@@ -362,7 +362,7 @@ disabled by default.
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer function omp_get_nested()}
+@item @emph{Interface}: @tab @code{logical function omp_get_nested()}
 @end multitable
 
 @item @emph{See also}:
@@ -583,7 +583,7 @@ adjustment of team sizes and @code{false} disables it.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine omp_set_dynamic(set)}
-@item                   @tab @code{integer, intent(in) :: set}
+@item                   @tab @code{logical, intent(in) :: set}
 @end multitable
 
 @item @emph{See also}:
@@ -639,7 +639,7 @@ dynamic adjustment of team sizes and @code{false} disables it.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine omp_set_nested(set)}
-@item                   @tab @code{integer, intent(in) :: set}
+@item                   @tab @code{logical, intent(in) :: set}
 @end multitable
 
 @item @emph{See also}:
@@ -756,7 +756,7 @@ a deadlock occurs.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine omp_set_lock(lock)}
-@item                   @tab @code{integer(omp_lock_kind), intent(out) :: lock}
+@item                   @tab @code{integer(omp_lock_kind), intent(inout) :: lock}
 @end multitable
 
 @item @emph{See also}:
@@ -787,7 +787,7 @@ does not block if the lock is not available. This function returns
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine omp_test_lock(lock)}
 @item                   @tab @code{logical(omp_logical_kind) :: omp_test_lock}
-@item                   @tab @code{integer(omp_lock_kind), intent(out) :: lock}
+@item                   @tab @code{integer(omp_lock_kind), intent(inout) :: lock}
 @end multitable
 
 @item @emph{See also}:
@@ -817,7 +817,7 @@ again, set the lock for itself.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine omp_unset_lock(lock)}
-@item                   @tab @code{integer(omp_lock_kind), intent(out) :: lock}
+@item                   @tab @code{integer(omp_lock_kind), intent(inout) :: lock}
 @end multitable
 
 @item @emph{See also}:
@@ -899,7 +899,7 @@ nesting count for the lock in incremented.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine omp_set_nest_lock(lock)}
-@item                   @tab @code{integer(omp_nest_lock_kind), intent(out) :: lock}
+@item                   @tab @code{integer(omp_nest_lock_kind), intent(inout) :: lock}
 @end multitable
 
 @item @emph{See also}:
@@ -961,7 +961,7 @@ one of them is chosen to, again, set the lock for itself.
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{subroutine omp_unset_nest_lock(lock)}
-@item                   @tab @code{integer(omp_nest_lock_kind), intent(out) :: lock}
+@item                   @tab @code{integer(omp_nest_lock_kind), intent(inout) :: lock}
 @end multitable
 
 @item @emph{See also}:
