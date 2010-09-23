@@ -5290,13 +5290,17 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  return;
 	}
 
-      if (ss->expr != expr)
+      if (ss->expr != expr || ss->type != GFC_SS_FUNCTION)
 	{
-	  /* Elemental function.  */
-	  gcc_assert ((expr->value.function.esym != NULL
-		       && expr->value.function.esym->attr.elemental)
-		      || (expr->value.function.isym != NULL
-			  && expr->value.function.isym->elemental));
+	  if (ss->expr != expr)
+	    /* Elemental function.  */
+	    gcc_assert ((expr->value.function.esym != NULL
+			 && expr->value.function.esym->attr.elemental)
+			|| (expr->value.function.isym != NULL
+			    && expr->value.function.isym->elemental));
+	  else
+	    gcc_assert (ss->type == GFC_SS_INTRINSIC);
+
 	  need_tmp = 1;
 	  if (expr->ts.type == BT_CHARACTER
 		&& expr->ts.u.cl->length->expr_type != EXPR_CONSTANT)
