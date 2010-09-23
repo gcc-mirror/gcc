@@ -1,3 +1,8 @@
+2010-09-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/45744
+	* gfortran.dg/dependency_36.f90:  New test.
+
 2010-09-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pad-1.c: Remove -S from dg-options.
