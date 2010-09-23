@@ -1,3 +1,8 @@
+2010-09-23  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (toc_relative_ok): Delete.
+	(rs6000_emit_move): Use SYMBOL_REF_LOCAL_P instead.
+
 2010-09-23  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/44374
