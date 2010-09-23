@@ -1,3 +1,9 @@
+2010-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/stackalign/alloca-4.c: Remove -m32 from dg-options.
+	* gcc.dg/torture/stackalign/alloca-5.c: Likewise.  Fix up -DDEBUG
+	build.
+
 2010-09-23  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/44374
