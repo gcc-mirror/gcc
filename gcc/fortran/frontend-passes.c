@@ -122,8 +122,13 @@ optimize_binop_array_assignment (gfc_code *c, gfc_expr **rhs, bool seen_op)
   else if (seen_op && e->expr_type == EXPR_FUNCTION && e->rank > 0
 	   && ! (e->value.function.esym 
 		 && (e->value.function.esym->attr.elemental 
-		     || e->value.function.esym->attr.allocatable))
-	   && ! (e->value.function.isym && e->value.function.isym->elemental))
+		     || e->value.function.esym->attr.allocatable
+		     || e->value.function.esym->ts.type != c->expr1->ts.type
+		     || e->value.function.esym->ts.kind != c->expr1->ts.kind))
+	   && ! (e->value.function.isym
+		 && (e->value.function.isym->elemental
+		     || e->ts.type != c->expr1->ts.type
+		     || e->ts.kind != c->expr1->ts.kind)))
     {
 
       gfc_code *n;
