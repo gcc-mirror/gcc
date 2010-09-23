@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse3 -S" } */
+/* { dg-options "-O2 -msse3" } */
 /* { dg-final { scan-assembler-not "%mm" } } */
 /* PR 28825 */
 #include <pmmintrin.h>

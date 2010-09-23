@@ -1,3 +1,12 @@
+2010-09-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (UNSPECV_NOPS): Rename from UNSPEC_NOPS and
+	define as unspec_volatile.
+	("nops"): Define as unspec_volatile. Use fputs to write to
+	asm_out_file directly.  Output NOPs on separate lines using while loop.
+	* config/i386/i386.c (ix86_code_end): Use fputs to write to
+	asm_out_file directly.  Output NOPs on separate lines using while loop.
+
 2010-09-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45565
@@ -45,8 +54,7 @@
 
 2010-09-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
-	* doc/contrib.texi (Contributors): Allow URL to wrap in PDF
-	output.
+	* doc/contrib.texi (Contributors): Allow URL to wrap in PDF output.
 	* doc/cppopts.texi: Fix markup of index entry.
 	* doc/extend.texi (Constructing Calls): Fix markup of
 	__builtin_va_arg_pack and __builtin_va_arg_pack_len definition.
@@ -63,8 +71,7 @@
 	long lines, avoid overlong pages from long @itemx lists.
 	* doc/objc.texi (Garbage Collection): Allow URLs to wrap.
 	* doc/standards.texi (Standards): Likewise.
-	* doc/trouble.texi (Incompatibilities): Fix markup of index
-	entry.
+	* doc/trouble.texi (Incompatibilities): Fix markup of index entry.
 
 2010-09-22  Joseph Myers  <joseph@codesourcery.com>
 
@@ -74,8 +81,7 @@
 	resize option array here.
 	* opts.h (prune_options): Remove prototype.
 	* gcc.c (process_command): Take decoded options; don't call
-	decode_cmdline_options_to_array here.  Use decoded options for
-	argv[0].
+	decode_cmdline_options_to_array here.  Use decoded options for argv[0].
 	(main): Call decode_cmdline_options_to_array here instead of
 	prune_options.  Update call to process_command.
 	* config/darwin-driver.c: Include opts.h.
@@ -148,7 +154,7 @@
 	* postreload.c (move2add_note_store): Add reg_symbol_ref[] checks
 	to update conditions. Fix reg_mode[] check.
 
-2010-09-22  Hariharan Sandanagobalane <hariharan@picochip.com>
+2010-09-22  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.md (movhicc): Use expand to check whether
 	movhicc is available and split it after reload.
@@ -467,7 +473,7 @@
 	* tree-inline.c (copy_phis_for_bb): Delay commit of edge
 	insertions until after all PHI nodes of the block are processed.
 
-2010-09-18  Tijl Coosemans <tijl@coosemans.org>
+2010-09-18  Tijl Coosemans  <tijl@coosemans.org>
 
 	* config/i386/freebsd.h (SUBTARGET32_DEFAULT_CPU): Add.
 
@@ -1084,7 +1090,7 @@
 2010-09-15  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/arm/neon.md (vec_pack_trunc_<mode>): Instruction
-	pattern for vmovn. Expansion in case of non 
+	pattern for vmovn. Expansion in case of non
 	-mvectorize-with-neon-quad.
 	(neon_vec_pack_trunc_<mode>): Instruction pattern for vmovn for
 	non- -mvectorize-with-neon-quad case.

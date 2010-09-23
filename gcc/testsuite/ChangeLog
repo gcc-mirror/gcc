@@ -1,3 +1,22 @@
+2010-09-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pad-1.c: Remove -S from dg-options.
+	* gcc.target/i386/pad-3.c: Ditto.
+	* gcc.target/i386/pad-7.c: Ditto.
+	* gcc.target/i386/pad-7.c: Ditto.
+	* gcc.target/i386/pr36502.c: Ditto.
+	* gcc.target/i386/zee.c: Ditto.
+	* gcc.target/i386/20060821-1.c: Ditto.
+	* gcc.target/i386/pad-2.c: Ditto.  Scan for NOPs on separate lines.
+	* gcc.target/i386/pad-5a.c: Ditto.  Do not use scan-assembler-not.
+	* gcc.target/i386/pad-5b.c: Ditto.
+	* gcc.target/i386/pad-6a.c: Ditto.
+	* gcc.target/i386/pad-6b.c: Ditto.
+	* gcc.target/i386/pad-8.c: Ditto.
+	* gcc.target/i386/pad-9.c: Ditto.
+	* gcc.target/i386/pad-10.c: Ditto.
+	* gcc.target/i386/pad-4.c: Ditto.  Require pic effective target.
+
 2010-09-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45565
@@ -121,10 +140,10 @@
 	2005-10-11  Fariborz Jahanian <fjahanian@apple.com>
 
 	Radar 4291785
-	objc.dg/naming-4.m: New
-	objc.dg/naming-5.m: New
-	obj-c++.dg/naming-1.mm: New
-	obj-c++.dg/naming-2.mm: New
+	* objc.dg/naming-4.m: New
+	* objc.dg/naming-5.m: New
+	* obj-c++.dg/naming-1.mm: New
+	* obj-c++.dg/naming-2.mm: New
 
 2010-09-21  Jonathan Wakely  <redi@gcc.gnu.org>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>

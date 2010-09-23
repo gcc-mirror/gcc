@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O2 -fomit-frame-pointer -march=atom -S" } */
+/* { dg-options "-O2 -fomit-frame-pointer -march=atom" } */
 /* { dg-final { scan-assembler-not "nop" } } */
 /* { dg-final { scan-assembler-not "rep" } } */
 
