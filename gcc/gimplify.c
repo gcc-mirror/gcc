@@ -6809,8 +6809,10 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	    ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
 				 is_gimple_reg, fb_rvalue);
-	    recalculate_side_effects (*expr_p);
+	    if (ret == GS_ERROR)
+	      break;
 
+	    recalculate_side_effects (*expr_p);
 	    *expr_p = fold_build2_loc (input_location, MEM_REF,
 				       TREE_TYPE (*expr_p),
 				       TREE_OPERAND (*expr_p, 0),
@@ -6835,6 +6837,8 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    }
 	  ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
 			       is_gimple_mem_ref_addr, fb_rvalue);
+	  if (ret == GS_ERROR)
+	    break;
 	  recalculate_side_effects (*expr_p);
 	  ret = GS_ALL_DONE;
 	  break;
