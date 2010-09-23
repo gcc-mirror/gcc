@@ -1,3 +1,10 @@
+2010-09-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-typeck.c (convert_arguments): Use warning 'too many arguments
+	to method [methodname]' for an Objective-C method instead of the
+	less satisfactory 'too many arguments to function' (with no method
+	name).
+
 2010-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-flow.h (execute_update_addresses_taken): Remove parameter.

@@ -3428,8 +3428,17 @@ warn_args_num (location_t loc, tree fndecl, bool too_many_p)
 	      "declared here");
     }
   else
-    error_at (loc, too_many_p ? G_("too many arguments to function")
-		      	      : G_("too few arguments to function"));
+    {
+      if (c_dialect_objc ()  &&  objc_message_selector ())
+	error_at (loc,
+		  too_many_p 
+		  ? G_("too many arguments to method %q#D")
+		  : G_("too few arguments to method %q#D"),
+		  objc_message_selector ());
+      else
+	error_at (loc, too_many_p ? G_("too many arguments to function")
+		                  : G_("too few arguments to function"));
+    }
 }
 
 /* Convert the actual parameter expressions in the list VALUES to the
