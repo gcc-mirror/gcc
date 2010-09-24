@@ -1,3 +1,21 @@
+2010-09-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40571
+	* iso-fortran-env.def: Add NAMED_KINDARRAY with
+	character_kinds, integer_kinds, logical_kinds and
+	real_kinds.
+	* gfortran.h: Add them to iso_fortran_env_symbol.
+	* libgfortran.h: Rename GFC_INQUIRE_INTERNAL_UNIT to
+	LIBERROR_INQUIRE_INTERNAL_UNIT and move it from
+	libgfortran_stat_codes to libgfortran_error_codes.
+	* module.c (create_int_parameter_array): New function.
+	(use_iso_fortran_env_module): Use it for
+	NAMED_KINDARRAY of iso-fortran-env.def.
+	* trans-decl.c (gfc_get_symbol_decl): Parameter
+	arrays of intrinsics modules become local static variables.
+	* intrinsic.texi (ISO_FORTRAN_ENV): Add character_kinds,
+	integer_kinds, logical_kinds and real_kinds.
+
 2010-09-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45744

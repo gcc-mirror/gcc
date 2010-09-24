@@ -93,6 +93,7 @@ typedef enum
   LIBERROR_DIRECT_EOR,
   LIBERROR_SHORT_RECORD,
   LIBERROR_CORRUPT_FILE,
+  LIBERROR_INQUIRE_INTERNAL_UNIT, /* Must be different from STAT_STOPPED_IMAGE.  */
   LIBERROR_LAST			/* Not a real error, the last error # + 1.  */
 }
 libgfortran_error_codes;
@@ -102,8 +103,7 @@ typedef enum
   GFC_STAT_UNLOCKED = 0,
   GFC_STAT_LOCKED,
   GFC_STAT_LOCKED_OTHER_IMAGE,
-  GFC_STAT_STOPPED_IMAGE,
-  GFC_INQUIRE_INTERNAL_UNIT  /* Must be different from STAT_STOPPED_IMAGE.  */
+  GFC_STAT_STOPPED_IMAGE
 }
 libgfortran_stat_codes;
 

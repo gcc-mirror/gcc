@@ -19,6 +19,15 @@ along with GCC; see the file COPYING3.  If not see
 /* This file contains the definition of the named integer constants provided
    by the Fortran 2003 ISO_FORTRAN_ENV intrinsic module.  */
 
+#ifndef NAMED_INTCST
+# define NAMED_INTCST(a,b,c,d)
+#endif
+
+#ifndef NAMED_KINDARRAY
+# define NAMED_KINDARRAY(a,b,c,d)
+#endif
+
+
 /* The arguments to NAMED_INTCST are:
      -- an internal name
      -- the symbol name in the module, as seen by Fortran code
@@ -50,7 +59,7 @@ NAMED_INTCST (ISOFORTRANENV_IOSTAT_END, "iostat_end", LIBERROR_END, \
 NAMED_INTCST (ISOFORTRANENV_IOSTAT_EOR, "iostat_eor", LIBERROR_EOR, \
               GFC_STD_F2003)
 NAMED_INTCST (ISOFORTRANENV_IOSTAT_INQUIRE_INTERNAL_UNIT, \
-              "iostat_inquire_internal_unit", GFC_INQUIRE_INTERNAL_UNIT, \
+              "iostat_inquire_internal_unit", LIBERROR_INQUIRE_INTERNAL_UNIT, \
               GFC_STD_F2008)
 NAMED_INTCST (ISOFORTRANENV_NUMERIC_STORAGE_SIZE, "numeric_storage_size", \
               gfc_numeric_storage_size, GFC_STD_F2003)
@@ -72,3 +81,21 @@ NAMED_INTCST (ISOFORTRANENV_FILE_STAT_STOPPED_IMAGE, "stat_stopped_image", \
 NAMED_INTCST (ISOFORTRANENV_FILE_STAT_UNLOCKED, "stat_unlocked", \
               GFC_STAT_UNLOCKED, GFC_STD_F2008)
 
+
+/* The arguments to NAMED_KINDARRAY are:
+     -- an internal name
+     -- the symbol name in the module, as seen by Fortran code
+     -- the gfortran variable containing the information
+     -- the Fortran standard  */
+
+NAMED_KINDARRAY (ISOFORTRAN_CHARACTER_KINDS, "character_kinds", \
+                 gfc_character_kinds, GFC_STD_F2008)
+NAMED_KINDARRAY (ISOFORTRAN_INTEGER_KINDS, "integer_kinds", \
+                 gfc_integer_kinds, GFC_STD_F2008)
+NAMED_KINDARRAY (ISOFORTRAN_LOGICAL_KINDS, "logical_kinds", \
+                 gfc_logical_kinds, GFC_STD_F2008)
+NAMED_KINDARRAY (ISOFORTRAN_REAL_KINDS, "real_kinds", \
+                 gfc_real_kinds, GFC_STD_F2008)
+
+#undef NAMED_INTCST
+#undef NAMED_KINDARRAY
