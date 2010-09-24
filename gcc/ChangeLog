@@ -1,3 +1,18 @@
+2010-09-24  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c (ia64_dwarf_handle_frame_unspec): New.
+	(TARGET_DWARF_HANDLE_FRAME_UNSPEC): New.
+	(do_spill): Use REG_CFA_OFFSET.
+	(ia64_expand_prologue): Use REG_CFA_ADJUST_CFA and REG_CFA_REGISTER
+	as appropriate.
+	(ia64_expand_epilogue): Likewise.
+	(process_set): Split into ...
+	(process_cfa_adjust_cfa): this,
+	(process_cfa_register): this,
+	(process_cfa_offset): and this new function.
+	(ia64_asm_unwind_emit): Use them.  Expect REG_CFA_* notes
+	instead of REG_FRAME_RELATED_EXPR.
+
 2010-09-24  Olivier Hainque  <hainque@adacore.com>
 
 	* config/i386/vx-common.h (DBX_REGISTER_NUMBER): Reinstate.
