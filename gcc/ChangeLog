@@ -1,3 +1,10 @@
+2010-09-24  Iain Sandoe  <iains@gcc.gnu.org>
+	    Dominique Dhumieres  <dominiq@lps.ens.fr>
+	    
+	PR bootstrap/45751
+	* gcc/config/darwin-driver.c (darwin_default_min_version):
+	Adjust size passed to memcpy in two places.
+	
 2010-09-24  Richard Guenther  <rguenther@suse.de>
 
 	* c-decl.c (pop_scope): Always set file-scope DECL_CONTEXT.
