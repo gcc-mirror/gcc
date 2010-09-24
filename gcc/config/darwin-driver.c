@@ -76,7 +76,7 @@ darwin_default_min_version (unsigned int *decoded_options_count,
 	generate_option (OPT_mmacosx_version_min_, macosx_deployment_target,
 			 1, CL_DRIVER, &(*decoded_options)[1]);
 	memcpy (*decoded_options + 2, argv + 1,
-		(argc - 1) * sizeof (struct cl_decoded_option *));
+		(argc - 1) * sizeof (struct cl_decoded_option));
 	return;
       }
   }
@@ -128,7 +128,7 @@ darwin_default_min_version (unsigned int *decoded_options_count,
   generate_option (OPT_mmacosx_version_min_, new_flag,
 		   1, CL_DRIVER, &(*decoded_options)[1]);
   memcpy (*decoded_options + 2, argv + 1,
-	  (argc - 1) * sizeof (struct cl_decoded_option *));
+	  (argc - 1) * sizeof (struct cl_decoded_option));
   return;
   
  parse_failed:
