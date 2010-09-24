@@ -613,6 +613,7 @@ gfc_reverse;
 #define BBT_HEADER(self) int priority; struct self *left, *right
 
 #define NAMED_INTCST(a,b,c,d) a,
+#define NAMED_KINDARRAY(a,b,c,d) a,
 typedef enum
 {
   ISOFORTRANENV_INVALID = -1,
@@ -620,7 +621,7 @@ typedef enum
   ISOFORTRANENV_LAST, ISOFORTRANENV_NUMBER = ISOFORTRANENV_LAST
 }
 iso_fortran_env_symbol;
-#undef NAMED_INTCST
+#undef NAMED_KINDARRAY
 
 #define NAMED_INTCST(a,b,c,d) a,
 #define NAMED_REALCST(a,b,c) a,

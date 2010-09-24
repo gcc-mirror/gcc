@@ -12606,6 +12606,10 @@ integer variables used in atomic operations. (Fortran 2008 or later.)
 Default-kind integer constant to be used as kind parameter when defining
 logical variables used in atomic operations. (Fortran 2008 or later.)
 
+@item @code{CHARACTER_KINDS}:
+Default-kind integer constant array of rank one containing the supported kind
+parameters of the @code{CHARACTER} type. (Fortran 2008 or later.)
+
 @item @code{CHARACTER_STORAGE_SIZE}:
 Size in bits of the character storage unit.
 
@@ -12624,6 +12628,10 @@ Kind type parameters to specify an INTEGER type with a storage
 size of 16, 32, and 64 bits. It is negative if a target platform
 does not support the particular kind. (Fortran 2008 or later.)
 
+@item @code{INTEGER_KINDS}:
+Default-kind integer constant array of rank one containing the supported kind
+parameters of the @code{INTEGER} type. (Fortran 2008 or later.)
+
 @item @code{IOSTAT_END}:
 The value assigned to the variable passed to the @code{IOSTAT=} specifier of
 an input/output statement if an end-of-file condition occurred.
@@ -12640,6 +12648,10 @@ internal unit. (Fortran 2008 or later.)
 @item @code{NUMERIC_STORAGE_SIZE}:
 The size in bits of the numeric storage unit.
 
+@item @code{LOGICAL_KINDS}:
+Default-kind integer constant array of rank one containing the supported kind
+parameters of the @code{LOGICAL} type. (Fortran 2008 or later.)
+
 @item @code{OUTPUT_UNIT}:
 Identifies the preconnected unit identified by the asterisk
 (@code{*}) in @code{WRITE} statement.
@@ -12648,6 +12660,10 @@ Identifies the preconnected unit identified by the asterisk
 Kind type parameters to specify a REAL type with a storage
 size of 32, 64, and 128 bits. It is negative if a target platform
 does not support the particular kind. (Fortran 2008 or later.)
+
+@item @code{REAL_KINDS}:
+Default-kind integer constant array of rank one containing the supported kind
+parameters of the @code{REAL} type. (Fortran 2008 or later.)
 
 @item @code{STAT_LOCKED}:
 Scalar default-integer constant used as STAT= return value by @code{LOCK} to

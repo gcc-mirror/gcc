@@ -1044,6 +1044,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   tree length = NULL_TREE;
   tree attributes;
   int byref;
+  bool intrinsic_array_parameter = false;
 
   gcc_assert (sym->attr.referenced
 		|| sym->attr.use_assoc
@@ -1181,6 +1182,12 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   if (sym->attr.intrinsic)
     internal_error ("intrinsic variable which isn't a procedure");
 
+  /* Special case for array-valued named constants from intrinsic
+     procedures; those are inlined.  */
+  if (sym->attr.use_assoc && sym->from_intmod && sym->attr.dimension
+      && sym->attr.flavor == FL_PARAMETER)
+    intrinsic_array_parameter = true;
+
   /* Create string length decl first so that they can be used in the
      type declaration.  */
   if (sym->ts.type == BT_CHARACTER)
@@ -1200,7 +1207,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   if (sym->module)
     {
       gfc_set_decl_assembler_name (decl, gfc_sym_mangled_identifier (sym));
-      if (sym->attr.use_assoc)
+      if (sym->attr.use_assoc && !intrinsic_array_parameter)
 	DECL_IGNORED_P (decl) = 1;
     }
 
@@ -1226,7 +1233,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  && !sym->attr.data
 	  && !sym->attr.allocatable
 	  && (sym->value && !sym->ns->proc_name->attr.is_main_program)
-	  && !sym->attr.use_assoc))
+	  && !(sym->attr.use_assoc && !intrinsic_array_parameter)))
     gfc_defer_symbol_init (sym);
 
   gfc_finish_var_decl (decl, sym);
@@ -1280,7 +1287,14 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   if (sym->attr.assign)
     gfc_add_assign_aux_vars (sym);
 
-  if (TREE_STATIC (decl) && !sym->attr.use_assoc
+  if (intrinsic_array_parameter)
+    {
+      TREE_STATIC (decl) = 1;
+      DECL_EXTERNAL (decl) = 0;
+    }
+
+  if (TREE_STATIC (decl)
+      && !(sym->attr.use_assoc && !intrinsic_array_parameter)
       && (sym->attr.save || sym->ns->proc_name->attr.is_main_program
 	  || gfc_option.flag_max_stack_var_size == 0
 	  || sym->attr.data || sym->ns->proc_name->attr.flavor == FL_MODULE))
