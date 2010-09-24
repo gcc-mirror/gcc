@@ -1,3 +1,48 @@
+2010-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45234
+	* rtl.h (enum global_rtl_index): Add
+	GR_VIRTUAL_PREFERRED_STACK_BOUNDARY.
+	(LAST_VIRTUAL_POINTER_REGISTER): Define.
+	(virtual_preferred_stack_boundary_rtx,
+	VIRTUAL_PREFERRED_STACK_BOUNDARY_REGNUM): Define.
+	(LAST_VIRTUAL_REGISTER): Increase by one.
+	(REGNO_PTR_FRAME_P): Use LAST_VIRTUAL_POINTER_REGISTER
+	instead of LAST_VIRTUAL_REGISTER.
+	* function.c (instantiate_new_reg): Handle
+	virtual_preferred_stack_boundary_rtx.
+	* emit-rtl.c (init_virtual_regs): Handle
+	VIRTUAL_PREFERRED_STACK_BOUNDARY_REGNUM.
+	(init_emit_regs): Initialize virtual_preferred_stack_boundary_rtx.
+	* explow.c (round_push): If crtl->preferred_stack_boundary
+	is smaller than MAX_SUPPORTED_STACK_ALIGNMENT, use
+	virtual_preferred_stack_boundary_rtx alignment instead of
+	crtl->preferred_stack_boundary alignment.
+	(allocate_dynamic_stack_space): Use CONST_INT_P and REG_P
+	macros.  Never decrease crtl->preferred_stack_boundary,
+	use crtl->preferred_stack_boundary or MAX_SUPPORTED_STACK_ALIGNMENT
+	instead of PREFERRED_STACK_BOUNDARY.  Don't modify
+	stack_pointer_delta in dynamic allocation, even when size
+	is constant.
+	(probe_stack_range, anti_adjust_stack_and_probe): Use CONST_INT_P
+	macro.
+	* print-rtl.c (print_rtx): Handle
+	VIRTUAL_PREFERRED_STACK_BOUNDARY_REGNUM.
+	* config/alpha/alpha.h (NONSTRICT_REG_OK_FP_BASE_P): Use
+	LAST_VIRTUAL_POINTER_REGISTER instead of LAST_VIRTUAL_REGISTER.
+	* config/frv/frv.c (frv_emit_movsi): Likewise.
+	* config/arm/arm.c (thumb1_legitimate_address_p): Likewise.
+	* config/rs6000/rs6000.c (virtual_stack_registers_memory_p):
+	Likewise.
+
+	Revert:
+	2010-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/45234
+	* calls.c (expand_call): Make sure that all variable sized
+	adjustments are multiple of preferred stack boundary after
+	stack alignment.
+
 2010-09-24  Iain Sandoe  <iains@gcc.gnu.org>
 	    Dominique Dhumieres  <dominiq@lps.ens.fr>
 	    

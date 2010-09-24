@@ -457,6 +457,9 @@ print_rtx (const_rtx in_rtx)
 		  fprintf (outfile, " %d virtual-outgoing-args", value);
 		else if (value == VIRTUAL_CFA_REGNUM)
 		  fprintf (outfile, " %d virtual-cfa", value);
+		else if (value == VIRTUAL_PREFERRED_STACK_BOUNDARY_REGNUM)
+		  fprintf (outfile, " %d virtual-preferred-stack-boundary",
+			   value);
 		else
 		  fprintf (outfile, " %d virtual-reg-%d", value,
 			   value-FIRST_VIRTUAL_REGISTER);

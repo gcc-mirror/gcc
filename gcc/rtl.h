@@ -2010,6 +2010,7 @@ enum global_rtl_index
   GR_VIRTUAL_STACK_DYNAMIC,
   GR_VIRTUAL_OUTGOING_ARGS,
   GR_VIRTUAL_CFA,
+  GR_VIRTUAL_PREFERRED_STACK_BOUNDARY,
 
   GR_MAX
 };
@@ -2157,7 +2158,18 @@ extern rtx gen_rtx_MEM (enum machine_mode, rtx);
 
 #define VIRTUAL_CFA_REGNUM		((FIRST_VIRTUAL_REGISTER) + 4)
 
-#define LAST_VIRTUAL_REGISTER		((FIRST_VIRTUAL_REGISTER) + 4)
+#define LAST_VIRTUAL_POINTER_REGISTER	((FIRST_VIRTUAL_REGISTER) + 4)
+
+/* This is replaced by crtl->preferred_stack_boundary / BITS_PER_UNIT
+   when finalized.  */
+
+#define virtual_preferred_stack_boundary_rtx \
+	(global_rtl[GR_VIRTUAL_PREFERRED_STACK_BOUNDARY])
+
+#define VIRTUAL_PREFERRED_STACK_BOUNDARY_REGNUM \
+					((FIRST_VIRTUAL_REGISTER) + 5)
+
+#define LAST_VIRTUAL_REGISTER		((FIRST_VIRTUAL_REGISTER) + 5)
 
 /* Nonzero if REGNUM is a pointer into the stack frame.  */
 #define REGNO_PTR_FRAME_P(REGNUM)		\
@@ -2166,7 +2178,7 @@ extern rtx gen_rtx_MEM (enum machine_mode, rtx);
    || (REGNUM) == HARD_FRAME_POINTER_REGNUM	\
    || (REGNUM) == ARG_POINTER_REGNUM		\
    || ((REGNUM) >= FIRST_VIRTUAL_REGISTER	\
-       && (REGNUM) <= LAST_VIRTUAL_REGISTER))
+       && (REGNUM) <= LAST_VIRTUAL_POINTER_REGISTER))
 
 /* REGNUM never really appearing in the INSN stream.  */
 #define INVALID_REGNUM			(~(unsigned int) 0)

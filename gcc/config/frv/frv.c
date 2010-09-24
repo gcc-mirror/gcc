@@ -4067,7 +4067,7 @@ frv_emit_movsi (rtx dest, rtx src)
 	  || (GET_CODE (src) == REG
 	      && IN_RANGE_P (REGNO (src),
 			     FIRST_VIRTUAL_REGISTER,
-			     LAST_VIRTUAL_REGISTER))))
+			     LAST_VIRTUAL_POINTER_REGISTER))))
     {
       emit_insn (gen_rtx_SET (VOIDmode, dest, copy_to_mode_reg (SImode, src)));
       return TRUE;

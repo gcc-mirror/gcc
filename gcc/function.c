@@ -1405,6 +1405,11 @@ instantiate_new_reg (rtx x, HOST_WIDE_INT *poffset)
 #endif
       offset = cfa_offset;
     }
+  else if (x == virtual_preferred_stack_boundary_rtx)
+    {
+      new_rtx = GEN_INT (crtl->preferred_stack_boundary / BITS_PER_UNIT);
+      offset = 0;
+    }
   else
     return NULL_RTX;
 
