@@ -1924,6 +1924,10 @@ Driver JoinedOrMissing
 u
 Driver Joined Separate
 
+undef
+Driver
+; C option, but driver must not handle as "-u ndef".
+
 v
 Driver
 
