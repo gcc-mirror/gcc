@@ -2258,7 +2258,8 @@ is_ctrl_altering_stmt (gimple t)
 
 	/* A non-pure/const call alters flow control if the current
 	   function has nonlocal labels.  */
-	if (!(flags & (ECF_CONST | ECF_PURE)) && cfun->has_nonlocal_label)
+	if (!(flags & (ECF_CONST | ECF_PURE | ECF_LEAF))
+	    && cfun->has_nonlocal_label)
 	  return true;
 
 	/* A call also alters control flow if it does not return.  */
@@ -2314,7 +2315,8 @@ stmt_can_make_abnormal_goto (gimple t)
   if (computed_goto_p (t))
     return true;
   if (is_gimple_call (t))
-    return gimple_has_side_effects (t) && cfun->has_nonlocal_label;
+    return (gimple_has_side_effects (t) && cfun->has_nonlocal_label
+	    && !(gimple_call_flags (t) & ECF_LEAF));
   return false;
 }
 

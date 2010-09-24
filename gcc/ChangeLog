@@ -1,3 +1,22 @@
+2010-09-24  Jan Hubicka  <jh@suse.cz>
+
+	* doc/extend.texi: (attribute leaf): Document.
+	* tree.c (local_define_builtin): Handle ECF_LEAF.
+	(build_common_builtin_nodes): Set ECF_LEAF where needed.
+	* tree.h (ECF_LEAF): New.
+	* ipa-reference.c (propagate_bits): For leaf calls propagate ever overwrittable
+	and unavailable functions.
+	(ipa_init): Put all_module_statics into optimization_summary_obstack.
+	(copy_global_bitmap): Do not copy all_module_statics.
+	(read_write_all_from_decl): Use cgraph_node argument; handle ECF_LEAF.
+	(propagate): Handle overwritable and unavailable leaf functions;
+	initialize global info for overwritable and unavailable leaf functions;
+	do not free all module statics.
+	(ipa_reference_get_not_read_global, ipa_reference_get_not_written_global):
+	leaf calls don't clobber local statics.
+	* calls.c (flags_from_decl_or_type): Handle leaf.
+	* tree-cfg.c (stmt_can_make_abnormal_goto): Leaf functions can't do
+	abnormal gotos.
 
 2010-09-24  Basile Starynkevitch  <basile@starynkevitch.net>
 
