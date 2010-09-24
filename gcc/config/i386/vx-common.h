@@ -24,3 +24,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #define SUBTARGET_RETURN_IN_MEMORY(TYPE, FNTYPE) \
 	ix86_solaris_return_in_memory (TYPE, FNTYPE)
+
+/* Provide our target specific DBX_REGISTER_NUMBER, as advertised by the
+   common svr4.h.  VxWorks relies on the SVR4 numbering.  */
+
+#undef DBX_REGISTER_NUMBER
+#define DBX_REGISTER_NUMBER(n)  svr4_dbx_register_map[n]

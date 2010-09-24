@@ -1,3 +1,7 @@
+2010-09-24  Olivier Hainque  <hainque@adacore.com>
+
+	* config/i386/vx-common.h (DBX_REGISTER_NUMBER): Reinstate.
+
 2010-09-24  Jan Hubicka  <jh@suse.cz>
 
 	* doc/extend.texi: (attribute leaf): Document.
