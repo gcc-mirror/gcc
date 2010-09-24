@@ -1,5 +1,9 @@
 2010-09-24  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (compute_array_index_type): Remember type dependence of
+	array bound.
+	* pt.c (dependent_type_p_r): Don't recompute it here.
+
 	* error.c (dump_expr) [CASE_CONVERT]: Print conversion between
 	reference and pointer to the same type as "*" or "&".
 
