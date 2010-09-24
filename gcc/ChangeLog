@@ -1,5 +1,11 @@
 2010-09-24  Richard Guenther  <rguenther@suse.de>
 
+	* c-decl.c (pop_scope): Always set file-scope DECL_CONTEXT.
+	Make sure to not call set_type_context with error_mark_node.
+	* langhooks.c (lhd_set_decl_assembler_name): Use DECL_FILE_SCOPE_P.
+
+2010-09-24  Richard Guenther  <rguenther@suse.de>
+
 	* Makefile.in (OBJS-onestep): Remove.
 	(ALL_HOST_BACKEND_OBJS): Remove libbackend.o.
 	(libbackend.a): Remove onestep support.

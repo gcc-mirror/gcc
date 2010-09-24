@@ -176,7 +176,7 @@ lhd_set_decl_assembler_name (tree decl)
      is less than the whole compilation.  Concatenate a distinguishing
      number - we use the DECL_UID.  */
 
-  if (TREE_PUBLIC (decl) || DECL_CONTEXT (decl) == NULL_TREE)
+  if (TREE_PUBLIC (decl) || DECL_FILE_SCOPE_P (decl))
     id = targetm.mangle_decl_assembler_name (decl, DECL_NAME (decl));
   else
     {
