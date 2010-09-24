@@ -1,3 +1,8 @@
+2010-09-24  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* cfgcleanup.c (flow_find_head_matching_sequence): Terminate when
+	reaching the end of a block if it occurs at a DEBUG_INSN.
+
 2010-09-09  Tristan Gingold  <gingold@adacore.com>
 
 	PR target/44242
