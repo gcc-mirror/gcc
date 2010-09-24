@@ -1949,8 +1949,21 @@ dump_expr (tree t, int flags)
     case VIEW_CONVERT_EXPR:
       {
 	tree op = TREE_OPERAND (t, 0);
+	tree ttype = TREE_TYPE (t);
+	tree optype = TREE_TYPE (op);
 
-	if (!same_type_p (TREE_TYPE (op), TREE_TYPE (t)))
+	if (TREE_CODE (ttype) != TREE_CODE (optype)
+	    && POINTER_TYPE_P (ttype)
+	    && POINTER_TYPE_P (optype)
+	    && same_type_p (TREE_TYPE (optype),
+			    TREE_TYPE (ttype)))
+	  {
+	    if (TREE_CODE (ttype) == REFERENCE_TYPE)
+	      dump_unary_op ("*", t, flags);
+	    else
+	      dump_unary_op ("&", t, flags);
+	  }
+	else if (!same_type_p (TREE_TYPE (op), TREE_TYPE (t)))
 	  {
 	    /* It is a cast, but we cannot tell whether it is a
 	       reinterpret or static cast. Use the C style notation.  */

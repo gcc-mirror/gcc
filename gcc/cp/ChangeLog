@@ -1,3 +1,8 @@
+2010-09-24  Jason Merrill  <jason@redhat.com>
+
+	* error.c (dump_expr) [CASE_CONVERT]: Print conversion between
+	reference and pointer to the same type as "*" or "&".
+
 2010-09-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* typeck.c (warn_args_num): Use warning 'too many arguments to
