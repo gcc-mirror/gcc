@@ -230,7 +230,6 @@ static void emit_predicate_relation_info (void);
 static void ia64_reorg (void);
 static bool ia64_in_small_data_p (const_tree);
 static void process_epilogue (FILE *, rtx, bool, bool);
-static int process_set (FILE *, rtx, rtx, bool, bool);
 
 static bool ia64_assemble_integer (rtx, unsigned int, int);
 static void ia64_output_function_prologue (FILE *, HOST_WIDE_INT);
@@ -318,6 +317,8 @@ static enum machine_mode ia64_promote_function_mode (const_tree,
 						     int);
 static void ia64_trampoline_init (rtx, tree, rtx);
 static void ia64_override_options_after_change (void);
+
+static void ia64_dwarf_handle_frame_unspec (const char *, rtx, int);
 
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ia64_attribute_table[] =
@@ -527,6 +528,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR ia64_gimplify_va_arg
 
+#undef TARGET_DWARF_HANDLE_FRAME_UNSPEC
+#define TARGET_DWARF_HANDLE_FRAME_UNSPEC  ia64_dwarf_handle_frame_unspec
 #undef TARGET_ASM_UNWIND_EMIT
 #define TARGET_ASM_UNWIND_EMIT ia64_asm_unwind_emit
 #undef TARGET_ASM_EMIT_EXCEPT_PERSONALITY
@@ -3035,7 +3038,7 @@ do_spill (rtx (*move_fn) (rtx, rtx, rtx), rtx reg, HOST_WIDE_INT cfa_off,
 	  off = current_frame_info.total_size - cfa_off;
 	}
 
-      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+      add_reg_note (insn, REG_CFA_OFFSET,
 		    gen_rtx_SET (VOIDmode,
 				 gen_rtx_MEM (GET_MODE (reg),
 					      plus_constant (base, off)),
@@ -3219,6 +3222,10 @@ ia64_expand_prologue (void)
     {
       insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
+
+      /* Force the unwind info to recognize this as defining a new CFA,
+	 rather than some temp register setup.  */
+      add_reg_note (insn, REG_CFA_ADJUST_CFA, NULL_RTX);
     }
 
   if (current_frame_info.total_size != 0)
@@ -3241,13 +3248,12 @@ ia64_expand_prologue (void)
       if (! frame_pointer_needed)
 	{
 	  RTX_FRAME_RELATED_P (insn) = 1;
-	  if (GET_CODE (offset) != CONST_INT)
-	    add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-			  gen_rtx_SET (VOIDmode,
-				       stack_pointer_rtx,
-				       gen_rtx_PLUS (DImode,
-						     stack_pointer_rtx,
-						     frame_size_rtx)));
+	  add_reg_note (insn, REG_CFA_ADJUST_CFA,
+			gen_rtx_SET (VOIDmode,
+				     stack_pointer_rtx,
+				     gen_rtx_PLUS (DImode,
+						   stack_pointer_rtx,
+						   frame_size_rtx)));
 	}
 
       /* ??? At this point we must generate a magic insn that appears to
@@ -3275,7 +3281,11 @@ ia64_expand_prologue (void)
 
       reg = gen_rtx_REG (DImode, AR_UNAT_REGNUM);
       insn = emit_move_insn (ar_unat_save_reg, reg);
-      RTX_FRAME_RELATED_P (insn) = (current_frame_info.r[reg_save_ar_unat] != 0);
+      if (current_frame_info.r[reg_save_ar_unat])
+	{
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  add_reg_note (insn, REG_CFA_REGISTER, NULL_RTX);
+	}
 
       /* Even if we're not going to generate an epilogue, we still
 	 need to save the register so that EH works.  */
@@ -3314,8 +3324,7 @@ ia64_expand_prologue (void)
 	  /* ??? Denote pr spill/fill by a DImode move that modifies all
 	     64 hard registers.  */
 	  RTX_FRAME_RELATED_P (insn) = 1;
-	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-			gen_rtx_SET (VOIDmode, alt_reg, reg));
+	  add_reg_note (insn, REG_CFA_REGISTER, NULL_RTX);
 
 	  /* Even if we're not going to generate an epilogue, we still
 	     need to save the register so that EH works.  */
@@ -3361,6 +3370,7 @@ ia64_expand_prologue (void)
 	  reg_emitted (reg_save_ar_lc);
 	  insn = emit_move_insn (alt_reg, reg);
 	  RTX_FRAME_RELATED_P (insn) = 1;
+	  add_reg_note (insn, REG_CFA_REGISTER, NULL_RTX);
 
 	  /* Even if we're not going to generate an epilogue, we still
 	     need to save the register so that EH works.  */
@@ -3387,6 +3397,7 @@ ia64_expand_prologue (void)
           reg_emitted (reg_save_b0);
 	  insn = emit_move_insn (alt_reg, reg);
 	  RTX_FRAME_RELATED_P (insn) = 1;
+	  add_reg_note (insn, REG_CFA_REGISTER, NULL_RTX);
 
 	  /* Even if we're not going to generate an epilogue, we still
 	     need to save the register so that EH works.  */
@@ -3677,6 +3688,7 @@ ia64_expand_epilogue (int sibcall_p)
     {
       insn = emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_CFA_ADJUST_CFA, NULL);
     }
   else if (current_frame_info.total_size)
     {
@@ -3696,13 +3708,12 @@ ia64_expand_epilogue (int sibcall_p)
 				    offset));
 
       RTX_FRAME_RELATED_P (insn) = 1;
-      if (GET_CODE (offset) != CONST_INT)
-	add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-		      gen_rtx_SET (VOIDmode,
-				   stack_pointer_rtx,
-				   gen_rtx_PLUS (DImode,
-						 stack_pointer_rtx,
-						 frame_size_rtx)));
+      add_reg_note (insn, REG_CFA_ADJUST_CFA,
+		    gen_rtx_SET (VOIDmode,
+				 stack_pointer_rtx,
+				 gen_rtx_PLUS (DImode,
+					       stack_pointer_rtx,
+					       frame_size_rtx)));
     }
 
   if (cfun->machine->ia64_eh_epilogue_bsp)
@@ -3713,11 +3724,12 @@ ia64_expand_epilogue (int sibcall_p)
   else
     {
       int fp = GR_REG (2);
-      /* We need a throw away register here, r0 and r1 are reserved, so r2 is the
-	 first available call clobbered register.  If there was a frame_pointer
-	 register, we may have swapped the names of r2 and HARD_FRAME_POINTER_REGNUM,
-	 so we have to make sure we're using the string "r2" when emitting
-	 the register name for the assembler.  */
+      /* We need a throw away register here, r0 and r1 are reserved,
+	 so r2 is the first available call clobbered register.  If
+	 there was a frame_pointer register, we may have swapped the
+	 names of r2 and HARD_FRAME_POINTER_REGNUM, so we have to make
+	 sure we're using the string "r2" when emitting the register
+	 name for the assembler.  */
       if (current_frame_info.r[reg_fp] 
           && current_frame_info.r[reg_fp] == GR_REG (2))
 	fp = HARD_FRAME_POINTER_REGNUM;
@@ -9590,6 +9602,17 @@ ia64_dwarf2out_def_steady_cfa (rtx insn, bool frame)
      + ARG_POINTER_CFA_OFFSET (current_function_decl));
 }
 
+/* All we need to do here is avoid a crash in the generic dwarf2
+   processing.  The real CFA definition is set up above.  */
+
+static void
+ia64_dwarf_handle_frame_unspec (const char * ARG_UNUSED (label),
+				rtx ARG_UNUSED (pattern),
+				int index)
+{
+  gcc_assert (index == UNSPECV_ALLOC);
+}
+
 /* The generic dwarf2 frame debug info generator does not define a
    separate region for the very end of the epilogue, so refrain from
    doing so in the IA64-specific code as well.  */
@@ -9619,22 +9642,265 @@ process_epilogue (FILE *asm_out_file, rtx insn, bool unwind, bool frame)
 		       STACK_POINTER_REGNUM, INCOMING_FRAME_SP_OFFSET);
 }
 
-/* This function processes a SET pattern looking for specific patterns
-   which result in emitting an assembly directive required for unwinding.  */
+/* This function processes a SET pattern for REG_CFA_ADJUST_CFA.  */
 
-static int
-process_set (FILE *asm_out_file, rtx pat, rtx insn, bool unwind, bool frame)
+static void
+process_cfa_adjust_cfa (FILE *asm_out_file, rtx pat, rtx insn,
+			bool unwind, bool frame)
 {
-  rtx src = SET_SRC (pat);
   rtx dest = SET_DEST (pat);
-  int src_regno, dest_regno;
+  rtx src = SET_SRC (pat);
+
+  if (dest == stack_pointer_rtx)
+    {
+      if (GET_CODE (src) == PLUS)
+	{
+	  rtx op0 = XEXP (src, 0);
+	  rtx op1 = XEXP (src, 1);
+	  
+	  gcc_assert (op0 == dest && GET_CODE (op1) == CONST_INT);
+	  
+	  if (INTVAL (op1) < 0)
+	    {
+	      gcc_assert (!frame_pointer_needed);
+	      if (unwind)
+		fprintf (asm_out_file,
+			 "\t.fframe "HOST_WIDE_INT_PRINT_DEC"\n",
+			 -INTVAL (op1));
+	      ia64_dwarf2out_def_steady_cfa (insn, frame);
+	    }
+	  else
+	    process_epilogue (asm_out_file, insn, unwind, frame);
+	}
+      else
+	{
+	  gcc_assert (src == hard_frame_pointer_rtx);
+	  process_epilogue (asm_out_file, insn, unwind, frame);
+	}
+    }
+  else if (dest == hard_frame_pointer_rtx)
+    {
+      gcc_assert (src == stack_pointer_rtx);
+      gcc_assert (frame_pointer_needed);
+
+      if (unwind)
+	fprintf (asm_out_file, "\t.vframe r%d\n",
+		 ia64_dbx_register_number (REGNO (dest)));
+      ia64_dwarf2out_def_steady_cfa (insn, frame);
+    }
+  else
+    gcc_unreachable ();
+}
+
+/* This function processes a SET pattern for REG_CFA_REGISTER.  */
+
+static void
+process_cfa_register (FILE *asm_out_file, rtx pat, bool unwind)
+{
+  rtx dest = SET_DEST (pat);
+  rtx src = SET_SRC (pat);
+
+  int dest_regno = REGNO (dest);
+  int src_regno = REGNO (src);
+
+  switch (src_regno)
+    {
+    case BR_REG (0):
+      /* Saving return address pointer.  */
+      gcc_assert (dest_regno == current_frame_info.r[reg_save_b0]);
+      if (unwind)
+	fprintf (asm_out_file, "\t.save rp, r%d\n",
+		 ia64_dbx_register_number (dest_regno));
+      break;
+
+    case PR_REG (0):
+      gcc_assert (dest_regno == current_frame_info.r[reg_save_pr]);
+      if (unwind)
+	fprintf (asm_out_file, "\t.save pr, r%d\n",
+		 ia64_dbx_register_number (dest_regno));
+      break;
+
+    case AR_UNAT_REGNUM:
+      gcc_assert (dest_regno == current_frame_info.r[reg_save_ar_unat]);
+      if (unwind)
+	fprintf (asm_out_file, "\t.save ar.unat, r%d\n",
+		 ia64_dbx_register_number (dest_regno));
+      break;
+
+    case AR_LC_REGNUM:
+      gcc_assert (dest_regno == current_frame_info.r[reg_save_ar_lc]);
+      if (unwind)
+	fprintf (asm_out_file, "\t.save ar.lc, r%d\n",
+		 ia64_dbx_register_number (dest_regno));
+      break;
+
+    default:
+      /* Everything else should indicate being stored to memory.  */
+      gcc_unreachable ();
+    }
+}
+
+/* This function processes a SET pattern for REG_CFA_OFFSET.  */
+
+static void
+process_cfa_offset (FILE *asm_out_file, rtx pat, bool unwind)
+{
+  rtx dest = SET_DEST (pat);
+  rtx src = SET_SRC (pat);
+  int src_regno = REGNO (src);
+  const char *saveop;
+  HOST_WIDE_INT off;
+  rtx base;
+
+  gcc_assert (MEM_P (dest));
+  if (GET_CODE (XEXP (dest, 0)) == REG)
+    {
+      base = XEXP (dest, 0);
+      off = 0;
+    }
+  else
+    {
+      gcc_assert (GET_CODE (XEXP (dest, 0)) == PLUS
+		  && GET_CODE (XEXP (XEXP (dest, 0), 1)) == CONST_INT);
+      base = XEXP (XEXP (dest, 0), 0);
+      off = INTVAL (XEXP (XEXP (dest, 0), 1));
+    }
+
+  if (base == hard_frame_pointer_rtx)
+    {
+      saveop = ".savepsp";
+      off = - off;
+    }
+  else
+    {
+      gcc_assert (base == stack_pointer_rtx);
+      saveop = ".savesp";
+    }
+
+  src_regno = REGNO (src);
+  switch (src_regno)
+    {
+    case BR_REG (0):
+      gcc_assert (!current_frame_info.r[reg_save_b0]);
+      if (unwind)
+	fprintf (asm_out_file, "\t%s rp, " HOST_WIDE_INT_PRINT_DEC "\n",
+		 saveop, off);
+      break;
+
+    case PR_REG (0):
+      gcc_assert (!current_frame_info.r[reg_save_pr]);
+      if (unwind)
+	fprintf (asm_out_file, "\t%s pr, " HOST_WIDE_INT_PRINT_DEC "\n",
+		 saveop, off);
+      break;
+
+    case AR_LC_REGNUM:
+      gcc_assert (!current_frame_info.r[reg_save_ar_lc]);
+      if (unwind)
+	fprintf (asm_out_file, "\t%s ar.lc, " HOST_WIDE_INT_PRINT_DEC "\n",
+		 saveop, off);
+      break;
+
+    case AR_PFS_REGNUM:
+      gcc_assert (!current_frame_info.r[reg_save_ar_pfs]);
+      if (unwind)
+	fprintf (asm_out_file, "\t%s ar.pfs, " HOST_WIDE_INT_PRINT_DEC "\n",
+		 saveop, off);
+      break;
+
+    case AR_UNAT_REGNUM:
+      gcc_assert (!current_frame_info.r[reg_save_ar_unat]);
+      if (unwind)
+	fprintf (asm_out_file, "\t%s ar.unat, " HOST_WIDE_INT_PRINT_DEC "\n",
+		 saveop, off);
+      break;
+
+    case GR_REG (4):
+    case GR_REG (5):
+    case GR_REG (6):
+    case GR_REG (7):
+      if (unwind)
+	fprintf (asm_out_file, "\t.save.g 0x%x\n",
+		 1 << (src_regno - GR_REG (4)));
+      break;
+
+    case BR_REG (1):
+    case BR_REG (2):
+    case BR_REG (3):
+    case BR_REG (4):
+    case BR_REG (5):
+      if (unwind)
+	fprintf (asm_out_file, "\t.save.b 0x%x\n",
+		 1 << (src_regno - BR_REG (1)));
+      break;
+
+    case FR_REG (2):
+    case FR_REG (3):
+    case FR_REG (4):
+    case FR_REG (5):
+      if (unwind)
+	fprintf (asm_out_file, "\t.save.f 0x%x\n",
+		 1 << (src_regno - FR_REG (2)));
+      break;
+
+    case FR_REG (16): case FR_REG (17): case FR_REG (18): case FR_REG (19):
+    case FR_REG (20): case FR_REG (21): case FR_REG (22): case FR_REG (23):
+    case FR_REG (24): case FR_REG (25): case FR_REG (26): case FR_REG (27):
+    case FR_REG (28): case FR_REG (29): case FR_REG (30): case FR_REG (31):
+      if (unwind)
+	fprintf (asm_out_file, "\t.save.gf 0x0, 0x%x\n",
+		 1 << (src_regno - FR_REG (12)));
+      break;
+
+    default:
+      /* ??? For some reason we mark other general registers, even those
+	 we can't represent in the unwind info.  Ignore them.  */
+      break;
+    }
+}
+
+/* This function looks at a single insn and emits any directives
+   required to unwind this insn.  */
+
+static void
+ia64_asm_unwind_emit (FILE *asm_out_file, rtx insn)
+{
+  bool unwind = (flag_unwind_tables
+		 || (flag_exceptions && !USING_SJLJ_EXCEPTIONS));
+  bool frame = dwarf2out_do_frame ();
+  rtx note, pat;
+  bool handled_one;
+
+  if (!unwind && !frame)
+    return;
+
+  if (NOTE_INSN_BASIC_BLOCK_P (insn))
+    {
+      last_block = NOTE_BASIC_BLOCK (insn)->next_bb == EXIT_BLOCK_PTR;
+
+      /* Restore unwind state from immediately before the epilogue.  */
+      if (need_copy_state)
+	{
+	  if (unwind)
+	    {
+	      fprintf (asm_out_file, "\t.body\n");
+	      fprintf (asm_out_file, "\t.copy_state %d\n",
+		       cfun->machine->state_num);
+	    }
+	  if (IA64_CHANGE_CFA_IN_EPILOGUE)
+	    ia64_dwarf2out_def_steady_cfa (insn, frame);
+	  need_copy_state = false;
+	}
+    }
+
+  if (GET_CODE (insn) == NOTE || ! RTX_FRAME_RELATED_P (insn))
+    return;
 
   /* Look for the ALLOC insn.  */
-  if (GET_CODE (src) == UNSPEC_VOLATILE
-      && XINT (src, 1) == UNSPECV_ALLOC
-      && GET_CODE (dest) == REG)
+  if (INSN_CODE (insn) == CODE_FOR_alloc)
     {
-      dest_regno = REGNO (dest);
+      rtx dest = SET_DEST (XVECEXP (PATTERN (insn), 0, 0));
+      int dest_regno = REGNO (dest);
 
       /* If this is the final destination for ar.pfs, then this must
 	 be the alloc in the prologue.  */
@@ -9658,266 +9924,53 @@ process_set (FILE *asm_out_file, rtx pat, rtx insn, bool unwind, bool frame)
 	  if (unwind)
 	    fprintf (asm_out_file, "\t.prologue\n");
 	}
-      return 1;
+      return;
     }
 
-  /* Look for SP = ....  */
-  if (GET_CODE (dest) == REG && REGNO (dest) == STACK_POINTER_REGNUM)
-    {
-      if (GET_CODE (src) == PLUS)
-        {
-	  rtx op0 = XEXP (src, 0);
-	  rtx op1 = XEXP (src, 1);
-	  
-	  gcc_assert (op0 == dest && GET_CODE (op1) == CONST_INT);
-	  
-	  if (INTVAL (op1) < 0)
-	    {
-	      gcc_assert (!frame_pointer_needed);
-	      if (unwind)
-		fprintf (asm_out_file, "\t.fframe "HOST_WIDE_INT_PRINT_DEC"\n",
-			 -INTVAL (op1));
-	      ia64_dwarf2out_def_steady_cfa (insn, frame);
-	    }
-	  else
-	    process_epilogue (asm_out_file, insn, unwind, frame);
-	}
-      else
-	{
-	  gcc_assert (GET_CODE (src) == REG
-		      && REGNO (src) == HARD_FRAME_POINTER_REGNUM);
-	  process_epilogue (asm_out_file, insn, unwind, frame);
-	}
+  handled_one = false;
+  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+    switch (REG_NOTE_KIND (note))
+      {
+      case REG_CFA_ADJUST_CFA:
+	pat = XEXP (note, 0);
+	if (pat == NULL)
+	  pat = PATTERN (insn);
+	process_cfa_adjust_cfa (asm_out_file, pat, insn, unwind, frame);
+	handled_one = true;
+	break;
 
-      return 1;
-    }
+      case REG_CFA_OFFSET:
+	pat = XEXP (note, 0);
+	if (pat == NULL)
+	  pat = PATTERN (insn);
+	process_cfa_offset (asm_out_file, pat, unwind);
+	handled_one = true;
+	break;
 
-  /* Register move we need to look at.  */
-  if (GET_CODE (dest) == REG && GET_CODE (src) == REG)
-    {
-      src_regno = REGNO (src);
-      dest_regno = REGNO (dest);
+      case REG_CFA_REGISTER:
+	pat = XEXP (note, 0);
+	if (pat == NULL)
+	  pat = PATTERN (insn);
+	process_cfa_register (asm_out_file, pat, unwind);
+	handled_one = true;
+	break;
 
-      switch (src_regno)
-	{
-	case BR_REG (0):
-	  /* Saving return address pointer.  */
-	  gcc_assert (dest_regno == current_frame_info.r[reg_save_b0]);
-	  if (unwind)
-	    fprintf (asm_out_file, "\t.save rp, r%d\n",
-		     ia64_dbx_register_number (dest_regno));
-	  return 1;
+      case REG_FRAME_RELATED_EXPR:
+      case REG_CFA_DEF_CFA:
+      case REG_CFA_EXPRESSION:
+      case REG_CFA_RESTORE:
+      case REG_CFA_SET_VDRAP:
+	/* Not used in the ia64 port.  */
+	gcc_unreachable ();
 
-	case PR_REG (0):
-	  gcc_assert (dest_regno == current_frame_info.r[reg_save_pr]);
-	  if (unwind)
-	    fprintf (asm_out_file, "\t.save pr, r%d\n",
-		     ia64_dbx_register_number (dest_regno));
-	  return 1;
+      default:
+	/* Not a frame-related note.  */
+	break;
+      }
 
-	case AR_UNAT_REGNUM:
-	  gcc_assert (dest_regno == current_frame_info.r[reg_save_ar_unat]);
-	  if (unwind)
-	    fprintf (asm_out_file, "\t.save ar.unat, r%d\n",
-		     ia64_dbx_register_number (dest_regno));
-	  return 1;
-
-	case AR_LC_REGNUM:
-	  gcc_assert (dest_regno == current_frame_info.r[reg_save_ar_lc]);
-	  if (unwind)
-	    fprintf (asm_out_file, "\t.save ar.lc, r%d\n",
-		     ia64_dbx_register_number (dest_regno));
-	  return 1;
-
-	case STACK_POINTER_REGNUM:
-	  gcc_assert (dest_regno == HARD_FRAME_POINTER_REGNUM
-		      && frame_pointer_needed);
-	  if (unwind)
-	    fprintf (asm_out_file, "\t.vframe r%d\n",
-		     ia64_dbx_register_number (dest_regno));
-	  ia64_dwarf2out_def_steady_cfa (insn, frame);
-	  return 1;
-
-	default:
-	  /* Everything else should indicate being stored to memory.  */
-	  gcc_unreachable ();
-	}
-    }
-
-  /* Memory store we need to look at.  */
-  if (GET_CODE (dest) == MEM && GET_CODE (src) == REG)
-    {
-      long off;
-      rtx base;
-      const char *saveop;
-
-      if (GET_CODE (XEXP (dest, 0)) == REG)
-	{
-	  base = XEXP (dest, 0);
-	  off = 0;
-	}
-      else
-	{
-	  gcc_assert (GET_CODE (XEXP (dest, 0)) == PLUS
-		      && GET_CODE (XEXP (XEXP (dest, 0), 1)) == CONST_INT);
-	  base = XEXP (XEXP (dest, 0), 0);
-	  off = INTVAL (XEXP (XEXP (dest, 0), 1));
-	}
-
-      if (base == hard_frame_pointer_rtx)
-	{
-	  saveop = ".savepsp";
-	  off = - off;
-	}
-      else
-	{
-	  gcc_assert (base == stack_pointer_rtx);
-	  saveop = ".savesp";
-	}
-
-      src_regno = REGNO (src);
-      switch (src_regno)
-	{
-	case BR_REG (0):
-	  gcc_assert (!current_frame_info.r[reg_save_b0]);
-	  if (unwind)
-	    fprintf (asm_out_file, "\t%s rp, %ld\n", saveop, off);
-	  return 1;
-
-	case PR_REG (0):
-	  gcc_assert (!current_frame_info.r[reg_save_pr]);
-	  if (unwind)
-	    fprintf (asm_out_file, "\t%s pr, %ld\n", saveop, off);
-	  return 1;
-
-	case AR_LC_REGNUM:
-	  gcc_assert (!current_frame_info.r[reg_save_ar_lc]);
-	  if (unwind)
-	    fprintf (asm_out_file, "\t%s ar.lc, %ld\n", saveop, off);
-	  return 1;
-
-	case AR_PFS_REGNUM:
-	  gcc_assert (!current_frame_info.r[reg_save_ar_pfs]);
-	  if (unwind)
-	    fprintf (asm_out_file, "\t%s ar.pfs, %ld\n", saveop, off);
-	  return 1;
-
-	case AR_UNAT_REGNUM:
-	  gcc_assert (!current_frame_info.r[reg_save_ar_unat]);
-	  if (unwind)
-	    fprintf (asm_out_file, "\t%s ar.unat, %ld\n", saveop, off);
-	  return 1;
-
-	case GR_REG (4):
-	case GR_REG (5):
-	case GR_REG (6):
-	case GR_REG (7):
-	  if (unwind)
-	    fprintf (asm_out_file, "\t.save.g 0x%x\n",
-		     1 << (src_regno - GR_REG (4)));
-	  return 1;
-
-	case BR_REG (1):
-	case BR_REG (2):
-	case BR_REG (3):
-	case BR_REG (4):
-	case BR_REG (5):
-	  if (unwind)
-	    fprintf (asm_out_file, "\t.save.b 0x%x\n",
-		     1 << (src_regno - BR_REG (1)));
-	  return 1;
-
-	case FR_REG (2):
-	case FR_REG (3):
-	case FR_REG (4):
-	case FR_REG (5):
-	  if (unwind)
-	    fprintf (asm_out_file, "\t.save.f 0x%x\n",
-		     1 << (src_regno - FR_REG (2)));
-	  return 1;
-
-	case FR_REG (16): case FR_REG (17): case FR_REG (18): case FR_REG (19):
-	case FR_REG (20): case FR_REG (21): case FR_REG (22): case FR_REG (23):
-	case FR_REG (24): case FR_REG (25): case FR_REG (26): case FR_REG (27):
-	case FR_REG (28): case FR_REG (29): case FR_REG (30): case FR_REG (31):
-	  if (unwind)
-	    fprintf (asm_out_file, "\t.save.gf 0x0, 0x%x\n",
-		     1 << (src_regno - FR_REG (12)));
-	  return 1;
-
-	default:
-	  return 0;
-	}
-    }
-
-  return 0;
-}
-
-
-/* This function looks at a single insn and emits any directives
-   required to unwind this insn.  */
-static void
-ia64_asm_unwind_emit (FILE *asm_out_file, rtx insn)
-{
-  bool unwind = (flag_unwind_tables
-		 || (flag_exceptions && !USING_SJLJ_EXCEPTIONS));
-  bool frame = dwarf2out_do_frame ();
-
-  if (unwind || frame)
-    {
-      rtx pat;
-
-      if (NOTE_INSN_BASIC_BLOCK_P (insn))
-	{
-	  last_block = NOTE_BASIC_BLOCK (insn)->next_bb == EXIT_BLOCK_PTR;
-
-	  /* Restore unwind state from immediately before the epilogue.  */
-	  if (need_copy_state)
-	    {
-	      if (unwind)
-		{
-		  fprintf (asm_out_file, "\t.body\n");
-		  fprintf (asm_out_file, "\t.copy_state %d\n",
-			   cfun->machine->state_num);
-		}
-	      if (IA64_CHANGE_CFA_IN_EPILOGUE)
-		ia64_dwarf2out_def_steady_cfa (insn, frame);
-	      need_copy_state = false;
-	    }
-	}
-
-      if (GET_CODE (insn) == NOTE || ! RTX_FRAME_RELATED_P (insn))
-	return;
-
-      pat = find_reg_note (insn, REG_FRAME_RELATED_EXPR, NULL_RTX);
-      if (pat)
-	pat = XEXP (pat, 0);
-      else
-	pat = PATTERN (insn);
-
-      switch (GET_CODE (pat))
-        {
-	case SET:
-	  process_set (asm_out_file, pat, insn, unwind, frame);
-	  break;
-
-	case PARALLEL:
-	  {
-	    int par_index;
-	    int limit = XVECLEN (pat, 0);
-	    for (par_index = 0; par_index < limit; par_index++)
-	      {
-		rtx x = XVECEXP (pat, 0, par_index);
-		if (GET_CODE (x) == SET)
-		  process_set (asm_out_file, x, insn, unwind, frame);
-	      }
-	    break;
-	  }
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
+  /* All REG_FRAME_RELATED_P insns, besides ALLOC, are marked with the
+     explicit action to take.  No guessing required.  */
+  gcc_assert (handled_one);
 }
 
 /* Implement TARGET_ASM_EMIT_EXCEPT_PERSONALITY.  */
