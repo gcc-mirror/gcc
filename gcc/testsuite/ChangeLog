@@ -1,3 +1,7 @@
+2010-09-24  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/lto/20091006-2_0.c: Prune warnings.
+
 2010-09-24  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* g++.dg/debug/dwarf2/nested-2.C: Permit the ARM @ character

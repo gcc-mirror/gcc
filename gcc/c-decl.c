@@ -1203,15 +1203,14 @@ pop_scope (void)
 	      DECL_CHAIN (extp) = BLOCK_VARS (block);
 	      BLOCK_VARS (block) = extp;
 	    }
-	  /* If this is the file scope, and we are processing more
-	     than one translation unit in this compilation, set
-	     DECL_CONTEXT of each decl to the TRANSLATION_UNIT_DECL.
-	     This makes same_translation_unit_p work, and causes
-	     static declarations to be given disambiguating suffixes.  */
-	  if (scope == file_scope && num_in_fnames > 1)
+	  /* If this is the file scope set DECL_CONTEXT of each decl to
+	     the TRANSLATION_UNIT_DECL.  This makes same_translation_unit_p
+	     work.  */
+	  if (scope == file_scope)
 	    {
 	      DECL_CONTEXT (p) = context;
-	      if (TREE_CODE (p) == TYPE_DECL)
+	      if (TREE_CODE (p) == TYPE_DECL
+		  && TREE_TYPE (p) != error_mark_node)
 		set_type_context (TREE_TYPE (p), context);
 	    }
 
