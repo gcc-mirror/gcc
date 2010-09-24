@@ -1,3 +1,8 @@
+2010-09-24  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* g++.dg/debug/dwarf2/nested-2.C: Permit the ARM @ character
+	as a comment leader in regexp.
+
 2010-09-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/sync-2.m: New test.
