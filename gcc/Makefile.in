@@ -1469,13 +1469,11 @@ OBJS-archive = \
 
 OBJS = $(OBJS-common) $(OBJS-md) $(OBJS-archive)
 
-OBJS-onestep = libbackend.o $(OBJS-archive)
-
 # This lists all host objects for the front ends.
 ALL_HOST_FRONTEND_OBJS = $(C_OBJS) \
   $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
 
-ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) libbackend.o \
+ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) \
   @TREEBROWSER@ main.o gccspec.o version.o intl.o prefix.o cppspec.o \
   $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) mips-tfile.o mips-tdump.o \
   $(GCOV_OBJS) $(GCOV_DUMP_OBJS)
@@ -1800,9 +1798,9 @@ rest.cross: specs
 compilations: $(BACKEND)
 
 # This archive is strictly for the host.
-libbackend.a: $(OBJS@onestep@)
+libbackend.a: $(OBJS)
 	-rm -rf libbackend.a
-	$(AR) $(AR_FLAGS) libbackend.a $(OBJS@onestep@)
+	$(AR) $(AR_FLAGS) libbackend.a $(OBJS)
 	-$(RANLIB) $(RANLIB_FLAGS) libbackend.a
 
 # We call this executable `xgcc' rather than `gcc'
@@ -3524,19 +3522,6 @@ mips-tdump: mips-tdump.o version.o $(LIBDEPS)
 
 mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) version.h $(srcdir)/../include/getopt.h stab.def
-
-# FIXME: writing proper dependencies for this is a *LOT* of work.
-libbackend.o : $(OBJS-common:.o=.c) $(out_file) \
-  insn-config.h insn-flags.h insn-codes.h insn-constants.h \
-  insn-attr.h  $(DATESTAMP) $(BASEVER) $(DEVPHASE) gcov-iov.h
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-	  -DTARGET_NAME=\"$(target_noncanonical)\" \
-	  -DLOCALEDIR=\"$(localedir)\" \
-	  -c $(filter %.c,$^) -o $@  \
-	  -DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
-	  -DREVISION=$(REVISION_s) \
-	  -DDEVPHASE=$(DEVPHASE_s) -DPKGVERSION=$(PKGVERSION_s) \
-	  -DBUGURL=$(BUGURL_s) -combine
 
 #
 # Generate header and source files from the machine description,

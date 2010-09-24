@@ -759,7 +759,6 @@ SET_MAKE
 REPORT_BUGS_TEXI
 REPORT_BUGS_TO
 PKGVERSION
-onestep
 CONFIGURE_SPECS
 CROSS_SYSTEM_HEADER_DIR
 TARGET_SYSTEM_ROOT_DEFINE
@@ -885,7 +884,6 @@ enable_shared
 with_build_sysroot
 with_sysroot
 with_specs
-enable_intermodule
 with_pkgversion
 with_bugurl
 enable_languages
@@ -1588,7 +1586,6 @@ Optional Features:
   --enable-objc-gc	  enable the use of Boehm's garbage collector with
 			  the GNU Objective-C runtime
   --disable-shared        don't provide a shared libgcc
-  --enable-intermodule    build the compiler in one step
   --enable-languages=LIST specify which front-ends to build
   --disable-rpath         do not hardcode runtime library paths
   --enable-initfini-array	use .init_array/.fini_array sections
@@ -6882,19 +6879,6 @@ if test "${with_specs+set}" = set; then :
 else
   CONFIGURE_SPECS=
 
-fi
-
-
-
-# Build with intermodule optimisations
-# Check whether --enable-intermodule was given.
-if test "${enable_intermodule+set}" = set; then :
-  enableval=$enable_intermodule; case ${enable_intermodule} in
-  yes) onestep="-onestep";;
-  *) onestep="";;
-esac
-else
-  onestep=""
 fi
 
 
@@ -17139,7 +17123,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17142 "configure"
+#line 17126 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17245,7 +17229,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17248 "configure"
+#line 17232 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
