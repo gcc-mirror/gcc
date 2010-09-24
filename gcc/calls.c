@@ -2385,19 +2385,6 @@ expand_call (tree exp, rtx target, int ignore)
 
   preferred_unit_stack_boundary = preferred_stack_boundary / BITS_PER_UNIT;
 
-  if (SUPPORTS_STACK_ALIGNMENT)
-    {
-      /* All variable sized adjustments must be multiple of preferred
-	 stack boundary.  Stack alignment may change preferred stack
-	 boundary after variable sized adjustments have been made.  We
-	 need to compensate it here.  */
-      unsigned HOST_WIDE_INT delta
-	= ((stack_pointer_delta - pending_stack_adjust)
-	   % preferred_unit_stack_boundary);
-      if (delta)
-	anti_adjust_stack (GEN_INT (preferred_unit_stack_boundary - delta));
-    }
-
   /* We want to make two insn chains; one for a sibling call, the other
      for a normal call.  We will select one of the two chains after
      initial RTL generation is complete.  */

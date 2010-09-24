@@ -5489,7 +5489,7 @@ virtual_stack_registers_memory_p (rtx op)
     return false;
 
   return (regnum >= FIRST_VIRTUAL_REGISTER
-	  && regnum <= LAST_VIRTUAL_REGISTER);
+	  && regnum <= LAST_VIRTUAL_POINTER_REGISTER);
 }
 
 static bool

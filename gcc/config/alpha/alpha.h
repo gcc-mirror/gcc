@@ -916,7 +916,7 @@ extern int alpha_memory_latency;
 #define NONSTRICT_REG_OK_FP_BASE_P(X)		\
   (REGNO (X) == 31 || REGNO (X) == 63		\
    || (REGNO (X) >= FIRST_PSEUDO_REGISTER	\
-       && REGNO (X) < LAST_VIRTUAL_REGISTER))
+       && REGNO (X) < LAST_VIRTUAL_POINTER_REGISTER))
 
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
 #define STRICT_REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
