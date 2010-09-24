@@ -1,3 +1,8 @@
+2010-09-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/sync-2.m: New test.
+	* obj-c++.dg/sync-2.mm: New test.
+
 2010-09-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40571
