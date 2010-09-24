@@ -610,6 +610,8 @@ flags_from_decl_or_type (const_tree exp)
 
       if (DECL_IS_NOVOPS (exp))
 	flags |= ECF_NOVOPS;
+      if (lookup_attribute ("leaf", DECL_ATTRIBUTES (exp)))
+	flags |= ECF_LEAF;
 
       if (TREE_NOTHROW (exp))
 	flags |= ECF_NOTHROW;

@@ -2671,6 +2671,31 @@ SRAM. The function will be put into a specific section named
 @code{.l1.text}. With @option{-mfdpic}, callers of such functions will use
 an inlined PLT.
 
+@item leaf
+@cindex @code{leaf} function attribute
+Calls to external functions with this attribute must return to the current
+compilation unit only by return or by exception handling. In particular, leaf
+functions are not allowed to call callback function passed to it from current
+compilation unit or directly call functions exported by the unit or longjmp
+into the unit.  Still leaf function might call functions from other complation
+units and thus they are not neccesarily leaf in the sense that they contains no
+function calls at all.
+
+The attribute is intended for library functions to improve dataflow analysis.
+Compiler takes the hint that any data not escaping current compilation unit can
+not be used or modified by the leaf function.  For example, function @code{sin}
+is leaf, function @code{qsort} is not.
+
+Note that the leaf functions might invoke signals and signal handlers might be
+defined in the current compilation unit and use static variables. Only
+compliant way to write such a signal handler is to declare such variables
+@code{volatile}.
+
+The attribute has no effect on functions defined within current compilation
+unit.  This is to allow easy merging of multiple compilation units into one,
+for example, by using the link time optimization.  For this reason the
+attribute is not allowed on types to annotate indirect calls.
+
 @item long_call/short_call
 @cindex indirect calls on ARM
 This attribute specifies how a particular function is called on

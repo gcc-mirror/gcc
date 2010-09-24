@@ -200,6 +200,8 @@ ipa_reference_get_not_read_global (struct cgraph_node *fn)
   info = get_reference_optimization_summary (fn);
   if (info)
     return info->statics_not_read;
+  else if (flags_from_decl_or_type (fn->decl) & ECF_LEAF)
+    return all_module_statics;
   else
     return NULL;
 }
@@ -217,6 +219,8 @@ ipa_reference_get_not_written_global (struct cgraph_node *fn)
   info = get_reference_optimization_summary (fn);
   if (info)
     return info->statics_not_written;
+  else if (flags_from_decl_or_type (fn->decl) & ECF_LEAF)
+    return all_module_statics;
   else
     return NULL;
 }
@@ -299,9 +303,13 @@ propagate_bits (ipa_reference_global_vars_info_t x_global, struct cgraph_node *x
   for (e = x->callees; e; e = e->next_callee)
     {
       struct cgraph_node *y = e->callee;
+      enum availability avail;
 
+      avail = cgraph_function_body_availability (e->callee);
       /* Only look into nodes we can propagate something.  */
-      if (cgraph_function_body_availability (e->callee) > AVAIL_OVERWRITABLE)
+      if (avail > AVAIL_OVERWRITABLE
+	  || (avail == AVAIL_OVERWRITABLE
+	      && (flags_from_decl_or_type (e->callee->decl) & ECF_LEAF)))
 	{
 	  int flags = flags_from_decl_or_type (e->callee->decl);
 	  if (get_reference_vars_info (y))
@@ -573,17 +581,28 @@ read_write_all_from_decl (struct cgraph_node *node, bool * read_all,
 {
   tree decl = node->decl;
   int flags = flags_from_decl_or_type (decl);
-  if (flags & ECF_CONST)
+  if ((flags & ECF_LEAF)
+      && cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
+    ;
+  else if (flags & ECF_CONST)
     ;
   else if ((flags & ECF_PURE)
 	   || cgraph_node_cannot_return (node))
-    *read_all = true;
+    {
+      *read_all = true;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+         fprintf (dump_file, "   %s/%i -> read all\n",
+		  cgraph_node_name (node), node->uid);
+    }
   else
     {
        /* TODO: To be able to produce sane results, we should also handle
 	  common builtins, in particular throw.  */
       *read_all = true;
       *write_all = true;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+         fprintf (dump_file, "   %s/%i -> read all, write all\n",
+		  cgraph_node_name (node), node->uid);
     }
 }
 
@@ -629,6 +648,11 @@ propagate (void)
       node_info = get_reference_vars_info (node);
       gcc_assert (node_info);
 
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Starting cycle with %s/%i\n",
+		  cgraph_node_name (node), node->uid);
+
       node_l = &node_info->local;
       node_g = &node_info->global;
 
@@ -647,9 +671,15 @@ propagate (void)
 	if (!(ie->indirect_info->ecf_flags & ECF_CONST))
 	  {
 	    read_all = true;
+	    if (dump_file && (dump_flags & TDF_DETAILS))
+	       fprintf (dump_file, "   indirect call -> read all\n");
 	    if (!cgraph_edge_cannot_lead_to_return (ie)
 		&& !(ie->indirect_info->ecf_flags & ECF_PURE))
-	      write_all = true;
+	      {
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		   fprintf (dump_file, "   indirect call -> write all\n");
+	        write_all = true;
+	      }
 	  }
 
 
@@ -659,6 +689,9 @@ propagate (void)
       w = w_info->next_cycle;
       while (w && (!read_all || !write_all))
 	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  Visiting %s/%i\n",
+		      cgraph_node_name (w), w->uid);
 	  /* When function is overwrittable, we can not assume anything.  */
 	  if (cgraph_function_body_availability (w) <= AVAIL_OVERWRITABLE)
 	    read_write_all_from_decl (w, &read_all, &write_all);
@@ -671,9 +704,15 @@ propagate (void)
 	    if (!(ie->indirect_info->ecf_flags & ECF_CONST))
 	      {
 		read_all = true;
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		   fprintf (dump_file, "   indirect call -> read all\n");
 		if (!cgraph_edge_cannot_lead_to_return (ie)
 		    && !(ie->indirect_info->ecf_flags & ECF_PURE))
-		  write_all = true;
+		  {
+		    write_all = true;
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		       fprintf (dump_file, "   indirect call -> write all\n");
+		  }
 	      }
 
 	  w_info = (struct ipa_dfs_info *) w->aux;
@@ -841,7 +880,8 @@ propagate (void)
         continue;
 
       node_info = get_reference_vars_info (node);
-      if (cgraph_function_body_availability (node) > AVAIL_OVERWRITABLE)
+      if (cgraph_function_body_availability (node) > AVAIL_OVERWRITABLE
+	  || (flags_from_decl_or_type (node->decl) & ECF_LEAF))
 	{
 	  node_g = &node_info->global;
 

@@ -9224,6 +9224,9 @@ local_define_builtin (const char *name, tree type, enum built_in_function code,
     TREE_NOTHROW (decl) = 1;
   if (ecf_flags & ECF_MALLOC)
     DECL_IS_MALLOC (decl) = 1;
+  if (ecf_flags & ECF_LEAF)
+    DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("leaf"),
+					NULL, DECL_ATTRIBUTES (decl));
 
   built_in_decls[code] = decl;
   implicit_built_in_decls[code] = decl;
@@ -9247,10 +9250,10 @@ build_common_builtin_nodes (void)
 
       if (built_in_decls[BUILT_IN_MEMCPY] == NULL)
 	local_define_builtin ("__builtin_memcpy", ftype, BUILT_IN_MEMCPY,
-			      "memcpy", ECF_NOTHROW);
+			      "memcpy", ECF_NOTHROW | ECF_LEAF);
       if (built_in_decls[BUILT_IN_MEMMOVE] == NULL)
 	local_define_builtin ("__builtin_memmove", ftype, BUILT_IN_MEMMOVE,
-			      "memmove", ECF_NOTHROW);
+			      "memmove", ECF_NOTHROW | ECF_LEAF);
     }
 
   if (built_in_decls[BUILT_IN_MEMCMP] == NULL)
@@ -9259,7 +9262,7 @@ build_common_builtin_nodes (void)
 					const_ptr_type_node, size_type_node,
 					NULL_TREE);
       local_define_builtin ("__builtin_memcmp", ftype, BUILT_IN_MEMCMP,
-			    "memcmp", ECF_PURE | ECF_NOTHROW);
+			    "memcmp", ECF_PURE | ECF_NOTHROW | ECF_LEAF);
     }
 
   if (built_in_decls[BUILT_IN_MEMSET] == NULL)
@@ -9268,7 +9271,7 @@ build_common_builtin_nodes (void)
 					ptr_type_node, integer_type_node,
 					size_type_node, NULL_TREE);
       local_define_builtin ("__builtin_memset", ftype, BUILT_IN_MEMSET,
-			    "memset", ECF_NOTHROW);
+			    "memset", ECF_NOTHROW | ECF_LEAF);
     }
 
   if (built_in_decls[BUILT_IN_ALLOCA] == NULL)
@@ -9276,7 +9279,7 @@ build_common_builtin_nodes (void)
       ftype = build_function_type_list (ptr_type_node,
 					size_type_node, NULL_TREE);
       local_define_builtin ("__builtin_alloca", ftype, BUILT_IN_ALLOCA,
-			    "alloca", ECF_MALLOC | ECF_NOTHROW);
+			    "alloca", ECF_MALLOC | ECF_NOTHROW | ECF_LEAF);
     }
 
   /* If we're checking the stack, `alloca' can throw.  */
@@ -9288,7 +9291,7 @@ build_common_builtin_nodes (void)
 				    ptr_type_node, NULL_TREE);
   local_define_builtin ("__builtin_init_trampoline", ftype,
 			BUILT_IN_INIT_TRAMPOLINE,
-			"__builtin_init_trampoline", ECF_NOTHROW);
+			"__builtin_init_trampoline", ECF_NOTHROW | ECF_LEAF);
 
   ftype = build_function_type_list (ptr_type_node, ptr_type_node, NULL_TREE);
   local_define_builtin ("__builtin_adjust_trampoline", ftype,
@@ -9322,12 +9325,12 @@ build_common_builtin_nodes (void)
 
   ftype = build_function_type_list (ptr_type_node, NULL_TREE);
   local_define_builtin ("__builtin_stack_save", ftype, BUILT_IN_STACK_SAVE,
-			"__builtin_stack_save", ECF_NOTHROW);
+			"__builtin_stack_save", ECF_NOTHROW | ECF_LEAF);
 
   ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   local_define_builtin ("__builtin_stack_restore", ftype,
 			BUILT_IN_STACK_RESTORE,
-			"__builtin_stack_restore", ECF_NOTHROW);
+			"__builtin_stack_restore", ECF_NOTHROW | ECF_LEAF);
 
   ftype = build_function_type_list (void_type_node, NULL_TREE);
   local_define_builtin ("__builtin_profile_func_enter", ftype,
@@ -9342,7 +9345,7 @@ build_common_builtin_nodes (void)
       ftype = build_function_type_list (void_type_node, NULL_TREE);
       local_define_builtin ("__builtin_cxa_end_cleanup", ftype,
 			    BUILT_IN_CXA_END_CLEANUP,
-			    "__cxa_end_cleanup", ECF_NORETURN);
+			    "__cxa_end_cleanup", ECF_NORETURN | ECF_LEAF);
     }
 
   ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
@@ -9361,12 +9364,12 @@ build_common_builtin_nodes (void)
   ftype = build_function_type_list (ptr_type_node,
 				    integer_type_node, NULL_TREE);
   local_define_builtin ("__builtin_eh_pointer", ftype, BUILT_IN_EH_POINTER,
-			"__builtin_eh_pointer", ECF_PURE | ECF_NOTHROW);
+			"__builtin_eh_pointer", ECF_PURE | ECF_NOTHROW | ECF_LEAF);
 
   tmp = lang_hooks.types.type_for_mode (targetm.eh_return_filter_mode (), 0);
   ftype = build_function_type_list (tmp, integer_type_node, NULL_TREE);
   local_define_builtin ("__builtin_eh_filter", ftype, BUILT_IN_EH_FILTER,
-			"__builtin_eh_filter", ECF_PURE | ECF_NOTHROW);
+			"__builtin_eh_filter", ECF_PURE | ECF_NOTHROW | ECF_LEAF);
 
   ftype = build_function_type_list (void_type_node,
 				    integer_type_node, integer_type_node,
@@ -9408,11 +9411,11 @@ build_common_builtin_nodes (void)
 
 	built_in_names[mcode] = concat ("__mul", mode_name_buf, "3", NULL);
         local_define_builtin (built_in_names[mcode], ftype, mcode,
-			      built_in_names[mcode], ECF_CONST | ECF_NOTHROW);
+			      built_in_names[mcode], ECF_CONST | ECF_NOTHROW | ECF_LEAF);
 
 	built_in_names[dcode] = concat ("__div", mode_name_buf, "3", NULL);
         local_define_builtin (built_in_names[dcode], ftype, dcode,
-			      built_in_names[dcode], ECF_CONST | ECF_NOTHROW);
+			      built_in_names[dcode], ECF_CONST | ECF_NOTHROW | ECF_LEAF);
       }
   }
 }

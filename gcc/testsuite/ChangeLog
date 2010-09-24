@@ -1,5 +1,9 @@
 2010-09-24  Jan Hubicka  <jh@suse.cz>
 
+	* gcc.dg/tree-ssa/leaf.c: New testcase.
+
+2010-09-24  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimization/45738
 	PR tree-optimization/45741
 	* gcc.c-torture/compile/pr45741.c: New.
