@@ -1,3 +1,56 @@
+2010-09-24  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_symtab_entry_def): Add guessed field.
+	(lto_symtab_resolve_symbols): Set it.
+	(lto_symtab_merge_decls_1): Do not compute used_from_object_file;
+	store resolution field in cgraph/varpool.
+	* cgraph.c (cgraph_same_body_alias, cgraph_add_thunk): Return node.
+	(cgraph_get_node_or_alias, cgraph_get_node_or_alias): Constify.
+	(cgraph_dump_node): Drop used_from_object_file.
+	(cgraph_clone_node, cgraph_create_virtual_clone): Likewise.
+	(cgraph_function_body_availability): Use decl_replaceable_p.
+	(cgraph_make_node_local): Set resolution to LDPR_PREVAILING_DEF_IRONLY.
+	(cgraph_can_remove_if_no_direct_calls_and_refs): Use
+	cgraph_used_from_object_file_p.
+	(cgraph_will_be_removed_from_program_if_no_direct_calls): Use
+	cgraph_used_from_object_file_p.
+	(resolution_used_from_other_file_p): New functoin.
+	(cgraph_used_from_object_file_p): New predicate.
+	* cgraph.h: Include plugin-api.h
+	(struct cgraph_local_info): Remove used_from_object_file.
+	(struct cgraph_node): Add resolution field.
+	(struct varpool_node): Likewise; remove used_from_object_file;
+	reove const_value_known.
+	(cgraph_get_node, cgraph_get_node_or_alias, cgraph_node,
+	cgraph_same_body_alias, cgraph_add_thunk): Update prototypes.
+	(resolution_used_from_other_file_p, cgraph_used_from_object_file_p,
+	varpool_used_from_object_file_p): Declare.
+	(varpool_get_node, varpool_extra_name_alias): Update prototype.
+	* tree.h (DECL_REPLACEABLE_P): Remove.
+	(decl_replaceable_p, decl_binds_to_current_def_p): Declare.
+	* final.c (rest_of_clean_state): Use decl_binds_to_current_def_p.
+	* lto-cgraph.c (lto_output_node, lto_output_varpool_node,
+	input_overwrite_node, input_node, input_varpool_node): Stream
+	resolution.
+	* expr.c (expand_expr_real_1): Use const_value_known_p
+	* ipa.c (ipa_discover_readonly_nonaddressable_var): Do not set
+	const_value_known.
+	(cgraph_externally_visible_p): Use cgraph_used_from_object_file_p.
+	(function_and_variable_visibility): Set resolution for local vars
+	and functions.
+	use varpool_used_from_object_file_p.
+	* varasm.c (resolution_to_local_definition_p, resolution_local_p): New
+	static functions.
+	(default_binds_local_p_1): Use resolutoin info.
+	(decl_binds_to_current_def_p, decl_replaceable_p): New functions.
+	* varpool.c (varpool_get_node): Constify.
+	(const_value_known_p): Do not use vnode->const_value_known;
+	use decl_replaceable_p.
+	(varpool_finalize_decl): Do not set const_value_known.
+	(cgraph_variable_initializer_availability): Use decl_replaceable_p
+	(varpool_extra_name_alias): Return new node.
+	(varpool_used_from_object_file_p): New function.
+
 2010-09-24  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_dwarf_handle_frame_unspec): New.

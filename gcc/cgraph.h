@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CGRAPH_H
 #define GCC_CGRAPH_H
 
+#include "plugin-api.h"
 #include "vec.h"
 #include "tree.h"
 #include "basic-block.h"
@@ -101,9 +102,6 @@ struct GTY(()) cgraph_local_info {
 
   /* Set when function is visible by other units.  */
   unsigned externally_visible : 1;
-
-  /* Set when resolver determines that function is visible by other units.  */
-  unsigned used_from_object_file : 1;
   
   /* Set once it has been finalized so we consider it to be output.  */
   unsigned finalized : 1;
@@ -259,6 +257,7 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   /* unique id for profiling. pid is not suitable because of different
      number of cfg nodes with -fprofile-generate and -fprofile-use */
   int pid;
+  enum ld_plugin_symbol_resolution resolution;
 
   /* Set when function must be output for some reason.  The primary
      use of this flag is to mark functions needed to be output for
@@ -476,6 +475,7 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) varpool_node {
   PTR GTY ((skip)) aux;
   /* Ordering of all cgraph nodes.  */
   int order;
+  enum ld_plugin_symbol_resolution resolution;
 
   /* Set when function must be output - it is externally visible
      or its address is taken.  */
@@ -492,8 +492,6 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) varpool_node {
   unsigned output : 1;
   /* Set when function is visible by other units.  */
   unsigned externally_visible : 1;
-  /* Set when resolver determines that variable is visible by other units.  */
-  unsigned used_from_object_file : 1;
   /* Set for aliases once they got through assemble_alias.  Also set for
      extra name aliases in varpool_extra_name_alias.  */
   unsigned alias : 1;
@@ -503,8 +501,6 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) varpool_node {
      During WPA output it is used to mark nodes that are present in
      multiple partitions.  */
   unsigned in_other_partition : 1;
-  /* True when variable is constant and its value is known.  */
-  unsigned int const_value_known : 1;
 };
 
 /* Every top level asm statement is put into a cgraph_asm_node.  */
@@ -561,11 +557,12 @@ struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
 					gimple, gcov_type, int, int);
 struct cgraph_edge *cgraph_create_indirect_edge (struct cgraph_node *, gimple, int,
 						 gcov_type, int, int);
-struct cgraph_node * cgraph_get_node (tree);
-struct cgraph_node * cgraph_get_node_or_alias (tree);
-struct cgraph_node *cgraph_node (tree);
-bool cgraph_same_body_alias (tree, tree);
-void cgraph_add_thunk (tree, tree, bool, HOST_WIDE_INT, HOST_WIDE_INT, tree, tree);
+struct cgraph_node * cgraph_get_node (const_tree);
+struct cgraph_node * cgraph_get_node_or_alias (const_tree);
+struct cgraph_node * cgraph_node (tree);
+struct cgraph_node * cgraph_same_body_alias (tree, tree);
+struct cgraph_node * cgraph_add_thunk (tree, tree, bool, HOST_WIDE_INT,
+				       HOST_WIDE_INT, tree, tree);
 void cgraph_remove_same_body_alias (struct cgraph_node *);
 struct cgraph_node *cgraph_node_for_asm (tree);
 struct cgraph_edge *cgraph_edge (struct cgraph_node *, gimple);
@@ -614,6 +611,9 @@ bool cgraph_will_be_removed_from_program_if_no_direct_calls
   (struct cgraph_node *node);
 bool cgraph_can_remove_if_no_direct_calls_and_refs_p
   (struct cgraph_node *node);
+bool resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution resolution);
+bool cgraph_used_from_object_file_p (struct cgraph_node *node);
+bool varpool_used_from_object_file_p (struct varpool_node *node);
 
 /* In cgraphunit.c  */
 extern FILE *cgraph_dump_file;
@@ -718,14 +718,14 @@ void cgraph_make_node_local (struct cgraph_node *);
 bool cgraph_node_can_be_local_p (struct cgraph_node *);
 
 
-struct varpool_node * varpool_get_node (tree decl);
+struct varpool_node * varpool_get_node (const_tree decl);
 void varpool_remove_node (struct varpool_node *node);
 bool varpool_assemble_pending_decls (void);
 bool varpool_assemble_decl (struct varpool_node *node);
 bool varpool_analyze_pending_decls (void);
 void varpool_remove_unreferenced_decls (void);
 void varpool_empty_needed_queue (void);
-bool varpool_extra_name_alias (tree, tree);
+struct varpool_node * varpool_extra_name_alias (tree, tree);
 const char * varpool_node_name (struct varpool_node *node);
 void varpool_reset_queue (void);
 bool const_value_known_p (tree);

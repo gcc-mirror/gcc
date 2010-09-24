@@ -4441,7 +4441,10 @@ rest_of_clean_state (void)
 
   delete_tree_ssa ();
 
-  if (targetm.binds_local_p (current_function_decl))
+  /* We can reduce stack alignment on call site only when we are sure that
+     the function body just produced will be actually used in the final
+     executable.  */
+  if (decl_binds_to_current_def_p (current_function_decl))
     {
       unsigned int pref = crtl->preferred_stack_boundary;
       if (crtl->stack_alignment_needed > crtl->preferred_stack_boundary)
