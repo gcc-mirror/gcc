@@ -1184,13 +1184,16 @@ flow_find_head_matching_sequence (basic_block bb1, basic_block bb2, rtx *f1,
 
   while (true)
     {
-
       /* Ignore notes.  */
       while (!NONDEBUG_INSN_P (i1) && i1 != BB_END (bb1))
 	i1 = NEXT_INSN (i1);
 
       while (!NONDEBUG_INSN_P (i2) && i2 != BB_END (bb2))
 	i2 = NEXT_INSN (i2);
+
+      if ((i1 == BB_END (bb1) && !NONDEBUG_INSN_P (i1))
+	  || (i2 == BB_END (bb2) && !NONDEBUG_INSN_P (i2)))
+	break;
 
       if (NOTE_P (i1) || NOTE_P (i2)
 	  || JUMP_P (i1) || JUMP_P (i2))
