@@ -7964,12 +7964,12 @@ ix86_code_end (void)
   rtx xops[2];
   int regno;
 
-  for (regno = 0; regno < 8; ++regno)
+  for (regno = AX_REG; regno <= SP_REG; regno++)
     {
       char name[32];
       tree decl;
 
-      if (! ((pic_labels_used >> regno) & 1))
+      if (!(pic_labels_used & (1 << regno)))
 	continue;
 
       get_pc_thunk_name (name, regno);
@@ -8022,10 +8022,8 @@ ix86_code_end (void)
       /* Make sure unwind info is emitted for the thunk if needed.  */
       final_start_function (emit_barrier (), asm_out_file, 1);
 
-      xops[0] = gen_rtx_REG (Pmode, regno);
-      xops[1] = gen_rtx_MEM (Pmode, stack_pointer_rtx);
       /* Pad stack IP move with 4 instructions (two NOPs count
-	 as one instruction.)  */
+	 as one instruction).  */
       if (TARGET_PAD_SHORT_FUNCTION)
 	{
 	  int i = 8;
@@ -8034,6 +8032,8 @@ ix86_code_end (void)
 	    fputs ("\tnop\n", asm_out_file);
 	}
 
+      xops[0] = gen_rtx_REG (Pmode, regno);
+      xops[1] = gen_rtx_MEM (Pmode, stack_pointer_rtx);
       output_asm_insn ("mov%z0\t{%1, %0|%0, %1}", xops);
       fputs ("\tret\n", asm_out_file);
       final_end_function ();

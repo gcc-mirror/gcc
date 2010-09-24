@@ -1,9 +1,14 @@
+2010-09-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (ix86_code_end): Move the initialization of
+	xops array near the consumer.  Use AX_REG and SP_REG instead of
+	numerical constants.
+
 2010-09-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	* c-typeck.c (convert_arguments): Use warning 'too many arguments
-	to method [methodname]' for an Objective-C method instead of the
-	less satisfactory 'too many arguments to function' (with no method
-	name).
+	* c-typeck.c (convert_arguments): Use warning 'too many arguments to
+	method [methodname]' for an Objective-C method instead of the less
+	satisfactory 'too many arguments to function' (with no method name).
 
 2010-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
