@@ -1,3 +1,16 @@
+2010-09-09  Tristan Gingold  <gingold@adacore.com>
+
+	PR target/44242
+	* config/vms/vms-crt0-64.c: Removed.
+	* config/vms/vms-crt0.c: Removed.
+	* config/vms/vms-psxcrt0-64.c: Removed.
+	* config/vms/vms-psxcrt0.c: Removed.
+	* config/vms/vms-ucrt0.c: New file.
+	* config/vms/t-vms64: Removed.
+	* config/vms/t-vms (VMS_EXTRA_PARTS): Uncomment it.  Remove DECC.
+	Use $(GCC_FOR_TARGET) to build pcrt0.o and vcrt0.o
+	* config.gcc (alpha-dec-vms): Use t-vms.
+
 2010-09-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* doc/invoke.texi (-fno-nil-receivers): Tidied up line to remove
@@ -20,7 +33,7 @@
 	(Exceptions): New section mostly containing text previously in the
 	description of the -fobjc-exception command-line option.
 	(Synchronization): Same.
-	
+
 2010-09-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (ix86_code_end): Move the initialization of
