@@ -2516,11 +2516,11 @@ used.
 
 @item -fno-nil-receivers
 @opindex fno-nil-receivers
-Assume that all Objective-C message dispatches (e.g.,
-@code{[receiver message:arg]}) in this translation unit ensure that the receiver
-is not @code{nil}.  This allows for more efficient entry points in the runtime
-to be used.  Currently, this option is only available in conjunction with
-the NeXT runtime on Mac OS X 10.3 and later.
+Assume that all Objective-C message dispatches (@code{[receiver
+message:arg]}) in this translation unit ensure that the receiver is
+not @code{nil}.  This allows for more efficient entry points in the
+runtime to be used.  Currently, this option is only available in
+conjunction with the NeXT runtime on Mac OS X 10.3 and later.
 
 @item -fobjc-call-cxx-cdtors
 @opindex fobjc-call-cxx-cdtors
@@ -2533,14 +2533,15 @@ is a C++ object with a non-trivial destructor, and if so, synthesize a
 special @code{- (void) .cxx_destruct} method that will run
 all such default destructors, in reverse order.
 
-The @code{- (id) .cxx_construct} and/or @code{- (void) .cxx_destruct} methods
-thusly generated will only operate on instance variables declared in the
-current Objective-C class, and not those inherited from superclasses.  It
-is the responsibility of the Objective-C runtime to invoke all such methods
-in an object's inheritance hierarchy.  The @code{- (id) .cxx_construct} methods
-will be invoked by the runtime immediately after a new object
-instance is allocated; the @code{- (void) .cxx_destruct} methods will
-be invoked immediately before the runtime deallocates an object instance.
+The @code{- (id) .cxx_construct} and @code{- (void) .cxx_destruct}
+methods thusly generated will only operate on instance variables
+declared in the current Objective-C class, and not those inherited
+from superclasses.  It is the responsibility of the Objective-C
+runtime to invoke all such methods in an object's inheritance
+hierarchy.  The @code{- (id) .cxx_construct} methods will be invoked
+by the runtime immediately after a new object instance is allocated;
+the @code{- (void) .cxx_destruct} methods will be invoked immediately
+before the runtime deallocates an object instance.
 
 As of this writing, only the NeXT runtime on Mac OS X 10.4 and later has
 support for invoking the @code{- (id) .cxx_construct} and
@@ -2553,100 +2554,20 @@ accomplished via the comm page.
 
 @item -fobjc-exceptions
 @opindex fobjc-exceptions
-Enable syntactic support for structured exception handling in Objective-C,
-similar to what is offered by C++ and Java.  This option is
-unavailable in conjunction with the NeXT runtime on Mac OS X 10.2 and
-earlier.
-
-@smallexample
-  @@try @{
-    @dots{}
-       @@throw expr;
-    @dots{}
-  @}
-  @@catch (AnObjCClass *exc) @{
-    @dots{}
-      @@throw expr;
-    @dots{}
-      @@throw;
-    @dots{}
-  @}
-  @@catch (AnotherClass *exc) @{
-    @dots{}
-  @}
-  @@catch (id allOthers) @{
-    @dots{}
-  @}
-  @@finally @{
-    @dots{}
-      @@throw expr;
-    @dots{}
-  @}
-@end smallexample
-
-The @code{@@throw} statement may appear anywhere in an Objective-C or
-Objective-C++ program; when used inside of a @code{@@catch} block, the
-@code{@@throw} may appear without an argument (as shown above), in which case
-the object caught by the @code{@@catch} will be rethrown.
-
-Note that only (pointers to) Objective-C objects may be thrown and
-caught using this scheme.  When an object is thrown, it will be caught
-by the nearest @code{@@catch} clause capable of handling objects of that type,
-analogously to how @code{catch} blocks work in C++ and Java.  A
-@code{@@catch(id @dots{})} clause (as shown above) may also be provided to catch
-any and all Objective-C exceptions not caught by previous @code{@@catch}
-clauses (if any).
-
-The @code{@@finally} clause, if present, will be executed upon exit from the
-immediately preceding @code{@@try @dots{} @@catch} section.  This will happen
-regardless of whether any exceptions are thrown, caught or rethrown
-inside the @code{@@try @dots{} @@catch} section, analogously to the behavior
-of the @code{finally} clause in Java.
-
-There are several caveats to using the new exception mechanism:
-
-@itemize @bullet
-@item
-Although currently designed to be binary compatible with @code{NS_HANDLER}-style
-idioms provided by the @code{NSException} class, the new
-exceptions can only be used on Mac OS X 10.3 (Panther) and later
-systems, due to additional functionality needed in the (NeXT) Objective-C
-runtime.
-
-@item
-As mentioned above, the new exceptions do not support handling
-types other than Objective-C objects.   Furthermore, when used from
-Objective-C++, the Objective-C exception model does not interoperate with C++
-exceptions at this time.  This means you cannot @code{@@throw} an exception
-from Objective-C and @code{catch} it in C++, or vice versa
-(i.e., @code{throw @dots{} @@catch}).
-@end itemize
-
-The @option{-fobjc-exceptions} switch also enables the use of synchronization
-blocks for thread-safe execution:
-
-@smallexample
-  @@synchronized (ObjCClass *guard) @{
-    @dots{}
-  @}
-@end smallexample
-
-Upon entering the @code{@@synchronized} block, a thread of execution shall
-first check whether a lock has been placed on the corresponding @code{guard}
-object by another thread.  If it has, the current thread shall wait until
-the other thread relinquishes its lock.  Once @code{guard} becomes available,
-the current thread will place its own lock on it, execute the code contained in
-the @code{@@synchronized} block, and finally relinquish the lock (thereby
-making @code{guard} available to other threads).
-
-Unlike Java, Objective-C does not allow for entire methods to be marked
-@code{@@synchronized}.  Note that throwing exceptions out of
-@code{@@synchronized} blocks is allowed, and will cause the guarding object
-to be unlocked properly.
+Enable syntactic support for structured exception handling in
+Objective-C, similar to what is offered by C++ and Java.  This option
+is required to use the Objective-C keywords @code{@@try},
+@code{@@throw}, @code{@@catch}, @code{@@finally} and
+@code{@@synchronized}.  This option is available with both the GNU
+runtime and the NeXT runtime (but not available in conjunction with
+the NeXT runtime on Mac OS X 10.2 and earlier).
 
 @item -fobjc-gc
 @opindex fobjc-gc
-Enable garbage collection (GC) in Objective-C and Objective-C++ programs.
+Enable garbage collection (GC) in Objective-C and Objective-C++
+programs.  This option is only available with the NeXT runtime; the
+GNU runtime has a different garbage collection implementation that
+does not require special compiler flags.
 
 @item -freplace-objc-classes
 @opindex freplace-objc-classes
@@ -2668,6 +2589,8 @@ which improves run-time performance.  Specifying the @option{-fzero-link} flag
 suppresses this behavior and causes calls to @code{objc_getClass("@dots{}")}
 to be retained.  This is useful in Zero-Link debugging mode, since it allows
 for individual class implementations to be modified during program execution.
+The GNU runtime currently always retains calls to @code{objc_get_class("@dots{}")}
+regardless of command line options.
 
 @item -gen-decls
 @opindex gen-decls
