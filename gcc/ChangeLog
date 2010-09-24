@@ -1,3 +1,26 @@
+2010-09-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* doc/invoke.texi (-fno-nil-receivers): Tidied up line to remove
+	underfull hbox in DVI output.
+	(-fobjc-class-cxx-cdtors): Same change.
+	(-fobjc-exceptions): Tidied up documentation.  Explain what the
+	option does, but moved the (lenghty) description of the exception
+	syntax into objc.texi.
+	(-fobjc-gc): Explain that the option is not useful with the GNU
+	runtime.
+	(-fzero-link): Explain that the GNU runtime always works in
+	"zero-link" mode.
+	* doc/objc.texi: All sections: simplified @node declarations
+	removing specification of next, previous, up node.
+	(Objective-C): Updated introduction.
+	(Garbage Collection): Updated.  The bohem-gc library is now
+	included in gcc itself.  Mention that this section only applies to
+	the GNU Objective-C runtime.
+	(compatibility_alias): Small tidy up.
+	(Exceptions): New section mostly containing text previously in the
+	description of the -fobjc-exception command-line option.
+	(Synchronization): Same.
+	
 2010-09-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (ix86_code_end): Move the initialization of

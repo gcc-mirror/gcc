@@ -6,13 +6,11 @@
 @node Objective-C
 @comment  node-name,  next,  previous,  up
 
-@chapter GNU Objective-C runtime features
+@chapter GNU Objective-C features
 
-This document is meant to describe some of the GNU Objective-C runtime
-features.  It is not intended to teach you Objective-C, there are several
-resources on the Internet that present the language.  Questions and
-comments about this document to Ovidiu Predescu
-@email{ovidiu@@cup.hp.com}.
+This document is meant to describe some of the GNU Objective-C
+features.  It is not intended to teach you Objective-C, there are
+several resources on the Internet that present the language.
 
 @menu
 * Executing code before main::
@@ -20,9 +18,11 @@ comments about this document to Ovidiu Predescu
 * Garbage Collection::
 * Constant string objects::
 * compatibility_alias::
+* Exceptions::
+* Synchronization::
 @end menu
 
-@node Executing code before main, Type encoding, Objective-C, Objective-C
+@node Executing code before main
 @section @code{+load}: Executing code before main
 
 The GNU Objective-C runtime provides a way that allows you to execute
@@ -103,7 +103,7 @@ instead of @code{+initialize}.
 @end menu
 
 
-@node What you can and what you cannot do in +load,  , Executing code before main, Executing code before main
+@node What you can and what you cannot do in +load
 @subsection What you can and what you cannot do in @code{+load}
 
 The @code{+load} implementation in the GNU runtime guarantees you the following
@@ -167,7 +167,7 @@ above apply to classes defined in bundle.
 
 
 
-@node Type encoding, Garbage Collection, Executing code before main, Objective-C
+@node Type encoding
 @section Type encoding
 
 The Objective-C compiler generates type encodings for all the
@@ -311,21 +311,19 @@ however, the type specifiers are only encoded when they appear in method
 argument types.
 
 
-@node Garbage Collection, Constant string objects, Type encoding, Objective-C
+@node Garbage Collection
 @section Garbage Collection
 
-Support for a new memory management policy has been added by using a
-powerful conservative garbage collector, known as the
-Boehm-Demers-Weiser conservative garbage collector.  It is available from
-@uref{http://www.hpl.hp.com/@/personal/@/Hans_Boehm/@/gc/}.
+Support for garbage collection with the GNU runtime has been added by
+using a powerful conservative garbage collector, known as the
+Boehm-Demers-Weiser conservative garbage collector.
 
-To enable the support for it you have to configure the compiler using an
-additional argument, @w{@option{--enable-objc-gc}}.  You need to have
-garbage collector installed before building the compiler.  This will
-build an additional runtime library which has several enhancements to
-support the garbage collector.  The new library has a new name,
-@file{libobjc_gc.a} to not conflict with the non-garbage-collected
-library.
+To enable the support for it you have to configure the compiler using
+an additional argument, @w{@option{--enable-objc-gc}}.  This will
+build the boehm-gc library, and build an additional runtime library
+which has several enhancements to support the garbage collector.  The
+new library has a new name, @file{libobjc_gc.a} to not conflict with
+the non-garbage-collected library.
 
 When the garbage collector is used, the objects are allocated using the
 so-called typed memory allocation mechanism available in the
@@ -452,10 +450,6 @@ restrictions in doing this.
 @node compatibility_alias
 @section compatibility_alias
 
-This is a feature of the Objective-C compiler rather than of the
-runtime, anyway since it is documented nowhere and its existence was
-forgotten, we are documenting it here.
-
 The keyword @code{@@compatibility_alias} allows you to define a class name
 as equivalent to another class name.  For example:
 
@@ -476,3 +470,114 @@ There are some constraints on how this can be used---
 @item @code{GSWApplication} (the real class) must be an existing class.
 
 @end itemize
+
+@c =========================================================================
+@node Exceptions
+@section Exceptions
+
+GNU Objective-C provides exception support built into the language, as
+in the following example:
+
+@smallexample
+  @@try @{
+    @dots{}
+       @@throw expr;
+    @dots{}
+  @}
+  @@catch (AnObjCClass *exc) @{
+    @dots{}
+      @@throw expr;
+    @dots{}
+      @@throw;
+    @dots{}
+  @}
+  @@catch (AnotherClass *exc) @{
+    @dots{}
+  @}
+  @@catch (id allOthers) @{
+    @dots{}
+  @}
+  @@finally @{
+    @dots{}
+      @@throw expr;
+    @dots{}
+  @}
+@end smallexample
+
+The @code{@@throw} statement may appear anywhere in an Objective-C or
+Objective-C++ program; when used inside of a @code{@@catch} block, the
+@code{@@throw} may appear without an argument (as shown above), in
+which case the object caught by the @code{@@catch} will be rethrown.
+
+Note that only (pointers to) Objective-C objects may be thrown and
+caught using this scheme.  When an object is thrown, it will be caught
+by the nearest @code{@@catch} clause capable of handling objects of
+that type, analogously to how @code{catch} blocks work in C++ and
+Java.  A @code{@@catch(id @dots{})} clause (as shown above) may also
+be provided to catch any and all Objective-C exceptions not caught by
+previous @code{@@catch} clauses (if any).
+
+The @code{@@finally} clause, if present, will be executed upon exit
+from the immediately preceding @code{@@try @dots{} @@catch} section.
+This will happen regardless of whether any exceptions are thrown,
+caught or rethrown inside the @code{@@try @dots{} @@catch} section,
+analogously to the behavior of the @code{finally} clause in Java.
+
+There are several caveats to using the new exception mechanism:
+
+@itemize @bullet
+@item
+The @option{-fobjc-exceptions} command line option must be used when
+compiling Objective-C files that use exceptions.
+
+@item
+With the GNU runtime, exceptions are always implemented as ``native''
+exceptions and it is recommended that the @option{-fexceptions} and
+@option{-shared-libgcc} options are used when linking.
+
+@item
+With the NeXT runtime, although currently designed to be binary
+compatible with @code{NS_HANDLER}-style idioms provided by the
+@code{NSException} class, the new exceptions can only be used on Mac
+OS X 10.3 (Panther) and later systems, due to additional functionality
+needed in the NeXT Objective-C runtime.
+
+@item
+As mentioned above, the new exceptions do not support handling
+types other than Objective-C objects.   Furthermore, when used from
+Objective-C++, the Objective-C exception model does not interoperate with C++
+exceptions at this time.  This means you cannot @code{@@throw} an exception
+from Objective-C and @code{catch} it in C++, or vice versa
+(i.e., @code{throw @dots{} @@catch}).
+@end itemize
+
+@c =========================================================================
+@node Synchronization
+@section Synchronization
+
+GNU Objective-C provides support for synchronized blocks:
+
+@smallexample
+  @@synchronized (ObjCClass *guard) @{
+    @dots{}
+  @}
+@end smallexample
+
+Upon entering the @code{@@synchronized} block, a thread of execution
+shall first check whether a lock has been placed on the corresponding
+@code{guard} object by another thread.  If it has, the current thread
+shall wait until the other thread relinquishes its lock.  Once
+@code{guard} becomes available, the current thread will place its own
+lock on it, execute the code contained in the @code{@@synchronized}
+block, and finally relinquish the lock (thereby making @code{guard}
+available to other threads).
+
+Unlike Java, Objective-C does not allow for entire methods to be
+marked @code{@@synchronized}.  Note that throwing exceptions out of
+@code{@@synchronized} blocks is allowed, and will cause the guarding
+object to be unlocked properly.
+
+Because of the interactions between synchronization and exception
+handling, you can only use @code{@@synchronized} when compiling with
+exceptions enabled, that is with the command line option
+@option{-fobjc-exceptions}.
