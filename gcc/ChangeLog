@@ -1,3 +1,12 @@
+2010-09-24  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.in (OBJS-onestep): Remove.
+	(ALL_HOST_BACKEND_OBJS): Remove libbackend.o.
+	(libbackend.a): Remove onestep support.
+	(libbackend.o): Remove.
+	* configure.ac (--enable-intermodule): Remove.
+	* configure: Regenerate.
+
 2010-09-24  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* cfgcleanup.c (flow_find_head_matching_sequence): Terminate when

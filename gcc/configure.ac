@@ -754,16 +754,6 @@ AC_ARG_WITH(specs,
 )
 AC_SUBST(CONFIGURE_SPECS)
 
-# Build with intermodule optimisations
-AC_ARG_ENABLE(intermodule,
-[  --enable-intermodule    build the compiler in one step],
-[case ${enable_intermodule} in
-  yes) onestep="-onestep";;
-  *) onestep="";;
-esac],
-[onestep=""])
-AC_SUBST(onestep)
-
 ACX_PKGVERSION([GCC])
 ACX_BUGURL([http://gcc.gnu.org/bugs.html])
 
