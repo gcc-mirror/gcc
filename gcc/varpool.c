@@ -367,8 +367,8 @@ const_value_known_p (tree decl)
 {
   struct varpool_node *vnode;
 
-  if (TREE_CODE (decl) == PARM_DECL
-      || TREE_CODE (decl) == RESULT_DECL)
+  if (TREE_CODE (decl) != VAR_DECL
+      &&TREE_CODE (decl) != CONST_DECL)
     return false;
 
   if (TREE_CODE (decl) == CONST_DECL

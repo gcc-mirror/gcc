@@ -1,3 +1,12 @@
+2010-09-24  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/45738
+	PR tree-optimization/45741
+	* expr.c (string_constant): Allow CONST_DECL too;
+	check that DECL_INITIAL is set.
+	* varpool.c (const_value_known_p): Only look into VAR_DECL
+	and CONST_DECL.
+
 2010-09-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (undef): New.
