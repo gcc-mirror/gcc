@@ -1,3 +1,8 @@
+2010-09-24  Jan Hubicka  <jh@suse.cz>
+
+	* decl.c (finish_function): Use decl_replaceable_p
+	* method.c (make_alias_for_thunk): Update call of cgraph_same_body_alias.
+
 2010-09-24  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (compute_array_index_type): Remember type dependence of

@@ -1048,7 +1048,8 @@ lto_promote_cross_file_statics (void)
 			   && !v->externally_visible && v->analyzed)
 		    {
 		      if (promote_var (v)
-			  && DECL_INITIAL (v->decl) && v->const_value_known
+			  && DECL_INITIAL (v->decl)
+			  && const_value_known_p (v->decl)
 			  && !pointer_set_insert (inserted, vnode))
 			VEC_safe_push (varpool_node_ptr, heap,
 				       promoted_initializers, v);

@@ -6381,6 +6381,30 @@ default_use_anchors_for_symbol_p (const_rtx symbol)
   return true;
 }
 
+/* Return true when RESOLUTION indicate that symbol will be bound to the
+   definition provided by current .o file.  */
+
+static bool
+resolution_to_local_definition_p (enum ld_plugin_symbol_resolution resolution)
+{
+  return (resolution == LDPR_PREVAILING_DEF
+	  || resolution == LDPR_PREVAILING_DEF_IRONLY);
+}
+
+/* Return true when RESOLUTION indicate that symbol will be bound locally
+   within current executable or DSO.  */
+
+static bool
+resolution_local_p (enum ld_plugin_symbol_resolution resolution)
+{
+  return (resolution == LDPR_PREVAILING_DEF
+	  || resolution == LDPR_PREVAILING_DEF_IRONLY
+	  || resolution == LDPR_PREEMPTED_REG
+	  || resolution == LDPR_PREEMPTED_IR
+	  || resolution == LDPR_RESOLVED_IR
+	  || resolution == LDPR_RESOLVED_EXEC);
+}
+
 /* Assume ELF-ish defaults, since that's pretty much the most liberal
    wrt cross-module name binding.  */
 
@@ -6394,12 +6418,41 @@ bool
 default_binds_local_p_1 (const_tree exp, int shlib)
 {
   bool local_p;
+  bool resolved_locally = false;
+  bool resolved_to_local_def = false;
+
+  /* With resolution file in hands, take look into resolutions.
+     We can't just return true for resolved_localy symbols,
+     because dynamic linking might overwrite symbols
+     in shared libraries.  */
+  if (TREE_CODE (exp) == VAR_DECL && TREE_PUBLIC (exp)
+      && (TREE_STATIC (exp) || DECL_EXTERNAL (exp)))
+    {
+      struct varpool_node *vnode = varpool_get_node (exp);
+      if (vnode && resolution_local_p (vnode->resolution))
+	resolved_locally = true;
+      if (vnode
+	  && resolution_to_local_definition_p (vnode->resolution))
+	resolved_to_local_def = true;
+    }
+  else if (TREE_CODE (exp) == FUNCTION_DECL && TREE_PUBLIC (exp))
+    {
+      struct cgraph_node *node = cgraph_get_node_or_alias (exp);
+      if (node
+	  && resolution_local_p (node->resolution))
+	resolved_locally = true;
+      if (node
+	  && resolution_to_local_definition_p (node->resolution))
+	resolved_to_local_def = true;
+    }
 
   /* A non-decl is an entry in the constant pool.  */
   if (!DECL_P (exp))
     local_p = true;
   /* Weakrefs may not bind locally, even though the weakref itself is
-     always static and therefore local.  */
+     always static and therefore local.
+     FIXME: We can resolve this more curefuly by looking at the weakref
+     alias.  */
   else if (lookup_attribute ("weakref", DECL_ATTRIBUTES (exp)))
     local_p = false;
   /* Static variables are always local.  */
@@ -6407,11 +6460,12 @@ default_binds_local_p_1 (const_tree exp, int shlib)
     local_p = true;
   /* A variable is local if the user has said explicitly that it will
      be.  */
-  else if (DECL_VISIBILITY_SPECIFIED (exp)
+  else if ((DECL_VISIBILITY_SPECIFIED (exp)
+	    || resolved_to_local_def)
 	   && DECL_VISIBILITY (exp) != VISIBILITY_DEFAULT)
     local_p = true;
   /* Variables defined outside this object might not be local.  */
-  else if (DECL_EXTERNAL (exp))
+  else if (DECL_EXTERNAL (exp) && !resolved_locally)
     local_p = false;
   /* If defined in this object and visibility is not default, must be
      local.  */
@@ -6419,16 +6473,17 @@ default_binds_local_p_1 (const_tree exp, int shlib)
     local_p = true;
   /* Default visibility weak data can be overridden by a strong symbol
      in another module and so are not local.  */
-  else if (DECL_WEAK (exp))
+  else if (DECL_WEAK (exp)
+	   && !resolved_locally)
     local_p = false;
   /* If PIC, then assume that any global name can be overridden by
-     symbols resolved from other modules, unless we are compiling with
-     -fwhole-program, which assumes that names are local.  */
+     symbols resolved from other modules.  */
   else if (shlib)
-    local_p = flag_whole_program;
+    local_p = false;
   /* Uninitialized COMMON variable may be unified with symbols
      resolved from other modules.  */
   else if (DECL_COMMON (exp)
+	   && !resolved_locally
 	   && (DECL_INITIAL (exp) == NULL
 	       || DECL_INITIAL (exp) == error_mark_node))
     local_p = false;
@@ -6438,6 +6493,67 @@ default_binds_local_p_1 (const_tree exp, int shlib)
     local_p = true;
 
   return local_p;
+}
+
+/* Return true when references to DECL must bind to current definition in
+   final executable.
+
+   The condition is usually equivalent to whether the function binds to the
+   current module (shared library or executable), that is to binds_local_p.
+   We use this fact to avoid need for another target hook and implement
+   the logic using binds_local_p and just special cases where
+   decl_binds_to_current_def_p is stronger than binds local_p.  In particular
+   the weak definitions (that can be overwritten at linktime by other
+   definition from different object file) and when resolution info is available
+   we simply use the knowledge passed to us by linker plugin.  */
+bool
+decl_binds_to_current_def_p (tree decl)
+{
+  gcc_assert (DECL_P (decl));
+  if (!TREE_PUBLIC (decl))
+    return true;
+  if (!targetm.binds_local_p (decl))
+    return false;
+  /* When resolution is available, just use it.  */
+  if (TREE_CODE (decl) == VAR_DECL && TREE_PUBLIC (decl)
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+    {
+      struct varpool_node *vnode = varpool_get_node (decl);
+      if (vnode
+	  && vnode->resolution != LDPR_UNKNOWN)
+	return resolution_to_local_definition_p (vnode->resolution);
+    }
+  else if (TREE_CODE (decl) == FUNCTION_DECL && TREE_PUBLIC (decl))
+    {
+      struct cgraph_node *node = cgraph_get_node_or_alias (decl);
+      if (node
+	  && node->resolution != LDPR_UNKNOWN)
+	return resolution_to_local_definition_p (node->resolution);
+    }
+  /* Otherwise we have to assume the worst for DECL_WEAK (hidden weaks
+     binds localy but still can be overwritten).
+     This rely on fact that binds_local_p behave as decl_replaceable_p
+     for all other declaration types.  */
+  return !DECL_WEAK (decl);
+}
+
+/* A replaceable function or variable is one which may be replaced
+   at link-time with an entirely different definition, provided that the
+   replacement has the same type.  For example, functions declared
+   with __attribute__((weak)) on most systems are replaceable.
+
+   COMDAT functions are not replaceable, since all definitions of the
+   function must be equivalent.  It is important that COMDAT functions
+   not be treated as replaceable so that use of C++ template
+   instantiations is not penalized.  */
+
+bool
+decl_replaceable_p (tree decl)
+{
+  gcc_assert (DECL_P (decl));
+  if (!TREE_PUBLIC (decl) || DECL_COMDAT (decl))
+    return false;
+  return !decl_binds_to_current_def_p (decl);
 }
 
 /* Default function to output code that will globalize a label.  A

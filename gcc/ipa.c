@@ -570,7 +570,6 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	    if (dump_file)
 	      fprintf (dump_file, " %s (read-only)", varpool_node_name (vnode));
 	    TREE_READONLY (vnode->decl) = 1;
-	    vnode->const_value_known |= const_value_known_p (vnode->decl);
 	  }
       }
   if (dump_file)
@@ -622,7 +621,7 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool 
 	      return true;
 	}
     }
-  if (node->local.used_from_object_file)
+  if (cgraph_used_from_object_file_p (node))
     return true;
   if (DECL_PRESERVE_P (node->decl))
     return true;
@@ -739,6 +738,7 @@ function_and_variable_visibility (bool whole_program)
           struct cgraph_node *alias;
 	  gcc_assert (whole_program || in_lto_p || !TREE_PUBLIC (node->decl));
 	  cgraph_make_decl_local (node->decl);
+	  node->resolution = LDPR_PREVAILING_DEF_IRONLY;
 	  for (alias = node->same_body; alias; alias = alias->next)
 	    cgraph_make_decl_local (alias->decl);
 	  if (node->same_comdat_group)
@@ -777,9 +777,6 @@ function_and_variable_visibility (bool whole_program)
 	      || ! (ADDR_SPACE_GENERIC_P
 		    (TYPE_ADDR_SPACE (TREE_TYPE (vnode->decl))))))
 	DECL_COMMON (vnode->decl) = 0;
-     /* Even extern variables might have initializers known.
-	See, for example testsuite/g++.dg/opt/static3.C  */
-     vnode->const_value_known |= const_value_known_p (vnode->decl);
     }
   for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
     {
@@ -802,7 +799,7 @@ function_and_variable_visibility (bool whole_program)
 		      In this case we do not sed used_from_object_file.  */
 		   || !vnode->finalized))
 	      || DECL_PRESERVE_P (vnode->decl)
-              || vnode->used_from_object_file
+              || varpool_used_from_object_file_p (vnode)
 	      || pointer_set_contains (aliased_vnodes, vnode)
 	      || lookup_attribute ("externally_visible",
 				   DECL_ATTRIBUTES (vnode->decl))))
@@ -813,8 +810,8 @@ function_and_variable_visibility (bool whole_program)
 	{
 	  gcc_assert (in_lto_p || whole_program || !TREE_PUBLIC (vnode->decl));
 	  cgraph_make_decl_local (vnode->decl);
+	  vnode->resolution = LDPR_PREVAILING_DEF_IRONLY;
 	}
-     vnode->const_value_known |= const_value_known_p (vnode->decl);
      gcc_assert (TREE_STATIC (vnode->decl));
     }
   pointer_set_destroy (aliased_nodes);

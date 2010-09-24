@@ -519,6 +519,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->finalized_by_frontend, 1);
   bp_pack_value (&bp, node->frequency, 2);
   lto_output_bitpack (&bp);
+  lto_output_uleb128_stream (ob->main_stream, node->resolution);
 
   if (node->same_body)
     {
@@ -550,6 +551,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 	      lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
 					alias->thunk.alias);
 	    }
+	  lto_output_uleb128_stream (ob->main_stream, alias->resolution);
 	  alias = alias->previous;
 	}
       while (alias);
@@ -578,7 +580,6 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
   bp_pack_value (&bp, node->force_output, 1);
   bp_pack_value (&bp, node->finalized, 1);
   bp_pack_value (&bp, node->alias, 1);
-  bp_pack_value (&bp, node->const_value_known, 1);
   gcc_assert (!node->alias || !node->extra_name);
   gcc_assert (node->finalized || !node->analyzed);
   gcc_assert (node->needed);
@@ -611,12 +612,16 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
   else
     ref = LCC_NOT_FOUND;
   lto_output_sleb128_stream (ob->main_stream, ref);
+  lto_output_uleb128_stream (ob->main_stream, node->resolution);
 
   if (count)
     {
       lto_output_uleb128_stream (ob->main_stream, count);
       for (alias = node->extra_name; alias; alias = alias->next)
-	lto_output_var_decl_index (ob->decl_state, ob->main_stream, alias->decl);
+	{
+	  lto_output_var_decl_index (ob->decl_state, ob->main_stream, alias->decl);
+	  lto_output_uleb128_stream (ob->main_stream, alias->resolution);
+	}
     }
 }
 
@@ -926,7 +931,8 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
 		      unsigned int self_time,
 		      unsigned int time_inlining_benefit,
 		      unsigned int self_size,
-		      unsigned int size_inlining_benefit)
+		      unsigned int size_inlining_benefit,
+		      enum ld_plugin_symbol_resolution resolution)
 {
   node->aux = (void *) tag;
   node->local.inline_summary.estimated_self_stack_size = stack_size;
@@ -972,6 +978,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->alias = bp_unpack_value (bp, 1);
   node->finalized_by_frontend = bp_unpack_value (bp, 1);
   node->frequency = (enum node_frequency)bp_unpack_value (bp, 2);
+  node->resolution = resolution;
 }
 
 /* Output the part of the cgraph in SET.  */
@@ -1019,6 +1026,7 @@ input_node (struct lto_file_decl_data *file_data,
   int size_inlining_benefit = 0;
   unsigned long same_body_count = 0;
   int clone_ref;
+  enum ld_plugin_symbol_resolution resolution;
 
   clone_ref = lto_input_sleb128 (ib);
 
@@ -1057,9 +1065,10 @@ input_node (struct lto_file_decl_data *file_data,
 		    "node %d", node->uid);
 
   bp = lto_input_bitpack (ib);
+  resolution = (enum ld_plugin_symbol_resolution)lto_input_uleb128 (ib);
   input_overwrite_node (file_data, node, tag, &bp, stack_size, self_time,
   			time_inlining_benefit, self_size,
-			size_inlining_benefit);
+			size_inlining_benefit, resolution);
 
   /* Store a reference for now, and fix up later to be a pointer.  */
   node->global.inlined_to = (cgraph_node_ptr) (intptr_t) ref;
@@ -1072,6 +1081,7 @@ input_node (struct lto_file_decl_data *file_data,
     {
       tree alias_decl;
       int type;
+      struct cgraph_node *alias;
       decl_index = lto_input_uleb128 (ib);
       alias_decl = lto_file_decl_data_get_fn_decl (file_data, decl_index);
       type = lto_input_uleb128 (ib);
@@ -1080,7 +1090,7 @@ input_node (struct lto_file_decl_data *file_data,
 	  tree real_alias;
 	  decl_index = lto_input_uleb128 (ib);
 	  real_alias = lto_file_decl_data_get_fn_decl (file_data, decl_index);
-	  cgraph_same_body_alias (alias_decl, real_alias);
+	  alias = cgraph_same_body_alias (alias_decl, real_alias);
 	}
       else
         {
@@ -1089,11 +1099,12 @@ input_node (struct lto_file_decl_data *file_data,
 	  tree real_alias;
 	  decl_index = lto_input_uleb128 (ib);
 	  real_alias = lto_file_decl_data_get_fn_decl (file_data, decl_index);
-	  cgraph_add_thunk (alias_decl, fn_decl, type & 2, fixed_offset,
-	  		    virtual_value,
-			    (type & 4) ? size_int (virtual_value) : NULL_TREE,
-			    real_alias);
+	  alias = cgraph_add_thunk (alias_decl, fn_decl, type & 2, fixed_offset,
+				    virtual_value,
+				    (type & 4) ? size_int (virtual_value) : NULL_TREE,
+				    real_alias);
 	}
+       alias->resolution = (enum ld_plugin_symbol_resolution)lto_input_uleb128 (ib);
     }
   return node;
 }
@@ -1123,7 +1134,6 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->force_output = bp_unpack_value (&bp, 1);
   node->finalized = bp_unpack_value (&bp, 1);
   node->alias = bp_unpack_value (&bp, 1);
-  node->const_value_known = bp_unpack_value (&bp, 1);
   node->analyzed = node->finalized; 
   node->used_from_other_partition = bp_unpack_value (&bp, 1);
   node->in_other_partition = bp_unpack_value (&bp, 1);
@@ -1138,6 +1148,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   ref = lto_input_sleb128 (ib);
   /* Store a reference for now, and fix up later to be a pointer.  */
   node->same_comdat_group = (struct varpool_node *) (intptr_t) ref;
+  node->resolution = (enum ld_plugin_symbol_resolution)lto_input_uleb128 (ib);
   if (aliases_p)
     {
       count = lto_input_uleb128 (ib);
@@ -1145,7 +1156,9 @@ input_varpool_node (struct lto_file_decl_data *file_data,
 	{
 	  tree decl = lto_file_decl_data_get_var_decl (file_data,
 						       lto_input_uleb128 (ib));
-	  varpool_extra_name_alias (decl, var_decl);
+	  struct varpool_node *alias;
+	  alias = varpool_extra_name_alias (decl, var_decl);
+	  alias->resolution = (enum ld_plugin_symbol_resolution)lto_input_uleb128 (ib);
 	}
     }
   return node;

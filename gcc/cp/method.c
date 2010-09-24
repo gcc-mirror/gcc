@@ -259,9 +259,9 @@ make_alias_for_thunk (tree function)
 
   if (!flag_syntax_only)
     {
-      bool ok = cgraph_same_body_alias (alias, function);
+      struct cgraph_node *aliasn = cgraph_same_body_alias (alias, function);
       DECL_ASSEMBLER_NAME (function);
-      gcc_assert (ok);
+      gcc_assert (aliasn != NULL);
     }
 
   return alias;
