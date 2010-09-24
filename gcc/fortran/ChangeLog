@@ -1,5 +1,13 @@
 2010-09-24  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.texi: Add second space after end-of-sentence period;
+	change / to /@/ to allow hyphenation of URLs.
+	(Standards): Remove duplicated OpenMP, update wording given that
+	Fortran 2008 now released.
+	(Fortran 2008 status): Update and add list of implemented features.
+
+2010-09-24  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/40571
 	* iso-fortran-env.def: Add NAMED_KINDARRAY with
 	character_kinds, integer_kinds, logical_kinds and
