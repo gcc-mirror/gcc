@@ -333,8 +333,6 @@ enum reg_class {
 
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
-#define CLASS_LIKELY_SPILLED_P(c) class_likely_spilled_p(c)
-
 #define CLASS_MAX_NREGS(CLASS, MODE)   class_max_nregs (CLASS, MODE)
 
 #define STACK_PUSH_CODE POST_DEC
