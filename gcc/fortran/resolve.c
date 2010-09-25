@@ -7916,6 +7916,13 @@ resolve_transfer (gfc_code *code)
 		      && exp->expr_type != EXPR_FUNCTION))
     return;
 
+  /* If we are reading, the variable will be changed.  Note that
+     code->ext.dt may be NULL if the TRANSFER is related to
+     an INQUIRE statement -- but in this case, we are not reading, either.  */
+  if (code->ext.dt && code->ext.dt->dt_io_kind->value.iokind == M_READ
+      && gfc_check_vardef_context (exp, false, _("item in READ")) == FAILURE)
+    return;
+
   sym = exp->symtree->n.sym;
   ts = &sym->ts;
 

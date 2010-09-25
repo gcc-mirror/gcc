@@ -1,3 +1,19 @@
+2010-09-25  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/45776
+	* gfortran.h (struct gfc_dt): New member `dt_io_kind'.
+	* io.c (resolve_tag): F2008 check for NEWUNIT and variable
+	definition checks for NEWUNIT, IOSTAT, SIZE and IOMSG.
+	(gfc_free_dt): Correctly handle freeing of `dt_io_kind' and
+	`extra_comma' with changed semantics.
+	(gfc_resolve_dt): Check variable definitions.
+	(match_io_element): Remove INTENT and PURE checks here and
+	initialize code->ext.dt member.
+	(match_io): Set dt->dt_io_kind.
+	(gfc_resolve_inquire): Check variable definition for all tags
+	except UNIT, FILE and ID.
+	* resolve.c (resolve_transfer): Variable definition check.
+
 2010-09-25  Tobias Burnus  <burnus@net-b.de>
 
 	* interface.c (gfc_match_end_interface): Constify char pointer

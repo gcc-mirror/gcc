@@ -2000,7 +2000,7 @@ typedef struct
 {
   gfc_expr *io_unit, *format_expr, *rec, *advance, *iostat, *size, *iomsg,
 	   *id, *pos, *asynchronous, *blank, *decimal, *delim, *pad, *round,
-	   *sign, *extra_comma;
+	   *sign, *extra_comma, *dt_io_kind;
 
   gfc_symbol *namelist;
   /* A format_label of `format_asterisk' indicates the "*" format */
