@@ -1,3 +1,7 @@
+2010-09-25  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi: Re-add accidently removed \input line.
+
 2010-09-25  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/45776
