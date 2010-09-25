@@ -24,7 +24,6 @@
 extern int function_arg_regno_p (int r);
 extern void avr_cpu_cpp_builtins (struct cpp_reader * pfile);
 extern int avr_ret_register (void);
-extern bool class_likely_spilled_p (int c);
 extern enum reg_class avr_regno_reg_class (int r);
 extern void asm_globalize_label (FILE *file, const char *name);
 extern void avr_asm_declare_function_name (FILE *, const char *, tree);

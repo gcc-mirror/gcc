@@ -92,6 +92,7 @@ static bool avr_hard_regno_scratch_ok (unsigned int);
 static unsigned int avr_case_values_threshold (void);
 static bool avr_frame_pointer_required_p (void);
 static bool avr_can_eliminate (const int, const int);
+static bool avr_class_likely_spilled_p (reg_class_t c);
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
@@ -192,6 +193,9 @@ static const struct attribute_spec avr_attribute_table[] =
 #define TARGET_FRAME_POINTER_REQUIRED avr_frame_pointer_required_p
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE avr_can_eliminate
+
+#undef TARGET_CLASS_LIKELY_SPILLED_P
+#define TARGET_CLASS_LIKELY_SPILLED_P avr_class_likely_spilled_p
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE avr_option_override
@@ -4762,8 +4766,8 @@ gas_output_ascii(FILE *file, const char *str, size_t length)
    assigned to registers of class CLASS would likely be spilled
    because registers of CLASS are needed for spill registers.  */
 
-bool
-class_likely_spilled_p (int c)
+static bool
+avr_class_likely_spilled_p (reg_class_t c)
 {
   return (c != ALL_REGS && c != ADDW_REGS);
 }
