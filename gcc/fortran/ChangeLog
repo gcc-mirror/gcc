@@ -1,3 +1,8 @@
+2010-09-24  Steven G. Kargl  < kargl@gcc.gnu.org>
+
+	* fortran/interface.c (gfc_match_end_interface): Deal with user defined
+	operators that overload rational operators and C1202.
+
 2010-09-24  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi: Add second space after end-of-sentence period;
