@@ -314,12 +314,42 @@ gfc_match_end_interface (void)
 	{
 
 	  if (current_interface.op == INTRINSIC_ASSIGN)
-	    gfc_error ("Expected 'END INTERFACE ASSIGNMENT (=)' at %C");
+	    {
+	      m = MATCH_ERROR;
+	      gfc_error ("Expected 'END INTERFACE ASSIGNMENT (=)' at %C");
+	    }
 	  else
-	    gfc_error ("Expecting 'END INTERFACE OPERATOR (%s)' at %C",
-		       gfc_op2string (current_interface.op));
+	    {
+	      char *s1, *s2;
+	      s1 = gfc_op2string (current_interface.op);
+	      s2 = gfc_op2string (op);
 
-	  m = MATCH_ERROR;
+	      /* The following if-statements are used to enforce C1202
+		 from F2003.  */
+	      if ((strcmp(s1, "==") == 0 && strcmp(s2, ".eq.") == 0)
+		  || (strcmp(s1, ".eq.") == 0 && strcmp(s2, "==") == 0))
+		break;
+	      if ((strcmp(s1, "/=") == 0 && strcmp(s2, ".ne.") == 0)
+		  || (strcmp(s1, ".ne.") == 0 && strcmp(s2, "/=") == 0))
+		break;
+	      if ((strcmp(s1, "<=") == 0 && strcmp(s2, ".le.") == 0)
+		  || (strcmp(s1, ".le.") == 0 && strcmp(s2, "<=") == 0))
+		break;
+	      if ((strcmp(s1, "<") == 0 && strcmp(s2, ".lt.") == 0)
+		  || (strcmp(s1, ".lt.") == 0 && strcmp(s2, "<") == 0))
+		break;
+	      if ((strcmp(s1, ">=") == 0 && strcmp(s2, ".ge.") == 0)
+		  || (strcmp(s1, ".ge.") == 0 && strcmp(s2, ">=") == 0))
+		break;
+	      if ((strcmp(s1, ">") == 0 && strcmp(s2, ".gt.") == 0)
+		  || (strcmp(s1, ".gt.") == 0 && strcmp(s2, ">") == 0))
+		break;
+
+	      m = MATCH_ERROR;
+	      gfc_error ("Expecting 'END INTERFACE OPERATOR (%s)' at %C, "
+			 "but got %s", s1, s2);
+	    }
+		
 	}
 
       break;
