@@ -1,3 +1,8 @@
+2010-09-25  Jie Zhang  <jie@codesourcery.com>
+
+	* lto.c (lto_read_all_file_options): Start a new line after
+	printing out file names.
+
 2010-09-24  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (lto_promote_cross_file_statics): Use const_value_known_p.

@@ -1689,6 +1689,9 @@ lto_read_all_file_options (void)
       free (file_data);
     }
 
+  if (!quiet_flag)
+    fprintf (stderr, "\n");
+
   /* Apply globally the options read from all the files.  */
   lto_reissue_options ();
 }
