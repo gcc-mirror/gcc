@@ -1,3 +1,8 @@
+2010-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-inline.c (copy_bb): Use GSI_CONTINUE_LINKING when inserting new
+	statements because of the return slot optimization.
+
 2010-09-25  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.h (CLASS_LIKELY_SPILLED_P): Remove.
