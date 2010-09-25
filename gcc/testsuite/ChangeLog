@@ -1,3 +1,8 @@
+2010-09-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/return2.ad[sb]: New test.
+	* gnat.dg/return2_pkg.ads: New helper.
+
 2010-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/45234
