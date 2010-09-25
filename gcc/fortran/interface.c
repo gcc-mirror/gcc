@@ -320,7 +320,7 @@ gfc_match_end_interface (void)
 	    }
 	  else
 	    {
-	      char *s1, *s2;
+	      const char *s1, *s2;
 	      s1 = gfc_op2string (current_interface.op);
 	      s2 = gfc_op2string (op);
 
