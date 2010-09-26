@@ -1,3 +1,10 @@
+2010-09-26  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/45783
+	PR fortran/45795
+	* resolve.c (resolve_select_type): Clarify code.
+	(resolve_assoc_var): Only set typespec if it is currently unknown.
+
 2010-09-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/45793
