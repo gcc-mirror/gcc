@@ -1,3 +1,26 @@
+2010-09-25  Kai Tietz  <kai.tietz@onevision.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* config/i386/cygwin.asm: Include auto-host.h.
+	(cfi_startproc, cfi_endproc, cfi_adjust_cfa_offset,
+	cfi_def_cfa_register, cfi_register, cfi_push, cfi_pop): New macros.
+	(__chkstk, __alloca): Annotate for dwarf2 unwind info.  Drop
+	alignment code from the 64-bit path.  Use gas local labels.
+	* config/i386/i386.md (pro_epilogue_adjust_stack_<mode>_2): Macroize
+	from _di_2.  Remove the useless constant integer argument.
+	(pro_epilogue_adjust_stack_<mode>_3): New.
+	(allocate_stack_worker_probe_<mode>): Macroize from
+	allocate_stack_worker_{32,64}.  Use __chkstk_ms.  Update all users.
+	* config/i386/i386.c (ix86_expand_prologue): Use __chkstk_ms;
+	use gen_pro_epilogue_adjust_stack_*_3 and annotate it.
+	(__chkstk_ms): New function.
+	* config/i386/t-cygming (LIB1ASMFUNCS): Add _chkstk_ms.
+	* gcc/config/i386/t-interix: Likewise.
+	* configure.ac (HAVE_GAS_CFI_DIRECTIVE): Export for target.
+	(HAVE_GAS_CFI_PERSONALITY_DIRECTIVE): Likewise.
+	(HAVE_GAS_CFI_SECTIONS_DIRECTIVE): Likewise.
+	* configure, config.in: Rebuild.
+
 2010-09-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-inline.c (copy_bb): Use GSI_CONTINUE_LINKING when inserting new
