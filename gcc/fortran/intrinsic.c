@@ -814,6 +814,24 @@ find_sym (gfc_intrinsic_sym *start, int n, const char *name)
 }
 
 
+gfc_intrinsic_sym *
+gfc_intrinsic_function_by_id (gfc_isym_id id)
+{
+  gfc_intrinsic_sym *start = functions;
+  int n = nfunc;
+
+  while (true)
+    {
+      gcc_assert (n > 0);
+      if (id == start->id)
+	return start;
+
+      start++;
+      n--;
+    }
+}
+
+
 /* Given a name, find a function in the intrinsic function table.
    Returns NULL if not found.  */
 
@@ -823,10 +841,10 @@ gfc_find_function (const char *name)
   gfc_intrinsic_sym *sym;
 
   sym = find_sym (functions, nfunc, name);
-  if (!sym)
+  if (!sym || sym->from_module)
     sym = find_sym (conversion, nconv, name);
 
-  return sym;
+  return (!sym || sym->from_module) ? NULL : sym;
 }
 
 
@@ -836,7 +854,9 @@ gfc_find_function (const char *name)
 gfc_intrinsic_sym *
 gfc_find_subroutine (const char *name)
 {
-  return find_sym (subroutines, nsub, name);
+  gfc_intrinsic_sym *sym;
+  sym = find_sym (subroutines, nsub, name);
+  return (!sym || sym->from_module) ? NULL : sym;
 }
 
 
@@ -849,7 +869,7 @@ gfc_generic_intrinsic (const char *name)
   gfc_intrinsic_sym *sym;
 
   sym = gfc_find_function (name);
-  return (sym == NULL) ? 0 : sym->generic;
+  return (!sym || sym->from_module) ? 0 : sym->generic;
 }
 
 
@@ -862,7 +882,7 @@ gfc_specific_intrinsic (const char *name)
   gfc_intrinsic_sym *sym;
 
   sym = gfc_find_function (name);
-  return (sym == NULL) ? 0 : sym->specific;
+  return (!sym || sym->from_module) ? 0 : sym->specific;
 }
 
 
@@ -1012,6 +1032,15 @@ make_noreturn (void)
 {
   if (sizing == SZ_NOTHING)
     next_sym[-1].noreturn = 1;
+}
+
+
+/* Mark current intrinsic as module intrinsic.  */
+static void
+make_from_module (void)
+{
+  if (sizing == SZ_NOTHING)
+    next_sym[-1].from_module = 1;
 }
 
 /* Set the attr.value of the current procedure.  */
@@ -2607,10 +2636,23 @@ add_functions (void)
 	     x, BT_UNKNOWN, 0, REQUIRED);
 
   make_generic ("sizeof", GFC_ISYM_SIZEOF, GFC_STD_GNU);
-  
+
+  /* C_SIZEOF is part of ISO_C_BINDING.  */
   add_sym_1 ("c_sizeof", GFC_ISYM_C_SIZEOF, CLASS_INQUIRY, ACTUAL_NO,
 	     BT_INTEGER, ii, GFC_STD_F2008, gfc_check_c_sizeof, NULL, NULL,
 	     x, BT_UNKNOWN, 0, REQUIRED);
+  make_from_module();
+
+  /* COMPILER_OPTIONS and COMPILER_VERSION are part of ISO_FORTRAN_ENV.  */  
+  add_sym_0 ("compiler_options", GFC_ISYM_COMPILER_OPTIONS, CLASS_IMPURE,
+	     ACTUAL_NO, BT_CHARACTER, 1, GFC_STD_F2008,
+	     NULL, gfc_simplify_compiler_options, NULL);
+  make_from_module();
+
+  add_sym_0 ("compiler_version", GFC_ISYM_COMPILER_VERSION, CLASS_IMPURE,
+	     ACTUAL_NO, BT_CHARACTER, 1, GFC_STD_F2008,
+	     NULL, gfc_simplify_compiler_version, NULL);
+  make_from_module();
 
   add_sym_1 ("spacing", GFC_ISYM_SPACING, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
 	     gfc_check_x, gfc_simplify_spacing, gfc_resolve_spacing,
@@ -4012,7 +4054,14 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
 
   name = expr->symtree->n.sym->name;
 
-  isym = specific = gfc_find_function (name);
+  if (expr->symtree->n.sym->intmod_sym_id)
+    {
+      int id = expr->symtree->n.sym->intmod_sym_id;
+      isym = specific = gfc_intrinsic_function_by_id ((gfc_isym_id) id);
+    }
+  else
+    isym = specific = gfc_find_function (name);
+
   if (isym == NULL)
     {
       if (!error_flag)

@@ -4,7 +4,7 @@
 !
 ! Contributed by Janus Weil <janus@gcc.gnu.org>
 
-use iso_c_binding, only: c_int
+use iso_c_binding, only: c_int, c_sizeof
 
 type, bind(c) :: t 
   integer(c_int) :: j

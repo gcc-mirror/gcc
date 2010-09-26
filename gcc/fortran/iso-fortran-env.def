@@ -27,6 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 # define NAMED_KINDARRAY(a,b,c,d)
 #endif
 
+#ifndef NAMED_FUNCTION
+# define NAMED_FUNCTION(a,b,c,d)
+#endif
 
 /* The arguments to NAMED_INTCST are:
      -- an internal name
@@ -97,5 +100,17 @@ NAMED_KINDARRAY (ISOFORTRAN_LOGICAL_KINDS, "logical_kinds", \
 NAMED_KINDARRAY (ISOFORTRAN_REAL_KINDS, "real_kinds", \
                  gfc_real_kinds, GFC_STD_F2008)
 
+/* The arguments to NAMED_FUNCTIONS are:
+     -- the ISYM
+     -- the symbol name in the module, as seen by Fortran code
+     -- the Fortran standard  */
+
+NAMED_FUNCTION (ISOFORTRAN_COMPILER_OPTIONS, "compiler_options", \
+                GFC_ISYM_COMPILER_OPTIONS, GFC_STD_F2008)
+NAMED_FUNCTION (ISOFORTRAN_COMPILER_VERSION, "compiler_version", \
+                GFC_ISYM_COMPILER_VERSION, GFC_STD_F2008)
+
+
 #undef NAMED_INTCST
 #undef NAMED_KINDARRAY
+#undef NAMED_FUNCTION
