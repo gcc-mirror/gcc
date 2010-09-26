@@ -1,3 +1,9 @@
+2010-09-26  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/45783
+	PR fortran/45795
+	* gfortran.dg/select_type_18.f03: New test.
+
 2010-09-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/return2.ad[sb]: New test.

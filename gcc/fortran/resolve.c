@@ -7570,7 +7570,11 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       sym->attr.target = (tsym->attr.target || tsym->attr.pointer);
     }
 
-  sym->ts = target->ts;
+  /* Get type if this was not already set.  Note that it can be
+     some other type than the target in case this is a SELECT TYPE
+     selector!  So we must not update when the type is already there.  */
+  if (sym->ts.type == BT_UNKNOWN)
+    sym->ts = target->ts;
   gcc_assert (sym->ts.type != BT_UNKNOWN);
 
   /* See if this is a valid association-to-variable.  */
@@ -7673,8 +7677,8 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	      error++;
 	      continue;
 	    }
-	  else
-	    default_case = body;
+
+	  default_case = body;
 	}
     }
     
