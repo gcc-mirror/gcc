@@ -4,8 +4,7 @@
 
 2010-09-26  Kai Tietz  <kai.tietz@onevision.com>
 
-	* sendmsg.c (get_imp):  Remove inline.
-	(objc_msg_lookup): Likewise.
+	* sendmsg.c (objc_msg_lookup): Remove inline.
 	(objc_get_uninstalled_dtable): Likewise.
 	* encoding.c (objc_skip_type_qualifiers): Likewise.
 	(objc_skip_offset): Likewise.

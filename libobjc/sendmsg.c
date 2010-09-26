@@ -136,7 +136,7 @@ __objc_get_forward_imp (id rcv, SEL sel)
 }
 
 /* Given a class and selector, return the selector's implementation.  */
-
+inline
 IMP
 get_imp (Class class, SEL sel)
 {
