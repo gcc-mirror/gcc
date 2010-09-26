@@ -1,3 +1,8 @@
+2010-09-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c: Removed historical, obsolete comment at the top of
+	the file.
+
 2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/23710

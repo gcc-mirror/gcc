@@ -20,26 +20,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-
-/* Purpose: This module implements the Objective-C 4.0 language.
-
-   compatibility issues (with the Stepstone translator):
-
-   - does not recognize the following 3.3 constructs.
-     @requires, @classes, @messages, = (...)
-   - methods with variable arguments must conform to ANSI standard.
-   - tagged structure definitions that appear in BOTH the interface
-     and implementation are not allowed.
-   - public/private: all instance variables are public within the
-     context of the implementation...I consider this to be a bug in
-     the translator.
-   - statically allocated objects are not supported. the user will
-     receive an error if this service is requested.
-
-   code generation `options':
-
-   */
-
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
