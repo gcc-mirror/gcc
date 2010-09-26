@@ -5305,7 +5305,8 @@ create_int_parameter (const char *name, int value, const char *modname,
 }
 
 
-/* Value is already contained the array constructor, but not yet the shape.  */
+/* Value is already contained by the array constructor, but not
+   yet the shape.  */
 
 static void
 create_int_parameter_array (const char *name, int size, gfc_expr *value,
@@ -5313,7 +5314,6 @@ create_int_parameter_array (const char *name, int size, gfc_expr *value,
 {
   gfc_symtree *tmp_symtree;
   gfc_symbol *sym;
-  gfc_expr *e;
 
   tmp_symtree = gfc_find_symtree (gfc_current_ns->sym_root, name);
   if (tmp_symtree != NULL)
@@ -5342,8 +5342,8 @@ create_int_parameter_array (const char *name, int size, gfc_expr *value,
   sym->as->upper[0] = gfc_get_int_expr (gfc_default_integer_kind, NULL, size); 
 
   sym->value = value;
-  e->shape = gfc_get_shape (1);
-  mpz_init_set_ui (e->shape[0], size);
+  sym->value->shape = gfc_get_shape (1);
+  mpz_init_set_ui (sym->value->shape[0], size);
 }
 
 
