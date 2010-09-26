@@ -1,6 +1,7 @@
 /* stuff needed for libgcc on win32.
  *
- *   Copyright (C) 1996, 1998, 2001, 2003, 2008, 2009 Free Software Foundation, Inc.
+ *   Copyright (C) 1996, 1998, 2001, 2003, 2008, 2009
+ *   Free Software Foundation, Inc.
  *   Written By Steve Chamberlain
  * 
  * This file is free software; you can redistribute it and/or modify it
@@ -23,104 +24,165 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifdef L_chkstk
+#include "auto-host.h"
 
-/* Function prologue calls _alloca to probe the stack when allocating more
+#ifdef HAVE_GAS_CFI_SECTIONS_DIRECTIVE
+	.cfi_sections	.debug_frame
+# define cfi_startproc()		.cfi_startproc
+# define cfi_endproc()			.cfi_endproc
+# define cfi_adjust_cfa_offset(X) 	.cfi_adjust_cfa_offset X
+# define cfi_def_cfa_register(X)	.cfi_def_cfa_register X
+# define cfi_register(D,S)		.cfi_register D, S
+# ifdef _WIN64
+#  define cfi_push(X)		.cfi_adjust_cfa_offset 8; .cfi_rel_offset X, 0
+#  define cfi_pop(X)		.cfi_adjust_cfa_offset -8; .cfi_restore X
+# else
+#  define cfi_push(X)		.cfi_adjust_cfa_offset 4; .cfi_rel_offset X, 0
+#  define cfi_pop(X)		.cfi_adjust_cfa_offset -4; .cfi_restore X
+# endif
+#else
+# define cfi_startproc()
+# define cfi_endproc()
+# define cfi_adjust_cfa_offset(X)
+# define cfi_def_cfa_register(X)
+# define cfi_register(D,S)
+# define cfi_push(X)
+# define cfi_pop(X)
+#endif /* HAVE_GAS_CFI_SECTIONS_DIRECTIVE */
+
+#ifdef L_chkstk
+/* Function prologue calls __chkstk to probe the stack when allocating more
    than CHECK_STACK_LIMIT bytes in one go.  Touching the stack at 4K
    increments is necessary to ensure that the guard pages used
    by the OS virtual memory manger are allocated in correct sequence.  */
 
 	.global ___chkstk
 	.global	__alloca
-#ifndef _WIN64
-___chkstk:
+#ifdef _WIN64
+/* __alloca is a normal function call, which uses %rcx as the argument.  */
+	cfi_startproc()
 __alloca:
-	pushl	%ecx		/* save temp */
-	leal	8(%esp), %ecx	/* point past return addr */
-	cmpl	$0x1000, %eax	/* > 4k ?*/
-	jb	Ldone
-
-Lprobe:
-	subl	$0x1000, %ecx  		/* yes, move pointer down 4k*/
-	orl	$0x0, (%ecx)   		/* probe there */
-	subl	$0x1000, %eax  	 	/* decrement count */
-	cmpl	$0x1000, %eax
-	ja	Lprobe         	 	/* and do it again */
-
-Ldone:
-	subl	%eax, %ecx	   
-	orl	$0x0, (%ecx)	/* less than 4k, just peek here */
-
-	movl	%esp, %eax	/* save old stack pointer */
-	movl	%ecx, %esp	/* decrement stack */
-	movl	(%eax), %ecx	/* recover saved temp */
-	movl	4(%eax), %eax	/* recover return address */
-
-	/* Push the return value back.  Doing this instead of just
-	   jumping to %eax preserves the cached call-return stack
-	   used by most modern processors.  */
-	pushl	%eax
-	ret
-#else
-/* __alloca is a normal function call, which uses %rcx as the argument.  And stack space
-   for the argument is saved.  */
-__alloca:
- 	movq	%rcx, %rax
-	addq	$0x7, %rax
-	andq	$0xfffffffffffffff8, %rax
-	popq	%rcx		/* pop return address */
-	popq	%r10		/* Pop the reserved stack space.  */
-	movq	%rsp, %r10	/* get sp */
-	cmpq	$0x1000, %rax	/* > 4k ?*/
-	jb	Ldone_alloca
-
-Lprobe_alloca:
-	subq	$0x1000, %r10  		/* yes, move pointer down 4k*/
-	orq	$0x0, (%r10)   		/* probe there */
-	subq	$0x1000, %rax  	 	/* decrement count */
-	cmpq	$0x1000, %rax
-	ja	Lprobe_alloca         	 	/* and do it again */
-
-Ldone_alloca:
-	subq	%rax, %r10
-	orq	$0x0, (%r10)	/* less than 4k, just peek here */
-	movq	%r10, %rax
-	subq	$0x8, %r10	/* Reserve argument stack space.  */
-	movq	%r10, %rsp	/* decrement stack */
-
-	/* Push the return value back.  Doing this instead of just
-	   jumping to %rcx preserves the cached call-return stack
-	   used by most modern processors.  */
-	pushq	%rcx
-	ret
+	movq	%rcx, %rax
+	/* FALLTHRU */
 
 /* ___chkstk is a *special* function call, which uses %rax as the argument.
    We avoid clobbering the 4 integer argument registers, %rcx, %rdx, 
    %r8 and %r9, which leaves us with %rax, %r10, and %r11 to use.  */
+	.align	4
 ___chkstk:
-	addq	$0x7, %rax	/* Make sure stack is on alignment of 8.  */
-	andq	$0xfffffffffffffff8, %rax
-	popq	%r11		/* pop return address */
-	movq	%rsp, %r10	/* get sp */
-	cmpq	$0x1000, %rax	/* > 4k ?*/
-	jb	Ldone
+	popq	%r11			/* pop return address */
+	cfi_adjust_cfa_offset(-8)	/* indicate return address in r11 */
+	cfi_register(%rip, %r11)
+	movq	%rsp, %r10
+	cmpq	$0x1000, %rax		/* > 4k ?*/
+	jb	2f
 
-Lprobe:
-	subq	$0x1000, %r10  		/* yes, move pointer down 4k*/
+1:	subq	$0x1000, %r10  		/* yes, move pointer down 4k*/
 	orl	$0x0, (%r10)   		/* probe there */
 	subq	$0x1000, %rax  	 	/* decrement count */
 	cmpq	$0x1000, %rax
-	ja	Lprobe         	 	/* and do it again */
+	ja	1b			/* and do it again */
 
-Ldone:
-	subq	%rax, %r10
-	orl	$0x0, (%r10)	/* less than 4k, just peek here */
-	movq	%r10, %rsp	/* decrement stack */
+2:	subq	%rax, %r10
+	movq	%rsp, %rax		/* hold CFA until return */
+	cfi_def_cfa_register(%rax)
+	orl	$0x0, (%r10)		/* less than 4k, just peek here */
+	movq	%r10, %rsp		/* decrement stack */
 
 	/* Push the return value back.  Doing this instead of just
 	   jumping to %r11 preserves the cached call-return stack
 	   used by most modern processors.  */
 	pushq	%r11
 	ret
-#endif
-#endif
+	cfi_endproc()
+#else
+	cfi_startproc()
+___chkstk:
+__alloca:
+	pushl	%ecx			/* save temp */
+	cfi_push(%eax)
+	leal	8(%esp), %ecx		/* point past return addr */
+	cmpl	$0x1000, %eax		/* > 4k ?*/
+	jb	2f
+
+1:	subl	$0x1000, %ecx  		/* yes, move pointer down 4k*/
+	orl	$0x0, (%ecx)   		/* probe there */
+	subl	$0x1000, %eax  	 	/* decrement count */
+	cmpl	$0x1000, %eax
+	ja	1b			/* and do it again */
+
+2:	subl	%eax, %ecx	   
+	orl	$0x0, (%ecx)		/* less than 4k, just peek here */
+	movl	%esp, %eax		/* save current stack pointer */
+	cfi_def_cfa_register(%eax)
+	movl	%ecx, %esp		/* decrement stack */
+	movl	(%eax), %ecx		/* recover saved temp */
+
+	/* Copy the return register.  Doing this instead of just jumping to
+	   the address preserves the cached call-return stack used by most
+	   modern processors.  */
+	pushl	4(%eax)
+	ret
+	cfi_endproc()
+#endif /* _WIN64 */
+#endif /* L_chkstk */
+
+#ifdef L_chkstk_ms
+/* ___chkstk_ms is a *special* function call, which uses %rax as the argument.
+   We avoid clobbering any registers.  Unlike ___chkstk, it just probes the
+   stack and does no stack allocation.  */
+	.global ___chkstk_ms
+#ifdef _WIN64
+	cfi_startproc()
+___chkstk_ms:
+	pushq	%rcx			/* save temps */
+	cfi_push(%rcx)
+	pushq	%rax
+	cfi_push(%rax)
+	cmpq	$0x1000, %rax		/* > 4k ?*/
+	leaq	24(%rsp), %rcx		/* point past return addr */
+	jb	2f
+
+1:	subq	$0x1000, %rcx  		/* yes, move pointer down 4k */
+	orq	$0x0, (%rcx)   		/* probe there */
+	subq	$0x1000, %rax  	 	/* decrement count */
+	cmpq	$0x1000, %rax
+	ja	1b			/* and do it again */
+
+2:	subq	%rax, %rcx
+	orq	$0x0, (%rcx)		/* less than 4k, just peek here */
+
+	popq	%rax
+	cfi_pop(%rax)
+	popq	%rcx
+	cfi_pop(%rcx)
+	ret
+	cfi_endproc()
+#else
+	cfi_startproc()
+___chkstk_ms:
+	pushl	%ecx			/* save temp */
+	cfi_push(%ecx)
+	pushl	%eax
+	cfi_push(%eax)
+	cmpl	$0x1000, %eax		/* > 4k ?*/
+	leal	12(%esp), %ecx		/* point past return addr */
+	jb	2f
+
+1:	subl	$0x1000, %ecx  		/* yes, move pointer down 4k*/
+	orl	$0x0, (%ecx)   		/* probe there */
+	subl	$0x1000, %eax  	 	/* decrement count */
+	cmpl	$0x1000, %eax
+	ja	1b			/* and do it again */
+
+2:	subl	%eax, %ecx
+	orl	$0x0, (%ecx)		/* less than 4k, just peek here */
+
+	popl	%eax
+	cfi_pop(%eax)
+	popl	%ecx
+	cfi_pop(%ecx)
+	ret
+	cfi_endproc()
+#endif /* _WIN64 */
+#endif /* L_chkstk_ms */
