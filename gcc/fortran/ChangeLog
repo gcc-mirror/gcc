@@ -1,3 +1,30 @@
+2010-09-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40569
+	PR fortran/40568
+	* intrinsic.h (gfc_simplify_compiler_options,
+	gfc_simplify_compiler_version): New prototypes.
+	* intrinsic.c (gfc_intrinsic_function_by_id,
+	make_from_module): New functions.
+	(gfc_find_function, gfc_find_subroutine, gfc_generic_intrinsic,
+	gfc_specific_intrinsic): Don't return module intrinsics.
+	(add_functions): Add compiler_options, compiler_version.
+	(gfc_intrinsic_func_interface): Also lookup symbol by ISYM ID.
+	* symbol.c (std_for_isocbinding_symbol): Add version check for
+	NAMED_FUNCTIONS.
+	* iso-fortran-env.def: Add compiler_options, compiler_version.
+	* iso-c-binding.def: Add c_sizeof.
+	* gfortran.h (gfc_intrinsic_sym): Add from_module:1.
+	(iso_c_binding_symbol, iso_fortran_env_symbol): Add NAMED_FUNCTIONS.
+	(gfc_intrinsic_function_by_id): New prototype.
+	* module.c (create_intrinsic_function): New function.
+	(import_iso_c_binding_module, use_iso_fortran_env_module): Use it.
+	* trans-types.c (init_c_interop_kinds): Add NAMED_FUNCTIONS.
+	* resolve.c (resolve_intrinsic): Try also to resolve intrinsics
+	by ISYM ID.
+	* simplify.c (gfc_simplify_compiler_options,
+	gfc_simplify_compiler_version): New functions.
+
 2010-09-26  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/45783

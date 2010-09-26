@@ -246,6 +246,8 @@ gfc_expr *gfc_simplify_btest (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_ceiling (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_char (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_cmplx (gfc_expr *, gfc_expr *, gfc_expr *);
+gfc_expr *gfc_simplify_compiler_options (void);
+gfc_expr *gfc_simplify_compiler_version (void);
 gfc_expr *gfc_simplify_complex (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_conjg (gfc_expr *);
 gfc_expr *gfc_simplify_cos (gfc_expr *);

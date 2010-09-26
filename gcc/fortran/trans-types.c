@@ -333,6 +333,11 @@ void init_c_interop_kinds (void)
   c_interop_kinds_table[a].f90_type = BT_PROCEDURE; \
   c_interop_kinds_table[a].value = 0;
 #include "iso-c-binding.def"
+#define NAMED_FUNCTION(a,b,c,d) \
+  strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
+  c_interop_kinds_table[a].f90_type = BT_PROCEDURE; \
+  c_interop_kinds_table[a].value = c;
+#include "iso-c-binding.def"
 }
 
 

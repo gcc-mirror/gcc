@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! Support F2008's c_sizeof()
 !
-use iso_c_binding, only: c_int, c_char, c_ptr, c_intptr_t, c_null_ptr
+use iso_c_binding, only: c_int, c_char, c_ptr, c_intptr_t, c_null_ptr, c_sizeof
 
 integer(kind=c_int) :: i, j(10)
 character(kind=c_char,len=4),parameter :: str(1) = "abcd"

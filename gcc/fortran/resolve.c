@@ -1396,7 +1396,7 @@ is_illegal_recursion (gfc_symbol* sym, gfc_namespace* context)
 static gfc_try
 resolve_intrinsic (gfc_symbol *sym, locus *loc)
 {
-  gfc_intrinsic_sym* isym;
+  gfc_intrinsic_sym* isym = NULL;
   const char* symstd;
 
   if (sym->formal)
@@ -1407,7 +1407,12 @@ resolve_intrinsic (gfc_symbol *sym, locus *loc)
      gfc_find_subroutine directly to check whether it is a function or
      subroutine.  */
 
-  if ((isym = gfc_find_function (sym->name)))
+  if (sym->intmod_sym_id)
+    isym = gfc_intrinsic_function_by_id ((gfc_isym_id) sym->intmod_sym_id);
+  else
+    isym = gfc_find_function (sym->name);
+
+  if (isym)
     {
       if (sym->ts.type != BT_UNKNOWN && gfc_option.warn_surprising
 	  && !sym->attr.implicit_type)

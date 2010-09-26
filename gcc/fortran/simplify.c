@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intrinsic.h"
 #include "target-memory.h"
 #include "constructor.h"
+#include "version.h"  /* For version_string.  */
 
 
 gfc_expr gfc_bad_expr;
@@ -6732,4 +6733,22 @@ gfc_convert_char_constant (gfc_expr *e, bt type ATTRIBUTE_UNUSED, int kind)
     }
   else
     return NULL;
+}
+
+
+gfc_expr *
+gfc_simplify_compiler_options (void)
+{
+  /* FIXME: PR40569 - return the proper compiler arguments.  */
+  return gfc_get_character_expr (gfc_default_character_kind,
+                                &gfc_current_locus, "", 0);
+}
+
+
+gfc_expr *
+gfc_simplify_compiler_version (void)
+{
+  return gfc_get_character_expr (gfc_default_character_kind,
+                                &gfc_current_locus, version_string,
+                                strlen (version_string));
 }

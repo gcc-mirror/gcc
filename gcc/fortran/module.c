@@ -5207,6 +5207,38 @@ gfc_dump_module (const char *name, int dump_flag)
 }
 
 
+static void
+create_intrinsic_function (const char *name, gfc_isym_id id,
+			   const char *modname, intmod_id module)
+{
+  gfc_intrinsic_sym *isym;
+  gfc_symtree *tmp_symtree;
+  gfc_symbol *sym;
+
+  tmp_symtree = gfc_find_symtree (gfc_current_ns->sym_root, name);
+  if (tmp_symtree)
+    {
+      if (strcmp (modname, tmp_symtree->n.sym->module) == 0)
+        return;
+      gfc_error ("Symbol '%s' already declared", name);
+    }
+
+  gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree, false);
+  sym = tmp_symtree->n.sym;
+
+  isym = gfc_intrinsic_function_by_id (id);
+  gcc_assert (isym);
+
+  sym->attr.flavor = FL_PROCEDURE;
+  sym->attr.intrinsic = 1;
+
+  sym->module = gfc_get_string (modname);
+  sym->attr.use_assoc = 1;
+  sym->from_intmod = module;
+  sym->intmod_sym_id = id;
+}
+
+
 /* Import the intrinsic ISO_C_BINDING module, generating symbols in
    the current namespace for all named constants, pointer types, and
    procedures in the module unless the only clause was used or a rename
@@ -5252,14 +5284,45 @@ import_iso_c_binding_module (void)
 	  {
 	    u->found = 1;
 	    found = true;
-	    generate_isocbinding_symbol (iso_c_module_name,
-					 (iso_c_binding_symbol) i,
-					 u->local_name);
+	    switch (i)
+	      {
+#define NAMED_FUNCTION(a,b,c,d) \
+	        case a: \
+		  create_intrinsic_function (u->local_name[0] ? u->local_name \
+							      : u->use_name, \
+					     (gfc_isym_id) c, \
+                                             iso_c_module_name, \
+                                             INTMOD_ISO_C_BINDING); \
+		  break;
+#include "iso-c-binding.def"
+#undef NAMED_FUNCTION
+
+		default:
+		  generate_isocbinding_symbol (iso_c_module_name,
+					       (iso_c_binding_symbol) i,
+					       u->local_name[0] ? u->local_name
+								: u->use_name);
+	      }
 	  }
 
       if (!found && !only_flag)
-	generate_isocbinding_symbol (iso_c_module_name,
-				     (iso_c_binding_symbol) i, NULL);
+	switch (i)
+	  {
+#define NAMED_FUNCTION(a,b,c,d) \
+	    case a: \
+	      if ((gfc_option.allow_std & d) == 0) \
+		continue; \
+	      create_intrinsic_function (b, (gfc_isym_id) c, \
+					 iso_c_module_name, \
+					 INTMOD_ISO_C_BINDING); \
+		  break;
+#include "iso-c-binding.def"
+#undef NAMED_FUNCTION
+
+	    default:
+	      generate_isocbinding_symbol (iso_c_module_name,
+					   (iso_c_binding_symbol) i, NULL);
+	  }
    }
 
    for (u = gfc_rename_list; u; u = u->next)
@@ -5367,6 +5430,9 @@ use_iso_fortran_env_module (void)
 #define NAMED_KINDARRAY(a,b,c,d) { a, b, 0, d },
 #include "iso-fortran-env.def"
 #undef NAMED_KINDARRAY
+#define NAMED_FUNCTION(a,b,c,d) { a, b, c, d },
+#include "iso-fortran-env.def"
+#undef NAMED_FUNCTION
     { ISOFORTRANENV_INVALID, NULL, -1234, 0 } };
 
   i = 0;
@@ -5448,6 +5514,16 @@ use_iso_fortran_env_module (void)
 #include "iso-fortran-env.def"
 #undef NAMED_KINDARRAY
 
+#define NAMED_FUNCTION(a,b,c,d) \
+		case a:
+#include "iso-fortran-env.def"
+#undef NAMED_FUNCTION
+		  create_intrinsic_function (u->local_name[0] ? u->local_name
+							      : u->use_name,
+					     (gfc_isym_id) symbol[i].value, mod,
+					     INTMOD_ISO_FORTRAN_ENV);
+		  break;
+
 		default:
 		  gcc_unreachable ();
 		}
@@ -5490,6 +5566,15 @@ use_iso_fortran_env_module (void)
             break;
 #include "iso-fortran-env.def"
 #undef NAMED_KINDARRAY
+
+#define NAMED_FUNCTION(a,b,c,d) \
+		case a:
+#include "iso-fortran-env.def"
+#undef NAMED_FUNCTION
+		  create_intrinsic_function (symbol[i].name,
+					     (gfc_isym_id) symbol[i].value, mod,
+					     INTMOD_ISO_FORTRAN_ENV);
+		  break;
 
 	  default:
 	    gcc_unreachable ();

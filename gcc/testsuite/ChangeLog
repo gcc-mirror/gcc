@@ -1,3 +1,15 @@
+2010-09-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40569
+	PR fortran/40568
+	* gfortran.dg/storage_size_2.f08: Fix test.
+	* gfortran.dg/c_sizeof_1.f90: Fix test.
+	* gfortran.dg/c_sizeof_2.f90: Update dg-error.
+	* gfortran.dg/c_sizeof_3.f90: New.
+	* gfortran.dg/c_sizeof_4.f90: New.
+	* gfortran.dg/iso_c_binding_compiler_1.f90: New.
+	* gfortran.dg/iso_c_binding_compiler_2.f90: New.
+
 2010-09-26  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/45783
