@@ -1,3 +1,7 @@
+2010-09-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* libobjc_entry.c: File removed.
+
 2010-09-26  Kai Tietz  <kai.tietz@onevision.com>
 
 	* sendmsg.c (get_imp):  Remove inline.
