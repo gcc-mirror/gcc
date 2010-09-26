@@ -1,3 +1,11 @@
+2010-09-26  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_builtin_decls): Declare.
+	(mips_init_builtins): Store function declarations in
+	mips_builtin_decls.
+	(mips_builtin_decl): New function.
+	(TARGET_BUILTIN_DECL): Define.
+
 2010-09-25  Kai Tietz  <kai.tietz@onevision.com>
 	    Richard Henderson  <rth@redhat.com>
 
