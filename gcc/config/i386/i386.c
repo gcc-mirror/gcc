@@ -8777,9 +8777,11 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
   rtx insn;
 
   if (! TARGET_64BIT)
-    insn = emit_insn (gen_pro_epilogue_adjust_stack_si_1 (dest, src, offset));
+    insn = emit_insn (gen_pro_epilogue_adjust_stack_si_add (dest,
+							    src, offset));
   else if (x86_64_immediate_operand (offset, DImode))
-    insn = emit_insn (gen_pro_epilogue_adjust_stack_di_1 (dest, src, offset));
+    insn = emit_insn (gen_pro_epilogue_adjust_stack_di_add (dest,
+							    src, offset));
   else
     {
       rtx tmp;
@@ -8796,7 +8798,7 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
       insn = emit_insn (gen_rtx_SET (DImode, tmp, offset));
       if (style < 0)
 	RTX_FRAME_RELATED_P (insn) = 1;
-      insn = emit_insn (gen_pro_epilogue_adjust_stack_di_2 (dest, src, tmp));
+      insn = emit_insn (gen_pro_epilogue_adjust_stack_di_add (dest, src, tmp));
     }
 
   if (style >= 0)
@@ -9698,6 +9700,8 @@ ix86_expand_prologue (void)
     {
       rtx eax = gen_rtx_REG (Pmode, AX_REG);
       rtx r10 = NULL;
+      rtx (*adjust_stack_insn)(rtx, rtx, rtx);
+
       bool eax_live = false;
       bool r10_live = false;
 
@@ -9722,13 +9726,12 @@ ix86_expand_prologue (void)
       emit_insn (ix86_gen_allocate_stack_worker (eax, eax));
 
       /* Use the fact that AX still contains ALLOCATE.  */
-      if (TARGET_64BIT)
-	insn = gen_pro_epilogue_adjust_stack_di_3 (stack_pointer_rtx,
-					           stack_pointer_rtx, eax);
-      else
-	insn = gen_pro_epilogue_adjust_stack_si_3 (stack_pointer_rtx,
-					           stack_pointer_rtx, eax);
-      insn = emit_insn (insn);
+      adjust_stack_insn = (TARGET_64BIT
+			   ? gen_pro_epilogue_adjust_stack_di_sub
+			   : gen_pro_epilogue_adjust_stack_si_sub);
+
+      insn = emit_insn (adjust_stack_insn (stack_pointer_rtx,
+					   stack_pointer_rtx, eax));
 
       if (m->fs.cfa_reg == stack_pointer_rtx)
 	{

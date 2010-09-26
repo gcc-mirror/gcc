@@ -1,5 +1,16 @@
 2010-09-26  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (pro_epilogue_adjust_stack_<mode>_add): Merge
+	from pro_epilogue_adjust_stack_<mode>_{1,2}.
+	(pro_epilogue_adjust_stack_<mode>_add): Rename from
+	pro_epilogue_adjust_stack_<mode>_3.
+	* config/i386/i386.c (pro_epilogue_adjust_stack): Update for
+	renamed pro_epilogue_adjust_stack_{si,di}_add.
+	(ix86_expand_prologue): Use indirect functions.  Update for renamed
+	pro_epilogue_adjust_stack_{si,di}_sub.
+
+2010-09-26  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (movmsk_df): New insn.
 	(signbitdf): Split out of signbit<mode>2.  Generate movmsk_df
 	sequence for TARGET_SSE_MATH.
