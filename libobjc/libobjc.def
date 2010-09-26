@@ -132,7 +132,6 @@ __objc_exec_class
 __objc_init_dispatch_tables
 __objc_install_premature_dtable
 __objc_print_dtable_stats
-__objc_responds_to
 __objc_update_dispatch_table_for_class
 class_add_method_list
 class_get_class_method

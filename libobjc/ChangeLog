@@ -1,3 +1,28 @@
+2010-09-26  Kai Tietz  <kai.tietz@onevision.com>
+
+	* sendmsg.c (get_imp):  Remove inline.
+	(objc_msg_lookup): Likewise.
+	(objc_get_uninstalled_dtable): Likewise.
+	* encoding.c (objc_skip_type_qualifiers): Likewise.
+	(objc_skip_offset): Likewise.
+	* archive.c (__objc_write_object): Likewise
+	(__objc_write_class):
+	(__objc_write_selector):
+	(objc_read_char):
+	(objc_read_unsigned_char):
+	(objc_read_short):
+	(objc_read_unsigned_short):
+	(objc_read_int):
+	(objc_read_long):
+	(__objc_read_nbyte_uint):
+	(objc_read_unsigned_int):
+	(objc_read_unsigned_long):
+	* objc/objc-decls.h (obc_EXPORT): Remove dllexport for DLL_EXPORT case.
+	(objc_EXPORT): Likewise.
+	* objc/message.h (objc-decls.h): Add include.
+	* objc/objc-api.h: Mark API by objc_EXPORT.
+	* libobjc.def (__objc_responds_to): Removed.
+
 2010-09-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* hash.c: Include objc-private/hash.h instead of objc/hash.h.
