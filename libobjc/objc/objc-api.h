@@ -298,9 +298,9 @@ typedef struct objc_super {
 #endif
 } Super, *Super_t;
 
-IMP objc_msg_lookup_super(Super_t super, SEL sel);
+objc_EXPORT IMP objc_msg_lookup_super(Super_t super, SEL sel);
 
-retval_t objc_msg_sendv(id, SEL, arglist_t);
+objc_EXPORT retval_t objc_msg_sendv(id, SEL, arglist_t);
 
 
 
@@ -332,22 +332,22 @@ objc_EXPORT id (*_objc_object_dispose)(id object);
   use these functions in their ObjC programs so that they work so that
   they work properly with garbage collectors.
 */
-void *
+objc_EXPORT void *
 objc_malloc(size_t size);
 
 /* FIXME: Shouldn't the following be called objc_malloc_atomic ?  The
    GC function is GC_malloc_atomic() which makes sense.
  */
-void *
+objc_EXPORT void *
 objc_atomic_malloc(size_t size);
 
-void *
+objc_EXPORT void *
 objc_realloc(void *mem, size_t size);
 
-void *
+objc_EXPORT void *
 objc_calloc(size_t nelem, size_t size);
 
-void
+objc_EXPORT void
 objc_free(void *mem);
 
 #include "deprecated/objc_valloc.h"
@@ -365,36 +365,36 @@ objc_EXPORT IMP (*__objc_msg_forward2)(id, SEL);
 
 #include "deprecated/objc_unexpected_exception.h"
 
-Method_t class_get_class_method(MetaClass _class, SEL aSel);
+objc_EXPORT Method_t class_get_class_method(MetaClass _class, SEL aSel);
 
-Method_t class_get_instance_method(Class _class, SEL aSel);
+objc_EXPORT Method_t class_get_instance_method(Class _class, SEL aSel);
 
-Class class_pose_as(Class impostor, Class superclass);
+objc_EXPORT Class class_pose_as(Class impostor, Class superclass);
 
-Class objc_get_class(const char *name);
+objc_EXPORT Class objc_get_class(const char *name);
 
-Class objc_lookup_class(const char *name);
+objc_EXPORT Class objc_lookup_class(const char *name);
 
-Class objc_next_class(void **enum_state);
+objc_EXPORT Class objc_next_class(void **enum_state);
 
-const char *sel_get_name(SEL selector);
+objc_EXPORT const char *sel_get_name(SEL selector);
 
-const char *sel_get_type(SEL selector);
+objc_EXPORT const char *sel_get_type(SEL selector);
 
-SEL sel_get_uid(const char *name);
+objc_EXPORT SEL sel_get_uid(const char *name);
 
-SEL sel_get_any_uid(const char *name);
+objc_EXPORT SEL sel_get_any_uid(const char *name);
 
-SEL sel_get_any_typed_uid(const char *name);
+objc_EXPORT SEL sel_get_any_typed_uid(const char *name);
 
-SEL sel_get_typed_uid(const char *name, const char*);
+objc_EXPORT SEL sel_get_typed_uid(const char *name, const char*);
 
-SEL sel_register_name(const char *name);
+objc_EXPORT SEL sel_register_name(const char *name);
 
-SEL sel_register_typed_name(const char *name, const char*type);
+objc_EXPORT SEL sel_register_typed_name(const char *name, const char*type);
 
 
-BOOL sel_is_mapped (SEL aSel);
+objc_EXPORT BOOL sel_is_mapped (SEL aSel);
 
 extern id class_create_instance(Class _class);
 
@@ -465,11 +465,11 @@ method_get_imp(Method_t method)
   return (method!=METHOD_NULL)?method->method_imp:(IMP)0;
 }
 
-IMP get_imp (Class _class, SEL sel);
+objc_EXPORT IMP get_imp (Class _class, SEL sel);
 
-id object_copy(id object);
+objc_EXPORT id object_copy(id object);
 
-id object_dispose(id object);
+objc_EXPORT id object_dispose(id object);
 
 static inline Class
 object_get_class(id object)
@@ -535,7 +535,7 @@ object_is_meta_class (id object)
 	  &&  !object_is_class (object));
 }
 
-struct sarray* 
+objc_EXPORT struct sarray* 
 objc_get_uninstalled_dtable(void);
 
 #ifdef __cplusplus

@@ -31,6 +31,7 @@ extern "C" {
 #endif
 
 #include "objc.h"
+#include "objc-decls.h"
 
 /* This file includes declarations of the messaging functions and types.  */
 
@@ -41,7 +42,7 @@ typedef union arglist {
   char arg_regs[sizeof (char*)];
 } *arglist_t;			/* argument frame */
 
-IMP objc_msg_lookup(id receiver, SEL op);
+objc_EXPORT IMP objc_msg_lookup(id receiver, SEL op);
 
 /* TODO: Add the remaining messaging declarations from objc-api.h.  */
 
