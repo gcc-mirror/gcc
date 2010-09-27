@@ -16,4 +16,4 @@ struct cookie
 };
 
 cookie cat(&foo("apabepa"));// { dg-warning "deprecated conversion" "dep" }
-// { dg-warning "taking address of temporary" "add" { target *-*-* } 18 }
+// { dg-error "lvalue required" "lvalue" { target *-*-* } 18 }

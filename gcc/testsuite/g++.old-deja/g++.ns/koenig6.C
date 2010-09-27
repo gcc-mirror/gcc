@@ -2,12 +2,12 @@
 namespace A{
   struct X{};
 
-  X foo(X a){return a;}
+  X* foo(X a);
   void bar(X*){}
 }
 
 int main()
 {
   A::X x;
-  bar(&foo(x));  // { dg-warning "" } address of temporary
+  bar(foo(x));
 }

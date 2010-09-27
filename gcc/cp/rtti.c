@@ -693,10 +693,10 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	  static_type = TYPE_MAIN_VARIANT (TREE_TYPE (exprtype));
 	  td2 = get_tinfo_decl (target_type);
 	  mark_used (td2);
-	  td2 = cp_build_unary_op (ADDR_EXPR, td2, 0, complain);
+	  td2 = cp_build_addr_expr (td2, complain);
 	  td3 = get_tinfo_decl (static_type);
 	  mark_used (td3);
-	  td3 = cp_build_unary_op (ADDR_EXPR, td3, 0, complain);
+	  td3 = cp_build_addr_expr (td3, complain);
 
 	  /* Determine how T and V are related.  */
 	  boff = dcast_base_hint (static_type, target_type);
@@ -706,7 +706,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 
 	  expr1 = expr;
 	  if (tc == REFERENCE_TYPE)
-	    expr1 = cp_build_unary_op (ADDR_EXPR, expr1, 0, complain);
+	    expr1 = cp_build_addr_expr (expr1, complain);
 
 	  elems[0] = expr1;
 	  elems[1] = td3;
@@ -913,8 +913,7 @@ tinfo_base_init (tinfo_s *ti, tree target)
 	}
 
       vtable_ptr = get_vtable_decl (real_type, /*complete=*/1);
-      vtable_ptr = cp_build_unary_op (ADDR_EXPR, vtable_ptr, 0, 
-                                   tf_warning_or_error);
+      vtable_ptr = cp_build_addr_expr (vtable_ptr, tf_warning_or_error);
 
       /* We need to point into the middle of the vtable.  */
       vtable_ptr = build2

@@ -1942,7 +1942,7 @@ decay_conversion (tree exp)
   if (invalid_nonstatic_memfn_p (exp, tf_warning_or_error))
     return error_mark_node;
   if (code == FUNCTION_TYPE || is_overloaded_fn (exp))
-    return cp_build_unary_op (ADDR_EXPR, exp, 0, tf_warning_or_error);
+    return cp_build_addr_expr (exp, tf_warning_or_error);
   if (code == ARRAY_TYPE)
     {
       tree adr;
@@ -1977,7 +1977,7 @@ decay_conversion (tree exp)
 	}
       /* This way is better for a COMPONENT_REF since it can
 	 simplify the offset for a component.  */
-      adr = cp_build_unary_op (ADDR_EXPR, exp, 1, tf_warning_or_error);
+      adr = cp_build_addr_expr (exp, tf_warning_or_error);
       return cp_convert (ptrtype, adr);
     }
 
@@ -3211,8 +3211,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
 	 vtable entry is treated as a function pointer.  */
       if (TARGET_VTABLE_USES_DESCRIPTORS)
 	e2 = build1 (NOP_EXPR, TREE_TYPE (e2),
-		     cp_build_unary_op (ADDR_EXPR, e2, /*noconvert=*/1,
-                                     tf_warning_or_error));
+		     cp_build_addr_expr (e2, tf_warning_or_error));
 
       e2 = fold_convert (TREE_TYPE (e3), e2);
       e1 = build_conditional_expr (e1, e2, e3, tf_warning_or_error);
@@ -4721,9 +4720,8 @@ build_x_unary_op (enum tree_code code, tree xarg, tsubst_flags_t complain)
 	      PTRMEM_OK_P (xarg) = ptrmem;
 	    }
 	}
-      else if (TREE_CODE (xarg) == TARGET_EXPR && (complain & tf_warning))
-	warning (0, "taking address of temporary");
-      exp = cp_build_unary_op (ADDR_EXPR, xarg, 0, complain);
+
+      exp = cp_build_addr_expr_strict (xarg, complain);
     }
 
   if (processing_template_decl && exp != error_mark_node)
@@ -4798,6 +4796,276 @@ build_nop (tree type, tree expr)
   if (type == error_mark_node || error_operand_p (expr))
     return expr;
   return build1 (NOP_EXPR, type, expr);
+}
+
+/* Take the address of ARG, whatever that means under C++ semantics.
+   If STRICT_LVALUE is true, require an lvalue; otherwise, allow xvalues
+   and class rvalues as well.
+
+   Nothing should call this function directly; instead, callers should use
+   cp_build_addr_expr or cp_build_addr_expr_strict.  */
+
+static tree
+cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
+{
+  tree argtype;
+  tree val;
+
+  if (!arg || error_operand_p (arg))
+    return error_mark_node;
+
+  arg = mark_lvalue_use (arg);
+  argtype = lvalue_type (arg);
+
+  gcc_assert (TREE_CODE (arg) != IDENTIFIER_NODE
+	      || !IDENTIFIER_OPNAME_P (arg));
+
+  if (TREE_CODE (arg) == COMPONENT_REF && type_unknown_p (arg)
+      && !really_overloaded_fn (TREE_OPERAND (arg, 1)))
+    {
+      /* They're trying to take the address of a unique non-static
+	 member function.  This is ill-formed (except in MS-land),
+	 but let's try to DTRT.
+	 Note: We only handle unique functions here because we don't
+	 want to complain if there's a static overload; non-unique
+	 cases will be handled by instantiate_type.  But we need to
+	 handle this case here to allow casts on the resulting PMF.
+	 We could defer this in non-MS mode, but it's easier to give
+	 a useful error here.  */
+
+      /* Inside constant member functions, the `this' pointer
+	 contains an extra const qualifier.  TYPE_MAIN_VARIANT
+	 is used here to remove this const from the diagnostics
+	 and the created OFFSET_REF.  */
+      tree base = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg, 0)));
+      tree fn = get_first_fn (TREE_OPERAND (arg, 1));
+      mark_used (fn);
+
+      if (! flag_ms_extensions)
+	{
+	  tree name = DECL_NAME (fn);
+	  if (!(complain & tf_error))
+	    return error_mark_node;
+	  else if (current_class_type
+		   && TREE_OPERAND (arg, 0) == current_class_ref)
+	    /* An expression like &memfn.  */
+	    permerror (input_location, "ISO C++ forbids taking the address of an unqualified"
+		       " or parenthesized non-static member function to form"
+		       " a pointer to member function.  Say %<&%T::%D%>",
+		       base, name);
+	  else
+	    permerror (input_location, "ISO C++ forbids taking the address of a bound member"
+		       " function to form a pointer to member function."
+		       "  Say %<&%T::%D%>",
+		       base, name);
+	}
+      arg = build_offset_ref (base, fn, /*address_p=*/true);
+    }
+
+  /* Uninstantiated types are all functions.  Taking the
+     address of a function is a no-op, so just return the
+     argument.  */
+  if (type_unknown_p (arg))
+    return build1 (ADDR_EXPR, unknown_type_node, arg);
+
+  if (TREE_CODE (arg) == OFFSET_REF)
+    /* We want a pointer to member; bypass all the code for actually taking
+       the address of something.  */
+    goto offset_ref;
+
+  /* Anything not already handled and not a true memory reference
+     is an error.  */
+  if (TREE_CODE (argtype) != FUNCTION_TYPE
+      && TREE_CODE (argtype) != METHOD_TYPE)
+    {
+      bool win = strict_lvalue ? real_lvalue_p (arg) : lvalue_p (arg);
+      if (!win)
+	{
+	  if (complain & tf_error)
+	    lvalue_error (lv_addressof);
+	  return error_mark_node;
+	}
+    }
+
+  if (TREE_CODE (argtype) == REFERENCE_TYPE)
+    {
+      tree type = build_pointer_type (TREE_TYPE (argtype));
+      arg = build1 (CONVERT_EXPR, type, arg);
+      return arg;
+    }
+  else if (pedantic && DECL_MAIN_P (arg))
+    {
+      /* ARM $3.4 */
+      /* Apparently a lot of autoconf scripts for C++ packages do this,
+	 so only complain if -pedantic.  */
+      if (complain & (flag_pedantic_errors ? tf_error : tf_warning))
+	pedwarn (input_location, OPT_pedantic,
+		 "ISO C++ forbids taking address of function %<::main%>");
+      else if (flag_pedantic_errors)
+	return error_mark_node;
+    }
+
+  /* Let &* cancel out to simplify resulting code.  */
+  if (TREE_CODE (arg) == INDIRECT_REF)
+    {
+      /* We don't need to have `current_class_ptr' wrapped in a
+	 NON_LVALUE_EXPR node.  */
+      if (arg == current_class_ref)
+	return current_class_ptr;
+
+      arg = TREE_OPERAND (arg, 0);
+      if (TREE_CODE (TREE_TYPE (arg)) == REFERENCE_TYPE)
+	{
+	  tree type = build_pointer_type (TREE_TYPE (TREE_TYPE (arg)));
+	  arg = build1 (CONVERT_EXPR, type, arg);
+	}
+      else
+	/* Don't let this be an lvalue.  */
+	arg = rvalue (arg);
+      return arg;
+    }
+
+  /* ??? Cope with user tricks that amount to offsetof.  */
+  if (TREE_CODE (argtype) != FUNCTION_TYPE
+      && TREE_CODE (argtype) != METHOD_TYPE
+      && argtype != unknown_type_node
+      && (val = get_base_address (arg))
+      && TREE_CODE (val) == INDIRECT_REF
+      && TREE_CONSTANT (TREE_OPERAND (val, 0)))
+    {
+      tree type = build_pointer_type (argtype);
+      tree op0 = fold_convert (type, TREE_OPERAND (val, 0));
+      tree op1 = fold_convert (sizetype, fold_offsetof (arg, val));
+      return fold_build2 (POINTER_PLUS_EXPR, type, op0, op1);
+    }
+
+  /* Handle complex lvalues (when permitted)
+     by reduction to simpler cases.  */
+  val = unary_complex_lvalue (ADDR_EXPR, arg);
+  if (val != 0)
+    return val;
+
+  switch (TREE_CODE (arg))
+    {
+    CASE_CONVERT:
+    case FLOAT_EXPR:
+    case FIX_TRUNC_EXPR:
+      /* Even if we're not being pedantic, we cannot allow this
+	 extension when we're instantiating in a SFINAE
+	 context.  */
+      if (! lvalue_p (arg) && complain == tf_none)
+	{
+	  if (complain & tf_error)
+	    permerror (input_location, "ISO C++ forbids taking the address of a cast to a non-lvalue expression");
+	  else
+	    return error_mark_node;
+	}
+      break;
+
+    case BASELINK:
+      arg = BASELINK_FUNCTIONS (arg);
+      /* Fall through.  */
+
+    case OVERLOAD:
+      arg = OVL_CURRENT (arg);
+      break;
+
+    case OFFSET_REF:
+    offset_ref:
+      /* Turn a reference to a non-static data member into a
+	 pointer-to-member.  */
+      {
+	tree type;
+	tree t;
+
+	gcc_assert (PTRMEM_OK_P (arg));
+
+	t = TREE_OPERAND (arg, 1);
+	if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
+	  {
+	    if (complain & tf_error)
+	      error ("cannot create pointer to reference member %qD", t);
+	    return error_mark_node;
+	  }
+
+	type = build_ptrmem_type (context_for_name_lookup (t),
+				  TREE_TYPE (t));
+	t = make_ptrmem_cst (type, TREE_OPERAND (arg, 1));
+	return t;
+      }
+
+    default:
+      break;
+    }
+
+  if (argtype != error_mark_node)
+    argtype = build_pointer_type (argtype);
+
+  /* In a template, we are processing a non-dependent expression
+     so we can just form an ADDR_EXPR with the correct type.  */
+  if (processing_template_decl || TREE_CODE (arg) != COMPONENT_REF)
+    {
+      val = build_address (arg);
+      if (TREE_CODE (arg) == OFFSET_REF)
+	PTRMEM_OK_P (val) = PTRMEM_OK_P (arg);
+    }
+  else if (TREE_CODE (TREE_OPERAND (arg, 1)) == BASELINK)
+    {
+      tree fn = BASELINK_FUNCTIONS (TREE_OPERAND (arg, 1));
+
+      /* We can only get here with a single static member
+	 function.  */
+      gcc_assert (TREE_CODE (fn) == FUNCTION_DECL
+		  && DECL_STATIC_FUNCTION_P (fn));
+      mark_used (fn);
+      val = build_address (fn);
+      if (TREE_SIDE_EFFECTS (TREE_OPERAND (arg, 0)))
+	/* Do not lose object's side effects.  */
+	val = build2 (COMPOUND_EXPR, TREE_TYPE (val),
+		      TREE_OPERAND (arg, 0), val);
+    }
+  else if (DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)))
+    {
+      if (complain & tf_error)
+	error ("attempt to take address of bit-field structure member %qD",
+	       TREE_OPERAND (arg, 1));
+      return error_mark_node;
+    }
+  else
+    {
+      tree object = TREE_OPERAND (arg, 0);
+      tree field = TREE_OPERAND (arg, 1);
+      gcc_assert (same_type_ignoring_top_level_qualifiers_p
+		  (TREE_TYPE (object), decl_type_context (field)));
+      val = build_address (arg);
+    }
+
+  if (TREE_CODE (argtype) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (argtype)) == METHOD_TYPE)
+    {
+      build_ptrmemfunc_type (argtype);
+      val = build_ptrmemfunc (argtype, val, 0,
+			      /*c_cast_p=*/false,
+			      tf_warning_or_error);
+    }
+
+  return val;
+}
+
+/* Take the address of ARG if it has one, even if it's an rvalue.  */
+
+tree
+cp_build_addr_expr (tree arg, tsubst_flags_t complain)
+{
+  return cp_build_addr_expr_1 (arg, 0, complain);
+}
+
+/* Take the address of ARG, but only if it's an lvalue.  */
+
+tree
+cp_build_addr_expr_strict (tree arg, tsubst_flags_t complain)
+{
+  return cp_build_addr_expr_1 (arg, 1, complain);
 }
 
 /* C++: Must handle pointers to members.
@@ -5066,238 +5334,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
     case ADDR_EXPR:
       /* Note that this operation never does default_conversion
 	 regardless of NOCONVERT.  */
-
-      argtype = lvalue_type (arg);
-
-      arg = mark_lvalue_use (arg);
-
-      if (TREE_CODE (arg) == OFFSET_REF)
-	goto offset_ref;
-
-      if (TREE_CODE (argtype) == REFERENCE_TYPE)
-	{
-	  tree type = build_pointer_type (TREE_TYPE (argtype));
-	  arg = build1 (CONVERT_EXPR, type, arg);
-	  return arg;
-	}
-      else if (pedantic && DECL_MAIN_P (arg))
-        {
-          /* ARM $3.4 */
-	  /* Apparently a lot of autoconf scripts for C++ packages do this,
-	     so only complain if -pedantic.  */
-          if (complain & (flag_pedantic_errors ? tf_error : tf_warning))
-            pedwarn (input_location, OPT_pedantic,
-		     "ISO C++ forbids taking address of function %<::main%>");
-          else if (flag_pedantic_errors)
-            return error_mark_node;
-        }
-
-      /* Let &* cancel out to simplify resulting code.  */
-      if (TREE_CODE (arg) == INDIRECT_REF)
-	{
-	  /* We don't need to have `current_class_ptr' wrapped in a
-	     NON_LVALUE_EXPR node.  */
-	  if (arg == current_class_ref)
-	    return current_class_ptr;
-
-	  arg = TREE_OPERAND (arg, 0);
-	  if (TREE_CODE (TREE_TYPE (arg)) == REFERENCE_TYPE)
-	    {
-	      tree type = build_pointer_type (TREE_TYPE (TREE_TYPE (arg)));
-	      arg = build1 (CONVERT_EXPR, type, arg);
-	    }
-	  else
-	    /* Don't let this be an lvalue.  */
-	    arg = rvalue (arg);
-	  return arg;
-	}
-
-      /* ??? Cope with user tricks that amount to offsetof.  */
-      if (TREE_CODE (argtype) != FUNCTION_TYPE
-	  && TREE_CODE (argtype) != METHOD_TYPE
-	  && argtype != unknown_type_node
-	  && (val = get_base_address (arg))
-	  && TREE_CODE (val) == INDIRECT_REF
-	  && TREE_CONSTANT (TREE_OPERAND (val, 0)))
-	{
-	  tree type = build_pointer_type (argtype);
-	  tree op0 = fold_convert (type, TREE_OPERAND (val, 0));
-	  tree op1 = fold_convert (sizetype, fold_offsetof (arg, val));
-	  return fold_build2 (POINTER_PLUS_EXPR, type, op0, op1);
-	}
-
-      /* Uninstantiated types are all functions.  Taking the
-	 address of a function is a no-op, so just return the
-	 argument.  */
-
-      gcc_assert (TREE_CODE (arg) != IDENTIFIER_NODE
-		  || !IDENTIFIER_OPNAME_P (arg));
-
-      if (TREE_CODE (arg) == COMPONENT_REF && type_unknown_p (arg)
-	  && !really_overloaded_fn (TREE_OPERAND (arg, 1)))
-	{
-	  /* They're trying to take the address of a unique non-static
-	     member function.  This is ill-formed (except in MS-land),
-	     but let's try to DTRT.
-	     Note: We only handle unique functions here because we don't
-	     want to complain if there's a static overload; non-unique
-	     cases will be handled by instantiate_type.  But we need to
-	     handle this case here to allow casts on the resulting PMF.
-	     We could defer this in non-MS mode, but it's easier to give
-	     a useful error here.  */
-
-	  /* Inside constant member functions, the `this' pointer
-	     contains an extra const qualifier.  TYPE_MAIN_VARIANT
-	     is used here to remove this const from the diagnostics
-	     and the created OFFSET_REF.  */
-	  tree base = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg, 0)));
-	  tree fn = get_first_fn (TREE_OPERAND (arg, 1));
-	  mark_used (fn);
-
-	  if (! flag_ms_extensions)
-	    {
-	      tree name = DECL_NAME (fn);
-              if (!(complain & tf_error))
-                return error_mark_node;
-	      else if (current_class_type
-                       && TREE_OPERAND (arg, 0) == current_class_ref)
-                  /* An expression like &memfn.  */
-                permerror (input_location, "ISO C++ forbids taking the address of an unqualified"
-                           " or parenthesized non-static member function to form"
-                           " a pointer to member function.  Say %<&%T::%D%>",
-                           base, name);
-	      else
-		permerror (input_location, "ISO C++ forbids taking the address of a bound member"
-			   " function to form a pointer to member function."
-			   "  Say %<&%T::%D%>",
-			   base, name);
-	    }
-	  arg = build_offset_ref (base, fn, /*address_p=*/true);
-	}
-
-    offset_ref:
-      if (type_unknown_p (arg))
-	return build1 (ADDR_EXPR, unknown_type_node, arg);
-
-      /* Handle complex lvalues (when permitted)
-	 by reduction to simpler cases.  */
-      val = unary_complex_lvalue (code, arg);
-      if (val != 0)
-	return val;
-
-      switch (TREE_CODE (arg))
-	{
-	CASE_CONVERT:
-	case FLOAT_EXPR:
-	case FIX_TRUNC_EXPR:
-          /* Even if we're not being pedantic, we cannot allow this
-             extension when we're instantiating in a SFINAE
-             context.  */
-	  if (! lvalue_p (arg) && complain == tf_none)
-            {
-              if (complain & tf_error)
-                permerror (input_location, "ISO C++ forbids taking the address of a cast to a non-lvalue expression");
-              else
-                return error_mark_node;
-            }
-	  break;
-
-	case BASELINK:
-	  arg = BASELINK_FUNCTIONS (arg);
-	  /* Fall through.  */
-
-	case OVERLOAD:
-	  arg = OVL_CURRENT (arg);
-	  break;
-
-	case OFFSET_REF:
-	  /* Turn a reference to a non-static data member into a
-	     pointer-to-member.  */
-	  {
-	    tree type;
-	    tree t;
-
-	    if (!PTRMEM_OK_P (arg))
-	      return cp_build_unary_op (code, arg, 0, complain);
-
-	    t = TREE_OPERAND (arg, 1);
-	    if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
-	      {
-                if (complain & tf_error)
-                  error ("cannot create pointer to reference member %qD", t);
-		return error_mark_node;
-	      }
-
-	    type = build_ptrmem_type (context_for_name_lookup (t),
-				      TREE_TYPE (t));
-	    t = make_ptrmem_cst (type, TREE_OPERAND (arg, 1));
-	    return t;
-	  }
-
-	default:
-	  break;
-	}
-
-      /* Anything not already handled and not a true memory reference
-	 is an error.  */
-      if (TREE_CODE (argtype) != FUNCTION_TYPE
-	  && TREE_CODE (argtype) != METHOD_TYPE
-	  && TREE_CODE (arg) != OFFSET_REF
-	  && !lvalue_or_else (arg, lv_addressof, complain))
-	return error_mark_node;
-
-      if (argtype != error_mark_node)
-	argtype = build_pointer_type (argtype);
-
-      /* In a template, we are processing a non-dependent expression
-	 so we can just form an ADDR_EXPR with the correct type.  */
-      if (processing_template_decl || TREE_CODE (arg) != COMPONENT_REF)
-	{
-	  val = build_address (arg);
-	  if (TREE_CODE (arg) == OFFSET_REF)
-	    PTRMEM_OK_P (val) = PTRMEM_OK_P (arg);
-	}
-      else if (TREE_CODE (TREE_OPERAND (arg, 1)) == BASELINK)
-	{
-	  tree fn = BASELINK_FUNCTIONS (TREE_OPERAND (arg, 1));
-
-	  /* We can only get here with a single static member
-	     function.  */
-	  gcc_assert (TREE_CODE (fn) == FUNCTION_DECL
-		      && DECL_STATIC_FUNCTION_P (fn));
-	  mark_used (fn);
-	  val = build_address (fn);
-	  if (TREE_SIDE_EFFECTS (TREE_OPERAND (arg, 0)))
-	    /* Do not lose object's side effects.  */
-	    val = build2 (COMPOUND_EXPR, TREE_TYPE (val),
-			  TREE_OPERAND (arg, 0), val);
-	}
-      else if (DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)))
-	{
-          if (complain & tf_error)
-            error ("attempt to take address of bit-field structure member %qD",
-                   TREE_OPERAND (arg, 1));
-	  return error_mark_node;
-	}
-      else
-	{
-	  tree object = TREE_OPERAND (arg, 0);
-	  tree field = TREE_OPERAND (arg, 1);
-	  gcc_assert (same_type_ignoring_top_level_qualifiers_p
-		      (TREE_TYPE (object), decl_type_context (field)));
-	  val = build_address (arg);
-	}
-
-      if (TREE_CODE (argtype) == POINTER_TYPE
-	  && TREE_CODE (TREE_TYPE (argtype)) == METHOD_TYPE)
-	{
-	  build_ptrmemfunc_type (argtype);
-	  val = build_ptrmemfunc (argtype, val, 0,
-				  /*c_cast_p=*/false,
-				  tf_warning_or_error);
-	}
-
-      return val;
+      return cp_build_addr_expr (arg, complain);
 
     default:
       break;
@@ -6128,7 +6165,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 	warning (0, "casting %qT to %qT does not dereference pointer",
 		 intype, type);
 
-      expr = cp_build_unary_op (ADDR_EXPR, expr, 0, complain);
+      expr = cp_build_addr_expr (expr, complain);
 
       if (warn_strict_aliasing > 2)
 	strict_aliasing_warning (TREE_TYPE (expr), type, expr);
@@ -6366,8 +6403,8 @@ build_const_cast_1 (tree dst_type, tree expr, bool complain,
 	}
       if (reference_type)
 	{
-	  expr = cp_build_unary_op (ADDR_EXPR, expr, 0, 
-                                    complain? tf_warning_or_error : tf_none);
+	  expr = cp_build_addr_expr (expr,
+				     complain ? tf_warning_or_error : tf_none);
 	  expr = build_nop (reference_type, expr);
 	  return convert_from_reference (expr);
 	}
@@ -8324,7 +8361,7 @@ non_reference (tree t)
 int
 lvalue_or_else (tree ref, enum lvalue_use use, tsubst_flags_t complain)
 {
-  int win = lvalue_p (ref);
+  int win = real_lvalue_p (ref);
 
   if (!win && (complain & tf_error))
     lvalue_error (use);

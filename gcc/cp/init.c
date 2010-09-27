@@ -1649,8 +1649,7 @@ build_offset_ref (tree type, tree member, bool address_p)
 	  if (flag_ms_extensions)
 	    {
 	      PTRMEM_OK_P (member) = 1;
-	      return cp_build_unary_op (ADDR_EXPR, member, 0, 
-                                        tf_warning_or_error);
+	      return cp_build_addr_expr (member, tf_warning_or_error);
 	    }
 	  error ("invalid use of non-static member function %qD",
 		 TREE_OPERAND (member, 1));
@@ -3246,7 +3245,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
       /* Don't check PROTECT here; leave that decision to the
 	 destructor.  If the destructor is accessible, call it,
 	 else report error.  */
-      addr = cp_build_unary_op (ADDR_EXPR, addr, 0, tf_warning_or_error);
+      addr = cp_build_addr_expr (addr, tf_warning_or_error);
       if (TREE_SIDE_EFFECTS (addr))
 	addr = save_expr (addr);
 
@@ -3486,7 +3485,7 @@ build_vec_delete (tree base, tree maxindex,
 	 bad name.  */
       maxindex = array_type_nelts_total (type);
       type = strip_array_types (type);
-      base = cp_build_unary_op (ADDR_EXPR, base, 1, tf_warning_or_error);
+      base = cp_build_addr_expr (base, tf_warning_or_error);
       if (TREE_SIDE_EFFECTS (base))
 	{
 	  base_init = get_target_expr (base);

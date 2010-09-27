@@ -3008,7 +3008,7 @@ stabilize_expr (tree exp, tree* initp)
     }
   else
     {
-      exp = cp_build_unary_op (ADDR_EXPR, exp, 1, tf_warning_or_error);
+      exp = cp_build_addr_expr (exp, tf_warning_or_error);
       init_expr = get_target_expr (exp);
       exp = TARGET_EXPR_SLOT (init_expr);
       exp = cp_build_indirect_ref (exp, RO_NULL, tf_warning_or_error);
