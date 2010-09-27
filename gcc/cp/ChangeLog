@@ -1,3 +1,21 @@
+2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from apple/trunk branch on FSF servers:
+	
+	2005-12-15  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4229905
+	* typeck.c (composite_pointer_type): Call objc_have_common_type
+	when comparing two objective-c pointer types.
+
+	2005-06-22  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4154928
+	* call.c (standard_conversion): Allow for a pointer conversion
+	between any two ObjC pointer types.
+	* typeck.c (composite_pointer_type): Determine common type
+	for two ObjC pointer types.
+	
 2010-09-24  Jan Hubicka  <jh@suse.cz>
 
 	* decl.c (finish_function): Use decl_replaceable_p

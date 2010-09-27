@@ -1,3 +1,19 @@
+2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.  Renamed
+	const-str-12.m to constr-str-12b.m to avoid conflicts.
+	
+	2005-12-15  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4229905
+	* obj-c++.dg/warn5.mm: New
+	
+	2005-06-22  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4154928
+	* obj-c++.dg/const-str-12.mm: New.
+	* objc.dg/const-str-12.m: New.
+
 2010-09-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40569

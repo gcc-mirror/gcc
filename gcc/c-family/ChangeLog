@@ -1,3 +1,19 @@
+2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.	
+
+	2005-12-15  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4229905	
+	* c-common.h (objc_have_common_type): New declaration.
+	* stub-objc.c (objc_have_common_type): New stub.
+
+	2005-06-22  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4154928
+	* c-common.h (objc_common_type): New prototype.
+	* stub-objc.c (objc_common_type): New stub.	
+
 2010-09-24  Jan Hubicka  <jh@suse.cz>
 
 	* c-common.c (handle_leaf_attribute): New function.

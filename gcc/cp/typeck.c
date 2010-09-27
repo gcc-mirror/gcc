@@ -632,8 +632,8 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
   if (c_dialect_objc () && TREE_CODE (t1) == POINTER_TYPE
       && TREE_CODE (t2) == POINTER_TYPE)
     {
-      if (objc_compare_types (t1, t2, -3, NULL_TREE))
-	return t1;
+      if (objc_have_common_type (t1, t2, -3, NULL_TREE))
+	return objc_common_type (t1, t2);
     }
 
   /* [expr.eq] permits the application of a pointer conversion to
