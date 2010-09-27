@@ -45,7 +45,7 @@
 #
 #
 #
-# Copyright (c) 2002, 2003, 2005, 2009 Free Software Foundation, Inc.
+# Copyright (c) 2002, 2003, 2005, 2009, 2010 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ error() {
 # control tools and report to the user.
 
 make_date() {
-  MADE_DATE="`${DATE} -u +\"%Y-%m-%d %H:%M %Z\" --date \"1970-01-01 ${1} seconds\"`" \
+  MADE_DATE=`${DATE} -u +"%Y-%m-%d %H:%M %Z" --date "1970-01-01 ${1} seconds"` \
     || error "make_date: date command failed"
 }
 
