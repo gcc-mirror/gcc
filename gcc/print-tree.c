@@ -439,6 +439,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
       if (code == VAR_DECL && DECL_IN_TEXT_SECTION (node))
 	fputs (" in-text-section", file);
+      if (code == VAR_DECL && DECL_IN_CONSTANT_POOL (node))
+	fputs (" in-constant-pool", file);
       if (code == VAR_DECL && DECL_COMMON (node))
 	fputs (" common", file);
       if (code == VAR_DECL && DECL_THREAD_LOCAL_P (node))

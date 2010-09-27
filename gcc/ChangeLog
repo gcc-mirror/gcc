@@ -1,3 +1,7 @@
+2010-09-27  Jie Zhang  <jie@codesourcery.com>
+
+	* print-tree.c (print_node): Print in-constant-pool.
+
 2010-09-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (CLASS_MAX_NREGS): Also handle XCmode.
