@@ -2858,8 +2858,8 @@ objc_get_class_reference (tree ident)
 	     : TREE_TYPE (ident));
 
 #ifdef OBJCPLUS
-  if (TYPE_P (ident) && TYPE_CONTEXT (ident)
-      && TYPE_CONTEXT (ident) != global_namespace)
+  if (TYPE_P (ident)
+      && CP_TYPE_CONTEXT (ident) != global_namespace)
     local_scope = true;
 #endif
 
@@ -3251,7 +3251,7 @@ objc_is_global_reference_p (tree expr)
   return (TREE_CODE (expr) == INDIRECT_REF || TREE_CODE (expr) == PLUS_EXPR
 	  ? objc_is_global_reference_p (TREE_OPERAND (expr, 0))
 	  : DECL_P (expr)
-	  ? (!DECL_CONTEXT (expr) || TREE_STATIC (expr))
+	  ? (DECL_FILE_SCOPE_P (expr) || TREE_STATIC (expr))
 	  : 0);
 }
 
