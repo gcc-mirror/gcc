@@ -282,6 +282,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline void
     swap(stack<_Tp, _Seq>& __x, stack<_Tp, _Seq>& __y)
     { __x.swap(__y); }
+
+  template<typename _Tp, typename _Seq, typename _Alloc>
+    struct uses_allocator<stack<_Tp, _Seq>, _Alloc>
+    : public uses_allocator<_Seq, _Alloc>::type { };
 #endif
 
 _GLIBCXX_END_NAMESPACE

@@ -48,4 +48,4 @@ main()
 // { dg-warning "note" "" { target *-*-* } 1027 }
 // { dg-warning "note" "" { target *-*-* } 340 }
 // { dg-warning "note" "" { target *-*-* } 290 }
-// { dg-warning "note" "" { target *-*-* } 197 }
+// { dg-warning "note" "" { target *-*-* } 200 }

@@ -68,6 +68,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   struct piecewise_construct_t { };
 
+  static const piecewise_construct_t piecewise_construct
+    = piecewise_construct_t();
+
   // forward declarations
   template<typename...>
     class tuple;
