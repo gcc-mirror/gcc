@@ -1,4 +1,9 @@
 2010-09-27  Hans-Peter Nilsson  <hp@axis.com>
+
+	* emit-rtl.c (reorder_insns_nobb) [ENABLE_CHECKING]: Sanity-check
+	that AFTER is not in the range FROM..TO, inclusive.
+
+2010-09-27  Hans-Peter Nilsson  <hp@axis.com>
 	    Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/45792
