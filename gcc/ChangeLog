@@ -1,5 +1,17 @@
 2010-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	Backport from mainline:
+
+	2010-05-19  James E. Wilson  <wilson@codesourcery.com>
+
+	PR target/43764
+	* config/mips/mips.c (mips_call_expr_from_insn): New arg second_call.
+	Set it.
+	(mips_annotate_pic_calls): Pass new arg to mips_call_expr_from_insn.
+	Use it.
+
+2010-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	PR rtl-optimization/43358
 	* ira-lives.c (process_single_reg_class_operands): Adjust the costs
 	of a single hard register, using simplify_subreg_regno to decide
