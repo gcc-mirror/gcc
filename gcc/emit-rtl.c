@@ -3977,6 +3977,13 @@ delete_insns_since (rtx from)
 void
 reorder_insns_nobb (rtx from, rtx to, rtx after)
 {
+#ifdef ENABLE_CHECKING
+  rtx x;
+  for (x = from; x != to; x = NEXT_INSN (x))
+    gcc_assert (after != x);
+  gcc_assert (after != to);
+#endif
+
   /* Splice this bunch out of where it is now.  */
   if (PREV_INSN (from))
     NEXT_INSN (PREV_INSN (from)) = NEXT_INSN (to);
