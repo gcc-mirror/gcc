@@ -77,10 +77,6 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  // Forward declaration of a helper function.  This really should be
-  // an `exported' forward declaration.
-  template<typename _Tp> _Tp __cmath_power(_Tp, unsigned int);
-
   inline double
   abs(double __x)
   { return __builtin_fabs(__x); }
@@ -344,15 +340,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   modf(long double __x, long double* __iptr)
   { return __builtin_modfl(__x, __iptr); }
 
-  template<typename _Tp>
-    inline _Tp
-    __pow_helper(_Tp __x, int __n)
-    {
-      return __n < 0
-        ? _Tp(1)/__cmath_power(__x, -__n)
-        : __cmath_power(__x, __n);
-    }
-
   using ::pow;
 
   inline float
@@ -588,10 +575,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 _GLIBCXX_END_NAMESPACE
 
 #endif /* _GLIBCXX_USE_C99_FP_MACROS_DYNAMIC */
-#endif
-
-#ifndef _GLIBCXX_EXPORT_TEMPLATE
-# include <bits/cmath.tcc>
 #endif
 
 #endif

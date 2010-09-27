@@ -951,12 +951,32 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   //                          raised to the __y-th power.  The branch
   //                          cut is on the negative axis.
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp>
+    complex<_Tp>
+    __complex_pow_unsigned(complex<_Tp> __x, unsigned __n)
+    {
+      complex<_Tp> __y = __n % 2 ? __x : complex<_Tp>(1);
+
+      while (__n >>= 1)
+        {
+          __x *= __x;
+          if (__n % 2)
+            __y *= __x;
+        }
+
+      return __y;
+    }
+
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 844. complex pow return type is ambiguous.
   template<typename _Tp>
     inline complex<_Tp>
     pow(const complex<_Tp>& __z, int __n)
-    { return std::__pow_helper(__z, __n); }
+    {
+      return __n < 0
+        ? complex<_Tp>(1) / std::__complex_pow_unsigned(__z, -__n)
+        : std::__complex_pow_unsigned(__z, __n);
+    }
 #endif
 
   template<typename _Tp>
