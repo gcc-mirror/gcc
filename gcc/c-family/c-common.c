@@ -358,6 +358,7 @@ static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_alloc_size_attribute (tree *, tree, tree, int, bool *);
 static tree handle_target_attribute (tree *, tree, tree, int, bool *);
 static tree handle_optimize_attribute (tree *, tree, tree, int, bool *);
+static tree handle_no_split_stack_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fnspec_attribute (tree *, tree, tree, int, bool *);
 
 static void check_function_nonnull (tree, int, tree *);
@@ -661,6 +662,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_target_attribute },
   { "optimize",               1, -1, true, false, false,
 			      handle_optimize_attribute },
+  { "no_split_stack",	      0, 0, true,  false, false,
+			      handle_no_split_stack_attribute },
   /* For internal use (marking of builtins and runtime functions) only.
      The name contains space to prevent its usage in source code.  */
   { "fn spec",	 	      1, 1, false, true, true,
@@ -7837,6 +7840,32 @@ handle_optimize_attribute (tree *node, tree name, tree args,
 
       /* Restore current options.  */
       cl_optimization_restore (&cur_opts);
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "no_split_stack" attribute.  */
+
+static tree
+handle_no_split_stack_attribute (tree *node, tree name,
+				 tree ARG_UNUSED (args),
+				 int ARG_UNUSED (flags),
+				 bool *no_add_attrs)
+{
+  tree decl = *node;
+
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qE attribute applies only to functions", name);
+      *no_add_attrs = true;
+    }
+  else if (DECL_INITIAL (decl))
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"can%'t set %qE attribute after definition", name);
+      *no_add_attrs = true;
     }
 
   return NULL_TREE;

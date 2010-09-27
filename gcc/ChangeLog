@@ -1,3 +1,63 @@
+2010-09-27  Ian Lance Taylor  <iant@google.com>
+
+	* common.opt (fsplit-stack): New option.
+	* opts.c (decode_options): Set flag_split_stack to final value.
+	* target.def (supports_split_stack): New hook.
+	* gcc.c (STACK_SPLIT_SPEC): Define.
+	(LINK_COMMAND_SPEC): Use STACK_SPLIT_SPEC.
+	* doc/invoke.texi (Option Summary): Mention -fsplit-stack.
+	(Code Gen Options): Document -fsplit-stack.
+	* doc/extend.texi (Function Attributes): Mention no_split_stack.
+	(Function Attributes): Document no_split_stack.
+	* doc/tm.texi.in (Stack Smashing Protection): Add @hook
+	TARGET_SUPPORTS_SPLIT_STACK.
+	* doc/tm.texi: Rebuild.
+	* function.c (thread_prologue_and_epilogue_insns): If
+	flag_split_stack, add split stack prologue.
+	* explow.c (allocate_dynamic_stack_space): Support -fsplit-stack.
+	* varasm.c (saw_no_split_stack): New static variable.
+	(assemble_start_function): Set saw_no_split_stack if the function
+	has the no_split_stack attribute.
+	(file_end_indicate_split_stack): New function.
+	* output.h (file_end_indicate_split_stack): Declare.
+	* libgcc-std.ver (GCC_4.6.0): Add -fsplit-stack support variables
+	and function.
+	* doc/libgcc.texi (Miscellaneous routines): Document -fsplit-stack
+	routines.
+	* config/i386/i386.c (ix86_option_override_internal): Don't set
+	expand_builtin_va_start to NULL if -fsplit-stack.
+	(ix86_function_regparm): Reduce local regparm by 1 for 32-bit
+	-fsplit-stack.
+	(ix86_va_start): If -fsplit-stack, get overflow pointer	from
+	scratch register set by prologue.
+	(ix86_code_end): If -fsplit-stack, call
+	file_end_indicate_split_stack.
+	(ix86_supports_split_stack): New static function.
+	(SPLIT_STACK_AVAILABLE): Define.
+	(split_stack_prologue_scratch_regno): New static function.
+	(split_stack_fn): New static variable.
+	(ix86_expand_split_stack_prologue): New function.
+	(ix86_live_on_entry): New static function.
+	(ix86_legitimate_address_p): Handle UNSPEC_STACK_CHECK.
+	(output_pic_addr_const): Likewise.
+	(i386_asm_output_addr_const_extra): Likewise.
+	(ix86_expand_call): Change return type to rtx.  Return the new
+	call instruction.
+	(TARGET_SUPPORTS_SPLIT_STACK): Define.
+	(TARGET_EXTRA_LIVE_ON_ENTRY): Define.
+	* config/i386/i386.md (UNSPEC_STACK_CHECK): Define.
+	(split_stack_prologue, split_stack_return): New insns.
+	(split_stack_space_check): New insn.
+	* config/i386/i386.h (struct machine_function): Add
+	split_stack_varargs_pointer field.
+	* config/i386/linux.h (TARGET_CAN_SPLIT_STACK): Define.
+	(TARGET_THREAD_SPLIT_STACK_OFFSET): Define.
+	* config/i386/linux64.h (TARGET_CAN_SPLIT_STACK): Define.
+	(TARGET_THREAD_SPLIT_STACK_OFFSET): Define.
+	* config/i386/i386-protos.h (ix86_expand_split_stack_prologue):
+	Declare.
+	(ix86_expand_call): Update declaration.
+
 2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* doc/objc.texi (Type encoding): Added the new 'long double' (D)

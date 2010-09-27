@@ -4960,6 +4960,10 @@ The default version of this hook invokes a function called
 normally defined in @file{libgcc2.c}.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_SUPPORTS_SPLIT_STACK (bool)
+Whether this target supports splitting the stack.  This is called after options have been parsed, so the target may reject splitting the stack in some configurations.  The default version of this hook returns false.  If @var{report} is true, this function may issue a warning or error; if @var{report} is false, it must simply return a value
+@end deftypefn
+
 @node Varargs
 @section Implementing the Varargs Macros
 @cindex varargs implementation

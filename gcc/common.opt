@@ -1426,6 +1426,10 @@ fsplit-ivs-in-unroller
 Common Report Var(flag_split_ivs_in_unroller) Init(1) Optimization
 Split lifetimes of induction variables when loops are unrolled
 
+fsplit-stack
+Common Report Var(flag_split_stack) Init(-1)
+Generate discontiguous stack frames
+
 fsplit-wide-types
 Common Report Var(flag_split_wide_types) Optimization
 Split wide types into independent registers

@@ -4960,6 +4960,8 @@ The default version of this hook invokes a function called
 normally defined in @file{libgcc2.c}.
 @end deftypefn
 
+@hook TARGET_SUPPORTS_SPLIT_STACK
+
 @node Varargs
 @section Implementing the Varargs Macros
 @cindex varargs implementation
