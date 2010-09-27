@@ -1,3 +1,10 @@
+2010-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/43358
+	* ira-lives.c (process_single_reg_class_operands): Adjust the costs
+	of a single hard register, using simplify_subreg_regno to decide
+	what that register should be.
+
 2010-09-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-inline.c (copy_bb): Use GSI_CONTINUE_LINKING when inserting new
