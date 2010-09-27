@@ -1,3 +1,17 @@
+2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2005-12-15  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4229905
+	* objc-act.c (objc_have_common_types): New function.
+	
+	2005-06-22  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4154928
+	* objc-act.c (objc_common_type): New function.
+	
 2010-09-27  Richard Guenther  <rguenther@suse.de>
 
 	* objc-act.c (objc_get_class_reference): Use CP_TYPE_CONTEXT.
