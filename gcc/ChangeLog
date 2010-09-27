@@ -1,3 +1,13 @@
+2010-09-27  Hans-Peter Nilsson  <hp@axis.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/45792
+	* cfgcleanup.c (try_head_merge_bb): New rtx vector nextptr.
+	If not all insns are to be merged, for each edge, stash the
+	next candidate after the to-be-merged insns before doing the
+	merge, and use them for the retry at the new insertion point.
+	Handle CC0 targets when retrying.
+
 2010-09-27  Ian Lance Taylor  <iant@google.com>
 
 	* common.opt (fsplit-stack): New option.
