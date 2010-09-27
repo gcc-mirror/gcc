@@ -1,3 +1,8 @@
+2010-09-27  Richard Guenther  <rguenther@suse.de>
+
+	* objc-act.c (objc_get_class_reference): Use CP_TYPE_CONTEXT.
+	(objc_is_global_reference_p): Use DECL_FILE_SCOPE_P.
+
 2010-09-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c: Removed historical, obsolete comment at the top of
