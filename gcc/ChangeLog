@@ -1,3 +1,10 @@
+2010-09-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (CLASS_MAX_NREGS): Also handle XCmode.
+	(UNITS_PER_WORD): Define only when IN_LIBGCC2 is undefined.
+	(MOVE_MAX_PIECES): Redefine using UNITS_PER_WORD.
+	(ASM_OUTPUT_AVX_PREFIX): Simplify pointer addition.
+
 2010-09-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (pro_epilogue_adjust_stack_<mode>_add): Merge
