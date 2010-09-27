@@ -1,3 +1,9 @@
+2010-06-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/44621
+	* configure.ac: Fix unportable shell quoting.
+	* configure: Regenerate.
+
 2010-09-21  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* configure.ac (enable-lto): Add Darwin to the list of supported lto

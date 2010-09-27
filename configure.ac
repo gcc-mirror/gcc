@@ -351,7 +351,7 @@ ENABLE_GOLD=no)
             configdirs="$configdirs gold"
 	    ;;
 	  *)
-            configdirs="`echo " ${configdirs} " | sed -e 's/ ld / gold /'`"
+            configdirs=`echo " ${configdirs} " | sed -e 's/ ld / gold /'`
 	    ;;
 	  esac
 	  ENABLE_GOLD=yes

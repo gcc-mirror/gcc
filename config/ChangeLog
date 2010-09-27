@@ -1,3 +1,7 @@
+2010-06-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* po.m4 (AM_PO_SUBDIRS): Fix unportable shell quoting.
+
 2010-09-10  Jonathan Yong  <jon_y@users.sourceforge.net>
 
 	* dfp.m4: Enable decimal float for i?86 cygwin
