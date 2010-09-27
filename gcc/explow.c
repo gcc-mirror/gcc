@@ -1,6 +1,6 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
    Copyright (C) 1987, 1991, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1146,6 +1146,7 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
 {
   HOST_WIDE_INT stack_usage_size = -1;
   bool known_align_valid = true;
+  rtx final_label, final_target;
 
   /* If we're asking for zero bytes, it doesn't matter what we point
      to since we can't dereference it.  But return a reasonable
@@ -1284,6 +1285,14 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
 	}
     }
 
+  /* Don't use a TARGET that isn't a pseudo or is the wrong mode.  */
+  if (target == 0 || !REG_P (target)
+      || REGNO (target) < FIRST_PSEUDO_REGISTER
+      || GET_MODE (target) != Pmode)
+    target = gen_reg_rtx (Pmode);
+
+  mark_reg_pointer (target, known_align);
+
   /* The size is supposed to be fully adjusted at this point so record it
      if stack usage info is requested.  */
   if (flag_stack_usage)
@@ -1294,6 +1303,52 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
 	 of stack usage oriented flow analysis.  */
       if (!cannot_accumulate)
 	current_function_has_unbounded_dynamic_stack_size = 1;
+    }
+
+  final_label = NULL_RTX;
+  final_target = NULL_RTX;
+
+  /* If we are splitting the stack, we need to ask the backend whether
+     there is enough room on the current stack.  If there isn't, or if
+     the backend doesn't know how to tell is, then we need to call a
+     function to allocate memory in some other way.  This memory will
+     be released when we release the current stack segment.  The
+     effect is that stack allocation becomes less efficient, but at
+     least it doesn't cause a stack overflow.  */
+  if (flag_split_stack)
+    {
+      rtx available_label, space, func;
+
+      available_label = NULL_RTX;
+
+#ifdef HAVE_split_stack_space_check
+      if (HAVE_split_stack_space_check)
+	{
+	  available_label = gen_label_rtx ();
+
+	  /* This instruction will branch to AVAILABLE_LABEL if there
+	     are SIZE bytes available on the stack.  */
+	  emit_insn (gen_split_stack_space_check (size, available_label));
+	}
+#endif
+
+      func = init_one_libfunc ("__morestack_allocate_stack_space");
+
+      space = emit_library_call_value (func, target, LCT_NORMAL, Pmode,
+				       1, size, Pmode);
+
+      if (available_label == NULL_RTX)
+	return space;
+
+      final_target = gen_reg_rtx (Pmode);
+      mark_reg_pointer (final_target, known_align);
+
+      emit_move_insn (final_target, space);
+
+      final_label = gen_label_rtx ();
+      emit_jump (final_label);
+
+      emit_label (available_label);
     }
 
   do_pending_stack_adjust ();
@@ -1312,14 +1367,6 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
 		       size);
   else if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
     probe_stack_range (STACK_CHECK_PROTECT, size);
-
-  /* Don't use a TARGET that isn't a pseudo or is the wrong mode.  */
-  if (target == 0 || !REG_P (target)
-      || REGNO (target) < FIRST_PSEUDO_REGISTER
-      || GET_MODE (target) != Pmode)
-    target = gen_reg_rtx (Pmode);
-
-  mark_reg_pointer (target, known_align);
 
   /* Perform the required allocation from the stack.  Some systems do
      this differently than simply incrementing/decrementing from the
@@ -1412,6 +1459,15 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
   /* Record the new stack level for nonlocal gotos.  */
   if (cfun->nonlocal_goto_save_area != 0)
     update_nonlocal_goto_save_area ();
+
+  /* Finish up the split stack handling.  */
+  if (final_label != NULL_RTX)
+    {
+      gcc_assert (flag_split_stack);
+      emit_move_insn (final_target, target);
+      emit_label (final_label);
+      target = final_target;
+    }
 
   return target;
 }

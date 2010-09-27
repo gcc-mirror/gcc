@@ -123,4 +123,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* i386 glibc provides __stack_chk_guard in %gs:0x14,
    x86_64 glibc provides it in %fs:0x28.  */
 #define TARGET_THREAD_SSP_OFFSET	(TARGET_64BIT ? 0x28 : 0x14)
+
+/* We steal the last transactional memory word.  */
+#define TARGET_CAN_SPLIT_STACK
+#define TARGET_THREAD_SPLIT_STACK_OFFSET (TARGET_64BIT ? 0x70 : 0x30)
 #endif

@@ -3664,6 +3664,15 @@ proc check_effective_target_lto { } {
     return [info exists ENABLE_LTO]
 }
 
+# Return 1 if this target supports the -fsplit-stack option, 0
+# otherwise.
+
+proc check_effective_target_split_stack {} {
+    return [check_no_compiler_messages split_stack object {
+	void foo (void) { }
+    } "-fsplit-stack"]
+}
+
 # Return 1 if the language for the compiler under test is C.
 
 proc check_effective_target_c { } {

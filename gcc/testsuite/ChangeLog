@@ -1,3 +1,12 @@
+2010-09-27  Ian Lance Taylor  <iant@google.com>
+
+	* lib/target-supports.exp (check_effective_target_split_stack):
+	New procedure.
+	* gcc.dg/split-1.c: New test.
+	* gcc.dg/split-2.c: New test.
+	* gcc.dg/split-3.c: New test.
+	* gcc.dg/split-4.c: New test.
+
 2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/25464

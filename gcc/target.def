@@ -1679,6 +1679,16 @@ DEFHOOK
  tree, (void),
  default_external_stack_protect_fail)
 
+DEFHOOK
+(supports_split_stack,
+ "Whether this target supports splitting the stack.  This is called\
+ after options have been parsed, so the target may reject splitting\
+ the stack in some configurations.  The default version of this hook\
+ returns false.  If @var{report} is true, this function may issue a warning\
+ or error; if @var{report} is false, it must simply return a value",
+ bool, (bool),
+ hook_bool_bool_false)
+
 /* Returns NULL if target supports the insn within a doloop block,
    otherwise it returns an error message.  */
 DEFHOOK

@@ -1926,7 +1926,8 @@ attributes are currently defined for functions on all targets:
 @code{returns_twice}, @code{noinline}, @code{noclone},
 @code{always_inline}, @code{flatten}, @code{pure}, @code{const},
 @code{nothrow}, @code{sentinel}, @code{format}, @code{format_arg},
-@code{no_instrument_function}, @code{section}, @code{constructor},
+@code{no_instrument_function}, @code{no_split_stack},
+@code{section}, @code{constructor},
 @code{destructor}, @code{used}, @code{unused}, @code{deprecated},
 @code{weak}, @code{malloc}, @code{alias}, @code{ifunc},
 @code{warn_unused_result}, @code{nonnull}, @code{gnu_inline},
@@ -2855,6 +2856,14 @@ attribute is present.
 If @option{-finstrument-functions} is given, profiling function calls will
 be generated at entry and exit of most user-compiled functions.
 Functions with this attribute will not be so instrumented.
+
+@item no_split_stack
+@cindex @code{no_split_stack} function attribute
+@opindex fsplit-stack
+If @option{-fsplit-stack} is given, functions will have a small
+prologue which decides whether to split the stack.  Functions with the
+@code{no_split_stack} attribute will not have that prologue, and thus
+may run with only a small amount of stack space available.
 
 @item noinline
 @cindex @code{noinline} function attribute

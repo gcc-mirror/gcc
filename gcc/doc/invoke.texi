@@ -927,7 +927,7 @@ See S/390 and zSeries Options.
 -fshort-double  -fshort-wchar @gol
 -fverbose-asm  -fpack-struct[=@var{n}]  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
--fno-stack-limit @gol
+-fno-stack-limit -fsplit-stack @gol
 -fleading-underscore  -ftls-model=@var{model} @gol
 -ftrapv  -fwrapv  -fbounds-check @gol
 -fvisibility}
@@ -17856,6 +17856,25 @@ and grows downwards, you can use the flags
 @option{-fstack-limit-symbol=__stack_limit} and
 @option{-Wl,--defsym,__stack_limit=0x7ffe0000} to enforce a stack limit
 of 128KB@.  Note that this may only work with the GNU linker.
+
+@item -fsplit-stack
+@opindex fsplit-stack
+Generate code to automatically split the stack before it overflows.
+The resulting program has a discontiguous stack which can only
+overflow if the program is unable to allocate any more memory.  This
+is most useful when running threaded programs, as it is no longer
+necessary to calculate a good stack size to use for each thread.  This
+is currently only implemented for the i386 and x86_64 backends running
+GNU/Linux.
+
+When code compiled with @option{-fsplit-stack} calls code compiled
+without @option{-fsplit-stack}, there may not be much stack space
+available for the latter code to run.  If compiling all code,
+including library code, with @option{-fsplit-stack} is not an option,
+then the linker can fix up these calls so that the code compiled
+without @option{-fsplit-stack} always has a large stack.  Support for
+this is implemented in the gold linker in GNU binutils release 2.21
+and later.
 
 @item -fleading-underscore
 @opindex fleading-underscore

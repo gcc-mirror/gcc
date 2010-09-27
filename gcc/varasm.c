@@ -99,6 +99,10 @@ bool first_function_block_is_cold;
 
 static alias_set_type const_alias_set;
 
+/* Whether we saw any functions with no_split_stack.  */
+
+static bool saw_no_split_stack;
+
 static const char *strip_reg_name (const char *);
 static int contains_pointers_p (tree);
 #ifdef ASM_OUTPUT_EXTERNAL
@@ -1549,6 +1553,9 @@ assemble_start_function (tree decl, const char *fnname)
   /* Standard thing is just output label for the function.  */
   ASM_OUTPUT_FUNCTION_LABEL (asm_out_file, fnname, current_function_decl);
 #endif /* ASM_DECLARE_FUNCTION_NAME */
+
+  if (lookup_attribute ("no_split_stack", DECL_ATTRIBUTES (decl)))
+    saw_no_split_stack = true;
 }
 
 /* Output assembler code associated with defining the size of the
@@ -6647,6 +6654,28 @@ file_end_indicate_exec_stack (void)
     flags |= SECTION_CODE;
 
   switch_to_section (get_section (".note.GNU-stack", flags, NULL));
+}
+
+/* Emit a special section directive to indicate that this object file
+   was compiled with -fsplit-stack.  This is used to let the linker
+   detect calls between split-stack code and non-split-stack code, so
+   that it can modify the split-stack code to allocate a sufficiently
+   large stack.  We emit another special section if there are any
+   functions in this file which have the no_split_stack attribute, to
+   prevent the linker from warning about being unable to convert the
+   functions if they call non-split-stack code.  */
+
+void
+file_end_indicate_split_stack (void)
+{
+  if (flag_split_stack)
+    {
+      switch_to_section (get_section (".note.GNU-split-stack", SECTION_DEBUG,
+				      NULL));
+      if (saw_no_split_stack)
+	switch_to_section (get_section (".note.GNU-no-split-stack",
+					SECTION_DEBUG, NULL));
+    }
 }
 
 /* Output DIRECTIVE (a C string) followed by a newline.  This is used as

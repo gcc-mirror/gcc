@@ -29,6 +29,7 @@ extern void ix86_setup_frame_addresses (void);
 extern HOST_WIDE_INT ix86_initial_elimination_offset (int, int);
 extern void ix86_expand_prologue (void);
 extern void ix86_expand_epilogue (int);
+extern void ix86_expand_split_stack_prologue (void);
 
 extern void ix86_output_addr_vec_elt (FILE *, int);
 extern void ix86_output_addr_diff_elt (FILE *, int, int);
@@ -117,7 +118,7 @@ extern bool ix86_expand_int_vcond (rtx[]);
 extern void ix86_expand_sse_unpack (rtx[], bool, bool);
 extern void ix86_expand_sse4_unpack (rtx[], bool, bool);
 extern bool ix86_expand_int_addcc (rtx[]);
-extern void ix86_expand_call (rtx, rtx, rtx, rtx, rtx, int);
+extern rtx ix86_expand_call (rtx, rtx, rtx, rtx, rtx, int);
 extern void x86_initialize_trampoline (rtx, rtx, rtx);
 extern rtx ix86_zero_extend_to_Pmode (rtx);
 extern void ix86_split_long_move (rtx[]);

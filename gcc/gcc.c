@@ -545,6 +545,16 @@ proper position among the other output files.  */
 #define MFLIB_SPEC "%{fmudflap|fmudflapth: -export-dynamic}"
 #endif
 
+/* When using -fsplit-stack we need to wrap pthread_create, in order
+   to initialize the stack guard.  We always use wrapping, rather than
+   shared library ordering, and we keep the wrapper function in
+   libgcc.  This is not yet a real spec, though it could become one;
+   it is currently just stuffed into LINK_SPEC.  FIXME: This wrapping
+   only works with GNU ld and gold.  FIXME: This is incompatible with
+   -fmudflap when linking statically, which wants to do its own
+   wrapping.  */
+#define STACK_SPLIT_SPEC " %{fsplit-stack: --wrap=pthread_create}"
+
 /* config.h can define LIBGCC_SPEC to override how and when libgcc.a is
    included.  */
 #ifndef LIBGCC_SPEC
@@ -657,7 +667,8 @@ proper position among the other output files.  */
    "%X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
     %{static:} %{L*} %(mfwrap) %(link_libgcc) %o\
-    %{fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)} %(mflib)\
+    %{fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)}\
+    %(mflib) " STACK_SPLIT_SPEC "\
     %{fprofile-arcs|fprofile-generate*|coverage:-lgcov}\
     %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
     %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} }}}}}}"
