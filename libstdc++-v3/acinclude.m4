@@ -1695,16 +1695,11 @@ AC_DEFUN([GLIBCXX_ENABLE_CHEADERS], [
      c_compatibility=yes
   fi
 
-  if test $enable_cheaders = c_global || test $enable_cheaders = c_std; then
-     c_extra=yes
-  fi
-
   AC_SUBST(C_INCLUDE_DIR)
   GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_C, test $enable_cheaders = c)
   GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_C_STD, test $enable_cheaders = c_std)
   GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_C_GLOBAL, test $enable_cheaders = c_global)
   GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_COMPATIBILITY, test $c_compatibility = yes)
-  GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_EXTRA, test $c_extra = yes)
 ])
 
 

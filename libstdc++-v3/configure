@@ -649,8 +649,6 @@ ENABLE_PARALLEL_TRUE
 GLIBCXX_BUILD_DEBUG_FALSE
 GLIBCXX_BUILD_DEBUG_TRUE
 DEBUG_FLAGS
-GLIBCXX_C_HEADERS_EXTRA_FALSE
-GLIBCXX_C_HEADERS_EXTRA_TRUE
 GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE
 GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE
 GLIBCXX_C_HEADERS_C_GLOBAL_FALSE
@@ -11468,7 +11466,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11471 "configure"
+#line 11469 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11574,7 +11572,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11577 "configure"
+#line 11575 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14914,7 +14912,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14917 "configure"
+#line 14915 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15282,7 +15280,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15285 "configure"
+#line 15283 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15319,7 +15317,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15322 "configure"
+#line 15320 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15356,7 +15354,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15359 "configure"
+#line 15357 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15394,7 +15392,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15397 "configure"
+#line 15395 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15470,7 +15468,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15473 "configure"
+#line 15471 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16070,11 +16068,6 @@ $as_echo "$as_me: \"C\" header strategy set to $enable_cheaders" >&6;}
   if test $enable_cheaders = c_global; then
      c_compatibility=yes
   fi
-
-  if test $enable_cheaders = c_global || test $enable_cheaders = c_std; then
-     c_extra=yes
-  fi
-
 
 
 
@@ -58987,15 +58980,6 @@ else
 fi
 
 
-    if test $c_extra = yes; then
-  GLIBCXX_C_HEADERS_EXTRA_TRUE=
-  GLIBCXX_C_HEADERS_EXTRA_FALSE='#'
-else
-  GLIBCXX_C_HEADERS_EXTRA_TRUE='#'
-  GLIBCXX_C_HEADERS_EXTRA_FALSE=
-fi
-
-
     if test $enable_libstdcxx_debug = yes; then
   GLIBCXX_BUILD_DEBUG_TRUE=
   GLIBCXX_BUILD_DEBUG_FALSE='#'
@@ -59451,10 +59435,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE}" && test -z "${GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE}"; then
   as_fn_error "conditional \"GLIBCXX_C_HEADERS_COMPATIBILITY\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${GLIBCXX_C_HEADERS_EXTRA_TRUE}" && test -z "${GLIBCXX_C_HEADERS_EXTRA_FALSE}"; then
-  as_fn_error "conditional \"GLIBCXX_C_HEADERS_EXTRA\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GLIBCXX_BUILD_DEBUG_TRUE}" && test -z "${GLIBCXX_BUILD_DEBUG_FALSE}"; then

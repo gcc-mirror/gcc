@@ -824,15 +824,8 @@ profile_impl_headers = \
 	${profile_impl_srcdir}/profiler_list_to_vector.h \
 	${profile_impl_srcdir}/profiler_list_to_slist.h
 
-# Some of the different "C" header models need extra files.
 # Some "C" header schemes require the "C" compatibility headers.
 # For --enable-cheaders=c_std
-if GLIBCXX_C_HEADERS_EXTRA
-c_base_headers_extra = ${c_base_srcdir}/cmath.tcc
-else
-c_base_headers_extra =
-endif
-
 if GLIBCXX_C_HEADERS_COMPATIBILITY
 c_compatibility_headers_extra = ${c_compatibility_headers}
 else
@@ -915,10 +908,10 @@ endif
 # List of all timestamp files.  By keeping only one copy of this list, both
 # CLEANFILES and all-local are kept up-to-date.
 allstamped = \
-	stamp-std stamp-bits stamp-c_base stamp-c_base_extra \
-	stamp-c_compatibility  stamp-backward stamp-ext stamp-pb \
-	stamp-tr1 stamp-tr1-impl stamp-decimal stamp-debug \
-	stamp-parallel stamp-profile stamp-profile-impl stamp-host 
+	stamp-std stamp-bits stamp-c_base stamp-c_compatibility \
+	stamp-backward stamp-ext stamp-pb stamp-tr1 stamp-tr1-impl \
+	stamp-decimal stamp-debug stamp-parallel stamp-profile \
+	stamp-profile-impl stamp-host 
 
 # List of all files that are created by explicit building, editing, or
 # catenation.

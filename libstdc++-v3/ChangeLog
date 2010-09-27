@@ -1,3 +1,17 @@
+2010-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_std/cmath (__pow_helper): Remove.
+	(__cmath_power): Remove declaration.
+	* include/c_global/cmath: Likewise.
+	* include/std/complex (__complex_pow_unsigned): Add.
+	(pow(const complex<_Tp>&, int)): Use the latter.
+	* include/c_std/cmath.tcc: Remove file.
+	* include/c_global/cmath.tcc: Likewise.
+	* acinclude.m4: Adjust.
+	* include/Makefile.am: Likewise.
+	* configure: Regenerate.
+	* include/Makefile.in: Likewise.
+
 2010-09-22  David Krauss  <potswa@mac.com>
 
 	PR libstdc++/45628
