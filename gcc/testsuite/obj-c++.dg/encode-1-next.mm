@@ -1,7 +1,10 @@
+/* This file tests that things are encoded using the gcc-3.3 ABI which is only
+   used by the NeXT runtime.  */
 /* Test for graceful encoding of const-qualified fields and parameters.  */
 /* Author: Ziemowit Laski  <zlaski@apple.com>  */
+
 /* { dg-do compile } */
-/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 
 struct Cxx {
   const struct Cxx *next;
@@ -20,4 +23,4 @@ struct Cxx {
 }
 @end 
 
-/* { dg-final { scan-assembler "@\[0-9\]+@0:\[0-9\]+r\\^{Cxx=\\^r{Cxx}}\[0-9\]+\\^r{Cxx}" } } */
+/* { dg-final { scan-assembler "@\[0-9\]+@0:\[0-9\]+\\^{Cxx=\\^{Cxx}}\[0-9\]+r\\^{Cxx=\\^{Cxx}}" } } */

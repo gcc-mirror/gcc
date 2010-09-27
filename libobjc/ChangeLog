@@ -1,5 +1,15 @@
 2010-09-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* encoding.c (objc_sizeof_type): Added support for vector type and
+	for double long types.	
+	(objc_alignof_type): Same change.
+	(objc_skip_typespec): Same change.
+	* objc/encoding.h (_C_GCINVISIBLE): Use '|' for _C_GCINVISIBLE
+	instead of '!' since '!' is already used for _C_VECTOR.
+	* objc/objc-api.h (_C_LNG_DBL): Added.
+	
+2010-09-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* libobjc_entry.c: File removed.
 
 2010-09-26  Kai Tietz  <kai.tietz@onevision.com>
