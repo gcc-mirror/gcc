@@ -2822,7 +2822,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	  && DECL_INITIAL (decl) != 0
 	  && host_integerp (DECL_INITIAL (decl), 0)
 	  && ! TREE_ASM_WRITTEN (decl)
-	  && (DECL_CONTEXT (decl) == NULL_TREE
+	  && (DECL_FILE_SCOPE_P (decl)
 	      || TREE_CODE (DECL_CONTEXT (decl)) == BLOCK
 	      || TREE_CODE (DECL_CONTEXT (decl)) == NAMESPACE_DECL)
 	  && TREE_PUBLIC (decl) == 0)
