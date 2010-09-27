@@ -156,8 +156,7 @@
 	(propagate): Handle overwritable and unavailable leaf functions;
 	initialize global info for overwritable and unavailable leaf functions;
 	do not free all module statics.
-	(ipa_reference_get_not_read_global,
-	ipa_reference_get_not_written_global): leaf calls don't clobber
+	(ipa_reference_get_not_{read,written}_global): Leaf calls don't clobber
 	local statics.
 	* calls.c (flags_from_decl_or_type): Handle leaf.
 	* tree-cfg.c (stmt_can_make_abnormal_goto): Leaf functions can't do
@@ -1913,7 +1912,7 @@
 	* doc/extend.texi (Function Attributes): Document ifunc.
 	* varasm.c (do_assemble_alias): Deal with ifuncs too.
 
-2010-09-09  Hariharan Sandanagobalane <hariharan@picochip.com>
+2010-09-09  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (picochip_reorg): Check for note_p for
 	epilogue instruction move.
@@ -2135,7 +2134,7 @@
 	* c-tree.h, c-decl.c (build_enumerator): Add location parameter.
 	* c-parser.c (c_parser_enum_specifier): Adjust call to build_enumerator.
 
-2010-09-08  Kenneth Zadeck <zadeck@naturalbridge.com>
+2010-09-08  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR doc/45587
 	* doc/md.texi: Fixed modes on several standard pattern names.
@@ -2176,7 +2175,7 @@
 	* cif-code.def (OVERWRITABLE): New code.
 
 2010-09-07  H.J. Lu  <hjl.tools@gmail.com>
-	    Jack Howarth <howarth@bromo.med.uc.edu>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/36502
 	PR target/42313
@@ -3391,7 +3390,7 @@
 
 	* config/ia64/ia64.md (cstorebi4): Fix thinko.
 
-2010-08-28  Hariharan Sandanagobalane <hariharan@picochip.com>
+2010-08-28  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (reorder_var_tracking_notes): This
 	function was dropping debug insns which caused PR45299.
@@ -4468,7 +4467,7 @@
 	Dunmmy function with NULL return unless the target is
 	OSX >= 10.6 (Darwin10).
 
-2010-08-17  Jack Howarth <howarth@bromo.med.uc.edu>
+2010-08-17  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* gcc.c (spec_function): Add remove-outfile.
 	(remove_outfile_spec_function): New function.
@@ -4707,7 +4706,7 @@
 	(loongson_pmull<V_suffix>): Rename to...
 	(mul<mode>3): ...this and use MULT instead of an UNSPEC.
 
-2010-08-13  Jack Howarth <howarth@bromo.med.uc.edu>
+2010-08-13  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* configure.ac: Enable -fomit-frame-pointer on darwin
 	which support dwarf2.
@@ -5609,7 +5608,7 @@
 	alignment from MEM_REF offset only if we took it from the
 	base object.
 
-2010-08-09  Eric Fisher <joefoxreal@gmail.com>
+2010-08-09  Eric Fisher  <joefoxreal@gmail.com>
 
 	* doc/sourcebuild.texi (vect_int_mult): Remove duplicate entry.
 
@@ -6021,7 +6020,7 @@
 	* double-int.h (double_int_ctz): Declare.
 	* double-int.c (double_int_ctz): New function.
 
-2010-08-04  Hariharan Sandanagobalane <hariharan@picochip.com>
+2010-08-04  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE):
 	Define.
@@ -6627,7 +6626,7 @@
 	(rs6000_arg_partial_bytes): Likewise.
 	(rs6000_function_value): Likewise.
 
-2010-07-28  Andi Kleen <ak@linux.intel.com>
+2010-07-28  Andi Kleen  <ak@linux.intel.com>
 
 	* lto-opts.c (lto_file_read_options): Add loop over all inputs.
 
@@ -6680,7 +6679,7 @@
 	* expr.c (expand_expr_real_1) <MEM_REF>: Revert latest change.  Make
 	sure the base has address_mode before adding the offset.
 
-2010-07-27  Xinliang David Li <davidxl@google.com>
+2010-07-27  Xinliang David Li  <davidxl@google.com>
 
 	* tree-flow.h (create_mem_ref): Add one new parameter.
 	* tree-ssa-address.c (create_mem_ref): New parameter.
@@ -10408,7 +10407,7 @@
 
 2010-07-02  Daniel Jacobowitz  <dan@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
-	    Sandra Loosemore <sandra@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/arm/arm.c (arm_canonicalize_comparison): Canonicalize DImode
 	comparisons.  Adjust to take both operands.
@@ -10433,7 +10432,7 @@
 	(cstoredi4): Handle non-Cirrus also.
 
 2010-07-02  Julian Brown  <julian@codesourcery.com>
-	    Sandra Loosemore <sandra@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR target/43703
 	* config/arm/vec-common.md (add<mode>3, sub<mode>3, smin<mode>3)
