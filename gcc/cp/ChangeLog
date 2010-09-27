@@ -8,6 +8,12 @@
 	* typeck.c (composite_pointer_type): Call objc_have_common_type
 	when comparing two objective-c pointer types.
 
+	2005-07-18  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4175534
+	* call.c (standard_conversion): Do not issue warnings when
+	comparing ObjC pointer types.
+	
 	2005-06-22  Ziemowit Laski  <zlaski@apple.com>
 
 	Radar 4154928
