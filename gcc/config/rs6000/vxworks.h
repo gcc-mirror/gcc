@@ -44,7 +44,9 @@ along with GCC; see the file COPYING3.  If not see
 						\
       /* C89 namespace violation! */		\
       builtin_define ("CPU_FAMILY=PPC");	\
-    }						\
+        					\
+      VXWORKS_OS_CPP_BUILTINS ();		\
+    }		\
   while (0)
 
 /* Only big endian PPC is supported by VxWorks.  */
