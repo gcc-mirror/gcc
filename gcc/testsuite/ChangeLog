@@ -1,3 +1,11 @@
+2010-09-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/rv-lvalue-req.C: New.
+	* g++.dg/ext/complit11.C: Adjust.
+	* g++.old-deja/g++.law/temps1.C: Adjust.
+	* g++.old-deja/g++.ns/koenig6.C: Adjust.
+	* g++.old-deja/g++.oliva/partord1.C: Adjust.
+
 2010-09-27  Ian Lance Taylor  <iant@google.com>
 
 	* lib/target-supports.exp (check_effective_target_split_stack):

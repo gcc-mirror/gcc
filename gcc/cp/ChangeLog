@@ -1,3 +1,25 @@
+2010-09-27  Jason Merrill  <jason@redhat.com>
+
+	Require lvalues as specified by the standard.
+	* typeck.c (lvalue_or_else): Use real_lvalue_p.
+	(cp_build_addr_expr_1): Split out of cp_build_unary_op.
+	(cp_build_addr_expr, cp_build_addr_expr_strict): Interfaces.
+	(decay_conversion, get_member_function_from_ptrfunc): Adjust.
+	(build_x_unary_op, build_reinterpret_cast_1): Adjust.
+	(build_const_cast_1): Adjust.
+	* cp-tree.h: Declare new fns.
+	* call.c (build_this, convert_like_real, build_over_call): Adjust.
+	(initialize_reference): Adjust.
+	* class.c (build_base_path, convert_to_base_statically): Adjust.
+	(build_vfn_ref, resolve_address_of_overloaded_function): Adjust.
+	* cvt.c (build_up_reference, convert_to_reference): Adjust.
+	* decl.c (register_dtor_fn): Adjust.
+	* decl2.c (build_offset_ref_call_from_tree): Adjust.
+	* except.c (initialize_handler_parm): Adjust.
+	* init.c (build_offset_ref, build_delete, build_vec_delete): Adjust.
+	* rtti.c (build_dynamic_cast_1, tinfo_base_init): Adjust.
+	* tree.c (stabilize_expr): Adjust.
+
 2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from apple/trunk branch on FSF servers:
