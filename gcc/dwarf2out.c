@@ -790,8 +790,9 @@ dwarf2out_cfi_label (bool force)
     }
   else
     {
-      ASM_GENERATE_INTERNAL_LABEL (label, "LCFI", dwarf2out_cfi_label_num++);
-      ASM_OUTPUT_LABEL (asm_out_file, label);
+      int num = dwarf2out_cfi_label_num++;
+      ASM_GENERATE_INTERNAL_LABEL (label, "LCFI", num);
+      ASM_OUTPUT_DEBUG_LABEL (asm_out_file, "LCFI", num);
     }
 
   return label;

@@ -1,3 +1,7 @@
+2010-09-27  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (dwarf2out_cfi_label): Use ASM_OUTPUT_DEBUG_LABEL.
+
 2010-09-27  Hans-Peter Nilsson  <hp@axis.com>
 
 	* emit-rtl.c (reorder_insns_nobb) [ENABLE_CHECKING]: Sanity-check
