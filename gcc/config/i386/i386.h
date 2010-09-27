@@ -674,9 +674,8 @@ enum target_cpu_default
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD		(TARGET_64BIT ? 8 : 4)
-#ifdef IN_LIBGCC2
-#define MIN_UNITS_PER_WORD	(TARGET_64BIT ? 8 : 4)
-#else
+
+#ifndef IN_LIBGCC2
 #define MIN_UNITS_PER_WORD	4
 #endif
 
@@ -863,8 +862,8 @@ enum target_cpu_default
 #define STACK_REGS
 
 #define IS_STACK_MODE(MODE)					\
-  (((MODE) == SFmode && (!TARGET_SSE || !TARGET_SSE_MATH))	\
-   || ((MODE) == DFmode && (!TARGET_SSE2 || !TARGET_SSE_MATH))  \
+  (((MODE) == SFmode && !(TARGET_SSE && TARGET_SSE_MATH))	\
+   || ((MODE) == DFmode && !(TARGET_SSE2 && TARGET_SSE_MATH))	\
    || (MODE) == XFmode)
 
 /* Cover class containing the stack registers.  */
@@ -979,8 +978,7 @@ enum target_cpu_default
 
    Actually there are no two word move instructions for consecutive
    registers.  And only registers 0-3 may have mov byte instructions
-   applied to them.
-   */
+   applied to them.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
   (FP_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO)	\
@@ -1187,7 +1185,8 @@ enum reg_class
   NON_Q_REGS,			/* %esi %edi %ebp %esp */
   INDEX_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp */
   LEGACY_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp %esp */
-  GENERAL_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp %esp %r8 - %r15*/
+  GENERAL_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp %esp
+				   %r8 %r9 %r10 %r11 %r12 %r13 %r14 %r15 */
   FP_TOP_REG, FP_SECOND_REG,	/* %st(0) %st(1) */
   FLOAT_REGS,
   SSE_FIRST_REG,
@@ -1416,10 +1415,13 @@ enum reg_class
 /* On the 80386, this is the size of MODE in words,
    except in the FP regs, where a single reg is always enough.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
- (!MAYBE_INTEGER_CLASS_P (CLASS)					\
-  ? (COMPLEX_MODE_P (MODE) ? 2 : 1)					\
-  : (((((MODE) == XFmode ? 12 : GET_MODE_SIZE (MODE)))			\
-      + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+  (MAYBE_INTEGER_CLASS_P (CLASS)					\
+   ? ((MODE) == XFmode							\
+      ? (TARGET_64BIT ? 2 : 3)						\
+      : (MODE) == XCmode						\
+      ? (TARGET_64BIT ? 4 : 6)						\
+      : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))	\
+   : (COMPLEX_MODE_P (MODE) ? 2 : 1))
 
 /* Return a class of registers that cannot change FROM mode to TO mode.  */
 
@@ -1753,7 +1755,7 @@ typedef struct ix86_args {
 /* MOVE_MAX_PIECES is the number of bytes at a time which we can
    move efficiently, as opposed to  MOVE_MAX which is the maximum
    number of bytes we can move with a single instruction.  */
-#define MOVE_MAX_PIECES (TARGET_64BIT ? 8 : 4)
+#define MOVE_MAX_PIECES UNITS_PER_WORD
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
    move-instruction pairs, we will do a movmem or libcall instead.
@@ -1998,18 +2000,12 @@ do {									\
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
   ix86_output_addr_diff_elt ((FILE), (VALUE), (REL))
 
-/* When we see %v, we will print the 'v' prefix if TARGET_AVX is
-   true.  */
+/* When we see %v, we will print the 'v' prefix if TARGET_AVX is true.  */
 
 #define ASM_OUTPUT_AVX_PREFIX(STREAM, PTR)	\
 {						\
   if ((PTR)[0] == '%' && (PTR)[1] == 'v')	\
-    {						\
-      if (TARGET_AVX)				\
-	(PTR) += 1;				\
-      else					\
-	(PTR) += 2;				\
-    }						\
+    (PTR) += TARGET_AVX ? 1 : 2;		\
 }
 
 /* A C statement or statements which output an assembler instruction

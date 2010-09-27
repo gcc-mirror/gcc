@@ -8777,11 +8777,9 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
   rtx insn;
 
   if (! TARGET_64BIT)
-    insn = emit_insn (gen_pro_epilogue_adjust_stack_si_add (dest,
-							    src, offset));
+    insn = gen_pro_epilogue_adjust_stack_si_add (dest, src, offset);
   else if (x86_64_immediate_operand (offset, DImode))
-    insn = emit_insn (gen_pro_epilogue_adjust_stack_di_add (dest,
-							    src, offset));
+    insn = gen_pro_epilogue_adjust_stack_di_add (dest, src, offset);
   else
     {
       rtx tmp;
@@ -8798,9 +8796,11 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
       insn = emit_insn (gen_rtx_SET (DImode, tmp, offset));
       if (style < 0)
 	RTX_FRAME_RELATED_P (insn) = 1;
-      insn = emit_insn (gen_pro_epilogue_adjust_stack_di_add (dest, src, tmp));
+
+      insn = gen_pro_epilogue_adjust_stack_di_add (dest, src, tmp);
     }
 
+  insn = emit_insn (insn);
   if (style >= 0)
     ix86_add_queued_cfa_restore_notes (insn);
 
