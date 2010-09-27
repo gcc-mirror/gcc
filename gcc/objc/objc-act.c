@@ -8136,15 +8136,17 @@ encode_array (tree type, int curtype, int format)
 	 NB: This hack assumes that you can't use '=' as part of a C
 	 identifier.
       */
-      char *enc = obstack_base (&util_obstack) + curtype;
-      if (memchr (enc, '=', 
-		  obstack_object_size (&util_obstack) - curtype) == NULL)
-	{
-	  /* We are not inside a struct.  Encode the array as a
-	     pointer.  */
-	  encode_pointer (type, curtype, format);
-	  return;
-	}
+      {
+	char *enc = obstack_base (&util_obstack) + curtype;
+	if (memchr (enc, '=', 
+		    obstack_object_size (&util_obstack) - curtype) == NULL)
+	  {
+	    /* We are not inside a struct.  Encode the array as a
+	       pointer.  */
+	    encode_pointer (type, curtype, format);
+	    return;
+	  }
+      }
 
       /* Else, we are in a struct, and we encode it as a zero-length
 	 array.  */
