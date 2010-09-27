@@ -1,3 +1,7 @@
+2010-09-27  Richard Guenther  <rguenther@suse.de>
+
+	* dbxout.c (dbxout_symbol): Use DECL_FILE_SCOPE_P.
+
 2010-09-27  Jie Zhang  <jie@codesourcery.com>
 
 	* print-tree.c (print_node): Print in-constant-pool.
