@@ -1944,7 +1944,7 @@ try_head_merge_bb (basic_block bb)
   basic_block final_dest_bb = NULL;
   int max_match = INT_MAX;
   edge e0;
-  rtx *headptr, *currptr;
+  rtx *headptr, *currptr, *nextptr;
   bool changed, moveall;
   unsigned ix;
   rtx e0_last_head, cond, move_before;
@@ -2077,6 +2077,7 @@ try_head_merge_bb (basic_block bb)
 
   currptr = XNEWVEC (rtx, nedges);
   headptr = XNEWVEC (rtx, nedges);
+  nextptr = XNEWVEC (rtx, nedges);
 
   for (ix = 0; ix < nedges; ix++)
     {
@@ -2132,6 +2133,14 @@ try_head_merge_bb (basic_block bb)
 
 	  /* Try again, using a different insertion point.  */
 	  move_before = jump;
+
+#ifdef HAVE_cc0
+	  /* Don't try moving before a cc0 user, as that may invalidate
+	     the cc0.  */
+	  if (reg_mentioned_p (cc0_rtx, jump))
+	    break;
+#endif
+
 	  continue;
 	}
 
@@ -2155,6 +2164,18 @@ try_head_merge_bb (basic_block bb)
 	    }
 	}
 
+      /* If we can't currently move all of the identical insns, remember
+	 each insn after the range that we'll merge.  */
+      if (!moveall)
+	for (ix = 0; ix < nedges; ix++)
+	  {
+	    rtx curr = currptr[ix];
+	    do
+	      curr = NEXT_INSN (curr);
+	    while (!NONDEBUG_INSN_P (curr));
+	    nextptr[ix] = curr;
+	  }
+
       reorder_insns (headptr[0], currptr[0], PREV_INSN (move_before));
       df_set_bb_dirty (EDGE_SUCC (bb, 0)->dest);
       if (final_dest_bb != NULL)
@@ -2170,16 +2191,18 @@ try_head_merge_bb (basic_block bb)
 	  if (jump == move_before)
 	    break;
 
-	  /* Try again, using a different insertion point.  */
+	  /* For the unmerged insns, try a different insertion point.  */
 	  move_before = jump;
+
+#ifdef HAVE_cc0
+	  /* Don't try moving before a cc0 user, as that may invalidate
+	     the cc0.  */
+	  if (reg_mentioned_p (cc0_rtx, jump))
+	    break;
+#endif
+
 	  for (ix = 0; ix < nedges; ix++)
-	    {
-	      rtx curr = currptr[ix];
-	      do
-		curr = NEXT_INSN (curr);
-	      while (!NONDEBUG_INSN_P (curr));
-	      currptr[ix] = headptr[ix] = curr;
-	    }
+	    currptr[ix] = headptr[ix] = nextptr[ix];
 	}
     }
   while (!moveall);
@@ -2187,6 +2210,7 @@ try_head_merge_bb (basic_block bb)
  out:
   free (currptr);
   free (headptr);
+  free (nextptr);
 
   crossjumps_occured |= changed;
 
