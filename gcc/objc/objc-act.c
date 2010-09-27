@@ -4434,6 +4434,11 @@ objc_encoded_type_size (tree type)
   return sz;
 }
 
+/* Encode a method prototype.
+
+   The format is described in gcc/doc/objc.texi, section 'Method
+   signatures'.
+ */
 static tree
 encode_method_prototype (tree method_decl)
 {
@@ -6796,6 +6801,8 @@ objc_build_selector_expr (location_t loc, tree selnamelist)
     return build_selector_reference (loc, selname);
 }
 
+/* This is used to implement @encode().  See gcc/doc/objc.texi,
+   section '@encode'.  */
 tree
 objc_build_encode_expr (tree type)
 {
@@ -7931,7 +7938,34 @@ start_protocol (enum tree_code code, tree name, tree list)
 
 
 /* "Encode" a data type into a string, which grows in util_obstack.
-   ??? What is the FORMAT?  Someone please document this!  */
+
+   The format is described in gcc/doc/objc.texi, section 'Type
+   encoding'.
+
+   Most of the encode_xxx functions have a 'type' argument, which is
+   the type to encode, and an integer 'curtype' argument, which is the
+   index in the encoding string of the beginning of the encoding of
+   the current type, and allows you to find what characters have
+   already been written for the current type (they are the ones in the
+   current encoding string starting from 'curtype').
+
+   For example, if we are encoding a method which returns 'int' and
+   takes a 'char **' argument, then when we get to the point of
+   encoding the 'char **' argument, the encoded string already
+   contains 'i12@0:4' (assuming a pointer size of 4 bytes).  So,
+   'curtype' will be set to 7 when starting to encode 'char **'.
+   During the whole of the encoding of 'char **', 'curtype' will be
+   fixed at 7, so the routine encoding the second pointer can find out
+   that it's actually encoding a pointer to a pointer by looking
+   backwards at what has already been encoded for the current type,
+   and seeing there is a "^" (meaning a pointer) in there.
+*/
+
+
+/* Encode type qualifiers encodes one of the "PQ" Objective-C
+   keywords, ie 'in', 'out', 'inout', 'bycopy', 'byref', 'oneway'.
+   'const', instead, is encoded directly as part of the type.
+ */
 
 static void
 encode_type_qualifiers (tree declspecs)
@@ -7940,6 +7974,7 @@ encode_type_qualifiers (tree declspecs)
 
   for (spec = declspecs; spec; spec = TREE_CHAIN (spec))
     {
+      /* FIXME: Shouldn't we use token->keyword here ? */
       if (ridpointers[(int) RID_IN] == TREE_VALUE (spec))
 	obstack_1grow (&util_obstack, 'n');
       else if (ridpointers[(int) RID_INOUT] == TREE_VALUE (spec))
@@ -7955,12 +7990,40 @@ encode_type_qualifiers (tree declspecs)
     }
 }
 
+/* Determine if a pointee is marked read-only.  Only used by the NeXT
+   runtime to be compatible with gcc-3.3.  */
+
+static bool
+pointee_is_readonly (tree pointee)
+{
+  while (POINTER_TYPE_P (pointee))
+    pointee = TREE_TYPE (pointee);
+
+  return TYPE_READONLY (pointee);
+}
+
 /* Encode a pointer type.  */
 
 static void
 encode_pointer (tree type, int curtype, int format)
 {
   tree pointer_to = TREE_TYPE (type);
+
+  if (flag_next_runtime)
+    {
+      /* This code is used to be compatible with gcc-3.3.  */
+      /* For historical/compatibility reasons, the read-only qualifier
+	 of the pointee gets emitted _before_ the '^'.  The read-only
+	 qualifier of the pointer itself gets ignored, _unless_ we are
+	 looking at a typedef!  Also, do not emit the 'r' for anything
+	 but the outermost type!  */
+      if (!generating_instance_variables
+	  && (obstack_object_size (&util_obstack) - curtype <= 1)
+	  && (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	      ? TYPE_READONLY (type)
+	      : pointee_is_readonly (pointer_to)))
+	obstack_1grow (&util_obstack, 'r');
+    }
 
   if (TREE_CODE (pointer_to) == RECORD_TYPE)
     {
@@ -8010,21 +8073,28 @@ encode_pointer (tree type, int curtype, int format)
 	          ? OBJC_TYPE_NAME (pointer_to)
 	          : DECL_NAME (OBJC_TYPE_NAME (pointer_to));
 
-      if (!flag_next_runtime || strcmp (IDENTIFIER_POINTER (pname), "BOOL"))
+      /* (BOOL *) are an exception and are encoded as ^c, while all
+	 other pointers to char are encoded as *.   */
+      if (strcmp (IDENTIFIER_POINTER (pname), "BOOL"))
 	{
-	  /* It appears that "r*" means "const char *" rather than
-	     "char *const".  */
-	  if (TYPE_READONLY (pointer_to))
-	    obstack_1grow (&util_obstack, 'r');
+	  if (!flag_next_runtime)
+	    {
+	      /* The NeXT runtime adds the 'r' before getting here.  */
+
+	      /* It appears that "r*" means "const char *" rather than
+		 "char *const".  "char *const" is encoded as "*",
+		 which is identical to "char *", so the "const" is
+		 unfortunately lost.  */		 
+	      if (TYPE_READONLY (pointer_to))
+		obstack_1grow (&util_obstack, 'r');
+	    }
 
 	  obstack_1grow (&util_obstack, '*');
 	  return;
 	}
     }
 
-  /* We have a type that does not get special treatment.  */
-
-  /* NeXT extension */
+  /* We have a normal pointer type that does not get special treatment.  */
   obstack_1grow (&util_obstack, '^');
   encode_type (pointer_to, curtype, format);
 }
@@ -8036,14 +8106,51 @@ encode_array (tree type, int curtype, int format)
   tree array_of = TREE_TYPE (type);
   char buffer[40];
 
-  /* An incomplete array is treated like a pointer.  */
   if (an_int_cst == NULL)
     {
-      encode_pointer (type, curtype, format);
-      return;
-    }
+      /* We are trying to encode an incomplete array.  An incomplete
+	 array is forbidden as part of an instance variable.  */
+      if (generating_instance_variables)
+	{
+	  /* TODO: Detect this error earlier.  */
+	  error ("instance variable has unknown size");
+	  return;
+	}
 
-  if (TREE_INT_CST_LOW (TYPE_SIZE (array_of)) == 0)
+      /* So the only case in which an incomplete array could occur is
+	 if we are encoding the arguments or return value of a method.
+	 In that case, an incomplete array argument or return value
+	 (eg, -(void)display: (char[])string) is treated like a
+	 pointer because that is how the compiler does the function
+	 call.  A special, more complicated case, is when the
+	 incomplete array is the last member of a struct (eg, if we
+	 are encoding "struct { unsigned long int a;double b[];}"),
+	 which is again part of a method argument/return value.  In
+	 that case, we really need to communicate to the runtime that
+	 there is an incomplete array (not a pointer!) there.  So, we
+	 detect that special case and encode it as a zero-length
+	 array.
+
+	 Try to detect that we are part of a struct.  We do this by
+	 searching for '=' in the type encoding for the current type.
+	 NB: This hack assumes that you can't use '=' as part of a C
+	 identifier.
+      */
+      char *enc = obstack_base (&util_obstack) + curtype;
+      if (memchr (enc, '=', 
+		  obstack_object_size (&util_obstack) - curtype) == NULL)
+	{
+	  /* We are not inside a struct.  Encode the array as a
+	     pointer.  */
+	  encode_pointer (type, curtype, format);
+	  return;
+	}
+
+      /* Else, we are in a struct, and we encode it as a zero-length
+	 array.  */
+      sprintf (buffer, "[" HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT)0);
+    }
+  else if (TREE_INT_CST_LOW (TYPE_SIZE (array_of)) == 0)
    sprintf (buffer, "[" HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT)0);
   else
     sprintf (buffer, "[" HOST_WIDE_INT_PRINT_DEC,
@@ -8052,6 +8159,37 @@ encode_array (tree type, int curtype, int format)
 
   obstack_grow (&util_obstack, buffer, strlen (buffer));
   encode_type (array_of, curtype, format);
+  obstack_1grow (&util_obstack, ']');
+  return;
+}
+
+/* Encode a vector.  The vector type is a GCC extension to C.  */
+static void
+encode_vector (tree type, int curtype, int format)
+{
+  tree vector_of = TREE_TYPE (type);
+  char buffer[40];
+
+  /* Vectors are like simple fixed-size arrays.  */
+
+  /* Output ![xx,yy,<code>] where xx is the vector_size, yy is the
+     alignment of the vector, and <code> is the base type.  Eg, int
+     __attribute__ ((vector_size (16))) gets encoded as ![16,32,i]
+     assuming that the alignment is 32 bytes.  We include size and
+     alignment in bytes so that the runtime does not have to have any
+     knowledge of the actual types.
+  */
+  sprintf (buffer, "![" HOST_WIDE_INT_PRINT_DEC ",%d",
+	   /* We want to compute the equivalent of sizeof (<vector>).
+	      Code inspired by c_sizeof_or_alignof_type.  */
+	   ((TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type)) 
+	     / (TYPE_PRECISION (char_type_node) / BITS_PER_UNIT))),
+	   /* We want to compute the equivalent of __alignof__
+	      (<vector>).  Code inspired by
+	      c_sizeof_or_alignof_type.  */
+	   TYPE_ALIGN_UNIT (type));
+  obstack_grow (&util_obstack, buffer, strlen (buffer));
+  encode_type (vector_of, curtype, format);
   obstack_1grow (&util_obstack, ']');
   return;
 }
@@ -8105,12 +8243,64 @@ encode_aggregate_within (tree type, int curtype, int format, int left,
   /* NB: aggregates that are pointed to have slightly different encoding
      rules in that you never encode the names of instance variables.  */
   int ob_size = obstack_object_size (&util_obstack);
-  char c1 = ob_size > 1 ? *(obstack_next_free (&util_obstack) - 2) : 0;
-  char c0 = ob_size > 0 ? *(obstack_next_free (&util_obstack) - 1) : 0;
-  int pointed_to = (c0 == '^' || (c1 == '^' && c0 == 'r'));
-  int inline_contents
-   = ((format == OBJC_ENCODE_INLINE_DEFS || generating_instance_variables)
-      && (!pointed_to || ob_size - curtype == (c1 == 'r' ? 2 : 1)));
+  bool inline_contents = false;
+  bool pointed_to = false;
+
+  if (flag_next_runtime)
+    {
+      pointed_to = (ob_size > 0
+		    ? *(obstack_next_free (&util_obstack) - 1) == '^'
+		    : 0);
+      inline_contents = ((format == OBJC_ENCODE_INLINE_DEFS || generating_instance_variables)
+			 && (!pointed_to
+			     || ob_size - curtype == 1
+			     || (ob_size - curtype == 2
+				 && *(obstack_next_free (&util_obstack) - 2) == 'r')));      
+    }
+  else
+    {
+      /* c0 and c1 are the last two characters in the encoding of the
+	 current type; if the last two characters were '^' or '^r',
+	 then we are encoding an aggregate that is "pointed to".  The
+	 comment above applies: in that case we should avoid encoding
+	 the names of instance variables.
+      */
+      char c1 = ob_size > 1 ? *(obstack_next_free (&util_obstack) - 2) : 0;
+      char c0 = ob_size > 0 ? *(obstack_next_free (&util_obstack) - 1) : 0;
+      
+      if (c0 == '^' || (c1 == '^' && c0 == 'r'))
+	pointed_to = true;
+      
+      if (format == OBJC_ENCODE_INLINE_DEFS || generating_instance_variables)
+	{
+	  if (!pointed_to)
+	    inline_contents = true;
+	  else
+	    {
+	      /* FIXME: It's hard to understand what the following
+		 code is meant to be doing.  It seems that it will
+		 inline contents even if we are encoding a pointed
+		 structure and the last characters were 'r^' or just
+		 '^'.
+
+		 So it seems that in the end the only case where we
+		 don't inline contents is '^r', which is a pointer to
+		 a 'const' structure!  If that is the case, the whole
+		 blob of code could be rewritten in a simpler way.
+	      */
+	      if (c1 == 'r')
+		{
+		  if (ob_size - curtype == 2)
+		    inline_contents = true;
+		}
+	      else
+		{
+		  if (ob_size - curtype == 1)
+		    inline_contents = true;    
+		}
+	    }
+	}
+    }
 
   /* Traverse struct aliases; it is important to get the
      original struct and its tag name (if any).  */
@@ -8150,33 +8340,6 @@ encode_aggregate_within (tree type, int curtype, int format, int left,
   obstack_1grow (&util_obstack, right);
 }
 
-static void
-encode_aggregate (tree type, int curtype, int format)
-{
-  enum tree_code code = TREE_CODE (type);
-
-  switch (code)
-    {
-    case RECORD_TYPE:
-      {
-	encode_aggregate_within (type, curtype, format, '{', '}');
-	break;
-      }
-    case UNION_TYPE:
-      {
-	encode_aggregate_within (type, curtype, format, '(', ')');
-	break;
-      }
-
-    case ENUMERAL_TYPE:
-      obstack_1grow (&util_obstack, 'i');
-      break;
-
-    default:
-      break;
-    }
-}
-
 /* Encode a bitfield NeXT-style (i.e., without a bit offset or the underlying
    field type.  */
 
@@ -8188,12 +8351,21 @@ encode_next_bitfield (int width)
   obstack_grow (&util_obstack, buffer, strlen (buffer));
 }
 
-/* FORMAT will be OBJC_ENCODE_INLINE_DEFS or OBJC_ENCODE_DONT_INLINE_DEFS.  */
+
+/* Encodes 'type', ignoring type qualifiers (which you should encode
+   beforehand if needed) with the exception of 'const', which is
+   encoded by encode_type.  See above for the explanation of
+   'curtype'.  'format' can be OBJC_ENCODE_INLINE_DEFS or
+   OBJC_ENCODE_DONT_INLINE_DEFS.
+*/
 static void
 encode_type (tree type, int curtype, int format)
 {
   enum tree_code code = TREE_CODE (type);
   char c;
+
+  /* Ignore type qualifiers other than 'const' when encoding a
+     type.  */
 
   if (type == error_mark_node)
     return;
@@ -8201,61 +8373,137 @@ encode_type (tree type, int curtype, int format)
   if (TYPE_READONLY (type))
     obstack_1grow (&util_obstack, 'r');
 
-  if (code == INTEGER_TYPE)
+  switch (code)
     {
-      switch (GET_MODE_BITSIZE (TYPE_MODE (type)))
+    case ENUMERAL_TYPE:
+      if (flag_next_runtime)
 	{
-	case 8:  c = TYPE_UNSIGNED (type) ? 'C' : 'c'; break;
-	case 16: c = TYPE_UNSIGNED (type) ? 'S' : 's'; break;
-	case 32:
-	  if (type == long_unsigned_type_node
-	      || type == long_integer_type_node)
-	         c = TYPE_UNSIGNED (type) ? 'L' : 'l';
-	  else
-	         c = TYPE_UNSIGNED (type) ? 'I' : 'i';
+	  /* Kludge for backwards-compatibility with gcc-3.3: enums
+	     are always encoded as 'i' no matter what type they
+	     actually are (!).  */
+	  c = 'i';
 	  break;
-	case 64: c = TYPE_UNSIGNED (type) ? 'Q' : 'q'; break;
-	default: abort ();
 	}
-      obstack_1grow (&util_obstack, c);
-    }
+      /* Else, they are encoded exactly like the integer type that is
+	 used by the compiler to store them.  */
+    case INTEGER_TYPE:
+      {
+	switch (GET_MODE_BITSIZE (TYPE_MODE (type)))
+	  {
+	  case 8:  c = TYPE_UNSIGNED (type) ? 'C' : 'c'; break;
+	  case 16: c = TYPE_UNSIGNED (type) ? 'S' : 's'; break;
+	  case 32:
+	    if (flag_next_runtime)
+	      {
+		tree int_type;
+		/* Another legacy kludge for compatiblity with
+		   gcc-3.3: 32-bit longs are encoded as 'l' or 'L',
+		   but not always.  For typedefs, we need to use 'i'
+		   or 'I' instead if encoding a struct field, or a
+		   pointer!  */
+		int_type =  ((!generating_instance_variables
+			      && (obstack_object_size (&util_obstack)
+				  == (unsigned) curtype))
+			     ? TYPE_MAIN_VARIANT (type)
+			     : type);
+		
+		if (int_type == long_unsigned_type_node
+		    || int_type == long_integer_type_node)
+		  c = TYPE_UNSIGNED (type) ? 'L' : 'l';
+		else
+		  c = TYPE_UNSIGNED (type) ? 'I' : 'i';
+	      }
+	    else
+	      {
+		if (type == long_unsigned_type_node
+		    || type == long_integer_type_node)
+		  c = TYPE_UNSIGNED (type) ? 'L' : 'l';
+		else
+		  c = TYPE_UNSIGNED (type) ? 'I' : 'i';
+	      }
+	    break;
+	  case 64:  c = TYPE_UNSIGNED (type) ? 'Q' : 'q'; break;
+	  case 128: c = TYPE_UNSIGNED (type) ? 'T' : 't'; break;
+	  default: abort ();
+	  }
+	obstack_1grow (&util_obstack, c);
+	break;
+      }
+    case REAL_TYPE:
+      {
+	/* Floating point types.  */
+	switch (GET_MODE_BITSIZE (TYPE_MODE (type)))
+	  {
+	  case 32:  c = 'f'; break;
+	  case 64:  c = 'd'; break;
+	  case 96:
+	  case 128: c = 'D'; break;
+	  default: abort ();
+	  }
+	obstack_1grow (&util_obstack, c);
+	break;
+      }
+    case VOID_TYPE:
+      obstack_1grow (&util_obstack, 'v');
+      break;
 
-  else if (code == REAL_TYPE)
-    {
-      /* Floating point types.  */
-      switch (GET_MODE_BITSIZE (TYPE_MODE (type)))
-	{
-	case 32:  c = 'f'; break;
-	case 64:
-	case 96:
-	case 128: c = 'd'; break;
-	default: abort ();
-	}
-      obstack_1grow (&util_obstack, c);
-    }
+    case BOOLEAN_TYPE:
+      obstack_1grow (&util_obstack, 'B');
+      break;
 
-  else if (code == VOID_TYPE)
-    obstack_1grow (&util_obstack, 'v');
+    case ARRAY_TYPE:
+      encode_array (type, curtype, format);
+      break;
 
-  else if (code == BOOLEAN_TYPE)
-    obstack_1grow (&util_obstack, 'B');
+    case POINTER_TYPE:
+#ifdef OBJCPLUS
+    case REFERENCE_TYPE:
+#endif
+      encode_pointer (type, curtype, format);
+      break;
 
-  else if (code == ARRAY_TYPE)
-    encode_array (type, curtype, format);
+    case RECORD_TYPE:
+      encode_aggregate_within (type, curtype, format, '{', '}');
+      break;
 
-  else if (code == POINTER_TYPE)
-    encode_pointer (type, curtype, format);
+    case UNION_TYPE:
+      encode_aggregate_within (type, curtype, format, '(', ')');
+      break;
 
-  else if (code == RECORD_TYPE || code == UNION_TYPE || code == ENUMERAL_TYPE)
-    encode_aggregate (type, curtype, format);
+    case FUNCTION_TYPE: /* '?' means an unknown type.  */
+      obstack_1grow (&util_obstack, '?');
+      break;
 
-  else if (code == FUNCTION_TYPE) /* '?' */
-    obstack_1grow (&util_obstack, '?');
-
-  else if (code == COMPLEX_TYPE)
-    {
+    case COMPLEX_TYPE:
+      /* A complex is encoded as 'j' followed by the inner type (eg,
+	 "_Complex int" is encoded as 'ji').  */
       obstack_1grow (&util_obstack, 'j');
       encode_type (TREE_TYPE (type), curtype, format);
+      break;
+
+    case VECTOR_TYPE:
+      encode_vector (type, curtype, format);
+      break;
+
+    default:
+      warning (0, "unknown type %s found during Objective-C encoding",
+	       gen_type_name (type));
+      obstack_1grow (&util_obstack, '?');
+      break;
+    }
+  
+  if (flag_next_runtime)
+    {
+      /* Super-kludge.  Some ObjC qualifier and type combinations need
+	 to be rearranged for compatibility with gcc-3.3.  */
+      if (code == POINTER_TYPE && obstack_object_size (&util_obstack) >= 3)
+	{
+	  char *enc = obstack_base (&util_obstack) + curtype;
+	  
+	  /* Rewrite "in const" from "nr" to "rn".  */
+	  if (curtype >= 1 && !strncmp (enc - 1, "nr", 2))
+	    strncpy (enc - 1, "rn", 2);
+	}
     }
 }
 
@@ -8266,12 +8514,14 @@ encode_gnu_bitfield (int position, tree type, int size)
   char buffer[40];
   char charType = '?';
 
-  if (code == INTEGER_TYPE)
+  /* This code is only executed for the GNU runtime, so we can ignore
+     the NeXT runtime kludge of always encoding enums as 'i' no matter
+     what integers they actually are.  */
+  if (code == INTEGER_TYPE  ||  code == ENUMERAL_TYPE)
     {
       if (integer_zerop (TYPE_MIN_VALUE (type)))
+	/* Unsigned integer types.  */
 	{
-	  /* Unsigned integer types.  */
-
 	  if (TYPE_MODE (type) == QImode)
 	    charType = 'C';
 	  else if (TYPE_MODE (type) == HImode)
@@ -8286,7 +8536,6 @@ encode_gnu_bitfield (int position, tree type, int size)
 	  else if (TYPE_MODE (type) == DImode)
 	    charType = 'Q';
 	}
-
       else
 	/* Signed integer types.  */
 	{
@@ -8306,10 +8555,12 @@ encode_gnu_bitfield (int position, tree type, int size)
 	    charType = 'q';
 	}
     }
-  else if (code == ENUMERAL_TYPE)
-    charType = 'i';
   else
-    abort ();
+    {
+      /* Do not do any encoding, produce an error and keep going.  */
+      error ("trying to encode non-integer type as a bitfield");
+      return;
+    }
 
   sprintf (buffer, "b%d%c%d", position, charType, size);
   obstack_grow (&util_obstack, buffer, strlen (buffer));
@@ -8335,7 +8586,7 @@ encode_field_decl (tree field_decl, int curtype, int format)
 	encode_next_bitfield (size);
       else
 	encode_gnu_bitfield (int_bit_position (field_decl),
-				  DECL_BIT_FIELD_TYPE (field_decl), size);
+			     DECL_BIT_FIELD_TYPE (field_decl), size);
     }
   else
     encode_type (TREE_TYPE (field_decl), curtype, format);

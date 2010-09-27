@@ -1,5 +1,65 @@
 2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR objc/25464
+	* objc.dg/type-size-3.m: New test.
+
+2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/45763
+	* objc.dg/encode-1.m: Execute the test with the GNU runtime as
+	well.
+	
+2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>	
+
+	PR objc/25450
+	* objc.dg/encode-3.m: Updated for fix of encoding of enums.
+	* objc.dg/type-size-2.m: Same change.
+	* obj-c++.dg/encode-5.mm: Same change.
+
+2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.  The original
+	Changelogs are below.
+
+	* objc.dg/encode-6.m: Execute the test only with the GNU runtime.
+	* objc.dg/encode-6-next.m: New file (from encode-6.m in the
+	branch).
+	* objc.dg/encode-7-next.m: New file (from encode-7.m in the
+	branch).
+	* objc.dg/encode-7-next-64bit.m: New file (from encode-7-64bit.m
+	in the branch).	
+	* objc.dg/proto-qual-1.m: Test the 3.3 ABI on NeXT (from
+	proto-qual-1.m in the branch) and the normal ABI on GNU.
+	* objc.dg/threedotthree-abi-1.m: New file (from the branch).  Run
+	the test only with the NeXT runtime.
+	* obj-c++/encode-1.mm: Execute the test only with the GNU runtime.
+	* obj-c++/encode-1-next.mm: New file (from encode-1.mm in the
+	branch).
+	* obj-c++.dg/threedotthree-abi-1.mm: New file (from the branch).
+	Run the test only with the NeXT runtime.
+	
+	2006-03-30 Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4492973
+	* objc.dg/encode-7-64bit.m: New.
+	* objc.dg/encode-7.m: Skip if -m64.
+	
+	2005-10-19  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4301047
+	* objc.dg/proto-qual-1.m: Fix test to match 3.3 ABI
+	* obj-c++.dg/threedotthree-abi-1.mm: New
+	* objc.dg/threedotthree-abi-1.m: New
+
+	2005-07-20  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4136935
+	* obj-c++.dg/encode-1.mm: Tweak encodings to match fix.
+	* objc.dg/encode-6.m: Likewise.
+	* objc.dg/encode-7.m: New test case.
+
+2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	Merge from 'apple/trunk' branch on FSF servers.  Renamed
 	const-str-12.m to constr-str-12b.m to avoid conflicts.
 	

@@ -1,5 +1,22 @@
 2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* doc/objc.texi (Type encoding): Added the new 'long double' (D)
+	code.  Added byref, which was missing in the list of codes.
+	Explain that enumeration values are encoded as the integer type
+	that the compiler uses to store them.  Explain and make examples
+	of how 'const' interacts with pointers, and the complication of
+	the encoding of 'const char *'.
+	(Legacy type encoding): New subsection, explaining that GCC emits
+	incorrect type encodings for the NeXT runtime for compatibility
+	reasons.
+	(@@encode): New subsection, explaining @encode and particularly
+	that protocol qualifiers are not recognized inside an @encode()
+	expression.
+	(Method signatures): New subsection, explaining how method
+	signatures are encoded.
+
+2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	Merge from 'apple/trunk' branch on FSF servers.  Removed small
 	change in build_conditional_expr that had been added when fixing
 	PR objc/27377 and which did the same check in a less complete way.

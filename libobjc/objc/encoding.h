@@ -42,7 +42,7 @@ extern "C" {
 #define _C_BYCOPY	'O'
 #define _C_BYREF	'R'
 #define _C_ONEWAY	'V'
-#define _C_GCINVISIBLE	'!'
+#define _C_GCINVISIBLE	'|'
 
 #define _F_CONST	0x01
 #define _F_IN		0x01
