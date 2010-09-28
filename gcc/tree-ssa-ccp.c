@@ -168,6 +168,9 @@ static prop_value_t *const_val;
 
 static void canonicalize_float_value (prop_value_t *);
 static bool ccp_fold_stmt (gimple_stmt_iterator *);
+static tree fold_ctor_reference (tree type, tree ctor,
+				 unsigned HOST_WIDE_INT offset,
+				 unsigned HOST_WIDE_INT size);
 
 /* Dump constant propagation value VAL to file OUTF prefixed by PREFIX.  */
 
@@ -1369,6 +1372,221 @@ get_base_constructor (tree base, tree *offset)
     }
 }
 
+/* CTOR is STRING_CST.  Fold reference of type TYPE and size SIZE
+   to the memory at bit OFFSET.  
+
+   We do only simple job of folding byte accesses.  */
+
+static tree
+fold_string_cst_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
+				unsigned HOST_WIDE_INT size)
+{
+  if (INTEGRAL_TYPE_P (type)
+      && (TYPE_MODE (type)
+	  == TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
+      && (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
+	  == MODE_INT)
+      && GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor)))) == 1
+      && size == BITS_PER_UNIT
+      && !(offset % BITS_PER_UNIT))
+    {
+      offset /= BITS_PER_UNIT;
+      if (offset < (unsigned HOST_WIDE_INT) TREE_STRING_LENGTH (ctor))
+	return build_int_cst_type (type, (TREE_STRING_POINTER (ctor)
+				   [offset]));
+      /* Folding
+	 const char a[20]="hello";
+	 return a[10];
+
+	 might lead to offset greater than string length.  In this case we
+	 know value is either initialized to 0 or out of bounds.  Return 0
+	 in both cases.  */
+      return build_zero_cst (type);
+    }
+  return NULL_TREE;
+}
+
+/* CTOR is CONSTRUCTOR of an array type.  Fold reference of type TYPE and size
+   SIZE to the memory at bit OFFSET.  */
+
+static tree
+fold_array_ctor_reference (tree type, tree ctor,
+			   unsigned HOST_WIDE_INT offset,
+			   unsigned HOST_WIDE_INT size)
+{
+  unsigned HOST_WIDE_INT cnt;
+  tree cfield, cval;
+  double_int low_bound, elt_size;
+  double_int index, max_index;
+  double_int access_index;
+  tree domain_type = TYPE_DOMAIN (TREE_TYPE (ctor));
+  HOST_WIDE_INT inner_offset;
+
+  /* Compute low bound and elt size.  */
+  if (domain_type && TYPE_MIN_VALUE (domain_type))
+    {
+      /* Static constructors for variably sized objects makes no sense.  */
+      gcc_assert (TREE_CODE (TYPE_MIN_VALUE (domain_type)) == INTEGER_CST);
+      low_bound = tree_to_double_int (TYPE_MIN_VALUE (domain_type));
+    }
+  else
+    low_bound = double_int_zero;
+  /* Static constructors for variably sized objects makes no sense.  */
+  gcc_assert (TREE_CODE(TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))))
+	      == INTEGER_CST);
+  elt_size =
+    tree_to_double_int (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))));
+
+
+  /* We can handle only constantly sized accesses that are known to not
+     be larger than size of array element.  */
+  if (!TYPE_SIZE_UNIT (type)
+      || TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST
+      || double_int_cmp (elt_size,
+			 tree_to_double_int (TYPE_SIZE_UNIT (type)), 0) < 0)
+    return NULL_TREE;
+
+  /* Compute the array index we look for.  */
+  access_index = double_int_udiv (uhwi_to_double_int (offset / BITS_PER_UNIT),
+				  elt_size, TRUNC_DIV_EXPR);
+  access_index = double_int_add (access_index, low_bound);
+
+  /* And offset within the access.  */
+  inner_offset = offset % (double_int_to_uhwi (elt_size) * BITS_PER_UNIT);
+
+  /* See if the array field is large enough to span whole access.  We do not
+     care to fold accesses spanning multiple array indexes.  */
+  if (inner_offset + size > double_int_to_uhwi (elt_size) * BITS_PER_UNIT)
+    return NULL_TREE;
+
+  index = double_int_sub (low_bound, double_int_one);
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
+    {
+      /* Array constructor might explicitely set index, or specify range
+	 or leave index NULL meaning that it is next index after previous
+	 one.  */
+      if (cfield)
+	{
+	  if (TREE_CODE (cfield) == INTEGER_CST)
+	    max_index = index = tree_to_double_int (cfield);
+	  else
+	    {
+	      gcc_assert (TREE_CODE (cfield) == RANGE_EXPR);
+	      index = tree_to_double_int (TREE_OPERAND (cfield, 0));
+	      max_index = tree_to_double_int (TREE_OPERAND (cfield, 1));
+	    }
+	}
+      else
+	max_index = index = double_int_add (index, double_int_one);
+
+      /* Do we have match?  */
+      if (double_int_cmp (access_index, index, 1) >= 0
+	  && double_int_cmp (access_index, max_index, 1) <= 0)
+	return fold_ctor_reference (type, cval, inner_offset, size);
+    }
+  /* When memory is not explicitely mentioned in constructor,
+     it is 0 (or out of range).  */
+  return build_zero_cst (type);
+}
+
+/* CTOR is CONSTRUCTOR of an aggregate or vector.
+   Fold reference of type TYPE and size SIZE to the memory at bit OFFSET.  */
+
+static tree
+fold_nonarray_ctor_reference (tree type, tree ctor,
+			      unsigned HOST_WIDE_INT offset,
+			      unsigned HOST_WIDE_INT size)
+{
+  unsigned HOST_WIDE_INT cnt;
+  tree cfield, cval;
+
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield,
+			    cval)
+    {
+      tree byte_offset = DECL_FIELD_OFFSET (cfield);
+      tree field_offset = DECL_FIELD_BIT_OFFSET (cfield);
+      tree field_size = DECL_SIZE (cfield);
+      double_int bitoffset;
+      double_int byte_offset_cst = tree_to_double_int (byte_offset);
+      double_int bits_per_unit_cst = uhwi_to_double_int (BITS_PER_UNIT);
+      double_int bitoffset_end;
+
+      /* Variable sized objects in static constructors makes no sense.  */
+      gcc_assert (TREE_CODE (field_offset) == INTEGER_CST
+		  && TREE_CODE (byte_offset) == INTEGER_CST
+		  && TREE_CODE (field_size) == INTEGER_CST);
+
+      /* Compute bit offset of the field.  */
+      bitoffset = double_int_add (tree_to_double_int (field_offset),
+				  double_int_mul (byte_offset_cst,
+						  bits_per_unit_cst));
+      /* Compute bit offset where the field ends.  */
+      bitoffset_end = double_int_add (bitoffset,
+				      tree_to_double_int (field_size));
+
+      /* Is OFFSET in the range (BITOFFSET, BITOFFSET_END)? */
+      if (double_int_cmp (uhwi_to_double_int (offset), bitoffset, 0) >= 0
+	  && double_int_cmp (uhwi_to_double_int (offset),
+			     bitoffset_end, 0) < 0)
+	{
+	  double_int access_end = double_int_add (uhwi_to_double_int (offset),
+						  uhwi_to_double_int (size));
+	  double_int inner_offset = double_int_sub (uhwi_to_double_int (offset),
+						    bitoffset);
+	  /* We do have overlap.  Now see if field is large enough to
+	     cover the access.  Give up for accesses spanning multiple
+	     fields.  */
+	  if (double_int_cmp (access_end, bitoffset_end, 0) > 0)
+	    return NULL_TREE;
+	  return fold_ctor_reference (type, cval,
+				      double_int_to_uhwi (inner_offset), size);
+	}
+    }
+  /* When memory is not explicitely mentioned in constructor, it is 0.  */
+  return build_zero_cst (type);
+}
+
+/* CTOR is value initializing memory, fold reference of type TYPE and size SIZE
+   to the memory at bit OFFSET.  */
+
+static tree
+fold_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
+		     unsigned HOST_WIDE_INT size)
+{
+  tree ret;
+
+  /* We found the field with exact match.  */
+  if (useless_type_conversion_p (type, TREE_TYPE (ctor))
+      && !offset)
+    return canonicalize_constructor_val (ctor);
+
+  /* We are at the end of walk, see if we can view convert the
+     result.  */
+  if (!AGGREGATE_TYPE_P (TREE_TYPE (ctor)) && !offset
+      /* VIEW_CONVERT_EXPR is defined only for matching sizes.  */
+      && operand_equal_p (TYPE_SIZE (type),
+			  TYPE_SIZE (TREE_TYPE (ctor)), 0))
+    {
+      ret = canonicalize_constructor_val (ctor);
+      ret = fold_unary (VIEW_CONVERT_EXPR, type, ret);
+      if (ret)
+	STRIP_NOPS (ret);
+      return ret;
+    }
+  if (TREE_CODE (ctor) == STRING_CST)
+    return fold_string_cst_ctor_reference (type, ctor, offset, size);
+  if (TREE_CODE (ctor) == CONSTRUCTOR)
+    {
+
+      if (TREE_CODE (TREE_TYPE (ctor)) == ARRAY_TYPE)
+	return fold_array_ctor_reference (type, ctor, offset, size);
+      else
+	return fold_nonarray_ctor_reference (type, ctor, offset, size);
+    }
+
+  return NULL_TREE;
+}
+
 /* Return the tree representing the element referenced by T if T is an
    ARRAY_REF or COMPONENT_REF into constant aggregates.  Return
    NULL_TREE otherwise.  */
@@ -1376,10 +1594,10 @@ get_base_constructor (tree base, tree *offset)
 tree
 fold_const_aggregate_ref (tree t)
 {
-  tree ctor, idx, field;
-  unsigned HOST_WIDE_INT cnt;
-  tree cfield, cval;
+  tree ctor, idx, base;
+  HOST_WIDE_INT offset, size, max_size;
   tree tem;
+  tree ctr_offset;
 
   if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration)
     return get_symbol_constant_value (t);
@@ -1391,99 +1609,81 @@ fold_const_aggregate_ref (tree t)
   switch (TREE_CODE (t))
     {
     case ARRAY_REF:
-      ctor = get_base_constructor (TREE_OPERAND (t, 0), &idx);
-
-      if (idx)
-	return NULL_TREE;
-
-      if (ctor == error_mark_node)
-	return build_zero_cst (TREE_TYPE (t));
-
-      if (ctor == NULL_TREE
-	  || (TREE_CODE (ctor) != CONSTRUCTOR
-	      && TREE_CODE (ctor) != STRING_CST))
-	return NULL_TREE;
-
-      /* Get the index.  If we have an SSA_NAME, try to resolve it
-	 with the current lattice value for the SSA_NAME.  */
-      idx = TREE_OPERAND (t, 1);
-      switch (TREE_CODE (idx))
+    case ARRAY_RANGE_REF:
+      /* Constant indexes are handled well by get_base_constructor.
+	 Only special case variable offsets.
+	 FIXME: This code can't handle nested references with variable indexes
+	 (they will be handled only by iteration of ccp).  Perhaps we can bring
+	 get_ref_base_and_extent here and make it use get_constant_value.  */
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == SSA_NAME
+	  && (idx = get_constant_value (TREE_OPERAND (t, 1)))
+	  && host_integerp (idx, 0))
 	{
-	case SSA_NAME:
-	  if ((tem = get_constant_value (idx))
-	      && TREE_CODE (tem) == INTEGER_CST)
-	    idx = tem;
-	  else
-	    return NULL_TREE;
-	  break;
+	  tree low_bound, unit_size;
 
-	case INTEGER_CST:
-	  break;
+	  /* If the resulting bit-offset is constant, track it.  */
+	  if ((low_bound = array_ref_low_bound (t),
+	       host_integerp (low_bound, 0))
+	      && (unit_size = array_ref_element_size (t),
+		  host_integerp (unit_size, 1)))
+	    {
+	      offset = TREE_INT_CST_LOW (idx);
+	      offset -= TREE_INT_CST_LOW (low_bound);
+	      offset *= TREE_INT_CST_LOW (unit_size);
+	      offset *= BITS_PER_UNIT;
 
-	default:
-	  return NULL_TREE;
+	      base = TREE_OPERAND (t, 0);
+	      ctor = get_base_constructor (base, &ctr_offset);
+	      if (ctr_offset)
+		{
+		  if (!host_integerp (ctr_offset, 1))
+		    return NULL_TREE;
+		  offset += TREE_INT_CST_LOW (ctr_offset) * BITS_PER_UNIT;
+		}
+	      /* Empty constructor.  Always fold to 0. */
+	      if (ctor == error_mark_node)
+		return build_zero_cst (TREE_TYPE (t));
+	      /* Out of bound array access.  Value is undefined, but don't fold. */
+	      if (offset < 0)
+		return NULL_TREE;
+	      /* We can not determine ctor.  */
+	      if (!ctor)
+		return NULL_TREE;
+	      return fold_ctor_reference (TREE_TYPE (t), ctor, offset,
+					  TREE_INT_CST_LOW (unit_size)
+					  * BITS_PER_UNIT);
+	    }
 	}
-
-      /* Fold read from constant string.  */
-      if (TREE_CODE (ctor) == STRING_CST)
-	{
-	  tree low_bound = array_ref_low_bound (t);
-	  double_int low_bound_cst;
-	  double_int index_cst;
-	  double_int length_cst;
-	  bool signed_p = TYPE_UNSIGNED (TREE_TYPE (idx));
-
-	  if (TREE_CODE (idx) != INTEGER_CST
-	      || !INTEGRAL_TYPE_P (TREE_TYPE (t))
-	      || TREE_CODE (low_bound) != INTEGER_CST)
-	    return NULL_TREE;
-	  low_bound_cst = tree_to_double_int (low_bound);
-	  index_cst = tree_to_double_int (idx);
-	  length_cst = uhwi_to_double_int (TREE_STRING_LENGTH (ctor));
-	  index_cst = double_int_sub (index_cst, low_bound_cst);
-	  if ((TYPE_MODE (TREE_TYPE (t))
-	       == TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
-	      && (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
-	          == MODE_INT)
-	      && GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor)))) == 1
-	      && double_int_cmp (index_cst, length_cst, signed_p) < 0)
-	    return build_int_cst_type (TREE_TYPE (t),
-				       (TREE_STRING_POINTER (ctor)
-					[double_int_to_uhwi (index_cst)]));
-	  return NULL_TREE;
-	}
-
-      /* Whoo-hoo!  I'll fold ya baby.  Yeah!  */
-      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
-	if (tree_int_cst_equal (cfield, idx))
-	  return canonicalize_constructor_val (cval);
-      break;
-
+      /* Fallthru.  */
+	
     case COMPONENT_REF:
-      /* Get a CONSTRUCTOR.  If BASE is a VAR_DECL, get its
-	 DECL_INITIAL.  If BASE is a nested reference into another
-	 ARRAY_REF or COMPONENT_REF, make a recursive call to resolve
-	 the inner reference.  */
-      ctor = get_base_constructor (TREE_OPERAND (t, 0), &idx);
+    case BIT_FIELD_REF:
+    case TARGET_MEM_REF:
+    case MEM_REF:
+      base = get_ref_base_and_extent (t, &offset, &size, &max_size);
+      ctor = get_base_constructor (base, &ctr_offset);
 
-      if (idx)
-	return NULL_TREE;
-
+      /* Empty constructor.  Always fold to 0. */
       if (ctor == error_mark_node)
 	return build_zero_cst (TREE_TYPE (t));
-
-      if (ctor == NULL_TREE
-	  || TREE_CODE (ctor) != CONSTRUCTOR)
+      /* We do not know precise address.  */
+      if (max_size == -1 || max_size != size)
+	return NULL_TREE;
+      /* We can not determine ctor.  */
+      if (!ctor)
 	return NULL_TREE;
 
-      field = TREE_OPERAND (t, 1);
+      if (ctr_offset)
+	{
+	  if (!host_integerp (ctr_offset, 1))
+	    return NULL_TREE;
+	  offset += TREE_INT_CST_LOW (ctr_offset) * BITS_PER_UNIT;
+	}
+      /* Out of bound array access.  Value is undefined, but don't fold. */
+      if (offset < 0)
+	return NULL_TREE;
 
-      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
-	if (cfield == field
-	    /* FIXME: Handle bit-fields.  */
-	    && ! DECL_BIT_FIELD (cfield))
-	  return canonicalize_constructor_val (cval);
-      break;
+      return fold_ctor_reference (TREE_TYPE (t), ctor, offset, size);
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
@@ -1494,73 +1694,6 @@ fold_const_aggregate_ref (tree t)
 			      TREE_CODE (t), TREE_TYPE (t), c);
 	break;
       }
-
-    case MEM_REF:
-      ctor = get_base_constructor (t, &idx);
-
-      if (ctor == error_mark_node)
-	return build_zero_cst (TREE_TYPE (t));
-
-      if (ctor && !AGGREGATE_TYPE_P (TREE_TYPE (ctor))
-	  && !idx)
-	{
-	  if (ctor
-	      && !useless_type_conversion_p
-		    (TREE_TYPE (t), TREE_TYPE (ctor)))
-	    ctor = fold_unary (VIEW_CONVERT_EXPR, TREE_TYPE (t), ctor);
-	  return ctor;
-	}
-
-      if (!idx)
-	idx = integer_zero_node;
-
-      if (ctor == NULL_TREE
-	  || (TREE_CODE (ctor) != CONSTRUCTOR
-	      && TREE_CODE (ctor) != STRING_CST))
-	return NULL_TREE;
-
-      /* Fold read from constant string.  */
-      if (TREE_CODE (ctor) == STRING_CST)
-	{
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (t))
-	      && (TYPE_MODE (TREE_TYPE (t))
-		  == TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
-	      && (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
-	          == MODE_INT)
-	      && GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor)))) == 1
-	      && compare_tree_int (idx, TREE_STRING_LENGTH (ctor)) < 0)
-	    return build_int_cst_type (TREE_TYPE (t),
-				       (TREE_STRING_POINTER (ctor)
-					[TREE_INT_CST_LOW (idx)]));
-	  return NULL_TREE;
-	}
-
-      /* ???  Implement byte-offset indexing into a non-array CONSTRUCTOR.  */
-      if (TREE_CODE (TREE_TYPE (ctor)) == ARRAY_TYPE
-	  && (TYPE_MODE (TREE_TYPE (t))
-	      == TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
-	  && GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (t))) != 0
-	  && integer_zerop
-	       (int_const_binop
-		  (TRUNC_MOD_EXPR, idx,
-		   size_int (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (t)))), 0)))
-	{
-	  idx = int_const_binop (TRUNC_DIV_EXPR, idx,
-				 size_int (GET_MODE_SIZE
-					     (TYPE_MODE (TREE_TYPE (t)))), 0);
-	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
-	    if (tree_int_cst_equal (cfield, idx))
-	      {
-		cval = canonicalize_constructor_val (cval);
-		if (useless_type_conversion_p (TREE_TYPE (t), TREE_TYPE (cval)))
-		  return cval;
-		else if (CONSTANT_CLASS_P (cval))
-		  return fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (t), cval);
-		else
-		  return NULL_TREE;
-	      }
-	}
-      break;
 
     default:
       break;
