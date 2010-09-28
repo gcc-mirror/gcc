@@ -1,3 +1,11 @@
+2010-09-28  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (lvalue_kind): Rename from lvalue_p_1, make nonstatic.
+	(real_lvalue_p): Take const_tree.
+	* cp-tree.h: Adjust.
+	* typeck.c (lvalue_or_else): Make temporary arg a permerror.
+	(cp_build_addr_expr_1): Likewise.
+
 2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
 	
 	Partially merged from apple/trunk branch on FSF servers:

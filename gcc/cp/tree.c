@@ -40,7 +40,6 @@ static tree bot_replace (tree *, int *, void *);
 static int list_hash_eq (const void *, const void *);
 static hashval_t list_hash_pieces (tree, tree, tree);
 static hashval_t list_hash (const void *);
-static cp_lvalue_kind lvalue_p_1 (const_tree);
 static tree build_target_expr (tree, tree);
 static tree count_trees_r (tree *, int *, void *);
 static tree verify_stmt_tree_r (tree *, int *, void *);
@@ -53,8 +52,8 @@ static tree handle_init_priority_attribute (tree *, tree, tree, int, bool *);
 /* If REF is an lvalue, returns the kind of lvalue that REF is.
    Otherwise, returns clk_none.  */
 
-static cp_lvalue_kind
-lvalue_p_1 (const_tree ref)
+cp_lvalue_kind
+lvalue_kind (const_tree ref)
 {
   cp_lvalue_kind op1_lvalue_kind = clk_none;
   cp_lvalue_kind op2_lvalue_kind = clk_none;
@@ -66,7 +65,7 @@ lvalue_p_1 (const_tree ref)
   if (TREE_CODE (ref) == INDIRECT_REF
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 0)))
 	  == REFERENCE_TYPE)
-    return lvalue_p_1 (TREE_OPERAND (ref, 0));
+    return lvalue_kind (TREE_OPERAND (ref, 0));
 
   if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
     {
@@ -96,10 +95,10 @@ lvalue_p_1 (const_tree ref)
     case WITH_CLEANUP_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      return lvalue_p_1 (TREE_OPERAND (ref, 0));
+      return lvalue_kind (TREE_OPERAND (ref, 0));
 
     case COMPONENT_REF:
-      op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 0));
+      op1_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 0));
       /* Look at the member designator.  */
       if (!op1_lvalue_kind)
 	;
@@ -156,22 +155,22 @@ lvalue_p_1 (const_tree ref)
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (ref, 0))
 	  || TREE_SIDE_EFFECTS (TREE_OPERAND (ref, 1)))
 	return clk_none;
-      op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 0));
-      op2_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 1));
+      op1_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 0));
+      op2_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 1));
       break;
 
     case COND_EXPR:
-      op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 1)
+      op1_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 1)
 				    ? TREE_OPERAND (ref, 1)
 				    : TREE_OPERAND (ref, 0));
-      op2_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 2));
+      op2_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 2));
       break;
 
     case MODIFY_EXPR:
       return clk_ordinary;
 
     case COMPOUND_EXPR:
-      return lvalue_p_1 (TREE_OPERAND (ref, 1));
+      return lvalue_kind (TREE_OPERAND (ref, 1));
 
     case TARGET_EXPR:
       return clk_class;
@@ -194,7 +193,7 @@ lvalue_p_1 (const_tree ref)
 	 with a BASELINK.  */
       /* This CONST_CAST is okay because BASELINK_FUNCTIONS returns
 	 its argument unmodified and we assign it to a const_tree.  */
-      return lvalue_p_1 (BASELINK_FUNCTIONS (CONST_CAST_TREE (ref)));
+      return lvalue_kind (BASELINK_FUNCTIONS (CONST_CAST_TREE (ref)));
 
     case NON_DEPENDENT_EXPR:
       /* We must consider NON_DEPENDENT_EXPRs to be lvalues so that
@@ -232,9 +231,9 @@ lvalue_p_1 (const_tree ref)
    computes the C++ definition of lvalue.  */
 
 cp_lvalue_kind
-real_lvalue_p (tree ref)
+real_lvalue_p (const_tree ref)
 {
-  cp_lvalue_kind kind = lvalue_p_1 (ref);
+  cp_lvalue_kind kind = lvalue_kind (ref);
   if (kind & (clk_rvalueref|clk_class))
     return clk_none;
   else
@@ -247,7 +246,7 @@ real_lvalue_p (tree ref)
 bool
 lvalue_p (const_tree ref)
 {
-  return (lvalue_p_1 (ref) != clk_none);
+  return (lvalue_kind (ref) != clk_none);
 }
 
 /* This differs from real_lvalue_p in that rvalues formed by dereferencing
@@ -256,7 +255,7 @@ lvalue_p (const_tree ref)
 bool
 lvalue_or_rvalue_with_address_p (const_tree ref)
 {
-  cp_lvalue_kind kind = lvalue_p_1 (ref);
+  cp_lvalue_kind kind = lvalue_kind (ref);
   if (kind & clk_class)
     return false;
   else

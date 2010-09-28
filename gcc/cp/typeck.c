@@ -4878,12 +4878,22 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
   if (TREE_CODE (argtype) != FUNCTION_TYPE
       && TREE_CODE (argtype) != METHOD_TYPE)
     {
-      bool win = strict_lvalue ? real_lvalue_p (arg) : lvalue_p (arg);
-      if (!win)
+      cp_lvalue_kind kind = lvalue_kind (arg);
+      if (kind == clk_none)
 	{
 	  if (complain & tf_error)
 	    lvalue_error (lv_addressof);
 	  return error_mark_node;
+	}
+      if (strict_lvalue && (kind & (clk_rvalueref|clk_class)))
+	{
+	  if (!(complain & tf_error))
+	    return error_mark_node;
+	  if (kind & clk_class)
+	    /* Make this a permerror because we used to accept it.  */
+	    permerror (input_location, "taking address of temporary");
+	  else
+	    error ("taking address of xvalue (rvalue reference)");
 	}
     }
 
@@ -8361,11 +8371,24 @@ non_reference (tree t)
 int
 lvalue_or_else (tree ref, enum lvalue_use use, tsubst_flags_t complain)
 {
-  int win = real_lvalue_p (ref);
+  cp_lvalue_kind kind = lvalue_kind (ref);
 
-  if (!win && (complain & tf_error))
-    lvalue_error (use);
-
-  return win;
+  if (kind == clk_none)
+    {
+      if (complain & tf_error)
+	lvalue_error (use);
+      return 0;
+    }
+  else if (kind & (clk_rvalueref|clk_class))
+    {
+      if (!(complain & tf_error))
+	return 0;
+      if (kind & clk_class)
+	/* Make this a permerror because we used to accept it.  */
+	permerror (input_location, "using temporary as lvalue");
+      else
+	error ("using xvalue (rvalue reference) as lvalue");
+    }
+  return 1;
 }
 
