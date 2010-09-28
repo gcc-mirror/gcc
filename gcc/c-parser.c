@@ -242,8 +242,6 @@ c_lex_one_token (c_parser *parser, c_token *token)
 		    && (!OBJC_IS_PQ_KEYWORD (rid_code)
 			|| parser->objc_pq_context))
 		  {
-		    /* Return the canonical spelling for this keyword.  */
-		    token->value = ridpointers[(int) rid_code];
 		    token->type = CPP_KEYWORD;
 		    token->keyword = rid_code;
 		    break;
