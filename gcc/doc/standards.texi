@@ -208,23 +208,53 @@ no C++ language dialect options are given, is @option{-std=gnu++98}.
 @cindex Objective-C
 @cindex Objective-C++
 
-There is no formal written standard for Objective-C or Objective-C++@.  The most
-authoritative manual is ``Object-Oriented Programming and the
-Objective-C Language'', available at a number of web sites:
+GCC supports ``traditional'' Objective-C (also known as ``Objective-C
+1.0''), and contains support for the Objective-C exception and
+synchronization syntax.  At the time of writing, it has no support for
+``Objective-C 2.0'' language extensions.  GCC supports Objective-C++
+and features available in Objective-C are also available in
+Objective-C++@.
 
+GCC by default uses the GNU Objective-C runtime library, which is part
+of GCC and is not the same as the Apple/NeXT Objective-C runtime
+library used on Apple systems.  There are a number of differences
+documented in this manual.  The options @option{-fgnu-runtime} and
+@option{-fnext-runtime} allow you to switch between producing output
+that works with the GNU Objective-C runtime library and output that
+works with the Apple/NeXT Objective-C runtime library.
+
+There is no formal written standard for Objective-C or Objective-C++@.
+The authoritative manual on traditional Objective-C (1.0) is
+``Object-Oriented Programming and the Objective-C Language'',
+available at a number of web sites:
+@itemize
+@item
+@uref{http://www.gnustep.org/@/resources/@/documentation/@/ObjectivCBook.pdf}
+is the original NeXTstep document;
+@item
+@uref{http://objc.toodarkpark.net}
+is the same document in another format;
+@item
+@uref{http://developer.apple.com/@/mac/@/library/@/documentation/@/Cocoa/@/Conceptual/@/ObjectiveC/}
+has an updated version but make sure you search for ``Object Oriented Programming and the Objective-C Programming Language 1.0'',
+not documentation on the newer ``Objective-C 2.0'' language
+@end itemize
+
+The Objective-C exception and synchronization syntax (that is, the
+keywords @@try, @@throw, @@catch, @@finally and @@synchronized) is
+fully supported by GCC and is enabled with the option
+@option{-fobjc-exceptions}.  The syntax is briefly documented in this
+manual and in the Objective-C 2.0 manuals from Apple.
+
+At the time of writing, GCC supports no Objective-C 2.0 features.  The
+authoritative manual on Objective-C 2.0 is available from Apple:
 @itemize
 @item
 @uref{http://developer.apple.com/@/mac/@/library/@/documentation/@/Cocoa/@/Conceptual/@/ObjectiveC/}
-is a recent (and periodically updated) version;
-@item
-@uref{http://objc.toodarkpark.net}
-is an older example;
-@item
-@uref{http://www.gnustep.org}
-and
-@uref{http://gcc.gnu.org/readings.html}
-have additional useful information.
 @end itemize
+
+For more information concerning the history of Objective-C that is
+available online, see @uref{http://gcc.gnu.org/readings.html}
 
 @xref{Top, GNAT Reference Manual, About This Guide, gnat_rm,
 GNAT Reference Manual}, for information on standard
