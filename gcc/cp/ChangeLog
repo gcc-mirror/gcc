@@ -1,3 +1,9 @@
+2010-09-28  Richard Henderson  <rth@redhat.com>
+
+	* cp-lang.c: Include "target.h".
+	(cp_eh_personality): Use targetm.except_unwind_info.
+	* Make-lang.in (cp-lang.o): Update deps.
+
 2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* parser.c (cp_parser_objc_valid_prefix_attributes): New.

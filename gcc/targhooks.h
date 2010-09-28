@@ -154,3 +154,8 @@ extern int default_register_move_cost (enum machine_mode, reg_class_t,
 
 extern bool default_profile_before_prologue (void);
 extern bool default_class_likely_spilled_p (reg_class_t);
+
+extern enum unwind_info_type default_debug_unwind_info (void);
+extern enum unwind_info_type default_except_unwind_info (void);
+extern enum unwind_info_type dwarf2_except_unwind_info (void);
+extern enum unwind_info_type sjlj_except_unwind_info (void);

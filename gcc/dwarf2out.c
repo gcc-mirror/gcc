@@ -112,21 +112,16 @@ int vms_file_stats_name (const char *, long long *, long *, char *, int *);
 #define DWARF2_INDIRECT_STRING_SUPPORT_MISSING_ON_TARGET 0
 #endif
 
-#ifndef DWARF2_UNWIND_INFO
-#define DWARF2_UNWIND_INFO 0
+/* ??? Poison these here until it can be done generically.  They've been
+   totally replaced in this file; make sure it stays that way.  */
+#undef DWARF2_UNWIND_INFO
+#undef DWARF2_FRAME_INFO
+#if (GCC_VERSION >= 3000)
+ #pragma GCC poison DWARF2_UNWIND_INFO DWARF2_FRAME_INFO
 #endif
 
 #ifndef INCOMING_RETURN_ADDR_RTX
 #define INCOMING_RETURN_ADDR_RTX  (gcc_unreachable (), NULL_RTX)
-#endif
-
-#ifndef DWARF2_FRAME_INFO
-# ifdef DWARF2_DEBUGGING_INFO
-#  define DWARF2_FRAME_INFO \
-  (write_symbols == DWARF2_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
-# else
-#  define DWARF2_FRAME_INFO 0
-# endif
 #endif
 
 /* Map register numbers held in the call frame info that gcc has
@@ -148,13 +143,20 @@ dwarf2out_do_frame (void)
   /* We want to emit correct CFA location expressions or lists, so we
      have to return true if we're going to output debug info, even if
      we're not going to output frame or unwind info.  */
-  return (write_symbols == DWARF2_DEBUG
-	  || write_symbols == VMS_AND_DWARF2_DEBUG
-	  || DWARF2_FRAME_INFO || saved_do_cfi_asm
-	  || (DWARF2_UNWIND_INFO
-	      && (flag_unwind_tables
-		  || (flag_exceptions && ! USING_SJLJ_EXCEPTIONS)))
-	  );
+  if (write_symbols == DWARF2_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
+    return true;
+
+  if (saved_do_cfi_asm)
+    return true;
+
+  if (targetm.debug_unwind_info () == UI_DWARF2)
+    return true;
+
+  if ((flag_unwind_tables || flag_exceptions)
+      && targetm.except_unwind_info () == UI_DWARF2)
+    return true;
+
+  return false;
 }
 
 /* Decide whether to emit frame unwind via assembler directives.  */
@@ -167,10 +169,10 @@ dwarf2out_do_cfi_asm (void)
 #ifdef MIPS_DEBUGGING_INFO
   return false;
 #endif
-  if (!flag_dwarf2_cfi_asm || !dwarf2out_do_frame ())
-    return false;
   if (saved_do_cfi_asm)
     return true;
+  if (!flag_dwarf2_cfi_asm || !dwarf2out_do_frame ())
+    return false;
   if (!HAVE_GAS_CFI_PERSONALITY_DIRECTIVE)
     return false;
 
@@ -183,15 +185,12 @@ dwarf2out_do_cfi_asm (void)
   if ((enc & 0x70) != 0 && (enc & 0x70) != DW_EH_PE_pcrel)
     return false;
 
-  if (!HAVE_GAS_CFI_SECTIONS_DIRECTIVE)
-    {
-#ifdef TARGET_UNWIND_INFO
-      return false;
-#else
-      if (USING_SJLJ_EXCEPTIONS || (!flag_unwind_tables && !flag_exceptions))
-	return false;
-#endif
-    }
+  /* If we can't get the assembler to emit only .debug_frame, and we don't need
+     dwarf2 unwind info for exceptions, then emit .debug_frame by hand.  */
+  if (!HAVE_GAS_CFI_SECTIONS_DIRECTIVE
+      && !flag_unwind_tables && !flag_exceptions
+      && targetm.except_unwind_info () != UI_DWARF2)
+    return false;
 
   saved_do_cfi_asm = true;
   return true;
@@ -3976,20 +3975,18 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   char * dup_label;
   dw_fde_ref fde;
   section *fnsec;
+  bool do_frame;
 
   current_function_func_begin_label = NULL;
 
-#ifdef TARGET_UNWIND_INFO
-  /* ??? current_function_func_begin_label is also used by except.c
-     for call-site information.  We must emit this label if it might
-     be used.  */
-  if ((! flag_exceptions || USING_SJLJ_EXCEPTIONS)
-      && ! dwarf2out_do_frame ())
+  do_frame = dwarf2out_do_frame ();
+
+  /* ??? current_function_func_begin_label is also used by except.c for
+     call-site information.  We must emit this label if it might be used.  */
+  if (!do_frame
+      && (!flag_exceptions
+	  || targetm.except_unwind_info () != UI_TARGET))
     return;
-#else
-  if (! dwarf2out_do_frame ())
-    return;
-#endif
 
   fnsec = function_section (current_function_decl);
   switch_to_section (fnsec);
@@ -4000,11 +3997,9 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   dup_label = xstrdup (label);
   current_function_func_begin_label = dup_label;
 
-#ifdef TARGET_UNWIND_INFO
   /* We can elide the fde allocation if we're not emitting debug info.  */
-  if (! dwarf2out_do_frame ())
+  if (!do_frame)
     return;
-#endif
 
   /* Expand the fde table if necessary.  */
   if (fde_table_in_use == fde_table_allocated)
@@ -4173,7 +4168,8 @@ dwarf2out_frame_init (void)
   /* On entry, the Canonical Frame Address is at SP.  */
   dwarf2out_def_cfa (NULL, STACK_POINTER_REGNUM, INCOMING_FRAME_SP_OFFSET);
 
-  if (DWARF2_UNWIND_INFO || DWARF2_FRAME_INFO)
+  if (targetm.debug_unwind_info () == UI_DWARF2
+      || targetm.except_unwind_info () == UI_DWARF2)
     initial_return_save (INCOMING_RETURN_ADDR_RTX);
 }
 
@@ -4181,14 +4177,13 @@ void
 dwarf2out_frame_finish (void)
 {
   /* Output call frame information.  */
-  if (DWARF2_FRAME_INFO)
+  if (targetm.debug_unwind_info () == UI_DWARF2)
     output_call_frame_info (0);
 
-#ifndef TARGET_UNWIND_INFO
   /* Output another copy for the unwinder.  */
-  if (! USING_SJLJ_EXCEPTIONS && (flag_unwind_tables || flag_exceptions))
+  if ((flag_unwind_tables || flag_exceptions)
+      && targetm.except_unwind_info () == UI_DWARF2)
     output_call_frame_info (1);
-#endif
 }
 
 /* Note that the current function section is being used for code.  */
@@ -21806,13 +21801,11 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 static void
 dwarf2out_assembly_start (void)
 {
-  if (HAVE_GAS_CFI_SECTIONS_DIRECTIVE && dwarf2out_do_cfi_asm ())
-    {
-#ifndef TARGET_UNWIND_INFO
-      if (USING_SJLJ_EXCEPTIONS || (!flag_unwind_tables && !flag_exceptions))
-#endif
-	fprintf (asm_out_file, "\t.cfi_sections\t.debug_frame\n");
-    }
+  if (HAVE_GAS_CFI_SECTIONS_DIRECTIVE
+      && dwarf2out_do_cfi_asm ()
+      && (!(flag_unwind_tables || flag_exceptions)
+	  || targetm.except_unwind_info () != UI_DWARF2))
+    fprintf (asm_out_file, "\t.cfi_sections\t.debug_frame\n");
 }
 
 /* A helper function for dwarf2out_finish called through

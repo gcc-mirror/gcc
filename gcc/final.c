@@ -87,9 +87,7 @@ along with GCC; see the file COPYING3.  If not see
 				   declarations for e.g. AIX 4.x.  */
 #endif
 
-#if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
-#endif
 
 #ifdef DBX_DEBUGGING_INFO
 #include "dbxout.h"
@@ -1534,10 +1532,8 @@ final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
   if (!DECL_IGNORED_P (current_function_decl))
     debug_hooks->begin_prologue (last_linenum, last_filename);
 
-#if defined (DWARF2_UNWIND_INFO) || defined (TARGET_UNWIND_INFO)
   if (!dwarf2_debug_info_emitted_p (current_function_decl))
     dwarf2out_begin_prologue (0, NULL);
-#endif
 
 #ifdef LEAF_REG_REMAP
   if (current_function_uses_only_leaf_regs)
@@ -1549,7 +1545,7 @@ final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
   if (targetm.profile_before_prologue () && crtl->profile)
     profile_function (file);
 
-#if defined (DWARF2_UNWIND_INFO) && defined (HAVE_prologue)
+#if defined (HAVE_prologue)
   if (dwarf2out_do_frame ())
     dwarf2out_frame_debug (NULL_RTX, false);
 #endif
@@ -1657,11 +1653,9 @@ final_end_function (void)
   if (!DECL_IGNORED_P (current_function_decl))
     debug_hooks->end_epilogue (last_linenum, last_filename);
 
-#if defined (DWARF2_UNWIND_INFO)
   if (!dwarf2_debug_info_emitted_p (current_function_decl)
       && dwarf2out_do_frame ())
     dwarf2out_end_epilogue (last_linenum, last_filename);
-#endif
 }
 
 /* Output assembler code for some insns: all or part of a function.
@@ -1834,12 +1828,10 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	case NOTE_INSN_SWITCH_TEXT_SECTIONS:
 	  in_cold_section_p = !in_cold_section_p;
-#ifdef DWARF2_UNWIND_INFO
+
 	  if (dwarf2out_do_frame ())
 	    dwarf2out_switch_text_section ();
-	  else
-#endif
-	  if (!DECL_IGNORED_P (current_function_decl))
+	  else if (!DECL_IGNORED_P (current_function_decl))
 	    debug_hooks->switch_text_section ();
 
 	  switch_to_section (current_function_section ());
@@ -1890,7 +1882,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	  break;
 
 	case NOTE_INSN_EPILOGUE_BEG:
-#if defined (DWARF2_UNWIND_INFO) && defined (HAVE_epilogue)
+#if defined (HAVE_epilogue)
 	  if (dwarf2out_do_frame ())
 	    dwarf2out_cfi_begin_epilogue (insn);
 #endif
@@ -1899,9 +1891,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	  break;
 
 	case NOTE_INSN_CFA_RESTORE_STATE:
-#if defined (DWARF2_UNWIND_INFO)
 	  dwarf2out_frame_debug_restore_state ();
-#endif
 	  break;
 
 	case NOTE_INSN_FUNCTION_BEG:
@@ -2010,10 +2000,8 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
       break;
 
     case BARRIER:
-#if defined (DWARF2_UNWIND_INFO)
       if (dwarf2out_do_frame ())
 	dwarf2out_frame_debug (insn, false);
-#endif
       break;
 
     case CODE_LABEL:
@@ -2281,11 +2269,9 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	    /* Record the delay slots' frame information before the branch.
 	       This is needed for delayed calls: see execute_cfa_program().  */
-#if defined (DWARF2_UNWIND_INFO)
 	    if (dwarf2out_do_frame ())
 	      for (i = 1; i < XVECLEN (body, 0); i++)
 		dwarf2out_frame_debug (XVECEXP (body, 0, i), false);
-#endif
 
 	    /* The first insn in this SEQUENCE might be a JUMP_INSN that will
 	       force the restoration of a comparison that was previously
@@ -2600,10 +2586,8 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	current_output_insn = debug_insn = insn;
 
-#if defined (DWARF2_UNWIND_INFO)
 	if (CALL_P (insn) && dwarf2out_do_frame ())
 	  dwarf2out_frame_debug (insn, false);
-#endif
 
 	/* Find the proper template for this insn.  */
 	templ = get_insn_template (insn_code_number, insn);
@@ -2705,14 +2689,12 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	/* If necessary, report the effect that the instruction has on
 	   the unwind info.   We've already done this for delay slots
 	   and call instructions.  */
-#if defined (DWARF2_UNWIND_INFO)
 	if (final_sequence == 0
 #if !defined (HAVE_prologue)
 	    && !ACCUMULATE_OUTGOING_ARGS
 #endif
 	    && dwarf2out_do_frame ())
 	  dwarf2out_frame_debug (insn, true);
-#endif
 
 	if (!targetm.asm_out.unwind_emit_before_insn
 	    && targetm.asm_out.unwind_emit)

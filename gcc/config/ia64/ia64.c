@@ -251,6 +251,9 @@ static void ia64_asm_unwind_emit (FILE *, rtx);
 static void ia64_asm_emit_except_personality (rtx);
 static void ia64_asm_init_sections (void);
 
+static enum unwind_info_type ia64_debug_unwind_info (void);
+static enum unwind_info_type ia64_except_unwind_info (void);
+
 static struct bundle_state *get_free_bundle_state (void);
 static void free_bundle_state (struct bundle_state *);
 static void initiate_bundle_states (void);
@@ -536,6 +539,11 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_ASM_EMIT_EXCEPT_PERSONALITY  ia64_asm_emit_except_personality
 #undef TARGET_ASM_INIT_SECTIONS
 #define TARGET_ASM_INIT_SECTIONS  ia64_asm_init_sections
+
+#undef TARGET_DEBUG_UNWIND_INFO
+#define TARGET_DEBUG_UNWIND_INFO  ia64_debug_unwind_info
+#undef TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO  ia64_except_unwind_info
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P ia64_scalar_mode_supported_p
@@ -3903,7 +3911,7 @@ ia64_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	     current_frame_info.n_output_regs,
 	     current_frame_info.n_rotate_regs);
 
-  if (!flag_unwind_tables && (!flag_exceptions || USING_SJLJ_EXCEPTIONS))
+  if (ia64_except_unwind_info () != UI_TARGET)
     return;
 
   /* Emit the .prologue directive.  */
@@ -3961,7 +3969,7 @@ ia64_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 static void
 ia64_output_function_end_prologue (FILE *file)
 {
-  if (!flag_unwind_tables && (!flag_exceptions || USING_SJLJ_EXCEPTIONS))
+  if (ia64_except_unwind_info () != UI_TARGET)
     return;
 
   fputs ("\t.body\n", file);
@@ -8558,7 +8566,7 @@ ia64_add_bundle_selector_before (int template0, rtx insn)
   ia64_emit_insn_before (b, insn);
 #if NR_BUNDLES == 10
   if ((template0 == 4 || template0 == 5)
-      && (flag_unwind_tables || (flag_exceptions && !USING_SJLJ_EXCEPTIONS)))
+      && ia64_except_unwind_info () == UI_TARGET)
     {
       int i;
       rtx note = NULL_RTX;
@@ -9399,7 +9407,7 @@ ia64_reorg (void)
   /* A call must not be the last instruction in a function, so that the
      return address is still within the function, so that unwinding works
      properly.  Note that IA-64 differs from dwarf2 on this point.  */
-  if (flag_unwind_tables || (flag_exceptions && !USING_SJLJ_EXCEPTIONS))
+  if (ia64_except_unwind_info () == UI_TARGET)
     {
       rtx insn;
       int saw_stop = 0;
@@ -9865,8 +9873,7 @@ process_cfa_offset (FILE *asm_out_file, rtx pat, bool unwind)
 static void
 ia64_asm_unwind_emit (FILE *asm_out_file, rtx insn)
 {
-  bool unwind = (flag_unwind_tables
-		 || (flag_exceptions && !USING_SJLJ_EXCEPTIONS));
+  bool unwind = ia64_except_unwind_info () == UI_TARGET;
   bool frame = dwarf2out_do_frame ();
   rtx note, pat;
   bool handled_one;
@@ -9990,6 +9997,33 @@ ia64_asm_init_sections (void)
 {
   exception_section = get_unnamed_section (0, output_section_asm_op,
 					   "\t.handlerdata");
+}
+
+/* Implement TARGET_DEBUG_UNWIND_INFO.  */
+
+static enum unwind_info_type
+ia64_debug_unwind_info (void)
+{
+  return UI_TARGET;
+}
+
+/* Implement TARGET_EXCEPT_UNWIND_INFO.  */
+
+static enum unwind_info_type
+ia64_except_unwind_info (void)
+{
+  /* Honor the --enable-sjlj-exceptions configure switch.  */
+#ifdef CONFIG_UNWIND_EXCEPTIONS
+  if (CONFIG_UNWIND_EXCEPTIONS)
+    return UI_SJLJ;
+#endif
+
+  /* For simplicity elsewhere in this file, indicate that all unwind
+     info is disabled if we're not emitting unwind tables.  */
+  if (!flag_exceptions && !flag_unwind_tables)
+    return UI_NONE;
+
+  return UI_TARGET;
 }
 
 enum ia64_builtins

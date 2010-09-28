@@ -9351,7 +9351,7 @@ build_common_builtin_nodes (void)
   ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   local_define_builtin ("__builtin_unwind_resume", ftype,
 			BUILT_IN_UNWIND_RESUME,
-			(USING_SJLJ_EXCEPTIONS
+			(targetm.except_unwind_info () == UI_SJLJ
 			 ? "_Unwind_SjLj_Resume" : "_Unwind_Resume"),
 			ECF_NORETURN);
 
@@ -10935,7 +10935,7 @@ lhd_gcc_personality (void)
 {
   if (!gcc_eh_personality_decl)
     gcc_eh_personality_decl
-      = build_personality_function (USING_SJLJ_EXCEPTIONS
+      = build_personality_function (targetm.except_unwind_info () == UI_SJLJ
 				    ? "__gcc_personality_sj0"
 				    : "__gcc_personality_v0");
 

@@ -4897,7 +4897,7 @@ expand_function_end (void)
   /* Output the label for the actual return from the function.  */
   emit_label (return_label);
 
-  if (USING_SJLJ_EXCEPTIONS)
+  if (targetm.except_unwind_info () == UI_SJLJ)
     {
       /* Let except.c know where it should emit the call to unregister
 	 the function context for sjlj exceptions.  */
@@ -5055,7 +5055,8 @@ expand_function_end (void)
   /* @@@ This is a kludge.  We want to ensure that instructions that
      may trap are not moved into the epilogue by scheduling, because
      we don't always emit unwind information for the epilogue.  */
-  if (!USING_SJLJ_EXCEPTIONS && cfun->can_throw_non_call_exceptions)
+  if (cfun->can_throw_non_call_exceptions
+      && targetm.except_unwind_info () != UI_SJLJ)
     emit_insn (gen_blockage ());
 
   /* If stack protection is enabled for this function, check the guard.  */

@@ -1,3 +1,9 @@
+2010-09-28  Richard Henderson  <rth@redhat.com>
+
+	* lang.c: Include "target.h".
+	(java_eh_personality): Use targetm.except_unwind_info.
+	* Make-lang.in (lang.o): Update deps.
+
 2010-09-27  Andrew Haley  <aph@redhat.com>
 
 	PR java/45773

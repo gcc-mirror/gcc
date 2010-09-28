@@ -520,7 +520,7 @@ pa_option_override (void)
      call frame information.  There is no benefit in using this optimization
      on PA8000 and later processors.  */
   if (pa_cpu >= PROCESSOR_8000
-      || (! USING_SJLJ_EXCEPTIONS && flag_exceptions)
+      || (targetm.except_unwind_info () == UI_DWARF2 && flag_exceptions)
       || flag_unwind_tables)
     target_flags &= ~MASK_JUMP_IN_DELAY;
 

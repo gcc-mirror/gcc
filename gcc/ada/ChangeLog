@@ -1,3 +1,8 @@
+2010-09-28  Richard Henderson  <rth@redhat.com>
+
+	* gcc-interface/misc.c (gnat_eh_personality): Use
+	targetm.except_unwind_info.
+
 2010-09-28  Jan Hubicka  <jh@suse.cz>
 
 	* gcc-interface/utils.c (handle_leaf_attribute): New function.
