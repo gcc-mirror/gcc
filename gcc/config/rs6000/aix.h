@@ -207,13 +207,6 @@
 /* And similarly for general purpose registers.  */
 #define GP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) < 32)
 
-/* __throw will restore its own return address to be the same as the
-   return address of the function that the throw is being made to.
-   This is unfortunate, because we want to check the original
-   return address to see if we need to restore the TOC.
-   So we have to squirrel it away with this.  */
-#define SETUP_FRAME_ADDRESSES() rs6000_aix_emit_builtin_unwind_init ()
-
 /* If the current unwind info (FS) does not contain explicit info
    saving R2, then we have to do a minor amount of code reading to
    figure out if it was saved.  The big problem here is that the
