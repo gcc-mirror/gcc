@@ -8197,7 +8197,7 @@ encode_vector (tree type, int curtype, int format)
 }
 
 static void
-encode_aggregate_fields (tree type, int pointed_to, int curtype, int format)
+encode_aggregate_fields (tree type, bool pointed_to, int curtype, int format)
 {
   tree field = TYPE_FIELDS (type);
 
@@ -8250,14 +8250,14 @@ encode_aggregate_within (tree type, int curtype, int format, int left,
 
   if (flag_next_runtime)
     {
-      pointed_to = (ob_size > 0
-		    ? *(obstack_next_free (&util_obstack) - 1) == '^'
-		    : 0);
-      inline_contents = ((format == OBJC_ENCODE_INLINE_DEFS || generating_instance_variables)
-			 && (!pointed_to
-			     || ob_size - curtype == 1
-			     || (ob_size - curtype == 2
-				 && *(obstack_next_free (&util_obstack) - 2) == 'r')));      
+      if (ob_size > 0  &&  *(obstack_next_free (&util_obstack) - 1) == '^')
+	pointed_to = true;
+
+      if ((format == OBJC_ENCODE_INLINE_DEFS || generating_instance_variables)
+	  && (!pointed_to || ob_size - curtype == 1
+	      || (ob_size - curtype == 2
+		  && *(obstack_next_free (&util_obstack) - 2) == 'r')))
+	inline_contents = true;
     }
   else
     {
@@ -8279,27 +8279,19 @@ encode_aggregate_within (tree type, int curtype, int format, int left,
 	    inline_contents = true;
 	  else
 	    {
-	      /* FIXME: It's hard to understand what the following
-		 code is meant to be doing.  It seems that it will
-		 inline contents even if we are encoding a pointed
-		 structure and the last characters were 'r^' or just
-		 '^'.
+	      /* Note that the check (ob_size - curtype < 2) prevents
+		 infinite recursion when encoding a structure which is
+		 a linked list (eg, struct node { struct node *next;
+		 }).  Each time we follow a pointer, we add one
+		 character to ob_size, and curtype is fixed, so after
+		 at most two pointers we stop inlining contents and
+		 break the loop.
 
-		 So it seems that in the end the only case where we
-		 don't inline contents is '^r', which is a pointer to
-		 a 'const' structure!  If that is the case, the whole
-		 blob of code could be rewritten in a simpler way.
+		 The other case where we don't inline is "^r", which
+		 is a pointer to a constant struct.
 	      */
-	      if (c1 == 'r')
-		{
-		  if (ob_size - curtype == 2)
-		    inline_contents = true;
-		}
-	      else
-		{
-		  if (ob_size - curtype == 1)
-		    inline_contents = true;    
-		}
+	      if ((ob_size - curtype <= 2) && !(c0 == 'r'))
+		inline_contents = true;
 	    }
 	}
     }
@@ -8372,8 +8364,11 @@ encode_type (tree type, int curtype, int format)
   if (type == error_mark_node)
     return;
 
-  if (TYPE_READONLY (type))
-    obstack_1grow (&util_obstack, 'r');
+  if (!flag_next_runtime)
+    {
+      if (TYPE_READONLY (type))
+	obstack_1grow (&util_obstack, 'r');
+    }
 
   switch (code)
     {

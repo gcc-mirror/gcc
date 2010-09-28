@@ -1,3 +1,10 @@
+2010-09-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (encode_type): Do not add 'r' with the next runtime.
+	(encode_aggregate_within): Reorganized code to be more readable.
+	(encode_aggregate_fields): Updated second argument to be 'bool'
+	instead of 'int'.
+
 2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/45763
