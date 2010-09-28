@@ -1,3 +1,8 @@
+2010-09-28  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/cygming.h (ASM_OUTPUT_DWARF_OFFSET): Output 8 bytes
+	when 8 bytes are requested.                             
+
 2010-09-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Backport from mainline:
