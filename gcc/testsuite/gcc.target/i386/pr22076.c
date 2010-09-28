@@ -1,4 +1,5 @@
-/* { dg-do compile } */
+/* Fails on 32-bit Solaris 2/x86: PR target/44452 */
+/* { dg-do compile { target { ! { i?86-*-solaris2* && ilp32 } } } } */
 /* { dg-options "-O2 -fomit-frame-pointer -flax-vector-conversions -mmmx" } */
 
 #include <mmintrin.h>
