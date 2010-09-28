@@ -1,3 +1,8 @@
+2010-09-27  Ian Lance Taylor  <iant@google.com>
+
+	* config/i386/i386.c (ix86_supports_split_stack): -fsplit-stack
+	requires assembler support for CFI directives.
+
 2010-09-27  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (dwarf2out_cfi_label): Use ASM_OUTPUT_DEBUG_LABEL.

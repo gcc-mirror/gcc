@@ -3707,6 +3707,26 @@ $as_echo "$libgcc_cv_fixed_point" >&6; }
 fixed_point=$libgcc_cv_fixed_point
 
 
+# Check for assembler CFI support.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether assembler supports CFI directives" >&5
+$as_echo_n "checking whether assembler supports CFI directives... " >&6; }
+if test "${libgcc_cv_cfi+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int i = __GCC_HAVE_DWARF2_CFI_ASM;
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgcc_cv_cfi=yes
+else
+  libgcc_cv_cfi=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_cfi" >&5
+$as_echo "$libgcc_cv_cfi" >&6; }
+
 # Check 32bit or 64bit for x86.
 case ${host} in
 i?86*-*-* | x86_64*-*-*)

@@ -602,7 +602,10 @@ case ${host} in
 i[34567]86-*-linux* | x86_64-*-linux* | \
   i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | \
   i[34567]86-*-gnu*)
-	tmake_file="${tmake_file} t-tls t-stack i386/t-stack-i386"
+	tmake_file="${tmake_file} t-tls"
+	if test "$libgcc_cv_cfi" = "yes"; then
+		tmake_file="{$tmake_file} t-stack i386/t-stack-i386"
+	fi
 	;;
 esac
 
