@@ -1,5 +1,12 @@
 2010-09-27  Ian Lance Taylor  <iant@google.com>
 
+	* configure.ac: Test whether assembler supports CFI directives.
+	* config.host: Only add t-stack and i386/t-stack-i386 to
+	tmake_file if libgcc_cv_cfi is "yes".
+	* configure: Rebuild.
+
+2010-09-27  Ian Lance Taylor  <iant@google.com>
+
 	* generic-morestack.h: New file.
 	* generic-morestack.c: New file.
 	* generic-morestack-thread.c: New file.

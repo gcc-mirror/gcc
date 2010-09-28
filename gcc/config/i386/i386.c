@@ -8415,6 +8415,14 @@ ix86_supports_split_stack (bool report ATTRIBUTE_UNUSED)
   if (report)
     error ("%<-fsplit-stack%> currently only supported on GNU/Linux");
   ret = false;
+#else
+  if (!dwarf2out_do_cfi_asm ())
+    {
+      if (report)
+	error ("%<-fsplit-stack%> requires "
+	       "assembler support for CFI directives");
+      ret = false;
+    }
 #endif
 
   return ret;
