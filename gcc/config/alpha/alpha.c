@@ -6634,6 +6634,36 @@ static GTY(()) tree alpha_v8qi_s;
 static GTY(()) tree alpha_v4hi_u;
 static GTY(()) tree alpha_v4hi_s;
 
+static GTY(()) tree alpha_builtins[(int) ALPHA_BUILTIN_max];
+
+/* Return the alpha builtin for CODE.  */
+
+static tree
+alpha_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
+{
+  if (code >= ALPHA_BUILTIN_max)
+    return error_mark_node;
+  return alpha_builtins[code];
+}
+
+/* Helper function of alpha_init_builtins.  Add the built-in specified
+   by NAME, TYPE, CODE, and ECF.  */
+
+static void
+alpha_builtin_function (const char *name, tree ftype,
+			enum alpha_builtin code, unsigned ecf)
+{
+  tree decl = add_builtin_function (name, ftype, (int) code,
+				    BUILT_IN_MD, NULL, NULL_TREE);
+
+  if (ecf & ECF_CONST)
+    TREE_READONLY (decl) = 1;
+  if (ecf & ECF_NOTHROW)
+    TREE_NOTHROW (decl) = 1;
+
+  alpha_builtins [(int) code] = decl;
+}
+
 /* Helper function of alpha_init_builtins.  Add the COUNT built-in
    functions pointed to by P, with function type FTYPE.  */
 
@@ -6641,26 +6671,19 @@ static void
 alpha_add_builtins (const struct alpha_builtin_def *p, size_t count,
 		    tree ftype)
 {
-  tree decl;
   size_t i;
 
   for (i = 0; i < count; ++i, ++p)
     if ((target_flags & p->target_mask) == p->target_mask)
-      {
-	decl = add_builtin_function (p->name, ftype, p->code, BUILT_IN_MD,
-				     NULL, NULL);
-	if (p->is_const)
-	  TREE_READONLY (decl) = 1;
-	TREE_NOTHROW (decl) = 1;
-      }
+      alpha_builtin_function (p->name, ftype, p->code,
+			      (p->is_const ? ECF_CONST : 0) | ECF_NOTHROW);
 }
-
 
 static void
 alpha_init_builtins (void)
 {
   tree dimode_integer_type_node;
-  tree ftype, decl;
+  tree ftype;
 
   dimode_integer_type_node = lang_hooks.types.type_for_mode (DImode, 0);
 
@@ -6686,30 +6709,26 @@ alpha_init_builtins (void)
 		      ftype);
 
   ftype = build_function_type (ptr_type_node, void_list_node);
-  decl = add_builtin_function ("__builtin_thread_pointer", ftype,
-			       ALPHA_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
-			       NULL, NULL);
-  TREE_NOTHROW (decl) = 1;
+  alpha_builtin_function ("__builtin_thread_pointer", ftype,
+			  ALPHA_BUILTIN_THREAD_POINTER, ECF_NOTHROW);
 
   ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
-  decl = add_builtin_function ("__builtin_set_thread_pointer", ftype,
-			       ALPHA_BUILTIN_SET_THREAD_POINTER, BUILT_IN_MD,
-			       NULL, NULL);
-  TREE_NOTHROW (decl) = 1;
+  alpha_builtin_function ("__builtin_set_thread_pointer", ftype,
+			  ALPHA_BUILTIN_SET_THREAD_POINTER, ECF_NOTHROW);
 
   if (TARGET_ABI_OPEN_VMS)
     {
       ftype = build_function_type_list (ptr_type_node, ptr_type_node,
 					NULL_TREE);
-      add_builtin_function ("__builtin_establish_vms_condition_handler", ftype,
-			    ALPHA_BUILTIN_ESTABLISH_VMS_CONDITION_HANDLER,
-			    BUILT_IN_MD, NULL, NULL_TREE);
+      alpha_builtin_function ("__builtin_establish_vms_condition_handler",
+			      ftype,
+			      ALPHA_BUILTIN_ESTABLISH_VMS_CONDITION_HANDLER,
+			      0);
 
       ftype = build_function_type_list (ptr_type_node, void_type_node,
 					NULL_TREE);
-      add_builtin_function ("__builtin_revert_vms_condition_handler", ftype,
-			    ALPHA_BUILTIN_REVERT_VMS_CONDITION_HANDLER,
-			     BUILT_IN_MD, NULL, NULL_TREE);
+      alpha_builtin_function ("__builtin_revert_vms_condition_handler", ftype,
+			      ALPHA_BUILTIN_REVERT_VMS_CONDITION_HANDLER, 0);
     }
 
   alpha_v8qi_u = build_vector_type (unsigned_intQI_type_node, 8);
@@ -11082,6 +11101,8 @@ alpha_init_libfuncs (void)
 #undef TARGET_HAVE_TLS
 #define TARGET_HAVE_TLS HAVE_AS_TLS
 
+#undef  TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL  alpha_builtin_decl
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS alpha_init_builtins
 #undef  TARGET_EXPAND_BUILTIN
