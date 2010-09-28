@@ -499,19 +499,6 @@
   return true;
 })
 
-;; True for any non-virtual or eliminable register.  Used in places where
-;; instantiation of such a register may cause the pattern to not be recognized.
-(define_predicate "register_no_elim_operand"
-  (match_operand 0 "register_operand")
-{
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-  return !(op == arg_pointer_rtx
-	   || op == frame_pointer_rtx
-	   || IN_RANGE (REGNO (op),
-			FIRST_PSEUDO_REGISTER, LAST_VIRTUAL_REGISTER));
-})
-
 ;; P6 processors will jump to the address after the decrement when %esp
 ;; is used as a call operand, so they will execute return address as a code.
 ;; See Pentium Pro errata 70, Pentium 2 errata A33 and Pentium 3 errata E17.
@@ -526,6 +513,19 @@
     return false;
 
   return register_no_elim_operand (op, mode);
+})
+
+;; True for any non-virtual or eliminable register.  Used in places where
+;; instantiation of such a register may cause the pattern to not be recognized.
+(define_predicate "register_no_elim_operand"
+  (match_operand 0 "register_operand")
+{
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+  return !(op == arg_pointer_rtx
+	   || op == frame_pointer_rtx
+	   || IN_RANGE (REGNO (op),
+			FIRST_PSEUDO_REGISTER, LAST_VIRTUAL_REGISTER));
 })
 
 ;; Similarly, but include the stack pointer.  This is used to prevent esp

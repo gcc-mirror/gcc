@@ -6031,18 +6031,16 @@
 
 (define_insn "*avx_<code><mode>3"
   [(set (match_operand:SSEMODE124 0 "register_operand" "=x")
-	(maxmin:SSEMODE124
+	(umaxmin:SSEMODE124
 	  (match_operand:SSEMODE124 1 "nonimmediate_operand" "%x")
 	  (match_operand:SSEMODE124 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "vp<maxmin_int><ssevecsize>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sseiadd")
    (set (attr "prefix_extra")
-     (if_then_else
-       (ne (symbol_ref "<MODE>mode != ((<CODE> == SMAX || <CODE> == SMIN) ? V8HImode : V16QImode)")
-	   (const_int 0))
-       (const_string "1")
-       (const_string "0")))
+     (if_then_else (match_operand:V16QI 0 "" "")
+       (const_string "0")
+       (const_string "1")))
    (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
@@ -6063,6 +6061,21 @@
   "p<maxmin_int>b\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
    (set_attr "prefix_data16" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "*avx_<code><mode>3"
+  [(set (match_operand:SSEMODE124 0 "register_operand" "=x")
+	(smaxmin:SSEMODE124
+	  (match_operand:SSEMODE124 1 "nonimmediate_operand" "%x")
+	  (match_operand:SSEMODE124 2 "nonimmediate_operand" "xm")))]
+  "TARGET_AVX && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
+  "vp<maxmin_int><ssevecsize>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "sseiadd")
+   (set (attr "prefix_extra")
+     (if_then_else (match_operand:V8HI 0 "" "")
+       (const_string "0")
+       (const_string "1")))
+   (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
 (define_expand "<code>v8hi3"
@@ -6917,7 +6930,7 @@
 }
   [(set_attr "type" "sselog")
    (set (attr "prefix_extra")
-     (if_then_else (match_operand:V8HI 0 "register_operand" "")
+     (if_then_else (match_operand:V8HI 0 "" "")
        (const_string "0")
        (const_string "1")))
    (set_attr "length_immediate" "1")

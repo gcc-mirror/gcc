@@ -1,3 +1,10 @@
+2010-09-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*avx_<umaxmin:code><mode>3):
+	Split from *avx_<maxmin:code><mode>3.
+	(*avx_<smaxmin:code><mode>3): Ditto.
+	* config/i386/i386.md (maxmin): Remove code iterator.
+
 2010-09-27  Ian Lance Taylor  <iant@google.com>
 
 	* config/i386/i386.c (ix86_supports_split_stack): -fsplit-stack
