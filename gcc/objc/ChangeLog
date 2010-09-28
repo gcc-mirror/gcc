@@ -1,5 +1,16 @@
 2010-09-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2005-07-18  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4175534
+	* objc-act.c (objc_compare_types): A new silent comparison
+	mode (-4), differing from regular comparison (-3) in that
+	'false' is returned instead of issuing warnings.
+	
+2010-09-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (encode_type): Do not add 'r' with the next runtime.
 	(encode_aggregate_within): Reorganized code to be more readable.
 	(encode_aggregate_fields): Updated second argument to be 'bool'

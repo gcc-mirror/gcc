@@ -1,3 +1,12 @@
+2010-09-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2005-07-18  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4175534
+	* obj-c++.dg/method-22.mm: New.
+	
 2010-09-27  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/rv-lvalue-req.C: New.
