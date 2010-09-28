@@ -1,5 +1,6 @@
 // { dg-do assemble  }
 // { dg-prune-output "note" }
+// { dg-prune-output "deleted" }
 
 // g++ 1.36.1 bug 900121_02
 
