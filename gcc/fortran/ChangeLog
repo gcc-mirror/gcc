@@ -1,3 +1,9 @@
+2010-09-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45756
+	* trans-decl.c (gfc_get_symbol_decl): Use gsym for decl of
+	module parameters.
+
 2010-09-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40569
