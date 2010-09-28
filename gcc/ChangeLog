@@ -1,5 +1,10 @@
 2010-09-28  Tristan Gingold  <gingold@adacore.com>
 
+	* config/avr/avr.c (expand_prologue): Set
+	current_function_static_stack_size.
+
+2010-09-28  Tristan Gingold  <gingold@adacore.com>
+
 	* config/alpha/alpha.md: Change the initial condition of the
 	probing loop.
 
