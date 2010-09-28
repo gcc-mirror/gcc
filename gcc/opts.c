@@ -1091,7 +1091,7 @@ decode_options (unsigned int argc, const char **argv,
      default value if they choose based on other options.  */
   if (flag_split_stack == -1)
     flag_split_stack = 0;
-  else
+  else if (flag_split_stack)
     {
       if (!targetm.supports_split_stack (true))
 	{

@@ -1,3 +1,9 @@
+2010-09-28  Ian Lance Taylor  <iant@google.com>
+
+	PR target/45815
+	* opts.c (decode_options): Don't test whether the target supports
+	split stack if flag_split_stack == 0.
+
 2010-09-28  Jan Hubicka  <jh@suse.cz>
 
 	* builtin-attrs.def (ATTR_LEAF): New attribute.
