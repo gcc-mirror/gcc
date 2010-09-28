@@ -1,3 +1,21 @@
+2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc.dg/attributes: New.
+	* objc.dg/attributes/attributes.exp: New.
+	* objc.dg/attributes/class-attribute-1.m: New.
+	* objc.dg/attributes/class-attribute-2.m: New
+	* objc.dg/attributes/categ-attribute-1.m: New
+	* objc.dg/attributes/categ-attribute-2.m: New
+	* objc.dg/attributes/proto-attribute-1.m: New
+
+	* obj-c++.dg/attributes: New.
+	* obj-c++.dg/attributes/attributes.exp: New
+	* obj-c++.dg/attributes/class-attribute-1.mm: New
+	* obj-c++.dg/attributes/class-attribute-2.mm: New
+	* obj-c++.dg/attributes/categ-attribute-1.mm: New
+	* obj-c++.dg/attributes/categ-attribute-2.mm: New
+	* obj-c++.dg/attributes/proto-attribute-1.mm: New
+
 2010-09-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers (test method-20.m

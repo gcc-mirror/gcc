@@ -1,3 +1,9 @@
+2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc-act.c (objc_start_class_interface): Handle and ignore attributes.
+	(objc_start_category_interface): Likewise.
+	(objc_start_protocol): Likewise.
+
 2010-09-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.

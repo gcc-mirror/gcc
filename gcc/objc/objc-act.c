@@ -651,8 +651,13 @@ lookup_protocol_in_reflist (tree rproto_list, tree lproto)
 }
 
 void
-objc_start_class_interface (tree klass, tree super_class, tree protos)
+objc_start_class_interface (tree klass, tree super_class,
+			    tree protos, tree attributes)
 {
+  if (attributes)
+    warning_at (input_location, OPT_Wattributes, 
+		"class attributes are not available in this version"
+		" of the compiler, (ignored)");
   objc_interface_context
     = objc_ivar_context
     = start_class (CLASS_INTERFACE_TYPE, klass, super_class, protos);
@@ -660,8 +665,13 @@ objc_start_class_interface (tree klass, tree super_class, tree protos)
 }
 
 void
-objc_start_category_interface (tree klass, tree categ, tree protos)
+objc_start_category_interface (tree klass, tree categ,
+			       tree protos, tree attributes)
 {
+  if (attributes)
+    warning_at (input_location, OPT_Wattributes, 
+		"category attributes are not available in this version"
+		" of the compiler, (ignored)");
   objc_interface_context
     = start_class (CATEGORY_INTERFACE_TYPE, klass, categ, protos);
   objc_ivar_chain
@@ -669,8 +679,12 @@ objc_start_category_interface (tree klass, tree categ, tree protos)
 }
 
 void
-objc_start_protocol (tree name, tree protos)
+objc_start_protocol (tree name, tree protos, tree attributes)
 {
+  if (attributes)
+    warning_at (input_location, OPT_Wattributes, 
+		"protocol attributes are not available in this version"
+		" of the compiler, (ignored)");
   objc_interface_context
     = start_protocol (PROTOCOL_INTERFACE_TYPE, name, protos);
 }

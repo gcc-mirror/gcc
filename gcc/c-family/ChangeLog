@@ -1,3 +1,12 @@
+2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* c-common.h (objc_start_class_interface): Adjust prototype.
+	(objc_start_category_interface): Likewise.
+	(objc_start_protocol): Likewise.
+	* stub-objc.c (objc_start_protocol): Adjust for extra argument.
+	(objc_start_class_interface): Likewise.
+	(objc_start_category_interface): Likewise.
+
 2010-09-27  Ian Lance Taylor  <iant@google.com>
 
 	* c-common.c (c_common_attribute_table): Add no_split_stack.
