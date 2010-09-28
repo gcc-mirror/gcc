@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wc++-compat" } */
+/* { dg-options "-fno-short-enums -Wc++-compat" } */
 
 enum E { A };
 
