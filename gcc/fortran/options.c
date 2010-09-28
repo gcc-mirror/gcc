@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "intl.h"
 #include "opts.h"
+#include "toplev.h"  /* For save_decoded_options.  */
 #include "options.h"
 #include "params.h"
 #include "tree-inline.h"
@@ -964,5 +965,81 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
     }
 
+  return result;
+}
+
+
+/* Return a string with the options passed to the compiler; used for
+   Fortran's compiler_options() intrinsic.  */
+
+char *
+gfc_get_option_string (void)
+{
+  unsigned j;
+  size_t len, pos;
+  char *result;
+
+  /* Determine required string length.  */
+
+  len = 0;
+  for (j = 1; j < save_decoded_options_count; j++)
+    {
+      switch (save_decoded_options[j].opt_index)
+        {
+        case OPT_o:
+        case OPT_d:
+        case OPT_dumpbase:
+        case OPT_dumpdir:
+        case OPT_auxbase:
+        case OPT_quiet:
+        case OPT_version:
+        case OPT_fintrinsic_modules_path:
+          /* Ignore these.  */
+          break;
+	default:
+	  /* Ignore file names. */
+	  if (save_decoded_options[j].orig_option_with_args_text[0] == '-')
+	    len += 1
+		 + strlen (save_decoded_options[j].orig_option_with_args_text);
+        }
+    }
+
+  result = (char *) gfc_getmem (len);
+
+  pos = 0; 
+  for (j = 1; j < save_decoded_options_count; j++)
+    {
+      switch (save_decoded_options[j].opt_index)
+        {
+        case OPT_o:
+        case OPT_d:
+        case OPT_dumpbase:
+        case OPT_dumpdir:
+        case OPT_auxbase:
+        case OPT_quiet:
+        case OPT_version:
+        case OPT_fintrinsic_modules_path:
+          /* Ignore these.  */
+	  continue;
+
+        case OPT_cpp_:
+	  /* Use "-cpp" rather than "-cpp=<temporary file>".  */
+	  len = 4;
+	  break;
+
+        default:
+	  /* Ignore file names. */
+	  if (save_decoded_options[j].orig_option_with_args_text[0] != '-')
+	    continue;
+
+	  len = strlen (save_decoded_options[j].orig_option_with_args_text);
+        }
+
+      memcpy (&result[pos], save_decoded_options[j].orig_option_with_args_text, len);
+      pos += len;
+      result[pos++] = ' ';
+    }
+
+  result[--pos] = '\0';
   return result;
 }

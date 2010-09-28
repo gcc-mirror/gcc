@@ -2403,6 +2403,7 @@ void gfc_init_options (unsigned int,
 bool gfc_handle_option (size_t, const char *, int, int,
 			const struct cl_option_handlers *);
 bool gfc_post_options (const char **);
+char *gfc_get_option_string (void);
 
 /* f95-lang.c */
 void gfc_maybe_initialize_eh (void);

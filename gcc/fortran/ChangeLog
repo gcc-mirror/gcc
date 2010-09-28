@@ -1,3 +1,19 @@
+2010-09-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40569
+	PR fortran/40568
+	* intrinsic.c (add_functions): Make compiler_version and
+	compiler_options CLASS_INQUIRY.
+	* gfortran.h (gfc_get_option_string): New prototype.
+	* intrinsic.texi (COMPILER_VERSION, COMPILER_OPTIONS):
+	Add documentation.
+	(C_SIZEOF): Mark as inquiry function of ISO_C_BINDING.
+	(ISO_FORTRAN_ENV): Refer to COMPILER_VERSION and COMPILER_OPTIONS.
+	(ISO_C_BINDING): Refer to C_SIZEOF.
+	* options.c (gfc_get_option_string): New function.
+	* simplify.c (gfc_simplify_compiler_options): Use it.
+	(gfc_simplify_compiler_version): Include compiler name.
+
 2010-09-28  Jan Hubicka  <jh@suse.cz>
 
 	* f95-lang.c (gfc_define_builtin): Make leaf.
