@@ -123,8 +123,12 @@ main (int argc, char **argv)
   for (i = 1; i < last_arg; ++i)
     {
       const char *p;
+
+      if (strcmp (argv[i], "-D") == 0)
+	continue;
+
       fprintf (stream, "  \"");
-      for (p = &argv[i][2]; *p; ++p)
+      for (p = argv[i]; *p; ++p)
 	{
 	  if (! ISPRINT (*p))
 	    fprintf (stream, "\\%o", *p);
