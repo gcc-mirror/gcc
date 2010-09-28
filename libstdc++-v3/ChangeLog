@@ -1,3 +1,8 @@
+2010-09-28  Matt Austern  <austern@google.com>
+
+	* testsuite/20_util/hash/chi2_quality.cc: New.
+	* testsuite/20_util/hash/quality.cc: Likewise.
+
 2010-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/allocator.h (allocator_arg_t, allocator_arg,
