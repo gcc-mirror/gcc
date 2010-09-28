@@ -1,3 +1,9 @@
+2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_lex_one_token): In Objective-C, do not replace
+	token->value with the canonical spelling.  Do exactly like C and
+	C++ and leave it as it is.
+
 2010-09-28  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_builtins): New.
