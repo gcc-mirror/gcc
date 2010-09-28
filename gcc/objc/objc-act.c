@@ -8365,7 +8365,6 @@ static void
 encode_type (tree type, int curtype, int format)
 {
   enum tree_code code = TREE_CODE (type);
-  char c;
 
   /* Ignore type qualifiers other than 'const' when encoding a
      type.  */
@@ -8387,13 +8386,14 @@ encode_type (tree type, int curtype, int format)
 	  /* Kludge for backwards-compatibility with gcc-3.3: enums
 	     are always encoded as 'i' no matter what type they
 	     actually are (!).  */
-	  c = 'i';
+	  obstack_1grow (&util_obstack, 'i');
 	  break;
 	}
       /* Else, they are encoded exactly like the integer type that is
 	 used by the compiler to store them.  */
     case INTEGER_TYPE:
       {
+	char c;
 	switch (GET_MODE_BITSIZE (TYPE_MODE (type)))
 	  {
 	  case 8:  c = TYPE_UNSIGNED (type) ? 'C' : 'c'; break;
@@ -8437,6 +8437,7 @@ encode_type (tree type, int curtype, int format)
       }
     case REAL_TYPE:
       {
+	char c;
 	/* Floating point types.  */
 	switch (GET_MODE_BITSIZE (TYPE_MODE (type)))
 	  {

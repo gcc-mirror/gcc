@@ -1,3 +1,8 @@
+2010-09-28  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
+
+	* objc-act.c (encode_type): Fixed encoding enums with the next
+	runtime.
+
 2010-09-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
