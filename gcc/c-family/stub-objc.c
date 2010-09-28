@@ -122,21 +122,24 @@ objc_declare_protocols (tree ARG_UNUSED (list))
 
 void
 objc_start_protocol (tree ARG_UNUSED (proto),
-		     tree ARG_UNUSED (protorefs))
+		     tree ARG_UNUSED (protorefs),
+		     tree ARG_UNUSED (attribs))
 {
 }
 
 void
 objc_start_class_interface (tree ARG_UNUSED (name),
 			    tree ARG_UNUSED (super),
-			    tree ARG_UNUSED (protos))
+			    tree ARG_UNUSED (protos),
+			    tree ARG_UNUSED (attribs))
 {
 }
 
 void
 objc_start_category_interface (tree ARG_UNUSED (name),
 			       tree ARG_UNUSED (categ),
-			       tree ARG_UNUSED (protos))
+			       tree ARG_UNUSED (protos),
+			       tree ARG_UNUSED (attribs))
 {
 }
 

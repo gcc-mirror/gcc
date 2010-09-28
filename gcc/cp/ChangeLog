@@ -1,3 +1,11 @@
+2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* parser.c (cp_parser_objc_valid_prefix_attributes): New.
+	(cp_parser_declaration): Parse prefix attributes for ObjC++.
+	(cp_parser_objc_protocol_declaration): Handle attributes.
+	(cp_parser_objc_class_interface): Likewise.
+	(cp_parser_objc_declaration): Likewise.
+
 2010-09-27  Jason Merrill  <jason@redhat.com>
 
 	Require lvalues as specified by the standard.
