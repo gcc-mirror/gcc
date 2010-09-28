@@ -2644,13 +2644,13 @@ add_functions (void)
   make_from_module();
 
   /* COMPILER_OPTIONS and COMPILER_VERSION are part of ISO_FORTRAN_ENV.  */  
-  add_sym_0 ("compiler_options", GFC_ISYM_COMPILER_OPTIONS, CLASS_IMPURE,
-	     ACTUAL_NO, BT_CHARACTER, 1, GFC_STD_F2008,
+  add_sym_0 ("compiler_options", GFC_ISYM_COMPILER_OPTIONS, CLASS_INQUIRY,
+	     ACTUAL_NO, BT_CHARACTER, dc, GFC_STD_F2008,
 	     NULL, gfc_simplify_compiler_options, NULL);
   make_from_module();
 
-  add_sym_0 ("compiler_version", GFC_ISYM_COMPILER_VERSION, CLASS_IMPURE,
-	     ACTUAL_NO, BT_CHARACTER, 1, GFC_STD_F2008,
+  add_sym_0 ("compiler_version", GFC_ISYM_COMPILER_VERSION, CLASS_INQUIRY,
+	     ACTUAL_NO, BT_CHARACTER, dc, GFC_STD_F2008,
 	     NULL, gfc_simplify_compiler_version, NULL);
   make_from_module();
 

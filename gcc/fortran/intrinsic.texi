@@ -86,6 +86,8 @@ Some basic guidelines for editing this document:
 * @code{CMPLX}:         CMPLX,     Complex conversion function
 * @code{COMMAND_ARGUMENT_COUNT}: COMMAND_ARGUMENT_COUNT, Get number of command line arguments
 * @code{COMPLEX}:       COMPLEX,   Complex conversion function
+* @code{COMPILER_VERSION}: COMPILER_VERSION, Compiler version string
+* @code{COMPILER_OPTIONS}: COMPILER_OPTIONS, Options passed to the compiler
 * @code{CONJG}:         CONJG,     Complex conjugate function
 * @code{COS}:           COS,       Cosine function
 * @code{COSH}:          COSH,      Hyperbolic cosine function
@@ -2363,7 +2365,7 @@ expression @code{X} occupies.
 Fortran 2008
 
 @item @emph{Class}:
-Intrinsic function
+Inquiry function of the module @code{ISO_C_BINDING}
 
 @item @emph{Syntax}:
 @code{N = C_SIZEOF(X)}
@@ -2375,7 +2377,7 @@ Intrinsic function
 
 @item @emph{Return value}:
 The return value is of type integer and of the system-dependent kind
-@var{C_SIZE_T} (from the @var{ISO_C_BINDING} module). Its value is the
+@code{C_SIZE_T} (from the @code{ISO_C_BINDING} module). Its value is the
 number of bytes occupied by the argument.  If the argument has the
 @code{POINTER} attribute, the number of bytes of the storage area pointed
 to is returned.  If the argument is of a derived type with @code{POINTER}
@@ -2715,6 +2717,92 @@ end program test_command_argument_count
 
 @item @emph{See also}:
 @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT}
+@end table
+
+
+
+@node COMPILER_OPTIONS
+@section @code{COMPILER_OPTIONS} --- Options passed to the compiler
+@fnindex COMPILER_OPTIONS
+@cindex flags inquiry function
+@cindex options inquiry function
+@cindex compiler flags inquiry function
+
+@table @asis
+@item @emph{Description}:
+@code{COMPILER_OPTIONS()} returns a string with the options used for
+compiling.
+
+@item @emph{Standard}:
+Fortran 2008
+
+@item @emph{Class}:
+Inquiry function of the module @code{ISO_FORTRAN_ENV}
+
+@item @emph{Syntax}:
+@code{STR = COMPILER_OPTIONS()}
+
+@item @emph{Arguments}:
+None.
+
+@item @emph{Return value}:
+The return value is a default-kind string with system-dependent length.
+It contains the compiler flags used to compile the file, which called
+the @code{COMPILER_OPTIONS} intrinsic.
+
+@item @emph{Example}:
+@smallexample
+   use iso_fortran_env
+   print '(4a)', 'This file was compiled by ', &
+                 compiler_version(), ' using the the options ', &
+                 compiler_options()
+   end
+@end smallexample
+
+@item @emph{See also}:
+@ref{COMPILER_VERSION}, @ref{ISO_FORTRAN_ENV}
+@end table
+
+
+
+@node COMPILER_VERSION
+@section @code{COMPILER_VERSION} --- Compiler version string
+@fnindex COMPILER_VERSION
+@cindex compiler, name and version
+@cindex version of the compiler
+
+@table @asis
+@item @emph{Description}:
+@code{COMPILER_VERSION()} returns a string with the name and the
+version of the compiler.
+
+@item @emph{Standard}:
+Fortran 2008
+
+@item @emph{Class}:
+Inquiry function of the module @code{ISO_FORTRAN_ENV}
+
+@item @emph{Syntax}:
+@code{STR = COMPILER_VERSION()}
+
+@item @emph{Arguments}:
+None.
+
+@item @emph{Return value}:
+The return value is a default-kind string with system-dependent length.
+It contains the name of the compiler and its version number.
+
+@item @emph{Example}:
+@smallexample
+   use iso_fortran_env
+   print '(4a)', 'This file was compiled by ', &
+                 compiler_version(), ' using the the options ', &
+                 compiler_options()
+   end
+@end smallexample
+
+@item @emph{See also}:
+@ref{COMPILER_OPTIONS}, @ref{ISO_FORTRAN_ENV}
 @end table
 
 
@@ -12685,6 +12773,9 @@ Scalar default-integer constant used as STAT= return value by @code{UNLOCK} to
 denote that the lock variable is unlocked. (Fortran 2008 or later.)
 @end table
 
+The module also provides the following intrinsic procedures:
+@ref{COMPILER_OPTIONS} and @ref{COMPILER_VERSION}.
+
 
 
 @node ISO_C_BINDING
@@ -12704,6 +12795,7 @@ manual.
 @item @code{C_F_PROCPOINTER}
 @item @code{C_FUNLOC}
 @item @code{C_LOC}
+@item @code{C_SIZEOF}
 @end table
 @c TODO: Vertical spacing between C_FUNLOC and C_LOC wrong in PDF,
 @c don't really know why.

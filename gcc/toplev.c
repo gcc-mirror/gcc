@@ -127,8 +127,8 @@ static bool no_backend;
 #define MAX_LINE 75
 
 /* Decoded options, and number of such options.  */
-static struct cl_decoded_option *save_decoded_options;
-static unsigned int save_decoded_options_count;
+struct cl_decoded_option *save_decoded_options;
+unsigned int save_decoded_options_count;
 
 /* Name of top-level original source file (what was input to cpp).
    This comes from the #-command at the beginning of the actual input.
