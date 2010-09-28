@@ -6,4 +6,5 @@
 typedef long long __m256i __attribute__ ((__vector_size__ (32)));
 __m256i foo (void) { return (__m256i){ 1, 2, 3, 4 }; }
 
-/* { dg-final { scan-assembler-times "ymm0" 1 } } */
+/* Fails on 32-bit Solaris 2/x86: PR target/44452 */
+/* { dg-final { scan-assembler-times "ymm0" 1 { xfail { i?86-*-solaris2* && ilp32 } } } } */

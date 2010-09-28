@@ -1,3 +1,9 @@
+2010-09-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/44452
+	* gcc.target/i386/abi-2.c: XFAIL on i?86-*-solaris2* && ilp32.
+	* gcc.target/i386/pr22076.c: Skip on i?86-solaris2* && ilp32.
+
 2010-09-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/return2.ad[sb]: New test.
