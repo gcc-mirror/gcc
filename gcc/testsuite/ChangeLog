@@ -1,3 +1,11 @@
+2010-09-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/44452
+	* gcc.target/i386/pr22076.c: Add -mno-vect8-ret-in-mem on
+	i?86-*-solaris2.[89], *-*-vxworks*.
+	* gcc.target/i386/pr22152.c: Likewise.
+	* gcc.target/i386/vect8-ret.c: New test.
+
 2010-09-28  Jie Zhang  <jie@codesourcery.com>
 
 	* gcc.dg/Wcxx-compat-12.c: Add -fno-short-enums.

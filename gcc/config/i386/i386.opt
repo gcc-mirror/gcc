@@ -244,6 +244,10 @@ mveclibabi=
 Target RejectNegative Joined Var(ix86_veclibabi_string)
 Vector library ABI to use
 
+mvect8-ret-in-mem
+Target Report Mask(VECT8_RETURNS) Save
+Return 8-byte vectors in memory
+
 mrecip
 Target Report Mask(RECIP) Save
 Generate reciprocals instead of divss and sqrtss.

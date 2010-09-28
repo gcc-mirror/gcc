@@ -20,10 +20,11 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
-/* VxWorks uses the same ABI as Solaris 2.  */
+/* VxWorks uses the same ABI as Solaris 2, so use i386/sol2.h version.  */
 
-#define SUBTARGET_RETURN_IN_MEMORY(TYPE, FNTYPE) \
-	ix86_solaris_return_in_memory (TYPE, FNTYPE)
+#undef TARGET_SUBTARGET_DEFAULT
+#define TARGET_SUBTARGET_DEFAULT \
+	(MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_VECT8_RETURNS)
 
 /* Provide our target specific DBX_REGISTER_NUMBER, as advertised by the
    common svr4.h.  VxWorks relies on the SVR4 numbering.  */

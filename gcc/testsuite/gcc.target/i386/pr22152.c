@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2" } */
+/* { dg-options "-O2 -msse2 -mno-vect8-ret-in-mem" { target i?86-*-solaris2.[89] *-*-vxworks* } } */
 
 #include <mmintrin.h>
 

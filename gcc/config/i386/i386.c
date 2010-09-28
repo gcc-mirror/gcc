@@ -2632,6 +2632,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
     { "-msseregparm",			MASK_SSEREGPARM },
     { "-mstack-arg-probe",		MASK_STACK_PROBE },
     { "-mtls-direct-seg-refs",		MASK_TLS_DIRECT_SEG_REFS },
+    { "-mvect8-ret-in-mem",		MASK_VECT8_RETURNS },
     { "-m8bit-idiv",			MASK_USE_8BIT_IDIV },
   };
 
@@ -6849,9 +6850,9 @@ return_in_memory_32 (const_tree type, enum machine_mode mode)
 	return false;
 
       /* MMX/3dNow values are returned in MM0,
-	 except when it doesn't exits.  */
+	 except when it doesn't exits or the ABI prescribes otherwise.  */
       if (size == 8)
-	return !TARGET_MMX;
+	return !TARGET_MMX || TARGET_VECT8_RETURNS;
 
       /* SSE values are returned in XMM0, except when it doesn't exist.  */
       if (size == 16)
@@ -6913,43 +6914,6 @@ ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
   else
     return return_in_memory_32 (type, mode);
 #endif
-}
-
-/* Return false iff TYPE is returned in memory.  This version is used
-   on Solaris 2.  It is similar to the generic ix86_return_in_memory,
-   but differs notably in that when MMX is available, 8-byte vectors
-   are returned in memory, rather than in MMX registers.  */
-
-bool
-ix86_solaris_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
-{
-  int size;
-  enum machine_mode mode = type_natural_mode (type, NULL);
-
-  if (TARGET_64BIT)
-    return return_in_memory_64 (type, mode);
-
-  if (mode == BLKmode)
-    return 1;
-
-  size = int_size_in_bytes (type);
-
-  if (VECTOR_MODE_P (mode))
-    {
-      /* Return in memory only if MMX registers *are* available.  This
-	 seems backwards, but it is consistent with the existing
-	 Solaris x86 ABI.  */
-      if (size == 8)
-	return TARGET_MMX;
-      if (size == 16)
-	return !TARGET_SSE;
-    }
-  else if (mode == TImode)
-    return !TARGET_SSE;
-  else if (mode == XFmode)
-    return 0;
-
-  return size > 12;
 }
 
 /* When returning SSE vector types, we have a choice of either
