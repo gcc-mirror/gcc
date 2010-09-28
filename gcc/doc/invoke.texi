@@ -601,7 +601,8 @@ Objective-C and Objective-C++ Dialects}.
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
 -m96bit-long-double  -mregparm=@var{num}  -msseregparm @gol
--mveclibabi=@var{type} -mpc32 -mpc64 -mpc80 -mstackrealign @gol
+-mveclibabi=@var{type} -mvect8-ret-in-mem @gol
+-mpc32 -mpc64 -mpc80 -mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} -mabi=@var{name} @gol
 -m32  -m64 -mlarge-data-threshold=@var{num} @gol
@@ -12245,6 +12246,16 @@ function by using the function attribute @samp{sseregparm}.
 @strong{Warning:} if you use this switch then you must build all
 modules with the same value, including any libraries.  This includes
 the system libraries and startup modules.
+
+@item -mvect8-ret-in-mem
+@opindex mvect8-ret-in-mem
+Return 8-byte vectors in memory instead of MMX registers.  This is the
+default on Solaris~8 and 9 and VxWorks to match the ABI of the Sun
+Studio compilers until version 12.  Later compiler versions (starting
+with Studio 12 Update~1) follow the ABI used by other x86 targets, which
+is the default on Solaris~10 and later.  @emph{Only} use this option if
+you need to remain compatible with existing code produced by those
+previous compiler versions or older versions of GCC.
 
 @item -mpc32
 @itemx -mpc64

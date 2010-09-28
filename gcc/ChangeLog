@@ -1,3 +1,19 @@
+2010-09-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/44452
+	* config/i386/i386.opt (mvect8-ret-in-mem): Define.
+	* config/i386/i386.c (ix86_target_string): Handle -mvect8-ret-in-mem.
+	(ix86_solaris_return_in_memory): Remove.
+	* config/i386/i386-protos.h (ix86_solaris_return_in_memory): Remove.
+	* config/i386/sol2.h (SUBTARGET_RETURN_IN_MEMORY): Remove.
+	(TARGET_SUBTARGET_DEFAULT): Redefine.
+	* config/i386/sol2-10.h (TARGET_SUBTARGET_DEFAULT): Update comment.
+	* config/i386/vx-common.h (SUBTARGET_RETURN_IN_MEMORY): Remove.
+	(TARGET_SUBTARGET_DEFAULT): Redefine.
+	* doc/invoke.texi (Option Summary, i386 and x86-64 Options): Add
+	-mvect8-ret-in-mem.
+	(i386 and x86-64 Options): Document -mvect8-ret-in-mem.
+
 2010-09-29  Alan Modra  <amodra@gmail.com>
 
 	PR target/45807
