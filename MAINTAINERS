@@ -72,6 +72,7 @@ m68k port		Andreas Schwab		schwab@linux-m68k.org
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
 mcore port		Nick Clifton		nickc@redhat.com
 mep port		DJ Delorie		dj@redhat.com
+microblaze		Michael Eager		eager@eagercon.com
 mips port		Eric Christopher	echristo@apple.com
 mips port		Richard Sandiford	rdsandiford@googlemail.com
 mmix port		Hans-Peter Nilsson	hp@bitrange.com
