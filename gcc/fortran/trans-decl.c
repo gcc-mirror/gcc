@@ -1133,11 +1133,18 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   if (sym->backend_decl)
     return sym->backend_decl;
 
+  /* Special case for array-valued named constants from intrinsic
+     procedures; those are inlined.  */
+  if (sym->attr.use_assoc && sym->from_intmod
+      && sym->attr.flavor == FL_PARAMETER)
+    intrinsic_array_parameter = true;
+
   /* If use associated and whole file compilation, use the module
      declaration.  */
   if (gfc_option.flag_whole_file
-	&& sym->attr.flavor == FL_VARIABLE
-	&& sym->attr.use_assoc
+	&& (sym->attr.flavor == FL_VARIABLE
+	    || sym->attr.flavor == FL_PARAMETER)
+	&& sym->attr.use_assoc && !intrinsic_array_parameter
 	&& sym->module)
     {
       gfc_gsymbol *gsym;
@@ -1181,12 +1188,6 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 
   if (sym->attr.intrinsic)
     internal_error ("intrinsic variable which isn't a procedure");
-
-  /* Special case for array-valued named constants from intrinsic
-     procedures; those are inlined.  */
-  if (sym->attr.use_assoc && sym->from_intmod && sym->attr.dimension
-      && sym->attr.flavor == FL_PARAMETER)
-    intrinsic_array_parameter = true;
 
   /* Create string length decl first so that they can be used in the
      type declaration.  */
