@@ -1,3 +1,15 @@
+2010-09-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers (test method-20.m
+	from the branch renamed to method-20b.m to avoid clashes).
+
+	2005-08-23  Stuart Hastings <stuart@apple.com>
+	            Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4209854
+	* obj-c++.dg/method-23.mm: New.
+	* objc.dg/method-20.m: New.
+
 2010-09-28  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/foldconst-5.c: New testcase.
