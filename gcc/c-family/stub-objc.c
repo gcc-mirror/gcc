@@ -196,12 +196,14 @@ objc_finish_implementation (void)
 }
 
 void
-objc_add_method_declaration (tree ARG_UNUSED (signature))
+objc_add_method_declaration (tree ARG_UNUSED (signature),
+			     tree ARG_UNUSED (attributes))
 {
 }
 
 bool
-objc_start_method_definition (tree ARG_UNUSED (signature))
+objc_start_method_definition (tree ARG_UNUSED (signature),
+			      tree ARG_UNUSED (attributes))
 {
   return true;
 }
@@ -214,7 +216,8 @@ objc_finish_method_definition (tree ARG_UNUSED (fndecl))
 tree
 objc_build_keyword_decl (tree ARG_UNUSED (selector),
 			 tree ARG_UNUSED (type),
-			 tree ARG_UNUSED (identifier))
+			 tree ARG_UNUSED (identifier),
+			 tree ARG_UNUSED (attributes))
 {
   return 0;
 }

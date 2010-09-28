@@ -1,3 +1,16 @@
+2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
+	
+	Partially merged from apple/trunk branch on FSF servers:
+	2006-04-26 Fariborz Jahanian <fjahanian@apple.com>
+	Radar 3803157 (method attributes)
+	
+	* parser.c (cp_parser_objc_method_keyword_params): Handle attributes.
+	(cp_parser_objc_method_tail_params_opt): Likewise.
+	(cp_parser_objc_method_signature): Likewise.
+	(cp_parser_objc_method_maybe_bad_prefix_attributes): New.
+	(cp_parser_objc_method_prototype_list): Handle attributes.
+	(cp_parser_objc_method_definition_list): Likewise.
+
 2010-09-28  Richard Henderson  <rth@redhat.com>
 
 	* cp-lang.c: Include "target.h".

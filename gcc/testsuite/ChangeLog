@@ -1,5 +1,13 @@
 2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
 
+	* objc.dg/attributes/method-attribute-1.m: New.
+	* objc.dg/attributes/method-attribute-2.m: New.
+
+	* obj-c++.dg/attributes/method-attribute-1.m: New.
+	* obj-c++.dg/attributes/method-attribute-2.m: New.
+
+2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
+
 	* objc.dg/attributes: New.
 	* objc.dg/attributes/attributes.exp: New.
 	* objc.dg/attributes/class-attribute-1.m: New.
