@@ -1,3 +1,8 @@
+2010-09-27  Andrew Haley  <aph@redhat.com>
+
+	PR java/45773
+	* jvgenmain.c (main): Fix arg processing.
+
 2010-09-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* jvspec.c (lang_specific_driver): Handle OPT__help instead of
