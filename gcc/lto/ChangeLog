@@ -1,3 +1,8 @@
+2010-09-28  Jan Hubicka  <jh@suse.cz>
+
+	* lto-lang.c (handle_leaf_attribute): New function.
+	(lto_attribute_tables): Add leaf.
+
 2010-09-25  Jie Zhang  <jie@codesourcery.com>
 
 	* lto.c (lto_read_all_file_options): Start a new line after

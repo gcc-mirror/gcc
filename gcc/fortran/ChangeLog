@@ -1,3 +1,11 @@
+2010-09-28  Jan Hubicka  <jh@suse.cz>
+
+	* f95-lang.c (gfc_define_builtin): Make leaf.
+	(gfc_init_builtin_functions): Handle only ATTR_CONST_NOTHROW_LEAF_LIST
+	and ATTR_NOTHROW_LEAF_LIST.
+	(DEF_SYNC_BUILTIN): Check ATTR_CONST_NOTHROW_LEAF_LIST.
+	(DEF_GOMP_BUILTIN): Likewise.
+
 2010-09-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45756

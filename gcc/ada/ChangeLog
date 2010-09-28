@@ -1,3 +1,8 @@
+2010-09-28  Jan Hubicka  <jh@suse.cz>
+
+	* gcc-interface/utils.c (handle_leaf_attribute): New function.
+	(gnat_internal_attribute_tables): Add leaf.
+
 2010-09-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/lang.opt (-all-warnings, -include-barrier,

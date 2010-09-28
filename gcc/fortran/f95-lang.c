@@ -638,6 +638,8 @@ gfc_define_builtin (const char *name,
   if (const_p)
     TREE_READONLY (decl) = 1;
   TREE_NOTHROW (decl) = 1;
+  DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("leaf"),
+				      NULL, DECL_ATTRIBUTES (decl));
 
   built_in_decls[code] = decl;
   implicit_built_in_decls[code] = decl;
@@ -728,8 +730,8 @@ gfc_init_builtin_functions (void)
   enum
   {
     /* So far we need just these 2 attribute types.  */
-    ATTR_NOTHROW_LIST,
-    ATTR_CONST_NOTHROW_LIST
+    ATTR_NOTHROW_LEAF_LIST,
+    ATTR_CONST_NOTHROW_LEAF_LIST
   };
 
   tree mfunc_float[6];
@@ -1083,7 +1085,7 @@ gfc_init_builtin_functions (void)
 #undef DEF_SYNC_BUILTIN
 #define DEF_SYNC_BUILTIN(code, name, type, attr) \
     gfc_define_builtin (name, builtin_types[type], code, name, \
-			attr == ATTR_CONST_NOTHROW_LIST);
+			attr == ATTR_CONST_NOTHROW_LEAF_LIST);
 #include "../sync-builtins.def"
 #undef DEF_SYNC_BUILTIN
 
@@ -1092,7 +1094,7 @@ gfc_init_builtin_functions (void)
 #undef DEF_GOMP_BUILTIN
 #define DEF_GOMP_BUILTIN(code, name, type, attr) \
       gfc_define_builtin ("__builtin_" name, builtin_types[type], \
-			  code, name, attr == ATTR_CONST_NOTHROW_LIST);
+			  code, name, attr == ATTR_CONST_NOTHROW_LEAF_LIST);
 #include "../omp-builtins.def"
 #undef DEF_GOMP_BUILTIN
     }
