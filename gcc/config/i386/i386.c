@@ -8380,7 +8380,7 @@ ix86_supports_split_stack (bool report ATTRIBUTE_UNUSED)
     error ("%<-fsplit-stack%> currently only supported on GNU/Linux");
   ret = false;
 #else
-  if (!dwarf2out_do_cfi_asm ())
+  if (!HAVE_GAS_CFI_PERSONALITY_DIRECTIVE)
     {
       if (report)
 	error ("%<-fsplit-stack%> requires "
