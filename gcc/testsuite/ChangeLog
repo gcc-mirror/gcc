@@ -1,5 +1,9 @@
 2010-09-28  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/rv-lvalue-req.C: Adjust messages.
+	* g++.dg/ext/complit11.C: Likewise.
+	* g++.old-deja/g++.law/temps1.C: Likewise.
+
 	* g++.old-deja/g++.bugs/900121_02.C: Adjust for C++0x mode.
 	* g++.old-deja/g++.mike/misc6.C: Likewise.
 
