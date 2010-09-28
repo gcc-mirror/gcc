@@ -1,3 +1,9 @@
+2010-09-28  DJ Delorie  <dj@redhat.com>
+
+	PR target/45800
+	* config/m32c/m32c.c (m32c_subreg): Force adjustment of subregs of
+	volatile MEMs.
+
 2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* c-parser.c (c_parser_declaration_or_fndef): Diagnose incorrect prefix

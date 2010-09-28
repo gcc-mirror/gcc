@@ -3317,7 +3317,19 @@ m32c_subreg (enum machine_mode outer,
     return gen_rtx_MEM (outer, XEXP (XEXP (x, 0), 0));
 
   if (GET_CODE (x) != REG)
-    return simplify_gen_subreg (outer, x, inner, byte);
+    {
+      rtx r = simplify_gen_subreg (outer, x, inner, byte);
+      if (GET_CODE (r) == SUBREG
+	  && GET_CODE (x) == MEM
+	  && MEM_VOLATILE_P (x))
+	{
+	  /* Volatile MEMs don't get simplified, but we need them to
+	     be.  We are little endian, so the subreg byte is the
+	     offset.  */
+	  r = adjust_address (x, outer, byte);
+	}
+      return r;
+    }
 
   r = REGNO (x);
   if (r >= FIRST_PSEUDO_REGISTER || r == AP_REGNO)
