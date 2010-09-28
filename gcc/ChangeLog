@@ -1,5 +1,22 @@
 2010-09-28  Jan Hubicka  <jh@suse.cz>
 
+	* builtin-attrs.def (ATTR_LEAF): New attribute.
+	(ATTR_NOVOPS_LEAF_LIST, ATTR_LEAF_LIST, ATTR_NOTHROW_LEAF_LIST,
+	ATTR_CONST_NOTHROW_LEAF_LIST, ATTR_PURE_NOTHROW_LEAF_LIST,
+	ATTR_PURE_NOTHROW_NOVOPS_LEAF_LIST, ATTR_NORETURN_NOTHROW_LEAF_LIST,
+	ATTR_MALLOC_NOTHROW_LEAF_LIST, ATTR_SENTINEL_NOTHROW_LEAF_LIST,
+	ATTR_NOTHROW_NONNULL_LEAF, ATTR_CONST_NOTHROW_NONNULL_LEAF,
+	ATTR_CONST_NOTHROW_TYPEGENERIC_LEAF, ATTR_PURE_NOTHROW_NONNULL_LEAF,
+	ATTR_MALLOC_NOTHROW_NONNULL_LEAF): New attribute lists.
+	* sync-builtins.def: Annotate all builtins by leaf.
+	* omp-builtins.def: Annotate all builtins by leaf.
+	* builtins.def: Annotate relevant builtins with leaf attribute.
+	(ATTR_MATHFN_ERRNO, ATTR_MATHFN_FPROUNDING,
+	ATTR_MATHFN_FPROUNDING_ERRNO, ATTR_MATHFN_FPROUNDING_STORE): Make
+	leaf.
+
+2010-09-28  Jan Hubicka  <jh@suse.cz>
+
 	* tree-ssa-ccp.c (fold_ctor_reference): New function.
 	(fold_const_aggregate_ref): Use it.
 	* fold-const.c (canonicalize_constructor_val): Check that we don't fold
