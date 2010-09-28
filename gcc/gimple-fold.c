@@ -54,12 +54,11 @@ static_object_in_other_unit_p (tree decl)
   struct varpool_node *vnode;
   struct cgraph_node *node;
 
-  if (!TREE_STATIC (decl)
-      || TREE_PUBLIC (decl) || DECL_COMDAT (decl))
+  if (!TREE_STATIC (decl) || DECL_COMDAT (decl))
     return false;
   /* External flag is set, so we deal with C++ reference
      to static object from other file.  */
-  if (DECL_EXTERNAL (decl))
+  if (DECL_EXTERNAL (decl) && TREE_CODE (decl) == VAR_DECL)
     {
       /* Just be sure it is not big in frontend setting
 	 flags incorrectly.  Those variables should never
@@ -68,6 +67,8 @@ static_object_in_other_unit_p (tree decl)
 			   || !vnode->finalized);
       return true;
     }
+  if (TREE_PUBLIC (decl))
+    return false;
   /* We are not at ltrans stage; so don't worry about WHOPR.  */
   if (!flag_ltrans)
     return false;
