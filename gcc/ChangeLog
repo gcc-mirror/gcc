@@ -1,5 +1,11 @@
 2010-09-28  Ian Lance Taylor  <iant@google.com>
 
+	* config/i386/i386.c (ix86_supports_split_stack): Test
+	HAVE_GAS_CFI_PERSONALITY_DIRECTIVE rather than
+	dwarf2out_do_cfi_asm.
+
+2010-09-28  Ian Lance Taylor  <iant@google.com>
+
 	PR target/45815
 	* opts.c (decode_options): Don't test whether the target supports
 	split stack if flag_split_stack == 0.
