@@ -43,6 +43,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree-dump.h"
 #include "opts.h"
 #include "options.h"
+#include "target.h"
 
 static bool java_init (void);
 static void java_finish (void);
@@ -902,7 +903,7 @@ java_eh_personality (void)
 {
   if (!java_eh_personality_decl)
     java_eh_personality_decl
-      = build_personality_function (USING_SJLJ_EXCEPTIONS
+      = build_personality_function (targetm.except_unwind_info () == UI_SJLJ
 				    ? "__gcj_personality_sj0"
 				    : "__gcj_personality_v0");
 

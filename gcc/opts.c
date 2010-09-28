@@ -664,6 +664,7 @@ decode_options (unsigned int argc, const char **argv,
   int opt3;
   int opt1_max;
   int ofast = 0;
+  enum unwind_info_type ui_except;
 
   if (first_time_p)
     {
@@ -992,15 +993,15 @@ decode_options (unsigned int argc, const char **argv,
      generating unwind info.  If flag_exceptions is turned on we need to
      turn off the partitioning optimization.  */
 
-  if (flag_exceptions && flag_reorder_blocks_and_partition
-      && (USING_SJLJ_EXCEPTIONS
-#ifdef TARGET_UNWIND_INFO
-	  || 1
-#endif
-	 ))
+  ui_except = targetm.except_unwind_info ();
+
+  if (flag_exceptions
+      && flag_reorder_blocks_and_partition
+      && (ui_except == UI_SJLJ || ui_except == UI_TARGET))
     {
       inform (input_location,
-	      "-freorder-blocks-and-partition does not work with exceptions on this architecture");
+	      "-freorder-blocks-and-partition does not work "
+	      "with exceptions on this architecture");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
@@ -1008,16 +1009,14 @@ decode_options (unsigned int argc, const char **argv,
   /* If user requested unwind info, then turn off the partitioning
      optimization.  */
 
-  if (flag_unwind_tables && ! targetm.unwind_tables_default
+  if (flag_unwind_tables
+      && !targetm.unwind_tables_default
       && flag_reorder_blocks_and_partition
-      && (USING_SJLJ_EXCEPTIONS
-#ifdef TARGET_UNWIND_INFO
-	  || 1
-#endif
-	 ))
+      && (ui_except == UI_SJLJ || ui_except == UI_TARGET))
     {
       inform (input_location,
-	      "-freorder-blocks-and-partition does not support unwind info on this architecture");
+	      "-freorder-blocks-and-partition does not support "
+	      "unwind info on this architecture");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
@@ -1028,15 +1027,13 @@ decode_options (unsigned int argc, const char **argv,
 
   if (flag_reorder_blocks_and_partition
       && (!targetm.have_named_sections
-	  || (flag_unwind_tables && targetm.unwind_tables_default
-	      && (USING_SJLJ_EXCEPTIONS
-#ifdef TARGET_UNWIND_INFO
-		  || 1
-#endif
-		 ))))
+	  || (flag_unwind_tables
+	      && targetm.unwind_tables_default
+	      && (ui_except == UI_SJLJ || ui_except == UI_TARGET))))
     {
       inform (input_location,
-	      "-freorder-blocks-and-partition does not work on this architecture");
+	      "-freorder-blocks-and-partition does not work "
+	      "on this architecture");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }

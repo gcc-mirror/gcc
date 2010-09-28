@@ -3638,7 +3638,7 @@ objc_eh_personality (void)
   if (!flag_objc_sjlj_exceptions
       && !objc_eh_personality_decl)
     objc_eh_personality_decl
-      = build_personality_function (USING_SJLJ_EXCEPTIONS
+      = build_personality_function (targetm.except_unwind_info () == UI_SJLJ
 				    ? "__gnu_objc_personality_sj0"
 				    : "__gnu_objc_personality_v0");
 

@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "objc-act.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
+#include "target.h"
 #include "cp-objcp-common.h"
 
 enum c_language_kind c_language = clk_objcxx;
@@ -147,7 +148,7 @@ objcxx_eh_personality (void)
 {
   if (!objcp_eh_personality_decl)
     objcp_eh_personality_decl
-	= build_personality_function (USING_SJLJ_EXCEPTIONS
+	= build_personality_function (targetm.except_unwind_info () == UI_SJLJ
 				      ? "__gxx_personality_sj0"
 				      : "__gxx_personality_v0");
 

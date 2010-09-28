@@ -1233,4 +1233,73 @@ default_class_likely_spilled_p (reg_class_t rclass)
 #endif
 }
 
+/* Determine the debugging unwind mechanism for the target.  */
+
+enum unwind_info_type
+default_debug_unwind_info (void)
+{
+  /* If the target wants to force the use of dwarf2 unwind info, let it.  */
+  /* ??? Change all users to the hook, then poison this.  */
+#ifdef DWARF2_FRAME_INFO
+  if (DWARF2_FRAME_INFO)
+    return UI_DWARF2;
+#endif
+
+  /* Otherwise, only turn it on if dwarf2 debugging is enabled.  */
+#ifdef DWARF2_DEBUGGING_INFO
+  if (write_symbols == DWARF2_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
+    return UI_DWARF2;
+#endif
+
+  return UI_NONE;
+}
+
+/* Determine the exception handling mechanism for the target.  */
+
+enum unwind_info_type
+default_except_unwind_info (void)
+{
+  /* ??? Change the one user to the hook, then poison this.  */
+#ifdef MUST_USE_SJLJ_EXCEPTIONS
+  if (MUST_USE_SJLJ_EXCEPTIONS)
+    return UI_SJLJ;
+#endif
+
+  /* Obey the configure switch to turn on sjlj exceptions.  */
+#ifdef CONFIG_SJLJ_EXCEPTIONS
+  if (CONFIG_SJLJ_EXCEPTIONS)
+    return UI_SJLJ;
+#endif
+
+  /* ??? Change all users to the hook, then poison this.  */
+#ifdef DWARF2_UNWIND_INFO
+  if (DWARF2_UNWIND_INFO)
+    return UI_DWARF2;
+#endif
+
+  return UI_SJLJ;
+}
+
+/* To be used by targets that force dwarf2 unwind enabled.  */
+
+enum unwind_info_type
+dwarf2_except_unwind_info (void)
+{
+  /* Obey the configure switch to turn on sjlj exceptions.  */
+#ifdef CONFIG_SJLJ_EXCEPTIONS
+  if (CONFIG_SJLJ_EXCEPTIONS)
+    return UI_SJLJ;
+#endif
+
+  return UI_DWARF2;
+}
+
+/* To be used by targets that force sjlj unwind enabled.  */
+
+enum unwind_info_type
+sjlj_except_unwind_info (void)
+{
+  return UI_SJLJ;
+}
+
 #include "gt-targhooks.h"

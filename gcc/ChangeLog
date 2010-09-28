@@ -1,3 +1,68 @@
+2010-09-28  Richard Henderson  <rth@redhat.com>
+
+	* defaults.h (DWARF2_UNWIND_INFO): Don't depend on TARGET_UNWIND_INFO.
+	(MUST_USE_SJLJ_EXCEPTIONS): Remove.
+	(CONFIG_SJLJ_EXCEPTIONS): Remove.
+	(STACK_OLD_CHECK_PROTECT): Use targetm.except_unwind_info.
+	(STACK_CHECK_PROTECT): Likewise.
+	* dwarf2out.c (DWARF2_UNWIND_INFO, DWARF2_FRAME_INFO): Poison.
+	(dwarf2out_do_frame): Use debug_unwind_info and except_unwind_info.
+	(dwarf2out_do_cfi_asm, dwarf2out_begin_prologue): Likewise.
+	(dwarf2out_frame_init, dwarf2out_frame_finish): Likewise.
+	(dwarf2out_assembly_start): Likewise.
+	* except.c (init_eh): Use targetm.except_unwind_info.
+	(finish_eh_generation, gate_convert_to_eh_region_ranges): Likewise.
+	(output_one_function_exception_table): Likewise.
+	* final.c: Unconditionally include dwarf2out.h.
+	(final_start_function): Unconditionally call dwarf2out routines.
+	(final_end_function, final_scan_insn): Likewise.
+	* function.c (expand_function_end): Use targetm.except_unwind_info.
+	* opts.c (decode_options): Use targetm.except_unwind_info.
+	* system.h (USING_SJLJ_EXCEPTIONS, TARGET_UNWIND_INFO): Poison.
+	* target.def (debug_unwind_info, except_unwind_info): New.
+	* target.h (enum unwind_info_type): New.
+	* targhooks.c (default_debug_unwind_info): New.
+	(default_except_unwind_info): New.
+	(dwarf2_except_unwind_info, sjlj_except_unwind_info): New.
+	* targhooks.h: Declare them.
+	* tree-tailcall.c: Include "target.h"
+	(suitable_for_tail_call_opt_p): Use targetm.except_unwind_info.
+	* Makefile.in (tree-tailcall.o): Update.
+	* tree.c (build_common_builtin_nodes): Use targetm.except_unwind_info.
+	(lhd_gcc_personality): Likewise.
+
+	* doc/tm.texi.in (TARGET_UNWIND_INFO): Remove.
+	(TARGET_EXCEPT_UNWIND_INFO): New.
+	(DWARF2_UNWIND_INFO): Update.
+	(TARGET_DEBUG_UNWIND_INFO): New.
+	* doc/tm.texi: Rebuild.
+
+	* c-family/c-cppbuiltin.c (c_cpp_builtins): Use
+	targetm.except_unwind_info.
+
+	* config/arm/arm.c (TARGET_EXCEPT_UNWIND_INFO): New.
+	(arm_except_unwind_info): New.
+	(arm_compute_func_type): Use it.
+	(arm_expand_prologue, thumb_pushpop): Likewise.
+	(thumb1_expand_prologue, thumb1_output_function_prologue): Likewise.
+	(arm_unwind_emit, arm_output_fn_unwind): Likewise.
+	* config/arm/bpabi.h (ARM_UNWIND_INFO): Rename from TARGET_UNWIND_INFO.
+	* config/arm/arm.h (ARM_UNWIND_INFO): Likewise.
+	(DWARF2_UNWIND_INFO): Remove.
+	(MUST_USE_SJLJ_EXCEPTIONS): Remove.
+	(ARM_EABI_UNWIND_TABLES): Remove.
+
+	* config/ia64/ia64.c (ia64_debug_unwind_info): New.
+	(TARGET_DEBUG_UNWIND_INFO, TARGET_EXCEPT_UNWIND_INFO): New.
+	(ia64_except_unwind_info): New.
+	(ia64_output_function_prologue): Use it.
+	(ia64_add_bundle_selector_before): Likewise.
+	(ia64_reorg, ia64_asm_unwind_emit): Likewise.
+	* config/ia64/ia64.h (DWARF2_FRAME_INFO): Remove.
+	(TARGET_UNWIND_INFO): Remove.
+
+	* config/pa/pa.c (pa_option_override): Use targetm.except_unwind_info.
+
 2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* c-parser.c (c_parser_objc_class_definition): Adjust prototype.

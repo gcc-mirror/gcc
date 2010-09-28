@@ -1,3 +1,7 @@
+2010-09-28  Richard Henderson  <rth@redhat.com>
+
+	* objc-act.c (objc_eh_personality): Use targetm.except_unwind_info.
+
 2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc-act.c (objc_start_class_interface): Handle and ignore attributes.

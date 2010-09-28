@@ -1731,12 +1731,6 @@ do {									\
 
 #define DWARF2_DEBUGGING_INFO 1
 
-/* We do not want call-frame info to be output, since debuggers are
-   supposed to use the target unwind info.  Leave this undefined it
-   TARGET_UNWIND_INFO might ever be false.  */
-
-#define DWARF2_FRAME_INFO 0
-
 #define DWARF2_ASM_LINE_DEBUG_INFO (TARGET_DWARF2_ASM)
 
 /* Use tags for debug info labels, so that they don't break instruction
@@ -1848,8 +1842,6 @@ do {									\
 #define MAX_CONDITIONAL_EXECUTE 12
 
 extern int ia64_final_schedule;
-
-#define TARGET_UNWIND_INFO	1
 
 #define TARGET_UNWIND_TABLES_DEFAULT true
 

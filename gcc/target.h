@@ -128,6 +128,16 @@ enum vect_cost_for_stmt
   vec_perm
 };
 
+/* Types of unwind/exception handling info that can be generated.  */
+
+enum unwind_info_type
+{
+  UI_NONE,
+  UI_SJLJ,
+  UI_DWARF2,
+  UI_TARGET
+};
+
 /* The target structure.  This holds all the backend hooks.  */
 #define DEFHOOKPOD(NAME, DOC, TYPE, INIT) TYPE NAME;
 #define DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT) TYPE (* NAME) PARAMS;
