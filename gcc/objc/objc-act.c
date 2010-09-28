@@ -769,7 +769,7 @@ objc_build_method_signature (tree rettype, tree selector,
 }
 
 void
-objc_add_method_declaration (tree decl)
+objc_add_method_declaration (tree decl, tree attributes)
 {
   if (!objc_interface_context)
     {
@@ -780,6 +780,11 @@ objc_add_method_declaration (tree decl)
       fatal_error ("method declaration not in @interface context");
     }
 
+  if (attributes)
+    warning_at (input_location, OPT_Wattributes, 
+		"method attributes are not available in this version"
+		" of the compiler, (ignored)");
+
   objc_add_method (objc_interface_context,
 		   decl,
 		   objc_inherit_code == CLASS_METHOD_DECL);
@@ -789,13 +794,18 @@ objc_add_method_declaration (tree decl)
    'false' if not (because we are outside an @implementation context).
 */
 bool
-objc_start_method_definition (tree decl)
+objc_start_method_definition (tree decl, tree attributes)
 {
   if (!objc_implementation_context)
     {
       error ("method definition not in @implementation context");
       return false;
     }
+
+  if (attributes)
+    warning_at (input_location, OPT_Wattributes, 
+		"method attributes are not available in this version"
+		" of the compiler, (ignored)");
 
 #ifndef OBJCPLUS
   /* Indicate no valid break/continue context by setting these variables
@@ -4644,7 +4654,7 @@ objc_generate_cxx_ctor_or_dtor (bool dtor)
 						 ? TAG_CXX_DESTRUCT
 						 : TAG_CXX_CONSTRUCT),
 				 make_node (TREE_LIST),
-				 false));
+				 false), NULL);
   body = begin_function_body ();
   compound_stmt = begin_compound_stmt (0);
 
@@ -5976,6 +5986,7 @@ adjust_type_for_id_default (tree type)
      In:	key_name, an "identifier_node" (optional).
 		arg_type, a  "tree_list" (optional).
 		arg_name, an "identifier_node".
+		attributes, a optional tree containing param attributes.
 
      Note:	It would be really nice to strongly type the preceding
 		arguments in the function prototype; however, then I
@@ -5984,9 +5995,15 @@ adjust_type_for_id_default (tree type)
      Out:	an instance of "keyword_decl".  */
 
 tree
-objc_build_keyword_decl (tree key_name, tree arg_type, tree arg_name)
+objc_build_keyword_decl (tree key_name, tree arg_type, 
+			 tree arg_name, tree attributes)
 {
   tree keyword_decl;
+
+  if (attributes)
+    warning_at (input_location, OPT_Wattributes, 
+		"method parameter attributes are not available in this "
+		"version of the compiler, (ignored)");
 
   /* If no type is specified, default to "id".  */
   arg_type = adjust_type_for_id_default (arg_type);
@@ -8128,7 +8145,7 @@ encode_array (tree type, int curtype, int format)
   tree an_int_cst = TYPE_SIZE (type);
   tree array_of = TREE_TYPE (type);
   char buffer[40];
-
+  
   if (an_int_cst == NULL)
     {
       /* We are trying to encode an incomplete array.  An incomplete

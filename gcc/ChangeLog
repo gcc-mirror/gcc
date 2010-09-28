@@ -1,3 +1,13 @@
+2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* c-parser.c (c_parser_declaration_or_fndef): Diagnose incorrect prefix
+	attributes on methods.
+	 (c_parser_objc_method_definition): Handle attributes.
+	(c_parser_objc_methodproto): Likewise.
+	(c_parser_objc_maybe_method_attributes): New.
+	(c_parser_objc_method_decl): Handle attributes, add a diagnostic for a
+	missing definition, similar to that in ObjC++.
+
 2010-09-28  Richard Henderson  <rth@redhat.com>
 
 	* defaults.h (DWARF2_UNWIND_INFO): Don't depend on TARGET_UNWIND_INFO.
@@ -62,7 +72,7 @@
 	(TARGET_UNWIND_INFO): Remove.
 
 	* config/pa/pa.c (pa_option_override): Use targetm.except_unwind_info.
-
+	
 2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* c-parser.c (c_parser_objc_class_definition): Adjust prototype.

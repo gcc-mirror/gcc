@@ -1,5 +1,15 @@
 2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
 
+	* c-common.h (objc_add_method_declaration): Adjust prototype to 
+	include attributes.
+	(objc_start_method_definition): Likewise.
+	(objc_build_keyword_decl): Likewise.
+	* stub-objc.c:(objc_add_method_declaration): Handle attributes.
+	(objc_start_method_definition): Likewise.
+	(objc_build_keyword_decl): Likewise.
+
+2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
+
 	* c-common.h (objc_start_class_interface): Adjust prototype.
 	(objc_start_category_interface): Likewise.
 	(objc_start_protocol): Likewise.
