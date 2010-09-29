@@ -418,7 +418,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
 	{
 	  int u_or_i = (result & (CPP_N_UNSIGNED|CPP_N_IMAGINARY));
 	  int large = (result & CPP_N_WIDTH) == CPP_N_LARGE
-		       && CPP_OPTION (pfile, warn_long_long);
+		       && CPP_OPTION (pfile, cpp_warn_long_long);
 
 	  if (u_or_i || large)
 	    cpp_warning (pfile, large ? CPP_W_LONG_LONG : CPP_W_TRADITIONAL,
@@ -427,7 +427,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
 	}
 
       if ((result & CPP_N_WIDTH) == CPP_N_LARGE
-	  && CPP_OPTION (pfile, warn_long_long))
+	  && CPP_OPTION (pfile, cpp_warn_long_long))
         {
           const char *message = CPP_OPTION (pfile, cplusplus) 
 		                ? N_("use of C++0x long long integer constant")
@@ -814,7 +814,7 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
 	  if (CPP_PEDANTIC (pfile))
 	    cpp_error (pfile, CPP_DL_PEDWARN,
 		       "assertions are a GCC extension");
-	  else if (CPP_OPTION (pfile, warn_deprecated))
+	  else if (CPP_OPTION (pfile, cpp_warn_deprecated))
 	    cpp_warning (pfile, CPP_W_DEPRECATED,
 		         "assertions are a deprecated extension");
 	}

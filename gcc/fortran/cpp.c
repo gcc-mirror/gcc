@@ -176,7 +176,7 @@ cpp_define_builtins (cpp_reader *pfile)
   cpp_define (pfile, "__GFORTRAN__=1");
   cpp_define (pfile, "_LANGUAGE_FORTRAN=1");
 
-  if (gfc_option.flag_openmp)
+  if (gfc_option.gfc_flag_openmp)
     cpp_define (pfile, "_OPENMP=200805");
 
 
@@ -526,7 +526,7 @@ gfc_cpp_post_options (void)
   cpp_option->traditional = 1;
   cpp_option->cplusplus_comments = 0;
 
-  cpp_option->pedantic = pedantic;
+  cpp_option->cpp_pedantic = pedantic;
 
   cpp_option->dollars_in_ident = gfc_option.flag_dollar_ok;
   cpp_option->discard_comments = gfc_cpp_option.discard_comments;
@@ -1075,13 +1075,13 @@ cb_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
 {
   diagnostic_info diagnostic;
   diagnostic_t dlevel;
-  bool save_warn_system_headers = global_dc->warn_system_headers;
+  bool save_warn_system_headers = global_dc->dc_warn_system_headers;
   bool ret;
 
   switch (level)
     {
     case CPP_DL_WARNING_SYSHDR:
-      global_dc->warn_system_headers = 1;
+      global_dc->dc_warn_system_headers = 1;
       /* Fall through.  */
     case CPP_DL_WARNING:
       dlevel = DK_WARNING;
@@ -1112,7 +1112,7 @@ cb_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
     diagnostic_override_option_index (&diagnostic, OPT_Wcpp);
   ret = report_diagnostic (&diagnostic);
   if (level == CPP_DL_WARNING_SYSHDR)
-    global_dc->warn_system_headers = save_warn_system_headers;
+    global_dc->dc_warn_system_headers = save_warn_system_headers;
   return ret;
 }
 

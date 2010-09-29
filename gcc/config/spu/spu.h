@@ -24,9 +24,6 @@
 
 #define INIT_EXPANDERS spu_init_expanders()
 
-extern int target_flags;
-extern const char *spu_fixed_range_string;
-
 /* Which processor to generate code or schedule for.  */
 enum processor_type
 {

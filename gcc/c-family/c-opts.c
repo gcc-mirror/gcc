@@ -157,7 +157,7 @@ warning_as_error_callback (int option_index)
 	break;
 
       case OPT_Wdeprecated:
-	cpp_opts->warn_deprecated = 1;
+	cpp_opts->cpp_warn_deprecated = 1;
 	break;
 
       case OPT_Wcomment:
@@ -173,11 +173,11 @@ warning_as_error_callback (int option_index)
 	break;
 
       case OPT_Wtraditional:
-	cpp_opts->warn_traditional = 1;
+	cpp_opts->cpp_warn_traditional = 1;
 	break;
 
       case OPT_Wlong_long:
-	cpp_opts->warn_long_long = 1;
+	cpp_opts->cpp_warn_long_long = 1;
 	break;
 
       case OPT_Wendif_labels:
@@ -508,7 +508,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_Wdeprecated:
-      cpp_opts->warn_deprecated = value;
+      cpp_opts->cpp_warn_deprecated = value;
       break;
 
     case OPT_Wendif_labels:
@@ -567,7 +567,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_Wtraditional:
-      cpp_opts->warn_traditional = value;
+      cpp_opts->cpp_warn_traditional = value;
       break;
 
     case OPT_Wtrigraphs:
@@ -788,7 +788,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	 is not overridden.  */
     case OPT_pedantic_errors:
     case OPT_pedantic:
-      cpp_opts->pedantic = 1;
+      cpp_opts->cpp_pedantic = 1;
       cpp_opts->warn_endif_labels = 1;
       if (warn_pointer_sign == -1)
 	warn_pointer_sign = 1;
@@ -1314,7 +1314,7 @@ sanitize_cpp_opts (void)
   if (warn_long_long == -1)
     warn_long_long = ((pedantic || warn_traditional)
 		      && (c_dialect_cxx () ? cxx_dialect == cxx98 : !flag_isoc99));
-  cpp_opts->warn_long_long = warn_long_long;
+  cpp_opts->cpp_warn_long_long = warn_long_long;
 
   /* Similarly with -Wno-variadic-macros.  No check for c99 here, since
      this also turns off warnings about GCCs extension.  */
@@ -1381,7 +1381,7 @@ finish_options (void)
 	 conflict with the specified standard, and since a strictly
 	 conforming program cannot contain a '$', we do not condition
 	 their acceptance on the -std= setting.  */
-      cpp_opts->warn_dollars = (cpp_opts->pedantic && !cpp_opts->c99);
+      cpp_opts->warn_dollars = (cpp_opts->cpp_pedantic && !cpp_opts->c99);
 
       cb_file_change (parse_in,
 		      linemap_add (line_table, LC_RENAME, 0,

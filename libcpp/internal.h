@@ -1,6 +1,6 @@
 /* Part of CPP library.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007,
-   2008, 2009 Free Software Foundation, Inc.
+   2008, 2009, 2010 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -526,8 +526,8 @@ cpp_in_system_header (cpp_reader *pfile)
 {
   return pfile->buffer ? pfile->buffer->sysp : 0;
 }
-#define CPP_PEDANTIC(PF) CPP_OPTION (PF, pedantic)
-#define CPP_WTRADITIONAL(PF) CPP_OPTION (PF, warn_traditional)
+#define CPP_PEDANTIC(PF) CPP_OPTION (PF, cpp_pedantic)
+#define CPP_WTRADITIONAL(PF) CPP_OPTION (PF, cpp_warn_traditional)
 
 static inline int cpp_in_primary_file (cpp_reader *);
 static inline int

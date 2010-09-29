@@ -1,5 +1,5 @@
 /* Subroutines used for macro/preprocessor support on the ia-32.
-   Copyright (C) 2008, 2009
+   Copyright (C) 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -297,8 +297,8 @@ ix86_pragma_target_parse (tree args, tree pop_target)
   /* Figure out the previous/current isa, arch, tune and the differences.  */
   prev_opt  = TREE_TARGET_OPTION (prev_tree);
   cur_opt   = TREE_TARGET_OPTION (cur_tree);
-  prev_isa  = prev_opt->ix86_isa_flags;
-  cur_isa   = cur_opt->ix86_isa_flags;
+  prev_isa  = prev_opt->x_ix86_isa_flags;
+  cur_isa   = cur_opt->x_ix86_isa_flags;
   diff_isa  = (prev_isa ^ cur_isa);
   prev_arch = (enum processor_type) prev_opt->arch;
   prev_tune = (enum processor_type) prev_opt->tune;

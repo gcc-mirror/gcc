@@ -144,8 +144,6 @@ enum alpha_fp_trap_mode
   ALPHA_FPTM_SUI	/* Software completion, w/underflow & inexact traps */
 };
 
-extern int target_flags;
-
 extern enum alpha_trap_precision alpha_tp;
 extern enum alpha_fp_rounding_mode alpha_fprm;
 extern enum alpha_fp_trap_mode alpha_fptm;

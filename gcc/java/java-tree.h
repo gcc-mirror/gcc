@@ -112,64 +112,11 @@ struct JCF;
 /* The virtual offset symbol table. Used by the runtime to fill out
    the otable. */
 
-extern int flag_filelist_file;
-
-/* When nonzero, permit the use of the assert keyword.  */
-
-extern int flag_assert;
-
-/* When nonzero, assume all native functions are implemented with
-   JNI, not CNI.  */
-
-extern int flag_jni;
-
-/* When nonzero, always check for a non gcj generated classes archive.  */
-
-extern int flag_force_classes_archive_check;
-
 /* Resource name.  */
 extern const char *resource_name;
 
 /* Turned to 1 if -Wall was encountered. See lang.c for their meanings.  */
 extern int flag_wall;
-extern int flag_redundant;
-
-/* When nonzero, warn when source file is newer than matching class
-   file.  */
-extern int flag_newer;
-
-/* When nonzero, call a library routine to do integer divisions. */
-extern int flag_use_divide_subroutine;
-
-/* When nonzero, use atomic builtins. */
-extern int flag_use_atomic_builtins;
-
-/* When nonzero, generate code for the Boehm GC.  */
-extern int flag_use_boehm_gc;
-
-/* When nonzero, assume the runtime uses a hash table to map an
-   object to its synchronization structure.  */
-extern int flag_hash_synchronization;
-
-/* When nonzero, generate checks for references to NULL.  */
-extern int flag_check_references;
-
-/* Used through STATIC_CLASS_INIT_OPT_P to check whether static
-   initialization optimization should be performed.  */
-extern int flag_optimize_sci;
-
-/* Generate instances of Class at runtime.  */
-extern int flag_indirect_classes;
-
-/* When nonzero, use offset tables for virtual method calls
-   in order to improve binary compatibility. */
-extern int flag_indirect_dispatch;
-
-/* When zero, don't generate runtime array store checks. */
-extern int flag_store_check;
-
-/* When nonzero, generate only a limited set of class meta-data. */
-extern int flag_reduced_reflection;
 
 /* The Java .class file that provides main_class;  the main input file. */
 extern GTY(()) struct JCF * current_jcf;

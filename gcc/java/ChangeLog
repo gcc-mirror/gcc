@@ -1,3 +1,16 @@
+2010-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* java-tree.h (flag_filelist_file, flag_assert, flag_jni,
+	flag_force_classes_archive_check, flag_redundant, flag_newer,
+	flag_use_divide_subroutine, flag_use_atomic_builtins,
+	flag_use_boehm_gc, flag_hash_synchronization,
+	flag_check_references, flag_optimize_sci, flag_indirect_classes,
+	flag_indirect_dispatch, flag_store_check,
+	flag_reduced_reflection): Remove.
+	* jcf-dump.c (flag_newer): Remove.
+	* jcf.h (quiet_flag): Remove.
+	* parse.h (quiet_flag): Remove.
+
 2010-09-28  Richard Henderson  <rth@redhat.com>
 
 	* lang.c: Include "target.h".
