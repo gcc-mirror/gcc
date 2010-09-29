@@ -1,3 +1,9 @@
+2010-09-29  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* config/picochip/picochip.c (picochip_output_internal_label):
+	  This function can now be called for debug CFI labels, which can come in
+	  the middle of a vliw instruction. Postpone until end of vliw.
+
 2010-09-29  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (SCOPE_FILE_SCOPE_P): New macro.
