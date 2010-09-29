@@ -1,3 +1,9 @@
+2010-09-29  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (SCOPE_FILE_SCOPE_P): New macro.
+	(DECL_FILE_SCOPE_P): Use it.
+	(TYPE_FILE_SCOPE_P): New macro.
+
 2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-parser.c (c_lex_one_token): In Objective-C, when dealing with

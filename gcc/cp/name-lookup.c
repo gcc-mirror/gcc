@@ -1169,7 +1169,7 @@ maybe_push_decl (tree decl)
 	  && DECL_CONTEXT (decl) != NULL_TREE
 	  /* Definitions of namespace members outside their namespace are
 	     possible.  */
-	  && TREE_CODE (DECL_CONTEXT (decl)) != NAMESPACE_DECL)
+	  && !DECL_NAMESPACE_SCOPE_P (decl))
       || (TREE_CODE (decl) == TEMPLATE_DECL && !namespace_bindings_p ())
       || type == unknown_type_node
       /* The declaration of a template specialization does not affect
@@ -3068,7 +3068,7 @@ namespace_binding (tree name, tree scope)
 {
   cxx_binding *binding;
 
-  if (scope == NULL)
+  if (SCOPE_FILE_SCOPE_P (scope))
     scope = global_namespace;
   else
     /* Unnecessary for the global namespace because it can't be an alias. */
