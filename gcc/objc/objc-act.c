@@ -1495,6 +1495,14 @@ objc_check_decl (tree decl)
 	   type);
 }
 
+void
+objc_check_global_decl (tree decl)
+{
+  tree id = DECL_NAME (decl);
+  if (objc_is_class_name (id) && global_bindings_p())
+    error ("redeclaration of Objective-C class %qs", IDENTIFIER_POINTER (id));
+}
+
 /* Construct a PROTOCOLS-qualified variant of INTERFACE, where INTERFACE may
    either name an Objective-C class, or refer to the special 'id' or 'Class'
    types.  If INTERFACE is not a valid ObjC type, just return it unchanged.  */

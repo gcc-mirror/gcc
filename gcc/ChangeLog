@@ -1,3 +1,14 @@
+2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+	* c-parser.c: Applied change originally in c-parse.in.
+	
+	2005-10-04  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4281748
+	* c-decl.c (start_decl): Check for redeclaration of class name.
+	* c-parse.in (after_type_declarator): Recognize CLASSNAME.
+
 2010-09-29  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.c (ia64_builtin_decl): New.

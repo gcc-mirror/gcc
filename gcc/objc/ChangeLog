@@ -1,3 +1,12 @@
+2010-09-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2005-10-04  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4281748
+	* objc-act.c (objc_check_global_decl): New
+
 2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_is_reserved_word): Removed.
