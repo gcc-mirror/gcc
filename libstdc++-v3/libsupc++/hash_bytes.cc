@@ -172,7 +172,7 @@ namespace std
   {
     size_t hash = seed;
     const char* cptr = reinterpret_cast<const char*>(ptr);
-    for (; clength; --clength)
+    for (; len; --len)
       hash = (hash * 131) + *cptr++;
     return hash;
   }
