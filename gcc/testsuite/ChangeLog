@@ -1,3 +1,7 @@
+2010-09-29  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc.dg/stack-usage-1.c (SIZE): Adjust for avr.
+
 2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/keywords-1.m: New test.
@@ -77,7 +81,7 @@
 
 	Radar 4175534
 	* obj-c++.dg/method-22.mm: New.
-	
+
 2010-09-27  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/rv-lvalue-req.C: New.
@@ -105,8 +109,8 @@
 	PR objc/45763
 	* objc.dg/encode-1.m: Execute the test with the GNU runtime as
 	well.
-	
-2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>	
+
+2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/25450
 	* objc.dg/encode-3.m: Updated for fix of encoding of enums.
