@@ -29,7 +29,7 @@
 #ifndef _FORWARD_LIST_TCC
 #define _FORWARD_LIST_TCC 1
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
   template<typename _Tp, typename _Alloc>
     _Fwd_list_base<_Tp, _Alloc>::
@@ -491,7 +491,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
           }
       }
  
-_GLIBCXX_END_NAMESPACE // namespace std
+_GLIBCXX_END_NESTED_NAMESPACE // namespace std
 
 #endif /* _FORWARD_LIST_TCC */
 

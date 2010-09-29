@@ -56,10 +56,10 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__valid_range(_First, _Last),	\
 
 /** Verify that we can insert into *this with the iterator _Position.
  *  Insertion into a container at a specific position requires that
- *  the iterator be nonsingular (i.e., either dereferenceable or
- *  past-the-end) and that it reference the sequence we are inserting
- *  into. Note that this macro is only valid when the container is a
- *  _Safe_sequence and the iterator is a _Safe_iterator.
+ *  the iterator be nonsingular, either dereferenceable or past-the-end,
+ *  and that it reference the sequence we are inserting into. Note that
+ *  this macro is only valid when the container is a_Safe_sequence and
+ *  the iterator is a _Safe_iterator.
 */
 #define __glibcxx_check_insert(_Position)				\
 _GLIBCXX_DEBUG_VERIFY(!_Position._M_singular(),				\
@@ -68,6 +68,20 @@ _GLIBCXX_DEBUG_VERIFY(!_Position._M_singular(),				\
 		      ._M_iterator(_Position, #_Position));		\
 _GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
 		      _M_message(__gnu_debug::__msg_insert_different) \
+		      ._M_sequence(*this, "this")			\
+		      ._M_iterator(_Position, #_Position))
+
+/** Verify that we can insert into *this after the iterator _Position.
+ *  Insertion into a container after a specific position requires that
+ *  the iterator be nonsingular, either dereferenceable or before-begin,
+ *  and that it reference the sequence we are inserting into. Note that
+ *  this macro is only valid when the container is a_Safe_sequence and
+ *  the iterator is a _Safe_iterator.
+*/
+#define __glibcxx_check_insert_after(_Position)				\
+__glibcxx_check_insert(_Position);					\
+_GLIBCXX_DEBUG_VERIFY(!_Position._M_is_end(),				\
+		      _M_message(__gnu_debug::__msg_insert_after_end)	\
 		      ._M_sequence(*this, "this")			\
 		      ._M_iterator(_Position, #_Position))
 
@@ -86,14 +100,24 @@ _GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
 */
 #define __glibcxx_check_insert_range(_Position,_First,_Last)		\
 __glibcxx_check_valid_range(_First,_Last);				\
-_GLIBCXX_DEBUG_VERIFY(!_Position._M_singular(),				\
-		      _M_message(__gnu_debug::__msg_insert_singular)    \
-                      ._M_sequence(*this, "this")			\
-		      ._M_iterator(_Position, #_Position));		\
-_GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
-		      _M_message(__gnu_debug::__msg_insert_different)   \
-		      ._M_sequence(*this, "this")			\
-		      ._M_iterator(_Position, #_Position))
+__glibcxx_check_insert(_Position)
+
+/** Verify that we can insert the values in the iterator range
+ *  [_First, _Last) into *this after the iterator _Position.  Insertion
+ *  into a container after a specific position requires that the iterator
+ *  be nonsingular (i.e., either dereferenceable or past-the-end),
+ *  that it reference the sequence we are inserting into, and that the
+ *  iterator range [_First, Last) is a valid (possibly empty)
+ *  range. Note that this macro is only valid when the container is a
+ *  _Safe_sequence and the iterator is a _Safe_iterator.
+ *
+ *  @todo We would like to be able to check for noninterference of
+ *  _Position and the range [_First, _Last), but that can't (in
+ *  general) be done.
+*/
+#define __glibcxx_check_insert_range_after(_Position,_First,_Last)	\
+__glibcxx_check_valid_range(_First,_Last);				\
+__glibcxx_check_insert_after(_Position)
 
 /** Verify that we can erase the element referenced by the iterator
  * _Position. We can erase the element if the _Position iterator is
@@ -109,6 +133,20 @@ _GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
 		      ._M_sequence(*this, "this")			\
 		      ._M_iterator(_Position, #_Position))
 
+/** Verify that we can erase the element after the iterator
+ * _Position. We can erase the element if the _Position iterator is
+ * before a dereferenceable one and references this sequence.
+*/
+#define __glibcxx_check_erase_after(_Position)				\
+_GLIBCXX_DEBUG_VERIFY(_Position._M_before_dereferenceable(),		\
+		      _M_message(__gnu_debug::__msg_erase_after_bad)	\
+		      ._M_sequence(*this, "this")			\
+		      ._M_iterator(_Position, #_Position));		\
+_GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
+		      _M_message(__gnu_debug::__msg_erase_different)	\
+		      ._M_sequence(*this, "this")			\
+		      ._M_iterator(_Position, #_Position))
+
 /** Verify that we can erase the elements in the iterator range
  *  [_First, _Last). We can erase the elements if [_First, _Last) is a
  *  valid iterator range within this sequence.
@@ -120,6 +158,36 @@ _GLIBCXX_DEBUG_VERIFY(_First._M_attached_to(this),			\
                       ._M_sequence(*this, "this")			\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
+
+/** Verify that we can erase the elements in the iterator range
+ *  (_First, _Last). We can erase the elements if (_First, _Last) is a
+ *  valid iterator range within this sequence.
+*/
+#define __glibcxx_check_erase_range_after(_First,_Last)			\
+_GLIBCXX_DEBUG_VERIFY(_First._M_can_compare(_Last),			\
+		      _M_message(__gnu_debug::__msg_erase_different)	\
+		      ._M_sequence(*this, "this")			\
+		      ._M_iterator(_First, #_First)			\
+		      ._M_iterator(_Last, #_Last));			\
+_GLIBCXX_DEBUG_VERIFY(_First._M_attached_to(this),			\
+		      _M_message(__gnu_debug::__msg_erase_different)	\
+		      ._M_sequence(*this, "this")			\
+		      ._M_iterator(_First, #_First));			\
+_GLIBCXX_DEBUG_VERIFY(_First != _Last,					\
+		      _M_message(__gnu_debug::__msg_valid_range2)	\
+		      ._M_sequence(*this, "this")			\
+		      ._M_iterator(_First, #_First)			\
+		      ._M_iterator(_Last, #_Last));			\
+_GLIBCXX_DEBUG_VERIFY(_First._M_incrementable(),			\
+		      _M_message(__gnu_debug::__msg_valid_range2)	\
+		      ._M_sequence(*this, "this")			\
+		      ._M_iterator(_First, #_First)			\
+		      ._M_iterator(_Last, #_Last));			\
+_GLIBCXX_DEBUG_VERIFY(!_Last._M_is_before_begin(),			\
+		      _M_message(__gnu_debug::__msg_valid_range2)	\
+		      ._M_sequence(*this, "this")			\
+		      ._M_iterator(_First, #_First)			\
+		      ._M_iterator(_Last, #_Last))			\
 
 // Verify that the subscript _N is less than the container's size.
 #define __glibcxx_check_subscript(_N)					\

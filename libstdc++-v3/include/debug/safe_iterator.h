@@ -40,6 +40,19 @@
 
 namespace __gnu_debug
 {
+  /** Helper struct to deal with sequence offering a before_begin
+   *  iterator.
+   **/
+  template <typename _Sequence>
+    struct _BeforeBeginHelper
+    {
+      typedef typename _Sequence::const_iterator _It;
+
+      static bool
+      _M_Is(_It __it, const _Sequence* __seq)
+      { return false; }
+    };
+
   /** Iterators that derive from _Safe_iterator_base but that aren't
    *  _Safe_iterators can be determined singular or non-singular via
    *  _Safe_iterator_base.
@@ -343,11 +356,20 @@ namespace __gnu_debug
       /// Is the iterator dereferenceable?
       bool
       _M_dereferenceable() const
-      { return !this->_M_singular() && !_M_is_end(); }
+      { return !this->_M_singular() && !_M_is_end() && !_M_is_before_begin(); }
+
+      /// Is the iterator before a dereferenceable one?
+      bool
+      _M_before_dereferenceable() const
+      {
+	_Self __it = *this;
+	return __it._M_incrementable() && (++__it)._M_dereferenceable();
+      }
 
       /// Is the iterator incrementable?
       bool
-      _M_incrementable() const { return this->_M_dereferenceable(); }
+      _M_incrementable() const
+      { return !this->_M_singular() && !_M_is_end(); }
 
       // Is the iterator decrementable?
       bool
@@ -398,11 +420,16 @@ namespace __gnu_debug
 
       /// Is this iterator equal to the sequence's begin() iterator?
       bool _M_is_begin() const
-      {	return *this == static_cast<const _Sequence*>(_M_sequence)->begin(); }
+      { return *this == _M_get_sequence()->begin(); }
 
       /// Is this iterator equal to the sequence's end() iterator?
       bool _M_is_end() const
-      {	return *this == static_cast<const _Sequence*>(_M_sequence)->end(); }
+      { return *this == _M_get_sequence()->end(); }
+
+      /// Is this iterator equal to the sequence's before_begin() iterator if
+      /// any?
+      bool _M_is_before_begin() const
+      { return _BeforeBeginHelper<_Sequence>::_M_Is(*this, _M_get_sequence()); }
     };
 
   template<typename _IteratorL, typename _IteratorR, typename _Sequence>

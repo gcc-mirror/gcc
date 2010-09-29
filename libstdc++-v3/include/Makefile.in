@@ -953,6 +953,7 @@ debug_headers = \
 	${debug_srcdir}/debug.h \
 	${debug_srcdir}/deque \
 	${debug_srcdir}/formatter.h \
+	${debug_srcdir}/forward_list \
 	${debug_srcdir}/functions.h \
 	${debug_srcdir}/list \
 	${debug_srcdir}/map \

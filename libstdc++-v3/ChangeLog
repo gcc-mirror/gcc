@@ -1,3 +1,40 @@
+2010-09-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/Makefile.am: Add debug/forward_list.
+	* include/Makefile.in: Regenerate.
+
+	* testsuite/util/testsuite_container_traits.h (traits_base):
+	Add has_erase_after and hash_insert_after typedefs.
+	(traits<forward_list<>>): Adjust.
+	* testsuite/util/exception/safety.h (erase_point, erase_range,
+	insert_point): Deal correctly with forward_list.
+	* include/Makefile.am: Add.
+
+2010-09-29  François Dumont  <francois.cppdevs@free.fr>
+
+	* src/debug.cc: Add forward_list specific debug messages.
+	* include/debug/forward_list: New.
+	* include/debug/formatter.h: Add debug message ids and before begin
+	iterator state.
+	* include/debug/macros.h (__glibcxx_check_insert_after,
+	__glibcxx_check_insert_range_after, __glibcxx_check_erase_after,
+	__glibcxx_check_erase_range_after): Add.
+	* include/debug/safe_iterator.h (_BeforeBeginHelper): Add.
+	(_Safe_iterator<>::_M_before_dereferenceable,
+	_Safe_iterator<>::_M_is_before_begin): Add.
+	(_Safe_iterator<>::_M_dereferenceable, _Safe_iterator<>::_M_is_end,
+	_Safe_iterator<>::_M_incrementable): Adjust.
+	* include/std/forward_list: Include debug/forward when _GLIBCXX_DEBUG
+	defined.
+	* include/bits/forward_list.h, forward_list.tcc: Put in std::__norm
+	when debug mode is active.
+	* testsuite/23_containers/forward_list/capacity/1.cc: Fix to compile
+	even in debug mode.
+	* testsuite/23_containers/forward_list/debug/erase_after1.cc,
+	erase_after2.cc, erase_after3.cc, erase_after4.cc, erase_after5.cc,
+	insert_after1.cc,erase_after6.cc, erase_after7.cc, insert_after2.cc,
+	erase_after8.cc, insert_after3.cc, erase_after9.cc: New
+
 2010-09-28  DJ Delorie  <dj@redhat.com>
 
 	* libsupc++/hash_bytes.cc (_Hash_bytes): Replace "clength" with

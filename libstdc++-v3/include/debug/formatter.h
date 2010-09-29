@@ -113,7 +113,11 @@ namespace __gnu_debug
     __msg_output_ostream,
     // istreambuf_iterator
     __msg_deref_istreambuf,
-    __msg_inc_istreambuf
+    __msg_inc_istreambuf,
+    // forward_list
+    __msg_insert_after_end,
+    __msg_erase_after_bad,
+    __msg_valid_range2
   };
 
   class _Error_formatter
@@ -135,6 +139,7 @@ namespace __gnu_debug
       __begin,         // dereferenceable, and at the beginning
       __middle,        // dereferenceable, not at the beginning
       __end,           // past-the-end, may be at beginning if sequence empty
+      __before_begin,  // before begin
       __last_state
     };
 
@@ -234,11 +239,11 @@ namespace __gnu_debug
 	    _M_variant._M_iterator._M_state = __singular;
 	  else
 	    {
-	      bool __is_begin = __it._M_is_begin();
-	      bool __is_end = __it._M_is_end();
-	      if (__is_end)
+	      if (__it._M_is_before_begin())
+		_M_variant._M_iterator._M_state = __before_begin;
+	      else if (__it._M_is_end())
 		_M_variant._M_iterator._M_state = __end;
-	      else if (__is_begin)
+	      else if (__it._M_is_begin())
 		_M_variant._M_iterator._M_state = __begin;
 	      else
 		_M_variant._M_iterator._M_state = __middle;
