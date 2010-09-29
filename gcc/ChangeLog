@@ -1,3 +1,10 @@
+2010-09-29  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.c (ia64_builtin_decl): New.
+	(TARGET_BUILTIN_DECL): Define.
+	(ia64_builtins): New.
+	(ia64_init_builtins): Save decls in ia64_builtins.
+
 2010-09-29  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/40457
