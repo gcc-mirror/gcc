@@ -1,3 +1,27 @@
+2010-09-29  Richard Guenther  <rguenther@suse.de>
+
+	* cp-tree.h (CP_DECL_CONTEXT): Check DECL_FILE_SCOPE_P.
+	(CP_TYPE_CONTEXT): Similar.
+	(FROB_CONTEXT): Frob global_namespace to the global
+	TRANSLATION_UNIT_DECL.
+	* decl.c (cxx_init_decl_processing): Build a TRANSLATION_UNIT_DECL,
+	set DECL_CONTEXT of global_namespace to it.
+	(start_decl): Use CP_DECL_CONTEXT and test TYPE_P
+	instead of zeroing context.
+	(cp_finish_decl): Use DECL_FILE_SCOPE_P.
+	(grokfndecl): Likewise.
+	(start_preparsed_function): Likewise.
+	* name-lookup.c (maybe_push_decl): Use DECL_NAMESPACE_SCOPE_P.
+	(namespace_binding): Use SCOPE_FILE_SCOPE_P.
+	* pt.c (template_class_depth): Use CP_TYPE_CONTEXT.
+	(is_specialization_of_friend): Use CP_DECL_CONTEXT.
+	(push_template_decl_real): Likewise.
+	(tsubst_friend_class): Likewise.  Adjust context comparisons.
+	(instantiate_class_template): Use CP_TYPE_CONTEXT.
+	(tsubst): Do not substitute into TRANSLATION_UNIT_DECL.
+	* cxx-pretty-print.c (pp_cxx_nested_name_specifier): Use
+	SCOPE_FILE_SCOPE_P.
+
 2010-09-29  Yao Qi  <yao@codesourcery.com>
 
 	* decl.c (get_atexit_node): Fix typo.

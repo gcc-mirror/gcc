@@ -2687,10 +2687,13 @@ struct GTY(()) tree_decl_minimal {
 #define DECL_LANG_FLAG_8(NODE) \
   (DECL_COMMON_CHECK (NODE)->decl_common.lang_flag_8)
 
+/* Nonzero for a scope which is equal to file scope.  */
+#define SCOPE_FILE_SCOPE_P(EXP)	\
+  (! (EXP) || TREE_CODE (EXP) == TRANSLATION_UNIT_DECL)
 /* Nonzero for a decl which is at file scope.  */
-#define DECL_FILE_SCOPE_P(EXP) 					\
-  (! DECL_CONTEXT (EXP)						\
-   || TREE_CODE (DECL_CONTEXT (EXP)) == TRANSLATION_UNIT_DECL)
+#define DECL_FILE_SCOPE_P(EXP) SCOPE_FILE_SCOPE_P (DECL_CONTEXT (EXP))
+/* Nonzero for a type which is at file scope.  */
+#define TYPE_FILE_SCOPE_P(EXP) SCOPE_FILE_SCOPE_P (TYPE_CONTEXT (EXP))
 
 /* Nonzero for a decl that is decorated using attribute used.
    This indicates to compiler tools that this decl needs to be preserved.  */

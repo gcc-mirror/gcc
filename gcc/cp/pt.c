@@ -344,7 +344,7 @@ template_class_depth (tree type)
   for (depth = 0;
        type && TREE_CODE (type) != NAMESPACE_DECL;
        type = (TREE_CODE (type) == FUNCTION_DECL)
-	 ? CP_DECL_CONTEXT (type) : TYPE_CONTEXT (type))
+	 ? CP_DECL_CONTEXT (type) : CP_TYPE_CONTEXT (type))
     {
       tree tinfo = get_template_info (type);
 
@@ -1130,7 +1130,7 @@ is_specialization_of_friend (tree decl, tree friend_decl)
      nonzero.  To determine if DECL is a friend of FRIEND, we first
      check if the enclosing class is a specialization of another.  */
 
-  template_depth = template_class_depth (DECL_CONTEXT (friend_decl));
+  template_depth = template_class_depth (CP_DECL_CONTEXT (friend_decl));
   if (template_depth
       && DECL_CLASS_SCOPE_P (decl)
       && is_specialization_of (TYPE_NAME (DECL_CONTEXT (decl)),
@@ -4346,7 +4346,7 @@ push_template_decl_real (tree decl, bool is_friend)
   if (is_friend)
     /* For a friend, we want the context of the friend function, not
        the type of which it is a friend.  */
-    ctx = DECL_CONTEXT (decl);
+    ctx = CP_DECL_CONTEXT (decl);
   else if (CP_DECL_CONTEXT (decl)
 	   && TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL)
     /* In the case of a virtual function, we want the class in which
@@ -7530,9 +7530,9 @@ tsubst_friend_class (tree friend_tmpl, tree args)
   tree tmpl;
   tree context;
 
-  context = DECL_CONTEXT (friend_tmpl);
+  context = CP_DECL_CONTEXT (friend_tmpl);
 
-  if (context)
+  if (context != global_namespace)
     {
       if (TREE_CODE (context) == NAMESPACE_DECL)
 	push_nested_namespace (context);
@@ -7621,7 +7621,7 @@ tsubst_friend_class (tree friend_tmpl, tree args)
       friend_type = TREE_TYPE (pushdecl_top_level_maybe_friend (tmpl, true));
     }
 
-  if (context)
+  if (context != global_namespace)
     {
       if (TREE_CODE (context) == NAMESPACE_DECL)
 	pop_nested_namespace (context);
@@ -7883,14 +7883,13 @@ instantiate_class_template (tree type)
   if (BINFO_N_BASE_BINFOS (pbinfo))
     {
       tree pbase_binfo;
-      tree context = TYPE_CONTEXT (type);
       tree pushed_scope;
       int i;
 
       /* We must enter the scope containing the type, as that is where
 	 the accessibility of types named in dependent bases are
 	 looked up from.  */
-      pushed_scope = push_scope (context ? context : global_namespace);
+      pushed_scope = push_scope (CP_TYPE_CONTEXT (type));
 
       /* Substitute into each of the bases to determine the actual
 	 basetypes.  */
@@ -10012,7 +10011,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       || t == void_type_node
       || t == char_type_node
       || t == unknown_type_node
-      || TREE_CODE (t) == NAMESPACE_DECL)
+      || TREE_CODE (t) == NAMESPACE_DECL
+      || TREE_CODE (t) == TRANSLATION_UNIT_DECL)
     return t;
 
   if (DECL_P (t))

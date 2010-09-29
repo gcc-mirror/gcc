@@ -3417,6 +3417,7 @@ cxx_init_decl_processing (void)
   gcc_assert (global_namespace == NULL_TREE);
   global_namespace = build_lang_decl (NAMESPACE_DECL, global_scope_name,
 				      void_type_node);
+  DECL_CONTEXT (global_namespace) = build_translation_unit_decl (NULL_TREE);
   TREE_PUBLIC (global_namespace) = 1;
   begin_scope (sk_namespace, global_namespace);
 
@@ -4163,16 +4164,9 @@ start_decl (const cp_declarator *declarator,
       || decl == error_mark_node)
     return error_mark_node;
 
-  context = DECL_CONTEXT (decl);
-
-  if (context)
-    {
-      *pushed_scope_p = push_scope (context);
-
-      /* We are only interested in class contexts, later.  */
-      if (TREE_CODE (context) == NAMESPACE_DECL)
-	context = NULL_TREE;
-    }
+  context = CP_DECL_CONTEXT (decl);
+  if (context != global_namespace)
+    *pushed_scope_p = push_scope (context);
 
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?
@@ -4241,7 +4235,7 @@ start_decl (const cp_declarator *declarator,
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
     warning (0, "inline function %q+D given attribute noinline", decl);
 
-  if (context && COMPLETE_TYPE_P (complete_type (context)))
+  if (TYPE_P (context) && COMPLETE_TYPE_P (complete_type (context)))
     {
       if (TREE_CODE (decl) == VAR_DECL)
 	{
@@ -5802,7 +5796,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  && !COMPLETE_TYPE_P (TREE_TYPE (decl)))
 	TYPE_DECL_SUPPRESS_DEBUG (decl) = 1;
 
-      rest_of_decl_compilation (decl, DECL_CONTEXT (decl) == NULL_TREE,
+      rest_of_decl_compilation (decl, DECL_FILE_SCOPE_P (decl),
 				at_eof);
       goto finish_end;
     }
@@ -6888,8 +6882,7 @@ grokfndecl (tree ctype,
 	   && strncmp (IDENTIFIER_POINTER (declarator)+2, "builtin_", 8) == 0))
       && current_lang_name == lang_name_cplusplus
       && ctype == NULL_TREE
-      /* NULL_TREE means global namespace.  */
-      && DECL_CONTEXT (decl) == NULL_TREE)
+      && DECL_FILE_SCOPE_P (decl))
     SET_DECL_LANGUAGE (decl, lang_c);
 
   /* Should probably propagate const out from type to decl I bet (mrs).  */
@@ -12068,7 +12061,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	 with any previous declarations; if the original declaration
 	 has a linkage specification, that specification applies to
 	 the definition as well, and may affect the mangled name.  */
-      if (!DECL_CONTEXT (decl1))
+      if (DECL_FILE_SCOPE_P (decl1))
 	maybe_apply_pragma_weak (decl1);
     }
 

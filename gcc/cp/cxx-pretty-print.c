@@ -260,7 +260,7 @@ pp_cxx_template_keyword_if_needed (cxx_pretty_printer *pp, tree scope, tree t)
 static void
 pp_cxx_nested_name_specifier (cxx_pretty_printer *pp, tree t)
 {
-  if (t != NULL && t != pp->enclosing_scope)
+  if (!SCOPE_FILE_SCOPE_P (t) && t != pp->enclosing_scope)
     {
       tree scope = TYPE_P (t) ? TYPE_CONTEXT (t) : DECL_CONTEXT (t);
       pp_cxx_nested_name_specifier (pp, scope);

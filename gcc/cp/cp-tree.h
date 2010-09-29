@@ -2361,12 +2361,12 @@ struct GTY((variable_size)) lang_decl {
 #define SET_DECL_FRIEND_CONTEXT(NODE, CONTEXT) \
   (LANG_DECL_FN_CHECK (NODE)->context = (CONTEXT))
 
-/* NULL_TREE in DECL_CONTEXT represents the global namespace.  */
 #define CP_DECL_CONTEXT(NODE) \
-  (DECL_CONTEXT (NODE) ? DECL_CONTEXT (NODE) : global_namespace)
+  (!DECL_FILE_SCOPE_P (NODE) ? DECL_CONTEXT (NODE) : global_namespace)
 #define CP_TYPE_CONTEXT(NODE) \
-  (TYPE_CONTEXT (NODE) ? TYPE_CONTEXT (NODE) : global_namespace)
-#define FROB_CONTEXT(NODE)   ((NODE) == global_namespace ? NULL_TREE : (NODE))
+  (!TYPE_FILE_SCOPE_P (NODE) ? TYPE_CONTEXT (NODE) : global_namespace)
+#define FROB_CONTEXT(NODE) \
+  ((NODE) == global_namespace ? DECL_CONTEXT (NODE) : (NODE))
 
 /* 1 iff NODE has namespace scope, including the global namespace.  */
 #define DECL_NAMESPACE_SCOPE_P(NODE)				\
