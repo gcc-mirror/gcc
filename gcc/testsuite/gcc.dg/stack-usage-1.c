@@ -28,6 +28,8 @@
 #elif defined (__powerpc__) || defined (__PPC__) || defined (__ppc__) \
       || defined (__POWERPC__) || defined (PPC) || defined (_IBMR2)
 #  define SIZE 240
+#elif defined (__AVR__)
+#  define SIZE 254
 #else
 #  define SIZE 256
 #endif
