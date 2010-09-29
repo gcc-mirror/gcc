@@ -1,3 +1,8 @@
+2010-09-29  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/40457
+	* gcc.target/arm/pr40457-3.c: New test.
+
 2010-09-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* lib/target-supports-dg.exp (dg-require-ifunc): Remove extraneous

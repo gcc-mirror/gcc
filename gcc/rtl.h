@@ -1123,9 +1123,57 @@ rhs_regno (const_rtx x)
    not to use an rtx with this cost under any circumstances.  */
 #define MAX_COST INT_MAX
 
+/* A structure to hold all available cost information about an rtl
+   expression.  */
+struct full_rtx_costs
+{
+  int speed;
+  int size;
+};
+
+/* Initialize a full_rtx_costs structure C to the maximum cost.  */
+static inline void
+init_costs_to_max (struct full_rtx_costs *c)
+{
+  c->speed = MAX_COST;
+  c->size = MAX_COST;
+}
+
+/* Initialize a full_rtx_costs structure C to zero cost.  */
+static inline void
+init_costs_to_zero (struct full_rtx_costs *c)
+{
+  c->speed = 0;
+  c->size = 0;
+}
+
+/* Compare two full_rtx_costs structures A and B, returning true
+   if A < B when optimizing for speed.  */
+static inline bool
+costs_lt_p (struct full_rtx_costs *a, struct full_rtx_costs *b,
+	    bool speed)
+{
+  if (speed)
+    return (a->speed < b->speed
+	    || (a->speed == b->speed && a->size < b->size));
+  else
+    return (a->size < b->size
+	    || (a->size == b->size && a->speed < b->speed));
+}
+
+/* Increase both members of the full_rtx_costs structure C by the
+   cost of N insns.  */
+static inline void
+costs_add_n_insns (struct full_rtx_costs *c, int n)
+{
+  c->speed += COSTS_N_INSNS (n);
+  c->size += COSTS_N_INSNS (n);
+}
+
 extern void init_rtlanal (void);
 extern int rtx_cost (rtx, enum rtx_code, bool);
 extern int address_cost (rtx, enum machine_mode, addr_space_t, bool);
+extern void get_full_rtx_cost (rtx, enum rtx_code, struct full_rtx_costs *);
 extern unsigned int subreg_lsb (const_rtx);
 extern unsigned int subreg_lsb_1 (enum machine_mode, enum machine_mode,
 				  unsigned int);
