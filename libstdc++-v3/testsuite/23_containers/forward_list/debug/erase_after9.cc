@@ -1,6 +1,8 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-debug-mode "" }
+// { dg-do run { xfail *-*-* } }
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,35 +19,16 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 23.2.3.n forward_list capacity [lib.forward_list.capacity]
-
 #include <forward_list>
-#include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
-// This test verifies the following.
-//
 void
 test01()
 {
-  std::forward_list<double> fld;
-  VERIFY(fld.empty() == true);
+  std::forward_list<int> fl1{1, 2, 3};
 
-  fld.push_front(1.0);
-  VERIFY(fld.empty() == false);
-
-  fld.resize(0);
-  VERIFY(fld.empty() == true);
-
-#ifndef _GLIBCXX_DEBUG
-  using std::_Fwd_list_node;
-#else
-  using std::_GLIBCXX_STD_D::_Fwd_list_node;
-#endif
-
-  VERIFY( (fld.max_size()
-	   == std::allocator<_Fwd_list_node<double> >().max_size()) );
+  auto it = fl1.begin();
+  ++it;
+  fl1.erase_after(it, fl1.begin());
 }
 
 int

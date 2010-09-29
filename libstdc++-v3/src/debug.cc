@@ -1,6 +1,6 @@
 // Debugging mode support code -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -105,7 +105,12 @@ namespace __gnu_debug
     "attempt to output via an ostream_iterator with no associated stream",
     "attempt to dereference an end-of-stream istreambuf_iterator"
     " (this is a GNU extension)",
-    "attempt to increment an end-of-stream istreambuf_iterator"
+    "attempt to increment an end-of-stream istreambuf_iterator",
+    "attempt to insert into container after an end iterator",
+    "attempt to erase from container after a %2.state; iterator not followed"
+    " by a dereferenceable one",
+    "function requires a valid iterator range (%1.name;, %2.name;)"
+    ", %1.name; shall not be equal to %2.name;"
   };
 
   void
@@ -325,7 +330,8 @@ namespace __gnu_debug
 		"singular",
 		"dereferenceable (start-of-sequence)",
 		"dereferenceable",
-		"past-the-end"
+		"past-the-end",
+		"before begin"
 	      };
 	    __formatter->_M_print_word(__state_names[_M_variant.
 						     _M_iterator._M_state]);

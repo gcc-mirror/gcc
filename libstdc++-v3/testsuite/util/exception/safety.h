@@ -347,8 +347,14 @@ namespace __gnu_test
 	  _F_erase_range(&container_type::erase) { }
       };
 
-    template<typename _Tp, bool = traits<_Tp>::has_erase::value>
-      struct erase_point : public erase_base<_Tp>
+    template<typename _Tp,
+	     bool = traits<_Tp>::has_erase::value,
+	     bool = traits<_Tp>::has_erase_after::value>
+      struct erase_point;
+
+    // Specialization for most containers.
+    template<typename _Tp>
+      struct erase_point<_Tp, true, false> : public erase_base<_Tp>
       {
 	using erase_base<_Tp>::_F_erase_point;
 
@@ -374,17 +380,51 @@ namespace __gnu_test
 	}
       };
 
+    // Specialization for forward_list.
+    template<typename _Tp>
+      struct erase_point<_Tp, false, true> : public erase_base<_Tp>
+      {
+	using erase_base<_Tp>::_F_erase_point;
+
+	void
+	operator()(_Tp& __container)
+	{
+	  try
+	    {
+	      // NB: Should be equivalent to size() member function, but
+	      // computed with begin() and end().
+	      const size_type sz = std::distance(__container.begin(),
+						 __container.end());
+
+	      // NB: Lowest common denominator: use forward iterator operations.
+	      auto i = __container.before_begin();
+	      std::advance(i, generate(sz));
+
+	      // Makes it easier to think of this as __container.erase(i)
+	      (__container.*_F_erase_point)(i);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+      };
+
     // Specialization, empty.
     template<typename _Tp>
-      struct erase_point<_Tp, false>
+      struct erase_point<_Tp, false, false>
       {
 	void
 	operator()(_Tp&) { }
       };
 
 
-    template<typename _Tp, bool = traits<_Tp>::has_erase::value>
-      struct erase_range : public erase_base<_Tp>
+    template<typename _Tp,
+	     bool = traits<_Tp>::has_erase::value,
+	     bool = traits<_Tp>::has_erase_after::value>
+      struct erase_range;
+
+    // Specialization for most containers.
+    template<typename _Tp>
+      struct erase_range<_Tp, true, false> : public erase_base<_Tp>
       {
 	using erase_base<_Tp>::_F_erase_range;
 
@@ -410,9 +450,37 @@ namespace __gnu_test
 	}
       };
 
+    // Specialization for forward_list.
+    template<typename _Tp>
+      struct erase_range<_Tp, false, true> : public erase_base<_Tp>
+      {
+	using erase_base<_Tp>::_F_erase_range;
+
+	void
+	operator()(_Tp& __container)
+	{
+	  try
+	    {
+	      const size_type sz = std::distance(__container.begin(),
+						 __container.end());
+	      size_type s1 = generate(sz);
+	      size_type s2 = generate(sz);
+	      auto i1 = __container.before_begin();
+	      auto i2 = __container.before_begin();
+	      std::advance(i1, std::min(s1, s2));
+	      std::advance(i2, std::max(s1, s2));
+
+	      // Makes it easier to think of this as __container.erase(i1, i2).
+	      (__container.*_F_erase_range)(i1, i2);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+      };
+
     // Specialization, empty.
     template<typename _Tp>
-      struct erase_range<_Tp, false>
+      struct erase_range<_Tp, false, false>
       {
 	void
 	operator()(_Tp&) { }
@@ -677,8 +745,14 @@ namespace __gnu_test
 	insert_base() : _F_insert_point(&container_type::insert) { }
       };
 
-    template<typename _Tp, bool = traits<_Tp>::has_insert::value>
-      struct insert_point : public insert_base<_Tp>
+    template<typename _Tp,
+	     bool = traits<_Tp>::has_insert::value,
+	     bool = traits<_Tp>::has_insert_after::value>
+      struct insert_point;
+
+    // Specialization for most containers.
+    template<typename _Tp>
+      struct insert_point<_Tp, true, false> : public insert_base<_Tp>
       {
 	typedef _Tp 				       	container_type;
 	typedef typename container_type::value_type 	value_type;
@@ -718,9 +792,51 @@ namespace __gnu_test
  	}
       };
 
+    // Specialization for forward_list.
+    template<typename _Tp>
+      struct insert_point<_Tp, false, true> : public insert_base<_Tp>
+      {
+	typedef _Tp 				       	container_type;
+	typedef typename container_type::value_type 	value_type;
+	using insert_base<_Tp>::_F_insert_point;
+
+	void
+	operator()(_Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      const size_type sz = std::distance(__test.begin(), __test.end());
+	      size_type s = generate(sz);
+	      auto i = __test.before_begin();
+	      std::advance(i, s);
+	      (__test.*_F_insert_point)(i, cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+
+	// Assumes containers start out equivalent.
+	void
+	operator()(_Tp& __control, _Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      const size_type sz = std::distance(__test.begin(), __test.end());
+	      size_type s = generate(sz);
+	      auto i = __test.before_begin();
+	      std::advance(i, s);
+	      (__test.*_F_insert_point)(i, cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+ 	}
+      };
+
     // Specialization, empty.
     template<typename _Tp>
-      struct insert_point<_Tp, false>
+      struct insert_point<_Tp, false, false>
       {
 	void
 	operator()(_Tp&) { }
