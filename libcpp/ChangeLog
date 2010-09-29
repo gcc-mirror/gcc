@@ -1,3 +1,20 @@
+2010-09-29  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR preprocessor/45362
+	* directives.c (cpp_pop_definition): Make static.
+	(do_pragma_push_macro): Reworked to store text
+	definition.
+	(do_pragma_pop_macro): Add free text definition.
+	(cpp_push_definition): Removed.
+	* include/cpplib.h (cpp_push_definition): Removed.
+	(cpp_pop_definition): Likewise.
+	* internal.h (def_pragma_macro): Remove member 'value'
+	and add new members 'definition', 'line',
+	'syshdr', 'sued' and 'is_undef'.
+	* pch.c (_cpp_restore_pushed_macros): Rework to work
+	on text definition and store additional macro flags.
+	(_cpp_save_pushed_macros): Likewise.
+
 2010-09-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* include/cpplib.h (cpp_options): Rename warn_deprecated,

@@ -128,6 +128,7 @@ static struct answer ** find_answer (cpp_hashnode *, const struct answer *);
 static void handle_assertion (cpp_reader *, const char *, int);
 static void do_pragma_push_macro (cpp_reader *);
 static void do_pragma_pop_macro (cpp_reader *);
+static void cpp_pop_definition (cpp_reader *, struct def_pragma_macro *);
 
 /* This is the table of directive handlers.  It is ordered by
    frequency of occurrence; the numbers at the end are directive
@@ -1436,6 +1437,9 @@ do_pragma_once (cpp_reader *pfile)
 static void
 do_pragma_push_macro (cpp_reader *pfile)
 {
+  cpp_hashnode *node;
+  size_t defnlen;
+  const uchar *defn = NULL;
   char *macroname, *dest;
   const char *limit, *src;
   const cpp_token *txt;
@@ -1465,10 +1469,26 @@ do_pragma_push_macro (cpp_reader *pfile)
   check_eol (pfile, false);
   skip_rest_of_line (pfile);
   c = XNEW (struct def_pragma_macro);
+  memset (c, 0, sizeof (struct def_pragma_macro));
   c->name = XNEWVAR (char, strlen (macroname) + 1);
   strcpy (c->name, macroname);
   c->next = pfile->pushed_macros;
-  c->value = cpp_push_definition (pfile, c->name);
+  node = _cpp_lex_identifier (pfile, c->name);
+  if (node->type == NT_VOID)
+    c->is_undef = 1;
+  else
+    {
+      defn = cpp_macro_definition (pfile, node);
+      defnlen = ustrlen (defn);
+      c->definition = XNEWVEC (uchar, defnlen + 2);
+      c->definition[defnlen] = '\n';
+      c->definition[defnlen + 1] = 0;
+      c->line = node->value.macro->line;
+      c->syshdr = node->value.macro->syshdr;
+      c->used = node->value.macro->used;
+      memcpy (c->definition, defn, defnlen);
+    }
+
   pfile->pushed_macros = c;
 }
 
@@ -1512,7 +1532,8 @@ do_pragma_pop_macro (cpp_reader *pfile)
 	    pfile->pushed_macros = c->next;
 	  else
 	    l->next = c->next;
-	  cpp_pop_definition (pfile, c->name, c->value);
+	  cpp_pop_definition (pfile, c);
+	  free (c->definition);
 	  free (c->name);
 	  free (c);
 	  break;
@@ -2334,23 +2355,12 @@ cpp_undef (cpp_reader *pfile, const char *macro)
   run_directive (pfile, T_UNDEF, buf, len);
 }
 
-/* If STR is a defined macro, return its definition node, else return NULL.  */
-cpp_macro *
-cpp_push_definition (cpp_reader *pfile, const char *str)
+/* Replace a previous definition DEF of the macro STR.  If DEF is NULL,
+   or first element is zero, then the macro should be undefined.  */
+static void
+cpp_pop_definition (cpp_reader *pfile, struct def_pragma_macro *c)
 {
-  cpp_hashnode *node = _cpp_lex_identifier (pfile, str);
-  if (node && node->type == NT_MACRO)
-    return node->value.macro;
-  else
-    return NULL;
-}
-
-/* Replace a previous definition DFN of the macro STR.  If DFN is NULL,
-   then the macro should be undefined.  */
-void
-cpp_pop_definition (cpp_reader *pfile, const char *str, cpp_macro *dfn)
-{
-  cpp_hashnode *node = _cpp_lex_identifier (pfile, str);
+  cpp_hashnode *node = _cpp_lex_identifier (pfile, c->name);
   if (node == NULL)
     return;
 
@@ -2367,16 +2377,35 @@ cpp_pop_definition (cpp_reader *pfile, const char *str, cpp_macro *dfn)
   if (node->type != NT_VOID)
     _cpp_free_definition (node);
 
-  if (dfn)
-    {
-      node->type = NT_MACRO;
-      node->value.macro = dfn;
-      if (! ustrncmp (NODE_NAME (node), DSC ("__STDC_")))
-	node->flags |= NODE_WARN;
+  if (c->is_undef)
+    return;
+  {
+    size_t namelen;
+    const uchar *dn;
+    cpp_hashnode *h = NULL;
+    cpp_buffer *nbuf;
 
-      if (pfile->cb.define)
-	pfile->cb.define (pfile, pfile->directive_line, node);
-    }
+    namelen = ustrcspn (c->definition, "( \n");
+    h = cpp_lookup (pfile, c->definition, namelen);
+    dn = c->definition + namelen;
+
+    h->type = NT_VOID;
+    h->flags &= ~(NODE_POISONED|NODE_BUILTIN|NODE_DISABLED|NODE_USED);
+    nbuf = cpp_push_buffer (pfile, dn, ustrchr (dn, '\n') - dn, true);
+    if (nbuf != NULL)
+      {
+	_cpp_clean_line (pfile);
+	nbuf->sysp = 1;
+	if (!_cpp_create_definition (pfile, h))
+	  abort ();
+	_cpp_pop_buffer (pfile);
+      }
+    else
+      abort ();
+    h->value.macro->line = c->line;
+    h->value.macro->syshdr = c->syshdr;
+    h->value.macro->used = c->used;
+  }
 }
 
 /* Process the string STR as if it appeared as the body of a #assert.  */
