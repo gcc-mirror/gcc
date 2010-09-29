@@ -372,12 +372,10 @@ proc check_alias_available { } {
 # proc check_ifunc_available { }
 ###############################
 
-# Determine if the target toolchain supports the alias attribute.
+# Determine if the target toolchain supports the ifunc attribute.
 
-# Returns 2 if the target supports aliases.  Returns 1 if the target
-# only supports weak aliased.  Returns 0 if the target does not
-# support aliases at all.  Returns -1 if support for aliases could not
-# be determined.
+# Returns 1 if the target supports ifunc.  Returns 0 if the target
+# does not support ifunc.
 
 proc check_ifunc_available { } {
     global ifunc_available_saved
@@ -390,26 +388,19 @@ proc check_ifunc_available { } {
 	set obj ifunc[pid].o
         verbose "check_ifunc_available  compiling testfile $src" 2
 	set f [open $src "w"]
-	# Compile a small test program.  The definition of "g" is
-	# necessary to keep the Solaris assembler from complaining
-	# about the program.
-	puts $f "#ifdef __cplusplus\nextern \"C\"\n#endif\n"
-	puts $f "void g() {} void f() __attribute__((ifunc(\"g\")));"
+	puts $f "#endif"
+	puts $f "#ifdef __cplusplus\nextern \"C\"\n#endif"
+	puts $f "void g() {}"
+	puts $f "void f() __attribute__((ifunc(\"g\")));"
 	close $f
 	set lines [${tool}_target_compile $src $obj object ""]
 	file delete $src
 	remote_file build delete $obj
 
 	if [string match "" $lines] then {
-	    # No error messages, everything is OK.
-	    set ifunc_available_saved 2
+	    set ifunc_available_saved 1
 	} else {
-	    if [regexp "ifunc is not supported" $lines] {
-		verbose "check_ifunc_available  target does not support ifunc" 2
-		set ifunc_available_saved 0
-	    } else {
-		set ifunc_available_saved -1
-	    }
+	    set ifunc_available_saved 0
 	}
 
 	verbose "check_ifunc_available  returning $ifunc_available_saved" 2

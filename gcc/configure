@@ -903,6 +903,7 @@ with_pic
 enable_fast_install
 enable_libtool_lock
 with_plugin_ld
+enable_gnu_indirect_function
 enable_comdat
 enable_gnu_unique_object
 enable_linker_build_id
@@ -1608,6 +1609,9 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --enable-gnu-indirect-function
+                          enable the use of the @gnu_indirect_function to
+                          glibc systems
   --enable-comdat         enable COMDAT group support
   --enable-gnu-unique-object	enable the use of the @gnu_unique_object ELF extension on
 				glibc systems
@@ -17123,7 +17127,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17126 "configure"
+#line 17130 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17229,7 +17233,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17232 "configure"
+#line 17236 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21316,42 +21320,20 @@ $as_echo "$gcc_cv_as_hidden" >&6; }
 # gnu_indirect_function type is an extension proposed at
 # http://groups.google/com/group/generic-abi/files. It allows dynamic runtime
 # selection of function implementation
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for gnu_indirect_function" >&5
-$as_echo_n "checking assembler for gnu_indirect_function... " >&6; }
-if test "${gcc_cv_as_indirect_function+set}" = set; then :
-  $as_echo_n "(cached) " >&6
+# Check whether --enable-gnu-indirect-function was given.
+if test "${enable_gnu_indirect_function+set}" = set; then :
+  enableval=$enable_gnu_indirect_function; case $enable_gnu_indirect_function in
+    yes | no) ;;
+    *) as_fn_error "'$enable_gnu_indirect_function' is an invalid value for --enable-gnu-indirect-function.
+Valid choices are 'yes' and 'no'." "$LINENO" 5 ;;
+  esac
 else
-  gcc_cv_as_indirect_function=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 20 \) \* 1000 + 1`
-  then gcc_cv_as_indirect_function=yes
+  enable_gnu_indirect_function="$default_gnu_indirect_function"
 fi
-  elif test x$gcc_cv_as != x; then
-    echo '	.type  Foo, @gnu_indirect_function
-Foo:' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_indirect_function=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_indirect_function" >&5
-$as_echo "$gcc_cv_as_indirect_function" >&6; }
 
+if test x$enable_gnu_indirect_function = xyes; then
 
-if test $gcc_cv_as_indirect_function = yes ; then
-
-$as_echo "#define HAVE_GAS_INDIRECT_FUNCTION 1" >>confdefs.h
+$as_echo "#define HAVE_GNU_INDIRECT_FUNCTION 1" >>confdefs.h
 
 fi
 
