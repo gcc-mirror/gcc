@@ -1,3 +1,7 @@
+2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_is_reserved_word): Removed.
+
 2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
 	
 	* objc-act.c (objc_add_method_declaration): Handle and ignore 

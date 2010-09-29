@@ -1,3 +1,12 @@
+2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-common.h (OBJC_IS_CXX_KEYWORD): New macro.  Updated comments.
+	(objc_is_reserved_word): Removed.
+	* c-common.c: Updated comments.
+	* c-lex.c (c_lex_with_flags): Use OBJC_IS_CXX_KEYWORD instead of
+	objc_is_reserved_word.
+	* stub-objc.c (objc_is_reserved_word): Removed.
+
 2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* c-common.h (objc_add_method_declaration): Adjust prototype to 

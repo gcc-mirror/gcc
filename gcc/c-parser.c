@@ -179,7 +179,11 @@ typedef struct GTY(()) c_parser {
   BOOL_BITFIELD in_if_block : 1;
   /* True if we want to lex an untranslated string.  */
   BOOL_BITFIELD lex_untranslated_string : 1;
+
   /* Objective-C specific parser/lexer information.  */
+
+  /* True if we are in a context where the Objective-C "PQ" keywords
+     are considered keywords.  */
   BOOL_BITFIELD objc_pq_context : 1;
   /* The following flag is needed to contextualize Objective-C lexical
      analysis.  In some cases (e.g., 'int NSObject;'), it is
@@ -236,16 +240,37 @@ c_lex_one_token (c_parser *parser, c_token *token)
 		token->keyword = rid_code;
 		break;
 	      }
-	    else if (c_dialect_objc ())
+	    else if (c_dialect_objc () && OBJC_IS_PQ_KEYWORD (rid_code))
 	      {
-		if (!objc_is_reserved_word (token->value)
-		    && (!OBJC_IS_PQ_KEYWORD (rid_code)
-			|| parser->objc_pq_context))
+		/* We found an Objective-C "pq" keyword (in, out,
+		   inout, bycopy, byref, oneway).  They need special
+		   care because the interpretation depends on the
+		   context.
+		 */
+		if (parser->objc_pq_context)
 		  {
 		    token->type = CPP_KEYWORD;
 		    token->keyword = rid_code;
 		    break;
 		  }
+		/* Else, "pq" keywords outside of the "pq" context are
+		   not keywords, and we fall through to the code for
+		   normal tokens.
+		*/
+	      }
+	    else if (c_dialect_objc () 
+		     && (OBJC_IS_AT_KEYWORD (rid_code)
+			 || OBJC_IS_CXX_KEYWORD (rid_code)))
+	      {
+		/* We found one of the Objective-C "@" keywords (defs,
+		   selector, synchronized, etc) or one of the
+		   Objective-C "cxx" keywords (class, private,
+		   protected, public, try, catch, throw) without a
+		   preceding '@' sign.  Do nothing and fall through to
+		   the code for normal tokens (in C++ we would still
+		   consider the CXX ones keywords, but not in C).
+		*/
+		;
 	      }
 	    else
 	      {

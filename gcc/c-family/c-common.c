@@ -381,8 +381,13 @@ static int resort_field_decl_cmp (const void *, const void *);
    If -fno-asm is used, D_ASM is added to the mask.  If
    -fno-gnu-keywords is used, D_EXT is added.  If -fno-asm and C in
    C89 mode, D_EXT89 is added for both -fno-asm and -fno-gnu-keywords.
-   In C with -Wc++-compat, we warn if D_CXXWARN is set.  */
+   In C with -Wc++-compat, we warn if D_CXXWARN is set.
 
+   Note the complication of the D_CXX_OBJC keywords.  These are
+   reserved words such as 'class'.  In C++, 'class' is a reserved
+   word.  In Objective-C++ it is too.  In Objective-C, it is a
+   reserved word too, but only if it follows an '@' sign.
+*/
 const struct c_common_resword c_common_reswords[] =
 {
   { "_Bool",		RID_BOOL,      D_CONLY },

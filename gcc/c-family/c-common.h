@@ -76,7 +76,8 @@ enum rid
   /* C++ */
   RID_FRIEND, RID_VIRTUAL, RID_EXPLICIT, RID_EXPORT, RID_MUTABLE,
 
-  /* ObjC */
+  /* ObjC ("PQ" reserved words - they do not appear after a '@' and
+     are keywords only in specific contexts)  */
   RID_IN, RID_OUT, RID_INOUT, RID_BYCOPY, RID_BYREF, RID_ONEWAY,
 
   /* C (reserved and imaginary types not implemented, so any use is a
@@ -105,7 +106,8 @@ enum rid
   /* Too many ways of getting the name of a function as a string */
   RID_FUNCTION_NAME, RID_PRETTY_FUNCTION_NAME, RID_C99_FUNCTION_NAME,
 
-  /* C++ */
+  /* C++ (some of these are keywords in Objective-C as well, but only
+     if they appear after a '@') */
   RID_BOOL,     RID_WCHAR,    RID_CLASS,
   RID_PUBLIC,   RID_PRIVATE,  RID_PROTECTED,
   RID_TEMPLATE, RID_NULL,     RID_CATCH,
@@ -133,7 +135,8 @@ enum rid
   /* C++0x */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
 
-  /* Objective-C */
+  /* Objective-C ("AT" reserved words - they are only keywords when
+     they follow '@')  */
   RID_AT_ENCODE,   RID_AT_END,
   RID_AT_CLASS,    RID_AT_ALIAS,     RID_AT_DEFS,
   RID_AT_PRIVATE,  RID_AT_PROTECTED, RID_AT_PUBLIC,
@@ -187,6 +190,18 @@ enum rid
 #define OBJC_IS_PQ_KEYWORD(rid) \
   ((unsigned int) (rid) >= (unsigned int) RID_FIRST_PQ && \
    (unsigned int) (rid) <= (unsigned int) RID_LAST_PQ)
+
+/* OBJC_IS_CXX_KEYWORD recognizes the 'CXX_OBJC' keywords (such as
+   'class') which are shared in a subtle way between Objective-C and
+   C++.  When the lexer is lexing in Objective-C/Objective-C++, if it
+   finds '@' followed by one of these identifiers (eg, '@class'), it
+   recognizes the whole as an Objective-C keyword.  If the identifier
+   is found elsewhere, it follows the rules of the C/C++ language.
+ */
+#define OBJC_IS_CXX_KEYWORD(rid) \
+  (rid == RID_CLASS							\
+   || rid == RID_PUBLIC || rid == RID_PROTECTED || rid == RID_PRIVATE	\
+   || rid == RID_TRY || rid == RID_THROW || rid == RID_CATCH)
 
 /* The elements of `ridpointers' are identifier nodes for the reserved
    type names and storage classes.  It is indexed by a RID_... value.  */
@@ -940,7 +955,6 @@ extern void c_parse_error (const char *, enum cpp_ttype, tree, unsigned char);
 extern tree objc_is_class_name (tree);
 extern tree objc_is_object_ptr (tree);
 extern void objc_check_decl (tree);
-extern int objc_is_reserved_word (tree);
 extern tree objc_common_type (tree, tree);
 extern bool objc_compare_types (tree, tree, int, tree);
 extern bool objc_have_common_type (tree, tree, int, tree);
