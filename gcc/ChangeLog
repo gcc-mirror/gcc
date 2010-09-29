@@ -1,5 +1,11 @@
 2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* c-parser.c (c_lex_one_token): In Objective-C, when dealing with
+	a CPP_NAME which is a reserved word, clearly separate cases for
+	OBJC_IS_PQ_KEYWORD, OBJC_IS_AT_KEYWORD and OBJC_IS_CXX_KEYWORD.
+
+2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* c-parser.c (c_lex_one_token): In Objective-C, do not replace
 	token->value with the canonical spelling.  Do exactly like C and
 	C++ and leave it as it is.

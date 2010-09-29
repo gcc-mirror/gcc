@@ -56,12 +56,6 @@ objc_check_decl (tree ARG_UNUSED (decl))
 {
 }
 
-int
-objc_is_reserved_word (tree ARG_UNUSED (ident))
-{
-  return 0;
-}
-
 tree
 objc_common_type (tree ARG_UNUSED (type1), tree ARG_UNUSED (type2))
 {

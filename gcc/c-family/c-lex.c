@@ -366,7 +366,8 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 
 	    case CPP_NAME:
 	      *value = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
-	      if (objc_is_reserved_word (*value))
+	      if (OBJC_IS_AT_KEYWORD (C_RID_CODE (*value))
+		  || OBJC_IS_CXX_KEYWORD (C_RID_CODE (*value)))
 		{
 		  type = CPP_AT_NAME;
 		  break;
