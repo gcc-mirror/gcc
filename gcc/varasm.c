@@ -5542,8 +5542,12 @@ assemble_alias (tree decl, tree target)
 # else
       if (!DECL_WEAK (decl))
 	{
-	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "only weak aliases are supported in this configuration");
+	  if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl)))
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "ifunc is not supported in this configuration");
+	  else	
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "only weak aliases are supported in this configuration");
 	  return;
 	}
 # endif
