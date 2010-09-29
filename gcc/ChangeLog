@@ -1,3 +1,8 @@
+2010-09-29  Mike Stump  <mikestump@comcast.net>
+
+	* config/darwin.h (flag_mkernel): Remove.
+	(flag_apple_kext): Likewise.
+
 2010-09-29  Joseph Myers  <joseph@codesourcery.com>
 	    Jack Howarth <howarth@bromo.med.uc.edu>
 
