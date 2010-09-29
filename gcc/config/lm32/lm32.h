@@ -68,8 +68,6 @@
 #undef  LIB_SPEC
 #define LIB_SPEC "%{!T*:-T sim.ld}"
 
-extern int target_flags;
-
 /* Add -G xx support.  */
 
 #undef  SWITCH_TAKES_ARG

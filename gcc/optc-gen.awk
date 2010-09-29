@@ -85,8 +85,19 @@ print "#endif /* GCC_DRIVER */"
 print ""
 
 have_save = 0;
+print "struct gcc_options global_options =\n{"
 for (i = 0; i < n_extra_vars; i++) {
-	print extra_vars[i] ";"
+	var = extra_vars[i]
+	init = extra_vars[i]
+	if (var ~ "=" ) {
+		sub(".*= *", "", init)
+		sub(" *=.*", "", var)
+		sub("^.*[ *]", "", var)
+	} else {
+		init = "0"
+	}
+	var_seen[var] = 1
+	print "  " init ", /* " var " */"
 }
 for (i = 0; i < n_opts; i++) {
 	if (flag_set_p("Save", flags[i]))
@@ -96,24 +107,31 @@ for (i = 0; i < n_opts; i++) {
 	if (name == "")
 		continue;
 
-	if (flag_set_p("VarExists", flags[i])) {
+	init = opt_args("Init", flags[i])
+	if (init != "") {
+		if (name in var_init && var_init[name] != init)
+			print "#error multiple initializers for " name
+		var_init[name] = init
+	}
+}
+for (i = 0; i < n_opts; i++) {
+	name = var_name(flags[i]);
+	if (name == "")
 		continue;
-	}
-	else {
-		init = opt_args("Init", flags[i])
-		if (init != "")
-			init = " = " init;
-		else if (name in var_seen)
-			continue;
-	}
 
-	print "/* Set by -" opts[i] "."
-	print "   " help[i] "  */"
-	print var_type(flags[i]) name init ";"
-	print ""
+	if (name in var_seen)
+		continue;
+
+	if (name in var_init)
+		init = var_init[name]
+	else
+		init = "0"
+
+	print "  " init ", /* " name " */"
 
 	var_seen[name] = 1;
 }
+print "};"
 
 print ""
 print "/* Local state variables.  */"
@@ -332,19 +350,19 @@ for (i = 0; i < n_opt_char; i++) {
 
 print "";
 for (i = 0; i < n_opt_other; i++) {
-	print "  ptr->" var_opt_other[i] " = " var_opt_other[i] ";";
+	print "  ptr->x_" var_opt_other[i] " = " var_opt_other[i] ";";
 }
 
 for (i = 0; i < n_opt_int; i++) {
-	print "  ptr->" var_opt_int[i] " = " var_opt_int[i] ";";
+	print "  ptr->x_" var_opt_int[i] " = " var_opt_int[i] ";";
 }
 
 for (i = 0; i < n_opt_short; i++) {
-	print "  ptr->" var_opt_short[i] " = " var_opt_short[i] ";";
+	print "  ptr->x_" var_opt_short[i] " = " var_opt_short[i] ";";
 }
 
 for (i = 0; i < n_opt_char; i++) {
-	print "  ptr->" var_opt_char[i] " = " var_opt_char[i] ";";
+	print "  ptr->x_" var_opt_char[i] " = " var_opt_char[i] ";";
 }
 
 print "}";
@@ -356,19 +374,19 @@ print "cl_optimization_restore (struct cl_optimization *ptr)";
 print "{";
 
 for (i = 0; i < n_opt_other; i++) {
-	print "  " var_opt_other[i] " = ptr->" var_opt_other[i] ";";
+	print "  " var_opt_other[i] " = ptr->x_" var_opt_other[i] ";";
 }
 
 for (i = 0; i < n_opt_int; i++) {
-	print "  " var_opt_int[i] " = ptr->" var_opt_int[i] ";";
+	print "  " var_opt_int[i] " = ptr->x_" var_opt_int[i] ";";
 }
 
 for (i = 0; i < n_opt_short; i++) {
-	print "  " var_opt_short[i] " = ptr->" var_opt_short[i] ";";
+	print "  " var_opt_short[i] " = ptr->x_" var_opt_short[i] ";";
 }
 
 for (i = 0; i < n_opt_char; i++) {
-	print "  " var_opt_char[i] " = ptr->" var_opt_char[i] ";";
+	print "  " var_opt_char[i] " = ptr->x_" var_opt_char[i] ";";
 }
 
 print "  targetm.override_options_after_change ();";
@@ -384,38 +402,38 @@ print "{";
 
 print "  fputs (\"\\n\", file);";
 for (i = 0; i < n_opt_other; i++) {
-	print "  if (ptr->" var_opt_other[i] ")";
+	print "  if (ptr->x_" var_opt_other[i] ")";
 	print "    fprintf (file, \"%*s%s (%#lx)\\n\",";
 	print "             indent_to, \"\",";
 	print "             \"" var_opt_other[i] "\",";
-	print "             (unsigned long)ptr->" var_opt_other[i] ");";
+	print "             (unsigned long)ptr->x_" var_opt_other[i] ");";
 	print "";
 }
 
 for (i = 0; i < n_opt_int; i++) {
-	print "  if (ptr->" var_opt_int[i] ")";
+	print "  if (ptr->x_" var_opt_int[i] ")";
 	print "    fprintf (file, \"%*s%s (%#x)\\n\",";
 	print "             indent_to, \"\",";
 	print "             \"" var_opt_int[i] "\",";
-	print "             ptr->" var_opt_int[i] ");";
+	print "             ptr->x_" var_opt_int[i] ");";
 	print "";
 }
 
 for (i = 0; i < n_opt_short; i++) {
-	print "  if (ptr->" var_opt_short[i] ")";
+	print "  if (ptr->x_" var_opt_short[i] ")";
 	print "    fprintf (file, \"%*s%s (%#x)\\n\",";
 	print "             indent_to, \"\",";
 	print "             \"" var_opt_short[i] "\",";
-	print "             ptr->" var_opt_short[i] ");";
+	print "             ptr->x_" var_opt_short[i] ");";
 	print "";
 }
 
 for (i = 0; i < n_opt_char; i++) {
-	print "  if (ptr->" var_opt_char[i] ")";
+	print "  if (ptr->x_" var_opt_char[i] ")";
 	print "    fprintf (file, \"%*s%s (%#x)\\n\",";
 	print "             indent_to, \"\",";
 	print "             \"" var_opt_char[i] "\",";
-	print "             ptr->" var_opt_char[i] ");";
+	print "             ptr->x_" var_opt_char[i] ");";
 	print "";
 }
 
@@ -482,19 +500,19 @@ print "    targetm.target_option.save (ptr);";
 print "";
 
 for (i = 0; i < n_target_other; i++) {
-	print "  ptr->" var_target_other[i] " = " var_target_other[i] ";";
+	print "  ptr->x_" var_target_other[i] " = " var_target_other[i] ";";
 }
 
 for (i = 0; i < n_target_int; i++) {
-	print "  ptr->" var_target_int[i] " = " var_target_int[i] ";";
+	print "  ptr->x_" var_target_int[i] " = " var_target_int[i] ";";
 }
 
 for (i = 0; i < n_target_short; i++) {
-	print "  ptr->" var_target_short[i] " = " var_target_short[i] ";";
+	print "  ptr->x_" var_target_short[i] " = " var_target_short[i] ";";
 }
 
 for (i = 0; i < n_target_char; i++) {
-	print "  ptr->" var_target_char[i] " = " var_target_char[i] ";";
+	print "  ptr->x_" var_target_char[i] " = " var_target_char[i] ";";
 }
 
 print "}";
@@ -506,19 +524,19 @@ print "cl_target_option_restore (struct cl_target_option *ptr)";
 print "{";
 
 for (i = 0; i < n_target_other; i++) {
-	print "  " var_target_other[i] " = ptr->" var_target_other[i] ";";
+	print "  " var_target_other[i] " = ptr->x_" var_target_other[i] ";";
 }
 
 for (i = 0; i < n_target_int; i++) {
-	print "  " var_target_int[i] " = ptr->" var_target_int[i] ";";
+	print "  " var_target_int[i] " = ptr->x_" var_target_int[i] ";";
 }
 
 for (i = 0; i < n_target_short; i++) {
-	print "  " var_target_short[i] " = ptr->" var_target_short[i] ";";
+	print "  " var_target_short[i] " = ptr->x_" var_target_short[i] ";";
 }
 
 for (i = 0; i < n_target_char; i++) {
-	print "  " var_target_char[i] " = ptr->" var_target_char[i] ";";
+	print "  " var_target_char[i] " = ptr->x_" var_target_char[i] ";";
 }
 
 # This must occur after the normal variables in case the code depends on those
@@ -539,38 +557,38 @@ print "{";
 
 print "  fputs (\"\\n\", file);";
 for (i = 0; i < n_target_other; i++) {
-	print "  if (ptr->" var_target_other[i] ")";
+	print "  if (ptr->x_" var_target_other[i] ")";
 	print "    fprintf (file, \"%*s%s (%#lx)\\n\",";
 	print "             indent, \"\",";
 	print "             \"" var_target_other[i] "\",";
-	print "             (unsigned long)ptr->" var_target_other[i] ");";
+	print "             (unsigned long)ptr->x_" var_target_other[i] ");";
 	print "";
 }
 
 for (i = 0; i < n_target_int; i++) {
-	print "  if (ptr->" var_target_int[i] ")";
+	print "  if (ptr->x_" var_target_int[i] ")";
 	print "    fprintf (file, \"%*s%s (%#x)\\n\",";
 	print "             indent, \"\",";
 	print "             \"" var_target_int[i] "\",";
-	print "             ptr->" var_target_int[i] ");";
+	print "             ptr->x_" var_target_int[i] ");";
 	print "";
 }
 
 for (i = 0; i < n_target_short; i++) {
-	print "  if (ptr->" var_target_short[i] ")";
+	print "  if (ptr->x_" var_target_short[i] ")";
 	print "    fprintf (file, \"%*s%s (%#x)\\n\",";
 	print "             indent, \"\",";
 	print "             \"" var_target_short[i] "\",";
-	print "             ptr->" var_target_short[i] ");";
+	print "             ptr->x_" var_target_short[i] ");";
 	print "";
 }
 
 for (i = 0; i < n_target_char; i++) {
-	print "  if (ptr->" var_target_char[i] ")";
+	print "  if (ptr->x_" var_target_char[i] ")";
 	print "    fprintf (file, \"%*s%s (%#x)\\n\",";
 	print "             indent, \"\",";
 	print "             \"" var_target_char[i] "\",";
-	print "             ptr->" var_target_char[i] ");";
+	print "             ptr->x_" var_target_char[i] ");";
 	print "";
 }
 

@@ -107,8 +107,8 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->permissive = false;
   context->opt_permissive = 0;
   context->fatal_errors = false;
-  context->inhibit_warnings = false;
-  context->warn_system_headers = false;
+  context->dc_inhibit_warnings = false;
+  context->dc_warn_system_headers = false;
   context->internal_error = NULL;
   diagnostic_starter (context) = default_diagnostic_starter;
   diagnostic_finalizer (context) = default_diagnostic_finalizer;

@@ -1834,7 +1834,7 @@ expand_nl_goto_receiver (void)
        decrementing fp by STARTING_FRAME_OFFSET.  */
     emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
 
-#if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+#if !HARD_FRAME_POINTER_IS_ARG_POINTER
   if (fixed_regs[ARG_POINTER_REGNUM])
     {
 #ifdef ELIMINABLE_REGS

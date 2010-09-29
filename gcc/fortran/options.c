@@ -88,7 +88,7 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.warn_ampersand = 0;
   gfc_option.warn_character_truncation = 0;
   gfc_option.warn_array_temp = 0;
-  gfc_option.warn_conversion = 0;
+  gfc_option.gfc_warn_conversion = 0;
   gfc_option.warn_conversion_extra = 0;
   gfc_option.warn_implicit_interface = 0;
   gfc_option.warn_line_truncation = 0;
@@ -129,7 +129,7 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.blas_matmul_limit = 30;
   gfc_option.flag_cray_pointer = 0;
   gfc_option.flag_d_lines = -1;
-  gfc_option.flag_openmp = 0;
+  gfc_option.gfc_flag_openmp = 0;
   gfc_option.flag_sign_zero = 1;
   gfc_option.flag_recursive = 0;
   gfc_option.flag_init_integer = GFC_INIT_INTEGER_OFF;
@@ -357,7 +357,7 @@ gfc_post_options (const char **pfilename)
 		     gfc_option.flag_max_stack_var_size);
   else if (!gfc_option.flag_automatic && gfc_option.flag_recursive)
     gfc_warning_now ("Flag -fno-automatic overwrites -frecursive");
-  else if (!gfc_option.flag_automatic && gfc_option.flag_openmp)
+  else if (!gfc_option.flag_automatic && gfc_option.gfc_flag_openmp)
     gfc_warning_now ("Flag -fno-automatic overwrites -frecursive implied by "
 		     "-fopenmp");
   else if (gfc_option.flag_max_stack_var_size != -2
@@ -365,7 +365,7 @@ gfc_post_options (const char **pfilename)
     gfc_warning_now ("Flag -frecursive overwrites -fmax-stack-var-size=%d",
 		     gfc_option.flag_max_stack_var_size);
   else if (gfc_option.flag_max_stack_var_size != -2
-	   && gfc_option.flag_openmp)
+	   && gfc_option.gfc_flag_openmp)
     gfc_warning_now ("Flag -fmax-stack-var-size=%d overwrites -frecursive "
 		     "implied by -fopenmp", 
 		     gfc_option.flag_max_stack_var_size);
@@ -375,7 +375,7 @@ gfc_post_options (const char **pfilename)
     gfc_option.flag_max_stack_var_size = -1;
 
   /* Implied -frecursive; implemented as -fmax-stack-var-size=-1.  */
-  if (gfc_option.flag_max_stack_var_size == -2 && gfc_option.flag_openmp
+  if (gfc_option.flag_max_stack_var_size == -2 && gfc_option.gfc_flag_openmp
       && gfc_option.flag_automatic)
     {
       gfc_option.flag_recursive = 1;
@@ -419,7 +419,7 @@ set_Wall (int setting)
 {
   gfc_option.warn_aliasing = setting;
   gfc_option.warn_ampersand = setting;
-  gfc_option.warn_conversion = setting;
+  gfc_option.gfc_warn_conversion = setting;
   gfc_option.warn_line_truncation = setting;
   gfc_option.warn_surprising = setting;
   gfc_option.warn_tabs = !setting;
@@ -581,7 +581,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_Wconversion:
-      gfc_option.warn_conversion = value;
+      gfc_option.gfc_warn_conversion = value;
       break;
 
     case OPT_Wconversion_extra:
@@ -707,7 +707,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_fopenmp:
-      gfc_option.flag_openmp = value;
+      gfc_option.gfc_flag_openmp = value;
       break;
 
     case OPT_ffree_line_length_none:

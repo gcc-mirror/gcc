@@ -2688,7 +2688,7 @@ init_alias_target (void)
     = gen_rtx_ADDRESS (Pmode, arg_pointer_rtx);
   static_reg_base_value[FRAME_POINTER_REGNUM]
     = gen_rtx_ADDRESS (Pmode, frame_pointer_rtx);
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
   static_reg_base_value[HARD_FRAME_POINTER_REGNUM]
     = gen_rtx_ADDRESS (Pmode, hard_frame_pointer_rtx);
 #endif

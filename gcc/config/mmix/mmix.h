@@ -140,8 +140,6 @@ struct GTY(()) machine_function
     }								\
   while (0)
 
-extern int target_flags;
-
 #define TARGET_DEFAULT \
  (MASK_BRANCH_PREDICT | MASK_BASE_ADDRESSES | MASK_USE_RETURN_INSN)
 

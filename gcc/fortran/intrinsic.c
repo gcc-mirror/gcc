@@ -4320,7 +4320,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	    gfc_warning_now ("Conversion from %s to %s at %L",
 			     gfc_typename (&from_ts), gfc_typename (ts),
 			     &expr->where);
-	  else if (gfc_option.warn_conversion
+	  else if (gfc_option.gfc_warn_conversion
 		   && from_ts.kind > ts->kind)
 	    gfc_warning_now ("Possible change of value in conversion "
 			     "from %s to %s at %L", gfc_typename (&from_ts),
@@ -4333,7 +4333,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	  /* Conversion from REAL/COMPLEX to INTEGER or COMPLEX to REAL
 	     usually comes with a loss of information, regardless of kinds.  */
 	  if (gfc_option.warn_conversion_extra
-	      || gfc_option.warn_conversion)
+	      || gfc_option.gfc_warn_conversion)
 	    gfc_warning_now ("Possible change of value in conversion "
 			     "from %s to %s at %L", gfc_typename (&from_ts),
 			     gfc_typename (ts), &expr->where);
@@ -4342,7 +4342,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	{
 	  /* If HOLLERITH is involved, all bets are off.  */
 	  if (gfc_option.warn_conversion_extra
-	      || gfc_option.warn_conversion)
+	      || gfc_option.gfc_warn_conversion)
 	    gfc_warning_now ("Conversion from %s to %s at %L",
 			     gfc_typename (&from_ts), gfc_typename (ts),
 			     &expr->where);

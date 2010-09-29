@@ -123,6 +123,11 @@ static enum debug_struct_file debug_struct_ordinary[DINFO_USAGE_NUM_ENUMS]
 static enum debug_struct_file debug_struct_generic[DINFO_USAGE_NUM_ENUMS]
   = { DINFO_STRUCT_FILE_ANY, DINFO_STRUCT_FILE_ANY, DINFO_STRUCT_FILE_ANY };
 
+/* Run the second compilation of -fcompare-debug.  Not defined using
+   Var in common.opt because this is used in Ada code and so must be
+   an actual variable not a macro.  */
+int flag_compare_debug;
+
 /* Parse the -femit-struct-debug-detailed option value
    and set the flag variables. */
 
@@ -1635,7 +1640,7 @@ common_handle_option (const struct cl_decoded_option *decoded,
       break;
 
     case OPT_Wsystem_headers:
-      global_dc->warn_system_headers = value;
+      global_dc->dc_warn_system_headers = value;
       break;
 
     case OPT_Wunused:
@@ -1698,6 +1703,10 @@ common_handle_option (const struct cl_decoded_option *decoded,
 
     case OPT_fcall_saved_:
       fix_register (arg, 0, 0);
+      break;
+
+    case OPT_fcompare_debug_second:
+      flag_compare_debug = value;
       break;
 
     case OPT_fdbg_cnt_:
@@ -2083,7 +2092,7 @@ common_handle_option (const struct cl_decoded_option *decoded,
       break;
 
     case OPT_w:
-      global_dc->inhibit_warnings = true;
+      global_dc->dc_inhibit_warnings = true;
       break;
 
     case OPT_fuse_linker_plugin:
@@ -2186,11 +2195,11 @@ fast_math_flags_set_p (void)
 bool
 fast_math_flags_struct_set_p (struct cl_optimization *opt)
 {
-  return (!opt->flag_trapping_math
-	  && opt->flag_unsafe_math_optimizations
-	  && opt->flag_finite_math_only
-	  && !opt->flag_signed_zeros
-	  && !opt->flag_errno_math);
+  return (!opt->x_flag_trapping_math
+	  && opt->x_flag_unsafe_math_optimizations
+	  && opt->x_flag_finite_math_only
+	  && !opt->x_flag_signed_zeros
+	  && !opt->x_flag_errno_math);
 }
 
 /* Handle a debug output -g switch.  EXTENDED is true or false to support

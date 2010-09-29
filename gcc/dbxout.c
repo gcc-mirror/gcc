@@ -3015,7 +3015,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 	       || (REG_P (XEXP (home, 0))
 		   && REGNO (XEXP (home, 0)) != HARD_FRAME_POINTER_REGNUM
 		   && REGNO (XEXP (home, 0)) != STACK_POINTER_REGNUM
-#if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+#if !HARD_FRAME_POINTER_IS_ARG_POINTER
 		   && REGNO (XEXP (home, 0)) != ARG_POINTER_REGNUM
 #endif
 		   )))
@@ -3429,7 +3429,7 @@ dbxout_parms (tree parms)
 		 && REG_P (XEXP (DECL_RTL (parms), 0))
 		 && REGNO (XEXP (DECL_RTL (parms), 0)) != HARD_FRAME_POINTER_REGNUM
 		 && REGNO (XEXP (DECL_RTL (parms), 0)) != STACK_POINTER_REGNUM
-#if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+#if !HARD_FRAME_POINTER_IS_ARG_POINTER
 		 && REGNO (XEXP (DECL_RTL (parms), 0)) != ARG_POINTER_REGNUM
 #endif
 		 )

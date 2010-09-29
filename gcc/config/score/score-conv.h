@@ -1,5 +1,5 @@
 /* score-conv.h for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -19,8 +19,6 @@
 
 #ifndef GCC_SCORE_CONV_H
 #define GCC_SCORE_CONV_H
-
-extern int target_flags;
 
 #define GP_REG_FIRST                    0U
 #define GP_REG_LAST                     31U

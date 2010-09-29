@@ -514,14 +514,14 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
 
   /* Other target-independent built-ins determined by command-line
      options.  */
-  if (!prev->optimize_size && cur->optimize_size)
+  if (!prev->x_optimize_size && cur->x_optimize_size)
     cpp_define (pfile, "__OPTIMIZE_SIZE__");
-  else if (prev->optimize_size && !cur->optimize_size)
+  else if (prev->x_optimize_size && !cur->x_optimize_size)
     cpp_undef (pfile, "__OPTIMIZE_SIZE__");
 
-  if (!prev->optimize && cur->optimize)
+  if (!prev->x_optimize && cur->x_optimize)
     cpp_define (pfile, "__OPTIMIZE__");
-  else if (prev->optimize && !cur->optimize)
+  else if (prev->x_optimize && !cur->x_optimize)
     cpp_undef (pfile, "__OPTIMIZE__");
 
   prev_fast_math = fast_math_flags_struct_set_p (prev);
@@ -531,17 +531,17 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
   else if (prev_fast_math && !cur_fast_math)
     cpp_undef (pfile, "__FAST_MATH__");
 
-  if (!prev->flag_signaling_nans && cur->flag_signaling_nans)
+  if (!prev->x_flag_signaling_nans && cur->x_flag_signaling_nans)
     cpp_define (pfile, "__SUPPORT_SNAN__");
-  else if (prev->flag_signaling_nans && !cur->flag_signaling_nans)
+  else if (prev->x_flag_signaling_nans && !cur->x_flag_signaling_nans)
     cpp_undef (pfile, "__SUPPORT_SNAN__");
 
-  if (!prev->flag_finite_math_only && cur->flag_finite_math_only)
+  if (!prev->x_flag_finite_math_only && cur->x_flag_finite_math_only)
     {
       cpp_undef (pfile, "__FINITE_MATH_ONLY__");
       cpp_define (pfile, "__FINITE_MATH_ONLY__=1");
     }
-  else if (!prev->flag_finite_math_only && cur->flag_finite_math_only)
+  else if (!prev->x_flag_finite_math_only && cur->x_flag_finite_math_only)
     {
       cpp_undef (pfile, "__FINITE_MATH_ONLY__");
       cpp_define (pfile, "__FINITE_MATH_ONLY__=0");

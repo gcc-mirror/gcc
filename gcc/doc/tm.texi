@@ -3643,6 +3643,22 @@ pointer register, then you must mark it as a fixed register according to
 (@pxref{Elimination}).
 @end defmac
 
+@defmac HARD_FRAME_POINTER_IS_FRAME_POINTER
+Define this to a preprocessor constant that is nonzero if
+@code{hard_frame_pointer_rtx} and @code{frame_pointer_rtx} should be
+the same.  The default definition is @samp{(HARD_FRAME_POINTER_REGNUM
+== FRAME_POINTER_REGNUM)}; you only need to define this macro if that
+definition is not suitable for use in preprocessor conditionals.
+@end defmac
+
+@defmac HARD_FRAME_POINTER_IS_ARG_POINTER
+Define this to a preprocessor constant that is nonzero if
+@code{hard_frame_pointer_rtx} and @code{arg_pointer_rtx} should be the
+same.  The default definition is @samp{(HARD_FRAME_POINTER_REGNUM ==
+ARG_POINTER_REGNUM)}; you only need to define this macro if that
+definition is not suitable for use in preprocessor conditionals.
+@end defmac
+
 @defmac RETURN_ADDRESS_POINTER_REGNUM
 The register number of the return address pointer register, which is used to
 access the current function's return address from the stack.  On some

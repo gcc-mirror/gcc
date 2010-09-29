@@ -200,7 +200,7 @@ regrename_optimize (void)
       if (frame_pointer_needed)
 	{
 	  add_to_hard_reg_set (&unavailable, Pmode, FRAME_POINTER_REGNUM);
-#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
 	  add_to_hard_reg_set (&unavailable, Pmode, HARD_FRAME_POINTER_REGNUM);
 #endif
 	}
@@ -233,7 +233,7 @@ regrename_optimize (void)
 #endif
 
 	  if (fixed_regs[reg] || global_regs[reg]
-#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
 	      || (frame_pointer_needed && reg == HARD_FRAME_POINTER_REGNUM)
 #else
 	      || (frame_pointer_needed && reg == FRAME_POINTER_REGNUM)

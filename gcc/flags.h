@@ -77,6 +77,11 @@ extern void set_struct_debug_option (const char *value);
    debugging information.  */
 extern bool use_gnu_debug_info_extensions;
 
+/* Run the second compilation of -fcompare-debug.  Not defined using
+   Var in common.opt because this is used in Ada code and so must be
+   an actual variable not a macro.  */
+extern int flag_compare_debug;
+
 /* Enumerate visibility settings.  This is deliberately ordered from most
    to least visibility.  */
 #ifndef SYMBOL_VISIBILITY_DEFINED

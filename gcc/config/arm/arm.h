@@ -989,6 +989,9 @@ extern int arm_structure_size_boundary;
    ? ARM_HARD_FRAME_POINTER_REGNUM		\
    : THUMB_HARD_FRAME_POINTER_REGNUM)
 
+#define HARD_FRAME_POINTER_IS_FRAME_POINTER 0
+#define HARD_FRAME_POINTER_IS_ARG_POINTER 0
+
 #define FP_REGNUM	                HARD_FRAME_POINTER_REGNUM
 
 /* Register to use for pushing function arguments.  */

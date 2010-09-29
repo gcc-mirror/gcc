@@ -1,6 +1,6 @@
 /* Language parser definitions for the GNU compiler for the Java(TM) language.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2010 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GCC.
@@ -28,7 +28,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Extern global variable declarations */
 extern struct obstack temporary_obstack;
-extern int quiet_flag;
 
 #ifdef VERBOSE_SKELETON
 #undef SOURCE_FRONTEND_DEBUG

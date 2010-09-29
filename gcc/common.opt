@@ -647,7 +647,7 @@ Common Driver JoinedOrMissing RejectNegative Var(flag_compare_debug_opt)
 -fcompare-debug[=<opts>]	Compile with and without e.g. -gtoggle, and compare the final-insns dump
 
 fcompare-debug-second
-Common Driver RejectNegative Var(flag_compare_debug)
+Common Driver RejectNegative
 Run only the second compilation of -fcompare-debug
 
 fconserve-stack

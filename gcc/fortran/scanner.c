@@ -1,6 +1,6 @@
 /* Character scanner.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -75,8 +75,6 @@ locus gfc_current_locus;
 const char *gfc_source_file;
 static FILE *gfc_src_file;
 static gfc_char_t *gfc_src_preprocessor_lines[2];
-
-extern int pedantic;
 
 static struct gfc_file_change
 {
@@ -747,7 +745,7 @@ skip_free_comments (void)
 	     2) handle OpenMP conditional compilation, where
 		!$ should be treated as 2 spaces (for initial lines
 		only if followed by space).  */
-	  if (gfc_option.flag_openmp && at_bol)
+	  if (gfc_option.gfc_flag_openmp && at_bol)
 	    {
 	      locus old_loc = gfc_current_locus;
 	      if (next_char () == '$')
@@ -873,7 +871,7 @@ skip_fixed_comments (void)
 	      && continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
 	    continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
 
-	  if (gfc_option.flag_openmp)
+	  if (gfc_option.gfc_flag_openmp)
 	    {
 	      if (next_char () == '$')
 		{
@@ -1814,7 +1812,7 @@ include_line (gfc_char_t *line)
 
   c = line;
 
-  if (gfc_option.flag_openmp)
+  if (gfc_option.gfc_flag_openmp)
     {
       if (gfc_current_form == FORM_FREE)
 	{

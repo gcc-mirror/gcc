@@ -280,9 +280,6 @@ extern int cris_cpu_version;
     }						\
   while (0)
 
-/* This needs to be at least 32 bits.  */
-extern int target_flags;
-
 /* Previously controlled by target_flags.  */
 #define TARGET_ELF 1
 

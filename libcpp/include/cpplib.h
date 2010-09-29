@@ -319,7 +319,7 @@ struct cpp_options
   unsigned char print_include_names;
 
   /* Nonzero means complain about deprecated features.  */
-  unsigned char warn_deprecated;
+  unsigned char cpp_warn_deprecated;
 
   /* Nonzero means warn if slash-star appears in a comment.  */
   unsigned char warn_comments;
@@ -336,10 +336,10 @@ struct cpp_options
 
   /* Nonzero means warn about various incompatibilities with
      traditional C.  */
-  unsigned char warn_traditional;
+  unsigned char cpp_warn_traditional;
 
   /* Nonzero means warn about long long numeric constants.  */
-  unsigned char warn_long_long;
+  unsigned char cpp_warn_long_long;
 
   /* Nonzero means warn about text after an #endif (or #else).  */
   unsigned char warn_endif_labels;
@@ -383,7 +383,7 @@ struct cpp_options
   unsigned char std;
 
   /* Nonzero means give all the error messages the ANSI standard requires.  */
-  unsigned char pedantic;
+  unsigned char cpp_pedantic;
 
   /* Nonzero means we're looking at already preprocessed code, so don't
      bother trying to do macro expansion and whatnot.  */

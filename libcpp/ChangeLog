@@ -1,3 +1,17 @@
+2010-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (cpp_options): Rename warn_deprecated,
+	warn_traditional, warn_long_long and pedantic.
+	* directives.c (directive_diagnostics, _cpp_handle_directive):
+	Update names of cpp_options members.
+	* expr.c (cpp_classify_number, eval_token): Update names of
+	cpp_options members.
+	* init.c (cpp_create_reader, post_options): Update names of
+	cpp_options members.
+	* internal.h (CPP_PEDANTIC, CPP_WTRADITIONAL): Update names of
+	cpp_options members.
+	* macro.c (parse_params): Update names of cpp_options members.
+
 2010-09-15  Ian Lance Taylor  <iant@google.com>
 
 	* init.c: Fix type name in comment.

@@ -108,8 +108,6 @@ crtbegin.o%s"
     }						\
   while (0)
 
-extern int target_flags;
-
 /* Controlled by MeP-Integrator.  */
 #define TARGET_H1		0
 

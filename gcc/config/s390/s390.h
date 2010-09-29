@@ -869,8 +869,6 @@ do {									\
 
 /* Position independent code.  */
 
-extern int flag_pic;
-
 #define PIC_OFFSET_TABLE_REGNUM (flag_pic ? 12 : INVALID_REGNUM)
 
 #define LEGITIMATE_PIC_OPERAND_P(X)  legitimate_pic_operand_p (X)

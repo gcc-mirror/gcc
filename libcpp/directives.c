@@ -354,7 +354,7 @@ directive_diagnostics (cpp_reader *pfile, const directive *dir, int indented)
 	cpp_error (pfile, CPP_DL_PEDWARN, "#%s is a GCC extension", dir->name);
       else if (((dir->flags & DEPRECATED) != 0
 		|| (dir == &dtable[T_IMPORT] && !CPP_OPTION (pfile, objc)))
-	       && CPP_OPTION (pfile, warn_deprecated))
+	       && CPP_OPTION (pfile, cpp_warn_deprecated))
 	cpp_warning (pfile, CPP_W_DEPRECATED,
                      "#%s is a deprecated GCC extension", dir->name);
     }
@@ -400,7 +400,7 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
 
   if (was_parsing_args)
     {
-      if (CPP_OPTION (pfile, pedantic))
+      if (CPP_OPTION (pfile, cpp_pedantic))
 	cpp_error (pfile, CPP_DL_PEDWARN,
 	     "embedding a directive within macro arguments is not portable");
       pfile->state.parsing_args = 0;

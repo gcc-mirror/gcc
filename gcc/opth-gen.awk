@@ -75,10 +75,25 @@ print ""
 
 have_save = 0;
 
+print "#ifndef GENERATOR_FILE"
+print "struct gcc_options\n{"
+print "#endif"
+
 for (i = 0; i < n_extra_vars; i++) {
 	var = extra_vars[i]
 	sub(" *=.*", "", var)
-	print "extern " var ";"
+	orig_var = var
+	name = var
+	type = var
+	sub("^.*[ *]", "", name)
+	sub(" *" name "$", "", type)
+	var_seen[name] = 1
+	print "#ifdef GENERATOR_FILE"
+	print "extern " orig_var ";"
+	print "#else"
+	print "  " type " x_" name ";"
+	print "#define " name " global_options.x_" name
+	print "#endif"
 }
 
 for (i = 0; i < n_opts; i++) {
@@ -93,8 +108,17 @@ for (i = 0; i < n_opts; i++) {
 		continue;
 
 	var_seen[name] = 1;
+	print "#ifdef GENERATOR_FILE"
 	print "extern " var_type(flags[i]) name ";"
+	print "#else"
+	print "  " var_type(flags[i]) "x_" name ";"
+	print "#define " name " global_options.x_" name
+	print "#endif"
 }
+print "#ifndef GENERATOR_FILE"
+print "};"
+print "extern struct gcc_options global_options;"
+print "#endif"
 print ""
 
 # All of the optimization switches gathered together so they can be saved and restored.
@@ -114,8 +138,8 @@ n_opt_char = 2;
 n_opt_short = 0;
 n_opt_int = 0;
 n_opt_other = 0;
-var_opt_char[0] = "unsigned char optimize";
-var_opt_char[1] = "unsigned char optimize_size";
+var_opt_char[0] = "unsigned char x_optimize";
+var_opt_char[1] = "unsigned char x_optimize_size";
 
 for (i = 0; i < n_opts; i++) {
 	if (flag_set_p("Optimization", flags[i])) {
@@ -129,16 +153,16 @@ for (i = 0; i < n_opts; i++) {
 		var_opt_seen[name]++;
 		otype = var_type_struct(flags[i]);
 		if (otype ~ "^((un)?signed +)?int *$")
-			var_opt_int[n_opt_int++] = otype name;
+			var_opt_int[n_opt_int++] = otype "x_" name;
 
 		else if (otype ~ "^((un)?signed +)?short *$")
-			var_opt_short[n_opt_short++] = otype name;
+			var_opt_short[n_opt_short++] = otype "x_" name;
 
 		else if (otype ~ "^((un)?signed +)?char *$")
-			var_opt_char[n_opt_char++] = otype name;
+			var_opt_char[n_opt_char++] = otype "x_" name;
 
 		else
-			var_opt_other[n_opt_other++] = otype name;
+			var_opt_other[n_opt_other++] = otype "x_" name;
 	}
 }
 
@@ -198,20 +222,20 @@ if (have_save) {
 			var_save_seen[name]++;
 			otype = var_type_struct(flags[i])
 			if (otype ~ "^((un)?signed +)?int *$")
-				var_target_int[n_target_int++] = otype name;
+				var_target_int[n_target_int++] = otype "x_" name;
 
 			else if (otype ~ "^((un)?signed +)?short *$")
-				var_target_short[n_target_short++] = otype name;
+				var_target_short[n_target_short++] = otype "x_" name;
 
 			else if (otype ~ "^((un)?signed +)?char *$")
-				var_target_char[n_target_char++] = otype name;
+				var_target_char[n_target_char++] = otype "x_" name;
 
 			else
-				var_target_other[n_target_other++] = otype name;
+				var_target_other[n_target_other++] = otype "x_" name;
 		}
 	}
 } else {
-	var_target_int[n_target_int++] = "int target_flags";
+	var_target_int[n_target_int++] = "int x_target_flags";
 }
 
 for (i = 0; i < n_target_other; i++) {

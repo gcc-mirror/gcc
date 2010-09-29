@@ -447,8 +447,6 @@ extern int x86_prefetch_sse;
 #define TARGET_ANY_GNU_TLS	(TARGET_GNU_TLS || TARGET_GNU2_TLS)
 #define TARGET_SUN_TLS		0
 
-extern int ix86_isa_flags;
-
 #ifndef TARGET_64BIT_DEFAULT
 #define TARGET_64BIT_DEFAULT 0
 #endif

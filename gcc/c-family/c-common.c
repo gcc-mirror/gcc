@@ -8311,7 +8311,7 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
 {
   diagnostic_info diagnostic;
   diagnostic_t dlevel;
-  bool save_warn_system_headers = global_dc->warn_system_headers;
+  bool save_warn_system_headers = global_dc->dc_warn_system_headers;
   bool ret;
 
   switch (level)
@@ -8319,7 +8319,7 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
     case CPP_DL_WARNING_SYSHDR:
       if (flag_no_output)
 	return false;
-      global_dc->warn_system_headers = 1;
+      global_dc->dc_warn_system_headers = 1;
       /* Fall through.  */
     case CPP_DL_WARNING:
       if (flag_no_output)
@@ -8356,7 +8356,7 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
                                     c_option_controlling_cpp_error (reason));
   ret = report_diagnostic (&diagnostic);
   if (level == CPP_DL_WARNING_SYSHDR)
-    global_dc->warn_system_headers = save_warn_system_headers;
+    global_dc->dc_warn_system_headers = save_warn_system_headers;
   return ret;
 }
 

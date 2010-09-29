@@ -1,3 +1,72 @@
+2010-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* optc-gen.awk: Generate global_options initializer instead of
+	individual variables.  Add x_ prefix to names of structure
+	members.
+	* opth-gen.awk: Generate gcc_options structure.  Add x_ prefix to
+	names of structure members.
+	* doc/tm.texi.in (HARD_FRAME_POINTER_IS_FRAME_POINTER,
+	HARD_FRAME_POINTER_IS_ARG_POINTER): Document.
+	* doc/tm.texi: Regenerate.
+	* alias.c: Use HARD_FRAME_POINTER_IS_FRAME_POINTER
+	* builtins.c: Use HARD_FRAME_POINTER_IS_ARG_POINTER.
+	* c-parser.c (disable_extension_diagnostics,
+	restore_extension_diagnostics): Update names of cpp_options
+	members.
+	* combine.c: Use HARD_FRAME_POINTER_IS_FRAME_POINTER
+	* common.opt (fcompare-debug-second): Don't use Var.
+	* config/alpha/alpha.h (target_flags): Remove.
+	* config/arm/arm.h (HARD_FRAME_POINTER_IS_FRAME_POINTER,
+	HARD_FRAME_POINTER_IS_ARG_POINTER): Define.
+	* config/bfin/bfin.h (target_flags): Remove.
+	* config/cris/cris.h (target_flags): Remove.
+	* config/i386/i386-c.c (ix86_pragma_target_parse): Update names of
+	cl_target_option members.
+	* config/i386/i386.c (ix86_force_align_arg_pointer): Remove.
+	(ix86_function_specific_print, ix86_valid_target_attribute_tree,
+	ix86_can_inline_p): Update names of cl_target_option members.
+	* config/i386/i386.h (ix86_isa_flags): Remove.
+	* config/lm32/lm32.h (target_flags): Remove.
+	* config/mcore/mcore.h (mcore_stack_increment): Remove.
+	* config/mcore/mcore.md (addsi3): Remove extern declaration of
+	flag_omit_frame_pointer.
+	* config/mep/mep.h (target_flags): Remove.
+	* config/mips/mips.h (HARD_FRAME_POINTER_IS_FRAME_POINTER,
+	HARD_FRAME_POINTER_IS_ARG_POINTER): Define.
+	* config/mmix/mmix.h (target_flags): Remove.
+	* config/rs6000/rs6000.h (rs6000_xilinx_fpu, flag_pic,
+	flag_expensive_optimizations): Remove.
+	* config/s390/s390.h (flag_pic): Remove.
+	* config/score/score-conv.h (target_flags): Remove.
+	* config/sh/sh.h (sh_fixed_range_str): Remove.
+	* config/spu/spu.h (target_flags, spu_fixed_range_string): Remove.
+	* dbxout.c: Use HARD_FRAME_POINTER_IS_ARG_POINTER
+	* df-scan.c: Use HARD_FRAME_POINTER_IS_FRAME_POINTER.
+	* diagnostic.c (diagnostic_initialize): Update names of
+	diagnostic_context members.
+	* diagnostic.h (diagnostic_context): Rename inhibit_warnings and
+	warn_system_headers.
+	(diagnostic_report_warnings_p): Update for new names.
+	* dwarf2out.c: Use HARD_FRAME_POINTER_IS_ARG_POINTER
+	* emit-rtl.c: Use HARD_FRAME_POINTER_IS_FRAME_POINTER and
+	HARD_FRAME_POINTER_IS_ARG_POINTER.
+	* flags.h (flag_compare_debug): Declare.
+	* ira.c: Use HARD_FRAME_POINTER_IS_FRAME_POINTER
+	* opts.c (flag_compare_debug): Define.
+	(common_handle_option): Update names of diagnostic_context
+	members.  Handle -fcompare-debug-second.
+	(fast_math_flags_struct_set_p): Update names of cl_optimization
+	members.
+	* reginfo.c: Use HARD_FRAME_POINTER_IS_FRAME_POINTER.
+	* regrename.c: Use HARD_FRAME_POINTER_IS_FRAME_POINTER.
+	* reload.c: Use HARD_FRAME_POINTER_IS_FRAME_POINTER.
+	* reload1.c: Use HARD_FRAME_POINTER_IS_FRAME_POINTER.
+	* resource.c: Use HARD_FRAME_POINTER_IS_FRAME_POINTER.
+	* rtl.h (HARD_FRAME_POINTER_IS_FRAME_POINTER,
+	HARD_FRAME_POINTER_IS_ARG_POINTER): Define and use.
+	* sel-sched.c: Use HARD_FRAME_POINTER_IS_FRAME_POINTER
+	* stmt.c: Use HARD_FRAME_POINTER_IS_ARG_POINTER.
+
 2010-09-29  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (picochip_output_internal_label):

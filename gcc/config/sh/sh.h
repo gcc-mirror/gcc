@@ -503,8 +503,6 @@ extern enum sh_divide_strategy_e sh_div_strategy;
 
 #define SUBTARGET_OVERRIDE_OPTIONS (void) 0
 
-extern const char *sh_fixed_range_str;
-
 
 /* Target machine storage layout.  */
 

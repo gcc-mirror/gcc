@@ -1,3 +1,13 @@
+2010-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (c_cpp_error): Update names of diagnostic_context
+	members.
+	* c-cppbuiltin.c (c_cpp_builtins_optimize_pragma): Update names of
+	cl_optimization members.
+	* c-opts.c (warning_as_error_callback, c_common_handle_option,
+	sanitize_cpp_opts, finish_options): Update names of cpp_options
+	members.
+
 2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-common.h (OBJC_IS_CXX_KEYWORD): New macro.  Updated comments.
