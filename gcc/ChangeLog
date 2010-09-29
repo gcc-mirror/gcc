@@ -1,3 +1,8 @@
+2010-09-29  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/mingw32.h (TARGET_64BIT): replaced by
+	TARGET_64BIT_DEFAULT in #if check.
+
 2010-09-29  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	* varasm.c (assemble_alias): Add error message for
