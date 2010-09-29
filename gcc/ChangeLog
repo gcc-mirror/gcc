@@ -11,6 +11,11 @@
 	costs_add_n_insns): New inline functions.
 	(get_full_rtx_cost): Declare.
 
+	PR c/45054
+	* reload1.c (replace_pseudos_in): Use eliminate_regs_1, allowing
+	invariants.  Check for reg_equiv_invariant.
+	(reload): Assert that spilled_pseudos is empty when returning.
+
 2010-09-29  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/mingw32.h (TARGET_64BIT): replaced by
