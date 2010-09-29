@@ -1052,8 +1052,6 @@ __enable_execute_stack (void *addr)                                     \
 /* For Apple KEXTs, we make the constructors return this to match gcc
    2.95.  */
 #define TARGET_CXX_CDTOR_RETURNS_THIS (darwin_kextabi_p)
-extern int flag_mkernel;
-extern int flag_apple_kext;
 #define TARGET_KEXTABI flag_apple_kext
 
 #define TARGET_HAS_TARGETCM 1
