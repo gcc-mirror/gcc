@@ -3589,6 +3589,17 @@ rtx_cost (rtx x, enum rtx_code outer_code ATTRIBUTE_UNUSED, bool speed)
 
   return total;
 }
+
+/* Fill in the structure C with information about both speed and size rtx
+   costs for X, with outer code OUTER.  */
+
+void
+get_full_rtx_cost (rtx x, enum rtx_code outer, struct full_rtx_costs *c)
+{
+  c->speed = rtx_cost (x, outer, true);
+  c->size = rtx_cost (x, outer, false);
+}
+
 
 /* Return cost of address expression X.
    Expect that X is properly formed address reference.

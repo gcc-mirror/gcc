@@ -1,3 +1,16 @@
+2010-09-29  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/40457
+	* postreload.c (move2add_use_add2_insn): Use full_costs for
+	comparison.
+	(move2add_use_add3_insn): Likewise.
+	(reload_cse_move2add): Likewise.
+	* rtlanal.c (get_full_rtx_cost): New function.
+	* rtl.h (struct full_rtx_costs): New.
+	(init_costs_to_max, init_costs_to_zero, costs_lt_p,
+	costs_add_n_insns): New inline functions.
+	(get_full_rtx_cost): Declare.
+
 2010-09-29  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/mingw32.h (TARGET_64BIT): replaced by

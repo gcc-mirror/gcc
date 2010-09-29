@@ -1645,39 +1645,45 @@ move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx insn)
       if (INTVAL (off) == reg_offset [regno])
 	changed = validate_change (insn, &SET_SRC (pat), reg, 0);
     }
-  else if (rtx_cost (new_src, PLUS, speed) < rtx_cost (src, SET, speed)
-	   && have_add2_insn (reg, new_src))
+  else
     {
+      struct full_rtx_costs oldcst, newcst;
       rtx tem = gen_rtx_PLUS (GET_MODE (reg), reg, new_src);
-      changed = validate_change (insn, &SET_SRC (pat), tem, 0);
-    }
-  else if (sym == NULL_RTX && GET_MODE (reg) != BImode)
-    {
-      enum machine_mode narrow_mode;
-      for (narrow_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	   narrow_mode != VOIDmode
-	     && narrow_mode != GET_MODE (reg);
-	   narrow_mode = GET_MODE_WIDER_MODE (narrow_mode))
+
+      get_full_rtx_cost (pat, SET, &oldcst);
+      SET_SRC (pat) = tem;
+      get_full_rtx_cost (pat, SET, &newcst);
+      SET_SRC (pat) = src;
+
+      if (costs_lt_p (&newcst, &oldcst, speed)
+	  && have_add2_insn (reg, new_src))
+	changed = validate_change (insn, &SET_SRC (pat), tem, 0);	
+      else if (sym == NULL_RTX && GET_MODE (reg) != BImode)
 	{
-	  if (have_insn_for (STRICT_LOW_PART, narrow_mode)
-	      && ((reg_offset[regno]
-		   & ~GET_MODE_MASK (narrow_mode))
-		  == (INTVAL (off)
-		      & ~GET_MODE_MASK (narrow_mode))))
+	  enum machine_mode narrow_mode;
+	  for (narrow_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+	       narrow_mode != VOIDmode
+		 && narrow_mode != GET_MODE (reg);
+	       narrow_mode = GET_MODE_WIDER_MODE (narrow_mode))
 	    {
-	      rtx narrow_reg = gen_rtx_REG (narrow_mode,
-					    REGNO (reg));
-	      rtx narrow_src = gen_int_mode (INTVAL (off),
-					     narrow_mode);
-	      rtx new_set =
-		gen_rtx_SET (VOIDmode,
-			     gen_rtx_STRICT_LOW_PART (VOIDmode,
-						      narrow_reg),
-			     narrow_src);
-	      changed = validate_change (insn, &PATTERN (insn),
-					 new_set, 0);
-	      if (changed)
-		break;
+	      if (have_insn_for (STRICT_LOW_PART, narrow_mode)
+		  && ((reg_offset[regno] & ~GET_MODE_MASK (narrow_mode))
+		      == (INTVAL (off) & ~GET_MODE_MASK (narrow_mode))))
+		{
+		  rtx narrow_reg = gen_rtx_REG (narrow_mode,
+						REGNO (reg));
+		  rtx narrow_src = gen_int_mode (INTVAL (off),
+						 narrow_mode);
+		  rtx new_set
+		    = gen_rtx_SET (VOIDmode,
+				   gen_rtx_STRICT_LOW_PART (VOIDmode,
+							    narrow_reg),
+				   narrow_src);
+		  changed = validate_change (insn, &PATTERN (insn),
+					     new_set, 0);
+		  if (changed)
+		    break;
+		}
 	    }
 	}
     }
@@ -1705,11 +1711,18 @@ move2add_use_add3_insn (rtx reg, rtx sym, rtx off, rtx insn)
   rtx pat = PATTERN (insn);
   rtx src = SET_SRC (pat);
   int regno = REGNO (reg);
-  int min_cost = INT_MAX;
   int min_regno = 0;
   bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
   int i;
   bool changed = false;
+  struct full_rtx_costs oldcst, newcst, mincst;
+  rtx plus_expr;
+
+  init_costs_to_max (&mincst);
+  get_full_rtx_cost (pat, SET, &oldcst);
+
+  plus_expr = gen_rtx_PLUS (GET_MODE (reg), reg, const0_rtx);
+  SET_SRC (pat) = plus_expr;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (reg_set_luid[i] > move2add_last_label_luid
@@ -1728,22 +1741,25 @@ move2add_use_add3_insn (rtx reg, rtx sym, rtx off, rtx insn)
 	   no-op moves.  */
 	if (new_src == const0_rtx)
 	  {
-	    min_cost = 0;
+	    init_costs_to_zero (&mincst);
 	    min_regno = i;
 	    break;
 	  }
 	else
 	  {
-	    int cost = rtx_cost (new_src, PLUS, speed);
-	    if (cost < min_cost)
+	    XEXP (plus_expr, 1) = new_src;
+	    get_full_rtx_cost (pat, SET, &newcst);
+
+	    if (costs_lt_p (&newcst, &mincst, speed))
 	      {
-		min_cost = cost;
+		mincst = newcst;
 		min_regno = i;
 	      }
 	  }
       }
+  SET_SRC (pat) = src;
 
-  if (min_cost < rtx_cost (src, SET, speed))
+  if (costs_lt_p (&mincst, &oldcst, speed))
     {
       rtx tem;
 
@@ -1879,18 +1895,26 @@ reload_cse_move2add (rtx first)
 			/* See above why we create (set (reg) (reg)) here.  */
 			success
 			  = validate_change (next, &SET_SRC (set), reg, 0);
-		      else if ((rtx_cost (new_src, PLUS, speed)
-				< COSTS_N_INSNS (1) + rtx_cost (src3, SET, speed))
-			       && have_add2_insn (reg, new_src))
+		      else
 			{
-			  rtx newpat = gen_rtx_SET (VOIDmode,
-						    reg,
-						    gen_rtx_PLUS (GET_MODE (reg),
-						 		  reg,
-								  new_src));
-			  success
-			    = validate_change (next, &PATTERN (next),
-					       newpat, 0);
+			  rtx old_src = SET_SRC (set);
+			  struct full_rtx_costs oldcst, newcst;
+			  rtx tem = gen_rtx_PLUS (GET_MODE (reg), reg, new_src);
+
+			  get_full_rtx_cost (set, SET, &oldcst);
+			  SET_SRC (set) = tem;
+			  get_full_rtx_cost (tem, SET, &newcst);
+			  SET_SRC (set) = old_src;
+			  costs_add_n_insns (&oldcst, 1);
+
+			  if (costs_lt_p (&newcst, &oldcst, speed)
+			      && have_add2_insn (reg, new_src))
+			    {
+			      rtx newpat = gen_rtx_SET (VOIDmode, reg, tem);
+			      success
+				= validate_change (next, &PATTERN (next),
+						   newpat, 0);
+			    }
 			}
 		      if (success)
 			delete_insn (insn);
