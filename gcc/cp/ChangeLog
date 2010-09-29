@@ -1,3 +1,7 @@
+2010-09-29  Yao Qi  <yao@codesourcery.com>
+
+	* decl.c (get_atexit_node): Fix typo.
+
 2010-09-28  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (lvalue_kind): Rename from lvalue_p_1, make nonstatic.
