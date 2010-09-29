@@ -1,5 +1,9 @@
 2010-09-29  Joseph Myers  <joseph@codesourcery.com>
 
+	* c.opt: Don't use VarExists.
+
+2010-09-29  Joseph Myers  <joseph@codesourcery.com>
+
 	* c-common.c (c_cpp_error): Update names of diagnostic_context
 	members.
 	* c-cppbuiltin.c (c_cpp_builtins_optimize_pragma): Update names of

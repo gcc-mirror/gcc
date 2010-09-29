@@ -270,111 +270,111 @@ is selected.
 ;; ISA support
 
 m32
-Target RejectNegative Negative(m64) Report InverseMask(ISA_64BIT) Var(ix86_isa_flags) VarExists Save
+Target RejectNegative Negative(m64) Report InverseMask(ISA_64BIT) Var(ix86_isa_flags) Save
 Generate 32bit i386 code
 
 m64
-Target RejectNegative Negative(m32) Report Mask(ISA_64BIT) Var(ix86_isa_flags) VarExists Save
+Target RejectNegative Negative(m32) Report Mask(ISA_64BIT) Var(ix86_isa_flags) Save
 Generate 64bit x86-64 code
 
 mmmx
-Target Report Mask(ISA_MMX) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_MMX) Var(ix86_isa_flags) Save
 Support MMX built-in functions
 
 m3dnow
-Target Report Mask(ISA_3DNOW) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_3DNOW) Var(ix86_isa_flags) Save
 Support 3DNow! built-in functions
 
 m3dnowa
-Target Undocumented Mask(ISA_3DNOW_A) Var(ix86_isa_flags) VarExists Save
+Target Undocumented Mask(ISA_3DNOW_A) Var(ix86_isa_flags) Save
 Support Athlon 3Dnow! built-in functions
 
 msse
-Target Report Mask(ISA_SSE) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_SSE) Var(ix86_isa_flags) Save
 Support MMX and SSE built-in functions and code generation
 
 msse2
-Target Report Mask(ISA_SSE2) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_SSE2) Var(ix86_isa_flags) Save
 Support MMX, SSE and SSE2 built-in functions and code generation
 
 msse3
-Target Report Mask(ISA_SSE3) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_SSE3) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation
 
 mssse3
-Target Report Mask(ISA_SSSE3) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_SSSE3) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation
 
 msse4.1
-Target Report Mask(ISA_SSE4_1) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_SSE4_1) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation
 
 msse4.2
-Target Report Mask(ISA_SSE4_2) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_SSE4_2) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation
 
 msse4
-Target RejectNegative Report Mask(ISA_SSE4_2) MaskExists Var(ix86_isa_flags) VarExists Save
+Target RejectNegative Report Mask(ISA_SSE4_2) MaskExists Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation
 
 mno-sse4
-Target RejectNegative Report InverseMask(ISA_SSE4_1) MaskExists Var(ix86_isa_flags) VarExists Save
+Target RejectNegative Report InverseMask(ISA_SSE4_1) MaskExists Var(ix86_isa_flags) Save
 Do not support SSE4.1 and SSE4.2 built-in functions and code generation
 
 mavx
-Target Report Mask(ISA_AVX) Var(ix86_isa_flags) VarExists
+Target Report Mask(ISA_AVX) Var(ix86_isa_flags)
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation
 
 mfma
-Target Report Mask(ISA_FMA) Var(ix86_isa_flags) VarExists
+Target Report Mask(ISA_FMA) Var(ix86_isa_flags)
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation
 
 msse4a
-Target Report Mask(ISA_SSE4A) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_SSE4A) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation
 
 mfma4
-Target Report Mask(ISA_FMA4) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_FMA4) Var(ix86_isa_flags) Save
 Support FMA4 built-in functions and code generation 
 
 mxop
-Target Report Mask(ISA_XOP) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_XOP) Var(ix86_isa_flags) Save
 Support XOP built-in functions and code generation 
 
 mlwp
-Target Report Mask(ISA_LWP) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_LWP) Var(ix86_isa_flags) Save
 Support LWP built-in functions and code generation 
 
 mabm
-Target Report Mask(ISA_ABM) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_ABM) Var(ix86_isa_flags) Save
 Support code generation of Advanced Bit Manipulation (ABM) instructions.
 
 mpopcnt
-Target Report Mask(ISA_POPCNT) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_POPCNT) Var(ix86_isa_flags) Save
 Support code generation of popcnt instruction.
 
 mcx16
-Target Report Mask(ISA_CX16) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_CX16) Var(ix86_isa_flags) Save
 Support code generation of cmpxchg16b instruction.
 
 msahf
-Target Report Mask(ISA_SAHF) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_SAHF) Var(ix86_isa_flags) Save
 Support code generation of sahf instruction in 64bit x86-64 code.
 
 mmovbe
-Target Report Mask(ISA_MOVBE) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_MOVBE) Var(ix86_isa_flags) Save
 Support code generation of movbe instruction.
 
 mcrc32
-Target Report Mask(ISA_CRC32) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_CRC32) Var(ix86_isa_flags) Save
 Support code generation of crc32 instruction.
 
 maes
-Target Report Mask(ISA_AES) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_AES) Var(ix86_isa_flags) Save
 Support AES built-in functions and code generation
 
 mpclmul
-Target Report Mask(ISA_PCLMUL) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_PCLMUL) Var(ix86_isa_flags) Save
 Support PCLMUL built-in functions and code generation
 
 msse2avx
@@ -382,15 +382,15 @@ Target Report Var(ix86_sse2avx)
 Encode SSE instructions with VEX prefix
 
 mfsgsbase
-Target Report Mask(ISA_FSGSBASE) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_FSGSBASE) Var(ix86_isa_flags) Save
 Support FSGSBASE built-in functions and code generation
 
 mrdrnd
-Target Report Mask(ISA_RDRND) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_RDRND) Var(ix86_isa_flags) Save
 Support RDRND built-in functions and code generation
 
 mf16c
-Target Report Mask(ISA_F16C) Var(ix86_isa_flags) VarExists Save
+Target Report Mask(ISA_F16C) Var(ix86_isa_flags) Save
 Support F16C built-in functions and code generation
 
 mfentry

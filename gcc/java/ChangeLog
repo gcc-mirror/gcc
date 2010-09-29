@@ -1,5 +1,9 @@
 2010-09-29  Joseph Myers  <joseph@codesourcery.com>
 
+	* lang.opt: Don't use VarExists.
+
+2010-09-29  Joseph Myers  <joseph@codesourcery.com>
+
 	* java-tree.h (flag_filelist_file, flag_assert, flag_jni,
 	flag_force_classes_archive_check, flag_redundant, flag_newer,
 	flag_use_divide_subroutine, flag_use_atomic_builtins,

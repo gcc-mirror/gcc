@@ -499,7 +499,7 @@ Fortran
 Append a second underscore if the name already contains an underscore
 
 fshort-enums
-Fortran Var(flag_short_enums) VarExists
+Fortran Var(flag_short_enums)
 ; Documented in C
 
 fsign-zero

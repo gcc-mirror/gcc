@@ -114,7 +114,7 @@ Java
 ; Documented for C
 
 Wdeprecated
-Java Var(warn_deprecated) VarExists
+Java Var(warn_deprecated)
 ; Documented for C
 
 Wextraneous-semicolon

@@ -46,10 +46,10 @@ information.  These records have two fields: the string
 @samp{Variable}, and a declaration of the type and name of the
 variable, optionally with an initializer (but without any trailing
 @samp{;}).  These records may be used for variables used for many
-options where declaring the variable and its initializer by omitting
-@code{VarExists} from a single option definition record would be
-inappropriate, or for variables set in option handlers rather than
-referenced by @code{Var} properties.
+options where declaring the initializer in a single option definition
+record, or duplicating it in many records, would be inappropriate, or
+for variables set in option handlers rather than referenced by
+@code{Var} properties.
 
 @item
 An option definition record.  These records have the following fields:
@@ -177,7 +177,8 @@ compatibility with existing options that are used both directly and
 via @option{-Wp,}; new options should not have this property.
 
 @item Var(@var{var})
-The state of this option should be stored in variable @var{var}.
+The state of this option should be stored in variable @var{var}
+(actually a macro for @code{global_options.x_@var{var}}).
 The way that the state is stored depends on the type of option:
 
 @itemize @bullet
@@ -201,9 +202,8 @@ the argument string.  The pointer will be null if the argument is optional
 and wasn't given.
 @end itemize
 
-The option-processing script will usually declare @var{var} in
-@file{options.c} and leave it to be zero-initialized at start-up time.
-You can modify this behavior using @code{VarExists} and @code{Init}.
+The option-processing script will usually zero-initialize @var{var}.
+You can modify this behavior using @code{Init}.
 
 @item Var(@var{var}, @var{set})
 The option controls an integer variable @var{var} and is active when
@@ -214,17 +214,10 @@ when the ``no-'' form is used.
 @var{var} is declared in the same way as for the single-argument form
 described above.
 
-@item VarExists
-The variable specified by the @code{Var} property already exists.
-No definition should be added to @file{options.c} in response to
-this option record.
-
-You should use this property only if the variable is declared outside
-@file{options.c}.
-
 @item Init(@var{value})
 The variable specified by the @code{Var} property should be statically
-initialized to @var{value}.
+initialized to @var{value}.  If more than one option using the same
+variable specifies @code{Init}, all must specify the same initializer.
 
 @item Mask(@var{name})
 The option is associated with a bit in the @code{target_flags}
