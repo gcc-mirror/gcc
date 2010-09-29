@@ -24,9 +24,9 @@ Target Report RejectNegative Var(linux_libc,LIBC_BIONIC) Init(DEFAULT_LIBC) Nega
 Use Bionic C library
 
 mglibc
-Target Report RejectNegative Var(linux_libc,LIBC_GLIBC) VarExists Negative(muclibc)
+Target Report RejectNegative Var(linux_libc,LIBC_GLIBC) Negative(muclibc)
 Use GNU C library
 
 muclibc
-Target Report RejectNegative Var(linux_libc,LIBC_UCLIBC) VarExists Negative(mbionic)
+Target Report RejectNegative Var(linux_libc,LIBC_UCLIBC) Negative(mbionic)
 Use uClibc C library

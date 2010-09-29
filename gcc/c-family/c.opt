@@ -966,11 +966,11 @@ C++ ObjC++ Optimization Var(flag_threadsafe_statics) Init(1)
 -fno-threadsafe-statics	Do not generate thread-safe code for initializing local statics
 
 funsigned-bitfields
-C ObjC C++ ObjC++ Var(flag_signed_bitfields, 0) VarExists
+C ObjC C++ ObjC++ Var(flag_signed_bitfields, 0)
 When \"signed\" or \"unsigned\" is not given make the bitfield unsigned
 
 funsigned-char
-C ObjC C++ ObjC++ LTO Var(flag_signed_char, 0) VarExists
+C ObjC C++ ObjC++ LTO Var(flag_signed_char, 0)
 Make \"char\" unsigned by default
 
 fuse-cxa-atexit

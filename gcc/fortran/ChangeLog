@@ -1,5 +1,9 @@
 2010-09-29  Joseph Myers  <joseph@codesourcery.com>
 
+	* lang.opt: Don't use VarExists.
+
+2010-09-29  Joseph Myers  <joseph@codesourcery.com>
+
 	* cpp.c (cpp_define_builtins): Update names of gfc_option_t
 	members.
 	(gfc_cpp_post_options): Update names of cpp_options members.

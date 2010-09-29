@@ -188,7 +188,7 @@ msched-epilog
 Target Undocumented Var(TARGET_SCHED_PROLOG) Init(1)
 
 msched-prolog
-Target Report Var(TARGET_SCHED_PROLOG) VarExists
+Target Report Var(TARGET_SCHED_PROLOG)
 Schedule the start and end of the procedure
 
 maix-struct-return
@@ -196,7 +196,7 @@ Target Report RejectNegative Var(aix_struct_return)
 Return all structures in memory (AIX default)
 
 msvr4-struct-return
-Target Report RejectNegative Var(aix_struct_return,0) VarExists
+Target Report RejectNegative Var(aix_struct_return,0)
 Return small structures in registers (SVR4 default)
 
 mxl-compat
@@ -228,7 +228,7 @@ Target RejectNegative Var(TARGET_NO_SUM_IN_TOC)
 Do not place symbol+offset constants in TOC
 
 msum-in-toc
-Target RejectNegative Var(TARGET_NO_SUM_IN_TOC,0) VarExists
+Target RejectNegative Var(TARGET_NO_SUM_IN_TOC,0)
 Place symbol+offset constants in TOC
 
 ;  Output only one TOC entry per module.  Normally linking fails if

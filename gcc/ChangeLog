@@ -1,5 +1,14 @@
 2010-09-29  Joseph Myers  <joseph@codesourcery.com>
 
+	* doc/options.texi (Variable, Var, Init): Update documentation
+	without reference to VarExists.
+	(VarExists): Remove.
+	* common.opt, config/i386/i386.opt, config/linux.opt,
+	config/rs6000/rs6000.opt, config/sh/sh.opt, config/spu/spu.opt:
+	Don't use VarExists.
+
+2010-09-29  Joseph Myers  <joseph@codesourcery.com>
+
 	* optc-gen.awk: Generate global_options initializer instead of
 	individual variables.  Add x_ prefix to names of structure
 	members.
