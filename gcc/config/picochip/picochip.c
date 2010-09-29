@@ -1637,6 +1637,18 @@ picochip_output_internal_label (FILE * stream, const char *prefix,
 	  sprintf (picochip_current_vliw_state.lm_label_name,
 		   "picoMark_%s%ld", prefix, num);
 	}
+      else if (picochip_schedule_type == DFA_TYPE_SPEED &&
+	  (strcmp (prefix, "LCFI")) == 0 && picochip_vliw_continuation)
+	{
+          if (picochip_current_vliw_state.num_cfi_labels_deferred == 2)
+          {
+            internal_error ("LCFI labels have already been deferred.");
+          }
+          sprintf(picochip_current_vliw_state.cfi_label_name[
+                    picochip_current_vliw_state.num_cfi_labels_deferred], 
+                  "picoMark_%s%ld", prefix, num);
+          picochip_current_vliw_state.num_cfi_labels_deferred++;
+	}
       else
 	{
 	  /* Marker label. */
