@@ -313,7 +313,17 @@ struct def_pragma_macro {
   /* Name of the macro.  */
   char *name;
   /* The stored macro content.  */
-  cpp_macro *value;
+  unsigned char *definition;
+
+  /* Definition line number.  */
+  source_location line;
+  /* If macro defined in system header.  */
+  unsigned int syshdr   : 1;
+  /* Nonzero if it has been expanded or had its existence tested.  */
+  unsigned int used     : 1;
+
+  /* Mark if we save an undefined macro.  */
+  unsigned int is_undef : 1;
 };
 
 /* A cpp_reader encapsulates the "state" of a pre-processor run.
