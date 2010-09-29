@@ -1,3 +1,7 @@
+2010-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (handle_leaf_attribute): Fix long line.
+
 2010-09-28  Richard Henderson  <rth@redhat.com>
 
 	* gcc-interface/misc.c (gnat_eh_personality): Use
