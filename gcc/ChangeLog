@@ -1,3 +1,8 @@
+2010-09-29  Joseph Myers  <joseph@codesourcery.com>
+	    Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* config/darwin.opt (undefined): Add.
+
 2010-09-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* configure.ac: Add --enable-indirect-function option.
