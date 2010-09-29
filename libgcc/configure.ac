@@ -137,9 +137,14 @@ AC_SUBST(fixed_point)
 
 # Check for assembler CFI support.
 AC_CACHE_CHECK([whether assembler supports CFI directives], [libgcc_cv_cfi],
-	       [AC_COMPILE_IFELSE([int i = __GCC_HAVE_DWARF2_CFI_ASM;],
-				  [libgcc_cv_cfi=yes],
-				  [libgcc_cv_cfi=no])])
+	       [AC_COMPILE_IFELSE(
+[asm("\n\
+	.text\n\
+	.cfi_startproc\n\
+	.cfi_personality 0, symbol\n\
+	.cfi_endproc");],
+  [libgcc_cv_cfi=yes],
+  [libgcc_cv_cfi=no])])
 
 # Check 32bit or 64bit for x86.
 case ${host} in
