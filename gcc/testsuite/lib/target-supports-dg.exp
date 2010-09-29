@@ -94,12 +94,7 @@ proc dg-require-alias { args } {
 # test.
 
 proc dg-require-ifunc { args } {
-    set ifunc_available [ check_ifunc_available ]
-    if { $ifunc_available == -1 } {
-	upvar name name
-	unresolved "$name"
-    }
-    if { $ifunc_available < 2 } {
+    if { ![ check_ifunc_available ] } {
 	upvar dg-do-what dg-do-what
 	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
     }

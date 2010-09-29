@@ -45,6 +45,16 @@
 #			default value of $default_use_cxa_atexit is set to
 #			"no" except for targets which are known to be OK.
 #
+#  default_gnu_indirect_function
+#                       The default value for the $enable_gnu_indirect_function
+#                       variable.  enable_gnu_indirect_function relies
+#			upon the presence of a non-standard gnu ifunc support
+#			in the assembler, linker and dynamic linker.
+#			Since not all libraries provide the dynamic linking
+#			support, the default value of
+#			$default_gnu_indirect_function is set to
+#			"no" except for targets which are known to be OK.
+#
 #  gas_flag		Either yes or no depending on whether GNU as was
 #			requested.
 #
@@ -205,6 +215,7 @@ thread_file=
 gas="$gas_flag"
 gnu_ld="$gnu_ld_flag"
 default_use_cxa_atexit=no
+default_gnu_indirect_function=no
 target_gtfiles=
 need_64bit_hwint=
 need_64bit_isa=
@@ -1192,6 +1203,8 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h glibc-stdint.h"
 	case ${target} in
 	i[34567]86-*-linux*)
+		# Assume modern glibc
+		default_gnu_indirect_function=yes
 		if test x$enable_targets = xall; then
 			tm_file="${tm_file} i386/x86-64.h i386/linux64.h"
 			tm_defines="${tm_defines} TARGET_BI_ARCH=1"
@@ -1227,6 +1240,8 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h glibc-stdint.h \
 		 i386/x86-64.h i386/linux64.h"
 	case ${target} in
+	x86_64-*-linux*)
+	  default_gnu_indirect_function=glibc-2011 ;;
 	x86_64-*-kfreebsd*-gnu) tm_file="${tm_file} kfreebsd-gnu.h" ;;
 	x86_64-*-knetbsd*-gnu) tm_file="${tm_file} knetbsd-gnu.h" ;;
 	esac

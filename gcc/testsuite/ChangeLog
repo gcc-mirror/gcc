@@ -1,3 +1,9 @@
+2010-09-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lib/target-supports-dg.exp (dg-require-ifunc): Remove extraneous
+	alias checking.
+	* lib/target-supports.exp (check_ifunc_available): Likewise.
+
 2010-09-29  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc.dg/stack-usage-1.c (SIZE): Adjust for avr.
