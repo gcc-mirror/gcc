@@ -5201,7 +5201,7 @@ handle_leaf_attribute (tree *node, tree name,
     }
   if (!TREE_PUBLIC (*node))
     {
-      warning (OPT_Wattributes, "%qE attribute has no effect on unit local functions", name);
+      warning (OPT_Wattributes, "%qE attribute has no effect", name);
       *no_add_attrs = true;
     }
 
