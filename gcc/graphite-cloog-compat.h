@@ -259,5 +259,15 @@ cloog_block_list_set_block (CloogBlockList *bl, CloogBlock *block)
 {
   bl->block = block;
 }
+
+static inline int cloog_matrix_ncolumns (CloogMatrix * m)
+{
+  return m->NbColumns;
+}
+
+static inline int cloog_matrix_nrows (CloogMatrix * m)
+{
+   return m->NbRows;
+}
 #endif /* CLOOG_ORG  */
 #endif /* GRAPHITE_CLOOG_COMPAT_H  */

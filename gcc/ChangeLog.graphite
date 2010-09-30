@@ -1,3 +1,8 @@
+2010-08-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
+	* graphite-cloog-compat.h (cloog_matrix_ncolumns): New.
+	(cloog_matrix_nrows): New.
+
 2010-08-11  Riyadh Baghdadi <baghdadi.mr@gmail.com>
 
 	* graphite-cloog-util.c (openscop_print_cloog_matrix): Remove spaces
