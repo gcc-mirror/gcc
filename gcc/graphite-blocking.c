@@ -172,25 +172,25 @@ pbb_strip_mine_time_depth (poly_bb_p pbb, int time_depth, int stride)
   return true;
 }
 
-/* Returns true when strip mining with STRIDE of the loop around PBB
-   at DEPTH is profitable.  */
+/* Returns true when strip mining with STRIDE of the loop LST is
+   profitable.  */
 
 static bool
-pbb_strip_mine_profitable_p (poly_bb_p pbb,
-			     graphite_dim_t depth,
-			     int stride)
+lst_strip_mine_profitable_p (lst_p lst, int stride)
 {
   mpz_t niter, strip_stride;
   bool res;
 
+  gcc_assert (LST_LOOP_P (lst));
   mpz_init (strip_stride);
   mpz_init (niter);
+
   mpz_set_si (strip_stride, stride);
-  pbb_number_of_iterations_at_time (pbb, psct_dynamic_dim (pbb, depth), niter);
+  lst_niter_for_loop (lst, niter);
   res = (mpz_cmp (niter, strip_stride) > 0);
+
   mpz_clear (strip_stride);
   mpz_clear (niter);
-
   return res;
 }
 
@@ -244,8 +244,7 @@ lst_do_strip_mine (lst_p lst)
 
   depth = lst_depth (lst);
   if (depth >= 0
-      && pbb_strip_mine_profitable_p (LST_PBB (lst_find_first_pbb (lst)),
-				      depth, stride))
+      && lst_strip_mine_profitable_p (lst, stride))
     {
       res |= lst_do_strip_mine_loop (lst, lst_depth (lst));
       lst_add_loop_under_loop (lst);

@@ -1,5 +1,11 @@
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-blocking.c (pbb_strip_mine_profitable_p): Renamed
+	lst_strip_mine_profitable_p.  Call lst_niter_for_loop.
+	* graphite-poly.h (lst_niter_for_loop): New.
+
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (apply_poly_transforms): Do not abort when the
 	transform read from disk is not legal.  Call fatal_error instead.
 
