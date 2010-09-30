@@ -6,7 +6,7 @@
 #include "../objc-obj-c++-shared/Object1.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <memory.h>
+#include <string.h>
 
 @interface Foo: Object {
   char *cString;

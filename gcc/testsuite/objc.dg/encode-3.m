@@ -1,10 +1,11 @@
 /* Method encoding tests for stand-alone @protocol declarations.  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
-
-#include <stdlib.h>
-#include "../objc-obj-c++-shared/Protocol1.h"
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+
+#include "../objc-obj-c++-shared/Protocol1.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 #define ProtoBool bool
