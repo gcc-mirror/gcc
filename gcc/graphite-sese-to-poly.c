@@ -1032,7 +1032,6 @@ add_upper_bounds_from_estimated_nit (scop_p scop, double_int nit,
   ppl_Coefficient_t coef;
   ppl_Constraint_t ub;
 
-  ppl_new_Linear_Expression_with_dimension (&ub_expr, dim);
   ppl_new_C_Polyhedron_from_space_dimension (&pol, dim, 0);
   ppl_new_Linear_Expression_from_Linear_Expression (&nb_iters_le,
 						    ub_expr);
