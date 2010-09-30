@@ -2,6 +2,8 @@
    they should.  */
 /* { dg-do run } */
 /* { dg-options "-O2" } */
+/* { dg-additional-sources "../objc-obj-c++-shared/Object1.mm" } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 #include "../objc-obj-c++-shared/Object1.h"
 #include <string.h>
