@@ -1,5 +1,9 @@
 2010-08-24  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.c (graphite_read_scop_file): Fix uninitialize warning.
+
+2010-08-24  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (dot_deps): Avoid set but not used warning.
 	(dot_deps_stmt): Same.
 	* graphite-poly.c (dot_lst): Same.
