@@ -1,5 +1,11 @@
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-chrec.h (evolution_function_is_affine_p): Do not check
+	whether CHREC_LEFT is invariant.  A function is affine when
+	CHREC_RIGHT is invariant.
+
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (reduction_phi_p): Remove check for
 	is_gimple_reg.
 	(rewrite_degenerate_phi): Same.
