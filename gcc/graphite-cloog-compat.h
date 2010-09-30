@@ -72,6 +72,8 @@ typedef const char *clast_name_p;
 #define cloog_scattering cloog_domain
 #define cloog_next_scattering cloog_next_domain
 #define cloog_scattering_free cloog_domain_free
+#define cloog_program_dump_cloog(DUMPFILE, PROGRAM, SCATTERINGLIST)\
+  cloog_program_dump_cloog (DUMPFILE, PROGRAM)
 
 #endif
 
