@@ -1249,13 +1249,16 @@ print_pbb_body (FILE *file, poly_bb_p pbb, int verbosity,
     fprintf (file, "# Body (\n");
 
   if (!statement_body_provided)
-  {
-    if (verbosity > 0)
-      fprintf (file, "# Statement body is not provided\n");
+    {
+      if (verbosity > 0)
+	fprintf (file, "# Statement body is not provided\n");
 
-   fprintf (file, "0\n");
-   return;
-  }
+      fprintf (file, "0\n");
+
+      if (verbosity > 1)
+	fprintf (file, "#)\n");
+      return;
+    }
 
   if (verbosity > 0)
     fprintf (file, "# Statement body is provided\n");
@@ -1394,12 +1397,14 @@ print_scop_context (FILE *file, scop_p scop, int verbosity)
     fprintf (file, "# )\n");
 }
 
-/* Print to FILE the SCOP header: context, parameters, and statements
-   number.  */
+/* Print to FILE the SCOP, at some VERBOSITY level.  */
 
-static void
-print_scop_header (FILE *file, scop_p scop, int verbosity)
+void
+print_scop (FILE *file, scop_p scop, int verbosity)
 {
+  int i;
+  poly_bb_p pbb;
+
   fprintf (file, "SCoP 1\n#(\n");
   fprintf (file, "# Language\nGimple\n");
   openscop_print_scop_context (file, scop, verbosity);
@@ -1409,17 +1414,6 @@ print_scop_header (FILE *file, scop_p scop, int verbosity)
     fprintf (file, "# Number of statements\n");
 
   fprintf (file, "%d\n",VEC_length (poly_bb_p, SCOP_BBS (scop)));
-}
-
-/* Print to FILE the SCOP, at some VERBOSITY level.  */
-
-void
-print_scop (FILE *file, scop_p scop, int verbosity)
-{
-  int i;
-  poly_bb_p pbb;
-
-  print_scop_header (file, scop, verbosity);
 
   FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
     print_pbb (file, pbb, verbosity);

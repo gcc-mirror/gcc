@@ -1,5 +1,11 @@
 2010-09-09  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.c (print_pbb_body): Add missing closing parenthesis.
+	(print_scop_header): Removed.  Inlined in the only call place...
+	(print_scop): ... here.
+
+2010-09-09  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.h (lst_dewey_number): Use FOR_EACH_VEC_ELT.
 
 2010-09-02  Vladimir Kargov  <kargov@gmail.com>
