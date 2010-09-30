@@ -1,5 +1,10 @@
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/45230
+	* gcc.dg/graphite/id-pr45230.c: New.
+
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* gcc.dg/graphite/graphite.exp: Add compile rules for vect-* files.
 	* gfortran.dg/graphite/graphite.exp: Same.
 	* gcc.dg/graphite/vect-pr43423.c: New.
