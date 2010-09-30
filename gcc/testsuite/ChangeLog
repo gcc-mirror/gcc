@@ -1,3 +1,8 @@
+2010-09-30  Michael Eager  <eager@eagercon.com>
+
+	* gcc.c-torture/execute/cmpsf-1.c: Rename FLOAT_{MIN,MAX} to
+	__FLT_{MIN,MAX}__.
+	
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/45758
