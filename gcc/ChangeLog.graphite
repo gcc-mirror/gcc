@@ -1,3 +1,24 @@
+2010-09-21  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
+	* common.opt (fgraphite-dump-cloog): New flag.
+	* doc/invoke.texi (-fgraphite-dump-cloog): Documented.
+	* graphite-clast-to-gimple.c (init_cloog_input_file): New.
+	(build_cloog_prog): Dump CLooG input file when
+	flag_graphite_dump_cloog is set.
+	* graphite-cloog-compat.h (cloog_program_dump_cloog): New.
+
+2010-09-20  Sebastian Pop  <sebastian.pop@amd.com>
+
+	Revert previous patch "New flag: -fgraphite-dump-cloog."
+
+2010-09-20  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
+	* common.opt (fgraphite-dump-cloog): New flag.
+	* doc/invoke.texi (-fgraphite-dump-cloog): Documented.
+	* graphite-clast-to-gimple.c (init_cloog_input_file): New.
+	(build_cloog_prog): Dump CLooG input file when
+	flag_graphite_dump_cloog is set.
+
 2010-09-20  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (graphite_verify): Remove call to

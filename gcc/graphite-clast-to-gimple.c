@@ -1216,6 +1216,31 @@ initialize_cloog_names (scop_p scop, CloogProgram *prog)
 			      scattering);
 }
 
+/* Initialize a CLooG input file.  */
+
+static FILE *
+init_cloog_input_file (int scop_number)
+{
+  FILE *graphite_out_file;
+  int len = strlen (dump_base_name);
+  char *dumpname = XNEWVEC (char, len + 25);
+  char *s_scop_number = XNEWVEC (char, 15);
+
+  memcpy (dumpname, dump_base_name, len + 1);
+  strip_off_ending (dumpname, len);
+  sprintf (s_scop_number, ".%d", scop_number);
+  strcat (dumpname, s_scop_number);
+  strcat (dumpname, ".cloog");
+  graphite_out_file = fopen (dumpname, "w+b");
+
+  if (graphite_out_file == 0)
+    fatal_error ("can%'t open %s for writing: %m", dumpname);
+
+  free (dumpname);
+
+  return graphite_out_file;
+}
+
 /* Build cloog program for SCoP.  */
 
 static void
@@ -1305,6 +1330,17 @@ build_cloog_prog (scop_p scop, CloogProgram *prog,
 
   /* Extract scalar dimensions to simplify the code generation problem.  */
   cloog_program_extract_scalars (prog, scattering, options);
+
+  /* Dump a .cloog input file, if requested.  This feature is only
+     enabled in the Graphite branch.  */
+  if (0)
+    {
+      static size_t file_scop_number = 0;
+      FILE *cloog_file = init_cloog_input_file (file_scop_number);
+
+      cloog_program_dump_cloog (cloog_file, prog, scattering);
+      ++file_scop_number;
+    }
 
   /* Apply scattering.  */
   cloog_program_scatter (prog, scattering, options);
