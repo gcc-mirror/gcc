@@ -1,5 +1,10 @@
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-scalar-evolution.c (instantiate_array_ref): New.
+	(instantiate_scev_r): Also handle ARRAY_REFs.
+
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-scalar-evolution.c (chrec_contains_symbols_defined_in_loop):
 	Do not check for VAR_DECL, PARM_DECL, FUNCTION_DECL, LABEL_DECL,
 	RESULT_DECL, and FIELD_DECL.  Return false for an
