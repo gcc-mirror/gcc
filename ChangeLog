@@ -1,3 +1,8 @@
+2010-09-30  Michael Eager  <eager@eagercon.com>
+
+	* configure.ac (microblaze): Add target-libssp to noconfigdirs.
+	* configure: Regenerate.
+
 2010-09-28  Michael Eager  <eager@eagercon.com>
 
 	* MAINTAINERS (CPU Port Maintainers): Add myself for MicroBlaze port.

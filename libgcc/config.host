@@ -107,6 +107,9 @@ m68k-*-*)
 	;;
 mep*-*-*)
 	;;
+microblaze*-*-*)
+	cpu_type=microblaze
+	;;
 mips*-*-*)
 	cpu_type=mips
 	;;
@@ -398,6 +401,9 @@ m68k-*-rtems*)
 mcore-*-elf)
 	;;
 mcore-*-pe*)
+	;;
+microblaze*-*-*)
+        tmake_file="microblaze/t-microblaze"
 	;;
 mips-sgi-irix[56]*)
 	;;

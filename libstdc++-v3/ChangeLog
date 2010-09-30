@@ -1,3 +1,8 @@
+2010-09-30  Michael Eager  <eager@eagercon.com>
+
+	* config/cpu/microblaze/cpu_defines.h: New. Define
+	_GLIBCXX_NO_VERBOSE_TERMINATE for MicroBlaze.
+
 2010-09-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/Makefile.am: Add debug/forward_list.
@@ -75,6 +80,7 @@
 	* configure: Regenerate.
 	* include/Makefile.in: Likewise.
 
+>>>>>>> .r164755
 2010-09-22  David Krauss  <potswa@mac.com>
 
 	PR libstdc++/45628
