@@ -168,12 +168,6 @@ reduction_phi_p (sese region, gimple_stmt_iterator *psi)
   gimple phi = gsi_stmt (*psi);
   tree res = gimple_phi_result (phi);
 
-  if (!is_gimple_reg (res))
-    {
-      gsi_next (psi);
-      return false;
-    }
-
   loop = loop_containing_stmt (phi);
 
   if (simple_copy_phi_p (phi))
@@ -2359,12 +2353,6 @@ rewrite_degenerate_phi (gimple_stmt_iterator *psi)
   tree res = gimple_phi_result (phi);
   basic_block bb;
 
-  if (!is_gimple_reg (res))
-    {
-      gsi_next (psi);
-      return;
-    }
-
   bb = gimple_bb (phi);
   rhs = degenerate_phi_result (phi);
   gcc_assert (rhs);
@@ -2391,6 +2379,12 @@ rewrite_reductions_out_of_ssa (scop_p scop)
       for (psi = gsi_start_phis (bb); !gsi_end_p (psi);)
 	{
 	  gimple phi = gsi_stmt (psi);
+
+	  if (!is_gimple_reg (gimple_phi_result (phi)))
+	    {
+	      gsi_next (&psi);
+	      continue;
+	    }
 
 	  if (gimple_phi_num_args (phi) > 1
 	      && degenerate_phi_result (phi))

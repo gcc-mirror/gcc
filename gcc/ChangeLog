@@ -1,3 +1,10 @@
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (reduction_phi_p): Remove check for
+	is_gimple_reg.
+	(rewrite_degenerate_phi): Same.
+	(rewrite_reductions_out_of_ssa): Add check for is_gimple_reg.
+
 2010-09-30  Vladimir Kargov  <kargov@gmail.com>
 
 	* graphite-scop-detection.c (graphite_can_represent_scev,
