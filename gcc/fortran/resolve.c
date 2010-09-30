@@ -6708,6 +6708,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
     {
       /* Set up default initializer if needed.  */
       gfc_typespec ts;
+      gfc_expr *init_e;
 
       if (code->ext.alloc.ts.type == BT_DERIVED)
 	ts = code->ext.alloc.ts;
@@ -6717,9 +6718,8 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       if (ts.type == BT_CLASS)
 	ts = ts.u.derived->components->ts;
 
-      if (ts.type == BT_DERIVED && gfc_has_default_initializer(ts.u.derived))
+      if (ts.type == BT_DERIVED && (init_e = gfc_default_initializer (&ts)))
 	{
-	  gfc_expr *init_e = gfc_default_initializer (&ts);
 	  gfc_code *init_st = gfc_get_code ();
 	  init_st->loc = code->loc;
 	  init_st->op = EXEC_INIT_ASSIGN;
