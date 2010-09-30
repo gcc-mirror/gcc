@@ -1,5 +1,10 @@
 2010-07-29  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (gcc_type_for_interval): Generate in
+	priority signed types.
+
+2010-07-29  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (max_signed_precision_type): Remove the call
 	to lang_hooks.types.type_for_size.  Call build_nonstandard_integer_type.
 

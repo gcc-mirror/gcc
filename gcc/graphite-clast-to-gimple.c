@@ -459,9 +459,6 @@ gcc_type_for_interval (mpz_t low, mpz_t up)
 
   gcc_assert (mpz_cmp (low, up) <= 0);
 
-  if (mpz_sgn (low) < 0)
-    unsigned_p = false;
-
   prec_up = precision_for_value (up);
   prec_int = precision_for_interval (low, up);
   precision = MAX (prec_up, prec_int);
@@ -470,6 +467,15 @@ gcc_type_for_interval (mpz_t low, mpz_t up)
     {
       gloog_error = true;
       return integer_type_node;
+    }
+
+  if (mpz_sgn (low) <= 0)
+    unsigned_p = false;
+
+  else if (precision < BITS_PER_WORD)
+    {
+      unsigned_p = false;
+      precision++;
     }
 
   mode = smallest_mode_for_size (precision, MODE_INT);
