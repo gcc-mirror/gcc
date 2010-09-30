@@ -1,5 +1,10 @@
 2010-09-09  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.c (cloog_checksum): New.
+	* graphite-poly.h (cloog_checksum): Declared.
+
+2010-09-09  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (pbb_number_of_iterations): Removed.
 	(pbb_number_of_iterations_at_time): Correctly compute the number
 	of iterations in the transformed loop.
