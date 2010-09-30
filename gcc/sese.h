@@ -386,9 +386,22 @@ nb_common_loops (sese region, gimple_bb_p gbb1, gimple_bb_p gbb2)
 static inline bool
 scev_analyzable_p (tree def, sese region)
 {
-  gimple stmt = SSA_NAME_DEF_STMT (def);
-  loop_p loop = loop_containing_stmt (stmt);
-  tree scev = scalar_evolution_in_region (region, loop, def);
+  loop_p loop;
+  tree scev;
+  tree type = TREE_TYPE (def);
+
+  /* When Graphite generates code for a scev, the code generator
+     expresses the scev in function of a single induction variable.
+     This is unsafe for floating point computations, as it may replace
+     a floating point sum reduction with a multiplication.  The
+     following test returns false for non integer types to avoid such
+     problems.  */
+  if (!INTEGRAL_TYPE_P (type)
+      && !POINTER_TYPE_P (type))
+    return false;
+
+  loop = loop_containing_stmt (SSA_NAME_DEF_STMT (def));
+  scev = scalar_evolution_in_region (region, loop, def);
 
   return !chrec_contains_undetermined (scev)
     && TREE_CODE (scev) != SSA_NAME

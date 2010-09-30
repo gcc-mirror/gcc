@@ -1,5 +1,10 @@
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* sese.h (scev_analyzable_p): Return false for real or floating
+	point.  Only handle INTEGRAL_TYPE_P and POINTER_TYPE_P.
+
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (compute_bounds_for_level): Free le
 	and ps.
 	* graphite-poly.c (pbb_number_of_iterations_at_time): Free le and
