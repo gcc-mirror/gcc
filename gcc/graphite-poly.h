@@ -843,7 +843,7 @@ lst_dewey_number (lst_p lst)
   if (!LST_LOOP_FATHER (lst))
     return 0;
 
-  for (i = 0; VEC_iterate (lst_p, LST_SEQ (LST_LOOP_FATHER (lst)), i, l); i++)
+  FOR_EACH_VEC_ELT (lst_p, LST_SEQ (LST_LOOP_FATHER (lst)), i, l)
     if (l == lst)
       return i;
 
