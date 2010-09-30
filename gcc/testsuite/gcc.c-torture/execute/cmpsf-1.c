@@ -56,8 +56,8 @@ float args[] =
   0.0F,
   1.0F,
   -1.0F, 
-  FLOAT_MAX,
-  FLOAT_MIN,
+  __FLT_MAX__,
+  __FLT_MIN__,
   0.0000000000001F,
   123456789.0F,
   -987654321.0F
@@ -154,14 +154,6 @@ main (void)
 	  if (fgt (arg0, arg1) != *res++)
 	    abort ();
 	  if (fle (arg0, arg1) != *res++)
-	    abort ();
-	  if (fltu (arg0, arg1) != *res++)
-	    abort ();
-	  if (fgeu (arg0, arg1) != *res++)
-	    abort ();
-	  if (fgtu (arg0, arg1) != *res++)
-	    abort ();
-	  if (fleu (arg0, arg1) != *res++)
 	    abort ();
 	}
     }
