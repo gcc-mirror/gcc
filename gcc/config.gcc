@@ -653,6 +653,9 @@ case ${target} in
 *-*-uclinux*)
   use_gcc_stdint=wrap
   ;;
+*-*-solaris2*)
+  extra_options="${extra_options} sol2.opt"
+  ;;
 *-*-vxworks*)
   tmake_file=t-vxworks
   xm_defines=POSIX

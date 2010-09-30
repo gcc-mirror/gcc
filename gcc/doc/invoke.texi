@@ -848,6 +848,10 @@ See RS/6000 and PowerPC Options.
 -madjust-unroll -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
 -maccumulate-outgoing-args -minvalid-symbols}
 
+@emph{Solaris 2 Options}
+@gccoptlist{-mimpure-text  -mno-impure-text @gol
+-threads -pthreads -pthread}
+
 @emph{SPARC Options}
 @gccoptlist{-mcpu=@var{cpu-type} @gol
 -mtune=@var{cpu-type} @gol
@@ -856,11 +860,10 @@ See RS/6000 and PowerPC Options.
 -mfaster-structs  -mno-faster-structs @gol
 -mfpu  -mno-fpu  -mhard-float  -msoft-float @gol
 -mhard-quad-float  -msoft-quad-float @gol
--mimpure-text  -mno-impure-text  -mlittle-endian @gol
+-mlittle-endian @gol
 -mstack-bias  -mno-stack-bias @gol
 -munaligned-doubles  -mno-unaligned-doubles @gol
--mv8plus  -mno-v8plus  -mvis  -mno-vis
--threads -pthreads -pthread}
+-mv8plus  -mno-v8plus  -mvis  -mno-vis}
 
 @emph{SPU Options}
 @gccoptlist{-mwarn-reloc -merror-reloc @gol
@@ -9847,6 +9850,7 @@ platform.
 * S/390 and zSeries Options::
 * Score Options::
 * SH Options::
+* Solaris 2 Options::
 * SPARC Options::
 * SPU Options::
 * System V Options::
@@ -16705,6 +16709,51 @@ It will then prevent cross-basic-block cse, hoisting and most scheduling
 of symbol loads.  The default is @option{-mno-invalid-symbols}.
 @end table
 
+@node Solaris 2 Options
+@subsection Solaris 2 Options
+@cindex Solaris 2 options
+
+These @samp{-m} options are supported on Solaris 2:
+
+@table @gcctabopt
+@item -mimpure-text
+@opindex mimpure-text
+@option{-mimpure-text}, used in addition to @option{-shared}, tells
+the compiler to not pass @option{-z text} to the linker when linking a
+shared object.  Using this option, you can link position-dependent
+code into a shared object.
+
+@option{-mimpure-text} suppresses the ``relocations remain against
+allocatable but non-writable sections'' linker error message.
+However, the necessary relocations will trigger copy-on-write, and the
+shared object is not actually shared across processes.  Instead of
+using @option{-mimpure-text}, you should compile all source code with
+@option{-fpic} or @option{-fPIC}.
+
+@end table
+
+These switches are supported in addition to the above on Solaris 2:
+
+@table @gcctabopt
+@item -threads
+@opindex threads
+Add support for multithreading using the Solaris threads library.  This
+option sets flags for both the preprocessor and linker.  This option does
+not affect the thread safety of object code produced by the compiler or
+that of libraries supplied with it.
+
+@item -pthreads
+@opindex pthreads
+Add support for multithreading using the POSIX threads library.  This
+option sets flags for both the preprocessor and linker.  This option does
+not affect the thread safety of object code produced  by the compiler or
+that of libraries supplied with it.
+
+@item -pthread
+@opindex pthread
+This is a synonym for @option{-pthreads}.
+@end table
+
 @node SPARC Options
 @subsection SPARC Options
 @cindex SPARC options
@@ -16792,22 +16841,6 @@ However, the use of this changed alignment directly violates the SPARC
 ABI@.  Thus, it's intended only for use on targets where the developer
 acknowledges that their resulting code will not be directly in line with
 the rules of the ABI@.
-
-@item -mimpure-text
-@opindex mimpure-text
-@option{-mimpure-text}, used in addition to @option{-shared}, tells
-the compiler to not pass @option{-z text} to the linker when linking a
-shared object.  Using this option, you can link position-dependent
-code into a shared object.
-
-@option{-mimpure-text} suppresses the ``relocations remain against
-allocatable but non-writable sections'' linker error message.
-However, the necessary relocations will trigger copy-on-write, and the
-shared object is not actually shared across processes.  Instead of
-using @option{-mimpure-text}, you should compile all source code with
-@option{-fpic} or @option{-fPIC}.
-
-This option is only available on SunOS and Solaris.
 
 @item -mcpu=@var{cpu_type}
 @opindex mcpu
@@ -16955,28 +16988,6 @@ With @option{-mstack-bias}, GCC assumes that the stack pointer, and
 frame pointer if present, are offset by @minus{}2047 which must be added back
 when making stack frame references.  This is the default in 64-bit mode.
 Otherwise, assume no such offset is present.
-@end table
-
-These switches are supported in addition to the above on Solaris:
-
-@table @gcctabopt
-@item -threads
-@opindex threads
-Add support for multithreading using the Solaris threads library.  This
-option sets flags for both the preprocessor and linker.  This option does
-not affect the thread safety of object code produced by the compiler or
-that of libraries supplied with it.
-
-@item -pthreads
-@opindex pthreads
-Add support for multithreading using the POSIX threads library.  This
-option sets flags for both the preprocessor and linker.  This option does
-not affect the thread safety of object code produced  by the compiler or
-that of libraries supplied with it.
-
-@item -pthread
-@opindex pthread
-This is a synonym for @option{-pthreads}.
 @end table
 
 @node SPU Options
