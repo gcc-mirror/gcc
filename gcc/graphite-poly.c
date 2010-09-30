@@ -152,7 +152,7 @@ openscop_print_pdr_polyhedron (FILE *file, ppl_const_Polyhedron_t ph,
   ppl_dimension_type *map, i, ph_space_dim = sub_dim_last + 1;
   ppl_Polyhedron_t pph;
 
-  ppl_new_C_Polyhedron_from_C_Polyhedron (&pph,ph);
+  ppl_new_C_Polyhedron_from_C_Polyhedron (&pph, ph);
 
   map = (ppl_dimension_type *) XNEWVEC (ppl_dimension_type, ph_space_dim);
 
@@ -171,7 +171,7 @@ openscop_print_pdr_polyhedron (FILE *file, ppl_const_Polyhedron_t ph,
      the output columns.  */
   output = nb_subscripts + 1;
 
-  openscop_print_polyhedron_matrix (file, ph, output, input, locals, nb_params);
+  openscop_print_polyhedron_matrix (file, pph, output, input, locals, nb_params);
 }
 
 /* Print to FILE the powerset PDR.  NB_SUBSCRIPTS is the number of subscripts

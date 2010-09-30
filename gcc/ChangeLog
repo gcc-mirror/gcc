@@ -1,3 +1,8 @@
+2010-09-30  Riyadh Baghdadi <baghdadi.mr@gmail.com>
+
+	* graphite-poly.c (openscop_print_pdr_polyhedron): Fix indentation.
+	(openscop_print_pdr_polyhedron): Print pph.
+
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (gcc_type_for_interval): Generate in
