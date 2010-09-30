@@ -1,3 +1,8 @@
+2010-09-28  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* g-socket.adb: Move pragma to disable warnings in case
+	multiple errnos are not defined by target.
+
 2010-09-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (handle_leaf_attribute): Fix long line.
