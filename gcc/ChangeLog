@@ -1,5 +1,11 @@
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.h (lst_update_scattering_seq): Removed.
+	(lst_update_scattering): Correctly handle outermost loop dewey
+	renumbering.
+
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-blocking.c (pbb_strip_mine_profitable_p): Renamed
 	lst_strip_mine_profitable_p.  Call lst_niter_for_loop.
 	* graphite-poly.h (lst_niter_for_loop): New.
