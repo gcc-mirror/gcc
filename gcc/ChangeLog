@@ -1,3 +1,18 @@
+2010-09-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/45796
+	* Makefile.in (build/gen%$(build_exeext)): Move rule after all
+	special-casing for generators and turn into ...
+	((genprog:%=build/gen%$(build_exeext))): ... this static pattern
+	rule, for better error messages in case of toplevel dependency
+	errors.
+	(genprog): Add hooks, rename to ...
+	(genprogerr): ... this, and let genprog also contain check,
+	checksum, condmd.
+	((genprog:%=build/gen%$(build_exeext))): Rename to ...
+	((genprogerr:%=build/gen%$(build_exeext))): ... this.
+	(build/genhooks$(build_exeext)): Remove now-unneeded dependency.
+
 2010-09-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
             Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
