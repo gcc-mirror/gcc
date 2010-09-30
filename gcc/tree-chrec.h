@@ -202,23 +202,10 @@ evolution_function_is_affine_in_loop (const_tree chrec, int loopnum)
 static inline bool
 evolution_function_is_affine_p (const_tree chrec)
 {
-  if (chrec == NULL_TREE)
-    return false;
-
-  switch (TREE_CODE (chrec))
-    {
-    case POLYNOMIAL_CHREC:
-      if (evolution_function_is_invariant_p (CHREC_LEFT (chrec),
-					     CHREC_VARIABLE (chrec))
-	  && evolution_function_is_invariant_p (CHREC_RIGHT (chrec),
-						CHREC_VARIABLE (chrec)))
-	return true;
-      else
-	return false;
-
-    default:
-      return false;
-    }
+  return chrec
+    && TREE_CODE (chrec) == POLYNOMIAL_CHREC
+    && evolution_function_is_invariant_p (CHREC_RIGHT (chrec),
+					  CHREC_VARIABLE (chrec));
 }
 
 /* Determines whether EXPR does not contains chrec expressions.  */
