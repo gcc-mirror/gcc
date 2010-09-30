@@ -255,7 +255,7 @@ openscop_print_scattering_function_1 (FILE *file, poly_bb_p pbb, int verbosity)
   if (verbosity > 0)
     {
       fprintf (file, "# scattering bb_%d (\n", pbb_index (pbb));
-      fprintf (file, "#  eq");
+      fprintf (file, "#eq");
 
       for (i = 0; i < pbb_nb_scattering_transform (pbb); i++)
 	fprintf (file, "     s%d", (int) i);
@@ -301,7 +301,7 @@ print_scattering_function_1 (FILE *file, poly_bb_p pbb, int verbosity)
   if (verbosity > 0)
     {
       fprintf (file, "# scattering bb_%d (\n", pbb_index (pbb));
-      fprintf (file, "#  eq");
+      fprintf (file, "#eq");
 
       for (i = 0; i < pbb_nb_scattering_transform (pbb); i++)
 	fprintf (file, "     s%d", (int) i);
@@ -731,7 +731,7 @@ openscop_print_pbb_domain (FILE *file, poly_bb_p pbb, int verbosity)
   if (verbosity > 0)
     {
       fprintf (file, "\n# Iteration domain of bb_%d (\n", GBB_BB (gbb)->index);
-      fprintf (file, "#  eq");
+      fprintf (file, "#eq");
 
       for (i = 0; i < pbb_dim_iter_domain (pbb); i++)
 	fprintf (file, "     i%d", (int) i);
@@ -1025,7 +1025,7 @@ openscop_print_scop_context (FILE *file, scop_p scop, int verbosity)
   if (verbosity > 0)
     {
       fprintf (file, "# Context (\n");
-      fprintf (file, "#  eq");
+      fprintf (file, "#eq");
 
       for (i = 0; i < scop_nb_params (scop); i++)
 	fprintf (file, "     p%d", (int) i);
@@ -1054,7 +1054,7 @@ print_scop_context (FILE *file, scop_p scop, int verbosity)
   if (verbosity > 0)
     {
       fprintf (file, "# Context (\n");
-      fprintf (file, "#  eq");
+      fprintf (file, "#eq");
 
       for (i = 0; i < scop_nb_params (scop); i++)
 	fprintf (file, "     p%d", (int) i);
