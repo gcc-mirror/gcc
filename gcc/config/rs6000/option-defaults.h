@@ -27,7 +27,7 @@
 /* This header needs to be included after any other headers affecting
    TARGET_DEFAULT.  */
 
-#if TARGET_AIX
+#if TARGET_AIX_OS
 #define OPT_64 "maix64"
 #define OPT_32 "maix32"
 #else
