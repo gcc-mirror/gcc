@@ -1,3 +1,19 @@
+2010-08-12  Riyadh Baghdadi <baghdadi.mr@gmail.com>
+
+	* graphite-cloog-util.c (openscop_read_cloog_matrix): New.
+	(openscop_read_polyhedron_matrix): New.
+	* graphite-cloog-util.h (openscop_read_polyhedron_matrix): Declared.
+	(openscop_read_N_int): Same.
+	* graphite-poly.c (openscop_read_N_int): New.
+	(openscop_read_one_int): New.
+	(openscop_read_N_string): New.
+	(openscop_read_one_string): New.
+	(openscop_read_powerset_matrix): New.
+	(graphite_read_transforms): Remove.
+	(graphite_read_scatt): New.
+	(graphite_read_scop_file): New.
+	(apply_poly_transforms): Updated to call graphite_read_scop_file.
+
 2010-08-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite-poly.c: Change include order.

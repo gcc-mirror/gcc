@@ -34,5 +34,9 @@ CloogDomain * new_Cloog_Domain_from_ppl_Pointset_Powerset
 void new_C_Polyhedron_from_Cloog_Matrix (ppl_Polyhedron_t *, CloogMatrix *);
 void openscop_print_polyhedron_matrix (FILE *, ppl_const_Polyhedron_t, int,
 				       int, int, int);
+void openscop_read_polyhedron_matrix (FILE *, ppl_Polyhedron_t *, int *, int *,
+	       			     int *, int *);
+
+extern int *openscop_read_N_int (FILE *, int);
 
 #endif /* GRAPHITE_CLOOG_UTIL_H */
