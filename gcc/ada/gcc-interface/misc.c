@@ -303,6 +303,13 @@ gnat_init_options (unsigned int decoded_options_count,
   flag_zero_initialized_in_bss = 0;
 }
 
+/* Ada code requires variables for these settings rather than elements
+   of the global_options structure.  */
+#undef optimize
+#undef optimize_size
+int optimize;
+int optimize_size;
+
 /* Post-switch processing.  */
 
 static bool
@@ -333,6 +340,9 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
      flag for use by later passes.  */
   if (write_symbols == DWARF2_DEBUG)
     use_gnu_debug_info_extensions = gnat_dwarf_extensions > 0;
+
+  optimize = global_options.x_optimize;
+  optimize_size = global_options.x_optimize_size;
 
   return false;
 }
