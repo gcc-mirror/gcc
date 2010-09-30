@@ -1,5 +1,10 @@
 2010-09-23  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* sese.h (scev_analyzable_p): Return false for real or floating
+	point.  Only handle INTEGRAL_TYPE_P and POINTER_TYPE_P.
+
+2010-09-23  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/45758
 	* gfortran.dg/graphite/pr45758.f90: New.
 
