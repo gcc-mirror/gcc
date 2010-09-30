@@ -1,3 +1,11 @@
+2010-08-17  Riyadh Baghdadi <baghdadi.mr@gmail.com>
+
+	* graphite-poly.c (init_graphite_out_file): New.
+	(init_graphite_in_file): New.
+	(apply_poly_transforms): Updated to enable reading and writing of
+	multiple scop files.
+	* toplev.c (init_asm_output): Remove graphite in/out file initialization.
+
 2010-08-17  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* graphite-scop-detection.c (graphite_can_represent_scev): Remove
