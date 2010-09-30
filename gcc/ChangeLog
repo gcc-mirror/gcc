@@ -1,3 +1,8 @@
+2010-09-30  Vladimir Kargov  <kargov@gmail.com>
+
+	* graphite-scop-detection.c (graphite_can_represent_loop): Correct the
+	description.
+
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-scalar-evolution.c (instantiate_array_ref): New.
