@@ -7831,12 +7831,13 @@ handle_optimize_attribute (tree *node, tree name, tree args,
       tree old_opts = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node);
 
       /* Save current options.  */
-      cl_optimization_save (&cur_opts);
+      cl_optimization_save (&cur_opts, &global_options);
 
       /* If we previously had some optimization options, use them as the
 	 default.  */
       if (old_opts)
-	cl_optimization_restore (TREE_OPTIMIZATION (old_opts));
+	cl_optimization_restore (&global_options,
+				 TREE_OPTIMIZATION (old_opts));
 
       /* Parse options, and update the vector.  */
       parse_optimize_options (args, true);
@@ -7844,7 +7845,7 @@ handle_optimize_attribute (tree *node, tree name, tree args,
 	= build_optimization_node ();
 
       /* Restore current options.  */
-      cl_optimization_restore (&cur_opts);
+      cl_optimization_restore (&global_options, &cur_opts);
     }
 
   return NULL_TREE;

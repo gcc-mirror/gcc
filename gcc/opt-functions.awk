@@ -120,9 +120,9 @@ function needs_state_p(flags)
 		&& !flag_set_p("Ignore", flags))
 }
 
-# If FLAGS describes an option that needs a static state variable,
-# return the name of that variable, otherwise return "".  NAME is
-# the name of the option.
+# If FLAGS describes an option that needs state without a public
+# variable name, return the name of that field, minus the initial
+# "x_", otherwise return "".  NAME is the name of the option.
 function static_var(name, flags)
 {
 	if (global_state_p(flags) || !needs_state_p(flags))
@@ -193,12 +193,12 @@ function var_ref(name, flags)
 {
 	name = var_name(flags) static_var(name, flags)
 	if (name != "")
-		return "&" name
+		return "offsetof (struct gcc_options, x_" name ")"
 	if (opt_args("Mask", flags) != "")
-		return "&target_flags"
+		return "offsetof (struct gcc_options, x_target_flags)"
 	if (opt_args("InverseMask", flags) != "")
-		return "&target_flags"
-	return "0"
+		return "offsetof (struct gcc_options, x_target_flags)"
+	return "-1"
 }
 
 # Given the option called NAME return a sanitized version of its name.

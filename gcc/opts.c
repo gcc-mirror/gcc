@@ -376,7 +376,8 @@ bool flag_warn_unused_result = false;
 const char **in_fnames;
 unsigned num_in_fnames;
 
-static bool common_handle_option (const struct cl_decoded_option *decoded,
+static bool common_handle_option (struct gcc_options *opts,
+				  const struct cl_decoded_option *decoded,
 				  unsigned int lang_mask, int kind,
 				  const struct cl_option_handlers *handlers);
 static void handle_param (const char *);
@@ -515,10 +516,12 @@ post_handling_callback (const struct cl_decoded_option *decoded ATTRIBUTE_UNUSED
    handle_option.  */
 
 static bool
-lang_handle_option (const struct cl_decoded_option *decoded,
+lang_handle_option (struct gcc_options *opts,
+		    const struct cl_decoded_option *decoded,
 		    unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
 		    const struct cl_option_handlers *handlers)
 {
+  gcc_assert (opts == &global_options);
   gcc_assert (decoded->canonical_option_num_elements <= 2);
   return lang_hooks.handle_option (decoded->opt_index, decoded->arg,
 				   decoded->value, kind, handlers);
@@ -528,10 +531,12 @@ lang_handle_option (const struct cl_decoded_option *decoded,
    handle_option.  */
 
 static bool
-target_handle_option (const struct cl_decoded_option *decoded,
+target_handle_option (struct gcc_options *opts,
+		      const struct cl_decoded_option *decoded,
 		      unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
 		      const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {
+  gcc_assert (opts == &global_options);
   gcc_assert (decoded->canonical_option_num_elements <= 2);
   gcc_assert (kind == DK_UNSPECIFIED);
   return targetm.handle_option (decoded->opt_index, decoded->arg,
@@ -644,7 +649,8 @@ read_cmdline_options (struct cl_decoded_option *decoded_options,
 	  continue;
 	}
 
-      read_cmdline_option (decoded_options + i, lang_mask, handlers);
+      read_cmdline_option (&global_options, decoded_options + i,
+			   lang_mask, handlers);
     }
 }
 
@@ -1254,28 +1260,30 @@ print_filtered_help (unsigned int include_flags,
 	 with an option to be an indication of its current setting.  */
       if (!quiet_flag)
 	{
+	  void *flag_var = option_flag_var (i, &global_options);
+
 	  if (len < (LEFT_COLUMN + 2))
 	    strcpy (new_help, "\t\t");
 	  else
 	    strcpy (new_help, "\t");
 
-	  if (option->flag_var != NULL)
+	  if (flag_var != NULL)
 	    {
 	      if (option->flags & CL_JOINED)
 		{
 		  if (option->var_type == CLVC_STRING)
 		    {
-		      if (* (const char **) option->flag_var != NULL)
+		      if (* (const char **) flag_var != NULL)
 			snprintf (new_help + strlen (new_help),
 				  sizeof (new_help) - strlen (new_help),
-				  * (const char **) option->flag_var);
+				  * (const char **) flag_var);
 		    }
 		  else
 		    sprintf (new_help + strlen (new_help),
-			     "%#x", * (int *) option->flag_var);
+			     "%#x", * (int *) flag_var);
 		}
 	      else
-		strcat (new_help, option_enabled (i)
+		strcat (new_help, option_enabled (i, &global_options)
 			? _("[enabled]") : _("[disabled]"));
 	    }
 
@@ -1423,7 +1431,8 @@ print_specific_help (unsigned int include_flags,
    DECODED->value assigned to a variable, it happens automatically.  */
 
 static bool
-common_handle_option (const struct cl_decoded_option *decoded,
+common_handle_option (struct gcc_options *opts,
+		      const struct cl_decoded_option *decoded,
 		      unsigned int lang_mask, int kind ATTRIBUTE_UNUSED,
 		      const struct cl_option_handlers *handlers)
 {
@@ -1433,6 +1442,7 @@ common_handle_option (const struct cl_decoded_option *decoded,
   static bool verbose = false;
   enum opt_code code = (enum opt_code) scode;
 
+  gcc_assert (opts == &global_options);
   gcc_assert (decoded->canonical_option_num_elements <= 2);
 
   switch (code)
@@ -2102,7 +2112,7 @@ common_handle_option (const struct cl_decoded_option *decoded,
     default:
       /* If the flag was handled in a standard way, assume the lack of
 	 processing here is intentional.  */
-      gcc_assert (cl_options[scode].flag_var);
+      gcc_assert (option_flag_var (scode, opts));
       break;
     }
 
@@ -2258,28 +2268,30 @@ set_debug_level (enum debug_info_type type, int extended, const char *arg)
     }
 }
 
-/* Return 1 if OPTION is enabled, 0 if it is disabled, or -1 if it isn't
-   a simple on-off switch.  */
+/* Return 1 if option OPT_IDX is enabled in OPTS, 0 if it is disabled,
+   or -1 if it isn't a simple on-off switch.  */
 
 int
-option_enabled (int opt_idx)
+option_enabled (int opt_idx, void *opts)
 {
   const struct cl_option *option = &(cl_options[opt_idx]);
+  struct gcc_options *optsg = (struct gcc_options *) opts;
+  void *flag_var = option_flag_var (opt_idx, optsg);
 
-  if (option->flag_var)
+  if (flag_var)
     switch (option->var_type)
       {
       case CLVC_BOOLEAN:
-	return *(int *) option->flag_var != 0;
+	return *(int *) flag_var != 0;
 
       case CLVC_EQUAL:
-	return *(int *) option->flag_var == option->var_value;
+	return *(int *) flag_var == option->var_value;
 
       case CLVC_BIT_CLEAR:
-	return (*(int *) option->flag_var & option->var_value) == 0;
+	return (*(int *) flag_var & option->var_value) == 0;
 
       case CLVC_BIT_SET:
-	return (*(int *) option->flag_var & option->var_value) != 0;
+	return (*(int *) flag_var & option->var_value) != 0;
 
       case CLVC_STRING:
 	break;
@@ -2287,32 +2299,35 @@ option_enabled (int opt_idx)
   return -1;
 }
 
-/* Fill STATE with the current state of option OPTION.  Return true if
-   there is some state to store.  */
+/* Fill STATE with the current state of option OPTION in OPTS.  Return
+   true if there is some state to store.  */
 
 bool
-get_option_state (int option, struct cl_option_state *state)
+get_option_state (struct gcc_options *opts, int option,
+		  struct cl_option_state *state)
 {
-  if (cl_options[option].flag_var == 0)
+  void *flag_var = option_flag_var (option, opts);
+
+  if (flag_var == 0)
     return false;
 
   switch (cl_options[option].var_type)
     {
     case CLVC_BOOLEAN:
     case CLVC_EQUAL:
-      state->data = cl_options[option].flag_var;
+      state->data = flag_var;
       state->size = sizeof (int);
       break;
 
     case CLVC_BIT_CLEAR:
     case CLVC_BIT_SET:
-      state->ch = option_enabled (option);
+      state->ch = option_enabled (option, opts);
       state->data = &state->ch;
       state->size = 1;
       break;
 
     case CLVC_STRING:
-      state->data = *(const char **) cl_options[option].flag_var;
+      state->data = *(const char **) flag_var;
       if (state->data == 0)
 	state->data = "";
       state->size = strlen ((const char *) state->data) + 1;
@@ -2369,7 +2384,8 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
 
 	  /* -Werror=foo implies -Wfoo.  */
 	  if (option->var_type == CLVC_BOOLEAN)
-	    handle_generated_option (option_index, NULL, value, lang_mask,
+	    handle_generated_option (&global_options, option_index,
+				     NULL, value, lang_mask,
 				     (int)kind, handlers);
 
 	  if (warning_as_error_callback)

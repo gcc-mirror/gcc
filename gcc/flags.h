@@ -107,14 +107,6 @@ struct visibility_flags
 /* Global visibility options.  */
 extern struct visibility_flags visibility_options;
 
-/* Nonzero means do optimizations.  -opt.  */
-
-extern int optimize;
-
-/* Nonzero means optimize for size.  -Os.  */
-
-extern int optimize_size;
-
 /* True if this is the LTO front end (lto1).  This is used to disable
    gimple generation and lowering passes that are normally run on the
    output of a front end.  These passes must be bypassed for lto since

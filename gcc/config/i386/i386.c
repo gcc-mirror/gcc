@@ -4180,11 +4180,12 @@ ix86_valid_target_attribute_p (tree fndecl,
   /* If the function changed the optimization levels as well as setting target
      options, start with the optimizations specified.  */
   if (func_optimize && func_optimize != old_optimize)
-    cl_optimization_restore (TREE_OPTIMIZATION (func_optimize));
+    cl_optimization_restore (&global_options,
+			     TREE_OPTIMIZATION (func_optimize));
 
   /* The target attributes may also change some optimization flags, so update
      the optimization options if necessary.  */
-  cl_target_option_save (&cur_target);
+  cl_target_option_save (&cur_target, &global_options);
   new_target = ix86_valid_target_attribute_tree (args);
   new_optimize = build_optimization_node ();
 
@@ -4199,10 +4200,11 @@ ix86_valid_target_attribute_p (tree fndecl,
 	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
     }
 
-  cl_target_option_restore (&cur_target);
+  cl_target_option_restore (&global_options, &cur_target);
 
   if (old_optimize != new_optimize)
-    cl_optimization_restore (TREE_OPTIMIZATION (old_optimize));
+    cl_optimization_restore (&global_options,
+			     TREE_OPTIMIZATION (old_optimize));
 
   return ret;
 }
@@ -4291,7 +4293,8 @@ ix86_set_current_function (tree fndecl)
 
       else if (new_tree)
 	{
-	  cl_target_option_restore (TREE_TARGET_OPTION (new_tree));
+	  cl_target_option_restore (&global_options,
+				    TREE_TARGET_OPTION (new_tree));
 	  target_reinit ();
 	}
 
@@ -4300,7 +4303,7 @@ ix86_set_current_function (tree fndecl)
 	  struct cl_target_option *def
 	    = TREE_TARGET_OPTION (target_option_current_node);
 
-	  cl_target_option_restore (def);
+	  cl_target_option_restore (&global_options, def);
 	  target_reinit ();
 	}
     }

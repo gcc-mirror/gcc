@@ -2416,7 +2416,6 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
 /* #define  MACHINE_no_sched_speculative_load */
 
 /* General flags.  */
-extern int optimize;
 extern int frame_pointer_needed;
 
 /* Classification of the builtin functions to properly set the declaration tree

@@ -2544,8 +2544,6 @@ enum processor_type {
 #define sh_cpu_attr ((enum attr_cpu)sh_cpu)
 extern enum processor_type sh_cpu;
 
-extern int optimize; /* needed for gen_casesi.  */
-
 enum mdep_reorg_phase_e
 {
   SH_BEFORE_MDEP_REORG,

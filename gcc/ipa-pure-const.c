@@ -138,7 +138,7 @@ suggest_attribute (int option, tree decl, bool known_finite,
 		   struct pointer_set_t *warned_about,
 		   const char * attrib_name)
 {
-  if (!option_enabled (option))
+  if (!option_enabled (option, &global_options))
     return warned_about;
   if (TREE_THIS_VOLATILE (decl)
       || (known_finite && function_always_visible_to_compiler_p (decl)))

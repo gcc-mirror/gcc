@@ -1512,12 +1512,12 @@ dwarf2_debug_info_emitted_p (tree decl)
 
    FIRST is the first insn of the rtl for the function being compiled.
    FILE is the file to write assembler code to.
-   OPTIMIZE is nonzero if we should eliminate redundant
+   OPTIMIZE_P is nonzero if we should eliminate redundant
      test and compare insns.  */
 
 void
 final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
-		      int optimize ATTRIBUTE_UNUSED)
+		      int optimize_p ATTRIBUTE_UNUSED)
 {
   block_depth = 0;
 
@@ -1662,7 +1662,7 @@ final_end_function (void)
    For description of args, see `final_start_function', above.  */
 
 void
-final (rtx first, FILE *file, int optimize)
+final (rtx first, FILE *file, int optimize_p)
 {
   rtx insn;
   int max_uid = 0;
@@ -1677,7 +1677,7 @@ final (rtx first, FILE *file, int optimize)
 #ifdef HAVE_cc0
       /* If CC tracking across branches is enabled, record the insn which
 	 jumps to each branch only reached from one place.  */
-      if (optimize && JUMP_P (insn))
+      if (optimize_p && JUMP_P (insn))
 	{
 	  rtx lab = JUMP_LABEL (insn);
 	  if (lab && LABEL_NUSES (lab) == 1)
@@ -1707,7 +1707,7 @@ final (rtx first, FILE *file, int optimize)
 	insn_current_address = INSN_ADDRESSES (INSN_UID (insn));
 #endif /* HAVE_ATTR_length */
 
-      insn = final_scan_insn (insn, file, optimize, 0, &seen);
+      insn = final_scan_insn (insn, file, optimize_p, 0, &seen);
     }
 }
 
@@ -1803,7 +1803,7 @@ call_from_call_insn (rtx insn)
    first.  */
 
 rtx
-final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
+final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		 int nopeepholes ATTRIBUTE_UNUSED, int *seen)
 {
 #ifdef HAVE_cc0
@@ -2327,7 +2327,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	   and the next statement should reexamine the variable
 	   to compute the condition codes.  */
 
-	if (optimize)
+	if (optimize_p)
 	  {
 	    if (set
 		&& GET_CODE (SET_DEST (set)) == CC0
@@ -2512,7 +2512,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 #ifdef HAVE_peephole
 	/* Do machine-specific peephole optimizations if desired.  */
 
-	if (optimize && !flag_no_peephole && !nopeepholes)
+	if (optimize_p && !flag_no_peephole && !nopeepholes)
 	  {
 	    rtx next = peephole (insn);
 	    /* When peepholing, if there were notes within the peephole,
@@ -2523,7 +2523,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 		for (note = NEXT_INSN (insn); note != next;
 		     note = NEXT_INSN (note))
-		  final_scan_insn (note, file, optimize, nopeepholes, seen);
+		  final_scan_insn (note, file, optimize_p, nopeepholes, seen);
 
 		/* Put the notes in the proper position for a later
 		   rescan.  For example, the SH target can do this
