@@ -2235,6 +2235,15 @@ else
       hppa64*-*-hpux* | ia64*-*-hpux*)
 	gcc_cv_ld_hidden=yes
 	;;
+      *-*-solaris2.8*)
+        # .hidden support was backported to Solaris 8, starting with ld
+	# version 1.276.
+	if test "$ld_vers_minor" -ge 276; then
+	  gcc_cv_ld_hidden=yes
+	else
+	  gcc_cv_ld_hidden=no
+	fi
+	;;
       *-*-solaris2.9* | *-*-solaris2.1[0-9]*)
 	# Support for .hidden in Sun ld appeared in Solaris 9 FCS, but
 	# .symbolic was only added in Solaris 9 12/02.
