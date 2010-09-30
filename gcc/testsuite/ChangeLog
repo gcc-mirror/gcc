@@ -1,3 +1,7 @@
+2010-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada/acats/run_acats: Revert revision 157037.
+
 2010-09-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/44452
