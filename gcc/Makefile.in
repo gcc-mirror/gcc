@@ -3903,11 +3903,6 @@ build/genhooks.o : genhooks.c target.def $(BCONFIG_H) $(SYSTEM_H) errors.h
 # since they need to run on this machine
 # even if GCC is being compiled to run on some other machine.
 
-# As a general rule...
-build/gen%$(build_exeext): build/gen%.o $(BUILD_LIBDEPS)
-	$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
-
 # All these programs use the RTL reader ($(BUILD_RTL)).
 genprogrtl = attr attrtab automata codes conditions config emit \
 	     extract flags opinit output peep preds recog
@@ -3917,16 +3912,23 @@ $(genprogrtl:%=build/gen%$(build_exeext)): $(BUILD_RTL)
 genprogmd = $(genprogrtl) mddeps constants enums
 $(genprogmd:%=build/gen%$(build_exeext)): $(BUILD_MD)
 
-# All generator programs need to report errors
-genprog = $(genprogmd) genrtl modes gtype
-$(genprog:%=build/gen%$(build_exeext)): $(BUILD_ERRORS)
+# All these programs need to report errors.
+genprogerr = $(genprogmd) genrtl modes gtype hooks
+$(genprogerr:%=build/gen%$(build_exeext)): $(BUILD_ERRORS)
+
+# Remaining build programs.
+genprog = $(genprogerr) check checksum condmd
 
 # These programs need libs over and above what they get from the above list.
 build/genautomata$(build_exeext) : BUILD_LIBS += -lm
 
 # These programs are not linked with the MD reader.
 build/gengtype$(build_exeext) : build/gengtype-lex.o build/gengtype-parse.o
-build/genhooks$(build_exeext) : $(BUILD_ERRORS)
+
+# Rule for the generator programs:
+$(genprog:%=build/gen%$(build_exeext)): build/gen%$(build_exeext): build/gen%.o $(BUILD_LIBDEPS)
+	$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
+	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
 
 # Generated source files for gengtype.
 gengtype-lex.c : gengtype-lex.l
