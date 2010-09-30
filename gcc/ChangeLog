@@ -1,5 +1,12 @@
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.c (pbb_number_of_iterations): Removed.
+	(pbb_number_of_iterations_at_time): Correctly compute the number
+	of iterations in the transformed loop.
+	* graphite-poly.h (pbb_number_of_iterations): Removed.
+
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.h (lst_update_scattering_seq): Removed.
 	(lst_update_scattering): Correctly handle outermost loop dewey
 	renumbering.

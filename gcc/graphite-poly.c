@@ -1625,72 +1625,115 @@ psct_scattering_dim_for_loop_depth (poly_bb_p pbb, graphite_dim_t loop_depth)
   gcc_unreachable ();
 }
 
-/* Returns the number of iterations NITER of the loop around PBB at
-   depth LOOP_DEPTH.  */
-
-void
-pbb_number_of_iterations (poly_bb_p pbb,
-			  graphite_dim_t loop_depth,
-			  mpz_t niter)
-{
-  ppl_Linear_Expression_t le;
-  ppl_dimension_type dim;
-
-  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (PBB_DOMAIN (pbb), &dim);
-  ppl_new_Linear_Expression_with_dimension (&le, dim);
-  ppl_set_coef (le, pbb_iterator_dim (pbb, loop_depth), 1);
-  mpz_set_si (niter, -1);
-  ppl_max_for_le_pointset (PBB_DOMAIN (pbb), le, niter);
-  ppl_delete_Linear_Expression (le);
-}
-
-/* Returns the number of iterations NITER of the loop around PBB at
+/* Returns the number of iterations RES of the loop around PBB at
    time(scattering) dimension TIME_DEPTH.  */
 
 void
 pbb_number_of_iterations_at_time (poly_bb_p pbb,
 				  graphite_dim_t time_depth,
-				  mpz_t niter)
+				  mpz_t res)
 {
-  ppl_Pointset_Powerset_C_Polyhedron_t ext_domain, sctr;
+  ppl_Pointset_Powerset_C_Polyhedron_t domain, sctr_lb, sctr_ub;
+  ppl_dimension_type domain_dim, sctr_dim;
   ppl_Linear_Expression_t le;
-  ppl_dimension_type dim;
+  mpz_t lb, ub, diff, one;
+  int i;
 
-  /* Takes together domain and scattering polyhedrons, and composes
-     them into the bigger polyhedron that has the following format:
+  ppl_Polyhedron_space_dimension (PBB_TRANSFORMED_SCATTERING (pbb), &sctr_dim);
 
-     t0..t_{n-1} | l0..l_{nlcl-1} | i0..i_{niter-1} | g0..g_{nparm-1}
-
-     where
-     | t0..t_{n-1} are time dimensions (scattering dimensions)
-     | l0..l_{nclc-1} are local variables in scattering function
-     | i0..i_{niter-1} are original iteration variables
-     | g0..g_{nparam-1} are global parameters.  */
-
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&sctr,
-      PBB_TRANSFORMED_SCATTERING (pbb));
-
-  /* Extend the iteration domain with the scattering dimensions:
-     0..0 | 0..0 | i0..i_{niter-1} | g0..g_{nparm-1}.   */
   ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-    (&ext_domain, PBB_DOMAIN (pbb));
-  ppl_insert_dimensions_pointset (ext_domain, 0,
-                                  pbb_nb_scattering_transform (pbb)
-                                  + pbb_nb_local_vars (pbb));
+    (&domain, PBB_DOMAIN (pbb));
 
-  /* Add to sctr the extended domain.  */
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (sctr, ext_domain);
+  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (domain, &domain_dim);
+  mpz_init (diff);
+  mpz_init (lb);
+  mpz_init (ub);
+  mpz_init (one);
+  mpz_set_si (one, 1);
+
+  /* Compute the upper bound on the original iteration domain and add
+     that upper bound to the scattering.  */
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
+    (&sctr_ub, PBB_TRANSFORMED_SCATTERING (pbb));
+  for (i = 0; i < (int) domain_dim; i++)
+    {
+      ppl_Linear_Expression_t eq;
+      ppl_Constraint_t pc;
+      ppl_Constraint_System_t cs;
+      ppl_Polyhedron_t ph;
+      ppl_Pointset_Powerset_C_Polyhedron_t pph;
+
+      ppl_new_Linear_Expression_with_dimension (&le, domain_dim);
+      ppl_set_coef (le, i, 1);
+      ppl_min_for_le_pointset (domain, le, lb);
+      ppl_max_for_le_pointset (domain, le, ub);
+      mpz_sub (diff, ub, lb);
+      mpz_add (diff, diff, one);
+
+      ppl_new_Linear_Expression_with_dimension (&eq, sctr_dim);
+      ppl_set_coef (eq, psct_iterator_dim (pbb, i), -1);
+      ppl_set_inhomogeneous_gmp (eq, diff);
+
+      ppl_new_Constraint (&pc, eq, PPL_CONSTRAINT_TYPE_EQUAL);
+      ppl_new_Constraint_System_from_Constraint (&cs, pc);
+      ppl_new_C_Polyhedron_from_Constraint_System (&ph, cs);
+      ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&pph, ph);
+      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (sctr_ub, pph);
+
+      ppl_delete_Linear_Expression (le);
+      ppl_delete_Linear_Expression (eq);
+      ppl_delete_Polyhedron (ph);
+      ppl_delete_Pointset_Powerset_C_Polyhedron (pph);
+      ppl_delete_Constraint (pc);
+      ppl_delete_Constraint_System (cs);
+    }
+
+  /* Compute the lower bound on the original iteration domain.  */
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
+    (&sctr_lb, PBB_TRANSFORMED_SCATTERING (pbb));
+  for (i = 0; i < (int) domain_dim; i++)
+    {
+      ppl_Linear_Expression_t eq;
+      ppl_Constraint_t pc;
+      ppl_Constraint_System_t cs;
+      ppl_Polyhedron_t ph;
+      ppl_Pointset_Powerset_C_Polyhedron_t pph;
+
+      ppl_new_Linear_Expression_with_dimension (&le, domain_dim);
+      ppl_set_coef (le, i, 1);
+      ppl_min_for_le_pointset (domain, le, lb);
+
+      ppl_new_Linear_Expression_with_dimension (&eq, sctr_dim);
+      ppl_set_coef (eq, psct_iterator_dim (pbb, i), -1);
+      ppl_set_inhomogeneous_gmp (eq, lb);
+
+      ppl_new_Constraint (&pc, eq, PPL_CONSTRAINT_TYPE_EQUAL);
+      ppl_new_Constraint_System_from_Constraint (&cs, pc);
+      ppl_new_C_Polyhedron_from_Constraint_System (&ph, cs);
+      ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&pph, ph);
+      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (sctr_lb, pph);
+
+      ppl_delete_Linear_Expression (le);
+      ppl_delete_Linear_Expression (eq);
+      ppl_delete_Polyhedron (ph);
+      ppl_delete_Pointset_Powerset_C_Polyhedron (pph);
+      ppl_delete_Constraint (pc);
+      ppl_delete_Constraint_System (cs);
+    }
 
   /* Extract the number of iterations.  */
-  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (sctr, &dim);
-  ppl_new_Linear_Expression_with_dimension (&le, dim);
+  ppl_new_Linear_Expression_with_dimension (&le, sctr_dim);
   ppl_set_coef (le, time_depth, 1);
-  mpz_set_si (niter, -1);
-  ppl_max_for_le_pointset (sctr, le, niter);
+  ppl_min_for_le_pointset (sctr_lb, le, lb);
+  ppl_max_for_le_pointset (sctr_ub, le, ub);
+  mpz_sub (res, ub, lb);
 
-  ppl_delete_Linear_Expression (le);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (sctr);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (ext_domain);
+  mpz_clear (one);
+  mpz_clear (diff);
+  mpz_clear (lb);
+  mpz_clear (ub);
+  ppl_delete_Pointset_Powerset_C_Polyhedron (sctr_ub);
+  ppl_delete_Pointset_Powerset_C_Polyhedron (sctr_lb);
 }
 
 /* Translates LOOP to LST.  */

@@ -320,7 +320,7 @@ pdr_stride_in_loop (mpz_t stride, graphite_dim_t depth, poly_dr_p pdr)
     {
       char *str;
       void (*gmp_free) (void *, size_t);
-      
+
       fprintf (dump_file, "\nStride in BB_%d, DR_%d, depth %d:",
 	       pbb_index (pbb), PDR_ID (pdr), (int) depth);
       str = mpz_get_str (0, 10, stride);
