@@ -1,3 +1,8 @@
+2010-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/45843
+	* g++.dg/torture/pr45843.C: New test.
+
 2010-09-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45828
