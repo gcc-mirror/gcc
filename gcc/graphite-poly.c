@@ -683,18 +683,78 @@ graphite_read_scop_file (FILE *file, scop_p scop)
   return transform_done;
 }
 
+/* Initialize and return a file that will be used to write a scop.  SCOP_NUMBER
+   is a sequential number (identifier) used to differentiate scop files.
+   Examples of the generated file names: dump_base_name.0.graphite,
+   dump_base_name.1.graphite, dump_base_name.2.graphite, etc.  */
+
+static FILE *
+init_graphite_out_file (int scop_number)
+{
+  FILE *graphite_out_file;
+  int len = strlen (dump_base_name);
+  char *dumpname = XNEWVEC (char, len + 25);
+  char *s_scop_number = XNEWVEC (char, 15);
+
+  memcpy (dumpname, dump_base_name, len + 1);
+  strip_off_ending (dumpname, len);
+  sprintf (s_scop_number, ".%d", scop_number);
+  strcat (dumpname, s_scop_number);
+  strcat (dumpname, ".graphite");
+  graphite_out_file = fopen (dumpname, "w+b");
+
+  if (graphite_out_file == 0)
+    fatal_error ("can%'t open %s for writing: %m", dumpname);
+
+  free (dumpname);
+
+  return graphite_out_file;
+}
+
+/* Open and return a file used for scop reading.  SCOP_NUMBER is a sequential
+   number (identifier) used to differentiate scop files.  Examples of the
+   generated file names: dump_base_name.0.graphite, dump_base_name.1.graphite,
+   dump_base_name.2.graphite, etc.  */
+
+static FILE *
+init_graphite_in_file (int scop_number)
+{
+  FILE *graphite_in_file;
+  int len = strlen (dump_base_name);
+  char *dumpname = XNEWVEC (char, len + 25);
+  char *s_scop_number = XNEWVEC (char, 15);
+
+  memcpy (dumpname, dump_base_name, len + 1);
+  strip_off_ending (dumpname, len);
+  sprintf (s_scop_number, ".%d", scop_number);
+  strcat (dumpname, s_scop_number);
+  strcat (dumpname, ".graphite");
+  graphite_in_file = fopen (dumpname, "r+b");
+
+  if (graphite_in_file == 0)
+    fatal_error ("can%'t open %s for reading: %m", dumpname);
+
+  free (dumpname);
+
+  return graphite_in_file;
+}
+
 /* Apply graphite transformations to all the basic blocks of SCOP.  */
 
 bool
 apply_poly_transforms (scop_p scop)
 {
   bool transform_done = false;
+  FILE *graphite_file;
+  static size_t file_scop_number = 0;
 
   /* This feature is only enabled in the Graphite branch.  */
   if (0)
     {
-      transform_done |= graphite_read_scop_file (dump_file, scop);
+      graphite_file = init_graphite_in_file (file_scop_number);
+      transform_done |= graphite_read_scop_file (graphite_file, scop);
       gcc_assert (graphite_legal_transform (scop));
+      file_scop_number++;
     }
 
   /* Generate code even if we did not apply any real transformation.
@@ -721,7 +781,11 @@ apply_poly_transforms (scop_p scop)
 
   /* This feature is only enabled in the Graphite branch.  */
   if (0)
-    print_scop (dump_file, scop, 1);
+    {
+      graphite_file = init_graphite_out_file (file_scop_number);
+      print_scop (graphite_file, scop, 1);
+      file_scop_number++;
+    }
 
   return transform_done;
 }
