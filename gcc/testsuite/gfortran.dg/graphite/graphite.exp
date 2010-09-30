@@ -41,8 +41,9 @@ set wait_to_run_files [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,0
 set block_files       [lsort [glob -nocomplain $srcdir/$subdir/block-*.\[fF\]{,90,95,03,08} ] ]
 set id_files          [lsort [glob -nocomplain $srcdir/$subdir/id-*.\[fF\]{,90,95,03,08} ] ]
 set interchange_files [lsort [glob -nocomplain $srcdir/$subdir/interchange-*.\[fF\]{,90,95,03,08} ] ]
-set scop_files [lsort [glob -nocomplain $srcdir/$subdir/scop-*.\[fF\]{,90,95,03,08} ] ]
-set run_id_files [lsort [glob -nocomplain $srcdir/$subdir/run-id-*.\[fF\]{,90,95,03,08} ] ]
+set scop_files        [lsort [glob -nocomplain $srcdir/$subdir/scop-*.\[fF\]{,90,95,03,08} ] ]
+set run_id_files      [lsort [glob -nocomplain $srcdir/$subdir/run-id-*.\[fF\]{,90,95,03,08} ] ]
+set vect_files        [lsort [glob -nocomplain $srcdir/$subdir/vect-*.\[fF\]{,90,95,03,08} ] ]
 
 # Tests to be compiled.
 set dg-do-what-default compile
@@ -50,6 +51,7 @@ gfortran-dg-runtest $scop_files        "-O2 -fgraphite -fdump-tree-graphite-all"
 gfortran-dg-runtest $id_files          "-O2 -fgraphite-identity -ffast-math"
 gfortran-dg-runtest $interchange_files "-O2 -floop-interchange -fno-loop-block -fno-loop-strip-mine -ffast-math -fdump-tree-graphite-all"
 gfortran-dg-runtest $block_files       "-O2 -floop-block -fno-loop-strip-mine -fno-loop-interchange -ffast-math -fdump-tree-graphite-all"
+gfortran-dg-runtest $vect_files        "-O2 -fgraphite-identity -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details"
 
 # Tests to be run.
 set dg-do-what-default run
@@ -62,6 +64,7 @@ foreach f $id_files          {lremove wait_to_run_files $f}
 foreach f $interchange_files {lremove wait_to_run_files $f}
 foreach f $scop_files        {lremove wait_to_run_files $f}
 foreach f $run_id_files      {lremove wait_to_run_files $f}
+foreach f $vect_files        {lremove wait_to_run_files $f}
 gfortran-dg-runtest $wait_to_run_files ""
 
 # Clean up.

@@ -1,5 +1,11 @@
 2010-07-29  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* gcc.dg/graphite/graphite.exp: Add compile rules for vect-* files.
+	* gfortran.dg/graphite/graphite.exp: Same.
+	* gcc.dg/graphite/vect-pr43423.c: New.
+
+2010-07-29  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (gcc_type_for_interval): Generate in
 	priority signed types.
 

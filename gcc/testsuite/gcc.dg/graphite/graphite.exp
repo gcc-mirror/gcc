@@ -43,11 +43,13 @@ set id_files          [lsort [glob -nocomplain $srcdir/$subdir/id-*.c ] ]
 set run_id_files      [lsort [glob -nocomplain $srcdir/$subdir/run-id-*.c ] ]
 set interchange_files [lsort [glob -nocomplain $srcdir/$subdir/interchange-*.c ] ]
 set block_files       [lsort [glob -nocomplain $srcdir/$subdir/block-*.c ] ]
+set vect_files        [lsort [glob -nocomplain $srcdir/$subdir/vect-*.c ] ]
 
 # Tests to be compiled.
 set dg-do-what-default compile
 dg-runtest $scop_files        "" "-O2 -fgraphite -fdump-tree-graphite-all"
 dg-runtest $id_files          "" "-O2 -fgraphite-identity -ffast-math"
+dg-runtest $vect_files        "" "-O2 -fgraphite-identity -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details"
 
 # Tests to be run.
 set dg-do-what-default run
@@ -62,6 +64,7 @@ foreach f $id_files          {lremove wait_to_run_files $f}
 foreach f $run_id_files      {lremove wait_to_run_files $f}
 foreach f $interchange_files {lremove wait_to_run_files $f}
 foreach f $block_files       {lremove wait_to_run_files $f}
+foreach f $vect_files        {lremove wait_to_run_files $f}
 dg-runtest $wait_to_run_files "" "-ansi -pedantic-errors"
 
 # Clean up.
