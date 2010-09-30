@@ -1,3 +1,8 @@
+2010-09-30  Kai Tietz  <kai.tietz@onevision.com>
+
+	* objc/deprecated/struct_objc_class.h: Add padding
+	to avoid warning with -Wpadded.
+
 2010-09-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* encoding.c (objc_sizeof_type): Added support for vector type and
