@@ -1,3 +1,18 @@
+2010-09-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_lex_one_token): When finding a CPP_AT_NAME
+	Objective-C token, map RID_CLASS to RID_AT_CLASS and similar.
+	(c_parser_external_declaration): Use RID_AT_CLASS
+	instead of RID_CLASS.
+	(c_parser_objc_class_declaration): Same change.
+	(c_parser_objc_try_catch_statement): Use RID_AT_TRY instead of
+	RID_TRY and RID_AT_CATCH instead of RID_CATCH.
+	(c_parser_objc_class_instance_variables): Use RID_AT_PRIVATE
+	instead of RID_PRIVATE, RID_AT_PROTECTED instead of RID_PROTECTED
+	and RID_AT_PUBLIC instead of RID_PUBLIC.
+	(c_parser_statement_after_labels): Use RID_AT_TRY instead of
+	RID_TRY and RID_AT_CATCH instead of RID_CATCH.
+	
 2010-09-30  Tom G. Christensen <tgc@jupiterrise.com>
 
 	* doc/install.texi (Binaries): Update link to HP-UX porting centre.

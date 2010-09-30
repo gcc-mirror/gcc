@@ -1,3 +1,8 @@
+2010-09-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (cp_lexer_get_preprocessor_token): Tidied up comments
+	and indentation when finding an Objective-C++ CPP_AT_NAME token.
+
 2010-09-29  Richard Guenther  <rguenther@suse.de>
 
 	* cp-tree.h (CP_DECL_CONTEXT): Check DECL_FILE_SCOPE_P.

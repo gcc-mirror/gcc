@@ -310,7 +310,25 @@ c_lex_one_token (c_parser *parser, c_token *token)
     case CPP_AT_NAME:
       /* This only happens in Objective-C; it must be a keyword.  */
       token->type = CPP_KEYWORD;
-      token->keyword = C_RID_CODE (token->value);
+      switch (C_RID_CODE (token->value))
+	{
+	  /* Replace 'class' with '@class', 'private' with '@private',
+	     etc.  This prevents confusion with the C++ keyword
+	     'class', and makes the tokens consistent with other
+	     Objective-C 'AT' keywords.  For example '@class' is
+	     reported as RID_AT_CLASS which is consistent with
+	     '@synchronized', which is reported as
+	     RID_AT_SYNCHRONIZED.
+	  */
+	case RID_CLASS:     token->keyword = RID_AT_CLASS; break;
+	case RID_PRIVATE:   token->keyword = RID_AT_PRIVATE; break;
+	case RID_PROTECTED: token->keyword = RID_AT_PROTECTED; break;
+	case RID_PUBLIC:    token->keyword = RID_AT_PUBLIC; break;
+	case RID_THROW:     token->keyword = RID_AT_THROW; break;
+	case RID_TRY:       token->keyword = RID_AT_TRY; break;
+	case RID_CATCH:     token->keyword = RID_AT_CATCH; break;
+	default:            token->keyword = C_RID_CODE (token->value);
+	}
       break;
     case CPP_COLON:
     case CPP_COMMA:
@@ -1106,7 +1124,7 @@ c_parser_external_declaration (c_parser *parser)
 	  gcc_assert (c_dialect_objc ());
 	  c_parser_objc_class_definition (parser, NULL_TREE);
 	  break;
-	case RID_CLASS:
+	case RID_AT_CLASS:
 	  gcc_assert (c_dialect_objc ());
 	  c_parser_objc_class_declaration (parser);
 	  break;
@@ -4081,7 +4099,7 @@ c_parser_statement_after_labels (c_parser *parser)
 	case RID_ASM:
 	  stmt = c_parser_asm_statement (parser);
 	  break;
-	case RID_THROW:
+	case RID_AT_THROW:
 	  gcc_assert (c_dialect_objc ());
 	  c_parser_consume_token (parser);
 	  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
@@ -4097,7 +4115,7 @@ c_parser_statement_after_labels (c_parser *parser)
 	      goto expect_semicolon;
 	    }
 	  break;
-	case RID_TRY:
+	case RID_AT_TRY:
 	  gcc_assert (c_dialect_objc ());
 	  c_parser_objc_try_catch_statement (parser);
 	  break;
@@ -6483,19 +6501,19 @@ c_parser_objc_class_instance_variables (c_parser *parser)
 	  break;
 	}
       /* Parse any objc-visibility-spec.  */
-      if (c_parser_next_token_is_keyword (parser, RID_PRIVATE))
+      if (c_parser_next_token_is_keyword (parser, RID_AT_PRIVATE))
 	{
 	  c_parser_consume_token (parser);
 	  objc_set_visibility (2);
 	  continue;
 	}
-      else if (c_parser_next_token_is_keyword (parser, RID_PROTECTED))
+      else if (c_parser_next_token_is_keyword (parser, RID_AT_PROTECTED))
 	{
 	  c_parser_consume_token (parser);
 	  objc_set_visibility (0);
 	  continue;
 	}
-      else if (c_parser_next_token_is_keyword (parser, RID_PUBLIC))
+      else if (c_parser_next_token_is_keyword (parser, RID_AT_PUBLIC))
 	{
 	  c_parser_consume_token (parser);
 	  objc_set_visibility (1);
@@ -6530,7 +6548,7 @@ static void
 c_parser_objc_class_declaration (c_parser *parser)
 {
   tree list = NULL_TREE;
-  gcc_assert (c_parser_next_token_is_keyword (parser, RID_CLASS));
+  gcc_assert (c_parser_next_token_is_keyword (parser, RID_AT_CLASS));
   c_parser_consume_token (parser);
   /* Any identifiers, including those declared as type names, are OK
      here.  */
@@ -7052,12 +7070,12 @@ c_parser_objc_try_catch_statement (c_parser *parser)
 {
   location_t loc;
   tree stmt;
-  gcc_assert (c_parser_next_token_is_keyword (parser, RID_TRY));
+  gcc_assert (c_parser_next_token_is_keyword (parser, RID_AT_TRY));
   c_parser_consume_token (parser);
   loc = c_parser_peek_token (parser)->location;
   stmt = c_parser_compound_statement (parser);
   objc_begin_try_stmt (loc, stmt);
-  while (c_parser_next_token_is_keyword (parser, RID_CATCH))
+  while (c_parser_next_token_is_keyword (parser, RID_AT_CATCH))
     {
       struct c_parm *parm;
       c_parser_consume_token (parser);

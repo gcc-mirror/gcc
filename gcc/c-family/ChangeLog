@@ -1,3 +1,8 @@
+2010-09-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-lex.c (c_lex_with_flags): Updated comments for CPP_AT_NAME
+	Objective-C/Objective-C++ keywords.
+
 2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.	
