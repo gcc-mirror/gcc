@@ -956,14 +956,13 @@ dot_deps (scop_p scop)
   /* When debugging, enable the following code.  This cannot be used
      in production compilers because it calls "system".  */
 #if 0
-  int x;
   FILE *stream = fopen ("/tmp/scopdeps.dot", "w");
   gcc_assert (stream);
 
   dot_deps_1 (stream, scop);
   fclose (stream);
 
-  x = system ("dotty /tmp/scopdeps.dot &");
+  system ("dotty /tmp/scopdeps.dot &");
 #else
   dot_deps_1 (stderr, scop);
 #endif
@@ -977,14 +976,13 @@ dot_deps_stmt (scop_p scop)
   /* When debugging, enable the following code.  This cannot be used
      in production compilers because it calls "system".  */
 #if 0
-  int x;
   FILE *stream = fopen ("/tmp/scopdeps.dot", "w");
   gcc_assert (stream);
 
   dot_deps_stmt_1 (stream, scop);
   fclose (stream);
 
-  x = system ("dotty /tmp/scopdeps.dot &");
+  system ("dotty /tmp/scopdeps.dot &");
 #else
   dot_deps_stmt_1 (stderr, scop);
 #endif

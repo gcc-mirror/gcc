@@ -1,3 +1,9 @@
+2010-08-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (dot_deps): Avoid set but not used warning.
+	(dot_deps_stmt): Same.
+	* graphite-poly.c (dot_lst): Same.
+
 2010-08-23  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-blocking.c (scop_do_strip_mine): Do not call
