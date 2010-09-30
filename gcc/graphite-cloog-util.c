@@ -296,4 +296,43 @@ new_Cloog_Domain_from_ppl_Pointset_Powerset
 
   return res;
 }
+
+/* Print to FILE the matrix MAT in OpenScop format.  OUTPUT is the number
+   of output dimensions, INPUT is the number of input dimensions, LOCALS
+   is the number of existentially quantified variables and PARAMS is the
+   number of parameters.  */
+
+static void
+openscop_print_cloog_matrix (FILE *file, CloogMatrix *mat,
+			     int output, int input, int locals,
+			     int params)
+{
+  int i, j;
+
+  fprintf (file, "%d %d %d %d %d %d \n", cloog_matrix_nrows (mat),
+	   cloog_matrix_ncolumns (mat), output, input, locals, params);
+
+  for (i = 0; i < cloog_matrix_nrows (mat); i++)
+    {
+      for (j = 0; j < cloog_matrix_ncolumns (mat); j++)
+	fprintf (file, "%6ld ", mpz_get_si (mat->p[i][j]));
+      fprintf (file, "\n");
+    }
+}
+
+/* Print to FILE the polyhedron PH in OpenScop format.  OUTPUT is the number
+   of output dimensions, INPUT is the number of input dimensions, LOCALS is
+   the number of existentially quantified variables and PARAMS is the number
+   of parameters.  */
+
+void
+openscop_print_polyhedron_matrix (FILE *file, ppl_const_Polyhedron_t ph,
+				  int output, int input, int locals,
+				  int params)
+{
+  CloogMatrix *mat = new_Cloog_Matrix_from_ppl_Polyhedron (ph);
+  openscop_print_cloog_matrix (file, mat, output, input, locals, params);
+  cloog_matrix_free (mat);
+}
+
 #endif
