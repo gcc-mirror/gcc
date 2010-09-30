@@ -370,6 +370,12 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 		  || OBJC_IS_CXX_KEYWORD (C_RID_CODE (*value)))
 		{
 		  type = CPP_AT_NAME;
+		  /* Note the complication: if we found an OBJC_CXX
+		     keyword, for example, 'class', we will be
+		     returning a token of type CPP_AT_NAME and rid
+		     code RID_CLASS (not RID_AT_CLASS).  The language
+		     parser needs to convert that to RID_AT_CLASS.
+		  */
 		  break;
 		}
 	      /* FALLTHROUGH */
