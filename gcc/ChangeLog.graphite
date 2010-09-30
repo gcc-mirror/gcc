@@ -1,5 +1,10 @@
 2010-08-20  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/45230
+	* gcc.dg/graphite/id-pr45230.c: New.
+
+2010-08-20  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-scalar-evolution.c (instantiate_array_ref): New.
 	(instantiate_scev_r): Also handle ARRAY_REFs.
 
