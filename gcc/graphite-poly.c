@@ -599,7 +599,7 @@ graphite_read_scop_file (FILE *file, scop_p scop)
   int input, output, locals, params;
   ppl_Pointset_Powerset_C_Polyhedron_t ps;
   poly_bb_p pbb;
-  bool transform_done;
+  bool transform_done = false;
 
   /* Ensure that the file is in OpenScop format.  */
   tmp = openscop_read_N_string (file, 2);
