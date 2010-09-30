@@ -1,5 +1,7 @@
 2010-09-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (mem_loc_descriptor): Handle IF_THEN_ELSE.
+
 	PR tree-optimization/31261
 	* fold-const.c (fold_binary): Optimize ((A & N) + B) & M
 	for constants M and N, M == (1LL << cst) - 1 && (N & M) == M.
