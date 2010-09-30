@@ -1855,7 +1855,6 @@ dot_lst (lst_p lst)
   /* When debugging, enable the following code.  This cannot be used
      in production compilers because it calls "system".  */
 #if 0
-  int x;
   FILE *stream = fopen ("/tmp/lst.dot", "w");
   gcc_assert (stream);
 
@@ -1864,7 +1863,7 @@ dot_lst (lst_p lst)
   fputs ("}\n\n", stream);
   fclose (stream);
 
-  x = system ("dotty /tmp/lst.dot &");
+  system ("dotty /tmp/lst.dot &");
 #else
   fputs ("digraph all {\n", stderr);
   dot_lst_1 (stderr, lst);
