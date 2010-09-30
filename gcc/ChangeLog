@@ -1,3 +1,8 @@
+2010-09-30  Tom G. Christensen <tgc@jupiterrise.com>
+
+	* doc/install.texi (Binaries): Update link to HP-UX porting centre.
+	Add links to current providers of packages for Solaris and IRIX.
+
 2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.

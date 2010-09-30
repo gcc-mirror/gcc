@@ -2791,7 +2791,7 @@ Development Tools for the Renesas H8/300[HS] Series}.
 HP-UX:
 @itemize
 @item
-@uref{http://hpux.cs.utah.edu/,,HP-UX Porting Center};
+@uref{http://hpux.connect.org.uk/,,HP-UX Porting Center};
 
 @item
 @uref{ftp://sunsite.informatik.rwth-aachen.de/pub/packages/gcc_hpux/,,Binaries for HP-UX 11.00 at Aachen University of Technology}.
@@ -2806,10 +2806,30 @@ Development Tools for the Motorola 68HC11/68HC12}.
 OpenServer/Unixware}.
 
 @item
-Solaris 2 (SPARC, Intel)---@uref{http://www.sunfreeware.com/,,Sunfreeware}.
+Solaris 2 (SPARC, Intel):
+@itemize
+@item
+@uref{http://www.sunfreeware.com/,,Sunfreeware}
 
 @item
-SGI---@uref{http://freeware.sgi.com/,,SGI Freeware}.
+@uref{http://www.blastwave.org/,,Blastwave}
+
+@item
+@uref{http://www.opencsw.org/,,OpenCSW}
+
+@item
+@uref{http://jupiterrise.com/tgcware/,,TGCware}
+@end itemize
+
+@item
+SGI IRIX:
+@itemize
+@item
+@uref{http://nekochan.net/,,Nekoware}
+
+@item
+@uref{http://jupiterrise.com/tgcware/,,TGCware}
+@end itemize
 
 @item
 Microsoft Windows:
