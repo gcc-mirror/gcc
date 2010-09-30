@@ -383,9 +383,9 @@ harmful_stmt_in_bb (basic_block scop_entry, loop_p outer_loop, basic_block bb)
   return NULL;
 }
 
-/* Return true when it is not possible to represent LOOP in the
-   polyhedral representation.  This is evaluated taking SCOP_ENTRY
-   in mind.  */
+/* Return true if LOOP can be represented in the polyhedral
+   representation.  This is evaluated taking SCOP_ENTRY and
+   OUTERMOST_LOOP in mind.  */
 
 static bool
 graphite_can_represent_loop (basic_block scop_entry, loop_p loop)
