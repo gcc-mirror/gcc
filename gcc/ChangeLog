@@ -1,5 +1,18 @@
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* Makefile.in (OBJS-common): Add graphite-flattening.o.
+	(graphite-flattening.o): New rule.
+	* common.opt (floop-flatten): New flag.
+	* doc/invoke.texi (-floop-flatten): Documented.
+	* graphite-flattening.c: New.
+	* graphite-poly.c (apply_poly_transforms): Call flatten_all_loops.
+	* graphite-poly.h (flatten_all_loops): Declared.
+	(lst_remove_loop_and_inline_stmts_in_loop_father): New.
+	* tree-ssa-loop.c (gate_graphite_transforms): When flag_loop_flatten
+	is set, also set flag_graphite.
+
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (cloog_checksum): New.
 	* graphite-poly.h (cloog_checksum): Declared.
 
