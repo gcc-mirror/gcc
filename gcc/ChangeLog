@@ -1,3 +1,8 @@
+2010-09-30  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (type_consists_of_records_p): Do not check for trailing
+	zero sized bit-fields.
+
 2010-09-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-parser.c (c_lex_one_token): When finding a CPP_AT_NAME
