@@ -1120,24 +1120,6 @@ lst_update_scattering_under (lst_p lst, int level, int dewey)
     pbb_update_scattering (LST_PBB (lst), level, dewey);
 }
 
-/* Updates the scattering of all the PBBs under LST and in sequence
-   with LST.  */
-
-static inline void
-lst_update_scattering_seq (lst_p lst)
-{
-  int i;
-  lst_p l;
-  lst_p father = LST_LOOP_FATHER (lst);
-  int dewey = lst_dewey_number (lst);
-  int level = lst_depth (lst);
-
-  gcc_assert (lst && father && dewey >= 0 && level >= 0);
-
-  for (i = dewey; VEC_iterate (lst_p, LST_SEQ (father), i, l); i++)
-    lst_update_scattering_under (l, level, i);
-}
-
 /* Updates the all the scattering levels of all the PBBs under
    LST.  */
 
@@ -1147,14 +1129,24 @@ lst_update_scattering (lst_p lst)
   int i;
   lst_p l;
 
-  if (!lst || !LST_LOOP_P (lst))
+  if (!lst)
     return;
 
   if (LST_LOOP_FATHER (lst))
-    lst_update_scattering_seq (lst);
+    {
+      lst_p father = LST_LOOP_FATHER (lst);
+      int dewey = lst_dewey_number (lst);
+      int level = lst_depth (lst);
 
-  for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
-    lst_update_scattering (l);
+      gcc_assert (lst && father && dewey >= 0 && level >= 0);
+
+      for (i = dewey; VEC_iterate (lst_p, LST_SEQ (father), i, l); i++)
+	lst_update_scattering_under (l, level, i);
+    }
+
+  if (LST_LOOP_P (lst))
+    for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+      lst_update_scattering (l);
 }
 
 /* Inserts LST1 before LST2 if BEFORE is true; inserts LST1 after LST2
