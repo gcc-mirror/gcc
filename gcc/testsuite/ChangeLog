@@ -1,3 +1,8 @@
+2010-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/31261
+	* gcc.dg/tree-ssa/pr31261.c: New test.
+
 2010-09-30  Michael Eager  <eager@eagercon.com>
 
 	* gcc.c-torture/execute/cmpsi-2.c: New testcase.
