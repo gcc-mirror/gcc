@@ -1,3 +1,7 @@
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* testsuite/libgomp.graphite/force-parallel-1.c: Adjust.
+
 2010-09-23  Tobias Burnus  <burnus@net-b.de>
 
 	* libgomp.texi (omp_get_nested, omp_set_nested, omp_set_dynamic):
