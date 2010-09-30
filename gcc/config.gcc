@@ -350,6 +350,10 @@ m32r*-*-*)
 m68k-*-*)
 	extra_headers=math-68881.h
 	;;
+microblaze*-*-*)
+        cpu_type=microblaze
+	extra_options="${extra_options} g.opt"
+        ;;
 mips*-*-*)
 	cpu_type=mips
 	need_64bit_hwint=yes
@@ -1757,6 +1761,19 @@ mep-*-*)
 	fi
 	use_gcc_stdint=wrap
 	;;
+microblaze*-linux*)
+	tm_file="${tm_file} dbxelf.h linux.h microblaze/linux.h"
+	c_target_objs="${c_target_objs} microblaze-c.o"
+	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
+	tmake_file="${tmake_file} t-slibgcc-elf-ver t-slibgcc-nolc-override t-linux microblaze/t-microblaze"
+        extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o crtbeginT.o"
+	;;
+microblaze*-*-*)
+        tm_file="${tm_file} dbxelf.h"
+	c_target_objs="${c_target_objs} microblaze-c.o"
+	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
+        tmake_file="${tmake_file} microblaze/t-microblaze"
+        ;;
 mips-sgi-irix6.5*)
 	tm_file="elfos.h ${tm_file} mips/iris6.h"
 	tmake_file="mips/t-iris mips/t-iris6 mips/t-slibgcc-irix"

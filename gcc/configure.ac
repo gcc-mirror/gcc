@@ -3745,7 +3745,7 @@ case "$target" in
   i?86*-*-* | mips*-*-* | alpha*-*-* | powerpc*-*-* | sparc*-*-* | m68*-*-* \
   | x86_64*-*-* | hppa*-*-* | arm*-*-* \
   | xstormy16*-*-* | cris-*-* | crisv32-*-* | xtensa*-*-* | bfin-*-* | score*-*-* \
-  | spu-*-* | fido*-*-* | m32c-*-*)
+  | spu-*-* | fido*-*-* | m32c-*-* | microblaze-*-*)
     insn="nop"
     ;;
   ia64*-*-* | s390*-*-*)

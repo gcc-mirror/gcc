@@ -1,3 +1,10 @@
+2010-09-30  Michael Eager  <eager@eagercon.com>
+
+	* config.host: Add microblaze*-*-*.
+	* config/microblaze/{divsi3.asm,divsi3_table.c,moddi3.asm,modsi3.asm,
+	muldi3_hard.asm,mulsi3.asm,stack_overflow_exit.asm,t-microblaze,
+	udivsi3.asm,umodsi3.asm}:  New.
+
 2010-09-28  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Adjust CFI test to test assembler directly rather
@@ -22,6 +29,7 @@
 	* config.host (i[34567]86-*-linux* and friends): Add t-stack and
 	i386/t-stack-i386 to tmake_file.
 
+>>>>>>> .r164755
 2010-09-21  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* Makefile.in (libgcc-extra-parts):  Check for static archives and

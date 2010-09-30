@@ -2534,8 +2534,8 @@ interrupt handler.  The compiler will generate function entry and exit
 sequences suitable for use in an interrupt handler when this attribute
 is present.
 
-Note, interrupt handlers for the Blackfin, H8/300, H8/300H, H8S, and
-SH processors can be specified via the @code{interrupt_handler} attribute.
+Note, interrupt handlers for the Blackfin, H8/300, H8/300H, H8S, MicroBlaze,
+and SH processors can be specified via the @code{interrupt_handler} attribute.
 
 Note, on the AVR, interrupts will be enabled inside the function.
 
@@ -3133,6 +3133,14 @@ to be marked with the @code{noreturn} attribute.
 Use this attribute on the Blackfin, H8/300, H8/300H, and H8S to indicate that
 all registers except the stack pointer should be saved in the prologue
 regardless of whether they are used or not.
+
+@item save_volatiles
+@cindex save volatile registers on the MicroBlaze
+Use this attribute on the MicroBlaze to indicate that the function is
+an interrupt handler.  All volatile registers (in addition to non-volatile 
+registers) will be saved in the function prologue.  If the function is a leaf 
+function, only volatiles used by the function are saved.  A normal function 
+return is generated instead of a return from interrupt.  
 
 @item section ("@var{section-name}")
 @cindex @code{section} function attribute

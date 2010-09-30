@@ -1,3 +1,27 @@
+2010-09-30  Michael Eager  <eager@eagercon.com>
+
+	* extend.texi (interrupt_handler): Add MicroBlaze to list.
+	(save_volatiles): Describe option for MicroBlaze.
+	* invoke.texi: Add MicroBlaze Options.
+	* contrib.texi: Add acknowledgment. 
+	* md.texi: Add MicroBlaze d and z constraints.
+	* install.texi: Add microblaze-*-elf.
+	* configure.ac: Add microblaze-*-* to target list.
+	* configure: Regenerate.
+	* config.gcc: Add microblaze*-*-*, microblaze*-linux*.
+	* config/microblaze/microblaze-protos.h: New.
+	* config/microblaze/crti.s: New.
+	* config/microblaze/predicates.md: New.
+	* config/microblaze/linux.h: New.
+	* config/microblaze/microblaze.md: New.
+	* config/microblaze/constraints.md: New.
+	* config/microblaze/crtn.s: New.
+	* config/microblaze/microblaze.opt: New.
+	* config/microblaze/microblaze-c.c: New.
+	* config/microblaze/t-microblaze: New.
+	* config/microblaze/microblaze.c: New.
+	* config/microblaze/microblaze.h: New.
+
 2010-09-30  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* c-parser.c (c_parser_objc_methodprotolist): Amend preceding comment,
@@ -905,6 +929,7 @@
 	unconditionally if TODO_rebuild_alias is set, else only when optimizing
 	if TODO_update_address_taken is set.
 
+>>>>>>> .r164755
 2010-09-23  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/arm/arm.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
