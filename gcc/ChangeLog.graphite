@@ -1,3 +1,8 @@
+2010-08-11  Riyadh Baghdadi <baghdadi.mr@gmail.com>
+
+	* graphite-poly.c (openscop_print_pdr_polyhedron): Fix indentation.
+	(openscop_print_pdr_polyhedron): Print pph.
+
 2010-07-29  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* gcc.dg/graphite/graphite.exp: Add compile rules for vect-* files.
