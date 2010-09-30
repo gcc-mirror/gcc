@@ -10,7 +10,7 @@
 #include "../objc-obj-c++-shared/next-mapping.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <memory.h>
+#include <string.h>
 #include <objc/objc.h>
 
 @interface Foo: Object {

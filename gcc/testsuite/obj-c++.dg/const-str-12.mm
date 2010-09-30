@@ -5,6 +5,7 @@
 /* { dg-do compile } */
 
 #include "../objc-obj-c++-shared/Object1.h"
+#import "../objc-obj-c++-shared/next-mapping.h"
 
 @interface Foo: Object {
   char *cString;
@@ -17,7 +18,11 @@
 + (Foo *) getString: (int) which;
 @end
 
+#ifdef NEXT_OBJC_USE_NEW_INTERFACE
+struct fudge_objc_class _FooClassReference;
+#else
 struct objc_class _FooClassReference;
+#endif
 
 @implementation Bar
 + (Foo *) getString: (int) which {
