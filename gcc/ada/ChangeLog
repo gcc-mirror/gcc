@@ -1,13 +1,13 @@
 2010-09-30  Joseph Myers  <joseph@codesourcery.com>
 
-	* gcc-interface/misc.c (optimize, optimize_size): Undefine as
-	macros and define as variables.
+	* gcc-interface/misc.c (optimize, optimize_size): Undefine as macros
+	and define as variables.
 	(gnat_post_options): Set optimize and optimize_size variables.
 
-2010-09-28  Joel Sherrill <joel.sherrill@oarcorp.com>
+2010-09-29  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
-	* g-socket.adb: Move pragma to disable warnings in case
-	multiple errnos are not defined by target.
+	* g-socket.adb: Move pragma to disable warnings in case multiple errnos
+	are not defined by target.
 
 2010-09-29  Eric Botcazou  <ebotcazou@adacore.com>
 
