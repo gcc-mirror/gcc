@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "gimple.h"
 #include "params.h"
+#include "graphite-cloog-util.h"
 
 #ifdef HAVE_cloog
 #include "ppl_c.h"
@@ -136,6 +137,159 @@ unify_scattering_dimensions (scop_p scop)
   return max_scattering;
 }
 
+/* Print to FILE the pdr PH in OpenScop format.  NB_SUBSCRIPTS is the number
+   of subscripts in PH, ALIAS_SET_DIM is the dimension of the alias set and
+   NB_PARAMS is the number of parameters in PH.  */
+
+static void
+openscop_print_pdr_polyhedron (FILE *file, ppl_const_Polyhedron_t ph,
+			       int nb_subscripts, int alias_set_dimension,
+			       int nb_params)
+{
+  int input, locals, output;
+  ppl_dimension_type alias_set_dim = (ppl_dimension_type) alias_set_dimension;
+  ppl_dimension_type sub_dim_last = alias_set_dim + nb_subscripts;
+  ppl_dimension_type *map, i, ph_space_dim = sub_dim_last + 1;
+  ppl_Polyhedron_t pph;
+
+  ppl_new_C_Polyhedron_from_C_Polyhedron (&pph,ph);
+
+  map = (ppl_dimension_type *) XNEWVEC (ppl_dimension_type, ph_space_dim);
+
+  for (i = 0; i < alias_set_dim - 1; i++)
+    map[i] = nb_subscripts + 1 + i;
+
+  for (i = alias_set_dim - 1; i < sub_dim_last; i++)
+    map[i] = i - alias_set_dim + 1;
+
+  ppl_Polyhedron_map_space_dimensions (pph, map, ph_space_dim - 1);
+
+  locals = 0;
+  input = alias_set_dim - nb_params - 1;
+
+  /* According to OpenScop specification, the alias set column is a part of
+     the output columns.  */
+  output = nb_subscripts + 1;
+
+  openscop_print_polyhedron_matrix (file, ph, output, input, locals, nb_params);
+}
+
+/* Print to FILE the powerset PDR.  NB_SUBSCRIPTS is the number of subscripts
+   in PDR, ALIAS_SET_DIM is the dimension of the alias set in PDR and
+   NB_PARAMS is the number of parameters in PDR.  */
+
+static void
+openscop_print_pdr_powerset (FILE *file,
+			     ppl_Pointset_Powerset_C_Polyhedron_t ps,
+			     int nb_subscripts,
+			     int alias_set_dim,
+			     int nb_params)
+{
+  size_t nb_disjuncts;
+  ppl_Pointset_Powerset_C_Polyhedron_iterator_t it, end;
+
+  ppl_new_Pointset_Powerset_C_Polyhedron_iterator (&it);
+  ppl_new_Pointset_Powerset_C_Polyhedron_iterator (&end);
+
+  ppl_Pointset_Powerset_C_Polyhedron_size (ps, &nb_disjuncts);
+  fprintf (file, "%d\n", (int) nb_disjuncts);
+
+  for (ppl_Pointset_Powerset_C_Polyhedron_iterator_begin (ps, it),
+       ppl_Pointset_Powerset_C_Polyhedron_iterator_end (ps, end);
+       !ppl_Pointset_Powerset_C_Polyhedron_iterator_equal_test (it, end);
+       ppl_Pointset_Powerset_C_Polyhedron_iterator_increment (it))
+    {
+      ppl_const_Polyhedron_t ph;
+
+      ppl_Pointset_Powerset_C_Polyhedron_iterator_dereference (it, &ph);
+      openscop_print_pdr_polyhedron (file, ph, nb_subscripts, alias_set_dim,
+				     nb_params);
+    }
+
+  ppl_delete_Pointset_Powerset_C_Polyhedron_iterator (it);
+  ppl_delete_Pointset_Powerset_C_Polyhedron_iterator (end);
+}
+
+/* Print to FILE the powerset PS in its OpenScop matrix form.  */
+
+static void
+openscop_print_powerset_matrix (FILE *file,
+				ppl_Pointset_Powerset_C_Polyhedron_t ps,
+				int output, int input, int locals,
+				int params)
+{
+  size_t nb_disjuncts;
+  ppl_Pointset_Powerset_C_Polyhedron_iterator_t it, end;
+
+  ppl_new_Pointset_Powerset_C_Polyhedron_iterator (&it);
+  ppl_new_Pointset_Powerset_C_Polyhedron_iterator (&end);
+
+  ppl_Pointset_Powerset_C_Polyhedron_size (ps, &nb_disjuncts);
+  fprintf (file, "%d\n", (int) nb_disjuncts);
+
+  for (ppl_Pointset_Powerset_C_Polyhedron_iterator_begin (ps, it),
+       ppl_Pointset_Powerset_C_Polyhedron_iterator_end (ps, end);
+       !ppl_Pointset_Powerset_C_Polyhedron_iterator_equal_test (it, end);
+       ppl_Pointset_Powerset_C_Polyhedron_iterator_increment (it))
+    {
+      ppl_const_Polyhedron_t ph;
+
+      ppl_Pointset_Powerset_C_Polyhedron_iterator_dereference (it, &ph);
+      openscop_print_polyhedron_matrix (file, ph, output, input, locals,
+				        params);
+    }
+
+  ppl_delete_Pointset_Powerset_C_Polyhedron_iterator (it);
+  ppl_delete_Pointset_Powerset_C_Polyhedron_iterator (end);
+}
+
+/* Prints to FILE the scattering function of PBB in OpenScop format, at some
+   VERBOSITY level.  */
+
+static void
+openscop_print_scattering_function_1 (FILE *file, poly_bb_p pbb, int verbosity)
+{
+  graphite_dim_t i;
+  ppl_const_Polyhedron_t ph;
+
+  if (verbosity > 0)
+    {
+      fprintf (file, "# scattering bb_%d (\n", pbb_index (pbb));
+      fprintf (file, "#  eq");
+
+      for (i = 0; i < pbb_nb_scattering_transform (pbb); i++)
+	fprintf (file, "     s%d", (int) i);
+
+      for (i = 0; i < pbb_nb_local_vars (pbb); i++)
+	fprintf (file, "    lv%d", (int) i);
+
+      for (i = 0; i < pbb_dim_iter_domain (pbb); i++)
+	fprintf (file, "     i%d", (int) i);
+
+      for (i = 0; i < pbb_nb_params (pbb); i++)
+	fprintf (file, "     p%d", (int) i);
+
+      fprintf (file, "    cst\n");
+    }
+
+  /* Number of disjunct components.  Remove this when
+     PBB_TRANSFORMED_SCATTERING will be a pointset_powerset.  */
+  fprintf (file, "1\n");
+
+  ph = PBB_TRANSFORMED_SCATTERING (pbb)
+    ? PBB_TRANSFORMED_SCATTERING (pbb)
+    : PBB_ORIGINAL_SCATTERING (pbb);
+
+  openscop_print_polyhedron_matrix (file, ph,
+				    pbb_nb_scattering_transform (pbb),
+				    pbb_dim_iter_domain (pbb),
+				    pbb_nb_local_vars (pbb),
+				    pbb_nb_params (pbb));
+
+  if (verbosity > 0)
+    fprintf (file, "#)\n");
+}
+
 /* Prints to FILE the scattering function of PBB, at some VERBOSITY
    level.  */
 
@@ -201,7 +355,13 @@ print_scattering_function (FILE *file, poly_bb_p pbb, int verbosity)
       return;
     }
 
-  print_scattering_function_1 (file, pbb, verbosity);
+  openscop_print_scattering_function_1 (file, pbb, verbosity);
+
+  if (verbosity > 0)
+    fprintf (file, "# Scattering names are not provided\n");
+
+  fprintf (file, "0\n");
+
 }
 
 /* Prints to FILE the iteration domain of PBB, at some VERBOSITY
@@ -430,22 +590,22 @@ free_poly_bb (poly_bb_p pbb)
 }
 
 static void
-print_pdr_access_layout (FILE *file, poly_dr_p pdr)
+print_pdr_access_layout (FILE *file, poly_bb_p pbb, poly_dr_p pdr)
 {
   graphite_dim_t i;
 
   fprintf (file, "#  eq");
 
-  for (i = 0; i < pdr_dim_iter_domain (pdr); i++)
-    fprintf (file, "     i%d", (int) i);
-
-  for (i = 0; i < pdr_nb_params (pdr); i++)
-    fprintf (file, "     p%d", (int) i);
-
-  fprintf (file, "  alias");
+  fprintf (file, "   alias");
 
   for (i = 0; i < PDR_NB_SUBSCRIPTS (pdr); i++)
     fprintf (file, "   sub%d", (int) i);
+
+  for (i = 0; i < pbb_dim_iter_domain (pbb); i++)
+    fprintf (file, "     i%d", (int) i);
+
+  for (i = 0; i < pbb_nb_params (pbb); i++)
+    fprintf (file, "     p%d", (int) i);
 
   fprintf (file, "    cst\n");
 }
@@ -456,6 +616,8 @@ print_pdr_access_layout (FILE *file, poly_dr_p pdr)
 void
 print_pdr (FILE *file, poly_dr_p pdr, int verbosity)
 {
+  int alias_set_dim;
+
   if (verbosity > 1)
     {
       fprintf (file, "# pdr_%d (", PDR_ID (pdr));
@@ -484,10 +646,16 @@ print_pdr (FILE *file, poly_dr_p pdr, int verbosity)
   if (verbosity > 0)
     {
       fprintf (file, "# data accesses (\n");
-      print_pdr_access_layout (file, pdr);
+      print_pdr_access_layout (file, PDR_PBB (pdr), pdr);
     }
 
-  ppl_print_powerset_matrix (file, PDR_ACCESSES (pdr));
+  alias_set_dim = pdr_alias_set_dim (pdr) + 1;
+
+  openscop_print_pdr_powerset (file,
+			       PDR_ACCESSES (pdr),
+			       PDR_NB_SUBSCRIPTS (pdr),
+			       alias_set_dim,
+			       pbb_nb_params (PDR_PBB (pdr)));
 
   if (verbosity > 0)
     fprintf (file, "#)\n");
@@ -546,6 +714,45 @@ free_scop (scop_p scop)
   free_lst (SCOP_TRANSFORMED_SCHEDULE (scop));
   free_lst (SCOP_SAVED_SCHEDULE (scop));
   XDELETE (scop);
+}
+
+/* Print to FILE the domain of PBB in OpenScop format, at some VERBOSITY
+   level.  */
+
+static void
+openscop_print_pbb_domain (FILE *file, poly_bb_p pbb, int verbosity)
+{
+  graphite_dim_t i;
+  gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
+
+  if (!PBB_DOMAIN (pbb))
+    return;
+
+  if (verbosity > 0)
+    {
+      fprintf (file, "\n# Iteration domain of bb_%d (\n", GBB_BB (gbb)->index);
+      fprintf (file, "#  eq");
+
+      for (i = 0; i < pbb_dim_iter_domain (pbb); i++)
+	fprintf (file, "     i%d", (int) i);
+
+      for (i = 0; i < pbb_nb_params (pbb); i++)
+	fprintf (file, "     p%d", (int) i);
+
+      fprintf (file, "    cst\n");
+    }
+
+  if (PBB_DOMAIN (pbb))
+    openscop_print_powerset_matrix (file, PBB_DOMAIN (pbb),
+				    pbb_dim_iter_domain (pbb),
+				    0,
+				    0,
+				    pbb_nb_params (pbb));
+  else
+    fprintf (file, "0\n");
+
+  if (verbosity > 0)
+    fprintf (file, "#)\n");
 }
 
 /* Print to FILE the domain of PBB, at some VERBOSITY level.  */
@@ -708,13 +915,24 @@ debug_pdrs (poly_bb_p pbb, int verbosity)
   print_pdrs (stderr, pbb, verbosity);
 }
 
-/* Print to FILE the body of PBB, at some VERBOSITY level.  */
+/* Print to FILE the body of PBB, at some VERBOSITY level.
+   If statement_body_provided is false statement body is not printed.  */
 
 static void
-print_pbb_body (FILE *file, poly_bb_p pbb, int verbosity)
+print_pbb_body (FILE *file, poly_bb_p pbb, int verbosity,
+		bool statement_body_provided)
 {
   if (verbosity > 1)
     fprintf (file, "# Body (\n");
+
+  if (!statement_body_provided)
+  {
+    if (verbosity > 0)
+      fprintf (file, "# Statement body is not provided\n");
+
+   fprintf (file, "0\n");
+   return;
+  }
 
   if (verbosity > 0)
     fprintf (file, "# Statement body is provided\n");
@@ -747,10 +965,10 @@ print_pbb (FILE *file, poly_bb_p pbb, int verbosity)
       dump_gbb_cases (file, PBB_BLACK_BOX (pbb));
     }
 
-  print_pbb_domain (file, pbb, verbosity);
+  openscop_print_pbb_domain (file, pbb, verbosity);
   print_scattering_function (file, pbb, verbosity);
   print_pdrs (file, pbb, verbosity);
-  print_pbb_body (file, pbb, verbosity);
+  print_pbb_body (file, pbb, verbosity, false);
 
   if (verbosity > 1)
     fprintf (file, "#)\n");
@@ -796,6 +1014,36 @@ print_scop_params (FILE *file, scop_p scop, int verbosity)
     fprintf (file, "#)\n");
 }
 
+/* Print to FILE the context of SCoP in OpenScop format, at some VERBOSITY
+   level.  */
+
+static void
+openscop_print_scop_context (FILE *file, scop_p scop, int verbosity)
+{
+  graphite_dim_t i;
+
+  if (verbosity > 0)
+    {
+      fprintf (file, "# Context (\n");
+      fprintf (file, "#  eq");
+
+      for (i = 0; i < scop_nb_params (scop); i++)
+	fprintf (file, "     p%d", (int) i);
+
+      fprintf (file, "    cst\n");
+    }
+
+  if (SCOP_CONTEXT (scop))
+    openscop_print_powerset_matrix (file, SCOP_CONTEXT (scop), 0, 0, 0,
+				    scop_nb_params (scop));
+  else
+    fprintf (file, "0 %d 0 0 0 %d\n", (int) scop_nb_params (scop) + 2,
+	     (int) scop_nb_params (scop));
+
+  if (verbosity > 0)
+    fprintf (file, "# )\n");
+}
+
 /* Print to FILE the context of SCoP, at some VERBOSITY level.  */
 
 void
@@ -823,6 +1071,23 @@ print_scop_context (FILE *file, scop_p scop, int verbosity)
     fprintf (file, "# )\n");
 }
 
+/* Print to FILE the SCOP header: context, parameters, and statements
+   number.  */
+
+static void
+print_scop_header (FILE *file, scop_p scop, int verbosity)
+{
+  fprintf (file, "SCoP 1\n#(\n");
+  fprintf (file, "# Language\nGimple\n");
+  openscop_print_scop_context (file, scop, verbosity);
+  print_scop_params (file, scop, verbosity);
+
+  if (verbosity > 0)
+    fprintf (file, "# Number of statements\n");
+
+  fprintf (file, "%d\n",VEC_length (poly_bb_p, SCOP_BBS (scop)));
+}
+
 /* Print to FILE the SCOP, at some VERBOSITY level.  */
 
 void
@@ -831,15 +1096,7 @@ print_scop (FILE *file, scop_p scop, int verbosity)
   int i;
   poly_bb_p pbb;
 
-  fprintf (file, "SCoP #(\n");
-  fprintf (file, "# Language\nGimple\n");
-  print_scop_context (file, scop, verbosity);
-  print_scop_params (file, scop, verbosity);
-
-  if (verbosity > 0)
-    fprintf (file, "# Number of statements\n");
-
-  fprintf (file, "%d\n",VEC_length (poly_bb_p, SCOP_BBS (scop)));
+  print_scop_header (file, scop, verbosity);
 
   FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
     print_pbb (file, pbb, verbosity);

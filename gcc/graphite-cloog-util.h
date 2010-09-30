@@ -32,5 +32,7 @@ CloogScattering *new_Cloog_Scattering_from_ppl_Polyhedron
 CloogDomain * new_Cloog_Domain_from_ppl_Pointset_Powerset
   (ppl_Pointset_Powerset_C_Polyhedron_t, int, CloogState *);
 void new_C_Polyhedron_from_Cloog_Matrix (ppl_Polyhedron_t *, CloogMatrix *);
+void openscop_print_polyhedron_matrix (FILE *, ppl_const_Polyhedron_t, int,
+				       int, int, int);
 
 #endif /* GRAPHITE_CLOOG_UTIL_H */

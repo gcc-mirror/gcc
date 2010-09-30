@@ -132,7 +132,54 @@ struct poly_dr
      dimensions.
 
      | i   j   k   a   1
-     | 0   0   0  -1   15  = 0 */
+     | 0   0   0  -1   15  = 0
+
+     The difference between the graphite internal format for access data and
+     the OpenSop format is in the order of columns.
+     Instead of having:
+
+     | i   j   k   a  s0  s1   1
+     | 0   0   0   1   0   0  -5     =  0
+     |-1   0   0   0   1   0   0     =  0
+     | 0  -1  -1   0   0   1   0     =  0
+     | 0   0   0   0   1   0   0     >= 0  # The last four lines describe the
+     | 0   0   0   0   0   1   0     >= 0  # array size.
+     | 0   0   0   0  -1   0 1335    >= 0
+     | 0   0   0   0   0  -1 123     >= 0
+
+     In OpenScop we have:
+
+     | a  s0  s1   i   j   k   1
+     | 1   0   0   0   0   0  -5     =  0
+     | 0   1   0  -1   0   0   0     =  0
+     | 0   0   1   0  -1  -1   0     =  0
+     | 0   1   0   0   0   0   0     >= 0  # The last four lines describe the
+     | 0   0   1   0   0   0   0     >= 0  # array size.
+     | 0  -1   0   0   0   0 1335    >= 0
+     | 0   0  -1   0   0   0 123     >= 0
+
+     The OpenScop access function is printed as follows:
+
+     | 1  # The number of disjunct components in a union of access functions.
+     | R C O I L P  # Described bellow.
+     | a  s0  s1   i   j   k   1
+     | 1   0   0   0   0   0  -5     =  0
+     | 0   1   0  -1   0   0   0     =  0
+     | 0   0   1   0  -1  -1   0     =  0
+     | 0   1   0   0   0   0   0     >= 0  # The last four lines describe the
+     | 0   0   1   0   0   0   0     >= 0  # array size.
+     | 0  -1   0   0   0   0 1335    >= 0
+     | 0   0  -1   0   0   0 123     >= 0
+
+     Where:
+     - R: Number of rows.
+     - C: Number of columns.
+     - O: Number of output dimensions = alias set + number of subscripts.
+     - I: Number of input dimensions (iterators).
+     - L: Number of local (existentially quantified) dimensions.
+     - P: Number of parameters.
+
+     In the example, the vector "R C O I L P" is "7 7 3 2 0 1".  */
   ppl_Pointset_Powerset_C_Polyhedron_t accesses;
 
   /* Data reference's base object set number, we must assure 2 pdrs are in the
