@@ -1,3 +1,8 @@
+2010-07-29  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (max_signed_precision_type): Remove the call
+	to lang_hooks.types.type_for_size.  Call build_nonstandard_integer_type.
+
 2010-07-29  Riyadh Baghdadi <baghdadi.mr@gmail.com>
 
 	* graphite-cloog-util.c (openscop_print_cloog_matrix): New.
