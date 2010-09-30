@@ -11071,6 +11071,133 @@ fold_binary_loc (location_t loc,
 			      fold_convert_loc (loc, type, arg0));
 	}
 
+      /* For constants M and N, if M == (1LL << cst) - 1 && (N & M) == M,
+	 ((A & N) + B) & M -> (A + B) & M
+	 Similarly if (N & M) == 0,
+	 ((A | N) + B) & M -> (A + B) & M
+	 and for - instead of + (or unary - instead of +)
+	 and/or ^ instead of |.
+	 If B is constant and (B & M) == 0, fold into A & M.  */
+      if (host_integerp (arg1, 1))
+	{
+	  unsigned HOST_WIDE_INT cst1 = tree_low_cst (arg1, 1);
+	  if (~cst1 && (cst1 & (cst1 + 1)) == 0
+	      && INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+	      && (TREE_CODE (arg0) == PLUS_EXPR
+		  || TREE_CODE (arg0) == MINUS_EXPR
+		  || TREE_CODE (arg0) == NEGATE_EXPR)
+	      && (TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0))
+		  || TREE_CODE (TREE_TYPE (arg0)) == INTEGER_TYPE))
+	    {
+	      tree pmop[2];
+	      int which = 0;
+	      unsigned HOST_WIDE_INT cst0;
+
+	      /* Now we know that arg0 is (C + D) or (C - D) or
+		 -C and arg1 (M) is == (1LL << cst) - 1.
+		 Store C into PMOP[0] and D into PMOP[1].  */
+	      pmop[0] = TREE_OPERAND (arg0, 0);
+	      pmop[1] = NULL;
+	      if (TREE_CODE (arg0) != NEGATE_EXPR)
+		{
+		  pmop[1] = TREE_OPERAND (arg0, 1);
+		  which = 1;
+		}
+
+	      if (!host_integerp (TYPE_MAX_VALUE (TREE_TYPE (arg0)), 1)
+		  || (tree_low_cst (TYPE_MAX_VALUE (TREE_TYPE (arg0)), 1)
+		      & cst1) != cst1)
+		which = -1;
+
+	      for (; which >= 0; which--)
+		switch (TREE_CODE (pmop[which]))
+		  {
+		  case BIT_AND_EXPR:
+		  case BIT_IOR_EXPR:
+		  case BIT_XOR_EXPR:
+		    if (TREE_CODE (TREE_OPERAND (pmop[which], 1))
+			!= INTEGER_CST)
+		      break;
+		    /* tree_low_cst not used, because we don't care about
+		       the upper bits.  */
+		    cst0 = TREE_INT_CST_LOW (TREE_OPERAND (pmop[which], 1));
+		    cst0 &= cst1;
+		    if (TREE_CODE (pmop[which]) == BIT_AND_EXPR)
+		      {
+			if (cst0 != cst1)
+			  break;
+		      }
+		    else if (cst0 != 0)
+		      break;
+		    /* If C or D is of the form (A & N) where
+		       (N & M) == M, or of the form (A | N) or
+		       (A ^ N) where (N & M) == 0, replace it with A.  */
+		    pmop[which] = TREE_OPERAND (pmop[which], 0);
+		    break;
+		  case INTEGER_CST:
+		    /* If C or D is a N where (N & M) == 0, it can be
+		       omitted (assumed 0).  */
+		    if ((TREE_CODE (arg0) == PLUS_EXPR
+			 || (TREE_CODE (arg0) == MINUS_EXPR && which == 0))
+			&& (TREE_INT_CST_LOW (pmop[which]) & cst1) == 0)
+		      pmop[which] = NULL;
+		    break;
+		  default:
+		    break;
+		  }
+
+	      /* Only build anything new if we optimized one or both arguments
+		 above.  */
+	      if (pmop[0] != TREE_OPERAND (arg0, 0)
+		  || (TREE_CODE (arg0) != NEGATE_EXPR
+		      && pmop[1] != TREE_OPERAND (arg0, 1)))
+		{
+		  tree utype = type;
+		  if (! TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0)))
+		    {
+		      /* Perform the operations in a type that has defined
+			 overflow behavior.  */
+		      utype = unsigned_type_for (type);
+		      if (pmop[0] != NULL)
+			pmop[0] = fold_convert_loc (loc, utype, pmop[0]);
+		      if (pmop[1] != NULL)
+			pmop[1] = fold_convert_loc (loc, utype, pmop[1]);
+		    }
+
+		  if (TREE_CODE (arg0) == NEGATE_EXPR)
+		    tem = fold_build1_loc (loc, NEGATE_EXPR, utype, pmop[0]);
+		  else if (TREE_CODE (arg0) == PLUS_EXPR)
+		    {
+		      if (pmop[0] != NULL && pmop[1] != NULL)
+			tem = fold_build2_loc (loc, PLUS_EXPR, utype,
+					       pmop[0], pmop[1]);
+		      else if (pmop[0] != NULL)
+			tem = pmop[0];
+		      else if (pmop[1] != NULL)
+			tem = pmop[1];
+		      else
+			return build_int_cst (type, 0);
+		    }
+		  else if (pmop[0] == NULL)
+		    tem = fold_build1_loc (loc, NEGATE_EXPR, utype, pmop[1]);
+		  else
+		    tem = fold_build2_loc (loc, MINUS_EXPR, utype,
+					   pmop[0], pmop[1]);
+		  /* TEM is now the new binary +, - or unary - replacement.  */
+		  if (utype == type)
+		    return fold_build2_loc (loc, BIT_AND_EXPR, type,
+					    tem, arg1);
+		  else
+		    {
+		      tem = fold_build2_loc (loc, BIT_AND_EXPR, utype, tem,
+					     fold_convert_loc (loc, utype,
+					     arg1));		
+		      return fold_convert_loc (loc, type, tem);
+		    }
+		}
+	    }
+	}
+
       t1 = distribute_bit_expr (loc, code, type, arg0, arg1);
       if (t1 != NULL_TREE)
 	return t1;
