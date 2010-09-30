@@ -6743,6 +6743,8 @@ c_parser_objc_method_definition (c_parser *parser)
      objc-methodprotolist objc-methodproto
      objc-methodprotolist declaration
      objc-methodprotolist ;
+     @optional
+     @required
 
    The declaration is a data definition, which may be missing
    declaration specifiers under the same rules and diagnostics as
@@ -6775,7 +6777,18 @@ c_parser_objc_methodprotolist (c_parser *parser)
 	default:
 	  if (c_parser_next_token_is_keyword (parser, RID_AT_END))
 	    return;
-	  c_parser_declaration_or_fndef (parser, false, false, true,
+	  else if (c_parser_next_token_is_keyword (parser, RID_AT_OPTIONAL))
+	    {
+	      objc_set_method_opt (true);
+	      c_parser_consume_token (parser);
+	    }
+	  else if (c_parser_next_token_is_keyword (parser, RID_AT_REQUIRED))
+	    {
+	      objc_set_method_opt (false);
+	      c_parser_consume_token (parser);
+	    }
+	  else
+	    c_parser_declaration_or_fndef (parser, false, false, true,
 					 false, true);
 	  break;
 	}

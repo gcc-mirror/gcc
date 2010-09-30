@@ -1,3 +1,17 @@
+2010-09-30  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* c-common.c: Add two new entries for @optional
+	and @required keywords.
+
+	merge from FSF 'apple/trunk' branch.
+	2006-01-30  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4386773
+	* c-common.h (RID_AT_OPTIONAL, RID_AT_REQUIRED): Two new
+	objective-c keywords.
+	(objc_set_method_opt): New declaration.
+	* stub-objc.c (objc_set_method_opt): New stub.
+	
 2010-09-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (handle_optimize_attribute): Pass &global_options to

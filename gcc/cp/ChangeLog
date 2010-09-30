@@ -1,3 +1,12 @@
+2010-09-30  Iain Sandoe  <iains@gcc.gnu.org>
+
+	merge from FSF 'apple/trunk' branch.
+	2006-01-30  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4386773
+	* cp/parser.c (cp_parser_objc_interstitial_code): For
+	@optional/@required set the optional/required flag.
+	
 2010-09-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* parser.c (cp_lexer_get_preprocessor_token): Tidied up comments
