@@ -142,7 +142,8 @@ enum rid
   RID_AT_PRIVATE,  RID_AT_PROTECTED, RID_AT_PUBLIC,
   RID_AT_PROTOCOL, RID_AT_SELECTOR,
   RID_AT_THROW,	   RID_AT_TRY,       RID_AT_CATCH,
-  RID_AT_FINALLY,  RID_AT_SYNCHRONIZED,
+  RID_AT_FINALLY,  RID_AT_SYNCHRONIZED, 
+  RID_AT_OPTIONAL, RID_AT_REQUIRED,
   RID_AT_INTERFACE,
   RID_AT_IMPLEMENTATION,
 
@@ -1007,6 +1008,7 @@ extern tree objc_build_synchronized (location_t, tree, tree);
 extern int objc_static_init_needed_p (void);
 extern tree objc_generate_static_init_call (tree);
 extern tree objc_generate_write_barrier (tree, enum tree_code, tree);
+extern void objc_set_method_opt (bool);
 
 /* The following are provided by the C and C++ front-ends, and called by
    ObjC/ObjC++.  */

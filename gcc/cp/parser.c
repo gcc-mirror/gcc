@@ -21597,6 +21597,17 @@ cp_parser_objc_interstitial_code (cp_parser* parser)
   /* Allow stray semicolons.  */
   else if (token->type == CPP_SEMICOLON)
     cp_lexer_consume_token (parser->lexer);
+  /* Mark methods as optional or required, when building protocols.  */
+  else if (token->keyword == RID_AT_OPTIONAL)
+    {
+      cp_lexer_consume_token (parser->lexer);
+      objc_set_method_opt (true);
+    }
+  else if (token->keyword == RID_AT_REQUIRED)
+    {
+      cp_lexer_consume_token (parser->lexer);
+      objc_set_method_opt (false);
+    }
   /* Finally, try to parse a block-declaration, or a function-definition.  */
   else
     cp_parser_block_declaration (parser, /*statement_p=*/false);

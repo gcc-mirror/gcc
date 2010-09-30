@@ -1,3 +1,14 @@
+2010-09-30  Iain Sandoe  <iains@gcc.gnu.org>
+
+	merge from FSF 'apple/trunk' branch.
+	2006-01-30  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4386773
+	* objc.dg/enhanced-proto-1.m: New.
+	* objc.dg/enhanced-proto-2.m: New.
+	* obj-c++.dg/enhanced-proto-1.mm: New
+	* obj-c++.dg/enhanced-proto-2.mm: New.
+
 2010-09-30  Richard Guenther  <rguenther@suse.de>
 
 	PR testsuite/45702

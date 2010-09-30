@@ -1,3 +1,8 @@
+2010-09-30  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* c-parser.c (c_parser_objc_methodprotolist): Amend preceding comment,
+	parse @optional/@required and set the flags as appropriate.
+
 2010-09-30  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/iq2000/t-iq2000 (TARGET_LIBGCC2_CFLAGS): Delete.

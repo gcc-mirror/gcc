@@ -146,7 +146,7 @@ static void objc_start_function (tree, tree, tree, struct c_arg_info *);
 #endif
 static tree start_protocol (enum tree_code, tree, tree);
 static tree build_method_decl (enum tree_code, tree, tree, tree, bool);
-static tree objc_add_method (tree, tree, int);
+static tree objc_add_method (tree, tree, int, bool);
 static tree add_instance_variable (tree, int, tree);
 static tree build_ivar_reference (tree);
 static tree is_ivar (tree, tree);
@@ -351,6 +351,10 @@ int objc_public_flag;
 
 /* Use to generate method labels.  */
 static int method_slot = 0;
+
+/* Flag to say whether methods in a protocol are optional or
+   required.  */
+static bool objc_method_optional_flag = false;
 
 static int objc_collecting_ivars = 0;
 
@@ -687,6 +691,7 @@ objc_start_protocol (tree name, tree protos, tree attributes)
 		" of the compiler, (ignored)");
   objc_interface_context
     = start_protocol (PROTOCOL_INTERFACE_TYPE, name, protos);
+  objc_method_optional_flag = false;
 }
 
 void
@@ -701,6 +706,7 @@ objc_finish_interface (void)
 {
   finish_class (objc_interface_context);
   objc_interface_context = NULL_TREE;
+  objc_method_optional_flag = false;
 }
 
 void
@@ -753,6 +759,18 @@ objc_set_visibility (int visibility)
 }
 
 void
+objc_set_method_opt (bool optional)
+{
+  objc_method_optional_flag = optional;
+  if (!objc_interface_context 
+      || TREE_CODE (objc_interface_context) != PROTOCOL_INTERFACE_TYPE)
+    {
+      error ("@optional/@required is allowed in @protocol context only.");
+      objc_method_optional_flag = false;
+    }
+}
+
+void
 objc_set_method_type (enum tree_code type)
 {
   objc_inherit_code = (type == PLUS_EXPR
@@ -787,7 +805,8 @@ objc_add_method_declaration (tree decl, tree attributes)
 
   objc_add_method (objc_interface_context,
 		   decl,
-		   objc_inherit_code == CLASS_METHOD_DECL);
+		   objc_inherit_code == CLASS_METHOD_DECL,
+		   objc_method_optional_flag);
 }
 
 /* Return 'true' if the method definition could be started, and
@@ -816,7 +835,8 @@ objc_start_method_definition (tree decl, tree attributes)
 
   objc_add_method (objc_implementation_context,
 		   decl,
-		   objc_inherit_code == CLASS_METHOD_DECL);
+		   objc_inherit_code == CLASS_METHOD_DECL, 
+		   /* is optional */ false);
   start_method_def (decl);
   return true;
 }
@@ -7073,11 +7093,32 @@ add_method_to_hash_list (hash *hash_list, tree method)
 }
 
 static tree
-objc_add_method (tree klass, tree method, int is_class)
+objc_add_method (tree klass, tree method, int is_class, bool is_optional)
 {
   tree mth;
 
-  if (!(mth = lookup_method (is_class
+  /* @optional methods are added to protocol's OPTIONAL list */
+  if (is_optional)
+    {
+      gcc_assert (TREE_CODE (klass) == PROTOCOL_INTERFACE_TYPE);
+      if (!(mth = lookup_method (is_class
+				? PROTOCOL_OPTIONAL_CLS_METHODS (klass)
+				: PROTOCOL_OPTIONAL_NST_METHODS (klass), 
+								method)))
+	{
+	  if (is_class)
+	    {
+	      TREE_CHAIN (method) = PROTOCOL_OPTIONAL_CLS_METHODS (klass);
+	      PROTOCOL_OPTIONAL_CLS_METHODS (klass) = method;
+	    }
+	  else
+	    {
+	      TREE_CHAIN (method) = PROTOCOL_OPTIONAL_NST_METHODS (klass);
+	      PROTOCOL_OPTIONAL_NST_METHODS (klass) = method;
+	    }
+	}
+    }
+  else if (!(mth = lookup_method (is_class
 			     ? CLASS_CLS_METHODS (klass)
 			     : CLASS_NST_METHODS (klass), method)))
     {
@@ -9064,7 +9105,8 @@ really_start_method (tree method,
 
 	  if (interface)
 	    objc_add_method (interface, copy_node (method),
-			     TREE_CODE (method) == CLASS_METHOD_DECL);
+			     TREE_CODE (method) == CLASS_METHOD_DECL, 
+			     /* is_optional= */ false);
 	}
     }
 }
