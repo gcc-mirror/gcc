@@ -201,19 +201,29 @@ max_signed_precision_type (tree type1, tree type2)
   int p2 = TYPE_PRECISION (type2);
   int precision;
   tree type;
+  enum machine_mode mode;
 
   if (p1 > p2)
     precision = TYPE_UNSIGNED (type1) ? p1 * 2 : p1;
   else
     precision = TYPE_UNSIGNED (type2) ? p2 * 2 : p2;
 
-  type = lang_hooks.types.type_for_size (precision, false);
+  if (precision > BITS_PER_WORD)
+    {
+      gloog_error = true;
+      return integer_type_node;
+    }
+
+  mode = smallest_mode_for_size (precision, MODE_INT);
+  precision = GET_MODE_PRECISION (mode);
+  type = build_nonstandard_integer_type (precision, false);
 
   if (!type)
     {
       gloog_error = true;
       return integer_type_node;
     }
+
   return type;
 }
 
