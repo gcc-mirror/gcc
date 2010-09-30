@@ -1,5 +1,14 @@
 2010-08-14  Riyadh Baghdadi <baghdadi.mr@gmail.com>
 
+	* doc/invoke.texi (debugging options): Update documentation.
+	(-floop-interchange): Same.
+	(-flopp-strip-mine): Same.
+	(-floop-block): Same.
+	(-fgraphite-read): Add documentation.
+	(-fgraphite-write): Same.
+
+2010-08-14  Riyadh Baghdadi <baghdadi.mr@gmail.com>
+
 	* toplev.c (process_options): Disable graphite loop optimization
 	options when -fgraphite-read flag is used.
 
