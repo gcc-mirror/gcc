@@ -1821,12 +1821,14 @@ package body GNAT.Sockets is
          return Resource_Temporarily_Unavailable;
       end if;
 
-      pragma Warnings (On);
-
       --  This is not a case statement because if a particular error
       --  number constant is not defined, s-oscons-tmplt.c defines
       --  it to -1.  If multiple constants are not defined, they
       --  would each be -1 and result in a "duplicate value in case" error.
+      --
+      --  But we have to leave warnings off because the compiler is also
+      --  smart enough to note that when two errnos have the same value,
+      --  the second if condition is useless.
       if Error_Value = ENOERROR then
          return Success;
       elsif Error_Value = EACCES then
@@ -1910,6 +1912,8 @@ package body GNAT.Sockets is
       else
          return Cannot_Resolve_Error;
       end if;
+      pragma Warnings (On);
+
    end Resolve_Error;
 
    -----------------------
