@@ -1,4 +1,10 @@
-2010-08-14  Riyadh Baghdadi <baghdadi.mr@gmail.com>
+2010-08-17  Riyadh Baghdadi  <baghdadi.mr@gmail.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/graphite/graphite.exp: Add test rules for openscop read/write.
+	Call remove-build-file to clean up the generated *.graphite files.
+
+2010-08-17  Riyadh Baghdadi <baghdadi.mr@gmail.com>
 
 	* doc/invoke.texi (debugging options): Update documentation.
 	(-floop-interchange): Same.
@@ -7,7 +13,7 @@
 	(-fgraphite-read): Add documentation.
 	(-fgraphite-write): Same.
 
-2010-08-14  Riyadh Baghdadi <baghdadi.mr@gmail.com>
+2010-08-17  Riyadh Baghdadi <baghdadi.mr@gmail.com>
 
 	* toplev.c (process_options): Disable graphite loop optimization
 	options when -fgraphite-read flag is used.
