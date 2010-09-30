@@ -1,5 +1,9 @@
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-flattening.c: Fix comments.
+
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* Makefile.in (OBJS-common): Add graphite-flattening.o.
 	(graphite-flattening.o): New rule.
 	* common.opt (floop-flatten): New flag.

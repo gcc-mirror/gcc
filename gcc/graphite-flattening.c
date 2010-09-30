@@ -55,6 +55,12 @@ along with GCC; see the file COPYING3.  If not see
    then apply on the full loop body, without needing the outer-loop
    vectorization.
 
+   The loop flattening pass that has been described in a very Fortran
+   specific way in the 1992 paper by Reinhard von Hanxleden and Ken
+   Kennedy: "Relaxing SIMD Control Flow Constraints using Loop
+   Transformations" available from
+   http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.54.5033
+
    The canonical example is as follows: suppose that we have a loop
    nest with known iteration counts
 
@@ -95,11 +101,11 @@ along with GCC; see the file COPYING3.  If not see
    |   }
    | }
 
-   For an arbitrarily complex loop nests the algorithm proceeds in two
+   For an arbitrarily complex loop nest the algorithm proceeds in two
    steps.  First, the LST is flattened by removing the loops structure
    and by inserting the statements in the order they appear in
    depth-first order.  Then, the scattering of each statement is
-   transformed such that it
+   transformed accordingly.
 
    Supposing that the original program is represented by the following
    LST:
