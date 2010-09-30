@@ -341,6 +341,10 @@ dependencies = { module=all-gcc; on=all-libcpp; hard=true; };
 dependencies = { module=all-gcc; on=all-libdecnumber; hard=true; };
 dependencies = { module=all-gcc; on=all-libiberty; };
 dependencies = { module=all-gcc; on=all-fixincludes; };
+dependencies = { module=info-gcc; on=all-build-libiberty; };
+dependencies = { module=dvi-gcc; on=all-build-libiberty; };
+dependencies = { module=pdf-gcc; on=all-build-libiberty; };
+dependencies = { module=html-gcc; on=all-build-libiberty; };
 dependencies = { module=install-gcc ; on=install-fixincludes; };
 
 dependencies = { module=configure-libcpp; on=configure-libiberty; hard=true; };
