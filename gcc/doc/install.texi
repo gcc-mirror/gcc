@@ -1574,7 +1574,10 @@ they are installed (@samp{--with-gmp=@var{gmpinstalldir}},
 @option{--with-mpc-lib=@var{mpcinstalldir}/lib} and
 @option{--with-mpc-include=@var{mpcinstalldir}/include}.  If these
 shorthand assumptions are not correct, you can use the explicit
-include and lib options directly.
+include and lib options directly.  You might also need to ensure the
+shared libraries can be found by the dynamic linker when building and
+using GCC, for example by setting the runtime shared library path
+variable (@env{LD_LIBRARY_PATH} on GNU/Linux and Solaris systems).
 
 @item --with-ppl=@var{pathname}
 @itemx --with-ppl-include=@var{pathname}

@@ -1,3 +1,9 @@
+2010-09-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
+            Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/install.texi: Suggest using LD_LIBRARY_PATH to find libs
+	for GMP, MPFR and MPC.
+
 2010-09-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sparc/sparc.opt (mimpure-text): Move ...
