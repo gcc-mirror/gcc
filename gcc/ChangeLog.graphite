@@ -1,3 +1,15 @@
+2010-09-02  Vladimir Kargov  <kargov@gmail.com>
+
+	* graphite-scop-detection.c (is_valid_expr_p, is_valid_loop_p): New.
+	(is_valid_stmt_p): Add data reference and operation-specific checks.
+	(is_valid_bb_p): Change structure, add loop validity check.
+	(is_scop_p): Move the TODO list
+	(find_scops_new): New.
+	(build_scops_new): Move part of functionality to find_scops_new and
+	build_scops.  Add necessary steps for successful SCoP construction.
+	(build_scops): Compute SCoP sets for both detection algorithms, choose
+	the resulting one depending on static condition.
+
 2010-08-24  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-poly.c (graphite_read_scop_file): Fix uninitialize warning.
