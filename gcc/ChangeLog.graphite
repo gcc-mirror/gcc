@@ -1,5 +1,10 @@
 2010-09-09  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.c (pbb_number_of_iterations_at_time): Only iterate
+	over pbb_dim_iter_domain.
+
+2010-09-09  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-flattening.c: Fix comments.
 
 2010-09-09  Sebastian Pop  <sebastian.pop@amd.com>
