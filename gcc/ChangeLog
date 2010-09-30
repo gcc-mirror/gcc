@@ -1,3 +1,7 @@
+2010-09-30  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/iq2000/t-iq2000 (TARGET_LIBGCC2_CFLAGS): Delete.
+
 2010-09-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* opt-functions.awk (static_var): Update comment.
