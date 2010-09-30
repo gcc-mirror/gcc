@@ -1,5 +1,10 @@
 2010-09-23  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/45758
+	* gfortran.dg/graphite/pr45758.f90: New.
+
+2010-09-23  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-scop-detection.c (is_scop_p): Free bblist.
 
 2010-09-23  Sebastian Pop  <sebastian.pop@amd.com>

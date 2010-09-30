@@ -1,5 +1,10 @@
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/45758
+	* gfortran.dg/graphite/pr45758.f90: New.
+
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/45230
 	* gcc.dg/graphite/id-pr45230.c: New.
 
