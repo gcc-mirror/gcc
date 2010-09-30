@@ -1,3 +1,9 @@
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/45229
+	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps): Do not
+	handle GIMPLE_CALLs with no LHS.
+
 2010-09-30  Riyadh Baghdadi <baghdadi.mr@gmail.com>
 
 	* graphite-poly.c (init_graphite_out_file): New.
