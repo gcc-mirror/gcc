@@ -1,5 +1,9 @@
 2010-09-23  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-scop-detection.c (is_scop_p): Free bblist.
+
+2010-09-23  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (compute_bounds_for_level): Free le
 	and ps.
 	* graphite-poly.c (pbb_number_of_iterations_at_time): Free le and
