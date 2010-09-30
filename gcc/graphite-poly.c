@@ -54,6 +54,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite-dependences.h"
 #include "graphite-cloog-util.h"
 
+#define OPENSCOP_MAX_STRING 256
+
 /* Return the maximal loop depth in SCOP.  */
 
 int
@@ -434,6 +436,252 @@ debug_iteration_domains (scop_p scop, int verbosity)
   print_iteration_domains (stderr, scop, verbosity);
 }
 
+/* Read N integer from FILE.  */
+
+int *
+openscop_read_N_int (FILE *file, int N)
+{
+  char s[OPENSCOP_MAX_STRING];
+  char *str;
+  int i, *res = (int *) xmalloc (OPENSCOP_MAX_STRING * sizeof (int));
+
+  /* Skip blank and commented lines.  */
+  while (fgets (s, sizeof s, file) == (char *) 0
+	 || s[0] == '#'
+	 || ISSPACE (s[0]))
+    ;
+
+  str = s;
+
+  for (i = 0; i < N; i++)
+    {
+      sscanf (str, "%d", &res[i]);
+
+      /* Jump the integer that was read.  */
+      while ((*str) && !ISSPACE (*str) && (*str != '#'))
+	str++;
+
+      /* Jump spaces.  */
+      while ((*str) && ISSPACE (*str) && (*str != '#'))
+	str++;
+    }
+
+  return res;
+}
+
+/* Read one integer from FILE.  */
+
+static int
+openscop_read_one_int (FILE *file)
+{
+  int *x = openscop_read_N_int (file, 1);
+  int res = *x;
+
+  free (x);
+  return res;
+}
+
+/* Read N string from FILE.  */
+
+static char *
+openscop_read_N_string (FILE *file, int N)
+{
+  int count, i;
+  char str[OPENSCOP_MAX_STRING];
+  char *tmp = (char *) xmalloc (sizeof (char) * OPENSCOP_MAX_STRING);
+  char *s = NULL;
+
+  /* Skip blank and commented lines.  */
+  while (fgets (str, sizeof str, file) == (char *) 0
+	 || str[0] == '#'
+	 || ISSPACE (str[0]))
+    ;
+
+  s = str;
+  count = 0;
+
+  for (i = 0; i < N; i++)
+    {
+      /* Read the first word.  */
+      for (; (*s) && (!ISSPACE (*s)) && (*s != '#'); ++count)
+        tmp[count] = *(s++);
+
+      tmp[count] = ' ';
+      count++;
+
+      /* Jump spaces.  */
+      while ((*s) && ISSPACE (*s) && (*s != '#'))
+	s++;
+    }
+
+  tmp[count-1] = '\0';
+
+  return tmp;
+}
+
+/* Read one string from FILE.  */
+
+static char *
+openscop_read_one_string (FILE *file)
+{
+  return openscop_read_N_string (file, 1);
+}
+
+/* Read from FILE the powerset PS in its OpenScop matrix form.  OUTPUT is the
+   number of output dimensions, INPUT is the number of input dimensions,
+   LOCALS is the number of existentially quantified variables and PARAMS is
+   the number of parameters.  */
+
+static void
+openscop_read_powerset_matrix (FILE *file,
+			       ppl_Pointset_Powerset_C_Polyhedron_t *ps,
+			       int *output, int *input, int *locals,
+			       int *params)
+{
+  int nb_disjuncts, i;
+
+  nb_disjuncts = openscop_read_one_int (file);
+
+  for (i = 0; i < nb_disjuncts; i++)
+    {
+      ppl_Polyhedron_t ph;
+
+      openscop_read_polyhedron_matrix (file, &ph, output, input, locals,
+				       params);
+      if (!ph)
+        *ps = NULL;
+      else if (i == 0)
+        ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (ps, ph);
+      else
+        ppl_Pointset_Powerset_C_Polyhedron_add_disjunct (*ps, ph);
+    }
+}
+
+/* Read a scattering function from FILE and save it to PBB.  Return whether
+   the scattering function was provided or not.  */
+
+static bool
+graphite_read_scatt (FILE *file, poly_bb_p pbb)
+{
+  bool scattering_provided = false;
+  int output, input, locals, params;
+  ppl_Polyhedron_t newp;
+
+  if (openscop_read_one_int (file) > 0)
+    {
+      /* Read number of disjunct components.  */
+      openscop_read_one_int (file);
+
+      /* Read scattering function.  */
+      openscop_read_polyhedron_matrix (file, &newp, &output, &input,
+				       &locals, &params);
+      store_scattering (PBB_SCOP (pbb));
+      PBB_TRANSFORMED (pbb) = poly_scattering_new ();
+      PBB_TRANSFORMED_SCATTERING (pbb) = newp;
+      PBB_NB_LOCAL_VARIABLES (pbb) = locals;
+
+      /* New scattering dimension.  */
+      PBB_NB_SCATTERING_TRANSFORM (pbb) = output;
+
+      scattering_provided = true;
+    }
+
+  return scattering_provided;
+}
+
+/* Read a scop file.  Return true if the scop is transformed.  */
+
+static bool
+graphite_read_scop_file (FILE *file, scop_p scop)
+{
+  char *tmp, *language;
+  size_t i, j, nb_statements, nbr, nbw;
+  int input, output, locals, params;
+  ppl_Pointset_Powerset_C_Polyhedron_t ps;
+  poly_bb_p pbb;
+  bool transform_done;
+
+  /* Ensure that the file is in OpenScop format.  */
+  tmp = openscop_read_N_string (file, 2);
+
+  if (strcmp (tmp, "SCoP 1"))
+    {
+      error ("The file is not in OpenScop format.\n");
+      return false;
+    }
+
+  free (tmp);
+
+  /* Read the language.  */
+  language = openscop_read_one_string (file);
+
+  if (strcmp (language, "Gimple"))
+    {
+      error ("The language is not recognized\n");
+      return false;
+    }
+
+  free (language);
+
+  /* Read the context but do not use it.  */
+  openscop_read_powerset_matrix (file, &ps, &input, &output, &locals, &params);
+
+  if ((size_t) params != scop->nb_params)
+    {
+      error ("Parameters number in the scop file is different from the"
+	     " internal scop parameter number.");
+      return false;
+    }
+
+  /* Read parameter names if provided.  */
+  if (openscop_read_one_int (file))
+    openscop_read_N_string (file, scop->nb_params);
+
+  nb_statements = openscop_read_one_int (file);
+
+  if (nb_statements != VEC_length (poly_bb_p, SCOP_BBS (scop)))
+    {
+      error ("Number of statements in the OpenScop file does not match"
+	     " the graphite internal statements number.");
+      return false;
+    }
+
+  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
+    {
+      /* Read iteration domain.  */
+      openscop_read_powerset_matrix (file, &ps, &input, &output, &locals,
+				     &params);
+
+      /* Read scattering.  */
+      transform_done = graphite_read_scatt (file, pbb);
+
+      /* Scattering names.  */
+      openscop_read_one_int (file);
+
+      /* Read access functions.  */
+      if (openscop_read_one_int (file) > 0)
+	{
+	  nbr = openscop_read_one_int (file);
+
+	  /* Read access functions.  */
+	  for (j = 0; j < nbr; j++)
+	    openscop_read_powerset_matrix (file, &ps, &input, &output, &locals,
+					   &params);
+
+	  nbw = openscop_read_one_int (file);
+
+	  /* Write access functions.  */
+	  for (j = 0; j < nbw; j++)
+	    openscop_read_powerset_matrix (file, &ps, &input, &output, &locals,
+					   &params);
+	}
+
+      /* Statement body.  */
+      openscop_read_one_int (file);
+    }
+
+  return transform_done;
+}
 
 /* Apply graphite transformations to all the basic blocks of SCOP.  */
 
@@ -441,6 +689,13 @@ bool
 apply_poly_transforms (scop_p scop)
 {
   bool transform_done = false;
+
+  /* This feature is only enabled in the Graphite branch.  */
+  if (0)
+    {
+      transform_done |= graphite_read_scop_file (dump_file, scop);
+      gcc_assert (graphite_legal_transform (scop));
+    }
 
   /* Generate code even if we did not apply any real transformation.
      This also allows to check the performance for the identity
@@ -463,6 +718,10 @@ apply_poly_transforms (scop_p scop)
       if (flag_loop_interchange)
 	transform_done |= scop_do_interchange (scop);
     }
+
+  /* This feature is only enabled in the Graphite branch.  */
+  if (0)
+    print_scop (dump_file, scop, 1);
 
   return transform_done;
 }
