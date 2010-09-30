@@ -1062,6 +1062,19 @@ lst_remove_from_sequence (lst_p lst)
   LST_LOOP_FATHER (lst) = NULL;
 }
 
+/* Sets NITER to the upper bound approximation of the number of
+   iterations of loop LST.  */
+
+static inline void
+lst_niter_for_loop (lst_p lst, mpz_t niter)
+{
+  int depth = lst_depth (lst);
+  poly_bb_p pbb = LST_PBB (lst_find_first_pbb (lst));
+
+  gcc_assert (LST_LOOP_P (lst));
+  pbb_number_of_iterations_at_time (pbb, psct_dynamic_dim (pbb, depth), niter);
+}
+
 /* Updates the scattering of PBB to be at the DEWEY number in the loop
    at depth LEVEL.  */
 
