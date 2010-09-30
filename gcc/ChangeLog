@@ -1,3 +1,16 @@
+2010-09-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sparc.opt (mimpure-text): Move ...
+	* config/sol2.opt: ... here.
+	Correct description.
+	* config.gcc (*-*-solaris2*): Add sol2.opt to extra_options.
+	* doc/invoke.texi (Option Summary, SPARC Options): Move
+	-mimpure-text, -mno-impure-text, -threads, -pthreads, -pthread ...
+	(Option Summary, Solaris 2 Options): ... here.
+	(Submodel Options, Solaris 2 Options): New menu entry.
+	(SPARC Options): Move -mimpure-text, -threads, -pthreads, -pthread ...
+	(Solaris 2 Options): ... here.
+
 2010-09-30  Michael Eager  <eager@eagercon.com>
 
 	* extend.texi (interrupt_handler): Add MicroBlaze to list.
