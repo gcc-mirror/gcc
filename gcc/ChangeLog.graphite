@@ -1,3 +1,12 @@
+2010-09-23  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (compute_bounds_for_level): Free le
+	and ps.
+	* graphite-poly.c (pbb_number_of_iterations_at_time): Free le and
+	domain.
+	* graphite-sese-to-poly.c (add_upper_bounds_from_estimated_nit):
+	Do not allocate ub_expr, it is passed in initialized.
+
 2010-09-21  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* common.opt (fgraphite-dump-cloog): New flag.

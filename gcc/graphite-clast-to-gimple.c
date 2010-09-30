@@ -703,6 +703,8 @@ compute_bounds_for_level (poly_bb_p pbb, int level, mpz_t low, mpz_t up)
 
   ppl_max_for_le_pointset (ps, le, up);
   ppl_min_for_le_pointset (ps, le, low);
+  ppl_delete_Linear_Expression (le);
+  ppl_delete_Pointset_Powerset_C_Polyhedron (ps);
 }
 
 /* Compute the type for the induction variable at LEVEL for the

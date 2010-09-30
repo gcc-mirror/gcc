@@ -1738,8 +1738,10 @@ pbb_number_of_iterations_at_time (poly_bb_p pbb,
   mpz_clear (diff);
   mpz_clear (lb);
   mpz_clear (ub);
+  ppl_delete_Linear_Expression (le);
   ppl_delete_Pointset_Powerset_C_Polyhedron (sctr_ub);
   ppl_delete_Pointset_Powerset_C_Polyhedron (sctr_lb);
+  ppl_delete_Pointset_Powerset_C_Polyhedron (domain);
 }
 
 /* Translates LOOP to LST.  */
