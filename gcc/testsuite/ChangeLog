@@ -1,3 +1,25 @@
+2010-09-30  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR objc/45842
+	* objc.dg/threedotthree-abi-1.m: Only apply at m32.
+	* objc.dg/const-str-3.m: Correct header for memcpy.
+	* objc.dg/const-str-7.m: Likewise.
+	* objc.dg/method-20b.m: Provide an implementation of Object.
+	Adjust XFAIL for m64 NeXT runtime.
+	* objc.dg/const-str-12b.m: Use mapped data types Darwin >= 9.
+	* objc.dg/encode-3.m: Correct line ordering, provide header for 
+	sprintf.
+	* objc.dg/encode-7-next.m: Only run for 32bit.
+	* objc.dg/encode-7-next-64bit.m: Only run for 64bit.
+	* objc.dg/type-size-2.m: Provide an implementation of Object.
+	Ajust headers.
+	* obj-c++.dg/const-str-7.mm: Correct header for memcpy.
+	* obj-c++.dg/const-str-12.mm: Use mapped data types Darwin >= 9.
+	* obj-c++.dg/method-23.mm: Provide an implementation of Object.
+	Adjust XFAIL for m64 NeXT runtime.
+	* obj-c++.dg/method-22.mm: Likewise.
+	* obj-c++.dg/threedotthree-abi-1.mm: Only apply at m32.
+
 2010-09-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.

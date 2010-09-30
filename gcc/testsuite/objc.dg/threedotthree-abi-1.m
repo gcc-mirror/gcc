@@ -1,13 +1,14 @@
 /* This file tests that things are encoded using the gcc-3.3 ABI which is only
    used by the NeXT runtime.  */
 /* { dg-do run { target *-*-darwin* } } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
+
+#include "../objc-obj-c++-shared/Protocol1.h"
 #include <stdio.h>
 #include <string.h>
-#include "../objc-obj-c++-shared/Protocol1.h"
 
 extern void abort();
-
 
 @protocol CommonProtocol
 

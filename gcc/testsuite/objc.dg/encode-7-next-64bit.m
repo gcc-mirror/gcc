@@ -1,8 +1,9 @@
 /* Additional testing for the NeXT runtime. Encoding in -m64 mode  */
 
 /* { dg-do run { target *-*-darwin* } } */
-/* { dg-options "-m64" } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 #include <objc/Object.h>
 #include <stdbool.h>
