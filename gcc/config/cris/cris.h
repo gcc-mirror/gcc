@@ -1073,14 +1073,6 @@ struct cum_args {int regs;};
 
 /* Node: Costs */
 
-#define REGISTER_MOVE_COST(MODE, FROM, TO)	\
-  cris_register_move_cost (MODE, FROM, TO)
-
-/* This isn't strictly correct for v0..3 in buswidth-8bit mode, but
-   should suffice.  */
-#define MEMORY_MOVE_COST(M, CLASS, IN) \
- (((M) == QImode) ? 4 : ((M) == HImode) ? 4 : 6)
-
 /* Regardless of the presence of delay slots, the default value of 1 for
    BRANCH_COST is the best in the range (1, 2, 3), tested with gcc-2.7.2
    with testcases ipps and gcc, giving smallest and fastest code.  */

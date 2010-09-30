@@ -1,3 +1,12 @@
+2010-09-30  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/cris/m32c.c (cris_memory_move_cost): New.
+	(cris_register_move_cost): Make static. Change arguments type from
+	enum reg_class to reg_class_t.
+	(TARGET_REGISTER_MOVE_COST, TARGET_MEMORY_MOVE_COST): Define.
+	* config/cris/cris.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.
+	* config/cris/cris-protos.h (cris_register_move_cost): Remove.
+
 2010-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/45843

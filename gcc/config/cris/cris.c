@@ -121,6 +121,8 @@ static void cris_asm_output_mi_thunk
 static void cris_file_start (void);
 static void cris_init_libfuncs (void);
 
+static int cris_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
+static int cris_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool cris_rtx_costs (rtx, int, int, int *, bool);
 static int cris_address_cost (rtx, bool);
 static bool cris_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
@@ -185,6 +187,10 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS cris_init_libfuncs
 
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST cris_register_move_cost
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST cris_memory_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS cris_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -1378,11 +1384,11 @@ cris_reload_address_legitimized (rtx x,
   return false;
 }
 
-/* Worker function for REGISTER_MOVE_COST.  */
+/* Worker function for TARGET_REGISTER_MOVE_COST.  */
 
-int
+static int
 cris_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
-			 enum reg_class from, enum reg_class to) 
+			 reg_class_t from, reg_class_t to)
 {
   if (!TARGET_V32)
     {
@@ -1422,6 +1428,23 @@ cris_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
     return 3;
 
   return 2;
+}
+
+/* Worker function for TARGET_MEMORY_MOVE_COST.
+
+   This isn't strictly correct for v0..3 in buswidth-8bit mode, but should
+   suffice.  */
+
+static int
+cris_memory_move_cost (enum machine_mode mode,
+                       reg_class_t rclass ATTRIBUTE_UNUSED,
+                       bool in ATTRIBUTE_UNUSED)
+{
+  if (mode == QImode
+      || mode == HImode)
+    return 4;
+  else
+    return 6;
 }
 
 /* Worker for cris_notice_update_cc; handles the "normal" cases.
