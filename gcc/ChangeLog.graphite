@@ -1,5 +1,15 @@
 2010-08-11  Riyadh Baghdadi <baghdadi.mr@gmail.com>
 
+	* graphite-cloog-util.c (openscop_print_cloog_matrix): Remove spaces
+	from matrix lines.
+	* graphite-poly.c (openscop_print_scattering_function_1): Same.
+	(print_scattering_function_1): Same.
+	(openscop_print_pbb_domain): Same.
+	(openscop_print_scop_context): Same.
+	(print_scop_context): Same.
+
+2010-08-11  Riyadh Baghdadi <baghdadi.mr@gmail.com>
+
 	* graphite-poly.c (openscop_print_pdr_polyhedron): Fix indentation.
 	(openscop_print_pdr_polyhedron): Print pph.
 

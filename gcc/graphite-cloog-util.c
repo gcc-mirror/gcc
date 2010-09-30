@@ -315,7 +315,11 @@ openscop_print_cloog_matrix (FILE *file, CloogMatrix *mat,
   for (i = 0; i < cloog_matrix_nrows (mat); i++)
     {
       for (j = 0; j < cloog_matrix_ncolumns (mat); j++)
-	fprintf (file, "%6ld ", mpz_get_si (mat->p[i][j]));
+        if (j == 0)
+	  fprintf (file, "%ld ", mpz_get_si (mat->p[i][j]));
+        else
+	  fprintf (file, "%6ld ", mpz_get_si (mat->p[i][j]));
+
       fprintf (file, "\n");
     }
 }
