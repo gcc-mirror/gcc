@@ -2337,6 +2337,41 @@ instantiate_scev_binary (basic_block instantiate_below,
 /* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
    and EVOLUTION_LOOP, that were left under a symbolic form.
 
+   "CHREC" is an array reference to be instantiated.
+
+   CACHE is the cache of already instantiated values.
+
+   FOLD_CONVERSIONS should be set to true when the conversions that
+   may wrap in signed/pointer type are folded, as long as the value of
+   the chrec is preserved.
+
+   SIZE_EXPR is used for computing the size of the expression to be
+   instantiated, and to stop if it exceeds some limit.  */
+
+static tree
+instantiate_array_ref (basic_block instantiate_below,
+		       struct loop *evolution_loop, tree chrec,
+		       bool fold_conversions, htab_t cache, int size_expr)
+{
+  tree res;
+  tree index = TREE_OPERAND (chrec, 1);
+  tree op1 = instantiate_scev_r (instantiate_below, evolution_loop, index,
+				 fold_conversions, cache, size_expr);
+
+  if (op1 == chrec_dont_know)
+    return chrec_dont_know;
+
+  if (chrec && op1 == index)
+    return chrec;
+
+  res = unshare_expr (chrec);
+  TREE_OPERAND (res, 1) = op1;
+  return res;
+}
+
+/* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
+   and EVOLUTION_LOOP, that were left under a symbolic form.
+
    "CHREC" that stands for a convert expression "(TYPE) OP" is to be
    instantiated.
 
@@ -2612,6 +2647,10 @@ instantiate_scev_r (basic_block instantiate_below,
 
     case SCEV_KNOWN:
       return chrec_known;
+
+    case ARRAY_REF:
+      return instantiate_array_ref (instantiate_below, evolution_loop, chrec,
+				    fold_conversions, cache, size_expr);
 
     default:
       break;
