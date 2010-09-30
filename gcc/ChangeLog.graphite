@@ -1,3 +1,7 @@
+2010-09-09  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.h (lst_dewey_number): Use FOR_EACH_VEC_ELT.
+
 2010-09-02  Vladimir Kargov  <kargov@gmail.com>
 
 	* graphite-scop-detection.c (is_valid_expr_p, is_valid_loop_p): New.

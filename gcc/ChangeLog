@@ -1,4 +1,8 @@
-2010-08-24  Sebastian Pop  <sebastian.pop@amd.com>
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.h (lst_dewey_number): Use FOR_EACH_VEC_ELT.
+
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-poly.c (graphite_read_scop_file): Fix uninitialize warning.
 
