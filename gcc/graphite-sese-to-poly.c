@@ -2465,7 +2465,8 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
       return false;
     }
 
-  if (!is_gimple_reg (def))
+  if (!def
+      || !is_gimple_reg (def))
     return false;
 
   if (scev_analyzable_p (def, region))
