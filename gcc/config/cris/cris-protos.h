@@ -31,8 +31,6 @@ extern bool cris_simple_epilogue (void);
 extern const char *cris_op_str (rtx);
 extern void cris_notice_update_cc (rtx, rtx);
 extern bool cris_reload_address_legitimized (rtx, enum machine_mode, int, int, int);
-extern int cris_register_move_cost (enum machine_mode, enum reg_class,
-				    enum reg_class);
 extern int cris_side_effect_mode_ok (enum rtx_code, rtx *, int, int,
                                      int, int, int);
 extern bool cris_cc0_user_requires_cmp (rtx);
