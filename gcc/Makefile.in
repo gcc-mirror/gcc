@@ -1244,6 +1244,7 @@ OBJS-common = \
 	graphite-clast-to-gimple.o \
 	graphite-cloog-util.o \
 	graphite-dependences.o \
+	graphite-flattening.o \
 	graphite-interchange.o \
 	graphite-poly.o \
 	graphite-ppl.o \
@@ -2695,6 +2696,12 @@ graphite-dependences.o: graphite-dependences.c $(CONFIG_H) $(SYSTEM_H) \
    $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(TIMEVAR_H) $(CFGLOOP_H) \
    $(GIMPLE_H) $(TREE_DATA_REF_H) tree-pass.h domwalk.h \
    graphite.h graphite-poly.h graphite-ppl.h graphite-dependences.h
+graphite-flattening.o: graphite-flattening.c $(CONFIG_H) $(SYSTEM_H)	\
+   coretypes.h $(TM_H) $(GGC_H) $(TREE_H) $(RTL_H) output.h		\
+   $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) $(TOPLEV_H) $(TREE_FLOW_H)		\
+   $(TREE_DUMP_H) $(TIMEVAR_H) $(CFGLOOP_H) $(GIMPLE_H)			\
+   $(TREE_DATA_REF_H) tree-pass.h domwalk.h value-prof.h graphite.h	\
+   graphite-poly.h graphite-ppl.h
 graphite-interchange.o: graphite-interchange.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(RTL_H) output.h $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) \

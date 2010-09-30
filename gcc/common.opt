@@ -870,6 +870,10 @@ floop-block
 Common Report Var(flag_loop_block) Optimization
 Enable Loop Blocking transformation
 
+floop-flatten
+Common Report Var(flag_loop_flatten) Optimization
+Enable Loop Flattening transformation
+
 fstrict-volatile-bitfields
 Common Report Var(flag_strict_volatile_bitfields) Init(-1)
 Force bitfield accesses to match their type width

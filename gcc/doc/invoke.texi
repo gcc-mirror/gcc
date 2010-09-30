@@ -352,7 +352,7 @@ Objective-C and Objective-C++ Dialects}.
 -fira-loop-pressure -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
--floop-block -floop-interchange -floop-strip-mine @gol
+-floop-block -floop-flatten -floop-interchange -floop-strip-mine @gol
 -floop-parallelize-all -flto -flto-compression-level -flto-report @gol
 -fltrans -fltrans-output-list -fmerge-all-constants -fmerge-constants @gol
 -fmodulo-sched -fmodulo-sched-allow-regmoves -fmove-loop-invariants @gol
@@ -6798,6 +6798,7 @@ Perform linear loop transformations on tree.  This flag can improve cache
 performance and allow further loop optimizations to take place.
 
 @item -floop-interchange
+@opindex floop-interchange
 Perform loop interchange transformations on loops.  Interchanging two
 nested loops switches the inner and outer loops.  For example, given a
 loop like:
@@ -6826,6 +6827,7 @@ with @option{--with-ppl} and @option{--with-cloog} to enable the
 Graphite loop transformation infrastructure.
 
 @item -floop-strip-mine
+@opindex floop-strip-mine
 Perform loop strip mining transformations on loops.  Strip mining
 splits a loop into two nested loops.  The outer loop has strides
 equal to the strip size and the inner loop has strides of the
@@ -6851,6 +6853,7 @@ be configured with @option{--with-ppl} and @option{--with-cloog} to
 enable the Graphite loop transformation infrastructure.
 
 @item -floop-block
+@opindex floop-block
 Perform loop blocking transformations on loops.  Blocking strip mines
 each loop in the loop nest such that the memory accesses of the
 element loops fit inside caches.  The strip length can be changed
@@ -6892,7 +6895,14 @@ GIMPLE -> GRAPHITE -> GIMPLE transformation.  Some minimal optimizations
 are also performed by the code generator CLooG, like index splitting and
 dead code elimination in loops.
 
+@item -floop-flatten
+@opindex floop-flatten
+Removes the loop nesting structure: transforms the loop nest into a
+single loop.  This transformation can be useful to vectorize all the
+levels of the loop nest.
+
 @item -floop-parallelize-all
+@opindex floop-parallelize-all
 Use the Graphite data dependence analysis to identify loops that can
 be parallelized.  Parallelize all the loops that can be analyzed to
 not contain loop carried dependences without checking that it is

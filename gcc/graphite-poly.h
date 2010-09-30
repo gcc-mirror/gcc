@@ -414,6 +414,7 @@ extern void debug_iteration_domains (scop_p, int);
 extern bool scop_do_interchange (scop_p);
 extern bool scop_do_strip_mine (scop_p);
 extern bool scop_do_block (scop_p);
+extern bool flatten_all_loops (scop_p);
 extern void pbb_number_of_iterations_at_time (poly_bb_p, graphite_dim_t, mpz_t);
 extern void pbb_remove_duplicate_pdrs (poly_bb_p);
 
@@ -944,7 +945,7 @@ find_lst_loop (lst_p stmt, int loop_depth)
   return loop;
 }
 
-/* Return the first lst representing a PBB statement in LST.  */
+/* Return the first LST representing a PBB statement in LST.  */
 
 static inline lst_p
 lst_find_first_pbb (lst_p lst)
@@ -968,7 +969,7 @@ lst_find_first_pbb (lst_p lst)
   return NULL;
 }
 
-/* Returns true when LST is a loop that does not contains
+/* Returns true when LST is a loop that does not contain
    statements.  */
 
 static inline bool
@@ -977,7 +978,7 @@ lst_empty_p (lst_p lst)
   return !lst_find_first_pbb (lst);
 }
 
-/* Return the last lst representing a PBB statement in LST.  */
+/* Return the last LST representing a PBB statement in LST.  */
 
 static inline lst_p
 lst_find_last_pbb (lst_p lst)
@@ -1059,6 +1060,26 @@ lst_remove_from_sequence (lst_p lst)
 
   VEC_ordered_remove (lst_p, LST_SEQ (father), dewey);
   LST_LOOP_FATHER (lst) = NULL;
+}
+
+/* Removes the loop LST and inline its body in the father loop.  */
+
+static inline void
+lst_remove_loop_and_inline_stmts_in_loop_father (lst_p lst)
+{
+  lst_p l, father = LST_LOOP_FATHER (lst);
+  int i, dewey = lst_dewey_number (lst);
+
+  gcc_assert (lst && father && dewey >= 0);
+
+  VEC_ordered_remove (lst_p, LST_SEQ (father), dewey);
+  LST_LOOP_FATHER (lst) = NULL;
+
+  FOR_EACH_VEC_ELT (lst_p, LST_SEQ (lst), i, l)
+    {
+      VEC_safe_insert (lst_p, heap, LST_SEQ (father), dewey + i, l);
+      LST_LOOP_FATHER (l) = father;
+    }
 }
 
 /* Sets NITER to the upper bound approximation of the number of
