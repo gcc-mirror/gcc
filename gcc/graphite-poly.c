@@ -753,7 +753,11 @@ apply_poly_transforms (scop_p scop)
     {
       graphite_file = init_graphite_in_file (file_scop_number);
       transform_done |= graphite_read_scop_file (graphite_file, scop);
-      gcc_assert (graphite_legal_transform (scop));
+
+      if (!graphite_legal_transform (scop))
+	fatal_error ("the graphite file read for scop %d does not contain a legal transform",
+		     (int) file_scop_number);
+
       file_scop_number++;
     }
 
