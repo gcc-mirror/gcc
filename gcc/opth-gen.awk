@@ -115,6 +115,15 @@ for (i = 0; i < n_opts; i++) {
 	print "#define " name " global_options.x_" name
 	print "#endif"
 }
+for (i = 0; i < n_opts; i++) {
+	name = static_var(opts[i], flags[i]);
+	if (name != "") {
+		print "#ifndef GENERATOR_FILE"
+		print "  " var_type(flags[i]) "x_" name ";"
+		print "#define x_" name " do_not_use"
+		print "#endif"
+	}
+}
 print "#ifndef GENERATOR_FILE"
 print "};"
 print "extern struct gcc_options global_options;"
@@ -258,19 +267,19 @@ print "};";
 print "";
 print "";
 print "/* Save optimization variables into a structure.  */"
-print "extern void cl_optimization_save (struct cl_optimization *);";
+print "extern void cl_optimization_save (struct cl_optimization *, struct gcc_options *);";
 print "";
 print "/* Restore optimization variables from a structure.  */";
-print "extern void cl_optimization_restore (struct cl_optimization *);";
+print "extern void cl_optimization_restore (struct gcc_options *, struct cl_optimization *);";
 print "";
 print "/* Print optimization variables from a structure.  */";
 print "extern void cl_optimization_print (FILE *, int, struct cl_optimization *);";
 print "";
 print "/* Save selected option variables into a structure.  */"
-print "extern void cl_target_option_save (struct cl_target_option *);";
+print "extern void cl_target_option_save (struct cl_target_option *, struct gcc_options *);";
 print "";
 print "/* Restore selected option variables from a structure.  */"
-print "extern void cl_target_option_restore (struct cl_target_option *);";
+print "extern void cl_target_option_restore (struct gcc_options *, struct cl_target_option *);";
 print "";
 print "/* Print target option variables from a structure.  */";
 print "extern void cl_target_option_print (FILE *, int, struct cl_target_option *);";

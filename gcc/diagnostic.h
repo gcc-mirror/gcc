@@ -146,7 +146,11 @@ struct diagnostic_context
 
   /* Client hook to say whether the option controlling a diagnostic is
      enabled.  Returns nonzero if enabled, zero if disabled.  */
-  int (*option_enabled) (int);
+  int (*option_enabled) (int, void *);
+
+  /* Client information to pass as second argument to
+     option_enabled.  */
+  void *option_state;
 
   /* Client hook to return the name of an option that controls a
      diagnostic.  Returns malloced memory.  The first diagnostic_t

@@ -1,3 +1,13 @@
+2010-09-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (handle_optimize_attribute): Pass &global_options to
+	cl_optimization_save and cl_optimization_restore.
+	* c-opts.c (c_common_handle_option): Pass &global_options to
+	handle_generated_option.
+	* c-pragma.c (handle_pragma_diagnostic): Use option_flag_var.
+	(handle_pragma_pop_options, handle_pragma_reset_options): Pass
+	&global_options to cl_optimization_restore.
+
 2010-09-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-lex.c (c_lex_with_flags): Updated comments for CPP_AT_NAME

@@ -799,12 +799,13 @@ keep:
 }
 
 /* Handle option DECODED for the language indicated by LANG_MASK,
-   using the handlers in HANDLERS.  KIND is the diagnostic_t if this
-   is a diagnostics option, DK_UNSPECIFIED otherwise.  Returns false
-   if the switch was invalid.  */
+   using the handlers in HANDLERS and setting fields in OPTS.  KIND is
+   the diagnostic_t if this is a diagnostics option, DK_UNSPECIFIED
+   otherwise.  Returns false if the switch was invalid.  */
 
 bool
-handle_option (const struct cl_decoded_option *decoded,
+handle_option (struct gcc_options *opts,
+	       const struct cl_decoded_option *decoded,
 	       unsigned int lang_mask, int kind,
 	       const struct cl_option_handlers *handlers)
 {
@@ -812,15 +813,16 @@ handle_option (const struct cl_decoded_option *decoded,
   const char *arg = decoded->arg;
   int value = decoded->value;
   const struct cl_option *option = &cl_options[opt_index];
+  void *flag_var = option_flag_var (opt_index, opts);
   size_t i;
 
-  if (option->flag_var)
-    set_option (opt_index, value, arg, kind);
+  if (flag_var)
+    set_option (opts, opt_index, value, arg, kind);
 
   for (i = 0; i < handlers->num_handlers; i++)
     if (option->flags & handlers->handlers[i].mask)
       {
-	if (!handlers->handlers[i].handler (decoded,
+	if (!handlers->handlers[i].handler (opts, decoded,
 					    lang_mask, kind, handlers))
 	  return false;
 	else
@@ -837,14 +839,15 @@ handle_option (const struct cl_decoded_option *decoded,
    command line.  */
 
 bool
-handle_generated_option (size_t opt_index, const char *arg, int value,
+handle_generated_option (struct gcc_options *opts, size_t opt_index,
+			 const char *arg, int value,
 			 unsigned int lang_mask, int kind,
 			 const struct cl_option_handlers *handlers)
 {
   struct cl_decoded_option decoded;
 
   generate_option (opt_index, arg, value, lang_mask, &decoded);
-  return handle_option (&decoded, lang_mask, kind, handlers);
+  return handle_option (opts, &decoded, lang_mask, kind, handlers);
 }
 
 /* Fill in *DECODED with an option described by OPT_INDEX, ARG and
@@ -903,10 +906,11 @@ generate_option_input_file (const char *file,
 }
 
 /* Handle the switch DECODED for the language indicated by LANG_MASK,
-   using the handlers in *HANDLERS.  */
+   using the handlers in *HANDLERS and setting fields in OPTS.  */
 
 void
-read_cmdline_option (struct cl_decoded_option *decoded,
+read_cmdline_option (struct gcc_options *opts,
+		     struct cl_decoded_option *decoded,
 		     unsigned int lang_mask,
 		     const struct cl_option_handlers *handlers)
 {
@@ -959,49 +963,64 @@ read_cmdline_option (struct cl_decoded_option *decoded,
 
   gcc_assert (!decoded->errors);
 
-  if (!handle_option (decoded, lang_mask, DK_UNSPECIFIED, handlers))
+  if (!handle_option (opts, decoded, lang_mask, DK_UNSPECIFIED, handlers))
     error ("unrecognized command line option %qs", opt);
 }
 
-/* Set any variable for option OPT_INDEX according to VALUE and ARG,
+/* Set any field in OPTS for option OPT_INDEX according to VALUE and ARG,
    diagnostic kind KIND.  */
 
 void
-set_option (int opt_index, int value, const char *arg, int kind)
+set_option (struct gcc_options *opts, int opt_index, int value,
+	    const char *arg, int kind)
 {
   const struct cl_option *option = &cl_options[opt_index];
+  void *flag_var = option_flag_var (opt_index, opts);
 
-  if (!option->flag_var)
+  if (!flag_var)
     return;
 
   switch (option->var_type)
     {
     case CLVC_BOOLEAN:
-	*(int *) option->flag_var = value;
+	*(int *) flag_var = value;
 	break;
 
     case CLVC_EQUAL:
-	*(int *) option->flag_var = (value
-				     ? option->var_value
-				     : !option->var_value);
+	*(int *) flag_var = (value
+			     ? option->var_value
+			     : !option->var_value);
 	break;
 
     case CLVC_BIT_CLEAR:
     case CLVC_BIT_SET:
 	if ((value != 0) == (option->var_type == CLVC_BIT_SET))
-	  *(int *) option->flag_var |= option->var_value;
+	  *(int *) flag_var |= option->var_value;
 	else
-	  *(int *) option->flag_var &= ~option->var_value;
-	if (option->flag_var == &target_flags)
+	  *(int *) flag_var &= ~option->var_value;
+	if (flag_var == &target_flags)
 	  target_flags_explicit |= option->var_value;
 	break;
 
     case CLVC_STRING:
-	*(const char **) option->flag_var = arg;
+	*(const char **) flag_var = arg;
 	break;
     }
 
   if ((diagnostic_t) kind != DK_UNSPECIFIED)
     diagnostic_classify_diagnostic (global_dc, opt_index, (diagnostic_t) kind,
 				    UNKNOWN_LOCATION);
+}
+
+/* Return the address of the flag variable for option OPT_INDEX in
+   options structure OPTS, or NULL if there is no flag variable.  */
+
+void *
+option_flag_var (int opt_index, struct gcc_options *opts)
+{
+  const struct cl_option *option = &cl_options[opt_index];
+
+  if (option->flag_var_offset == (unsigned short) -1)
+    return NULL;
+  return (void *)(((char *) opts) + option->flag_var_offset);
 }

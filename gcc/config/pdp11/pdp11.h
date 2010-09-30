@@ -767,7 +767,6 @@ extern int may_call_alloca;
   pdp11_register_move_cost (CLASS1, CLASS2)
 
 /* Tell emit-rtl.c how to initialize special values on a per-function base.  */
-extern int optimize;
 extern struct rtx_def *cc0_reg_rtx;
 
 #define CC_STATUS_MDEP rtx

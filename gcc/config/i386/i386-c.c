@@ -283,7 +283,8 @@ ix86_pragma_target_parse (tree args, tree pop_target)
       cur_tree = ((pop_target)
 		  ? pop_target
 		  : target_option_default_node);
-      cl_target_option_restore (TREE_TARGET_OPTION (cur_tree));
+      cl_target_option_restore (&global_options,
+				TREE_TARGET_OPTION (cur_tree));
     }
   else
     {

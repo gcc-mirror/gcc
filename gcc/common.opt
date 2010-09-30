@@ -26,6 +26,12 @@
 Variable
 int target_flags
 
+Variable
+int optimize
+
+Variable
+int optimize_size
+
 ###
 Driver
 

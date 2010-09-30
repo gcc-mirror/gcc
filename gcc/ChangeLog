@@ -1,3 +1,76 @@
+2010-09-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* opt-functions.awk (static_var): Update comment.
+	(var_ref): Return offsetof expression or -1, not variable address.
+	* optc-gen.awk: Generate structure field initializers instead of
+	static variables.  Expect -1 for missing variables instead of null
+	pointer.  Add gcc_options parameters to generated functions.
+	* opth-gen.awk: Generate structure fields for static variables.
+	Add gcc_options parameters to generated functions.
+	* common.opt (optimize, optimize_size): Add variables.
+	* config/i386/i386-c.c (ix86_pragma_target_parse): Pass
+	&global_options to cl_target_option_restore.
+	* config/i386/i386.c (ix86_valid_target_attribute_p): Pass
+	&global_options to cl_optimization_restore, cl_target_option_save
+	and cl_target_option_restore.
+	(ix86_set_current_function): Pass &global_options to
+	cl_target_option_restore.
+	* config/pdp11/pdp11.h (optimize): Remove.
+	* config/rs6000/rs6000.h (optimize): Remove.
+	* config/sh/sh.h (optimize): Remove.
+	* config/xtensa/xtensa.h (optimize): Remove.
+	* coretypes.h (struct gcc_options): Declare.
+	* diagnostic.c (diagnostic_initialize): Initialize
+	context->option_state.
+	(diagnostic_report_diagnostic): Pass option_state to
+	option_enabled hook.
+	* diagnostic.h (diagnostic_context.option_enabled): Add void *
+	parameter.
+	(diagnostic_context.option_state): New field.
+	* final.c (final_start_function, final, final_scan_insn): Rename
+	optimize parameter to optimize_p.
+	* flags.h (optimize, optimize_size): Remove.
+	* function.c (invoke_set_current_function_hook): Pass
+	&global_options to cl_optimization_restore.
+	* gcc.c (driver_handle_option): Take gcc_options parameter.
+	Assert that it is &global_options.
+	(process_command): Pass &global_options to read_cmdline_option.
+	* ipa-pure-const.c (suggest_attribute): Pass &global_options to
+	option_enabled.
+	* lto-opts.c (lto_reissue_options): Use option_flag_var.  Pass
+	&global_options to set_option.
+	* opts-common.c (handle_option, handle_generated_option,
+	read_cmdline_option, set_option): Take explicit gcc_options
+	parameters.  Use option_flag_var.
+	(option_flag_var): New.
+	* opts.c (common_handle_option, lang_handle_option,
+	target_handle_option): Take gcc_options parameter.  Assert that it
+	is &global_options.
+	(read_cmdline_options): Pass &global_options to
+	read_cmdline_option.
+	(print_filtered_help): Use option_flag_var.  Pass &global_options
+	to option_enabled.
+	(common_handle_option): Use option_flag_var.
+	(option_enabled): Take opts parameter.  Use option_flag_var.
+	(get_option_state): Take gcc_options parameter.  Use
+	option_flag_var.  Pass gcc_options parameter to option_enabled.
+	(enable_warning_as_error): Pass &global_options to
+	handle_generated_option.
+	* opts.h (struct cl_option): Change flag_var to flag_var_offset.
+	(cl_option_handler_func.handler): Take gcc_options parameter.
+	(option_enabled, get_option_state, set_option, handle_option,
+	handle_generated_option, read_cmdline_option): Take gcc_options
+	parameters.
+	* toplev.c (optimize, optimize_size): Remove.
+	(print_switch_values): Pass &global_options to option_enabled.
+	(option_affects_pch_p): Use option_flag_var.  Pass &global_options
+	to get_option_state.
+	(general_init): Initialize global_dc->option_state.
+	* tree.c (build_optimization_node): Pass &global_options to
+	cl_optimization_save.
+	(build_target_option_node): Pass &global_options to
+	cl_target_option_save.
+
 2010-09-30  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (type_consists_of_records_p): Do not check for trailing

@@ -64,6 +64,7 @@ typedef const union tree_node *const_tree;
 typedef const union gimple_statement_d *const_gimple;
 union section;
 typedef union section section;
+struct gcc_options;
 struct cl_target_option;
 struct cl_optimization;
 struct cl_option;

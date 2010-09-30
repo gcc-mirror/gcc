@@ -22,9 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Get Xtensa configuration settings */
 #include "xtensa-config.h"
 
-/* Standard GCC variables that we reference.  */
-extern int optimize;
-
 /* External variables defined in xtensa.c.  */
 
 extern unsigned xtensa_current_frame_size;
