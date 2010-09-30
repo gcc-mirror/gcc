@@ -980,7 +980,13 @@ transformational bit intrinsics @code{IALL}, @code{IANY} and @code{IPARITY}.
 @item Support for the @code{STORAGE_SIZE} intrinsic inquiry function.
 
 @item The @code{INT@{8,16,32@}} and @code{REAL@{32,64,128@}} kind type
-parameters of the intrinsic module @code{ISO_FORTRAN_ENV}.
+parameters and the array-valued named constants @code{INTEGER_KINDS},
+@code{LOGICAL_KINDS}, @code{REAL_KINDS} and @code{CHARACTER_KINDS} of
+the intrinsic module @code{ISO_FORTRAN_ENV}.
+
+@item The module procedures @code{C_SIZEOF} of the intrinsic module
+@code{ISO_C_BINDINGS} and @code{COMPILER_VERSION} and @code{COMPILER_OPTIONS}
+of @code{ISO_FORTRAN_ENV}.
 
 @item Experimental coarray support (for one image only), use the
 @option{-fcoarray=single} flag to enable it.
