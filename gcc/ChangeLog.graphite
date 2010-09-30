@@ -1,3 +1,12 @@
+2010-09-20  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (graphite_verify): Remove call to
+	verify_dominators for CDI_POST_DOMINATORS.
+	* sese.h: Remove comment about CDI_POST_DOMINATORS.
+	(recompute_all_dominators): Remove call to free_dominance_info
+	for CDI_POST_DOMINATORS.  Remove call to calculate_dominance_info
+	for CDI_POST_DOMINATORS.
+
 2010-09-09  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-poly.c (pbb_number_of_iterations_at_time): Only iterate
