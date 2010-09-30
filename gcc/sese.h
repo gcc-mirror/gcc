@@ -94,10 +94,6 @@ bb_in_region (basic_block bb, basic_block entry, basic_block exit)
        predecessors of EXIT are dominated by ENTRY.  */
     FOR_EACH_EDGE (e, ei, exit->preds)
       dominated_by_p (CDI_DOMINATORS, e->src, entry);
-
-    /* Check that there are no edges going out of the region: the
-       entry is post-dominated by the exit.  FIXME: This cannot be
-       checked right now as the CDI_POST_DOMINATORS are needed.  */
   }
 #endif
 
@@ -310,9 +306,7 @@ recompute_all_dominators (void)
 {
   mark_irreducible_loops ();
   free_dominance_info (CDI_DOMINATORS);
-  free_dominance_info (CDI_POST_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
 }
 
 typedef struct gimple_bb
