@@ -1,3 +1,8 @@
+2010-08-17  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* graphite-scop-detection.c (graphite_can_represent_scev): Remove
+	redundant checks.
+
 2010-08-12  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (precision_for_value): Adjust
