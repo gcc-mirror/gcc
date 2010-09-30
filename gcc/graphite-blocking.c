@@ -254,28 +254,13 @@ lst_do_strip_mine (lst_p lst)
   return res;
 }
 
-/* Strip mines all the loops in SCOP.  Nothing profitable in all this:
-   this is just a driver function.  */
+/* Strip mines all the loops in SCOP.  Returns true when some loops
+   have been strip-mined.  */
 
 bool
 scop_do_strip_mine (scop_p scop)
 {
-  bool transform_done = false;
-
-  store_scattering (scop);
-
-  transform_done = lst_do_strip_mine (SCOP_TRANSFORMED_SCHEDULE (scop));
-
-  if (!transform_done)
-    return false;
-
-  if (!graphite_legal_transform (scop))
-    {
-      restore_scattering (scop);
-      return false;
-    }
-
-  return transform_done;
+  return lst_do_strip_mine (SCOP_TRANSFORMED_SCHEDULE (scop));
 }
 
 /* Loop blocks all the loops in SCOP.  Returns true when we manage to
@@ -292,10 +277,10 @@ scop_do_block (scop_p scop)
   strip_mined = lst_do_strip_mine (SCOP_TRANSFORMED_SCHEDULE (scop));
   interchanged = scop_do_interchange (scop);
 
-  /* If we don't interchange loops, then the strip mine is not
-     profitable, and the transform is not a loop blocking.  */
-  if (!interchanged
-      || !graphite_legal_transform (scop))
+  /* If we don't interchange loops, the strip mine alone will not be
+     profitable, and the transform is not a loop blocking: so revert
+     the transform.  */
+  if (!interchanged)
     {
       restore_scattering (scop);
       return false;
