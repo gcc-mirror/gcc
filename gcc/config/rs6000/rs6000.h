@@ -46,6 +46,10 @@
 #define TARGET_AIX 0
 #endif
 
+#ifndef TARGET_AIX_OS
+#define TARGET_AIX_OS 0
+#endif
+
 /* Control whether function entry points use a "dot" symbol when
    ABI_AIX.  */
 #define DOT_SYMBOLS 1
