@@ -1,3 +1,8 @@
+2010-08-14  Riyadh Baghdadi <baghdadi.mr@gmail.com>
+
+	* toplev.c (process_options): Disable graphite loop optimization
+	options when -fgraphite-read flag is used.
+
 2010-08-17  Riyadh Baghdadi <baghdadi.mr@gmail.com>
 
 	* graphite-poly.c (init_graphite_out_file): New.
