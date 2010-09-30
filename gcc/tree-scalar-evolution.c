@@ -385,19 +385,17 @@ chrec_contains_symbols_defined_in_loop (const_tree chrec, unsigned loop_nb)
   if (is_gimple_min_invariant (chrec))
     return false;
 
-  if (TREE_CODE (chrec) == VAR_DECL
-      || TREE_CODE (chrec) == PARM_DECL
-      || TREE_CODE (chrec) == FUNCTION_DECL
-      || TREE_CODE (chrec) == LABEL_DECL
-      || TREE_CODE (chrec) == RESULT_DECL
-      || TREE_CODE (chrec) == FIELD_DECL)
-    return true;
-
   if (TREE_CODE (chrec) == SSA_NAME)
     {
-      gimple def = SSA_NAME_DEF_STMT (chrec);
-      struct loop *def_loop = loop_containing_stmt (def);
-      struct loop *loop = get_loop (loop_nb);
+      gimple def;
+      loop_p def_loop, loop;
+
+      if (SSA_NAME_IS_DEFAULT_DEF (chrec))
+	return false;
+
+      def = SSA_NAME_DEF_STMT (chrec);
+      def_loop = loop_containing_stmt (def);
+      loop = get_loop (loop_nb);
 
       if (def_loop == NULL)
 	return false;
@@ -1834,12 +1832,17 @@ compute_scalar_evolution_in_loop (struct loop *wrto_loop,
 				  struct loop *def_loop,
 				  tree ev)
 {
+  bool val;
   tree res;
+
   if (def_loop == wrto_loop)
     return ev;
 
   def_loop = superloop_at_depth (def_loop, loop_depth (wrto_loop) + 1);
   res = compute_overall_effect_of_inner_loop (def_loop, ev);
+
+  if (no_evolution_in_loop_p (res, wrto_loop->num, &val) && val)
+    return res;
 
   return analyze_scalar_evolution_1 (wrto_loop, res, chrec_not_analyzed_yet);
 }

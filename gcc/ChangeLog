@@ -1,5 +1,14 @@
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-scalar-evolution.c (chrec_contains_symbols_defined_in_loop):
+	Do not check for VAR_DECL, PARM_DECL, FUNCTION_DECL, LABEL_DECL,
+	RESULT_DECL, and FIELD_DECL.  Return false for an
+	SSA_NAME_IS_DEFAULT_DEF.
+	(compute_scalar_evolution_in_loop): Do not further analyze the
+	scalar evolution when no_evolution_in_loop_p returns true.
+
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-chrec.h (evolution_function_is_affine_p): Do not check
 	whether CHREC_LEFT is invariant.  A function is affine when
 	CHREC_RIGHT is invariant.
