@@ -202,12 +202,10 @@ graphite_can_represent_init (tree e)
 
    1 i + 20 j + (-2) m + 25
 
-   Something like "i * n" or "n * m" is not allowed.
-
-   OUTERMOST_LOOP defines the outermost loop that can variate.  */
+   Something like "i * n" or "n * m" is not allowed.  */
 
 static bool
-graphite_can_represent_scev (tree scev, int outermost_loop)
+graphite_can_represent_scev (tree scev)
 {
   if (chrec_contains_undetermined (scev))
     return false;
@@ -216,8 +214,8 @@ graphite_can_represent_scev (tree scev, int outermost_loop)
     {
     case PLUS_EXPR:
     case MINUS_EXPR:
-      return graphite_can_represent_scev (TREE_OPERAND (scev, 0), outermost_loop)
-	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1), outermost_loop);
+      return graphite_can_represent_scev (TREE_OPERAND (scev, 0))
+	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1));
 
     case MULT_EXPR:
       return !CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (scev, 0)))
@@ -225,8 +223,8 @@ graphite_can_represent_scev (tree scev, int outermost_loop)
 	&& !(chrec_contains_symbols (TREE_OPERAND (scev, 0))
 	     && chrec_contains_symbols (TREE_OPERAND (scev, 1)))
 	&& graphite_can_represent_init (scev)
-	&& graphite_can_represent_scev (TREE_OPERAND (scev, 0), outermost_loop)
-	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1), outermost_loop);
+	&& graphite_can_represent_scev (TREE_OPERAND (scev, 0))
+	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1));
 
     case POLYNOMIAL_CHREC:
       /* Check for constant strides.  With a non constant stride of
@@ -253,19 +251,18 @@ graphite_can_represent_scev (tree scev, int outermost_loop)
 
    This means an expression can be represented, if it is linear with
    respect to the loops and the strides are non parametric.
-   LOOP is the place where the expr will be evaluated and OUTERMOST_LOOP
-   defindes the outermost loop that can variate.  SCOP_ENTRY defines the
+   LOOP is the place where the expr will be evaluated.  SCOP_ENTRY defines the
    entry of the region we analyse.  */
 
 static bool
 graphite_can_represent_expr (basic_block scop_entry, loop_p loop,
-			     loop_p outermost_loop, tree expr)
+			     tree expr)
 {
   tree scev = analyze_scalar_evolution (loop, expr);
 
   scev = instantiate_scev (scop_entry, loop, scev);
 
-  return graphite_can_represent_scev (scev, outermost_loop->num);
+  return graphite_can_represent_scev (scev);
 }
 
 /* Return true if the data references of STMT can be represented by
@@ -278,14 +275,13 @@ stmt_has_simple_data_refs_p (loop_p outermost_loop, gimple stmt)
   unsigned i;
   int j;
   bool res = true;
-  int loop = outermost_loop->num;
   VEC (data_reference_p, heap) *drs = VEC_alloc (data_reference_p, heap, 5);
 
   graphite_find_data_references_in_stmt (outermost_loop, stmt, &drs);
 
   FOR_EACH_VEC_ELT (data_reference_p, drs, j, dr)
     for (i = 0; i < DR_NUM_DIMENSIONS (dr); i++)
-      if (!graphite_can_represent_scev (DR_ACCESS_FN (dr, i), loop))
+      if (!graphite_can_represent_scev (DR_ACCESS_FN (dr, i)))
 	{
 	  res = false;
 	  goto done;
@@ -349,8 +345,7 @@ stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
           return false;
 
 	FOR_EACH_SSA_TREE_OPERAND (op, stmt, op_iter, SSA_OP_ALL_USES)
-	  if (!graphite_can_represent_expr (scop_entry, loop, outermost_loop,
-					    op)
+	  if (!graphite_can_represent_expr (scop_entry, loop, op)
 	      /* We can not handle REAL_TYPE. Failed for pr39260.  */
 	      || TREE_CODE (TREE_TYPE (op)) == REAL_TYPE)
 	    return false;
@@ -389,12 +384,11 @@ harmful_stmt_in_bb (basic_block scop_entry, loop_p outer_loop, basic_block bb)
 }
 
 /* Return true when it is not possible to represent LOOP in the
-   polyhedral representation.  This is evaluated taking SCOP_ENTRY and
-   OUTERMOST_LOOP in mind.  */
+   polyhedral representation.  This is evaluated taking SCOP_ENTRY
+   in mind.  */
 
 static bool
-graphite_can_represent_loop (basic_block scop_entry, loop_p outermost_loop,
-			     loop_p loop)
+graphite_can_represent_loop (basic_block scop_entry, loop_p loop)
 {
   tree niter = number_of_latch_executions (loop);
 
@@ -403,7 +397,7 @@ graphite_can_represent_loop (basic_block scop_entry, loop_p outermost_loop,
     return false;
 
   /* Number of iterations not affine.  */
-  if (!graphite_can_represent_expr (scop_entry, loop, outermost_loop, niter))
+  if (!graphite_can_represent_expr (scop_entry, loop, niter))
     return false;
 
   return true;
@@ -476,7 +470,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
 
 	sinfo = build_scops_1 (bb, outermost_loop, &regions, loop);
 
-	if (!graphite_can_represent_loop (entry_block, outermost_loop, loop))
+	if (!graphite_can_represent_loop (entry_block, loop))
 	  result.difficult = true;
 
 	result.difficult |= sinfo.difficult;
