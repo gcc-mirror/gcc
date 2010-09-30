@@ -44,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "gimple.h"
 #include "params.h"
-#include "graphite-cloog-util.h"
 
 #ifdef HAVE_cloog
 #include "ppl_c.h"
@@ -53,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite.h"
 #include "graphite-poly.h"
 #include "graphite-dependences.h"
+#include "graphite-cloog-util.h"
 
 /* Return the maximal loop depth in SCOP.  */
 

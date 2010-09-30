@@ -1,5 +1,9 @@
 2010-09-30  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
+	* graphite-poly.c: Change include order.
+
+2010-09-30  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
 	* graphite-cloog-compat.h (cloog_matrix_ncolumns): New.
 	(cloog_matrix_nrows): New.
 
