@@ -1,3 +1,8 @@
+2010-08-12  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (precision_for_value): Adjust
+	computation of precision by 1.
+
 2010-08-12  Riyadh Baghdadi <baghdadi.mr@gmail.com>
 
 	* graphite-cloog-util.c (openscop_read_cloog_matrix): New.

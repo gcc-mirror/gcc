@@ -415,7 +415,7 @@ precision_for_value (mpz_t val)
   if (mpz_sgn (y) < 0)
     mpz_neg (y, y);
 
-  while (mpz_cmp (y, x) > 0)
+  while (mpz_cmp (y, x) >= 0)
     {
       mpz_mul (x, x, two);
       precision++;
