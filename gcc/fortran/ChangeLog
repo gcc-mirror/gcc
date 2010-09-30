@@ -1,3 +1,8 @@
+2010-09-30  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.tex (Fortran 2008 status): Update list of
+	implemented features.
+
 2010-09-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang.opt: Don't use VarExists.
