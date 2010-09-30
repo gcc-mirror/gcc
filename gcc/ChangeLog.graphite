@@ -1,3 +1,8 @@
+2010-09-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/45758
+	* graphite.c (graphite_initialize): Call scev_reset.
+
 2010-09-23  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* sese.h (scev_analyzable_p): Return false for real or floating

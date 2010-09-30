@@ -214,6 +214,7 @@ graphite_initialize (void)
       return false;
     }
 
+  scev_reset ();
   recompute_all_dominators ();
   initialize_original_copy_tables ();
 
