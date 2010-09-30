@@ -1,3 +1,13 @@
+2010-09-30  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/45702
+	* gcc.dg/debug/pr41893-1.c: Adjust.
+	* gcc.dg/pr30762-1.c: Likewise.
+	* gcc.dg/pr31529-1.c: Likewise.
+	* gcc.dg/pr34457-1.c: Likewise.
+	* gcc.dg/pr34668-1.c: Likewise.
+	* gcc.dg/pr43557-1.c: Likewise.
+
 2010-09-30  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR objc/45842
