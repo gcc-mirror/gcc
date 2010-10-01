@@ -801,6 +801,7 @@ decode_options (unsigned int argc, const char **argv,
   flag_tree_copy_prop = opt1;
   flag_tree_sink = opt1;
   flag_tree_ch = opt1;
+  flag_combine_stack_adjustments = opt1;
 
   /* -O2 optimizations.  */
   opt2 = (optimize >= 2);

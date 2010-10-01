@@ -546,7 +546,7 @@ combine_stack_adjustments_for_block (basic_block bb)
 static bool
 gate_handle_stack_adjustments (void)
 {
-  return (optimize > 0);
+  return flag_combine_stack_adjustments;
 }
 
 static unsigned int

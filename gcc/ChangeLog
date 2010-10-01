@@ -1,3 +1,12 @@
+2010-10-01  Nick Clifton  <nickc@redhat.com>
+
+	* common.opt: Add -fcombine-stack-adjustments.
+	* opts.c (decode_options): Enable -fcombine-stack-adjustments at
+	-O1.
+	* combine-stack-adj.c (gate_handle_stack_adjustments): Check
+	flag_combine_stack_adjustments.
+	* doc/invoke.texi: Document the new option.
+
 2010-10-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45854
