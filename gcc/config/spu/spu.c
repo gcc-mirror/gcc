@@ -472,6 +472,9 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_OPTION_OPTIMIZATION
 #define TARGET_OPTION_OPTIMIZATION spu_option_optimization
 
+#undef TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO  sjlj_except_unwind_info
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 static void

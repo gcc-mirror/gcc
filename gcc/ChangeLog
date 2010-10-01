@@ -1,3 +1,8 @@
+2010-10-01  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (TARGET_EXCEPT_UNWIND_INFO): Set to
+	sjlj_except_unwind_info.
+
 2010-10-01  Tristan Gingold  <gingold@adacore.com>
 
 	* configure.ac: Define the nop insn for avr*-*-*
