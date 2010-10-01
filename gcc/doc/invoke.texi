@@ -334,7 +334,8 @@ Objective-C and Objective-C++ Dialects}.
 -falign-labels[=@var{n}] -falign-loops[=@var{n}] -fassociative-math @gol
 -fauto-inc-dec -fbranch-probabilities -fbranch-target-load-optimize @gol
 -fbranch-target-load-optimize2 -fbtr-bb-exclusive -fcaller-saves @gol
--fcheck-data-deps -fconserve-stack -fcprop-registers -fcrossjumping @gol
+-fcheck-data-deps -fcombine-stack-adjustments -fconserve-stack @gol
+-fcprop-registers -fcrossjumping @gol
 -fcse-follow-jumps -fcse-skip-blocks -fcx-fortran-rules @gol
 -fcx-limited-range @gol
 -fdata-sections -fdce -fdce @gol
@@ -6617,6 +6618,13 @@ This option is always enabled by default on certain machines, usually
 those which have no call-preserved registers to use instead.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
+@item -fcombine-stack-adjustments
+@opindex fcombine-stack-adjustments
+Tracks stack adjustments (pushes and pops) and stack memory references
+and then tries to find ways to combine them.
+
+Enabled by default at @option{-O1} and higher.
 
 @item -fconserve-stack
 @opindex fconserve-stack
