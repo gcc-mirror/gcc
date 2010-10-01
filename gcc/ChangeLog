@@ -1,3 +1,9 @@
+2010-10-01  Steve Ellcey  <sje@cup.hp.com>
+
+	PR tree-optimization/44716
+	* config/ia64/hpux.h (UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Define.
+	(HOT_TEXT_SECTION_NAME): Define.
+
 2010-10-01  Nick Clifton  <nickc@redhat.com>
 
 	* common.opt: Add -fcombine-stack-adjustments.

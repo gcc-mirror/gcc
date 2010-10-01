@@ -215,3 +215,14 @@ do {								\
 
 #undef HANDLE_PRAGMA_PACK_PUSH_POP
 #define HANDLE_PRAGMA_PACK_PUSH_POP
+
+/* The HP-UX linker has a bug that causes calls from functions in
+   .text.unlikely to functions in .text to cause a segfault.  Until
+   it is fixed, prevent code from being put into .text.unlikely or
+   .text.hot.  */
+
+#undef UNLIKELY_EXECUTED_TEXT_SECTION_NAME
+#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME ".text"
+
+#undef HOT_TEXT_SECTION_NAME
+#define HOT_TEXT_SECTION_NAME ".text"
