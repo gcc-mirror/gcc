@@ -3752,7 +3752,7 @@ esac
 # version to the per-target configury.
 case "$target" in
   i?86*-*-* | mips*-*-* | alpha*-*-* | powerpc*-*-* | sparc*-*-* | m68*-*-* \
-  | x86_64*-*-* | hppa*-*-* | arm*-*-* \
+  | x86_64*-*-* | hppa*-*-* | arm*-*-* | avr*-*-* \
   | xstormy16*-*-* | cris-*-* | crisv32-*-* | xtensa*-*-* | bfin-*-* | score*-*-* \
   | spu-*-* | fido*-*-* | m32c-*-* | microblaze-*-*)
     insn="nop"
