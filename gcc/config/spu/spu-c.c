@@ -95,7 +95,7 @@ spu_resolve_overloaded_builtin (location_t loc, tree fndecl, void *passed_args)
 			  || POINTER_TYPE_P (t))
   VEC(tree,gc) *fnargs = (VEC(tree,gc) *) passed_args;
   unsigned int nargs = VEC_length (tree, fnargs);
-  int new_fcode, fcode = DECL_FUNCTION_CODE (fndecl) - END_BUILTINS;
+  int new_fcode, fcode = DECL_FUNCTION_CODE (fndecl);
   struct spu_builtin_description *desc;
   tree match = NULL_TREE;
 
