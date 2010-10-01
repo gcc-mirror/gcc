@@ -982,7 +982,7 @@ moxie-*-uclinux*)
 	extra_options="${extra_options} linux.opt"
 	;;
 moxie-*-rtems*)
-	tmake_file="${tmake_file} moxie/t-moxie moxie/t-moxie-softfp soft-fp/t-softfp moxie/t-rtems"
+	tmake_file="${tmake_file} moxie/t-moxie moxie/t-moxie-softfp soft-fp/t-softfp t-rtems"
 	tm_file="moxie/moxie.h dbxelf.h elfos.h moxie/rtems.h rtems.h newlib-stdint.h"
 	;;
 h8300-*-rtems*)
