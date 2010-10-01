@@ -1,3 +1,8 @@
+2010-10-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/45858
+	* config.host: Add the missing `$'.
+
 2010-09-30  Michael Eager  <eager@eagercon.com>
 
 	* config.host: Add microblaze*-*-*.
