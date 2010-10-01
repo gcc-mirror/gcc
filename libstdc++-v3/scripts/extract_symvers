@@ -26,6 +26,14 @@ fi
 lib=$1
 output=$2
 
+# Sun ld doesn't record symbol versions in .dynsym entries and they cannot
+# easily be extracted from readelf --versions output, so use pvs instead.
+if type pvs 2>&1 | grep 'not found' > /dev/null; then
+    :
+else
+    pvs="pvs -dsvo"
+fi
+
 # GNU binutils, somewhere after version 2.11.2, requires -W/--wide to avoid
 # default line truncation.  -W is not supported and truncation did not occur
 # by default before that point.
@@ -42,15 +50,53 @@ export LANG
 
 tmp=extract.$$
 
-${readelf} ${lib} |\
-sed -e 's/ \[<other>: [A-Fa-f0-9]*\] //' -e '/\.dynsym/,/^$/p;d' |\
-egrep -v ' (LOCAL|UND) ' |\
-awk '{ if ($4 == "FUNC" || $4 == "NOTYPE")
-         printf "%s:%s\n", $4, $8;
-       else if ($4 == "OBJECT")
-         printf "%s:%s:%s\n", $4, $3, $8;
-     }' | sort | uniq > $tmp 2>&1
-#       else printf "Huh?  What is %s?\n", $8;
+# Prefer pvs if found.  Need to use nawk on Solaris 2 since Solaris 8/9 awk
+# (oawk) cannot handle sub.
+if [ -n ${pvs} ]; then
+    ${pvs} ${lib} | \
+    nawk '# Remove colon separator from version field, trailing semicolon.
+	 {
+	   sub (/:$/, "", $3);
+	   sub (/;$/, "");
+	 }
+	 # Record base version.  The [BASE] field was only added in Solaris 11,
+	 # so simply use the first record instead.
+	 NR == 1 {
+	   basever = $3;
+	   next;
+	 }
+	 # Ignore version dependencies.
+	 $4 ~ /\{.*\}/ {
+	   next;
+	 }
+	 NF == 4 {
+	   if ($3 == $4 || $3 == basever)
+	     # Emit versions or symbols bound to base versions as objects.
+	     printf "OBJECT:0:%s\n", $4;
+	   else
+	     # Everything else without a size field is a function.
+	     printf "FUNC:%s@@%s\n", $4, $3;
+	   next;
+	 }
+	 # Emit objects.
+	 NF == 5 {
+	   # Strip parens from object size.
+	   sub (/^\(/, "", $5);
+	   sub (/\)$/, "", $5);
+	   printf "OBJECT:%s:%s@@%s\n", $5, $4, $3;
+	   next;
+	 }' | sort | uniq > $tmp 2>&1
+else
+    ${readelf} ${lib} |\
+    sed -e 's/ \[<other>: [A-Fa-f0-9]*\] //' -e '/\.dynsym/,/^$/p;d' |\
+    egrep -v ' (LOCAL|UND) ' |\
+    awk '{ if ($4 == "FUNC" || $4 == "NOTYPE")
+             printf "%s:%s\n", $4, $8;
+           else if ($4 == "OBJECT")
+             printf "%s:%s:%s\n", $4, $3, $8;
+         }' | sort | uniq > $tmp 2>&1
+#          else printf "Huh?  What is %s?\n", $8;
+fi
 
 
 # I think we'll be doing some more with this file, but for now, dump.
