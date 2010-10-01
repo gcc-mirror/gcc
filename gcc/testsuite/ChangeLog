@@ -1,3 +1,8 @@
+2010-10-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45854
+	* g++.dg/torture/pr45854.C: New testcase.
+
 2010-09-30  Michael Eager  <eager@eagercon.com>
 
 	* gcc.c-torture/execute/cmpsf-1.c: Rename FLOAT_{MIN,MAX} to
