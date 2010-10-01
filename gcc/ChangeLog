@@ -1,3 +1,9 @@
+2010-10-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*ashl<mode>3_mask): New insn_and_split pattern.
+	(*<shiftrt_insn><mode>3_mask): Ditto.
+	(*<rotate_insn><mode>3_mask): Ditto.
+
 2010-10-01  Steve Ellcey  <sje@cup.hp.com>
 
 	PR tree-optimization/44716
@@ -7,8 +13,7 @@
 2010-10-01  Nick Clifton  <nickc@redhat.com>
 
 	* common.opt: Add -fcombine-stack-adjustments.
-	* opts.c (decode_options): Enable -fcombine-stack-adjustments at
-	-O1.
+	* opts.c (decode_options): Enable -fcombine-stack-adjustments at -O1.
 	* combine-stack-adj.c (gate_handle_stack_adjustments): Check
 	flag_combine_stack_adjustments.
 	* doc/invoke.texi: Document the new option.
@@ -286,8 +291,9 @@
 
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
-	* graphite-clast-to-gimple.c (max_signed_precision_type): Remove the call
-	to lang_hooks.types.type_for_size.  Call build_nonstandard_integer_type.
+	* graphite-clast-to-gimple.c (max_signed_precision_type): Remove
+	the call to lang_hooks.types.type_for_size.  Call
+	build_nonstandard_integer_type.
 
 2010-09-30  Riyadh Baghdadi <baghdadi.mr@gmail.com>
 
@@ -304,8 +310,8 @@
 	(print_pdr_access_layout): Updated to support OpenScop format.
 	(print_pdr): Same.
 	(openscop_print_pbb_domain): New.
-	(print_pbb_body): Added a parameter to allow indicating that pbb_body is
-	not provided.
+	(print_pbb_body): Added a parameter to allow indicating that pbb_body
+	is not provided.
 	(print_pbb): Updated to call the new print_pbb_body.
 	(openscop_print_scop_context): New.
 	(print_scop_header): New.
@@ -351,8 +357,7 @@
 	* Makefile.in (build/gen%$(build_exeext)): Move rule after all
 	special-casing for generators and turn into ...
 	((genprog:%=build/gen%$(build_exeext))): ... this static pattern
-	rule, for better error messages in case of toplevel dependency
-	errors.
+	rule, for better error messages in case of toplevel dependency errors.
 	(genprog): Add hooks, rename to ...
 	(genprogerr): ... this, and let genprog also contain check,
 	checksum, condmd.
@@ -361,7 +366,7 @@
 	(build/genhooks$(build_exeext)): Remove now-unneeded dependency.
 
 2010-09-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
-            Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/install.texi: Suggest using LD_LIBRARY_PATH to find libs
 	for GMP, MPFR and MPC.
@@ -369,8 +374,7 @@
 2010-09-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sparc/sparc.opt (mimpure-text): Move ...
-	* config/sol2.opt: ... here.
-	Correct description.
+	* config/sol2.opt: ... here.  Correct description.
 	* config.gcc (*-*-solaris2*): Add sol2.opt to extra_options.
 	* doc/invoke.texi (Option Summary, SPARC Options): Move
 	-mimpure-text, -mno-impure-text, -threads, -pthreads, -pthread ...
@@ -460,8 +464,7 @@
 	* opts.c (common_handle_option, lang_handle_option,
 	target_handle_option): Take gcc_options parameter.  Assert that it
 	is &global_options.
-	(read_cmdline_options): Pass &global_options to
-	read_cmdline_option.
+	(read_cmdline_options): Pass &global_options to read_cmdline_option.
 	(print_filtered_help): Use option_flag_var.  Pass &global_options
 	to option_enabled.
 	(common_handle_option): Use option_flag_var.
@@ -494,8 +497,7 @@
 
 	* c-parser.c (c_lex_one_token): When finding a CPP_AT_NAME
 	Objective-C token, map RID_CLASS to RID_AT_CLASS and similar.
-	(c_parser_external_declaration): Use RID_AT_CLASS
-	instead of RID_CLASS.
+	(c_parser_external_declaration): Use RID_AT_CLASS instead of RID_CLASS.
 	(c_parser_objc_class_declaration): Same change.
 	(c_parser_objc_try_catch_statement): Use RID_AT_TRY instead of
 	RID_TRY and RID_AT_CATCH instead of RID_CATCH.
@@ -531,8 +533,7 @@
 2010-09-29  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/40457
-	* postreload.c (move2add_use_add2_insn): Use full_costs for
-	comparison.
+	* postreload.c (move2add_use_add2_insn): Use full_costs for comparison.
 	(move2add_use_add3_insn): Likewise.
 	(reload_cse_move2add): Likewise.
 	* rtlanal.c (get_full_rtx_cost): New function.
@@ -553,8 +554,7 @@
 
 2010-09-29  Jack Howarth <howarth@bromo.med.uc.edu>
 
-	* varasm.c (assemble_alias): Add error message for
-	unsupported ifunc.
+	* varasm.c (assemble_alias): Add error message for unsupported ifunc.
 
 2010-09-29  Mike Stump  <mikestump@comcast.net>
 
@@ -589,8 +589,7 @@
 2010-09-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* optc-gen.awk: Generate global_options initializer instead of
-	individual variables.  Add x_ prefix to names of structure
-	members.
+	individual variables.  Add x_ prefix to names of structure members.
 	* opth-gen.awk: Generate gcc_options structure.  Add x_ prefix to
 	names of structure members.
 	* doc/tm.texi.in (HARD_FRAME_POINTER_IS_FRAME_POINTER,
@@ -599,8 +598,7 @@
 	* alias.c: Use HARD_FRAME_POINTER_IS_FRAME_POINTER
 	* builtins.c: Use HARD_FRAME_POINTER_IS_ARG_POINTER.
 	* c-parser.c (disable_extension_diagnostics,
-	restore_extension_diagnostics): Update names of cpp_options
-	members.
+	restore_extension_diagnostics): Update names of cpp_options members.
 	* combine.c: Use HARD_FRAME_POINTER_IS_FRAME_POINTER
 	* common.opt (fcompare-debug-second): Don't use Var.
 	* config/alpha/alpha.h (target_flags): Remove.
@@ -658,8 +656,8 @@
 2010-09-29  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (picochip_output_internal_label):
-	  This function can now be called for debug CFI labels, which can come in
-	  the middle of a vliw instruction. Postpone until end of vliw.
+	This function can now be called for debug CFI labels, which can come
+	in the middle of a vliw instruction.  Postpone until end of vliw.
 
 2010-09-29  Richard Guenther  <rguenther@suse.de>
 
@@ -771,7 +769,7 @@
 	(TARGET_UNWIND_INFO): Remove.
 
 	* config/pa/pa.c (pa_option_override): Use targetm.except_unwind_info.
-	
+
 2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* c-parser.c (c_parser_objc_class_definition): Adjust prototype.
@@ -788,13 +786,12 @@
 	* toplev.h (save_decoded_options, save_decoded_options_count):
 	New global variables.
 	* toplev.c (save_decoded_options, save_decoded_options_count):
-	export variables.
+	Export variables.
 
 2010-09-28  Ian Lance Taylor  <iant@google.com>
 
 	* config/i386/i386.c (ix86_supports_split_stack): Test
-	HAVE_GAS_CFI_PERSONALITY_DIRECTIVE rather than
-	dwarf2out_do_cfi_asm.
+	HAVE_GAS_CFI_PERSONALITY_DIRECTIVE rather than dwarf2out_do_cfi_asm.
 
 2010-09-28  Ian Lance Taylor  <iant@google.com>
 
@@ -987,7 +984,7 @@
 	Radar 4229905
 	* c-typeck.c (build_conditional_expr): Call objc_have_common_type when
 	looking for objective-c common pointer types.
-	
+
 	2005-06-22  Ziemowit Laski  <zlaski@apple.com>
 
 	Radar 4154928
