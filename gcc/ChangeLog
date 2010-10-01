@@ -1,3 +1,9 @@
+2010-09-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43959
+	* function.c (gimplify_parameters): Use create_tmp_reg instead of
+	create_tmp_var.
+
 2010-09-30  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_expand_prologue): Set

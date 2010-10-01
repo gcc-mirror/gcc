@@ -3583,7 +3583,7 @@ gimplify_parameters (void)
 		       && compare_tree_int (DECL_SIZE_UNIT (parm),
 					    STACK_CHECK_MAX_VAR_SIZE) > 0))
 		{
-		  local = create_tmp_var (type, get_name (parm));
+		  local = create_tmp_reg (type, get_name (parm));
 		  DECL_IGNORED_P (local) = 0;
 		  /* If PARM was addressable, move that flag over
 		     to the local copy, as its address will be taken,
@@ -3597,7 +3597,7 @@ gimplify_parameters (void)
 		  tree ptr_type, addr;
 
 		  ptr_type = build_pointer_type (type);
-		  addr = create_tmp_var (ptr_type, get_name (parm));
+		  addr = create_tmp_reg (ptr_type, get_name (parm));
 		  DECL_IGNORED_P (addr) = 0;
 		  local = build_fold_indirect_ref (addr);
 
