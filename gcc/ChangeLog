@@ -562,11 +562,12 @@
 
 2010-09-29  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR testsuite/45664
 	* configure.ac: Add --enable-indirect-function option.
 	* config.gcc: Add default_gnu_indirect_function.
 	* config.in (HAVE_GAS_INDIRECT_FUNCTION): Rename to ...
 	(HAVE_GNU_INDIRECT_FUNCTION): ... this.
-	* varasm.c (do_assemble_alias): Adjust for macto name change.
+	* varasm.c (do_assemble_alias): Adjust for macro name change.
 	* configure: Rebuilt.
 	* doc/install.texi: Document --enable-indirect-function.
 
