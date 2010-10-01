@@ -1,5 +1,12 @@
 2010-10-01  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/spu/spu.c (spu_init_builtins): No longer add END_BUILTINS
+	to the function code for SPU MD builtins.
+	(spu_expand_builtin): Update.
+	* config/spu/spu-c.c (spu_resolve_overloaded_builtin): Update.
+
+2010-10-01  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/spu/spu.c (TARGET_EXCEPT_UNWIND_INFO): Set to
 	sjlj_except_unwind_info.
 
