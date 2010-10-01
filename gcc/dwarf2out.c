@@ -20620,7 +20620,7 @@ gen_namespace_die (tree decl, dw_die_ref context_die)
       dw_die_ref origin_die
 	= force_decl_die (DECL_ABSTRACT_ORIGIN (decl));
 
-      if (DECL_CONTEXT (decl) == NULL_TREE
+      if (DECL_FILE_SCOPE_P (decl)
 	  || TREE_CODE (DECL_CONTEXT (decl)) == NAMESPACE_DECL)
 	context_die = setup_namespace_context (decl, comp_unit_die ());
       /* Now create the namespace alias DIE.  */
@@ -20670,7 +20670,7 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
       /* Don't output any DIEs to represent mere function declarations,
 	 unless they are class members or explicit block externs.  */
       if (DECL_INITIAL (decl_or_origin) == NULL_TREE
-          && DECL_CONTEXT (decl_or_origin) == NULL_TREE
+          && DECL_FILE_SCOPE_P (decl_or_origin)
 	  && (current_function_decl == NULL_TREE
 	      || DECL_ARTIFICIAL (decl_or_origin)))
 	break;
