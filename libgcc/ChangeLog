@@ -1,3 +1,8 @@
+2010-10-01  Ian Lance Taylor  <iant@google.com>
+
+	* config/t-stack(LIB2ADD_ST): Set instead of LIB2ADD.
+	* config/i386/t-stack-i386 (LIB2ADD_ST): Likewise.
+
 2010-10-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/45858
@@ -34,7 +39,6 @@
 	* config.host (i[34567]86-*-linux* and friends): Add t-stack and
 	i386/t-stack-i386 to tmake_file.
 
->>>>>>> .r164755
 2010-09-21  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* Makefile.in (libgcc-extra-parts):  Check for static archives and
