@@ -92,7 +92,7 @@ else
     egrep -v ' (LOCAL|UND) ' |\
     awk '{ if ($4 == "FUNC" || $4 == "NOTYPE")
              printf "%s:%s\n", $4, $8;
-           else if ($4 == "OBJECT")
+           else if ($4 == "OBJECT" || $4 == "TLS")
              printf "%s:%s:%s\n", $4, $3, $8;
          }' | sort | uniq > $tmp 2>&1
 #          else printf "Huh?  What is %s?\n", $8;
