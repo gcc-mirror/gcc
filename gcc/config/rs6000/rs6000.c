@@ -20234,8 +20234,8 @@ rs6000_emit_prologue (void)
 	 be updated if we arrived at this function via a plt call or
 	 toc adjusting stub.  */
       emit_move_insn (tmp_reg_si, gen_rtx_MEM (SImode, tmp_reg));
-      toc_restore_insn = ((TARGET_32BIT ? 0x80410014 : 0xE8410028)
-			  ^ 0x80000000) - 0x80000000;
+      toc_restore_insn = TARGET_32BIT ? 0x80410014 : 0xE8410028;
+      toc_restore_insn = (toc_restore_insn ^ 0x80000000) - 0x80000000;
       emit_insn (gen_xorsi3 (tmp_reg_si, tmp_reg_si,
 			     GEN_INT (toc_restore_insn & ~0xffff)));
       compare_result = gen_rtx_REG (CCUNSmode, CR0_REGNO);

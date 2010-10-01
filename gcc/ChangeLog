@@ -1,3 +1,9 @@
+2010-10-01  Alan Modra  <amodra@gmail.com>
+
+	PR target/45807
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Properly sign
+	extend toc_restore_insn.
+
 2010-09-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43959
