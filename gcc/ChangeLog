@@ -1,3 +1,8 @@
+2010-09-30  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_expand_prologue): Set
+	current_function_static_stack_size.
+
 2010-09-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Check for Solaris 8 ld with .hidden support.
