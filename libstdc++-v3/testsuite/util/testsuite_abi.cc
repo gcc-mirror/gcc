@@ -43,13 +43,15 @@ symbol::init(string& data)
     type = symbol::function;
   else if (data.find("OBJECT") == 0)
     type = symbol::object;
+  else if (data.find("TLS") == 0)
+    type = symbol::tls;
 
   n = data.find_first_of(delim);
   if (n != npos)
     data.erase(data.begin(), data.begin() + n + 1);
 
-  // Iff object, get size info.
-  if (type == symbol::object)
+  // Iff object or TLS, get size info.
+  if (type == symbol::object || type == symbol::tls)
     {
       n = data.find_first_of(delim);
       if (n != npos)
@@ -130,6 +132,9 @@ symbol::print() const
     case object:
       type_string = "object";
       break;
+    case tls:
+      type_string = "tls";
+      break;
     case uncategorized:
       type_string = "uncategorized";
       break;
@@ -138,7 +143,7 @@ symbol::print() const
     }
   cout << "type: " << type_string << endl;
   
-  if (type == object)
+  if (type == object || type == tls)
     cout << "type size: " << size << endl;
 
   string status_string;

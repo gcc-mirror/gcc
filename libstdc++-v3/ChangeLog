@@ -1,3 +1,10 @@
+2010-10-01  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* scripts/extract_symvers: Add support for tracking TLS symbols.
+	* testsuite/util/testsuite_abi.h (symbol::category): Add tls type.
+	* testsuite/util/testsuite_abi.cc: Set symbol type to tls when
+	appropriate, collect size info.
+
 2010-10-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* scripts/extract_symvers: Use pvs if present.
