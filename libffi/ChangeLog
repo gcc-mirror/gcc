@@ -1,3 +1,10 @@
+2010-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libffi/45677
+	* src/x86/ffi64.c (ffi_prep_cif_machdep): Ensure cif->bytes is
+	a multiple of 8.
+	* testsuite/libffi.call/many2.c: New test.
+
 2010-08-20  Mark Wielaard  <mjw@redhat.com>
 
 	* src/closures.c (open_temp_exec_file_mnt): Check if getmntent_r
