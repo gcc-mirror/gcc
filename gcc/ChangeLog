@@ -1,3 +1,9 @@
+2010-10-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/45820
+	* config/pa/pa.c (pa_secondary_reload): Handle symbolic operands
+	earlier.
+
 2010-10-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/install.texi (Configuration): Document build_configargs,
