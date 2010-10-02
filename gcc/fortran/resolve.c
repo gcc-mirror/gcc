@@ -297,11 +297,9 @@ resolve_formal_arglist (gfc_symbol *proc)
 	  continue;
 	}
 
-      if (sym->ts.type == BT_UNKNOWN)
-	{
-	  if (!sym->attr.function || sym->result == sym)
-	    gfc_set_default_type (sym, 1, sym->ns);
-	}
+      if (sym->ts.type == BT_UNKNOWN && !proc->attr.intrinsic
+	  && (!sym->attr.function || sym->result == sym))
+	gfc_set_default_type (sym, 1, sym->ns);
 
       gfc_resolve_array_spec (sym->as, 0);
 
