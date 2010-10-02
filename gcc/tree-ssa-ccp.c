@@ -2307,6 +2307,17 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 		changed = true;
 	      }
 	  }
+	if (TREE_CODE (gimple_call_fn (stmt)) == OBJ_TYPE_REF)
+	  {
+	    tree expr = OBJ_TYPE_REF_EXPR (gimple_call_fn (stmt));
+	    expr = valueize_op (expr);
+	    if (TREE_CODE (expr) == ADDR_EXPR
+	        && TREE_CODE (TREE_OPERAND (expr, 0)) == FUNCTION_DECL)
+	     {
+	       gimple_call_set_fn (stmt, expr);
+	       changed = true;
+	     }
+	  }
 
 	return changed;
       }
