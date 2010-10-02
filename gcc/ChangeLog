@@ -1,3 +1,8 @@
+2010-10-02  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-ccp.c (ccp_fold_stmt): Fold away OBJ_TYPE_REF when
+	call destination is known.
+
 2010-10-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/45820
