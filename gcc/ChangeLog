@@ -1,3 +1,8 @@
+2010-10-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/install.texi (Configuration): Document build_configargs,
+	host_configargs, target_configargs.
+
 2010-10-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*ashl<mode>3_mask): New insn_and_split pattern.
