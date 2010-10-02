@@ -1,3 +1,7 @@
+2010-10-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* po.m4 (AM_PO_SUBDIRS): Fix unportable shell quoting.
+
 2010-10-01  Release Manager
 
 	* GCC 4.4.5 released.

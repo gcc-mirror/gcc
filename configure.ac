@@ -319,7 +319,7 @@ if test "${ENABLE_GOLD}" = "yes"; then
     # Check for target supported by gold.
     case "${target}" in
       i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-*)
-        configdirs="`echo " ${configdirs} " | sed -e 's/ ld / gold /'`"
+        configdirs=`echo " ${configdirs} " | sed -e 's/ ld / gold /'`
         ;;
     esac
   fi
