@@ -1,3 +1,8 @@
+2010-10-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/42831
+	* gfortran.dg/dependency_37.f90:  New test.
+
 2010-10-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/shift_mask.c: New test.
