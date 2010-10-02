@@ -1,3 +1,9 @@
+2010-10-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/torture/pr45678-1.c: Add -fno-common to options on 32-bit
+	hppa*-*-hpux*.
+	* gcc.dg/torture/pr45678-2.c: Likewise.
+
 2010-10-02  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45748
