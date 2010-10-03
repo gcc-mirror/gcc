@@ -1449,6 +1449,7 @@ OBJS-archive = \
 	cgraph.o \
 	cgraphbuild.o \
 	cgraphunit.o \
+	cppbuiltin.o \
 	cppdefault.o \
 	incpath.o \
 	ipa-cp.o \
@@ -2093,9 +2094,9 @@ c-family/c-common.o : c-family/c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 c-family/c-cppbuiltin.o : c-family/c-cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) \
 	coretypes.h $(TM_H) $(TREE_H) version.h $(C_COMMON_H) $(C_PRAGMA_H) \
 	$(FLAGS_H) $(TOPLEV_H) output.h $(TREE_H) $(TARGET_H) \
-	$(TM_P_H) $(BASEVER) debug.h $(CPP_ID_DATA_H)
+	$(TM_P_H) debug.h $(CPP_ID_DATA_H) cppbuiltin.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-		-DBASEVER=$(BASEVER_s) $< $(OUTPUT_OPTION)
+		$< $(OUTPUT_OPTION)
 
 c-family/c-dump.o : c-family/c-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(TREE_H) $(TREE_DUMP_H)
@@ -3963,6 +3964,12 @@ PREPROCESSOR_DEFINES = \
   -DPREFIX=\"$(prefix)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc/\" \
   @TARGET_SYSTEM_ROOT_DEFINE@
+
+cppbuiltin.o: cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+	cppbuiltin.h Makefile
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
+	  $(PREPROCESSOR_DEFINES) -DBASEVER=$(BASEVER_s) \
+	  -c $(srcdir)/cppbuiltin.c $(OUTPUT_OPTION)
 
 cppdefault.o: cppdefault.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	cppdefault.h Makefile

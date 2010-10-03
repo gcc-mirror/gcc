@@ -1,3 +1,10 @@
+2010-10-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* cpp.c (cpp_define_builtins): Call functions from cppbuiltin.c
+	instead of duplicating code.
+	* Make-lang.in: Add dependency on cppbuiltin.h. Don't define
+	BASEVER.
+
 2010-10-02  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45748
