@@ -1,6 +1,12 @@
+2010-10-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* cppbuiltin.c: New file.
+	* cppbuiltin.h: New file.
+	* Makefile.in: Take into account cppbuiltin.{h,c}.
+
 2010-10-03  Andi Kleen <ak@linux.intel.com>
 
-    	* lto-cgraph.c (input_cgraph): Check for missing sections.
+	* lto-cgraph.c (input_cgraph): Check for missing sections.
 
 2010-10-03  Uros Bizjak  <ubizjak@gmail.com>
 

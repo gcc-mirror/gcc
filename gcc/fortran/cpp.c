@@ -35,7 +35,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "../../libcpp/internal.h"
 #include "cpp.h"
 #include "incpath.h"
+#include "cppbuiltin.h"
 #include "mkdeps.h"
+
+#ifndef TARGET_CPU_CPP_BUILTINS
+# define TARGET_CPU_CPP_BUILTINS()
+#endif
 
 #ifndef TARGET_OS_CPP_BUILTINS
 # define TARGET_OS_CPP_BUILTINS()
@@ -156,85 +161,18 @@ static void dump_queued_macros (cpp_reader *);
 static void
 cpp_define_builtins (cpp_reader *pfile)
 {
-  int major, minor, patchlevel;
-
   /* Initialize CPP built-ins; '1' corresponds to 'flag_hosted'
      in C, defines __STDC_HOSTED__?!  */
   cpp_init_builtins (pfile, 0);
 
   /* Initialize GFORTRAN specific builtins.
      These are documented.  */
-  if (sscanf (BASEVER, "%d.%d.%d", &major, &minor, &patchlevel) != 3)
-    {
-      sscanf (BASEVER, "%d.%d", &major, &minor);
-      patchlevel = 0;
-    }
-  cpp_define_formatted (pfile, "__GNUC__=%d", major);
-  cpp_define_formatted (pfile, "__GNUC_MINOR__=%d", minor);
-  cpp_define_formatted (pfile, "__GNUC_PATCHLEVEL__=%d", patchlevel);
-
+  define_language_independent_builtin_macros (pfile);
   cpp_define (pfile, "__GFORTRAN__=1");
   cpp_define (pfile, "_LANGUAGE_FORTRAN=1");
 
   if (gfc_option.gfc_flag_openmp)
     cpp_define (pfile, "_OPENMP=200805");
-
-
-  /* More builtins that might be useful, but are not documented
-     (in no particular order).  */
-  cpp_define_formatted (pfile, "__VERSION__=\"%s\"", version_string);
-
-  if (flag_pic)
-    {
-      cpp_define_formatted (pfile, "__pic__=%d", flag_pic);
-      cpp_define_formatted (pfile, "__PIC__=%d", flag_pic);
-    }
-  if (flag_pie)
-    {
-      cpp_define_formatted (pfile, "__pie__=%d", flag_pie);
-      cpp_define_formatted (pfile, "__PIE__=%d", flag_pie);
-    }
-
-  if (optimize_size)
-    cpp_define (pfile, "__OPTIMIZE_SIZE__");
-  if (optimize)
-    cpp_define (pfile, "__OPTIMIZE__");
-
-  if (fast_math_flags_set_p ())
-    cpp_define (pfile, "__FAST_MATH__");
-  if (flag_signaling_nans)
-    cpp_define (pfile, "__SUPPORT_SNAN__");
-
-  cpp_define_formatted (pfile, "__FINITE_MATH_ONLY__=%d", flag_finite_math_only);
-
-  /* Definitions for LP64 model. */
-  if (TYPE_PRECISION (long_integer_type_node) == 64
-      && POINTER_SIZE == 64
-      && TYPE_PRECISION (integer_type_node) == 32)
-    {
-      cpp_define (pfile, "_LP64");
-      cpp_define (pfile, "__LP64__");
-    }
-
-  /* Define NAME with value TYPE size_unit.
-     The C-side also defines __SIZEOF_WCHAR_T__, __SIZEOF_WINT_T__
-     __SIZEOF_PTRDIFF_T__, however, fortran seems to lack the
-     appropriate type nodes.  */
-
-#define define_type_sizeof(NAME, TYPE)                             \
-    cpp_define_formatted (pfile, NAME"="HOST_WIDE_INT_PRINT_DEC,   \
-                          tree_low_cst (TYPE_SIZE_UNIT (TYPE), 1))
-
-  define_type_sizeof ("__SIZEOF_INT__", integer_type_node);
-  define_type_sizeof ("__SIZEOF_LONG__", long_integer_type_node);
-  define_type_sizeof ("__SIZEOF_LONG_LONG__", long_long_integer_type_node);
-  define_type_sizeof ("__SIZEOF_SHORT__", short_integer_type_node);
-  define_type_sizeof ("__SIZEOF_FLOAT__", float_type_node);
-  define_type_sizeof ("__SIZEOF_DOUBLE__", double_type_node);
-  define_type_sizeof ("__SIZEOF_LONG_DOUBLE__", long_double_type_node);
-  define_type_sizeof ("__SIZEOF_SIZE_T__", size_type_node);
-
-#undef define_type_sizeof
 
   /* The defines below are necessary for the TARGET_* macros.
 
