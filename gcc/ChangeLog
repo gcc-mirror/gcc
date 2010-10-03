@@ -1,3 +1,7 @@
+2010-10-03  Andi Kleen <ak@linux.intel.com>
+
+    	* lto-cgraph.c (input_cgraph): Check for missing sections.
+
 2010-10-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*ashl<mode>3_mask): Change operand 2 preticate

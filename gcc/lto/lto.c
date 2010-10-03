@@ -493,7 +493,11 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
   file_data->renaming_hash_table = lto_create_renaming_table ();
   file_data->file_name = file->filename;
   data = lto_get_section_data (file_data, LTO_section_decls, NULL, &len);
-  gcc_assert (data != NULL);
+  if (data == NULL)
+    {
+      internal_error ("Cannot read LTO decls from %s", file_data->file_name);
+      return;
+    }
   lto_read_decls (file_data, data, file_data->resolutions);
   lto_free_section_data (file_data, LTO_section_decls, NULL, data, len);
 }
