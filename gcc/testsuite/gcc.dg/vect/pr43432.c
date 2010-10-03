@@ -10,5 +10,5 @@ int len){
         dst[i] = src0[i] * src1[-i];
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_perm } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail { vect_perm } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

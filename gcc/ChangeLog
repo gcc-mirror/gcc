@@ -1,3 +1,16 @@
+2010-10-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/45720
+	PR tree-optimization/45764
+	* tree-vect-data-refs.c (vect_analyze_data_ref_access):
+	Don't accept backwards consecutive accesses.
+	(vect_create_data_ref_ptr): Disallow negative steps.
+
+	* tree-vect-stmts.c (vectorizable_store): Allow negative steps.
+	(perm_mask_for_reverse): Removed.
+	(reverse_vec_elements): Likewise.
+	(vectorizable_load): Don't hanle negative steps.
+
 2010-10-02  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-ccp.c (ccp_fold_stmt): Fold away OBJ_TYPE_REF when
