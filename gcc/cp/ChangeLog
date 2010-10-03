@@ -1,3 +1,12 @@
+2010-10-03  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (require_complete_type_sfinae): Add complain parm to...
+	(require_complete_type): ...this function.
+	(cp_build_array_ref, convert_arguments): Use it.
+	(convert_for_initialization, cp_build_modify_expr): Likewise.
+	* cp-tree.h: Declare it.
+	* call.c (build_over_call): Use it.
+
 2010-09-30  Iain Sandoe  <iains@gcc.gnu.org>
 
 	merge from FSF 'apple/trunk' branch.

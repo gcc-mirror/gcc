@@ -64,11 +64,11 @@ static int convert_arguments (tree, VEC(tree,gc) **, tree, int,
 
 /* Do `exp = require_complete_type (exp);' to make sure exp
    does not have an incomplete type.  (That includes void types.)
-   Returns the error_mark_node if the VALUE does not have
+   Returns error_mark_node if the VALUE does not have
    complete type when this function returns.  */
 
 tree
-require_complete_type (tree value)
+require_complete_type_sfinae (tree value, tsubst_flags_t complain)
 {
   tree type;
 
@@ -87,10 +87,16 @@ require_complete_type (tree value)
   if (COMPLETE_TYPE_P (type))
     return value;
 
-  if (complete_type_or_else (type, value))
+  if (complete_type_or_maybe_complain (type, value, complain))
     return value;
   else
     return error_mark_node;
+}
+
+tree
+require_complete_type (tree value)
+{
+  return require_complete_type_sfinae (value, tf_warning_or_error);
 }
 
 /* Try to complete TYPE, if it is incomplete.  For example, if TYPE is
@@ -3039,7 +3045,8 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 	|= (CP_TYPE_VOLATILE_P (type) | TREE_SIDE_EFFECTS (array));
       TREE_THIS_VOLATILE (rval)
 	|= (CP_TYPE_VOLATILE_P (type) | TREE_THIS_VOLATILE (array));
-      ret = require_complete_type (fold_if_not_in_template (rval));
+      ret = require_complete_type_sfinae (fold_if_not_in_template (rval),
+					  complain);
       protected_set_expr_location (ret, loc);
       return ret;
     }
@@ -3542,7 +3549,7 @@ convert_arguments (tree typelist, VEC(tree,gc) **values, tree fndecl,
 	    /* Don't do ellipsis conversion for __built_in_constant_p
 	       as this will result in spurious errors for non-trivial
 	       types.  */
-	    val = require_complete_type (val);
+	    val = require_complete_type_sfinae (val, complain);
 	  else
 	    val = convert_arg_to_ellipsis (val);
 
@@ -6744,7 +6751,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
     }
   else
     {
-      lhs = require_complete_type (lhs);
+      lhs = require_complete_type_sfinae (lhs, complain);
       if (lhs == error_mark_node)
 	return error_mark_node;
 
@@ -7592,7 +7599,7 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
     }
 
   if (exp != 0)
-    exp = require_complete_type (exp);
+    exp = require_complete_type_sfinae (exp, complain);
   if (exp == error_mark_node)
     return error_mark_node;
 
