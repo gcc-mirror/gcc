@@ -1,3 +1,10 @@
+2010-10-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*ashl<mode>3_mask): Change operand 2 preticate
+	to nonimmediate_operand.  Force operand 2 to register when allowed.
+	(*<shiftrt_insn><mode>3_mask): Ditto.
+	(*<rotate_insn><mode>3_mask): Ditto.
+
 2010-10-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR tree-optimization/45720
@@ -9,7 +16,7 @@
 	* tree-vect-stmts.c (vectorizable_store): Allow negative steps.
 	(perm_mask_for_reverse): Removed.
 	(reverse_vec_elements): Likewise.
-	(vectorizable_load): Don't hanle negative steps.
+	(vectorizable_load): Don't handle negative steps.
 
 2010-10-02  Jan Hubicka  <jh@suse.cz>
 
