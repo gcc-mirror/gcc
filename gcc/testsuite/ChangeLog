@@ -1,3 +1,13 @@
+2010-10-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/45720
+	PR tree-optimization/45764
+	* g++.dg/torture/pr45764.C: New.
+
+	* gcc.dg/vect/pr43432.c: Xfail.
+	* gcc.dg/vect/vect-114.c: Likewise.
+	* gcc.dg/vect/vect-15.c: Likewise.
+
 2010-10-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/torture/pr45678-1.c: Add -fno-common to options on 32-bit
