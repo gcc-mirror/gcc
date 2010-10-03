@@ -1,3 +1,10 @@
+2010-10-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* g++.dg/torture/pr45764.C: Revert revision 164914.
+	* gcc.dg/vect/pr43432.c: Likewise.
+	* gcc.dg/vect/vect-114.c: Likewise.
+	* gcc.dg/vect/vect-15.c: Likewise.
+
 2010-10-03  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/sfinae5.C: New.
