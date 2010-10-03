@@ -2287,7 +2287,9 @@ vect_analyze_data_ref_access (struct data_reference *dr)
     }
 
   /* Consecutive?  */
-  if (!tree_int_cst_compare (step, TYPE_SIZE_UNIT (scalar_type)))
+  if (!tree_int_cst_compare (step, TYPE_SIZE_UNIT (scalar_type))
+      || (dr_step < 0
+	  && !compare_tree_int (TYPE_SIZE_UNIT (scalar_type), -dr_step)))
     {
       /* Mark that it is not interleaving.  */
       DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)) = NULL;
@@ -2970,6 +2972,7 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
   tree vptr;
   gimple_stmt_iterator incr_gsi;
   bool insert_after;
+  bool negative;
   tree indx_before_incr, indx_after_incr;
   gimple incr;
   tree step;
@@ -3002,6 +3005,7 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
     *inv_p = true;
   else
     *inv_p = false;
+  negative = tree_int_cst_compare (step, size_zero_node) < 0;
 
   /* Create an expression for the first address accessed by this load
      in LOOP.  */
@@ -3160,6 +3164,8 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
 	 LOOP is zero. In this case the step here is also zero.  */
       if (*inv_p)
 	step = size_zero_node;
+      else if (negative)
+	step = fold_build1 (NEGATE_EXPR, TREE_TYPE (step), step);
 
       standard_iv_increment_position (loop, &incr_gsi, &insert_after);
 

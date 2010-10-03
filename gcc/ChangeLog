@@ -1,3 +1,13 @@
+2010-10-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* tree-vect-data-refs.c (vect_analyze_data_ref_access): Revert
+	revision 164914.
+	(vect_create_data_ref_ptr): Likewise.
+	* tree-vect-stmts.c (vectorizable_store): Likewise.
+	(perm_mask_for_reverse): Likewise.
+	(reverse_vec_elements): Likewise.
+	(vectorizable_load): Likewise.
+
 2010-10-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* cppbuiltin.c: New file.
