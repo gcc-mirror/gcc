@@ -5432,6 +5432,7 @@ extern int string_conv_p			(const_tree, const_tree, int);
 extern tree cp_truthvalue_conversion		(tree);
 extern tree condition_conversion		(tree);
 extern tree require_complete_type		(tree);
+extern tree require_complete_type_sfinae	(tree, tsubst_flags_t);
 extern tree complete_type			(tree);
 extern tree complete_type_or_else		(tree, tree);
 extern tree complete_type_or_maybe_complain	(tree, tree, tsubst_flags_t);
