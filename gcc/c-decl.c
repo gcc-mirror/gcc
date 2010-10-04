@@ -6614,15 +6614,15 @@ grokfield (location_t loc,
 	 is the anonymous union extension.  Similarly for struct.
 
 	 If this is something of the form "struct foo;", then
-	   If MS extensions are enabled, this is handled as an
-	     anonymous struct.
+	   If MS or Plan 9 extensions are enabled, this is handled as
+	     an anonymous struct.
 	   Otherwise this is a forward declaration of a structure tag.
 
 	 If this is something of the form "foo;" and foo is a TYPE_DECL, then
 	   If foo names a structure or union without a tag, then this
 	     is an anonymous struct (this is permitted by C1X).
-	   If MS extensions are enabled and foo names a structure, then
-	     again this is an anonymous struct.
+	   If MS or Plan 9 extensions are enabled and foo names a
+	     structure, then again this is an anonymous struct.
 	   Otherwise this is an error.
 
 	 Oh what a horrid tangled web we weave.  I wonder if MS consciously
@@ -6636,7 +6636,7 @@ grokfield (location_t loc,
 
       if (type_ok)
 	{
-	  if (flag_ms_extensions)
+	  if (flag_ms_extensions || flag_plan9_extensions)
 	    ok = true;
 	  else if (TYPE_NAME (TYPE_MAIN_VARIANT (type)) == NULL)
 	    ok = true;
@@ -6688,6 +6688,50 @@ grokfield (location_t loc,
   return value;
 }
 
+/* Subroutine of detect_field_duplicates: return whether X and Y,
+   which are both fields in the same struct, have duplicate field
+   names.  */
+
+static bool
+is_duplicate_field (tree x, tree y)
+{
+  if (DECL_NAME (x) != NULL_TREE && DECL_NAME (x) == DECL_NAME (y))
+    return true;
+
+  /* When using -fplan9-extensions, an anonymous field whose name is a
+     typedef can duplicate a field name.  */
+  if (flag_plan9_extensions
+      && (DECL_NAME (x) == NULL_TREE || DECL_NAME (y) == NULL_TREE))
+    {
+      tree xt, xn, yt, yn;
+
+      xt = TREE_TYPE (x);
+      if (DECL_NAME (x) != NULL_TREE)
+	xn = DECL_NAME (x);
+      else if ((TREE_CODE (xt) == RECORD_TYPE || TREE_CODE (xt) == UNION_TYPE)
+	       && TYPE_NAME (xt) != NULL_TREE
+	       && TREE_CODE (TYPE_NAME (xt)) == TYPE_DECL)
+	xn = DECL_NAME (TYPE_NAME (xt));
+      else
+	xn = NULL_TREE;
+
+      yt = TREE_TYPE (y);
+      if (DECL_NAME (y) != NULL_TREE)
+	yn = DECL_NAME (y);
+      else if ((TREE_CODE (yt) == RECORD_TYPE || TREE_CODE (yt) == UNION_TYPE)
+	       && TYPE_NAME (yt) != NULL_TREE
+	       && TREE_CODE (TYPE_NAME (yt)) == TYPE_DECL)
+	yn = DECL_NAME (TYPE_NAME (yt));
+      else
+	yn = NULL_TREE;
+
+      if (xn != NULL_TREE && xn == yn)
+	return true;
+    }
+
+  return false;
+}
+
 /* Subroutine of detect_field_duplicates: add the fields of FIELDLIST
    to HTAB, giving errors for any duplicates.  */
 
@@ -6710,7 +6754,22 @@ detect_field_duplicates_hash (tree fieldlist, htab_t htab)
       }
     else if (TREE_CODE (TREE_TYPE (x)) == RECORD_TYPE
 	     || TREE_CODE (TREE_TYPE (x)) == UNION_TYPE)
-      detect_field_duplicates_hash (TYPE_FIELDS (TREE_TYPE (x)), htab);
+      {
+	detect_field_duplicates_hash (TYPE_FIELDS (TREE_TYPE (x)), htab);
+
+	/* When using -fplan9-extensions, an anonymous field whose
+	   name is a typedef can duplicate a field name.  */
+	if (flag_plan9_extensions
+	    && TYPE_NAME (TREE_TYPE (x)) != NULL_TREE
+	    && TREE_CODE (TYPE_NAME (TREE_TYPE (x))) == TYPE_DECL)
+	  {
+	    tree xn = DECL_NAME (TYPE_NAME (TREE_TYPE (x)));
+	    slot = htab_find_slot (htab, xn, INSERT);
+	    if (*slot)
+	      error ("duplicate member %q+D", TYPE_NAME (TREE_TYPE (x)));
+	    *slot = xn;
+	  }
+      }
 }
 
 /* Generate an error for any duplicate field names in FIELDLIST.  Munge
@@ -6755,10 +6814,18 @@ detect_field_duplicates (tree fieldlist)
   if (timeout > 0)
     {
       for (x = DECL_CHAIN (fieldlist); x; x = DECL_CHAIN (x))
-	if (DECL_NAME (x))
+	/* When using -fplan9-extensions, we can have duplicates
+	   between typedef names and fields.  */
+	if (DECL_NAME (x)
+	    || (flag_plan9_extensions
+		&& DECL_NAME (x) == NULL_TREE
+		&& (TREE_CODE (TREE_TYPE (x)) == RECORD_TYPE
+		    || TREE_CODE (TREE_TYPE (x)) == UNION_TYPE)
+		&& TYPE_NAME (TREE_TYPE (x)) != NULL_TREE
+		&& TREE_CODE (TYPE_NAME (TREE_TYPE (x))) == TYPE_DECL))
 	  {
 	    for (y = fieldlist; y != x; y = TREE_CHAIN (y))
-	      if (DECL_NAME (y) == DECL_NAME (x))
+	      if (is_duplicate_field (y, x))
 		{
 		  error ("duplicate member %q+D", x);
 		  DECL_NAME (x) = NULL_TREE;

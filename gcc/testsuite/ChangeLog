@@ -1,3 +1,10 @@
+2010-10-03  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/anon-struct-11.c: New test.
+	* gcc.dg/anon-struct-12.c: New test.
+	* gcc.dg/anon-struct-13.c: New test.
+	* gcc.dg/anon-struct-14.c: New test.
+
 2010-10-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* g++.dg/torture/pr45764.C: Revert revision 164914.

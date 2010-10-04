@@ -1,3 +1,21 @@
+2010-10-03  Ian Lance Taylor  <iant@google.com>
+
+	* c-typeck.c (lookup_field): If -fplan9-extensions, permit
+	referring to a field using a typedef name.
+	(find_anonymous_field_with_type): New static function.
+	(convert_to_anonymous_field): New static function.
+	(convert_for_assignment): If -fplan9-extensions, permit converting
+	pointer to struct to pointer to anonymous field.
+	* c-decl.c (grokfield): If -fplan9-extensions, permit anonymous
+	fields.
+	(is_duplicate_field): New static function.
+	(detect_field_duplicates_hash): If -fplan9-extensions, check for
+	typedef names duplicating field names.
+	(detect_field_duplicates): Likewise.
+	* doc/invoke.texi (Option Summary): Mention -fplan9-extensions.
+	(C Dialect Options): Document -fplan9-extensions.
+	* doc/extend.texi (Unnamed Fields): Document -fplan9-extensions.
+
 2010-10-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* tree-vect-data-refs.c (vect_analyze_data_ref_access): Revert
