@@ -1,3 +1,11 @@
+2010-10-04  Robert Dewar  <dewar@adacore.com>
+
+	* s-taprop-vxworks.adb, sem_res.adb: Minor reformatting.
+
+2010-10-04  Javier Miranda  <miranda@adacore.com>
+
+	* exp_cg.adb (Write_Call_Info): Code clean up.
+
 2010-10-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-taprop-mingw.adb (Create_Task): Initialize Thread_Id field to 0.
