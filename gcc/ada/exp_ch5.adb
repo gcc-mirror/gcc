@@ -1956,6 +1956,12 @@ package body Exp_Ch5 is
                   if Is_Class_Wide_Type (Typ)
                     and then Is_Tagged_Type (Typ)
                     and then Is_Tagged_Type (Underlying_Type (Etype (Rhs)))
+
+                    --   Do not generate a tag check when the target object is
+                    --   an interface since the expression of the right hand
+                    --   side must only cover the interface.
+
+                    and then not Is_Interface (Typ)
                   then
                      Append_To (L,
                        Make_Raise_Constraint_Error (Loc,

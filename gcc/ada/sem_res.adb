@@ -8826,9 +8826,9 @@ package body Sem_Res is
                  (Etype (Entity (Orig_N)) = Orig_T
                    or else
                      (Ekind (Entity (Orig_N)) = E_Loop_Parameter
-                      and then Covers (Orig_T, Etype (Entity (Orig_N))))))
+                       and then Covers (Orig_T, Etype (Entity (Orig_N))))))
 
-         --  If not an entity, then type of expression must match
+           --  If not an entity, then type of expression must match
 
            or else Etype (Orig_N) = Orig_T
          then
