@@ -1,5 +1,8 @@
 2010-10-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/45849
+	* gcc.dg/debug/pr45849.c: New test.
+
 	PR middle-end/45876
 	* gcc.c-torture/compile/pr45876.c: New test.
 
