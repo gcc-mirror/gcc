@@ -693,7 +693,8 @@ package body Prj.Makr is
             W_Char                 => Write_A_Char'Access,
             W_Eol                  => Write_Eol'Access,
             W_Str                  => Write_A_String'Access,
-            Backward_Compatibility => False);
+            Backward_Compatibility => False,
+            Max_Line_Length        => 79);
          Close (Output_FD);
 
          --  Delete the naming project file if it already exists

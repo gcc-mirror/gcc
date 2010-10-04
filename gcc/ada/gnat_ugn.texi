@@ -4246,7 +4246,7 @@ means that no limit applies.
 @item -gnatn
 @cindex @option{-gnatn} (@command{gcc})
 Activate inlining for subprograms for which
-pragma @code{inline} is specified. This inlining is performed
+pragma @code{Inline} is specified. This inlining is performed
 by the GCC back-end.
 
 @item -gnatN
@@ -10392,8 +10392,9 @@ subprograms.
 @item
 @cindex pragma Inline
 @findex Inline
-Either @code{pragma Inline} applies to the subprogram, or it is local to
-the unit and called once from within it, or it is small and optimization
+Either @code{pragma Inline} applies to the subprogram and the
+@option{^-gnatn^/INLINE^} switch is used on the command line, or it is local
+to the unit and called once from within it, or it is small and optimization
 level @option{-O2} is specified, or automatic inlining (optimization level
 @option{-O3}) is specified.
 @end itemize
@@ -10419,9 +10420,7 @@ The call appears in a body (not in a package spec).
 There is a @code{pragma Inline} for the subprogram.
 
 @item
-@cindex @option{-gnatn} (@command{gcc})
-The @option{^-gnatn^/INLINE^} switch
-is used in the @command{gcc} command line
+The @option{^-gnatn^/INLINE^} switch is used on the command line.
 @end itemize
 
 Even if all these conditions are met, it may not be possible for

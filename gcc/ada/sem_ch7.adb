@@ -52,6 +52,7 @@ with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Disp; use Sem_Disp;
+with Sem_Eval; use Sem_Eval;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
@@ -473,9 +474,10 @@ package body Sem_Ch7 is
       --  is conservative and definitely correct.
 
       --  We only do this at the outer (library) level non-generic packages.
-      --  The reason is simply to cut down on the number of external symbols
-      --  generated, so this is simply an optimization of the efficiency
-      --  of the compilation process. It has no other effect.
+      --  The reason is simply to cut down on the number of global symbols
+      --  generated, which has a double effect: (1) to make the compilation
+      --  process more efficient and (2) to give the code generator more
+      --  freedom to optimize within each unit, especially subprograms.
 
       if (Scope (Spec_Id) = Standard_Standard or else Is_Child_Unit (Spec_Id))
         and then not Is_Generic_Unit (Spec_Id)
@@ -488,16 +490,18 @@ package body Sem_Ch7 is
                Outer : Boolean)
                return  Boolean;
             --  Traverse the given list of declarations in reverse order.
-            --  Return True as soon as a referencer is reached. Return False if
-            --  none is found. The Outer parameter is True for the outer level
-            --  call, and False for inner level calls for nested packages. If
-            --  Outer is True, then any entities up to the point of hitting a
-            --  referencer get their Is_Public flag cleared, so that the
-            --  entities will be treated as static entities in the C sense, and
-            --  need not have fully qualified names. For inner levels, we need
-            --  all names to be fully qualified to deal with the same name
-            --  appearing in parallel packages (right now this is tied to their
-            --  being external).
+            --  Return True if a referencer is present. Return False if none is
+            --  found. The Outer parameter is True for the outer level call and
+            --  False for inner level calls for nested packages. If Outer is
+            --  True, then any entities up to the point of hitting a referencer
+            --  get their Is_Public flag cleared, so that the entities will be
+            --  treated as static entities in the C sense, and need not have
+            --  fully qualified names. Furthermore, if the referencer is an
+            --  inlined subprogram that doesn't reference other subprograms,
+            --  we keep clearing the Is_Public flag on subprograms. For inner
+            --  levels, we need all names to be fully qualified to deal with
+            --  the same name appearing in parallel packages (right now this
+            --  is tied to their being external).
 
             --------------------
             -- Has_Referencer --
@@ -508,10 +512,65 @@ package body Sem_Ch7 is
                Outer : Boolean)
                return  Boolean
             is
+               Has_Referencer_Except_For_Subprograms : Boolean := False;
                D : Node_Id;
                E : Entity_Id;
                K : Node_Kind;
                S : Entity_Id;
+
+               function Check_Subprogram_Ref (N : Node_Id)
+                 return Traverse_Result;
+               --  Look for references to subprograms
+
+               --------------------------
+               -- Check_Subprogram_Ref --
+               --------------------------
+
+               function Check_Subprogram_Ref (N : Node_Id)
+                 return Traverse_Result
+               is
+                  V : Node_Id;
+
+               begin
+
+                  --  Check name of procedure or function calls
+
+                  if Nkind_In (N, N_Procedure_Call_Statement, N_Function_Call)
+                    and then Is_Entity_Name (Name (N))
+                  then
+                     return Abandon;
+                  end if;
+
+                  --  Check prefix of attribute references
+
+                  if Nkind (N) = N_Attribute_Reference
+                    and then Is_Entity_Name (Prefix (N))
+                    and then Present (Entity (Prefix (N)))
+                    and then Ekind (Entity (Prefix (N))) in Subprogram_Kind
+                  then
+                     return Abandon;
+                  end if;
+
+                  --  Check value of constants
+
+                  if Nkind (N) = N_Identifier
+                    and then Present (Entity (N))
+                    and then Ekind (Entity (N)) = E_Constant
+                  then
+                     V := Constant_Value (Entity (N));
+                     if Present (V)
+                       and then not Compile_Time_Known_Value_Or_Aggr (V)
+                     then
+                        return Abandon;
+                     end if;
+                  end if;
+
+                  return OK;
+
+               end Check_Subprogram_Ref;
+
+               function Check_Subprogram_Refs is
+                 new Traverse_Func (Check_Subprogram_Ref);
 
             begin
                if No (L) then
@@ -524,6 +583,8 @@ package body Sem_Ch7 is
 
                   if K in N_Body_Stub then
                      return True;
+
+                  --  Processing for subprogram bodies
 
                   elsif K = N_Subprogram_Body then
                      if Acts_As_Spec (D) then
@@ -541,7 +602,13 @@ package body Sem_Ch7 is
                         --  of accessing global entities.
 
                         if Has_Pragma_Inline (E) then
-                           return True;
+                           if Outer
+                             and then Check_Subprogram_Refs (D) = OK
+                           then
+                              Has_Referencer_Except_For_Subprograms := True;
+                           else
+                              return True;
+                           end if;
                         else
                            Set_Is_Public (E, False);
                         end if;
@@ -549,18 +616,30 @@ package body Sem_Ch7 is
                      else
                         E := Corresponding_Spec (D);
 
-                        if Present (E)
-                          and then (Is_Generic_Unit (E)
-                                     or else Has_Pragma_Inline (E)
-                                     or else Is_Inlined (E))
-                        then
-                           return True;
+                        if Present (E) then
+
+                           --  A generic subprogram body acts as a referencer
+
+                           if Is_Generic_Unit (E) then
+                              return True;
+                           end if;
+
+                           if Has_Pragma_Inline (E) or else Is_Inlined (E) then
+                              if Outer
+                                and then Check_Subprogram_Refs (D) = OK
+                              then
+                                 Has_Referencer_Except_For_Subprograms := True;
+                              else
+                                 return True;
+                              end if;
+                           end if;
                         end if;
                      end if;
 
                   --  Processing for package bodies
 
                   elsif K = N_Package_Body
+                    and then not Has_Referencer_Except_For_Subprograms
                     and then Present (Corresponding_Spec (D))
                   then
                      E := Corresponding_Spec (D);
@@ -590,7 +669,9 @@ package body Sem_Ch7 is
                   --  Processing for package specs, recurse into declarations.
                   --  Again we skip this for the case of generic instances.
 
-                  elsif K = N_Package_Declaration then
+                  elsif K = N_Package_Declaration
+                    and then not Has_Referencer_Except_For_Subprograms
+                  then
                      S := Specification (D);
 
                      if not Is_Generic_Unit (Defining_Entity (S)) then
@@ -617,6 +698,8 @@ package body Sem_Ch7 is
                      E := Defining_Entity (D);
 
                      if Outer
+                       and then (not Has_Referencer_Except_For_Subprograms
+                                  or else K = N_Subprogram_Declaration)
                        and then not Is_Imported (E)
                        and then not Is_Exported (E)
                        and then No (Interface_Name (E))
@@ -628,7 +711,7 @@ package body Sem_Ch7 is
                   Prev (D);
                end loop;
 
-               return False;
+               return Has_Referencer_Except_For_Subprograms;
             end Has_Referencer;
 
          --  Start of processing for Make_Non_Public_Where_Possible

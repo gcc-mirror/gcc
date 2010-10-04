@@ -2103,9 +2103,7 @@ package body Sem_Ch4 is
 
       P_T := Base_Type (Etype (P));
 
-      if Is_Entity_Name (P)
-        or else Nkind (P) = N_Operator_Symbol
-      then
+      if Is_Entity_Name (P) then
          U_N := Entity (P);
 
          if Is_Type (U_N) then
@@ -2526,9 +2524,7 @@ package body Sem_Ch4 is
          --  being called is noted on the selector.
 
          if not Is_Type (Nam) then
-            if Is_Entity_Name (Name (N))
-              or else Nkind (Name (N)) = N_Operator_Symbol
-            then
+            if Is_Entity_Name (Name (N)) then
                Set_Entity (Name (N), Nam);
 
             elsif Nkind (Name (N)) = N_Selected_Component then

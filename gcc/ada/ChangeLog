@@ -1,3 +1,65 @@
+2010-10-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Set_Biased): New procedure, now used throughout, adds
+	name of entity to biased warning msg.
+	(Analyze_Enumeration_Representation_Clause): Remove attempt to use
+	biased rep (wrong and never worked anyway).
+
+2010-10-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_elab.adb: Minor reformatting.
+
+2010-10-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Null): Handle properly the case of a subtype of
+	an access_to_protected subprogram type, and convert null value into
+	corresponding aggregate.
+
+2010-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi: Clarify first point of 7.1.5 about pragma Inline.
+
+2010-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* make.adb (Scan_Make_Arg): Pass -Oxxx switches to the linker as well.
+	* gnatlink.adb (Gnatlink): Filter out -Oxxx switches for CLI, RTX and
+	AAMP.
+
+2010-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Analyze_Indexed_Component_Form): Remove redundant test
+	for N_Operator_Symbol.
+	(Indicate_Name_And_Type): Likewise.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Likewise.
+	* sem_res.adb (Resolve): Likewise.
+	* sem_type.adb (Add_One_Interp): Likewise.
+	(Disambiguate): Likewise.
+	
+2010-10-04  Vincent Celier  <celier@adacore.com>
+
+	* osint.adb (Read_Library_Info_From_Full): If object timestamp is less
+	than ALI file timestamp, return null.
+
+2010-10-04  Vincent Celier  <celier@adacore.com>
+
+	* prj-makr.adb (Finalize): Invoke Pretty_Print with Max_Length set to 79
+	* prj-pp.adb (Pretty_Print): New parameter Max_Line_Length, that
+	replaces global constant with the same name. When a line is too long,
+	indent properly the next continuation line.
+	* prj-pp.ads (Pretty_Print): New parameter Max_Line_Length with a range
+	from 50 to 255, defaulted to 255, to indicate the maximum length of
+	lines in the project file.
+
+2010-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch7.adb (Analyze_Package_Body_Helper) <Has_Referencer>: New
+	Check_Subprogram_Ref function and Check_Subprogram_Refs instantiation
+	of Traverse_Func on it to look for subprogram references in a body.
+	Call Check_Subprogram_Refs on the body of inlined subprograms at the
+	outer level and keep clearing the Is_Public flag of subprograms as long
+	as it returns OK.  Do not look at anything else than subprograms once
+	an inlined subprogram has been seen.
+
 2010-10-04  Javier Miranda  <miranda@adacore.com>
 
 	* exp_cg.adb (Expand_N_Assignment_Statement): Restore tag check when
