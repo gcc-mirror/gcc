@@ -8847,9 +8847,8 @@ package body Sem_Res is
             --  own expression is a possibly overloaded function call. The
             --  qualified expression is needed to be disambiguate the call,
             --  but it appears in a context in which a name is needed, forcing
-            --  the use of a conversion.
-            --  In Ada2012 a qualified expression is a name, and this idiom
-            --  is not needed any longer.
+            --  the use of a conversion. In Ada 2012, a qualified expression is
+            --  a name, and this idiom is no longer needed.
 
             elsif Nkind (Orig_N) = N_Qualified_Expression
               and then Nkind (Expression (Orig_N)) = N_Function_Call
@@ -9255,9 +9254,9 @@ package body Sem_Res is
 
          Rewrite (N, Op_Node);
 
-         --  If the context type is private, add the appropriate conversions
-         --  so that the operator is applied to the full view. This is done
-         --  in the routines that resolve intrinsic operators,
+         --  If the context type is private, add the appropriate conversions so
+         --  that the operator is applied to the full view. This is done in the
+         --  routines that resolve intrinsic operators.
 
          if Is_Intrinsic_Subprogram (Op)
            and then Is_Private_Type (Typ)
@@ -9277,9 +9276,8 @@ package body Sem_Res is
 
       elsif Ekind (Op) = E_Function and then Is_Intrinsic_Subprogram (Op) then
 
-         --  Operator renames a user-defined operator of the same name. Use
-         --  the original operator in the node, which is the one that Gigi
-         --  knows about.
+         --  Operator renames a user-defined operator of the same name. Use the
+         --  original operator in the node, which is the one Gigi knows about.
 
          Set_Entity (N, Op);
          Set_Is_Overloaded (N, False);
@@ -9290,12 +9288,12 @@ package body Sem_Res is
    -- Set_Slice_Subtype --
    -----------------------
 
-   --  Build an implicit subtype declaration to represent the type delivered
-   --  by the slice. This is an abbreviated version of an array subtype. We
-   --  define an index subtype for the slice, using either the subtype name
-   --  or the discrete range of the slice. To be consistent with index usage
-   --  elsewhere, we create a list header to hold the single index. This list
-   --  is not otherwise attached to the syntax tree.
+   --  Build an implicit subtype declaration to represent the type delivered by
+   --  the slice. This is an abbreviated version of an array subtype. We define
+   --  an index subtype for the slice, using either the subtype name or the
+   --  discrete range of the slice. To be consistent with index usage elsewhere
+   --  we create a list header to hold the single index. This list is not
+   --  otherwise attached to the syntax tree.
 
    procedure Set_Slice_Subtype (N : Node_Id) is
       Loc           : constant Source_Ptr := Sloc (N);
@@ -9401,10 +9399,10 @@ package body Sem_Res is
 
       if Is_OK_Static_Expression (Low_Bound) then
 
-      --  The low bound is set from the low bound of the corresponding
-      --  index type. Note that we do not store the high bound in the
-      --  string literal subtype, but it can be deduced if necessary
-      --  from the length and the low bound.
+      --  The low bound is set from the low bound of the corresponding index
+      --  type. Note that we do not store the high bound in the string literal
+      --  subtype, but it can be deduced if necessary from the length and the
+      --  low bound.
 
          Set_String_Literal_Low_Bound (Subtype_Id, Low_Bound);
 
