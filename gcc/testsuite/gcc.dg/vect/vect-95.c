@@ -56,14 +56,14 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 0 "vect" { xfail {vect_hw_misalign} } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 0 "vect" { xfail {vect_element_align} } } } */
 
 /* For targets that support unaligned loads we version for the two unaligned 
    stores and generate misaligned accesses for the loads. For targets that 
    don't support unaligned loads we version for all four accesses.  */
 
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { xfail { vect_no_align || vect_hw_misalign} } } }  */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 2 "vect" { xfail { vect_no_align || vect_hw_misalign } } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { xfail { vect_no_align || vect_element_align} } } }  */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 2 "vect" { xfail { vect_no_align || vect_element_align } } } } */
 /*  { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" { target vect_no_align } } } */
 /*  { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 4 "vect" { target vect_no_align } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
