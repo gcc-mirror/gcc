@@ -49,6 +49,11 @@ package Lib is
    --  extended source (the main unit, its spec, or one of its subunits). This
    --  flag to implement In_Extended_Main_Source_Unit.
 
+   Analysing_Subunit_Of_Main : Boolean := False;
+   --  Set to True when analyzing a subunit of the main source. When True, if
+   --  the subunit is preprocessed and -gnateG is specified, then the
+   --  preprocessed file (.prep) is written.
+
    --------------------------------------------
    -- General Approach to Library Management --
    --------------------------------------------
