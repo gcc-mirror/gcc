@@ -579,9 +579,14 @@ package body Exp_CG is
          Prim := Node (Elmt);
 
          --  Skip internal entities associated with overridden interface
-         --  primitives
+         --  primitives, and also inherited primitives.
 
-         if Present (Interface_Alias (Prim)) then
+         if Present (Interface_Alias (Prim))
+           or else
+            (Present (Alias (Prim))
+               and then Find_Dispatching_Type (Prim)
+                          /= Find_Dispatching_Type (Alias (Prim)))
+         then
             goto Continue;
          end if;
 

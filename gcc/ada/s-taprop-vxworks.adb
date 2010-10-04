@@ -1099,9 +1099,9 @@ package body System.Task_Primitives.Operations is
       Result : STATUS;
 
    begin
-
       --  Set_True can be called from an interrupt context, in which case
       --  Abort_Defer is undefined.
+
       if Is_Task_Context then
          SSL.Abort_Defer.all;
       end if;
@@ -1129,6 +1129,7 @@ package body System.Task_Primitives.Operations is
 
       --  Set_True can be called from an interrupt context, in which case
       --  Abort_Undefer is undefined.
+
       if Is_Task_Context then
          SSL.Abort_Undefer.all;
       end if;
@@ -1336,9 +1337,9 @@ package body System.Task_Primitives.Operations is
 
    function Is_Task_Context return Boolean is
       function intContext return int;
+      pragma Import (C, intContext, "intContext");
       --  Binding to the C routine intContext. This function returns 1 only
       --  if the current execution state is an interrupt context.
-      pragma Import (C, intContext, "intContext");
    begin
       return intContext /= 1;
    end Is_Task_Context;

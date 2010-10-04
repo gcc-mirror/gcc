@@ -8856,13 +8856,11 @@ package body Sem_Res is
             --  newer language version.
 
             elsif Nkind (Orig_N) = N_Qualified_Expression
-              and then Nkind_In
-                         (Parent (N),
-                          N_Attribute_Reference,
-                          N_Indexed_Component,
-                          N_Selected_Component,
-                          N_Slice,
-                          N_Explicit_Dereference)
+              and then Nkind_In (Parent (N), N_Attribute_Reference,
+                                             N_Indexed_Component,
+                                             N_Selected_Component,
+                                             N_Slice,
+                                             N_Explicit_Dereference)
             then
                null;
 
