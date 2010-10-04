@@ -1,3 +1,17 @@
+2010-10-04  Richard Guenther  <rguenther@suse.de>
+
+	* f95-lang.c (current_translation_unit): New global variable.
+	(gfc_create_decls): Build a translation-unit decl.
+	(pushdecl): In the global binding-level use the
+	translation-unit decl as DECL_CONTEXT.
+	* trans-decl.c (gfc_get_symbol_decl): Use DECL_FILE_SCOPE_P.
+	(build_function_decl): Likewise.  Delay setting the assembler
+	name, leave setting of DECL_CONTEXT to pushdecl.
+	(trans_function_start): Use DECL_FILE_SCOPE_P.
+	(gfc_create_module_variable): Likewise.  Remove questionable
+	asserts.
+	* trans.c (gfc_generate_module_code): Likewise.
+
 2010-10-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* cpp.c (cpp_define_builtins): Call functions from cppbuiltin.c
