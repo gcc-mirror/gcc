@@ -1959,7 +1959,35 @@ package body Sem_Disp is
       --  and would have to undo any expansion to an indirect call.
 
       if Tagged_Type_Expansion then
-         Expand_Dispatching_Call (Call_Node);
+         declare
+            Call_Typ : constant Entity_Id := Etype (Call_Node);
+
+         begin
+            Expand_Dispatching_Call (Call_Node);
+
+            --  If the controlling argument is an interface type and the type
+            --  of Call_Node differs then we must add an implicit conversion to
+            --  force displacement of the pointer to the object to reference
+            --  the secondary dispatch table of the interface.
+
+            if Is_Interface (Etype (Control))
+              and then Etype (Control) /= Call_Typ
+            then
+               --  Cannot use Convert_To because the previous call to
+               --  Expand_Dispatching_Call leaves decorated the Call_Node
+               --  with the type of Control.
+
+               Rewrite (Call_Node,
+                 Make_Type_Conversion (Sloc (Call_Node),
+                   Subtype_Mark =>
+                     New_Occurrence_Of (Etype (Control), Sloc (Call_Node)),
+                   Expression => Relocate_Node (Call_Node)));
+               Set_Etype (Call_Node, Etype (Control));
+               Set_Analyzed (Call_Node);
+
+               Expand_Interface_Conversion (Call_Node, Is_Static => False);
+            end if;
+         end;
 
       --  Expansion of a dispatching call results in an indirect call, which in
       --  turn causes current values to be killed (see Resolve_Call), so on VM

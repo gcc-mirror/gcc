@@ -409,6 +409,7 @@ package body Exp_CG is
       Nul   : constant Character := Character'First;
       Line  : String (Str'First .. Str'Last + 1);
       Errno : Integer;
+
    begin
       --  Add the null character to the string as required by fputs
 
@@ -583,9 +584,9 @@ package body Exp_CG is
 
          if Present (Interface_Alias (Prim))
            or else
-            (Present (Alias (Prim))
-               and then Find_Dispatching_Type (Prim)
-                          /= Find_Dispatching_Type (Alias (Prim)))
+             (Present (Alias (Prim))
+               and then Find_Dispatching_Type (Prim) /=
+                        Find_Dispatching_Type (Alias (Prim)))
          then
             goto Continue;
          end if;
@@ -641,8 +642,8 @@ package body Exp_CG is
                   Int_Alias := Interface_Alias (Prim_Op);
 
                   if Present (Int_Alias)
-                    and then not Is_Ancestor
-                                   (Find_Dispatching_Type (Int_Alias), Typ)
+                    and then
+                      not Is_Ancestor (Find_Dispatching_Type (Int_Alias), Typ)
                     and then (Alias (Prim_Op)) = Prim
                   then
                      Write_Char (',');

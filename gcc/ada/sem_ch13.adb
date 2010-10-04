@@ -2098,10 +2098,16 @@ package body Sem_Ch13 is
       Val      : Uint;
       Err      : Boolean := False;
 
-      Lo  : constant Uint := Expr_Value (Type_Low_Bound (Universal_Integer));
-      Hi  : constant Uint := Expr_Value (Type_High_Bound (Universal_Integer));
+      Lo : constant Uint := Expr_Value (Type_Low_Bound (Universal_Integer));
+      Hi : constant Uint := Expr_Value (Type_High_Bound (Universal_Integer));
+      --  Allowed range of universal integer (= allowed range of enum lit vals)
+
       Min : Uint;
       Max : Uint;
+      --  Minimum and maximum values of entries
+
+      Max_Node : Node_Id;
+      --  Pointer to node for literal providing max value
 
    begin
       if Ignore_Rep_Clauses then
@@ -2260,7 +2266,7 @@ package body Sem_Ch13 is
                         Err := True;
                      end if;
 
-                     Set_Enumeration_Rep_Expr (Elit, Choice);
+                     Set_Enumeration_Rep_Expr (Elit, Expression (Assoc));
 
                      Expr := Expression (Assoc);
                      Val := Static_Integer (Expr);
@@ -2306,15 +2312,16 @@ package body Sem_Ch13 is
                   if Max /= No_Uint and then Val <= Max then
                      Error_Msg_NE
                        ("enumeration value for& not ordered!",
-                                       Enumeration_Rep_Expr (Elit), Elit);
+                        Enumeration_Rep_Expr (Elit), Elit);
                   end if;
 
+                  Max_Node := Enumeration_Rep_Expr (Elit);
                   Max := Val;
                end if;
 
-               --  If there is at least one literal whose representation
-               --  is not equal to the Pos value, then note that this
-               --  enumeration type has a non-standard representation.
+               --  If there is at least one literal whose representation is not
+               --  equal to the Pos value, then note that this enumeration type
+               --  has a non-standard representation.
 
                if Val /= Enumeration_Pos (Elit) then
                   Set_Has_Non_Standard_Rep (Base_Type (Enumtype));
@@ -2331,15 +2338,28 @@ package body Sem_Ch13 is
 
          begin
             if Has_Size_Clause (Enumtype) then
-               if Esize (Enumtype) >= Minsize then
+
+               --  All OK, if size is OK now
+
+               if RM_Size (Enumtype) >= Minsize then
                   null;
 
                else
+                  --  Try if we can get by with biasing
+
                   Minsize :=
                     UI_From_Int (Minimum_Size (Enumtype, Biased => True));
 
-                  if Esize (Enumtype) < Minsize then
-                     Error_Msg_N ("previously given size is too small", N);
+                  --  Error message if even biasing does not work
+
+                  if RM_Size (Enumtype) < Minsize then
+                     Error_Msg_Uint_1 := RM_Size (Enumtype);
+                     Error_Msg_Uint_2 := Max;
+                     Error_Msg_N
+                       ("previously given size (^) is too small "
+                        & "for this value (^)", Max_Node);
+
+                  --  If biasing worked, indicate that we now have biased rep
 
                   else
                      Set_Has_Biased_Representation (Enumtype);
