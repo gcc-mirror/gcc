@@ -1,3 +1,8 @@
+2010-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/functional (function<>::swap): Use std::swap.
+	* include/tr1/functional (function<>::swap): Likewise.
+
 2010-10-04  Andreas Schwab  <schwab@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE): Properly quote argument to

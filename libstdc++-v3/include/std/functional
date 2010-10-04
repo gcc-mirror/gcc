@@ -1940,15 +1940,9 @@ namespace std
        */
       void swap(function& __x)
       {
-	_Any_data __old_functor = _M_functor;
-	_M_functor = __x._M_functor;
-	__x._M_functor = __old_functor;
-	_Manager_type __old_manager = _M_manager;
-	_M_manager = __x._M_manager;
-	__x._M_manager = __old_manager;
-	_Invoker_type __old_invoker = _M_invoker;
-	_M_invoker = __x._M_invoker;
-	__x._M_invoker = __old_invoker;
+	std::swap(_M_functor, __x._M_functor);
+	std::swap(_M_manager, __x._M_manager);
+	std::swap(_M_invoker, __x._M_invoker);
       }
 
       // TODO: needs allocator_arg_t
