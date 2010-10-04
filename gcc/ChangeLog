@@ -1,3 +1,40 @@
+2010-10-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* common.opt (fira-coalesce): Remove.
+
+	* doc/invoke.texi (flag_ira_coalesce): Remove.
+
+	* ira-color.c (allocno_coalesced_p): Move before
+	copy_freq_compare_func.
+	processed_coalesced_allocno_bitmap): Ditto.
+	(update_conflict_hard_regno_costs): Don't use
+	ALLOCNO_FIRST_COALESCED_ALLOCNO.
+	(allocno_cost_compare_func, print_coalesced_allocno): Remove.
+	(assign_hard_reg): Assume no coalesced allocnos.
+	(get_coalesced_allocnos_attributes): Remove.
+	(bucket_allocno_compare_func): Assume no coalesced allocnos.
+	(push_allocno_to_stack): Ditto.
+	(remove_allocno_from_bucket_and_push): Use
+	ira_print_expanded_allocno instead of print_coalesced_allocno.
+	(push_allocnos_to_stack): Assume uncoalesced allocnos.
+	(all_conflicting_hard_regs_coalesced): Ditto.  Rename to
+	all_conflicting_hard_regs.
+	(setup_allocno_available_regs_num): Assume uncoalesced allocnos.
+	(setup_allocno_left_conflicts_size): Ditto.
+	(put_allocno_into_bucket): Ditto.
+	(copy_freq_compare_func): Remove.
+	(copy_freq_compare_func, merge_allocnos): Move before
+	coalesced_pseudo_reg_freq_compare.
+	coalesced_allocno_conflict_p): Ditto.
+	(coalesced_allocno_conflict_p, coalesce_allocnos): Ditto.  Remove
+	parameter.  Assume it true.
+	(color_allocnos): Assume uncoalesced allocnos.  Use
+	ira_print_expanded_allocno instead of print_coalesced_allocno.
+	(ira_sort_regnos_for_alter_reg): Call coalesce_allocnos without
+	parameter.
+
+	* ira.c: Remove comment about coalescing.
+
 2010-10-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/mips.h (target_flags_explicit): Declare for
