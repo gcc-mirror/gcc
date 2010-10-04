@@ -556,13 +556,14 @@ package body Sinput.L is
                   --  the source has been modified by the preprocessing. Only
                   --  do that for the main unit (spec, body and subunits).
 
-                  if Generate_Processed_File and then
-                     Modified and then
+                  if Generate_Processed_File
+                    and then Modified
+                    and then
                      ((Compiler_State = Parsing
-                       and then Parsing_Main_Extended_Source)
-                      or else
-                       (Compiler_State = Analyzing
-                        and then Analysing_Subunit_Of_Main))
+                        and then Parsing_Main_Extended_Source)
+                       or else
+                        (Compiler_State = Analyzing
+                          and then Analysing_Subunit_Of_Main))
                   then
                      declare
                         FD     : File_Descriptor;
