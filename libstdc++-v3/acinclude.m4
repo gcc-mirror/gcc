@@ -776,8 +776,8 @@ dnl See docs/html/17_intro/configury.html#enable for documentation.
 dnl
 m4_define([GLIBCXX_ENABLE],[dnl
 m4_define([_g_switch],[--enable-$1])dnl
-m4_define([_g_help],[AC_HELP_STRING(_g_switch$3,[$4 @<:@default=$2@:>@])])dnl
- AC_ARG_ENABLE($1,_g_help,
+m4_define([_g_help],[AC_HELP_STRING([_g_switch$3],[$4 @<:@default=$2@:>@])])dnl
+ AC_ARG_ENABLE([$1],m4_dquote(_g_help),
   m4_bmatch([$5],
    [^permit ],
      [[
@@ -1072,7 +1072,7 @@ dnl
 AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
 
   AC_MSG_CHECKING([for clock_gettime, nanosleep and sched_yield])
-  GLIBCXX_ENABLE(libstdcxx-time,$1,[=KIND],
+  GLIBCXX_ENABLE(libstdcxx-time,$1,[[[=KIND]]],
     [use KIND for check type],
     [permit yes|no|rt])
 
@@ -1684,7 +1684,7 @@ dnl  +  Usage:  GLIBCXX_ENABLE_CHEADERS[(DEFAULT)]
 dnl       Where DEFAULT is either 'c' or 'c_std' or 'c_global'.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_CHEADERS], [
-  GLIBCXX_ENABLE(cheaders,$1,[=KIND],
+  GLIBCXX_ENABLE(cheaders,$1,[[[=KIND]]],
     [construct "C" headers for g++], [permit c|c_std|c_global])
   AC_MSG_NOTICE("C" header strategy set to $enable_cheaders)
 
@@ -1710,7 +1710,7 @@ dnl
 dnl Default is generic.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
-  GLIBCXX_ENABLE(clocale,auto,[@<:@=MODEL@:>@],
+  GLIBCXX_ENABLE(clocale,auto,[[[=MODEL]]],
     [use MODEL for target locale package],
     [permit generic|gnu|ieee_1003.1-2001|yes|no|auto])
 
@@ -1915,7 +1915,7 @@ dnl Default is new.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_ALLOCATOR], [
   AC_MSG_CHECKING([for std::allocator base class])
-  GLIBCXX_ENABLE(libstdcxx-allocator,auto,[=KIND],
+  GLIBCXX_ENABLE(libstdcxx-allocator,auto,[[[=KIND]]],
     [use KIND for target std::allocator base],
     [permit new|malloc|mt|bitmap|pool|yes|no|auto])
 
@@ -2022,7 +2022,7 @@ dnl Default is stdio.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_CSTDIO], [
   AC_MSG_CHECKING([for underlying I/O to use])
-  GLIBCXX_ENABLE(cstdio,stdio,[=PACKAGE],
+  GLIBCXX_ENABLE(cstdio,stdio,[[[=PACKAGE]]],
     [use target-specific I/O package], [permit stdio])
 
   # Now that libio has been removed, you can have any color you want as long
@@ -2812,7 +2812,7 @@ dnl       'no' disables versioning.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_SYMVERS], [
 
-GLIBCXX_ENABLE(symvers,$1,[=STYLE],
+GLIBCXX_ENABLE(symvers,$1,[[[=STYLE]]],
   [enables symbol versioning of the shared library],
   [permit yes|no|gnu|gnu-versioned-namespace|darwin|darwin-export|sun])
 

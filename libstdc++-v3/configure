@@ -1492,14 +1492,16 @@ Optional Features:
                           [default=auto]
   --enable-libstdcxx-pch  build pre-compiled libstdc++ headers
                           [default=$is_hosted]
-  --enable-cstdio=PACKAGE use target-specific I/O package [default=stdio]
+  --enable-cstdio[=PACKAGE]
+                          use target-specific I/O package [default=stdio]
   --enable-clocale[=MODEL]
                           use MODEL for target locale package [default=auto]
   --enable-nls            use Native Language Support (default)
-  --enable-libstdcxx-allocator=KIND
+  --enable-libstdcxx-allocator[=KIND]
                           use KIND for target std::allocator base
                           [default=auto]
-  --enable-cheaders=KIND  construct "C" headers for g++ [default=$c_model]
+  --enable-cheaders[=KIND]
+                          construct "C" headers for g++ [default=$c_model]
   --enable-long-long      enable template specializations for 'long long'
                           [default=yes]
   --enable-wchar_t        enable template specializations for 'wchar_t'
@@ -1516,12 +1518,13 @@ Optional Features:
   --enable-fully-dynamic-string
                           do not put empty strings in per-process static
                           memory [default=no]
-  --enable-libstdcxx-time=KIND
+  --enable-libstdcxx-time[=KIND]
                           use KIND for check type [default=no]
   --enable-tls            Use thread-local storage [default=yes]
   --disable-rpath         do not hardcode runtime library paths
   --enable-linux-futex    use the Linux futex system call [default=default]
-  --enable-symvers=STYLE  enables symbol versioning of the shared library
+  --enable-symvers[=STYLE]
+                          enables symbol versioning of the shared library
                           [default=yes]
   --enable-visibility     enables visibility safe usage [default=yes]
   --enable-version-specific-runtime-libs
@@ -11466,7 +11469,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11469 "configure"
+#line 11472 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11572,7 +11575,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11575 "configure"
+#line 11578 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14912,7 +14915,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14915 "configure"
+#line 14918 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15280,7 +15283,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15283 "configure"
+#line 15286 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15317,7 +15320,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15320 "configure"
+#line 15323 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15354,7 +15357,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15357 "configure"
+#line 15360 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15392,7 +15395,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15395 "configure"
+#line 15398 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15468,7 +15471,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15471 "configure"
+#line 15474 "configure"
 int main()
 {
   _Decimal32 d1;

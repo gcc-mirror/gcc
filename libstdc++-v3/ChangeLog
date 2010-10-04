@@ -1,3 +1,16 @@
+2010-10-04  Andreas Schwab  <schwab@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE): Properly quote argument to
+	AC_HELP_STRING.  Double quote expansion of _g_help.
+	(GLIBCXX_ENABLE_LIBSTDCXX_TIME): Double quote third argument of
+	GLIBCXX_ENABLE.
+	(GLIBCXX_ENABLE_CHEADERS): Likewise.
+	(GLIBCXX_ENABLE_CLOCALE): Likewise.
+	(GLIBCXX_ENABLE_ALLOCATOR): Likewise.
+	(GLIBCXX_ENABLE_CSTDIO): Likewise.
+	(GLIBCXX_ENABLE_SYMVERS): Likewise.
+	* configure: Regenerate.
+
 2010-10-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libstdc++/45863
