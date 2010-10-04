@@ -5566,11 +5566,6 @@ ia64_handle_option (size_t code, const char *arg, int value)
 {
   switch (code)
     {
-    case OPT_G:
-      g_switch_value = value;
-      g_switch_set = true;
-      return true;
-
     case OPT_mfixed_range_:
       fix_range (arg);
       return true;
@@ -5627,7 +5622,9 @@ ia64_option_override (void)
     flag_ira_loop_pressure = 1;
 
 
-  ia64_section_threshold = g_switch_set ? g_switch_value : IA64_DEFAULT_GVALUE;
+  ia64_section_threshold = (global_options_set.x_g_switch_value
+			    ? g_switch_value
+			    : IA64_DEFAULT_GVALUE);
 
   init_machine_status = ia64_init_machine_status;
 

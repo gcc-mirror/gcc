@@ -295,11 +295,6 @@ score_handle_option (size_t code, const char *arg, int value)
 {
   switch (code)
     {
-    case OPT_G:
-      g_switch_value = value;
-      g_switch_set = true;
-      return true;
-
     case OPT_mscore7d:
       target_flags &= ~(MASK_ALL_CPU_BITS);
       target_flags |= MASK_SCORE7 | MASK_SCORE7D;

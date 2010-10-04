@@ -1279,11 +1279,6 @@ microblaze_handle_option (size_t code,
 {
   switch (code)
     {
-    case OPT_G:
-      g_switch_value = value;
-      g_switch_set = true;
-      return true;
-
     case OPT_mno_clearbss:
       flag_zero_initialized_in_bss = 0;
       warning (0, "-mno-clearbss is deprecated; use -fno-zero-initialized-in-bss");
@@ -1304,8 +1299,9 @@ microblaze_option_override (void)
   register enum machine_mode mode;
   int ver;
 
-  microblaze_section_threshold =
-    g_switch_set ? g_switch_value : MICROBLAZE_DEFAULT_GVALUE;
+  microblaze_section_threshold = (global_options_set.x_g_switch_value
+				  ? g_switch_value
+				  : MICROBLAZE_DEFAULT_GVALUE);
 
   /* Check the MicroBlaze CPU version for any special action to be done.  */
   if (microblaze_select_cpu == NULL)

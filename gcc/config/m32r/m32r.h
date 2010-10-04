@@ -1227,7 +1227,8 @@ L2:     .word STATIC
   do									\
     {									\
       if (! TARGET_SDATA_NONE						\
-	  && (SIZE) > 0 && (SIZE) <= g_switch_value)			\
+	  && (SIZE) > 0							\
+	  && (SIZE) <= (unsigned HOST_WIDE_INT) g_switch_value)		\
 	fprintf ((FILE), "%s", SCOMMON_ASM_OP);				\
       else								\
 	fprintf ((FILE), "%s", COMMON_ASM_OP);				\
@@ -1240,7 +1241,8 @@ L2:     .word STATIC
   do									\
     {									\
       if (! TARGET_SDATA_NONE						\
-          && (SIZE) > 0 && (SIZE) <= g_switch_value)			\
+          && (SIZE) > 0							\
+	  && (SIZE) <= (unsigned HOST_WIDE_INT) g_switch_value)		\
         switch_to_section (get_named_section (NULL, ".sbss", 0));	\
       else								\
         switch_to_section (bss_section);				\

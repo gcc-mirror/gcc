@@ -1,3 +1,67 @@
+2010-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* flags.h (g_switch_value, g_switch_set): Remove.
+	* opts.c (g_switch_value, g_switch_set): Remove.
+	* config/g.opt (G): Add Var(g_switch_value).
+	* config/alpha/alpha.c (alpha_handle_option): Don't handle -G
+	here.
+	(alpha_option_override): Check global_options_set.x_g_switch_value
+	instead of g_switch_set.
+	(alpha_in_small_data_p): Remove cast in comparison with
+	g_switch_value.
+	* config/alpha/elf.h (ASM_OUTPUT_ALIGNED_LOCAL): Cast
+	g_switch_value to unsigned HOST_WIDE_INT.
+	* config/frv/frv.c (frv_const_unspec_p): Remove cast in comparison
+	with g_switch_value.
+	(frv_handle_option): Don't handle -G here.
+	(frv_option_override): Check global_options_set.x_g_switch_value
+	instead of g_switch_set.  Don't modify g_switch_set.
+	(frv_in_small_data_p): Remove cast in comparison with
+	g_switch_value.
+	* config/frv/frv.h (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Cast
+	g_switch_value to unsigned HOST_WIDE_INT.
+	* config/ia64/ia64.c (ia64_handle_option): Don't handle -G here.
+	(ia64_option_override): Check global_options_set.x_g_switch_value
+	instead of g_switch_set.
+	* config/lm32/lm32.c (lm32_handle_option, TARGET_HANDLE_OPTION):
+	Remove.
+	(lm32_in_small_data_p): Remove cast in comparison with
+	g_switch_value.
+	* config/lm32/lm32.h (ASM_OUTPUT_ALIGNED_LOCAL,
+	ASM_OUTPUT_ALIGNED_COMMON): Cast g_switch_value to unsigned
+	HOST_WIDE_INT.
+	* config/m32r/m32r.c (m32r_handle_option): Don't handle -G here.
+	(m32r_init): Check global_options_set.x_g_switch_value instead of
+	g_switch_set.
+	(m32r_in_small_data_p): Remove cast in comparison with
+	g_switch_value.
+	(m32r_file_start): Format g_switch_value with %d.
+	* config/m32r/m32r.h (ASM_OUTPUT_ALIGNED_COMMON,
+	ASM_OUTPUT_ALIGNED_BSS): Cast g_switch_value to unsigned
+	HOST_WIDE_INT.
+	* config/microblaze/microblaze.c (microblaze_handle_option): Don't
+	handle -G here.
+	(microblaze_option_override): Check
+	global_options_set.x_g_switch_value instead of g_switch_set.
+	* config/mips/mips.c (mips_handle_option): Don't handle -G here.
+	(mips_option_override): Check global_options_set.x_g_switch_value
+	instead of g_switch_set.
+	* config/rs6000/rs6000.c (rs6000_handle_option): Don't handle -G
+	here.
+	(rs6000_file_start): Format g_switch_value with %d.
+	(small_data_operand, rs6000_elf_in_small_data_p): Remove casts in
+	comparisons with g_switch_value.
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Check
+	global_options_set.x_g_switch_value instead of g_switch_set.
+	* config/rs6000/vxworks.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Check
+	global_options_set.x_g_switch_value instead of g_switch_set.
+	* config/score/score.c (score_handle_option): Don't handle -G
+	here.
+	* config/score/score3.c (score3_option_override): Check
+	global_options_set.x_g_switch_value instead of g_switch_set.
+	* config/score/score7.c (score7_option_override): Check
+	global_options_set.x_g_switch_value instead of g_switch_set.
+
 2010-10-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* common.opt (fira-coalesce): Remove.

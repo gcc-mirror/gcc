@@ -81,7 +81,7 @@ extern const char *rs6000_tls_size_string; /* For -mtls-size= */
 
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
-  if (!g_switch_set)							\
+  if (!global_options_set.x_g_switch_value)				\
     g_switch_value = SDATA_DEFAULT_SIZE;				\
 									\
   if (rs6000_abi_name == NULL)						\

@@ -75,11 +75,8 @@ static bool lm32_can_eliminate (const int, const int);
 static bool
 lm32_legitimate_address_p (enum machine_mode mode, rtx x, bool strict);
 static HOST_WIDE_INT lm32_compute_frame_size (int size);
-static bool lm32_handle_option (size_t code, const char *arg, int value);
 static void lm32_option_override (void);
 
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION lm32_handle_option
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE lm32_option_override
 #undef TARGET_ADDRESS_COST
@@ -698,23 +695,6 @@ lm32_setup_incoming_varargs (CUMULATIVE_ARGS * cum, enum machine_mode mode,
     }
 }
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-lm32_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
-{
-  switch (code)
-    {
-    case OPT_G:
-      g_switch_value = value;
-      g_switch_set = true;
-      return true;
-
-    default:
-      return true;
-    }
-}
-
 /* Override command line options.  */
 static void
 lm32_option_override (void)
@@ -797,7 +777,7 @@ lm32_in_small_data_p (const_tree exp)
 
       /* If this is an incomplete type with size 0, then we can't put it
          in sdata because it might be too big when completed.  */
-      if (size > 0 && (unsigned HOST_WIDE_INT) size <= g_switch_value)
+      if (size > 0 && size <= g_switch_value)
 	return true;
     }
 

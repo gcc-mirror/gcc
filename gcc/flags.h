@@ -272,10 +272,6 @@ extern struct target_flag_state *this_target_flag_state;
 /* Nonzero if subexpressions must be evaluated from left-to-right.  */
 extern int flag_evaluation_order;
 
-/* Value of the -G xx switch, and whether it was passed or not.  */
-extern unsigned HOST_WIDE_INT g_switch_value;
-extern bool g_switch_set;
-
 /* Whether to run the warn_unused_result attribute pass.  */
 extern bool flag_warn_unused_result;
 

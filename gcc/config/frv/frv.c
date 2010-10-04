@@ -572,7 +572,7 @@ frv_const_unspec_p (rtx x, struct frv_unspec *unspec)
 
 	  if (frv_small_data_reloc_p (unspec->symbol, unspec->reloc)
 	      && unspec->offset > 0
-	      && (unsigned HOST_WIDE_INT) unspec->offset < g_switch_value)
+	      && unspec->offset < g_switch_value)
 	    return true;
 	}
     }
@@ -611,11 +611,6 @@ frv_handle_option (size_t code, const char *arg, int value)
 {
   switch (code)
     {
-    case OPT_G:
-      g_switch_value = value;
-      g_switch_set = true;
-      return true;
-
     case OPT_mcpu_:
       if (strcmp (arg, "simple") == 0)
 	frv_cpu_type = FRV_CPU_SIMPLE;
@@ -692,9 +687,8 @@ frv_option_override (void)
       if (!flag_pic)		/* -fPIC */
 	flag_pic = 2;
 
-      if (! g_switch_set)	/* -G0 */
+      if (!global_options_set.x_g_switch_value)	/* -G0 */
 	{
-	  g_switch_set = 1;
 	  g_switch_value = 0;
 	}
     }
@@ -786,7 +780,7 @@ frv_option_override (void)
     }
 
   /* Check for small data option */
-  if (!g_switch_set)
+  if (!global_options_set.x_g_switch_value && !TARGET_LIBPIC)
     g_switch_value = SDATA_DEFAULT_SIZE;
 
   /* A C expression which defines the machine-dependent operand
@@ -9570,7 +9564,7 @@ frv_in_small_data_p (const_tree decl)
     }
 
   size = int_size_in_bytes (TREE_TYPE (decl));
-  if (size > 0 && (unsigned HOST_WIDE_INT) size <= g_switch_value)
+  if (size > 0 && size <= g_switch_value)
     return true;
 
   return false;

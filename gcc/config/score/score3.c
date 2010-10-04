@@ -641,11 +641,13 @@ score3_option_override (void)
 {
   flag_pic = false;
   if (!flag_pic)
-    score3_sdata_max = g_switch_set ? g_switch_value : SCORE3_DEFAULT_SDATA_MAX;
+    score3_sdata_max = (global_options_set.x_g_switch_value
+			? g_switch_value
+			: SCORE3_DEFAULT_SDATA_MAX);
   else
     {
       score3_sdata_max = 0;
-      if (g_switch_set && (g_switch_value != 0))
+      if (global_options_set.x_g_switch_value && (g_switch_value != 0))
         warning (0, "-fPIC and -G are incompatible");
     }
 

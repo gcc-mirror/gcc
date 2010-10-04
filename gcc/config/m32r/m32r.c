@@ -210,11 +210,6 @@ m32r_handle_option (size_t code, const char *arg, int value)
 {
   switch (code)
     {
-    case OPT_G:
-      g_switch_value = value;
-      g_switch_set = true;
-      return true;
-
     case OPT_m32r:
       target_flags &= ~(MASK_M32R2 | MASK_M32RX);
       return true;
@@ -270,7 +265,7 @@ m32r_init (void)
   m32r_punct_chars['@'] = 1; /* ??? no longer used */
 
   /* Provide default value if not specified.  */
-  if (!g_switch_set)
+  if (!global_options_set.x_g_switch_value)
     g_switch_value = SDATA_DEFAULT_SIZE;
 }
 
@@ -545,7 +540,7 @@ m32r_in_small_data_p (const_tree decl)
 	{
 	  int size = int_size_in_bytes (TREE_TYPE (decl));
 
-	  if (size > 0 && (unsigned HOST_WIDE_INT) size <= g_switch_value)
+	  if (size > 0 && size <= g_switch_value)
 	    return true;
 	}
     }
@@ -2106,7 +2101,7 @@ m32r_file_start (void)
 
   if (flag_verbose_asm)
     fprintf (asm_out_file,
-	     "%s M32R/D special options: -G " HOST_WIDE_INT_PRINT_UNSIGNED "\n",
+	     "%s M32R/D special options: -G %d\n",
 	     ASM_COMMENT_START, g_switch_value);
 
   if (TARGET_LITTLE_ENDIAN)

@@ -3996,11 +3996,6 @@ rs6000_handle_option (size_t code, const char *arg, int value)
 
   switch (code)
     {
-    case OPT_G:
-      g_switch_value = value;
-      g_switch_set = true;
-      break;
-
     case OPT_mno_power:
       target_flags &= ~(MASK_POWER | MASK_POWER2
 			| MASK_MULTIPLE | MASK_STRING);
@@ -4425,7 +4420,7 @@ rs6000_file_start (void)
 
       if (rs6000_sdata && g_switch_value)
 	{
-	  fprintf (file, "%s -G " HOST_WIDE_INT_PRINT_UNSIGNED, start,
+	  fprintf (file, "%s -G %d", start,
 		   g_switch_value);
 	  start = "";
 	}
@@ -5416,7 +5411,7 @@ small_data_operand (rtx op ATTRIBUTE_UNUSED,
       /* We have to be careful here, because it is the referenced address
 	 that must be 32k from _SDA_BASE_, not just the symbol.  */
       summand = INTVAL (XEXP (sum, 1));
-      if (summand < 0 || (unsigned HOST_WIDE_INT) summand > g_switch_value)
+      if (summand < 0 || summand > g_switch_value)
 	return 0;
 
       sym_ref = XEXP (sum, 0);
@@ -24834,7 +24829,7 @@ rs6000_elf_in_small_data_p (const_tree decl)
       HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
 
       if (size > 0
-	  && (unsigned HOST_WIDE_INT) size <= g_switch_value
+	  && size <= g_switch_value
 	  /* If it's not public, and we're not going to reference it there,
 	     there's no need to put it in the small data section.  */
 	  && (rs6000_sdata != SDATA_DATA || TREE_PUBLIC (decl)))
