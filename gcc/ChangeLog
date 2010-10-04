@@ -1,3 +1,8 @@
+2010-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/mips.h (target_flags_explicit): Declare for
+	GENERATOR_FILE.
+
 2010-10-04  Andi Kleen <ak@linux.intel.com>
 
 	* Makefile.in (xgcc, cpp, cc1, collect2, lto-wrapper, gcov,
