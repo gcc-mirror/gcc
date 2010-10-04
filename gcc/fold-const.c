@@ -11152,12 +11152,12 @@ fold_binary_loc (location_t loc,
 		  || (TREE_CODE (arg0) != NEGATE_EXPR
 		      && pmop[1] != TREE_OPERAND (arg0, 1)))
 		{
-		  tree utype = type;
+		  tree utype = TREE_TYPE (arg0);
 		  if (! TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0)))
 		    {
 		      /* Perform the operations in a type that has defined
 			 overflow behavior.  */
-		      utype = unsigned_type_for (type);
+		      utype = unsigned_type_for (TREE_TYPE (arg0));
 		      if (pmop[0] != NULL)
 			pmop[0] = fold_convert_loc (loc, utype, pmop[0]);
 		      if (pmop[1] != NULL)
@@ -11184,16 +11184,9 @@ fold_binary_loc (location_t loc,
 		    tem = fold_build2_loc (loc, MINUS_EXPR, utype,
 					   pmop[0], pmop[1]);
 		  /* TEM is now the new binary +, - or unary - replacement.  */
-		  if (utype == type)
-		    return fold_build2_loc (loc, BIT_AND_EXPR, type,
-					    tem, arg1);
-		  else
-		    {
-		      tem = fold_build2_loc (loc, BIT_AND_EXPR, utype, tem,
-					     fold_convert_loc (loc, utype,
-					     arg1));		
-		      return fold_convert_loc (loc, type, tem);
-		    }
+		  tem = fold_build2_loc (loc, BIT_AND_EXPR, utype, tem,
+					 fold_convert_loc (loc, utype, arg1));
+		  return fold_convert_loc (loc, type, tem);
 		}
 	    }
 	}

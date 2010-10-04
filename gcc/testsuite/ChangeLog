@@ -1,3 +1,8 @@
+2010-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45876
+	* gcc.c-torture/compile/pr45876.c: New test.
+
 2010-10-04  Julian Brown  <julian@codesourcery.com>
 
 	* gcc.dg/vect/vect-42.c: Use vect_element_align instead of
