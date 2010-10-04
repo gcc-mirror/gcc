@@ -8843,15 +8843,26 @@ package body Sem_Res is
             then
                null;
 
-            --  Finally, the expression may be a qualified expression whose
-            --  own expression is a possibly overloaded function call. The
-            --  qualified expression is needed to be disambiguate the call,
-            --  but it appears in a context in which a name is needed, forcing
-            --  the use of a conversion. In Ada 2012, a qualified expression is
-            --  a name, and this idiom is no longer needed.
+            --  Finally, if this type conversion occurs in a context that
+            --  requires a prefix, and the expression is a qualified
+            --  expression, then the type conversion is not redundant,
+            --  because a qualified expression is not a prefix, whereas a
+            --  type conversion is. For example, "X := T'(Funx(...)).Y;" is
+            --  illegal. because a selected component requires a prefix, but
+            --  a type conversion makes it legal: "X := T(T'(Funx(...))).Y;"
+            --  In Ada 2012, a qualified expression is a name, so this idiom is
+            --  no longer needed, but we still suppress the warning because it
+            --  seems unfriendly for warnings to pop up when you switch to the
+            --  newer language version.
 
             elsif Nkind (Orig_N) = N_Qualified_Expression
-              and then Nkind (Expression (Orig_N)) = N_Function_Call
+              and then Nkind_In
+                         (Parent (N),
+                          N_Attribute_Reference,
+                          N_Indexed_Component,
+                          N_Selected_Component,
+                          N_Slice,
+                          N_Explicit_Dereference)
             then
                null;
 

@@ -17291,21 +17291,24 @@ supplied.
 @cindex Report file (for @code{gnatcheck})
 
 @noindent
-The @command{gnatcheck} tool outputs on @file{stdout} all messages concerning
-rule violations.
-It also creates a text file  that
-contains the complete report of the last gnatcheck run. By default this file
-is named named @file{^gnatcheck.out^GNATCHECK.OUT^} and it is located in the
+The @command{gnatcheck} tool outputs on @file{stderr} all messages concerning
+rule violations except if running in quiet mode.  It also creates a text file
+that contains the complete report of the last gnatcheck run. By default this file
+is named @file{^gnatcheck.out^GNATCHECK.OUT^} and it is located in the
 current directory; the @option{^-o^/OUTPUT^} option can be used to change the
 name and/or location of the report file. This report contains:
+
 @itemize @bullet
-@item date and time of @command{gnatcheck} run, the version of
-the tool that has generated this report and the full parameters
-of the  @command{gnatcheck} invocation;
-@item list of enabled rules;
-@item total number of detected violations;
-@item list of source files where rule violations have been detected;
-@item list of source files where no violations have been detected.
+
+@item general details of the @command{gnatcheck} run: date and time of the run,
+the version of the tool that has generated this report, full parameters
+of the  @command{gnatcheck} invocation, reference to the list of checked
+sources and applied rules (coding standard);
+@item summary of the run (number of checked sources and detected violations);
+@item list of exempted coding standard violations;
+@item list of non-exempted coding standard violations;
+@item list of problems in the definition of exemption sections;
+@item of language violations (compile-time errors) detected in processed sources;
 @end itemize
 
 @node General gnatcheck Switches

@@ -5280,9 +5280,17 @@ package body Prj.Nmsc is
          Recursive_Dirs.Reset (Visited);
       end Find_Source_Dirs;
 
-   --  Start of processing for Get_Directories
-
       Dir_Exists : Boolean;
+
+      No_Sources : constant Boolean :=
+        (((not Source_Files.Default) and then Source_Files.Values = Nil_String)
+         or else
+         ((not Source_Dirs.Default) and then Source_Dirs.Values = Nil_String)
+         or else
+         ((not Languages.Default) and then Languages.Values = Nil_String))
+        and then Project.Extends = No_Project;
+
+   --  Start of processing for Get_Directories
 
    begin
       if Current_Verbosity = High then
@@ -5292,14 +5300,7 @@ package body Prj.Nmsc is
       --  Set the object directory to its default which may be nil, if there
       --  is no sources in the project.
 
-      if (((not Source_Files.Default)
-             and then Source_Files.Values = Nil_String)
-          or else
-           ((not Source_Dirs.Default) and then Source_Dirs.Values = Nil_String)
-              or else
-           ((not Languages.Default) and then Languages.Values = Nil_String))
-        and then Project.Extends = No_Project
-      then
+      if No_Sources then
          Project.Object_Directory := No_Path_Information;
       else
          Project.Object_Directory := Project.Directory;
@@ -5316,7 +5317,7 @@ package body Prj.Nmsc is
                "Object_Dir cannot be empty",
                Object_Dir.Location, Project);
 
-         else
+         elsif not No_Sources then
             --  We check that the specified object directory does exist.
             --  However, even when it doesn't exist, we set it to a default
             --  value. This is for the benefit of tools that recover from
@@ -5348,9 +5349,7 @@ package body Prj.Nmsc is
             end if;
          end if;
 
-      elsif Project.Object_Directory /= No_Path_Information
-        and then Subdirs /= null
-      then
+      elsif not No_Sources and then Subdirs /= null then
          Name_Len := 1;
          Name_Buffer (1) := '.';
          Locate_Directory
@@ -5389,7 +5388,7 @@ package body Prj.Nmsc is
                "Exec_Dir cannot be empty",
                Exec_Dir.Location, Project);
 
-         else
+         elsif not No_Sources then
             --  We check that the specified exec directory does exist
 
             Locate_Directory

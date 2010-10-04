@@ -163,6 +163,10 @@ package body System.Task_Primitives.Operations is
    procedure Install_Signal_Handlers;
    --  Install the default signal handlers for the current task
 
+   function Is_Task_Context return Boolean;
+   --  This function returns True if the current execution is in the context
+   --  of a task, and False if it is an interrupt context.
+
    function To_Address is
      new Ada.Unchecked_Conversion (Task_Id, System.Address);
 
@@ -1095,7 +1099,12 @@ package body System.Task_Primitives.Operations is
       Result : STATUS;
 
    begin
-      SSL.Abort_Defer.all;
+
+      --  Set_True can be called from an interrupt context, in which case
+      --  Abort_Defer is undefined.
+      if Is_Task_Context then
+         SSL.Abort_Defer.all;
+      end if;
 
       Result := semTake (S.L, WAIT_FOREVER);
       pragma Assert (Result = OK);
@@ -1118,7 +1127,12 @@ package body System.Task_Primitives.Operations is
       Result := semGive (S.L);
       pragma Assert (Result = OK);
 
-      SSL.Abort_Undefer.all;
+      --  Set_True can be called from an interrupt context, in which case
+      --  Abort_Undefer is undefined.
+      if Is_Task_Context then
+         SSL.Abort_Undefer.all;
+      end if;
+
    end Set_True;
 
    ------------------------
@@ -1315,6 +1329,19 @@ package body System.Task_Primitives.Operations is
          return True;
       end if;
    end Continue_Task;
+
+   ---------------------
+   -- Is_Task_Context --
+   ---------------------
+
+   function Is_Task_Context return Boolean is
+      function intContext return int;
+      --  Binding to the C routine intContext. This function returns 1 only
+      --  if the current execution state is an interrupt context.
+      pragma Import (C, intContext, "intContext");
+   begin
+      return intContext /= 1;
+   end Is_Task_Context;
 
    ----------------
    -- Initialize --
