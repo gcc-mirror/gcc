@@ -1041,7 +1041,7 @@ package body Exp_Ch5 is
       --  Note that on the last iteration of the loop, the index is increased
       --  (or decreased) past the corresponding bound. This is consistent with
       --  the C semantics of the back-end, where such an off-by-one value on a
-      --  dead index variable is OK.  However, in CodePeer mode this leads to
+      --  dead index variable is OK. However, in CodePeer mode this leads to
       --  spurious warnings, and thus we place a guard around the attribute
       --  reference. For obvious reasons we only do this for CodePeer.
 
@@ -1223,6 +1223,13 @@ package body Exp_Ch5 is
          --  declaration for Typ. We need to use the actual entity because the
          --  type may be private and resolution by identifier alone would fail.
 
+         function Make_Field_Expr
+           (Comp_Ent : Entity_Id;
+            U_U      : Boolean) return Node_Id;
+         --  Common processing for one component for Make_Component_List_Assign
+         --  and Make_Field_Assign. Return the expression to be assigned for
+         --  component Comp_Ent.
+
          function Make_Component_List_Assign
            (CL  : Node_Id;
             U_U : Boolean := False) return List_Id;
@@ -1232,7 +1239,7 @@ package body Exp_Ch5 is
          --  part expression as the switch for the generated case statement.
 
          function Make_Field_Assign
-           (C : Entity_Id;
+           (C   : Entity_Id;
             U_U : Boolean := False) return Node_Id;
          --  Given C, the entity for a discriminant or component, build an
          --  assignment for the corresponding field values. The flag U_U
@@ -1282,7 +1289,6 @@ package body Exp_Ch5 is
             Alts   : List_Id;
             DC     : Node_Id;
             DCH    : List_Id;
-            Expr   : Node_Id;
             Result : List_Id;
             V      : Node_Id;
 
@@ -1308,28 +1314,9 @@ package body Exp_Ch5 is
                   Next_Non_Pragma (V);
                end loop;
 
-               --  If we have an Unchecked_Union, use the value of the inferred
-               --  discriminant of the variant part expression as the switch
-               --  for the case statement. The case statement may later be
-               --  folded.
-
-               if U_U then
-                  Expr :=
-                    New_Copy (Get_Discriminant_Value (
-                      Entity (Name (VP)),
-                      Etype (Rhs),
-                      Discriminant_Constraint (Etype (Rhs))));
-               else
-                  Expr :=
-                    Make_Selected_Component (Loc,
-                      Prefix => Duplicate_Subexpr (Rhs),
-                      Selector_Name =>
-                        Make_Identifier (Loc, Chars (Name (VP))));
-               end if;
-
                Append_To (Result,
                  Make_Case_Statement (Loc,
-                   Expression => Expr,
+                   Expression   => Make_Field_Expr (Entity (Name (VP)), U_U),
                    Alternatives => Alts));
             end if;
 
@@ -1341,36 +1328,23 @@ package body Exp_Ch5 is
          -----------------------
 
          function Make_Field_Assign
-           (C : Entity_Id;
+           (C   : Entity_Id;
             U_U : Boolean := False) return Node_Id
          is
             A    : Node_Id;
-            Expr : Node_Id;
 
          begin
             --  In the case of an Unchecked_Union, use the discriminant
             --  constraint value as on the right hand side of the assignment.
 
-            if U_U then
-               Expr :=
-                 New_Copy (Get_Discriminant_Value (C,
-                   Etype (Rhs),
-                   Discriminant_Constraint (Etype (Rhs))));
-            else
-               Expr :=
-                 Make_Selected_Component (Loc,
-                   Prefix => Duplicate_Subexpr (Rhs),
-                   Selector_Name => New_Occurrence_Of (C, Loc));
-            end if;
-
             A :=
               Make_Assignment_Statement (Loc,
-                Name =>
+                Name       =>
                   Make_Selected_Component (Loc,
-                    Prefix => Duplicate_Subexpr (Lhs),
+                    Prefix        => Duplicate_Subexpr (Lhs),
                     Selector_Name =>
                       New_Occurrence_Of (Find_Component (L_Typ, C), Loc)),
-                Expression => Expr);
+                Expression => Make_Field_Expr (C, U_U));
 
             --  Set Assignment_OK, so discriminants can be assigned
 
@@ -1395,8 +1369,9 @@ package body Exp_Ch5 is
             Result : List_Id;
 
          begin
-            Item := First (CI);
             Result := New_List;
+
+            Item := First (CI);
             while Present (Item) loop
 
                --  Look for components, but exclude _tag field assignment if
@@ -1404,7 +1379,7 @@ package body Exp_Ch5 is
 
                if Nkind (Item) = N_Component_Declaration
                  and then not (Is_Tag (Defining_Identifier (Item))
-                                and then Componentwise_Assignment (N))
+                                 and then Componentwise_Assignment (N))
                then
                   Append_To
                     (Result, Make_Field_Assign (Defining_Identifier (Item)));
@@ -1415,6 +1390,32 @@ package body Exp_Ch5 is
 
             return Result;
          end Make_Field_Assigns;
+
+         ---------------------
+         -- Make_Field_Expr --
+         ---------------------
+
+         function Make_Field_Expr
+           (Comp_Ent : Entity_Id;
+            U_U      : Boolean) return Node_Id
+         is
+         begin
+            --  If we have an Unchecked_Union, use the value of the inferred
+            --  discriminant of the variant part expression.
+
+            if U_U then
+               return
+                 New_Copy (Get_Discriminant_Value
+                   (Comp_Ent,
+                    Etype (Rhs),
+                    Discriminant_Constraint (Etype (Rhs))));
+            else
+               return
+                 Make_Selected_Component (Loc,
+                   Prefix        => Duplicate_Subexpr (Rhs),
+                   Selector_Name => New_Occurrence_Of (Comp_Ent, Loc));
+            end if;
+         end Make_Field_Expr;
 
       --  Start of processing for Expand_Assign_Record
 

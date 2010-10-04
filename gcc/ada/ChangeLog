@@ -1,3 +1,42 @@
+2010-10-04  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): If a type conversion is needed
+	to make a qualified expression into a name (syntax-wise), then do not
+	consider it redundant.
+
+2010-10-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_warn.ads: Fix typo.
+
+2010-10-04  Javier Miranda  <miranda@adacore.com>
+
+	* exp_cg.adb (Is_Predefined_Dispatching_Operation): Handle suffix in
+	TSS names.
+	(Write_Call_Info): Add missing support for renamed primitives.
+
+2010-10-04  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch5.adb (Make_Field_Expr): New subprogram, to factor duplicated
+	code between Make_Component_List_Assign and Make_Field_Assign.
+
+2010-10-04  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Get_Directories): For non extending projects that
+	declare that they have no sources, do not create a non existing object
+	or exec directory if builder switch -p is used.
+
+2010-10-04  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi (gnatcheck): Change the description of the report file
+	format.
+
+2010-10-04  Ed Falis  <falis@adacore.com>
+
+	* s-taprop-vxworks.adb (Is_Task_Context): Import VxWorks intContext to
+	determine whether Set_True is called from a task or an ISR.
+	(Set_True): test for being in a task context before trying to
+	dereference Defer_Abort or Undefer_Abort.
+
 2010-10-04  Robert Dewar  <dewar@adacore.com>
 
 	* sem_res.adb, sinput-l.adb: Minor reformatting.
