@@ -349,7 +349,7 @@ Objective-C and Objective-C++ Dialects}.
 -finline-small-functions -fipa-cp -fipa-cp-clone -fipa-matrix-reorg @gol
 -fipa-pta -fipa-profile -fipa-pure-const -fipa-reference @gol
 -fipa-struct-reorg -fira-algorithm=@var{algorithm} @gol
--fira-region=@var{region} -fira-coalesce @gol
+-fira-region=@var{region} @gol
 -fira-loop-pressure -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
@@ -6415,11 +6415,6 @@ The first value can give best result for machines with small size and
 irregular register set, the third one results in faster and generates
 decent code and the smallest size code, and the default value usually
 give the best results in most cases and for most architectures.
-
-@item -fira-coalesce
-@opindex fira-coalesce
-Do optimistic register coalescing.  This option might be profitable for
-architectures with big regular register files.
 
 @item -fira-loop-pressure
 @opindex fira-loop-pressure

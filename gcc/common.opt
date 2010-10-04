@@ -1004,10 +1004,6 @@ fira-region=
 Common Joined RejectNegative
 -fira-region=[one|all|mixed] Set regions for IRA
 
-fira-coalesce
-Common Report Var(flag_ira_coalesce) Init(0)
-Do optimistic coalescing.
-
 fira-loop-pressure
 Common Report Var(flag_ira_loop_pressure)
 Use IRA based register pressure calculation

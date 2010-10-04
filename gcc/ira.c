@@ -168,8 +168,6 @@ along with GCC; see the file COPYING3.  If not see
        process.  It is done in each region on top-down traverse of the
        region tree (file ira-color.c).  There are following subpasses:
 
-       * Optional aggressive coalescing of allocnos in the region.
-
        * Putting allocnos onto the coloring stack.  IRA uses Briggs
          optimistic coloring which is a major improvement over
          Chaitin's coloring.  Therefore IRA does not spill allocnos at
