@@ -1,3 +1,21 @@
+2010-10-04  Javier Miranda  <miranda@adacore.com>
+
+	* exp_cg.adb (Expand_N_Assignment_Statement): Restore tag check when
+	the target object is an interface.
+	* sem_disp.adb (Propagate_Tag): If the controlling argument is an
+	interface type then we generate an implicit conversion to force
+	displacement of the pointer to the object to reference the secondary
+	dispatch table associated with the interface.
+
+2010-10-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Analyze_Enumeration_Representation_Clause): Set
+	Enumeration_Rep_Expr to point to the literal, not the identifier.
+	(Analyze_Enumeration_Representation_Clause): Improve error message for
+	size too small for enum rep value
+	(Analyze_Enumeration_Representation_Clause): Fix size test to use proper
+	size (RM_Size, not Esize).
+
 2010-10-04  Robert Dewar  <dewar@adacore.com>
 
 	* s-taprop-vxworks.adb, sem_res.adb: Minor reformatting.
