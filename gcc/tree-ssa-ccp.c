@@ -1319,18 +1319,26 @@ ccp_fold (gimple stmt)
 }
 
 /* See if we can find constructor defining value of BASE.
+   When we know the consructor with constant offset (such as
+   base is array[40] and we do know constructor of array), then
+   BIT_OFFSET is adjusted accordingly.
 
    As a special case, return error_mark_node when constructor
    is not explicitly available, but it is known to be zero
    such as 'static const int a;'.  */
 static tree
-get_base_constructor (tree base, tree *offset)
+get_base_constructor (tree base, HOST_WIDE_INT *bit_offset)
 {
-  *offset = NULL;
+  HOST_WIDE_INT bit_offset2, size, max_size;
   if (TREE_CODE (base) == MEM_REF)
     {
       if (!integer_zerop (TREE_OPERAND (base, 1)))
-        *offset = TREE_OPERAND (base, 1);
+	{
+	  if (!host_integerp (TREE_OPERAND (base, 1), 0))
+	    return NULL_TREE;
+	  *bit_offset += (mem_ref_offset (base).low
+			  * BITS_PER_UNIT);
+	}
 
       base = get_constant_value (TREE_OPERAND (base, 0));
       if (!base || TREE_CODE (base) != ADDR_EXPR)
@@ -1359,7 +1367,11 @@ get_base_constructor (tree base, tree *offset)
 
     case ARRAY_REF:
     case COMPONENT_REF:
-      return fold_const_aggregate_ref (base);
+      base = get_ref_base_and_extent (base, &bit_offset2, &size, &max_size);
+      if (max_size == -1 || size != max_size)
+	return NULL_TREE;
+      *bit_offset +=  bit_offset2;
+      return get_base_constructor (base, bit_offset);
       break;
 
     case STRING_CST:
@@ -1597,7 +1609,6 @@ fold_const_aggregate_ref (tree t)
   tree ctor, idx, base;
   HOST_WIDE_INT offset, size, max_size;
   tree tem;
-  tree ctr_offset;
 
   if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration)
     return get_symbol_constant_value (t);
@@ -1633,13 +1644,7 @@ fold_const_aggregate_ref (tree t)
 	      offset *= BITS_PER_UNIT;
 
 	      base = TREE_OPERAND (t, 0);
-	      ctor = get_base_constructor (base, &ctr_offset);
-	      if (ctr_offset)
-		{
-		  if (!host_integerp (ctr_offset, 1))
-		    return NULL_TREE;
-		  offset += TREE_INT_CST_LOW (ctr_offset) * BITS_PER_UNIT;
-		}
+	      ctor = get_base_constructor (base, &offset);
 	      /* Empty constructor.  Always fold to 0. */
 	      if (ctor == error_mark_node)
 		return build_zero_cst (TREE_TYPE (t));
@@ -1661,7 +1666,7 @@ fold_const_aggregate_ref (tree t)
     case TARGET_MEM_REF:
     case MEM_REF:
       base = get_ref_base_and_extent (t, &offset, &size, &max_size);
-      ctor = get_base_constructor (base, &ctr_offset);
+      ctor = get_base_constructor (base, &offset);
 
       /* Empty constructor.  Always fold to 0. */
       if (ctor == error_mark_node)
@@ -1673,12 +1678,6 @@ fold_const_aggregate_ref (tree t)
       if (!ctor)
 	return NULL_TREE;
 
-      if (ctr_offset)
-	{
-	  if (!host_integerp (ctr_offset, 1))
-	    return NULL_TREE;
-	  offset += TREE_INT_CST_LOW (ctr_offset) * BITS_PER_UNIT;
-	}
       /* Out of bound array access.  Value is undefined, but don't fold. */
       if (offset < 0)
 	return NULL_TREE;

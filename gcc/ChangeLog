@@ -1,3 +1,10 @@
+2010-10-04  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/45871
+	* tree-ssa-ccp.c (get_base_constructor): Take HOST_WIDE_INT offset;
+	use get_ref_base_and_offset to handle references.
+	(fold_const_aggregate_ref): Update.
+
 2010-10-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/45572
