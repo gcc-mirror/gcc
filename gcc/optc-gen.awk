@@ -76,9 +76,7 @@ for (i = 1; i <= n_headers; i++)
 print "#include " quote "opts.h" quote
 print "#include " quote "intl.h" quote
 print ""
-print "#ifdef GCC_DRIVER"
-print "int target_flags_explicit;"
-print "#else"
+print "#ifndef GCC_DRIVER"
 print "#include " quote "flags.h" quote
 print "#include " quote "target.h" quote
 print "#endif /* GCC_DRIVER */"
@@ -139,6 +137,8 @@ for (i = 0; i < n_opts; i++) {
 	}
 }
 print "};"
+print ""
+print "struct gcc_options global_options_set;"
 print ""
 
 print "const char * const lang_names[] =\n{"

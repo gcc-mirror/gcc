@@ -1,3 +1,8 @@
+2010-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (c_common_handle_option): Pass &global_options_set to
+	handle_generated_option.
+
 2010-10-03  Ian Lance Taylor  <iant@google.com>
 
 	* c.opt (-fplan9-extensions): New option.

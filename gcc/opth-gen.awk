@@ -70,8 +70,6 @@ print ""
 print "#ifndef OPTIONS_H"
 print "#define OPTIONS_H"
 print ""
-print "extern int target_flags_explicit;"
-print ""
 
 have_save = 0;
 
@@ -127,6 +125,8 @@ for (i = 0; i < n_opts; i++) {
 print "#ifndef GENERATOR_FILE"
 print "};"
 print "extern struct gcc_options global_options;"
+print "extern struct gcc_options global_options_set;"
+print "#define target_flags_explicit global_options_set.x_target_flags"
 print "#endif"
 print ""
 

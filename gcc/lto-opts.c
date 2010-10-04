@@ -402,7 +402,8 @@ lto_reissue_options (void)
       void *flag_var = option_flag_var (o->code, &global_options);
 
       if (flag_var)
-	set_option (&global_options, o->code, o->value, o->arg,
+	set_option (&global_options, &global_options_set,
+		    o->code, o->value, o->arg,
 		    0 /*DK_UNSPECIFIED*/);
 
       if (o->type == CL_TARGET)
