@@ -172,6 +172,9 @@ tree *ridpointers = NULL;
 /* True means we've initialized exception handling.  */
 bool gfc_eh_initialized_p;
 
+/* The current translation unit.  */
+static GTY(()) tree current_translation_unit;
+
 
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
    or validate its data type for an `if' or `while' statement or ?..: exp.
@@ -229,6 +232,9 @@ gfc_create_decls (void)
   gfc_build_builtin_function_decls ();
 
   gfc_init_constants ();
+
+  /* Build our translation-unit decl.  */
+  current_translation_unit = build_translation_unit_decl (NULL_TREE);
 }
 
 
@@ -491,8 +497,10 @@ tree
 pushdecl (tree decl)
 {
   /* External objects aren't nested, other objects may be.  */
-  if ((DECL_EXTERNAL (decl)) || (decl == current_function_decl))
-    DECL_CONTEXT (decl) = 0;
+  if (DECL_EXTERNAL (decl))
+    DECL_CONTEXT (decl) = NULL_TREE;
+  else if (global_bindings_p ())
+    DECL_CONTEXT (decl) = current_translation_unit;
   else
     DECL_CONTEXT (decl) = current_function_decl;
 

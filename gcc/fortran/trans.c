@@ -1414,12 +1414,10 @@ gfc_generate_module_code (gfc_namespace * ns)
         continue;
 
       gfc_create_function_decl (n, false);
-      gcc_assert (DECL_CONTEXT (n->proc_name->backend_decl) == NULL_TREE);
       DECL_CONTEXT (n->proc_name->backend_decl) = ns->proc_name->backend_decl;
       gfc_module_add_decl (entry, n->proc_name->backend_decl);
       for (el = ns->entries; el; el = el->next)
 	{
-	  gcc_assert (DECL_CONTEXT (el->sym->backend_decl) == NULL_TREE);
 	  DECL_CONTEXT (el->sym->backend_decl) = ns->proc_name->backend_decl;
 	  gfc_module_add_decl (entry, el->sym->backend_decl);
 	}
