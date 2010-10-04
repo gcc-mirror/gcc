@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-options "-fno-common" { target { { hppa*-*-hpux* } && { ! hppa*64*-*-* } } } } */
 
 typedef float V __attribute__ ((vector_size (16)));
 V g;
