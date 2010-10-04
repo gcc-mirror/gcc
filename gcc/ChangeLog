@@ -1,3 +1,9 @@
+2010-10-04  Andi Kleen <ak@linux.intel.com>
+
+	* Makefile.in (xgcc, cpp, cc1, collect2, lto-wrapper, gcov,
+        gcov-dump, cc1-dummy, genprog, build/gcov-iov):
+        Add + to build rule.
+
 2010-10-04  Matthias Klose  <doko@ubuntu.com>
 
 	* config/sparc/t-linux64 (MULTILIB_OSDIRNAMES): Use ../lib32 as the

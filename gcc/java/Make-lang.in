@@ -65,7 +65,7 @@ jvspec.o: $(srcdir)/java/jvspec.c $(SYSTEM_H) coretypes.h $(TM_H) \
 # Create the compiler driver for $(XGCJ).
 $(XGCJ)$(exeext): $(GCC_OBJS) jvspec.o java/jcf-path.o version.o \
 	   prefix.o intl.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
 	  jvspec.o java/jcf-path.o prefix.o intl.o \
 	  version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
@@ -100,17 +100,17 @@ jvspec.o-warn = -Wno-error
 
 jc1$(exeext): $(JAVA_OBJS) $(BACKEND) $(LIBDEPS) attribs.o
 	rm -f $@
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(JAVA_OBJS) $(BACKEND) $(ZLIB) $(LIBICONV) $(LIBS) attribs.o $(BACKENDLIBS)
 
 jcf-dump$(exeext): $(JCFDUMP_OBJS) $(LIBDEPS)
 	rm -f $@
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(JCFDUMP_OBJS) \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(JCFDUMP_OBJS) \
 		$(CPPLIBS) $(ZLIB) $(LDEXP_LIB) $(LIBS)
 
 jvgenmain$(exeext): $(JVGENMAIN_OBJS) $(LIBDEPS)
 	rm -f $@
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(JVGENMAIN_OBJS) \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(JVGENMAIN_OBJS) \
 		$(LIBS)
 
 #

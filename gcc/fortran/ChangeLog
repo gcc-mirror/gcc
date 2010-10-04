@@ -1,3 +1,7 @@
+2010-10-04  Andi Kleen <ak@linux.intel.com>
+
+	* Make-lang.in (gfortran, f951): Add + to build rule.
+
 2010-10-04  Richard Guenther  <rguenther@suse.de>
 
 	* f95-lang.c (current_translation_unit): New global variable.

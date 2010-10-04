@@ -1,3 +1,8 @@
+2010-10-04  Andi Kleen <ak@linux.intel.com>
+
+	* Make-lang.in (xgcj, jc1, jcf-dump, jvgenmain):
+        Add + to build rule.
+
 2010-09-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang.opt: Don't use VarExists.
