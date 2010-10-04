@@ -1031,6 +1031,7 @@ add_new_edges_to_heap (fibheap_t heap, VEC (cgraph_edge_p, heap) *new_edges)
 
       gcc_assert (!edge->aux);
       if (edge->callee->local.inlinable
+	  && edge->inline_failed
 	  && cgraph_default_inline_p (edge->callee, &edge->inline_failed))
         edge->aux = fibheap_insert (heap, cgraph_edge_badness (edge, false), edge);
     }

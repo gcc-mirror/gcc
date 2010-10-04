@@ -1447,7 +1447,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
   callee = cgraph_node (target);
   if (!callee)
     return NULL;
-
+  ipa_check_create_node_params ();
   cgraph_make_edge_direct (ie, callee);
   if (dump_file)
     {
