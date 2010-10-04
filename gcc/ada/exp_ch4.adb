@@ -2183,7 +2183,7 @@ package body Exp_Ch4 is
 
             --  if no TSS has been created for the type, check whether there is
             --  a primitive equality declared for it. If it is abstract replace
-            --  the call with an explicit raise.
+            --  the call with an explicit raise (AI05-0123).
 
             declare
                Prim : Elmt_Id;
@@ -2208,7 +2208,7 @@ package body Exp_Ch4 is
                end loop;
             end;
 
-            --  Predfined equality applies iff no user-defined primitive exists
+            --  Use predefined equality iff no user-defined primitive exists
 
             return Make_Op_Eq (Loc, Lhs, Rhs);
 
@@ -2217,8 +2217,7 @@ package body Exp_Ch4 is
          end if;
 
       else
-
-         --  It can be a simple record or the full view of a scalar private
+         --  If not array or record type, it is predefined equality.
 
          return Make_Op_Eq (Loc, Left_Opnd => Lhs, Right_Opnd => Rhs);
       end if;
@@ -5031,15 +5030,15 @@ package body Exp_Ch4 is
    -- Expand_N_Null --
    -------------------
 
-   --  The only replacement required is for the case of a null of type that is
-   --  an access to protected subprogram. We represent such access values as a
-   --  record, and so we must replace the occurrence of null by the equivalent
-   --  record (with a null address and a null pointer in it), so that the
-   --  backend creates the proper value.
+   --  The only replacement required is for the case of a null of a type that
+   --  is an access to protected subprogram, or a subtype thereof. We represent
+   --  such access values as a record, and so we must replace the occurrence of
+   --  null by the equivalent record (with a null address and a null pointer in
+   --  it), so that the backend creates the proper value.
 
    procedure Expand_N_Null (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
-      Typ : constant Entity_Id  := Etype (N);
+      Typ : constant Entity_Id  := Base_Type (Etype (N));
       Agg : Node_Id;
 
    begin

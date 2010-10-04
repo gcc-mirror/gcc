@@ -106,6 +106,16 @@ package body Sem_Ch13 is
    --  renaming_as_body. For tagged types, the specification is one of the
    --  primitive specs.
 
+   procedure Set_Biased
+     (E      : Entity_Id;
+      N      : Node_Id;
+      Msg    : String;
+      Biased : Boolean := True);
+   --  If Biased is True, sets Has_Biased_Representation flag for E, and
+   --  outputs a warning message at node N if Warn_On_Biased_Representation is
+   --  is True. This warning inserts the string Msg to describe the construct
+   --  causing biasing.
+
    ----------------------------------------------
    -- Table for Validate_Unchecked_Conversions --
    ----------------------------------------------
@@ -1342,17 +1352,11 @@ package body Sem_Ch13 is
                      Set_Esize                     (New_Ctyp, Csize);
                      Set_RM_Size                   (New_Ctyp, Csize);
                      Init_Alignment                (New_Ctyp);
-                     Set_Has_Biased_Representation (New_Ctyp, True);
                      Set_Is_Itype                  (New_Ctyp, True);
                      Set_Associated_Node_For_Itype (New_Ctyp, U_Ent);
 
                      Set_Component_Type (Btype, New_Ctyp);
-
-                     if Warn_On_Biased_Representation then
-                        Error_Msg_N
-                          ("?component size clause forces biased "
-                           & "representation", N);
-                     end if;
+                     Set_Biased (New_Ctyp, N, "component size clause");
                   end if;
 
                   Set_Component_Size (Btype, Csize);
@@ -1574,12 +1578,7 @@ package body Sem_Ch13 is
                  or else Has_Small_Clause (U_Ent)
                then
                   Check_Size (Expr, Etyp, Size, Biased);
-                     Set_Has_Biased_Representation (U_Ent, Biased);
-
-                  if Biased and Warn_On_Biased_Representation then
-                     Error_Msg_N
-                       ("?size clause forces biased representation", N);
-                  end if;
+                  Set_Biased (U_Ent, N, "size clause", Biased);
                end if;
 
                --  For types set RM_Size and Esize if possible
@@ -1953,12 +1952,7 @@ package body Sem_Ch13 is
             else
                if Is_Elementary_Type (U_Ent) then
                   Check_Size (Expr, U_Ent, Size, Biased);
-                  Set_Has_Biased_Representation (U_Ent, Biased);
-
-                  if Biased and Warn_On_Biased_Representation then
-                     Error_Msg_N
-                       ("?value size clause forces biased representation", N);
-                  end if;
+                  Set_Biased (U_Ent, N, "value size clause", Biased);
                end if;
 
                Set_RM_Size (U_Ent, Size);
@@ -2362,7 +2356,8 @@ package body Sem_Ch13 is
                   --  If biasing worked, indicate that we now have biased rep
 
                   else
-                     Set_Has_Biased_Representation (Enumtype);
+                     Set_Biased
+                       (Enumtype, Size_Clause (Enumtype), "size clause");
                   end if;
                end if;
 
@@ -2807,13 +2802,8 @@ package body Sem_Ch13 is
                            Esize (Comp),
                            Biased);
 
-                        Set_Has_Biased_Representation (Comp, Biased);
-
-                        if Biased and Warn_On_Biased_Representation then
-                           Error_Msg_F
-                             ("?component clause forces biased "
-                              & "representation", CC);
-                        end if;
+                        Set_Biased
+                          (Comp, First_Node (CC), "component clause", Biased);
 
                         if Present (Ocomp) then
                            Set_Component_Clause     (Ocomp, CC);
@@ -2824,6 +2814,10 @@ package body Sem_Ch13 is
 
                            Set_Normalized_Position_Max
                              (Ocomp, Normalized_Position (Ocomp));
+
+                           --  Note: we don't use Set_Biased here, because we
+                           --  already gave a warning above if needed, and we
+                           --  would get a duplicate for the same name here.
 
                            Set_Has_Biased_Representation
                              (Ocomp, Has_Biased_Representation (Comp));
@@ -4856,7 +4850,6 @@ package body Sem_Ch13 is
       --  cases were already dealt with.
 
       elsif Is_Enumeration_Type (T1) then
-
          Enumeration_Case : declare
             L1, L2 : Entity_Id;
 
@@ -4883,6 +4876,27 @@ package body Sem_Ch13 is
          return True;
       end if;
    end Same_Representation;
+
+   ----------------
+   -- Set_Biased --
+   ----------------
+
+   procedure Set_Biased
+     (E      : Entity_Id;
+      N      : Node_Id;
+      Msg    : String;
+      Biased : Boolean := True)
+   is
+   begin
+      if Biased then
+         Set_Has_Biased_Representation (E);
+
+         if Warn_On_Biased_Representation then
+            Error_Msg_NE
+              ("?" & Msg & " forces biased representation for&", N, E);
+         end if;
+      end if;
+   end Set_Biased;
 
    --------------------
    -- Set_Enum_Esize --

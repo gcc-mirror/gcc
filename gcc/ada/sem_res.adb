@@ -2290,8 +2290,7 @@ package body Sem_Res is
                --  and also the entity pointer for the prefix.
 
                elsif Nkind_In (N, N_Procedure_Call_Statement, N_Function_Call)
-                 and then (Is_Entity_Name (Name (N))
-                            or else Nkind (Name (N)) = N_Operator_Symbol)
+                 and then Is_Entity_Name (Name (N))
                then
                   Set_Etype  (Name (N), Expr_Type);
                   Set_Entity (Name (N), Seen);

@@ -482,8 +482,7 @@ package body Sem_Type is
 
          elsif (Nkind (N) = N_Function_Call
                  or else Nkind (N) = N_Procedure_Call_Statement)
-           and then (Nkind (Name (N)) = N_Operator_Symbol
-                      or else Is_Entity_Name (Name (N)))
+           and then Is_Entity_Name (Name (N))
          then
             Add_Entry (Entity (Name (N)), Etype (N));
 
@@ -1622,9 +1621,7 @@ package body Sem_Type is
                   Arg1 := Left_Opnd  (N);
                   Arg2 := Right_Opnd (N);
 
-               elsif Is_Entity_Name (N)
-                 or else Nkind (N) = N_Operator_Symbol
-               then
+               elsif Is_Entity_Name (N) then
                   Arg1 := First_Entity (Entity (N));
                   Arg2 := Next_Entity (Arg1);
 

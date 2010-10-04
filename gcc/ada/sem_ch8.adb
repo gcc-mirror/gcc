@@ -2078,8 +2078,7 @@ package body Sem_Ch8 is
          Analyze_Renamed_Character (N, New_S, Present (Rename_Spec));
          return;
 
-      elsif (not Is_Entity_Name (Nam)
-              and then Nkind (Nam) /= N_Operator_Symbol)
+      elsif not Is_Entity_Name (Nam)
         or else not Is_Overloadable (Entity (Nam))
       then
          Error_Msg_N ("expect valid subprogram name in renaming", N);
