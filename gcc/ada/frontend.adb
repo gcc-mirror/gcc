@@ -116,6 +116,11 @@ begin
       Prepcomp.Check_Symbols;
    end if;
 
+   --  We set Parsing_Main_Extended_Source true here to cover processing of all
+   --  the configuration pragma files, as well as the main source unit itself.
+
+   Parsing_Main_Extended_Source := True;
+
    --  Now that the preprocessing situation is established, we are able to
    --  load the main source (this is no longer done by Lib.Load.Initialize).
 
@@ -126,11 +131,6 @@ begin
    if Sinput.Main_Source_File = No_Source_File then
       return;
    end if;
-
-   --  We set Parsing_Main_Extended_Source true here to cover processing of all
-   --  the configuration pragma files, as well as the main source unit itself.
-
-   Parsing_Main_Extended_Source := True;
 
    --  Read and process configuration pragma files if present
 

@@ -1,5 +1,20 @@
 2010-10-04  Vincent Celier  <celier@adacore.com>
 
+	* frontend.adb: Set Lib.Parsing_Main_Extended_Source to True before
+	loading the main source, so that if it is preprocessed and -gnateG is
+	used, the preprocessed file is written.
+	* lib.ads (Analysing_Subunit_Of_Main): New global variable to indicate
+	if a subunit is from the main unit when it is loaded.
+	* sem_ch10.adb (Analyze_Proper_Body): Set Lib.Analysing_Subunit_Of_Main
+	to True before loading a subunit.
+	* sem_ch12.adb (Copy_Generic_Node): Set Lib.Analysing_Subunit_Of_Main
+	to True when the main is a generic unit before loading one of its
+	subunits.
+	* sinput-l.adb (Load_File): If -gnateG is used, write the preprocessed
+	file only for the main unit (spec, body and subunits).
+
+2010-10-04  Vincent Celier  <celier@adacore.com>
+
 	* sinput-l.adb (Load_File): Do not fail when switch -gnateG is
 	specified and the processed file cannot be written. Just issue a
 	warning and continue.

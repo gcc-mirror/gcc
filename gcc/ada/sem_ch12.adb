@@ -5906,12 +5906,19 @@ package body Sem_Ch12 is
                New_Body     : Node_Id;
 
             begin
+               --  Make sure that, if it is a subunit of the main unit that is
+               --  preprocessed and if -gnateG is specified, the preprocessed
+               --  file will be written.
+
+               Lib.Analysing_Subunit_Of_Main :=
+                 Lib.In_Extended_Main_Source_Unit (N);
                Unum :=
                  Load_Unit
                    (Load_Name  => Subunit_Name,
                     Required   => False,
                     Subunit    => True,
                     Error_Node => N);
+               Lib.Analysing_Subunit_Of_Main := False;
 
                --  If the proper body is not found, a warning message will be
                --  emitted when analyzing the stub, or later at the point
