@@ -1,3 +1,11 @@
+2010-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45849
+	* var-tracking.c (strip_pointer_flags): New function.
+	(emit_note_insn_var_location): If rtx_equal_p check failed,
+	retry on locations simplified with simplify_replace_fn_rtx
+	and strip_pointer_flags as its callback.
+
 2010-10-04  Jan Hubicka  <jh@suse.cz>
 
 	* gimple-fold.c (static_object_in_other_unit_p): Rename to...
