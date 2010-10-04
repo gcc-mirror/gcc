@@ -1,3 +1,7 @@
+2010-10-04  Yao Qi  <yao@codesourcery.com>
+
+	* doc/passes.texi: Clean up.
+
 2010-10-03  Ian Lance Taylor  <iant@google.com>
 
 	* c-typeck.c (lookup_field): If -fplan9-extensions, permit
