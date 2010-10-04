@@ -4809,20 +4809,20 @@ package body Exp_Ch3 is
                   Iface    : constant Entity_Id := Root_Type (Typ);
                   Expr_N   : Node_Id := Expr;
                   Expr_Typ : Entity_Id;
-
-                  Decl_1   : Node_Id;
-                  Decl_2   : Node_Id;
                   New_Expr : Node_Id;
+                  Obj_Id   : Entity_Id;
+                  Tag_Comp : Node_Id;
 
                begin
                   --  If the original node of the expression was a conversion
                   --  to this specific class-wide interface type then we
-                  --  restore the original node to generate code that
-                  --  statically displaces the pointer to the interface
-                  --  component.
+                  --  restore the original node because we must copy the object
+                  --  before displacing the pointer to reference the secondary
+                  --  tag component. This code must be kept synchronized with
+                  --  the expansion done by routine Expand_Interface_Conversion
 
                   if not Comes_From_Source (Expr_N)
-                    and then Nkind (Expr_N) = N_Unchecked_Type_Conversion
+                    and then Nkind (Expr_N) = N_Explicit_Dereference
                     and then Nkind (Original_Node (Expr_N)) = N_Type_Conversion
                     and then Etype (Original_Node (Expr_N)) = Typ
                   then
@@ -4839,6 +4839,7 @@ package body Exp_Ch3 is
                      Set_Expression (N, Expr_N);
                   end if;
 
+                  Obj_Id   := Make_Temporary (Loc, 'D', Expr_N);
                   Expr_Typ := Base_Type (Etype (Expr_N));
 
                   if Is_Class_Wide_Type (Expr_Typ) then
@@ -4849,122 +4850,114 @@ package body Exp_Ch3 is
                   --     CW : I'Class := Obj;
                   --  by
                   --     Tmp : T := Obj;
-                  --     CW  : I'Class renames TiC!(Tmp.I_Tag);
+                  --     type Ityp is not null access I'Class;
+                  --     CW  : I'Class renames Ityp(Tmp.I_Tag'Address).all;
 
                   if Comes_From_Source (Expr_N)
                     and then Nkind (Expr_N) = N_Identifier
                     and then not Is_Interface (Expr_Typ)
+                    and then Interface_Present_In_Ancestor (Expr_Typ, Typ)
                     and then (Expr_Typ = Etype (Expr_Typ)
                                or else not
                               Is_Variable_Size_Record (Etype (Expr_Typ)))
                   then
-                     Decl_1 :=
+                     --  Copy the object
+
+                     Insert_Action (N,
                        Make_Object_Declaration (Loc,
-                         Defining_Identifier =>
-                           Make_Temporary (Loc, 'D', Expr_N),
+                         Defining_Identifier => Obj_Id,
                          Object_Definition =>
                            New_Occurrence_Of (Expr_Typ, Loc),
                          Expression =>
-                           Unchecked_Convert_To (Expr_Typ,
-                             Relocate_Node (Expr_N)));
+                           Relocate_Node (Expr_N)));
 
                      --  Statically reference the tag associated with the
                      --  interface
 
-                     Decl_2 :=
-                       Make_Object_Renaming_Declaration (Loc,
-                         Defining_Identifier => Make_Temporary (Loc, 'D'),
-                         Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
-                         Name                =>
-                           Unchecked_Convert_To (Typ,
-                             Make_Selected_Component (Loc,
-                               Prefix =>
-                                 New_Occurrence_Of
-                                   (Defining_Identifier (Decl_1), Loc),
-                               Selector_Name =>
-                                 New_Reference_To
-                                   (Find_Interface_Tag (Expr_Typ, Iface),
-                                    Loc))));
-
-                  --  General case:
+                     Tag_Comp :=
+                       Make_Selected_Component (Loc,
+                         Prefix => New_Occurrence_Of (Obj_Id, Loc),
+                         Selector_Name =>
+                           New_Reference_To
+                             (Find_Interface_Tag (Expr_Typ, Iface), Loc));
 
                   --  Replace
                   --     IW : I'Class := Obj;
                   --  by
                   --     type Equiv_Record is record ... end record;
                   --     implicit subtype CW is <Class_Wide_Subtype>;
-                  --     Temp : CW := CW!(Obj'Address);
-                  --     IW : I'Class renames Displace (Temp, I'Tag);
+                  --     Tmp : CW := CW!(Obj);
+                  --     type Ityp is not null access I'Class;
+                  --     IW : I'Class renames
+                  --            Ityp!(Displace (Temp'Address, I'Tag)).all;
 
                   else
-                     --  Generate the equivalent record type
+                     --  Generate the equivalent record type and update
+                     --  the subtype indication to reference it
 
                      Expand_Subtype_From_Expr
                        (N             => N,
                         Unc_Type      => Typ,
                         Subtype_Indic => Object_Definition (N),
-                        Exp           => Expression (N));
+                        Exp           => Expr_N);
 
-                     if not Is_Interface (Etype (Expression (N))) then
-                        New_Expr := Relocate_Node (Expression (N));
+                     if not Is_Interface (Etype (Expr_N)) then
+                        New_Expr := Relocate_Node (Expr_N);
+
+                     --  For interface types we use 'Address which displaces
+                     --  the pointer to the base of the object (if required)
+
                      else
                         New_Expr :=
-                          Make_Explicit_Dereference (Loc,
-                            Unchecked_Convert_To (RTE (RE_Tag_Ptr),
-                              Make_Attribute_Reference (Loc,
-                                Prefix => Relocate_Node (Expression (N)),
-                                Attribute_Name => Name_Address)));
+                          Unchecked_Convert_To (Etype (Object_Definition (N)),
+                            Make_Explicit_Dereference (Loc,
+                              Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                                Make_Attribute_Reference (Loc,
+                                  Prefix => Relocate_Node (Expr_N),
+                                  Attribute_Name => Name_Address))));
                      end if;
 
-                     Decl_1 :=
+                     --  Copy the object
+
+                     Insert_Action (N,
                        Make_Object_Declaration (Loc,
-                         Defining_Identifier =>
-                           Make_Temporary (Loc, 'D', New_Expr),
-                         Object_Definition   =>
+                         Defining_Identifier => Obj_Id,
+                         Object_Definition =>
                            New_Occurrence_Of
-                            (Etype (Object_Definition (N)), Loc),
-                         Expression          =>
-                           Unchecked_Convert_To
-                             (Etype (Object_Definition (N)), New_Expr));
+                             (Etype (Object_Definition (N)), Loc),
+                         Expression => New_Expr));
 
-                     Decl_2 :=
-                       Make_Object_Renaming_Declaration (Loc,
-                         Defining_Identifier => Make_Temporary (Loc, 'D'),
-                         Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
-                         Name                =>
-                           Unchecked_Convert_To (Typ,
-                             Make_Explicit_Dereference (Loc,
-                               Unchecked_Convert_To (RTE (RE_Tag_Ptr),
-                                 Make_Function_Call (Loc,
-                                   Name =>
-                                     New_Reference_To (RTE (RE_Displace), Loc),
-                                   Parameter_Associations => New_List (
-                                     Make_Attribute_Reference (Loc,
-                                       Prefix =>
-                                         New_Occurrence_Of
-                                          (Defining_Identifier (Decl_1), Loc),
-                                       Attribute_Name => Name_Address),
+                     --  Dynamically reference the tag associated with the
+                     --  interface
 
-                                     Unchecked_Convert_To (RTE (RE_Tag),
-                                       New_Reference_To
-                                         (Node
-                                           (First_Elmt
-                                             (Access_Disp_Table (Iface))),
-                                          Loc))))))));
+                     Tag_Comp :=
+                       Make_Function_Call (Loc,
+                         Name => New_Reference_To (RTE (RE_Displace), Loc),
+                         Parameter_Associations => New_List (
+                           Make_Attribute_Reference (Loc,
+                             Prefix => New_Occurrence_Of (Obj_Id, Loc),
+                             Attribute_Name => Name_Address),
+                           New_Reference_To
+                             (Node (First_Elmt (Access_Disp_Table (Iface))),
+                              Loc)));
                   end if;
 
-                  Insert_Action (N, Decl_1);
-                  Rewrite (N, Decl_2);
-                  Analyze (N);
+                  Rewrite (N,
+                    Make_Object_Renaming_Declaration (Loc,
+                      Defining_Identifier => Make_Temporary (Loc, 'D'),
+                      Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                      Name => Convert_Tag_To_Interface (Typ, Tag_Comp)));
 
-                  --  Replace internal identifier of Decl_2 by the identifier
-                  --  found in the sources. We also have to exchange entities
-                  --  containing their defining identifiers to ensure the
-                  --  correct replacement of the object declaration by this
-                  --  object renaming declaration (because such definings
-                  --  identifier have been previously added by Enter_Name to
-                  --  the current scope). We must preserve the homonym chain
-                  --  of the source entity as well.
+                  Analyze (N, Suppress => All_Checks);
+
+                  --  Replace internal identifier of rewriten node by the
+                  --  identifier found in the sources. We also have to exchange
+                  --  entities containing their defining identifiers to ensure
+                  --  the correct replacement of the object declaration by this
+                  --  object renaming declaration ---because these identifiers
+                  --  were previously added by Enter_Name to the current scope.
+                  --  We must preserve the homonym chain of the source entity
+                  --  as well.
 
                   Set_Chars (Defining_Identifier (N), Chars (Def_Id));
                   Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));

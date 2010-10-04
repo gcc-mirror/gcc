@@ -1,3 +1,44 @@
+2010-10-04  Vincent Celier  <celier@adacore.com>
+
+	* a-direct.adb (Copy_File): Interpret the Form parameter and call
+	System.OS_Lib.Copy_File to do the work accordingly. Raise Use_Error if
+	the Form parameter contains an incorrect value for field preserve= or
+	mode=.
+	* a-direct.ads (Create_Directory, Create_Path): Indicate that the Form
+	parameter is ignored.
+	(Copy_File): Indicate the interpretation of the Form parameter.
+
+2010-10-04  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Gnatmake): When there are no foreign languages declared and
+	a main in attribute Main of the main project does not exist or is a
+	source of another project, fail immediately before attempting
+	compilation.
+
+2010-10-04  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.ads (Convert_Tag_To_Interface): New function which must be
+	used to convert a node referencing a tag to a class-wide interface type.
+	* exp_disp.adb (Convert_Tag_To_Interface): New function.
+	(Expand_Interface_Conversion): Replace invocation of
+	Unchecked_Conversion by new function Convert_Tag_To_Interface.
+	(Write_DT): Add support for null primitives.
+	* exp_ch3.adb (Expand_N_Object_Declaration): For tagged type objects,
+	cleanup code that handles interface conversions and avoid unchecked
+	conversion of referenced tag components.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Code cleanup. Avoid
+	unrequired conversions when generating a dispatching call to _assign.
+	* sprint.adb (Write_Itype): Fix wrong output of not null access itypes.
+
+2010-10-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Not): Handle properly both operands when the
+	parent is a binary boolean operation and the operand is an unpacked
+	array.
+	(Build_Boolean_Array_Proc_Call): If the operands are both negations, the
+	operands of the rewritten node are the operands of the negations, not
+	the negations themselves.
+
 2010-10-04  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch13.adb (Set_Biased): New procedure, now used throughout, adds

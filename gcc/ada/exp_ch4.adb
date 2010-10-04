@@ -255,7 +255,7 @@ package body Exp_Ch4 is
                       Prefix         => Name (N),
                       Attribute_Name => Name_Address);
 
-      Arg1      : constant Node_Id := Op1;
+      Arg1      : Node_Id := Op1;
       Arg2      : Node_Id := Op2;
       Call_Node : Node_Id;
       Proc_Name : Entity_Id;
@@ -321,6 +321,8 @@ package body Exp_Ch4 is
          --   X       xor (not Y)  =  not (X xor Y)  =  Nxor (X, Y)
 
          if Nkind (Op1) = N_Op_Not then
+            Arg1 := Right_Opnd (Op1);
+            Arg2 := Right_Opnd (Op2);
             if Kind = N_Op_And then
                Proc_Name := RTE (RE_Vector_Nor);
             elsif Kind = N_Op_Or then
@@ -7030,6 +7032,9 @@ package body Exp_Ch4 is
                --  (not A) op (not B) can be reduced to a single call
 
                if N = Op1 and then Nkind (Op2) = N_Op_Not then
+                  return;
+
+               elsif N = Op2 and then Nkind (Op1) = N_Op_Not then
                   return;
 
                --  A xor (not B) can also be special-cased

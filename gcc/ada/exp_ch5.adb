@@ -1976,14 +1976,29 @@ package body Exp_Ch5 is
                          Reason => CE_Tag_Check_Failed));
                   end if;
 
-                  Append_To (L,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name => New_Reference_To (Op, Loc),
-                      Parameter_Associations => New_List (
-                        Unchecked_Convert_To (F_Typ,
-                          Duplicate_Subexpr (Lhs)),
-                        Unchecked_Convert_To (F_Typ,
-                          Duplicate_Subexpr (Rhs)))));
+                  declare
+                     Left_N  : Node_Id := Duplicate_Subexpr (Lhs);
+                     Right_N : Node_Id := Duplicate_Subexpr (Rhs);
+
+                  begin
+                     --  In order to dispatch the call to _assign the type of
+                     --  the actuals must match. Add conversion (if required).
+
+                     if Etype (Lhs) /= F_Typ then
+                        Left_N := Unchecked_Convert_To (F_Typ, Left_N);
+                     end if;
+
+                     if Etype (Rhs) /= F_Typ then
+                        Right_N := Unchecked_Convert_To (F_Typ, Right_N);
+                     end if;
+
+                     Append_To (L,
+                       Make_Procedure_Call_Statement (Loc,
+                         Name => New_Reference_To (Op, Loc),
+                         Parameter_Associations => New_List (
+                           Node1 => Left_N,
+                           Node2 => Right_N)));
+                  end;
                end;
 
             else
