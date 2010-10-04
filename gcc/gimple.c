@@ -3013,7 +3013,8 @@ get_base_address (tree t)
       && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR)
     t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
 
-  if (SSA_VAR_P (t)
+  if (TREE_CODE (t) == SSA_NAME
+      || DECL_P (t)
       || TREE_CODE (t) == STRING_CST
       || TREE_CODE (t) == CONSTRUCTOR
       || INDIRECT_REF_P (t)

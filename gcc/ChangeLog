@@ -1,3 +1,13 @@
+2010-10-04  Jan Hubicka  <jh@suse.cz>
+
+	* gimple-fold.c (static_object_in_other_unit_p): Rename to...
+	(can_refer_decl_in_current_unit_p): ... this one; reverse return
+	value; handle comdats too.
+	(canonicalize_constructor_val): Use it; handle function_decls
+	correctly.
+	(gimple_fold_obj_type_ref_known_binfo): Likewise.
+	* gimple.c (get_base_address): Accept all kinds of decls.
+
 2010-10-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* flags.h (g_switch_value, g_switch_set): Remove.
