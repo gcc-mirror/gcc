@@ -1,3 +1,30 @@
+2010-10-04  Vincent Celier  <celier@adacore.com>
+
+	* sinput-l.adb (Load_File): Do not fail when switch -gnateG is
+	specified and the processed file cannot be written. Just issue a
+	warning and continue.
+
+2010-10-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb: Minor reformatting.
+
+2010-10-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): If the renamed operation
+	is an overridden inherited operation, the desired operation is the
+	overriding one, which is the alias of the visible one.
+
+2010-10-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Find_Corresponding_Spec): Check that the wrapper body is
+	present before deleting from the tree, when an inherited function with
+	a controlling result that returns a null extension is overridden by a
+	later declaration or body.
+
+2010-10-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb: Update comment.
+
 2010-09-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/misc.c (optimize, optimize_size): Undefine as macros

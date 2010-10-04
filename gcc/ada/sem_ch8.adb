@@ -2100,6 +2100,21 @@ package body Sem_Ch8 is
       if No (Old_S) then
          Old_S := Find_Renamed_Entity (N, Name (N), New_S, Is_Actual);
 
+         --  The visible operation may be an inherited abstract operation that
+         --  was overridden in the private part, in which case a call will
+         --  dispatch to the overriding operation. Use the overriding one in
+         --  the renaming declaration, to prevent spurious errors below.
+
+         if Is_Overloadable (Old_S)
+           and then Is_Abstract_Subprogram (Old_S)
+           and then No (DTC_Entity (Old_S))
+           and then Present (Alias (Old_S))
+           and then not Is_Abstract_Subprogram (Alias (Old_S))
+           and then Is_Overriding_Operation (Alias (Old_S))
+         then
+            Old_S := Alias (Old_S);
+         end if;
+
          --  When the renamed subprogram is overloaded and used as an actual
          --  of a generic, its entity is set to the first available homonym.
          --  We must first disambiguate the name, then set the proper entity.

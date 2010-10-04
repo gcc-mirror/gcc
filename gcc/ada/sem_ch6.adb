@@ -5910,8 +5910,8 @@ package body Sem_Ch6 is
                --  that was created for an operation inherited by a null
                --  extension, it may be overridden by a body without a previous
                --  spec (one more reason why these should be shunned). In that
-               --  case remove the generated body, because the current one is
-               --  the explicit overriding.
+               --  case remove the generated body if present, because the
+               --  current one is the explicit overriding.
 
                elsif Ekind (E) = E_Function
                  and then Ada_Version >= Ada_05
@@ -5922,15 +5922,20 @@ package body Sem_Ch6 is
                then
                   Set_Has_Completion (E, False);
 
-                  if Expander_Active then
+                  if Expander_Active
+                    and then Nkind (Parent (E)) = N_Function_Specification
+                  then
                      Remove
                        (Unit_Declaration_Node
-                         (Corresponding_Body (Unit_Declaration_Node (E))));
+                          (Corresponding_Body (Unit_Declaration_Node (E))));
+
                      return E;
 
-                  --  If expansion is disabled, the wrapper function has not
-                  --  been generated, and this is the standard case of a late
-                  --  body overriding an inherited operation.
+                  --  If expansion is disabled, or if the wrapper function has
+                  --  not been generated yet, this a late body overriding an
+                  --  inherited operation, or it is an overriding by some other
+                  --  declaration before the controlling result is frozen. In
+                  --  either case this is a declaration of a new entity.
 
                   else
                      return Empty;
