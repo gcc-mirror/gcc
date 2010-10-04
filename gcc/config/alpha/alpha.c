@@ -215,11 +215,6 @@ alpha_handle_option (size_t code, const char *arg, int value)
 {
   switch (code)
     {
-    case OPT_G:
-      g_switch_value = value;
-      g_switch_set = true;
-      break;
-
     case OPT_mfp_regs:
       if (value == 0)
 	target_flags |= MASK_SOFT_FP;
@@ -487,7 +482,7 @@ alpha_option_override (void)
   }
 
   /* Default the definition of "small data" to 8 bytes.  */
-  if (!g_switch_set)
+  if (!global_options_set.x_g_switch_value)
     g_switch_value = 8;
 
   /* Infer TARGET_SMALL_DATA from -fpic/-fPIC.  */
@@ -775,7 +770,7 @@ alpha_in_small_data_p (const_tree exp)
 
       /* If this is an incomplete type with size 0, then we can't put it
 	 in sdata because it might be too big when completed.  */
-      if (size > 0 && (unsigned HOST_WIDE_INT) size <= g_switch_value)
+      if (size > 0 && size <= g_switch_value)
 	return true;
     }
 

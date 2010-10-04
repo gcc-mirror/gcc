@@ -46,10 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "lto-streamer.h"
 
-/* Value of the -G xx switch, and whether it was passed or not.  */
-unsigned HOST_WIDE_INT g_switch_value;
-bool g_switch_set;
-
 /* True if we should exit after parsing options.  */
 bool exit_after_options;
 

@@ -121,7 +121,7 @@ do {									\
 #undef  ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
-  if ((SIZE) <= g_switch_value)						\
+  if ((SIZE) <= (unsigned HOST_WIDE_INT) g_switch_value)		\
     switch_to_section (sbss_section);					\
   else									\
     switch_to_section (bss_section);					\

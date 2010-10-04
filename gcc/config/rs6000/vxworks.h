@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vxworks PowerPC version.
-   Copyright (C) 1996, 2000, 2002, 2003, 2004, 2005, 2007, 2009
+   Copyright (C) 1996, 2000, 2002, 2003, 2004, 2005, 2007, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
@@ -141,7 +141,7 @@ VXWORKS_ADDITIONAL_CPP_SPEC
 	rs6000_float_gprs = 1;			\
       }						\
 						\
-  if (!g_switch_set)				\
+  if (!global_options_set.x_g_switch_value)	\
     g_switch_value = SDATA_DEFAULT_SIZE;	\
   VXWORKS_OVERRIDE_OPTIONS;			\
   } while (0)

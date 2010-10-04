@@ -2069,7 +2069,7 @@ extern int size_directive_output;
 #undef ASM_OUTPUT_ALIGNED_DECL_LOCAL
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGN)	\
 do {                                                                   	\
-  if ((SIZE) > 0 && (SIZE) <= g_switch_value)				\
+  if ((SIZE) > 0 && (SIZE) <= (unsigned HOST_WIDE_INT) g_switch_value)	\
     switch_to_section (get_named_section (NULL, ".sbss", 0));           \
   else                                                                 	\
     switch_to_section (bss_section);                                  	\
