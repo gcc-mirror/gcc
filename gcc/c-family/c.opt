@@ -893,6 +893,10 @@ fpermissive
 C++ ObjC++
 Downgrade conformance errors to warnings
 
+fplan9-extensions
+C ObjC Var(flag_plan9_extensions)
+Enable Plan 9 language extensions
+
 fpreprocessed
 C ObjC C++ ObjC++
 Treat the input file as already preprocessed

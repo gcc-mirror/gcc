@@ -13027,6 +13027,34 @@ also be a definition with a tag such as @samp{struct foo @{ int a;
 @samp{struct foo;}, or a reference to a @code{typedef} name for a
 previously defined structure or union type with a tag.
 
+@opindex fplan9-extensions
+The option @option{-fplan9-extensions} enables
+@option{-fms-extensions} as well as two other extensions.  First, a
+pointer to a structure is automatically converted to a pointer to an
+anonymous field for assignments and function calls.  For example:
+
+@smallexample
+struct s1 @{ int a; @};
+struct s2 @{ struct s1; @};
+extern void f1 (struct s1 *);
+void f2 (struct s2 *p) @{ f1 (p); @}
+@end smallexample
+
+In the call to @code{f1} inside @code{f2}, the pointer @code{p} is
+converted into a pointer to the anonymous field.
+
+Second, when the type of an anonymous field is a @code{typedef} for a
+@code{struct} or @code{union}, code may refer to the field using the
+name of the @code{typedef}.
+
+@smallexample
+typedef struct @{ int a; @} s1;
+struct s2 @{ s1; @};
+s1 f1 (struct s2 *p) @{ return p->s1; @}
+@end smallexample
+
+These usages are only permitted when they are not ambiguous.
+
 @node Thread-Local
 @section Thread-Local Storage
 @cindex Thread-Local Storage

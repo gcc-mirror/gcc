@@ -172,7 +172,7 @@ in the following sections.
 @gccoptlist{-ansi  -std=@var{standard}  -fgnu89-inline @gol
 -aux-info @var{filename} @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function} @gol
--fhosted  -ffreestanding -fopenmp -fms-extensions @gol
+-fhosted  -ffreestanding -fopenmp -fms-extensions -fplan9-extensions @gol
 -trigraphs  -no-integrated-cpp  -traditional  -traditional-cpp @gol
 -fallow-single-precision  -fcond-mismatch -flax-vector-conversions @gol
 -fsigned-bitfields  -fsigned-char @gol
@@ -1699,6 +1699,16 @@ struct ABC @{
 Some cases of unnamed fields in structures and unions are only
 accepted with this option.  @xref{Unnamed Fields,,Unnamed struct/union
 fields within structs/unions}, for details.
+
+@item -fplan9-extensions
+Accept some non-standard constructs used in Plan 9 code.
+
+This enables @option{-fms-extensions}, permits passing pointers to
+structures with anonymous fields to functions which expect pointers to
+elements of the type of the field, and permits referring to anonymous
+fields declared using a typedef.  @xref{Unnamed Fields,,Unnamed
+struct/union fields within structs/unions}, for details.  This is only
+supported for C, not C++.
 
 @item -trigraphs
 @opindex trigraphs

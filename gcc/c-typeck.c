@@ -2044,6 +2044,17 @@ lookup_field (tree type, tree component)
 
 		      if (anon)
 			return tree_cons (NULL_TREE, field, anon);
+
+		      /* The Plan 9 compiler permits referring
+			 directly to an anonymous struct/union field
+			 using a typedef name.  */
+		      if (flag_plan9_extensions
+			  && TYPE_NAME (TREE_TYPE (field)) != NULL_TREE
+			  && (TREE_CODE (TYPE_NAME (TREE_TYPE (field)))
+			      == TYPE_DECL)
+			  && (DECL_NAME (TYPE_NAME (TREE_TYPE (field)))
+			      == component))
+			break;
 		    }
 		}
 
@@ -2080,6 +2091,16 @@ lookup_field (tree type, tree component)
 
 	      if (anon)
 		return tree_cons (NULL_TREE, field, anon);
+
+	      /* The Plan 9 compiler permits referring directly to an
+		 anonymous struct/union field using a typedef
+		 name.  */
+	      if (flag_plan9_extensions
+		  && TYPE_NAME (TREE_TYPE (field)) != NULL_TREE
+		  && TREE_CODE (TYPE_NAME (TREE_TYPE (field))) == TYPE_DECL
+		  && (DECL_NAME (TYPE_NAME (TREE_TYPE (field)))
+		      == component))
+		break;
 	    }
 
 	  if (DECL_NAME (field) == component)
@@ -4952,6 +4973,106 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
   return result;
 }
 
+/* Return whether STRUCT_TYPE has an anonymous field with type TYPE.
+   This is used to implement -fplan9-extensions.  */
+
+static bool
+find_anonymous_field_with_type (tree struct_type, tree type)
+{
+  tree field;
+  bool found;
+
+  gcc_assert (TREE_CODE (struct_type) == RECORD_TYPE
+	      || TREE_CODE (struct_type) == UNION_TYPE);
+  found = false;
+  for (field = TYPE_FIELDS (struct_type);
+       field != NULL_TREE;
+       field = TREE_CHAIN (field))
+    {
+      if (DECL_NAME (field) == NULL
+	  && comptypes (type, TYPE_MAIN_VARIANT (TREE_TYPE (field))))
+	{
+	  if (found)
+	    return false;
+	  found = true;
+	}
+      else if (DECL_NAME (field) == NULL
+	       && (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE
+		   || TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
+	       && find_anonymous_field_with_type (TREE_TYPE (field), type))
+	{
+	  if (found)
+	    return false;
+	  found = true;
+	}
+    }
+  return found;
+}
+
+/* RHS is an expression whose type is pointer to struct.  If there is
+   an anonymous field in RHS with type TYPE, then return a pointer to
+   that field in RHS.  This is used with -fplan9-extensions.  This
+   returns NULL if no conversion could be found.  */
+
+static tree
+convert_to_anonymous_field (location_t location, tree type, tree rhs)
+{
+  tree rhs_struct_type, lhs_main_type;
+  tree field, found_field;
+  bool found_sub_field;
+  tree ret;
+
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (rhs)));
+  rhs_struct_type = TREE_TYPE (TREE_TYPE (rhs));
+  gcc_assert (TREE_CODE (rhs_struct_type) == RECORD_TYPE
+	      || TREE_CODE (rhs_struct_type) == UNION_TYPE);
+
+  gcc_assert (POINTER_TYPE_P (type));
+  lhs_main_type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+
+  found_field = NULL_TREE;
+  found_sub_field = false;
+  for (field = TYPE_FIELDS (rhs_struct_type);
+       field != NULL_TREE;
+       field = TREE_CHAIN (field))
+    {
+      if (DECL_NAME (field) != NULL_TREE
+	  || (TREE_CODE (TREE_TYPE (field)) != RECORD_TYPE
+	      && TREE_CODE (TREE_TYPE (field)) != UNION_TYPE))
+	continue;
+      if (comptypes (lhs_main_type, TYPE_MAIN_VARIANT (TREE_TYPE (field))))
+	{
+	  if (found_field != NULL_TREE)
+	    return NULL_TREE;
+	  found_field = field;
+	}
+      else if (find_anonymous_field_with_type (TREE_TYPE (field),
+					       lhs_main_type))
+	{
+	  if (found_field != NULL_TREE)
+	    return NULL_TREE;
+	  found_field = field;
+	  found_sub_field = true;
+	}
+    }
+
+  if (found_field == NULL_TREE)
+    return NULL_TREE;
+
+  ret = fold_build3_loc (location, COMPONENT_REF, TREE_TYPE (found_field),
+			 build_fold_indirect_ref (rhs), found_field,
+			 NULL_TREE);
+  ret = build_fold_addr_expr_loc (location, ret);
+
+  if (found_sub_field)
+    {
+      ret = convert_to_anonymous_field (location, type, ret);
+      gcc_assert (ret != NULL_TREE);
+    }
+
+  return ret;
+}
+
 /* Convert value RHS to type TYPE as preparation for an assignment to
    an lvalue of type TYPE.  If ORIGTYPE is not NULL_TREE, it is the
    original type of RHS; this differs from TREE_TYPE (RHS) for enum
@@ -5322,6 +5443,25 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 	mvr = TYPE_MAIN_VARIANT (mvr);
       /* Opaque pointers are treated like void pointers.  */
       is_opaque_pointer = vector_targets_convertible_p (ttl, ttr);
+
+      /* The Plan 9 compiler permits a pointer to a struct to be
+	 automatically converted into a pointer to an anonymous field
+	 within the struct.  */
+      if (flag_plan9_extensions
+	  && (TREE_CODE (mvl) == RECORD_TYPE || TREE_CODE(mvl) == UNION_TYPE)
+	  && (TREE_CODE (mvr) == RECORD_TYPE || TREE_CODE(mvr) == UNION_TYPE)
+	  && mvl != mvr)
+	{
+	  tree new_rhs = convert_to_anonymous_field (location, type, rhs);
+	  if (new_rhs != NULL_TREE)
+	    {
+	      rhs = new_rhs;
+	      rhstype = TREE_TYPE (rhs);
+	      coder = TREE_CODE (rhstype);
+	      ttr = TREE_TYPE (rhstype);
+	      mvr = TYPE_MAIN_VARIANT (ttr);
+	    }
+	}
 
       /* C++ does not allow the implicit conversion void* -> T*.  However,
 	 for the purpose of reducing the number of false positives, we
