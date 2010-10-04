@@ -186,6 +186,33 @@ package Exp_Disp is
    --  bodies they are added to the end of the list of declarations of the
    --  package body.
 
+   function Convert_Tag_To_Interface
+     (Typ : Entity_Id; Expr : Node_Id) return Node_Id;
+   pragma Inline (Convert_Tag_To_Interface);
+   --  This function is used in class-wide interface conversions; the expanded
+   --  code generated to convert a tagged object to a class-wide interface type
+   --  involves referencing the tag component containing the secondary dispatch
+   --  table associated with the interface. Given the expression Expr that
+   --  references a tag component, we cannot generate an unchecked conversion
+   --  to leave the expression decorated with the class-wide interface type Typ
+   --  because an unchecked conversion cannot be seen as a no-op. An unchecked
+   --  conversion is conceptually a function call and therefore the RM allows
+   --  the backend to obtain a copy of the value of the actual object and store
+   --  it in some other place (like a register); in such case the interface
+   --  conversion is not equivalent to a displacement of the pointer to the
+   --  interface and any further displacement fails. Although the functionality
+   --  of this function is simple and could be done directly, the purpose of
+   --  this routine is to leave well documented in the sources these
+   --  occurrences.
+
+   --  If Expr is an N_Selected_Component that references a tag generate:
+   --     type ityp is non null access Typ;
+   --     ityp!(Expr'Address).all
+
+   --  if Expr is an N_Function_Call to Ada.Tags.Displace then generate:
+   --     type ityp is non null access Typ;
+   --     ityp!(Expr).all
+
    function CPP_Num_Prims (Typ : Entity_Id) return Nat;
    --  Return the number of primitives of the C++ part of the dispatch table.
    --  For types that are not derivations of CPP types return 0.

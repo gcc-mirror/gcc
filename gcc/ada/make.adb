@@ -4468,29 +4468,41 @@ package body Make is
                      --  language, all the Ada mains.
 
                      while Value /= Prj.Nil_String loop
-                        Get_Name_String
-                          (Project_Tree.String_Elements.Table (Value).Value);
-
                         --  To know if a main is an Ada main, get its project.
                         --  It should be the project specified on the command
                         --  line.
 
-                        if (not Foreign_Language) or else
-                            Prj.Env.Project_Of
-                              (Name_Buffer (1 .. Name_Len),
-                               Main_Project,
-                               Project_Tree) =
-                             Main_Project
-                        then
-                           At_Least_One_Main := True;
-                           Osint.Add_File
-                             (Get_Name_String
-                                (Project_Tree.String_Elements.Table
-                                   (Value).Value),
-                              Index =>
-                                Project_Tree.String_Elements.Table
-                                  (Value).Index);
-                        end if;
+                        Get_Name_String
+                          (Project_Tree.String_Elements.Table (Value).Value);
+
+                        declare
+                           Main_Name : constant String :=
+                              Get_Name_String
+                               (Project_Tree.String_Elements.Table
+                                    (Value).Value);
+                           Proj : constant Project_Id :=
+                             Prj.Env.Project_Of
+                              (Main_Name, Main_Project, Project_Tree);
+                        begin
+
+                           if Proj = Main_Project then
+
+                              At_Least_One_Main := True;
+                              Osint.Add_File
+                                (Get_Name_String
+                                   (Project_Tree.String_Elements.Table
+                                      (Value).Value),
+                                 Index =>
+                                   Project_Tree.String_Elements.Table
+                                     (Value).Index);
+
+                           elsif not Foreign_Language then
+                              Make_Failed
+                                ("""" & Main_Name &
+                                 """ is not a source of project " &
+                                 Get_Name_String (Main_Project.Display_Name));
+                           end if;
+                        end;
 
                         Value := Project_Tree.String_Elements.Table
                                    (Value).Next;

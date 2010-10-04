@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived for use with GNAT from AI-00248,  which is --
 -- expected to be a part of a future expected revised Ada Reference Manual. --
@@ -104,6 +104,8 @@ package Ada.Directories is
    --  identification of a directory. The exception Use_Error is propagated if
    --  the external environment does not support the creation of a directory
    --  with the given name (in the absence of Name_Error) and form.
+   --
+   --  The Form parameter is ignored.
 
    procedure Delete_Directory (Directory : String);
    --  Deletes an existing empty directory with name Directory. The exception
@@ -129,6 +131,8 @@ package Ada.Directories is
    --  The exception Use_Error is propagated if the external environment does
    --  not support the creation of any directories with the given name (in the
    --  absence of Name_Error) and form.
+   --
+   --  The Form parameter is ignored.
 
    procedure Delete_Tree (Directory : String);
    --  Deletes an existing directory with name Directory. The directory and
@@ -172,6 +176,41 @@ package Ada.Directories is
    --  not support the creating of the file with the name given by Target_Name
    --  and form given by Form, or copying of the file with the name given by
    --  Source_Name (in the absence of Name_Error).
+   --
+   --  Interpretation of the Form parameter:
+   --  The Form parameter is case-insensitive.
+   --  Two fields are recognized in the Form parameter:
+   --    preserve=<value>
+   --    mode=<value>
+   --  <value> starts immediatey after the character '=' and ends with the
+   --  character immediatey preceding the next comma (',') or with the last
+   --  character of the parameter.
+   --  The only possible values for preserve= are:
+   --     no_attributes: do not try to preserve any file attributes. This is
+   --                    the default if no preserve= is found in Form.
+   --     all_attributes: try to preserve all file attributes (timestamps,
+   --                     access rights).
+   --     timestamps: preserve the timestamp of the copied file, but not the
+   --                 other file attributes.
+   --  The only possible values for mode= are:
+   --     copy: only do the copy if the destination file does not already
+   --           exist. If it already exist, Copy_File fails.
+   --     overwrite: copy the file in all cases. Overwite an aready existing
+   --                destination file.
+   --     append: append the original file to the destination file. If the
+   --             destination file does not exist, the destination file is
+   --             a copy of the source file.
+   --             When mode=append, the field preserve=, if it exists, is not
+   --             taken into account.
+   --  If the Form parameter includes one or both of the fields and the value
+   --  or values are incorrect, Copy_file fails with Use_Error.
+   --  Examples of correct Forms:
+   --     Form => "preserve=no_attributes,mode=overwrite" (the default)
+   --     Form => "mode=append"
+   --     Form => "mode=copy, preserve=all_attributes"
+   --  Examples of incorrect Forms
+   --     Form => "preserve=junk"
+   --     Form => "mode=internal, preserve=timestamps"
 
    ----------------------------------------
    -- File and directory name operations --
