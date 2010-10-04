@@ -5280,15 +5280,20 @@ package body Prj.Nmsc is
          Recursive_Dirs.Reset (Visited);
       end Find_Source_Dirs;
 
+      --  Local declarations
+
       Dir_Exists : Boolean;
 
       No_Sources : constant Boolean :=
-        (((not Source_Files.Default) and then Source_Files.Values = Nil_String)
-         or else
-         ((not Source_Dirs.Default) and then Source_Dirs.Values = Nil_String)
-         or else
-         ((not Languages.Default) and then Languages.Values = Nil_String))
-        and then Project.Extends = No_Project;
+                     ((not Source_Files.Default
+                        and then Source_Files.Values = Nil_String)
+                       or else
+                      (not Source_Dirs.Default
+                        and then Source_Dirs.Values = Nil_String)
+                       or else
+                      (not Languages.Default
+                        and then Languages.Values = Nil_String))
+                     and then Project.Extends = No_Project;
 
    --  Start of processing for Get_Directories
 
@@ -5318,6 +5323,7 @@ package body Prj.Nmsc is
                Object_Dir.Location, Project);
 
          elsif not No_Sources then
+
             --  We check that the specified object directory does exist.
             --  However, even when it doesn't exist, we set it to a default
             --  value. This is for the benefit of tools that recover from
@@ -5338,8 +5344,8 @@ package body Prj.Nmsc is
             if not Dir_Exists
               and then not Project.Externally_Built
             then
-               --  The object directory does not exist, report an error if
-               --  the project is not externally built.
+               --  The object directory does not exist, report an error if the
+               --  project is not externally built.
 
                Err_Vars.Error_Msg_File_1 :=
                  File_Name_Type (Object_Dir.Value);
@@ -5389,6 +5395,7 @@ package body Prj.Nmsc is
                Exec_Dir.Location, Project);
 
          elsif not No_Sources then
+
             --  We check that the specified exec directory does exist
 
             Locate_Directory

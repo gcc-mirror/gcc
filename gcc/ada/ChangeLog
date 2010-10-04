@@ -1,3 +1,13 @@
+2010-10-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taprop-mingw.adb (Create_Task): Initialize Thread_Id field to 0.
+
+2010-10-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_cg.adb: Minor code reorganization
+	Minor reformatting.
+	* exp_ch5.adb, prj-nmsc.adb: Minor reformatting.
+
 2010-10-04  Bob Duff  <duff@adacore.com>
 
 	* sem_res.adb (Resolve_Type_Conversion): If a type conversion is needed

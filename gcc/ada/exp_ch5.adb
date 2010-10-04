@@ -1370,7 +1370,6 @@ package body Exp_Ch5 is
 
          begin
             Result := New_List;
-
             Item := First (CI);
             while Present (Item) loop
 
