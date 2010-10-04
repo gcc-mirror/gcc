@@ -1,3 +1,19 @@
+2010-10-04  Julian Brown  <julian@codesourcery.com>
+
+	* expr.c (expand_assignment): Add assertion to prevent emitting
+	null rtx for movmisalign pattern.
+	(expand_expr_real_1): Likewise.
+	* config/arm/arm.c (arm_builtin_support_vector_misalignment): New.
+	(TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT): New. Use above.
+	(arm_vector_alignment_reachable): New.
+	(TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE): New. Use above.
+	(neon_vector_mem_operand): Disallow PRE_DEC for misaligned loads.
+	(arm_print_operand): Include alignment qualifier in %A.
+	* config/arm/neon.md (UNSPEC_MISALIGNED_ACCESS): New constant.
+	(movmisalign<mode>): New expander.
+	(movmisalign<mode>_neon_store, movmisalign<mode>_neon_load): New
+	insn patterns.
+
 2010-10-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* optc-gen.awk: Define global_options_set.  Don't define

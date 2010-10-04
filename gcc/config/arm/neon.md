@@ -141,6 +141,7 @@
    (UNSPEC_VUZP2		202)
    (UNSPEC_VZIP1		203)
    (UNSPEC_VZIP2		204)
+   (UNSPEC_MISALIGNED_ACCESS	205)
    (UNSPEC_VCLE			206)
    (UNSPEC_VCLT			207)])
 
@@ -368,6 +369,52 @@
 
   neon_disambiguate_copy (operands, dest, src, 4);
 })
+
+(define_expand "movmisalign<mode>"
+  [(set (match_operand:VDQX 0 "nonimmediate_operand"	      "")
+	(unspec:VDQX [(match_operand:VDQX 1 "general_operand" "")]
+		     UNSPEC_MISALIGNED_ACCESS))]
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+{
+  /* This pattern is not permitted to fail during expansion: if both arguments
+     are non-registers (e.g. memory := constant, which can be created by the
+     auto-vectorizer), force operand 1 into a register.  */
+  if (!s_register_operand (operands[0], <MODE>mode)
+      && !s_register_operand (operands[1], <MODE>mode))
+    operands[1] = force_reg (<MODE>mode, operands[1]);
+})
+
+(define_insn "*movmisalign<mode>_neon_store"
+  [(set (match_operand:VDX 0 "memory_operand"		       "=Um")
+	(unspec:VDX [(match_operand:VDX 1 "s_register_operand" " w")]
+		    UNSPEC_MISALIGNED_ACCESS))]
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  "vst1.<V_sz_elem>\t{%P1}, %A0"
+  [(set_attr "neon_type" "neon_vst1_1_2_regs_vst2_2_regs")])
+
+(define_insn "*movmisalign<mode>_neon_load"
+  [(set (match_operand:VDX 0 "s_register_operand"	   "=w")
+	(unspec:VDX [(match_operand:VDX 1 "memory_operand" " Um")]
+		    UNSPEC_MISALIGNED_ACCESS))]
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  "vld1.<V_sz_elem>\t{%P0}, %A1"
+  [(set_attr "neon_type" "neon_vld1_1_2_regs")])
+
+(define_insn "*movmisalign<mode>_neon_store"
+  [(set (match_operand:VQX 0 "memory_operand"		       "=Um")
+	(unspec:VQX [(match_operand:VQX 1 "s_register_operand" " w")]
+		    UNSPEC_MISALIGNED_ACCESS))]
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  "vst1.<V_sz_elem>\t{%q1}, %A0"
+  [(set_attr "neon_type" "neon_vst1_1_2_regs_vst2_2_regs")])
+
+(define_insn "*movmisalign<mode>_neon_load"
+  [(set (match_operand:VQX 0 "s_register_operand"	   "=w")
+	(unspec:VQX [(match_operand:VQX 1 "memory_operand" " Um")]
+		    UNSPEC_MISALIGNED_ACCESS))]
+  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  "vld1.<V_sz_elem>\t{%q0}, %A1"
+  [(set_attr "neon_type" "neon_vld1_1_2_regs")])
 
 (define_insn "vec_set<mode>_internal"
   [(set (match_operand:VD 0 "s_register_operand" "=w")

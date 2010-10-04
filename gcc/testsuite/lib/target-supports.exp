@@ -1813,6 +1813,18 @@ proc check_effective_target_arm32 { } {
     }]
 }
 
+# Return 1 if this is an ARM target that only supports aligned vector accesses
+proc check_effective_target_arm_vect_no_misalign { } {
+    return [check_no_compiler_messages arm_vect_no_misalign assembly {
+	#if !defined(__arm__) \
+	    || (defined(__ARMEL__) \
+	        && (!defined(__thumb__) || defined(__thumb2__)))
+	#error FOO
+	#endif
+    }]
+}
+
+
 # Return 1 if this is an ARM target supporting -mfpu=vfp
 # -mfloat-abi=softfp.  Some multilibs may be incompatible with these
 # options.
@@ -2776,7 +2788,7 @@ proc check_effective_target_vect_no_align { } {
 	if { [istarget mipsisa64*-*-*]
 	     || [istarget sparc*-*-*]
 	     || [istarget ia64-*-*]
-	     || [check_effective_target_arm32]
+	     || [check_effective_target_arm_vect_no_misalign]
 	     || ([istarget mips*-*-*]
 		 && [check_effective_target_mips_loongson]) } {
 	    set et_vect_no_align_saved 1
@@ -2911,6 +2923,25 @@ proc check_effective_target_vector_alignment_reachable_for_64bit { } {
     }
     verbose "check_effective_target_vector_alignment_reachable_for_64bit: returning $et_vector_alignment_reachable_for_64bit_saved" 2
     return $et_vector_alignment_reachable_for_64bit_saved
+}
+
+# Return 1 if the target only requires element alignment for vector accesses
+
+proc check_effective_target_vect_element_align { } {
+    global et_vect_element_align
+
+    if [info exists et_vect_element_align] {
+	verbose "check_effective_target_vect_element_align: using cached result" 2
+    } else {
+	set et_vect_element_align 0
+	if { [istarget arm*-*-*]
+	     || [check_effective_target_vect_hw_misalign] } {
+	   set et_vect_element_align 1
+	}
+    }
+
+    verbose "check_effective_target_vect_element_align: returning $et_vect_element_align" 2
+    return $et_vect_element_align
 }
 
 # Return 1 if the target supports vector conditional operations, 0 otherwise.
@@ -3475,6 +3506,16 @@ proc add_options_for_bind_pic_locally { flags } {
         #endif
     }]} {
 	return "$flags -fpie"
+    }
+
+    return $flags
+}
+
+# Add to FLAGS the flags needed to enable 128-bit vectors.
+
+proc add_options_for_quad_vectors { flags } {
+    if [is-effective-target arm_neon_ok] {
+	return "$flags -mvectorize-with-neon-quad"
     }
 
     return $flags
