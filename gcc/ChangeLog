@@ -1,3 +1,10 @@
+2010-10-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/45572
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Call
+	ipa_check_create_node_params.
+	* ipa-inline.c (add_new_edges_to_heap): Do not insert inlined edges.
+
 2010-10-04  Yao Qi  <yao@codesourcery.com>
 
 	* doc/passes.texi: Clean up.

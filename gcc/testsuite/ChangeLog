@@ -1,3 +1,9 @@
+2010-10-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/45572
+	* g++.dg/ipa/pr45572-1.C: New test.
+	* g++.dg/ipa/pr45572-2.C: Likewise.
+
 2010-10-03  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/anon-struct-11.c: New test.
