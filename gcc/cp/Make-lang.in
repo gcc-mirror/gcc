@@ -62,7 +62,7 @@ g++spec.o: $(srcdir)/cp/g++spec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
 # Create the compiler driver for g++.
 GXX_OBJS = $(GCC_OBJS) g++spec.o intl.o prefix.o version.o
 g++$(exeext): $(GXX_OBJS) $(EXTRA_GCC_OBJS) $(LIBDEPS)
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	  $(GXX_OBJS) $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Create a version of the g++ driver which calls the cross-compiler.
@@ -101,7 +101,7 @@ cc1plus-checksum.c : cc1plus-dummy$(exeext) build/genchecksum$(build_exeext)
 cc1plus-checksum.o : cc1plus-checksum.c $(CONFIG_H) $(SYSTEM_H)
 
 cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBDEPS)
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	      $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
 # Special build rules.

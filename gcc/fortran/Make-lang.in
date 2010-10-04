@@ -86,7 +86,7 @@ gfortranspec.o: $(srcdir)/fortran/gfortranspec.c $(SYSTEM_H) $(TM_H) $(GCC_H) \
 # Create the compiler driver gfortran.
 GFORTRAN_D_OBJS = $(GCC_OBJS) gfortranspec.o version.o prefix.o intl.o
 gfortran$(exeext): $(GFORTRAN_D_OBJS) $(EXTRA_GCC_OBJS) $(LIBDEPS)
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	  $(GFORTRAN_D_OBJS) $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Create a version of the gfortran driver which calls the cross-compiler.
@@ -97,7 +97,7 @@ gfortran-cross$(exeext): gfortran$(exeext)
 # The compiler itself is called f951.
 f951$(exeext): $(F95_OBJS) \
 		$(BACKEND) $(LIBDEPS) attribs.o
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(F95_OBJS) $(BACKEND) $(LIBS) attribs.o $(BACKENDLIBS)
 
 gt-fortran-trans.h    : s-gtype; @true
