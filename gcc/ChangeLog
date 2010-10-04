@@ -1,3 +1,51 @@
+2010-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* optc-gen.awk: Define global_options_set.  Don't define
+	target_flags_explicit.
+	* opth-gen.awk: Declare global_options_set.  Define
+	target_flags_explicit as macro.
+	* opts-common.c (handle_option): Take opts_set and generated_p
+	parameters.
+	(handle_generated_option, read_cmdline_option, set_option): Take
+	opts_set parameter.
+	(set_option): Use opts_set instead of hardcoding target_flags and
+	target_flags_explicit.
+	* opts.c (sel_sched_switch_set, profile_arc_flag_set,
+	flag_profile_values_set, flag_unroll_loops_set, flag_tracer_set,
+	flag_value_profile_transformations_set, flag_peel_loops_set,
+	flag_branch_probabilities_set, flag_inline_functions_set,
+	flag_ipa_cp_set, flag_ipa_cp_clone_set,
+	flag_predictive_commoning_set, flag_unswitch_loops_set,
+	flag_gcse_after_reload_set): Remove.
+	(common_handle_option, lang_handle_option, target_handle_option):
+	Take opts_set parameter.  Assert that it is &global_options_set.
+	(common_handle_option): Don't set _set variables.  Check opts_set
+	instead of such variables.
+	(enable_warning_as_error): Pass &global_options_set to
+	handle_generated_option.
+	* opts.h (cl_option_handler_func.handler, set_option,
+	handle_option, handle_generated_option, read_cmdline_option): Add
+	opts_set parameters.
+	(handle_option): Add generated_p parameter.
+	* config/i386/i386.c (ix86_function_specific_save,
+	ix86_function_specific_restore): Updat for renaming of
+	target_flags_explicit field.
+	* config/i386/i386.opt (target_flags_explicit): Rename to
+	ix86_target_flags_explicit.
+	* config/ia64/ia64.c (ia64_override_options_after_change): Check
+	global_options_set.x_flag_selective_scheduling and
+	global_options_set.x_flag_selective_scheduling2, not
+	sel_sched_switch_set.
+	* flags.h (sel_sched_switch_set,
+	flag_speculative_prefetching_set): Remove.
+	* gcc.c (driver_handle_option): Take opts_set parameter.  Assert
+	that it is &global_options_set.
+	(process_command): Pass &global_options_set to
+	read_cmdline_option.
+	* lto-opts.c (lto_reissue_options): Pass &global_options_set to
+	set_option.
+	* toplev.c (target_flags_explicit): Remove.
+
 2010-10-04  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/45871

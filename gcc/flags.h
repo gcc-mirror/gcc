@@ -276,9 +276,6 @@ extern int flag_evaluation_order;
 extern unsigned HOST_WIDE_INT g_switch_value;
 extern bool g_switch_set;
 
-/* Same for selective scheduling.  */
-extern bool sel_sched_switch_set;
-
 /* Whether to run the warn_unused_result attribute pass.  */
 extern bool flag_warn_unused_result;
 
@@ -292,10 +289,6 @@ enum graph_dump_types
   vcg
 };
 extern enum graph_dump_types graph_dump_format;
-
-/* True if flag_speculative_prefetching was set by user.  Used to suppress
-   warning message in case flag was set by -fprofile-{generate,use}.  */
-extern bool flag_speculative_prefetching_set;
 
 /* Type of stack check.  */
 enum stack_check_type

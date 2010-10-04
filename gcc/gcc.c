@@ -3151,6 +3151,7 @@ static int last_language_n_infiles;
 
 static bool
 driver_handle_option (struct gcc_options *opts,
+		      struct gcc_options *opts_set,
 		      const struct cl_decoded_option *decoded,
 		      unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
 		      const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
@@ -3163,6 +3164,7 @@ driver_handle_option (struct gcc_options *opts,
   bool do_save = true;
 
   gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
   gcc_assert (kind == DK_UNSPECIFIED);
 
   switch (opt_index)
@@ -3803,8 +3805,8 @@ process_command (unsigned int decoded_options_count,
 	  continue;
 	}
 
-      read_cmdline_option (&global_options, decoded_options + j,
-			   CL_DRIVER, &handlers);
+      read_cmdline_option (&global_options, &global_options_set,
+			   decoded_options + j, CL_DRIVER, &handlers);
     }
 
   /* If -save-temps=obj and -o name, create the prefix to use for %b.

@@ -50,9 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 unsigned HOST_WIDE_INT g_switch_value;
 bool g_switch_set;
 
-/* Same for selective scheduling.  */
-bool sel_sched_switch_set;
-
 /* True if we should exit after parsing options.  */
 bool exit_after_options;
 
@@ -345,15 +342,6 @@ struct visibility_flags visibility_options;
 /* What to print when a switch has no documentation.  */
 static const char undocumented_msg[] = N_("This switch lacks documentation");
 
-/* Used for bookkeeping on whether user set these flags so
-   -fprofile-use/-fprofile-generate does not use them.  */
-static bool profile_arc_flag_set, flag_profile_values_set;
-static bool flag_unroll_loops_set, flag_tracer_set;
-static bool flag_value_profile_transformations_set;
-static bool flag_peel_loops_set, flag_branch_probabilities_set;
-static bool flag_inline_functions_set, flag_ipa_cp_set, flag_ipa_cp_clone_set;
-static bool flag_predictive_commoning_set, flag_unswitch_loops_set, flag_gcse_after_reload_set;
-
 /* Functions excluded from profiling.  */
 
 typedef char *char_p; /* For DEF_VEC_P.  */
@@ -377,6 +365,7 @@ const char **in_fnames;
 unsigned num_in_fnames;
 
 static bool common_handle_option (struct gcc_options *opts,
+				  struct gcc_options *opts_set,
 				  const struct cl_decoded_option *decoded,
 				  unsigned int lang_mask, int kind,
 				  const struct cl_option_handlers *handlers);
@@ -517,11 +506,13 @@ post_handling_callback (const struct cl_decoded_option *decoded ATTRIBUTE_UNUSED
 
 static bool
 lang_handle_option (struct gcc_options *opts,
+		    struct gcc_options *opts_set,
 		    const struct cl_decoded_option *decoded,
 		    unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
 		    const struct cl_option_handlers *handlers)
 {
   gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
   gcc_assert (decoded->canonical_option_num_elements <= 2);
   return lang_hooks.handle_option (decoded->opt_index, decoded->arg,
 				   decoded->value, kind, handlers);
@@ -532,11 +523,13 @@ lang_handle_option (struct gcc_options *opts,
 
 static bool
 target_handle_option (struct gcc_options *opts,
+		      struct gcc_options *opts_set,
 		      const struct cl_decoded_option *decoded,
 		      unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
 		      const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {
   gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
   gcc_assert (decoded->canonical_option_num_elements <= 2);
   gcc_assert (kind == DK_UNSPECIFIED);
   return targetm.handle_option (decoded->opt_index, decoded->arg,
@@ -649,8 +642,8 @@ read_cmdline_options (struct cl_decoded_option *decoded_options,
 	  continue;
 	}
 
-      read_cmdline_option (&global_options, decoded_options + i,
-			   lang_mask, handlers);
+      read_cmdline_option (&global_options, &global_options_set,
+			   decoded_options + i, lang_mask, handlers);
     }
 }
 
@@ -1433,6 +1426,7 @@ print_specific_help (unsigned int include_flags,
 
 static bool
 common_handle_option (struct gcc_options *opts,
+		      struct gcc_options *opts_set,
 		      const struct cl_decoded_option *decoded,
 		      unsigned int lang_mask, int kind ATTRIBUTE_UNUSED,
 		      const struct cl_option_handlers *handlers)
@@ -1444,6 +1438,7 @@ common_handle_option (struct gcc_options *opts,
   enum opt_code code = (enum opt_code) scode;
 
   gcc_assert (opts == &global_options);
+  gcc_assert (opts_set == &global_options_set);
   gcc_assert (decoded->canonical_option_num_elements <= 2);
 
   switch (code)
@@ -1704,10 +1699,6 @@ common_handle_option (struct gcc_options *opts,
       align_loops = value;
       break;
 
-    case OPT_fbranch_probabilities:
-      flag_branch_probabilities_set = true;
-      break;
-
     case OPT_fcall_used_:
       fix_register (arg, 0, 1);
       break;
@@ -1801,10 +1792,6 @@ common_handle_option (struct gcc_options *opts,
 	}
       break;
 
-    case OPT_fpeel_loops:
-      flag_peel_loops_set = true;
-      break;
-
     case OPT_fplugin_:
 #ifdef ENABLE_PLUGIN
       add_new_plugin (arg);
@@ -1821,14 +1808,6 @@ common_handle_option (struct gcc_options *opts,
 #endif
       break;
 
-    case OPT_fprofile_arcs:
-      profile_arc_flag_set = true;
-      break;
-
-    case OPT_finline_functions:
-      flag_inline_functions_set = true;
-      break;
-
     case OPT_fprofile_dir_:
       profile_data_prefix = xstrdup (arg);
       break;
@@ -1839,30 +1818,30 @@ common_handle_option (struct gcc_options *opts,
       value = true;
       /* No break here - do -fprofile-use processing. */
     case OPT_fprofile_use:
-      if (!flag_branch_probabilities_set)
+      if (!opts_set->x_flag_branch_probabilities)
         flag_branch_probabilities = value;
-      if (!flag_profile_values_set)
+      if (!opts_set->x_flag_profile_values)
         flag_profile_values = value;
-      if (!flag_unroll_loops_set)
+      if (!opts_set->x_flag_unroll_loops)
         flag_unroll_loops = value;
-      if (!flag_peel_loops_set)
+      if (!opts_set->x_flag_peel_loops)
         flag_peel_loops = value;
-      if (!flag_tracer_set)
+      if (!opts_set->x_flag_tracer)
         flag_tracer = value;
-      if (!flag_value_profile_transformations_set)
+      if (!opts_set->x_flag_value_profile_transformations)
         flag_value_profile_transformations = value;
-      if (!flag_inline_functions_set)
+      if (!opts_set->x_flag_inline_functions)
         flag_inline_functions = value;
-      if (!flag_ipa_cp_set)
+      if (!opts_set->x_flag_ipa_cp)
         flag_ipa_cp = value;
-      if (!flag_ipa_cp_clone_set
+      if (!opts_set->x_flag_ipa_cp_clone
 	  && value && flag_ipa_cp)
 	flag_ipa_cp_clone = value;
-      if (!flag_predictive_commoning_set)
+      if (!opts_set->x_flag_predictive_commoning)
 	flag_predictive_commoning = value;
-      if (!flag_unswitch_loops_set)
+      if (!opts_set->x_flag_unswitch_loops)
 	flag_unswitch_loops = value;
-      if (!flag_gcse_after_reload_set)
+      if (!opts_set->x_flag_gcse_after_reload)
 	flag_gcse_after_reload = value;
       break;
 
@@ -1871,18 +1850,14 @@ common_handle_option (struct gcc_options *opts,
       value = true;
       /* No break here - do -fprofile-generate processing. */
     case OPT_fprofile_generate:
-      if (!profile_arc_flag_set)
+      if (!opts_set->x_profile_arc_flag)
         profile_arc_flag = value;
-      if (!flag_profile_values_set)
+      if (!opts_set->x_flag_profile_values)
         flag_profile_values = value;
-      if (!flag_value_profile_transformations_set)
+      if (!opts_set->x_flag_value_profile_transformations)
         flag_value_profile_transformations = value;
-      if (!flag_inline_functions_set)
+      if (!opts_set->x_flag_inline_functions)
         flag_inline_functions = value;
-      break;
-
-    case OPT_fprofile_values:
-      flag_profile_values_set = true;
       break;
 
     case OPT_fshow_column:
@@ -1904,10 +1879,6 @@ common_handle_option (struct gcc_options *opts,
       }
       break;
 
-    case OPT_fvpt:
-      flag_value_profile_transformations_set = true;
-      break;
-
     case OPT_frandom_seed:
       /* The real switch is -fno-random-seed.  */
       if (value)
@@ -1917,11 +1888,6 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_frandom_seed_:
       set_random_seed (arg);
-      break;
-
-    case OPT_fselective_scheduling:
-    case OPT_fselective_scheduling2:
-      sel_sched_switch_set = true;
       break;
 
     case OPT_fsched_verbose_:
@@ -2021,34 +1987,6 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_fira_verbose_:
       flag_ira_verbose = value;
-      break;
-
-    case OPT_ftracer:
-      flag_tracer_set = true;
-      break;
-
-    case OPT_fipa_cp:
-      flag_ipa_cp_set = true;
-      break;
-
-    case OPT_fipa_cp_clone:
-      flag_ipa_cp_clone_set = true;
-      break;
-
-    case OPT_fpredictive_commoning:
-      flag_predictive_commoning_set = true;
-      break;
-
-    case OPT_funswitch_loops:
-      flag_unswitch_loops_set = true;
-      break;
-
-    case OPT_fgcse_after_reload:
-      flag_gcse_after_reload_set = true;
-      break;
-
-    case OPT_funroll_loops:
-      flag_unroll_loops_set = true;
       break;
 
     case OPT_g:
@@ -2385,8 +2323,8 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
 
 	  /* -Werror=foo implies -Wfoo.  */
 	  if (option->var_type == CLVC_BOOLEAN)
-	    handle_generated_option (&global_options, option_index,
-				     NULL, value, lang_mask,
+	    handle_generated_option (&global_options, &global_options_set,
+				     option_index, NULL, value, lang_mask,
 				     (int)kind, handlers);
 
 	  if (warning_as_error_callback)

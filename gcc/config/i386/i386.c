@@ -3802,7 +3802,7 @@ ix86_function_specific_save (struct cl_target_option *ptr)
   ptr->tune_defaulted = ix86_tune_defaulted;
   ptr->arch_specified = ix86_arch_specified;
   ptr->ix86_isa_flags_explicit = ix86_isa_flags_explicit;
-  ptr->target_flags_explicit = target_flags_explicit;
+  ptr->ix86_target_flags_explicit = target_flags_explicit;
 
   /* The fields are char but the variables are not; make sure the
      values fit in the fields.  */
@@ -3831,7 +3831,7 @@ ix86_function_specific_restore (struct cl_target_option *ptr)
   ix86_tune_defaulted = ptr->tune_defaulted;
   ix86_arch_specified = ptr->arch_specified;
   ix86_isa_flags_explicit = ptr->ix86_isa_flags_explicit;
-  target_flags_explicit = ptr->target_flags_explicit;
+  target_flags_explicit = ptr->ix86_target_flags_explicit;
 
   /* Recreate the arch feature tests if the arch changed */
   if (old_arch != ix86_arch)

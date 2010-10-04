@@ -5650,7 +5650,8 @@ ia64_override_options_after_change (void)
   flag_schedule_insns_after_reload = 0;
 
   if (optimize >= 3
-      && ! sel_sched_switch_set)
+      && !global_options_set.x_flag_selective_scheduling
+      && !global_options_set.x_flag_selective_scheduling2)
     {
       flag_selective_scheduling2 = 1;
       flag_sel_sched_pipelining = 1;

@@ -157,6 +157,7 @@ struct cl_option_handler_func
 {
   /* The function called to handle the option.  */
   bool (*handler) (struct gcc_options *opts,
+		   struct gcc_options *opts_set,
 		   const struct cl_decoded_option *decoded,
 		   unsigned int lang_mask, int kind,
 		   const struct cl_option_handlers *handlers);
@@ -213,14 +214,18 @@ extern void decode_options (unsigned int argc, const char **argv,
 extern int option_enabled (int opt_idx, void *opts);
 extern bool get_option_state (struct gcc_options *, int,
 			      struct cl_option_state *);
-extern void set_option (struct gcc_options *opts, int opt_index, int value,
-			const char *arg, int);
+extern void set_option (struct gcc_options *opts,
+			struct gcc_options *opts_set,
+			int opt_index, int value, const char *arg, int);
 extern void *option_flag_var (int opt_index, struct gcc_options *opts);
 bool handle_option (struct gcc_options *opts,
+		    struct gcc_options *opts_set,
 		    const struct cl_decoded_option *decoded,
 		    unsigned int lang_mask, int kind,
-		    const struct cl_option_handlers *handlers);
+		    const struct cl_option_handlers *handlers,
+		    bool generated_p);
 bool handle_generated_option (struct gcc_options *opts,
+			      struct gcc_options *opts_set,
 			      size_t opt_index, const char *arg, int value,
 			      unsigned int lang_mask, int kind,
 			      const struct cl_option_handlers *handlers);
@@ -230,6 +235,7 @@ void generate_option (size_t opt_index, const char *arg, int value,
 void generate_option_input_file (const char *file,
 				 struct cl_decoded_option *decoded);
 extern void read_cmdline_option (struct gcc_options *opts,
+				 struct gcc_options *opts_set,
 				 struct cl_decoded_option *decoded,
 				 unsigned int lang_mask,
 				 const struct cl_option_handlers *handlers);
