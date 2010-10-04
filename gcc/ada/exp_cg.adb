@@ -173,7 +173,8 @@ package body Exp_CG is
       ---------------------------
 
       function Homonym_Suffix_Length (E : Entity_Id) return Natural is
-         Prefix_Length : constant := 2; --  Length of prefix "__"
+         Prefix_Length : constant := 2;
+         --  Length of prefix "__"
 
          H  : Entity_Id;
          Nr : Nat := 1;
@@ -200,11 +201,13 @@ package body Exp_CG is
             else
                declare
                   Result : Natural := Prefix_Length + 1;
+
                begin
                   while Nr >= 10 loop
                      Result := Result + 1;
                      Nr := Nr / 10;
                   end loop;
+
                   return Result;
                end;
             end if;
@@ -214,7 +217,7 @@ package body Exp_CG is
       --  Local variables
 
       Full_Name     : constant String := Get_Name_String (Chars (E));
-      Suffix_Length : Natural         := Homonym_Suffix_Length (E);
+      Suffix_Length : Natural;
       TSS_Name      : TSS_Name_Type;
 
    --  Start of processing for Is_Predefined_Dispatching_Operation
@@ -226,6 +229,7 @@ package body Exp_CG is
 
       --  Search for and strip suffix for body-nested package entities
 
+      Suffix_Length := Homonym_Suffix_Length (E);
       for J in reverse Full_Name'First + 2 .. Full_Name'Last loop
          if Full_Name (J) = 'X' then
 
