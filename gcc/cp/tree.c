@@ -2985,6 +2985,25 @@ decl_linkage (tree decl)
   /* Everything else has internal linkage.  */
   return lk_internal;
 }
+
+/* Returns the storage duration of the object or reference associated with
+   the indicated DECL, which should be a VAR_DECL or PARM_DECL.  */
+
+duration_kind
+decl_storage_duration (tree decl)
+{
+  if (TREE_CODE (decl) == PARM_DECL)
+    return dk_auto;
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    return dk_static;
+  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+  if (!TREE_STATIC (decl)
+      && !DECL_EXTERNAL (decl))
+    return dk_auto;
+  if (DECL_THREAD_LOCAL_P (decl))
+    return dk_thread;
+  return dk_static;
+}
 
 /* EXP is an expression that we want to pre-evaluate.  Returns (in
    *INITP) an expression that will perform the pre-evaluation.  The
