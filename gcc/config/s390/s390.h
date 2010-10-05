@@ -36,6 +36,7 @@ enum processor_type
   PROCESSOR_2084_Z990,
   PROCESSOR_2094_Z9_109,
   PROCESSOR_2097_Z10,
+  PROCESSOR_2817_Z196,
   PROCESSOR_max
 };
 
@@ -48,7 +49,8 @@ enum processor_flags
   PF_LONG_DISPLACEMENT = 4,
   PF_EXTIMM = 8,
   PF_DFP = 16,
-  PF_Z10 = 32
+  PF_Z10 = 32,
+  PF_Z196 = 64
 };
 
 extern enum processor_type s390_tune;
@@ -77,6 +79,8 @@ extern int s390_arch_flags;
  	(s390_arch_flags & PF_DFP)
 #define TARGET_CPU_Z10 \
  	(s390_arch_flags & PF_Z10)
+#define TARGET_CPU_Z196 \
+ 	(s390_arch_flags & PF_Z196)
 
 /* These flags indicate that the generated code should run on a cpu
    providing the respective hardware facility when run in
@@ -90,6 +94,11 @@ extern int s390_arch_flags;
        (TARGET_ZARCH && TARGET_CPU_DFP && TARGET_HARD_FLOAT)
 #define TARGET_Z10 \
        (TARGET_ZARCH && TARGET_CPU_Z10)
+#define TARGET_Z196 \
+       (TARGET_ZARCH && TARGET_CPU_Z196)
+
+
+#define TARGET_AVOID_CMP_AND_BRANCH (s390_tune == PROCESSOR_2817_Z196)
 
 /* Run-time target specification.  */
 
