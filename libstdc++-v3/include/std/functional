@@ -63,33 +63,7 @@ namespace std
   template<typename _MemberPointer>
     class _Mem_fn;
 
-  /**
-   *  Actual implementation of _Has_result_type, which uses SFINAE to
-   *  determine if the type _Tp has a publicly-accessible member type
-   *  result_type.
-  */
-  template<typename _Tp>
-    class _Has_result_type_helper : __sfinae_types
-    {
-      template<typename _Up>
-        struct _Wrap_type
-	{ };
-
-      template<typename _Up>
-        static __one __test(_Wrap_type<typename _Up::result_type>*);
-
-      template<typename _Up>
-        static __two __test(...);
-
-    public:
-      static const bool value = sizeof(__test<_Tp>(0)) == 1;
-    };
-
-  template<typename _Tp>
-    struct _Has_result_type
-    : integral_constant<bool,
-	      _Has_result_type_helper<typename remove_cv<_Tp>::type>::value>
-    { };
+_GLIBCXX_HAS_NESTED_TYPE(result_type)
 
   /// If we have found a result_type, extract it.
   template<bool _Has_result_type, typename _Functor>
@@ -108,7 +82,7 @@ namespace std
   */
   template<typename _Functor>
     struct _Weak_result_type_impl
-    : _Maybe_get_result_type<_Has_result_type<_Functor>::value, _Functor>
+    : _Maybe_get_result_type<__has_result_type<_Functor>::value, _Functor>
     { };
 
   /// Retrieve the result type for a function type.

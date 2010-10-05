@@ -65,7 +65,7 @@
 #include <bits/c++config.h>
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <bits/cpp_type_traits.h> // For __has_iterator_category
+# include <type_traits>  // For _GLIBCXX_HAS_NESTED_TYPE
 #endif
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
@@ -137,8 +137,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  provide tighter, more correct semantics.
   */
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+
+_GLIBCXX_HAS_NESTED_TYPE(iterator_category)
+
   template<typename _Iterator,
-	   bool = __has_iterator_category<_Iterator>::__value>
+	   bool = __has_iterator_category<_Iterator>::value>
     struct __iterator_traits { };
 
   template<typename _Iterator>

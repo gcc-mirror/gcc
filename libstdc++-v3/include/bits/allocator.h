@@ -48,7 +48,7 @@
 #include <bits/c++allocator.h>
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <type_traits>
+#include <type_traits> // For _GLIBCXX_HAS_NESTED_TYPE
 #endif
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
@@ -210,26 +210,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   static const allocator_arg_t allocator_arg = allocator_arg_t();
 
-  template<typename _Tp>
-    class __has_allocator_type
-    : public __sfinae_types
-    {
-      template<typename _Up>
-        struct _Wrap_type
-	{ };
-
-      template<typename _Up>
-        static __one __test(_Wrap_type<typename _Up::allocator_type>*);
-
-      template<typename _Up>
-        static __two __test(...);
-
-    public:
-      static const bool __value = sizeof(__test<_Tp>(0)) == 1;
-    };
+_GLIBCXX_HAS_NESTED_TYPE(allocator_type)
 
   template<typename _Tp, typename _Alloc,
-	   bool = __has_allocator_type<_Tp>::__value>
+	   bool = __has_allocator_type<_Tp>::value>
     struct __uses_allocator_helper
     : public false_type { };
 
