@@ -405,11 +405,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Parse input time string.
        *
-       *  This function parses a time according to the format @a x and puts the
+       *  This function parses a time according to the format @a X and puts the
        *  results into a user-supplied struct tm.  The result is returned by
        *  calling time_get::do_get_time().
        *
-       *  If there is a valid time string according to format @a x, @a tm will
+       *  If there is a valid time string according to format @a X, @a tm will
        *  be filled in accordingly and the returned iterator will point to the
        *  first character beyond the time string.  If an error occurs before
        *  the end, err |= ios_base::failbit.  If parsing reads all the
@@ -430,11 +430,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Parse input date string.
        *
-       *  This function parses a date according to the format @a X and puts the
+       *  This function parses a date according to the format @a x and puts the
        *  results into a user-supplied struct tm.  The result is returned by
        *  calling time_get::do_get_date().
        *
-       *  If there is a valid date string according to format @a X, @a tm will
+       *  If there is a valid date string according to format @a x, @a tm will
        *  be filled in accordingly and the returned iterator will point to the
        *  first character beyond the date string.  If an error occurs before
        *  the end, err |= ios_base::failbit.  If parsing reads all the
