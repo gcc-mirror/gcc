@@ -9144,7 +9144,104 @@ main program in the natural manner.
 @sp 1
 @cartouche
 @noindent
-@strong{74}.  Implementation-defined convention names.  See B.1(11).
+@strong{74}.  The interpretation of the @code{Form} parameter in procedure
+@code{Create_Directory}.  See A.16(56).
+@end cartouche
+@noindent
+The @code{Form} parameter is not used.
+
+@sp 1
+@cartouche
+@noindent
+@strong{75}.  The interpretation of the @code{Form} parameter in procedure
+@code{Create_Path}.  See A.16(60).
+@end cartouche
+@noindent
+The @code{Form} parameter is not used.
+
+@sp 1
+@cartouche
+@noindent
+@strong{76}.  The interpretation of the @code{Form} parameter in procedure
+@code{Copy_File}.  See A.16(68).
+@end cartouche
+@noindent
+The @code{Form} parameter is case-insensitive.
+
+Two fields are recognized in the @code{Form} parameter:
+
+@table @code
+
+@item preserve=<value>
+
+@item mode=<value>
+
+@end table
+
+@noindent
+<value> starts immediately after the character '=' and ends with the
+character immediately preceding the next comma (',') or with the last
+character of the parameter.
+
+The only possible values for preserve= are:
+
+@table @code
+
+@item no_attributes
+Do not try to preserve any file attributes. This is the default if no
+preserve= is found in Form.
+
+@item all_attributes
+Try to preserve all file attributes (timestamps, access rights).
+
+@item timestamps
+Preserve the timestamp of the copied file, but not the other file attributes.
+
+@end table
+
+@noindent
+The only possible values for mode= are:
+
+@table @code
+
+@item copy
+Only do the copy if the destination file does not already exist. If it already
+exists, Copy_File fails.
+
+@item overwrite
+Copy the file in all cases. Overwite an already existing destination file.
+
+@item append
+Append the original file to the destination file. If the destination file does
+not exist, the destination file is a copy of the source file. When mode=append,
+the field preserve=, if it exists, is not taken into account.
+
+@end table
+
+@noindent
+If the Form parameter includes one or both of the fields and the value or
+values are incorrect, Copy_file fails with Use_Error.
+
+Examples of correct Forms:
+
+@smallexample
+Form => "preserve=no_attributes,mode=overwrite" (the default)
+Form => "mode=append"
+Form => "mode=copy, preserve=all_attributes"
+@end smallexample
+
+@noindent
+Examples of incorrect Forms
+
+@smallexample
+Form => "preserve=junk"
+Form => "mode=internal, preserve=timestamps"
+@end smallexample
+
+@sp 1
+@cartouche
+@noindent
+@strong{77}.  Implementation-defined convention names.  See B.1(11).
 @end cartouche
 @noindent
 The following convention names are supported
@@ -9202,7 +9299,7 @@ implementations, these names are accepted silently.
 @sp 1
 @cartouche
 @noindent
-@strong{75}.  The meaning of link names.  See B.1(36).
+@strong{78}.  The meaning of link names.  See B.1(36).
 @end cartouche
 @noindent
 Link names are the actual names used by the linker.
@@ -9210,7 +9307,7 @@ Link names are the actual names used by the linker.
 @sp 1
 @cartouche
 @noindent
-@strong{76}.  The manner of choosing link names when neither the link
+@strong{79}.  The manner of choosing link names when neither the link
 name nor the address of an imported or exported entity is specified.  See
 B.1(36).
 @end cartouche
@@ -9222,7 +9319,7 @@ letters.
 @sp 1
 @cartouche
 @noindent
-@strong{77}.  The effect of pragma @code{Linker_Options}.  See B.1(37).
+@strong{80}.  The effect of pragma @code{Linker_Options}.  See B.1(37).
 @end cartouche
 @noindent
 The string passed to @code{Linker_Options} is presented uninterpreted as
@@ -9243,7 +9340,7 @@ from the corresponding package spec.
 @sp 1
 @cartouche
 @noindent
-@strong{78}.  The contents of the visible part of package
+@strong{81}.  The contents of the visible part of package
 @code{Interfaces} and its language-defined descendants.  See B.2(1).
 @end cartouche
 @noindent
@@ -9252,7 +9349,7 @@ See files with prefix @file{i-} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{79}.  Implementation-defined children of package
+@strong{82}.  Implementation-defined children of package
 @code{Interfaces}.  The contents of the visible part of package
 @code{Interfaces}.  See B.2(11).
 @end cartouche
@@ -9262,7 +9359,7 @@ See files with prefix @file{i-} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{80}.  The types @code{Floating}, @code{Long_Floating},
+@strong{83}.  The types @code{Floating}, @code{Long_Floating},
 @code{Binary}, @code{Long_Binary}, @code{Decimal_ Element}, and
 @code{COBOL_Character}; and the initialization of the variables
 @code{Ada_To_COBOL} and @code{COBOL_To_Ada}, in
@@ -9290,7 +9387,7 @@ For initialization, see the file @file{i-cobol.ads} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{81}.  Support for access to machine instructions.  See C.1(1).
+@strong{84}.  Support for access to machine instructions.  See C.1(1).
 @end cartouche
 @noindent
 See documentation in file @file{s-maccod.ads} in the distributed library.
@@ -9298,7 +9395,7 @@ See documentation in file @file{s-maccod.ads} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{82}.  Implementation-defined aspects of access to machine
+@strong{85}.  Implementation-defined aspects of access to machine
 operations.  See C.1(9).
 @end cartouche
 @noindent
@@ -9307,7 +9404,7 @@ See documentation in file @file{s-maccod.ads} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{83}.  Implementation-defined aspects of interrupts.  See C.3(2).
+@strong{86}.  Implementation-defined aspects of interrupts.  See C.3(2).
 @end cartouche
 @noindent
 Interrupts are mapped to signals or conditions as appropriate.  See
@@ -9318,7 +9415,7 @@ on the interrupts supported on a particular target.
 @sp 1
 @cartouche
 @noindent
-@strong{84}.  Implementation-defined aspects of pre-elaboration.  See
+@strong{87}.  Implementation-defined aspects of pre-elaboration.  See
 C.4(13).
 @end cartouche
 @noindent
@@ -9328,7 +9425,7 @@ except under control of the debugger.
 @sp 1
 @cartouche
 @noindent
-@strong{85}.  The semantics of pragma @code{Discard_Names}.  See C.5(7).
+@strong{88}.  The semantics of pragma @code{Discard_Names}.  See C.5(7).
 @end cartouche
 @noindent
 Pragma @code{Discard_Names} causes names of enumeration literals to
@@ -9339,7 +9436,7 @@ Pos values.
 @sp 1
 @cartouche
 @noindent
-@strong{86}.  The result of the @code{Task_Identification.Image}
+@strong{89}.  The result of the @code{Task_Identification.Image}
 attribute.  See C.7.1(7).
 @end cartouche
 @noindent
@@ -9369,7 +9466,7 @@ virtual address of the control block of the task.
 @sp 1
 @cartouche
 @noindent
-@strong{87}.  The value of @code{Current_Task} when in a protected entry
+@strong{90}.  The value of @code{Current_Task} when in a protected entry
 or interrupt handler.  See C.7.1(17).
 @end cartouche
 @noindent
@@ -9379,7 +9476,7 @@ convenient thread, so the value of @code{Current_Task} is undefined.
 @sp 1
 @cartouche
 @noindent
-@strong{88}.  The effect of calling @code{Current_Task} from an entry
+@strong{91}.  The effect of calling @code{Current_Task} from an entry
 body or interrupt handler.  See C.7.1(19).
 @end cartouche
 @noindent
@@ -9390,7 +9487,7 @@ executing the code.
 @sp 1
 @cartouche
 @noindent
-@strong{89}.  Implementation-defined aspects of
+@strong{92}.  Implementation-defined aspects of
 @code{Task_Attributes}.  See C.7.2(19).
 @end cartouche
 @noindent
@@ -9399,7 +9496,7 @@ There are no implementation-defined aspects of @code{Task_Attributes}.
 @sp 1
 @cartouche
 @noindent
-@strong{90}.  Values of all @code{Metrics}.  See D(2).
+@strong{93}.  Values of all @code{Metrics}.  See D(2).
 @end cartouche
 @noindent
 The metrics information for GNAT depends on the performance of the
@@ -9414,7 +9511,7 @@ the required metrics.
 @sp 1
 @cartouche
 @noindent
-@strong{91}.  The declarations of @code{Any_Priority} and
+@strong{94}.  The declarations of @code{Any_Priority} and
 @code{Priority}.  See D.1(11).
 @end cartouche
 @noindent
@@ -9423,7 +9520,7 @@ See declarations in file @file{system.ads}.
 @sp 1
 @cartouche
 @noindent
-@strong{92}.  Implementation-defined execution resources.  See D.1(15).
+@strong{95}.  Implementation-defined execution resources.  See D.1(15).
 @end cartouche
 @noindent
 There are no implementation-defined execution resources.
@@ -9431,7 +9528,7 @@ There are no implementation-defined execution resources.
 @sp 1
 @cartouche
 @noindent
-@strong{93}.  Whether, on a multiprocessor, a task that is waiting for
+@strong{96}.  Whether, on a multiprocessor, a task that is waiting for
 access to a protected object keeps its processor busy.  See D.2.1(3).
 @end cartouche
 @noindent
@@ -9441,7 +9538,7 @@ object does not keep its processor busy.
 @sp 1
 @cartouche
 @noindent
-@strong{94}.  The affect of implementation defined execution resources
+@strong{97}.  The affect of implementation defined execution resources
 on task dispatching.  See D.2.1(9).
 @end cartouche
 @noindent
@@ -9457,7 +9554,7 @@ underlying operating system.
 @sp 1
 @cartouche
 @noindent
-@strong{95}.  Implementation-defined @code{policy_identifiers} allowed
+@strong{98}.  Implementation-defined @code{policy_identifiers} allowed
 in a pragma @code{Task_Dispatching_Policy}.  See D.2.2(3).
 @end cartouche
 @noindent
@@ -9467,7 +9564,7 @@ pragma.
 @sp 1
 @cartouche
 @noindent
-@strong{96}.  Implementation-defined aspects of priority inversion.  See
+@strong{99}.  Implementation-defined aspects of priority inversion.  See
 D.2.2(16).
 @end cartouche
 @noindent
@@ -9477,7 +9574,7 @@ of delay expirations for lower priority tasks.
 @sp 1
 @cartouche
 @noindent
-@strong{97}.  Implementation defined task dispatching.  See D.2.2(18).
+@strong{100}.  Implementation defined task dispatching.  See D.2.2(18).
 @end cartouche
 @noindent
 @c SGI info:
@@ -9490,7 +9587,7 @@ The policy is the same as that of the underlying threads implementation.
 @sp 1
 @cartouche
 @noindent
-@strong{98}.  Implementation-defined @code{policy_identifiers} allowed
+@strong{101}.  Implementation-defined @code{policy_identifiers} allowed
 in a pragma @code{Locking_Policy}.  See D.3(4).
 @end cartouche
 @noindent
@@ -9503,7 +9600,7 @@ requesting the lock.
 @sp 1
 @cartouche
 @noindent
-@strong{99}.  Default ceiling priorities.  See D.3(10).
+@strong{102}.  Default ceiling priorities.  See D.3(10).
 @end cartouche
 @noindent
 The ceiling priority of protected objects of the type
@@ -9513,7 +9610,7 @@ Reference Manual D.3(10),
 @sp 1
 @cartouche
 @noindent
-@strong{100}.  The ceiling of any protected object used internally by
+@strong{103}.  The ceiling of any protected object used internally by
 the implementation.  See D.3(16).
 @end cartouche
 @noindent
@@ -9523,7 +9620,7 @@ The ceiling priority of internal protected objects is
 @sp 1
 @cartouche
 @noindent
-@strong{101}.  Implementation-defined queuing policies.  See D.4(1).
+@strong{104}.  Implementation-defined queuing policies.  See D.4(1).
 @end cartouche
 @noindent
 There are no implementation-defined queuing policies.
@@ -9531,7 +9628,7 @@ There are no implementation-defined queuing policies.
 @sp 1
 @cartouche
 @noindent
-@strong{102}.  On a multiprocessor, any conditions that cause the
+@strong{105}.  On a multiprocessor, any conditions that cause the
 completion of an aborted construct to be delayed later than what is
 specified for a single processor.  See D.6(3).
 @end cartouche
@@ -9542,7 +9639,7 @@ processor, there are no further delays.
 @sp 1
 @cartouche
 @noindent
-@strong{103}.  Any operations that implicitly require heap storage
+@strong{106}.  Any operations that implicitly require heap storage
 allocation.  See D.7(8).
 @end cartouche
 @noindent
@@ -9552,7 +9649,7 @@ task creation.
 @sp 1
 @cartouche
 @noindent
-@strong{104}.  Implementation-defined aspects of pragma
+@strong{107}.  Implementation-defined aspects of pragma
 @code{Restrictions}.  See D.7(20).
 @end cartouche
 @noindent
@@ -9561,7 +9658,7 @@ There are no such implementation-defined aspects.
 @sp 1
 @cartouche
 @noindent
-@strong{105}.  Implementation-defined aspects of package
+@strong{108}.  Implementation-defined aspects of package
 @code{Real_Time}.  See D.8(17).
 @end cartouche
 @noindent
@@ -9570,7 +9667,7 @@ There are no implementation defined aspects of package @code{Real_Time}.
 @sp 1
 @cartouche
 @noindent
-@strong{106}.  Implementation-defined aspects of
+@strong{109}.  Implementation-defined aspects of
 @code{delay_statements}.  See D.9(8).
 @end cartouche
 @noindent
@@ -9580,7 +9677,7 @@ delayed (see D.9(7)).
 @sp 1
 @cartouche
 @noindent
-@strong{107}.  The upper bound on the duration of interrupt blocking
+@strong{110}.  The upper bound on the duration of interrupt blocking
 caused by the implementation.  See D.12(5).
 @end cartouche
 @noindent
@@ -9590,7 +9687,7 @@ no cases is it more than 10 milliseconds.
 @sp 1
 @cartouche
 @noindent
-@strong{108}.  The means for creating and executing distributed
+@strong{111}.  The means for creating and executing distributed
 programs.  See E(5).
 @end cartouche
 @noindent
@@ -9600,7 +9697,7 @@ distributed programs.  See the GLADE reference manual for further details.
 @sp 1
 @cartouche
 @noindent
-@strong{109}.  Any events that can result in a partition becoming
+@strong{112}.  Any events that can result in a partition becoming
 inaccessible.  See E.1(7).
 @end cartouche
 @noindent
@@ -9609,7 +9706,7 @@ See the GLADE reference manual for full details on such events.
 @sp 1
 @cartouche
 @noindent
-@strong{110}.  The scheduling policies, treatment of priorities, and
+@strong{113}.  The scheduling policies, treatment of priorities, and
 management of shared resources between partitions in certain cases.  See
 E.1(11).
 @end cartouche
@@ -9620,7 +9717,7 @@ multi-partition execution.
 @sp 1
 @cartouche
 @noindent
-@strong{111}.  Events that cause the version of a compilation unit to
+@strong{114}.  Events that cause the version of a compilation unit to
 change.  See E.3(5).
 @end cartouche
 @noindent
@@ -9633,7 +9730,7 @@ comments.
 @sp 1
 @cartouche
 @noindent
-@strong{112}.  Whether the execution of the remote subprogram is
+@strong{115}.  Whether the execution of the remote subprogram is
 immediately aborted as a result of cancellation.  See E.4(13).
 @end cartouche
 @noindent
@@ -9643,7 +9740,7 @@ a distributed application.
 @sp 1
 @cartouche
 @noindent
-@strong{113}.  Implementation-defined aspects of the PCS@.  See E.5(25).
+@strong{116}.  Implementation-defined aspects of the PCS@.  See E.5(25).
 @end cartouche
 @noindent
 See the GLADE reference manual for a full description of all implementation
@@ -9652,7 +9749,7 @@ defined aspects of the PCS@.
 @sp 1
 @cartouche
 @noindent
-@strong{114}.  Implementation-defined interfaces in the PCS@.  See
+@strong{117}.  Implementation-defined interfaces in the PCS@.  See
 E.5(26).
 @end cartouche
 @noindent
@@ -9662,7 +9759,7 @@ implementation defined interfaces.
 @sp 1
 @cartouche
 @noindent
-@strong{115}.  The values of named numbers in the package
+@strong{118}.  The values of named numbers in the package
 @code{Decimal}.  See F.2(7).
 @end cartouche
 @noindent
@@ -9682,7 +9779,7 @@ implementation defined interfaces.
 @sp 1
 @cartouche
 @noindent
-@strong{116}.  The value of @code{Max_Picture_Length} in the package
+@strong{119}.  The value of @code{Max_Picture_Length} in the package
 @code{Text_IO.Editing}.  See F.3.3(16).
 @end cartouche
 @noindent
@@ -9691,7 +9788,7 @@ implementation defined interfaces.
 @sp 1
 @cartouche
 @noindent
-@strong{117}.  The value of @code{Max_Picture_Length} in the package
+@strong{120}.  The value of @code{Max_Picture_Length} in the package
 @code{Wide_Text_IO.Editing}.  See F.3.4(5).
 @end cartouche
 @noindent
@@ -9700,7 +9797,7 @@ implementation defined interfaces.
 @sp 1
 @cartouche
 @noindent
-@strong{118}.  The accuracy actually achieved by the complex elementary
+@strong{121}.  The accuracy actually achieved by the complex elementary
 functions and by other complex arithmetic operations.  See G.1(1).
 @end cartouche
 @noindent
@@ -9710,7 +9807,7 @@ operations.  Only fast math mode is currently supported.
 @sp 1
 @cartouche
 @noindent
-@strong{119}.  The sign of a zero result (or a component thereof) from
+@strong{122}.  The sign of a zero result (or a component thereof) from
 any operator or function in @code{Numerics.Generic_Complex_Types}, when
 @code{Real'Signed_Zeros} is True.  See G.1.1(53).
 @end cartouche
@@ -9721,7 +9818,7 @@ implementation advice.
 @sp 1
 @cartouche
 @noindent
-@strong{120}.  The sign of a zero result (or a component thereof) from
+@strong{123}.  The sign of a zero result (or a component thereof) from
 any operator or function in
 @code{Numerics.Generic_Complex_Elementary_Functions}, when
 @code{Real'Signed_Zeros} is @code{True}.  See G.1.2(45).
@@ -9733,7 +9830,7 @@ implementation advice.
 @sp 1
 @cartouche
 @noindent
-@strong{121}.  Whether the strict mode or the relaxed mode is the
+@strong{124}.  Whether the strict mode or the relaxed mode is the
 default.  See G.2(2).
 @end cartouche
 @noindent
@@ -9743,7 +9840,7 @@ provides a highly efficient implementation of strict mode.
 @sp 1
 @cartouche
 @noindent
-@strong{122}.  The result interval in certain cases of fixed-to-float
+@strong{125}.  The result interval in certain cases of fixed-to-float
 conversion.  See G.2.1(10).
 @end cartouche
 @noindent
@@ -9754,7 +9851,7 @@ floating-point format.
 @sp 1
 @cartouche
 @noindent
-@strong{123}.  The result of a floating point arithmetic operation in
+@strong{126}.  The result of a floating point arithmetic operation in
 overflow situations, when the @code{Machine_Overflows} attribute of the
 result type is @code{False}.  See G.2.1(13).
 @end cartouche
@@ -9771,7 +9868,7 @@ properly generated.
 @sp 1
 @cartouche
 @noindent
-@strong{124}.  The result interval for division (or exponentiation by a
+@strong{127}.  The result interval for division (or exponentiation by a
 negative exponent), when the floating point hardware implements division
 as multiplication by a reciprocal.  See G.2.1(16).
 @end cartouche
@@ -9781,7 +9878,7 @@ Not relevant, division is IEEE exact.
 @sp 1
 @cartouche
 @noindent
-@strong{125}.  The definition of close result set, which determines the
+@strong{128}.  The definition of close result set, which determines the
 accuracy of certain fixed point multiplications and divisions.  See
 G.2.3(5).
 @end cartouche
@@ -9794,7 +9891,7 @@ is converted to the target type.
 @sp 1
 @cartouche
 @noindent
-@strong{126}.  Conditions on a @code{universal_real} operand of a fixed
+@strong{129}.  Conditions on a @code{universal_real} operand of a fixed
 point multiplication or division for which the result shall be in the
 perfect result set.  See G.2.3(22).
 @end cartouche
@@ -9806,7 +9903,7 @@ representable in 64-bits.
 @sp 1
 @cartouche
 @noindent
-@strong{127}.  The result of a fixed point arithmetic operation in
+@strong{130}.  The result of a fixed point arithmetic operation in
 overflow situations, when the @code{Machine_Overflows} attribute of the
 result type is @code{False}.  See G.2.3(27).
 @end cartouche
@@ -9817,7 +9914,7 @@ types.
 @sp 1
 @cartouche
 @noindent
-@strong{128}.  The result of an elementary function reference in
+@strong{131}.  The result of an elementary function reference in
 overflow situations, when the @code{Machine_Overflows} attribute of the
 result type is @code{False}.  See G.2.4(4).
 @end cartouche
@@ -9827,7 +9924,7 @@ IEEE infinite and Nan values are produced as appropriate.
 @sp 1
 @cartouche
 @noindent
-@strong{129}.  The value of the angle threshold, within which certain
+@strong{132}.  The value of the angle threshold, within which certain
 elementary functions, complex arithmetic operations, and complex
 elementary functions yield results conforming to a maximum relative
 error bound.  See G.2.4(10).
@@ -9838,7 +9935,7 @@ Information on this subject is not yet available.
 @sp 1
 @cartouche
 @noindent
-@strong{130}.  The accuracy of certain elementary functions for
+@strong{133}.  The accuracy of certain elementary functions for
 parameters beyond the angle threshold.  See G.2.4(10).
 @end cartouche
 @noindent
@@ -9847,7 +9944,7 @@ Information on this subject is not yet available.
 @sp 1
 @cartouche
 @noindent
-@strong{131}.  The result of a complex arithmetic operation or complex
+@strong{134}.  The result of a complex arithmetic operation or complex
 elementary function reference in overflow situations, when the
 @code{Machine_Overflows} attribute of the corresponding real type is
 @code{False}.  See G.2.6(5).
@@ -9858,7 +9955,7 @@ IEEE infinite and Nan values are produced as appropriate.
 @sp 1
 @cartouche
 @noindent
-@strong{132}.  The accuracy of certain complex arithmetic operations and
+@strong{135}.  The accuracy of certain complex arithmetic operations and
 certain complex elementary functions for parameters (or components
 thereof) beyond the angle threshold.  See G.2.6(8).
 @end cartouche
@@ -9868,7 +9965,7 @@ Information on those subjects is not yet available.
 @sp 1
 @cartouche
 @noindent
-@strong{133}.  Information regarding bounded errors and erroneous
+@strong{136}.  Information regarding bounded errors and erroneous
 execution.  See H.2(1).
 @end cartouche
 @noindent
@@ -9877,7 +9974,7 @@ Information on this subject is not yet available.
 @sp 1
 @cartouche
 @noindent
-@strong{134}.  Implementation-defined aspects of pragma
+@strong{137}.  Implementation-defined aspects of pragma
 @code{Inspection_Point}.  See H.3.2(8).
 @end cartouche
 @noindent
@@ -9887,7 +9984,7 @@ be examined by the debugger at the inspection point.
 @sp 1
 @cartouche
 @noindent
-@strong{135}.  Implementation-defined aspects of pragma
+@strong{138}.  Implementation-defined aspects of pragma
 @code{Restrictions}.  See H.4(25).
 @end cartouche
 @noindent
@@ -9898,7 +9995,7 @@ generated code.  Checks must suppressed by use of pragma @code{Suppress}.
 @sp 1
 @cartouche
 @noindent
-@strong{136}.  Any restrictions on pragma @code{Restrictions}.  See
+@strong{139}.  Any restrictions on pragma @code{Restrictions}.  See
 H.4(27).
 @end cartouche
 @noindent
