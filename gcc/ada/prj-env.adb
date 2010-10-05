@@ -24,16 +24,28 @@
 ------------------------------------------------------------------------------
 
 with Fmap;
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
+with Hostparm;
+with Makeutl;                   use Makeutl;
 with Opt;
-with Osint;    use Osint;
-with Output;   use Output;
-with Prj.Com;  use Prj.Com;
+with Osint;                     use Osint;
+with Output;                    use Output;
+with Prj.Com;                   use Prj.Com;
+with Sdefault;
 with Tempdir;
 
 package body Prj.Env is
 
    Buffer_Initial : constant := 1_000;
    --  Initial size of Buffer
+
+   Uninitialized_Prefix : constant String := '#' & Path_Separator;
+   --  Prefix to indicate that the project path has not been initilized yet.
+   --  Must be two characters long
+
+   No_Project_Default_Dir : constant String := "-";
+   --  Indicator in the project path to indicate that the default search
+   --  directories should not be added to the path
 
    -----------------------
    -- Local Subprograms --
@@ -96,6 +108,11 @@ package body Prj.Env is
      (Project : Project_Id) return Project_Id;
    --  Return a project that is either Project or an extended ancestor of
    --  Project that itself is not extended.
+
+   procedure Initialize_Project_Path
+     (Self : in out Project_Search_Path; Target_Name : String);
+   --  Initialize Current_Project_Path.
+   --  Does nothing if the path has already been initialized properly
 
    ----------------------
    -- Ada_Include_Path --
@@ -1738,5 +1755,436 @@ package body Prj.Env is
 
       return Result;
    end Ultimate_Extension_Of;
+
+   ---------------------
+   -- Add_Directories --
+   ---------------------
+
+   procedure Add_Directories
+     (Self : in out Project_Search_Path;
+      Path : String)
+   is
+      Tmp : String_Access;
+   begin
+      if Self.Path = null then
+         Self.Path := new String'(Uninitialized_Prefix & Path);
+      else
+         Tmp := Self.Path;
+         Self.Path := new String'(Tmp.all & Path_Separator & Path);
+         Free (Tmp);
+      end if;
+   end Add_Directories;
+
+   -----------------------------
+   -- Initialize_Project_Path --
+   -----------------------------
+
+   procedure Initialize_Project_Path
+     (Self : in out Project_Search_Path; Target_Name : String)
+   is
+      Add_Default_Dir : Boolean := True;
+      First           : Positive;
+      Last            : Positive;
+      New_Len         : Positive;
+      New_Last        : Positive;
+
+      Ada_Project_Path : constant String := "ADA_PROJECT_PATH";
+      Gpr_Project_Path : constant String := "GPR_PROJECT_PATH";
+      --  Name of alternate env. variable that contain path name(s) of
+      --  directories where project files may reside. GPR_PROJECT_PATH has
+      --  precedence over ADA_PROJECT_PATH.
+
+      Gpr_Prj_Path : String_Access;
+      Ada_Prj_Path : String_Access;
+      --  The path name(s) of directories where project files may reside.
+      --  May be empty.
+
+   begin
+      --  If already initialized, nothing else to do
+      if Self.Path /= null
+        and then Self.Path (Self.Path'First) /= '#'
+      then
+         return;
+      end if;
+
+      --  The current directory is always first in the search path. Since the
+      --  Project_Path currently starts with '#:' as a sign that it isn't
+      --  initialized, we simply replace '#' with '.'
+
+      if Self.Path = null then
+         Self.Path := new String'('.' & Path_Separator);
+      else
+         Self.Path (Self.Path'First) := '.';
+      end if;
+
+      --  Then the reset of the project path (if any) currently contains the
+      --  directories added through Add_Search_Project_Directory
+
+      --  If environment variables are defined and not empty, add their content
+
+      Gpr_Prj_Path := Getenv (Gpr_Project_Path);
+      Ada_Prj_Path := Getenv (Ada_Project_Path);
+
+      if Gpr_Prj_Path.all /= "" then
+         Add_Directories (Self, Gpr_Prj_Path.all);
+      end if;
+
+      Free (Gpr_Prj_Path);
+
+      if Ada_Prj_Path.all /= "" then
+         Add_Directories (Self, Ada_Prj_Path.all);
+      end if;
+
+      Free (Ada_Prj_Path);
+
+      --  Copy to Name_Buffer, since we will need to manipulate the path
+
+      Name_Len := Self.Path'Length;
+      Name_Buffer (1 .. Name_Len) := Self.Path.all;
+
+      --  Scan the directory path to see if "-" is one of the directories.
+      --  Remove each occurrence of "-" and set Add_Default_Dir to False.
+      --  Also resolve relative paths and symbolic links.
+
+      First := 3;
+      loop
+         while First <= Name_Len
+           and then (Name_Buffer (First) = Path_Separator)
+         loop
+            First := First + 1;
+         end loop;
+
+         exit when First > Name_Len;
+
+         Last := First;
+
+         while Last < Name_Len
+           and then Name_Buffer (Last + 1) /= Path_Separator
+         loop
+            Last := Last + 1;
+         end loop;
+
+         --  If the directory is "-", set Add_Default_Dir to False and
+         --  remove from path.
+
+         if Name_Buffer (First .. Last) = No_Project_Default_Dir then
+            Add_Default_Dir := False;
+
+            for J in Last + 1 .. Name_Len loop
+               Name_Buffer (J - No_Project_Default_Dir'Length - 1) :=
+                 Name_Buffer (J);
+            end loop;
+
+            Name_Len := Name_Len - No_Project_Default_Dir'Length - 1;
+
+            --  After removing the '-', go back one character to get the next
+            --  directory correctly.
+
+            Last := Last - 1;
+
+         elsif not Hostparm.OpenVMS
+           or else not Is_Absolute_Path (Name_Buffer (First .. Last))
+         then
+            --  On VMS, only expand relative path names, as absolute paths
+            --  may correspond to multi-valued VMS logical names.
+
+            declare
+               New_Dir : constant String :=
+                           Normalize_Pathname
+                             (Name_Buffer (First .. Last),
+                              Resolve_Links => Opt.Follow_Links_For_Dirs);
+
+            begin
+               --  If the absolute path was resolved and is different from
+               --  the original, replace original with the resolved path.
+
+               if New_Dir /= Name_Buffer (First .. Last)
+                 and then New_Dir'Length /= 0
+               then
+                  New_Len := Name_Len + New_Dir'Length - (Last - First + 1);
+                  New_Last := First + New_Dir'Length - 1;
+                  Name_Buffer (New_Last + 1 .. New_Len) :=
+                    Name_Buffer (Last + 1 .. Name_Len);
+                  Name_Buffer (First .. New_Last) := New_Dir;
+                  Name_Len := New_Len;
+                  Last := New_Last;
+               end if;
+            end;
+         end if;
+
+         First := Last + 1;
+      end loop;
+
+      Free (Self.Path);
+
+      --  Set the initial value of Current_Project_Path
+
+      if Add_Default_Dir then
+         declare
+            Prefix : String_Ptr := Sdefault.Search_Dir_Prefix;
+
+         begin
+            if Prefix = null then
+               Prefix := new String'(Executable_Prefix_Path);
+
+               if Prefix.all /= "" then
+                  if Target_Name /= "" then
+                     Add_Str_To_Name_Buffer
+                       (Path_Separator & Prefix.all &
+                        "lib" & Directory_Separator & "gpr" &
+                        Directory_Separator & Target_Name);
+                  end if;
+
+                  Add_Str_To_Name_Buffer
+                    (Path_Separator & Prefix.all &
+                     "share" & Directory_Separator & "gpr");
+                  Add_Str_To_Name_Buffer
+                    (Path_Separator & Prefix.all &
+                     "lib" & Directory_Separator & "gnat");
+               end if;
+
+            else
+               Self.Path :=
+                 new String'(Name_Buffer (1 .. Name_Len) & Path_Separator &
+                             Prefix.all &
+                             ".." &  Directory_Separator &
+                             ".." & Directory_Separator &
+                             ".." & Directory_Separator & "gnat");
+            end if;
+
+            Free (Prefix);
+         end;
+      end if;
+
+      if Self.Path = null then
+         Self.Path := new String'(Name_Buffer (1 .. Name_Len));
+      end if;
+   end Initialize_Project_Path;
+
+   --------------
+   -- Get_Path --
+   --------------
+
+   procedure Get_Path
+     (Self : in out Project_Search_Path;
+      Path : out String_Access)
+   is
+   begin
+      Initialize_Project_Path (Self, "");  --  ??? Target_Name unspecified
+      Path := Self.Path;
+   end Get_Path;
+
+   ---------------
+   -- Deep_Copy --
+   ---------------
+
+   function Deep_Copy
+     (Self : Project_Search_Path) return Project_Search_Path is
+   begin
+      if Self.Path = null then
+         return Project_Search_Path'
+           (Path => null, Cache => Projects_Paths.Nil);
+      else
+         return Project_Search_Path'
+           (Path => new String'(Self.Path.all),
+            Cache => Projects_Paths.Nil);
+      end if;
+   end Deep_Copy;
+
+   ------------------
+   -- Find_Project --
+   ------------------
+
+   procedure Find_Project
+     (Self               : in out Project_Search_Path;
+      Project_File_Name  : String;
+      Directory          : String;
+      Path               : out Namet.Path_Name_Type)
+   is
+      File : constant String := Project_File_Name;
+      --  Have to do a copy, in case the parameter is Name_Buffer, which we
+      --  modify below
+
+      function Try_Path_Name (Path : String) return String_Access;
+      pragma Inline (Try_Path_Name);
+      --  Try the specified Path
+
+      -------------------
+      -- Try_Path_Name --
+      -------------------
+
+      function Try_Path_Name (Path : String) return String_Access is
+         First    : Natural;
+         Last     : Natural;
+         Result   : String_Access := null;
+
+      begin
+         if Current_Verbosity = High then
+            Write_Str  ("   Trying ");
+            Write_Line (Path);
+         end if;
+
+         if Is_Absolute_Path (Path) then
+            if Is_Regular_File (Path) then
+               Result := new String'(Path);
+            end if;
+
+         else
+            --  Because we don't want to resolve symbolic links, we cannot use
+            --  Locate_Regular_File. So, we try each possible path
+            --  successively.
+
+            First := Self.Path'First;
+            while First <= Self.Path'Last loop
+               while First <= Self.Path'Last
+                 and then Self.Path (First) = Path_Separator
+               loop
+                  First := First + 1;
+               end loop;
+
+               exit when First > Self.Path'Last;
+
+               Last := First;
+               while Last < Self.Path'Last
+                 and then Self.Path (Last + 1) /= Path_Separator
+               loop
+                  Last := Last + 1;
+               end loop;
+
+               Name_Len := 0;
+
+               if not Is_Absolute_Path (Self.Path (First .. Last)) then
+                  Add_Str_To_Name_Buffer (Get_Current_Dir);  -- ??? System call
+                  Add_Char_To_Name_Buffer (Directory_Separator);
+               end if;
+
+               Add_Str_To_Name_Buffer (Self.Path (First .. Last));
+               Add_Char_To_Name_Buffer (Directory_Separator);
+               Add_Str_To_Name_Buffer (Path);
+
+               if Current_Verbosity = High then
+                  Write_Str  ("   Testing file ");
+                  Write_Line (Name_Buffer (1 .. Name_Len));
+               end if;
+
+               if Is_Regular_File (Name_Buffer (1 .. Name_Len)) then
+                  Result := new String'(Name_Buffer (1 .. Name_Len));
+                  exit;
+               end if;
+
+               First := Last + 1;
+            end loop;
+         end if;
+
+         return Result;
+      end Try_Path_Name;
+
+      --  Local Declarations
+
+      Result    : String_Access;
+      Has_Dot   : Boolean := False;
+      Key       : Name_Id;
+
+   --  Start of processing for Project_Path_Name_Of
+
+   begin
+      Initialize_Project_Path (Self, "");
+
+      if Current_Verbosity = High then
+         Write_Str  ("Searching for project (""");
+         Write_Str  (File);
+         Write_Str  (""", """);
+         Write_Str  (Directory);
+         Write_Line (""");");
+      end if;
+
+      --  Check the project cache
+
+      Name_Len := File'Length;
+      Name_Buffer (1 .. Name_Len) := File;
+      Key := Name_Find;
+      Path := Projects_Paths.Get (Self.Cache, Key);
+
+      if Path /= No_Path then
+         return;
+      end if;
+
+      --  Check if File contains an extension (a dot before a
+      --  directory separator). If it is the case we do not try project file
+      --  with an added extension as it is not possible to have multiple dots
+      --  on a project file name.
+
+      Check_Dot : for K in reverse File'Range loop
+         if File (K) = '.' then
+            Has_Dot := True;
+            exit Check_Dot;
+         end if;
+
+         exit Check_Dot when File (K) = Directory_Separator
+           or else File (K) = '/';
+      end loop Check_Dot;
+
+      if not Is_Absolute_Path (File) then
+
+         --  First we try <directory>/<file_name>.<extension>
+
+         if not Has_Dot then
+            Result := Try_Path_Name
+              (Directory & Directory_Separator &
+               File & Project_File_Extension);
+         end if;
+
+         --  Then we try <directory>/<file_name>
+
+         if Result = null then
+            Result := Try_Path_Name (Directory & Directory_Separator & File);
+         end if;
+      end if;
+
+      --  Then we try <file_name>.<extension>
+
+      if Result = null and then not Has_Dot then
+         Result := Try_Path_Name (File & Project_File_Extension);
+      end if;
+
+      --  Then we try <file_name>
+
+      if Result = null then
+         Result := Try_Path_Name (File);
+      end if;
+
+      --  If we cannot find the project file, we return an empty string
+
+      if Result = null then
+         Path := Namet.No_Path;
+         return;
+
+      else
+         declare
+            Final_Result : constant String :=
+                             GNAT.OS_Lib.Normalize_Pathname
+                               (Result.all,
+                                Directory      => Directory,
+                                Resolve_Links  => Opt.Follow_Links_For_Files,
+                                Case_Sensitive => True);
+         begin
+            Free (Result);
+            Name_Len := Final_Result'Length;
+            Name_Buffer (1 .. Name_Len) := Final_Result;
+            Path := Name_Find;
+            Projects_Paths.Set (Self.Cache, Key, Path);
+         end;
+      end if;
+   end Find_Project;
+
+   ----------
+   -- Free --
+   ----------
+
+   procedure Free (Self : in out Project_Search_Path) is
+   begin
+      Free (Self.Path);
+      Projects_Paths.Reset (Self.Cache);
+   end Free;
 
 end Prj.Env;

@@ -28,7 +28,7 @@ with Makeutl;  use Makeutl;
 with Osint;    use Osint;
 with Opt;      use Opt;
 with Prj;      use Prj;
-with Prj.Ext;  use Prj.Ext;
+with Prj.Env;  use Prj.Env;
 with Table;
 
 package body Switch.M is
@@ -664,8 +664,8 @@ package body Switch.M is
          elsif Switch_Chars'Length > 3
            and then Switch_Chars (Ptr .. Ptr + 1) = "aP"
          then
-            Add_Search_Project_Directory
-              (Project_Node_Tree,
+            Add_Directories
+              (Project_Node_Tree.Project_Path,
                Switch_Chars (Ptr + 2 .. Switch_Chars'Last));
 
          elsif C = 'v' and then Switch_Chars'Length = 3 then
@@ -813,7 +813,7 @@ package body Switch.M is
                --  Processing for C switch
 
                when 'C' =>
-                  Create_Mapping_File := True;
+                  Opt.Create_Mapping_File := True;
 
                --  Processing for D switch
 

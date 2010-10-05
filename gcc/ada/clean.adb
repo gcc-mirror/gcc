@@ -1692,8 +1692,9 @@ package body Clean is
                            Add_Lib_Search_Dir (Arg (4 .. Arg'Last));
 
                         elsif Arg (3) = 'P' then
-                           Prj.Ext.Add_Search_Project_Directory
-                             (Project_Node_Tree, Arg (4 .. Arg'Last));
+                           Prj.Env.Add_Directories
+                             (Project_Node_Tree.Project_Path,
+                              Arg (4 .. Arg'Last));
 
                         else
                            Bad_Argument;
