@@ -1550,22 +1550,7 @@ package body Sem_Ch3 is
                    (Tagged_Type => Tagged_Type,
                     Iface_Prim  => Iface_Prim);
 
-               --  Handle cases where the type has no primitive covering this
-               --  interface primitive.
-
-               if No (Prim) then
-
-                  --  Skip non-overridden null interface primitives because
-                  --  their wrappers will be generated later.
-
-                  if Is_Null_Interface_Primitive (Iface_Prim) then
-                     goto Continue;
-
-                  else
-                     pragma Assert (False);
-                     raise Program_Error;
-                  end if;
-               end if;
+               pragma Assert (Present (Prim));
 
                Derive_Subprogram
                  (New_Subp     => New_Subp,
@@ -1605,7 +1590,6 @@ package body Sem_Ch3 is
                Set_Has_Delayed_Freeze (New_Subp);
             end if;
 
-            <<Continue>>
             Next_Elmt (Elmt);
          end loop;
 

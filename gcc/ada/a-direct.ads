@@ -200,14 +200,14 @@ package Ada.Directories is
    --        timestamps:     Preserve the timestamp of the copied file, but not
    --                        the other file attributes.
    --
-   --
    --      The allowed values for mode= are:
    --
    --        copy:           Only copy if the destination file does not already
    --                        exist. If it already exists, Copy_File will fail.
    --
    --        overwrite:      Copy the file in all cases. Overwite an already
-   --                        existing destination file.
+   --                        existing destination file. This is the default if
+   --                        no mode= is found in Form.
    --
    --        append:         Append the original file to the destination file.
    --                        If the destination file does not exist, the
@@ -215,19 +215,17 @@ package Ada.Directories is
    --                        When mode=append, the field preserve=, if it
    --                        exists, is not taken into account.
    --
-   --    What is the default value for mode=???
-   --
    --    If the Form parameter includes one or both of the fields and the value
-   --    or values are incorrect, Copy_file fails with Use_Error.
+   --    or values are incorrect, Copy_File fails with Use_Error.
    --
    --    Examples of correct Forms:
    --       Form => "preserve=no_attributes,mode=overwrite" (the default)
    --       Form => "mode=append"
-   --       Form => "mode=copy, preserve=all_attributes"
+   --       Form => "mode=copy,preserve=all_attributes"
    --
    --    Examples of incorrect Forms:
    --       Form => "preserve=junk"
-   --       Form => "mode=internal, preserve=timestamps"
+   --       Form => "mode=internal,preserve=timestamps"
 
    ----------------------------------------
    -- File and directory name operations --

@@ -1661,7 +1661,9 @@ package body Sem_Disp is
                      Is_Interface
                        (Find_Dispatching_Type (Ultimate_Alias (Iface_Prim)))));
 
-      --  Search in the homonym chain
+      --  Search in the homonym chain. Done to speed up locating visible
+      --  entities and required to catch primitives associated with the partial
+      --  view of private types when processing the corresponding full view.
 
       E := Current_Entity (Iface_Prim);
       while Present (E) loop
@@ -1675,16 +1677,39 @@ package body Sem_Disp is
          E := Homonym (E);
       end loop;
 
-      --  Search in the list of primitives of the type
+      --  Search in the list of primitives of the type. Required to locate the
+      --  covering primitive if the covering primitive is not visible (for
+      --  example, non-visible inherited primitive of private type).
 
       El := First_Elmt (Primitive_Operations (Tagged_Type));
       while Present (El) loop
          E := Node (El);
 
-         if No (Interface_Alias (E))
-           and then Alias (E) = Iface_Prim
-         then
-            return Node (El);
+         --  Keep separate the management of internal entities that link
+         --  primitives with interface primitives from tagged type primitives.
+
+         if No (Interface_Alias (E)) then
+            if Present (Alias (E)) then
+
+               --  This interface primitive has not been covered yet
+
+               if Alias (E) = Iface_Prim then
+                  return E;
+
+               --  The covering primitive was inherited
+
+               elsif Overridden_Operation (Ultimate_Alias (E))
+                       = Iface_Prim
+               then
+                  return E;
+               end if;
+            end if;
+
+         --  Use the internal entity that links the interface primitive with
+         --  the covering primitive to locate the entity
+
+         elsif Interface_Alias (E) = Iface_Prim then
+            return Alias (E);
          end if;
 
          Next_Elmt (El);

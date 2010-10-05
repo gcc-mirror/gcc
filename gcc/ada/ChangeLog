@@ -1,5 +1,27 @@
 2010-10-05  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch4.adb: Minor reformatting.
+	* a-direct.ads: Minor comment update.
+
+2010-10-05  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Add_Internal_Interface_Entities): Removing code that is
+	no longer required after change in New_Overloaded_Entity.
+	* sem_ch6.adb (New_Overloaded_Entity): Code reorganization to isolate
+	the fragment of code that handles derivations of interface primitives.
+	Add missing dependence on global variable Inside_Freezing_Actions to
+	ensure the correct management of internal interface entities.
+	* sem_ch13.adb (Analyze_Freeze_Entity): Add missing increase/decrease
+	of the global variable Inside_Freezing_Actions to ensure that internal
+	interface entities are well handled by New_Overloaded_Entity.
+	* sem_disp.adb (Find_Primitive_Covering_Interface): Add documentation
+	and complete the algorithm to catch hidden primitives derived of
+	private type that covers the interface.
+	* sem_disp.ads (Find_Primitive_Covering_Interface): Add missing
+	documentation.
+
+2010-10-05  Robert Dewar  <dewar@adacore.com>
+
 	* prj-util.adb, prj-util.ads, prj.ads, s-vxwext-rtp.adb, sem_ch4.adb,
 	sem_ch7.adb, sem_res.adb, sem_type.adb: Minor reformatting.
 	Minor code reorganization (use Nkind_In).

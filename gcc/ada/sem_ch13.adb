@@ -2396,9 +2396,14 @@ package body Sem_Ch13 is
       E : constant Entity_Id := Entity (N);
 
    begin
+      --  Remember that we are processing a freezing entity. Required to
+      --  ensure correct decoration of internal entities associated with
+      --  interfaces (see New_Overloaded_Entity).
+
+      Inside_Freezing_Actions := Inside_Freezing_Actions + 1;
+
       --  For tagged types covering interfaces add internal entities that link
       --  the primitives of the interfaces with the primitives that cover them.
-
       --  Note: These entities were originally generated only when generating
       --  code because their main purpose was to provide support to initialize
       --  the secondary dispatch tables. They are now generated also when
@@ -2485,6 +2490,8 @@ package body Sem_Ch13 is
             end loop;
          end;
       end if;
+
+      Inside_Freezing_Actions := Inside_Freezing_Actions - 1;
    end Analyze_Freeze_Entity;
 
    ------------------------------------------
