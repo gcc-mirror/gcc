@@ -127,7 +127,6 @@ procedure Xgnatugn is
    --  line-oriented checks (length, character set, trailing spaces).
 
    procedure Put_Line (F : Sfile; S : String);
-   procedure Put_Line (F : Sfile; S : VString);
    --  Local version of Put_Line ensures Unix style line endings
 
    Number_Of_Warnings : Natural := 0;
@@ -367,11 +366,6 @@ procedure Xgnatugn is
    begin
       String'Write (Stream (F), S);
       Character'Write (Stream (F), ASCII.LF);
-   end Put_Line;
-
-   procedure Put_Line (F : Sfile; S : VString) is
-   begin
-      Put_Line (F, To_String (S));
    end Put_Line;
 
    -----------

@@ -1,3 +1,13 @@
+2010-10-05  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Check): When compiling with -gnatc, recompile if the ALI
+	file has not been generated for the current source, for example if it
+	has been generated for the spec, but we are compiling the body.
+
+2010-10-05  Bob Duff  <duff@adacore.com>
+
+	* xgnatugn.adb: Remove unused procedure.
+
 2010-10-04  Vincent Celier  <celier@adacore.com>
 
 	* a-direct.adb (Copy_File): Interpret the Form parameter and call

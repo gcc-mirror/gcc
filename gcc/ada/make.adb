@@ -1658,6 +1658,32 @@ package body Make is
             return;
          end if;
 
+         --  When compiling with -gnatc, don't take ALI file into account if
+         --  it has not been generated for the current source, for example if
+         --  it has been generated for the spec, but we are compiling the body.
+
+         if Operating_Mode = Check_Semantics then
+            declare
+               File_Name : constant String := Get_Name_String (Source_File);
+               OK        : Boolean := False;
+
+            begin
+               for U in ALIs.Table (ALI).First_Unit ..
+                 ALIs.Table (ALI).Last_Unit
+               loop
+                  OK := Get_Name_String (Units.Table (U).Sfile) = File_Name;
+                  exit when OK;
+               end loop;
+
+               if not OK then
+                  Verbose_Msg
+                    (Full_Lib_File, "not generated for the same source");
+                  ALI := No_ALI_Id;
+                  return;
+               end if;
+            end;
+         end if;
+
          --  Check for matching compiler switches if needed
 
          if Check_Switches then
