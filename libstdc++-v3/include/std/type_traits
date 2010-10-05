@@ -696,6 +696,35 @@ namespace std
         type;
     };
 
+  /**
+   *  Use SFINAE to determine if the type _Tp has a publicly-accessible
+   *  member type _NTYPE.
+   */
+#define _GLIBCXX_HAS_NESTED_TYPE(_NTYPE)                         \
+  template<typename _Tp>                                         \
+    class __has_##_NTYPE##_helper                                \
+    : __sfinae_types                                             \
+    {                                                            \
+      template<typename _Up>                                     \
+        struct _Wrap_type                                        \
+	{ };                                                     \
+                                                                 \
+      template<typename _Up>                                     \
+        static __one __test(_Wrap_type<typename _Up::_NTYPE>*);  \
+                                                                 \
+      template<typename _Up>                                     \
+        static __two __test(...);                                \
+                                                                 \
+    public:                                                      \
+      static const bool value = sizeof(__test<_Tp>(0)) == 1;     \
+    };                                                           \
+                                                                 \
+  template<typename _Tp>                                         \
+    struct __has_##_NTYPE                                        \
+    : integral_constant<bool, __has_##_NTYPE##_helper            \
+			<typename remove_cv<_Tp>::type>::value>  \
+    { };
+
   // @} group metaprogramming
 }
 
