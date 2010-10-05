@@ -95,6 +95,10 @@ package body Prj.Err is
          --  so we shouldn't report errors for projects that the user has no
          --  access to in any case.
 
+         if Current_Verbosity = High then
+            Write_Line ("Error in in-memory project, ignored");
+         end if;
+
          return;
       end if;
 

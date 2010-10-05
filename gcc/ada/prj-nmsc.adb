@@ -211,6 +211,33 @@ package body Prj.Nmsc is
    --  exceptions, and copied into the Source_Names and Unit_Exceptions tables
    --  as appropriate.
 
+   type Search_Type is (Search_Files, Search_Directories);
+   pragma Unreferenced (Search_Files);
+
+   generic
+      with procedure Callback
+        (Path_Id         : Path_Name_Type;
+         Display_Path_Id : Path_Name_Type;
+         Pattern_Index   : Natural);
+   procedure Expand_Subdirectory_Pattern
+     (Project       : Project_Id;
+      Data          : in out Tree_Processing_Data;
+      Patterns      : String_List_Id;
+      Search_For    : Search_Type;
+      Resolve_Links : Boolean);
+   --  Search the subdirectories of Project's directory for files or
+   --  directories that match the globbing patterns found in Patterns (for
+   --  instance "**/*.adb"). Typically, Patterns will be the value of the
+   --  Source_Dirs or Excluded_Source_Dirs attributes.
+   --  Every time such a file or directory is found, the callback is called.
+   --  Resolve_Links indicates whether we should resolve links while
+   --  normalizing names.
+   --  In the callback, Pattern_Index is the index within Patterns where the
+   --  expanded pattern was found (1 for the first element of Patterns and
+   --  all its matching directories, then 2,...).
+   --  We use a generic and not an access-to-subprogram because in some cases
+   --  this code is compiled with the restriction No_Implicit_Dynamic_Code
+
    procedure Add_Source
      (Id                  : out Source_Id;
       Data                : in out Tree_Processing_Data;
@@ -4853,19 +4880,6 @@ package body Prj.Nmsc is
      (Project : Project_Id;
       Data    : in out Tree_Processing_Data)
    is
-      package Recursive_Dirs is new GNAT.Dynamic_HTables.Simple_HTable
-        (Header_Num => Header_Num,
-         Element    => Boolean,
-         No_Element => False,
-         Key        => Path_Name_Type,
-         Hash       => Hash,
-         Equal      => "=");
-      --  Hash table stores recursive source directories, to avoid looking
-      --  several times, and to avoid cycles that may be introduced by symbolic
-      --  links.
-
-      Visited : Recursive_Dirs.Instance;
-
       Object_Dir  : constant Variable_Value :=
                       Util.Value_Of
                         (Name_Object_Dir, Project.Decl.Attributes, Data.Tree);
@@ -4894,24 +4908,20 @@ package body Prj.Nmsc is
 
       Languages : constant Variable_Value :=
                       Prj.Util.Value_Of
-                        (Name_Languages, Project.Decl.Attributes, Data.Tree);
+          (Name_Languages, Project.Decl.Attributes, Data.Tree);
 
-      procedure Find_Source_Dirs
-        (From     : File_Name_Type;
-         Location : Source_Ptr;
-         Rank     : Natural;
-         Removed  : Boolean := False);
-      --  Find one or several source directories, and add (or remove, if
-      --  Removed is True) them to list of source directories of the project.
+      Remove_Source_Dirs : Boolean := False;
 
       procedure Add_To_Or_Remove_From_Source_Dirs
         (Path_Id         : Path_Name_Type;
          Display_Path_Id : Path_Name_Type;
-         Rank            : Natural;
-         Removed         : Boolean);
+         Rank            : Natural);
       --  When Removed = False, the directory Path_Id to the list of
       --  source_dirs if not already in the list. When Removed = True,
       --  removed directory Path_Id if in the list.
+
+      procedure Find_Source_Dirs is new Expand_Subdirectory_Pattern
+        (Add_To_Or_Remove_From_Source_Dirs);
 
       ---------------------------------------
       -- Add_To_Or_Remove_From_Source_Dirs --
@@ -4920,8 +4930,7 @@ package body Prj.Nmsc is
       procedure Add_To_Or_Remove_From_Source_Dirs
         (Path_Id         : Path_Name_Type;
          Display_Path_Id : Path_Name_Type;
-         Rank            : Natural;
-         Removed         : Boolean)
+         Rank            : Natural)
       is
          List       : String_List_Id;
          Prev       : String_List_Id;
@@ -4945,7 +4954,7 @@ package body Prj.Nmsc is
 
          --  The directory is in the list if List is not Nil_String
 
-         if not Removed and then List = Nil_String then
+         if not Remove_Source_Dirs and then List = Nil_String then
             if Current_Verbosity = High then
                Write_Str  ("   Adding Source Dir=");
                Write_Line (Get_Name_String (Display_Path_Id));
@@ -4991,7 +5000,7 @@ package body Prj.Nmsc is
             Data.Tree.Number_Lists.Table (Last_Src_Dir_Rank) :=
               (Number => Rank, Next => No_Number_List);
 
-         elsif Removed and then List /= Nil_String then
+         elsif Remove_Source_Dirs and then List /= Nil_String then
 
             --  Remove source dir, if present
 
@@ -5009,247 +5018,6 @@ package body Prj.Nmsc is
             end if;
          end if;
       end Add_To_Or_Remove_From_Source_Dirs;
-
-      ----------------------
-      -- Find_Source_Dirs --
-      ----------------------
-
-      procedure Find_Source_Dirs
-        (From     : File_Name_Type;
-         Location : Source_Ptr;
-         Rank     : Natural;
-         Removed  : Boolean := False)
-      is
-         Directory : constant String := Get_Name_String (From);
-
-         procedure Recursive_Find_Dirs (Path : Name_Id);
-         --  Find all the subdirectories (recursively) of Path and add them
-         --  to the list of source directories of the project.
-
-         -------------------------
-         -- Recursive_Find_Dirs --
-         -------------------------
-
-         procedure Recursive_Find_Dirs (Path : Name_Id) is
-            Dir  : Dir_Type;
-            Name : String (1 .. 250);
-            Last : Natural;
-
-            Non_Canonical_Path : Path_Name_Type := No_Path;
-            Canonical_Path     : Path_Name_Type := No_Path;
-
-            The_Path : constant String :=
-                         Normalize_Pathname
-                           (Get_Name_String (Path),
-                            Directory     =>
-                              Get_Name_String (Project.Directory.Display_Name),
-                            Resolve_Links => Opt.Follow_Links_For_Dirs) &
-                         Directory_Separator;
-
-            The_Path_Last : constant Natural :=
-                              Compute_Directory_Last (The_Path);
-
-         begin
-            Name_Len := The_Path_Last - The_Path'First + 1;
-            Name_Buffer (1 .. Name_Len) :=
-              The_Path (The_Path'First .. The_Path_Last);
-            Non_Canonical_Path := Name_Find;
-            Canonical_Path :=
-              Path_Name_Type
-                (Canonical_Case_File_Name (Name_Id (Non_Canonical_Path)));
-
-            --  To avoid processing the same directory several times, check
-            --  if the directory is already in Recursive_Dirs. If it is, then
-            --  there is nothing to do, just return. If it is not, put it there
-            --  and continue recursive processing.
-
-            if not Removed then
-               if Recursive_Dirs.Get (Visited, Canonical_Path) then
-                  return;
-               else
-                  Recursive_Dirs.Set (Visited, Canonical_Path, True);
-               end if;
-            end if;
-
-            Add_To_Or_Remove_From_Source_Dirs
-              (Path_Id         => Canonical_Path,
-               Display_Path_Id => Non_Canonical_Path,
-               Rank            => Rank,
-               Removed         => Removed);
-
-            --  Now look for subdirectories. Do that even when this directory
-            --  is already in the list, because some of its subdirectories may
-            --  not be in the list yet.
-
-            Open (Dir, The_Path (The_Path'First .. The_Path_Last));
-
-            loop
-               Read (Dir, Name, Last);
-               exit when Last = 0;
-
-               if Name (1 .. Last) /= "."
-                 and then Name (1 .. Last) /= ".."
-               then
-                  --  Avoid . and .. directories
-
-                  if Current_Verbosity = High then
-                     Write_Str  ("   Checking ");
-                     Write_Line (Name (1 .. Last));
-                  end if;
-
-                  declare
-                     Path_Name : constant String :=
-                                   Normalize_Pathname
-                                     (Name           => Name (1 .. Last),
-                                      Directory      =>
-                                        The_Path
-                                          (The_Path'First .. The_Path_Last),
-                                      Resolve_Links  =>
-                                        Opt.Follow_Links_For_Dirs,
-                                      Case_Sensitive => True);
-
-                  begin
-                     if Is_Directory (Path_Name) then
-
-                        --  We have found a new subdirectory, call self
-
-                        Name_Len := Path_Name'Length;
-                        Name_Buffer (1 .. Name_Len) := Path_Name;
-                        Recursive_Find_Dirs (Name_Find);
-                     end if;
-                  end;
-               end if;
-            end loop;
-
-            Close (Dir);
-
-         exception
-            when Directory_Error =>
-               null;
-         end Recursive_Find_Dirs;
-
-      --  Start of processing for Find_Source_Dirs
-
-      begin
-         if Current_Verbosity = High and then not Removed then
-            Write_Str ("Find_Source_Dirs (""");
-            Write_Str (Directory);
-            Write_Str (",");
-            Write_Str (Rank'Img);
-            Write_Line (""")");
-         end if;
-
-         --  First, check if we are looking for a directory tree, indicated
-         --  by "/**" at the end.
-
-         if Directory'Length >= 3
-           and then Directory (Directory'Last - 1 .. Directory'Last) = "**"
-           and then (Directory (Directory'Last - 2) = '/'
-                       or else
-                     Directory (Directory'Last - 2) = Directory_Separator)
-         then
-            Name_Len := Directory'Length - 3;
-
-            if Name_Len = 0 then
-
-               --  Case of "/**": all directories in file system
-
-               Name_Len := 1;
-               Name_Buffer (1) := Directory (Directory'First);
-
-            else
-               Name_Buffer (1 .. Name_Len) :=
-                 Directory (Directory'First .. Directory'Last - 3);
-            end if;
-
-            if Current_Verbosity = High then
-               Write_Str ("Looking for all subdirectories of """);
-               Write_Str (Name_Buffer (1 .. Name_Len));
-               Write_Line ("""");
-            end if;
-
-            declare
-               Base_Dir : constant File_Name_Type := Name_Find;
-               Root_Dir : constant String :=
-                            Normalize_Pathname
-                              (Name      => Name_Buffer (1 .. Name_Len),
-                               Directory =>
-                                 Get_Name_String
-                                   (Project.Directory.Display_Name),
-                               Resolve_Links  =>
-                                 Opt.Follow_Links_For_Dirs,
-                               Case_Sensitive => True);
-               Has_Error : Boolean := False;
-
-            begin
-               if Root_Dir'Length = 0 then
-                  Err_Vars.Error_Msg_File_1 := Base_Dir;
-                  Error_Or_Warning
-                    (Data.Flags, Data.Flags.Missing_Source_Files,
-                     "{ is not a valid directory.", Location, Project);
-                  Has_Error := Data.Flags.Missing_Source_Files = Error;
-               end if;
-
-               if not Has_Error then
-
-                  --  We have an existing directory, we register it and all of
-                  --  its subdirectories.
-
-                  if Current_Verbosity = High then
-                     Write_Line ("Looking for source directories:");
-                  end if;
-
-                  Name_Len := Root_Dir'Length;
-                  Name_Buffer (1 .. Name_Len) := Root_Dir;
-                  Recursive_Find_Dirs (Name_Find);
-
-                  if Current_Verbosity = High then
-                     Write_Line ("End of looking for source directories.");
-                  end if;
-               end if;
-            end;
-
-         --  We have a single directory
-
-         else
-            declare
-               Path_Name  : Path_Information;
-               Dir_Exists : Boolean;
-               Has_Error  : Boolean := False;
-
-            begin
-               Locate_Directory
-                 (Project     => Project,
-                  Name        => From,
-                  Path        => Path_Name,
-                  Dir_Exists  => Dir_Exists,
-                  Data        => Data,
-                  Must_Exist  => False);
-
-               if not Dir_Exists then
-                  Err_Vars.Error_Msg_File_1 := From;
-                  Error_Or_Warning
-                    (Data.Flags, Data.Flags.Missing_Source_Files,
-                     "{ is not a valid directory", Location, Project);
-                  Has_Error := Data.Flags.Missing_Source_Files = Error;
-               end if;
-
-               if not Has_Error then
-
-                  --  Links have been resolved if necessary, and Path_Name
-                  --  always ends with a directory separator.
-
-                  Add_To_Or_Remove_From_Source_Dirs
-                    (Path_Id         => Path_Name.Name,
-                     Display_Path_Id => Path_Name.Display_Name,
-                     Rank            => Rank,
-                     Removed         => Removed);
-               end if;
-            end;
-         end if;
-
-         Recursive_Dirs.Reset (Visited);
-      end Find_Source_Dirs;
 
       --  Local declarations
 
@@ -5422,62 +5190,41 @@ package body Prj.Nmsc is
          --  No Source_Dirs specified: the single source directory is the one
          --  containing the project file.
 
+         Remove_Source_Dirs := False;
          Add_To_Or_Remove_From_Source_Dirs
            (Path_Id         => Project.Directory.Name,
             Display_Path_Id => Project.Directory.Display_Name,
-            Rank            => 1,
-            Removed         => False);
+            Rank            => 1);
 
       else
-         declare
-            Source_Dir : String_List_Id;
-            Element    : String_Element;
-            Rank       : Natural;
-         begin
-            --  Process the source directories for each element of the list
+         Remove_Source_Dirs := False;
+         Find_Source_Dirs
+           (Project         => Project,
+            Data            => Data,
+            Patterns        => Source_Dirs.Values,
+            Search_For      => Search_Directories,
+            Resolve_Links   => Opt.Follow_Links_For_Dirs);
 
-            Source_Dir := Source_Dirs.Values;
-            Rank := 0;
-            while Source_Dir /= Nil_String loop
-               Element := Data.Tree.String_Elements.Table (Source_Dir);
-               Rank := Rank + 1;
-               Find_Source_Dirs
-                 (File_Name_Type (Element.Value), Element.Location, Rank);
-               Source_Dir := Element.Next;
-            end loop;
-
-            if Project.Source_Dirs = Nil_String
-              and then Project.Qualifier = Standard
-            then
-               Error_Msg
-                 (Data.Flags,
-                  "a standard project cannot have no source directories",
-                  Source_Dirs.Location, Project);
-            end if;
-         end;
+         if Project.Source_Dirs = Nil_String
+           and then Project.Qualifier = Standard
+         then
+            Error_Msg
+              (Data.Flags,
+               "a standard project cannot have no source directories",
+               Source_Dirs.Location, Project);
+         end if;
       end if;
 
       if not Excluded_Source_Dirs.Default
         and then Excluded_Source_Dirs.Values /= Nil_String
       then
-         declare
-            Source_Dir : String_List_Id;
-            Element    : String_Element;
-
-         begin
-            --  Process the source directories for each element of the list
-
-            Source_Dir := Excluded_Source_Dirs.Values;
-            while Source_Dir /= Nil_String loop
-               Element := Data.Tree.String_Elements.Table (Source_Dir);
-               Find_Source_Dirs
-                 (File_Name_Type (Element.Value),
-                  Element.Location,
-                  0,
-                  Removed => True);
-               Source_Dir := Element.Next;
-            end loop;
-         end;
+         Remove_Source_Dirs := True;
+         Find_Source_Dirs
+           (Project         => Project,
+            Data            => Data,
+            Patterns        => Excluded_Source_Dirs.Values,
+            Search_For      => Search_Directories,
+            Resolve_Links   => Opt.Follow_Links_For_Dirs);
       end if;
 
       if Current_Verbosity = High then
@@ -6932,6 +6679,253 @@ package body Prj.Nmsc is
          end if;
       end if;
    end Check_File;
+
+   ---------------------------------
+   -- Expand_Subdirectory_Pattern --
+   ---------------------------------
+
+   procedure Expand_Subdirectory_Pattern
+     (Project       : Project_Id;
+      Data          : in out Tree_Processing_Data;
+      Patterns      : String_List_Id;
+      Search_For    : Search_Type;
+      Resolve_Links : Boolean)
+   is
+      pragma Unreferenced (Search_For);
+      Project_Dir : constant String :=
+        Get_Name_String (Project.Directory.Display_Name);
+
+      package Recursive_Dirs is new GNAT.Dynamic_HTables.Simple_HTable
+        (Header_Num => Header_Num,
+         Element    => Boolean,
+         No_Element => False,
+         Key        => Path_Name_Type,
+         Hash       => Hash,
+         Equal      => "=");
+      --  Hash table stores recursive source directories, to avoid looking
+      --  several times, and to avoid cycles that may be introduced by symbolic
+      --  links.
+
+      Visited : Recursive_Dirs.Instance;
+
+      procedure Find_Pattern
+        (Pattern : String; Rank : Natural; Location : Source_Ptr);
+      --  Find a specific pattern
+
+      procedure Recursive_Find_Dirs (Normalized_Path : String; Rank : Natural);
+      --  Search all the subdirectories (recursively) of Path
+
+      -------------------------
+      -- Recursive_Find_Dirs --
+      -------------------------
+
+      procedure Recursive_Find_Dirs
+        (Normalized_Path : String; Rank : Natural)
+      is
+         Dir  : Dir_Type;
+         Name : String (1 .. 250);
+         Last : Natural;
+
+         Non_Canonical_Path : Path_Name_Type := No_Path;
+         Canonical_Path     : Path_Name_Type := No_Path;
+
+         The_Path_Last : constant Natural :=
+           Compute_Directory_Last (Normalized_Path);
+
+      begin
+         Name_Len := 0;
+         Add_Str_To_Name_Buffer
+           (Normalized_Path (Normalized_Path'First .. The_Path_Last));
+         Non_Canonical_Path := Name_Find;
+
+         Canonical_Path :=
+           Path_Name_Type
+             (Canonical_Case_File_Name (Name_Id (Non_Canonical_Path)));
+
+         if Recursive_Dirs.Get (Visited, Canonical_Path) then
+            return;
+         end if;
+
+         Recursive_Dirs.Set (Visited, Canonical_Path, True);
+
+         Callback (Canonical_Path, Non_Canonical_Path, Rank);
+
+         Open (Dir, Normalized_Path (Normalized_Path'First .. The_Path_Last));
+
+         loop
+            Read (Dir, Name, Last);
+            exit when Last = 0;
+
+            if Name (1 .. Last) /= "."
+              and then Name (1 .. Last) /= ".."
+            then
+               if Current_Verbosity = High then
+                  Write_Str  ("   Checking ");
+                  Write_Line (Name (1 .. Last));
+               end if;
+
+               declare
+                  Path_Name : constant String :=
+                    Normalize_Pathname
+                      (Name           => Name (1 .. Last),
+                       Directory      =>
+                         Normalized_Path
+                           (Normalized_Path'First .. The_Path_Last),
+                       Resolve_Links  => Resolve_Links)
+                    & Directory_Separator;
+               begin
+                  if Is_Directory (Path_Name) then
+                     Recursive_Find_Dirs (Path_Name, Rank);
+                  end if;
+               end;
+            end if;
+         end loop;
+
+         Close (Dir);
+
+      exception
+         when Directory_Error =>
+            null;
+      end Recursive_Find_Dirs;
+
+      ------------------
+      -- Find_Pattern --
+      ------------------
+
+      procedure Find_Pattern
+        (Pattern : String; Rank : Natural; Location : Source_Ptr) is
+      begin
+         if Current_Verbosity = High then
+            Write_Str ("Expand_Subdirectory_Pattern (""");
+            Write_Str (Pattern);
+            Write_Line (""")");
+         end if;
+
+         --  First, check if we are looking for a directory tree, indicated
+         --  by "/**" at the end.
+
+         if Pattern'Length >= 3
+           and then Pattern (Pattern'Last - 1 .. Pattern'Last) = "**"
+           and then (Pattern (Pattern'Last - 2) = '/'
+                     or else Pattern (Pattern'Last - 2) = Directory_Separator)
+         then
+            Name_Len := Pattern'Length - 3;
+
+            if Name_Len = 0 then
+
+               --  Case of "/**": all directories in file system
+
+               Name_Len := 1;
+               Name_Buffer (1) := Pattern (Pattern'First);
+
+            else
+               Name_Buffer (1 .. Name_Len) :=
+                 Pattern (Pattern'First .. Pattern'Last - 3);
+            end if;
+
+            if Current_Verbosity = High then
+               Write_Str ("Looking for all subdirectories of """);
+               Write_Str (Name_Buffer (1 .. Name_Len));
+               Write_Line ("""");
+            end if;
+
+            declare
+               Base_Dir : constant File_Name_Type := Name_Find;
+               Root_Dir : constant String :=
+                 Normalize_Pathname
+                   (Name          => Name_Buffer (1 .. Name_Len),
+                    Directory     => Project_Dir,
+                    Resolve_Links => Resolve_Links);
+               Has_Error : Boolean := False;
+
+            begin
+               if Root_Dir'Length = 0 then
+                  Err_Vars.Error_Msg_File_1 := Base_Dir;
+                  Error_Or_Warning
+                    (Data.Flags, Data.Flags.Missing_Source_Files,
+                     "{ is not a valid directory.", Location, Project);
+                  Has_Error := Data.Flags.Missing_Source_Files = Error;
+               end if;
+
+               if not Has_Error then
+
+                  --  We have an existing directory, we register it and all of
+                  --  its subdirectories.
+
+                  if Current_Verbosity = High then
+                     Write_Line ("Looking for source directories:");
+                  end if;
+
+                  if Root_Dir (Root_Dir'Last) /= Directory_Separator then
+                     Recursive_Find_Dirs
+                       (Root_Dir & Directory_Separator, Rank);
+                  else
+                     Recursive_Find_Dirs (Root_Dir, Rank);
+                  end if;
+
+                  if Current_Verbosity = High then
+                     Write_Line ("End of looking for source directories.");
+                  end if;
+               end if;
+            end;
+
+            --  We have a single directory
+
+         else
+            declare
+               Directory  : File_Name_Type;
+               Path_Name  : Path_Information;
+               Dir_Exists : Boolean;
+               Has_Error  : Boolean := False;
+
+            begin
+               Name_Len := Pattern'Length;
+               Name_Buffer (1 .. Name_Len) := Pattern;
+               Directory := Name_Find;
+
+               Locate_Directory
+                 (Project     => Project,
+                  Name        => Directory,
+                  Path        => Path_Name,
+                  Dir_Exists  => Dir_Exists,
+                  Data        => Data,
+                  Must_Exist  => False);
+
+               if not Dir_Exists then
+                  Err_Vars.Error_Msg_File_1 := Directory;
+                  Error_Or_Warning
+                    (Data.Flags, Data.Flags.Missing_Source_Files,
+                     "{ is not a valid directory", Location, Project);
+                  Has_Error := Data.Flags.Missing_Source_Files = Error;
+               end if;
+
+               if not Has_Error then
+
+                  --  Links have been resolved if necessary, and Path_Name
+                  --  always ends with a directory separator.
+
+                  Callback (Path_Name.Name, Path_Name.Display_Name, Rank);
+               end if;
+            end;
+         end if;
+      end Find_Pattern;
+
+      --  Start of processing for Expand_Subdirectory_Pattern
+
+      Pattern_Id : String_List_Id := Patterns;
+      Element    : String_Element;
+      Rank       : Natural := 1;
+   begin
+      while Pattern_Id /= Nil_String loop
+         Element := Data.Tree.String_Elements.Table (Pattern_Id);
+         Find_Pattern
+           (Get_Name_String (Element.Value), Rank, Element.Location);
+         Rank := Rank + 1;
+         Pattern_Id := Element.Next;
+      end loop;
+
+      Recursive_Dirs.Reset (Visited);
+   end Expand_Subdirectory_Pattern;
 
    ------------------------
    -- Search_Directories --

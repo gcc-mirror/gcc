@@ -1,5 +1,12 @@
 2010-10-05  Emmanuel Briot  <briot@adacore.com>
 
+	* prj-nmsc.adb, prj-err.adb (Expand_Subdirectory_Pattern): New
+	subprogram.
+	Extract some code from Get_Directories, to share with the handling
+	of aggregate projects (for the Project_Files attributes)
+
+2010-10-05  Emmanuel Briot  <briot@adacore.com>
+
 	* gnatcmd.adb, prj-proc.adb, prj-part.adb, prj-ext.adb, prj-ext.ads,
 	switch-m.adb, clean.adb, prj-nmsc.adb, prj-nmsc.ads, prj-env.adb,
 	prj-env.ads, prj-tree.adb, prj-tree.ads (Project_Search_Path): New type.
