@@ -2561,11 +2561,13 @@ gnatlib-shared-win32:
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib
 	$(RM) $(RTSDIR)/libgna*$(soext)
-	cd $(RTSDIR); ../../xgcc -B../../ -shared $(TARGET_LIBGCC2_CFLAGS) \
+	cd $(RTSDIR); ../../xgcc -B../../ -shared -shared-libgcc \
+		$(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
 		$(SO_OPTS)libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) $(MISCLIB)
-	cd $(RTSDIR); ../../xgcc -B../../ -shared $(TARGET_LIBGCC2_CFLAGS) \
+	cd $(RTSDIR); ../../xgcc -B../../ -shared -shared-libgcc \
+		$(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
 		$(SO_OPTS)libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \

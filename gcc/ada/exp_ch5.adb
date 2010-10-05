@@ -27,7 +27,6 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
-with Elists;   use Elists;
 with Exp_Atag; use Exp_Atag;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch6;  use Exp_Ch6;
@@ -4145,13 +4144,11 @@ package body Exp_Ch5 is
                       Make_Selected_Component (Loc,
                         Prefix => Duplicate_Subexpr (Exp),
                         Selector_Name =>
-                          New_Reference_To (First_Tag_Component (Utyp), Loc)),
+                          Make_Identifier (Loc, Chars => Name_uTag)),
                     Right_Opnd =>
-                      Unchecked_Convert_To (RTE (RE_Tag),
-                        New_Reference_To
-                          (Node (First_Elmt
-                                  (Access_Disp_Table (Base_Type (Utyp)))),
-                           Loc))),
+                      Make_Attribute_Reference (Loc,
+                        Prefix => New_Occurrence_Of (Base_Type (Utyp), Loc),
+                        Attribute_Name => Name_Tag)),
                 Reason => CE_Tag_Check_Failed));
 
          --  If the result type is a specific nonlimited tagged type, then we

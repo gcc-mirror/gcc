@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,8 +61,10 @@ package body MLib.Tgt.Specific is
 
    function PIC_Option return String;
 
-   No_Argument_List : constant String_List := (1 .. 0 => null);
-   --  Used as value of parameter Options or Options2 in calls to Gcc
+   Shared_Libgcc : aliased String := "-shared-libgcc";
+
+   Shared_Libgcc_Switch : constant Argument_List :=
+                            (1 => Shared_Libgcc'Access);
 
    ---------------------------
    -- Build_Dynamic_Library --
@@ -99,7 +101,7 @@ package body MLib.Tgt.Specific is
       Tools.Gcc
         (Output_File => Lib_File,
          Objects     => Ofiles,
-         Options     => No_Argument_List,
+         Options     => Shared_Libgcc_Switch,
          Options_2   => Options,
          Driver_Name => Driver_Name);
    end Build_Dynamic_Library;

@@ -4099,13 +4099,13 @@ package body Checks is
          end if;
       end if;
 
-      --  If this is a boolean expression, only its elementary consituents need
+      --  If this is a boolean expression, only its elementary operands need
       --  checking: if they are valid, a boolean or short-circuit operation
       --  with them will be valid as well.
 
       if Base_Type (Typ) = Standard_Boolean
-        and then
-          (Nkind (Expr) in N_Op or else Nkind (Expr) in N_Short_Circuit)
+           and then
+         (Nkind (Expr) in N_Op or else Nkind (Expr) in N_Short_Circuit)
       then
          return;
       end if;

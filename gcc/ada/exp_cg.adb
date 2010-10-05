@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
-with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Exp_Disp; use Exp_Disp;
@@ -110,11 +109,9 @@ package body Exp_CG is
 
    begin
       --  No output if the "ci" output file has not been previously opened
-      --  by toplev.c. Temporarily the output is also disabled with -gnatd.Z
+      --  by toplev.c
 
-      if Callgraph_Info_File = Null_Address
-        or else not Debug_Flag_Dot_ZZ
-      then
+      if Callgraph_Info_File = Null_Address then
          return;
       end if;
 
@@ -393,11 +390,12 @@ package body Exp_CG is
    -----------------
 
    function Slot_Number (Prim : Entity_Id) return Uint is
+      E : constant Entity_Id := Ultimate_Alias (Prim);
    begin
-      if Is_Predefined_Dispatching_Operation (Prim) then
-         return -DT_Position (Prim);
+      if Is_Predefined_Dispatching_Operation (E) then
+         return -DT_Position (E);
       else
-         return DT_Position (Prim);
+         return DT_Position (E);
       end if;
    end Slot_Number;
 

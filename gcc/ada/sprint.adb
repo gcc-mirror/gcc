@@ -2785,7 +2785,13 @@ package body Sprint is
             end if;
 
             Write_Indent;
-            Sprint_Node_Sloc (Specification (Node));
+
+            if Present (Corresponding_Spec (Node)) then
+               Sprint_Node_Sloc (Parent (Corresponding_Spec (Node)));
+            else
+               Sprint_Node_Sloc (Specification (Node));
+            end if;
+
             Write_Str (" is");
 
             Sprint_Indented_List (Declarations (Node));

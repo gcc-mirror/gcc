@@ -143,7 +143,7 @@ package body Debug is
    --  d.W  Print out debugging information for Walk_Library_Items
    --  d.X  Use Expression_With_Actions
    --  d.Y  Do not use Expression_With_Actions
-   --  d.Z  Generate call-graph information
+   --  d.Z
 
    --  d1   Error msgs have node numbers where possible
    --  d2   Eliminate error flags in verbose form error messages

@@ -4060,6 +4060,11 @@ package body Sem_Ch3 is
             when N_Record_Definition =>
                Record_Type_Declaration (T, N, Prev);
 
+            --  If declaration has a parse error, nothing to elaborate.
+
+            when N_Error =>
+               null;
+
             when others =>
                raise Program_Error;
 

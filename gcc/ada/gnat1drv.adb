@@ -230,14 +230,12 @@ procedure Gnat1drv is
          Assertions_Enabled    := True;
          Debug_Pragmas_Enabled := True;
 
-         --  Suppress compiler warnings, since what we are interested in here
-         --  is what CodePeer can find out. Also disable all simple value
-         --  propagation. This is an optimization which is valuable for code
-         --  optimization, and also for generation of compiler warnings, but
-         --  these are being turned off anyway, and CodePeer understands
-         --  things more clearly if references are not optimized in this way.
+         --  Disable all simple value propagation. This is an optimization
+         --  which is valuable for code optimization, and also for generation
+         --  of compiler warnings, but these are being turned off by default,
+         --  and CodePeer generates better messages (referencing original
+         --  variables) this way.
 
-         Warning_Mode  := Suppress;
          Debug_Flag_MM := True;
 
          --  Set normal RM validity checking, and checking of IN OUT parameters

@@ -10549,9 +10549,9 @@ package body Exp_Dist is
             if Is_Itype (Typ) and then Typ /= Base_Type (Typ) then
                Build_TypeCode_Function
                   (Loc  => Loc,
-                  Typ  => Etype (Typ),
-                  Decl => Decl,
-                  Fnam => Fnam);
+                   Typ  => Etype (Typ),
+                   Decl => Decl,
+                   Fnam => Fnam);
                return;
             end if;
 
@@ -11036,26 +11036,30 @@ package body Exp_Dist is
          begin
             declare
                Serial : Nat := 0;
-               --  For tagged types, we use a canonical name so that it matches
-               --  the primitive spec. For all other cases, we use a serialized
-               --  name so that multiple generations of the same procedure do
-               --  not clash.
+               --  For tagged types that aren't frozen yet, generate the helper
+               --  under its canonical name so that it matches the primitive
+               --  spec. For all other cases, we use a serialized name so that
+               --  multiple generations of the same procedure do not clash.
 
             begin
-               if not Is_Tagged_Type (Typ) then
+               if Is_Tagged_Type (Typ) and then not Is_Frozen (Typ) then
+                  null;
+
+               else
                   Serial := Increment_Serial_Number;
                end if;
 
-               --  Use prefixed underscore to avoid potential clash with used
+               --  Use prefixed underscore to avoid potential clash with user
                --  identifier (we use attribute names for Nam).
 
                return
                  Make_Defining_Identifier (Loc,
                    Chars =>
                      New_External_Name
-                       (Related_Id => Nam,
-                        Suffix => ' ', Suffix_Index => Serial,
-                        Prefix => '_'));
+                       (Related_Id   => Nam,
+                        Suffix       => ' ',
+                        Suffix_Index => Serial,
+                        Prefix       => '_'));
             end;
          end Make_Helper_Function_Name;
       end Helpers;

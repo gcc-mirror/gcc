@@ -876,10 +876,13 @@ package body Sem_Type is
             return False;
          end;
 
-      --  In a dispatching call the actual may be class-wide
+         --  In a dispatching call the actual may be class-wide, the formal
+         --  may be its specific type, or that of a descendent of it.
 
       elsif Is_Class_Wide_Type (T2)
-        and then Base_Type (Root_Type (T2)) = Base_Type (T1)
+        and then
+          (Class_Wide_Type (T1) = T2
+             or else Base_Type (Root_Type (T2)) = Base_Type (T1))
       then
          return True;
 

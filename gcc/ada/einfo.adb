@@ -6182,6 +6182,7 @@ package body Einfo is
    begin
       return Ekind (Id) in String_Kind
         or else (Is_Array_Type (Id)
+                  and then Id /= Any_Composite
                   and then Number_Dimensions (Id) = 1
                   and then Is_Character_Type (Component_Type (Id)));
    end Is_String_Type;
@@ -7701,7 +7702,8 @@ package body Einfo is
               E_Generic_Package                            =>
             Write_Str ("Renamed_Entity");
 
-         when Incomplete_Or_Private_Kind                   =>
+         when Incomplete_Or_Private_Kind                   |
+            E_Record_Subtype                               =>
             Write_Str ("Private_Dependents");
 
          when Concurrent_Kind                              =>

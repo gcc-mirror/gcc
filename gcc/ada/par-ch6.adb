@@ -224,10 +224,8 @@ package body Ch6 is
          --  case is for subunits.
 
          if Pf_Flags /= Pf_Decl_Gins_Pbod_Rnam_Stub
-              and then
-            Pf_Flags /= Pf_Decl_Pbod
-              and then
-            Pf_Flags /= Pf_Pbod
+           and then Pf_Flags /= Pf_Decl_Pbod
+           and then Pf_Flags /= Pf_Pbod
          then
             Error_Msg_SC ("overriding indicator not allowed here!");
 
@@ -376,9 +374,17 @@ package body Ch6 is
          end if;
 
       else
+         --  Skip extra parenthesis at end of formal part, and if
+         --  function scan result subtype.
+
+         Ignore (Tok_Right_Paren);
+
          if Func then
-            Ignore (Tok_Right_Paren);
             TF_Return;
+
+            if Prev_Token = Tok_Return then
+               Result_Node := P_Subtype_Mark;
+            end if;
          end if;
       end if;
 
