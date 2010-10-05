@@ -313,6 +313,13 @@ begin
    Write_Str ("  --subdirs=dir real obj/lib/exec dirs are subdirs");
    Write_Eol;
 
+   --  Line for --source-info=
+
+   Write_Str ("  ");
+   Write_Str (Makeutl.Source_Info_Option);
+   Write_Str ("file specify a source info file");
+   Write_Eol;
+
    --  Line for --unchecked-shared-lib-imports
 
    Write_Str ("  ");

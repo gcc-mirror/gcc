@@ -29,11 +29,31 @@ with GNAT.Case_Util; use GNAT.Case_Util;
 
 with Osint;    use Osint;
 with Output;   use Output;
+with Opt;
 with Prj.Com;
 with Snames;   use Snames;
+with Table;
 with Targparm; use Targparm;
 
+with GNAT.HTable;
+
 package body Prj.Util is
+
+   package Source_Info_Table is new Table.Table
+     (Table_Component_Type => Source_Info_Iterator,
+      Table_Index_Type     => Natural,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 10,
+      Table_Increment      => 100,
+      Table_Name           => "Makeutl.Source_Info_Table");
+
+   package Source_Info_Project_HTable is new GNAT.HTable.Simple_HTable
+     (Header_Num => Prj.Header_Num,
+      Element    => Natural,
+      No_Element => 0,
+      Key        => Name_Id,
+      Hash       => Prj.Hash,
+      Equal      => "=");
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Text_File_Data, Text_File);
@@ -43,17 +63,64 @@ package body Prj.Util is
    -----------
 
    procedure Close (File : in out Text_File) is
+      Len : Integer;
+      Status : Boolean;
+
    begin
       if File = null then
          Prj.Com.Fail ("Close attempted on an invalid Text_File");
       end if;
 
-      --  Close file, no need to test status, since this is a file that we
-      --  read, and the file was read successfully before we closed it.
+      if File.Out_File then
+         if File.Buffer_Len > 0 then
+            Len := Write (File.FD, File.Buffer'Address, File.Buffer_Len);
 
-      Close (File.FD);
+            if Len /= File.Buffer_Len then
+               Prj.Com.Fail ("Unable to write to an out Text_File");
+            end if;
+         end if;
+
+         Close (File.FD, Status);
+
+         if not Status then
+            Prj.Com.Fail ("Unable to close an out Text_File");
+         end if;
+
+      else
+
+         --  Close in file, no need to test status, since this is a file that
+         --  we read, and the file was read successfully before we closed it.
+
+         Close (File.FD);
+      end if;
+
       Free (File);
    end Close;
+
+   ------------
+   -- Create --
+   ------------
+
+   procedure Create (File : out Text_File; Name : String) is
+      FD        : File_Descriptor;
+      File_Name : String (1 .. Name'Length + 1);
+
+   begin
+      File_Name (1 .. Name'Length) := Name;
+      File_Name (File_Name'Last) := ASCII.NUL;
+      FD := Create_File (Name => File_Name'Address,
+                         Fmode => GNAT.OS_Lib.Text);
+
+      if FD = Invalid_FD then
+         File := null;
+
+      else
+         File := new Text_File_Data;
+         File.FD := FD;
+         File.Out_File := True;
+         File.End_Of_File_Reached := True;
+      end if;
+   end Create;
 
    ---------------
    -- Duplicate --
@@ -365,6 +432,9 @@ package body Prj.Util is
    begin
       if File = null then
          Prj.Com.Fail ("Get_Line attempted on an invalid Text_File");
+
+      elsif File.Out_File then
+         Prj.Com.Fail ("Get_Line attempted on an out file");
       end if;
 
       Last := Line'First - 1;
@@ -400,6 +470,23 @@ package body Prj.Util is
       end if;
    end Get_Line;
 
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize
+     (Iter : out Source_Info_Iterator; For_Project : Name_Id)
+   is
+      Ind : constant Natural := Source_Info_Project_HTable.Get (For_Project);
+   begin
+      if Ind = 0 then
+         Iter := (No_Source_Info, 0);
+
+      else
+         Iter := Source_Info_Table.Table (Ind);
+      end if;
+   end Initialize;
+
    --------------
    -- Is_Valid --
    --------------
@@ -408,6 +495,20 @@ package body Prj.Util is
    begin
       return File /= null;
    end Is_Valid;
+
+   ----------
+   -- Next --
+   ----------
+
+   procedure Next (Iter : in out Source_Info_Iterator) is
+   begin
+      if Iter.Next = 0 then
+         Iter.Info := No_Source_Info;
+
+      else
+         Iter := Source_Info_Table.Table (Iter.Next);
+      end if;
+   end Next;
 
    ----------
    -- Open --
@@ -495,6 +596,194 @@ package body Prj.Util is
          List := Element.Next;
       end loop;
    end Put;
+
+   procedure Put (File : Text_File; S : String) is
+      Len : Integer;
+   begin
+      if File = null then
+         Prj.Com.Fail ("Attempted to write on an invalid Text_File");
+
+      elsif not File.Out_File then
+         Prj.Com.Fail ("Attempted to write an in Text_File");
+      end if;
+
+      if File.Buffer_Len + S'Length > File.Buffer'Last then
+         --  Write buffer
+         Len := Write (File.FD, File.Buffer'Address, File.Buffer_Len);
+
+         if Len /= File.Buffer_Len then
+            Prj.Com.Fail ("Failed to write to an out Text_File");
+         end if;
+
+         File.Buffer_Len := 0;
+      end if;
+
+      File.Buffer (File.Buffer_Len + 1 .. File.Buffer_Len + S'Length) := S;
+      File.Buffer_Len := File.Buffer_Len + S'Length;
+   end Put;
+
+   --------------
+   -- Put_Line --
+   --------------
+
+   procedure Put_Line (File : Text_File; Line : String) is
+      L : String (1 .. Line'Length + 1);
+   begin
+      L (1 .. Line'Length) := Line;
+      L (L'Last) := ASCII.LF;
+      Put (File, L);
+   end Put_Line;
+
+   ---------------------------
+   -- Read_Source_Info_File --
+   ---------------------------
+
+   procedure Read_Source_Info_File (Tree : Project_Tree_Ref) is
+      File : Text_File;
+      Info : Source_Info_Iterator;
+      Proj : Name_Id;
+
+      procedure Report_Error;
+
+      ------------------
+      -- Report_Error --
+      ------------------
+
+      procedure Report_Error is
+      begin
+         Write_Line ("errors in source info file """ &
+                     Tree.Source_Info_File_Name.all & '"');
+         Tree.Source_Info_File_Exists := False;
+      end Report_Error;
+
+   begin
+      Source_Info_Project_HTable.Reset;
+      Source_Info_Table.Init;
+
+      if Tree.Source_Info_File_Name = null then
+         Tree.Source_Info_File_Exists := False;
+         return;
+      end if;
+
+      Open (File, Tree.Source_Info_File_Name.all);
+
+      if not Is_Valid (File) then
+         if Opt.Verbose_Mode then
+            Write_Line ("source info file " & Tree.Source_Info_File_Name.all &
+                        " does not exist");
+         end if;
+
+         Tree.Source_Info_File_Exists := False;
+         return;
+      end if;
+
+      Tree.Source_Info_File_Exists := True;
+
+      if Opt.Verbose_Mode then
+         Write_Line ("Reading source info file " &
+                     Tree.Source_Info_File_Name.all);
+      end if;
+
+      Source_Loop :
+      while not End_Of_File (File) loop
+         Info := (new Source_Info_Data, 0);
+         Source_Info_Table.Increment_Last;
+
+         --  project name
+         Get_Line (File, Name_Buffer, Name_Len);
+         Proj := Name_Find;
+         Info.Info.Project := Proj;
+         Info.Next := Source_Info_Project_HTable.Get (Proj);
+         Source_Info_Project_HTable.Set (Proj, Source_Info_Table.Last);
+
+         if End_Of_File (File) then
+            Report_Error;
+            exit Source_Loop;
+         end if;
+
+         --  language name
+         Get_Line (File, Name_Buffer, Name_Len);
+         Info.Info.Language := Name_Find;
+
+         if End_Of_File (File) then
+            Report_Error;
+            exit Source_Loop;
+         end if;
+
+         --  kind
+         Get_Line (File, Name_Buffer, Name_Len);
+         Info.Info.Kind := Source_Kind'Value (Name_Buffer (1 .. Name_Len));
+
+         if End_Of_File (File) then
+            Report_Error;
+            exit Source_Loop;
+         end if;
+
+         --  display path name
+         Get_Line (File, Name_Buffer, Name_Len);
+         Info.Info.Display_Path_Name := Name_Find;
+         Info.Info.Path_Name := Info.Info.Display_Path_Name;
+
+         if End_Of_File (File) then
+            Report_Error;
+            exit Source_Loop;
+         end if;
+
+         --  optional fields
+         Option_Loop :
+         loop
+            Get_Line (File, Name_Buffer, Name_Len);
+            exit Option_Loop when Name_Len = 0;
+
+            if Name_Len <= 2 then
+               Report_Error;
+               exit Source_Loop;
+
+            else
+               if Name_Buffer (1 .. 2) = "P=" then
+                  Name_Buffer (1 .. Name_Len - 2) :=
+                    Name_Buffer (3 .. Name_Len);
+                  Name_Len := Name_Len - 2;
+                  Info.Info.Path_Name := Name_Find;
+
+               elsif Name_Buffer (1 .. 2) = "U=" then
+                  Name_Buffer (1 .. Name_Len - 2) :=
+                    Name_Buffer (3 .. Name_Len);
+                  Name_Len := Name_Len - 2;
+                  Info.Info.Unit_Name := Name_Find;
+
+               elsif Name_Buffer (1 .. 2) = "I=" then
+                  Info.Info.Index := Int'Value (Name_Buffer (3 .. Name_Len));
+
+               elsif Name_Buffer (1 .. Name_Len) = "N=T" then
+                  Info.Info.Naming_Exception := True;
+
+               else
+                  Report_Error;
+                  exit Source_Loop;
+               end if;
+            end if;
+         end loop Option_Loop;
+
+         Source_Info_Table.Table (Source_Info_Table.Last) := Info;
+      end loop Source_Loop;
+
+      Close (File);
+
+   exception
+      when others =>
+         Close (File);
+         Report_Error;
+   end Read_Source_Info_File;
+
+   --------------------
+   -- Source_Info_Of --
+   --------------------
+
+   function Source_Info_Of (Iter : Source_Info_Iterator) return Source_Info is
+   begin
+      return Iter.Info;
+   end Source_Info_Of;
 
    --------------
    -- Value_Of --
@@ -745,6 +1034,79 @@ package body Prj.Util is
 
       return Nil_Variable_Value;
    end Value_Of;
+
+   ----------------------------
+   -- Write_Source_Info_File --
+   ----------------------------
+
+   procedure Write_Source_Info_File (Tree : Project_Tree_Ref) is
+      Iter : Source_Iterator := For_Each_Source (Tree);
+      Source : Prj.Source_Id;
+      File   : Text_File;
+   begin
+      if Opt.Verbose_Mode then
+         Write_Line ("Writing new source info file " &
+                     Tree.Source_Info_File_Name.all);
+      end if;
+
+      Create (File, Tree.Source_Info_File_Name.all);
+
+      if not Is_Valid (File) then
+         Write_Line ("warning: unable to create source info file """ &
+                     Tree.Source_Info_File_Name.all & '"');
+         return;
+      end if;
+
+      loop
+         Source := Element (Iter);
+         exit when Source = No_Source;
+
+         if not Source.Locally_Removed and then
+           Source.Replaced_By = No_Source
+         then
+            --  project name
+            Put_Line (File, Get_Name_String (Source.Project.Name));
+            --  language name
+            Put_Line (File, Get_Name_String (Source.Language.Name));
+            --  kind
+            Put_Line (File, Source.Kind'Img);
+            --  display path name
+            Put_Line (File, Get_Name_String (Source.Path.Display_Name));
+
+            --  Optional lines:
+
+            --  path name (P=)
+            if Source.Path.Name /= Source.Path.Display_Name then
+               Put (File, "P=");
+               Put_Line (File, Get_Name_String (Source.Path.Name));
+            end if;
+
+            --  unit name (U=)
+            if Source.Unit /= No_Unit_Index then
+               Put (File, "U=");
+               Put_Line (File, Get_Name_String (Source.Unit.Name));
+            end if;
+
+            --  multi-source index (I=)
+            if Source.Index /= 0 then
+               Put (File, "I=");
+               Put_Line (File, Source.Index'Img);
+            end if;
+
+            --  naming exception ("N=T");
+            if Source.Naming_Exception then
+               Put_Line (File, "N=T");
+            end if;
+
+            --  empty line to indicate end of info on this source
+            Put_Line (File, "");
+         end if;
+
+         Next (Iter);
+      end loop;
+
+      Close (File);
+   end Write_Source_Info_File;
 
    ---------------
    -- Write_Str --

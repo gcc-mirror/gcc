@@ -32,6 +32,7 @@ with Err_Vars; use Err_Vars;
 with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
+with Prj.Com;
 with Prj.Err;  use Prj.Err;
 with Prj.Util; use Prj.Util;
 with Sinput.P;
@@ -7175,8 +7176,8 @@ package body Prj.Nmsc is
       Data    : in out Tree_Processing_Data)
    is
       Object_Files : Object_File_Names_Htable.Instance;
-      Iter : Source_Iterator;
-      Src  : Source_Id;
+      Iter         : Source_Iterator;
+      Src          : Source_Id;
 
       procedure Check_Object (Src : Source_Id);
       --  Check if object file name of Src is already used in the project tree,
@@ -7191,6 +7192,10 @@ package body Prj.Nmsc is
       procedure Check_Missing_Sources;
       --  Check whether one of the languages has no sources, and report an
       --  error when appropriate
+
+      procedure Get_Sources_From_Source_Info;
+      --  Get the source information from the tabes that were created when a
+      --  source info fie was read.
 
       ---------------------------
       -- Check_Missing_Sources --
@@ -7421,22 +7426,131 @@ package body Prj.Nmsc is
          end loop;
       end Check_Object_Files;
 
+      ----------------------------------
+      -- Get_Sources_From_Source_Info --
+      ----------------------------------
+
+      procedure Get_Sources_From_Source_Info is
+         Iter    : Source_Info_Iterator;
+         Src     : Source_Info;
+         Id      : Source_Id;
+         Lang_Id : Language_Ptr;
+      begin
+         Initialize (Iter, Project.Project.Name);
+
+         loop
+            Src := Source_Info_Of (Iter);
+
+            exit when Src = No_Source_Info;
+
+            Id := new Source_Data;
+
+            Id.Project := Project.Project;
+
+            Lang_Id := Project.Project.Languages;
+            while Lang_Id /= No_Language_Index and then
+            Lang_Id.Name /= Src.Language
+            loop
+               Lang_Id := Lang_Id.Next;
+            end loop;
+
+            if Lang_Id = No_Language_Index then
+               Prj.Com.Fail
+                 ("unknown language " &
+                  Get_Name_String (Src.Language) &
+                  " for project " &
+                  Get_Name_String (Src.Project) &
+                  " in source info file");
+            end if;
+
+            Id.Language            := Lang_Id;
+            Id.Kind                := Src.Kind;
+
+            Id.Index               := Src.Index;
+
+            Id.Path :=
+              (Path_Name_Type (Src.Display_Path_Name),
+               Path_Name_Type (Src.Path_Name));
+
+            Name_Len := 0;
+            Add_Str_To_Name_Buffer
+              (Ada.Directories.Simple_Name
+                 (Get_Name_String (Src.Path_Name)));
+            Id.File := Name_Find;
+
+            Name_Len := 0;
+            Add_Str_To_Name_Buffer
+              (Ada.Directories.Simple_Name
+                 (Get_Name_String (Src.Display_Path_Name)));
+            Id.Display_File := Name_Find;
+
+            Id.Dep_Name            := Dependency_Name
+              (Id.File, Id.Language.Config.Dependency_Kind);
+            Id.Naming_Exception    := Src.Naming_Exception;
+            Id.Object              := Object_Name
+              (Id.File, Id.Language.Config.Object_File_Suffix);
+            Id.Switches            := Switches_Name (Id.File);
+
+            --  Add the source id to the Unit_Sources_HT hash table, if the
+            --  unit name is not null.
+
+            if Src.Kind /= Sep and then Src.Unit_Name /= No_Name then
+
+               declare
+                  UData : Unit_Index :=
+                    Units_Htable.Get (Data.Tree.Units_HT, Src.Unit_Name);
+               begin
+                  if UData = No_Unit_Index then
+                     UData := new Unit_Data;
+                     UData.Name := Src.Unit_Name;
+                     Units_Htable.Set
+                       (Data.Tree.Units_HT, Src.Unit_Name, UData);
+                  end if;
+
+                  Id.Unit := UData;
+               end;
+
+               --  Note that this updates Unit information as well
+
+               Override_Kind (Id, Id.Kind);
+            end if;
+
+            if Src.Index /= 0 then
+               Project.Project.Has_Multi_Unit_Sources := True;
+            end if;
+
+            --  Add the source to the language list
+
+            Id.Next_In_Lang := Id.Language.First_Source;
+            Id.Language.First_Source := Id;
+
+            Files_Htable.Set (Data.File_To_Source, Id.File, Id);
+
+            Next (Iter);
+         end loop;
+      end Get_Sources_From_Source_Info;
+
    --  Start of processing for Look_For_Sources
 
    begin
-      if Project.Project.Source_Dirs /= Nil_String then
-         Find_Excluded_Sources (Project, Data);
+      if Data.Tree.Source_Info_File_Exists then
+         Get_Sources_From_Source_Info;
 
-         if Project.Project.Languages /= No_Language_Index then
-            Load_Naming_Exceptions (Project, Data);
-            Find_Sources (Project, Data);
-            Mark_Excluded_Sources;
-            Check_Object_Files;
-            Check_Missing_Sources;
+      else
+         if Project.Project.Source_Dirs /= Nil_String then
+            Find_Excluded_Sources (Project, Data);
+
+            if Project.Project.Languages /= No_Language_Index then
+               Load_Naming_Exceptions (Project, Data);
+               Find_Sources (Project, Data);
+               Mark_Excluded_Sources;
+               Check_Object_Files;
+               Check_Missing_Sources;
+            end if;
          end if;
-      end if;
 
-      Object_File_Names_Htable.Reset (Object_Files);
+         Object_File_Names_Htable.Reset (Object_Files);
+      end if;
    end Look_For_Sources;
 
    ------------------

@@ -315,22 +315,194 @@ package body Prj.Conf is
       end loop;
    end Add_Attributes;
 
-   ------------------------
-   -- Locate_Config_File --
-   ------------------------
+   ------------------------------------
+   -- Add_Default_GNAT_Naming_Scheme --
+   ------------------------------------
 
-   function Locate_Config_File (Name : String) return String_Access is
-      Prefix_Path : constant String := Executable_Prefix_Path;
+   procedure Add_Default_GNAT_Naming_Scheme
+     (Config_File  : in out Project_Node_Id;
+      Project_Tree : Project_Node_Tree_Ref)
+   is
+      procedure Create_Attribute
+        (Name  : Name_Id;
+         Value : String;
+         Index : String := "";
+         Pkg   : Project_Node_Id := Empty_Node);
+
+      ----------------------
+      -- Create_Attribute --
+      ----------------------
+
+      procedure Create_Attribute
+        (Name  : Name_Id;
+         Value : String;
+         Index : String := "";
+         Pkg   : Project_Node_Id := Empty_Node)
+      is
+         Attr       : Project_Node_Id;
+         pragma Unreferenced (Attr);
+
+         Expr   : Name_Id         := No_Name;
+         Val    : Name_Id         := No_Name;
+         Parent : Project_Node_Id := Config_File;
+      begin
+         if Index /= "" then
+            Name_Len := Index'Length;
+            Name_Buffer (1 .. Name_Len) := Index;
+            Val := Name_Find;
+         end if;
+
+         if Pkg /= Empty_Node then
+            Parent := Pkg;
+         end if;
+
+         Name_Len := Value'Length;
+         Name_Buffer (1 .. Name_Len) := Value;
+         Expr := Name_Find;
+
+         Attr := Create_Attribute
+           (Tree       => Project_Tree,
+            Prj_Or_Pkg => Parent,
+            Name       => Name,
+            Index_Name => Val,
+            Kind       => Prj.Single,
+            Value      => Create_Literal_String (Expr, Project_Tree));
+      end Create_Attribute;
+
+      --  Local variables
+
+      Name   : Name_Id;
+      Naming : Project_Node_Id;
+
+   --  Start of processing for Add_Default_GNAT_Naming_Scheme
+
    begin
-      if Prefix_Path'Length /= 0 then
-         return Locate_Regular_File
-           (Name,
-            "." & Path_Separator &
-            Prefix_Path & "share" & Directory_Separator & "gpr");
-      else
-         return Locate_Regular_File (Name, ".");
+      if Config_File = Empty_Node then
+
+         --  Create a dummy config file is none was found
+
+         Name_Len := Auto_Cgpr'Length;
+         Name_Buffer (1 .. Name_Len) := Auto_Cgpr;
+         Name := Name_Find;
+
+         --  An invalid project name to avoid conflicts with user-created ones
+
+         Name_Len := 5;
+         Name_Buffer (1 .. Name_Len) := "_auto";
+
+         Config_File :=
+           Create_Project
+             (In_Tree        => Project_Tree,
+              Name           => Name_Find,
+              Full_Path      => Path_Name_Type (Name),
+              Is_Config_File => True);
+
+         --  Setup library support
+
+         case MLib.Tgt.Support_For_Libraries is
+            when None =>
+               null;
+
+            when Static_Only =>
+               Create_Attribute (Name_Library_Support, "static_only");
+
+            when Full =>
+               Create_Attribute (Name_Library_Support, "full");
+         end case;
+
+         if MLib.Tgt.Standalone_Library_Auto_Init_Is_Supported then
+            Create_Attribute (Name_Library_Auto_Init_Supported, "true");
+         else
+            Create_Attribute (Name_Library_Auto_Init_Supported, "false");
+         end if;
+
+         --  Setup Ada support (Ada is the default language here, since this
+         --  is only called when no config file existed initially, ie for
+         --  gnatmake).
+
+         Create_Attribute (Name_Default_Language, "ada");
+
+         Naming := Create_Package (Project_Tree, Config_File, "naming");
+         Create_Attribute (Name_Spec_Suffix, ".ads", "ada",     Pkg => Naming);
+         Create_Attribute (Name_Separate_Suffix, ".adb", "ada", Pkg => Naming);
+         Create_Attribute (Name_Body_Suffix, ".adb", "ada",     Pkg => Naming);
+         Create_Attribute (Name_Dot_Replacement, "-",           Pkg => Naming);
+         Create_Attribute (Name_Casing,          "lowercase",   Pkg => Naming);
+
+         if Current_Verbosity = High then
+            Write_Line ("Automatically generated (in-memory) config file");
+            Prj.PP.Pretty_Print
+              (Project                => Config_File,
+               In_Tree                => Project_Tree,
+               Backward_Compatibility => False);
+         end if;
       end if;
-   end Locate_Config_File;
+   end Add_Default_GNAT_Naming_Scheme;
+
+   -----------------------
+   -- Apply_Config_File --
+   -----------------------
+
+   procedure Apply_Config_File
+     (Config_File  : Prj.Project_Id;
+      Project_Tree : Prj.Project_Tree_Ref)
+   is
+      Conf_Decl    : constant Declarations := Config_File.Decl;
+      Conf_Pack_Id : Package_Id;
+      Conf_Pack    : Package_Element;
+
+      User_Decl    : Declarations;
+      User_Pack_Id : Package_Id;
+      User_Pack    : Package_Element;
+      Proj         : Project_List;
+
+   begin
+      Proj := Project_Tree.Projects;
+      while Proj /= null loop
+         if Proj.Project /= Config_File then
+            User_Decl := Proj.Project.Decl;
+            Add_Attributes
+              (Project_Tree => Project_Tree,
+               Conf_Decl    => Conf_Decl,
+               User_Decl    => User_Decl);
+
+            Conf_Pack_Id := Conf_Decl.Packages;
+            while Conf_Pack_Id /= No_Package loop
+               Conf_Pack := Project_Tree.Packages.Table (Conf_Pack_Id);
+
+               User_Pack_Id := User_Decl.Packages;
+               while User_Pack_Id /= No_Package loop
+                  User_Pack := Project_Tree.Packages.Table (User_Pack_Id);
+                  exit when User_Pack.Name = Conf_Pack.Name;
+                  User_Pack_Id := User_Pack.Next;
+               end loop;
+
+               if User_Pack_Id = No_Package then
+                  Package_Table.Increment_Last (Project_Tree.Packages);
+                  User_Pack := Conf_Pack;
+                  User_Pack.Next := User_Decl.Packages;
+                  User_Decl.Packages :=
+                    Package_Table.Last (Project_Tree.Packages);
+                  Project_Tree.Packages.Table (User_Decl.Packages) :=
+                    User_Pack;
+
+               else
+                  Add_Attributes
+                    (Project_Tree => Project_Tree,
+                     Conf_Decl    => Conf_Pack.Decl,
+                     User_Decl    => Project_Tree.Packages.Table
+                       (User_Pack_Id).Decl);
+               end if;
+
+               Conf_Pack_Id := Conf_Pack.Next;
+            end loop;
+
+            Proj.Project.Decl := User_Decl;
+         end if;
+
+         Proj := Proj.Next;
+      end loop;
+   end Apply_Config_File;
 
    ------------------
    -- Check_Target --
@@ -965,82 +1137,22 @@ package body Prj.Conf is
       end if;
    end Get_Or_Create_Configuration_File;
 
-   --------------------------------------
-   -- Process_Project_And_Apply_Config --
-   --------------------------------------
+   ------------------------
+   -- Locate_Config_File --
+   ------------------------
 
-   procedure Process_Project_And_Apply_Config
-     (Main_Project               : out Prj.Project_Id;
-      User_Project_Node          : Prj.Tree.Project_Node_Id;
-      Config_File_Name           : String := "";
-      Autoconf_Specified         : Boolean;
-      Project_Tree               : Prj.Project_Tree_Ref;
-      Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
-      Packages_To_Check          : String_List_Access;
-      Allow_Automatic_Generation : Boolean := True;
-      Automatically_Generated    : out Boolean;
-      Config_File_Path           : out String_Access;
-      Target_Name                : String := "";
-      Normalized_Hostname        : String;
-      Flags                      : Processing_Flags;
-      On_Load_Config             : Config_File_Hook := null;
-      Reset_Tree                 : Boolean := True)
-   is
-      Main_Config_Project : Project_Id;
-      Success : Boolean;
-
+   function Locate_Config_File (Name : String) return String_Access is
+      Prefix_Path : constant String := Executable_Prefix_Path;
    begin
-      Main_Project := No_Project;
-      Automatically_Generated := False;
-
-      Process_Project_Tree_Phase_1
-        (In_Tree                => Project_Tree,
-         Project                => Main_Project,
-         Success                => Success,
-         From_Project_Node      => User_Project_Node,
-         From_Project_Node_Tree => Project_Node_Tree,
-         Flags                  => Flags,
-         Reset_Tree             => Reset_Tree);
-
-      if not Success then
-         Main_Project := No_Project;
-         return;
+      if Prefix_Path'Length /= 0 then
+         return Locate_Regular_File
+           (Name,
+            "." & Path_Separator &
+            Prefix_Path & "share" & Directory_Separator & "gpr");
+      else
+         return Locate_Regular_File (Name, ".");
       end if;
-
-      --  Find configuration file
-
-      Get_Or_Create_Configuration_File
-        (Config                     => Main_Config_Project,
-         Project                    => Main_Project,
-         Project_Tree               => Project_Tree,
-         Project_Node_Tree          => Project_Node_Tree,
-         Allow_Automatic_Generation => Allow_Automatic_Generation,
-         Config_File_Name           => Config_File_Name,
-         Autoconf_Specified         => Autoconf_Specified,
-         Target_Name                => Target_Name,
-         Normalized_Hostname        => Normalized_Hostname,
-         Packages_To_Check          => Packages_To_Check,
-         Config_File_Path           => Config_File_Path,
-         Automatically_Generated    => Automatically_Generated,
-         Flags                      => Flags,
-         On_Load_Config             => On_Load_Config);
-
-      Apply_Config_File (Main_Config_Project, Project_Tree);
-
-      --  Finish processing the user's project
-
-      Prj.Proc.Process_Project_Tree_Phase_2
-        (In_Tree                    => Project_Tree,
-         Project                    => Main_Project,
-         Success                    => Success,
-         From_Project_Node          => User_Project_Node,
-         From_Project_Node_Tree     => Project_Node_Tree,
-         Flags                      => Flags);
-
-      if not Success then
-         Main_Project := No_Project;
-      end if;
-   end Process_Project_And_Apply_Config;
+   end Locate_Config_File;
 
    ------------------------------------
    -- Parse_Project_And_Apply_Config --
@@ -1103,81 +1215,125 @@ package body Prj.Conf is
          On_Load_Config             => On_Load_Config);
    end Parse_Project_And_Apply_Config;
 
-   -----------------------
-   -- Apply_Config_File --
-   -----------------------
+   --------------------------------------
+   -- Process_Project_And_Apply_Config --
+   --------------------------------------
 
-   procedure Apply_Config_File
-     (Config_File  : Prj.Project_Id;
-      Project_Tree : Prj.Project_Tree_Ref)
+   procedure Process_Project_And_Apply_Config
+     (Main_Project               : out Prj.Project_Id;
+      User_Project_Node          : Prj.Tree.Project_Node_Id;
+      Config_File_Name           : String := "";
+      Autoconf_Specified         : Boolean;
+      Project_Tree               : Prj.Project_Tree_Ref;
+      Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
+      Packages_To_Check          : String_List_Access;
+      Allow_Automatic_Generation : Boolean := True;
+      Automatically_Generated    : out Boolean;
+      Config_File_Path           : out String_Access;
+      Target_Name                : String := "";
+      Normalized_Hostname        : String;
+      Flags                      : Processing_Flags;
+      On_Load_Config             : Config_File_Hook := null;
+      Reset_Tree                 : Boolean := True)
    is
-      Conf_Decl    : constant Declarations := Config_File.Decl;
-      Conf_Pack_Id : Package_Id;
-      Conf_Pack    : Package_Element;
-
-      User_Decl    : Declarations;
-      User_Pack_Id : Package_Id;
-      User_Pack    : Package_Element;
-      Proj         : Project_List;
+      Main_Config_Project : Project_Id;
+      Success : Boolean;
 
    begin
-      Proj := Project_Tree.Projects;
-      while Proj /= null loop
-         if Proj.Project /= Config_File then
-            User_Decl := Proj.Project.Decl;
-            Add_Attributes
-              (Project_Tree => Project_Tree,
-               Conf_Decl    => Conf_Decl,
-               User_Decl    => User_Decl);
+      Main_Project := No_Project;
+      Automatically_Generated := False;
 
-            Conf_Pack_Id := Conf_Decl.Packages;
-            while Conf_Pack_Id /= No_Package loop
-               Conf_Pack := Project_Tree.Packages.Table (Conf_Pack_Id);
+      Process_Project_Tree_Phase_1
+        (In_Tree                => Project_Tree,
+         Project                => Main_Project,
+         Success                => Success,
+         From_Project_Node      => User_Project_Node,
+         From_Project_Node_Tree => Project_Node_Tree,
+         Flags                  => Flags,
+         Reset_Tree             => Reset_Tree);
 
-               User_Pack_Id := User_Decl.Packages;
-               while User_Pack_Id /= No_Package loop
-                  User_Pack := Project_Tree.Packages.Table (User_Pack_Id);
-                  exit when User_Pack.Name = Conf_Pack.Name;
-                  User_Pack_Id := User_Pack.Next;
-               end loop;
+      if not Success then
+         Main_Project := No_Project;
+         return;
+      end if;
 
-               if User_Pack_Id = No_Package then
-                  Package_Table.Increment_Last (Project_Tree.Packages);
-                  User_Pack := Conf_Pack;
-                  User_Pack.Next := User_Decl.Packages;
-                  User_Decl.Packages :=
-                    Package_Table.Last (Project_Tree.Packages);
-                  Project_Tree.Packages.Table (User_Decl.Packages) :=
-                    User_Pack;
+      if Project_Tree.Source_Info_File_Name /= null then
+         if not Is_Absolute_Path (Project_Tree.Source_Info_File_Name.all) then
+            declare
+               Obj_Dir : constant Variable_Value :=
+                 Value_Of
+                   (Name_Object_Dir,
+                    Main_Project.Decl.Attributes,
+                    Project_Tree);
+
+            begin
+               if Obj_Dir = Nil_Variable_Value or else Obj_Dir.Default then
+                  Get_Name_String (Main_Project.Directory.Display_Name);
 
                else
-                  Add_Attributes
-                    (Project_Tree => Project_Tree,
-                     Conf_Decl    => Conf_Pack.Decl,
-                     User_Decl    => Project_Tree.Packages.Table
-                       (User_Pack_Id).Decl);
+                  if Is_Absolute_Path (Get_Name_String (Obj_Dir.Value)) then
+                     Get_Name_String (Obj_Dir.Value);
+
+                  else
+                     Name_Len := 0;
+                     Add_Str_To_Name_Buffer
+                       (Get_Name_String (Main_Project.Directory.Display_Name));
+                     Add_Str_To_Name_Buffer (Get_Name_String (Obj_Dir.Value));
+                  end if;
                end if;
 
-               Conf_Pack_Id := Conf_Pack.Next;
-            end loop;
-
-            Proj.Project.Decl := User_Decl;
+               Add_Char_To_Name_Buffer (Directory_Separator);
+               Add_Str_To_Name_Buffer (Project_Tree.Source_Info_File_Name.all);
+               Free (Project_Tree.Source_Info_File_Name);
+               Project_Tree.Source_Info_File_Name :=
+                 new String'(Name_Buffer (1 .. Name_Len));
+            end;
          end if;
 
-         Proj := Proj.Next;
-      end loop;
-   end Apply_Config_File;
+         Read_Source_Info_File (Project_Tree);
+      end if;
 
-   ---------------------
-   -- Set_Runtime_For --
-   ---------------------
+      --  Find configuration file
 
-   procedure Set_Runtime_For (Language : Name_Id; RTS_Name : String) is
-   begin
-      Name_Len := RTS_Name'Length;
-      Name_Buffer (1 .. Name_Len) := RTS_Name;
-      RTS_Languages.Set (Language, Name_Find);
-   end Set_Runtime_For;
+      Get_Or_Create_Configuration_File
+        (Config                     => Main_Config_Project,
+         Project                    => Main_Project,
+         Project_Tree               => Project_Tree,
+         Project_Node_Tree          => Project_Node_Tree,
+         Allow_Automatic_Generation => Allow_Automatic_Generation,
+         Config_File_Name           => Config_File_Name,
+         Autoconf_Specified         => Autoconf_Specified,
+         Target_Name                => Target_Name,
+         Normalized_Hostname        => Normalized_Hostname,
+         Packages_To_Check          => Packages_To_Check,
+         Config_File_Path           => Config_File_Path,
+         Automatically_Generated    => Automatically_Generated,
+         Flags                      => Flags,
+         On_Load_Config             => On_Load_Config);
+
+      Apply_Config_File (Main_Config_Project, Project_Tree);
+
+      --  Finish processing the user's project
+
+      Prj.Proc.Process_Project_Tree_Phase_2
+        (In_Tree                    => Project_Tree,
+         Project                    => Main_Project,
+         Success                    => Success,
+         From_Project_Node          => User_Project_Node,
+         From_Project_Node_Tree     => Project_Node_Tree,
+         Flags                      => Flags);
+
+      if Success then
+         if Project_Tree.Source_Info_File_Name /= null and then
+            not Project_Tree.Source_Info_File_Exists
+         then
+            Write_Source_Info_File (Project_Tree);
+         end if;
+
+      else
+         Main_Project := No_Project;
+      end if;
+   end Process_Project_And_Apply_Config;
 
    ----------------------
    -- Runtime_Name_For --
@@ -1192,128 +1348,15 @@ package body Prj.Conf is
       end if;
    end Runtime_Name_For;
 
-   ------------------------------------
-   -- Add_Default_GNAT_Naming_Scheme --
-   ------------------------------------
+   ---------------------
+   -- Set_Runtime_For --
+   ---------------------
 
-   procedure Add_Default_GNAT_Naming_Scheme
-     (Config_File  : in out Project_Node_Id;
-      Project_Tree : Project_Node_Tree_Ref)
-   is
-      procedure Create_Attribute
-        (Name  : Name_Id;
-         Value : String;
-         Index : String := "";
-         Pkg   : Project_Node_Id := Empty_Node);
-
-      ----------------------
-      -- Create_Attribute --
-      ----------------------
-
-      procedure Create_Attribute
-        (Name  : Name_Id;
-         Value : String;
-         Index : String := "";
-         Pkg   : Project_Node_Id := Empty_Node)
-      is
-         Attr       : Project_Node_Id;
-         pragma Unreferenced (Attr);
-
-         Expr   : Name_Id         := No_Name;
-         Val    : Name_Id         := No_Name;
-         Parent : Project_Node_Id := Config_File;
-      begin
-         if Index /= "" then
-            Name_Len := Index'Length;
-            Name_Buffer (1 .. Name_Len) := Index;
-            Val := Name_Find;
-         end if;
-
-         if Pkg /= Empty_Node then
-            Parent := Pkg;
-         end if;
-
-         Name_Len := Value'Length;
-         Name_Buffer (1 .. Name_Len) := Value;
-         Expr := Name_Find;
-
-         Attr := Create_Attribute
-           (Tree       => Project_Tree,
-            Prj_Or_Pkg => Parent,
-            Name       => Name,
-            Index_Name => Val,
-            Kind       => Prj.Single,
-            Value      => Create_Literal_String (Expr, Project_Tree));
-      end Create_Attribute;
-
-      --  Local variables
-
-      Name   : Name_Id;
-      Naming : Project_Node_Id;
-
-   --  Start of processing for Add_Default_GNAT_Naming_Scheme
-
+   procedure Set_Runtime_For (Language : Name_Id; RTS_Name : String) is
    begin
-      if Config_File = Empty_Node then
-
-         --  Create a dummy config file is none was found
-
-         Name_Len := Auto_Cgpr'Length;
-         Name_Buffer (1 .. Name_Len) := Auto_Cgpr;
-         Name := Name_Find;
-
-         --  An invalid project name to avoid conflicts with user-created ones
-
-         Name_Len := 5;
-         Name_Buffer (1 .. Name_Len) := "_auto";
-
-         Config_File :=
-           Create_Project
-             (In_Tree        => Project_Tree,
-              Name           => Name_Find,
-              Full_Path      => Path_Name_Type (Name),
-              Is_Config_File => True);
-
-         --  Setup library support
-
-         case MLib.Tgt.Support_For_Libraries is
-            when None =>
-               null;
-
-            when Static_Only =>
-               Create_Attribute (Name_Library_Support, "static_only");
-
-            when Full =>
-               Create_Attribute (Name_Library_Support, "full");
-         end case;
-
-         if MLib.Tgt.Standalone_Library_Auto_Init_Is_Supported then
-            Create_Attribute (Name_Library_Auto_Init_Supported, "true");
-         else
-            Create_Attribute (Name_Library_Auto_Init_Supported, "false");
-         end if;
-
-         --  Setup Ada support (Ada is the default language here, since this
-         --  is only called when no config file existed initially, ie for
-         --  gnatmake).
-
-         Create_Attribute (Name_Default_Language, "ada");
-
-         Naming := Create_Package (Project_Tree, Config_File, "naming");
-         Create_Attribute (Name_Spec_Suffix, ".ads", "ada",     Pkg => Naming);
-         Create_Attribute (Name_Separate_Suffix, ".adb", "ada", Pkg => Naming);
-         Create_Attribute (Name_Body_Suffix, ".adb", "ada",     Pkg => Naming);
-         Create_Attribute (Name_Dot_Replacement, "-",           Pkg => Naming);
-         Create_Attribute (Name_Casing,          "lowercase",   Pkg => Naming);
-
-         if Current_Verbosity = High then
-            Write_Line ("Automatically generated (in-memory) config file");
-            Prj.PP.Pretty_Print
-              (Project                => Config_File,
-               In_Tree                => Project_Tree,
-               Backward_Compatibility => False);
-         end if;
-      end if;
-   end Add_Default_GNAT_Naming_Scheme;
+      Name_Len := RTS_Name'Length;
+      Name_Buffer (1 .. Name_Len) := RTS_Name;
+      RTS_Languages.Set (Language, Name_Find);
+   end Set_Runtime_For;
 
 end Prj.Conf;

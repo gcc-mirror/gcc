@@ -1354,6 +1354,12 @@ package Prj is
          Source_Paths_HT   : Source_Paths_Htable.Instance;
          --  Full path to Source_Id
 
+         Source_Info_File_Name   : String_Access := null;
+         --  The name of the source info file, if specified by the builder
+
+         Source_Info_File_Exists : Boolean := False;
+         --  True when a source info file has been successfully read
+
          Private_Part      : Private_Project_Tree_Data;
       end record;
    --  Data for a project tree
