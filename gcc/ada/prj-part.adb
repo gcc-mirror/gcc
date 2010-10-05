@@ -125,7 +125,36 @@ package body Prj.Part is
       Key        => Name_Id,
       Hash       => Hash,
       Equal      => "=");
+
+   function Has_Circular_Dependencies
+     (Flags               : Processing_Flags;
+      Normed_Path_Name    : Path_Name_Type;
+      Canonical_Path_Name : Path_Name_Type) return Boolean;
+   --  Check for a circular dependency in the loaded project.
+   --  Generates an error message in such a case.
+
+   procedure Read_Project_Qualifier
+     (Flags              : Processing_Flags;
+      In_Tree            : Project_Node_Tree_Ref;
+      Is_Config_File     : Boolean;
+      Qualifier_Location : out Source_Ptr;
+      Project            : Project_Node_Id);
+   --  Check if there is a qualifier before the reserved word "project"
+
    --  Hash table to cache project path to avoid looking for them on the path
+
+   procedure Check_Extending_All_Imports
+     (Flags : Processing_Flags;
+      In_Tree : Project_Node_Tree_Ref;
+      Project : Project_Node_Id);
+   --  Check that a non extending-all project does not import an
+   --  extending-all project.
+
+   procedure Check_Aggregate_Imports
+     (Flags   : Processing_Flags;
+      In_Tree : Project_Node_Tree_Ref;
+      Project : Project_Node_Id);
+   --  Check that an aggregate project only imports abstract projects
 
    procedure Create_Virtual_Extending_Project
      (For_Project  : Project_Node_Id;
@@ -916,6 +945,185 @@ package body Prj.Part is
       end loop;
    end Post_Parse_Context_Clause;
 
+   ---------------------------------
+   -- Check_Extending_All_Imports --
+   ---------------------------------
+
+   procedure Check_Extending_All_Imports
+     (Flags   : Processing_Flags;
+      In_Tree : Project_Node_Tree_Ref;
+      Project : Project_Node_Id)
+   is
+      With_Clause, Imported : Project_Node_Id;
+   begin
+      if not Is_Extending_All (Project, In_Tree) then
+         With_Clause := First_With_Clause_Of (Project, In_Tree);
+
+         while Present (With_Clause) loop
+            Imported := Project_Node_Of (With_Clause, In_Tree);
+
+            if Is_Extending_All (With_Clause, In_Tree) then
+               Error_Msg_Name_1 := Name_Of (Imported, In_Tree);
+               Error_Msg (Flags, "cannot import extending-all project %%",
+                          Token_Ptr);
+               exit;
+            end if;
+
+            With_Clause := Next_With_Clause_Of (With_Clause, In_Tree);
+         end loop;
+      end if;
+   end Check_Extending_All_Imports;
+
+   -----------------------------
+   -- Check_Aggregate_Imports --
+   -----------------------------
+
+   procedure Check_Aggregate_Imports
+     (Flags   : Processing_Flags;
+      In_Tree : Project_Node_Tree_Ref;
+      Project : Project_Node_Id)
+   is
+      With_Clause, Imported : Project_Node_Id;
+   begin
+      if Project_Qualifier_Of (Project, In_Tree) = Aggregate then
+         With_Clause := First_With_Clause_Of (Project, In_Tree);
+
+         while Present (With_Clause) loop
+            Imported := Project_Node_Of (With_Clause, In_Tree);
+
+            if Project_Qualifier_Of (Imported, In_Tree) /= Dry then
+               Error_Msg_Name_1 := Name_Id (Path_Name_Of (Imported, In_Tree));
+               Error_Msg (Flags, "can only import abstract projects, not %%",
+                          Token_Ptr);
+               exit;
+            end if;
+
+            With_Clause := Next_With_Clause_Of (With_Clause, In_Tree);
+         end loop;
+      end if;
+   end Check_Aggregate_Imports;
+
+   ----------------------------
+   -- Read_Project_Qualifier --
+   ----------------------------
+
+   procedure Read_Project_Qualifier
+     (Flags              : Processing_Flags;
+      In_Tree            : Project_Node_Tree_Ref;
+      Is_Config_File     : Boolean;
+      Qualifier_Location : out Source_Ptr;
+      Project            : Project_Node_Id)
+   is
+      Proj_Qualifier : Project_Qualifier := Unspecified;
+   begin
+      Qualifier_Location := Token_Ptr;
+
+      if Token = Tok_Abstract then
+         Proj_Qualifier := Dry;
+         Scan (In_Tree);
+
+      elsif Token = Tok_Identifier then
+         case Token_Name is
+            when Snames.Name_Standard =>
+               Proj_Qualifier := Standard;
+               Scan (In_Tree);
+
+            when Snames.Name_Aggregate =>
+               Proj_Qualifier := Aggregate;
+               Scan (In_Tree);
+
+               if Token = Tok_Identifier and then
+                 Token_Name = Snames.Name_Library
+               then
+                  Proj_Qualifier := Aggregate_Library;
+                  Scan (In_Tree);
+               end if;
+
+            when Snames.Name_Library =>
+               Proj_Qualifier := Library;
+               Scan (In_Tree);
+
+            when Snames.Name_Configuration =>
+               if not Is_Config_File then
+                  Error_Msg
+                    (Flags,
+                     "configuration projects cannot belong to a user" &
+                     " project tree",
+                     Token_Ptr);
+               end if;
+
+               Proj_Qualifier := Configuration;
+               Scan (In_Tree);
+
+            when others =>
+               null;
+         end case;
+      end if;
+
+      if Is_Config_File and then Proj_Qualifier = Unspecified then
+
+         --  Set the qualifier to Configuration, even if the token doesn't
+         --  exist in the source file itself, so that we can differentiate
+         --  project files and configuration files later on.
+
+         Proj_Qualifier := Configuration;
+      end if;
+
+      if Proj_Qualifier /= Unspecified then
+         if Is_Config_File
+           and then Proj_Qualifier /= Configuration
+         then
+            Error_Msg (Flags,
+                       "a configuration project cannot be qualified except " &
+                       "as configuration project",
+                       Qualifier_Location);
+         end if;
+
+         Set_Project_Qualifier_Of (Project, In_Tree, Proj_Qualifier);
+      end if;
+   end Read_Project_Qualifier;
+
+   -------------------------------
+   -- Has_Circular_Dependencies --
+   -------------------------------
+
+   function Has_Circular_Dependencies
+     (Flags               : Processing_Flags;
+      Normed_Path_Name    : Path_Name_Type;
+      Canonical_Path_Name : Path_Name_Type) return Boolean is
+   begin
+      for Index in reverse 1 .. Project_Stack.Last loop
+         exit when Project_Stack.Table (Index).Limited_With;
+
+         if Canonical_Path_Name =
+           Project_Stack.Table (Index).Canonical_Path_Name
+         then
+            Error_Msg (Flags, "circular dependency detected", Token_Ptr);
+            Error_Msg_Name_1 := Name_Id (Normed_Path_Name);
+            Error_Msg (Flags, "\  %% is imported by", Token_Ptr);
+
+            for Current in reverse 1 .. Project_Stack.Last loop
+               Error_Msg_Name_1 :=
+                 Name_Id (Project_Stack.Table (Current).Path_Name);
+
+               if Project_Stack.Table (Current).Canonical_Path_Name /=
+                 Canonical_Path_Name
+               then
+                  Error_Msg
+                    (Flags, "\  %% which itself is imported by", Token_Ptr);
+
+               else
+                  Error_Msg (Flags, "\  %%", Token_Ptr);
+                  exit;
+               end if;
+            end loop;
+
+            return True;
+         end if;
+      end loop;
+      return False;
+   end Has_Circular_Dependencies;
+
    --------------------------
    -- Parse_Single_Project --
    --------------------------
@@ -962,7 +1170,6 @@ package body Prj.Part is
 
       Project_Comment_State : Tree.Comment_State;
 
-      Proj_Qualifier     : Project_Qualifier := Unspecified;
       Qualifier_Location : Source_Ptr;
 
    begin
@@ -988,38 +1195,12 @@ package body Prj.Part is
          Canonical_Path_Name := Name_Find;
       end;
 
-      --  Check for a circular dependency
-
-      for Index in reverse 1 .. Project_Stack.Last loop
-         exit when Project_Stack.Table (Index).Limited_With;
-
-         if Canonical_Path_Name =
-              Project_Stack.Table (Index).Canonical_Path_Name
-         then
-            Error_Msg (Flags, "circular dependency detected", Token_Ptr);
-            Error_Msg_Name_1 := Name_Id (Normed_Path_Name);
-            Error_Msg (Flags, "\  %% is imported by", Token_Ptr);
-
-            for Current in reverse 1 .. Project_Stack.Last loop
-               Error_Msg_Name_1 :=
-                 Name_Id (Project_Stack.Table (Current).Path_Name);
-
-               if Project_Stack.Table (Current).Canonical_Path_Name /=
-                    Canonical_Path_Name
-               then
-                  Error_Msg
-                    (Flags, "\  %% which itself is imported by", Token_Ptr);
-
-               else
-                  Error_Msg (Flags, "\  %%", Token_Ptr);
-                  exit;
-               end if;
-            end loop;
-
-            Project := Empty_Node;
-            return;
-         end if;
-      end loop;
+      if Has_Circular_Dependencies
+        (Flags, Normed_Path_Name, Canonical_Path_Name)
+      then
+         Project := Empty_Node;
+         return;
+      end if;
 
       --  Put the new path name on the stack
 
@@ -1156,73 +1337,8 @@ package body Prj.Part is
       Set_Directory_Of (Project, In_Tree, Project_Directory);
       Set_Path_Name_Of (Project, In_Tree,  Normed_Path_Name);
 
-      --  Check if there is a qualifier before the reserved word "project"
-
-      Qualifier_Location := Token_Ptr;
-
-      if Token = Tok_Abstract then
-         Proj_Qualifier := Dry;
-         Scan (In_Tree);
-
-      elsif Token = Tok_Identifier then
-         case Token_Name is
-            when Snames.Name_Standard =>
-               Proj_Qualifier := Standard;
-               Scan (In_Tree);
-
-            when Snames.Name_Aggregate =>
-               Proj_Qualifier := Aggregate;
-               Scan (In_Tree);
-
-               if Token = Tok_Identifier and then
-                 Token_Name = Snames.Name_Library
-               then
-                  Proj_Qualifier := Aggregate_Library;
-                  Scan (In_Tree);
-               end if;
-
-            when Snames.Name_Library =>
-               Proj_Qualifier := Library;
-               Scan (In_Tree);
-
-            when Snames.Name_Configuration =>
-               if not Is_Config_File then
-                  Error_Msg
-                    (Flags,
-                     "configuration projects cannot belong to a user" &
-                     " project tree",
-                     Token_Ptr);
-               end if;
-
-               Proj_Qualifier := Configuration;
-               Scan (In_Tree);
-
-            when others =>
-               null;
-         end case;
-      end if;
-
-      if Is_Config_File and then Proj_Qualifier = Unspecified then
-
-         --  Set the qualifier to Configuration, even if the token doesn't
-         --  exist in the source file itself, so that we can differentiate
-         --  project files and configuration files later on.
-
-         Proj_Qualifier := Configuration;
-      end if;
-
-      if Proj_Qualifier /= Unspecified then
-         if Is_Config_File
-           and then Proj_Qualifier /= Configuration
-         then
-            Error_Msg (Flags,
-                       "a configuration project cannot be qualified except " &
-                       "as configuration project",
-                       Qualifier_Location);
-         end if;
-
-         Set_Project_Qualifier_Of (Project, In_Tree, Proj_Qualifier);
-      end if;
+      Read_Project_Qualifier
+        (Flags, In_Tree, Is_Config_File, Qualifier_Location, Project);
 
       Set_Location_Of (Project, In_Tree, Token_Ptr);
 
@@ -1513,7 +1629,7 @@ package body Prj.Part is
                      --  with sources, if it inherits sources from the project
                      --  it extends.
 
-                     if Proj_Qualifier = Dry and then
+                     if Project_Qualifier_Of (Project, In_Tree) = Dry and then
                        Project_Qualifier_Of (Extended_Project, In_Tree) /= Dry
                      then
                         Error_Msg
@@ -1529,31 +1645,8 @@ package body Prj.Part is
          end if;
       end if;
 
-      --  Check that a non extending-all project does not import an
-      --  extending-all project.
-
-      if not Is_Extending_All (Project, In_Tree) then
-         declare
-            With_Clause : Project_Node_Id :=
-                            First_With_Clause_Of (Project, In_Tree);
-            Imported    : Project_Node_Id := Empty_Node;
-
-         begin
-            With_Clause_Loop :
-            while Present (With_Clause) loop
-               Imported := Project_Node_Of (With_Clause, In_Tree);
-
-               if Is_Extending_All (With_Clause, In_Tree) then
-                  Error_Msg_Name_1 := Name_Of (Imported, In_Tree);
-                  Error_Msg (Flags, "cannot import extending-all project %%",
-                             Token_Ptr);
-                  exit With_Clause_Loop;
-               end if;
-
-               With_Clause := Next_With_Clause_Of (With_Clause, In_Tree);
-            end loop With_Clause_Loop;
-         end;
-      end if;
+      Check_Extending_All_Imports (Flags, In_Tree, Project);
+      Check_Aggregate_Imports (Flags, In_Tree, Project);
 
       --  Check that a project with a name including a dot either imports
       --  or extends the project whose name precedes the last dot.
@@ -1571,7 +1664,7 @@ package body Prj.Part is
          Name_Len := Name_Len - 1;
       end loop;
 
-      --  If a dot was find, check if the parent project is imported
+      --  If a dot was found, check if the parent project is imported
       --  or extended.
 
       if Name_Len > 0 then
@@ -1728,7 +1821,7 @@ package body Prj.Part is
                   Node           => Project,
                   Canonical_Path => Canonical_Path_Name,
                   Extended       => Extended,
-                  Proj_Qualifier => Proj_Qualifier));
+                  Proj_Qualifier => Project_Qualifier_Of (Project, In_Tree)));
       end if;
 
       declare

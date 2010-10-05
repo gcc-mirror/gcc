@@ -1133,6 +1133,8 @@ package Snames is
    Name_Prefix                           : constant Name_Id := N + $;
    Name_Project                          : constant Name_Id := N + $;
    Name_Project_Dir                      : constant Name_Id := N + $;
+   Name_Project_Files                    : constant Name_Id := N + $;
+   Name_Project_Path                     : constant Name_Id := N + $;
    Name_Response_File_Format             : constant Name_Id := N + $;
    Name_Response_File_Switches           : constant Name_Id := N + $;
    Name_Roots                            : constant Name_Id := N + $; --  GPR

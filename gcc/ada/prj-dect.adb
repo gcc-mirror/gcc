@@ -48,6 +48,31 @@ package body Prj.Dect is
    --  a case construction (In_Case_Construction) or none of those two
    --  (In_Project).
 
+   procedure Rename_Obsolescent_Attributes
+     (In_Tree         : Project_Node_Tree_Ref;
+      Attribute       : Project_Node_Id;
+      Current_Package : Project_Node_Id);
+   --  Rename obsolescent attributes in the tree.
+   --  When the attribute has been renamed since its initial introduction in
+   --  the design of projects, we replace the old name in the tree with the
+   --  new name, so that the code does not have to check both names forever.
+
+   procedure Check_Attribute_Allowed
+     (In_Tree         : Project_Node_Tree_Ref;
+      Project         : Project_Node_Id;
+      Attribute       : Project_Node_Id;
+      Flags           : Processing_Flags);
+   --  Chech whether the attribute is valid in this project.
+   --  In particular, depending on the type of project (qualifier), some
+   --  attributes might be disabled.
+
+   procedure Check_Package_Allowed
+     (In_Tree         : Project_Node_Tree_Ref;
+      Project         : Project_Node_Id;
+      Current_Package : Project_Node_Id;
+      Flags           : Processing_Flags);
+   --  Check whether the package is valid in this project
+
    procedure Parse_Attribute_Declaration
      (In_Tree           : Project_Node_Tree_Ref;
       Attribute         : out Project_Node_Id;
@@ -147,6 +172,111 @@ package body Prj.Dect is
         (Declarations, In_Tree, To => First_Declarative_Item);
    end Parse;
 
+   -----------------------------------
+   -- Rename_Obsolescent_Attributes --
+   -----------------------------------
+
+   procedure Rename_Obsolescent_Attributes
+     (In_Tree         : Project_Node_Tree_Ref;
+      Attribute       : Project_Node_Id;
+      Current_Package : Project_Node_Id) is
+   begin
+      if Present (Current_Package)
+        and then Expression_Kind_Of (Current_Package, In_Tree) /= Ignored
+      then
+         case Name_Of (Attribute, In_Tree) is
+         when Snames.Name_Specification =>
+            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Spec);
+
+         when Snames.Name_Specification_Suffix =>
+            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Spec_Suffix);
+
+         when Snames.Name_Implementation =>
+            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Body);
+
+         when Snames.Name_Implementation_Suffix =>
+            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Body_Suffix);
+
+         when others =>
+            null;
+         end case;
+      end if;
+   end Rename_Obsolescent_Attributes;
+
+   ---------------------------
+   -- Check_Package_Allowed --
+   ---------------------------
+
+   procedure Check_Package_Allowed
+     (In_Tree         : Project_Node_Tree_Ref;
+      Project         : Project_Node_Id;
+      Current_Package : Project_Node_Id;
+      Flags           : Processing_Flags)
+   is
+      Qualif : constant Project_Qualifier :=
+        Project_Qualifier_Of (Project, In_Tree);
+      Name   : constant Name_Id := Name_Of (Current_Package, In_Tree);
+   begin
+      if Qualif = Aggregate
+        and then Name /= Snames.Name_Builder
+      then
+         Error_Msg_Name_1 := Name;
+         Error_Msg
+           (Flags,
+            "package %% is forbidden in aggregate projects",
+            Location_Of (Current_Package, In_Tree));
+      end if;
+   end Check_Package_Allowed;
+
+   -----------------------------
+   -- Check_Attribute_Allowed --
+   -----------------------------
+
+   procedure Check_Attribute_Allowed
+     (In_Tree         : Project_Node_Tree_Ref;
+      Project         : Project_Node_Id;
+      Attribute       : Project_Node_Id;
+      Flags           : Processing_Flags)
+   is
+      Qualif : constant Project_Qualifier :=
+        Project_Qualifier_Of (Project, In_Tree);
+      Name   : constant Name_Id := Name_Of (Attribute, In_Tree);
+   begin
+      case Qualif is
+         when Aggregate =>
+            if Name = Snames.Name_Languages
+              or else Name = Snames.Name_Source_Files
+              or else Name = Snames.Name_Source_List_File
+              or else Name = Snames.Name_Locally_Removed_Files
+              or else Name = Snames.Name_Excluded_Source_Files
+              or else Name = Snames.Name_Excluded_Source_List_File
+              or else Name = Snames.Name_Interfaces
+              or else Name = Snames.Name_Object_Dir
+              or else Name = Snames.Name_Exec_Dir
+              or else Name = Snames.Name_Source_Dirs
+              or else Name = Snames.Name_Inherit_Source_Path
+            then
+               Error_Msg_Name_1 := Name;
+               Error_Msg
+                 (Flags,
+                  "%% is not valid in aggregate projects",
+                  Location_Of (Attribute, In_Tree));
+            end if;
+
+         when others =>
+            if Name = Snames.Name_Project_Files
+              or else Name = Snames.Name_Project_Path
+              or else Name = Snames.Name_External
+            then
+               Error_Msg_Name_1 := Name;
+               Error_Msg
+                 (Flags,
+                  "%% is only valid in aggregate projects",
+                  Location_Of (Attribute, In_Tree));
+            end if;
+      end case;
+   end Check_Attribute_Allowed;
+
    ---------------------------------
    -- Parse_Attribute_Declaration --
    ---------------------------------
@@ -165,37 +295,28 @@ package body Prj.Dect is
       Attribute_Name         : Name_Id           := No_Name;
       Optional_Index         : Boolean           := False;
       Pkg_Id                 : Package_Node_Id   := Empty_Package;
-      Ignore                 : Boolean           := False;
 
-   begin
-      Attribute :=
-        Default_Project_Node
-          (Of_Kind => N_Attribute_Declaration, In_Tree => In_Tree);
-      Set_Location_Of (Attribute, In_Tree, To => Token_Ptr);
-      Set_Previous_Line_Node (Attribute);
+      procedure Process_Attribute_Name;
+      --  Read the name of the attribute, and check its type
 
-      --  Scan past "for"
+      procedure Process_Associative_Array_Index;
+      --  Read the index of the associative array and check its validity
 
-      Scan (In_Tree);
+      ----------------------------
+      -- Process_Attribute_Name --
+      ----------------------------
 
-      --  Body may be an attribute name
-
-      if Token = Tok_Body then
-         Token := Tok_Identifier;
-         Token_Name := Snames.Name_Body;
-      end if;
-
-      Expect (Tok_Identifier, "identifier");
-
-      if Token = Tok_Identifier then
+      procedure Process_Attribute_Name is
+         Ignore : Boolean;
+      begin
          Attribute_Name := Token_Name;
-         Set_Name_Of (Attribute, In_Tree, To => Token_Name);
+         Set_Name_Of (Attribute, In_Tree, To => Attribute_Name);
          Set_Location_Of (Attribute, In_Tree, To => Token_Ptr);
 
          --  Find the attribute
 
          Current_Attribute :=
-           Attribute_Node_Id_Of (Token_Name, First_Attribute);
+           Attribute_Node_Id_Of (Attribute_Name, First_Attribute);
 
          --  If the attribute cannot be found, create the attribute if inside
          --  an unknown package.
@@ -254,35 +375,22 @@ package body Prj.Dect is
          end if;
 
          Scan (In_Tree); --  past the attribute name
-      end if;
 
-      --  Change obsolete names of attributes to the new names
+         --  Set the expression kind of the attribute
 
-      if Present (Current_Package)
-        and then Expression_Kind_Of (Current_Package, In_Tree) /= Ignored
-      then
-         case Name_Of (Attribute, In_Tree) is
-         when Snames.Name_Specification =>
-            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Spec);
+         if Current_Attribute /= Empty_Attribute then
+            Set_Expression_Kind_Of
+              (Attribute, In_Tree, To => Variable_Kind_Of (Current_Attribute));
+            Optional_Index := Optional_Index_Of (Current_Attribute);
+         end if;
+      end Process_Attribute_Name;
 
-         when Snames.Name_Specification_Suffix =>
-            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Spec_Suffix);
+      -------------------------------------
+      -- Process_Associative_Array_Index --
+      -------------------------------------
 
-         when Snames.Name_Implementation =>
-            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Body);
-
-         when Snames.Name_Implementation_Suffix =>
-            Set_Name_Of (Attribute, In_Tree, To => Snames.Name_Body_Suffix);
-
-         when others =>
-            null;
-         end case;
-      end if;
-
-      --  Associative array attributes
-
-      if Token = Tok_Left_Paren then
-
+      procedure Process_Associative_Array_Index is
+      begin
          --  If the attribute is not an associative array attribute, report
          --  an error. If this information is still unknown, set the kind
          --  to Associative_Array.
@@ -292,9 +400,8 @@ package body Prj.Dect is
          then
             Error_Msg (Flags,
                        "the attribute """ &
-                       Get_Name_String
-                          (Attribute_Name_Of (Current_Attribute)) &
-                       """ cannot be an associative array",
+                       Get_Name_String (Attribute_Name_Of (Current_Attribute))
+                       & """ cannot be an associative array",
                        Location_Of (Attribute, In_Tree));
 
          elsif Attribute_Kind_Of (Current_Attribute) = Unknown then
@@ -371,6 +478,35 @@ package body Prj.Dect is
          if Token = Tok_Right_Paren then
             Scan (In_Tree); --  past the right parenthesis
          end if;
+      end Process_Associative_Array_Index;
+
+   begin
+      Attribute :=
+        Default_Project_Node
+          (Of_Kind => N_Attribute_Declaration, In_Tree => In_Tree);
+      Set_Location_Of (Attribute, In_Tree, To => Token_Ptr);
+      Set_Previous_Line_Node (Attribute);
+
+      --  Scan past "for"
+
+      Scan (In_Tree);
+
+      --  Body may be an attribute name
+
+      if Token = Tok_Body then
+         Token := Tok_Identifier;
+         Token_Name := Snames.Name_Body;
+      end if;
+
+      Expect (Tok_Identifier, "identifier");
+      Process_Attribute_Name;
+      Rename_Obsolescent_Attributes (In_Tree, Attribute, Current_Package);
+      Check_Attribute_Allowed (In_Tree, Current_Project, Attribute, Flags);
+
+      --  Associative array attributes
+
+      if Token = Tok_Left_Paren then
+         Process_Associative_Array_Index;
 
       else
          --  If it is an associative array attribute and there are no left
@@ -388,14 +524,6 @@ package body Prj.Dect is
                Full_Associative_Array := True;
             end if;
          end if;
-      end if;
-
-      --  Set the expression kind of the attribute
-
-      if Current_Attribute /= Empty_Attribute then
-         Set_Expression_Kind_Of
-           (Attribute, In_Tree, To => Variable_Kind_Of (Current_Attribute));
-         Optional_Index := Optional_Index_Of (Current_Attribute);
       end if;
 
       Expect (Tok_Use, "USE");
@@ -1148,6 +1276,9 @@ package body Prj.Dect is
 
          Scan (In_Tree);
       end if;
+
+      Check_Package_Allowed
+        (In_Tree, Current_Project, Package_Declaration, Flags);
 
       if Token = Tok_Renames then
          Renaming := True;

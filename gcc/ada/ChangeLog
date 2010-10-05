@@ -1,3 +1,25 @@
+2010-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch5.adb (Make_Field_Expr): Revert previous change (removed).
+
+2010-10-05  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-dect.adb, prj-nmsc.adb, prj-attr.adb, snames.ads-tmpl
+	(Aggregate projects): added support for parsing aggregate projects.
+	In particular, check the presence and value of the new attributes
+	related to aggregate projects, ie Project_Files, Project_Path
+	and External.
+	(Check_Attribute_Allowed, Check_Package_Allowed,
+	Rename_Obsolescent_Attributes): new subprogram, extracting code
+	from existing subprogram to keep their sizes smaller.
+	(Check_Aggregate_Project, Check_Abstract_Project,
+	Check_Missing_Sources): new subprograms
+	(Check): remove comments that duplicated either the name of the
+	following subprogram call, or the comment on that subprogram.
+	* prj-part.adb (Check_Extending_All_Imports): New subprogram, extracted
+	from Parse_Single_Project.
+	(Check_Aggregate_Imports): new subprogram.
+
 2010-10-05  Vincent Celier  <celier@adacore.com>
 
 	* make.adb (Check): When compiling with -gnatc, recompile if the ALI
