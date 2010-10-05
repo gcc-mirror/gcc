@@ -509,8 +509,10 @@ package body Prj.Part is
 
       exception
          when Types.Unrecoverable_Error =>
+
             --  Unrecoverable_Error is raised when a line is too long.
             --  A meaningful error message will be displayed later.
+
             Project := Empty_Node;
       end;
 
@@ -535,7 +537,7 @@ package body Prj.Part is
 
          declare
             Declaration : constant Project_Node_Id :=
-              Project_Declaration_Of (Project, In_Tree);
+                            Project_Declaration_Of (Project, In_Tree);
          begin
             Look_For_Virtual_Projects_For
               (Extended_Project_Of (Declaration, In_Tree), In_Tree,
@@ -544,9 +546,9 @@ package body Prj.Part is
 
          --  Now, check the projects directly imported by the main project.
          --  Remove from the potentially virtual any project extended by one
-         --  of these imported projects. For non extending imported
-         --  projects, check that they do not belong to the project tree of
-         --  the project being "extended-all" by the main project.
+         --  of these imported projects. For non extending imported projects,
+         --  check that they do not belong to the project tree of the project
+         --  being "extended-all" by the main project.
 
          declare
             With_Clause : Project_Node_Id;
@@ -930,11 +932,12 @@ package body Prj.Part is
       In_Tree : Project_Node_Tree_Ref;
       Project : Project_Node_Id)
    is
-      With_Clause, Imported : Project_Node_Id;
+      With_Clause : Project_Node_Id;
+      Imported    : Project_Node_Id;
+
    begin
       if not Is_Extending_All (Project, In_Tree) then
          With_Clause := First_With_Clause_Of (Project, In_Tree);
-
          while Present (With_Clause) loop
             Imported := Project_Node_Of (With_Clause, In_Tree);
 
@@ -1174,7 +1177,7 @@ package body Prj.Part is
       end;
 
       if Has_Circular_Dependencies
-        (Flags, Normed_Path_Name, Canonical_Path_Name)
+           (Flags, Normed_Path_Name, Canonical_Path_Name)
       then
          Project := Empty_Node;
          return;
@@ -1641,18 +1644,17 @@ package body Prj.Part is
          Name_Len := Name_Len - 1;
       end loop;
 
-      --  If a dot was found, check if the parent project is imported
-      --  or extended.
+      --  If a dot was found, check if parent project is imported or extended
 
       if Name_Len > 0 then
          Name_Len := Name_Len - 1;
 
          declare
-            Parent_Name  : constant Name_Id := Name_Find;
-            Parent_Found : Boolean := False;
-            Parent_Node  : Project_Node_Id := Empty_Node;
-            With_Clause  : Project_Node_Id :=
-                             First_With_Clause_Of (Project, In_Tree);
+            Parent_Name   : constant Name_Id := Name_Find;
+            Parent_Found  : Boolean := False;
+            Parent_Node   : Project_Node_Id := Empty_Node;
+            With_Clause   : Project_Node_Id :=
+                              First_With_Clause_Of (Project, In_Tree);
             Imp_Proj_Name : Name_Id;
 
          begin
@@ -1670,9 +1672,7 @@ package body Prj.Part is
             Imported_Loop :
             while not Parent_Found and then Present (With_Clause) loop
                Parent_Node := Project_Node_Of (With_Clause, In_Tree);
-
-               Extension_Loop :
-               while Present (Parent_Node) loop
+               Extension_Loop : while Present (Parent_Node) loop
                   Imp_Proj_Name := Name_Of (Parent_Node, In_Tree);
                   Parent_Found := Imp_Proj_Name = Parent_Name;
                   exit Imported_Loop when Parent_Found;

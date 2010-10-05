@@ -1358,7 +1358,7 @@ package body Exp_Ch5 is
             else
                Expr :=
                  Make_Selected_Component (Loc,
-                   Prefix => Duplicate_Subexpr (Rhs),
+                   Prefix        => Duplicate_Subexpr (Rhs),
                    Selector_Name => New_Occurrence_Of (C, Loc));
             end if;
 
@@ -1366,7 +1366,7 @@ package body Exp_Ch5 is
               Make_Assignment_Statement (Loc,
                 Name =>
                   Make_Selected_Component (Loc,
-                    Prefix => Duplicate_Subexpr (Lhs),
+                    Prefix        => Duplicate_Subexpr (Lhs),
                     Selector_Name =>
                       New_Occurrence_Of (Find_Component (L_Typ, C), Loc)),
                 Expression => Expr);

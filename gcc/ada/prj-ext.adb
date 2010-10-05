@@ -23,8 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Osint;         use Osint;
-with Prj.Tree;      use Prj.Tree;
+with Osint;    use Osint;
+with Prj.Tree; use Prj.Tree;
 
 package body Prj.Ext is
 

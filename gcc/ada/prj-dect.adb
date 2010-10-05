@@ -179,7 +179,8 @@ package body Prj.Dect is
    procedure Rename_Obsolescent_Attributes
      (In_Tree         : Project_Node_Tree_Ref;
       Attribute       : Project_Node_Id;
-      Current_Package : Project_Node_Id) is
+      Current_Package : Project_Node_Id)
+   is
    begin
       if Present (Current_Package)
         and then Expression_Kind_Of (Current_Package, In_Tree) /= Ignored
@@ -214,7 +215,7 @@ package body Prj.Dect is
       Flags           : Processing_Flags)
    is
       Qualif : constant Project_Qualifier :=
-        Project_Qualifier_Of (Project, In_Tree);
+                 Project_Qualifier_Of (Project, In_Tree);
       Name   : constant Name_Id := Name_Of (Current_Package, In_Tree);
    begin
       if Qualif = Aggregate
@@ -239,8 +240,9 @@ package body Prj.Dect is
       Flags           : Processing_Flags)
    is
       Qualif : constant Project_Qualifier :=
-        Project_Qualifier_Of (Project, In_Tree);
+                 Project_Qualifier_Of (Project, In_Tree);
       Name   : constant Name_Id := Name_Of (Attribute, In_Tree);
+
    begin
       case Qualif is
          when Aggregate =>
@@ -308,6 +310,7 @@ package body Prj.Dect is
 
       procedure Process_Attribute_Name is
          Ignore : Boolean;
+
       begin
          Attribute_Name := Token_Name;
          Set_Name_Of (Attribute, In_Tree, To => Attribute_Name);

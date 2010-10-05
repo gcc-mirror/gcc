@@ -61,7 +61,7 @@ package Prj.PP is
    --  Output a project file, using either the default output routines, or the
    --  ones specified by W_Char, W_Eol and W_Str.
    --
-   --  Increment is the number of spaces for each indentation level.
+   --  Increment is the number of spaces for each indentation level
    --
    --  W_Char, W_Eol and W_Str can be used to change the default output
    --  procedures. The default values force the output to Standard_Output.
@@ -82,7 +82,7 @@ package Prj.PP is
    --  Id is used to compute the display name of the project including its
    --  proper casing.
    --
-   --  Max_Line_Length is the maximum line length in the project file.
+   --  Max_Line_Length is the maximum line length in the project file
 
 private
 
