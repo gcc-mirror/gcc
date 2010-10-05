@@ -789,8 +789,20 @@ begin
         and then ALIs.Table (ALIs.First).Main_Program = None
         and then not No_Main_Subprogram
       then
-         Error_Msg_File_1 := Main_Lib_File;
-         Error_Msg ("{ does not contain a unit that can be a main program");
+         Get_Name_String
+           (Units.Table (ALIs.Table (ALIs.First).First_Unit).Uname);
+
+         declare
+            Unit_Name : String := Name_Buffer (1 .. Name_Len - 2);
+         begin
+            To_Mixed (Unit_Name);
+            Get_Name_String (ALIs.Table (ALIs.First).Sfile);
+            Add_Str_To_Name_Buffer (":1: ");
+            Add_Str_To_Name_Buffer (Unit_Name);
+            Add_Str_To_Name_Buffer (" cannot be used as a main program");
+            Write_Line (Name_Buffer (1 .. Name_Len));
+            Errors_Detected := Errors_Detected + 1;
+         end;
       end if;
 
       --  Perform consistency and correctness checks

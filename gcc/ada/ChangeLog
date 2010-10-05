@@ -1,3 +1,20 @@
+2010-10-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Analyze_Task_Body_Stub): Diagnose duplicate stub for
+	task.
+
+2010-10-05  Vincent Celier  <celier@adacore.com>
+
+	* gnatbind.adb: If the main library file is not for a suitable main
+	program, change the error message.
+
+2010-10-05  Vincent Celier  <celier@adacore.com>
+
+	* a-direct.ads: Minor spelling error fixes in comments.
+	* gnat_rm.texi: Add three entries in "Implementation Defined
+	Characteristics" for the interpretations of the Form parameters in
+	Ada.Directories.
+
 2010-10-05  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch3.adb, exp_ch5.adb, exp_disp.adb, exp_dist.adb, gnatlink.adb,
