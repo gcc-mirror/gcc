@@ -1,4 +1,12 @@
-2010-09-29  Jan Hubicka  <jh@suse.cz>
+2010-10-05  Jan Hubicka  <jh@suse.cz>
+
+	* doc/invoke.texi (-flto-partition, lto-partitions, lto-minpartition):
+	Document.
+	* opts.c (decode_options): Handle lto partitions.
+	* common.opt (flto-partition=1to1, flto-partition=balanced): New.
+	* params.def (PARAM_LTO_PARTITIONS, MIN_PARTITION_SIZE): New.
+
+2010-10-05  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (assemble_function): Output thunks and aliases before
 	the function itself.

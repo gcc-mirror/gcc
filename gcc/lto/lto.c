@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-tree.h"
 #include "lto-streamer.h"
 #include "splay-tree.h"
+#include "params.h"
 
 /* This needs to be included after config.h.  Otherwise, _GNU_SOURCE will not
    be defined in time to set __USE_GNU in the system headers, and strsignal
@@ -759,12 +760,8 @@ add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
   part->insns += node->local.inline_summary.self_size;
 
   if (node->aux)
-    {
-      gcc_assert (node->aux != part);
-      node->in_other_partition = 1;
-    }
-  else
-    node->aux = part;
+    node->in_other_partition = 1;
+  node->aux = (void *)((size_t)node->aux + 1);
 
   cgraph_node_set_add (part->cgraph_set, node);
 
@@ -788,18 +785,78 @@ add_varpool_node_to_partition (ltrans_partition part, struct varpool_node *vnode
   varpool_node_set_add (part->varpool_set, vnode);
 
   if (vnode->aux)
-    {
-      gcc_assert (vnode->aux != part);
-      vnode->in_other_partition = 1;
-    }
-  else
-    vnode->aux = part;
+    vnode->in_other_partition = 1;
+  vnode->aux = (void *)((size_t)vnode->aux + 1);
 
   add_references_to_partition (part, &vnode->ref_list);
 
   if (vnode->same_comdat_group
       && !varpool_node_in_set_p (vnode->same_comdat_group, part->varpool_set))
     add_varpool_node_to_partition (part, vnode->same_comdat_group);
+}
+
+/* Undo all additions until number of cgraph nodes in PARITION is N_CGRAPH_NODES
+   and number of varpool nodes is N_VARPOOL_NODES.  */
+
+static void
+undo_partition (ltrans_partition partition, unsigned int n_cgraph_nodes,
+		unsigned int n_varpool_nodes)
+{
+  while (VEC_length (cgraph_node_ptr, partition->cgraph_set->nodes) >
+	 n_cgraph_nodes)
+    {
+      struct cgraph_node *node = VEC_index (cgraph_node_ptr,
+					    partition->cgraph_set->nodes,
+					    n_cgraph_nodes);
+      partition->insns -= node->local.inline_summary.self_size;
+      cgraph_node_set_remove (partition->cgraph_set, node);
+      node->aux = (void *)((size_t)node->aux - 1);
+    }
+  while (VEC_length (varpool_node_ptr, partition->varpool_set->nodes) >
+	 n_varpool_nodes)
+    {
+      struct varpool_node *node = VEC_index (varpool_node_ptr,
+					     partition->varpool_set->nodes,
+					     n_varpool_nodes);
+      varpool_node_set_remove (partition->varpool_set, node);
+      node->aux = (void *)((size_t)node->aux - 1);
+    }
+}
+
+/* Return true if NODE should be partitioned.
+   This means that partitioning algorithm should put NODE into one of partitions.
+   This apply to most functions with bodies.  Functions that are not partitions
+   are put into every unit needing them.  This is the case of i.e. COMDATs.  */
+
+static bool
+partition_cgraph_node_p (struct cgraph_node *node)
+{
+  /* We will get proper partition based on function they are inlined to.  */
+  if (node->global.inlined_to)
+    return false;
+  /* Nodes without a body do not need partitioning.  */
+  if (!node->analyzed)
+    return false;
+  /* Extern inlines and comdat are always only in partitions they are needed.  */
+  if (DECL_EXTERNAL (node->decl)
+      || DECL_COMDAT (node->decl))
+    return false;
+  return true;
+}
+
+/* Return true if VNODE should be partitioned. 
+   This means that partitioning algorithm should put VNODE into one of partitions. */
+
+static bool
+partition_varpool_node_p (struct varpool_node *vnode)
+{
+  if (vnode->alias || !vnode->needed)
+    return false;
+  /* Constant pool and comdat are always only in partitions they are needed.  */
+  if (DECL_IN_CONSTANT_POOL (vnode->decl)
+      || DECL_COMDAT (vnode->decl))
+    return false;
+  return true;
 }
 
 /* Group cgrah nodes by input files.  This is used mainly for testing
@@ -822,15 +879,7 @@ lto_1_to_1_map (void)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
-      /* We will get proper partition based on function they are inlined to.  */
-      if (node->global.inlined_to)
-	continue;
-      /* Nodes without a body do not need partitioning.  */
-      if (!node->analyzed)
-	continue;
-      /* Extern inlines and comdat are always only in partitions they are needed.  */
-      if (DECL_EXTERNAL (node->decl)
-	  || DECL_COMDAT (node->decl))
+      if (!partition_cgraph_node_p (node))
 	continue;
 
       file_data = node->local.lto_file_data;
@@ -865,11 +914,7 @@ lto_1_to_1_map (void)
 
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
     {
-      if (vnode->alias || !vnode->needed)
-	continue;
-      /* Constant pool and comdat are always only in partitions they are needed.  */
-      if (DECL_IN_CONSTANT_POOL (vnode->decl)
-	  || DECL_COMDAT (vnode->decl))
+      if (!partition_varpool_node_p (vnode))
 	continue;
       file_data = vnode->lto_file_data;
       slot = pointer_map_contains (pmap, file_data);
@@ -901,6 +946,300 @@ lto_1_to_1_map (void)
 
   lto_stats.num_cgraph_partitions += VEC_length (ltrans_partition, 
 						 ltrans_partitions);
+}
+
+
+/* Group cgraph nodes in qually sized partitions.
+
+   The algorithm deciding paritions are simple: nodes are taken in predefined
+   order.  The order correspond to order we wish to have functions in final
+   output.  In future this will be given by function reordering pass, but at
+   the moment we use topological order that serve a good approximation.
+
+   The goal is to partition this linear order into intervals (partitions) such
+   that all partitions have approximately the same size and that the number of
+   callgraph or IPA reference edgess crossing boundaries is minimal.
+
+   This is a lot faster (O(n) in size of callgraph) than algorithms doing
+   priority based graph clustering that are generally O(n^2) and since WHOPR
+   is designed to make things go well across partitions, it leads to good results.
+
+   We compute the expected size of partition as
+   max (total_size / lto_partitions, min_partition_size).
+   We use dynamic expected size of partition, so small programs
+   are partitioning into enough partitions to allow use of multiple CPUs while
+   large programs are not partitioned too much. Creating too many partition
+   increase streaming overhead significandly.
+
+   In the future we would like to bound maximal size of partition to avoid
+   ltrans stage consuming too much memory.  At the moment however WPA stage is
+   most memory intensive phase at large benchmark since too many types and
+   declarations are read into memory.
+
+   The function implement simple greedy algorithm.  Nodes are begin added into
+   current partition until 3/4th of expected partition size is reached.
+   After this threshold we keep track of boundary size (number of edges going to
+   other partitions) and continue adding functions until the current partition
+   grows into a double of expected partition size.  Then the process is undone
+   till the point when minimal ration of boundary size and in partition calls
+   was reached.  */
+
+static void
+lto_balanced_map (void)
+{
+  int n_nodes = 0;
+  struct cgraph_node **postorder =
+    XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  struct cgraph_node **order = XNEWVEC (struct cgraph_node *, cgraph_max_uid);
+  int i, postorder_len;
+  struct cgraph_node *node;
+  int total_size = 0;
+  int partition_size;
+  ltrans_partition partition;
+  unsigned int last_visited_cgraph_node = 0, last_visited_varpool_node = 0;
+  struct varpool_node *vnode;
+  int cost = 0, internal = 0;
+  int best_n_nodes = 0, best_n_varpool_nodes = 0, best_i = 0, best_cost =
+    INT_MAX, best_internal = 0;
+  int npartitions;
+
+  /* Until we have better ordering facility, use toplogical order.
+     Include only nodes we will partition and compute estimate of program
+     size.  Note that since nodes that are not partitioned might be put into
+     multiple partitions, this is just an estimate of real size.  This is why
+     we keep partition_size updated after every partition is finalized.  */
+  postorder_len = cgraph_postorder (postorder);
+  for (i = 0; i < postorder_len; i++)
+    {
+      node = postorder[i];
+      if (partition_cgraph_node_p (node))
+	{
+	  order[n_nodes++] = node;
+          total_size += node->local.inline_summary.self_size;
+	}
+    }
+  free (postorder);
+
+  /* Compute partition size and create the first partition.  */
+  partition_size = total_size / PARAM_VALUE (PARAM_LTO_PARTITIONS);
+  if (partition_size < PARAM_VALUE (MIN_PARTITION_SIZE))
+    partition_size = PARAM_VALUE (MIN_PARTITION_SIZE);
+  npartitions = 1;
+  partition = new_partition ("");
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file, "Total unit size: %i, partition size: %i\n",
+	     total_size, partition_size);
+
+  for (i = 0; i < n_nodes; i++)
+    {
+      add_cgraph_node_to_partition (partition, order[i]);
+
+      /* Once we added a new node to the partition, we also want to add
+         all referenced variables unless they was already added into some
+         earlier partition.
+	 add_cgraph_node_to_partition adds possibly multiple nodes and
+	 variables that are needed to satisfy needs of ORDER[i].
+         We remember last visited cgraph and varpool node from last iteration
+         of outer loop that allows us to process every new addition. 
+
+	 At the same time we compute size of the boundary into COST.  Every
+         callgraph or IPA reference edge leaving the partition contributes into
+         COST.  Every edge inside partition was earlier computed as one leaving
+	 it and thus we need to subtract it from COST.  */
+      while (last_visited_cgraph_node <
+	     VEC_length (cgraph_node_ptr, partition->cgraph_set->nodes)
+	     || last_visited_varpool_node < VEC_length (varpool_node_ptr,
+							partition->varpool_set->
+							nodes))
+	{
+	  struct ipa_ref_list *refs;
+	  int j;
+	  struct ipa_ref *ref;
+	  bool cgraph_p = false;
+
+	  if (last_visited_cgraph_node <
+	      VEC_length (cgraph_node_ptr, partition->cgraph_set->nodes))
+	    {
+	      struct cgraph_edge *edge;
+
+	      cgraph_p = true;
+	      node = VEC_index (cgraph_node_ptr, partition->cgraph_set->nodes,
+				last_visited_cgraph_node);
+	      refs = &node->ref_list;
+
+	      total_size -= node->local.inline_summary.self_size;
+	      last_visited_cgraph_node++;
+
+	      gcc_assert (node->analyzed);
+
+	      /* Compute boundary cost of callgrpah edges.  */
+	      for (edge = node->callees; edge; edge = edge->next_callee)
+		if (edge->callee->analyzed)
+		  {
+		    int edge_cost = edge->frequency;
+		    cgraph_node_set_iterator csi;
+
+		    if (!edge_cost)
+		      edge_cost = 1;
+		    gcc_assert (edge_cost > 0);
+		    csi = cgraph_node_set_find (partition->cgraph_set, edge->callee);
+		    if (!csi_end_p (csi)
+		        && csi.index < last_visited_cgraph_node - 1)
+		      cost -= edge_cost, internal+= edge_cost;
+		    else
+		      cost += edge_cost;
+		  }
+	      for (edge = node->callers; edge; edge = edge->next_caller)
+		{
+		  int edge_cost = edge->frequency;
+		  cgraph_node_set_iterator csi;
+
+		  gcc_assert (edge->caller->analyzed);
+		  if (!edge_cost)
+		    edge_cost = 1;
+		  gcc_assert (edge_cost > 0);
+		  csi = cgraph_node_set_find (partition->cgraph_set, edge->caller);
+		  if (!csi_end_p (csi)
+		      && csi.index < last_visited_cgraph_node)
+		    cost -= edge_cost;
+		  else
+		    cost += edge_cost;
+		}
+	    }
+	  else
+	    {
+	      refs =
+		&VEC_index (varpool_node_ptr, partition->varpool_set->nodes,
+			    last_visited_varpool_node)->ref_list;
+	      last_visited_varpool_node++;
+	    }
+
+	  /* Compute boundary cost of IPA REF edges and at the same time look into
+	     variables referenced from current partition and try to add them.  */
+	  for (j = 0; ipa_ref_list_reference_iterate (refs, j, ref); j++)
+	    if (ref->refered_type == IPA_REF_VARPOOL)
+	      {
+		varpool_node_set_iterator vsi;
+
+		vnode = ipa_ref_varpool_node (ref);
+		if (!vnode->finalized)
+		  continue;
+		if (!vnode->aux && partition_varpool_node_p (vnode))
+		  add_varpool_node_to_partition (partition, vnode);
+		vsi = varpool_node_set_find (partition->varpool_set, vnode);
+		if (!vsi_end_p (vsi)
+		    && vsi.index < last_visited_varpool_node - !cgraph_p)
+		  cost--, internal++;
+		else
+		  cost++;
+	      }
+	    else
+	      {
+		cgraph_node_set_iterator csi;
+
+		node = ipa_ref_node (ref);
+		if (!node->analyzed)
+		  continue;
+		csi = cgraph_node_set_find (partition->cgraph_set, node);
+		if (!csi_end_p (csi)
+		    && csi.index < last_visited_cgraph_node - cgraph_p)
+		  cost--, internal++;
+		else
+		  cost++;
+	      }
+	  for (j = 0; ipa_ref_list_refering_iterate (refs, j, ref); j++)
+	    if (ref->refering_type == IPA_REF_VARPOOL)
+	      {
+		varpool_node_set_iterator vsi;
+
+		vnode = ipa_ref_refering_varpool_node (ref);
+		gcc_assert (vnode->finalized);
+		if (!vnode->aux && partition_varpool_node_p (vnode))
+		  add_varpool_node_to_partition (partition, vnode);
+		vsi = varpool_node_set_find (partition->varpool_set, vnode);
+		if (!vsi_end_p (vsi)
+		    && vsi.index < last_visited_varpool_node)
+		  cost--;
+		else
+		  cost++;
+	      }
+	    else
+	      {
+		cgraph_node_set_iterator csi;
+
+		node = ipa_ref_refering_node (ref);
+		gcc_assert (node->analyzed);
+		csi = cgraph_node_set_find (partition->cgraph_set, node);
+		if (!csi_end_p (csi)
+		    && csi.index < last_visited_cgraph_node)
+		  cost--;
+		else
+		  cost++;
+	      }
+	}
+
+      /* If the partition is large enough, start looking for smallest boundary cost.  */
+      if (partition->insns < partition_size * 3 / 4
+	  || best_cost == INT_MAX
+	  || ((!cost 
+	       || (best_internal * (HOST_WIDE_INT) cost
+		   > (internal * (HOST_WIDE_INT)best_cost)))
+  	      && partition->insns < partition_size * 5 / 4))
+	{
+	  best_cost = cost;
+	  best_internal = internal;
+	  best_i = i;
+	  best_n_nodes = VEC_length (cgraph_node_ptr,
+				     partition->cgraph_set->nodes);
+	  best_n_varpool_nodes = VEC_length (varpool_node_ptr,
+					     partition->varpool_set->nodes);
+	}
+      if (cgraph_dump_file)
+	fprintf (cgraph_dump_file, "Step %i: added %s, size %i, cost %i/%i best %i/%i, step %i\n", i,
+		 cgraph_node_name (order[i]), partition->insns, cost, internal,
+		 best_cost, best_internal, best_i);
+      /* Partition is too large, unwind into step when best cost was reached and
+	 start new partition.  */
+      if (partition->insns > 2 * partition_size)
+	{
+	  if (best_i != i)
+	    {
+	      if (cgraph_dump_file)
+		fprintf (cgraph_dump_file, "Unwinding %i insertions to step %i\n",
+			 i - best_i, best_i);
+	      undo_partition (partition, best_n_nodes, best_n_varpool_nodes);
+	    }
+	  i = best_i;
+	  partition = new_partition ("");
+	  last_visited_cgraph_node = 0;
+	  last_visited_varpool_node = 0;
+	  cost = 0;
+
+	  if (cgraph_dump_file)
+	    fprintf (cgraph_dump_file, "New partition\n");
+	  best_n_nodes = 0;
+	  best_n_varpool_nodes = 0;
+	  best_cost = INT_MAX;
+
+	  /* Since the size of partitions is just approximate, update the size after
+	     we finished current one.  */
+	  if (npartitions < PARAM_VALUE (PARAM_LTO_PARTITIONS))
+	    partition_size = total_size
+	      / (PARAM_VALUE (PARAM_LTO_PARTITIONS) - npartitions);
+	  else
+	    partition_size = INT_MAX;
+
+	  if (partition_size < PARAM_VALUE (MIN_PARTITION_SIZE))
+	    partition_size = PARAM_VALUE (MIN_PARTITION_SIZE);
+	  npartitions ++;
+	}
+    }
+
+  /* Varables that are not reachable from the code go into last partition.  */
+  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+    if (partition_varpool_node_p (vnode) && !vnode->aux)
+      add_varpool_node_to_partition (partition, vnode);
+  free (order);
 }
 
 /* Promote variable VNODE to be static.  */
@@ -1990,7 +2329,10 @@ do_whole_program_analysis (void)
   /* We are about to launch the final LTRANS phase, stop the WPA timer.  */
   timevar_pop (TV_WHOPR_WPA);
 
-  lto_1_to_1_map ();
+  if (flag_lto_partition_1to1)
+    lto_1_to_1_map ();
+  else
+    lto_balanced_map ();
 
   if (!quiet_flag)
     {

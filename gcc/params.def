@@ -838,6 +838,17 @@ DEFPARAM (PARAM_DEVIRT_TYPE_LIST_SIZE,
 	  "devirtualization",
 	  8, 0, 0)
 
+/* WHOPR partitioning configuration.  */
+
+DEFPARAM (PARAM_LTO_PARTITIONS,
+	  "lto-partitions",
+	  "Number of paritions program should be split to",
+	  32, 0, 0)
+
+DEFPARAM (MIN_PARTITION_SIZE,
+	  "lto-min-partition",
+	  "Size of minimal paritition for WHOPR (in estimated instructions)",
+	  1000, 0, 0)
 /*
 Local variables:
 mode:c
