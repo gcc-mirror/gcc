@@ -476,13 +476,13 @@ package body Prj.Util is
    ----------------
 
    procedure Initialize
-     (Iter : out Source_Info_Iterator; For_Project : Name_Id)
+     (Iter        : out Source_Info_Iterator;
+      For_Project : Name_Id)
    is
       Ind : constant Natural := Source_Info_Project_HTable.Get (For_Project);
    begin
       if Ind = 0 then
          Iter := (No_Source_Info, 0);
-
       else
          Iter := Source_Info_Table.Table (Ind);
       end if;
@@ -1049,9 +1049,10 @@ package body Prj.Util is
    ----------------------------
 
    procedure Write_Source_Info_File (Tree : Project_Tree_Ref) is
-      Iter : Source_Iterator := For_Each_Source (Tree);
+      Iter   : Source_Iterator := For_Each_Source (Tree);
       Source : Prj.Source_Id;
       File   : Text_File;
+
    begin
       if Opt.Verbose_Mode then
          Write_Line ("Writing new source info file " &
@@ -1073,41 +1074,53 @@ package body Prj.Util is
          if not Source.Locally_Removed and then
            Source.Replaced_By = No_Source
          then
-            --  project name
+            --  Project name
+
             Put_Line (File, Get_Name_String (Source.Project.Name));
-            --  language name
+
+            --  Language name
+
             Put_Line (File, Get_Name_String (Source.Language.Name));
-            --  kind
+
+            --  Kind
+
             Put_Line (File, Source.Kind'Img);
-            --  display path name
+
+            --  Display path name
+
             Put_Line (File, Get_Name_String (Source.Path.Display_Name));
 
             --  Optional lines:
 
-            --  path name (P=)
+            --  Path name (P=)
+
             if Source.Path.Name /= Source.Path.Display_Name then
                Put (File, "P=");
                Put_Line (File, Get_Name_String (Source.Path.Name));
             end if;
 
-            --  unit name (U=)
+            --  Unit name (U=)
+
             if Source.Unit /= No_Unit_Index then
                Put (File, "U=");
                Put_Line (File, Get_Name_String (Source.Unit.Name));
             end if;
 
-            --  multi-source index (I=)
+            --  Multi-source index (I=)
+
             if Source.Index /= 0 then
                Put (File, "I=");
                Put_Line (File, Source.Index'Img);
             end if;
 
-            --  naming exception ("N=T");
+            --  Naming exception ("N=T");
+
             if Source.Naming_Exception then
                Put_Line (File, "N=T");
             end if;
 
-            --  empty line to indicate end of info on this source
+            --  Empty line to indicate end of info on this source
+
             Put_Line (File, "");
          end if;
 

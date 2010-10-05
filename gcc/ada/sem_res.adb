@@ -1011,8 +1011,8 @@ package body Sem_Res is
          It  : Interp;
 
       begin
-         --  if the context is an attribute reference that can apply to
-         --  functions, this is never a parameterless call. (RM 4.1.4 (6))
+         --  If the context is an attribute reference that can apply to
+         --  functions, this is never a parameterless call (RM 4.1.4 (6)).
 
          if Nkind (Parent (N)) = N_Attribute_Reference
             and then (Attribute_Name (Parent (N)) = Name_Address

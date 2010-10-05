@@ -60,7 +60,8 @@ package body System.VxWorks.Ext is
    function Interrupt_Connect
      (Vector    : Interrupt_Vector;
       Handler   : Interrupt_Handler;
-      Parameter : System.Address := System.Null_Address) return int is
+      Parameter : System.Address := System.Null_Address) return int
+   is
       pragma Unreferenced (Vector, Handler, Parameter);
    begin
       return ERROR;
@@ -82,7 +83,8 @@ package body System.VxWorks.Ext is
    --------------------------------
 
    function Interrupt_Number_To_Vector
-     (intNum : int) return Interrupt_Vector is
+     (intNum : int) return Interrupt_Vector
+   is
       pragma Unreferenced (intNum);
    begin
       return 0;

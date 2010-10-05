@@ -6103,9 +6103,10 @@ package body Sem_Ch4 is
             if Is_Discrete_Type (Entity (Actual)) then
                Rewrite (N,
                  Make_Slice (Loc,
-                   Prefix => Make_Function_Call (Loc,
-                     Name => Relocate_Node (Name (N))),
-                Discrete_Range =>
+                   Prefix =>
+                     Make_Function_Call (Loc,
+                       Name => Relocate_Node (Name (N))),
+                   Discrete_Range =>
                      New_Occurrence_Of (Entity (Actual), Sloc (Actual))));
 
                Analyze (N);
