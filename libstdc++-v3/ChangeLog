@@ -145,7 +145,6 @@
 	* configure: Regenerate.
 	* include/Makefile.in: Likewise.
 
->>>>>>> .r164755
 2010-09-22  David Krauss  <potswa@mac.com>
 
 	PR libstdc++/45628
