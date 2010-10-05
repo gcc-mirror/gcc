@@ -4104,7 +4104,7 @@ package body Checks is
       --  with them will be valid as well.
 
       if Base_Type (Typ) = Standard_Boolean
-           and then
+        and then
          (Nkind (Expr) in N_Op or else Nkind (Expr) in N_Short_Circuit)
       then
          return;

@@ -26,6 +26,7 @@
 with Ada.Unchecked_Deallocation;
 
 with GNAT.Case_Util; use GNAT.Case_Util;
+with GNAT.Regexp;    use GNAT.Regexp;
 
 with Osint;    use Osint;
 with Output;   use Output;
@@ -848,7 +849,8 @@ package body Prj.Util is
       Src_Index              : Int := 0;
       In_Array               : Array_Element_Id;
       In_Tree                : Project_Tree_Ref;
-      Force_Lower_Case_Index : Boolean := False) return Variable_Value
+      Force_Lower_Case_Index : Boolean := False;
+      Allow_Wildcards        : Boolean := False) return Variable_Value
    is
       Current      : Array_Element_Id;
       Element      : Array_Element;
@@ -888,8 +890,13 @@ package body Prj.Util is
             end if;
          end if;
 
-         if Real_Index_1 = Real_Index_2 and then
-           Src_Index = Element.Src_Index
+         if Src_Index = Element.Src_Index and then
+           (Real_Index_1 = Real_Index_2 or else
+              (Real_Index_2 /= All_Other_Names and then
+               Allow_Wildcards and then
+                 Match (Get_Name_String (Real_Index_1),
+                        Compile (Get_Name_String (Real_Index_2),
+                                 Glob => True))))
          then
             return Element.Value;
          else
@@ -906,7 +913,8 @@ package body Prj.Util is
       Attribute_Or_Array_Name : Name_Id;
       In_Package              : Package_Id;
       In_Tree                 : Project_Tree_Ref;
-      Force_Lower_Case_Index  : Boolean := False) return Variable_Value
+      Force_Lower_Case_Index  : Boolean := False;
+      Allow_Wildcards         : Boolean := False) return Variable_Value
    is
       The_Array     : Array_Element_Id;
       The_Attribute : Variable_Value := Nil_Variable_Value;
@@ -927,7 +935,8 @@ package body Prj.Util is
               Src_Index              => Index,
               In_Array               => The_Array,
               In_Tree                => In_Tree,
-              Force_Lower_Case_Index => Force_Lower_Case_Index);
+              Force_Lower_Case_Index => Force_Lower_Case_Index,
+              Allow_Wildcards        => Allow_Wildcards);
 
          --  If there is no array element, look for a variable
 

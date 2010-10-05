@@ -105,7 +105,7 @@ package Ada.Directories is
    --  the external environment does not support the creation of a directory
    --  with the given name (in the absence of Name_Error) and form.
    --
-   --  The Form parameter is ignored.
+   --  The Form parameter is ignored
 
    procedure Delete_Directory (Directory : String);
    --  Deletes an existing empty directory with name Directory. The exception
@@ -132,7 +132,7 @@ package Ada.Directories is
    --  not support the creation of any directories with the given name (in the
    --  absence of Name_Error) and form.
    --
-   --  The Form parameter is ignored.
+   --  The Form parameter is ignored
 
    procedure Delete_Tree (Directory : String);
    --  Deletes an existing directory with name Directory. The directory and
@@ -164,17 +164,17 @@ package Ada.Directories is
      (Source_Name   : String;
       Target_Name   : String;
       Form          : String := "");
-   --  Copies the contents of the existing external file with Source_Name
-   --  to Target_Name. The resulting external file is a duplicate of the source
-   --  external file. The Form can be used to give system-dependent
+   --  Copies the contents of the existing external file with Source_Name to
+   --  Target_Name. The resulting external file is a duplicate of the source
+   --  external file. The Form argument can be used to give system-dependent
    --  characteristics of the resulting external file; the interpretation of
    --  the Form parameter is implementation-defined. Exception Name_Error is
    --  propagated if the string given as Source_Name does not identify an
    --  existing external ordinary or special file or if the string given as
-   --  Target_Name does not allow the identification of an external file.
-   --  The exception Use_Error is propagated if the external environment does
-   --  not support the creating of the file with the name given by Target_Name
-   --  and form given by Form, or copying of the file with the name given by
+   --  Target_Name does not allow the identification of an external file. The
+   --  exception Use_Error is propagated if the external environment does not
+   --  support the creating of the file with the name given by Target_Name and
+   --  form given by Form, or copying of the file with the name given by
    --  Source_Name (in the absence of Name_Error).
    --
    --  Interpretation of the Form parameter:

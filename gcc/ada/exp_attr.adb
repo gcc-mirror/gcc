@@ -155,6 +155,11 @@ package body Exp_Attr is
    --  defining it, is returned. In both cases, inheritance of representation
    --  aspects is thus taken into account.
 
+   function Full_Base (T : Entity_Id) return Entity_Id;
+   --  The stream functions need to examine the underlying representation of
+   --  composite types. In some cases T may be non-private but its base type
+   --  is, in which case the function returns the corresponding full view.
+
    function Get_Stream_Convert_Pragma (T : Entity_Id) return Node_Id;
    --  Given a type, find a corresponding stream convert pragma that applies to
    --  the implementation base type of this type (Typ). If found, return the
@@ -3770,10 +3775,10 @@ package body Exp_Attr is
                    (Discriminant_Default_Value (First_Discriminant (U_Type)))
                then
                   Build_Mutable_Record_Read_Procedure
-                    (Loc, Base_Type (U_Type), Decl, Pname);
+                    (Loc, Full_Base (U_Type), Decl, Pname);
                else
                   Build_Record_Read_Procedure
-                    (Loc, Base_Type (U_Type), Decl, Pname);
+                    (Loc, Full_Base (U_Type), Decl, Pname);
                end if;
 
                --  Suppress checks, uninitialized or otherwise invalid
@@ -5245,10 +5250,10 @@ package body Exp_Attr is
                    (Discriminant_Default_Value (First_Discriminant (U_Type)))
                then
                   Build_Mutable_Record_Write_Procedure
-                    (Loc, Base_Type (U_Type), Decl, Pname);
+                    (Loc, Full_Base (U_Type), Decl, Pname);
                else
                   Build_Record_Write_Procedure
-                    (Loc, Base_Type (U_Type), Decl, Pname);
+                    (Loc, Full_Base (U_Type), Decl, Pname);
                end if;
 
                Insert_Action (N, Decl);
@@ -5637,6 +5642,25 @@ package body Exp_Attr is
          return Find_Inherited_TSS (Typ, Nam);
       end if;
    end Find_Stream_Subprogram;
+
+   ---------------
+   -- Full_Base --
+   ---------------
+
+   function Full_Base (T : Entity_Id) return Entity_Id is
+      BT : Entity_Id;
+
+   begin
+      BT := Base_Type (T);
+
+      if Is_Private_Type (BT)
+        and then Present (Full_View (BT))
+      then
+         BT := Full_View (BT);
+      end if;
+
+      return BT;
+   end Full_Base;
 
    -----------------------
    -- Get_Index_Subtype --

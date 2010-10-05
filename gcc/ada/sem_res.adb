@@ -1011,6 +1011,17 @@ package body Sem_Res is
          It  : Interp;
 
       begin
+         --  if the context is an attribute reference that can apply to
+         --  functions, this is never a parameterless call. (RM 4.1.4 (6))
+
+         if Nkind (Parent (N)) = N_Attribute_Reference
+            and then (Attribute_Name (Parent (N)) = Name_Address
+              or else Attribute_Name (Parent (N)) = Name_Code_Address
+              or else Attribute_Name (Parent (N)) = Name_Access)
+         then
+            return False;
+         end if;
+
          if not Is_Overloaded (N) then
             return
               Ekind (Etype (N)) = E_Subprogram_Type
@@ -1070,7 +1081,7 @@ package body Sem_Res is
       --  If the entity is the name of an operator, it cannot be a call because
       --  operators cannot have default parameters. In this case, this must be
       --  a string whose contents coincide with an operator name. Set the kind
-      --  of the node appropriately and reanalyze.
+      --  of the node appropriately.
 
       if (Is_Entity_Name (N)
             and then Nkind (N) /= N_Operator_Symbol

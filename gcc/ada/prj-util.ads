@@ -86,7 +86,8 @@ package Prj.Util is
       Src_Index              : Int := 0;
       In_Array               : Array_Element_Id;
       In_Tree                : Project_Tree_Ref;
-      Force_Lower_Case_Index : Boolean := False) return Variable_Value;
+      Force_Lower_Case_Index : Boolean := False;
+      Allow_Wildcards        : Boolean := False) return Variable_Value;
    --  Get a string array component (single String or String list). Returns
    --  Nil_Variable_Value if no component Index or if In_Array is null.
    --
@@ -101,7 +102,8 @@ package Prj.Util is
       Attribute_Or_Array_Name : Name_Id;
       In_Package              : Package_Id;
       In_Tree                 : Project_Tree_Ref;
-      Force_Lower_Case_Index  : Boolean := False) return Variable_Value;
+      Force_Lower_Case_Index  : Boolean := False;
+      Allow_Wildcards         : Boolean := False) return Variable_Value;
    --  In a specific package,
    --   - if there exists an array Attribute_Or_Array_Name with an index Name,
    --     returns the corresponding component (depending on the attribute, the

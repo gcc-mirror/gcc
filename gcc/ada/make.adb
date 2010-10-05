@@ -8361,10 +8361,11 @@ package body Make is
 
       Switches :=
         Prj.Util.Value_Of
-          (Index     => Name_Id (Source_File),
-           Src_Index => Source_Index,
-           In_Array  => Switches_Array,
-           In_Tree   => Project_Tree);
+          (Index           => Name_Id (Source_File),
+           Src_Index       => Source_Index,
+           In_Array        => Switches_Array,
+           In_Tree         => Project_Tree,
+           Allow_Wildcards => True);
 
       --  Check also without the suffix
 
@@ -8406,10 +8407,11 @@ package body Make is
                Add_Str_To_Name_Buffer (Name (1 .. Last));
                Switches :=
                  Prj.Util.Value_Of
-                   (Index     => Name_Find,
-                    Src_Index => 0,
-                    In_Array  => Switches_Array,
-                    In_Tree   => Project_Tree);
+                   (Index           => Name_Find,
+                    Src_Index       => 0,
+                    In_Array        => Switches_Array,
+                    In_Tree         => Project_Tree,
+                    Allow_Wildcards => True);
 
                if Switches = Nil_Variable_Value and then Allow_ALI then
                   Last := Source_File_Name'Length;
