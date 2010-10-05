@@ -1,3 +1,12 @@
+2010-10-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/44647
+	* libsupc++/Makefile.am (sources): Add bad_alloc.cc.
+	* libsupc++/new_handler.cc (bad_alloc): Move to ...
+	* libsupc++/bad_alloc.cc (bad_alloc): ... here, new file.
+	* libsupc++/Makefile.in: Regenerate.
+
 2010-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/functional (function<>::swap): Use std::swap.
