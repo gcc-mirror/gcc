@@ -354,10 +354,10 @@ Objective-C and Objective-C++ Dialects}.
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
 -floop-block -floop-flatten -floop-interchange -floop-strip-mine @gol
--floop-parallelize-all -flto -flto-compression-level -flto-report @gol
--fltrans -fltrans-output-list -fmerge-all-constants -fmerge-constants @gol
--fmodulo-sched -fmodulo-sched-allow-regmoves -fmove-loop-invariants @gol
--fmudflap -fmudflapir -fmudflapth -fno-branch-count-reg @gol
+-floop-parallelize-all -flto -flto-compression-level -flto-partition=@var{alg} @gol
+-flto-report -fltrans -fltrans-output-list -fmerge-all-constants @gol
+-fmerge-constants -fmodulo-sched -fmodulo-sched-allow-regmoves @gol
+-fmove-loop-invariants fmudflap -fmudflapir -fmudflapth -fno-branch-count-reg @gol
 -fno-default-inline @gol
 -fno-defer-pop -fno-function-cse -fno-guess-branch-probability @gol
 -fno-inline -fno-math-errno -fno-peephole -fno-peephole2 @gol
@@ -7596,6 +7596,13 @@ GNU make.
 
 Disabled by default.
 
+@item -flto-partition=@var{alg}
+@opindex flto-partition
+Specify partitioning algorithm used by @option{-fwhopr} mode.  The value is
+either @code{1to1} to specify partitioning corresponding to source files
+or @code{balanced} to specify partitioning into, if possible, equally sized
+chunks.  The default value is @code{balanced}.
+
 @item -fwpa
 @opindex fwpa
 This is an internal option used by GCC when compiling with
@@ -8788,6 +8795,16 @@ IPA-CP attempts to track all possible types passed to a function's
 parameter in order to perform devirtualization.
 @option{devirt-type-list-size} is the maximum number of types it
 stores per a single formal parameter of a function.
+
+@item lto-partitions
+Specify desired nuber of partitions produced during WHOPR copmilation.
+Number of partitions should exceed number of CPUs used for compilatoin.
+Default value is 32.
+
+@item lto-minpartition
+Size of minimal paritition for WHOPR (in estimated instructions).
+This prevents expenses of splitting very small programs into too many
+partitions.
 
 @end table
 @end table

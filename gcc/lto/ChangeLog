@@ -1,3 +1,15 @@
+2010-10-05  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c:  Include params.h.
+	(add_cgraph_node_to_partition, add_varpool_node_to_partition): Do
+	refcounting in aux field.
+	(undo_partition, partition_cgraph_node_p, partition_varpool_node_p):
+	New functions.
+	(lto_1_to_1_map): Simplify.
+	(lto_balanced_map): New function.
+	(do_whole_program_analysis): Chose proper partitioning alg.
+	* Make-lang.in (lto.o): Add dependency on params.h
+
 2010-10-04  Andi Kleen <ak@linux.intel.com>
 
 	* Make-lang.in (lto1): Add + to build rule.

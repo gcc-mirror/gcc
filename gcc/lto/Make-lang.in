@@ -85,7 +85,7 @@ lto/lto.o: lto/lto.c $(CONFIG_H) $(SYSTEM_H) coretypes.h opts.h \
 	$(CGRAPH_H) $(GGC_H) tree-ssa-operands.h $(TREE_PASS_H) \
 	langhooks.h $(VEC_H) $(BITMAP_H) pointer-set.h $(IPA_PROP_H) \
 	$(COMMON_H) debug.h $(TIMEVAR_H) $(GIMPLE_H) $(LTO_H) $(LTO_TREE_H) \
-	$(LTO_TAGS_H) $(LTO_STREAMER_H) $(SPLAY_TREE_H) gt-lto-lto.h
+	$(LTO_TAGS_H) $(LTO_STREAMER_H) $(SPLAY_TREE_H) gt-lto-lto.h $(PARAMS_H)
 lto/lto-elf.o: lto/lto-elf.c $(CONFIG_H) coretypes.h $(SYSTEM_H) \
 	toplev.h $(LTO_H) $(TM_H) $(LIBIBERTY_H) $(GGC_H) $(LTO_STREAMER_H)
 lto/lto-coff.o: lto/lto-coff.c $(CONFIG_H) coretypes.h $(SYSTEM_H) \

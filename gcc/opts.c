@@ -1081,6 +1081,13 @@ decode_options (unsigned int argc, const char **argv,
       error ("LTO support has not been enabled in this configuration");
 #endif
     }
+  if (flag_lto_partition_balanced || flag_lto_partition_1to1)
+    {
+      if (flag_lto_partition_balanced && flag_lto_partition_1to1)
+	error ("Only one -flto-partitoin value can be specified");
+      if (!flag_whopr)
+	error ("-flto-partitoin has effect only with -fwhopr");
+    }
 
   /* Reconcile -flto and -fwhopr.  Set additional flags as appropriate and
      check option consistency.  */

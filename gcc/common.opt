@@ -1049,6 +1049,14 @@ flto
 Common Var(flag_lto)
 Enable link-time optimization.
 
+flto-partition=1to1
+Common Var(flag_lto_partition_1to1)
+Partition functions and vars at linktime based on object files they originate from
+
+flto-partition=balanced
+Common Var(flag_lto_partition_balanced)
+Partition functions and vars at linktime into approximately same sized buckets
+
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
 flto-compression-level=
 Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1)
