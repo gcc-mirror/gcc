@@ -1,3 +1,8 @@
+2010-10-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/locale_facets_nonio.h (time_get::get_time): Doc typo.
+	(time_get::get_date): Likewise.
+
 2010-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/type_traits (_GLIBCXX_HAS_NESTED_TYPE): Add.
