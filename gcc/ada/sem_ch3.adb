@@ -829,12 +829,6 @@ package body Sem_Ch3 is
          Layout_Type (Anon_Type);
       end if;
 
-      --  ???The following makes no sense, because Anon_Type is an access type
-      --  and therefore cannot have components, private or otherwise. Hence
-      --  the assertion. Not sure what was meant, here.
-      Set_Depends_On_Private (Anon_Type, Has_Private_Component (Anon_Type));
-      pragma Assert (not Depends_On_Private (Anon_Type));
-
       --  Ada 2005 (AI-231): Ada 2005 semantics for anonymous access differs
       --  from Ada 95 semantics. In Ada 2005, anonymous access must specify if
       --  the null value is allowed. In Ada 95 the null value is never allowed.
