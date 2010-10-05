@@ -27,7 +27,7 @@
 --  to the environment (configuration pragma files, path files, mapping files).
 
 with GNAT.Dynamic_HTables;
-with System.OS_Lib;
+with GNAT.OS_Lib;
 
 package Prj.Env is
 
@@ -216,7 +216,7 @@ private
       Equal      => "=");
 
    type Project_Search_Path is record
-      Path : System.OS_Lib.String_Access;
+      Path : GNAT.OS_Lib.String_Access;
       --  As a special case, if the first character is '#:" or this variable is
       --  unset, this means that the PATH has not been fully initialized yet
       --  (although subprograms above will properly take care of that).
