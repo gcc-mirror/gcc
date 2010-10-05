@@ -190,14 +190,40 @@ package body Ch5 is
       -----------------------------
 
       procedure Test_Statement_Required is
+         function All_Pragmas return Boolean;
+         --  Return True if statement list is all pragmas
+
+         -----------------
+         -- All_Pragmas --
+         -----------------
+
+         function All_Pragmas return Boolean is
+            S : Node_Id;
+         begin
+            S := First (Statement_List);
+            while Present (S) loop
+               if Nkind (S) /= N_Pragma then
+                  return False;
+               else
+                  Next (S);
+               end if;
+            end loop;
+
+            return True;
+         end All_Pragmas;
+
+      --  Start of processing for Test_Statement_Required
+
       begin
          if Statement_Required then
 
-            --  Check no statement required after label in Ada 2012
+            --  Check no statement required after label in Ada 2012, and that
+            --  it is OK to have nothing but pragmas in a statement sequence.
 
             if Ada_Version >= Ada_2012
               and then not Is_Empty_List (Statement_List)
-              and then Nkind (Last (Statement_List)) = N_Label
+              and then (Nkind (Last (Statement_List)) = N_Label
+                          or else All_Pragmas)
             then
                declare
                   Null_Stm : constant Node_Id :=
@@ -206,6 +232,8 @@ package body Ch5 is
                   Set_Comes_From_Source (Null_Stm, False);
                   Append_To (Statement_List, Null_Stm);
                end;
+
+            --  All pragmas is OK on
 
             --  If not Ada 2012, or not special case above, give error message
 

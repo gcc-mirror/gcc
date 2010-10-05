@@ -1,5 +1,19 @@
 2010-10-05  Robert Dewar  <dewar@adacore.com>
 
+	* par-ch5.adb (Test_Statement_Required): Allow all pragmas in Ada 2012
+	mode.
+
+2010-10-05  Pascal Obry  <obry@adacore.com>
+
+	* gnat_rm.texi: Fix typo.
+
+2010-10-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Add note about identifiers with same name and
+	-fdump-ada-spec.
+
+2010-10-05  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch4.adb: Minor reformatting.
 	* a-direct.ads: Minor comment update.
 
