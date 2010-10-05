@@ -1,3 +1,47 @@
+2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc++/28050
+	* obj-c++.dg/syntax-error-10.mm: New.
+
+2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc++/23707
+	* obj-c++.dg/syntax-error-9.mm: New.
+
+2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc++/31126
+	* obj-c++.dg/syntax-error-8.mm: New.
+
+2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2005-10-17  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4290840
+	* obj-c++.dg/syntax-error-7.mm: New
+
+	2005-10-14  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4294425
+	* obj-c++.dg/syntax-error-6.mm: New
+
+	2005-10-13  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4261146
+	* obj-c++.dg/syntax-error-5.mm: New
+
+	2005-08-15  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4093475
+	* obj-c++.dg/syntax-error-[3-4].mm: New.
+	
+	2005-08-02  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4185810
+	* obj-c++.dg/syntax-error-[1-2].mm: New.
+	
 2010-10-05  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/45752

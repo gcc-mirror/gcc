@@ -1,3 +1,13 @@
+2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2005-10-17  Fariborz Jahanian <fjahanian@apple.com>
+
+        Radar 4290840
+	* objc-act.c (objc_start_method_definition): Check for error_mark_node for
+	the selector name and make a quick exit.
+	
 2010-10-04  Andi Kleen <ak@linux.intel.com>
 
 	* Make-lang.in (cc1obj-dummy, cc1obj): Add + to build rule.

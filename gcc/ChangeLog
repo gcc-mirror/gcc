@@ -1,3 +1,7 @@
+2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_parser_objc_method_definition): Updated comment.
+
 2010-10-05  Jan Hubicka  <jh@suse.cz>
 
 	* doc/invoke.texi (-flto-partition, lto-partitions, lto-minpartition):
@@ -1768,7 +1772,6 @@
 	unconditionally if TODO_rebuild_alias is set, else only when optimizing
 	if TODO_update_address_taken is set.
 
->>>>>>> .r164755
 2010-09-23  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/arm/arm.h (OUTPUT_ADDR_CONST_EXTRA): Remove.

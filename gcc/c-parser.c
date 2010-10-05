@@ -6729,8 +6729,9 @@ c_parser_objc_method_definition (c_parser *parser)
   else
     {
       /* This code is executed when we find a method definition
-	 outside of an @implementation context.  Parse the method (to
-	 keep going) but do not emit any code.
+	 outside of an @implementation context (or invalid for other
+	 reasons).  Parse the method (to keep going) but do not emit
+	 any code.
       */
       c_parser_compound_statement (parser);
     }

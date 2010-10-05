@@ -821,6 +821,9 @@ objc_start_method_definition (tree decl, tree attributes)
       return false;
     }
 
+  if (decl != NULL_TREE  && METHOD_SEL_NAME (decl) == error_mark_node)
+    return false;
+
   if (attributes)
     warning_at (input_location, OPT_Wattributes, 
 		"method attributes are not available in this version"
