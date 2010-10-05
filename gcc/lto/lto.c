@@ -431,7 +431,7 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
 static int 
 lto_section_with_id (const char *name, unsigned *id)
 {
-  char *s;
+  const char *s;
 
   if (strncmp (name, LTO_SECTION_NAME_PREFIX, strlen (LTO_SECTION_NAME_PREFIX)))
     return 0;
