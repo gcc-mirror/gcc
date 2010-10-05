@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-optimized -fdump-tree-tree_profile" } */
+/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-tree_profile_ipa" } */
 
 struct A {
   A () {}
@@ -15,6 +15,7 @@ struct B : public A {
   { return 1; }
 };
 
+void * __attribute__((noinline,noclone)) wrap (void *p) { return p; }
 int
 main (void)
 {
@@ -23,17 +24,16 @@ main (void)
   
   A* p;
 
-  p = &a;
+  p = (A *)wrap ((void *)&a);
   p->AA ();
 
-  p = &b;
+  p = (B *)wrap ((void *)&b);
   p->AA ();
   
   return 0;
 }
 
-/* { dg-final-use { scan-tree-dump "Indirect call -> direct call.* AA transformation on insn" "tree_profile"} } */
-/* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized"} } */                                                                                
-/* { dg-final-use { cleanup-tree-dump "optimized" } } */                                                                                              
-/* { dg-final-use { cleanup-tree-dump "tree_profile" } } */                                                                                           
-
+/* { dg-final-use { scan-ipa-dump "Indirect call -> direct call.* AA transformation on insn" "tree_profile_ipa" } } */
+/* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized" } } */
+/* { dg-final-use { cleanup-tree-dump "optimized" } } */
+/* { dg-final-use { cleanup-ipa-dump "tree_profile_ipa" } } */

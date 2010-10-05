@@ -1,5 +1,31 @@
 2010-10-05  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/tree-prof/val-prof-1.c: Adjust.
+	* gcc.dg/tree-prof/val-prof-2.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-3.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-4.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-5.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-7.c: Likewise.
+	* gcc.dg/tree-prof/stringop-1.c: Likewise.
+	* gcc.dg/tree-prof/stringop-2.c: Likewise.
+	* gcc.dg/tree-prof/ic-misattribution-1.c: Likewise.
+	* gcc.dg/tree-prof/indir-call-prof.c: Likewise.
+	* gcc.dg/tree-prof/update-loopch.c: Likewise.
+	* g++.dg/tree-prof/indir-call-prof.C: Likewise.
+	* g++.dg/tree-prof/inline_mismatch_args.C: Likewise.
+	* gcc.dg/tree-prof/tracer-1.c: Likewise.
+	* gcc.dg/tree-ssa/inline-4.c: Likewise.
+	* gcc.dg/tree-ssa/inline-3.c: Likewise.
+	* gcc.dg/tree-ssa/20080530.c: Likewise.
+	* g++.dg/tree-ssa/inline-3.C: Likewise.
+	* g++.dg/tree-ssa/inline-1.C: Likewise.
+	* g++.dg/tree-ssa/inline-2.C: Likewise.
+	* gcc.dg/profile-dir-1.c: Likewise.
+	* gcc.dg/profile-dir-2.c: Likewise.
+	* gcc.dg/profile-dir-3.c: Likewise.
+
+2010-10-05  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/45877
 	* g++.dg/torture/pr45877.C: New testcase.
 

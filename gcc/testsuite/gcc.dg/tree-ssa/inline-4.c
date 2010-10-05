@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-einline2" } */
+/* { dg-options "-O2 -fdump-tree-einline" } */
 /* { dg-add-options bind_pic_locally } */
 
 extern int rand(void);
@@ -23,5 +23,5 @@ int main()
     }
 }
 
-/* { dg-final { scan-tree-dump "Inlining get_data_for into main" "einline2" } } */
-/* { dg-final { cleanup-tree-dump "einline2" } } */
+/* { dg-final { scan-tree-dump "Inlining get_data_for into main" "einline" } } */
+/* { dg-final { cleanup-tree-dump "einline" } } */

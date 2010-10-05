@@ -1841,36 +1841,6 @@ struct gimple_opt_pass pass_early_inline =
  }
 };
 
-/* When inlining shall be performed.  */
-static bool
-cgraph_gate_ipa_early_inlining (void)
-{
-  return (flag_early_inlining
-	  && !in_lto_p
-	  && (flag_branch_probabilities || flag_test_coverage
-	      || profile_arc_flag));
-}
-
-/* IPA pass wrapper for early inlining pass.  We need to run early inlining
-   before tree profiling so we have stand alone IPA pass for doing so.  */
-struct simple_ipa_opt_pass pass_ipa_early_inline =
-{
- {
-  SIMPLE_IPA_PASS,
-  "einline_ipa",			/* name */
-  cgraph_gate_ipa_early_inlining,	/* gate */
-  NULL,					/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_INLINE_HEURISTICS,			/* tv_id */
-  0,	                                /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_dump_cgraph 		        /* todo_flags_finish */
- }
-};
 
 /* See if statement might disappear after inlining.  We are not terribly
    sophisficated, basically looking for simple abstraction penalty wrappers.  */
