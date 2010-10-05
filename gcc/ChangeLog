@@ -1,3 +1,61 @@
+2010-10-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+            Christian Borntraeger  <Christian.Borntraeger@de.ibm.com>
+
+	* gcc/config/s390/s390.c (z196_cost): New.
+	(s390_handle_arch_option): Add -march=z196.
+	(s390_option_override): Use the new cost function and use the z10
+	defaults also for z196.
+	(legitimate_reload_constant_p): Adjust comment.
+	(legitimate_reload_fp_constant_p): New function.
+	(s390_preferred_reload_class): Distingiush between FP and Int constants.
+	(preferred_la_operand_p): Avoid la with index on z196.
+	(s390_adjust_priority): Trigger also for z196.
+	(s390_issue_rate): Issue rate for z196 is 3.
+	(s390_z10_fix_long_loop_prediction): Rename to ...
+	(s390_fix_long_loop_prediction): ... this.
+	(s390_reorg): Apply the z10 adjustments also for z196.
+	(s390_loop_unroll_adjust): Do this also for z196.
+	* gcc/config/s390/s390.h (enum processor_type): Add PROCESSOR_2817_Z196.
+	(enum processor_flags): Add PF_Z196.
+	(TARGET_AVOID_CMP_AND_BRANCH): New macro.
+	(TARGET_CPU_Z196, TARGET_Z196): New macros.
+	* gcc/config.gcc: Enable z196 for --with-arch.
+	* gcc/config/s390/2817.md: New file.
+	* gcc/config/s390/2084.md: New type for multiply and add.
+	* gcc/config/s390/2097.md: Likewise.
+	* gcc/config/s390/s390.md (UNSPEC_POPCNT, UNSPEC_COPYSIGN)
+	(UNSPECV_ATOMIC_OP): New constants.
+	(fmadddf, fmaddsf): New values for type attribute.
+	(z196prop): New insn attribute.
+	(cpu, cpu_facility): Add z196.
+	(ATOMIC_Z196): New code iterator.
+	(noxa): New code attribute.
+	(gk): New mode attribute.
+	(*mov<mode>_64, *mov<mode>_31, *mov<mode>_64dfp, mov<mode>):
+	Support load zero for fp constants.
+	(fixuns_truncdddi2, fixuns_trunctddi2)
+	(fixuns_trunc<BFP:mode><GPR:mode>2): Use the standard rtx pattern
+	for z196.
+	(fixuns_trunc<mode>si2, mov<mode>cc, popcountdi2, popcountsi2)
+	(popcounthi2, popcountqi2): New expander.
+	(*fixuns_trunc<FP:mode><GPR:mode>2_z196, floatsi<mode>2)
+	(floatuns<GPR:mode><FP:mode>2, *mov<mode>cc, sync_<atomic><mode>)
+	(sync_old_<atomic><mode>, *popcount<mode>, copysign<mode>3): New
+	insn definition.
+	(add<mode>3, *add<mode>3_carry1_cc, *add<mode>3_carry1_cconly)
+	(*add<mode>3_carry2_cc, *add<mode>3_carry2_cconly, *add<mode>3_cc)
+	(*add<mode>3_cconly, *add<mode>3_cconly2, *add<mode>3_imm_cc, *sub<mode>3)
+	(*sub<mode>3_borrow_cc, *sub<mode>3_borrow_cconly, *sub<mode>3_cc)
+	(*sub<mode>3_cc2, *sub<mode>3_cconly, *sub<mode>3_cconly2)
+	(*anddi3_cc, *anddi3_cconly, *anddi3, *andsi3_cc, *andsi3_cconly)
+	(*andsi3_zarch, *andsi3_esa, *andhi3_zarch, *andqi3_zarch, *iordi3_cc)
+	(*iordi3_cconly, *iordi3, *iorsi3_cc, *iorsi3_cconly, *iorsi3_zarch)
+	(*iorhi3_zarch, *iorqi3_zarch, *xordi3_cc, *xordi3_cconly, *xordi3)
+	(*xorsi3_cc, *xorsi3_cconly, *xorsi3, *xorhi3, *xorqi3, *<shift><mode>3)
+	(*<shift><mode>3_and, *ashr<mode>3_cc, *ashr<mode>3_cconly, *ashr<mode>3)
+	(*ashr<mode>3_cc_and, *ashr<mode>3_cconly_and, *ashr<mode>3_and):
+	Support new z196 instructions.
+
 2010-10-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/45877
