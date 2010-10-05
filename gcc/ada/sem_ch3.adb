@@ -1567,41 +1567,9 @@ package body Sem_Ch3 is
                   if Is_Null_Interface_Primitive (Iface_Prim) then
                      goto Continue;
 
-                  --  if the tagged type is defined at library level then we
-                  --  invoke Check_Abstract_Overriding to report the error
-                  --  and thus avoid generating the dispatch tables.
-
-                  elsif Is_Library_Level_Tagged_Type (Tagged_Type) then
-                     Check_Abstract_Overriding (Tagged_Type);
-                     pragma Assert (Serious_Errors_Detected > 0);
-                     return;
-
-                  --  For tagged types defined in nested scopes it is still
-                  --  possible to cover this interface primitive by means of
-                  --  late overriding (see Override_Dispatching_Operation).
-
-                  --  Search in the list of primitives of the type for the
-                  --  entity that will be overridden in such case to reference
-                  --  it in the internal entity that we build here. If the
-                  --  primitive is not overridden then the error will be
-                  --  reported later as part of the analysis of entities
-                  --  defined in the enclosing scope.
-
                   else
-                     declare
-                        El : Elmt_Id;
-
-                     begin
-                        El := First_Elmt (Primitive_Operations (Tagged_Type));
-                        while Present (El)
-                          and then Alias (Node (El)) /= Iface_Prim
-                        loop
-                           Next_Elmt (El);
-                        end loop;
-
-                        pragma Assert (Present (El));
-                        Prim := Node (El);
-                     end;
+                     pragma Assert (False);
+                     raise Program_Error;
                   end if;
                end if;
 

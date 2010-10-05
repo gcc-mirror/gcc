@@ -7625,6 +7625,7 @@ package body Sem_Ch6 is
 
          if Ada_Version >= Ada_05
            and then Present (Derived_Type)
+           and then Present (Alias (S))
            and then Is_Dispatching_Operation (Alias (S))
            and then Present (Find_Dispatching_Type (Alias (S)))
            and then Is_Interface (Find_Dispatching_Type (Alias (S)))

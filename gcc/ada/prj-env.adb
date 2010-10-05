@@ -1974,22 +1974,17 @@ package body Prj.Env is
       Path := Self.Path;
    end Get_Path;
 
-   ---------------
-   -- Deep_Copy --
-   ---------------
+   --------------
+   -- Set_Path --
+   --------------
 
-   function Deep_Copy
-     (Self : Project_Search_Path) return Project_Search_Path is
+   procedure Set_Path
+     (Self : in out Project_Search_Path; Path : String) is
    begin
-      if Self.Path = null then
-         return Project_Search_Path'
-           (Path => null, Cache => Projects_Paths.Nil);
-      else
-         return Project_Search_Path'
-           (Path => new String'(Self.Path.all),
-            Cache => Projects_Paths.Nil);
-      end if;
-   end Deep_Copy;
+      Free (Self.Path);
+      Self.Path := new String'(Path);
+      Projects_Paths.Reset (Self.Cache);
+   end Set_Path;
 
    ------------------
    -- Find_Project --

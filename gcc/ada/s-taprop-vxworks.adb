@@ -1336,12 +1336,8 @@ package body System.Task_Primitives.Operations is
    ---------------------
 
    function Is_Task_Context return Boolean is
-      function intContext return int;
-      pragma Import (C, intContext, "intContext");
-      --  Binding to the C routine intContext. This function returns 1 only
-      --  if the current execution state is an interrupt context.
    begin
-      return intContext /= 1;
+      return System.OS_Interface.Interrupt_Context /= 1;
    end Is_Task_Context;
 
    ----------------
