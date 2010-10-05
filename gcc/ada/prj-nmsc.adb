@@ -282,6 +282,16 @@ package body Prj.Nmsc is
    --  Check the library attributes of project Project in project tree
    --  and modify its data Data accordingly.
 
+   procedure Check_Aggregate_Project
+     (Project : Project_Id;
+      Data    : in out Tree_Processing_Data);
+   --  Check aggregate projects attributes
+
+   procedure Check_Abstract_Project
+     (Project : Project_Id;
+      Data    : in out Tree_Processing_Data);
+   --  Check abstract projects attributes
+
    procedure Check_Programming_Languages
      (Project : Project_Id;
       Data    : in out Tree_Processing_Data);
@@ -432,9 +442,8 @@ package body Prj.Nmsc is
      (Project : in out Project_Processing_Data;
       Data    : in out Tree_Processing_Data);
    --  Find all the sources of project Project in project tree Data.Tree and
-   --  update its Data accordingly. This assumes that Data.First_Source has
-   --  been initialized with the list of excluded sources and special naming
-   --  exceptions.
+   --  update its Data accordingly. This assumes that the special naming
+   --  exceptions have already been processed.
 
    function Path_Name_Of
      (File_Name : File_Name_Type;
@@ -854,6 +863,73 @@ package body Prj.Nmsc is
       end if;
    end Canonical_Case_File_Name;
 
+   -----------------------------
+   -- Check_Aggregate_Project --
+   -----------------------------
+
+   procedure Check_Aggregate_Project
+     (Project : Project_Id;
+      Data    : in out Tree_Processing_Data)
+   is
+      Project_Files : constant Prj.Variable_Value :=
+                        Prj.Util.Value_Of
+                          (Snames.Name_Project_Files,
+                           Project.Decl.Attributes,
+                           Data.Tree);
+   begin
+      if Project_Files.Default then
+         Error_Msg_Name_1 := Snames.Name_Project_Files;
+         Error_Msg
+           (Data.Flags,
+            "Attribute %% must be specified in aggregate project",
+            Project.Location, Project);
+      end if;
+   end Check_Aggregate_Project;
+
+   ----------------------------
+   -- Check_Abstract_Project --
+   ----------------------------
+
+   procedure Check_Abstract_Project
+     (Project : Project_Id;
+      Data    : in out Tree_Processing_Data)
+   is
+      Source_Dirs      : constant Variable_Value :=
+                           Util.Value_Of
+                             (Name_Source_Dirs,
+                              Project.Decl.Attributes, Data.Tree);
+      Source_Files     : constant Variable_Value :=
+                           Util.Value_Of
+                             (Name_Source_Files,
+                              Project.Decl.Attributes, Data.Tree);
+      Source_List_File : constant Variable_Value :=
+                           Util.Value_Of
+                             (Name_Source_List_File,
+                              Project.Decl.Attributes, Data.Tree);
+      Languages        : constant Variable_Value :=
+                           Util.Value_Of
+                             (Name_Languages,
+                              Project.Decl.Attributes, Data.Tree);
+
+   begin
+      if Project.Source_Dirs /= Nil_String then
+         if Source_Dirs.Values  = Nil_String
+           and then Source_Files.Values = Nil_String
+           and then Languages.Values = Nil_String
+           and then Source_List_File.Default
+         then
+            Project.Source_Dirs := Nil_String;
+
+         else
+            Error_Msg
+              (Data.Flags,
+               "at least one of Source_Files, Source_Dirs or Languages "
+               & "must be declared empty for an abstract project",
+               Project.Location, Project);
+         end if;
+      end if;
+   end Check_Abstract_Project;
+
    -----------
    -- Check --
    -----------
@@ -862,60 +938,20 @@ package body Prj.Nmsc is
      (Project : Project_Id;
       Data    : in out Tree_Processing_Data)
    is
-      Extending : Boolean := False;
       Prj_Data  : Project_Processing_Data;
 
    begin
       Initialize (Prj_Data, Project);
 
-      Check_If_Externally_Built (Project, Data);
-
-      --  Object, exec and source directories
-
-      Get_Directories (Project, Data);
-
-      --  Get the programming languages
-
+      Check_If_Externally_Built   (Project, Data);
+      Get_Directories             (Project, Data);
       Check_Programming_Languages (Project, Data);
 
-      if Project.Qualifier = Dry
-        and then Project.Source_Dirs /= Nil_String
-      then
-         declare
-            Source_Dirs      : constant Variable_Value :=
-                                 Util.Value_Of
-                                   (Name_Source_Dirs,
-                                    Project.Decl.Attributes, Data.Tree);
-            Source_Files     : constant Variable_Value :=
-                                 Util.Value_Of
-                                   (Name_Source_Files,
-                                    Project.Decl.Attributes, Data.Tree);
-            Source_List_File : constant Variable_Value :=
-                                 Util.Value_Of
-                                   (Name_Source_List_File,
-                                    Project.Decl.Attributes, Data.Tree);
-            Languages        : constant Variable_Value :=
-                                 Util.Value_Of
-                                   (Name_Languages,
-                                    Project.Decl.Attributes, Data.Tree);
-
-         begin
-            if Source_Dirs.Values  = Nil_String
-              and then Source_Files.Values = Nil_String
-              and then Languages.Values = Nil_String
-              and then Source_List_File.Default
-            then
-               Project.Source_Dirs := Nil_String;
-
-            else
-               Error_Msg
-                 (Data.Flags,
-                  "at least one of Source_Files, Source_Dirs or Languages "
-                    & "must be declared empty for an abstract project",
-                  Project.Location, Project);
-            end if;
-         end;
-      end if;
+      case Project.Qualifier is
+         when Aggregate => Check_Aggregate_Project (Project, Data);
+         when Dry       => Check_Abstract_Project  (Project, Data);
+         when others    => null;
+      end case;
 
       --  Check configuration. This must be done even for gnatmake (even though
       --  no user configuration file was provided) since the default config we
@@ -923,90 +959,23 @@ package body Prj.Nmsc is
 
       Check_Configuration (Project, Data);
 
-      --  Library attributes
-
       Check_Library_Attributes (Project, Data);
 
       if Current_Verbosity = High then
          Show_Source_Dirs (Project, Data.Tree);
       end if;
 
-      Extending := Project.Extends /= No_Project;
-
       Check_Package_Naming (Project, Data);
 
-      --  Find the sources
-
-      if Project.Source_Dirs /= Nil_String then
+      if Project.Qualifier /= Aggregate then
          Look_For_Sources (Prj_Data, Data);
-
-         if not Project.Externally_Built
-           and then not Extending
-         then
-            declare
-               Language     : Language_Ptr;
-               Source       : Source_Id;
-               Alt_Lang     : Language_List;
-               Continuation : Boolean := False;
-               Iter         : Source_Iterator;
-
-            begin
-               Language := Project.Languages;
-               while Language /= No_Language_Index loop
-
-                  --  If there are no sources for this language, check if there
-                  --  are sources for which this is an alternate language.
-
-                  if Language.First_Source = No_Source
-                    and then (Data.Flags.Require_Sources_Other_Lang
-                               or else Language.Name = Name_Ada)
-                  then
-                     Iter := For_Each_Source (In_Tree => Data.Tree,
-                                              Project => Project);
-                     Source_Loop : loop
-                        Source := Element (Iter);
-                        exit Source_Loop when Source = No_Source
-                          or else Source.Language = Language;
-
-                        Alt_Lang := Source.Alternate_Languages;
-                        while Alt_Lang /= null loop
-                           exit Source_Loop when Alt_Lang.Language = Language;
-                           Alt_Lang := Alt_Lang.Next;
-                        end loop;
-
-                        Next (Iter);
-                     end loop Source_Loop;
-
-                     if Source = No_Source then
-
-                        Report_No_Sources
-                          (Project,
-                           Get_Name_String (Language.Display_Name),
-                           Data,
-                           Prj_Data.Source_List_File_Location,
-                           Continuation);
-                        Continuation := True;
-                     end if;
-                  end if;
-
-                  Language := Language.Next;
-               end loop;
-            end;
-         end if;
       end if;
 
-      --  If a list of sources is specified in attribute Interfaces, set
-      --  In_Interfaces only for the sources specified in the list.
-
       Check_Interfaces (Project, Data);
-
-      --  If it is a library project file, check if it is a standalone library
 
       if Project.Library then
          Check_Stand_Alone_Library (Project, Data);
       end if;
-
-      --  Put the list of Mains, if any, in the project data
 
       Get_Mains (Project, Data);
 
@@ -7242,6 +7211,68 @@ package body Prj.Nmsc is
       procedure Mark_Excluded_Sources;
       --  Mark as such the sources that are declared as excluded
 
+      procedure Check_Missing_Sources;
+      --  Check whether one of the languages has no sources, and report an
+      --  error when appropriate
+
+      ---------------------------
+      -- Check_Missing_Sources --
+      ---------------------------
+
+      procedure Check_Missing_Sources is
+         Extending    : constant Boolean :=
+           Project.Project.Extends /= No_Project;
+         Language     : Language_Ptr;
+         Source       : Source_Id;
+         Alt_Lang     : Language_List;
+         Continuation : Boolean := False;
+         Iter         : Source_Iterator;
+      begin
+         if not Project.Project.Externally_Built
+           and then not Extending
+         then
+            Language := Project.Project.Languages;
+            while Language /= No_Language_Index loop
+
+               --  If there are no sources for this language, check if there
+               --  are sources for which this is an alternate language.
+
+               if Language.First_Source = No_Source
+                 and then (Data.Flags.Require_Sources_Other_Lang
+                           or else Language.Name = Name_Ada)
+               then
+                  Iter := For_Each_Source (In_Tree => Data.Tree,
+                                           Project => Project.Project);
+                  Source_Loop : loop
+                     Source := Element (Iter);
+                     exit Source_Loop when Source = No_Source
+                       or else Source.Language = Language;
+
+                     Alt_Lang := Source.Alternate_Languages;
+                     while Alt_Lang /= null loop
+                        exit Source_Loop when Alt_Lang.Language = Language;
+                        Alt_Lang := Alt_Lang.Next;
+                     end loop;
+
+                     Next (Iter);
+                  end loop Source_Loop;
+
+                  if Source = No_Source then
+                     Report_No_Sources
+                       (Project.Project,
+                        Get_Name_String (Language.Display_Name),
+                        Data,
+                        Project.Source_List_File_Location,
+                        Continuation);
+                     Continuation := True;
+                  end if;
+               end if;
+
+               Language := Language.Next;
+            end loop;
+         end if;
+      end Check_Missing_Sources;
+
       ------------------
       -- Check_Object --
       ------------------
@@ -7416,13 +7447,16 @@ package body Prj.Nmsc is
    --  Start of processing for Look_For_Sources
 
    begin
-      Find_Excluded_Sources (Project, Data);
+      if Project.Project.Source_Dirs /= Nil_String then
+         Find_Excluded_Sources (Project, Data);
 
-      if Project.Project.Languages /= No_Language_Index then
-         Load_Naming_Exceptions (Project, Data);
-         Find_Sources (Project, Data);
-         Mark_Excluded_Sources;
-         Check_Object_Files;
+         if Project.Project.Languages /= No_Language_Index then
+            Load_Naming_Exceptions (Project, Data);
+            Find_Sources (Project, Data);
+            Mark_Excluded_Sources;
+            Check_Object_Files;
+            Check_Missing_Sources;
+         end if;
       end if;
 
       Object_File_Names_Htable.Reset (Object_Files);
