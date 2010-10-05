@@ -1,3 +1,68 @@
+2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc++/31125
+	* parser.c (cp_parser_objc_class_interface): If no identifier
+	follows an @interface token, stop parsing the interface after
+	printing an error.
+	(cp_parser_objc_class_implementation): If no identifier follows an
+	@implementation token, stop parsing the implementation after
+	printing an error.
+
+2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc++/23707
+	* parser.c (cp_parser_objc_method_keyword_params): If the required
+	colon is not found while parsing parameters, stop parsing them.
+
+2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc++/31126
+	* parser.c (cp_parser_objc_class_ivars): Do not eat the EOF or
+	@end after detecting it.  Print an error if @end is found without
+	a '}'.
+	(cp_parser_objc_method_prototype_list): Do not eat the EOF after
+	detecting it.  Fixed reading the next token when continuing
+	because of an error in a method signature.  Print an error if EOF
+	is found without an '@end'.
+	(cp_parser_objc_method_definition_list): Same change.
+
+2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	Merge from apple/trunk branch on FSF servers:
+	
+	2005-10-17  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4290840
+	* parser.c (cp_parser_objc_method_keyword_params): Check for valid
+	method parameters and issue error.
+	(cp_parser_objc_method_definition_list): Check for invalid tokens
+	which cannot start a function definition.
+
+	2005-10-14  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4294425
+	* parser.c (cp_parser_objc_message_args): Check for missing message
+	arguments and syntax error.
+
+	2005-10-13  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4261146
+	* parser.c (cp_parser_objc_class_ivars): Check for @end/eof while
+	looking for '}'.
+
+	2005-08-15  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4093475
+	* parser.c (cp_parser_objc_interstitial_code): Catch stray
+	'{' and '}' tokens and issue appropriate errors.
+	
+	2005-08-02  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4185810
+	(cp_parser_statement_seq_opt): In addition to '}' and
+	end-of-file, a statement sequence may also be terminated
+	by a stray '@end'.
+	
 2010-10-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* cp-tree.h (cxx_print_error_function,
