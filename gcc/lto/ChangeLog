@@ -1,3 +1,7 @@
+2010-10-05  Ian Lance Taylor  <iant@google.com>
+
+	* lto.c (lto_section_with_id): Make s a const pointer.
+
 2010-10-05  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c:  Include params.h.
