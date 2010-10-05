@@ -1,8 +1,6 @@
 // Implementation file for the -*- C++ -*- dynamic memory management header.
 
-// Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-// 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation
+// Copyright (C) 2010 Free Software Foundation
 //
 // This file is part of GCC.
 //
@@ -27,15 +25,10 @@
 
 #include "new"
 
-const std::nothrow_t std::nothrow = { };
+std::bad_alloc::~bad_alloc() throw() { }
 
-using std::new_handler;
-new_handler __new_handler;
-
-new_handler
-std::set_new_handler (new_handler handler) throw()
+const char* 
+std::bad_alloc::what() const throw()
 {
-  new_handler prev_handler = __new_handler;
-  __new_handler = handler;
-  return prev_handler;
+  return "std::bad_alloc";
 }
