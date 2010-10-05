@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This file should be #include-d after tree.h.  */
 
-struct diagnostic_context;
 struct diagnostic_info;
 
 struct gimplify_omp_ctx;
@@ -275,7 +274,7 @@ struct lang_hooks
 
   /* Callback used to perform language-specific initialization for the
      global diagnostic context structure.  */
-  void (*initialize_diagnostics) (struct diagnostic_context *);
+  void (*initialize_diagnostics) (diagnostic_context *);
 
   /* Return true if a warning should be given about option OPTION,
      which is for the wrong language, false if it should be quietly
@@ -374,7 +373,7 @@ struct lang_hooks
   int (*types_compatible_p) (tree x, tree y);
 
   /* Called by report_error_function to print out function name.  */
-  void (*print_error_function) (struct diagnostic_context *, const char *,
+  void (*print_error_function) (diagnostic_context *, const char *,
 				struct diagnostic_info *);
 
   /* Convert a character from the host's to the target's character

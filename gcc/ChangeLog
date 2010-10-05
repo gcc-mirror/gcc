@@ -1,3 +1,41 @@
+2010-10-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* opts-common.c (handle_option, handle_generated_option,
+	read_cmdline_option, set_option): Add diagnostic_context
+	parameter.  Update calls among these functions.
+	(set_option): Don't use global_dc.
+	* opts.c (read_cmdline_options): Pass global_dc to
+	read_cmdline_option.
+	(decode_options): Pass global_dc to enable_warning_as_error.
+	(common_handle_option): Pass global_dc to enable_warning_as_error.
+	(enable_warning_as_error): Add diagnostic_context parameter.
+	Document parameters.  Don't use global_dc.  Pass
+	diagnostic_context parameter to handle_generated_option.
+	* opts.h (set_option, handle_option, handle_generated_option,
+	read_cmdline_option, enable_warning_as_error): Add
+	diagnostic_context parameter.
+	* Makefile.in (lto-opts.o): Update dependencies.
+	* coretypes.h (struct diagnostic_context, diagnostic_context):
+	Declare here.
+	* diagnostic.h (diagnostic_context): Don't declare typedef here.
+	* gcc.c (process_command): Pass global_dc to read_cmdline_option.
+	* langhooks-def.h (struct diagnostic_context): Don't declare here.
+	(lhd_print_error_function, lhd_initialize_diagnostics): Declare
+	using diagnostic_context typedef.
+	* langhooks.c (lhd_initialize_diagnostics): Declare using
+	diagnostic_context typedef.
+	* langhooks.h (struct diagnostic_context): Don't declare here.
+	(initialize_diagnostics, print_error_function): Declare using
+	diagnostic_context typedef.
+	* lto-opts.c: Include diagnostic.h.
+	(lto_reissue_options): Pass global_dc to set_option.  Pass
+	DK_UNSPECIFIED not 0.
+	* plugin.c (plugins_internal_error_function): Declare using
+	diagnostic_context typedef.
+	* plugin.h (struct diagnostic_context): Don't declare here.
+	(plugins_internal_error_function): Declare using
+	diagnostic_context typedef.
+
 2010-10-05  Olivier Hainque  <hainque@adacore.com>
             Nicolas Roche  <roche@adacore.com>
 

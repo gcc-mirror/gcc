@@ -830,7 +830,7 @@ warn_if_plugins (void)
 /* Likewise, as a callback from the diagnostics code.  */
 
 void
-plugins_internal_error_function (struct diagnostic_context *context ATTRIBUTE_UNUSED,
+plugins_internal_error_function (diagnostic_context *context ATTRIBUTE_UNUSED,
 				 const char *msgid ATTRIBUTE_UNUSED,
 				 va_list *ap ATTRIBUTE_UNUSED)
 {

@@ -216,19 +216,21 @@ extern bool get_option_state (struct gcc_options *, int,
 			      struct cl_option_state *);
 extern void set_option (struct gcc_options *opts,
 			struct gcc_options *opts_set,
-			int opt_index, int value, const char *arg, int);
+			int opt_index, int value, const char *arg, int kind,
+			diagnostic_context *dc);
 extern void *option_flag_var (int opt_index, struct gcc_options *opts);
 bool handle_option (struct gcc_options *opts,
 		    struct gcc_options *opts_set,
 		    const struct cl_decoded_option *decoded,
 		    unsigned int lang_mask, int kind,
 		    const struct cl_option_handlers *handlers,
-		    bool generated_p);
+		    bool generated_p, diagnostic_context *dc);
 bool handle_generated_option (struct gcc_options *opts,
 			      struct gcc_options *opts_set,
 			      size_t opt_index, const char *arg, int value,
 			      unsigned int lang_mask, int kind,
-			      const struct cl_option_handlers *handlers);
+			      const struct cl_option_handlers *handlers,
+			      diagnostic_context *dc);
 void generate_option (size_t opt_index, const char *arg, int value,
 		      unsigned int lang_mask,
 		      struct cl_decoded_option *decoded);
@@ -238,10 +240,12 @@ extern void read_cmdline_option (struct gcc_options *opts,
 				 struct gcc_options *opts_set,
 				 struct cl_decoded_option *decoded,
 				 unsigned int lang_mask,
-				 const struct cl_option_handlers *handlers);
+				 const struct cl_option_handlers *handlers,
+				 diagnostic_context *dc);
 extern void register_warning_as_error_callback (void (*callback) (int));
 extern void enable_warning_as_error (const char *arg, int value,
 				     unsigned int lang_mask,
-				     const struct cl_option_handlers *handlers);
+				     const struct cl_option_handlers *handlers,
+				     diagnostic_context *dc);
 extern void print_ignored_options (void);
 #endif

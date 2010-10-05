@@ -2325,7 +2325,7 @@ lto-symtab.o: lto-symtab.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(LTO_STREAMER_H) $(LINKER_PLUGIN_API_H) gt-lto-symtab.h
 lto-opts.o: lto-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
    $(HASHTAB_H) $(GGC_H) $(BITMAP_H) $(FLAGS_H) opts.h options.h \
-   $(TARGET_H) $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) $(LTO_STREAMER_H)
+   $(TARGET_H) $(TOPLEV_H) $(DIAGNOSTIC_H) $(LTO_STREAMER_H)
 lto-streamer.o: lto-streamer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h   \
    $(TM_H) $(TREE_H) $(GIMPLE_H) $(BITMAP_H) $(LTO_STREAMER_H) $(FLAGS_H) \
    $(TREE_FLOW_H) $(DIAGNOSTIC_CORE_H) $(LTO_SYMTAB_H) $(TOPLEV_H) $(DIAGNOSTIC_CORE_H)

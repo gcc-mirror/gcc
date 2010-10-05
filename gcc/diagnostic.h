@@ -52,7 +52,6 @@ typedef struct diagnostic_classification_change_t
 } diagnostic_classification_change_t;
 
 /*  Forward declarations.  */
-typedef struct diagnostic_context diagnostic_context;
 typedef void (*diagnostic_starter_fn) (diagnostic_context *,
 				       diagnostic_info *);
 typedef diagnostic_starter_fn diagnostic_finalizer_fn;
