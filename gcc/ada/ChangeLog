@@ -1,3 +1,9 @@
+2010-10-05  Robert Dewar  <dewar@adacore.com>
+
+	* prj-util.adb, prj-util.ads, prj.ads, s-vxwext-rtp.adb, sem_ch4.adb,
+	sem_ch7.adb, sem_res.adb, sem_type.adb: Minor reformatting.
+	Minor code reorganization (use Nkind_In).
+
 2010-10-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch10.adb (Analyze_Task_Body_Stub): Diagnose duplicate stub for

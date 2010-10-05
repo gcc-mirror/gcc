@@ -292,17 +292,16 @@ package Prj is
 
    Makefile_Dependency_Suffix : constant String := ".d";
    ALI_Dependency_Suffix      : constant String := ".ali";
-
    Switches_Dependency_Suffix : constant String := ".cswi";
 
-   Binder_Exchange_Suffix     : constant String := ".bexch";
+   Binder_Exchange_Suffix : constant String := ".bexch";
    --  Suffix for binder exchange files
 
-   Library_Exchange_Suffix     : constant String := ".lexch";
+   Library_Exchange_Suffix : constant String := ".lexch";
    --  Suffix for library exchange files
 
    type Name_List_Index is new Nat;
-   No_Name_List            : constant Name_List_Index := 0;
+   No_Name_List : constant Name_List_Index := 0;
 
    type Name_Node is record
       Name : Name_Id         := No_Name;
@@ -1348,19 +1347,19 @@ package Prj is
          Packages          : Package_Table.Instance;
          Projects          : Project_List;
 
-         Units_HT          : Units_Htable.Instance;
+         Units_HT : Units_Htable.Instance;
          --  Unit name to Unit_Index (and from there so Source_Id)
 
-         Source_Paths_HT   : Source_Paths_Htable.Instance;
+         Source_Paths_HT : Source_Paths_Htable.Instance;
          --  Full path to Source_Id
 
-         Source_Info_File_Name   : String_Access := null;
+         Source_Info_File_Name : String_Access := null;
          --  The name of the source info file, if specified by the builder
 
          Source_Info_File_Exists : Boolean := False;
          --  True when a source info file has been successfully read
 
-         Private_Part      : Private_Project_Tree_Data;
+         Private_Part : Private_Project_Tree_Data;
       end record;
    --  Data for a project tree
 

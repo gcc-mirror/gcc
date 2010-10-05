@@ -104,7 +104,7 @@ package Prj.Util is
       In_Tree                 : Project_Tree_Ref;
       Force_Lower_Case_Index  : Boolean := False;
       Allow_Wildcards         : Boolean := False) return Variable_Value;
-   --  In a specific package,
+   --  In a specific package:
    --   - if there exists an array Attribute_Or_Array_Name with an index Name,
    --     returns the corresponding component (depending on the attribute, the
    --     index may or may not be case sensitive, see previous function),
@@ -134,8 +134,8 @@ package Prj.Util is
      (Name        : Name_Id;
       In_Packages : Package_Id;
       In_Tree     : Project_Tree_Ref) return Package_Id;
-   --  Returns a specified package in a package list. Returns No_Package if
-   --  In_Packages is null or if Name is not the name of a package in
+   --  Returns a specified package in a package list. Returns No_Package
+   --  if In_Packages is null or if Name is not the name of a package in
    --  Package_List. The caller must ensure that Name is in lower case.
 
    function Value_Of
@@ -150,9 +150,9 @@ package Prj.Util is
      (S          : String;
       Max_Length : Positive;
       Separator  : Character);
-   --  Output string S using Output.Write_Str. If S is too long to fit in
-   --  one line of Max_Length, cut it in several lines, using Separator as
-   --  the last character of each line, if possible.
+   --  Output string S using Output.Write_Str. If S is too long to fit in one
+   --  line of Max_Length, cut it in several lines, using Separator as the last
+   --  character of each line, if possible.
 
    type Text_File is limited private;
    --  Represents a text file (default is invalid text file)
@@ -198,10 +198,9 @@ package Prj.Util is
    --  the new file.
 
    procedure Read_Source_Info_File (Tree : Project_Tree_Ref);
-   --  Check if there is a source info file specified for the project Tree and
-   --  if there is one, attempt to read it. If the file exists and is
-   --  successfully read, set the flag Source_Info_File_Exists to True for
-   --  the tree.
+   --  Check if there is a source info file specified for the project Tree. If
+   --  so, attempt to read it. If the file exists and is successfully read, set
+   --  the flag Source_Info_File_Exists to True for the tree.
 
    type Source_Info_Data is record
       Project             : Name_Id;
@@ -222,7 +221,8 @@ package Prj.Util is
    --  Iterator to get the sources for a single project
 
    procedure Initialize
-     (Iter : out Source_Info_Iterator; For_Project : Name_Id);
+     (Iter        : out Source_Info_Iterator;
+      For_Project : Name_Id);
    --  Initiaize Iter for the project
 
    function Source_Info_Of (Iter : Source_Info_Iterator) return Source_Info;
@@ -234,7 +234,6 @@ package Prj.Util is
    --  Advance the iterator to the next source in the project
 
 private
-
    type Text_File_Data is record
       FD                  : File_Descriptor := Invalid_FD;
       Out_File            : Boolean := False;
