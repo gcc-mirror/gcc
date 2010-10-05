@@ -188,6 +188,11 @@ package Prj.Env is
    --  been called, the value set by the last call to Set_Project_Path.
    --  The returned value must not be modified.
 
+   procedure Set_Path
+     (Self : in out Project_Search_Path; Path : String);
+   --  Override the value of the project path.
+   --  This also removes the implicit default search directories
+
    procedure Find_Project
      (Self               : in out Project_Search_Path;
       Project_File_Name  : String;
@@ -201,10 +206,6 @@ package Prj.Env is
    --  Project_File_Name can optionally contain directories, and the extension
    --  (.gpr) for the file name is optional.
    --  Returns No_Name if no such project was found.
-
-   function Deep_Copy (Self : Project_Search_Path) return Project_Search_Path;
-   --  Return a deep copy of Self. The result can be modified independently of
-   --  Self, and must be freed by the caller
 
 private
    package Projects_Paths is new GNAT.Dynamic_HTables.Simple_HTable

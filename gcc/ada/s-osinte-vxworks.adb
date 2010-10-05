@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---         Copyright (C) 1997-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1997-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -228,6 +228,15 @@ package body System.OS_Interface is
          System.VxWorks.Ext.Interrupt_Handler (Handler),
          Parameter);
    end Interrupt_Connect;
+
+   -----------------------
+   -- Interrupt_Context --
+   -----------------------
+
+   function Interrupt_Context return int is
+   begin
+      return System.VxWorks.Ext.Interrupt_Context;
+   end Interrupt_Context;
 
    --------------------------------
    -- Interrupt_Number_To_Vector --

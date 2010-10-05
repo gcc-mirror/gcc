@@ -1,5 +1,35 @@
 2010-10-05  Emmanuel Briot  <briot@adacore.com>
 
+	* prj-env.adb, prj-env.ads (Set_Path): New subprogram.
+	(Deep_Copy): Removed, not used.
+
+2010-10-05  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Add_Internal_Interface_Entities): Code reorganization:
+	move code that searches in the list of primitives of a tagged type for
+	the entity that will be overridden by user-defined routines.
+	* sem_disp.adb (Find_Primitive_Covering_Interface): Move here code
+	previously located in routine Add_Internal_Interface_Entities.
+	* sem_disp.ads (Find_Primitive_Covering_Interface): Update documentation
+	* sem_ch6.adb (New_Overloaded_Entity): Add missing check on
+	availability of attribute Alias.
+
+2010-10-05  Ed Falis  <falis@adacore.com>
+
+	* s-taprop-vxworks.adb, s-osinte-vxworks.adb, s-osinte-vxworks.ads,
+	s-vxwext.ads, s-vxwext-kernel.ads, s-vxwext-rtp.adb, s-vxwext-rtp.ads:
+	Move definition of intContext to System.OS_Interface.
+	Add necessary variants in System.VxWorks.Extensions.
+
+2010-10-05  Doug Rupp  <rupp@adacore.com>
+
+	* s-asthan-vms-alpha.adb: On VMS, a task using
+	pragma AST_Entry exhibits a memory leak when the task terminates
+	because the vector allocated for the AST interface is not freed. Fixed
+	by making the vector a controlled type.
+
+2010-10-05  Emmanuel Briot  <briot@adacore.com>
+
 	* prj-nmsc.adb (Expand_Subdirectory_Pattern): Check that the prefix in
 	a "**" pattern properly exists, and report an error otherwise.
 

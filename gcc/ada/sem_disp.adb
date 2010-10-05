@@ -1651,7 +1651,8 @@ package body Sem_Disp is
      (Tagged_Type : Entity_Id;
       Iface_Prim  : Entity_Id) return Entity_Id
    is
-      E : Entity_Id;
+      E  : Entity_Id;
+      El : Elmt_Id;
 
    begin
       pragma Assert (Is_Interface (Find_Dispatching_Type (Iface_Prim))
@@ -1659,6 +1660,8 @@ package body Sem_Disp is
                    and then
                      Is_Interface
                        (Find_Dispatching_Type (Ultimate_Alias (Iface_Prim)))));
+
+      --  Search in the homonym chain
 
       E := Current_Entity (Iface_Prim);
       while Present (E) loop
@@ -1671,6 +1674,23 @@ package body Sem_Disp is
 
          E := Homonym (E);
       end loop;
+
+      --  Search in the list of primitives of the type
+
+      El := First_Elmt (Primitive_Operations (Tagged_Type));
+      while Present (El) loop
+         E := Node (El);
+
+         if No (Interface_Alias (E))
+           and then Alias (E) = Iface_Prim
+         then
+            return Node (El);
+         end if;
+
+         Next_Elmt (El);
+      end loop;
+
+      --  Not found
 
       return Empty;
    end Find_Primitive_Covering_Interface;
