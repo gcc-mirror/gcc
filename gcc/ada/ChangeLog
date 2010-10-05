@@ -1,5 +1,149 @@
 2010-10-05  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch3.adb: Do not elaborate type definition if syntax error.
+
+2010-10-05  Javier Miranda  <miranda@adacore.com>
+
+	* sprint.adb (Sprint_Node_Actual): Improve output of subprogram bodies
+	to generate the full-qualified names of its corresponding spec.
+	This facilitates locating the corresponing body when reading
+	the DG output.
+
+2010-10-05  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb (Make_Helper_Function_Name): For a tagged type, use
+	canonical name without serial number only if the helper is becoming a
+	primitive of the type.
+
+2010-10-05  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_DT): Minor code reorganization.
+
+2010-10-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch6.adb: improve recovery with extra paren in function spec.
+
+2010-10-05  Quentin Ochem  <ochem@adacore.com>
+
+	* prj-tree.ads: Project_Path is now aliased.
+
+2010-10-05  Thomas Quinot  <quinot@adacore.com>
+
+	* checks.adb: Minor reformatting.
+
+2010-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* mlib-tgt-specific-mingw.adb (No_Argument_List): Delete.
+	(Shared_Libgcc): New aliased variable.
+	(Shared_Libgcc_Switch): New constant.
+	(Build_Dynamic_Library): Pass Shared_Libgcc_Switch to the compiler
+	* gcc-interface/Makefile.in (gnatlib-shared-win32): Pass -shared-libgcc
+	to the compiler.
+	* gcc-interface/Make-lang.in: Update dependencies.
+	
+2010-10-05  Vincent Celier  <celier@adacore.com>
+
+	* prj-part.adb (Parse_Simple_Project): When checking if a child project
+	imports its parent project, also look in projects being extended by
+	imported projects.
+
+2010-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi: Adjust instructions in G.10 Building DLLs with GNAT.
+
+2010-10-05  Javier Miranda  <miranda@adacore.com>
+
+	* exp_cg.adb (Slot_Number): Add support to handle aliased entities.
+	(Generate_CG_Output): Switch -gnatd.Z is no longer needed to
+	activate this output.
+
+2010-10-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* back_end.adb (Call_Back_End): Generate an error message when scil
+	generation is enabled, and no scil back-end (by default) is available.
+
+2010-10-05  Javier Miranda  <miranda@adacore.com>
+
+	* debug.adb: Update documentation because -gnatd.Z is no longer required
+	to generate the call-graph information.
+
+2010-10-05  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch5.adb (Expand_Simple_Function_Return): Rewrite expansion of a
+	runtime access check by an equivalent expansion that causes
+	no problems in the VM backend. The original expansion was
+	not good for the VM backends because when Tagged_Type_Expansion
+	is disabled the attribute Access_Disp_Table is not available.
+
+2010-10-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Covers): In a dispatching context, T1 covers T2 if T2
+	is class-wide and T1 is its specific type.
+
+2010-10-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.adb: Add guard to Is_String_Type to prevent cascaded errors.
+
+2010-10-05  Vincent Celier  <celier@adacore.com>
+
+	* back_end.ads: Minor spelling error correction.
+
+2010-10-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* switch-c.adb, gnat1drv.adb (Scan_Front_End_Switches): Disable
+	warnings when -gnatC is specified here so that warnings can be
+	re-enabled  explicitly.
+	(Adjust_Global_Switches): No longer suppress warnings.
+
+2010-10-05  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb: Minor reformatting.
+
+2010-10-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb: add guard in Analyze_One_Call to prevent crash when a
+	non-discrete type appears as an actual in a call.
+
+2010-10-05  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Scan_Make_Arg): Take into account new switch
+	--source-info=file.
+	* makeusg.adb: Add line for new switch --source-info=file.
+	* makeutl.ads (Source_Info_Option): New constant String for new builder
+	switch.
+	* prj-conf.adb: Put subprograms in alphabetical order
+	(Process_Project_And_Apply_Config): Read/write an eventual source info
+	file, if necessary.
+	* prj-nmsc.adb (Look_For_Sources.Get_Sources_From_Source_Info): New
+	procedure.
+	(Look_For_Sources): If a source info file was successfully read, get the
+	source data from the data read from the source info file.
+	* prj-util.adb (Source_Info_Table): New table
+	(Source_Info_Project_HTable): New hash table
+	(Create): New procedure
+	(Put (File), Put_Line): New procedures
+	(Write_Source_Info_File): New procedure
+	(Read_Source_Info_File): New procedure
+	(Initialize): New procedure
+	(Source_Info_Of): New procedure
+	(Next): New procedure
+	(Close): When file is an out file, fail if the buffer cannot be written
+	or if the file cannot be close successfully.
+	(Get_Line): Fail if file is an out file
+	* prj-util.ads (Create): New procedure
+	(Put (File), Put_Line): New procedures
+	(Write_Source_Info_File): New procedure
+	(Read_Source_Info_File): New procedure
+	(Source_Info_Data): New record type
+	(Source_Info_Iterator): New private type
+	(Initialize): New procedure
+	(Source_Info_Of): New procedure
+	(Next): New procedure
+	* prj.ads (Project_Tree_Data): New components Source_Info_File_Name and
+	Source_Info_File_Exists.
+
+2010-10-05  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch4.adb: Fix typo.
 
 2010-10-05  Thomas Quinot  <quinot@adacore.com>

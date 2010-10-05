@@ -6097,14 +6097,24 @@ package body Sem_Ch4 is
            and then Is_Type (Entity (Actual))
            and then No (Next (Actual))
          then
-            Rewrite (N,
-              Make_Slice (Loc,
-                Prefix => Make_Function_Call (Loc,
-                  Name => Relocate_Node (Name (N))),
-                Discrete_Range =>
-                  New_Occurrence_Of (Entity (Actual), Sloc (Actual))));
+            --  A single actual that is a type name indicates a slice if the
+            --  type is discrete, and an error otherwise.
 
-            Analyze (N);
+            if Is_Discrete_Type (Entity (Actual)) then
+               Rewrite (N,
+                 Make_Slice (Loc,
+                   Prefix => Make_Function_Call (Loc,
+                     Name => Relocate_Node (Name (N))),
+                Discrete_Range =>
+                     New_Occurrence_Of (Entity (Actual), Sloc (Actual))));
+
+               Analyze (N);
+
+            else
+               Error_Msg_N ("invalid use of type in expression", Actual);
+               Set_Etype (N, Any_Type);
+            end if;
+
             return True;
 
          elsif not Has_Compatible_Type (Actual, Etype (Index)) then

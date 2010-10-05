@@ -1653,6 +1653,7 @@ package body Prj.Part is
             Parent_Node  : Project_Node_Id := Empty_Node;
             With_Clause  : Project_Node_Id :=
                              First_With_Clause_Of (Project, In_Tree);
+            Imp_Proj_Name : Name_Id;
 
          begin
             --  If there is an extended project, check its name
@@ -1666,11 +1667,23 @@ package body Prj.Part is
             --  If the parent project is not the extended project,
             --  check each imported project until we find the parent project.
 
+            Imported_Loop :
             while not Parent_Found and then Present (With_Clause) loop
                Parent_Node := Project_Node_Of (With_Clause, In_Tree);
-               Parent_Found := Name_Of (Parent_Node, In_Tree) = Parent_Name;
+
+               Extension_Loop :
+               while Present (Parent_Node) loop
+                  Imp_Proj_Name := Name_Of (Parent_Node, In_Tree);
+                  Parent_Found := Imp_Proj_Name = Parent_Name;
+                  exit Imported_Loop when Parent_Found;
+                  Parent_Node :=
+                    Extended_Project_Of
+                      (Project_Declaration_Of (Parent_Node, In_Tree),
+                       In_Tree);
+               end loop Extension_Loop;
+
                With_Clause := Next_With_Clause_Of (With_Clause, In_Tree);
-            end loop;
+            end loop Imported_Loop;
 
             if Parent_Found then
                Set_Parent_Project_Of (Project, In_Tree, To => Parent_Node);

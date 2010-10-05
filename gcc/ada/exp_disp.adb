@@ -5022,6 +5022,7 @@ package body Exp_Disp is
             declare
                Prim_Elmt : Elmt_Id;
                Prim      : Entity_Id;
+               Size_Comp : Node_Id;
 
             begin
                Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
@@ -5032,15 +5033,15 @@ package body Exp_Disp is
                      Prim := Ultimate_Alias (Prim);
 
                      if Is_Abstract_Subprogram (Prim) then
-                        Append_To (TSD_Aggr_List,
+                        Size_Comp :=
                           Unchecked_Convert_To (RTE (RE_Size_Ptr),
-                            New_Reference_To (RTE (RE_Null_Address), Loc)));
+                            New_Reference_To (RTE (RE_Null_Address), Loc));
                      else
-                        Append_To (TSD_Aggr_List,
+                        Size_Comp :=
                           Unchecked_Convert_To (RTE (RE_Size_Ptr),
                             Make_Attribute_Reference (Loc,
                               Prefix => New_Reference_To (Prim, Loc),
-                              Attribute_Name => Name_Unrestricted_Access)));
+                              Attribute_Name => Name_Unrestricted_Access));
                      end if;
 
                      exit;
@@ -5048,6 +5049,9 @@ package body Exp_Disp is
 
                   Next_Elmt (Prim_Elmt);
                end loop;
+
+               pragma Assert (Present (Size_Comp));
+               Append_To (TSD_Aggr_List, Size_Comp);
             end;
          end if;
       end if;

@@ -27716,11 +27716,11 @@ into the DLL. This is done by using the standard @command{gnatmake} tool.
 
 @item building the DLL
 
-To build the DLL you must use @command{gcc}'s @option{-shared}
-option. It is quite simple to use this method:
+To build the DLL you must use @command{gcc}'s @option{-shared} and
+@option{-shared-libgcc} options. It is quite simple to use this method:
 
 @smallexample
-$ gcc -shared -o api.dll obj1.o obj2.o @dots{}
+$ gcc -shared -shared-libgcc -o api.dll obj1.o obj2.o @dots{}
 @end smallexample
 
 It is important to note that in this case all symbols found in the
@@ -27729,7 +27729,7 @@ the set of symbols to export by passing to @command{gcc} a definition
 file, @pxref{The Definition File}. For example:
 
 @smallexample
-$ gcc -shared -o api.dll api.def obj1.o obj2.o @dots{}
+$ gcc -shared -shared-libgcc -o api.dll api.def obj1.o obj2.o @dots{}
 @end smallexample
 
 If you use a definition file you must export the elaboration procedures
