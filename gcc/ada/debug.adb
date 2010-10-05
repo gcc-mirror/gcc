@@ -596,12 +596,6 @@ package body Debug is
    --       case of the gcc back end. Provided as a back up in case the new
    --       scheme has problems.
 
-   --  d.Z  This flag enables the frontend call-graph output associated with
-   --       dispatching calls. This is a temporary debug flag to be used during
-   --       development of this output. Once it works, it will always be output
-   --       (as part of the standard call-graph output) by default, and this
-   --       flag will be removed.
-
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when
    --       debugging errors caused by expanded code, where the source location

@@ -633,8 +633,23 @@ Several attributes can be used to specify the switches:
   @end smallexample
 
   @noindent
+  @code{Switches} may take a pattern as an index, such as in:
+
+  @smallexample
+  @b{package} Compiler @b{is}
+    @b{for} Default_Switches ("Ada") @b{use} ("-O2");
+    @b{for} Switches ("pkg*") @b{use} ("-O0");
+  @b{end} Compiler;
+  @end smallexample
+
+  @noindent
+  Sources @file{pkg.adb} and @file{pkg-child.adb} would be compiled with -O0,
+  not -O2.
+
+  @noindent
   @code{Switches} can also be given a language name as index instead of a file
   name in which case it has the same semantics as @emph{Default_Switches}.
+  However, indexes with wild cards are never valid for language name.
 
 @item @b{Local_Configuration_Pragmas}:
 @cindex @code{Local_Configuration_Pragmas}

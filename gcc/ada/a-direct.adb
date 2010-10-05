@@ -39,11 +39,10 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 
-with System.CRTL;                use System.CRTL;
-with System.OS_Lib;              use System.OS_Lib;
-with System.Regexp;              use System.Regexp;
-with System.File_IO;             use System.File_IO;
-
+with System.CRTL;    use System.CRTL;
+with System.OS_Lib;  use System.OS_Lib;
+with System.Regexp;  use System.Regexp;
+with System.File_IO; use System.File_IO;
 with System;
 
 package body Ada.Directories is
@@ -302,8 +301,7 @@ package body Ada.Directories is
       Target_Name : String;
       Form        : String := "")
    is
-      Success : Boolean;
-
+      Success  : Boolean;
       Mode     : Copy_Mode := Overwrite;
       Preserve : Attribute := None;
 
@@ -331,7 +329,6 @@ package body Ada.Directories is
                V1, V2  : Natural;
 
             begin
-
                --  Acquire form string, setting required NUL terminator
 
                Formstr (1 .. Form'Length) := Form;

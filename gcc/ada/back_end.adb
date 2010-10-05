@@ -124,7 +124,7 @@ package body Back_End is
 
          if CodePeer_Mode
            or else (Mode /= Generate_Object
-                    and then not Back_Annotate_Rep_Info)
+                     and then not Back_Annotate_Rep_Info)
          then
             return;
          end if;

@@ -1,3 +1,32 @@
+2010-10-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Check_Parameterless_Call): If the prefix of 'Address is
+	an explicit dereference of an access to function, the prefix is not
+	interpreted as a parameterless call.
+
+2010-10-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb: For 'Read and 'Write, use full view of base type if
+	private.
+
+2010-10-05  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Switches_Of): Allow wild cards in index of attributes
+	Switches.
+	* prj-util.adb (Value_Of): When Allow_Wildcards is True, use the index
+	of the associative array as a glob regular expression.
+	* prj-util.ads (Value_Of (Index, In_Array)): New Boolean parameter
+	Allow_Wildcards, defaulted to False.
+	(Value_Of (Name, Attribute_Or_Array_Name)): Ditto
+	* projects.texi: Document that attribute Switches (<file name>) may
+	use wild cards in the index.
+
+2010-10-05  Robert Dewar  <dewar@adacore.com>
+
+	* a-direct.adb, a-direct.ads, back_end.adb, checks.adb,
+	einfo.adb: Minor reformatting.
+	* debug.adb: Remove obsolete documentation for d.Z flag.
+
 2010-10-05  Vincent Celier  <celier@adacore.com>
 
 	* vms_data.ads: Add VMS qualifier /SRC_INFO= corresponding to gnatmake

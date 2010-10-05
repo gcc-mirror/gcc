@@ -7703,7 +7703,7 @@ package body Einfo is
             Write_Str ("Renamed_Entity");
 
          when Incomplete_Or_Private_Kind                   |
-            E_Record_Subtype                               =>
+              E_Record_Subtype                             =>
             Write_Str ("Private_Dependents");
 
          when Concurrent_Kind                              =>
