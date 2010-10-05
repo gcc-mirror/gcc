@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "options.h"
 #include "target.h"
-#include "diagnostic-core.h"
+#include "diagnostic.h"
 #include "toplev.h"
 #include "lto-streamer.h"
 
@@ -404,7 +404,7 @@ lto_reissue_options (void)
       if (flag_var)
 	set_option (&global_options, &global_options_set,
 		    o->code, o->value, o->arg,
-		    0 /*DK_UNSPECIFIED*/);
+		    DK_UNSPECIFIED, global_dc);
 
       if (o->type == CL_TARGET)
 	targetm.handle_option (o->code, o->arg, o->value);

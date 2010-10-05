@@ -3806,7 +3806,8 @@ process_command (unsigned int decoded_options_count,
 	}
 
       read_cmdline_option (&global_options, &global_options_set,
-			   decoded_options + j, CL_DRIVER, &handlers);
+			   decoded_options + j, CL_DRIVER, &handlers,
+			   global_dc);
     }
 
   /* If -save-temps=obj and -o name, create the prefix to use for %b.

@@ -1,3 +1,11 @@
+2010-10-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.h (struct diagnostic_context): Don't declare here.
+	(c_common_initialize_diagnostics): Declare using
+	diagnostic_context typedef.
+	* c-opts.c (c_common_handle_option): Pass global_dc to
+	handle_generated_option.
+
 2010-10-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-opts.c (c_common_handle_option): Pass &global_options_set to

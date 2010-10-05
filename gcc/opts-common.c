@@ -804,7 +804,8 @@ keep:
    option, DK_UNSPECIFIED otherwise.  GENERATED_P is true for an
    option generated as part of processing another option or otherwise
    generated internally, false for one explicitly passed by the user.
-   Returns false if the switch was invalid.  */
+   Returns false if the switch was invalid.  DC is the diagnostic
+   context for options affecting diagnostics state, or NULL.  */
 
 bool
 handle_option (struct gcc_options *opts,
@@ -812,7 +813,7 @@ handle_option (struct gcc_options *opts,
 	       const struct cl_decoded_option *decoded,
 	       unsigned int lang_mask, int kind,
 	       const struct cl_option_handlers *handlers,
-	       bool generated_p)
+	       bool generated_p, diagnostic_context *dc)
 {
   size_t opt_index = decoded->opt_index;
   const char *arg = decoded->arg;
@@ -823,7 +824,7 @@ handle_option (struct gcc_options *opts,
 
   if (flag_var)
     set_option (opts, (generated_p ? NULL : opts_set),
-		opt_index, value, arg, kind);
+		opt_index, value, arg, kind, dc);
 
   for (i = 0; i < handlers->num_handlers; i++)
     if (option->flags & handlers->handlers[i].mask)
@@ -849,13 +850,14 @@ handle_generated_option (struct gcc_options *opts,
 			 struct gcc_options *opts_set,
 			 size_t opt_index, const char *arg, int value,
 			 unsigned int lang_mask, int kind,
-			 const struct cl_option_handlers *handlers)
+			 const struct cl_option_handlers *handlers,
+			 diagnostic_context *dc)
 {
   struct cl_decoded_option decoded;
 
   generate_option (opt_index, arg, value, lang_mask, &decoded);
   return handle_option (opts, opts_set, &decoded, lang_mask, kind, handlers,
-			true);
+			true, dc);
 }
 
 /* Fill in *DECODED with an option described by OPT_INDEX, ARG and
@@ -915,14 +917,16 @@ generate_option_input_file (const char *file,
 
 /* Handle the switch DECODED for the language indicated by LANG_MASK,
    using the handlers in *HANDLERS and setting fields in OPTS and
-   OPTS_SET.  */
+   OPTS_SET and using diagnostic context DC (if not NULL) for
+   diagnostic options.  */
 
 void
 read_cmdline_option (struct gcc_options *opts,
 		     struct gcc_options *opts_set,
 		     struct cl_decoded_option *decoded,
 		     unsigned int lang_mask,
-		     const struct cl_option_handlers *handlers)
+		     const struct cl_option_handlers *handlers,
+		     diagnostic_context *dc)
 {
   const struct cl_option *option;
   const char *opt = decoded->orig_option_with_args_text;
@@ -974,16 +978,19 @@ read_cmdline_option (struct gcc_options *opts,
   gcc_assert (!decoded->errors);
 
   if (!handle_option (opts, opts_set, decoded, lang_mask, DK_UNSPECIFIED,
-		      handlers, false))
+		      handlers, false, dc))
     error ("unrecognized command line option %qs", opt);
 }
 
 /* Set any field in OPTS, and OPTS_SET if not NULL, for option
-   OPT_INDEX according to VALUE and ARG, diagnostic kind KIND.  */
+   OPT_INDEX according to VALUE and ARG, diagnostic kind KIND, using
+   diagnostic context DC if not NULL for diagnostic
+   classification.  */
 
 void
 set_option (struct gcc_options *opts, struct gcc_options *opts_set,
-	    int opt_index, int value, const char *arg, int kind)
+	    int opt_index, int value, const char *arg, int kind,
+	    diagnostic_context *dc)
 {
   const struct cl_option *option = &cl_options[opt_index];
   void *flag_var = option_flag_var (opt_index, opts);
@@ -1028,8 +1035,9 @@ set_option (struct gcc_options *opts, struct gcc_options *opts_set,
 	break;
     }
 
-  if ((diagnostic_t) kind != DK_UNSPECIFIED)
-    diagnostic_classify_diagnostic (global_dc, opt_index, (diagnostic_t) kind,
+  if ((diagnostic_t) kind != DK_UNSPECIFIED
+      && dc != NULL)
+    diagnostic_classify_diagnostic (dc, opt_index, (diagnostic_t) kind,
 				    UNKNOWN_LOCATION);
 }
 

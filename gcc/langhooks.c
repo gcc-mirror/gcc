@@ -333,7 +333,7 @@ write_global_declarations (void)
 
 /* Called to perform language-specific initialization of CTX.  */
 void
-lhd_initialize_diagnostics (struct diagnostic_context *ctx ATTRIBUTE_UNUSED)
+lhd_initialize_diagnostics (diagnostic_context *ctx ATTRIBUTE_UNUSED)
 {
 }
 

@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "hooks.h"
 
-struct diagnostic_context;
 struct diagnostic_info;
 
 /* Note to creators of new hooks:
@@ -51,7 +50,7 @@ extern void lhd_print_tree_nothing (FILE *, tree, int);
 extern const char *lhd_decl_printable_name (tree, int);
 extern const char *lhd_dwarf_name (tree, int);
 extern int lhd_types_compatible_p (tree, tree);
-extern void lhd_print_error_function (struct diagnostic_context *,
+extern void lhd_print_error_function (diagnostic_context *,
 				      const char *, struct diagnostic_info *);
 extern void lhd_set_decl_assembler_name (tree);
 extern bool lhd_warn_unused_global_decl (const_tree);
@@ -65,7 +64,7 @@ extern tree lhd_expr_to_decl (tree, bool *, bool *);
 extern tree lhd_builtin_function (tree);
 
 /* Declarations of default tree inlining hooks.  */
-extern void lhd_initialize_diagnostics (struct diagnostic_context *);
+extern void lhd_initialize_diagnostics (diagnostic_context *);
 extern void lhd_init_options (unsigned int,
 			      struct cl_decoded_option *);
 extern bool lhd_complain_wrong_lang_p (const struct cl_option *);

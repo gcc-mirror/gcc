@@ -438,7 +438,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       set_Wformat (value);
       handle_generated_option (&global_options, &global_options_set,
 			       OPT_Wimplicit, NULL, value,
-			       c_family_lang_mask, kind, handlers);
+			       c_family_lang_mask, kind, handlers, global_dc);
       warn_char_subscripts = value;
       warn_missing_braces = value;
       warn_parentheses = value;
@@ -533,11 +533,13 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       if (warn_implicit_int == -1)
 	handle_generated_option (&global_options, &global_options_set,
 				 OPT_Wimplicit_int, NULL, value,
-				 c_family_lang_mask, kind, handlers);
+				 c_family_lang_mask, kind, handlers,
+				 global_dc);
       if (warn_implicit_function_declaration == -1)
 	handle_generated_option (&global_options, &global_options_set,
 				 OPT_Wimplicit_function_declaration, NULL,
-				 value, c_family_lang_mask, kind, handlers);
+				 value, c_family_lang_mask, kind, handlers,
+				 global_dc);
       break;
 
     case OPT_Winvalid_pch:

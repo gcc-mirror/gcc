@@ -1,3 +1,9 @@
+2010-10-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* cp-tree.h (cxx_print_error_function,
+	cxx_initialize_diagnostics): Declare using diagnostic_context
+	typedef.
+
 2010-10-04  Andi Kleen <ak@linux.intel.com>
 
 	* Make-lang.in (g++, cc1plus): Add + to build rule.

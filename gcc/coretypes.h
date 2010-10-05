@@ -70,6 +70,8 @@ struct cl_optimization;
 struct cl_option;
 struct cl_decoded_option;
 struct cl_option_handlers;
+struct diagnostic_context;
+typedef struct diagnostic_context diagnostic_context;
 struct gimple_seq_d;
 typedef struct gimple_seq_d *gimple_seq;
 typedef const struct gimple_seq_d *const_gimple_seq;
