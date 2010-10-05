@@ -932,7 +932,21 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
   push_gimplify_context (&gctx);
 
   if (lhs == NULL_TREE)
-    gimplify_and_add (expr, &stmts);
+    {
+      gimplify_and_add (expr, &stmts);
+      /* We can end up with folding a memcpy of an empty class assignment
+	 which gets optimized away by C++ gimplification.  */
+      if (gimple_seq_empty_p (stmts))
+	{
+	  if (gimple_in_ssa_p (cfun))
+	    {
+	      unlink_stmt_vdef (stmt);
+	      release_defs (stmt);
+	    }
+	  gsi_remove (si_p, true);
+	  return;
+	}
+    }
   else
     tmp = get_initialized_tmp_var (expr, &stmts, NULL);
 
