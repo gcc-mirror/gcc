@@ -145,9 +145,9 @@ package Prj.Env is
      (Project : Project_Id;
       In_Tree : Project_Tree_Ref);
    --  Iterate through all the source directories of a project, including those
-   --  of imported or modified projects.
-   --  Only returns those directories that potentially contain Ada sources (ie
-   --  ignore projects that have no Ada sources
+   --  of imported or modified projects. Only returns those directories that
+   --  potentially contain Ada sources (ie ignore projects that have no Ada
+   --  sources
 
    generic
       with procedure Action (Path : String);
@@ -170,11 +170,10 @@ package Prj.Env is
    procedure Add_Directories
      (Self : in out Project_Search_Path;
       Path : String);
-   --  Add one or more directories to the path.
-   --  Directories added with this procedure are added in order after the
-   --  current directory and before the path given by the environment variable
-   --  GPR_PROJECT_PATH. A value of "-" will remove the default project
-   --  directory from the project path.
+   --  Add one or more directories to the path. Directories added with this
+   --  procedure are added in order after the current directory and before the
+   --  path given by the environment variable GPR_PROJECT_PATH. A value of "-"
+   --  will remove the default project directory from the project path.
    --
    --  Calls to this subprogram must be performed before the first call to
    --  Find_Project below, or PATH will be added at the end of the search
@@ -199,13 +198,14 @@ package Prj.Env is
       Directory          : String;
       Path               : out Namet.Path_Name_Type);
    --  Search for a the project with the given name either in Directory (which
-   --  often will be the directory contain the project we are currently
-   --  parsing and which we found a reference to another project), or in the
-   --  project path. Extra_Project_Path contains additional directories to
-   --  search.
+   --  often will be the directory contain the project we are currently parsing
+   --  and which we found a reference to another project), or in the project
+   --  path. Extra_Project_Path contains additional directories to search.
+   --
    --  Project_File_Name can optionally contain directories, and the extension
    --  (.gpr) for the file name is optional.
-   --  Returns No_Name if no such project was found.
+   --
+   --  Returns No_Name if no such project was found
 
 private
    package Projects_Paths is new GNAT.Dynamic_HTables.Simple_HTable

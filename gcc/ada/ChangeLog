@@ -1,3 +1,11 @@
+2010-10-05  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch3.adb, exp_ch5.adb, exp_disp.adb, exp_dist.adb, gnatlink.adb,
+	makeutl.adb, par-ch6.adb, prj-dect.adb, prj-env.adb, prj-env.ads,
+	prj-ext.adb, prj-nmsc.adb, prj-part.adb, prj-pp.ads: Minor code
+	reorganization.
+	Minor reformatting.
+
 2010-10-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Check_Parameterless_Call): If the prefix of 'Address is

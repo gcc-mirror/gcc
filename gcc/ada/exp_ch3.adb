@@ -4892,8 +4892,8 @@ package body Exp_Ch3 is
                   --            Ityp!(Displace (Temp'Address, I'Tag)).all;
 
                   else
-                     --  Generate the equivalent record type and update
-                     --  the subtype indication to reference it
+                     --  Generate the equivalent record type and update the
+                     --  subtype indication to reference it.
 
                      Expand_Subtype_From_Expr
                        (N             => N,
@@ -4928,7 +4928,7 @@ package body Exp_Ch3 is
                          Expression => New_Expr));
 
                      --  Dynamically reference the tag associated with the
-                     --  interface
+                     --  interface.
 
                      Tag_Comp :=
                        Make_Function_Call (Loc,
@@ -4945,7 +4945,7 @@ package body Exp_Ch3 is
                   Rewrite (N,
                     Make_Object_Renaming_Declaration (Loc,
                       Defining_Identifier => Make_Temporary (Loc, 'D'),
-                      Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                      Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
                       Name => Convert_Tag_To_Interface (Typ, Tag_Comp)));
 
                   Analyze (N, Suppress => All_Checks);

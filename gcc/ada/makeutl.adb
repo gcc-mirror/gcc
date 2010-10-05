@@ -38,7 +38,7 @@ with Tempdir;
 
 with Ada.Command_Line;  use Ada.Command_Line;
 
-with GNAT.Case_Util; use GNAT.Case_Util;
+with GNAT.Case_Util;            use GNAT.Case_Util;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.HTable;
 

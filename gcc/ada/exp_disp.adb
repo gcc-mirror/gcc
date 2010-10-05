@@ -481,11 +481,11 @@ package body Exp_Disp is
         and then Is_Interface (Typ)
         and then
           ((Nkind (Expr) = N_Selected_Component
-              and then Is_Tag (Entity (Selector_Name (Expr))))
+             and then Is_Tag (Entity (Selector_Name (Expr))))
            or else
            (Nkind (Expr) = N_Function_Call
-              and then RTE_Available (RE_Displace)
-              and then Entity (Name (Expr)) = RTE (RE_Displace))));
+             and then RTE_Available (RE_Displace)
+             and then Entity (Name (Expr)) = RTE (RE_Displace))));
 
       Anon_Type := Create_Itype (E_Anonymous_Access_Type, Expr);
       Set_Directly_Designated_Type (Anon_Type, Typ);
@@ -8023,7 +8023,7 @@ package body Exp_Disp is
             Write_Int (Int (Alias (Prim)));
 
             --  If the DTC_Entity attribute is already set we can also output
-            --  the name of the interface covered by this primitive (if any)
+            --  the name of the interface covered by this primitive (if any).
 
             if Present (DTC_Entity (Alias (Prim)))
               and then Is_Interface (Scope (DTC_Entity (Alias (Prim))))

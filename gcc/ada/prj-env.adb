@@ -24,15 +24,16 @@
 ------------------------------------------------------------------------------
 
 with Fmap;
-with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with Hostparm;
-with Makeutl;                   use Makeutl;
+with Makeutl;  use Makeutl;
 with Opt;
-with Osint;                     use Osint;
-with Output;                    use Output;
-with Prj.Com;                   use Prj.Com;
+with Osint;    use Osint;
+with Output;   use Output;
+with Prj.Com;  use Prj.Com;
 with Sdefault;
 with Tempdir;
+
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
 package body Prj.Env is
 
@@ -110,9 +111,10 @@ package body Prj.Env is
    --  Project that itself is not extended.
 
    procedure Initialize_Project_Path
-     (Self : in out Project_Search_Path; Target_Name : String);
-   --  Initialize Current_Project_Path.
-   --  Does nothing if the path has already been initialized properly
+     (Self        : in out Project_Search_Path;
+      Target_Name : String);
+   --  Initialize Current_Project_Path. Does nothing if the path has already
+   --  been initialized properly.
 
    ----------------------
    -- Ada_Include_Path --
@@ -1780,7 +1782,8 @@ package body Prj.Env is
    -----------------------------
 
    procedure Initialize_Project_Path
-     (Self : in out Project_Search_Path; Target_Name : String)
+     (Self        : in out Project_Search_Path;
+      Target_Name : String)
    is
       Add_Default_Dir : Boolean := True;
       First           : Positive;
@@ -1801,6 +1804,7 @@ package body Prj.Env is
 
    begin
       --  If already initialized, nothing else to do
+
       if Self.Path /= null
         and then Self.Path (Self.Path'First) /= '#'
       then

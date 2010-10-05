@@ -23,11 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with GNAT.Case_Util;             use GNAT.Case_Util;
-with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
-with GNAT.Dynamic_HTables;
-with GNAT.Table;
-
 with Err_Vars; use Err_Vars;
 with Opt;      use Opt;
 with Osint;    use Osint;
@@ -44,6 +39,11 @@ with Ada.Directories;            use Ada.Directories;
 with Ada.Strings;                use Ada.Strings;
 with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
 with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
+
+with GNAT.Case_Util;            use GNAT.Case_Util;
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
+with GNAT.Dynamic_HTables;
+with GNAT.Table;
 
 package body Prj.Nmsc is
 
@@ -4909,7 +4909,7 @@ package body Prj.Nmsc is
 
       Languages : constant Variable_Value :=
                       Prj.Util.Value_Of
-          (Name_Languages, Project.Decl.Attributes, Data.Tree);
+                        (Name_Languages, Project.Decl.Attributes, Data.Tree);
 
       Remove_Source_Dirs : Boolean := False;
 

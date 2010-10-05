@@ -11044,7 +11044,6 @@ package body Exp_Dist is
             begin
                if Is_Tagged_Type (Typ) and then not Is_Frozen (Typ) then
                   null;
-
                else
                   Serial := Increment_Serial_Number;
                end if;
