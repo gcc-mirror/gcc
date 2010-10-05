@@ -5688,7 +5688,7 @@ and implementation of the @code{Bit} attribute.
 @unnumberedsec Bit_Position
 @findex Bit_Position
 @noindent
-@code{@var{R.C}'Bit}, where @var{R} is a record object and C is one
+@code{@var{R.C}'Bit_Position}, where @var{R} is a record object and C is one
 of the fields of the record type, yields the bit
 offset within the record contains the first bit of
 storage allocated for the object.  The value of this attribute is of the

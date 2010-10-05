@@ -18107,6 +18107,8 @@ constants. Function macros (macros with arguments) are partially translated
 as comments, to be completed manually if needed.
 @item some extensions (e.g. vector types) are not supported
 @item pointers to pointers or complex structures are mapped to System.Address
+@item identifiers with identical name (except casing) will generate compilation
+      errors (e.g. @code{shm_get} vs @code{SHM_GET}).
 @end itemize
 
 The code generated is using the Ada 2005 syntax, which makes it
