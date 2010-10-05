@@ -6692,9 +6692,6 @@ package body Prj.Nmsc is
       Resolve_Links : Boolean)
    is
       pragma Unreferenced (Search_For);
-      Project_Dir : constant String :=
-        Get_Name_String (Project.Directory.Display_Name);
-
       package Recursive_Dirs is new GNAT.Dynamic_HTables.Simple_HTable
         (Header_Num => Header_Num,
          Element    => Boolean,
@@ -6714,6 +6711,16 @@ package body Prj.Nmsc is
 
       procedure Recursive_Find_Dirs (Normalized_Path : String; Rank : Natural);
       --  Search all the subdirectories (recursively) of Path
+
+      procedure Check_Directory_And_Subdirs
+        (Directory       : String;
+         Include_Subdirs : Boolean;
+         Rank            : Natural;
+         Location        : Source_Ptr);
+      --  Make sur that Directory exists (and if not report an error/warning
+      --  message depending on the flags.
+      --  Calls Callback for Directory itself and all its subdirectories if
+      --  Include_Subdirs is True).
 
       -------------------------
       -- Recursive_Find_Dirs --
@@ -6788,6 +6795,64 @@ package body Prj.Nmsc is
             null;
       end Recursive_Find_Dirs;
 
+      ---------------------------------
+      -- Check_Directory_And_Subdirs --
+      ---------------------------------
+
+      procedure Check_Directory_And_Subdirs
+        (Directory       : String;
+         Include_Subdirs : Boolean;
+         Rank            : Natural;
+         Location        : Source_Ptr)
+      is
+         Dir        : File_Name_Type;
+         Path_Name  : Path_Information;
+         Dir_Exists : Boolean;
+         Has_Error  : Boolean := False;
+      begin
+         Name_Len := Directory'Length;
+         Name_Buffer (1 .. Name_Len) := Directory;
+         Dir := Name_Find;
+
+         Locate_Directory
+           (Project     => Project,
+            Name        => Dir,
+            Path        => Path_Name,
+            Dir_Exists  => Dir_Exists,
+            Data        => Data,
+            Must_Exist  => False);
+
+         if not Dir_Exists then
+            Err_Vars.Error_Msg_File_1 := Dir;
+            Error_Or_Warning
+              (Data.Flags, Data.Flags.Missing_Source_Files,
+               "{ is not a valid directory", Location, Project);
+            Has_Error := Data.Flags.Missing_Source_Files = Error;
+         end if;
+
+         if not Has_Error then
+            --  Links have been resolved if necessary, and Path_Name
+            --  always ends with a directory separator.
+
+            if Include_Subdirs then
+               if Current_Verbosity = High then
+                  Write_Str ("Looking for all subdirectories of """);
+                  Write_Str (Directory);
+                  Write_Line ("""");
+               end if;
+
+               Recursive_Find_Dirs (Get_Name_String (Path_Name.Name), Rank);
+
+               if Current_Verbosity = High then
+                  Write_Line ("End of looking for source directories.");
+               end if;
+
+            else
+               Callback (Path_Name.Name, Path_Name.Display_Name, Rank);
+            end if;
+         end if;
+      end Check_Directory_And_Subdirs;
+
       ------------------
       -- Find_Pattern --
       ------------------
@@ -6809,104 +6874,18 @@ package body Prj.Nmsc is
            and then (Pattern (Pattern'Last - 2) = '/'
                      or else Pattern (Pattern'Last - 2) = Directory_Separator)
          then
-            Name_Len := Pattern'Length - 3;
-
-            if Name_Len = 0 then
-
+            if Pattern'Length = 3 then
                --  Case of "/**": all directories in file system
-
-               Name_Len := 1;
-               Name_Buffer (1) := Pattern (Pattern'First);
-
+               Check_Directory_And_Subdirs
+                 (Pattern (Pattern'First .. Pattern'First),
+                  True, Rank, Location);
             else
-               Name_Buffer (1 .. Name_Len) :=
-                 Pattern (Pattern'First .. Pattern'Last - 3);
+               Check_Directory_And_Subdirs
+                 (Pattern (Pattern'First .. Pattern'Last - 3),
+                  True, Rank, Location);
             end if;
-
-            if Current_Verbosity = High then
-               Write_Str ("Looking for all subdirectories of """);
-               Write_Str (Name_Buffer (1 .. Name_Len));
-               Write_Line ("""");
-            end if;
-
-            declare
-               Base_Dir : constant File_Name_Type := Name_Find;
-               Root_Dir : constant String :=
-                 Normalize_Pathname
-                   (Name          => Name_Buffer (1 .. Name_Len),
-                    Directory     => Project_Dir,
-                    Resolve_Links => Resolve_Links);
-               Has_Error : Boolean := False;
-
-            begin
-               if Root_Dir'Length = 0 then
-                  Err_Vars.Error_Msg_File_1 := Base_Dir;
-                  Error_Or_Warning
-                    (Data.Flags, Data.Flags.Missing_Source_Files,
-                     "{ is not a valid directory.", Location, Project);
-                  Has_Error := Data.Flags.Missing_Source_Files = Error;
-               end if;
-
-               if not Has_Error then
-
-                  --  We have an existing directory, we register it and all of
-                  --  its subdirectories.
-
-                  if Current_Verbosity = High then
-                     Write_Line ("Looking for source directories:");
-                  end if;
-
-                  if Root_Dir (Root_Dir'Last) /= Directory_Separator then
-                     Recursive_Find_Dirs
-                       (Root_Dir & Directory_Separator, Rank);
-                  else
-                     Recursive_Find_Dirs (Root_Dir, Rank);
-                  end if;
-
-                  if Current_Verbosity = High then
-                     Write_Line ("End of looking for source directories.");
-                  end if;
-               end if;
-            end;
-
-            --  We have a single directory
-
          else
-            declare
-               Directory  : File_Name_Type;
-               Path_Name  : Path_Information;
-               Dir_Exists : Boolean;
-               Has_Error  : Boolean := False;
-
-            begin
-               Name_Len := Pattern'Length;
-               Name_Buffer (1 .. Name_Len) := Pattern;
-               Directory := Name_Find;
-
-               Locate_Directory
-                 (Project     => Project,
-                  Name        => Directory,
-                  Path        => Path_Name,
-                  Dir_Exists  => Dir_Exists,
-                  Data        => Data,
-                  Must_Exist  => False);
-
-               if not Dir_Exists then
-                  Err_Vars.Error_Msg_File_1 := Directory;
-                  Error_Or_Warning
-                    (Data.Flags, Data.Flags.Missing_Source_Files,
-                     "{ is not a valid directory", Location, Project);
-                  Has_Error := Data.Flags.Missing_Source_Files = Error;
-               end if;
-
-               if not Has_Error then
-
-                  --  Links have been resolved if necessary, and Path_Name
-                  --  always ends with a directory separator.
-
-                  Callback (Path_Name.Name, Path_Name.Display_Name, Rank);
-               end if;
-            end;
+            Check_Directory_And_Subdirs (Pattern, False, Rank, Location);
          end if;
       end Find_Pattern;
 

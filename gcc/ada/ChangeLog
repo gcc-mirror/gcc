@@ -1,5 +1,14 @@
 2010-10-05  Emmanuel Briot  <briot@adacore.com>
 
+	* prj-nmsc.adb (Expand_Subdirectory_Pattern): Check that the prefix in
+	a "**" pattern properly exists, and report an error otherwise.
+
+2010-10-05  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-env.ads: Use GNAT.OS_Lib rather than System.OS_Lib.
+
+2010-10-05  Emmanuel Briot  <briot@adacore.com>
+
 	* prj-nmsc.adb, prj-err.adb (Expand_Subdirectory_Pattern): New
 	subprogram.
 	Extract some code from Get_Directories, to share with the handling
