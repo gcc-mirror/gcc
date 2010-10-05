@@ -1,3 +1,30 @@
+2010-10-05  Richard Guenther  <rguenther@suse.de>
+
+	* value-prof.c (gimple_divmod_fixed_value): Work on SSA form.
+	(gimple_mod_pow2): Likewise.
+	(gimple_mod_subtract): Likewise.
+	(gimple_ic): Likewise.
+	(gimple_stringop_fixed_value): Likewise.
+	* tree-profile.c (tree_init_edge_profiler): Mark profile
+	functions nothrow and leaf.
+	(add_abnormal_goto_call_edges): Remove.
+	(tree_gen_edge_profiler): Work on SSA form.
+	(tree_gen_ic_profiler): Likewise.  Simplify.
+	(do_tree_profiling): Update SSA form.
+	(pass_tree_profile): Remove.
+	(do_tree_profiling): Likewise.
+	(gate_tree_profile_ipa): New function.
+	(pass_ipa_tree_profile): New.
+	(tree_profiling): Re-write as IPA pass.  Properly drop const/pure
+	state of instrumented functions.
+	* passes.c (init_optimization_passes): Remove early non-SSA
+	inlining.  Move profiling after early optimizations.
+	* ipa-inline.c (cgraph_gate_ipa_early_inlining): Remove.
+	(pass_ipa_early_inline): Likewise.
+	* tree-pass.h (pass_ipa_early_inline): Remove.
+	(pass_tree_profile): Likewise.
+	(pass_ipa_tree_profile): Declare.
+
 2010-10-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
             Christian Borntraeger  <Christian.Borntraeger@de.ibm.com>
 

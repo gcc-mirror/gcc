@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-einline2" } */
+/* { dg-options "-O2 -fdump-tree-einline" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <algorithm>
@@ -26,6 +26,6 @@ int main(int argc, char **argv)
   std::for_each (argv, argv + argc, inline_me_too);
 }
 
-/* { dg-final { scan-tree-dump-times "Inlining void inline_me\\(" 1 "einline2"} } */
-/* { dg-final { scan-tree-dump-times "Inlining void inline_me_too\\(" 1 "einline2"} } */
-/* { dg-final { cleanup-tree-dump "einline2" } } */
+/* { dg-final { scan-tree-dump-times "Inlining void inline_me\\(" 1 "einline"} } */
+/* { dg-final { scan-tree-dump-times "Inlining void inline_me_too\\(" 1 "einline"} } */
+/* { dg-final { cleanup-tree-dump "einline" } } */

@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-tree_profile -mtune=core2" } */
+/* { dg-options "-O2 -fdump-ipa-tree_profile_ipa -mtune=core2" } */
 /* { dg-skip-if "" { ! { i?86-*-* x86_64-*-* } } { "*" } { "" } } */
 
 #include <strings.h>
@@ -22,5 +22,5 @@ int main() {
   return 0;
 }
 
-/* { dg-final-use { scan-tree-dump "Single value 8 stringop transformation on bzero" "tree_profile"} } */
-/* { dg-final-use { cleanup-tree-dump "tree_profile" } } */
+/* { dg-final-use { scan-ipa-dump "Single value 8 stringop transformation on bzero" "tree_profile_ipa" } } */
+/* { dg-final-use { cleanup-ipa-dump "tree_profile_ipa" } } */

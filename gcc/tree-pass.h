@@ -353,7 +353,6 @@ extern struct gimple_opt_pass pass_lower_eh;
 extern struct gimple_opt_pass pass_lower_eh_dispatch;
 extern struct gimple_opt_pass pass_lower_resx;
 extern struct gimple_opt_pass pass_build_cfg;
-extern struct gimple_opt_pass pass_tree_profile;
 extern struct gimple_opt_pass pass_early_tree_profile;
 extern struct gimple_opt_pass pass_referenced_vars;
 extern struct gimple_opt_pass pass_cleanup_eh;
@@ -447,7 +446,7 @@ extern struct gimple_opt_pass pass_split_functions;
 /* IPA Passes */
 extern struct simple_ipa_opt_pass pass_ipa_lower_emutls;
 extern struct simple_ipa_opt_pass pass_ipa_function_and_variable_visibility;
-extern struct simple_ipa_opt_pass pass_ipa_early_inline;
+extern struct simple_ipa_opt_pass pass_ipa_tree_profile;
 
 extern struct simple_ipa_opt_pass pass_early_local_passes;
 

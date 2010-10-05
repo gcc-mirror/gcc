@@ -18,5 +18,5 @@ baz (void)
   return 6;
 }
 
-/* { dg-final { scan-tree-dump-times "Inlining foo into baz" 0 "einline2"} } */
-/* { dg-final { cleanup-tree-dump "einline2" } } */
+/* { dg-final { scan-tree-dump-times "Inlining foo into baz" 0 "einline"} } */
+/* { dg-final { cleanup-tree-dump "einline" } } */

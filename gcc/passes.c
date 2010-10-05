@@ -746,18 +746,10 @@ init_optimization_passes (void)
   p = &all_small_ipa_passes;
   NEXT_PASS (pass_ipa_free_lang_data);
   NEXT_PASS (pass_ipa_function_and_variable_visibility);
-  NEXT_PASS (pass_ipa_early_inline);
-    {
-      struct opt_pass **p = &pass_ipa_early_inline.pass.sub;
-      NEXT_PASS (pass_early_inline);
-      NEXT_PASS (pass_inline_parameters);
-      NEXT_PASS (pass_rebuild_cgraph_edges);
-    }
   NEXT_PASS (pass_early_local_passes);
     {
       struct opt_pass **p = &pass_early_local_passes.pass.sub;
       NEXT_PASS (pass_fixup_cfg);
-      NEXT_PASS (pass_tree_profile);
       NEXT_PASS (pass_init_datastructures);
       NEXT_PASS (pass_expand_omp);
 
@@ -802,6 +794,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_rebuild_cgraph_edges);
       NEXT_PASS (pass_inline_parameters);
     }
+  NEXT_PASS (pass_ipa_tree_profile);
   NEXT_PASS (pass_ipa_increase_alignment);
   NEXT_PASS (pass_ipa_matrix_reorg);
   NEXT_PASS (pass_ipa_lower_emutls);
