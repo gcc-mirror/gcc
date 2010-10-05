@@ -1,3 +1,8 @@
+2010-09-29  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (assemble_function): Output thunks and aliases before
+	the function itself.
+
 2010-09-29  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (picochip_option_override): Disable

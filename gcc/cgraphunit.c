@@ -1470,15 +1470,6 @@ cgraph_expand_function (struct cgraph_node *node)
 
   announce_function (decl);
   node->process = 0;
-
-  gcc_assert (node->lowered);
-
-  /* Generate RTL for the body of DECL.  */
-  tree_rest_of_compilation (decl);
-
-  /* Make sure that BE didn't give up on compiling.  */
-  gcc_assert (TREE_ASM_WRITTEN (decl));
-  current_function_decl = NULL;
   if (node->same_body)
     {
       struct cgraph_node *alias, *next;
@@ -1498,7 +1489,17 @@ cgraph_expand_function (struct cgraph_node *node)
 	    assemble_thunk (alias);
 	}
       node->alias = saved_alias;
+      cgraph_process_new_functions ();
     }
+
+  gcc_assert (node->lowered);
+
+  /* Generate RTL for the body of DECL.  */
+  tree_rest_of_compilation (decl);
+
+  /* Make sure that BE didn't give up on compiling.  */
+  gcc_assert (TREE_ASM_WRITTEN (decl));
+  current_function_decl = NULL;
   gcc_assert (!cgraph_preserve_function_body_p (decl));
   cgraph_release_function_body (node);
   /* Eliminate all call edges.  This is important so the GIMPLE_CALL no longer
