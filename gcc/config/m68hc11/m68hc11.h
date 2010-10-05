@@ -704,34 +704,6 @@ extern enum reg_class m68hc11_tmp_regs_class;
 #define HARD_REGNO_RENAME_OK(REGNO1,REGNO2) \
   m68hc11_hard_regno_rename_ok ((REGNO1), (REGNO2))
 
-/* A C expression whose value is nonzero if pseudos that have been
-   assigned to registers of class CLASS would likely be spilled
-   because registers of CLASS are needed for spill registers.
-
-   The default value of this macro returns 1 if CLASS has exactly one
-   register and zero otherwise.  On most machines, this default
-   should be used.  Only define this macro to some other expression
-   if pseudo allocated by `local-alloc.c' end up in memory because
-   their hard registers were needed for spill registers.  If this
-   macro returns nonzero for those classes, those pseudos will only
-   be allocated by `global.c', which knows how to reallocate the
-   pseudo to another register.  If there would not be another
-   register available for reallocation, you should not change the
-   definition of this macro since the only effect of such a
-   definition would be to slow down register allocation.  */
-
-#define CLASS_LIKELY_SPILLED_P(CLASS)					\
-  (((CLASS) == D_REGS)							\
-   || ((CLASS) == X_REGS)                                               \
-   || ((CLASS) == Y_REGS)                                               \
-   || ((CLASS) == A_REGS)                                               \
-   || ((CLASS) == SP_REGS)                                              \
-   || ((CLASS) == D_OR_X_REGS)                                          \
-   || ((CLASS) == D_OR_Y_REGS)                                          \
-   || ((CLASS) == X_OR_SP_REGS)                                         \
-   || ((CLASS) == Y_OR_SP_REGS)                                         \
-   || ((CLASS) == D_OR_SP_REGS))
-
 /* Return the maximum number of consecutive registers needed to represent
    mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)		\
