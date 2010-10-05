@@ -76,6 +76,7 @@ static int m68hc11_rtx_costs_1 (rtx, enum rtx_code, enum rtx_code);
 static bool m68hc11_rtx_costs (rtx, int, int, int *, bool);
 static tree m68hc11_handle_fntype_attribute (tree *, tree, tree, int, bool *);
 static tree m68hc11_handle_page0_attribute (tree *, tree, tree, int, bool *);
+static bool m68hc11_class_likely_spilled_p (reg_class_t);
 
 void create_regs_rtx (void);
 
@@ -290,6 +291,9 @@ static const struct attribute_spec m68hc11_attribute_table[] =
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE m68hc11_can_eliminate
+
+#undef TARGET_CLASS_LIKELY_SPILLED_P
+#define TARGET_CLASS_LIKELY_SPILLED_P m68hc11_class_likely_spilled_p
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT m68hc11_trampoline_init
@@ -579,6 +583,32 @@ preferred_reload_class (rtx operand, enum reg_class rclass)
     }
 
   return rclass;
+}
+
+/* Implement TARGET_CLASS_LIKELY_SPILLED_P.  */
+
+static bool
+m68hc11_class_likely_spilled_p (reg_class_t rclass)
+{
+  switch (rclass)
+    {
+    case D_REGS:
+    case X_REGS:
+    case Y_REGS:
+    case A_REGS:
+    case SP_REGS:
+    case D_OR_X_REGS:
+    case D_OR_Y_REGS:
+    case X_OR_SP_REGS:
+    case Y_OR_SP_REGS:
+    case D_OR_SP_REGS:
+      return true;
+
+    default:
+      break;
+    }
+
+  return false;
 }
 
 /* Return 1 if the operand is a valid indexed addressing mode.

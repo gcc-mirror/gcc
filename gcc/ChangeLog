@@ -1,3 +1,9 @@
+2010-10-05  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/m68hc11/m68hc11.h (CLASS_LIKELY_SPILLED_P): Remove.
+	* config/m68hc11/m68hc11.c (TARGET_CLASS_LIKELY_SPILLED_P): Define.
+	(m68hc11_class_likely_spilled_p): New function.
+
 2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-parser.c (c_parser_objc_method_definition): Updated comment.
