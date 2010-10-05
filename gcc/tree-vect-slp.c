@@ -2177,20 +2177,18 @@ static bool
 vect_get_mask_element (gimple stmt, int first_mask_element, int m,
                        int mask_nunits, bool only_one_vec, int index,
                        int *mask, int *current_mask_element,
-                       bool *need_next_vector)
+                       bool *need_next_vector, int *number_of_mask_fixes,
+                       bool *mask_fixed, bool *needs_first_vector)
 {
   int i;
-  static int number_of_mask_fixes = 1;
-  static bool mask_fixed = false;
-  static bool needs_first_vector = false;
 
   /* Convert to target specific representation.  */
   *current_mask_element = first_mask_element + m;
   /* Adjust the value in case it's a mask for second and third vectors.  */
-  *current_mask_element -= mask_nunits * (number_of_mask_fixes - 1);
+  *current_mask_element -= mask_nunits * (*number_of_mask_fixes - 1);
 
   if (*current_mask_element < mask_nunits)
-    needs_first_vector = true;
+    *needs_first_vector = true;
 
   /* We have only one input vector to permute but the mask accesses values in
      the next vector as well.  */
@@ -2208,7 +2206,7 @@ vect_get_mask_element (gimple stmt, int first_mask_element, int m,
   /* The mask requires the next vector.  */
   if (*current_mask_element >= mask_nunits * 2)
     {
-      if (needs_first_vector || mask_fixed)
+      if (*needs_first_vector || *mask_fixed)
         {
           /* We either need the first vector too or have already moved to the
              next vector. In both cases, this permutation needs three
@@ -2226,23 +2224,23 @@ vect_get_mask_element (gimple stmt, int first_mask_element, int m,
       /* We move to the next vector, dropping the first one and working with
          the second and the third - we need to adjust the values of the mask
          accordingly.  */
-      *current_mask_element -= mask_nunits * number_of_mask_fixes;
+      *current_mask_element -= mask_nunits * *number_of_mask_fixes;
 
       for (i = 0; i < index; i++)
-        mask[i] -= mask_nunits * number_of_mask_fixes;
+        mask[i] -= mask_nunits * *number_of_mask_fixes;
 
-      (number_of_mask_fixes)++;
-      mask_fixed = true;
+      (*number_of_mask_fixes)++;
+      *mask_fixed = true;
     }
 
-  *need_next_vector = mask_fixed;
+  *need_next_vector = *mask_fixed;
 
   /* This was the last element of this mask. Start a new one.  */
   if (index == mask_nunits - 1)
     {
-      number_of_mask_fixes = 1;
-      mask_fixed = false;
-      needs_first_vector = false;
+      *number_of_mask_fixes = 1;
+      *mask_fixed = false;
+      *needs_first_vector = false;
     }
 
   return true;
@@ -2268,6 +2266,9 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
   int index, unroll_factor, *mask, current_mask_element, ncopies;
   bool only_one_vec = false, need_next_vector = false;
   int first_vec_index, second_vec_index, orig_vec_stmts_num, vect_stmts_counter;
+  int number_of_mask_fixes = 1;
+  bool mask_fixed = false;
+  bool needs_first_vector = false;
 
   if (!targetm.vectorize.builtin_vec_perm)
     {
@@ -2351,7 +2352,9 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
                 {
                   if (!vect_get_mask_element (stmt, first_mask_element, m,
                                    mask_nunits, only_one_vec, index, mask,
-                                   &current_mask_element, &need_next_vector))
+                                   &current_mask_element, &need_next_vector,
+                                   &number_of_mask_fixes, &mask_fixed,
+                                   &needs_first_vector))
                     return false;
 
                   mask[index++] = current_mask_element;

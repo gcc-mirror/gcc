@@ -1,3 +1,11 @@
+2010-10-05  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/45752
+	* tree-vect-slp.c (vect_get_mask_element): Remove static
+	variables, make them function arguments.
+	(vect_transform_slp_perm_load): Pass new arguments to
+	vect_get_mask_element.
+
 2010-10-05  Richard Guenther  <rguenther@suse.de>
 
 	* value-prof.c (gimple_divmod_fixed_value): Work on SSA form.
