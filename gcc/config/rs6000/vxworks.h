@@ -37,8 +37,6 @@ along with GCC; see the file COPYING3.  If not see
       builtin_define ("__PPC__");		\
       builtin_define ("__EABI__");		\
       builtin_define ("__ELF__");		\
-      builtin_define ("__vxworks");		\
-      builtin_define ("__VXWORKS__");		\
       if (!TARGET_SOFT_FLOAT)			\
 	builtin_define ("__hardfp");		\
 						\

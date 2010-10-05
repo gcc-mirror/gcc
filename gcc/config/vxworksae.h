@@ -55,3 +55,13 @@ along with GCC; see the file COPYING3.  If not see
 #define VXWORKS_STARTFILE_SPEC ""
 
 #define VXWORKS_KIND VXWORKS_KIND_AE
+
+/* A VxWorks 653 implementation of TARGET_OS_CPP_BUILTINS.  */
+#define VXWORKS_OS_CPP_BUILTINS()                                       \
+  do                                                                    \
+    {                                                                   \
+      builtin_define ("__vxworks");                                     \
+      builtin_define ("__VXWORKS__");                                   \
+    }                                                                   \
+  while (0)
+

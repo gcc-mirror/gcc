@@ -1,3 +1,9 @@
+2010-10-05  Olivier Hainque  <hainque@adacore.com>
+            Nicolas Roche  <roche@adacore.com>
+
+	* config/vxworksae.h: Add missing VXWORKS_OS_CPP_BUILTINS.
+	* config/rs6000/vxworks.h: Remove redundant CPP builtin definitions.
+
 2010-10-05  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/45752
