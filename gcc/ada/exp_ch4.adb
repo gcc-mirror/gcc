@@ -356,7 +356,7 @@ package body Exp_Ch4 is
                  Prefix         => Arg2,
                  Attribute_Name => Name_Address),
                Make_Attribute_Reference (Loc,
-                 Prefix         => Op1,
+                 Prefix         => Arg1,
                  Attribute_Name => Name_Length)));
       end if;
 
