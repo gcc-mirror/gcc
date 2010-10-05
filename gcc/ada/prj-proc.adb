@@ -76,9 +76,10 @@ package body Prj.Proc is
    --  the package or project with declarations Decl.
 
    procedure Check
-     (In_Tree : Project_Tree_Ref;
-      Project : Project_Id;
-      Flags   : Processing_Flags);
+     (In_Tree   : Project_Tree_Ref;
+      Project   : Project_Id;
+      Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
+      Flags     : Processing_Flags);
    --  Set all projects to not checked, then call Recursive_Check for the
    --  main project Project. Project is set to No_Project if errors occurred.
    --  Current_Dir is for optimization purposes, avoiding extra system calls.
@@ -270,12 +271,13 @@ package body Prj.Proc is
    -----------
 
    procedure Check
-     (In_Tree : Project_Tree_Ref;
-      Project : Project_Id;
-      Flags   : Processing_Flags)
+     (In_Tree   : Project_Tree_Ref;
+      Project   : Project_Id;
+      Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
+      Flags     : Processing_Flags)
    is
    begin
-      Process_Naming_Scheme (In_Tree, Project, Flags);
+      Process_Naming_Scheme (In_Tree, Project, Node_Tree, Flags);
 
       --  Set the Other_Part field for the units
 
@@ -2316,7 +2318,7 @@ package body Prj.Proc is
       Success := True;
 
       if Project /= No_Project then
-         Check (In_Tree, Project, Flags);
+         Check (In_Tree, Project, From_Project_Node_Tree, Flags);
       end if;
 
       --  If main project is an extending all project, set object directory of

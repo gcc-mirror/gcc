@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,11 +25,14 @@
 
 --  Find source dirs and source files for a project
 
+with Prj.Tree;
+
 private package Prj.Nmsc is
 
    procedure Process_Naming_Scheme
      (Tree         : Project_Tree_Ref;
       Root_Project : Project_Id;
+      Node_Tree    : Prj.Tree.Project_Node_Tree_Ref;
       Flags        : Processing_Flags);
    --  Perform consistency and semantic checks on all the projects in the tree.
    --  This procedure interprets the various case statements in the project

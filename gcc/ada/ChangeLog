@@ -1,3 +1,9 @@
+2010-10-05  Emmanuel Briot  <briot@adacore.com>
+
+	* gnatcmd.adb, prj-proc.adb, prj-part.adb, prj-ext.adb, prj-ext.ads,
+	switch-m.adb, clean.adb, prj-nmsc.adb, prj-nmsc.ads, prj-env.adb,
+	prj-env.ads, prj-tree.adb, prj-tree.ads (Project_Search_Path): New type.
+
 2010-10-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch5.adb (Make_Field_Expr): Revert previous change (removed).

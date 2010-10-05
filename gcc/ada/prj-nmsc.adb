@@ -149,6 +149,7 @@ package body Prj.Nmsc is
 
    type Tree_Processing_Data is record
       Tree           : Project_Tree_Ref;
+      Node_Tree      : Prj.Tree.Project_Node_Tree_Ref;
       File_To_Source : Files_Htable.Instance;
       Flags          : Prj.Processing_Flags;
    end record;
@@ -173,9 +174,10 @@ package body Prj.Nmsc is
    --  projects do not have the same library names.
 
    procedure Initialize
-     (Data  : out Tree_Processing_Data;
-      Tree  : Project_Tree_Ref;
-      Flags : Prj.Processing_Flags);
+     (Data      : out Tree_Processing_Data;
+      Tree      : Project_Tree_Ref;
+      Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
+      Flags     : Prj.Processing_Flags);
    --  Initialize Data
 
    procedure Free (Data : in out Tree_Processing_Data);
@@ -6574,14 +6576,16 @@ package body Prj.Nmsc is
    ----------------
 
    procedure Initialize
-     (Data  : out Tree_Processing_Data;
-      Tree  : Project_Tree_Ref;
-      Flags : Prj.Processing_Flags)
+     (Data      : out Tree_Processing_Data;
+      Tree      : Project_Tree_Ref;
+      Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
+      Flags     : Prj.Processing_Flags)
    is
    begin
       Files_Htable.Reset (Data.File_To_Source);
-      Data.Tree  := Tree;
-      Data.Flags := Flags;
+      Data.Tree      := Tree;
+      Data.Node_Tree := Node_Tree;
+      Data.Flags     := Flags;
    end Initialize;
 
    ----------
@@ -7611,6 +7615,7 @@ package body Prj.Nmsc is
    procedure Process_Naming_Scheme
      (Tree         : Project_Tree_Ref;
       Root_Project : Project_Id;
+      Node_Tree    : Prj.Tree.Project_Node_Tree_Ref;
       Flags        : Processing_Flags)
    is
       procedure Recursive_Check
@@ -7644,7 +7649,7 @@ package body Prj.Nmsc is
    --  Start of processing for Process_Naming_Scheme
    begin
       Lib_Data_Table.Init;
-      Initialize (Data, Tree => Tree, Flags => Flags);
+      Initialize (Data, Tree => Tree, Node_Tree => Node_Tree, Flags => Flags);
       Check_All_Projects (Root_Project, Data, Imported_First => True);
       Free (Data);
 
