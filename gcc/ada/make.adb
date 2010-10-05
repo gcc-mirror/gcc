@@ -7988,6 +7988,12 @@ package body Make is
                end;
             end if;
 
+         elsif Argv'Length > Source_Info_Option'Length and then
+           Argv (1 .. Source_Info_Option'Length) = Source_Info_Option
+         then
+            Project_Tree.Source_Info_File_Name :=
+              new String'(Argv (Source_Info_Option'Length + 1 .. Argv'Last));
+
          elsif Argv'Length >= 8 and then
            Argv (1 .. 8) = "--param="
          then

@@ -160,32 +160,93 @@ package Prj.Util is
    --  closed.
 
    procedure Open (File : out Text_File; Name : String);
-   --  Open a text file to read (file is invalid if text file cannot be opened)
+   --  Open a text file to read (File is invalid if text file cannot be opened)
+
+   procedure Create (File : out Text_File; Name : String);
+   --  Create a text file to write (File is invaid if text file cannot be
+   --  created).
 
    function End_Of_File (File : Text_File) return Boolean;
    --  Returns True if the end of the text file File has been reached. Fails if
-   --  File is invalid.
+   --  File is invalid. Return True if File is an out file.
 
    procedure Get_Line
      (File : Text_File;
       Line : out String;
       Last : out Natural);
-   --  Reads a line from an open text file (fails if file is invalid)
+   --  Reads a line from an open text file (fails if File is invalid or in an
+   --  out file).
+
+   procedure Put (File : Text_File; S : String);
+   procedure Put_Line (File : Text_File; Line : String);
+   --  Output a string or a line to an out text file (fails if File is invalid
+   --  or in an in file).
 
    procedure Close (File : in out Text_File);
    --  Close an open text file. File becomes invalid. Fails if File is already
-   --  invalid.
+   --  invalid or if an out file cannot be closed successfully.
+
+   -----------------------
+   -- Source info files --
+   -----------------------
+
+   procedure Write_Source_Info_File (Tree : Project_Tree_Ref);
+   --  Create a new source info file, with the path name specified in the
+   --  project tree data. Issue a warning if it is not possible to create
+   --  the new file.
+
+   procedure Read_Source_Info_File (Tree : Project_Tree_Ref);
+   --  Check if there is a source info file specified for the project Tree and
+   --  if there is one, attempt to read it. If the file exists and is
+   --  successfully read, set the flag Source_Info_File_Exists to True for
+   --  the tree.
+
+   type Source_Info_Data is record
+      Project             : Name_Id;
+      Language            : Name_Id;
+      Kind                : Source_Kind;
+      Display_Path_Name   : Name_Id;
+      Path_Name           : Name_Id;
+      Unit_Name           : Name_Id := No_Name;
+      Index               : Int := 0;
+      Naming_Exception    : Boolean := False;
+   end record;
+   --  Data read from a source info file for a single source
+
+   type Source_Info is access all Source_Info_Data;
+   No_Source_Info : constant Source_Info := null;
+
+   type Source_Info_Iterator is private;
+   --  Iterator to get the sources for a single project
+
+   procedure Initialize
+     (Iter : out Source_Info_Iterator; For_Project : Name_Id);
+   --  Initiaize Iter for the project
+
+   function Source_Info_Of (Iter : Source_Info_Iterator) return Source_Info;
+   --  Get the source info for the source corresponding to the current value of
+   --  the iterator. Returns No_Source_Info if there is no source corresponding
+   --  to the iterator.
+
+   procedure Next (Iter : in out Source_Info_Iterator);
+   --  Advance the iterator to the next source in the project
 
 private
 
    type Text_File_Data is record
       FD                  : File_Descriptor := Invalid_FD;
+      Out_File            : Boolean := False;
       Buffer              : String (1 .. 1_000);
-      Buffer_Len          : Natural;
+      Buffer_Len          : Natural := 0;
       Cursor              : Natural := 0;
       End_Of_File_Reached : Boolean := False;
    end record;
 
    type Text_File is access Text_File_Data;
+
+   type Source_Info_Iterator is record
+      Info : Source_Info;
+      Next : Natural;
+   end record;
 
 end Prj.Util;
