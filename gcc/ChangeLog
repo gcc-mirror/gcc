@@ -1,3 +1,8 @@
+2010-09-29  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* config/picochip/picochip.c (picochip_option_override): Disable
+	exception flags for picochip.
+
 2010-10-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* opts-common.c (handle_option, handle_generated_option,

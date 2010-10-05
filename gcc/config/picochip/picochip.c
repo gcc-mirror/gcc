@@ -358,6 +358,11 @@ picochip_option_override (void)
   if (optimize >= 1)
     flag_section_anchors = 1;
 
+  /* Exception flags are irrelevant to picochip. It causes failure in libgcc
+     functions. */
+    flag_non_call_exceptions = 0;
+    flag_exceptions = 0;
+
   /* Turn off the second scheduling pass, and move it to
      picochip_reorg, to avoid having the second jump optimisation
      trash the instruction modes (e.g., instructions are changed to
