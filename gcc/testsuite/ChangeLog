@@ -1,3 +1,8 @@
+2010-10-05  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/45752
+	* gcc.dg/vect/pr45752.c: New test.
+
 2010-10-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/torture/pr45678-1.c: Add -fno-common to options on 32-bit
