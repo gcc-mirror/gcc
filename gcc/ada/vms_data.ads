@@ -4902,6 +4902,13 @@ package VMS_Data is
    --
    --   When looking for source files also look in the specified directories.
 
+   S_Make_Src_Info : aliased constant S := "/SRC_INFO=<"                   &
+                                            "--source-info-file=>";
+   --        /SRC_INFO=source-info-file
+   --
+   --   Specify a source info file to be read or written by the Project
+   --   Manager when project files are used.
+
    S_Make_Stand   : aliased constant S := "/STANDARD_OUTPUT_FOR_COMMANDS " &
                                             "-eS";
    --        /NOSTANDARD_OUTPUT_FOR_COMMANDS (D)
@@ -5012,6 +5019,7 @@ package VMS_Data is
                       S_Make_Single  'Access,
                       S_Make_Skip    'Access,
                       S_Make_Source  'Access,
+                      S_Make_Src_Info'Access,
                       S_Make_Stand   'Access,
                       S_Make_Subdirs 'Access,
                       S_Make_Switch  'Access,

@@ -9342,6 +9342,21 @@ By default, shared library projects are not allowed to import static library
 projects. When this switch is used on the command line, this restriction is
 relaxed.
 
+@item ^--source-info=<source info file>^/SRC_INFO=source-info-file^
+Specify a source info file. This switch is active only when project files
+are used. If the source info file is specified as a relative path, then it is
+relative to the object directory of the main project. If the source info file
+does not exist, then after the Project Manager has successfully parsed and
+processed the project files and found the sources, it creates the source info
+file. If the source info file already exists and can be read successfully,
+then the Project Manager will get all the needed information about the sources
+from the source info file and will not look for them. This reduces the time
+to process the project files, especially when looking for sources that take a
+long time. If the source info file exists but cannot be parsed successfully,
+the Project Manager will attempt to recreate it. If the Project Manager fails
+to create the source info file, a message is issued, but gnatmake does not
+fail.
+
 @ifclear vms
 @item --create-map-file
 When linking an executable, create a map file. The name of the map file

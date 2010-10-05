@@ -1,3 +1,10 @@
+2010-10-05  Vincent Celier  <celier@adacore.com>
+
+	* vms_data.ads: Add VMS qualifier /SRC_INFO= corresponding to gnatmake
+	switch --create-info-file=.
+	* gnat_ugn.texi: Add documentation for new gnatmake switch
+	--source-info=
+
 2010-10-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb: Do not elaborate type definition if syntax error.
