@@ -5404,6 +5404,7 @@ static gfc_try
 check_typebound_baseobject (gfc_expr* e)
 {
   gfc_expr* base;
+  gfc_try return_value = FAILURE;
 
   base = extract_compcall_passed_object (e);
   if (!base)
@@ -5415,7 +5416,7 @@ check_typebound_baseobject (gfc_expr* e)
     {
       gfc_error ("Base object for type-bound procedure call at %L is of"
 		 " ABSTRACT type '%s'", &e->where, base->ts.u.derived->name);
-      return FAILURE;
+      goto cleanup;
     }
 
   /* If the procedure called is NOPASS, the base object must be scalar.  */
@@ -5423,7 +5424,7 @@ check_typebound_baseobject (gfc_expr* e)
     {
       gfc_error ("Base object for NOPASS type-bound procedure call at %L must"
 		 " be scalar", &e->where);
-      return FAILURE;
+      goto cleanup;
     }
 
   /* FIXME: Remove once PR 41177 (this problem) is fixed completely.  */
@@ -5431,10 +5432,14 @@ check_typebound_baseobject (gfc_expr* e)
     {
       gfc_error ("Non-scalar base object at %L currently not implemented",
 		 &e->where);
-      return FAILURE;
+      goto cleanup;
     }
 
-  return SUCCESS;
+  return_value = SUCCESS;
+
+cleanup:
+  gfc_free_expr (base);
+  return return_value;
 }
 
 
