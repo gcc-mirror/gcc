@@ -1843,7 +1843,7 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 
   gfc_conv_procedure_call (se, sym, expr->value.function.actual, expr,
 			  append_args);
-  gfc_free (sym);
+  gfc_free_symbol (sym);
 }
 
 /* ANY and ALL intrinsics. ANY->op == NE_EXPR, ALL->op == EQ_EXPR.
