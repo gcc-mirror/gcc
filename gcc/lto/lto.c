@@ -839,7 +839,8 @@ partition_cgraph_node_p (struct cgraph_node *node)
     return false;
   /* Extern inlines and comdat are always only in partitions they are needed.  */
   if (DECL_EXTERNAL (node->decl)
-      || DECL_COMDAT (node->decl))
+      || (DECL_COMDAT (node->decl)
+	  && !cgraph_used_from_object_file_p (node)))
     return false;
   return true;
 }
@@ -854,7 +855,8 @@ partition_varpool_node_p (struct varpool_node *vnode)
     return false;
   /* Constant pool and comdat are always only in partitions they are needed.  */
   if (DECL_IN_CONSTANT_POOL (vnode->decl)
-      || DECL_COMDAT (vnode->decl))
+      || (DECL_COMDAT (vnode->decl)
+	  && !varpool_used_from_object_file_p (vnode)))
     return false;
   return true;
 }
