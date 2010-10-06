@@ -5687,6 +5687,8 @@ gfc_use_module (void)
 			       "for file '%s' opened at %C", atom_string,
 			       MOD_VERSION, filename);
 	    }
+
+	  gfc_free (atom_string);
 	}
 
       if (c == '\n')
