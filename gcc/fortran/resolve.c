@@ -7939,7 +7939,7 @@ resolve_transfer (gfc_code *code)
   ts = &sym->ts;
 
   /* Go to actual component transferred.  */
-  for (ref = code->expr1->ref; ref; ref = ref->next)
+  for (ref = exp->ref; ref; ref = ref->next)
     if (ref->type == REF_COMPONENT)
       ts = &ref->u.c.component->ts;
 
