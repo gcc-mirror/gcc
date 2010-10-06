@@ -491,8 +491,9 @@ struct module_htab_entry *gfc_find_module (const char *);
 void gfc_module_add_decl (struct module_htab_entry *, tree);
 
 /* Get and set the current location.  */
+void gfc_save_backend_locus (locus *);
 void gfc_set_backend_locus (locus *);
-void gfc_get_backend_locus (locus *);
+void gfc_restore_backend_locus (locus *);
 
 /* Handle static constructor functions.  */
 extern GTY(()) tree gfc_static_ctors;

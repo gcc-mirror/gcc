@@ -1454,13 +1454,13 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
 	  tree save_fn_decl = current_function_decl;
 
 	  current_function_decl = NULL_TREE;
-	  gfc_get_backend_locus (&old_loc);
+	  gfc_save_backend_locus (&old_loc);
 	  push_cfun (cfun);
 
 	  gfc_create_function_decl (gsym->ns, true);
 
 	  pop_cfun ();
-	  gfc_set_backend_locus (&old_loc);
+	  gfc_restore_backend_locus (&old_loc);
 	  current_function_decl = save_fn_decl;
 	}
 
@@ -2028,7 +2028,7 @@ build_entry_thunks (gfc_namespace * ns, bool global)
   /* This should always be a toplevel function.  */
   gcc_assert (current_function_decl == NULL_TREE);
 
-  gfc_get_backend_locus (&old_loc);
+  gfc_save_backend_locus (&old_loc);
   for (el = ns->entries; el; el = el->next)
     {
       VEC(tree,gc) *args = NULL;
@@ -2192,7 +2192,7 @@ build_entry_thunks (gfc_namespace * ns, bool global)
 	}
     }
 
-  gfc_set_backend_locus (&old_loc);
+  gfc_restore_backend_locus (&old_loc);
 }
 
 
@@ -3336,11 +3336,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 					    NULL_TREE);
 		    }
 
-		  gfc_get_backend_locus (&loc);
+		  gfc_save_backend_locus (&loc);
 		  gfc_set_backend_locus (&sym->declared_at);
 		  gfc_trans_auto_array_allocation (sym->backend_decl,
 						   sym, block);
-		  gfc_set_backend_locus (&loc);
+		  gfc_restore_backend_locus (&loc);
 		}
 	      break;
 
@@ -3412,20 +3412,20 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	gfc_trans_deferred_array (sym, block);
       else if (sym->ts.type == BT_CHARACTER)
 	{
-	  gfc_get_backend_locus (&loc);
+	  gfc_save_backend_locus (&loc);
 	  gfc_set_backend_locus (&sym->declared_at);
 	  if (sym->attr.dummy || sym->attr.result)
 	    gfc_trans_dummy_character (sym, sym->ts.u.cl, block);
 	  else
 	    gfc_trans_auto_character_variable (sym, block);
-	  gfc_set_backend_locus (&loc);
+	  gfc_restore_backend_locus (&loc);
 	}
       else if (sym->attr.assign)
 	{
-	  gfc_get_backend_locus (&loc);
+	  gfc_save_backend_locus (&loc);
 	  gfc_set_backend_locus (&sym->declared_at);
 	  gfc_trans_assign_aux_var (sym, block);
-	  gfc_set_backend_locus (&loc);
+	  gfc_restore_backend_locus (&loc);
 	}
       else if (sym->ts.type == BT_DERIVED
 		 && sym->value

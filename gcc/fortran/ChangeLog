@@ -1,5 +1,26 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans.c (gfc_restore_backend_locus): New function.
+	(gfc_get_backend_locus): Renamed to ...
+	(gfc_save_backend_locus): ... this.
+	* trans.h (gfc_restore_backend_locus, gfc_get_backend_locus,
+	gfc_save_backend_locus): Same.
+	* trans-array.c (gfc_trans_g77_array, gfc_trans_dummy_array_bias,
+	gfc_trans_deferred_array): Rename gfc_get_backend_locus to
+	gfc_save_backend_locus.
+	(gfc_trans_dummy_array_bias): Call gfc_restore_backend_locus at the
+	end.
+	(gfc_trans_g77_array, gfc_trans_deferred_array): Use
+	gfc_restore_backend_locus instead of gfc_set_backend_locus.
+	(gfc_trans_deferred_array): Call gfc_restore_backend_locus on early
+	return.
+	* trans-decl.c (gfc_get_extern_function_decl, build_entry_thunks,
+	gfc_trans_deferred_vars):
+	Rename gfc_get_backend_locus to gfc_save_backend_locus.
+	Use gfc_restore_backend_locus insted of gfc_set_backend_locus.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_build_constant_array_constructor): Free array
 	spec when done.
 
