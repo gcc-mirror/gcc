@@ -49,7 +49,7 @@ fle (long x, long y)
     return F;
 }
 
-fltu (long x, long y)
+fltu (unsigned long x, unsigned long y)
 {
   if (x < y)
     return T;
@@ -57,7 +57,7 @@ fltu (long x, long y)
     return F;
 }
 
-fgeu (long x, long y)
+fgeu (unsigned long x, unsigned long y)
 {
   if (x >= y)
     return T;
@@ -65,7 +65,7 @@ fgeu (long x, long y)
     return F;
 }
 
-fgtu (long x, long y)
+fgtu (unsigned long x, unsigned long y)
 {
   if (x > y)
     return T;
@@ -73,7 +73,7 @@ fgtu (long x, long y)
     return F;
 }
 
-fleu (long x, long y)
+fleu (unsigned long x, unsigned long y)
 {
   if (x <= y)
     return T;
