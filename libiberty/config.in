@@ -44,8 +44,8 @@
    don't. */
 #undef HAVE_DECL_ASPRINTF
 
-/* Define to 1 if you have the declaration of `basename', and to 0 if you
-   don't. */
+/* Define to 1 if you have the declaration of `basename(char *)', and to 0 if
+   you don't. */
 #undef HAVE_DECL_BASENAME
 
 /* Define to 1 if you have the declaration of `calloc', and to 0 if you don't.
@@ -154,9 +154,6 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* Define to 1 if you have the `mempcpy' function. */
-#undef HAVE_MEMPCPY
-
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
 
@@ -168,6 +165,9 @@
 
 /* Define to 1 if you have the `on_exit' function. */
 #undef HAVE_ON_EXIT
+
+/* Define if you have prctl PR_SET_NAME */
+#undef HAVE_PRCTL_SET_NAME
 
 /* Define to 1 if you have the `psignal' function. */
 #undef HAVE_PSIGNAL
@@ -198,6 +198,9 @@
 
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
+
+/* Define to 1 if you have the `setproctitle' function. */
+#undef HAVE_SETPROCTITLE
 
 /* Define to 1 if you have the `sigsetmask' function. */
 #undef HAVE_SIGSETMASK
@@ -357,9 +360,6 @@
 
 /* Define to 1 if you have the `vprintf' function. */
 #undef HAVE_VPRINTF
-
-/* Define to 1 if you have the `vsnprintf' function. */
-#undef HAVE_VSNPRINTF
 
 /* Define to 1 if you have the `vsprintf' function. */
 #undef HAVE_VSPRINTF

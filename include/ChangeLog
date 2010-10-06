@@ -1,3 +1,7 @@
+2010-10-06  Andi Kleen <ak@linux.intel.com>
+
+	* libiberty.h (setproctitle): Add prototype.
+
 2010-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.h (DW_OP_GNU_implicit_pointer): New.

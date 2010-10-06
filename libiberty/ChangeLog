@@ -1,3 +1,14 @@
+2010-10-06  Andi Kleen <ak@linux.intel.com>
+
+	* Makefile.in (CFILES): Add setproctitle.
+	(CONFIGURED_OFILES): Add setproctitle.
+	(setproctitle): Add rule.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add checks for prctl PR_SET_NAME and setproctitle.
+	* setproctitle.c: Add file.
+	* functions.texi: Regenerate.
+
 2010-09-22 Tristan Gingold  <gingold@adacore.com>
 
 	* cplus-dem.c (ada_demangle): Add comments.

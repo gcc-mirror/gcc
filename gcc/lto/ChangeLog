@@ -1,3 +1,8 @@
+2010-10-06  Andi Kleen <ak@linux.intel.com>
+
+	* lto.c (lto_process_name): Add.
+	(lto_main): Call lto_process_name.
+
 2010-10-06  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (partition_cgraph_node_p, partition_varpool_node_p): Handle

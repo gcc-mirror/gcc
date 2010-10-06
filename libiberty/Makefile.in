@@ -144,7 +144,8 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	 pex-unix.c pex-win32.c						\
          physmem.c putenv.c						\
 	random.c regex.c rename.c rindex.c				\
-	safe-ctype.c setenv.c sha1.c sigsetmask.c snprintf.c sort.c	\
+	safe-ctype.c setenv.c setproctitle.c sha1.c sigsetmask.c        \
+         snprintf.c sort.c						\
 	 spaces.c splay-tree.c stpcpy.c stpncpy.c strcasecmp.c		\
 	 strchr.c strdup.c strerror.c strncasecmp.c strncmp.c		\
 	 strrchr.c strsignal.c strstr.c strtod.c strtol.c strtoul.c	\
@@ -201,7 +202,9 @@ CONFIGURED_OFILES = ./asprintf.$(objext) ./atexit.$(objext)		\
 	 ./pex-unix.$(objext) ./pex-win32.$(objext)			\
 	 ./putenv.$(objext)						\
 	./random.$(objext) ./rename.$(objext) ./rindex.$(objext)	\
-	./setenv.$(objext) ./sigsetmask.$(objext) ./snprintf.$(objext)	\
+	./setenv.$(objext) 						\
+	 ./setproctitle.$(objext)					\
+	 ./sigsetmask.$(objext) ./snprintf.$(objext)			\
 	 ./stpcpy.$(objext) ./stpncpy.$(objext) ./strcasecmp.$(objext)	\
 	 ./strchr.$(objext) ./strdup.$(objext) ./strncasecmp.$(objext)	\
 	 ./strncmp.$(objext) ./strndup.$(objext) ./strrchr.$(objext)	\
@@ -943,6 +946,12 @@ $(CONFIGURED_OFILES): stamp-picdir
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/setenv.c -o pic/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/setenv.c $(OUTPUT_OPTION)
+
+./setproctitle.$(objext): $(srcdir)/setproctitle.c config.h $(INCDIR)/ansidecl.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/setproctitle.c -o pic/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/setproctitle.c $(OUTPUT_OPTION)
 
 ./sha1.$(objext): $(srcdir)/sha1.c config.h $(INCDIR)/ansidecl.h $(INCDIR)/sha1.h
 	if [ x"$(PICFLAG)" != x ]; then \
