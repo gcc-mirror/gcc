@@ -1,3 +1,21 @@
+2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from apple/trunk branch on FSF servers.
+	* cp-tree.def: Added AT_ENCODE_EXPR here instead of to the no
+	longer existing gcc/c-common.def.
+	
+	2005-12-14  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4278774
+	* pt.c (tsubst_copy_and_build): Instantiate @endcode(T).
+	* parser.c (cp_parser_objc_encode_expression): Build a templatized 
+	parse tree for @encode(T).
+
+	2005-12-14  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4278774
+	* c-common.def: Add new expression code AT_ENCODE_EXPR.
+	
 2010-10-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR c++/45908

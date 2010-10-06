@@ -21128,6 +21128,13 @@ cp_parser_objc_encode_expression (cp_parser* parser)
       return error_mark_node;
     }
 
+  if (dependent_type_p (type))
+    {
+      tree value = build_min (AT_ENCODE_EXPR, size_type_node, type);
+      TREE_READONLY (value) = 1;
+      return value;
+    }
+
   return objc_build_encode_expr (type);
 }
 
