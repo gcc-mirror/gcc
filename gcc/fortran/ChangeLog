@@ -1,5 +1,9 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* module.c (read_module): Remove useless string duplication.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* gfortranspec.c (append_arg): Remove commented code.
 
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
