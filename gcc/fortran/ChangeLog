@@ -1,5 +1,10 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_build_constant_array_constructor): Free array
+	spec when done.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* symbol.c (gfc_copy_formal_args_ppc): Free previous formal arg list
 	before overwriting it.
 
