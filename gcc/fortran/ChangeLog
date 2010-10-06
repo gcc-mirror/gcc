@@ -1,5 +1,10 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* symbol.c (free_components): Free list of formal args and formal
+	namespace.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* simplify.c (gfc_simplify_size): Clear temporary mpz int before
 	returning.
 
