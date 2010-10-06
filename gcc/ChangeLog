@@ -1,3 +1,9 @@
+2010-10-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config/spu/spu-c.c (spu_resolve_overloaded_builtin): Don't use
+	define_builtin_std where it's unnecessary.
+	* config/i386/nto.h (TARGET_OS_CPP_BUILTINS): Likewise.
+
 2010-10-06  Anatoly Sokolov  <aesok@post.ru>
 
 	* doc/tm.texi.in (CLASS_LIKELY_SPILLED_P): Remove documentation.
