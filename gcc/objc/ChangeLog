@@ -1,5 +1,9 @@
 2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* README: Obsolete file removed.
+
+2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	Implemented fast enumeration for Objective-C.
 	* objc-act.c (build_fast_enumeration_state_template): New.
 	(TAG_ENUMERATION_MUTATION): New.
