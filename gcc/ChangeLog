@@ -1,3 +1,7 @@
+2010-10-06  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.in (regmove.o): Depend on $(TARGET_H).
+
 2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented fast enumeration for Objective-C.	

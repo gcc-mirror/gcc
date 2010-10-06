@@ -3370,9 +3370,10 @@ ira.o: ira.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(EXPR_H) $(RECOG_H) $(PARAMS_H) $(TIMEVAR_H) $(TREE_PASS_H) output.h \
    $(EXCEPT_H) reload.h $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) $(INTEGRATE_H) $(DF_H) $(GGC_H) $(IRA_INT_H)
 regmove.o : regmove.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
-   insn-config.h $(TIMEVAR_H) $(TREE_PASS_H) $(DF_H)\
+   insn-config.h $(TIMEVAR_H) $(TREE_PASS_H) $(DF_H) \
    $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
-   $(EXPR_H) $(BASIC_BLOCK_H) $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) $(TM_P_H) $(EXCEPT_H) ira.h reload.h
+   $(EXPR_H) $(BASIC_BLOCK_H) $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) $(TM_P_H) \
+   $(EXCEPT_H) ira.h reload.h $(TARGET_H)
 combine-stack-adj.o : combine-stack-adj.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(RTL_H) insn-config.h $(TIMEVAR_H) $(TREE_PASS_H) \
    $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
