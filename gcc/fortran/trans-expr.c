@@ -1612,10 +1612,17 @@ get_proc_ptr_comp (gfc_expr *e)
 {
   gfc_se comp_se;
   gfc_expr *e2;
+  expr_t old_type;
+
   gfc_init_se (&comp_se, NULL);
   e2 = gfc_copy_expr (e);
+  /* We have to restore the expr type later so that gfc_free_expr frees
+     the exact same thing that was allocated.
+     TODO: This is ugly.  */
+  old_type = e2->expr_type;
   e2->expr_type = EXPR_VARIABLE;
   gfc_conv_expr (&comp_se, e2);
+  e2->expr_type = old_type;
   gfc_free_expr (e2);
   return build_fold_addr_expr_loc (input_location, comp_se.expr);
 }
