@@ -1,3 +1,9 @@
+2010-10-06  Thomas Schwinge  <thomas@schwinge.name>
+
+	PR target/45901
+	* config/alpha/gnu.h (TARGET_OS_CPP_BUILTINS): Refer to
+	LINUX_TARGET_OS_CPP_BUILTINS instead of HURD_TARGET_OS_CPP_BUILTINS.
+
 2010-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.def (BUILT_IN_CALLOC, BUILT_IN_REALLOC,
