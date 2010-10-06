@@ -117,7 +117,7 @@ extern enum processor_type mn10300_processor;
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.  */
 
-#define FIRST_PSEUDO_REGISTER 50
+#define FIRST_PSEUDO_REGISTER 51
 
 /* Specify machine-specific register numbers.  */
 #define FIRST_DATA_REGNUM 0
@@ -128,6 +128,7 @@ extern enum processor_type mn10300_processor;
 #define LAST_EXTENDED_REGNUM 17
 #define FIRST_FP_REGNUM 18
 #define LAST_FP_REGNUM 49
+#define MDR_REGNUM 50
 #define FIRST_ARGUMENT_REGNUM 0
 
 /* Specify the registers used for certain standard purposes.
@@ -153,7 +154,7 @@ extern enum processor_type mn10300_processor;
 #define FIXED_REGISTERS \
   { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 \
   , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
-  , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
+  , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 \
   }
 
 /* 1 for registers not available across function calls.
@@ -167,7 +168,7 @@ extern enum processor_type mn10300_processor;
 #define CALL_USED_REGISTERS \
   { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 \
   , 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
-  , 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 \
+  , 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 \
   }
 
 /* Note: The definition of CALL_REALLY_USED_REGISTERS is not
@@ -298,7 +299,7 @@ enum reg_class {
  { 0xfffc0000, 0x3ffff }, /* FP_REGS */		\
  { 0x03fc0000, 0 },	/* FP_ACC_REGS */	\
  { 0x3fdff, 0 }, 	/* GENERAL_REGS */	\
- { 0xffffffff, 0x3ffff } /* ALL_REGS 	*/	\
+ { 0xffffffff, 0x7ffff } /* ALL_REGS 	*/	\
 }
 
 /* The following macro defines cover classes for Integrated Register
@@ -587,6 +588,8 @@ struct cum_arg {int nbytes; };
   ((COUNT == 0)                         \
    ? gen_rtx_MEM (Pmode, arg_pointer_rtx) \
    : (rtx) 0)
+
+#define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (Pmode, MDR_REGNUM)
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 
@@ -765,7 +768,7 @@ struct cum_arg {int nbytes; };
 , "fs0", "fs1", "fs2", "fs3", "fs4", "fs5", "fs6", "fs7" \
 , "fs8", "fs9", "fs10", "fs11", "fs12", "fs13", "fs14", "fs15" \
 , "fs16", "fs17", "fs18", "fs19", "fs20", "fs21", "fs22", "fs23" \
-, "fs24", "fs25", "fs26", "fs27", "fs28", "fs29", "fs30", "fs31" \
+    , "fs24", "fs25", "fs26", "fs27", "fs28", "fs29", "fs30", "fs31", "mdr"	\
 }
 
 #define ADDITIONAL_REGISTER_NAMES \
@@ -810,8 +813,9 @@ struct cum_arg {int nbytes; };
 #define DEFAULT_GDB_EXTENSIONS 1
 
 /* Use dwarf2 debugging info by default.  */
-#undef PREFERRED_DEBUGGING_TYPE
+#undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+#define DWARF2_DEBUGGING_INFO 1
 
 #define DWARF2_ASM_LINE_DEBUG_INFO 1
 
