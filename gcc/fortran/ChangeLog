@@ -1,5 +1,10 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-intrinsic.c (gfc_conv_intrinsic_funcall): Also free symbol's
+	subcomponents.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-stmt.c (gfc_trans_forall_1): Free forall struct at the end.
 
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
