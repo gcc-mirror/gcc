@@ -3462,6 +3462,13 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
   gfc_free (varexpr);
   gfc_free (saved_vars);
 
+  for (this_forall = info->this_loop; this_forall;)
+    {
+      iter_info *next = this_forall->next;
+      gfc_free (this_forall);
+      this_forall = next;
+    }
+
   /* Free the space for this forall_info.  */
   gfc_free (info);
 
