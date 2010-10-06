@@ -4536,10 +4536,10 @@ gfc_trans_g77_array (gfc_symbol * sym, gfc_wrapped_block * block)
   locus loc;
   tree offset;
   tree tmp;
-  tree stmt;  
+  tree stmt;
   stmtblock_t init;
 
-  gfc_get_backend_locus (&loc);
+  gfc_save_backend_locus (&loc);
   gfc_set_backend_locus (&sym->declared_at);
 
   /* Descriptor type.  */
@@ -4568,7 +4568,7 @@ gfc_trans_g77_array (gfc_symbol * sym, gfc_wrapped_block * block)
     }
   stmt = gfc_finish_block (&init);
 
-  gfc_set_backend_locus (&loc);
+  gfc_restore_backend_locus (&loc);
 
   /* Add the initialization code to the start of the function.  */
 
@@ -4629,7 +4629,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
       return;
     }
 
-  gfc_get_backend_locus (&loc);
+  gfc_save_backend_locus (&loc);
   gfc_set_backend_locus (&sym->declared_at);
 
   /* Descriptor type.  */
@@ -4921,6 +4921,8 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
   /* We don't need to free any memory allocated by internal_pack as it will
      be freed at the end of the function by pop_context.  */
   gfc_add_init_cleanup (block, stmtInit, stmtCleanup);
+
+  gfc_restore_backend_locus (&loc);
 }
 
 
@@ -6500,7 +6502,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
       return;
     }
 
-  gfc_get_backend_locus (&loc);
+  gfc_save_backend_locus (&loc);
   gfc_set_backend_locus (&sym->declared_at);
   descriptor = sym->backend_decl;
 
@@ -6513,6 +6515,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
       gfc_trans_static_array_pointer (sym);
 
       gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
+      gfc_restore_backend_locus (&loc);
       return;
     }
 
@@ -6550,7 +6553,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
     gfc_conv_descriptor_data_set (&init, descriptor, null_pointer_node);
 
   gfc_init_block (&cleanup);
-  gfc_set_backend_locus (&loc);
+  gfc_restore_backend_locus (&loc);
 
   /* Allocatable arrays need to be freed when they go out of scope.
      The allocatable components of pointers must not be touched.  */

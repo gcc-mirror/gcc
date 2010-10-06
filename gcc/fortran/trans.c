@@ -1055,11 +1055,11 @@ gfc_add_block_to_block (stmtblock_t * block, stmtblock_t * append)
 }
 
 
-/* Get the current locus.  The structure may not be complete, and should
-   only be used with gfc_set_backend_locus.  */
+/* Save the current locus.  The structure may not be complete, and should
+   only be used with gfc_restore_backend_locus.  */
 
 void
-gfc_get_backend_locus (locus * loc)
+gfc_save_backend_locus (locus * loc)
 {
   loc->lb = XCNEW (gfc_linebuf);
   loc->lb->location = input_location;
@@ -1074,6 +1074,17 @@ gfc_set_backend_locus (locus * loc)
 {
   gfc_current_backend_file = loc->lb->file;
   input_location = loc->lb->location;
+}
+
+
+/* Restore the saved locus. Only used in conjonction with
+   gfc_save_backend_locus, to free the memory when we are done.  */
+
+void
+gfc_restore_backend_locus (locus * loc)
+{
+  gfc_set_backend_locus (loc);
+  gfc_free (loc->lb);
 }
 
 
