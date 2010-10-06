@@ -136,6 +136,8 @@ extern int picochip_flag_schedule_insns2;
 
 extern void picochip_asm_output_anchor (rtx symbol);
 
+extern enum unwind_info_type picochip_except_unwind_info (void);
+
 /* Instruction set capability flags.  These are initialised to the
    appropriate values by picochip_option_override, once the user has
    selected a CPU type. */
