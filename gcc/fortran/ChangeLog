@@ -1,5 +1,10 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* resolve.c (check_typebound_baseobject): Free local expr before
+	returning.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* primary.c (gfc_match_structure_constructor): Invert the assert logic.
 
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
