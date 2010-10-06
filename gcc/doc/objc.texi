@@ -20,6 +20,7 @@ several resources on the Internet that present the language.
 * compatibility_alias::
 * Exceptions::
 * Synchronization::
+* Fast enumeration::
 @end menu
 
 @node Executing code before main
@@ -739,3 +740,218 @@ Because of the interactions between synchronization and exception
 handling, you can only use @code{@@synchronized} when compiling with
 exceptions enabled, that is with the command line option
 @option{-fobjc-exceptions}.
+
+
+@c =========================================================================
+@node Fast enumeration
+@section Fast enumeration
+
+@menu
+* Using fast enumeration::
+* c99-like fast enumeration syntax::
+* Fast enumeration details::
+* Fast enumeration protocol::
+@end menu
+
+@c ================================
+@node Using fast enumeration
+@subsection Using fast enumeration
+
+GNU Objective-C provides support for the fast enumeration syntax:
+
+@smallexample
+  id array = @dots{};
+  id object;
+
+  for (object in array)
+  @{
+    /* Do something with 'object' */
+  @}
+@end smallexample
+
+@code{array} needs to be an Objective-C object (usually a collection
+object, for example an array, a dictionary or a set) which implements
+the ``Fast Enumeration Protocol'' (see below).  If you are using a
+Foundation library such as GNUstep Base or Apple Cocoa Foundation, all
+collection objects in the library implement this protocol and can be
+used in this way.
+
+The code above would iterate over all objects in @code{array}.  For
+each of them, it assigns it to @code{object}, then executes the
+@code{Do something with 'object'} statements.
+
+Here is a fully worked-out example using a Foundation library (which
+provides the implementation of @code{NSArray}, @code{NSString} and
+@code{NSLog}):
+
+@smallexample
+  NSArray *array = [NSArray arrayWithObjects: @@"1", @@"2", @@"3", nil];
+  NSString *object;
+
+  for (object in array)
+    NSLog (@@"Iterating over %@@", object);
+@end smallexample
+
+
+@c ================================
+@node c99-like fast enumeration syntax
+@subsection c99-like fast enumeration syntax
+
+A c99-like declaration syntax is also allowed:
+
+@smallexample
+  id array = @dots{};
+
+  for (id object in array)
+  @{
+    /* Do something with 'object'  */
+  @}
+@end smallexample
+
+this is completely equivalent to:
+
+@smallexample
+  id array = @dots{};
+
+  @{
+    id object;
+    for (object in array)
+    @{
+      /* Do something with 'object'  */
+    @}
+  @}
+@end smallexample
+
+but can save some typing.
+
+Note that the option @option{-std=c99} is not required to allow this
+syntax in Objective-C.
+
+@c ================================
+@node Fast enumeration details
+@subsection Fast enumeration details
+
+Here is a more technical description with the gory details.  Consider the code
+
+@smallexample
+  for (@var{object expression} in @var{collection expression})
+  @{
+    @var{statements}
+  @}
+@end smallexample
+
+here is what happens when you run it:
+
+@itemize @bullet
+@item
+@code{@var{collection expression}} is evaluated exactly once and the
+result is used as the collection object to iterate over.  This means
+it is safe to write code such as @code{for (object in [NSDictionary
+keyEnumerator]) @dots{}}.
+
+@item
+the iteration is implemented by the compiler by repeatedly getting
+batches of objects from the collection object using the fast
+enumeration protocol (see below), then iterating over all objects in
+the batch.  This is faster than a normal enumeration where objects are
+retrieved one by one (hence the name ``fast enumeration'').
+
+@item
+if there are no objects in the collection, then
+@code{@var{object expression}} is set to @code{nil} and the loop
+immediately terminates.
+
+@item
+if there are objects in the collection, then for each object in the
+collection (in the order they are returned) @code{@var{object expression}}
+is set to the object, then @code{@var{statements}} are executed.
+
+@item
+@code{@var{statements}} can contain @code{break} and @code{continue}
+commands, which will abort the iteration or skip to the next loop
+iteration as expected.
+
+@item
+when the iteration ends because there are no more objects to iterate
+over, @code{@var{object expression}} is set to @code{nil}.  This allows
+you to determine whether the iteration finished because a @code{break}
+command was used (in which case @code{@var{object expression}} will remain
+set to the last object that was iterated over) or because it iterated
+over all the objects (in which case @code{@var{object expression}} will be
+set to @code{nil}).
+
+@item
+@code{@var{statements}} must not make any changes to the collection
+object; if they do, it is a hard error and the fast enumeration
+terminates by invoking @code{objc_enumerationMutation}, a runtime
+function that normally aborts the program but which can be customized
+by Foundation libraries via @code{objc_set_mutation_handler} to do
+something different, such as raising an exception.
+
+@end itemize
+
+@c ================================
+@node Fast enumeration protocol
+@subsection Fast enumeration protocol
+
+If you want your own collection object to be usable with fast
+enumeration, you need to have it implement the method
+
+@smallexample
+- (unsigned long) countByEnumeratingWithState: (NSFastEnumerationState *)state 
+                                      objects: (id *)objects
+                                        count: (unsigneld long)len;
+@end smallexample
+
+where @code{NSFastEnumerationState} must be defined in your code as follows:
+
+@smallexample
+typdef struct
+@{
+  unsigned long state;
+  id            *itemsPtr;
+  unsigned long *mutationsPtr;
+  unsigned long extra[5];
+@} NSFastEnumerationState;
+@end smallexample
+
+If no @code{NSFastEnumerationState} is defined in your code, the
+compiler will automatically replace @code{NSFastEnumerationState *}
+with @code{struct __objcFastEnumerationState *}, where that type is
+silently defined by the compiler in an identical way.  This can be
+confusing and we recommend that you define
+@code{NSFastEnumerationState} (as shown above) instead.
+
+The method is called repeatedly during a fast enumeration to retrieve
+batches of objects.  Each invocation of the method should retrieve the
+next batch of objects.
+
+The return value of the method is the number of objects in the current
+batch; this should not exceed @code{len}, which is the maximum size of
+a batch as requested by the caller.  The batch itself is returned in
+the @code{itemsPtr} field of the @code{NSFastEnumerationState} struct.
+
+To help with returning the objects, the @code{objects} array is a C
+array preallocated by the caller (on the stack) of size @code{len}.
+In many cases you can put the objects you want to return in that
+@code{objects} array, then do @code{itemsPtr = objects}.  But you
+don't have to; if your collection already has the objects to return in
+some form of C array, it could return them from there instead.
+
+The @code{state} and @code{extra} fields of the
+@code{NSFastEnumerationState} structure allows your collection object
+to keep track of the state of the enumeration.  In a simple array
+implementation, @code{state} may keep track of the index of the last
+object that was returned, and @code{extra} may be unused.
+
+The @code{mutationsPtr} field of the @code{NSFastEnumerationState} is
+used to keep track of mutations.  It should point to a number; before
+working on each object, the fast enumeration loop will check that this
+number has not changed.  If it has, a mutation has happened and the
+fast enumeration will abort.  So, @code{mutationsPtr} could be set to
+point to some sort of version number of your collection, which is
+increased by one every time there is a change (for example when an
+object is added or removed).  Or, if you are content with less strict
+mutation checks, it could point to the number of objects in your
+collection or some other value that can be checked to perform an
+approximate check that the collection has not been mutated.

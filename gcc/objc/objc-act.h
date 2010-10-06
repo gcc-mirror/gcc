@@ -269,6 +269,9 @@ enum objc_tree_index
     OCTI_ASSIGN_GLOBAL_DECL,
     OCTI_ASSIGN_STRONGCAST_DECL,
 
+    OCTI_FAST_ENUM_STATE_TEMP,
+    OCTI_ENUM_MUTATION_DECL,
+
     OCTI_MAX
 };
 
@@ -433,5 +436,9 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 #define string_class_decl	objc_global_trees[OCTI_STRING_CLASS_DECL]
 #define internal_const_str_type	objc_global_trees[OCTI_INTERNAL_CNST_STR_TYPE]
 #define UOBJC_SUPER_decl	objc_global_trees[OCTI_SUPER_DECL]
+#define objc_fast_enumeration_state_template	\
+                                objc_global_trees[OCTI_FAST_ENUM_STATE_TEMP]
+#define objc_enumeration_mutation_decl		\
+                                objc_global_trees[OCTI_ENUM_MUTATION_DECL]
 
 #endif /* GCC_OBJC_ACT_H */

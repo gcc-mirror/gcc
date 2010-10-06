@@ -355,3 +355,11 @@ objc_generate_write_barrier (tree ARG_UNUSED (lhs),
 {
   return 0;
 }
+
+void
+objc_finish_foreach_loop (location_t ARG_UNUSED (location), tree ARG_UNUSED (object_expression),
+			  tree ARG_UNUSED (collection_expression), tree ARG_UNUSED (for_body),
+			  tree ARG_UNUSED (break_label), tree ARG_UNUSED (continue_label))
+{
+  return;
+}

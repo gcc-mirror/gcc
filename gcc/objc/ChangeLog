@@ -1,3 +1,31 @@
+2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented fast enumeration for Objective-C.
+	* objc-act.c (build_fast_enumeration_state_template): New.
+	(TAG_ENUMERATION_MUTATION): New.
+	(TAG_FAST_ENUMERATION_STATE): New.
+	(synth_module_prologue): Call build_fast_enumeration_state_template() and set up
+	objc_enumeration_mutation_decl.
+	(objc_create_temporary_var): Allow providing a name to temporary
+	variables.
+	(objc_build_exc_ptr): Updated calls to
+	objc_create_temporary_var().
+	(next_sjlj_build_try_catch_finally): Same change.
+	(objc_finish_foreach_loop): New.
+	* objc-act.h: Added OCTI_FAST_ENUM_STATE_TEMP,
+	OCTI_ENUM_MUTATION_DECL, objc_fast_enumeration_state_template,
+	objc_enumeration_mutation_decl.
+
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2006-04-12 Fariborz Jahanian <fjahanian@apple.com>
+
+        Radar 4507230
+	* objc-act.c (objc_type_valid_for_messaging): New routine to check
+	for valid objc object types.
+	(objc_finish_foreach_loop): Check for invalid objc objects in
+	foreach header.
+	
 2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
@@ -5,8 +33,8 @@
 	2005-10-17  Fariborz Jahanian <fjahanian@apple.com>
 
         Radar 4290840
-	* objc-act.c (objc_start_method_definition): Check for error_mark_node for
-	the selector name and make a quick exit.
+	* objc-act.c (objc_start_method_definition): Check for
+	error_mark_node for the selector name and make a quick exit.
 	
 2010-10-04  Andi Kleen <ak@linux.intel.com>
 

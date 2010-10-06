@@ -185,6 +185,11 @@ typedef struct GTY(()) c_parser {
   /* True if we are in a context where the Objective-C "PQ" keywords
      are considered keywords.  */
   BOOL_BITFIELD objc_pq_context : 1;
+  /* True if we are parsing a (potential) Objective-C foreach
+     statement.  This is set to true after we parsed 'for (' and while
+     we wait for 'in' or ';' to decide if it's a standard C for loop or an
+     Objective-C foreach loop.  */
+  BOOL_BITFIELD objc_could_be_foreach_context : 1;
   /* The following flag is needed to contextualize Objective-C lexical
      analysis.  In some cases (e.g., 'int NSObject;'), it is
      undesirable to bind an identifier to an Objective-C class, even
@@ -249,6 +254,26 @@ c_lex_one_token (c_parser *parser, c_token *token)
 		 */
 		if (parser->objc_pq_context)
 		  {
+		    token->type = CPP_KEYWORD;
+		    token->keyword = rid_code;
+		    break;
+		  }
+		else if (parser->objc_could_be_foreach_context
+			 && rid_code == RID_IN)
+		  {
+		    /* We are in Objective-C, inside a (potential)
+		       foreach context (which means after having
+		       parsed 'for (', but before having parsed ';'),
+		       and we found 'in'.  We consider it the keyword
+		       which terminates the declaration at the
+		       beginning of a foreach-statement.  Note that
+		       this means you can't use 'in' for anything else
+		       in that context; in particular, in Objective-C
+		       you can't use 'in' as the name of the running
+		       variable in a C for loop.  We could potentially
+		       try to add code here to disambiguate, but it
+		       seems a reasonable limitation.
+		    */
 		    token->type = CPP_KEYWORD;
 		    token->keyword = rid_code;
 		    break;
@@ -947,7 +972,7 @@ typedef enum c_dtr_syn {
 static void c_parser_external_declaration (c_parser *);
 static void c_parser_asm_definition (c_parser *);
 static void c_parser_declaration_or_fndef (c_parser *, bool, bool, bool,
-					   bool, bool);
+					   bool, bool, tree *);
 static void c_parser_static_assert_declaration_no_semi (c_parser *);
 static void c_parser_static_assert_declaration (c_parser *);
 static void c_parser_declspecs (c_parser *, struct c_declspecs *, bool, bool,
@@ -1170,7 +1195,7 @@ c_parser_external_declaration (c_parser *parser)
 	 an @interface or @protocol with prefix attributes).  We can
 	 only tell which after parsing the declaration specifiers, if
 	 any, and the first declarator.  */
-      c_parser_declaration_or_fndef (parser, true, true, true, false, true);
+      c_parser_declaration_or_fndef (parser, true, true, true, false, true, NULL);
       break;
     }
 }
@@ -1189,6 +1214,8 @@ c_parser_external_declaration (c_parser *parser)
    (old-style parameter declarations) they are diagnosed.  If
    START_ATTR_OK is true, the declaration specifiers may start with
    attributes; otherwise they may not.
+   OBJC_FOREACH_OBJECT_DECLARATION can be used to get back the parsed
+   declaration when parsing an Objective-C foreach statement.
 
    declaration:
      declaration-specifiers init-declarator-list[opt] ;
@@ -1235,6 +1262,10 @@ c_parser_external_declaration (c_parser *parser)
    specifiers, but only at top level (elsewhere they conflict with
    other syntax).
 
+   In Objective-C, declarations of the looping variable in a foreach
+   statement are exceptionally terminated by 'in' (for example, 'for
+   (NSObject *object in array) { ... }').
+
    OpenMP:
 
    declaration:
@@ -1243,7 +1274,8 @@ c_parser_external_declaration (c_parser *parser)
 static void
 c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 			       bool static_assert_ok, bool empty_ok,
-			       bool nested, bool start_attr_ok)
+			       bool nested, bool start_attr_ok,
+			       tree *objc_foreach_object_declaration)
 {
   struct c_declspecs *specs;
   tree prefix_attrs;
@@ -1375,7 +1407,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  || c_parser_next_token_is (parser, CPP_COMMA)
 	  || c_parser_next_token_is (parser, CPP_SEMICOLON)
 	  || c_parser_next_token_is_keyword (parser, RID_ASM)
-	  || c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
+	  || c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE)
+	  || c_parser_next_token_is_keyword (parser, RID_IN))
 	{
 	  tree asm_name = NULL_TREE;
 	  tree postfix_attrs = NULL_TREE;
@@ -1421,7 +1454,15 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 					    all_prefix_attrs));
 	      if (d)
 		finish_decl (d, UNKNOWN_LOCATION, NULL_TREE,
-		    	     NULL_TREE, asm_name);
+			     NULL_TREE, asm_name);
+	      
+	      if (c_parser_next_token_is_keyword (parser, RID_IN))
+		{
+		  if (d)
+		    *objc_foreach_object_declaration = d;
+		  else
+		    *objc_foreach_object_declaration = error_mark_node;		    
+		}
 	    }
 	  if (c_parser_next_token_is (parser, CPP_COMMA))
 	    {
@@ -1436,6 +1477,15 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  else if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	    {
 	      c_parser_consume_token (parser);
+	      return;
+	    }
+	  else if (c_parser_next_token_is_keyword (parser, RID_IN))
+	    {
+	      /* This can only happen in Objective-C: we found the
+		 'in' that terminates the declaration inside an
+		 Objective-C foreach statement.  Do not consume the
+		 token, so that the caller can use it to determine
+		 that this indeed is a foreach context.  */
 	      return;
 	    }
 	  else
@@ -1484,7 +1534,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       while (c_parser_next_token_is_not (parser, CPP_EOF)
 	     && c_parser_next_token_is_not (parser, CPP_OPEN_BRACE))
 	c_parser_declaration_or_fndef (parser, false, false, false,
-				       true, false);
+				       true, false, NULL);
       store_parm_decls ();
       DECL_STRUCT_FUNCTION (current_function_decl)->function_start_locus
 	= c_parser_peek_token (parser)->location;
@@ -3743,7 +3793,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	{
 	  last_label = false;
 	  mark_valid_location_for_stdc_pragma (false);
-	  c_parser_declaration_or_fndef (parser, true, true, true, true, true);
+	  c_parser_declaration_or_fndef (parser, true, true, true, true, true, NULL);
 	  if (last_stmt)
 	    pedwarn_c90 (loc,
 			 (pedantic && !flag_isoc99)
@@ -3771,7 +3821,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	      last_label = false;
 	      mark_valid_location_for_stdc_pragma (false);
 	      c_parser_declaration_or_fndef (parser, true, true, true, true,
-					     true);
+					     true, NULL);
 	      /* Following the old parser, __extension__ does not
 		 disable this diagnostic.  */
 	      restore_extension_diagnostics (ext);
@@ -3911,7 +3961,7 @@ c_parser_label (c_parser *parser)
 	  c_parser_declaration_or_fndef (parser, /*fndef_ok*/ false,
 					 /*static_assert_ok*/ true,
 					 /*nested*/ true, /*empty_ok*/ false,
-					 /*start_attr_ok*/ true);
+					 /*start_attr_ok*/ true, NULL);
 	}
     }
 }
@@ -4427,20 +4477,68 @@ c_parser_do_statement (c_parser *parser)
    Note in particular that the nested function does not include a
    trailing ';', whereas the "declaration" production includes one.
    Also, can we reject bad declarations earlier and cheaper than
-   check_for_loop_decls?  */
+   check_for_loop_decls?
+
+   In Objective-C, there are two additional variants:
+
+   foreach-statement:
+     for ( expression in expresssion ) statement
+     for ( declaration in expression ) statement
+
+   This is inconsistent with C, because the second variant is allowed
+   even if c99 is not enabled.
+
+   The rest of the comment documents these Objective-C foreach-statement.
+
+   Here is the canonical example of the first variant:
+    for (object in array)    { do something with object }
+   we call the first expression ("object") the "object_expression" and 
+   the second expression ("array") the "collection_expression".
+   object_expression must be an lvalue of type "id" (a generic Objective-C
+   object) because the loop works by assigning to object_expression the
+   various objects from the collection_expression.  collection_expression
+   must evaluate to something of type "id" which responds to the method
+   countByEnumeratingWithState:objects:count:.
+
+   The canonical example of the second variant is:
+    for (id object in array)    { do something with object }
+   which is completely equivalent to
+    {
+      id object;
+      for (object in array) { do something with object }
+    }
+   Note that initizializing 'object' in some way (eg, "for ((object =
+   xxx) in array) { do something with object }") is possibly
+   technically valid, but completely pointless as 'object' will be
+   assigned to something else as soon as the loop starts.  We should
+   most likely reject it (TODO).
+
+   The beginning of the Objective-C foreach-statement looks exactly
+   like the beginning of the for-statement, and we can tell it is a
+   foreach-statement only because the initial declaration or
+   expression is terminated by 'in' instead of ';'.
+*/
 
 static void
 c_parser_for_statement (c_parser *parser)
 {
   tree block, cond, incr, save_break, save_cont, body;
+  /* The following are only used when parsing an ObjC foreach statement.  */
+  tree object_expression, collection_expression;
   location_t loc = c_parser_peek_token (parser)->location;
   location_t for_loc = c_parser_peek_token (parser)->location;
+  bool is_foreach_statement = false;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_FOR));
   c_parser_consume_token (parser);
-  block = c_begin_compound_stmt (flag_isoc99);
+  /* Open a compound statement in Objective-C as well, just in case this is
+     as foreach expression.  */
+  block = c_begin_compound_stmt (flag_isoc99 || c_dialect_objc ());
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       /* Parse the initialization declaration or expression.  */
+      cond = error_mark_node;
+      object_expression = error_mark_node;
+
       if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	{
 	  c_parser_consume_token (parser);
@@ -4448,8 +4546,20 @@ c_parser_for_statement (c_parser *parser)
 	}
       else if (c_parser_next_token_starts_declaration (parser))
 	{
-	  c_parser_declaration_or_fndef (parser, true, true, true, true, true);
-	  check_for_loop_decls (for_loc);
+	  parser->objc_could_be_foreach_context = true;
+	  c_parser_declaration_or_fndef (parser, true, true, true, true, true, 
+					 &object_expression);
+	  parser->objc_could_be_foreach_context = false;
+	  
+	  if (c_parser_next_token_is_keyword (parser, RID_IN))
+	    {
+	      c_parser_consume_token (parser);
+	      is_foreach_statement = true;
+	      if (check_for_loop_decls (for_loc, true) == NULL_TREE)
+		c_parser_error (parser, "multiple iterating variables in fast enumeration");
+	    }
+	  else
+	    check_for_loop_decls (for_loc, flag_isoc99);
 	}
       else if (c_parser_next_token_is_keyword (parser, RID_EXTENSION))
 	{
@@ -4466,10 +4576,21 @@ c_parser_for_statement (c_parser *parser)
 	      int ext;
 	      ext = disable_extension_diagnostics ();
 	      c_parser_consume_token (parser);
+	      parser->objc_could_be_foreach_context = true;
 	      c_parser_declaration_or_fndef (parser, true, true, true, true,
-					     true);
+					     true, &object_expression);
+	      parser->objc_could_be_foreach_context = false;
+	      
 	      restore_extension_diagnostics (ext);
-	      check_for_loop_decls (for_loc);
+	      if (c_parser_next_token_is_keyword (parser, RID_IN))
+		{
+		  c_parser_consume_token (parser);
+		  is_foreach_statement = true;
+		  if (check_for_loop_decls (for_loc, true) == NULL_TREE)
+		    c_parser_error (parser, "multiple iterating variables in fast enumeration");
+		}
+	      else
+		check_for_loop_decls (for_loc, flag_isoc99);
 	    }
 	  else
 	    goto init_expr;
@@ -4477,25 +4598,62 @@ c_parser_for_statement (c_parser *parser)
       else
 	{
 	init_expr:
-	  c_finish_expr_stmt (loc, c_parser_expression (parser).value);
-	  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+	  {
+	    tree init_expression;
+	    parser->objc_could_be_foreach_context = true;
+	    init_expression = c_parser_expression (parser).value;
+	    parser->objc_could_be_foreach_context = false;
+	    if (c_parser_next_token_is_keyword (parser, RID_IN))
+	      {
+		c_parser_consume_token (parser);
+		is_foreach_statement = true;
+		if (! lvalue_p (init_expression))
+		  c_parser_error (parser, "invalid iterating variable in fast enumeration");
+		object_expression = c_process_expr_stmt (loc, init_expression);
+
+	      }
+	    else
+	      {
+		c_finish_expr_stmt (loc, init_expression);
+		c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+	      }
+	  }
 	}
-      /* Parse the loop condition.  */
-      if (c_parser_next_token_is (parser, CPP_SEMICOLON))
+      /* Parse the loop condition.  In the case of a foreach
+	 statement, there is no loop condition.  */
+      if (!is_foreach_statement)
 	{
-	  c_parser_consume_token (parser);
-	  cond = NULL_TREE;
+	  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
+	    {
+	      c_parser_consume_token (parser);
+	      cond = NULL_TREE;
+	    }
+	  else
+	    {
+	      cond = c_parser_condition (parser);
+	      c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+	    }
 	}
-      else
-	{
-	  cond = c_parser_condition (parser);
-	  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
-	}
-      /* Parse the increment expression.  */
+      /* Parse the increment expression (the third expression in a
+	 for-statement).  In the case of a foreach-statement, this is
+	 the expression that follows the 'in'.  */
       if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
-	incr = c_process_expr_stmt (loc, NULL_TREE);
+	{
+	  if (is_foreach_statement)
+	    {
+	      c_parser_error (parser, "missing collection in fast enumeration");
+	      collection_expression = error_mark_node;
+	    }
+	  else
+	    incr = c_process_expr_stmt (loc, NULL_TREE);
+	}
       else
-	incr = c_process_expr_stmt (loc, c_parser_expression (parser).value);
+	{
+	  if (is_foreach_statement)
+	    collection_expression = c_process_expr_stmt (loc, c_parser_expression (parser).value);
+	  else
+	    incr = c_process_expr_stmt (loc, c_parser_expression (parser).value);
+	}
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
     }
   else
@@ -4508,8 +4666,11 @@ c_parser_for_statement (c_parser *parser)
   save_cont = c_cont_label;
   c_cont_label = NULL_TREE;
   body = c_parser_c99_block_statement (parser);
-  c_finish_loop (loc, cond, incr, body, c_break_label, c_cont_label, true);
-  add_stmt (c_end_compound_stmt (loc, block, flag_isoc99));
+  if (is_foreach_statement)
+    objc_finish_foreach_loop (loc, object_expression, collection_expression, body, c_break_label, c_cont_label);
+  else
+    c_finish_loop (loc, cond, incr, body, c_break_label, c_cont_label, true);
+  add_stmt (c_end_compound_stmt (loc, block, flag_isoc99 || c_dialect_objc ()));
   c_break_label = save_break;
   c_cont_label = save_cont;
 }
@@ -6790,7 +6951,7 @@ c_parser_objc_methodprotolist (c_parser *parser)
 	    }
 	  else
 	    c_parser_declaration_or_fndef (parser, false, false, true,
-					 false, true);
+					   false, true, NULL);
 	  break;
 	}
     }
@@ -8439,8 +8600,8 @@ c_parser_omp_for_loop (location_t loc,
 	{
 	  if (i > 0)
 	    VEC_safe_push (tree, gc, for_block, c_begin_compound_stmt (true));
-	  c_parser_declaration_or_fndef (parser, true, true, true, true, true);
-	  decl = check_for_loop_decls (for_loc);
+	  c_parser_declaration_or_fndef (parser, true, true, true, true, true, NULL);
+	  decl = check_for_loop_decls (for_loc, flag_isoc99);
 	  if (decl == NULL)
 	    goto error_init;
 	  if (DECL_INITIAL (decl) == error_mark_node)
