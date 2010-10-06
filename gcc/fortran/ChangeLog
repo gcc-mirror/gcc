@@ -1,5 +1,10 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* symbol.c (gfc_copy_formal_args_ppc): Free previous formal arg list
+	before overwriting it.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* array.c (gfc_match_array_spec): Don't re-initialize cleared struct.
 	* symbol.c (gen_shape_param): Ditto.
 
