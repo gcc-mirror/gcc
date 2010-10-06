@@ -1,3 +1,16 @@
+2010-10-06  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	Backport from mainline
+	2010-05-03  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR java/43839
+	* testsuite/Makefile.am: Override automake for site.exp creation
+	and add entry to set libiconv.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/libjava.jni/jni.exp (gcj_jni_get_cxxflags_invocation):
+	Add new global variable libiconv to handle alternative libiconv
+	locations.
+
 2010-07-31  Release Manager
 
 	* GCC 4.5.1 released.
