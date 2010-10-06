@@ -1,5 +1,9 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* gfortranspec.c (append_arg): Remove commented code.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* decl.c (match_procedure_in_type): Assertify if conditions.
 
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>

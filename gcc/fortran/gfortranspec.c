@@ -115,10 +115,6 @@ append_arg (const struct cl_decoded_option *arg)
 {
   static unsigned int newargsize;
 
-#if 0
-  fprintf (stderr, "`%s'\n", arg);
-#endif
-
   if (g77_new_decoded_options == g77_x_decoded_options
       && g77_newargc < g77_xargc
       && options_same (arg, &g77_x_decoded_options[g77_newargc]))
