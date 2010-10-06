@@ -1226,11 +1226,7 @@ default_profile_before_prologue (void)
 bool
 default_class_likely_spilled_p (reg_class_t rclass)
 {
-#ifndef CLASS_LIKELY_SPILLED_P
   return (reg_class_size[(int) rclass] == 1);
-#else
-  return CLASS_LIKELY_SPILLED_P ((enum reg_class) rclass);
-#endif
 }
 
 /* Determine the debugging unwind mechanism for the target.  */

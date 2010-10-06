@@ -1,3 +1,13 @@
+2010-10-06  Anatoly Sokolov  <aesok@post.ru>
+
+	* doc/tm.texi.in (CLASS_LIKELY_SPILLED_P): Remove documentation.
+	* doc/tm.texi.in: Regenerate.
+	* system.h (CLASS_LIKELY_SPILLED_P): Poison.
+	* targhooks.c (default_class_likely_spilled_p): Don't use the 
+	CLASS_LIKELY_SPILLED_P macro.
+
+	* config\arm\arm.md: Update comment.
+
 2010-10-06  Jan Hubicka  <jh@suse.cz>
 
 	* ipa.c (cgraph_remove_unreachable_nodes): External references can always
