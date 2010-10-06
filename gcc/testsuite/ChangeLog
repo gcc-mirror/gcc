@@ -1,4 +1,4 @@
-2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented fast enumeration for Objective-C.
 	* objc.dg/foreach-1.m: New.
