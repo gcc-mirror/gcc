@@ -1,3 +1,9 @@
+2010-10-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/45863
+	* scripts/extract_symvers: Restore revision 164879.
+	Only use pvs on SunOS.
+
 2010-10-05  David Krauss  <potswa@mac.com>
 
 	PR libstdc++/45841
