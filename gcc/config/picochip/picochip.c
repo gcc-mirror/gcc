@@ -309,8 +309,17 @@ static char picochip_get_vliw_alu_id (void);
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE picochip_option_override
 
+#undef TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO picochip_except_unwind_info
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+
+enum unwind_info_type
+picochip_except_unwind_info (void)
+{
+  return UI_NONE;
+}
 
 /* Only return a value in memory if it is greater than 4 bytes.
    int_size_in_bytes returns -1 for variable size objects, which go in
@@ -357,11 +366,6 @@ picochip_option_override (void)
      accessing offsets from the anchor for file local data variables.*/
   if (optimize >= 1)
     flag_section_anchors = 1;
-
-  /* Exception flags are irrelevant to picochip. It causes failure in libgcc
-     functions. */
-    flag_non_call_exceptions = 0;
-    flag_exceptions = 0;
 
   /* Turn off the second scheduling pass, and move it to
      picochip_reorg, to avoid having the second jump optimisation

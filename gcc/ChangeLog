@@ -1,3 +1,10 @@
+2010-10-06  Hariharan Sandanagobalane <hariharan@picochip.com>
+	* config/picochip/picochip.c (TARGET_EXCEPT_UNWIND_INFO): Define it to
+	be UI_NONE for picochip.
+	(picochip_option_override): Do not disable exception flags.
+	* config/picochip/picochip-protos.h (picochip_except_unwind_info)
+	Declare.
+
 2010-10-06  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.in (regmove.o): Depend on $(TARGET_H).
