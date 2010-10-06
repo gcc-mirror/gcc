@@ -171,6 +171,8 @@ static tree get_class_ivars (tree, bool);
 static tree generate_protocol_list (tree);
 static void build_protocol_reference (tree);
 
+static void build_fast_enumeration_state_template (void);
+
 #ifdef OBJCPLUS
 static void objc_generate_cxx_cdtors (void);
 #endif
@@ -240,6 +242,7 @@ static void generate_struct_by_value_array (void)
      ATTRIBUTE_NORETURN;
 static void mark_referenced_methods (void);
 static void generate_objc_image_info (void);
+static bool objc_type_valid_for_messaging (tree typ);
 
 /*** Private Interface (data) ***/
 
@@ -273,6 +276,9 @@ static void generate_objc_image_info (void);
 #define STRING_OBJECT_GLOBAL_FORMAT	"_%sClassReference"
 
 #define PROTOCOL_OBJECT_CLASS_NAME	"Protocol"
+
+#define TAG_ENUMERATION_MUTATION        "objc_enumerationMutation"
+#define TAG_FAST_ENUMERATION_STATE      "__objcFastEnumerationState"
 
 static const char *TAG_GETCLASS;
 static const char *TAG_GETMETACLASS;
@@ -1952,6 +1958,17 @@ synth_module_prologue (void)
   self_id = get_identifier ("self");
   ucmd_id = get_identifier ("_cmd");
 
+  /* Declare struct _objc_fast_enumeration_state { ... };  */
+  build_fast_enumeration_state_template ();
+  
+  /* void objc_enumeration_mutation (id) */
+  type = build_function_type (void_type_node,
+			      tree_cons (NULL_TREE, objc_object_type, NULL_TREE));
+  objc_enumeration_mutation_decl 
+    = add_builtin_function (TAG_ENUMERATION_MUTATION, type, 0, NOT_BUILT_IN, 
+			    NULL, NULL_TREE);
+  TREE_NOTHROW (objc_enumeration_mutation_decl) = 0;
+
 #ifdef OBJCPLUS
   pop_lang_context ();
 #endif
@@ -3596,13 +3613,25 @@ get_class_ivars (tree interface, bool inherited)
   return ivar_chain;
 }
 
+/* Create a temporary variable of type 'type'.  If 'name' is set, uses
+   the specified name, else use no name.  Returns the declaration of
+   the type.  The 'name' is mostly useful for debugging.
+*/
 static tree
-objc_create_temporary_var (tree type)
+objc_create_temporary_var (tree type, const char *name)
 {
   tree decl;
 
-  decl = build_decl (input_location,
-		     VAR_DECL, NULL_TREE, type);
+  if (name != NULL)
+    {
+      decl = build_decl (input_location,
+			 VAR_DECL, get_identifier (name), type);
+    }
+  else
+    {
+      decl = build_decl (input_location,
+			 VAR_DECL, NULL_TREE, type);
+    }
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
@@ -3687,7 +3716,7 @@ objc_build_exc_ptr (void)
       tree var = cur_try_context->caught_decl;
       if (!var)
 	{
-	  var = objc_create_temporary_var (objc_object_type);
+	  var = objc_create_temporary_var (objc_object_type, NULL);
 	  cur_try_context->caught_decl = var;
 	}
       return var;
@@ -3888,10 +3917,10 @@ next_sjlj_build_try_catch_finally (void)
 
   /* Create the declarations involved.  */
   t = xref_tag (RECORD_TYPE, get_identifier (UTAG_EXCDATA));
-  stack_decl = objc_create_temporary_var (t);
+  stack_decl = objc_create_temporary_var (t, NULL);
   cur_try_context->stack_decl = stack_decl;
 
-  rethrow_decl = objc_create_temporary_var (objc_object_type);
+  rethrow_decl = objc_create_temporary_var (objc_object_type, NULL);
   cur_try_context->rethrow_decl = rethrow_decl;
   TREE_CHAIN (rethrow_decl) = stack_decl;
 
@@ -9978,6 +10007,550 @@ objc_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 #else
   return (enum gimplify_status) c_gimplify_expr (expr_p, pre_p, post_p);
 #endif
+}
+
+/* This routine returns true if TYP is a valid objc object type, 
+   suitable for messaging; false otherwise.
+*/
+
+static bool
+objc_type_valid_for_messaging (tree typ)
+{
+  if (!POINTER_TYPE_P (typ))
+    return false;
+
+  do
+    typ = TREE_TYPE (typ);  /* Remove indirections.  */
+  while (POINTER_TYPE_P (typ));
+
+  if (TREE_CODE (typ) != RECORD_TYPE)
+    return false;
+
+  return objc_is_object_id (typ) || TYPE_HAS_OBJC_INFO (typ);
+}
+
+/* Begin code generation for fast enumeration (foreach) ... */
+
+/* Defines
+
+  struct __objcFastEnumerationState
+   {
+     unsigned long state;
+     id            *itemsPtr;
+     unsigned long *mutationsPtr;
+     unsigned long extra[5];
+   };
+
+   Confusingly enough, NSFastEnumeration is then defined by libraries
+   to be the same structure.  
+*/
+
+static void
+build_fast_enumeration_state_template (void)
+{
+  tree decls, *chain = NULL;
+
+  /* { */
+  objc_fast_enumeration_state_template = objc_start_struct (get_identifier 
+							    (TAG_FAST_ENUMERATION_STATE));
+
+  /* unsigned long state; */
+  decls = add_field_decl (long_unsigned_type_node, "state", &chain);
+
+  /* id            *itemsPtr; */
+  add_field_decl (build_pointer_type (objc_object_type), 
+		  "itemsPtr", &chain);
+
+  /* unsigned long *mutationsPtr; */
+  add_field_decl (build_pointer_type (long_unsigned_type_node), 
+		  "mutationsPtr", &chain);
+
+  /* unsigned long extra[5]; */
+  add_field_decl (build_sized_array_type (long_unsigned_type_node, 5), 
+		  "extra", &chain);
+
+  /* } */
+  objc_finish_struct (objc_fast_enumeration_state_template, decls);
+}
+
+/*
+  'objc_finish_foreach_loop()' generates the code for an Objective-C
+  foreach loop.  The 'location' argument is the location of the 'for'
+  that starts the loop.  The 'object_expression' is the expression of
+  the 'object' that iterates; the 'collection_expression' is the
+  expression of the collection that we iterate over (we need to make
+  sure we evaluate this only once); the 'for_body' is the set of
+  statements to be executed in each iteration; 'break_label' and
+  'continue_label' are the break and continue labels which we need to
+  emit since the <statements> may be jumping to 'break_label' (if they
+  contain 'break') or to 'continue_label' (if they contain
+  'continue').
+
+  The syntax is
+  
+  for (<object expression> in <collection expression>)
+    <statements>
+
+  which is compiled into the following blurb:
+
+  {
+    id __objc_foreach_collection;
+    __objc_fast_enumeration_state __objc_foreach_enum_state;
+    unsigned long __objc_foreach_batchsize;
+    id __objc_foreach_items[16];
+    __objc_foreach_collection = <collection expression>;
+    __objc_foreach_enum_state = { 0 };
+    __objc_foreach_batchsize = [__objc_foreach_collection countByEnumeratingWithState: &__objc_foreach_enum_state  objects: __objc_foreach_items  count: 16];
+    
+    if (__objc_foreach_batchsize == 0)
+      <object expression> = nil;
+    else
+      {
+	unsigned long __objc_foreach_mutations_pointer = *__objc_foreach_enum_state.mutationsPtr;
+        next_batch:
+	  {
+	    unsigned long __objc_foreach_index;
+            __objc_foreach_index = 0;
+
+            next_object:
+	    if (__objc_foreach_mutation_pointer != *__objc_foreach_enum_state.mutationsPtr) objc_enumeration_mutation (<collection expression>);
+	    <object expression> = enumState.itemsPtr[__objc_foreach_index];
+	    <statements> [PS: inside <statments>, 'break' jumps to break_label and 'continue' jumps to continue_label]
+
+            continue_label:
+            __objc_foreach_index++;
+            if (__objc_foreach_index < __objc_foreach_batchsize) goto next_object;
+	    __objc_foreach_batchsize = [__objc_foreach_collection countByEnumeratingWithState: &__objc_foreach_enum_state  objects: __objc_foreach_items  count: 16];
+         }
+       if (__objc_foreach_batchsize != 0) goto next_batch;
+       <object expression> = nil;
+       break_label:
+      }
+  }
+
+  'statements' may contain a 'continue' or 'break' instruction, which
+  the user expects to 'continue' or 'break' the entire foreach loop.
+  We are provided the labels that 'break' and 'continue' jump to, so
+  we place them where we want them to jump to when they pick them.
+  
+  Optimization TODO: we could cache the IMP of
+  countByEnumeratingWithState:objects:count:.
+*/
+
+/* If you need to debug objc_finish_foreach_loop(), uncomment the following line.  */
+/* #define DEBUG_OBJC_FINISH_FOREACH_LOOP 1 */
+
+#ifdef DEBUG_OBJC_FINISH_FOREACH_LOOP
+#include "tree-pretty-print.h"
+#endif
+
+void
+objc_finish_foreach_loop (location_t location, tree object_expression, tree collection_expression, tree for_body, 
+			  tree break_label, tree continue_label)
+{
+  /* A tree representing the __objcFastEnumerationState struct type,
+     or NSFastEnumerationState struct, whatever we are using.  */
+  tree objc_fast_enumeration_state_type;
+
+  /* The trees representing the declarations of each of the local variables.  */
+  tree objc_foreach_collection_decl;
+  tree objc_foreach_enum_state_decl;
+  tree objc_foreach_items_decl;
+  tree objc_foreach_batchsize_decl;
+  tree objc_foreach_mutations_pointer_decl;
+  tree objc_foreach_index_decl;
+
+  /* A tree representing the selector countByEnumeratingWithState:objects:count:.  */
+  tree selector_name;
+
+  /* A tree representing the local bind.  */
+  tree bind;
+
+  /* A tree representing the external 'if (__objc_foreach_batchsize)' */
+  tree first_if;
+
+  /* A tree representing the 'else' part of 'first_if'  */
+  tree first_else;
+
+  /* A tree representing the 'next_batch' label.  */
+  tree next_batch_label_decl;
+
+  /* A tree representing the binding after the 'next_batch' label.  */
+  tree next_batch_bind;
+
+  /* A tree representing the 'next_object' label.  */
+  tree next_object_label_decl;
+
+  /* Temporary variables.  */
+  tree t;
+  int i;
+
+  if (object_expression == error_mark_node)
+    return;
+
+  if (collection_expression == error_mark_node)
+    return;
+
+  if (!objc_type_valid_for_messaging (TREE_TYPE (object_expression)))
+    {
+      error ("iterating variable in fast enumeration is not an object");
+      return;
+    }
+
+  if (!objc_type_valid_for_messaging (TREE_TYPE (collection_expression)))
+    {
+      error ("collection in fast enumeration is not an object");
+      return;
+    }
+
+  /* TODO: Check that object_expression is either a variable
+     declaration, or an lvalue.  */
+
+  /* This kludge is an idea from apple.  We use the
+     __objcFastEnumerationState struct implicitly defined by the
+     compiler, unless a NSFastEnumerationState struct has been defined
+     (by a Foundation library such as GNUstep Base) in which case, we
+     use that one.
+  */
+  objc_fast_enumeration_state_type = objc_fast_enumeration_state_template;
+  {
+    tree objc_NSFastEnumeration_type = lookup_name (get_identifier ("NSFastEnumerationState"));
+
+    if (objc_NSFastEnumeration_type)
+      {
+	/* TODO: We really need to check that
+	   objc_NSFastEnumeration_type is the same as ours!  */
+	if (TREE_CODE (objc_NSFastEnumeration_type) == TYPE_DECL)
+	  {
+	    /* If it's a typedef, use the original type.  */
+	    if (DECL_ORIGINAL_TYPE (objc_NSFastEnumeration_type))
+	      objc_fast_enumeration_state_type = DECL_ORIGINAL_TYPE (objc_NSFastEnumeration_type);
+	    else
+	      objc_fast_enumeration_state_type = TREE_TYPE (objc_NSFastEnumeration_type);	      
+	  }
+      }
+  }
+
+  /* { */
+  /* Done by c-parser.c.  */
+
+  /* type object; */
+  /* Done by c-parser.c.  */
+
+  /*  id __objc_foreach_collection */
+  objc_foreach_collection_decl = objc_create_temporary_var (objc_object_type, "__objc_foreach_collection");
+
+  /*  __objcFastEnumerationState __objc_foreach_enum_state; */
+  objc_foreach_enum_state_decl = objc_create_temporary_var (objc_fast_enumeration_state_type, "__objc_foreach_enum_state");
+  TREE_CHAIN (objc_foreach_enum_state_decl) = objc_foreach_collection_decl;
+
+  /* id __objc_foreach_items[16]; */
+  objc_foreach_items_decl = objc_create_temporary_var (build_sized_array_type (objc_object_type, 16), "__objc_foreach_items");
+  TREE_CHAIN (objc_foreach_items_decl) = objc_foreach_enum_state_decl;
+
+  /* unsigned long __objc_foreach_batchsize; */
+  objc_foreach_batchsize_decl = objc_create_temporary_var (long_unsigned_type_node, "__objc_foreach_batchsize");
+  TREE_CHAIN (objc_foreach_batchsize_decl) = objc_foreach_items_decl;
+
+  /* Generate the local variable binding.  */
+  bind = build3 (BIND_EXPR, void_type_node, objc_foreach_batchsize_decl, NULL, NULL);
+  SET_EXPR_LOCATION (bind, location);
+  TREE_SIDE_EFFECTS (bind) = 1;
+  
+  /*  __objc_foreach_collection = <collection expression>; */
+  t = build2 (MODIFY_EXPR, void_type_node, objc_foreach_collection_decl, collection_expression);
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (bind));
+
+  /*  __objc_foreach_enum_state.state = 0; */
+  t = build2 (MODIFY_EXPR, void_type_node, objc_build_component_ref (objc_foreach_enum_state_decl, 
+								     get_identifier ("state")),
+	      build_int_cst (long_unsigned_type_node, 0));
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (bind));
+
+  /*  __objc_foreach_enum_state.itemsPtr = NULL; */
+  t = build2 (MODIFY_EXPR, void_type_node, objc_build_component_ref (objc_foreach_enum_state_decl, 
+								     get_identifier ("itemsPtr")),
+	      null_pointer_node);
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (bind));
+
+  /*  __objc_foreach_enum_state.mutationsPtr = NULL; */
+  t = build2 (MODIFY_EXPR, void_type_node, objc_build_component_ref (objc_foreach_enum_state_decl, 
+								     get_identifier ("mutationsPtr")),
+	      null_pointer_node);
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (bind));
+
+  /*  __objc_foreach_enum_state.extra[0] = 0; */
+  /*  __objc_foreach_enum_state.extra[1] = 0; */
+  /*  __objc_foreach_enum_state.extra[2] = 0; */
+  /*  __objc_foreach_enum_state.extra[3] = 0; */
+  /*  __objc_foreach_enum_state.extra[4] = 0; */
+  for (i = 0; i < 5 ; i++)
+    {
+      t = build2 (MODIFY_EXPR, void_type_node,
+		  build_array_ref (location, objc_build_component_ref (objc_foreach_enum_state_decl, 
+								       get_identifier ("extra")),
+				   build_int_cst (NULL_TREE, i)),
+		  build_int_cst (long_unsigned_type_node, 0));
+      SET_EXPR_LOCATION (t, location);
+      append_to_statement_list (t, &BIND_EXPR_BODY (bind));
+    }
+    
+  /* __objc_foreach_batchsize = [__objc_foreach_collection countByEnumeratingWithState: &__objc_foreach_enum_state  objects: __objc_foreach_items  count: 16]; */
+  selector_name = get_identifier ("countByEnumeratingWithState:objects:count:");
+#ifdef OBJCPLUS
+  t = objc_finish_message_expr (objc_foreach_collection_decl, selector_name,
+				/* Parameters.  */
+				tree_cons    /* &__objc_foreach_enum_state */
+				(NULL_TREE, build_fold_addr_expr_loc (location, objc_foreach_enum_state_decl),
+				 tree_cons   /* __objc_foreach_items  */
+				 (NULL_TREE, objc_foreach_items_decl,
+				  tree_cons  /* 16 */
+				  (NULL_TREE, build_int_cst (NULL_TREE, 16), NULL_TREE))));
+#else
+  /* In C, we need to decay the __objc_foreach_items array that we are passing.  */
+  {
+    struct c_expr array;
+    array.value = objc_foreach_items_decl;
+    t = objc_finish_message_expr (objc_foreach_collection_decl, selector_name,
+				  /* Parameters.  */
+				  tree_cons    /* &__objc_foreach_enum_state */
+				  (NULL_TREE, build_fold_addr_expr_loc (location, objc_foreach_enum_state_decl),
+				   tree_cons   /* __objc_foreach_items  */
+				   (NULL_TREE, default_function_array_conversion (location, array).value,
+				    tree_cons  /* 16 */
+				    (NULL_TREE, build_int_cst (NULL_TREE, 16), NULL_TREE))));
+  }
+#endif
+  t = build2 (MODIFY_EXPR, void_type_node, objc_foreach_batchsize_decl, t);
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (bind));
+
+  /* if (__objc_foreach_batchsize == 0) */
+  first_if = build3 (COND_EXPR, void_type_node, 
+		     /* Condition.  */
+		     c_fully_fold 
+		     (c_common_truthvalue_conversion 
+		      (location, 
+		       build_binary_op (location,
+					EQ_EXPR, 
+					objc_foreach_batchsize_decl,
+					build_int_cst (long_unsigned_type_node, 0), 1)),
+		      false, NULL),
+		     /* Then block (we fill it in later).  */
+		     NULL_TREE,
+		     /* Else block (we fill it in later).  */
+		     NULL_TREE);
+  SET_EXPR_LOCATION (first_if, location);
+  append_to_statement_list (first_if, &BIND_EXPR_BODY (bind));
+
+  /* then <object expression> = nil; */
+  t = build2 (MODIFY_EXPR, void_type_node, object_expression, convert (objc_object_type, null_pointer_node));
+  SET_EXPR_LOCATION (t, location);
+  COND_EXPR_THEN (first_if) = t;
+
+  /* Now we build the 'else' part of the if; once we finish building
+     it, we attach it to first_if as the 'else' part.  */
+
+  /* else */
+  /* { */
+
+  /* unsigned long __objc_foreach_mutations_pointer; */
+  objc_foreach_mutations_pointer_decl = objc_create_temporary_var (long_unsigned_type_node, "__objc_foreach_mutations_pointer");
+
+  /* Generate the local variable binding.  */
+  first_else = build3 (BIND_EXPR, void_type_node, objc_foreach_mutations_pointer_decl, NULL, NULL);
+  SET_EXPR_LOCATION (first_else, location);
+  TREE_SIDE_EFFECTS (first_else) = 1;
+
+  /* __objc_foreach_mutations_pointer = *__objc_foreach_enum_state.mutationsPtr; */
+  t = build2 (MODIFY_EXPR, void_type_node, objc_foreach_mutations_pointer_decl, 
+	      build_indirect_ref (location, objc_build_component_ref (objc_foreach_enum_state_decl, 
+								      get_identifier ("mutationsPtr")),
+				  RO_UNARY_STAR));
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (first_else));
+
+  /* next_batch: */
+  next_batch_label_decl = create_artificial_label (location);
+  t = build1 (LABEL_EXPR, void_type_node, next_batch_label_decl); 
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (first_else));
+  
+  /* { */
+
+  /* unsigned long __objc_foreach_index; */
+  objc_foreach_index_decl = objc_create_temporary_var (long_unsigned_type_node, "__objc_foreach_index");
+
+  /* Generate the local variable binding.  */
+  next_batch_bind = build3 (BIND_EXPR, void_type_node, objc_foreach_index_decl, NULL, NULL);
+  SET_EXPR_LOCATION (next_batch_bind, location);
+  TREE_SIDE_EFFECTS (next_batch_bind) = 1;
+  append_to_statement_list (next_batch_bind, &BIND_EXPR_BODY (first_else));
+
+  /* __objc_foreach_index = 0; */
+  t = build2 (MODIFY_EXPR, void_type_node, objc_foreach_index_decl,
+	      build_int_cst (long_unsigned_type_node, 0));
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (next_batch_bind));
+
+  /* next_object: */
+  next_object_label_decl = create_artificial_label (location);
+  t = build1 (LABEL_EXPR, void_type_node, next_object_label_decl);
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (next_batch_bind));
+
+  /* if (__objc_foreach_mutation_pointer != *__objc_foreach_enum_state.mutationsPtr) objc_enumeration_mutation (<collection expression>); */
+  t = build3 (COND_EXPR, void_type_node, 
+	      /* Condition.  */
+	      c_fully_fold 
+	      (c_common_truthvalue_conversion 
+	       (location, 
+		build_binary_op 
+		(location,
+		 NE_EXPR, 
+		 objc_foreach_mutations_pointer_decl,
+		 build_indirect_ref (location, 
+				     objc_build_component_ref (objc_foreach_enum_state_decl, 
+							       get_identifier ("mutationsPtr")),
+				     RO_UNARY_STAR), 1)),
+	       false, NULL),
+	      /* Then block.  */
+	      build_function_call (input_location,
+				   objc_enumeration_mutation_decl,
+				   tree_cons (NULL, collection_expression, NULL)),
+	      /* Else block.  */
+	      NULL_TREE);
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (next_batch_bind));
+
+  /* <object expression> = enumState.itemsPtr[__objc_foreach_index]; */
+  t = build2 (MODIFY_EXPR, void_type_node, object_expression, 
+	      build_array_ref (location, objc_build_component_ref (objc_foreach_enum_state_decl, 
+								   get_identifier ("itemsPtr")),
+			       objc_foreach_index_decl));
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (next_batch_bind));
+
+  /* <statements> [PS: in <statments>, 'break' jumps to break_label and 'continue' jumps to continue_label] */
+  append_to_statement_list (for_body, &BIND_EXPR_BODY (next_batch_bind));
+
+  /* continue_label: */
+  if (continue_label)
+    {
+      t = build1 (LABEL_EXPR, void_type_node, continue_label);
+      SET_EXPR_LOCATION (t, location);
+      append_to_statement_list (t, &BIND_EXPR_BODY (next_batch_bind));
+    }
+
+  /* __objc_foreach_index++; */
+  t = build2 (MODIFY_EXPR, void_type_node, objc_foreach_index_decl, 
+	      build_binary_op (location,
+			       PLUS_EXPR,
+			       objc_foreach_index_decl,
+			       build_int_cst (long_unsigned_type_node, 1), 1));
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (next_batch_bind));
+
+  /* if (__objc_foreach_index < __objc_foreach_batchsize) goto next_object; */
+  t = build3 (COND_EXPR, void_type_node, 
+	      /* Condition.  */
+	      c_fully_fold 
+	      (c_common_truthvalue_conversion 
+	       (location, 
+		build_binary_op (location,
+				 LT_EXPR, 
+				 objc_foreach_index_decl,
+				 objc_foreach_batchsize_decl, 1)),
+	       false, NULL),
+	      /* Then block.  */
+	      build1 (GOTO_EXPR, void_type_node, next_object_label_decl),
+	      /* Else block.  */
+	      NULL_TREE);
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (next_batch_bind));
+  
+  /* __objc_foreach_batchsize = [__objc_foreach_collection countByEnumeratingWithState: &__objc_foreach_enum_state  objects: __objc_foreach_items  count: 16]; */
+#ifdef OBJCPLUS
+  t = objc_finish_message_expr (objc_foreach_collection_decl, selector_name,
+				/* Parameters.  */
+				tree_cons    /* &__objc_foreach_enum_state */
+				(NULL_TREE, build_fold_addr_expr_loc (location, objc_foreach_enum_state_decl),
+				 tree_cons   /* __objc_foreach_items  */
+				 (NULL_TREE, objc_foreach_items_decl,
+				  tree_cons  /* 16 */
+				  (NULL_TREE, build_int_cst (NULL_TREE, 16), NULL_TREE))));
+#else
+  /* In C, we need to decay the __objc_foreach_items array that we are passing.  */
+  {
+    struct c_expr array;
+    array.value = objc_foreach_items_decl;
+    t = objc_finish_message_expr (objc_foreach_collection_decl, selector_name,
+				  /* Parameters.  */
+				  tree_cons    /* &__objc_foreach_enum_state */
+				  (NULL_TREE, build_fold_addr_expr_loc (location, objc_foreach_enum_state_decl),
+				   tree_cons   /* __objc_foreach_items  */
+				   (NULL_TREE, default_function_array_conversion (location, array).value,
+				    tree_cons  /* 16 */
+				    (NULL_TREE, build_int_cst (NULL_TREE, 16), NULL_TREE))));
+  }
+#endif
+  t = build2 (MODIFY_EXPR, void_type_node, objc_foreach_batchsize_decl, t);
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (next_batch_bind));
+
+  /* } */
+
+  /* if (__objc_foreach_batchsize != 0) goto next_batch; */
+  t = build3 (COND_EXPR, void_type_node, 
+	      /* Condition.  */
+	      c_fully_fold 
+	      (c_common_truthvalue_conversion 
+	       (location, 
+		build_binary_op (location,
+				 NE_EXPR, 
+				 objc_foreach_batchsize_decl,
+				 build_int_cst (long_unsigned_type_node, 0), 1)),
+	       false, NULL),
+	      /* Then block.  */
+	      build1 (GOTO_EXPR, void_type_node, next_batch_label_decl),
+	      /* Else block.  */
+	      NULL_TREE);
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (first_else));
+
+  /* <object expression> = nil; */
+  t = build2 (MODIFY_EXPR, void_type_node, object_expression, convert (objc_object_type, null_pointer_node));
+  SET_EXPR_LOCATION (t, location);
+  append_to_statement_list (t, &BIND_EXPR_BODY (first_else));
+
+  /* break_label: */
+  if (break_label)
+    {
+      t = build1 (LABEL_EXPR, void_type_node, break_label);
+      SET_EXPR_LOCATION (t, location);
+      append_to_statement_list (t, &BIND_EXPR_BODY (first_else));
+    }
+
+  /* } */
+  COND_EXPR_ELSE (first_if) = first_else;
+
+  /* Do the whole thing.  */
+  add_stmt (bind);
+
+#ifdef DEBUG_OBJC_FINISH_FOREACH_LOOP
+  /* This will print to stderr the whole blurb generated by the
+     compiler while compiling (assuming the compiler doesn't crash
+     before getting here).
+   */
+  debug_generic_stmt (bind);
+#endif
+
+  /* } */
+  /* Done by c-parser.c  */
 }
 
 #include "gt-objc-objc-act.h"

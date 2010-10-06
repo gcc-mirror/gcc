@@ -1,3 +1,9 @@
+2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented fast enumeration for Objective-C.
+	* c-common.h (objc_finish_foreach_loop): New.
+	* stub-objc.c (objc_finish_foreach_loop): New.
+
 2010-10-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.h (struct diagnostic_context): Don't declare here.

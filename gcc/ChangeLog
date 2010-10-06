@@ -1,3 +1,28 @@
+2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented fast enumeration for Objective-C.	
+	* c-parser.c (objc_could_be_foreach_context): New.
+	(c_lex_one_token): Recognize RID_IN keyword in a potential
+	Objective-C foreach context.
+	(c_parser_declaration_or_fndef): Added parameter.  Accept
+	Objective-C RID_IN keyword as terminating a declaration; in that
+	case, return the declaration in the new parameter.
+	(c_parser_extenral_declaration): Updated calls to
+	c_parser_declaration_or_fndef.
+	(c_parser_declaration_or_fndef): Same change.
+	(c_parser_compound_statement_nostart): Same change.
+	(c_parser_label): Same change.
+	(c_parser_objc_methodprotolist): Same change.
+	(c_parser_omp_for_loop): Same change.
+	(c_parser_for_statement): Detect and parse Objective-C foreach
+	statements.
+	(c_parser_omp_for_loop): Updated call to check_for_loop_decls().
+	* c-decl.c (check_for_loop_decls): Added parameter to allow ObjC
+	fast enumeration parsing code to turn off the c99 error but still
+	perform checks on the loop declarations.
+	* c-tree.h (check_for_loop_decls): Updated declaration.
+	* doc/objc.texi: Document fast enumeration.
+	
 2010-10-06  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.h (FIRST_PSEUDO_REGISTER): Increment by

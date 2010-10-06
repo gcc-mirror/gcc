@@ -1,8 +1,45 @@
+2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented fast enumeration for Objective-C.
+	* objc.dg/foreach-1.m: New.
+	* objc.dg/foreach-2.m: New.
+	* objc.dg/foreach-3.m: New.
+	* objc.dg/foreach-4.m: New.
+	* objc.dg/foreach-5.m: New.
+	* objc.dg/foreach-6.m: New.
+	* objc.dg/foreach-7.m: New.
+
+	Merge from 'apple/trunk' branch on FSF servers:
+	2006-04-13 Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4502236
+	* objc.dg/objc-foreach-5.m: New.	
+
+	2006-04-12 Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4507230
+	* objc.dg/objc-foreach-4.m: New.
+
+	2006-03-13  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4472881
+	* objc.dg/objc-foreach-3.m: New.
+
+	2005-03-07 Fariborz Jahanian <fjahanian@apple.com>
+
+        Radar 4468498
+	* objc.dg/objc-foreach-2.m: New.
+
+	2006-02-15   Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4294910
+	* objc.dg/objc-foreach-1.m: New
+
 2010-10-06  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* gcc.c-torture/execute/cmpsi-2.c : Unsigned comparisons should use
 	unsigned values.
-
+	
 2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc++/28050

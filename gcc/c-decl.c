@@ -8310,16 +8310,23 @@ finish_function (void)
 
 /* Check the declarations given in a for-loop for satisfying the C99
    constraints.  If exactly one such decl is found, return it.  LOC is
-   the location of the opening parenthesis of the for loop.  */
+   the location of the opening parenthesis of the for loop.  The last
+   parameter allows you to control the "for loop initial declarations
+   are only allowed in C99 mode".  Normally, you should pass
+   flag_isoc99 as that parameter.  But in some cases (Objective-C
+   foreach loop, for example) we want to run the checks in this
+   function even if not in C99 mode, so we allow the caller to turn
+   off the error about not being in C99 mode.
+*/
 
 tree
-check_for_loop_decls (location_t loc)
+check_for_loop_decls (location_t loc, bool turn_off_iso_c99_error)
 {
   struct c_binding *b;
   tree one_decl = NULL_TREE;
   int n_decls = 0;
 
-  if (!flag_isoc99)
+  if (!turn_off_iso_c99_error)
     {
       static bool hint = true;
       /* If we get here, declarations have been used in a for loop without

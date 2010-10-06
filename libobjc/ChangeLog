@@ -1,3 +1,11 @@
+2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented fast enumeration for Objective-C.
+	* Makefile.in (C_SOURCE_FILES): Added objc-foreach.c.
+	(OBJC_H): Added runtime.h
+	* objc-foreach.c: New file.
+	* objc/runtime.h: New file.
+	
 2010-09-30  Kai Tietz  <kai.tietz@onevision.com>
 
 	* objc/deprecated/struct_objc_class.h: Add padding

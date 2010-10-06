@@ -120,6 +120,7 @@ OBJC_H = \
   message.h \
   objc-api.h \
   objc-decls.h \
+  runtime.h \
   thr.h \
   \
   hash.h \
@@ -163,6 +164,7 @@ C_SOURCE_FILES = \
    init.c \
    memory.c \
    nil_method.c \
+   objc-foreach.c \
    objc-sync.c \
    objects.c \
    sarray.c \
