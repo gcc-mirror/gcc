@@ -12359,6 +12359,19 @@ tsubst_copy_and_build (tree t,
 	return cxx_sizeof_or_alignof_expr (op1, TREE_CODE (t), 
                                            complain & tf_error);
 
+    case AT_ENCODE_EXPR:
+      {
+	op1 = TREE_OPERAND (t, 0);
+	++cp_unevaluated_operand;
+	++c_inhibit_evaluation_warnings;
+	op1 = tsubst_copy_and_build (op1, args, complain, in_decl,
+				     /*function_p=*/false,
+				     /*integral_constant_expression_p=*/false);
+	--cp_unevaluated_operand;
+	--c_inhibit_evaluation_warnings;
+	return objc_build_encode_expr (op1);
+      }
+
     case NOEXCEPT_EXPR:
       op1 = TREE_OPERAND (t, 0);
       ++cp_unevaluated_operand;

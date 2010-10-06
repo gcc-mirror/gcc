@@ -335,6 +335,10 @@ DEFTREECODE (ARROW_EXPR, "arrow_expr", tcc_expression, 1)
    expansion.  */
 DEFTREECODE (ALIGNOF_EXPR, "alignof_expr", tcc_expression, 1)
 
+/* Represents an Objective-C++ '@encode' expression during template
+   expansion.  */
+DEFTREECODE (AT_ENCODE_EXPR, "at_encode_expr", tcc_unary, 1)
+
 /* A STMT_EXPR represents a statement-expression during template
    expansion.  This is the GCC extension { ( ... ) }.  The
    STMT_EXPR_STMT is the statement given by the expression.  */
