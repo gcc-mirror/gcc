@@ -667,7 +667,7 @@ relative prefix can be found, return @code{NULL}.
 
 @end deftypefn
 
-@c make-temp-file.c:168
+@c make-temp-file.c:173
 @deftypefn Replacement char* make_temp_file (const char *@var{suffix})
 
 Return a temporary file name (as a string) or @code{NULL} if unable to
@@ -1143,6 +1143,14 @@ deprecated in new programs in favor of @code{strrchr}.
 the new value will be stored only if @var{overwrite} is nonzero.
 The companion @code{unsetenv} function removes @var{name} from the
 environment.  This implementation is not safe for multithreaded code.
+
+@end deftypefn
+
+@c setproctitle.c:30
+@deftypefn Supplemental void setproctitle(const char *@var{fmt} ...)
+
+Set the title of a process to @var{fmt}. va args not supported for now,
+but defined for compatibility with BSD. 
 
 @end deftypefn
 

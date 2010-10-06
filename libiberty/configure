@@ -5276,6 +5276,7 @@ funcs="$funcs vprintf"
 funcs="$funcs vsnprintf"
 funcs="$funcs vsprintf"
 funcs="$funcs waitpid"
+funcs="$funcs setproctitle"
 
 # Also in the old function.def file: alloca, vfork, getopt.
 
@@ -5298,7 +5299,8 @@ if test "x" = "y"; then
     on_exit \
     psignal pstat_getdynamic pstat_getstatic putenv \
     random realpath rename rindex \
-    sbrk setenv sigsetmask snprintf stpcpy stpncpy strcasecmp strchr strdup \
+    sbrk setenv setproctitle sigsetmask snprintf stpcpy stpncpy strcasecmp strchr \
+    strdup \
      strerror strncasecmp strndup strrchr strsignal strstr strtod strtol \
      strtoul strverscmp sysconf sysctl sysmp \
     table times tmpnam \
@@ -5702,6 +5704,33 @@ else
 fi
 
 
+
+
+# check for prctl PR_SET_NAME
+if test "$cross_compiling" = yes; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error "cannot run test program while cross compiling
+See \`config.log' for more details." "$LINENO" 5; }
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/prctl.h>
+int main()
+{
+  return (prctl(PR_SET_NAME, "foo") == 0) ? 0 : 1;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+
+$as_echo "#define HAVE_PRCTL_SET_NAME 1" >>confdefs.h
+
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
 
 
 case "${host}" in

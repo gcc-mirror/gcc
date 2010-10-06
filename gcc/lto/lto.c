@@ -2379,6 +2379,18 @@ lto_eh_personality (void)
   return lto_eh_personality_decl;
 }
 
+/* Set the process name based on the LTO mode. */
+
+static void 
+lto_process_name (void)
+{
+  if (flag_lto)
+    setproctitle ("lto1-lto");
+  if (flag_wpa)
+    setproctitle ("lto1-wpa");
+  if (flag_ltrans)
+    setproctitle ("lto1-ltrans");
+}
 
 /* Main entry point for the GIMPLE front end.  This front end has
    three main personalities:
@@ -2403,6 +2415,8 @@ lto_eh_personality (void)
 void
 lto_main (int debug_p ATTRIBUTE_UNUSED)
 {
+  lto_process_name ();
+
   lto_init_reader ();
 
   /* Read all the symbols and call graph from all the files in the
