@@ -1,5 +1,9 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* resolve.c (add_dt_to_dt_list): Remove unneeded if.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* resolve.c (check_typebound_baseobject): Free local expr before
 	returning.
 
