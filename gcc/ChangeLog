@@ -1,3 +1,11 @@
+2010-10-06  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (cgraph_remove_unreachable_nodes): External references can always
+	be removed.
+	(cgraph_externally_visible_p): We can not bring local comdats that are known
+	to linker; fix handling of internal visibility.
+	(function_and_variable_visibility): Likewise.
+
 2010-10-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/45394

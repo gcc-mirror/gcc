@@ -238,14 +238,19 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 #endif
   varpool_reset_queue ();
   for (node = cgraph_nodes; node; node = node->next)
-    if ((!cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
-	 /* Keep around virtual functions for possible devirtualization.  */
-	 || (!before_inlining_p
-	     && !node->global.inlined_to
-	     && DECL_VIRTUAL_P (node->decl)
-	     && (DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl))))
-	&& ((!DECL_EXTERNAL (node->decl))
-            || before_inlining_p))
+    if (!node->analyzed)
+      {
+        gcc_assert (!node->aux);
+	node->reachable = false;
+      }
+    else if ((!cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
+	      /* Keep around virtual functions for possible devirtualization.  */
+	      || (!before_inlining_p
+		  && !node->global.inlined_to
+		  && DECL_VIRTUAL_P (node->decl)
+		  && (DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl))))
+	     && ((!DECL_EXTERNAL (node->decl))
+		 || before_inlining_p))
       {
         gcc_assert (!node->global.inlined_to);
 	enqueue_cgraph_node (node, &first);
@@ -592,8 +597,13 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool 
   if (aliased)
     return true;
 
+  /* If linker counts on us, we must preserve the function.  */
+  if (cgraph_used_from_object_file_p (node))
+    return true;
   /* When doing link time optimizations, hidden symbols become local.  */
-  if (in_lto_p && DECL_VISIBILITY (node->decl) == VISIBILITY_HIDDEN
+  if (in_lto_p
+      && (DECL_VISIBILITY (node->decl) == VISIBILITY_HIDDEN
+	  || DECL_VISIBILITY (node->decl) == VISIBILITY_INTERNAL)
       /* Be sure that node is defined in IR file, not in other object
 	 file.  In that case we don't set used_from_other_object_file.  */
       && node->analyzed)
@@ -621,8 +631,6 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool 
 	      return true;
 	}
     }
-  if (cgraph_used_from_object_file_p (node))
-    return true;
   if (DECL_PRESERVE_P (node->decl))
     return true;
   if (MAIN_NAME_P (DECL_NAME (node->decl)))
@@ -794,7 +802,8 @@ function_and_variable_visibility (bool whole_program)
 	       /* When doing linktime optimizations, all hidden symbols will
 		  become local.  */
 	       && (!in_lto_p
-		   || DECL_VISIBILITY (vnode->decl) != VISIBILITY_HIDDEN
+		   || (DECL_VISIBILITY (vnode->decl) != VISIBILITY_HIDDEN
+		       && DECL_VISIBILITY (vnode->decl) != VISIBILITY_INTERNAL)
 		   /* We can get prevailing decision in other object file.
 		      In this case we do not sed used_from_object_file.  */
 		   || !vnode->finalized))
