@@ -2882,10 +2882,10 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
       return x;
 
     case CLOBBER:
+    case ASM_OPERANDS:
       gcc_assert (insn && DEBUG_INSN_P (insn));
       break;
 
-    case ASM_OPERANDS:
     case SET:
       gcc_unreachable ();
 
