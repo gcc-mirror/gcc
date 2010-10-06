@@ -2354,7 +2354,6 @@ gfc_conv_subref_array_arg (gfc_se * parmse, gfc_expr * expr, int g77,
   gfc_conv_expr (&rse, expr);
 
   gfc_conv_tmp_array_ref (&lse);
-  gfc_advance_se_ss_chain (&lse);
 
   if (intent != INTENT_OUT)
     {
@@ -2829,7 +2828,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	      /* Access the previously obtained result.  */
 	      gfc_conv_tmp_array_ref (se);
-	      gfc_advance_se_ss_chain (se);
 	      return 0;
 	    }
 	}
@@ -3977,7 +3975,6 @@ gfc_conv_array_constructor_expr (gfc_se * se, gfc_expr * expr)
   gcc_assert (se->ss->expr == expr && se->ss->type == GFC_SS_CONSTRUCTOR);
 
   gfc_conv_tmp_array_ref (se);
-  gfc_advance_se_ss_chain (se);
 }
 
 
@@ -5679,7 +5676,6 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   if (l_is_temp)
     {
       gfc_conv_tmp_array_ref (&lse);
-      gfc_advance_se_ss_chain (&lse);
       if (expr2->ts.type == BT_CHARACTER)
 	lse.string_length = string_length;
     }
@@ -5730,7 +5726,6 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	  lse.ss = lss;
 
 	  gfc_conv_tmp_array_ref (&rse);
-	  gfc_advance_se_ss_chain (&rse);
 	  gfc_conv_expr (&lse, expr1);
 
 	  gcc_assert (lse.ss == gfc_ss_terminator
