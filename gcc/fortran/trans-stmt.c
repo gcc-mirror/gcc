@@ -4567,6 +4567,7 @@ gfc_trans_allocate (gfc_code * code)
 			fold_convert (TREE_TYPE (lse.expr), tmp));
 		}
 	    }
+	  gfc_free_expr (lhs);
 	}
 
     }
