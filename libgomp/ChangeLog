@@ -1,3 +1,9 @@
+2010-10-06  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/linux/futex.h: New.
+	* config/linux/arm/mutex.h: New.
+	* configure.tgt (arm*-*-linux*): Add config path.
+
 2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* testsuite/libgomp.graphite/force-parallel-1.c: Adjust.
