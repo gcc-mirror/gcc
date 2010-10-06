@@ -6671,7 +6671,7 @@
 
 ;; Sigh!  This variant shouldn't be needed, but combine often fails to
 ;; merge cases like this because the op1 is a hard register in
-;; CLASS_LIKELY_SPILLED_P.
+;; arm_class_likely_spilled_p.
 (define_peephole2
   [(set (match_operand:SI 0 "low_register_operand" "")
 	(match_operand:SI 1 "low_register_operand" ""))
