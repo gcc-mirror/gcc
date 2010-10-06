@@ -631,23 +631,27 @@ gfc_builtin_function (tree decl)
   return decl;
 }
 
+/* So far we need just these 4 attribute types.  */
+#define ATTR_NOTHROW_LEAF_LIST		(ECF_NOTHROW | ECF_LEAF)
+#define ATTR_CONST_NOTHROW_LEAF_LIST	(ECF_NOTHROW | ECF_LEAF | ECF_CONST)
+#define ATTR_NOTHROW_LIST		(ECF_NOTHROW)
+#define ATTR_CONST_NOTHROW_LIST		(ECF_NOTHROW | ECF_CONST)
 
 static void
-gfc_define_builtin (const char *name,
-		    tree type,
-		    int code,
-		    const char *library_name,
-		    bool const_p)
+gfc_define_builtin (const char *name, tree type, int code,
+		    const char *library_name, int attr)
 {
   tree decl;
 
   decl = add_builtin_function (name, type, code, BUILT_IN_NORMAL,
 			       library_name, NULL_TREE);
-  if (const_p)
+  if (attr & ECF_CONST)
     TREE_READONLY (decl) = 1;
-  TREE_NOTHROW (decl) = 1;
-  DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("leaf"),
-				      NULL, DECL_ATTRIBUTES (decl));
+  if (attr & ECF_NOTHROW)
+    TREE_NOTHROW (decl) = 1;
+  if (attr & ECF_LEAF)
+    DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("leaf"),
+					NULL, DECL_ATTRIBUTES (decl));
 
   built_in_decls[code] = decl;
   implicit_built_in_decls[code] = decl;
@@ -656,11 +660,14 @@ gfc_define_builtin (const char *name,
 
 #define DO_DEFINE_MATH_BUILTIN(code, name, argtype, tbase) \
     gfc_define_builtin ("__builtin_" name "l", tbase##longdouble[argtype], \
-                       BUILT_IN_ ## code ## L, name "l", true); \
+			BUILT_IN_ ## code ## L, name "l", \
+			ATTR_CONST_NOTHROW_LEAF_LIST); \
     gfc_define_builtin ("__builtin_" name, tbase##double[argtype], \
-			BUILT_IN_ ## code, name, true); \
+			BUILT_IN_ ## code, name, \
+			ATTR_CONST_NOTHROW_LEAF_LIST); \
     gfc_define_builtin ("__builtin_" name "f", tbase##float[argtype], \
-			BUILT_IN_ ## code ## F, name "f", true);
+			BUILT_IN_ ## code ## F, name "f", \
+			ATTR_CONST_NOTHROW_LEAF_LIST);
 
 #define DEFINE_MATH_BUILTIN(code, name, argtype) \
     DO_DEFINE_MATH_BUILTIN (code, name, argtype, mfunc_)
@@ -735,12 +742,6 @@ gfc_init_builtin_functions (void)
     BT_LAST
   };
   typedef enum builtin_type builtin_type;
-  enum
-  {
-    /* So far we need just these 2 attribute types.  */
-    ATTR_NOTHROW_LEAF_LIST,
-    ATTR_CONST_NOTHROW_LEAF_LIST
-  };
 
   tree mfunc_float[6];
   tree mfunc_double[6];
@@ -804,177 +805,189 @@ gfc_init_builtin_functions (void)
 #include "mathbuiltins.def"
 
   gfc_define_builtin ("__builtin_roundl", mfunc_longdouble[0], 
-		      BUILT_IN_ROUNDL, "roundl", true);
+		      BUILT_IN_ROUNDL, "roundl", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_round", mfunc_double[0], 
-		      BUILT_IN_ROUND, "round", true);
+		      BUILT_IN_ROUND, "round", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_roundf", mfunc_float[0], 
-		      BUILT_IN_ROUNDF, "roundf", true);
+		      BUILT_IN_ROUNDF, "roundf", ATTR_CONST_NOTHROW_LEAF_LIST);
 
   gfc_define_builtin ("__builtin_truncl", mfunc_longdouble[0],
-		      BUILT_IN_TRUNCL, "truncl", true);
+		      BUILT_IN_TRUNCL, "truncl", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_trunc", mfunc_double[0],
-                      BUILT_IN_TRUNC, "trunc", true);
+		      BUILT_IN_TRUNC, "trunc", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_truncf", mfunc_float[0],
-                      BUILT_IN_TRUNCF, "truncf", true);
+		      BUILT_IN_TRUNCF, "truncf", ATTR_CONST_NOTHROW_LEAF_LIST);
 
   gfc_define_builtin ("__builtin_cabsl", func_clongdouble_longdouble, 
-		      BUILT_IN_CABSL, "cabsl", true);
+		      BUILT_IN_CABSL, "cabsl", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_cabs", func_cdouble_double, 
-		      BUILT_IN_CABS, "cabs", true);
+		      BUILT_IN_CABS, "cabs", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_cabsf", func_cfloat_float, 
-		      BUILT_IN_CABSF, "cabsf", true);
+		      BUILT_IN_CABSF, "cabsf", ATTR_CONST_NOTHROW_LEAF_LIST);
  
   gfc_define_builtin ("__builtin_copysignl", mfunc_longdouble[1], 
-		      BUILT_IN_COPYSIGNL, "copysignl", true);
+		      BUILT_IN_COPYSIGNL, "copysignl",
+		      ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_copysign", mfunc_double[1], 
-		      BUILT_IN_COPYSIGN, "copysign", true);
+		      BUILT_IN_COPYSIGN, "copysign",
+		      ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_copysignf", mfunc_float[1], 
-		      BUILT_IN_COPYSIGNF, "copysignf", true);
+		      BUILT_IN_COPYSIGNF, "copysignf",
+		      ATTR_CONST_NOTHROW_LEAF_LIST);
  
   gfc_define_builtin ("__builtin_nextafterl", mfunc_longdouble[1], 
-		      BUILT_IN_NEXTAFTERL, "nextafterl", true);
+		      BUILT_IN_NEXTAFTERL, "nextafterl",
+		      ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_nextafter", mfunc_double[1], 
-		      BUILT_IN_NEXTAFTER, "nextafter", true);
+		      BUILT_IN_NEXTAFTER, "nextafter",
+		      ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_nextafterf", mfunc_float[1], 
-		      BUILT_IN_NEXTAFTERF, "nextafterf", true);
+		      BUILT_IN_NEXTAFTERF, "nextafterf",
+		      ATTR_CONST_NOTHROW_LEAF_LIST);
  
   gfc_define_builtin ("__builtin_frexpl", mfunc_longdouble[4], 
-		      BUILT_IN_FREXPL, "frexpl", false);
+		      BUILT_IN_FREXPL, "frexpl", ATTR_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_frexp", mfunc_double[4], 
-		      BUILT_IN_FREXP, "frexp", false);
+		      BUILT_IN_FREXP, "frexp", ATTR_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_frexpf", mfunc_float[4], 
-		      BUILT_IN_FREXPF, "frexpf", false);
+		      BUILT_IN_FREXPF, "frexpf", ATTR_NOTHROW_LEAF_LIST);
  
   gfc_define_builtin ("__builtin_fabsl", mfunc_longdouble[0], 
-		      BUILT_IN_FABSL, "fabsl", true);
+		      BUILT_IN_FABSL, "fabsl", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_fabs", mfunc_double[0], 
-		      BUILT_IN_FABS, "fabs", true);
+		      BUILT_IN_FABS, "fabs", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_fabsf", mfunc_float[0], 
-		      BUILT_IN_FABSF, "fabsf", true);
+		      BUILT_IN_FABSF, "fabsf", ATTR_CONST_NOTHROW_LEAF_LIST);
  
   gfc_define_builtin ("__builtin_scalbnl", mfunc_longdouble[5], 
-		      BUILT_IN_SCALBNL, "scalbnl", true);
+		      BUILT_IN_SCALBNL, "scalbnl", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_scalbn", mfunc_double[5], 
-		      BUILT_IN_SCALBN, "scalbn", true);
+		      BUILT_IN_SCALBN, "scalbn", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_scalbnf", mfunc_float[5], 
-		      BUILT_IN_SCALBNF, "scalbnf", true);
+		      BUILT_IN_SCALBNF, "scalbnf", ATTR_CONST_NOTHROW_LEAF_LIST);
  
   gfc_define_builtin ("__builtin_fmodl", mfunc_longdouble[1], 
-		      BUILT_IN_FMODL, "fmodl", true);
+		      BUILT_IN_FMODL, "fmodl", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_fmod", mfunc_double[1], 
-		      BUILT_IN_FMOD, "fmod", true);
+		      BUILT_IN_FMOD, "fmod", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_fmodf", mfunc_float[1], 
-		      BUILT_IN_FMODF, "fmodf", true);
+		      BUILT_IN_FMODF, "fmodf", ATTR_CONST_NOTHROW_LEAF_LIST);
 
   /* lround{f,,l} and llround{f,,l} */
   ftype = build_function_type_list (long_integer_type_node,
                                     float_type_node, NULL_TREE); 
   gfc_define_builtin ("__builtin_lroundf", ftype, BUILT_IN_LROUNDF,
-		      "lroundf", true);
+		      "lroundf", ATTR_CONST_NOTHROW_LEAF_LIST);
   ftype = build_function_type_list (long_long_integer_type_node,
                                     float_type_node, NULL_TREE); 
   gfc_define_builtin ("__builtin_llroundf", ftype, BUILT_IN_LLROUNDF,
-		      "llroundf", true);
+		      "llroundf", ATTR_CONST_NOTHROW_LEAF_LIST);
 
   ftype = build_function_type_list (long_integer_type_node,
                                     double_type_node, NULL_TREE); 
   gfc_define_builtin ("__builtin_lround", ftype, BUILT_IN_LROUND,
-		      "lround", true);
+		      "lround", ATTR_CONST_NOTHROW_LEAF_LIST);
   ftype = build_function_type_list (long_long_integer_type_node,
                                     double_type_node, NULL_TREE); 
   gfc_define_builtin ("__builtin_llround", ftype, BUILT_IN_LLROUND,
-		      "llround", true);
+		      "llround", ATTR_CONST_NOTHROW_LEAF_LIST);
 
   ftype = build_function_type_list (long_integer_type_node,
                                     long_double_type_node, NULL_TREE); 
   gfc_define_builtin ("__builtin_lroundl", ftype, BUILT_IN_LROUNDL,
-		      "lroundl", true);
+		      "lroundl", ATTR_CONST_NOTHROW_LEAF_LIST);
   ftype = build_function_type_list (long_long_integer_type_node,
                                     long_double_type_node, NULL_TREE); 
   gfc_define_builtin ("__builtin_llroundl", ftype, BUILT_IN_LLROUNDL,
-		      "llroundl", true);
+		      "llroundl", ATTR_CONST_NOTHROW_LEAF_LIST);
 
   /* These are used to implement the ** operator.  */
   gfc_define_builtin ("__builtin_powl", mfunc_longdouble[1], 
-		      BUILT_IN_POWL, "powl", true);
+		      BUILT_IN_POWL, "powl", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_pow", mfunc_double[1], 
-		      BUILT_IN_POW, "pow", true);
+		      BUILT_IN_POW, "pow", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_powf", mfunc_float[1], 
-		      BUILT_IN_POWF, "powf", true);
+		      BUILT_IN_POWF, "powf", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_cpowl", mfunc_clongdouble[1], 
-		      BUILT_IN_CPOWL, "cpowl", true);
+		      BUILT_IN_CPOWL, "cpowl", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_cpow", mfunc_cdouble[1], 
-		      BUILT_IN_CPOW, "cpow", true);
+		      BUILT_IN_CPOW, "cpow", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_cpowf", mfunc_cfloat[1], 
-		      BUILT_IN_CPOWF, "cpowf", true);
+		      BUILT_IN_CPOWF, "cpowf", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_powil", mfunc_longdouble[2], 
-		      BUILT_IN_POWIL, "powil", true);
+		      BUILT_IN_POWIL, "powil", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_powi", mfunc_double[2], 
-		      BUILT_IN_POWI, "powi", true);
+		      BUILT_IN_POWI, "powi", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_powif", mfunc_float[2], 
-		      BUILT_IN_POWIF, "powif", true);
+		      BUILT_IN_POWIF, "powif", ATTR_CONST_NOTHROW_LEAF_LIST);
 
 
   if (TARGET_C99_FUNCTIONS)
     {
       gfc_define_builtin ("__builtin_cbrtl", mfunc_longdouble[0],
-			  BUILT_IN_CBRTL, "cbrtl", true);
+			  BUILT_IN_CBRTL, "cbrtl",
+			  ATTR_CONST_NOTHROW_LEAF_LIST);
       gfc_define_builtin ("__builtin_cbrt", mfunc_double[0],
-			  BUILT_IN_CBRT, "cbrt", true);
+			  BUILT_IN_CBRT, "cbrt",
+			  ATTR_CONST_NOTHROW_LEAF_LIST);
       gfc_define_builtin ("__builtin_cbrtf", mfunc_float[0],
-			  BUILT_IN_CBRTF, "cbrtf", true);
+			  BUILT_IN_CBRTF, "cbrtf",
+			  ATTR_CONST_NOTHROW_LEAF_LIST);
       gfc_define_builtin ("__builtin_cexpil", func_longdouble_clongdouble, 
-		          BUILT_IN_CEXPIL, "cexpil", true);
+			  BUILT_IN_CEXPIL, "cexpil",
+			  ATTR_CONST_NOTHROW_LEAF_LIST);
       gfc_define_builtin ("__builtin_cexpi", func_double_cdouble,
-		          BUILT_IN_CEXPI, "cexpi", true);
+			  BUILT_IN_CEXPI, "cexpi",
+			  ATTR_CONST_NOTHROW_LEAF_LIST);
       gfc_define_builtin ("__builtin_cexpif", func_float_cfloat,
-		          BUILT_IN_CEXPIF, "cexpif", true);
+			  BUILT_IN_CEXPIF, "cexpif",
+			  ATTR_CONST_NOTHROW_LEAF_LIST);
     }
 
   if (TARGET_HAS_SINCOS)
     {
       gfc_define_builtin ("__builtin_sincosl",
 			  func_longdouble_longdoublep_longdoublep,
-		          BUILT_IN_SINCOSL, "sincosl", false);
+			  BUILT_IN_SINCOSL, "sincosl", ATTR_NOTHROW_LEAF_LIST);
       gfc_define_builtin ("__builtin_sincos", func_double_doublep_doublep,
-		          BUILT_IN_SINCOS, "sincos", false);
+			  BUILT_IN_SINCOS, "sincos", ATTR_NOTHROW_LEAF_LIST);
       gfc_define_builtin ("__builtin_sincosf", func_float_floatp_floatp,
-		          BUILT_IN_SINCOSF, "sincosf", false);
+			  BUILT_IN_SINCOSF, "sincosf", ATTR_NOTHROW_LEAF_LIST);
     }
 
   /* For LEADZ, TRAILZ, POPCNT and POPPAR.  */
   ftype = build_function_type_list (integer_type_node,
                                     unsigned_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_clz", ftype, BUILT_IN_CLZ,
-		      "__builtin_clz", true);
+		      "__builtin_clz", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_ctz", ftype, BUILT_IN_CTZ,
-		      "__builtin_ctz", true);
+		      "__builtin_ctz", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_parity", ftype, BUILT_IN_PARITY,
-		      "__builtin_parity", true);
+		      "__builtin_parity", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_popcount", ftype, BUILT_IN_POPCOUNT,
-		      "__builtin_popcount", true);
+		      "__builtin_popcount", ATTR_CONST_NOTHROW_LEAF_LIST);
 
   ftype = build_function_type_list (integer_type_node,
                                     long_unsigned_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_clzl", ftype, BUILT_IN_CLZL,
-		      "__builtin_clzl", true);
+		      "__builtin_clzl", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_ctzl", ftype, BUILT_IN_CTZL,
-		      "__builtin_ctzl", true);
+		      "__builtin_ctzl", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_parityl", ftype, BUILT_IN_PARITYL,
-		      "__builtin_parityl", true);
+		      "__builtin_parityl", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_popcountl", ftype, BUILT_IN_POPCOUNTL,
-		      "__builtin_popcountl", true);
+		      "__builtin_popcountl", ATTR_CONST_NOTHROW_LEAF_LIST);
 
   ftype = build_function_type_list (integer_type_node,
                                     long_long_unsigned_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_clzll", ftype, BUILT_IN_CLZLL,
-		      "__builtin_clzll", true);
+		      "__builtin_clzll", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_ctzll", ftype, BUILT_IN_CTZLL,
-		      "__builtin_ctzll", true);
+		      "__builtin_ctzll", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_parityll", ftype, BUILT_IN_PARITYLL,
-		      "__builtin_parityll", true);
+		      "__builtin_parityll", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__builtin_popcountll", ftype, BUILT_IN_POPCOUNTLL,
-		      "__builtin_popcountll", true);
+		      "__builtin_popcountll", ATTR_CONST_NOTHROW_LEAF_LIST);
 
   /* Other builtin functions we use.  */
 
@@ -982,29 +995,29 @@ gfc_init_builtin_functions (void)
                                     long_integer_type_node,
                                     long_integer_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_expect", ftype, BUILT_IN_EXPECT,
-		      "__builtin_expect", true);
+		      "__builtin_expect", ATTR_CONST_NOTHROW_LEAF_LIST);
 
   ftype = build_function_type_list (void_type_node,
                                     pvoid_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_free", ftype, BUILT_IN_FREE,
-		      "free", false);
+		      "free", ATTR_NOTHROW_LEAF_LIST);
 
   ftype = build_function_type_list (pvoid_type_node,
                                     size_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_malloc", ftype, BUILT_IN_MALLOC,
-		      "malloc", false);
+		      "malloc", ATTR_NOTHROW_LEAF_LIST);
   DECL_IS_MALLOC (built_in_decls[BUILT_IN_MALLOC]) = 1;
 
   ftype = build_function_type_list (pvoid_type_node,
                                     size_type_node, pvoid_type_node,
                                     NULL_TREE);
   gfc_define_builtin ("__builtin_realloc", ftype, BUILT_IN_REALLOC,
-		      "realloc", false);
+		      "realloc", ATTR_NOTHROW_LEAF_LIST);
 
   ftype = build_function_type_list (integer_type_node,
                                     void_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_isnan", ftype, BUILT_IN_ISNAN,
-		      "__builtin_isnan", true);
+		      "__builtin_isnan", ATTR_CONST_NOTHROW_LEAF_LIST);
 
 #define DEF_PRIMITIVE_TYPE(ENUM, VALUE) \
   builtin_types[(int) ENUM] = VALUE;
@@ -1093,7 +1106,7 @@ gfc_init_builtin_functions (void)
 #undef DEF_SYNC_BUILTIN
 #define DEF_SYNC_BUILTIN(code, name, type, attr) \
     gfc_define_builtin (name, builtin_types[type], code, name, \
-			attr == ATTR_CONST_NOTHROW_LEAF_LIST);
+			attr);
 #include "../sync-builtins.def"
 #undef DEF_SYNC_BUILTIN
 
@@ -1102,22 +1115,23 @@ gfc_init_builtin_functions (void)
 #undef DEF_GOMP_BUILTIN
 #define DEF_GOMP_BUILTIN(code, name, type, attr) \
       gfc_define_builtin ("__builtin_" name, builtin_types[type], \
-			  code, name, attr == ATTR_CONST_NOTHROW_LEAF_LIST);
+			  code, name, attr);
 #include "../omp-builtins.def"
 #undef DEF_GOMP_BUILTIN
     }
 
   gfc_define_builtin ("__builtin_trap", builtin_types[BT_FN_VOID],
-		      BUILT_IN_TRAP, NULL, false);
+		      BUILT_IN_TRAP, NULL, ATTR_NOTHROW_LEAF_LIST);
   TREE_THIS_VOLATILE (built_in_decls[BUILT_IN_TRAP]) = 1;
 
   gfc_define_builtin ("__emutls_get_address",
-		      builtin_types[BT_FN_PTR_PTR], BUILT_IN_EMUTLS_GET_ADDRESS,
-		      "__emutls_get_address", true);
+		      builtin_types[BT_FN_PTR_PTR],
+		      BUILT_IN_EMUTLS_GET_ADDRESS,
+		      "__emutls_get_address", ATTR_CONST_NOTHROW_LEAF_LIST);
   gfc_define_builtin ("__emutls_register_common",
 		      builtin_types[BT_FN_VOID_PTR_WORD_WORD_PTR],
 		      BUILT_IN_EMUTLS_REGISTER_COMMON,
-		      "__emutls_register_common", false);
+		      "__emutls_register_common", ATTR_NOTHROW_LEAF_LIST);
 
   build_common_builtin_nodes ();
   targetm.init_builtins ();
