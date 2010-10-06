@@ -3927,6 +3927,9 @@ gfc_trans_where_2 (gfc_code * code, tree mask, bool invert,
       inner_size = compute_inner_temp_size (cblock->expr1, cblock->expr1,
 					    &inner_size_body, &lss, &rss);
 
+      gfc_free_ss_chain (lss);
+      gfc_free_ss_chain (rss);
+
       /* Calculate the total size of temporary needed.  */
       size = compute_overall_iter_number (nested_forall_info, inner_size,
 					  &inner_size_body, block);
