@@ -1,3 +1,13 @@
+2010-10-06  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	Backport from mainline
+	2010-04-26  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR 43715
+	* configure.ac: Pass -g for export_sym_check on darwin.
+	Use "-undefined dynamic_lookup" on darwin.
+	* configure: Regenerate.
+
 2010-10-05  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/45752

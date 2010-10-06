@@ -1,3 +1,12 @@
+2010-10-06  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	Backport from mainline
+	2010-04-26  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR 43715
+	* lib/plugin-support.exp: Use "-undefined
+	dynamic_lookup" on darwin.
+
 2010-10-05  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/45752
