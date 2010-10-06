@@ -1,3 +1,14 @@
+2010-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45838
+	* f95-lang.c (ATTR_NOTHROW_LEAF_LIST, ATTR_CONST_NOTHROW_LEAF_LIST,
+	ATTR_NOTHROW_LIST, ATTR_CONST_NOTHROW_LIST): Define.
+	(gfc_define_builtin): Change last argument to int bitmask from bool,
+	control addition of TREE_NOTHROW and leaf attribute as well.
+	(DO_DEFINE_MATH_BUILTIN): Adjust callers.
+	(gfc_init_builtin_functions): Likewise.  Remove
+	ATTR_{,CONST_}NOTHROW_LIST enum.
+
 2010-10-04  Andi Kleen <ak@linux.intel.com>
 
 	* Make-lang.in (gfortran, f951): Add + to build rule.
