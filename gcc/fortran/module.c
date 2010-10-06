@@ -4372,8 +4372,8 @@ read_module (void)
 	    p = name;
 
 	  /* Exception: Always import vtabs & vtypes.  */
-	  if (p == NULL && (strcmp (xstrndup (name,5), "vtab$") == 0
-			    || strcmp (xstrndup (name,6), "vtype$") == 0))
+	  if (p == NULL && (strncmp (name, "vtab$", 5) == 0
+			    || strncmp (name, "vtype$", 6) == 0))
 	    p = name;
 
 	  /* Skip symtree nodes not in an ONLY clause, unless there
