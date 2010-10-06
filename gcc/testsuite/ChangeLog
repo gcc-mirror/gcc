@@ -1,3 +1,8 @@
+2010-10-06  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* gcc.c-torture/execute/cmpsi-2.c : Unsigned comparisons should use
+	unsigned values.
+
 2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc++/28050
