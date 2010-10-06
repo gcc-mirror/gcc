@@ -4947,6 +4947,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
       && TREE_CODE (argtype) != METHOD_TYPE
       && argtype != unknown_type_node
       && (val = get_base_address (arg))
+      && COMPLETE_TYPE_P (TREE_TYPE (val))
       && TREE_CODE (val) == INDIRECT_REF
       && TREE_CONSTANT (TREE_OPERAND (val, 0)))
     {

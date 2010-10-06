@@ -1,3 +1,9 @@
+2010-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/45908
+	* typeck.c (cp_build_addr_expr_1): Add check for incomplete types in
+	code folding offsetof-like computations.
+
 2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc++/31125
