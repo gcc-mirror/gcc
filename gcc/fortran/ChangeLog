@@ -1,3 +1,8 @@
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* cpp.c (gfc_cpp_post_options): Don't create a cpp reader if
+	preprocessing is disabled.
+
 2010-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/45838
