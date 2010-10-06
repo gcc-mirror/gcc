@@ -4203,6 +4203,7 @@ gfc_copy_formal_args_ppc (gfc_component *dest, gfc_symbol *src)
     }
 
   /* Add the interface to the symbol.  */
+  gfc_free_formal_arglist (dest->formal);
   dest->formal = head;
   dest->attr.if_source = IFSRC_DECL;
 
