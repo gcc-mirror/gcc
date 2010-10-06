@@ -5477,6 +5477,7 @@ gfc_expr *
 gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
   mpz_t size;
+  gfc_expr *return_value;
   int d;
   int k = get_kind (BT_INTEGER, kind, "SIZE", gfc_default_integer_kind);
 
@@ -5548,7 +5549,9 @@ gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 	return NULL;
     }
 
-  return gfc_get_int_expr (k, &array->where, mpz_get_si (size));
+  return_value = gfc_get_int_expr (k, &array->where, mpz_get_si (size));
+  mpz_clear (size);
+  return return_value;
 }
 
 

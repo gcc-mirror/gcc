@@ -1,5 +1,10 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* simplify.c (gfc_simplify_size): Clear temporary mpz int before
+	returning.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* resolve.c (add_dt_to_dt_list): Remove unneeded if.
 
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
