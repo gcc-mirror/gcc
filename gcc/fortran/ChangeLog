@@ -1,5 +1,9 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* primary.c (gfc_match_structure_constructor): Invert the assert logic.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* primary.c (gfc_free_structure_ctor_component): Also free the
 	component structure itself.
 
