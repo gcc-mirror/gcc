@@ -1,3 +1,15 @@
+2010-10-05  David Krauss  <potswa@mac.com>
+
+	PR libstdc++/45841
+	* include/bits/fstream.h (basic_filebuf::underflow): Overflow
+	success does not preclude returning failure.
+	(basic_filebuf::pbackfail): Likewise.
+	(basic_filebuf::xsputn): Fix indentation problem.
+	(basic_filebuf::xsgetn): Likewise. Also, add similar overflow
+	call to enable optimized case from write mode.
+	* testsuite/27_io/basic_filebuf/underflow/char/45841.cc: New.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/45841.cc: Likewise.
+
 2010-10-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/locale_facets_nonio.h (time_get::get_time): Doc typo.
