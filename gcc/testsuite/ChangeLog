@@ -1,6 +1,16 @@
 2010-10-06  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	Backport from mainline
+	2010-08-18  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR debug/42487
+	* lib/target-supports.exp (check_effective_target_function_sections): New.
+	* gcc.dg/debug/dwarf2/aranges-fnsec-1.c: Check that the target supports
+	function sections before proceding.
+
+2010-10-06  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	Backport from mainline
 	2010-09-10  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR target/42070
