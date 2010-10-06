@@ -2164,6 +2164,7 @@ gfc_free_structure_ctor_component (gfc_structure_ctor_component *comp)
 {
   gfc_free (comp->name);
   gfc_free_expr (comp->val);
+  gfc_free (comp);
 }
 
 
