@@ -1,5 +1,10 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-expr.c (get_proc_ptr_comp): Restore initial expression type
+	before calling gfc_free_expr.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_conv_tmp_array_ref): Add factorized call to
 	gfc_advance_se_ss_chain.
 	* trans-expr.c (gfc_conv_subref_array_ref, gfc_conv_procedure_call,
