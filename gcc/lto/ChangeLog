@@ -1,3 +1,8 @@
+2010-10-06  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (partition_cgraph_node_p, partition_varpool_node_p): Handle
+	COMDATs required by the linker.
+
 2010-10-05  Ian Lance Taylor  <iant@google.com>
 
 	* lto.c (lto_section_with_id): Make s a const pointer.
