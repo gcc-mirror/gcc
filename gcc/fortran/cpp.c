@@ -448,10 +448,10 @@ gfc_cpp_post_options (void)
 	  || gfc_cpp_option.dump_includes))
     gfc_fatal_error("To enable preprocessing, use -cpp");
 
-  cpp_in = cpp_create_reader (CLK_GNUC89, NULL, line_table);
   if (!gfc_cpp_enabled ())
     return;
 
+  cpp_in = cpp_create_reader (CLK_GNUC89, NULL, line_table);
   gcc_assert (cpp_in);
 
   /* The cpp_options-structure defines far more flags than those set here.
