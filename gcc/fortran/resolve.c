@@ -11088,15 +11088,12 @@ add_dt_to_dt_list (gfc_symbol *derived)
 
   for (dt_list = gfc_derived_types; dt_list; dt_list = dt_list->next)
     if (derived == dt_list->derived)
-      break;
+      return;
 
-  if (dt_list == NULL)
-    {
-      dt_list = gfc_get_dt_list ();
-      dt_list->next = gfc_derived_types;
-      dt_list->derived = derived;
-      gfc_derived_types = dt_list;
-    }
+  dt_list = gfc_get_dt_list ();
+  dt_list->next = gfc_derived_types;
+  dt_list->derived = derived;
+  gfc_derived_types = dt_list;
 }
 
 
