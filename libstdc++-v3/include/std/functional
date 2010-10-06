@@ -60,9 +60,6 @@
 
 namespace std
 {
-  template<typename _MemberPointer>
-    class _Mem_fn;
-
 _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
   /// If we have found a result_type, extract it.
@@ -72,9 +69,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
   template<typename _Functor>
     struct _Maybe_get_result_type<true, _Functor>
-    {
-      typedef typename _Functor::result_type result_type;
-    };
+    { typedef typename _Functor::result_type result_type; };
 
   /**
    *  Base class for any function object that has a weak result type, as
@@ -88,51 +83,91 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   /// Retrieve the result type for a function type.
   template<typename _Res, typename... _ArgTypes> 
     struct _Weak_result_type_impl<_Res(_ArgTypes...)>
-    {
-      typedef _Res result_type;
-    };
+    { typedef _Res result_type; };
+
+  template<typename _Res, typename... _ArgTypes> 
+    struct _Weak_result_type_impl<_Res(_ArgTypes......)>
+    { typedef _Res result_type; };
+
+  template<typename _Res, typename... _ArgTypes> 
+    struct _Weak_result_type_impl<_Res(_ArgTypes...) const>
+    { typedef _Res result_type; };
+
+  template<typename _Res, typename... _ArgTypes> 
+    struct _Weak_result_type_impl<_Res(_ArgTypes......) const>
+    { typedef _Res result_type; };
+
+  template<typename _Res, typename... _ArgTypes> 
+    struct _Weak_result_type_impl<_Res(_ArgTypes...) volatile>
+    { typedef _Res result_type; };
+
+  template<typename _Res, typename... _ArgTypes> 
+    struct _Weak_result_type_impl<_Res(_ArgTypes......) volatile>
+    { typedef _Res result_type; };
+
+  template<typename _Res, typename... _ArgTypes> 
+    struct _Weak_result_type_impl<_Res(_ArgTypes...) const volatile>
+    { typedef _Res result_type; };
+
+  template<typename _Res, typename... _ArgTypes> 
+    struct _Weak_result_type_impl<_Res(_ArgTypes......) const volatile>
+    { typedef _Res result_type; };
 
   /// Retrieve the result type for a function reference.
   template<typename _Res, typename... _ArgTypes> 
     struct _Weak_result_type_impl<_Res(&)(_ArgTypes...)>
-    {
-      typedef _Res result_type;
-    };
+    { typedef _Res result_type; };
+
+  template<typename _Res, typename... _ArgTypes> 
+    struct _Weak_result_type_impl<_Res(&)(_ArgTypes......)>
+    { typedef _Res result_type; };
 
   /// Retrieve the result type for a function pointer.
   template<typename _Res, typename... _ArgTypes> 
     struct _Weak_result_type_impl<_Res(*)(_ArgTypes...)>
-    {
-      typedef _Res result_type;
-    };
+    { typedef _Res result_type; };
+
+  template<typename _Res, typename... _ArgTypes> 
+    struct _Weak_result_type_impl<_Res(*)(_ArgTypes......)>
+    { typedef _Res result_type; };
 
   /// Retrieve result type for a member function pointer. 
   template<typename _Res, typename _Class, typename... _ArgTypes> 
     struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...)>
-    {
-      typedef _Res result_type;
-    };
+    { typedef _Res result_type; };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes> 
+    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......)>
+    { typedef _Res result_type; };
 
   /// Retrieve result type for a const member function pointer. 
   template<typename _Res, typename _Class, typename... _ArgTypes> 
     struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...) const>
-    {
-      typedef _Res result_type;
-    };
+    { typedef _Res result_type; };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes> 
+    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......) const>
+    { typedef _Res result_type; };
 
   /// Retrieve result type for a volatile member function pointer. 
   template<typename _Res, typename _Class, typename... _ArgTypes> 
     struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...) volatile>
-    {
-      typedef _Res result_type;
-    };
+    { typedef _Res result_type; };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes> 
+    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......) volatile>
+    { typedef _Res result_type; };
 
   /// Retrieve result type for a const volatile member function pointer. 
   template<typename _Res, typename _Class, typename... _ArgTypes> 
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...)const volatile>
-    {
-      typedef _Res result_type;
-    };
+    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...) 
+				  const volatile>
+    { typedef _Res result_type; };
+
+  template<typename _Res, typename _Class, typename... _ArgTypes> 
+    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......)
+				  const volatile>
+    { typedef _Res result_type; };
 
   /**
    *  Strip top-level cv-qualifiers from the function object and let
@@ -280,9 +315,39 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     : unary_function<_T1, _Res>
     { };
 
+  template<typename _Res, typename _T1>
+    struct _Reference_wrapper_base<_Res(_T1) const>
+    : unary_function<_T1, _Res>
+    { };
+
+  template<typename _Res, typename _T1>
+    struct _Reference_wrapper_base<_Res(_T1) volatile>
+    : unary_function<_T1, _Res>
+    { };
+
+  template<typename _Res, typename _T1>
+    struct _Reference_wrapper_base<_Res(_T1) const volatile>
+    : unary_function<_T1, _Res>
+    { };
+
   // - a function type (binary)
   template<typename _Res, typename _T1, typename _T2>
     struct _Reference_wrapper_base<_Res(_T1, _T2)>
+    : binary_function<_T1, _T2, _Res>
+    { };
+
+  template<typename _Res, typename _T1, typename _T2>
+    struct _Reference_wrapper_base<_Res(_T1, _T2) const>
+    : binary_function<_T1, _T2, _Res>
+    { };
+
+  template<typename _Res, typename _T1, typename _T2>
+    struct _Reference_wrapper_base<_Res(_T1, _T2) volatile>
+    : binary_function<_T1, _T2, _Res>
+    { };
+
+  template<typename _Res, typename _T1, typename _T2>
+    struct _Reference_wrapper_base<_Res(_T1, _T2) const volatile>
     : binary_function<_T1, _T2, _Res>
     { };
 
@@ -423,17 +488,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
   // @} group functors
 
-  template<typename _Tp, bool>
-    struct _Mem_fn_const_or_non
-    {
-      typedef const _Tp& type;
-    };
-
-  template<typename _Tp>
-    struct _Mem_fn_const_or_non<_Tp, false>
-    {
-      typedef _Tp& type;
-    };
+  template<typename _MemberPointer>
+    class _Mem_fn;
 
   /**
    * Derives from @c unary_function or @c binary_function, or perhaps
@@ -638,6 +694,18 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       _Functor __pmf;
     };
 
+
+  template<typename _Tp, bool>
+    struct _Mem_fn_const_or_non
+    {
+      typedef const _Tp& type;
+    };
+
+  template<typename _Tp>
+    struct _Mem_fn_const_or_non<_Tp, false>
+    {
+      typedef _Tp& type;
+    };
 
   template<typename _Res, typename _Class>
     class _Mem_fn<_Res _Class::*>
