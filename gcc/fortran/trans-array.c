@@ -1731,6 +1731,13 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
 
   tmptype = gfc_get_nodesc_array_type (type, &as, PACKED_STATIC, true);
 
+  /* as is not needed anymore.  */
+  for (i = 0; i < as.rank + as.corank; i++)
+    {
+      gfc_free_expr (as.lower[i]);
+      gfc_free_expr (as.upper[i]);
+    }
+
   init = build_constructor (tmptype, v);
 
   TREE_CONSTANT (init) = 1;
