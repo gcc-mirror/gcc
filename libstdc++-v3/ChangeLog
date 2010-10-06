@@ -1,3 +1,14 @@
+2010-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/functional (struct _Weak_result_type_impl): Add
+	specializazions for cv-qualified function types, for variadic
+	function types and pointers and references to function types,
+	and for pointers to member function types.
+	(struct _Reference_wrapper_base): Add specializations for
+	cv-qualified unary and binary function types.
+	* testsuite/20_util/reference_wrapper/result_type.cc: New.
+	* testsuite/20_util/reference_wrapper/typedefs-2.cc: Likewise.
+
 2010-10-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libstdc++/45863
