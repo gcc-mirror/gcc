@@ -1,5 +1,9 @@
 2010-10-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* g++.dg/cpp0x/pr45908.C: New test.
+
+2010-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/opt6.ad[sb]: New test.
 
 2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
