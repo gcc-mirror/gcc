@@ -1,3 +1,23 @@
+2010-10-06  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.h (FIRST_PSEUDO_REGISTER): Increment by
+	one.
+	(MDR_REGNUM): Define.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Add MDR as a fixed
+	register.
+	(REG_CLASS_CONTENTS): Add MDR to ALL_REGS.
+	(INCOMING_RETURN_ADDR_RTX): Define in terms of MDR.
+	(REGISTER_NAMES): Add MDR.
+	(DWARF2_DEBUGGING_INFO): Define to 1.
+	* config/mn10300/mn10300.c (TARGET_EXCEPT_UNWIND_INFO): Define.
+	(F): New function.  Sets RTX_FRAME_RELATED_P.
+	(mn10300_gen_multiple_store): Use F.
+	(expand_prologue): Use F.  Use gen_movsf() to push floating
+	point registers.
+	(expand_epilogue): Use gen_movsf() to pop floating point
+	registers.
+	(mn10300_option_override): Disable combine stack adjust pass.
+
 2010-10-06  Thomas Schwinge  <thomas@schwinge.name>
 
 	PR target/45901

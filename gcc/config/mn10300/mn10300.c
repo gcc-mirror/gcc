@@ -93,6 +93,9 @@ static void mn10300_asm_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_
 static bool mn10300_can_output_mi_thunk (const_tree, HOST_WIDE_INT, HOST_WIDE_INT, const_tree);
 
 /* Initialize the GCC target structure.  */
+#undef  TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
+
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
 
@@ -187,6 +190,12 @@ mn10300_option_override (void)
 {
   if (TARGET_AM33)
     target_flags &= ~MASK_MULT_BUG;
+
+  /* FIXME: The combine stack adjustments pass is breaking
+     cc0-setter/cc0-user relationship by inserting a jump
+     instruction.  This should be investigated, but for now
+     just disable the pass.  */
+  flag_combine_stack_adjustments = 0;
 }
 
 static void
@@ -661,6 +670,13 @@ mn10300_get_live_callee_saved_regs (void)
   return mask;
 }
 
+static rtx
+F (rtx r)
+{
+  RTX_FRAME_RELATED_P (r) = 1;
+  return r;
+}
+
 /* Generate an instruction that pushes several registers onto the stack.
    Register K will be saved if bit K in MASK is set.  The function does
    nothing if MASK is zero.
@@ -702,11 +718,11 @@ mn10300_gen_multiple_store (int mask)
 
       /* Create the instruction that updates the stack pointer.  */
       XVECEXP (par, 0, 0)
-	= gen_rtx_SET (SImode,
-		       stack_pointer_rtx,
-		       gen_rtx_PLUS (SImode,
-				     stack_pointer_rtx,
-				     GEN_INT (-count * 4)));
+	= F (gen_rtx_SET (SImode,
+			  stack_pointer_rtx,
+			  gen_rtx_PLUS (SImode,
+					stack_pointer_rtx,
+					GEN_INT (-count * 4))));
 
       /* Create each store.  */
       pari = 1;
@@ -717,14 +733,13 @@ mn10300_gen_multiple_store (int mask)
 					stack_pointer_rtx,
 					GEN_INT (-pari * 4));
 	    XVECEXP(par, 0, pari)
-	      = gen_rtx_SET (VOIDmode,
-			     gen_rtx_MEM (SImode, address),
-			     gen_rtx_REG (SImode, i));
+	      = F (gen_rtx_SET (VOIDmode,
+				gen_rtx_MEM (SImode, address),
+				gen_rtx_REG (SImode, i)));
 	    pari += 1;
 	  }
 
-      par = emit_insn (par);
-      RTX_FRAME_RELATED_P (par) = 1;
+      F (emit_insn (par));
     }
 }
 
@@ -751,7 +766,6 @@ expand_prologue (void)
 	     save_a0_no_merge } strategy;
       unsigned int strategy_size = (unsigned)-1, this_strategy_size;
       rtx reg;
-      rtx insn;
 
       /* We have several different strategies to save FP registers.
 	 We can store them using SP offsets, which is beneficial if
@@ -891,25 +905,25 @@ expand_prologue (void)
 	{
 	case save_sp_no_merge:
 	case save_a0_no_merge:
-	  emit_insn (gen_addsi3 (stack_pointer_rtx,
-				 stack_pointer_rtx,
-				 GEN_INT (-4 * num_regs_to_save)));
+	  F (emit_insn (gen_addsi3 (stack_pointer_rtx,
+				    stack_pointer_rtx,
+				    GEN_INT (-4 * num_regs_to_save))));
 	  xsize = 0;
 	  break;
 
 	case save_sp_partial_merge:
-	  emit_insn (gen_addsi3 (stack_pointer_rtx,
-				 stack_pointer_rtx,
-				 GEN_INT (-128)));
+	  F (emit_insn (gen_addsi3 (stack_pointer_rtx,
+				    stack_pointer_rtx,
+				    GEN_INT (-128))));
 	  xsize = 128 - 4 * num_regs_to_save;
 	  size -= xsize;
 	  break;
 
 	case save_sp_merge:
 	case save_a0_merge:
-	  emit_insn (gen_addsi3 (stack_pointer_rtx,
-				 stack_pointer_rtx,
-				 GEN_INT (-(size + 4 * num_regs_to_save))));
+	  F (emit_insn (gen_addsi3 (stack_pointer_rtx,
+				    stack_pointer_rtx,
+				    GEN_INT (-(size + 4 * num_regs_to_save)))));
 	  /* We'll have to adjust FP register saves according to the
 	     frame size.  */
 	  xsize = size;
@@ -934,9 +948,9 @@ expand_prologue (void)
 	case save_a0_merge:
 	case save_a0_no_merge:
 	  reg = gen_rtx_REG (SImode, FIRST_ADDRESS_REGNUM);
-	  emit_insn (gen_movsi (reg, stack_pointer_rtx));
+	  F (emit_insn (gen_movsi (reg, stack_pointer_rtx)));
 	  if (xsize)
-	    emit_insn (gen_addsi3 (reg, reg, GEN_INT (xsize)));
+	    F (emit_insn (gen_addsi3 (reg, reg, GEN_INT (xsize))));
 	  reg = gen_rtx_POST_INC (SImode, reg);
 	  break;
 
@@ -967,22 +981,21 @@ expand_prologue (void)
 		xsize += 4;
 	      }
 
-	    insn = emit_insn (gen_movsi (gen_rtx_MEM (SImode, addr),
-					 gen_rtx_REG (SImode, i)));
-
-	    RTX_FRAME_RELATED_P (insn) = 1;
+	    F (emit_insn (gen_movsf (gen_rtx_MEM (SFmode, addr),
+				     gen_rtx_REG (SFmode, i))));
 	  }
     }
 
   /* Now put the frame pointer into the frame pointer register.  */
   if (frame_pointer_needed)
-    emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
+    F (emit_move_insn (frame_pointer_rtx, stack_pointer_rtx));
 
   /* Allocate stack for this frame.  */
   if (size)
-    emit_insn (gen_addsi3 (stack_pointer_rtx,
-			   stack_pointer_rtx,
-			   GEN_INT (-size)));
+    F (emit_insn (gen_addsi3 (stack_pointer_rtx,
+			      stack_pointer_rtx,
+			      GEN_INT (-size))));
+
   if (flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
     emit_insn (gen_GOTaddr2picreg ());
 }
@@ -1169,8 +1182,8 @@ expand_epilogue (void)
 
 	    size += 4;
 
-	    emit_insn (gen_movsi (gen_rtx_REG (SImode, i),
-				  gen_rtx_MEM (SImode, addr)));
+	    emit_insn (gen_movsf (gen_rtx_REG (SFmode, i),
+				  gen_rtx_MEM (SFmode, addr)));
 	  }
 
       /* If we were using the restore_a1 strategy and the number of
@@ -1261,8 +1274,8 @@ notice_update_cc (rtx body, rtx insn)
       /* The insn is a compare instruction.  */
       CC_STATUS_INIT;
       cc_status.value1 = SET_SRC (body);
-      if (GET_CODE (cc_status.value1) == COMPARE
-	  && GET_MODE (XEXP (cc_status.value1, 0)) == SFmode)
+      if (GET_CODE (SET_SRC (body)) == COMPARE
+	  && GET_MODE (XEXP (SET_SRC (body), 0)) == SFmode)
 	cc_status.mdep.fpCC = 1;
       break;
 
@@ -2138,7 +2151,7 @@ mn10300_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed ATTRI
 bool
 mn10300_wide_const_load_uses_clr (rtx operands[2])
 {
-  long val[2];
+  long val[2] = {0, 0};
 
   if (GET_CODE (operands[0]) != REG
       || REGNO_REG_CLASS (REGNO (operands[0])) != DATA_REGS)
