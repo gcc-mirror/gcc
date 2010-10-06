@@ -1,5 +1,15 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_conv_tmp_array_ref): Add factorized call to
+	gfc_advance_se_ss_chain.
+	* trans-expr.c (gfc_conv_subref_array_ref, gfc_conv_procedure_call,
+	gfc_conv_array_constructor_expr, gfc_trans_assignment_1): Remove
+	calls to gfc_advance_se_ss_chain after gfc_conv_tmp_array_ref.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Ditto.
+	* trans-stmt.c (gfc_trans_where_assign, gfc_trans_where_3): Ditto.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans.c (gfc_restore_backend_locus): New function.
 	(gfc_get_backend_locus): Renamed to ...
 	(gfc_save_backend_locus): ... this.

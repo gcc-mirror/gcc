@@ -6089,11 +6089,8 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_TRANSFER:
       if (se->ss && se->ss->useflags)
-	{
-	  /* Access the previously obtained result.  */
-	  gfc_conv_tmp_array_ref (se);
-	  gfc_advance_se_ss_chain (se);
-	}
+	/* Access the previously obtained result.  */
+	gfc_conv_tmp_array_ref (se);
       else
 	gfc_conv_intrinsic_transfer (se, expr);
       break;

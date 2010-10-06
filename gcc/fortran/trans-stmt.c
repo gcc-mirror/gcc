@@ -3740,10 +3740,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
   /* Translate the expression.  */
   gfc_conv_expr (&rse, expr2);
   if (lss != gfc_ss_terminator && loop.temp_ss != NULL)
-    {
-      gfc_conv_tmp_array_ref (&lse);
-      gfc_advance_se_ss_chain (&lse);
-    }
+    gfc_conv_tmp_array_ref (&lse);
   else
     gfc_conv_expr (&lse, expr1);
 
@@ -3796,7 +3793,6 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
           lse.ss = lss;
 
           gfc_conv_tmp_array_ref (&rse);
-          gfc_advance_se_ss_chain (&rse);
           gfc_conv_expr (&lse, expr1);
 
           gcc_assert (lse.ss == gfc_ss_terminator
@@ -4201,10 +4197,7 @@ gfc_trans_where_3 (gfc_code * cblock, gfc_code * eblock)
 
   gfc_conv_expr (&tsse, tsrc);
   if (tdss != gfc_ss_terminator && loop.temp_ss != NULL)
-    {
-      gfc_conv_tmp_array_ref (&tdse);
-      gfc_advance_se_ss_chain (&tdse);
-    }
+    gfc_conv_tmp_array_ref (&tdse);
   else
     gfc_conv_expr (&tdse, tdst);
 
@@ -4212,12 +4205,9 @@ gfc_trans_where_3 (gfc_code * cblock, gfc_code * eblock)
     {
       gfc_conv_expr (&esse, esrc);
       if (edss != gfc_ss_terminator && loop.temp_ss != NULL)
-        {
-          gfc_conv_tmp_array_ref (&edse);
-          gfc_advance_se_ss_chain (&edse);
-        }
+	gfc_conv_tmp_array_ref (&edse);
       else
-        gfc_conv_expr (&edse, edst);
+	gfc_conv_expr (&edse, edst);
     }
 
   tstmt = gfc_trans_scalar_assign (&tdse, &tsse, tdst->ts, false, false, true);

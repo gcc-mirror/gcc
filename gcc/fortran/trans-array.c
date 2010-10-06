@@ -2552,6 +2552,7 @@ gfc_conv_tmp_array_ref (gfc_se * se)
 {
   se->string_length = se->ss->string_length;
   gfc_conv_scalarized_array_ref (se, NULL);
+  gfc_advance_se_ss_chain (se);
 }
 
 
