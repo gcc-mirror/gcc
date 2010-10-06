@@ -3255,6 +3255,22 @@ void gfc_free_charlen (gfc_charlen *cl, gfc_charlen *end)
 }
 
 
+/* Free entry list structs.  */
+
+static void
+free_entry_list (gfc_entry_list *el)
+{
+  gfc_entry_list *next;
+
+  if (el == NULL)
+    return;
+
+  next = el->next;
+  gfc_free (el);
+  free_entry_list (next);
+}
+
+
 /* Free a namespace structure and everything below it.  Interface
    lists associated with intrinsic operators are not freed.  These are
    taken care of when a specific name is freed.  */
@@ -3284,6 +3300,7 @@ gfc_free_namespace (gfc_namespace *ns)
   gfc_free_charlen (ns->cl_list, NULL);
   free_st_labels (ns->st_labels);
 
+  free_entry_list (ns->entries);
   gfc_free_equiv (ns->equiv);
   gfc_free_equiv_lists (ns->equiv_lists);
   gfc_free_use_stmts (ns->use_stmts);

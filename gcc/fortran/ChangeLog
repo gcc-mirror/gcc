@@ -1,5 +1,10 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* symbol.c (free_entry_list): New function.
+	(gfc_free_namespace): Free list of entries.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* symbol.c (free_components): Free list of formal args and formal
 	namespace.
 
