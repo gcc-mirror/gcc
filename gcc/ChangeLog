@@ -1,13 +1,27 @@
+2010-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/45394
+	* combine.c (cleanup_auto_inc_dec): Remove AFTER parameter and adjust.
+	(struct rtx_subst_pair): Remove AFTER field.
+	(propagate_for_debug_subst): Adjust call to cleanup_auto_inc_dec.
+	(propagate_for_debug): Remove MOVE parameter and adjust.
+	(try_combine): In the special case where I2 is a PARALLEL, combine only
+	destinations of SETs and set I2SRC to the I2 source.
+	Adjust calls to propagate_for_debug throughout.
+	* reload1.c (eliminate_regs_1) <ASM_OPERANDS>: Do not abort for debug
+	insns.
+
 2010-10-06  Olivier Hainque  <hainque@adacore.com>
 
 	* config/rs6000/rs6000.c (rs6000_expand_ternop_builtin): Rewrite
 	switch on insn codes as sequence of ifs.
 
-2010-10-06  Hariharan Sandanagobalane <hariharan@picochip.com>
+2010-10-06  Hariharan Sandanagobalane  <hariharan@picochip.com>
+
 	* config/picochip/picochip.c (TARGET_EXCEPT_UNWIND_INFO): Define it to
 	be UI_NONE for picochip.
 	(picochip_option_override): Do not disable exception flags.
-	* config/picochip/picochip-protos.h (picochip_except_unwind_info)
+	* config/picochip/picochip-protos.h (picochip_except_unwind_info):
 	Declare.
 
 2010-10-06  Richard Guenther  <rguenther@suse.de>
@@ -107,7 +121,7 @@
 	* cgraphunit.c (assemble_function): Output thunks and aliases before
 	the function itself.
 
-2010-09-29  Hariharan Sandanagobalane <hariharan@picochip.com>
+2010-09-29  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (picochip_option_override): Disable
 	exception flags for picochip.
@@ -1209,7 +1223,7 @@
 	* sel-sched.c: Use HARD_FRAME_POINTER_IS_FRAME_POINTER
 	* stmt.c: Use HARD_FRAME_POINTER_IS_ARG_POINTER.
 
-2010-09-29  Hariharan Sandanagobalane <hariharan@picochip.com>
+2010-09-29  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (picochip_output_internal_label):
 	This function can now be called for debug CFI labels, which can come

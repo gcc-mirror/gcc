@@ -2292,13 +2292,11 @@ reg_subword_p (rtx x, rtx reg)
 }
 
 #ifdef AUTO_INC_DEC
-/* Replace auto-increment addressing modes with explicit operations to
-   access the same addresses without modifying the corresponding
-   registers.  If AFTER holds, SRC is meant to be reused after the
-   side effect, otherwise it is to be reused before that.  */
+/* Replace auto-increment addressing modes with explicit operations to access
+   the same addresses without modifying the corresponding registers.  */
 
 static rtx
-cleanup_auto_inc_dec (rtx src, bool after, enum machine_mode mem_mode)
+cleanup_auto_inc_dec (rtx src, enum machine_mode mem_mode)
 {
   rtx x = src;
   const RTX_CODE code = GET_CODE (x);
@@ -2335,26 +2333,20 @@ cleanup_auto_inc_dec (rtx src, bool after, enum machine_mode mem_mode)
 
     case PRE_INC:
     case PRE_DEC:
+      gcc_assert (mem_mode != VOIDmode && mem_mode != BLKmode);
+      return gen_rtx_PLUS (GET_MODE (x),
+			   cleanup_auto_inc_dec (XEXP (x, 0), mem_mode),
+			   GEN_INT (code == PRE_INC
+				    ? GET_MODE_SIZE (mem_mode)
+				    : -GET_MODE_SIZE (mem_mode)));
+
     case POST_INC:
     case POST_DEC:
-      gcc_assert (mem_mode != VOIDmode && mem_mode != BLKmode);
-      if (after == (code == PRE_INC || code == PRE_DEC))
-	x = cleanup_auto_inc_dec (XEXP (x, 0), after, mem_mode);
-      else
-	x = gen_rtx_PLUS (GET_MODE (x),
-			  cleanup_auto_inc_dec (XEXP (x, 0), after, mem_mode),
-			  GEN_INT ((code == PRE_INC || code == POST_INC)
-				   ? GET_MODE_SIZE (mem_mode)
-				   : -GET_MODE_SIZE (mem_mode)));
-      return x;
-
     case PRE_MODIFY:
     case POST_MODIFY:
-      if (after == (code == PRE_MODIFY))
-	x = XEXP (x, 0);
-      else
-	x = XEXP (x, 1);
-      return cleanup_auto_inc_dec (x, after, mem_mode);
+      return cleanup_auto_inc_dec (code == PRE_MODIFY
+				   ? XEXP (x, 1) : XEXP (x, 0),
+				   mem_mode);
 
     default:
       break;
@@ -2377,14 +2369,14 @@ cleanup_auto_inc_dec (rtx src, bool after, enum machine_mode mem_mode)
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     if (fmt[i] == 'e')
-      XEXP (x, i) = cleanup_auto_inc_dec (XEXP (x, i), after, mem_mode);
+      XEXP (x, i) = cleanup_auto_inc_dec (XEXP (x, i), mem_mode);
     else if (fmt[i] == 'E' || fmt[i] == 'V')
       {
 	int j;
 	XVEC (x, i) = rtvec_alloc (XVECLEN (x, i));
 	for (j = 0; j < XVECLEN (x, i); j++)
 	  XVECEXP (x, i, j)
-	    = cleanup_auto_inc_dec (XVECEXP (src, i, j), after, mem_mode);
+	    = cleanup_auto_inc_dec (XVECEXP (src, i, j), mem_mode);
       }
 
   return x;
@@ -2397,7 +2389,6 @@ struct rtx_subst_pair
 {
   rtx to;
   bool adjusted;
-  bool after;
 };
 
 /* DATA points to an rtx_subst_pair.  Return the value that should be
@@ -2414,7 +2405,7 @@ propagate_for_debug_subst (rtx from, const_rtx old_rtx, void *data)
     {
       pair->adjusted = true;
 #ifdef AUTO_INC_DEC
-      pair->to = cleanup_auto_inc_dec (pair->to, pair->after, VOIDmode);
+      pair->to = cleanup_auto_inc_dec (pair->to, VOIDmode);
 #else
       pair->to = copy_rtx (pair->to);
 #endif
@@ -2424,19 +2415,17 @@ propagate_for_debug_subst (rtx from, const_rtx old_rtx, void *data)
   return copy_rtx (pair->to);
 }
 
-/* Replace occurrences of DEST with SRC in DEBUG_INSNs between INSN
-   and LAST.  If MOVE holds, debug insns must also be moved past
-   LAST.  */
+/* Replace all the occurrences of DEST with SRC in DEBUG_INSNs between INSN
+   and LAST.  */
 
 static void
-propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src, bool move)
+propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src)
 {
-  rtx next, move_pos = move ? last : NULL_RTX, loc;
+  rtx next, loc;
 
   struct rtx_subst_pair p;
   p.to = src;
   p.adjusted = false;
-  p.after = move;
 
   next = NEXT_INSN (insn);
   while (next != last)
@@ -2450,14 +2439,7 @@ propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src, bool move)
 	  if (loc == INSN_VAR_LOCATION_LOC (insn))
 	    continue;
 	  INSN_VAR_LOCATION_LOC (insn) = loc;
-	  if (move_pos)
-	    {
-	      remove_insn (insn);
-	      PREV_INSN (insn) = NEXT_INSN (insn) = NULL_RTX;
-	      move_pos = emit_debug_insn_after (insn, move_pos);
-	    }
-	  else
-	    df_insn_rescan (insn);
+	  df_insn_rescan (insn);
 	}
     }
 }
@@ -2619,7 +2601,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 
   added_links_insn = 0;
 
-  /* First check for one important special-case that the code below will
+  /* First check for one important special case that the code below will
      not handle.  Namely, the case where I1 is zero, I2 is a PARALLEL
      and I3 is a SET whose SET_SRC is a SET_DEST in I2.  In that case,
      we may be able to replace that destination with the destination of I3.
@@ -2627,8 +2609,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
      remainder into a structure, in which case we want to do the computation
      directly into the structure to avoid register-register copies.
 
-     Note that this case handles both multiple sets in I2 and also
-     cases where I2 has a number of CLOBBER or PARALLELs.
+     Note that this case handles both multiple sets in I2 and also cases
+     where I2 has a number of CLOBBERs inside the PARALLEL.
 
      We make very conservative checks below and only try to handle the
      most common cases of this.  For example, we only handle the case
@@ -2672,8 +2654,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 
       if (i == XVECLEN (p2, 0))
 	for (i = 0; i < XVECLEN (p2, 0); i++)
-	  if ((GET_CODE (XVECEXP (p2, 0, i)) == SET
-	       || GET_CODE (XVECEXP (p2, 0, i)) == CLOBBER)
+	  if (GET_CODE (XVECEXP (p2, 0, i)) == SET
 	      && SET_DEST (XVECEXP (p2, 0, i)) == SET_SRC (PATTERN (i3)))
 	    {
 	      combine_merges++;
@@ -2682,16 +2663,14 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 	      subst_low_luid = DF_INSN_LUID (i2);
 
 	      added_sets_2 = added_sets_1 = added_sets_0 = 0;
-	      i2src = SET_DEST (PATTERN (i3));
-	      i2dest = SET_SRC (PATTERN (i3));
+	      i2src = SET_SRC (XVECEXP (p2, 0, i));
+	      i2dest = SET_DEST (XVECEXP (p2, 0, i));
 	      i2dest_killed = dead_or_set_p (i2, i2dest);
 
 	      /* Replace the dest in I2 with our dest and make the resulting
-		 insn the new pattern for I3.  Then skip to where we
-		 validate the pattern.  Everything was set up above.  */
-	      SUBST (SET_DEST (XVECEXP (p2, 0, i)),
-		     SET_DEST (PATTERN (i3)));
-
+		 insn the new pattern for I3.  Then skip to where we validate
+		 the pattern.  Everything was set up above.  */
+	      SUBST (SET_DEST (XVECEXP (p2, 0, i)), SET_DEST (PATTERN (i3)));
 	      newpat = p2;
 	      i3_subst_into_i2 = 1;
 	      goto validate_replacement;
@@ -3820,7 +3799,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 		   i2src while its original mode is temporarily
 		   restored, and then clear i2scratch so that we don't
 		   do it again later.  */
-		propagate_for_debug (i2, i3, reg, i2src, false);
+		propagate_for_debug (i2, i3, reg, i2src);
 		i2scratch = false;
 		/* Put back the new mode.  */
 		adjust_reg_mode (reg, new_mode);
@@ -3851,11 +3830,10 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 		   with this copy we have created; then, replace the
 		   copy with the SUBREG of the original shared reg,
 		   once again changed to the new mode.  */
-		propagate_for_debug (first, last, reg, tempreg, false);
+		propagate_for_debug (first, last, reg, tempreg);
 		adjust_reg_mode (reg, new_mode);
 		propagate_for_debug (first, last, tempreg,
-				     lowpart_subreg (old_mode, reg, new_mode),
-				     false);
+				     lowpart_subreg (old_mode, reg, new_mode));
 	      }
 	  }
     }
@@ -4069,14 +4047,14 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
     if (newi2pat)
       {
 	if (MAY_HAVE_DEBUG_INSNS && i2scratch)
-	  propagate_for_debug (i2, i3, i2dest, i2src, false);
+	  propagate_for_debug (i2, i3, i2dest, i2src);
 	INSN_CODE (i2) = i2_code_number;
 	PATTERN (i2) = newi2pat;
       }
     else
       {
 	if (MAY_HAVE_DEBUG_INSNS && i2src)
-	  propagate_for_debug (i2, i3, i2dest, i2src, i3_subst_into_i2);
+	  propagate_for_debug (i2, i3, i2dest, i2src);
 	SET_INSN_DELETED (i2);
       }
 
@@ -4085,7 +4063,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 	LOG_LINKS (i1) = 0;
 	REG_NOTES (i1) = 0;
 	if (MAY_HAVE_DEBUG_INSNS)
-	  propagate_for_debug (i1, i3, i1dest, i1src, false);
+	  propagate_for_debug (i1, i3, i1dest, i1src);
 	SET_INSN_DELETED (i1);
       }
 
@@ -4094,7 +4072,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 	LOG_LINKS (i0) = 0;
 	REG_NOTES (i0) = 0;
 	if (MAY_HAVE_DEBUG_INSNS)
-	  propagate_for_debug (i0, i3, i0dest, i0src, false);
+	  propagate_for_debug (i0, i3, i0dest, i0src);
 	SET_INSN_DELETED (i0);
       }
 
