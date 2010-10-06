@@ -1,3 +1,8 @@
+2010-10-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/45889
+	* gfortran.dg/alloc_comp_constraint_6.f90: New test.
+
 2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
