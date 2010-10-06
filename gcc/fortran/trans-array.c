@@ -448,7 +448,7 @@ static void gfc_free_ss (gfc_ss *);
 
 /* Free a gfc_ss chain.  */
 
-static void
+void
 gfc_free_ss_chain (gfc_ss * ss)
 {
   gfc_ss *next;

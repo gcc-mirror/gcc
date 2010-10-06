@@ -1,5 +1,11 @@
 2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_free_ss_chain): Made non-static.
+	* trans-array.h (gfc_free_ss_chain): New prototype.
+	* trans-stmt.c (gfc_trans_where_2): Free ss chains.
+
+2010-10-06  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-intrinsic.c (gfc_conv_intrinsic_funcall): Also free symbol's
 	subcomponents.
 

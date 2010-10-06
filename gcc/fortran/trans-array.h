@@ -81,6 +81,8 @@ void gfc_cleanup_loop (gfc_loopinfo *);
 void gfc_add_ss_to_loop (gfc_loopinfo *, gfc_ss *);
 /* Mark a SS chain as used in this loop.  */
 void gfc_mark_ss_chain_used (gfc_ss *, unsigned);
+/* Free a gfc_ss chain.  */
+void gfc_free_ss_chain (gfc_ss *);
 
 /* Calculates the lower bound and stride of array sections.  */
 void gfc_conv_ss_startstride (gfc_loopinfo *);
