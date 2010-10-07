@@ -633,7 +633,8 @@ _GLIBCXX_END_LDBL_NAMESPACE
       const size_t __len = char_traits<_CharT>::length(__format);
 
       ios_base::iostate __tmperr = ios_base::goodbit;
-      for (size_t __i = 0; __beg != __end && __i < __len && !__tmperr; ++__i)
+      size_t __i = 0;
+      for (; __beg != __end && __i < __len && !__tmperr; ++__i)
 	{
 	  if (__ctype.narrow(__format[__i], 0) == '%')
 	    {
@@ -827,7 +828,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
 	    }
 	}
 
-      if (__tmperr)
+      if (__tmperr || __i != __len)
 	__err |= ios_base::failbit;
   
       return __beg;
