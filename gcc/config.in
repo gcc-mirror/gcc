@@ -959,9 +959,6 @@
 /* Define if your assembler and linker support .hidden. */
 #undef HAVE_GAS_HIDDEN
 
-/* Define if your system supports gnu indirect functions. */
-#undef HAVE_GNU_INDIRECT_FUNCTION
-
 /* Define if your assembler supports .lcomm with an alignment field. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GAS_LCOMM_WITH_ALIGNMENT
@@ -1059,6 +1056,12 @@
 /* Define if using GNU as. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GNU_AS
+#endif
+
+
+/* Define if your system supports gnu indirect functions. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GNU_INDIRECT_FUNCTION
 #endif
 
 
@@ -1540,6 +1543,13 @@
 /* Define to the library containing __tls_get_addr/___tls_get_addr. */
 #ifndef USED_FOR_TARGET
 #undef LIB_TLS_SPEC
+#endif
+
+
+/* Define to the name of the LTO plugin DSO that must be passed to the
+   linker's -plugin=LIB option. */
+#ifndef USED_FOR_TARGET
+#undef LTOPLUGINSONAME
 #endif
 
 

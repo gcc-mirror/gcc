@@ -1,3 +1,12 @@
+2010-10-07  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* config.host (host_lto_plugin_soname): New shell variable.
+	* configure.ac (LTOPLUGINSONAME): Add an AC_DEFINE for the above.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* gcc.c (main): Use LTOPLUGINSONAME instead of hard-coding name of
+	LTO plugin shared library.
+
 2010-10-07  Richard Henderson  <rth@redhat.com>
 
 	* target.h (enum unwind_info_type): Move ...

@@ -1786,9 +1786,11 @@ to specify its location.])
   # Flags needed for libelf.
   AC_SUBST(libelflibs)
   AC_SUBST(libelfinc)
+  # ELF platforms build the lto-plugin when GOLD is in use.
+  build_lto_plugin=${ENABLE_GOLD}
 fi],[if test x"$default_enable_lto" = x"yes" ; then
     case $target in
-      *-apple-darwin*) ;;
+      *-apple-darwin* | *-cygwin* | *-mingw*) ;;
       # On other non-ELF platforms, LTO must be explicitly enabled.
       *) enable_lto=no ;;
     esac
@@ -1799,13 +1801,18 @@ fi],[if test x"$default_enable_lto" = x"yes" ; then
   # warn during gcc/ subconfigure; unless you're bootstrapping with
   # -flto it won't be needed until after installation anyway.
     case $target in
-      *-cygwin*|*-mingw* | *-apple-darwin*) ;;
+      *-cygwin* | *-mingw* | *-apple-darwin*) ;;
       *) if test x"$enable_lto" = x"yes"; then
 	AC_MSG_ERROR([LTO support is not enabled for this target.])
         fi
       ;;
     esac
   fi
+  # Among non-ELF, only Windows platforms support the lto-plugin so far.
+  case $target in
+    *-cygwin* | *-mingw*) build_lto_plugin=yes ;;
+    *) ;;
+  esac
   default_enable_lto=no])
 
 
@@ -1884,7 +1891,7 @@ if test -d ${srcdir}/gcc; then
       *,lto,*) ;;
       *) enable_languages="${enable_languages},lto" ;;
     esac
-    if test "${ENABLE_GOLD}" = "yes" ; then
+    if test "${build_lto_plugin}" = "yes" ; then
       configdirs="$configdirs lto-plugin"
       extra_host_libiberty_configure_flags=--enable-shared
     fi

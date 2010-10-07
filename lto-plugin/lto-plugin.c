@@ -1,5 +1,5 @@
-/* LTO plugin for gold.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+/* LTO plugin for gold and/or GNU ld.
+   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
    Contributed by Rafael Avila de Espindola (espindola@google.com).
 
 This program is free software; you can redistribute it and/or modify
@@ -45,46 +45,13 @@ along with this program; see the file COPYING3.  If not see
 #include <stdbool.h>
 #include <libiberty.h>
 #include <hashtab.h>
-
-/* The presence of gelf.h is checked by the toplevel configure script.  */
-#include <gelf.h>
-
-#include "plugin-api.h"
 #include "../gcc/lto/common.h"
 
-/* The part of the symbol table the plugin has to keep track of. Note that we
-   must keep SYMS until all_symbols_read is called to give the linker time to
-   copy the symbol information. */
-
-struct sym_aux
-{
-  uint32_t slot;
-  unsigned id;
-  unsigned next_conflict;
-};
-
-struct plugin_symtab
-{
-  int nsyms;
-  struct sym_aux *aux;
-  struct ld_plugin_symbol *syms;
-  unsigned id;
-};
-
-/* All that we have to remember about a file. */
-
-struct plugin_file_info
-{
-  char *name;
-  void *handle;
-  struct plugin_symtab symtab;
-  struct plugin_symtab conflicts;
-};
-
+/* Common definitions for/from the object format dependent code.  */
+#include "lto-plugin.h"
 
 static char *arguments_file_name;
 static ld_plugin_register_claim_file register_claim_file;
-static ld_plugin_add_symbols add_symbols;
 static ld_plugin_register_all_symbols_read register_all_symbols_read;
 static ld_plugin_get_symbols get_symbols;
 static ld_plugin_register_cleanup register_cleanup;
@@ -92,8 +59,12 @@ static ld_plugin_add_input_file add_input_file;
 static ld_plugin_add_input_library add_input_library;
 static ld_plugin_message message;
 
-static struct plugin_file_info *claimed_files = NULL;
-static unsigned int num_claimed_files = 0;
+/* These are not static because the object format dependent
+   claim_file hooks in lto-plugin-{coff,elf}.c need them.  */
+ld_plugin_add_symbols add_symbols;
+
+struct plugin_file_info *claimed_files = NULL;
+unsigned int num_claimed_files = 0;
 
 static char **output_files = NULL;
 static unsigned int num_output_files = 0;
@@ -108,7 +79,7 @@ static bool debug;
 static bool nop;
 static char *resolution_file = NULL;
 
-static void
+void
 check (bool gate, enum ld_plugin_level level, const char *text)
 {
   if (gate)
@@ -129,7 +100,7 @@ check (bool gate, enum ld_plugin_level level, const char *text)
    by P and the result is written in ENTRY. The slot number is stored in SLOT.
    Returns the address of the next entry. */
 
-static char *
+char *
 parse_table_entry (char *p, struct ld_plugin_symbol *entry, 
 		   struct sym_aux *aux)
 {
@@ -191,16 +162,13 @@ parse_table_entry (char *p, struct ld_plugin_symbol *entry,
   return p;
 }
 
-#define LTO_SECTION_PREFIX ".gnu.lto_.symtab"
+/* Translate the IL symbol table located between DATA and END. Append the
+   slots and symbols to OUT. */
 
-/* Translate the IL symbol table SYMTAB. Append the slots and symbols to OUT. */
-
-static void
-translate (Elf_Data *symtab, struct plugin_symtab *out)
+void
+translate (char *data, char *end, struct plugin_symtab *out)
 {
   struct sym_aux *aux;
-  char *data = symtab->d_buf;
-  char *end = data + symtab->d_size;
   struct ld_plugin_symbol *syms = NULL;
   int n, len;
 
@@ -222,39 +190,6 @@ translate (Elf_Data *symtab, struct plugin_symtab *out)
   out->nsyms = n;
   out->syms = syms;
   out->aux = aux;
-}
-
-/* Process all lto symtabs of file ELF. */
-
-static int
-process_symtab (Elf *elf, struct plugin_symtab *out)
-{
-  int found = 0;
-  Elf_Scn *section = 0;
-  GElf_Ehdr header;
-  GElf_Ehdr *t = gelf_getehdr (elf, &header);
-  if (t == NULL)
-    return 0;
-  assert (t == &header);
-
-  while ((section = elf_nextscn(elf, section)) != 0)
-    {
-      GElf_Shdr shdr;
-      GElf_Shdr *tshdr = gelf_getshdr (section, &shdr);
-      const char *t;
-      assert (tshdr == &shdr);
-      t = elf_strptr (elf, header.e_shstrndx, shdr.sh_name);
-      assert (t != NULL);
-      if (strncmp (t, LTO_SECTION_PREFIX, strlen (LTO_SECTION_PREFIX)) == 0) 
-	{
-	  char *s = strrchr (t, '.');
-	  if (s)
-	      sscanf (s, ".%x", &out->id);
-	  translate (elf_getdata (section, NULL), out);
-	  found++;
-	}
-    }
-  return found;
 }
 
 /* Free all memory that is no longer needed after writing the symbol
@@ -686,7 +621,7 @@ static int symbol_strength (struct ld_plugin_symbol *s)
    
    XXX how to handle common? */
 
-static void
+void
 resolve_conflicts (struct plugin_symtab *t, struct plugin_symtab *conflicts)
 {
   htab_t symtab = htab_create (t->nsyms, hash_sym, eq_sym, NULL);
@@ -754,87 +689,6 @@ resolve_conflicts (struct plugin_symtab *t, struct plugin_symtab *conflicts)
   htab_delete (symtab);
 }
 
-/* Callback used by gold to check if the plugin will claim FILE. Writes
-   the result in CLAIMED. */
-
-static enum ld_plugin_status
-claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
-{
-  enum ld_plugin_status status;
-  Elf *elf;
-  struct plugin_file_info lto_file;
-  int n;
-
-  memset (&lto_file, 0, sizeof (struct plugin_file_info));
-
-  if (file->offset != 0)
-    {
-      char *objname;
-      Elf *archive;
-      off_t offset;
-      /* We pass the offset of the actual file, not the archive header. */
-      int t = asprintf (&objname, "%s@0x%" PRIx64, file->name,
-                        (int64_t) file->offset);
-      check (t >= 0, LDPL_FATAL, "asprintf failed");
-      lto_file.name = objname;
-
-      archive = elf_begin (file->fd, ELF_C_READ, NULL);
-      check (elf_kind (archive) == ELF_K_AR, LDPL_FATAL,
-             "Not an archive and offset not 0");
-
-      /* elf_rand expects the offset to point to the ar header, not the
-         object itself. Subtract the size of the ar header (60 bytes).
-         We don't uses sizeof (struct ar_hd) to avoid including ar.h */
-
-      offset = file->offset - 60;
-      check (offset == elf_rand (archive, offset), LDPL_FATAL,
-             "could not seek in archive");
-      elf = elf_begin (file->fd, ELF_C_READ, archive);
-      check (elf != NULL, LDPL_FATAL, "could not find archive member");
-      elf_end (archive);
-    }
-  else
-    {
-      lto_file.name = xstrdup (file->name);
-      elf = elf_begin (file->fd, ELF_C_READ, NULL);
-    }
-  lto_file.handle = file->handle;
-
-  *claimed = 0;
-
-  if (!elf)
-    goto err;
-
-  n = process_symtab (elf, &lto_file.symtab);
-  if (n == 0)
-    goto err;
-
-  if (n > 1)
-    resolve_conflicts (&lto_file.symtab, &lto_file.conflicts);
-
-  status = add_symbols (file->handle, lto_file.symtab.nsyms,
-			lto_file.symtab.syms);
-  check (status == LDPS_OK, LDPL_FATAL, "could not add symbols");
-
-  *claimed = 1;
-  num_claimed_files++;
-  claimed_files =
-    xrealloc (claimed_files,
-	      num_claimed_files * sizeof (struct plugin_file_info));
-  claimed_files[num_claimed_files - 1] = lto_file;
-
-  goto cleanup;
-
- err:
-  free (lto_file.name);
-
- cleanup:
-  if (elf)
-    elf_end (elf);
-
-  return LDPS_OK;
-}
-
 /* Parse the plugin options. */
 
 static void
@@ -873,8 +727,9 @@ onload (struct ld_plugin_tv *tv)
   struct ld_plugin_tv *p;
   enum ld_plugin_status status;
 
-  unsigned version = elf_version (EV_CURRENT);
-  check (version != EV_NONE, LDPL_FATAL, "invalid ELF version");
+  status = onload_format_checks (tv);
+  if (status != LDPS_OK)
+    return status;
 
   p = tv;
   while (p->tv_tag)

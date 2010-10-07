@@ -11,13 +11,19 @@ libexecsubdir := $(libexecdir)/gcc/$(target_noncanonical)/$(gcc_version)
 LIBELFLIBS = @LIBELFLIBS@
 LIBELFINC = @LIBELFINC@
 
+# Which object format to parse.
+LTO_FORMAT = @LTO_FORMAT@
+
 AM_CPPFLAGS = -I$(top_srcdir)/../include $(LIBELFINC)
 AM_CFLAGS = -Wall -Werror
 
 libexecsub_LTLIBRARIES = liblto_plugin.la
 
-liblto_plugin_la_SOURCES = lto-plugin.c
-liblto_plugin_la_LIBADD = $(LIBELFLIBS) ../libiberty/pic/libiberty.a
+liblto_plugin_la_SOURCES = lto-plugin.c lto-plugin-$(LTO_FORMAT).c
+liblto_plugin_la_LIBADD = $(LIBELFLIBS) \
+	$(if $(wildcard ../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
+liblto_plugin_la_LDFLAGS = -no-undefined -bindir $(libexecsubdir) \
+	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a)
 
 all: copy_lto_plugin
 
