@@ -1,3 +1,8 @@
+2010-10-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45732
+	* gcc.dg/torture/pr45732.c: New testcase.
+
 2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/foreach-1.m: Adjust for -fnext-runtime compatibility.
