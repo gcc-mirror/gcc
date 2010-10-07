@@ -536,7 +536,7 @@ AC_SUBST(CHECK)
 AC_SUBST(target_header_dir)
 
 # check for prctl PR_SET_NAME
-AC_RUN_IFELSE([AC_LANG_SOURCE([[
+AC_LINK_IFELSE([AC_LANG_SOURCE([[
 #include <sys/prctl.h>
 int main()
 {

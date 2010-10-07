@@ -1,3 +1,8 @@
+2010-10-07  Andi Kleen <ak@linux.intel.com>
+
+	* configure: Regenerate.
+	* configure.ac: Turn PR_SET_NAME check into link check.
+
 2010-10-06  Andi Kleen <ak@linux.intel.com>
 
 	* Makefile.in (CFILES): Add setproctitle.
