@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Casing;   use Casing;
 with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
@@ -1752,6 +1753,62 @@ package body Exp_Util is
    begin
       Remove_Side_Effects (Exp, Name_Req, Variable_Ref => True);
    end Force_Evaluation;
+
+   ---------------------------------
+   -- Fully_Qualified_Name_String --
+   ---------------------------------
+
+   function Fully_Qualified_Name_String (E : Entity_Id) return String_Id is
+      procedure Internal_Full_Qualified_Name (E : Entity_Id);
+      --  Compute recursively the qualified name without NUL at the end, adding
+      --  it to the currently started string being generated
+
+      ----------------------------------
+      -- Internal_Full_Qualified_Name --
+      ----------------------------------
+
+      procedure Internal_Full_Qualified_Name (E : Entity_Id) is
+         Ent : Entity_Id;
+
+      begin
+         --  Deal properly with child units
+
+         if Nkind (E) = N_Defining_Program_Unit_Name then
+            Ent := Defining_Identifier (E);
+         else
+            Ent := E;
+         end if;
+
+         --  Compute qualification recursively (only "Standard" has no scope)
+
+         if Present (Scope (Scope (Ent))) then
+            Internal_Full_Qualified_Name (Scope (Ent));
+            Store_String_Char (Get_Char_Code ('.'));
+         end if;
+
+         --  Every entity should have a name except some expanded blocks
+         --  don't bother about those.
+
+         if Chars (Ent) = No_Name then
+            return;
+         end if;
+
+         --  Generates the entity name in upper case
+
+         Get_Decoded_Name_String (Chars (Ent));
+         Set_All_Upper_Case;
+         Store_String_Chars (Name_Buffer (1 .. Name_Len));
+         return;
+      end Internal_Full_Qualified_Name;
+
+   --  Start of processing for Full_Qualified_Name
+
+   begin
+      Start_String;
+      Internal_Full_Qualified_Name (E);
+      Store_String_Char (Get_Char_Code (ASCII.NUL));
+      return End_String;
+   end Fully_Qualified_Name_String;
 
    ------------------------
    -- Generate_Poll_Call --

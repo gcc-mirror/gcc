@@ -1265,7 +1265,7 @@ package body Exp_Ch11 is
           Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
           Expression          =>
             Make_String_Literal (Loc,
-              Strval => Full_Qualified_Name (Id))));
+              Strval => Fully_Qualified_Name_String (Id))));
 
       Set_Is_Statically_Allocated (Exname);
 

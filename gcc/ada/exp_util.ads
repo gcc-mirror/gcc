@@ -403,6 +403,10 @@ package Exp_Util is
    --  Force_Evaluation further guarantees that all evaluations will yield
    --  the same result.
 
+   function Fully_Qualified_Name_String (E : Entity_Id) return String_Id;
+   --  Generates the string literal corresponding to the fully qualified name
+   --  of entity E with an ASCII.NUL appended at the end of the name.
+
    procedure Generate_Poll_Call (N : Node_Id);
    --  If polling is active, then a call to the Poll routine is built,
    --  and then inserted before the given node N and analyzed.

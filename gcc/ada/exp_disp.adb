@@ -4483,8 +4483,7 @@ package body Exp_Disp is
          end loop;
       end if;
 
-      --  Get the _tag entity and the number of primitives of its dispatch
-      --  table.
+      --  Get the _tag entity and number of primitives of its dispatch table
 
       DT_Ptr  := Node (First_Elmt (Access_Disp_Table (Typ)));
       Nb_Prim := UI_To_Int (DT_Entry_Count (First_Tag_Component (Typ)));
@@ -4654,7 +4653,7 @@ package body Exp_Disp is
           Object_Definition   => New_Reference_To (Standard_String, Loc),
           Expression =>
             Make_String_Literal (Loc,
-              Full_Qualified_Name (First_Subtype (Typ)))));
+              Fully_Qualified_Name_String (First_Subtype (Typ)))));
 
       Set_Is_Statically_Allocated (Exname);
       Set_Is_True_Constant (Exname);
@@ -4768,7 +4767,7 @@ package body Exp_Disp is
                               New_External_Name (Tname, 'A'));
 
             Full_Name   : constant String_Id :=
-                            Full_Qualified_Name (First_Subtype (Typ));
+                            Fully_Qualified_Name_String (First_Subtype (Typ));
             Str1_Id     : String_Id;
             Str2_Id     : String_Id;
 

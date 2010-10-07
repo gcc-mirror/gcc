@@ -5554,6 +5554,13 @@ package body Sem_Res is
          Check_Potentially_Blocking_Operation (N);
       end if;
 
+      --  A call to Ada.Real_Time.Timing_Events.Set_Handler violates
+      --  restriction No_Relative_Delay (AI-0211).
+
+      if Is_RTE (Nam, RE_Set_Handler) then
+         Check_Restriction (No_Relative_Delay, N);
+      end if;
+
       --  Issue an error for a call to an eliminated subprogram. We skip this
       --  in a spec expression, e.g. a call in a default parameter value, since
       --  we are not really doing a call at this time. That's important because
