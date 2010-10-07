@@ -5944,12 +5944,13 @@ package body Sem_Prag is
                    and then Nkind (Object_Definition (D)) =
                                        N_Constrained_Array_Definition)
             then
-               Ctyp := Component_Type (E);
-
                --  The flag is set on the object, or on the base type
 
                if Nkind (D) /= N_Object_Declaration then
                   E := Base_Type (E);
+                  Ctyp := Component_Type (E);
+               else
+                  Ctyp := Component_Type (Base_Type (Etype (E)));
                end if;
 
                Set_Has_Volatile_Components (E);
@@ -9918,7 +9919,7 @@ package body Sem_Prag is
                  and then (Esize (Ctyp) = 8  or else
                            Esize (Ctyp) = 16 or else
                            Esize (Ctyp) = 32 or else
-                           Esize (Ctyp) = 64)
+                           Esize (Ctyp) >= 64)
                then
                   Ignore := True;
 
@@ -9931,6 +9932,13 @@ package body Sem_Prag is
                  or else Is_Atomic (Component_Type (Typ))
                then
                   Error_Pragma ("cannot pack atomic components");
+
+               --  Warn for cases of packing non-atomic components of atomic
+
+               elsif Is_Atomic (Typ) then
+                  Error_Msg_NE
+                    ("non-atomic components of type& may not be accessible "
+                     & "by separate tasks?", N, Typ);
                end if;
 
                --  If we had an explicit component size given, then we do not

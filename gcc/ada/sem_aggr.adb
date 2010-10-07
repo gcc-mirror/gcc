@@ -3890,7 +3890,7 @@ package body Sem_Aggr is
                elsif No (Typech) then
                   Typech := Base_Type (Etype (Component));
 
-               --  AI05-0199: In Ada2012, several components of anonymous
+               --  AI05-0199: In Ada 2012, several components of anonymous
                --  access types can appear in a choice list, as long as the
                --  designated types match.
 

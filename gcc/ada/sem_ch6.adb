@@ -5864,7 +5864,7 @@ package body Sem_Ch6 is
                      Obj_Decl, Typ);
                   Error_Msg_N
                     ("\an equality operator cannot be declared after this "
-                      & "point ('R'M 4.5.2 (9.8)) (Ada2012))?", Obj_Decl);
+                      & "point ('R'M 4.5.2 (9.8)) (Ada 2012))?", Obj_Decl);
                   exit;
                end if;
 

@@ -2409,6 +2409,12 @@ package body Scng is
             end if;
          end if;
 
+         --  We will assume it is an identifier, not a keyword, so that the
+         --  checksum is independent of the Ada version.
+
+         Token := Tok_Identifier;
+         Accumulate_Token_Checksum;
+
          --  Here is where we check if it was a keyword
 
          if Is_Keyword_Name (Token_Name) then
@@ -2464,14 +2470,11 @@ package body Scng is
             --  corresponding keyword.
 
             Token_Name := No_Name;
-            Accumulate_Token_Checksum;
             return;
 
          --  It is an identifier after all
 
          else
-            Token := Tok_Identifier;
-            Accumulate_Token_Checksum;
             Post_Scan;
             return;
          end if;
