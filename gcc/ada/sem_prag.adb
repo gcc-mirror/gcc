@@ -5948,9 +5948,6 @@ package body Sem_Prag is
 
                if Nkind (D) /= N_Object_Declaration then
                   E := Base_Type (E);
-                  Ctyp := Component_Type (E);
-               else
-                  Ctyp := Component_Type (Base_Type (Etype (E)));
                end if;
 
                Set_Has_Volatile_Components (E);
@@ -5960,6 +5957,12 @@ package body Sem_Prag is
 
                   if Is_Packed (E) then
                      Set_Is_Packed (E, False);
+
+                     if Is_Array_Type (E) then
+                        Ctyp := Component_Type (E);
+                     else
+                        Ctyp := Component_Type (Etype (E));
+                     end if;
 
                      if not (Known_Static_Esize (Ctyp)
                               and then Known_Static_RM_Size (Ctyp)
@@ -9919,7 +9922,7 @@ package body Sem_Prag is
                  and then (Esize (Ctyp) = 8  or else
                            Esize (Ctyp) = 16 or else
                            Esize (Ctyp) = 32 or else
-                           Esize (Ctyp) >= 64)
+                           Esize (Ctyp) = 64)
                then
                   Ignore := True;
 
