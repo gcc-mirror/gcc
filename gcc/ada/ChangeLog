@@ -1,5 +1,9 @@
 2010-10-07  Robert Dewar  <dewar@adacore.com>
 
+	* tbuild.ads: Minor reformatting.
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
 	* gnatcmd.adb, make.adb, prj-nmsc.adb, sem_elab.adb: Minor reformatting
 
 2010-10-07  Arnaud Charlet  <charlet@adacore.com>
