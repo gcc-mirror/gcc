@@ -413,6 +413,7 @@ vect_recog_widen_mult_pattern (gimple last_stmt,
   vectype = get_vectype_for_scalar_type (half_type0);
   vectype_out = get_vectype_for_scalar_type (type);
   if (!vectype
+      || !vectype_out
       || !supportable_widening_operation (WIDEN_MULT_EXPR, last_stmt,
 					  vectype_out, vectype,
 					  &dummy, &dummy, &dummy_code,
