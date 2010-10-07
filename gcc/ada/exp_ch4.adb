@@ -3672,15 +3672,6 @@ package body Exp_Ch4 is
                if Has_Task (T) then
                   if No (Master_Id (Base_Type (PtrT))) then
 
-                     --  If we have a non-library level task with restriction
-                     --  No_Task_Hierarchy set, then no point in expanding.
-
-                     if not Is_Library_Level_Entity (T)
-                       and then Restriction_Active (No_Task_Hierarchy)
-                     then
-                        return;
-                     end if;
-
                      --  The designated type was an incomplete type, and the
                      --  access type did not get expanded. Salvage it now.
 

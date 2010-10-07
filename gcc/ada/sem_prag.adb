@@ -5912,6 +5912,7 @@ package body Sem_Prag is
             E    : Entity_Id;
             D    : Node_Id;
             K    : Node_Kind;
+            Ctyp : Entity_Id;
 
          begin
             Check_Ada_83_Warning;
@@ -5943,6 +5944,8 @@ package body Sem_Prag is
                    and then Nkind (Object_Definition (D)) =
                                        N_Constrained_Array_Definition)
             then
+               Ctyp := Component_Type (E);
+
                --  The flag is set on the object, or on the base type
 
                if Nkind (D) /= N_Object_Declaration then
@@ -5957,9 +5960,13 @@ package body Sem_Prag is
                   if Is_Packed (E) then
                      Set_Is_Packed (E, False);
 
-                     Error_Pragma_Arg
-                       ("?Pack canceled, cannot pack atomic components",
-                        Arg1);
+                     if not (Known_Static_Esize (Ctyp)
+                              and then Known_Static_RM_Size (Ctyp)
+                              and then Esize (Ctyp) = RM_Size (Ctyp))
+                     then
+                        Error_Pragma_Arg
+                          ("cannot pack atomic components", Arg1);
+                     end if;
                   end if;
                end if;
 
@@ -9869,6 +9876,8 @@ package body Sem_Prag is
             Assoc   : constant Node_Id := Arg1;
             Type_Id : Node_Id;
             Typ     : Entity_Id;
+            Ctyp    : Entity_Id;
+            Ignore  : Boolean := False;
 
          begin
             Check_No_Identifiers;
@@ -9899,18 +9908,29 @@ package body Sem_Prag is
             --  Array type
 
             elsif Is_Array_Type (Typ) then
+               Ctyp := Component_Type (Typ);
 
-               --  Pack not allowed for aliased or atomic components
+               --  Ignore pack that does nothing
 
-               if Has_Aliased_Components (Base_Type (Typ)) then
-                  Error_Pragma
-                    ("pragma% ignored, cannot pack aliased components?");
+               if Known_Static_Esize (Ctyp)
+                 and then Known_Static_RM_Size (Ctyp)
+                 and then Esize (Ctyp) = RM_Size (Ctyp)
+                 and then (Esize (Ctyp) = 8  or else
+                           Esize (Ctyp) = 16 or else
+                           Esize (Ctyp) = 32 or else
+                           Esize (Ctyp) = 64)
+               then
+                  Ignore := True;
+
+               --  Pack not allowed for aliased/atomic components
+
+               elsif Has_Aliased_Components (Base_Type (Typ)) then
+                  Error_Pragma ("cannot pack aliased components");
 
                elsif Has_Atomic_Components (Typ)
                  or else Is_Atomic (Component_Type (Typ))
                then
-                  Error_Pragma
-                    ("?pragma% ignored, cannot pack atomic components");
+                  Error_Pragma ("cannot pack atomic components");
                end if;
 
                --  If we had an explicit component size given, then we do not
@@ -9944,12 +9964,15 @@ package body Sem_Prag is
                      --  For normal non-VM target, do the packing
 
                      elsif VM_Target = No_VM then
-                        Set_Is_Packed            (Base_Type (Typ));
-                        Set_Has_Pragma_Pack      (Base_Type (Typ));
-                        Set_Has_Non_Standard_Rep (Base_Type (Typ));
+                        if not Ignore then
+                           Set_Is_Packed            (Base_Type (Typ));
+                           Set_Has_Non_Standard_Rep (Base_Type (Typ));
+                        end if;
 
-                     --  If we ignore the pack, then warn about this, except
-                     --  that we suppress the warning in GNAT mode.
+                        Set_Has_Pragma_Pack      (Base_Type (Typ));
+
+                     --  If we ignore the pack for VM_Targets, then warn about
+                     --  this, except suppress the warning in GNAT mode.
 
                      elsif not GNAT_Mode then
                         Error_Pragma

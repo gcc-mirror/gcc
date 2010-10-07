@@ -9969,12 +9969,13 @@ package body Sem_Ch12 is
          --  interface then  the generic formal is not unless declared
          --  explicitly so. If not declared limited, the actual cannot be
          --  limited (see AI05-0087).
-         --  Disable check for now, limited interfaces implemented by
-         --  protected types are common, Need to update tests ???
+         --  Even though this AI is a binding interpretation, we enable the
+         --  check only in Ada2012 mode, because this improper construct
+         --  shows up in user code and in existing B-tests.
 
          if Is_Limited_Type (Act_T)
            and then not Is_Limited_Type (A_Gen_T)
-           and then False
+           and then Ada_Version >= Ada_12
          then
             Error_Msg_NE
               ("actual for non-limited & cannot be a limited type", Actual,
