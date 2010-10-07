@@ -2801,8 +2801,11 @@ package body Sem_Ch12 is
             Result_Type := Access_Definition (Spec, Result_Definition (Spec));
             Set_Etype (Id, Result_Type);
 
-            --  Check restriction imposed by AI05-073 : a generic function
+            --  Check restriction imposed by AI05-073: a generic function
             --  cannot return an abstract type or an access to such.
+
+            --  This is a binding interpreration should it apply to earlier
+            --  versions of Ada as well as Ada 2012???
 
             if Is_Abstract_Type (Designated_Type (Result_Type))
               and then Ada_Version >= Ada_12
