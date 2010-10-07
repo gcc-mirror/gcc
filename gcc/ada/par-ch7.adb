@@ -109,7 +109,7 @@ package body Ch7 is
       --  Case of package body. Note that we demand a package body if that
       --  is the only possibility (even if the BODY keyword is not present)
 
-      if Token = Tok_Body or else Pf_Flags = Pf_Pbod then
+      if Token = Tok_Body or else Pf_Flags = Pf_Pbod_Pexp then
          if not Pf_Flags.Pbod then
             Error_Msg_SC ("package body cannot appear here!");
          end if;

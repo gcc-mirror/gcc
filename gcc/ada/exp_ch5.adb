@@ -4246,6 +4246,29 @@ package body Exp_Ch5 is
                         Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))),
                 Reason => PE_Accessibility_Check_Failed));
          end;
+
+      --  AI05-0073 : if function has a controlling access result, check that
+      --  the tag of the return value matches the designated type.
+
+      elsif Ekind (R_Type) = E_Anonymous_Access_Type
+        and then Has_Controlling_Result (Scope_Id)
+        and then Ada_Version >= Ada_12
+      then
+         Insert_Action (Exp,
+           Make_Raise_Constraint_Error (Loc,
+             Condition =>
+               Make_Op_Ne (Loc,
+                 Left_Opnd =>
+                   Make_Selected_Component (Loc,
+                     Prefix => Duplicate_Subexpr (Exp),
+                     Selector_Name =>
+                       Make_Identifier (Loc, Chars => Name_uTag)),
+                 Right_Opnd =>
+                   Make_Attribute_Reference (Loc,
+                     Prefix =>
+                       New_Occurrence_Of (Designated_Type (R_Type), Loc),
+                     Attribute_Name => Name_Tag)),
+           Reason => CE_Tag_Check_Failed));
       end if;
 
       --  If we are returning an object that may not be bit-aligned, then copy
