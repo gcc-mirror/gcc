@@ -5344,7 +5344,7 @@ package body Sem_Prag is
          --  pragma Ada_2005;
          --  pragma Ada_2005 (LOCAL_NAME):
 
-         --  Note: these pragma also have some specific processing in Par.Prag
+         --  Note: these pragmas also have some specific processing in Par.Prag
          --  because we want to set the Ada 2005 version mode during parsing.
 
          when Pragma_Ada_05 | Pragma_Ada_2005 => declare
@@ -5386,27 +5386,48 @@ package body Sem_Prag is
          ---------------------
 
          --  pragma Ada_12;
-         --  pragma Ada_2012;
+         --  pragma Ada_12 (LOCAL_NAME);
 
-         --  Note: these pragma also have some specific processing in Par.Prag
+         --  pragma Ada_2012;
+         --  pragma Ada_2012 (LOCAL_NAME):
+
+         --  Note: these pragmas also have some specific processing in Par.Prag
          --  because we want to set the Ada 2012 version mode during parsing.
 
-         when Pragma_Ada_12 | Pragma_Ada_2012 =>
+         when Pragma_Ada_12 | Pragma_Ada_2012 => declare
+            E_Id : Node_Id;
+
+         begin
             GNAT_Pragma;
-            Check_Arg_Count (0);
 
-            --  For Ada_2012 we unconditionally enforce the documented
-            --  configuration pragma placement, since we do not want to
-            --  tolerate mixed modes in a unit involving Ada 2012. That would
-            --  cause real difficulties for those cases where there are
-            --  incompatibilities between Ada 95 and Ada 2005/Ada 2012.
+            if Arg_Count = 1 then
+               Check_Arg_Is_Local_Name (Arg1);
+               E_Id := Expression (Arg1);
 
-            Check_Valid_Configuration_Pragma;
+               if Etype (E_Id) = Any_Type then
+                  return;
+               end if;
 
-            --  Now set Ada 2012 mode
+               Set_Is_Ada_2012_Only (Entity (E_Id));
 
-            Ada_Version := Ada_12;
-            Ada_Version_Explicit := Ada_12;
+            else
+               Check_Arg_Count (0);
+
+               --  For Ada_2012 we unconditionally enforce the documented
+               --  configuration pragma placement, since we do not want to
+               --  tolerate mixed modes in a unit involving Ada 2012. That
+               --  would cause real difficulties for those cases where there
+               --  are incompatibilities between Ada 95 and Ada 2012. We could
+               --  allow mixing of Ada 2005 and Ada 2012 but it's not worth it.
+
+               Check_Valid_Configuration_Pragma;
+
+               --  Now set Ada 2012 mode
+
+               Ada_Version := Ada_12;
+               Ada_Version_Explicit := Ada_12;
+            end if;
+         end;
 
          ----------------------
          -- All_Calls_Remote --

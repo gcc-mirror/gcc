@@ -1889,10 +1889,18 @@ package Einfo is
 --       Applies to all entities, true for access types and subtypes
 
 --    Is_Ada_2005_Only (Flag185)
---       Present in all entities, true if a valid pragma Ada_05 applies to the
---       entity which specifically names the entity, indicating that the entity
---       is Ada 2005 only. Note that this flag is not set if the entity is part
---       of a unit compiled with the normal no-argument form of pragma Ada_05.
+--       Present in all entities, true if a valid pragma Ada_05 or Ada_2005
+--       applies to the entity which specifically names the entity, indicating
+--       that the entity is Ada 2005 only. Note that this flag is not set if
+--       the entity is part of a unit compiled with the normal no-argument form
+--       of pragma Ada_05 or Ada_2005.
+
+--    Is_Ada_2012_Only (Flag199)
+--       Present in all entities, true if a valid pragma Ada_12 or Ada_2012
+--       applies to the entity which specifically names the entity, indicating
+--       that the entity is Ada 2012 only. Note that this flag is not set if
+--       the entity is part of a unit compiled with the normal no-argument form
+--       of pragma Ada_12 or Ada_2012.
 
 --    Is_Aliased (Flag15)
 --       Present in objects whose declarations carry the keyword aliased,
@@ -4589,6 +4597,7 @@ package Einfo is
    --    Has_Xref_Entry                      (Flag182)
    --    In_Private_Part                     (Flag45)
    --    Is_Ada_2005_Only                    (Flag185)
+   --    Is_Ada_2012_Only                    (Flag199)
    --    Is_Bit_Packed_Array                 (Flag122)  (base type only)
    --    Is_Character_Type                   (Flag63)
    --    Is_Child_Unit                       (Flag73)
@@ -5932,6 +5941,7 @@ package Einfo is
    function Is_Abstract_Type                    (Id : E) return B;
    function Is_Access_Constant                  (Id : E) return B;
    function Is_Ada_2005_Only                    (Id : E) return B;
+   function Is_Ada_2012_Only                    (Id : E) return B;
    function Is_Aliased                          (Id : E) return B;
    function Is_Asynchronous                     (Id : E) return B;
    function Is_Atomic                           (Id : E) return B;
@@ -6493,6 +6503,7 @@ package Einfo is
    procedure Set_Is_Abstract_Type                (Id : E; V : B := True);
    procedure Set_Is_Access_Constant              (Id : E; V : B := True);
    procedure Set_Is_Ada_2005_Only                (Id : E; V : B := True);
+   procedure Set_Is_Ada_2012_Only                (Id : E; V : B := True);
    procedure Set_Is_Aliased                      (Id : E; V : B := True);
    procedure Set_Is_Asynchronous                 (Id : E; V : B := True);
    procedure Set_Is_Atomic                       (Id : E; V : B := True);
@@ -7152,6 +7163,7 @@ package Einfo is
    pragma Inline (Is_Abstract_Type);
    pragma Inline (Is_Access_Constant);
    pragma Inline (Is_Ada_2005_Only);
+   pragma Inline (Is_Ada_2012_Only);
    pragma Inline (Is_Access_Type);
    pragma Inline (Is_Access_Protected_Subprogram_Type);
    pragma Inline (Is_Access_Subprogram_Type);
@@ -7584,6 +7596,7 @@ package Einfo is
    pragma Inline (Set_Is_Abstract_Type);
    pragma Inline (Set_Is_Access_Constant);
    pragma Inline (Set_Is_Ada_2005_Only);
+   pragma Inline (Set_Is_Ada_2012_Only);
    pragma Inline (Set_Is_Aliased);
    pragma Inline (Set_Is_Asynchronous);
    pragma Inline (Set_Is_Atomic);

@@ -1332,6 +1332,12 @@ package Opt is
    --  including warnings on Ada 2005 obsolescent features used in Ada 2005
    --  mode. Set False by -gnatwY.
 
+   Warn_On_Ada_2012_Compatibility : Boolean := True;
+   --  GNAT
+   --  Set to True to generate all warnings on Ada 2012 compatibility issues,
+   --  including warnings on Ada 2012 obsolescent features used in Ada 2012
+   --  mode. Set False by -gnatwY.
+
    Warn_On_Parameter_Order : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings for cases where the argument list for

@@ -1,3 +1,26 @@
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb: Minor reformatting.
+	* einfo.ads, einfo.adb (Is_Ada_2012_Only): New flag
+	* itypes.adb (Create_Null_Excluding_Itype): Set Is_Ada_2012_Only flag
+	properly.
+	* lib-xref.adb (Generate_Reference): Warn on use of Ada 2012 entity in
+	non-Ada 2012 mode.
+	* opt.ads (Warn_On_Ada_2012_Compatibility): New flag
+	* sem_ch3.adb (Analye_Subtype_Declaration): Inherit Is_Ada_2012_Only
+	* sem_ch7.adb (Preserve_Full_Attributes): Preserve Is_Ada_2012_Only
+	flag.
+	* sem_prag.adb (Analyze_Pragma, case Ada_12/Ada_2012): Allow form with
+	argument.
+	* sem_type.adb (Disambiguate): Deal with Is_Ada_2012_Only.
+	* sem_warn.adb (Warn_On_Ada_2012_Compatibility): New flag, treated
+	same as 2005 flag.
+
+2010-10-07  Javier Miranda  <miranda@adacore.com>
+
+	* a-tags.ads: Use new support for pragma Ada_2012 with function
+	Type_Is_Abstract.
+
 2010-10-07  Ed Schonberg  <schonberg@adacore.com>
 
 	* par-ch5.adb (P_Sequence_Of_Statements): In Ada2012 a label can end a

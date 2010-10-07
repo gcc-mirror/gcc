@@ -112,6 +112,7 @@ package body Itypes is
       Set_Treat_As_Volatile        (I_Typ, Treat_As_Volatile  (T));
       Set_Is_Atomic                (I_Typ, Is_Atomic          (T));
       Set_Is_Ada_2005_Only         (I_Typ, Is_Ada_2005_Only   (T));
+      Set_Is_Ada_2012_Only         (I_Typ, Is_Ada_2012_Only   (T));
       Set_Can_Never_Be_Null        (I_Typ);
 
       return I_Typ;

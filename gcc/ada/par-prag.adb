@@ -323,11 +323,14 @@ begin
 
       --  These pragmas must be processed at parse time, since we want to set
       --  the Ada version properly at parse time to recognize the appropriate
-      --  Ada version syntax.
+      --  Ada version syntax. However, it is only the zero argument form that
+      --  must be processed at parse time.
 
       when Pragma_Ada_12 | Pragma_Ada_2012 =>
-         Ada_Version := Ada_12;
-         Ada_Version_Explicit := Ada_12;
+         if Arg_Count = 0 then
+            Ada_Version := Ada_12;
+            Ada_Version_Explicit := Ada_12;
+         end if;
 
       -----------
       -- Debug --

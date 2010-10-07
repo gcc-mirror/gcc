@@ -475,6 +475,18 @@ package body Lib.Xref is
          Error_Msg_NE ("& is only defined in Ada 2005?", N, E);
       end if;
 
+      --  Warn if reference to Ada 2012 entity not in Ada 2012 mode. We only
+      --  detect real explicit references (modifications and references).
+
+      if Comes_From_Source (N)
+        and then Is_Ada_2012_Only (E)
+        and then Ada_Version < Ada_12
+        and then Warn_On_Ada_2012_Compatibility
+        and then (Typ = 'm' or else Typ = 'r')
+      then
+         Error_Msg_NE ("& is only defined in Ada 2012?", N, E);
+      end if;
+
       --  Never collect references if not in main source unit. However, we omit
       --  this test if Typ is 'e' or 'k', since these entries are structural,
       --  and it is useful to have them in units that reference packages as

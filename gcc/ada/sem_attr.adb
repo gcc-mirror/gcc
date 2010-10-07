@@ -7917,6 +7917,7 @@ package body Sem_Attr is
                   --  that generic unit. This includes any such attribute that
                   --  occurs within the body of a generic unit that is a child
                   --  of the generic unit where the subprogram is declared.
+
                   --  The rule also prohibits applying the attribute when the
                   --  access type is a generic formal access type (since the
                   --  level of the actual type is not known). This restriction

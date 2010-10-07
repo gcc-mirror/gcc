@@ -457,6 +457,7 @@ package body Einfo is
    --    Was_Hidden                      Flag196
    --    Is_Limited_Interface            Flag197
    --    Has_Pragma_Ordered              Flag198
+   --    Is_Ada_2012_Only                Flag199
 
    --    Has_Anon_Block_Suffix           Flag201
    --    Itype_Printed                   Flag202
@@ -510,7 +511,6 @@ package body Einfo is
    --    Is_Underlying_Record_View       Flag246
    --    OK_To_Rename                    Flag247
 
-   --    (unused)                        Flag199
    --    (unused)                        Flag200
 
    -----------------------
@@ -1608,6 +1608,11 @@ package body Einfo is
    begin
       return Flag185 (Id);
    end Is_Ada_2005_Only;
+
+   function Is_Ada_2012_Only (Id : E) return B is
+   begin
+      return Flag199 (Id);
+   end Is_Ada_2012_Only;
 
    function Is_Aliased (Id : E) return B is
    begin
@@ -4028,6 +4033,11 @@ package body Einfo is
    begin
       Set_Flag185 (Id, V);
    end Set_Is_Ada_2005_Only;
+
+   procedure Set_Is_Ada_2012_Only (Id : E; V : B := True) is
+   begin
+      Set_Flag199 (Id, V);
+   end Set_Is_Ada_2012_Only;
 
    procedure Set_Is_Aliased (Id : E; V : B := True) is
    begin
@@ -6958,6 +6968,7 @@ package body Einfo is
       W ("Is_Local_Anonymous_Access",       Flag194 (Id));
       W ("Is_Access_Constant",              Flag69  (Id));
       W ("Is_Ada_2005_Only",                Flag185 (Id));
+      W ("Is_Ada_2012_Only",                Flag199 (Id));
       W ("Is_Aliased",                      Flag15  (Id));
       W ("Is_Asynchronous",                 Flag81  (Id));
       W ("Is_Atomic",                       Flag85  (Id));

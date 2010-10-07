@@ -76,7 +76,7 @@ package Ada.Tags is
    pragma Ada_05 (Interface_Ancestor_Tags);
 
    function Type_Is_Abstract (T : Tag) return Boolean;
-   pragma Ada_05 (Type_Is_Abstract);
+   pragma Ada_2012 (Type_Is_Abstract);
 
    Tag_Error : exception;
 
