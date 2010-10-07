@@ -51,10 +51,15 @@
 #
 #  host_can_use_collect2 Set to yes normally; to no if the host cannot
 #			link or otherwise use collect2
+#
 #  use_long_long_for_widest_fast_int Set this to 'yes' if 'long long'
 #			(or '__int64') is wider than 'long' but still
 #			efficeiently supported by the host hardware.
 #			Only affects compile speed.  Default is 'no'.
+#
+#  host_lto_plugin_soname Set this to the name to which the LTO linker
+#			plugin gets compiled on this host, if it is
+#			different from the default "liblto_plugin.so".
 
 # When setting any of these variables, check to see if a corresponding
 # variable is present in config.build; if so, you will likely want to 
@@ -70,6 +75,7 @@ host_extra_gcc_objs=
 out_host_hook_obj=host-default.o
 host_can_use_collect2=yes
 use_long_long_for_widest_fast_int=no
+host_lto_plugin_soname=liblto_plugin.so
 
 # Unsupported hosts list.  Generally, only include hosts known to fail here,
 # since we allow hosts not listed to be supported generically.
@@ -206,12 +212,14 @@ case ${host} in
     out_host_hook_obj=host-cygwin.o
     host_xmake_file="${host_xmake_file} i386/x-cygwin"
     host_exeext=.exe
+    host_lto_plugin_soname=cyglto_plugin-0.dll
     ;;
   i[34567]86-*-mingw32*)
     host_xm_file=i386/xm-mingw32.h
     host_xmake_file="${host_xmake_file} i386/x-mingw32"
     host_exeext=.exe
     out_host_hook_obj=host-mingw32.o
+    host_lto_plugin_soname=liblto_plugin-0.dll
     ;;
   x86_64-*-mingw*)
     use_long_long_for_widest_fast_int=yes
@@ -219,6 +227,7 @@ case ${host} in
     host_xmake_file="${host_xmake_file} i386/x-mingw32"
     host_exeext=.exe
     out_host_hook_obj=host-mingw32.o
+    host_lto_plugin_soname=liblto_plugin-0.dll
     ;;
   i[34567]86-*-uwin*)
     echo "*** UWIN may not be used as a host platform because"

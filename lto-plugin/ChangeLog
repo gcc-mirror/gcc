@@ -1,3 +1,50 @@
+2010-10-07  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* configure.ac: Source config.gcc to determine lto_binary_reader.
+	(LTO_FORMAT): New AC_SUBST variable inferred from lto_binary_reader.
+	* Makefile.am (LTO_FORMAT): Import.
+	(liblto_plugin_la_SOURCES): Add object format dependent module
+	defined by LTO_FORMAT.
+	(liblto_plugin_la_LIBADD): Allow for both PIC and non-PIC libiberty,
+	and work around libtool warning.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+	* lto-plugin.c (struct sym_aux): Move to new lto-plugin.h.
+	(struct sym_aux): Likewise.
+	(struct plugin_symtab): Likewise.
+	(struct plugin_file_info): Likewise.
+	(LTO_SECTION_PREFIX): Likewise.
+	(add_symbols):  Make non-static.
+	(claimed_files): Likewise.
+	(num_claimed_files): Likewise.
+	(check): Likewise.
+	(parse_table_entry): Likewise.
+	(translate): Likewise.
+	(resolve_conflicts): Likewise.
+	(process_symtab): Move to new lto-plugin-elf.c object format dependent
+	source file.
+	(claim_file_handler): Likewise, and make non-static.
+	(onload): Call new onload_format_checks function.
+	* lto-plugin.h: New file.
+	(LTO_SECTION_PREFIX): Move here.
+	(struct sym_aux): Likewise.
+	(struct plugin_symtab): Likewise.
+	(struct plugin_file_info): Likewise.
+	(claim_file_handler): Add new function prototype.
+	(onload_format_checks): Likewise.
+	(check): Declare extern.
+	(translate): Likewise.
+	(parse_table_entry): Likewise.
+	(resolve_conflicts): Likewise.
+	(add_symbols):  Likewise.
+	(claimed_files): Likewise.
+	(num_claimed_files): Likewise.
+	* lto-plugin-elf.c (process_symtab): Move here.
+	(claim_file_handler): Likewise, and make non-static.
+	(onload_format_checks): New function factored out from onload.
+	* lto-plugin-coff.c (claim_file_handler): New function stub.
+	(onload_format_checks): Likewise.
+
 2010-08-05  Andi Kleen  <ak@linux.intel.com>
 
 	* lto-plugin.c: Include <hashtab.h>

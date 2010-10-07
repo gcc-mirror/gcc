@@ -11045,6 +11045,12 @@ case $use_collect2 in
     ;;
 esac
 
+
+cat >>confdefs.h <<_ACEOF
+#define LTOPLUGINSONAME "${host_lto_plugin_soname}"
+_ACEOF
+
+
 # ---------------------------
 # Assembler & linker features
 # ---------------------------
@@ -17127,7 +17133,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17130 "configure"
+#line 17136 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17233,7 +17239,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17236 "configure"
+#line 17242 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

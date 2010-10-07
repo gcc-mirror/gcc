@@ -79,10 +79,14 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(libexecsubdir)"
 LTLIBRARIES = $(libexecsub_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-liblto_plugin_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	../libiberty/pic/libiberty.a
-am_liblto_plugin_la_OBJECTS = lto-plugin.lo
+liblto_plugin_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(if $(wildcard \
+	../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
+am_liblto_plugin_la_OBJECTS = lto-plugin.lo \
+	lto-plugin-$(LTO_FORMAT).lo
 liblto_plugin_la_OBJECTS = $(am_liblto_plugin_la_OBJECTS)
+liblto_plugin_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(liblto_plugin_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp =
 am__depfiles_maybe =
@@ -139,6 +143,9 @@ LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
+
+# Which object format to parse.
+LTO_FORMAT = @LTO_FORMAT@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
@@ -225,8 +232,13 @@ libexecsubdir := $(libexecdir)/gcc/$(target_noncanonical)/$(gcc_version)
 AM_CPPFLAGS = -I$(top_srcdir)/../include $(LIBELFINC)
 AM_CFLAGS = -Wall -Werror
 libexecsub_LTLIBRARIES = liblto_plugin.la
-liblto_plugin_la_SOURCES = lto-plugin.c
-liblto_plugin_la_LIBADD = $(LIBELFLIBS) ../libiberty/pic/libiberty.a
+liblto_plugin_la_SOURCES = lto-plugin.c lto-plugin-$(LTO_FORMAT).c
+liblto_plugin_la_LIBADD = $(LIBELFLIBS) \
+	$(if $(wildcard ../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
+
+liblto_plugin_la_LDFLAGS = -no-undefined -bindir $(libexecsubdir) \
+	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a)
+
 all: all-am
 
 .SUFFIXES:
@@ -297,7 +309,7 @@ clean-libexecsubLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 liblto_plugin.la: $(liblto_plugin_la_OBJECTS) $(liblto_plugin_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libexecsubdir) $(liblto_plugin_la_OBJECTS) $(liblto_plugin_la_LIBADD) $(LIBS)
+	$(liblto_plugin_la_LINK) -rpath $(libexecsubdir) $(liblto_plugin_la_OBJECTS) $(liblto_plugin_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
