@@ -1323,7 +1323,7 @@ namespace std
         operator()(_Args&&... __args)
         {
           return this->__call<_Result>(
-              tuple<_Args...>(std::forward<_Args...>(__args)...),
+              tuple<_Args...>(std::forward<_Args>(__args)...),
               _Bound_indexes());
         }
 
@@ -1333,7 +1333,7 @@ namespace std
         operator()(_Args&&... __args) const
         {
           return this->__call<_Result>(
-              tuple<_Args...>(std::forward<_Args...>(__args)...),
+              tuple<_Args...>(std::forward<_Args>(__args)...),
               _Bound_indexes());
         }
 
@@ -1343,7 +1343,7 @@ namespace std
         operator()(_Args&&... __args) volatile
         {
           return this->__call<_Result>(
-              tuple<_Args...>(std::forward<_Args...>(__args)...),
+              tuple<_Args...>(std::forward<_Args>(__args)...),
               _Bound_indexes());
         }
 
@@ -1353,7 +1353,7 @@ namespace std
         operator()(_Args&&... __args) const volatile
         {
           return this->__call<_Result>(
-              tuple<_Args...>(std::forward<_Args...>(__args)...),
+              tuple<_Args...>(std::forward<_Args>(__args)...),
               _Bound_indexes());
         }
     };
