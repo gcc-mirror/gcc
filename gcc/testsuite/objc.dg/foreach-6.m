@@ -1,11 +1,9 @@
 /* Test basic Objective-C foreach syntax.  This tests warnings and errors.  */
-/* FIXME: Run this test with the NeXT runtime as well.  */
-/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 /* { dg-do compile } */
 
-#include <objc/objc.h>
-#include <objc/Object.h>
-extern void abort (void);
+#import "../objc-obj-c++-shared/Object1.h"
+#import "../objc-obj-c++-shared/next-mapping.h"
+
 /*
 struct __objcFastEnumerationState
 {

@@ -1,8 +1,20 @@
+2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc.dg/foreach-1.m: Adjust for -fnext-runtime compatibility.
+	* objc.dg/foreach-2.m: Likewise.
+	* objc.dg/foreach-3.m: Likewise.
+	* objc.dg/foreach-4.m: Likewise.
+	* objc.dg/foreach-5.m: Likewise.
+	* objc.dg/foreach-6.m: Likewise.
+	* objc.dg/foreach-7.m: Likewise.
+	* objc.dg/objc-foreach-4.m: Likewise.
+	* objc.dg/objc-foreach-5.m: Likewise.
+
 2010-10-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/45869
 	* gcc.dg/torture/pr45869.c: New testcase.
-
+	
 2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/set-not-used-1.m: New

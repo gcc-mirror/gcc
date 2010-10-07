@@ -1,18 +1,21 @@
 /* Test basic Objective-C foreach syntax.  This tests the mutation.
 */
-/* FIXME: Run this test with the NeXT runtime as well.  */
-/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
+/* { dg-do compile } */
+
 /* FIXME: This test should be run, and it succeeds if the program
    aborts at the right time (when the mutation happens).  It currently
    works, but how do we tell the testsuite to test for it ?
 */
-/* { dg-do compile } */
 
-#include <objc/objc.h>
-#include <objc/Object.h>
+#import "../objc-obj-c++-shared/Object1.h"
+#import "../objc-obj-c++-shared/next-mapping.h"
+#ifndef __NEXT_RUNTIME__
 #include <objc/NXConstStr.h>
+#endif
+
+extern int printf (const char *, ...);
 #include <stdlib.h>
-extern void abort (void);
+
 /*
 struct __objcFastEnumerationState
 {

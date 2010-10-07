@@ -1,6 +1,8 @@
 /* FIXME: Run this test with the GNU runtime as well.  */
-/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-do compile { target *-*-darwin* } } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
+
+#include <objc/objc-api.h>
 #import <Foundation/Foundation.h>
 
 NSArray * createTestVictim(unsigned capacity) {
