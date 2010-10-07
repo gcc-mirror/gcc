@@ -21128,6 +21128,12 @@ cp_parser_objc_encode_expression (cp_parser* parser)
       return error_mark_node;
     }
 
+  /* This happens if we find @encode(T) (where T is a template
+     typename or something dependent on a template typename) when
+     parsing a template.  In that case, we can't compile it
+     immediately, but we rather create an AT_ENCODE_EXPR which will
+     need to be instantiated when the template is used.
+  */
   if (dependent_type_p (type))
     {
       tree value = build_min (AT_ENCODE_EXPR, size_type_node, type);

@@ -1,5 +1,9 @@
 2010-10-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* obj-c++.dg/encode-10.mm: New testcase.
+
+2010-10-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	PR objc++/23614
 	* obj-c++.dg/lookup-2.mm: Do not assign 'nil' to a pointer to a
 	C++ class.  Removed XFAIL.
