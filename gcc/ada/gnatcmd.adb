@@ -407,6 +407,21 @@ procedure GNATCmd is
                                         (Main).Value),
                                    "ci"));
 
+                           if not Is_Regular_File (File.all) and then
+                             B_Start.all /= "b__"
+                           then
+                              File :=
+                                new String'
+                                  (Get_Name_String
+                                     (Proj.Project.Object_Directory.Name)    &
+                                   "b__"                                     &
+                                   MLib.Fil.Ext_To
+                                     (Get_Name_String
+                                        (Project_Tree.String_Elements.Table
+                                           (Main).Value),
+                                      "ci"));
+                           end if;
+
                            if Is_Regular_File (File.all) then
                               Last_Switches.Increment_Last;
                               Last_Switches.Table (Last_Switches.Last) := File;
@@ -429,6 +444,19 @@ procedure GNATCmd is
                                 B_Start.all                                  &
                                 Get_Name_String (Proj.Project.Library_Name)  &
                                 ".ci");
+
+                           if not Is_Regular_File (File.all) and then
+                               B_Start.all /= "b__"
+                           then
+                              File :=
+                                new String'
+                                  (Get_Name_String
+                                     (Proj.Project.Object_Directory.Name)    &
+                                   "b__"                                     &
+                                   Get_Name_String
+                                     (Proj.Project.Library_Name)             &
+                                   ".ci");
+                           end if;
 
                            if Is_Regular_File (File.all) then
                               Last_Switches.Increment_Last;
