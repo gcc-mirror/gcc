@@ -1,15 +1,19 @@
 /* Test basic Objective-C foreach syntax.  This tests iterations, with
    the basic syntax 'for (object in array) statements'
 */
-/* FIXME: Run this test with the NeXT runtime as well.  */
-/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 /* { dg-do run } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+/* { dg-additional-sources "../objc-obj-c++-shared/Object1.m" } */
 
-#include <objc/objc.h>
-#include <objc/Object.h>
+#import "../objc-obj-c++-shared/Object1.h"
+#import "../objc-obj-c++-shared/next-mapping.h"
+#ifndef __NEXT_RUNTIME__
 #include <objc/NXConstStr.h>
+#endif
+
+extern int printf (const char *, ...);
 #include <stdlib.h>
-extern void abort (void);
+
 /*
 struct __objcFastEnumerationState
 {

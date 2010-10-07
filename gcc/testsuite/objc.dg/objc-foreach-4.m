@@ -1,7 +1,9 @@
 /* Test for valid objc objects used in a for-each statement. */
 /* FIXME: Run this test with the GNU runtime as well.  */
-/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-do compile { target *-*-darwin* } } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
+
+#include <objc/objc-api.h>
 #include <Foundation/Foundation.h>
 
 // gcc -o foo foo.m -framework Foundation
