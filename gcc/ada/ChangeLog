@@ -1,5 +1,23 @@
 2010-10-07  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause, case
+	Component_Size): It is now illegal to give an incorrect component size
+	clause in the case of aliased or atomic components.
+	* sem_prag.adb (Analyze_Pragma, case Pack): It is now illegal to give
+	an effective pragma Pack in the case of aliased or atomic components.
+
+2010-10-07  Steve Baird  <baird@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): Do not bypass expansion
+	in the case of a violation of an active No_Task_Hierarchy restriction.
+
+2010-10-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validate_Derived_Type_Instance): If a formal derived
+	type is non-limited, an actual for it cannot be limited.
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.ads (No_Pool_Assigned): Update documentation.
 	* sem_ch13.adb (Analyze_Attribute_Definition_Clause, case
 	Storage_Size): We only set No_Pool_Assigned if the expression is a
