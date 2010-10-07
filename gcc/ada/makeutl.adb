@@ -203,7 +203,10 @@ package body Makeutl is
    -- Check_Source_Info_In_ALI --
    ------------------------------
 
-   function Check_Source_Info_In_ALI (The_ALI : ALI_Id) return Boolean is
+   function Check_Source_Info_In_ALI
+     (The_ALI : ALI_Id;
+      Tree    : Project_Tree_Ref) return Boolean
+   is
       Unit_Name : Name_Id;
 
    begin
@@ -242,7 +245,7 @@ package body Makeutl is
          end loop;
       end loop;
 
-      --  Loop to check subunits
+      --  Loop to check subunits and replaced sources
 
       for D in ALIs.Table (The_ALI).First_Sdep ..
                ALIs.Table (The_ALI).Last_Sdep
@@ -253,8 +256,32 @@ package body Makeutl is
          begin
             Unit_Name := SD.Subunit_Name;
 
-            if Unit_Name /= No_Name then
+            if Unit_Name = No_Name then
+               --  Check if this source file has been replaced by a source with
+               --  a different file name.
 
+               if Tree /= null and then Tree.Replaced_Source_Number > 0 then
+                  declare
+                     Replacement : constant File_Name_Type :=
+                       Replaced_Source_HTable.Get
+                         (Tree.Replaced_Sources, SD.Sfile);
+
+                  begin
+                     if Replacement /= No_File then
+                        if Verbose_Mode then
+                           Write_Line
+                             ("source file" &
+                              Get_Name_String (SD.Sfile) &
+                              " has been replaced by " &
+                              Get_Name_String (Replacement));
+                        end if;
+
+                        return False;
+                     end if;
+                  end;
+               end if;
+
+            else
                --  For separates, the file is no longer associated with the
                --  unit ("proc-sep.adb" is not associated with unit "proc.sep")
                --  so we need to check whether the source file still exists in

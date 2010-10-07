@@ -939,6 +939,16 @@ package body Sem_Elab is
                  Make_Attribute_Reference (Loc,
                    Attribute_Name => Name_Elaborated,
                    Prefix => New_Occurrence_Of (Spec_Entity (E_Scope), Loc)));
+
+               --  Prevent duplicate elaboration checks on the same call,
+               --  which can happen if the body enclosing the call appears
+               --  itself in a call whose elaboration check is delayed.
+
+               if
+                 Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
+               then
+                  Set_No_Elaboration_Check (N);
+               end if;
             end if;
 
          --  Case of static elaboration model

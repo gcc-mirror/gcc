@@ -2193,7 +2193,14 @@ package body Exp_Ch4 is
             begin
                Prim := First_Elmt (Collect_Primitive_Operations (Full_Type));
                while Present (Prim) loop
-                  if Chars (Node (Prim)) = Name_Op_Eq then
+
+                  --  Locate primitive equality with the right signature
+
+                  if Chars (Node (Prim)) = Name_Op_Eq
+                    and then Etype (First_Formal (Node (Prim))) =
+                               Etype (Next_Formal (First_Formal (Node (Prim))))
+                    and then Etype (Node (Prim)) = Standard_Boolean
+                  then
                      if Is_Abstract_Subprogram (Node (Prim)) then
                         return
                           Make_Raise_Program_Error (Loc,

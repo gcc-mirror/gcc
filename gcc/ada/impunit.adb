@@ -177,6 +177,7 @@ package body Impunit is
       --  harmless (and useful) to make then available in Ada 95 mode, since
       --  they do not deal with Wide_Wide_Character.
 
+     "a-wichha",    -- Ada.Wide_Characters.Handling
      "a-stuten",    -- Ada.Strings.UTF_Encoding
      "a-suenco",    -- Ada.Strings.UTF_Encoding.Conversions
      "a-suesen",    -- Ada.Strings.UTF_Encoding.String_Encoding
@@ -426,6 +427,7 @@ package body Impunit is
      "a-wwboio",    -- Ada.Wide_Text_IO.Wide_Bounded_IO
      "a-wwunio",    -- Ada.Wide_Text_IO.Wide_Unbounded_IO
      "a-zchara",    -- Ada.Wide_Wide_Characters
+     "a-zchhan",    -- Ada.Wide_Wide_Characters.Handling
      "a-ztcoio",    -- Ada.Wide_Wide_Text_IO.Complex_IO
      "a-ztedit",    -- Ada.Wide_Wide_Text_IO.Editing
      "a-zttest",    -- Ada.Wide_Wide_Text_IO.Text_Streams

@@ -105,7 +105,9 @@ package Makeutl is
    --  True if the unit is in one of the project file, but the file name is not
    --  one of its source. Returns False otherwise.
 
-   function Check_Source_Info_In_ALI (The_ALI : ALI.ALI_Id) return Boolean;
+   function Check_Source_Info_In_ALI
+     (The_ALI : ALI.ALI_Id;
+      Tree    : Project_Tree_Ref) return Boolean;
    --  Check whether all file references in ALI are still valid (i.e. the
    --  source files are still associated with the same units). Return True
    --  if everything is still valid.

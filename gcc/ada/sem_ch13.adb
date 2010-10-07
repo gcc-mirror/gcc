@@ -2506,16 +2506,16 @@ package body Sem_Ch13 is
    --  for the remainder of this processing.
 
    procedure Analyze_Record_Representation_Clause (N : Node_Id) is
-      Ident   : constant Node_Id    := Identifier (N);
-      Rectype : Entity_Id;
-      CC      : Node_Id;
-      Posit   : Uint;
-      Fbit    : Uint;
-      Lbit    : Uint;
-      Hbit    : Uint := Uint_0;
-      Comp    : Entity_Id;
-      Ocomp   : Entity_Id;
+      Ident   : constant Node_Id := Identifier (N);
       Biased  : Boolean;
+      CC      : Node_Id;
+      Comp    : Entity_Id;
+      Fbit    : Uint;
+      Hbit    : Uint := Uint_0;
+      Lbit    : Uint;
+      Ocomp   : Entity_Id;
+      Posit   : Uint;
+      Rectype : Entity_Id;
 
       CR_Pragma : Node_Id := Empty;
       --  Points to N_Pragma node if Complete_Representation pragma present
@@ -2542,10 +2542,6 @@ package body Sem_Ch13 is
          Error_Msg_NE
            ("record type required, found}", Ident, First_Subtype (Rectype));
          return;
-
-      elsif Is_Unchecked_Union (Rectype) then
-         Error_Msg_N
-           ("record rep clause not allowed for Unchecked_Union", N);
 
       elsif Scope (Rectype) /= Current_Scope then
          Error_Msg_N ("type must be declared in this scope", N);
@@ -2721,6 +2717,24 @@ package body Sem_Ch13 is
                   if No (Comp) then
                      Error_Msg_N
                        ("component clause is for non-existent field", CC);
+
+                  --  Ada 2012 (AI05-0026): Any name that denotes a
+                  --  discriminant of an object of an unchecked union type
+                  --  shall not occur within a record_representation_clause.
+
+                  --  The general restriction of using record rep clauses on
+                  --  Unchecked_Union types has now been lifted. Since it is
+                  --  possible to introduce a record rep clause which mentions
+                  --  the discriminant of an Unchecked_Union in non-Ada 2012
+                  --  code, this check is applied to all versions of the
+                  --  language.
+
+                  elsif Ekind (Comp) = E_Discriminant
+                    and then Is_Unchecked_Union (Rectype)
+                  then
+                     Error_Msg_N
+                       ("cannot reference discriminant of Unchecked_Union",
+                        Component_Name (CC));
 
                   elsif Present (Component_Clause (Comp)) then
 

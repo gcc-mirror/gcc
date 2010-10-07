@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2005-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2005-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -173,7 +173,16 @@ package Ada.Wide_Wide_Characters.Unicode is
    --  The following function is used to fold to upper case, as required by
    --  the Ada 2005 standard rules for identifier case folding. Two
    --  identifiers are equivalent if they are identical after folding all
-   --  letters to upper case using this routine.
+   --  letters to upper case using this routine. A fold to lower routine is
+   --  also provided.
+
+   function To_Lower_Case
+     (U : Wide_Wide_Character) return Wide_Wide_Character;
+   pragma Inline (To_Lower_Case);
+   --  If U represents an upper case letter, returns the corresponding lower
+   --  case letter, otherwise U is returned unchanged. The folding is locale
+   --  independent as defined by documents referenced in the note in section
+   --  1 of ISO/IEC 10646:2003
 
    function To_Upper_Case
      (U : Wide_Wide_Character) return Wide_Wide_Character;

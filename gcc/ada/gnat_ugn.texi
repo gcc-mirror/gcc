@@ -6980,10 +6980,12 @@ may generally be compiled using this switch (see the description of the
 @option{-gnat83} and @option{-gnat95} switches for further
 information).
 
+@ifset PROEDITION
 Note that even though Ada 2005 is the current official version of the
 language, GNAT still compiles in Ada 95 mode by default, so if you are
 using Ada 2005 features in your program, you must use this switch (or
 the equivalent Ada_05 or Ada_2005 configuration pragmas).
+@end ifset
 
 @item -gnat12 or -gnat2012 (Ada 2012 mode)
 @cindex @option{-gnat12} (@command{gcc})

@@ -37,6 +37,7 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Exp_Ch7;  use Exp_Ch7;
 with Exp_Dist; use Exp_Dist;
 with Lib;      use Lib;
 with Lib.Writ; use Lib.Writ;
@@ -392,9 +393,14 @@ package body Sem_Prag is
       procedure Check_At_Most_N_Arguments (N : Nat);
       --  Check there are no more than N arguments present
 
-      procedure Check_Component (Comp : Node_Id);
-      --  Examine Unchecked_Union component for correct use of per-object
+      procedure Check_Component
+        (Comp            : Node_Id;
+         UU_Typ          : Entity_Id;
+         In_Variant_Part : Boolean := False);
+      --  Examine an Unchecked_Union component for correct use of per-object
       --  constrained subtypes, and for restrictions on finalizable components.
+      --  UU_Typ is the related Unchecked_Union type. Flag In_Variant_Part
+      --  should be set when Comp comes from a record variant.
 
       procedure Check_Duplicated_Export_Name (Nam : Node_Id);
       --  Nam is an N_String_Literal node containing the external name set by
@@ -483,9 +489,10 @@ package body Sem_Prag is
       --  and to library level instantiations), and they are simply ignored,
       --  which is implemented by rewriting them as null statements.
 
-      procedure Check_Variant (Variant : Node_Id);
-      --  Check Unchecked_Union variant for lack of nested variants and
-      --  presence of at least one component.
+      procedure Check_Variant (Variant : Node_Id; UU_Typ : Entity_Id);
+      --  Check an Unchecked_Union variant for lack of nested variants and
+      --  presence of at least one component. UU_Typ is the related Unchecked_
+      --  Union type.
 
       procedure Error_Pragma (Msg : String);
       pragma No_Return (Error_Pragma);
@@ -1094,39 +1101,80 @@ package body Sem_Prag is
       -- Check_Component --
       ---------------------
 
-      procedure Check_Component (Comp : Node_Id) is
+      procedure Check_Component
+        (Comp            : Node_Id;
+         UU_Typ          : Entity_Id;
+         In_Variant_Part : Boolean := False)
+      is
+         Comp_Id : constant Entity_Id := Defining_Identifier (Comp);
+         Sindic  : constant Node_Id :=
+                     Subtype_Indication (Component_Definition (Comp));
+         Typ     : constant Entity_Id := Etype (Comp_Id);
+
+         function Inside_Generic_Body (Id : Entity_Id) return Boolean;
+         --  Determine whether entity Id appears inside a generic body
+
+         -------------------------
+         -- Inside_Generic_Body --
+         -------------------------
+
+         function Inside_Generic_Body (Id : Entity_Id) return Boolean is
+            S : Entity_Id := Id;
+
+         begin
+            while Present (S)
+              and then S /= Standard_Standard
+            loop
+               if Ekind (S) = E_Generic_Package
+                 and then In_Package_Body (S)
+               then
+                  return True;
+               end if;
+
+               S := Scope (S);
+            end loop;
+
+            return False;
+         end Inside_Generic_Body;
+
+      --  Start of processing for Check_Component
+
       begin
-         if Nkind (Comp) = N_Component_Declaration then
-            declare
-               Sindic : constant Node_Id :=
-                          Subtype_Indication (Component_Definition (Comp));
-               Typ    : constant Entity_Id :=
-                          Etype (Defining_Identifier (Comp));
-            begin
-               if Nkind (Sindic) = N_Subtype_Indication then
+         --  Ada 2005 (AI-216): If a component subtype is subject to a per-
+         --  object constraint, then the component type shall be an Unchecked_
+         --  Union.
 
-                  --  Ada 2005 (AI-216): If a component subtype is subject to
-                  --  a per-object constraint, then the component type shall
-                  --  be an Unchecked_Union.
+         if Nkind (Sindic) = N_Subtype_Indication
+           and then Has_Per_Object_Constraint (Comp_Id)
+           and then not Is_Unchecked_Union (Etype (Subtype_Mark (Sindic)))
+         then
+            Error_Msg_N
+              ("component subtype subject to per-object constraint " &
+               "must be an Unchecked_Union", Comp);
 
-                  if Has_Per_Object_Constraint (Defining_Identifier (Comp))
-                    and then
-                      not Is_Unchecked_Union (Etype (Subtype_Mark (Sindic)))
-                  then
-                     Error_Msg_N ("component subtype subject to per-object" &
-                       " constraint must be an Unchecked_Union", Comp);
-                  end if;
-               end if;
+         --  Ada 2012 (AI05-0026): For an unchecked union type declared within
+         --  the body of a generic unit, or within the body of any of its
+         --  descendant library units, no part of the type of a component
+         --  declared in a variant_part of the unchecked union type shall be of
+         --  a formal private type or formal private extension declared within
+         --  the formal part of the generic unit.
 
-               if Is_Controlled (Typ) then
-                  Error_Msg_N
-                   ("component of unchecked union cannot be controlled", Comp);
+         elsif Ada_Version >= Ada_2012
+           and then Inside_Generic_Body (UU_Typ)
+           and then In_Variant_Part
+           and then Is_Private_Type (Typ)
+           and then Is_Generic_Type (Typ)
+         then
+            Error_Msg_N
+              ("component of Unchecked_Union cannot be of generic type", Comp);
 
-               elsif Has_Task (Typ) then
-                  Error_Msg_N
-                   ("component of unchecked union cannot have tasks", Comp);
-               end if;
-            end;
+         elsif Needs_Finalization (Typ) then
+            Error_Msg_N
+              ("component of Unchecked_Union cannot be controlled", Comp);
+
+         elsif Has_Task (Typ) then
+            Error_Msg_N
+              ("component of Unchecked_Union cannot have tasks", Comp);
          end if;
       end Check_Component;
 
@@ -1698,7 +1746,7 @@ package body Sem_Prag is
       -- Check_Variant --
       -------------------
 
-      procedure Check_Variant (Variant : Node_Id) is
+      procedure Check_Variant (Variant : Node_Id; UU_Typ : Entity_Id) is
          Clist : constant Node_Id := Component_List (Variant);
          Comp  : Node_Id;
 
@@ -1712,7 +1760,7 @@ package body Sem_Prag is
 
          Comp := First (Component_Items (Clist));
          while Present (Comp) loop
-            Check_Component (Comp);
+            Check_Component (Comp, UU_Typ, In_Variant_Part => True);
             Next (Comp);
          end loop;
       end Check_Variant;
@@ -11971,7 +12019,7 @@ package body Sem_Prag is
 
                Comp := First (Component_Items (Clist));
                while Present (Comp) loop
-                  Check_Component (Comp);
+                  Check_Component (Comp, Typ);
                   Next (Comp);
                end loop;
 
@@ -11986,7 +12034,7 @@ package body Sem_Prag is
 
                Variant := First (Variants (Vpart));
                while Present (Variant) loop
-                  Check_Variant (Variant);
+                  Check_Variant (Variant, Typ);
                   Next (Variant);
                end loop;
             end if;

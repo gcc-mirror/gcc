@@ -1,3 +1,83 @@
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb: Minor reformatting
+
+2010-10-07  Olivier Ramonat  <ramonat@adacore.com>
+
+	* gnat_ugn.texi: Minor editing.
+	* opt.ads: Document that scripts rely on specific formats in opt.ads
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
+	* a-wichun.ads, a-wichun.adb (To_Lower_Case): New function
+	(To_Upper_Case): Fix to be inverse of To_Lower_Case
+	* a-zchuni.ads, a-zchuni.adb (To_Lower_Case): New function
+	(To_Upper_Case): Fix to be inverse of To_Lower_Case
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
+	* a-wichha.adb, a-wichha.ads, a-zchhan.adb, a-zchhan.ads: New file.
+	* impunit.adb: Add entries for a-wichha/a-zchhan
+	* Makefile.rtl: Add entries for a-wichha/a-zchhan
+
+2010-10-07  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Check): Call Check_Source_Info_In_ALI with Project_Tree
+	* makeutl.adb (Check_Source_Info_In_ALI): If there is at least one
+	replaced source, check that none of the replaced sources are in the
+	dependencies.
+	* makeutl.ads (Check_Source_Info_In_ALI): New parameter Tree
+	* prj-nmsc.adb (Remove_Source): New parameter Tree. If the source is
+	replaced with a source with a different file name, put it in the hash
+	table Replaced_Sources.
+	(Add_Source): Call Remove_Source with Data.Tree. If there is at least
+	one replaced source, check if it has the same file name as the current
+	source; if it has, remove it from the hash table Replaced_Sources.
+	* prj.adb (Reset): Reset hash table Tree.Replaced_Sources
+	* prj.ads (Replaced_Source_HTable): New hash table
+	(Project_Tree_Data): New components Replaced_Sources and
+	Replaced_Source_Number.
+
+2010-10-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_elab.adb (Check_A_Call): After inserting elaboration check, set
+	proper flag to prevent a double elaboration check on the same call.
+	* exp_util.adb (Insert_Actions): If the enclosing node is an
+	Expression_With_Actions and it has been analyzed already, find
+	insertion point further up in the tree.
+
+2010-10-07  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Analyze_Record_Representation_Clause): Alphabetize all
+	local variables. Remove the general restriction which prohibits the
+	application of record rep clauses to Unchecked_Union types. Add Ada
+	2012 check to detect improper naming of an Unchecked_Union
+	discriminant in record rep clause.
+	* sem_prag.adb: Add with and use clause for Exp_Ch7.
+	(Analyze_Pragma): Unchecked_Union case: Propagate the Unchecked_Union
+	type to all invocations of Check_Component and Check_Variant.
+	(Check_Component): Add formal parameters UU_Typ and In_Variant_Part.
+	Rewritten.  Add Ada 2012 check to detect improper use of formal
+	private types and private extensions as component types of an
+	Unchecked_Union declared inside a generic body.
+	(Check_Variant): Add formal parameter UU_Typ. Propagate the
+	Unchecked_Union type to all calls of Check_Component. Signal that the
+	current component comes from the variant part of an Unchecked_Union
+	type.
+	(Inside_Generic_Body): New routine.
+
+2010-10-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_Composite_Equality): When looking for a primitive
+	equality operation for a record component, verify that both formals
+	have the same type, and the result type is boolean.
+
+2010-10-07  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (Check_Files): When looking for the .ci file for a
+	binder generated file, look for both b~xxx and b__xxx as gprbuild
+	always uses b__ as the prefix of such files.
+
 2010-10-07  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_res.adb: Minor reformatting.
