@@ -1,3 +1,7 @@
+2010-10-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* vi.po: New.
+
 2010-09-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* exgettext: Handle {} in operand of MissingArgError.  Handle
