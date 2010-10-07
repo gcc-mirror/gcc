@@ -536,7 +536,8 @@ package Rtsfind is
      RO_RT_Delay_Until,                  -- Ada.Real_Time.Delays
      RO_RT_To_Duration,                  -- Ada.Real_Time.Delays
 
-     RE_Timing_Event,                    -- Ada_Real_Time_Timing_Events
+     RE_Set_Handler,                     -- Ada_Real_Time.Timing_Events
+     RE_Timing_Event,                    -- Ada_Real_Time.Timing_Events
 
      RE_Root_Stream_Type,                -- Ada.Streams
      RE_Stream_Element,                  -- Ada.Streams
@@ -1707,6 +1708,7 @@ package Rtsfind is
      RO_RT_Delay_Until                   => Ada_Real_Time_Delays,
      RO_RT_To_Duration                   => Ada_Real_Time_Delays,
 
+     RE_Set_Handler                      => Ada_Real_Time_Timing_Events,
      RE_Timing_Event                     => Ada_Real_Time_Timing_Events,
 
      RE_Root_Stream_Type                 => Ada_Streams,

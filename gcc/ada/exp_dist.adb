@@ -5541,7 +5541,7 @@ package body Exp_Dist is
                --  Name
 
                 Make_String_Literal (Loc,
-                  Full_Qualified_Name (Desig)),
+                  Fully_Qualified_Name_String (Desig)),
 
                --  Handler
 
@@ -5887,7 +5887,7 @@ package body Exp_Dist is
                    Unchecked_Convert_To (RTE (RE_Address),
                      New_Occurrence_Of (RACW_Parameter, Loc)),
                    Make_String_Literal (Loc,
-                     Strval => Full_Qualified_Name
+                     Strval => Fully_Qualified_Name_String
                                  (Etype (Designated_Type (RACW_Type)))),
                    Build_Stub_Tag (Loc, RACW_Type),
                    New_Occurrence_Of (Boolean_Literals (Is_RAS), Loc),
@@ -6083,7 +6083,7 @@ package body Exp_Dist is
                  Parameter_Associations => New_List (
                    Unchecked_Convert_To (RTE (RE_Address), Object),
                   Make_String_Literal (Loc,
-                    Strval => Full_Qualified_Name
+                    Strval => Fully_Qualified_Name_String
                                 (Etype (Designated_Type (RACW_Type)))),
                   Build_Stub_Tag (Loc, RACW_Type),
                   New_Occurrence_Of (Boolean_Literals (Is_RAS), Loc),

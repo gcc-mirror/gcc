@@ -1419,8 +1419,8 @@ package body Sem_Ch10 is
                      P := Parent_Spec (Unit (N));
                      loop
                         if Unit (P) = Lib_U then
-                           Error_Msg_N ("limited with_clause of immediate "
-                                        & "ancestor not allowed", Item);
+                           Error_Msg_N ("limited with_clause cannot "
+                                        & "name ancestor", Item);
                            exit;
                         end if;
 
