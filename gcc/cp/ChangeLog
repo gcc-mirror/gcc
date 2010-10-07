@@ -1,6 +1,16 @@
+2010-10-07  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
+
+	Merge from apple/trunk branch on FSF servers.
+
+	2006-04-26  Fariborz Jahanian <fjahanian@apple.com>
+
+        Radar 4508851
+	* parser.c (cp_parser_objc_interstitial_code): Recognize
+	and parse RID_NAMESPACE keyword.
+
 2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
 
-	parser.c (cp_parser_objc_method_tail_params_opt): Peek new token after
+	* parser.c (cp_parser_objc_method_tail_params_opt): Peek new token after
 	finding ellipsis, before checking for attributes.
 
 2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>

@@ -1,3 +1,12 @@
+2010-10-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+	
+	2006-04-26  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4508851
+	* obj-c++.dg/method-namespace-1.mm: New.
+
 2010-10-07  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/tree-ssa/sra-11.c: New test.

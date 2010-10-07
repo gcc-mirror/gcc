@@ -21635,6 +21635,8 @@ cp_parser_objc_interstitial_code (cp_parser* parser)
       cp_lexer_consume_token (parser->lexer);
       objc_set_method_opt (false);
     }
+  else if (token->keyword == RID_NAMESPACE)
+    cp_parser_namespace_definition (parser);
   /* Other stray characters must generate errors.  */
   else if (token->type == CPP_OPEN_BRACE || token->type == CPP_CLOSE_BRACE)
     {
