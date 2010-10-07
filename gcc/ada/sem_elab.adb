@@ -944,8 +944,8 @@ package body Sem_Elab is
                --  which can happen if the body enclosing the call appears
                --  itself in a call whose elaboration check is delayed.
 
-               if
-                 Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
+               if Nkind_In (N, N_Function_Call,
+                               N_Procedure_Call_Statement)
                then
                   Set_No_Elaboration_Check (N);
                end if;

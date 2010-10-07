@@ -1,5 +1,13 @@
 2010-10-07  Robert Dewar  <dewar@adacore.com>
 
+	* gnatcmd.adb, make.adb, prj-nmsc.adb, sem_elab.adb: Minor reformatting
+
+2010-10-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch11.adb (Expand_N_Exception_Declaration): Update comments.
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
 	* sem_res.adb: Minor reformatting
 
 2010-10-07  Olivier Ramonat  <ramonat@adacore.com>
