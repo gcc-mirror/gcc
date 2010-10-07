@@ -2451,11 +2451,15 @@ package body Exp_Util is
                return;
 
             --  Case of appearing within an Expressions_With_Actions node. We
-            --  prepend the actions to the list of actions already there.
+            --  prepend the actions to the list of actions already there, if
+            --  the node has not been analyzed yet. Otherwise find insertion
+            --  location further up the tree.
 
             when N_Expression_With_Actions =>
-               Prepend_List (Ins_Actions, Actions (P));
-               return;
+               if not Analyzed (P) then
+                  Prepend_List (Ins_Actions, Actions (P));
+                  return;
+               end if;
 
             --  Case of appearing in the condition of a while expression or
             --  elsif. We insert the actions into the Condition_Actions field.

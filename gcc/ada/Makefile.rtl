@@ -268,6 +268,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-tiunio$(objext) \
   a-unccon$(objext) \
   a-uncdea$(objext) \
+  a-wichha$(objext) \
   a-wichun$(objext) \
   a-widcha$(objext) \
   a-witeio$(objext) \
@@ -292,6 +293,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-wwboio$(objext) \
   a-wwunio$(objext) \
   a-zchara$(objext) \
+  a-zchhan$(objext) \
   a-zchuni$(objext) \
   a-zrstfi$(objext) \
   a-ztcoau$(objext) \

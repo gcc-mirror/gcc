@@ -1150,7 +1150,7 @@ package body Sem_Res is
    begin
       return Ekind (Btyp) = E_Access_Type
         or else (Ekind (Btyp) = E_Access_Subprogram_Type
-                   and then Comes_From_Source (Btyp));
+                  and then Comes_From_Source (Btyp));
    end Is_Definite_Access_Type;
 
    ----------------------

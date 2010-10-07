@@ -1333,6 +1333,14 @@ package Prj is
    -- Project_Tree_Data --
    -----------------------
 
+   package Replaced_Source_HTable is new Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => File_Name_Type,
+      No_Element => No_File,
+      Key        => File_Name_Type,
+      Hash       => Hash,
+      Equal      => "=");
+
    type Private_Project_Tree_Data is private;
    --  Data for a project tree that is used only by the Project Manager
 
@@ -1346,6 +1354,13 @@ package Prj is
          Arrays            : Array_Table.Instance;
          Packages          : Package_Table.Instance;
          Projects          : Project_List;
+
+         Replaced_Sources  : Replaced_Source_HTable.Instance;
+         --  The list of sources that have been replaced by sources with
+         --  different file names.
+
+         Replaced_Source_Number : Natural := 0;
+         --  The number of entries in Replaced_Sources
 
          Units_HT : Units_Htable.Instance;
          --  Unit name to Unit_Index (and from there so Source_Id)

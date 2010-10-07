@@ -1843,7 +1843,7 @@ package body Make is
 
             elsif not Read_Only and then Main_Project /= No_Project then
 
-               if not Check_Source_Info_In_ALI (ALI) then
+               if not Check_Source_Info_In_ALI (ALI, Project_Tree) then
                   ALI := No_ALI_Id;
                   return;
                end if;
