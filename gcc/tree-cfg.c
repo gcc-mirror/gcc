@@ -3422,6 +3422,7 @@ verify_gimple_assign_binary (gimple stmt)
       {
 	if (TREE_CODE (rhs1_type) != VECTOR_TYPE
 	    || !(INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
+		 || POINTER_TYPE_P (TREE_TYPE (rhs1_type))
 		 || FIXED_POINT_TYPE_P (TREE_TYPE (rhs1_type))
 		 || SCALAR_FLOAT_TYPE_P (TREE_TYPE (rhs1_type)))
 	    || (!INTEGRAL_TYPE_P (rhs2_type)
@@ -3435,9 +3436,9 @@ verify_gimple_assign_binary (gimple stmt)
 	    debug_generic_expr (rhs2_type);
 	    return true;
 	  }
-	/* For shifting a vector of floating point components we
+	/* For shifting a vector of non-integral components we
 	   only allow shifting by a constant multiple of the element size.  */
-	if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (rhs1_type))
+	if (!INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
 	    && (TREE_CODE (rhs2) != INTEGER_CST
 		|| !div_if_zero_remainder (EXACT_DIV_EXPR, rhs2,
 					   TYPE_SIZE (TREE_TYPE (rhs1_type)))))

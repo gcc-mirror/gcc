@@ -1,3 +1,9 @@
+2010-10-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/45869
+	* tree-cfg.c (verify_gimple_assign_binary): Allow vector shifts
+	of pointers.
+
 2010-10-07  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_prologue): Use gen_int_mode
