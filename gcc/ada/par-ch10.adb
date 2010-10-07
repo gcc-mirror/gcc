@@ -634,7 +634,6 @@ package body Ch10 is
          --  Check we did not with any child units
 
          Item := First (Context_Items (Comp_Unit_Node));
-
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause
               and then Nkind (Name (Item)) /= N_Identifier

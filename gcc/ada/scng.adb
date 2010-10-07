@@ -241,6 +241,14 @@ package body Scng is
       --  past the closing quote of the string literal, Token and Token_Node
       --  are set appropriately, and the checksum is updated.
 
+      procedure Skip_Other_Format_Characters;
+      --  Skips past any "other format" category characters at the current
+      --  cursor location (does not skip past spaces or any other characters).
+
+      function Start_Of_Wide_Character return Boolean;
+      --  Returns True if the scan pointer is pointing to the start of a wide
+      --  character sequence, does not modify the scan pointer in any case.
+
       -----------------------
       -- Check_End_Of_Line --
       -----------------------
@@ -1039,15 +1047,7 @@ package body Scng is
                   Code := Get_Char_Code (C);
                   Scan_Ptr := Scan_Ptr + 1;
 
-               elsif (C = ESC
-                        and then Wide_Character_Encoding_Method
-                                   in WC_ESC_Encoding_Method)
-                 or else (C in Upper_Half_Character
-                            and then Upper_Half_Encoding)
-                 or else (C = '['
-                            and then Source (Scan_Ptr + 1) = '"'
-                            and then Identifier_Char (Source (Scan_Ptr + 2)))
-               then
+               elsif Start_Of_Wide_Character then
                   Wptr := Scan_Ptr;
                   Scan_Wide (Source, Scan_Ptr, Code, Err);
 
@@ -1108,6 +1108,62 @@ package body Scng is
          Set_String;
          return;
       end Slit;
+
+      ----------------------------------
+      -- Skip_Other_Format_Characters --
+      ----------------------------------
+
+      procedure Skip_Other_Format_Characters is
+         P    : Source_Ptr;
+         Code : Char_Code;
+         Err  : Boolean;
+
+      begin
+         while Start_Of_Wide_Character loop
+            P := Scan_Ptr;
+            Scan_Wide (Source, Scan_Ptr, Code, Err);
+
+            if not Is_UTF_32_Other (UTF_32 (Code)) then
+               Scan_Ptr := P;
+               return;
+            end if;
+         end loop;
+      end Skip_Other_Format_Characters;
+
+      -----------------------------
+      -- Start_Of_Wide_Character --
+      -----------------------------
+
+      function Start_Of_Wide_Character return Boolean is
+         C : constant Character := Source (Scan_Ptr);
+
+      begin
+         --  ESC encoding method with ESC present
+
+         if C = ESC
+           and then Wide_Character_Encoding_Method in WC_ESC_Encoding_Method
+         then
+            return True;
+
+         --  Upper half character with upper half encoding
+
+         elsif C in Upper_Half_Character and then Upper_Half_Encoding then
+            return True;
+
+         --  Brackets encoding
+
+         elsif C = '['
+           and then Source (Scan_Ptr + 1) = '"'
+           and then Identifier_Char (Source (Scan_Ptr + 2))
+         then
+            return True;
+
+         --  Not the start of a wide character
+
+         else
+            return False;
+         end if;
+      end Start_Of_Wide_Character;
 
    --  Start of processing for Scan
 
@@ -1513,12 +1569,7 @@ package body Scng is
                   --  If we have a wide character, we have to scan it out,
                   --  because it might be a legitimate line terminator
 
-                  elsif (Source (Scan_Ptr) = ESC
-                           and then Identifier_Char (ESC))
-                    or else
-                         (Source (Scan_Ptr) in Upper_Half_Character
-                            and then Upper_Half_Encoding)
-                  then
+                  elsif Start_Of_Wide_Character then
                      declare
                         Wptr : constant Source_Ptr := Scan_Ptr;
                         Code : Char_Code;
@@ -1626,18 +1677,7 @@ package body Scng is
             else
                --  Case of wide character literal
 
-               if (Source (Scan_Ptr) = ESC
-                     and then
-                    Wide_Character_Encoding_Method in WC_ESC_Encoding_Method)
-                 or else
-                   (Source (Scan_Ptr) in Upper_Half_Character
-                     and then
-                    Upper_Half_Encoding)
-                 or else
-                   (Source (Scan_Ptr) = '['
-                     and then
-                    Source (Scan_Ptr + 1) = '"')
-               then
+               if Start_Of_Wide_Character then
                   Wptr := Scan_Ptr;
                   Scan_Wide (Source, Scan_Ptr, Code, Err);
                   Accumulate_Checksum (Code);
@@ -1872,6 +1912,10 @@ package body Scng is
 
             Nlit;
 
+            --  Check for proper delimiter, ignoring other format characters
+
+            Skip_Other_Format_Characters;
+
             if Identifier_Char (Source (Scan_Ptr)) then
                Error_Msg_S
                  ("delimiter required between literal and identifier");
@@ -2039,6 +2083,12 @@ package body Scng is
             elsif Is_UTF_32_Space (Cat) then
                goto Scan_Next_Character;
 
+            --  If other format character, ignore and keep scanning (again we
+            --  do not include in the checksum) (this is for AI-0079).
+
+            elsif Is_UTF_32_Other (Cat) then
+               goto Scan_Next_Character;
+
             --  If OK wide line terminator, terminate current line
 
             elsif Is_UTF_32_Line_Terminator (UTF_32 (Code)) then
@@ -2058,16 +2108,6 @@ package body Scng is
 
             elsif Is_UTF_32_Mark (Cat) then
                Error_Msg ("identifier cannot start with mark character", Wptr);
-               Scan_Ptr := Wptr;
-               Name_Len := 0;
-               Underline_Found := False;
-               goto Scan_Identifier;
-
-            --  Other format character is an error (at start of identifier)
-
-            elsif Is_UTF_32_Other (Cat) then
-               Error_Msg
-                 ("identifier cannot start with other format character", Wptr);
                Scan_Ptr := Wptr;
                Name_Len := 0;
                Underline_Found := False;
@@ -2255,6 +2295,33 @@ package body Scng is
                   --  Here if not a normal identifier character
 
                   else
+                     Cat := Get_Category (UTF_32 (Code));
+
+                     --  Wide character in Unicode category "Other, Format"
+                     --  is not accepted in an identifier. This is because it
+                     --  it is considered a security risk (AI-0091).
+
+                     --  However, it is OK for such a character to appear at
+                     --  the end of an identifier.
+
+                     if Is_UTF_32_Other (Cat) then
+                        if not Identifier_Char (Source (Scan_Ptr)) then
+                           goto Scan_Identifier_Complete;
+                        else
+                           Error_Msg
+                             ("identifier cannot contain other_format "
+                              & "character", Wptr);
+                           goto Scan_Identifier;
+                        end if;
+
+                     --  Wide character in category Separator,Space terminates
+
+                     elsif Is_UTF_32_Space (Cat) then
+                        goto Scan_Identifier_Complete;
+                     end if;
+
+                     --  Here if wide character is part of the identifier
+
                      --  Make sure we are allowing wide characters in
                      --  identifiers. Note that we allow wide character
                      --  notation for an OK identifier character. This in
@@ -2267,10 +2334,8 @@ package body Scng is
                        and then Ada_Version < Ada_05
                      then
                         Error_Msg
-                       ("wide character not allowed in identifier", Wptr);
+                          ("wide character not allowed in identifier", Wptr);
                      end if;
-
-                     Cat := Get_Category (UTF_32 (Code));
 
                      --  If OK letter, store it folding to upper case. Note
                      --  that we include the folded letter in the checksum.
@@ -2310,23 +2375,6 @@ package body Scng is
                            Store_Encoded_Character (Code);
                            Underline_Found := True;
                         end if;
-
-                     --  Wide character in Unicode category "Other, Format"
-                     --  is accepted in an identifier, but is ignored and not
-                     --  stored. It seems reasonable to exclude it from the
-                     --  checksum.
-
-                     --  Note that it is correct (see AI-395) to simply strip
-                     --  other format characters, before testing for double
-                     --  underlines, or for reserved words).
-
-                     elsif Is_UTF_32_Other (Cat) then
-                        null;
-
-                     --  Wide character in category Separator,Space terminates
-
-                     elsif Is_UTF_32_Space (Cat) then
-                        goto Scan_Identifier_Complete;
 
                      --  Any other wide character is not acceptable
 

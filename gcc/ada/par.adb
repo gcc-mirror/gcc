@@ -361,17 +361,17 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    function F return Boolean renames False;
 
    Pf_Decl_Gins_Pbod_Rnam_Stub : constant Pf_Rec :=
-                                             Pf_Rec'(F, T, T, T, T, T, F, F);
+                                   Pf_Rec'(F, T, T, T, T, T, F, F);
    Pf_Decl                     : constant Pf_Rec :=
-                                             Pf_Rec'(F, T, F, F, F, F, F, F);
+                                   Pf_Rec'(F, T, F, F, F, F, F, F);
    Pf_Decl_Gins_Pbod_Rnam      : constant Pf_Rec :=
-                                             Pf_Rec'(F, T, T, T, T, F, F, F);
+                                   Pf_Rec'(F, T, T, T, T, F, F, F);
    Pf_Decl_Pbod                : constant Pf_Rec :=
-                                             Pf_Rec'(F, T, F, T, F, F, F, F);
+                                   Pf_Rec'(F, T, F, T, F, F, F, F);
    Pf_Pbod                     : constant Pf_Rec :=
-                                             Pf_Rec'(F, F, F, T, F, F, F, F);
+                                   Pf_Rec'(F, F, F, T, F, F, F, F);
    Pf_Spcn                     : constant Pf_Rec :=
-                                             Pf_Rec'(T, F, F, F, F, F, F, F);
+                                   Pf_Rec'(T, F, F, F, F, F, F, F);
    --  The above are the only allowed values of Pf_Rec arguments
 
    type SS_Rec is record
