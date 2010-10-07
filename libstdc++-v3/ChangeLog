@@ -1,3 +1,9 @@
+2010-10-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/libstdc++-dg/conformance.exp: Apply
+	check_v3_target_fileio as a gate for tests in
+	subdirectories matching the substring _filebuf.
+
 2010-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/locale_facets_nonio.tcc (time_get<>::
