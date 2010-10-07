@@ -1,5 +1,11 @@
 2010-10-07  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/45869
+	* tree-cfg.c (verify_gimple_assign_binary): Allow vector shifts
+	of pointers.
+
+2010-10-07  Richard Guenther  <rguenther@suse.de>
+
 	Backport from mainline
 	2010-09-07  Richard Guenther  <rguenther@suse.de>
 

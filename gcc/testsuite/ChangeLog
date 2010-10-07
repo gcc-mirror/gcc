@@ -1,3 +1,16 @@
+2010-10-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/45869
+	* gcc.dg/torture/pr45869.c: New testcase.
+
+2010-10-07  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2010-09-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/45569
+	* g++.dg/eh/pr45569.C: New testcase.
+
 2010-10-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from mainline
