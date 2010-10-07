@@ -241,6 +241,11 @@ extern enum machine_mode smallest_mode_for_size (unsigned int,
 
 extern enum machine_mode int_mode_for_mode (enum machine_mode);
 
+/* Return a mode that is suitable for representing a vector,
+   or BLKmode on failure.  */
+
+extern enum machine_mode mode_for_vector (enum machine_mode, unsigned);
+
 /* Find the best mode to use to access a bit field.  */
 
 extern enum machine_mode get_best_mode (int, int, unsigned int,
