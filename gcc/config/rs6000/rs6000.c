@@ -1086,7 +1086,7 @@ static bool rs6000_builtin_support_vector_misalignment (enum
 							int, bool);
 static int rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt,
                                               tree, int);
-static unsigned int rs6000_units_per_simd_word (enum machine_mode);
+static enum machine_mode rs6000_preferred_simd_mode (enum machine_mode);
 
 static void def_builtin (int, const char *, tree, int);
 static bool rs6000_vector_alignment_reachable (const_tree, bool);
@@ -1492,9 +1492,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
   rs6000_builtin_vectorization_cost
-#undef TARGET_VECTORIZE_UNITS_PER_SIMD_WORD
-#define TARGET_VECTORIZE_UNITS_PER_SIMD_WORD \
-  rs6000_units_per_simd_word
+#undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
+#define TARGET_VECTORIZE_PREFERRED_SIMD_MODE \
+  rs6000_preferred_simd_mode
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS rs6000_init_builtins
@@ -3595,16 +3595,46 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
     }
 }
 
-/* Implement targetm.vectorize.units_per_simd_word.  */
+/* Implement targetm.vectorize.preferred_simd_mode.  */
 
-static unsigned int
-rs6000_units_per_simd_word (enum machine_mode mode ATTRIBUTE_UNUSED)
+static enum machine_mode
+rs6000_preferred_simd_mode (enum machine_mode mode)
 {
-  return (TARGET_VSX ? UNITS_PER_VSX_WORD
-	  : (TARGET_ALTIVEC ? UNITS_PER_ALTIVEC_WORD
-	     : (TARGET_SPE ? UNITS_PER_SPE_WORD
-		: (TARGET_PAIRED_FLOAT ? UNITS_PER_PAIRED_WORD
-		   : UNITS_PER_WORD))));
+  if (TARGET_VSX)
+    switch (mode)
+      {
+      case DFmode:
+	return V2DFmode;
+      default:;
+      }
+  if (TARGET_ALTIVEC || TARGET_VSX)
+    switch (mode)
+      {
+      case SFmode:
+	return V4SFmode;
+      case DImode:
+	return V2DImode;
+      case SImode:
+	return V4SImode;
+      case HImode:
+	return V8HImode;
+      case QImode:
+	return V16QImode;
+      default:;
+      }
+  if (TARGET_SPE)
+    switch (mode)
+      {
+      case SFmode:
+	return V2SFmode;
+      case SImode:
+	return V2SImode;
+      default:;
+      }
+  if (TARGET_PAIRED_FLOAT
+      && mode == SFmode)
+    return V2SFmode;
+  return word_mode;
 }
 
 /* Handle generic options of the form -mfoo=yes/no.

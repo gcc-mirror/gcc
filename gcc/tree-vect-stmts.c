@@ -4793,12 +4793,12 @@ tree
 get_vectype_for_scalar_type (tree scalar_type)
 {
   enum machine_mode inner_mode = TYPE_MODE (scalar_type);
+  enum machine_mode simd_mode;
   unsigned int nbytes = GET_MODE_SIZE (inner_mode);
   int nunits;
   tree vectype;
 
-  if (nbytes == 0
-      || (nbytes >= targetm.vectorize.units_per_simd_word (inner_mode)))
+  if (nbytes == 0)
     return NULL_TREE;
 
   /* We can't build a vector type of elements with alignment bigger than
@@ -4814,9 +4814,14 @@ get_vectype_for_scalar_type (tree scalar_type)
       && GET_MODE_BITSIZE (inner_mode) != TYPE_PRECISION (scalar_type))
     return NULL_TREE;
 
-  /* FORNOW: Only a single vector size per mode
-    (TARGET_VECTORIZE_UNITS_PER_SIMD_WORD) is expected.  */
-  nunits = targetm.vectorize.units_per_simd_word (inner_mode) / nbytes;
+  if (GET_MODE_CLASS (inner_mode) != MODE_INT
+      && GET_MODE_CLASS (inner_mode) != MODE_FLOAT)
+    return NULL_TREE;
+
+  simd_mode = targetm.vectorize.preferred_simd_mode (inner_mode);
+  nunits = GET_MODE_SIZE (simd_mode) / nbytes;
+  if (nunits <= 1)
+    return NULL_TREE;
 
   vectype = build_vector_type (scalar_type, nunits);
   if (vect_print_dump_info (REPORT_DETAILS))

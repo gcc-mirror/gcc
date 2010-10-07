@@ -240,7 +240,7 @@ static rtx arm_trampoline_adjust_address (rtx);
 static rtx arm_pic_static_addr (rtx orig, rtx reg);
 static bool cortex_a9_sched_adjust_cost (rtx, rtx, rtx, int *);
 static bool xscale_sched_adjust_cost (rtx, rtx, rtx, int *);
-static unsigned int arm_units_per_simd_word (enum machine_mode);
+static enum machine_mode arm_preferred_simd_mode (enum machine_mode);
 static bool arm_class_likely_spilled_p (reg_class_t);
 static bool arm_vector_alignment_reachable (const_tree type, bool is_packed);
 static bool arm_builtin_support_vector_misalignment (enum machine_mode mode,
@@ -381,8 +381,8 @@ static const struct attribute_spec arm_attribute_table[] =
 #define TARGET_SHIFT_TRUNCATION_MASK arm_shift_truncation_mask
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P arm_vector_mode_supported_p
-#undef TARGET_VECTORIZE_UNITS_PER_SIMD_WORD
-#define TARGET_VECTORIZE_UNITS_PER_SIMD_WORD arm_units_per_simd_word
+#undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
+#define TARGET_VECTORIZE_PREFERRED_SIMD_MODE arm_preferred_simd_mode
 
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG arm_reorg
@@ -21998,11 +21998,42 @@ arm_vector_mode_supported_p (enum machine_mode mode)
    registers when autovectorizing for Neon, at least until multiple vector
    widths are supported properly by the middle-end.  */
 
-static unsigned int
-arm_units_per_simd_word (enum machine_mode mode ATTRIBUTE_UNUSED)
+static enum machine_mode
+arm_preferred_simd_mode (enum machine_mode mode)
 {
-  return (TARGET_NEON
-	  ? (TARGET_NEON_VECTORIZE_QUAD ? 16 : 8) : UNITS_PER_WORD);
+  if (TARGET_NEON)
+    switch (mode)
+      {
+      case SFmode:
+	return TARGET_NEON_VECTORIZE_QUAD ? V4SFmode : V2SFmode;
+      case SImode:
+	return TARGET_NEON_VECTORIZE_QUAD ? V4SImode : V2SImode;
+      case HImode:
+	return TARGET_NEON_VECTORIZE_QUAD ? V8HImode : V4HImode;
+      case QImode:
+	return TARGET_NEON_VECTORIZE_QUAD ? V16QImode : V8QImode;
+      case DImode:
+	if (TARGET_NEON_VECTORIZE_QUAD)
+	  return V2DImode;
+	break;
+
+      default:;
+      }
+
+  if (TARGET_REALLY_IWMMXT)
+    switch (mode)
+      {
+      case SImode:
+	return V2SImode;
+      case HImode:
+	return V4HImode;
+      case QImode:
+	return V8QImode;
+
+      default:;
+      }
+
+  return word_mode;
 }
 
 /* Implement TARGET_CLASS_LIKELY_SPILLED_P.

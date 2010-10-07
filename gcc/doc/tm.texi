@@ -5743,10 +5743,10 @@ the elements in the vectors should be of type @var{type}.  @var{is_packed}
 parameter is true if the memory access is defined in a packed struct.
 @end deftypefn
 
-@deftypefn {Target Hook} {unsigned int} TARGET_VECTORIZE_UNITS_PER_SIMD_WORD (enum machine_mode @var{mode})
-This hook should return th number of units in the vectors that the
-vectorizer can produce for scalar mode @var{mode}.  The default is
-equal to @code{UNITS_PER_WORD}, because the vectorizer can do some
+@deftypefn {Target Hook} {enum machine_mode} TARGET_VECTORIZE_PREFERRED_SIMD_MODE (enum machine_mode @var{mode})
+This hook should return the preferred mode for vectorizing scalar
+mode @var{mode}.  The default is
+equal to @code{word_mode}, because the vectorizer can do some
 transformations even in absence of specialized @acronym{SIMD} hardware.
 @end deftypefn
 

@@ -435,7 +435,7 @@ static bool sparc_can_eliminate (const int, const int);
 static const char *sparc_mangle_type (const_tree);
 #endif
 static void sparc_trampoline_init (rtx, tree, rtx);
-static unsigned int sparc_units_per_simd_word (enum machine_mode);
+static enum machine_mode sparc_preferred_simd_mode (enum machine_mode);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -573,8 +573,8 @@ static bool fpu_option_set = false;
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P sparc_vector_mode_supported_p
 
-#undef TARGET_VECTORIZE_UNITS_PER_SIMD_WORD
-#define TARGET_VECTORIZE_UNITS_PER_SIMD_WORD sparc_units_per_simd_word
+#undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
+#define TARGET_VECTORIZE_PREFERRED_SIMD_MODE sparc_preferred_simd_mode
 
 #undef TARGET_DWARF_HANDLE_FRAME_UNSPEC
 #define TARGET_DWARF_HANDLE_FRAME_UNSPEC sparc_dwarf_handle_frame_unspec
@@ -6244,12 +6244,25 @@ sparc_vector_mode_supported_p (enum machine_mode mode)
   return TARGET_VIS && VECTOR_MODE_P (mode) ? true : false;
 }
 
-/* Implement the TARGET_VECTORIZE_UNITS_PER_SIMD_WORD target hook.  */
+/* Implement the TARGET_VECTORIZE_PREFERRED_SIMD_MODE target hook.  */
 
-static unsigned int
-sparc_units_per_simd_word (enum machine_mode mode ATTRIBUTE_UNUSED)
+static enum machine_mode
+sparc_preferred_simd_mode (enum machine_mode mode)
 {
-  return TARGET_VIS ? 8 : UNITS_PER_WORD;
+  if (TARGET_VIS)
+    switch (mode)
+      {
+      case SImode:
+	return V2SImode;
+      case HImode:
+	return V4HImode;
+      case QImode:
+	return V8QImode;
+
+      default:;
+      }
+
+  return word_mode;
 }
 
 /* Return the string to output an unconditional branch to LABEL, which is
