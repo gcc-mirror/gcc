@@ -6689,6 +6689,8 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
 		     : umsg_decl)
 		  : umsg_nonnil_decl));
   tree rcv_p = (super_flag ? objc_super_type : objc_object_type);
+  VEC(tree, gc) *parms = NULL;
+  unsigned nparm = (method_params ? list_length (method_params) : 0);
 
   /* If a prototype for the method to be called exists, then cast
      the sender's return type and arguments to match that of the method.
@@ -6710,6 +6712,9 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
   /* Use SAVE_EXPR to avoid evaluating the receiver twice.  */
   lookup_object = save_expr (lookup_object);
 
+  /* Param list + 2 slots for object and selector.  */
+  parms = VEC_alloc (tree, gc, nparm + 2);
+
   if (flag_next_runtime)
     {
       /* If we are returning a struct in memory, and the address
@@ -6724,38 +6729,40 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
 	sender = (super_flag ? umsg_super_stret_decl :
 		flag_nil_receivers ? umsg_stret_decl : umsg_nonnil_stret_decl);
 
-      method_params = tree_cons (NULL_TREE, lookup_object,
-				 tree_cons (NULL_TREE, selector,
-					    method_params));
       method = build_fold_addr_expr_loc (input_location, sender);
+      /* Pass the object to the method.  */
+      VEC_quick_push (tree, parms, lookup_object);
     }
   else
     {
       /* This is the portable (GNU) way.  */
-      tree object;
-
       /* First, call the lookup function to get a pointer to the method,
 	 then cast the pointer, then call it with the method arguments.  */
+      VEC(tree, gc) *tv = VEC_alloc (tree, gc, 2);
+      VEC_quick_push (tree, tv, lookup_object);
+      VEC_quick_push (tree, tv, selector);
+      method = build_function_call_vec (loc, sender, tv, NULL);
+      VEC_free (tree, gc, tv);
 
-      object = (super_flag ? self_decl : lookup_object);
-
-      t = tree_cons (NULL_TREE, selector, NULL_TREE);
-      t = tree_cons (NULL_TREE, lookup_object, t);
-      method = build_function_call (loc, sender, t);
-
-      /* Pass the object to the method.  */
-      method_params = tree_cons (NULL_TREE, object,
-				 tree_cons (NULL_TREE, selector,
-					    method_params));
+      /* Pass the appropriate object to the method.  */
+      VEC_quick_push (tree, parms, (super_flag ? self_decl : lookup_object));
     }
 
-  /* ??? Selector is not at this point something we can use inside
-     the compiler itself.  Set it to garbage for the nonce.  */
-  t = build3 (OBJ_TYPE_REF, sender_cast, method, lookup_object, size_zero_node);
-  return build_function_call (loc,
-			      t, method_params);
+  /* Pass the selector to the method.  */
+  VEC_quick_push (tree, parms, selector);
+  /* Now append the remainder of the parms.  */
+  if (nparm)
+    for (; method_params; method_params = TREE_CHAIN (method_params))
+      VEC_quick_push (tree, parms, TREE_VALUE (method_params));
+
+  /* Build an obj_type_ref, with the correct cast for the method call.  */
+  t = build3 (OBJ_TYPE_REF, sender_cast, method, 
+			    lookup_object, size_zero_node);
+  t = build_function_call_vec (loc, t, parms, NULL);\
+  VEC_free (tree, gc, parms);
+  return t;
 }
-
+
 static void
 build_protocol_reference (tree p)
 {
