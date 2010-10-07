@@ -1,3 +1,8 @@
+2010-10-07  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/45926
+	* ipa.c (cgraph_remove_unreachable_nodes): Revert my previous patch.
+
 2010-10-07  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/45914
