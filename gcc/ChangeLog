@@ -1,3 +1,15 @@
+2010-10-07  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (struct access): New field grp_assignment_write.
+	(dump_access): Dump grp_assignment_write.
+	(build_accesses_from_assign): Set grp_assignment_write.
+	(sort_and_splice_var_accesses): Aggregate grp_assignment_write.
+	(mark_read_status): Renamed to mark_rw_status, individual values
+	renamed too.
+	(analyze_access_subtree): Changed type of mark_write to
+	mark_read_status.  Fixed propagating of mark_read and
+	mark_write.  Changed benefit estimate.  Updated comment.
+
 2010-10-07  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Add NULL
