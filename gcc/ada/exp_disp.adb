@@ -4679,6 +4679,7 @@ package body Exp_Disp is
       --            External_Tag       => Cstring_Ptr!(Exname'Address))
       --            HT_Link            => HT_Link'Address,
       --            Transportable      => <<boolean-value>>,
+      --            Type_Is_Abstract   => <<boolean-value>>,
       --            RC_Offset          => <<integer-value>>,
       --            [ Size_Func         => Size_Prim'Access ]
       --            [ Interfaces_Table  => <<access-value>> ]
@@ -4944,6 +4945,22 @@ package body Exp_Disp is
          Append_To (TSD_Aggr_List,
             New_Occurrence_Of (Transportable, Loc));
       end;
+
+      --  Type_Is_Abstract (Ada 2012: AI05-0173). This functionality is
+      --  not available in the HIE runtime.
+
+      if RTE_Record_Component_Available (RE_Type_Is_Abstract) then
+         declare
+            Type_Is_Abstract : Entity_Id;
+
+         begin
+            Type_Is_Abstract :=
+              Boolean_Literals (Is_Abstract_Type (Typ));
+
+            Append_To (TSD_Aggr_List,
+               New_Occurrence_Of (Type_Is_Abstract, Loc));
+         end;
+      end if;
 
       --  RC_Offset: These are the valid values and their meaning:
 

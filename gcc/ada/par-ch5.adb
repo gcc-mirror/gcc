@@ -83,7 +83,8 @@ package body Ch5 is
    -- 5.1  Sequence of Statements --
    ---------------------------------
 
-   --  SEQUENCE_OF_STATEMENTS ::= STATEMENT {STATEMENT}
+   --  SEQUENCE_OF_STATEMENTS ::= STATEMENT {STATEMENT} {LABEL}
+   --  Note: the final label is an Ada2012 addition.
 
    --  STATEMENT ::=
    --    {LABEL} SIMPLE_STATEMENT | {LABEL} COMPOUND_STATEMENT
@@ -149,6 +150,12 @@ package body Ch5 is
       --  is required. It is initialized from the Sreq flag, and modified as
       --  statements are scanned (a statement turns it off, and a label turns
       --  it back on again since a statement must follow a label).
+      --  Note : this final requirement is lifted in Ada2012.
+
+      Statement_Seen : Boolean;
+      --  In Ada2012 a label can end a sequence of statements, but the sequence
+      --  cannot contain only labels. This flag is set whenever a label is
+      --  encountered, to enforce this rule at the end of a sequence.
 
       Declaration_Found : Boolean := False;
       --  This flag is set True if a declaration is encountered, so that the
@@ -222,8 +229,10 @@ package body Ch5 is
 
             if Ada_Version >= Ada_2012
               and then not Is_Empty_List (Statement_List)
-              and then (Nkind (Last (Statement_List)) = N_Label
-                          or else All_Pragmas)
+              and then
+                ((Nkind (Last (Statement_List)) = N_Label
+                   and then Statement_Seen)
+                or else All_Pragmas)
             then
                declare
                   Null_Stm : constant Node_Id :=
@@ -232,8 +241,6 @@ package body Ch5 is
                   Set_Comes_From_Source (Null_Stm, False);
                   Append_To (Statement_List, Null_Stm);
                end;
-
-            --  All pragmas is OK on
 
             --  If not Ada 2012, or not special case above, give error message
 
@@ -249,6 +256,7 @@ package body Ch5 is
    begin
       Statement_List := New_List;
       Statement_Required := SS_Flags.Sreq;
+      Statement_Seen     := False;
 
       loop
          Ignore (Tok_Semicolon);
@@ -765,8 +773,15 @@ package body Ch5 is
                   Statement_Required := False;
 
                --  Label starting with << which must precede real statement
+               --  Note: in Ada2012, the label may end the sequence.
 
                when Tok_Less_Less =>
+                  if Present (Last (Statement_List))
+                    and then Nkind (Last (Statement_List)) /= N_Label
+                  then
+                     Statement_Seen := True;
+                  end if;
+
                   Append_To (Statement_List, P_Label);
                   Statement_Required := True;
 

@@ -475,12 +475,6 @@ package body Sem_Ch12 is
    --  of generic formals of a generic package declared with a box or with
    --  partial parametrization.
 
-   procedure Mark_Context (Inst_Decl : Node_Id; Gen_Decl : Node_Id);
-   --  If the generic unit comes from a different unit, indicate that the
-   --  unit that contains the instance depends on the body that contains
-   --  the generic body. Used to determine a more precise dependency graph
-   --  for use by CodePeer.
-
    procedure Set_Instance_Env
      (Gen_Unit : Entity_Id;
       Act_Unit : Entity_Id);
@@ -3237,8 +3231,7 @@ package body Sem_Ch12 is
                   or else Enclosing_Body_Present
                   or else Present (Corresponding_Body (Gen_Decl)))
                 and then (Is_In_Main_Unit (N)
-                           or else Might_Inline_Subp
-                           or else CodePeer_Mode)
+                           or else Might_Inline_Subp)
                 and then not Is_Actual_Pack
                 and then not Inline_Now
                 and then (Operating_Mode = Generate_Code
@@ -8609,8 +8602,6 @@ package body Sem_Ch12 is
          Gen_Body_Id := Corresponding_Body (Gen_Decl);
       end if;
 
-      Mark_Context (Act_Decl, Gen_Decl);
-
       --  Establish global variable for sloc adjustment and for error recovery
 
       Instantiation_Node := Inst_Node;
@@ -8893,7 +8884,6 @@ package body Sem_Ch12 is
 
       if Present (Gen_Body_Id) then
          Gen_Body := Unit_Declaration_Node (Gen_Body_Id);
-         Mark_Context (Inst_Node, Gen_Decl);
 
          if Nkind (Gen_Body) = N_Subprogram_Body_Stub then
 
@@ -10407,131 +10397,6 @@ package body Sem_Ch12 is
                      N_Formal_Subprogram_Declaration);
       end if;
    end Is_Generic_Formal;
-
-   ------------------
-   -- Mark_Context --
-   ------------------
-
-   procedure Mark_Context (Inst_Decl : Node_Id; Gen_Decl : Node_Id) is
-      Loc     : constant Source_Ptr := Sloc (Inst_Decl);
-      Inst_CU : constant Unit_Number_Type := Get_Code_Unit (Inst_Decl);
-
-      --  Note that we use Get_Code_Unit to determine the position of the
-      --  instantiation, because it may itself appear within another instance
-      --  and we need to mark the context of the enclosing unit, not that of
-      --  the unit that contains the generic.
-
-      Gen_CU  : constant Unit_Number_Type := Get_Source_Unit (Gen_Decl);
-      Inst    : Entity_Id;
-      Clause  : Node_Id;
-      Scop    : Entity_Id;
-
-      procedure Add_Implicit_With (CU : Unit_Number_Type);
-      --  If a generic is instantiated in the direct or indirect context of
-      --  the current unit, but there is no with_clause for it in the current
-      --  context, add a with_clause for it to indicate that the body of the
-      --  generic should be examined before the current unit.
-
-      procedure Add_Implicit_With (CU : Unit_Number_Type) is
-         Withn : constant Node_Id :=
-           Make_With_Clause (Loc,
-              Name => New_Occurrence_Of (Cunit_Entity (CU), Loc));
-      begin
-         Set_Implicit_With (Withn);
-         Set_Library_Unit (Withn, Cunit (CU));
-         Set_Withed_Body (Withn, Cunit (CU));
-         Prepend (Withn, Context_Items (Cunit (Inst_CU)));
-      end Add_Implicit_With;
-
-   begin
-      --  This is only relevant when compiling for CodePeer. In what follows,
-      --  C is the current unit containing the instance body, and G is the
-      --  generic unit in that instance.
-
-      if not CodePeer_Mode then
-         return;
-      end if;
-
-      --  Nothing to do if G is local.
-
-      if Inst_CU = Gen_CU then
-         return;
-      end if;
-
-      --  If G is itself  declared within an instance, indicate that the
-      --  generic body of that instance is also needed by C. This must be
-      --  done recursively.
-
-      Scop := Scope (Defining_Entity (Gen_Decl));
-
-      while Is_Generic_Instance (Scop)
-        and then Ekind (Scop) = E_Package
-      loop
-         Mark_Context
-           (Inst_Decl,
-            Unit_Declaration_Node
-              (Generic_Parent
-                 (Specification (Unit_Declaration_Node (Scop)))));
-         Scop := Scope (Scop);
-      end loop;
-
-      --  Add references to other generic units in the context of G, because
-      --  they may be instantiated within G, and their bodies needed by C.
-
-      Clause := First (Context_Items (Cunit (Gen_CU)));
-
-      while Present (Clause) loop
-         if Nkind (Clause) = N_With_Clause
-           and then
-             Nkind (Unit (Library_Unit (Clause)))
-               = N_Generic_Package_Declaration
-         then
-            Add_Implicit_With (Get_Source_Unit (Library_Unit (Clause)));
-         end if;
-
-         Next (Clause);
-      end loop;
-
-      --  Now indicate that the body of G is needed by C
-
-      Clause := First (Context_Items (Cunit (Inst_CU)));
-      while Present (Clause) loop
-         if Nkind (Clause) = N_With_Clause
-           and then  Library_Unit (Clause) = Cunit (Gen_CU)
-         then
-            Set_Withed_Body (Clause, Cunit (Gen_CU));
-            return;
-         end if;
-
-         Next (Clause);
-      end loop;
-
-      --  If the with-clause for G is not in the context of C, it may appear in
-      --  some ancestor of C.
-
-      Inst := Cunit_Entity (Inst_CU);
-      while Is_Child_Unit (Inst) loop
-         Inst := Scope (Inst);
-
-         Clause :=
-           First (Context_Items (Parent (Unit_Declaration_Node (Inst))));
-         while Present (Clause) loop
-            if Nkind (Clause) = N_With_Clause
-              and then Library_Unit (Clause) = Cunit (Gen_CU)
-            then
-               Set_Withed_Body (Clause, Cunit (Gen_CU));
-               return;
-            end if;
-
-            Next (Clause);
-         end loop;
-      end loop;
-
-      --  If not found, G comes from an instance elsewhere in the context. Make
-      --  the dependence explicit in the context of C.
-
-      Add_Implicit_With (Gen_CU);
-   end Mark_Context;
 
    ---------------------
    -- Is_In_Main_Unit --

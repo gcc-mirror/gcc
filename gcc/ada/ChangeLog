@@ -1,3 +1,25 @@
+2010-10-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch5.adb (P_Sequence_Of_Statements): In Ada2012 a label can end a
+	sequence of statements.
+
+2010-10-07  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (Check_Files): Only add a .ci files if it exists
+
+2010-10-07  Javier Miranda  <miranda@adacore.com>
+
+	* a-tags.ads, a-tags.adb (Type_Is_Abstract): New subprogram.
+	* rtsfind.ads (RE_Type_Is_Abstract): New entity.
+	* exp_disp.adb (Make_DT): Initialize TSD component Type_Is_Abstract.
+
+2010-10-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch12.adb (Mark_Context): Removed, no longer needed.
+	(Analyze_Package_Instantiation): No longer analyze systematically a
+	generic body in CodePeer mode.
+	* freeze.adb, sem_attr.adb: Update comments.
+
 2010-10-05  Robert Dewar  <dewar@adacore.com>
 
 	* par-ch5.adb (Test_Statement_Required): Allow all pragmas in Ada 2012
