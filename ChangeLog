@@ -1,3 +1,10 @@
+2010-10-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	Sync from src:
+	* configure.ac (v850 support): Remove target-libgloss from
+	noconfigdirs.
+	* configure: Regenerate.
+
 2010-10-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/45326
