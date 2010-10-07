@@ -4427,17 +4427,17 @@ package Sinfo is
       --  Was_Originally_Stub (Flag13-Sem)
       --  Has_Relative_Deadline_Pragma (Flag9-Sem)
 
-      -----------------------------
-      -- Parametrized Expression --
-      -----------------------------
+      ------------------------------
+      -- Parameterized Expression --
+      ------------------------------
 
       --  This is an Ada 2012 extension, we put it here for now, to be labeled
       --  and put in its proper section when we know exactly where that is!
 
-      --  PARAMETRIZED_EXPRESSION ::=
+      --  PARAMETERIZED_EXPRESSION ::=
       --    FUNCTION SPECIFICATION IS (EXPRESSION);
 
-      --  N_Parametrized_Expression
+      --  N_Parameterized_Expression
       --  Sloc points to FUNCTION
       --  Specification (Node1)
       --  Expression (Node3)
@@ -7329,7 +7329,7 @@ package Sinfo is
       N_Incomplete_Type_Declaration,
       N_Loop_Parameter_Specification,
       N_Object_Declaration,
-      N_Parametrized_Expression,
+      N_Parameterized_Expression,
       N_Protected_Type_Declaration,
       N_Private_Extension_Declaration,
       N_Private_Type_Declaration,
@@ -10438,7 +10438,7 @@ package Sinfo is
         4 => True,    --  Handled_Statement_Sequence (Node4)
         5 => False),  --  Corresponding_Spec (Node5-Sem)
 
-     N_Parametrized_Expression =>
+     N_Parameterized_Expression =>
        (1 => True,    --  Specification (Node1)
         2 => False,   --  unused
         3 => True,    --  Expression (Node3)

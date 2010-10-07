@@ -1191,7 +1191,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Number_Declaration
         or else NT (N).Nkind = N_Object_Declaration
         or else NT (N).Nkind = N_Parameter_Specification
-        or else NT (N).Nkind = N_Parametrized_Expression
+        or else NT (N).Nkind = N_Parameterized_Expression
         or else NT (N).Nkind = N_Pragma_Argument_Association
         or else NT (N).Nkind = N_Qualified_Expression
         or else NT (N).Nkind = N_Raise_Statement
@@ -2682,7 +2682,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Generic_Package_Declaration
         or else NT (N).Nkind = N_Generic_Subprogram_Declaration
         or else NT (N).Nkind = N_Package_Declaration
-        or else NT (N).Nkind = N_Parametrized_Expression
+        or else NT (N).Nkind = N_Parameterized_Expression
         or else NT (N).Nkind = N_Subprogram_Body
         or else NT (N).Nkind = N_Subprogram_Body_Stub
         or else NT (N).Nkind = N_Subprogram_Declaration
@@ -4096,7 +4096,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Number_Declaration
         or else NT (N).Nkind = N_Object_Declaration
         or else NT (N).Nkind = N_Parameter_Specification
-        or else NT (N).Nkind = N_Parametrized_Expression
+        or else NT (N).Nkind = N_Parameterized_Expression
         or else NT (N).Nkind = N_Pragma_Argument_Association
         or else NT (N).Nkind = N_Qualified_Expression
         or else NT (N).Nkind = N_Raise_Statement
@@ -5587,7 +5587,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Generic_Package_Declaration
         or else NT (N).Nkind = N_Generic_Subprogram_Declaration
         or else NT (N).Nkind = N_Package_Declaration
-        or else NT (N).Nkind = N_Parametrized_Expression
+        or else NT (N).Nkind = N_Parameterized_Expression
         or else NT (N).Nkind = N_Subprogram_Body
         or else NT (N).Nkind = N_Subprogram_Body_Stub
         or else NT (N).Nkind = N_Subprogram_Declaration

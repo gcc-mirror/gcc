@@ -84,7 +84,7 @@ package Sem_Util is
    --  node that is built is normally Etype (N), but if the Typ parameter
    --  is present, this is used instead. Warn is normally False. If it is
    --  True then the message is treated as a warning even though it does
-   --  not end with a ? (this is used when the caller wants to parametrize
+   --  not end with a ? (this is used when the caller wants to parameterize
    --  whether an error or warning is given.
 
    function Build_Actual_Subtype

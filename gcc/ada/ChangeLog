@@ -1,5 +1,12 @@
 2010-10-07  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi, exp_util.adb, sinfo.adb, sinfo.ads, sem_ch12.adb,
+	sem.adb, gnat_ugn.texi, sem_util.ads, par-ch6.adb, targparm.ads,
+	restrict.adb, sem_ch6.adb, sem_ch6.ads, sprint.adb, i-c.ads: Change
+	spelling parametrize(d) => parameterize(d).
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch12.adb: Add comment.
 	* sem_ch6.adb: Minor reformatting.
 

@@ -2918,7 +2918,7 @@ should provide a stub body that raises @code{Program_Error}.
 
 @noindent
 GNAT additionally provides a useful pragma @code{Convention_Identifier}
-that can be used to parametrize conventions and allow additional synonyms
+that can be used to parameterize conventions and allow additional synonyms
 to be specified. For example if you have legacy code in which the convention
 identifier Fortran77 was used for Fortran, you can use the configuration
 pragma:
