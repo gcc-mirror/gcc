@@ -26272,7 +26272,7 @@ ix86_vectorize_builtin_conversion (unsigned int code,
 	    case V8SFmode:
 	      return (TYPE_UNSIGNED (src_type)
 		      ? NULL_TREE
-		      : ix86_builtins[IX86_BUILTIN_CVTDQ2PS]);
+		      : ix86_builtins[IX86_BUILTIN_CVTDQ2PS256]);
 	    default:
 	      return NULL_TREE;
 	    }

@@ -470,6 +470,50 @@ int_mode_for_mode (enum machine_mode mode)
   return mode;
 }
 
+/* Find a mode that is suitable for representing a vector with
+   NUNITS elements of mode INNERMODE.  Returns BLKmode if there
+   is no suitable mode.  */
+
+enum machine_mode
+mode_for_vector (enum machine_mode innermode, unsigned nunits)
+{
+  enum machine_mode mode;
+
+  /* First, look for a supported vector type.  */
+  if (SCALAR_FLOAT_MODE_P (innermode))
+    mode = MIN_MODE_VECTOR_FLOAT;
+  else if (SCALAR_FRACT_MODE_P (innermode))
+    mode = MIN_MODE_VECTOR_FRACT;
+  else if (SCALAR_UFRACT_MODE_P (innermode))
+    mode = MIN_MODE_VECTOR_UFRACT;
+  else if (SCALAR_ACCUM_MODE_P (innermode))
+    mode = MIN_MODE_VECTOR_ACCUM;
+  else if (SCALAR_UACCUM_MODE_P (innermode))
+    mode = MIN_MODE_VECTOR_UACCUM;
+  else
+    mode = MIN_MODE_VECTOR_INT;
+
+  /* Do not check vector_mode_supported_p here.  We'll do that
+     later in vector_type_mode.  */
+  for (; mode != VOIDmode ; mode = GET_MODE_WIDER_MODE (mode))
+    if (GET_MODE_NUNITS (mode) == nunits
+	&& GET_MODE_INNER (mode) == innermode)
+      break;
+
+  /* For integers, try mapping it to a same-sized scalar mode.  */
+  if (mode == VOIDmode
+      && GET_MODE_CLASS (innermode) == MODE_INT)
+    mode = mode_for_size (nunits * GET_MODE_BITSIZE (innermode),
+			  MODE_INT, 0);
+
+  if (mode == VOIDmode
+      || (GET_MODE_CLASS (mode) == MODE_INT
+	  && !have_regs_of_mode[mode]))
+    return BLKmode;
+
+  return mode;
+}
+
 /* Return the alignment of MODE. This will be bounded by 1 and
    BIGGEST_ALIGNMENT.  */
 
@@ -1848,44 +1892,8 @@ layout_type (tree type)
 
 	/* Find an appropriate mode for the vector type.  */
 	if (TYPE_MODE (type) == VOIDmode)
-	  {
-	    enum machine_mode innermode = TYPE_MODE (innertype);
-	    enum machine_mode mode;
-
-	    /* First, look for a supported vector type.  */
-	    if (SCALAR_FLOAT_MODE_P (innermode))
-	      mode = MIN_MODE_VECTOR_FLOAT;
-	    else if (SCALAR_FRACT_MODE_P (innermode))
-	      mode = MIN_MODE_VECTOR_FRACT;
-	    else if (SCALAR_UFRACT_MODE_P (innermode))
-	      mode = MIN_MODE_VECTOR_UFRACT;
-	    else if (SCALAR_ACCUM_MODE_P (innermode))
-	      mode = MIN_MODE_VECTOR_ACCUM;
-	    else if (SCALAR_UACCUM_MODE_P (innermode))
-	      mode = MIN_MODE_VECTOR_UACCUM;
-	    else
-	      mode = MIN_MODE_VECTOR_INT;
-
-	    /* Do not check vector_mode_supported_p here.  We'll do that
-	       later in vector_type_mode.  */
-	    for (; mode != VOIDmode ; mode = GET_MODE_WIDER_MODE (mode))
-	      if (GET_MODE_NUNITS (mode) == nunits
-	  	  && GET_MODE_INNER (mode) == innermode)
-	        break;
-
-	    /* For integers, try mapping it to a same-sized scalar mode.  */
-	    if (mode == VOIDmode
-	        && GET_MODE_CLASS (innermode) == MODE_INT)
-	      mode = mode_for_size (nunits * GET_MODE_BITSIZE (innermode),
-				    MODE_INT, 0);
-
-	    if (mode == VOIDmode ||
-		(GET_MODE_CLASS (mode) == MODE_INT
-		 && !have_regs_of_mode[mode]))
-	      SET_TYPE_MODE (type, BLKmode);
-	    else
-	      SET_TYPE_MODE (type, mode);
-	  }
+	  SET_TYPE_MODE (type,
+			 mode_for_vector (TYPE_MODE (innertype), nunits));
 
 	TYPE_SATURATING (type) = TYPE_SATURATING (TREE_TYPE (type));
         TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));

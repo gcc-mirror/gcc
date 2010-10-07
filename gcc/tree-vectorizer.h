@@ -779,6 +779,7 @@ extern LOC find_loop_location (struct loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
 
 /* In tree-vect-stmts.c.  */
+extern unsigned int current_vector_size;
 extern tree get_vectype_for_scalar_type (tree);
 extern tree get_same_sized_vectype (tree, tree);
 extern bool vect_is_simple_use (tree, loop_vec_info, bb_vec_info, gimple *,

@@ -1,5 +1,27 @@
 2010-10-07  Richard Guenther  <rguenther@suse.de>
 
+	* machmode.h (mode_for_vector): Declare.
+	* stor-layout.c (mode_for_vector): New function, split out from ...
+	(layout_type): ... here.
+	* tree-vectorizer.h (current_vector_size): Declare.
+	* tree-vect-stmts.c (perm_mask_for_reverse): Check if the
+	mask vector type is available.
+	(get_vectype_for_scalar_type): Rename to ...
+	(get_vectype_for_scalar_type_and_size): ... this.  Get a vector
+	size argument.
+	(get_vectype_for_scalar_type): New wrapper around
+	get_vectype_for_scalar_type_and_size using current_vector_size.
+	(get_same_sized_vectype): Use get_vectype_for_scalar_type_and_size.
+	* tree-vect-loop.c (vect_analyze_loop_2): Split out core part
+	of vect_analyze_loop here.
+	(vect_analyze_loop): Loop over vector sizes calling vect_analyze_loop_3.
+	* tree-vect-slp.c (vect_slp_analyze_bb): Set current_vector_size
+	to autodetect.
+	* config/i386/i386.c (ix86_vectorize_builtin_conversion): Fix
+	V8SF to V8SI conversion builtin.
+
+2010-10-07  Richard Guenther  <rguenther@suse.de>
+
 	* target.def (autovectorize_vector_sizes): New target hook.
 	* targhooks.c (default_autovectorize_vector_sizes): New function.
 	* targhooks.h (default_autovectorize_vector_sizes): Declare.

@@ -1643,6 +1643,7 @@ vect_slp_analyze_bb (basic_block bb)
   int max_vf = MAX_VECTORIZATION_FACTOR;
   bool data_dependence_in_bb = false;
 
+  current_vector_size = 0;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "===vect_slp_analyze_bb===\n");
