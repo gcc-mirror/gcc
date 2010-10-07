@@ -1,3 +1,10 @@
+2010-10-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline:
+	PR libfortran/45710
+	* io/write.c (namelist_write_newline): Pad character array internal
+	unit records with spaces.
+
 2010-09-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/45532

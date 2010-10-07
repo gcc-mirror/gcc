@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist output contributed by Paul Thomas
@@ -1428,6 +1428,13 @@ namelist_write_newline (st_parameter_dt *dtp)
     {
       gfc_offset record;
       int finished;
+      char *p;
+      int length = dtp->u.p.current_unit->bytes_left;
+
+      p = write_block (dtp, length);
+      if (p == NULL)
+	return;
+      memset (p, ' ', length);
 
       /* Now that the current record has been padded out,
 	 determine where the next record in the array is. */
