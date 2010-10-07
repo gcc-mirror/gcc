@@ -1,3 +1,8 @@
+2010-10-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45933
+	* gfortran.dg/typebound_operator_5.f03: New.
+
 2010-10-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.

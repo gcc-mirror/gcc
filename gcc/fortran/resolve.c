@@ -5719,13 +5719,12 @@ resolve_typebound_function (gfc_expr* e)
 
   /* Deal with typebound operators for CLASS objects.  */
   expr = e->value.compcall.base_object;
-  if (expr && expr->symtree->n.sym->ts.type == BT_CLASS
-	&& e->value.compcall.name)
+  if (expr && expr->ts.type == BT_CLASS && e->value.compcall.name)
     {
       /* Since the typebound operators are generic, we have to ensure
 	 that any delays in resolution are corrected and that the vtab
 	 is present.  */
-      ts = expr->symtree->n.sym->ts;
+      ts = expr->ts;
       declared = ts.u.derived;
       c = gfc_find_component (declared, "$vptr", true, true);
       if (c->ts.u.derived == NULL)
