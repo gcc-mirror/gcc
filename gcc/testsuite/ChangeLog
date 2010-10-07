@@ -1,3 +1,8 @@
+2010-10-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/45869
+	* gcc.dg/torture/pr45869.c: New testcase.
+
 2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/set-not-used-1.m: New
