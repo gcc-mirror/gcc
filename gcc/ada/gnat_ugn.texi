@@ -17324,7 +17324,7 @@ sources and applied rules (coding standard);
 @item list of exempted coding standard violations;
 @item list of non-exempted coding standard violations;
 @item list of problems in the definition of exemption sections;
-@item of language violations (compile-time errors) detected in processed sources;
+@item list of language violations (compile-time errors) detected in processed sources;
 @end itemize
 
 @node General gnatcheck Switches

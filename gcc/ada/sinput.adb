@@ -792,8 +792,7 @@ package body Sinput is
                else
                   --  Free the buffer, we use Free here, because we used malloc
                   --  or realloc directly to allocate the tables. That is
-                  --  because we were playing the big array trick. We need to
-                  --  suppress the warning for freeing from an empty pool!
+                  --  because we were playing the big array trick.
 
                   --  We have to recreate a proper pointer to the actual array
                   --  from the zero origin pointer stored in the source table.
@@ -801,9 +800,7 @@ package body Sinput is
                   Tmp1 :=
                     To_Source_Buffer_Ptr
                       (S.Source_Text (S.Source_First)'Address);
-                  pragma Warnings (Off);
                   Free_Ptr (Tmp1);
-                  pragma Warnings (On);
 
                   if S.Lines_Table /= null then
                      Memory.Free (To_Address (S.Lines_Table));

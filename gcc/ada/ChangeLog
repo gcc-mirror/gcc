@@ -1,5 +1,27 @@
 2010-10-07  Robert Dewar  <dewar@adacore.com>
 
+	* par-ch6.adb: Fix error in handling of parametrized expressions.
+	* par-ch4.adb (P_Name): Allow qualified expression as name in Ada 2012
+	mode.
+	(P_Simple_Expression): Better message for qualified expression prefix
+	* s-crc32.adb: Minor reformatting.
+	* exp_intr.adb (Expand_Unc_Deallocation): Remove test for empty
+	storage pool (this test is moved to Sem_Intr).
+	* sem_intr.adb (Check_Intrinsic_Call): Add check for deallocation from
+	empty storage pool, moved here from Exp_Intr and made into error.
+	(Check_Intrinsic_Call): Remove assumption in generating not-null free
+	warning that the name of the instantiation is Free.
+	* sinput.adb (Tree_Read): Document use of illegal free call allowed in
+	GNAT mode.
+	* types.ads: Remove storage size clauses from big types (since we may
+	need to do deallocations, which are now illegal for empty pools).
+
+2010-10-07  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Add missing word.
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
 	* exp_util.adb (Insert_Actions): Add handling of
 	N_Parametrized_Expression.
 	* par-ch6.adb (P_Subprogram): Add parsing of parametrized expression

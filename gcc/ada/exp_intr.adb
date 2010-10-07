@@ -851,7 +851,7 @@ package body Exp_Intr is
       Rtyp  : constant Entity_Id  := Underlying_Type (Root_Type (Typ));
       Pool  : constant Entity_Id  := Associated_Storage_Pool (Rtyp);
 
-      Desig_T   : constant Entity_Id  := Designated_Type (Typ);
+      Desig_T   : constant Entity_Id := Designated_Type (Typ);
       Gen_Code  : Node_Id;
       Free_Node : Node_Id;
       Deref     : Node_Id;
@@ -866,10 +866,6 @@ package body Exp_Intr is
       --  them to the tree, and that can disturb current value settings.
 
    begin
-      if No_Pool_Assigned (Rtyp) then
-         Error_Msg_N ("?deallocation from empty storage pool!", N);
-      end if;
-
       --  Nothing to do if we know the argument is null
 
       if Known_Null (N) then
