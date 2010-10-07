@@ -1,5 +1,21 @@
 2010-10-07  Robert Dewar  <dewar@adacore.com>
 
+	* sem_prag.adb (Analyze_Attribute_Definition_Clause, case
+	Component_Size): Complete previous change.
+
+2010-10-07  Vincent Celier  <celier@adacore.com>
+
+	* scng.adb (Scan): Call Accumulate_Token_Checksum for Tok_Identifier,
+	even for keywords, to avoid having the checksum to depend on the Ada
+	version.
+
+2010-10-07  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb, sem_ch12.adb, sem_ch6.adb, par-ch5.adb,
+	exp_ch3.adb: Minor reformatting.
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch13.adb (Analyze_Attribute_Definition_Clause, case
 	Component_Size): It is now illegal to give an incorrect component size
 	clause in the case of aliased or atomic components.

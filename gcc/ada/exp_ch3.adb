@@ -230,7 +230,7 @@ package body Exp_Ch3 is
      (Typ     : Entity_Id;
       Eq_Name : Name_Id) return Node_Id;
    --  Build the body of a primitive equality operation for a tagged record
-   --  type, or in Ada2012 for any record type that has components with a
+   --  type, or in Ada 2012 for any record type that has components with a
    --  user-defined equality. Factored out of Predefined_Primitive_Bodies.
 
    function Make_Eq_Case
@@ -6174,7 +6174,7 @@ package body Exp_Ch3 is
 
       --  In the non-tagged case, ever since Ada83 an equality function must
       --  be  provided for variant records that are not unchecked unions.
-      --  In Ada2012 the equality function composes, and thus must be built
+      --  In Ada 2012 the equality function composes, and thus must be built
       --  explicitly just as for tagged records.
 
       elsif Has_Discriminants (Def_Id)

@@ -84,7 +84,7 @@ package body Ch5 is
    ---------------------------------
 
    --  SEQUENCE_OF_STATEMENTS ::= STATEMENT {STATEMENT} {LABEL}
-   --  Note: the final label is an Ada2012 addition.
+   --  Note: the final label is an Ada 2012 addition.
 
    --  STATEMENT ::=
    --    {LABEL} SIMPLE_STATEMENT | {LABEL} COMPOUND_STATEMENT
@@ -150,12 +150,12 @@ package body Ch5 is
       --  is required. It is initialized from the Sreq flag, and modified as
       --  statements are scanned (a statement turns it off, and a label turns
       --  it back on again since a statement must follow a label).
-      --  Note : this final requirement is lifted in Ada2012.
+      --  Note : this final requirement is lifted in Ada 2012.
 
       Statement_Seen : Boolean;
-      --  In Ada2012 a label can end a sequence of statements, but the sequence
-      --  cannot contain only labels. This flag is set whenever a label is
-      --  encountered, to enforce this rule at the end of a sequence.
+      --  In Ada 2012, a label can end a sequence of statements, but the
+      --  sequence cannot contain only labels. This flag is set whenever a
+      --  label is encountered, to enforce this rule at the end of a sequence.
 
       Declaration_Found : Boolean := False;
       --  This flag is set True if a declaration is encountered, so that the
@@ -773,7 +773,7 @@ package body Ch5 is
                   Statement_Required := False;
 
                --  Label starting with << which must precede real statement
-               --  Note: in Ada2012, the label may end the sequence.
+               --  Note: in Ada 2012, the label may end the sequence.
 
                when Tok_Less_Less =>
                   if Present (Last (Statement_List))
