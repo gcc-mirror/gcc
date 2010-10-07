@@ -111,6 +111,16 @@ enum tls_model {
   TLS_MODEL_LOCAL_EXEC
 };
 
+/* Types of unwind/exception handling info that can be generated.  */
+
+enum unwind_info_type
+{
+  UI_NONE,
+  UI_SJLJ,
+  UI_DWARF2,
+  UI_TARGET
+};
+
 struct edge_def;
 typedef struct edge_def *edge;
 typedef const struct edge_def *const_edge;
