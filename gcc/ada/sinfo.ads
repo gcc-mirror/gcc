@@ -4435,10 +4435,7 @@ package Sinfo is
       --  and put in its proper section when we know exactly where that is!
 
       --  PARAMETRIZED_EXPRESSION ::=
-      --    FUNCTION SPECIFICATION IS EXPRESSION;
-
-      --  Note: there are no separate nodes for the profiles, instead the
-      --  information appears directly in the following nodes.
+      --    FUNCTION SPECIFICATION IS (EXPRESSION);
 
       --  N_Parametrized_Expression
       --  Sloc points to FUNCTION

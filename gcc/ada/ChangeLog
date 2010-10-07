@@ -1,5 +1,26 @@
 2010-10-07  Robert Dewar  <dewar@adacore.com>
 
+	* par-ch3.adb, par-ch6.adb, par-ch7.adb, par-ch9.adb, par-ch10.adb: Add
+	Pexp to Pf_Rec constants
+	(P_Subprogram): Expression is always enclosed in parentheses
+	* par.adb (Pf_Rec): add Pexp flag for parametrized expression
+	* sinfo.ads (N_Parametrized_Expression): Expression must be in parens
+
+2010-10-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Specification): Implement Ada2012
+	checks on functions that return an abstract type or have a controlling
+	result whose designated type is an abstract type.
+	(Check_Private_Overriding): Implement Ada2012 checks on functions
+	declared in the private part, if an abstract type is involved.
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration): In Ada2012,
+	reject a generic function that returns an abstract type.
+	* exp_ch5.adb (Expand_Simple_Function_Return): in Ada2012, if a
+	function has a controlling access result, check that the tag of the
+	return value matches the designated type of the return expression.
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
 	* par-ch6.adb: Fix error in handling of parametrized expressions.
 	* par-ch4.adb (P_Name): Allow qualified expression as name in Ada 2012
 	mode.

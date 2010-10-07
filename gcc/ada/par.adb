@@ -352,7 +352,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       Pbod : Boolean;                  -- True if proper body OK
       Rnam : Boolean;                  -- True if renaming declaration OK
       Stub : Boolean;                  -- True if body stub OK
-      Fil1 : Boolean;                  -- Filler to fill to 8 bits
+      Pexp : Boolean;                  -- True if parametried expression OK
       Fil2 : Boolean;                  -- Filler to fill to 8 bits
    end record;
    pragma Pack (Pf_Rec);
@@ -360,18 +360,18 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    function T return Boolean renames True;
    function F return Boolean renames False;
 
-   Pf_Decl_Gins_Pbod_Rnam_Stub : constant Pf_Rec :=
-                                   Pf_Rec'(F, T, T, T, T, T, F, F);
-   Pf_Decl                     : constant Pf_Rec :=
-                                   Pf_Rec'(F, T, F, F, F, F, F, F);
-   Pf_Decl_Gins_Pbod_Rnam      : constant Pf_Rec :=
-                                   Pf_Rec'(F, T, T, T, T, F, F, F);
-   Pf_Decl_Pbod                : constant Pf_Rec :=
-                                   Pf_Rec'(F, T, F, T, F, F, F, F);
-   Pf_Pbod                     : constant Pf_Rec :=
-                                   Pf_Rec'(F, F, F, T, F, F, F, F);
-   Pf_Spcn                     : constant Pf_Rec :=
-                                   Pf_Rec'(T, F, F, F, F, F, F, F);
+   Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp : constant Pf_Rec :=
+                                       Pf_Rec'(F, T, T, T, T, T, T, F);
+   Pf_Decl_Pexp                     : constant Pf_Rec :=
+                                       Pf_Rec'(F, T, F, F, F, F, T, F);
+   Pf_Decl_Gins_Pbod_Rnam_Pexp      : constant Pf_Rec :=
+                                       Pf_Rec'(F, T, T, T, T, F, T, F);
+   Pf_Decl_Pbod_Pexp                : constant Pf_Rec :=
+                                       Pf_Rec'(F, T, F, T, F, F, T, F);
+   Pf_Pbod_Pexp                     : constant Pf_Rec :=
+                                       Pf_Rec'(F, F, F, T, F, F, T, F);
+   Pf_Spcn                         : constant Pf_Rec :=
+                                       Pf_Rec'(T, F, F, F, F, F, F, F);
    --  The above are the only allowed values of Pf_Rec arguments
 
    type SS_Rec is record

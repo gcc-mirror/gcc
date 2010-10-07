@@ -2960,16 +2960,29 @@ package body Sem_Ch6 is
          --  In case of primitives associated with abstract interface types
          --  the check is applied later (see Analyze_Subprogram_Declaration).
 
-         if Is_Abstract_Type (Etype (Designator))
-           and then not Is_Interface (Etype (Designator))
-           and then Nkind (Parent (N)) /= N_Subprogram_Renaming_Declaration
-           and then Nkind (Parent (N)) /=
-                      N_Abstract_Subprogram_Declaration
-           and then
-             (Nkind (Parent (N))) /= N_Formal_Abstract_Subprogram_Declaration
+         if not Nkind_In (Parent (N),
+             N_Subprogram_Renaming_Declaration,
+             N_Abstract_Subprogram_Declaration,
+             N_Formal_Abstract_Subprogram_Declaration)
          then
-            Error_Msg_N
-              ("function that returns abstract type must be abstract", N);
+            if Is_Abstract_Type (Etype (Designator))
+              and then not Is_Interface (Etype (Designator))
+            then
+               Error_Msg_N
+                 ("function that returns abstract type must be abstract", N);
+
+            --  Ada 2012 (AI-0073) : extend this test to subprograms with an
+            --  access result whose designated type is abstract.
+
+            elsif Nkind (Result_Definition (N)) = N_Access_Definition
+              and then
+                not Is_Class_Wide_Type (Designated_Type (Etype (Designator)))
+              and then Is_Abstract_Type (Designated_Type (Etype (Designator)))
+              and then Ada_Version >= Ada_12
+            then
+               Error_Msg_N ("function whose access result designates "
+                 & "abstract type must be abstract", N);
+            end if;
          end if;
       end if;
 
@@ -7029,16 +7042,34 @@ package body Sem_Ch6 is
                      & "(RM 3.9.3(10))!", S);
 
                elsif Ekind (S) = E_Function
-                 and then Is_Tagged_Type (T)
-                 and then T = Base_Type (Etype (S))
                  and then not Is_Overriding
                then
-                  Error_Msg_N
-                    ("private function with tagged result must"
-                     & " override visible-part function", S);
-                  Error_Msg_N
-                    ("\move subprogram to the visible part"
-                     & " (RM 3.9.3(10))", S);
+                  if Is_Tagged_Type (T)
+                    and then T = Base_Type (Etype (S))
+                  then
+                     Error_Msg_N
+                       ("private function with tagged result must"
+                        & " override visible-part function", S);
+                     Error_Msg_N
+                       ("\move subprogram to the visible part"
+                        & " (RM 3.9.3(10))", S);
+
+                  --  AI05-0073: extend this test to the case of a function
+                  --  with a controlling access result.
+
+                  elsif Ekind (Etype (S)) = E_Anonymous_Access_Type
+                    and then Is_Tagged_Type (Designated_Type (Etype (S)))
+                    and then
+                      not Is_Class_Wide_Type (Designated_Type (Etype (S)))
+                    and then Ada_Version >= Ada_12
+                  then
+                     Error_Msg_N
+                       ("private function with controlling access result "
+                          & "must override visible-part function", S);
+                     Error_Msg_N
+                       ("\move subprogram to the visible part"
+                          & " (RM 3.9.3(10))", S);
+                  end if;
                end if;
             end if;
          end Check_Private_Overriding;

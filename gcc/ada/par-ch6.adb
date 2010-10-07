@@ -124,7 +124,7 @@ package body Ch6 is
    --  other subprogram constructs.
 
    --  PARAMETRIZED_EXPRESSION ::=
-   --    FUNCTION SPECIFICATION IS EXPRESSION;
+   --    FUNCTION SPECIFICATION IS (EXPRESSION);
 
    --  The value in Pf_Flags indicates which of these possible declarations
    --  is acceptable to the caller:
@@ -134,6 +134,7 @@ package body Ch6 is
    --    Pf_Flags.Pbod                 Set if proper body OK
    --    Pf_Flags.Rnam                 Set if renaming declaration OK
    --    Pf_Flags.Stub                 Set if body stub OK
+   --    Pf_Flags.Pexp                 Set if parametrized expression OK
 
    --  If an inappropriate form is encountered, it is scanned out but an
    --  error message indicating that it is appearing in an inappropriate
@@ -221,17 +222,17 @@ package body Ch6 is
          --  already been given, so no need to give another message here.
 
          --  An overriding indicator is allowed for subprogram declarations,
-         --  bodies (including subunits), renamings, stubs, and
-         --  instantiations. The test against Pf_Decl_Pbod is added to account
-         --  for the case of subprograms declared in a protected type, where
-         --  only subprogram declarations and bodies can occur. The Pf_Pbod
-         --  case is for subunits.
+         --  bodies (including subunits), renamings, stubs, and instantiations.
+         --  The test against Pf_Decl_Pbod is added to account for the case of
+         --  subprograms declared in a protected type, where only subprogram
+         --  declarations and bodies can occur. The Pf_Pbod case is for
+         --  subunits.
 
-         if Pf_Flags /= Pf_Decl_Gins_Pbod_Rnam_Stub
+         if Pf_Flags /= Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp
               and then
-            Pf_Flags /= Pf_Decl_Pbod
+            Pf_Flags /= Pf_Decl_Pbod_Pexp
               and then
-            Pf_Flags /= Pf_Pbod
+            Pf_Flags /= Pf_Pbod_Pexp
          then
             Error_Msg_SC ("overriding indicator not allowed here!");
 
@@ -583,12 +584,9 @@ package body Ch6 is
          end if;
       end if;
 
-      --  Processing for subprogram body or parametrized expression
+      --  Processing for stub or subprogram body or parametrized expression
 
       <<Subprogram_Body>>
-         if not Pf_Flags.Pbod then
-            Error_Msg_SP ("subprogram body not allowed here!");
-         end if;
 
          --  Subprogram body stub case
 
@@ -614,28 +612,24 @@ package body Ch6 is
          --  Subprogram body or parametrized expression case
 
          else
-            --  Here we must distinguish a body and a parametrized expression
+            Scan_Body_Or_Parametrized_Expression : declare
 
-            Parse_Body_Or_Parametrized_Expression : declare
-               function Is_Parametrized_Expression return Boolean;
-               --  Returns True if we have case of parametrized epression
+               function Likely_Parametrized_Expression return Boolean;
+               --  Returns True if we have a probably case of a parametrized
+               --  expression omitting the parentheses, if so, returns True
+               --  and emits an appropriate error message, else returns False.
 
-               --------------------------------
-               -- Is_Parametrized_Expression --
-               --------------------------------
+               ------------------------------------
+               -- Likely_Parametrized_Expression --
+               ------------------------------------
 
-               function Is_Parametrized_Expression return Boolean is
+               function Likely_Parametrized_Expression return Boolean is
                begin
-                  --  Parametrized expression only allowed in Ada 2012
-
-                  if Ada_Version < Ada_12 then
-                     return False;
-
                   --  If currently pointing to BEGIN or a declaration keyword
                   --  or a pragma, then we definitely have a subprogram body.
                   --  This is a common case, so worth testing first.
 
-                  elsif Token = Tok_Begin
+                  if Token = Tok_Begin
                     or else Token in Token_Class_Declk
                     or else Token = Tok_Pragma
                   then
@@ -652,42 +646,79 @@ package body Ch6 is
                     or else Token = Tok_New
                     or else Token = Tok_Not
                   then
-                     return True;
+                     null;
 
-                  --  Anything other than an identifier must be a body at
-                  --  this stage. Probably we could do a little better job of
-                  --  distingushing some more error cases, but it seems right
-                  --  to err on the side of favoring a body over the
-                  --  new-fangled parametrized expression.
+                  --  Anything other than an identifier must be a body
 
                   elsif Token /= Tok_Identifier then
                      return False;
 
-                  --  For identifier we have to scan ahead if identifier is
-                  --  followed by a colon or a comma, it is a declaration and
-                  --  hence we have a subprogram body. Otherwise we have an
-                  --  expression.
+                  --  Here for an identifier
 
                   else
-                     declare
-                        Scan_State : Saved_Scan_State;
-                        Tok        : Token_Type;
-                     begin
-                        Save_Scan_State (Scan_State);
-                        Scan; -- past identifier
-                        Tok := Token;
-                        Restore_Scan_State (Scan_State);
-                        return Tok /= Tok_Colon and then Tok /= Tok_Comma;
-                     end;
-                  end if;
-               end Is_Parametrized_Expression;
+                     --  If the identifier is the first token on its line, then
+                     --  let's assume that we have a missing begin and this is
+                     --  intended as a subprogram body.
 
-            --  Start of processing for Parse_Body_Or_Parametrized_Expression
+                     if Token_Is_At_Start_Of_Line then
+                        return False;
+
+                     --  Otherwise we have to scan ahead. If the identifier is
+                     --  followed by a colon or a comma, it is a declaration
+                     --  and hence we have a subprogram body. Otherwise assume
+                     --  a parametrized expression.
+
+                     else
+                        declare
+                           Scan_State : Saved_Scan_State;
+                           Tok        : Token_Type;
+                        begin
+                           Save_Scan_State (Scan_State);
+                           Scan; -- past identifier
+                           Tok := Token;
+                           Restore_Scan_State (Scan_State);
+
+                           if Tok = Tok_Colon or else Tok = Tok_Comma then
+                              return False;
+                           end if;
+                        end;
+                     end if;
+                  end if;
+
+                  --  Fall through if we have a likely parametrized expression
+
+                  Error_Msg_SC
+                    ("parametrized expression must be "
+                     & "enclosed in parentheses");
+                  return True;
+               end Likely_Parametrized_Expression;
+
+            --  Start of processing for Scan_Body_Or_Parametrized_Expression
 
             begin
-               --  Parametrized_Expression case, parse expression
+               --  Parametrized_Expression case
 
-               if Is_Parametrized_Expression then
+               if Token = Tok_Left_Paren
+                 or else Likely_Parametrized_Expression
+               then
+                  --  Check parametrized expression allowed here
+
+                  if not Pf_Flags.Pexp then
+                     Error_Msg_SC
+                       ("parametrized expression not allowed here!");
+                  end if;
+
+                  --  Check we are in Ada 2012 mode
+
+                  if Ada_Version < Ada_12 then
+                     Error_Msg_SC
+                       ("parametrized expression is an Ada 2012 feature!");
+                     Error_Msg_SC
+                       ("\unit must be compiled with -gnat2012 switch!");
+                  end if;
+
+                  --  Parse out expression and build parametrized expression
+
                   Body_Node :=
                     New_Node
                       (N_Parametrized_Expression, Sloc (Specification_Node));
@@ -699,10 +730,16 @@ package body Ch6 is
                --  Subprogram body case
 
                else
-                  --  Here is the test for a suspicious IS (i.e. one that looks
-                  --  like it might more properly be a semicolon). See separate
-                  --  section discussing use of IS instead of semicolon in
-                  --  package Parse.
+                  --  Check body allowed here
+
+                  if not Pf_Flags.Pbod then
+                     Error_Msg_SP ("subprogram body not allowed here!");
+                  end if;
+
+                  --  Here is the test for a suspicious IS (i.e. one that
+                  --  looks like it might more properly be a semicolon).
+                  --  See separate section describing use of IS instead
+                  --  of semicolon in package Parse.
 
                   if (Token in Token_Class_Declk
                         or else
@@ -715,7 +752,7 @@ package body Ch6 is
                   end if;
 
                   --  Build and return subprogram body, parsing declarations
-                  --  an statement sequence that belong to the body.
+                  --  and statement sequence that belong to the body.
 
                   Body_Node :=
                     New_Node (N_Subprogram_Body, Sloc (Specification_Node));
@@ -724,7 +761,7 @@ package body Ch6 is
                end if;
 
                return Body_Node;
-            end Parse_Body_Or_Parametrized_Expression;
+            end Scan_Body_Or_Parametrized_Expression;
          end if;
 
       --  Processing for subprogram declaration
