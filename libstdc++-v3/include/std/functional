@@ -1332,7 +1332,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
         operator()(_Args&&... __args)
         {
           return this->__call<_Result>(
-              tuple<_Args...>(std::forward<_Args...>(__args)...),
+              tuple<_Args...>(std::forward<_Args>(__args)...),
               _Bound_indexes());
         }
 
@@ -1342,7 +1342,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
         operator()(_Args&&... __args) const
         {
           return this->__call<_Result>(
-              tuple<_Args...>(std::forward<_Args...>(__args)...),
+              tuple<_Args...>(std::forward<_Args>(__args)...),
               _Bound_indexes());
         }
 
@@ -1352,7 +1352,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
         operator()(_Args&&... __args) volatile
         {
           return this->__call<_Result>(
-              tuple<_Args...>(std::forward<_Args...>(__args)...),
+              tuple<_Args...>(std::forward<_Args>(__args)...),
               _Bound_indexes());
         }
 
@@ -1362,7 +1362,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
         operator()(_Args&&... __args) const volatile
         {
           return this->__call<_Result>(
-              tuple<_Args...>(std::forward<_Args...>(__args)...),
+              tuple<_Args...>(std::forward<_Args>(__args)...),
               _Bound_indexes());
         }
     };
