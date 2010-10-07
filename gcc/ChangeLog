@@ -1,5 +1,9 @@
 2010-10-07  Dave Korn  <dave.korn.cygwin@gmail.com>
 
+	* config.host: Update copyright year.
+
+2010-10-07  Dave Korn  <dave.korn.cygwin@gmail.com>
+
 	* config.host (host_lto_plugin_soname): New shell variable.
 	* configure.ac (LTOPLUGINSONAME): Add an AC_DEFINE for the above.
 	* config.in: Regenerate.
