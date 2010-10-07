@@ -20214,7 +20214,7 @@ rs6000_emit_prologue (void)
   /* In AIX ABI we need to make sure r2 is really saved.  */
   if (TARGET_AIX && crtl->calls_eh_return)
     {
-      rtx tmp_reg, tmp_reg_si, compare_result, toc_save_done, jump;
+      rtx tmp_reg, tmp_reg_si, hi, lo, compare_result, toc_save_done, jump;
       long toc_restore_insn;
 
       gcc_assert (frame_reg_rtx == frame_ptr_rtx
@@ -20232,15 +20232,13 @@ rs6000_emit_prologue (void)
 	 toc adjusting stub.  */
       emit_move_insn (tmp_reg_si, gen_rtx_MEM (SImode, tmp_reg));
       toc_restore_insn = TARGET_32BIT ? 0x80410014 : 0xE8410028;
-      toc_restore_insn = (toc_restore_insn ^ 0x80000000) - 0x80000000;
-      emit_insn (gen_xorsi3 (tmp_reg_si, tmp_reg_si,
-			     GEN_INT (toc_restore_insn & ~0xffff)));
+      hi = gen_int_mode (toc_restore_insn & ~0xffff, SImode);
+      emit_insn (gen_xorsi3 (tmp_reg_si, tmp_reg_si, hi));
       compare_result = gen_rtx_REG (CCUNSmode, CR0_REGNO);
       validate_condition_mode (EQ, CCUNSmode);
+      lo = gen_int_mode (toc_restore_insn & 0xffff, SImode);
       emit_insn (gen_rtx_SET (VOIDmode, compare_result,
-			      gen_rtx_COMPARE (CCUNSmode, tmp_reg_si,
-					       GEN_INT (toc_restore_insn
-							& 0xffff))));
+			      gen_rtx_COMPARE (CCUNSmode, tmp_reg_si, lo)));
       toc_save_done = gen_label_rtx ();
       jump = gen_rtx_IF_THEN_ELSE (VOIDmode,
 				   gen_rtx_EQ (VOIDmode, compare_result,

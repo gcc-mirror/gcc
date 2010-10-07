@@ -1,3 +1,8 @@
+2010-10-07  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Use gen_int_mode
+	rather than sign extension by hand.
+
 2010-10-07  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/45926
@@ -20,17 +25,17 @@
 	* doc/tm.texi.in (CLASS_LIKELY_SPILLED_P): Remove documentation.
 	* doc/tm.texi.in: Regenerate.
 	* system.h (CLASS_LIKELY_SPILLED_P): Poison.
-	* targhooks.c (default_class_likely_spilled_p): Don't use the 
+	* targhooks.c (default_class_likely_spilled_p): Don't use the
 	CLASS_LIKELY_SPILLED_P macro.
 
-	* config\arm\arm.md: Update comment.
+	* config/arm/arm.md: Update comment.
 
 2010-10-06  Jan Hubicka  <jh@suse.cz>
 
-	* ipa.c (cgraph_remove_unreachable_nodes): External references can always
-	be removed.
-	(cgraph_externally_visible_p): We can not bring local comdats that are known
-	to linker; fix handling of internal visibility.
+	* ipa.c (cgraph_remove_unreachable_nodes): External references can
+	always be removed.
+	(cgraph_externally_visible_p): We can not bring local comdats that
+	are known to linker; fix handling of internal visibility.
 	(function_and_variable_visibility): Likewise.
 
 2010-10-06  Eric Botcazou  <ebotcazou@adacore.com>
@@ -65,7 +70,7 @@
 
 2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	Implemented fast enumeration for Objective-C.	
+	Implemented fast enumeration for Objective-C.
 	* c-parser.c (objc_could_be_foreach_context): New.
 	(c_lex_one_token): Recognize RID_IN keyword in a potential
 	Objective-C foreach context.
@@ -87,7 +92,7 @@
 	perform checks on the loop declarations.
 	* c-tree.h (check_for_loop_decls): Updated declaration.
 	* doc/objc.texi: Document fast enumeration.
-	
+
 2010-10-06  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.h (FIRST_PSEUDO_REGISTER): Increment by
@@ -431,8 +436,7 @@
 2010-10-04  Andi Kleen <ak@linux.intel.com>
 
 	* Makefile.in (xgcc, cpp, cc1, collect2, lto-wrapper, gcov,
-        gcov-dump, cc1-dummy, genprog, build/gcov-iov):
-        Add + to build rule.
+	gcov-dump, cc1-dummy, genprog, build/gcov-iov): Add + to build rule.
 
 2010-10-04  Matthias Klose  <doko@ubuntu.com>
 
@@ -993,7 +997,7 @@
 	* extend.texi (interrupt_handler): Add MicroBlaze to list.
 	(save_volatiles): Describe option for MicroBlaze.
 	* invoke.texi: Add MicroBlaze Options.
-	* contrib.texi: Add acknowledgment. 
+	* contrib.texi: Add acknowledgment.
 	* md.texi: Add MicroBlaze d and z constraints.
 	* install.texi: Add microblaze-*-elf.
 	* configure.ac: Add microblaze-*-* to target list.
@@ -1111,7 +1115,7 @@
 	and RID_AT_PUBLIC instead of RID_PUBLIC.
 	(c_parser_statement_after_labels): Use RID_AT_TRY instead of
 	RID_TRY and RID_AT_CATCH instead of RID_CATCH.
-	
+
 2010-09-30  Tom G. Christensen <tgc@jupiterrise.com>
 
 	* doc/install.texi (Binaries): Update link to HP-UX porting centre.
@@ -1121,7 +1125,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 	* c-parser.c: Applied change originally in c-parse.in.
-	
+
 	2005-10-04  Fariborz Jahanian <fjahanian@apple.com>
 
 	Radar 4281748
@@ -9203,7 +9207,7 @@
 
 2010-07-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
- 	PR target/43698
+	PR target/43698
 	* config/arm/arm.md: Split arm_rev into *arm_rev and *thumb1_rev.
 	Set *arm_rev to be predicable.
 
@@ -12081,7 +12085,7 @@
 
 	* ipa-split.c (split_function): For aggregate values, set the return
 	slot optimization bit.  When passing DECL_BY_REFERENCE, produce
- 	*<retval> = fncall.part ().
+	*<retval> = fncall.part ().
 	(execute_split_functions): Do not care about DECL_BY_REFERENCE.
 
 2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
