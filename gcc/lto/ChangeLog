@@ -1,3 +1,7 @@
+2010-10-06  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_balanced_map): Do not produce empty partitions.
+
 2010-10-06  Andi Kleen <ak@linux.intel.com>
 
 	* lto.c (lto_process_name): Add.

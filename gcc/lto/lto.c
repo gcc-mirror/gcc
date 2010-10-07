@@ -1212,6 +1212,9 @@ lto_balanced_map (void)
 	      undo_partition (partition, best_n_nodes, best_n_varpool_nodes);
 	    }
 	  i = best_i;
+ 	  /* When we are finished, avoid creating empty partition.  */
+	  if (i == n_nodes - 1)
+	    break;
 	  partition = new_partition ("");
 	  last_visited_cgraph_node = 0;
 	  last_visited_varpool_node = 0;
