@@ -1,5 +1,10 @@
 2010-10-07  Tejas Belagod  <tejas.belagod@arm.com>
 
+	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Add NULL
+	check for vectype_out returned by get_vectype_for_scalar_type().
+
+2010-10-07  Tejas Belagod  <tejas.belagod@arm.com>
+
 	* config/arm/neon.md (neon_unpack<US>_<mode>): Add 'w' to
 	constraint, add register specifier in instruction template.
 	(neon_vec_pack_trunc_<mode>): Likewise.
