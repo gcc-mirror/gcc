@@ -1,5 +1,10 @@
 2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
 
+	* objc.dg/set-not-used-1.m: New
+	* obj-c++.dg/set-not-used-1.mm: New.
+
+2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
+
 	* objc.dg/attributes/method-attribute-3.m: New.
 	* obj-c++.dg/attributes/method-attribute-3.mm: New.
 

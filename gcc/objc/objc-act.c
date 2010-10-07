@@ -6455,6 +6455,9 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
   tree selector, retval, class_tree;
   int self, super, have_cast;
 
+  /* We have used the receiver, so mark it as read.  */
+  mark_exp_read (receiver);
+
   /* Extract the receiver of the message, as well as its type
      (where the latter may take the form of a cast or be inferred
      from the implementation context).  */
