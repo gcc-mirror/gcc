@@ -2634,7 +2634,7 @@ package body Ch4 is
 
    --  Error_Recovery: cannot raise Error_Resync
 
-   function  P_Qualified_Expression (Subtype_Mark : Node_Id) return Node_Id is
+   function P_Qualified_Expression (Subtype_Mark : Node_Id) return Node_Id is
       Qual_Node : Node_Id;
    begin
       Qual_Node := New_Node (N_Qualified_Expression, Prev_Token_Ptr);

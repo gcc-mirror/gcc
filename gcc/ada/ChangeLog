@@ -1,5 +1,17 @@
 2010-10-07  Robert Dewar  <dewar@adacore.com>
 
+	* exp_util.adb (Insert_Actions): Add handling of
+	N_Parametrized_Expression.
+	* par-ch6.adb (P_Subprogram): Add parsing of parametrized expression
+	* sem.adb: Add entry for N_Parametrized_Expression
+	* sem_ch6.adb (Analyze_Parametrized_Expression): New procedure
+	* sem_ch6.ads (Analyze_Parametrized_Expression): New procedure
+	* sinfo.ads, sinfo.adb: Add N_Parametrized_Expression
+	* sprint.adb (Sprint_Node): Add handling for N_Parametrized_Expression
+	* par-ch4.adb: Minor reformatting.
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
 	* scng.adb (Skip_Other_Format_Characters): New procedure
 	(Start_Of_Wide_Character): New procedure
 	(Scan): Use Start_Of_Wide_Character where appropriate

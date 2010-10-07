@@ -2388,6 +2388,17 @@ package body Sprint is
                Write_Str (", ");
             end if;
 
+         when N_Parametrized_Expression =>
+            Write_Indent;
+            Sprint_Node_Sloc (Specification (Node));
+
+            Write_Str (" is");
+            Indent_Begin;
+            Write_Indent;
+            Sprint_Node (Expression (Node));
+            Write_Char (';');
+            Indent_End;
+
          when N_Pop_Constraint_Error_Label =>
             Write_Indent_Str ("%pop_constraint_error_label");
 

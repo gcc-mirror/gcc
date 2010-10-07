@@ -82,6 +82,7 @@ package body Ch6 is
 
    --  This routine scans out a subprogram declaration, subprogram body,
    --  subprogram renaming declaration or subprogram generic instantiation.
+   --  It also handles the new Ada 2012 parametrized expression form
 
    --  SUBPROGRAM_DECLARATION ::= SUBPROGRAM_SPECIFICATION;
 
@@ -121,6 +122,9 @@ package body Ch6 is
    --  Null procedures are an Ada 2005 feature. A null procedure declaration
    --  is classified as a basic declarative item, but it is parsed here, with
    --  other subprogram constructs.
+
+   --  PARAMETRIZED_EXPRESSION ::=
+   --    FUNCTION SPECIFICATION IS EXPRESSION;
 
    --  The value in Pf_Flags indicates which of these possible declarations
    --  is acceptable to the caller:
@@ -579,7 +583,7 @@ package body Ch6 is
          end if;
       end if;
 
-      --  Processing for subprogram body
+      --  Processing for subprogram body or parametrized expression
 
       <<Subprogram_Body>>
          if not Pf_Flags.Pbod then
@@ -607,29 +611,110 @@ package body Ch6 is
             TF_Semicolon;
             return Stub_Node;
 
-         --  Subprogram body case
+         --  Subprogram body or parametrized expression case
 
          else
-            --  Here is the test for a suspicious IS (i.e. one that looks
-            --  like it might more properly be a semicolon). See separate
-            --  section discussing use of IS instead of semicolon in
-            --  package Parse.
+            --  Here we must distinguish a body and a parametrized expression
 
-            if (Token in Token_Class_Declk
-                  or else
-                Token = Tok_Identifier)
-              and then Start_Column <= Scope.Table (Scope.Last).Ecol
-              and then Scope.Last /= 1
-            then
-               Scope.Table (Scope.Last).Etyp := E_Suspicious_Is;
-               Scope.Table (Scope.Last).S_Is := Prev_Token_Ptr;
-            end if;
+            Parse_Body_Or_Parametrized_Expression : declare
+               function Is_Parametrized_Expression return Boolean;
+               --  Returns True if we have case of parametrized epression
 
-            Body_Node :=
-              New_Node (N_Subprogram_Body, Sloc (Specification_Node));
-            Set_Specification (Body_Node, Specification_Node);
-            Parse_Decls_Begin_End (Body_Node);
-            return Body_Node;
+               --------------------------------
+               -- Is_Parametrized_Expression --
+               --------------------------------
+
+               function Is_Parametrized_Expression return Boolean is
+               begin
+                  --  Parametrized expression only allowed in Ada 2012
+
+                  if Ada_Version < Ada_12 then
+                     return False;
+
+                  --  If currently pointing to BEGIN or a declaration keyword
+                  --  or a pragma then we definitely do not have a parametrized
+                  --  expression.
+
+                  elsif Token in Token_Class_Declk
+                    or else Token = Tok_Begin
+                    or else Token = Tok_Pragma
+                  then
+                     return False;
+
+                  --  A common error case, missing BEGIN before RETURN
+
+                  elsif Token = Tok_Return then
+                     return False;
+
+                  --  Anything other than an identifier must be a parametrized
+                  --  expression at this stage. Probably we could do a little
+                  --  better job of distingushing some more error cases.
+
+                  elsif Token /= Tok_Identifier then
+                     return True;
+
+                  --  For identifier we have to scan ahead if identifier is
+                  --  followed by a colon or a comma, it is a declaration and
+                  --  hence we have a subprogram body. Otherwise we have an
+                  --  expression.
+
+                  else
+                     declare
+                        Scan_State : Saved_Scan_State;
+                        Tok        : Token_Type;
+                     begin
+                        Save_Scan_State (Scan_State);
+                        Scan; -- past identifier
+                        Tok := Token;
+                        Restore_Scan_State (Scan_State);
+                        return Tok /= Tok_Colon and then Tok /= Tok_Comma;
+                     end;
+                  end if;
+               end Is_Parametrized_Expression;
+
+            --  Start of processing for Parse_Body_Or_Parametrized_Expression
+
+            begin
+               --  Parametrized_Expression case, parse expression
+
+               if Is_Parametrized_Expression then
+                  Body_Node :=
+                    New_Node
+                      (N_Parametrized_Expression, Sloc (Specification_Node));
+                  Set_Specification (Body_Node, Specification_Node);
+                  Set_Expression (Body_Node, P_Expression);
+                  T_Semicolon;
+                  Pop_Scope_Stack;
+
+               --  Subprogram body case
+
+               else
+                  --  Here is the test for a suspicious IS (i.e. one that looks
+                  --  like it might more properly be a semicolon). See separate
+                  --  section discussing use of IS instead of semicolon in
+                  --  package Parse.
+
+                  if (Token in Token_Class_Declk
+                        or else
+                      Token = Tok_Identifier)
+                    and then Start_Column <= Scope.Table (Scope.Last).Ecol
+                    and then Scope.Last /= 1
+                  then
+                     Scope.Table (Scope.Last).Etyp := E_Suspicious_Is;
+                     Scope.Table (Scope.Last).S_Is := Prev_Token_Ptr;
+                  end if;
+
+                  --  Build and return subprogram body, parsing declarations
+                  --  an statement sequence that belong to the body.
+
+                  Body_Node :=
+                    New_Node (N_Subprogram_Body, Sloc (Specification_Node));
+                  Set_Specification (Body_Node, Specification_Node);
+                  Parse_Decls_Begin_End (Body_Node);
+               end if;
+
+               return Body_Node;
+            end Parse_Body_Or_Parametrized_Expression;
          end if;
 
       --  Processing for subprogram declaration

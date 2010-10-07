@@ -1038,6 +1038,31 @@ package body Sem_Ch6 is
       Analyze (Explicit_Actual_Parameter (N));
    end Analyze_Parameter_Association;
 
+   -------------------------------------
+   -- Analyze_Parametrized_Expression --
+   -------------------------------------
+
+   procedure Analyze_Parametrized_Expression (N : Node_Id) is
+      Loc  : constant Source_Ptr := Sloc (N);
+      LocX : constant Source_Ptr := Sloc (Expression (N));
+
+   begin
+      --  This is one of the occasions on which we write things during semantic
+      --  analysis. We transform the parametrized expression into an equivalent
+      --  subprogram body, and then analyze that.
+
+      Rewrite (N,
+        Make_Subprogram_Body (Loc,
+          Specification              => Specification (N),
+          Declarations               => Empty_List,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (LocX,
+              Statements => New_List (
+                Make_Simple_Return_Statement (LocX,
+                  Expression => Expression (N))))));
+      Analyze (N);
+   end Analyze_Parametrized_Expression;
+
    ----------------------------
    -- Analyze_Procedure_Call --
    ----------------------------
