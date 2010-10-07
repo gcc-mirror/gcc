@@ -2592,6 +2592,7 @@ package body Exp_Util is
                N_Package_Declaration                    |
                N_Package_Instantiation                  |
                N_Package_Renaming_Declaration           |
+               N_Parametrized_Expression                |
                N_Private_Extension_Declaration          |
                N_Private_Type_Declaration               |
                N_Procedure_Instantiation                |
@@ -4583,15 +4584,14 @@ package body Exp_Util is
 
       function Side_Effect_Free (N : Node_Id) return Boolean is
       begin
-         --  Note on checks that could raise Constraint_Error. Strictly, if
-         --  we take advantage of 11.6, these checks do not count as side
-         --  effects. However, we would just as soon consider that they are
-         --  side effects, since the backend CSE does not work very well on
-         --  expressions which can raise Constraint_Error. On the other
-         --  hand, if we do not consider them to be side effect free, then
-         --  we get some awkward expansions in -gnato mode, resulting in
-         --  code insertions at a point where we do not have a clear model
-         --  for performing the insertions.
+         --  Note on checks that could raise Constraint_Error. Strictly, if we
+         --  take advantage of 11.6, these checks do not count as side effects.
+         --  However, we would prefer to consider that they are side effects,
+         --  since the backend CSE does not work very well on expressions which
+         --  can raise Constraint_Error. On the other hand if we don't consider
+         --  them to be side effect free, then we get some awkward expansions
+         --  in -gnato mode, resulting in code insertions at a point where we
+         --  do not have a clear model for performing the insertions.
 
          --  Special handling for entity names
 

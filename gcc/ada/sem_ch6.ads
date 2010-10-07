@@ -39,6 +39,7 @@ package Sem_Ch6 is
    procedure Analyze_Function_Call                   (N : Node_Id);
    procedure Analyze_Operator_Symbol                 (N : Node_Id);
    procedure Analyze_Parameter_Association           (N : Node_Id);
+   procedure Analyze_Parametrized_Expression         (N : Node_Id);
    procedure Analyze_Procedure_Call                  (N : Node_Id);
    procedure Analyze_Simple_Return_Statement         (N : Node_Id);
    procedure Analyze_Subprogram_Declaration          (N : Node_Id);
