@@ -4296,15 +4296,7 @@ package body Sem_Res is
       --  Check for allocation from an empty storage pool
 
       if No_Pool_Assigned (Typ) then
-         declare
-            Loc : constant Source_Ptr := Sloc (N);
-         begin
-            Error_Msg_N ("?allocation from empty storage pool!", N);
-            Error_Msg_N ("\?Storage_Error will be raised at run time!", N);
-            Insert_Action (N,
-              Make_Raise_Storage_Error (Loc,
-                Reason => SE_Empty_Storage_Pool));
-         end;
+         Error_Msg_N ("allocation from empty storage pool!", N);
 
       --  If the context is an unchecked conversion, as may happen within
       --  an inlined subprogram, the allocator is being resolved with its

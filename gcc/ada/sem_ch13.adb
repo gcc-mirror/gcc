@@ -1859,7 +1859,7 @@ package body Sem_Ch13 is
                      return;
                   end if;
 
-                  if Compile_Time_Known_Value (Expr)
+                  if Is_OK_Static_Expression (Expr)
                     and then Expr_Value (Expr) = 0
                   then
                      Set_No_Pool_Assigned (Btype);

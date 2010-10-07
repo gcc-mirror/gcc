@@ -3768,12 +3768,13 @@ package body Exp_Aggr is
          then
             Expr := First (Component_Associations (N));
             while Present (Expr) loop
-               if Nkind (Expression (Expr)) = N_Integer_Literal then
+               if Nkind_In (Expression (Expr), N_Integer_Literal,
+                                               N_Real_Literal)
+               then
                   null;
 
                elsif Nkind (Expression (Expr)) /= N_Aggregate
-                 or else
-                   not Compile_Time_Known_Aggregate (Expression (Expr))
+                 or else not Compile_Time_Known_Aggregate (Expression (Expr))
                  or else Expansion_Delayed (Expression (Expr))
                then
                   Static_Components := False;
@@ -4193,6 +4194,11 @@ package body Exp_Aggr is
       --  aggregate index is outside the bounds of the index constraint.
       --  Sub_Aggr is an array sub-aggregate. Dim is the dimension
       --  corresponding to the sub-aggregate.
+
+      function Safe_Left_Hand_Side (N : Node_Id) return Boolean;
+      --  In addition to Maybe_In_Place_OK, in order for an aggregate to be
+      --  built directly into the target of the assignment it must be free
+      --  of side-effects.
 
       ----------------------------
       -- Build_Constrained_Type --
@@ -4922,7 +4928,33 @@ package body Exp_Aggr is
          end if;
       end Others_Check;
 
-      --  Remaining Expand_Array_Aggregate variables
+      -------------------------
+      -- Safe_Left_Hand_Side --
+      -------------------------
+
+      function Safe_Left_Hand_Side (N : Node_Id) return Boolean is
+      begin
+         if Is_Entity_Name (N) then
+            return True;
+
+         elsif Nkind_In (N, N_Explicit_Dereference, N_Selected_Component)
+           and then Safe_Left_Hand_Side (Prefix (N))
+         then
+            return True;
+
+         elsif Nkind (N) = N_Indexed_Component
+           and then Safe_Left_Hand_Side (Prefix (N))
+           and then
+             (Is_Entity_Name (First (Expressions (N)))
+               or else Nkind (First (Expressions (N))) = N_Integer_Literal)
+         then
+            return True;
+         else
+            return False;
+         end if;
+      end Safe_Left_Hand_Side;
+
+      --  Local variables
 
       Tmp : Entity_Id;
       --  Holds the temporary aggregate value
@@ -5230,9 +5262,9 @@ package body Exp_Aggr is
       --  In the remaining cases the aggregate is the RHS of an assignment
 
       elsif Maybe_In_Place_OK
-        and then Is_Entity_Name (Name (Parent (N)))
+        and then Safe_Left_Hand_Side (Name (Parent (N)))
       then
-         Tmp := Entity (Name (Parent (N)));
+         Tmp := Name (Parent (N));
 
          if Etype (Tmp) /= Etype (N) then
             Apply_Length_Check (N, Etype (Tmp));
@@ -5243,16 +5275,6 @@ package body Exp_Aggr is
 
                return;
             end if;
-         end if;
-
-      elsif Maybe_In_Place_OK
-        and then Nkind (Name (Parent (N))) = N_Explicit_Dereference
-        and then Is_Entity_Name (Prefix (Name (Parent (N))))
-      then
-         Tmp := Name (Parent (N));
-
-         if Etype (Tmp) /= Etype (N) then
-            Apply_Length_Check (N, Etype (Tmp));
          end if;
 
       elsif Maybe_In_Place_OK
