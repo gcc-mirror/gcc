@@ -1,3 +1,11 @@
+2010-10-07  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/arm/neon.md (neon_unpack<US>_<mode>): Add 'w' to
+	constraint, add register specifier in instruction template.
+	(neon_vec_pack_trunc_<mode>): Likewise.
+	(neon_vec_<US>mult_<mode>): Add register specifier to
+	instruction template.
+
 2010-10-07  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* config.gcc (c_target_objs)[i?86-*-pe|i?86-*-cygwin*]: Don't add

@@ -5361,9 +5361,9 @@
 ;; Vectorize for non-neon-quad case
 (define_insn "neon_unpack<US>_<mode>"
  [(set (match_operand:<V_widen> 0 "register_operand" "=w")
-       (SE:<V_widen> (match_operand:VDI 1 "register_operand" "")))]
+       (SE:<V_widen> (match_operand:VDI 1 "register_operand" "w")))]
  "TARGET_NEON"
- "vmovl.<US><V_sz_elem> %q0, %1"
+ "vmovl.<US><V_sz_elem> %q0, %P1"
   [(set_attr "neon_type" "neon_shift_1")]
 )
 
@@ -5400,7 +5400,7 @@
  		       (SE:<V_widen> 
 			   (match_operand:VDI 2 "register_operand" "w"))))]
   "TARGET_NEON"
-  "vmull.<US><V_sz_elem> %q0, %1, %2"
+  "vmull.<US><V_sz_elem> %q0, %P1, %P2"
   [(set_attr "neon_type" "neon_shift_1")]
 )
 
@@ -5449,9 +5449,9 @@
 ;; For the non-quad case.
 (define_insn "neon_vec_pack_trunc_<mode>"
  [(set (match_operand:<V_narrow> 0 "register_operand" "=w")
-       (truncate:<V_narrow> (match_operand:VN 1 "register_operand" "")))]
+       (truncate:<V_narrow> (match_operand:VN 1 "register_operand" "w")))]
  "TARGET_NEON"
- "vmovn.i<V_sz_elem>\t%0, %q1"
+ "vmovn.i<V_sz_elem>\t%P0, %q1"
  [(set_attr "neon_type" "neon_shift_1")]
 )
 
