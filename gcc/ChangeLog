@@ -1,3 +1,8 @@
+2010-10-07  Richard Henderson  <rth@redhat.com>
+
+	* target.h (enum unwind_info_type): Move ...
+	* coretypes.h: ... here.
+
 2010-10-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* doc/objc.texi (Fast enumeration protocol): Mention that
