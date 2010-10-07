@@ -1,5 +1,27 @@
 2010-10-07  Richard Guenther  <rguenther@suse.de>
 
+	* target.def (units_per_simd_word): Rename to ...
+	(preferred_simd_mode): ... this.  Return mode instead of size.
+	* targhooks.c (default_units_per_simd_word): Rename to ...
+	(default_preferred_simd_mode): ... this.  Return word_mode.
+	* targhooks.h (default_preferred_simd_mode): Declare.
+	* config/arm/arm.c (arm_units_per_simd_word): Rename to ...
+	(arm_preferred_simd_mode): ... this.  Re-implement.
+	* config/i386/i386.c (ix86_units_per_simd_word): Rename to ...
+	(ix86_preferred_simd_mode): ... this.  Re-implement.
+	* config/sparc/sparc.c (sparc_units_per_simd_word): Rename to ...
+	(sparc_preferred_simd_mode): ... this.  Re-implement.
+	* config/mips/mips.c (mips_units_per_simd_word): Rename to ...
+	(mips_preferred_simd_mode): ... this.  Re-implement.
+	* config/rs6000/rs6000.c (rs6000_units_per_simd_word): Rename to ...
+	(rs6000_preferred_simd_mode): ... this.  Re-implement.
+	* tree-vect-stmts.c (get_vectype_for_scalar_type): Adjust.
+	* doc/tm.texi.in (TARGET_VECTORIZE_UNITS_PER_SIMD_WORD): Remove.
+	(TARGET_VECTORIZE_PREFERRED_SIMD_MODE): Document.
+	* doc/tm.texi: Update.
+
+2010-10-07  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/45869
 	* tree-cfg.c (verify_gimple_assign_binary): Allow vector shifts
 	of pointers.

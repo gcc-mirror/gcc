@@ -32962,23 +32962,35 @@ has_dispatch (rtx insn, int action)
 /* ??? No autovectorization into MMX or 3DNOW until we can reliably
    place emms and femms instructions.  */
 
-static unsigned int
-ix86_units_per_simd_word (enum machine_mode mode)
+static enum machine_mode
+ix86_preferred_simd_mode (enum machine_mode mode)
 {
   /* Disable double precision vectorizer if needed.  */
   if (mode == DFmode && !TARGET_VECTORIZE_DOUBLE)
-    return UNITS_PER_WORD;
+    return word_mode;
 
-#if 0
-  /*  FIXME: AVX has 32byte floating point vector operations and 16byte
-      integer vector operations.  But vectorizer doesn't support
-      different sizes for integer and floating point vectors.  We limit
-      vector size to 16byte.  */
-  if (TARGET_AVX)
-    return (mode == DFmode || mode == SFmode) ? 32 : 16;
-  else
-#endif
-    return TARGET_SSE ? 16 : UNITS_PER_WORD;
+  if (!TARGET_AVX && !TARGET_SSE)
+    return word_mode;
+
+  switch (mode)
+    {
+    case SFmode:
+      return TARGET_AVX ? V8SFmode : V4SFmode;
+    case DFmode:
+      return TARGET_AVX ? V4DFmode : V2DFmode;
+    case DImode:
+      return V2DImode;
+    case SImode:
+      return V4SImode;
+    case HImode:
+      return V8HImode;
+    case QImode:
+      return V16QImode;
+
+    default:;
+    }
+
+  return word_mode;
 }
 
 /* Initialize the GCC target structure.  */
@@ -33238,9 +33250,9 @@ ix86_units_per_simd_word (enum machine_mode mode)
 #undef TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK
 #define TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK \
   ix86_vectorize_builtin_vec_perm_ok
-#undef TARGET_VECTORIZE_UNITS_PER_SIMD_WORD
-#define TARGET_VECTORIZE_UNITS_PER_SIMD_WORD \
-  ix86_units_per_simd_word
+#undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
+#define TARGET_VECTORIZE_PREFERRED_SIMD_MODE \
+  ix86_preferred_simd_mode
 
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION ix86_set_current_function
