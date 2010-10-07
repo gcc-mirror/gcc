@@ -1,7 +1,13 @@
 2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* objc-act.c (objc_build_message_expr):  Call mark_exp_read () to signal that
-	the receiver has been used.
+	* objc-act.c (build_objc_method_call): Replace calls to 
+	build_function_call () with the VEC equivalent.  Construct parameter
+	lists as VECs.
+
+2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc-act.c (objc_build_message_expr):  Call mark_exp_read () to 
+	signal that the receiver has been used.
 
 2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
