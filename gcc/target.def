@@ -889,6 +889,15 @@ DEFHOOK
  (enum machine_mode mode),
  default_preferred_simd_mode)
 
+/* Returns a mask of vector sizes to iterate over when auto-vectorizing
+   after processing the preferred one derived from preferred_simd_mode.  */
+DEFHOOK
+(autovectorize_vector_sizes,
+ "",
+ unsigned int,
+ (void),
+ default_autovectorize_vector_sizes)
+
 HOOK_VECTOR_END (vectorize)
 
 #undef HOOK_PREFIX

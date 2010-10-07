@@ -985,6 +985,15 @@ default_preferred_simd_mode (enum machine_mode mode ATTRIBUTE_UNUSED)
   return word_mode;
 }
 
+/* By default only the size derived from the preferred vector mode
+   is tried.  */
+
+unsigned int
+default_autovectorize_vector_sizes (void)
+{
+  return 0;
+}
+
 /* Determine whether or not a pointer mode is valid. Assume defaults
    of ptr_mode or Pmode - can be overridden.  */
 bool
