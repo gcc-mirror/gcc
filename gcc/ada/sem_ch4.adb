@@ -507,13 +507,21 @@ package body Sem_Ch4 is
             --  be a null object, and we can insert an unconditional raise
             --  before the allocator.
 
+            --  Ada2012 (AI-104) : a not null indication here is altogether
+            --  illegal.
+
             if Can_Never_Be_Null (Type_Id) then
                declare
                   Not_Null_Check : constant Node_Id :=
                                      Make_Raise_Constraint_Error (Sloc (E),
                                        Reason => CE_Null_Not_Allowed);
                begin
-                  if Expander_Active then
+                  if Ada_Version >= Ada_12 then
+                     Error_Msg_N
+                       ("an uninitialized allocator cannot have"
+                         & " a null exclusion", N);
+
+                  elsif Expander_Active then
                      Insert_Action (N, Not_Null_Check);
                      Analyze (Not_Null_Check);
                   else

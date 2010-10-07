@@ -1,5 +1,22 @@
 2010-10-07  Robert Dewar  <dewar@adacore.com>
 
+	* sem_prag.adb, sem_ch13.adb: Implement AI05-0012-1/02.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2010-10-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.ad: (Instantiate_Object): For an in-out formal of a child
+	unit, if the type of the formal is declared in a parent unit and is not
+	a formal itself, the actual must be located from an enclosing parent
+	instance by normal visibility.
+
+2010-10-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Allocator): In Ada 2012, a null_exclusion
+	indicator is illegal for an uninitialized allocator.
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
 	* sem_prag.adb (Analyze_Attribute_Definition_Clause, case
 	Component_Size): Complete previous change.
 

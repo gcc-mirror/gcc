@@ -1355,13 +1355,24 @@ package body Sem_Ch13 is
                then
                   Ignore := True;
 
-               --  Cannot give component size for aliased/atomic types
+               --  Cannot give component size for aliased/atomic components
 
-               elsif Has_Aliased_Components (Btype) then
+               elsif Has_Aliased_Components (Btype)
+                 or else Is_Aliased (Ctyp)
+               then
                   Complain_CS ("aliased");
 
-               elsif Has_Atomic_Components (Btype) then
+               elsif Has_Atomic_Components (Btype)
+                  or else Is_Atomic (Ctyp)
+               then
                   Complain_CS ("atomic");
+
+               --  Warn for case of atomic type
+
+               elsif Is_Atomic (Btype) then
+                  Error_Msg_NE
+                    ("non-atomic components of type& may not be accessible "
+                     & "by separate tasks?", N, Btype);
                end if;
 
                --  For the biased case, build a declaration for a subtype

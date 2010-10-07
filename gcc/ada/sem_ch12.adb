@@ -8329,6 +8329,25 @@ package body Sem_Ch12 is
          Ftyp :=
            Get_Instance_Of (Etype (Defining_Identifier (Analyzed_Formal)));
 
+         --  If the type of the formal is not itself a formal, and the
+         --  current unit is a child unit, the formal type must be declared
+         --  in a parent, and must be retrieved by visibility.
+
+         if Ftyp = Orig_Ftyp
+           and then Is_Generic_Unit (Scope (Ftyp))
+           and then
+             Is_Child_Unit (Scope (Defining_Identifier (Analyzed_Formal)))
+         then
+            declare
+               Temp : constant Node_Id :=
+                 New_Copy_Tree (Subtype_Mark (Analyzed_Formal));
+            begin
+               Set_Entity (Temp, Empty);
+               Find_Type (Temp);
+               Ftyp := Entity (Temp);
+            end;
+         end if;
+
          if Is_Private_Type (Ftyp)
            and then not Is_Private_Type (Etype (Actual))
            and then (Base_Type (Full_View (Ftyp)) = Base_Type (Etype (Actual))
