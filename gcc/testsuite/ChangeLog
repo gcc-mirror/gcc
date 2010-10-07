@@ -1,3 +1,9 @@
+2010-10-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc++/23614
+	* obj-c++.dg/lookup-2.mm: Do not assign 'nil' to a pointer to a
+	C++ class.  Removed XFAIL.
+
 2010-10-07  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45933
