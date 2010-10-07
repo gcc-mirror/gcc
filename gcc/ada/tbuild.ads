@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,8 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains various utility procedures to assist in
---  building specific types of tree nodes.
+--  This package contains various utility procedures to assist in building
+--  specific types of tree nodes.
 
 with Namet; use Namet;
 with Sinfo; use Sinfo;
@@ -167,14 +167,14 @@ package Tbuild is
       Condition : Node_Id := Empty;
       Reason    : RT_Exception_Code) return Node_Id;
    pragma Inline (Make_Raise_Storage_Error);
-   --  A convenient form of Make_Raise_Storage_Error where the Reason
-   --  is given simply as an enumeration value, rather than a Uint code.
+   --  A convenient form of Make_Raise_Storage_Error where the Reason is given
+   --  simply as an enumeration value, rather than a Uint code.
 
    function Make_String_Literal
      (Sloc   : Source_Ptr;
       Strval : String) return Node_Id;
-   --  A convenient form of Make_String_Literal, where the string value
-   --  is given as a normal string instead of a String_Id value.
+   --  A convenient form of Make_String_Literal, where the string value is
+   --  given as a normal string instead of a String_Id value.
 
    function Make_Temporary
      (Loc          : Source_Ptr;
@@ -198,8 +198,8 @@ package Tbuild is
      (Loc   : Source_Ptr;
       Check : Name_Id;
       Stmts : List_Id) return Node_Id;
-   --  Build a block with a pragma Suppress on 'Check'. Stmts is the
-   --  statements list that needs protection against the check
+   --  Build a block with a pragma Suppress on 'Check'. Stmts is the statements
+   --  list that needs protection against the check
 
    function New_Constraint_Error (Loc : Source_Ptr) return Node_Id;
    --  This function builds a tree corresponding to the Ada statement
@@ -293,8 +293,8 @@ package Tbuild is
    function New_Reference_To
      (Def_Id : Entity_Id;
       Loc    : Source_Ptr) return Node_Id;
-   --  This is like New_Occurrence_Of, but it does not set the Etype field.
-   --  It is used from the expander, where Etype fields are generally not set,
+   --  This is like New_Occurrence_Of, but it does not set the Etype field. It
+   --  is used from the expander, where Etype fields are generally not set,
    --  since they are set when the expanded tree is reanalyzed.
 
    function New_Suffixed_Name
@@ -307,13 +307,13 @@ package Tbuild is
    --  fixed-point type (as passed in Related_Id), and Suffix is "SMALL".
 
    function OK_Convert_To (Typ : Entity_Id; Expr : Node_Id) return Node_Id;
-   --  Like Convert_To, except that a conversion node is always generated,
-   --  and the Conversion_OK flag is set on this conversion node.
+   --  Like Convert_To, except that a conversion node is always generated, and
+   --  the Conversion_OK flag is set on this conversion node.
 
    function Unchecked_Convert_To
      (Typ  : Entity_Id;
       Expr : Node_Id) return Node_Id;
-   --  Like Convert_To, but if a conversion is actually needed, constructs
-   --  an N_Unchecked_Type_Conversion node to do the required conversion.
+   --  Like Convert_To, but if a conversion is actually needed, constructs an
+   --  N_Unchecked_Type_Conversion node to do the required conversion.
 
 end Tbuild;
