@@ -1,3 +1,9 @@
+2010-10-07  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/45914
+	* configure.ac: Fix typo.
+	* configure: Regenerated.
+
 2010-10-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* config/spu/spu-c.c (spu_resolve_overloaded_builtin): Don't use
