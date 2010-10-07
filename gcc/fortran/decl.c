@@ -7916,9 +7916,8 @@ match_procedure_in_type (void)
 	 would be an error.  If a GENERIC already targetted this binding, it may
 	 be already there but then typebound is still NULL.  */
       stree = gfc_find_symtree (ns->tb_sym_root, name);
-      if (stree)
+      if (stree && stree->n.tb)
 	{
-	  gcc_assert (stree->n.tb);
 	  gfc_error ("There is already a procedure with binding name '%s' for "
 		     "the derived type '%s' at %C", name, block->name);
 	  return MATCH_ERROR;
@@ -7926,9 +7925,11 @@ match_procedure_in_type (void)
 
       /* Insert it and set attributes.  */
 
-      gcc_assert (!stree);
-      stree = gfc_new_symtree (&ns->tb_sym_root, name);
-      gcc_assert (stree);
+      if (!stree)
+	{
+	  stree = gfc_new_symtree (&ns->tb_sym_root, name);
+	  gcc_assert (stree);
+	}
       stree->n.tb = gfc_get_typebound_proc (&tb);
 
       if (gfc_get_sym_tree (target, gfc_current_ns, &stree->n.tb->u.specific,
