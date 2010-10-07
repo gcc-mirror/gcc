@@ -1,3 +1,9 @@
+2010-10-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* doc/objc.texi (Fast enumeration protocol): Mention that
+	'unsigned int' can also be used instead of 'unsigned long' in
+	countByEnumeratingWithState:objects:count:.
+
 2010-10-07  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (struct access): New field grp_assignment_write.

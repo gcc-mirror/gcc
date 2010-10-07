@@ -10335,7 +10335,8 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
 				    (NULL_TREE, build_int_cst (NULL_TREE, 16), NULL_TREE))));
   }
 #endif
-  t = build2 (MODIFY_EXPR, void_type_node, objc_foreach_batchsize_decl, t);
+  t = build2 (MODIFY_EXPR, void_type_node, objc_foreach_batchsize_decl,
+	      convert (long_unsigned_type_node, t));
   SET_EXPR_LOCATION (t, location);
   append_to_statement_list (t, &BIND_EXPR_BODY (bind));
 
@@ -10508,7 +10509,8 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
 				    (NULL_TREE, build_int_cst (NULL_TREE, 16), NULL_TREE))));
   }
 #endif
-  t = build2 (MODIFY_EXPR, void_type_node, objc_foreach_batchsize_decl, t);
+  t = build2 (MODIFY_EXPR, void_type_node, objc_foreach_batchsize_decl, 
+	      convert (long_unsigned_type_node, t));
   SET_EXPR_LOCATION (t, location);
   append_to_statement_list (t, &BIND_EXPR_BODY (next_batch_bind));
 
