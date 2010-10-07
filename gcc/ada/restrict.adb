@@ -685,7 +685,7 @@ package body Restrict is
          Error_Msg_Sloc := No_Location;
       end if;
 
-      --  Case of parametrized restriction
+      --  Case of parameterized restriction
 
       if R in All_Parameter_Restrictions then
          Add_Char ('`');

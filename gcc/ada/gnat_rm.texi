@@ -1544,7 +1544,7 @@ pragma Convention_Identifier (Fortran77, Fortran);
 @noindent
 would allow the use of the convention identifier @code{Fortran77} in
 subsequent code, avoiding the need to modify the sources. As another
-example, you could use this to parametrize convention requirements
+example, you could use this to parameterize convention requirements
 according to systems. Suppose you needed to use @code{Stdcall} on
 windows systems, and @code{C} on some other system, then you could
 define a convention identifier @code{Library} and use a single

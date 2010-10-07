@@ -82,7 +82,7 @@ package body Ch6 is
 
    --  This routine scans out a subprogram declaration, subprogram body,
    --  subprogram renaming declaration or subprogram generic instantiation.
-   --  It also handles the new Ada 2012 parametrized expression form
+   --  It also handles the new Ada 2012 parameterized expression form
 
    --  SUBPROGRAM_DECLARATION ::= SUBPROGRAM_SPECIFICATION;
 
@@ -123,7 +123,7 @@ package body Ch6 is
    --  is classified as a basic declarative item, but it is parsed here, with
    --  other subprogram constructs.
 
-   --  PARAMETRIZED_EXPRESSION ::=
+   --  PARAMETERIZED_EXPRESSION ::=
    --    FUNCTION SPECIFICATION IS (EXPRESSION);
 
    --  The value in Pf_Flags indicates which of these possible declarations
@@ -134,7 +134,7 @@ package body Ch6 is
    --    Pf_Flags.Pbod                 Set if proper body OK
    --    Pf_Flags.Rnam                 Set if renaming declaration OK
    --    Pf_Flags.Stub                 Set if body stub OK
-   --    Pf_Flags.Pexp                 Set if parametrized expression OK
+   --    Pf_Flags.Pexp                 Set if parameterized expression OK
 
    --  If an inappropriate form is encountered, it is scanned out but an
    --  error message indicating that it is appearing in an inappropriate
@@ -584,7 +584,7 @@ package body Ch6 is
          end if;
       end if;
 
-      --  Processing for stub or subprogram body or parametrized expression
+      --  Processing for stub or subprogram body or parameterized expression
 
       <<Subprogram_Body>>
 
@@ -609,21 +609,21 @@ package body Ch6 is
             TF_Semicolon;
             return Stub_Node;
 
-         --  Subprogram body or parametrized expression case
+         --  Subprogram body or parameterized expression case
 
          else
-            Scan_Body_Or_Parametrized_Expression : declare
+            Scan_Body_Or_Parameterized_Expression : declare
 
-               function Likely_Parametrized_Expression return Boolean;
-               --  Returns True if we have a probably case of a parametrized
+               function Likely_Parameterized_Expression return Boolean;
+               --  Returns True if we have a probably case of a parameterized
                --  expression omitting the parentheses, if so, returns True
                --  and emits an appropriate error message, else returns False.
 
-               ------------------------------------
-               -- Likely_Parametrized_Expression --
-               ------------------------------------
+               -------------------------------------
+               -- Likely_Parameterized_Expression --
+               -------------------------------------
 
-               function Likely_Parametrized_Expression return Boolean is
+               function Likely_Parameterized_Expression return Boolean is
                begin
                   --  If currently pointing to BEGIN or a declaration keyword
                   --  or a pragma, then we definitely have a subprogram body.
@@ -636,7 +636,7 @@ package body Ch6 is
                      return False;
 
                   --  Test for tokens which could only start an expression and
-                  --  thus signal the case of a parametrized expression.
+                  --  thus signal the case of a parameterized expression.
 
                   elsif Token in Token_Class_Literal
                     or else Token in Token_Class_Unary_Addop
@@ -666,7 +666,7 @@ package body Ch6 is
                      --  Otherwise we have to scan ahead. If the identifier is
                      --  followed by a colon or a comma, it is a declaration
                      --  and hence we have a subprogram body. Otherwise assume
-                     --  a parametrized expression.
+                     --  a parameterized expression.
 
                      else
                         declare
@@ -685,43 +685,43 @@ package body Ch6 is
                      end if;
                   end if;
 
-                  --  Fall through if we have a likely parametrized expression
+                  --  Fall through if we have a likely parameterized expression
 
                   Error_Msg_SC
-                    ("parametrized expression must be "
+                    ("parameterized expression must be "
                      & "enclosed in parentheses");
                   return True;
-               end Likely_Parametrized_Expression;
+               end Likely_Parameterized_Expression;
 
-            --  Start of processing for Scan_Body_Or_Parametrized_Expression
+            --  Start of processing for Scan_Body_Or_Parameterized_Expression
 
             begin
-               --  Parametrized_Expression case
+               --  Parameterized_Expression case
 
                if Token = Tok_Left_Paren
-                 or else Likely_Parametrized_Expression
+                 or else Likely_Parameterized_Expression
                then
-                  --  Check parametrized expression allowed here
+                  --  Check parameterized expression allowed here
 
                   if not Pf_Flags.Pexp then
                      Error_Msg_SC
-                       ("parametrized expression not allowed here!");
+                       ("parameterized expression not allowed here!");
                   end if;
 
                   --  Check we are in Ada 2012 mode
 
                   if Ada_Version < Ada_12 then
                      Error_Msg_SC
-                       ("parametrized expression is an Ada 2012 feature!");
+                       ("parameterized expression is an Ada 2012 feature!");
                      Error_Msg_SC
                        ("\unit must be compiled with -gnat2012 switch!");
                   end if;
 
-                  --  Parse out expression and build parametrized expression
+                  --  Parse out expression and build parameterized expression
 
                   Body_Node :=
                     New_Node
-                      (N_Parametrized_Expression, Sloc (Specification_Node));
+                      (N_Parameterized_Expression, Sloc (Specification_Node));
                   Set_Specification (Body_Node, Specification_Node);
                   Set_Expression (Body_Node, P_Expression);
                   T_Semicolon;
@@ -761,7 +761,7 @@ package body Ch6 is
                end if;
 
                return Body_Node;
-            end Scan_Body_Or_Parametrized_Expression;
+            end Scan_Body_Or_Parameterized_Expression;
          end if;
 
       --  Processing for subprogram declaration

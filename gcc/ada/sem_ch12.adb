@@ -608,11 +608,11 @@ package body Sem_Ch12 is
    --  formals: the visible and private declarations themselves need not be
    --  created.
 
-   --  In Ada 2005, the formal package may be only partially parametrized. In
-   --  that case the visibility step must make visible those actuals whose
+   --  In Ada 2005, the formal package may be only partially parameterized.
+   --  In that case the visibility step must make visible those actuals whose
    --  corresponding formals were given with a box. A final complication
-   --  involves inherited operations from formal derived types, which must be
-   --  visible if the type is.
+   --  involves inherited operations from formal derived types, which must
+   --  be visible if the type is.
 
    function Is_In_Main_Unit (N : Node_Id) return Boolean;
    --  Test if given node is in the main unit
@@ -4753,7 +4753,7 @@ package body Sem_Ch12 is
             --  that are attributes are rewritten as subprograms. If the
             --  subprogram in the formal package is defaulted, no check is
             --  needed. Note that this can only happen in Ada 2005 when the
-            --  formal package can be partially parametrized.
+            --  formal package can be partially parameterized.
 
             if Nkind (Unit_Declaration_Node (E1)) =
                                            N_Subprogram_Renaming_Declaration

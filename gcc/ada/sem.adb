@@ -437,8 +437,8 @@ package body Sem is
          when N_Parameter_Association =>
             Analyze_Parameter_Association (N);
 
-         when N_Parametrized_Expression =>
-            Analyze_Parametrized_Expression (N);
+         when N_Parameterized_Expression =>
+            Analyze_Parameterized_Expression (N);
 
          when N_Pragma =>
             Analyze_Pragma (N);

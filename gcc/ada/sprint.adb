@@ -2388,7 +2388,7 @@ package body Sprint is
                Write_Str (", ");
             end if;
 
-         when N_Parametrized_Expression =>
+         when N_Parameterized_Expression =>
             Write_Indent;
             Sprint_Node_Sloc (Specification (Node));
 

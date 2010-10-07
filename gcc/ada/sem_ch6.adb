@@ -1038,17 +1038,17 @@ package body Sem_Ch6 is
       Analyze (Explicit_Actual_Parameter (N));
    end Analyze_Parameter_Association;
 
-   -------------------------------------
-   -- Analyze_Parametrized_Expression --
-   -------------------------------------
+   --------------------------------------
+   -- Analyze_Parameterized_Expression --
+   --------------------------------------
 
-   procedure Analyze_Parametrized_Expression (N : Node_Id) is
+   procedure Analyze_Parameterized_Expression (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
       LocX : constant Source_Ptr := Sloc (Expression (N));
 
    begin
       --  This is one of the occasions on which we write things during semantic
-      --  analysis. We transform the parametrized expression into an equivalent
+      --  analysis. Transform the parameterized expression into an equivalent
       --  subprogram body, and then analyze that.
 
       Rewrite (N,
@@ -1061,7 +1061,7 @@ package body Sem_Ch6 is
                 Make_Simple_Return_Statement (LocX,
                   Expression => Expression (N))))));
       Analyze (N);
-   end Analyze_Parametrized_Expression;
+   end Analyze_Parameterized_Expression;
 
    ----------------------------
    -- Analyze_Procedure_Call --
