@@ -631,6 +631,7 @@ proc check_v3_target_fileio { } {
     global et_fileio_saved
     global et_fileio_target_name
     global tool	
+    global srcdir
 
     if { ![info exists et_fileio_target_name] } {
 	set et_fileio_target_name ""
@@ -656,6 +657,8 @@ proc check_v3_target_fileio { } {
 	# the file functions
 	set src fileio[pid].cc
 	set exe fileio[pid].x
+	set testfile "cin_unget-1.txt"
+	v3-copy-files "$srcdir/data/$testfile"
 
 	set f [open $src "w"]
 	puts $f "#include <sys/types.h>"
@@ -663,20 +666,26 @@ proc check_v3_target_fileio { } {
 	puts $f "#include <fcntl.h>"
 	puts $f "#include <unistd.h>"
 	puts $f "#include <errno.h>"
+	puts $f "#include <string.h>"
 	puts $f "using namespace std;"	
 	puts $f "int main ()"
 	puts $f "{"
-	puts $f "  int fd  = open (\".\", O_RDONLY);"
+	puts $f "  int fd  = open (\"$testfile\", O_RDONLY);"
 	puts $f "  int ret = 0;"
+	puts $f "  char buf\[10\];"
 	puts $f "  if (fd == -1)"
-	puts $f "  {"
-	puts $f "    int err = errno;"
-	puts $f "    if (err == EIO || err == ENOSYS)"
-	puts $f "      ret = 1;"
-	puts $f "  }"
+	puts $f "    ret = 1;"
 	puts $f "  else"
 	puts $f "  {"
-	puts $f "    if (lseek (fd, 0, SEEK_CUR) == -1)"
+	puts $f "    if (lseek (fd, -1, SEEK_CUR) != -1 || errno != EINVAL)"
+	puts $f "      ret = 1;"
+	puts $f "    errno = 0;"
+	puts $f "    if (lseek (fd, 0, SEEK_CUR) != 0"
+	puts $f "        || read (fd, buf, 4) != 4"
+	puts $f "        || memcmp (buf, \"1234\", 4) != 0"
+	puts $f "        || lseek (fd, -2, SEEK_CUR) != 2"
+	puts $f "        || read (fd, buf, 2) != 2"
+	puts $f "        || memcmp (buf, \"34\", 2) != 0)"
 	puts $f "      ret = 1;"
 	puts $f "    close (fd);"
 	puts $f "  }"
