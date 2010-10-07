@@ -1,5 +1,10 @@
 2010-10-07  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch12.adb: Add comment.
+	* sem_ch6.adb: Minor reformatting.
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
 	* par-ch3.adb, par-ch6.adb, par-ch7.adb, par-ch9.adb, par-ch10.adb: Add
 	Pexp to Pf_Rec constants
 	(P_Subprogram): Expression is always enclosed in parentheses
