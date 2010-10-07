@@ -31,6 +31,7 @@ with Errout;   use Errout;
 with Fname;    use Fname;
 with Lib;      use Lib;
 with Namet;    use Namet;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -96,10 +97,32 @@ package body Sem_Intr is
 
    procedure Check_Intrinsic_Call (N : Node_Id) is
       Nam  : constant Entity_Id := Entity (Name (N));
-      Cnam : constant Name_Id   := Chars (Nam);
       Arg1 : constant Node_Id   := First_Actual (N);
+      Typ  : Entity_Id;
+      Rtyp : Entity_Id;
+      Cnam : Name_Id;
+      Unam : Node_Id;
 
    begin
+      --  Set argument type if argument present
+
+      if Present (Arg1) then
+         Typ := Etype (Arg1);
+         Rtyp := Underlying_Type (Root_Type (Typ));
+      end if;
+
+      --  Set intrinsic name (getting original name in the generic case)
+
+      Unam := Ultimate_Alias (Nam);
+
+      if Present (Parent (Unam))
+        and then Present (Generic_Parent (Parent (Unam)))
+      then
+         Cnam := Chars (Generic_Parent (Parent (Unam)));
+      else
+         Cnam := Chars (Nam);
+      end if;
+
       --  For Import_xxx calls, argument must be static string. A string
       --  literal is legal even in Ada83 mode, where such literals are
       --  not static.
@@ -136,11 +159,22 @@ package body Sem_Intr is
       --  Check for the case of freeing a non-null object which will raise
       --  Constraint_Error. Issue warning here, do the expansion in Exp_Intr.
 
-      elsif Cnam = Name_Free
+      elsif Cnam = Name_Unchecked_Deallocation
         and then Can_Never_Be_Null (Etype (Arg1))
       then
          Error_Msg_N
            ("freeing `NOT NULL` object will raise Constraint_Error?", N);
+
+      --  For unchecked deallocation, error to deallocate from empty pool.
+      --  Note: this test used to be in Exp_Intr as a warning, but AI 157
+      --  issues a binding intepretation that this should be an error, and
+      --  consequently it needs to be done in the semantic analysis so that
+      --  the error is issued even in semantics only mode.
+
+      elsif Cnam = Name_Unchecked_Deallocation
+        and then No_Pool_Assigned (Rtyp)
+      then
+         Error_Msg_N ("deallocation from empty storage pool!", N);
 
       --  For now, no other special checks are required
 
@@ -188,9 +222,9 @@ package body Sem_Intr is
             then
                T2 := T1;
 
-            else
-               --  Previous error in declaration
+            --  Previous error in declaration
 
+            else
                return;
             end if;
 
@@ -198,19 +232,19 @@ package body Sem_Intr is
             T2 := Etype (Next_Formal (First_Formal (E)));
          end if;
 
+         --  Same types, predefined operator will apply
+
          if Root_Type (T1) = Root_Type (T2)
            or else Root_Type (T1) = Root_Type (Ret)
          then
-            --  Same types, predefined operator will apply
-
             null;
+
+         --  Expansion will introduce conversions if sizes are not equal
 
          elsif Is_Integer_Type (Underlying_Type (T1))
            and then Is_Integer_Type (Underlying_Type (T2))
            and then Is_Integer_Type (Underlying_Type (Ret))
          then
-            --  Expansion will introduce conversions if sizes are not equal
-
             null;
 
          else
@@ -234,12 +268,10 @@ package body Sem_Intr is
       then
          T1 := Etype (First_Formal (E));
 
+         --  Return if previous error in declaration, otherwise get T2 type
+
          if No (Next_Formal (First_Formal (E))) then
-
-            --  Previous error in declaration
-
             return;
-
          else
             T2 := Etype (Next_Formal (First_Formal (E)));
          end if;

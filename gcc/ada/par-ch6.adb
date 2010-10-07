@@ -632,26 +632,36 @@ package body Ch6 is
                      return False;
 
                   --  If currently pointing to BEGIN or a declaration keyword
-                  --  or a pragma then we definitely do not have a parametrized
-                  --  expression.
+                  --  or a pragma, then we definitely have a subprogram body.
+                  --  This is a common case, so worth testing first.
 
-                  elsif Token in Token_Class_Declk
-                    or else Token = Tok_Begin
+                  elsif Token = Tok_Begin
+                    or else Token in Token_Class_Declk
                     or else Token = Tok_Pragma
                   then
                      return False;
 
-                  --  A common error case, missing BEGIN before RETURN
+                  --  Test for tokens which could only start an expression and
+                  --  thus signal the case of a parametrized expression.
 
-                  elsif Token = Tok_Return then
-                     return False;
+                  elsif Token in Token_Class_Literal
+                    or else Token in Token_Class_Unary_Addop
+                    or else Token = Tok_Left_Paren
+                    or else Token = Tok_Abs
+                    or else Token = Tok_Null
+                    or else Token = Tok_New
+                    or else Token = Tok_Not
+                  then
+                     return True;
 
-                  --  Anything other than an identifier must be a parametrized
-                  --  expression at this stage. Probably we could do a little
-                  --  better job of distingushing some more error cases.
+                  --  Anything other than an identifier must be a body at
+                  --  this stage. Probably we could do a little better job of
+                  --  distingushing some more error cases, but it seems right
+                  --  to err on the side of favoring a body over the
+                  --  new-fangled parametrized expression.
 
                   elsif Token /= Tok_Identifier then
-                     return True;
+                     return False;
 
                   --  For identifier we have to scan ahead if identifier is
                   --  followed by a colon or a comma, it is a declaration and
@@ -740,7 +750,6 @@ package body Ch6 is
 
          Pop_Scope_Stack;
          return Decl_Node;
-
    end P_Subprogram;
 
    ---------------------------------

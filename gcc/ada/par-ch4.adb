@@ -233,13 +233,18 @@ package body Ch4 is
          Save_Scan_State (Scan_State); -- at apostrophe
          Scan; -- past apostrophe
 
-         --  If left paren, then this might be a qualified expression, but we
-         --  are only in the business of scanning out names, so return with
-         --  Token backed up to point to the apostrophe. The treatment for
-         --  the range attribute is similar (we do not consider x'range to
-         --  be a name in this grammar).
+         --  Qualified expression in Ada 2012 mode (treated as a name)
 
-         if Token = Tok_Left_Paren or else Token = Tok_Range then
+         if Ada_Version >= Ada_12 and then Token = Tok_Left_Paren then
+            goto Scan_Name_Extension_Apostrophe;
+
+         --  If left paren not in Ada 2012, then it is not part of the name,
+         --  since qualified expressions are not names in prior versions of
+         --  Ada, so return with Token backed up to point to the apostrophe.
+         --  The treatment for the range attribute is similar (we do not
+         --  consider x'range to be a name in this grammar).
+
+         elsif Token = Tok_Left_Paren or else Token = Tok_Range then
             Restore_Scan_State (Scan_State); -- to apostrophe
             Expr_Form := EF_Simple_Name;
             return Name_Node;
@@ -363,6 +368,10 @@ package body Ch4 is
             --  the current token to Tok_Semicolon, and returns True.
             --  Otherwise returns False.
 
+            ------------------------------------
+            -- Apostrophe_Should_Be_Semicolon --
+            ------------------------------------
+
             function Apostrophe_Should_Be_Semicolon return Boolean is
             begin
                if Token_Is_At_Start_Of_Line then
@@ -378,14 +387,20 @@ package body Ch4 is
          --  Start of processing for Scan_Apostrophe
 
          begin
+            --  Check for qualified expression case in Ada 2012 mode
+
+            if Ada_Version >= Ada_12 and then Token = Tok_Left_Paren then
+               Name_Node := P_Qualified_Expression (Name_Node);
+               goto Scan_Name_Extension;
+
             --  If range attribute after apostrophe, then return with Token
             --  pointing to the apostrophe. Note that in this case the prefix
             --  need not be a simple name (cases like A.all'range). Similarly
             --  if there is a left paren after the apostrophe, then we also
             --  return with Token pointing to the apostrophe (this is the
-            --  qualified expression case).
+            --  aggregate case, or some error case).
 
-            if Token = Tok_Range or else Token = Tok_Left_Paren then
+            elsif Token = Tok_Range or else Token = Tok_Left_Paren then
                Restore_Scan_State (Scan_State); -- to apostrophe
                Expr_Form := EF_Name;
                return Name_Node;
@@ -2054,7 +2069,17 @@ package body Ch4 is
 
       if Token = Tok_Dot then
          Error_Msg_SC ("prefix for selection is not a name");
-         raise Error_Resync;
+
+         --  If qualified expression, comment and continue, otherwise something
+         --  is pretty nasty so do an Error_Resync call.
+
+         if Ada_Version < Ada_12
+           and then Nkind (Node1) = N_Qualified_Expression
+         then
+            Error_Msg_SC ("\would be legal in Ada 2012 mode");
+         else
+            raise Error_Resync;
+         end if;
       end if;
 
       --  Special test to improve error recovery: If the current token is
