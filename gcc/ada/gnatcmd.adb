@@ -377,6 +377,7 @@ procedure GNATCmd is
 
          declare
             Proj : Project_List;
+            File : String_Access;
 
          begin
             --  Gnatstack needs to add the .ci file for the binder generated
@@ -389,7 +390,6 @@ procedure GNATCmd is
                   if Check_Project (Proj.Project, Project) then
                      declare
                         Main : String_List_Id;
-                        File : String_Access;
 
                      begin
                         --  Include binder generated files for main programs
@@ -541,8 +541,7 @@ procedure GNATCmd is
                         end if;
 
                         if not Subunit then
-                           Last_Switches.Increment_Last;
-                           Last_Switches.Table (Last_Switches.Last) :=
+                           File :=
                              new String'
                                (Get_Name_String
                                  (Unit.File_Names
@@ -551,6 +550,11 @@ procedure GNATCmd is
                                   (Get_Name_String
                                      (Unit.File_Names (Impl).Display_File),
                                    "ci"));
+
+                           if Is_Regular_File (File.all) then
+                              Last_Switches.Increment_Last;
+                              Last_Switches.Table (Last_Switches.Last) := File;
+                           end if;
                         end if;
                      end if;
 
@@ -562,8 +566,7 @@ procedure GNATCmd is
                      if Check_Project
                           (Unit.File_Names (Spec).Project, Project)
                      then
-                        Last_Switches.Increment_Last;
-                        Last_Switches.Table (Last_Switches.Last) :=
+                        File :=
                           new String'
                             (Get_Name_String
                               (Unit.File_Names
@@ -572,6 +575,11 @@ procedure GNATCmd is
                              MLib.Fil.Ext_To
                                (Get_Name_String (Unit.File_Names (Spec).File),
                                 "ci"));
+
+                        if Is_Regular_File (File.all) then
+                           Last_Switches.Increment_Last;
+                           Last_Switches.Table (Last_Switches.Last) := File;
+                        end if;
                      end if;
                   end if;
 

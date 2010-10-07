@@ -2249,7 +2249,9 @@ package body Freeze is
            and then Esize (Rec) >= Scalar_Component_Total_RM_Size
 
            --  Never do implicit packing in CodePeer mode since we don't do
-           --  any packing ever in this mode (why not???)
+           --  any packing in this mode, since this generates over-complex
+           --  code that confuses CodePeer, and in general, CodePeer does not
+           --  care about the internal representation of objects.
 
            and then not CodePeer_Mode
          then
