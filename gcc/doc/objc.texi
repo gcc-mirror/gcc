@@ -955,3 +955,8 @@ object is added or removed).  Or, if you are content with less strict
 mutation checks, it could point to the number of objects in your
 collection or some other value that can be checked to perform an
 approximate check that the collection has not been mutated.
+
+Finally, note how we declared the @code{len} argument and the return
+value to be of type @code{unsigned long}.  They could also be declared
+to be of type @code{unsigned int} and everything would still work.
+
