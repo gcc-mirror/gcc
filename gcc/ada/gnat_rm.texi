@@ -7912,10 +7912,11 @@ Followed.
 @chapter Implementation Defined Characteristics
 
 @noindent
-In addition to the implementation dependent pragmas and attributes, and
-the implementation advice, there are a number of other Ada features
-that are potentially implementation dependent.  These are mentioned
-throughout the Ada Reference Manual, and are summarized in Annex M@.
+In addition to the implementation dependent pragmas and attributes, and the
+implementation advice, there are a number of other Ada features that are
+potentially implementation dependent and are designated as
+implementation-defined. These are mentioned throughout the Ada Reference
+Manual, and are summarized in Annex M@.
 
 A requirement for conforming Ada compilers is that they provide
 documentation describing how the implementation deals with each of these
@@ -8527,6 +8528,35 @@ target type. Unchecked conversions where the target subtype is an
 unconstrained array are not permitted. If the target alignment is
 greater than the source alignment, then a copy of the result is
 made with appropriate alignment
+
+@sp 1
+@cartouche
+@noindent
+@strong{53}. The semantics of operations on invalid representations.
+See 13.9.2(10-11).
+@end cartouche
+@noindent
+For assignments and other operations where the use of invalid values cannot
+result in erroneous behavior, the compiler ignores the possibility of invalid
+values. An exception is raised at the point where an invalid value would
+result in erroneous behavior. For example executing:
+
+@smallexample @c ada
+procedure invalidvals is
+   X : Integer := -1;
+   Y : Natural range 1 .. 10;
+   for Y'Address use X'Address;
+   Z : Natural range 1 .. 10;
+   A : array (Natural range 1 .. 10) of Integer;
+begin
+   Z := Y;     -- no exception
+   A (Z) := 3; -- exception raised;
+end;
+@end smallexample
+
+@noindent
+As indicated, an exception is raised on the array assignment, but not
+on the simple assignment of the invalid negative value from Y to Z.
 
 @sp 1
 @cartouche

@@ -1012,7 +1012,7 @@ package body Sem_Res is
 
       begin
          --  If the context is an attribute reference that can apply to
-         --  functions, this is never a parameterless call (RM 4.1.4 (6)).
+         --  functions, this is never a parameterless call (RM 4.1.4(6)).
 
          if Nkind (Parent (N)) = N_Attribute_Reference
             and then (Attribute_Name (Parent (N)) = Name_Address
@@ -1150,7 +1150,7 @@ package body Sem_Res is
    begin
       return Ekind (Btyp) = E_Access_Type
         or else (Ekind (Btyp) = E_Access_Subprogram_Type
-                  and then Comes_From_Source (Btyp));
+                   and then Comes_From_Source (Btyp));
    end Is_Definite_Access_Type;
 
    ----------------------
@@ -1199,13 +1199,13 @@ package body Sem_Res is
       type Kind_Test is access function (E : Entity_Id) return Boolean;
 
       function Operand_Type_In_Scope (S : Entity_Id) return Boolean;
-      --  If the operand is not universal, and the operator is given by a
-      --  expanded name, verify that the operand has an interpretation with
-      --  a type defined in the given scope of the operator.
+      --  If the operand is not universal, and the operator is given by an
+      --  expanded name, verify that the operand has an interpretation with a
+      --  type defined in the given scope of the operator.
 
       function Type_In_P (Test : Kind_Test) return Entity_Id;
-      --  Find a type of the given class in the package Pack that contains
-      --  the operator.
+      --  Find a type of the given class in package Pack that contains the
+      --  operator.
 
       ---------------------------
       -- Operand_Type_In_Scope --
@@ -1280,12 +1280,10 @@ package body Sem_Res is
       --  Start of processing for Type_In_P
 
       begin
-         --  If the context type is declared in the prefix package, this
-         --  is the desired base type.
+         --  If the context type is declared in the prefix package, this is the
+         --  desired base type.
 
-         if Scope (Base_Type (Typ)) = Pack
-           and then Test (Typ)
-         then
+         if Scope (Base_Type (Typ)) = Pack and then Test (Typ) then
             return Base_Type (Typ);
 
          else
@@ -1343,7 +1341,7 @@ package body Sem_Res is
 
       --  A final wrinkle is the multiplication operator for fixed point types,
       --  which is defined in Standard only, and not in the scope of the
-      --  fixed_point type itself.
+      --  fixed point type itself.
 
       if Nkind (Name (N)) = N_Expanded_Name then
          Pack := Entity (Prefix (Name (N)));
@@ -1371,7 +1369,7 @@ package body Sem_Res is
                Error := True;
             end if;
 
-         --  Ada 2005, AI-420: Predefined equality on Universal_Access is
+         --  Ada 2005 AI-420: Predefined equality on Universal_Access is
          --  available.
 
          elsif Ada_Version >= Ada_05

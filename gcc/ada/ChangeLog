@@ -1,3 +1,18 @@
+2010-10-07  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb: Minor reformatting.
+
+2010-10-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* debug.adb: Update -gnatd.J documentation.
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document handling of invalid values
+	* s-utf_32.ads, s-utf_32.adb (UTF_To_Lower_Case): Fix implementation
+	to match new spec.
+	(UTF_To_Upper_Case): New function.
+
 2010-10-07  Robert Dewar  <dewar@adacore.com>
 
 	* sem_attr.adb: Minor reformatting.

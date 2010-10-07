@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2005-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2005-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -185,13 +185,27 @@ package System.UTF_32 is
    --  The following function is used to fold to upper case, as required by
    --  the Ada 2005 standard rules for identifier case folding. Two
    --  identifiers are equivalent if they are identical after folding all
-   --  letters to upper case using this routine.
+   --  letters to upper case using this routine. A corresponding routine to
+   --  fold to lower case is also provided.
+
+   function UTF_32_To_Lower_Case (U : UTF_32) return UTF_32;
+   pragma Inline (UTF_32_To_Lower_Case);
+   --  If U represents an upper case letter, returns the corresponding lower
+   --  case letter, otherwise U is returned unchanged. The folding rule is
+   --  simply that if the code corresponds to a 10646 entry whose name contains
+   --  the string CAPITAL LETTER, and there is a corresponding entry whose name
+   --  is the same but with CAPITAL LETTER replaced by SMALL LETTER, then the
+   --  code is folded to this SMALL LETTER code. Otherwise the input code is
+   --  returned unchanged.
 
    function UTF_32_To_Upper_Case (U : UTF_32) return UTF_32;
    pragma Inline (UTF_32_To_Upper_Case);
-   --  If U represents a lower case letter, returns the corresponding upper
-   --  case letter, otherwise U is returned unchanged. The folding is locale
-   --  independent as defined by documents referenced in the note in section
-   --  1 of ISO/IEC 10646:2003
+   --  If U represents a lower case letter, returns the corresponding lower
+   --  case letter, otherwise U is returned unchanged. The folding rule is
+   --  simply that if the code corresponds to a 10646 entry whose name contains
+   --  the string SMALL LETTER, and there is a corresponding entry whose name
+   --  is the same but with SMALL LETTER replaced by CAPITAL LETTER, then the
+   --  code is folded to this CAPITAL LETTER code. Otherwise the input code is
+   --  returned unchanged.
 
 end System.UTF_32;

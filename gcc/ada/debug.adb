@@ -127,7 +127,7 @@ package body Debug is
    --  d.G
    --  d.H
    --  d.I  SCIL generation mode
-   --  d.J  Parallel SCIL generation mode
+   --  d.J  Disable parallel SCIL generation mode
    --  d.K
    --  d.L  Depend on back end for limited types in conditional expressions
    --  d.M
@@ -563,9 +563,9 @@ package body Debug is
    --       of static analysis tools, and ensure additional tree consistency
    --       between different compilations of specs.
 
-   --  d.J  Ensure the SCIL generated is compatible with parallel builds.
-   --       This means in particular not writing the same files under the
-   --       same directory.
+   --  d.J  Disable parallel SCIL generation. Normally SCIL file generation is
+   --       done in parallel to speed processing. This switch disables this
+   --       behavior.
 
    --  d.L  Normally the front end generates special expansion for conditional
    --       expressions of a limited type. This debug flag removes this special
