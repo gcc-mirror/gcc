@@ -2141,6 +2141,14 @@ dump_expr (tree t, int flags)
       pp_cxx_right_paren (cxx_pp);
       break;
 
+    case AT_ENCODE_EXPR:
+      pp_cxx_ws_string (cxx_pp, "@encode");
+      pp_cxx_whitespace (cxx_pp);
+      pp_cxx_left_paren (cxx_pp);
+      dump_type (TREE_OPERAND (t, 0), flags);
+      pp_cxx_right_paren (cxx_pp);
+      break;
+
     case NOEXCEPT_EXPR:
       pp_cxx_ws_string (cxx_pp, "noexcept");
       pp_cxx_whitespace (cxx_pp);

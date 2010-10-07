@@ -1,3 +1,15 @@
+2010-10-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* cp-tree.def: Changed type of AT_ENCODE_EXPR from tcc_unary to
+	tcc_expression.
+	* cxx-pretty-print.c (pp_cxx_unary_expression): Added case for
+	AT_ENCODE_EXPR.
+	* error.c (dump_expr): Added case for AT_ENCODE_EXPR.
+	* pt.c (tsubst_copy): Added case for AT_ENCODE_EXPR.
+	(value_dependent_expression_p): Added case for AT_ENCODE_EXPR.
+	(type_dependent_expression_p): Added case for AT_ENCODE_EXPR.
+	* parser.c (cp_parser_objc_encode_expression): Updated comment.
+	
 2010-10-07  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
 
 	Merge from apple/trunk branch on FSF servers.

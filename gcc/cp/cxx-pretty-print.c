@@ -791,6 +791,14 @@ pp_cxx_unary_expression (cxx_pretty_printer *pp, tree t)
 	pp_unary_expression (pp, TREE_OPERAND (t, 0));
       break;
 
+    case AT_ENCODE_EXPR:
+      pp_cxx_ws_string (pp, "@encode");
+      pp_cxx_whitespace (pp);
+      pp_cxx_left_paren (pp);
+      pp_cxx_type_id (pp, TREE_OPERAND (t, 0));
+      pp_cxx_right_paren (pp);
+      break;      
+
     case NOEXCEPT_EXPR:
       pp_cxx_ws_string (pp, "noexcept");
       pp_cxx_whitespace (pp);

@@ -11131,6 +11131,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case ADDR_EXPR:
     case UNARY_PLUS_EXPR:      /* Unary + */
     case ALIGNOF_EXPR:
+    case AT_ENCODE_EXPR:
     case ARROW_EXPR:
     case THROW_EXPR:
     case TYPEID_EXPR:
@@ -17689,6 +17690,12 @@ value_dependent_expression_p (tree expression)
 	return dependent_type_p (expression);
       return type_dependent_expression_p (expression);
 
+    case AT_ENCODE_EXPR:
+      /* An 'encode' expression is value-dependent if the operand is
+	 type-dependent.  */
+      expression = TREE_OPERAND (expression, 0);
+      return dependent_type_p (expression);
+
     case NOEXCEPT_EXPR:
       expression = TREE_OPERAND (expression, 0);
       /* FIXME why check value-dependency?  */
@@ -17806,6 +17813,7 @@ type_dependent_expression_p (tree expression)
   if (TREE_CODE (expression) == PSEUDO_DTOR_EXPR
       || TREE_CODE (expression) == SIZEOF_EXPR
       || TREE_CODE (expression) == ALIGNOF_EXPR
+      || TREE_CODE (expression) == AT_ENCODE_EXPR
       || TREE_CODE (expression) == NOEXCEPT_EXPR
       || TREE_CODE (expression) == TRAIT_EXPR
       || TREE_CODE (expression) == TYPEID_EXPR
