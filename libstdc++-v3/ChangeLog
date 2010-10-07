@@ -1,5 +1,11 @@
 2010-10-07  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR libstdc++/45841
+	* testsuite/lib/libstdc++.exp (check_v3_target_fileio): Rewrite to
+	use an actual testsuite file and machinery, not ".".  Specifically
+	check that incorrectly seeking backwards from 0 yields an error,
+	and that reading, seeking backwards and reading again works.
+
 	* testsuite/libstdc++-dg/conformance.exp: Apply
 	check_v3_target_fileio as a gate for tests in
 	subdirectories matching the substring _filebuf.
