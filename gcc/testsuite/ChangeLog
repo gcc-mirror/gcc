@@ -1,3 +1,8 @@
+2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc.dg/attributes/method-attribute-3.m: New.
+	* obj-c++.dg/attributes/method-attribute-3.mm: New.
+
 2010-10-07  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/45916

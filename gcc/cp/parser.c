@@ -21568,6 +21568,7 @@ cp_parser_objc_method_tail_params_opt (cp_parser* parser, bool *ellipsisp,
 	{
 	  cp_lexer_consume_token (parser->lexer);  /* Eat '...'.  */
 	  *ellipsisp = true;
+	  token = cp_lexer_peek_token (parser->lexer);
 	  break;
 	}
 

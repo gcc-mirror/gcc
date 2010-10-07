@@ -1,3 +1,8 @@
+2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
+
+	parser.c (cp_parser_objc_method_tail_params_opt): Peek new token after
+	finding ellipsis, before checking for attributes.
+
 2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from apple/trunk branch on FSF servers.
