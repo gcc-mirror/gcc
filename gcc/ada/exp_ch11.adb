@@ -1249,7 +1249,8 @@ package body Exp_Ch11 is
 
    begin
       --  There is no expansion needed when compiling for the JVM since the
-      --  JVM has a built-in exception mechanism. See 4jexcept.ads for details.
+      --  JVM has a built-in exception mechanism. See cil/gnatlib/a-except.ads
+      --  for details.
 
       if VM_Target /= No_VM then
          return;

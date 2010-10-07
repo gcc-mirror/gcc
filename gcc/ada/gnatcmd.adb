@@ -407,8 +407,13 @@ procedure GNATCmd is
                                         (Main).Value),
                                    "ci"));
 
-                           if not Is_Regular_File (File.all) and then
-                             B_Start.all /= "b__"
+                           --  When looking for the .ci file for a binder
+                           --  generated file, look for both b~xxx and b__xxx
+                           --  as gprbuild always uses b__ as the prefix of
+                           --  such files.
+
+                           if not Is_Regular_File (File.all)
+                             and then B_Start.all /= "b__"
                            then
                               File :=
                                 new String'

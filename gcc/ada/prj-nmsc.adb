@@ -7624,7 +7624,9 @@ package body Prj.Nmsc is
          if Id.File /= Replaced_By.File then
             declare
                Replacement : constant File_Name_Type :=
-                 Replaced_Source_HTable.Get (Tree.Replaced_Sources, Id.File);
+                               Replaced_Source_HTable.Get
+                                 (Tree.Replaced_Sources, Id.File);
+
             begin
                Replaced_Source_HTable.Set
                  (Tree.Replaced_Sources, Id.File, Replaced_By.File);
