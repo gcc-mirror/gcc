@@ -23,16 +23,6 @@
 LIBGCC2_INCLUDES += -I$(srcdir)/../winsup/include \
 	-I$(srcdir)/../winsup/cygwin/include
 
-cygwin1.o: $(srcdir)/config/i386/cygwin1.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(TM_H) $(TM_P_H) opts.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(srcdir)/config/i386/cygwin1.c
-
-cygwin2.o: $(srcdir)/config/i386/cygwin2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(TM_H) $(TM_P_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(srcdir)/config/i386/cygwin2.c
-
 # Cygwin-specific parts of LIB_SPEC
 SHLIB_LC = -lcygwin -ladvapi32 -lshell32 -luser32 -lkernel32
 

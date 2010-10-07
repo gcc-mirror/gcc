@@ -1410,9 +1410,8 @@ i[34567]86-*-pe | i[34567]86-*-cygwin*)
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	extra_options="${extra_options} i386/cygming.opt"
 	extra_objs="winnt.o winnt-stubs.o"
-	c_target_objs="${c_target_objs} cygwin2.o msformat-c.o"
-	cxx_target_objs="${cxx_target_objs} cygwin2.o winnt-cxx.o msformat-c.o"
-	extra_gcc_objs=cygwin1.o
+	c_target_objs="${c_target_objs} msformat-c.o"
+	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi

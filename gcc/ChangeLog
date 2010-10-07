@@ -1,3 +1,44 @@
+2010-10-07  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* config.gcc (c_target_objs)[i?86-*-pe|i?86-*-cygwin*]: Don't add
+	cygwin2.o.
+	(cxx_target_objs)[i?86-*-pe|i?86-*-cygwin*]: Likewise.
+	(extra_gcc_objs)[i?86-*-pe|i?86-*-cygwin*]: Don't add cygwin1.o.
+	* config/i386/t-cygwin (cygwin1.o): Delete build rule.
+	(cygwin2.o): Likewise.
+	* config/i386/cygwin1.c: Delete file.
+	* config/i386/cygwin2.c: Likewise.
+	* config/i386/cygwin.h (CPP_SPEC): Remove all %{mno-cygwin} specs and
+	make all {%!mno-cygwin} ones unconditional.
+	(STARTFILE_SPEC): Likewise.
+	(REAL_LIBGCC_SPEC): Likewise.
+	(LIB_SPEC): Likewise.
+	(CXX_WRAP_SPEC): Likewise.
+	(LINK_SPEC): Likewise.
+	(CYGWIN_MINGW_SUBDIR): Delete now-unused macro definition.
+	(CYGWIN_MINGW_SUBDIR_LEN): Likewise.
+	(cygwin_gplusplus_include_dir): Delete now-unused array.
+	(GPLUSPLUS_INCLUDE_DIR): Don't redefine to point to it.
+	(cygwin_gplusplus_tool_include_dir): Delete now-unused array.
+	(GPLUSPLUS_TOOL_INCLUDE_DIR): Don't redefine to point to it.
+	(cygwin_gplusplus_backward_include_dir): Delete now-unused array.
+	(GPLUSPLUS_BACKWARD_INCLUDE_DIR): Don't redefine to point to it.
+	(cygwin_local_include_dir): Delete now-unused array.
+	(LOCAL_INCLUDE_DIR): Don't redefine to point to it.
+	(cygwin_cross_include_dir): Delete now-unused array.
+	(CROSS_INCLUDE_DIR): Don't redefine to point to it.
+	(cygwin_tool_include_dir): Delete now-unused array.
+	(TOOL_INCLUDE_DIR): Don't redefine to point to it.
+	(cygwin_standard_include_dir): Delete now-unused array.
+	(STANDARD_INCLUDE_DIR): Don't redefine to point to it.
+	(GEN_CVT_ARRAY): Delete now-unused macro definition.
+	(cvt_to_mingw): Delete now-unused array.
+	(mingw_scan): Remove prototype of deleted function.
+	(GCC_DRIVER_HOST_INITIALIZATION): Don't define now-unused target macro.
+	* config/i386/cygming.opt (mcygwin): Delete target-specific option.
+	* doc/invoke.texi (-mcygwin): Don't document removed option.
+	(-mno-cygwin): Likewise.
+
 2010-10-07  Richard Guenther  <rguenther@suse.de>
 
 	* machmode.h (mode_for_vector): Declare.
