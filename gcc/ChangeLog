@@ -1,5 +1,16 @@
 2010-10-07  Richard Guenther  <rguenther@suse.de>
 
+	* target.def (autovectorize_vector_sizes): New target hook.
+	* targhooks.c (default_autovectorize_vector_sizes): New function.
+	* targhooks.h (default_autovectorize_vector_sizes): Declare.
+	* doc/tm.texi.in (TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES):
+	Document.
+	* doc/tm.texi: Update.
+	* config/i386/i386.c (ix86_autovectorize_vector_sizes): New function.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Define.
+
+2010-10-07  Richard Guenther  <rguenther@suse.de>
+
 	* target.def (units_per_simd_word): Rename to ...
 	(preferred_simd_mode): ... this.  Return mode instead of size.
 	* targhooks.c (default_units_per_simd_word): Rename to ...

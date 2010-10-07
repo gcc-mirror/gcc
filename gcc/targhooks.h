@@ -87,6 +87,7 @@ default_builtin_support_vector_misalignment (enum machine_mode mode,
 					     const_tree,
 					     int, bool);
 extern enum machine_mode default_preferred_simd_mode (enum machine_mode mode);
+extern unsigned int default_autovectorize_vector_sizes (void);
 
 /* These are here, and not in hooks.[ch], because not all users of
    hooks.h include tm.h, and thus we don't have CUMULATIVE_ARGS.  */
