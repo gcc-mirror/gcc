@@ -4335,23 +4335,23 @@ package body Ch3 is
                Done := True;
             end if;
 
-            --  Normally an END terminates the scan for basic declarative
-            --  items. The one exception is END RECORD, which is probably
-            --  left over from some other junk.
+         --  Normally an END terminates the scan for basic declarative items.
+         --  The one exception is END RECORD, which is probably left over from
+         --  some other junk.
 
-            when Tok_End =>
-               Save_Scan_State (Scan_State); -- at END
-               Scan; -- past END
+         when Tok_End =>
+            Save_Scan_State (Scan_State); -- at END
+            Scan; -- past END
 
-               if Token = Tok_Record then
-                  Error_Msg_SP ("no RECORD for this `end record`!");
-                  Scan; -- past RECORD
-                  TF_Semicolon;
+            if Token = Tok_Record then
+               Error_Msg_SP ("no RECORD for this `end record`!");
+               Scan; -- past RECORD
+               TF_Semicolon;
 
-               else
-                  Restore_Scan_State (Scan_State); -- to END
-                  Done := True;
-               end if;
+            else
+               Restore_Scan_State (Scan_State); -- to END
+               Done := True;
+            end if;
 
          --  The following tokens which can only be the start of a statement
          --  are considered to end a declarative part (i.e. we have a missing

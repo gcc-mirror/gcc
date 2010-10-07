@@ -4538,6 +4538,25 @@ package body Exp_Util is
                  or else Ekind (Entity (Prefix (N))) = E_In_Parameter;
             end if;
 
+         --  If the prefix is an explicit dereference that is not access-to-
+         --  constant then this construct is a variable reference, which means
+         --  it is to be considered to have side effects if Variable_Ref is
+         --  True.
+
+         --  Exception is an access to an entity that is a constant or an
+         --  in-parameter.
+
+         elsif Nkind (Prefix (N)) = N_Explicit_Dereference
+           and then not Is_Access_Constant (Etype (Prefix (Prefix (N))))
+           and then Variable_Ref
+         then
+            declare
+               DDT : constant Entity_Id :=
+                       Designated_Type (Etype (Prefix (Prefix (N))));
+            begin
+               return Ekind_In (DDT, E_Constant, E_In_Parameter);
+            end;
+
          --  The following test is the simplest way of solving a complex
          --  problem uncovered by BB08-010: Side effect on loop bound that
          --  is a subcomponent of a global variable:

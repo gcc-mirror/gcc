@@ -1,5 +1,22 @@
 2010-10-07  Robert Dewar  <dewar@adacore.com>
 
+	* scng.adb (Skip_Other_Format_Characters): New procedure
+	(Start_Of_Wide_Character): New procedure
+	(Scan): Use Start_Of_Wide_Character where appropriate
+	(Scan): Improve error message for other_format chars in identifier
+	(Scan): Allow other_format chars between tokens
+
+2010-10-07  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.adb (Safe_Prefixed_Reference): When removing side effects,
+	Add missing support for explicit dereferences.
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch10.adb, par-ch3.adb, par.adb: Minor reformatting.
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
 	* exp_disp.adb, exp_dist.adb, exp_util.ads, exp_util.adb,
 	exp_ch11.adb: Rename Full_Qualified_Name to Fully_Qualified_Name_String
 	* sem_util.adb, sem_util.ads (Full_Qualified_Name): Moved to
