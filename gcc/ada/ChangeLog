@@ -1,5 +1,27 @@
 2010-10-07  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.ads (No_Pool_Assigned): Update documentation.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause, case
+	Storage_Size): We only set No_Pool_Assigned if the expression is a
+	static constant and zero.
+	* sem_res.adb (Resolve_Allocator): Allocation from empty storage pool
+	should be an error not a warning.
+
+2010-10-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): Recognize additional cases
+	where an aggregate in an assignment can be built directly into the
+	target, and does not require the creation of a temporary that may
+	overflow the stack.
+
+2010-10-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Analyze_Record_Aggregate): In Ada2012, a choice list
+	in a record aggregate can correspond to several components of
+	anonymous access types, as long as the designated subtypes match.
+
+2010-10-07  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi, exp_util.adb, sinfo.adb, sinfo.ads, sem_ch12.adb,
 	sem.adb, gnat_ugn.texi, sem_util.ads, par-ch6.adb, targparm.ads,
 	restrict.adb, sem_ch6.adb, sem_ch6.ads, sprint.adb, i-c.ads: Change

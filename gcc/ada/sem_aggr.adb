@@ -3890,8 +3890,23 @@ package body Sem_Aggr is
                elsif No (Typech) then
                   Typech := Base_Type (Etype (Component));
 
+               --  AI05-0199: In Ada2012, several components of anonymous
+               --  access types can appear in a choice list, as long as the
+               --  designated types match.
+
                elsif Typech /= Base_Type (Etype (Component)) then
-                  if not Box_Present (Parent (Selectr)) then
+                  if Ada_Version >= Ada_12
+                    and then Ekind (Typech) = E_Anonymous_Access_Type
+                    and then
+                       Ekind (Etype (Component)) = E_Anonymous_Access_Type
+                    and then Base_Type (Designated_Type (Typech)) =
+                             Base_Type (Designated_Type (Etype (Component)))
+                    and then
+                      Subtypes_Statically_Match (Typech, (Etype (Component)))
+                  then
+                     null;
+
+                  elsif not Box_Present (Parent (Selectr)) then
                      Error_Msg_N
                        ("components in choice list must have same type",
                         Selectr);

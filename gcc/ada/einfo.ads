@@ -3035,12 +3035,12 @@ package Einfo is
 --       interpreted as true. Currently this is set true for derived Boolean
 --       types which have a convention of C, C++ or Fortran.
 
---    No_Pool_Assigned (Flag131) [root type only]
---       Present in access types. Set if a storage size clause applies to
---       the variable with a compile time known value of zero. This flag is
---       used to generate warnings if any attempt is made to allocate or free
---       an instance of such an access type. This is set only in the root
---       type, since derived types must have the same pool.
+--    No_Pool_Assigned (Flag131) [root type only] Present in access types.
+--       Set if a storage size clause applies to the variable with a static
+--       expression value of zero. This flag is used to generate errors if any
+--       attempt is made to allocate or free an instance of such an access
+--       type. This is set only in the root type, since derived types must
+--       have the same pool.
 
 --    No_Return (Flag113)
 --       Present in all entities. Always false except in the case of procedures
