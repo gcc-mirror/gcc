@@ -3015,7 +3015,7 @@ case "$target" in
 	  min_tls_ld_vers_minor=343
           ;;
       esac
-      if test "$ls_vers_major" -gt 1 || \
+      if test "$ld_vers_major" -gt 1 || \
         test "$ld_vers_minor" -ge "$min_tls_ld_vers_minor"; then
  	ld_tls_support=yes
       else
