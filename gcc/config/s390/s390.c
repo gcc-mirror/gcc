@@ -8340,7 +8340,7 @@ s390_function_arg_size (enum machine_mode mode, const_tree type)
    is to be passed in a floating-point register, if available.  */
 
 static bool
-s390_function_arg_float (enum machine_mode mode, tree type)
+s390_function_arg_float (enum machine_mode mode, const_tree type)
 {
   int size = s390_function_arg_size (mode, type);
   if (size > 8)
@@ -8385,7 +8385,7 @@ s390_function_arg_float (enum machine_mode mode, tree type)
    registers, if available.  */
 
 static bool
-s390_function_arg_integer (enum machine_mode mode, tree type)
+s390_function_arg_integer (enum machine_mode mode, const_tree type)
 {
   int size = s390_function_arg_size (mode, type);
   if (size > 8)
@@ -8447,9 +8447,9 @@ s390_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
    argument is a named argument (as opposed to an unnamed argument
    matching an ellipsis).  */
 
-void
+static void
 s390_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			   tree type, int named ATTRIBUTE_UNUSED)
+			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   if (s390_function_arg_float (mode, type))
     {
@@ -8483,9 +8483,9 @@ s390_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    to pass floating point arguments.  All remaining arguments
    are pushed to the stack.  */
 
-rtx
-s390_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
-		   int named ATTRIBUTE_UNUSED)
+static rtx
+s390_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   if (s390_function_arg_float (mode, type))
     {
@@ -10568,6 +10568,10 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL s390_function_ok_for_sibcall
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG s390_function_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE s390_function_arg_advance
 
 #undef TARGET_FIXED_CONDITION_CODE_REGS
 #define TARGET_FIXED_CONDITION_CODE_REGS s390_fixed_condition_code_regs

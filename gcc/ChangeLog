@@ -1,5 +1,17 @@
 2010-10-08  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/s390/s390-protos.h (s390_function_arg_advance): Delete.
+	(s390_function_arg): Delete.
+	* config/s390/s390.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	* config/s390/s390.c (s390_function_arg_float): Take a const_tree.
+	(s390_function_arg_integer): Likewise.
+	(s390_function_arg_advance): Make static.  Take a const_tree and
+	a bool.
+	(s390_function_arg): Likewise.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-10-08  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/spu/spu-protos.h (spu_function_arg): Delete.
 	* config/spu/spu.h (FUNCTION_ARG): Delete.
 	(FUNCTION_ARG_ADVANCE): Move code to ...
