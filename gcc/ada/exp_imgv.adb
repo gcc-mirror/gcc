@@ -306,8 +306,16 @@ package body Exp_Imgv is
          Imid := RE_Image_Boolean;
          Tent := Rtyp;
 
+      --  For standard character, we have to select the version which handles
+      --  soft hyphen correctly, based on the version of Ada in use (ugly!)
+
       elsif Rtyp = Standard_Character then
-         Imid := RE_Image_Character;
+         if Ada_Version < Ada_05 then
+            Imid := RE_Image_Character;
+         else
+            Imid := RE_Image_Character_05;
+         end if;
+
          Tent := Rtyp;
 
       elsif Rtyp = Standard_Wide_Character then

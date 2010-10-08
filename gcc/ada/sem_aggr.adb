@@ -3654,10 +3654,11 @@ package body Sem_Aggr is
                           (Aggr       : Node_Id;
                            Assoc_List : List_Id)
                         is
-                           Aggr_Type  : constant Entity_Id :=
-                             Base_Type (Etype (Aggr));
-                           Def_Node   : constant Node_Id :=
-                             Type_Definition (Declaration_Node (Aggr_Type));
+                           Aggr_Type : constant Entity_Id :=
+                                         Base_Type (Etype (Aggr));
+                           Def_Node  : constant Node_Id :=
+                                         Type_Definition
+                                           (Declaration_Node (Aggr_Type));
 
                            Comp       : Node_Id;
                            Comp_Elmt  : Elmt_Id;
@@ -3666,7 +3667,7 @@ package body Sem_Aggr is
                            Errors     : Boolean;
 
                            procedure Process_Component (Comp : Entity_Id);
-                           --  Add one component with a box association  to the
+                           --  Add one component with a box association to the
                            --  inner aggregate, and recurse if component is
                            --  itself composite.
 
@@ -3702,7 +3703,6 @@ package body Sem_Aggr is
                            end Process_Component;
 
                         begin
-
                            --  The component type may be a variant type, so
                            --  collect the components that are ruled by the
                            --  known values of the discriminants.
@@ -3734,7 +3734,6 @@ package body Sem_Aggr is
                            --  No variant part, iterate over all components
 
                            else
-
                               Comp := First_Component (Etype (Aggr));
                               while Present (Comp) loop
                                  Process_Component (Comp);
@@ -3753,15 +3752,16 @@ package body Sem_Aggr is
                            end if;
                         end Propagate_Discriminants;
 
-                        --  Start of processing for Capture_Discriminants
+                     --  Start of processing for Capture_Discriminants
 
                      begin
                         Expr := Make_Aggregate (Loc, New_List, New_List);
                         Set_Etype (Expr, Ctyp);
 
-                        --  If the enclosing type has discriminants, they
-                        --  have been collected in the aggregate earlier, and
-                        --  they may appear as constraints of subcomponents.
+                        --  If the enclosing type has discriminants, they have
+                        --  been collected in the aggregate earlier, and they
+                        --  may appear as constraints of subcomponents.
+
                         --  Similarly if this component has discriminants, they
                         --  might in turn be propagated to their components.
 
@@ -3771,7 +3771,7 @@ package body Sem_Aggr is
 
                         elsif Has_Discriminants (Ctyp) then
                            Add_Discriminant_Values
-                              (Expr,  Component_Associations (Expr));
+                              (Expr, Component_Associations (Expr));
                            Propagate_Discriminants
                               (Expr, Component_Associations (Expr));
 
