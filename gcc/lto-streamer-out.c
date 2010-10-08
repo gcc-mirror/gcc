@@ -1065,7 +1065,8 @@ lto_output_ts_block_tree_pointers (struct output_block *ob, tree expr,
   lto_output_tree_or_ref (ob, BLOCK_ABSTRACT_ORIGIN (expr), ref_p);
   lto_output_tree_or_ref (ob, BLOCK_FRAGMENT_ORIGIN (expr), ref_p);
   lto_output_tree_or_ref (ob, BLOCK_FRAGMENT_CHAIN (expr), ref_p);
-  lto_output_chain (ob, BLOCK_SUBBLOCKS (expr), ref_p);
+  /* Do not output BLOCK_SUBBLOCKS.  Instead on streaming-in this
+     list is re-constructed from BLOCK_SUPERCONTEXT.  */
 }
 
 

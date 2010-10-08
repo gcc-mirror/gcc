@@ -2139,17 +2139,29 @@ lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
   BLOCK_VARS (expr) = lto_input_chain (ib, data_in);
 
   len = lto_input_uleb128 (ib);
-  for (i = 0; i < len; i++)
+  if (len > 0)
     {
-      tree t = lto_input_tree (ib, data_in);
-      VEC_safe_push (tree, gc, BLOCK_NONLOCALIZED_VARS (expr), t);
+      VEC_reserve_exact (tree, gc, BLOCK_NONLOCALIZED_VARS (expr), len);
+      for (i = 0; i < len; i++)
+	{
+	  tree t = lto_input_tree (ib, data_in);
+	  VEC_quick_push (tree, BLOCK_NONLOCALIZED_VARS (expr), t);
+	}
     }
 
   BLOCK_SUPERCONTEXT (expr) = lto_input_tree (ib, data_in);
   BLOCK_ABSTRACT_ORIGIN (expr) = lto_input_tree (ib, data_in);
   BLOCK_FRAGMENT_ORIGIN (expr) = lto_input_tree (ib, data_in);
   BLOCK_FRAGMENT_CHAIN (expr) = lto_input_tree (ib, data_in);
-  BLOCK_SUBBLOCKS (expr) = lto_input_chain (ib, data_in);
+  /* We re-compute BLOCK_SUBBLOCKS of our parent here instead
+     of streaming it.  For non-BLOCK BLOCK_SUPERCONTEXTs we still
+     stream the child relationship explicitly.  */
+  if (BLOCK_SUPERCONTEXT (expr)
+      && TREE_CODE (BLOCK_SUPERCONTEXT (expr)) == BLOCK)
+    {
+      BLOCK_CHAIN (expr) = BLOCK_SUBBLOCKS (BLOCK_SUPERCONTEXT (expr));
+      BLOCK_SUBBLOCKS (BLOCK_SUPERCONTEXT (expr)) = expr;
+    }
 }
 
 
@@ -2183,10 +2195,14 @@ lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
   BINFO_VPTR_FIELD (expr) = lto_input_tree (ib, data_in);
 
   len = lto_input_uleb128 (ib);
-  for (i = 0; i < len; i++)
+  if (len > 0)
     {
-      tree a = lto_input_tree (ib, data_in);
-      VEC_safe_push (tree, gc, BINFO_BASE_ACCESSES (expr), a);
+      VEC_reserve_exact (tree, gc, BINFO_BASE_ACCESSES (expr), len);
+      for (i = 0; i < len; i++)
+	{
+	  tree a = lto_input_tree (ib, data_in);
+	  VEC_quick_push (tree, BINFO_BASE_ACCESSES (expr), a);
+	}
     }
 
   BINFO_INHERITANCE_CHAIN (expr) = lto_input_tree (ib, data_in);

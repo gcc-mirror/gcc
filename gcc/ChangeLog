@@ -1,3 +1,13 @@
+2010-10-08  Richard Guenther  <rguenther@suse.de>
+
+	* lto-streamer-out.c (lto_output_ts_block_tree_pointers):
+	Do not output BLOCK_SUBBLOCKS.
+	* lto-streamer-in.c (lto_input_ts_block_tree_pointers):
+	Reserve exact space needed for BLOCK_NONLOCALIZED_VARS.
+	Re-construct BLOCK_SUBBLOCKS of parent block.
+	(lto_input_ts_binfo_tree_pointers): Reserve exact space needed
+	for BINFO_BASE_ACCESSES.
+
 2010-10-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* Makefile.in (TM_H): Include $(FLAGS_H) instead of options.h.
