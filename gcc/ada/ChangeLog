@@ -1,5 +1,22 @@
 2010-10-08  Robert Dewar  <dewar@adacore.com>
 
+	* sem_aggr.adb: Minor reformatting.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
+	* exp_imgv.adb (Expand_Image_Attribute): Handle special calling
+	sequence for soft hyphen for Character'Image case.
+	* rtsfind.ads (Image_Character_05): New entry
+	* s-imgcha.adb (Image_Character_05): New procedurew
+	* s-imgcha.ads (Image_Character_05): New procedure
+	* s-imgwch.adb (Image_Wide_Character): Deal with Ada 2005 soft hyphen
+	case.
+	* s-valcha.adb (Value_Character): Recognize SOFT_HYPHEN for 16#AD#
+	* sem_attr.adb (Eval_Attribute, case Width): Handle soft_hyphen name
+	properly.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
 	* sem_attr.adb (Eval_Attribute, case Width): Avoid ludicrous long loop
 	for case of Wide_[Wide_]Character.
 

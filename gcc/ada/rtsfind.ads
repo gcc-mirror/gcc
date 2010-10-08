@@ -800,6 +800,7 @@ package Rtsfind is
      RE_Image_Boolean,                   -- System.Img_Bool
 
      RE_Image_Character,                 -- System.Img_Char
+     RE_Image_Character_05,              -- System.Img_Char
 
      RE_Image_Decimal,                   -- System.Img_Dec
 
@@ -1972,6 +1973,7 @@ package Rtsfind is
      RE_Image_Boolean                    => System_Img_Bool,
 
      RE_Image_Character                  => System_Img_Char,
+     RE_Image_Character_05               => System_Img_Char,
 
      RE_Image_Decimal                    => System_Img_Dec,
 

@@ -7413,7 +7413,6 @@ package body Sem_Attr is
 
                            --  No need to compute this more than once!
 
-                           W := Int'Max (W, 12);
                            exit;
 
                         else
@@ -7427,13 +7426,11 @@ package body Sem_Attr is
                            case C is
                               when Reserved_128 | Reserved_129 |
                                    Reserved_132 | Reserved_153
-
                                 => Wt := 12;
 
                               when BS | HT | LF | VT | FF | CR |
                                    SO | SI | EM | FS | GS | RS |
                                    US | RI | MW | ST | PM
-
                                 => Wt := 2;
 
                               when NUL | SOH | STX | ETX | EOT |
@@ -7445,13 +7442,20 @@ package body Sem_Attr is
                                    SS2 | SS3 | DCS | PU1 | PU2 |
                                    STS | CCH | SPA | EPA | SOS |
                                    SCI | CSI | OSC | APC
-
                                 => Wt := 3;
 
                               when Space .. Tilde |
                                    No_Break_Space .. LC_Y_Diaeresis
+                                =>
+                                 --  Special case of soft hyphen in Ada 2005
 
-                                => Wt := 3;
+                                 if C = Character'Val (16#AD#)
+                                   and then Ada_Version >= Ada_05
+                                 then
+                                    Wt := 11;
+                                 else
+                                    Wt := 3;
+                                 end if;
                            end case;
 
                            W := Int'Max (W, Wt);
