@@ -620,9 +620,15 @@ package body Prj is
          The_Empty_String := Name_Find;
 
          Prj.Attr.Initialize;
-         Set_Name_Table_Byte (Name_Project,  Token_Type'Pos (Tok_Project));
-         Set_Name_Table_Byte (Name_Extends,  Token_Type'Pos (Tok_Extends));
-         Set_Name_Table_Byte (Name_External, Token_Type'Pos (Tok_External));
+
+         Set_Name_Table_Byte
+           (Name_Project,          Token_Type'Pos (Tok_Project));
+         Set_Name_Table_Byte
+           (Name_Extends,          Token_Type'Pos (Tok_Extends));
+         Set_Name_Table_Byte
+           (Name_External,         Token_Type'Pos (Tok_External));
+         Set_Name_Table_Byte
+           (Name_External_As_List, Token_Type'Pos (Tok_External_As_List));
       end if;
 
       if Tree /= No_Project_Tree then

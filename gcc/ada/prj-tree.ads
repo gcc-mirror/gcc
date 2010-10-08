@@ -296,7 +296,8 @@ package Prj.Tree is
    pragma Inline (Expression_Kind_Of);
    --  Only valid for N_Literal_String, N_Attribute_Declaration,
    --  N_Variable_Declaration, N_Typed_Variable_Declaration, N_Expression,
-   --  N_Term, N_Variable_Reference or N_Attribute_Reference nodes.
+   --  N_Term, N_Variable_Reference, N_Attribute_Reference nodes or
+   --  N_External_Value.
 
    function Is_Extending_All
      (Node    : Project_Node_Id;
@@ -759,7 +760,8 @@ package Prj.Tree is
    pragma Inline (Set_Expression_Kind_Of);
    --  Only valid for N_Literal_String, N_Attribute_Declaration,
    --  N_Variable_Declaration, N_Typed_Variable_Declaration, N_Expression,
-   --  N_Term, N_Variable_Reference or N_Attribute_Reference nodes.
+   --  N_Term, N_Variable_Reference, N_Attribute_Reference or N_External_Value
+   --  nodes.
 
    procedure Set_Is_Extending_All
      (Node    : Project_Node_Id;
