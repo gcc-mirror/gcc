@@ -215,24 +215,22 @@ namespace std
 
     /// Result_alloc.
     template<typename _Res, typename _Alloc>
-      struct _Result_alloc : _Result<_Res>
+      struct _Result_alloc : _Result<_Res>, _Alloc
       {
         typedef typename _Alloc::template rebind<_Result_alloc>::other
           __allocator_type;
 
         explicit
-	_Result_alloc(const _Alloc& __a) : _Result<_Res>(), _M_alloc(__a)
+	_Result_alloc(const _Alloc& __a) : _Result<_Res>(), _Alloc(__a)
         { }
 	
       private:
 	void _M_destroy()
         {
-          __allocator_type __a(_M_alloc);
+          __allocator_type __a(*this);
           __a.destroy(this);
           __a.deallocate(this, 1);
         }
-
-        __allocator_type _M_alloc;
       };
 
     template<typename _Res, typename _Allocator>
