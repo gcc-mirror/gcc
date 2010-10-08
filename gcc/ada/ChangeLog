@@ -1,5 +1,26 @@
 2010-10-08  Robert Dewar  <dewar@adacore.com>
 
+	* sem_prag.adb (Check_Duplicate_Pragma): New procedure
+	Add calls to this new procedure where appropriate
+
+2010-10-08  Vincent Celier  <celier@adacore.com>
+
+	* a-textio.adb (Get_Chunk): Code clean up.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
+	* a-strbou.ads, a-strfix.adb, a-strfix.ads, a-strsea.adb, a-strsea.ads,
+	a-strsup.adb, a-strsup.ads, a-strunb-shared.adb, a-strunb-shared.ads,
+	a-strunb.adb, a-strunb.ads, a-stwibo.ads, a-stwifi.adb, a-stwifi.ads,
+	a-stwise.adb, a-stwise.ads, a-stwisu.adb, a-stwisu.ads,
+	a-stwiun-shared.adb, a-stwiun-shared.ads, a-stwiun.adb, a-stwiun.ads,
+	a-stzbou.ads, a-stzfix.adb, a-stzfix.ads, a-stzsea.adb, a-stzsea.ads,
+	a-stzsup.adb, a-stzsup.ads, a-stzunb-shared.adb, a-stzunb-shared.ads,
+	a-stzunb.adb, a-stzunb.ads (Find_Token): New version with From
+	parameter.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
 	* sem_cat.adb (Check_Categorization_Dependencies): Remote types
 	packages can depend on preleborated packages.
 

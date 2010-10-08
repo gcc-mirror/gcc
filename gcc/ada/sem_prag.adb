@@ -407,6 +407,11 @@ package body Sem_Prag is
       --  UU_Typ is the related Unchecked_Union type. Flag In_Variant_Part
       --  should be set when Comp comes from a record variant.
 
+      procedure Check_Duplicate_Pragma (E : Entity_Id);
+      --  Check if a pragma of the same name as the current pragma is already
+      --  chained as a rep pragma to the given entity. if so give a message
+      --  about the duplicate, using Error_Pragma so the call does not return.
+
       procedure Check_Duplicated_Export_Name (Nam : Node_Id);
       --  Nam is an N_String_Literal node containing the external name set by
       --  an Import or Export pragma (or extended Import or Export pragma).
@@ -1194,6 +1199,17 @@ package body Sem_Prag is
          end if;
       end Check_Component;
 
+      procedure Check_Duplicate_Pragma (E : Entity_Id) is
+         P : constant Node_Id := Get_Rep_Pragma (E, Pragma_Name (N));
+      begin
+         if Present (P) then
+            Error_Msg_Name_1 := Pname;
+            Error_Msg_Sloc := Sloc (P);
+            Error_Msg_NE ("pragma% for & duplicates one#", N, E);
+            raise Pragma_Exit;
+         end if;
+      end Check_Duplicate_Pragma;
+
       ----------------------------------
       -- Check_Duplicated_Export_Name --
       ----------------------------------
@@ -1306,8 +1322,16 @@ package body Sem_Prag is
               ("argument for pragma% must be library level entity", Arg1);
          end if;
 
+         --  AI05-0033 : pragma cannot appear within a generic body, because
+         --  instance can be in a nested scope. The check that protected type
+         --  is itself a library-level declaration is done elsewhere.
+
          if Inside_A_Generic then
-            Error_Pragma ("pragma% cannot be used inside a generic");
+            if Ekind (Scope (Current_Scope)) = E_Generic_Package
+               and then In_Package_Body (Scope (Current_Scope))
+            then
+               Error_Pragma ("pragma% cannot be used inside a generic");
+            end if;
          end if;
       end Check_Interrupt_Or_Attach_Handler;
 
@@ -2219,6 +2243,12 @@ package body Sem_Prag is
          E := Entity (E_Id);
          D := Declaration_Node (E);
          K := Nkind (D);
+
+         --  Check duplicate before we chain ourselves!
+
+         Check_Duplicate_Pragma (E);
+
+         --  Now check appropriateness of the entity
 
          if Is_Type (E) then
             if Rep_Item_Too_Early (E, N)
@@ -5946,6 +5976,8 @@ package body Sem_Prag is
 
             E := Entity (E_Id);
 
+            Check_Duplicate_Pragma (E);
+
             if Rep_Item_Too_Early (E, N)
                  or else
                Rep_Item_Too_Late (E, N)
@@ -8410,6 +8442,12 @@ package body Sem_Prag is
             D := Declaration_Node (E);
             K := Nkind (D);
 
+            --  Check duplicate before we chain ourselves!
+
+            Check_Duplicate_Pragma (E);
+
+            --  Check appropriate entity
+
             if Is_Type (E) then
                if Rep_Item_Too_Early (E, N)
                     or else
@@ -8463,6 +8501,12 @@ package body Sem_Prag is
             end if;
 
             E := Entity (E_Id);
+
+            --  Check duplicate before we chain ourselves!
+
+            Check_Duplicate_Pragma (E);
+
+            --  Check appropriate entity
 
             if Rep_Item_Too_Early (E, N)
                  or else
