@@ -116,10 +116,7 @@ extern int s390_compare_and_branch_condition_mask (rtx);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern void s390_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
-				       tree, int);
 #ifdef RTX_CODE
-extern rtx s390_function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern rtx s390_function_value (const_tree, const_tree, enum machine_mode);
 #endif /* RTX_CODE */
 #endif /* TREE_CODE */
