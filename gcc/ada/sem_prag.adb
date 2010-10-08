@@ -1305,6 +1305,10 @@ package body Sem_Prag is
             Error_Pragma_Arg
               ("argument for pragma% must be library level entity", Arg1);
          end if;
+
+         if Inside_A_Generic then
+            Error_Pragma ("pragma% cannot be used inside a generic");
+         end if;
       end Check_Interrupt_Or_Attach_Handler;
 
       -------------------------------------------

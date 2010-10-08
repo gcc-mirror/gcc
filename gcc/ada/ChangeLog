@@ -1,5 +1,15 @@
 2010-10-08  Robert Dewar  <dewar@adacore.com>
 
+	* sem_cat.adb (Check_Categorization_Dependencies): Remote types
+	packages can depend on preleborated packages.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Check_Interrupt_Or_Attach_Handler): Pragmas
+	Interrupt_Handler and Attach_Handler not allowed in generics.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
 	* ali.adb: Set Allocator_In_Body if AB parameter present on M line
 	* ali.ads (Allocator_In_Body): New flag
 	* bcheck.adb (Check_Consistent_Restrictions): Handle case of main
