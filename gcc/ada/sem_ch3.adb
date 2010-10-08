@@ -12601,6 +12601,9 @@ package body Sem_Ch3 is
       if Ekind (Parent_Subp) = E_Procedure then
          Set_Is_Valued_Procedure
            (New_Subp, Is_Valued_Procedure (Parent_Subp));
+      else
+         Set_Has_Controlling_Result
+           (New_Subp, Has_Controlling_Result (Parent_Subp));
       end if;
 
       --  No_Return must be inherited properly. If this is overridden in the
@@ -12651,6 +12654,15 @@ package body Sem_Ch3 is
                    or else (Is_Tagged_Type (Derived_Type)
                              and then Etype (New_Subp) = Derived_Type
                              and then No (Actual_Subp)))
+      then
+         Set_Is_Abstract_Subprogram (New_Subp);
+
+      --  AI05-0097 : an inherited operation that dispatches on result is
+      --  abstract if the derived type is abstract, even if the parent type
+      --  is concrete and the derived type is a null extension.
+
+      elsif Has_Controlling_Result (Alias (New_Subp))
+        and then Is_Abstract_Type (Etype (New_Subp))
       then
          Set_Is_Abstract_Subprogram (New_Subp);
 

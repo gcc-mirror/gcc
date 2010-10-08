@@ -142,7 +142,7 @@ Implementation Defined Pragmas
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
 * Pragma Ident::
-* Pragma Implemented_By_Entry::
+* Pragma Implemented::
 * Pragma Implicit_Packing::
 * Pragma Import_Exception::
 * Pragma Import_Function::
@@ -760,7 +760,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
 * Pragma Ident::
-* Pragma Implemented_By_Entry::
+* Pragma Implemented::
 * Pragma Implicit_Packing::
 * Pragma Import_Exception::
 * Pragma Import_Function::
@@ -2474,41 +2474,51 @@ maximum allowed length is 31 characters, so if it is important to
 maintain compatibility with this compiler, you should obey this length
 limit.
 
-@node Pragma Implemented_By_Entry
-@unnumberedsec Pragma Implemented_By_Entry
-@findex Implemented_By_Entry
+@node Pragma Implemented
+@unnumberedsec Pragma Implemented
+@findex Implemented
 @noindent
 Syntax:
 
 @smallexample @c ada
-pragma Implemented_By_Entry (LOCAL_NAME);
+pragma Implemented (procedure_LOCAL_NAME, implementation_kind);
+
+implementation_kind ::= By_Entry | By_Protected_Procedure | By_Any
 @end smallexample
 
 @noindent
-This is a representation pragma which applies to protected, synchronized and
-task interface primitives. If the pragma is applied to primitive operation Op
-of interface Iface, it is illegal to override Op in a type that implements
-Iface, with anything other than an entry.
+This is an Ada 2012 representation pragma which applies to protected, task
+and synchronized interface primitives. The use of pragma Implemented provides
+a way to impose a static requirement on the overriding opreration by adhering
+to one of the three implementation kids: entry, protected procedure or any of
+the above.
 
 @smallexample @c ada
-type Iface is protected interface;
-procedure Do_Something (Object : in out Iface) is abstract;
-pragma Implemented_By_Entry (Do_Something);
+type Synch_Iface is synchronized interface;
+procedure Prim_Op (Obj : in out Iface) is abstract;
+pragma Implemented (Prim_Op, By_Protected_Procedure);
 
-protected type P is new Iface with
-   procedure Do_Something;  --  Illegal
-end P;
+protected type Prot_1 is new Synch_Iface with
+   procedure Prim_Op;  --  Legal
+end Prot_1;
 
-task type T is new Iface with
-   entry Do_Something;      --  Legal
-end T;
+protected type Prot_2 is new Synch_Iface with
+   entry Prim_Op;      --  Illegal
+end Prot_2;
+
+task type Task_Typ is new Synch_Iface with
+   entry Prim_Op;      --  Illegal
+end Task_Typ;
 @end smallexample
 
 @noindent
-NOTE: The pragma is still in its design stage by the Ada Rapporteur Group. It
-is intended to be used in conjunction with dispatching requeue statements as
-described in AI05-0030. Should the ARG decide on an official name and syntax,
-this pragma will become language-defined rather than GNAT-specific.
+When applied to the procedure_or_entry_NAME of a requeue statement, pragma
+Implemented determines the runtime behavior of the requeue. Implementation kind
+By_Entry guarantees that the action of requeueing will procede from an entry to
+another entry. Implementation kind By_Protected_Procedure transforms the
+requeue into a dispatching call, thus eliminating the chance of blocking. Kind
+By_Any shares the behavior of By_Entry and By_Protected_Procedure depending on
+the target's overriding subprogram kind.
 
 @node Pragma Implicit_Packing
 @unnumberedsec Pragma Implicit_Packing
