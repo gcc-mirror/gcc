@@ -580,7 +580,9 @@ class StdStringPrinter:
         reptype = gdb.lookup_type (str (realtype) + '::_Rep').pointer ()
         header = ptr.cast(reptype) - 1
         len = header.dereference ()['_M_length']
-        return self.val['_M_dataplus']['_M_p'].lazy_string (length = len)
+        if hasattr(ptr, "lazy_string"):
+            return ptr.lazy_string (length = len)
+        return ptr.string (length = len)
 
     def display_hint (self):
         return 'string'
