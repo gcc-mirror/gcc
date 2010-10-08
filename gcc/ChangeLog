@@ -1,5 +1,16 @@
 2010-10-08  Richard Guenther  <rguenther@suse.de>
 
+	* lto-streamer-in.c (lto_input_ts_decl_minimal_tree_pointers):
+	Re-construct BLOCK_VARS.
+	(lto_input_ts_block_tree_pointers): Do not stream BLOCK_VARS.
+	* lto-streamer-out.c (lto_output_ts_block_tree_pointers): Likewise.
+	* tree.c (free_lang_data_in_block): Remove.
+	(free_lang_data_in_decl): Do not touch DECL_CONTEXT of non-PARM_DECLs.
+	Do not touch the BLOCK tree.
+	* expr.c (expand_expr_real_1): Allow externals.
+
+2010-10-08  Richard Guenther  <rguenther@suse.de>
+
 	* lto-streamer-out.c (lto_output_ts_block_tree_pointers):
 	Do not output BLOCK_SUBBLOCKS.
 	* lto-streamer-in.c (lto_input_ts_block_tree_pointers):
