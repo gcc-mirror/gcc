@@ -1,3 +1,18 @@
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb, sem_prag.adb: Minor reformatting
+
+2010-10-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat_rm.texi: Remove the section on pragma Implemented_By_Entry.
+	Add section on pragma Implemented.
+
+2010-10-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Derive_Subprogram): If an abstract extension has a
+	concrete parent with a concrete constructor, the inherited constructor
+	is abstract even if the derived type is a null extension.
+
 2010-10-08  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch4.adb: Minor reformatting.

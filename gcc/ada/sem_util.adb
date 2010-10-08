@@ -5243,10 +5243,8 @@ package body Sem_Util is
 
    function Implementation_Kind (Subp : Entity_Id) return Name_Id is
       Impl_Prag : constant Node_Id := Get_Rep_Pragma (Subp, Name_Implemented);
-
    begin
       pragma Assert (Present (Impl_Prag));
-
       return
         Chars (Expression (Last (Pragma_Argument_Associations (Impl_Prag))));
    end Implementation_Kind;
