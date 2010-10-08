@@ -4316,6 +4316,8 @@ package body Exp_Disp is
       if Has_Dispatch_Table (Typ)
         or else No (Access_Disp_Table (Typ))
         or else Is_CPP_Class (Typ)
+        or else Convention (Typ) = Convention_CIL
+        or else Convention (Typ) = Convention_Java
       then
          return Result;
 

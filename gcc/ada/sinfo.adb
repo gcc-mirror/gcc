@@ -223,7 +223,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Access_Definition
-        or else NT (N).Nkind = N_Access_To_Object_Definition);
+        or else NT (N).Nkind = N_Access_To_Object_Definition
+        or else NT (N).Nkind = N_Use_Type_Clause);
       return Flag15 (N);
    end All_Present;
 
@@ -3137,7 +3138,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Access_Definition
-        or else NT (N).Nkind = N_Access_To_Object_Definition);
+        or else NT (N).Nkind = N_Access_To_Object_Definition
+        or else NT (N).Nkind = N_Use_Type_Clause);
       Set_Flag15 (N, Val);
    end Set_All_Present;
 
