@@ -1,3 +1,7 @@
+2010-10-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/interface5.adb: Compile with warnings disabled.
+
 2010-10-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* obj-c++.dg/encode-10.mm: New testcase.
