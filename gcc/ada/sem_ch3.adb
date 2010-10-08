@@ -13738,9 +13738,24 @@ package body Sem_Ch3 is
              (not Is_Interface (Parent_Type)
                or else not Is_Limited_Interface (Parent_Type))
          then
-            Error_Msg_NE
-              ("parent type& of limited type must be limited",
-               N, Parent_Type);
+
+            --  AI05-0096 : a derivation in the private part of an instance is
+            --  legal if the generic formal is untagged limited, and the actual
+            --  is non-limited.
+
+            if Is_Generic_Actual_Type (Parent_Type)
+              and then In_Private_Part (Current_Scope)
+              and then
+                not Is_Tagged_Type
+                  (Generic_Parent_Type (Parent (Parent_Type)))
+            then
+               null;
+
+            else
+               Error_Msg_NE
+                 ("parent type& of limited type must be limited",
+                  N, Parent_Type);
+            end if;
          end if;
       end if;
    end Derived_Type_Declaration;

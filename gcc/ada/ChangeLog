@@ -1,3 +1,21 @@
+2010-10-08  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
+2010-10-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Derived_Type_Declaration): In the private part of an
+	instance, it is legal to derive from a non-limited actual when the
+	formal type is untagged limited.
+	* sem_ch12.adb (Instantiate_Type): For a formal private type, use
+	analyzed formal as Generic_Parent_Type, to simplify later checks.
+
+2010-10-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Insert_Default): If default value is already a
+	raise_constraint_error do not rewrite it as new raise node, to prevent
+	infinite loops in the warning removal machinery.
+
 2010-10-08  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb, sem_prag.adb: Minor reformatting
