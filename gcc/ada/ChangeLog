@@ -1,3 +1,10 @@
+2010-10-08  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Add missing checks on wrong use of
+	pragmas CIL_Constructor and Java_Constructor.
+	* exp_ch3.adb (Expand_Freeze_Record_Type): Do not generate the
+	predefined primitives for CIL/Java tagged types.
+
 2010-10-08  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch6.adb: Minor reformatting.
