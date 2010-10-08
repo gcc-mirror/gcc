@@ -105,6 +105,12 @@ static void score_option_override (void);
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES        score_arg_partial_bytes
 
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG             score_function_arg
+
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE     score_function_arg_advance
+
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE        score_pass_by_reference
 
@@ -474,10 +480,10 @@ score_init_cumulative_args (CUMULATIVE_ARGS *cum,
   memset (cum, 0, sizeof (CUMULATIVE_ARGS));
 }
 
-/* Implement FUNCTION_ARG_ADVANCE macro.  */
+/* Implement TARGET_FUNCTION_ARG_ADVANCE hook.  */
 void
 score_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-                            tree type, int named)
+                            const_tree type, bool named)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
     return score7_function_arg_advance (cum, mode, type, named);
@@ -500,10 +506,10 @@ score_arg_partial_bytes (CUMULATIVE_ARGS *cum,
   gcc_unreachable ();
 }
 
-/* Implement FUNCTION_ARG macro.  */
+/* Implement TARGET_FUNCTION_ARG hook.  */
 rtx
-score_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
-                    tree type, int named)
+score_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+                    const_tree type, bool named)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
     return score7_function_arg (cum, mode, type, named);

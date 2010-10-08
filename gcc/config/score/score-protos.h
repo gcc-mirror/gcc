@@ -39,9 +39,6 @@ extern bool score_unaligned_load (rtx* ops);
 extern bool score_unaligned_store (rtx* ops);
 extern bool score_block_move (rtx* ops);
 extern int score_address_cost (rtx addr, bool speed);
-extern rtx score_function_arg (const CUMULATIVE_ARGS *cum,
-                               enum machine_mode mode,
-                               tree type, int named);
 extern int score_address_p (enum machine_mode mode, rtx x, int strict);
 extern int score_reg_class (int regno);
 extern int score_register_move_cost (enum machine_mode mode, enum reg_class to,
@@ -51,9 +48,6 @@ extern int score_const_ok_for_letter_p (HOST_WIDE_INT value, char c);
 extern int score_extra_constraint (rtx op, char c);
 extern rtx score_return_addr (int count, rtx frame);
 extern int score_regno_mode_ok_for_base_p (int regno, int strict);
-extern void score_function_arg_advance (CUMULATIVE_ARGS *cum,
-                                        enum machine_mode mode,
-                                        tree type, int named);
 extern void score_init_cumulative_args (CUMULATIVE_ARGS *cum,
                                         tree fntype, rtx libname);
 extern void score_declare_object (FILE *stream, const char *name,
