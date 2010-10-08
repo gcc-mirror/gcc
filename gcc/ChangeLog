@@ -1,3 +1,17 @@
+2010-10-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* builtins.c (rewrite_call_expr): Move code to...
+	(rewrite_call_expr_valist): ...here.  Call
+	build_call_expr_loc_array.
+	(rewrite_call_expr_array): New function.
+	(fold_builtin_sprintf_chk_1): New function.
+	(fold_builtin_sprintf_chk): Call it.
+	(gimple_fold_builtin_sprintf_chk): Likewise.
+	(fold_builtin_snprintf_chk_1): New function.
+	(fold_builtin_snprintf_chk): Call it.
+	(gimple_fold_builtin_snprintf_chk): Likewise.
+	(gimple_rewrite_call_expr): Delete.
+
 2010-10-07  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* config.host: Update copyright year.
