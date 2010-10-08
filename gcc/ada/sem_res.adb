@@ -3120,8 +3120,12 @@ package body Sem_Res is
          --  If the default expression raises constraint error, then just
          --  silently replace it with an N_Raise_Constraint_Error node,
          --  since we already gave the warning on the subprogram spec.
+         --  If node is already a Raise_Constraint_Error leave as is, to
+         --  prevent loops in the warnings removal machinery.
 
-         if Raises_Constraint_Error (Actval) then
+         if Raises_Constraint_Error (Actval)
+           and then Nkind (Actval) /= N_Raise_Constraint_Error
+         then
             Rewrite (Actval,
               Make_Raise_Constraint_Error (Loc,
                 Reason => CE_Range_Check_Failed));

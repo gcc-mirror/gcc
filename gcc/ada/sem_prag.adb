@@ -8074,9 +8074,9 @@ package body Sem_Prag is
                return;
             end if;
 
-            --  Ada 2012 (AI05-0030): Cannot apply the Implementation_kind
-            --  "By_Protected_Procedure" to the primitive procedure of a
-            --  task interface.
+            --  Ada 2012 (AI05-0030): Cannot apply the implementation_kind
+            --  By_Protected_Procedure to the primitive procedure of a task
+            --  interface.
 
             if Chars (Arg2) = Name_By_Protected_Procedure
               and then Is_Interface (Typ)
