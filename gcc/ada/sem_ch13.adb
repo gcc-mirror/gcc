@@ -1298,34 +1298,6 @@ package body Sem_Ch13 is
             Biased   : Boolean;
             New_Ctyp : Entity_Id;
             Decl     : Node_Id;
-            Ignore   : Boolean := False;
-
-            procedure Complain_CS (T : String);
-            --  Outputs error messages for incorrect CS clause for aliased or
-            --  atomic components (T is "aliased" or "atomic");
-
-            -----------------
-            -- Complain_CS --
-            -----------------
-
-            procedure Complain_CS (T : String) is
-            begin
-               if Known_Static_Esize (Ctyp) then
-                  Error_Msg_N
-                    ("incorrect component size for " & T & " components", N);
-                  Error_Msg_Uint_1 := Esize (Ctyp);
-                  Error_Msg_N ("\only allowed value is^", N);
-
-               else
-                  Error_Msg_N
-                    ("component size cannot be given for " & T & " components",
-                     N);
-               end if;
-
-               return;
-            end Complain_CS;
-
-         --  Start of processing for Component_Size_Case
 
          begin
             if not Is_Array_Type (U_Ent) then
@@ -1340,40 +1312,11 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("component size clause for& previously given", Nam);
 
+            elsif Rep_Item_Too_Early (Btype, N) then
+               null;
+
             elsif Csize /= No_Uint then
                Check_Size (Expr, Ctyp, Csize, Biased);
-
-               --  Case where component size has no effect
-
-               if Known_Static_Esize (Ctyp)
-                 and then Known_Static_RM_Size (Ctyp)
-                 and then Esize (Ctyp) = RM_Size (Ctyp)
-                 and then (Esize (Ctyp) = 8  or else
-                           Esize (Ctyp) = 16 or else
-                           Esize (Ctyp) = 32 or else
-                           Esize (Ctyp) = 64)
-               then
-                  Ignore := True;
-
-               --  Cannot give component size for aliased/atomic components
-
-               elsif Has_Aliased_Components (Btype)
-                 or else Is_Aliased (Ctyp)
-               then
-                  Complain_CS ("aliased");
-
-               elsif Has_Atomic_Components (Btype)
-                  or else Is_Atomic (Ctyp)
-               then
-                  Complain_CS ("atomic");
-
-               --  Warn for case of atomic type
-
-               elsif Is_Atomic (Btype) then
-                  Error_Msg_NE
-                    ("non-atomic components of type& may not be accessible "
-                     & "by separate tasks?", N, Btype);
-               end if;
 
                --  For the biased case, build a declaration for a subtype
                --  that will be used to represent the biased subtype that
@@ -1435,10 +1378,7 @@ package body Sem_Ch13 is
                end if;
 
                Set_Has_Component_Size_Clause (Btype, True);
-
-               if not Ignore then
-                  Set_Has_Non_Standard_Rep (Btype, True);
-               end if;
+               Set_Has_Non_Standard_Rep (Btype, True);
             end if;
          end Component_Size_Case;
 

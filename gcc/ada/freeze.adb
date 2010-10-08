@@ -3097,7 +3097,9 @@ package body Freeze is
 
          if Is_Array_Type (E) then
             declare
-               Ctyp : constant Entity_Id := Component_Type (E);
+               FS     : constant Entity_Id := First_Subtype (E);
+               Ctyp   : constant Entity_Id := Component_Type (E);
+               Clause : Entity_Id;
 
                Non_Standard_Enum : Boolean := False;
                --  Set true if any of the index types is an enumeration type
@@ -3150,8 +3152,8 @@ package body Freeze is
 
                   begin
                      if (Is_Packed (E) or else Has_Pragma_Pack (E))
-                       and then not Has_Atomic_Components (E)
                        and then Known_Static_RM_Size (Ctyp)
+                       and then not Has_Component_Size_Clause (E)
                      then
                         Csiz := UI_Max (RM_Size (Ctyp), 1);
 
@@ -3213,6 +3215,7 @@ package body Freeze is
 
                            if Present (Comp_Size_C)
                              and then Has_Pragma_Pack (Ent)
+                             and then Warn_On_Redundant_Constructs
                            then
                               Error_Msg_Sloc := Sloc (Comp_Size_C);
                               Error_Msg_NE
@@ -3221,6 +3224,8 @@ package body Freeze is
                               Error_Msg_N
                                 ("\?explicit component size given#!",
                                  Pack_Pragma);
+                              Set_Is_Packed (Base_Type (Ent), False);
+                              Set_Is_Bit_Packed_Array (Base_Type (Ent), False);
                            end if;
 
                            --  Set component size if not already set by a
@@ -3277,18 +3282,128 @@ package body Freeze is
                               --  a representation characteristic, and this
                               --  request may be ignored.
 
-                              Set_Is_Packed (Base_Type (E), False);
+                              Set_Is_Packed           (Base_Type (E), False);
+                              Set_Is_Bit_Packed_Array (Base_Type (E), False);
 
-                              --  In all other cases, packing is indeed needed
+                              if Known_Static_Esize (Component_Type (E))
+                                and then Esize (Component_Type (E)) = Csiz
+                              then
+                                 Set_Has_Non_Standard_Rep
+                                   (Base_Type (E), False);
+                              end if;
+
+                           --  In all other cases, packing is indeed needed
 
                            else
-                              Set_Has_Non_Standard_Rep (Base_Type (E));
-                              Set_Is_Bit_Packed_Array  (Base_Type (E));
-                              Set_Is_Packed            (Base_Type (E));
+                              Set_Has_Non_Standard_Rep (Base_Type (E), True);
+                              Set_Is_Bit_Packed_Array  (Base_Type (E), True);
+                              Set_Is_Packed            (Base_Type (E), True);
                            end if;
                         end;
                      end if;
                   end;
+
+                  --  Check for Atomic_Components or Aliased with unsuitable
+                  --  packing or explicit component size clause given.
+
+                  if (Has_Atomic_Components (E)
+                       or else Has_Aliased_Components (E))
+                    and then (Has_Component_Size_Clause (E)
+                               or else Is_Packed (E))
+                  then
+                     Alias_Atomic_Check : declare
+
+                        procedure Complain_CS (T : String);
+                        --  Outputs error messages for incorrect CS clause or
+                        --  pragma Pack for aliased or atomic components (T is
+                        --  "aliased" or "atomic");
+
+                        -----------------
+                        -- Complain_CS --
+                        -----------------
+
+                        procedure Complain_CS (T : String) is
+                        begin
+                           if Has_Component_Size_Clause (E) then
+                              Clause :=
+                                Get_Attribute_Definition_Clause
+                                  (FS, Attribute_Component_Size);
+
+                              if Known_Static_Esize (Ctyp) then
+                                 Error_Msg_N
+                                   ("incorrect component size for "
+                                    & T & " components", Clause);
+                                 Error_Msg_Uint_1 := Esize (Ctyp);
+                                 Error_Msg_N
+                                   ("\only allowed value is^", Clause);
+
+                              else
+                                 Error_Msg_N
+                                   ("component size cannot be given for "
+                                    & T & " components", Clause);
+                              end if;
+
+                           else
+                              Error_Msg_N
+                                ("cannot pack " & T & " components",
+                                 Get_Rep_Pragma (FS, Name_Pack));
+                           end if;
+
+                           return;
+                        end Complain_CS;
+
+                     --  Start of processing for Alias_Atomic_Check
+
+                     begin
+                        --  Case where component size has no effect
+
+                        if Known_Static_Esize (Ctyp)
+                          and then Known_Static_RM_Size (Ctyp)
+                          and then Esize (Ctyp) = RM_Size (Ctyp)
+                          and then Esize (Ctyp) mod 8 = 0
+                        then
+                           null;
+
+                        elsif Has_Aliased_Components (E)
+                          or else Is_Aliased (Ctyp)
+                        then
+                           Complain_CS ("aliased");
+
+                        elsif Has_Atomic_Components (E)
+                          or else Is_Atomic (Ctyp)
+                        then
+                           Complain_CS ("atomic");
+                        end if;
+                     end Alias_Atomic_Check;
+                  end if;
+
+                  --  Warn for case of atomic type
+
+                  Clause := Get_Rep_Pragma (FS, Name_Atomic);
+
+                  if Present (Clause)
+                    and then not Addressable (Component_Size (FS))
+                  then
+                     Error_Msg_NE
+                       ("non-atomic components of type& may not be "
+                        & "accessible by separate tasks?", Clause, E);
+
+                     if Has_Component_Size_Clause (E) then
+                        Error_Msg_Sloc :=
+                          Sloc
+                            (Get_Attribute_Definition_Clause
+                                 (FS, Attribute_Component_Size));
+                        Error_Msg_N
+                          ("\because of component size clause#?",
+                           Clause);
+
+                     elsif Has_Pragma_Pack (E) then
+                        Error_Msg_Sloc :=
+                          Sloc (Get_Rep_Pragma (FS, Name_Pack));
+                        Error_Msg_N
+                          ("\because of pragma Pack#?", Clause);
+                     end if;
+                  end if;
 
                --  Processing that is done only for subtypes
 
@@ -4749,11 +4864,7 @@ package body Freeze is
                --  natural boundary of size.
 
                elsif Size_Incl_EP /= Size_Excl_EP
-                 and then
-                    (Size_Excl_EP = 8  or else
-                     Size_Excl_EP = 16 or else
-                     Size_Excl_EP = 32 or else
-                     Size_Excl_EP = 64)
+                 and then Addressable (Size_Excl_EP)
                then
                   Actual_Size := Size_Excl_EP;
                   Actual_Lo   := Loval_Excl_EP;

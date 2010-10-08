@@ -51,6 +51,12 @@ package Sem_Util is
    --  for the current unit. The declarations are added in the current scope,
    --  so the caller should push a new scope as required before the call.
 
+   function Addressable (V : Uint) return Boolean;
+   function Addressable (V : Int)  return Boolean;
+   pragma Inline (Addressable);
+   --  Returns True if the value of V is the word size of an addressable
+   --  factor of the word size (typically 8, 16, 32 or 64).
+
    function Alignment_In_Bits (E : Entity_Id) return Uint;
    --  If the alignment of the type or object E is currently known to the
    --  compiler, then this function returns the alignment value in bits.

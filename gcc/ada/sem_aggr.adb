@@ -1795,6 +1795,19 @@ package body Sem_Aggr is
                      Expander_Mode_Save_And_Set (False);
                      Full_Analysis := False;
                      Analyze (Expr);
+
+                     --  If the expression is a literal, propagate this info
+                     --  to the expression in the association, to enable some
+                     --  optimizations downstream.
+
+                     if Is_Entity_Name (Expr)
+                       and then Present (Entity (Expr))
+                       and then Ekind (Entity (Expr)) = E_Enumeration_Literal
+                     then
+                        Analyze_And_Resolve
+                          (Expression (Assoc), Component_Typ);
+                     end if;
+
                      Full_Analysis := Save_Analysis;
                      Expander_Mode_Restore;
 

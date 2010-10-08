@@ -1,3 +1,30 @@
+2010-10-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): If the expression in an
+	others choice is a literal analyze it now to enable later optimizations.
+	* exp_aggr.adb (Expand_Record_Aggregate): An aggregate with static size
+	and components can be handled by the backend even if it is of a limited
+	type.
+
+2010-10-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-rttiev.adb (task Timer): Since this package may be elaborated
+	before System.Interrupt, we need to call Setup_Interrupt_Mask
+	explicitly to ensure that this task has the proper signal mask.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Entity): For array case, move some processing for
+	pragma Pack, Component_Size clause and atomic/volatile components here
+	instead of trying to do the job in Sem_Ch13 and Freeze.
+	* layout.adb: Use new Addressable function
+	* sem_ch13.adb (Analyze_Attribute_Representation_Clause, case
+	Component_Size): Move some handling to freeze point in
+	Freeze.Freeze_Entity.
+	* sem_prag.adb (Analyze_pragma, case Pack): Move some handling to
+	freeze point in Freese.Freeze_Entity.
+	* sem_util.ads, sem_util.adb (Addressable): New function.
+
 2010-10-08  Robert Dewar  <dewar@adacore.com>
 
 	* sprint.adb: Minor reformatting.
