@@ -45,6 +45,8 @@ extern bool cp_function_decl_explicit_p (tree decl);
 #define LANG_HOOKS_OPTION_LANG_MASK c_common_option_lang_mask
 #undef LANG_HOOKS_COMPLAIN_WRONG_LANG_P
 #define LANG_HOOKS_COMPLAIN_WRONG_LANG_P c_common_complain_wrong_lang_p
+#undef LANG_HOOKS_INIT_OPTIONS_STRUCT
+#define LANG_HOOKS_INIT_OPTIONS_STRUCT c_common_init_options_struct
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS c_common_init_options
 #undef LANG_HOOKS_INITIALIZE_DIAGNOSTICS

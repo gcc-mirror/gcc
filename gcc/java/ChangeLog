@@ -1,3 +1,9 @@
+2010-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.c (java_init_options_struct): New.  Split out from
+	java_init_options.
+	(LANG_HOOKS_INIT_OPTIONS_STRUCT): Define.
+
 2010-10-04  Andi Kleen <ak@linux.intel.com>
 
 	* Make-lang.in (xgcj, jc1, jcf-dump, jvgenmain):

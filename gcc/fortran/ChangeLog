@@ -1,3 +1,10 @@
+2010-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* f95-lang.c (LANG_HOOKS_INIT_OPTIONS_STRUCT): Define.
+	* gfortran.h (gfc_init_options_struct): Declare.
+	* options.c (gfc_init_options_struct): New.  Split out from
+	gfc_init_options.
+
 2010-10-07  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45933

@@ -23,7 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_FLAGS_H
 
 #include "coretypes.h"
-#include "options.h"
+
+#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 
 enum debug_info_type
 {
@@ -147,12 +148,6 @@ extern int flag_print_asm_name;
 
 /* Now the symbols that are set with `-f' switches.  */
 
-/* 0 means straightforward implementation of complex divide acceptable.
-   1 means wide ranges of inputs must work for complex divide.
-   2 means C99-like requirements for complex multiply and divide.  */
-
-extern int flag_complex_method;
-
 /* Nonzero if we are only using compiler to check syntax errors.  */
 
 extern int rtl_dump_and_exit;
@@ -201,8 +196,6 @@ enum ira_algorithm
   IRA_ALGORITHM_PRIORITY
 };
 
-extern enum ira_algorithm flag_ira_algorithm;
-
 /* The regions used for the integrated register allocator (IRA).  */
 enum ira_region
 {
@@ -210,8 +203,6 @@ enum ira_region
   IRA_REGION_ALL,
   IRA_REGION_MIXED
 };
-
-extern enum ira_region flag_ira_region;
 
 /* The options for excess precision.  */
 enum excess_precision
@@ -268,12 +259,6 @@ extern struct target_flag_state *this_target_flag_state;
   (this_target_flag_state->x_align_functions_log)
 #define flag_excess_precision \
   (this_target_flag_state->x_flag_excess_precision)
-
-/* Nonzero if subexpressions must be evaluated from left-to-right.  */
-extern int flag_evaluation_order;
-
-/* Whether to run the warn_unused_result attribute pass.  */
-extern bool flag_warn_unused_result;
 
 /* Nonzero if we dump in VCG format, not plain text.  */
 extern int dump_for_graph;
@@ -368,5 +353,11 @@ enum warn_strict_overflow_code
 
 /* Whether to emit an overflow warning whose code is C.  */
 #define issue_strict_overflow_warning(c) (warn_strict_overflow >= (int) (c))
+
+#endif
+
+/* This is included last because options may use types declared
+   above.  */
+#include "options.h"
 
 #endif /* ! GCC_FLAGS_H */

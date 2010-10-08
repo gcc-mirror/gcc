@@ -1,3 +1,9 @@
+2010-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/misc.c (gnat_init_options_struct): New.  Split out
+	from gnat_init_options.
+	(LANG_HOOKS_INIT_OPTIONS_STRUCT): Define.
+
 2010-10-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aux.adb: Cleanup Is_Immutably_Limited_Type.

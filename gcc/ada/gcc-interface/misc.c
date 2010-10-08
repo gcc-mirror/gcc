@@ -62,6 +62,7 @@
 
 static bool gnat_init			(void);
 static unsigned int gnat_option_lang_mask (void);
+static void gnat_init_options_struct	(struct gcc_options *);
 static void gnat_init_options		(unsigned int,
 					 struct cl_decoded_option *);
 static bool gnat_handle_option		(size_t, const char *, int, int,
@@ -91,6 +92,8 @@ static tree gnat_eh_personality		(void);
 #define LANG_HOOKS_INIT			gnat_init
 #undef  LANG_HOOKS_OPTION_LANG_MASK
 #define LANG_HOOKS_OPTION_LANG_MASK	gnat_option_lang_mask
+#undef  LANG_HOOKS_INIT_OPTIONS_STRUCT
+#define LANG_HOOKS_INIT_OPTIONS_STRUCT	gnat_init_options_struct
 #undef  LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS		gnat_init_options
 #undef  LANG_HOOKS_HANDLE_OPTION
@@ -256,6 +259,15 @@ gnat_option_lang_mask (void)
   return CL_Ada;
 }
 
+/* Initialize options structure OPTS.  */
+
+static void
+gnat_init_options_struct (struct gcc_options *opts)
+{
+  /* Uninitialized really means uninitialized in Ada.  */
+  opts->x_flag_zero_initialized_in_bss = 0;
+}
+
 /* Initialize for option processing.  */
 
 static void
@@ -298,9 +310,6 @@ gnat_init_options (unsigned int decoded_options_count,
   gnat_argv = (char **) xmalloc (sizeof (save_argv[0]));
   gnat_argv[0] = xstrdup (save_argv[0]);     /* name of the command */
   gnat_argc = 1;
-
-  /* Uninitialized really means uninitialized in Ada.  */
-  flag_zero_initialized_in_bss = 0;
 }
 
 /* Ada code requires variables for these settings rather than elements

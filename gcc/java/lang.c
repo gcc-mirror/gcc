@@ -48,6 +48,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 static bool java_init (void);
 static void java_finish (void);
 static unsigned int java_option_lang_mask (void);
+static void java_init_options_struct (struct gcc_options *);
 static void java_init_options (unsigned int, struct cl_decoded_option *);
 static bool java_post_options (const char **);
 
@@ -126,6 +127,8 @@ struct GTY(()) language_function {
 #define LANG_HOOKS_FINISH java_finish
 #undef LANG_HOOKS_OPTION_LANG_MASK
 #define LANG_HOOKS_OPTION_LANG_MASK java_option_lang_mask
+#undef LANG_HOOKS_INIT_OPTIONS_STRUCT
+#define LANG_HOOKS_INIT_OPTIONS_STRUCT java_init_options_struct
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS java_init_options
 #undef LANG_HOOKS_HANDLE_OPTION
@@ -535,23 +538,29 @@ java_option_lang_mask (void)
   return CL_Java;
 }
 
+/* Initialize options structure OPTS.  */
+
+static void
+java_init_options_struct (struct gcc_options *opts)
+{
+  opts->x_flag_bounds_check = 1;
+  opts->x_flag_exceptions = 1;
+  opts->x_flag_non_call_exceptions = 1;
+
+  /* In Java floating point operations never trap.  */
+  opts->x_flag_trapping_math = 0;
+
+  /* In Java arithmetic overflow always wraps around.  */
+  opts->x_flag_wrapv = 1;
+
+  /* Java requires left-to-right evaluation of subexpressions.  */
+  opts->x_flag_evaluation_order = 1;
+}
+
 static void
 java_init_options (unsigned int decoded_options_count ATTRIBUTE_UNUSED,
 		   struct cl_decoded_option *decoded_options ATTRIBUTE_UNUSED)
 {
-  flag_bounds_check = 1;
-  flag_exceptions = 1;
-  flag_non_call_exceptions = 1;
-
-  /* In Java floating point operations never trap.  */
-  flag_trapping_math = 0;
-
-  /* In Java arithmetic overflow always wraps around.  */
-  flag_wrapv = 1;
-
-  /* Java requires left-to-right evaluation of subexpressions.  */
-  flag_evaluation_order = 1;
-
   jcf_path_init ();
 }
 

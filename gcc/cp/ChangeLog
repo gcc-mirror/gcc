@@ -1,3 +1,7 @@
+2010-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* cp-objcp-common.h (LANG_HOOKS_INIT_OPTIONS_STRUCT): Define.
+
 2010-10-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* cp-tree.def: Changed type of AT_ENCODE_EXPR from tcc_unary to

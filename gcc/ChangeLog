@@ -1,3 +1,58 @@
+2010-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (TM_H): Include $(FLAGS_H) instead of options.h.
+	(TREE_H): Include $(FLAGS_H) instead of options.h.
+	(opts-common.o): Depend on $(FLAGS_H) instead of options.h.
+	* c-objc-common.h (LANG_HOOKS_INIT_OPTIONS_STRUCT): Define.
+	* common.opt (flag_complex_method, flag_evaluation_order,
+	flag_ira_algorithm, flag_ira_region, flag_warn_unused_result): New
+	Variable declarations.
+	* configure.ac (tm_include_list): Include flags.h instead of
+	options.h.
+	* configure: Regenerate.
+	* flags.h: Condition out contents for target libraries.  Include
+	options.h at end of file.
+	(flag_complex_method, flag_ira_algorithm, flag_ira_region,
+	flag_evaluation_order, flag_warn_unused_result): Remove.
+	* gcc.c (main): Intialize global_options with global_options_init.
+	* langhooks-def.h (lhd_init_options_struct): Declare.
+	(LANG_HOOKS_INIT_OPTIONS_STRUCT): Define.
+	(LANG_HOOKS_INITIALIZER): Include LANG_HOOKS_INIT_OPTIONS_STRUCT.
+	* langhooks.c (lhd_init_options_struct): New.
+	* langhooks.h (struct lang_hooks): Add init_options_struct.
+	Update comment on init_options.
+	* optc-gen.awk: Generate initializer for global_options_init, not
+	global_options.
+	* opth-gen.awk: Condition out structure declarations for target
+	libraries.  Declare global_options_init.
+	* opts-common.c: Include flags.h instead of options.h.
+	* opts.c (flag_warn_unused_result): Remove.
+	(read_cmdline_options): Take gcc_options parameters.  Pass them to
+	read_cmdline_option.
+	(initial_lang_mask, initial_min_crossjump_insns,
+	initial_max_fields_for_field_sensitive,
+	initial_loop_invariant_max_bbs_in_loop): Define at file scope.
+	(init_options_once): New.  Split out of decode_options.
+	(init_options_struct): New.  Split out of decode_options.
+	(decode_cmdline_options_to_array_default_mask): New.
+	(default_options_optimization): New.  Split out of decode_options.
+	(decode_options): Move most code to other functions.  Update call
+	to read_cmdline_options.
+	(finish_options): New.  Split out of decode_options.
+	* opts.h (decode_options): Add gcc_options parameters.
+	(init_options_once, init_options_struct,
+	decode_cmdline_options_to_array_default_mask): New.
+	* toplev.c (flag_complex_method, flag_ira_algorithm,
+	flag_ira_region, flag_evaluation_order): Remove.
+	(general_init): Use global_options_init for initial flag values
+	for global_dc.
+	(toplev_main): Call init_options_once, init_options_struct,
+	lang_hooks.init_options_struct,
+	decode_cmdline_options_to_array_default_mask and
+	lang_hooks.init_option before decode_options.  Update arguments to
+	decode_options.
+	* tree.h: Include flags.h instead of options.h.
+
 2010-10-08  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rx/rx.c (TARGET_EXCEPT_UNWIND_INFO): Define.

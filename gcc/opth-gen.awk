@@ -73,6 +73,7 @@ print ""
 
 have_save = 0;
 
+print "#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)"
 print "#ifndef GENERATOR_FILE"
 print "struct gcc_options\n{"
 print "#endif"
@@ -125,8 +126,10 @@ for (i = 0; i < n_opts; i++) {
 print "#ifndef GENERATOR_FILE"
 print "};"
 print "extern struct gcc_options global_options;"
+print "extern const struct gcc_options global_options_init;"
 print "extern struct gcc_options global_options_set;"
 print "#define target_flags_explicit global_options_set.x_target_flags"
+print "#endif"
 print "#endif"
 print ""
 

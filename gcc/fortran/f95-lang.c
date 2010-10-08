@@ -102,6 +102,7 @@ static void gfc_init_ts (void);
 #undef LANG_HOOKS_FINISH
 #undef LANG_HOOKS_WRITE_GLOBALS
 #undef LANG_HOOKS_OPTION_LANG_MASK
+#undef LANG_HOOKS_INIT_OPTIONS_STRUCT
 #undef LANG_HOOKS_INIT_OPTIONS
 #undef LANG_HOOKS_HANDLE_OPTION
 #undef LANG_HOOKS_POST_OPTIONS
@@ -132,6 +133,7 @@ static void gfc_init_ts (void);
 #define LANG_HOOKS_FINISH               gfc_finish
 #define LANG_HOOKS_WRITE_GLOBALS	gfc_write_global_declarations
 #define LANG_HOOKS_OPTION_LANG_MASK	gfc_option_lang_mask
+#define LANG_HOOKS_INIT_OPTIONS_STRUCT  gfc_init_options_struct
 #define LANG_HOOKS_INIT_OPTIONS         gfc_init_options
 #define LANG_HOOKS_HANDLE_OPTION        gfc_handle_option
 #define LANG_HOOKS_POST_OPTIONS		gfc_post_options

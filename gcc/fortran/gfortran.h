@@ -2398,6 +2398,7 @@ int get_c_kind (const char *, CInteropKind_t *);
 
 /* options.c */
 unsigned int gfc_option_lang_mask (void);
+void gfc_init_options_struct (struct gcc_options *);
 void gfc_init_options (unsigned int,
 		       struct cl_decoded_option *);
 bool gfc_handle_option (size_t, const char *, int, int,

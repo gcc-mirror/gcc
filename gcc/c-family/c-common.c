@@ -7802,8 +7802,11 @@ parse_optimize_options (tree args, bool attr_p)
   saved_flag_strict_aliasing = flag_strict_aliasing;
 
   /* Now parse the options.  */
-  decode_options (opt_argc, opt_argv, &decoded_options,
-		  &decoded_options_count);
+  decode_cmdline_options_to_array_default_mask (opt_argc, opt_argv,
+						&decoded_options,
+						&decoded_options_count);
+  decode_options (&global_options, &global_options_set,
+		  decoded_options, decoded_options_count);
 
   targetm.override_options_after_change();
 

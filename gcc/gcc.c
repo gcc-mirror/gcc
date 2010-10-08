@@ -6135,6 +6135,8 @@ main (int argc, char **argv)
   if (argv != old_argv)
     at_file_supplied = true;
 
+  global_options = global_options_init;
+
   decode_cmdline_options_to_array (argc, CONST_CAST2 (const char **, char **,
 						      argv),
 				   CL_DRIVER,
