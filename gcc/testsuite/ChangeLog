@@ -28,6 +28,7 @@
 
 2010-10-07  Tejas Belagod  <tejas.belagod@arm.com>
 
+	PR Tree-Vect/45847
 	* gcc.dg/vect/pr45847.c: New test.
 
 2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
