@@ -2568,14 +2568,9 @@ package body Layout is
                then
                   declare
                      S : constant Uint := Esize (CT);
-
                   begin
-                     if S = 8  or else
-                        S = 16 or else
-                        S = 32 or else
-                        S = 64
-                     then
-                        Set_Component_Size (E, Esize (CT));
+                     if Addressable (S) then
+                        Set_Component_Size (E, S);
                      end if;
                   end;
                end if;

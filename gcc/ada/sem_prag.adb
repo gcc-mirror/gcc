@@ -5928,7 +5928,6 @@ package body Sem_Prag is
             E    : Entity_Id;
             D    : Node_Id;
             K    : Node_Kind;
-            Ctyp : Entity_Id;
 
          begin
             Check_Ada_83_Warning;
@@ -5970,24 +5969,6 @@ package body Sem_Prag is
 
                if Prag_Id = Pragma_Atomic_Components then
                   Set_Has_Atomic_Components (E);
-
-                  if Is_Packed (E) then
-                     Set_Is_Packed (E, False);
-
-                     if Is_Array_Type (E) then
-                        Ctyp := Component_Type (E);
-                     else
-                        Ctyp := Component_Type (Etype (E));
-                     end if;
-
-                     if not (Known_Static_Esize (Ctyp)
-                              and then Known_Static_RM_Size (Ctyp)
-                              and then Esize (Ctyp) = RM_Size (Ctyp))
-                     then
-                        Error_Pragma_Arg
-                          ("cannot pack atomic components", Arg1);
-                     end if;
-                  end if;
                end if;
 
             else
@@ -8091,9 +8072,9 @@ package body Sem_Prag is
             Record_Rep_Item (Proc_Id, N);
          end Implemented;
 
-         -----------------------
+         ----------------------
          -- Implicit_Packing --
-         -----------------------
+         ----------------------
 
          --  pragma Implicit_Packing;
 
@@ -9991,76 +9972,40 @@ package body Sem_Prag is
                if Known_Static_Esize (Ctyp)
                  and then Known_Static_RM_Size (Ctyp)
                  and then Esize (Ctyp) = RM_Size (Ctyp)
-                 and then (Esize (Ctyp) = 8  or else
-                           Esize (Ctyp) = 16 or else
-                           Esize (Ctyp) = 32 or else
-                           Esize (Ctyp) = 64)
+                 and then Addressable (Esize (Ctyp))
                then
                   Ignore := True;
-
-               --  Pack not allowed for aliased/atomic components
-
-               elsif Has_Aliased_Components (Base_Type (Typ)) then
-                  Error_Pragma ("cannot pack aliased components");
-
-               elsif Has_Atomic_Components (Typ)
-                 or else Is_Atomic (Component_Type (Typ))
-               then
-                  Error_Pragma ("cannot pack atomic components");
-
-               --  Warn for cases of packing non-atomic components of atomic
-
-               elsif Is_Atomic (Typ) then
-                  Error_Msg_NE
-                    ("non-atomic components of type& may not be accessible "
-                     & "by separate tasks?", N, Typ);
                end if;
 
-               --  If we had an explicit component size given, then we do not
-               --  let Pack override this given size. We also give a warning
-               --  that Pack is being ignored unless we can tell for sure that
-               --  the Pack would not have had any effect anyway.
+               --  Process OK pragma Pack. Note that if there is a separate
+               --  component clause present, the Pack will be cancelled. This
+               --  processing is in Freeze.
 
-               if Has_Component_Size_Clause (Typ) then
-                  if Known_Static_RM_Size (Component_Type (Typ))
-                    and then
-                      RM_Size (Component_Type (Typ)) = Component_Size (Typ)
-                  then
+               if not Rep_Item_Too_Late (Typ, N) then
+
+                  --  In the context of static code analysis, we do not need
+                  --  complex front-end expansions related to pragma Pack,
+                  --  so disable handling of pragma Pack in this case.
+
+                  if CodePeer_Mode then
                      null;
-                  else
-                     Error_Pragma
-                       ("?pragma% ignored, explicit component size given");
-                  end if;
 
-               --  If no prior array component size given, Pack is effective
+                  --  For normal non-VM target, do the packing
 
-               else
-                  if not Rep_Item_Too_Late (Typ, N) then
-
-                     --  In the context of static code analysis, we do not need
-                     --  complex front-end expansions related to pragma Pack,
-                     --  so disable handling of pragma Pack in this case.
-
-                     if CodePeer_Mode then
-                        null;
-
-                     --  For normal non-VM target, do the packing
-
-                     elsif VM_Target = No_VM then
-                        if not Ignore then
-                           Set_Is_Packed            (Base_Type (Typ));
-                           Set_Has_Non_Standard_Rep (Base_Type (Typ));
-                        end if;
-
-                        Set_Has_Pragma_Pack      (Base_Type (Typ));
-
-                     --  If we ignore the pack for VM_Targets, then warn about
-                     --  this, except suppress the warning in GNAT mode.
-
-                     elsif not GNAT_Mode then
-                        Error_Pragma
-                          ("?pragma% ignored in this configuration");
+                  elsif VM_Target = No_VM then
+                     if not Ignore then
+                        Set_Is_Packed            (Base_Type (Typ));
+                        Set_Has_Non_Standard_Rep (Base_Type (Typ));
                      end if;
+
+                     Set_Has_Pragma_Pack (Base_Type (Typ));
+
+                  --  If we ignore the pack for VM_Targets, then warn about
+                  --  this, except suppress the warning in GNAT mode.
+
+                  elsif not GNAT_Mode then
+                     Error_Pragma
+                       ("?pragma% ignored in this configuration");
                   end if;
                end if;
 

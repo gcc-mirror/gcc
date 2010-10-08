@@ -3773,6 +3773,13 @@ package body Exp_Aggr is
                then
                   null;
 
+               elsif Is_Entity_Name (Expression (Expr))
+                 and then Present (Entity (Expression (Expr)))
+                 and then Ekind (Entity (Expression (Expr))) =
+                   E_Enumeration_Literal
+               then
+                  null;
+
                elsif Nkind (Expression (Expr)) /= N_Aggregate
                  or else not Compile_Time_Known_Aggregate (Expression (Expr))
                  or else Expansion_Delayed (Expression (Expr))
@@ -5491,6 +5498,14 @@ package body Exp_Aggr is
 
          C := First (Comps);
          while Present (C) loop
+
+            --  If the component has box initialization, expansion is needed
+            --  and component is not ready for backend.
+
+            if Box_Present (C) then
+               return True;
+            end if;
+
             if Nkind (Expression (C)) = N_Qualified_Expression then
                Expr_Q := Expression (Expression (C));
             else
@@ -5576,13 +5591,32 @@ package body Exp_Aggr is
       end if;
 
       --  Ada 2005 (AI-318-2): We need to convert to assignments if components
-      --  are build-in-place function calls. This test could be more specific,
-      --  but doing it for all inherently limited aggregates seems harmless.
-      --  The assignments will turn into build-in-place function calls (see
-      --  Make_Build_In_Place_Call_In_Assignment).
+      --  are build-in-place function calls. The assignments will each turn
+      --  into a build-in-place function call.  If components are all static,
+      --  we can pass the aggregate to the backend regardless of limitedness.
+
+      --  Extension aggregates, aggregates in extended return statements, and
+      --  aggregates for C++ imported types must be expanded.
 
       if Ada_Version >= Ada_05 and then Is_Inherently_Limited_Type (Typ) then
-         Convert_To_Assignments (N, Typ);
+         if Nkind (Parent (N)) /= N_Object_Declaration then
+            Convert_To_Assignments (N, Typ);
+
+         elsif Nkind (N) = N_Extension_Aggregate
+           or else Convention (Typ) = Convention_CPP
+         then
+            Convert_To_Assignments (N, Typ);
+
+         elsif not Size_Known_At_Compile_Time (Typ)
+           or else Component_Not_OK_For_Backend
+           or else not Static_Components
+         then
+            Convert_To_Assignments (N, Typ);
+
+         else
+            Set_Compile_Time_Known_Aggregate (N);
+            Set_Expansion_Delayed (N, False);
+         end if;
 
       --  Gigi doesn't handle properly temporaries of variable size
       --  so we generate it in the front-end

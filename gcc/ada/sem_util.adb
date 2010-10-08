@@ -245,6 +245,28 @@ package body Sem_Util is
       Analyze (N);
    end Add_Global_Declaration;
 
+   -----------------
+   -- Addressable --
+   -----------------
+
+   --  For now, just 8/16/32/64. but analyze later if AAMP is special???
+
+   function Addressable (V : Uint) return Boolean is
+   begin
+      return V = Uint_8  or else
+             V = Uint_16 or else
+             V = Uint_32 or else
+             V = Uint_64;
+   end Addressable;
+
+   function Addressable (V : Int) return Boolean is
+   begin
+      return V = 8  or else
+             V = 16 or else
+             V = 32 or else
+             V = 64;
+   end Addressable;
+
    -----------------------
    -- Alignment_In_Bits --
    -----------------------
