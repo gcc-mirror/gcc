@@ -206,6 +206,17 @@ package body Sem_Cat is
            and then In_Package_Body (Unit_Entity)
          then
             null;
+
+         --  Special case: Remote_Types can depend on Preelaborated per
+         --  Ada 2005 AI 0206.
+
+         elsif Unit_Category = Remote_Types
+           and then Is_Preelaborated (Depended_Entity)
+         then
+            null;
+
+         --  All other cases, we do have an error
+
          else
             Err := True;
          end if;
