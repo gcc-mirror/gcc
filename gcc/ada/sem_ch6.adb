@@ -3711,7 +3711,6 @@ package body Sem_Ch6 is
                Error_Msg_Name_1 := Chars (New_Id);
                Error_Msg_Name_2 :=
                  Name_Ada + Convention_Id'Pos (Convention (New_Id));
-
                Conformance_Error ("\prior declaration for% has convention %!");
 
             else
@@ -3770,6 +3769,29 @@ package body Sem_Ch6 is
 
                Set_Error_Posted (New_Formal);
                return;
+            end if;
+
+            --  Null exclusion must match
+
+            if Null_Exclusion_Present (Parent (Old_Formal))
+                 /=
+               Null_Exclusion_Present (Parent (New_Formal))
+            then
+               --  Only give error if both come from source. This should be
+               --  investigated some time, since it should not be needed ???
+
+               if Comes_From_Source (Old_Formal)
+                    and then
+                  Comes_From_Source (New_Formal)
+               then
+                  Conformance_Error
+                    ("\null exclusion for & does not match", New_Formal);
+
+                  --  Mark error posted on the new formal to avoid duplicated
+                  --  complaint about types not matching.
+
+                  Set_Error_Posted (New_Formal);
+               end if;
             end if;
          end if;
 
@@ -3912,6 +3934,11 @@ package body Sem_Ch6 is
                    or else
                  Is_Access_Constant (Etype (Old_Formal)) /=
                  Is_Access_Constant (Etype (New_Formal)))
+
+              --  Do not complain if error already posted on New_Formal. This
+              --  avoids some redundant error messages.
+
+              and then not Error_Posted (New_Formal)
             then
                --  It is allowed to omit the null-exclusion in case of stream
                --  attribute subprograms. We recognize stream subprograms
