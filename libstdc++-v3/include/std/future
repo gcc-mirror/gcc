@@ -309,7 +309,7 @@ namespace std
         bool __set = __ignore_failure;
         // all calls to this function are serialized,
         // side-effects of invoking __res only happen once
-        call_once(_M_once, mem_fn(&_State::_M_do_set), this, ref(__res),
+        call_once(_M_once, &_State::_M_do_set, this, ref(__res),
             ref(__set));
         if (!__set)
           __throw_future_error(int(future_errc::promise_already_satisfied));
@@ -1155,7 +1155,7 @@ namespace std
       _M_run(_Args... __args)
       {
         // bound arguments decay so wrap lvalue references
-        auto __bound = std::bind<_Res>(_M_task,
+        auto __bound = std::bind<_Res>(std::ref(_M_task),
             _S_maybe_wrap_ref(std::forward<_Args>(__args))...);
         _Task_setter<_Task_state> __setter{ this, std::move(__bound) };
         _M_set_result(std::move(__setter));
