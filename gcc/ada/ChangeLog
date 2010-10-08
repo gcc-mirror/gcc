@@ -1,3 +1,13 @@
+2010-10-08  Geert Bosch  <bosch@adacore.com>
+
+	* a-textio.adb (Get_Line): Rewrite to use fgets instead of fgetc.
+
+2010-10-08  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Relax semantic rule of
+	Java_Constructors because in the JRE library we generate occurrences
+	in which the "this" parameter is not the first formal.
+
 2010-10-08  Robert Dewar  <dewar@adacore.com>
 
 	* par-ch3.adb: Minor reformatting.

@@ -2378,7 +2378,7 @@ package body Sem_Prag is
                      --  need to force visibility for client (error will be
                      --  output in any case, and this is the situation in which
                      --  we do not want a client to get a warning, since the
-                     --  warning is in the body or the spec private part.
+                     --  warning is in the body or the spec private part).
 
                      else
                         if Cont = False then
@@ -8903,10 +8903,11 @@ package body Sem_Prag is
 
          when Pragma_CIL_Constructor | Pragma_Java_Constructor =>
          Java_Constructor : declare
-            Convention : Convention_Id;
-            Def_Id     : Entity_Id;
-            Hom_Id     : Entity_Id;
-            Id         : Entity_Id;
+            Convention  : Convention_Id;
+            Def_Id      : Entity_Id;
+            Hom_Id      : Entity_Id;
+            Id          : Entity_Id;
+            This_Formal : Entity_Id;
 
          begin
             GNAT_Pragma;
@@ -8997,36 +8998,70 @@ package body Sem_Prag is
                if not Is_Value_Type (Etype (Def_Id)) then
                   if No (First_Formal (Def_Id)) then
                      Error_Msg_Name_1 := Pname;
-                     Error_Msg_N
-                       ("first formal of % function must be named `this`",
-                        Def_Id);
+                     Error_Msg_N ("% function must have parameters", Def_Id);
+                     return;
+                  end if;
 
-                  elsif Get_Name_String (Chars (First_Formal (Def_Id)))
-                          /= "this"
+                  --  In the JRE library we have several occurrences in which
+                  --  the "this" parameter is not the first formal.
+
+                  This_Formal := First_Formal (Def_Id);
+
+                  --  In the JRE library we have several occurrences in which
+                  --  the "this" parameter is not the first formal. Search for
+                  --  it.
+
+                  if VM_Target = JVM_Target then
+                     while Present (This_Formal)
+                       and then Get_Name_String (Chars (This_Formal)) /= "this"
+                     loop
+                        Next_Formal (This_Formal);
+                     end loop;
+
+                     if No (This_Formal) then
+                        This_Formal := First_Formal (Def_Id);
+                     end if;
+                  end if;
+
+                  --  Warning: The first parameter should be named "this".
+                  --  We temporarily allow it because we have the following
+                  --  case in the Java runtime (file s-osinte.ads) ???
+
+                  --    function new_Thread
+                  --      (Self_Id : System.Address) return Thread_Id;
+                  --    pragma Java_Constructor (new_Thread);
+
+                  if VM_Target = JVM_Target
+                    and then Get_Name_String (Chars (First_Formal (Def_Id)))
+                               = "self_id"
+                    and then Etype (First_Formal (Def_Id)) = RTE (RE_Address)
                   then
+                     null;
+
+                  elsif Get_Name_String (Chars (This_Formal)) /= "this" then
                      Error_Msg_Name_1 := Pname;
                      Error_Msg_N
                        ("first formal of % function must be named `this`",
-                        Parent (First_Formal (Def_Id)));
+                        Parent (This_Formal));
 
-                  elsif not Is_Access_Type (Etype (First_Formal (Def_Id))) then
+                  elsif not Is_Access_Type (Etype (This_Formal)) then
                      Error_Msg_Name_1 := Pname;
                      Error_Msg_N
                        ("first formal of % function must be an access type",
-                        Parameter_Type (Parent (First_Formal (Def_Id))));
+                        Parameter_Type (Parent (This_Formal)));
 
                   --  For delegates the type of the first formal must be a
                   --  named access-to-subprogram type (see previous example)
 
                   elsif Ekind (Etype (Def_Id)) = E_Access_Subprogram_Type
-                    and then Ekind (Etype (First_Formal (Def_Id)))
+                    and then Ekind (Etype (This_Formal))
                                /= E_Access_Subprogram_Type
                   then
                      Error_Msg_Name_1 := Pname;
                      Error_Msg_N
                        ("first formal of % function must be a named access" &
                         " to subprogram type",
-                        Parameter_Type (Parent (First_Formal (Def_Id))));
+                        Parameter_Type (Parent (This_Formal)));
 
                   --  Warning: We should reject anonymous access types because
                   --  the constructor must not be handled as a primitive of the
@@ -9034,20 +9069,19 @@ package body Sem_Prag is
                   --  is currently generated by cil2ada???
 
                   elsif Ekind (Etype (Def_Id)) /= E_Access_Subprogram_Type
-                    and then not Ekind_In (Etype (First_Formal (Def_Id)),
-                                   E_Access_Type,
-                                   E_General_Access_Type,
-                                   E_Anonymous_Access_Type)
+                    and then not Ekind_In (Etype (This_Formal),
+                                             E_Access_Type,
+                                             E_General_Access_Type,
+                                             E_Anonymous_Access_Type)
                   then
                      Error_Msg_Name_1 := Pname;
                      Error_Msg_N
                        ("first formal of % function must be a named access" &
                         " type",
-                        Parameter_Type (Parent (First_Formal (Def_Id))));
+                        Parameter_Type (Parent (This_Formal)));
 
                   elsif Atree.Convention
-                         (Designated_Type (Etype (First_Formal (Def_Id))))
-                           /= Convention
+                         (Designated_Type (Etype (This_Formal))) /= Convention
                   then
                      Error_Msg_Name_1 := Pname;
 
@@ -9055,23 +9089,21 @@ package body Sem_Prag is
                         Error_Msg_N
                           ("pragma% requires convention 'Cil in designated" &
                            " type",
-                           Parameter_Type (Parent (First_Formal (Def_Id))));
+                           Parameter_Type (Parent (This_Formal)));
                      else
                         Error_Msg_N
                           ("pragma% requires convention 'Java in designated" &
                            " type",
-                           Parameter_Type (Parent (First_Formal (Def_Id))));
+                           Parameter_Type (Parent (This_Formal)));
                      end if;
 
-                  elsif No (Expression (Parent (First_Formal (Def_Id))))
-                    or else
-                      Nkind (Expression (Parent (First_Formal (Def_Id)))) /=
-                        N_Null
+                  elsif No (Expression (Parent (This_Formal)))
+                    or else Nkind (Expression (Parent (This_Formal))) /= N_Null
                   then
                      Error_Msg_Name_1 := Pname;
                      Error_Msg_N
                        ("pragma% requires first formal with default `null`",
-                        Parameter_Type (Parent (First_Formal (Def_Id))));
+                        Parameter_Type (Parent (This_Formal)));
                   end if;
                end if;
 
