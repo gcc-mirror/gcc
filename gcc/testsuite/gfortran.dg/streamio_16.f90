@@ -10,7 +10,7 @@ do i=1,17
   read( 50, *,pos=i)
   inquire(50, access=sAccess, pos=mypos)
   if (sAccess.ne."STREAM") call abort
-  if (mypos.ne.18) call abort
+  if ((mypos.ne.18).and.(mypos.ne.19)) call abort
 end do
 read (50,*, end=10)
 call abort
