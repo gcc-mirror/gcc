@@ -1,5 +1,13 @@
 2010-10-08  Robert Dewar  <dewar@adacore.com>
 
+	* sprint.adb: Minor reformatting.
+
+2010-10-08  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Real_Range_Check): Declare temporary as constant.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb: Minor reformatting.
 
 2010-10-08  Vincent Celier  <celier@adacore.com>
