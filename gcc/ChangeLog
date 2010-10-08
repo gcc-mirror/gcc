@@ -1,5 +1,10 @@
 2010-10-07  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/m68hc11/m68hc11.c (m68hc11_print_operand): Call
+	m68hc11_print_operand_address.
+
+2010-10-07  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* builtins.c (rewrite_call_expr): Move code to...
 	(rewrite_call_expr_valist): ...here.  Call
 	build_call_expr_loc_array.
