@@ -1,3 +1,26 @@
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb: Minor reformatting.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb: Add call to Validate_Independence.
+	* par-prag.adb: Add dummy entries for Independent,
+	Independent_Componentsa.
+	* sem_ch13.adb (Validate_Independence): New procedure
+	(Initialize): Initialize address clause and independence check tables
+	* sem_ch13.ads (Independence_Checks): New table
+	(Validate_Independence): New procedure
+	* sem_prag.adb: Add processing for pragma Independent[_Components]
+	* snames.ads-tmpl: Add entries for pragma Independent[_Components]
+
+2010-10-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Propagate_Discriminants): When expanding an aggregate
+	component with box initialization, if the component is a variant record
+	use the values of the discriminants to select the proper variant for
+	further box initialization.
+
 2010-10-08  Thomas Quinot  <quinot@adacore.com>
 
 	* xsnames.adb: Remove obsolete file.

@@ -704,6 +704,7 @@ begin
          Treepr.Tree_Dump;
          Sem_Ch13.Validate_Unchecked_Conversions;
          Sem_Ch13.Validate_Address_Clauses;
+         Sem_Ch13.Validate_Independence;
          Errout.Output_Messages;
          Namet.Finalize;
 
@@ -880,6 +881,7 @@ begin
 
          Sem_Ch13.Validate_Unchecked_Conversions;
          Sem_Ch13.Validate_Address_Clauses;
+         Sem_Ch13.Validate_Independence;
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Treepr.Tree_Dump;
@@ -913,6 +915,7 @@ begin
       then
          Sem_Ch13.Validate_Unchecked_Conversions;
          Sem_Ch13.Validate_Address_Clauses;
+         Sem_Ch13.Validate_Independence;
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Write_ALI (Object => False);
@@ -979,6 +982,11 @@ begin
       --  by the backend where possible).
 
       Sem_Ch13.Validate_Address_Clauses;
+
+      --  Validate independence pragmas (again using values annotated by
+      --  the back end for component layout etc.)
+
+      Sem_Ch13.Validate_Independence;
 
       --  Now we complete output of errors, rep info and the tree info. These
       --  are delayed till now, since it is perfectly possible for gigi to

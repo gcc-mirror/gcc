@@ -1131,6 +1131,8 @@ begin
            Pragma_Import_Object                 |
            Pragma_Import_Procedure              |
            Pragma_Import_Valued_Procedure       |
+           Pragma_Independent                   |
+           Pragma_Independent_Components        |
            Pragma_Initialize_Scalars            |
            Pragma_Inline                        |
            Pragma_Inline_Always                 |
