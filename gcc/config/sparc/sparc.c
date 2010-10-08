@@ -351,9 +351,9 @@ int sparc_indent_opcode = 0;
 static bool sparc_handle_option (size_t, const char *, int);
 static void sparc_option_override (void);
 static void sparc_init_modes (void);
-static void scan_record_type (tree, int *, int *, int *);
+static void scan_record_type (const_tree, int *, int *, int *);
 static int function_arg_slotno (const CUMULATIVE_ARGS *, enum machine_mode,
-				tree, int, int, int *, int *);
+				const_tree, bool, bool, int *, int *);
 
 static int supersparc_adjust_cost (rtx, rtx, rtx, int);
 static int hypersparc_adjust_cost (rtx, rtx, rtx, int);
@@ -424,6 +424,14 @@ static rtx sparc_legitimize_address (rtx, rtx, enum machine_mode);
 static bool sparc_mode_dependent_address_p (const_rtx);
 static bool sparc_pass_by_reference (CUMULATIVE_ARGS *,
 				     enum machine_mode, const_tree, bool);
+static void sparc_function_arg_advance (CUMULATIVE_ARGS *,
+					enum machine_mode, const_tree, bool);
+static rtx sparc_function_arg_1 (const CUMULATIVE_ARGS *,
+				 enum machine_mode, const_tree, bool, bool);
+static rtx sparc_function_arg (CUMULATIVE_ARGS *,
+			       enum machine_mode, const_tree, bool);
+static rtx sparc_function_incoming_arg (CUMULATIVE_ARGS *,
+					enum machine_mode, const_tree, bool);
 static int sparc_arg_partial_bytes (CUMULATIVE_ARGS *,
 				    enum machine_mode, tree, bool);
 static void sparc_dwarf_handle_frame_unspec (const char *, rtx, int);
@@ -559,6 +567,12 @@ static bool fpu_option_set = false;
 #define TARGET_PASS_BY_REFERENCE sparc_pass_by_reference
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES sparc_arg_partial_bytes
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE sparc_function_arg_advance
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG sparc_function_arg
+#undef TARGET_FUNCTION_INCOMING_ARG
+#define TARGET_FUNCTION_INCOMING_ARG sparc_function_incoming_arg
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS sparc_builtin_saveregs
@@ -4938,7 +4952,8 @@ sparc_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
    Sub-fields are not taken into account for the PACKED_P predicate.  */
 
 static void
-scan_record_type (tree type, int *intregs_p, int *fpregs_p, int *packed_p)
+scan_record_type (const_tree type, int *intregs_p, int *fpregs_p,
+		  int *packed_p)
 {
   tree field;
 
@@ -4978,7 +4993,7 @@ scan_record_type (tree type, int *intregs_p, int *fpregs_p, int *packed_p)
 
 static int
 function_arg_slotno (const struct sparc_args *cum, enum machine_mode mode,
-		     tree type, int named, int incoming_p,
+		     const_tree type, bool named, bool incoming_p,
 		     int *pregno, int *ppadding)
 {
   int regbase = (incoming_p
@@ -5552,8 +5567,7 @@ function_arg_vector_value (int size, int regno)
   return regs;
 }
 
-/* Handle the FUNCTION_ARG macro.
-   Determine where to put an argument to a function.
+/* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
 
@@ -5563,13 +5577,14 @@ function_arg_vector_value (int size, int regno)
    TYPE is the data type of the argument (as a tree).
     This is null for libcalls where that information may
     not be available.
-   NAMED is nonzero if this argument is a named parameter
+   NAMED is true if this argument is a named parameter
     (otherwise it is an extra parameter matching an ellipsis).
-   INCOMING_P is zero for FUNCTION_ARG, nonzero for FUNCTION_INCOMING_ARG.  */
+   INCOMING_P is false for TARGET_FUNCTION_ARG, true for
+    TARGET_FUNCTION_INCOMING_ARG.  */
 
-rtx
-function_arg (const struct sparc_args *cum, enum machine_mode mode,
-	      tree type, int named, int incoming_p)
+static rtx
+sparc_function_arg_1 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		      const_tree type, bool named, bool incoming_p)
 {
   int regbase = (incoming_p
 		 ? SPARC_INCOMING_INT_ARG_FIRST
@@ -5701,6 +5716,24 @@ function_arg (const struct sparc_args *cum, enum machine_mode mode,
   return gen_rtx_REG (mode, regno);
 }
 
+/* Handle the TARGET_FUNCTION_ARG target hook.  */
+
+static rtx
+sparc_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		    const_tree type, bool named)
+{
+  return sparc_function_arg_1 (cum, mode, type, named, false);
+}
+
+/* Handle the TARGET_FUNCTION_INCOMING_ARG target hook.  */
+
+static rtx
+sparc_function_incoming_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			     const_tree type, bool named)
+{
+  return sparc_function_arg_1 (cum, mode, type, named, true);
+}
+
 /* For an arg passed partly in registers and partly in memory,
    this is the number of bytes of registers used.
    For args passed entirely in registers or entirely in memory, zero.
@@ -5717,8 +5750,9 @@ sparc_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 {
   int slotno, regno, padding;
 
-  /* We pass 0 for incoming_p here, it doesn't matter.  */
-  slotno = function_arg_slotno (cum, mode, type, named, 0, &regno, &padding);
+  /* We pass false for incoming_p here, it doesn't matter.  */
+  slotno = function_arg_slotno (cum, mode, type, named, false,
+				&regno, &padding);
 
   if (slotno == -1)
     return 0;
@@ -5816,19 +5850,19 @@ sparc_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 	    || GET_MODE_SIZE (mode) > 16);
 }
 
-/* Handle the FUNCTION_ARG_ADVANCE macro.
+/* Handle the TARGET_FUNCTION_ARG_ADVANCE hook.
    Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
    TYPE is null for libcalls where that information may not be available.  */
 
-void
-function_arg_advance (struct sparc_args *cum, enum machine_mode mode,
-		      tree type, int named)
+static void
+sparc_function_arg_advance (struct sparc_args *cum, enum machine_mode mode,
+			    const_tree type, bool named)
 {
   int regno, padding;
 
-  /* We pass 0 for incoming_p here, it doesn't matter.  */
-  function_arg_slotno (cum, mode, type, named, 0, &regno, &padding);
+  /* We pass false for incoming_p here, it doesn't matter.  */
+  function_arg_slotno (cum, mode, type, named, false, &regno, &padding);
 
   /* If argument requires leading padding, add it.  */
   cum->words += padding;

@@ -1,5 +1,22 @@
 2010-10-08  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/sparc/sparc-protos.h (function_arg_advance, function-arg):
+	Delete.
+	* config/sparc/sparc.h (FUNCTION_ARG_ADVANCE, FUNCTION_ARG): Delete.
+	(FUNCTION_INCOMING_ARG): Delete.
+	* config/sparc/sparc.c (scan_record_type): Const-ify tree argument.
+	(function_arg_slotno): Likewise.  Take bool arguments.
+	(sparc_arg_partial_bytes): Update call to it.
+	(function_arg): Rename to...
+	(sparc_function_arg_1): ...this.  Take bool arguments.
+	(sparc_function_arg, sparc_function_incoming_arg): New functions.
+	(function_arg_advance): Rename to...
+	(sparc_function_arg_advance): ...this.  Take bool argument.
+	(TARGET_FUNCTION_ARG_ADVANCE, TARGET_FUNCTION_ARG): Define.
+	(TARGET_FUNCTION_INCOMING_ARG): Define.
+
+2010-10-08  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/bfin/bfin-protos.h (function_arg, function_arg_advance):
 	Delete.
 	* config/bfin/bfin.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
