@@ -65,8 +65,6 @@
 
 #define Mmode enum machine_mode
 
-extern rtx function_arg (CUMULATIVE_ARGS *, Mmode, tree, int);
-extern void function_arg_advance (CUMULATIVE_ARGS *, Mmode, tree, int);
 extern bool function_arg_regno_p (int);
 
 extern const char *output_load_immediate (rtx *);
