@@ -5482,6 +5482,31 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 				   : byte + shifted_bytes));
     }
 
+  /* If we have a lowpart SUBREG of a right shift of MEM, make a new MEM
+     and try replacing the SUBREG and shift with it.  Don't do this if
+     the MEM has a mode-dependent address or if we would be widening it.  */
+
+  if ((GET_CODE (op) == LSHIFTRT
+       || GET_CODE (op) == ASHIFTRT)
+      && MEM_P (XEXP (op, 0))
+      && CONST_INT_P (XEXP (op, 1))
+      && GET_MODE_SIZE (outermode) < GET_MODE_SIZE (GET_MODE (op))
+      && (INTVAL (XEXP (op, 1)) % GET_MODE_BITSIZE (outermode)) == 0
+      && INTVAL (XEXP (op, 1)) > 0
+      && INTVAL (XEXP (op, 1)) < GET_MODE_BITSIZE (innermode)
+      && ! mode_dependent_address_p (XEXP (XEXP (op, 0), 0))
+      && ! MEM_VOLATILE_P (XEXP (op, 0))
+      && byte == subreg_lowpart_offset (outermode, innermode)
+      && (GET_MODE_SIZE (outermode) >= UNITS_PER_WORD
+	  || WORDS_BIG_ENDIAN == BYTES_BIG_ENDIAN))
+    {
+      int shifted_bytes = INTVAL (XEXP (op, 1)) / BITS_PER_UNIT;
+      return adjust_address_nv (XEXP (op, 0), outermode,
+				(WORDS_BIG_ENDIAN
+				 ? byte - shifted_bytes
+				 : byte + shifted_bytes));
+    }
+
   return NULL_RTX;
 }
 
