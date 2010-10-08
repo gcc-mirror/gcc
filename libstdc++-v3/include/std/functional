@@ -957,7 +957,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
        */
       template<typename _CVRef, typename _Tuple>
         result_type
-        operator()(_CVRef& __arg, _Tuple&&) const volatile
+        operator()(_CVRef& __arg, _Tuple&) const volatile
         { return __arg.get(); }
     };
 
@@ -970,33 +970,26 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     class _Mu<_Arg, true, false>
     {
     public:
-      template<typename _Signature> class result;
-
-      // Determine the result type when we pass the arguments along. This
-      // involves passing along the cv-qualifiers placed on _Mu and
-      // unwrapping the argument bundle.
-      template<typename _CVMu, typename _CVArg, typename... _Args>
-        class result<_CVMu(_CVArg, tuple<_Args...>)>
-	: public result_of<_CVArg(_Args...)> { };
-
       template<typename _CVArg, typename... _Args>
-        typename result_of<_CVArg(_Args...)>::type
+        auto
         operator()(_CVArg& __arg,
-		   tuple<_Args...>&& __tuple) const volatile
+		   tuple<_Args...>& __tuple) const volatile
+        -> decltype(__arg(declval<_Args>()...))
         {
 	  // Construct an index tuple and forward to __call
 	  typedef typename _Build_index_tuple<sizeof...(_Args)>::__type
 	    _Indexes;
-	  return this->__call(__arg, std::move(__tuple), _Indexes());
+	  return this->__call(__arg, __tuple, _Indexes());
 	}
 
     private:
       // Invokes the underlying function object __arg by unpacking all
       // of the arguments in the tuple. 
       template<typename _CVArg, typename... _Args, int... _Indexes>
-        typename result_of<_CVArg(_Args...)>::type
-        __call(_CVArg& __arg, tuple<_Args...>&& __tuple,
+        auto
+        __call(_CVArg& __arg, tuple<_Args...>& __tuple,
 	       const _Index_tuple<_Indexes...>&) const volatile
+        -> decltype(__arg(declval<_Args>()...))
         {
 	  return __arg(std::forward<_Args>(get<_Indexes>(__tuple))...);
 	}
@@ -1029,7 +1022,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       template<typename _Tuple>
         typename result<_Mu(_Arg, _Tuple)>::type
-        operator()(const volatile _Arg&, _Tuple&& __tuple) const volatile
+        operator()(const volatile _Arg&, _Tuple& __tuple) const volatile
         {
 	  return std::forward<typename result<_Mu(_Arg, _Tuple)>::type>(
               ::std::get<(is_placeholder<_Arg>::value - 1)>(__tuple));
@@ -1056,7 +1049,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       // Pick up the cv-qualifiers of the argument
       template<typename _CVArg, typename _Tuple>
         _CVArg&&
-        operator()(_CVArg&& __arg, _Tuple&&) const volatile
+        operator()(_CVArg&& __arg, _Tuple&) const volatile
         { return std::forward<_CVArg>(__arg); }
     };
 
@@ -1069,10 +1062,14 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     struct _Maybe_wrap_member_pointer
     {
       typedef _Tp type;
-      
+
       static const _Tp&
       __do_wrap(const _Tp& __x)
       { return __x; }
+
+      static _Tp&&
+      __do_wrap(_Tp&& __x)
+      { return static_cast<_Tp&&>(__x); }
     };
 
   /**
@@ -1100,6 +1097,20 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       typedef void type;
     };
 
+  // std::get<I> for volatile-qualified tuples
+  template<size_t _Ind, typename... _Tp>
+    inline auto
+    __volget(volatile tuple<_Tp...>& __tuple)
+    -> typename tuple_element<_Ind, tuple<_Tp...>>::type volatile&
+    { return std::get<_Ind>(const_cast<tuple<_Tp...>&>(__tuple)); }
+
+  // std::get<I> for const-volatile-qualified tuples
+  template<size_t _Ind, typename... _Tp>
+    inline auto
+    __volget(const volatile tuple<_Tp...>& __tuple)
+    -> typename tuple_element<_Ind, tuple<_Tp...>>::type const volatile&
+    { return std::get<_Ind>(const_cast<const tuple<_Tp...>&>(__tuple)); }
+
   /// Type of the function object returned from bind().
   template<typename _Signature>
     struct _Bind;
@@ -1109,7 +1120,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     : public _Weak_result_type<_Functor>
     {
       typedef _Bind __self_type;
-      typedef typename _Build_index_tuple<sizeof...(_Bound_args)>::__type 
+      typedef typename _Build_index_tuple<sizeof...(_Bound_args)>::__type
         _Bound_indexes;
 
       _Functor _M_f;
@@ -1121,7 +1132,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
         __call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>)
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
+                      (get<_Indexes>(_M_bound_args), __args)...);
         }
 
       // Call as const
@@ -1130,10 +1141,9 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
         __call_c(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) const
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
+                      (get<_Indexes>(_M_bound_args), __args)...);
         }
 
-#if 0
       // Call as volatile
       template<typename _Result, typename... _Args, int... _Indexes>
         _Result
@@ -1141,7 +1151,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 		 _Index_tuple<_Indexes...>) volatile
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
+                      (__volget<_Indexes>(_M_bound_args), __args)...);
         }
 
       // Call as const volatile
@@ -1151,69 +1161,77 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 		   _Index_tuple<_Indexes...>) const volatile
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
+                      (__volget<_Indexes>(_M_bound_args), __args)...);
         }
-#endif
 
      public:
-      explicit _Bind(_Functor __f, _Bound_args... __bound_args)
-      : _M_f(std::forward<_Functor>(__f)),
-	_M_bound_args(std::forward<_Bound_args>(__bound_args)...)
+      template<typename... _Args>
+        explicit _Bind(const _Functor& __f, _Args&&... __args)
+        : _M_f(__f), _M_bound_args(std::forward<_Args>(__args)...)
+        { }
+
+      template<typename... _Args>
+        explicit _Bind(_Functor&& __f, _Args&&... __args)
+        : _M_f(std::move(__f)), _M_bound_args(std::forward<_Args>(__args)...)
+        { }
+
+      _Bind(const _Bind&) = default;
+
+      _Bind(_Bind&& __b)
+      : _M_f(std::move(__b._M_f)), _M_bound_args(std::move(__b._M_bound_args))
       { }
 
       // Call unqualified
       template<typename... _Args, typename _Result
         = decltype( std::declval<_Functor>()(
               _Mu<_Bound_args>()( std::declval<_Bound_args&>(),
-				  std::declval<tuple<_Args...>&&>() )... ) )>
+				  std::declval<tuple<_Args...>&>() )... ) )>
         _Result
         operator()(_Args&&... __args)
         {
-          return this->__call<_Result>(tuple<_Args...>
-				       (std::forward<_Args>(__args)...),
-                                       _Bound_indexes());
+          return this->__call<_Result>(
+              std::forward_as_tuple(std::forward<_Args>(__args)...),
+              _Bound_indexes());
         }
 
       // Call as const
       template<typename... _Args, typename _Result
         = decltype( std::declval<const _Functor>()(
 	      _Mu<_Bound_args>()( std::declval<const _Bound_args&>(),
-				  std::declval<tuple<_Args...>&&>() )... ) )>
+				  std::declval<tuple<_Args...>&>() )... ) )>
         _Result
         operator()(_Args&&... __args) const
         {
-          return this->__call_c<_Result>(tuple<_Args...>
-                                         (std::forward<_Args>(__args)...),
-                                         _Bound_indexes());
+          return this->__call_c<_Result>(
+              std::forward_as_tuple(std::forward<_Args>(__args)...),
+              _Bound_indexes());
         }
 
-#if 0
       // Call as volatile
       template<typename... _Args, typename _Result
         = decltype( std::declval<volatile _Functor>()(
               _Mu<_Bound_args>()( std::declval<volatile _Bound_args&>(),
-                                  std::declval<tuple<_Args...>&&>() )... ) )>
+                                  std::declval<tuple<_Args...>&>() )... ) )>
         _Result
         operator()(_Args&&... __args) volatile
         {
-          return this->__call_v<_Result>(tuple<_Args...>
-                                         (std::forward<_Args>(__args)...),
-                                         _Bound_indexes());
+          return this->__call_v<_Result>(
+              std::forward_as_tuple(std::forward<_Args>(__args)...),
+              _Bound_indexes());
         }
 
       // Call as const volatile
       template<typename... _Args, typename _Result
         = decltype( std::declval<const volatile _Functor>()(
               _Mu<_Bound_args>()( std::declval<const volatile _Bound_args&>(),
-                                  std::declval<tuple<_Args...>&&>() )... ) )>
+                                  std::declval<tuple<_Args...>&>() )... ) )>
         _Result
         operator()(_Args&&... __args) const volatile
         {
-          return this->__call_c_v<_Result>(tuple<_Args...>
-                                           (std::forward<_Args>(__args)...),
-                                           _Bound_indexes());
+          return this->__call_c_v<_Result>(
+              std::forward_as_tuple(std::forward<_Args>(__args)...),
+              _Bound_indexes());
         }
-#endif
     };
 
   /// Type of the function object returned from bind<R>().
@@ -1243,7 +1261,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
             typename __disable_if_void<_Res>::type = 0)
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
+                      (get<_Indexes>(_M_bound_args), __args)...);
         }
 
       // Call unqualified, return void
@@ -1253,7 +1271,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
             typename __enable_if_void<_Res>::type = 0)
         {
           _M_f(_Mu<_Bound_args>()
-	       (get<_Indexes>(_M_bound_args), std::move(__args))...);
+	       (get<_Indexes>(_M_bound_args), __args)...);
         }
 
       // Call as const
@@ -1263,7 +1281,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
             typename __disable_if_void<_Res>::type = 0) const
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
+                      (get<_Indexes>(_M_bound_args), __args)...);
         }
 
       // Call as const, return void
@@ -1273,7 +1291,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
             typename __enable_if_void<_Res>::type = 0) const
         {
           _M_f(_Mu<_Bound_args>()
-	       (get<_Indexes>(_M_bound_args),  std::move(__args))...);
+	       (get<_Indexes>(_M_bound_args),  __args)...);
         }
 
       // Call as volatile
@@ -1283,7 +1301,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
             typename __disable_if_void<_Res>::type = 0) volatile
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
+                      (__volget<_Indexes>(_M_bound_args), __args)...);
         }
 
       // Call as volatile, return void
@@ -1293,7 +1311,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
             typename __enable_if_void<_Res>::type = 0) volatile
         {
           _M_f(_Mu<_Bound_args>()
-	       (get<_Indexes>(_M_bound_args), std::move(__args))...);
+	       (__volget<_Indexes>(_M_bound_args), __args)...);
         }
 
       // Call as const volatile
@@ -1303,7 +1321,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
             typename __disable_if_void<_Res>::type = 0) const volatile
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
+                      (__volget<_Indexes>(_M_bound_args), __args)...);
         }
 
       // Call as const volatile, return void
@@ -1314,16 +1332,26 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
             typename __enable_if_void<_Res>::type = 0) const volatile
         {
           _M_f(_Mu<_Bound_args>()
-	       (get<_Indexes>(_M_bound_args), std::move(__args))...);
+	       (__volget<_Indexes>(_M_bound_args), __args)...);
         }
 
     public:
       typedef _Result result_type;
 
-      explicit
-      _Bind_result(_Functor __f, _Bound_args... __bound_args)
-      : _M_f(std::forward<_Functor>(__f)),
-	_M_bound_args(std::forward<_Bound_args>(__bound_args)...)
+      template<typename... _Args>
+        explicit _Bind_result(const _Functor& __f, _Args&&... __args)
+        : _M_f(__f), _M_bound_args(std::forward<_Args>(__args)...)
+        { }
+
+      template<typename... _Args>
+        explicit _Bind_result(_Functor&& __f, _Args&&... __args)
+        : _M_f(std::move(__f)), _M_bound_args(std::forward<_Args>(__args)...)
+        { }
+
+      _Bind_result(const _Bind_result&) = default;
+
+      _Bind_result(_Bind_result&& __b)
+      : _M_f(std::move(__b._M_f)), _M_bound_args(std::move(__b._M_bound_args))
       { }
 
       // Call unqualified
@@ -1332,7 +1360,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
         operator()(_Args&&... __args)
         {
           return this->__call<_Result>(
-              tuple<_Args...>(std::forward<_Args>(__args)...),
+              std::forward_as_tuple(std::forward<_Args>(__args)...),
               _Bound_indexes());
         }
 
@@ -1342,7 +1370,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
         operator()(_Args&&... __args) const
         {
           return this->__call<_Result>(
-              tuple<_Args...>(std::forward<_Args>(__args)...),
+              std::forward_as_tuple(std::forward<_Args>(__args)...),
               _Bound_indexes());
         }
 
@@ -1352,7 +1380,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
         operator()(_Args&&... __args) volatile
         {
           return this->__call<_Result>(
-              tuple<_Args...>(std::forward<_Args>(__args)...),
+              std::forward_as_tuple(std::forward<_Args>(__args)...),
               _Bound_indexes());
         }
 
@@ -1362,7 +1390,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
         operator()(_Args&&... __args) const volatile
         {
           return this->__call<_Result>(
-              tuple<_Args...>(std::forward<_Args>(__args)...),
+              std::forward_as_tuple(std::forward<_Args>(__args)...),
               _Bound_indexes());
         }
     };
@@ -1383,38 +1411,55 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     struct is_bind_expression<_Bind_result<_Result, _Signature> >
     : public true_type { };
 
+  template<typename _Functor, typename... _ArgTypes>
+    struct _Bind_helper
+    {
+      typedef _Maybe_wrap_member_pointer<typename decay<_Functor>::type>
+        __maybe_type;
+      typedef typename __maybe_type::type __functor_type;
+      typedef _Bind<__functor_type(typename decay<_ArgTypes>::type...)> type;
+    };
+
   /**
    *  @brief Function template for std::bind.
    *  @ingroup binders
    */
   template<typename _Functor, typename... _ArgTypes>
     inline
-    _Bind<typename _Maybe_wrap_member_pointer<_Functor>::type(_ArgTypes...)>
-    bind(_Functor __f, _ArgTypes... __args)
+    typename _Bind_helper<_Functor, _ArgTypes...>::type
+    bind(_Functor&& __f, _ArgTypes&&... __args)
     {
-      typedef _Maybe_wrap_member_pointer<_Functor> __maybe_type;
-      typedef typename __maybe_type::type __functor_type;
-      typedef _Bind<__functor_type(_ArgTypes...)> __result_type;
-      return __result_type(__maybe_type::__do_wrap(__f),
+      typedef _Bind_helper<_Functor, _ArgTypes...> __helper_type;
+      typedef typename __helper_type::__maybe_type __maybe_type;
+      typedef typename __helper_type::type __result_type;
+      return __result_type(__maybe_type::__do_wrap(std::forward<_Functor>(__f)),
                            std::forward<_ArgTypes>(__args)...);
     } 
 
+  template<typename _Result, typename _Functor, typename... _ArgTypes>
+    struct _Bindres_helper
+    {
+      typedef _Maybe_wrap_member_pointer<typename decay<_Functor>::type>
+        __maybe_type;
+      typedef typename __maybe_type::type __functor_type;
+      typedef _Bind_result<_Result,
+                           __functor_type(typename decay<_ArgTypes>::type...)>
+        type;
+    };
+
   /**
-   *  @brief Function template for std::bind.
+   *  @brief Function template for std::bind<R>.
    *  @ingroup binders
    */
   template<typename _Result, typename _Functor, typename... _ArgTypes>
     inline
-    _Bind_result<_Result,
-		 typename _Maybe_wrap_member_pointer<_Functor>::type
-                            (_ArgTypes...)>
-    bind(_Functor __f, _ArgTypes... __args)
+    typename _Bindres_helper<_Result, _Functor, _ArgTypes...>::type
+    bind(_Functor&& __f, _ArgTypes&&... __args)
     {
-      typedef _Maybe_wrap_member_pointer<_Functor> __maybe_type;
-      typedef typename __maybe_type::type __functor_type;
-      typedef _Bind_result<_Result, __functor_type(_ArgTypes...)>
-	__result_type;
-      return __result_type(__maybe_type::__do_wrap(__f),
+      typedef _Bindres_helper<_Result, _Functor, _ArgTypes...> __helper_type;
+      typedef typename __helper_type::__maybe_type __maybe_type;
+      typedef typename __helper_type::type __result_type;
+      return __result_type(__maybe_type::__do_wrap(std::forward<_Functor>(__f)),
                            std::forward<_ArgTypes>(__args)...);
     }
 

@@ -1,3 +1,14 @@
+2010-10-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/45893
+	* include/std/functional (bind): Implement DR 817 and add support
+	for volatile-qualified call wrappers.
+	* include/std/mutex (call_once): Implement DR 891.
+	* include/std/thread (thread::thread): Implement DR 929.
+	* include/std/future: Optimise use of std::bind.
+	* testsuite/20_util/bind/cv_quals.cc: Test volatile-qualification.
+	* testsuite/20_util/bind/move.cc: New.
+
 2010-10-07  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR libstdc++/45841

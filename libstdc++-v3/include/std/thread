@@ -126,16 +126,14 @@ namespace std
     thread(thread&& __t)
     { swap(__t); }
 
-    template<typename _Callable>
-      explicit thread(_Callable __f)
-      {
-	_M_start_thread(_M_make_routine<_Callable>
-			(std::forward<_Callable>(__f)));
-      }
-
     template<typename _Callable, typename... _Args>
+      explicit 
       thread(_Callable&& __f, _Args&&... __args)
-      { _M_start_thread(_M_make_routine(std::bind(__f, __args...))); }
+      {
+        _M_start_thread(_M_make_routine(std::bind<void>(
+                std::forward<_Callable>(__f),
+                std::forward<_Args>(__args)...)));
+      }
 
     ~thread()
     {

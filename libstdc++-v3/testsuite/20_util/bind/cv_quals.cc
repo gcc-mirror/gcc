@@ -22,13 +22,23 @@
 #include <functional>
 #include <testsuite_hooks.h>
 
+// target must be invoked with cv-quals of call wrapper
+
 struct X
 {
   int operator()() { return 0; }
   int operator()() const { return 1; }
-  // int operator()() volatile { return 2; }
-  // int operator()() const volatile { return 3; }
+  int operator()() volatile { return 2; }
+  int operator()() const volatile { return 3; }
+
+  int operator()(int, int, int) { return 0; }
+  int operator()(int, int, int) const { return 1; }
+  int operator()(int, int, int) volatile { return 2; }
+  int operator()(int, int, int) const volatile { return 3; }
 };
+
+using std::placeholders::_1;
+using std::placeholders::_2;
 
 void test01()
 {
@@ -40,15 +50,70 @@ void test01()
   const auto b1 = std::bind(X());
   VERIFY( b1() == 1 );
 
-  // volatile auto b2 = std::bind(X());
-  // VERIFY( b2() == 2 );
+  volatile auto b2 = std::bind(X());
+  VERIFY( b2() == 2 );
 
-  // const volatile auto b3 = std::bind(X());
-  // VERIFY( b3() == 3 );
+  const volatile auto b3 = std::bind(X());
+  VERIFY( b3() == 3 );
 }
+
+void test02()
+{
+  bool test __attribute__((unused)) = true;
+
+  auto b0 = std::bind<int>(X());
+  VERIFY( b0() == 0 );
+
+  const auto b1 = std::bind<int>(X());
+  VERIFY( b1() == 1 );
+
+  volatile auto b2 = std::bind<int>(X());
+  VERIFY( b2() == 2 );
+
+  const volatile auto b3 = std::bind<int>(X());
+  VERIFY( b3() == 3 );
+}
+
+void test03()
+{
+  bool test __attribute__((unused)) = true;
+
+  auto b0 = std::bind(X(), 0, _1, _2);
+  VERIFY( b0(0, 0) == 0 );
+
+  const auto b1 = std::bind(X(), _1, 0, _2);
+  VERIFY( b1(0, 0) == 1 );
+
+  volatile auto b2 = std::bind(X(), _1, _2, 0);
+  VERIFY( b2(0, 0) == 2 );
+
+  const volatile auto b3 = std::bind(X(), _1, 0, _2);
+  VERIFY( b3(0, 0) == 3 );
+}
+
+void test04()
+{
+  bool test __attribute__((unused)) = true;
+
+  auto b0 = std::bind<int>(X(), 0, _1, _2);
+  VERIFY( b0(0, 0) == 0 );
+
+  const auto b1 = std::bind<int>(X(), _1, 0, _2);
+  VERIFY( b1(0, 0) == 1 );
+
+  volatile auto b2 = std::bind<int>(X(), _1, _2, 0);
+  VERIFY( b2(0, 0) == 2 );
+
+  const volatile auto b3 = std::bind<int>(X(), _1, 0, _2);
+  VERIFY( b3(0, 0) == 3 );
+}
+
 
 int main()
 {
   test01();
+  test02();
+  test03();
+  test04();
   return 0;
 }
