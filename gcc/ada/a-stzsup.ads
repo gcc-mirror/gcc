@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -303,6 +303,14 @@ package Ada.Strings.Wide_Wide_Superbounded is
    function Super_Count
      (Source : Super_String;
       Set    : Wide_Wide_Maps.Wide_Wide_Character_Set) return Natural;
+
+   procedure Super_Find_Token
+     (Source : Super_String;
+      Set    : Wide_Wide_Maps.Wide_Wide_Character_Set;
+      From   : Positive;
+      Test   : Membership;
+      First  : out Positive;
+      Last   : out Natural);
 
    procedure Super_Find_Token
      (Source : Super_String;

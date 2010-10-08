@@ -819,6 +819,19 @@ package body Ada.Strings.Unbounded is
    procedure Find_Token
      (Source : Unbounded_String;
       Set    : Maps.Character_Set;
+      From   : Positive;
+      Test   : Strings.Membership;
+      First  : out Positive;
+      Last   : out Natural)
+   is
+      SR : constant Shared_String_Access := Source.Reference;
+   begin
+      Search.Find_Token (SR.Data (From .. SR.Last), Set, Test, First, Last);
+   end Find_Token;
+
+   procedure Find_Token
+     (Source : Unbounded_String;
+      Set    : Maps.Character_Set;
       Test   : Strings.Membership;
       First  : out Positive;
       Last   : out Natural)

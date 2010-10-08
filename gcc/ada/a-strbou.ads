@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -288,6 +288,15 @@ package Ada.Strings.Bounded is
       function Count
         (Source : Bounded_String;
          Set    : Maps.Character_Set) return Natural;
+
+      procedure Find_Token
+        (Source : Bounded_String;
+         Set    : Maps.Character_Set;
+         From   : Positive;
+         Test   : Membership;
+         First  : out Positive;
+         Last   : out Natural);
+      pragma Ada_2012 (Find_Token);
 
       procedure Find_Token
         (Source : Bounded_String;
@@ -745,6 +754,15 @@ package Ada.Strings.Bounded is
         (Source : Bounded_String;
          Set    : Maps.Character_Set) return Natural
          renames Super_Count;
+
+      procedure Find_Token
+        (Source : Bounded_String;
+         Set    : Maps.Character_Set;
+         From   : Positive;
+         Test   : Membership;
+         First  : out Positive;
+         Last   : out Natural)
+         renames Super_Find_Token;
 
       procedure Find_Token
         (Source : Bounded_String;

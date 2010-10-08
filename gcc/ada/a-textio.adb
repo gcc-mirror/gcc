@@ -758,7 +758,7 @@ package body Ada.Text_IO is
 
          if P = Null_Address then
             pragma Assert (Buf (N) = ASCII.NUL);
-            memcpy (Item (Item'First + Last)'Address,
+            memcpy (Item (Last + 1)'Address,
                     Buf (1)'Address, size_t (N - 1));
             Last := Last + N - 1;
 
@@ -783,7 +783,7 @@ package body Ada.Text_IO is
                   K := K - 1;
                end if;
 
-               memcpy (Item (Item'First + Last)'Address,
+               memcpy (Item (Last + 1)'Address,
                        Buf (1)'Address, size_t (K));
                Last := Last + K;
             end;

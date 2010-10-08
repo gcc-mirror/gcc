@@ -297,6 +297,15 @@ package Ada.Strings.Unbounded is
    procedure Find_Token
      (Source : Unbounded_String;
       Set    : Maps.Character_Set;
+      From   : Positive;
+      Test   : Membership;
+      First  : out Positive;
+      Last   : out Natural);
+   pragma Ada_2012 (Find_Token);
+
+   procedure Find_Token
+     (Source : Unbounded_String;
+      Set    : Maps.Character_Set;
       Test   : Membership;
       First  : out Positive;
       Last   : out Natural);
