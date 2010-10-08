@@ -1,4 +1,4 @@
-// { dg-do compile { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* mips-sgi-irix6* } }
+// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* mips-sgi-irix6* } }
 // { dg-options " -std=gnu++0x -pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf* mips-sgi-irix6* } }
 // { dg-options " -std=gnu++0x -pthreads" { target *-*-solaris* } }
 // { dg-options " -std=gnu++0x " { target *-*-cygwin *-*-darwin* } }
@@ -39,7 +39,7 @@ void test01()
 
   uneq_allocator<char> alloc(99);
 
-  packaged_task<int ()> p1(allocator_arg, alloc, f); // { dg-excess-errors "" }
+  packaged_task<int ()> p1(allocator_arg, alloc, f);
   VERIFY( static_cast<bool>(p1) );
   p1();
   VERIFY( p1.get_future().get() == 5 );

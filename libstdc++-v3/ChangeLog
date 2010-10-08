@@ -1,5 +1,11 @@
 2010-10-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/future: Enable allocator support.
+	* testsuite/30_threads/packaged_task/cons/alloc.cc: Expect PASS.
+	* testsuite/30_threads/promise/cons/alloc.cc: Expect PASS.
+
+2010-10-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/45893
 	* include/std/functional (bind): Implement DR 817 and add support
 	for volatile-qualified call wrappers.
