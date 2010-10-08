@@ -6198,7 +6198,8 @@ package body Exp_Ch3 is
             end if;
          end;
 
-      --  Otherwise create primitive equality operation  (AI05-0123)
+      --  Otherwise create primitive equality operation (AI05-0123)
+
       --  This is done unconditionally to ensure that tools can be linked
       --  properly with user programs compiled with older language versions.
       --  It might be worth including a switch to revert to a non-composable

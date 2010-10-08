@@ -578,14 +578,13 @@ package body Sem_Aux is
       Btype : constant Entity_Id := Base_Type (Ent);
 
    begin
-      if Ekind (Btype) = E_Limited_Private_Type then
-         if Nkind (Parent (Btype)) = N_Formal_Type_Declaration then
-            return not In_Package_Body (Scope ((Btype)));
-         else
-            return True;
-         end if;
+      if Ekind (Btype) = E_Limited_Private_Type
+        and then Nkind (Parent (Btype)) = N_Formal_Type_Declaration
+      then
+         return not In_Package_Body (Scope ((Btype)));
+      end if;
 
-      elsif Is_Private_Type (Btype) then
+      if Is_Private_Type (Btype) then
          --  AI05-0063 : a type derived from a limited private formal type
          --  is not immutably limited in a generic body.
 

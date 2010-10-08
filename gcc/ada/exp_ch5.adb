@@ -4247,8 +4247,10 @@ package body Exp_Ch5 is
                 Reason => PE_Accessibility_Check_Failed));
          end;
 
-      --  AI05-0073 : if function has a controlling access result, check that
+      --  AI05-0073: If function has a controlling access result, check that
       --  the tag of the return value matches the designated type.
+
+      --  The "or else True" needs commenting here ???
 
       elsif Ekind (R_Type) = E_Anonymous_Access_Type
         and then Has_Controlling_Result (Scope_Id)
