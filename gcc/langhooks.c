@@ -337,6 +337,12 @@ lhd_initialize_diagnostics (diagnostic_context *ctx ATTRIBUTE_UNUSED)
 {
 }
 
+/* Called to perform language-specific options initialization of OPTS.  */
+void
+lhd_init_options_struct (struct gcc_options *opts ATTRIBUTE_UNUSED)
+{
+}
+
 /* Called to perform language-specific options initialization.  */
 void
 lhd_init_options (unsigned int decoded_options_count ATTRIBUTE_UNUSED,

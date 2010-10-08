@@ -639,14 +639,13 @@ lto_complain_wrong_lang_p (const struct cl_option *option ATTRIBUTE_UNUSED)
 }
 
 static void
-lto_init_options (unsigned int decoded_options_count ATTRIBUTE_UNUSED,
-		  struct cl_decoded_option *decoded_options ATTRIBUTE_UNUSED)
+lto_init_options_struct (struct gcc_options *opts)
 {
   /* By default, C99-like requirements for complex multiply and divide.
      ???  Until the complex method is encoded in the IL this is the only
      safe choice.  This will pessimize Fortran code with LTO unless
      people specify a complex method manually or use -ffast-math.  */
-  flag_complex_method = 2;
+  opts->x_flag_complex_method = 2;
 }
 
 /* Handle command-line option SCODE.  If the option takes an argument, it is
@@ -1162,8 +1161,8 @@ static void lto_init_ts (void)
 #define LANG_HOOKS_OPTION_LANG_MASK lto_option_lang_mask
 #undef LANG_HOOKS_COMPLAIN_WRONG_LANG_P
 #define LANG_HOOKS_COMPLAIN_WRONG_LANG_P lto_complain_wrong_lang_p
-#undef LANG_HOOKS_INIT_OPTIONS
-#define LANG_HOOKS_INIT_OPTIONS lto_init_options
+#undef LANG_HOOKS_INIT_OPTIONS_STRUCT
+#define LANG_HOOKS_INIT_OPTIONS_STRUCT lto_init_options_struct
 #undef LANG_HOOKS_HANDLE_OPTION
 #define LANG_HOOKS_HANDLE_OPTION lto_handle_option
 #undef LANG_HOOKS_POST_OPTIONS

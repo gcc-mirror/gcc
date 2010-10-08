@@ -743,6 +743,7 @@ extern tree build_va_arg (location_t, tree, tree);
 extern unsigned int c_common_option_lang_mask (void);
 extern void c_common_initialize_diagnostics (diagnostic_context *);
 extern bool c_common_complain_wrong_lang_p (const struct cl_option *);
+extern void c_common_init_options_struct (struct gcc_options *);
 extern void c_common_init_options (unsigned int, struct cl_decoded_option *);
 extern bool c_common_post_options (const char **);
 extern bool c_common_init (void);

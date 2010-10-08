@@ -208,9 +208,17 @@ extern void decode_cmdline_options_to_array (unsigned int argc,
 					     unsigned int lang_mask,
 					     struct cl_decoded_option **decoded_options,
 					     unsigned int *decoded_options_count);
-extern void decode_options (unsigned int argc, const char **argv,
-			    struct cl_decoded_option **decoded_options,
-			    unsigned int *decoded_options_count);
+extern void init_options_once (void);
+extern void init_options_struct (struct gcc_options *opts,
+				 struct gcc_options *opts_set);
+extern void decode_cmdline_options_to_array_default_mask (unsigned int argc,
+							  const char **argv, 
+							  struct cl_decoded_option **decoded_options,
+							  unsigned int *decoded_options_count);
+extern void decode_options (struct gcc_options *opts,
+			    struct gcc_options *opts_set,
+			    struct cl_decoded_option *decoded_options,
+			    unsigned int decoded_options_count);
 extern int option_enabled (int opt_idx, void *opts);
 extern bool get_option_state (struct gcc_options *, int,
 			      struct cl_option_state *);

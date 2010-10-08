@@ -1,3 +1,12 @@
+2010-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (parse_optimize_options): Call
+	decode_cmdline_options_to_array_default_mask before
+	decode_options.  Update arguments to decode_options.
+	* c-common.h (c_common_init_options_struct): Declare.
+	* c-opts.c (c_common_init_options_struct): New.  Split out from
+	c_common_init_options.
+
 2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented fast enumeration for Objective-C.

@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "coretypes.h"
 #include "opts.h"
-#include "options.h"
+#include "flags.h"
 #include "diagnostic.h"
 #include "tm.h" /* For SWITCH_TAKES_ARG, WORD_SWITCH_TAKES_ARG and
 		   TARGET_OPTION_TRANSLATE_TABLE.  */

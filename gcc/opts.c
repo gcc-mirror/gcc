@@ -353,9 +353,6 @@ DEF_VEC_ALLOC_P(const_char_p,heap);
 
 static VEC(const_char_p,heap) *ignored_options;
 
-/* Language specific warning pass for unused results.  */
-bool flag_warn_unused_result = false;
-
 /* Input file names.  */
 const char **in_fnames;
 unsigned num_in_fnames;
@@ -613,11 +610,14 @@ flag_instrument_functions_exclude_p (tree fndecl)
 }
 
 
-/* Handle the vector of command line options.  LANG_MASK
-   contains has a single bit set representing the current
-   language.  HANDLERS describes what functions to call for the options.  */
+/* Handle the vector of command line options, storing the results of
+   processing DECODED_OPTIONS and DECODED_OPTIONS_COUNT in OPTS and
+   OPTS_SET.  LANG_MASK contains has a single bit set representing the
+   current language.  HANDLERS describes what functions to call for
+   the options.  */
 static void
-read_cmdline_options (struct cl_decoded_option *decoded_options,
+read_cmdline_options (struct gcc_options *opts, struct gcc_options *opts_set,
+		      struct cl_decoded_option *decoded_options,
 		      unsigned int decoded_options_count,
 		      unsigned int lang_mask,
 		      const struct cl_option_handlers *handlers)
@@ -628,6 +628,11 @@ read_cmdline_options (struct cl_decoded_option *decoded_options,
     {
       if (decoded_options[i].opt_index == OPT_SPECIAL_input_file)
 	{
+	  /* Input files should only ever appear on the main command
+	     line.  */
+	  gcc_assert (opts == &global_options);
+	  gcc_assert (opts_set == &global_options_set);
+
 	  if (main_input_filename == NULL)
 	    {
 	      main_input_filename = decoded_options[i].arg;
@@ -638,76 +643,104 @@ read_cmdline_options (struct cl_decoded_option *decoded_options,
 	  continue;
 	}
 
-      read_cmdline_option (&global_options, &global_options_set,
+      read_cmdline_option (opts, opts_set,
 			   decoded_options + i, lang_mask, handlers,
 			   global_dc);
     }
 }
 
-/* Parse command line options and set default flag values.  Do minimal
-   options processing.  The decoded options are placed in *DECODED_OPTIONS
-   and *DECODED_OPTIONS_COUNT.  */
-void
-decode_options (unsigned int argc, const char **argv,
-		struct cl_decoded_option **decoded_options,
-		unsigned int *decoded_options_count)
-{
-  static bool first_time_p = true;
-  static int initial_min_crossjump_insns;
-  static int initial_max_fields_for_field_sensitive;
-  static int initial_loop_invariant_max_bbs_in_loop;
-  static unsigned int initial_lang_mask;
-  struct cl_option_handlers handlers;
+/* Language mask determined at initialization.  */
+static unsigned int initial_lang_mask;
 
-  unsigned int i, lang_mask;
+/* Initial values of parameters we reset.  */
+static int initial_min_crossjump_insns;
+static int initial_max_fields_for_field_sensitive;
+static int initial_loop_invariant_max_bbs_in_loop;
+
+/* Initialize global options-related settings at start-up.  */
+
+void
+init_options_once (void)
+{
+  /* Perform language-specific options initialization.  */
+  initial_lang_mask = lang_hooks.option_lang_mask ();
+
+  lang_hooks.initialize_diagnostics (global_dc);
+
+  /* Save initial values of parameters we reset.  */
+  initial_min_crossjump_insns
+    = compiler_params[PARAM_MIN_CROSSJUMP_INSNS].value;
+  initial_max_fields_for_field_sensitive
+    = compiler_params[PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE].value;
+  initial_loop_invariant_max_bbs_in_loop
+    = compiler_params[PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP].value;
+}
+
+/* Initialize OPTS and OPTS_SET before using them in parsing options.  */
+
+void
+init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
+{
+  *opts = global_options_init;
+  memset (opts_set, 0, sizeof (*opts_set));
+
+  /* Use priority coloring if cover classes is not defined for the
+     target.  */
+  if (targetm.ira_cover_classes == NULL)
+    opts->x_flag_ira_algorithm = IRA_ALGORITHM_PRIORITY;
+
+  /* Initialize whether `char' is signed.  */
+  opts->x_flag_signed_char = DEFAULT_SIGNED_CHAR;
+  /* Set this to a special "uninitialized" value.  The actual default
+     is set after target options have been processed.  */
+  opts->x_flag_short_enums = 2;
+
+  /* Initialize target_flags before targetm.target_option.optimization
+     so the latter can modify it.  */
+  opts->x_target_flags = targetm.default_target_flags;
+
+  /* Some targets have ABI-specified unwind tables.  */
+  opts->x_flag_unwind_tables = targetm.unwind_tables_default;
+}
+
+/* Decode command-line options to an array, like
+   decode_cmdline_options_to_array and with the same arguments but
+   using the default lang_mask.  */
+
+void
+decode_cmdline_options_to_array_default_mask (unsigned int argc,
+					      const char **argv, 
+					      struct cl_decoded_option **decoded_options,
+					      unsigned int *decoded_options_count)
+{
+  decode_cmdline_options_to_array (argc, argv,
+				   initial_lang_mask | CL_COMMON | CL_TARGET,
+				   decoded_options, decoded_options_count);
+}
+
+/* Default the options in OPTS and OPTS_SET based on the optimization
+   settings in DECODED_OPTIONS and DECODED_OPTIONS_COUNT.  */
+static void
+default_options_optimization (struct gcc_options *opts,
+			      struct gcc_options *opts_set,
+			      struct cl_decoded_option *decoded_options,
+			      unsigned int decoded_options_count)
+{
+  unsigned int i;
   int opt1;
   int opt2;
   int opt3;
   int opt1_max;
   int ofast = 0;
-  enum unwind_info_type ui_except;
 
-  if (first_time_p)
-    {
-      /* Perform language-specific options initialization.  */
-      initial_lang_mask = lang_mask = lang_hooks.option_lang_mask ();
-
-      lang_hooks.initialize_diagnostics (global_dc);
-
-      /* Save initial values of parameters we reset.  */
-      initial_min_crossjump_insns
-	= compiler_params[PARAM_MIN_CROSSJUMP_INSNS].value;
-      initial_max_fields_for_field_sensitive
-	= compiler_params[PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE].value;
-      initial_loop_invariant_max_bbs_in_loop
-	= compiler_params[PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP].value;
-    }
-  else
-    lang_mask = initial_lang_mask;
-
-  decode_cmdline_options_to_array (argc, argv,
-				   lang_mask | CL_COMMON | CL_TARGET,
-				   decoded_options, decoded_options_count);
-  if (first_time_p)
-    /* Perform language-specific options initialization.  */
-    lang_hooks.init_options (*decoded_options_count, *decoded_options);
-
-  handlers.unknown_option_callback = unknown_option_callback;
-  handlers.wrong_lang_callback = complain_wrong_lang;
-  handlers.post_handling_callback = post_handling_callback;
-  handlers.num_handlers = 3;
-  handlers.handlers[0].handler = lang_handle_option;
-  handlers.handlers[0].mask = lang_mask;
-  handlers.handlers[1].handler = common_handle_option;
-  handlers.handlers[1].mask = CL_COMMON;
-  handlers.handlers[2].handler = target_handle_option;
-  handlers.handlers[2].mask = CL_TARGET;
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set = &global_options_set);
 
   /* Scan to see what optimization level has been specified.  That will
      determine the default value of many flags.  */
-  for (i = 1; i < *decoded_options_count; i++)
+  for (i = 1; i < decoded_options_count; i++)
     {
-      struct cl_decoded_option *opt = &(*decoded_options)[i];
+      struct cl_decoded_option *opt = &decoded_options[i];
       switch (opt->opt_index)
 	{
 	case OPT_O:
@@ -754,11 +787,6 @@ decode_options (unsigned int argc, const char **argv,
 	  break;
 	}
     }
-
-  /* Use priority coloring if cover classes is not defined for the
-     target.  */
-  if (targetm.ira_cover_classes == NULL)
-    flag_ira_algorithm = IRA_ALGORITHM_PRIORITY;
 
   /* -O1 optimizations.  */
   opt1 = (optimize >= 1);
@@ -879,37 +907,67 @@ decode_options (unsigned int argc, const char **argv,
       targetm.handle_ofast ();
     }
 
+  /* Allow default optimizations to be specified on a per-machine basis.  */
+  targetm.target_option.optimization (optimize, optimize_size);
+}
+
+static void finish_options (struct gcc_options *, struct gcc_options *);
+
+/* Parse command line options and set default flag values.  Do minimal
+   options processing.  The decoded options are in *DECODED_OPTIONS
+   and *DECODED_OPTIONS_COUNT.  */
+void
+decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
+		struct cl_decoded_option *decoded_options,
+		unsigned int decoded_options_count)
+{
+  struct cl_option_handlers handlers;
+
+  unsigned int lang_mask;
+
+  lang_mask = initial_lang_mask;
+
+  handlers.unknown_option_callback = unknown_option_callback;
+  handlers.wrong_lang_callback = complain_wrong_lang;
+  handlers.post_handling_callback = post_handling_callback;
+  handlers.num_handlers = 3;
+  handlers.handlers[0].handler = lang_handle_option;
+  handlers.handlers[0].mask = lang_mask;
+  handlers.handlers[1].handler = common_handle_option;
+  handlers.handlers[1].mask = CL_COMMON;
+  handlers.handlers[2].handler = target_handle_option;
+  handlers.handlers[2].mask = CL_TARGET;
+
   /* Enable -Werror=coverage-mismatch by default */
   enable_warning_as_error ("coverage-mismatch", 1, lang_mask, &handlers,
 			   global_dc);
 
-  if (first_time_p)
-    {
-      /* Initialize whether `char' is signed.  */
-      flag_signed_char = DEFAULT_SIGNED_CHAR;
-      /* Set this to a special "uninitialized" value.  The actual default is
-	 set after target options have been processed.  */
-      flag_short_enums = 2;
-
-      /* Initialize target_flags before
-	 targetm.target_option.optimization so the latter can modify
-	 it.  */
-      target_flags = targetm.default_target_flags;
-
-      /* Some targets have ABI-specified unwind tables.  */
-      flag_unwind_tables = targetm.unwind_tables_default;
-    }
+  default_options_optimization (opts, opts_set,
+				decoded_options, decoded_options_count);
 
 #ifdef ENABLE_LTO
   /* Clear any options currently held for LTO.  */
   lto_clear_user_options ();
 #endif
 
-  /* Allow default optimizations to be specified on a per-machine basis.  */
-  targetm.target_option.optimization (optimize, optimize_size);
-
-  read_cmdline_options (*decoded_options, *decoded_options_count, lang_mask,
+  read_cmdline_options (opts, opts_set,
+			decoded_options, decoded_options_count, lang_mask,
 			&handlers);
+
+  finish_options (opts, opts_set);
+}
+
+/* After all options have been read into OPTS and OPTS_SET, finalize
+   settings of those options and diagnose incompatible
+   combinations.  */
+static void
+finish_options (struct gcc_options *opts, struct gcc_options *opts_set)
+{
+  static bool first_time_p = true;
+  enum unwind_info_type ui_except;
+
+  gcc_assert (opts == &global_options);
+  gcc_assert (opts_set = &global_options_set);
 
   if (dump_base_name && ! IS_ABSOLUTE_PATH (dump_base_name))
     {

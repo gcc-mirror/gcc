@@ -62,6 +62,14 @@ gfc_option_lang_mask (void)
   return CL_Fortran;
 }
 
+/* Initialize options structure OPTS.  */
+
+void
+gfc_init_options_struct (struct gcc_options *opts)
+{
+  opts->x_flag_errno_math = 0;
+  opts->x_flag_associative_math = -1;
+}
 
 /* Get ready for options handling. Keep in sync with
    libgfortran/runtime/compile_options.c (init_compile_options). */
@@ -145,13 +153,7 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.rtcheck = 0;
   gfc_option.coarray = GFC_FCOARRAY_NONE;
 
-  flag_errno_math = 0;
-  flag_associative_math = -1;
-
   set_default_std_flags ();
-
-  /* -fshort-enums can be default on some targets.  */
-  flag_short_enums = targetm.default_short_enums ();
 
   /* Initialize cpp-related options.  */
   gfc_cpp_init_options (decoded_options_count, decoded_options);

@@ -32,6 +32,29 @@ int optimize
 Variable
 int optimize_size
 
+; 0 means straightforward implementation of complex divide acceptable.
+; 1 means wide ranges of inputs must work for complex divide.
+; 2 means C99-like requirements for complex multiply and divide.
+Variable
+int flag_complex_method = 1
+
+; Nonzero if subexpressions must be evaluated from left-to-right.
+Variable
+int flag_evaluation_order = 0
+
+; Set the default region and algorithm for the integrated register
+; allocator.
+
+Variable
+enum ira_algorithm flag_ira_algorithm = IRA_ALGORITHM_CB
+
+Variable
+enum ira_region flag_ira_region = IRA_REGION_MIXED
+
+; Language specific warning pass for unused results.
+Variable
+bool flag_warn_unused_result = false
+
 ###
 Driver
 

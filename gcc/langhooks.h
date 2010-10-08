@@ -267,8 +267,12 @@ struct lang_hooks
      of options.  */
   unsigned int (*option_lang_mask) (void);
 
+  /* Initialize variables in an options structure.  */
+  void (*init_options_struct) (struct gcc_options *opts);
+
   /* After the initialize_diagnostics hook is called, do any simple
-     initialization needed before any calls to handle_option.  */
+     initialization needed before any calls to handle_option, other
+     than that done by the init_options_struct hook.  */
   void (*init_options) (unsigned int decoded_options_count,
 			struct cl_decoded_option *decoded_options);
 
