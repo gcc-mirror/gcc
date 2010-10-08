@@ -1,3 +1,8 @@
+2010-10-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/mcore/mcore.h (INCOMING_RETURN_ADDR_RTX): Define.
+	* config/mcore/mcore.c (TARGET_EXCEPT_UNWIND_INFO): Define.
+
 2010-10-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/45656
