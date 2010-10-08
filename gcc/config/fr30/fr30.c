@@ -172,6 +172,9 @@ static void fr30_trampoline_init (rtx, tree, rtx);
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT fr30_trampoline_init
 
+#undef TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 
