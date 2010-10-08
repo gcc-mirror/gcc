@@ -8378,6 +8378,113 @@ package body Sem_Prag is
               Arg_First_Optional_Parameter => First_Optional_Parameter);
          end Import_Valued_Procedure;
 
+         -----------------
+         -- Independent --
+         -----------------
+
+         --  pragma Independent (LOCAL_NAME);
+
+         when Pragma_Independent => Independent : declare
+            E_Id : Node_Id;
+            E    : Entity_Id;
+            D    : Node_Id;
+            K    : Node_Kind;
+
+         begin
+            Check_Ada_83_Warning;
+            Ada_2012_Pragma;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+            Check_Arg_Is_Local_Name (Arg1);
+            E_Id := Expression (Arg1);
+
+            if Etype (E_Id) = Any_Type then
+               return;
+            end if;
+
+            E := Entity (E_Id);
+            D := Declaration_Node (E);
+            K := Nkind (D);
+
+            if Is_Type (E) then
+               if Rep_Item_Too_Early (E, N)
+                    or else
+                  Rep_Item_Too_Late (E, N)
+               then
+                  return;
+               else
+                  Check_First_Subtype (Arg1);
+               end if;
+
+            elsif K = N_Object_Declaration
+              or else (K = N_Component_Declaration
+                       and then Original_Record_Component (E) = E)
+            then
+               if Rep_Item_Too_Late (E, N) then
+                  return;
+               end if;
+
+            else
+               Error_Pragma_Arg
+                 ("inappropriate entity for pragma%", Arg1);
+            end if;
+
+            Independence_Checks.Append ((N, E));
+         end Independent;
+
+         ----------------------------
+         -- Independent_Components --
+         ----------------------------
+
+         --  pragma Atomic_Components (array_LOCAL_NAME);
+
+         --  This processing is shared by Volatile_Components
+
+         when Pragma_Independent_Components => Independent_Components : declare
+            E_Id : Node_Id;
+            E    : Entity_Id;
+            D    : Node_Id;
+            K    : Node_Kind;
+
+         begin
+            Check_Ada_83_Warning;
+            Ada_2012_Pragma;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+            Check_Arg_Is_Local_Name (Arg1);
+            E_Id := Expression (Arg1);
+
+            if Etype (E_Id) = Any_Type then
+               return;
+            end if;
+
+            E := Entity (E_Id);
+
+            if Rep_Item_Too_Early (E, N)
+                 or else
+               Rep_Item_Too_Late (E, N)
+            then
+               return;
+            end if;
+
+            D := Declaration_Node (E);
+            K := Nkind (D);
+
+            if (K = N_Full_Type_Declaration
+                 and then (Is_Array_Type (E) or else Is_Record_Type (E)))
+              or else
+                ((Ekind (E) = E_Constant or else Ekind (E) = E_Variable)
+                   and then Nkind (D) = N_Object_Declaration
+                   and then Nkind (Object_Definition (D)) =
+                                       N_Constrained_Array_Definition)
+            then
+               Independence_Checks.Append ((N, E));
+
+            else
+               Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
+            end if;
+         end Independent_Components;
+
          ------------------------
          -- Initialize_Scalars --
          ------------------------
@@ -12971,6 +13078,8 @@ package body Sem_Prag is
       Pragma_Import_Object                 =>  0,
       Pragma_Import_Procedure              =>  0,
       Pragma_Import_Valued_Procedure       =>  0,
+      Pragma_Independent                   =>  0,
+      Pragma_Independent_Components        =>  0,
       Pragma_Initialize_Scalars            => -1,
       Pragma_Inline                        =>  0,
       Pragma_Inline_Always                 =>  0,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Table;
 with Types; use Types;
 with Uintp; use Uintp;
 
@@ -167,15 +168,45 @@ package Sem_Ch13 is
    --  back end as required.
 
    procedure Validate_Unchecked_Conversions;
-   --  This routine is called after calling the backend to validate
-   --  unchecked conversions for size and alignment appropriateness.
-   --  The reason it is called that late is to take advantage of any
-   --  back-annotation of size and alignment performed by the backend.
+   --  This routine is called after calling the backend to validate unchecked
+   --  conversions for size and alignment appropriateness. The reason it is
+   --  called that late is to take advantage of any back-annotation of size
+   --  and alignment performed by the backend.
 
    procedure Validate_Address_Clauses;
    --  This is called after the back end has been called (and thus after the
    --  alignments of objects have been back annotated). It goes through the
    --  table of saved address clauses checking for suspicious alignments and
    --  if necessary issuing warnings.
+
+   procedure Validate_Independence;
+   --  This is called after the back end has been called (and thus after the
+   --  layout of components has been back annotated). It goes through the
+   --  table of saved pragma Independent[_Component] entries, checking that
+   --  independence can be achieved, and if necessary issuing error mssags.
+
+   -------------------------------------
+   -- Table for Validate_Independence --
+   -------------------------------------
+
+   --  If a legal pragma Independent or Independent_Components is given for
+   --  an entity, then an entry is made in this table, to be checked by a
+   --  call to Validate_Independence after back annotation of layout is done.
+
+   type Independence_Check_Record is record
+      N : Node_Id;
+      --  The pragma Independent or Independent_Components
+
+      E : Entity_Id;
+      --  The entity to which it applies
+   end record;
+
+   package Independence_Checks is new Table.Table (
+     Table_Component_Type => Independence_Check_Record,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 20,
+     Table_Increment      => 200,
+     Table_Name           => "Independence_Checks");
 
 end Sem_Ch13;
