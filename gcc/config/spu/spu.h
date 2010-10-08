@@ -330,21 +330,10 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 /* Register Arguments */
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-        (spu_function_arg((CUM),(MODE),(TYPE),(NAMED)))
-
 #define CUMULATIVE_ARGS int
 
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,FNDECL,N_NAMED_ARGS) \
 		((CUM) = 0)
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
-        ((CUM) += \
-	 (TYPE) && TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST ? 1 \
-	 : (MODE) == BLKmode ? ((int_size_in_bytes(TYPE)+15) / 16) \
-         : (MODE) == VOIDmode ? 1 \
-	 : HARD_REGNO_NREGS(CUM,MODE))
-
 
 /* The SPU ABI wants 32/64-bit types at offset 0 in the quad-word on the
    stack.  8/16-bit types should be at offsets 3/2 respectively.  */

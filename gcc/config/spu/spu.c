@@ -190,6 +190,10 @@ static tree spu_handle_vector_attribute (tree * node, tree name, tree args,
 static int spu_naked_function_p (tree func);
 static bool spu_pass_by_reference (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 				   const_tree type, bool named);
+static rtx spu_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			     const_tree type, bool named);
+static void spu_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+				      const_tree type, bool named);
 static tree spu_build_builtin_va_list (void);
 static void spu_va_start (tree, rtx);
 static tree spu_gimplify_va_arg_expr (tree valist, tree type,
@@ -390,6 +394,12 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE spu_pass_by_reference
+
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG spu_function_arg
+
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE spu_function_arg_advance
 
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
@@ -3994,10 +4004,10 @@ spu_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED)
   return gen_rtx_REG (mode, FIRST_RETURN_REGNUM);
 }
 
-rtx
-spu_function_arg (CUMULATIVE_ARGS cum,
+static rtx
+spu_function_arg (CUMULATIVE_ARGS *cum,
 		  enum machine_mode mode,
-		  tree type, int named ATTRIBUTE_UNUSED)
+		  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   int byte_size;
 
@@ -4028,6 +4038,19 @@ spu_function_arg (CUMULATIVE_ARGS cum,
     }
   else
     return gen_rtx_REG (mode, FIRST_ARG_REGNUM + cum);
+}
+
+static void
+spu_function_arg_advance (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+			  const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  *cum += (type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
+	   ? 1
+	   : mode == BLKmode
+	   ? ((int_size_in_bytes (type) + 15) / 16)
+	   : mode == VOIDmode
+	   ? 1
+	   : HARD_REGNO_NREGS (cum, mode));
 }
 
 /* Variable sized types are passed by reference.  */
@@ -4238,7 +4261,7 @@ spu_setup_incoming_varargs (CUMULATIVE_ARGS * cum, enum machine_mode mode,
 
       /* cum currently points to the last named argument, we want to
          start at the next argument. */
-      FUNCTION_ARG_ADVANCE (ncum, mode, type, 1);
+      spu_function_arg_advance (&ncum, mode, type, true);
 
       offset = -STACK_POINTER_OFFSET;
       for (regno = ncum; regno < MAX_REGISTER_ARGS; regno++)

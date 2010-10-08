@@ -1,5 +1,19 @@
 2010-10-08  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/spu/spu-protos.h (spu_function_arg): Delete.
+	* config/spu/spu.h (FUNCTION_ARG): Delete.
+	(FUNCTION_ARG_ADVANCE): Move code to ...
+	* config/spu/spu.c (spu_function_arg_advance): New function.
+	(spu_function_arg): Make static.  Take a const_tree and a bool.
+	(spu_setup_incoming_varargs): Call spu_function_arg_advance.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-10-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rx/rx.c (TARGET_EXCEPT_UNWIND_INFO): Define.
+
+2010-10-08  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* tree-ssa-sccvn.c (init_vn_nary_op_from_pieces): New function.
 	(init_vn_nary_op_from_op): New function.
 	(init_vn_nary_op_from_stmt): New function.
