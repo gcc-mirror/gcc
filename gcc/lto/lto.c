@@ -995,7 +995,7 @@ lto_balanced_map (void)
   struct cgraph_node **order = XNEWVEC (struct cgraph_node *, cgraph_max_uid);
   int i, postorder_len;
   struct cgraph_node *node;
-  int total_size = 0;
+  int total_size = 0, best_total_size = 0;
   int partition_size;
   ltrans_partition partition;
   unsigned int last_visited_cgraph_node = 0, last_visited_varpool_node = 0;
@@ -1017,7 +1017,7 @@ lto_balanced_map (void)
       if (partition_cgraph_node_p (node))
 	{
 	  order[n_nodes++] = node;
-          total_size += node->local.inline_summary.self_size;
+          total_size += node->global.size;
 	}
     }
   free (postorder);
@@ -1035,6 +1035,7 @@ lto_balanced_map (void)
   for (i = 0; i < n_nodes; i++)
     {
       add_cgraph_node_to_partition (partition, order[i]);
+      total_size -= order[i]->global.size;
 
       /* Once we added a new node to the partition, we also want to add
          all referenced variables unless they was already added into some
@@ -1069,7 +1070,6 @@ lto_balanced_map (void)
 				last_visited_cgraph_node);
 	      refs = &node->ref_list;
 
-	      total_size -= node->local.inline_summary.self_size;
 	      last_visited_cgraph_node++;
 
 	      gcc_assert (node->analyzed);
@@ -1195,6 +1195,7 @@ lto_balanced_map (void)
 				     partition->cgraph_set->nodes);
 	  best_n_varpool_nodes = VEC_length (varpool_node_ptr,
 					     partition->varpool_set->nodes);
+	  best_total_size = total_size;
 	}
       if (cgraph_dump_file)
 	fprintf (cgraph_dump_file, "Step %i: added %s, size %i, cost %i/%i best %i/%i, step %i\n", i,
@@ -1218,6 +1219,7 @@ lto_balanced_map (void)
 	  partition = new_partition ("");
 	  last_visited_cgraph_node = 0;
 	  last_visited_varpool_node = 0;
+	  total_size = best_total_size;
 	  cost = 0;
 
 	  if (cgraph_dump_file)
