@@ -1,3 +1,8 @@
+2010-10-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/45943
+	* gfortran.dg/streamio_16.f90: Update test.
+
 2010-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/45903
