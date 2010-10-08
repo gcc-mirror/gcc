@@ -392,7 +392,7 @@ package body Exp_Ch7 is
           Typ   => Typ,
           Stmts => Make_Deep_Array_Body (Initialize_Case, Typ)));
 
-      if not Is_Inherently_Limited_Type (Typ) then
+      if not Is_Immutably_Limited_Type (Typ) then
          Set_TSS (Typ,
            Make_Deep_Proc (
              Prim  => Adjust_Case,
@@ -502,7 +502,7 @@ package body Exp_Ch7 is
           Typ   => Typ,
           Stmts => Make_Deep_Record_Body (Initialize_Case, Typ)));
 
-      if not Is_Inherently_Limited_Type (Typ) then
+      if not Is_Immutably_Limited_Type (Typ) then
          Set_TSS (Typ,
            Make_Deep_Proc (
              Prim  => Adjust_Case,
@@ -2725,7 +2725,7 @@ package body Exp_Ch7 is
       Res            : constant List_Id := New_List;
 
    begin
-      if Is_Inherently_Limited_Type (Typ) then
+      if Is_Immutably_Limited_Type (Typ) then
          Controller_Typ := RTE (RE_Limited_Record_Controller);
       else
          Controller_Typ := RTE (RE_Record_Controller);

@@ -570,24 +570,49 @@ package body Sem_Aux is
       end if;
    end Is_Indefinite_Subtype;
 
-   --------------------------------
-   -- Is_Inherently_Limited_Type --
-   --------------------------------
+   -------------------------------
+   -- Is_Immutably_Limited_Type --
+   -------------------------------
 
-   function Is_Inherently_Limited_Type (Ent : Entity_Id) return Boolean is
+   function Is_Immutably_Limited_Type (Ent : Entity_Id) return Boolean is
       Btype : constant Entity_Id := Base_Type (Ent);
 
    begin
-      if Is_Private_Type (Btype) then
-         declare
-            Utyp : constant Entity_Id := Underlying_Type (Btype);
-         begin
-            if No (Utyp) then
+      if Ekind (Btype) = E_Limited_Private_Type then
+         if Nkind (Parent (Btype)) = N_Formal_Type_Declaration then
+            return not In_Package_Body (Scope ((Btype)));
+         else
+            return True;
+         end if;
+
+      elsif Is_Private_Type (Btype) then
+         --  AI05-0063 : a type derived from a limited private formal type
+         --  is not immutably limited in a generic body.
+
+         if Is_Derived_Type (Btype)
+           and then Is_Generic_Type (Etype (Btype))
+         then
+            if not Is_Limited_Type (Etype (Btype)) then
                return False;
+
+            elsif Ekind (Scope (Etype (Btype))) = E_Generic_Package then
+               return not In_Package_Body (Scope (Etype (Btype)));
+
             else
-               return Is_Inherently_Limited_Type (Utyp);
+               return False;
             end if;
-         end;
+
+         else
+            declare
+               Utyp : constant Entity_Id := Underlying_Type (Btype);
+            begin
+               if No (Utyp) then
+                  return False;
+               else
+                  return Is_Immutably_Limited_Type (Utyp);
+               end if;
+            end;
+         end if;
 
       elsif Is_Concurrent_Type (Btype) then
          return True;
@@ -605,7 +630,7 @@ package body Sem_Aux is
             return True;
 
          elsif Is_Class_Wide_Type (Btype) then
-            return Is_Inherently_Limited_Type (Root_Type (Btype));
+            return Is_Immutably_Limited_Type (Root_Type (Btype));
 
          else
             declare
@@ -622,7 +647,7 @@ package body Sem_Aux is
                   --  limited intefaces.
 
                   if not Is_Interface (Etype (C))
-                    and then Is_Inherently_Limited_Type (Etype (C))
+                    and then Is_Immutably_Limited_Type (Etype (C))
                   then
                      return True;
                   end if;
@@ -635,12 +660,12 @@ package body Sem_Aux is
          end if;
 
       elsif Is_Array_Type (Btype) then
-         return Is_Inherently_Limited_Type (Component_Type (Btype));
+         return Is_Immutably_Limited_Type (Component_Type (Btype));
 
       else
          return False;
       end if;
-   end Is_Inherently_Limited_Type;
+   end Is_Immutably_Limited_Type;
 
    ---------------------
    -- Is_Limited_Type --

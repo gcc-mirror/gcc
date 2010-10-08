@@ -5028,7 +5028,7 @@ package body Exp_Util is
          --  to accommodate functions returning limited objects by reference.
 
          if Nkind (Exp) = N_Function_Call
-           and then Is_Inherently_Limited_Type (Etype (Exp))
+           and then Is_Immutably_Limited_Type (Etype (Exp))
            and then Nkind (Parent (Exp)) /= N_Object_Declaration
            and then Ada_Version >= Ada_05
          then

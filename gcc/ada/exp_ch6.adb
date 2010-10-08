@@ -3106,7 +3106,7 @@ package body Exp_Ch6 is
       --  not a rewriting of a protected function call.
 
       if Needs_Finalization (Etype (Subp)) then
-         if not Is_Inherently_Limited_Type (Etype (Subp))
+         if not Is_Immutably_Limited_Type (Etype (Subp))
            and then
              (No (First_Formal (Subp))
                 or else
@@ -4405,7 +4405,7 @@ package body Exp_Ch6 is
          then
             null;
 
-         elsif Is_Inherently_Limited_Type (Typ) then
+         elsif Is_Immutably_Limited_Type (Typ) then
             Set_Returns_By_Ref (Spec_Id);
 
          elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
@@ -4810,7 +4810,7 @@ package body Exp_Ch6 is
          --  may return objects of nonlimited descendants.
 
          else
-            return Is_Inherently_Limited_Type (Etype (E))
+            return Is_Immutably_Limited_Type (Etype (E))
               and then Ada_Version >= Ada_05
               and then not Debug_Flag_Dot_L;
          end if;
@@ -5025,7 +5025,7 @@ package body Exp_Ch6 is
          Typ  : constant Entity_Id := Etype (Subp);
          Utyp : constant Entity_Id := Underlying_Type (Typ);
       begin
-         if Is_Inherently_Limited_Type (Typ) then
+         if Is_Immutably_Limited_Type (Typ) then
             Set_Returns_By_Ref (Subp);
          elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
             Set_Returns_By_Ref (Subp);

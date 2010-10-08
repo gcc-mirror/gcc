@@ -1661,7 +1661,7 @@ package body Exp_Ch3 is
            and then Has_New_Controlled_Component (Enclos_Type)
            and then Has_Controlled_Component (Typ)
          then
-            if Is_Inherently_Limited_Type (Typ) then
+            if Is_Immutably_Limited_Type (Typ) then
                Controller_Typ := RTE (RE_Limited_Record_Controller);
             else
                Controller_Typ := RTE (RE_Record_Controller);
@@ -1930,7 +1930,7 @@ package body Exp_Ch3 is
 
          if Needs_Finalization (Typ)
            and then not (Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate))
-           and then not Is_Inherently_Limited_Type (Typ)
+           and then not Is_Immutably_Limited_Type (Typ)
          then
             declare
                Ref : constant Node_Id :=
@@ -4800,7 +4800,7 @@ package body Exp_Ch3 is
             --  creating the object (via allocator) and initializing it.
 
             if Is_Return_Object (Def_Id)
-              and then Is_Inherently_Limited_Type (Typ)
+              and then Is_Immutably_Limited_Type (Typ)
             then
                null;
 
@@ -5014,7 +5014,7 @@ package body Exp_Ch3 is
             --  renaming declaration.
 
             if Needs_Finalization (Typ)
-              and then not Is_Inherently_Limited_Type (Typ)
+              and then not Is_Immutably_Limited_Type (Typ)
               and then not Rewrite_As_Renaming
             then
                Insert_Actions_After (Init_After,
@@ -5291,7 +5291,7 @@ package body Exp_Ch3 is
          Loc := Sloc (First (Component_Items (Comp_List)));
       end if;
 
-      if Is_Inherently_Limited_Type (T) then
+      if Is_Immutably_Limited_Type (T) then
          Controller_Type := RTE (RE_Limited_Record_Controller);
       else
          Controller_Type := RTE (RE_Record_Controller);
@@ -6099,7 +6099,11 @@ package body Exp_Ch3 is
             end if;
 
             Set_Is_Frozen (Def_Id);
-            Set_All_DT_Position (Def_Id);
+            if not Is_Derived_Type (Def_Id)
+              or else Is_Tagged_Type (Etype (Def_Id))
+            then
+               Set_All_DT_Position (Def_Id);
+            end if;
 
             --  Add the controlled component before the freezing actions
             --  referenced in those actions.
@@ -6194,9 +6198,16 @@ package body Exp_Ch3 is
             end if;
          end;
 
-      elsif Ada_Version >= Ada_12
-        and then Comes_From_Source (Def_Id)
+      --  Otherwise create primitive equality operation  (AI05-0123)
+      --  This is done unconditionally to ensure that tools can be linked
+      --  properly with user programs compiled with older language versions.
+      --  It might be worth including a switch to revert to a non-composable
+      --  equality for untagged records, even though no program depending on
+      --  non-composability has surfaced ???
+
+      elsif Comes_From_Source (Def_Id)
         and then Convention (Def_Id) = Convention_Ada
+        and then not Is_Limited_Type (Def_Id)
       then
          Build_Untagged_Equality (Def_Id);
       end if;

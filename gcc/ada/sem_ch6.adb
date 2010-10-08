@@ -483,7 +483,7 @@ package body Sem_Ch6 is
                Error_Msg_N
                  ("(Ada 2005) cannot copy object of a limited type " &
                   "(RM-2005 6.5(5.5/2))", Expr);
-               if Is_Inherently_Limited_Type (R_Type) then
+               if Is_Immutably_Limited_Type (R_Type) then
                   Error_Msg_N
                     ("\return by reference not permitted in Ada 2005", Expr);
                end if;
@@ -495,7 +495,7 @@ package body Sem_Ch6 is
             --  evilly turned off. Otherwise it is a real error.
 
             elsif Warn_On_Ada_2005_Compatibility or GNAT_Mode then
-               if Is_Inherently_Limited_Type (R_Type) then
+               if Is_Immutably_Limited_Type (R_Type) then
                   Error_Msg_N
                     ("return by reference not permitted in Ada 2005 " &
                      "(RM-2005 6.5(5.5/2))?", Expr);
@@ -759,7 +759,7 @@ package body Sem_Ch6 is
          --  check the static cases.
 
          if (Ada_Version < Ada_05 or else Debug_Flag_Dot_L)
-           and then Is_Inherently_Limited_Type (Etype (Scope_Id))
+           and then Is_Immutably_Limited_Type (Etype (Scope_Id))
            and then Object_Access_Level (Expr) >
                       Subprogram_Access_Level (Scope_Id)
          then
@@ -4256,7 +4256,7 @@ package body Sem_Ch6 is
             Utyp : constant Entity_Id := Underlying_Type (Typ);
 
          begin
-            if Is_Inherently_Limited_Type (Typ) then
+            if Is_Immutably_Limited_Type (Typ) then
                Set_Returns_By_Ref (Designator);
 
             elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then

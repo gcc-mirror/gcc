@@ -165,7 +165,7 @@ package Sem_Aux is
    --  discriminant values or a class wide type or subtype and returns True if
    --  so. False for other type entities, or any entities that are not types.
 
-   function Is_Inherently_Limited_Type (Ent : Entity_Id) return Boolean;
+   function Is_Immutably_Limited_Type (Ent : Entity_Id) return Boolean;
    --  Ent is any entity. True for a type that is "inherently" limited (i.e.
    --  cannot become nonlimited). From the Ada 2005 RM-7.5(8.1/2), "a type with
    --  a part that is of a task, protected, or explicitly limited record type".

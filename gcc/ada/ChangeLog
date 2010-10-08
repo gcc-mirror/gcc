@@ -1,5 +1,21 @@
 2010-10-08  Robert Dewar  <dewar@adacore.com>
 
+	* sem_prag.adb (Check_Duplicate_Pragma): Check for entity match
+	* gcc-interface/Make-lang.in: Update dependencies.
+	* einfo.ads: Minor reformatting.
+
+2010-10-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb, sem_ch3.adb, exp_ch7.adb, exp_util.adb, sem_aux.adb,
+	sem_aux.ads, exp_ch4.adb, exp_ch6.adb, sem_ch6.adb, exp_aggr.adb,
+	exp_ch3.adb: Change Is_Inherently_Limited_Type to
+	Is_Immutably_Limited_Type to accord with new RM terminology.
+	* sem_aux.adb (Is_Immutably_Limited_Type): A type that is a descendant
+	of a formal limited private type is not immutably limited in a generic
+	body.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
 	* sem_prag.adb (Check_Duplicate_Pragma): New procedure
 	Add calls to this new procedure where appropriate
 
