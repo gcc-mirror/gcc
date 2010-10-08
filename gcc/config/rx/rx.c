@@ -2837,6 +2837,9 @@ rx_memory_move_cost (enum machine_mode mode, enum reg_class regclass, bool in)
 #undef  TARGET_OPTION_OPTIMIZATION
 #define TARGET_OPTION_OPTIMIZATION		rx_option_optimization
 
+#undef  TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO		sjlj_except_unwind_info
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* #include "gt-rx.h" */

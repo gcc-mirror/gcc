@@ -1,5 +1,9 @@
 2010-10-08  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/rx/rx.c (TARGET_EXCEPT_UNWIND_INFO): Define.
+
+2010-10-08  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/sparc/sparc-protos.h (function_arg_advance, function-arg):
 	Delete.
 	* config/sparc/sparc.h (FUNCTION_ARG_ADVANCE, FUNCTION_ARG): Delete.
