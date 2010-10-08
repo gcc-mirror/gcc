@@ -1,3 +1,8 @@
+2010-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/45903
+	* gcc.target/i386/pr45903.c: New test.
+
 2010-10-08  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/interface5.adb: Compile with warnings disabled.

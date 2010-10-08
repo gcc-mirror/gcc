@@ -1,3 +1,9 @@
+2010-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/45903
+	* simplify-rtx.c (simplify_subreg): Optimize lowpart SUBREG
+	of *SHIFTRT of MEM.
+
 2010-10-08  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer-in.c (lto_input_ts_decl_minimal_tree_pointers):
