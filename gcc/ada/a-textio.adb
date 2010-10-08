@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,13 +29,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Streams;          use Ada.Streams;
-with Interfaces.C_Streams; use Interfaces.C_Streams;
+with Ada.Streams;             use Ada.Streams;
+with Interfaces.C_Streams;    use Interfaces.C_Streams;
 
+with System;                  use System;
+with System.Storage_Elements; use System.Storage_Elements;
 with System.File_IO;
 with System.CRTL;
-with System.WCh_Cnv;       use System.WCh_Cnv;
-with System.WCh_Con;       use System.WCh_Con;
+with System.WCh_Cnv;          use System.WCh_Cnv;
+with System.WCh_Con;          use System.WCh_Con;
 
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
@@ -693,19 +695,119 @@ package body Ada.Text_IO is
       Item : out String;
       Last : out Natural)
    is
+      Chunk_Size : constant := 80;
+      --  We read into a fixed size auxiliary buffer. Because this buffer
+      --  needs to be pre-initialized, there is a trade-off between size and
+      --  speed. Experiments find returns are diminishing after 50 and this
+      --  size allows most lines to be processed with a single read.
+
       ch : int;
+      N  : Natural;
+
+      procedure memcpy (s1, s2 : chars; n : size_t);
+      pragma Import (C, memcpy);
+
+      function memchr (s : chars; ch : int; n : size_t) return chars;
+      pragma Import (C, memchr);
+
+      procedure memset (b : chars; ch : int; n : size_t);
+      pragma Import (C, memset);
+
+      function Get_Chunk (N : Positive) return Natural;
+      --  Reads at most N - 1 characters into Item (Last + 1 .. Item'Last),
+      --  updating Last. Raises End_Error if nothing was read (End_Of_File).
+      --  Returns number of characters still to read (either 0 or 1) in
+      --  case of success.
+
+      ---------------
+      -- Get_Chunk --
+      ---------------
+
+      function Get_Chunk (N : Positive) return Natural is
+         Buf : String (1 .. Chunk_Size);
+         S   : constant chars := Buf (1)'Address;
+         P   : chars;
+
+      begin
+         if N = 1 then
+            return N;
+         end if;
+
+         memset (S, 10, size_t (N));
+
+         if fgets (S, N, File.Stream) = Null_Address then
+            if ferror (File.Stream) /= 0 then
+               raise Device_Error;
+
+            --  If incomplete last line, pretend we found a LM
+
+            elsif Last >= Item'First then
+               return 0;
+
+            else
+               raise End_Error;
+            end if;
+         end if;
+
+         P := memchr (S, LM, size_t (N));
+
+         --  If no LM is found, the buffer got filled without reading a new
+         --  line. Otherwise, the LM is either one from the input, or else one
+         --  from the initialization, which means an incomplete end-of-line was
+         --  encountered. Only in first case the LM will be followed by a 0.
+
+         if P = Null_Address then
+            pragma Assert (Buf (N) = ASCII.NUL);
+            memcpy (Item (Item'First + Last)'Address,
+                    Buf (1)'Address, size_t (N - 1));
+            Last := Last + N - 1;
+
+            return 1;
+
+         else
+            --  P points to the LM character. Set K so Buf (K) is the character
+            --  right before.
+
+            declare
+               K : Natural := Natural (P - S);
+
+            begin
+               --  Now Buf (K + 2) should be 0, or otherwise Buf (K) is the 0
+               --  put in by fgets, so compensate.
+
+               if K + 2 > Buf'Last or else Buf (K + 2) /= ASCII.NUL then
+
+                  --  Incomplete last line, so remove the extra 0
+
+                  pragma Assert (Buf (K) = ASCII.NUL);
+                  K := K - 1;
+               end if;
+
+               memcpy (Item (Item'First + Last)'Address,
+                       Buf (1)'Address, size_t (K));
+               Last := Last + K;
+            end;
+
+            return 0;
+         end if;
+      end Get_Chunk;
+
+   --  Start of processing for Get_Line
 
    begin
       FIO.Check_Read_Status (AP (File));
-      Last := Item'First - 1;
 
       --  Immediate exit for null string, this is a case in which we do not
       --  need to test for end of file and we do not skip a line mark under
       --  any circumstances.
 
-      if Last >= Item'Last then
+      if Item'First > Item'Last then
          return;
       end if;
+
+      N := Item'Last - Item'First + 1;
+
+      Last := Item'First - 1;
 
       --  Here we have at least one character, if we are immediately before
       --  a line mark, then we will just skip past it storing no characters.
@@ -717,67 +819,44 @@ package body Ada.Text_IO is
       --  Otherwise we need to read some characters
 
       else
-         ch := Getc (File);
+         while N >= Chunk_Size loop
+            if Get_Chunk (Chunk_Size) = 0 then
+               N := 0;
+            else
+               N := N - Chunk_Size + 1;
+            end if;
+         end loop;
 
-         --  If we are at the end of file now, it means we are trying to
-         --  skip a file terminator and we raise End_Error (RM A.10.7(20))
-
-         if ch = EOF then
-            raise End_Error;
+         if N > 1 then
+            N := Get_Chunk (N);
          end if;
 
-         --  Loop through characters. Don't bother if we hit a page mark,
-         --  since in normal files, page marks can only follow line marks
-         --  in any case and we only promise to treat the page nonsense
-         --  correctly in the absense of such rogue page marks.
+         --  Almost there, only a little bit more to read
 
-         loop
-            --  Exit the loop if read is terminated by encountering line mark
+         if N = 1 then
+            ch := Getc (File);
 
-            exit when ch = LM;
+            --  If we get EOF after already reading data, this is an incomplete
+            --  last line, in which case no End_Error should be raised.
 
-            --  Otherwise store the character, note that we know that ch is
-            --  something other than LM or EOF. It could possibly be a page
-            --  mark if there is a stray page mark in the middle of a line,
-            --  but this is not an official page mark in any case, since
-            --  official page marks can only follow a line mark. The whole
-            --  page business is pretty much nonsense anyway, so we do not
-            --  want to waste time trying to make sense out of non-standard
-            --  page marks in the file! This means that the behavior of
-            --  Get_Line is different from repeated Get of a character, but
-            --  that's too bad. We only promise that page numbers etc make
-            --  sense if the file is formatted in a standard manner.
+            if ch = EOF and then Last < Item'First then
+               raise End_Error;
 
-            --  Note: we do not adjust the column number because it is quicker
-            --  to adjust it once at the end of the operation than incrementing
-            --  it each time around the loop.
+            elsif ch /= LM then
 
-            Last := Last + 1;
-            Item (Last) := Character'Val (ch);
+               --  Buffer really is full without having seen LM, update col
 
-            --  All done if the string is full, this is the case in which
-            --  we do not skip the following line mark. We need to adjust
-            --  the column number in this case.
-
-            if Last = Item'Last then
-               File.Col := File.Col + Count (Item'Length);
+               Last := Last + 1;
+               Item (Last) := Character'Val (ch);
+               File.Col := File.Col + Count (Last - Item'First + 1);
                return;
             end if;
-
-            --  Otherwise read next character. We also exit from the loop if
-            --  we read an end of file. This is the case where the last line
-            --  is not terminated with a line mark, and we consider that there
-            --  is an implied line mark in this case (this is a non-standard
-            --  file, but it is nice to treat it reasonably).
-
-            ch := Getc (File);
-            exit when ch = EOF;
-         end loop;
+         end if;
       end if;
 
       --  We have skipped past, but not stored, a line mark. Skip following
-      --  page mark if one follows, but do not do this for a non-regular
-      --  file (since otherwise we get annoying wait for an extra character)
+      --  page mark if one follows, but do not do this for a non-regular file
+      --  (since otherwise we get annoying wait for an extra character)
 
       File.Line := File.Line + 1;
       File.Col := 1;
