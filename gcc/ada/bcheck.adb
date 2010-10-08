@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -854,6 +854,22 @@ package body Bcheck is
    --  Start of processing for Check_Consistent_Restrictions
 
    begin
+      --  A special test, if we have a main program, then if it has an
+      --  allocator in the body, this is considered to be a violation of
+      --  the restriction No_Allocators_After_Elaboration. We just mark
+      --  this restriction and then the normal circuit will flag it.
+
+      if Bind_Main_Program
+        and then ALIs.Table (ALIs.First).Main_Program /= None
+        and then not No_Main_Subprogram
+        and then ALIs.Table (ALIs.First).Allocator_In_Body
+      then
+         Cumulative_Restrictions.Violated
+           (No_Allocators_After_Elaboration) := True;
+         ALIs.Table (ALIs.First).Restrictions.Violated
+           (No_Allocators_After_Elaboration) := True;
+      end if;
+
       --  Loop through all restriction violations
 
       for R in All_Restrictions loop

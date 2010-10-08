@@ -357,6 +357,10 @@ package Lib is
    --      that the default priority is to be used (and is also used for
    --      entries that do not correspond to possible main programs).
 
+   --    Has_Allocator
+   --      This flag is set if a subprogram unit has an allocator after the
+   --      BEGIN (it is used to set the AB flag in the M ALI line).
+
    --    OA_Setting
    --      This is a character field containing L if Optimize_Alignment mode
    --      was set locally, and O/T/S for Off/Time/Space default if not.
@@ -397,6 +401,7 @@ package Lib is
    function Fatal_Error      (U : Unit_Number_Type) return Boolean;
    function Generate_Code    (U : Unit_Number_Type) return Boolean;
    function Ident_String     (U : Unit_Number_Type) return Node_Id;
+   function Has_Allocator    (U : Unit_Number_Type) return Boolean;
    function Has_RACW         (U : Unit_Number_Type) return Boolean;
    function Is_Compiler_Unit (U : Unit_Number_Type) return Boolean;
    function Loading          (U : Unit_Number_Type) return Boolean;
@@ -415,6 +420,7 @@ package Lib is
    procedure Set_Fatal_Error      (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Generate_Code    (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Has_RACW         (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Has_Allocator    (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Is_Compiler_Unit (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Ident_String     (U : Unit_Number_Type; N : Node_Id);
    procedure Set_Loading          (U : Unit_Number_Type; B : Boolean := True);
@@ -653,6 +659,7 @@ private
    pragma Inline (Dependency_Num);
    pragma Inline (Fatal_Error);
    pragma Inline (Generate_Code);
+   pragma Inline (Has_Allocator);
    pragma Inline (Has_RACW);
    pragma Inline (Is_Compiler_Unit);
    pragma Inline (Increment_Serial_Number);
@@ -664,6 +671,7 @@ private
    pragma Inline (Set_Cunit_Entity);
    pragma Inline (Set_Fatal_Error);
    pragma Inline (Set_Generate_Code);
+   pragma Inline (Set_Has_Allocator);
    pragma Inline (Set_Has_RACW);
    pragma Inline (Set_Loading);
    pragma Inline (Set_Main_Priority);
@@ -693,6 +701,7 @@ private
       Is_Compiler_Unit : Boolean;
       Dynamic_Elab     : Boolean;
       Loading          : Boolean;
+      Has_Allocator    : Boolean;
       OA_Setting       : Character;
    end record;
 
@@ -720,7 +729,8 @@ private
       Dynamic_Elab     at 55 range 0 ..  7;
       Is_Compiler_Unit at 56 range 0 ..  7;
       OA_Setting       at 57 range 0 ..  7;
-      Loading          at 58 range 0 .. 15;
+      Loading          at 58 range 0 ..  7;
+      Has_Allocator    at 59 range 0 ..  7;
    end record;
 
    for Unit_Record'Size use 60 * 8;

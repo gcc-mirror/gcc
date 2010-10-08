@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -135,6 +135,10 @@ package ALI is
       --  Indicates value of time slice parameter from T=xxx on main program
       --  line. A value of -1 indicates that no T=xxx parameter was found, or
       --  no M line was present. Not set if 'M' appears in Ignore_Lines.
+
+      Allocator_In_Body : Boolean;
+      --  Set True if an AB switch appears on the main program line. False
+      --  if no M line, or AB not present, or 'M appears in Ignore_Lines.
 
       WC_Encoding : Character;
       --  Wide character encoding if main procedure. Otherwise not relevant.

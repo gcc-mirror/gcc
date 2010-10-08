@@ -1,3 +1,23 @@
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
+	* ali.adb: Set Allocator_In_Body if AB parameter present on M line
+	* ali.ads (Allocator_In_Body): New flag
+	* bcheck.adb (Check_Consistent_Restrictions): Handle case of main
+	program violating No_Allocators_After_Elaboration restriction.
+	* gnatbind.adb (No_Restriction_List): Add entries for
+	No_Anonymous_Allocators, and No_Allocators_After_Elaboration.
+	* lib-load.adb: Initialize Has_Allocator flag
+	* lib-writ.adb: Initialize Has_Allocator flag
+	(M_Parameters): Set AB switch if Has_Allocator flag set
+	* lib-writ.ads: Document AB flag on M line
+	* lib.adb (Has_Allocator): New function
+	(Set_Has_Allocator): New procedure
+	* lib.ads (Has_Allocator): New function
+	(Set_Has_Allocator): New procedure
+	(Has_Allocator): New flag in Unit_Record
+	* sem_ch4.adb (Analyze_Allocator): Add processing for
+	No_Allocators_After_Elaboration.
+
 2010-10-08  Geert Bosch  <bosch@adacore.com>
 
 	* a-textio.adb (Get_Line): Rewrite to use fgets instead of fgetc.
