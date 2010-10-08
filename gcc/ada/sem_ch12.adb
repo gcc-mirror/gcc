@@ -8225,17 +8225,18 @@ package body Sem_Ch12 is
       Actual          : Node_Id;
       Analyzed_Formal : Node_Id) return List_Id
    is
+      Gen_Obj     : constant Entity_Id  := Defining_Identifier (Formal);
+      A_Gen_Obj   : constant Entity_Id  :=
+                      Defining_Identifier (Analyzed_Formal);
       Acc_Def     : Node_Id             := Empty;
       Act_Assoc   : constant Node_Id    := Parent (Actual);
       Actual_Decl : Node_Id             := Empty;
-      Formal_Id   : constant Entity_Id  := Defining_Identifier (Formal);
       Decl_Node   : Node_Id;
       Def         : Node_Id;
       Ftyp        : Entity_Id;
       List        : constant List_Id    := New_List;
       Loc         : constant Source_Ptr := Sloc (Actual);
-      Orig_Ftyp   : constant Entity_Id  :=
-                      Etype (Defining_Identifier (Analyzed_Formal));
+      Orig_Ftyp   : constant Entity_Id  := Etype (A_Gen_Obj);
       Subt_Decl   : Node_Id             := Empty;
       Subt_Mark   : Node_Id             := Empty;
 
@@ -8249,9 +8250,9 @@ package body Sem_Ch12 is
 
       --  Sloc for error message on missing actual
 
-      Error_Msg_Sloc := Sloc (Scope (Defining_Identifier (Analyzed_Formal)));
+      Error_Msg_Sloc := Sloc (Scope (A_Gen_Obj));
 
-      if Get_Instance_Of (Formal_Id) /= Formal_Id then
+      if Get_Instance_Of (Gen_Obj) /= Gen_Obj then
          Error_Msg_N ("duplicate instantiation of generic parameter", Actual);
       end if;
 
@@ -8272,25 +8273,24 @@ package body Sem_Ch12 is
          if No (Actual) then
             Error_Msg_NE
               ("missing actual&",
-               Instantiation_Node, Formal_Id);
+               Instantiation_Node, Gen_Obj);
             Error_Msg_NE
               ("\in instantiation of & declared#",
-                 Instantiation_Node,
-                   Scope (Defining_Identifier (Analyzed_Formal)));
+                 Instantiation_Node, Scope (A_Gen_Obj));
             Abandon_Instantiation (Instantiation_Node);
          end if;
 
          if Present (Subt_Mark) then
             Decl_Node :=
               Make_Object_Renaming_Declaration (Loc,
-                Defining_Identifier => New_Copy (Formal_Id),
+                Defining_Identifier => New_Copy (Gen_Obj),
                 Subtype_Mark        => New_Copy_Tree (Subt_Mark),
                 Name                => Actual);
 
          else pragma Assert (Present (Acc_Def));
             Decl_Node :=
               Make_Object_Renaming_Declaration (Loc,
-                Defining_Identifier => New_Copy (Formal_Id),
+                Defining_Identifier => New_Copy (Gen_Obj),
                 Access_Definition   => New_Copy_Tree (Acc_Def),
                 Name                => Actual);
          end if;
@@ -8323,11 +8323,10 @@ package body Sem_Ch12 is
          end if;
 
          --  The actual has to be resolved in order to check that it is a
-         --  variable (due to cases such as F(1), where F returns
-         --  access to an array, and for overloaded prefixes).
+         --  variable (due to cases such as F (1), where F returns access to an
+         --  array, and for overloaded prefixes).
 
-         Ftyp :=
-           Get_Instance_Of (Etype (Defining_Identifier (Analyzed_Formal)));
+         Ftyp := Get_Instance_Of (Etype (A_Gen_Obj));
 
          --  If the type of the formal is not itself a formal, and the
          --  current unit is a child unit, the formal type must be declared
@@ -8335,12 +8334,11 @@ package body Sem_Ch12 is
 
          if Ftyp = Orig_Ftyp
            and then Is_Generic_Unit (Scope (Ftyp))
-           and then
-             Is_Child_Unit (Scope (Defining_Identifier (Analyzed_Formal)))
+           and then Is_Child_Unit (Scope (A_Gen_Obj))
          then
             declare
                Temp : constant Node_Id :=
-                 New_Copy_Tree (Subtype_Mark (Analyzed_Formal));
+                        New_Copy_Tree (Subtype_Mark (Analyzed_Formal));
             begin
                Set_Entity (Temp, Empty);
                Find_Type (Temp);
@@ -8374,7 +8372,7 @@ package body Sem_Ch12 is
 
          if not Denotes_Variable (Actual) then
             Error_Msg_NE
-              ("actual for& must be a variable", Actual, Formal_Id);
+              ("actual for& must be a variable", Actual, Gen_Obj);
 
          elsif Base_Type (Ftyp) /= Base_Type (Etype (Actual)) then
 
@@ -8391,7 +8389,7 @@ package body Sem_Ch12 is
                   E_Anonymous_Access_Type
             then
                Error_Msg_NE ("type of actual does not match type of&",
-                             Actual, Formal_Id);
+                             Actual, Gen_Obj);
             end if;
          end if;
 
@@ -8430,7 +8428,7 @@ package body Sem_Ch12 is
 
             Decl_Node :=
               Make_Object_Declaration (Loc,
-                Defining_Identifier    => New_Copy (Formal_Id),
+                Defining_Identifier    => New_Copy (Gen_Obj),
                 Constant_Present       => True,
                 Null_Exclusion_Present => Null_Exclusion_Present (Formal),
                 Object_Definition      => New_Copy_Tree (Def),
@@ -8441,9 +8439,7 @@ package body Sem_Ch12 is
             --  A generic formal object of a tagged type is defined to be
             --  aliased so the new constant must also be treated as aliased.
 
-            if Is_Tagged_Type
-                 (Etype (Defining_Identifier (Analyzed_Formal)))
-            then
+            if Is_Tagged_Type (Etype (A_Gen_Obj)) then
                Set_Aliased_Present (Decl_Node);
             end if;
 
@@ -8463,11 +8459,8 @@ package body Sem_Ch12 is
             end if;
 
             declare
-               Formal_Object : constant Entity_Id :=
-                                 Defining_Identifier (Analyzed_Formal);
-               Formal_Type   : constant Entity_Id := Etype (Formal_Object);
-
-               Typ : Entity_Id;
+               Formal_Type : constant Entity_Id := Etype (A_Gen_Obj);
+               Typ         : Entity_Id;
 
             begin
                Typ := Get_Instance_Of (Formal_Type);
@@ -8504,7 +8497,7 @@ package body Sem_Ch12 is
 
             Decl_Node :=
               Make_Object_Declaration (Sloc (Formal),
-                Defining_Identifier    => New_Copy (Formal_Id),
+                Defining_Identifier    => New_Copy (Gen_Obj),
                 Constant_Present       => True,
                 Null_Exclusion_Present => Null_Exclusion_Present (Formal),
                 Object_Definition      => New_Copy (Def),
@@ -8517,14 +8510,12 @@ package body Sem_Ch12 is
          else
             Error_Msg_NE
               ("missing actual&",
-                Instantiation_Node, Formal_Id);
+                Instantiation_Node, Gen_Obj);
             Error_Msg_NE ("\in instantiation of & declared#",
-              Instantiation_Node,
-                Scope (Defining_Identifier (Analyzed_Formal)));
+              Instantiation_Node, Scope (A_Gen_Obj));
 
-            if Is_Scalar_Type
-                 (Etype (Defining_Identifier (Analyzed_Formal)))
-            then
+            if Is_Scalar_Type (Etype (A_Gen_Obj)) then
+
                --  Create dummy constant declaration so that instance can be
                --  analyzed, to minimize cascaded visibility errors.
 
@@ -8536,12 +8527,12 @@ package body Sem_Ch12 is
 
                Decl_Node :=
                  Make_Object_Declaration (Loc,
-                   Defining_Identifier    => New_Copy (Formal_Id),
+                   Defining_Identifier    => New_Copy (Gen_Obj),
                    Constant_Present       => True,
                    Null_Exclusion_Present => Null_Exclusion_Present (Formal),
                    Object_Definition      => New_Copy (Def),
                    Expression             =>
-                     Make_Attribute_Reference (Sloc (Formal_Id),
+                     Make_Attribute_Reference (Sloc (Gen_Obj),
                        Attribute_Name => Name_First,
                        Prefix         => New_Copy (Def)));
 

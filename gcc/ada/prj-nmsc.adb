@@ -3287,7 +3287,7 @@ package body Prj.Nmsc is
             --  Spec_Suffix cannot be equal to Body_Suffix or Separate_Suffix,
             --  since that would cause a clear ambiguity. Note that we do allow
             --  a Spec_Suffix to have the same termination as one of these,
-            --  which causes a potential ambiguity, but we resolve that my
+            --  which causes a potential ambiguity, but we resolve that by
             --  matching the longest possible suffix.
 
             if Lang_Id.Config.Naming_Data.Spec_Suffix /= No_File
