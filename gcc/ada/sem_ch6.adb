@@ -620,7 +620,12 @@ package body Sem_Ch6 is
                   Subtype_Ind);
             end if;
 
-            if Is_Constrained (R_Type) then
+            --  AI05-103 : for elementary types, subtypes must statically
+            --  match.
+
+            if Is_Constrained (R_Type)
+              or else Is_Access_Type (R_Type)
+            then
                if not Subtypes_Statically_Match (R_Stm_Type, R_Type) then
                   Error_Msg_N
                     ("subtype must statically match function result subtype",

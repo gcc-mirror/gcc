@@ -1,3 +1,27 @@
+2010-10-08  Thomas Quinot  <quinot@adacore.com>
+
+	* xsnames.adb: Remove obsolete file.
+	* make.adb, sem_ch8.adb, einfo.ads: Minor reformatting.
+
+2010-10-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb: Complete previous change.
+
+2010-10-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Return_Subtype): The subtype indication in an
+	extended return must match statically the return subtype of the
+	enclosing function if the type is an elementary type or if it is
+	constrained.
+
+2010-10-08  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Add_Source): Report all duplicate units and source file
+	names.  Do not report the same duplicate unit several times.
+	* prj.ads (Source_Data): New Boolean component Duplicate_Unit,
+	defaulted to False, to avoid reporting the same unit as duplicate
+	several times.
+
 2010-10-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aggr.adb (Resolve_Array_Aggregate): If the expression in an
