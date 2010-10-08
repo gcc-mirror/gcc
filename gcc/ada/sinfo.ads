@@ -4730,15 +4730,18 @@ package Sinfo is
       -- 8.4  Use Type Clause --
       --------------------------
 
-      --  USE_TYPE_CLAUSE ::= use type SUBTYPE_MARK {, SUBTYPE_MARK};
+      --  USE_TYPE_CLAUSE ::= use [ALL] type SUBTYPE_MARK {, SUBTYPE_MARK};
 
       --  Note: use type clause is not permitted in Ada 83 mode
+
+      --  Note: the ALL keyword can appear only in Ada 2012 mode
 
       --  N_Use_Type_Clause
       --  Sloc points to USE
       --  Subtype_Marks (List2)
       --  Next_Use_Clause (Node3-Sem)
       --  Hidden_By_Use_Clause (Elist4-Sem)
+      --  All_Present (Flag15)
 
       -------------------------------
       -- 8.5  Renaming Declaration --

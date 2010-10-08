@@ -479,9 +479,9 @@ package body Bindgen is
                Set_String (", """);
                Get_Name_String (U.Uname);
 
-               --  In the case of JGNAT we need to emit an Import name
-               --  that includes the class name (using '$' separators
-               --  in the case of a child unit name).
+               --  In the case of JGNAT we need to emit an Import name that
+               --  includes the class name (using '$' separators in the case
+               --  of a child unit name).
 
                if VM_Target /= No_VM then
                   for J in 1 .. Name_Len - 2 loop
@@ -2818,7 +2818,7 @@ package body Bindgen is
          Set_String (", ");
          Count := Count + 1;
 
-         if Count = 8 then
+         if J /= Cumulative_Restrictions.Set'Last and then Count = 8 then
             Write_Statement_Buffer;
             Set_String ("           ");
             Count := 0;
@@ -2845,7 +2845,7 @@ package body Bindgen is
          Set_String (", ");
          Count := Count + 1;
 
-         if Count = 8 then
+         if J /= Cumulative_Restrictions.Set'Last and then Count = 8 then
             Write_Statement_Buffer;
             Set_String ("           ");
             Count := 0;

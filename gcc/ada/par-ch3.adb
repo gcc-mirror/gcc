@@ -3677,10 +3677,11 @@ package body Ch3 is
                   --     when (A in 1 .. 10 | 12) =>
                   --     when (A in 1 .. 10) | 12 =>
 
-                  --  To solve this, in Ada 2012 mode, we disallow
-                  --  the use of membership operations in expressions in
-                  --  choices. Technically in the grammar, the expression
-                  --  must match the grammar for restricted expression.
+                  --  To solve this, in Ada 2012 mode, we disallow the use of
+                  --  membership operations in expressions in choices.
+
+                  --  Technically in the grammar, the expression must match the
+                  --  grammar for restricted expression.
 
                   if Ada_Version >= Ada_12 then
                      Check_Restricted_Expression (Expr_Node);

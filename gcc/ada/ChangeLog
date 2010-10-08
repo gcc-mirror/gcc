@@ -1,5 +1,34 @@
 2010-10-08  Robert Dewar  <dewar@adacore.com>
 
+	* par-ch3.adb: Minor reformatting.
+
+2010-10-08  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_DT): Do not generate dispatch tables for CIL/Java
+	types.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch8.adb (P_Use_Type_Clause): Recognize ALL keyword in Ada 2012
+	mode.
+	* sinfo.adb (Use_Type_Clause): Add All_Present flag.
+	* sinfo.ads (Use_Type_Clause): Add All_Present flag.
+	* s-rident.ads: Add entry for No_Allocators_After_Elaboration,
+	No_Anonymous_Allocators.
+
+2010-10-08  Vincent Celier  <celier@adacore.com>
+
+	* bindgen.adb (Gen_Restrictions_Ada): No new line after last
+	restriction, so that the last comma is always replaced with a left
+	parenthesis.
+
+2010-10-08  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Add specific check on the type of the
+	first formal of delegates.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
 	* sem_aggr.adb: Minor reformatting.
 
 2010-10-08  Robert Dewar  <dewar@adacore.com>
