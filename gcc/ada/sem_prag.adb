@@ -8903,10 +8903,10 @@ package body Sem_Prag is
 
          when Pragma_CIL_Constructor | Pragma_Java_Constructor =>
          Java_Constructor : declare
-            Id         : Entity_Id;
+            Convention : Convention_Id;
             Def_Id     : Entity_Id;
             Hom_Id     : Entity_Id;
-            Convention : Convention_Id;
+            Id         : Entity_Id;
 
          begin
             GNAT_Pragma;
@@ -8923,6 +8923,22 @@ package body Sem_Prag is
                return;
             end if;
 
+            --  Check wrong use of pragma in wrong VM target
+
+            if VM_Target = No_VM then
+               return;
+
+            elsif VM_Target = CLI_Target
+              and then Prag_Id = Pragma_Java_Constructor
+            then
+               Error_Pragma ("must use pragma 'C'I'L_'Constructor");
+
+            elsif VM_Target = JVM_Target
+              and then Prag_Id = Pragma_CIL_Constructor
+            then
+               Error_Pragma ("must use pragma 'Java_'Constructor");
+            end if;
+
             case Prag_Id is
                when Pragma_CIL_Constructor  => Convention := Convention_CIL;
                when Pragma_Java_Constructor => Convention := Convention_Java;
@@ -8936,42 +8952,160 @@ package body Sem_Prag is
             loop
                Def_Id := Get_Base_Subprogram (Hom_Id);
 
-               --  The constructor is required to be a function returning an
-               --  access type whose designated type has convention Java/CIL.
+               --  The constructor is required to be a function
 
-               if Ekind (Def_Id) = E_Function
-                 and then
-                   (Is_Value_Type (Etype (Def_Id))
-                     or else
-                       (Ekind (Etype (Def_Id)) = E_Access_Subprogram_Type
-                         and then
-                          Atree.Convention (Etype (Def_Id)) = Convention)
-                     or else
-                       (Ekind (Etype (Def_Id)) in Access_Kind
-                         and then
-                          (Atree.Convention
-                             (Designated_Type (Etype (Def_Id))) = Convention
-                            or else
-                              Atree.Convention
-                               (Root_Type (Designated_Type (Etype (Def_Id)))) =
-                                                                 Convention)))
-               then
-                  Set_Is_Constructor (Def_Id);
-                  Set_Convention     (Def_Id, Convention);
-                  Set_Is_Imported    (Def_Id);
-
-               else
-                  if Convention = Convention_Java then
+               if Ekind (Def_Id) /= E_Function then
+                  if VM_Target = JVM_Target then
                      Error_Pragma_Arg
                        ("pragma% requires function returning a " &
-                        "'Java access type", Arg1);
+                        "'Java access type", Def_Id);
                   else
-                     pragma Assert (Convention = Convention_CIL);
                      Error_Pragma_Arg
                        ("pragma% requires function returning a " &
-                        "'C'I'L access type", Arg1);
+                        "'C'I'L access type", Def_Id);
                   end if;
                end if;
+
+               --  Check arguments: For tagged type the first formal must be
+               --  named "this" and its type must be a named access type
+               --  designating a class-wide tagged type that has convention
+               --  CIL/Java. The first formal must also have a null default
+               --  value. For example:
+
+               --      type Typ is tagged ...
+               --      type Ref is access all Typ;
+               --      pragma Convention (CIL, Typ);
+
+               --      function New_Typ (This : Ref) return Ref;
+               --      function New_Typ (This : Ref; I : Integer) return Ref;
+               --      pragma Cil_Constructor (New_Typ);
+
+               --  Reason: The first formal must NOT be a primitive of the
+               --  tagged type.
+
+               --  This rule also applies to constructors of delegates used
+               --  to interface with standard target libraries. For example:
+
+               --      type Delegate is access procedure ...
+               --      pragma Import (CIL, Delegate, ...);
+
+               --      function new_Delegate
+               --        (This : Delegate := null; ... ) return Delegate;
+
+               --  For value-types this rule does not apply.
+
+               if not Is_Value_Type (Etype (Def_Id)) then
+                  if No (First_Formal (Def_Id)) then
+                     Error_Msg_Name_1 := Pname;
+                     Error_Msg_N
+                       ("first formal of % function must be named `this`",
+                        Def_Id);
+
+                  elsif Get_Name_String (Chars (First_Formal (Def_Id)))
+                          /= "this"
+                  then
+                     Error_Msg_Name_1 := Pname;
+                     Error_Msg_N
+                       ("first formal of % function must be named `this`",
+                        Parent (First_Formal (Def_Id)));
+
+                  --  Warning: We should reject anonymous access types because
+                  --  the constructor must not be handled as a primitive of the
+                  --  tagged type. We temporarily allow it because this profile
+                  --  is currently generated by cil2ada???
+
+                  elsif not Is_Access_Type (Etype (First_Formal (Def_Id)))
+                    or else not Ekind_In (Etype (First_Formal (Def_Id)),
+                                  E_Access_Type,
+                                  E_General_Access_Type,
+                                  E_Anonymous_Access_Type) --  ???
+                  then
+                     Error_Msg_Name_1 := Pname;
+                     Error_Msg_N
+                       ("first formal of % function must be a named access" &
+                        " type",
+                        Parameter_Type (Parent (First_Formal (Def_Id))));
+
+                  elsif Atree.Convention
+                         (Designated_Type (Etype (First_Formal (Def_Id))))
+                           /= Convention
+                  then
+                     Error_Msg_Name_1 := Pname;
+
+                     if Convention = Convention_Java then
+                        Error_Msg_N
+                          ("pragma% requires convention 'Cil in designated" &
+                           " type",
+                           Parameter_Type (Parent (First_Formal (Def_Id))));
+                     else
+                        Error_Msg_N
+                          ("pragma% requires convention 'Java in designated" &
+                           " type",
+                           Parameter_Type (Parent (First_Formal (Def_Id))));
+                     end if;
+
+                  elsif No (Expression (Parent (First_Formal (Def_Id))))
+                    or else
+                      Nkind (Expression (Parent (First_Formal (Def_Id)))) /=
+                        N_Null
+                  then
+                     Error_Msg_Name_1 := Pname;
+                     Error_Msg_N
+                       ("pragma% requires first formal with default `null`",
+                        Parameter_Type (Parent (First_Formal (Def_Id))));
+                  end if;
+               end if;
+
+               --  Check result type: the constructor must be a function
+               --  returning:
+               --   * a value type (only allowed in the CIL compiler)
+               --   * an access-to-subprogram type with convention Java/CIL
+               --   * an access-type designating a type that has convention
+               --     Java/CIL.
+
+               if Is_Value_Type (Etype (Def_Id)) then
+                  null;
+
+               --  Access-to-subprogram type with convention Java/CIL
+
+               elsif Ekind (Etype (Def_Id)) = E_Access_Subprogram_Type then
+                  if Atree.Convention (Etype (Def_Id)) /= Convention then
+                     if Convention = Convention_Java then
+                        Error_Pragma_Arg
+                          ("pragma% requires function returning a " &
+                           "'Java access type", Arg1);
+                     else
+                        pragma Assert (Convention = Convention_CIL);
+                        Error_Pragma_Arg
+                          ("pragma% requires function returning a " &
+                           "'C'I'L access type", Arg1);
+                     end if;
+                  end if;
+
+               elsif Ekind (Etype (Def_Id)) in Access_Kind then
+                  if not Ekind_In (Etype (Def_Id), E_Access_Type,
+                                                   E_General_Access_Type)
+                    or else
+                      Atree.Convention
+                        (Designated_Type (Etype (Def_Id))) /= Convention
+                  then
+                     Error_Msg_Name_1 := Pname;
+
+                     if Convention = Convention_Java then
+                        Error_Pragma_Arg
+                          ("pragma% requires function returning a named" &
+                           "'Java access type", Arg1);
+                     else
+                        Error_Pragma_Arg
+                          ("pragma% requires function returning a named" &
+                           "'C'I'L access type", Arg1);
+                     end if;
+                  end if;
+               end if;
+
+               Set_Is_Constructor (Def_Id);
+               Set_Convention     (Def_Id, Convention);
+               Set_Is_Imported    (Def_Id);
 
                Hom_Id := Homonym (Hom_Id);
 
