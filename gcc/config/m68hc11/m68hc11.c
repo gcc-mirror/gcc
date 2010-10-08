@@ -2261,7 +2261,7 @@ m68hc11_print_operand (FILE *file, rtx op, int letter)
         case MEM:
           gcc_assert (TARGET_M6812);
 	  fprintf (file, "[");
-	  print_operand_address (file, XEXP (base, 0));
+	  m68hc11_print_operand_address (file, XEXP (base, 0));
 	  fprintf (file, "]");
           break;
 
