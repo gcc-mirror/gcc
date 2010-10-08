@@ -1,3 +1,8 @@
+2010-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/future (_Result_alloc): Derive from _Alloc,
+	exploit the Empty Base Optimization.
+
 2010-10-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/45403
