@@ -1423,18 +1423,17 @@ package body Sem_Ch9 is
          Entry_Id := Entity (Entry_Name);
       end if;
 
-      --  Ada 2005 (AI05-0030): Potential dispatching requeue statement. The
+      --  Ada 2012 (AI05-0030): Potential dispatching requeue statement. The
       --  target type must be a concurrent interface class-wide type and the
-      --  entry name must be a procedure, flagged by pragma Implemented_By_
-      --  Entry.
+      --  target must be a procedure, flagged by pragma Implemented.
 
       Is_Disp_Req :=
-        Ada_Version >= Ada_05
+        Ada_Version >= Ada_2012
           and then Present (Target_Obj)
           and then Is_Class_Wide_Type (Etype (Target_Obj))
           and then Is_Concurrent_Interface (Etype (Target_Obj))
           and then Ekind (Entry_Id) = E_Procedure
-          and then Implemented_By_Entry (Entry_Id);
+          and then Has_Rep_Pragma (Entry_Id, Name_Implemented);
 
       --  Resolve entry, and check that it is subtype conformant with the
       --  enclosing construct if this construct has formals (RM 9.5.4(5)).
@@ -1462,11 +1461,13 @@ package body Sem_Ch9 is
                return;
             end if;
 
-            --  Ada 2005 (AI05-0030): Perform type conformance after skipping
+            --  Ada 2012 (AI05-0030): Perform type conformance after skipping
             --  the first parameter of Entry_Id since it is the interface
             --  controlling formal.
 
-            if Is_Disp_Req then
+            if Ada_Version >= Ada_2012
+              and then Is_Disp_Req
+            then
                declare
                   Enclosing_Formal : Entity_Id;
                   Target_Formal    : Entity_Id;

@@ -8375,6 +8375,155 @@ package body Sem_Ch3 is
       Subp       : Entity_Id;
       Type_Def   : Node_Id;
 
+      procedure Check_Pragma_Implemented (Subp : Entity_Id);
+      --  Ada 2012 (AI05-0030): Subprogram Subp overrides an interface routine
+      --  which has pragma Implemented already set. Check whether Subp's entity
+      --  kind conforms to the implementation kind of the overridden routine.
+
+      procedure Check_Pragma_Implemented
+        (Subp       : Entity_Id;
+         Iface_Subp : Entity_Id);
+      --  Ada 2012 (AI05-0030): Subprogram Subp overrides interface routine
+      --  Iface_Subp and both entities have pragma Implemented already set on
+      --  them. Check whether the two implementation kinds are conforming.
+
+      procedure Inherit_Pragma_Implemented
+        (Subp       : Entity_Id;
+         Iface_Subp : Entity_Id);
+      --  Ada 2012 (AI05-0030): Interface primitive Subp overrides interface
+      --  subprogram Iface_Subp which has been marked by pragma Implemented.
+      --  Propagate the implementation kind of Iface_Subp to Subp.
+
+      ------------------------------
+      -- Check_Pragma_Implemented --
+      ------------------------------
+
+      procedure Check_Pragma_Implemented (Subp : Entity_Id) is
+         Iface_Alias : constant Entity_Id := Interface_Alias (Subp);
+         Impl_Kind   : constant Name_Id   := Implementation_Kind (Iface_Alias);
+         Contr_Typ   : Entity_Id;
+
+      begin
+         --  Subp must have an alias since it is a hidden entity used to link
+         --  an interface subprogram to its overriding counterpart.
+
+         pragma Assert (Present (Alias (Subp)));
+
+         --  Extract the type of the controlling formal
+
+         Contr_Typ := Etype (First_Formal (Alias (Subp)));
+
+         if Is_Concurrent_Record_Type (Contr_Typ) then
+            Contr_Typ := Corresponding_Concurrent_Type (Contr_Typ);
+         end if;
+
+         --  An interface subprogram whose implementation kind is By_Entry must
+         --  be implemented by an entry.
+
+         if Impl_Kind = Name_By_Entry
+           and then Ekind (Wrapped_Entity (Alias (Subp))) /= E_Entry
+         then
+            Error_Msg_Node_2 := Iface_Alias;
+            Error_Msg_NE
+              ("type & must implement abstract subprogram & with an entry",
+               Alias (Subp), Contr_Typ);
+
+         elsif Impl_Kind = Name_By_Protected_Procedure then
+
+            --  An interface subprogram whose implementation kind is By_
+            --  Protected_Procedure cannot be implemented by a primitive
+            --  procedure of a task type.
+
+            if Ekind (Contr_Typ) /= E_Protected_Type then
+               Error_Msg_Node_2 := Contr_Typ;
+               Error_Msg_NE
+                 ("interface subprogram & cannot be implemented by a " &
+                  "primitive procedure of task type &", Alias (Subp),
+                  Iface_Alias);
+
+            --  An interface subprogram whose implementation kind is By_
+            --  Protected_Procedure must be implemented by a procedure.
+
+            elsif Is_Primitive_Wrapper (Alias (Subp))
+              and then Ekind (Wrapped_Entity (Alias (Subp))) /= E_Procedure
+            then
+               Error_Msg_Node_2 := Iface_Alias;
+               Error_Msg_NE
+                 ("type & must implement abstract subprogram & with a " &
+                  "procedure", Alias (Subp), Contr_Typ);
+            end if;
+         end if;
+      end Check_Pragma_Implemented;
+
+      ------------------------------
+      -- Check_Pragma_Implemented --
+      ------------------------------
+
+      procedure Check_Pragma_Implemented
+        (Subp       : Entity_Id;
+         Iface_Subp : Entity_Id)
+      is
+         Iface_Kind : constant Name_Id := Implementation_Kind (Iface_Subp);
+         Subp_Kind  : constant Name_Id := Implementation_Kind (Subp);
+
+      begin
+         --  Ada 2012 (AI05-0030): The implementation kinds of an overridden
+         --  and overriding subprogram are different. In general this is an
+         --  error except when the implementation kind of the overridden
+         --  subprograms is By_Any.
+
+         if Iface_Kind /= Subp_Kind
+           and then Iface_Kind /= Name_By_Any
+         then
+            if Iface_Kind = Name_By_Entry then
+               Error_Msg_N
+                 ("incompatible implementation kind, overridden subprogram " &
+                  "is marked By_Entry", Subp);
+            else
+               Error_Msg_N
+                 ("incompatible implementation kind, overridden subprogram " &
+                  "is marked By_Protected_Procedure", Subp);
+            end if;
+         end if;
+      end Check_Pragma_Implemented;
+
+      --------------------------------
+      -- Inherit_Pragma_Implemented --
+      --------------------------------
+
+      procedure Inherit_Pragma_Implemented
+        (Subp       : Entity_Id;
+         Iface_Subp : Entity_Id)
+      is
+         Iface_Kind : constant Name_Id    := Implementation_Kind (Iface_Subp);
+         Loc        : constant Source_Ptr := Sloc (Subp);
+         Impl_Prag  : Node_Id;
+
+      begin
+         --  Since the implementation kind is stored as a representation item
+         --  rather than a flag, create a pragma node.
+
+         Impl_Prag :=
+           Make_Pragma (Loc,
+             Chars => Name_Implemented,
+             Pragma_Argument_Associations => New_List (
+               Make_Pragma_Argument_Association (Loc,
+                 Expression =>
+                   New_Reference_To (Subp, Loc)),
+
+               Make_Pragma_Argument_Association (Loc,
+                 Expression =>
+                   Make_Identifier (Loc, Iface_Kind))));
+
+         --  The pragma doesn't need to be analyzed because it is internaly
+         --  build. It is safe to directly register it as a rep item since we
+         --  are only interested in the characters of the implementation kind.
+
+         Record_Rep_Item (Subp, Impl_Prag);
+      end Inherit_Pragma_Implemented;
+
+   --  Start of processing for Check_Abstract_Overriding
+
    begin
       Op_List := Primitive_Operations (T);
 
@@ -8584,33 +8733,48 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  Ada 2005 (AI05-0030): Inspect hidden subprograms which provide
-         --  the mapping between interface and implementing type primitives.
-         --  If the interface alias is marked as Implemented_By_Entry, the
-         --  alias must be an entry wrapper.
+         --  Ada 2012 (AI05-0030): Perform some checks related to pragma
+         --  Implemented
 
-         if Ada_Version >= Ada_05
+         --  Subp is an expander-generated procedure which maps an interface
+         --  alias to a protected wrapper. The interface alias is flagged by
+         --  pragma Implemented. Ensure that Subp is a procedure when the
+         --  implementation kind is By_Protected_Procedure or an entry when
+         --  By_Entry.
+
+         if Ada_Version >= Ada_2012
            and then Is_Hidden (Subp)
            and then Present (Interface_Alias (Subp))
-           and then Implemented_By_Entry (Interface_Alias (Subp))
-           and then Present (Alias_Subp)
-           and then
-             (not Is_Primitive_Wrapper (Alias_Subp)
-                or else Ekind (Wrapped_Entity (Alias_Subp)) /= E_Entry)
+           and then Has_Rep_Pragma (Interface_Alias (Subp), Name_Implemented)
          then
-            declare
-               Error_Ent : Entity_Id := T;
+            Check_Pragma_Implemented (Subp);
+         end if;
 
-            begin
-               if Is_Concurrent_Record_Type (Error_Ent) then
-                  Error_Ent := Corresponding_Concurrent_Type (Error_Ent);
-               end if;
+         --  Subp is an interface primitive which overrides another interface
+         --  primitive marked with pragma Implemented.
 
-               Error_Msg_Node_2 := Interface_Alias (Subp);
-               Error_Msg_NE
-                 ("type & must implement abstract subprogram & with an entry",
-                  Error_Ent, Error_Ent);
-            end;
+         if Ada_Version >= Ada_2012
+           and then Is_Overriding_Operation (Subp)
+           and then Present (Overridden_Operation (Subp))
+           and then Has_Rep_Pragma
+                      (Overridden_Operation (Subp), Name_Implemented)
+         then
+            --  If the overriding routine is also marked by Implemented, check
+            --  that the two implementation kinds are conforming.
+
+            if Has_Rep_Pragma (Subp, Name_Implemented) then
+               Check_Pragma_Implemented
+                 (Subp       => Subp,
+                  Iface_Subp => Overridden_Operation (Subp));
+
+            --  Otherwise the overriding routine inherits the implementation
+            --  kind from the overridden subprogram.
+
+            else
+               Inherit_Pragma_Implemented
+                 (Subp       => Subp,
+                  Iface_Subp => Overridden_Operation (Subp));
+            end if;
          end if;
 
          Next_Elmt (Elmt);

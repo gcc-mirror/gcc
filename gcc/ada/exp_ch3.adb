@@ -5863,7 +5863,6 @@ package body Exp_Ch3 is
       Type_Decl     : constant Node_Id := Parent (Def_Id);
       Comp          : Entity_Id;
       Comp_Typ      : Entity_Id;
-      Has_Static_DT : Boolean := False;
       Predef_List   : List_Id;
 
       Flist : Entity_Id := Empty;
@@ -5982,9 +5981,6 @@ package body Exp_Ch3 is
       --  just use it.
 
       if Is_Tagged_Type (Def_Id) then
-         Has_Static_DT :=
-           Static_Dispatch_Tables
-             and then Is_Library_Level_Tagged_Type (Def_Id);
 
          --  Add the _Tag component
 
@@ -6004,7 +6000,7 @@ package body Exp_Ch3 is
             Set_CPP_Constructors (Def_Id);
 
          else
-            if not Has_Static_DT then
+            if not Building_Static_DT (Def_Id) then
 
                --  Usually inherited primitives are not delayed but the first
                --  Ada extension of a CPP_Class is an exception since the
@@ -6116,7 +6112,7 @@ package body Exp_Ch3 is
                --  Dispatch tables of library level tagged types are built
                --  later (see Analyze_Declarations).
 
-               if not Has_Static_DT then
+               if not Building_Static_DT (Def_Id) then
                   Append_Freeze_Actions (Def_Id, Make_DT (Def_Id));
                end if;
             end if;

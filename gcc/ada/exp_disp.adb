@@ -4060,8 +4060,7 @@ package body Exp_Disp is
             Append_To (Prim_Ops_Aggr_List, Make_Null (Loc));
 
          elsif Is_Abstract_Type (Typ)
-           or else not Static_Dispatch_Tables
-           or else not Is_Library_Level_Tagged_Type (Typ)
+           or else not Building_Static_DT (Typ)
          then
             for J in 1 .. Nb_Prim loop
                Append_To (Prim_Ops_Aggr_List, Make_Null (Loc));
@@ -5614,9 +5613,7 @@ package body Exp_Disp is
          if Nb_Prim = 0 then
             Append_To (Prim_Ops_Aggr_List, Make_Null (Loc));
 
-         elsif not Static_Dispatch_Tables
-           or else not Is_Library_Level_Tagged_Type (Typ)
-         then
+         elsif not Building_Static_DT (Typ) then
             for J in 1 .. Nb_Prim loop
                Append_To (Prim_Ops_Aggr_List, Make_Null (Loc));
             end loop;
@@ -5768,9 +5765,7 @@ package body Exp_Disp is
       --  because the whole dispatch table (including inherited primitives) has
       --  been already built.
 
-      if Static_Dispatch_Tables
-        and then Is_Library_Level_Tagged_Type (Typ)
-      then
+      if Building_Static_DT (Typ) then
          null;
 
       --  If the ancestor is a CPP_Class type we inherit the dispatch tables

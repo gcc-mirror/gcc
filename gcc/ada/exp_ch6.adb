@@ -4998,10 +4998,8 @@ package body Exp_Ch6 is
             --  Generate code to register the primitive in non statically
             --  allocated dispatch tables
 
-            elsif not Static_Dispatch_Tables
-              or else not
-                Is_Library_Level_Tagged_Type (Scope (DTC_Entity (Subp)))
-            then
+            elsif not Building_Static_DT (Scope (DTC_Entity (Subp))) then
+
                --  When a primitive is frozen, enter its name in its dispatch
                --  table slot.
 
