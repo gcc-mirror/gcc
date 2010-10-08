@@ -7410,7 +7410,11 @@ package body Sem_Attr is
                         --  All wide characters look like Hex_hhhhhhhh
 
                         if J > 255 then
-                           W := 12;
+
+                           --  No need to compute this more than once!
+
+                           W := Int'Max (W, 12);
+                           exit;
 
                         else
                            C := Character'Val (J);

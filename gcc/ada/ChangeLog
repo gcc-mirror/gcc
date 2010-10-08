@@ -1,3 +1,13 @@
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute, case Width): Avoid ludicrous long loop
+	for case of Wide_[Wide_]Character.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch3.adb: Minor reformating
+	Minor code reorganization.
+
 2010-10-08  Javier Miranda  <miranda@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Add missing checks on wrong use of
