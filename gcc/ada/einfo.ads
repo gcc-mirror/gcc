@@ -2436,7 +2436,7 @@ package Einfo is
 --         4. Setting Component_Size of an array to a bit-packable value
 --         3. Indexing an array with a non-standard enumeration type.
 --
---       For records, Is_Packed is always set if Has_Pack_Pragma is set,
+--       For records, Is_Packed is always set if Has_Pragma_Pack is set,
 --       and can also be set on its own in a derived type which inherited
 --       its packed status.
 --
@@ -2455,7 +2455,7 @@ package Einfo is
 --       the bit packed case once the array type is frozen.
 --
 --       Before an array type is frozen, Is_Packed will always be set if
---       Has_Pack_Pragma is set. Before the freeze point, it is not possible
+--       Has_Pragma_Pack is set. Before the freeze point, it is not possible
 --       to know the component size, since the component type is not frozen
 --       until the array type is frozen. Thus Is_Packed for an array type
 --       before it is frozen means that packed is required. Then if it turns

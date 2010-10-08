@@ -3896,7 +3896,7 @@ package body Exp_Ch5 is
       --  the type of the expression may be.
 
       if not Comes_From_Extended_Return_Statement (N)
-        and then Is_Inherently_Limited_Type (Etype (Expression (N)))
+        and then Is_Immutably_Limited_Type (Etype (Expression (N)))
         and then Ada_Version >= Ada_05
         and then not Debug_Flag_Dot_L
       then
@@ -3967,7 +3967,7 @@ package body Exp_Ch5 is
       --  type that requires special processing (indicated by the fact that
       --  it requires a cleanup scope for the secondary stack case).
 
-      if Is_Inherently_Limited_Type (Exptyp)
+      if Is_Immutably_Limited_Type (Exptyp)
         or else Is_Limited_Interface (Exptyp)
       then
          null;
@@ -4252,7 +4252,7 @@ package body Exp_Ch5 is
 
       elsif Ekind (R_Type) = E_Anonymous_Access_Type
         and then Has_Controlling_Result (Scope_Id)
-        and then Ada_Version >= Ada_12
+        and then (Ada_Version >= Ada_12 or else True)
       then
          Insert_Action (Exp,
            Make_Raise_Constraint_Error (Loc,

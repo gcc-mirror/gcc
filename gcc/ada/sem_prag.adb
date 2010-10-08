@@ -1199,14 +1199,30 @@ package body Sem_Prag is
          end if;
       end Check_Component;
 
+      ----------------------------
+      -- Check_Duplicate_Pragma --
+      ----------------------------
+
       procedure Check_Duplicate_Pragma (E : Entity_Id) is
-         P : constant Node_Id := Get_Rep_Pragma (E, Pragma_Name (N));
+         P   : constant Node_Id := Get_Rep_Pragma (E, Pragma_Name (N));
+         Arg : Node_Id;
+
       begin
          if Present (P) then
-            Error_Msg_Name_1 := Pname;
-            Error_Msg_Sloc := Sloc (P);
-            Error_Msg_NE ("pragma% for & duplicates one#", N, E);
-            raise Pragma_Exit;
+
+            --  Make sure pragma is for this entity, and not for some parent
+            --  entity in the case of a derived type.
+
+            Arg := Get_Pragma_Arg (First (Pragma_Argument_Associations (P)));
+
+            if Nkind (Arg) = N_Identifier
+              and then Entity (Arg) = E
+            then
+               Error_Msg_Name_1 := Pname;
+               Error_Msg_Sloc := Sloc (P);
+               Error_Msg_NE ("pragma% for & duplicates one#", N, E);
+               raise Pragma_Exit;
+            end if;
          end if;
       end Check_Duplicate_Pragma;
 

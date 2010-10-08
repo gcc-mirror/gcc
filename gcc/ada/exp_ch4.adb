@@ -947,7 +947,7 @@ package body Exp_Ch4 is
                --  want to Adjust.
 
                if not Aggr_In_Place
-                 and then not Is_Inherently_Limited_Type (T)
+                 and then not Is_Immutably_Limited_Type (T)
                then
                   Insert_Actions (N,
                     Make_Adjust_Call (
