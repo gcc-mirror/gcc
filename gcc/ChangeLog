@@ -1,5 +1,10 @@
 2010-10-08  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/fr30/fr30.c (TARGET_EXCEPT_UNWIND_INFO): Define.
+	* config/fr30/fr30.md (leave_func): Rewrite without post_inc.
+
+2010-10-08  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/mcore/mcore.h (INCOMING_RETURN_ADDR_RTX): Define.
 	* config/mcore/mcore.c (TARGET_EXCEPT_UNWIND_INFO): Define.
 
