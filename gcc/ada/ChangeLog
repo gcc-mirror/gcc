@@ -1,3 +1,63 @@
+2010-10-08  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch4.adb: Minor reformatting.
+
+2010-10-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Flag 232 (formerly Implemented_By_Entry) is now unused.
+	(Implemented_By_Entry): Removed.
+	(Set_Implemented_By_Entry): Removed.
+	(Write_Entity_Flags): Remove the output for Implemented_By_Entry.
+	* einfo.ads: Remove flag Implemented_By_Entry and its usage in entities.
+	(Implemented_By_Entry): Removed along with its associated pragma Inline.
+	(Set_Implemented_By_Entry): Removed along with its associated pragma
+	Inline.
+	* exp_ch9.adb: Alphabetize with and use clauses of Exp_Ch9.
+	(Build_Dispatching_Call_Equivalent): New routine.
+	(Build_Dispatching_Requeue): New routine.
+	(Build_Dispatching_Requeue_To_Any): New routine.
+	(Build_Normal_Requeue): New routine.
+	(Build_Skip_Statement): New routine.
+	(Expand_N_Requeue_Statement): Rewritten. The logic has been split into
+	several subroutines.
+	* par-prag.adb: Replace Pragma_Implemented_By_Entry by
+	Pragma_Implemented.
+	* sem_ch3.adb (Check_Abstract_Overriding): Perform checks concerning
+	pragma Implemented.
+	(Check_Pragma_Implemented): New routines.
+	(Inherit_Pragma_Implemented): New routine.
+	* sem_ch9.adb (Analyze_Requeue): Update the predicate which detects a
+	dispatching requeue.
+	* sem_prag.adb: Update array Sig_Flags by removing Implemented_By_Entry
+	and adding Implemented.
+	(Ada_2012_Pragma): New routine.
+	(Analyze_Pragma, case Implemented): Perform all necessary checks
+	concerning pragma Implemented and register the pragma as a
+	representation item with the procedure_LOCAL_NAME.
+	(Analyze_Pragma, case Implemented_By_Entry): Removed.
+	* sem_util.adb (Implementation_Kind): New routine.
+	* sem_util.ads (Implementation_Kind): New routine.
+	* snames.ads-tmpl: Remove Name_Implemented_By_Entry and add
+	Name_Implemented. Remove pragma name Pragma_Implemented_By_Entry and
+	add Pragma_Implemented. Add special names By_Any, By_Entry and
+	By_Protected_Procedure.
+
+2010-10-08  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeeze_Record_Type): Code cleanup: remove local
+	variable Has_Static_DT by invocation of function Building_Static_DT.
+
+2010-10-08  Vincent Celier  <celier@adacore.com>
+
+	* g-dirope.adb (Remove_Dir): Do not change the current directory when
+	doing a recursive remove of a subdirectory.
+
+2010-10-08  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.ad (Freeze_Subprogram): Factorize code.
+	* exp_disp.adb (Make_Secondary_DT): Factorize code.
+	(Make_DT): Factorize code.
+
 2010-10-08  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch4.adb: Minor reformatting.

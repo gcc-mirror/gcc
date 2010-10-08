@@ -507,7 +507,7 @@ package body Sem_Ch4 is
             --  be a null object, and we can insert an unconditional raise
             --  before the allocator.
 
-            --  Ada2012 (AI-104): a not null indication here is altogether
+            --  Ada 2012 (AI-104): A not null indication here is altogether
             --  illegal.
 
             if Can_Never_Be_Null (Type_Id) then

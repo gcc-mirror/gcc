@@ -1123,7 +1123,7 @@ begin
            Pragma_Finalize_Storage_Only         |
            Pragma_Float_Representation          |
            Pragma_Ident                         |
-           Pragma_Implemented_By_Entry          |
+           Pragma_Implemented                   |
            Pragma_Implicit_Packing              |
            Pragma_Import                        |
            Pragma_Import_Exception              |

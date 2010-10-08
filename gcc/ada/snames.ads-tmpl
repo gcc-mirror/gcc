@@ -445,7 +445,7 @@ package Snames is
    Name_External                       : constant Name_Id := N + $; -- GNAT
    Name_Finalize_Storage_Only          : constant Name_Id := N + $; -- GNAT
    Name_Ident                          : constant Name_Id := N + $; -- VMS
-   Name_Implemented_By_Entry           : constant Name_Id := N + $; -- Ada 05
+   Name_Implemented                    : constant Name_Id := N + $; -- Ada 12
    Name_Import                         : constant Name_Id := N + $;
    Name_Import_Exception               : constant Name_Id := N + $; -- VMS
    Name_Import_Function                : constant Name_Id := N + $; -- GNAT
@@ -594,6 +594,9 @@ package Snames is
    Name_Attribute_Name                 : constant Name_Id := N + $;
    Name_Body_File_Name                 : constant Name_Id := N + $;
    Name_Boolean_Entry_Barriers         : constant Name_Id := N + $;
+   Name_By_Any                         : constant Name_Id := N + $;
+   Name_By_Entry                       : constant Name_Id := N + $;
+   Name_By_Protected_Procedure         : constant Name_Id := N + $;
    Name_Casing                         : constant Name_Id := N + $;
    Name_Code                           : constant Name_Id := N + $;
    Name_Component                      : constant Name_Id := N + $;
@@ -1520,7 +1523,7 @@ package Snames is
       Pragma_External,
       Pragma_Finalize_Storage_Only,
       Pragma_Ident,
-      Pragma_Implemented_By_Entry,
+      Pragma_Implemented,
       Pragma_Import,
       Pragma_Import_Exception,
       Pragma_Import_Function,

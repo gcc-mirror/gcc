@@ -586,11 +586,16 @@ package Sem_Util is
    --  component is present. This function is used to check if "=" has to be
    --  expanded into a bunch component comparisons.
 
+   function Implementation_Kind (Subp : Entity_Id) return Name_Id;
+   --  Subp is a subprogram marked with pragma Implemented. Return the specific
+   --  implementation requirement which the pragma imposes. The return value is
+   --  either Name_By_Any, Name_By_Entry or Name_By_Protected_Procedure.
+
    function Implements_Interface
      (Typ_Ent         : Entity_Id;
       Iface_Ent       : Entity_Id;
       Exclude_Parents : Boolean := False) return Boolean;
-   --  Returns true if the Typ implements interface Iface
+   --  Returns true if the Typ_Ent implements interface Iface_Ent
 
    function In_Instance return Boolean;
    --  Returns True if the current scope is within a generic instance

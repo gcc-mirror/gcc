@@ -493,7 +493,6 @@ package body Einfo is
    --    Has_Pragma_Inline_Always        Flag230
 
    --    Renamed_In_Spec                 Flag231
-   --    Implemented_By_Entry            Flag232
    --    Has_Pragma_Unmodified           Flag233
    --    Is_Dispatch_Table_Entity        Flag234
    --    Is_Trivial_Subprogram           Flag235
@@ -512,6 +511,7 @@ package body Einfo is
    --    OK_To_Rename                    Flag247
 
    --    (unused)                        Flag200
+   --    (unused)                        Flag232
 
    -----------------------
    -- Local subprograms --
@@ -1535,12 +1535,6 @@ package body Einfo is
    begin
       return Node4 (Id);
    end Homonym;
-
-   function Implemented_By_Entry (Id : E) return B is
-   begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
-      return Flag232 (Id);
-   end Implemented_By_Entry;
 
    function Interfaces (Id : E) return L is
    begin
@@ -3957,12 +3951,6 @@ package body Einfo is
       pragma Assert (Id /= V);
       Set_Node4 (Id, V);
    end Set_Homonym;
-
-   procedure Set_Implemented_By_Entry (Id : E; V : B := True) is
-   begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
-      Set_Flag232 (Id, V);
-   end Set_Implemented_By_Entry;
 
    procedure Set_Interfaces (Id : E; V : L) is
    begin
@@ -6958,7 +6946,6 @@ package body Einfo is
       W ("Has_Up_Level_Access",             Flag215 (Id));
       W ("Has_Volatile_Components",         Flag87  (Id));
       W ("Has_Xref_Entry",                  Flag182 (Id));
-      W ("Implemented_By_Entry",            Flag232 (Id));
       W ("In_Package_Body",                 Flag48  (Id));
       W ("In_Private_Part",                 Flag45  (Id));
       W ("In_Use",                          Flag8   (Id));

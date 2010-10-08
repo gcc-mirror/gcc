@@ -310,7 +310,12 @@ package body Sem_Prag is
       procedure Ada_2005_Pragma;
       --  Called for pragmas defined in Ada 2005, that are not in Ada 95. In
       --  Ada 95 mode, these are implementation defined pragmas, so should be
-      --  caught by the No_Implementation_Pragmas restriction
+      --  caught by the No_Implementation_Pragmas restriction.
+
+      procedure Ada_2012_Pragma;
+      --  Called for pragmas defined in Ada 2012, that are not in Ada 95 or 05.
+      --  In Ada 95 or 05 mode, these are implementation defined pragmas, so
+      --  should be caught by the No_Implementation_Pragmas restriction.
 
       procedure Check_Ada_83_Warning;
       --  Issues a warning message for the current pragma if operating in Ada
@@ -732,6 +737,17 @@ package body Sem_Prag is
             Check_Restriction (No_Implementation_Pragmas, N);
          end if;
       end Ada_2005_Pragma;
+
+      ---------------------
+      -- Ada_2012_Pragma --
+      ---------------------
+
+      procedure Ada_2012_Pragma is
+      begin
+         if Ada_Version <= Ada_05 then
+            Check_Restriction (No_Implementation_Pragmas, N);
+         end if;
+      end Ada_2012_Pragma;
 
       --------------------------
       -- Check_Ada_83_Warning --
@@ -7979,45 +7995,101 @@ package body Sem_Prag is
             end;
          end Ident;
 
-         --------------------------
-         -- Implemented_By_Entry --
-         --------------------------
+         -----------------
+         -- Implemented --
+         -----------------
 
-         --  pragma Implemented_By_Entry (DIRECT_NAME);
+         --  pragma Implemented (procedure_LOCAL_NAME, implementation_kind);
+         --  implementation_kind ::= By_Entry | By_Protected_Procedure | By_Any
 
-         when Pragma_Implemented_By_Entry => Implemented_By_Entry : declare
-            Ent : Entity_Id;
+         when Pragma_Implemented => Implemented : declare
+            Proc_Id : Entity_Id;
+            Typ     : Entity_Id;
 
          begin
-            Ada_2005_Pragma;
-            Check_Arg_Count (1);
+            Ada_2012_Pragma;
+            Check_Arg_Count (2);
             Check_No_Identifiers;
             Check_Arg_Is_Identifier (Arg1);
             Check_Arg_Is_Local_Name (Arg1);
-            Ent := Entity (Expression (Arg1));
+            Check_Arg_Is_One_Of
+              (Arg2, Name_By_Any, Name_By_Entry, Name_By_Protected_Procedure);
 
-            --  Pragma Implemented_By_Entry must be applied only to protected
-            --  synchronized or task interface primitives.
+            --  Extract the name of the local procedure
 
-            if (Ekind (Ent) /= E_Function
-                  and then Ekind (Ent) /= E_Procedure)
-               or else not Present (First_Formal (Ent))
-               or else not Is_Concurrent_Interface (Etype (First_Formal (Ent)))
+            Proc_Id := Entity (Expression (Arg1));
+
+            --  Ada 2012 (AI05-0030): The procedure_LOCAL_NAME must denote a
+            --  primitive procedure of a synchronized tagged type.
+
+            if Ekind (Proc_Id) = E_Procedure
+              and then Is_Primitive (Proc_Id)
+              and then Present (First_Formal (Proc_Id))
             then
-               Error_Pragma_Arg
-                 ("pragma % must be applied to a concurrent interface " &
-                  "primitive", Arg1);
+               Typ := Etype (First_Formal (Proc_Id));
+
+               if Is_Tagged_Type (Typ)
+                 and then
+
+                  --  Check for a protected, a synchronized or a task interface
+
+                   ((Is_Interface (Typ)
+                       and then Is_Synchronized_Interface (Typ))
+
+                  --  Check for a protected type or a task type that implements
+                  --  an interface.
+
+                   or else
+                    (Is_Concurrent_Record_Type (Typ)
+                       and then Present (Interfaces (Typ)))
+
+                  --  Check for a private record extension with keyword
+                  --  "synchronized".
+
+                   or else
+                    (Ekind_In (Typ, E_Record_Type_With_Private,
+                                    E_Record_Subtype_With_Private)
+                       and then Synchronized_Present (Parent (Typ))))
+               then
+                  null;
+               else
+                  Error_Pragma_Arg
+                    ("controlling formal must be of synchronized " &
+                     "tagged type", Arg1);
+                  return;
+               end if;
+
+            --  Procedures declared inside a protected type must be accepted
+
+            elsif Ekind (Proc_Id) = E_Procedure
+              and then Is_Protected_Type (Scope (Proc_Id))
+            then
+               null;
+
+            --  The first argument is not a primitive procedure
 
             else
-               if Einfo.Implemented_By_Entry (Ent)
-                 and then Warn_On_Redundant_Constructs
-               then
-                  Error_Pragma ("?duplicate pragma%!");
-               else
-                  Set_Implemented_By_Entry (Ent);
-               end if;
+               Error_Pragma_Arg
+                 ("pragma % must be applied to a primitive procedure", Arg1);
+               return;
             end if;
-         end Implemented_By_Entry;
+
+            --  Ada 2012 (AI05-0030): Implementation_kind "By_Protected_
+            --  Procedure" cannot be applied to the primitive procedure of a
+            --  task interface.
+
+            if Chars (Arg2) = Name_By_Protected_Procedure
+              and then Is_Interface (Typ)
+              and then Is_Task_Interface (Typ)
+            then
+               Error_Pragma_Arg
+                 ("implementation kind By_Protected_Procedure cannot be " &
+                  "applied to a task interface primitive", Arg2);
+               return;
+            end if;
+
+            Record_Rep_Item (Proc_Id, N);
+         end Implemented;
 
          -----------------------
          -- Implicit_Packing --
@@ -12946,7 +13018,7 @@ package body Sem_Prag is
       Pragma_Finalize_Storage_Only         =>  0,
       Pragma_Float_Representation          =>  0,
       Pragma_Ident                         => -1,
-      Pragma_Implemented_By_Entry          => -1,
+      Pragma_Implemented                   => -1,
       Pragma_Implicit_Packing              =>  0,
       Pragma_Import                        => +2,
       Pragma_Import_Exception              =>  0,
