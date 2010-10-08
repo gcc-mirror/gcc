@@ -1,3 +1,12 @@
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch4.adb: Minor reformatting.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Check_Conformance): Check null exclusion match for full
+	conformance.
+
 2010-10-08  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch12.adb (Instantiate_Object): Rename Formal_Id to Gen_Obj, for
