@@ -440,7 +440,7 @@ score3_legitimize_address (rtx x)
    is a named (fixed) argument rather than a variable one.  */
 static void
 score3_classify_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
-                     tree type, int named, struct score3_arg_info *info)
+                     const_tree type, bool named, struct score3_arg_info *info)
 {
   int even_reg_p;
   unsigned int num_words, max_regs;
@@ -800,10 +800,10 @@ score3_initial_elimination_offset (int from,
     }
 }
 
-/* Implement FUNCTION_ARG_ADVANCE macro.  */
+/* Implement TARGET_FUNCTION_ARG_ADVANCE hook.  */
 void
 score3_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-                             tree type, int named)
+                             const_tree type, bool named)
 {
   struct score3_arg_info info;
   score3_classify_arg (cum, mode, type, named, &info);
@@ -823,10 +823,10 @@ score3_arg_partial_bytes (CUMULATIVE_ARGS *cum,
   return info.stack_words > 0 ? info.reg_words * UNITS_PER_WORD : 0;
 }
 
-/* Implement FUNCTION_ARG macro.  */
+/* Implement TARGET_FUNCTION_ARG hook.  */
 rtx
 score3_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
-                     tree type, int named)
+                     const_tree type, bool named)
 {
   struct score3_arg_info info;
 

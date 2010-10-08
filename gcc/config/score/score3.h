@@ -107,16 +107,16 @@ score3_initial_elimination_offset (int from,
                                    int to ATTRIBUTE_UNUSED);
 extern void score3_function_arg_advance (CUMULATIVE_ARGS *cum,
                                          enum machine_mode mode,
-                                         tree type,
-                                         int named);
+                                         const_tree type,
+                                         bool named);
 extern int score3_arg_partial_bytes (CUMULATIVE_ARGS *cum,
                                      enum machine_mode mode,
                                      tree type,
                                      bool named);
 extern rtx score3_function_arg (const CUMULATIVE_ARGS *cum,
                                 enum machine_mode mode,
-                                tree type,
-                                int named);
+                                const_tree type,
+                                bool named);
 extern rtx score3_function_value (tree valtype,
                                   tree func ATTRIBUTE_UNUSED,
                                   enum machine_mode mode);
