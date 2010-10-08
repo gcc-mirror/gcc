@@ -5859,11 +5859,11 @@ package body Exp_Ch3 is
    -------------------------------
 
    procedure Expand_Freeze_Record_Type (N : Node_Id) is
-      Def_Id        : constant Node_Id := Entity (N);
-      Type_Decl     : constant Node_Id := Parent (Def_Id);
-      Comp          : Entity_Id;
-      Comp_Typ      : Entity_Id;
-      Predef_List   : List_Id;
+      Def_Id      : constant Node_Id := Entity (N);
+      Type_Decl   : constant Node_Id := Parent (Def_Id);
+      Comp        : Entity_Id;
+      Comp_Typ    : Entity_Id;
+      Predef_List : List_Id;
 
       Flist : Entity_Id := Empty;
       --  Finalization list allocated for the case of a type with anonymous
@@ -5898,9 +5898,9 @@ package body Exp_Ch3 is
       elsif Is_Derived_Type (Def_Id)
         and then not Is_Tagged_Type (Def_Id)
 
-         --  If we have a derived Unchecked_Union, we do not inherit the
-         --  discriminant checking functions from the parent type since the
-         --  discriminants are non existent.
+        --  If we have a derived Unchecked_Union, we do not inherit the
+        --  discriminant checking functions from the parent type since the
+        --  discriminants are non existent.
 
         and then not Is_Unchecked_Union (Def_Id)
         and then Has_Discriminants (Def_Id)
@@ -5938,7 +5938,6 @@ package body Exp_Ch3 is
       --  declaration.
 
       Comp := First_Component (Def_Id);
-
       while Present (Comp) loop
          Comp_Typ := Etype (Comp);
 
@@ -6010,14 +6009,14 @@ package body Exp_Ch3 is
                --  Similarly, if this is an inherited operation whose parent is
                --  not frozen yet, it is not in the DT of the parent, and we
                --  generate an explicit freeze node for the inherited operation
-               --  so that it is properly inserted in the DT of the current
-               --  type.
+               --  so it is properly inserted in the DT of the current type.
 
                declare
-                  Elmt : Elmt_Id := First_Elmt (Primitive_Operations (Def_Id));
+                  Elmt : Elmt_Id;
                   Subp : Entity_Id;
 
                begin
+                  Elmt := First_Elmt (Primitive_Operations (Def_Id));
                   while Present (Elmt) loop
                      Subp := Node (Elmt);
 
@@ -6050,6 +6049,14 @@ package body Exp_Ch3 is
 
             if Is_CPP_Class (Root_Type (Def_Id))
               and then Convention (Def_Id) = Convention_CPP
+            then
+               null;
+
+            --  Do not add the spec of predefined primitives in case of
+            --  CIL and Java tagged types
+
+            elsif Convention (Def_Id) = Convention_CIL
+              or else Convention (Def_Id) = Convention_Java
             then
                null;
 
@@ -6179,7 +6186,6 @@ package body Exp_Ch3 is
          declare
             Comps : constant Node_Id :=
                       Component_List (Type_Definition (Type_Decl));
-
          begin
             if Present (Comps)
               and then Present (Variant_Part (Comps))
@@ -6247,11 +6253,10 @@ package body Exp_Ch3 is
       end if;
 
       --  For tagged type that are not interfaces, build bodies of primitive
-      --  operations. Note that we do this after building the record
-      --  initialization procedure, since the primitive operations may need
-      --  the initialization routine. There is no need to add predefined
-      --  primitives of interfaces because all their predefined primitives
-      --  are abstract.
+      --  operations. Note: do this after building the record initialization
+      --  procedure, since the primitive operations may need the initialization
+      --  routine. There is no need to add predefined primitives of interfaces
+      --  because all their predefined primitives are abstract.
 
       if Is_Tagged_Type (Def_Id)
         and then not Is_Interface (Def_Id)
@@ -6261,6 +6266,14 @@ package body Exp_Ch3 is
 
          if Is_CPP_Class (Root_Type (Def_Id))
            and then Convention (Def_Id) = Convention_CPP
+         then
+            null;
+
+         --  Do not add the body of predefined primitives in case of
+         --  CIL and Java tagged types.
+
+         elsif Convention (Def_Id) = Convention_CIL
+           or else Convention (Def_Id) = Convention_Java
          then
             null;
 
