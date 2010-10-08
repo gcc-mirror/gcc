@@ -5599,7 +5599,9 @@ package body Exp_Aggr is
       --  aggregates for C++ imported types must be expanded.
 
       if Ada_Version >= Ada_05 and then Is_Inherently_Limited_Type (Typ) then
-         if Nkind (Parent (N)) /= N_Object_Declaration then
+         if not Nkind_In (Parent (N), N_Object_Declaration,
+                                      N_Component_Association)
+         then
             Convert_To_Assignments (N, Typ);
 
          elsif Nkind (N) = N_Extension_Aggregate

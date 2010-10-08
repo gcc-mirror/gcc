@@ -6863,7 +6863,7 @@ package Einfo is
    --  Empty is returned.
 
    function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id;
-   --  Searches the Rep_Item chain for a given entyt E, for a record
+   --  Searches the Rep_Item chain for a given entity E, for a record
    --  representation clause, and if found, returns it. Returns Empty
    --  if no such clause is found.
 

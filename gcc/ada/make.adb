@@ -1916,8 +1916,7 @@ package body Make is
                if ALI_Project = No_Project then
                   ALI := No_ALI_Id;
 
-                  Verbose_Msg
-                    (Lib_File, " wrong object directory");
+                  Verbose_Msg (Lib_File, " wrong object directory");
                   return;
                end if;
 

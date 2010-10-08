@@ -705,9 +705,13 @@ package body Prj.Nmsc is
                --  (for instance because of symbolic links).
 
                elsif Source.Path.Name /= Path.Name then
-                  Error_Msg_Name_1 := Unit;
-                  Error_Msg
-                    (Data.Flags, "duplicate unit %%", Location, Project);
+                  if not Source.Duplicate_Unit then
+                     Error_Msg_Name_1 := Unit;
+                     Error_Msg
+                       (Data.Flags, "\duplicate unit %%", Location, Project);
+                     Source.Duplicate_Unit := True;
+                  end if;
+
                   Add_Src := False;
                end if;
             end if;

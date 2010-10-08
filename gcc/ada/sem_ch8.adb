@@ -3076,7 +3076,7 @@ package body Sem_Ch8 is
 
       --  The replacement of a discriminant by the corresponding discriminal
       --  is not done for a task discriminant that appears in a default
-      --  expression of an entry parameter. See Expand_Discriminant in exp_ch2
+      --  expression of an entry parameter. See Exp_Ch2.Expand_Discriminant
       --  for details on their handling.
 
       elsif Is_Concurrent_Type (Scope (E)) then

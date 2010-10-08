@@ -765,6 +765,9 @@ package Prj is
       Naming_Exception : Boolean := False;
       --  True if the source has an exceptional name
 
+      Duplicate_Unit : Boolean := False;
+      --  True when a duplicate unit has been reported for this source
+
       Next_In_Lang : Source_Id := No_Source;
       --  Link to another source of the same language in the same project
    end record;
@@ -799,6 +802,7 @@ package Prj is
                        Switches_Path          => No_Path,
                        Switches_TS            => Empty_Time_Stamp,
                        Naming_Exception       => False,
+                       Duplicate_Unit         => False,
                        Next_In_Lang           => No_Source);
 
    package Source_Paths_Htable is new Simple_HTable
