@@ -1,3 +1,8 @@
+2010-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/future (uses_allocator<packaged_task<>,>): Add;
+	minor formatting tweaks.
+
 2010-10-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/future: Enable allocator support.

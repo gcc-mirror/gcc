@@ -233,7 +233,7 @@ namespace std
         }
 
         __allocator_type _M_alloc;
-    };
+      };
 
     template<typename _Res, typename _Allocator>
       static typename _Ptr<_Result_alloc<_Res, _Allocator>>::type
@@ -243,7 +243,7 @@ namespace std
         typename __result_type::__allocator_type __a2(__a);
         __result_type* __p = __a2.allocate(1);
         __try
-        {
+	{
           __a2.construct(__p, __a);
         }
         __catch(...)
@@ -843,7 +843,7 @@ namespace std
       template<typename _Allocator>
         promise(allocator_arg_t, const _Allocator& __a)
         : _M_future(std::allocate_shared<_State>(__a)),
-        _M_storage(__future_base::_S_allocate_result<_Res>(__a))
+	  _M_storage(__future_base::_S_allocate_result<_Res>(__a))
         { }
 
       promise(const promise&) = delete;
@@ -904,6 +904,11 @@ namespace std
     swap(promise<_Res>& __x, promise<_Res>& __y)
     { __x.swap(__y); }
 
+  template<typename _Res, typename _Alloc>
+    struct uses_allocator<promise<_Res>, _Alloc>
+    : public true_type { };
+
+
   /// Partial specialization for promise<R&>
   template<typename _Res>
     class promise<_Res&>
@@ -930,7 +935,7 @@ namespace std
       template<typename _Allocator>
         promise(allocator_arg_t, const _Allocator& __a)
         : _M_future(std::allocate_shared<_State>(__a)),
-        _M_storage(__future_base::_S_allocate_result<_Res&>(__a))
+	  _M_storage(__future_base::_S_allocate_result<_Res&>(__a))
         { }
 
       promise(const promise&) = delete;
@@ -1002,11 +1007,10 @@ namespace std
 	_M_storage(std::move(__rhs._M_storage))
       { }
 
-
       template<typename _Allocator>
         promise(allocator_arg_t, const _Allocator& __a)
         : _M_future(std::allocate_shared<_State>(__a)),
-        _M_storage(__future_base::_S_allocate_result<void>(__a))
+	  _M_storage(__future_base::_S_allocate_result<void>(__a))
         { }
 
       promise(const promise&) = delete;
@@ -1076,9 +1080,6 @@ namespace std
     _M_future->_M_set_result(std::move(__setter));
   }
 
-  template<typename _Res, class Alloc>
-    struct uses_allocator<promise<_Res>, Alloc> : true_type  { };
-
 
   template<typename _StateT, typename _Res>
     struct __future_base::_Task_setter
@@ -1129,8 +1130,8 @@ namespace std
 
       template<typename _Func, typename _Alloc>
         _Task_state(_Func&& __task, const _Alloc& __a)
-        : _M_result(_S_allocate_result<_Res>(__a))
-        , _M_task(allocator_arg, __a, std::move(__task))
+        : _M_result(_S_allocate_result<_Res>(__a)),
+	  _M_task(allocator_arg, __a, std::move(__task))
         { }
 
       void
@@ -1248,7 +1249,12 @@ namespace std
     swap(packaged_task<_Res(_ArgTypes...)>& __x,
 	 packaged_task<_Res(_ArgTypes...)>& __y)
     { __x.swap(__y); }
- 
+
+  template<typename _Res, typename _Alloc>
+    struct uses_allocator<packaged_task<_Res>, _Alloc>
+    : public true_type { };
+
+
   template<typename _Res>
     class __future_base::_Deferred_state : public __future_base::_State
     {
