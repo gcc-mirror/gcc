@@ -1,3 +1,12 @@
+2010-10-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aux.adb: Cleanup Is_Immutably_Limited_Type.
+
+2010-10-08  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch3.adb: Minor reformatting.
+	* exp_ch5.adb: Add comment.
+
 2010-10-08  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb (Check_Duplicate_Pragma): Check for entity match
