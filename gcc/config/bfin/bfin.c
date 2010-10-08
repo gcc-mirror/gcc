@@ -1907,9 +1907,9 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
 
-void
-function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
-		      int named ATTRIBUTE_UNUSED)
+static void
+bfin_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   int count, bytes, words;
 
@@ -1946,9 +1946,9 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
    NAMED is nonzero if this argument is a named parameter
     (otherwise it is an extra parameter matching an ellipsis).  */
 
-struct rtx_def *
-function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
-	      int named ATTRIBUTE_UNUSED)
+static rtx
+bfin_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   int bytes
     = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
@@ -6633,6 +6633,12 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES bfin_arg_partial_bytes
+
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG bfin_function_arg
+
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE bfin_function_arg_advance
 
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE bfin_pass_by_reference
