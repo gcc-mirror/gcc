@@ -1,5 +1,12 @@
 2010-10-08  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/45656
+	* cse.c (cse_extended_basic_block): Preserve cc0 info across
+	debug isnsn.  Skip them when searching for cc0 setter.
+	(set_live_p): Skip debug insns when searching for cc0 user.
+
+2010-10-08  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/45673
 	PR debug/45604
 	PR debug/45419
