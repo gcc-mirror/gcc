@@ -116,7 +116,7 @@ package Lib.Writ is
    --  -- M  Main Program --
    --  ---------------------
 
-   --    M type [priority] [T=time-slice] W=?
+   --    M type [priority] [T=time-slice] [AB] W=?
 
    --      This line appears only if the main unit for this file is suitable
    --      for use as a main program. The parameters are:
@@ -140,6 +140,15 @@ package Lib.Writ is
    --          range 0 .. 10**9 giving the time slice value in units of
    --          milliseconds. The actual significance of this parameter is
    --          target dependent.
+
+   --        AB
+
+   --          Present if there is an allocator in the body of the procedure
+   --          after the BEGIN. This will be a violation of the restriction
+   --          No_Allocators_After_Elaboration if it is present, and this
+   --          unit is used as a main program (only the binder can find the
+   --          violation, since only the binder knows the main program).
+   --
 
    --        W=?
 

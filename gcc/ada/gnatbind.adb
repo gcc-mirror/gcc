@@ -143,34 +143,40 @@ procedure Gnatbind is
       --  should not be listed.
 
       No_Restriction_List : constant array (All_Restrictions) of Boolean :=
-        (No_Exception_Propagation => True,
+        (No_Allocators_After_Elaboration => True,
+         --  This involves run-time conditions not checkable at compile time
+
+         No_Anonymous_Allocators         => True,
+         --  Premature, since we have not implemented this yet
+
+         No_Exception_Propagation        => True,
          --  Modifies code resulting in different exception semantics
 
-         No_Exceptions            => True,
+         No_Exceptions                   => True,
          --  Has unexpected Suppress (All_Checks) effect
 
-         No_Implicit_Conditionals => True,
+         No_Implicit_Conditionals        => True,
          --  This could modify and pessimize generated code
 
-         No_Implicit_Dynamic_Code => True,
+         No_Implicit_Dynamic_Code        => True,
          --  This could modify and pessimize generated code
 
-         No_Implicit_Loops        => True,
+         No_Implicit_Loops               => True,
          --  This could modify and pessimize generated code
 
-         No_Recursion             => True,
+         No_Recursion                    => True,
          --  Not checkable at compile time
 
-         No_Reentrancy            => True,
+         No_Reentrancy                   => True,
          --  Not checkable at compile time
 
-         Max_Entry_Queue_Length    => True,
+         Max_Entry_Queue_Length           => True,
          --  Not checkable at compile time
 
-         Max_Storage_At_Blocking  => True,
+         Max_Storage_At_Blocking         => True,
          --  Not checkable at compile time
 
-         others => False);
+         others                          => False);
 
       Additional_Restrictions_Listed : Boolean := False;
       --  Set True if we have listed header for restrictions

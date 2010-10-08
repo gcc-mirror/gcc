@@ -113,6 +113,11 @@ package body Lib is
       return Units.Table (U).Generate_Code;
    end Generate_Code;
 
+   function Has_Allocator (U : Unit_Number_Type) return Boolean is
+   begin
+      return Units.Table (U).Has_Allocator;
+   end Has_Allocator;
+
    function Has_RACW (U : Unit_Number_Type) return Boolean is
    begin
       return Units.Table (U).Has_RACW;
@@ -197,6 +202,11 @@ package body Lib is
    begin
       Units.Table (U).Generate_Code := B;
    end Set_Generate_Code;
+
+   procedure Set_Has_Allocator (U : Unit_Number_Type; B : Boolean := True) is
+   begin
+      Units.Table (U).Has_Allocator := B;
+   end Set_Has_Allocator;
 
    procedure Set_Has_RACW (U : Unit_Number_Type; B : Boolean := True) is
    begin

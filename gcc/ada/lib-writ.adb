@@ -80,6 +80,7 @@ package body Lib.Writ is
          Dynamic_Elab     => False,
          Fatal_Error      => False,
          Generate_Code    => False,
+         Has_Allocator    => False,
          Has_RACW         => False,
          Is_Compiler_Unit => False,
          Ident_String     => Empty,
@@ -135,6 +136,7 @@ package body Lib.Writ is
         Dynamic_Elab     => False,
         Fatal_Error      => False,
         Generate_Code    => False,
+        Has_Allocator    => False,
         Has_RACW         => False,
         Is_Compiler_Unit => False,
         Ident_String     => Empty,
@@ -923,6 +925,10 @@ package body Lib.Writ is
             if Opt.Time_Slice_Set then
                Write_Info_Str (" T=");
                Write_Info_Nat (Opt.Time_Slice_Value);
+            end if;
+
+            if Has_Allocator (Main_Unit) then
+               Write_Info_Str (" AB");
             end if;
 
             Write_Info_Str (" W=");
