@@ -1,3 +1,14 @@
+2010-10-08  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Object): Rename Formal_Id to Gen_Obj, for
+	consistency with Gen_T in Instantiate_Type.
+	Introduce constant A_Gen_Obj to avoid repeated queries for
+	Defining_Identifier (Analyzed_Formal).
+
+2010-10-08  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb: Minor comment fix.
+
 2010-10-07  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb, sem_ch13.adb: Implement AI05-0012-1/02.
