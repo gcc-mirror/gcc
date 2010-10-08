@@ -1063,6 +1063,7 @@ package Snames is
    Name_Executable                       : constant Name_Id := N + $;
    Name_Executable_Suffix                : constant Name_Id := N + $;
    Name_Extends                          : constant Name_Id := N + $;
+   Name_External_As_List                 : constant Name_Id := N + $;
    Name_Externally_Built                 : constant Name_Id := N + $;
    Name_Finder                           : constant Name_Id := N + $;
    Name_Global_Compilation_Switches      : constant Name_Id := N + $;

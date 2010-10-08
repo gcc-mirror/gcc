@@ -155,9 +155,10 @@ package body ALI.Util is
       --  recognized as reserved words, but as identifiers. The byte info for
       --  those names have been set if we are in gnatmake.
 
-      Set_Name_Table_Byte (Name_Project,  0);
-      Set_Name_Table_Byte (Name_Extends,  0);
-      Set_Name_Table_Byte (Name_External, 0);
+      Set_Name_Table_Byte (Name_Project,          0);
+      Set_Name_Table_Byte (Name_Extends,          0);
+      Set_Name_Table_Byte (Name_External,         0);
+      Set_Name_Table_Byte (Name_External_As_List, 0);
 
       --  Scan the complete file to compute its checksum
 

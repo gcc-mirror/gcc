@@ -13738,8 +13738,7 @@ package body Sem_Ch3 is
              (not Is_Interface (Parent_Type)
                or else not Is_Limited_Interface (Parent_Type))
          then
-
-            --  AI05-0096 : a derivation in the private part of an instance is
+            --  AI05-0096: a derivation in the private part of an instance is
             --  legal if the generic formal is untagged limited, and the actual
             --  is non-limited.
 
@@ -13747,7 +13746,7 @@ package body Sem_Ch3 is
               and then In_Private_Part (Current_Scope)
               and then
                 not Is_Tagged_Type
-                  (Generic_Parent_Type (Parent (Parent_Type)))
+                      (Generic_Parent_Type (Parent (Parent_Type)))
             then
                null;
 

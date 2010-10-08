@@ -2515,6 +2515,11 @@ An external value is an expression whose value is obtained from the command
 that invoked the processing of the current project file (typically a
 gnatmake or gprbuild command).
 
+There are two kinds of external values, one that returns a single string, and
+one that returns a string list.
+
+The syntax of a single string external value is:
+
 @smallexample
 external_value ::= @i{external} ( string_literal [, string_literal] )
 @end smallexample
@@ -2532,7 +2537,7 @@ or be specified on the command line through the
 are specified, then the command line value is used, so that a user can more
 easily override the value.
 
-The function @code{external} always returns a string, possibly empty if the
+The function @code{external} always returns a string. It is an error if the
 value was not found in the environment and no default was specified in the
 call to @code{external}.
 
@@ -2544,6 +2549,42 @@ Most of the time, this construct is used to initialize typed variables, which
 are then used in @b{case} statements to control the value assigned to
 attributes in various scenarios. Thus such variables are often called
 @b{scenario variables}.
+
+The syntax for a string list external value is:
+
+@smallexample
+external_value ::= @i{external_as_list} ( string_literal , string_literal )
+@end smallexample
+
+@noindent
+The first string_literal is the string to be used on the command line or
+in the environment to specify the external value. The second string_literal is
+the separator between each component of the string list.
+
+If the external value does not exist in the environment or on the command line,
+the result is an empty list. This is also the case, if the separator is an
+empty string or if the external value is only one separator.
+
+Any separator at the beginning or at the end of the external value is
+discarded. Then, if there is no separator in the external vaue, the result is
+a string list with only one string. Otherwise, any string between the biginning
+and the first separator, between two consecutive separators and between the
+last separator and the end are components of the string list.
+
+@smallexample
+   @i{external_as_list} ("SWITCHES", ",")
+@end smallexample
+
+@noindent
+If the external value is "-O2,-g", the result is ("-O2", "-g").
+
+If the external value is ",-O2,-g,", the result is also ("-O2", "-g").
+
+if the external value is "-gnav", the result is ("-gnatv").
+
+If the external value is ",,", the result is ("").
+
+If the external value is ",", the result is (), the empty string list.
 
 @c ---------------------------------------------
 @node Typed String Declaration
