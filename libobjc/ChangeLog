@@ -1,5 +1,9 @@
 2010-10-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-sync.c: Include objc-private/common.h.
+
+2010-10-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-foreach.c: Include objc-private/common.h.
 	* objc/deprecated/METHOD_NULL.h: New file.
 	* objc/objc-api.h: Include deprecated/METHOD_NULL.h instead of
