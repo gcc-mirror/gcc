@@ -75,8 +75,6 @@ extern void mep_print_operand_address (FILE *, rtx);
 extern void mep_print_operand (FILE *, rtx, int);
 extern void mep_final_prescan_insn (rtx, rtx *, int);
 extern void mep_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
-extern rtx mep_function_arg (CUMULATIVE_ARGS, enum machine_mode, tree, int);
-extern void mep_arg_advance (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern bool mep_return_in_memory (const_tree, const_tree);
 extern rtx mep_function_value (tree, tree);
 extern rtx mep_libcall_value (enum machine_mode);
