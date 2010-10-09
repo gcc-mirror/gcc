@@ -1,3 +1,8 @@
+2010-10-09  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/45947
+	* tree.c (free_lang_data_in_cgraph): Properly walk the varpool.
+
 2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/mmix/mmix-protos.h (mmix_function_arg): Delete.

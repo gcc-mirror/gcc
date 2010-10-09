@@ -4982,7 +4982,7 @@ free_lang_data_in_cgraph (void)
     find_decls_types (p->decl, &fld);
 
   /* Find decls and types in every varpool symbol.  */
-  for (v = varpool_nodes_queue; v; v = v->next_needed)
+  for (v = varpool_nodes; v; v = v->next)
     find_decls_types_in_var (v, &fld);
 
   /* Set the assembler name on every decl found.  We need to do this
