@@ -42,15 +42,8 @@ extern int avr_progmem_p (tree decl, tree attributes);
 #ifdef RTX_CODE /* inside TREE_CODE */
 extern void init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 				  rtx libname, tree fndecl);
-extern rtx function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			 tree type, int named);
 #endif /* RTX_CODE inside TREE_CODE */
 
-#ifdef HAVE_MACHINE_MODES /* inside TREE_CODE */
-extern void function_arg_advance (CUMULATIVE_ARGS *cum,
-				  enum machine_mode mode, tree type,
-				  int named);
-#endif /* HAVE_MACHINE_MODES inside TREE_CODE*/
 #endif /* TREE_CODE */
 
 #ifdef RTX_CODE
