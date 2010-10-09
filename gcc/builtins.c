@@ -13627,26 +13627,20 @@ fold_call_stmt (gimple stmt, bool ignore)
       && !gimple_call_va_arg_pack_p (stmt))
     {
       int nargs = gimple_call_num_args (stmt);
+      tree *args = (nargs > 0
+		    ? gimple_call_arg_ptr (stmt, 0)
+		    : &error_mark_node);
 
       if (avoid_folding_inline_builtin (fndecl))
 	return NULL_TREE;
       if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
         {
-	  return targetm.fold_builtin (fndecl, nargs,
-				       (nargs > 0
-					? gimple_call_arg_ptr (stmt, 0)
-					: &error_mark_node), ignore);
+	  return targetm.fold_builtin (fndecl, nargs, args, ignore);
         }
       else
 	{
 	  if (nargs <= MAX_ARGS_TO_FOLD_BUILTIN)
-	    {
-              tree args[MAX_ARGS_TO_FOLD_BUILTIN];
-              int i;
-              for (i = 0; i < nargs; i++)
-                args[i] = gimple_call_arg (stmt, i);
-	      ret = fold_builtin_n (loc, fndecl, args, nargs, ignore);
-	    }
+	    ret = fold_builtin_n (loc, fndecl, args, nargs, ignore);
 	  if (!ret)
 	    ret = gimple_fold_builtin_varargs (fndecl, stmt, ignore);
 	  if (ret)
