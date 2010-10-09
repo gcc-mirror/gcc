@@ -1,5 +1,12 @@
 2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/pdp11/pdp11.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	* config/pdp11/pdp11.c (pdp11_function_arg): New function.
+	(pdp11_function_arg_advance): New function.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* libgcc2.h: Use __SIZEOF_LONG_LONG__ instead of LONG_LONG_TYPE_SIZE.
 	* libgcc2.c: Likewise.
 
