@@ -1,5 +1,12 @@
 2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/vax/vax.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	* config/vax/vax.c (vax_function_arg): New function.
+	(vax_function_arg_advance): New function.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/pa/pa-protos.h (function_arg): Delete.
 	* config/pa/pa.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
 	* config/pa/pa.c (function_arg): Rename to...
