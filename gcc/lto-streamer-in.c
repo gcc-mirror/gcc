@@ -2367,27 +2367,26 @@ lto_input_tree_pointers (struct lto_input_block *ib, struct data_in *data_in,
 static void
 lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
 {
-  /* Register symbols with file or global scope to mark what input
-     file has their definition.  */
-  if (decl_function_context (decl) == NULL_TREE)
-    {
-      /* Variable has file scope, not local. Need to ensure static variables
-	 between different files don't clash unexpectedly.  */
-      if (!TREE_PUBLIC (decl))
-        {
-	  /* ??? We normally pre-mangle names before we serialize them
-	     out.  Here, in lto1, we do not know the language, and
-	     thus cannot do the mangling again. Instead, we just
-	     append a suffix to the mangled name.  The resulting name,
-	     however, is not a properly-formed mangled name, and will
-	     confuse any attempt to unmangle it.  */
-	  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-	  char *label;
+  tree context;
 
-	  ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
-	  SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
-          rest_of_decl_compilation (decl, 1, 0);
-        }
+  /* Variable has file scope, not local. Need to ensure static variables
+     between different files don't clash unexpectedly.  */
+  if (!TREE_PUBLIC (decl)
+      && !((context = decl_function_context (decl))
+	   && auto_var_in_fn_p (decl, context)))
+    {
+      /* ??? We normally pre-mangle names before we serialize them
+	 out.  Here, in lto1, we do not know the language, and
+	 thus cannot do the mangling again. Instead, we just
+	 append a suffix to the mangled name.  The resulting name,
+	 however, is not a properly-formed mangled name, and will
+	 confuse any attempt to unmangle it.  */
+      const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      char *label;
+
+      ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
+      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
+      rest_of_decl_compilation (decl, 1, 0);
     }
 
   /* If this variable has already been declared, queue the
