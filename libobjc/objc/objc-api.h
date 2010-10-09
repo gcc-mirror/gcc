@@ -289,26 +289,12 @@ typedef struct objc_category {
 					         conformed to */
 } Category, *Category_t;
 
-/*
-** Structure used when a message is send to a class's super class.  The
-** compiler generates one of these structures and passes it to
-** objc_msg_super.
-*/
-typedef struct objc_super {
-  id      self;                           /* Id of the object sending
-                                                the message. */
-#ifdef __cplusplus
-  Class super_class;
-#else
-  Class class;                              /* Object's super class. */
-#endif
-} Super, *Super_t;
-
-objc_EXPORT IMP objc_msg_lookup_super(Super_t super, SEL sel);
-
-objc_EXPORT retval_t objc_msg_sendv(id, SEL, arglist_t);
-
-
+/* We include message.h for compatibility with the old objc-api.h
+   which included the declarations currently in message.h.  The
+   Apple/NeXT runtime does not do this and only include message.h in
+   objc-runtime.h.  It does not matter that much since most of the
+   definitions in message.h are runtime-specific.  */
+#include "message.h"
 
 /*
 ** This is a hook which is called by objc_lookup_class and
@@ -358,16 +344,6 @@ objc_free(void *mem);
 
 #include "deprecated/objc_valloc.h"
 #include "deprecated/objc_malloc.h"
-
-/*
-**  Hooks for method forwarding. This makes it easy to substitute a
-**  library, such as ffcall, that implements closures, thereby avoiding
-**  gcc's __builtin_apply problems.  __objc_msg_forward2's result will
-**  be preferred over that of __objc_msg_forward if both are set and
-**  return non-NULL.
-*/
-objc_EXPORT IMP (*__objc_msg_forward)(SEL);
-objc_EXPORT IMP (*__objc_msg_forward2)(id, SEL);
 
 #include "deprecated/objc_unexpected_exception.h"
 
