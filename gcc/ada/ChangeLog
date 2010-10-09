@@ -249,7 +249,8 @@
 	* prj-tree.ads (Expression_Kind_Of): Allowed for N_External_Value nodes
 	(Set_Expression_Kind_Of): Ditto
 	* prj.adb (Initialize): Set external_as_list as a reserved word
-	* projects.texi: Document new string external reference external_as_list
+	* projects.texi: Document new string external reference
+	external_as_list.
 	* scans.ads (Token_Type): New token Tok_External_As_List
 	* snames.ads-tmpl: New standard name Name_External_As_List
 
@@ -1074,9 +1075,9 @@
 	* exp_ch4.adb (Expand_N_Op_Not): Handle properly both operands when the
 	parent is a binary boolean operation and the operand is an unpacked
 	array.
-	(Build_Boolean_Array_Proc_Call): If the operands are both negations, the
-	operands of the rewritten node are the operands of the negations, not
-	the negations themselves.
+	(Build_Boolean_Array_Proc_Call): If the operands are both negations,
+	the operands of the rewritten node are the operands of the negations,
+	not the negations themselves.
 
 2010-10-04  Robert Dewar  <dewar@adacore.com>
 
