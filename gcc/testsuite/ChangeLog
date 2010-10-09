@@ -1,5 +1,12 @@
 2010-10-09  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/45956
+	* gcc.dg/lto/20101009-2_0.c: New testcase.
+	* gcc.dg/lto/20101009-2_1.c: Likewise.
+	* gcc.dg/lto/20101009-2_2.c: Likewise.
+
+2010-10-09  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/45947
 	* g++.dg/lto/20101009-1_0.C: New testcase.
 
