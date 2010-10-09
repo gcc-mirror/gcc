@@ -27,8 +27,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   objc_set_enumeration_mutation_handler(), the two functions required
   to handle mutations during a fast enumeration.
 */
-#include "objc/runtime.h"           /* For objc_enumerationMutation() and objc_set_enumeration_mutation_handler() */
+#include "objc-private/common.h"
 #include "objc-private/error.h"     /* For _objc_abort() */
+#include "objc/runtime.h"           /* For objc_enumerationMutation() and objc_set_enumeration_mutation_handler() */
 
 /* The enumeration mutation handler currently in use.  */
 static void (*__objc_enumeration_mutation_handler)(id) = NULL;
