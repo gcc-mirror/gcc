@@ -1,3 +1,14 @@
+2010-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/45612
+	* ipa-split.c (test_nonssa_use): Remove bogus ATTRIBUTE_UNUSED.
+	Test LABEL_DECLs as well.  Fix formatting issues.
+	(verify_non_ssa_vars): Return false for a GIMPLE_LABEL statement
+	whose label is present in NON_SSA_VARS.
+	(mark_nonssa_use): Remove bogus ATTRIBUTE_UNUSED.  Handle LABEL_DECLs
+	as well.  Fix formatting issues.
+	(visit_bb): Fix typos and formatting issue.
+
 2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR tree-optimization/45950
