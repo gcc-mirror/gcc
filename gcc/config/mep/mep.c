@@ -216,6 +216,10 @@ static void mep_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					tree, int *, int);
 static bool mep_pass_by_reference (CUMULATIVE_ARGS * cum, enum machine_mode,
 				   const_tree, bool);
+static rtx mep_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			     const_tree, bool);
+static void mep_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				      const_tree, bool);
 static bool mep_vector_mode_supported_p (enum machine_mode);
 static bool mep_handle_option (size_t, const char *, int);
 static rtx  mep_allocate_initial_value (rtx);
@@ -3717,23 +3721,29 @@ mep_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
     pcum->vliw = 0;
 }
 
-rtx
-mep_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
-		  tree type ATTRIBUTE_UNUSED, int named ATTRIBUTE_UNUSED)
+/* The ABI is thus: Arguments are in $1, $2, $3, $4, stack.  Arguments
+   larger than 4 bytes are passed indirectly.  Return value in 0,
+   unless bigger than 4 bytes, then the caller passes a pointer as the
+   first arg.  For varargs, we copy $1..$4 to the stack.  */
+
+static rtx
+mep_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		  const_tree type ATTRIBUTE_UNUSED,
+		  bool named ATTRIBUTE_UNUSED)
 {
   /* VOIDmode is a signal for the backend to pass data to the call
      expander via the second operand to the call pattern.  We use
      this to determine whether to use "jsr" or "jsrv".  */
   if (mode == VOIDmode)
-    return GEN_INT (cum.vliw);
+    return GEN_INT (cum->vliw);
 
   /* If we havn't run out of argument registers, return the next.  */
-  if (cum.nregs < 4)
+  if (cum->nregs < 4)
     {
       if (type && TARGET_IVC2 && VECTOR_TYPE_P (type))
-	return gen_rtx_REG (mode, cum.nregs + 49);
+	return gen_rtx_REG (mode, cum->nregs + 49);
       else
-	return gen_rtx_REG (mode, cum.nregs + 1);
+	return gen_rtx_REG (mode, cum->nregs + 1);
     }
 
   /* Otherwise the argument goes on the stack.  */
@@ -3762,10 +3772,11 @@ mep_pass_by_reference (CUMULATIVE_ARGS * cum ATTRIBUTE_UNUSED,
   return true;
 }
 
-void
-mep_arg_advance (CUMULATIVE_ARGS *pcum,
-		 enum machine_mode mode ATTRIBUTE_UNUSED,
-		 tree type ATTRIBUTE_UNUSED, int named ATTRIBUTE_UNUSED)
+static void
+mep_function_arg_advance (CUMULATIVE_ARGS *pcum,
+			  enum machine_mode mode ATTRIBUTE_UNUSED,
+			  const_tree type ATTRIBUTE_UNUSED,
+			  bool named ATTRIBUTE_UNUSED)
 {
   pcum->nregs += 1;
 }
@@ -7405,6 +7416,10 @@ mep_asm_init_sections (void)
 #define TARGET_SETUP_INCOMING_VARARGS	mep_setup_incoming_varargs
 #undef  TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE        mep_pass_by_reference
+#undef  TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG             mep_function_arg
+#undef  TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE     mep_function_arg_advance
 #undef  TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P	mep_vector_mode_supported_p
 #undef  TARGET_HANDLE_OPTION

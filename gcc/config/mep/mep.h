@@ -499,14 +499,6 @@ extern unsigned int mep_selected_isa;
 
 
 
-/* The ABI is thus: Arguments are in $1, $2, $3, $4, stack.  Arguments
-   larger than 4 bytes are passed indirectly.  Return value in 0,
-   unless bigger than 4 bytes, then the caller passes a pointer as the
-   first arg.  For varargs, we copy $1..$4 to the stack.  */
-
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-	mep_function_arg (CUM, MODE, TYPE, NAMED)
-
 #define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) 1
 
 typedef struct
@@ -517,9 +509,6 @@ typedef struct
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
 	mep_init_cumulative_args (& (CUM), FNTYPE, LIBNAME, FNDECL)
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)		\
-	mep_arg_advance (& (CUM), MODE, TYPE, NAMED)
 
 #define FUNCTION_ARG_REGNO_P(REGNO) \
 	(((REGNO) >= 1 && (REGNO) <= 4) \

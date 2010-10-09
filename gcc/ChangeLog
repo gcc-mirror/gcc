@@ -1,3 +1,13 @@
+2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/mep/mep-protos.h (mep_function_arg): Delete.
+	(mep_function_arg_advance): Delete.
+	* config/mep/mep.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	* config/mep/mep.c (mep_function_arg): Make static.  Take a
+	const_tree and a bool.
+	(mep_function_arg_advance): Likewise.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
 2010-10-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45945
