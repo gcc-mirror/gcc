@@ -132,7 +132,7 @@ static rtx expand_builtin_memset (tree, rtx, enum machine_mode);
 static rtx expand_builtin_memset_args (tree, tree, tree, rtx, enum machine_mode, tree);
 static rtx expand_builtin_bzero (tree);
 static rtx expand_builtin_strlen (tree, rtx, enum machine_mode);
-static rtx expand_builtin_alloca (tree, rtx, bool);
+static rtx expand_builtin_alloca (tree, bool);
 static rtx expand_builtin_unop (enum machine_mode, tree, rtx, rtx, optab);
 static rtx expand_builtin_frame_address (tree, tree);
 static tree stabilize_va_list_loc (location_t, tree, int);
@@ -1572,7 +1572,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
      arguments to the outgoing arguments address.  We can pass TRUE
      as the 4th argument because we just saved the stack pointer
      and will restore it right after the call.  */
-  allocate_dynamic_stack_space (argsize, 0, BITS_PER_UNIT, TRUE);
+  allocate_dynamic_stack_space (argsize, 0, BIGGEST_ALIGNMENT, true);
 
   /* Set DRAP flag to true, even though allocate_dynamic_stack_space
      may have already set current_function_calls_alloca to true.
@@ -4931,12 +4931,11 @@ expand_builtin_frame_address (tree fndecl, tree exp)
 }
 
 /* Expand EXP, a call to the alloca builtin.  Return NULL_RTX if we
-   failed and the caller should emit a normal call, otherwise try to
-   get the result in TARGET, if convenient.  CANNOT_ACCUMULATE is the
-   same as for allocate_dynamic_stack_space.  */
+   failed and the caller should emit a normal call.  CANNOT_ACCUMULATE
+   is the same as for allocate_dynamic_stack_space.  */
 
 static rtx
-expand_builtin_alloca (tree exp, rtx target, bool cannot_accumulate)
+expand_builtin_alloca (tree exp, bool cannot_accumulate)
 {
   rtx op0;
   rtx result;
@@ -4952,7 +4951,7 @@ expand_builtin_alloca (tree exp, rtx target, bool cannot_accumulate)
   op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
 
   /* Allocate the desired space.  */
-  result = allocate_dynamic_stack_space (op0, target, BITS_PER_UNIT,
+  result = allocate_dynamic_stack_space (op0, 0, BIGGEST_ALIGNMENT,
 					 cannot_accumulate);
   result = convert_memory_address (ptr_mode, result);
 
@@ -5997,7 +5996,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_ALLOCA:
       /* If the allocation stems from the declaration of a variable-sized
 	 object, it cannot accumulate.  */
-      target = expand_builtin_alloca (exp, target, ALLOCA_FOR_VAR_P (exp));
+      target = expand_builtin_alloca (exp, ALLOCA_FOR_VAR_P (exp));
       if (target)
 	return target;
       break;
