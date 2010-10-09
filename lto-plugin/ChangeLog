@@ -1,3 +1,9 @@
+2010-10-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/45951
+	* configure.ac: Add AC_CANONICAL_SYSTEM.
+	* configure: Regenerated.
+
 2010-10-07  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* configure.ac: Source config.gcc to determine lto_binary_reader.
