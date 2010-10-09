@@ -132,29 +132,34 @@ struct split_point best_split_point;
 
 static tree find_retval (basic_block return_bb);
 
-/* Callback for walk_stmt_load_store_addr_ops.  If T is non-ssa automatic
+/* Callback for walk_stmt_load_store_addr_ops.  If T is non-SSA automatic
    variable, check it if it is present in bitmap passed via DATA.  */
 
 static bool
-test_nonssa_use (gimple stmt ATTRIBUTE_UNUSED, tree t,
-	         void *data ATTRIBUTE_UNUSED)
+test_nonssa_use (gimple stmt ATTRIBUTE_UNUSED, tree t, void *data)
 {
   t = get_base_address (t);
 
-  if (t && !is_gimple_reg (t)
-      && ((TREE_CODE (t) == VAR_DECL
+  if (!t || is_gimple_reg (t))
+    return false;
+
+  if (TREE_CODE (t) == PARM_DECL
+      || (TREE_CODE (t) == VAR_DECL
 	  && auto_var_in_fn_p (t, current_function_decl))
-	  || (TREE_CODE (t) == RESULT_DECL)
-	  || (TREE_CODE (t) == PARM_DECL)))
+      || TREE_CODE (t) == RESULT_DECL
+      || TREE_CODE (t) == LABEL_DECL)
     return bitmap_bit_p ((bitmap)data, DECL_UID (t));
 
-  /* For DECL_BY_REFERENCE, the return value is actually pointer.  We want to pretend
-     that the value pointed to is actual result decl.  */
-  if (t && (TREE_CODE (t) == MEM_REF || INDIRECT_REF_P (t))
+  /* For DECL_BY_REFERENCE, the return value is actually a pointer.  We want
+     to pretend that the value pointed to is actual result decl.  */
+  if ((TREE_CODE (t) == MEM_REF || INDIRECT_REF_P (t))
       && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
       && TREE_CODE (SSA_NAME_VAR (TREE_OPERAND (t, 0))) == RESULT_DECL
       && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
-    return bitmap_bit_p ((bitmap)data, DECL_UID (DECL_RESULT (current_function_decl)));
+    return
+      bitmap_bit_p ((bitmap)data,
+		    DECL_UID (DECL_RESULT (current_function_decl)));
+
   return false;
 }
 
@@ -173,8 +178,8 @@ dump_split_point (FILE * file, struct split_point *current)
   dump_bitmap (file, current->ssa_names_to_pass);
 }
 
-/* Look for all BBs in header that might lead to split part and verify that
-   they are not defining any of SSA vars used by split part. 
+/* Look for all BBs in header that might lead to the split part and verify
+   that they are not defining any non-SSA var used by the split part.
    Parameters are the same as for consider_split.  */
 
 static bool
@@ -186,7 +191,7 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
   edge e;
   edge_iterator ei;
   bool ok = true;
-  
+
   FOR_EACH_EDGE (e, ei, current->entry_bb->preds)
     if (e->src != ENTRY_BLOCK_PTR
 	&& !bitmap_bit_p (current->split_bbs, e->src->index))
@@ -194,7 +199,7 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
         VEC_safe_push (basic_block, heap, worklist, e->src);
 	bitmap_set_bit (seen, e->src->index);
       }
-  
+
   while (!VEC_empty (basic_block, worklist))
     {
       gimple_stmt_iterator bsi;
@@ -210,21 +215,29 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
 	  }
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
-	  if (is_gimple_debug (gsi_stmt (bsi)))
+	  gimple stmt = gsi_stmt (bsi);
+	  if (is_gimple_debug (stmt))
 	    continue;
 	  if (walk_stmt_load_store_addr_ops
-	      (gsi_stmt (bsi), non_ssa_vars, test_nonssa_use,
-	       test_nonssa_use, test_nonssa_use))
+	      (stmt, non_ssa_vars, test_nonssa_use, test_nonssa_use,
+	       test_nonssa_use))
 	    {
 	      ok = false;
 	      goto done;
 	    }
+	  if (gimple_code (stmt) == GIMPLE_LABEL
+	      && test_nonssa_use (stmt, gimple_label_label (stmt),
+				  non_ssa_vars))
+	  {
+	    ok = false;
+	    goto done;
+	  }
 	}
       for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
 	  if (walk_stmt_load_store_addr_ops
-	      (gsi_stmt (bsi), non_ssa_vars, test_nonssa_use,
-	       test_nonssa_use, test_nonssa_use))
+	      (gsi_stmt (bsi), non_ssa_vars, test_nonssa_use, test_nonssa_use,
+	       test_nonssa_use))
 	    {
 	      ok = false;
 	      goto done;
@@ -542,13 +555,12 @@ find_retval (basic_block return_bb)
   return NULL;
 }
 
-/* Callback for walk_stmt_load_store_addr_ops.  If T is non-ssa automatic
-   variable, mark it as used in bitmap passed via DATA. 
+/* Callback for walk_stmt_load_store_addr_ops.  If T is non-SSA automatic
+   variable, mark it as used in bitmap passed via DATA.
    Return true when access to T prevents splitting the function.  */
 
 static bool
-mark_nonssa_use (gimple stmt ATTRIBUTE_UNUSED, tree t,
-	         void *data ATTRIBUTE_UNUSED)
+mark_nonssa_use (gimple stmt ATTRIBUTE_UNUSED, tree t, void *data)
 {
   t = get_base_address (t);
 
@@ -560,21 +572,27 @@ mark_nonssa_use (gimple stmt ATTRIBUTE_UNUSED, tree t,
   if (TREE_CODE (t) == PARM_DECL)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Can not split use of non-ssa function parameter.\n");
+	fprintf (dump_file,
+		 "Cannot split: use of non-ssa function parameter.\n");
       return true;
     }
 
-  if ((TREE_CODE (t) == VAR_DECL && auto_var_in_fn_p (t, current_function_decl))
-      || (TREE_CODE (t) == RESULT_DECL))
+  if ((TREE_CODE (t) == VAR_DECL
+       && auto_var_in_fn_p (t, current_function_decl))
+      || TREE_CODE (t) == RESULT_DECL
+      || TREE_CODE (t) == LABEL_DECL)
     bitmap_set_bit ((bitmap)data, DECL_UID (t));
 
-  /* For DECL_BY_REFERENCE, the return value is actually pointer.  We want to pretend
-     that the value pointed to is actual result decl.  */
-  if (t && (TREE_CODE (t) == MEM_REF || INDIRECT_REF_P (t))
+  /* For DECL_BY_REFERENCE, the return value is actually a pointer.  We want
+     to pretend that the value pointed to is actual result decl.  */
+  if ((TREE_CODE (t) == MEM_REF || INDIRECT_REF_P (t))
       && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
       && TREE_CODE (SSA_NAME_VAR (TREE_OPERAND (t, 0))) == RESULT_DECL
       && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
-    return bitmap_bit_p ((bitmap)data, DECL_UID (DECL_RESULT (current_function_decl)));
+    return
+      bitmap_bit_p ((bitmap)data,
+		    DECL_UID (DECL_RESULT (current_function_decl)));
+
   return false;
 }
 
@@ -617,13 +635,13 @@ visit_bb (basic_block bb, basic_block return_bb,
 	  && stmt_can_throw_external (stmt))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Can not split external resx.\n");
+	    fprintf (dump_file, "Cannot split: external resx.\n");
 	  can_split = false;
 	}
       if (gimple_code (stmt) == GIMPLE_EH_DISPATCH)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Can not split eh dispatch.\n");
+	    fprintf (dump_file, "Cannot split: eh dispatch.\n");
 	  can_split = false;
 	}
 
@@ -642,12 +660,13 @@ visit_bb (basic_block bb, basic_block return_bb,
 	  case BUILT_IN_APPLY:
 	  case BUILT_IN_VA_START:
 	    if (dump_file && (dump_flags & TDF_DETAILS))
-	      fprintf (dump_file, "Can not split builtin_apply and va_start.\n");
+	      fprintf (dump_file,
+		       "Cannot split: builtin_apply and va_start.\n");
 	    can_split = false;
 	    break;
 	  case BUILT_IN_EH_POINTER:
 	    if (dump_file && (dump_flags & TDF_DETAILS))
-	      fprintf (dump_file, "Can not split builtin_eh_pointer.\n");
+	      fprintf (dump_file, "Cannot split: builtin_eh_pointer.\n");
 	    can_split = false;
 	    break;
 	  default:
