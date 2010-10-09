@@ -1,3 +1,8 @@
+2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* libgcc2.h: Use __SIZEOF_LONG_LONG__ instead of LONG_LONG_TYPE_SIZE.
+	* libgcc2.c: Likewise.
+
 2010-10-09  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/45956
