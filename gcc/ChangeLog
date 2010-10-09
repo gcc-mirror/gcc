@@ -1,3 +1,9 @@
+2010-10-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45945
+	* tree-ssa.c (execute_update_addresses_taken): Fixup LHS
+	scanning.
+
 2010-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/45612
