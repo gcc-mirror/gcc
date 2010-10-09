@@ -634,17 +634,6 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
      ? (HOST_WIDE_INT) GET_MODE_SIZE (MODE) \
      : int_size_in_bytes (TYPE)) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-{ (CUM).nargs_prototype--;						\
-  (CUM).words += FUNCTION_ARG_SIZE(MODE, TYPE)	 			\
-    + (((CUM).words & 01) && (TYPE) != 0				\
-	&& FUNCTION_ARG_SIZE(MODE, TYPE) > 1);				\
-}
-
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
@@ -706,12 +695,6 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
    correctly padded.  */
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
   function_arg_padding ((MODE), (TYPE))
-
-/* Do not expect to understand this without reading it several times.  I'm
-   tempted to try and simply it, but I worry about breaking something.  */
-
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  function_arg (&CUM, MODE, TYPE, NAMED)
 
 /* If defined, a C expression that gives the alignment boundary, in
    bits, of an argument with the specified mode and type.  If it is
