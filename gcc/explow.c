@@ -1123,15 +1123,18 @@ update_nonlocal_goto_save_area (void)
 }
 
 /* Return an rtx representing the address of an area of memory dynamically
-   pushed on the stack.  This region of memory is always aligned to
-   a multiple of BIGGEST_ALIGNMENT.
+   pushed on the stack.
 
    Any required stack pointer alignment is preserved.
 
    SIZE is an rtx representing the size of the area.
-   TARGET is a place in which the address can be placed.
 
-   KNOWN_ALIGN is the alignment (in bits) that we know SIZE has.
+   SIZE_ALIGN is the alignment (in bits) that we know SIZE has.  This
+   parameter may be zero.  If so, a proper value will be extracted 
+   from SIZE if it is constant, otherwise BITS_PER_UNIT will be assumed.
+
+   REQUIRED_ALIGN is the alignment (in bits) required for the region
+   of memory.
 
    If CANNOT_ACCUMULATE is set to TRUE, the caller guarantees that the
    stack space allocated by the generated code cannot be added with itself
@@ -1141,12 +1144,12 @@ update_nonlocal_goto_save_area (void)
    loops to it executes the associated deallocation code.  */
 
 rtx
-allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
-			      bool cannot_accumulate)
+allocate_dynamic_stack_space (rtx size, unsigned size_align,
+			      unsigned required_align, bool cannot_accumulate)
 {
   HOST_WIDE_INT stack_usage_size = -1;
-  bool known_align_valid = true;
-  rtx final_label, final_target;
+  rtx final_label, final_target, target;
+  bool must_align;
 
   /* If we're asking for zero bytes, it doesn't matter what we point
      to since we can't dereference it.  But return a reasonable
@@ -1192,6 +1195,23 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
   if (GET_MODE (size) != VOIDmode && GET_MODE (size) != Pmode)
     size = convert_to_mode (Pmode, size, 1);
 
+  /* Adjust SIZE_ALIGN, if needed.  */
+  if (CONST_INT_P (size))
+    {
+      unsigned HOST_WIDE_INT lsb;
+
+      lsb = INTVAL (size);
+      lsb &= -lsb;
+
+      /* Watch out for overflow truncating to "unsigned".  */
+      if (lsb > UINT_MAX / BITS_PER_UNIT)
+	size_align = 1u << (HOST_BITS_PER_INT - 1);
+      else
+	size_align = (unsigned)lsb * BITS_PER_UNIT;
+    }
+  else if (size_align < BITS_PER_UNIT)
+    size_align = BITS_PER_UNIT;
+
   /* We can't attempt to minimize alignment necessary, because we don't
      know the final value of preferred_stack_boundary yet while executing
      this code.  */
@@ -1199,35 +1219,43 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
     crtl->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
 
   /* We will need to ensure that the address we return is aligned to
-     BIGGEST_ALIGNMENT.  If STACK_DYNAMIC_OFFSET is defined, we don't
+     REQUIRED_ALIGN.  If STACK_DYNAMIC_OFFSET is defined, we don't
      always know its final value at this point in the compilation (it
      might depend on the size of the outgoing parameter lists, for
      example), so we must align the value to be returned in that case.
      (Note that STACK_DYNAMIC_OFFSET will have a default nonzero value if
      STACK_POINTER_OFFSET or ACCUMULATE_OUTGOING_ARGS are defined).
      We must also do an alignment operation on the returned value if
-     the stack pointer alignment is less strict that BIGGEST_ALIGNMENT.
+     the stack pointer alignment is less strict than REQUIRED_ALIGN.
 
      If we have to align, we must leave space in SIZE for the hole
      that might result from the alignment operation.  */
 
+  must_align = (crtl->preferred_stack_boundary < required_align);
 #if defined (STACK_DYNAMIC_OFFSET) || defined (STACK_POINTER_OFFSET)
-#define MUST_ALIGN 1
-#else
-#define MUST_ALIGN (crtl->preferred_stack_boundary < BIGGEST_ALIGNMENT)
+  must_align = true;
 #endif
 
-  if (MUST_ALIGN)
+  if (must_align)
     {
-      size
-        = force_operand (plus_constant (size,
-					BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1),
-			 NULL_RTX);
+      unsigned extra, extra_align;
+
+      if (required_align > PREFERRED_STACK_BOUNDARY)
+	extra_align = PREFERRED_STACK_BOUNDARY;
+      else if (required_align > STACK_BOUNDARY)
+	extra_align = STACK_BOUNDARY;
+      else
+	extra_align = BITS_PER_UNIT;
+      extra = (required_align - extra_align) / BITS_PER_UNIT;
+
+      size = plus_constant (size, extra);
+      size = force_operand (size, NULL_RTX);
 
       if (flag_stack_usage)
-	stack_usage_size += BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1;
+	stack_usage_size += extra;
 
-      known_align_valid = false;
+      if (extra && size_align > extra_align)
+	size_align = extra_align;
     }
 
 #ifdef SETJMP_VIA_SAVE_AREA
@@ -1257,7 +1285,8 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
       if (flag_stack_usage)
 	current_function_dynamic_alloc_count++;
 
-      known_align_valid = false;
+      /* ??? Can we infer a minimum of STACK_BOUNDARY here?  */
+      size_align = BITS_PER_UNIT;
     }
 #endif /* SETJMP_VIA_SAVE_AREA */
 
@@ -1274,7 +1303,7 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
      insns.  Since this is an extremely rare event, we have no reliable
      way of knowing which systems have this problem.  So we avoid even
      momentarily mis-aligning the stack.  */
-  if (!known_align_valid || known_align % MAX_SUPPORTED_STACK_ALIGNMENT != 0)
+  if (size_align % MAX_SUPPORTED_STACK_ALIGNMENT != 0)
     {
       size = round_push (size);
 
@@ -1285,13 +1314,7 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
 	}
     }
 
-  /* Don't use a TARGET that isn't a pseudo or is the wrong mode.  */
-  if (target == 0 || !REG_P (target)
-      || REGNO (target) < FIRST_PSEUDO_REGISTER
-      || GET_MODE (target) != Pmode)
-    target = gen_reg_rtx (Pmode);
-
-  mark_reg_pointer (target, known_align);
+  target = gen_reg_rtx (Pmode);
 
   /* The size is supposed to be fully adjusted at this point so record it
      if stack usage info is requested.  */
@@ -1341,7 +1364,6 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
 	return space;
 
       final_target = gen_reg_rtx (Pmode);
-      mark_reg_pointer (final_target, known_align);
 
       emit_move_insn (final_target, space);
 
@@ -1440,26 +1462,6 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
 #endif
     }
 
-  if (MUST_ALIGN)
-    {
-      /* CEIL_DIV_EXPR needs to worry about the addition overflowing,
-	 but we know it can't.  So add ourselves and then do
-	 TRUNC_DIV_EXPR.  */
-      target = expand_binop (Pmode, add_optab, target,
-			     GEN_INT (BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1),
-			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
-      target = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, target,
-			      GEN_INT (BIGGEST_ALIGNMENT / BITS_PER_UNIT),
-			      NULL_RTX, 1);
-      target = expand_mult (Pmode, target,
-			    GEN_INT (BIGGEST_ALIGNMENT / BITS_PER_UNIT),
-			    NULL_RTX, 1);
-    }
-
-  /* Record the new stack level for nonlocal gotos.  */
-  if (cfun->nonlocal_goto_save_area != 0)
-    update_nonlocal_goto_save_area ();
-
   /* Finish up the split stack handling.  */
   if (final_label != NULL_RTX)
     {
@@ -1468,6 +1470,29 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
       emit_label (final_label);
       target = final_target;
     }
+
+  if (must_align)
+    {
+      /* CEIL_DIV_EXPR needs to worry about the addition overflowing,
+	 but we know it can't.  So add ourselves and then do
+	 TRUNC_DIV_EXPR.  */
+      target = expand_binop (Pmode, add_optab, target,
+			     GEN_INT (required_align / BITS_PER_UNIT - 1),
+			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
+      target = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, target,
+			      GEN_INT (required_align / BITS_PER_UNIT),
+			      NULL_RTX, 1);
+      target = expand_mult (Pmode, target,
+			    GEN_INT (required_align / BITS_PER_UNIT),
+			    NULL_RTX, 1);
+    }
+
+  /* Now that we've committed to a return value, mark its alignment.  */
+  mark_reg_pointer (target, required_align);
+
+  /* Record the new stack level for nonlocal gotos.  */
+  if (cfun->nonlocal_goto_save_area != 0)
+    update_nonlocal_goto_save_area ();
 
   return target;
 }

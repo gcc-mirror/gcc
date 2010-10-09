@@ -205,43 +205,13 @@ static bool has_protected_decls;
    smaller than our cutoff threshold.  Used for -Wstack-protector.  */
 static bool has_short_buffer;
 
-/* Update stack alignment requirement.  */
-
-static void
-update_stack_alignment (unsigned int align)
-{
-  if (SUPPORTS_STACK_ALIGNMENT)
-    {
-      if (crtl->stack_alignment_estimated < align)
-	{
-	  gcc_assert(!crtl->stack_realign_processed);
-          crtl->stack_alignment_estimated = align;
-	}
-    }
-
-  /* stack_alignment_needed > PREFERRED_STACK_BOUNDARY is permitted.
-     So here we only make sure stack_alignment_needed >= align.  */
-  if (crtl->stack_alignment_needed < align)
-    crtl->stack_alignment_needed = align;
-  if (crtl->max_used_stack_slot_alignment < align)
-    crtl->max_used_stack_slot_alignment = align;
-}
-
 /* Discover the byte alignment to use for DECL.  Ignore alignment
    we can't do with expected alignment of the stack boundary.  */
 
 static unsigned int
 get_decl_align_unit (tree decl)
 {
-  unsigned int align;
-
-  align = LOCAL_DECL_ALIGNMENT (decl);
-
-  if (align > MAX_SUPPORTED_STACK_ALIGNMENT)
-    align = MAX_SUPPORTED_STACK_ALIGNMENT;
-
-  update_stack_alignment (align);
-
+  unsigned int align = LOCAL_DECL_ALIGNMENT (decl);
   return align / BITS_PER_UNIT;
 }
 
@@ -249,7 +219,7 @@ get_decl_align_unit (tree decl)
    Return the frame offset.  */
 
 static HOST_WIDE_INT
-alloc_stack_frame_space (HOST_WIDE_INT size, HOST_WIDE_INT align)
+alloc_stack_frame_space (HOST_WIDE_INT size, unsigned HOST_WIDE_INT align)
 {
   HOST_WIDE_INT offset, new_frame_offset;
 
@@ -402,26 +372,43 @@ add_alias_set_conflicts (void)
 }
 
 /* A subroutine of partition_stack_vars.  A comparison function for qsort,
-   sorting an array of indices by the size and type of the object.  */
+   sorting an array of indices by the properties of the object.  */
 
 static int
-stack_var_size_cmp (const void *a, const void *b)
+stack_var_cmp (const void *a, const void *b)
 {
-  HOST_WIDE_INT sa = stack_vars[*(const size_t *)a].size;
-  HOST_WIDE_INT sb = stack_vars[*(const size_t *)b].size;
-  tree decla, declb;
+  size_t ia = *(const size_t *)a;
+  size_t ib = *(const size_t *)b;
+  unsigned int aligna = stack_vars[ia].alignb;
+  unsigned int alignb = stack_vars[ib].alignb;
+  HOST_WIDE_INT sizea = stack_vars[ia].size;
+  HOST_WIDE_INT sizeb = stack_vars[ib].size;
+  tree decla = stack_vars[ia].decl;
+  tree declb = stack_vars[ib].decl;
+  bool largea, largeb;
   unsigned int uida, uidb;
 
-  if (sa < sb)
+  /* Primary compare on "large" alignment.  Large comes first.  */
+  largea = (aligna * BITS_PER_UNIT > MAX_SUPPORTED_STACK_ALIGNMENT);
+  largeb = (alignb * BITS_PER_UNIT > MAX_SUPPORTED_STACK_ALIGNMENT);
+  if (largea != largeb)
+    return (int)largeb - (int)largea;
+
+  /* Secondary compare on size, decreasing  */
+  if (sizea < sizeb)
     return -1;
-  if (sa > sb)
+  if (sizea > sizeb)
     return 1;
-  decla = stack_vars[*(const size_t *)a].decl;
-  declb = stack_vars[*(const size_t *)b].decl;
-  /* For stack variables of the same size use and id of the decls
-     to make the sort stable.  Two SSA names are compared by their
-     version, SSA names come before non-SSA names, and two normal
-     decls are compared by their DECL_UID.  */
+
+  /* Tertiary compare on true alignment, decreasing.  */
+  if (aligna < alignb)
+    return -1;
+  if (aligna > alignb)
+    return 1;
+
+  /* Final compare on ID for sort stability, increasing.
+     Two SSA names are compared by their version, SSA names come before
+     non-SSA names, and two normal decls are compared by their DECL_UID.  */
   if (TREE_CODE (decla) == SSA_NAME)
     {
       if (TREE_CODE (declb) == SSA_NAME)
@@ -434,9 +421,9 @@ stack_var_size_cmp (const void *a, const void *b)
   else
     uida = DECL_UID (decla), uidb = DECL_UID (declb);
   if (uida < uidb)
-    return -1;
-  if (uida > uidb)
     return 1;
+  if (uida > uidb)
+    return -1;
   return 0;
 }
 
@@ -634,12 +621,13 @@ partition_stack_vars (void)
   if (n == 1)
     return;
 
-  qsort (stack_vars_sorted, n, sizeof (size_t), stack_var_size_cmp);
+  qsort (stack_vars_sorted, n, sizeof (size_t), stack_var_cmp);
 
   for (si = 0; si < n; ++si)
     {
       size_t i = stack_vars_sorted[si];
       HOST_WIDE_INT isize = stack_vars[i].size;
+      unsigned int ialign = stack_vars[i].alignb;
       HOST_WIDE_INT offset = 0;
 
       for (sj = si; sj-- > 0; )
@@ -658,6 +646,12 @@ partition_stack_vars (void)
 
 	  /* Ignore conflicting objects.  */
 	  if (stack_var_conflict_p (i, j))
+	    continue;
+
+	  /* Do not mix objects of "small" (supported) alignment
+	     and "large" (unsupported) alignment.  */
+	  if ((ialign * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
+	      != (jalign * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT))
 	    continue;
 
 	  /* Refine the remaining space check to include alignment.  */
@@ -715,19 +709,19 @@ dump_stack_var_partition (void)
     }
 }
 
-/* Assign rtl to DECL at frame offset OFFSET.  */
+/* Assign rtl to DECL at BASE + OFFSET.  */
 
 static void
-expand_one_stack_var_at (tree decl, HOST_WIDE_INT offset)
+expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
+			 HOST_WIDE_INT offset)
 {
-  /* Alignment is unsigned.   */
-  unsigned HOST_WIDE_INT align, max_align;
+  unsigned align;
   rtx x;
 
   /* If this fails, we've overflowed the stack frame.  Error nicely?  */
   gcc_assert (offset == trunc_int_for_mode (offset, Pmode));
 
-  x = plus_constant (virtual_stack_vars_rtx, offset);
+  x = plus_constant (base, offset);
   x = gen_rtx_MEM (DECL_MODE (SSAVAR (decl)), x);
 
   if (TREE_CODE (decl) != SSA_NAME)
@@ -735,12 +729,16 @@ expand_one_stack_var_at (tree decl, HOST_WIDE_INT offset)
       /* Set alignment we actually gave this decl if it isn't an SSA name.
          If it is we generate stack slots only accidentally so it isn't as
 	 important, we'll simply use the alignment that is already set.  */
-      offset -= frame_phase;
+      if (base == virtual_stack_vars_rtx)
+	offset -= frame_phase;
       align = offset & -offset;
       align *= BITS_PER_UNIT;
-      max_align = crtl->max_used_stack_slot_alignment;
-      if (align == 0 || align > max_align)
-	align = max_align;
+      if (align == 0 || align > base_align)
+	align = base_align;
+
+      /* One would think that we could assert that we're not decreasing
+	 alignment here, but (at least) the i386 port does exactly this
+	 via the MINIMUM_ALIGNMENT hook.  */
 
       DECL_ALIGN (decl) = align;
       DECL_USER_ALIGN (decl) = 0;
@@ -758,9 +756,56 @@ static void
 expand_stack_vars (bool (*pred) (tree))
 {
   size_t si, i, j, n = stack_vars_num;
+  HOST_WIDE_INT large_size = 0, large_alloc = 0;
+  rtx large_base = NULL;
+  unsigned large_align = 0;
+  tree decl;
+
+  /* Determine if there are any variables requiring "large" alignment.
+     Since these are dynamically allocated, we only process these if
+     no predicate involved.  */
+  large_align = stack_vars[stack_vars_sorted[0]].alignb * BITS_PER_UNIT;
+  if (pred == NULL && large_align > MAX_SUPPORTED_STACK_ALIGNMENT)
+    {
+      /* Find the total size of these variables.  */
+      for (si = 0; si < n; ++si)
+	{
+	  unsigned alignb;
+
+	  i = stack_vars_sorted[si];
+	  alignb = stack_vars[i].alignb;
+
+	  /* Stop when we get to the first decl with "small" alignment.  */
+	  if (alignb * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
+	    break;
+
+	  /* Skip variables that aren't partition representatives.  */
+	  if (stack_vars[i].representative != i)
+	    continue;
+
+	  /* Skip variables that have already had rtl assigned.  See also
+	     add_stack_var where we perpetrate this pc_rtx hack.  */
+	  decl = stack_vars[i].decl;
+	  if ((TREE_CODE (decl) == SSA_NAME
+	      ? SA.partition_to_pseudo[var_to_partition (SA.map, decl)]
+	      : DECL_RTL (decl)) != pc_rtx)
+	    continue;
+
+	  large_size += alignb - 1;
+	  large_size &= -(HOST_WIDE_INT)alignb;
+	  large_size += stack_vars[i].size;
+	}
+
+      /* If there were any, allocate space.  */
+      if (large_size > 0)
+	large_base = allocate_dynamic_stack_space (GEN_INT (large_size), 0,
+						   large_align, true);
+    }
 
   for (si = 0; si < n; ++si)
     {
+      rtx base;
+      unsigned base_align, alignb;
       HOST_WIDE_INT offset;
 
       i = stack_vars_sorted[si];
@@ -771,18 +816,38 @@ expand_stack_vars (bool (*pred) (tree))
 
       /* Skip variables that have already had rtl assigned.  See also
 	 add_stack_var where we perpetrate this pc_rtx hack.  */
-      if ((TREE_CODE (stack_vars[i].decl) == SSA_NAME
-	   ? SA.partition_to_pseudo[var_to_partition (SA.map, stack_vars[i].decl)]
-	   : DECL_RTL (stack_vars[i].decl)) != pc_rtx)
+      decl = stack_vars[i].decl;
+      if ((TREE_CODE (decl) == SSA_NAME
+	   ? SA.partition_to_pseudo[var_to_partition (SA.map, decl)]
+	   : DECL_RTL (decl)) != pc_rtx)
 	continue;
 
       /* Check the predicate to see whether this variable should be
 	 allocated in this pass.  */
-      if (pred && !pred (stack_vars[i].decl))
+      if (pred && !pred (decl))
 	continue;
 
-      offset = alloc_stack_frame_space (stack_vars[i].size,
-					stack_vars[i].alignb);
+      alignb = stack_vars[i].alignb;
+      if (alignb * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
+	{
+	  offset = alloc_stack_frame_space (stack_vars[i].size, alignb);
+	  base = virtual_stack_vars_rtx;
+	  base_align = crtl->max_used_stack_slot_alignment;
+	}
+      else
+	{
+	  /* Large alignment is only processed in the last pass.  */
+	  if (pred)
+	    continue;
+
+	  large_alloc += alignb - 1;
+	  large_alloc &= -(HOST_WIDE_INT)alignb;
+	  offset = large_alloc;
+	  large_alloc += stack_vars[i].size;
+
+	  base = large_base;
+	  base_align = large_align;
+	}
 
       /* Create rtl for each variable based on their location within the
 	 partition.  */
@@ -790,9 +855,12 @@ expand_stack_vars (bool (*pred) (tree))
 	{
 	  gcc_assert (stack_vars[j].offset <= stack_vars[i].size);
 	  expand_one_stack_var_at (stack_vars[j].decl,
+				   base, base_align,
 				   stack_vars[j].offset + offset);
 	}
     }
+
+  gcc_assert (large_alloc == large_size);
 }
 
 /* Take into account all sizes of partitions and reset DECL_RTLs.  */
@@ -823,13 +891,19 @@ account_stack_vars (void)
 static void
 expand_one_stack_var (tree var)
 {
-  HOST_WIDE_INT size, offset, align;
+  HOST_WIDE_INT size, offset;
+  unsigned byte_align;
 
   size = tree_low_cst (DECL_SIZE_UNIT (SSAVAR (var)), 1);
-  align = get_decl_align_unit (SSAVAR (var));
-  offset = alloc_stack_frame_space (size, align);
+  byte_align = get_decl_align_unit (SSAVAR (var));
 
-  expand_one_stack_var_at (var, offset);
+  /* We handle highly aligned variables in expand_stack_vars.  */
+  gcc_assert (byte_align * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT);
+
+  offset = alloc_stack_frame_space (size, byte_align);
+
+  expand_one_stack_var_at (var, virtual_stack_vars_rtx,
+			   crtl->max_used_stack_slot_alignment, offset);
 }
 
 /* A subroutine of expand_one_var.  Called to assign rtl to a VAR_DECL
@@ -898,6 +972,11 @@ defer_stack_allocation (tree var, bool toplevel)
   if (flag_stack_protect)
     return true;
 
+  /* We handle "large" alignment via dynamic allocation.  We want to handle
+     this extra complication in only one place, so defer them.  */
+  if (DECL_ALIGN (var) > MAX_SUPPORTED_STACK_ALIGNMENT)
+    return true;
+
   /* Variables in the outermost scope automatically conflict with
      every other variable.  The only reason to want to defer them
      at all is that, after sorting, we can more efficiently pack
@@ -927,15 +1006,13 @@ defer_stack_allocation (tree var, bool toplevel)
 static HOST_WIDE_INT
 expand_one_var (tree var, bool toplevel, bool really_expand)
 {
+  unsigned int align = BITS_PER_UNIT;
   tree origvar = var;
+
   var = SSAVAR (var);
 
-  if (SUPPORTS_STACK_ALIGNMENT
-      && TREE_TYPE (var) != error_mark_node
-      && TREE_CODE (var) == VAR_DECL)
+  if (TREE_TYPE (var) != error_mark_node && TREE_CODE (var) == VAR_DECL)
     {
-      unsigned int align;
-
       /* Because we don't know if VAR will be in register or on stack,
 	 we conservatively assume it will be on stack even if VAR is
 	 eventually put into register after RA pass.  For non-automatic
@@ -955,14 +1032,27 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
       else
 	align = MINIMUM_ALIGNMENT (var, DECL_MODE (var), DECL_ALIGN (var));
 
-      if (crtl->stack_alignment_estimated < align)
-        {
-          /* stack_alignment_estimated shouldn't change after stack
-             realign decision made */
-          gcc_assert(!crtl->stack_realign_processed);
-	  crtl->stack_alignment_estimated = align;
-	}
+      /* If the variable alignment is very large we'll dynamicaly allocate
+	 it, which means that in-frame portion is just a pointer.  */
+      if (align > MAX_SUPPORTED_STACK_ALIGNMENT)
+	align = POINTER_SIZE;
     }
+
+  if (SUPPORTS_STACK_ALIGNMENT
+      && crtl->stack_alignment_estimated < align)
+    {
+      /* stack_alignment_estimated shouldn't change after stack
+         realign decision made */
+      gcc_assert(!crtl->stack_realign_processed);
+      crtl->stack_alignment_estimated = align;
+    }
+
+  /* stack_alignment_needed > PREFERRED_STACK_BOUNDARY is permitted.
+     So here we only make sure stack_alignment_needed >= align.  */
+  if (crtl->stack_alignment_needed < align)
+    crtl->stack_alignment_needed = align;
+  if (crtl->max_used_stack_slot_alignment < align)
+    crtl->max_used_stack_slot_alignment = align;
 
   if (TREE_CODE (origvar) == SSA_NAME)
     {
@@ -3787,6 +3877,7 @@ gimple_expand_cfg (void)
   sbitmap blocks;
   edge_iterator ei;
   edge e;
+  rtx var_seq;
   unsigned i;
 
   timevar_push (TV_OUT_OF_SSA);
@@ -3832,10 +3923,14 @@ gimple_expand_cfg (void)
   crtl->preferred_stack_boundary = STACK_BOUNDARY;
   cfun->cfg->max_jumptable_ents = 0;
 
-
   /* Expand the variables recorded during gimple lowering.  */
   timevar_push (TV_VAR_EXPAND);
+  start_sequence ();
+
   expand_used_vars ();
+
+  var_seq = get_insns ();
+  end_sequence ();
   timevar_pop (TV_VAR_EXPAND);
 
   /* Honor stack protection warnings.  */
@@ -3854,6 +3949,18 @@ gimple_expand_cfg (void)
 
   /* Set up parameters and prepare for return, for the function.  */
   expand_function_start (current_function_decl);
+
+  /* If we emitted any instructions for setting up the variables,
+     emit them before the FUNCTION_START note.  */
+  if (var_seq)
+    {
+      emit_insn_before (var_seq, parm_birth_insn);
+
+      /* In expand_function_end we'll insert the alloca save/restore
+	 before parm_birth_insn.  We've just insertted an alloca call.
+	 Adjust the pointer to match.  */
+      parm_birth_insn = var_seq;
+    }
 
   /* Now that we also have the parameter RTXs, copy them over to our
      partitions.  */

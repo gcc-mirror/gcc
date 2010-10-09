@@ -3551,12 +3551,8 @@ proc check_effective_target_4byte_wchar_t { } {
 # Return 1 if the target supports automatic stack alignment.
 
 proc check_effective_target_automatic_stack_alignment  { } {
-    if { [istarget i?86*-*-*]
-	 || [istarget x86_64-*-*] } then {
-	return 1
-    } else {
-	return 0
-    }
+    # Not "stack alignment" per se, but proper stack alignment of decls.
+    return 1;
 }
 
 # Return 1 if avx instructions can be compiled.

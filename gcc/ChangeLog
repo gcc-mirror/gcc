@@ -1,3 +1,33 @@
+2010-10-09  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/33721
+	* explow.c (allocate_dynamic_stack_space): Add REQUIRED_ALIGN parm,
+	remove TARGET parm, convert KNOWN_ALIGN parm to SIZE_ALIGN.  Honor
+	required_align, tidy the code a bit.  Emit split_stack code in the
+	right place.  Mark the return value with the alignment properly.
+	* expr.h (allocate_dynamic_stack_space): Update decl.
+	* builtins.c (expand_builtin_apply): Update call to
+	allocate_dynamic_stack_space.
+	(expand_builtin_alloca): Likewise.  Remove TARGET parameter.
+	* calls.c (initialize_argument_information): Update call to
+	allocate_dynamic_stack_space.
+	(expand_call): Likewise.
+
+	* cfgexpand.c (get_decl_align_unit): Don't limit alignment.
+	Don't update_stack_alignment here.
+	(alloc_stack_frame_space): Make ALIGN unsigned.
+	(stack_var_cmp): Sort by alignment too.
+	(partition_stack_vars): Don't merge large and small alignment vars.
+	(expand_one_stack_var_at): Add BASE and BASE_ALIGN parameters.
+	Take care when BASE is not virtual_stack_vars_rtx.
+	(expand_stack_vars): Allocate dynamic stack space for large
+	alignment variables.
+	(expand_one_stack_var): Update all to expand_one_stack_var_at.
+	(defer_stack_allocation): True for large alignment vars.
+	(update_stack_alignment): Merge into ...
+	(expand_one_var): ... here.
+	(gimple_expand_cfg): Place code from expand_stack_vars.
+
 2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/pdp11/pdp11.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
