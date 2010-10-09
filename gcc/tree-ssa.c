@@ -1980,8 +1980,10 @@ execute_update_addresses_taken (void)
               /* A plain decl does not need it set.  */
               if (lhs && !DECL_P (lhs))
 		{
-		  if (handled_component_p (lhs))
-		    lhs = get_base_address (lhs);
+		  tree orig_lhs = lhs;
+
+		  while (handled_component_p (lhs))
+		    lhs = TREE_OPERAND (lhs, 0);
 
                   if (DECL_P (lhs))
                     bitmap_set_bit (not_reg_needs, DECL_UID (lhs));
@@ -1992,7 +1994,7 @@ execute_update_addresses_taken (void)
 		      if (DECL_P (decl)
 			  && (!integer_zerop (TREE_OPERAND (lhs, 1))
 			      || (DECL_SIZE (decl)
-				  != TYPE_SIZE (TREE_TYPE (lhs)))))
+				  != TYPE_SIZE (TREE_TYPE (orig_lhs)))))
 			bitmap_set_bit (not_reg_needs, DECL_UID (decl));
 		    }
                 }
@@ -2020,8 +2022,29 @@ execute_update_addresses_taken (void)
 	      for (i = 0; i < gimple_asm_noutputs (stmt); ++i)
 		{
 		  tree link = gimple_asm_output_op (stmt, i);
-		  if ((decl = non_rewritable_mem_ref_base (TREE_VALUE (link))))
-		    bitmap_set_bit (not_reg_needs, DECL_UID (decl));
+		  tree lhs = TREE_VALUE (link);
+
+		  /* A plain decl does not need it set.  */
+		  if (!DECL_P (lhs))
+		    {
+		      tree orig_lhs = lhs;
+
+		      while (handled_component_p (lhs))
+			lhs = TREE_OPERAND (lhs, 0);
+		  
+		      if (DECL_P (lhs))
+			bitmap_set_bit (not_reg_needs, DECL_UID (lhs));
+		      else if (TREE_CODE (lhs) == MEM_REF
+			       && TREE_CODE (TREE_OPERAND (lhs, 0)) == ADDR_EXPR)
+			{
+			  decl = TREE_OPERAND (TREE_OPERAND (lhs, 0), 0);
+			  if (DECL_P (decl)
+			      && (!integer_zerop (TREE_OPERAND (lhs, 1))
+				  || (TYPE_MAIN_VARIANT (TREE_TYPE (decl))
+				      != TYPE_MAIN_VARIANT (TREE_TYPE (orig_lhs)))))
+			    bitmap_set_bit (not_reg_needs, DECL_UID (decl));
+			}
+		    }
 		}
 	      for (i = 0; i < gimple_asm_ninputs (stmt); ++i)
 		{

@@ -1,3 +1,8 @@
+2010-10-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45945
+	* gcc.dg/lto/20101009-1_0.c: New testcase.
+
 2010-10-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/45913
