@@ -14987,7 +14987,16 @@ ix86_binary_operator_ok (enum rtx_code code, enum machine_mode mode,
 
   /* Source 1 cannot be a non-matching memory.  */
   if (MEM_P (src1) && !rtx_equal_p (dst, src1))
-    return false;
+    {
+      /* Support "andhi/andsi/anddi" as a zero-extending move.  */
+      return (code == AND
+	      && (mode == HImode
+		  || mode == SImode
+		  || (TARGET_64BIT && mode == DImode))
+	      && CONST_INT_P (src2)
+	      && (INTVAL (src2) == 0xff
+		  || INTVAL (src2) == 0xffff));
+    }
 
   return true;
 }
