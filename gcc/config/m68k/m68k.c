@@ -157,6 +157,10 @@ static void m68k_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static void m68k_trampoline_init (rtx, tree, rtx);
 static int m68k_return_pops_args (tree, tree, int);
 static rtx m68k_delegitimize_address (rtx);
+static void m68k_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				       const_tree, bool);
+static rtx m68k_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			      const_tree, bool);
 
 
 /* Specify the identification number of the library being built */
@@ -282,6 +286,12 @@ const char *m68k_library_id_string = "_current_shared_library_a5_offset_";
 
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS m68k_delegitimize_address
+
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG m68k_function_arg
+
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE m68k_function_arg_advance
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
@@ -1472,6 +1482,26 @@ m68k_ok_for_sibcall_p (tree decl, tree exp)
     return true;
   
   return false;
+}
+
+/* On the m68k all args are always pushed.  */
+
+static rtx
+m68k_function_arg (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+		   enum machine_mode mode ATTRIBUTE_UNUSED,
+		   const_tree type ATTRIBUTE_UNUSED,
+		   bool named ATTRIBUTE_UNUSED)
+{
+  return NULL_RTX;
+}
+
+static void
+m68k_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			   const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  *cum += (mode != BLKmode
+	   ? (GET_MODE_SIZE (mode) + 3) & ~3
+	   : (int_size_in_bytes (type) + 3) & ~3);
 }
 
 /* Convert X to a legitimate function call memory reference and return the
