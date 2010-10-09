@@ -131,6 +131,7 @@ OBJC_H = \
 # User-visible header files containing deprecated APIs, from the
 # objc/deprecated directory
 OBJC_DEPRECATED_H = \
+  METHOD_NULL.h \
   MetaClass.h \
   Object.h \
   STR.h \

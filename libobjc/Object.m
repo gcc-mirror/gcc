@@ -172,14 +172,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 + (BOOL)instancesRespondTo:(SEL)aSel
 {
-  return class_get_instance_method(self, aSel)!=METHOD_NULL;
+  return class_get_instance_method(self, aSel) != (Method_t)0;
 }
 
 - (BOOL)respondsTo:(SEL)aSel
 {
   return ((object_is_instance(self)
            ?class_get_instance_method(self->isa, aSel)
-           :class_get_class_method(self->isa, aSel))!=METHOD_NULL);
+           :class_get_class_method(self->isa, aSel)) != (Method_t)0);
 }
 
 + (IMP)instanceMethodFor:(SEL)aSel

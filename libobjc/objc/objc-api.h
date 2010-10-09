@@ -40,9 +40,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 extern "C" {
 #endif /* __cplusplus */
 
-/* For functions which return Method_t */
-#define METHOD_NULL	(Method_t)0
-                                                /* Boolean typedefs */
+#include "deprecated/METHOD_NULL.h"
+
 /* Method descriptor returned by introspective Object methods.
    This is really just the first part of the more complete objc_method
    structure defined below and used internally by the runtime.  */
@@ -441,11 +440,7 @@ extern void class_ivar_set_gcinvisible (Class _class,
 					const char* ivarname,
 					BOOL gcInvisible);
 
-static inline IMP
-method_get_imp(Method_t method)
-{
-  return (method!=METHOD_NULL)?method->method_imp:(IMP)0;
-}
+objc_EXPORT IMP method_get_imp(Method_t method);
 
 objc_EXPORT IMP get_imp (Class _class, SEL sel);
 

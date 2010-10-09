@@ -1,3 +1,17 @@
+2010-10-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-foreach.c: Include objc-private/common.h.
+	* objc/deprecated/METHOD_NULL.h: New file.
+	* objc/objc-api.h: Include deprecated/METHOD_NULL.h instead of
+	defining METHOD_NULL here.
+	* Makefile.in (OBJC_DEPRECATED_H): Added METHOD_NULL.h.
+	* Object.m ([+instancesRespondTo:]): Use (Method_t)0 instead of
+	METHOD_NULL.
+	([-respondsTo:]): Same change.
+	* objc/objc-api.h (method_get_imp): Converted it into a normal
+	function so that we can hide the internals of struct objc_method.
+	* sendmsg.c (method_get_imp): Implemented.
+
 2010-10-09  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc-api.h (struct objc_super, Super, Super_t,

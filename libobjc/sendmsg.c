@@ -194,6 +194,13 @@ get_imp (Class class, SEL sel)
   return res;
 }
 
+/* Given a method, return its implementation.  */
+IMP
+method_get_imp (Method_t method)
+{
+  return (method != (Method_t)0) ? method->method_imp : (IMP)0;
+}
+
 /* Query if an object can respond to a selector, returns YES if the
 object implements the selector otherwise NO.  Does not check if the
 method can be forwarded. */
