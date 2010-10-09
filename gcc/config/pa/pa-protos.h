@@ -151,10 +151,6 @@ extern int cmpib_comparison_operator (rtx, enum machine_mode);
 /* Miscellaneous functions in pa.c.  */
 #ifdef TREE_CODE
 extern int reloc_needed (tree);
-#ifdef RTX_CODE
-extern rtx function_arg (CUMULATIVE_ARGS *, enum machine_mode,
-			 tree, int);
-#endif
 extern bool pa_return_in_memory (const_tree, const_tree);
 #endif /* TREE_CODE */
 

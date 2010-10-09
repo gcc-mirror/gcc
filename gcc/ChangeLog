@@ -1,5 +1,15 @@
 2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/pa/pa-protos.h (function_arg): Delete.
+	* config/pa/pa.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	* config/pa/pa.c (function_arg): Rename to...
+	(pa_function_arg): ...this.  Make static.  Take a const_tree and
+	a bool.
+	(pa_function_arg_advance): New function.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/m68k/m68k.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
 	* config/m68k/m68k.c (m68k_function_arg): New function.
 	(m68k_function_arg_advance): New function.
