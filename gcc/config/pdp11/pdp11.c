@@ -157,6 +157,10 @@ static rtx pdp11_function_value (const_tree, const_tree, bool);
 static rtx pdp11_libcall_value (enum machine_mode, const_rtx);
 static bool pdp11_function_value_regno_p (const unsigned int);
 static void pdp11_trampoline_init (rtx, tree, rtx);
+static rtx pdp11_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			       const_tree, bool);
+static void pdp11_function_arg_advance (CUMULATIVE_ARGS *,
+					enum machine_mode, const_tree, bool);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -188,6 +192,11 @@ static void pdp11_trampoline_init (rtx, tree, rtx);
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS pdp11_rtx_costs
+
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG pdp11_function_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE pdp11_function_arg_advance
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY pdp11_return_in_memory
@@ -1833,4 +1842,43 @@ pdp11_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   mem = adjust_address (m_tramp, HImode, 4);
   emit_move_insn (mem, GEN_INT (0x0058));
   emit_move_insn (mem, fnaddr);
+}
+
+/* Worker function for TARGET_FUNCTION_ARG.
+
+   Determine where to put an argument to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
+
+   MODE is the argument's machine mode.
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).  */
+
+static rtx
+pdp11_function_arg (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+		    enum machine_mode mode ATTRIBUTE_UNUSED,
+		    const_tree type ATTRIBUTE_UNUSED,
+		    bool named ATTRIBUTE_UNUSED)
+{
+  return NULL_RTX;
+}
+
+/* Worker function for TARGET_FUNCTION_ARG_ADVANCE.
+
+   Update the data in CUM to advance over an argument of mode MODE and
+   data type TYPE.  (TYPE is null for libcalls where that information
+   may not be available.)  */
+
+static void
+pdp11_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			    const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  *cum += (mode != BLKmode
+	   ? GET_MODE_SIZE (mode)
+	   : int_size_in_bytes (type));
 }
