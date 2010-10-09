@@ -143,6 +143,14 @@ static rtx mmix_struct_value_rtx (tree, int);
 static enum machine_mode mmix_promote_function_mode (const_tree,
 						     enum machine_mode,
 	                                             int *, const_tree, int);
+static void mmix_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				       const_tree, bool);
+static rtx mmix_function_arg_1 (const CUMULATIVE_ARGS *, enum machine_mode,
+				const_tree, bool, bool);
+static rtx mmix_function_incoming_arg (CUMULATIVE_ARGS *, enum machine_mode,
+				       const_tree, bool);
+static rtx mmix_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			      const_tree, bool);
 static rtx mmix_function_value (const_tree, const_tree, bool);
 static rtx mmix_libcall_value (enum machine_mode, const_rtx);
 static bool mmix_function_value_regno_p (const unsigned int);
@@ -213,6 +221,12 @@ static void mmix_trampoline_init (rtx, tree, rtx);
 #undef TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P mmix_function_value_regno_p
 
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG mmix_function_arg
+#undef TARGET_FUNCTION_INCOMING_ARG
+#define TARGET_FUNCTION_INCOMING_ARG mmix_function_incoming_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE mmix_function_arg_advance
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX mmix_struct_value_rtx
 #undef TARGET_SETUP_INCOMING_VARARGS
@@ -369,9 +383,9 @@ mmix_conditional_register_usage (void)
    Those two macros must only be applied to function argument
    registers.  FIXME: for their current use in gcc, it'd be better
    with an explicit specific additional FUNCTION_INCOMING_ARG_REGNO_P
-   a'la FUNCTION_ARG / FUNCTION_INCOMING_ARG instead of forcing the
-   target to commit to a fixed mapping and for any unspecified
-   register use.  */
+   a'la TARGET_FUNCTION_ARG / TARGET_FUNCTION_INCOMING_ARG instead of
+   forcing the target to commit to a fixed mapping and for any
+   unspecified register use.  */
 
 int
 mmix_opposite_regno (int regno, int incoming)
@@ -622,15 +636,28 @@ mmix_initial_elimination_offset (int fromreg, int toreg)
     + (fromreg == MMIX_ARG_POINTER_REGNUM ? 0 : 8);
 }
 
-/* Return an rtx for a function argument to go in a register, and 0 for
-   one that must go on stack.  */
+static void
+mmix_function_arg_advance (CUMULATIVE_ARGS *argsp, enum machine_mode mode,
+			   const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  int arg_size = MMIX_FUNCTION_ARG_SIZE (mode, type);
 
-rtx
-mmix_function_arg (const CUMULATIVE_ARGS *argsp,
-		   enum machine_mode mode,
-		   tree type,
-		   int named ATTRIBUTE_UNUSED,
-		   int incoming)
+  argsp->regs = ((targetm.calls.must_pass_in_stack (mode, type)
+		  || (arg_size > 8
+		      && !TARGET_LIBFUNC
+		      && !argsp->lib))
+		 ? (MMIX_MAX_ARGS_IN_REGS) + 1
+		 : argsp->regs + (7 + arg_size) / 8);
+}
+
+/* Helper function for mmix_function_arg and mmix_function_incoming_arg.  */
+
+static rtx
+mmix_function_arg_1 (const CUMULATIVE_ARGS *argsp,
+		     enum machine_mode mode,
+		     const_tree type,
+		     bool named ATTRIBUTE_UNUSED,
+		     bool incoming)
 {
   /* Last-argument marker.  */
   if (type == void_type_node)
@@ -652,6 +679,27 @@ mmix_function_arg (const CUMULATIVE_ARGS *argsp,
 		    : MMIX_FIRST_ARG_REGNUM)
 		   + argsp->regs)
     : NULL_RTX;
+}
+
+/* Return an rtx for a function argument to go in a register, and 0 for
+   one that must go on stack.  */
+
+static rtx
+mmix_function_arg (CUMULATIVE_ARGS *argsp,
+		   enum machine_mode mode,
+		   const_tree type,
+		   bool named)
+{
+  return mmix_function_arg_1 (argsp, mode, type, named, false);
+}
+
+static rtx
+mmix_function_incoming_arg (CUMULATIVE_ARGS *argsp,
+			    enum machine_mode mode,
+			    const_tree type,
+			    bool named)
+{
+  return mmix_function_arg_1 (argsp, mode, type, named, true);
 }
 
 /* Returns nonzero for everything that goes by reference, 0 for

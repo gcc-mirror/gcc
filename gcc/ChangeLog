@@ -1,5 +1,18 @@
 2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/mmix/mmix-protos.h (mmix_function_arg): Delete.
+	* config/mmix/mmix.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	* config/mmix/mmix.c (mmix_function_arg): Rename to...
+	(mmix_function_arg_1): ...this.  Make static.  Take a const_tree and
+	bool arguments.
+	(mmix_function_arg): New function.
+	(mmix_function_incoming_arg): New function.
+	(mmix_function_arg_advance): New function.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_INCOMING_ARG): Define.
+	(TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/vax/vax.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
 	* config/vax/vax.c (vax_function_arg): New function.
 	(vax_function_arg_advance): New function.
