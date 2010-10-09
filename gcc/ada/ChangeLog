@@ -203,7 +203,7 @@
 2010-10-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aggr.adb (Resolve_Array_Aggregate): If the expression in an
-	others choice is a literal analyze it now to enable later optimizations.
+	others choice is a literal, analyze it to enable later optimizations.
 	* exp_aggr.adb (Expand_Record_Aggregate): An aggregate with static size
 	and components can be handled by the backend even if it is of a limited
 	type.
@@ -296,10 +296,9 @@
 	(Implemented_By_Entry): Removed.
 	(Set_Implemented_By_Entry): Removed.
 	(Write_Entity_Flags): Remove the output for Implemented_By_Entry.
-	* einfo.ads: Remove flag Implemented_By_Entry and its usage in entities.
-	(Implemented_By_Entry): Removed along with its associated pragma Inline.
-	(Set_Implemented_By_Entry): Removed along with its associated pragma
-	Inline.
+	* einfo.ads: Remove Implemented_By_Entry and its usage in entities.
+	(Implemented_By_Entry): Removed along with its associated pragma.
+	(Set_Implemented_By_Entry): Removed along with its associated pragma.
 	* exp_ch9.adb: Alphabetize with and use clauses of Exp_Ch9.
 	(Build_Dispatching_Call_Equivalent): New routine.
 	(Build_Dispatching_Requeue): New routine.
@@ -862,7 +861,7 @@
 
 2010-10-05  Javier Miranda  <miranda@adacore.com>
 
-	* debug.adb: Update documentation because -gnatd.Z is no longer required
+	* debug.adb: Update documentation since -gnatd.Z is no longer required
 	to generate the call-graph information.
 
 2010-10-05  Javier Miranda  <miranda@adacore.com>
@@ -914,8 +913,8 @@
 	file, if necessary.
 	* prj-nmsc.adb (Look_For_Sources.Get_Sources_From_Source_Info): New
 	procedure.
-	(Look_For_Sources): If a source info file was successfully read, get the
-	source data from the data read from the source info file.
+	(Look_For_Sources): If a source info file was successfully read, get
+	the source data from the data read from the source info file.
 	* prj-util.adb (Source_Info_Table): New table
 	(Source_Info_Project_HTable): New hash table
 	(Create): New procedure
@@ -964,7 +963,7 @@
 	the entity that will be overridden by user-defined routines.
 	* sem_disp.adb (Find_Primitive_Covering_Interface): Move here code
 	previously located in routine Add_Internal_Interface_Entities.
-	* sem_disp.ads (Find_Primitive_Covering_Interface): Update documentation
+	* sem_disp.ads (Find_Primitive_Covering_Interface): Update docs.
 	* sem_ch6.adb (New_Overloaded_Entity): Add missing check on
 	availability of attribute Alias.
 
@@ -1002,7 +1001,8 @@
 
 	* gnatcmd.adb, prj-proc.adb, prj-part.adb, prj-ext.adb, prj-ext.ads,
 	switch-m.adb, clean.adb, prj-nmsc.adb, prj-nmsc.ads, prj-env.adb,
-	prj-env.ads, prj-tree.adb, prj-tree.ads (Project_Search_Path): New type.
+	prj-env.ads, prj-tree.adb, prj-tree.ads (Project_Search_Path): New
+	type.
 
 2010-10-05  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -1056,7 +1056,8 @@
 2010-10-04  Javier Miranda  <miranda@adacore.com>
 
 	* exp_disp.ads (Convert_Tag_To_Interface): New function which must be
-	used to convert a node referencing a tag to a class-wide interface type.
+	used to convert a node referencing a tag to a class-wide interface
+	type.
 	* exp_disp.adb (Convert_Tag_To_Interface): New function.
 	(Expand_Interface_Conversion): Replace invocation of
 	Unchecked_Conversion by new function Convert_Tag_To_Interface.
@@ -1121,7 +1122,7 @@
 
 2010-10-04  Vincent Celier  <celier@adacore.com>
 
-	* prj-makr.adb (Finalize): Invoke Pretty_Print with Max_Length set to 79
+	* prj-makr.adb (Finalize): Invoke Pretty_Print with Max_Length of 79.
 	* prj-pp.adb (Pretty_Print): New parameter Max_Line_Length, that
 	replaces global constant with the same name. When a line is too long,
 	indent properly the next continuation line.
@@ -1154,8 +1155,8 @@
 	Enumeration_Rep_Expr to point to the literal, not the identifier.
 	(Analyze_Enumeration_Representation_Clause): Improve error message for
 	size too small for enum rep value
-	(Analyze_Enumeration_Representation_Clause): Fix size test to use proper
-	size (RM_Size, not Esize).
+	(Analyze_Enumeration_Representation_Clause): Fix size test to use
+	proper size (RM_Size, not Esize).
 
 2010-10-04  Robert Dewar  <dewar@adacore.com>
 
@@ -1855,7 +1856,7 @@
 	* opt.ads (Short_Descriptors): New flag
 	(Short_Descriptors_Config): New flag
 	* par-prag.adb: Add dummy entry for Short_Descriptors pragma
-	* sem_prag.adb (Set_Mechanism_Value): Deal with Short_Descriptors pragma
+	* sem_prag.adb (Set_Mechanism_Value): Deal with Short_Descriptors.
 	(Analyze_Pragma): Implement Short_Descriptors pragma
 	* snames.ads-tmpl: Add entry for Short_Descriptors pragma
 
@@ -1897,8 +1898,8 @@
 	--create-map-file.
 	* make.adb (Map_File): New global variable to store the value of switch
 	--create-map-file.
-	(Gnatmake): Add switch -M to gnatlink if buider switch --create-map-file
-	has been specified.
+	(Gnatmake): Add switch -M to gnatlink if switch --create-map-file has
+	been specified.
 	(Scan_Make_Arg): Recognize switch --create-map-file
 	* makeutl.ads (Create_Map_File_Switch): New constant string for new
 	gnatmake and gprbuild switch --create-map-file.
@@ -2372,8 +2373,9 @@
 	* prj-strt.adb (Attribute_Reference): Avoid enumeration range test
 	* prj.adb (Known_Casing): Moved to Casing spec (avoid enum range)
 	* sem_ch13.adb (Adjust_Record_For_Reverse_Bit_Order): Avoid enumeration
-	ranges
-	* sem_res.adb (Resolve_Range): Check for enumeration subrange style rule
+	ranges.
+	* sem_res.adb (Resolve_Range): Check for enumeration subrange style
+	rule.
 	* sem_type.adb (Is_Array_Class_Record_Type): New.
 	* style.ads (Check_Enumeration_Subrange): New procedure
 	* styleg.adb (Check_Enumeration_Subrange): New procedure
@@ -2463,10 +2465,10 @@
 	equality. Otherwise the body of the operations is built as for tagged
 	types.
 	(Expand_Freeze_Record_Type): Call Build_Untagged_Equality when needed.
-	(Make_Eq_Body): New function to create the expanded body of the equality
-	operation for tagged and untagged records.  In both cases the operation
-	composes, and the primitive operation of each record component is used
-	to generate the equality function for the type.
+	(Make_Eq_Body): New function to create the expanded body of the
+	equality operation for tagged and untagged records.  In both cases the
+	operation composes, and the primitive operation of each record
+	component is used to generate the equality function for the type.
 	* exp_ch4.adb (Expand_Composite_Equality): In Ada2012, if a component
 	has an abstract equality defined, replace its call with a
 	Raise_Program_Error.
@@ -2593,7 +2595,8 @@
 	CPP constructor. These IP are wrappers of the C++ constructors that,
 	after the first invocation of the constructor, read the C++ tags from
 	the object and save them locally. These copies of the C++ tags are used
-	by the IC routines to initialize tables of Ada derivations of CPP types.
+	by the IC routines to initialize tables of Ada derivations of CPP
+	types.
 	(Write_DT): Indicate what primitives are imported from C++
 	* exp_disp.ads (CPP_Num_Prims): New subprogram.
 	(Has_CPP_Constructors): New subprogram.
@@ -2605,9 +2608,10 @@
 	Is_Variable_Size_Array.
 	(Build_CPP_Init_Procedure): New subprogram that builds the tree
 	corresponding to the procedure that initializes the C++ part of the
-	dispatch table of an Ada tagged type that is a derivation of a CPP type.
-	(Build_Init_Procedure): Adding documentation plus code reorganization to
-	leave more clear the construction of the IP with C++ types.
+	dispatch table of an Ada tagged type that is a derivation of a CPP
+	type.
+	(Build_Init_Procedure): Adding documentation plus code reorganization
+	to leave more clear the construction of the IP with C++ types.
 	(Expand_Freeze_Record_Type): Delay call to Set_CPP_Constructors because
 	it cannot be called after Make_Tags has been invoked.
 	(Inherit_CPP_Tag): Removed.
@@ -3461,10 +3465,12 @@
 	Adjust_SCIL_Node.
 	* exp_ch4.adb (Expand_N_In): Code cleanup: remove call to
 	Set_SCIL_Related_Node and avoid adding the SCIL node before the
-	referenced node using Insert_Action because this is not longer required.
+	referenced node using Insert_Action because this is not longer
+	required.
 	(Expand_Short_Circuit_Operator): Remove call to SCIL node.
 	* exp_ch6.adb (Expand_Call): Remove call to Adjust_SCIL_Node.
-	* sem_ch4.adb (Analyze_Type_Conversion): Remove call to Adjust_SCIL_Node
+	* sem_ch4.adb (Analyze_Type_Conversion): Remove call to
+	Adjust_SCIL_Node.
 	* exp_disp.adb (Expand_Dispatching_Call): Minor code reorganization
 	because we no longer require to generate the SCIL node before the call.
 	(Make_DT): Remove generation of SCI_Dispatch_Table_Object_Init node.
@@ -3666,8 +3672,9 @@
 	* sem_ch4.adb (Collect_Generic_Type_Ops): Protect code that handles
 	generic subprogram declarations to ensure proper context. Add missing
 	support for generic actuals.
-	(Try_Primitive_Operation): Add missing support for concurrent types that
-	have no Corresponding_Record_Type. Required to diagnose errors compiling
+	(Try_Primitive_Operation): Add missing support for concurrent types
+	that have no Corresponding_Record_Type. Required to diagnose errors
+	compiling
 	generics or when compiling with no code generation (-gnatc).
 	* sem_ch9.adb (Analyze_Protected_Type, Analyze_Task_Type): Do not build
 	the corresponding record type.
@@ -3707,7 +3714,7 @@
 2010-06-22  Geert Bosch  <bosch@adacore.com>
 
 	* exp_imgv.adb (Expand_Image_Attribute): Treat ordinary fixed point
-	with decimal small as decimal types, avoiding floating-point arithmetic.
+	with decimal small as decimal types, avoiding FP arithmetic.
 	(Has_Decimal_Small): New function.
 	* einfo.ads, einfo.adb (Aft_Value): New synthesized attributed for
 	fixed point types.
@@ -3951,7 +3958,7 @@
 
 2010-06-22  Vincent Celier  <celier@adacore.com>
 
-	* prj-nmsc.adb (Process_Naming_Scheme): Initialize table Lib_Data_Table.
+	* prj-nmsc.adb (Process_Naming_Scheme): Initialize Lib_Data_Table.
 
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
@@ -4074,7 +4081,7 @@
 
 2010-06-22  Ed Falis  <falis@adacore.com>
 
-	* s-osinte-vxworks.ads: take sigset_t definition from System.VxWorks.Ext
+	* s-osinte-vxworks.ads: Take sigset_t definition of System.VxWorks.Ext.
 	* s-vxwext.ads, s-vxwext-kernel.ads, s-vxwext-rtp.ads: Define sigset_t
 	for specific versions of VxWorks.
 
@@ -4117,7 +4124,8 @@
 
 	* sem_ch4.adb (Analyze_Conditional_Expression): Defend against
 	malformed tree.
-	* sprint.adb (Sprint_Node_Actual, case N_Conditional_Expression): Ditto.
+	* sprint.adb (Sprint_Node_Actual, case N_Conditional_Expression):
+	Ditto.
 
 2010-06-22  Arnaud Charlet  <charlet@adacore.com>
 
@@ -4222,8 +4230,9 @@
 
 	* g-expect-vms.adb, sem_res.adb: Minor reformatting.
 	* exp_aggr.adb: Minor comment changes and reformatting.
-	* sem_eval.adb (Find_Universal_Operator_Type): Put in proper alpha order
-	* sem_util.ads: Add some missing pragma Inline's (efficiency issue only)
+	* sem_eval.adb (Find_Universal_Operator_Type): Put in proper alpha
+	order.
+	* sem_util.ads: Add some missing pragma Inline's.
 
 2010-06-22  Thomas Quinot  <quinot@adacore.com>
 
@@ -4235,8 +4244,8 @@
 
 2010-06-22  Gary Dismukes  <dismukes@adacore.com>
 
-	* exp_util.adb (Find_Interface_ADT): Retrieve Designated_Type instead of
-	Directly_Designated_Type when the type argument is an access type.
+	* exp_util.adb (Find_Interface_ADT): Retrieve Designated_Type instead
+	of Directly_Designated_Type when the type argument is an access type.
 	(Find_Interface_Tag): Retrieve Designated_Type instead of
 	Directly_Designated_Type when the type argument is an access type.
 	(Has_Controlled_Coextensions): Retrieve Designated_Type instead of
@@ -4289,7 +4298,8 @@
 	operands, when an explicit scope indication is present. Diagnose the
 	case where such a call is ambiguous.
 	(Eval_Arithmetic_Op, Eval_Relational_Op, Eval_Unary_Op):
-	Use the above to identify the operand type so it can be properly frozen.
+	Use the above to identify the operand type so it can be properly
+	frozen.
 	* sem_res.adb (Make_Call_Into_Operator): Remove bogus freeze of operand
 	type, done in an arbitrary, possibly incorrect type (the presence of
 	some numeric type in the scope is checked for legality, but when more
@@ -4422,7 +4432,8 @@
 	extract bounds, to ensure that we get the proper captured values,
 	rather than an expression that may have changed value since the point
 	where the subtype was elaborated.
-	(Find_Body_Discriminal): New utility subprogram to share code between...
+	(Find_Body_Discriminal): New utility subprogram to share code
+	between...
 	(Eval_Attribute): For the case of a subtype bound that references a
 	discriminant of the current concurrent type, insert appropriate
 	discriminal reference.
@@ -4775,7 +4786,8 @@
 
 2010-06-18  Robert Dewar  <dewar@adacore.com>
 
-	* par-ch7.adb, sem_warn.adb, types.ads, par-ch3.adb: Minor reformatting.
+	* par-ch7.adb, sem_warn.adb, types.ads, par-ch3.adb: Minor
+	reformatting.
 	* gnat1drv.adb: Fix typo.
 
 2010-06-18  Robert Dewar  <dewar@adacore.com>
@@ -4875,12 +4887,13 @@
 	when the project is externally built.
 	(Gnatmake): Set Must_Compile and Check_Readonly_Files to True when
 	invoked with -f -u and one or several mains on the command line.
-	(Scan_Make_Arg): Set Main_On_Command_Line to True when at least one main
-	is specified on the command line.
+	(Scan_Make_Arg): Set Main_On_Command_Line to True when at least one
+	main is specified on the command line.
 
 2010-06-18  Ed Schonberg  <schonberg@adacore.com>
 
-	* sem_ch6.adb (Build_Body_For_Inline): Handle extended_return_statements
+	* sem_ch6.adb (Build_Body_For_Inline): Handle
+	extended_return_statements.
 	* exp_ch6.adb (Expand_Inlined_Call): when possible, inline a body
 	containing extented_return statements.
 	* exp_util.adb (Make_CW_Equivalent_Type): If the root type is already
@@ -4964,8 +4977,8 @@
 	node when expanding short circuit form with actions present for right
 	opnd.
 	* exp_ch4.adb: Minor reformatting
-	(Expand_Short_Circuit_Operator): Use new Expression_With_Actions node if
-	right opeand has actions present, and debug flag -gnatd.X is set.
+	(Expand_Short_Circuit_Operator): Use new Expression_With_Actions node
+	if right opeand has actions present, and debug flag -gnatd.X is set.
 	* exp_util.adb (Insert_Actions): Handle case of Expression_With_Actions
 	node.
 	* nlists.adb (Prepend_List): New procedure
@@ -5345,12 +5358,13 @@
 
 2010-06-17  Robert Dewar  <dewar@adacore.com>
 
-	* einfo.ads, einfo.adb (Get_Record_Representation_Clause): New function.
+	* einfo.ads, einfo.adb (Get_Record_Representation_Clause): New
+	function.
 	* freeze.adb (Freeze_Record_Type): Add call to
 	Check_Record_Representation_Clause.
 	* sem_ch13.adb (Check_Record_Representation_Clause): New function
-	(Analyze_Record_Representation_Clause): Split out overlap code into this
-	new function.
+	(Analyze_Record_Representation_Clause): Split out overlap code into
+	this new function.
 	(Check_Component_Overlap): Moved inside
 	Check_Record_Representation_Clause.
 	* sem_ch13.ads (Check_Record_Representation_Clause): New function.
@@ -5442,7 +5456,7 @@
 2010-06-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb: propagate Pragma_Enabled flag to generic.
-	* get_scos.adb: Set C2 flag in decision entry of pragma to 'e' (enabled)
+	* get_scos.adb: Set C2 flag in decision entry of pragma to 'e'.
 	* par_sco.ads, par_sco.adb (Set_SCO_Pragma_Enabled): New procedure
 	Remove use of Node field in SCOs table
 	(Output_Header): Set 'd' to initially disable pragma entry
@@ -5459,7 +5473,8 @@
 	(Switch_Subsequently_Cancelled): Function moved to the body of Switch.C
 	* back_end.ads (Scan_Front_End_Switches): Function moved to the body of
 	Switch.C.
-	* switch-c.adb: Copied a number of global declarations from back_end.adb
+	* switch-c.adb: Copied a number of global declarations from
+	back_end.adb.
 	(Len_Arg): New function copied from back_end.adb
 	(Switch_Subsequently_Cancelled): New function moved from back_end.adb
 	(Scan_Front_End_Switches): New parameter Arg_Rank used to call
@@ -5591,7 +5606,8 @@
 	* einfo.ads (First_Exit_Statement): New attribute for E_Loop
 	* sem_ch5.adb (Analyze_Loop_Statement): Check_Infinite_Loop_Warning has
 	new calling sequence to include test for EXIT WHEN.
-	(Analyze_Exit_Statement): Chain EXIT statement into exit statement chain
+	(Analyze_Exit_Statement): Chain EXIT statement into exit statement
+	chain
 	* sem_warn.ads, sem_warn.adb (Check_Infinite_Loop_Warning): Now handles
 	EXIT WHEN case.
 	* sinfo.adb (Next_Exit_Statement): New attribute of N_Exit_Statement
@@ -5729,7 +5745,8 @@
 2010-06-14  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_res.adb (Resolve_Call): For infinite recursion check, test
-	whether the called subprogram is inherited from a containing subprogram.
+	whether the called subprogram is inherited from a containing
+	subprogram.
 	(Same_Or_Aliased_Subprograms): New function
 
 2010-06-14  Ed Schonberg  <schonberg@adacore.com>
@@ -5752,8 +5769,8 @@
 	* gsocket.h, g-socket.adb, g-sothco.ads (GNAT.Sockets.Get_XXX_By_YYY):
 	Ensure mutual exclusion for netdb operations if the target platform
 	requires it.
-	(GNAT.Sockets.Thin_Common): New binding for getXXXbyYYY, treating struct
-	hostent as an opaque type to improve portability.
+	(GNAT.Sockets.Thin_Common): New binding for getXXXbyYYY, treating
+	struct hostent as an opaque type to improve portability.
 	* s-oscons-tmplt.c, socket.c: For the case of Vxworks, emulate
 	gethostbyYYY using proprietary VxWorks API so that a uniform interface
 	is available for the Ada side.
