@@ -33,7 +33,16 @@ extern "C" {
 #include "objc.h"
 #include "objc-decls.h"
 
-/* This file includes declarations of the messaging functions and types.  */
+/* This file includes declarations of the messaging functions and
+   types.
+*/
+
+/* Compatibility note: the messaging function is one area where the
+   GNU runtime and the Apple/NeXT runtime differ significantly.  If
+   you can, it is recommended that you use higher-level facilities
+   (provided by a Foundation library such as GNUstep Base) to perform
+   forwarding or other advanced messaging tricks.
+*/
 
 typedef void* retval_t;		/* return value */
 typedef void(*apply_t)(void);	/* function pointer */
@@ -44,7 +53,37 @@ typedef union arglist {
 
 objc_EXPORT IMP objc_msg_lookup(id receiver, SEL op);
 
-/* TODO: Add the remaining messaging declarations from objc-api.h.  */
+/*
+ * Structure used when a message is send to a class's super class.
+ * The compiler generates one of these structures and passes it to
+ * objc_msg_lookup_super.
+ */
+typedef struct objc_super {
+  id      self;       /* Id of the object sending the message. */
+#ifdef __cplusplus
+  /* The new version of the API will always use 'super_class'.  */
+  Class super_class;
+#else
+  Class class;        /* Object's super class. */
+#endif
+} Super, *Super_t;
+
+objc_EXPORT IMP objc_msg_lookup_super(Super_t super, SEL sel);
+
+objc_EXPORT retval_t objc_msg_sendv(id, SEL, arglist_t);
+
+/*
+ * Hooks for method forwarding. This makes it easy to substitute a
+ * library, such as ffcall, that implements closures, thereby avoiding
+ * gcc's __builtin_apply problems.  __objc_msg_forward2's result will
+ * be preferred over that of __objc_msg_forward if both are set and
+ * return non-NULL.
+ *
+ * TODO: The API should define objc_set_msg_forward_handler () or
+ * similar instead of these hooks.
+ */
+objc_EXPORT IMP (*__objc_msg_forward)(SEL);
+objc_EXPORT IMP (*__objc_msg_forward2)(id, SEL);
 
 #ifdef __cplusplus
 }

@@ -1,3 +1,11 @@
+2010-10-09  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc/objc-api.h (struct objc_super, Super, Super_t,
+	objc_msg_lookup_super, objc_msg_sendv, objc_msg_forward,
+	objc_msg_forward2): Declarations moved to objc/message.h.  Include
+	message.h here.
+	* objc/message.h: Added such declarations; updated comments.
+
 2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented fast enumeration for Objective-C.
