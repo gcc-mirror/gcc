@@ -5634,9 +5634,9 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
    On Alpha the first 6 words of args are normally in registers
    and the rest are pushed.  */
 
-rtx
-function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode, tree type,
-	      int named ATTRIBUTE_UNUSED)
+static rtx
+alpha_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		    const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   int basereg;
   int num_args;
@@ -5661,87 +5661,22 @@ function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode, tree type,
     }
 
   /* ??? Irritatingly, the definition of CUMULATIVE_ARGS is different for
-     the three platforms, so we can't avoid conditional compilation.  */
+     the two platforms, so we can't avoid conditional compilation.  */
 #if TARGET_ABI_OPEN_VMS
     {
       if (mode == VOIDmode)
 	return alpha_arg_info_reg_val (cum);
 
-      num_args = cum.num_args;
+      num_args = cum->num_args;
       if (num_args >= 6
 	  || targetm.calls.must_pass_in_stack (mode, type))
 	return NULL_RTX;
     }
-#elif TARGET_ABI_UNICOSMK
-    {
-      int size;
-
-      /* If this is the last argument, generate the call info word (CIW).  */
-      /* ??? We don't include the caller's line number in the CIW because
-	 I don't know how to determine it if debug infos are turned off.  */
-      if (mode == VOIDmode)
-	{
-	  int i;
-	  HOST_WIDE_INT lo;
-	  HOST_WIDE_INT hi;
-	  rtx ciw;
-
-	  lo = 0;
-
-	  for (i = 0; i < cum.num_reg_words && i < 5; i++)
-	    if (cum.reg_args_type[i])
-	      lo |= (1 << (7 - i));
-
-	  if (cum.num_reg_words == 6 && cum.reg_args_type[5])
-	    lo |= 7;
-	  else
-	    lo |= cum.num_reg_words;
-
-#if HOST_BITS_PER_WIDE_INT == 32
-	  hi = (cum.num_args << 20) | cum.num_arg_words;
-#else
-	  lo = lo | ((HOST_WIDE_INT) cum.num_args << 52)
-	    | ((HOST_WIDE_INT) cum.num_arg_words << 32);
-	  hi = 0;
-#endif
-	  ciw = immed_double_const (lo, hi, DImode);
-
-	  return gen_rtx_UNSPEC (DImode, gen_rtvec (1, ciw),
-				 UNSPEC_UMK_LOAD_CIW);
-	}
-
-      size = ALPHA_ARG_SIZE (mode, type, named);
-      num_args = cum.num_reg_words;
-      if (cum.force_stack
-	  || cum.num_reg_words + size > 6
-	  || targetm.calls.must_pass_in_stack (mode, type))
-	return NULL_RTX;
-      else if (type && TYPE_MODE (type) == BLKmode)
-	{
-	  rtx reg1, reg2;
-
-	  reg1 = gen_rtx_REG (DImode, num_args + 16);
-	  reg1 = gen_rtx_EXPR_LIST (DImode, reg1, const0_rtx);
-
-	  /* The argument fits in two registers. Note that we still need to
-	     reserve a register for empty structures.  */
-	  if (size == 0)
-	    return NULL_RTX;
-	  else if (size == 1)
-	    return gen_rtx_PARALLEL (mode, gen_rtvec (1, reg1));
-	  else
-	    {
-	      reg2 = gen_rtx_REG (DImode, num_args + 17);
-	      reg2 = gen_rtx_EXPR_LIST (DImode, reg2, GEN_INT (8));
-	      return gen_rtx_PARALLEL (mode, gen_rtvec (2, reg1, reg2));
-	    }
-	}
-    }
 #elif TARGET_ABI_OSF
     {
-      if (cum >= 6)
+      if (*cum >= 6)
 	return NULL_RTX;
-      num_args = cum;
+      num_args = *cum;
 
       /* VOID is passed as a special flag for "last argument".  */
       if (type == void_type_node)
@@ -5754,6 +5689,26 @@ function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode, tree type,
 #endif
 
   return gen_rtx_REG (mode, num_args + basereg);
+}
+
+/* Update the data in CUM to advance over an argument
+   of mode MODE and data type TYPE.
+   (TYPE is null for libcalls where that information may not be available.)  */
+
+static void
+alpha_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			    const_tree type, bool named)
+{
+  bool onstack = targetm.calls.must_pass_in_stack (mode, type);
+  int increment = onstack ? 6 : ALPHA_ARG_SIZE (mode, type, named);
+
+#if TARGET_ABI_OSF
+  *cum += increment;
+#else
+  if (!onstack && cum->num_args < 6)
+    cum->atypes[cum->num_args] = alpha_arg_type (mode);
+  cum->num_args += increment;
+#endif
 }
 
 static int
@@ -6183,7 +6138,7 @@ alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
   CUMULATIVE_ARGS cum = *pcum;
 
   /* Skip the current argument.  */
-  FUNCTION_ARG_ADVANCE (cum, mode, type, 1);
+  targetm.calls.function_arg_advance (cum, mode, type, true);
 
 #if TARGET_ABI_UNICOSMK
   /* On Unicos/Mk, the standard subroutine __T3E_MISMATCH stores all register
@@ -11149,6 +11104,10 @@ alpha_init_libfuncs (void)
 #define TARGET_GIMPLIFY_VA_ARG_EXPR alpha_gimplify_va_arg
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES alpha_arg_partial_bytes
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG alpha_function_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE alpha_function_arg_advance
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT alpha_trampoline_init
 
