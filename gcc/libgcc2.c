@@ -40,7 +40,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if MIN_UNITS_PER_WORD > 4
 # define LIBGCC2_MAX_UNITS_PER_WORD 8
 #elif (MIN_UNITS_PER_WORD > 2 \
-       || (MIN_UNITS_PER_WORD > 1 && LONG_LONG_TYPE_SIZE > 32))
+       || (MIN_UNITS_PER_WORD > 1 && __SIZEOF_LONG_LONG__ > 4))
 # define LIBGCC2_MAX_UNITS_PER_WORD 4
 #else
 # define LIBGCC2_MAX_UNITS_PER_WORD MIN_UNITS_PER_WORD

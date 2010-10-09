@@ -140,7 +140,7 @@ typedef unsigned int UHItype	__attribute__ ((mode (HI)));
 /* These typedefs are usually forbidden on dsp's with UNITS_PER_WORD 1.  */
 typedef 	 int SItype	__attribute__ ((mode (SI)));
 typedef unsigned int USItype	__attribute__ ((mode (SI)));
-#if LONG_LONG_TYPE_SIZE > 32
+#if __SIZEOF_LONG_LONG__ > 4
 /* These typedefs are usually forbidden on archs with UNITS_PER_WORD 2.  */
 typedef		 int DItype	__attribute__ ((mode (DI)));
 typedef unsigned int UDItype	__attribute__ ((mode (DI)));
@@ -342,7 +342,7 @@ extern cmp_return_type __ucmpdi2 (DWtype, DWtype);
 #if MIN_UNITS_PER_WORD > 1
 extern SItype __bswapsi2 (SItype);
 #endif
-#if LONG_LONG_TYPE_SIZE > 32
+#if __SIZEOF_LONG_LONG__ > 4
 extern DItype __bswapdi2 (DItype);
 #endif
 
