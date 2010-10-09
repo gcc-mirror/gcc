@@ -1,3 +1,9 @@
+2010-10-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/45913
+	* config/i386/i386.c (ix86_binary_operator_ok): Support
+	"andhi/andsi/anddi" as a zero-extending move.
+
 2010-10-08  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* builtins.c (fold_call_stmt): Don't copy gimple call arguments
