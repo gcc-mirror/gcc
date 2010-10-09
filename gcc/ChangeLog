@@ -1,5 +1,12 @@
 2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/m68k/m68k.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	* config/m68k/m68k.c (m68k_function_arg): New function.
+	(m68k_function_arg_advance): New function.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/avr/avr-protos.h (function_arg): Delete.
 	(function_arg_advance): Delete.
 	* config/avr/avr.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
