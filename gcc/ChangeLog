@@ -1,3 +1,9 @@
+2010-10-09  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR tree-optimization/45950
+	* tree-ssa-sccvn.c (init_vn_nary_op_from_pieces): Consult length
+	before initializing vno->op.
+
 2010-10-09  Ralf Corsépius <ralf.corsepius@rtems.org>
 
 	* config.gcc (bfin*-rtems*): Add newlib-stdint.h.
