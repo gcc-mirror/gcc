@@ -1,3 +1,8 @@
+2010-10-09  Ralf Corsépius <ralf.corsepius@rtems.org>
+
+	* config.gcc (bfin*-rtems*): Add newlib-stdint.h.
+	* config.gcc (lm32*-rtems*): Add newlib-stdint.h.
+
 2010-10-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/45913
