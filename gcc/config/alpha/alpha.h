@@ -749,34 +749,6 @@ extern int alpha_memory_latency;
    : (((MODE) == BLKmode ? int_size_in_bytes (TYPE) : GET_MODE_SIZE (MODE)) \
       + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-  ((CUM) += 								\
-   (targetm.calls.must_pass_in_stack (MODE, TYPE))			\
-    ? 6 : ALPHA_ARG_SIZE (MODE, TYPE, NAMED))
-
-/* Determine where to put an argument to a function.
-   Value is zero to push the argument on the stack,
-   or a hard register in which to store the argument.
-
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   CUM is a variable of type CUMULATIVE_ARGS which gives info about
-    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
-
-   On Alpha the first 6 words of args are normally in registers
-   and the rest are pushed.  */
-
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\
-  function_arg((CUM), (MODE), (TYPE), (NAMED))
-
 /* Make (or fake) .linkage entry for function call.
    IS_LOCAL is 0 if name is used in call, 1 if name is used in definition.  */
 
