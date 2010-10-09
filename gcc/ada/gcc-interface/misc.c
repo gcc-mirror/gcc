@@ -23,10 +23,6 @@
  *                                                                          *
  ****************************************************************************/
 
-/* This file contains parts of the compiler that are required for interfacing
-   with GCC but otherwise do nothing and parts of Gigi that need to know
-   about GIMPLE.  */
-
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -60,100 +56,17 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
-static bool gnat_init			(void);
-static unsigned int gnat_option_lang_mask (void);
-static void gnat_init_options_struct	(struct gcc_options *);
-static void gnat_init_options		(unsigned int,
-					 struct cl_decoded_option *);
-static bool gnat_handle_option		(size_t, const char *, int, int,
-					 const struct cl_option_handlers *);
-static bool gnat_post_options		(const char **);
-static alias_set_type gnat_get_alias_set (tree);
-static void gnat_print_decl		(FILE *, tree, int);
-static void gnat_print_type		(FILE *, tree, int);
-static const char *gnat_printable_name	(tree, int);
-static const char *gnat_dwarf_name	(tree, int);
-static bool gnat_type_hash_eq		(const_tree, const_tree);
-static tree gnat_return_tree		(tree);
-static void gnat_parse_file		(int);
-static void internal_error_function	(diagnostic_context *,
-					 const char *, va_list *);
-static tree gnat_type_max_size		(const_tree);
-static void gnat_get_subrange_bounds	(const_tree, tree *, tree *);
-static tree gnat_eh_personality		(void);
-
-/* Definitions for our language-specific hooks.  */
-
-#undef  LANG_HOOKS_NAME
-#define LANG_HOOKS_NAME			"GNU Ada"
-#undef  LANG_HOOKS_IDENTIFIER_SIZE
-#define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct tree_identifier)
-#undef  LANG_HOOKS_INIT
-#define LANG_HOOKS_INIT			gnat_init
-#undef  LANG_HOOKS_OPTION_LANG_MASK
-#define LANG_HOOKS_OPTION_LANG_MASK	gnat_option_lang_mask
-#undef  LANG_HOOKS_INIT_OPTIONS_STRUCT
-#define LANG_HOOKS_INIT_OPTIONS_STRUCT	gnat_init_options_struct
-#undef  LANG_HOOKS_INIT_OPTIONS
-#define LANG_HOOKS_INIT_OPTIONS		gnat_init_options
-#undef  LANG_HOOKS_HANDLE_OPTION
-#define LANG_HOOKS_HANDLE_OPTION	gnat_handle_option
-#undef  LANG_HOOKS_POST_OPTIONS
-#define LANG_HOOKS_POST_OPTIONS		gnat_post_options
-#undef  LANG_HOOKS_PARSE_FILE
-#define LANG_HOOKS_PARSE_FILE		gnat_parse_file
-#undef  LANG_HOOKS_TYPE_HASH_EQ
-#define LANG_HOOKS_TYPE_HASH_EQ		gnat_type_hash_eq
-#undef  LANG_HOOKS_GETDECLS
-#define LANG_HOOKS_GETDECLS		lhd_return_null_tree_v
-#undef  LANG_HOOKS_PUSHDECL
-#define LANG_HOOKS_PUSHDECL		gnat_return_tree
-#undef  LANG_HOOKS_WRITE_GLOBALS
-#define LANG_HOOKS_WRITE_GLOBALS	gnat_write_global_declarations
-#undef  LANG_HOOKS_GET_ALIAS_SET
-#define LANG_HOOKS_GET_ALIAS_SET	gnat_get_alias_set
-#undef  LANG_HOOKS_PRINT_DECL
-#define LANG_HOOKS_PRINT_DECL		gnat_print_decl
-#undef  LANG_HOOKS_PRINT_TYPE
-#define LANG_HOOKS_PRINT_TYPE		gnat_print_type
-#undef  LANG_HOOKS_TYPE_MAX_SIZE
-#define LANG_HOOKS_TYPE_MAX_SIZE	gnat_type_max_size
-#undef  LANG_HOOKS_DECL_PRINTABLE_NAME
-#define LANG_HOOKS_DECL_PRINTABLE_NAME	gnat_printable_name
-#undef  LANG_HOOKS_DWARF_NAME
-#define LANG_HOOKS_DWARF_NAME		gnat_dwarf_name
-#undef  LANG_HOOKS_GIMPLIFY_EXPR
-#define LANG_HOOKS_GIMPLIFY_EXPR	gnat_gimplify_expr
-#undef  LANG_HOOKS_TYPE_FOR_MODE
-#define LANG_HOOKS_TYPE_FOR_MODE	gnat_type_for_mode
-#undef  LANG_HOOKS_TYPE_FOR_SIZE
-#define LANG_HOOKS_TYPE_FOR_SIZE	gnat_type_for_size
-#undef  LANG_HOOKS_TYPES_COMPATIBLE_P
-#define LANG_HOOKS_TYPES_COMPATIBLE_P	gnat_types_compatible_p
-#undef  LANG_HOOKS_GET_SUBRANGE_BOUNDS
-#define LANG_HOOKS_GET_SUBRANGE_BOUNDS  gnat_get_subrange_bounds
-#undef  LANG_HOOKS_ATTRIBUTE_TABLE
-#define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_internal_attribute_table
-#undef  LANG_HOOKS_BUILTIN_FUNCTION
-#define LANG_HOOKS_BUILTIN_FUNCTION	gnat_builtin_function
-#undef  LANG_HOOKS_EH_PERSONALITY
-#define LANG_HOOKS_EH_PERSONALITY	gnat_eh_personality
-#undef  LANG_HOOKS_DEEP_UNSHARING
-#define LANG_HOOKS_DEEP_UNSHARING	true
-
-struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
-
 /* This symbol needs to be defined for the front-end.  */
 void *callgraph_info_file = NULL;
 
-/* How much we want of our DWARF extensions.  Some of our dwarf+ extensions
+/* How much we want of our DWARF extensions.  Some of our DWARF extensions
    are incompatible with regular GDB versions, so we must make sure to only
    produce them on explicit request.  This is eventually reflected into the
    use_gnu_debug_info_extensions common flag for later processing.  */
 static int gnat_dwarf_extensions = 0;
 
-/* Command-line argc and argv.  These variables are global
-   since they are imported in back_end.adb.  */
+/* Command-line argc and argv.  These variables are global since they are
+   imported in back_end.adb.  */
 unsigned int save_argc;
 const char **save_argv;
 
@@ -162,10 +75,10 @@ extern int gnat_argc;
 extern char **gnat_argv;
 
 /* Declare functions we use as part of startup.  */
-extern void __gnat_initialize           (void *);
-extern void __gnat_install_SEH_handler  (void *);
-extern void adainit		        (void);
-extern void _ada_gnat1drv	        (void);
+extern void __gnat_initialize (void *);
+extern void __gnat_install_SEH_handler (void *);
+extern void adainit (void);
+extern void _ada_gnat1drv (void);
 
 /* The parser for the language.  For us, we process the GNAT tree.  */
 
@@ -276,32 +189,34 @@ gnat_init_options (unsigned int decoded_options_count,
 {
   /* Reconstruct an argv array for use of back_end.adb.
 
-     ??? back_end.adb should not rely on this; instead, it should work
-     with decoded options without such reparsing, to ensure
-     consistency in how options are decoded.  */
+     ??? back_end.adb should not rely on this; instead, it should work with
+     decoded options without such reparsing, to ensure consistency in how
+     options are decoded.  */
   unsigned int i;
 
   save_argv = XNEWVEC (const char *, 2 * decoded_options_count + 1);
   save_argc = 0;
   for (i = 0; i < decoded_options_count; i++)
     {
+      size_t num_elements = decoded_options[i].canonical_option_num_elements;
+
       if (decoded_options[i].errors
 	  || decoded_options[i].opt_index == OPT_SPECIAL_unknown
-	  || decoded_options[i].canonical_option_num_elements == 0)
+	  || num_elements == 0)
 	continue;
+
       if (decoded_options[i].opt_index == OPT_I)
 	{
-	  gcc_assert (decoded_options[i].canonical_option_num_elements == 2);
+	  gcc_assert (num_elements == 2);
 	  save_argv[save_argc++]
 	    = concat (decoded_options[i].canonical_option[0],
 		      decoded_options[i].canonical_option[1], NULL);
 	}
       else
 	{
-	  gcc_assert (decoded_options[i].canonical_option_num_elements >= 1
-		      && decoded_options[i].canonical_option_num_elements <= 2);
+	  gcc_assert (num_elements >= 1 && num_elements <= 2);
 	  save_argv[save_argc++] = decoded_options[i].canonical_option[0];
-	  if (decoded_options[i].canonical_option_num_elements >= 2)
+	  if (num_elements >= 2)
 	    save_argv[save_argc++] = decoded_options[i].canonical_option[1];
 	}
     }
@@ -492,6 +407,7 @@ gnat_init_gcc_eh (void)
   flag_non_call_exceptions = 1;
 
   init_eh ();
+
 #ifdef DWARF2_UNWIND_INFO
   if (!dwarf2out_frame_initialized && dwarf2out_do_frame ())
     dwarf2out_frame_init ();
@@ -780,6 +696,8 @@ fp_size_to_prec (int size)
 
 static GTY(()) tree gnat_eh_personality_decl;
 
+/* Return the GNAT personality function decl.  */
+
 static tree
 gnat_eh_personality (void)
 {
@@ -791,5 +709,66 @@ gnat_eh_personality (void)
 
   return gnat_eh_personality_decl;
 }
+
+/* Definitions for our language-specific hooks.  */
+
+#undef  LANG_HOOKS_NAME
+#define LANG_HOOKS_NAME			"GNU Ada"
+#undef  LANG_HOOKS_IDENTIFIER_SIZE
+#define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct tree_identifier)
+#undef  LANG_HOOKS_INIT
+#define LANG_HOOKS_INIT			gnat_init
+#undef  LANG_HOOKS_OPTION_LANG_MASK
+#define LANG_HOOKS_OPTION_LANG_MASK	gnat_option_lang_mask
+#undef  LANG_HOOKS_INIT_OPTIONS_STRUCT
+#define LANG_HOOKS_INIT_OPTIONS_STRUCT	gnat_init_options_struct
+#undef  LANG_HOOKS_INIT_OPTIONS
+#define LANG_HOOKS_INIT_OPTIONS		gnat_init_options
+#undef  LANG_HOOKS_HANDLE_OPTION
+#define LANG_HOOKS_HANDLE_OPTION	gnat_handle_option
+#undef  LANG_HOOKS_POST_OPTIONS
+#define LANG_HOOKS_POST_OPTIONS		gnat_post_options
+#undef  LANG_HOOKS_PARSE_FILE
+#define LANG_HOOKS_PARSE_FILE		gnat_parse_file
+#undef  LANG_HOOKS_TYPE_HASH_EQ
+#define LANG_HOOKS_TYPE_HASH_EQ		gnat_type_hash_eq
+#undef  LANG_HOOKS_GETDECLS
+#define LANG_HOOKS_GETDECLS		lhd_return_null_tree_v
+#undef  LANG_HOOKS_PUSHDECL
+#define LANG_HOOKS_PUSHDECL		gnat_return_tree
+#undef  LANG_HOOKS_WRITE_GLOBALS
+#define LANG_HOOKS_WRITE_GLOBALS	gnat_write_global_declarations
+#undef  LANG_HOOKS_GET_ALIAS_SET
+#define LANG_HOOKS_GET_ALIAS_SET	gnat_get_alias_set
+#undef  LANG_HOOKS_PRINT_DECL
+#define LANG_HOOKS_PRINT_DECL		gnat_print_decl
+#undef  LANG_HOOKS_PRINT_TYPE
+#define LANG_HOOKS_PRINT_TYPE		gnat_print_type
+#undef  LANG_HOOKS_TYPE_MAX_SIZE
+#define LANG_HOOKS_TYPE_MAX_SIZE	gnat_type_max_size
+#undef  LANG_HOOKS_DECL_PRINTABLE_NAME
+#define LANG_HOOKS_DECL_PRINTABLE_NAME	gnat_printable_name
+#undef  LANG_HOOKS_DWARF_NAME
+#define LANG_HOOKS_DWARF_NAME		gnat_dwarf_name
+#undef  LANG_HOOKS_GIMPLIFY_EXPR
+#define LANG_HOOKS_GIMPLIFY_EXPR	gnat_gimplify_expr
+#undef  LANG_HOOKS_TYPE_FOR_MODE
+#define LANG_HOOKS_TYPE_FOR_MODE	gnat_type_for_mode
+#undef  LANG_HOOKS_TYPE_FOR_SIZE
+#define LANG_HOOKS_TYPE_FOR_SIZE	gnat_type_for_size
+#undef  LANG_HOOKS_TYPES_COMPATIBLE_P
+#define LANG_HOOKS_TYPES_COMPATIBLE_P	gnat_types_compatible_p
+#undef  LANG_HOOKS_GET_SUBRANGE_BOUNDS
+#define LANG_HOOKS_GET_SUBRANGE_BOUNDS  gnat_get_subrange_bounds
+#undef  LANG_HOOKS_ATTRIBUTE_TABLE
+#define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_internal_attribute_table
+#undef  LANG_HOOKS_BUILTIN_FUNCTION
+#define LANG_HOOKS_BUILTIN_FUNCTION	gnat_builtin_function
+#undef  LANG_HOOKS_EH_PERSONALITY
+#define LANG_HOOKS_EH_PERSONALITY	gnat_eh_personality
+#undef  LANG_HOOKS_DEEP_UNSHARING
+#define LANG_HOOKS_DEEP_UNSHARING	true
+
+struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 #include "gt-ada-misc.h"
