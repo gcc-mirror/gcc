@@ -5736,7 +5736,7 @@ resolve_typebound_function (gfc_expr* e)
       /* Use the generic name if it is there.  */
       name = name ? name : e->value.function.esym->name;
       e->symtree = expr->symtree;
-      expr->symtree->n.sym->ts.u.derived = declared;
+      e->ref = gfc_copy_ref (expr->ref);
       gfc_add_component_ref (e, "$vptr");
       gfc_add_component_ref (e, name);
       e->value.function.esym = NULL;
