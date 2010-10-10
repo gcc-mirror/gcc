@@ -1,5 +1,11 @@
 2010-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Subprogram_Type>: Add
+	assertion on the types of the parameters.  Use KIND local variable.
+	<E_Incomplete_Type>: Likewise.
+
+2010-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (DECL_BY_DOUBLE_REF_P): New macro.
 	* gcc-interface/gigi.h (annotate_object): Add BY_DOUBLE_REF parameter.
 	* gcc-interface/decl.c (annotate_object): Likewise and handle it.

@@ -4149,6 +4149,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		gnu_param = NULL_TREE;
 	      }
 
+	    /* The failure of this assertion will very likely come from an
+	       order of elaboration issue for the type of the parameter.  */
+	    gcc_assert (kind == E_Subprogram_Type
+			|| !TYPE_IS_DUMMY_P (gnu_param_type));
+
 	    if (gnu_param)
 	      {
 		/* If it's an exported subprogram, we build a parameter list
@@ -4246,7 +4251,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  gnu_stub_param_list = nreverse (gnu_stub_param_list);
 	gnu_cico_list = nreverse (gnu_cico_list);
 
-	if (Ekind (gnat_entity) == E_Function)
+	if (kind == E_Function)
 	  Set_Mechanism (gnat_entity, return_unconstrained_p
 				      || return_by_direct_ref_p
 				      || return_by_invisi_ref_p
@@ -4396,8 +4401,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   full view, whichever is present.  This is used in all the tests
 	   below.  */
 	Entity_Id full_view
-	  = (IN (Ekind (gnat_entity), Incomplete_Kind)
-	     && From_With_Type (gnat_entity))
+	  = (IN (kind, Incomplete_Kind) && From_With_Type (gnat_entity))
 	    ? Non_Limited_View (gnat_entity)
 	    : Present (Full_View (gnat_entity))
 	      ? Full_View (gnat_entity)
