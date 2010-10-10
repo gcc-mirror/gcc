@@ -30,6 +30,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   so that they work properly with garbage collectors.
 */
 
+/* TODO: Turn these into macros or inline functions.  */
+
 #include "objc-private/common.h"
 #include "objc-private/error.h"
 
@@ -85,7 +87,7 @@ objc_calloc (size_t nelem, size_t size)
 }
 
 void
-objc_free (void *mem)
+objc_free (void *mem __attribute__ ((__unused__)))
 {
   return;
 }

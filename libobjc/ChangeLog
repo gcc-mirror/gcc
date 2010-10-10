@@ -1,3 +1,48 @@
+2010-10-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc/objc.h: Updated comments.
+	* objc/objc-api.h: (object_copy): Added one argument; use a
+	#define to maintain backwards-compatibility.  Moved
+	_objc_object_alloc, _objc_object_copy, _objc_object_dispose and
+	objc_get_uninstalled_dtable into
+	objc/deprecated/objc_get_uninstalled_dtable.h and
+	objc/deprecated/objc_object_alloc.h.  Include these files.
+	* objc/deprecated/objc_get_uninstalled_dtable.h: New.
+	* objc/deprecated/objc_object_alloc.h: New.
+	* objc/runtime.h (set_getName): New.
+	(sel_getType): New.
+	(sel_getUid): New.
+	(sel_registerName): New.
+	(sel_registerTypedName): New.
+	(sel_isEqual): New.
+	(class_createInstance): New.
+	(object_copy): New.
+	(object_dispose): New.
+	* objects.c: Do not include tconfig.h.  Include gc_typed.h if
+	building the garbage collection version.
+	(__objc_object_alloc): Removed.
+	(__objc_object_copy): Removed.
+	(__objc_object_dispose): Removed.
+	(class_createInstance): New from code in class_create_instance.
+	Cast second argument of GC_malloc_explicitly_typed.  Use
+	objc_calloc.  Do not call _objc_object_alloc.
+	(class_create_instance): Call class_createInstance.
+	(object_copy): Added extraBytes argument.  Do not call
+	_objc_object_copy.
+	(object_dispose): Do not call _objc_object_dispose.
+	* memory.c (objc_free): When using garbage collection, mark the
+	argument as unused.
+	* selector.c (sel_getName): New.
+	(sel_get_name): Call sel_getName.
+	(sel_getType): New.
+	(sel_get_type): Call sel_getType.
+	(sel_registerName): New.
+	(sel_register_name): Call sel_registerName.
+	(sel_registerTypedName): New.
+	(sel_register_typed_name): Call sel_registerTypedName.
+	(sel_getUid): New.
+	(sel_get_uid): Call sel_getUid.
+	
 2010-10-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc-api.h: Define Method, Method_t, Category and
