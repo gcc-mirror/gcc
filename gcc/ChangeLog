@@ -1,3 +1,7 @@
+2010-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* opt-functions.awk (opt_sanitized_name): Remove gdwarf+ handling.
+
 2010-10-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_setup_incoming_varargs): Pass pointer
