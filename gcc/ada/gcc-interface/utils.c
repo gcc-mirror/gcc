@@ -963,17 +963,6 @@ add_parallel_type (tree decl, tree parallel_type)
   SET_DECL_PARALLEL_TYPE (d, parallel_type);
 }
 
-/* Return the parallel type associated to a type, if any.  */
-
-tree
-get_parallel_type (tree type)
-{
-  if (TYPE_STUB_DECL (type))
-    return DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type));
-  else
-    return NULL_TREE;
-}
-
 /* Utility function of above to merge LAST_SIZE, the previous size of a record
    with FIRST_BIT and SIZE that describe a field.  SPECIAL is true if this
    represents a QUAL_UNION_TYPE in which case we must look for COND_EXPRs and

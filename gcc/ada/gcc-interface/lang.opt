@@ -101,10 +101,6 @@ fRTS=
 Ada Joined RejectNegative
 ; Selects the runtime
 
-gdwarf+
-Ada
-; Explicit request for dwarf debug info with GNAT specific extensions.
-
 gant
 Ada Joined Undocumented
 ; Catches typos
