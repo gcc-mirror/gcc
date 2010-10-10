@@ -26,11 +26,30 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef __objc_runtime_INCLUDE_GNU
 #define __objc_runtime_INCLUDE_GNU
 
-#include "objc.h"
+/*
+  This file declares the "modern" GNU Objective-C Runtime API.
+  Include this file to use it.
 
-/* The following is temporary, until all code from objc-api.h has been
-   moved into this file and objc-api.h will include runtime.h.  */
-#include "objc-api.h"
+  This API is replacing the "traditional" GNU Objective-C Runtime API
+  (declared in objc/objc-api.h) which is the one supported by older
+  versions of the GNU Objective-C Runtime.  The "modern" API is very
+  similar to the API used by the modern Apple/NeXT runtime.
+
+  Because the two APIs have some conflicting definitions (in
+  particular, Method and Category are defined differently) you should
+  include either objc/objc-api.h (to use the traditional GNU
+  Objective-C Runtime API) or objc/runtime.h (to use the modern GNU
+  Objective-C Runtime API), but not both.
+*/
+/*
+#ifdef __objc_api_INCLUDE_GNU
+# error You can not include both objc/objc-api.h and objc/runtime.h.  Include objc/objc-api.h for the traditional GNU Objective-C Runtime API and objc/runtime.h for the modern one.
+#endif
+*/
+
+/* TODO: This file is incomplete.  */
+
+#include "objc.h"
 
 /* 'objc_enumerationMutation()' is called when a collection is
    mutated while being "fast enumerated".  That is a hard error, and
@@ -63,7 +82,7 @@ objc_EXPORT void objc_enumerationMutation (id collection);
    You probably shouldn't use this function unless you are writing
    your own Foundation library.
 */
-objc_EXPORT void objc_set_enumeration_mutation_handler (void (*handler)(id));
+objc_EXPORT void objc_setEnumerationMutationHandler (void (*handler)(id));
 
 /* This structure (used during fast enumeration) is automatically
    defined by the compiler (it is as if this definition was always
@@ -82,7 +101,5 @@ struct __objcFastEnumerationState
   unsigned long extra[5];
 };
 */
-/* For compatibility with the Apple/NeXT runtime.  */
-#define objc_setEnumerationMutationHandler objc_set_enumeration_mutation_handler
 
 #endif
