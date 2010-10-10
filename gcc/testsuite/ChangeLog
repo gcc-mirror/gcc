@@ -1,5 +1,13 @@
 2010-10-10  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/tree-prof/ic-misattribution-1a.c: Cleanup tree_profile_ipa
+	instead of tree_profile dump file.
+	* g++.dg/tree-prof/inline_mismatch_args.C: Cleanup einline dump file.
+	* gfortran.dg/derived_array_intrinisics_1.f90: Cleanup original
+	dump file.
+
+2010-10-10  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.dg/lto/20101009-1_0.c (bar): Fix asm constraints.
 
 2010-10-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
@@ -67,7 +75,7 @@
 2010-10-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
-	
+
 	2006-04-26  Fariborz Jahanian <fjahanian@apple.com>
 
 	Radar 4508851
@@ -108,7 +116,7 @@
 
 	PR middle-end/45869
 	* gcc.dg/torture/pr45869.c: New testcase.
-	
+
 2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/set-not-used-1.m: New
@@ -132,12 +140,12 @@
 2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
-	
+
 	2005-12-14  Fariborz Jahanian <fjahanian@apple.com>
 
 	Radar 4278774
 	* obj-c++.dg/encode-9.mm: New.
-	
+
 2010-10-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/cpp0x/pr45908.C: New test.
@@ -161,7 +169,7 @@
 	2006-04-13 Fariborz Jahanian <fjahanian@apple.com>
 
 	Radar 4502236
-	* objc.dg/objc-foreach-5.m: New.	
+	* objc.dg/objc-foreach-5.m: New.
 
 	2006-04-12 Fariborz Jahanian <fjahanian@apple.com>
 
@@ -183,11 +191,11 @@
 	Radar 4294910
 	* objc.dg/objc-foreach-1.m: New
 
-2010-10-06  Hariharan Sandanagobalane <hariharan@picochip.com>
+2010-10-06  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* gcc.c-torture/execute/cmpsi-2.c : Unsigned comparisons should use
 	unsigned values.
-	
+
 2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc++/28050
@@ -226,12 +234,12 @@
 
 	Radar 4093475
 	* obj-c++.dg/syntax-error-[3-4].mm: New.
-	
+
 	2005-08-02  Ziemowit Laski  <zlaski@apple.com>
 
 	Radar 4185810
 	* obj-c++.dg/syntax-error-[1-2].mm: New.
-	
+
 2010-10-05  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/45752
@@ -464,7 +472,7 @@
 	* objc.dg/method-20b.m: Provide an implementation of Object.
 	Adjust XFAIL for m64 NeXT runtime.
 	* objc.dg/const-str-12b.m: Use mapped data types Darwin >= 9.
-	* objc.dg/encode-3.m: Correct line ordering, provide header for 
+	* objc.dg/encode-3.m: Correct line ordering, provide header for
 	sprintf.
 	* objc.dg/encode-7-next.m: Only run for 32bit.
 	* objc.dg/encode-7-next-64bit.m: Only run for 64bit.
@@ -480,7 +488,7 @@
 2010-09-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
-	
+
 	2005-10-04  Fariborz Jahanian <fjahanian@apple.com>
 
 	Radar 4278236
@@ -887,8 +895,7 @@
 2010-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/45739
-	* gcc.target/i386/pr45739.c: Tighten up scan-assembler-not
-	regexps.
+	* gcc.target/i386/pr45739.c: Tighten up scan-assembler-not regexps.
 
 2010-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
