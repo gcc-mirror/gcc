@@ -5697,7 +5697,7 @@ alpha_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 static void
 alpha_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			    const_tree type, bool named)
+			    const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   bool onstack = targetm.calls.must_pass_in_stack (mode, type);
   int increment = onstack ? 6 : ALPHA_ARG_SIZE (mode, type, named);
@@ -6138,7 +6138,7 @@ alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
   CUMULATIVE_ARGS cum = *pcum;
 
   /* Skip the current argument.  */
-  targetm.calls.function_arg_advance (cum, mode, type, true);
+  targetm.calls.function_arg_advance (&cum, mode, type, true);
 
 #if TARGET_ABI_UNICOSMK
   /* On Unicos/Mk, the standard subroutine __T3E_MISMATCH stores all register
