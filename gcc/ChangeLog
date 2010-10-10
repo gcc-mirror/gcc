@@ -1,3 +1,9 @@
+2010-10-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_setup_incoming_varargs): Pass pointer
+	to cum struct in the call to function_arg_advance.
+	(alpha_function_arg_advance): Mark named as unused.
+
 2010-10-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_handle_option): Make "value" with
@@ -130,8 +136,7 @@
 2010-10-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45945
-	* tree-ssa.c (execute_update_addresses_taken): Fixup LHS
-	scanning.
+	* tree-ssa.c (execute_update_addresses_taken): Fixup LHS scanning.
 
 2010-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -170,7 +175,7 @@
 
 	PR tree-optimization/45903
 	* simplify-rtx.c (simplify_subreg): Optimize lowpart SUBREG
-	of *SHIFTRT of MEM.
+	of {A,L}SHIFTRT of MEM.
 
 2010-10-08  Richard Guenther  <rguenther@suse.de>
 
@@ -202,8 +207,7 @@
 	* common.opt (flag_complex_method, flag_evaluation_order,
 	flag_ira_algorithm, flag_ira_region, flag_warn_unused_result): New
 	Variable declarations.
-	* configure.ac (tm_include_list): Include flags.h instead of
-	options.h.
+	* configure.ac (tm_include_list): Include flags.h instead of options.h.
 	* configure: Regenerate.
 	* flags.h: Condition out contents for target libraries.  Include
 	options.h at end of file.
@@ -379,8 +383,7 @@
 2010-10-07  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* builtins.c (rewrite_call_expr): Move code to...
-	(rewrite_call_expr_valist): ...here.  Call
-	build_call_expr_loc_array.
+	(rewrite_call_expr_valist): ...here.  Call build_call_expr_loc_array.
 	(rewrite_call_expr_array): New function.
 	(fold_builtin_sprintf_chk_1): New function.
 	(fold_builtin_sprintf_chk): Call it.
@@ -640,11 +643,9 @@
 
 2010-10-06  Nick Clifton  <nickc@redhat.com>
 
-	* config/mn10300/mn10300.h (FIRST_PSEUDO_REGISTER): Increment by
-	one.
+	* config/mn10300/mn10300.h (FIRST_PSEUDO_REGISTER): Increment by one.
 	(MDR_REGNUM): Define.
-	(FIXED_REGISTERS, CALL_USED_REGISTERS): Add MDR as a fixed
-	register.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Add MDR as a fixed register.
 	(REG_CLASS_CONTENTS): Add MDR to ALL_REGS.
 	(INCOMING_RETURN_ADDR_RTX): Define in terms of MDR.
 	(REGISTER_NAMES): Add MDR.
@@ -654,8 +655,7 @@
 	(mn10300_gen_multiple_store): Use F.
 	(expand_prologue): Use F.  Use gen_movsf() to push floating
 	point registers.
-	(expand_epilogue): Use gen_movsf() to pop floating point
-	registers.
+	(expand_epilogue): Use gen_movsf() to pop floating point registers.
 	(mn10300_option_override): Disable combine stack adjust pass.
 
 2010-10-06  Thomas Schwinge  <thomas@schwinge.name>
@@ -717,8 +717,7 @@
 	read_cmdline_option, set_option): Add diagnostic_context
 	parameter.  Update calls among these functions.
 	(set_option): Don't use global_dc.
-	* opts.c (read_cmdline_options): Pass global_dc to
-	read_cmdline_option.
+	* opts.c (read_cmdline_options): Pass global_dc to read_cmdline_option.
 	(decode_options): Pass global_dc to enable_warning_as_error.
 	(common_handle_option): Pass global_dc to enable_warning_as_error.
 	(enable_warning_as_error): Add diagnostic_context parameter.
@@ -750,7 +749,7 @@
 	diagnostic_context typedef.
 
 2010-10-05  Olivier Hainque  <hainque@adacore.com>
-            Nicolas Roche  <roche@adacore.com>
+	    Nicolas Roche  <roche@adacore.com>
 
 	* config/vxworksae.h: Add missing VXWORKS_OS_CPP_BUILTINS.
 	* config/rs6000/vxworks.h: Remove redundant CPP builtin definitions.
@@ -791,7 +790,7 @@
 	(pass_ipa_tree_profile): Declare.
 
 2010-10-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
-            Christian Borntraeger  <Christian.Borntraeger@de.ibm.com>
+	    Christian Borntraeger  <Christian.Borntraeger@de.ibm.com>
 
 	* gcc/config/s390/s390.c (z196_cost): New.
 	(s390_handle_arch_option): Add -march=z196.
@@ -836,15 +835,16 @@
 	insn definition.
 	(add<mode>3, *add<mode>3_carry1_cc, *add<mode>3_carry1_cconly)
 	(*add<mode>3_carry2_cc, *add<mode>3_carry2_cconly, *add<mode>3_cc)
-	(*add<mode>3_cconly, *add<mode>3_cconly2, *add<mode>3_imm_cc, *sub<mode>3)
-	(*sub<mode>3_borrow_cc, *sub<mode>3_borrow_cconly, *sub<mode>3_cc)
-	(*sub<mode>3_cc2, *sub<mode>3_cconly, *sub<mode>3_cconly2)
-	(*anddi3_cc, *anddi3_cconly, *anddi3, *andsi3_cc, *andsi3_cconly)
-	(*andsi3_zarch, *andsi3_esa, *andhi3_zarch, *andqi3_zarch, *iordi3_cc)
-	(*iordi3_cconly, *iordi3, *iorsi3_cc, *iorsi3_cconly, *iorsi3_zarch)
-	(*iorhi3_zarch, *iorqi3_zarch, *xordi3_cc, *xordi3_cconly, *xordi3)
-	(*xorsi3_cc, *xorsi3_cconly, *xorsi3, *xorhi3, *xorqi3, *<shift><mode>3)
-	(*<shift><mode>3_and, *ashr<mode>3_cc, *ashr<mode>3_cconly, *ashr<mode>3)
+	(*add<mode>3_cconly, *add<mode>3_cconly2, *add<mode>3_imm_cc)
+	(*sub<mode>3, *sub<mode>3_borrow_cc, *sub<mode>3_borrow_cconly)
+	(*sub<mode>3_cc, *sub<mode>3_cc2, *sub<mode>3_cconly)
+	(*sub<mode>3_cconly2, *anddi3_cc, *anddi3_cconly, *anddi3, *andsi3_cc)
+	(*andsi3_cconly, *andsi3_zarch, *andsi3_esa, *andhi3_zarch
+	(*andqi3_zarch, *iordi3_cc, *iordi3_cconly, *iordi3, *iorsi3_cc)
+	(*iorsi3_cconly, *iorsi3_zarch, *iorhi3_zarch, *iorqi3_zarch)
+	(*xordi3_cc, *xordi3_cconly, *xordi3, *xorsi3_cc, *xorsi3_cconly)
+	(*xorsi3, *xorhi3, *xorqi3, *<shift><mode>3, *<shift><mode>3_and)
+	(*ashr<mode>3_cc, *ashr<mode>3_cconly, *ashr<mode>3)
 	(*ashr<mode>3_cc_and, *ashr<mode>3_cconly_and, *ashr<mode>3_and):
 	Support new z196 instructions.
 
@@ -877,8 +877,7 @@
 	* flags.h (g_switch_value, g_switch_set): Remove.
 	* opts.c (g_switch_value, g_switch_set): Remove.
 	* config/g.opt (G): Add Var(g_switch_value).
-	* config/alpha/alpha.c (alpha_handle_option): Don't handle -G
-	here.
+	* config/alpha/alpha.c (alpha_handle_option): Don't handle -G here.
 	(alpha_option_override): Check global_options_set.x_g_switch_value
 	instead of g_switch_set.
 	(alpha_in_small_data_p): Remove cast in comparison with
@@ -890,8 +889,7 @@
 	(frv_handle_option): Don't handle -G here.
 	(frv_option_override): Check global_options_set.x_g_switch_value
 	instead of g_switch_set.  Don't modify g_switch_set.
-	(frv_in_small_data_p): Remove cast in comparison with
-	g_switch_value.
+	(frv_in_small_data_p): Remove cast in comparison with g_switch_value.
 	* config/frv/frv.h (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Cast
 	g_switch_value to unsigned HOST_WIDE_INT.
 	* config/ia64/ia64.c (ia64_handle_option): Don't handle -G here.
@@ -911,8 +909,7 @@
 	g_switch_value.
 	(m32r_file_start): Format g_switch_value with %d.
 	* config/m32r/m32r.h (ASM_OUTPUT_ALIGNED_COMMON,
-	ASM_OUTPUT_ALIGNED_BSS): Cast g_switch_value to unsigned
-	HOST_WIDE_INT.
+	ASM_OUTPUT_ALIGNED_BSS): Cast g_switch_value to unsigned HOST_WIDE_INT.
 	* config/microblaze/microblaze.c (microblaze_handle_option): Don't
 	handle -G here.
 	(microblaze_option_override): Check
@@ -920,8 +917,7 @@
 	* config/mips/mips.c (mips_handle_option): Don't handle -G here.
 	(mips_option_override): Check global_options_set.x_g_switch_value
 	instead of g_switch_set.
-	* config/rs6000/rs6000.c (rs6000_handle_option): Don't handle -G
-	here.
+	* config/rs6000/rs6000.c (rs6000_handle_option): Don't handle -G here.
 	(rs6000_file_start): Format g_switch_value with %d.
 	(small_data_operand, rs6000_elf_in_small_data_p): Remove casts in
 	comparisons with g_switch_value.
@@ -929,8 +925,7 @@
 	global_options_set.x_g_switch_value instead of g_switch_set.
 	* config/rs6000/vxworks.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Check
 	global_options_set.x_g_switch_value instead of g_switch_set.
-	* config/score/score.c (score_handle_option): Don't handle -G
-	here.
+	* config/score/score.c (score_handle_option): Don't handle -G here.
 	* config/score/score3.c (score3_option_override): Check
 	global_options_set.x_g_switch_value instead of g_switch_set.
 	* config/score/score7.c (score7_option_override): Check
@@ -1054,8 +1049,7 @@
 	flag_speculative_prefetching_set): Remove.
 	* gcc.c (driver_handle_option): Take opts_set parameter.  Assert
 	that it is &global_options_set.
-	(process_command): Pass &global_options_set to
-	read_cmdline_option.
+	(process_command): Pass &global_options_set to read_cmdline_option.
 	* lto-opts.c (lto_reissue_options): Pass &global_options_set to
 	set_option.
 	* toplev.c (target_flags_explicit): Remove.
@@ -1086,8 +1080,7 @@
 	(convert_to_anonymous_field): New static function.
 	(convert_for_assignment): If -fplan9-extensions, permit converting
 	pointer to struct to pointer to anonymous field.
-	* c-decl.c (grokfield): If -fplan9-extensions, permit anonymous
-	fields.
+	* c-decl.c (grokfield): If -fplan9-extensions, permit anonymous fields.
 	(is_duplicate_field): New static function.
 	(detect_field_duplicates_hash): If -fplan9-extensions, check for
 	typedef names duplicating field names.
@@ -1118,7 +1111,7 @@
 
 2010-10-03  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md (*ashl<mode>3_mask): Change operand 2 preticate
+	* config/i386/i386.md (*ashl<mode>3_mask): Change operand 2 predicate
 	to nonimmediate_operand.  Force operand 2 to register when allowed.
 	(*<shiftrt_insn><mode>3_mask): Ditto.
 	(*<rotate_insn><mode>3_mask): Ditto.
