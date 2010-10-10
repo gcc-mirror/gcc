@@ -69,7 +69,7 @@ static objc_exception_matcher
 __objc_exception_matcher = is_kind_of_exception_matcher;
 
 objc_exception_matcher
-objc_set_exception_matcher (objc_exception_matcher new_matcher)
+objc_setExceptionMatcher (objc_exception_matcher new_matcher)
 {
   objc_exception_matcher old_matcher = __objc_exception_matcher;
   __objc_exception_matcher = new_matcher;
@@ -81,8 +81,8 @@ static objc_uncaught_exception_handler
 __objc_uncaught_exception_handler = NULL;
 
 objc_uncaught_exception_handler
-objc_set_uncaught_exception_handler (objc_uncaught_exception_handler 
-				     new_handler)
+objc_setUncaughtExceptionHandler (objc_uncaught_exception_handler 
+				  new_handler)
 {
   objc_uncaught_exception_handler old_handler 
     = __objc_uncaught_exception_handler;

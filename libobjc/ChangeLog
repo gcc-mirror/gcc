@@ -1,5 +1,35 @@
 2010-10-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Makefile.in (OBJC_DEPRECATED_H): Added struct_objc_category.h,
+	struct_objc_ivar.h, struct_objc_ivar_list.h, struct_objc_method.h,
+	struct_objc_method_list.h, struct_objc_module.h,
+	struct_objc_protocol_list.h, struct_objc_symtab.h.
+	* objc/deprecated/struct_objc_category.h: New.
+	* objc/deprecated/struct_objc_ivar.h: New.
+	* objc/deprecated/struct_objc_ivar_list.h: New.
+	* objc/deprecated/struct_objc_method.h: New.
+	* objc/deprecated/struct_objc_method_list.h: New.
+	* objc/deprecated/struct_objc_module.h: New.
+	* objc/deprecated/struct_objc_protocol_list.h: New.
+	* objc/deprecated/struct_objc_symtab.h: New.
+	* objc/deprecated/struct_objc_static_instances.h: New.
+	* objc/objc-api.h: Definitions of deprecated structures moved into
+	the above header fragment files in objc/deprecated/.  Include the
+	files instead of definition the structures here.  Updated
+	comments.
+	* objc/runtime.h: Updated comments.  Do not include objc-api.h.
+	(objc_set_enumeration_mutation_handler): Renamed to
+	objc_setEnumerationMutationHandler.
+	* objc-foreach.c (objc_set_enumeration_mutation_handler): Renamed
+	to objc_setEnumerationMutationHandler.
+	* objc/objc-exception.h (objc_set_exception_matcher): Renamed to
+	objc_setExceptionMatcher.
+	(objc_set_uncaught_exception_handler): Renamed to
+	objc_setUncaughtExceptionHandler.
+	* exception.c: Same changes.
+
+2010-10-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-sync.c: Include objc-private/common.h.
 
 2010-10-10  Nicola Pero  <nicola.pero@meta-innovation.com>

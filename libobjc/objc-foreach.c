@@ -35,7 +35,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 static void (*__objc_enumeration_mutation_handler)(id) = NULL;
 
 void
-objc_set_enumeration_mutation_handler (void (*handler)(id))
+objc_setEnumerationMutationHandler (void (*handler)(id))
 {
   __objc_enumeration_mutation_handler = handler;
 }

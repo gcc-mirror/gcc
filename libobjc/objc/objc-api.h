@@ -23,9 +23,29 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-
 #ifndef __objc_api_INCLUDE_GNU
 #define __objc_api_INCLUDE_GNU
+
+/*
+  This file declares the "traditional" GNU Objective-C Runtime API.
+  It is the API supported by older versions of the GNU Objective-C
+  Runtime.  Include this file to use it.
+
+  This API is being replaced by the "modern" GNU Objective-C Runtime
+  API, which is declared in objc/runtime.h.  The "modern" API is very
+  similar to the API used by the modern Apple/NeXT runtime.
+
+  Because the two APIs have some conflicting definitions (in
+  particular, Method and Category are defined differently) you should
+  include either objc/objc-api.h (to use the traditional GNU
+  Objective-C Runtime API) or objc/runtime.h (to use the modern GNU
+  Objective-C Runtime API), but not both.
+*/
+/*
+#ifdef __objc_runtime_INCLUDE_GNU
+# error You can not include both objc/objc-api.h and objc/runtime.h.  Include objc/objc-api.h for the traditional GNU Objective-C Runtime API and objc/runtime.h for the modern one.
+#endif
+*/
 
 #include "objc.h"
 #ifndef GNU_LIBOBJC_COMPILING_LIBOBJC_ITSELF
@@ -91,133 +111,14 @@ struct objc_method_description
 
 #include "deprecated/objc_error.h"
 
-/* For every class which happens to have statically allocated instances in
-   this module, one OBJC_STATIC_INSTANCES is allocated by the compiler.
-   INSTANCES is NULL terminated and points to all statically allocated
-   instances of this class.  */
-struct objc_static_instances
-{
-  char *class_name;
-#ifdef __cplusplus
-  id instances[1];
-#else
-  id instances[0];
-#endif
-};
-
-/* Whereas a Module (defined further down) is the root (typically) of a file,
-   a Symtab is the root of the class and category definitions within the
-   module.  
-   
-   A Symtab contains a variable length array of pointers to classes and
-   categories  defined in the module.   */
-typedef struct objc_symtab {
-  unsigned long sel_ref_cnt;                     /* Unknown. */
-  SEL        refs;                              /* Unknown. */
-  unsigned short cls_def_cnt;                   /* Number of classes compiled
-                                                  (defined) in the module. */
-  unsigned short cat_def_cnt;                   /* Number of categories 
-                                                  compiled (defined) in the 
-                                                  module. */
-
-  void      *defs[1];                           /* Variable array of pointers.
-                                                  cls_def_cnt of type Class 
-                                                  followed by cat_def_cnt of
-                                                  type Category_t, followed
-						  by a NULL terminated array
-						  of objc_static_instances. */
-} Symtab,   *Symtab_t;
-
-
-/*
-** The compiler generates one of these structures for each module that
-** composes the executable (eg main.m).  
-** 
-** This data structure is the root of the definition tree for the module.  
-** 
-** A collect program runs between ld stages and creates a ObjC ctor array. 
-** That array holds a pointer to each module structure of the executable. 
-*/
-typedef struct objc_module {
-  unsigned long version; /* Version of the Module data structure.  */
-  unsigned long size;    /* sizeof(Module) according to the compiler -
-			    only used to sanity check that it matches
-			    sizeof(Module) according to the
-			    runtime.  */
-  const char* name;      /* Name of the file used to compile the
-			    module - not set by modern compilers for
-			    security reasons.  */
-  Symtab_t    symtab;    /* Pointer to the Symtab of the module.  The
-			    Symtab holds an array of pointers to the
-			    classes and categories defined in the
-			    module. */
-} Module, *Module_t;
-
-
-/*
-** The compiler generates one of these structures for a class that has
-** instance variables defined in its specification. 
-*/
-typedef struct objc_ivar {
-    const char* ivar_name;                      /* Name of the instance
-                                                  variable as entered in the
-                                                  class definition. */
-    const char* ivar_type;                      /* Description of the Ivar's
-                                                  type.  Useful for 
-                                                  debuggers. */
-    int        ivar_offset;                    /* Byte offset from the base 
-                                                  address of the instance 
-                                                  structure to the variable. */
-} *Ivar_t;
-
-typedef struct objc_ivar_list {
-  int   ivar_count;                             /* Number of structures (Ivar) 
-                                                  contained in the list.  One
-                                                  structure per instance 
-                                                  variable defined in the
-                                                  class. */
-  struct objc_ivar ivar_list[1];               /* Variable length 
-                                                  structure. */
-} IvarList, *IvarList_t;
-
-
-/*
-** The compiler generates one (or more) of these structures for a class that
-** has methods defined in its specification. 
-** 
-** The implementation of a class can be broken into separate pieces in a file
-** and categories can break them across modules. To handle this problem is a
-** singly linked list of methods. 
-*/
-typedef struct objc_method {
-  SEL         method_name;                  /* This variable is the method's 
-                                               name.  It is a char*. 
-                                               The unique integer passed to 
-                                               objc_msg_send is a char* too.  
-                                               It is compared against 
-                                               method_name using strcmp. */
-  const char* method_types;                 /* Description of the method's
-                                               parameter list.  Useful for
-                                               debuggers. */
-  IMP         method_imp;                   /* Address of the method in the 
-                                               executable. */
-} Method, *Method_t;
-
-typedef struct objc_method_list {
-  struct objc_method_list*  method_next;    /* This variable is used to link 
-                                               a method list to another.  It 
-                                               is a singly linked list. */
-  int            method_count;              /* Number of methods defined in 
-                                               this structure. */
-  Method method_list[1];                    /* Variable length 
-                                               structure. */
-} MethodList, *MethodList_t;
-
-struct objc_protocol_list {
-  struct objc_protocol_list *next;
-  size_t count;
-  Protocol *list[1];
-};
+#include "deprecated/struct_objc_static_instances.h"
+#include "deprecated/struct_objc_symtab.h"
+#include "deprecated/struct_objc_module.h"
+#include "deprecated/struct_objc_ivar.h"
+#include "deprecated/struct_objc_ivar_list.h"
+#include "deprecated/struct_objc_method.h"
+#include "deprecated/struct_objc_method_list.h"
+#include "deprecated/struct_objc_protocol_list.h"
 
 /*
 ** This is used to assure consistent access to the info field of 
@@ -266,27 +167,7 @@ struct objc_protocol_list {
      (cls)->info >>= (HOST_BITS_PER_LONG/2); \
      __CLS_SETINFO(cls, (((unsigned long)num) << (HOST_BITS_PER_LONG/2))); })
 
-/*
-** The compiler generates one of these structures for each category.  A class
-** may have many categories and contain both instance and factory methods.  
-*/
-typedef struct objc_category {
-  const char*   category_name;                /* Name of the category.  Name
-                                                contained in the () of the
-                                                category definition. */
-  const char*   class_name;                   /* Name of the class to which
-                                                the category belongs. */
-  MethodList_t  instance_methods;             /* Linked list of instance
-                                                methods defined in the 
-                                                category. NULL indicates no
-                                                instance methods defined. */
-  MethodList_t  class_methods;                /* Linked list of factory 
-                                                methods defined in the
-                                                category.  NULL indicates no
-                                                class methods defined. */
-  struct objc_protocol_list *protocols;	      /* List of Protocols 
-					         conformed to */
-} Category, *Category_t;
+#include "deprecated/struct_objc_category.h"
 
 /* We include message.h for compatibility with the old objc-api.h
    which included the declarations currently in message.h.  The

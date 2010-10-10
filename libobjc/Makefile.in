@@ -142,9 +142,17 @@ OBJC_DEPRECATED_H = \
   objc_unexpected_exception.h \
   objc_valloc.h \
   sarray.h \
+  struct_objc_category.h \
   struct_objc_class.h \
+  struct_objc_ivar.h \
+  struct_objc_ivar_list.h \
+  struct_objc_method.h \
+  struct_objc_method_list.h \
+  struct_objc_module.h \
   struct_objc_protocol.h \
+  struct_objc_protocol_list.h \
   struct_objc_selector.h \
+  struct_objc_symtab.h \
   typedstream.h 
 
 # Objective-C source files to compile

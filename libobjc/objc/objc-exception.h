@@ -89,7 +89,7 @@ typedef int (*objc_exception_matcher)(Class catch_class, id exception);
    multi-threaded environment because other threads may be trying to
    invoke the exception matcher while you change it!  */
 objc_exception_matcher
-objc_set_exception_matcher (objc_exception_matcher new_matcher);
+objc_setExceptionMatcher (objc_exception_matcher new_matcher);
 
 
 /* An 'objc_uncaught_exception_handler' function is a function that
@@ -103,12 +103,7 @@ typedef void (*objc_uncaught_exception_handler)(id exception);
    it.
 */
 objc_uncaught_exception_handler
-objc_set_uncaught_exception_handler (objc_uncaught_exception_handler new_handler);
-
-
-/* For compatibility with the Apple/NeXT runtime.  */
-#define objc_setExceptionMatcher objc_set_exception_matcher
-#define objc_setUncaughtExceptionHandler objc_set_uncaught_exception_handler
+objc_setUncaughtExceptionHandler (objc_uncaught_exception_handler new_handler);
 
 #ifdef __cplusplus
 }
