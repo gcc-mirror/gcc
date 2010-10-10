@@ -1,3 +1,13 @@
+2010-10.10  Kai Tietz  <kai.tietz@onevision.com>
+
+	* g++.dg/ext/dllexport-MI1.C: Enable for x86_64 mingw
+	and adjust -export symbol scanning.
+	* g++.dg/ext/dllexport1.C: Likewise.
+	* g++.dg/ext/dllexport3.C: Likewise.
+	* gcc.dg/dll-3.c: Likewise.
+	* gcc.dg/dll-4.c: Likewise.
+	* gcc.dg/dll-5.c: Likewise.
+
 2010-10-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-prof/ic-misattribution-1a.c: Cleanup tree_profile_ipa
