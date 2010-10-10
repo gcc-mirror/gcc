@@ -1,5 +1,12 @@
 2010-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Not_In>: Use
+	invert_truthvalue_loc instead of invert_truthvalue.
+	* utils2.c (build_binary_op) <NE_EXPR>: Likewise.
+	(build_unary_op) <TRUTH_NOT_EXPR>: Likewise.
+
+2010-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Subprogram_Type>: Add
 	assertion on the types of the parameters.  Use KIND local variable.
 	<E_Incomplete_Type>: Likewise.

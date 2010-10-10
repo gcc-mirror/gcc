@@ -791,7 +791,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	  result = compare_arrays (result_type, left_operand, right_operand);
 
 	  if (op_code == NE_EXPR)
-	    result = invert_truthvalue (result);
+	    result = invert_truthvalue_loc (EXPR_LOCATION (result), result);
 	  else
 	    gcc_assert (op_code == EQ_EXPR);
 
@@ -1018,7 +1018,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 #ifdef ENABLE_CHECKING
       gcc_assert (TREE_CODE (get_base_type (result_type)) == BOOLEAN_TYPE);
 #endif
-      result = invert_truthvalue (operand);
+      result = invert_truthvalue_loc (EXPR_LOCATION (operand), operand);
       break;
 
     case ATTR_ADDR_EXPR:
