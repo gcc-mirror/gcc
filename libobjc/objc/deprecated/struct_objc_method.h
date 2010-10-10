@@ -6,7 +6,7 @@
 ** and categories can break them across modules. To handle this problem is a
 ** singly linked list of methods. 
 */
-typedef struct objc_method {
+struct objc_method {
   SEL         method_name;                  /* This variable is the method's 
                                                name.  It is a char*. 
                                                The unique integer passed to 
@@ -18,4 +18,5 @@ typedef struct objc_method {
                                                debuggers. */
   IMP         method_imp;                   /* Address of the method in the 
                                                executable. */
-} Method, *Method_t;
+};
+

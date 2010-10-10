@@ -2,7 +2,7 @@
 ** The compiler generates one of these structures for each category.  A class
 ** may have many categories and contain both instance and factory methods.  
 */
-typedef struct objc_category {
+struct objc_category {
   const char*   category_name;                /* Name of the category.  Name
                                                 contained in the () of the
                                                 category definition. */
@@ -18,4 +18,4 @@ typedef struct objc_category {
                                                 class methods defined. */
   struct objc_protocol_list *protocols;	      /* List of Protocols 
 					         conformed to */
-} Category, *Category_t;
+};
