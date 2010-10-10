@@ -4496,7 +4496,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	  }
 
 	if (kind == N_Not_In)
-	  gnu_result = invert_truthvalue (gnu_result);
+	  gnu_result
+	    = invert_truthvalue_loc (EXPR_LOCATION (gnu_result), gnu_result);
       }
       break;
 
