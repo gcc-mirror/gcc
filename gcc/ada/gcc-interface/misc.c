@@ -619,8 +619,8 @@ gnat_get_subrange_bounds (const_tree gnu_type, tree *lowval, tree *highval)
   *highval = TYPE_MAX_VALUE (gnu_type);
 }
 
-/* GNU_TYPE is a type. Determine if it should be passed by reference by
-   default.  */
+/* GNU_TYPE is the type of a subprogram parameter.  Determine if it should be
+   passed by reference by default.  */
 
 bool
 default_pass_by_ref (tree gnu_type)
@@ -632,7 +632,7 @@ default_pass_by_ref (tree gnu_type)
      is an In Out parameter, but it's probably best to err on the side of
      passing more things by reference.  */
 
-  if (pass_by_reference (NULL, TYPE_MODE (gnu_type), gnu_type, 1))
+  if (pass_by_reference (NULL, TYPE_MODE (gnu_type), gnu_type, true))
     return true;
 
   if (targetm.calls.return_in_memory (gnu_type, NULL_TREE))
@@ -647,8 +647,8 @@ default_pass_by_ref (tree gnu_type)
   return false;
 }
 
-/* GNU_TYPE is the type of a subprogram parameter.  Determine from the type if
-   it should be passed by reference. */
+/* GNU_TYPE is the type of a subprogram parameter.  Determine if it must be
+   passed by reference.  */
 
 bool
 must_pass_by_ref (tree gnu_type)
