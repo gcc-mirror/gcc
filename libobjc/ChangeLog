@@ -1,5 +1,29 @@
 2010-10-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/objc-api.h: Define Method, Method_t, Category and
+	Category_t.  Prevent including this file at the same time as
+	objc/runtime.h.  Updated comments.
+	* objc/deprecated/struct_objc_method.h: Do not define Method,
+	Method_t.
+	* objc/deprecated/struct_objc_category.h: Do not define Category,
+	Category_t.
+	* objc-private/module-abi-8.h: New file containing a copy of all
+	the structure definitions.  Not used yet.
+	* objc/encoding.h (objc_aligned_size): Removed duplicate
+	declaration.  Updated comments.
+	* objc/runtime.h: Added Ivar, objc_property_t, Property, Method,
+	Category, struct objc_method_description, _C_ID and similar,
+	_C_CONST and similar and _F_CONST and similar.  Added
+	objc_sizeof_type, objc_alignof_type, objc_aligned_size,
+	objc_promoted_size, objc_skip_type_qualifier, objc_skip_typespec,
+	objc_skip_offset, objc_skip_argspec, objc_get_type_qualifiers,
+	struct objc_struct_layout, objc_layout_structure,
+	objc_layout_structure_next_member, objc_layout_finish_structure,
+	objc_layout_structure_get_info.  Prevent including this file at
+	the same time as objc/objc-api.h.
+	
+2010-10-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Makefile.in (OBJC_DEPRECATED_H): Added struct_objc_category.h,
 	struct_objc_ivar.h, struct_objc_ivar_list.h, struct_objc_method.h,
 	struct_objc_method_list.h, struct_objc_module.h,
