@@ -3,7 +3,7 @@
 static inline void
 bar (unsigned *u)
 {
-  __asm__ ("":"=d" (*u));
+  __asm__ ("":"=r" (*u));
 }
 
 void
