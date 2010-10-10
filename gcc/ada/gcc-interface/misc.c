@@ -59,12 +59,6 @@
 /* This symbol needs to be defined for the front-end.  */
 void *callgraph_info_file = NULL;
 
-/* How much we want of our DWARF extensions.  Some of our DWARF extensions
-   are incompatible with regular GDB versions, so we must make sure to only
-   produce them on explicit request.  This is eventually reflected into the
-   use_gnu_debug_info_extensions common flag for later processing.  */
-static int gnat_dwarf_extensions = 0;
-
 /* Command-line argc and argv.  These variables are global since they are
    imported in back_end.adb.  */
 unsigned int save_argc;
@@ -137,10 +131,6 @@ gnat_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED, int value,
 	 default flag value to be either 0 or positive, and expose a positive
 	 -f as a negative value to post_option.  */
       flag_eliminate_unused_debug_types = -value;
-      break;
-
-    case OPT_gdwarfplus:
-      gnat_dwarf_extensions = 1;
       break;
 
     case OPT_gant:
@@ -259,11 +249,6 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
     flag_eliminate_unused_debug_types = 1;
   else
     flag_eliminate_unused_debug_types = 0;
-
-  /* Reflect the explicit request of DWARF extensions into the common
-     flag for use by later passes.  */
-  if (write_symbols == DWARF2_DEBUG)
-    use_gnu_debug_info_extensions = gnat_dwarf_extensions > 0;
 
   optimize = global_options.x_optimize;
   optimize_size = global_options.x_optimize_size;

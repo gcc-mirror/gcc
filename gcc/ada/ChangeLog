@@ -1,8 +1,20 @@
+2010-10-10  Olivier Hainque  <hainque@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/lang.opt (gdwarf+): Remove.
+	* gcc-interface/gigi.h (get_parallel_type): Likewise
+	* gcc-interface/misc.c (gnat_dwarf_extensions): Likewise.
+	(gnat_handle_option): Remove OPT_gdwarfplus case.
+	(gnat_post_options): Remove setting of use_gnu_debug_info_extensions
+	from gnat_dwarf_extensions.
+	* gcc-interface/trans.c (gigi): Remove -gdwarf+ initializations.
+	* gcc-interface/utils.c (get_parallel_type): Remove.
+
 2010-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Not_In>: Use
 	invert_truthvalue_loc instead of invert_truthvalue.
-	* utils2.c (build_binary_op) <NE_EXPR>: Likewise.
+	* gcc-interface/utils2.c (build_binary_op) <NE_EXPR>: Likewise.
 	(build_unary_op) <TRUTH_NOT_EXPR>: Likewise.
 
 2010-10-10  Eric Botcazou  <ebotcazou@adacore.com>
