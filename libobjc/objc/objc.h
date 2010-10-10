@@ -88,22 +88,20 @@ typedef struct objc_class *Class;
 #include "deprecated/MetaClass.h"
 #include "deprecated/struct_objc_class.h"
 
-/* An 'id' is an object of an unknown class.  The struct objc_object
-   is private and what you see here is only the beginning of the
-   struct.  In theory, the fact that 'class_pointer' is public means
-   that if you have any object 'object', you can immediately get its
-   class by using '((id)object)->class_pointer', but this is not
-   recommended; you should use object_get_class(object) instead.
+/* An 'id' is an object of an unknown class.  The way the object data
+   is stored inside the object is private and what you see here is
+   only the beginning of the actual struct.  The first field is always
+   a pointer to the Class that the object belongs to.  If performance
+   is paramount, you can use this knowledge to get the class of an
+   object by doing '((id)object)->class_pointer'.
 */
 typedef struct objc_object
 {
   /* 'class_pointer' is the Class that the object belongs to.  In case
-     of a Class object, this pointer points to the meta class.  */
-  /* Note that the Apple/NeXT runtime calls this variable 'isa'.
-     TODO: Decide if we want to call it 'isa' too.  TODO: Why not
-     simply hide this pointer and force users to use the proper API to
-     get it ?
-  */
+     of a Class object, this pointer points to the meta class.
+
+     Compatibility Note: The Apple/NeXT runtime calls this field
+     'isa'.  */
   Class class_pointer;
 } *id;
 

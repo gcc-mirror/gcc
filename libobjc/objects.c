@@ -23,51 +23,67 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "objc-private/common.h"
-#include <string.h> /* For memset */
-#include "tconfig.h"         /* include defs of bzero for target */
 #include "objc/objc.h"
 #include "objc/objc-api.h"
 #include "objc-private/runtime.h"		/* the kitchen sink */
 
+#include <string.h> /* For memcpy()  */
+
 #if OBJC_WITH_GC
 # include <gc.h>
+# include <gc_typed.h>
 #endif
 
-id __objc_object_alloc (Class);
-id __objc_object_dispose (id);
-id __objc_object_copy (id);
-
-id (*_objc_object_alloc) (Class)   = __objc_object_alloc;   /* !T:SINGLE */ 
-id (*_objc_object_dispose) (id)    = __objc_object_dispose; /* !T:SINGLE */
-id (*_objc_object_copy) (id)       = __objc_object_copy;    /* !T:SINGLE */
-
+/* FIXME: The semantics of extraBytes are not really clear.  */
+inline
 id
-class_create_instance (Class class)
+class_createInstance (Class class, size_t extraBytes)
 {
   id new = nil;
 
 #if OBJC_WITH_GC
   if (CLS_ISCLASS (class))
-    new = (id) GC_malloc_explicitly_typed (class->instance_size,
-					   class->gc_object_type);
+    new = (id) GC_malloc_explicitly_typed (class->instance_size + extraBytes,
+					   (GC_descr)class->gc_object_type);
 #else
   if (CLS_ISCLASS (class))
-    new = (*_objc_object_alloc) (class);
+    new = (id) objc_calloc (class->instance_size + extraBytes, 1);
 #endif
 
   if (new != nil)
     {
-      memset (new, 0, class->instance_size);
+      /* There is no need to zero the memory, since both
+	 GC_malloc_explicitly_typed and objc_calloc return zeroed
+	 memory.  */
       new->class_pointer = class;
     }
+
+  /* TODO: Invoke C++ constructors on all appropriate C++ instance
+     variables of the new object.  */
+
   return new;
 }
 
+/* Traditional GNU Objective-C Runtime API.  */
 id
-object_copy (id object)
+class_create_instance (Class class)
+{
+  return class_createInstance (class, 0);
+}
+
+/* Temporary, while we are including objc-api.h instead of runtime.h.  */
+#undef object_copy
+
+id
+object_copy (id object, size_t extraBytes)
 {
   if ((object != nil) && CLS_ISCLASS (object->class_pointer))
-    return (*_objc_object_copy) (object);
+    {
+      /* TODO: How should it work with C++ constructors ? */
+      id copy = class_createInstance (object->class_pointer, extraBytes);
+      memcpy (copy, object, object->class_pointer->instance_size + extraBytes);
+      return copy;
+    }
   else
     return nil;
 }
@@ -77,28 +93,20 @@ object_dispose (id object)
 {
   if ((object != nil) && CLS_ISCLASS (object->class_pointer))
     {
-      if (_objc_object_dispose)
-        (*_objc_object_dispose) (object);
-      else
-        objc_free (object);
+      /* TODO: Invoke C++ destructors on all appropriate C++ instance
+	 variables.  But what happens with the garbage collector ?
+	 Would object_dispose() be ever called in that case ?  */
+
+      objc_free (object);
     }
   return nil;
 }
 
-id __objc_object_alloc (Class class)
-{
-  return (id) objc_malloc (class->instance_size);
-}
+/*
+  Hook functions for memory allocation and disposal.  Deprecated
+  and currently unused.
+*/
 
-id __objc_object_dispose (id object) 
-{
-  objc_free (object);
-  return 0;
-}
-
-id __objc_object_copy (id object)
-{
-  id copy = class_create_instance (object->class_pointer);
-  memcpy (copy, object, object->class_pointer->instance_size);
-  return copy;
-}
+id (*_objc_object_alloc) (Class)   = 0;
+id (*_objc_object_dispose) (id)    = 0;
+id (*_objc_object_copy) (id)       = 0;

@@ -287,16 +287,9 @@ sel_get_any_uid (const char *name)
   return (SEL) l->head;
 }
 
-/* return selector representing name */
-SEL
-sel_get_uid (const char *name)
-{
-  return sel_register_typed_name (name, 0);
-}
-
 /* Get name of selector.  If selector is unknown, the empty string "" 
    is returned */ 
-const char *sel_get_name (SEL selector)
+const char *sel_getName (SEL selector)
 {
   const char *ret;
 
@@ -310,6 +303,12 @@ const char *sel_get_name (SEL selector)
   return ret;
 }
 
+/* Traditional GNU Objective-C Runtime API.  */
+const char *sel_get_name (SEL selector)
+{
+  return sel_getName (selector);
+}
+
 BOOL
 sel_is_mapped (SEL selector)
 {
@@ -317,13 +316,18 @@ sel_is_mapped (SEL selector)
   return ((idx > 0) && (idx <= __objc_selector_max_index));
 }
 
-
-const char *sel_get_type (SEL selector)
+const char *sel_getType (SEL selector)
 {
   if (selector)
     return selector->sel_types;
   else
     return 0;
+}
+
+/* Traditional GNU Objective-C Runtime API.  */
+const char *sel_get_type (SEL selector)
+{
+  return sel_getType (selector);
 }
 
 /* The uninstalled dispatch table */
@@ -467,7 +471,7 @@ __sel_register_typed_name (const char *name, const char *types,
 }
 
 SEL
-sel_register_name (const char *name)
+sel_registerName (const char *name)
 {
   SEL ret;
     
@@ -480,8 +484,15 @@ sel_register_name (const char *name)
   return ret;
 }
 
+/* Traditional GNU Objective-C Runtime API.  */
 SEL
-sel_register_typed_name (const char *name, const char *type)
+sel_register_name (const char *name)
+{
+  return sel_registerName (name);
+}
+
+SEL
+sel_registerTypedName (const char *name, const char *type)
 {
   SEL ret;
 
@@ -492,4 +503,24 @@ sel_register_typed_name (const char *name, const char *type)
   objc_mutex_unlock (__objc_runtime_mutex);
   
   return ret;
+}
+
+SEL
+sel_register_typed_name (const char *name, const char *type)
+{
+  return sel_registerTypedName (name, type);
+}
+
+/* return selector representing name */
+SEL
+sel_getUid (const char *name)
+{
+  return sel_registerTypedName (name, 0);
+}
+
+/* Traditional GNU Objective-C Runtime API.  */
+SEL
+sel_get_uid (const char *name)
+{
+  return sel_getUid (name);
 }

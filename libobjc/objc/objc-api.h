@@ -193,12 +193,7 @@ objc_EXPORT Class (*_objc_lookup_class)(const char *name);
 */
 objc_EXPORT void (*_objc_load_callback)(Class _class, Category* category);
 
-/*
-** Hook functions for allocating, copying and disposing of instances
-*/
-objc_EXPORT id (*_objc_object_alloc)(Class _class);
-objc_EXPORT id (*_objc_object_copy)(id object);
-objc_EXPORT id (*_objc_object_dispose)(id object);
+#include "deprecated/objc_object_alloc.h"
 
 /*
   Standard functions for memory allocation and disposal.  Users should
@@ -326,7 +321,12 @@ objc_EXPORT IMP method_get_imp(Method_t method);
 
 objc_EXPORT IMP get_imp (Class _class, SEL sel);
 
-objc_EXPORT id object_copy(id object);
+/* object_copy used to take a single argument in the traditional GNU
+   Objective-C Runtime API (the one declared here), but takes 2 in the
+   modern API (implemented in the actual runtime).  Define the old
+   object_copy in terms of the new one.  */
+objc_EXPORT id object_copy (id object, size_t size);
+#define object_copy(X) (object_copy ((X), 0))
 
 objc_EXPORT id object_dispose(id object);
 
@@ -394,8 +394,7 @@ object_is_meta_class (id object)
 	  &&  !object_is_class (object));
 }
 
-objc_EXPORT struct sarray* 
-objc_get_uninstalled_dtable(void);
+#include "deprecated/objc_get_uninstalled_dtable.h"
 
 #ifdef __cplusplus
 }

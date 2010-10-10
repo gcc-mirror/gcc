@@ -145,7 +145,67 @@ struct objc_method_description
 #define _F_ONEWAY	0x10
 #define _F_GCINVISIBLE	0x20
 
-/* TODO: Add all the functions in the API.  */
+
+/** Internals: the following functions are in selector.c.  */
+
+/* Return the name of a given selector.  */
+objc_EXPORT const char *sel_getName (SEL selector);
+
+/* Return the type of a given selector.
+
+   Compatibility Note: the Apple/NeXT runtime has untyped selectors,
+   so it does not have this function, which is specific to the GNU
+   Runtime.  */
+objc_EXPORT const char *sel_getType (SEL selector);
+
+/* This is the same as sel_registerName ().  Please use
+   sel_registerName () instead.  */
+objc_EXPORT SEL sel_getUid (const char *name);
+
+/* Register a selector with a given name (but unspecified types).  If
+   you know the types, it is better to call sel_registerTypedName().
+   If a selector with this name already exists, it is returned.  */
+objc_EXPORT SEL sel_registerName (const char *name);
+
+/* Register a selector with a given name and types.  If a selector
+   with this name and types already exists, it is returned.
+
+   Compatibility Note: the Apple/NeXT runtime has untyped selectors,
+   so it does not have this function, which is specific to the GNU
+   Runtime.  */
+objc_EXPORT SEL set_registerTypedName (const char *name, const char *type);
+
+/* Return YES if first_selector is the same as second_selector, and NO
+   if not.  */
+objc_EXPORT BOOL sel_isEqual (SEL first_selector, SEL second_selector);
+
+
+/** Internals: the following functions are in objects.c.  */
+
+/* Create an instance of class 'class', adding extraBytes to the size
+   of the returned object.  This method allocates the appropriate
+   amount of memory for the instance, initializes it to zero, then
+   calls all the C++ constructors on appropriate C++ instance
+   variables of the instance (if any) (TODO: This is not implemented
+   yet).  */
+objc_EXPORT id class_createInstance (Class class, size_t extraBytes);
+
+/* Copy an object and return the copy.  extraBytes should be identical
+   to the extraBytes parameter that was passed when creating the
+   original object.  */
+objc_EXPORT id object_copy (id object, size_t extraBytes);
+
+/* Dispose of an object.  This method calls the appropriate C++
+   destructors on appropriate C++ instance variables of the instance
+   (if any) (TODO: This is not implemented yet), then frees the memory
+   for the instance.  */
+objc_EXPORT id object_dispose (id object);
+
+
+/* TODO: Add all the other functions in the API.  */
+
+
+/** Internals: the following functions are in objc-foreach.c.  */
 
 /* 'objc_enumerationMutation()' is called when a collection is
    mutated while being "fast enumerated".  That is a hard error, and
@@ -198,6 +258,8 @@ struct __objcFastEnumerationState
 };
 */
 
+
+/** Internals: the following functions are implemented in encoding.c.  */
 
 /* Traditional GNU Objective-C Runtime functions that are currently
    used to implement method forwarding.
