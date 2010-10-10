@@ -1,4 +1,9 @@
-2010-10.10  Kai Tietz  <kai.tietz@onevision.com>
+2010-10-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45961
+	* gfortran.dg/typebound_operator_6.f03: New.
+
+2010-10-10  Kai Tietz  <kai.tietz@onevision.com>
 
 	* g++.dg/ext/dllexport-MI1.C: Enable for x86_64 mingw
 	and adjust -export symbol scanning.
