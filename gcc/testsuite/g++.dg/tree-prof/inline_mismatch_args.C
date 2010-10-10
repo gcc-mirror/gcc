@@ -33,4 +33,4 @@ int main(void)
 }
 /* { dg-final-use { scan-tree-dump "Inlining .*Super::Foo" "einline" } } */
 /* { dg-final-use { scan-tree-dump-not "mismatched arguments" "einline" } } */
-/* { dg-final-use { cleanup-tree-dump "einline2" } } */
+/* { dg-final-use { cleanup-tree-dump "einline" } } */
