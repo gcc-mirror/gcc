@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "dependency.h"
 #include "constructor.h"
+#include "opts.h"
 
 /* Forward declarations.  */
 
@@ -32,7 +33,7 @@ static void strip_function_call (gfc_expr *);
 static void optimize_namespace (gfc_namespace *);
 static void optimize_assignment (gfc_code *);
 static bool optimize_op (gfc_expr *);
-static bool optimize_equality (gfc_expr *, bool);
+static bool optimize_comparison (gfc_expr *, gfc_intrinsic_op);
 
 /* Entry point - run all passes for a namespace.  So far, only an
    optimization pass is run.  */
@@ -226,15 +227,13 @@ optimize_op (gfc_expr *e)
     case INTRINSIC_GE_OS:
     case INTRINSIC_LE:
     case INTRINSIC_LE_OS:
-      return optimize_equality (e, true);
-
     case INTRINSIC_NE:
     case INTRINSIC_NE_OS:
     case INTRINSIC_GT:
     case INTRINSIC_GT_OS:
     case INTRINSIC_LT:
     case INTRINSIC_LT_OS:
-      return optimize_equality (e, false);
+      return optimize_comparison (e, op);
 
     default:
       break;
@@ -246,10 +245,12 @@ optimize_op (gfc_expr *e)
 /* Optimize expressions for equality.  */
 
 static bool
-optimize_equality (gfc_expr *e, bool equal)
+optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 {
   gfc_expr *op1, *op2;
   bool change;
+  int eq;
+  bool result;
 
   op1 = e->value.op.op1;
   op2 = e->value.op.op2;
@@ -276,7 +277,7 @@ optimize_equality (gfc_expr *e, bool equal)
 
   if (change)
     {
-      optimize_equality (e, equal);
+      optimize_comparison (e, op);
       return true;
     }
 
@@ -287,22 +288,106 @@ optimize_equality (gfc_expr *e, bool equal)
   if (e->rank > 0)
     return false;
 
-  /* Check for direct comparison between identical variables.  Don't compare
-     REAL or COMPLEX because of NaN checks.  */
-  if (op1->expr_type == EXPR_VARIABLE
-      && op2->expr_type == EXPR_VARIABLE
-      && op1->ts.type != BT_REAL && op2->ts.type != BT_REAL
-      && op1->ts.type != BT_COMPLEX && op2->ts.type !=BT_COMPLEX
-      && gfc_are_identical_variables (op1, op2))
+  /* Don't compare REAL or COMPLEX expressions when honoring NaNs.  */
+
+  if (flag_finite_math_only
+      || (op1->ts.type != BT_REAL && op2->ts.type != BT_REAL
+	  && op1->ts.type != BT_COMPLEX && op2->ts.type != BT_COMPLEX))
     {
-      /* Replace the expression by a constant expression.  The typespec
-	 and where remains the way it is.  */
-      gfc_free (op1);
-      gfc_free (op2);
-      e->expr_type = EXPR_CONSTANT;
-      e->value.logical = equal;
-      return true;
+      eq = gfc_dep_compare_expr (op1, op2);
+      if (eq == -2)
+	{
+	  /* Replace A // B < A // C with B < C, and A // B < C // B
+	     with A < C.  */
+	  if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER
+	      && op1->value.op.op == INTRINSIC_CONCAT
+	      && op2->value.op.op == INTRINSIC_CONCAT)
+	    {
+	      gfc_expr *op1_left = op1->value.op.op1;
+	      gfc_expr *op2_left = op2->value.op.op1;
+	      gfc_expr *op1_right = op1->value.op.op2;
+	      gfc_expr *op2_right = op2->value.op.op2;
+
+	      if (gfc_dep_compare_expr (op1_left, op2_left) == 0)
+		{
+		  /* Watch out for 'A ' // x vs. 'A' // x.  */
+
+		  if (op1_left->expr_type == EXPR_CONSTANT
+			&& op2_left->expr_type == EXPR_CONSTANT
+			&& op1_left->value.character.length
+			   != op2_left->value.character.length)
+		    return -2;
+		  else
+		    {
+		      gfc_free (op1_left);
+		      gfc_free (op2_left);
+		      e->value.op.op1 = op1_right;
+		      e->value.op.op2 = op2_right;
+		      optimize_comparison (e, op);
+		      return true;
+		    }
+		}
+	      if (gfc_dep_compare_expr (op1_right, op2_right) == 0)
+		{
+		  gfc_free (op1_right);
+		  gfc_free (op2_right);
+		  e->value.op.op1 = op1_left;
+		  e->value.op.op2 = op2_left;
+		  optimize_comparison (e, op);
+		  return true;
+		}
+	    }
+	}
+      else
+	{
+	  /* eq can only be -1, 0 or 1 at this point.  */
+	  switch (op)
+	    {
+	    case INTRINSIC_EQ:
+	    case INTRINSIC_EQ_OS:
+	      result = eq == 0;
+	      break;
+	      
+	    case INTRINSIC_GE:
+	    case INTRINSIC_GE_OS:
+	      result = eq >= 0;
+	      break;
+
+	    case INTRINSIC_LE:
+	    case INTRINSIC_LE_OS:
+	      result = eq <= 0;
+	      break;
+
+	    case INTRINSIC_NE:
+	    case INTRINSIC_NE_OS:
+	      result = eq != 0;
+	      break;
+
+	    case INTRINSIC_GT:
+	    case INTRINSIC_GT_OS:
+	      result = eq > 0;
+	      break;
+
+	    case INTRINSIC_LT:
+	    case INTRINSIC_LT_OS:
+	      result = eq < 0;
+	      break;
+	      
+	    default:
+	      gfc_internal_error ("illegal OP in optimize_comparison");
+	      break;
+	    }
+
+	  /* Replace the expression by a constant expression.  The typespec
+	     and where remains the way it is.  */
+	  gfc_free (op1);
+	  gfc_free (op2);
+	  e->expr_type = EXPR_CONSTANT;
+	  e->value.logical = result;
+	  return true;
+	}
     }
+
   return false;
 }
 

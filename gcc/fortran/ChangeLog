@@ -1,3 +1,19 @@
+2010-10-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c:  Include opts.h.
+	(optimize_comparison):  Renamed from optimize_equality.
+	Change second argument to operation to be compared.
+	Use flag_finite_math_only to avoid comparing REAL and
+	COMPLEX only when NANs are honored.  Simplify comparing
+	of string concatenations where left or right operands are
+	equal.  Simplify all comparison operations, based on the result
+	of gfc_dep_compare_expr.
+	* dependency.c:  Include arith.h.
+	(gfc_are_identical_variables):  Volatile variables should not
+	compare equal to themselves.
+	(gfc_dep_compare_expr):  Handle string constants and string
+	concatenations.
+
 2010-10-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* f95-lang.c (LANG_HOOKS_INIT_OPTIONS_STRUCT): Define.

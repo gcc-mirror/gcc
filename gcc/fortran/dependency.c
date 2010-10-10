@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "dependency.h"
 #include "constructor.h"
+#include "arith.h"
 
 /* static declarations */
 /* Enums  */
@@ -123,6 +124,11 @@ gfc_are_identical_variables (gfc_expr *e1, gfc_expr *e2)
   gfc_ref *r1, *r2;
 
   if (e1->symtree->n.sym != e2->symtree->n.sym)
+    return false;
+
+  /* Volatile variables should never compare equal to themselves.  */
+
+  if (e1->symtree->n.sym->attr.volatile_)
     return false;
 
   r1 = e1->ref;
@@ -306,6 +312,42 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 	}
     }
 
+  /* Compare A // B vs. C // D.  */
+
+  if (e1->expr_type == EXPR_OP && e1->value.op.op == INTRINSIC_CONCAT
+      && e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_CONCAT)
+    {
+      int l, r;
+
+      l = gfc_dep_compare_expr (e1->value.op.op1, e2->value.op.op1);
+      r = gfc_dep_compare_expr (e1->value.op.op2, e2->value.op.op2);
+
+      if (l == -2)
+	return -2;
+
+      if (l == 0)
+	{
+	  /* Watch out for 'A ' // x vs. 'A' // x.  */
+	  gfc_expr *e1_left = e1->value.op.op1;
+	  gfc_expr *e2_left = e2->value.op.op1;
+
+	  if (e1_left->expr_type == EXPR_CONSTANT
+	      && e2_left->expr_type == EXPR_CONSTANT
+	      && e1_left->value.character.length
+	        != e2_left->value.character.length)
+	    return -2;
+	  else
+	    return r;
+	}
+      else
+	{
+	  if (l != 0)
+	    return l;
+	  else
+	    return r;
+	}
+    }
+
   /* Compare X vs. X-C.  */
   if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_MINUS)
     {
@@ -321,6 +363,10 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
   switch (e1->expr_type)
     {
     case EXPR_CONSTANT:
+      /* Compare strings for equality.  */
+      if (e1->ts.type == BT_CHARACTER && e2->ts.type == BT_CHARACTER)
+	return gfc_compare_string (e1, e2);
+
       if (e1->ts.type != BT_INTEGER || e2->ts.type != BT_INTEGER)
 	return -2;
 
