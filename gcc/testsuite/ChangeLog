@@ -1,5 +1,21 @@
 2010-10-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	Backport from mainline
+	2010-09-04  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.dg/debug/dwarf2/inline2.c: Replace ".*" by "\[^\n\]*".
+
+	2010-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/debug/dwarf2/inline2.c (third): Make a a global var
+	and add volatile keyword.
+
+	2009-11-23  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/debug/dwarf2/inline2.c: Modify scan.
+
+2010-10-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
 	* gcc.dg/torture/pr41555.c: Require stdint types.
 
 2010-10-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
