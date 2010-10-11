@@ -476,7 +476,7 @@ package body Sem_Ch6 is
          then
             --  Error in Ada 2005
 
-            if Ada_Version >= Ada_05
+            if Ada_Version >= Ada_2005
               and then not Debug_Flag_Dot_L
               and then not GNAT_Mode
             then
@@ -733,7 +733,7 @@ package body Sem_Ch6 is
          --  type, apply an implicit conversion of the expression to that type
          --  to force appropriate static and run-time accessibility checks.
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Ekind (R_Type) = E_Anonymous_Access_Type
          then
             Rewrite (Expr, Convert_To (R_Type, Relocate_Node (Expr)));
@@ -744,7 +744,7 @@ package body Sem_Ch6 is
          --  expression's type is not declared at a deeper level than the
          --  function (RM05-6.5(5.6/2)).
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Is_Class_Wide_Type (R_Type)
          then
             if Type_Access_Level (Etype (Expr)) >
@@ -769,7 +769,7 @@ package body Sem_Ch6 is
          --  involving dereferences of access parameters. For now we just
          --  check the static cases.
 
-         if (Ada_Version < Ada_05 or else Debug_Flag_Dot_L)
+         if (Ada_Version < Ada_2005 or else Debug_Flag_Dot_L)
            and then Is_Immutably_Limited_Type (Etype (Scope_Id))
            and then Object_Access_Level (Expr) >
                       Subprogram_Access_Level (Scope_Id)
@@ -2329,7 +2329,7 @@ package body Sem_Ch6 is
       --  is the limited view of a class-wide type and the non-limited view is
       --  available, update the return type accordingly.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Comes_From_Source (N)
       then
          declare
@@ -2781,7 +2781,7 @@ package body Sem_Ch6 is
       --  Ada 2005 (AI-251): Abstract interface primitives must be abstract
       --  or null.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Comes_From_Source (N)
         and then Is_Dispatching_Operation (Designator)
       then
@@ -2852,7 +2852,7 @@ package body Sem_Ch6 is
       if Nkind (Parent (N)) = N_Compilation_Unit then
          Set_Body_Required (Parent (N), True);
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Nkind (Specification (N)) = N_Procedure_Specification
            and then Null_Present (Specification (N))
          then
@@ -2915,7 +2915,7 @@ package body Sem_Ch6 is
          --  Same processing for an access parameter whose designated type is
          --  derived from a synchronized interface.
 
-         if Ada_Version >= Ada_05 then
+         if Ada_Version >= Ada_2005 then
             declare
                Formal     : Entity_Id;
                Formal_Typ : Entity_Id;
@@ -3695,7 +3695,7 @@ package body Sem_Ch6 is
          --  Ada 2005 (AI-231): In case of anonymous access types check the
          --  null-exclusion and access-to-constant attributes match.
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Ekind (Etype (Old_Type)) = E_Anonymous_Access_Type
            and then
              (Can_Never_Be_Null (Old_Type)
@@ -3839,7 +3839,7 @@ package body Sem_Ch6 is
             New_Formal_Base := Get_Instance_Of (New_Formal_Base);
          end if;
 
-         Access_Types_Match := Ada_Version >= Ada_05
+         Access_Types_Match := Ada_Version >= Ada_2005
 
             --  Ensure that this rule is only applied when New_Id is a
             --  renaming of Old_Id.
@@ -3949,7 +3949,7 @@ package body Sem_Ch6 is
             --  the null-exclusion and access-to-constant attributes must
             --  match.
 
-            if Ada_Version >= Ada_05
+            if Ada_Version >= Ada_2005
               and then Ekind (Etype (Old_Formal)) = E_Anonymous_Access_Type
               and then Ekind (Etype (New_Formal)) = E_Anonymous_Access_Type
               and then
@@ -5423,7 +5423,7 @@ package body Sem_Ch6 is
             --  In Ada2005, access constant indicators must match for
             --  subtype conformance.
 
-            if Ada_Version >= Ada_05
+            if Ada_Version >= Ada_2005
               and then Ctype >= Subtype_Conformant
               and then
                 Is_Access_Constant (Type_1) /= Is_Access_Constant (Type_2)
@@ -5461,7 +5461,7 @@ package body Sem_Ch6 is
                     Etype (Base_Type (Desig_2)), Ctype);
 
             elsif Are_Anonymous_Access_To_Subprogram_Types then
-               if Ada_Version < Ada_05 then
+               if Ada_Version < Ada_2005 then
                   return Ctype = Type_Conformant
                     or else
                       Subtypes_Statically_Match (Desig_1, Desig_2);
@@ -5712,7 +5712,7 @@ package body Sem_Ch6 is
       --  Ada 2005 (AI-318-02): In the case of build-in-place functions, add
       --  appropriate extra formals. See type Exp_Ch6.BIP_Formal_Kind.
 
-      if Ada_Version >= Ada_05 and then Is_Build_In_Place_Function (E) then
+      if Ada_Version >= Ada_2005 and then Is_Build_In_Place_Function (E) then
          declare
             Result_Subt : constant Entity_Id := Etype (E);
 
@@ -6003,7 +6003,7 @@ package body Sem_Ch6 is
                --  current one is the explicit overriding.
 
                elsif Ekind (E) = E_Function
-                 and then Ada_Version >= Ada_05
+                 and then Ada_Version >= Ada_2005
                  and then not Comes_From_Source (E)
                  and then Has_Controlling_Result (E)
                  and then Is_Null_Extension (Etype (E))
@@ -7655,7 +7655,7 @@ package body Sem_Ch6 is
       --  of an operation that was already derived in the visible part of
       --  the current package.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Present (Derived_Type)
         and then Present (Alias (S))
         and then Is_Dispatching_Operation (Alias (S))
@@ -8306,7 +8306,7 @@ package body Sem_Ch6 is
             --  formal in the enclosing scope. Finally, replace the parameter
             --  type of the formal with the internal subtype.
 
-            if Ada_Version >= Ada_05
+            if Ada_Version >= Ada_2005
               and then Null_Exclusion_Present (Param_Spec)
             then
                if not Is_Access_Type (Formal_Type) then
@@ -8423,7 +8423,7 @@ package body Sem_Ch6 is
 
          --  Ada 2005 (AI-231): Static checks
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Is_Access_Type (Etype (Formal))
            and then Can_Never_Be_Null (Etype (Formal))
          then
@@ -8933,7 +8933,7 @@ package body Sem_Ch6 is
          --  Ada 2005 (AI-231): In Ada95, access parameters are always non-
          --  null; In Ada 2005, only if then null_exclusion is explicit.
 
-         if Ada_Version < Ada_05
+         if Ada_Version < Ada_2005
            or else Can_Never_Be_Null (Etype (Formal_Id))
          then
             Set_Is_Known_Non_Null (Formal_Id);

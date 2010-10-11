@@ -2452,8 +2452,8 @@ package body Sem_Ch10 is
                         "and version-dependent?", Name (N));
                   end if;
 
-               elsif U_Kind = Ada_05_Unit
-                 and then Ada_Version < Ada_05
+               elsif U_Kind = Ada_2005_Unit
+                 and then Ada_Version < Ada_2005
                  and then Warn_On_Ada_2005_Compatibility
                then
                   Error_Msg_N ("& is an Ada 2005 unit?", Name (N));
@@ -3773,7 +3773,7 @@ package body Sem_Ch10 is
       --  looking for incomplete subtype declarations of incomplete types
       --  visible through a limited with clause.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Analyzed (N)
         and then Nkind (Unit (N)) = N_Package_Declaration
       then
@@ -5026,7 +5026,7 @@ package body Sem_Ch10 is
 
       if Is_Child_Unit (Uname)
         and then Is_Visible_Child_Unit (Uname)
-        and then Ada_Version >= Ada_05
+        and then Ada_Version >= Ada_2005
       then
          declare
             Decl1 : constant Node_Id  := Unit_Declaration_Node (P);

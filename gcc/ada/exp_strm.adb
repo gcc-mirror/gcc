@@ -1177,7 +1177,7 @@ package body Exp_Strm is
          Set_No_Initialization (Obj_Decl);
       end if;
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Stms := New_List (
            Make_Extended_Return_Statement (Loc,
              Return_Object_Declarations => New_List (Obj_Decl),

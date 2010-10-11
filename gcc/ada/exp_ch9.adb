@@ -1061,7 +1061,7 @@ package body Exp_Ch9 is
                 Make_Component_List (Loc,
                   Component_Items => Cdecls),
               Tagged_Present  =>
-                 Ada_Version >= Ada_05 and then Is_Tagged_Type (Ctyp),
+                 Ada_Version >= Ada_2005 and then Is_Tagged_Type (Ctyp),
               Interface_List  => Interface_List (N),
               Limited_Present => True));
    end Build_Corresponding_Record;
@@ -3461,7 +3461,7 @@ package body Exp_Ch9 is
 
          if Nkind (Concval) = N_Function_Call
            and then Is_Task_Type (Conctyp)
-           and then Ada_Version >= Ada_05
+           and then Ada_Version >= Ada_2005
          then
             declare
                ExpR : constant Node_Id   := Relocate_Node (Concval);
@@ -3582,7 +3582,7 @@ package body Exp_Ch9 is
                else
                   --  Interface class-wide formal
 
-                  if Ada_Version >= Ada_05
+                  if Ada_Version >= Ada_2005
                     and then Ekind (Etype (Formal)) = E_Class_Wide_Type
                     and then Is_Interface (Etype (Formal))
                   then
@@ -5066,7 +5066,7 @@ package body Exp_Ch9 is
          --  A task interface class-wide type object is being aborted.
          --  Retrieve its _task_id by calling a dispatching routine.
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Ekind (Etype (Tasknm)) = E_Class_Wide_Type
            and then Is_Interface (Etype (Tasknm))
            and then Is_Task_Interface (Etype (Tasknm))
@@ -5659,7 +5659,7 @@ package body Exp_Ch9 is
       --  trigger which was expanded into a procedure call.
 
       if Nkind (Ecall) = N_Procedure_Call_Statement then
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then
              (No (Original_Node (Ecall))
                 or else not Nkind_In (Original_Node (Ecall),
@@ -6592,7 +6592,7 @@ package body Exp_Ch9 is
       S : Entity_Id;  --  Primitive operation slot
 
    begin
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Nkind (Blk) = N_Procedure_Call_Statement
       then
          Extract_Dispatching_Call (Blk, Call_Ent, Obj, Actuals, Formals);
@@ -7383,7 +7383,7 @@ package body Exp_Ch9 is
                      --  this subprogram if the protected type implements an
                      --  interface.
 
-                     if Ada_Version >= Ada_05
+                     if Ada_Version >= Ada_2005
                           and then
                         Present (Interfaces (Corresponding_Record_Type (Pid)))
                      then
@@ -7466,7 +7466,7 @@ package body Exp_Ch9 is
       --  protected body. At this point all wrapper specs have been created,
       --  frozen and included in the dispatch table for the protected type.
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Build_Wrapper_Bodies (Loc, Pid, Current_Node);
       end if;
    end Expand_N_Protected_Body;
@@ -7773,7 +7773,7 @@ package body Exp_Ch9 is
          --  Type has explicit entries or generated primitive entry wrappers
 
          elsif Has_Entries (Prot_Typ)
-           or else (Ada_Version >= Ada_05
+           or else (Ada_Version >= Ada_2005
                       and then Present (Interface_List (N)))
          then
             case Corresponding_Runtime_Package (Prot_Typ) is
@@ -7944,7 +7944,7 @@ package body Exp_Ch9 is
       --  the corresponding record is frozen. If any wrappers are generated,
       --  Current_Node is updated accordingly.
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Build_Wrapper_Specs (Loc, Prot_Typ, Current_Node);
       end if;
 
@@ -8005,7 +8005,7 @@ package body Exp_Ch9 is
             --  Generate an overriding primitive operation specification for
             --  this subprogram if the protected type implements an interface.
 
-            if Ada_Version >= Ada_05
+            if Ada_Version >= Ada_2005
               and then
                 Present (Interfaces (Corresponding_Record_Type (Prot_Typ)))
             then
@@ -10120,7 +10120,7 @@ package body Exp_Ch9 is
       --  the task body. At this point all wrapper specs have been created,
       --  frozen and included in the dispatch table for the task type.
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          if Nkind (Parent (N)) = N_Subunit then
             Insert_Nod := Corresponding_Stub (Parent (N));
          else
@@ -10571,7 +10571,7 @@ package body Exp_Ch9 is
       --  Ada 2005 (AI-345): Construct the primitive entry wrapper specs before
       --  the corresponding record has been frozen.
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Build_Wrapper_Specs (Loc, Tasktyp, Rec_Decl);
       end if;
 
@@ -10770,7 +10770,7 @@ package body Exp_Ch9 is
       end if;
 
       Is_Disp_Select :=
-        Ada_Version >= Ada_05
+        Ada_Version >= Ada_2005
           and then Nkind (E_Call) = N_Procedure_Call_Statement;
 
       if Is_Disp_Select then
@@ -11461,7 +11461,7 @@ package body Exp_Ch9 is
 
       S := Scope (E);
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          while Is_Internal (S) loop
             if Nkind (Parent (S)) = N_Block_Statement
               and then
@@ -11694,7 +11694,7 @@ package body Exp_Ch9 is
 
             elsif Has_Entries (Conc_Typ)
               or else
-                (Ada_Version >= Ada_05
+                (Ada_Version >= Ada_2005
                    and then Present (Interface_List (Parent (Conc_Typ))))
             then
                case Corresponding_Runtime_Package (Conc_Typ) is

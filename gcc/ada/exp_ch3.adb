@@ -2459,7 +2459,7 @@ package body Exp_Ch3 is
                --  located at fixed positions (tags whose position depends on
                --  variable size components are initialized later ---see below)
 
-               if Ada_Version >= Ada_05
+               if Ada_Version >= Ada_2005
                  and then not Is_Interface (Rec_Type)
                  and then Has_Interfaces (Rec_Type)
                then
@@ -2514,7 +2514,7 @@ package body Exp_Ch3 is
                --  located at fixed positions (tags whose position depends on
                --  variable size components are initialized later ---see below)
 
-               if Ada_Version >= Ada_05
+               if Ada_Version >= Ada_2005
                  and then not Is_Interface (Rec_Type)
                  and then Has_Interfaces (Rec_Type)
                then
@@ -2583,7 +2583,7 @@ package body Exp_Ch3 is
             --  depend on discriminants is only safely read at runtime after
             --  the parent components have been initialized.
 
-            if Ada_Version >= Ada_05
+            if Ada_Version >= Ada_2005
               and then not Is_Interface (Rec_Type)
               and then Has_Interfaces (Rec_Type)
               and then Has_Discriminants (Etype (Rec_Type))
@@ -4322,7 +4322,7 @@ package body Exp_Ch3 is
             Expand_Access_Protected_Subprogram_Type (N);
          end if;
 
-      elsif Ada_Version >= Ada_05
+      elsif Ada_Version >= Ada_2005
         and then Is_Array_Type (Def_Id)
         and then Is_Access_Type (Component_Type (Def_Id))
         and then Ekind (Component_Type (Def_Id)) = E_Anonymous_Access_Type
@@ -4332,7 +4332,7 @@ package body Exp_Ch3 is
       elsif Has_Task (Def_Id) then
          Expand_Previous_Access_Type (Def_Id);
 
-      elsif Ada_Version >= Ada_05
+      elsif Ada_Version >= Ada_2005
         and then
          (Is_Record_Type (Def_Id)
            or else (Is_Array_Type (Def_Id)
@@ -4770,7 +4770,7 @@ package body Exp_Ch3 is
          --  plan to expand the allowed forms of functions that are treated as
          --  build-in-place.
 
-         elsif Ada_Version >= Ada_05
+         elsif Ada_Version >= Ada_2005
            and then Is_Build_In_Place_Function_Call (Expr_Q)
          then
             Make_Build_In_Place_Call_In_Object_Declaration (N, Expr_Q);
@@ -6075,7 +6075,7 @@ package body Exp_Ch3 is
             --  a function returns an extension aggregate that invokes the
             --  the parent function.
 
-            if Ada_Version >= Ada_05
+            if Ada_Version >= Ada_2005
               and then not Is_Abstract_Type (Def_Id)
               and then Is_Null_Extension (Def_Id)
             then
@@ -6090,7 +6090,7 @@ package body Exp_Ch3 is
             --  overridden. This is done to ensure that the dispatch table
             --  entry associated with such null primitives are properly filled.
 
-            if Ada_Version >= Ada_05
+            if Ada_Version >= Ada_2005
               and then Etype (Def_Id) /= Def_Id
               and then not Is_Abstract_Type (Def_Id)
               and then Has_Interfaces (Def_Id)
@@ -8359,7 +8359,7 @@ package body Exp_Ch3 is
       --  disable their generation in this case. Disable the generation of
       --  these bodies if No_Dispatching_Calls, Ravenscar or ZFP is active.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Tagged_Type_Expansion
         and then not Restriction_Active (No_Dispatching_Calls)
         and then not Restriction_Active (No_Select_Statements)
@@ -8866,7 +8866,7 @@ package body Exp_Ch3 is
       --  disable their generation in this case. Disable the generation of
       --  these bodies if No_Dispatching_Calls, Ravenscar or ZFP is active.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Tagged_Type_Expansion
         and then not Is_Interface (Tag_Typ)
         and then
@@ -9053,14 +9053,14 @@ package body Exp_Ch3 is
             Has_Predefined_Or_Specified_Stream_Attribute :=
               Has_Specified_Stream_Input (Typ)
                 or else
-                  (Ada_Version >= Ada_05
+                  (Ada_Version >= Ada_2005
                     and then Stream_Operation_OK (Typ, TSS_Stream_Read));
 
          elsif Operation = TSS_Stream_Output then
             Has_Predefined_Or_Specified_Stream_Attribute :=
               Has_Specified_Stream_Output (Typ)
                 or else
-                  (Ada_Version >= Ada_05
+                  (Ada_Version >= Ada_2005
                     and then Stream_Operation_OK (Typ, TSS_Stream_Write));
          end if;
 

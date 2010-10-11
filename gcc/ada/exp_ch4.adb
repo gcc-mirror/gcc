@@ -515,7 +515,7 @@ package body Exp_Ch4 is
          --  Note: we skip the accessibility check for the VM case, since
          --  there does not seem to be any practical way of implementing it.
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Tagged_Type_Expansion
            and then Is_Class_Wide_Type (DesigT)
            and then not Scope_Suppress (Accessibility_Check)
@@ -635,7 +635,7 @@ package body Exp_Ch4 is
          --  we plan to expand the allowed forms of functions that are treated
          --  as build-in-place.
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Is_Build_In_Place_Function_Call (Exp)
          then
             Make_Build_In_Place_Call_In_Allocator (N, Exp);
@@ -1085,7 +1085,7 @@ package body Exp_Ch4 is
          --  we plan to expand the allowed forms of functions that are treated
          --  as build-in-place.
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Is_Build_In_Place_Function_Call (Exp)
          then
             Make_Build_In_Place_Call_In_Allocator (N, Exp);
@@ -3773,7 +3773,7 @@ package body Exp_Ch4 is
                      if not Is_Constrained (Typ)
                        and then Present (Discriminant_Default_Value
                                          (First_Discriminant (Typ)))
-                       and then (Ada_Version < Ada_05
+                       and then (Ada_Version < Ada_2005
                                   or else
                                     not Has_Constrained_Partial_View (Typ))
                      then
@@ -3790,7 +3790,7 @@ package body Exp_Ch4 is
                         --  anonymous access type make sure an accessibility
                         --  check is inserted if necessary (3.10.2(22.q/2))
 
-                        if Ada_Version >= Ada_05
+                        if Ada_Version >= Ada_2005
                           and then
                             Ekind (Etype (Nod)) = E_Anonymous_Access_Type
                         then
@@ -4860,7 +4860,7 @@ package body Exp_Ch4 is
       --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
       --  function, then additional actuals must be passed.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Is_Build_In_Place_Function_Call (P)
       then
          Make_Build_In_Place_Call_In_Anonymous_Context (P);
@@ -7450,7 +7450,7 @@ package body Exp_Ch4 is
       --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
       --  function, then additional actuals must be passed.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Is_Build_In_Place_Function_Call (P)
       then
          Make_Build_In_Place_Call_In_Anonymous_Context (P);
@@ -7749,7 +7749,7 @@ package body Exp_Ch4 is
       --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
       --  function, then additional actuals must be passed.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Is_Build_In_Place_Function_Call (Pfx)
       then
          Make_Build_In_Place_Call_In_Anonymous_Context (Pfx);

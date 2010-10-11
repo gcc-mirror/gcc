@@ -168,7 +168,7 @@ package body Ch9 is
             if Token = Tok_New then
                Scan; --  past NEW
 
-               if Ada_Version < Ada_05 then
+               if Ada_Version < Ada_2005 then
                   Error_Msg_SP ("task interface is an Ada 2005 extension");
                   Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
                end if;
@@ -480,7 +480,7 @@ package body Ch9 is
          if Token = Tok_New then
             Scan; --  past NEW
 
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                Error_Msg_SP ("protected interface is an Ada 2005 extension");
                Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
             end if;
@@ -640,7 +640,7 @@ package body Ch9 is
          end if;
 
          if Is_Overriding or else Not_Overriding then
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                Error_Msg_SP ("overriding indicator is an Ada 2005 extension");
                Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
 
@@ -824,7 +824,7 @@ package body Ch9 is
       end if;
 
       if Is_Overriding or else Not_Overriding then
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             Error_Msg_SP ("overriding indicator is an Ada 2005 extension");
             Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
 

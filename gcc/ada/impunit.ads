@@ -48,7 +48,7 @@ package Impunit is
       --  in both Ada 95 mode and Ada 05 mode. Note that in Ada 83 mode, no
       --  child units are allowed, so you can't even name such a unit.
 
-      Ada_05_Unit,
+      Ada_2005_Unit,
       --  This unit is defined in the Ada 2005 RM. Withing this unit from a
       --  Ada 95 mode program will generate a warning (again, strictly speaking
       --  this should be an error, but that seems over-strenuous).

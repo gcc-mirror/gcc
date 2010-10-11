@@ -291,7 +291,7 @@ package body Ch2 is
       --  Ada 2005 (AI-284): INTERFACE is a new reserved word but it is
       --  allowed as a pragma name.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Token = Tok_Interface
       then
          Prag_Name := Name_Interface;

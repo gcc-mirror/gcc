@@ -366,7 +366,7 @@ package body Sem_Ch5 is
             S   : Entity_Id;
 
          begin
-            if Ada_Version >= Ada_05 then
+            if Ada_Version >= Ada_2005 then
 
                --  Handle chains of renamings
 
@@ -592,7 +592,7 @@ package body Sem_Ch5 is
       --  as well to anonymous access-to-subprogram types that are component
       --  subtypes or formal parameters.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Is_Access_Type (T1)
       then
          if Is_Local_Anonymous_Access (T1)
@@ -605,7 +605,7 @@ package body Sem_Ch5 is
 
       --  Ada 2005 (AI-231): Assignment to not null variable
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Can_Never_Be_Null (T1)
         and then not Assignment_OK (Lhs)
       then

@@ -313,8 +313,8 @@ begin
 
       when Pragma_Ada_05 | Pragma_Ada_2005 =>
          if Arg_Count = 0 then
-            Ada_Version := Ada_05;
-            Ada_Version_Explicit := Ada_05;
+            Ada_Version := Ada_2005;
+            Ada_Version_Explicit := Ada_2005;
          end if;
 
       ---------------------

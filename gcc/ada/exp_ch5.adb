@@ -1536,7 +1536,7 @@ package body Exp_Ch5 is
       --  about complications that would other arise from X'Priority'Access,
       --  which is illegal, because of the lack of aliasing.
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          declare
             Call           : Node_Id;
             Conctyp        : Entity_Id;
@@ -1865,7 +1865,7 @@ package body Exp_Ch5 is
       --  build-in-place for user-written assignment statements (the assignment
       --  here came from an aggregate.)
 
-      elsif Ada_Version >= Ada_05
+      elsif Ada_Version >= Ada_2005
         and then Is_Build_In_Place_Function_Call (Rhs)
       then
          Make_Build_In_Place_Call_In_Assignment (N, Rhs);

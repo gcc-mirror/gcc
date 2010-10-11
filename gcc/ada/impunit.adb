@@ -609,7 +609,7 @@ package body Impunit is
 
       for J in Non_Imp_File_Names_05'Range loop
          if Name_Buffer (1 .. 8) = Non_Imp_File_Names_05 (J) then
-            return Ada_05_Unit;
+            return Ada_2005_Unit;
          end if;
       end loop;
 

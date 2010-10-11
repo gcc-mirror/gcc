@@ -301,7 +301,7 @@ package body Sem_Res is
 
          --  Include Wide_Wide_Character in Ada 2005 mode
 
-         if Ada_Version >= Ada_05 then
+         if Ada_Version >= Ada_2005 then
             Error_Msg_N ("\\possible interpretation: Wide_Wide_Character!", C);
          end if;
 
@@ -708,7 +708,7 @@ package body Sem_Res is
       --  are handled by Analyze_Access_Attribute, Analyze_Assignment,
       --  Analyze_Object_Renaming, and Freeze_Entity.
 
-      elsif Ada_Version >= Ada_05
+      elsif Ada_Version >= Ada_2005
         and then Is_Entity_Name (Pref)
         and then Is_Access_Type (Etype (Pref))
         and then Ekind (Directly_Designated_Type (Etype (Pref))) =
@@ -1372,7 +1372,7 @@ package body Sem_Res is
          --  Ada 2005 AI-420: Predefined equality on Universal_Access is
          --  available.
 
-         elsif Ada_Version >= Ada_05
+         elsif Ada_Version >= Ada_2005
            and then (Op_Name = Name_Op_Eq or else Op_Name = Name_Op_Ne)
            and then Ekind (Etype (Act1)) = E_Anonymous_Access_Type
          then
@@ -2045,7 +2045,7 @@ package body Sem_Res is
                --  type against which we are resolving is the same as the
                --  type of the interpretation.
 
-               if Ada_Version >= Ada_05
+               if Ada_Version >= Ada_2005
                  and then It.Typ = Typ
                  and then Typ /= Universal_Integer
                  and then Typ /= Universal_Real
@@ -3351,7 +3351,7 @@ package body Sem_Res is
                                            (Etype (Expression (A)));
                         begin
                            if Comes_From_Source (A)
-                             and then Ada_Version >= Ada_05
+                             and then Ada_Version >= Ada_2005
                              and then
                                ((Is_Private_Type (Comp_Type)
                                    and then not Is_Generic_Type (Comp_Type))
@@ -3676,7 +3676,7 @@ package body Sem_Res is
 
                --  Ada 2005 (AI-231)
 
-               if Ada_Version >= Ada_05
+               if Ada_Version >= Ada_2005
                  and then Is_Access_Type (F_Typ)
                  and then Can_Never_Be_Null (F_Typ)
                  and then Known_Null (A)
@@ -4259,7 +4259,7 @@ package body Sem_Res is
       --  the case of an initialized allocator with a class-wide argument (see
       --  Expand_Allocator_Expression).
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Is_Class_Wide_Type (Designated_Type (Typ))
       then
          declare
@@ -5047,7 +5047,7 @@ package body Sem_Res is
         and then Nkind (N) /= N_Entry_Call_Statement
         and then Entry_Call_Statement (Parent (N)) = N
       then
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             Error_Msg_N ("entry call required in select statement", N);
 
          --  Ada 2005 (AI-345): If a procedure_call_statement is used
@@ -7140,7 +7140,7 @@ package body Sem_Res is
       --  In this case we have nothing else to do. The membership test will be
       --  done at run time.
 
-      elsif Ada_Version >= Ada_05
+      elsif Ada_Version >= Ada_2005
         and then Is_Class_Wide_Type (Etype (L))
         and then Is_Interface (Etype (L))
         and then Is_Class_Wide_Type (Etype (R))
@@ -7196,7 +7196,7 @@ package body Sem_Res is
 
       --  Ada 2005 (AI-231): Remove restriction
 
-      if Ada_Version < Ada_05
+      if Ada_Version < Ada_2005
         and then not Debug_Flag_J
         and then Ekind (Typ) = E_Anonymous_Access_Type
         and then Comes_From_Source (N)
@@ -7221,7 +7221,7 @@ package body Sem_Res is
       --  Ada 2005 (AI-231): Generate the null-excluding check in case of
       --  assignment to a null-excluding object
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Can_Never_Be_Null (Typ)
         and then Nkind (Parent (N)) = N_Assignment_Statement
       then
@@ -8903,7 +8903,7 @@ package body Sem_Res is
       --  No need to perform any interface conversion if the type of the
       --  expression coincides with the target type.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Expander_Active
         and then Operand_Typ /= Target_Typ
       then

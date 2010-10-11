@@ -5598,7 +5598,7 @@ package body Exp_Aggr is
       --  Extension aggregates, aggregates in extended return statements, and
       --  aggregates for C++ imported types must be expanded.
 
-      if Ada_Version >= Ada_05 and then Is_Immutably_Limited_Type (Typ) then
+      if Ada_Version >= Ada_2005 and then Is_Immutably_Limited_Type (Typ) then
          if not Nkind_In (Parent (N), N_Object_Declaration,
                                       N_Component_Association)
          then

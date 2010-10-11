@@ -104,14 +104,14 @@ package body Sem_Ch9 is
          Analyze (T_Name);
 
          if Is_Task_Type (Etype (T_Name))
-           or else (Ada_Version >= Ada_05
+           or else (Ada_Version >= Ada_2005
                       and then Ekind (Etype (T_Name)) = E_Class_Wide_Type
                       and then Is_Interface (Etype (T_Name))
                       and then Is_Task_Interface (Etype (T_Name)))
          then
             Resolve (T_Name);
          else
-            if Ada_Version >= Ada_05 then
+            if Ada_Version >= Ada_2005 then
                Error_Msg_N ("expect task name or task interface class-wide "
                           & "object for ABORT", T_Name);
             else
@@ -402,7 +402,7 @@ package body Sem_Ch9 is
       Check_Restriction (Max_Asynchronous_Select_Nesting, N);
       Check_Restriction (No_Select_Statements, N);
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Trigger := Triggering_Statement (Triggering_Alternative (N));
 
          Analyze (Trigger);
@@ -448,7 +448,7 @@ package body Sem_Ch9 is
 
       --  Ada 2005 (AI-345): The trigger may be a dispatching call
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Analyze (Trigger);
          Check_Triggering_Statement (Trigger, N, Is_Disp_Select);
       end if;
@@ -1158,7 +1158,7 @@ package body Sem_Ch9 is
       Set_Stored_Constraint  (T, No_Elist);
       Push_Scope (T);
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Check_Interfaces (N, T);
       end if;
 
@@ -1966,7 +1966,7 @@ package body Sem_Ch9 is
       Set_Stored_Constraint  (T, No_Elist);
       Push_Scope (T);
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Check_Interfaces (N, T);
       end if;
 
@@ -2072,7 +2072,7 @@ package body Sem_Ch9 is
 
       --  Ada 2005 (AI-345): The trigger may be a dispatching call
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Analyze (Trigger);
          Check_Triggering_Statement (Trigger, N, Is_Disp_Select);
       end if;
@@ -2114,7 +2114,7 @@ package body Sem_Ch9 is
         and then Nkind (Trigger) not in N_Delay_Statement
         and then Nkind (Trigger) /= N_Entry_Call_Statement
       then
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             Error_Msg_N
              ("triggering statement must be delay or entry call", Trigger);
 
@@ -2400,7 +2400,7 @@ package body Sem_Ch9 is
       --  It is not possible to have a dispatching trigger if we are not in
       --  Ada 2005 mode.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Nkind (Trigger) = N_Procedure_Call_Statement
         and then Present (Parameter_Associations (Trigger))
       then

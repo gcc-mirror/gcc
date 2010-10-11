@@ -780,7 +780,7 @@ package body Sem_Ch3 is
          (E_Anonymous_Access_Type, Related_Nod, Scope_Id => Anon_Scope);
 
       if All_Present (N)
-        and then Ada_Version >= Ada_05
+        and then Ada_Version >= Ada_2005
       then
          Error_Msg_N ("ALL is not permitted for anonymous access types", N);
       end if;
@@ -833,7 +833,7 @@ package body Sem_Ch3 is
       --  from Ada 95 semantics. In Ada 2005, anonymous access must specify if
       --  the null value is allowed. In Ada 95 the null value is never allowed.
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Set_Can_Never_Be_Null (Anon_Type, Null_Exclusion_Present (N));
       else
          Set_Can_Never_Be_Null (Anon_Type, True);
@@ -1513,7 +1513,7 @@ package body Sem_Ch3 is
       Restore_Scope : Boolean := False;
 
    begin
-      pragma Assert (Ada_Version >= Ada_05
+      pragma Assert (Ada_Version >= Ada_2005
         and then Is_Record_Type (Tagged_Type)
         and then Is_Tagged_Type (Tagged_Type)
         and then Has_Interfaces (Tagged_Type)
@@ -1776,7 +1776,7 @@ package body Sem_Ch3 is
          Preanalyze_Spec_Expression (E, T);
          Check_Initialization (T, E);
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Ekind (T) = E_Anonymous_Access_Type
            and then Etype (E) /= Any_Type
          then
@@ -1867,7 +1867,7 @@ package body Sem_Ch3 is
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute and carry
       --  out some static checks.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Can_Never_Be_Null (T)
       then
          Null_Exclusion_Static_Checks (N);
@@ -2489,7 +2489,7 @@ package body Sem_Ch3 is
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute and carry
       --  out some static checks
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Can_Never_Be_Null (T)
       then
          --  In case of aggregates we must also take care of the correct
@@ -2589,7 +2589,7 @@ package body Sem_Ch3 is
          --  to make handlers not at the library level illegal.
 
          if Has_Interrupt_Handler (T)
-           and then Ada_Version < Ada_05
+           and then Ada_Version < Ada_2005
          then
             Error_Msg_N
               ("interrupt object can only be declared at library level", Id);
@@ -2970,7 +2970,7 @@ package body Sem_Ch3 is
            and then Is_Record_Type (T)
            and then not Is_Constrained (T)
            and then Has_Discriminants (T)
-           and then (Ada_Version < Ada_05 or else Is_Indefinite_Subtype (T))
+           and then (Ada_Version < Ada_2005 or else Is_Indefinite_Subtype (T))
          then
             Set_Actual_Subtype (Id, Build_Default_Subtype (T, N));
          end if;
@@ -3322,7 +3322,7 @@ package body Sem_Ch3 is
       --  Ada 2005 (AI-443): Synchronized private extension or a rewritten
       --  synchronized formal derived type.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Synchronized_Present (N)
       then
          Set_Is_Limited_Record (T);
@@ -3674,7 +3674,7 @@ package body Sem_Ch3 is
                end if;
 
             when E_Incomplete_Type =>
-               if Ada_Version >= Ada_05 then
+               if Ada_Version >= Ada_2005 then
                   Set_Ekind (Id, E_Incomplete_Subtype);
 
                   --  Ada 2005 (AI-412): Decorate an incomplete subtype
@@ -4462,7 +4462,7 @@ package body Sem_Ch3 is
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute to the
       --  array type to ensure that objects of this type are initialized.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Can_Never_Be_Null (Element_Type)
       then
          Set_Can_Never_Be_Null (T);
@@ -6650,7 +6650,7 @@ package body Sem_Ch3 is
             --  Create internal access types for components with anonymous
             --  access types.
 
-            if Ada_Version >= Ada_05 then
+            if Ada_Version >= Ada_2005 then
                Check_Anonymous_Access_Components
                  (N, Derived_Type, Derived_Type,
                    Component_List (Record_Extension_Part (Type_Def)));
@@ -6875,7 +6875,7 @@ package body Sem_Ch3 is
          --  cannot be declared in a generic body if it's derived directly
          --  or indirectly from a formal type of that generic.
 
-         if Ada_Version >= Ada_05 then
+         if Ada_Version >= Ada_2005 then
             if Present (Enclosing_Generic_Body (Derived_Type)) then
                declare
                   Ancestor_Type : Entity_Id;
@@ -6948,7 +6948,7 @@ package body Sem_Ch3 is
 
       --  Ada 2005 (AI-251)
 
-      if Ada_Version >= Ada_05 and then Is_Tagged then
+      if Ada_Version >= Ada_2005 and then Is_Tagged then
 
          --  "The declaration of a specific descendant of an interface type
          --  freezes the interface type" (RM 13.14).
@@ -7312,7 +7312,7 @@ package body Sem_Ch3 is
               (Derived_Type, Expand_To_Stored_Constraint (Parent_Base, Discs));
          end if;
 
-         if Ada_Version >= Ada_05 then
+         if Ada_Version >= Ada_2005 then
             declare
                Ifaces_List : Elist_Id;
 
@@ -8162,7 +8162,7 @@ package body Sem_Ch3 is
          --  concurrent record type (which has the list of primitive
          --  operations).
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Is_Concurrent_Type (T)
          then
             Set_Corresponding_Record_Type (Def_Id,
@@ -8557,7 +8557,7 @@ package body Sem_Ch3 is
 
          if Is_Null_Extension (T)
            and then Has_Controlling_Result (Subp)
-           and then Ada_Version >= Ada_05
+           and then Ada_Version >= Ada_2005
            and then Present (Alias_Subp)
            and then not Comes_From_Source (Subp)
            and then not Is_Abstract_Subprogram (Alias_Subp)
@@ -8613,7 +8613,7 @@ package body Sem_Ch3 is
                if Nkind (Type_Def) = N_Derived_Type_Definition
                  and then Present (Record_Extension_Part (Type_Def))
                  and then
-                   (Ada_Version < Ada_05
+                   (Ada_Version < Ada_2005
                       or else not Is_Null_Extension (T)
                       or else Ekind (Subp) = E_Procedure
                       or else not Has_Controlling_Result (Subp)
@@ -8837,7 +8837,7 @@ package body Sem_Ch3 is
                  and then Has_Discriminants (Etype (C))
                  and then not Is_Constrained (Etype (C))
                  and then not In_Instance_Body
-                 and then Ada_Version < Ada_05
+                 and then Ada_Version < Ada_2005
                then
                   Error_Msg_N
                     ("aliased component must be constrained (RM 3.6(11))",
@@ -8852,7 +8852,7 @@ package body Sem_Ch3 is
               and then Has_Discriminants (Component_Type (T))
               and then not Is_Constrained (Component_Type (T))
               and then not In_Instance_Body
-              and then Ada_Version < Ada_05
+              and then Ada_Version < Ada_2005
             then
                Error_Msg_N
                  ("aliased component type must be constrained (RM 3.6(11))",
@@ -9201,7 +9201,7 @@ package body Sem_Ch3 is
                Error_Msg_N
                  ("?cannot initialize entities of limited type!", Exp);
 
-            elsif Ada_Version < Ada_05 then
+            elsif Ada_Version < Ada_2005 then
                Error_Msg_N
                  ("cannot initialize entities of limited type", Exp);
                Explain_Limited_Type (T, Exp);
@@ -9515,7 +9515,7 @@ package body Sem_Ch3 is
                --  Ada 2005 (AI-230): Access discriminant allowed in
                --  non-limited record types.
 
-               if Ada_Version < Ada_05 then
+               if Ada_Version < Ada_2005 then
 
                   --  This restriction gets applied to the full type here. It
                   --  has already been applied earlier to the partial view.
@@ -10071,7 +10071,7 @@ package body Sem_Ch3 is
          end if;
 
          if (Ekind (T) = E_General_Access_Type
-              or else Ada_Version >= Ada_05)
+              or else Ada_Version >= Ada_2005)
            and then Has_Private_Declaration (Desig_Type)
            and then In_Open_Scopes (Scope (Desig_Type))
            and then Has_Discriminants (Desig_Type)
@@ -10175,11 +10175,11 @@ package body Sem_Ch3 is
       --  generic body, the rule is checked assuming that the actual type has
       --  defaulted discriminants.
 
-      if Ada_Version >= Ada_05 or else Warn_On_Ada_2005_Compatibility then
+      if Ada_Version >= Ada_2005 or else Warn_On_Ada_2005_Compatibility then
          if Ekind (Base_Type (T)) = E_General_Access_Type
            and then Has_Defaulted_Discriminants (Desig_Type)
          then
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                Error_Msg_N
                  ("access subtype of general access type would not " &
                   "be allowed in Ada 2005?", S);
@@ -10195,7 +10195,7 @@ package body Sem_Ch3 is
            and then Has_Discriminants (Desig_Type)
            and then In_Package_Body (Current_Scope)
          then
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                Error_Msg_N
                  ("access subtype would not be allowed in generic body " &
                   "in Ada 2005?", S);
@@ -10968,7 +10968,7 @@ package body Sem_Ch3 is
       --  Ada 2005 (AI-412): Constrained incomplete subtypes are illegal.
       --  Avoid generating an error for access-to-incomplete subtypes.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Ekind (T) = E_Incomplete_Type
         and then Nkind (Parent (S)) = N_Subtype_Declaration
         and then not Is_Itype (Def_Id)
@@ -12101,7 +12101,7 @@ package body Sem_Ch3 is
       Typ        : Entity_Id;
 
    begin
-      pragma Assert (Ada_Version >= Ada_05
+      pragma Assert (Ada_Version >= Ada_2005
         and then Is_Record_Type (Tagged_Type)
         and then Is_Tagged_Type (Tagged_Type)
         and then Has_Interfaces (Tagged_Type));
@@ -12491,7 +12491,7 @@ package body Sem_Ch3 is
       --  overrides an interface primitive because interface primitives
       --  must be visible in the partial view of the parent (RM 7.3 (7.3/2))
 
-      elsif Ada_Version >= Ada_05
+      elsif Ada_Version >= Ada_2005
          and then Is_Dispatching_Operation (Parent_Subp)
          and then Covers_Some_Interface (Parent_Subp)
       then
@@ -12634,7 +12634,7 @@ package body Sem_Ch3 is
       --  Ada 2005 (AI-228): Calculate the "require overriding" and "abstract"
       --  properties of the subprogram, as defined in RM-3.9.3(4/2-6/2).
 
-      elsif Ada_Version >= Ada_05
+      elsif Ada_Version >= Ada_2005
         and then (Is_Abstract_Subprogram (Alias (New_Subp))
                    or else (Is_Tagged_Type (Derived_Type)
                             and then Etype (New_Subp) = Derived_Type
@@ -12656,7 +12656,7 @@ package body Sem_Ch3 is
             Set_Requires_Overriding (New_Subp);
          end if;
 
-      elsif Ada_Version < Ada_05
+      elsif Ada_Version < Ada_2005
         and then (Is_Abstract_Subprogram (Alias (New_Subp))
                    or else (Is_Tagged_Type (Derived_Type)
                              and then Etype (New_Subp) = Derived_Type
@@ -13695,7 +13695,7 @@ package body Sem_Ch3 is
       --  extension. There is no point in checking the ancestor type or
       --  the progenitors since the construct is wrong to begin with.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Is_Generic_Type (T)
         and then Present (Original_Node (N))
       then
@@ -15845,7 +15845,7 @@ package body Sem_Ch3 is
    is
    begin
       return Is_CPP_Constructor_Call (Exp)
-        or else (Ada_Version >= Ada_05
+        or else (Ada_Version >= Ada_2005
                   and then not Debug_Flag_Dot_L
                   and then OK_For_Limited_Init_In_05 (Typ, Exp));
    end OK_For_Limited_Init;
@@ -16146,7 +16146,7 @@ package body Sem_Ch3 is
             --  Ada 2005 (AI-230): Access discriminant allowed in non-limited
             --  record types
 
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                Check_Access_Discriminant_Requires_Limited
                  (Discr, Discriminant_Type (Discr));
             end if;
@@ -16208,7 +16208,7 @@ package body Sem_Ch3 is
          --  Ada 2005 (AI-231): Create an Itype that is a duplicate of
          --  Discr_Type but with the null-exclusion attribute
 
-         if Ada_Version >= Ada_05 then
+         if Ada_Version >= Ada_2005 then
 
             --  Ada 2005 (AI-231): Static checks
 
@@ -16496,7 +16496,7 @@ package body Sem_Ch3 is
       --  consistent. We omit this check for synchronized types because
       --  they are performed on the corresponding record type when frozen.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Is_Tagged_Type (Priv_T)
         and then Is_Tagged_Type (Full_T)
         and then not Is_Concurrent_Type (Full_T)
@@ -16696,7 +16696,7 @@ package body Sem_Ch3 is
       --  Ada 2005 (AI-443): A synchronized private extension must be
       --  completed by a task or protected type.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Nkind (Parent (Priv_T)) = N_Private_Extension_Declaration
         and then Synchronized_Present (Parent (Priv_T))
         and then not Is_Concurrent_Type (Full_T)
@@ -17366,7 +17366,7 @@ package body Sem_Ch3 is
 
          if Ekind (Root_Type (Entity (T))) = E_Incomplete_Type
            and then
-             not (Ada_Version >= Ada_05
+             not (Ada_Version >= Ada_2005
                     and then
                        (Nkind (Parent (T)) = N_Subtype_Declaration
                           or else
@@ -17390,7 +17390,7 @@ package body Sem_Ch3 is
 
          --  Ada 2005 (AI-231): Static check
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Present (P)
            and then Null_Exclusion_Present (P)
            and then Nkind (P) /= N_Access_To_Object_Definition
@@ -18090,7 +18090,7 @@ package body Sem_Ch3 is
 
       --  Normal case
 
-      if Ada_Version < Ada_05
+      if Ada_Version < Ada_2005
         or else not Interface_Present (Def)
       then
          --  The flag Is_Tagged_Type might have already been set by
@@ -18129,7 +18129,7 @@ package body Sem_Ch3 is
 
       Check_Anonymous_Access_Components (N, T, Prev, Component_List (Def));
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Present (Interface_List (Def))
       then
          Check_Interfaces (N, Def);

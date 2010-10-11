@@ -921,7 +921,7 @@ package body Sem_Aggr is
 
       --  Ada 2005 (AI-287): Limited aggregates allowed
 
-      if Is_Limited_Type (Typ) and then Ada_Version < Ada_05 then
+      if Is_Limited_Type (Typ) and then Ada_Version < Ada_2005 then
          Error_Msg_N ("aggregate type cannot be limited", N);
          Explain_Limited_Type (Typ, N);
 
@@ -1758,7 +1758,7 @@ package body Sem_Aggr is
 
                --  Ada 2005 (AI-231)
 
-               if Ada_Version >= Ada_05
+               if Ada_Version >= Ada_2005
                  and then Known_Null (Expression (Assoc))
                then
                   Check_Can_Never_Be_Null (Etype (N), Expression (Assoc));
@@ -2060,7 +2060,7 @@ package body Sem_Aggr is
 
             --  Ada 2005 (AI-231)
 
-            if Ada_Version >= Ada_05
+            if Ada_Version >= Ada_2005
               and then Known_Null (Expr)
             then
                Check_Can_Never_Be_Null (Etype (N), Expr);
@@ -2087,7 +2087,7 @@ package body Sem_Aggr is
 
             --  Ada 2005 (AI-231)
 
-            if Ada_Version >= Ada_05
+            if Ada_Version >= Ada_2005
               and then Known_Null (Assoc)
             then
                Check_Can_Never_Be_Null (Etype (N), Expression (Assoc));
@@ -2355,7 +2355,7 @@ package body Sem_Aggr is
 
          --  Ada 2005 (AI-287): Limited aggregates are allowed
 
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             Error_Msg_N ("aggregate type cannot be limited", N);
             Explain_Limited_Type (Typ, N);
             return;
@@ -2395,7 +2395,7 @@ package body Sem_Aggr is
                --  Only consider limited interpretations in the Ada 2005 case
 
                if Is_Tagged_Type (It.Typ)
-                 and then (Ada_Version >= Ada_05
+                 and then (Ada_Version >= Ada_2005
                             or else not Is_Limited_Type (It.Typ))
                then
                   if A_Type /= Any_Type then
@@ -2410,7 +2410,7 @@ package body Sem_Aggr is
             end loop;
 
             if A_Type = Any_Type then
-               if Ada_Version >= Ada_05 then
+               if Ada_Version >= Ada_2005 then
                   Error_Msg_N ("ancestor part must be of a tagged type", A);
                else
                   Error_Msg_N
@@ -2809,7 +2809,7 @@ package body Sem_Aggr is
 
                      --  Ada 2005 (AI-231)
 
-                     if Ada_Version >= Ada_05
+                     if Ada_Version >= Ada_2005
                        and then Known_Null (Expression (Assoc))
                      then
                         Check_Can_Never_Be_Null (Compon, Expression (Assoc));
@@ -3051,7 +3051,7 @@ package body Sem_Aggr is
       --  aggregate for a null record type was established by AI05-016.
 
       elsif No (First_Entity (Typ))
-         and then Ada_Version < Ada_05
+         and then Ada_Version < Ada_2005
       then
          Error_Msg_N ("record aggregate must be null", N);
          return;
@@ -3148,7 +3148,7 @@ package body Sem_Aggr is
 
                --  Ada 2005 (AI-231)
 
-               if Ada_Version >= Ada_05
+               if Ada_Version >= Ada_2005
                  and then Known_Null (Positional_Expr)
                then
                   Check_Can_Never_Be_Null (Discrim, Positional_Expr);
@@ -3431,7 +3431,7 @@ package body Sem_Aggr is
 
          --  Ada 2005 (AI-231)
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Known_Null (Positional_Expr)
          then
             Check_Can_Never_Be_Null (Component, Positional_Expr);
@@ -4013,7 +4013,7 @@ package body Sem_Aggr is
 
    begin
       pragma Assert
-        (Ada_Version >= Ada_05
+        (Ada_Version >= Ada_2005
           and then Present (Expr)
           and then Known_Null (Expr));
 

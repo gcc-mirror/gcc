@@ -433,7 +433,7 @@ package body Ch3 is
 
          --  Ada 2005 (AI-419): AARM 3.4 (2/2)
 
-         if (Ada_Version < Ada_05 and then Token = Tok_Limited)
+         if (Ada_Version < Ada_2005 and then Token = Tok_Limited)
            or else Token = Tok_Private
            or else Token = Tok_Record
            or else Token = Tok_Null
@@ -566,7 +566,7 @@ package body Ch3 is
                --  Ada 2005 (AI-326): If the words IS TAGGED appear, the type
                --  is a tagged incomplete type.
 
-               if Ada_Version >= Ada_05
+               if Ada_Version >= Ada_2005
                  and then Token = Tok_Semicolon
                then
                   Scan; -- past ;
@@ -703,7 +703,7 @@ package body Ch3 is
                   --  Ada 2005 (AI-419): LIMITED NEW
 
                elsif Token = Tok_New then
-                  if Ada_Version < Ada_05 then
+                  if Ada_Version < Ada_2005 then
                      Error_Msg_SP
                        ("LIMITED in derived type is an Ada 2005 extension");
                      Error_Msg_SP
@@ -1018,7 +1018,7 @@ package body Ch3 is
             --  access ..." is legal in Ada 95, whereas "Formal : not null
             --  Named_Access_Type" is not.
 
-            if Ada_Version >= Ada_05
+            if Ada_Version >= Ada_2005
               or else (Ada_Version >= Ada_95
                         and then Allow_Anonymous_In_95
                         and then Token = Tok_Access)
@@ -1588,7 +1588,7 @@ package body Ch3 is
                   Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
 
                   if Token = Tok_Access then
-                     if Ada_Version < Ada_05 then
+                     if Ada_Version < Ada_2005 then
                         Error_Msg_SP
                           ("generalized use of anonymous access types " &
                            "is an Ada 2005 extension");
@@ -1651,7 +1651,7 @@ package body Ch3 is
                --  Access definition (AI-406) or subtype indication
 
                if Token = Tok_Access then
-                  if Ada_Version < Ada_05 then
+                  if Ada_Version < Ada_2005 then
                      Error_Msg_SP
                        ("generalized use of anonymous access types " &
                         "is an Ada 2005 extension");
@@ -1692,7 +1692,7 @@ package body Ch3 is
             Not_Null_Present := P_Null_Exclusion;  --  Ada 2005 (AI-231/423)
 
             if Token = Tok_Access then
-               if Ada_Version < Ada_05 then
+               if Ada_Version < Ada_2005 then
                   Error_Msg_SP
                     ("generalized use of anonymous access types " &
                      "is an Ada 2005 extension");
@@ -1720,7 +1720,7 @@ package body Ch3 is
                --  Object renaming declaration
 
                if Token_Is_Renames then
-                  if Ada_Version < Ada_05 then
+                  if Ada_Version < Ada_2005 then
                      Error_Msg_SP
                        ("`NOT NULL` not allowed in object renaming");
                      raise Error_Resync;
@@ -1763,7 +1763,7 @@ package body Ch3 is
          --  Ada 2005 (AI-230): Access Definition case
 
          elsif Token = Tok_Access then
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                Error_Msg_SP
                  ("generalized use of anonymous access types " &
                   "is an Ada 2005 extension");
@@ -1925,7 +1925,7 @@ package body Ch3 is
    begin
       Typedef_Node := New_Node (N_Derived_Type_Definition, Token_Ptr);
 
-      if Ada_Version < Ada_05
+      if Ada_Version < Ada_2005
         and then Token = Tok_Identifier
         and then Token_Name = Name_Interface
       then
@@ -1952,7 +1952,7 @@ package body Ch3 is
       if Token = Tok_And then
          Scan; -- past AND
 
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             Error_Msg_SP
               ("abstract interface is an Ada 2005 extension");
             Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
@@ -2648,7 +2648,7 @@ package body Ch3 is
       --  Ada 2005 (AI-230): Access Definition case
 
       if Token = Tok_Access then
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             Error_Msg_SP
               ("generalized use of anonymous access types " &
                "is an Ada 2005 extension");
@@ -3416,7 +3416,7 @@ package body Ch3 is
             --  Ada 2005 (AI-230): Access Definition case
 
             if Token = Tok_Access then
-               if Ada_Version < Ada_05 then
+               if Ada_Version < Ada_2005 then
                   Error_Msg_SP
                     ("generalized use of anonymous access types " &
                      "is an Ada 2005 extension");
@@ -3745,7 +3745,7 @@ package body Ch3 is
       Typedef_Node : Node_Id;
 
    begin
-      if Ada_Version < Ada_05 then
+      if Ada_Version < Ada_2005 then
          Error_Msg_SP ("abstract interface is an Ada 2005 extension");
          Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
       end if;
@@ -3924,7 +3924,7 @@ package body Ch3 is
          --  Ada 2005 (AI-318-02)
 
          if Token = Tok_Access then
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                Error_Msg_SC
                  ("anonymous access result type is an Ada 2005 extension");
                Error_Msg_SC ("\unit must be compiled with -gnat05 switch");
@@ -4025,7 +4025,7 @@ package body Ch3 is
         or else Token = Tok_Procedure
         or else Token = Tok_Function
       then
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             Error_Msg_SP ("access-to-subprogram is an Ada 2005 extension");
             Error_Msg_SP ("\unit should be compiled with -gnat05 switch");
          end if;
@@ -4041,7 +4041,7 @@ package body Ch3 is
          Set_Null_Exclusion_Present (Def_Node, Null_Exclusion_Present);
 
          if Token = Tok_All then
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                Error_Msg_SP
                  ("ALL is not permitted for anonymous access types");
             end if;
@@ -4050,7 +4050,7 @@ package body Ch3 is
             Set_All_Present (Def_Node);
 
          elsif Token = Tok_Constant then
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                Error_Msg_SP ("access-to-constant is an Ada 2005 extension");
                Error_Msg_SP ("\unit should be compiled with -gnat05 switch");
             end if;

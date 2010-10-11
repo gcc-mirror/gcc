@@ -1193,11 +1193,11 @@ package body Checks is
 
       if Present (Lhs)
         and then (Present (Param_Entity (Lhs))
-                   or else (Ada_Version < Ada_05
+                   or else (Ada_Version < Ada_2005
                              and then not Is_Constrained (T_Typ)
                              and then Is_Aliased_View (Lhs)
                              and then not Is_Aliased_Unconstrained_Component)
-                   or else (Ada_Version >= Ada_05
+                   or else (Ada_Version >= Ada_2005
                              and then not Is_Constrained (T_Typ)
                              and then Denotes_Explicit_Dereference (Lhs)
                              and then Nkind (Original_Node (Lhs)) /=
@@ -1216,7 +1216,7 @@ package body Checks is
       --  Ada 2005: nothing to do if the type is one for which there is a
       --  partial view that is constrained.
 
-      elsif Ada_Version >= Ada_05
+      elsif Ada_Version >= Ada_2005
         and then Has_Constrained_Partial_View (Base_Type (T_Typ))
       then
          return;
