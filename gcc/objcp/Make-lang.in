@@ -57,7 +57,7 @@ obj-c++_OBJS = $(OBJCXX_OBJS) cc1objplus-checksum.o
 cc1objplus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 	$(OBJCXX_OBJS) $(BACKEND) $(LIBDEPS)
 	build/genchecksum$(build_exeext) $(OBJCXX_OBJS) $(BACKEND) \
-		$(LIBDEPS) checksum-options > cc1objplus-checksum.c && \
+		$(LIBDEPS) checksum-options > cc1objplus-checksum.c.tmp && \
 	$(srcdir)/../move-if-change cc1objplus-checksum.c.tmp \
 	cc1objplus-checksum.c
 
