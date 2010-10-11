@@ -131,6 +131,8 @@ extern int    __gnat_open_read                     (char *, int);
 extern int    __gnat_open_rw                       (char *, int);
 extern int    __gnat_open_create                   (char *, int);
 extern int    __gnat_create_output_file            (char *);
+extern int    __gnat_create_output_file_new        (char *);
+
 extern int    __gnat_open_append                   (char *, int);
 extern long   __gnat_file_length                   (int);
 extern long   __gnat_named_file_length             (char *);
