@@ -1487,7 +1487,6 @@ build_cdtor (bool ctor_p, VEC (tree, heap) *cdtors)
 	  TREE_SIDE_EFFECTS (call) = 1;
 	  append_to_statement_list (call, &body);
 	}
-      while (i < len);
       gcc_assert (body != NULL_TREE);
       /* Generate a function to call all the function of like
 	 priority.  */
