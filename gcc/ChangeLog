@@ -1,3 +1,15 @@
+2010-10-11  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR bootstrap/45445
+	* ira-lives.c (mark_pseudo_reg_live, mark_pseudo_reg_dead): New
+	static functions.
+	(mark_ref_live, mark_ref_dead): Use them.
+	(make_pseudo_conflict): New arg ORIG_DREG.  All callers changed.
+	Save the original reg, and use the new functions.
+	(check_and_make_def_use_conflict): New arg ORIG_DREG.  All callers
+	changed.
+	(check_and_make_def_conflict): Save the original reg.
+
 2010-10-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/45699
