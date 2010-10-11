@@ -73,6 +73,12 @@
   </listitem>
   <listitem>
     <para>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-api-4.5/index.html">for the 4.5 release
+      </link>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/index.html">"the latest collection"
       </link>
       (For the main development tree; see the date on the first page.)
