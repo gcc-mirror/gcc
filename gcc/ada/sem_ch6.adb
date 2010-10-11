@@ -4240,29 +4240,21 @@ package body Sem_Ch6 is
    --  Start of processing for Check_Delayed_Subprogram
 
    begin
-      --  Never need to freeze abstract subprogram
+      --  All subprograms, including abstract subprograms, may need a freeze
+      --  node if some formal type or the return type needs one.
 
-      if Ekind (Designator) /= E_Subprogram_Type
-        and then Is_Abstract_Subprogram (Designator)
-      then
-         null;
-      else
-         --  Need delayed freeze if return type itself needs a delayed
-         --  freeze and is not yet frozen.
+      Possible_Freeze (Etype (Designator));
+      Possible_Freeze (Base_Type (Etype (Designator))); -- needed ???
 
-         Possible_Freeze (Etype (Designator));
-         Possible_Freeze (Base_Type (Etype (Designator))); -- needed ???
+      --  Need delayed freeze if any of the formal types themselves need
+      --  a delayed freeze and are not yet frozen.
 
-         --  Need delayed freeze if any of the formal types themselves need
-         --  a delayed freeze and are not yet frozen.
-
-         F := First_Formal (Designator);
-         while Present (F) loop
-            Possible_Freeze (Etype (F));
-            Possible_Freeze (Base_Type (Etype (F))); -- needed ???
-            Next_Formal (F);
-         end loop;
-      end if;
+      F := First_Formal (Designator);
+      while Present (F) loop
+         Possible_Freeze (Etype (F));
+         Possible_Freeze (Base_Type (Etype (F))); -- needed ???
+         Next_Formal (F);
+      end loop;
 
       --  Mark functions that return by reference. Note that it cannot be
       --  done for delayed_freeze subprograms because the underlying

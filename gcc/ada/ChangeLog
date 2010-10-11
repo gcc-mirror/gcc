@@ -1,3 +1,25 @@
+2010-10-11  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch10.adb (Analyze_With_Clause): Add missing test to ensure
+	availability of attribute Instance_Spec.
+
+2010-10-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Disable codepeer mode if
+	checking syntax only or in ASIS mode.
+
+2010-10-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Delayed_Subprogram): Abstract subprograms may also
+	need a freeze node if some type in the profile has one.
+	* gcc-interface/trans.c (case N_Abstract_Subprogram_Declaration): If
+	entity has a freeze node, defer elaboration.
+
+2010-10-11  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Check_Aggregate_Project): Add support for finding all
+	aggregated projects.
+
 2010-10-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve_Entry_Call): Generate 's' reference for entry
