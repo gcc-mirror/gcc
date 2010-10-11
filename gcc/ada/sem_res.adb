@@ -6328,7 +6328,10 @@ package body Sem_Res is
       end if;
 
       Resolve_Actuals (N, Nam);
-      Generate_Reference (Nam, Entry_Name);
+
+      --  Create a call reference to the entry
+
+      Generate_Reference (Nam, Entry_Name, 's');
 
       if Ekind_In (Nam, E_Entry, E_Entry_Family) then
          Check_Potentially_Blocking_Operation (N);

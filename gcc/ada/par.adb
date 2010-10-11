@@ -1375,7 +1375,7 @@ begin
 
             begin
                --  If parsing was successful and we are not in check syntax
-               --  mode, check that language defined units are compiled in GNAT
+               --  mode, check that language-defined units are compiled in GNAT
                --  mode. For this purpose we do NOT consider renamings in annex
                --  J as predefined. That allows users to compile their own
                --  versions of these files, and in particular, in the VMS
@@ -1406,7 +1406,7 @@ begin
                         Name = "system"
                      then
                         Error_Msg
-                          ("language defined units may not be recompiled",
+                          ("language-defined units cannot be recompiled",
                            Sloc (Unit (Comp_Unit_Node)));
 
                      elsif Name'Length > 4
@@ -1414,8 +1414,8 @@ begin
                          Name (Name'First .. Name'First + 3) = "ada."
                      then
                         Error_Msg
-                          ("descendents of package Ada " &
-                             "may not be compiled",
+                          ("user-defined descendents of package Ada " &
+                             "are not allowed",
                            Sloc (Unit (Comp_Unit_Node)));
 
                      elsif Name'Length > 11
@@ -1423,8 +1423,8 @@ begin
                          Name (Name'First .. Name'First + 10) = "interfaces."
                      then
                         Error_Msg
-                          ("descendents of package Interfaces " &
-                             "may not be compiled",
+                          ("user-defined descendents of package Interfaces " &
+                             "are not allowed",
                            Sloc (Unit (Comp_Unit_Node)));
 
                      elsif Name'Length > 7
@@ -1436,8 +1436,8 @@ begin
                                                                  "system.rpc.")
                      then
                         Error_Msg
-                          ("descendents of package System " &
-                             "may not be compiled",
+                          ("user-defined descendents of package System " &
+                             "are not allowed",
                            Sloc (Unit (Comp_Unit_Node)));
                      end if;
                   end;
