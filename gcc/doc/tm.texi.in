@@ -812,6 +812,8 @@ this hook!}  The debugging options are not supposed to alter the
 generated code.
 @end deftypefn
 
+@hook TARGET_OPTION_DEFAULT_PARAMS
+
 @hook TARGET_HELP
 This hook is called in response to the user invoking
 @option{--target-help} on the command line.  It gives the target a

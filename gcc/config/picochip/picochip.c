@@ -342,10 +342,10 @@ picochip_option_override (void)
   /* If we are optimizing for stack, dont let inliner to inline functions
      that could potentially increase stack size.*/
    if (flag_conserve_stack)
-   {
-     PARAM_VALUE (PARAM_LARGE_STACK_FRAME) = 0;
-     PARAM_VALUE (PARAM_STACK_FRAME_GROWTH) = 0;
-   }
+     {
+       maybe_set_param_value (PARAM_LARGE_STACK_FRAME, 0);
+       maybe_set_param_value (PARAM_STACK_FRAME_GROWTH, 0);
+     }
 
   /* Turn off the elimination of unused types. The elaborator
      generates various interesting types to represent constants,

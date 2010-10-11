@@ -669,11 +669,11 @@ init_options_once (void)
 
   /* Save initial values of parameters we reset.  */
   initial_min_crossjump_insns
-    = compiler_params[PARAM_MIN_CROSSJUMP_INSNS].value;
+    = PARAM_VALUE (PARAM_MIN_CROSSJUMP_INSNS);
   initial_max_fields_for_field_sensitive
-    = compiler_params[PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE].value;
+    = PARAM_VALUE (PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE);
   initial_loop_invariant_max_bbs_in_loop
-    = compiler_params[PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP].value;
+    = PARAM_VALUE (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP);
 }
 
 /* Initialize OPTS and OPTS_SET before using them in parsing options.  */
@@ -853,12 +853,12 @@ default_options_optimization (struct gcc_options *opts,
   flag_ipa_sra = opt2;
 
   /* Track fields in field-sensitive alias analysis.  */
-  set_param_value ("max-fields-for-field-sensitive",
-		   (opt2) ? 100 : initial_max_fields_for_field_sensitive);
+  maybe_set_param_value (PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE,
+			 opt2 ? 100 : initial_max_fields_for_field_sensitive);
 
   /* For -O1 only do loop invariant motion for very small loops.  */
-  set_param_value ("loop-invariant-max-bbs-in-loop",
-		   (opt2) ? initial_loop_invariant_max_bbs_in_loop : 1000);
+  maybe_set_param_value (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP,
+			 opt2 ? initial_loop_invariant_max_bbs_in_loop : 1000);
 
   /* -O3 optimizations.  */
   opt3 = (optimize >= 3);
@@ -891,10 +891,11 @@ default_options_optimization (struct gcc_options *opts,
 	optimize = 2;
 
       /* We want to crossjump as much as possible.  */
-      set_param_value ("min-crossjump-insns", 1);
+      maybe_set_param_value (PARAM_MIN_CROSSJUMP_INSNS, 1);
     }
   else
-    set_param_value ("min-crossjump-insns", initial_min_crossjump_insns);
+    maybe_set_param_value (PARAM_MIN_CROSSJUMP_INSNS,
+			   initial_min_crossjump_insns);
 
   /* -Ofast adds optimizations to -O3.  */
   if (ofast)
@@ -1114,10 +1115,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set)
 
   if (flag_conserve_stack)
     {
-      if (!PARAM_SET_P (PARAM_LARGE_STACK_FRAME))
-        PARAM_VALUE (PARAM_LARGE_STACK_FRAME) = 100;
-      if (!PARAM_SET_P (PARAM_STACK_FRAME_GROWTH))
-        PARAM_VALUE (PARAM_STACK_FRAME_GROWTH) = 40;
+      maybe_set_param_value (PARAM_LARGE_STACK_FRAME, 100);
+      maybe_set_param_value (PARAM_STACK_FRAME_GROWTH, 40);
     }
   if (flag_wpa || flag_ltrans)
     {

@@ -1,5 +1,5 @@
 /* params.c - Run-time parameters.
-   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
@@ -51,6 +51,21 @@ add_params (const param_info params[], size_t n)
   num_compiler_params += n;
 }
 
+/* Set the value of the parameter given by NUM to VALUE.  If
+   EXPLICIT_P, this is being set by the user; otherwise it is being
+   set implicitly by the compiler.  */
+
+static void
+set_param_value_internal (compiler_param num, int value,
+			  bool explicit_p)
+{
+  size_t i = (size_t) num;
+
+  compiler_params[i].value = value;
+  if (explicit_p)
+    compiler_params[i].set = true;
+}
+
 /* Set the VALUE associated with the parameter given by NAME.  */
 
 void
@@ -75,15 +90,32 @@ set_param_value (const char *name, int value)
 		 compiler_params[i].option,
 		 compiler_params[i].max_value);
 	else
-	  {
-	    compiler_params[i].value = value;
-	    compiler_params[i].set = true;
-	  }
+	  set_param_value_internal ((compiler_param) i, value, true);
 	return;
       }
 
   /* If we didn't find this parameter, issue an error message.  */
   error ("invalid parameter %qs", name);
+}
+
+/* Set the value of the parameter given by NUM to VALUE, implicitly,
+   if it has not been set explicitly by the user.  */
+
+void
+maybe_set_param_value (compiler_param num, int value)
+{
+  if (!PARAM_SET_P (num))
+    set_param_value_internal (num, value, false);
+}
+
+/* Set the default value of a parameter given by NUM to VALUE, before
+   option processing.  */
+
+void
+set_default_param_value (compiler_param num, int value)
+{
+  gcc_assert (!PARAM_SET_P (num));
+  set_param_value_internal (num, value, false);
 }
 
 /* Return the current value of num_compiler_params, for the benefit of

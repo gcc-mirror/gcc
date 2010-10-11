@@ -2340,6 +2340,13 @@ DEFHOOK
  void, (int level, int size),
  hook_void_int_int)
 
+DEFHOOK
+(default_params,
+"Set target-dependent default values for @option{--param} settings, using\
+ calls to @code{set_default_param_value}.",
+ void, (void),
+ hook_void_void)
+
 /* Function to determine if one function can inline another function.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_"

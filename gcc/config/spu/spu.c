@@ -151,6 +151,7 @@ char regs_ever_allocated[FIRST_PSEUDO_REGISTER];
 /*  Prototypes and external defs.  */
 static void spu_option_override (void);
 static void spu_option_optimization (int, int);
+static void spu_option_default_params (void);
 static void spu_init_builtins (void);
 static tree spu_builtin_decl (unsigned, bool);
 static bool spu_scalar_mode_supported_p (enum machine_mode mode);
@@ -482,6 +483,9 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_OPTION_OPTIMIZATION
 #define TARGET_OPTION_OPTIMIZATION spu_option_optimization
 
+#undef TARGET_OPTION_DEFAULT_PARAMS
+#define TARGET_OPTION_DEFAULT_PARAMS spu_option_default_params
+
 #undef TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO  sjlj_except_unwind_info
 
@@ -490,12 +494,17 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 static void
 spu_option_optimization (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
 {
-  /* Override some of the default param values.  With so many registers
-     larger values are better for these params.  */
-  MAX_PENDING_LIST_LENGTH = 128;
-
   /* With so many registers this is better on by default. */
   flag_rename_registers = 1;
+}
+
+/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
+static void
+spu_option_default_params (void)
+{
+  /* Override some of the default param values.  With so many registers
+     larger values are better for these params.  */
+  set_default_param_value (PARAM_MAX_PENDING_LIST_LENGTH, 128);
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
@@ -504,9 +513,8 @@ spu_option_override (void)
 {
   /* Small loops will be unpeeled at -O3.  For SPU it is more important
      to keep code small by default.  */
-  if (!flag_unroll_loops && !flag_peel_loops
-      && !PARAM_SET_P (PARAM_MAX_COMPLETELY_PEEL_TIMES))
-    PARAM_VALUE (PARAM_MAX_COMPLETELY_PEEL_TIMES) = 1;
+  if (!flag_unroll_loops && !flag_peel_loops)
+    maybe_set_param_value (PARAM_MAX_COMPLETELY_PEEL_TIMES, 1);
 
   flag_omit_frame_pointer = 1;
 
