@@ -6082,7 +6082,8 @@ build_cxx_call (tree fn, int nargs, tree *argarray)
   fndecl = get_callee_fndecl (fn);
   if ((!fndecl || !TREE_NOTHROW (fndecl))
       && at_function_scope_p ()
-      && cfun)
+      && cfun
+      && cp_function_chain)
     cp_function_chain->can_throw = 1;
 
   /* Check that arguments to builtin functions match the expectations.  */
