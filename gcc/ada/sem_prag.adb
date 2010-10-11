@@ -10404,7 +10404,7 @@ package body Sem_Prag is
 
          --  pragma Passive [(PASSIVE_FORM)];
 
-         --   PASSIVE_FORM ::= Semaphore | No
+         --  PASSIVE_FORM ::= Semaphore | No
 
          when Pragma_Passive =>
             GNAT_Pragma;
@@ -10474,6 +10474,8 @@ package body Sem_Prag is
          --------------------
          -- Persistent_BSS --
          --------------------
+
+         --  pragma Persistent_BSS [(object_NAME)];
 
          when Pragma_Persistent_BSS => Persistent_BSS :  declare
             Decl : Node_Id;
