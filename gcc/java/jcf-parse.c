@@ -1704,7 +1704,7 @@ java_emit_static_constructor (void)
 
       tree decl 
 	= build_decl (input_location, FUNCTION_DECL, name,
-		      build_function_type (void_type_node, void_list_node));
+		      build_function_type_list (void_type_node, NULL_TREE));
 
       tree resdecl = build_decl (input_location,
 				 RESULT_DECL, NULL_TREE, void_type_node);

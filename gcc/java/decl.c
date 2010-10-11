@@ -555,7 +555,6 @@ parse_version (void)
 void
 java_init_decl_processing (void)
 {
-  tree endlink;
   tree field = NULL_TREE;
   tree t;
 
@@ -987,40 +986,35 @@ java_init_decl_processing (void)
   build_decl (BUILTINS_LOCATION,
 	      TYPE_DECL, get_identifier ("Method"), method_type_node);
 
-  endlink = end_params_node = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
+  end_params_node = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
 
-  t = tree_cons (NULL_TREE, class_ptr_type, endlink);
-  alloc_object_node = add_builtin_function ("_Jv_AllocObject",
-					    build_function_type (ptr_type_node, t),
+  t = build_function_type_list (ptr_type_node, class_ptr_type, NULL_TREE);
+  alloc_object_node = add_builtin_function ("_Jv_AllocObject", t,
 					    0, NOT_BUILT_IN, NULL, NULL_TREE);
   DECL_IS_MALLOC (alloc_object_node) = 1;
   alloc_no_finalizer_node =
-    add_builtin_function ("_Jv_AllocObjectNoFinalizer",
-			  build_function_type (ptr_type_node, t),
+    add_builtin_function ("_Jv_AllocObjectNoFinalizer", t,
 			  0, NOT_BUILT_IN, NULL, NULL_TREE);
   DECL_IS_MALLOC (alloc_no_finalizer_node) = 1;
 
-  t = tree_cons (NULL_TREE, ptr_type_node, endlink);
-  soft_initclass_node = add_builtin_function ("_Jv_InitClass",
-					      build_function_type (void_type_node,
-								   t),
+  t = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
+  soft_initclass_node = add_builtin_function ("_Jv_InitClass", t,
 					      0, NOT_BUILT_IN, NULL, NULL_TREE);
-  t = tree_cons (NULL_TREE, class_ptr_type,
-		 tree_cons (NULL_TREE, int_type_node, endlink));
+  t = build_function_type_list (ptr_type_node,
+				class_ptr_type, int_type_node, NULL_TREE);
   soft_resolvepoolentry_node
-    = add_builtin_function ("_Jv_ResolvePoolEntry",
-			    build_function_type (ptr_type_node, t),
+    = add_builtin_function ("_Jv_ResolvePoolEntry", t,
 			    0,NOT_BUILT_IN, NULL, NULL_TREE);
   DECL_PURE_P (soft_resolvepoolentry_node) = 1;
-  throw_node = add_builtin_function ("_Jv_Throw",
-				     build_function_type (void_type_node, t),
+  t = build_function_type_list (void_type_node,
+				class_ptr_type, int_type_node, NULL_TREE);
+  throw_node = add_builtin_function ("_Jv_Throw", t,
 				     0, NOT_BUILT_IN, NULL, NULL_TREE);
   /* Mark throw_nodes as `noreturn' functions with side effects.  */
   TREE_THIS_VOLATILE (throw_node) = 1;
   TREE_SIDE_EFFECTS (throw_node) = 1;
 
-  t = build_function_type (void_type_node, tree_cons (NULL_TREE, ptr_type_node,
-						      endlink));
+  t = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   soft_monitorenter_node
     = add_builtin_function ("_Jv_MonitorEnter", t, 0, NOT_BUILT_IN,
 			    NULL, NULL_TREE);
@@ -1028,36 +1022,30 @@ java_init_decl_processing (void)
     = add_builtin_function ("_Jv_MonitorExit", t, 0, NOT_BUILT_IN,
 			    NULL, NULL_TREE);
 
-  t = tree_cons (NULL_TREE, ptr_type_node,
-		 tree_cons (NULL_TREE, int_type_node, endlink));
+  t = build_function_type_list (ptr_type_node,
+				ptr_type_node, int_type_node, NULL_TREE);
   soft_newarray_node
-      = add_builtin_function ("_Jv_NewPrimArray",
-			      build_function_type (ptr_type_node, t),
+      = add_builtin_function ("_Jv_NewPrimArray", t,
 			      0, NOT_BUILT_IN, NULL, NULL_TREE);
   DECL_IS_MALLOC (soft_newarray_node) = 1;
 
-  t = tree_cons (NULL_TREE, int_type_node,
-		 tree_cons (NULL_TREE, class_ptr_type,
-			    tree_cons (NULL_TREE, object_ptr_type_node,
-				       endlink)));
+  t = build_function_type_list (ptr_type_node,
+				int_type_node, class_ptr_type,
+				object_ptr_type_node, NULL_TREE);
   soft_anewarray_node
-      = add_builtin_function ("_Jv_NewObjectArray",
-			      build_function_type (ptr_type_node, t),
+      = add_builtin_function ("_Jv_NewObjectArray", t,
 			      0, NOT_BUILT_IN, NULL, NULL_TREE);
   DECL_IS_MALLOC (soft_anewarray_node) = 1;
 
-  /* There is no endlink here because _Jv_NewMultiArray is a varargs
-     function.  */
-  t = tree_cons (NULL_TREE, ptr_type_node,
-		 tree_cons (NULL_TREE, int_type_node, NULL_TREE));
+  t = build_varargs_function_type_list (ptr_type_node,
+					ptr_type_node, int_type_node,
+					NULL_TREE);
   soft_multianewarray_node
-      = add_builtin_function ("_Jv_NewMultiArray",
-			      build_function_type (ptr_type_node, t),
+      = add_builtin_function ("_Jv_NewMultiArray", t,
 			      0, NOT_BUILT_IN, NULL, NULL_TREE);
   DECL_IS_MALLOC (soft_multianewarray_node) = 1;
 
-  t = build_function_type (void_type_node, 
-			   tree_cons (NULL_TREE, int_type_node, endlink));
+  t = build_function_type_list (void_type_node, int_type_node, NULL_TREE);
   soft_badarrayindex_node
       = add_builtin_function ("_Jv_ThrowBadArrayIndex", t,
 			      0, NOT_BUILT_IN, NULL, NULL_TREE);
@@ -1066,9 +1054,9 @@ java_init_decl_processing (void)
   TREE_THIS_VOLATILE (soft_badarrayindex_node) = 1;
   TREE_SIDE_EFFECTS (soft_badarrayindex_node) = 1;
 
+  t = build_function_type_list (void_type_node, NULL_TREE);
   soft_nullpointer_node
-    = add_builtin_function ("_Jv_ThrowNullPointerException",
-			    build_function_type (void_type_node, endlink),
+    = add_builtin_function ("_Jv_ThrowNullPointerException", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
   /* Mark soft_nullpointer_node as a `noreturn' function with side
      effects.  */
@@ -1076,8 +1064,7 @@ java_init_decl_processing (void)
   TREE_SIDE_EFFECTS (soft_nullpointer_node) = 1;
 
   soft_abstractmethod_node
-    = add_builtin_function ("_Jv_ThrowAbstractMethodError",
-			    build_function_type (void_type_node, endlink),
+    = add_builtin_function ("_Jv_ThrowAbstractMethodError", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
   /* Mark soft_abstractmethod_node as a `noreturn' function with side
      effects.  */
@@ -1085,95 +1072,85 @@ java_init_decl_processing (void)
   TREE_SIDE_EFFECTS (soft_abstractmethod_node) = 1;
 
   soft_nosuchfield_node
-    = add_builtin_function ("_Jv_ThrowNoSuchFieldError",
-			    build_function_type (void_type_node, endlink),
+    = add_builtin_function ("_Jv_ThrowNoSuchFieldError", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
   /* Mark soft_nosuchfield_node as a `noreturn' function with side
      effects.  */
   TREE_THIS_VOLATILE (soft_nosuchfield_node) = 1;
   TREE_SIDE_EFFECTS (soft_nosuchfield_node) = 1;
 
-  t = tree_cons (NULL_TREE, class_ptr_type,
-		 tree_cons (NULL_TREE, object_ptr_type_node, endlink));
+  t = build_function_type_list (ptr_type_node,
+				class_ptr_type, object_ptr_type_node,
+				NULL_TREE);
   soft_checkcast_node
-    = add_builtin_function ("_Jv_CheckCast",
-			    build_function_type (ptr_type_node, t),
+    = add_builtin_function ("_Jv_CheckCast", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
-  t = tree_cons (NULL_TREE, object_ptr_type_node,
-		 tree_cons (NULL_TREE, class_ptr_type, endlink));
+  t = build_function_type_list (boolean_type_node,
+				object_ptr_type_node, class_ptr_type,
+				NULL_TREE);
   soft_instanceof_node
-    = add_builtin_function ("_Jv_IsInstanceOf",
-			    build_function_type (boolean_type_node, t),
+    = add_builtin_function ("_Jv_IsInstanceOf", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
   DECL_PURE_P (soft_instanceof_node) = 1;
-  t = tree_cons (NULL_TREE, object_ptr_type_node,
-		 tree_cons (NULL_TREE, object_ptr_type_node, endlink));
+  t = build_function_type_list (void_type_node,
+				object_ptr_type_node, object_ptr_type_node,
+				NULL_TREE);
   soft_checkarraystore_node
-    = add_builtin_function ("_Jv_CheckArrayStore",
-			    build_function_type (void_type_node, t),
+    = add_builtin_function ("_Jv_CheckArrayStore", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
-  t = tree_cons (NULL_TREE, ptr_type_node,
-		 tree_cons (NULL_TREE, ptr_type_node,
-			    tree_cons (NULL_TREE, int_type_node, endlink)));
+  t = build_function_type_list (ptr_type_node,
+				ptr_type_node, ptr_type_node, int_type_node,
+				NULL_TREE);
   soft_lookupinterfacemethod_node
-    = add_builtin_function ("_Jv_LookupInterfaceMethodIdx",
-			    build_function_type (ptr_type_node, t),
+    = add_builtin_function ("_Jv_LookupInterfaceMethodIdx", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
   DECL_PURE_P (soft_lookupinterfacemethod_node) = 1;
-  t = tree_cons (NULL_TREE, ptr_type_node,
-		 tree_cons (NULL_TREE, ptr_type_node,
-			    tree_cons (NULL_TREE, ptr_type_node, endlink)));
+
+  t = build_function_type_list (ptr_type_node,
+				ptr_type_node, ptr_type_node, ptr_type_node,
+				NULL_TREE);
   soft_lookupinterfacemethodbyname_node
-    = add_builtin_function ("_Jv_LookupInterfaceMethod",
-			    build_function_type (ptr_type_node, t),
+    = add_builtin_function ("_Jv_LookupInterfaceMethod", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
-  t = tree_cons (NULL_TREE, object_ptr_type_node,
-		 tree_cons (NULL_TREE, ptr_type_node,
-			    tree_cons (NULL_TREE, ptr_type_node, 
-			               tree_cons (NULL_TREE, int_type_node, 
-				                  endlink))));
+  t = build_function_type_list (ptr_type_node,
+				object_ptr_type_node, ptr_type_node,
+				ptr_type_node, int_type_node, NULL_TREE);
   soft_lookupjnimethod_node
-    = add_builtin_function ("_Jv_LookupJNIMethod",
-			    build_function_type (ptr_type_node, t),
+    = add_builtin_function ("_Jv_LookupJNIMethod", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
-  t = tree_cons (NULL_TREE, ptr_type_node, endlink);
+  t = build_function_type_list (ptr_type_node, ptr_type_node, NULL_TREE);
   soft_getjnienvnewframe_node
-    = add_builtin_function ("_Jv_GetJNIEnvNewFrame",
-			    build_function_type (ptr_type_node, t),
+    = add_builtin_function ("_Jv_GetJNIEnvNewFrame", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
+  t = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   soft_jnipopsystemframe_node
-    = add_builtin_function ("_Jv_JNI_PopSystemFrame",
-			    build_function_type (void_type_node, t),
+    = add_builtin_function ("_Jv_JNI_PopSystemFrame", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
 
-  t = tree_cons (NULL_TREE, object_ptr_type_node, endlink);
+  t = build_function_type_list (object_ptr_type_node,
+				object_ptr_type_node, NULL_TREE);
   soft_unwrapjni_node
-    = add_builtin_function ("_Jv_UnwrapJNIweakReference",
-			    build_function_type (object_ptr_type_node, t),
+    = add_builtin_function ("_Jv_UnwrapJNIweakReference", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
 
-  t = tree_cons (NULL_TREE, int_type_node,
-		 tree_cons (NULL_TREE, int_type_node, endlink));
+  t = build_function_type_list (int_type_node,
+				int_type_node, int_type_node, NULL_TREE);
   soft_idiv_node
-    = add_builtin_function ("_Jv_divI",
-			    build_function_type (int_type_node, t),
+    = add_builtin_function ("_Jv_divI", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
 
   soft_irem_node
-    = add_builtin_function ("_Jv_remI",
-			    build_function_type (int_type_node, t),
+    = add_builtin_function ("_Jv_remI", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
 
-  t = tree_cons (NULL_TREE, long_type_node,
-		 tree_cons (NULL_TREE, long_type_node, endlink));
+  t = build_function_type_list (long_type_node,
+				long_type_node, long_type_node, NULL_TREE);
   soft_ldiv_node
-    = add_builtin_function ("_Jv_divJ",
-			    build_function_type (long_type_node, t),
+    = add_builtin_function ("_Jv_divJ", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
 
   soft_lrem_node
-    = add_builtin_function ("_Jv_remJ",
-			    build_function_type (long_type_node, t),
+    = add_builtin_function ("_Jv_remJ", t,
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
 
   initialize_builtins ();

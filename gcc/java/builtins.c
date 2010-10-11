@@ -498,7 +498,6 @@ initialize_builtins (void)
   tree double_ftype_double, double_ftype_double_double;
   tree float_ftype_float_float;
   tree boolean_ftype_boolean_boolean;
-  tree t;
   int i;
 
   for (i = 0; java_builtins[i].builtin_code != END_BUILTINS; ++i)
@@ -512,14 +511,15 @@ initialize_builtins (void)
 
   void_list_node = end_params_node;
 
-  t = tree_cons (NULL_TREE, float_type_node, end_params_node);
-  t = tree_cons (NULL_TREE, float_type_node, t);
-  float_ftype_float_float = build_function_type (float_type_node, t);
+  float_ftype_float_float
+    = build_function_type_list (float_type_node,
+				float_type_node, float_type_node, NULL_TREE);
 
-  t = tree_cons (NULL_TREE, double_type_node, end_params_node);
-  double_ftype_double = build_function_type (double_type_node, t);
-  t = tree_cons (NULL_TREE, double_type_node, t);
-  double_ftype_double_double = build_function_type (double_type_node, t);
+  double_ftype_double
+    = build_function_type_list (double_type_node, double_type_node, NULL_TREE);
+  double_ftype_double_double
+    = build_function_type_list (double_type_node,
+				double_type_node, double_type_node, NULL_TREE);
 
   define_builtin (BUILT_IN_FMOD, "__builtin_fmod",
 		  double_ftype_double_double, "fmod", BUILTIN_CONST);
@@ -566,9 +566,10 @@ initialize_builtins (void)
 		  double_ftype_double, "_ZN4java4lang4Math3tanEJdd",
 		  BUILTIN_CONST);
   
-  t = tree_cons (NULL_TREE, boolean_type_node, end_params_node);
-  t = tree_cons (NULL_TREE, boolean_type_node, t);
-  boolean_ftype_boolean_boolean = build_function_type (boolean_type_node, t);
+  boolean_ftype_boolean_boolean
+    = build_function_type_list (boolean_type_node,
+				boolean_type_node, boolean_type_node,
+				NULL_TREE);
   define_builtin (BUILT_IN_EXPECT, "__builtin_expect", 
 		  boolean_ftype_boolean_boolean,
 		  "__builtin_expect",
@@ -588,7 +589,7 @@ initialize_builtins (void)
 					    int_type_node, NULL_TREE), 
 		  "__sync_bool_compare_and_swap_8", 0);
   define_builtin (BUILT_IN_SYNCHRONIZE, "__sync_synchronize",
-		  build_function_type (void_type_node, void_list_node),
+		  build_function_type_list (void_type_node, NULL_TREE),
 		  "__sync_synchronize", BUILTIN_NOTHROW);
   
   define_builtin (BUILT_IN_RETURN_ADDRESS, "__builtin_return_address",
