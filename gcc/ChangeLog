@@ -1,3 +1,9 @@
+2010-10-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/45699
+	* gimple-fold.c (gimple_fold_obj_type_ref_known_binfo): Choose among
+	thunks.
+
 2010-10-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in ($(lang_checks_parallel))

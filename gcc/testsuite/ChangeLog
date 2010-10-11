@@ -1,3 +1,10 @@
+2010-10-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/45699
+	* g++.dg/torture/pr45699.C: New test.
+	* g++.dg/otr-fold-1.C: Adjusted.
+	* g++.dg/otr-fold-1.C: Likewise.
+
 2010-10-11  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.c-torture/compile/pr44197.c: Require visibility support.
