@@ -134,9 +134,10 @@ package body Exp_Ch6 is
    --  expression to pass for the master. In most cases, this is the current
    --  master (_master). The two exceptions are: If the function call is the
    --  initialization expression for an allocator, we pass the master of the
-   --  access type. If the function call is the initialization expression for
-   --  a return object, we pass along the master passed in by the caller. The
-   --  activation chain to pass is always the local one.
+   --  access type. If the function call is the initialization expression for a
+   --  return object, we pass along the master passed in by the caller. The
+   --  activation chain to pass is always the local one. Note: Master_Actual
+   --  can be Empty, but only if there are no tasks
 
    procedure Check_Overriding_Operation (Subp : Entity_Id);
    --  Subp is a dispatching operation. Check whether it may override an
@@ -473,10 +474,10 @@ package body Exp_Ch6 is
      (Function_Call : Node_Id;
       Function_Id   : Entity_Id;
       Master_Actual : Node_Id)
-      --  Note: Master_Actual can be Empty, but only if there are no tasks
    is
       Loc    : constant Source_Ptr := Sloc (Function_Call);
       Actual : Node_Id := Master_Actual;
+
    begin
       --  No such extra parameters are needed if there are no tasks
 
@@ -1755,6 +1756,7 @@ package body Exp_Ch6 is
 
    procedure Expand_Call (N : Node_Id) is
       Loc           : constant Source_Ptr := Sloc (N);
+      Call_Node     : Node_Id := N;
       Extra_Actuals : List_Id := No_List;
       Prev          : Node_Id := Empty;
 
@@ -1791,13 +1793,14 @@ package body Exp_Ch6 is
          if No (Prev) or else
             Nkind (Parent (Prev)) /= N_Parameter_Association
          then
-            Set_Next_Named_Actual (Insert_Param, First_Named_Actual (N));
-            Set_First_Named_Actual (N, Actual_Expr);
+            Set_Next_Named_Actual
+              (Insert_Param, First_Named_Actual (Call_Node));
+            Set_First_Named_Actual (Call_Node, Actual_Expr);
 
             if No (Prev) then
-               if No (Parameter_Associations (N)) then
-                  Set_Parameter_Associations (N, New_List);
-                  Append (Insert_Param, Parameter_Associations (N));
+               if No (Parameter_Associations (Call_Node)) then
+                  Set_Parameter_Associations (Call_Node, New_List);
+                  Append (Insert_Param, Parameter_Associations (Call_Node));
                end if;
             else
                Insert_After (Prev, Insert_Param);
@@ -1809,7 +1812,7 @@ package body Exp_Ch6 is
             Set_Next_Named_Actual
               (Insert_Param, Next_Named_Actual (Parent (Prev)));
             Set_Next_Named_Actual (Parent (Prev), Actual_Expr);
-            Append (Insert_Param, Parameter_Associations (N));
+            Append (Insert_Param, Parameter_Associations (Call_Node));
          end if;
 
          Prev := Actual_Expr;
@@ -1825,7 +1828,7 @@ package body Exp_Ch6 is
       begin
          if Extra_Actuals = No_List then
             Extra_Actuals := New_List;
-            Set_Parent (Extra_Actuals, N);
+            Set_Parent (Extra_Actuals, Call_Node);
          end if;
 
          Append_To (Extra_Actuals,
@@ -1835,7 +1838,7 @@ package body Exp_Ch6 is
 
          Analyze_And_Resolve (Expr, Etype (EF));
 
-         if Nkind (N) = N_Function_Call then
+         if Nkind (Call_Node) = N_Function_Call then
             Set_Is_Accessibility_Actual (Parent (Expr));
          end if;
       end Add_Extra_Actual;
@@ -1941,7 +1944,7 @@ package body Exp_Ch6 is
 
       --  Local variables
 
-      Remote        : constant Boolean := Is_Remote_Call (N);
+      Remote        : constant Boolean := Is_Remote_Call (Call_Node);
       Actual        : Node_Id;
       Formal        : Entity_Id;
       Orig_Subp     : Entity_Id := Empty;
@@ -1964,35 +1967,37 @@ package body Exp_Ch6 is
    begin
       --  Ignore if previous error
 
-      if Nkind (N) in N_Has_Etype and then Etype (N) = Any_Type then
+      if Nkind (Call_Node) in N_Has_Etype
+        and then Etype (Call_Node) = Any_Type
+      then
          return;
       end if;
 
       --  Call using access to subprogram with explicit dereference
 
-      if Nkind (Name (N)) = N_Explicit_Dereference then
-         Subp        := Etype (Name (N));
+      if Nkind (Name (Call_Node)) = N_Explicit_Dereference then
+         Subp        := Etype (Name (Call_Node));
          Parent_Subp := Empty;
 
       --  Case of call to simple entry, where the Name is a selected component
       --  whose prefix is the task, and whose selector name is the entry name
 
-      elsif Nkind (Name (N)) = N_Selected_Component then
-         Subp        := Entity (Selector_Name (Name (N)));
+      elsif Nkind (Name (Call_Node)) = N_Selected_Component then
+         Subp        := Entity (Selector_Name (Name (Call_Node)));
          Parent_Subp := Empty;
 
       --  Case of call to member of entry family, where Name is an indexed
       --  component, with the prefix being a selected component giving the
       --  task and entry family name, and the index being the entry index.
 
-      elsif Nkind (Name (N)) = N_Indexed_Component then
-         Subp        := Entity (Selector_Name (Prefix (Name (N))));
+      elsif Nkind (Name (Call_Node)) = N_Indexed_Component then
+         Subp        := Entity (Selector_Name (Prefix (Name (Call_Node))));
          Parent_Subp := Empty;
 
       --  Normal case
 
       else
-         Subp        := Entity (Name (N));
+         Subp        := Entity (Name (Call_Node));
          Parent_Subp := Alias (Subp);
 
          --  Replace call to Raise_Exception by call to Raise_Exception_Always
@@ -2007,8 +2012,8 @@ package body Exp_Ch6 is
            and then RTE_Available (RE_Raise_Exception_Always)
          then
             declare
-               FA : constant Node_Id := Original_Node (First_Actual (N));
-
+               FA : constant Node_Id := Original_Node
+                                          (First_Actual (Call_Node));
             begin
                --  The case we catch is where the first argument is obtained
                --  using the Identity attribute (which must always be
@@ -2018,7 +2023,7 @@ package body Exp_Ch6 is
                  and then Attribute_Name (FA) = Name_Identity
                then
                   Subp := RTE (RE_Raise_Exception_Always);
-                  Set_Name (N, New_Occurrence_Of (Subp, Loc));
+                  Set_Name (Call_Node, New_Occurrence_Of (Subp, Loc));
                end if;
             end;
          end if;
@@ -2034,13 +2039,13 @@ package body Exp_Ch6 is
       --  is a renaming of an entry and rewrite it as an entry call.
 
       if Ada_Version >= Ada_2005
-        and then Nkind (N) = N_Procedure_Call_Statement
+        and then Nkind (Call_Node) = N_Procedure_Call_Statement
         and then
-           ((Nkind (Parent (N)) = N_Triggering_Alternative
-               and then Triggering_Statement (Parent (N)) = N)
+           ((Nkind (Parent (Call_Node)) = N_Triggering_Alternative
+               and then Triggering_Statement (Parent (Call_Node)) = Call_Node)
           or else
-            (Nkind (Parent (N)) = N_Entry_Call_Alternative
-               and then Entry_Call_Statement (Parent (N)) = N))
+            (Nkind (Parent (Call_Node)) = N_Entry_Call_Alternative
+               and then Entry_Call_Statement (Parent (Call_Node)) = Call_Node))
       then
          declare
             Ren_Decl : Node_Id;
@@ -2057,12 +2062,13 @@ package body Exp_Ch6 is
                Ren_Decl := Original_Node (Parent (Parent (Ren_Root)));
 
                if Nkind (Ren_Decl) = N_Subprogram_Renaming_Declaration then
-                  Rewrite (N,
+                  Rewrite (Call_Node,
                     Make_Entry_Call_Statement (Loc,
                       Name =>
                         New_Copy_Tree (Name (Ren_Decl)),
                       Parameter_Associations =>
-                        New_Copy_List_Tree (Parameter_Associations (N))));
+                        New_Copy_List_Tree
+                          (Parameter_Associations (Call_Node))));
 
                   return;
                end if;
@@ -2080,7 +2086,7 @@ package body Exp_Ch6 is
       --  (Though it seems that this would be better done in Expand_Actuals???)
 
       Formal      := First_Formal (Subp);
-      Actual      := First_Actual (N);
+      Actual      := First_Actual (Call_Node);
       Param_Count := 1;
       while Present (Formal) loop
 
@@ -2469,7 +2475,7 @@ package body Exp_Ch6 is
          --  checking mode, all indexed components are checked with a call
          --  directly from Expand_N_Indexed_Component.
 
-         if Comes_From_Source (N)
+         if Comes_From_Source (Call_Node)
            and then Ekind (Formal) /= E_In_Parameter
            and then Validity_Checks_On
            and then Validity_Check_Default
@@ -2568,50 +2574,53 @@ package body Exp_Ch6 is
       --  assignment might be transformed to a declaration for an unconstrained
       --  value if the expression is classwide.
 
-      if Nkind (N) = N_Function_Call
-        and then Is_Tag_Indeterminate (N)
-        and then Is_Entity_Name (Name (N))
+      if Nkind (Call_Node) = N_Function_Call
+        and then Is_Tag_Indeterminate (Call_Node)
+        and then Is_Entity_Name (Name (Call_Node))
       then
          declare
             Ass : Node_Id := Empty;
 
          begin
-            if Nkind (Parent (N)) = N_Assignment_Statement then
-               Ass := Parent (N);
+            if Nkind (Parent (Call_Node)) = N_Assignment_Statement then
+               Ass := Parent (Call_Node);
 
-            elsif Nkind (Parent (N)) = N_Qualified_Expression
-              and then Nkind (Parent (Parent (N))) = N_Assignment_Statement
+            elsif Nkind (Parent (Call_Node)) = N_Qualified_Expression
+              and then Nkind (Parent (Parent (Call_Node)))
+                         = N_Assignment_Statement
             then
-               Ass := Parent (Parent (N));
+               Ass := Parent (Parent (Call_Node));
 
-            elsif Nkind (Parent (N)) = N_Explicit_Dereference
-              and then Nkind (Parent (Parent (N))) = N_Assignment_Statement
+            elsif Nkind (Parent (Call_Node)) = N_Explicit_Dereference
+              and then Nkind (Parent (Parent (Call_Node)))
+                         = N_Assignment_Statement
             then
-               Ass := Parent (Parent (N));
+               Ass := Parent (Parent (Call_Node));
             end if;
 
             if Present (Ass)
               and then Is_Class_Wide_Type (Etype (Name (Ass)))
             then
-               if Is_Access_Type (Etype (N)) then
-                  if Designated_Type (Etype (N)) /=
+               if Is_Access_Type (Etype (Call_Node)) then
+                  if Designated_Type (Etype (Call_Node)) /=
                     Root_Type (Etype (Name (Ass)))
                   then
                      Error_Msg_NE
                        ("tag-indeterminate expression "
                          & " must have designated type& (RM 5.2 (6))",
-                           N, Root_Type (Etype (Name (Ass))));
+                           Call_Node, Root_Type (Etype (Name (Ass))));
                   else
-                     Propagate_Tag (Name (Ass), N);
+                     Propagate_Tag (Name (Ass), Call_Node);
                   end if;
 
-               elsif Etype (N) /= Root_Type (Etype (Name (Ass))) then
+               elsif Etype (Call_Node) /= Root_Type (Etype (Name (Ass))) then
                   Error_Msg_NE
                     ("tag-indeterminate expression must have type&"
-                     & "(RM 5.2 (6))", N, Root_Type (Etype (Name (Ass))));
+                     & "(RM 5.2 (6))",
+                     Call_Node, Root_Type (Etype (Name (Ass))));
 
                else
-                  Propagate_Tag (Name (Ass), N);
+                  Propagate_Tag (Name (Ass), Call_Node);
                end if;
 
                --  The call will be rewritten as a dispatching call, and
@@ -2625,10 +2634,10 @@ package body Exp_Ch6 is
       --  Ada 2005 (AI-251): If some formal is a class-wide interface, expand
       --  it to point to the correct secondary virtual table
 
-      if Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
+      if Nkind_In (Call_Node, N_Function_Call, N_Procedure_Call_Statement)
         and then CW_Interface_Formals_Present
       then
-         Expand_Interface_Actuals (N);
+         Expand_Interface_Actuals (Call_Node);
       end if;
 
       --  Deals with Dispatch_Call if we still have a call, before expanding
@@ -2639,27 +2648,49 @@ package body Exp_Ch6 is
       --  back-ends directly handle the generation of dispatching calls and
       --  would have to undo any expansion to an indirect call.
 
-      if Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
-        and then Present (Controlling_Argument (N))
+      if Nkind_In (Call_Node, N_Function_Call, N_Procedure_Call_Statement)
+        and then Present (Controlling_Argument (Call_Node))
       then
-         if Tagged_Type_Expansion then
-            Expand_Dispatching_Call (N);
+         declare
+            Typ        : constant Entity_Id := Find_Dispatching_Type (Subp);
+            Eq_Prim_Op : Entity_Id := Empty;
 
-            --  The following return is worrisome. Is it really OK to skip all
-            --  remaining processing in this procedure ???
+         begin
+            if not Is_Limited_Type (Typ) then
+               Eq_Prim_Op := Find_Prim_Op (Typ, Name_Op_Eq);
+            end if;
 
-            return;
+            if Tagged_Type_Expansion then
+               Expand_Dispatching_Call (Call_Node);
 
-         else
-            Apply_Tag_Checks (N);
+               --  The following return is worrisome. Is it really OK to skip
+               --  all remaining processing in this procedure ???
 
-            --  Expansion of a dispatching call results in an indirect call,
-            --  which in turn causes current values to be killed (see
-            --  Resolve_Call), so on VM targets we do the call here to ensure
-            --  consistent warnings between VM and non-VM targets.
+               return;
 
-            Kill_Current_Values;
-         end if;
+            --  VM targets
+
+            else
+               Apply_Tag_Checks (Call_Node);
+
+               --  Expansion of a dispatching call results in an indirect call,
+               --  which in turn causes current values to be killed (see
+               --  Resolve_Call), so on VM targets we do the call here to
+               --  ensure consistent warnings between VM and non-VM targets.
+
+               Kill_Current_Values;
+            end if;
+
+            --  If this is a dispatching "=" then we must update the reference
+            --  to the call node because we generated:
+            --     x.tag = y.tag and then x = y
+
+            if Subp = Eq_Prim_Op
+              and then Nkind (Call_Node) = N_Op_And
+            then
+               Call_Node := Right_Opnd (Call_Node);
+            end if;
+         end;
       end if;
 
       --  Similarly, expand calls to RCI subprograms on which pragma
@@ -2667,8 +2698,8 @@ package body Exp_Ch6 is
       --  later. Do this only when the call comes from source since we
       --  do not want such a rewriting to occur in expanded code.
 
-      if Is_All_Remote_Call (N) then
-         Expand_All_Calls_Remote_Subprogram_Call (N);
+      if Is_All_Remote_Call (Call_Node) then
+         Expand_All_Calls_Remote_Subprogram_Call (Call_Node);
 
       --  Similarly, do not add extra actuals for an entry call whose entity
       --  is a protected procedure, or for an internal protected subprogram
@@ -2693,15 +2724,15 @@ package body Exp_Ch6 is
       --  At this point we have all the actuals, so this is the point at which
       --  the various expansion activities for actuals is carried out.
 
-      Expand_Actuals (N, Subp);
+      Expand_Actuals (Call_Node, Subp);
 
       --  If the subprogram is a renaming, or if it is inherited, replace it in
       --  the call with the name of the actual subprogram being called. If this
       --  is a dispatching call, the run-time decides what to call. The Alias
       --  attribute does not apply to entries.
 
-      if Nkind (N) /= N_Entry_Call_Statement
-        and then No (Controlling_Argument (N))
+      if Nkind (Call_Node) /= N_Entry_Call_Statement
+        and then No (Controlling_Argument (Call_Node))
         and then Present (Parent_Subp)
       then
          if Present (Inherited_From_Formal (Subp)) then
@@ -2712,13 +2743,14 @@ package body Exp_Ch6 is
 
          --  The below setting of Entity is suspect, see F109-018 discussion???
 
-         Set_Entity (Name (N), Parent_Subp);
+         Set_Entity (Name (Call_Node), Parent_Subp);
 
          if Is_Abstract_Subprogram (Parent_Subp)
            and then not In_Instance
          then
             Error_Msg_NE
-              ("cannot call abstract subprogram &!", Name (N), Parent_Subp);
+              ("cannot call abstract subprogram &!",
+               Name (Call_Node), Parent_Subp);
          end if;
 
          --  Inspect all formals of derived subprogram Subp. Compare parameter
@@ -2754,7 +2786,7 @@ package body Exp_Ch6 is
                Parent_Typ : Entity_Id;
 
             begin
-               Actual := First_Actual (N);
+               Actual := First_Actual (Call_Node);
                Formal := First_Formal (Subp);
                Parent_Formal := First_Formal (Parent_Subp);
                while Present (Formal) loop
@@ -2842,7 +2874,7 @@ package body Exp_Ch6 is
       --  Check for violation of No_Abort_Statements
 
       if Is_RTE (Subp, RE_Abort_Task) then
-         Check_Restriction (No_Abort_Statements, N);
+         Check_Restriction (No_Abort_Statements, Call_Node);
 
       --  Check for violation of No_Dynamic_Attachment
 
@@ -2855,17 +2887,17 @@ package body Exp_Ch6 is
                   Is_RTE (Subp, RE_Detach_Handler)   or else
                   Is_RTE (Subp, RE_Reference))
       then
-         Check_Restriction (No_Dynamic_Attachment, N);
+         Check_Restriction (No_Dynamic_Attachment, Call_Node);
       end if;
 
       --  Deal with case where call is an explicit dereference
 
-      if Nkind (Name (N)) = N_Explicit_Dereference then
+      if Nkind (Name (Call_Node)) = N_Explicit_Dereference then
 
       --  Handle case of access to protected subprogram type
 
          if Is_Access_Protected_Subprogram_Type
-              (Base_Type (Etype (Prefix (Name (N)))))
+              (Base_Type (Etype (Prefix (Name (Call_Node)))))
          then
             --  If this is a call through an access to protected operation, the
             --  prefix has the form (object'address, operation'access). Rewrite
@@ -2877,7 +2909,7 @@ package body Exp_Ch6 is
                Parm : List_Id;
                Nam  : Node_Id;
                Obj  : Node_Id;
-               Ptr  : constant Node_Id := Prefix (Name (N));
+               Ptr  : constant Node_Id := Prefix (Name (Call_Node));
 
                T : constant Entity_Id :=
                      Equivalent_Type (Base_Type (Etype (Ptr)));
@@ -2902,8 +2934,8 @@ package body Exp_Ch6 is
                  Make_Explicit_Dereference (Loc,
                    Prefix => Nam);
 
-               if Present (Parameter_Associations (N))  then
-                  Parm := Parameter_Associations (N);
+               if Present (Parameter_Associations (Call_Node))  then
+                  Parm := Parameter_Associations (Call_Node);
                else
                   Parm := New_List;
                end if;
@@ -2922,7 +2954,7 @@ package body Exp_Ch6 is
                       Parameter_Associations => Parm);
                end if;
 
-               Set_First_Named_Actual (Call, First_Named_Actual (N));
+               Set_First_Named_Actual (Call, First_Named_Actual (Call_Node));
                Set_Etype (Call, Etype (D_T));
 
                --  We do not re-analyze the call to avoid infinite recursion.
@@ -2930,7 +2962,7 @@ package body Exp_Ch6 is
                --  the checks on the prefix that would otherwise be emitted
                --  when resolving a call.
 
-               Rewrite (N, Call);
+               Rewrite (Call_Node, Call);
                Analyze (Nam);
                Apply_Access_Check (Nam);
                Analyze (Obj);
@@ -2952,13 +2984,13 @@ package body Exp_Ch6 is
       --  parent operation, will yield the wrong type.
 
       if Is_Intrinsic_Subprogram (Subp) then
-         Expand_Intrinsic_Call (N, Subp);
+         Expand_Intrinsic_Call (Call_Node, Subp);
 
-         if Nkind (N) = N_Unchecked_Type_Conversion
+         if Nkind (Call_Node) = N_Unchecked_Type_Conversion
            and then Parent_Subp /= Orig_Subp
            and then Etype (Parent_Subp) /= Etype (Orig_Subp)
          then
-            Set_Etype (N, Etype (Orig_Subp));
+            Set_Etype (Call_Node, Etype (Orig_Subp));
          end if;
 
          return;
@@ -2980,13 +3012,13 @@ package body Exp_Ch6 is
          --  that tree generated is the same in both cases, for Inspector use.
 
          if Is_RTE (Subp, RE_To_Address) then
-            Rewrite (N,
+            Rewrite (Call_Node,
               Unchecked_Convert_To
-                (RTE (RE_Address), Relocate_Node (First_Actual (N))));
+                (RTE (RE_Address), Relocate_Node (First_Actual (Call_Node))));
             return;
 
          elsif Is_Null_Procedure (Subp)  then
-            Rewrite (N, Make_Null_Statement (Loc));
+            Rewrite (Call_Node, Make_Null_Statement (Loc));
             return;
          end if;
 
@@ -3060,8 +3092,8 @@ package body Exp_Ch6 is
                else
                   Bod := Body_To_Inline (Spec);
 
-                  if (In_Extended_Main_Code_Unit (N)
-                        or else In_Extended_Main_Code_Unit (Parent (N))
+                  if (In_Extended_Main_Code_Unit (Call_Node)
+                        or else In_Extended_Main_Code_Unit (Parent (Call_Node))
                         or else Has_Pragma_Inline_Always (Subp))
                     and then (not In_Same_Extended_Unit (Sloc (Bod), Loc)
                                or else
@@ -3081,7 +3113,7 @@ package body Exp_Ch6 is
                   --  visible a private entity in the body of the main unit,
                   --  that gigi will see before its sees its proper definition.
 
-                  elsif not (In_Extended_Main_Code_Unit (N))
+                  elsif not (In_Extended_Main_Code_Unit (Call_Node))
                     and then In_Package_Body
                   then
                      Must_Inline := not In_Extended_Main_Source_Unit (Subp);
@@ -3089,7 +3121,7 @@ package body Exp_Ch6 is
                end if;
 
                if Must_Inline then
-                  Expand_Inlined_Call (N, Subp, Orig_Subp);
+                  Expand_Inlined_Call (Call_Node, Subp, Orig_Subp);
 
                else
                   --  Let the back end handle it
@@ -3098,13 +3130,13 @@ package body Exp_Ch6 is
 
                   if Front_End_Inlining
                     and then Nkind (Spec) = N_Subprogram_Declaration
-                    and then (In_Extended_Main_Code_Unit (N))
+                    and then (In_Extended_Main_Code_Unit (Call_Node))
                     and then No (Body_To_Inline (Spec))
                     and then not Has_Completion (Subp)
                     and then In_Same_Extended_Unit (Sloc (Spec), Loc)
                   then
                      Cannot_Inline
-                      ("cannot inline& (body not seen yet)?", N, Subp);
+                      ("cannot inline& (body not seen yet)?", Call_Node, Subp);
                   end if;
                end if;
             end Inlined_Subprogram;
@@ -3122,7 +3154,7 @@ package body Exp_Ch6 is
 
       Scop := Scope (Subp);
 
-      if Nkind (N) /= N_Entry_Call_Statement
+      if Nkind (Call_Node) /= N_Entry_Call_Statement
         and then Is_Protected_Type (Scop)
         and then Ekind (Subp) /= E_Subprogram_Type
         and then not Is_Eliminated (Subp)
@@ -3130,7 +3162,7 @@ package body Exp_Ch6 is
          --  If the call is an internal one, it is rewritten as a call to the
          --  corresponding unprotected subprogram.
 
-         Expand_Protected_Subprogram_Call (N, Subp, Scop);
+         Expand_Protected_Subprogram_Call (Call_Node, Subp, Scop);
       end if;
 
       --  Functions returning controlled objects need special attention:
@@ -3147,14 +3179,14 @@ package body Exp_Ch6 is
                 or else
                   not Is_Concurrent_Record_Type (Etype (First_Formal (Subp))))
          then
-            Expand_Ctrl_Function_Call (N);
+            Expand_Ctrl_Function_Call (Call_Node);
 
          --  Build-in-place function calls which appear in anonymous contexts
          --  need a transient scope to ensure the proper finalization of the
          --  intermediate result after its use.
 
-         elsif Is_Build_In_Place_Function_Call (N)
-           and then Nkind_In (Parent (N), N_Attribute_Reference,
+         elsif Is_Build_In_Place_Function_Call (Call_Node)
+           and then Nkind_In (Parent (Call_Node), N_Attribute_Reference,
                                           N_Function_Call,
                                           N_Indexed_Component,
                                           N_Object_Renaming_Declaration,
@@ -3162,7 +3194,7 @@ package body Exp_Ch6 is
                                           N_Selected_Component,
                                           N_Slice)
          then
-            Establish_Transient_Scope (N, Sec_Stack => True);
+            Establish_Transient_Scope (Call_Node, Sec_Stack => True);
          end if;
       end if;
 
@@ -3187,7 +3219,7 @@ package body Exp_Ch6 is
             --  the validity of the parameter before setting it.
 
             Formal := First_Formal (Subp);
-            Actual := First_Actual (N);
+            Actual := First_Actual (Call_Node);
             while Formal /= First_Optional_Parameter (Subp) loop
                Last_Keep_Arg := Actual;
                Next_Formal (Formal);
@@ -3221,8 +3253,8 @@ package body Exp_Ch6 is
             --  If no arguments, delete entire list, this is the easy case
 
             if No (Last_Keep_Arg) then
-               Set_Parameter_Associations (N, No_List);
-               Set_First_Named_Actual (N, Empty);
+               Set_Parameter_Associations (Call_Node, No_List);
+               Set_First_Named_Actual (Call_Node, Empty);
 
             --  Case where at the last retained argument is positional. This
             --  is also an easy case, since the retained arguments are already
@@ -3234,7 +3266,7 @@ package body Exp_Ch6 is
                   Discard_Node (Remove_Next (Last_Keep_Arg));
                end loop;
 
-               Set_First_Named_Actual (N, Empty);
+               Set_First_Named_Actual (Call_Node, Empty);
 
             --  This is the annoying case where the last retained argument
             --  is a named parameter. Since the original arguments are not
@@ -3251,14 +3283,22 @@ package body Exp_Ch6 is
                   --  list (they are still chained using First_Named_Actual
                   --  and Next_Named_Actual, so we have not lost them!)
 
-                  Temp := First (Parameter_Associations (N));
+                  Temp := First (Parameter_Associations (Call_Node));
 
                   --  Case of all parameters named, remove them all
 
                   if Nkind (Temp) = N_Parameter_Association then
-                     while Is_Non_Empty_List (Parameter_Associations (N)) loop
-                        Temp := Remove_Head (Parameter_Associations (N));
+                     --  Suppress warnings to avoid warning on possible
+                     --  infinite loop (because Call_Node is not modified).
+
+                     pragma Warnings (Off);
+                     while Is_Non_Empty_List
+                             (Parameter_Associations (Call_Node))
+                     loop
+                        Temp :=
+                          Remove_Head (Parameter_Associations (Call_Node));
                      end loop;
+                     pragma Warnings (On);
 
                   --  Case of mixed positional/named, remove named parameters
 
@@ -3278,11 +3318,11 @@ package body Exp_Ch6 is
                   --  touched since we are only reordering them on the actual
                   --  parameter association list.
 
-                  Passoc := Parent (First_Named_Actual (N));
+                  Passoc := Parent (First_Named_Actual (Call_Node));
                   loop
                      Temp := Relocate_Node (Passoc);
                      Append_To
-                       (Parameter_Associations (N), Temp);
+                       (Parameter_Associations (Call_Node), Temp);
                      exit when
                        Last_Keep_Arg = Explicit_Actual_Parameter (Passoc);
                      Passoc := Parent (Next_Named_Actual (Passoc));
