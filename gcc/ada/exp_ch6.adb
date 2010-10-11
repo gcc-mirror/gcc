@@ -2033,8 +2033,9 @@ package body Exp_Ch6 is
            and then RTE_Available (RE_Raise_Exception_Always)
          then
             declare
-               FA : constant Node_Id := Original_Node
-                                          (First_Actual (Call_Node));
+               FA : constant Node_Id :=
+                      Original_Node (First_Actual (Call_Node));
+
             begin
                --  The case we catch is where the first argument is obtained
                --  using the Identity attribute (which must always be
@@ -2063,10 +2064,10 @@ package body Exp_Ch6 is
         and then Nkind (Call_Node) = N_Procedure_Call_Statement
         and then
            ((Nkind (Parent (Call_Node)) = N_Triggering_Alternative
-               and then Triggering_Statement (Parent (Call_Node)) = Call_Node)
+              and then Triggering_Statement (Parent (Call_Node)) = Call_Node)
           or else
             (Nkind (Parent (Call_Node)) = N_Entry_Call_Alternative
-               and then Entry_Call_Statement (Parent (Call_Node)) = Call_Node))
+              and then Entry_Call_Statement (Parent (Call_Node)) = Call_Node))
       then
          declare
             Ren_Decl : Node_Id;
@@ -2607,14 +2608,14 @@ package body Exp_Ch6 is
                Ass := Parent (Call_Node);
 
             elsif Nkind (Parent (Call_Node)) = N_Qualified_Expression
-              and then Nkind (Parent (Parent (Call_Node)))
-                         = N_Assignment_Statement
+              and then Nkind (Parent (Parent (Call_Node))) =
+                                                  N_Assignment_Statement
             then
                Ass := Parent (Parent (Call_Node));
 
             elsif Nkind (Parent (Call_Node)) = N_Explicit_Dereference
-              and then Nkind (Parent (Parent (Call_Node)))
-                         = N_Assignment_Statement
+              and then Nkind (Parent (Parent (Call_Node))) =
+                                                  N_Assignment_Statement
             then
                Ass := Parent (Parent (Call_Node));
             end if;
@@ -2629,7 +2630,7 @@ package body Exp_Ch6 is
                      Error_Msg_NE
                        ("tag-indeterminate expression "
                          & " must have designated type& (RM 5.2 (6))",
-                           Call_Node, Root_Type (Etype (Name (Ass))));
+                         Call_Node, Root_Type (Etype (Name (Ass))));
                   else
                      Propagate_Tag (Name (Ass), Call_Node);
                   end if;

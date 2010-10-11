@@ -1058,7 +1058,6 @@ package body Freeze is
          end if;
 
          Comp := First_Component (E);
-
          while Present (Comp) loop
             if not Is_Type (Comp)
               and then (Strict_Alignment (Etype (Comp))
@@ -2163,7 +2162,6 @@ package body Freeze is
 
          if Is_First_Subtype (Rec) then
             Comp := First_Component (Rec);
-
             while Present (Comp) loop
                if Present (Component_Clause (Comp))
                  and then (Is_Fixed_Point_Type (Etype (Comp))
@@ -2322,10 +2320,10 @@ package body Freeze is
         and then Ekind (Test_E) /= E_Constant
       then
          declare
-            S : Entity_Id := Current_Scope;
+            S : Entity_Id;
 
          begin
-
+            S := Current_Scope;
             while Present (S) loop
                if Is_Overloadable (S) then
                   if Comes_From_Source (S)
@@ -2356,9 +2354,10 @@ package body Freeze is
         and then Present (Scope (Test_E))
       then
          declare
-            S : Entity_Id := Scope (Test_E);
+            S : Entity_Id;
 
          begin
+            S := Scope (Test_E);
             while Present (S) loop
                if Is_Generic_Instance (S) then
                   exit;
@@ -3730,7 +3729,6 @@ package body Freeze is
 
          elsif Ekind (E) = E_Subprogram_Type then
             Formal := First_Formal (E);
-
             while Present (Formal) loop
                if Ekind (Etype (Formal)) = E_Incomplete_Type
                  and then No (Full_View (Etype (Formal)))
@@ -3739,7 +3737,7 @@ package body Freeze is
                   if Is_Tagged_Type (Etype (Formal)) then
                      null;
 
-                  --  AI05-151 : incomplete types are allowed in access to
+                  --  AI05-151: Incomplete types are allowed in access to
                   --  subprogram specifications.
 
                   elsif Ada_Version < Ada_2012 then
@@ -3877,6 +3875,7 @@ package body Freeze is
                declare
                   Prim_List : constant Elist_Id := Primitive_Operations (E);
                   Prim      : Elmt_Id;
+
                begin
                   Prim := First_Elmt (Prim_List);
                   while Present (Prim) loop
@@ -3984,7 +3983,6 @@ package body Freeze is
 
             begin
                Comp := First_Component (E);
-
                while Present (Comp) loop
                   Typ  := Etype (Comp);
 
@@ -5167,7 +5165,6 @@ package body Freeze is
                   end if;
 
                   F := First_Formal (Designated_Type (Typ));
-
                   while Present (F) loop
                      Ensure_Type_Is_SA (Etype (F));
                      Next_Formal (F);
@@ -5451,7 +5448,6 @@ package body Freeze is
 
          begin
             Comp := First_Component (T);
-
             while Present (Comp) loop
                if not Is_Fully_Defined (Etype (Comp)) then
                   return False;
@@ -5803,7 +5799,6 @@ package body Freeze is
 
             begin
                Comp := First_Component (Typ);
-
                while Present (Comp) loop
                   if Nkind (Parent (Comp)) = N_Component_Declaration
                     and then Present (Expression (Parent (Comp)))
