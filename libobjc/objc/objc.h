@@ -91,9 +91,7 @@ typedef struct objc_class *Class;
 /* An 'id' is an object of an unknown class.  The way the object data
    is stored inside the object is private and what you see here is
    only the beginning of the actual struct.  The first field is always
-   a pointer to the Class that the object belongs to.  If performance
-   is paramount, you can use this knowledge to get the class of an
-   object by doing '((id)object)->class_pointer'.
+   a pointer to the Class that the object belongs to.
 */
 typedef struct objc_object
 {
@@ -101,7 +99,9 @@ typedef struct objc_object
      of a Class object, this pointer points to the meta class.
 
      Compatibility Note: The Apple/NeXT runtime calls this field
-     'isa'.  */
+     'isa'.  To access this field in a portable way, use
+     object_getClass() from runtime.h, which is an inline function so
+     does not add any overhead.  */
   Class class_pointer;
 } *id;
 

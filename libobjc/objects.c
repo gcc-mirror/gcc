@@ -102,6 +102,29 @@ object_dispose (id object)
   return nil;
 }
 
+const char *
+object_getClassName (id object)
+{
+  if (object != nil)
+    return object->class_pointer->name;
+  else
+    return "Nil";
+}
+
+Class
+object_setClass (id object, Class class_)
+{
+  if (object == nil)
+    return Nil;
+  else
+    {
+      Class old_class = object->class_pointer;
+
+      object->class_pointer = class_;
+      return old_class;
+    }
+}
+
 /*
   Hook functions for memory allocation and disposal.  Deprecated
   and currently unused.
