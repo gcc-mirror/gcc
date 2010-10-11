@@ -1,5 +1,29 @@
 2010-10-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* class.c (objc_getClassList): New.
+	(objc_getRequiredClass): New.
+	(objc_getMetaClass): New.
+	(objc_lookupClass): New.
+	(objc_getClass): New.
+	(__objc_get_unknown_class_handler): New.
+	(objc_setGetUnknownClassHandler): New.
+	(objc_get_class): Use __objc_get_unknown_class_handler.
+	(objc_lookup_class): Call objc_getClass.
+	* objc/objc-api.h: Updated comment and copyright notice.
+	* objc/runtime.h: Updated comments.
+	(objc_getClass): New.
+	(objc_lookupClass): New.
+	(objc_getMetaClass): New.
+	(objc_getRequiredClass): New.
+	(objc_getClassList): New.
+	(objc_setGetUnknownClassHandler): New.
+	(objc_get_unknown_class_handler): New.
+	* objc-private/runtime.h: Use __objc_private_runtime_INCLUDE_GNU
+	instead of __objc_runtime_INCLUDE_GNU as include guard.
+	* objc-private/error.h (_objc_abort): Mark as noreturn.
+	
+2010-10-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Makefile.in (C_SOURCE_FILES): Added ivars.c.
 	* ivars.c: New.
 	* objc/objc.h: Updated comments.

@@ -29,9 +29,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    This should only be used for errors that really are unrecorevable:
    failure to allocate memory, and failure to load an Objective-C
    module.  All other usages of this function should be converted into
-   some milder type of error.
+   some milder type of error (unless aborting is explicitly required
+   by the documentation/API).
 */
 void
-_objc_abort (const char *fmt, ...);
+_objc_abort (const char *fmt, ...) __attribute__ ((noreturn));
 
 #endif /* __objc_private_error_INCLUDE_GNU */

@@ -1,4 +1,4 @@
-/* GNU Objective-C Runtime API.
+/* GNU Objective-C Runtime API - Modern API
    Copyright (C) 2010 Free Software Foundation, Inc.
    Contributed by Nicola Pero <nicola.pero@meta-innovation.com>
 
@@ -146,14 +146,16 @@ struct objc_method_description
 #define _F_GCINVISIBLE	0x20
 
 
-/** Internals: defined inline.  */
+/** Implementation: the following functions are defined inline.  */
 
 /* Return the class of 'object', or Nil if the object is nil.  If
    'object' is a class, the meta class is returned; if 'object' is a
    meta class, the root meta class is returned (note that this is
    different from the traditional GNU Objective-C Runtime API function
    object_get_class(), which for a meta class would return the meta
-   class itself).  */
+   class itself).  This function is inline, so it is really fast and
+   should be used instead of accessing object->class_pointer
+   directly.  */
 static inline Class
 object_getClass (id object)
 {
@@ -164,7 +166,7 @@ object_getClass (id object)
 }
 
 
-/** Internals: the following functions are in selector.c.  */
+/** Implementation: the following functions are in selector.c.  */
 
 /* Return the name of a given selector.  */
 objc_EXPORT const char *sel_getName (SEL selector);
@@ -198,7 +200,7 @@ objc_EXPORT SEL set_registerTypedName (const char *name, const char *type);
 objc_EXPORT BOOL sel_isEqual (SEL first_selector, SEL second_selector);
 
 
-/** Internals: the following functions are in objects.c.  */
+/** Implementation: the following functions are in objects.c.  */
 
 /* Create an instance of class 'class_', adding extraBytes to the size
    of the returned object.  This method allocates the appropriate
@@ -228,7 +230,7 @@ objc_EXPORT const char * object_getClassName (id object);
 objc_EXPORT Class object_setClass (id object, Class class_);
 
 
-/** Internals: the following functions are in ivars.c.  */
+/** Implementation: the following functions are in ivars.c.  */
 
 /* Return an instance variable given the class and the instance
    variable name.  This is an expensive function to call, so try to
@@ -283,10 +285,81 @@ objc_EXPORT ptrdiff_t ivar_getOffset (Ivar variable);
 objc_EXPORT const char * ivar_getTypeEncoding (Ivar variable);
 
 
+/** Implementation: the following functions are in class.c.  */
+
+/* Compatibility Note: The Apple/NeXT runtime does not have
+   objc_get_unknown_class_handler and
+   objc_setGetUnknownClassHandler().  They provide functionality that
+   the traditional GNU Objective-C Runtime API used to provide via the
+   _objc_lookup_class hook.  */
+
+/* An 'objc_get_unknown_class_handler' function is used by
+   objc_getClass() to get a class that is currently unknown to the
+   compiler.  You could use it for example to have the class loaded by
+   dynamically loading a library.  'class_name' is the name of the
+   class.  The function should return the Class object if it manages to
+   load the class, and Nil if not.  */
+typedef Class (*objc_get_unknown_class_handler)(const char *class_name);
+
+/* Sets a new handler function for getting unknown classes (to be used
+   by objc_getClass () and related), and returns the previous one.
+   This function is not safe to call in a multi-threaded environment
+   because other threads may be trying to use the get unknown class
+   handler while you change it!  */
+objc_get_unknown_class_handler
+objc_setGetUnknownClassHandler (objc_get_unknown_class_handler new_handler);
+
+
+/* Return the class with name 'name', if it is already registered with
+   the runtime.  If it is not registered, and
+   objc_setGetUnknownClassHandler() has been called to set a handler
+   for unknown classes, the handler is called to give it a chance to
+   load the class in some other way.  If the class is not known to the
+   runtime and the handler is not set or returns Nil, objc_getClass()
+   returns Nil.  */
+objc_EXPORT Class objc_getClass (const char *name);
+
+/* Return the class with name 'name', if it is already registered with
+   the runtime.  Return Nil if not.  This function does not call the
+   objc_get_unknown_class_handler function if the class is not
+   found.  */
+objc_EXPORT Class objc_lookupClass (const char *name);
+
+/* Return the meta class associated to the class with name 'name', if
+   it is already registered with the runtime.  First, it finds the
+   class using objc_getClass().  Then, it returns the associated meta
+   class.  If the class could not be found using objc_getClass(),
+   returns Nil.  */
+objc_EXPORT Class objc_getMetaClass (const char *name);
+
+/* This is identical to objc_getClass(), but if the class is not found,
+   it aborts the process instead of returning Nil.  */
+objc_EXPORT Class objc_getRequiredClass (const char *name);
+
+/* If 'returnValue' is NULL, 'objc_getClassList' returns the number of
+   classes currently registered with the runtime.  If 'returnValue' is
+   not NULL, it should be a (Class *) pointer to an area of memory
+   which can contain up to 'maxNumberOfClassesToReturn' Class records.
+   'objc_getClassList' will fill the area pointed to by 'returnValue'
+   with all the Classes registered with the runtime (or up to
+   maxNumberOfClassesToReturn if there are more than
+   maxNumberOfClassesToReturn).  The function return value is the
+   number of classes actually returned in 'returnValue'.  */
+objc_EXPORT int objc_getClassList (Class *returnValue, int maxNumberOfClassesToReturn); 
+
+/* Compatibility Note: The Apple/NeXT runtime also has
+
+    Class objc_getFutureClass (const char *name);
+    void objc_setFutureClass (Class class_, const char *name);
+
+   the documentation is unclear on what they are supposed to do, and
+   the GNU Objective-C Runtime currently does not provide them.  */
+
+
 /* TODO: Add all the other functions in the API.  */
 
 
-/** Internals: the following functions are in objc-foreach.c.  */
+/** Implementation: the following functions are in objc-foreach.c.  */
 
 /* 'objc_enumerationMutation()' is called when a collection is
    mutated while being "fast enumerated".  That is a hard error, and
@@ -337,7 +410,7 @@ struct __objcFastEnumerationState
 */
 
 
-/** Internals: the following functions are implemented in encoding.c.  */
+/** Implementation: the following functions are in encoding.c.  */
 
 /* Traditional GNU Objective-C Runtime functions that are currently
    used to implement method forwarding.

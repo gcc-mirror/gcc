@@ -36,8 +36,8 @@ but can almost certainly be shrinked down.
 
 */
 
-#ifndef __objc_runtime_INCLUDE_GNU
-#define __objc_runtime_INCLUDE_GNU
+#ifndef __objc_private_runtime_INCLUDE_GNU
+#define __objc_private_runtime_INCLUDE_GNU
 
 #include <stdarg.h>		/* for varargs and va_list's */
 
@@ -98,4 +98,4 @@ extern void __objc_generate_gc_type_description (Class);
 }
 #endif /* __cplusplus */
 
-#endif /* not __objc_runtime_INCLUDE_GNU */
+#endif /* not __objc_private_runtime_INCLUDE_GNU */
