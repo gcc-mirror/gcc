@@ -127,8 +127,13 @@ namespace __profile
       bitset(const _Base& __x) : _Base(__x) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      explicit
-      bitset(const char* __str) : _Base(__str) { }
+      template<typename _CharT>
+        explicit
+        bitset(const _CharT* __str,
+	       typename std::basic_string<_CharT>::size_type __n
+	       = std::basic_string<_CharT>::npos,
+	       _CharT __zero = _CharT('0'), _CharT __one = _CharT('1'))
+	: _Base(__str, __n, __zero, __one) { }
 #endif
 
       // 23.3.5.2 bitset operations:

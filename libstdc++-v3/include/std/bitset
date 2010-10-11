@@ -870,22 +870,31 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
-       *  @brief  Construct from a string.
-       *  @param  str  A string of @a 0 and @a 1 characters.
+       *  @brief  Construct from a character %array.
+       *  @param  str  An %array of characters @a zero and @a one.
+       *  @param  n    The number of characters to use.
+       *  @param  zero The character corresponding to the value 0.
+       *  @param  one  The character corresponding to the value 1.
        *  @throw  std::invalid_argument  If a character appears in the string
-       *                                 which is neither @a 0 nor @a 1.
+       *                                 which is neither @a zero nor @a one.
        */
-      explicit
-      bitset(const char* __str)
-      : _Base()
-      {
-	if (!__str)
-	  __throw_logic_error(__N("bitset::bitset(const char*)"));
+      template<typename _CharT>
+        explicit
+        bitset(const _CharT* __str,
+	       typename std::basic_string<_CharT>::size_type __n
+	       = std::basic_string<_CharT>::npos,
+	       _CharT __zero = _CharT('0'), _CharT __one = _CharT('1'))
+        : _Base()
+        {
+	  if (!__str)
+	    __throw_logic_error(__N("bitset::bitset(const _CharT*, ...)"));
 
-	const size_t __len = __builtin_strlen(__str);
-	_M_copy_from_ptr<char, std::char_traits<char>>(__str, __len, 0,
-						       __len, '0', '1');
-      }
+	  if (__n == std::basic_string<_CharT>::npos)
+	    __n = std::char_traits<_CharT>::length(__str);
+	  _M_copy_from_ptr<_CharT, std::char_traits<_CharT>>(__str, __n, 0,
+							     __n, __zero,
+							     __one);
+	}
 #endif
 
       // 23.3.5.2 bitset operations:
