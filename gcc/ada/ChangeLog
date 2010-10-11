@@ -1,5 +1,31 @@
 2010-10-11  Robert Dewar  <dewar@adacore.com>
 
+	* a-textio.adb: Minor reformatting
+
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
+	* a-suesen.ads, a-suenst.ads,
+	a-suesen.adb, a-suenst.adb,
+	a-suewse.adb, a-suewst.adb,
+	a-suewse.ads, a-suewst.ads,
+	a-suezse.ads, a-suezst.ads,
+	a-suezse.adb, a-suezst.adb: New name for string encoding packages.
+	* impunit.adb: New names for string encoding units
+	* Makefile.rtl: New names for string encoding units
+	* rtsfind.ads: Minor code reorganization.
+
+2010-10-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb: Code clean up.
+
+2010-10-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Limited_Return): Specialize warning on limited
+	returns when in a generic context.
+	(Analyze_Function_Return): ditto.
+
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
 	* s-multip.ads: Fix header.
 	* sem_ch3.adb, s-multip.adb, a-tigeli.adb: Minor reformatting.
 

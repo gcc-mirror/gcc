@@ -180,8 +180,8 @@ package body Impunit is
      "a-wichha",    -- Ada.Wide_Characters.Handling
      "a-stuten",    -- Ada.Strings.UTF_Encoding
      "a-suenco",    -- Ada.Strings.UTF_Encoding.Conversions
-     "a-suesen",    -- Ada.Strings.UTF_Encoding.String_Encoding
-     "a-suewse",    -- Ada.Strings.UTF_Encoding.Wide_String_Encoding
+     "a-suenst",    -- Ada.Strings.UTF_Encoding.Strings
+     "a-suewst",    -- Ada.Strings.UTF_Encoding.Wide_Strings
 
    ---------------------------
    -- GNAT Special IO Units --
@@ -474,7 +474,7 @@ package body Impunit is
       --  Note: strictly the following should be Ada 2012 units, but it seems
       --  harmless (and useful) to make then available in Ada 2005 mode.
 
-     "a-suezse",    -- Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding
+     "a-suezst",    -- Ada.Strings.UTF_Encoding.Wide_Wide_Strings
 
    ---------------------------
    -- GNAT Special IO Units --

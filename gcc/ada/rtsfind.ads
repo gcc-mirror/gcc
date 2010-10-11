@@ -265,7 +265,6 @@ package Rtsfind is
       System_Machine_Code,
       System_Mantissa,
       System_Memcop,
-      System_Multiprocessors,
       System_Pack_03,
       System_Pack_05,
       System_Pack_06,

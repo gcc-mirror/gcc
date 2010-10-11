@@ -3151,8 +3151,11 @@ package body Exp_Ch5 is
       else
          --  We're about to drop Return_Object_Declarations on the floor, so
          --  we need to insert it, in case it got expanded into useful code.
+         --  Remove side effects from expression, which may be duplicated in
+         --  subsequent checks (see Expand_Simple_Function_Return).
 
          Insert_List_Before (N, Return_Object_Declarations (N));
+         Remove_Side_Effects (Exp);
 
          --  Build simple_return_statement that returns the expression directly
 
@@ -4248,29 +4251,35 @@ package body Exp_Ch5 is
          end;
 
       --  AI05-0073: If function has a controlling access result, check that
-      --  the tag of the return value matches the designated type.
+      --  the tag of the return value, if it is not null, matches designated
+      --  type of return type.
 
       --  The "or else True" needs commenting here ???
 
       elsif Ekind (R_Type) = E_Anonymous_Access_Type
         and then Has_Controlling_Result (Scope_Id)
-        and then (Ada_Version >= Ada_12 or else True)
       then
-         Insert_Action (Exp,
+         Insert_Action (N,
            Make_Raise_Constraint_Error (Loc,
              Condition =>
-               Make_Op_Ne (Loc,
-                 Left_Opnd =>
-                   Make_Selected_Component (Loc,
-                     Prefix => Duplicate_Subexpr (Exp),
-                     Selector_Name =>
-                       Make_Identifier (Loc, Chars => Name_uTag)),
-                 Right_Opnd =>
-                   Make_Attribute_Reference (Loc,
-                     Prefix =>
-                       New_Occurrence_Of (Designated_Type (R_Type), Loc),
-                     Attribute_Name => Name_Tag)),
-           Reason => CE_Tag_Check_Failed));
+               Make_And_Then (Loc,
+                 Left_Opnd  =>
+                   Make_Op_Ne (Loc,
+                     Left_Opnd  => Exp,
+                     Right_Opnd => Make_Null (Loc)),
+                 Right_Opnd => Make_Op_Ne (Loc,
+                   Left_Opnd  =>
+                     Make_Selected_Component (Loc,
+                       Prefix        => Duplicate_Subexpr (Exp),
+                       Selector_Name =>
+                         Make_Identifier (Loc, Chars => Name_uTag)),
+                   Right_Opnd =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         =>
+                         New_Occurrence_Of (Designated_Type (R_Type), Loc),
+                       Attribute_Name => Name_Tag))),
+             Reason    => CE_Tag_Check_Failed),
+             Suppress  => All_Checks);
       end if;
 
       --  If we are returning an object that may not be bit-aligned, then copy

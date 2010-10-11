@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---               ADA.STRINGS.UTF_ENCODING.WIDE_STRING_ENCODING              --
+--                   ADA.STRINGS.UTF_ENCODING.WIDE_STRINGS                  --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -17,8 +17,8 @@
 --  and decoding Wide_String values using UTF encodings. Note: this package is
 --  consistent with Ada 95, and may be included in Ada 95 implementations.
 
-package Ada.Strings.UTF_Encoding.Wide_String_Encoding is
-   pragma Pure (Wide_String_Encoding);
+package Ada.Strings.UTF_Encoding.Wide_Strings is
+   pragma Pure (Wide_Strings);
 
    --  The encoding routines take a Wide_String as input and encode the result
    --  using the specified UTF encoding method. The result includes a BOM if
@@ -64,4 +64,4 @@ package Ada.Strings.UTF_Encoding.Wide_String_Encoding is
      (Item : UTF_16_Wide_String) return Wide_String;
    --  The input is encoded in UTF-16 and returned as a Wide_String value
 
-end Ada.Strings.UTF_Encoding.Wide_String_Encoding;
+end Ada.Strings.UTF_Encoding.Wide_Strings;

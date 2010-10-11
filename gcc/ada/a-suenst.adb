@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---            ADA.STRINGS.UTF_ENCODING.WIDE_WIDE_STRING_ENCODING            --
+--                     ADA.STRINGS.UTF_ENCODING.STRINGS                     --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,18 +29,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding is
+package body Ada.Strings.UTF_Encoding.Strings is
    use Interfaces;
 
    ------------
    -- Decode --
    ------------
 
-   --  Decode UTF-8/UTF-16BE/UTF-16LE input to Wide_Wide_String
+   --  Decode UTF-8/UTF-16BE/UTF-16LE input to String
 
    function Decode
      (Item         : UTF_String;
-      Input_Scheme : Encoding_Scheme) return Wide_Wide_String
+      Input_Scheme : Encoding_Scheme) return String
    is
    begin
       if Input_Scheme = UTF_8 then
@@ -50,20 +50,20 @@ package body Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding is
       end if;
    end Decode;
 
-   --  Decode UTF-8 input to Wide_Wide_String
+   --  Decode UTF-8 input to String
 
-   function Decode (Item : UTF_8_String) return Wide_Wide_String is
-      Result : Wide_Wide_String (1 .. Item'Length);
+   function Decode (Item : UTF_8_String) return String is
+      Result : String (1 .. Item'Length);
       --  Result string (worst case is same length as input)
 
       Len : Natural := 0;
       --  Length of result stored so far
 
       Iptr : Natural;
-      --  Input string pointer
+      --  Input Item pointer
 
       C : Unsigned_8;
-      R : Unsigned_32;
+      R : Unsigned_16;
 
       procedure Get_Continuation;
       --  Reads a continuation byte of the form 10xxxxxx, shifts R left
@@ -87,7 +87,7 @@ package body Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding is
             if C not in 2#10_000000# .. 2#10_111111# then
                Raise_Encoding_Error (Iptr - 1);
             else
-               R := Shift_Left (R, 6) or Unsigned_32 (C and 2#00_111111#);
+               R := Shift_Left (R, 6) or Unsigned_16 (C and 2#00_111111#);
             end if;
          end if;
       end Get_Continuation;
@@ -114,8 +114,6 @@ package body Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding is
          Raise_Encoding_Error (Iptr);
       end if;
 
-      --  Loop through input characters
-
       while Iptr <= Item'Last loop
          C := To_Unsigned_8 (Item (Iptr));
          Iptr := Iptr + 1;
@@ -124,7 +122,7 @@ package body Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding is
          --    0xxxxxxx
 
          if C <= 16#7F# then
-            R := Unsigned_32 (C);
+            R := Unsigned_16 (C);
 
          --  No initial code can be of the form 10xxxxxx. Such codes are used
          --  only for continuations.
@@ -136,60 +134,52 @@ package body Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding is
          --    110yyyxx 10xxxxxx
 
          elsif C <= 2#110_11111# then
-            R := Unsigned_32 (C and 2#000_11111#);
+            R := Unsigned_16 (C and 2#000_11111#);
             Get_Continuation;
 
          --  Codes in the range 16#800# - 16#FFFF# are represented as
          --    1110yyyy 10yyyyxx 10xxxxxx
 
-         elsif C <= 2#1110_1111# then
-            R := Unsigned_32 (C and 2#0000_1111#);
-            Get_Continuation;
-            Get_Continuation;
+         --  Such codes are out of range for type Character
 
          --  Codes in the range 16#10000# - 16#10FFFF# are represented as
          --    11110zzz 10zzyyyy 10yyyyxx 10xxxxxx
 
-         elsif C <= 2#11110_111# then
-            R := Unsigned_32 (C and 2#00000_111#);
-            Get_Continuation;
-            Get_Continuation;
-            Get_Continuation;
+         --  Such codes are out of range for Wide_String output
 
-         --  Any other code is an error
+         --  Thus all remaining cases raise Encoding_Error
 
          else
             Raise_Encoding_Error (Iptr - 1);
          end if;
 
          Len := Len + 1;
-         Result (Len) := Wide_Wide_Character'Val (R);
+         Result (Len) := Character'Val (R);
       end loop;
 
       return Result (1 .. Len);
    end Decode;
 
-   --  Decode UTF-16 input to Wide_Wide_String
+   --  Decode UTF-16 input to String
 
-   function Decode (Item : UTF_16_Wide_String) return Wide_Wide_String is
-      Result : Wide_Wide_String (1 .. Item'Length);
-      --  Result cannot be longer than the input string
+   function Decode (Item : UTF_16_Wide_String) return String is
+      Result : String (1 .. Item'Length);
+      --  Result is same length as input (possibly minus 1 if BOM present)
 
       Len : Natural := 0;
       --  Length of result
 
       Iptr : Natural;
-      --  Pointer to next element in Item
+      --  Index of next Item element
 
       C : Unsigned_16;
-      R : Unsigned_32;
 
    begin
       --  Skip UTF-16 BOM at start
 
       Iptr := Item'First;
 
-      if Iptr <= Item'Last and then Item (Iptr) = BOM_16 (1) then
+      if Item'Length > 0 and then Item (Iptr) = BOM_16 (1) then
          Iptr := Iptr + 1;
       end if;
 
@@ -199,48 +189,15 @@ package body Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding is
          C := To_Unsigned_16 (Item (Iptr));
          Iptr := Iptr + 1;
 
-         --  Codes in the range 16#0000#..16#D7FF# or 16#E000#..16#FFFD#
-         --  represent their own value.
+         --  Codes in the range 16#0000#..16#00FF# represent their own value
 
-         if C <= 16#D7FF# or else C in 16#E000# .. 16#FFFD# then
+         if C <= 16#00FF# then
             Len := Len + 1;
-            Result (Len) := Wide_Wide_Character'Val (C);
+            Result (Len) := Character'Val (C);
 
-         --  Codes in the range 16#D800#..16#DBFF# represent the first of the
-         --  two surrogates used to encode the range 16#01_000#..16#10_FFFF".
-         --  The first surrogate provides 10 high order bits of the result.
-
-         elsif C <= 16#DBFF# then
-            R := Shift_Left ((Unsigned_32 (C) - 16#D800#), 10);
-
-            --  Error if at end of string
-
-            if Iptr > Item'Last then
-               Raise_Encoding_Error (Iptr - 1);
-
-            --  Otherwise next character must be valid low order surrogate
-            --  which provides the low 10 order bits of the result.
-
-            else
-               C := To_Unsigned_16 (Item (Iptr));
-               Iptr := Iptr + 1;
-
-               if C not in 16#DC00# .. 16#DFFF# then
-                  Raise_Encoding_Error (Iptr - 1);
-
-               else
-                  R := R or (Unsigned_32 (C) mod 2 ** 10);
-
-               --  The final adjustment is to add 16#01_0000 to get the
-               --  result back in the required 21 bit range.
-
-                  R := R + 16#01_0000#;
-                  Len := Len + 1;
-                  Result (Len) := Wide_Wide_Character'Val (R);
-               end if;
-            end if;
-
-         --  Remaining codes are invalid
+         --  All other codes are invalid, either they are invalid UTF-16
+         --  encoding sequences, or they represent values that are out of
+         --  range for type Character.
 
          else
             Raise_Encoding_Error (Iptr - 1);
@@ -254,51 +211,57 @@ package body Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding is
    -- Encode --
    ------------
 
-   --  Encode Wide_Wide_String in UTF-8, UTF-16BE or UTF-16LE
+   --  Encode String in UTF-8, UTF-16BE or UTF-16LE
 
    function Encode
-     (Item          : Wide_Wide_String;
+     (Item          : String;
       Output_Scheme : Encoding_Scheme;
       Output_BOM    : Boolean  := False) return UTF_String
    is
    begin
+      --  Case of UTF_8
+
       if Output_Scheme = UTF_8 then
          return Encode (Item, Output_BOM);
+
+      --  Case of UTF_16LE or UTF_16BE, use UTF-16 intermediary
+
       else
-         return From_UTF_16 (Encode (Item), Output_Scheme, Output_BOM);
+         return From_UTF_16 (UTF_16_Wide_String'(Encode (Item)),
+                             Output_Scheme, Output_BOM);
       end if;
    end Encode;
 
-   --  Encode Wide_Wide_String in UTF-8
+   --  Encode String in UTF-8
 
    function Encode
-     (Item       : Wide_Wide_String;
+     (Item       : String;
       Output_BOM : Boolean  := False) return UTF_8_String
    is
-      Result : String (1 .. 4 * Item'Length + 3);
-      --  Worst case is four bytes per input byte + space for BOM
+      Result : UTF_8_String (1 .. 3 * Item'Length + 3);
+      --  Worst case is three bytes per input byte + space for BOM
 
-      Len  : Natural;
+      Len : Natural;
       --  Number of output codes stored in Result
 
-      C : Unsigned_32;
+      C : Unsigned_8;
       --  Single input character
 
-      procedure Store (C : Unsigned_32);
+      procedure Store (C : Unsigned_8);
       pragma Inline (Store);
-      --  Store one output code (input is in range 0 .. 255)
+      --  Store one output code, C is in the range 0 .. 255
 
       -----------
       -- Store --
       -----------
 
-      procedure Store (C : Unsigned_32) is
+      procedure Store (C : Unsigned_8) is
       begin
          Len := Len + 1;
          Result (Len) := Character'Val (C);
       end Store;
 
-   --  Start of processing for Encode
+   --  Start of processing for UTF8_Encode
 
    begin
       --  Output BOM if required
@@ -312,72 +275,46 @@ package body Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding is
 
       --  Loop through characters of input
 
-      for Iptr in Item'Range loop
-         C := To_Unsigned_32 (Item (Iptr));
+      for J in Item'Range loop
+         C := To_Unsigned_8 (Item (J));
 
-         --  Codes in the range 16#00#..16#7F# are represented as
+         --  Codes in the range 16#00# - 16#7F# are represented as
          --    0xxxxxxx
 
          if C <= 16#7F# then
             Store (C);
 
-         --  Codes in the range 16#80#..16#7FF# are represented as
+         --  Codes in the range 16#80# - 16#7FF# are represented as
          --    110yyyxx 10xxxxxx
 
-         elsif C <= 16#7FF# then
-            Store (2#110_00000# or Shift_Right (C, 6));
-            Store (2#10_000000# or (C and 2#00_111111#));
-
-         --  Codes in the range 16#800#..16#D7FF# or 16#E000#..16#FFFD# are
-         --  represented as
-         --    1110yyyy 10yyyyxx 10xxxxxx
-
-         elsif C <= 16#D7FF# or else C in 16#E000# .. 16#FFFD# then
-            Store (2#1110_0000# or Shift_Right (C, 12));
-            Store (2#10_000000# or
-                     Shift_Right (C and 2#111111_000000#, 6));
-            Store (2#10_000000# or (C and 2#00_111111#));
-
-         --  Codes in the range 16#10000# - 16#10FFFF# are represented as
-         --    11110zzz 10zzyyyy 10yyyyxx 10xxxxxx
-
-         elsif C in 16#1_0000# .. 16#10_FFFF# then
-            Store (2#11110_000# or
-                     Shift_Right (C, 18));
-            Store (2#10_000000# or
-                     Shift_Right (C and 2#111111_000000_000000#, 12));
-            Store (2#10_000000# or
-                     Shift_Right (C and 2#111111_000000#, 6));
-            Store (2#10_000000# or
-                     (C and 2#00_111111#));
-
-         --  All other codes are invalid
+         --  For type character of course, the limit is 16#FF# in any case
 
          else
-            Raise_Encoding_Error (Iptr);
+            Store (2#110_00000# or Shift_Right (C, 6));
+            Store (2#10_000000# or (C and 2#00_111111#));
          end if;
       end loop;
 
       return Result (1 .. Len);
    end Encode;
 
-   --  Encode Wide_Wide_String in UTF-16
+   --  Encode String in UTF-16
 
    function Encode
-     (Item       : Wide_Wide_String;
+     (Item       : String;
       Output_BOM : Boolean  := False) return UTF_16_Wide_String
    is
-      Result : UTF_16_Wide_String (1 .. 2 * Item'Length + 1);
-      --  Worst case is each input character generates two output characters
-      --  plus one for possible BOM.
+      Result : UTF_16_Wide_String
+                 (1 .. Item'Length + Boolean'Pos (Output_BOM));
+      --  Output is same length as input + possible BOM
 
       Len : Integer;
       --  Length of output string
 
-      C : Unsigned_32;
+      C : Unsigned_8;
 
    begin
-      --  Output BOM if needed
+      --  Output BOM if required
 
       if Output_BOM then
          Result (1) := BOM_16 (1);
@@ -389,41 +326,16 @@ package body Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding is
       --  Loop through input characters encoding them
 
       for Iptr in Item'Range loop
-         C := To_Unsigned_32 (Item (Iptr));
+         C := To_Unsigned_8 (Item (Iptr));
 
-         --  Codes in the range 16#00_0000#..16#00_D7FF# or 16#E000#..16#FFFD#
-         --  are output unchanged
+         --  Codes in the range 16#0000#..16#00FF# are output unchanged. This
+         --  includes all possible cases of Character values.
 
-         if C <= 16#00_D7FF# or else C in 16#E000# .. 16#FFFD# then
-            Len := Len + 1;
-            Result (Len) := Wide_Character'Val (C);
-
-         --  Codes in the range 16#01_0000#..16#10_FFFF# are output using two
-         --  surrogate characters. First 16#1_0000# is subtracted from the code
-         --  point to give a 20-bit value. This is then split into two separate
-         --  10-bit values each of which is represented as a surrogate with the
-         --  most significant half placed in the first surrogate. The ranges of
-         --  values used for the two surrogates are 16#D800#-16#DBFF# for the
-         --  first, most significant surrogate and 16#DC00#-16#DFFF# for the
-         --  second, least significant surrogate.
-
-         elsif C in 16#1_0000# ..  16#10_FFFF# then
-            C := C - 16#1_0000#;
-
-            Len := Len + 1;
-            Result (Len) := Wide_Character'Val (16#D800# + C / 2 ** 10);
-
-            Len := Len + 1;
-            Result (Len) := Wide_Character'Val (16#DC00# + C mod 2 ** 10);
-
-         --  All other codes are invalid
-
-         else
-            Raise_Encoding_Error (Iptr);
-         end if;
+         Len := Len + 1;
+         Result (Len) := Wide_Character'Val (C);
       end loop;
 
-      return Result (1 .. Len);
+      return Result;
    end Encode;
 
-end Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding;
+end Ada.Strings.UTF_Encoding.Strings;

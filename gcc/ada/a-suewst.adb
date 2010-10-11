@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                 ADA.STRINGS.UTF_ENCODING.STRING_ENCODING                 --
+--                   ADA.STRINGS.UTF_ENCODING.WIDE_STRINGS                  --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,18 +29,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body Ada.Strings.UTF_Encoding.String_Encoding is
+package body Ada.Strings.UTF_Encoding.Wide_Strings is
    use Interfaces;
 
    ------------
    -- Decode --
    ------------
 
-   --  Decode UTF-8/UTF-16BE/UTF-16LE input to String
+   --  Decode UTF-8/UTF-16BE/UTF-16LE input to Wide_String
 
    function Decode
      (Item         : UTF_String;
-      Input_Scheme : Encoding_Scheme) return String
+      Input_Scheme : Encoding_Scheme) return Wide_String
    is
    begin
       if Input_Scheme = UTF_8 then
@@ -50,10 +50,10 @@ package body Ada.Strings.UTF_Encoding.String_Encoding is
       end if;
    end Decode;
 
-   --  Decode UTF-8 input to String
+   --  Decode UTF-8 input to Wide_String
 
-   function Decode (Item : UTF_8_String) return String is
-      Result : String (1 .. Item'Length);
+   function Decode (Item : UTF_8_String) return Wide_String is
+      Result : Wide_String (1 .. Item'Length);
       --  Result string (worst case is same length as input)
 
       Len : Natural := 0;
@@ -140,30 +140,31 @@ package body Ada.Strings.UTF_Encoding.String_Encoding is
          --  Codes in the range 16#800# - 16#FFFF# are represented as
          --    1110yyyy 10yyyyxx 10xxxxxx
 
-         --  Such codes are out of range for type Character
+         elsif C <= 2#1110_1111# then
+            R := Unsigned_16 (C and 2#0000_1111#);
+            Get_Continuation;
+            Get_Continuation;
 
          --  Codes in the range 16#10000# - 16#10FFFF# are represented as
          --    11110zzz 10zzyyyy 10yyyyxx 10xxxxxx
 
          --  Such codes are out of range for Wide_String output
 
-         --  Thus all remaining cases raise Encoding_Error
-
          else
             Raise_Encoding_Error (Iptr - 1);
          end if;
 
          Len := Len + 1;
-         Result (Len) := Character'Val (R);
+         Result (Len) := Wide_Character'Val (R);
       end loop;
 
       return Result (1 .. Len);
    end Decode;
 
-   --  Decode UTF-16 input to String
+   --  Decode UTF-16 input to Wide_String
 
-   function Decode (Item : UTF_16_Wide_String) return String is
-      Result : String (1 .. Item'Length);
+   function Decode (Item : UTF_16_Wide_String) return Wide_String is
+      Result : Wide_String (1 .. Item'Length);
       --  Result is same length as input (possibly minus 1 if BOM present)
 
       Len : Natural := 0;
@@ -189,15 +190,25 @@ package body Ada.Strings.UTF_Encoding.String_Encoding is
          C := To_Unsigned_16 (Item (Iptr));
          Iptr := Iptr + 1;
 
-         --  Codes in the range 16#0000#..16#00FF# represent their own value
+         --  Codes in the range 16#0000#..16#D7FF# or 16#E000#..16#FFFD#
+         --  represent their own value.
 
-         if C <= 16#00FF# then
+         if C <= 16#D7FF# or else C in 16#E000# .. 16#FFFD# then
             Len := Len + 1;
-            Result (Len) := Character'Val (C);
+            Result (Len) := Wide_Character'Val (C);
 
-         --  All other codes are invalid, either they are invalid UTF-16
-         --  encoding sequences, or they represent values that are out of
-         --  range for type Character.
+         --  Codes in the range 16#D800#..16#DBFF# represent the first of the
+         --  two surrogates used to encode the range 16#01_000#..16#10_FFFF".
+         --  Such codes are out of range for 16-bit output.
+
+         --  The case of input in the range 16#DC00#..16#DFFF# must never
+         --  occur, since it means we have a second surrogate character with
+         --  no corresponding first surrogate.
+
+         --  Codes in the range 16#FFFE# .. 16#FFFF# are also invalid since
+         --  they conflict with codes used for BOM values.
+
+         --  Thus all remaining codes are invalid
 
          else
             Raise_Encoding_Error (Iptr - 1);
@@ -211,10 +222,10 @@ package body Ada.Strings.UTF_Encoding.String_Encoding is
    -- Encode --
    ------------
 
-   --  Encode String in UTF-8, UTF-16BE or UTF-16LE
+   --  Encode Wide_String in UTF-8, UTF-16BE or UTF-16LE
 
    function Encode
-     (Item          : String;
+     (Item          : Wide_String;
       Output_Scheme : Encoding_Scheme;
       Output_BOM    : Boolean  := False) return UTF_String
    is
@@ -232,10 +243,10 @@ package body Ada.Strings.UTF_Encoding.String_Encoding is
       end if;
    end Encode;
 
-   --  Encode String in UTF-8
+   --  Encode Wide_String in UTF-8
 
    function Encode
-     (Item       : String;
+     (Item       : Wide_String;
       Output_BOM : Boolean  := False) return UTF_8_String
    is
       Result : UTF_8_String (1 .. 3 * Item'Length + 3);
@@ -244,10 +255,10 @@ package body Ada.Strings.UTF_Encoding.String_Encoding is
       Len : Natural;
       --  Number of output codes stored in Result
 
-      C : Unsigned_8;
+      C : Unsigned_16;
       --  Single input character
 
-      procedure Store (C : Unsigned_8);
+      procedure Store (C : Unsigned_16);
       pragma Inline (Store);
       --  Store one output code, C is in the range 0 .. 255
 
@@ -255,7 +266,7 @@ package body Ada.Strings.UTF_Encoding.String_Encoding is
       -- Store --
       -----------
 
-      procedure Store (C : Unsigned_8) is
+      procedure Store (C : Unsigned_16) is
       begin
          Len := Len + 1;
          Result (Len) := Character'Val (C);
@@ -276,7 +287,7 @@ package body Ada.Strings.UTF_Encoding.String_Encoding is
       --  Loop through characters of input
 
       for J in Item'Range loop
-         C := To_Unsigned_8 (Item (J));
+         C := To_Unsigned_16 (Item (J));
 
          --  Codes in the range 16#00# - 16#7F# are represented as
          --    0xxxxxxx
@@ -287,10 +298,17 @@ package body Ada.Strings.UTF_Encoding.String_Encoding is
          --  Codes in the range 16#80# - 16#7FF# are represented as
          --    110yyyxx 10xxxxxx
 
-         --  For type character of course, the limit is 16#FF# in any case
+         elsif C <= 16#7FF# then
+            Store (2#110_00000# or Shift_Right (C, 6));
+            Store (2#10_000000# or (C and 2#00_111111#));
+
+         --  Codes in the range 16#800# - 16#FFFF# are represented as
+         --    1110yyyy 10yyyyxx 10xxxxxx
 
          else
-            Store (2#110_00000# or Shift_Right (C, 6));
+            Store (2#1110_0000# or Shift_Right (C, 12));
+            Store (2#10_000000# or
+                     Shift_Right (C and 2#111111_000000#, 6));
             Store (2#10_000000# or (C and 2#00_111111#));
          end if;
       end loop;
@@ -298,10 +316,10 @@ package body Ada.Strings.UTF_Encoding.String_Encoding is
       return Result (1 .. Len);
    end Encode;
 
-   --  Encode String in UTF-16
+   --  Encode Wide_String in UTF-16
 
    function Encode
-     (Item       : String;
+     (Item       : Wide_String;
       Output_BOM : Boolean  := False) return UTF_16_Wide_String
    is
       Result : UTF_16_Wide_String
@@ -311,7 +329,7 @@ package body Ada.Strings.UTF_Encoding.String_Encoding is
       Len : Integer;
       --  Length of output string
 
-      C : Unsigned_8;
+      C : Unsigned_16;
 
    begin
       --  Output BOM if required
@@ -326,16 +344,27 @@ package body Ada.Strings.UTF_Encoding.String_Encoding is
       --  Loop through input characters encoding them
 
       for Iptr in Item'Range loop
-         C := To_Unsigned_8 (Item (Iptr));
+         C := To_Unsigned_16 (Item (Iptr));
 
-         --  Codes in the range 16#0000#..16#00FF# are output unchanged. This
-         --  includes all possible cases of Character values.
+         --  Codes in the range 16#0000#..16#D7FF# or 16#E000#..16#FFFD# are
+         --  output unchanged.
 
-         Len := Len + 1;
-         Result (Len) := Wide_Character'Val (C);
+         if C <= 16#D7FF# or else C in 16#E000# .. 16#FFFD# then
+            Len := Len + 1;
+            Result (Len) := Wide_Character'Val (C);
+
+         --  Codes in tne range 16#D800#..16#DFFF# should never appear in the
+         --  input, since no valid Unicode characters are in this range (which
+         --  would conflict with the UTF-16 surrogate encodings). Similarly
+         --  codes in the range 16#FFFE#..16#FFFF conflict with BOM codes.
+         --  Thus all remaining codes are illegal.
+
+         else
+            Raise_Encoding_Error (Iptr);
+         end if;
       end loop;
 
       return Result;
    end Encode;
 
-end Ada.Strings.UTF_Encoding.String_Encoding;
+end Ada.Strings.UTF_Encoding.Wide_Strings;
