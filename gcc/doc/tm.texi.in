@@ -2583,6 +2583,40 @@ only if neither labeling works.
 This macro also has strict and non-strict variants.
 @end defmac
 
+@hook TARGET_PREFERRED_RELOAD_CLASS
+A target hook that places additional restrictions on the register class
+to use when it is necessary to copy value @var{x} into a register in class
+@var{rclass}.  The value is a register class; perhaps @var{rclass}, or perhaps
+another, smaller class.
+
+The default version of this hook always returns value of @code{rclass} argument.
+
+Sometimes returning a more restrictive class makes better code.  For
+example, on the 68000, when @var{x} is an integer constant that is in range
+for a @samp{moveq} instruction, the value of this macro is always
+@code{DATA_REGS} as long as @var{rclass} includes the data registers.
+Requiring a data register guarantees that a @samp{moveq} will be used.
+
+One case where @code{TARGET_PREFERRED_RELOAD_CLASS} must not return
+@var{rclass} is if @var{x} is a legitimate constant which cannot be
+loaded into some register class.  By returning @code{NO_REGS} you can
+force @var{x} into a memory location.  For example, rs6000 can load
+immediate values into general-purpose registers, but does not have an
+instruction for loading an immediate value into a floating-point
+register, so @code{TARGET_PREFERRED_RELOAD_CLASS} returns @code{NO_REGS} when
+@var{x} is a floating-point constant.  If the constant can't be loaded
+into any kind of register, code generation will be better if
+@code{LEGITIMATE_CONSTANT_P} makes the constant illegitimate instead
+of using @code{TARGET_PREFERRED_RELOAD_CLASS}.
+
+If an insn has pseudos in it after register allocation, reload will go
+through the alternatives and call repeatedly @code{TARGET_PREFERRED_RELOAD_CLASS}
+to find the best one.  Returning @code{NO_REGS}, in this case, makes
+reload add a @code{!} in front of the constraint: the x86 back-end uses
+this feature to discourage usage of 387 registers when math is done in
+the SSE registers (and vice versa).
+@end deftypefn
+
 @defmac PREFERRED_RELOAD_CLASS (@var{x}, @var{class})
 A C expression that places additional restrictions on the register class
 to use when it is necessary to copy value @var{x} into a register in class

@@ -2033,6 +2033,15 @@ DEFHOOK
   secondary_reload_info *sri),
  default_secondary_reload)
 
+/* Given an rtx X being reloaded into a reg required to be in class CLASS,
+   return the class of reg to actually use.  */
+DEFHOOK
+(preferred_reload_class,
+ "",
+ reg_class_t,
+ (rtx x, reg_class_t rclass),
+ default_preferred_reload_class)
+
 DEFHOOK
 (class_likely_spilled_p,
  "",
