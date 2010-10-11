@@ -1,3 +1,8 @@
+2010-10-11  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.c-torture/compile/pr44197.c: Require visibility support.
+        Allow for a user label prefix.
+
 2010-10-10  Richard Guenther  <rguenther@suse.de>
 
 	* g++.dg/lto/20101010-1_0.C: New testcase.
