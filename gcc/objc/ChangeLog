@@ -1,3 +1,9 @@
+2010-10-07  Andi Kleen  <ak@linux.intel.com>
+
+	* Make-lang.in (cc1obj-dummy): Remove.
+	(cc1obj-checksum): Change to run checksum over object files
+        and options only.
+
 2010-10-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/45925

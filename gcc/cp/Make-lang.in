@@ -86,17 +86,17 @@ CXX_AND_OBJCXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
 # Language-specific object files for C++.
 CXX_OBJS = cp/cp-lang.o c-family/stub-objc.o $(CXX_AND_OBJCXX_OBJS)
 
-c++_OBJS = $(CXX_OBJS) dummy-checksum.o cc1plus-checksum.o cp/g++spec.o
+c++_OBJS = $(CXX_OBJS) cc1plus-checksum.o cp/g++spec.o
 
 # Use strict warnings for this front end.
 cp-warn = $(STRICT_WARN)
 
-cc1plus-dummy$(exeext): $(CXX_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	      $(CXX_OBJS) dummy-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
-
-cc1plus-checksum.c : cc1plus-dummy$(exeext) build/genchecksum$(build_exeext)
-	build/genchecksum$(build_exeext) cc1plus-dummy$(exeext) > $@
+# compute checksum over all object files and the options
+cc1plus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
+	$(CXX_OBJS) $(BACKEND) $(LIBDEPS) 
+	build/genchecksum$(build_exeext) $(CXX_OBJS) $(BACKEND) $(LIBDEPS) \
+                     checksum-options > cc1plus-checksum.c.tmp &&	   \
+	$(srcdir)/../move-if-change cc1plus-checksum.c.tmp cc1plus-checksum.c
 
 cc1plus-checksum.o : cc1plus-checksum.c $(CONFIG_H) $(SYSTEM_H)
 

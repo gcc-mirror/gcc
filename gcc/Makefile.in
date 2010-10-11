@@ -1489,10 +1489,10 @@ BACKEND = main.o @TREEBROWSER@ libbackend.a $(CPPLIB) $(LIBDECNUMBER)
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attrtab.c insn-opinit.c insn-preds.c insn-constants.h \
- tm-preds.h tm-constrs.h \
+ tm-preds.h tm-constrs.h checksum-options \
  tree-check.h min-insn-modes.c insn-modes.c insn-modes.h \
  genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-input.list \
- xgcc$(exeext) cpp$(exeext) cc1$(exeext) cc1*-dummy$(exeext) $(EXTRA_PASSES) \
+ xgcc$(exeext) cpp$(exeext) cc1$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(SPECS) collect2$(exeext) lto-wrapper$(exeext) \
  gcov-iov$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
@@ -1832,14 +1832,16 @@ $(SPECS): xgcc$(exeext)
 gcc-cross$(exeext): xgcc$(exeext)
 	cp xgcc$(exeext) gcc-cross$(exeext)
 
-dummy-checksum.o : dummy-checksum.c $(CONFIG_H) $(SYSTEM_H)
+checksum-options:
+	echo "$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS)" > checksum-options.tmp \
+	&& $(srcdir)/../move-if-change checksum-options.tmp checksum-options
 
-cc1-dummy$(exeext): $(C_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
-	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
-	  dummy-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
-
-cc1-checksum.c : cc1-dummy$(exeext) build/genchecksum$(build_exeext)
-	build/genchecksum$(build_exeext) cc1-dummy$(exeext) > $@
+# compute checksum over all object files and the options
+cc1-checksum.c : build/genchecksum$(build_exeext) checksum-options \
+	$(C_OBJS) $(BACKEND) $(LIBDEPS) 
+	build/genchecksum$(build_exeext) $(C_OBJS) $(BACKEND) $(LIBDEPS) \
+                     checksum-options > cc1-checksum.c.tmp && 		 \
+	$(srcdir)/../move-if-change cc1-checksum.c.tmp cc1-checksum.c
 
 cc1-checksum.o : cc1-checksum.c $(CONFIG_H) $(SYSTEM_H)
 

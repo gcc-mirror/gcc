@@ -54,13 +54,12 @@ OBJCXX_OBJS = objcp/objcp-act.o objcp/objcp-lang.o objcp/objcp-decl.o \
 
 obj-c++_OBJS = $(OBJCXX_OBJS) cc1objplus-checksum.o
 
-cc1objplus-dummy$(exeext): $(OBJCXX_OBJS) dummy-checksum.o $(BACKEND) \
-		$(LIBDEPS)
-	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-		$(OBJCXX_OBJS) dummy-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
-
-cc1objplus-checksum.c : cc1objplus-dummy$(exeext) build/genchecksum$(build_exeext)
-	build/genchecksum$(build_exeext) cc1objplus-dummy$(exeext) > $@
+cc1objplus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
+	$(OBJCXX_OBJS) $(BACKEND) $(LIBDEPS)
+	build/genchecksum$(build_exeext) $(OBJCXX_OBJS) $(BACKEND) \
+		$(LIBDEPS) checksum-options > cc1objplus-checksum.c && \
+	$(srcdir)/../move-if-change cc1objplus-checksum.c.tmp \
+	cc1objplus-checksum.c
 
 cc1objplus-checksum.o : cc1objplus-checksum.c $(CONFIG_H) $(SYSTEM_H)
 
