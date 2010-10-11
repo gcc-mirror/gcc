@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -215,7 +215,7 @@ struct Flag_Word3
   Boolean      flag183	    :  1;
 };
 
-/* Structure used for extra flags in fifth component overlaying Field11 */
+/* Structure used for extra flags in fifth component overlaying Field12 */
 struct Flag_Word4
 {
   Boolean      flag184	    :  1;
@@ -255,46 +255,6 @@ struct Flag_Word4
   Boolean      flag215	    :  1;
 };
 
-/* Structure used for extra flags in fifth component overlaying Field12 */
-struct Flag_Word5
-{
-  Boolean      flag216	    :  1;
-  Boolean      flag217	    :  1;
-  Boolean      flag218	    :  1;
-  Boolean      flag219	    :  1;
-  Boolean      flag220	    :  1;
-  Boolean      flag221	    :  1;
-  Boolean      flag222	    :  1;
-  Boolean      flag223	    :  1;
-
-  Boolean      flag224	    :  1;
-  Boolean      flag225	    :  1;
-  Boolean      flag226	    :  1;
-  Boolean      flag227	    :  1;
-  Boolean      flag228	    :  1;
-  Boolean      flag229	    :  1;
-  Boolean      flag230	    :  1;
-  Boolean      flag231	    :  1;
-
-  Boolean      flag232	    :  1;
-  Boolean      flag233	    :  1;
-  Boolean      flag234	    :  1;
-  Boolean      flag235	    :  1;
-  Boolean      flag236	    :  1;
-  Boolean      flag237	    :  1;
-  Boolean      flag238	    :  1;
-  Boolean      flag239	    :  1;
-
-  Boolean      flag240      :  1;
-  Boolean      flag241	    :  1;
-  Boolean      flag242	    :  1;
-  Boolean      flag243	    :  1;
-  Boolean      flag244	    :  1;
-  Boolean      flag245	    :  1;
-  Boolean      flag246	    :  1;
-  Boolean      flag247	    :  1;
-};
-
 struct Non_Extended
 {
   Source_Ptr   sloc;
@@ -318,7 +278,6 @@ struct Extended
     {
       Int      field11;
       struct   Flag_Word3 fw3;
-      struct   Flag_Word4 fw4;
     } X;
 
   union
@@ -326,7 +285,7 @@ struct Extended
       Int      field12;
       struct   Flag_Word fw;
       struct   Flag_Word2 fw2;
-      struct   Flag_Word5 fw5;
+      struct   Flag_Word4 fw4;
     } U;
 };
 
@@ -423,6 +382,7 @@ extern Node_Id Current_Error_Node;
 #define Field26(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.field8)
 #define Field27(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.field9)
 #define Field28(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.field10)
+#define Field29(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.field11)
 
 #define Node1(N)      Field1  (N)
 #define Node2(N)      Field2  (N)
@@ -452,6 +412,7 @@ extern Node_Id Current_Error_Node;
 #define Node26(N)     Field26 (N)
 #define Node27(N)     Field27 (N)
 #define Node28(N)     Field28 (N)
+#define Node29(N)     Field29 (N)
 
 #define List1(N)      Field1  (N)
 #define List2(N)      Field2  (N)
@@ -695,68 +656,78 @@ extern Node_Id Current_Error_Node;
 #define Flag182(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].V.EX.X.fw3.flag182)
 #define Flag183(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].V.EX.X.fw3.flag183)
 
-#define Flag184(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag184)
-#define Flag185(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag185)
-#define Flag186(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag186)
-#define Flag187(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag187)
-#define Flag188(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag188)
-#define Flag189(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag189)
-#define Flag190(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag190)
-#define Flag191(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag191)
-#define Flag192(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag192)
-#define Flag193(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag193)
-#define Flag194(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag194)
-#define Flag195(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag195)
-#define Flag196(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag196)
-#define Flag197(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag197)
-#define Flag198(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag198)
-#define Flag199(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag199)
-#define Flag200(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag200)
-#define Flag201(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag201)
-#define Flag202(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag202)
-#define Flag203(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag203)
-#define Flag204(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag204)
-#define Flag205(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag205)
-#define Flag206(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag206)
-#define Flag207(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag207)
-#define Flag208(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag208)
-#define Flag209(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag209)
-#define Flag210(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag210)
-#define Flag211(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag211)
-#define Flag212(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag212)
-#define Flag213(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag213)
-#define Flag214(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag214)
-#define Flag215(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.X.fw4.flag215)
+#define Flag184(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag184)
+#define Flag185(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag185)
+#define Flag186(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag186)
+#define Flag187(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag187)
+#define Flag188(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag188)
+#define Flag189(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag189)
+#define Flag190(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag190)
+#define Flag191(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag191)
+#define Flag192(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag192)
+#define Flag193(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag193)
+#define Flag194(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag194)
+#define Flag195(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag195)
+#define Flag196(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag196)
+#define Flag197(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag197)
+#define Flag198(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag198)
+#define Flag199(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag199)
+#define Flag200(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag200)
+#define Flag201(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag201)
+#define Flag202(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag202)
+#define Flag203(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag203)
+#define Flag204(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag204)
+#define Flag205(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag205)
+#define Flag206(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag206)
+#define Flag207(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag207)
+#define Flag208(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag208)
+#define Flag209(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag209)
+#define Flag210(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag210)
+#define Flag211(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag211)
+#define Flag212(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag212)
+#define Flag213(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag213)
+#define Flag214(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag214)
+#define Flag215(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag215)
 
-#define Flag216(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag216)
-#define Flag217(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag217)
-#define Flag218(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag218)
-#define Flag219(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag219)
-#define Flag220(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag220)
-#define Flag221(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag221)
-#define Flag222(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag222)
-#define Flag223(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag223)
-#define Flag224(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag224)
-#define Flag225(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag225)
-#define Flag226(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag226)
-#define Flag227(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag227)
-#define Flag228(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag228)
-#define Flag229(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag229)
-#define Flag230(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag230)
-#define Flag231(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag231)
-#define Flag232(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag232)
-#define Flag233(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag233)
-#define Flag234(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag234)
-#define Flag235(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag235)
-#define Flag236(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag236)
-#define Flag237(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag237)
-#define Flag238(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag238)
-#define Flag239(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag239)
-#define Flag240(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag240)
-#define Flag241(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag241)
-#define Flag242(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag242)
-#define Flag243(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag243)
-#define Flag244(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag244)
-#define Flag245(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag245)
-#define Flag246(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag246)
-#define Flag247(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw5.flag247)
+#define Flag216(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.in_list)
+#define Flag217(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.rewrite_sub)
+#define Flag218(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.rewrite_ins)
+#define Flag219(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.analyzed)
+#define Flag220(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.c_f_s)
+#define Flag221(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.error_posted)
+#define Flag222(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag4)
+#define Flag223(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag5)
+#define Flag224(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag6)
+#define Flag225(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag7)
+#define Flag226(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag8)
+#define Flag227(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag9)
+#define Flag228(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag10)
+#define Flag229(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag11)
+#define Flag230(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag12)
+#define Flag231(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag13)
+#define Flag232(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag14)
+#define Flag233(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag15)
+#define Flag234(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag16)
+#define Flag235(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag17)
+#define Flag236(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag18)
+#define Flag237(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.pflag1)
+#define Flag238(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.pflag2)
+
+#define Flag239(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].U.NK.flag65)
+#define Flag240(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].U.NK.flag66)
+#define Flag241(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].U.NK.flag67)
+#define Flag242(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].U.NK.flag68)
+#define Flag243(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].U.NK.flag69)
+#define Flag244(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].U.NK.flag70)
+#define Flag245(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].U.NK.flag71)
+#define Flag246(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].U.NK.flag72)
+
+#define Flag247(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag65)
+#define Flag248(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag66)
+#define Flag249(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag67)
+#define Flag250(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag68)
+#define Flag251(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag69)
+#define Flag252(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag70)
+#define Flag253(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag71)
+#define Flag254(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag72)
+

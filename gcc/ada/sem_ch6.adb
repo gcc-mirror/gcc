@@ -483,6 +483,7 @@ package body Sem_Ch6 is
                Error_Msg_N
                  ("(Ada 2005) cannot copy object of a limited type " &
                   "(RM-2005 6.5(5.5/2))", Expr);
+
                if Is_Immutably_Limited_Type (R_Type) then
                   Error_Msg_N
                     ("\return by reference not permitted in Ada 2005", Expr);
@@ -4254,11 +4255,9 @@ package body Sem_Ch6 is
          declare
             Typ  : constant Entity_Id := Etype (Designator);
             Utyp : constant Entity_Id := Underlying_Type (Typ);
-
          begin
             if Is_Immutably_Limited_Type (Typ) then
                Set_Returns_By_Ref (Designator);
-
             elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
                Set_Returns_By_Ref (Designator);
             end if;

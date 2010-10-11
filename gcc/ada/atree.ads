@@ -981,6 +981,9 @@ package Atree is
       function Field28 (N : Node_Id) return Union_Id;
       pragma Inline (Field28);
 
+      function Field29 (N : Node_Id) return Union_Id;
+      pragma Inline (Field29);
+
       function Node1 (N : Node_Id) return Node_Id;
       pragma Inline (Node1);
 
@@ -1064,6 +1067,9 @@ package Atree is
 
       function Node28 (N : Node_Id) return Node_Id;
       pragma Inline (Node28);
+
+      function Node29 (N : Node_Id) return Node_Id;
+      pragma Inline (Node29);
 
       function List1 (N : Node_Id) return List_Id;
       pragma Inline (List1);
@@ -1925,6 +1931,27 @@ package Atree is
       function Flag247 (N : Node_Id) return Boolean;
       pragma Inline (Flag247);
 
+      function Flag248 (N : Node_Id) return Boolean;
+      pragma Inline (Flag248);
+
+      function Flag249 (N : Node_Id) return Boolean;
+      pragma Inline (Flag249);
+
+      function Flag250 (N : Node_Id) return Boolean;
+      pragma Inline (Flag250);
+
+      function Flag251 (N : Node_Id) return Boolean;
+      pragma Inline (Flag251);
+
+      function Flag252 (N : Node_Id) return Boolean;
+      pragma Inline (Flag252);
+
+      function Flag253 (N : Node_Id) return Boolean;
+      pragma Inline (Flag253);
+
+      function Flag254 (N : Node_Id) return Boolean;
+      pragma Inline (Flag254);
+
       --  Procedures to set value of indicated field
 
       procedure Set_Nkind (N : Node_Id; Val : Node_Kind);
@@ -2014,6 +2041,9 @@ package Atree is
       procedure Set_Field28 (N : Node_Id; Val : Union_Id);
       pragma Inline (Set_Field28);
 
+      procedure Set_Field29 (N : Node_Id; Val : Union_Id);
+      pragma Inline (Set_Field29);
+
       procedure Set_Node1 (N : Node_Id; Val : Node_Id);
       pragma Inline (Set_Node1);
 
@@ -2097,6 +2127,9 @@ package Atree is
 
       procedure Set_Node28 (N : Node_Id; Val : Node_Id);
       pragma Inline (Set_Node28);
+
+      procedure Set_Node29 (N : Node_Id; Val : Node_Id);
+      pragma Inline (Set_Node29);
 
       procedure Set_List1 (N : Node_Id; Val : List_Id);
       pragma Inline (Set_List1);
@@ -2953,6 +2986,27 @@ package Atree is
       procedure Set_Flag247 (N : Node_Id; Val : Boolean);
       pragma Inline (Set_Flag247);
 
+      procedure Set_Flag248 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag248);
+
+      procedure Set_Flag249 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag249);
+
+      procedure Set_Flag250 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag250);
+
+      procedure Set_Flag251 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag251);
+
+      procedure Set_Flag252 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag252);
+
+      procedure Set_Flag253 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag253);
+
+      procedure Set_Flag254 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag254);
+
       --  The following versions of Set_Noden also set the parent
       --  pointer of the referenced node if it is non_Empty
 
@@ -3069,33 +3123,33 @@ package Atree is
          Flag18 : Boolean;
          --  The eighteen flags for a normal node
 
-         --  The above fields are used as follows in components 2-4 of
+         --  The above fields are used as follows in components 2-5 of
          --  an extended node entry. These fields are not currently
          --  used in component 5 (where we still have lots of room!)
 
-         --    In_List            used as  Flag19, Flag40, Flag129
-         --    Unused_1           used as  Flag20, Flag41, Flag130
-         --    Rewrite_Ins        used as  Flag21, Flag42, Flag131
-         --    Analyzed           used as  Flag22, Flag43, Flag132
-         --    Comes_From_Source  used as  Flag23, Flag44, Flag133
-         --    Error_Posted       used as  Flag24, Flag45, Flag134
-         --    Flag4              used as  Flag25, Flag46, Flag135
-         --    Flag5              used as  Flag26, Flag47, Flag136
-         --    Flag6              used as  Flag27, Flag48, Flag137
-         --    Flag7              used as  Flag28, Flag49, Flag138
-         --    Flag8              used as  Flag29, Flag50, Flag139
-         --    Flag9              used as  Flag30, Flag51, Flag140
-         --    Flag10             used as  Flag31, Flag52, Flag141
-         --    Flag11             used as  Flag32, Flag53, Flag142
-         --    Flag12             used as  Flag33, Flag54, Flag143
-         --    Flag13             used as  Flag34, Flag55, Flag144
-         --    Flag14             used as  Flag35, Flag56, Flag145
-         --    Flag15             used as  Flag36, Flag57, Flag146
-         --    Flag16             used as  Flag37, Flag58, Flag147
-         --    Flag17             used as  Flag38, Flag59, Flag148
-         --    Flag18             used as  Flag39, Flag60, Flag149
-         --    Pflag1             used as  Flag61, Flag62, Flag150
-         --    Pflag2             used as  Flag63, Flag64, Flag151
+         --    In_List            used as  Flag19, Flag40, Flag129, Flag216
+         --    Unused_1           used as  Flag20, Flag41, Flag130, Flag217
+         --    Rewrite_Ins        used as  Flag21, Flag42, Flag131, Flag218
+         --    Analyzed           used as  Flag22, Flag43, Flag132, Flag219
+         --    Comes_From_Source  used as  Flag23, Flag44, Flag133, Flag220
+         --    Error_Posted       used as  Flag24, Flag45, Flag134, Flag221
+         --    Flag4              used as  Flag25, Flag46, Flag135, Flag222
+         --    Flag5              used as  Flag26, Flag47, Flag136, Flag223
+         --    Flag6              used as  Flag27, Flag48, Flag137, Flag224
+         --    Flag7              used as  Flag28, Flag49, Flag138, Flag225
+         --    Flag8              used as  Flag29, Flag50, Flag139, Flag226
+         --    Flag9              used as  Flag30, Flag51, Flag140, Flag227
+         --    Flag10             used as  Flag31, Flag52, Flag141, Flag228
+         --    Flag11             used as  Flag32, Flag53, Flag142, Flag229
+         --    Flag12             used as  Flag33, Flag54, Flag143, Flag230
+         --    Flag13             used as  Flag34, Flag55, Flag144, Flag231
+         --    Flag14             used as  Flag35, Flag56, Flag145, Flag232
+         --    Flag15             used as  Flag36, Flag57, Flag146, Flag233
+         --    Flag16             used as  Flag37, Flag58, Flag147, Flag234
+         --    Flag17             used as  Flag38, Flag59, Flag148, Flag235
+         --    Flag18             used as  Flag39, Flag60, Flag149, Flag236
+         --    Pflag1             used as  Flag61, Flag62, Flag150, Flag237
+         --    Pflag2             used as  Flag63, Flag64, Flag151, Flag238
 
          Nkind : Node_Kind;
          --  For a non-extended node, or the initial section of an extended
@@ -3104,7 +3158,8 @@ package Atree is
          --
          --     Second entry: holds the Ekind field of the entity
          --     Third entry:  holds 8 additional flags (Flag65-Flag72)
-         --     Fourth entry: not currently used
+         --     Fourth entry: holds 8 additional flags (Flag239-246)
+         --     Fifth entry:  holds 8 additional flags (Flag247-254)
 
          --  Now finally (on an 32-bit boundary!) comes the variant part
 
@@ -3167,9 +3222,8 @@ package Atree is
             --  above is used to hold additional general fields and flags
             --  as follows:
 
-            --    Field6-10      Holds Field24-Field28
-            --    Field11        Holds Flag184-Flag215
-            --    Field12        Holds Flag216-Flag247
+            --    Field6-11      Holds Field24-Field29
+            --    Field12        Holds Flag184-Flag215
 
          end case;
       end record;
