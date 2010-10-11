@@ -562,7 +562,7 @@ package body Sem_Ch4 is
                                        Reason => CE_Null_Not_Allowed);
 
                begin
-                  if Ada_Version >= Ada_12 then
+                  if Ada_Version >= Ada_2012 then
                      Error_Msg_N
                        ("an uninitialized allocator cannot have"
                          & " a null exclusion", N);
@@ -2419,7 +2419,7 @@ package body Sem_Ch4 is
       Analyze_Expression (L);
 
       if No (R)
-        and then Ada_Version >= Ada_12
+        and then Ada_Version >= Ada_2012
       then
          Analyze_Set_Membership;
          return;

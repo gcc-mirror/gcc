@@ -3683,7 +3683,7 @@ package body Ch3 is
                   --  Technically in the grammar, the expression must match the
                   --  grammar for restricted expression.
 
-                  if Ada_Version >= Ada_12 then
+                  if Ada_Version >= Ada_2012 then
                      Check_Restricted_Expression (Expr_Node);
 
                   --  In Ada 83 mode, the syntax required a simple expression

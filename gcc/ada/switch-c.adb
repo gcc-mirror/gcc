@@ -548,7 +548,7 @@ package body Switch.C is
                --  implicit setting here, since for example, we want
                --  Preelaborate_05 treated as Preelaborate
 
-               Ada_Version := Ada_12;
+               Ada_Version := Ada_2012;
                Ada_Version_Explicit := Ada_Version;
 
                --  Set default warnings and style checks for -gnatg
@@ -1075,7 +1075,7 @@ package body Switch.C is
                   Bad_Switch ("-gnat1" & Switch_Chars (Ptr .. Max));
                else
                   Ptr := Ptr + 1;
-                  Ada_Version := Ada_12;
+                  Ada_Version := Ada_2012;
                   Ada_Version_Explicit := Ada_Version;
                end if;
 
@@ -1089,7 +1089,7 @@ package body Switch.C is
                   Ada_Version := Ada_05;
 
                elsif Switch_Chars (Ptr .. Ptr + 3) = "2012" then
-                  Ada_Version := Ada_12;
+                  Ada_Version := Ada_2012;
 
                else
                   Bad_Switch ("-gnat" & Switch_Chars (Ptr .. Ptr + 3));

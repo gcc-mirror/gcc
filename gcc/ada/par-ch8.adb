@@ -109,7 +109,7 @@ package body Ch8 is
 
    begin
       if Token = Tok_All then
-         if Ada_Version < Ada_12 then
+         if Ada_Version < Ada_2012 then
             Error_Msg_SC ("|`USE ALL TYPE` is an Ada 2012 feature");
             Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
          end if;

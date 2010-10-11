@@ -2808,7 +2808,7 @@ package body Sem_Ch12 is
             --  versions of Ada as well as Ada 2012???
 
             if Is_Abstract_Type (Designated_Type (Result_Type))
-              and then Ada_Version >= Ada_12
+              and then Ada_Version >= Ada_2012
             then
                Error_Msg_N ("generic function cannot have an access result"
                  & " that designates an abstract type", Spec);
@@ -2819,7 +2819,7 @@ package body Sem_Ch12 is
             Typ := Entity (Result_Definition (Spec));
 
             if Is_Abstract_Type (Typ)
-              and then Ada_Version >= Ada_12
+              and then Ada_Version >= Ada_2012
             then
                Error_Msg_N
                  ("generic function cannot have abstract result type", Spec);
@@ -9986,7 +9986,7 @@ package body Sem_Ch12 is
 
          if Is_Limited_Type (Act_T)
            and then not Is_Limited_Type (A_Gen_T)
-           and then Ada_Version >= Ada_12
+           and then Ada_Version >= Ada_2012
          then
             Error_Msg_NE
               ("actual for non-limited & cannot be a limited type", Actual,

@@ -480,7 +480,7 @@ package body Lib.Xref is
 
       if Comes_From_Source (N)
         and then Is_Ada_2012_Only (E)
-        and then Ada_Version < Ada_12
+        and then Ada_Version < Ada_2012
         and then Warn_On_Ada_2012_Compatibility
         and then (Typ = 'm' or else Typ = 'r')
       then

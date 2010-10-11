@@ -710,7 +710,7 @@ package body Ch6 is
 
                   --  Check we are in Ada 2012 mode
 
-                  if Ada_Version < Ada_12 then
+                  if Ada_Version < Ada_2012 then
                      Error_Msg_SC
                        ("parameterized expression is an Ada 2012 feature!");
                      Error_Msg_SC

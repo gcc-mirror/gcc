@@ -53,7 +53,7 @@ package Impunit is
       --  Ada 95 mode program will generate a warning (again, strictly speaking
       --  this should be an error, but that seems over-strenuous).
 
-      Ada_12_Unit);
+      Ada_2012_Unit);
       --  This unit is defined in the Ada 2012 RM. Withing this unit from a Ada
       --  95 mode or Ada 2005 program will generate a warning (again, strictly
       --  speaking this should be an error, but that seems over-strenuous).

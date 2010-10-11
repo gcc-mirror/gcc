@@ -3965,7 +3965,7 @@ package body Sem_Aggr is
                --  designated types match.
 
                elsif Typech /= Base_Type (Etype (Component)) then
-                  if Ada_Version >= Ada_12
+                  if Ada_Version >= Ada_2012
                     and then Ekind (Typech) = E_Anonymous_Access_Type
                     and then
                        Ekind (Etype (Component)) = E_Anonymous_Access_Type

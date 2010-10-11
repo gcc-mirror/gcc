@@ -3002,7 +3002,7 @@ package body Sem_Ch6 is
               and then
                 not Is_Class_Wide_Type (Designated_Type (Etype (Designator)))
               and then Is_Abstract_Type (Designated_Type (Etype (Designator)))
-              and then Ada_Version >= Ada_12
+              and then Ada_Version >= Ada_2012
             then
                Error_Msg_N ("function whose access result designates "
                  & "abstract type must be abstract", N);
@@ -7112,7 +7112,7 @@ package body Sem_Ch6 is
                     and then Is_Tagged_Type (Designated_Type (Etype (S)))
                     and then
                       not Is_Class_Wide_Type (Designated_Type (Etype (S)))
-                    and then Ada_Version >= Ada_12
+                    and then Ada_Version >= Ada_2012
                   then
                      Error_Msg_N
                        ("private function with controlling access result "
@@ -8160,7 +8160,7 @@ package body Sem_Ch6 is
          then
             Make_Inequality_Operator (S);
 
-            if Ada_Version >= Ada_12 then
+            if Ada_Version >= Ada_2012 then
                Check_Untagged_Equality (S);
             end if;
          end if;
