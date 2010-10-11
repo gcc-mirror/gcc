@@ -1,3 +1,8 @@
+2010-10-11  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/utils2.c (maybe_wrap_malloc): Fix crash when allocating
+	very large object on VMS.
+
 2010-10-11  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch10.adb (Analyze_With_Clause): Add missing test to ensure
