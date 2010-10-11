@@ -1432,8 +1432,27 @@ package body Sem_Ch6 is
                          and then
                            Ekind (Root_Type (Typ)) = E_Incomplete_Type)
             then
-               Error_Msg_NE
-                 ("invalid use of incomplete type&", Designator, Typ);
+               --  AI05-0151: Tagged incomplete types are allowed in all formal
+               --  parts. Untagged incomplete types are not allowed in bodies.
+
+               if Ada_Version >= Ada_2012 then
+                  if Is_Tagged_Type (Typ) then
+                     null;
+
+                  elsif Nkind_In (Parent (Parent (N)),
+                     N_Accept_Statement,
+                     N_Entry_Body,
+                     N_Subprogram_Body)
+                  then
+                     Error_Msg_NE
+                       ("invalid use of untagged incomplete type&",
+                          Designator, Typ);
+                  end if;
+
+               else
+                  Error_Msg_NE
+                    ("invalid use of incomplete type&", Designator, Typ);
+               end if;
             end if;
          end if;
 
@@ -8306,13 +8325,34 @@ package body Sem_Ch6 is
                elsif not Nkind_In (Parent (T), N_Access_Function_Definition,
                                                N_Access_Procedure_Definition)
                then
-                  Error_Msg_NE
-                    ("invalid use of incomplete type&",
-                       Param_Spec, Formal_Type);
 
-                  --  Further checks on the legality of incomplete types
-                  --  in formal parts must be delayed until the freeze point
-                  --  of the enclosing subprogram or access to subprogram.
+                  --  AI05-0151: Tagged incomplete types are allowed in all
+                  --  formal parts. Untagged incomplete types are not allowed
+                  --  in bodies.
+
+                  if Ada_Version >= Ada_2012 then
+                     if Is_Tagged_Type (Formal_Type) then
+                        null;
+
+                     elsif Nkind_In (Parent (Parent (T)),
+                        N_Accept_Statement,
+                        N_Entry_Body,
+                        N_Subprogram_Body)
+                     then
+                        Error_Msg_NE
+                          ("invalid use of untagged incomplete type&",
+                             Ptype, Formal_Type);
+                     end if;
+
+                  else
+                     Error_Msg_NE
+                       ("invalid use of incomplete type&",
+                          Param_Spec, Formal_Type);
+
+                     --  Further checks on the legality of incomplete types
+                     --  in formal parts are delayed until the freeze point
+                     --  of the enclosing subprogram or access to subprogram.
+                  end if;
                end if;
 
             elsif Ekind (Formal_Type) = E_Void then

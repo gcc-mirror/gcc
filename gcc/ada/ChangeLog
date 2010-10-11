@@ -1,3 +1,25 @@
+2010-10-11  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): For VM platforms, add missing expansion of
+	tag check in case of dispatching call through "=".
+
+2010-10-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Subprogram_Declaration): In Ada2012 an incomplete
+	type is legal in the profile of any basic declaration.
+	* sem_ch6.adb (Analyze_Return_Type, Process_Formals): In Ada2012 an
+	incomplete type, including a limited view of a type, is legal in the
+	profile of any subprogram declaration.
+	If the type is tagged, its use is also legal in a body.
+	* sem_ch10.adb (Install_Limited_With_Clause): Do not process context
+	item if misplaced.
+	(Install_Limited_Withed_Unit): Refine legality checks when both the
+	limited and the non-limited view of a package are visible in the context
+	of a unit.
+	If this is not an error case, the limited view is ignored.
+	freeze.adb (Freeze_Entity): In Ada2012, an incomplete type is legal in
+	access to subprogram declarations
+
 2010-10-11  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch6.adb: Code clean up.

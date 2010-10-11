@@ -1112,9 +1112,18 @@ package body Sem_Ch3 is
 
                else
                   if From_With_Type (Typ) then
-                     Error_Msg_NE
-                      ("illegal use of incomplete type&",
-                         Result_Definition (T_Def), Typ);
+
+                     --  AI05-151 : incomplete types are allowed in all basic
+                     --  declarations, including access to subprograms.
+
+                     if Ada_Version >= Ada_2012 then
+                        null;
+
+                     else
+                        Error_Msg_NE
+                         ("illegal use of incomplete type&",
+                            Result_Definition (T_Def), Typ);
+                     end if;
 
                   elsif Ekind (Current_Scope) = E_Package
                     and then In_Private_Part (Current_Scope)
@@ -7037,7 +7046,7 @@ package body Sem_Ch3 is
 
          Check_Or_Process_Discriminants (N, Derived_Type);
 
-         --  For non-tagged types the constraint on the Parent_Type must be
+         --  For untagged types, the constraint on the Parent_Type must be
          --  present and is used to rename the discriminants.
 
          if not Is_Tagged and then not Has_Discriminants (Parent_Type) then
@@ -13179,7 +13188,7 @@ package body Sem_Ch3 is
       end if;
 
       --  Final check: Direct descendants must have their primitives in the
-      --  same order. We exclude from this test non-tagged types and instances
+      --  same order. We exclude from this test untagged types and instances
       --  of formal derived types. We skip this test if we have already
       --  reported serious errors in the sources.
 
@@ -16180,9 +16189,9 @@ package body Sem_Ch3 is
                  ("discriminant defaults not allowed for formal type",
                   Expression (Discr));
 
-            --  Tagged types cannot have defaulted discriminants, but a
-            --  non-tagged private type with defaulted discriminants
-            --   can have a tagged completion.
+            --  Tagged types declarations cannot have defaulted discriminants,
+            --  but an untagged private type with defaulted discriminants can
+            --  have a tagged completion.
 
             elsif Is_Tagged_Type (Current_Scope)
               and then Comes_From_Source (N)

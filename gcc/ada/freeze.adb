@@ -3738,7 +3738,11 @@ package body Freeze is
                then
                   if Is_Tagged_Type (Etype (Formal)) then
                      null;
-                  else
+
+                  --  AI05-151 : incomplete types are allowed in access to
+                  --  subprogram specifications.
+
+                  elsif Ada_Version < Ada_2012 then
                      Error_Msg_NE
                        ("invalid use of incomplete type&", E, Etype (Formal));
                   end if;
