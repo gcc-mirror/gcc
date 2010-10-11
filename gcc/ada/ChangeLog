@@ -1,3 +1,26 @@
+2010-10-11  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Operation): Revise test for warning
+	about nondispatching subprograms to use In_Same_List (reducing use of
+	Parent links).
+
+2010-10-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* xr_tabls.adb, sem_res.adb, lib-xref.adb, lib-xref.ads: Use s for
+	reference in a static call.
+
+2010-10-11  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case Type_Key): Type_Key
+	attribute should always be transformed into a string literal in
+	Analyze_Attribute.
+	* par-ch4.adb: Type_Key attribute's type is String; update value of
+	Is_Parameterless_Attribute constant to reflect this.
+	* sem_attr.adb (Analyze_Attribute): Recognize Type_Key attribute and
+	rewrite it as a string literal (attribute value is always known
+	statically).
+	* snames.ads-tmpl: Add entries for Type_Key attribute.
+
 2010-10-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* lib-xref.adb (Output_References): Common handling for objects and

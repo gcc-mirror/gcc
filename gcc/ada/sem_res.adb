@@ -5527,10 +5527,10 @@ package body Sem_Res is
       then
          Generate_Reference (Nam, Subp, 'R');
 
-      --  Normal case, not a dispatching call
+      --  Normal case, not a dispatching call. Generate a call reference.
 
       else
-         Generate_Reference (Nam, Subp);
+         Generate_Reference (Nam, Subp, 's');
       end if;
 
       if Is_Intrinsic_Subprogram (Nam) then

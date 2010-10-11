@@ -395,7 +395,8 @@ package body Xr_Tabls is
 
    begin
       case Ref_Type is
-         when 'b' | 'c' | 'H' | 'm' | 'o' | 'r' | 'R' | 'i' | ' ' | 'x' =>
+         when 'b' | 'c' | 'H' | 'm' | 'o' | 'r' | 'R' |
+              's' | 'i' | ' ' | 'x' =>
             null;
 
          when 'l' | 'w' =>
@@ -463,7 +464,7 @@ package body Xr_Tabls is
             New_Ref.Next          := Declaration.Body_Ref;
             Declaration.Body_Ref  := New_Ref;
 
-         when 'r' | 'R' | 'H' | 'i' | 'l' | 'o' | ' ' | 'x' | 'w' =>
+         when 'r' | 'R' | 's' | 'H' | 'i' | 'l' | 'o' | ' ' | 'x' | 'w' =>
             New_Ref.Next          := Declaration.Ref_Ref;
             Declaration.Ref_Ref   := New_Ref;
 

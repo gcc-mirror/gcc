@@ -5355,6 +5355,7 @@ package body Exp_Attr is
            Attribute_Stub_Type                    |
            Attribute_Target_Name                  |
            Attribute_Type_Class                   |
+           Attribute_Type_Key                     |
            Attribute_Unconstrained_Array          |
            Attribute_Universal_Literal_String     |
            Attribute_Wchar_T_Size                 |

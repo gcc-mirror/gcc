@@ -470,7 +470,7 @@ package body Lib.Xref is
         and then Is_Ada_2005_Only (E)
         and then Ada_Version < Ada_2005
         and then Warn_On_Ada_2005_Compatibility
-        and then (Typ = 'm' or else Typ = 'r')
+        and then (Typ = 'm' or else Typ = 'r' or else Typ = 's')
       then
          Error_Msg_NE ("& is only defined in Ada 2005?", N, E);
       end if;

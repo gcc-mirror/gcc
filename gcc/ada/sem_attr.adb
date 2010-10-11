@@ -4449,6 +4449,48 @@ package body Sem_Attr is
          Check_PolyORB_Attribute;
          Set_Etype (N, RTE (RE_TypeCode));
 
+      --------------
+      -- Type_Key --
+      --------------
+
+      when Attribute_Type_Key =>
+         Check_E0;
+         Check_Type;
+         declare
+            function Type_Key return String;
+            --  A very preliminary implementation.
+            --  For now, a signature consists of only the type name.
+            --  This is clearly incomplete (e.g., adding a new field to
+            --  a record type should change the type's Type_Key attribute).
+
+            --------------
+            -- Type_Key --
+            --------------
+
+            function Type_Key return String is
+
+               Full_Name : constant String_Id :=
+                 Fully_Qualified_Name_String (Entity (P));
+
+               Signature : String
+                 (1 .. Integer (String_Length (Full_Name)) - 1);
+               --  Decrement length to omit trailing NUL
+
+            begin
+               for J in Signature'Range loop
+                  Signature (J) :=
+                    Get_Character (Get_String_Char (Full_Name, Int (J)));
+               end loop;
+
+               return Signature & "'Type_Key";
+            end Type_Key;
+
+         begin
+            Rewrite (N, Make_String_Literal (Loc, Type_Key));
+         end;
+
+         Analyze_And_Resolve (N, Standard_String);
+
       -----------------
       -- UET_Address --
       -----------------
@@ -7596,6 +7638,7 @@ package body Sem_Attr is
            Attribute_Target_Name              |
            Attribute_Terminated               |
            Attribute_To_Address               |
+           Attribute_Type_Key                 |
            Attribute_UET_Address              |
            Attribute_Unchecked_Access         |
            Attribute_Universal_Literal_String |
