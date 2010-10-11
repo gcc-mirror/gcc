@@ -4972,10 +4972,7 @@ fieldoff_compare (const void *pa, const void *pb)
 static void
 sort_fieldstack (VEC(fieldoff_s,heap) *fieldstack)
 {
-  qsort (VEC_address (fieldoff_s, fieldstack),
-	 VEC_length (fieldoff_s, fieldstack),
-	 sizeof (fieldoff_s),
-	 fieldoff_compare);
+  VEC_qsort (fieldoff_s, fieldstack, fieldoff_compare);
 }
 
 /* Return true if V is a tree that we can have subvars for.

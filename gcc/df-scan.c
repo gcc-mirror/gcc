@@ -2392,8 +2392,7 @@ df_sort_and_compress_refs (VEC(df_ref,stack) **ref_vec)
          of DF_REF_COMPARE.  */
       if (i == count - 1)
         return;
-      qsort (VEC_address (df_ref, *ref_vec), count, sizeof (df_ref),
-	     df_ref_compare);
+      VEC_qsort (df_ref, *ref_vec, df_ref_compare);
     }
 
   for (i=0; i<count-dist; i++)
@@ -2492,8 +2491,7 @@ df_sort_and_compress_mws (VEC(df_mw_hardreg_ptr,stack) **mw_vec)
         }
     }
   else
-    qsort (VEC_address (df_mw_hardreg_ptr, *mw_vec), count,
-	   sizeof (struct df_mw_hardreg *), df_mw_compare);
+    VEC_qsort (df_mw_hardreg_ptr, *mw_vec, df_mw_compare);
 
   for (i=0; i<count-dist; i++)
     {

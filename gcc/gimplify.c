@@ -1476,9 +1476,7 @@ compare_case_labels (const void *p1, const void *p2)
 void
 sort_case_labels (VEC(tree,heap)* label_vec)
 {
-  size_t len = VEC_length (tree, label_vec);
-  qsort (VEC_address (tree, label_vec), len, sizeof (tree),
-         compare_case_labels);
+  VEC_qsort (tree, label_vec, compare_case_labels);
 }
 
 

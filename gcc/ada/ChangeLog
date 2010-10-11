@@ -1,3 +1,7 @@
+2010-10-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc-interface/utils2.c (gnat_build_constructor): Use VEC_qsort.
+
 2010-10-11  Robert Dewar  <dewar@adacore.com>
 
 	* g-htable.ads (Get_First): New procedural version for Simple_HTable

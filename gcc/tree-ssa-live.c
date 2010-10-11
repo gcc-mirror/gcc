@@ -1256,9 +1256,7 @@ dump_enumerated_decls (FILE *file, int flags)
 	  walk_gimple_stmt (&gsi, NULL, dump_enumerated_decls_push, &wi);
     }
   decl_list = (VEC (numbered_tree, heap) *) wi.info;
-  qsort (VEC_address (numbered_tree, decl_list),
-	 VEC_length (numbered_tree, decl_list),
-	 sizeof (numbered_tree), compare_decls_by_uid);
+  VEC_qsort (numbered_tree, decl_list, compare_decls_by_uid);
   if (VEC_length (numbered_tree, decl_list))
     {
       unsigned ix;

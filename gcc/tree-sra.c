@@ -1580,8 +1580,7 @@ sort_and_splice_var_accesses (tree var)
   access_count = VEC_length (access_p, access_vec);
 
   /* Sort by <OFFSET, SIZE>.  */
-  qsort (VEC_address (access_p, access_vec), access_count, sizeof (access_p),
-	 compare_access_positions);
+  VEC_qsort (access_p, access_vec, compare_access_positions);
 
   i = 0;
   while (i < access_count)
@@ -3524,8 +3523,7 @@ splice_param_accesses (tree parm, bool *ro_grp)
     return &no_accesses_representant;
   access_count = VEC_length (access_p, access_vec);
 
-  qsort (VEC_address (access_p, access_vec), access_count, sizeof (access_p),
-	 compare_access_positions);
+  VEC_qsort (access_p, access_vec, compare_access_positions);
 
   i = 0;
   total_size = 0;

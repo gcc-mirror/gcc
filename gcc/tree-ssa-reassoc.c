@@ -1093,8 +1093,7 @@ undistribute_ops_list (enum tree_code opcode,
   htab_delete (ctable);
 
   /* Sort the counting table.  */
-  qsort (VEC_address (oecount, cvec), VEC_length (oecount, cvec),
-	 sizeof (oecount), oecount_cmp);
+  VEC_qsort (oecount, cvec, oecount_cmp);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2093,18 +2092,12 @@ reassociate_bb (basic_block bb)
 
 	      gimple_set_visited (stmt, true);
 	      linearize_expr_tree (&ops, stmt, true, true);
-	      qsort (VEC_address (operand_entry_t, ops),
-		     VEC_length (operand_entry_t, ops),
-		     sizeof (operand_entry_t),
-		     sort_by_operand_rank);
+	      VEC_qsort (operand_entry_t, ops, sort_by_operand_rank);
 	      optimize_ops_list (rhs_code, &ops);
 	      if (undistribute_ops_list (rhs_code, &ops,
 					 loop_containing_stmt (stmt)))
 		{
-		  qsort (VEC_address (operand_entry_t, ops),
-			 VEC_length (operand_entry_t, ops),
-			 sizeof (operand_entry_t),
-			 sort_by_operand_rank);
+		  VEC_qsort (operand_entry_t, ops, sort_by_operand_rank);
 		  optimize_ops_list (rhs_code, &ops);
 		}
 
