@@ -1,3 +1,9 @@
+2010-10-11  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/45902
+	* tree-vect-slp.c (vect_get_constant_vectors): Use statement's
+	vector type for constants, unless it's a pointer.
+
 2010-10-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md (*mov<mode>cc): lgoc -> locg and stgoc -> stocg.
