@@ -1,3 +1,20 @@
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb: Minor reformatting.
+
+2010-10-11  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch8.adb (Attribute_Renaming): Add missing check to avoid loading
+	package System.Aux_Dec in VM platforms.
+
+2010-10-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Process_Suppress_Unsuppress): Ignore
+	Suppress/Unsuppress pragmas in codepeer mode.
+	(Analyze_Pragma [Pragma_Suppress_All]): Do not generate error message in
+	codepeer mode.
+	* einfo.ads: Fix typo.
+
 2010-10-11  Emmanuel Briot  <briot@adacore.com>
 
 	* sinfo.adb: Use GNAT.HTable rather than System.HTable.

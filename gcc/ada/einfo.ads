@@ -2040,7 +2040,7 @@ package Einfo is
 --    Is_Discrete_Type (synthesized)
 --       Applies to all entities, true for all discrete types and subtypes
 
---    Is_Discrete__Or_Fixed_Point_Type (synthesized)
+--    Is_Discrete_Or_Fixed_Point_Type (synthesized)
 --       Applies to all entities, true for all discrete types and subtypes
 --       and all fixed-point types and subtypes.
 

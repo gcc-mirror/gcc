@@ -64,6 +64,7 @@ with Sinfo.CN; use Sinfo.CN;
 with Snames;   use Snames;
 with Style;    use Style;
 with Table;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -2933,7 +2934,11 @@ package body Sem_Ch8 is
       --  type is still not frozen). We exclude from this processing generic
       --  formal subprograms found in instantiations and AST_Entry renamings.
 
-      if not Present (Corresponding_Formal_Spec (N))
+      --  We must exclude VM targets because entity AST_Handler is defined in
+      --  package System.Aux_Dec which is not available in those platforms.
+
+      if VM_Target = No_VM
+        and then not Present (Corresponding_Formal_Spec (N))
         and then Etype (Nam) /= RTE (RE_AST_Handler)
       then
          declare
