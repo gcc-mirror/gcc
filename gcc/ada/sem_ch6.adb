@@ -495,8 +495,16 @@ package body Sem_Ch6 is
             --  In GNAT mode, this is just a warning, to allow it to be
             --  evilly turned off. Otherwise it is a real error.
 
+            --  In a generic context, simplify the warning because it makes
+            --  no sense to discuss pass-by-reference or copy.
+
             elsif Warn_On_Ada_2005_Compatibility or GNAT_Mode then
-               if Is_Immutably_Limited_Type (R_Type) then
+               if Inside_A_Generic then
+                  Error_Msg_N
+                    ("return of limited object not permitted in Ada2005 " &
+                       "(RM-2005 6.5(5.5/2))?", Expr);
+
+               elsif Is_Immutably_Limited_Type (R_Type) then
                   Error_Msg_N
                     ("return by reference not permitted in Ada 2005 " &
                      "(RM-2005 6.5(5.5/2))?", Expr);
@@ -512,9 +520,11 @@ package body Sem_Ch6 is
                return; --  skip continuation messages below
             end if;
 
-            Error_Msg_N
-              ("\consider switching to return of access type", Expr);
-            Explain_Limited_Type (R_Type, Expr);
+            if not Inside_A_Generic then
+               Error_Msg_N
+                 ("\consider switching to return of access type", Expr);
+               Explain_Limited_Type (R_Type, Expr);
+            end if;
          end if;
       end Check_Limited_Return;
 
@@ -764,16 +774,25 @@ package body Sem_Ch6 is
            and then Object_Access_Level (Expr) >
                       Subprogram_Access_Level (Scope_Id)
          then
-            Rewrite (N,
-              Make_Raise_Program_Error (Loc,
-                Reason => PE_Accessibility_Check_Failed));
-            Analyze (N);
 
-            Error_Msg_N
-              ("cannot return a local value by reference?", N);
-            Error_Msg_NE
-              ("\& will be raised at run time?",
-               N, Standard_Program_Error);
+            --  Suppress the message in a generic, where the rewriting
+            --  is irrelevant.
+
+            if Inside_A_Generic then
+               null;
+
+            else
+               Rewrite (N,
+                 Make_Raise_Program_Error (Loc,
+                   Reason => PE_Accessibility_Check_Failed));
+               Analyze (N);
+
+               Error_Msg_N
+                 ("cannot return a local value by reference?", N);
+               Error_Msg_NE
+                 ("\& will be raised at run time?",
+                   N, Standard_Program_Error);
+            end if;
          end if;
 
          if Known_Null (Expr)
@@ -4255,9 +4274,11 @@ package body Sem_Ch6 is
          declare
             Typ  : constant Entity_Id := Etype (Designator);
             Utyp : constant Entity_Id := Underlying_Type (Typ);
+
          begin
             if Is_Immutably_Limited_Type (Typ) then
                Set_Returns_By_Ref (Designator);
+
             elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
                Set_Returns_By_Ref (Designator);
             end if;

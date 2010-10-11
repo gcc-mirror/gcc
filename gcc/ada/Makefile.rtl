@@ -227,9 +227,9 @@ GNATRTL_NONTASKING_OBJS= \
   a-stzsup$(objext) \
   a-stzunb$(objext) \
   a-suenco$(objext) \
-  a-suesen$(objext) \
-  a-suewse$(objext) \
-  a-suezse$(objext) \
+  a-suenst$(objext) \
+  a-suewst$(objext) \
+  a-suezst$(objext) \
   a-suteio$(objext) \
   a-swbwha$(objext) \
   a-swfwha$(objext) \

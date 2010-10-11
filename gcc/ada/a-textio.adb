@@ -684,10 +684,18 @@ package body Ada.Text_IO is
       Get_Immediate (Current_In, Item, Available);
    end Get_Immediate;
 
+   --------------
+   -- Get_Line --
+   --------------
+
    procedure Get_Line
      (File : File_Type;
       Item : out String;
       Last : out Natural) is separate;
+   --  The implementation of Ada.Text_IO.Get_Line is split into a subunit so
+   --  that different implementations can be used on different systems. In
+   --  particular the standard implementation uses low level stuff that is
+   --  not appropriate for the JVM and .NET implementations.
 
    procedure Get_Line
      (Item : out String;
