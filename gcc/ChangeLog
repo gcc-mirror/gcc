@@ -1,5 +1,9 @@
 2010-10-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* Makefile.in ($(lang_checks_parallel))
+	($(lang_checks_parallelized)): Use single quotes for
+	$(RUNTESTFLAGS), to allow passing quoted content.
+
 	PR bootstrap/35855
 	* opt-functions.awk (BEGIN): New section.
 	(lower, upper, digit, alnum): New variables.
