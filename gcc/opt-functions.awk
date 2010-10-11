@@ -19,6 +19,14 @@
 
 # Some common subroutines for use by opt[ch]-gen.awk.
 
+# Define some helpful character classes, for portability.
+BEGIN {
+	lower = "abcdefghijklmnopqrstuvwxyz"
+	upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	digit = "0123456789"
+	alnum = lower "" upper "" digit
+}
+
 # Return nonzero if FLAGS contains a flag matching REGEX.
 function flag_set_p(regex, flags)
 {
@@ -127,7 +135,7 @@ function static_var(name, flags)
 {
 	if (global_state_p(flags) || !needs_state_p(flags))
 		return ""
-	gsub ("[^A-Za-z0-9]", "_", name)
+	gsub ("[^" alnum "]", "_", name)
 	return "VAR_" name
 }
 
@@ -204,7 +212,7 @@ function var_ref(name, flags)
 # Given the option called NAME return a sanitized version of its name.
 function opt_sanitized_name(name)
 {
-	gsub ("[^A-Za-z0-9]", "_", name)
+	gsub ("[^" alnum "]", "_", name)
 	return name
 }
 

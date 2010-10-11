@@ -1,3 +1,13 @@
+2010-10-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/35855
+	* opt-functions.awk (BEGIN): New section.
+	(lower, upper, digit, alnum): New variables.
+	(static_var, opt_sanitized_name): Use alnum instead of character
+	classes, for non-C locale.
+	* optc-gen.awk: Likewise.
+	* opth-gen.awk: Likewise.
+
 2010-10-11  Anatoly Sokolov  <aesok@post.ru>
 
 	* target.def (preferred_reload_class): New hook.

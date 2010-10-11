@@ -145,7 +145,7 @@ print ""
 print "const char * const lang_names[] =\n{"
 for (i = 0; i < n_langs; i++) {
 	macros[i] = "CL_" langs[i]
-	gsub( "[^A-Za-z0-9_]", "X", macros[i] )
+	gsub( "[^" alnum "_]", "X", macros[i] )
 	s = substr("         ", length (macros[i]))
 	print "  " quote langs[i] quote ","
     }
