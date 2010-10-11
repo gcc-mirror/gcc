@@ -42,6 +42,7 @@ package body Ch4 is
       Attribute_Base         => True,
       Attribute_Class        => True,
       Attribute_Stub_Type    => True,
+      Attribute_Type_Key     => True,
       others                 => False);
    --  This map contains True for parameterless attributes that return a
    --  string or a type. For those attributes, a left parenthesis after
