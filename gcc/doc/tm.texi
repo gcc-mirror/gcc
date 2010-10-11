@@ -7923,13 +7923,21 @@ declaration of @code{name}.
 @end defmac
 
 @defmac SUPPORTS_WEAK
-A C expression which evaluates to true if the target supports weak symbols.
+A preprocessor constant expression which evaluates to true if the target
+supports weak symbols.
 
 If you don't define this macro, @file{defaults.h} provides a default
 definition.  If either @code{ASM_WEAKEN_LABEL} or @code{ASM_WEAKEN_DECL}
-is defined, the default definition is @samp{1}; otherwise, it is
-@samp{0}.  Define this macro if you want to control weak symbol support
-with a compiler flag such as @option{-melf}.
+is defined, the default definition is @samp{1}; otherwise, it is @samp{0}.
+@end defmac
+
+@defmac TARGET_SUPPORTS_WEAK
+A C expression which evaluates to true if the target supports weak symbols.
+
+If you don't define this macro, @file{defaults.h} provides a default
+definition.  The default definition is @samp{(SUPPORTS_WEAK)}.  Define
+this macro if you want to control weak symbol support with a compiler
+flag such as @option{-melf}.
 @end defmac
 
 @defmac MAKE_DECL_ONE_ONLY (@var{decl})
