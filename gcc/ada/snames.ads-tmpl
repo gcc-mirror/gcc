@@ -134,6 +134,14 @@ package Snames is
    Name_Space                          : constant Name_Id := N + $;
    Name_Time                           : constant Name_Id := N + $;
 
+   --  Names of aspects for which there are no matching pragmas or attributes
+   --  so that they need to be included for aspect specification use.
+
+   Name_Invariant                      : constant Name_Id := N + $;
+   Name_Post                           : constant Name_Id := N + $;
+   Name_Pre                            : constant Name_Id := N + $;
+   Name_Predicate                      : constant Name_Id := N + $;
+
    --  Some special names used by the expander. Note that the lower case u's
    --  at the start of these names get translated to extra underscores. These
    --  names are only referenced internally by expander generated code.

@@ -1,3 +1,23 @@
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, sem_aggr.adb, sprint.adb: Minor reformatting.
+
+2010-10-11  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch5.ads, exp_ch6.ads (Expand_N_Extended_Return_Statement): Moved
+	to exp_ch6.
+	(Expand_N_Simple_Return_Statement): Moved to exp_ch6.
+	* exp_ch5.adb, exp_ch6.adb (Expand_Non_Function_Return): Moved to
+	exp_ch6.
+	(Expand_Simple_Function_Return): Move to exp_ch6.
+	(Expand_N_Extended_Return_Statement): Moved to exp_ch6.
+	(Expand_N_Simple_Return_Statement): Moved to exp_ch6.
+
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
+	* snames.ads-tmpl: Add names for aspects.
+	* aspects.ads, aspects.adb: New.
+	* gcc-interface/Make-lang.in: Update dependencies.
 2010-10-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch6.adb (Expand_Actuals): If an actual is the current instance of

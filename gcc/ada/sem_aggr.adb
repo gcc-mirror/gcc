@@ -529,8 +529,8 @@ package body Sem_Aggr is
       --  N is an array (sub-)aggregate. Dim is the dimension corresponding
       --  to (sub-)aggregate N. This procedure collects and removes the side
       --  effects of the constrained N_Range nodes corresponding to each index
-      --  dimension of our aggregate itype.
-      --  These N_Range nodes are collected in Aggr_Range above.
+      --  dimension of our aggregate itype. These N_Range nodes are collected
+      --  in Aggr_Range above.
       --
       --  Likewise collect in Aggr_Low & Aggr_High above the low and high
       --  bounds of each index dimension. If, when collecting, two bounds

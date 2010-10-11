@@ -801,7 +801,6 @@ package body Sprint is
       --  Select print circuit based on node kind
 
       case Nkind (Node) is
-
          when N_Abort_Statement =>
             Write_Indent_Str_Sloc ("abort ");
             Sprint_Comma_List (Names (Node));
@@ -3091,7 +3090,6 @@ package body Sprint is
                   Write_Char (';');
                end if;
             end if;
-
       end case;
 
       if Nkind (Node) in N_Subexpr
