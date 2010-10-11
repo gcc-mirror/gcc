@@ -2989,7 +2989,7 @@ package body Sem_Attr is
                        Ekind (Entity (P)) /= E_Enumeration_Literal)
             then
                Error_Attr_P
-                 ("prefix of %attribute must be " &
+                 ("prefix of % attribute must be " &
                   "discrete type/object or enum literal");
             end if;
          end if;
@@ -3461,7 +3461,7 @@ package body Sem_Attr is
             elsif UI_To_Int (Intval (E1)) > Number_Formals (Entity (P))
               or else UI_To_Int (Intval (E1)) < 0
             then
-               Error_Attr ("invalid parameter number for %attribute", E1);
+               Error_Attr ("invalid parameter number for % attribute", E1);
             end if;
          end if;
 
@@ -4010,6 +4010,23 @@ package body Sem_Attr is
          Resolve (N, Standard_Void_Type);
          Note_Possible_Modification (E2, Sure => True);
 
+      ---------
+      -- Ref --
+      ---------
+
+      when Attribute_Ref =>
+         Check_E1;
+         Analyze (P);
+
+         if Nkind (P) /= N_Expanded_Name
+           or else not Is_RTE (P_Type, RE_Address)
+         then
+            Error_Attr_P ("prefix of % attribute must be System.Address");
+         end if;
+
+         Analyze_And_Resolve (E1, Any_Integer);
+         Set_Etype (N, RTE (RE_Address));
+
       ---------------
       -- Remainder --
       ---------------
@@ -4405,7 +4422,7 @@ package body Sem_Attr is
          if Nkind (P) /= N_Identifier
            or else Chars (P) /= Name_System
          then
-            Error_Attr_P ("prefix of %attribute must be System");
+            Error_Attr_P ("prefix of % attribute must be System");
          end if;
 
          Generate_Reference (RTE (RE_Address), P);
@@ -7630,6 +7647,7 @@ package body Sem_Attr is
            Attribute_Position                 |
            Attribute_Priority                 |
            Attribute_Read                     |
+           Attribute_Ref                      |
            Attribute_Result                   |
            Attribute_Storage_Pool             |
            Attribute_Storage_Size             |

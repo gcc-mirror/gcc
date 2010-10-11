@@ -3792,6 +3792,12 @@ package body Exp_Attr is
          Rewrite_Stream_Proc_Call (Pname);
       end Read;
 
+      ---------
+      -- Ref --
+      ---------
+
+      --  Ref is identical to To_Address, see To_Address for processing
+
       ---------------
       -- Remainder --
       ---------------
@@ -4507,10 +4513,10 @@ package body Exp_Attr is
       -- To_Address --
       ----------------
 
-      --  Transforms System'To_Address (X) into unchecked conversion
-      --  from (integral) type of X to type address.
+      --  Transforms System'To_Address (X) and System.Address'Ref (X) into
+      --  unchecked conversion from (integral) type of X to type address.
 
-      when Attribute_To_Address =>
+      when Attribute_To_Address | Attribute_Ref =>
          Rewrite (N,
            Unchecked_Convert_To (RTE (RE_Address),
              Relocate_Node (First (Exprs))));
