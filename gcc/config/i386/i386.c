@@ -12305,6 +12305,49 @@ ix86_pic_register_p (rtx x)
     return REG_P (x) && REGNO (x) == PIC_OFFSET_TABLE_REGNUM;
 }
 
+/* Helper function for ix86_delegitimize_address.
+   Attempt to delegitimize TLS local-exec accesses.  */
+
+static rtx
+ix86_delegitimize_tls_address (rtx orig_x)
+{
+  rtx x = orig_x, unspec;
+  struct ix86_address addr;
+
+  if (!TARGET_TLS_DIRECT_SEG_REFS)
+    return orig_x;
+  if (MEM_P (x))
+    x = XEXP (x, 0);
+  if (GET_CODE (x) != PLUS || GET_MODE (x) != Pmode)
+    return orig_x;
+  if (ix86_decompose_address (x, &addr) == 0
+      || addr.seg != (TARGET_64BIT ? SEG_FS : SEG_GS)
+      || addr.disp == NULL_RTX
+      || GET_CODE (addr.disp) != CONST)
+    return orig_x;
+  unspec = XEXP (addr.disp, 0);
+  if (GET_CODE (unspec) == PLUS && CONST_INT_P (XEXP (unspec, 1)))
+    unspec = XEXP (unspec, 0);
+  if (GET_CODE (unspec) != UNSPEC || XINT (unspec, 1) != UNSPEC_NTPOFF)
+    return orig_x;
+  x = XVECEXP (unspec, 0, 0);
+  gcc_assert (GET_CODE (x) == SYMBOL_REF);
+  if (unspec != XEXP (addr.disp, 0))
+    x = gen_rtx_PLUS (Pmode, x, XEXP (XEXP (addr.disp, 0), 1));
+  if (addr.index)
+    {
+      rtx idx = addr.index;
+      if (addr.scale != 1)
+	idx = gen_rtx_MULT (Pmode, idx, GEN_INT (addr.scale));
+      x = gen_rtx_PLUS (Pmode, idx, x);
+    }
+  if (addr.base)
+    x = gen_rtx_PLUS (Pmode, addr.base, x);
+  if (MEM_P (orig_x))
+    x = replace_equiv_address_nv (orig_x, x);
+  return x;
+}
+
 /* In the name of slightly smaller debug output, and to cater to
    general assembler lossage, recognize PIC+GOTOFF and turn it back
    into a direct symbol reference.
@@ -12340,7 +12383,7 @@ ix86_delegitimize_address (rtx x)
 	  || GET_CODE (XEXP (x, 0)) != UNSPEC
 	  || XINT (XEXP (x, 0), 1) != UNSPEC_GOTPCREL
 	  || !MEM_P (orig_x))
-	return orig_x;
+	return ix86_delegitimize_tls_address (orig_x);
       x = XVECEXP (XEXP (x, 0), 0, 0);
       if (GET_MODE (orig_x) != Pmode)
 	return simplify_gen_subreg (GET_MODE (orig_x), x, Pmode, 0);
@@ -12349,7 +12392,7 @@ ix86_delegitimize_address (rtx x)
 
   if (GET_CODE (x) != PLUS
       || GET_CODE (XEXP (x, 1)) != CONST)
-    return orig_x;
+    return ix86_delegitimize_tls_address (orig_x);
 
   if (ix86_pic_register_p (XEXP (x, 0)))
     /* %ebx + GOT/GOTOFF */
@@ -12389,7 +12432,7 @@ ix86_delegitimize_address (rtx x)
     result = XVECEXP (x, 0, 0);
 
   if (! result)
-    return orig_x;
+    return ix86_delegitimize_tls_address (orig_x);
 
   if (const_addend)
     result = gen_rtx_CONST (Pmode, gen_rtx_PLUS (Pmode, result, const_addend));
