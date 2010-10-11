@@ -1,3 +1,9 @@
+2010-10-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/linux-atomic.c (__sync_val_compare_and_swap_4): Return
+	actual_oldval.  Use __builtin_expect.
+	(SUBWORD_VAL_CAS): Likewise.
+
 2010-10-11  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* recog.c (nonmemory_operand): Call immediate_operand for
