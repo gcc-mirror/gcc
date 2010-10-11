@@ -4842,7 +4842,7 @@ package body Exp_Util is
       --  No action needed for renamings of class-wide expressions because for
       --  class-wide types Remove_Side_Effects uses a renaming to capture the
       --  expression (and hence we would generate a never-ending loop in the
-      --  frontend).
+      --  front end).
 
       if Is_Class_Wide_Type (Exp_Type)
          and then Nkind (Parent (Exp)) = N_Object_Renaming_Declaration
