@@ -1,3 +1,13 @@
+2010-10-11  Ian Lance Taylor  <iant@google.com>
+
+	* tree.h (TREE_THIS_NOTRAP): Use TREE_CHECK5.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Only check
+	TREE_THIS_NOTRAP when appropriate.
+	(get_spill_slot_decl): Don't set TREE_THIS_NOTRAP on the new
+	VAR_DECL.
+	* gimplify.c (gimplify_expr): Copy NOTRAP from INDIRECT_REF to
+	newly created MEM_REF.
+
 2010-10-11  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
         Nathan Froyds patch to hooks FUNCTION_ARG etc.
