@@ -5915,7 +5915,11 @@ package body Sem_Ch6 is
                null;
 
             elsif In_Package_Body (Scope (Typ)) then
-               null;   --  warrants a warning ???
+               Error_Msg_NE
+                 ("equality operator must be declared "
+                   & "before type& is frozen", Eq_Op, Typ);
+               Error_Msg_N
+                 ("\move declaration to package spec", Eq_Op);
 
             else
                Error_Msg_NE

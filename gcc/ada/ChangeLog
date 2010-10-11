@@ -1,3 +1,13 @@
+2010-10-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Entry_Call): Generate 's' reference for entry
+	call.
+	* sem_ch6.adb: Diagnose additional error condition.
+
+2010-10-11  Bob Duff  <duff@adacore.com>
+
+	* par.adb (Par): Clarify wording of certain error messages.
+
 2010-10-11  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_disp.adb (Check_Dispatching_Operation): Revise test for warning
