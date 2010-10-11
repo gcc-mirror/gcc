@@ -1,3 +1,29 @@
+2010-10-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Check_Interrupt_Or_Attach_Handler): Do not emit error
+	for AI05-0033 in CodePeer mode.
+
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
+	* atree.h, atree.ads, atree.adb (Flag3): New flag (replaces Unused_1)
+	* csinfo.adb: Aspect_Specifications is a new special field
+	* einfo.adb (Flag3): New unused flag
+	* exp_util.adb (Insert_Actions): Add processing for
+	N_Aspect_Specification.
+	* sem.adb: Add entry for N_Aspect_Specification.
+	* sinfo.ads, sinfo.adb (N_Aspect_Specification): New node
+	(Has_Aspect_Specifications): New flag
+	(Permits_Aspect_Specifications): New function
+	(Aspect_Specifications): New function
+	(Set_Aspect_Specifications): New procedure
+	* sprint.adb (Sprint_Node): Put N_At_Clause in proper alpha order
+	(Sprint_Node): Add dummy entry for N_Aspect_Specification
+	* treepr.adb (Flag3): New flag to be listed
+
+2010-10-11  Vincent Celier  <celier@adacore.com>
+
+	* adaint.c: Minor reformatting.
+
 2010-10-11  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch6.adb, s-htable.ads: Minor reformatting.
