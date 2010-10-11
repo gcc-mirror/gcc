@@ -1,3 +1,8 @@
+2010-10-11  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/45902
+	* gcc.dg/vect/45902.c: New test.
+
 2010-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/45870
