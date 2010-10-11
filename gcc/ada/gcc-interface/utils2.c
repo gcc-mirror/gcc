@@ -1562,8 +1562,7 @@ gnat_build_constructor (tree type, VEC(constructor_elt,gc) *v)
      by increasing bit position.  This is necessary to ensure the
      constructor can be output as static data.  */
   if (allconstant && TREE_CODE (type) == RECORD_TYPE && n_elmts > 1)
-    qsort (VEC_address (constructor_elt, v), n_elmts,
-           sizeof (constructor_elt), compare_elmt_bitpos);
+    VEC_qsort (constructor_elt, v, compare_elmt_bitpos);
 
   result = build_constructor (type, v);
   TREE_CONSTANT (result) = TREE_STATIC (result) = allconstant;

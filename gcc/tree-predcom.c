@@ -1192,8 +1192,7 @@ determine_roots_comp (struct loop *loop,
       return;
     }
 
-  qsort (VEC_address (dref, comp->refs), VEC_length (dref, comp->refs),
-	 sizeof (dref), order_drefs);
+  VEC_qsort (dref, comp->refs, order_drefs);
 
   FOR_EACH_VEC_ELT (dref, comp->refs, i, a)
     {

@@ -3252,9 +3252,7 @@ uniq_sort_alt_states (alt_state_t alt_states_list)
        curr_alt_state = curr_alt_state->next_alt_state)
     VEC_safe_push (alt_state_t, heap, alt_states, curr_alt_state);
 
-  qsort (VEC_address (alt_state_t, alt_states),
-	 VEC_length  (alt_state_t, alt_states),
-	 sizeof (alt_state_t), alt_state_cmp);
+  VEC_qsort (alt_state_t, alt_states, alt_state_cmp);
 
   prev_unique_state_ind = 0;
   for (i = 1; i < VEC_length (alt_state_t, alt_states); i++)
@@ -6004,9 +6002,7 @@ evaluate_equiv_classes (automaton_t automaton,
   all_achieved_states = VEC_alloc (state_t, heap, 1500);
   pass_states (automaton, add_achieved_state);
   pass_states (automaton, cache_presence);
-  qsort (VEC_address (state_t, all_achieved_states),
-	 VEC_length (state_t, all_achieved_states),
-         sizeof (state_t), compare_states_for_equiv);
+  VEC_qsort (state_t, all_achieved_states, compare_states_for_equiv);
 
   odd_iteration_flag = 0;
   new_equiv_class_num = init_equiv_class (all_achieved_states,
@@ -7456,9 +7452,7 @@ output_trans_table (automaton_t automaton)
      from the state (state with the maximum num is the first).  */
   output_states_vect = 0;
   pass_states (automaton, add_states_vect_el);
-  qsort (VEC_address (state_t, output_states_vect),
-	 VEC_length (state_t, output_states_vect),
-         sizeof (state_t), compare_transition_els_num);
+  VEC_qsort (state_t, output_states_vect, compare_transition_els_num);
 
   for (i = 0; i < VEC_length (state_t, output_states_vect); i++)
     {
@@ -8944,9 +8938,7 @@ output_state (state_t state)
   fprintf (output_description_file,
 	   state->new_cycle_p ? " (new cycle)\n" : "\n");
   add_state_reservs (state);
-  qsort (VEC_address (reserv_sets_t, state_reservs),
-	 VEC_length (reserv_sets_t, state_reservs),
-         sizeof (reserv_sets_t), state_reservs_cmp);
+  VEC_qsort (reserv_sets_t, state_reservs, state_reservs_cmp);
   remove_state_duplicate_reservs ();
   for (i = 0; i < VEC_length (reserv_sets_t, state_reservs); i++)
     {

@@ -2505,8 +2505,7 @@ output_used_types (void)
       htab_traverse (cfun->used_types_hash, output_used_types_helper, &types);
 
       /* Sort by UID to prevent dependence on hash table ordering.  */
-      qsort (VEC_address (tree, types), VEC_length (tree, types),
-	     sizeof (tree), output_types_sort);
+      VEC_qsort (tree, types, output_types_sort);
 
       FOR_EACH_VEC_ELT (tree, types, i, type)
 	debug_queue_symbol (type);

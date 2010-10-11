@@ -1475,8 +1475,7 @@ lto_wpa_write_files (void)
   blen = strlen (temp_filename);
 
   n_sets = VEC_length (ltrans_partition, ltrans_partitions);
-  qsort (VEC_address (ltrans_partition, ltrans_partitions), n_sets,
-	 sizeof (ltrans_partition), cmp_partitions);
+  VEC_qsort (ltrans_partition, ltrans_partitions, cmp_partitions);
   for (i = 0; i < n_sets; i++)
     {
       size_t len;

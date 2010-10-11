@@ -3719,8 +3719,7 @@ fill_vec_av_set (av_set_t av, blist_t bnds, fence_t fence,
     }
 
   /* Sort the vector.  */
-  qsort (VEC_address (expr_t, vec_av_set), VEC_length (expr_t, vec_av_set),
-         sizeof (expr_t), sel_rank_for_schedule);
+  VEC_qsort (expr_t, vec_av_set, sel_rank_for_schedule);
 
   /* We record maximal priority of insns in av set for current instruction
      group.  */
@@ -3934,8 +3933,7 @@ fill_vec_av_set (av_set_t av, blist_t bnds, fence_t fence,
     gcc_assert (min_need_stall == 0);
 
   /* Sort the vector.  */
-  qsort (VEC_address (expr_t, vec_av_set), VEC_length (expr_t, vec_av_set),
-         sizeof (expr_t), sel_rank_for_schedule);
+  VEC_qsort (expr_t, vec_av_set, sel_rank_for_schedule);
 
   if (sched_verbose >= 4)
     {

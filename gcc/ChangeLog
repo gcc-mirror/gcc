@@ -1,3 +1,27 @@
+2010-10-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* vec.h (VEC_qsort): Define.
+	* dbxout.c (output_used_types): Use it.
+	* df-scan.c (df_sort_and_compress_refs): Likewise.
+	(df_sort_and_compress_mws): Likewise.
+	* genautomata.c (uniq_sort_alt_states): Likewise.
+	(evaluate_equiv_classes): Likewise.
+	(output_trans_table): Likewise.
+	(output_state): Likewise.
+	* gimplify.c (compare_case_labels): Likewise.
+	* graphite-sese-to-poly.c (graphite_sort_dominated_info): Likewise.
+	* ipa.c (build_cdtor_fns): Likewise.
+	* lto.c (lto_wpa_write_files): Likewise.
+	* sel-sched.c (fill_vec_av_set): Likewise.
+	* tree-predcom.c (determine_roots_comp): Likewise.
+	* tree-sra.c (sort_and_spliace_var_accesses): Likewise.
+	(splice_param_accesses): Likewise.
+	* tree-ssa-live.c (dump_enumerated_decls): Likewise.
+	* tree-ssa-reassoc.c (undistribute_ops_list): Likewise.
+	(reassociate_bb): Likewise.
+	* tree-ssa-sccvn.c (sort_scc): Likewise.
+	* tree-ssa-structalias.c (sort_fieldstack): Likewise.
+
 2010-10-11  Ian Lance Taylor  <iant@google.com>
 
 	* tree.h (TREE_THIS_NOTRAP): Use TREE_CHECK5.

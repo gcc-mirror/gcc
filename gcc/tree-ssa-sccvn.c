@@ -3044,10 +3044,7 @@ compare_ops (const void *pa, const void *pb)
 static void
 sort_scc (VEC (tree, heap) *scc)
 {
-  qsort (VEC_address (tree, scc),
-	 VEC_length (tree, scc),
-	 sizeof (tree),
-	 compare_ops);
+  VEC_qsort (tree, scc, compare_ops);
 }
 
 /* Insert the no longer used nary ONARY to the hash INFO.  */

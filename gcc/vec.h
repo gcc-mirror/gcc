@@ -442,6 +442,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #define VEC_address(T,V)		(VEC_OP(T,base,address)(VEC_BASE(V)))
 
+/* Conveniently sort the contents of the vector with qsort.
+   void VEC_qsort (VEC(T) *v, int (*cmp_func)(const void *, const void *))  */
+
+#define VEC_qsort(T,V,CMP) qsort(VEC_address (T,V), VEC_length(T,V),	\
+				 sizeof (T), CMP)
+
 /* Find the first index in the vector not less than the object.
    unsigned VEC_T_lower_bound (VEC(T) *v, const T val,
                                bool (*lessthan) (const T, const T)); // Integer

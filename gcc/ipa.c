@@ -1557,20 +1557,14 @@ build_cdtor_fns (void)
   if (!VEC_empty (tree, static_ctors))
     {
       gcc_assert (!targetm.have_ctors_dtors || in_lto_p);
-      qsort (VEC_address (tree, static_ctors),
-	     VEC_length (tree, static_ctors),
-	     sizeof (tree),
-	     compare_ctor);
+      VEC_qsort (tree, static_ctors, compare_ctor);
       build_cdtor (/*ctor_p=*/true, static_ctors);
     }
 
   if (!VEC_empty (tree, static_dtors))
     {
       gcc_assert (!targetm.have_ctors_dtors || in_lto_p);
-      qsort (VEC_address (tree, static_dtors),
-	     VEC_length (tree, static_dtors),
-	     sizeof (tree),
-	     compare_dtor);
+      VEC_qsort (tree, static_dtors, compare_dtor);
       build_cdtor (/*ctor_p=*/false, static_dtors);
     }
 }

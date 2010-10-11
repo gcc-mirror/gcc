@@ -395,10 +395,7 @@ compare_bb_depths (const void *p1, const void *p2)
 static void
 graphite_sort_dominated_info (VEC (basic_block, heap) *dom)
 {
-  size_t len = VEC_length (basic_block, dom);
-
-  qsort (VEC_address (basic_block, dom), len, sizeof (basic_block),
-	 compare_bb_depths);
+  VEC_qsort (basic_block, dom, compare_bb_depths);
 }
 
 /* Recursive helper function for build_scops_bbs.  */
