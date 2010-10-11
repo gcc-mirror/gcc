@@ -28,6 +28,7 @@ with Types;  use Types;
 
 package Sem_Ch3 is
    procedure Analyze_Component_Declaration         (N : Node_Id);
+   procedure Analyze_Full_Type_Declaration         (N : Node_Id);
    procedure Analyze_Incomplete_Type_Decl          (N : Node_Id);
    procedure Analyze_Itype_Reference               (N : Node_Id);
    procedure Analyze_Number_Declaration            (N : Node_Id);
@@ -35,7 +36,6 @@ package Sem_Ch3 is
    procedure Analyze_Others_Choice                 (N : Node_Id);
    procedure Analyze_Private_Extension_Declaration (N : Node_Id);
    procedure Analyze_Subtype_Indication            (N : Node_Id);
-   procedure Analyze_Type_Declaration              (N : Node_Id);
    procedure Analyze_Variant_Part                  (N : Node_Id);
 
    procedure Analyze_Subtype_Declaration

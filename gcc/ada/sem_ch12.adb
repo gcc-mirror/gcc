@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
@@ -1801,6 +1802,7 @@ package body Sem_Ch12 is
    procedure Analyze_Formal_Object_Declaration (N : Node_Id) is
       E  : constant Node_Id := Default_Expression (N);
       Id : constant Node_Id := Defining_Identifier (N);
+      AS : constant List_Id := Aspect_Specifications (N);
       K  : Entity_Kind;
       T  : Node_Id;
 
@@ -1929,6 +1931,8 @@ package body Sem_Ch12 is
               ("initialization not allowed for `IN OUT` formals", N);
          end if;
       end if;
+
+      Analyze_Aspect_Specifications (N, Id, AS);
    end Analyze_Formal_Object_Declaration;
 
    ----------------------------------------------
@@ -1972,13 +1976,14 @@ package body Sem_Ch12 is
       Check_Restriction (No_Fixed_Point, Def);
    end Analyze_Formal_Ordinary_Fixed_Point_Type;
 
-   ----------------------------
-   -- Analyze_Formal_Package --
-   ----------------------------
+   ----------------------------------------
+   -- Analyze_Formal_Package_Declaration --
+   ----------------------------------------
 
-   procedure Analyze_Formal_Package (N : Node_Id) is
+   procedure Analyze_Formal_Package_Declaration (N : Node_Id) is
       Loc              : constant Source_Ptr := Sloc (N);
       Pack_Id          : constant Entity_Id  := Defining_Identifier (N);
+      AS               : constant List_Id    := Aspect_Specifications (N);
       Formal           : Entity_Id;
       Gen_Id           : constant Node_Id    := Name (N);
       Gen_Decl         : Node_Id;
@@ -2115,14 +2120,14 @@ package body Sem_Ch12 is
       if Ekind (Gen_Unit) /= E_Generic_Package then
          Error_Msg_N ("expect generic package name", Gen_Id);
          Restore_Env;
-         return;
+         goto Leave;
 
       elsif  Gen_Unit = Current_Scope then
          Error_Msg_N
            ("generic package cannot be used as a formal package of itself",
              Gen_Id);
          Restore_Env;
-         return;
+         goto Leave;
 
       elsif In_Open_Scopes (Gen_Unit) then
          if Is_Compilation_Unit (Gen_Unit)
@@ -2142,7 +2147,7 @@ package body Sem_Ch12 is
                 & "within itself",
                 Gen_Id);
             Restore_Env;
-            return;
+            goto Leave;
          end if;
       end if;
 
@@ -2190,7 +2195,7 @@ package body Sem_Ch12 is
                Remove_Parent;
             end if;
 
-            return;
+            goto Leave;
       end;
 
       Rewrite (N, New_N);
@@ -2273,7 +2278,9 @@ package body Sem_Ch12 is
       Set_Etype (Pack_Id, Standard_Void_Type);
       Set_Scope (Pack_Id, Scope (Formal));
       Set_Has_Completion (Pack_Id, True);
-   end Analyze_Formal_Package;
+
+      <<Leave>> Analyze_Aspect_Specifications (N, Pack_Id, AS);
+   end Analyze_Formal_Package_Declaration;
 
    ---------------------------------
    -- Analyze_Formal_Private_Type --
@@ -2323,14 +2330,15 @@ package body Sem_Ch12 is
       Set_Parent          (Base, Parent (Def));
    end Analyze_Formal_Signed_Integer_Type;
 
-   -------------------------------
-   -- Analyze_Formal_Subprogram --
-   -------------------------------
+   -------------------------------------------
+   -- Analyze_Formal_Subprogram_Declaration --
+   -------------------------------------------
 
-   procedure Analyze_Formal_Subprogram (N : Node_Id) is
+   procedure Analyze_Formal_Subprogram_Declaration (N : Node_Id) is
       Spec : constant Node_Id   := Specification (N);
       Def  : constant Node_Id   := Default_Name (N);
       Nam  : constant Entity_Id := Defining_Unit_Name (Spec);
+      AS   : constant List_Id   := Aspect_Specifications (N);
       Subp : Entity_Id;
 
    begin
@@ -2340,7 +2348,7 @@ package body Sem_Ch12 is
 
       if Nkind (Nam) = N_Defining_Program_Unit_Name then
          Error_Msg_N ("name of formal subprogram must be a direct name", Nam);
-         return;
+         goto Leave;
       end if;
 
       Analyze_Subprogram_Declaration (N);
@@ -2384,7 +2392,7 @@ package body Sem_Ch12 is
 
             Analyze (Prefix (Def));
             Valid_Default_Attribute (Nam, Def);
-            return;
+            goto Leave;
          end if;
 
          --  Default name may be overloaded, in which case the interpretation
@@ -2394,7 +2402,7 @@ package body Sem_Ch12 is
          --  can be a protected operation.
 
          if Etype (Def) = Any_Type then
-            return;
+            goto Leave;
 
          elsif Nkind (Def) = N_Selected_Component then
             if not Is_Overloadable (Entity (Selector_Name (Def))) then
@@ -2416,7 +2424,7 @@ package body Sem_Ch12 is
 
             else
                Error_Msg_N ("expect valid subprogram name as default", Def);
-               return;
+               goto Leave;
             end if;
 
          elsif Nkind (Def) = N_Character_Literal then
@@ -2429,7 +2437,7 @@ package body Sem_Ch12 is
            or else not Is_Overloadable (Entity (Def))
          then
             Error_Msg_N ("expect valid subprogram name as default", Def);
-            return;
+            goto Leave;
 
          elsif not Is_Overloaded (Def) then
             Subp := Entity (Def);
@@ -2491,7 +2499,9 @@ package body Sem_Ch12 is
             end if;
          end if;
       end if;
-   end Analyze_Formal_Subprogram;
+
+      <<Leave>> Analyze_Aspect_Specifications (N, Nam, AS);
+   end Analyze_Formal_Subprogram_Declaration;
 
    -------------------------------------
    -- Analyze_Formal_Type_Declaration --
@@ -2499,6 +2509,7 @@ package body Sem_Ch12 is
 
    procedure Analyze_Formal_Type_Declaration (N : Node_Id) is
       Def : constant Node_Id := Formal_Type_Definition (N);
+      AS  : constant List_Id := Aspect_Specifications (N);
       T   : Entity_Id;
 
    begin
@@ -2564,6 +2575,7 @@ package body Sem_Ch12 is
       end case;
 
       Set_Is_Generic_Type (T);
+      Analyze_Aspect_Specifications (N, T, AS);
    end Analyze_Formal_Type_Declaration;
 
    ------------------------------------
@@ -2630,6 +2642,7 @@ package body Sem_Ch12 is
 
    procedure Analyze_Generic_Package_Declaration (N : Node_Id) is
       Loc         : constant Source_Ptr := Sloc (N);
+      AS          : constant List_Id    := Aspect_Specifications (N);
       Id          : Entity_Id;
       New_N       : Node_Id;
       Save_Parent : Node_Id;
@@ -2740,6 +2753,8 @@ package body Sem_Ch12 is
             Check_References (Id);
          end if;
       end if;
+
+      Analyze_Aspect_Specifications (N, Id, AS);
    end Analyze_Generic_Package_Declaration;
 
    --------------------------------------------
@@ -2747,6 +2762,7 @@ package body Sem_Ch12 is
    --------------------------------------------
 
    procedure Analyze_Generic_Subprogram_Declaration (N : Node_Id) is
+      AS          : constant List_Id := Aspect_Specifications (N);
       Spec        : Node_Id;
       Id          : Entity_Id;
       Formals     : List_Id;
@@ -2865,6 +2881,7 @@ package body Sem_Ch12 is
       End_Scope;
       Exit_Generic_Scope (Id);
       Generate_Reference_To_Formals (Id);
+      Analyze_Aspect_Specifications (N, Id, AS);
    end Analyze_Generic_Subprogram_Declaration;
 
    -----------------------------------
@@ -2874,6 +2891,7 @@ package body Sem_Ch12 is
    procedure Analyze_Package_Instantiation (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
       Gen_Id : constant Node_Id    := Name (N);
+      AS     : constant List_Id    := Aspect_Specifications (N);
 
       Act_Decl      : Node_Id;
       Act_Decl_Name : Node_Id;
@@ -3014,7 +3032,7 @@ package body Sem_Ch12 is
 
       if Etype (Gen_Unit) = Any_Type then
          Restore_Env;
-         return;
+         goto Leave;
 
       elsif Ekind (Gen_Unit) /= E_Generic_Package then
 
@@ -3029,7 +3047,7 @@ package body Sem_Ch12 is
          end if;
 
          Restore_Env;
-         return;
+         goto Leave;
       end if;
 
       if In_Extended_Main_Source_Unit (N) then
@@ -3072,7 +3090,7 @@ package body Sem_Ch12 is
       if In_Open_Scopes (Gen_Unit) then
          Error_Msg_NE ("instantiation of & within itself", N, Gen_Unit);
          Restore_Env;
-         return;
+         goto Leave;
 
       elsif Contains_Instance_Of (Gen_Unit, Current_Scope, Gen_Id) then
          Error_Msg_Node_2 := Current_Scope;
@@ -3080,7 +3098,7 @@ package body Sem_Ch12 is
            ("circular Instantiation: & instantiated in &!", N, Gen_Unit);
          Circularity_Detected := True;
          Restore_Env;
-         return;
+         goto Leave;
 
       else
          Gen_Decl := Unit_Declaration_Node (Gen_Unit);
@@ -3537,6 +3555,8 @@ package body Sem_Ch12 is
          Set_Defining_Identifier (N, Act_Decl_Id);
       end if;
 
+      <<Leave>> Analyze_Aspect_Specifications (N, Act_Decl_Id, AS);
+
    exception
       when Instantiation_Error =>
          if Parent_Installed then
@@ -3890,6 +3910,7 @@ package body Sem_Ch12 is
    is
       Loc    : constant Source_Ptr := Sloc (N);
       Gen_Id : constant Node_Id    := Name (N);
+      AS     : constant List_Id    := Aspect_Specifications (N);
 
       Anon_Id : constant Entity_Id :=
                   Make_Defining_Identifier (Sloc (Defining_Entity (N)),
@@ -4153,7 +4174,7 @@ package body Sem_Ch12 is
             Error_Msg_NE
               ("circular Instantiation: & instantiated in &!", N, Gen_Unit);
             Circularity_Detected := True;
-            return;
+            goto Leave;
          end if;
 
          Gen_Decl := Unit_Declaration_Node (Gen_Unit);
@@ -4310,6 +4331,8 @@ package body Sem_Ch12 is
          Generic_Renamings.Set_Last (0);
          Generic_Renamings_HTable.Reset;
       end if;
+
+      <<Leave>> Analyze_Aspect_Specifications (N, Act_Decl_Id, AS);
 
    exception
       when Instantiation_Error =>

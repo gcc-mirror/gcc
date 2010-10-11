@@ -900,7 +900,7 @@ package body Ch9 is
          Discard_Junk_Node (P_Expression_No_Right_Paren);
       end if;
 
-      TF_Semicolon;
+      P_Aspect_Specifications (Decl_Node);
       return Decl_Node;
 
    exception

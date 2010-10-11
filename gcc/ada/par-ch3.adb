@@ -327,7 +327,7 @@ package body Ch3 is
       Type_Start_Col   : Column_Number;
       Unknown_Dis      : Boolean;
 
-      Typedef_Node     : Node_Id;
+      Typedef_Node : Node_Id;
       --  Normally holds type definition, except in the case of a private
       --  extension declaration, in which case it holds the declaration itself
 
@@ -476,22 +476,18 @@ package body Ch3 is
             when Tok_Access |
                  Tok_Not    => --  Ada 2005 (AI-231)
                Typedef_Node := P_Access_Type_Definition;
-               TF_Semicolon;
                exit;
 
             when Tok_Array =>
                Typedef_Node := P_Array_Type_Definition;
-               TF_Semicolon;
                exit;
 
             when Tok_Delta =>
                Typedef_Node := P_Fixed_Point_Definition;
-               TF_Semicolon;
                exit;
 
             when Tok_Digits =>
                Typedef_Node := P_Floating_Point_Definition;
-               TF_Semicolon;
                exit;
 
             when Tok_In =>
@@ -500,12 +496,10 @@ package body Ch3 is
             when Tok_Integer_Literal =>
                T_Range;
                Typedef_Node := P_Signed_Integer_Type_Definition;
-               TF_Semicolon;
                exit;
 
             when Tok_Null =>
                Typedef_Node := P_Record_Definition;
-               TF_Semicolon;
                exit;
 
             when Tok_Left_Paren =>
@@ -517,12 +511,10 @@ package body Ch3 is
                Set_Comes_From_Source (End_Labl, False);
 
                Set_End_Label (Typedef_Node, End_Labl);
-               TF_Semicolon;
                exit;
 
             when Tok_Mod =>
                Typedef_Node := P_Modular_Type_Definition;
-               TF_Semicolon;
                exit;
 
             when Tok_New =>
@@ -540,12 +532,10 @@ package body Ch3 is
                     (Record_Extension_Part (Typedef_Node), End_Labl);
                end if;
 
-               TF_Semicolon;
                exit;
 
             when Tok_Range =>
                Typedef_Node := P_Signed_Integer_Type_Definition;
-               TF_Semicolon;
                exit;
 
             when Tok_Record =>
@@ -557,7 +547,6 @@ package body Ch3 is
                Set_Comes_From_Source (End_Labl, False);
 
                Set_End_Label (Typedef_Node, End_Labl);
-               TF_Semicolon;
                exit;
 
             when Tok_Tagged =>
@@ -640,7 +629,6 @@ package body Ch3 is
                   end if;
                end if;
 
-               TF_Semicolon;
                exit;
 
             when Tok_Limited =>
@@ -733,7 +721,6 @@ package body Ch3 is
                   T_Private; -- past PRIVATE (or complain if not there!)
                end if;
 
-               TF_Semicolon;
                exit;
 
             --  Here we have an identifier after the IS, which is certainly
@@ -748,7 +735,6 @@ package body Ch3 is
 
                if not Token_Is_At_Start_Of_Line then
                   Typedef_Node := P_Derived_Type_Def_Or_Private_Ext_Decl;
-                  TF_Semicolon;
 
                --  If the identifier is at the start of the line, and is in the
                --  same column as the type declaration itself then we consider
@@ -769,7 +755,6 @@ package body Ch3 is
 
                else
                   Typedef_Node := P_Record_Definition;
-                  TF_Semicolon;
                end if;
 
                exit;
@@ -779,13 +764,11 @@ package body Ch3 is
             when Tok_Interface =>
                Typedef_Node := P_Interface_Type_Definition (Abstract_Present);
                Abstract_Present := True;
-               TF_Semicolon;
                exit;
 
             when Tok_Private =>
                Decl_Node := New_Node (N_Private_Type_Declaration, Type_Loc);
                Scan; -- past PRIVATE
-               TF_Semicolon;
                exit;
 
             --  Ada 2005 (AI-345): Protected, synchronized or task interface
@@ -849,7 +832,6 @@ package body Ch3 is
                   end if;
                end;
 
-               TF_Semicolon;
                exit;
 
             --  Anything else is an error
@@ -933,6 +915,7 @@ package body Ch3 is
 
       Set_Defining_Identifier (Decl_Node, Ident_Node);
       Set_Discriminant_Specifications (Decl_Node, Discr_List);
+      P_Aspect_Specifications (Decl_Node);
       return Decl_Node;
    end P_Type_Declaration;
 
@@ -980,7 +963,7 @@ package body Ch3 is
 
       Set_Subtype_Indication
         (Decl_Node, P_Subtype_Indication (Not_Null_Present));
-      TF_Semicolon;
+      P_Aspect_Specifications (Decl_Node);
       return Decl_Node;
    end P_Subtype_Declaration;
 
@@ -1836,8 +1819,8 @@ package body Ch3 is
             end if;
          end if;
 
-         TF_Semicolon;
          Set_Defining_Identifier (Decl_Node, Idents (Ident));
+         P_Aspect_Specifications (Decl_Node);
 
          if List_OK then
             if Ident < Num_Idents then
@@ -1976,7 +1959,16 @@ package body Ch3 is
       --  missing in the case of "type X is new Y record ..." or in the
       --  case of "type X is new Y null record".
 
-      if Token = Tok_With
+      --  First make sure we don't have an aspect specification. If we do
+      --  return now, so that our caller can check it (the WITH here is not
+      --  part of a type extension).
+
+      if Aspect_Specifications_Present then
+         return Typedef_Node;
+
+      --  OK, not an aspect specification, so continue test for extension
+
+      elsif Token = Tok_With
         or else Token = Tok_Record
         or else Token = Tok_Null
       then
@@ -3470,10 +3462,9 @@ package body Ch3 is
          Ident := Ident + 1;
          Restore_Scan_State (Scan_State);
          T_Colon;
-
       end loop Ident_Loop;
 
-      TF_Semicolon;
+      P_Aspect_Specifications (Decl_Node);
    end P_Component_Items;
 
    --------------------------------

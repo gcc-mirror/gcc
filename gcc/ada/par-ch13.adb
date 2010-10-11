@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,91 @@ package body Ch13 is
 
    function P_Component_Clause return Node_Id;
    function P_Mod_Clause return Node_Id;
+
+   -----------------------------------
+   -- Aspect_Specifications_Present --
+   -----------------------------------
+
+   function Aspect_Specifications_Present return Boolean is
+      Scan_State : Saved_Scan_State;
+      Result     : Boolean;
+
+   begin
+      Save_Scan_State (Scan_State);
+
+      --  If we have a semicolon, test for semicolon followed by Aspect
+      --  Specifications, in which case we decide the semicolon is accidental.
+
+      if Token = Tok_Semicolon then
+         Scan; -- past semicolon
+
+         if Aspect_Specifications_Present then
+            Error_Msg_SP ("|extra "";"" ignored");
+            return True;
+
+         else
+            Restore_Scan_State (Scan_State);
+            return False;
+         end if;
+      end if;
+
+      --  Definitely must have WITH to consider aspect specs to be present
+
+      if Token /= Tok_With then
+         return False;
+      end if;
+
+      --  Have a WITH, see if it looks like an aspect specification
+
+      Save_Scan_State (Scan_State);
+      Scan; -- past WITH
+
+      --  If no identifier, then consider that we definitely do not have an
+      --  aspect specification.
+
+      if Token /= Tok_Identifier then
+         Result := False;
+
+      --  In Ada 2012 mode, we are less strict, and we consider that we have
+      --  an aspect specification if the identifier is an aspect name (even if
+      --  not followed by =>) or the identifier is not an aspect name but is
+      --  followed by =>. P_Aspect_Specifications will generate messages if the
+      --  aspect specification is ill-formed.
+
+      elsif Ada_Version >= Ada_2012 then
+         if Get_Aspect_Id (Token_Name) /= No_Aspect then
+            Result := True;
+         else
+            Scan; -- past identifier
+            Result := Token = Tok_Arrow;
+         end if;
+
+      --  If earlier than Ada 2012, check for valid aspect identifier followed
+      --  by an arrow, and consider that this is still an aspect specification
+      --  so we give an appropriate message.
+
+      else
+         if Get_Aspect_Id (Token_Name) = No_Aspect then
+            Result := False;
+
+         else
+            Scan; -- past aspect name
+
+            if Token /= Tok_Arrow then
+               Result := False;
+
+            else
+               Restore_Scan_State (Scan_State);
+               Error_Msg_SC ("|aspect specification is an Ada 2012 feature");
+               Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
+               return True;
+            end if;
+         end if;
+      end if;
+
+      Restore_Scan_State (Scan_State);
+      return Result;
+   end Aspect_Specifications_Present;
 
    --------------------------------------------
    -- 13.1  Representation Clause (also I.7) --
@@ -273,6 +358,163 @@ package body Ch13 is
    ---------------------------------------
 
    --  Parsed by P_Representation_Clause (13.1)
+
+   ------------------------------
+   -- 13.1  Aspect Specifation --
+   ------------------------------
+
+   --  ASPECT_SPECIFICATION ::=
+   --    with ASPECT_MARK [=> ASPECT_DEFINITION] {.
+   --         ASPECT_MARK [=> ASPECT_DEFINITION] }
+
+   --  ASPECT_MARK ::= aspect_IDENTIFIER['Class]
+
+   --  ASPECT_DEFINITION ::= NAME | EXPRESSION
+
+   --  Error recovery: cannot raise Error_Resync
+
+   procedure P_Aspect_Specifications (Decl : Node_Id) is
+      Aspects : List_Id;
+      Aspect  : Node_Id;
+      A_Id    : Aspect_Id;
+      OK      : Boolean;
+
+   begin
+      --  Check if aspect specification present
+
+      if not Aspect_Specifications_Present then
+         T_Semicolon;
+         return;
+      end if;
+
+      --  Aspect Specification is present
+
+      Scan; -- past WITH
+
+      --  Here we have an aspect specification to scan, note that we don;t
+      --  set the flag till later, because it may turn out that we have no
+      --  valid aspects in the list.
+
+      Aspects := Empty_List;
+      loop
+         OK := True;
+
+         if Token /= Tok_Identifier then
+            Error_Msg_SC ("aspect identifier expected");
+            Resync_Past_Semicolon;
+            return;
+         end if;
+
+         --  We have an identifier (which should be an aspect identifier)
+
+         Aspect := Token_Node;
+         A_Id := Get_Aspect_Id (Token_Name);
+         Aspect :=
+           Make_Aspect_Specification (Sloc (Aspect),
+             Identifier => Token_Node);
+
+         --  No valid aspect identifier present
+
+         if A_Id = No_Aspect then
+            Error_Msg_SC ("aspect identifier expected");
+
+            if Token = Tok_Apostrophe then
+               Scan; -- past '
+               Scan; -- past presumably CLASS
+            end if;
+
+            if Token = Tok_Arrow then
+               Scan; -- Past arrow
+               Set_Expression (Aspect, P_Expression);
+               OK := False;
+
+            elsif Token = Tok_Comma then
+               OK := False;
+
+            else
+               Resync_Past_Semicolon;
+               return;
+            end if;
+
+         --  OK aspect scanned
+
+         else
+            Scan; -- past identifier
+
+            --  Check for 'Class present
+
+            if Token = Tok_Apostrophe then
+               if not Class_Aspect_OK (A_Id) then
+                  Error_Msg_Node_1 := Identifier (Aspect);
+                  Error_Msg_SC ("aspect& does not permit attribute here");
+                  Scan; -- past apostophe
+                  Scan; -- past presumed CLASS
+                  OK := False;
+
+               else
+                  Scan; -- past apostrophe
+
+                  if Token /= Tok_Identifier
+                    or else Token_Name /= Name_Class
+                  then
+                     Error_Msg_SC ("Class attribute expected here");
+                     OK := False;
+
+                     if Token = Tok_Identifier then
+                        Scan; -- past identifier not CLASS
+                     end if;
+                  end if;
+               end if;
+            end if;
+
+            --  Test case of missing aspect definition
+
+            if Token = Tok_Comma or else Token = Tok_Semicolon then
+               if Aspect_Argument (A_Id) /= Optional then
+                  Error_Msg_Node_1 := Aspect;
+                  Error_Msg_AP ("aspect& requires an aspect definition");
+                  OK := False;
+               end if;
+
+            --  Here we have an aspect definition
+
+            else
+               if Token = Tok_Arrow then
+                  Scan; -- past arrow
+               else
+                  T_Arrow;
+                  OK := False;
+               end if;
+
+               if Aspect_Argument (A_Id) = Name then
+                  Set_Expression (Aspect, P_Name);
+               else
+                  Set_Expression (Aspect, P_Expression);
+               end if;
+            end if;
+
+            --  If OK clause scanned, add it to the list
+
+            if OK then
+               Append (Aspect, Aspects);
+            end if;
+
+            if Token = Tok_Comma then
+               Scan; -- past comma
+            else
+               T_Semicolon;
+               exit;
+            end if;
+         end if;
+      end loop;
+
+      --  If aspects scanned, store them
+
+      if Is_Non_Empty_List (Aspects) then
+         Set_Parent (Aspects, Decl);
+         Set_Aspect_Specifications (Decl, Aspects);
+      end if;
+   end P_Aspect_Specifications;
 
    ---------------------------------------------
    -- 13.4  Enumeration Representation Clause --

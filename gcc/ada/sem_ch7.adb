@@ -28,6 +28,7 @@
 --  handling of private and full declarations, and the construction of dispatch
 --  tables for tagged types.
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
@@ -51,6 +52,7 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch12; use Sem_Ch12;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Prag; use Sem_Prag;
@@ -749,6 +751,7 @@ package body Sem_Ch7 is
 
    procedure Analyze_Package_Declaration (N : Node_Id) is
       Id : constant Node_Id := Defining_Entity (N);
+      AS : constant List_Id := Aspect_Specifications (N);
 
       PF : Boolean;
       --  True when in the context of a declared pure library unit
@@ -768,7 +771,7 @@ package body Sem_Ch7 is
       --     package Pkg is ...
 
       if From_With_Type (Id) then
-         return;
+         goto Leave;
       end if;
 
       if Debug_Flag_C then
@@ -842,6 +845,8 @@ package body Sem_Ch7 is
          Write_Location (Sloc (N));
          Write_Eol;
       end if;
+
+      <<Leave>> Analyze_Aspect_Specifications (N, Id, AS);
    end Analyze_Package_Declaration;
 
    -----------------------------------
@@ -1412,6 +1417,7 @@ package body Sem_Ch7 is
    procedure Analyze_Private_Type_Declaration (N : Node_Id) is
       PF : constant Boolean   := Is_Pure (Enclosing_Lib_Unit_Entity);
       Id : constant Entity_Id := Defining_Identifier (N);
+      AS : constant List_Id   := Aspect_Specifications (N);
 
    begin
       Generate_Definition (Id);
@@ -1426,6 +1432,7 @@ package body Sem_Ch7 is
 
       New_Private_Type (N, Id, N);
       Set_Depends_On_Private (Id);
+      Analyze_Aspect_Specifications (N, Id, AS);
    end Analyze_Private_Type_Declaration;
 
    ----------------------------------

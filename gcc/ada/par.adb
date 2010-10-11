@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Debug;    use Debug;
@@ -835,6 +836,25 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
    package Ch13 is
       function P_Representation_Clause                return Node_Id;
+
+      function Aspect_Specifications_Present return Boolean;
+      --  This function tests whether the next keyword is WITH followed by
+      --  something that looks reasonably like an aspect specification. If so,
+      --  True is returned. Otherwise False is returned. In either case control
+      --  returns with the token pointer unchanged (i.e. pointing to the WITH
+      --  token in the case where True is returned). This function takes care
+      --  of generating appropriate messages if aspect specifications appear
+      --  in versions of Ada prior to Ada 2012.
+
+      procedure P_Aspect_Specifications (Decl : Node_Id);
+      --  This subprogram is called with the current token pointing to either a
+      --  WITH keyword starting an aspect specification, or a semicolon. In the
+      --  former case, the aspect specifications are scanned out including the
+      --  terminating semicolon, the Has_Aspect_Specifications flag is set in
+      --  the given declaration node, and the list of aspect specifications is
+      --  constructed and associated with this declaration node using a call to
+      --  Set_Aspect_Specifications. If no WITH keyword is present, then this
+      --  call has no effect other than scanning out the semicolon.
 
       function P_Code_Statement (Subtype_Mark : Node_Id) return Node_Id;
       --  Function to parse a code statement. The caller has scanned out

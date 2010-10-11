@@ -3674,18 +3674,28 @@ package body Sem_Res is
                   Apply_Range_Check (A, F_Typ);
                end if;
 
-               --  Ada 2005 (AI-231)
+               --  Ada 2005 (AI-231): Note that the controlling parameter case
+               --  already existed in Ada 95, which is partially checked
+               --  elsewhere (see Checks), and we don't want the warning
+               --  message to differ.
 
-               if Ada_Version >= Ada_2005
-                 and then Is_Access_Type (F_Typ)
+               if Is_Access_Type (F_Typ)
                  and then Can_Never_Be_Null (F_Typ)
                  and then Known_Null (A)
                then
-                  Apply_Compile_Time_Constraint_Error
-                    (N      => A,
-                     Msg    => "(Ada 2005) null not allowed in "
-                               & "null-excluding formal?",
-                     Reason => CE_Null_Not_Allowed);
+                  if Is_Controlling_Formal (F) then
+                     Apply_Compile_Time_Constraint_Error
+                       (N      => A,
+                        Msg    => "null value not allowed here?",
+                        Reason => CE_Access_Check_Failed);
+
+                  elsif Ada_Version >= Ada_2005 then
+                     Apply_Compile_Time_Constraint_Error
+                       (N      => A,
+                        Msg    => "(Ada 2005) null not allowed in "
+                                  & "null-excluding formal?",
+                        Reason => CE_Null_Not_Allowed);
+                  end if;
                end if;
             end if;
 

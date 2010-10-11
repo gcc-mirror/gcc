@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,14 +41,14 @@ package Sem_Ch9  is
    procedure Analyze_Entry_Index_Specification          (N : Node_Id);
    procedure Analyze_Protected_Body                     (N : Node_Id);
    procedure Analyze_Protected_Definition               (N : Node_Id);
-   procedure Analyze_Protected_Type                     (N : Node_Id);
+   procedure Analyze_Protected_Type_Declaration         (N : Node_Id);
    procedure Analyze_Requeue                            (N : Node_Id);
    procedure Analyze_Selective_Accept                   (N : Node_Id);
-   procedure Analyze_Single_Protected                   (N : Node_Id);
-   procedure Analyze_Single_Task                        (N : Node_Id);
+   procedure Analyze_Single_Protected_Declaration       (N : Node_Id);
+   procedure Analyze_Single_Task_Declaration            (N : Node_Id);
    procedure Analyze_Task_Body                          (N : Node_Id);
    procedure Analyze_Task_Definition                    (N : Node_Id);
-   procedure Analyze_Task_Type                          (N : Node_Id);
+   procedure Analyze_Task_Type_Declaration              (N : Node_Id);
    procedure Analyze_Terminate_Alternative              (N : Node_Id);
    procedure Analyze_Timed_Entry_Call                   (N : Node_Id);
    procedure Analyze_Triggering_Alternative             (N : Node_Id);

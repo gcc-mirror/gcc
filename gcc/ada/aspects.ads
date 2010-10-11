@@ -29,25 +29,27 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package defines the aspects that are recognized in aspect
---  specifications. We separate this off in its own packages to that
---  it can be accessed by the parser without dragging in Sem_Asp
+--  This package defines the aspects that are recognized by GNAT in aspect
+--  specifications. It also contains the subprograms for storing/retrieving
+--  aspect speciciations from the tree. The semantic processing for aspect
+--  specifications is found in Sem_Ch13.Analyze_Aspect_Specifications.
 
 with Namet; use Namet;
+with Types; use Types;
 
 package Aspects is
+
+   --  Type defining recognized aspects
 
    type Aspect_Id is
      (No_Aspect,                            -- Dummy entry for no aspect
       Aspect_Ada_2005,                      -- GNAT
       Aspect_Ada_2012,                      -- GNAT
       Aspect_Address,
-      Aspect_Aliased,
       Aspect_Alignment,
       Aspect_Atomic,
       Aspect_Atomic_Components,
       Aspect_Bit_Order,
-      Aspect_C_Pass_By_Copy,
       Aspect_Component_Size,
       Aspect_Discard_Names,
       Aspect_External_Tag,
@@ -56,16 +58,14 @@ package Aspects is
       Aspect_Inline_Always,                 -- GNAT
       Aspect_Invariant,
       Aspect_Machine_Radix,
+      Aspect_No_Return,
       Aspect_Object_Size,                   -- GNAT
       Aspect_Pack,
       Aspect_Persistent_BSS,                -- GNAT
       Aspect_Post,
-      Aspect_Postcondition,                 -- GNAT (equivalent to Post)
       Aspect_Pre,
-      Aspect_Precondition,                  -- GNAT (equivalent to Pre)
       Aspect_Predicate,                     -- GNAT???
       Aspect_Preelaborable_Initialization,
-      Aspect_Psect_Object,                  -- GNAT
       Aspect_Pure_Function,                 -- GNAT
       Aspect_Shared,                        -- GNAT (equivalent to Atomic)
       Aspect_Size,
@@ -83,17 +83,15 @@ package Aspects is
       Aspect_Value_Size,                    -- GNAT
       Aspect_Volatile,
       Aspect_Volatile_Components,
-      Aspect_Warnings,                      -- GNAT
-      Aspect_Weak_External);                -- GNAT
+      Aspect_Warnings);                     -- GNAT
 
    --  The following array indicates aspects that accept 'Class
 
    Class_Aspect_OK : constant array (Aspect_Id) of Boolean :=
                        (Aspect_Invariant     => True,
                         Aspect_Pre           => True,
-                        Aspect_Precondition  => True,
+                        Aspect_Predicate     => True,
                         Aspect_Post          => True,
-                        Aspect_Postcondition => True,
                         others               => False);
 
    --  The following type is used for indicating allowed expression forms
@@ -110,12 +108,10 @@ package Aspects is
                         Aspect_Ada_2005                     => Optional,
                         Aspect_Ada_2012                     => Optional,
                         Aspect_Address                      => Expression,
-                        Aspect_Aliased                      => Optional,
                         Aspect_Alignment                    => Expression,
                         Aspect_Atomic                       => Optional,
                         Aspect_Atomic_Components            => Optional,
                         Aspect_Bit_Order                    => Expression,
-                        Aspect_C_Pass_By_Copy               => Optional,
                         Aspect_Component_Size               => Expression,
                         Aspect_Discard_Names                => Optional,
                         Aspect_External_Tag                 => Expression,
@@ -124,20 +120,18 @@ package Aspects is
                         Aspect_Inline_Always                => Optional,
                         Aspect_Invariant                    => Expression,
                         Aspect_Machine_Radix                => Expression,
+                        Aspect_No_Return                    => Optional,
                         Aspect_Object_Size                  => Expression,
-                        Aspect_Pack                         => Optional,
                         Aspect_Persistent_BSS               => Optional,
+                        Aspect_Pack                         => Optional,
                         Aspect_Post                         => Expression,
-                        Aspect_Postcondition                => Expression,
                         Aspect_Pre                          => Expression,
-                        Aspect_Precondition                 => Expression,
                         Aspect_Predicate                    => Expression,
                         Aspect_Preelaborable_Initialization => Optional,
-                        Aspect_Psect_Object                 => Optional,
                         Aspect_Pure_Function                => Optional,
                         Aspect_Shared                       => Optional,
                         Aspect_Size                         => Expression,
-                        Aspect_Storage_Pool                 => Expression,
+                        Aspect_Storage_Pool                 => Name,
                         Aspect_Storage_Size                 => Expression,
                         Aspect_Stream_Size                  => Expression,
                         Aspect_Suppress                     => Name,
@@ -151,11 +145,50 @@ package Aspects is
                         Aspect_Value_Size                   => Expression,
                         Aspect_Volatile                     => Optional,
                         Aspect_Volatile_Components          => Optional,
-                        Aspect_Warnings                     => Name,
-                        Aspect_Weak_External                => Optional);
+                        Aspect_Warnings                     => Name);
 
    function Get_Aspect_Id (Name : Name_Id) return Aspect_Id;
+   pragma Inline (Get_Aspect_Id);
    --  Given a name Nam, returns the corresponding aspect id value. If the name
    --  does not match any aspect, then No_Aspect is returned as the result.
+
+   ---------------------------------------------------
+   -- Handling of Aspect Specifications in the Tree --
+   ---------------------------------------------------
+
+   --  Several kinds of declaration node permit aspect specifications in Ada
+   --  2012 mode. If there was room in all the corresponding declaration nodes,
+   --  we could just have a field Aspect_Specifications pointing to a list of
+   --  nodes for the aspects (N_Aspect_Specification nodes). But there isn't
+   --  room, so we adopt a different approach.
+
+   --  The following subprograms provide access to a specialized interface
+   --  implemented internally with a hash table in the body, that provides
+   --  access to aspect specifications.
+
+   function Permits_Aspect_Specifications (N : Node_Id) return Boolean;
+   --  Returns True if the node N is a declaration node that permits aspect
+   --  specifications. All such nodes have the Has_Aspect_Specifications
+   --  flag defined. Returns False for all other nodes.
+
+   function Aspect_Specifications (N : Node_Id) return List_Id;
+   --  Given a node N, returns the list of N_Aspect_Specification nodes that
+   --  are attached to this declaration node. If the node is in the class of
+   --  declaration nodes that permit aspect specifications, as defined by the
+   --  predicate above, and if their Has_Aspect_Specifications flag is set to
+   --  True, then this will always be a non-empty list. If this flag is set to
+   --  False, or the node is not in the declaration class permitting aspect
+   --  specifications, then No_List is returned.
+
+   procedure Set_Aspect_Specifications (N : Node_Id; L : List_Id);
+   --  The node N must be in the class of declaration nodes that permit aspect
+   --  specifications and the Has_Aspect_Specifications flag must be False on
+   --  entry. L must be a non-empty list of N_Aspect_Specification nodes. This
+   --  procedure sets the Has_Aspect_Specifications flag to True, and makes an
+   --  entry that can be retrieved by a subsequent Aspect_Specifications call.
+   --  The parent of list L is set to reference the declaration node N. It is
+   --  an error to call this procedure with a node that does not permit aspect
+   --  specifications, or a node that has its Has_Aspect_Specifications flag
+   --  set True on entry, or with L being an empty list or No_List.
 
 end Aspects;

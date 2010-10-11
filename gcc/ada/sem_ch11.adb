@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
@@ -39,6 +40,7 @@ with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
@@ -55,6 +57,7 @@ package body Sem_Ch11 is
    procedure Analyze_Exception_Declaration (N : Node_Id) is
       Id : constant Entity_Id := Defining_Identifier (N);
       PF : constant Boolean   := Is_Pure (Current_Scope);
+      AS : constant List_Id   := Aspect_Specifications (N);
    begin
       Generate_Definition         (Id);
       Enter_Name                  (Id);
@@ -63,6 +66,7 @@ package body Sem_Ch11 is
       Set_Etype                   (Id, Standard_Exception_Type);
       Set_Is_Statically_Allocated (Id);
       Set_Is_Pure                 (Id, PF);
+      Analyze_Aspect_Specifications (N, Id, AS);
    end Analyze_Exception_Declaration;
 
    --------------------------------

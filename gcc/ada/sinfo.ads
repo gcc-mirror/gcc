@@ -455,13 +455,13 @@ package Sinfo is
 
    --  The following flag fields appear in all nodes
 
-   --  Analyzed (Flag1)
+   --  Analyzed
    --    This flag is used to indicate that a node (and all its children have
    --    been analyzed. It is used to avoid reanalysis of a node that has
    --    already been analyzed, both for efficiency and functional correctness
    --    reasons.
 
-   --  Comes_From_Source (Flag2)
+   --  Comes_From_Source
    --    This flag is set if the node comes directly from an explicit construct
    --    in the source. It is normally on for any nodes built by the scanner or
    --    parser from the source program, with the exception that in a few cases
@@ -475,7 +475,7 @@ package Sinfo is
    --    from the source program (e.g. the allocator built for build-in-place
    --    case), and the Comes_From_Source flag is deliberately set.
 
-   --  Error_Posted (Flag3)
+   --  Error_Posted
    --    This flag is used to avoid multiple error messages being posted on or
    --    referring to the same node. This flag is set if an error message
    --    refers to a node or is posted on its source location, and has the
@@ -586,6 +586,14 @@ package Sinfo is
    --    not normally handled (in particular the tasking abort signal). This
    --    is used for translation of the at end handler into a normal exception
    --    handler.
+
+   --  Aspect_Cancel (Flag11-Sem)
+   --    Processing of aspect specifications typically generates pragmas and
+   --    attribute definition clauses that are inserted into the tree after
+   --    the declaration node to get the desired aspect effect. In the case
+   --    of Boolean aspects that use "=> False" to cancel the effect of an
+   --    aspect (i.e. turn if off), the generated pragma has the Aspect_Cancel
+   --    flag set to indicate that the pragma operates in the opposite sense.
 
    --  Assignment_OK (Flag15-Sem)
    --    This flag is set in a subexpression node for an object, indicating
@@ -1055,6 +1063,12 @@ package Sinfo is
    --    definitely safe, and a runtime check may be required if the backend
    --    cannot figure it out. If both flags Forwards_OK and Backwards_OK are
    --    set, it means that the front end can assure no overlap of operands.
+
+   --  From_Aspect_Specification (Flag13-Sem)
+   --    Processing of aspect specifications typically results in insertion in
+   --    the tree of corresponding pragma or attribute definition clause nodes.
+   --    These generated nodes have the From_Aspect_Specification flag set to
+   --    indicate that they came from aspect specifications originally.
 
    --  From_At_End (Flag4-Sem)
    --    This flag is set on an N_Raise_Statement node if it corresponds to
@@ -1996,11 +2010,13 @@ package Sinfo is
       --  Sloc points to PRAGMA
       --  Next_Pragma (Node1-Sem)
       --  Pragma_Argument_Associations (List2) (set to No_List if none)
-      --  Debug_Statement (Node3) (set to Empty if not Debug, Assert)
+      --  Debug_Statement (Node3) (set to Empty if not Debug)
       --  Pragma_Identifier (Node4)
       --  Next_Rep_Item (Node5-Sem)
       --  Pragma_Enabled (Flag5-Sem)
+      --  From_Aspect_Specification (Flag13-Sem)
       --  Import_Interface_Present (Flag16-Sem)
+      --  Aspect_Cancel (Flag11-Sem)
 
       --  Note: we should have a section on what pragmas are passed on to
       --  the back end to be processed. This section should note that pragma
@@ -2010,7 +2026,12 @@ package Sinfo is
       --  Note: a utility function Pragma_Name may be applied to pragma nodes
       --  to conveniently obtain the Chars field of the Pragma_Identifier.
 
-      --------------------------------------
+      --  Note: if From_Aspect_Specification is set, then Sloc points to the
+      --  aspect name, as does the Pragma_Identifier. In this case if the
+      --  pragma has a local name argument (such as pragma Inline), it is
+      --  resolved to point to the specific entity affected by the pragma.
+
+   --------------------------------------
       -- 2.8  Pragma Argument Association --
       --------------------------------------
 
@@ -2818,7 +2839,7 @@ package Sinfo is
 
       --  COMPONENT_DECLARATION ::=
       --    DEFINING_IDENTIFIER_LIST : COMPONENT_DEFINITION
-      --      [:= DEFAULT_EXPRESSION]
+      --      [:= DEFAULT_EXPRESSION];
 
       --  Note: although the syntax does not permit a component definition to
       --  be an anonymous array (and the parser will diagnose such an attempt
@@ -6395,30 +6416,48 @@ package Sinfo is
       --  Next_Rep_Item (Node5-Sem)
       --  From_At_Mod (Flag4-Sem)
       --  Check_Address_Alignment (Flag11-Sem)
+      --  From_Aspect_Specification (Flag13-Sem)
       --  Address_Warning_Posted (Flag18-Sem)
 
-      ----------------------------------
-      -- 13.3.1  Aspect Specification --
-      ----------------------------------
+      --  Note: if From_Aspect_Specification is set, then Sloc points to the
+      --  aspect name, and Entity is resolved already to reference the entity
+      --  to which the aspect applies.
 
-      --  ASPECT_SPECIFICATION ::=
-      --    with ASPECT_MARK [=> ASPECT_DEFINITION] {.
-      --         ASPECT_MARK [=> ASPECT_DEFINITION] }
+      -----------------------------------
+      -- 13.3.1  Aspect Specifications --
+      -----------------------------------
 
-      --  ASPECT_MARK ::= aspect_IDENTIFIER['Class]
+      --  We modify the RM grammar here, the RM grammar is:
 
-      --  ASPECT_DEFINITION ::= NAME | EXPRESSION
+      --     ASPECT_SPECIFICATION ::=
+      --       with ASPECT_MARK [=> ASPECT_DEFINITION] {.
+      --            ASPECT_MARK [=> ASPECT_DEFINITION] }
 
-      --  See separate section "Handling of Aspect Specifications" for details
-      --  on the incorporation of these nodes into the tree, and association
-      --  with the related declaration node.
+      --     ASPECT_MARK ::= aspect_IDENTIFIER['Class]
+
+      --     ASPECT_DEFINITION ::= NAME | EXPRESSION
+
+      --  That's inconvenient, since there is no non-terminal name for a single
+      --  entry in the list of aspects. So we use this grammar instead:
+
+      --     ASPECT_SPECIFICATIONS ::=
+      --       with ASPECT_SPECIFICATION {, ASPECT_SPECIFICATION};
+
+      --     ASPECT_SPECIFICATION =>
+      --       ASPECT_MARK [=> ASPECT_DEFINITION]
+
+      --     ASPECT_MARK ::= aspect_IDENTIFIER['Class]
+
+      --     ASPECT_DEFINITION ::= NAME | EXPRESSION
+
+      --  See separate package Aspects for details on the incorporation of
+      --  these nodes into the tree, and how aspect specifications for a given
+      --  declaration node are associated with that node.
 
       --  N_Aspect_Specification
       --  Sloc points to aspect identifier
       --  Identifier (Node1) aspect identifier
       --  Expression (Node3) Aspect_Definition (set to Empty if none)
-      --  First_Aspect (Flag4) Set for first aspect for a declaration
-      --  Last_Aspect (Flag5) Set for last aspect for a declaration
       --  Class_Present (Flag6) Set if 'Class present
 
       --  Note: Aspect_Specification is an Ada 2012 feature
@@ -7900,6 +7939,9 @@ package Sinfo is
    function Array_Aggregate
      (N : Node_Id) return Node_Id;    -- Node3
 
+   function Aspect_Cancel
+     (N : Node_Id) return Boolean;    -- Flag11
+
    function Assignment_OK
      (N : Node_Id) return Boolean;    -- Flag15
 
@@ -8197,9 +8239,6 @@ package Sinfo is
    function Expressions
      (N : Node_Id) return List_Id;    -- List1
 
-   function First_Aspect
-     (N : Node_Id) return Boolean;    -- Flag4
-
    function First_Bit
      (N : Node_Id) return Node_Id;    -- Node3
 
@@ -8226,6 +8265,9 @@ package Sinfo is
 
    function Forwards_OK
      (N : Node_Id) return Boolean;    -- Flag5
+
+   function From_Aspect_Specification
+     (N : Node_Id) return Boolean;    -- Flag13
 
    function From_At_End
      (N : Node_Id) return Boolean;    -- Flag4
@@ -8415,9 +8457,6 @@ package Sinfo is
 
    function Left_Opnd
      (N : Node_Id) return Node_Id;    -- Node2
-
-   function Last_Aspect
-     (N : Node_Id) return Boolean;    -- Flag5
 
    function Last_Bit
      (N : Node_Id) return Node_Id;    -- Node4
@@ -8845,6 +8884,9 @@ package Sinfo is
    procedure Set_Has_Aspect_Specifications
      (N : Node_Id; Val : Boolean := True);    -- Flag3
 
+   procedure Set_Aspect_Cancel
+     (N : Node_Id; Val : Boolean := True);    -- Flag11
+
    procedure Set_Assignment_OK
      (N : Node_Id; Val : Boolean := True);    -- Flag15
 
@@ -9139,9 +9181,6 @@ package Sinfo is
    procedure Set_Expressions
      (N : Node_Id; Val : List_Id);            -- List1
 
-   procedure Set_First_Aspect
-     (N : Node_Id; Val : Boolean := True);    -- Flag4
-
    procedure Set_First_Bit
      (N : Node_Id; Val : Node_Id);            -- Node3
 
@@ -9171,6 +9210,9 @@ package Sinfo is
 
    procedure Set_From_At_Mod
      (N : Node_Id; Val : Boolean := True);    -- Flag4
+
+   procedure Set_From_Aspect_Specification
+     (N : Node_Id; Val : Boolean := True);    -- Flag13
 
    procedure Set_From_At_End
      (N : Node_Id; Val : Boolean := True);    -- Flag4
@@ -9348,9 +9390,6 @@ package Sinfo is
 
    procedure Set_Kill_Range_Check
      (N : Node_Id; Val : Boolean := True);    -- Flag11
-
-   procedure Set_Last_Aspect
-     (N : Node_Id; Val : Boolean := True);    -- Flag5
 
    procedure Set_Last_Bit
      (N : Node_Id; Val : Node_Id);            -- Node4
@@ -11417,45 +11456,6 @@ package Sinfo is
         4 => False,   --  unused
         5 => False)); --  unused
 
-   ---------------------------------------
-   -- Handling of Aspect Specifications --
-   ---------------------------------------
-
-   --  Several kinds of declaration node permit aspect specifications in Ada
-   --  2012 mode. If there was room in all these declaration nodes, we could
-   --  just have a field Aspect_Specifications pointing to a list of nodes
-   --  for the aspects (N_Aspect_Specification nodes). But there isn't room,
-   --  so we adopt a different approach.
-
-   --  The following subprograms provide access to a specialized interface
-   --  implemented internally with a hash table in the body, that provides
-   --  access to aspect specifications.
-
-   function Permits_Aspect_Specifications (N : Node_Id) return Boolean;
-   --  Returns True if the node N is a declaration node that permits aspect
-   --  specifications. All such nodes have the Has_Aspect_Specifications
-   --  flag defined. Returns False for all other nodes.
-
-   function Aspect_Specifications (N : Node_Id) return List_Id;
-   --  Given a node N, returns the list of N_Aspect_Specification nodes that
-   --  are attached to this declaration node. If the node is in the class of
-   --  declaration nodes that permit aspect specifications, as defined by the
-   --  predicate above, and if their Has_Aspect_Specifications flag is set to
-   --  True, then this will always be a non-empty list. If this flag is set to
-   --  False, or the node is not in the declaration class permitting aspect
-   --  specifications, then No_List is returned.
-
-   procedure Set_Aspect_Specifications (N : Node_Id; L : List_Id);
-   --  The node N must be in the class of declaration nodes that permit aspect
-   --  specifications and the Has_Aspect_Specifications flag must be False on
-   --  entry. L must be a non-empty list of N_Aspect_Specification nodes. This
-   --  procedure sets the Has_Aspect_Specifications flag to True, and makes an
-   --  entry that can be retrieved by a subsequent Aspect_Specifications call.
-   --  The parent of list L is set to reference the declaration node N. It is
-   --  an error to call this procedure with a node that does not permit aspect
-   --  specifications, or a node that has its Has_Aspect_Specifications flag
-   --  set True on entry, or with L being an empty list or No_List.
-
    --------------------
    -- Inline Pragmas --
    --------------------
@@ -11481,6 +11481,7 @@ package Sinfo is
    pragma Inline (Alternatives);
    pragma Inline (Ancestor_Part);
    pragma Inline (Array_Aggregate);
+   pragma Inline (Aspect_Cancel);
    pragma Inline (Assignment_OK);
    pragma Inline (Associated_Node);
    pragma Inline (At_End_Proc);
@@ -11580,7 +11581,6 @@ package Sinfo is
    pragma Inline (Explicit_Generic_Actual_Parameter);
    pragma Inline (Expression);
    pragma Inline (Expressions);
-   pragma Inline (First_Aspect);
    pragma Inline (First_Bit);
    pragma Inline (First_Inlined_Subprogram);
    pragma Inline (First_Name);
@@ -11590,6 +11590,7 @@ package Sinfo is
    pragma Inline (Float_Truncate);
    pragma Inline (Formal_Type_Definition);
    pragma Inline (Forwards_OK);
+   pragma Inline (From_Aspect_Specification);
    pragma Inline (From_At_End);
    pragma Inline (From_At_Mod);
    pragma Inline (From_Default);
@@ -11651,7 +11652,6 @@ package Sinfo is
    pragma Inline (Iteration_Scheme);
    pragma Inline (Itype);
    pragma Inline (Kill_Range_Check);
-   pragma Inline (Last_Aspect);
    pragma Inline (Last_Bit);
    pragma Inline (Last_Name);
    pragma Inline (Library_Unit);
@@ -11792,6 +11792,7 @@ package Sinfo is
    pragma Inline (Set_Alternatives);
    pragma Inline (Set_Ancestor_Part);
    pragma Inline (Set_Array_Aggregate);
+   pragma Inline (Set_Aspect_Cancel);
    pragma Inline (Set_Assignment_OK);
    pragma Inline (Set_Associated_Node);
    pragma Inline (Set_At_End_Proc);
@@ -11890,7 +11891,6 @@ package Sinfo is
    pragma Inline (Set_Explicit_Generic_Actual_Parameter);
    pragma Inline (Set_Expression);
    pragma Inline (Set_Expressions);
-   pragma Inline (Set_First_Aspect);
    pragma Inline (Set_First_Bit);
    pragma Inline (Set_First_Inlined_Subprogram);
    pragma Inline (Set_First_Name);
@@ -11900,6 +11900,7 @@ package Sinfo is
    pragma Inline (Set_Float_Truncate);
    pragma Inline (Set_Formal_Type_Definition);
    pragma Inline (Set_Forwards_OK);
+   pragma Inline (Set_From_Aspect_Specification);
    pragma Inline (Set_From_At_End);
    pragma Inline (Set_From_At_Mod);
    pragma Inline (Set_From_Default);
@@ -11961,7 +11962,6 @@ package Sinfo is
    pragma Inline (Set_Iteration_Scheme);
    pragma Inline (Set_Itype);
    pragma Inline (Set_Kill_Range_Check);
-   pragma Inline (Set_Last_Aspect);
    pragma Inline (Set_Last_Bit);
    pragma Inline (Set_Last_Name);
    pragma Inline (Set_Library_Unit);

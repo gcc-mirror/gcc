@@ -296,7 +296,7 @@ GNATLINK_OBJS = gnatlink.o \
  sdefault.o snames.o stylesw.o switch.o system.o table.o targparm.o tree_io.o \
  types.o validsw.o widechar.o
 
-GNATMAKE_OBJS = a-except.o ali.o ali-util.o s-casuti.o \
+GNATMAKE_OBJS = a-except.o ali.o ali-util.o aspects.o s-casuti.o \
  alloc.o atree.o binderr.o butil.o casing.o csets.o debug.o elists.o einfo.o\
  erroutc.o errutil.o err_vars.o fmap.o fname.o fname-uf.o fname-sf.o \
  gnatmake.o gnatvsn.o hostparm.o interfac.o i-c.o i-cstrin.o krunch.o lib.o \
