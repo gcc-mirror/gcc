@@ -1,5 +1,26 @@
 2010-10-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Makefile.in (C_SOURCE_FILES): Added ivars.c.
+	* ivars.c: New.
+	* objc/objc.h: Updated comments.
+	* objc/runtime.h (object_getClass): New.
+	(object_getClassName): New.
+	(object_setClass): New.
+	(class_getInstanceVariable): New.
+	(object_getIndexedIvars): New.
+	(object_getInstanceVariable): New.
+	(object_setInstanceVariable): New.
+	(object_getIvar): New.
+	(object_setIvar): New.	
+	(ivar_getName): New.
+	(ivar_getOffset): New.
+	(ivar_getTypeEncoding): New.
+	* objc-private/module-abi-8.h (struct objc_class): Added.
+	* objects.c (object_getClassName): New.
+	(object_setClass): New.
+	
+2010-10-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc/objc.h: Updated comments.
 	* objc/objc-api.h: (object_copy): Added one argument; use a
 	#define to maintain backwards-compatibility.  Moved

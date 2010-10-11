@@ -171,6 +171,7 @@ C_SOURCE_FILES = \
    gc.c \
    hash.c \
    init.c \
+   ivars.c \
    memory.c \
    nil_method.c \
    objc-foreach.c \

@@ -146,6 +146,24 @@ struct objc_method_description
 #define _F_GCINVISIBLE	0x20
 
 
+/** Internals: defined inline.  */
+
+/* Return the class of 'object', or Nil if the object is nil.  If
+   'object' is a class, the meta class is returned; if 'object' is a
+   meta class, the root meta class is returned (note that this is
+   different from the traditional GNU Objective-C Runtime API function
+   object_get_class(), which for a meta class would return the meta
+   class itself).  */
+static inline Class
+object_getClass (id object)
+{
+  if (object != nil)
+    return object->class_pointer;
+  else
+    return Nil;
+}
+
+
 /** Internals: the following functions are in selector.c.  */
 
 /* Return the name of a given selector.  */
@@ -182,13 +200,13 @@ objc_EXPORT BOOL sel_isEqual (SEL first_selector, SEL second_selector);
 
 /** Internals: the following functions are in objects.c.  */
 
-/* Create an instance of class 'class', adding extraBytes to the size
+/* Create an instance of class 'class_', adding extraBytes to the size
    of the returned object.  This method allocates the appropriate
    amount of memory for the instance, initializes it to zero, then
    calls all the C++ constructors on appropriate C++ instance
-   variables of the instance (if any) (TODO: This is not implemented
-   yet).  */
-objc_EXPORT id class_createInstance (Class class, size_t extraBytes);
+   variables of the instance (if any) (TODO: The C++ constructors bit
+   is not implemented yet).  */
+objc_EXPORT id class_createInstance (Class class_, size_t extraBytes);
 
 /* Copy an object and return the copy.  extraBytes should be identical
    to the extraBytes parameter that was passed when creating the
@@ -200,6 +218,69 @@ objc_EXPORT id object_copy (id object, size_t extraBytes);
    (if any) (TODO: This is not implemented yet), then frees the memory
    for the instance.  */
 objc_EXPORT id object_dispose (id object);
+
+/* Return the name of the class of 'object'.  If 'object' is 'nil',
+   returns "Nil".  */
+objc_EXPORT const char * object_getClassName (id object);
+
+/* Change the class of object to be class_.  Return the previous class
+   of object.  This is currently not really thread-safe.  */
+objc_EXPORT Class object_setClass (id object, Class class_);
+
+
+/** Internals: the following functions are in ivars.c.  */
+
+/* Return an instance variable given the class and the instance
+   variable name.  This is an expensive function to call, so try to
+   reuse the returned Ivar if you can.  */
+objc_EXPORT Ivar class_getInstanceVariable (Class class_, const char *name);
+
+/* If the object was created in class_createInstance() with some
+   extraBytes, returns a pointer to them.  If it was not, then the
+   returned pointer may make no sense.  */
+objc_EXPORT void * object_getIndexedIvars (id object);
+
+/* Get the value of an instance variable of type 'id'.  The function
+   returns the instance variable.  To get the value of the instance
+   variable, you should pass as 'returnValue' a pointer to an 'id';
+   the value will be copied there.  Note that 'returnValue' is really
+   a 'void *', not a 'void **'.  This function really works only with
+   instance variables of type 'id'; for other types of instance
+   variables, access directly the data at (char *)object +
+   ivar_getOffset (ivar).  */
+objc_EXPORT Ivar object_getInstanceVariable (id object, const char *name, void **returnValue);
+
+/* Set the value of an instance variable.  The value to set is passed
+   in 'newValue' (which really is an 'id', not a 'void *').  The
+   function returns the instance variable.  This function really works
+   only with instance variables of type 'id'; for other types of
+   instance variables, access directly the data at (char *)object +
+   ivar_getOffset (ivar).  */
+objc_EXPORT Ivar object_setInstanceVariable (id object, const char *name, void *newValue);
+
+/* Get the value of an instance variable of type 'id' of the object
+   'object'.  This is faster than object_getInstanceVariable if you
+   already have the instance variable because it avoids the expensive
+   call to class_getInstanceVariable that is done by
+   object_getInstanceVariable.  */
+objc_EXPORT id object_getIvar (id object, Ivar variable);
+
+/* Set the value of an instance variable of type 'id' of the object
+   'object'.  This is faster than object_setInstanceVariable if you
+   already have the instance variable because it avoids the expensive
+   call to class_getInstanceVariable that is done by
+   object_setInstanceVariable.  */
+objc_EXPORT void object_setIvar (id object, Ivar variable, id value);
+
+/* Return the name of the instance variable.  */
+objc_EXPORT const char * ivar_getName (Ivar variable);
+
+/* Return the offset of the instance variable from the start of the
+   object data.  */
+objc_EXPORT ptrdiff_t ivar_getOffset (Ivar variable);
+
+/* Return the type encoding of the variable.  */
+objc_EXPORT const char * ivar_getTypeEncoding (Ivar variable);
 
 
 /* TODO: Add all the other functions in the API.  */
@@ -216,8 +297,7 @@ objc_EXPORT id object_dispose (id object);
    is set.  Then, it will abort the program.
 
    Compatibility note: the Apple runtime will not abort the program
-   after calling the mutation handler.
- */
+   after calling the mutation handler.  */
 objc_EXPORT void objc_enumerationMutation (id collection);
 
 /* 'objc_set_enumeration_mutation_handler' can be used to set a
@@ -236,8 +316,7 @@ objc_EXPORT void objc_enumerationMutation (id collection);
    libraries; in the case of GNUstep, GNUstep Base may be using this
    function to improve the standard enumeration mutation handling.
    You probably shouldn't use this function unless you are writing
-   your own Foundation library.
-*/
+   your own Foundation library.  */
 objc_EXPORT void objc_setEnumerationMutationHandler (void (*handler)(id));
 
 /* This structure (used during fast enumeration) is automatically
@@ -246,8 +325,7 @@ objc_EXPORT void objc_setEnumerationMutationHandler (void (*handler)(id));
    defined again with the name of NSFastEnumeration by "Foundation"
    libraries such as GNUstep Base.  And if NSFastEnumeration is
    defined, the compiler will use it instead of
-   __objcFastEnumerationState when doing fast enumeration.
-*/
+   __objcFastEnumerationState when doing fast enumeration.  */
 /*
 struct __objcFastEnumerationState
 {
