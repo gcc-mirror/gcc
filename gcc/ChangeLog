@@ -1,3 +1,18 @@
+2010-10-07  Andi Kleen  <ak@linux.intel.com>
+
+	* Makefile.in (MOSTLYCLEANFILES): Remove cc1*dummy, add
+	checksum-options.
+	(checksum-options): Add.
+	(cc1-dummy): Remove.
+	(cc1-checksum): Change to run checksum over object files
+	and options only.
+	* dummy-checksum.c: Remove.
+	* genchecksum.c: Update copyright.
+	(usage): Allow multiple arguments.
+	(BLOCKSIZE): Add.
+	(dosum): Change for incremental checksum. Remove C output.
+	(main): Iterate over all argument files. Add C output.
+
 2010-10-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* params.c (set_param_value_internal): New.

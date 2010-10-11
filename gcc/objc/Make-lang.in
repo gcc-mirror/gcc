@@ -51,13 +51,11 @@ OBJC_OBJS = objc/objc-lang.o objc/objc-act.o
 
 objc_OBJS = $(OBJC_OBJS) cc1obj-checksum.o
 
-cc1obj-dummy$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
-	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	      $(OBJC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o \
-	      $(BACKEND) $(LIBS) $(BACKENDLIBS)
-
-cc1obj-checksum.c : cc1obj-dummy$(exeext) build/genchecksum$(build_exeext)
-	build/genchecksum$(build_exeext) cc1obj-dummy$(exeext) > $@
+cc1obj-checksum.c : build/genchecksum$(build_exeext) checksum-options \
+        $(OBJC_OBJS) $(C_AND_OBJC_OBJS) $(BACKEND) $(LIBDEPS)
+	build/genchecksum$(build_exeext) $(OBJC_OBJS) $(C_AND_OBJC_OBJS) \
+        $(BACKEND) $(LIBDEPS) checksum-options > cc1obj-checksum.c.tmp && \
+	$(srcdir)/../move-if-change cc1obj-checksum.c.tmp cc1obj-checksum.c
 
 cc1obj-checksum.o : cc1obj-checksum.c $(CONFIG_H) $(SYSTEM_H)
 

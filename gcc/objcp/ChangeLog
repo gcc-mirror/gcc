@@ -1,3 +1,9 @@
+2010-10-07  Andi Kleen  <ak@linux.intel.com>
+
+	* Make-lang.in (cc1objplus-dummy): Remove.
+	(cc1objplus-checksum): Change to run checksum over object files
+        and options only.
+
 2010-10-04  Andi Kleen <ak@linux.intel.com>
 
 	* Make-lang.in (cc1objplus-dummy, cc1objplus): Add + to build rule.

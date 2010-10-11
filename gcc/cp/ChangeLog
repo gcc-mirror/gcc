@@ -1,3 +1,10 @@
+2010-10-07  Andi Kleen  <ak@linux.intel.com>
+
+	* Make-lang.in (c++_OBJS): Remove dummy-checksum.o.
+	(cc1plus-dummy): Remove.
+	(cc1plus-checksum): Change to run checksum over object files
+        and options only.
+
 2010-10-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* cp-objcp-common.h (LANG_HOOKS_INIT_OPTIONS_STRUCT): Define.
