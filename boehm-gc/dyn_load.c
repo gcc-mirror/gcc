@@ -122,7 +122,7 @@
 #    endif
 #  endif
 
-/* An user-supplied routine that is called to dtermine if a DSO must
+/* An user-supplied routine that is called to determine if a DSO must
    be scanned by the gc.  */
 static int (*GC_has_static_roots)(const char *, void *, size_t);
 /* Register the routine.  */

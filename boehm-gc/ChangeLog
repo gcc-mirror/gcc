@@ -1,3 +1,9 @@
+2010-10-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dyn_load.c: Fix typo.
+	* pthread_support.c (GC_get_thread_stack_base) [DEBUG_THREADS]:
+	Use GC_printf0.
+
 2010-06-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (*-*-solaris2.8*): Only usr alternate thread
