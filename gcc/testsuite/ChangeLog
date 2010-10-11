@@ -1,3 +1,8 @@
+2010-10-10  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/lto/20101010-1_0.C: New testcase.
+	* g++.dg/lto/20101010-2_0.C: Likewise.
+
 2010-10-11  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/45902

@@ -1,3 +1,9 @@
+2010-10-10  Jason Merrill  <jason@redhat.com>
+
+	PR lto/45959
+	PR lto/45960
+	* pt.c (tsubst_copy) [INTEGER_CST]: Instantiate the type.
+
 2010-10-07  Andi Kleen  <ak@linux.intel.com>
 
 	* Make-lang.in (c++_OBJS): Remove dummy-checksum.o.
