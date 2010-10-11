@@ -2874,6 +2874,7 @@ system (file). The text is between brackets ([]) if the index is optional.
 @item VCS_Kind @tab string @tab IDE @tab -
 @item VCS_File_Check @tab string @tab IDE @tab -
 @item VCS_Log_Check @tab string @tab IDE @tab -
+@item Documentation_Dir @tab string @tab IDE @tab -
 @headitem
    Configuration files @tab @tab @tab See gprbuild manual
 @item Default_Language @tab string @tab - @tab -

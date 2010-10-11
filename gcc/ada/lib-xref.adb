@@ -1809,27 +1809,25 @@ package body Lib.Xref is
                      Ctyp := '*';
                   end if;
 
-                  --  Special handling for access parameter
+                  --  Special handling for access parameters and objects of
+                  --  an anonymous access type.
 
-                  declare
-                     K : constant Entity_Kind := Ekind (Etype (XE.Ent));
-
-                  begin
-                     if (K = E_Anonymous_Access_Type
-                           or else
-                         K = E_Anonymous_Access_Subprogram_Type
-                            or else K =
-                         E_Anonymous_Access_Protected_Subprogram_Type)
-                       and then Is_Formal (XE.Ent)
+                  if Ekind_In (Etype (XE.Ent),
+                               E_Anonymous_Access_Type,
+                               E_Anonymous_Access_Subprogram_Type,
+                               E_Anonymous_Access_Protected_Subprogram_Type)
+                  then
+                     if Is_Formal (XE.Ent)
+                       or else Ekind_In (XE.Ent, E_Variable, E_Constant)
                      then
                         Ctyp := 'p';
-
-                        --  Special handling for Boolean
-
-                     elsif Ctyp = 'e' and then Is_Boolean_Type (Ent) then
-                        Ctyp := 'b';
                      end if;
-                  end;
+
+                     --  Special handling for Boolean
+
+                  elsif Ctyp = 'e' and then Is_Boolean_Type (Ent) then
+                     Ctyp := 'b';
+                  end if;
                end if;
 
                --  Special handling for abstract types and operations
