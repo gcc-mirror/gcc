@@ -54,13 +54,6 @@ extern bool ok_to_peephole_ldw(rtx opnd0, rtx opnd1, rtx opnd2, rtx opnd3);
 
 extern rtx gen_min_reg(rtx opnd1,rtx opnd2);
 
-extern rtx picochip_function_arg (CUMULATIVE_ARGS cum, int mode, tree type,
-			   int named);
-
-extern rtx picochip_incoming_function_arg (CUMULATIVE_ARGS, int, tree, int);
-extern CUMULATIVE_ARGS picochip_arg_advance (CUMULATIVE_ARGS cum, int mode,
-				      tree type, int named);
-
 extern int picochip_regno_nregs (int regno, int mode);
 extern int picochip_class_max_nregs (int klass, int mode);
 

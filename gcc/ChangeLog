@@ -1,3 +1,19 @@
+2010-10-11  Hariharan Sandanagobalane  <hariharan@picochip.com>
+
+        Nathan Froyds patch to hooks FUNCTION_ARG etc.
+	* config/picochip/picochip-protos.h (picochip_function_arg): Delete.
+	(picochip_incoming_function_arg): Delete.
+	(picochip_arg_advance): Delete.
+	* config/picochip/picochip.h (FUNCTION_ARG): Delete.
+	(FUNCTION_INCOMING_ARG): Delete.
+	(FUNCTION_ARG_ADVANCE): Delete.
+	* config/picochip/picochip.c (picochip_function_arg): Take a
+	const_tree and a bool.
+	(picochip_incoming_function_arg): Likewise.
+	(picochip_arg_advance): Likewise.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_INCOMING_ARG): Define.
+	(TARGET_FUNCTION_ARG_ADVANCE): Define.
+
 2010-10-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/45955

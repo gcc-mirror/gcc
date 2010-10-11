@@ -81,6 +81,14 @@ void picochip_reorg (void);
 int picochip_arg_partial_bytes (CUMULATIVE_ARGS * p_cum,
 				       enum machine_mode mode,
 				       tree type, bool named);
+rtx picochip_function_arg (CUMULATIVE_ARGS * p_cum,
+			   enum machine_mode mode,
+			   const_tree type, bool named);
+rtx picochip_incoming_function_arg (CUMULATIVE_ARGS * p_cum,
+				    enum machine_mode mode,
+				    const_tree type, bool named);
+void picochip_arg_advance (CUMULATIVE_ARGS * p_cum, enum machine_mode mode,
+			   const_tree type, bool named);
 
 int picochip_sched_lookahead (void);
 int picochip_sched_issue_rate (void);
@@ -262,6 +270,15 @@ static char picochip_get_vliw_alu_id (void);
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES picochip_arg_partial_bytes
 
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG picochip_function_arg
+
+#undef TARGET_FUNCTION_INCOMING_ARG
+#define TARGET_FUNCTION_INCOMING_ARG picochip_incoming_function_arg
+
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE picochip_arg_advance
+
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
 #undef TARGET_PROMOTE_PROTOTYPES
@@ -314,12 +331,6 @@ static char picochip_get_vliw_alu_id (void);
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-
-enum unwind_info_type
-picochip_except_unwind_info (void)
-{
-  return UI_NONE;
-}
 
 /* Only return a value in memory if it is greater than 4 bytes.
    int_size_in_bytes returns -1 for variable size objects, which go in
@@ -799,7 +810,7 @@ picochip_is_aligned (int byte_offset, int bit_alignment)
 
 /* Compute the size of an argument in units. */
 static int
-picochip_compute_arg_size (tree type, enum machine_mode mode)
+picochip_compute_arg_size (const_tree type, enum machine_mode mode)
 {
   int type_size_in_units = 0;
 
@@ -814,8 +825,8 @@ picochip_compute_arg_size (tree type, enum machine_mode mode)
 
 /* Determine where the next outgoing arg should be placed. */
 rtx
-picochip_function_arg (CUMULATIVE_ARGS cum, int mode, tree type,
-		       int named ATTRIBUTE_UNUSED)
+picochip_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		       const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   int reg = 0;
   int type_align_in_units = 0;
@@ -835,17 +846,17 @@ picochip_function_arg (CUMULATIVE_ARGS cum, int mode, tree type,
 
   /* Compute the correct offset (i.e., ensure that the offset meets
      the alignment requirements). */
-  offset_overflow = cum % type_align_in_units;
+  offset_overflow = *cum % type_align_in_units;
   if (offset_overflow == 0)
-    new_offset = cum;
+    new_offset = *cum;
   else
-    new_offset = (cum - offset_overflow) + type_align_in_units;
+    new_offset = (*cum - offset_overflow) + type_align_in_units;
 
   if (TARGET_DEBUG)
     {
       printf ("Function arg:\n");
       printf ("  Type valid: %s\n", (type ? "yes" : "no"));
-      printf ("  Cumulative Value: %d\n", cum);
+      printf ("  Cumulative Value: %d\n", *cum);
       printf ("  Mode: %s\n", GET_MODE_NAME (mode));
       printf ("  Type size: %i units\n", type_size_in_units);
       printf ("  Alignment: %i units\n", type_align_in_units);
@@ -879,7 +890,7 @@ picochip_function_arg (CUMULATIVE_ARGS cum, int mode, tree type,
     case CSImode:
     case SCmode:
     case CQImode:
-      return gen_rtx_REG ((enum machine_mode) mode, reg);
+      return gen_rtx_REG (mode, reg);
 
     case BLKmode:
       {
@@ -912,8 +923,9 @@ picochip_function_arg (CUMULATIVE_ARGS cum, int mode, tree type,
    passed in registers, which are then pushed onto the stack by the
    function prologue). */
 rtx
-picochip_incoming_function_arg (CUMULATIVE_ARGS cum, int mode,
-				tree type, int named)
+picochip_incoming_function_arg (CUMULATIVE_ARGS *cum,
+				enum machine_mode mode,
+				const_tree type, bool named)
 {
 
   if (cfun->stdarg)
@@ -998,10 +1010,10 @@ picochip_arg_partial_bytes (CUMULATIVE_ARGS * p_cum, enum machine_mode mode,
 
 }
 
-/* Advance the cumulative args counter, returning the new counter. */
-CUMULATIVE_ARGS
-picochip_arg_advance (const CUMULATIVE_ARGS cum, int mode,
-		      tree type, int named ATTRIBUTE_UNUSED)
+/* Advance the cumulative args counter CUM. */
+void
+picochip_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		      const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   int type_align_in_units = 0;
   int type_size_in_units;
@@ -1011,7 +1023,7 @@ picochip_arg_advance (const CUMULATIVE_ARGS cum, int mode,
   /* VOIDmode is passed when computing the second argument to a `call'
      pattern. This can be ignored. */
   if (mode == VOIDmode)
-    return 0;
+    return;
 
   /* Compute the alignment and size of the parameter. */
   type_align_in_units =
@@ -1020,17 +1032,16 @@ picochip_arg_advance (const CUMULATIVE_ARGS cum, int mode,
 
   /* Compute the correct offset (i.e., ensure that the offset meets
      the alignment requirements). */
-  offset_overflow = cum % type_align_in_units;
+  offset_overflow = *cum % type_align_in_units;
   if (offset_overflow == 0)
-    new_offset = cum;
+    new_offset = *cum;
   else
-    new_offset = (cum - offset_overflow) + type_align_in_units;
+    new_offset = (*cum - offset_overflow) + type_align_in_units;
 
   /* Advance past the last argument. */
   new_offset += type_size_in_units;
 
-  return new_offset;
-
+  *cum = new_offset;
 }
 
 /* Determine whether a register needs saving/restoring. It does if it
