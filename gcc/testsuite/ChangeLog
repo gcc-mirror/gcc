@@ -135,7 +135,7 @@
 2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
 	    Kai Tietz  <kai.tietz@onevision.com>
 
-       * objc.dg/proto-lossage-4.m: Use intptr_t instead of long type.
+	* objc.dg/proto-lossage-4.m: Use intptr_t instead of long type.
 
 2010-10-07  Richard Guenther  <rguenther@suse.de>
 
@@ -225,7 +225,7 @@
 
 	2005-03-07 Fariborz Jahanian <fjahanian@apple.com>
 
-        Radar 4468498
+	Radar 4468498
 	* objc.dg/objc-foreach-2.m: New.
 
 	2006-02-15   Fariborz Jahanian <fjahanian@apple.com>
