@@ -1577,6 +1577,13 @@ begin
            Program_Name (Command_List (The_Command).Unixcmd.all, "gnat");
       end if;
 
+      --  For all tools other than gnatmake, allow shared library projects to
+      --  import projects that are not shared library projects.
+
+      if The_Command /= Make then
+         Opt.Unchecked_Shared_Lib_Imports := True;
+      end if;
+
       --  Locate the executable for the command
 
       Exec_Path := Locate_Exec_On_Path (Program.all);
