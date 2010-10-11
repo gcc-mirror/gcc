@@ -1,3 +1,28 @@
+2010-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (movmem<mode>): Macroize expander from
+	movmem{si,di} using SWI48 mode iterator.
+	(*strmovsi_1): Macroize insn pattern from *strmovsi_1 and
+	*strmovsi_rex_1 using P mode iterator.
+	(*strmovhi_1): Ditto from *strmovhi_1 and *strmovhi_rex_1.
+	(*strmovqi_1): Ditto from *strmovqi_1 and *strmovqi_rex_1.
+	(*rep_movsi): Ditto from *rep_movsi and *rep_movsi_rex64.
+	(*rep_movqi): Ditto from *rep_movqi and *rep_movqi_rex64.
+	(setmem<mode>): Macroize expander from setmem{si,di} using
+	SWI48 mode iterator.
+	(*strsetsi_1): Macroize insn pattern from *strsetsi_1 and
+	*strsetsi_rex_1 using P mode iterator.
+	(*strsethi_1): Ditto from *strsethi_1 and *strsethi_rex_1.
+	(*strsetqi_1): Ditto from *strsetqi_1 and *strsetqi_rex_1.
+	(*rep_stossi): Ditto from *rep_stossi and *rep_stossi_rex64.
+	(*rep_stosqi): Ditto from *rep_stosqi and *rep_stosqi_rex64.
+	(*cmpstrnqi_nz_1): Ditto from *cmpstrnqi_nz_1 and *cmpstrnqi_nz_rex_1.
+	(*cmpstrnqi_1): Ditto from *cmpstrnqi_1 and *cmpstrnqi_rex_1.
+	(strlen<mode>): Macroize expander from strlen{si,di} using SWI48x
+	mode iterator.
+	(*strlenqi_1): Macroize insn pattern from *strlenqi_1 and
+	*strlenqi_rex_1 using P mode iterator.
+
 2010-10-11  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR bootstrap/45445
@@ -118,14 +143,13 @@
 	* tree.h (TREE_THIS_NOTRAP): Use TREE_CHECK5.
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Only check
 	TREE_THIS_NOTRAP when appropriate.
-	(get_spill_slot_decl): Don't set TREE_THIS_NOTRAP on the new
-	VAR_DECL.
+	(get_spill_slot_decl): Don't set TREE_THIS_NOTRAP on the new VAR_DECL.
 	* gimplify.c (gimplify_expr): Copy NOTRAP from INDIRECT_REF to
 	newly created MEM_REF.
 
 2010-10-11  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
-        Nathan Froyds patch to hooks FUNCTION_ARG etc.
+	Nathan Froyds patch to hooks FUNCTION_ARG etc.
 	* config/picochip/picochip-protos.h (picochip_function_arg): Delete.
 	(picochip_incoming_function_arg): Delete.
 	(picochip_arg_advance): Delete.
@@ -166,8 +190,7 @@
 	(maybe_set_param_value, set_default_param_value): New.
 	* params.h (PARAM_VALUE, PARAM_SET_P): Make into rvalues.
 	(maybe_set_param_value, set_default_param_value): Declare.
-	* config/arm/arm.c (arm_option_override): Use
-	maybe_set_param_value.
+	* config/arm/arm.c (arm_option_override): Use maybe_set_param_value.
 	* config/i386/i386.c (ix86_option_override_internal): Use
 	maybe_set_param_value.
 	* config/ia64/ia64.c (ia64_option_default_params,
@@ -181,18 +204,15 @@
 	(rs6000_option_override_internal): Use maybe_set_param_value.
 	(rs6000_option_optimization): Move some code to
 	rs6000_option_default_params.
-	* config/s390/s390.c (s390_option_override): Use
-	maybe_set_param_value.
+	* config/s390/s390.c (s390_option_override): Use maybe_set_param_value.
 	* config/sh/sh.c (sh_option_default_params,
 	TARGET_OPTION_DEFAULT_PARAMS): New.
-	(sh_option_optimization): Move some code to
-	sh_option_default_params.
+	(sh_option_optimization): Move some code to sh_option_default_params.
 	* config/sparc/sparc.c (sparc_option_override): Use
 	maybe_set_param_value.
 	* config/spu/spu.c (spu_option_default_params,
 	TARGET_OPTION_DEFAULT_PARAMS): New.
-	(spu_option_optimization): Move some code to
-	spu_option_default_params.
+	(spu_option_optimization): Move some code to spu_option_default_params.
 	(spu_option_override): Use maybe_set_param_value.
 	* doc/tm.texi.in (TARGET_OPTION_DEFAULT_PARAMS): New @hook.
 	* doc/tm.texi: Regenerate.
@@ -202,8 +222,7 @@
 	(default_options_optimization): Use maybe_set_param_value.
 	(finish_options): Use maybe_set_param_value.
 	* target.def (target_option.default_params): New hook.
-	* toplev.c (general_init): Call
-	targetm.target_option.default_params.
+	* toplev.c (general_init): Call targetm.target_option.default_params.
 
 2010-10-11  Ira Rosen  <irar@il.ibm.com>
 
