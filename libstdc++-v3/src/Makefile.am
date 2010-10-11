@@ -389,13 +389,16 @@ endif
 debugdir = debug
 
 # Build a set of debug objects here.
+# Take care to fix all possibly-relative paths.
 stamp-debug:
 	if test ! -d ${debugdir}; then \
 	  mkdir -p ${debugdir}; \
 	  (cd ${debugdir}; \
 	  sed -e 's/top_builddir = \.\./top_builddir = ..\/../' \
+	      -e 's/top_build_prefix = \.\./top_build_prefix = ..\/../' \
 	      -e 's/srcdir = \.\./srcdir = ..\/../' \
 	      -e 's/glibcxx_basedir = \.\./glibcxx_basedir = ..\/../' \
+	      -e 's/MKDIR_P = \.\./MKDIR_P = ..\/../' \
 	      -e 's/all-local: build_debug/all-local:/' \
 	      -e 's/install-data-local: install_debug/install-data-local:/' \
 	  < ../Makefile > Makefile) ; \
