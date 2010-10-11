@@ -1,5 +1,20 @@
 2010-10-11  Arnaud Charlet  <charlet@adacore.com>
 
+	* sem_ch3.adb, exp_ch6.adb
+	(Make_Build_In_Place_Call_In_Anonymous_Context,
+	Make_Build_In_Place_Call_In_Assignment,
+	Make_Build_In_Place_Call_In_Object_Declaration): Fix calls to
+	Add_Task_Actuals_To_Build_In_Place_Call in case of No_Task_Hierarchy
+	restriction.
+	(Access_Definition): Add missing handling of No_Task_Hierarchy.
+
+2010-10-11  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): No action needed for renamings of
+	class-wide expressions.
+
+2010-10-11  Arnaud Charlet  <charlet@adacore.com>
+
 	* xr_tabls.adb, sem_res.adb: Minor reformatting
 
 2010-10-11  Arnaud Charlet  <charlet@adacore.com>

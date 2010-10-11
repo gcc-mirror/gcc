@@ -475,13 +475,19 @@ package body Exp_Ch6 is
       Master_Actual : Node_Id)
       --  Note: Master_Actual can be Empty, but only if there are no tasks
    is
-      Loc               : constant Source_Ptr := Sloc (Function_Call);
-
+      Loc    : constant Source_Ptr := Sloc (Function_Call);
+      Actual : Node_Id := Master_Actual;
    begin
       --  No such extra parameters are needed if there are no tasks
 
       if not Has_Task (Etype (Function_Id)) then
          return;
+      end if;
+
+      --  Use a dummy _master actual in case of No_Task_Hierarchy
+
+      if Restriction_Active (No_Task_Hierarchy) then
+         Actual := New_Occurrence_Of (RTE (RE_Library_Task_Level), Loc);
       end if;
 
       --  The master
@@ -493,13 +499,13 @@ package body Exp_Ch6 is
 
          Master_Formal := Build_In_Place_Formal (Function_Id, BIP_Master);
 
-         Analyze_And_Resolve (Master_Actual, Etype (Master_Formal));
+         Analyze_And_Resolve (Actual, Etype (Master_Formal));
 
          --  Build the parameter association for the new actual and add it to
          --  the end of the function's actuals.
 
          Add_Extra_Actual_To_Call
-           (Function_Call, Master_Formal, Master_Actual);
+           (Function_Call, Master_Formal, Actual);
       end;
 
       --  The activation chain

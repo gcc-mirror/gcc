@@ -884,6 +884,7 @@ package body Sem_Ch3 is
 
          elsif Has_Task (Desig_Type)
            and then Comes_From_Source (Related_Nod)
+           and then not Restriction_Active (No_Task_Hierarchy)
          then
             if not Has_Master_Entity (Current_Scope) then
                Decl :=
