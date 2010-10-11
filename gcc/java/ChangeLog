@@ -1,3 +1,10 @@
+2010-10-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* decl.c (java_init_decl_processing): Use build_function_type_list
+	instead of build_function_type.
+	* jcf-parse.c (java_emit_static_constructor): Likewise.
+	* builtins.c (initialize_builtins): Likewise.
+
 2010-10-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang.c (java_init_options_struct): New.  Split out from
