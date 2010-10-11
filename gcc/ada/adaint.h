@@ -235,6 +235,8 @@ extern int    __gnat_set_close_on_exec		   (int, int);
 extern int    __gnat_dup			   (int);
 extern int    __gnat_dup2			   (int, int);
 
+extern int    __gnat_number_of_cpus                (void);
+
 extern void   __gnat_os_filename                   (char *, char *, char *,
 						    int *, char *, int *);
 #if defined (linux)
