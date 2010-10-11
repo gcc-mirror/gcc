@@ -35,8 +35,6 @@
 #include "tconfig.h"
 #include "tsystem.h"
 #include <fcntl.h> /* for creat() */
-#include "coretypes.h"
-#include "tm.h"
 
 #if 0
 #include "sparc/gmon.h"
