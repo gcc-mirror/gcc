@@ -257,7 +257,7 @@ dump_symtab (FILE *f, struct plugin_symtab *symtab)
       
       assert (resolution != LDPR_UNKNOWN);
 
-      fprintf (f, "%d %x %s %s\n", slot, symtab->aux[j].id,
+      fprintf (f, "%u %x %s %s\n", (unsigned int) slot, symtab->aux[j].id,
 	       lto_resolution_str[resolution], 
 	       symtab->syms[j].name);
     }
@@ -277,7 +277,7 @@ finish_conflict_resolution (struct plugin_symtab *symtab,
 
   for (i = 0; i < symtab->nsyms; i++)
     { 
-      int resolution;
+      int resolution = LDPR_UNKNOWN;
 
       if (symtab->aux[i].next_conflict == -1)
 	continue;

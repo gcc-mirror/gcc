@@ -1,3 +1,8 @@
+2010-10-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* lto-plugin.c (dump_symtab): Correct printf argument type.
+	(finish_conflict_resolution): Initialize resolution.
+
 2010-10-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/45951
