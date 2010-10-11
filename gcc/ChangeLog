@@ -1,3 +1,49 @@
+2010-10-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* params.c (set_param_value_internal): New.
+	(set_param_value): Use set_param_value_internal.
+	(maybe_set_param_value, set_default_param_value): New.
+	* params.h (PARAM_VALUE, PARAM_SET_P): Make into rvalues.
+	(maybe_set_param_value, set_default_param_value): Declare.
+	* config/arm/arm.c (arm_option_override): Use
+	maybe_set_param_value.
+	* config/i386/i386.c (ix86_option_override_internal): Use
+	maybe_set_param_value.
+	* config/ia64/ia64.c (ia64_option_default_params,
+	TARGET_OPTION_DEFAULT_PARAMS): New.
+	(ia64_option_optimization): Move some code to
+	ia64_option_default_params.
+	* config/picochip/picochip.c (picochip_option_override): Use
+	maybe_set_param_value.
+	* config/rs6000/rs6000.c (rs6000_option_default_params,
+	TARGET_OPTION_DEFAULT_PARAMS): New.
+	(rs6000_option_override_internal): Use maybe_set_param_value.
+	(rs6000_option_optimization): Move some code to
+	rs6000_option_default_params.
+	* config/s390/s390.c (s390_option_override): Use
+	maybe_set_param_value.
+	* config/sh/sh.c (sh_option_default_params,
+	TARGET_OPTION_DEFAULT_PARAMS): New.
+	(sh_option_optimization): Move some code to
+	sh_option_default_params.
+	* config/sparc/sparc.c (sparc_option_override): Use
+	maybe_set_param_value.
+	* config/spu/spu.c (spu_option_default_params,
+	TARGET_OPTION_DEFAULT_PARAMS): New.
+	(spu_option_optimization): Move some code to
+	spu_option_default_params.
+	(spu_option_override): Use maybe_set_param_value.
+	* doc/tm.texi.in (TARGET_OPTION_DEFAULT_PARAMS): New @hook.
+	* doc/tm.texi: Regenerate.
+	* ggc-common.c (init_ggc_heuristics): Use set_default_param_value.
+	* opts.c (init_options_once): Use PARAM_VALUE not direct access to
+	compiler_params.
+	(default_options_optimization): Use maybe_set_param_value.
+	(finish_options): Use maybe_set_param_value.
+	* target.def (target_option.default_params): New hook.
+	* toplev.c (general_init): Call
+	targetm.target_option.default_params.
+
 2010-10-11  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/45902

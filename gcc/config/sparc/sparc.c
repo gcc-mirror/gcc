@@ -916,21 +916,19 @@ sparc_option_override (void)
     target_flags |= MASK_LONG_DOUBLE_128;
 #endif
 
-  if (!PARAM_SET_P (PARAM_SIMULTANEOUS_PREFETCHES))
-    set_param_value ("simultaneous-prefetches",
-		     ((sparc_cpu == PROCESSOR_ULTRASPARC
-		       || sparc_cpu == PROCESSOR_NIAGARA
-		       || sparc_cpu == PROCESSOR_NIAGARA2)
-		      ? 2
-		      : (sparc_cpu == PROCESSOR_ULTRASPARC3
-			 ? 8 : 3)));
-  if (!PARAM_SET_P (PARAM_L1_CACHE_LINE_SIZE))
-    set_param_value ("l1-cache-line-size",
-		     ((sparc_cpu == PROCESSOR_ULTRASPARC
-		       || sparc_cpu == PROCESSOR_ULTRASPARC3
-		       || sparc_cpu == PROCESSOR_NIAGARA
-		       || sparc_cpu == PROCESSOR_NIAGARA2)
-		      ? 64 : 32));
+  maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
+			 ((sparc_cpu == PROCESSOR_ULTRASPARC
+			   || sparc_cpu == PROCESSOR_NIAGARA
+			   || sparc_cpu == PROCESSOR_NIAGARA2)
+			  ? 2
+			  : (sparc_cpu == PROCESSOR_ULTRASPARC3
+			     ? 8 : 3)));
+  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
+			 ((sparc_cpu == PROCESSOR_ULTRASPARC
+			   || sparc_cpu == PROCESSOR_ULTRASPARC3
+			   || sparc_cpu == PROCESSOR_NIAGARA
+			   || sparc_cpu == PROCESSOR_NIAGARA2)
+			  ? 64 : 32));
 }
 
 /* Miscellaneous utilities.  */

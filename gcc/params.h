@@ -1,5 +1,5 @@
 /* params.h - Run-time parameters.
-   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
@@ -88,13 +88,24 @@ typedef enum compiler_param
   LAST_PARAM
 } compiler_param;
 
-/* The value of the parameter given by ENUM.  */
+/* The value of the parameter given by ENUM.  Not an lvalue.  */
 #define PARAM_VALUE(ENUM) \
-  (compiler_params[(int) ENUM].value)
+  ((int) compiler_params[(int) ENUM].value)
 
-/* True if the value of the parameter was explicitly changed.  */
+/* Set the value of the parameter given by NUM to VALUE, implicitly,
+   if it has not been set explicitly by the user.  */
+
+extern void maybe_set_param_value (compiler_param num, int value);
+
+/* Set the default value of a parameter given by NUM to VALUE, before
+   option processing.  */
+
+extern void set_default_param_value (compiler_param num, int value);
+
+/* True if the value of the parameter was explicitly changed.  Not an
+   lvalue.  */
 #define PARAM_SET_P(ENUM) \
-  (compiler_params[(int) ENUM].set)
+  ((bool) compiler_params[(int) ENUM].set)
 
 /* Macros for the various parameters.  */
 #define STRUCT_REORG_COLD_STRUCT_RATIO \

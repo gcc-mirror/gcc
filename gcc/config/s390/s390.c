@@ -1687,30 +1687,22 @@ s390_option_override (void)
   if (s390_tune == PROCESSOR_2097_Z10
       || s390_tune == PROCESSOR_2817_Z196)
     {
-      if (!PARAM_SET_P (PARAM_MAX_UNROLLED_INSNS))
-	set_param_value ("max-unrolled-insns", 100);
-      if (!PARAM_SET_P (PARAM_MAX_UNROLL_TIMES))
-	set_param_value ("max-unroll-times", 32);
-      if (!PARAM_SET_P (PARAM_MAX_COMPLETELY_PEELED_INSNS))
-	set_param_value ("max-completely-peeled-insns", 2000);
-      if (!PARAM_SET_P (PARAM_MAX_COMPLETELY_PEEL_TIMES))
-	set_param_value ("max-completely-peel-times", 64);
+      maybe_set_param_value (PARAM_MAX_UNROLLED_INSNS, 100);
+      maybe_set_param_value (PARAM_MAX_UNROLL_TIMES, 32);
+      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEELED_INSNS, 2000);
+      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEEL_TIMES, 64);
     }
 
   set_param_value ("max-pending-list-length", 256);
   /* values for loop prefetching */
   set_param_value ("l1-cache-line-size", 256);
-  if (!PARAM_SET_P (PARAM_L1_CACHE_SIZE))
-    set_param_value ("l1-cache-size", 128);
+  maybe_set_param_value (PARAM_L1_CACHE_SIZE, 128);
   /* s390 has more than 2 levels and the size is much larger.  Since
      we are always running virtualized assume that we only get a small
      part of the caches above l1.  */
-  if (!PARAM_SET_P (PARAM_L2_CACHE_SIZE))
-    set_param_value ("l2-cache-size", 1500);
-  if (!PARAM_SET_P (PARAM_PREFETCH_MIN_INSN_TO_MEM_RATIO))
-    set_param_value ("prefetch-min-insn-to-mem-ratio", 2);
-  if (!PARAM_SET_P (PARAM_SIMULTANEOUS_PREFETCHES))
-    set_param_value ("simultaneous-prefetches", 6);
+  maybe_set_param_value (PARAM_L2_CACHE_SIZE, 1500);
+  maybe_set_param_value (PARAM_PREFETCH_MIN_INSN_TO_MEM_RATIO, 2);
+  maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES, 6);
 
   /* This cannot reside in s390_option_optimization since HAVE_prefetch
      requires the arch flags to be evaluated already.  Since prefetching

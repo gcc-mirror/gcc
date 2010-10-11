@@ -1953,13 +1953,12 @@ arm_option_override (void)
       flag_reorder_blocks = 1;
     }
 
-  if (!PARAM_SET_P (PARAM_GCSE_UNRESTRICTED_COST)
-      && flag_pic)
+  if (flag_pic)
     /* Hoisting PIC address calculations more aggressively provides a small,
        but measurable, size reduction for PIC code.  Therefore, we decrease
        the bar for unrestricted expression hoisting to the cost of PIC address
        calculation, which is 2 instructions.  */
-    set_param_value ("gcse-unrestricted-cost", 2);
+    maybe_set_param_value (PARAM_GCSE_UNRESTRICTED_COST, 2);
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();

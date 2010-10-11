@@ -812,6 +812,10 @@ this hook!}  The debugging options are not supposed to alter the
 generated code.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_OPTION_DEFAULT_PARAMS (void)
+Set target-dependent default values for @option{--param} settings, using calls to @code{set_default_param_value}.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_HELP (void)
 This hook is called in response to the user invoking
 @option{--target-help} on the command line.  It gives the target a
