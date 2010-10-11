@@ -4689,6 +4689,13 @@ package body Sem_Prag is
       --  Start of processing for Process_Suppress_Unsuppress
 
       begin
+         --  Ignore pragma Suppress/Unsuppress in codepeer mode: we want to
+         --  generate checks for analysis purposes, as set by -gnatC.
+
+         if CodePeer_Mode then
+            return;
+         end if;
+
          --  Suppress/Unsuppress can appear as a configuration pragma, or in a
          --  declarative part or a package spec (RM 11.5(5)).
 
@@ -11995,8 +12002,10 @@ package body Sem_Prag is
               or else not Is_List_Member (N)
               or else List_Containing (N) /= Pragmas_After (Parent (N))
             then
-               Error_Pragma
-                 ("misplaced pragma%, must follow compilation unit");
+               if not CodePeer_Mode then
+                  Error_Pragma
+                    ("misplaced pragma%, must follow compilation unit");
+               end if;
             end if;
 
          -------------------------
