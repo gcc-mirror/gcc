@@ -1,3 +1,18 @@
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Remove d.A flag to delay address clause (not needed any
+	more). Add d.A flag to enable tree read/write of aspect spec hash table
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Properly delay address
+	clause.
+	(Rep_Item_Too_Late): No need for special processing for delayed rep
+	items (and it caused difficulties in the address case).
+	* tree_gen.adb: Only write aspect spec hash table if -gnatd.A is set
+	* tree_in.adb: Only write aspect spec hash table if -gnatd.A is set
+
+2010-10-11  Pat Rogers  <rogers@adacore.com>
+
+	* gnat_ugn.texi: Minor editing.
+
 2010-10-11  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc-interface/utils2.c (gnat_build_constructor): Use VEC_qsort.

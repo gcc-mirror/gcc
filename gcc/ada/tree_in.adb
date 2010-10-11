@@ -32,6 +32,7 @@
 with Aspects;
 with Atree;
 with Csets;
+with Debug;
 with Elists;
 with Fname;
 with Lib;
@@ -51,7 +52,13 @@ procedure Tree_In (Desc : File_Descriptor) is
 begin
    Tree_IO.Tree_Read_Initialize (Desc);
    Opt.Tree_Read;
-   Aspects.Tree_Read;
+
+   --  For now, only  read aspect specifications hash table if -gnatd.A is set
+
+   if Debug.Debug_Flag_Dot_AA then
+      Aspects.Tree_Read;
+   end if;
+
    Atree.Tree_Read;
    Elists.Tree_Read;
    Fname.Tree_Read;
