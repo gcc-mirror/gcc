@@ -2181,7 +2181,7 @@ package body Exp_Ch4 is
                end if;
             end if;
 
-         elsif Ada_Version >= Ada_12 then
+         elsif Ada_Version >= Ada_2012 then
 
             --  if no TSS has been created for the type, check whether there is
             --  a primitive equality declared for it. If it is abstract replace

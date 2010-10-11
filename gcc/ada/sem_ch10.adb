@@ -2458,8 +2458,8 @@ package body Sem_Ch10 is
                then
                   Error_Msg_N ("& is an Ada 2005 unit?", Name (N));
 
-               elsif U_Kind = Ada_12_Unit
-                 and then Ada_Version < Ada_12
+               elsif U_Kind = Ada_2012_Unit
+                 and then Ada_Version < Ada_2012
                  and then Warn_On_Ada_2012_Compatibility
                then
                   Error_Msg_N ("& is an Ada 2012 unit?", Name (N));

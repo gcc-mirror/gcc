@@ -328,8 +328,8 @@ begin
 
       when Pragma_Ada_12 | Pragma_Ada_2012 =>
          if Arg_Count = 0 then
-            Ada_Version := Ada_12;
-            Ada_Version_Explicit := Ada_12;
+            Ada_Version := Ada_2012;
+            Ada_Version_Explicit := Ada_2012;
          end if;
 
       -----------
@@ -389,7 +389,7 @@ begin
 
          if Chars (Expression (Arg1)) = Name_On then
             Extensions_Allowed := True;
-            Ada_Version := Ada_12;
+            Ada_Version := Ada_2012;
          else
             Extensions_Allowed := False;
             Ada_Version := Ada_Version_Explicit;

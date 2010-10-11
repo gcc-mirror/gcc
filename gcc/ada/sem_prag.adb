@@ -5542,8 +5542,8 @@ package body Sem_Prag is
 
                --  Now set Ada 2012 mode
 
-               Ada_Version := Ada_12;
-               Ada_Version_Explicit := Ada_12;
+               Ada_Version := Ada_2012;
+               Ada_Version_Explicit := Ada_2012;
             end if;
          end;
 
@@ -10684,7 +10684,7 @@ package body Sem_Prag is
 
             --  This is one of the few cases where we need to test the value of
             --  Ada_Version_Explicit rather than Ada_Version (which is always
-            --  set to Ada_12 in a predefined unit), we need to know the
+            --  set to Ada_2012 in a predefined unit), we need to know the
             --  explicit version set to know if this pragma is active.
 
             if Ada_Version_Explicit >= Ada_05 then
@@ -11184,7 +11184,7 @@ package body Sem_Prag is
 
             --  This is one of the few cases where we need to test the value of
             --  Ada_Version_Explicit rather than Ada_Version (which is always
-            --  set to Ada_12 in a predefined unit), we need to know the
+            --  set to Ada_2012 in a predefined unit), we need to know the
             --  explicit version set to know if this pragma is active.
 
             if Ada_Version_Explicit >= Ada_05 then

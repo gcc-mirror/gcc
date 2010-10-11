@@ -4540,16 +4540,17 @@ package body Exp_Util is
                  or else Ekind (Entity (Prefix (N))) = E_In_Parameter;
             end if;
 
-         --  If the prefix is an explicit dereference that is not access-to-
-         --  constant then this construct is a variable reference, which means
-         --  it is to be considered to have side effects if Variable_Ref is
-         --  True.
+         --  If the prefix is an explicit dereference then this construct is a
+         --  variable reference, which means it is to be considered to have
+         --  side effects if Variable_Ref is True.
+
+         --  We do NOT exclude dereferences of access-to-constant types because
+         --  we handle them as constant view of variables.
 
          --  Exception is an access to an entity that is a constant or an
          --  in-parameter.
 
          elsif Nkind (Prefix (N)) = N_Explicit_Dereference
-           and then not Is_Access_Constant (Etype (Prefix (Prefix (N))))
            and then Variable_Ref
          then
             declare

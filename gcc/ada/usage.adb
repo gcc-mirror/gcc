@@ -608,7 +608,7 @@ begin
 
    Write_Switch_Char ("12");
 
-   if Ada_Version_Default = Ada_12 then
+   if Ada_Version_Default = Ada_2012 then
       Write_Line ("Ada 2012 mode (default)");
    else
       Write_Line ("Allow Ada 2012 extensions");

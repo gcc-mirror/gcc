@@ -8362,23 +8362,28 @@ package body Sem_Res is
          Index := First_Index (Array_Type);
          Resolve (Drange, Base_Type (Etype (Index)));
 
-         if Nkind (Drange) = N_Range
+         if Nkind (Drange) = N_Range then
+
+            --  Ensure that side effects in the bounds are properly handled
+
+            Remove_Side_Effects (Low_Bound  (Drange), Variable_Ref => True);
+            Remove_Side_Effects (High_Bound (Drange), Variable_Ref => True);
 
             --  Do not apply the range check to nodes associated with the
             --  frontend expansion of the dispatch table. We first check
-            --  if Ada.Tags is already loaded to void the addition of an
+            --  if Ada.Tags is already loaded to avoid the addition of an
             --  undesired dependence on such run-time unit.
 
-           and then
-             (not Tagged_Type_Expansion
-               or else not
-                 (RTU_Loaded (Ada_Tags)
+            if not Tagged_Type_Expansion
+              or else not
+                (RTU_Loaded (Ada_Tags)
                    and then Nkind (Prefix (N)) = N_Selected_Component
                    and then Present (Entity (Selector_Name (Prefix (N))))
                    and then Entity (Selector_Name (Prefix (N))) =
-                                         RTE_Record_Component (RE_Prims_Ptr)))
-         then
-            Apply_Range_Check (Drange, Etype (Index));
+                                         RTE_Record_Component (RE_Prims_Ptr))
+            then
+               Apply_Range_Check (Drange, Etype (Index));
+            end if;
          end if;
       end if;
 
