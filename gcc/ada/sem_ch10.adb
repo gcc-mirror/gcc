@@ -5178,7 +5178,11 @@ package body Sem_Ch10 is
    --  If the unit is not generic, but contains a generic unit, it is loaded on
    --  demand, at the point of instantiation (see ch12).
 
-   procedure Load_Needed_Body (N : Node_Id; OK : out Boolean) is
+   procedure Load_Needed_Body
+     (N          : Node_Id;
+      OK         : out Boolean;
+      Do_Analyze : Boolean := True)
+   is
       Body_Name : Unit_Name_Type;
       Unum      : Unit_Number_Type;
 
@@ -5211,7 +5215,9 @@ package body Sem_Ch10 is
                Write_Eol;
             end if;
 
-            Semantics (Cunit (Unum));
+            if Do_Analyze then
+               Semantics (Cunit (Unum));
+            end if;
          end if;
 
          OK := True;
