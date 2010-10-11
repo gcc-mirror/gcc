@@ -1,5 +1,17 @@
 2010-10-10  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst_default_argument): Handle DEFAULT_ARG.
+	(tsubst_default_arguments): Only do this once for cloned fns.
+	(tsubst): Use typedef_variant_p.  Handle LANG_TYPE.  Don't
+	handle expressions.
+	(tsubst_expr): Avoid calling tsubst_expr for non-expressions.
+	(tsubst_copy_and_build): Likewise.
+	(tsubst_initializer_list): Likewise.
+	(tsubst_copy): Change default to gcc_unreachable.  Handle
+	OVERLOAD and PTRMEM_CST.
+
+2010-10-10  Jason Merrill  <jason@redhat.com>
+
 	PR lto/45959
 	PR lto/45960
 	* pt.c (tsubst_copy) [INTEGER_CST]: Instantiate the type.
