@@ -85,10 +85,6 @@ package Atree is
    --   In_List       A flag used to indicate if the node is a member
    --                 of a node list.
 
-   --   Rewrite_Sub   A flag set if the node has been rewritten using
-   --                 the Rewrite procedure. The original value of the
-   --                 node is retrievable with Original_Node.
-
    --   Rewrite_Ins   A flag set if a node is marked as a rewrite inserted
    --                 node as a result of a call to Mark_Rewrite_Insertion.
 
@@ -155,17 +151,18 @@ package Atree is
    --   it is useful to be able to do untyped traversals, and an internal
    --   package in Atree allows for direct untyped accesses in such cases.
 
-   --   Flag4         Fifteen Boolean flags (use depends on Nkind and
+   --   Flag3
+   --   Flag4         Sixteen Boolean flags (use depends on Nkind and
    --   Flag5         Ekind, as described for FieldN). Again the access
    --   Flag6         is usually via subprograms in Sinfo and Einfo which
    --   Flag7         provide high-level synonyms for these flags, and
    --   Flag8         contain debugging code that checks that the values
    --   Flag9         in Nkind and Ekind are appropriate for the access.
    --   Flag10
-   --   Flag11        Note that Flag1-3 are missing from this list. The
-   --   Flag12        first three flag positions are reserved for the
-   --   Flag13        standard flags (Comes_From_Source, Error_Posted,
-   --   Flag14        and Analyzed)
+   --   Flag11        Note that Flag1-2 are missing from this list. For
+   --   Flag12        historical reasons, these flag names are unused.
+   --   Flag13
+   --   Flag14
    --   Flag15
    --   Flag16
    --   Flag17
@@ -184,9 +181,9 @@ package Atree is
    --                 entity, it is of type Entity_Kind which is defined
    --                 in package Einfo.
 
-   --   Flag19        229 additional flags
+   --   Flag19        235 additional flags
    --   ...
-   --   Flag247
+   --   Flag254
 
    --   Convention    Entity convention (Convention_Id value)
 
@@ -296,7 +293,7 @@ package Atree is
    -------------------------------------
 
    --  A subpackage Atree.Unchecked_Access provides routines for reading and
-   --  writing the fields defined above (Field1-27, Node1-27, Flag1-247 etc).
+   --  writing the fields defined above (Field1-27, Node1-27, Flag3-254 etc).
    --  These unchecked access routines can be used for untyped traversals.
    --  In addition they are used in the implementations of the Sinfo and
    --  Einfo packages. These packages both provide logical synonyms for
@@ -1198,6 +1195,9 @@ package Atree is
 
       function Ureal21 (N : Node_Id) return Ureal;
       pragma Inline (Ureal21);
+
+      function Flag3 (N : Node_Id) return Boolean;
+      pragma Inline (Flag3);
 
       function Flag4 (N : Node_Id) return Boolean;
       pragma Inline (Flag4);
@@ -2254,6 +2254,9 @@ package Atree is
       procedure Set_Ureal21 (N : Node_Id; Val : Ureal);
       pragma Inline (Set_Ureal21);
 
+      procedure Set_Flag3 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag3);
+
       procedure Set_Flag4 (N : Node_Id; Val : Boolean);
       pragma Inline (Set_Flag4);
 
@@ -3088,8 +3091,7 @@ package Atree is
          --  Flag used to indicate if node is a member of a list.
          --  This field is considered private to the Atree package.
 
-         Unused_1 : Boolean;
-         --  Currently unused flag
+         Flag3 : Boolean;
 
          Rewrite_Ins : Boolean;
          --  Flag set by Mark_Rewrite_Insertion procedure.
@@ -3128,7 +3130,7 @@ package Atree is
          --  used in component 5 (where we still have lots of room!)
 
          --    In_List            used as  Flag19, Flag40, Flag129, Flag216
-         --    Unused_1           used as  Flag20, Flag41, Flag130, Flag217
+         --    Flag3              used as  Flag20, Flag41, Flag130, Flag217
          --    Rewrite_Ins        used as  Flag21, Flag42, Flag131, Flag218
          --    Analyzed           used as  Flag22, Flag43, Flag132, Flag219
          --    Comes_From_Source  used as  Flag23, Flag44, Flag133, Flag220
@@ -3243,7 +3245,7 @@ package Atree is
          Pflag1            => False,
          Pflag2            => False,
          In_List           => False,
-         Unused_1          => False,
+         Flag3             => False,
          Rewrite_Ins       => False,
          Analyzed          => False,
          Comes_From_Source => False,
@@ -3288,7 +3290,7 @@ package Atree is
          Pflag1            => False,
          Pflag2            => False,
          In_List           => False,
-         Unused_1          => False,
+         Flag3             => False,
          Rewrite_Ins       => False,
          Analyzed          => False,
          Comes_From_Source => False,

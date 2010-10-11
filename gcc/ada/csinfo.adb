@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -210,6 +210,7 @@ begin
    Set (Special, "Etype",                     True);
    Set (Special, "Evaluate_Once",             True);
    Set (Special, "First_Itype",               True);
+   Set (Special, "Has_Aspect_Specifications", True);
    Set (Special, "Has_Dynamic_Itype",         True);
    Set (Special, "Has_Dynamic_Range_Check",   True);
    Set (Special, "Has_Dynamic_Length_Check",  True);

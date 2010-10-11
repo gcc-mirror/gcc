@@ -636,6 +636,7 @@ package body Sem is
            N_Access_Function_Definition             |
            N_Access_Procedure_Definition            |
            N_Access_To_Object_Definition            |
+           N_Aspect_Specification                   |
            N_Case_Expression_Alternative            |
            N_Case_Statement_Alternative             |
            N_Compilation_Unit_Aux                   |

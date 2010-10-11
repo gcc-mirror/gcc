@@ -2774,6 +2774,7 @@ package body Exp_Util is
                N_Access_To_Object_Definition            |
                N_Aggregate                              |
                N_Allocator                              |
+               N_Aspect_Specification                   |
                N_Case_Expression                        |
                N_Case_Statement_Alternative             |
                N_Character_Literal                      |

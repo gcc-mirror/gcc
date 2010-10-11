@@ -241,9 +241,7 @@ package body Einfo is
    --  sense for them to be set true for certain subsets of entity kinds. See
    --  the spec of Einfo for further details.
 
-   --  Note: Flag1-Flag3 are absent from this list, since these flag positions
-   --  are used for the flags Analyzed, Comes_From_Source, and Error_Posted,
-   --  which are common to all nodes, including entity nodes.
+   --  Note: Flag1-Flag2 are absent from this list, for historical reasons
 
    --    Is_Frozen                       Flag4
    --    Has_Discriminants               Flag5
@@ -512,6 +510,7 @@ package body Einfo is
    --    Is_Underlying_Record_View       Flag246
    --    OK_To_Rename                    Flag247
 
+   --    (unused)                        Flag3
    --    (unused)                        Flag200
    --    (unused)                        Flag232
 

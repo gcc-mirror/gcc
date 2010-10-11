@@ -1338,13 +1338,17 @@ package body Sem_Prag is
               ("argument for pragma% must be library level entity", Arg1);
          end if;
 
-         --  AI05-0033 : pragma cannot appear within a generic body, because
+         --  AI05-0033: A pragma cannot appear within a generic body, because
          --  instance can be in a nested scope. The check that protected type
          --  is itself a library-level declaration is done elsewhere.
 
+         --  Note: we omit this check in Codepeer mode to properly handle code
+         --  prior to AI-0033 (pragmas don't matter to codepeer in any case).
+
          if Inside_A_Generic then
             if Ekind (Scope (Current_Scope)) = E_Generic_Package
-               and then In_Package_Body (Scope (Current_Scope))
+              and then In_Package_Body (Scope (Current_Scope))
+              and then not CodePeer_Mode
             then
                Error_Pragma ("pragma% cannot be used inside a generic");
             end if;
