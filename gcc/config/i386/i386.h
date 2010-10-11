@@ -1373,22 +1373,6 @@ enum reg_class
        || (CLASS) == LEGACY_REGS || (CLASS) == INDEX_REGS)	\
    ? Q_REGS : (CLASS))
 
-/* Given an rtx X being reloaded into a reg required to be
-   in class CLASS, return the class of reg to actually use.
-   In general this is just CLASS; but on some machines
-   in some cases it is preferable to use a more restrictive class.
-   On the 80386 series, we prevent floating constants from being
-   reloaded into floating registers (since no move-insn can do that)
-   and we ensure that QImodes aren't reloaded into the esi or edi reg.  */
-
-/* Put float CONST_DOUBLE in the constant pool instead of fp regs.
-   QImode must go into class Q_REGS.
-   Narrow ALL_REGS to GENERAL_REGS.  This supports allowing movsf and
-   movdf to do mem-to-mem moves through integer regs.  */
-
-#define PREFERRED_RELOAD_CLASS(X, CLASS) \
-   ix86_preferred_reload_class ((X), (CLASS))
-
 /* Discourage putting floating-point values in SSE registers unless
    SSE math is being used, and likewise for the 387 registers.  */
 

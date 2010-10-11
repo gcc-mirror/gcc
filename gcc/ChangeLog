@@ -1,3 +1,29 @@
+2010-10-11  Anatoly Sokolov  <aesok@post.ru>
+
+	* target.def (preferred_reload_class): New hook.
+	* doc/tm.texi.in (TARGET_PREFERRED_RELOAD_CLASS): Document.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_preferred_reload_class): New function.
+	* targhooks.h (default_preferred_reload_class): Declare.
+	* reload.c (find_dummy_reload): Change preferred_class variable type
+	from enum reg_class to reg_class_t. Use TARGET_PREFERRED_RELOAD_CLASS
+	target hook.
+	(find_reloads): Change goal_alternative array type from int to
+	reg_class_t. Use TARGET_PREFERRED_RELOAD_CLASS target hook.
+	(push_reload, find_reloads_address_part): Use
+	TARGET_PREFERRED_RELOAD_CLASS target hook.
+	* reload1.c (emit_input_reload_insns): Ditto.
+	* ira-costs.c (copy_cost): Use TARGET_PREFERRED_RELOAD_CLASS target
+	hook. Change rclass argument and secondary_class variable types from
+	'enum reg_class' to reg_class_t.
+
+	* config/i386/i386.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/i386/i386-protos (ix86_preferred_reload_class): Remove.
+	* config/i386/i386.c (ix86_preferred_reload_class): Make static.
+	Change regclass argument and result types from enum reg_class to
+	reg_class_t.
+	(TARGET_PREFERRED_RELOAD_CLASS): Define.
+
 2010-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* simplify-rtx.c (simplify_unary_operation_1): Use unsigned arithmetics

@@ -7500,8 +7500,8 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 		  || (reg_equiv_constant
 		      [REGNO (SUBREG_REG (oldequiv))] != 0)))
 	  || (CONSTANT_P (oldequiv)
-	      && (PREFERRED_RELOAD_CLASS (oldequiv,
-					  REGNO_REG_CLASS (REGNO (reloadreg)))
+	      && (targetm.preferred_reload_class (oldequiv,
+						  REGNO_REG_CLASS (REGNO (reloadreg)))
 		  == NO_REGS)))
 	real_oldequiv = rl->in;
       gen_reload (reloadreg, real_oldequiv, rl->opnum,

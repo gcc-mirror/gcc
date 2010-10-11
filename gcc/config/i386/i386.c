@@ -26650,12 +26650,15 @@ i386_ira_cover_classes (void)
  return TARGET_SSE_MATH ? sse_fpmath_classes : no_sse_fpmath_classes;
 }
 
-/* Put float CONST_DOUBLE in the constant pool instead of fp regs.
+/* Implement TARGET_PREFERRED_RELOAD_CLASS.
+
+   Put float CONST_DOUBLE in the constant pool instead of fp regs.
    QImode must go into class Q_REGS.
    Narrow ALL_REGS to GENERAL_REGS.  This supports allowing movsf and
    movdf to do mem-to-mem moves through integer regs.  */
-enum reg_class
-ix86_preferred_reload_class (rtx x, enum reg_class regclass)
+
+static reg_class_t
+ix86_preferred_reload_class (rtx x, reg_class_t regclass)
 {
   enum machine_mode mode = GET_MODE (x);
 
@@ -33295,6 +33298,8 @@ ix86_autovectorize_vector_sizes (void)
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD ix86_secondary_reload
 
+#undef TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS ix86_preferred_reload_class
 #undef TARGET_CLASS_LIKELY_SPILLED_P
 #define TARGET_CLASS_LIKELY_SPILLED_P ix86_class_likely_spilled_p
 
