@@ -35,7 +35,7 @@ pragma Style_Checks (All_Checks);
 with Atree;  use Atree;
 with Nlists; use Nlists;
 
-with System.HTable;
+with GNAT.HTable;
 
 package body Sinfo is
 
@@ -72,7 +72,7 @@ package body Sinfo is
    end AS_Hash;
 
    package Aspect_Specifications_Hash_Table is new
-     System.HTable.Simple_HTable
+     GNAT.HTable.Simple_HTable
        (Header_Num => Hash_Range,
         Element    => List_Id,
         No_Element => No_List,
