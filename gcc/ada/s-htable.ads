@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2009, AdaCore                     --
+--                     Copyright (C) 1995-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,7 +80,7 @@ package System.HTable is
 
       function Get (K : Key) return Element;
       --  Returns the Element associated with a key or No_Element if the
-      --  given key has not associated element
+      --  given key has no associated element.
 
       procedure Remove (K : Key);
       --  Removes the latest inserted element pointer associated with the
