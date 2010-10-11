@@ -578,7 +578,10 @@ package body Sem_Aux is
       Btype : constant Entity_Id := Base_Type (Ent);
 
    begin
-      if Ekind (Btype) = E_Limited_Private_Type
+      if Is_Limited_Record (Btype) then
+         return True;
+
+      elsif Ekind (Btype) = E_Limited_Private_Type
         and then Nkind (Parent (Btype)) = N_Formal_Type_Declaration
       then
          return not In_Package_Body (Scope ((Btype)));
@@ -595,8 +598,11 @@ package body Sem_Aux is
             if not Is_Limited_Type (Etype (Btype)) then
                return False;
 
+            --  A descendant of a limited formal type is not immutably limited
+            --  in the generic body, or in the body of a generic child.
+
             elsif Ekind (Scope (Etype (Btype))) = E_Generic_Package then
-               return not In_Package_Body (Scope (Etype (Btype)));
+               return not In_Package_Body (Scope (Btype));
 
             else
                return False;
@@ -626,10 +632,7 @@ package body Sem_Aux is
          --  handled as build in place even though they might return objects
          --  of a type that is not inherently limited.
 
-         if Is_Limited_Record (Btype) then
-            return True;
-
-         elsif Is_Class_Wide_Type (Btype) then
+         if Is_Class_Wide_Type (Btype) then
             return Is_Immutably_Limited_Type (Root_Type (Btype));
 
          else
