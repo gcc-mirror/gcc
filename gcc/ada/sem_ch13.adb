@@ -26,7 +26,6 @@
 with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
-with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -765,7 +764,8 @@ package body Sem_Ch13 is
                --  Aspects corresponding to attribute definition clauses with
                --  the exception of Address which is treated specially.
 
-               when Aspect_Alignment      |
+               when Aspect_Address        |
+                    Aspect_Alignment      |
                     Aspect_Bit_Order      |
                     Aspect_Component_Size |
                     Aspect_External_Tag   |
@@ -780,6 +780,8 @@ package body Sem_Ch13 is
                   --  Preanalyze the expression with the appropriate type
 
                   case A_Id is
+                     when Aspect_Address      =>
+                        T := RTE (RE_Address);
                      when Aspect_Bit_Order    =>
                         T := RTE (RE_Bit_Order);
                      when Aspect_External_Tag =>
@@ -809,38 +811,6 @@ package body Sem_Ch13 is
 
                   else
                      Delay_Required := True;
-                  end if;
-
-               --  Address aspect, treated specially because we have some
-               --  strange problem in the back end if we try to delay ???
-
-               when Aspect_Address =>
-
-                  --  Construct the attribute definition clause
-
-                  Aitem :=
-                    Make_Attribute_Definition_Clause (Sloc (Aspect),
-                      Name       => Ent,
-                      Chars      => Chars (Id),
-                      Expression => Relocate_Node (Expr));
-
-                  --  If -gnatd.A is set, do the delay if needed (this is
-                  --  so we can debug the relevant problem).
-
-                  if Debug_Flag_Dot_AA then
-                     Preanalyze_Spec_Expression
-                       (Expression (Aitem), RTE (RE_Address));
-
-                     if Is_OK_Static_Expression (Expression (Aitem)) then
-                        Delay_Required := False;
-                     else
-                        Delay_Required := True;
-                     end if;
-
-                  --  Here if -gnatd.A not set, never do the delay
-
-                  else
-                     Delay_Required := False;
                   end if;
 
                --  Aspects corresponding to pragmas with two arguments, where
@@ -1190,8 +1160,8 @@ package body Sem_Ch13 is
          A : Node_Id;
 
       begin
-         --  Nothing to do if this attribute definition clause comes from an
-         --  aspect specification, since we could not be duplicating an
+         --  Nothing to do if this attribute definition clause comes from
+         --  an aspect specification, since we could not be duplicating an
          --  explicit clause, and we dealt with the case of duplicated aspects
          --  in Analyze_Aspect_Specifications.
 
@@ -5022,17 +4992,6 @@ package body Sem_Ch13 is
    --  Start of processing for Rep_Item_Too_Late
 
    begin
-      --  If this is from an aspect that was delayed till the freeze point,
-      --  then we skip this check entirely, since it is not required and
-      --  furthermore can generate false errors. Also we don't need to chain
-      --  the item into the rep item chain in that case, it is already there!
-
-      if Nkind_In (N, N_Attribute_Definition_Clause, N_Pragma)
-        and then Is_Delayed_Aspect (N)
-      then
-         return False;
-      end if;
-
       --  First make sure entity is not frozen (RM 13.1(9)). Exclude imported
       --  types, which may be frozen if they appear in a representation clause
       --  for a local type.

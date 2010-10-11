@@ -5048,9 +5048,9 @@ gnat_rm, GNAT Reference manual}.
 @table @option
 @c !sort!
 @item -gnatwa
-@emph{Activate all optional errors.}
+@emph{Activate most optional warnings.}
 @cindex @option{-gnatwa} (@command{gcc})
-This switch activates most optional warning messages, see remaining list
+This switch activates most optional warning messages.  See the remaining list
 in this section for details on optional warning messages that can be
 individually controlled.  The warnings that are not turned on by this
 switch are
@@ -10409,11 +10409,11 @@ subprograms.
 @item
 @cindex pragma Inline
 @findex Inline
-Either @code{pragma Inline} applies to the subprogram and the
-@option{^-gnatn^/INLINE^} switch is used on the command line, or it is local
-to the unit and called once from within it, or it is small and optimization
-level @option{-O2} is specified, or automatic inlining (optimization level
-@option{-O3}) is specified.
+Any one of the following applies: @code{pragma Inline} is applied to the
+subprogram and the @option{^-gnatn^/INLINE^} switch is specified; the
+subprogram is local to the unit and called once from within it; the
+subprogram is small and optimization level @option{-O2} is specified;
+optimization level @option{-O3}) is specified.
 @end itemize
 
 @noindent
