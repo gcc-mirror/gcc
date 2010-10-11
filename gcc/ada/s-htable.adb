@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 1995-2009, AdaCore                      --
+--                    Copyright (C) 1995-2010, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -110,7 +110,7 @@ package body System.HTable is
 
       function Get_Non_Null return Elmt_Ptr is
       begin
-         while Iterator_Ptr = Null_Ptr  loop
+         while Iterator_Ptr = Null_Ptr loop
             if Iterator_Index = Table'Last then
                Iterator_Started := False;
                return Null_Ptr;

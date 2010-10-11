@@ -1754,8 +1754,8 @@ package body Sem_Cat is
    --  Start of processing for Validate_Remote_Access_Object_Type_Declaration
 
    begin
-      --  We are called from Analyze_Type_Declaration, and the Nkind of the
-      --  given node is N_Access_To_Object_Definition.
+      --  We are called from Analyze_Full_Type_Declaration, and the Nkind of
+      --  the given node is N_Access_To_Object_Definition.
 
       if not Comes_From_Source (T)
         or else (not In_RCI_Declaration (Parent (T))
@@ -2055,7 +2055,7 @@ package body Sem_Cat is
    --  Start of processing for Validate_SP_Access_Object_Type_Decl
 
    begin
-      --  We are called from Sem_Ch3.Analyze_Type_Declaration, and the
+      --  We are called from Sem_Ch3.Analyze_Full_Type_Declaration, and the
       --  Nkind of the given entity is N_Access_To_Object_Definition.
 
       if not Comes_From_Source (T)

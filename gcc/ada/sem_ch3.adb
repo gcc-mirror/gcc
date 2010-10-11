@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -1113,7 +1114,7 @@ package body Sem_Ch3 is
                else
                   if From_With_Type (Typ) then
 
-                     --  AI05-151 : incomplete types are allowed in all basic
+                     --  AI05-151: Incomplete types are allowed in all basic
                      --  declarations, including access to subprograms.
 
                      if Ada_Version >= Ada_2012 then
@@ -1618,6 +1619,7 @@ package body Sem_Ch3 is
    procedure Analyze_Component_Declaration (N : Node_Id) is
       Id : constant Entity_Id := Defining_Identifier (N);
       E  : constant Node_Id   := Expression (N);
+      AS : constant List_Id   := Aspect_Specifications (N);
       T  : Entity_Id;
       P  : Entity_Id;
 
@@ -1944,6 +1946,7 @@ package body Sem_Ch3 is
       end if;
 
       Set_Original_Record_Component (Id, Id);
+      Analyze_Aspect_Specifications (N, Id, AS);
    end Analyze_Component_Declaration;
 
    --------------------------
@@ -2068,6 +2071,318 @@ package body Sem_Ch3 is
          D := Next_Node;
       end loop;
    end Analyze_Declarations;
+
+   -----------------------------------
+   -- Analyze_Full_Type_Declaration --
+   -----------------------------------
+
+   procedure Analyze_Full_Type_Declaration (N : Node_Id) is
+      Def    : constant Node_Id   := Type_Definition (N);
+      Def_Id : constant Entity_Id := Defining_Identifier (N);
+      AS     : constant List_Id   := Aspect_Specifications (N);
+      T      : Entity_Id;
+      Prev   : Entity_Id;
+
+      Is_Remote : constant Boolean :=
+                    (Is_Remote_Types (Current_Scope)
+                       or else Is_Remote_Call_Interface (Current_Scope))
+                    and then not (In_Private_Part (Current_Scope)
+                                    or else In_Package_Body (Current_Scope));
+
+      procedure Check_Ops_From_Incomplete_Type;
+      --  If there is a tagged incomplete partial view of the type, transfer
+      --  its operations to the full view, and indicate that the type of the
+      --  controlling parameter (s) is this full view.
+
+      ------------------------------------
+      -- Check_Ops_From_Incomplete_Type --
+      ------------------------------------
+
+      procedure Check_Ops_From_Incomplete_Type is
+         Elmt   : Elmt_Id;
+         Formal : Entity_Id;
+         Op     : Entity_Id;
+
+      begin
+         if Prev /= T
+           and then Ekind (Prev) = E_Incomplete_Type
+           and then Is_Tagged_Type (Prev)
+           and then Is_Tagged_Type (T)
+         then
+            Elmt := First_Elmt (Primitive_Operations (Prev));
+            while Present (Elmt) loop
+               Op := Node (Elmt);
+               Prepend_Elmt (Op, Primitive_Operations (T));
+
+               Formal := First_Formal (Op);
+               while Present (Formal) loop
+                  if Etype (Formal) = Prev then
+                     Set_Etype (Formal, T);
+                  end if;
+
+                  Next_Formal (Formal);
+               end loop;
+
+               if Etype (Op) = Prev then
+                  Set_Etype (Op, T);
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+         end if;
+      end Check_Ops_From_Incomplete_Type;
+
+   --  Start of processing for Analyze_Full_Type_Declaration
+
+   begin
+      Prev := Find_Type_Name (N);
+
+      --  The full view, if present, now points to the current type
+
+      --  Ada 2005 (AI-50217): If the type was previously decorated when
+      --  imported through a LIMITED WITH clause, it appears as incomplete
+      --  but has no full view.
+
+      --  If the incomplete view is tagged, a class_wide type has been
+      --  created already. Use it for the full view as well, to prevent
+      --  multiple incompatible class-wide types that may be  created for
+      --  self-referential anonymous access components.
+
+      if Ekind (Prev) = E_Incomplete_Type
+        and then Present (Full_View (Prev))
+      then
+         T := Full_View (Prev);
+
+         if Is_Tagged_Type (Prev)
+           and then Present (Class_Wide_Type (Prev))
+         then
+            Set_Ekind (T, Ekind (Prev));         --  will be reset later
+            Set_Class_Wide_Type (T, Class_Wide_Type (Prev));
+            Set_Etype (Class_Wide_Type (T), T);
+         end if;
+
+      else
+         T := Prev;
+      end if;
+
+      Set_Is_Pure (T, Is_Pure (Current_Scope));
+
+      --  We set the flag Is_First_Subtype here. It is needed to set the
+      --  corresponding flag for the Implicit class-wide-type created
+      --  during tagged types processing.
+
+      Set_Is_First_Subtype (T, True);
+
+      --  Only composite types other than array types are allowed to have
+      --  discriminants.
+
+      case Nkind (Def) is
+
+         --  For derived types, the rule will be checked once we've figured
+         --  out the parent type.
+
+         when N_Derived_Type_Definition =>
+            null;
+
+         --  For record types, discriminants are allowed
+
+         when N_Record_Definition =>
+            null;
+
+         when others =>
+            if Present (Discriminant_Specifications (N)) then
+               Error_Msg_N
+                 ("elementary or array type cannot have discriminants",
+                  Defining_Identifier
+                  (First (Discriminant_Specifications (N))));
+            end if;
+      end case;
+
+      --  Elaborate the type definition according to kind, and generate
+      --  subsidiary (implicit) subtypes where needed. We skip this if it was
+      --  already done (this happens during the reanalysis that follows a call
+      --  to the high level optimizer).
+
+      if not Analyzed (T) then
+         Set_Analyzed (T);
+
+         case Nkind (Def) is
+
+            when N_Access_To_Subprogram_Definition =>
+               Access_Subprogram_Declaration (T, Def);
+
+               --  If this is a remote access to subprogram, we must create the
+               --  equivalent fat pointer type, and related subprograms.
+
+               if Is_Remote then
+                  Process_Remote_AST_Declaration (N);
+               end if;
+
+               --  Validate categorization rule against access type declaration
+               --  usually a violation in Pure unit, Shared_Passive unit.
+
+               Validate_Access_Type_Declaration (T, N);
+
+            when N_Access_To_Object_Definition =>
+               Access_Type_Declaration (T, Def);
+
+               --  Validate categorization rule against access type declaration
+               --  usually a violation in Pure unit, Shared_Passive unit.
+
+               Validate_Access_Type_Declaration (T, N);
+
+               --  If we are in a Remote_Call_Interface package and define a
+               --  RACW, then calling stubs and specific stream attributes
+               --  must be added.
+
+               if Is_Remote
+                 and then Is_Remote_Access_To_Class_Wide_Type (Def_Id)
+               then
+                  Add_RACW_Features (Def_Id);
+               end if;
+
+               --  Set no strict aliasing flag if config pragma seen
+
+               if Opt.No_Strict_Aliasing then
+                  Set_No_Strict_Aliasing (Base_Type (Def_Id));
+               end if;
+
+            when N_Array_Type_Definition =>
+               Array_Type_Declaration (T, Def);
+
+            when N_Derived_Type_Definition =>
+               Derived_Type_Declaration (T, N, T /= Def_Id);
+
+            when N_Enumeration_Type_Definition =>
+               Enumeration_Type_Declaration (T, Def);
+
+            when N_Floating_Point_Definition =>
+               Floating_Point_Type_Declaration (T, Def);
+
+            when N_Decimal_Fixed_Point_Definition =>
+               Decimal_Fixed_Point_Type_Declaration (T, Def);
+
+            when N_Ordinary_Fixed_Point_Definition =>
+               Ordinary_Fixed_Point_Type_Declaration (T, Def);
+
+            when N_Signed_Integer_Type_Definition =>
+               Signed_Integer_Type_Declaration (T, Def);
+
+            when N_Modular_Type_Definition =>
+               Modular_Type_Declaration (T, Def);
+
+            when N_Record_Definition =>
+               Record_Type_Declaration (T, N, Prev);
+
+            --  If declaration has a parse error, nothing to elaborate.
+
+            when N_Error =>
+               null;
+
+            when others =>
+               raise Program_Error;
+
+         end case;
+      end if;
+
+      if Etype (T) = Any_Type then
+         goto Leave;
+      end if;
+
+      --  Some common processing for all types
+
+      Set_Depends_On_Private (T, Has_Private_Component (T));
+      Check_Ops_From_Incomplete_Type;
+
+      --  Both the declared entity, and its anonymous base type if one
+      --  was created, need freeze nodes allocated.
+
+      declare
+         B : constant Entity_Id := Base_Type (T);
+
+      begin
+         --  In the case where the base type differs from the first subtype, we
+         --  pre-allocate a freeze node, and set the proper link to the first
+         --  subtype. Freeze_Entity will use this preallocated freeze node when
+         --  it freezes the entity.
+
+         --  This does not apply if the base type is a generic type, whose
+         --  declaration is independent of the current derived definition.
+
+         if B /= T and then not Is_Generic_Type (B) then
+            Ensure_Freeze_Node (B);
+            Set_First_Subtype_Link (Freeze_Node (B), T);
+         end if;
+
+         --  A type that is imported through a limited_with clause cannot
+         --  generate any code, and thus need not be frozen. However, an access
+         --  type with an imported designated type needs a finalization list,
+         --  which may be referenced in some other package that has non-limited
+         --  visibility on the designated type. Thus we must create the
+         --  finalization list at the point the access type is frozen, to
+         --  prevent unsatisfied references at link time.
+
+         if not From_With_Type (T) or else Is_Access_Type (T) then
+            Set_Has_Delayed_Freeze (T);
+         end if;
+      end;
+
+      --  Case where T is the full declaration of some private type which has
+      --  been swapped in Defining_Identifier (N).
+
+      if T /= Def_Id and then Is_Private_Type (Def_Id) then
+         Process_Full_View (N, T, Def_Id);
+
+         --  Record the reference. The form of this is a little strange, since
+         --  the full declaration has been swapped in. So the first parameter
+         --  here represents the entity to which a reference is made which is
+         --  the "real" entity, i.e. the one swapped in, and the second
+         --  parameter provides the reference location.
+
+         --  Also, we want to kill Has_Pragma_Unreferenced temporarily here
+         --  since we don't want a complaint about the full type being an
+         --  unwanted reference to the private type
+
+         declare
+            B : constant Boolean := Has_Pragma_Unreferenced (T);
+         begin
+            Set_Has_Pragma_Unreferenced (T, False);
+            Generate_Reference (T, T, 'c');
+            Set_Has_Pragma_Unreferenced (T, B);
+         end;
+
+         Set_Completion_Referenced (Def_Id);
+
+      --  For completion of incomplete type, process incomplete dependents
+      --  and always mark the full type as referenced (it is the incomplete
+      --  type that we get for any real reference).
+
+      elsif Ekind (Prev) = E_Incomplete_Type then
+         Process_Incomplete_Dependents (N, T, Prev);
+         Generate_Reference (Prev, Def_Id, 'c');
+         Set_Completion_Referenced (Def_Id);
+
+      --  If not private type or incomplete type completion, this is a real
+      --  definition of a new entity, so record it.
+
+      else
+         Generate_Definition (Def_Id);
+      end if;
+
+      if Chars (Scope (Def_Id)) = Name_System
+        and then Chars (Def_Id) = Name_Address
+        and then Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (N)))
+      then
+         Set_Is_Descendent_Of_Address (Def_Id);
+         Set_Is_Descendent_Of_Address (Base_Type (Def_Id));
+         Set_Is_Descendent_Of_Address (Prev);
+      end if;
+
+      Set_Optimize_Alignment_Flags (Def_Id);
+      Check_Eliminated (Def_Id);
+
+      <<Leave>> Analyze_Aspect_Specifications (N, Def_Id, AS);
+   end Analyze_Full_Type_Declaration;
 
    ----------------------------------
    -- Analyze_Incomplete_Type_Decl --
@@ -2329,6 +2644,7 @@ package body Sem_Ch3 is
    procedure Analyze_Object_Declaration (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
       Id    : constant Entity_Id  := Defining_Identifier (N);
+      AS    : constant List_Id    := Aspect_Specifications (N);
       T     : Entity_Id;
       Act_T : Entity_Id;
 
@@ -2466,7 +2782,7 @@ package body Sem_Ch3 is
             T := Find_Type_Of_Object (Object_Definition (N), N);
             Set_Etype (Id, T);
             Set_Ekind (Id, E_Variable);
-            return;
+            goto Leave;
          end if;
 
       --  In the normal case, enter identifier at the start to catch premature
@@ -2492,7 +2808,7 @@ package body Sem_Ch3 is
          if Error_Posted (Id) then
             Set_Etype (Id, T);
             Set_Ekind (Id, E_Variable);
-            return;
+            goto Leave;
          end if;
       end if;
 
@@ -3213,6 +3529,8 @@ package body Sem_Ch3 is
       then
          Check_Restriction (No_Local_Timing_Events, N);
       end if;
+
+      <<Leave>> Analyze_Aspect_Specifications (N, Id, AS);
    end Analyze_Object_Declaration;
 
    ---------------------------
@@ -3235,6 +3553,7 @@ package body Sem_Ch3 is
    procedure Analyze_Private_Extension_Declaration (N : Node_Id) is
       T           : constant Entity_Id := Defining_Identifier (N);
       Indic       : constant Node_Id   := Subtype_Indication (N);
+      AS          : constant List_Id   := Aspect_Specifications (N);
       Parent_Type : Entity_Id;
       Parent_Base : Entity_Id;
 
@@ -3268,16 +3587,16 @@ package body Sem_Ch3 is
       then
          Set_Ekind (T, Ekind (Parent_Type));
          Set_Etype (T, Any_Type);
-         return;
+         goto Leave;
 
       elsif not Is_Tagged_Type (Parent_Type) then
          Error_Msg_N
            ("parent of type extension must be a tagged type ", Indic);
-         return;
+         goto Leave;
 
       elsif Ekind_In (Parent_Type, E_Void, E_Incomplete_Type) then
          Error_Msg_N ("premature derivation of incomplete type", Indic);
-         return;
+         goto Leave;
 
       elsif Is_Concurrent_Type (Parent_Type) then
          Error_Msg_N
@@ -3288,7 +3607,7 @@ package body Sem_Ch3 is
          Set_Ekind              (T, E_Limited_Private_Type);
          Set_Private_Dependents (T, New_Elmt_List);
          Set_Error_Posted       (T);
-         return;
+         goto Leave;
       end if;
 
       --  Perhaps the parent type should be changed to the class-wide type's
@@ -3297,7 +3616,7 @@ package body Sem_Ch3 is
       if Is_Class_Wide_Type (Parent_Type) then
          Error_Msg_N
            ("parent of type extension must not be a class-wide type", Indic);
-         return;
+         goto Leave;
       end if;
 
       if (not Is_Package_Or_Generic_Package (Current_Scope)
@@ -3420,6 +3739,8 @@ package body Sem_Ch3 is
               N, Parent_Type);
          end if;
       end if;
+
+      <<Leave>> Analyze_Aspect_Specifications (N, T, AS);
    end Analyze_Private_Extension_Declaration;
 
    ---------------------------------
@@ -3431,6 +3752,7 @@ package body Sem_Ch3 is
       Skip : Boolean := False)
    is
       Id       : constant Entity_Id := Defining_Identifier (N);
+      AS       : constant List_Id   := Aspect_Specifications (N);
       T        : Entity_Id;
       R_Checks : Check_Result;
 
@@ -3718,7 +4040,7 @@ package body Sem_Ch3 is
       end if;
 
       if Etype (Id) = Any_Type then
-         return;
+         goto Leave;
       end if;
 
       --  Some common processing on all types
@@ -3832,6 +4154,8 @@ package body Sem_Ch3 is
 
       Set_Optimize_Alignment_Flags (Id);
       Check_Eliminated (Id);
+
+      <<Leave>> Analyze_Aspect_Specifications (N, Id, AS);
    end Analyze_Subtype_Declaration;
 
    --------------------------------
@@ -3854,314 +4178,6 @@ package body Sem_Ch3 is
          Set_Error_Posted (T);
       end if;
    end Analyze_Subtype_Indication;
-
-   ------------------------------
-   -- Analyze_Type_Declaration --
-   ------------------------------
-
-   procedure Analyze_Type_Declaration (N : Node_Id) is
-      Def    : constant Node_Id   := Type_Definition (N);
-      Def_Id : constant Entity_Id := Defining_Identifier (N);
-      T      : Entity_Id;
-      Prev   : Entity_Id;
-
-      Is_Remote : constant Boolean :=
-                    (Is_Remote_Types (Current_Scope)
-                       or else Is_Remote_Call_Interface (Current_Scope))
-                    and then not (In_Private_Part (Current_Scope)
-                                    or else In_Package_Body (Current_Scope));
-
-      procedure Check_Ops_From_Incomplete_Type;
-      --  If there is a tagged incomplete partial view of the type, transfer
-      --  its operations to the full view, and indicate that the type of the
-      --  controlling parameter (s) is this full view.
-
-      ------------------------------------
-      -- Check_Ops_From_Incomplete_Type --
-      ------------------------------------
-
-      procedure Check_Ops_From_Incomplete_Type is
-         Elmt   : Elmt_Id;
-         Formal : Entity_Id;
-         Op     : Entity_Id;
-
-      begin
-         if Prev /= T
-           and then Ekind (Prev) = E_Incomplete_Type
-           and then Is_Tagged_Type (Prev)
-           and then Is_Tagged_Type (T)
-         then
-            Elmt := First_Elmt (Primitive_Operations (Prev));
-            while Present (Elmt) loop
-               Op := Node (Elmt);
-               Prepend_Elmt (Op, Primitive_Operations (T));
-
-               Formal := First_Formal (Op);
-               while Present (Formal) loop
-                  if Etype (Formal) = Prev then
-                     Set_Etype (Formal, T);
-                  end if;
-
-                  Next_Formal (Formal);
-               end loop;
-
-               if Etype (Op) = Prev then
-                  Set_Etype (Op, T);
-               end if;
-
-               Next_Elmt (Elmt);
-            end loop;
-         end if;
-      end Check_Ops_From_Incomplete_Type;
-
-   --  Start of processing for Analyze_Type_Declaration
-
-   begin
-      Prev := Find_Type_Name (N);
-
-      --  The full view, if present, now points to the current type
-
-      --  Ada 2005 (AI-50217): If the type was previously decorated when
-      --  imported through a LIMITED WITH clause, it appears as incomplete
-      --  but has no full view.
-      --  If the incomplete view is tagged, a class_wide type has been
-      --  created already. Use it for the full view as well, to prevent
-      --  multiple incompatible class-wide types that may be  created for
-      --  self-referential anonymous access components.
-
-      if Ekind (Prev) = E_Incomplete_Type
-        and then Present (Full_View (Prev))
-      then
-         T := Full_View (Prev);
-
-         if Is_Tagged_Type (Prev)
-           and then Present (Class_Wide_Type (Prev))
-         then
-            Set_Ekind (T, Ekind (Prev));         --  will be reset later
-            Set_Class_Wide_Type (T, Class_Wide_Type (Prev));
-            Set_Etype (Class_Wide_Type (T), T);
-         end if;
-
-      else
-         T := Prev;
-      end if;
-
-      Set_Is_Pure (T, Is_Pure (Current_Scope));
-
-      --  We set the flag Is_First_Subtype here. It is needed to set the
-      --  corresponding flag for the Implicit class-wide-type created
-      --  during tagged types processing.
-
-      Set_Is_First_Subtype (T, True);
-
-      --  Only composite types other than array types are allowed to have
-      --  discriminants.
-
-      case Nkind (Def) is
-
-         --  For derived types, the rule will be checked once we've figured
-         --  out the parent type.
-
-         when N_Derived_Type_Definition =>
-            null;
-
-         --  For record types, discriminants are allowed
-
-         when N_Record_Definition =>
-            null;
-
-         when others =>
-            if Present (Discriminant_Specifications (N)) then
-               Error_Msg_N
-                 ("elementary or array type cannot have discriminants",
-                  Defining_Identifier
-                  (First (Discriminant_Specifications (N))));
-            end if;
-      end case;
-
-      --  Elaborate the type definition according to kind, and generate
-      --  subsidiary (implicit) subtypes where needed. We skip this if it was
-      --  already done (this happens during the reanalysis that follows a call
-      --  to the high level optimizer).
-
-      if not Analyzed (T) then
-         Set_Analyzed (T);
-
-         case Nkind (Def) is
-
-            when N_Access_To_Subprogram_Definition =>
-               Access_Subprogram_Declaration (T, Def);
-
-               --  If this is a remote access to subprogram, we must create the
-               --  equivalent fat pointer type, and related subprograms.
-
-               if Is_Remote then
-                  Process_Remote_AST_Declaration (N);
-               end if;
-
-               --  Validate categorization rule against access type declaration
-               --  usually a violation in Pure unit, Shared_Passive unit.
-
-               Validate_Access_Type_Declaration (T, N);
-
-            when N_Access_To_Object_Definition =>
-               Access_Type_Declaration (T, Def);
-
-               --  Validate categorization rule against access type declaration
-               --  usually a violation in Pure unit, Shared_Passive unit.
-
-               Validate_Access_Type_Declaration (T, N);
-
-               --  If we are in a Remote_Call_Interface package and define a
-               --  RACW, then calling stubs and specific stream attributes
-               --  must be added.
-
-               if Is_Remote
-                 and then Is_Remote_Access_To_Class_Wide_Type (Def_Id)
-               then
-                  Add_RACW_Features (Def_Id);
-               end if;
-
-               --  Set no strict aliasing flag if config pragma seen
-
-               if Opt.No_Strict_Aliasing then
-                  Set_No_Strict_Aliasing (Base_Type (Def_Id));
-               end if;
-
-            when N_Array_Type_Definition =>
-               Array_Type_Declaration (T, Def);
-
-            when N_Derived_Type_Definition =>
-               Derived_Type_Declaration (T, N, T /= Def_Id);
-
-            when N_Enumeration_Type_Definition =>
-               Enumeration_Type_Declaration (T, Def);
-
-            when N_Floating_Point_Definition =>
-               Floating_Point_Type_Declaration (T, Def);
-
-            when N_Decimal_Fixed_Point_Definition =>
-               Decimal_Fixed_Point_Type_Declaration (T, Def);
-
-            when N_Ordinary_Fixed_Point_Definition =>
-               Ordinary_Fixed_Point_Type_Declaration (T, Def);
-
-            when N_Signed_Integer_Type_Definition =>
-               Signed_Integer_Type_Declaration (T, Def);
-
-            when N_Modular_Type_Definition =>
-               Modular_Type_Declaration (T, Def);
-
-            when N_Record_Definition =>
-               Record_Type_Declaration (T, N, Prev);
-
-            --  If declaration has a parse error, nothing to elaborate.
-
-            when N_Error =>
-               null;
-
-            when others =>
-               raise Program_Error;
-
-         end case;
-      end if;
-
-      if Etype (T) = Any_Type then
-         return;
-      end if;
-
-      --  Some common processing for all types
-
-      Set_Depends_On_Private (T, Has_Private_Component (T));
-      Check_Ops_From_Incomplete_Type;
-
-      --  Both the declared entity, and its anonymous base type if one
-      --  was created, need freeze nodes allocated.
-
-      declare
-         B : constant Entity_Id := Base_Type (T);
-
-      begin
-         --  In the case where the base type differs from the first subtype, we
-         --  pre-allocate a freeze node, and set the proper link to the first
-         --  subtype. Freeze_Entity will use this preallocated freeze node when
-         --  it freezes the entity.
-
-         --  This does not apply if the base type is a generic type, whose
-         --  declaration is independent of the current derived definition.
-
-         if B /= T and then not Is_Generic_Type (B) then
-            Ensure_Freeze_Node (B);
-            Set_First_Subtype_Link (Freeze_Node (B), T);
-         end if;
-
-         --  A type that is imported through a limited_with clause cannot
-         --  generate any code, and thus need not be frozen. However, an access
-         --  type with an imported designated type needs a finalization list,
-         --  which may be referenced in some other package that has non-limited
-         --  visibility on the designated type. Thus we must create the
-         --  finalization list at the point the access type is frozen, to
-         --  prevent unsatisfied references at link time.
-
-         if not From_With_Type (T) or else Is_Access_Type (T) then
-            Set_Has_Delayed_Freeze (T);
-         end if;
-      end;
-
-      --  Case where T is the full declaration of some private type which has
-      --  been swapped in Defining_Identifier (N).
-
-      if T /= Def_Id and then Is_Private_Type (Def_Id) then
-         Process_Full_View (N, T, Def_Id);
-
-         --  Record the reference. The form of this is a little strange, since
-         --  the full declaration has been swapped in. So the first parameter
-         --  here represents the entity to which a reference is made which is
-         --  the "real" entity, i.e. the one swapped in, and the second
-         --  parameter provides the reference location.
-
-         --  Also, we want to kill Has_Pragma_Unreferenced temporarily here
-         --  since we don't want a complaint about the full type being an
-         --  unwanted reference to the private type
-
-         declare
-            B : constant Boolean := Has_Pragma_Unreferenced (T);
-         begin
-            Set_Has_Pragma_Unreferenced (T, False);
-            Generate_Reference (T, T, 'c');
-            Set_Has_Pragma_Unreferenced (T, B);
-         end;
-
-         Set_Completion_Referenced (Def_Id);
-
-      --  For completion of incomplete type, process incomplete dependents
-      --  and always mark the full type as referenced (it is the incomplete
-      --  type that we get for any real reference).
-
-      elsif Ekind (Prev) = E_Incomplete_Type then
-         Process_Incomplete_Dependents (N, T, Prev);
-         Generate_Reference (Prev, Def_Id, 'c');
-         Set_Completion_Referenced (Def_Id);
-
-      --  If not private type or incomplete type completion, this is a real
-      --  definition of a new entity, so record it.
-
-      else
-         Generate_Definition (Def_Id);
-      end if;
-
-      if Chars (Scope (Def_Id)) = Name_System
-        and then Chars (Def_Id) = Name_Address
-        and then Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (N)))
-      then
-         Set_Is_Descendent_Of_Address (Def_Id);
-         Set_Is_Descendent_Of_Address (Base_Type (Def_Id));
-         Set_Is_Descendent_Of_Address (Prev);
-      end if;
-
-      Set_Optimize_Alignment_Flags (Def_Id);
-      Check_Eliminated (Def_Id);
-   end Analyze_Type_Declaration;
 
    --------------------------
    -- Analyze_Variant_Part --

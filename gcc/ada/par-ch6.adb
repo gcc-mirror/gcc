@@ -305,7 +305,7 @@ package body Ch6 is
 
             Set_Defining_Unit_Name (Inst_Node, Name_Node);
             Set_Generic_Associations (Inst_Node, P_Generic_Actual_Part_Opt);
-            TF_Semicolon;
+            P_Aspect_Specifications (Inst_Node);
             Pop_Scope_Stack; -- Don't need scope stack entry in this case
 
             if Is_Overriding then
@@ -525,7 +525,7 @@ package body Ch6 is
                Set_Specification (Absdec_Node, Specification_Node);
                Pop_Scope_Stack; -- discard unneeded entry
                Scan; -- past ABSTRACT
-               TF_Semicolon;
+               P_Aspect_Specifications (Absdec_Node);
                return Absdec_Node;
 
             --  Ada 2005 (AI-248): Parse a null procedure declaration

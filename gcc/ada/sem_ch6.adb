@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -59,6 +60,7 @@ with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch12; use Sem_Ch12;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
 with Sem_Elim; use Sem_Elim;
@@ -352,6 +354,7 @@ package body Sem_Ch6 is
       Designator : constant Entity_Id :=
                      Analyze_Subprogram_Specification (Specification (N));
       Scop       : constant Entity_Id := Current_Scope;
+      AS         : constant List_Id   := Aspect_Specifications (N);
 
    begin
       Generate_Definition (Designator);
@@ -381,6 +384,7 @@ package body Sem_Ch6 is
 
       Generate_Reference_To_Formals (Designator);
       Check_Eliminated (Designator);
+      Analyze_Aspect_Specifications (N, Designator, AS);
    end Analyze_Abstract_Subprogram_Declaration;
 
    ----------------------------------------
@@ -2696,9 +2700,10 @@ package body Sem_Ch6 is
 
    procedure Analyze_Subprogram_Declaration (N : Node_Id) is
       Loc        : constant Source_Ptr := Sloc (N);
+      AS         : constant List_Id    := Aspect_Specifications (N);
+      Scop       : constant Entity_Id  := Current_Scope;
       Designator : Entity_Id;
       Form       : Node_Id;
-      Scop       : constant Entity_Id := Current_Scope;
       Null_Body  : Node_Id := Empty;
 
    --  Start of processing for Analyze_Subprogram_Declaration
@@ -2891,6 +2896,8 @@ package body Sem_Ch6 is
          Write_Location (Sloc (N));
          Write_Eol;
       end if;
+
+      Analyze_Aspect_Specifications (N, Designator, AS);
    end Analyze_Subprogram_Declaration;
 
    --------------------------------------
@@ -8334,20 +8341,19 @@ package body Sem_Ch6 is
                      if Is_Tagged_Type (Formal_Type) then
                         null;
 
-                     elsif Nkind_In (Parent (Parent (T)),
-                        N_Accept_Statement,
-                        N_Entry_Body,
-                        N_Subprogram_Body)
+                     elsif Nkind_In (Parent (Parent (T)), N_Accept_Statement,
+                                                          N_Entry_Body,
+                                                          N_Subprogram_Body)
                      then
                         Error_Msg_NE
                           ("invalid use of untagged incomplete type&",
-                             Ptype, Formal_Type);
+                           Ptype, Formal_Type);
                      end if;
 
                   else
                      Error_Msg_NE
                        ("invalid use of incomplete type&",
-                          Param_Spec, Formal_Type);
+                        Param_Spec, Formal_Type);
 
                      --  Further checks on the legality of incomplete types
                      --  in formal parts are delayed until the freeze point
@@ -8356,8 +8362,9 @@ package body Sem_Ch6 is
                end if;
 
             elsif Ekind (Formal_Type) = E_Void then
-               Error_Msg_NE ("premature use of&",
-                 Parameter_Type (Param_Spec), Formal_Type);
+               Error_Msg_NE
+                 ("premature use of&",
+                  Parameter_Type (Param_Spec), Formal_Type);
             end if;
 
             --  Ada 2005 (AI-231): Create and decorate an internal subtype
@@ -8378,8 +8385,7 @@ package body Sem_Ch6 is
                   then
                      Error_Msg_NE
                        ("`NOT NULL` not allowed (& already excludes null)",
-                        Param_Spec,
-                        Formal_Type);
+                        Param_Spec, Formal_Type);
                   end if;
 
                   Formal_Type :=

@@ -29,9 +29,42 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Atree;  use Atree;
+with Nlists; use Nlists;
+with Sinfo;  use Sinfo;
 with Snames; use Snames;
 
+with GNAT.HTable; use GNAT.HTable;
+
 package body Aspects is
+
+   ------------------------------------------
+   -- Hash Table for Aspect Specifications --
+   ------------------------------------------
+
+   type AS_Hash_Range is range 0 .. 510;
+   --  Size of hash table headers
+
+   function AS_Hash (F : Node_Id) return AS_Hash_Range;
+   --  Hash function for hash table
+
+   function AS_Hash (F : Node_Id) return AS_Hash_Range is
+   begin
+      return AS_Hash_Range (F mod 511);
+   end AS_Hash;
+
+   package Aspect_Specifications_Hash_Table is new
+     GNAT.HTable.Simple_HTable
+       (Header_Num => AS_Hash_Range,
+        Element    => List_Id,
+        No_Element => No_List,
+        Key        => Node_Id,
+        Hash       => AS_Hash,
+        Equal      => "=");
+
+   -----------------------------------------
+   -- Table Linking Names and Aspect_Id's --
+   -----------------------------------------
 
    type Aspect_Entry is record
       Nam : Name_Id;
@@ -42,12 +75,10 @@ package body Aspects is
      (Name_Ada_2005,                     Aspect_Ada_2005),
      (Name_Ada_2012,                     Aspect_Ada_2012),
      (Name_Address,                      Aspect_Address),
-     (Name_Aliased,                      Aspect_Aliased),
      (Name_Alignment,                    Aspect_Alignment),
      (Name_Atomic,                       Aspect_Atomic),
      (Name_Atomic_Components,            Aspect_Atomic_Components),
      (Name_Bit_Order,                    Aspect_Bit_Order),
-     (Name_C_Pass_By_Copy,               Aspect_C_Pass_By_Copy),
      (Name_Component_Size,               Aspect_Component_Size),
      (Name_Discard_Names,                Aspect_Discard_Names),
      (Name_External_Tag,                 Aspect_External_Tag),
@@ -60,12 +91,9 @@ package body Aspects is
      (Name_Pack,                         Aspect_Pack),
      (Name_Persistent_BSS,               Aspect_Persistent_BSS),
      (Name_Post,                         Aspect_Post),
-     (Name_Postcondition,                Aspect_Postcondition),
      (Name_Pre,                          Aspect_Pre),
-     (Name_Precondition,                 Aspect_Precondition),
      (Name_Predicate,                    Aspect_Predicate),
      (Name_Preelaborable_Initialization, Aspect_Preelaborable_Initialization),
-     (Name_Psect_Object,                 Aspect_Psect_Object),
      (Name_Pure_Function,                Aspect_Pure_Function),
      (Name_Shared,                       Aspect_Shared),
      (Name_Size,                         Aspect_Size),
@@ -83,8 +111,31 @@ package body Aspects is
      (Name_Value_Size,                   Aspect_Value_Size),
      (Name_Volatile,                     Aspect_Volatile),
      (Name_Volatile_Components,          Aspect_Volatile_Components),
-     (Name_Warnings,                     Aspect_Warnings),
-     (Name_Weak_External,                Aspect_Weak_External));
+     (Name_Warnings,                     Aspect_Warnings));
+
+   -------------------------------------
+   -- Hash Table for Aspect Id Values --
+   -------------------------------------
+
+   type AI_Hash_Range is range 0 .. 112;
+   --  Size of hash table headers
+
+   function AI_Hash (F : Name_Id) return AI_Hash_Range;
+   --  Hash function for hash table
+
+   function AI_Hash (F : Name_Id) return AI_Hash_Range is
+   begin
+      return AI_Hash_Range (F mod 113);
+   end AI_Hash;
+
+   package Aspect_Id_Hash_Table is new
+     GNAT.HTable.Simple_HTable
+       (Header_Num => AI_Hash_Range,
+        Element    => Aspect_Id,
+        No_Element => No_Aspect,
+        Key        => Name_Id,
+        Hash       => AI_Hash,
+        Equal      => "=");
 
    -------------------
    -- Get_Aspect_Id --
@@ -92,13 +143,74 @@ package body Aspects is
 
    function Get_Aspect_Id (Name : Name_Id) return Aspect_Id is
    begin
-      for J in Aspect_Names'Range loop
-         if Aspect_Names (J).Nam = Name then
-            return Aspect_Names (J).Asp;
-         end if;
-      end loop;
-
-      return No_Aspect;
+      return Aspect_Id_Hash_Table.Get (Name);
    end Get_Aspect_Id;
 
+   ---------------------------
+   -- Aspect_Specifications --
+   ---------------------------
+
+   function Aspect_Specifications (N : Node_Id) return List_Id is
+   begin
+      return Aspect_Specifications_Hash_Table.Get (N);
+   end Aspect_Specifications;
+
+   -----------------------------------
+   -- Permits_Aspect_Specifications --
+   -----------------------------------
+
+   Has_Aspect_Specifications_Flag : constant array (Node_Kind) of Boolean :=
+     (N_Abstract_Subprogram_Declaration        => True,
+      N_Component_Declaration                  => True,
+      N_Entry_Declaration                      => True,
+      N_Exception_Declaration                  => True,
+      N_Formal_Abstract_Subprogram_Declaration => True,
+      N_Formal_Concrete_Subprogram_Declaration => True,
+      N_Formal_Object_Declaration              => True,
+      N_Formal_Package_Declaration             => True,
+      N_Formal_Type_Declaration                => True,
+      N_Full_Type_Declaration                  => True,
+      N_Function_Instantiation                 => True,
+      N_Generic_Package_Declaration            => True,
+      N_Generic_Subprogram_Declaration         => True,
+      N_Object_Declaration                     => True,
+      N_Package_Declaration                    => True,
+      N_Package_Instantiation                  => True,
+      N_Private_Extension_Declaration          => True,
+      N_Private_Type_Declaration               => True,
+      N_Procedure_Instantiation                => True,
+      N_Protected_Type_Declaration             => True,
+      N_Single_Protected_Declaration           => True,
+      N_Single_Task_Declaration                => True,
+      N_Subprogram_Declaration                 => True,
+      N_Subtype_Declaration                    => True,
+      N_Task_Type_Declaration                  => True,
+      others                                   => False);
+
+   function Permits_Aspect_Specifications (N : Node_Id) return Boolean is
+   begin
+      return Has_Aspect_Specifications_Flag (Nkind (N));
+   end Permits_Aspect_Specifications;
+
+   -------------------------------
+   -- Set_Aspect_Specifications --
+   -------------------------------
+
+   procedure Set_Aspect_Specifications (N : Node_Id; L : List_Id) is
+   begin
+      pragma Assert (Permits_Aspect_Specifications (N));
+      pragma Assert (not Has_Aspect_Specifications (N));
+      pragma Assert (L /= No_List);
+
+      Set_Has_Aspect_Specifications (N);
+      Set_Parent (L, N);
+      Aspect_Specifications_Hash_Table.Set (N, L);
+   end Set_Aspect_Specifications;
+
+--  Package initialization sets up Aspect Id hash table
+
+begin
+   for J in Aspect_Names'Range loop
+      Aspect_Id_Hash_Table.Set (Aspect_Names (J).Nam, Aspect_Names (J).Asp);
+   end loop;
 end Aspects;

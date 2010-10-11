@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,8 +34,8 @@ package Sem_Ch12 is
    procedure Analyze_Function_Instantiation             (N : Node_Id);
    procedure Analyze_Formal_Object_Declaration          (N : Node_Id);
    procedure Analyze_Formal_Type_Declaration            (N : Node_Id);
-   procedure Analyze_Formal_Subprogram                  (N : Node_Id);
-   procedure Analyze_Formal_Package                     (N : Node_Id);
+   procedure Analyze_Formal_Subprogram_Declaration      (N : Node_Id);
+   procedure Analyze_Formal_Package_Declaration         (N : Node_Id);
 
    procedure Start_Generic;
    --  Must be invoked before starting to process a generic spec or body

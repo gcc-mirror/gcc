@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
@@ -44,6 +45,7 @@ with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
@@ -873,6 +875,7 @@ package body Sem_Ch9 is
       D_Sdef  : constant Node_Id   := Discrete_Subtype_Definition (N);
       Def_Id  : constant Entity_Id := Defining_Identifier (N);
       Formals : constant List_Id   := Parameter_Specifications (N);
+      AS      : constant List_Id   := Aspect_Specifications (N);
 
    begin
       Generate_Definition (Def_Id);
@@ -904,6 +907,7 @@ package body Sem_Ch9 is
       end if;
 
       Generate_Reference_To_Formals (Def_Id);
+      Analyze_Aspect_Specifications (N, Def_Id, AS);
    end Analyze_Entry_Declaration;
 
    ---------------------------------------
@@ -1122,19 +1126,20 @@ package body Sem_Ch9 is
       Process_End_Label (N, 'e', Current_Scope);
    end Analyze_Protected_Definition;
 
-   ----------------------------
-   -- Analyze_Protected_Type --
-   ----------------------------
+   ----------------------------------------
+   -- Analyze_Protected_Type_Declaration --
+   ----------------------------------------
 
-   procedure Analyze_Protected_Type (N : Node_Id) is
+   procedure Analyze_Protected_Type_Declaration (N : Node_Id) is
       Def_Id : constant Entity_Id := Defining_Identifier (N);
+      AS     : constant List_Id   := Aspect_Specifications (N);
       E      : Entity_Id;
       T      : Entity_Id;
 
    begin
       if No_Run_Time_Mode then
          Error_Msg_CRT ("protected type", N);
-         return;
+         goto Leave;
       end if;
 
       Tasking_Used := True;
@@ -1254,7 +1259,9 @@ package body Sem_Ch9 is
             Process_Full_View (N, T, Def_Id);
          end if;
       end if;
-   end Analyze_Protected_Type;
+
+      <<Leave>> Analyze_Aspect_Specifications (N, Def_Id, AS);
+   end Analyze_Protected_Type_Declaration;
 
    ---------------------
    -- Analyze_Requeue --
@@ -1651,13 +1658,14 @@ package body Sem_Ch9 is
       end if;
    end Analyze_Selective_Accept;
 
-   ------------------------------
-   -- Analyze_Single_Protected --
-   ------------------------------
+   ------------------------------------------
+   -- Analyze_Single_Protected_Declaration --
+   ------------------------------------------
 
-   procedure Analyze_Single_Protected (N : Node_Id) is
+   procedure Analyze_Single_Protected_Declaration (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
       Id     : constant Node_Id    := Defining_Identifier (N);
+      AS     : constant List_Id    := Aspect_Specifications (N);
       T      : Entity_Id;
       T_Decl : Node_Id;
       O_Decl : Node_Id;
@@ -1704,16 +1712,18 @@ package body Sem_Ch9 is
       --  procedure directly. Otherwise the node would be expanded twice, with
       --  disastrous result.
 
-      Analyze_Protected_Type (N);
-   end Analyze_Single_Protected;
+      Analyze_Protected_Type_Declaration (N);
+      Analyze_Aspect_Specifications (N, Id, AS);
+   end Analyze_Single_Protected_Declaration;
 
-   -------------------------
-   -- Analyze_Single_Task --
-   -------------------------
+   -------------------------------------
+   -- Analyze_Single_Task_Declaration --
+   -------------------------------------
 
-   procedure Analyze_Single_Task (N : Node_Id) is
+   procedure Analyze_Single_Task_Declaration (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
       Id     : constant Node_Id    := Defining_Identifier (N);
+      AS     : constant List_Id    := Aspect_Specifications (N);
       T      : Entity_Id;
       T_Decl : Node_Id;
       O_Decl : Node_Id;
@@ -1768,8 +1778,9 @@ package body Sem_Ch9 is
       --  procedure directly. Otherwise the node would be expanded twice, with
       --  disastrous result.
 
-      Analyze_Task_Type (N);
-   end Analyze_Single_Task;
+      Analyze_Task_Type_Declaration (N);
+      Analyze_Aspect_Specifications (N, Id, AS);
+   end Analyze_Single_Task_Declaration;
 
    -----------------------
    -- Analyze_Task_Body --
@@ -1935,12 +1946,13 @@ package body Sem_Ch9 is
       Process_End_Label (N, 'e', Current_Scope);
    end Analyze_Task_Definition;
 
-   -----------------------
-   -- Analyze_Task_Type --
-   -----------------------
+   -----------------------------------
+   -- Analyze_Task_Type_Declaration --
+   -----------------------------------
 
-   procedure Analyze_Task_Type (N : Node_Id) is
+   procedure Analyze_Task_Type_Declaration (N : Node_Id) is
       Def_Id : constant Entity_Id := Defining_Identifier (N);
+      AS     : constant List_Id   := Aspect_Specifications (N);
       T      : Entity_Id;
 
    begin
@@ -2038,7 +2050,9 @@ package body Sem_Ch9 is
             Process_Full_View (N, T, Def_Id);
          end if;
       end if;
-   end Analyze_Task_Type;
+
+      Analyze_Aspect_Specifications (N, Def_Id, AS);
+   end Analyze_Task_Type_Declaration;
 
    -----------------------------------
    -- Analyze_Terminate_Alternative --

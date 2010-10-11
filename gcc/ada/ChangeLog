@@ -1,3 +1,102 @@
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads, aspects.adb: Major revision of this package for 2nd
+	stage of aspects implementation.
+	* gcc-interface/Make-lang.in: Add entry for aspects.o
+	* gcc-interface/Makefile.in: Add aspects.o to GNATMAKE_OBJS
+	* par-ch13.adb (Aspect_Specifications_Present): New function
+	(P_Aspect_Specifications): New procedure
+	* par-ch3.adb (P_Type_Declaration): Handle aspect specifications
+	(P_Derived_Type_Def_Or_Private_Ext_Decl): Handle aspect specifications
+	(P_Identifier_Declarations): Handle aspect specifications
+	(P_Component_Items): Handle aspect specifications
+	(P_Subtype_Declaration): Handle aspect specifications
+	* par-ch6.adb (P_Subprogram): Handle aspect specifications
+	* par-ch9.adb (P_Entry_Declaration): Handle aspect specifications
+	* par.adb (Aspect_Specifications_Present): New function
+	(P_Aspect_Specifications): New procedure
+	* sem.adb (Analyze_Full_Type_Declaration): New name for
+	Analyze_Type_Declaration.
+	(Analyze_Formal_Package_Declaration): New name (add _Declaration)
+	(Analyze_Formal_Subprogram_Declaration): New name (add _Declaration)
+	(Analyze_Protected_Type_Declaration): New name (add _Declaration)
+	(Analyze_Single_Protected_Declaration): New name (add _Declaration)
+	(Analyze_Single_Task_Declaration): New name (add _Declaration)
+	(Analyze_Task_Type_Declaration): New name (add _Declaration)
+	* sem_cat.adb (Analyze_Full_Type_Declaration): New name for
+	Analyze_Type_Declaration.
+	* sem_ch11.adb (Analyze_Exception_Declaration): Analyze aspect
+	specifications.
+	* sem_ch12.adb (Analyze_Formal_Object_Declaration): Handle aspect
+	specifications.
+	(Analyze_Formal_Package_Declaration): New name (add _Declaration)
+	(Analyze_Formal_Package_Declaration): Handle aspect specifications
+	(Analyze_Formal_Subprogram_Declaration): New name (add _Declaration)
+	(Analyze_Formal_Subprogram_Declaration): Handle aspect specifications
+	(Analyze_Formal_Type_Declaration): Handle aspect specifications
+	(Analyze_Generic_Package_Declaration): Handle aspect specifications
+	(Analyze_Generic_Subprogram_Declaration): Handle aspect specifications
+	(Analyze_Package_Instantiation): Handle aspect specifications
+	(Analyze_Subprogram_Instantiation): Handle aspect specifications
+	* sem_ch12.ads (Analyze_Formal_Package_Declaration): New name (add
+	_Declaration).
+	(Analyze_Formal_Subprogram_Declaration): New name (add _Declaration)
+	* sem_ch13.adb (Analyze_Aspect_Specifications): New procedure
+	(Duplicate_Clause): New function, calls to this function are added to
+	processing for all aspects.
+	* sem_ch13.ads (Analyze_Aspect_Specifications): New procedure
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): New name for
+	Analyze_Type_Declaration.
+	* sem_ch3.ads (Analyze_Full_Type_Declaration): New name for
+	Analyze_Type_Declaration.
+	* sem_ch6.adb (Analyze_Abstract_Subprogram_Declaration): Analyze aspect
+	specifications.
+	(Analyze_Subprogram_Declaration): Analyze aspect specifications
+	* sem_ch7.adb (Analyze_Package_Declaration): Analyze aspect
+	specifications.
+	(Analyze_Private_Type_Declaration): Analyze aspect specifications
+	* sem_ch9.adb (Analyze_Protected_Type_Declaration): Analyze aspect
+	specifications.
+	(Analyze_Protected_Type_Declaration): New name (add _Declaration)
+	(Analyze_Single_Protected_Declaration): Analyze aspect specifications
+	(Analyze_Single_Protected_Declaration): New name (add _Declaration)
+	(Analyze_Single_Task_Declaration): Analyze aspect specifications
+	(Analyze_Single_Task_Declaration): New name (add _Declaration)
+	(Analyze_Task_Type_Declaration): Analyze aspect specifications
+	(Analyze_Task_Type_Declaration): New name (add _Declaration)
+	* sem_ch9.ads (Analyze_Protected_Type_Declaration): New name (add
+	_Declaration).
+	(Analyze_Single_Protected_Declaration): New name (add _Declaration)
+	(Analyze_Single_Task_Declaration): New name (add _Declaration)
+	(Analyze_Task_Type_Declaration): New name (add _Declaration)
+	* sem_prag.adb: Use Get_Pragma_Arg systematically so that we do not
+	have to generate unnecessary pragma argument associations (this matches
+	the doc).
+	Throughout do changes to accomodate aspect specifications, including
+	specializing messages, handling the case of not going through all
+	homonyms, and allowing for cancellation.
+	* sinfo.ads, sinfo.adb: Clean up obsolete documentation for Flag1,2,3
+	(Aspect_Cancel): New flag
+	(From_Aspect_Specification): New flag
+	(First_Aspect): Removed flag
+	(Last_Aspect): Removed flag
+	* sprint.adb (Sprint_Aspect_Specifications): New procedure
+	(Sprint_Node_Actual): Add calls to Sprint_Aspect_Specifications
+
+2010-10-11  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Minor change to warning messages so
+	they match in Ada 95, 2005, and 2012 modes, in the case where the
+	language didn't change. Same thing for the run-time exception message.
+
+2010-10-11  Javier Miranda  <miranda@adacore.com>
+
+	* debug.adb Document that switch -gnatd.p enables the CIL verifier.
+
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
+	* s-htable.adb: Minor reformatting.
+
 2010-10-11  Javier Miranda  <miranda@adacore.com>
 
 	* debug.adb: Update comment.
