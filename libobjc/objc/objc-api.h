@@ -1,6 +1,6 @@
-/* GNU Objective-C Runtime API.
+/* GNU Objective-C Runtime API - Traditional API
    Copyright (C) 1993, 1995, 1996, 1997, 2001, 2002, 2003, 2004, 2005,
-   2007, 2009 Free Software Foundation, Inc.
+   2007, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
