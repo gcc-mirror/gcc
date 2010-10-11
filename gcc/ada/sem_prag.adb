@@ -4689,10 +4689,10 @@ package body Sem_Prag is
       --  Start of processing for Process_Suppress_Unsuppress
 
       begin
-         --  Ignore pragma Suppress/Unsuppress in codepeer mode: we want to
-         --  generate checks for analysis purposes, as set by -gnatC.
+         --  Ignore pragma Suppress/Unsuppress in codepeer mode on user code:
+         --  we want to generate checks for analysis purposes, as set by -gnatC
 
-         if CodePeer_Mode then
+         if CodePeer_Mode and then Comes_From_Source (N) then
             return;
          end if;
 

@@ -1,3 +1,18 @@
+2010-10-11  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (GNATCmd): For all tools other than gnatmake, allow
+	shared library projects to import projects that are not shared library
+	projects.
+
+2010-10-11  Javier Miranda  <miranda@adacore.com>
+
+	* debug.adb: Document that switch -gnatd.o generates the CIL listing.
+
+2010-10-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Process_Suppress_Unsuppress): Only ignore
+	Suppress/Unsuppress pragmas in codepeer mode on user code.
+
 2010-10-11  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch6.adb (Expand_Call): For VM platforms, add missing expansion of
