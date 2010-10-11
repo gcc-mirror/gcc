@@ -504,6 +504,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-mastop$(objext) \
   s-memcop$(objext) \
   s-memory$(objext) \
+  s-multip$(objext) \
   s-os_lib$(objext) \
   s-osprim$(objext) \
   s-pack03$(objext) \

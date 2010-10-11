@@ -497,6 +497,15 @@ package body Impunit is
      "g-zspche",    -- GNAT.Wide_Wide_Spelling_Checker
      "g-zstspl");   -- GNAT.Wide_Wide_String_Split
 
+   --------------------
+   -- Ada 2012 Units --
+   --------------------
+
+   --  The following units should be used only in Ada 05 mode
+
+   Non_Imp_File_Names_12 : constant File_List := (
+     0 => "s-multip");   -- System.Mutiprocessors
+
    -----------------------
    -- Alternative Units --
    -----------------------
@@ -596,11 +605,19 @@ package body Impunit is
          end if;
       end loop;
 
-      --  See if name is in 05 list
+      --  See if name is in 2005 list
 
       for J in Non_Imp_File_Names_05'Range loop
          if Name_Buffer (1 .. 8) = Non_Imp_File_Names_05 (J) then
             return Ada_05_Unit;
+         end if;
+      end loop;
+
+      --  See if name is in 2012 list
+
+      for J in Non_Imp_File_Names_12'Range loop
+         if Name_Buffer (1 .. 8) = Non_Imp_File_Names_12 (J) then
+            return Ada_12_Unit;
          end if;
       end loop;
 

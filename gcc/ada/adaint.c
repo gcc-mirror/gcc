@@ -2358,6 +2358,18 @@ __gnat_dup2 (int oldfd, int newfd)
 #endif
 }
 
+int
+__gnat_number_of_cpus (void)
+{
+  int cores = 1;
+
+#if defined (linux)
+  cores = (int)sysconf(_SC_NPROCESSORS_ONLN);
+#endif
+
+  return cores;
+}
+
 /* WIN32 code to implement a wait call that wait for any child process.  */
 
 #if defined (_WIN32) && !defined (RTX)

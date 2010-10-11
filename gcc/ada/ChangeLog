@@ -1,3 +1,17 @@
+2010-10-11  Vincent Celier  <celier@adacore.com>
+
+	* Makefile.rtl: Add s-multip.
+	* adaint.c: New function __gnat_number_of_cpus, implemented for Linux,
+	defaulting to 1 for other platforms.
+	* adaint.h: New function __gnat_number_of_cpus.
+	* impunit.adb (Non_Imp_File_Names_12): New file list for Ada 2012,
+	with a single component "s-multip".
+	* impunit.ads (Kind_Of_Unit): New enumerated value Ada_12_Unit for Ada
+	2012.
+	* rtsfind.ads (RTU_Id): New enumerated value System_Multiprocessors
+	* s-multip.ads, s-multip.adb: New Ada 2012 package.
+	* sem_ch10.adb (Analyze_With_Clause): Check also Ada 2012 units.
+
 2010-10-11  Javier Miranda  <miranda@adacore.com>
 
 	* a-textio.adb: Move new implementation of Get_Line to a subunit.
