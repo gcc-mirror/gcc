@@ -5582,6 +5582,7 @@ consideration, you should minimize the use of these attributes.
 * Passed_By_Reference::
 * Pool_Address::
 * Range_Length::
+* Ref::
 * Result::
 * Safe_Emax::
 * Safe_Large::
@@ -6233,6 +6234,16 @@ the number of values represented by the subtype (zero for a null
 range).  The result is static for static subtypes.  @code{Range_Length}
 applied to the index subtype of a one dimensional array always gives the
 same result as @code{Range} applied to the array itself.
+
+@node Ref
+@unnumberedsec Ref
+@findex Ref
+@noindent
+The @code{System.Address'Ref}
+(@code{System.Address} is the only permissible prefix)
+denotes a function identical to
+@code{System.Storage_Elements.To_Address} except that
+it is a static attribute.  See @ref{To_Address} for more details.
 
 @node Result
 @unnumberedsec Result

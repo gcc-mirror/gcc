@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -395,6 +395,15 @@ package Sem_Attr is
       --  as Range applied to the array itself. The result is of type universal
       --  integer.
 
+      ---------
+      -- Ref --
+      ---------
+
+      Attribute_Ref => True,
+      --  System.Address'Ref (Address is the only permissible prefix) is
+      --  equivalent to System'To_Address, provided for compatibility with
+      --  other compilers.
+
       ------------------
       -- Storage_Unit --
       ------------------
@@ -439,7 +448,7 @@ package Sem_Attr is
       ----------------
 
       Attribute_To_Address => True,
-      --  System'To_Address (Address is the only permissible prefix) is a
+      --  System'To_Address (System is the only permissible prefix) is a
       --  function that takes any integer value, and converts it into an
       --  address value. The semantics is to first convert the integer value to
       --  type Integer_Address according to normal conversion rules, and then

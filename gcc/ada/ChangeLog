@@ -1,3 +1,11 @@
+2010-10-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_rm.texi, exp_attr.adb, sem_attr.adb, sem_attr.ads,
+	snames.ads-tmpl (Analyze_Attribute, Expand_N_Attribute_Reference): Add
+	handling of Attribute_Ref. Add missing blanks in some error messages.
+	(Attribute_Ref, Name_Ref): Declare.
+	Document 'Ref attribute.
+
 2010-10-11  Robert Dewar  <dewar@adacore.com>
 
 	* sem_attr.adb: Minor reformatting.
