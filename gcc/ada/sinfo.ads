@@ -2102,6 +2102,9 @@ package Sinfo is
       --  Discriminant_Specifications (List4) (set to No_List if none)
       --  Type_Definition (Node3)
       --  Discr_Check_Funcs_Built (Flag11-Sem)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       ----------------------------
       -- 3.2.1  Type Definition --
@@ -2130,6 +2133,9 @@ package Sinfo is
       --  Subtype_Indication (Node5)
       --  Generic_Parent_Type (Node4-Sem) (set for an actual derived type).
       --  Exception_Junk (Flag8-Sem)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       -------------------------------
       -- 3.2.2  Subtype Indication --
@@ -2260,6 +2266,9 @@ package Sinfo is
       --  Exception_Junk (Flag8-Sem)
       --  Is_Subprogram_Descriptor (Flag16-Sem)
       --  Has_Init_Expression (Flag14)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       -------------------------------------
       -- 3.3.1  Defining Identifier List --
@@ -2832,6 +2841,9 @@ package Sinfo is
       --  Expression (Node3) (set to Empty if no default expression)
       --  More_Ids (Flag5) (set to False if no more identifiers in list)
       --  Prev_Ids (Flag6) (set to False if no previous identifiers in list)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       -------------------------
       -- 3.8.1  Variant Part --
@@ -4185,6 +4197,9 @@ package Sinfo is
       --  Body_To_Inline (Node3-Sem)
       --  Corresponding_Body (Node5-Sem)
       --  Parent_Spec (Node4-Sem)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       ------------------------------------------
       -- 6.1  Abstract Subprogram Declaration --
@@ -4196,6 +4211,9 @@ package Sinfo is
       --  N_Abstract_Subprogram_Declaration
       --  Sloc points to ABSTRACT
       --  Specification (Node1)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       -----------------------------------
       -- 6.1  Subprogram Specification --
@@ -4586,9 +4604,12 @@ package Sinfo is
       --  By_Ref (Flag5-Sem)
 
       --  Note: Return_Statement_Entity points to an E_Return_Statement.
+
       --  Note that Return_Object_Declarations is a list containing the
       --  N_Object_Declaration -- see comment on this field above.
+
       --  The declared object will have Is_Return_Object = True.
+
       --  There is no such syntactic category as return_object_declaration
       --  in the RM. Return_Object_Declarations represents this portion of
       --  the syntax for EXTENDED_RETURN_STATEMENT:
@@ -4616,6 +4637,9 @@ package Sinfo is
       --  Corresponding_Body (Node5-Sem)
       --  Parent_Spec (Node4-Sem)
       --  Activation_Chain_Entity (Node3-Sem)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       --------------------------------
       -- 7.1  Package Specification --
@@ -4682,6 +4706,9 @@ package Sinfo is
       --  Abstract_Present (Flag4)
       --  Tagged_Present (Flag15)
       --  Limited_Present (Flag17)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       ----------------------------------------
       -- 7.4  Private Extension Declaration --
@@ -4707,6 +4734,9 @@ package Sinfo is
       --  Synchronized_Present (Flag7)
       --  Subtype_Indication (Node5)
       --  Interface_List (List2) (set to No_List if none)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       ---------------------
       -- 8.4  Use Clause --
@@ -4864,6 +4894,9 @@ package Sinfo is
       --  Interface_List (List2) (set to No_List if none)
       --  Task_Definition (Node3) (set to Empty if not present)
       --  Corresponding_Body (Node5-Sem)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       ----------------------------------
       -- 9.1  Single Task Declaration --
@@ -4878,6 +4911,9 @@ package Sinfo is
       --  Defining_Identifier (Node1)
       --  Interface_List (List2) (set to No_List if none)
       --  Task_Definition (Node3) (set to Empty if not present)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       --------------------------
       -- 9.1  Task Definition --
@@ -4950,6 +4986,9 @@ package Sinfo is
       --  Interface_List (List2) (set to No_List if none)
       --  Protected_Definition (Node3)
       --  Corresponding_Body (Node5-Sem)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       ---------------------------------------
       -- 9.4  Single Protected Declaration --
@@ -4966,6 +5005,9 @@ package Sinfo is
       --  Defining_Identifier (Node1)
       --  Interface_List (List2) (set to No_List if none)
       --  Protected_Definition (Node3)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       -------------------------------
       -- 9.4  Protected Definition --
@@ -5048,8 +5090,10 @@ package Sinfo is
       --  Corresponding_Body (Node5-Sem)
       --  Must_Override (Flag14) set if overriding indicator present
       --  Must_Not_Override (Flag15) set if not_overriding indicator present
+      --  Has_Aspect_Specifications (Flag3)
 
       --  Note: overriding indicator is an Ada 2005 feature
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       -----------------------------
       -- 9.5.2  Accept statement --
@@ -5713,6 +5757,9 @@ package Sinfo is
       --  Renaming_Exception (Node2-Sem)
       --  More_Ids (Flag5) (set to False if no more identifiers in list)
       --  Prev_Ids (Flag6) (set to False if no previous identifiers in list)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       ------------------------------------------
       -- 11.2  Handled Sequence Of Statements --
@@ -5861,6 +5908,9 @@ package Sinfo is
       --  Corresponding_Body (Node5-Sem)
       --  Generic_Formal_Declarations (List2) from generic formal part
       --  Parent_Spec (Node4-Sem)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       ---------------------------------------
       -- 12.1  Generic Package Declaration --
@@ -5882,6 +5932,9 @@ package Sinfo is
       --  Generic_Formal_Declarations (List2) from generic formal part
       --  Parent_Spec (Node4-Sem)
       --  Activation_Chain_Entity (Node3-Sem)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       -------------------------------
       -- 12.1  Generic Formal Part --
@@ -5923,6 +5976,7 @@ package Sinfo is
       --  Parent_Spec (Node4-Sem)
       --  Instance_Spec (Node5-Sem)
       --  ABE_Is_Certain (Flag18-Sem)
+      --  Has_Aspect_Specifications (Flag3)
 
       --  N_Procedure_Instantiation
       --  Sloc points to PROCEDURE
@@ -5935,6 +5989,7 @@ package Sinfo is
       --  Must_Override (Flag14) set if overriding indicator present
       --  Must_Not_Override (Flag15) set if not_overriding indicator present
       --  ABE_Is_Certain (Flag18-Sem)
+      --  Has_Aspect_Specifications (Flag3)
 
       --  N_Function_Instantiation
       --  Sloc points to FUNCTION
@@ -5947,8 +6002,10 @@ package Sinfo is
       --  Must_Override (Flag14) set if overriding indicator present
       --  Must_Not_Override (Flag15) set if not_overriding indicator present
       --  ABE_Is_Certain (Flag18-Sem)
+      --  Has_Aspect_Specifications (Flag3)
 
       --  Note: overriding indicator is an Ada 2005 feature
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       -------------------------------
       -- 12.3  Generic Actual Part --
@@ -6019,6 +6076,9 @@ package Sinfo is
       --  Default_Expression (Node5) (set to Empty if no default expression)
       --  More_Ids (Flag5) (set to False if no more identifiers in list)
       --  Prev_Ids (Flag6) (set to False if no previous identifiers in list)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       -----------------------------------
       -- 12.5  Formal Type Declaration --
@@ -6035,6 +6095,9 @@ package Sinfo is
       --  Discriminant_Specifications (List4) (set to No_List if no
       --   discriminant part)
       --  Unknown_Discriminants_Present (Flag13) set if (<>) discriminant
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       ----------------------------------
       -- 12.5  Formal type definition --
@@ -6180,9 +6243,12 @@ package Sinfo is
       --  Specification (Node1)
       --  Default_Name (Node2) (set to Empty if no subprogram default)
       --  Box_Present (Flag15)
+      --  Has_Aspect_Specifications (Flag3)
 
       --  Note: if no subprogram default is present, then Name is set
       --  to Empty, and Box_Present is False.
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       --------------------------------------------------
       -- 12.6  Formal Abstract Subprogram Declaration --
@@ -6196,9 +6262,12 @@ package Sinfo is
       --  Specification (Node1)
       --  Default_Name (Node2) (set to Empty if no subprogram default)
       --  Box_Present (Flag15)
+      --  Has_Aspect_Specifications (Flag3)
 
       --  Note: if no subprogram default is present, then Name is set
       --  to Empty, and Box_Present is False.
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       ------------------------------
       -- 12.6  Subprogram Default --
@@ -6236,6 +6305,9 @@ package Sinfo is
       --  Box_Present (Flag15)
       --  Instance_Spec (Node5-Sem)
       --  ABE_Is_Certain (Flag18-Sem)
+      --  Has_Aspect_Specifications (Flag3)
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       --------------------------------------
       -- 12.7  Formal Package Actual Part --
@@ -6324,6 +6396,32 @@ package Sinfo is
       --  From_At_Mod (Flag4-Sem)
       --  Check_Address_Alignment (Flag11-Sem)
       --  Address_Warning_Posted (Flag18-Sem)
+
+      ----------------------------------
+      -- 13.3.1  Aspect Specification --
+      ----------------------------------
+
+      --  ASPECT_SPECIFICATION ::=
+      --    with ASPECT_MARK [=> ASPECT_DEFINITION] {.
+      --         ASPECT_MARK [=> ASPECT_DEFINITION] }
+
+      --  ASPECT_MARK ::= aspect_IDENTIFIER['Class]
+
+      --  ASPECT_DEFINITION ::= NAME | EXPRESSION
+
+      --  See separate section "Handling of Aspect Specifications" for details
+      --  on the incorporation of these nodes into the tree, and association
+      --  with the related declaration node.
+
+      --  N_Aspect_Specification
+      --  Sloc points to aspect identifier
+      --  Identifier (Node1) aspect identifier
+      --  Expression (Node3) Aspect_Definition (set to Empty if none)
+      --  First_Aspect (Flag4) Set for first aspect for a declaration
+      --  Last_Aspect (Flag5) Set for last aspect for a declaration
+      --  Class_Present (Flag6) Set if 'Class present
+
+      --  Note: Aspect_Specification is an Ada 2012 feature
 
       ---------------------------------------------
       -- 13.4  Enumeration representation clause --
@@ -7180,6 +7278,7 @@ package Sinfo is
       N_Enumeration_Representation_Clause,
       N_Mod_Clause,
       N_Record_Representation_Clause,
+      N_Aspect_Specification,
 
       --  N_Representation_Clause, N_Has_Chars
 
@@ -7849,6 +7948,9 @@ package Sinfo is
    function Choices
      (N : Node_Id) return List_Id;    -- List1
 
+   function Class_Present
+     (N : Node_Id) return Boolean;    -- Flag6
+
    function Coextensions
       (N : Node_Id) return Elist_Id;  -- Elist4
 
@@ -8095,6 +8197,9 @@ package Sinfo is
    function Expressions
      (N : Node_Id) return List_Id;    -- List1
 
+   function First_Aspect
+     (N : Node_Id) return Boolean;    -- Flag4
+
    function First_Bit
      (N : Node_Id) return Node_Id;    -- Node3
 
@@ -8148,6 +8253,9 @@ package Sinfo is
 
    function Handler_List_Entry
      (N : Node_Id) return Node_Id;    -- Node2
+
+   function Has_Aspect_Specifications
+     (N : Node_Id) return Boolean;    -- Flag3
 
    function Has_Created_Identifier
      (N : Node_Id) return Boolean;    -- Flag15
@@ -8307,6 +8415,9 @@ package Sinfo is
 
    function Left_Opnd
      (N : Node_Id) return Node_Id;    -- Node2
+
+   function Last_Aspect
+     (N : Node_Id) return Boolean;    -- Flag5
 
    function Last_Bit
      (N : Node_Id) return Node_Id;    -- Node4
@@ -8731,6 +8842,9 @@ package Sinfo is
    procedure Set_Array_Aggregate
      (N : Node_Id; Val : Node_Id);            -- Node3
 
+   procedure Set_Has_Aspect_Specifications
+     (N : Node_Id; Val : Boolean := True);    -- Flag3
+
    procedure Set_Assignment_OK
      (N : Node_Id; Val : Boolean := True);    -- Flag15
 
@@ -8776,11 +8890,14 @@ package Sinfo is
    procedure Set_Choice_Parameter
      (N : Node_Id; Val : Node_Id);            -- Node2
 
-   procedure Set_Coextensions
-     (N : Node_Id; Val : Elist_Id);           -- Elist4
-
    procedure Set_Choices
      (N : Node_Id; Val : List_Id);            -- List1
+
+   procedure Set_Class_Present
+     (N : Node_Id; Val : Boolean := True);    -- Flag6
+
+   procedure Set_Coextensions
+     (N : Node_Id; Val : Elist_Id);           -- Elist4
 
    procedure Set_Comes_From_Extended_Return_Statement
      (N : Node_Id; Val : Boolean := True);    -- Flag18
@@ -9022,6 +9139,9 @@ package Sinfo is
    procedure Set_Expressions
      (N : Node_Id; Val : List_Id);            -- List1
 
+   procedure Set_First_Aspect
+     (N : Node_Id; Val : Boolean := True);    -- Flag4
+
    procedure Set_First_Bit
      (N : Node_Id; Val : Node_Id);            -- Node3
 
@@ -9228,6 +9348,9 @@ package Sinfo is
 
    procedure Set_Kill_Range_Check
      (N : Node_Id; Val : Boolean := True);    -- Flag11
+
+   procedure Set_Last_Aspect
+     (N : Node_Id; Val : Boolean := True);    -- Flag5
 
    procedure Set_Last_Bit
      (N : Node_Id; Val : Node_Id);            -- Node4
@@ -11001,6 +11124,13 @@ package Sinfo is
         4 => False,   --  unused
         5 => False),  --  Next_Rep_Item (Node5-Sem)
 
+     N_Aspect_Specification =>
+       (1 => True,    --  Identifier (Node1)
+        2 => False,   --  unused
+        3 => True,    --  Expression (Node3)
+        4 => False,   --  unused
+        5 => False),  --  unused
+
      N_Enumeration_Representation_Clause =>
        (1 => True,    --  Identifier (Node1)
         2 => False,   --  unused
@@ -11232,8 +11362,6 @@ package Sinfo is
         4 => False,   --  unused
         5 => False),  --  unused
 
-   --  End of inserted output from makeisf program
-
    --  Entries for SCIL nodes
 
      N_SCIL_Dispatch_Table_Tag_Init =>
@@ -11289,6 +11417,45 @@ package Sinfo is
         4 => False,   --  unused
         5 => False)); --  unused
 
+   ---------------------------------------
+   -- Handling of Aspect Specifications --
+   ---------------------------------------
+
+   --  Several kinds of declaration node permit aspect specifications in Ada
+   --  2012 mode. If there was room in all these declaration nodes, we could
+   --  just have a field Aspect_Specifications pointing to a list of nodes
+   --  for the aspects (N_Aspect_Specification nodes). But there isn't room,
+   --  so we adopt a different approach.
+
+   --  The following subprograms provide access to a specialized interface
+   --  implemented internally with a hash table in the body, that provides
+   --  access to aspect specifications.
+
+   function Permits_Aspect_Specifications (N : Node_Id) return Boolean;
+   --  Returns True if the node N is a declaration node that permits aspect
+   --  specifications. All such nodes have the Has_Aspect_Specifications
+   --  flag defined. Returns False for all other nodes.
+
+   function Aspect_Specifications (N : Node_Id) return List_Id;
+   --  Given a node N, returns the list of N_Aspect_Specification nodes that
+   --  are attached to this declaration node. If the node is in the class of
+   --  declaration nodes that permit aspect specifications, as defined by the
+   --  predicate above, and if their Has_Aspect_Specifications flag is set to
+   --  True, then this will always be a non-empty list. If this flag is set to
+   --  False, or the node is not in the declaration class permitting aspect
+   --  specifications, then No_List is returned.
+
+   procedure Set_Aspect_Specifications (N : Node_Id; L : List_Id);
+   --  The node N must be in the class of declaration nodes that permit aspect
+   --  specifications and the Has_Aspect_Specifications flag must be False on
+   --  entry. L must be a non-empty list of N_Aspect_Specification nodes. This
+   --  procedure sets the Has_Aspect_Specifications flag to True, and makes an
+   --  entry that can be retrieved by a subsequent Aspect_Specifications call.
+   --  The parent of list L is set to reference the declaration node N. It is
+   --  an error to call this procedure with a node that does not permit aspect
+   --  specifications, or a node that has its Has_Aspect_Specifications flag
+   --  set True on entry, or with L being an empty list or No_List.
+
    --------------------
    -- Inline Pragmas --
    --------------------
@@ -11330,6 +11497,7 @@ package Sinfo is
    pragma Inline (Check_Address_Alignment);
    pragma Inline (Choice_Parameter);
    pragma Inline (Choices);
+   pragma Inline (Class_Present);
    pragma Inline (Coextensions);
    pragma Inline (Comes_From_Extended_Return_Statement);
    pragma Inline (Compile_Time_Known_Aggregate);
@@ -11412,6 +11580,7 @@ package Sinfo is
    pragma Inline (Explicit_Generic_Actual_Parameter);
    pragma Inline (Expression);
    pragma Inline (Expressions);
+   pragma Inline (First_Aspect);
    pragma Inline (First_Bit);
    pragma Inline (First_Inlined_Subprogram);
    pragma Inline (First_Name);
@@ -11430,6 +11599,7 @@ package Sinfo is
    pragma Inline (Generic_Parent_Type);
    pragma Inline (Handled_Statement_Sequence);
    pragma Inline (Handler_List_Entry);
+   pragma Inline (Has_Aspect_Specifications);
    pragma Inline (Has_Created_Identifier);
    pragma Inline (Has_Dynamic_Length_Check);
    pragma Inline (Has_Dynamic_Range_Check);
@@ -11481,6 +11651,7 @@ package Sinfo is
    pragma Inline (Iteration_Scheme);
    pragma Inline (Itype);
    pragma Inline (Kill_Range_Check);
+   pragma Inline (Last_Aspect);
    pragma Inline (Last_Bit);
    pragma Inline (Last_Name);
    pragma Inline (Library_Unit);
@@ -11637,6 +11808,7 @@ package Sinfo is
    pragma Inline (Set_Check_Address_Alignment);
    pragma Inline (Set_Choice_Parameter);
    pragma Inline (Set_Choices);
+   pragma Inline (Set_Class_Present);
    pragma Inline (Set_Coextensions);
    pragma Inline (Set_Comes_From_Extended_Return_Statement);
    pragma Inline (Set_Compile_Time_Known_Aggregate);
@@ -11718,6 +11890,7 @@ package Sinfo is
    pragma Inline (Set_Explicit_Generic_Actual_Parameter);
    pragma Inline (Set_Expression);
    pragma Inline (Set_Expressions);
+   pragma Inline (Set_First_Aspect);
    pragma Inline (Set_First_Bit);
    pragma Inline (Set_First_Inlined_Subprogram);
    pragma Inline (Set_First_Name);
@@ -11736,6 +11909,7 @@ package Sinfo is
    pragma Inline (Set_Generic_Parent_Type);
    pragma Inline (Set_Handled_Statement_Sequence);
    pragma Inline (Set_Handler_List_Entry);
+   pragma Inline (Set_Has_Aspect_Specifications);
    pragma Inline (Set_Has_Created_Identifier);
    pragma Inline (Set_Has_Dynamic_Length_Check);
    pragma Inline (Set_Has_Init_Expression);
@@ -11787,6 +11961,7 @@ package Sinfo is
    pragma Inline (Set_Iteration_Scheme);
    pragma Inline (Set_Itype);
    pragma Inline (Set_Kill_Range_Check);
+   pragma Inline (Set_Last_Aspect);
    pragma Inline (Set_Last_Bit);
    pragma Inline (Set_Last_Name);
    pragma Inline (Set_Library_Unit);

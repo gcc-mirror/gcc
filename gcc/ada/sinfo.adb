@@ -32,7 +32,10 @@
 pragma Style_Checks (All_Checks);
 --  No subprogram ordering check, due to logical grouping
 
-with Atree; use Atree;
+with Atree;  use Atree;
+with Nlists; use Nlists;
+
+with System.HTable;
 
 package body Sinfo is
 
@@ -52,6 +55,30 @@ package body Sinfo is
 
    NT : Nodes.Table_Ptr renames Nodes.Table;
    --  A short hand abbreviation, useful for the debugging checks
+
+   ------------------------------------------
+   -- Hash Table for Aspect Specifications --
+   ------------------------------------------
+
+   type Hash_Range is range 0 .. 510;
+   --  Size of hash table headers
+
+   function AS_Hash (F : Node_Id) return Hash_Range;
+   --  Hash function for hash table
+
+   function AS_Hash (F : Node_Id) return Hash_Range is
+   begin
+      return Hash_Range (F mod 511);
+   end AS_Hash;
+
+   package Aspect_Specifications_Hash_Table is new
+     System.HTable.Simple_HTable
+       (Header_Num => Hash_Range,
+        Element    => List_Id,
+        No_Element => No_List,
+        Key        => Node_Id,
+        Hash       => AS_Hash,
+        Equal      => "=");
 
    ----------------------------
    -- Field Access Functions --
@@ -391,6 +418,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Component_Association);
       return List1 (N);
    end Choices;
+
+   function Class_Present
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification);
+      return Flag6 (N);
+   end Class_Present;
 
    function Coextensions
       (N : Node_Id) return Elist_Id is
@@ -1171,6 +1206,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Allocator
+        or else NT (N).Nkind = N_Aspect_Specification
         or else NT (N).Nkind = N_Assignment_Statement
         or else NT (N).Nkind = N_At_Clause
         or else NT (N).Nkind = N_Attribute_Definition_Clause
@@ -1214,6 +1250,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Indexed_Component);
       return List1 (N);
    end Expressions;
+
+   function First_Aspect
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification);
+      return Flag4 (N);
+   end First_Aspect;
 
    function First_Bit
       (N : Node_Id) return Node_Id is
@@ -1373,6 +1417,13 @@ package body Sinfo is
       return Node2 (N);
    end Handler_List_Entry;
 
+   function Has_Aspect_Specifications
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (Permits_Aspect_Specifications (N));
+      return Flag3 (N);
+   end Has_Aspect_Specifications;
+
    function Has_Created_Identifier
       (N : Node_Id) return Boolean is
    begin
@@ -1387,7 +1438,6 @@ package body Sinfo is
    begin
       return Flag10 (N);
    end Has_Dynamic_Length_Check;
-
    function Has_Dynamic_Range_Check
       (N : Node_Id) return Boolean is
    begin
@@ -1521,6 +1571,7 @@ package body Sinfo is
       (N : Node_Id) return Node_Id is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification
         or else NT (N).Nkind = N_At_Clause
         or else NT (N).Nkind = N_Block_Statement
         or else NT (N).Nkind = N_Designator
@@ -1817,6 +1868,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Implicit_Label_Declaration);
       return Node2 (N);
    end Label_Construct;
+
+   function Last_Aspect
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification);
+      return Flag5 (N);
+   end Last_Aspect;
 
    function Last_Bit
       (N : Node_Id) return Node_Id is
@@ -3307,6 +3366,14 @@ package body Sinfo is
       Set_List1_With_Parent (N, Val);
    end Set_Choices;
 
+   procedure Set_Class_Present
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification);
+      Set_Flag6 (N, Val);
+   end Set_Class_Present;
+
    procedure Set_Coextensions
       (N : Node_Id; Val : Elist_Id) is
    begin
@@ -4077,6 +4144,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Allocator
+        or else NT (N).Nkind = N_Aspect_Specification
         or else NT (N).Nkind = N_Assignment_Statement
         or else NT (N).Nkind = N_At_Clause
         or else NT (N).Nkind = N_Attribute_Definition_Clause
@@ -4120,6 +4188,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Indexed_Component);
       Set_List1_With_Parent (N, Val);
    end Set_Expressions;
+
+   procedure Set_First_Aspect
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification);
+      Set_Flag4 (N, Val);
+   end Set_First_Aspect;
 
    procedure Set_First_Bit
       (N : Node_Id; Val : Node_Id) is
@@ -4279,6 +4355,13 @@ package body Sinfo is
       Set_Node2 (N, Val);
    end Set_Handler_List_Entry;
 
+   procedure Set_Has_Aspect_Specifications
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (Permits_Aspect_Specifications (N));
+      Set_Flag3 (N, Val);
+   end Set_Has_Aspect_Specifications;
+
    procedure Set_Has_Created_Identifier
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -4427,6 +4510,7 @@ package body Sinfo is
       (N : Node_Id; Val : Node_Id) is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification
         or else NT (N).Nkind = N_At_Clause
         or else NT (N).Nkind = N_Block_Statement
         or else NT (N).Nkind = N_Designator
@@ -4731,6 +4815,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Component_Clause);
       Set_Node4_With_Parent (N, Val);
    end Set_Last_Bit;
+
+   procedure Set_Last_Aspect
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification);
+      Set_Flag5 (N, Val);
+   end Set_Last_Aspect;
 
    procedure Set_Last_Name
       (N : Node_Id; Val : Boolean := True) is
@@ -6070,5 +6162,66 @@ package body Sinfo is
    begin
       return Chars (Pragma_Identifier (N));
    end Pragma_Name;
+
+   -----------------------------------
+   -- Permits_Aspect_Specifications --
+   -----------------------------------
+
+   Has_Aspect_Specifications_Flag : constant array (Node_Kind) of Boolean :=
+     (N_Abstract_Subprogram_Declaration        => True,
+      N_Component_Declaration                  => True,
+      N_Entry_Declaration                      => True,
+      N_Exception_Declaration                  => True,
+      N_Formal_Abstract_Subprogram_Declaration => True,
+      N_Formal_Concrete_Subprogram_Declaration => True,
+      N_Formal_Object_Declaration              => True,
+      N_Formal_Package_Declaration             => True,
+      N_Formal_Type_Declaration                => True,
+      N_Full_Type_Declaration                  => True,
+      N_Function_Instantiation                 => True,
+      N_Generic_Package_Declaration            => True,
+      N_Generic_Subprogram_Declaration         => True,
+      N_Object_Declaration                     => True,
+      N_Package_Declaration                    => True,
+      N_Package_Instantiation                  => True,
+      N_Private_Extension_Declaration          => True,
+      N_Private_Type_Declaration               => True,
+      N_Procedure_Instantiation                => True,
+      N_Protected_Type_Declaration             => True,
+      N_Single_Protected_Declaration           => True,
+      N_Single_Task_Declaration                => True,
+      N_Subprogram_Declaration                 => True,
+      N_Subtype_Declaration                    => True,
+      N_Task_Type_Declaration                  => True,
+      others                                   => False);
+
+   function Permits_Aspect_Specifications (N : Node_Id) return Boolean is
+   begin
+      return Has_Aspect_Specifications_Flag (Nkind (N));
+   end Permits_Aspect_Specifications;
+
+   ---------------------------
+   -- Aspect_Specifications --
+   ---------------------------
+
+   function Aspect_Specifications (N : Node_Id) return List_Id is
+   begin
+      return Aspect_Specifications_Hash_Table.Get (N);
+   end Aspect_Specifications;
+
+   -------------------------------
+   -- Set_Aspect_Specifications --
+   -------------------------------
+
+   procedure Set_Aspect_Specifications (N : Node_Id; L : List_Id) is
+   begin
+      pragma Assert (Permits_Aspect_Specifications (N));
+      pragma Assert (not Has_Aspect_Specifications (N));
+      pragma Assert (L /= No_List);
+
+      Set_Has_Aspect_Specifications (N);
+      Set_Parent (L, N);
+      Aspect_Specifications_Hash_Table.Set (N, L);
+   end Set_Aspect_Specifications;
 
 end Sinfo;

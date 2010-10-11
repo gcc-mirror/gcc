@@ -1099,6 +1099,7 @@ package body Treepr is
             when F_Field5 =>
                Field_To_Be_Printed := Field5 (N) /= Union_Id (Empty);
 
+            when F_Flag3  => Field_To_Be_Printed := Flag3  (N);
             when F_Flag4  => Field_To_Be_Printed := Flag4  (N);
             when F_Flag5  => Field_To_Be_Printed := Flag5  (N);
             when F_Flag6  => Field_To_Be_Printed := Flag6  (N);
@@ -1115,12 +1116,10 @@ package body Treepr is
             when F_Flag17 => Field_To_Be_Printed := Flag17 (N);
             when F_Flag18 => Field_To_Be_Printed := Flag18 (N);
 
-            --  Flag1,2,3 are no longer used
+            --  Flag1,2 are no longer used
 
             when F_Flag1  => raise Program_Error;
             when F_Flag2  => raise Program_Error;
-            when F_Flag3  => raise Program_Error;
-
          end case;
 
          --  Print field if it is to be printed

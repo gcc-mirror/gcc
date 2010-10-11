@@ -999,12 +999,8 @@ package body Sprint is
             Write_Str_Sloc (" and then ");
             Sprint_Right_Opnd (Node);
 
-         when N_At_Clause =>
-            Write_Indent_Str_Sloc ("for ");
-            Write_Id (Identifier (Node));
-            Write_Str_With_Col_Check (" use at ");
-            Sprint_Node (Expression (Node));
-            Write_Char (';');
+         when N_Aspect_Specification =>
+            raise Program_Error;
 
          when N_Assignment_Statement =>
             Write_Indent;
@@ -1025,6 +1021,13 @@ package body Sprint is
             Write_Indent_Str ("then ");
             Sprint_Node (Abortable_Part (Node));
             Write_Indent_Str ("end select;");
+
+         when N_At_Clause =>
+            Write_Indent_Str_Sloc ("for ");
+            Write_Id (Identifier (Node));
+            Write_Str_With_Col_Check (" use at ");
+            Sprint_Node (Expression (Node));
+            Write_Char (';');
 
          when N_Attribute_Definition_Clause =>
             Write_Indent_Str_Sloc ("for ");

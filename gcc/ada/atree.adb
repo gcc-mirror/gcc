@@ -2704,6 +2704,12 @@ package body Atree is
          return From_Union (Nodes.Table (N + 3).Field8);
       end Ureal21;
 
+      function Flag3 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (N <= Nodes.Last);
+         return Nodes.Table (N).Flag3;
+      end Flag3;
+
       function Flag4 (N : Node_Id) return Boolean is
       begin
          pragma Assert (N <= Nodes.Last);
@@ -2803,7 +2809,7 @@ package body Atree is
       function Flag20 (N : Node_Id) return Boolean is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         return Nodes.Table (N + 1).Unused_1;
+         return Nodes.Table (N + 1).Flag3;
       end Flag20;
 
       function Flag21 (N : Node_Id) return Boolean is
@@ -2929,7 +2935,7 @@ package body Atree is
       function Flag41 (N : Node_Id) return Boolean is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         return Nodes.Table (N + 2).Unused_1;
+         return Nodes.Table (N + 2).Flag3;
       end Flag41;
 
       function Flag42 (N : Node_Id) return Boolean is
@@ -3463,7 +3469,7 @@ package body Atree is
       function Flag130 (N : Node_Id) return Boolean is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         return Nodes.Table (N + 3).Unused_1;
+         return Nodes.Table (N + 3).Flag3;
       end Flag130;
 
       function Flag131 (N : Node_Id) return Boolean is
@@ -3985,7 +3991,7 @@ package body Atree is
       function Flag217 (N : Node_Id) return Boolean is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         return Nodes.Table (N + 4).Unused_1;
+         return Nodes.Table (N + 4).Flag3;
       end Flag217;
 
       function Flag218 (N : Node_Id) return Boolean is
@@ -4806,6 +4812,12 @@ package body Atree is
          Nodes.Table (N + 3).Field8 := To_Union (Val);
       end Set_Ureal21;
 
+      procedure Set_Flag3 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (N <= Nodes.Last);
+         Nodes.Table (N).Flag3 := Val;
+      end Set_Flag3;
+
       procedure Set_Flag4 (N : Node_Id; Val : Boolean) is
       begin
          pragma Assert (N <= Nodes.Last);
@@ -4905,7 +4917,7 @@ package body Atree is
       procedure Set_Flag20 (N : Node_Id; Val : Boolean) is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         Nodes.Table (N + 1).Unused_1 := Val;
+         Nodes.Table (N + 1).Flag3 := Val;
       end Set_Flag20;
 
       procedure Set_Flag21 (N : Node_Id; Val : Boolean) is
@@ -5031,7 +5043,7 @@ package body Atree is
       procedure Set_Flag41 (N : Node_Id; Val : Boolean) is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         Nodes.Table (N + 2).Unused_1 := Val;
+         Nodes.Table (N + 2).Flag3 := Val;
       end Set_Flag41;
 
       procedure Set_Flag42 (N : Node_Id; Val : Boolean) is
@@ -5693,7 +5705,7 @@ package body Atree is
       procedure Set_Flag130 (N : Node_Id; Val : Boolean) is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         Nodes.Table (N + 3).Unused_1 := Val;
+         Nodes.Table (N + 3).Flag3 := Val;
       end Set_Flag130;
 
       procedure Set_Flag131 (N : Node_Id; Val : Boolean) is
@@ -6343,7 +6355,7 @@ package body Atree is
       procedure Set_Flag217 (N : Node_Id; Val : Boolean) is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         Nodes.Table (N + 4).Unused_1 := Val;
+         Nodes.Table (N + 4).Flag3 := Val;
       end Set_Flag217;
 
       procedure Set_Flag218 (N : Node_Id; Val : Boolean) is
