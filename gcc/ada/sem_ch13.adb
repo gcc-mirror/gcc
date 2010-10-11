@@ -2404,7 +2404,7 @@ package body Sem_Ch13 is
       --  also used to locate primitives covering interfaces when processing
       --  generics (see Derive_Subprograms).
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Ekind (E) = E_Record_Type
         and then Is_Tagged_Type (E)
         and then not Is_Interface (E)

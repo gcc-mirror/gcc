@@ -335,7 +335,7 @@ package body Ch12 is
       --  Ada2005: an association can be given by: others => <>
 
       if Token = Tok_Others then
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             Error_Msg_SP
               ("partial parametrization of formal packages" &
                 " is an Ada 2005 extension");
@@ -463,7 +463,7 @@ package body Ch12 is
             Set_Access_Definition (Decl_Node,
               P_Access_Definition (Not_Null_Present));
 
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                Error_Msg_SP
                  ("access definition not allowed in formal object " &
                   "declaration");
@@ -856,7 +856,7 @@ package body Ch12 is
          Set_Limited_Present (Def_Node);
          Scan;  --  past LIMITED
 
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             Error_Msg_SP
               ("LIMITED in derived type is an Ada 2005 extension");
             Error_Msg_SP
@@ -867,7 +867,7 @@ package body Ch12 is
          Set_Synchronized_Present (Def_Node);
          Scan;  --  past SYNCHRONIZED
 
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             Error_Msg_SP
               ("SYNCHRONIZED in derived type is an Ada 2005 extension");
             Error_Msg_SP
@@ -888,7 +888,7 @@ package body Ch12 is
       if Token = Tok_And then
          Scan; -- past AND
 
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             Error_Msg_SP
               ("abstract interface is an Ada 2005 extension");
             Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
@@ -1108,7 +1108,7 @@ package body Ch12 is
               New_Node (N_Formal_Abstract_Subprogram_Declaration, Prev_Sloc);
             Scan; -- past ABSTRACT
 
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                Error_Msg_SP
                  ("formal abstract subprograms are an Ada 2005 extension");
                Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
@@ -1130,7 +1130,7 @@ package body Ch12 is
             T_Semicolon;
 
          elsif Token = Tok_Null then
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                Error_Msg_SP
                  ("null default subprograms are an Ada 2005 extension");
                Error_Msg_SP ("\unit must be compiled with -gnat05 switch");

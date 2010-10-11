@@ -6058,14 +6058,14 @@ package body Sem_Util is
             --  (despite the fact that 3.10.2(26/2) and 8.5.1(5/2) are
             --  semantic rules -- these rules are acknowledged to need fixing).
 
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                if Is_Access_Type (Prefix_Type)
                  or else Nkind (P) = N_Explicit_Dereference
                then
                   return False;
                end if;
 
-            elsif Ada_Version >= Ada_05 then
+            elsif Ada_Version >= Ada_2005 then
                if Is_Access_Type (Prefix_Type) then
 
                   --  If the access type is pool-specific, and there is no
@@ -6105,7 +6105,7 @@ package body Sem_Util is
 
               and then (Is_Declared_Within_Variant (Comp)
                           or else Has_Discriminant_Dependent_Constraint (Comp))
-              and then (not P_Aliased or else Ada_Version >= Ada_05)
+              and then (not P_Aliased or else Ada_Version >= Ada_2005)
             then
                return True;
 
@@ -6934,7 +6934,7 @@ package body Sem_Util is
       --  because they denote entities that are not necessarily visible.
       --  Neither of them can apply to a protected type.
 
-      return Ada_Version >= Ada_05
+      return Ada_Version >= Ada_2005
         and then Is_Entity_Name (N)
         and then Present (Entity (N))
         and then Is_Protected_Type (Entity (N))
@@ -8019,7 +8019,7 @@ package body Sem_Util is
       Formal : Entity_Id;
 
    begin
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Present (First_Formal (E))
       then
          Formal := Next_Formal (First_Formal (E));
@@ -9650,7 +9650,7 @@ package body Sem_Util is
          --  version of the code causes regressions in several tests that are
          --  compiled with -gnat95. ???)
 
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             if Is_Entity_Name (Name (Obj)) then
                return Subprogram_Access_Level (Entity (Name (Obj)));
             else

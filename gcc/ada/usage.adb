@@ -598,7 +598,7 @@ begin
 
    Write_Switch_Char ("05");
 
-   if Ada_Version_Default = Ada_05 then
+   if Ada_Version_Default = Ada_2005 then
       Write_Line ("Ada 2005 mode (default)");
    else
       Write_Line ("Enforce Ada 2005 restrictions");

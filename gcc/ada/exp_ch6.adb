@@ -1465,7 +1465,7 @@ package body Exp_Ch6 is
             --  functions that are treated as build-in-place to include other
             --  composite result types.
 
-            if Ada_Version >= Ada_05
+            if Ada_Version >= Ada_2005
               and then Is_Build_In_Place_Function_Call (Actual)
             then
                Make_Build_In_Place_Call_In_Anonymous_Context (Actual);
@@ -2027,7 +2027,7 @@ package body Exp_Ch6 is
       --  a conditional or timed select. Check whether the procedure call
       --  is a renaming of an entry and rewrite it as an entry call.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Nkind (N) = N_Procedure_Call_Statement
         and then
            ((Nkind (Parent (N)) = N_Triggering_Alternative
@@ -2364,7 +2364,7 @@ package body Exp_Ch6 is
          --  access parameter as an actual. Also, we currently don't enforce
          --  this check for expander-generated actuals and when -gnatdj is set.
 
-         if Ada_Version >= Ada_05 then
+         if Ada_Version >= Ada_2005 then
 
             --  Ada 2005 (AI-231): Check null-excluding access types. Note that
             --  the intent of 6.4.1(13) is that null-exclusion checks should
@@ -2382,7 +2382,7 @@ package body Exp_Ch6 is
                Install_Null_Excluding_Check (Prev);
             end if;
 
-         --  Ada_Version < Ada_05
+         --  Ada_Version < Ada_2005
 
          else
             if Ekind (Etype (Formal)) /= E_Anonymous_Access_Type
@@ -5751,7 +5751,7 @@ package body Exp_Ch6 is
 
       if not Comes_From_Extended_Return_Statement (N)
         and then Is_Immutably_Limited_Type (Etype (Expression (N)))
-        and then Ada_Version >= Ada_05
+        and then Ada_Version >= Ada_2005
         and then not Debug_Flag_Dot_L
       then
          declare
@@ -6049,7 +6049,7 @@ package body Exp_Ch6 is
       --  Note: accessibility check is skipped in the VM case, since there
       --  does not seem to be any practical way to implement this check.
 
-      elsif Ada_Version >= Ada_05
+      elsif Ada_Version >= Ada_2005
         and then Tagged_Type_Expansion
         and then Is_Class_Wide_Type (R_Type)
         and then not Scope_Suppress (Accessibility_Check)
@@ -6268,7 +6268,7 @@ package body Exp_Ch6 is
       --  and the type of the returned object is an interface then generate an
       --  implicit conversion to force displacement of the "this" pointer.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Comes_From_Extended_Return_Statement (N)
         and then Nkind (Expression (N)) = N_Identifier
         and then Is_Interface (Utyp)
@@ -6319,7 +6319,7 @@ package body Exp_Ch6 is
 
          else
             return Is_Immutably_Limited_Type (Etype (E))
-              and then Ada_Version >= Ada_05
+              and then Ada_Version >= Ada_2005
               and then not Debug_Flag_Dot_L;
          end if;
 

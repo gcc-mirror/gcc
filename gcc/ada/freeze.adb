@@ -1577,7 +1577,7 @@ package body Freeze is
          --  either a tagged type, or a limited record.
 
          if Is_Limited_Type (Rec_Type)
-           and then (Ada_Version < Ada_05 or else Is_Tagged_Type (Rec_Type))
+           and then (Ada_Version < Ada_2005 or else Is_Tagged_Type (Rec_Type))
          then
             return;
 
@@ -3829,12 +3829,12 @@ package body Freeze is
             --  error in Ada 2005 if there is no pool (see AI-366).
 
             if Is_Pure_Unit_Access_Type (E)
-              and then (Ada_Version < Ada_05
+              and then (Ada_Version < Ada_2005
                          or else not No_Pool_Assigned (E))
             then
                Error_Msg_N ("named access type not allowed in pure unit", E);
 
-               if Ada_Version >= Ada_05 then
+               if Ada_Version >= Ada_2005 then
                   Error_Msg_N
                     ("\would be legal if Storage_Size of 0 given?", E);
 

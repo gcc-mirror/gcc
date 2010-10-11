@@ -749,7 +749,7 @@ package body Sem_Prag is
 
       procedure Ada_2012_Pragma is
       begin
-         if Ada_Version <= Ada_05 then
+         if Ada_Version <= Ada_2005 then
             Check_Restriction (No_Implementation_Pragmas, N);
          end if;
       end Ada_2012_Pragma;
@@ -5412,7 +5412,7 @@ package body Sem_Prag is
             --  with Ada 83 or Ada 95, so we must check if we are in Ada 2005
             --  or Ada 2012 mode.
 
-            if Ada_Version >= Ada_05 then
+            if Ada_Version >= Ada_2005 then
                Check_Valid_Configuration_Pragma;
             end if;
 
@@ -5443,7 +5443,7 @@ package body Sem_Prag is
             --  However, we really cannot tolerate mixing Ada 2005 with Ada 83
             --  or Ada 95, so we must check if we are in Ada 2005 mode.
 
-            if Ada_Version >= Ada_05 then
+            if Ada_Version >= Ada_2005 then
                Check_Valid_Configuration_Pragma;
             end if;
 
@@ -5494,8 +5494,8 @@ package body Sem_Prag is
 
                --  Now set Ada 2005 mode
 
-               Ada_Version := Ada_05;
-               Ada_Version_Explicit := Ada_05;
+               Ada_Version := Ada_2005;
+               Ada_Version_Explicit := Ada_2005;
             end if;
          end;
 
@@ -10091,7 +10091,7 @@ package body Sem_Prag is
                              ("only allowed argument for pragma% is %", Argx);
                         end if;
 
-                        if Ada_Version_Explicit < Ada_05
+                        if Ada_Version_Explicit < Ada_2005
                           or else not Warn_On_Ada_2005_Compatibility
                         then
                            Active := False;
@@ -10687,7 +10687,7 @@ package body Sem_Prag is
             --  set to Ada_2012 in a predefined unit), we need to know the
             --  explicit version set to know if this pragma is active.
 
-            if Ada_Version_Explicit >= Ada_05 then
+            if Ada_Version_Explicit >= Ada_2005 then
                Ent := Find_Lib_Unit_Name;
                Set_Is_Preelaborated (Ent);
                Set_Suppress_Elaboration_Warnings (Ent);
@@ -11187,7 +11187,7 @@ package body Sem_Prag is
             --  set to Ada_2012 in a predefined unit), we need to know the
             --  explicit version set to know if this pragma is active.
 
-            if Ada_Version_Explicit >= Ada_05 then
+            if Ada_Version_Explicit >= Ada_2005 then
                Ent := Find_Lib_Unit_Name;
                Set_Is_Preelaborated (Ent, False);
                Set_Is_Pure (Ent);

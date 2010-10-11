@@ -321,7 +321,7 @@ package body Exp_CG is
                   end if;
                end loop;
 
-               if Ada_Version >= Ada_05 then
+               if Ada_Version >= Ada_2005 then
                   for J in Predef_Names_05'Range loop
                      Get_Name_String (Predef_Names_05 (J));
 

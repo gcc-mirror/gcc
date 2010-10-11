@@ -1058,7 +1058,7 @@ package body Switch.C is
                   Bad_Switch ("-gnat0" & Switch_Chars (Ptr .. Max));
                else
                   Ptr := Ptr + 1;
-                  Ada_Version := Ada_05;
+                  Ada_Version := Ada_2005;
                   Ada_Version_Explicit := Ada_Version;
                end if;
 
@@ -1086,7 +1086,7 @@ package body Switch.C is
                   Bad_Switch ("-gnat" & Switch_Chars (Ptr .. Max));
 
                elsif Switch_Chars (Ptr .. Ptr + 3) = "2005" then
-                  Ada_Version := Ada_05;
+                  Ada_Version := Ada_2005;
 
                elsif Switch_Chars (Ptr .. Ptr + 3) = "2012" then
                   Ada_Version := Ada_2012;

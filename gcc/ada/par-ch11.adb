@@ -198,7 +198,7 @@ package body Ch11 is
       end if;
 
       if Token = Tok_With then
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             Error_Msg_SC ("string expression in raise is Ada 2005 extension");
             Error_Msg_SC ("\unit must be compiled with -gnat05 switch");
          end if;

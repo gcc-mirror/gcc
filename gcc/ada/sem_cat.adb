@@ -398,7 +398,7 @@ package body Sem_Cat is
       --  currently visible.
 
       return Present (Rep_Item)
-        and then (Ada_Version < Ada_05
+        and then (Ada_Version < Ada_2005
                    or else At_Any_Place
                    or else not Is_Hidden (Entity (Rep_Item)));
    end Has_Stream_Attribute_Definition;
@@ -779,7 +779,7 @@ package body Sem_Cat is
 
             --  This test is skipped in Ada 2005 (see AI-366)
 
-            if Ada_Version < Ada_05
+            if Ada_Version < Ada_2005
               and then Comes_From_Source (T)
               and then In_Pure_Unit
               and then not In_Subprogram_Task_Protected_Unit
@@ -976,7 +976,7 @@ package body Sem_Cat is
       --  Don't need this check in Ada 2005 mode, where this is all taken
       --  care of by the mechanism for Preelaborable Initialization.
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          return;
       end if;
 
@@ -1157,7 +1157,7 @@ package body Sem_Cat is
                      --  marked with this pragma in the predefined library are
                      --  not treated specially.
 
-                     if Ada_Version < Ada_05 then
+                     if Ada_Version < Ada_2005 then
                         Error_Msg_N
                           ("private object not allowed in preelaborated unit",
                            N);
@@ -1190,7 +1190,7 @@ package body Sem_Cat is
                         then
                            Error_Msg_Sloc := Sloc (Ent);
 
-                           if Ada_Version >= Ada_05 then
+                           if Ada_Version >= Ada_2005 then
                               Error_Msg_NE
                                 ("\would be legal if pragma Preelaborable_" &
                                  "Initialization given for & #", N, Ent);
@@ -1609,7 +1609,7 @@ package body Sem_Cat is
                Base_Under_Type := Base_Type (Underlying_Type
                                               (Base_Param_Type));
 
-               if (Ada_Version < Ada_05
+               if (Ada_Version < Ada_2005
                      and then
                        (No (TSS (Base_Param_Type, TSS_Stream_Read))
                           or else
@@ -1619,7 +1619,7 @@ package body Sem_Cat is
                           or else
                         No (TSS (Base_Under_Type, TSS_Stream_Write))))
                  or else
-                   (Ada_Version >= Ada_05
+                   (Ada_Version >= Ada_2005
                       and then
                         (No (TSS (Base_Param_Type, TSS_Stream_Read))
                            or else
@@ -1639,7 +1639,7 @@ package body Sem_Cat is
                      Error_Node := Param_Spec;
                   end if;
 
-                  if Ada_Version >= Ada_05 then
+                  if Ada_Version >= Ada_2005 then
                      Error_Msg_N
                        ("limited parameter in 'R'C'I unit "
                           & "must have visible read/write attributes ",
@@ -2003,7 +2003,7 @@ package body Sem_Cat is
                      "non-remote access type", U_Typ);
                end if;
 
-               if Ada_Version >= Ada_05 then
+               if Ada_Version >= Ada_2005 then
                   Error_Msg_N
                     ("\must have visible Read and Write attribute " &
                      "definition clauses (RM E.2.2(8))", U_Typ);

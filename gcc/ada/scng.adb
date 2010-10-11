@@ -1062,7 +1062,7 @@ package body Scng is
                   --  but in Ada 2005, the set of characters allowed has been
                   --  restricted to graphic characters.
 
-                  if Ada_Version >= Ada_05
+                  if Ada_Version >= Ada_2005
                     and then Is_UTF_32_Non_Graphic (UTF_32 (Code))
                   then
                      Error_Msg
@@ -1690,7 +1690,7 @@ package body Scng is
                   --  literal, but in Ada 2005, the set of characters allowed
                   --  is restricted to graphic characters.
 
-                  elsif Ada_Version >= Ada_05
+                  elsif Ada_Version >= Ada_2005
                     and then Is_UTF_32_Non_Graphic (UTF_32 (Code))
                   then
                      Error_Msg -- CODEFIX????
@@ -2331,7 +2331,7 @@ package body Scng is
                      --  Wide characters are always allowed in Ada 2005
 
                      if Identifier_Character_Set /= 'w'
-                       and then Ada_Version < Ada_05
+                       and then Ada_Version < Ada_2005
                      then
                         Error_Msg
                           ("wide character not allowed in identifier", Wptr);

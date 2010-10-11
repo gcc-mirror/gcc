@@ -64,15 +64,14 @@ package Opt is
    --  GNATBIND, GNATLINK
    --  Set True if binder file to be generated in Ada rather than C
 
-   type Ada_Version_Type is (Ada_83, Ada_95, Ada_05, Ada_2012);
+   type Ada_Version_Type is (Ada_83, Ada_95, Ada_2005, Ada_2012);
    pragma Ordered (Ada_Version_Type);
    --  Versions of Ada for Ada_Version below. Note that these are ordered,
    --  so that tests like Ada_Version >= Ada_95 are legitimate and useful.
+   --  Think twice before using "="; Ada_Version >= Ada_2012 is more likely
+   --  what you want, because it will apply to future versions of the language.
 
-   Ada_2005 : Ada_Version_Type renames Ada_05;
-   --  Renaming with full name (preferred usage)
-
-   Ada_Version_Default : constant Ada_Version_Type := Ada_05;
+   Ada_Version_Default : constant Ada_Version_Type := Ada_2005;
    pragma Warnings (Off, Ada_Version_Default);
    --  GNAT
    --  Default Ada version if no switch given. The Warnings off is to kill

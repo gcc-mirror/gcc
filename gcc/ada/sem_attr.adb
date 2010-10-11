@@ -730,7 +730,7 @@ package body Sem_Attr is
                --  expression comes from source, e.g. when a single component
                --  association in an aggregate has a box association.
 
-               elsif Ada_Version >= Ada_05
+               elsif Ada_Version >= Ada_2005
                  and then OK_Self_Reference
                then
                   null;
@@ -1349,7 +1349,7 @@ package body Sem_Attr is
          --     S : constant Integer := X.all'Size;             -- ERROR
          --     procedure Q (Obj : Integer := X.all'Alignment); -- ERROR
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Nkind (P) = N_Explicit_Dereference
          then
             E := P;
@@ -1671,7 +1671,7 @@ package body Sem_Attr is
          if Is_Task_Type (Etype (P))
            or else (Is_Access_Type (Etype (P))
                       and then Is_Task_Type (Designated_Type (Etype (P))))
-           or else (Ada_Version >= Ada_05
+           or else (Ada_Version >= Ada_2005
                       and then Ekind (Etype (P)) = E_Class_Wide_Type
                       and then Is_Interface (Etype (P))
                       and then Is_Task_Interface (Etype (P)))
@@ -1679,7 +1679,7 @@ package body Sem_Attr is
             Resolve (P);
 
          else
-            if Ada_Version >= Ada_05 then
+            if Ada_Version >= Ada_2005 then
                Error_Attr_P
                  ("prefix of % attribute must be a task or a task " &
                   "interface class-wide object");
@@ -1979,7 +1979,7 @@ package body Sem_Attr is
       --  Ada 2005 (AI-345): Ensure that the compiler gives exactly the current
       --  output compiling in Ada 95 mode for the case of ambiguous prefixes.
 
-      if Ada_Version < Ada_05
+      if Ada_Version < Ada_2005
         and then Is_Overloaded (P)
         and then Aname /= Name_Access
         and then Aname /= Name_Address
@@ -1990,7 +1990,7 @@ package body Sem_Attr is
       then
          Error_Attr ("ambiguous prefix for % attribute", P);
 
-      elsif Ada_Version >= Ada_05
+      elsif Ada_Version >= Ada_2005
         and then Is_Overloaded (P)
         and then Aname /= Name_Access
         and then Aname /= Name_Address
@@ -2002,7 +2002,7 @@ package body Sem_Attr is
          --  entry wrappers, the attributes Count, Caller and AST_Entry require
          --  a context check
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then (Aname = Name_Count
                       or else Aname = Name_Caller
                       or else Aname = Name_AST_Entry)
@@ -2832,7 +2832,7 @@ package body Sem_Attr is
                   --  Ada 2005 (AI-345): Do not consider primitive entry
                   --  wrappers generated for task or protected types.
 
-                  elsif Ada_Version >= Ada_05
+                  elsif Ada_Version >= Ada_2005
                     and then not Comes_From_Source (It.Nam)
                   then
                      null;
@@ -3175,7 +3175,7 @@ package body Sem_Attr is
          elsif Is_Task_Type (Etype (P))
            or else (Is_Access_Type (Etype (P))
                       and then Is_Task_Type (Designated_Type (Etype (P))))
-           or else (Ada_Version >= Ada_05
+           or else (Ada_Version >= Ada_2005
                       and then Ekind (Etype (P)) = E_Class_Wide_Type
                       and then Is_Interface (Etype (P))
                       and then Is_Task_Interface (Etype (P)))
@@ -3184,7 +3184,7 @@ package body Sem_Attr is
             Set_Etype (N, RTE (RO_AT_Task_Id));
 
          else
-            if Ada_Version >= Ada_05 then
+            if Ada_Version >= Ada_2005 then
                Error_Attr_P
                  ("prefix of % attribute must be an exception, a " &
                   "task or a task interface class-wide object");
@@ -3829,7 +3829,7 @@ package body Sem_Attr is
       --  Ada 2005 (AI-327): Dynamic ceiling priorities
 
       when Attribute_Priority =>
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             Error_Attr ("% attribute is allowed only in Ada 2005 mode", P);
          end if;
 
@@ -7450,7 +7450,7 @@ package body Sem_Attr is
                                  --  Special case of soft hyphen in Ada 2005
 
                                  if C = Character'Val (16#AD#)
-                                   and then Ada_Version >= Ada_05
+                                   and then Ada_Version >= Ada_2005
                                  then
                                     Wt := 11;
                                  else
@@ -8126,7 +8126,7 @@ package body Sem_Attr is
 
             Des_Btyp := Designated_Type (Btyp);
 
-            if Ada_Version >= Ada_05
+            if Ada_Version >= Ada_2005
               and then Is_Incomplete_Type (Des_Btyp)
             then
                --  Ada 2005 (AI-412): If the (sub)type is a limited view of an
@@ -8155,7 +8155,7 @@ package body Sem_Attr is
                --  components, and return objects. For a component definition
                --  the level is the same of the enclosing composite type.
 
-               if Ada_Version >= Ada_05
+               if Ada_Version >= Ada_2005
                  and then Is_Local_Anonymous_Access (Btyp)
                  and then Object_Access_Level (P) > Type_Access_Level (Btyp)
                  and then Attr_Id = Attribute_Access
@@ -8262,7 +8262,7 @@ package body Sem_Attr is
                elsif Has_Discriminants (Designated_Type (Typ))
                  and then not Is_Constrained (Des_Btyp)
                  and then
-                   (Ada_Version < Ada_05
+                   (Ada_Version < Ada_2005
                      or else
                        not Has_Constrained_Partial_View
                              (Designated_Type (Base_Type (Typ))))
@@ -8857,13 +8857,13 @@ package body Sem_Attr is
       --  In Ada 2005, Input can invoke Read, and Output can invoke Write
 
       if Nam = TSS_Stream_Input
-        and then Ada_Version >= Ada_05
+        and then Ada_Version >= Ada_2005
         and then Stream_Attribute_Available (Etyp, TSS_Stream_Read)
       then
          return True;
 
       elsif Nam = TSS_Stream_Output
-        and then Ada_Version >= Ada_05
+        and then Ada_Version >= Ada_2005
         and then Stream_Attribute_Available (Etyp, TSS_Stream_Write)
       then
          return True;
@@ -8880,7 +8880,7 @@ package body Sem_Attr is
          end if;
       end loop;
 
-      if Ada_Version < Ada_05 then
+      if Ada_Version < Ada_2005 then
 
          --  In Ada 95 mode, also consider a non-visible definition
 

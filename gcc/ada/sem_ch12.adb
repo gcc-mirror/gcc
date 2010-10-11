@@ -1867,7 +1867,7 @@ package body Sem_Ch12 is
 
          --  Ada 2005 (AI-287): Limited aggregates allowed in generic formals
 
-         if Ada_Version < Ada_05 and then Is_Limited_Type (T) then
+         if Ada_Version < Ada_2005 and then Is_Limited_Type (T) then
             Error_Msg_N
               ("generic formal of mode IN must not be of limited type", N);
             Explain_Limited_Type (T, N);
@@ -4235,7 +4235,7 @@ package body Sem_Ch12 is
          end if;
 
          if Is_Dispatching_Operation (Act_Decl_Id)
-           and then Ada_Version >= Ada_05
+           and then Ada_Version >= Ada_2005
          then
             declare
                Formal : Entity_Id;
@@ -4467,7 +4467,7 @@ package body Sem_Ch12 is
    procedure Check_Access_Definition (N : Node_Id) is
    begin
       pragma Assert
-        (Ada_Version >= Ada_05
+        (Ada_Version >= Ada_2005
            and then Present (Access_Definition (N)));
       null;
    end Check_Access_Definition;
@@ -8380,7 +8380,7 @@ package body Sem_Ch12 is
             --  the type of the actual shall resolve to a specific anonymous
             --  access type.
 
-            if Ada_Version < Ada_05
+            if Ada_Version < Ada_2005
               or else
                 Ekind (Base_Type (Ftyp)) /=
                   E_Anonymous_Access_Type
@@ -8558,7 +8558,7 @@ package body Sem_Ch12 is
       --  Otherwise, the subtype of the actual matching the formal object
       --  declaration shall exclude null.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Present (Actual_Decl)
         and then
           Nkind_In (Actual_Decl, N_Formal_Object_Declaration,
@@ -9577,7 +9577,7 @@ package body Sem_Ch12 is
 
          --  Ada 2005 (AI-251)
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Is_Interface (Ancestor)
          then
             if not Interface_Present_In_Ancestor (Act_T, Ancestor) then
@@ -9597,7 +9597,7 @@ package body Sem_Ch12 is
          --  that the formal type declaration has been rewritten as a private
          --  extension.
 
-         if Ada_Version >= Ada_05
+         if Ada_Version >= Ada_2005
            and then Nkind (Parent (A_Gen_T)) = N_Private_Extension_Declaration
            and then Synchronized_Present (Parent (A_Gen_T))
          then

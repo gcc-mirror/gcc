@@ -271,7 +271,7 @@ package body Exp_Ch8 is
       --  eventually we plan to expand the functions that are treated as
       --  build-in-place to include other composite result types.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Is_Build_In_Place_Function_Call (Nam)
       then
          Make_Build_In_Place_Call_In_Anonymous_Context (Nam);
