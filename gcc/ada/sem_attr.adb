@@ -4457,7 +4457,7 @@ package body Sem_Attr is
          Check_E0;
          Check_Type;
          declare
-            function Type_Key return String;
+            function Type_Key return String_Id;
             --  A very preliminary implementation.
             --  For now, a signature consists of only the type name.
             --  This is clearly incomplete (e.g., adding a new field to
@@ -4467,22 +4467,18 @@ package body Sem_Attr is
             -- Type_Key --
             --------------
 
-            function Type_Key return String is
-
+            function Type_Key return String_Id is
                Full_Name : constant String_Id :=
-                 Fully_Qualified_Name_String (Entity (P));
-
-               Signature : String
-                 (1 .. Integer (String_Length (Full_Name)) - 1);
-               --  Decrement length to omit trailing NUL
-
+                             Fully_Qualified_Name_String (Entity (P));
             begin
-               for J in Signature'Range loop
-                  Signature (J) :=
-                    Get_Character (Get_String_Char (Full_Name, Int (J)));
-               end loop;
+               --  Copy all characters in Full_Name but the trailing NUL
 
-               return Signature & "'Type_Key";
+               Start_String;
+               for J in 1 .. String_Length (Full_Name) - 1 loop
+                  Store_String_Char (Get_String_Char (Full_Name, Int (J)));
+               end loop;
+               Store_String_Chars ("'Type_Key");
+               return End_String;
             end Type_Key;
 
          begin

@@ -43,7 +43,7 @@ with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
 with GNAT.Case_Util;            use GNAT.Case_Util;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.Dynamic_HTables;
-with GNAT.Regexp;                use GNAT.Regexp;
+with GNAT.Regexp;               use GNAT.Regexp;
 with GNAT.Table;
 
 package body Prj.Nmsc is
@@ -922,9 +922,11 @@ package body Prj.Nmsc is
                            Data.Tree);
 
       procedure Found_Project_File (Path : Path_Information; Rank : Natural);
+      --  Comments required ???
 
-      procedure Expand_Project_Files is new Expand_Subdirectory_Pattern
-        (Callback => Found_Project_File);
+      procedure Expand_Project_Files is
+        new Expand_Subdirectory_Pattern (Callback => Found_Project_File);
+      --  Comments required ???
 
       ------------------------
       -- Found_Project_File --
@@ -938,6 +940,8 @@ package body Prj.Nmsc is
             Write_Line (Get_Name_String (Path.Display_Name));
          end if;
       end Found_Project_File;
+
+   --  Start of processing for Check_Aggregate_Project
 
    begin
       if Project_Files.Default then
@@ -1044,7 +1048,6 @@ package body Prj.Nmsc is
       Check_Configuration (Project, Data);
 
       if Project.Qualifier /= Aggregate then
-
          Check_Library_Attributes (Project, Data);
          Check_Package_Naming (Project, Data);
          Look_For_Sources (Prj_Data, Data);
@@ -4962,7 +4965,8 @@ package body Prj.Nmsc is
       Remove_Source_Dirs : Boolean := False;
 
       procedure Add_To_Or_Remove_From_Source_Dirs
-        (Path : Path_Information; Rank : Natural);
+        (Path : Path_Information;
+         Rank : Natural);
       --  When Removed = False, the directory Path_Id to the list of
       --  source_dirs if not already in the list. When Removed = True,
       --  removed directory Path_Id if in the list.
@@ -4975,7 +4979,8 @@ package body Prj.Nmsc is
       ---------------------------------------
 
       procedure Add_To_Or_Remove_From_Source_Dirs
-        (Path : Path_Information; Rank : Natural)
+        (Path : Path_Information;
+         Rank : Natural)
       is
          List       : String_List_Id;
          Prev       : String_List_Id;
@@ -5047,7 +5052,7 @@ package body Prj.Nmsc is
 
          elsif Remove_Source_Dirs and then List /= Nil_String then
 
-            --  Remove source dir, if present
+            --  Remove source dir if present
 
             if Prev = Nil_String then
                Project.Source_Dirs :=
@@ -5232,6 +5237,7 @@ package body Prj.Nmsc is
          end if;
 
       elsif Source_Dirs.Default then
+
          --  No Source_Dirs specified: the single source directory is the one
          --  containing the project file.
 
@@ -5239,7 +5245,7 @@ package body Prj.Nmsc is
          Add_To_Or_Remove_From_Source_Dirs
            (Path => (Name         => Project.Directory.Name,
                      Display_Name => Project.Directory.Display_Name),
-            Rank            => 1);
+            Rank => 1);
 
       else
          Remove_Source_Dirs := False;
@@ -6753,16 +6759,20 @@ package body Prj.Nmsc is
       Visited : Recursive_Dirs.Instance;
 
       procedure Find_Pattern
-        (Pattern_Id : Name_Id; Rank : Natural; Location : Source_Ptr);
+        (Pattern_Id : Name_Id;
+         Rank       : Natural;
+         Location   : Source_Ptr);
       --  Find a specific pattern
 
       function Recursive_Find_Dirs
-        (Path : Path_Information; Rank : Natural) return Boolean;
+        (Path : Path_Information;
+         Rank : Natural) return Boolean;
       --  Search all the subdirectories (recursively) of Path.
       --  Return True if at least one file or directory was processed
 
       function Subdirectory_Matches
-        (Path : Path_Information; Rank : Natural) return Boolean;
+        (Path : Path_Information;
+         Rank : Natural) return Boolean;
       --  Called when a matching directory was found. If the user is in fact
       --  searching for files, we then search for those files matching the
       --  pattern within the directory.
@@ -6773,13 +6783,15 @@ package body Prj.Nmsc is
       --------------------------
 
       function Subdirectory_Matches
-        (Path : Path_Information; Rank : Natural) return Boolean
+        (Path : Path_Information;
+         Rank : Natural) return Boolean
       is
          Dir   : Dir_Type;
          Name  : String (1 .. 250);
          Last  : Natural;
          Found : Path_Information;
          Success : Boolean := False;
+
       begin
          case Search_For is
             when Search_Directories =>
@@ -6819,7 +6831,8 @@ package body Prj.Nmsc is
       -------------------------
 
       function Recursive_Find_Dirs
-        (Path : Path_Information; Rank : Natural) return Boolean
+        (Path : Path_Information;
+         Rank : Natural) return Boolean
       is
          Path_Str : constant String := Get_Name_String (Path.Display_Name);
          Dir   : Dir_Type;
@@ -6858,7 +6871,8 @@ package body Prj.Nmsc is
                        Directory      => Path_Str,
                        Resolve_Links  => Resolve_Links)
                     & Directory_Separator;
-                  Path2 : Path_Information;
+                  Path2     : Path_Information;
+
                begin
                   if Is_Directory (Path_Name) then
                      Name_Len := 0;
@@ -6888,7 +6902,9 @@ package body Prj.Nmsc is
       ------------------
 
       procedure Find_Pattern
-        (Pattern_Id : Name_Id; Rank : Natural; Location : Source_Ptr)
+        (Pattern_Id : Name_Id;
+         Rank       : Natural;
+         Location   : Source_Ptr)
       is
          Pattern     : constant String := Get_Name_String (Pattern_Id);
          Pattern_End : Natural := Pattern'Last;
@@ -6898,6 +6914,7 @@ package body Prj.Nmsc is
          Dir_Exists  : Boolean;
          Has_Error   : Boolean := False;
          Success     : Boolean;
+
       begin
          if Current_Verbosity = High then
             Write_Str ("Expand_Subdirectory_Pattern (""");
@@ -7001,11 +7018,14 @@ package body Prj.Nmsc is
          end if;
       end Find_Pattern;
 
-      --  Start of processing for Expand_Subdirectory_Pattern
+      --  Local variables
 
       Pattern_Id : String_List_Id := Patterns;
       Element    : String_Element;
       Rank       : Natural := 1;
+
+   --  Start of processing for Expand_Subdirectory_Pattern
+
    begin
       while Pattern_Id /= Nil_String loop
          Element := Data.Tree.String_Elements.Table (Pattern_Id);
