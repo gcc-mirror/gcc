@@ -1,0 +1,98 @@
+#! /bin/sh
+
+# (C) 2010 Free Software Foundation
+# Written by Ralf Wildenhues <Ralf.Wildenhues@gmx.de>.
+
+# This script is Free Software, and it can be copied, distributed and
+# modified as defined in the GNU General Public License.  A copy of
+# its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
+
+PROGNAME=test_recheck
+
+usage ()
+{
+  cat <<EOF
+Usage: $PROGNAME [-h] [-n] DIR|FILE.sum...
+
+Rerun unsuccessful tests for testsuites below DIR or for FILE.sum.
+
+  -h     display this help and exit
+  -n     dry run, only show what would be run
+EOF
+  exit $?
+}
+
+error ()
+{
+  echo "$@" >&2
+  exit 1
+}
+
+dry=
+for arg
+do
+  case $arg in
+    -h | \?) usage ;;
+    -n) dry=:; shift ;;
+    -*) error "unknown argument $arg" ;;
+    *)  break ;;
+  esac
+done
+test $# -gt 0 || usage
+
+# Find a good awk.
+if test -z "$AWK" ; then
+  for AWK in gawk nawk awk
+  do
+    if type $AWK 2>&1 | grep 'not found' > /dev/null 2>&1 ; then
+      :
+    else
+      break
+    fi
+  done
+fi
+
+: ${MAKE=make}
+: ${filesuffix=}
+cwd=`pwd`
+files=`find "$@" -name \*.sum$filesuffix -print | grep testsuite | sort`
+st=0
+
+for file in $files; do
+  dir=`echo $file | sed 's,/[^/]*$,,'`
+  base=`echo $file | sed 's,.*/,,; s,\.sum$,,'`
+  flags=`$AWK '
+/^Running .*\.exp \.\.\./ {
+  if (expfile != "" && tests != "")
+    printf (" %s=\"%s\"", expfile, tests)
+  expfile = $2
+  sub (/^[^ ]*\//, "", expfile)
+  sep = ""
+  tests = ""
+}
+/^(FAIL|XPASS|UNRESOLVED|WARNING|ERROR): / {
+  if (test != $2 "" && $2 != "" ) {
+    test = $2
+    tests = tests sep test
+    sep = " "
+  }
+}
+END {
+  if (expfile != "" && tests != "")
+    printf (" %s=\"%s\"", expfile, tests)
+}' $file`
+  if test -n "$flags"; then
+    cd $dir
+    amflags=
+    if grep '^AM_RUNTESTFLAGS =' Makefile >/dev/null 2>&1; then
+      amflags=`echo 'print-runtestflags: ; @echo $(AM_RUNTESTFLAGS)' \
+		 | ${MAKE} -s -f Makefile -f - print-runtestflags`
+    fi
+    echo "(cd $dir && runtest $amflags --tool $base $flags)"
+    if test -z "$dry"; then
+      eval runtest --tool $base $flags || st=$?
+    fi
+    cd "$cwd"
+  fi
+done
+exit $st
