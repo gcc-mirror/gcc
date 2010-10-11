@@ -151,7 +151,6 @@ package Atree is
    --   it is useful to be able to do untyped traversals, and an internal
    --   package in Atree allows for direct untyped accesses in such cases.
 
-   --   Flag3
    --   Flag4         Sixteen Boolean flags (use depends on Nkind and
    --   Flag5         Ekind, as described for FieldN). Again the access
    --   Flag6         is usually via subprograms in Sinfo and Einfo which
@@ -293,7 +292,7 @@ package Atree is
    -------------------------------------
 
    --  A subpackage Atree.Unchecked_Access provides routines for reading and
-   --  writing the fields defined above (Field1-27, Node1-27, Flag3-254 etc).
+   --  writing the fields defined above (Field1-27, Node1-27, Flag4-254 etc).
    --  These unchecked access routines can be used for untyped traversals.
    --  In addition they are used in the implementations of the Sinfo and
    --  Einfo packages. These packages both provide logical synonyms for
@@ -517,6 +516,9 @@ package Atree is
 
    function Analyzed          (N : Node_Id) return Boolean;
    pragma Inline (Analyzed);
+
+   function Has_Aspects       (N : Node_Id) return Boolean;
+   pragma Inline (Has_Aspects);
 
    function Comes_From_Source (N : Node_Id) return Boolean;
    pragma Inline (Comes_From_Source);
@@ -749,6 +751,9 @@ package Atree is
    --  default mechanism provided sets the right value, but in some
    --  unusual cases, the value needs to be reset (e.g. when a source
    --  node is copied, and the copy must not have Comes_From_Source set.
+
+   procedure Set_Has_Aspects (N : Node_Id; Val : Boolean := True);
+   pragma Inline (Set_Has_Aspects);
 
    ------------------------------
    -- Entity Update Procedures --
@@ -1195,9 +1200,6 @@ package Atree is
 
       function Ureal21 (N : Node_Id) return Ureal;
       pragma Inline (Ureal21);
-
-      function Flag3 (N : Node_Id) return Boolean;
-      pragma Inline (Flag3);
 
       function Flag4 (N : Node_Id) return Boolean;
       pragma Inline (Flag4);
@@ -2254,9 +2256,6 @@ package Atree is
       procedure Set_Ureal21 (N : Node_Id; Val : Ureal);
       pragma Inline (Set_Ureal21);
 
-      procedure Set_Flag3 (N : Node_Id; Val : Boolean);
-      pragma Inline (Set_Flag3);
-
       procedure Set_Flag4 (N : Node_Id; Val : Boolean);
       pragma Inline (Set_Flag4);
 
@@ -3091,7 +3090,9 @@ package Atree is
          --  Flag used to indicate if node is a member of a list.
          --  This field is considered private to the Atree package.
 
-         Flag3 : Boolean;
+         Has_Aspects : Boolean;
+         --  Flag used to indicate that a node has aspect specifications that
+         --  are associated with the node. See Aspects package for details.
 
          Rewrite_Ins : Boolean;
          --  Flag set by Mark_Rewrite_Insertion procedure.
@@ -3126,32 +3127,31 @@ package Atree is
          --  The eighteen flags for a normal node
 
          --  The above fields are used as follows in components 2-5 of
-         --  an extended node entry. These fields are not currently
-         --  used in component 5 (where we still have lots of room!)
+         --  an extended node entry.
 
-         --    In_List            used as  Flag19, Flag40, Flag129, Flag216
-         --    Flag3              used as  Flag20, Flag41, Flag130, Flag217
-         --    Rewrite_Ins        used as  Flag21, Flag42, Flag131, Flag218
-         --    Analyzed           used as  Flag22, Flag43, Flag132, Flag219
-         --    Comes_From_Source  used as  Flag23, Flag44, Flag133, Flag220
-         --    Error_Posted       used as  Flag24, Flag45, Flag134, Flag221
-         --    Flag4              used as  Flag25, Flag46, Flag135, Flag222
-         --    Flag5              used as  Flag26, Flag47, Flag136, Flag223
-         --    Flag6              used as  Flag27, Flag48, Flag137, Flag224
-         --    Flag7              used as  Flag28, Flag49, Flag138, Flag225
-         --    Flag8              used as  Flag29, Flag50, Flag139, Flag226
-         --    Flag9              used as  Flag30, Flag51, Flag140, Flag227
-         --    Flag10             used as  Flag31, Flag52, Flag141, Flag228
-         --    Flag11             used as  Flag32, Flag53, Flag142, Flag229
-         --    Flag12             used as  Flag33, Flag54, Flag143, Flag230
-         --    Flag13             used as  Flag34, Flag55, Flag144, Flag231
-         --    Flag14             used as  Flag35, Flag56, Flag145, Flag232
-         --    Flag15             used as  Flag36, Flag57, Flag146, Flag233
-         --    Flag16             used as  Flag37, Flag58, Flag147, Flag234
-         --    Flag17             used as  Flag38, Flag59, Flag148, Flag235
-         --    Flag18             used as  Flag39, Flag60, Flag149, Flag236
-         --    Pflag1             used as  Flag61, Flag62, Flag150, Flag237
-         --    Pflag2             used as  Flag63, Flag64, Flag151, Flag238
+         --    In_List              used as  Flag19, Flag40, Flag129, Flag216
+         --    Has_Aspects          used as  Flag20, Flag41, Flag130, Flag217
+         --    Rewrite_Ins          used as  Flag21, Flag42, Flag131, Flag218
+         --    Analyzed             used as  Flag22, Flag43, Flag132, Flag219
+         --    Comes_From_Source    used as  Flag23, Flag44, Flag133, Flag220
+         --    Error_Posted         used as  Flag24, Flag45, Flag134, Flag221
+         --    Flag4                used as  Flag25, Flag46, Flag135, Flag222
+         --    Flag5                used as  Flag26, Flag47, Flag136, Flag223
+         --    Flag6                used as  Flag27, Flag48, Flag137, Flag224
+         --    Flag7                used as  Flag28, Flag49, Flag138, Flag225
+         --    Flag8                used as  Flag29, Flag50, Flag139, Flag226
+         --    Flag9                used as  Flag30, Flag51, Flag140, Flag227
+         --    Flag10               used as  Flag31, Flag52, Flag141, Flag228
+         --    Flag11               used as  Flag32, Flag53, Flag142, Flag229
+         --    Flag12               used as  Flag33, Flag54, Flag143, Flag230
+         --    Flag13               used as  Flag34, Flag55, Flag144, Flag231
+         --    Flag14               used as  Flag35, Flag56, Flag145, Flag232
+         --    Flag15               used as  Flag36, Flag57, Flag146, Flag233
+         --    Flag16               used as  Flag37, Flag58, Flag147, Flag234
+         --    Flag17               used as  Flag38, Flag59, Flag148, Flag235
+         --    Flag18               used as  Flag39, Flag60, Flag149, Flag236
+         --    Pflag1               used as  Flag61, Flag62, Flag150, Flag237
+         --    Pflag2               used as  Flag63, Flag64, Flag151, Flag238
 
          Nkind : Node_Kind;
          --  For a non-extended node, or the initial section of an extended
@@ -3245,7 +3245,7 @@ package Atree is
          Pflag1            => False,
          Pflag2            => False,
          In_List           => False,
-         Flag3             => False,
+         Has_Aspects       => False,
          Rewrite_Ins       => False,
          Analyzed          => False,
          Comes_From_Source => False,
@@ -3290,7 +3290,7 @@ package Atree is
          Pflag1            => False,
          Pflag2            => False,
          In_List           => False,
-         Flag3             => False,
+         Has_Aspects       => False,
          Rewrite_Ins       => False,
          Analyzed          => False,
          Comes_From_Source => False,

@@ -1841,7 +1841,7 @@ package body Sem_Ch5 is
                   --  declared "within" must be frozen explicitly.
 
                   declare
-                     Flist : constant List_Id := Freeze_Entity (Id, Sloc (N));
+                     Flist : constant List_Id := Freeze_Entity (Id, N);
                   begin
                      if Is_Non_Empty_List (Flist) then
                         Insert_Actions (N, Flist);

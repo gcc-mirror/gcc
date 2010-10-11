@@ -6157,16 +6157,16 @@ package body Exp_Ch3 is
                if not Is_Limited_Type (Def_Id) then
                   Append_Freeze_Actions (Def_Id,
                     Freeze_Entity
-                      (Find_Prim_Op (Def_Id, Name_Adjust), Sloc (Def_Id)));
+                      (Find_Prim_Op (Def_Id, Name_Adjust), Def_Id));
                end if;
 
                Append_Freeze_Actions (Def_Id,
                  Freeze_Entity
-                   (Find_Prim_Op (Def_Id, Name_Initialize), Sloc (Def_Id)));
+                   (Find_Prim_Op (Def_Id, Name_Initialize), Def_Id));
 
                Append_Freeze_Actions (Def_Id,
                  Freeze_Entity
-                   (Find_Prim_Op (Def_Id, Name_Finalize), Sloc (Def_Id)));
+                   (Find_Prim_Op (Def_Id, Name_Finalize), Def_Id));
             end if;
 
             --  Freeze rest of primitive operations. There is no need to handle
@@ -6361,8 +6361,7 @@ package body Exp_Ch3 is
                       N_Subprogram_Declaration
            and then not Is_Frozen (Stream_Op)
          then
-            Append_Freeze_Actions
-               (Typ, Freeze_Entity (Stream_Op, Sloc (N)));
+            Append_Freeze_Actions (Typ, Freeze_Entity (Stream_Op, N));
          end if;
       end loop;
    end Freeze_Stream_Operations;
@@ -8998,7 +8997,6 @@ package body Exp_Ch3 is
    function Predefined_Primitive_Freeze
      (Tag_Typ : Entity_Id) return List_Id
    is
-      Loc     : constant Source_Ptr := Sloc (Tag_Typ);
       Res     : constant List_Id    := New_List;
       Prim    : Elmt_Id;
       Frnodes : List_Id;
@@ -9007,7 +9005,7 @@ package body Exp_Ch3 is
       Prim := First_Elmt (Primitive_Operations (Tag_Typ));
       while Present (Prim) loop
          if Is_Predefined_Dispatching_Operation (Node (Prim)) then
-            Frnodes := Freeze_Entity (Node (Prim), Loc);
+            Frnodes := Freeze_Entity (Node (Prim), Tag_Typ);
 
             if Present (Frnodes) then
                Append_List_To (Res, Frnodes);

@@ -1619,7 +1619,6 @@ package body Sem_Ch3 is
    procedure Analyze_Component_Declaration (N : Node_Id) is
       Id : constant Entity_Id := Defining_Identifier (N);
       E  : constant Node_Id   := Expression (N);
-      AS : constant List_Id   := Aspect_Specifications (N);
       T  : Entity_Id;
       P  : Entity_Id;
 
@@ -1946,7 +1945,7 @@ package body Sem_Ch3 is
       end if;
 
       Set_Original_Record_Component (Id, Id);
-      Analyze_Aspect_Specifications (N, Id, AS);
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Component_Declaration;
 
    --------------------------
@@ -2079,7 +2078,6 @@ package body Sem_Ch3 is
    procedure Analyze_Full_Type_Declaration (N : Node_Id) is
       Def    : constant Node_Id   := Type_Definition (N);
       Def_Id : constant Entity_Id := Defining_Identifier (N);
-      AS     : constant List_Id   := Aspect_Specifications (N);
       T      : Entity_Id;
       Prev   : Entity_Id;
 
@@ -2381,7 +2379,8 @@ package body Sem_Ch3 is
       Set_Optimize_Alignment_Flags (Def_Id);
       Check_Eliminated (Def_Id);
 
-      <<Leave>> Analyze_Aspect_Specifications (N, Def_Id, AS);
+      <<Leave>>
+         Analyze_Aspect_Specifications (N, Def_Id, Aspect_Specifications (N));
    end Analyze_Full_Type_Declaration;
 
    ----------------------------------
@@ -2644,7 +2643,6 @@ package body Sem_Ch3 is
    procedure Analyze_Object_Declaration (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
       Id    : constant Entity_Id  := Defining_Identifier (N);
-      AS    : constant List_Id    := Aspect_Specifications (N);
       T     : Entity_Id;
       Act_T : Entity_Id;
 
@@ -3530,7 +3528,8 @@ package body Sem_Ch3 is
          Check_Restriction (No_Local_Timing_Events, N);
       end if;
 
-      <<Leave>> Analyze_Aspect_Specifications (N, Id, AS);
+      <<Leave>>
+         Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Object_Declaration;
 
    ---------------------------
@@ -3553,7 +3552,6 @@ package body Sem_Ch3 is
    procedure Analyze_Private_Extension_Declaration (N : Node_Id) is
       T           : constant Entity_Id := Defining_Identifier (N);
       Indic       : constant Node_Id   := Subtype_Indication (N);
-      AS          : constant List_Id   := Aspect_Specifications (N);
       Parent_Type : Entity_Id;
       Parent_Base : Entity_Id;
 
@@ -3740,7 +3738,8 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      <<Leave>> Analyze_Aspect_Specifications (N, T, AS);
+      <<Leave>>
+         Analyze_Aspect_Specifications (N, T, Aspect_Specifications (N));
    end Analyze_Private_Extension_Declaration;
 
    ---------------------------------
@@ -3752,7 +3751,6 @@ package body Sem_Ch3 is
       Skip : Boolean := False)
    is
       Id       : constant Entity_Id := Defining_Identifier (N);
-      AS       : constant List_Id   := Aspect_Specifications (N);
       T        : Entity_Id;
       R_Checks : Check_Result;
 
@@ -4152,10 +4150,19 @@ package body Sem_Ch3 is
          end if;
       end if;
 
+      --  Make sure that generic actual types are properly frozen
+
+      if Expander_Active
+        and then Is_Generic_Actual_Type (Id)
+      then
+         Insert_Actions (N, Freeze_Entity (Id, N));
+      end if;
+
       Set_Optimize_Alignment_Flags (Id);
       Check_Eliminated (Id);
 
-      <<Leave>> Analyze_Aspect_Specifications (N, Id, AS);
+      <<Leave>>
+         Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Subtype_Declaration;
 
    --------------------------------
@@ -14345,7 +14352,7 @@ package body Sem_Ch3 is
          then
             null;
          else
-            Insert_Actions (Obj_Def, Freeze_Entity (T, Sloc (P)));
+            Insert_Actions (Obj_Def, Freeze_Entity (T, P));
          end if;
 
       --  Ada 2005 AI-406: the object definition in an object declaration

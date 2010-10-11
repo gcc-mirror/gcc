@@ -4387,7 +4387,7 @@ package body Exp_Disp is
             Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
             while Present (Prim_Elmt) loop
                Prim    := Node (Prim_Elmt);
-               Frnodes := Freeze_Entity (Prim, Loc);
+               Frnodes := Freeze_Entity (Prim, Typ);
 
                declare
                   F : Entity_Id;
@@ -6728,8 +6728,8 @@ package body Exp_Disp is
             --  generating these freezing nodes in wrong scopes (for example in
             --  the IC routine of a derivation of Typ).
 
-            Append_List_To (Result, Freeze_Entity (DT_Prims, Loc));
-            Append_List_To (Result, Freeze_Entity (DT_Prims_Acc, Loc));
+            Append_List_To (Result, Freeze_Entity (DT_Prims, Typ));
+            Append_List_To (Result, Freeze_Entity (DT_Prims_Acc, Typ));
 
             --  Mark entity of dispatch table. Required by the back end to
             --  handle them properly.

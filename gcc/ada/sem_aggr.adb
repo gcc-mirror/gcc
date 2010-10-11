@@ -3706,10 +3706,14 @@ package body Sem_Aggr is
                               end if;
                            end Process_Component;
 
+                        --  Start of processing for Propagate_Discriminants
+
                         begin
                            --  The component type may be a variant type, so
                            --  collect the components that are ruled by the
-                           --  known values of the discriminants.
+                           --  known values of the discriminants. Their values
+                           --  have already been inserted into the component
+                           --  list of the current aggregate.
 
                            if Nkind (Def_Node) =  N_Record_Definition
                              and then
@@ -3720,7 +3724,7 @@ package body Sem_Aggr is
                            then
                               Gather_Components (Aggr_Type,
                                 Component_List (Def_Node),
-                                Governed_By   => Assoc_List,
+                                Governed_By   => Component_Associations (Aggr),
                                 Into          => Components,
                                 Report_Errors => Errors);
 

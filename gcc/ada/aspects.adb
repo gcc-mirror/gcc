@@ -29,10 +29,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;  use Atree;
-with Nlists; use Nlists;
-with Sinfo;  use Sinfo;
-with Snames; use Snames;
+with Atree;   use Atree;
+with Nlists;  use Nlists;
+with Sinfo;   use Sinfo;
+with Snames;  use Snames;
+with Tree_IO; use Tree_IO;
 
 with GNAT.HTable; use GNAT.HTable;
 
@@ -152,7 +153,11 @@ package body Aspects is
 
    function Aspect_Specifications (N : Node_Id) return List_Id is
    begin
-      return Aspect_Specifications_Hash_Table.Get (N);
+      if Has_Aspects (N) then
+         return Aspect_Specifications_Hash_Table.Get (N);
+      else
+         return No_List;
+      end if;
    end Aspect_Specifications;
 
    -----------------------------------
@@ -199,13 +204,46 @@ package body Aspects is
    procedure Set_Aspect_Specifications (N : Node_Id; L : List_Id) is
    begin
       pragma Assert (Permits_Aspect_Specifications (N));
-      pragma Assert (not Has_Aspect_Specifications (N));
+      pragma Assert (not Has_Aspects (N));
       pragma Assert (L /= No_List);
 
-      Set_Has_Aspect_Specifications (N);
+      Set_Has_Aspects (N);
       Set_Parent (L, N);
       Aspect_Specifications_Hash_Table.Set (N, L);
    end Set_Aspect_Specifications;
+
+   ---------------
+   -- Tree_Read --
+   ---------------
+
+   procedure Tree_Read is
+      Node : Node_Id;
+      List : List_Id;
+   begin
+      loop
+         Tree_Read_Int (Int (Node));
+         Tree_Read_Int (Int (List));
+         exit when List = No_List;
+         Set_Aspect_Specifications (Node, List);
+      end loop;
+   end Tree_Read;
+
+   ----------------
+   -- Tree_Write --
+   ----------------
+
+   procedure Tree_Write is
+      Node : Node_Id := Empty;
+      List : List_Id;
+   begin
+      Aspect_Specifications_Hash_Table.Get_First (Node, List);
+      loop
+         Tree_Write_Int (Int (Node));
+         Tree_Write_Int (Int (List));
+         exit when List = No_List;
+         Aspect_Specifications_Hash_Table.Get_Next (Node, List);
+      end loop;
+   end Tree_Write;
 
 --  Package initialization sets up Aspect Id hash table
 

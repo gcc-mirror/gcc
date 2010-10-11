@@ -246,6 +246,17 @@ package body System.HTable is
          end if;
       end Get_First;
 
+      procedure Get_First (K : in out Key; E : out Element) is
+         Tmp : constant Elmt_Ptr := Tab.Get_First;
+      begin
+         if Tmp = null then
+            E := No_Element;
+         else
+            K := Tmp.K;
+            E := Tmp.E;
+         end if;
+      end Get_First;
+
       -------------
       -- Get_Key --
       -------------
@@ -266,6 +277,17 @@ package body System.HTable is
             return No_Element;
          else
             return Tmp.E;
+         end if;
+      end Get_Next;
+
+      procedure Get_Next (K : in out Key; E : out Element) is
+         Tmp : constant Elmt_Ptr := Tab.Get_Next;
+      begin
+         if Tmp = null then
+            E := No_Element;
+         else
+            K := Tmp.K;
+            E := Tmp.E;
          end if;
       end Get_Next;
 

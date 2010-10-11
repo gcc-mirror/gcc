@@ -751,7 +751,6 @@ package body Sem_Ch7 is
 
    procedure Analyze_Package_Declaration (N : Node_Id) is
       Id : constant Node_Id := Defining_Entity (N);
-      AS : constant List_Id := Aspect_Specifications (N);
 
       PF : Boolean;
       --  True when in the context of a declared pure library unit
@@ -846,7 +845,8 @@ package body Sem_Ch7 is
          Write_Eol;
       end if;
 
-      <<Leave>> Analyze_Aspect_Specifications (N, Id, AS);
+      <<Leave>>
+         Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Package_Declaration;
 
    -----------------------------------
@@ -1417,7 +1417,6 @@ package body Sem_Ch7 is
    procedure Analyze_Private_Type_Declaration (N : Node_Id) is
       PF : constant Boolean   := Is_Pure (Enclosing_Lib_Unit_Entity);
       Id : constant Entity_Id := Defining_Identifier (N);
-      AS : constant List_Id   := Aspect_Specifications (N);
 
    begin
       Generate_Definition (Id);
@@ -1432,7 +1431,7 @@ package body Sem_Ch7 is
 
       New_Private_Type (N, Id, N);
       Set_Depends_On_Private (Id);
-      Analyze_Aspect_Specifications (N, Id, AS);
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Private_Type_Declaration;
 
    ----------------------------------

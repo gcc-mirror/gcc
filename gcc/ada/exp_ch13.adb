@@ -220,6 +220,31 @@ package body Exp_Ch13 is
       Delete         : Boolean := False;
 
    begin
+      --  If there are delayed aspect specifications, we insert them just
+      --  before the freeze node. They are already analyzed so we don't need
+      --  to reanalyze them (they were analyzed before the type was frozen),
+      --  but we want them in the tree for the back end, and so that the
+      --  listing from sprint is clearer on where these occur logically.
+
+      if Has_Delayed_Aspects (E) then
+         declare
+            Aitem : Node_Id;
+            Ritem : Node_Id;
+
+         begin
+            Ritem := First_Rep_Item (E);
+            while Present (Ritem) loop
+               if Nkind (Ritem) = N_Aspect_Specification then
+                  Aitem := Aspect_Rep_Item (Ritem);
+                  pragma Assert (Is_Delayed_Aspect (Aitem));
+                  Insert_Before (N, Aitem);
+               end if;
+
+               Next_Rep_Item (Ritem);
+            end loop;
+         end;
+      end if;
+
       --  Processing for objects with address clauses
 
       if Is_Object (E) and then Present (Address_Clause (E)) then

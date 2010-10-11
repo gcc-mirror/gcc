@@ -57,7 +57,6 @@ package body Sem_Ch11 is
    procedure Analyze_Exception_Declaration (N : Node_Id) is
       Id : constant Entity_Id := Defining_Identifier (N);
       PF : constant Boolean   := Is_Pure (Current_Scope);
-      AS : constant List_Id   := Aspect_Specifications (N);
    begin
       Generate_Definition         (Id);
       Enter_Name                  (Id);
@@ -66,7 +65,7 @@ package body Sem_Ch11 is
       Set_Etype                   (Id, Standard_Exception_Type);
       Set_Is_Statically_Allocated (Id);
       Set_Is_Pure                 (Id, PF);
-      Analyze_Aspect_Specifications (N, Id, AS);
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Exception_Declaration;
 
    --------------------------------

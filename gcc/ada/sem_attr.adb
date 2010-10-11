@@ -5356,8 +5356,34 @@ package body Sem_Attr is
    --  Start of processing for Eval_Attribute
 
    begin
-      --  Acquire first two expressions (at the moment, no attributes
-      --  take more than two expressions in any case).
+      --  No folding in spec expression that comes from source where the prefix
+      --  is an unfrozen entity. This avoids premature folding in cases like:
+
+      --    procedure DefExprAnal is
+      --       type R is new Integer;
+      --       procedure P (Arg : Integer := R'Size);
+      --       for R'Size use 64;
+      --       procedure P (Arg : Integer := R'Size) is
+      --       begin
+      --          Put_Line (Arg'Img);
+      --       end P;
+      --    begin
+      --       P;
+      --    end;
+
+      --  which shouold print 64 rather than 32. The exclusion of non-source
+      --  constructs from this test comes from some internal usage in packed
+      --  arrays, which otherwise fails, could use more analysis perhaps???
+
+      if In_Spec_Expression
+        and then Comes_From_Source (N)
+        and then not (Is_Entity_Name (P) and then Is_Frozen (Entity (P)))
+      then
+         return;
+      end if;
+
+      --  Acquire first two expressions (at the moment, no attributes take more
+      --  than two expressions in any case).
 
       if Present (Expressions (N)) then
          E1 := First (Expressions (N));
@@ -5373,8 +5399,6 @@ package body Sem_Attr is
       --  this attribute immediately and be done with it.
 
       if Id = Attribute_Enabled then
-
-         --  Evaluate the Enabled attribute
 
          --  We skip evaluation if the expander is not active. This is not just
          --  an optimization. It is of key importance that we not rewrite the
@@ -7889,7 +7913,7 @@ package body Sem_Attr is
                   --  Avoid insertion of freeze actions in spec expression mode
 
                   if not In_Spec_Expression then
-                     Insert_Actions (N, Freeze_Entity (Entity (P), Loc));
+                     Insert_Actions (N, Freeze_Entity (Entity (P), N));
                   end if;
 
                elsif Is_Type (Entity (P)) then
@@ -8668,14 +8692,14 @@ package body Sem_Attr is
          -- Range --
          -----------
 
-         --  We replace the Range attribute node with a range expression
-         --  whose bounds are the 'First and 'Last attributes applied to the
-         --  same prefix. The reason that we do this transformation here
-         --  instead of in the expander is that it simplifies other parts of
-         --  the semantic analysis which assume that the Range has been
-         --  replaced; thus it must be done even when in semantic-only mode
-         --  (note that the RM specifically mentions this equivalence, we
-         --  take care that the prefix is only evaluated once).
+         --  We replace the Range attribute node with a range expression whose
+         --  bounds are the 'First and 'Last attributes applied to the same
+         --  prefix. The reason that we do this transformation here instead of
+         --  in the expander is that it simplifies other parts of the semantic
+         --  analysis which assume that the Range has been replaced; thus it
+         --  must be done even when in semantic-only mode (note that the RM
+         --  specifically mentions this equivalence, we take care that the
+         --  prefix is only evaluated once).
 
          when Attribute_Range => Range_Attribute :
             declare

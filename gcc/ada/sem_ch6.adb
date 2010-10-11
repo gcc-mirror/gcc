@@ -354,7 +354,6 @@ package body Sem_Ch6 is
       Designator : constant Entity_Id :=
                      Analyze_Subprogram_Specification (Specification (N));
       Scop       : constant Entity_Id := Current_Scope;
-      AS         : constant List_Id   := Aspect_Specifications (N);
 
    begin
       Generate_Definition (Designator);
@@ -384,7 +383,7 @@ package body Sem_Ch6 is
 
       Generate_Reference_To_Formals (Designator);
       Check_Eliminated (Designator);
-      Analyze_Aspect_Specifications (N, Designator, AS);
+      Analyze_Aspect_Specifications (N, Designator, Aspect_Specifications (N));
    end Analyze_Abstract_Subprogram_Declaration;
 
    ----------------------------------------
@@ -2168,7 +2167,7 @@ package body Sem_Ch6 is
             --  why, to be investigated further???
 
             Set_Has_Delayed_Freeze (Spec_Id);
-            Insert_Actions (N, Freeze_Entity (Spec_Id, Loc));
+            Insert_Actions (N, Freeze_Entity (Spec_Id, N));
          end if;
       end if;
 
@@ -2700,7 +2699,6 @@ package body Sem_Ch6 is
 
    procedure Analyze_Subprogram_Declaration (N : Node_Id) is
       Loc        : constant Source_Ptr := Sloc (N);
-      AS         : constant List_Id    := Aspect_Specifications (N);
       Scop       : constant Entity_Id  := Current_Scope;
       Designator : Entity_Id;
       Form       : Node_Id;
@@ -2710,9 +2708,9 @@ package body Sem_Ch6 is
 
    begin
       --  For a null procedure, capture the profile before analysis, for
-      --  expansion at the freeze point and at each point of call.
-      --  The body will only be used if the procedure has preconditions.
-      --  In that case the body is analyzed at the freeze point.
+      --  expansion at the freeze point and at each point of call. The body
+      --  will only be used if the procedure has preconditions. In that case
+      --  the body is analyzed at the freeze point.
 
       if Nkind (Specification (N)) = N_Procedure_Specification
         and then Null_Present (Specification (N))
@@ -2897,7 +2895,7 @@ package body Sem_Ch6 is
          Write_Eol;
       end if;
 
-      Analyze_Aspect_Specifications (N, Designator, AS);
+      Analyze_Aspect_Specifications (N, Designator, Aspect_Specifications (N));
    end Analyze_Subprogram_Declaration;
 
    --------------------------------------
@@ -8825,7 +8823,6 @@ package body Sem_Ch6 is
    -------------------------
 
    procedure Set_Actual_Subtypes (N : Node_Id; Subp : Entity_Id) is
-      Loc            : constant Source_Ptr := Sloc (N);
       Decl           : Node_Id;
       Formal         : Entity_Id;
       T              : Entity_Id;
@@ -8939,7 +8936,7 @@ package body Sem_Ch6 is
 
             if Present (First_Stmt) then
                Insert_List_Before_And_Analyze (First_Stmt,
-                 Freeze_Entity (Defining_Identifier (Decl), Loc));
+                 Freeze_Entity (Defining_Identifier (Decl), N));
             end if;
 
             if Nkind (N) = N_Accept_Statement

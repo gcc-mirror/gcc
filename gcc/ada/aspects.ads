@@ -168,27 +168,37 @@ package Aspects is
 
    function Permits_Aspect_Specifications (N : Node_Id) return Boolean;
    --  Returns True if the node N is a declaration node that permits aspect
-   --  specifications. All such nodes have the Has_Aspect_Specifications
-   --  flag defined. Returns False for all other nodes.
+   --  specifications in the grammar. It is possible for other nodes to have
+   --  aspect specifications as a result of Rewrite or Replace calls.
 
    function Aspect_Specifications (N : Node_Id) return List_Id;
    --  Given a node N, returns the list of N_Aspect_Specification nodes that
    --  are attached to this declaration node. If the node is in the class of
    --  declaration nodes that permit aspect specifications, as defined by the
-   --  predicate above, and if their Has_Aspect_Specifications flag is set to
-   --  True, then this will always be a non-empty list. If this flag is set to
-   --  False, or the node is not in the declaration class permitting aspect
-   --  specifications, then No_List is returned.
+   --  predicate above, and if their Has_Aspects flag is set to True, then this
+   --  will always be a non-empty list. If this flag is set to False, then
+   --  No_List is returned. Normally, the only nodes that have Has_Aspects set
+   --  True are the nodes for which Permits_Aspect_Specifications would return
+   --  True (i.e. the declaration nodes defined in the RM as permitting the
+   --  presence of Aspect_Specifications). However, it is possible for the
+   --  flag Has_Aspects to be set on other nodes as a result of Rewrite and
+   --  Replace calls, and this function may be used to retrive the aspect
+   --  specifications for the original rewritten node in such cases.
 
    procedure Set_Aspect_Specifications (N : Node_Id; L : List_Id);
    --  The node N must be in the class of declaration nodes that permit aspect
-   --  specifications and the Has_Aspect_Specifications flag must be False on
-   --  entry. L must be a non-empty list of N_Aspect_Specification nodes. This
-   --  procedure sets the Has_Aspect_Specifications flag to True, and makes an
-   --  entry that can be retrieved by a subsequent Aspect_Specifications call.
-   --  The parent of list L is set to reference the declaration node N. It is
-   --  an error to call this procedure with a node that does not permit aspect
-   --  specifications, or a node that has its Has_Aspect_Specifications flag
-   --  set True on entry, or with L being an empty list or No_List.
+   --  specifications and the Has_Aspects flag must be False on entry. L must
+   --  be a non-empty list of N_Aspect_Specification nodes. This procedure sets
+   --  the Has_Aspects flag to True, and makes an entry that can be retrieved
+   --  by a subsequent Aspect_Specifications call. It is an error to call this
+   --  procedure with a node that does not permit aspect specifications, or a
+   --  node that has its Has_Aspects flag set True on entry, or with L being an
+   --  empty list or No_List.
+
+   procedure Tree_Write;
+   --  Writes contents of Aspect_Specifications hash table to the tree file
+
+   procedure Tree_Read;
+   --  Reads contents of Aspect_Specificatins hash table from the tree file
 
 end Aspects;

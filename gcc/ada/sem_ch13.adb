@@ -26,6 +26,7 @@
 with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -629,12 +630,31 @@ package body Sem_Ch13 is
       L : List_Id)
    is
       Aspect : Node_Id;
+      Aitem  : Node_Id;
       Ent    : Node_Id;
-      Result : Boolean;
-      Ritem  : Node_Id;
 
       Ins_Node : Node_Id := N;
-      --  Insert pragmas after this node
+      --  Insert pragmas (other than Pre/Post) after this node
+
+      --  The general processing involves building an attribute definition
+      --  clause or a pragma node that corresponds to the access type. Then
+      --  one of two things happens:
+
+      --  If we are required to delay the evaluation of this aspect to the
+      --  freeze point, we preanalyze the relevant argument, and then attach
+      --  the corresponding pragma/attribute definition clause to the aspect
+      --  specification node, which is then placed in the Rep Item chain.
+      --  In this case we mark the entity with the Has_Delayed_Aspects flag,
+      --  and we evaluate the rep item at the freeze point.
+
+      --  If no delay is required, we just insert the pragma or attribute
+      --  after the declaration, and it will get processed by the normal
+      --  circuit. The From_Aspect_Specification flag is set on the pragma
+      --  or attribute definition node in either case to activate special
+      --  processing (e.g. not traversing the list of homonyms for inline).
+
+      Delay_Required : Boolean;
+      --  Set True if delay is required
 
    begin
       if L = No_List then
@@ -644,12 +664,17 @@ package body Sem_Ch13 is
       Aspect := First (L);
       while Present (Aspect) loop
          declare
-            Id   : constant Node_Id  := Identifier (Aspect);
-            Expr : constant Node_Id  := Expression (Aspect);
-            Nam  : constant Name_Id  := Chars (Id);
+            Id   : constant Node_Id   := Identifier (Aspect);
+            Expr : constant Node_Id   := Expression (Aspect);
+            Nam  : constant Name_Id   := Chars (Id);
+            A_Id : constant Aspect_Id := Get_Aspect_Id (Nam);
             Anod : Node_Id;
+            T    : Entity_Id;
 
          begin
+            Set_Entity (Aspect, E);
+            Ent := New_Occurrence_Of (E, Sloc (Id));
+
             --  Check for duplicate aspect
 
             Anod := First (L);
@@ -667,7 +692,7 @@ package body Sem_Ch13 is
 
             --  Processing based on specific aspect
 
-            case Get_Aspect_Id (Nam) is
+            case A_Id is
 
                --  No_Aspect should be impossible
 
@@ -701,40 +726,46 @@ package body Sem_Ch13 is
                     Aspect_Volatile                     |
                     Aspect_Volatile_Components          =>
 
-                  if No (Expr) then
-                     Result := True;
+                  --  Build corresponding pragma node
 
-                  else
-                     Analyze_And_Resolve (Expr);
-
-                     if not Is_OK_Static_Expression (Expr) then
-                        Error_Msg_N
-                          ("static boolean expression required here", Expr);
-                        Result := True;
-
-                     else
-                        Result := Is_True (Expr_Value (Expr));
-                     end if;
-                  end if;
-
-                  Ent := New_Occurrence_Of (E, Sloc (Id));
-
-                  Ritem :=
+                  Aitem :=
                     Make_Pragma (Sloc (Aspect),
                       Pragma_Argument_Associations => New_List (Ent),
                       Pragma_Identifier            =>
-                         Make_Identifier (Sloc (Id), Chars (Id)));
+                        Make_Identifier (Sloc (Id), Chars (Id)));
 
-                  if Result = False then
-                     Set_Aspect_Cancel (Ritem);
+                  --  Deal with missing expression case, delay never needed
+
+                  if No (Expr) then
+                     Delay_Required := False;
+
+                  --  Expression is present
+
+                  else
+                     Preanalyze_Spec_Expression (Expr, Standard_Boolean);
+
+                     --  If preanalysis gives a static expression, we don't
+                     --  need to delay (this will happen often in practice).
+
+                     if Is_OK_Static_Expression (Expr) then
+                        Delay_Required := False;
+
+                        if Is_False (Expr_Value (Expr)) then
+                           Set_Aspect_Cancel (Aitem);
+                        end if;
+
+                     --  If we don't get a static expression, then delay, the
+                     --  expression may turn out static by freeze time.
+
+                     else
+                        Delay_Required := True;
+                     end if;
                   end if;
 
-               --  Aspects corresponding to attribute definition clauses. We
-               --  create the matching clause and insert it following the
-               --  declaration in the tree.
+               --  Aspects corresponding to attribute definition clauses with
+               --  the exception of Address which is treated specially.
 
-               when Aspect_Address        |
-                    Aspect_Alignment      |
+               when Aspect_Alignment      |
                     Aspect_Bit_Order      |
                     Aspect_Component_Size |
                     Aspect_External_Tag   |
@@ -746,11 +777,71 @@ package body Sem_Ch13 is
                     Aspect_Stream_Size    |
                     Aspect_Value_Size     =>
 
-                  Ritem :=
+                  --  Preanalyze the expression with the appropriate type
+
+                  case A_Id is
+                     when Aspect_Bit_Order    =>
+                        T := RTE (RE_Bit_Order);
+                     when Aspect_External_Tag =>
+                        T := Standard_String;
+                     when Aspect_Storage_Pool =>
+                        T := Class_Wide_Type (RTE (RE_Root_Storage_Pool));
+                     when others              =>
+                        T := Any_Integer;
+                  end case;
+
+                  Preanalyze_Spec_Expression (Expr, T);
+
+                  --  Construct the attribute definition clause
+
+                  Aitem :=
                     Make_Attribute_Definition_Clause (Sloc (Aspect),
-                      Name       => New_Occurrence_Of (E, Sloc (Id)),
+                      Name       => Ent,
                       Chars      => Chars (Id),
                       Expression => Relocate_Node (Expr));
+
+                  --  We do not need a delay if we have a static expression
+
+                  if Is_OK_Static_Expression (Expression (Aitem)) then
+                     Delay_Required := False;
+
+                  --  Here a delay is required
+
+                  else
+                     Delay_Required := True;
+                  end if;
+
+               --  Address aspect, treated specially because we have some
+               --  strange problem in the back end if we try to delay ???
+
+               when Aspect_Address =>
+
+                  --  Construct the attribute definition clause
+
+                  Aitem :=
+                    Make_Attribute_Definition_Clause (Sloc (Aspect),
+                      Name       => Ent,
+                      Chars      => Chars (Id),
+                      Expression => Relocate_Node (Expr));
+
+                  --  If -gnatd.A is set, do the delay if needed (this is
+                  --  so we can debug the relevant problem).
+
+                  if Debug_Flag_Dot_AA then
+                     Preanalyze_Spec_Expression
+                       (Expression (Aitem), RTE (RE_Address));
+
+                     if Is_OK_Static_Expression (Expression (Aitem)) then
+                        Delay_Required := False;
+                     else
+                        Delay_Required := True;
+                     end if;
+
+                  --  Here if -gnatd.A not set, never do the delay
+
+                  else
+                     Delay_Required := False;
+                  end if;
 
                --  Aspects corresponding to pragmas with two arguments, where
                --  the first argument is a local name referring to the entity,
@@ -759,13 +850,20 @@ package body Sem_Ch13 is
                when Aspect_Suppress   |
                     Aspect_Unsuppress =>
 
-                  Ritem :=
+                  --  Construct the pragma
+
+                  Aitem :=
                     Make_Pragma (Sloc (Aspect),
                       Pragma_Argument_Associations => New_List (
                         New_Occurrence_Of (E, Sloc (Expr)),
                         Relocate_Node (Expr)),
                       Pragma_Identifier            =>
-                         Make_Identifier (Sloc (Id), Chars (Id)));
+                      Make_Identifier (Sloc (Id), Chars (Id)));
+
+                  --  We don't have to play the delay game here, since the only
+                  --  values are check names which don't get analyzed anyway.
+
+                  Delay_Required := False;
 
                --  Aspects corresponding to pragmas with two arguments, where
                --  the second argument is a local name referring to the entity,
@@ -773,7 +871,9 @@ package body Sem_Ch13 is
 
                when Aspect_Warnings =>
 
-                  Ritem :=
+                  --  Construct the pragma
+
+                  Aitem :=
                     Make_Pragma (Sloc (Aspect),
                       Pragma_Argument_Associations => New_List (
                         Relocate_Node (Expr),
@@ -781,35 +881,52 @@ package body Sem_Ch13 is
                       Pragma_Identifier            =>
                          Make_Identifier (Sloc (Id), Chars (Id)));
 
+                  --  We don't have to play the delay game here, since the only
+                  --  values are check names which don't get analyzed anyway.
+
+                  Delay_Required := False;
+
                --  Aspect Post corresponds to pragma Postcondition with single
                --  argument that is the expression (we never give a message
-               --  argument. This is inserted right after the declaration, to
+               --  argument. This is inserted right after the declaration,
                --  to get the required pragma placement.
 
                when Aspect_Post =>
 
-                  Insert_After (N,
+                  --  Construct the pragma
+
+                  Aitem :=
                     Make_Pragma (Sloc (Expr),
                       Pragma_Argument_Associations => New_List (
                         Relocate_Node (Expr)),
                       Pragma_Identifier            =>
-                         Make_Identifier (Sloc (Id), Name_Postcondition)));
-                  goto Continue;
+                      Make_Identifier (Sloc (Id), Name_Postcondition));
+
+                  --  We don't have to play the delay game here. The required
+                  --  delay in this case is already implemented by the pragma.
+
+                  Delay_Required := False;
 
                --  Aspect Pre corresponds to pragma Precondition with single
                --  argument that is the expression (we never give a message
-               --  argument. This is inserted right after the declaration, to
-               --  get the required pragma placement.
+               --  argument). This is inserted right after the declaration,
+               --  to get the required pragma placement.
 
                when Aspect_Pre =>
 
-                  Insert_After (N,
+                  --  Construct the pragma
+
+                  Aitem :=
                     Make_Pragma (Sloc (Expr),
                       Pragma_Argument_Associations => New_List (
                         Relocate_Node (Expr)),
                       Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Name_Precondition)));
-                  goto Continue;
+                        Make_Identifier (Sloc (Id), Name_Precondition));
+
+                  --  We don't have to play the delay game here. The required
+                  --  delay in this case is already implemented by the pragma.
+
+                  Delay_Required := False;
 
                --  Aspects currently unimplemented
 
@@ -820,9 +937,36 @@ package body Sem_Ch13 is
                   goto Continue;
             end case;
 
-            Set_From_Aspect_Specification (Ritem);
-            Insert_After (Ins_Node, Ritem);
-            Ins_Node := Ritem;
+            Set_From_Aspect_Specification (Aitem, True);
+
+            --  If a delay is required, we delay the freeze (not much point in
+            --  delaying the aspect if we don't delay the freeze!). The pragma
+            --  or clause is then attached to the aspect specification which
+            --  is placed in the rep item list.
+
+            if Delay_Required then
+               Ensure_Freeze_Node (E);
+               Set_Is_Delayed_Aspect (Aitem);
+               Set_Has_Delayed_Aspects (E);
+               Set_Aspect_Rep_Item (Aspect, Aitem);
+               Record_Rep_Item (E, Aspect);
+
+            --  If no delay required, insert the pragma/clause in the tree
+
+            else
+               --  For Pre/Post cases, insert immediately after the entity
+               --  declaration, since that is the required pragma placement.
+
+               if A_Id = Aspect_Pre or else A_Id = Aspect_Post then
+                  Insert_After (N, Aitem);
+
+               --  For all other cases, insert in sequence
+
+               else
+                  Insert_After (Ins_Node, Aitem);
+                  Ins_Node := Aitem;
+               end if;
+            end if;
          end;
 
          <<Continue>>
@@ -1043,9 +1187,7 @@ package body Sem_Ch13 is
       ----------------------
 
       function Duplicate_Clause return Boolean is
-         A   : constant Node_Id :=
-                 Get_Attribute_Definition_Clause
-                   (U_Ent, Get_Attribute_Id (Chars (N)));
+         A : Node_Id;
 
       begin
          --  Nothing to do if this attribute definition clause comes from an
@@ -1057,8 +1199,10 @@ package body Sem_Ch13 is
             return False;
          end if;
 
-         --  Otherwise current pragma may duplicate previous pragma or a
-         --  previously given aspect specification for the same pragma.
+         --  Otherwise current clause may duplicate previous clause or a
+         --  previously given aspect specification for the same aspect.
+
+         A := Get_Rep_Item_For_Entity (U_Ent, Chars (N));
 
          if Present (A) then
             if Entity (A) = U_Ent then
@@ -1572,12 +1716,11 @@ package body Sem_Ch13 is
             elsif Csize /= No_Uint then
                Check_Size (Expr, Ctyp, Csize, Biased);
 
-               --  For the biased case, build a declaration for a subtype
-               --  that will be used to represent the biased subtype that
-               --  reflects the biased representation of components. We need
-               --  this subtype to get proper conversions on referencing
-               --  elements of the array. Note that component size clauses
-               --  are ignored in VM mode.
+               --  For the biased case, build a declaration for a subtype that
+               --  will be used to represent the biased subtype that reflects
+               --  the biased representation of components. We need the subtype
+               --  to get proper conversions on referencing elements of the
+               --  array. Note: component size clauses are ignored in VM mode.
 
                if VM_Target = No_VM then
                   if Biased then
@@ -4879,6 +5022,17 @@ package body Sem_Ch13 is
    --  Start of processing for Rep_Item_Too_Late
 
    begin
+      --  If this is from an aspect that was delayed till the freeze point,
+      --  then we skip this check entirely, since it is not required and
+      --  furthermore can generate false errors. Also we don't need to chain
+      --  the item into the rep item chain in that case, it is already there!
+
+      if Nkind_In (N, N_Attribute_Definition_Clause, N_Pragma)
+        and then Is_Delayed_Aspect (N)
+      then
+         return False;
+      end if;
+
       --  First make sure entity is not frozen (RM 13.1(9)). Exclude imported
       --  types, which may be frozen if they appear in a representation clause
       --  for a local type.

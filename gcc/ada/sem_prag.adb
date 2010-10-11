@@ -178,14 +178,6 @@ package body Sem_Prag is
    --  original one, following the renaming chain) is returned. Otherwise the
    --  entity is returned unchanged. Should be in Einfo???
 
-   function Get_Pragma_Arg (Arg : Node_Id) return Node_Id;
-   --  All the routines that check pragma arguments take either a pragma
-   --  argument association (in which case the expression of the argument
-   --  association is checked), or the expression directly. The function
-   --  Get_Pragma_Arg is a utility used to deal with these two cases. If Arg
-   --  is a pragma argument association node, then its expression is returned,
-   --  otherwise Arg is returned unchanged.
-
    procedure rv;
    --  This is a dummy function called by the processing for pragma Reviewable.
    --  It is there for assisting front end debugging. By placing a Reviewable
@@ -416,8 +408,9 @@ package body Sem_Prag is
 
       procedure Check_Duplicate_Pragma (E : Entity_Id);
       --  Check if a pragma of the same name as the current pragma is already
-      --  chained as a rep pragma to the given entity. if so give a message
+      --  chained as a rep pragma to the given entity. If so give a message
       --  about the duplicate, and then raise Pragma_Exit so does not return.
+      --  Also checks for delayed aspect specification node in the chain.
 
       procedure Check_Duplicated_Export_Name (Nam : Node_Id);
       --  Nam is an N_String_Literal node containing the external name set by
@@ -1232,8 +1225,7 @@ package body Sem_Prag is
       ----------------------------
 
       procedure Check_Duplicate_Pragma (E : Entity_Id) is
-         P   : constant Node_Id := Get_Rep_Pragma (E, Pragma_Name (N));
-         Arg : Node_Id;
+         P : Node_Id;
 
       begin
          --  Nothing to do if this pragma comes from an aspect specification,
@@ -1247,27 +1239,21 @@ package body Sem_Prag is
          --  Otherwise current pragma may duplicate previous pragma or a
          --  previously given aspect specification for the same pragma.
 
+         P := Get_Rep_Item_For_Entity (E, Pragma_Name (N));
+
          if Present (P) then
+            Error_Msg_Name_1 := Pragma_Name (N);
+            Error_Msg_Sloc := Sloc (P);
 
-            --  Make sure pragma is for this entity, and not for some parent
-            --  entity in the case of a derived type.
-
-            Arg := Get_Pragma_Arg (First (Pragma_Argument_Associations (P)));
-
-            if Nkind (Arg) = N_Identifier
-              and then Entity (Arg) = E
+            if Nkind (P) = N_Aspect_Specification
+              or else From_Aspect_Specification (P)
             then
-               Error_Msg_Name_1 := Pname;
-               Error_Msg_Sloc := Sloc (P);
-
-               if From_Aspect_Specification (P) then
-                  Error_Msg_NE ("aspect% for & previously specified#", N, E);
-               else
-                  Error_Msg_NE ("pragma% for & duplicates pragma#", N, E);
-               end if;
-
-               raise Pragma_Exit;
+               Error_Msg_NE ("aspect% for & previously specified#", N, E);
+            else
+               Error_Msg_NE ("pragma% for & duplicates pragma#", N, E);
             end if;
+
+            raise Pragma_Exit;
          end if;
       end Check_Duplicate_Pragma;
 
@@ -13357,19 +13343,6 @@ package body Sem_Prag is
 
       return Result;
    end Get_Base_Subprogram;
-
-   --------------------
-   -- Get_Pragma_Arg --
-   --------------------
-
-   function Get_Pragma_Arg (Arg : Node_Id) return Node_Id is
-   begin
-      if Nkind (Arg) = N_Pragma_Argument_Association then
-         return Expression (Arg);
-      else
-         return Arg;
-      end if;
-   end Get_Pragma_Arg;
 
    ----------------
    -- Initialize --

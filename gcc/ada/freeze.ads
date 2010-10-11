@@ -179,21 +179,21 @@ package Freeze is
      (E   : Entity_Id;
       Typ : Entity_Id) return Boolean;
 
-   --  If an atomic object is initialized with an aggregate or is assigned
-   --  an aggregate, we have to prevent a piecemeal access or assignment
-   --  to the object, even if the aggregate is to be expanded. We create
-   --  a temporary for the aggregate, and assign the temporary instead,
-   --  so that the back end can generate an atomic move for it. This is
-   --  only done in the context of an object declaration or an assignment.
-   --  Function is a noop and returns false in other contexts.
+   --  If an atomic object is initialized with an aggregate or is assigned an
+   --  aggregate, we have to prevent a piecemeal access or assignment to the
+   --  object, even if the aggregate is to be expanded. We create a temporary
+   --  for the aggregate, and assign the temporary instead, so that the back
+   --  end can generate an atomic move for it. This is only done in the context
+   --  of an object declaration or an assignment. Function is a noop and
+   --  returns false in other contexts.
 
-   function Freeze_Entity (E : Entity_Id; Loc : Source_Ptr) return List_Id;
-   --  Freeze an entity, and return Freeze nodes, to be inserted at the
-   --  point of call. Loc is a source location which corresponds to the
-   --  freeze point. This is used in placing warning messages in the
-   --  situation where it appears that a type has been frozen too early,
-   --  e.g. when a primitive operation is declared after the freezing
-   --  point of its tagged type. Returns No_List if no freeze nodes needed.
+   function Freeze_Entity (E : Entity_Id; N : Node_Id) return List_Id;
+   --  Freeze an entity, and return Freeze nodes, to be inserted at the point
+   --  of call. N is a node whose source location corresponds to the freeze
+   --  point. This is used in placing warning messages in the situation where
+   --  it appears that a type has been frozen too early, e.g. when a primitive
+   --  operation is declared after the freezing point of its tagged type.
+   --  Returns No_List if no freeze nodes needed.
 
    procedure Freeze_All (From : Entity_Id; After : in out Node_Id);
    --  Before a non-instance body, or at the end of a declarative part
