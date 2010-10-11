@@ -1158,24 +1158,7 @@ int
 nonmemory_operand (rtx op, enum machine_mode mode)
 {
   if (CONSTANT_P (op))
-    {
-      /* Don't accept CONST_INT or anything similar
-	 if the caller wants something floating.  */
-      if (GET_MODE (op) == VOIDmode && mode != VOIDmode
-	  && GET_MODE_CLASS (mode) != MODE_INT
-	  && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
-	return 0;
-
-      if (CONST_INT_P (op)
-	  && mode != VOIDmode
-	  && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
-	return 0;
-
-      return ((GET_MODE (op) == VOIDmode || GET_MODE (op) == mode
-	       || mode == VOIDmode)
-	      && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op))
-	      && LEGITIMATE_CONSTANT_P (op));
-    }
+    return immediate_operand (op, mode);
 
   if (GET_MODE (op) != mode && mode != VOIDmode)
     return 0;

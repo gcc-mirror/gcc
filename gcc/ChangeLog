@@ -1,3 +1,8 @@
+2010-10-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* recog.c (nonmemory_operand): Call immediate_operand for
+	CONSTANT_P operands.
+
 2010-10-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (movmem<mode>): Macroize expander from
