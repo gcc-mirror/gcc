@@ -1,3 +1,21 @@
+2010-10-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/45862
+	* doc/tm.texi.in (SUPPORTS_WEAK): Update.
+	(TARGET_SUPPORTS_WEAK): New.
+	* doc/tm.texi: Regenerate.
+	* defaults.h (SUPPORTS_WEAK): Update comment.
+	(TARGET_SUPPORTS_WEAK): New.
+	* dwarf2asm.c (USE_LINKONCE_INDIRECT): Update define.
+	* varasm.c (assemble_external): Use TARGET_SUPPORTS_WEAK instead of
+	SUPPORTS_WEAK.
+	(merge_weak, declare_weak, do_assemble_alias, supports_one_only,
+	make_decl_one_only): Likewise.
+	* config/pa/som.h (SUPPORTS_WEAK): Rename defines to
+	TARGET_SUPPORTS_WEAK.
+	(SUPPORTS_ONE_ONLY, MAKE_DECL_ONE_ONLY): Use TARGET_SUPPORTS_WEAK
+	instead of SUPPORTS_WEAK.
+
 2010-10-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sparc/gmon-sol2.c: Don't include coretypes.h, tm.h.

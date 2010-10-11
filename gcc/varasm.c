@@ -2053,7 +2053,7 @@ assemble_external (tree decl ATTRIBUTE_UNUSED)
   /* We want to output annotation for weak and external symbols at
      very last to check if they are references or not.  */
 
-  if (SUPPORTS_WEAK
+  if (TARGET_SUPPORTS_WEAK
       && DECL_WEAK (decl)
       /* TREE_STATIC is a weird and abused creature which is not
 	 generally the right test for whether an entity has been
@@ -5027,7 +5027,7 @@ merge_weak (tree newdecl, tree olddecl)
 {
   if (DECL_WEAK (newdecl) == DECL_WEAK (olddecl))
     {
-      if (DECL_WEAK (newdecl) && SUPPORTS_WEAK)
+      if (DECL_WEAK (newdecl) && TARGET_SUPPORTS_WEAK)
         {
           tree *pwd;
           /* We put the NEWDECL on the weak_decls list at some point
@@ -5064,7 +5064,7 @@ merge_weak (tree newdecl, tree olddecl)
 	warning (0, "weak declaration of %q+D after first use results "
                  "in unspecified behavior", newdecl);
 
-      if (SUPPORTS_WEAK)
+      if (TARGET_SUPPORTS_WEAK)
 	{
 	  /* We put the NEWDECL on the weak_decls list at some point.
 	     Replace it with the OLDDECL.  */
@@ -5098,7 +5098,7 @@ declare_weak (tree decl)
     error ("weak declaration of %q+D must be public", decl);
   else if (TREE_CODE (decl) == FUNCTION_DECL && TREE_ASM_WRITTEN (decl))
     error ("weak declaration of %q+D must precede definition", decl);
-  else if (!SUPPORTS_WEAK)
+  else if (!TARGET_SUPPORTS_WEAK)
     warning (0, "weak declaration of %q+D not supported", decl);
 
   mark_weak (decl);
@@ -5344,7 +5344,7 @@ do_assemble_alias (tree decl, tree target)
 			  IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
 			  IDENTIFIER_POINTER (target));
 #else
-      if (!SUPPORTS_WEAK)
+      if (!TARGET_SUPPORTS_WEAK)
 	{
 	  error_at (DECL_SOURCE_LOCATION (decl),
 		    "weakref is not supported in this configuration");
@@ -5636,7 +5636,7 @@ supports_one_only (void)
 {
   if (SUPPORTS_ONE_ONLY)
     return 1;
-  return SUPPORTS_WEAK;
+  return TARGET_SUPPORTS_WEAK;
 }
 
 /* Set up DECL as a public symbol that can be defined in multiple
@@ -5662,7 +5662,7 @@ make_decl_one_only (tree decl, tree comdat_group)
     DECL_COMMON (decl) = 1;
   else
     {
-      gcc_assert (SUPPORTS_WEAK);
+      gcc_assert (TARGET_SUPPORTS_WEAK);
       DECL_WEAK (decl) = 1;
     }
 }

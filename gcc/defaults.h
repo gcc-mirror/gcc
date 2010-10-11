@@ -286,13 +286,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #endif
 
-/* This determines whether or not we support weak symbols.  */
+/* This determines whether or not we support weak symbols.  SUPPORTS_WEAK
+   must be a preprocessor constant.  */
 #ifndef SUPPORTS_WEAK
 #if defined (ASM_WEAKEN_LABEL) || defined (ASM_WEAKEN_DECL)
 #define SUPPORTS_WEAK 1
 #else
 #define SUPPORTS_WEAK 0
 #endif
+#endif
+
+/* This determines whether or not we support weak symbols during target
+   code generation.  TARGET_SUPPORTS_WEAK can be any valid C expression.  */
+#ifndef TARGET_SUPPORTS_WEAK
+#define TARGET_SUPPORTS_WEAK (SUPPORTS_WEAK)
 #endif
 
 /* This determines whether or not we support the discriminator
