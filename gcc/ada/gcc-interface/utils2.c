@@ -1820,9 +1820,10 @@ maybe_wrap_malloc (tree data_size, tree data_type, Node_Id gnat_node)
   /* On VMS, if pointers are 64-bit and the allocator size is 32-bit or
      Convention C, allocate 32-bit memory.  */
   if (TARGET_ABI_OPEN_VMS
-      && (POINTER_SIZE == 64
-	     && (UI_To_Int (Esize (Etype (gnat_node))) == 32
-		 || Convention (Etype (gnat_node)) == Convention_C)))
+      && POINTER_SIZE == 64
+      && Nkind (gnat_node) == N_Allocator
+      && (UI_To_Int (Esize (Etype (gnat_node))) == 32
+          || Convention (Etype (gnat_node)) == Convention_C))
     malloc_ptr = build_call_1_expr (malloc32_decl, size_to_malloc);
   else
     malloc_ptr = build_call_1_expr (malloc_decl, size_to_malloc);
