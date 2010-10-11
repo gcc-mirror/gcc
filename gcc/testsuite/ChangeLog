@@ -1,3 +1,8 @@
+2010-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/45870
+	* gcc.dg/tls/pr45870.c: New test.
+
 2010-10-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45961

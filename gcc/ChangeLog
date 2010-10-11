@@ -1,3 +1,9 @@
+2010-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/45870
+	* config/i386/i386.c (ix86_delegitimize_tls_address): New function.
+	(ix86_delegitimize_address): Use it.
+
 2010-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* opt-functions.awk (opt_sanitized_name): Remove gdwarf+ handling.
