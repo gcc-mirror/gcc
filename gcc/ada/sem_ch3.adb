@@ -8793,14 +8793,15 @@ package body Sem_Ch3 is
       --  A discriminant_specification for an access discriminant shall appear
       --  only in the declaration for a task or protected type, or for a type
       --  with the reserved word 'limited' in its definition or in one of its
-      --  ancestors. (RM 3.7(10))
-      --  AI-0063 : the proper condition is that type must be immutably
-      --  limited, or else be a partial view.
+      --  ancestors (RM 3.7(10)).
+
+      --  AI-0063: The proper condition is that type must be immutably limited,
+      --  or else be a partial view.
 
       if Nkind (Discriminant_Type (D)) = N_Access_Definition then
          if Is_Immutably_Limited_Type (Current_Scope)
            or else
-            (Nkind (Parent (Current_Scope)) = N_Private_Type_Declaration
+             (Nkind (Parent (Current_Scope)) = N_Private_Type_Declaration
                and then Limited_Present (Parent (Current_Scope)))
          then
             null;

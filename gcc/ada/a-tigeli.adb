@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                          A D A . T E X T _ I O                           --
+--                 A D A . T E X T _ I O . G E T _ L I N E                  --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -28,6 +28,11 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+--  The implementation of Ada.Text_IO.Get_Line is split into a subunit so that
+--  different implementations can be used on different systems. This is the
+--  standard implementation (it uses low level features not suitable for use
+--  in the JVM or .NET implementations).
 
 with System;                  use System;
 with System.Storage_Elements; use System.Storage_Elements;
