@@ -1654,6 +1654,24 @@ package body Exp_Ch6 is
 
             elsif Is_Possibly_Unaligned_Slice (Actual) then
                Add_Call_By_Copy_Code;
+
+            --  An unusual case: a current instance of an enclosing task can be
+            --  an actual, and must be replaced by a reference to self.
+
+            elsif Is_Entity_Name (Actual)
+              and then Is_Task_Type (Entity (Actual))
+            then
+               if In_Open_Scopes (Entity (Actual)) then
+                  Rewrite (Actual,
+                    (Make_Function_Call (Loc,
+                     Name => New_Reference_To (RTE (RE_Self), Loc))));
+                  Analyze (Actual);
+
+               --  A task type cannot otherwise appear as an actual
+
+               else
+                  raise Program_Error;
+               end if;
             end if;
          end if;
 

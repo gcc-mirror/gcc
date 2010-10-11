@@ -1,3 +1,17 @@
+2010-10-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): If an actual is the current instance of
+	a task type, it must be replaced with a reference to Self.
+
+2010-10-11  Vincent Celier  <celier@adacore.com>
+
+	* adaint.h: Add prototype for function __gnat_create_output_file_new.
+
+2010-10-11  Javier Miranda  <miranda@adacore.com>
+
+	* sem_aggr.adb (Collect_Aggr_Bounds): Remove side effects of collected
+	aggregate bounds.
+
 2010-10-11  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_prag.adb (Check_Interrupt_Or_Attach_Handler): Do not emit error

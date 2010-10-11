@@ -526,9 +526,10 @@ package body Sem_Aggr is
       Is_Fully_Positional : Boolean := True;
 
       procedure Collect_Aggr_Bounds (N : Node_Id; Dim : Pos);
-      --  N is an array (sub-)aggregate. Dim is the dimension corresponding to
-      --  (sub-)aggregate N. This procedure collects the constrained N_Range
-      --  nodes corresponding to each index dimension of our aggregate itype.
+      --  N is an array (sub-)aggregate. Dim is the dimension corresponding
+      --  to (sub-)aggregate N. This procedure collects and removes the side
+      --  effects of the constrained N_Range nodes corresponding to each index
+      --  dimension of our aggregate itype.
       --  These N_Range nodes are collected in Aggr_Range above.
       --
       --  Likewise collect in Aggr_Low & Aggr_High above the low and high
@@ -552,6 +553,9 @@ package body Sem_Aggr is
          Expr  : Node_Id;
 
       begin
+         Remove_Side_Effects (This_Low,  Variable_Ref => True);
+         Remove_Side_Effects (This_High, Variable_Ref => True);
+
          --  Collect the first N_Range for a given dimension that you find.
          --  For a given dimension they must be all equal anyway.
 
