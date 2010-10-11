@@ -1,3 +1,7 @@
+2010-10-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md (*mov<mode>cc): lgoc -> locg and stgoc -> stocg.
+
 2010-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/45870
