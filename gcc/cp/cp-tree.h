@@ -1055,7 +1055,8 @@ struct GTY(()) language_function {
   (cfun && cp_function_chain					\
    ? cp_function_chain->x_current_class_ptr : NULL_TREE)
 #define current_class_ref \
-  (cfun ? cp_function_chain->x_current_class_ref : NULL_TREE)
+  ((cfun && cp_function_chain)                                  \
+   ? cp_function_chain->x_current_class_ref : NULL_TREE)
 
 /* The EH_SPEC_BLOCK for the exception-specifiers for the current
    function, if any.  */

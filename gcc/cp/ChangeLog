@@ -1,3 +1,10 @@
+2010-10-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR c++/45562
+	* cp-tree.h (current_class_ref): Check that cp_function_chain is
+	non-NULL.
+	* call.c (build_cxx_call): Likewise.
+
 2010-10-10  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_default_argument): Handle DEFAULT_ARG.
