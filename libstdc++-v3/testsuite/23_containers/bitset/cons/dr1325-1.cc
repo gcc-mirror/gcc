@@ -1,6 +1,9 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-do compile }
 
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// 2010-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,29 +21,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <bitset>
-#include <string>
-#include <testsuite_hooks.h>
 
-struct X
-{
-  operator const char*() { return "10101010"; }
-};
-
-void
-test01()
-{
-  bool test __attribute__((unused)) = true;
-
-  X x;
-  std::string s(x);
-  std::bitset<32> b1(static_cast<const char*>(x));
-  std::bitset<32> b2(s);
-  VERIFY( b1 == b2 );
-}
-
-int
-main()
-{
-  test01();
-  return 0;
-}
+// DR 1325.
+std::bitset<10> b(0);
