@@ -1,3 +1,8 @@
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
+	* s-multip.ads: Fix header.
+	* sem_ch3.adb, s-multip.adb, a-tigeli.adb: Minor reformatting.
+
 2010-10-11  Vincent Celier  <celier@adacore.com>
 
 	* Makefile.rtl: Add s-multip.

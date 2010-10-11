@@ -29,6 +29,7 @@
 with Interfaces.C; use Interfaces.C;
 
 package body System.Multiprocessors is
+
    function Gnat_Number_Of_CPUs return int;
    pragma Import (C, Gnat_Number_Of_CPUs, "__gnat_number_of_cpus");
 
