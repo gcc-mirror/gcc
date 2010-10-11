@@ -137,7 +137,7 @@ package body Exp_Ch6 is
    --  access type. If the function call is the initialization expression for a
    --  return object, we pass along the master passed in by the caller. The
    --  activation chain to pass is always the local one. Note: Master_Actual
-   --  can be Empty, but only if there are no tasks
+   --  can be Empty, but only if there are no tasks.
 
    procedure Check_Overriding_Operation (Subp : Entity_Id);
    --  Subp is a dispatching operation. Check whether it may override an
@@ -1779,6 +1779,11 @@ package body Exp_Ch6 is
       --  convoluted tree traversal before setting the proper subprogram to be
       --  called.
 
+      function New_Value (From : Node_Id) return Node_Id;
+      --  From is the original Expression. New_Value is equivalent to a call
+      --  to Duplicate_Subexpr with an explicit dereference when From is an
+      --  access parameter.
+
       --------------------------
       -- Add_Actual_Parameter --
       --------------------------
@@ -1941,6 +1946,22 @@ package body Exp_Ch6 is
 
          raise Program_Error;
       end Inherited_From_Formal;
+
+      ---------------
+      -- New_Value --
+      ---------------
+
+      function New_Value (From : Node_Id) return Node_Id is
+         Res : constant Node_Id := Duplicate_Subexpr (From);
+      begin
+         if Is_Access_Type (Etype (From)) then
+            return
+              Make_Explicit_Dereference (Sloc (From),
+                Prefix => Res);
+         else
+            return Res;
+         end if;
+      end New_Value;
 
       --  Local variables
 
@@ -2652,8 +2673,12 @@ package body Exp_Ch6 is
         and then Present (Controlling_Argument (Call_Node))
       then
          declare
+            Call_Typ   : constant Entity_Id := Etype (Call_Node);
             Typ        : constant Entity_Id := Find_Dispatching_Type (Subp);
             Eq_Prim_Op : Entity_Id := Empty;
+            New_Call   : Node_Id;
+            Param      : Node_Id;
+            Prev_Call  : Node_Id;
 
          begin
             if not Is_Limited_Type (Typ) then
@@ -2673,6 +2698,45 @@ package body Exp_Ch6 is
             else
                Apply_Tag_Checks (Call_Node);
 
+               --  If this is a dispatching "=", we must first compare the
+               --  tags so we generate: x.tag = y.tag and then x = y
+
+               if Subp = Eq_Prim_Op then
+
+                  --  Mark the node as analyzed to avoid reanalizing this
+                  --  dispatching call (which would cause a never-ending loop)
+
+                  Prev_Call := Relocate_Node (Call_Node);
+                  Set_Analyzed (Prev_Call);
+
+                  Param := First_Actual (Call_Node);
+                  New_Call :=
+                    Make_And_Then (Loc,
+                      Left_Opnd =>
+                           Make_Op_Eq (Loc,
+                             Left_Opnd =>
+                               Make_Selected_Component (Loc,
+                                 Prefix        => New_Value (Param),
+                                 Selector_Name =>
+                                   New_Reference_To (First_Tag_Component (Typ),
+                                                     Loc)),
+
+                             Right_Opnd =>
+                               Make_Selected_Component (Loc,
+                                 Prefix        =>
+                                   Unchecked_Convert_To (Typ,
+                                     New_Value (Next_Actual (Param))),
+                                 Selector_Name =>
+                                   New_Reference_To
+                                     (First_Tag_Component (Typ), Loc))),
+                      Right_Opnd => Prev_Call);
+
+                  Rewrite (Call_Node, New_Call);
+
+                  Analyze_And_Resolve
+                    (Call_Node, Call_Typ, Suppress => All_Checks);
+               end if;
+
                --  Expansion of a dispatching call results in an indirect call,
                --  which in turn causes current values to be killed (see
                --  Resolve_Call), so on VM targets we do the call here to
@@ -2685,9 +2749,7 @@ package body Exp_Ch6 is
             --  to the call node because we generated:
             --     x.tag = y.tag and then x = y
 
-            if Subp = Eq_Prim_Op
-              and then Nkind (Call_Node) = N_Op_And
-            then
+            if Subp = Eq_Prim_Op then
                Call_Node := Right_Opnd (Call_Node);
             end if;
          end;

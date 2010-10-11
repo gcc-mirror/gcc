@@ -3726,6 +3726,7 @@ package body Sem_Ch10 is
       while Present (Item) loop
          if Nkind (Item) = N_With_Clause
            and then Limited_Present (Item)
+           and then not Error_Posted (Item)
          then
             if Nkind (Name (Item)) = N_Selected_Component then
                Expand_Limited_With_Clause
@@ -4703,7 +4704,49 @@ package body Sem_Ch10 is
           (Is_Immediately_Visible (P)
             or else (Is_Child_Package and then Is_Visible_Child_Unit (P)))
       then
-         return;
+
+         --  The presence of both the limited and the analyzed nonlimited view
+         --  may also be an error, such as an illegal context for a limited
+         --  with_clause. In that case, do not process the context item at all.
+
+         if Error_Posted (N) then
+            return;
+         end if;
+
+         if Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Body then
+            declare
+               Item : Node_Id;
+            begin
+               Item := First (Context_Items (Cunit (Current_Sem_Unit)));
+               while Present (Item) loop
+                  if Nkind (Item) = N_With_Clause
+                    and then Comes_From_Source (Item)
+                    and then Entity (Name (Item)) = P
+                  then
+                     return;
+                  end if;
+
+                  Next (Item);
+               end loop;
+            end;
+
+            --  If this is a child body, assume that the nonlimited with_clause
+            --  appears in an ancestor. Could be refined ???
+
+            if Is_Child_Unit
+              (Defining_Entity
+                 (Unit (Library_Unit (Cunit (Current_Sem_Unit)))))
+            then
+               return;
+            end if;
+
+         else
+
+            --  If in package declaration, nonlimited view brought in from
+            --  parent unit or some error condition.
+
+            return;
+         end if;
       end if;
 
       if Debug_Flag_I then
