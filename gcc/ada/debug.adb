@@ -118,7 +118,7 @@ package body Debug is
    --  d.y
    --  d.z
 
-   --  d.A
+   --  d.A  Properly defer address aspect
    --  d.B
    --  d.C  Generate concatenation call, do not generate inline code
    --  d.D
@@ -557,6 +557,12 @@ package body Debug is
 
    --  d.w  This flag turns off the scanning of loops to detect possible
    --       infinite loops.
+
+   --  d.A  Properly defer address aspect. In the case where the expression
+   --       of an address aspect is non-static, we should defer the evaluation
+   --       of the expression till the freeze point, but this does not seem to
+   --       work properly. So we have this debug switch temporarily so that we
+   --       can easily investigate this problem.
 
    --  d.x  No exception handlers in generated code. This causes exception
    --       handlers to be eliminated from the generated code. They are still

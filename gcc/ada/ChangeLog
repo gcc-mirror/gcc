@@ -1,5 +1,85 @@
 2010-10-11  Robert Dewar  <dewar@adacore.com>
 
+	* g-htable.ads (Get_First): New procedural version for Simple_HTable
+	(Get_Next): New procedural version for Simple_HTable
+	* s-htable.adb (Get_First): New procedural version for Simple_HTable
+	(Get_Next): New procedural version for Simple_HTable
+	* s-htable.ads (Get_First): New procedural version for Simple_HTable
+	(Get_Next): New procedural version for Simple_HTable
+
+2010-10-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Propagate_Discriminants): To gather the components of a
+	variant part, use the association list of the subaggregate, which
+	already includes the values of the needed discriminants.
+
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads, aspects.adb: Changes to accomodate aspect delay
+	(Tree_Write): New procedure.
+	* atree.ads, atree.adb: Flag3 is now Has_Aspects and applies to all
+	nodes.
+	* atree.h: Flag3 is now Has_Aspects and applies to all nodes
+	* debug.adb: Add debug flag gnatd.A
+	* einfo.adb (Has_Delayed_Aspects): New flag
+	(Get_Rep_Item_For_Entity): New function
+	* einfo.ads (Has_Delayed_Aspects): New flag
+	(Get_Rep_Item_For_Entity): New function
+	* exp_ch13.adb (Expand_N_Freeze_Entity): Insert delayed aspects into
+	tree.
+	* exp_ch3.adb, exp_ch6.adb, exp_ch9.adb, exp_disp.adb: New calling
+	sequence for Freeze_Entity.
+	* freeze.ads, freeze.adb (Freeze_Entity): Takes node rather than source
+	ptr. All calls are changed to this new interface.
+	(Freeze_And_Append): Same change
+	(Freeze_Entity): Evaluate deferred aspects
+	* sem_attr.adb: New calling sequence for Freeze_Entity
+	(Eval_Attribute): Don't try to evaluate attributes of unfrozen types
+	when we are in spec expression preanalysis mode.
+	* sem_ch10.adb: New calling sequence for Freeze_Entity
+	* sem_ch11.adb: Simplify analysis of aspect specifications now that the
+	flag Has_Aspects applies to all nodes (no need to save aspects).
+	* sem_ch12.adb: Simplify analysis of aspect specifications now that the
+	flag Has_Aspects applies to all nodes (no need to save aspects).
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Major rewrite to
+	accomodate delaying aspect evaluation to the freeze point.
+	(Duplicate_Clause): Simplify using Get_Rep_Item_For_Entity, and also
+	accomodate delayed aspects.
+	(Rep_Item_Too_Late): Deal with delayed aspects case
+	* sem_ch13.ads (Rep_Item_Too_Late): Document handling of delayed aspects
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Make sure that generic
+	actual types are properly frozen (this is needed because of the new
+	check in Eval_Attribute that declines to evaluate attributes
+	for unfrozen types).
+	Simplify analysis of aspect specifications now that the flag
+	Has_Aspects applies to all nodes (no need to save aspects).
+	* sem_ch3.ads (Preanalyze_Spec_Expression): Note use for delayed aspects
+	* sem_ch5.adb: Simplify analysis of aspect specifications now that the
+	flag Has_Aspects applies to all nodes (no need to save aspects).
+	New calling sequence for Freeze_Entity.
+	* sem_ch9.adb, sem_ch7.adb, sem_ch6.adb: Simplify analysis of aspect
+	specifications now that the flag Has_Aspects applies to all nodes
+	(no need to save aspects).
+	New calling sequence for Freeze_Entity
+	* sem_prag.adb (Check_Duplicate_Pragma): Simplify using
+	Get_Rep_Item_For_Entity
+	(Get_Pragma_Arg): Moved to Sinfo
+	* sinfo.ads, sinfo.adb (Aspect_Rep_Item_: New field
+	(Is_Delayed_Aspect): New flag
+	(Next_Rep_Item): Document use for aspects
+	(Get_Pragma_Arg): Moved here from Sem_Prag
+	* sprint.adb (Sprint_Aspect_Specifications): Now called after semicolon
+	is output and removes semicolon (simplifies interface).
+	(Sprint_Node_Actual): Simplify handling of aspects now that Has_Aspects
+	applies to any node.
+	* tree_gen.adb: Write contents of Aspect_Specifications hash table
+	* tree_in.adb: Read and initialize Aspect_Specifications hash table
+	* treepr.adb (Print_Node): Print Has_Aspects flag
+	(Print_Node): Print Aspect_Specifications in Has_Aspects set
+	* xtreeprs.adb: Remove obsolete references to Flag1,2,3
+
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
 	* aspects.ads, aspects.adb: Major revision of this package for 2nd
 	stage of aspects implementation.
 	* gcc-interface/Make-lang.in: Add entry for aspects.o

@@ -875,7 +875,6 @@ package body Sem_Ch9 is
       D_Sdef  : constant Node_Id   := Discrete_Subtype_Definition (N);
       Def_Id  : constant Entity_Id := Defining_Identifier (N);
       Formals : constant List_Id   := Parameter_Specifications (N);
-      AS      : constant List_Id   := Aspect_Specifications (N);
 
    begin
       Generate_Definition (Def_Id);
@@ -907,7 +906,7 @@ package body Sem_Ch9 is
       end if;
 
       Generate_Reference_To_Formals (Def_Id);
-      Analyze_Aspect_Specifications (N, Def_Id, AS);
+      Analyze_Aspect_Specifications (N, Def_Id, Aspect_Specifications (N));
    end Analyze_Entry_Declaration;
 
    ---------------------------------------
@@ -1132,7 +1131,6 @@ package body Sem_Ch9 is
 
    procedure Analyze_Protected_Type_Declaration (N : Node_Id) is
       Def_Id : constant Entity_Id := Defining_Identifier (N);
-      AS     : constant List_Id   := Aspect_Specifications (N);
       E      : Entity_Id;
       T      : Entity_Id;
 
@@ -1260,7 +1258,8 @@ package body Sem_Ch9 is
          end if;
       end if;
 
-      <<Leave>> Analyze_Aspect_Specifications (N, Def_Id, AS);
+      <<Leave>>
+         Analyze_Aspect_Specifications (N, Def_Id, Aspect_Specifications (N));
    end Analyze_Protected_Type_Declaration;
 
    ---------------------
@@ -1665,7 +1664,6 @@ package body Sem_Ch9 is
    procedure Analyze_Single_Protected_Declaration (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
       Id     : constant Node_Id    := Defining_Identifier (N);
-      AS     : constant List_Id    := Aspect_Specifications (N);
       T      : Entity_Id;
       T_Decl : Node_Id;
       O_Decl : Node_Id;
@@ -1713,7 +1711,7 @@ package body Sem_Ch9 is
       --  disastrous result.
 
       Analyze_Protected_Type_Declaration (N);
-      Analyze_Aspect_Specifications (N, Id, AS);
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Single_Protected_Declaration;
 
    -------------------------------------
@@ -1723,7 +1721,6 @@ package body Sem_Ch9 is
    procedure Analyze_Single_Task_Declaration (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
       Id     : constant Node_Id    := Defining_Identifier (N);
-      AS     : constant List_Id    := Aspect_Specifications (N);
       T      : Entity_Id;
       T_Decl : Node_Id;
       O_Decl : Node_Id;
@@ -1779,7 +1776,7 @@ package body Sem_Ch9 is
       --  disastrous result.
 
       Analyze_Task_Type_Declaration (N);
-      Analyze_Aspect_Specifications (N, Id, AS);
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Single_Task_Declaration;
 
    -----------------------
@@ -1952,7 +1949,6 @@ package body Sem_Ch9 is
 
    procedure Analyze_Task_Type_Declaration (N : Node_Id) is
       Def_Id : constant Entity_Id := Defining_Identifier (N);
-      AS     : constant List_Id   := Aspect_Specifications (N);
       T      : Entity_Id;
 
    begin
@@ -2051,7 +2047,7 @@ package body Sem_Ch9 is
          end if;
       end if;
 
-      Analyze_Aspect_Specifications (N, Def_Id, AS);
+      Analyze_Aspect_Specifications (N, Def_Id, Aspect_Specifications (N));
    end Analyze_Task_Type_Declaration;
 
    -----------------------------------

@@ -36,6 +36,7 @@ pragma Style_Checks (All_Checks);
 --  file must be properly reflected in the file atree.h which is a C header
 --  file containing equivalent definitions for use by gigi.
 
+with Aspects; use Aspects;
 with Debug;   use Debug;
 with Nlists;  use Nlists;
 with Output;  use Output;
@@ -1087,6 +1088,16 @@ package body Atree is
       return Default_Node.Comes_From_Source;
    end Get_Comes_From_Source_Default;
 
+   -----------------
+   -- Has_Aspects --
+   -----------------
+
+   function Has_Aspects (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (N <= Nodes.Last);
+      return Nodes.Table (N).Has_Aspects;
+   end Has_Aspects;
+
    -------------------
    -- Has_Extension --
    -------------------
@@ -1563,20 +1574,22 @@ package body Atree is
    -------------
 
    procedure Replace (Old_Node, New_Node : Node_Id) is
-      Old_Post : constant Boolean  := Nodes.Table (Old_Node).Error_Posted;
-      Old_CFS  : constant Boolean  := Nodes.Table (Old_Node).Comes_From_Source;
+      Old_Post : constant Boolean := Nodes.Table (Old_Node).Error_Posted;
+      Old_HasA : constant Boolean := Nodes.Table (Old_Node).Has_Aspects;
+      Old_CFS  : constant Boolean := Nodes.Table (Old_Node).Comes_From_Source;
 
    begin
       pragma Assert
         (not Has_Extension (Old_Node)
-           and not Has_Extension (New_Node)
-           and not Nodes.Table (New_Node).In_List);
+          and not Has_Extension (New_Node)
+          and not Nodes.Table (New_Node).In_List);
 
-      --  Do copy, preserving link and in list status and comes from source
+      --  Do copy, preserving link and in list status and required flags
 
       Copy_Node (Source => New_Node, Destination => Old_Node);
       Nodes.Table (Old_Node).Comes_From_Source := Old_CFS;
       Nodes.Table (Old_Node).Error_Posted      := Old_Post;
+      Nodes.Table (Old_Node).Has_Aspects       := Old_HasA;
 
       --  Fix parents of substituted node, since it has changed identity
 
@@ -1601,7 +1614,10 @@ package body Atree is
 
    procedure Rewrite (Old_Node, New_Node : Node_Id) is
       Old_Error_P : constant Boolean  := Nodes.Table (Old_Node).Error_Posted;
-      --  This fields is always preserved in the new node
+      --  This field is always preserved in the new node
+
+      Old_Has_Aspects : constant Boolean := Nodes.Table (Old_Node).Has_Aspects;
+      --  This field is always preserved in the new node
 
       Old_Paren_Count     : Nat;
       Old_Must_Not_Freeze : Boolean;
@@ -1616,15 +1632,15 @@ package body Atree is
    begin
       pragma Assert
         (not Has_Extension (Old_Node)
-           and not Has_Extension (New_Node)
-           and not Nodes.Table (New_Node).In_List);
+          and not Has_Extension (New_Node)
+          and not Nodes.Table (New_Node).In_List);
       pragma Debug (Rewrite_Debugging_Output (Old_Node, New_Node));
 
       if Nkind (Old_Node) in N_Subexpr then
          Old_Paren_Count     := Paren_Count (Old_Node);
          Old_Must_Not_Freeze := Must_Not_Freeze (Old_Node);
       else
-         Old_Paren_Count := 0;
+         Old_Paren_Count     := 0;
          Old_Must_Not_Freeze := False;
       end if;
 
@@ -1638,12 +1654,21 @@ package body Atree is
          Sav_Node := New_Copy (Old_Node);
          Orig_Nodes.Table (Sav_Node) := Sav_Node;
          Orig_Nodes.Table (Old_Node) := Sav_Node;
+
+         --  Both the old and new copies of the node will share the same list
+         --  of aspect specifications if aspect specifications are present.
+
+         if Has_Aspects (Sav_Node) then
+            Set_Aspect_Specifications
+              (Sav_Node, Aspect_Specifications (Old_Node));
+         end if;
       end if;
 
       --  Copy substitute node into place, preserving old fields as required
 
       Copy_Node (Source => New_Node, Destination => Old_Node);
       Nodes.Table (Old_Node).Error_Posted := Old_Error_P;
+      Nodes.Table (Old_Node).Has_Aspects  := Old_Has_Aspects;
 
       if Nkind (New_Node) in N_Subexpr then
          Set_Paren_Count     (Old_Node, Old_Paren_Count);
@@ -1735,6 +1760,16 @@ package body Atree is
    begin
       Nodes.Table (N).Error_Posted := Val;
    end Set_Error_Posted;
+
+   ---------------------
+   -- Set_Has_Aspects --
+   ---------------------
+
+   procedure Set_Has_Aspects (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (N <= Nodes.Last);
+      Nodes.Table (N).Has_Aspects := Val;
+   end Set_Has_Aspects;
 
    ---------------------
    -- Set_Paren_Count --
@@ -2704,12 +2739,6 @@ package body Atree is
          return From_Union (Nodes.Table (N + 3).Field8);
       end Ureal21;
 
-      function Flag3 (N : Node_Id) return Boolean is
-      begin
-         pragma Assert (N <= Nodes.Last);
-         return Nodes.Table (N).Flag3;
-      end Flag3;
-
       function Flag4 (N : Node_Id) return Boolean is
       begin
          pragma Assert (N <= Nodes.Last);
@@ -2809,7 +2838,7 @@ package body Atree is
       function Flag20 (N : Node_Id) return Boolean is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         return Nodes.Table (N + 1).Flag3;
+         return Nodes.Table (N + 1).Has_Aspects;
       end Flag20;
 
       function Flag21 (N : Node_Id) return Boolean is
@@ -2935,7 +2964,7 @@ package body Atree is
       function Flag41 (N : Node_Id) return Boolean is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         return Nodes.Table (N + 2).Flag3;
+         return Nodes.Table (N + 2).Has_Aspects;
       end Flag41;
 
       function Flag42 (N : Node_Id) return Boolean is
@@ -3469,7 +3498,7 @@ package body Atree is
       function Flag130 (N : Node_Id) return Boolean is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         return Nodes.Table (N + 3).Flag3;
+         return Nodes.Table (N + 3).Has_Aspects;
       end Flag130;
 
       function Flag131 (N : Node_Id) return Boolean is
@@ -3991,7 +4020,7 @@ package body Atree is
       function Flag217 (N : Node_Id) return Boolean is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         return Nodes.Table (N + 4).Flag3;
+         return Nodes.Table (N + 4).Has_Aspects;
       end Flag217;
 
       function Flag218 (N : Node_Id) return Boolean is
@@ -4812,12 +4841,6 @@ package body Atree is
          Nodes.Table (N + 3).Field8 := To_Union (Val);
       end Set_Ureal21;
 
-      procedure Set_Flag3 (N : Node_Id; Val : Boolean) is
-      begin
-         pragma Assert (N <= Nodes.Last);
-         Nodes.Table (N).Flag3 := Val;
-      end Set_Flag3;
-
       procedure Set_Flag4 (N : Node_Id; Val : Boolean) is
       begin
          pragma Assert (N <= Nodes.Last);
@@ -4917,7 +4940,7 @@ package body Atree is
       procedure Set_Flag20 (N : Node_Id; Val : Boolean) is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         Nodes.Table (N + 1).Flag3 := Val;
+         Nodes.Table (N + 1).Has_Aspects := Val;
       end Set_Flag20;
 
       procedure Set_Flag21 (N : Node_Id; Val : Boolean) is
@@ -5043,7 +5066,7 @@ package body Atree is
       procedure Set_Flag41 (N : Node_Id; Val : Boolean) is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         Nodes.Table (N + 2).Flag3 := Val;
+         Nodes.Table (N + 2).Has_Aspects := Val;
       end Set_Flag41;
 
       procedure Set_Flag42 (N : Node_Id; Val : Boolean) is
@@ -5705,7 +5728,7 @@ package body Atree is
       procedure Set_Flag130 (N : Node_Id; Val : Boolean) is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         Nodes.Table (N + 3).Flag3 := Val;
+         Nodes.Table (N + 3).Has_Aspects := Val;
       end Set_Flag130;
 
       procedure Set_Flag131 (N : Node_Id; Val : Boolean) is
@@ -6355,7 +6378,7 @@ package body Atree is
       procedure Set_Flag217 (N : Node_Id; Val : Boolean) is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         Nodes.Table (N + 4).Flag3 := Val;
+         Nodes.Table (N + 4).Has_Aspects := Val;
       end Set_Flag217;
 
       procedure Set_Flag218 (N : Node_Id; Val : Boolean) is

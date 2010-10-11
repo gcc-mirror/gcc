@@ -1802,7 +1802,6 @@ package body Sem_Ch12 is
    procedure Analyze_Formal_Object_Declaration (N : Node_Id) is
       E  : constant Node_Id := Default_Expression (N);
       Id : constant Node_Id := Defining_Identifier (N);
-      AS : constant List_Id := Aspect_Specifications (N);
       K  : Entity_Kind;
       T  : Node_Id;
 
@@ -1932,7 +1931,7 @@ package body Sem_Ch12 is
          end if;
       end if;
 
-      Analyze_Aspect_Specifications (N, Id, AS);
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Formal_Object_Declaration;
 
    ----------------------------------------------
@@ -1983,7 +1982,6 @@ package body Sem_Ch12 is
    procedure Analyze_Formal_Package_Declaration (N : Node_Id) is
       Loc              : constant Source_Ptr := Sloc (N);
       Pack_Id          : constant Entity_Id  := Defining_Identifier (N);
-      AS               : constant List_Id    := Aspect_Specifications (N);
       Formal           : Entity_Id;
       Gen_Id           : constant Node_Id    := Name (N);
       Gen_Decl         : Node_Id;
@@ -2279,7 +2277,8 @@ package body Sem_Ch12 is
       Set_Scope (Pack_Id, Scope (Formal));
       Set_Has_Completion (Pack_Id, True);
 
-      <<Leave>> Analyze_Aspect_Specifications (N, Pack_Id, AS);
+      <<Leave>>
+         Analyze_Aspect_Specifications (N, Pack_Id, Aspect_Specifications (N));
    end Analyze_Formal_Package_Declaration;
 
    ---------------------------------
@@ -2338,7 +2337,6 @@ package body Sem_Ch12 is
       Spec : constant Node_Id   := Specification (N);
       Def  : constant Node_Id   := Default_Name (N);
       Nam  : constant Entity_Id := Defining_Unit_Name (Spec);
-      AS   : constant List_Id   := Aspect_Specifications (N);
       Subp : Entity_Id;
 
    begin
@@ -2500,7 +2498,8 @@ package body Sem_Ch12 is
          end if;
       end if;
 
-      <<Leave>> Analyze_Aspect_Specifications (N, Nam, AS);
+      <<Leave>>
+         Analyze_Aspect_Specifications (N, Nam, Aspect_Specifications (N));
    end Analyze_Formal_Subprogram_Declaration;
 
    -------------------------------------
@@ -2509,7 +2508,6 @@ package body Sem_Ch12 is
 
    procedure Analyze_Formal_Type_Declaration (N : Node_Id) is
       Def : constant Node_Id := Formal_Type_Definition (N);
-      AS  : constant List_Id := Aspect_Specifications (N);
       T   : Entity_Id;
 
    begin
@@ -2575,7 +2573,7 @@ package body Sem_Ch12 is
       end case;
 
       Set_Is_Generic_Type (T);
-      Analyze_Aspect_Specifications (N, T, AS);
+      Analyze_Aspect_Specifications (N, T, Aspect_Specifications (N));
    end Analyze_Formal_Type_Declaration;
 
    ------------------------------------
@@ -2642,7 +2640,6 @@ package body Sem_Ch12 is
 
    procedure Analyze_Generic_Package_Declaration (N : Node_Id) is
       Loc         : constant Source_Ptr := Sloc (N);
-      AS          : constant List_Id    := Aspect_Specifications (N);
       Id          : Entity_Id;
       New_N       : Node_Id;
       Save_Parent : Node_Id;
@@ -2754,7 +2751,7 @@ package body Sem_Ch12 is
          end if;
       end if;
 
-      Analyze_Aspect_Specifications (N, Id, AS);
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Generic_Package_Declaration;
 
    --------------------------------------------
@@ -2762,7 +2759,6 @@ package body Sem_Ch12 is
    --------------------------------------------
 
    procedure Analyze_Generic_Subprogram_Declaration (N : Node_Id) is
-      AS          : constant List_Id := Aspect_Specifications (N);
       Spec        : Node_Id;
       Id          : Entity_Id;
       Formals     : List_Id;
@@ -2881,7 +2877,7 @@ package body Sem_Ch12 is
       End_Scope;
       Exit_Generic_Scope (Id);
       Generate_Reference_To_Formals (Id);
-      Analyze_Aspect_Specifications (N, Id, AS);
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Generic_Subprogram_Declaration;
 
    -----------------------------------
@@ -2891,7 +2887,6 @@ package body Sem_Ch12 is
    procedure Analyze_Package_Instantiation (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
       Gen_Id : constant Node_Id    := Name (N);
-      AS     : constant List_Id    := Aspect_Specifications (N);
 
       Act_Decl      : Node_Id;
       Act_Decl_Name : Node_Id;
@@ -3555,7 +3550,9 @@ package body Sem_Ch12 is
          Set_Defining_Identifier (N, Act_Decl_Id);
       end if;
 
-      <<Leave>> Analyze_Aspect_Specifications (N, Act_Decl_Id, AS);
+      <<Leave>>
+         Analyze_Aspect_Specifications
+           (N, Act_Decl_Id, Aspect_Specifications (N));
 
    exception
       when Instantiation_Error =>
@@ -3582,8 +3579,7 @@ package body Sem_Ch12 is
                       Cunit_Entity (Get_Source_Unit (Gen_Unit));
       Curr_Comp    : constant Node_Id := Cunit (Current_Sem_Unit);
       Curr_Scope   : Entity_Id := Empty;
-      Curr_Unit    : constant Entity_Id :=
-                       Cunit_Entity (Current_Sem_Unit);
+      Curr_Unit    : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
       Removed      : Boolean := False;
       Num_Scopes   : Int := 0;
 
@@ -3910,7 +3906,6 @@ package body Sem_Ch12 is
    is
       Loc    : constant Source_Ptr := Sloc (N);
       Gen_Id : constant Node_Id    := Name (N);
-      AS     : constant List_Id    := Aspect_Specifications (N);
 
       Anon_Id : constant Entity_Id :=
                   Make_Defining_Identifier (Sloc (Defining_Entity (N)),
@@ -4332,7 +4327,9 @@ package body Sem_Ch12 is
          Generic_Renamings_HTable.Reset;
       end if;
 
-      <<Leave>> Analyze_Aspect_Specifications (N, Act_Decl_Id, AS);
+      <<Leave>>
+         Analyze_Aspect_Specifications
+           (N, Act_Decl_Id, Aspect_Specifications (N));
 
    exception
       when Instantiation_Error =>

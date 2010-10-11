@@ -264,8 +264,8 @@ package Einfo is
 --  on the actions triggered by a freeze node, which include the construction
 --  of initialization procedures and dispatch tables.
 
---  b) The presence of a freeze node on an entity  is used by the backend to
---  defer elaboration of the entity until its freeze node is seen.  In the
+--  b) The presence of a freeze node on an entity is used by the backend to
+--  defer elaboration of the entity until its freeze node is seen. In the
 --  absence of an explicit freeze node, an entity is frozen (and elaborated)
 --  at the point of declaration.
 
@@ -1390,6 +1390,12 @@ package Einfo is
 --       Present in all entities. Set true for an entity for which a valid
 --       Convention, Import, or Export pragma has been given. Used to prevent
 --       more than one such pragma appearing for a given entity (RM B.1(45)).
+
+--    Has_Delayed_Aspects (Flag200) Present in all entities. Set true if the
+--       Rep_Item chain for the entity has one or more N_Aspect_Definition
+--       nodes chained which are not to be evaluated till the freeze point.
+--       The aspect definition expression clause has been preanalyzed to get
+--       visibility at the point of use, but no other action has been taken.
 
 --    Has_Delayed_Freeze (Flag18)
 --       Present in all entities. Set to indicate that an explicit freeze
@@ -4572,6 +4578,7 @@ package Einfo is
    --    Has_Anon_Block_Suffix               (Flag201)
    --    Has_Controlled_Component            (Flag43)   (base type only)
    --    Has_Convention_Pragma               (Flag119)
+   --    Has_Delayed_Aspects                 (Flag200)
    --    Has_Delayed_Freeze                  (Flag18)
    --    Has_Fully_Qualified_Name            (Flag173)
    --    Has_Gigi_Rep_Item                   (Flag82)
@@ -5863,6 +5870,7 @@ package Einfo is
    function Has_Controlled_Component            (Id : E) return B;
    function Has_Controlling_Result              (Id : E) return B;
    function Has_Convention_Pragma               (Id : E) return B;
+   function Has_Delayed_Aspects                 (Id : E) return B;
    function Has_Delayed_Freeze                  (Id : E) return B;
    function Has_Discriminants                   (Id : E) return B;
    function Has_Dispatch_Table                  (Id : E) return B;
@@ -6424,6 +6432,7 @@ package Einfo is
    procedure Set_Has_Controlled_Component        (Id : E; V : B := True);
    procedure Set_Has_Controlling_Result          (Id : E; V : B := True);
    procedure Set_Has_Convention_Pragma           (Id : E; V : B := True);
+   procedure Set_Has_Delayed_Aspects             (Id : E; V : B := True);
    procedure Set_Has_Delayed_Freeze              (Id : E; V : B := True);
    procedure Set_Has_Discriminants               (Id : E; V : B := True);
    procedure Set_Has_Dispatch_Table              (Id : E; V : B := True);
@@ -6846,13 +6855,17 @@ package Einfo is
    -- Subprograms for Accessing Rep Item Chain --
    ----------------------------------------------
 
-   --  The First_Rep_Item field of every entity points to a linked list
-   --  (linked through Next_Rep_Item) of representation pragmas and attribute
-   --  definition clauses that apply to the item. Note that in the case of
-   --  types, it is assumed that any such rep items for a base type also apply
-   --  to all subtypes. This is implemented by having the chain for subtypes
-   --  link onto the chain for the base type, so that any new entries for the
-   --  subtype are added at the start of the chain.
+   --  The First_Rep_Item field of every entity points to a linked list (linked
+   --  through Next_Rep_Item) of representation pragmas, attribute definition
+   --  clauses, representation clauses, and aspect specifications that apply to
+   --  the item. Note that in the case of types, it is assumed that any such
+   --  rep items for a base type also apply to all subtypes. This is achieved
+   --  by having the chain for subtypes link onto the chain for the base type,
+   --  so that new entries for the subtype are added at the start of the chain.
+   --
+   --  Note: aspect specification nodes are linked only when evaluation of the
+   --  expression is deferred to the freeze point. For further details see
+   --  Sem_Ch13.Analyze_Aspect_Specifications.
 
    function Get_Attribute_Definition_Clause
      (E  : Entity_Id;
@@ -6861,6 +6874,16 @@ package Einfo is
    --  attribute definition clause with the given attribute Id. If found, the
    --  value returned is the N_Attribute_Definition_Clause node, otherwise
    --  Empty is returned.
+
+   function Get_Rep_Item_For_Entity
+     (E   : Entity_Id;
+      Nam : Name_Id) return Node_Id;
+   --  Searches the Rep_Item chain for a given entity E, for an instance of a
+   --  rep item (pragma, attribute definition clause, or aspect specitication)
+   --  whose name matches the given name. If one is found, it is returned,
+   --  otherwise Empty is returned. Unlike the other Get routines for the
+   --  Rep_Item chain, this only returns items whose entity matches E (it
+   --  does not return items from the parent chain).
 
    function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for a record
@@ -6885,15 +6908,15 @@ package Einfo is
    --  is returned, otherwise False indicates that no matching entry was found.
 
    procedure Record_Rep_Item (E : Entity_Id; N : Node_Id);
-   --  N is the node for either a representation pragma or an attribute
-   --  definition clause that applies to entity E. This procedure links the
-   --  node N onto the Rep_Item chain for entity E. Note that it is an error to
-   --  call this procedure with E being overloadable, and N being a pragma that
-   --  can apply to multiple overloadable entities (i.e. Convention, Interface,
-   --  Inline, Inline_Always, Import, Export, External). This is not allowed
-   --  even if in fact the entity is not overloaded, since we can't rely on
-   --  it being present in the overloaded case, it is not useful to have it
-   --  present in the non-overloaded case.
+   --  N is the node for a representation pragma, representation clause, an
+   --  attribute definition clause, or an aspect specification that applies to
+   --  entity E. This procedure links the node N onto the Rep_Item chain for
+   --  entity E. Note that it is an error to call this procedure with E being
+   --  overloadable, and N being a pragma that applies to multiple overloadable
+   --  entities (Convention, Interface, Inline, Inline_Always, Import, Export,
+   --  External). This is not allowed even in the case where the entity is not
+   --  overloaded, since we can't rely on it being present in the overloaded
+   --  case, it is not useful to have it present in the non-overloaded case.
 
    -------------------------------
    -- Miscellaneous Subprograms --
@@ -7083,6 +7106,7 @@ package Einfo is
    pragma Inline (Has_Controlled_Component);
    pragma Inline (Has_Controlling_Result);
    pragma Inline (Has_Convention_Pragma);
+   pragma Inline (Has_Delayed_Aspects);
    pragma Inline (Has_Delayed_Freeze);
    pragma Inline (Has_Discriminants);
    pragma Inline (Has_Dispatch_Table);
@@ -7515,6 +7539,7 @@ package Einfo is
    pragma Inline (Set_Has_Controlled_Component);
    pragma Inline (Set_Has_Controlling_Result);
    pragma Inline (Set_Has_Convention_Pragma);
+   pragma Inline (Set_Has_Delayed_Aspects);
    pragma Inline (Set_Has_Delayed_Freeze);
    pragma Inline (Set_Has_Discriminants);
    pragma Inline (Set_Has_Dispatch_Table);

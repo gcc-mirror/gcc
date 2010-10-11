@@ -227,6 +227,8 @@ package Sem_Ch3 is
    --  In_Default_Expression flag. See the documentation section entitled
    --  "Handling of Default and Per-Object Expressions" in sem.ads for full
    --  details. N is the expression to be analyzed, T is the expected type.
+   --  This mechanism is also used for aspect specifications that have an
+   --  expression parameter that needs similar preanalysis.
 
    procedure Process_Full_View (N : Node_Id; Full_T, Priv_T : Entity_Id);
    --  Process some semantic actions when the full view of a private type is

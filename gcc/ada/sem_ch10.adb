@@ -1204,9 +1204,8 @@ package body Sem_Ch10 is
       --  compilation unit actions list, and analyze them.
 
       declare
-         Loc : constant Source_Ptr := Sloc (N);
-         L   : constant List_Id :=
-                 Freeze_Entity (Cunit_Entity (Current_Sem_Unit), Loc);
+         L : constant List_Id :=
+               Freeze_Entity (Cunit_Entity (Current_Sem_Unit), N);
       begin
          while Is_Non_Empty_List (L) loop
             Insert_Library_Level_Action (Remove_Head (L));

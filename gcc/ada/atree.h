@@ -40,7 +40,7 @@ struct NFK
   Boolean      pflag1        :  1;
   Boolean      pflag2        :  1;
   Boolean      in_list       :  1;
-  Boolean      flag3         :  1;
+  Boolean      has_aspects   :  1;
   Boolean      rewrite_ins   :  1;
   Boolean      analyzed      :  1;
   Boolean      c_f_s	     :  1;
@@ -75,7 +75,7 @@ struct NFNK
   Boolean      pflag1        :  1;
   Boolean      pflag2        :  1;
   Boolean      in_list       :  1;
-  Boolean      flag3         :  1;
+  Boolean      has_aspects   :  1;
   Boolean      rewrite_ins   :  1;
   Boolean      analyzed      :  1;
   Boolean      c_f_s	     :  1;
@@ -466,10 +466,10 @@ extern Node_Id Current_Error_Node;
 #define Analyzed(N)          (Nodes_Ptr[(N) - First_Node_Id].U.K.analyzed)
 #define Comes_From_Source(N) (Nodes_Ptr[(N) - First_Node_Id].U.K.c_f_s)
 #define Error_Posted(N)      (Nodes_Ptr[(N) - First_Node_Id].U.K.error_posted)
+#define Has_Aspects(N)       (Nodes_Ptr[(N) - First_Node_Id].U.K.has_aspects)
 #define Convention(N) \
     (Nodes_Ptr[(N) - First_Node_Id + 2].V.EX.U.fw.convention)
 
-#define Flag3(N)      (Nodes_Ptr[(N) - First_Node_Id].U.K.flag3)
 #define Flag4(N)      (Nodes_Ptr[(N) - First_Node_Id].U.K.flag4)
 #define Flag5(N)      (Nodes_Ptr[(N) - First_Node_Id].U.K.flag5)
 #define Flag6(N)      (Nodes_Ptr[(N) - First_Node_Id].U.K.flag6)
@@ -487,7 +487,7 @@ extern Node_Id Current_Error_Node;
 #define Flag18(N)     (Nodes_Ptr[(N) - First_Node_Id].U.K.flag18)
 
 #define Flag19(N)     (Nodes_Ptr[(N) - First_Node_Id + 1].U.K.in_list)
-#define Flag20(N)     (Nodes_Ptr[(N) - First_Node_Id + 1].U.K.flag3)
+#define Flag20(N)     (Nodes_Ptr[(N) - First_Node_Id + 1].U.K.has_aspects)
 #define Flag21(N)     (Nodes_Ptr[(N) - First_Node_Id + 1].U.K.rewrite_ins)
 #define Flag22(N)     (Nodes_Ptr[(N) - First_Node_Id + 1].U.K.analyzed)
 #define Flag23(N)     (Nodes_Ptr[(N) - First_Node_Id + 1].U.K.c_f_s)
@@ -509,7 +509,7 @@ extern Node_Id Current_Error_Node;
 #define Flag39(N)     (Nodes_Ptr[(N) - First_Node_Id + 1].U.K.flag18)
 
 #define Flag40(N)     (Nodes_Ptr[(N) - First_Node_Id + 2].U.K.in_list)
-#define Flag41(N)     (Nodes_Ptr[(N) - First_Node_Id + 2].U.K.flag3)
+#define Flag41(N)     (Nodes_Ptr[(N) - First_Node_Id + 2].U.K.has_aspects)
 #define Flag42(N)     (Nodes_Ptr[(N) - First_Node_Id + 2].U.K.rewrite_ins)
 #define Flag43(N)     (Nodes_Ptr[(N) - First_Node_Id + 2].U.K.analyzed)
 #define Flag44(N)     (Nodes_Ptr[(N) - First_Node_Id + 2].U.K.c_f_s)
@@ -601,7 +601,7 @@ extern Node_Id Current_Error_Node;
 #define Flag128(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].V.EX.U.fw2.flag128)
 
 #define Flag129(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].U.K.in_list)
-#define Flag130(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].U.K.flag3)
+#define Flag130(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].U.K.has_aspects)
 #define Flag131(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].U.K.rewrite_ins)
 #define Flag132(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].U.K.analyzed)
 #define Flag133(N)     (Nodes_Ptr[(N) - First_Node_Id + 3].U.K.c_f_s)
@@ -691,7 +691,7 @@ extern Node_Id Current_Error_Node;
 #define Flag215(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.U.fw4.flag215)
 
 #define Flag216(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.in_list)
-#define Flag217(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.flag3)
+#define Flag217(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.has_aspects)
 #define Flag218(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.rewrite_ins)
 #define Flag219(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.analyzed)
 #define Flag220(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.K.c_f_s)

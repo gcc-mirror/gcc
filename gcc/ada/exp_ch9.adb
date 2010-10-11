@@ -10587,7 +10587,7 @@ package body Exp_Ch9 is
          --  in time if we don't freeze now.
 
          declare
-            L : constant List_Id := Freeze_Entity (Rec_Ent, Loc);
+            L : constant List_Id := Freeze_Entity (Rec_Ent, N);
          begin
             if Is_Non_Empty_List (L) then
                Insert_List_After (Body_Decl, L);

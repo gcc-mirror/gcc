@@ -159,6 +159,11 @@ package Sem_Ch13 is
    --  the case of a private or incomplete type. The protocol is to first
    --  check for Rep_Item_Too_Early using the initial entity, then take the
    --  underlying type, then call Rep_Item_Too_Late on the result.
+   --
+   --  Note: Calls to Rep_Item_Too_Late are ignored for the case of attribute
+   --  definition clauses which have From_Aspect_Specification set. This is
+   --  because such clauses are linked on to the Rep_Item chain in procedure
+   --  Sem_Ch13.Analyze_Aspect_Specifications. See that procedure for details.
 
    function Same_Representation (Typ1, Typ2 : Entity_Id) return Boolean;
    --  Given two types, where the two types are related by possible derivation,
