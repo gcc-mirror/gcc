@@ -1,3 +1,8 @@
+2010-10-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/45955
+	* ipa.c (build_cdtor): Delete endless loop.
+
 2010-10-07  Andi Kleen  <ak@linux.intel.com>
 
 	* Makefile.in (MOSTLYCLEANFILES): Remove cc1*dummy, add
