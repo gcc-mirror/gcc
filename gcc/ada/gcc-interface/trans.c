@@ -5011,10 +5011,14 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Abstract_Subprogram_Declaration:
       /* This subprogram doesn't exist for code generation purposes, but we
 	 have to elaborate the types of any parameters and result, unless
-	 they are imported types (nothing to generate in this case).  */
+	 they are imported types (nothing to generate in this case).
+
+	 The parameter list may contain types with freeze nodes, e.g. not null
+	 subtypes, so the subprogram itself may carry a freeze node, in which
+	 case its elaboration must be deferred.  */
 
       /* Process the parameter types first.  */
-
+      if (No (Freeze_Node (Defining_Entity (Specification (gnat_node)))))
       for (gnat_temp
 	   = First_Formal_With_Extras
 	      (Defining_Entity (Specification (gnat_node)));
@@ -5024,9 +5028,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	    && !From_With_Type (Etype (gnat_temp)))
 	  gnat_to_gnu_entity (Etype (gnat_temp), NULL_TREE, 0);
 
-
       /* Then the result type, set to Standard_Void_Type for procedures.  */
-
       {
 	Entity_Id gnat_temp_type
 	  = Etype (Defining_Entity (Specification (gnat_node)));

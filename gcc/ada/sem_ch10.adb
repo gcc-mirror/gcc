@@ -2490,6 +2490,7 @@ package body Sem_Ch10 is
 
       elsif Unit_Kind = N_Package_Instantiation
         and then Nkind (U) = N_Package_Instantiation
+        and then Present (Instance_Spec (U))
       then
          --  If the instance has not been rewritten as a package declaration,
          --  then it appeared already in a previous with clause. Retrieve
