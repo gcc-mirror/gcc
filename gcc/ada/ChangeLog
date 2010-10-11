@@ -1,3 +1,12 @@
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_aux.adb, sem_ch6.adb: Minor reformatting
+
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb, atree.h, atree.ads, atree.adb: Define seven new flags
+	Flag248-Flag254.  Define new field Field29.
+
 2010-10-10  Olivier Hainque  <hainque@adacore.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 

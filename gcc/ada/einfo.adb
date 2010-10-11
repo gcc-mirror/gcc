@@ -230,6 +230,8 @@ package body Einfo is
    --    Extra_Formals                   Node28
    --    Underlying_Record_View          Node28
 
+   --    (unused)                        Node29
+
    ---------------------------------------------
    -- Usage of Flags in Defining Entity Nodes --
    ---------------------------------------------
@@ -512,6 +514,14 @@ package body Einfo is
 
    --    (unused)                        Flag200
    --    (unused)                        Flag232
+
+   --    (unused)                        Flag248
+   --    (unused)                        Flag249
+   --    (unused)                        Flag250
+   --    (unused)                        Flag251
+   --    (unused)                        Flag252
+   --    (unused)                        Flag253
+   --    (unused)                        Flag254
 
    -----------------------
    -- Local subprograms --

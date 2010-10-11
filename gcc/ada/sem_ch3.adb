@@ -8795,13 +8795,20 @@ package body Sem_Ch3 is
       --  with the reserved word 'limited' in its definition or in one of its
       --  ancestors. (RM 3.7(10))
       --  AI-0063 : the proper condition is that type must be immutably
-      --  limited.
+      --  limited, or else be a partial view.
 
-      if Nkind (Discriminant_Type (D)) = N_Access_Definition
-        and then not Is_Immutably_Limited_Type (Current_Scope)
-      then
-         Error_Msg_N
-           ("access discriminants allowed only for limited types", Loc);
+      if Nkind (Discriminant_Type (D)) = N_Access_Definition then
+         if Is_Immutably_Limited_Type (Current_Scope)
+           or else
+            (Nkind (Parent (Current_Scope)) = N_Private_Type_Declaration
+               and then Limited_Present (Parent (Current_Scope)))
+         then
+            null;
+
+         else
+            Error_Msg_N
+              ("access discriminants allowed only for limited types", Loc);
+         end if;
       end if;
    end Check_Access_Discriminant_Requires_Limited;
 

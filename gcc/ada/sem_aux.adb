@@ -585,8 +585,9 @@ package body Sem_Aux is
       end if;
 
       if Is_Private_Type (Btype) then
-         --  AI05-0063 : a type derived from a limited private formal type
-         --  is not immutably limited in a generic body.
+
+         --  AI05-0063: A type derived from a limited private formal type is
+         --  not immutably limited in a generic body.
 
          if Is_Derived_Type (Btype)
            and then Is_Generic_Type (Etype (Btype))
