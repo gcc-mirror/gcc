@@ -49,6 +49,15 @@
 
 #endif /* VxWorks */
 
+#if (defined (__mips) && defined (__sgi)) || defined (__APPLE__)
+#include <unistd.h>
+#endif
+
+#if defined (__hpux__)
+#include <sys/param.h>
+#include <sys/pstat.h>
+#endif
+
 #ifdef VMS
 #define _POSIX_EXIT 1
 #define HOST_EXECUTABLE_SUFFIX ".exe"
@@ -2363,8 +2372,18 @@ __gnat_number_of_cpus (void)
 {
   int cores = 1;
 
-#if defined (linux)
+#if defined (linux) || defined (sun) || defined (AIX) || \
+    (defined (__alpha__)  && defined (_osf_)) || defined (__APPLE__)
   cores = (int)sysconf(_SC_NPROCESSORS_ONLN);
+
+#elif (defined (__mips) && defined (__sgi))
+  cores = (int)sysconf(_SC_NPROC_ONLN);
+
+#elif defined (__hpux__)
+    struct pst_dynamic psd;
+    if (pstat_getdynamic(&psd, sizeof(psd), 1, 0) != -1)
+       cores = (int)psd.psd_proc_cnt;
+
 #endif
 
   return cores;

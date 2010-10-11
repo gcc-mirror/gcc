@@ -3375,12 +3375,45 @@ package body Sem_Ch4 is
       Is_Single_Concurrent_Object : Boolean;
       --  Set True if the prefix is a single task or a single protected object
 
+      procedure Find_Component_In_Instance (Rec : Entity_Id);
+      --  In an instance, a component of a private extension may not be visible
+      --  while it was visible in the generic. Search candidate scope for a
+      --  component with the proper identifier. This is only done if all other
+      --  searches have failed. When the match is found (it always will be),
+      --  the Etype of both N and Sel are set from this component, and the
+      --  entity of Sel is set to reference this component.
+
       function Has_Mode_Conformant_Spec (Comp : Entity_Id) return Boolean;
       --  It is known that the parent of N denotes a subprogram call. Comp
       --  is an overloadable component of the concurrent type of the prefix.
       --  Determine whether all formals of the parent of N and Comp are mode
       --  conformant. If the parent node is not analyzed yet it may be an
       --  indexed component rather than a function call.
+
+      --------------------------------
+      -- Find_Component_In_Instance --
+      --------------------------------
+
+      procedure Find_Component_In_Instance (Rec : Entity_Id) is
+         Comp : Entity_Id;
+
+      begin
+         Comp := First_Component (Rec);
+         while Present (Comp) loop
+            if Chars (Comp) = Chars (Sel) then
+               Set_Entity_With_Style_Check (Sel, Comp);
+               Set_Etype (Sel, Etype (Comp));
+               Set_Etype (N,   Etype (Comp));
+               return;
+            end if;
+
+            Next_Component (Comp);
+         end loop;
+
+         --  This must succeed because code was legal in the generic
+
+         raise Program_Error;
+      end Find_Component_In_Instance;
 
       ------------------------------
       -- Has_Mode_Conformant_Spec --
@@ -3961,33 +3994,31 @@ package body Sem_Ch4 is
             Analyze_Selected_Component (N);
             return;
 
+         --  Similarly, if this is the actual for a formal derived type, the
+         --  component inherited from the generic parent may not be visible
+         --  in the actual, but the selected component is legal.
+
          elsif Ekind (Prefix_Type) = E_Record_Subtype_With_Private
            and then Is_Generic_Actual_Type (Prefix_Type)
            and then Present (Full_View (Prefix_Type))
          then
-            --  Similarly, if this the actual for a formal derived type, the
-            --  component inherited from the generic parent may not be visible
-            --  in the actual, but the selected component is legal.
 
-            declare
-               Comp : Entity_Id;
+            Find_Component_In_Instance
+              (Generic_Parent_Type (Parent (Prefix_Type)));
+            return;
 
-            begin
-               Comp :=
-                 First_Component (Generic_Parent_Type (Parent (Prefix_Type)));
-               while Present (Comp) loop
-                  if Chars (Comp) = Chars (Sel) then
-                     Set_Entity_With_Style_Check (Sel, Comp);
-                     Set_Etype (Sel, Etype (Comp));
-                     Set_Etype (N,   Etype (Comp));
-                     return;
-                  end if;
+         --  Finally, the formal and the actual may be private extensions,
+         --  but the generic is declared in a child unit of the parent, and
+         --  an addtional step is needed to retrieve the proper scope.
 
-                  Next_Component (Comp);
-               end loop;
+         elsif In_Instance
+           and then Present (Parent_Subtype (Etype (Base_Type (Prefix_Type))))
+         then
+            Find_Component_In_Instance
+              (Parent_Subtype (Etype (Base_Type (Prefix_Type))));
+            return;
 
-               pragma Assert (Etype (N) /= Any_Type);
-            end;
+         --  Component not found, specialize error message when appropriate
 
          else
             if Ekind (Prefix_Type) = E_Record_Subtype then

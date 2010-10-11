@@ -501,17 +501,17 @@ package body Sem_Ch6 is
             elsif Warn_On_Ada_2005_Compatibility or GNAT_Mode then
                if Inside_A_Generic then
                   Error_Msg_N
-                    ("return of limited object not permitted in Ada2005 " &
-                       "(RM-2005 6.5(5.5/2))?", Expr);
+                    ("return of limited object not permitted in Ada2005 "
+                     & "(RM-2005 6.5(5.5/2))?", Expr);
 
                elsif Is_Immutably_Limited_Type (R_Type) then
                   Error_Msg_N
-                    ("return by reference not permitted in Ada 2005 " &
-                     "(RM-2005 6.5(5.5/2))?", Expr);
+                    ("return by reference not permitted in Ada 2005 "
+                     & "(RM-2005 6.5(5.5/2))?", Expr);
                else
                   Error_Msg_N
-                    ("cannot copy object of a limited type in Ada 2005 " &
-                     "(RM-2005 6.5(5.5/2))?", Expr);
+                    ("cannot copy object of a limited type in Ada 2005 "
+                     & "(RM-2005 6.5(5.5/2))?", Expr);
                end if;
 
             --  Ada 95 mode, compatibility warnings disabled

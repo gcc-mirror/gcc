@@ -1,5 +1,21 @@
 2010-10-11  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch6.adb, s-htable.ads: Minor reformatting.
+
+2010-10-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): If the selector is
+	invisible in an instantiation, and both the formal and the actual are
+	private extensions of the same type, look for the desired component in
+	the proper view of the parent type.
+
+2010-10-11  Vincent Celier  <celier@adacore.com>
+
+	* adaint.c (__gnat_number_of_cpus): Add implementation for Solaris,
+	AIX, Tru64, Darwin, IRIX and HP-UX.
+
+2010-10-11  Robert Dewar  <dewar@adacore.com>
+
 	* a-textio.adb: Minor reformatting
 
 2010-10-11  Robert Dewar  <dewar@adacore.com>
