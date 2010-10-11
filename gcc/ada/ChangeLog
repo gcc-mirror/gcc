@@ -1,3 +1,23 @@
+2010-10-11  Javier Miranda  <miranda@adacore.com>
+
+	* debug.adb: Update comment.
+
+2010-10-11  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (GNATCmd): Set Opt.Unchecked_Shared_Lib_Imports to True
+	unconditionally as for "gnat make" the projects are not processed in
+	the GNAT driver.
+
+2010-10-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.ads, sem_ch10.adb (Load_Needed_Body): Add parameter to
+	suppress semantic analysis of the body when inlining, prior to
+	verifying that the body does not have a with_clause on a descendant
+	unit.
+	* inline.adb (Analyze_Inlined_Bodies): Do not inline a body if it has a
+	with_clause on a descendant. 
+	(Scope_In_Main_Unit): Simplify.
+
 2010-10-11  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch6.adb, freeze.adb: Minor reformatting.
