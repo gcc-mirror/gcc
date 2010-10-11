@@ -453,11 +453,10 @@ package body Xr_Tabls is
          Source_Line => null,
          Next        => null);
 
-      --  We can insert the reference in the list directly, since all
-      --  the references will appear only once in the ALI file
-      --  corresponding to the file where they are referenced.
-      --  This saves a lot of time compared to checking the list to check
-      --  if it exists.
+      --  We can insert the reference into the list directly, since all the
+      --  references will appear only once in the ALI file corresponding to the
+      --  file where they are referenced. This saves a lot of time compared to
+      --  checking the list to check if it exists.
 
       case Ref_Type is
          when 'b' | 'c' =>
