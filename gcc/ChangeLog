@@ -1,3 +1,14 @@
+2010-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* simplify-rtx.c (simplify_unary_operation_1): Use unsigned arithmetics
+	in masking operations.
+	(simplify_const_unary_operation): Likewise.
+	(simplify_binary_operation_1): Likewise.
+	(simplify_const_binary_operation): Likewise.
+	(simplify_const_relational_operation): Likewise.
+	(simplify_ternary_operation): Likewise.
+	(simplify_immed_subreg): Likewise.
+
 2010-10-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/45862
