@@ -8115,7 +8115,7 @@ package body Make is
              or else Argv (2 .. Argv'Last) = "pg"
              or else (Argv (2) = 'm' and then Argv'Last > 2)
              or else (Argv (2) = 'f' and then Argv'Last > 2)
-             or else (Argv (2) = 'O' and then Argv'Last > 2)
+             or else Argv (2) = 'O'
          then
             Add_Switch (Argv, Compiler, And_Save => And_Save);
             Add_Switch (Argv, Linker,   And_Save => And_Save);

@@ -334,6 +334,7 @@ package body Prj.Attr is
    "SVvcs_kind#" &
    "SVvcs_file_check#" &
    "SVvcs_log_check#" &
+   "SVdocumentation_dir#" &
 
    --  package Stack
 

@@ -1044,9 +1044,16 @@ package body Sem_Disp is
          --  If the type is not frozen yet and we are not in the overriding
          --  case it looks suspiciously like an attempt to define a primitive
          --  operation, which requires the declaration to be in a package spec
-         --  (3.2.3(6)).
+         --  (3.2.3(6)). Only report cases where the type and subprogram are
+         --  in the same declaration list (by comparing the unit nodes reached
+         --  via Parent links), to avoid spurious warnings on subprograms in
+         --  instance bodies when the type is declared in the instance spec but
+         --  hasn't been frozen by the instance body.
 
-         elsif not Is_Frozen (Tagged_Type) then
+         elsif not Is_Frozen (Tagged_Type)
+           and then
+             Parent (Parent (Tagged_Type)) = Parent (Parent (Parent (Subp)))
+         then
             Error_Msg_N
               ("?not dispatching (must be defined in a package spec)", Subp);
             return;

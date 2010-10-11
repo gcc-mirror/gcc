@@ -1,3 +1,27 @@
+2010-10-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (Output_References): Common handling for objects and
+	formals of an anonymous access type.
+
+2010-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* make.adb (Scan_Make_Arg): Also pass -O to both compiler and linker.
+
+2010-10-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: Fix check for illegal equality declaration in Ada2012
+
+2010-10-11  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Operation): When testing for issuing
+	a warning about subprograms of a tagged type not being dispatching,
+	limit this to cases where the tagged type and the subprogram are
+	declared within the same declaration list.
+
+2010-10-11  Jerome Lambourg  <lambourg@adacore.com>
+
+	* projects.texi, prj-attr.adb: Add new attribute documentation_dir.
+
 2010-10-11  Bob Duff  <duff@adacore.com>
 
 	* par-ch9.adb, sem_aggr.adb, exp_ch5.adb, sem_ch3.adb, impunit.adb,

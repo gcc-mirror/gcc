@@ -5899,32 +5899,55 @@ package body Sem_Ch6 is
         and then Is_Record_Type (Typ)
         and then not Is_Tagged_Type (Typ)
       then
+         --  If the type is not declared in a package, or if we are in the
+         --  body of the package or in some other scope, the new operation is
+         --  not primitive, and therefore legal, though suspicious. If the
+         --  type is a generic actual (sub)type, the operation is not primitive
+         --  either because the base type is declared elsewhere.
+
          if Is_Frozen (Typ) then
-            Error_Msg_NE
-              ("equality operator must be declared "
-                & "before type& is frozen", Eq_Op, Typ);
+            if Ekind (Scope (Typ)) /= E_Package
+              or else Scope (Typ) /= Current_Scope
+            then
+               null;
 
-            Obj_Decl := Next (Parent (Typ));
-            while Present (Obj_Decl)
-              and then Obj_Decl /= Decl
-            loop
-               if Nkind (Obj_Decl) = N_Object_Declaration
-                 and then Etype (Defining_Identifier (Obj_Decl)) = Typ
-               then
-                  Error_Msg_NE ("type& is frozen by declaration?",
-                     Obj_Decl, Typ);
-                  Error_Msg_N
-                    ("\an equality operator cannot be declared after this "
-                      & "point ('R'M 4.5.2 (9.8)) (Ada 2012))?", Obj_Decl);
-                  exit;
-               end if;
+            elsif Is_Generic_Actual_Type (Typ) then
+               null;
 
-               Next (Obj_Decl);
-            end loop;
+            elsif In_Package_Body (Scope (Typ)) then
+               null;   --  warrants a warning ???
+
+            else
+               Error_Msg_NE
+                 ("equality operator must be declared "
+                   & "before type& is frozen", Eq_Op, Typ);
+
+               Obj_Decl := Next (Parent (Typ));
+               while Present (Obj_Decl)
+                 and then Obj_Decl /= Decl
+               loop
+                  if Nkind (Obj_Decl) = N_Object_Declaration
+                    and then Etype (Defining_Identifier (Obj_Decl)) = Typ
+                  then
+                     Error_Msg_NE ("type& is frozen by declaration?",
+                        Obj_Decl, Typ);
+                     Error_Msg_N
+                       ("\an equality operator cannot be declared after this "
+                         & "point ('R'M 4.5.2 (9.8)) (Ada 2012))?", Obj_Decl);
+                     exit;
+                  end if;
+
+                  Next (Obj_Decl);
+               end loop;
+            end if;
 
          elsif not In_Same_List (Parent (Typ), Decl)
            and then not Is_Limited_Type (Typ)
          then
+
+            --  This makes it illegal to have a primitive equality declared in
+            --  the private part if the type is visible.
+
             Error_Msg_N ("equality operator appears too late", Eq_Op);
          end if;
       end if;
