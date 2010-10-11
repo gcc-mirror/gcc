@@ -329,6 +329,21 @@ mark_hard_reg_live (rtx reg)
     }
 }
 
+/* Mark a pseudo, or one of its subwords, as live.  REGNO is the pseudo's
+   register number; ORIG_REG is the access in the insn, which may be a
+   subreg.  */
+static void
+mark_pseudo_reg_live (rtx orig_reg, unsigned regno)
+{
+  if (df_read_modify_subreg_p (orig_reg))
+    {
+      mark_pseudo_regno_subword_live (regno,
+				      subreg_lowpart_p (orig_reg) ? 0 : 1);
+    }
+  else
+    mark_pseudo_regno_live (regno);
+}
+
 /* Mark the register referenced by use or def REF as live.  */
 static void
 mark_ref_live (df_ref ref)
@@ -340,15 +355,7 @@ mark_ref_live (df_ref ref)
     reg = SUBREG_REG (reg);
 
   if (REGNO (reg) >= FIRST_PSEUDO_REGISTER)
-    {
-      if (df_read_modify_subreg_p (orig_reg))
-	{
-	  mark_pseudo_regno_subword_live (REGNO (reg),
-					  subreg_lowpart_p (orig_reg) ? 0 : 1);
-	}
-      else
-	mark_pseudo_regno_live (REGNO (reg));
-    }
+    mark_pseudo_reg_live (orig_reg, REGNO (reg));
   else
     mark_hard_reg_live (reg);
 }
@@ -445,6 +452,21 @@ mark_hard_reg_dead (rtx reg)
     }
 }
 
+/* Mark a pseudo, or one of its subwords, as dead.  REGNO is the pseudo's
+   register number; ORIG_REG is the access in the insn, which may be a
+   subreg.  */
+static void
+mark_pseudo_reg_dead (rtx orig_reg, unsigned regno)
+{
+  if (df_read_modify_subreg_p (orig_reg))
+    {
+      mark_pseudo_regno_subword_dead (regno,
+				      subreg_lowpart_p (orig_reg) ? 0 : 1);
+    }
+  else
+    mark_pseudo_regno_dead (regno);
+}
+
 /* Mark the register referenced by definition DEF as dead, if the
    definition is a total one.  */
 static void
@@ -466,26 +488,22 @@ mark_ref_dead (df_ref def)
     return;
 
   if (REGNO (reg) >= FIRST_PSEUDO_REGISTER)
-    {
-      if (df_read_modify_subreg_p (orig_reg))
-	{
-	  mark_pseudo_regno_subword_dead (REGNO (reg),
-					  subreg_lowpart_p (orig_reg) ? 0 : 1);
-	}
-      else
-	mark_pseudo_regno_dead (REGNO (reg));
-    }
+    mark_pseudo_reg_dead (orig_reg, REGNO (reg));
   else
     mark_hard_reg_dead (reg);
 }
 
-/* Make pseudo REG conflicting with pseudo DREG, if the 1st pseudo
-   class is intersected with class CL.  Advance the current program
-   point before making the conflict if ADVANCE_P.  Return TRUE if we
-   will need to advance the current program point.  */
+/* If REG is a pseudo or a subreg of it, and the class of its allocno
+   intersects CL, make a conflict with pseudo DREG.  ORIG_DREG is the
+   rtx actually accessed, it may be indentical to DREG or a subreg of it.
+   Advance the current program point before making the conflict if
+   ADVANCE_P.  Return TRUE if we will need to advance the current
+   program point.  */
 static bool
-make_pseudo_conflict (rtx reg, enum reg_class cl, rtx dreg, bool advance_p)
+make_pseudo_conflict (rtx reg, enum reg_class cl, rtx dreg, rtx orig_dreg,
+		      bool advance_p)
 {
+  rtx orig_reg = reg;
   ira_allocno_t a;
 
   if (GET_CODE (reg) == SUBREG)
@@ -501,29 +519,31 @@ make_pseudo_conflict (rtx reg, enum reg_class cl, rtx dreg, bool advance_p)
   if (advance_p)
     curr_point++;
 
-  mark_pseudo_regno_live (REGNO (reg));
-  mark_pseudo_regno_live (REGNO (dreg));
-  mark_pseudo_regno_dead (REGNO (reg));
-  mark_pseudo_regno_dead (REGNO (dreg));
+  mark_pseudo_reg_live (orig_reg, REGNO (reg));
+  mark_pseudo_reg_live (orig_dreg, REGNO (dreg));
+  mark_pseudo_reg_dead (orig_reg, REGNO (reg));
+  mark_pseudo_reg_dead (orig_dreg, REGNO (dreg));
 
   return false;
 }
 
 /* Check and make if necessary conflicts for pseudo DREG of class
    DEF_CL of the current insn with input operand USE of class USE_CL.
-   Advance the current program point before making the conflict if
-   ADVANCE_P.  Return TRUE if we will need to advance the current
-   program point.  */
+   ORIG_DREG is the rtx actually accessed, it may be indentical to
+   DREG or a subreg of it.  Advance the current program point before
+   making the conflict if ADVANCE_P.  Return TRUE if we will need to
+   advance the current program point.  */
 static bool
-check_and_make_def_use_conflict (rtx dreg, enum reg_class def_cl,
-				 int use, enum reg_class use_cl,
-				 bool advance_p)
+check_and_make_def_use_conflict (rtx dreg, rtx orig_dreg,
+				 enum reg_class def_cl, int use,
+				 enum reg_class use_cl, bool advance_p)
 {
   if (! reg_classes_intersect_p (def_cl, use_cl))
     return advance_p;
 
   advance_p = make_pseudo_conflict (recog_data.operand[use],
-				    use_cl, dreg, advance_p);
+				    use_cl, dreg, orig_dreg, advance_p);
+
   /* Reload may end up swapping commutative operands, so you
      have to take both orderings into account.  The
      constraints for the two operands can be completely
@@ -534,12 +554,12 @@ check_and_make_def_use_conflict (rtx dreg, enum reg_class def_cl,
       && recog_data.constraints[use][0] == '%')
     advance_p
       = make_pseudo_conflict (recog_data.operand[use + 1],
-			      use_cl, dreg, advance_p);
+			      use_cl, dreg, orig_dreg, advance_p);
   if (use >= 1
       && recog_data.constraints[use - 1][0] == '%')
     advance_p
       = make_pseudo_conflict (recog_data.operand[use - 1],
-			      use_cl, dreg, advance_p);
+			      use_cl, dreg, orig_dreg, advance_p);
   return advance_p;
 }
 
@@ -554,6 +574,7 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
   enum reg_class use_cl, acl;
   bool advance_p;
   rtx dreg = recog_data.operand[def];
+  rtx orig_dreg = dreg;
 
   if (def_cl == NO_REGS)
     return;
@@ -599,8 +620,8 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
       if (alt1 < recog_data.n_alternatives)
 	continue;
 
-      advance_p = check_and_make_def_use_conflict (dreg, def_cl, use,
-						   use_cl, advance_p);
+      advance_p = check_and_make_def_use_conflict (dreg, orig_dreg, def_cl,
+						   use, use_cl, advance_p);
 
       if ((use_match = recog_op_alt[use][alt].matches) >= 0)
 	{
@@ -611,8 +632,8 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
 	    use_cl = ALL_REGS;
 	  else
 	    use_cl = recog_op_alt[use_match][alt].cl;
-	  advance_p = check_and_make_def_use_conflict (dreg, def_cl, use,
-						       use_cl, advance_p);
+	  advance_p = check_and_make_def_use_conflict (dreg, orig_dreg, def_cl,
+						       use, use_cl, advance_p);
 	}
     }
 }
