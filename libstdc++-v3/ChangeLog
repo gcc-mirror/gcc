@@ -1,5 +1,19 @@
 2010-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/random.h (discrete_distribution<>::param_type):
+	Disable move operations.
+	(piecewise_constant_distribution<>::param_type): Likewise.
+	(piecewise_linear_distribution<>::param_type): Likewise.
+
+	* include/bits/random.h (discrete_distribution<>::param_type::
+	param_type()): Simplify, don't use _M_initialize.
+	(piecewise_constant_distribution<>::param_type::param_type()):
+	Likewise.
+	(piecewise_linear_distribution<>::param_type::param_type()):
+	Likewise.
+
+2010-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/random.tcc (piecewise_linear_distribution<>::
 	operator()): Don't crash when the dist is default-constructed.
 	* testsuite/26_numerics/random/piecewise_linear_distribution/
