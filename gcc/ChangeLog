@@ -1,3 +1,23 @@
+2010-10-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* flag-types.h: New.
+	* Makefile.in (TH_H): Include $(OPTIONS_H) instead of $(FLAGS_H).
+	(FLAGS_H): Include flag-types.h.  Include $(OPTIONS_H) instead of
+	options.h.
+	(OPTIONS_H): Define.
+	(c-family/c-opts.o, lto-opts.o, opts.o): Use $(OPTIONS_H) instead
+	of options.h.
+	* configure.ac (tm_include_list): Include options.h not flags.h.
+	* configure: Regenerate.
+	* flags.h: Include flag-types.h.  Include options.h at top of file
+	again.
+	(enum debug_info_type, enum debug_info_level, enum
+	debug_info_usage, enum symbol_visibility, struct visibility_flags,
+	enum ira_algorithm, enum ira_region, enum excess_precision, enum
+	graph_dump_types, enum stack_check_type, enum
+	warn_strict_overflow_code): Move to flag-types.h
+	* opth-gen.awk: Include flag-types.h in options.h.
+
 2010-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (store_expr): Share code for STRING_CST and

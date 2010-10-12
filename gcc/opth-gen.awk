@@ -70,6 +70,8 @@ print ""
 print "#ifndef OPTIONS_H"
 print "#define OPTIONS_H"
 print ""
+print "#include \"flag-types.h\""
+print ""
 
 have_save = 0;
 

@@ -1,3 +1,8 @@
+2010-10-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (java/lang.o): Use $(OPTIONS_H) instead of
+	options.h.
+
 2010-10-11  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* decl.c (java_init_decl_processing): Use build_function_type_list
