@@ -311,17 +311,28 @@ case $vcs_type in
 	# Update tree, but make sure to only pull the default branch.
 	# Otherwise all branches in the upstream repo are added, even if
 	# only a single one has been cloned.
-	$GCC_HG pull -u ${silent+-q} -r`$GCC_HG branch` ${1+"$@"}
+	$GCC_HG pull ${silent+-q} -r`$GCC_HG branch` ${1+"$@"}
 	if [ $? -ne 0 ]; then
             (touch_files_reexec)
             echo "hg pull of full tree failed." >&2
             exit 1
 	fi
 
-	# Extract SVN revision corresponding to tip, as stored by hg convert.
-	# Before hg 1.4.3, there's no template keyword corresponding to the
-	# extra: tag, so need to use hg log --debug to extract the info.
-	revision=`$GCC_HG log --debug -l1 | \
+	# Update tree.  Needs to be done separately from pull so
+	# gcc_update -rREV works.
+	$GCC_HG update ${silent+-q} ${1+"$@"}
+	if [ $? -ne 0 ]; then
+            (touch_files_reexec)
+            echo "hg update of full tree failed." >&2
+            exit 1
+	fi
+
+	# Extract SVN revision corresponding to parents, as stored by
+	# hg convert.  Before hg 1.4.3, there's no template keyword
+	# corresponding to the extra: tag, so need to use hg log --debug
+	# to extract the info.
+	parents=`$GCC_HG parents --template '{rev}'`
+	revision=`$GCC_HG log --debug -r$parents | \
 	    sed -ne "/^extra:.*convert_revision=svn:/ {
 	        s%^.*@%%
 		p
