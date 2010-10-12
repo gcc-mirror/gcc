@@ -163,6 +163,14 @@ void __objc_register_instance_methods_to_class (Class class)
     __objc_update_dispatch_table_for_class (class->class_pointer);
 }
 
+BOOL
+sel_isEqual (SEL s1, SEL s2)
+{
+  if (s1 == 0 || s2 == 0)
+    return s1 == s2;
+  else
+    return s1->sel_id == s2->sel_id;
+}
 
 /* Returns YES iff t1 and t2 have same method types, but we ignore
    the argframe layout */

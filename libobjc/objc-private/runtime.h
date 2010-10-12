@@ -58,18 +58,18 @@ extern void __objc_init_dispatch_tables(void); /* (objc-dispatch.c) */
 extern void __objc_install_premature_dtable(Class); /* (objc-dispatch.c) */
 extern void __objc_resolve_class_links(void);  /* (objc-class.c) */
 extern void __objc_register_selectors_from_class(Class); /* (objc-sel.c) */
-extern void __objc_register_selectors_from_list (MethodList_t); /* (selector.c) */
+extern void __objc_register_selectors_from_list (struct objc_method_list *); /* (selector.c) */
 extern void __objc_update_dispatch_table_for_class (Class);/* (objc-msg.c) */
 
 extern int  __objc_init_thread_system(void);    /* thread.c */
 extern int  __objc_fini_thread_system(void);    /* thread.c */
 extern void __objc_print_dtable_stats(void);    /* sendmsg.c */
 
-extern void class_add_method_list(Class, MethodList_t);
+extern void class_add_method_list(Class, struct objc_method_list *);
 
 /* Registering instance methods as class methods for root classes */
 extern void __objc_register_instance_methods_to_class(Class);
-extern Method_t search_for_method_in_list(MethodList_t list, SEL op);
+extern struct objc_method * search_for_method_in_list(struct objc_method_list * list, SEL op);
 
 /* True when class links has been resolved */     
 extern BOOL __objc_class_links_resolved;
