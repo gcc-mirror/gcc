@@ -1,5 +1,24 @@
 2010-10-12  Robert Dewar  <dewar@adacore.com>
 
+	* par-endh.adb (Check_End): Don't swallow semicolon or aspects after
+	END RECORD.
+	* sem_attr.adb (Eval_Attribute): Code clean up.
+
+2010-10-12  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch12.adb (P_Formal_Private_Type_Definition): Improve error
+	messages and recovery for case of out of order Abstract/Tagged/Private
+	keywords.
+	* par-ch3.adb (P_Type_Declaration): Improve error messages and recovery
+	for case of out of order Abstract/Tagged/Private keywords.
+
+2010-10-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb (Analyze_Inlined_Bodies): Restrict previous change to case
+	where child unit is main unit of compilation.
+
+2010-10-12  Robert Dewar  <dewar@adacore.com>
+
 	* aspects.ads, aspects.adb (Move_Aspects): New procedure.
 	* atree.ads, atree.adb: (New_Copy): Does not copy aspect specifications
 	* sinfo.ads, par-ch3.adb, par-ch6.adb, par-ch7.adb, par-ch9.adb,
