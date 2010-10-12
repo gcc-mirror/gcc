@@ -7103,7 +7103,7 @@ package body Exp_Dist is
            (RE      : RE_Id;
             Actuals : List_Id := New_List) return Node_Id;
          --  Generate a procedure call statement calling RE with the given
-         --  actuals. Request is appended to the list.
+         --  actuals. Request'Access is appended to the list.
 
          ---------------------------
          -- Make_Request_RTE_Call --
@@ -7114,7 +7114,10 @@ package body Exp_Dist is
             Actuals : List_Id := New_List) return Node_Id
          is
          begin
-            Append_To (Actuals, New_Occurrence_Of (Request, Loc));
+            Append_To (Actuals,
+              Make_Attribute_Reference (Loc,
+                Prefix         => New_Occurrence_Of (Request, Loc),
+                Attribute_Name => Name_Access));
             return Make_Procedure_Call_Statement (Loc,
                      Name                   =>
                        New_Occurrence_Of (RTE (RE), Loc),
@@ -7174,9 +7177,9 @@ package body Exp_Dist is
          Append_To (Decls,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Request,
-             Aliased_Present     => False,
+             Aliased_Present     => True,
              Object_Definition   =>
-                 New_Occurrence_Of (RTE (RE_Request_Access), Loc)));
+               New_Occurrence_Of (RTE (RE_Request), Loc)));
 
          Result := Make_Temporary (Loc, 'R');
 
@@ -7410,13 +7413,16 @@ package body Exp_Dist is
          Append_List_To (Statements, Extra_Formal_Statements);
 
          Append_To (Statements,
-           Make_Request_RTE_Call (RE_Request_Create, New_List (
-                                    Target_Object,
-                                    Subprogram_Id,
-                                    New_Occurrence_Of (Arguments, Loc),
-                                    New_Occurrence_Of (Result, Loc),
-                                    New_Occurrence_Of
-                                      (RTE (RE_Nil_Exc_List), Loc))));
+           Make_Procedure_Call_Statement (Loc,
+             Name =>
+               New_Occurrence_Of (RTE (RE_Request_Setup), Loc),
+             Parameter_Associations => New_List (
+               New_Occurrence_Of (Request, Loc),
+               Target_Object,
+               Subprogram_Id,
+               New_Occurrence_Of (Arguments, Loc),
+               New_Occurrence_Of (Result, Loc),
+               New_Occurrence_Of (RTE (RE_Nil_Exc_List), Loc))));
 
          pragma Assert
            (not (Is_Known_Non_Asynchronous and Is_Known_Asynchronous));
@@ -7447,8 +7453,7 @@ package body Exp_Dist is
          --  Asynchronous case
 
          if not Is_Known_Non_Asynchronous then
-            Asynchronous_Statements :=
-              New_List (Make_Request_RTE_Call (RE_Request_Destroy));
+            Asynchronous_Statements := New_List (Make_Null_Statement (Loc));
          end if;
 
          --  Non-asynchronous case
@@ -7465,10 +7470,6 @@ package body Exp_Dist is
                   New_Occurrence_Of (Request, Loc))));
 
             if Is_Function then
-
-               Append_To (Non_Asynchronous_Statements,
-                 Make_Request_RTE_Call (RE_Request_Destroy));
-
                --  If this is a function call, read the value and return it
 
                Append_To (Non_Asynchronous_Statements,
@@ -7486,9 +7487,6 @@ package body Exp_Dist is
                --  Case of a procedure: deal with IN OUT and OUT formals
 
                Append_List_To (Non_Asynchronous_Statements, After_Statements);
-
-               Append_To (Non_Asynchronous_Statements,
-                 Make_Request_RTE_Call (RE_Request_Destroy));
             end if;
          end if;
 

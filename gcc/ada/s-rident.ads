@@ -329,7 +329,7 @@ package System.Rident is
       --  value of the parameter permitted by the profile.
    end record;
 
-   Profile_Info : array (Profile_Name_Actual) of Profile_Data :=
+   Profile_Info : constant array (Profile_Name_Actual) of Profile_Data :=
 
                      --  Restricted Profile
 
