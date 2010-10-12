@@ -1,3 +1,13 @@
+2010-10-12  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (New_Overloaded_Entity): Add missing decoration of
+	attribute Overridden_Operation in predefined dispatching primitives. 
+
+2010-10-12  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb, g-comlin.ads (Add_Switch): Raise an exception when a
+	command line configuration exists and we specify an invalid section.
+
 2010-10-12  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch6.adb (Process_PPCs): Fix error in inheriting Pre'Class when no
