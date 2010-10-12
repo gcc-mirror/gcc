@@ -1,5 +1,9 @@
 2010-10-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* expr.c (store_expr): Share code for STRING_CST and
+	MEM_REF of &STRING_CST cases.  Don't require BLKmode, instead
+	check if target is a MEM.
+
 	* rtl.h: Include hashtab.h.
 	(iterative_hash_rtx): New prototype.
 	* rtl.c (iterative_hash_rtx): New function.
