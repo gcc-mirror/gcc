@@ -1,3 +1,8 @@
+2010-10-12  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Add comment.
+	* gnatcmd.adb, sem_ch6.adb, switch-m.adb: Minor reformatting.
+
 2010-10-12  Javier Miranda  <miranda@adacore.com>
 
 	* exp_util.adb (Side_Effect_Free): Return true for object renaming

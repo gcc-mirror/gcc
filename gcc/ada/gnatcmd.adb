@@ -320,15 +320,21 @@ procedure GNATCmd is
       Success     : Boolean;
 
       procedure Add_To_Response_File
-        (File_Name : String; Check_File : Boolean := True);
+        (File_Name  : String;
+         Check_File : Boolean := True);
       --  Include the file name passed as parameter in the response file for
       --  the tool being called. If the response file can not be written then
       --  the file name is passed in the parameter list of the tool. If the
       --  Check_File parameter is True then the procedure verifies the
       --  existence of the file before adding it to the response file.
 
+      --------------------------
+      -- Add_To_Response_File --
+      --------------------------
+
       procedure Add_To_Response_File
-        (File_Name : String; Check_File : Boolean := True)
+        (File_Name  : String;
+         Check_File : Boolean := True)
       is
       begin
          Name_Len := 0;
@@ -354,6 +360,8 @@ procedure GNATCmd is
             end if;
          end if;
       end Add_To_Response_File;
+
+   --  Start of processing for Check_Files
 
    begin
       --  Check if there is at least one argument that is not a switch or if

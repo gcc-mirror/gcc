@@ -8120,8 +8120,8 @@ package body Sem_Ch6 is
                              Null_Present (Parent (S)))
                        or else
                          (Present (Alias (E))
-                            and then
-                          Is_Predefined_Dispatching_Operation (Alias (E)))
+                           and then
+                             Is_Predefined_Dispatching_Operation (Alias (E)))
                      then
                         if Present (Alias (E)) then
                            Set_Overridden_Operation (S, Alias (E));
