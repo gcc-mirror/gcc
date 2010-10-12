@@ -2,6 +2,7 @@
 
 /* { dg-do link { target *-*-solaris2.* } } */
 /* { dg-options "-fpic" } */
+/* { dg-xfail-if "no .pushsection/.popsection" { i?86-*-solaris2.8 && { ! gas } } } */
 
 #include <stdio.h>
 

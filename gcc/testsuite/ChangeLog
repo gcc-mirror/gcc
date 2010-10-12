@@ -1,3 +1,8 @@
+2010-10-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/pragma-init-fini.c: Skip on i?86-*-solaris2.8 && !gas.
+	* gcc.dg/pragma-init-fini-2.c: XFAIL on i?86-*-solaris2.8 && !gas.
+
 2010-10-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/45699
