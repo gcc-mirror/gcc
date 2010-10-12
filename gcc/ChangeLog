@@ -1,5 +1,18 @@
 2010-10-12  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* libgcc2.h: Use __SIZEOF_DOUBLE__ instead of
+	LIBGCC2_DOUBLE_TYPE_SIZE.
+	(LIBGCC2_DOUBLE_TYPE_SIZE): Delete.
+	* config/fixed-bit.h: Likewise.
+	* config/rx/rx.h (LIBGCC2_DOUBLE_TYPE_SIZE): Delete.
+	* config/sh/sh.h (LIBGCC2_DOUBLE_TYPE_SIZE): Delete.
+	* system.h (LIBGCC2_DOUBLE_TYPE_SIZE): Poison.
+	* doc/tm.texi.in (LIBGCC2_HAS_DF_MODE): Use DOUBLE_TYPE_SIZE.
+	(DF_SIZE): Likewise.
+	* doc/tm.texi: Regenerate.
+
+2010-10-12  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/rs6000/predicates.md (scc_rev_comparison_operator): New.
 	* config/rs6000/rs6000.md (*isel_reversed_signed_<mode>): New.
 	(*isel_reversed_unsigned_<mode>): New.

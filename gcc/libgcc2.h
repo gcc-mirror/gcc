@@ -43,9 +43,6 @@ extern void __eprintf (const char *, const char *, unsigned int, const char *)
 #define LIBGCC2_WORDS_BIG_ENDIAN WORDS_BIG_ENDIAN
 #endif
 
-#ifndef LIBGCC2_DOUBLE_TYPE_SIZE
-#define LIBGCC2_DOUBLE_TYPE_SIZE DOUBLE_TYPE_SIZE
-#endif
 #ifndef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE LONG_DOUBLE_TYPE_SIZE
 #endif
@@ -57,7 +54,7 @@ extern void __eprintf (const char *, const char *, unsigned int, const char *)
 #ifndef LIBGCC2_HAS_DF_MODE
 #define LIBGCC2_HAS_DF_MODE \
   (BITS_PER_UNIT == 8 \
-   && (LIBGCC2_DOUBLE_TYPE_SIZE == 64 \
+   && (__SIZEOF_DOUBLE__ * __CHAR_BIT__ == 64 \
        || LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 64))
 #endif
 
@@ -81,7 +78,7 @@ extern void __eprintf (const char *, const char *, unsigned int, const char *)
 
 #ifndef DF_SIZE
 #if LIBGCC2_HAS_DF_MODE
-#if LIBGCC2_DOUBLE_TYPE_SIZE == 64
+#if __SIZEOF_DOUBLE__ * __CHAR_BIT__ == 64
 #define DF_SIZE DBL_MANT_DIG
 #elif LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 64
 #define DF_SIZE LDBL_MANT_DIG
