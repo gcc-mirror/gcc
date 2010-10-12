@@ -566,9 +566,8 @@ package body Sem_Prag is
       --  This is called prior to issuing an error message. Msg is a string
       --  which typically contains the substring pragma. If the current pragma
       --  comes from an aspect, each such "pragma" substring is replaced with
-      --  the characters "aspect", and in addition, if Error_Msg_Name_1 is
-      --  Name_Precondition (resp Name_Postcondition) it is replaced with
-      --  Name_Pre (resp Name_Post).
+      --  the characters "aspect", and if Error_Msg_Name_1 is Name_Precondition
+      --  (resp Name_Postcondition) it is changed to Name_Pre (resp Name_Post).
 
       procedure Gather_Associations
         (Names : Name_List;
@@ -1463,7 +1462,10 @@ package body Sem_Prag is
 
       procedure Check_Optional_Identifier (Arg : Node_Id; Id : Name_Id) is
       begin
-         if Present (Arg) and then Chars (Arg) /= No_Name then
+         if Present (Arg)
+           and then Nkind (Arg) = N_Pragma_Argument_Association
+           and then Chars (Arg) /= No_Name
+         then
             if Chars (Arg) /= Id then
                Error_Msg_Name_1 := Pname;
                Error_Msg_Name_2 := Id;
@@ -1499,11 +1501,26 @@ package body Sem_Prag is
          ---------------
 
          procedure Chain_PPC (PO : Node_Id) is
-            S : Node_Id;
+            S   : Entity_Id;
+            P   : Node_Id;
 
          begin
-            if not Nkind_In (PO, N_Subprogram_Declaration,
-                                 N_Generic_Subprogram_Declaration)
+            if Nkind (PO) = N_Abstract_Subprogram_Declaration then
+               if not From_Aspect_Specification (N) then
+                  Error_Pragma
+                    ("pragma% cannot be applied to abstract subprogram");
+
+               elsif Class_Present (N) then
+                  Error_Pragma
+                    ("aspect `%''Class` not implemented yet");
+
+               else
+                  Error_Pragma
+                    ("aspect % requires ''Class for abstract subprogram");
+               end if;
+
+            elsif not Nkind_In (PO, N_Subprogram_Declaration,
+                                    N_Generic_Subprogram_Declaration)
             then
                Pragma_Misplaced;
             end if;
@@ -1511,6 +1528,35 @@ package body Sem_Prag is
             --  Here if we have subprogram or generic subprogram declaration
 
             S := Defining_Unit_Name (Specification (PO));
+
+            --  Make sure we do not have the case of a pre/postcondition
+            --  pragma when the corresponding aspect is present. This is
+            --  never allowed. We allow either pragmas or aspects, not both.
+
+            --  We do this by looking at pragmas already chained to the entity
+            --  since the aspect derived pragma will be put on this list first.
+
+            if not From_Aspect_Specification (N) then
+               P := Spec_PPC_List (S);
+               while Present (P) loop
+                  if Pragma_Name (P) = Pragma_Name (N)
+                    and then From_Aspect_Specification (P)
+                  then
+                     Error_Msg_Sloc := Sloc (P);
+
+                     if Prag_Id = Pragma_Precondition then
+                        Error_Msg_Name_2 := Name_Pre;
+                     else
+                        Error_Msg_Name_2 := Name_Post;
+                     end if;
+
+                     Error_Pragma
+                       ("pragma% not allowed, % aspect given#");
+                  end if;
+
+                  P := Next_Pragma (P);
+               end loop;
+            end if;
 
             --  Analyze the pragma unless it appears within a package spec,
             --  which is the case where we delay the analysis of the PPC until
@@ -2059,12 +2105,12 @@ package body Sem_Prag is
                   Msg (J .. J + 5) := "aspect";
                end if;
             end loop;
-         end if;
 
-         if Error_Msg_Name_1 = Name_Precondition then
-            Error_Msg_Name_1 := Name_Pre;
-         elsif Error_Msg_Name_1 = Name_Postcondition then
-            Error_Msg_Name_1 := Name_Post;
+            if Error_Msg_Name_1 = Name_Precondition then
+               Error_Msg_Name_1 := Name_Pre;
+            elsif Error_Msg_Name_1 = Name_Postcondition then
+               Error_Msg_Name_1 := Name_Post;
+            end if;
          end if;
       end Fix_Error;
 

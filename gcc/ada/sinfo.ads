@@ -2028,6 +2028,7 @@ package Sinfo is
       --  Is_Delayed_Aspect (Flag14-Sem)
       --  Import_Interface_Present (Flag16-Sem)
       --  Aspect_Cancel (Flag11-Sem)
+      --  Class_Present (Flag6) (set False if not from Aspect with 'Class)
 
       --  Note: we should have a section on what pragmas are passed on to
       --  the back end to be processed. This section should note that pragma

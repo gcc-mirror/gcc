@@ -663,10 +663,11 @@ package body Sem_Ch13 is
       Aspect := First (L);
       while Present (Aspect) loop
          declare
-            Id   : constant Node_Id   := Identifier (Aspect);
-            Expr : constant Node_Id   := Expression (Aspect);
-            Nam  : constant Name_Id   := Chars (Id);
-            A_Id : constant Aspect_Id := Get_Aspect_Id (Nam);
+            Loc  : constant Source_Ptr := Sloc (Aspect);
+            Id   : constant Node_Id    := Identifier (Aspect);
+            Expr : constant Node_Id    := Expression (Aspect);
+            Nam  : constant Name_Id    := Chars (Id);
+            A_Id : constant Aspect_Id  := Get_Aspect_Id (Nam);
             Anod : Node_Id;
             T    : Entity_Id;
 
@@ -728,7 +729,7 @@ package body Sem_Ch13 is
                   --  Build corresponding pragma node
 
                   Aitem :=
-                    Make_Pragma (Sloc (Aspect),
+                    Make_Pragma (Loc,
                       Pragma_Argument_Associations => New_List (Ent),
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Chars (Id)));
@@ -797,7 +798,7 @@ package body Sem_Ch13 is
                   --  Construct the attribute definition clause
 
                   Aitem :=
-                    Make_Attribute_Definition_Clause (Sloc (Aspect),
+                    Make_Attribute_Definition_Clause (Loc,
                       Name       => Ent,
                       Chars      => Chars (Id),
                       Expression => Relocate_Node (Expr));
@@ -823,7 +824,7 @@ package body Sem_Ch13 is
                   --  Construct the pragma
 
                   Aitem :=
-                    Make_Pragma (Sloc (Aspect),
+                    Make_Pragma (Loc,
                       Pragma_Argument_Associations => New_List (
                         New_Occurrence_Of (E, Sloc (Expr)),
                         Relocate_Node (Expr)),
@@ -844,36 +845,16 @@ package body Sem_Ch13 is
                   --  Construct the pragma
 
                   Aitem :=
-                    Make_Pragma (Sloc (Aspect),
+                    Make_Pragma (Loc,
                       Pragma_Argument_Associations => New_List (
                         Relocate_Node (Expr),
                         New_Occurrence_Of (E, Sloc (Expr))),
                       Pragma_Identifier            =>
-                         Make_Identifier (Sloc (Id), Chars (Id)));
+                        Make_Identifier (Sloc (Id), Chars (Id)),
+                      Class_Present                => Class_Present (Aspect));
 
                   --  We don't have to play the delay game here, since the only
                   --  values are check names which don't get analyzed anyway.
-
-                  Delay_Required := False;
-
-               --  Aspect Post corresponds to pragma Postcondition with single
-               --  argument that is the expression (we never give a message
-               --  argument. This is inserted right after the declaration,
-               --  to get the required pragma placement.
-
-               when Aspect_Post =>
-
-                  --  Construct the pragma
-
-                  Aitem :=
-                    Make_Pragma (Sloc (Expr),
-                      Pragma_Argument_Associations => New_List (
-                        Relocate_Node (Expr)),
-                      Pragma_Identifier            =>
-                      Make_Identifier (Sloc (Id), Name_Postcondition));
-
-                  --  We don't have to play the delay game here. The required
-                  --  delay in this case is already implemented by the pragma.
 
                   Delay_Required := False;
 
@@ -887,11 +868,38 @@ package body Sem_Ch13 is
                   --  Construct the pragma
 
                   Aitem :=
-                    Make_Pragma (Sloc (Expr),
-                      Pragma_Argument_Associations => New_List (
-                        Relocate_Node (Expr)),
+                    Make_Pragma (Loc,
                       Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Name_Precondition));
+                        Make_Identifier (Sloc (Id), Name_Precondition),
+                      Class_Present                => Class_Present (Aspect),
+                      Pragma_Argument_Associations => New_List (
+                        Make_Pragma_Argument_Association (Sloc (Expr),
+                          Chars      => Name_Check,
+                          Expression => Relocate_Node (Expr))));
+
+                  --  We don't have to play the delay game here. The required
+                  --  delay in this case is already implemented by the pragma.
+
+                  Delay_Required := False;
+
+               --  Aspect Post corresponds to pragma Postcondition with single
+               --  argument that is the expression (we never give a message
+               --  argument. This is inserted right after the declaration,
+               --  to get the required pragma placement.
+
+               when Aspect_Post =>
+
+                  --  Construct the pragma
+
+                  Aitem :=
+                    Make_Pragma (Sloc (Aspect),
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Name_Postcondition),
+                      Class_Present                => Class_Present (Aspect),
+                      Pragma_Argument_Associations => New_List (
+                        Make_Pragma_Argument_Association (Sloc (Expr),
+                          Chars      => Name_Check,
+                          Expression => Relocate_Node (Expr))));
 
                   --  We don't have to play the delay game here. The required
                   --  delay in this case is already implemented by the pragma.

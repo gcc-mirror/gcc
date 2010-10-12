@@ -409,10 +409,9 @@ package body Ch13 is
 
          --  We have an identifier (which should be an aspect identifier)
 
-         Aspect := Token_Node;
          A_Id := Get_Aspect_Id (Token_Name);
          Aspect :=
-           Make_Aspect_Specification (Sloc (Aspect),
+           Make_Aspect_Specification (Token_Ptr,
              Identifier => Token_Node);
 
          --  No valid aspect identifier present
@@ -465,6 +464,10 @@ package body Ch13 is
                      if Token = Tok_Identifier then
                         Scan; -- past identifier not CLASS
                      end if;
+
+                  else
+                     Scan; -- past CLASS
+                     Set_Class_Present (Aspect);
                   end if;
                end if;
             end if;
