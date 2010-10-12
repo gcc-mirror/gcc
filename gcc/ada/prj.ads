@@ -770,6 +770,10 @@ package Prj is
 
       Next_In_Lang : Source_Id := No_Source;
       --  Link to another source of the same language in the same project
+
+      Next_With_File_Name    : Source_Id := No_Source;
+      --  Link to another source with the same base file name
+
    end record;
 
    No_Source_Data : constant Source_Data :=
@@ -803,7 +807,17 @@ package Prj is
                        Switches_TS            => Empty_Time_Stamp,
                        Naming_Exception       => False,
                        Duplicate_Unit         => False,
-                       Next_In_Lang           => No_Source);
+                       Next_In_Lang           => No_Source,
+                       Next_With_File_Name    => No_Source);
+
+   package Source_Files_Htable is new Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Source_Id,
+      No_Element => No_Source,
+      Key        => File_Name_Type,
+      Hash       => Hash,
+      Equal      => "=");
+   --  Mapping of source file names to source ids
 
    package Source_Paths_Htable is new Simple_HTable
      (Header_Num => Header_Num,
@@ -1367,7 +1381,10 @@ package Prj is
          --  The number of entries in Replaced_Sources
 
          Units_HT : Units_Htable.Instance;
-         --  Unit name to Unit_Index (and from there so Source_Id)
+         --  Unit name to Unit_Index (and from there to Source_Id)
+
+         Source_Files_HT        : Source_Files_Htable.Instance;
+         --  Base source file names to Source_Id list.
 
          Source_Paths_HT : Source_Paths_Htable.Instance;
          --  Full path to Source_Id

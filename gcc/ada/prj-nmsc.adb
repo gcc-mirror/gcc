@@ -867,6 +867,10 @@ package body Prj.Nmsc is
          Source_Paths_Htable.Set (Data.Tree.Source_Paths_HT, Path.Name, Id);
       end if;
 
+      Id.Next_With_File_Name :=
+        Source_Files_Htable.Get (Data.Tree.Source_Files_HT, File_Name);
+      Source_Files_Htable.Set (Data.Tree.Source_Files_HT, File_Name, Id);
+
       if Index /= 0 then
          Project.Has_Multi_Unit_Sources := True;
       end if;
@@ -3016,7 +3020,6 @@ package body Prj.Nmsc is
          Element        : String_Element;
          File_Name      : File_Name_Type;
          Source         : Source_Id;
-         Iter           : Source_Iterator;
 
       begin
          case Kind is
@@ -3046,11 +3049,13 @@ package body Prj.Nmsc is
                Element   := Data.Tree.String_Elements.Table (Element_Id);
                File_Name := Canonical_Case_File_Name (Element.Value);
 
-               Iter := For_Each_Source (Data.Tree, Project);
+               Source := Source_Files_Htable.Get
+                 (Data.Tree.Source_Files_HT, File_Name);
+
+               while Source /= No_Source
+                     and then Source.Project /= Project
                loop
-                  Source := Prj.Element (Iter);
-                  exit when Source = No_Source or else Source.File = File_Name;
-                  Next (Iter);
+                  Source := Source.Next_With_File_Name;
                end loop;
 
                if Source = No_Source then
