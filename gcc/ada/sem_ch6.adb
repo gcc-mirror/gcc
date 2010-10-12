@@ -4636,10 +4636,12 @@ package body Sem_Ch6 is
         and then (not Is_Hidden (Overridden_Subp)
                    or else
                      ((Chars (Overridden_Subp) = Name_Initialize
-                         or else Chars (Overridden_Subp) = Name_Adjust
-                         or else Chars (Overridden_Subp) = Name_Finalize)
-                       and then Present (Alias (Overridden_Subp))
-                       and then not Is_Hidden (Alias (Overridden_Subp))))
+                         or else
+                       Chars (Overridden_Subp) = Name_Adjust
+                         or else
+                       Chars (Overridden_Subp) = Name_Finalize)
+                      and then Present (Alias (Overridden_Subp))
+                      and then not Is_Hidden (Alias (Overridden_Subp))))
       then
          if Must_Not_Override (Spec) then
             Error_Msg_Sloc := Sloc (Overridden_Subp);
@@ -8584,25 +8586,58 @@ package body Sem_Ch6 is
       Body_Id : Entity_Id)
    is
       Loc   : constant Source_Ptr := Sloc (N);
+      Plist : List_Id             := No_List;
       Prag  : Node_Id;
-      Plist : List_Id := No_List;
       Subp  : Entity_Id;
       Parms : List_Id;
 
-      function Grab_PPC (Nam : Name_Id) return Node_Id;
-      --  Prag contains an analyzed precondition or postcondition pragma.
-      --  This function copies the pragma, changes it to the corresponding
-      --  Check pragma and returns the Check pragma as the result. The
-      --  argument Nam is either Name_Precondition or Name_Postcondition.
+      function Grab_PPC (Pspec : Entity_Id := Empty) return Node_Id;
+      --  Prag contains an analyzed precondition or postcondition pragma. This
+      --  function copies the pragma, changes it to the corresponding Check
+      --  pragma and returns the Check pragma as the result. If Pspec is non-
+      --  empty, this is the case of inheriting a PPC, where we must change
+      --  references to parameters of the inherited subprogram to point to the
+      --  corresponding parameters of the current subprogram.
 
       --------------
       -- Grab_PPC --
       --------------
 
-      function Grab_PPC (Nam : Name_Id) return Node_Id is
-         CP : constant Node_Id := New_Copy_Tree (Prag);
+      function Grab_PPC (Pspec : Entity_Id := Empty) return Node_Id is
+         Nam : constant Name_Id := Pragma_Name (Prag);
+         Map : Elist_Id;
+         CP  : Node_Id;
 
       begin
+         --  Prepare map if this is the case where we have to map entities of
+         --  arguments in the overridden subprogram to corresponding entities
+         --  of the current subprogram.
+
+         if No (Pspec) then
+            Map := No_Elist;
+
+         else
+            declare
+               PF : Entity_Id;
+               CF : Entity_Id;
+
+            begin
+               Map := New_Elmt_List;
+               PF := First_Formal (Pspec);
+               CF := First_Formal (Spec_Id);
+               while Present (PF) loop
+                  Append_Elmt (PF, Map);
+                  Append_Elmt (CF, Map);
+                  Next_Formal (PF);
+                  Next_Formal (CF);
+               end loop;
+            end;
+         end if;
+
+         --  Now we can copy the tree, doing any required substituations
+
+         CP := New_Copy_Tree (Prag, Map => Map, New_Scope => Current_Scope);
+
          --  Set Analyzed to false, since we want to reanalyze the check
          --  procedure. Note that it is only at the outer level that we
          --  do this fiddling, for the spec cases, the already preanalyzed
@@ -8629,6 +8664,23 @@ package body Sem_Ch6 is
          Set_Pragma_Identifier (CP,
            Make_Identifier (Sloc (Prag),
              Chars => Name_Check));
+
+         --  If this is inherited case then the current message starts with
+         --  "failed p" and we change this to "failed inherited p".
+
+         if Present (Pspec) then
+            String_To_Name_Buffer
+              (Strval (Expression (Last (Pragma_Argument_Associations (CP)))));
+            pragma Assert (Name_Buffer (1 .. 8) = "failed p");
+            Name_Len := Name_Len + 10;
+            Name_Buffer (17 .. Name_Len) := Name_Buffer (7 .. Name_Len - 10);
+            Name_Buffer (7 .. 16) := " inherited";
+            Set_Strval
+              (Expression (Last (Pragma_Argument_Associations (CP))),
+               String_From_Name_Buffer);
+         end if;
+
+         --  Return the check pragma
 
          return CP;
       end Grab_PPC;
@@ -8660,7 +8712,7 @@ package body Sem_Ch6 is
                --  which is what we want since new entries were chained to
                --  the head of the list.
 
-               Prepend (Grab_PPC (Name_Precondition), Declarations (N));
+               Prepend (Grab_PPC, Declarations (N));
             end if;
 
             Prag := Next_Pragma (Prag);
@@ -8698,13 +8750,13 @@ package body Sem_Ch6 is
 
                   Analyze (Prag);
 
-                  --  If expansion is disabled, as in a generic unit,
-                  --  save pragma for later expansion.
+                  --  If expansion is disabled, as in a generic unit, save
+                  --  pragma for later expansion.
 
                   if not Expander_Active then
-                     Prepend (Grab_PPC (Name_Postcondition), Declarations (N));
+                     Prepend (Grab_PPC, Declarations (N));
                   else
-                     Append (Grab_PPC (Name_Postcondition), Plist);
+                     Append (Grab_PPC, Plist);
                   end if;
                end if;
 
@@ -8726,27 +8778,78 @@ package body Sem_Ch6 is
       --  Now deal with any postconditions from the spec
 
       if Present (Spec_Id) then
+         declare
+            Parent_Op : Node_Id;
 
-         --  Loop through PPC pragmas from spec
+            procedure Process_Post_Conditions
+              (Spec  : Node_Id;
+               Class : Boolean);
+            --  This processes the Spec_PPC_List from Spec, processing any
+            --  postconditions from the list. If Class is True, then only
+            --  postconditions marked with Class_Present are considered.
+            --  The caller has checked that Spec_PPC_List is non-Empty.
 
-         Prag := Spec_PPC_List (Spec_Id);
-         while Present (Prag) loop
-            if Pragma_Name (Prag) = Name_Postcondition
-              and then Pragma_Enabled (Prag)
-            then
-               if Plist = No_List then
-                  Plist := Empty_List;
-               end if;
+            -----------------------------
+            -- Process_Post_Conditions --
+            -----------------------------
 
-               if not Expander_Active then
-                  Prepend (Grab_PPC (Name_Postcondition), Declarations (N));
+            procedure Process_Post_Conditions
+              (Spec  : Node_Id;
+               Class : Boolean)
+            is
+               Pspec : Node_Id;
+
+            begin
+               if Class then
+                  Pspec := Spec;
                else
-                  Append (Grab_PPC (Name_Postcondition), Plist);
+                  Pspec := Empty;
                end if;
+
+               --  Loop through PPC pragmas from spec
+
+               Prag := Spec_PPC_List (Spec);
+               loop
+                  if Pragma_Name (Prag) = Name_Postcondition
+                    and then Pragma_Enabled (Prag)
+                    and then (not Class or else Class_Present (Prag))
+                  then
+                     if Plist = No_List then
+                        Plist := Empty_List;
+                     end if;
+
+                     if not Expander_Active then
+                        Prepend
+                          (Grab_PPC (Pspec), Declarations (N));
+                     else
+                        Append (Grab_PPC (Pspec), Plist);
+                     end if;
+                  end if;
+
+                  Prag := Next_Pragma (Prag);
+                  exit when No (Prag);
+               end loop;
+            end Process_Post_Conditions;
+
+         begin
+            if Present (Spec_PPC_List (Spec_Id)) then
+               Process_Post_Conditions (Spec_Id, Class => False);
             end if;
 
-            Prag := Next_Pragma (Prag);
-         end loop;
+            --  Process directly inherited specifications
+
+            Parent_Op := Spec_Id;
+            loop
+               Parent_Op := Overridden_Operation (Parent_Op);
+               exit when No (Parent_Op);
+
+               if Ekind (Parent_Op) /= E_Enumeration_Literal
+                 and then Present (Spec_PPC_List (Parent_Op))
+               then
+                  Process_Post_Conditions (Parent_Op, Class => True);
+               end if;
+            end loop;
+         end;
       end if;
 
       --  If we had any postconditions and expansion is enabled, build
@@ -8773,6 +8876,7 @@ package body Sem_Ch6 is
                    Make_Defining_Identifier (Loc,
                      Chars => Name_uPostconditions);
             --  The entity for the _Postconditions procedure
+
          begin
             Prepend_To (Declarations (N),
               Make_Subprogram_Body (Loc,
