@@ -3335,7 +3335,7 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p,
       if (flag_delete_null_pointer_checks)
 	temp.var = nothing_id;
       else
-	temp.var = anything_id;
+	temp.var = nonlocal_id;
       temp.type = ADDRESSOF;
       temp.offset = 0;
       VEC_safe_push (ce_s, heap, *results, &temp);
@@ -3426,6 +3426,15 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p,
     case tcc_declaration:
       {
 	get_constraint_for_ssa_var (t, results, address_p);
+	return;
+      }
+    case tcc_constant:
+      {
+	/* We cannot refer to automatic variables through constants.  */ 
+	temp.type = ADDRESSOF;
+	temp.var = nonlocal_id;
+	temp.offset = 0;
+	VEC_safe_push (ce_s, heap, *results, &temp);
 	return;
       }
     default:;
