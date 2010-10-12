@@ -1,3 +1,11 @@
+2010-10-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.md (*adddi3_insn_sp32): Rename.
+	(*adddi3_extend_sp32): Likewise.
+	(*subdi3_insn_sp32): Likewise.
+	(*subdi3_extend_sp32): Likewise.
+	(*negdi2_sp32): Use negative test for consistency.
+
 2010-10-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* libgcc2.h: Use __SIZEOF_DOUBLE__ instead of
