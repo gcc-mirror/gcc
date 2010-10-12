@@ -1,11 +1,25 @@
+2010-10-12  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb, g-comlin.ads (Define_Switch): Put back (unused)
+	parameter Separator for backward compatibility.
+
+2010-10-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch9.adb, par-ch9.adb, impunit.adb: Minor reformatting.
+
+2010-10-12  Vincent Celier  <celier@adacore.com>
+
+	* debug.adb: Put detailed documentation for gnatmake switch -dm.
+
+2010-10-12  Vincent Celier  <celier@adacore.com>
+
+	* gnat1drv.adb: When the compiler is invoked for a spec that needs aw
+	body, do not generate an ALI file if neither -gnatc nor -gnatQ is used.
+
 2010-10-12  Arnaud Charlet  <charlet@adacore.com>
 
 	* g-comlin.adb (Foreach_Switch): Make this procedure generic to avoid
 	using 'Access.
-
-2010-10-12  Emmanuel Briot  <briot@adacore.com>
-
-	* switch-m.adb: Allow building even in -gnat05 mode.
 
 2010-10-12  Robert Dewar  <dewar@adacore.com>
 

@@ -1599,7 +1599,8 @@ package body GNAT.Command_Line is
                         Add_Switch (Cmd, Sw, Parameter (Parser));
                      else
                         Add_Switch
-                          (Cmd, Sw, Parameter (Parser), Section.all);
+                          (Cmd, Sw, Parameter (Parser),
+                           Section => Section.all);
                      end if;
                   end if;
                end;
@@ -2052,13 +2053,15 @@ package body GNAT.Command_Line is
      (Cmd        : in out Command_Line;
       Switch     : String;
       Parameter  : String    := "";
+      Separator  : Character := ' ';
       Section    : String    := "";
       Add_Before : Boolean   := False)
    is
       Success : Boolean;
       pragma Unreferenced (Success);
    begin
-      Add_Switch (Cmd, Switch, Parameter, Section, Add_Before, Success);
+      Add_Switch (Cmd, Switch, Parameter, Separator,
+                  Section, Add_Before, Success);
    end Add_Switch;
 
    ----------------
@@ -2069,10 +2072,13 @@ package body GNAT.Command_Line is
      (Cmd        : in out Command_Line;
       Switch     : String;
       Parameter  : String := "";
+      Separator  : Character := ' ';
       Section    : String := "";
       Add_Before : Boolean := False;
       Success    : out Boolean)
    is
+      pragma Unreferenced (Separator);  --  ??? Should be removed eventually
+
       procedure Add_Simple_Switch
         (Simple    : String;
          Separator : String;

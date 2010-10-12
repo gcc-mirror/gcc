@@ -810,6 +810,7 @@ package body Ch9 is
    --    [OVERRIDING_INDICATOR]
    --    entry DEFINING_IDENTIFIER [(DISCRETE_SUBTYPE_DEFINITION)]
    --      PARAMETER_PROFILE;
+   --        [ASPECT_SPECIFICATIONS];
 
    --  The caller has checked that the initial token is ENTRY, NOT or
    --  OVERRIDING.

@@ -501,7 +501,7 @@ package body Impunit is
    -- Ada 2012 Units --
    --------------------
 
-   --  The following units should be used only in Ada 05 mode
+   --  The following units should be used only in Ada 2012 mode
 
    Non_Imp_File_Names_12 : constant File_List := (
      0 => "s-multip");   -- System.Mutiprocessors
