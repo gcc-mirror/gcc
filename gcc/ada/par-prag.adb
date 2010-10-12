@@ -982,6 +982,33 @@ begin
          end if;
       end Style_Checks;
 
+      -------------------------
+      -- Suppress_All (GNAT) --
+      -------------------------
+
+      --  pragma Suppress_All
+
+      --  This is a rather odd pragma, because other compilers allow it in
+      --  strange places. DEC allows it at the end of units, and Rational
+      --  allows it as a program unit pragma, when it would be more natural
+      --  if it were a configuration pragma.
+
+      --  Since the reason we provide this pragma is for compatibility with
+      --  these other compilers, we want to accomodate these strange placement
+      --  rules, and the easiest thing is simply to allow it anywhere in a
+      --  unit. If this pragma appears anywhere within a unit, then the effect
+      --  is as though a pragma Suppress (All_Checks) had appeared as the first
+      --  line of the current file, i.e. as the first configuration pragma in
+      --  the current unit.
+
+      --  To get this effect, we set the flag Has_Pragma_Suppress_All in the
+      --  compilation unit node for the current source file then in the last
+      --  stage of parsing a file, if this flag is set, we materialize the
+      --  Suppress (All_Checks) pragma, marked as not coming from Source.
+
+      when Pragma_Suppress_All =>
+         Set_Has_Pragma_Suppress_All (Cunit (Current_Source_Unit));
+
       ---------------------
       -- Warnings (GNAT) --
       ---------------------
@@ -1204,7 +1231,6 @@ begin
            Pragma_Stream_Convert                |
            Pragma_Subtitle                      |
            Pragma_Suppress                      |
-           Pragma_Suppress_All                  |
            Pragma_Suppress_Debug_Info           |
            Pragma_Suppress_Exception_Locations  |
            Pragma_Suppress_Initialization       |

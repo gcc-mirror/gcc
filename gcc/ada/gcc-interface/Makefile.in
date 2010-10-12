@@ -1074,6 +1074,8 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
     THREADSLIB = -lmarte
   else
     LIBGNAT_TARGET_PAIRS += \
+    a-exetim.adb<a-exetim-posix.adb \
+    a-exetim.ads<a-exetim-default.ads \
     s-linux.ads<s-linux.ads \
     s-osinte.adb<s-osinte-posix.adb
 
@@ -1099,9 +1101,9 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
       EH_MECHANISM=-gcc
     endif
 
-    THREADSLIB = -lpthread
+    THREADSLIB = -lpthread -lrt
     EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
-    EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
+    EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
   endif
 
   TOOLS_TARGET_PAIRS =  \
@@ -1785,6 +1787,8 @@ endif
 
 ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS_COMMON = \
+  a-exetim.adb<a-exetim-posix.adb \
+  a-exetim.ads<a-exetim-default.ads \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
@@ -1836,9 +1840,9 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
     indepsw.adb<indepsw-gnu.adb
 
-  EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
   EH_MECHANISM=-gcc
-  THREADSLIB = -lpthread
+  THREADSLIB = -lpthread -lrt
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
@@ -1983,6 +1987,8 @@ endif
 
 ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS = \
+  a-exetim.adb<a-exetim-posix.adb \
+  a-exetim.ads<a-exetim-default.ads \
   a-intnam.ads<a-intnam-linux.ads \
   a-numaux.ads<a-numaux-libc-x86.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -2004,10 +2010,10 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
     indepsw.adb<indepsw-gnu.adb
 
-  EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
   EH_MECHANISM=-gcc
   MISCLIB=
-  THREADSLIB=-lpthread
+  THREADSLIB=-lpthread -lrt
   GNATLIB_SHARED=gnatlib-shared-dual
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
@@ -2072,6 +2078,8 @@ endif
 
 ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS = \
+  a-exetim.adb<a-exetim-posix.adb \
+  a-exetim.ads<a-exetim-default.ads \
   a-intnam.ads<a-intnam-linux.ads \
   a-numaux.adb<a-numaux-x86.adb \
   a-numaux.ads<a-numaux-x86.ads \
@@ -2095,9 +2103,9 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
     indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
-  EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
   EH_MECHANISM=-gcc
-  THREADSLIB=-lpthread
+  THREADSLIB=-lpthread -lrt
   GNATLIB_SHARED=gnatlib-shared-dual
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)

@@ -10428,7 +10428,7 @@ package body Exp_Ch9 is
 
       --  Add the _Priority component if a Priority pragma is present
 
-      if Present (Taskdef) and then Has_Priority_Pragma (Taskdef) then
+      if Present (Taskdef) and then Has_Pragma_Priority (Taskdef) then
          declare
             Prag : constant Node_Id :=
                      Find_Task_Or_Protected_Pragma (Taskdef, Name_Priority);
@@ -12057,7 +12057,7 @@ package body Exp_Ch9 is
       --  defined value, see D.3(10).
 
       if Present (Pdef)
-        and then Has_Priority_Pragma (Pdef)
+        and then Has_Pragma_Priority (Pdef)
       then
          declare
             Prio : constant Node_Id :=
@@ -12357,7 +12357,7 @@ package body Exp_Ch9 is
       --  Priority parameter. Set to Unspecified_Priority unless there is a
       --  priority pragma, in which case we take the value from the pragma.
 
-      if Present (Tdef) and then Has_Priority_Pragma (Tdef) then
+      if Present (Tdef) and then Has_Pragma_Priority (Tdef) then
          Append_To (Args,
            Make_Selected_Component (Loc,
              Prefix => Make_Identifier (Loc, Name_uInit),

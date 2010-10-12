@@ -1,5 +1,41 @@
 2010-10-12  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch9.adb (Has_Pragma_Priority): New name for Has_Priority_Pragma
+	* gnat_rm.texi (pragma Suppress_All): Document new placement rules
+	* par-prag.adb (P_Pragma, case Suppress_All): Set
+	Has_Pragma_Suppress_All flag.
+	* sem_prag.adb (Has_Pragma_Priority): New name for Has_Priority_Pragma
+	(Analyze_Pragma, case Suppress_All): Remove placement check
+	(Process_Compilation_Unit_Pragmas): Use Has_Pragma_Suppress_All flag
+	* sem_prag.ads (Process_Compilation_Unit_Pragmas): Update documentation
+	* sinfo.adb (Has_Pragma_Suppress_All): New flag
+	(Has_Pragma_Priority): New name for Has_Priority_Pragma
+	* sinfo.ads (Has_Pragma_Suppress_All): New flag
+	(Has_Pragma_Priority): New name for Has_Priority_Pragma
+
+2010-10-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-xref.ads: Mark j/J as reserved for C++ classes.
+
+2010-10-12  Jose Ruiz  <ruiz@adacore.com>
+
+	* a-exetim-default.ads, a-exetim-posix.adb: New.
+	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS for linux): Use the
+	POSIX Realtime support to implement CPU clocks.
+	(EXTRA_GNATRTL_TASKING_OBJS for linux): Add the a-exetim.o object
+	to the tasking library.
+	(THREADSLIB): Make the POSIX.1b Realtime Extensions library (librt)
+	available for shared libraries.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2010-10-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): For Pre/Post, break
+	apart expressions with AND THEN clauses into separate pragmas.
+	* sinput.ads, sinput.adab (Get_Logical_Line_Number_Img): New function.
+
+2010-10-12  Robert Dewar  <dewar@adacore.com>
+
 	* par-ch13.adb (P_Aspect_Specifications): Fix handling of 'Class aspects
 	* sem_ch13.adb (Analyze_Aspect_Specifications): Fix bad Sloc on aspects
 	* sem_prag.adb (Fix_Error): Only change pragma names for pragmas from

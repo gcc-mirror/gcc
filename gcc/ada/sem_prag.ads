@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -99,8 +99,8 @@ package Sem_Prag is
    procedure Process_Compilation_Unit_Pragmas (N : Node_Id);
    --  Called at the start of processing compilation unit N to deal with any
    --  special issues regarding pragmas. In particular, we have to deal with
-   --  Suppress_All at this stage, since it appears after the unit instead of
-   --  before.
+   --  Suppress_All at this stage, since it can appear after the unit instead
+   --  of before (actually we allow it to appear anywhere).
 
    procedure Set_Encoded_Interface_Name (E : Entity_Id; S : Node_Id);
    --  This routine is used to set an encoded interface name. The node S is an

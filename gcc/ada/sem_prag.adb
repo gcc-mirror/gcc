@@ -8970,11 +8970,11 @@ package body Sem_Prag is
                Pragma_Misplaced;
                return;
 
-            elsif Has_Priority_Pragma (P) then
+            elsif Has_Pragma_Priority (P) then
                Error_Pragma ("duplicate pragma% not allowed");
 
             else
-               Set_Has_Priority_Pragma (P, True);
+               Set_Has_Pragma_Priority (P, True);
                Record_Rep_Item (Defining_Identifier (Parent (P)), N);
             end if;
          end Interrupt_Priority;
@@ -10994,10 +10994,10 @@ package body Sem_Prag is
                Pragma_Misplaced;
             end if;
 
-            if Has_Priority_Pragma (P) then
+            if Has_Pragma_Priority (P) then
                Error_Pragma ("duplicate pragma% not allowed");
             else
-               Set_Has_Priority_Pragma (P, True);
+               Set_Has_Pragma_Priority (P, True);
 
                if Nkind_In (P, N_Protected_Definition, N_Task_Definition) then
                   Record_Rep_Item (Defining_Identifier (Parent (P)), N);
@@ -12196,24 +12196,15 @@ package body Sem_Prag is
 
          --  pragma Suppress_All;
 
-         --  The only check made here is that the pragma appears in the proper
-         --  place, i.e. following a compilation unit. If indeed it appears in
-         --  this context, then the parser has already inserted an equivalent
-         --  pragma Suppress (All_Checks) to get the required effect.
+         --  The only check made here is that the pragma has no arguments.
+         --  There are no placement rules, and the processing required (setting
+         --  the Has_Pragma_Suppress_All flag in the compilation unit node was
+         --  taken care of by the parser). Process_Compilation_Unit_Pragmas
+         --  then creates and inserts a pragma Suppress (All_Checks).
 
          when Pragma_Suppress_All =>
             GNAT_Pragma;
             Check_Arg_Count (0);
-
-            if Nkind (Parent (N)) /= N_Compilation_Unit_Aux
-              or else not Is_List_Member (N)
-              or else List_Containing (N) /= Pragmas_After (Parent (N))
-            then
-               if not CodePeer_Mode then
-                  Error_Pragma
-                    ("misplaced pragma%, must follow compilation unit");
-               end if;
-            end if;
 
          -------------------------
          -- Suppress_Debug_Info --
@@ -13782,35 +13773,26 @@ package body Sem_Prag is
    procedure Process_Compilation_Unit_Pragmas (N : Node_Id) is
    begin
       --  A special check for pragma Suppress_All, a very strange DEC pragma,
-      --  strange because it comes at the end of the unit. If we have a pragma
-      --  Suppress_All in the Pragmas_After of the current unit, then we insert
-      --  a pragma Suppress (All_Checks) at the start of the context clause to
-      --  ensure the correct processing.
+      --  strange because it comes at the end of the unit. Rational has the
+      --  same name for a pragma, but treats it as a program unit pragma, In
+      --  GNAT we just decide to allow it anywhere at all. If it appeared then
+      --  the flag Has_Pragma_Suppress_All was set on the compilation unit
+      --  node, and we insert a pragma Suppress (All_Checks) at the start of
+      --  the context clause to ensure the correct processing.
 
-      declare
-         PA : constant List_Id := Pragmas_After (Aux_Decls_Node (N));
-         P  : Node_Id;
+      if Has_Pragma_Suppress_All (N) then
+         Prepend_To (Context_Items (N),
+           Make_Pragma (Sloc (N),
+             Chars                        => Name_Suppress,
+             Pragma_Argument_Associations => New_List (
+               Make_Pragma_Argument_Association (Sloc (N),
+                 Expression =>
+                   Make_Identifier (Sloc (N),
+                     Chars => Name_All_Checks)))));
+      end if;
 
-      begin
-         if Present (PA) then
-            P := First (PA);
-            while Present (P) loop
-               if Pragma_Name (P) = Name_Suppress_All then
-                  Prepend_To (Context_Items (N),
-                    Make_Pragma (Sloc (P),
-                      Chars => Name_Suppress,
-                      Pragma_Argument_Associations => New_List (
-                        Make_Pragma_Argument_Association (Sloc (P),
-                          Expression =>
-                            Make_Identifier (Sloc (P),
-                              Chars => Name_All_Checks)))));
-                  exit;
-               end if;
+      --  Nothing else to do at the current time!
 
-               Next (P);
-            end loop;
-         end if;
-      end;
    end Process_Compilation_Unit_Pragmas;
 
    --------
