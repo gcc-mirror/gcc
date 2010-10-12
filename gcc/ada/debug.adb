@@ -698,6 +698,8 @@ package body Debug is
 
    --  df  Only output file names, not path names, in log
 
+   --  dm  Needs documentation ???
+
    --  dn  Do not delete temporary files created by gnatmake at the end
    --      of execution, such as temporary config pragma files, mapping
    --      files or project path files.

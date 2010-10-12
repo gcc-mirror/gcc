@@ -754,6 +754,7 @@ package body Switch.M is
 
             declare
                Max_Proc : Nat;
+
             begin
                Scan_Nat (Switch_Chars, Max, Ptr, Max_Proc, C);
 
