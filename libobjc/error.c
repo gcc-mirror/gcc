@@ -48,8 +48,7 @@ _objc_abort (const char *fmt, ...)
 }
 
 /* The rest of the file is deprecated.  */
-#include "objc/objc.h"
-#include "objc/objc-api.h"
+#include "objc/objc-api.h" /* For objc_error_handler.  */
 
 /*
 ** Error handler function

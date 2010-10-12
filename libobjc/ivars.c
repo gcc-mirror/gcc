@@ -23,8 +23,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "objc-private/common.h"
-#include "objc/objc.h"
-#include "objc/objc-api.h"
+#include "objc/runtime.h"
+#include "objc-private/module-abi-8.h" /* For runtime structures  */
+#include "objc/thr.h"
 #include "objc-private/runtime.h"		/* the kitchen sink */
 #include <string.h> /* For strcmp */
 

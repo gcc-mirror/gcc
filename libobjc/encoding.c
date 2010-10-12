@@ -36,9 +36,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "objc/objc-api.h"
-#include "objc/encoding.h"
+#include "objc/runtime.h"
+#include "objc-private/module-abi-8.h" /* For struct objc_method */
 #include <stdlib.h>
+#include <ctype.h>
 
 #undef  MAX
 #define MAX(X, Y)                    \

@@ -28,8 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <objc/NXConstStr.h>
 
 /* Generate references to Object and NXConstanstString classes since they are
-   needed by the runtime system to run correctly. */
-
+   needed by the runtime system to run correctly.  */
 
 void __objc_linking (void)
 {

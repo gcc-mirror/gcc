@@ -1,5 +1,42 @@
 2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* archive.c: Do not include objc/objc.h.
+	* class.c: Do not include objc/objc.h.
+	* encoding.c: Include objc/runtime.h, ctype.h and
+	objc-private/module-abi-8.h instead of objc/objc-api.h and
+	objc/encoding.h.
+	* error.c: Do not include objc/objc.h.
+	* gc.c: Include tconfig.h and objc/encoding.h only if
+	OBJC_WITH_GC.
+	* hash.c: Include objc/runtime.h and objc/thr.h instead of
+	objc/objc-api.h.  Do not include objc/objc.h.
+	* init.c: Do not include objc/objc.h.
+	* ivars.c: Include objc/runtime.h, objc-private/module-abi-8.h and
+	objc/thr.h instead of objc/objc-api.h.  Do not include
+	objc/objc.h.
+	* linking.m: Tidied comment.
+	* memory.c: Include objc/runtime.h instead of objc/objc-api.h.
+	Do not include objc/objc.h.
+	* objects.c: Do not include objc/objc.h.
+	* objc-sync.c: Include objc/runtime.h instead of objc/objc-api.h.
+	* protocols.c: Do not include objc/objc.h.
+	* sarray.c: Include objc/runtime.h instead of objc/objc-api.h.  Do
+	not include objc/objc.h.
+	* selector.c: Do not include objc/objc.h.
+	* sendmsg.c: Do not include objc/objc.h.	
+	* thr.c: Include objc/runtime.h instead of objc/objc-api.h.
+	Do not include objc/objc.h.
+	* objc/objc-decls.h: Reindented code.
+	* objc/runtime.h Include objc-decls.h.  Updated comments.
+	(objc_malloc): New.
+	(objc_atomic_malloc): New.
+	(objc_calloc): New.
+	(objc_realloc): New.
+	(objc_free): New.
+	* objc-private/runtime.h: Updated comments.
+	
+2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Makefile.in (C_SOURCE_FILES): Added protocols.c.
 	* objc-private/protocols.h: New.
 	* protocols.c: New.

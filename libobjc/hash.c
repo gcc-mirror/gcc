@@ -25,8 +25,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/common.h"
 #include <assert.h> /* For assert */
 
-#include "objc/objc.h"
-#include "objc/objc-api.h"
+#include "objc/runtime.h" /* For objc_calloc */
+#include "objc/thr.h"     /* Required by objc-private/runtime.h.  */
 #include "objc-private/hash.h"
 #include "objc-private/runtime.h"		/* for DEBUG_PRINTF */
 

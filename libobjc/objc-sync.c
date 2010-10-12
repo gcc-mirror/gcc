@@ -79,7 +79,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "objc-private/common.h"
 #include "objc/objc-sync.h"         /* For objc_sync_enter(), objc_sync_exit() */
-#include "objc/objc-api.h"          /* For objc_malloc() */
+#include "objc/runtime.h"           /* For objc_malloc() */
 #include "objc/thr.h"               /* For objc_mutex_loc() and similar */
 #include "objc-private/objc-sync.h" /* For __objc_sync_init() */
 
