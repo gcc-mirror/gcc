@@ -1,3 +1,22 @@
+2010-10-12  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_number_of_cpus): Add implementation for Windows.
+
+2010-10-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* make.adb (Globalize): New procedure.
+	(Compile): Set Do_Codepeer_Globalize_Step when -gnatC is used.
+	(Gnatmake): Call Globalize when needed.
+	(Process_Restrictions_Or_Restriction_Warnings): Ignore Restrictions
+	pragmas in CodePeer mode.
+	(Adjust_Global_Switches): Set No_Initialize_Scalars in CodePeer mode,
+	to generate simpler and consistent code.
+
+2010-10-12  Bob Duff  <duff@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): Disable previous change,
+	can cause side effects to be duplicated.
+
 2010-10-12  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch6.adb (Process_PPCs): Handle inherited postconditions.

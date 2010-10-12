@@ -2384,6 +2384,10 @@ __gnat_number_of_cpus (void)
   if (pstat_getdynamic (&psd, sizeof (psd), 1, 0) != -1)
     cores = (int) psd.psd_proc_cnt;
 
+#elif defined (_WIN32)
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo (&sysinfo);
+  cores = (int) sysinfo.dwNumberOfProcessors;
 #endif
 
   return cores;

@@ -4594,6 +4594,12 @@ package body Sem_Prag is
       --  Start of processing for Process_Restrictions_Or_Restriction_Warnings
 
       begin
+         --  Ignore all Restrictions pragma in CodePeer mode
+
+         if CodePeer_Mode then
+            return;
+         end if;
+
          Check_Ada_83_Warning;
          Check_At_Least_N_Arguments (1);
          Check_Valid_Configuration_Pragma;
