@@ -31,6 +31,8 @@ with Prj;      use Prj;
 with Prj.Env;  use Prj.Env;
 with Table;
 
+with System.Multiprocessors; use System.Multiprocessors;
+
 package body Switch.M is
 
    package Normalized_Switches is new Table.Table
@@ -751,14 +753,22 @@ package body Switch.M is
             Ptr := Ptr + 1;
 
             declare
-               Max_Proc : Pos;
+               Max_Proc : Nat;
             begin
-               Scan_Pos (Switch_Chars, Max, Ptr, Max_Proc, C);
+               Scan_Nat (Switch_Chars, Max, Ptr, Max_Proc, C);
 
                if Ptr <= Max then
                   Bad_Switch (Switch_Chars);
 
                else
+                  if Max_Proc = 0 then
+                     Max_Proc := Nat (Number_Of_CPUs);
+
+                     if Max_Proc = 0 then
+                        Max_Proc := 1;
+                     end if;
+                  end if;
+
                   Maximum_Processes := Positive (Max_Proc);
                end if;
             end;
