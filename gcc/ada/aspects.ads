@@ -195,6 +195,12 @@ package Aspects is
    --  node that has its Has_Aspects flag set True on entry, or with L being an
    --  empty list or No_List.
 
+   procedure Move_Aspects (From : Node_Id; To : Node_Id);
+   --  Moves aspects from 'From' node to 'To' node. Has_Aspects (To) must be
+   --  False on entry. If Has_Aspects (From) is False, the call has no effect.
+   --  Otherwise the aspects are moved and on return Has_Aspects (To) is True,
+   --  and Has_Aspects (From) is False.
+
    procedure Tree_Write;
    --  Writes contents of Aspect_Specifications hash table to the tree file
 

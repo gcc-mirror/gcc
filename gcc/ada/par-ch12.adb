@@ -61,10 +61,12 @@ package body Ch12 is
    --    GENERIC_SUBPROGRAM_DECLARATION | GENERIC_PACKAGE_DECLARATION
 
    --  GENERIC_SUBPROGRAM_DECLARATION ::=
-   --    GENERIC_FORMAL_PART SUBPROGRAM_SPECIFICATION;
+   --    GENERIC_FORMAL_PART SUBPROGRAM_SPECIFICATION
+   --      [ASPECT_SPECIFICATIONS];
 
    --  GENERIC_PACKAGE_DECLARATION ::=
-   --    GENERIC_FORMAL_PART PACKAGE_SPECIFICATION;
+   --    GENERIC_FORMAL_PART PACKAGE_SPECIFICATION
+   --      [ASPECT_SPECIFICATIONS];
 
    --  GENERIC_FORMAL_PART ::=
    --    generic {GENERIC_FORMAL_PARAMETER_DECLARATION | USE_CLAUSE}
@@ -194,14 +196,14 @@ package body Ch12 is
                exit Decl_Loop;
             end if;
          end if;
-
       end loop Decl_Loop;
 
       --  Generic formal part is scanned, scan out subprogram or package spec
 
       if Token = Tok_Package then
          Gen_Decl := New_Node (N_Generic_Package_Declaration, Gen_Sloc);
-         Set_Specification (Gen_Decl, P_Package (Pf_Spcn));
+         Set_Specification (Gen_Decl, P_Package (Pf_Spcn, Gen_Decl));
+
       else
          Gen_Decl := New_Node (N_Generic_Subprogram_Declaration, Gen_Sloc);
 
@@ -213,7 +215,8 @@ package body Ch12 is
          then
             Error_Msg_SP ("child unit allowed only at library level");
          end if;
-         TF_Semicolon;
+
+         P_Aspect_Specifications (Gen_Decl);
       end if;
 
       Set_Generic_Formal_Declarations (Gen_Decl, Decls);
@@ -275,8 +278,9 @@ package body Ch12 is
    begin
       --  Figure out if a generic actual part operation is present. Clearly
       --  there is no generic actual part if the current token is semicolon
+      --  or if we have apsect specifications present.
 
-      if Token = Tok_Semicolon then
+      if Token = Tok_Semicolon or else Aspect_Specifications_Present then
          return No_List;
 
       --  If we don't have a left paren, then we have an error, and the job
@@ -402,9 +406,11 @@ package body Ch12 is
 
    --  FORMAL_OBJECT_DECLARATION ::=
    --    DEFINING_IDENTIFIER_LIST :
-   --      MODE [NULL_EXCLUSION] SUBTYPE_MARK [:= DEFAULT_EXPRESSION];
+   --      MODE [NULL_EXCLUSION] SUBTYPE_MARK [:= DEFAULT_EXPRESSION]
+   --        [ASPECT_SPECIFICATIONS];
    --  | DEFINING_IDENTIFIER_LIST :
    --      MODE ACCESS_DEFINITION [:= DEFAULT_EXPRESSION];
+   --        [ASPECT_SPECIFICATIONS];
 
    --  The caller has checked that the initial token is an identifier
 
@@ -425,7 +431,6 @@ package body Ch12 is
    begin
       Idents (1) := P_Defining_Identifier (C_Comma_Colon);
       Num_Idents := 1;
-
       while Comma_Present loop
          Num_Idents := Num_Idents + 1;
          Idents (Num_Idents) := P_Defining_Identifier (C_Comma_Colon);
@@ -479,6 +484,7 @@ package body Ch12 is
 
          No_Constraint;
          Set_Default_Expression (Decl_Node, Init_Expr_Opt);
+         P_Aspect_Specifications (Decl_Node);
 
          if Ident > 1 then
             Set_Prev_Ids (Decl_Node, True);
@@ -494,8 +500,6 @@ package body Ch12 is
          Ident := Ident + 1;
          Restore_Scan_State (Scan_State);
       end loop Ident_Loop;
-
-      TF_Semicolon;
    end P_Formal_Object_Declarations;
 
    -----------------------------------
@@ -504,7 +508,8 @@ package body Ch12 is
 
    --  FORMAL_TYPE_DECLARATION ::=
    --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART]
-   --      is FORMAL_TYPE_DEFINITION;
+   --      is FORMAL_TYPE_DEFINITION
+   --        [ASPECT_SPECIFICATIONS];
 
    --  The caller has checked that the initial token is TYPE
 
@@ -532,15 +537,20 @@ package body Ch12 is
 
       if Def_Node /= Error then
          Set_Formal_Type_Definition (Decl_Node, Def_Node);
-         TF_Semicolon;
+         P_Aspect_Specifications (Decl_Node);
 
       else
          Decl_Node := Error;
 
+         --  If we have aspect specifications, skip them
+
+         if Aspect_Specifications_Present then
+            P_Aspect_Specifications (Error);
+
          --  If we have semicolon, skip it to avoid cascaded errors
 
-         if Token = Tok_Semicolon then
-            Scan;
+         elsif Token = Tok_Semicolon then
+            Scan; -- past semicolon
          end if;
       end if;
 
@@ -1078,10 +1088,12 @@ package body Ch12 is
    --  | FORMAL_ABSTRACT_SUBPROGRAM_DECLARATION
 
    --  FORMAL_CONCRETE_SUBPROGRAM_DECLARATION ::=
-   --    with SUBPROGRAM_SPECIFICATION [is SUBPROGRAM_DEFAULT];
+   --    with SUBPROGRAM_SPECIFICATION [is SUBPROGRAM_DEFAULT]
+   --      [ASPECT_SPECIFICATIONS];
 
    --  FORMAL_ABSTRACT_SUBPROGRAM_DECLARATION ::=
-   --    with SUBPROGRAM_SPECIFICATION is abstract [SUBPROGRAM_DEFAULT];
+   --    with SUBPROGRAM_SPECIFICATION is abstract [SUBPROGRAM_DEFAULT]
+   --      [ASPECT_SPECIFICATIONS];
 
    --  SUBPROGRAM_DEFAULT ::= DEFAULT_NAME | <>
 
@@ -1122,12 +1134,14 @@ package body Ch12 is
          Set_Specification (Def_Node, Spec_Node);
 
          if Token = Tok_Semicolon then
-            Scan; -- past ";"
+            null;
+
+         elsif Aspect_Specifications_Present then
+            null;
 
          elsif Token = Tok_Box then
             Set_Box_Present (Def_Node, True);
             Scan; -- past <>
-            T_Semicolon;
 
          elsif Token = Tok_Null then
             if Ada_Version < Ada_2005 then
@@ -1143,20 +1157,18 @@ package body Ch12 is
             end if;
 
             Scan;  --  past NULL
-            T_Semicolon;
 
          else
             Set_Default_Name (Def_Node, P_Name);
-            T_Semicolon;
          end if;
 
       else
          Def_Node :=
            New_Node (N_Formal_Concrete_Subprogram_Declaration, Prev_Sloc);
          Set_Specification (Def_Node, Spec_Node);
-         T_Semicolon;
       end if;
 
+      P_Aspect_Specifications (Def_Node);
       return Def_Node;
    end P_Formal_Subprogram_Declaration;
 
@@ -1178,7 +1190,8 @@ package body Ch12 is
 
    --  FORMAL_PACKAGE_DECLARATION ::=
    --    with package DEFINING_IDENTIFIER
-   --      is new generic_package_NAME FORMAL_PACKAGE_ACTUAL_PART;
+   --      is new generic_package_NAME FORMAL_PACKAGE_ACTUAL_PART
+   --        [ASPECT_SPECIFICATIONS];
 
    --  FORMAL_PACKAGE_ACTUAL_PART ::=
    --    ([OTHERS =>] <>) |
@@ -1222,7 +1235,7 @@ package body Ch12 is
          end if;
       end if;
 
-      T_Semicolon;
+      P_Aspect_Specifications (Def_Node);
       return Def_Node;
    end P_Formal_Package_Declaration;
 

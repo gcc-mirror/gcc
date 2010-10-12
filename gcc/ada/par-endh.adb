@@ -166,7 +166,7 @@ package body Endh is
    -- Check_End --
    ---------------
 
-   function Check_End return Boolean is
+   function Check_End (Decl : Node_Id := Empty) return Boolean is
       Name_On_Separate_Line : Boolean;
       --  Set True if the name on an END line is on a separate source line
       --  from the END. This is highly suspicious, but is allowed. The point
@@ -387,6 +387,15 @@ package body Endh is
             end if;
          end if;
 
+         --  Scan aspect specifications if permitted here
+
+         if Aspect_Specifications_Present then
+            if No (Decl) then
+               P_Aspect_Specifications (Error);
+            else
+               P_Aspect_Specifications (Decl);
+            end if;
+
          --  Except in case of END RECORD, semicolon must follow. For END
          --  RECORD, a semicolon does follow, but it is part of a higher level
          --  construct. In any case, a missing semicolon is not serious enough
@@ -394,7 +403,7 @@ package body Endh is
          --  are dealing with (i.e. to be suspicious that it is not in fact
          --  the END statement we are looking for!)
 
-         if End_Type /= E_Record then
+         elsif End_Type /= E_Record then
             if Token = Tok_Semicolon then
                T_Semicolon;
 
@@ -644,13 +653,15 @@ package body Endh is
 
    --  Error recovery: cannot raise Error_Resync;
 
-   procedure End_Statements (Parent : Node_Id := Empty) is
+   procedure End_Statements
+     (Parent : Node_Id := Empty;
+      Decl   : Node_Id := Empty) is
    begin
       --  This loop runs more than once in the case where Check_End rejects
       --  the END sequence, as indicated by Check_End returning False.
 
       loop
-         if Check_End then
+         if Check_End (Decl) then
             if Present (Parent) then
                Set_End_Label (Parent, End_Labl);
             end if;

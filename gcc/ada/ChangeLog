@@ -1,3 +1,35 @@
+2010-10-12  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads, aspects.adb (Move_Aspects): New procedure.
+	* atree.ads, atree.adb: (New_Copy): Does not copy aspect specifications
+	* sinfo.ads, par-ch3.adb, par-ch6.adb, par-ch7.adb, par-ch9.adb,
+	par-endh.adb, par-ch13.adb, par-ch12.adb: Modify grammar to include
+	aspect specifications.
+	Recognize aspect specifications for all cases
+	* par.adb: Recognize aspect specifications for all cases
+	* sem_ch12.ads, sem_ch12.adb (Copy_Generic_Node): Copies aspect
+	specifications.
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Improve patch to freeze
+	generic actual types (was missing some guards before).
+	* sem_ch9.adb (Analyze_Single_Protected_Declaration): Copy aspects to
+	generated object
+	(Analyze_Single_Task_Declaration): Copy aspects to generated object
+
+2010-10-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* usage.adb (usage): Adjust line for -gnatn switch.
+
+2010-10-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Only leave change active for aspect
+	spec case.
+
+2010-10-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Declaration): If this is a
+	declaration of a null procedure resolve the types of the profile of the
+	generated null body now.
+
 2010-10-11  Robert Dewar  <dewar@adacore.com>
 
 	* debug.adb: Remove d.A flag to delay address clause (not needed any

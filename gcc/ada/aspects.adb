@@ -160,6 +160,20 @@ package body Aspects is
       end if;
    end Aspect_Specifications;
 
+   ------------------
+   -- Move_Aspects --
+   ------------------
+
+   procedure Move_Aspects (From : Node_Id; To : Node_Id) is
+      pragma Assert (not Has_Aspects (To));
+   begin
+      if Has_Aspects (From) then
+         Set_Aspect_Specifications (To, Aspect_Specifications (From));
+         Aspect_Specifications_Hash_Table.Remove (From);
+         Set_Has_Aspects (From, False);
+      end if;
+   end Move_Aspects;
+
    -----------------------------------
    -- Permits_Aspect_Specifications --
    -----------------------------------

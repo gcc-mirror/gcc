@@ -398,7 +398,10 @@ package Atree is
    --  The parent pointer of the destination and its list link, if any, are
    --  not affected by the copy. Note that parent pointers of descendents
    --  are not adjusted, so the descendents of the destination node after
-   --  the Copy_Node is completed have dubious parent pointers.
+   --  the Copy_Node is completed have dubious parent pointers. Note that
+   --  this routine does NOT copy aspect specifications, the Has_Aspects
+   --  flag in the returned node will always be False. The caller must deal
+   --  with copying aspect specifications where this is required.
 
    function New_Copy (Source : Node_Id) return Node_Id;
    --  This function allocates a completely new node, and then initializes

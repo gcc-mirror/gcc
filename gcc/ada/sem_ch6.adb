@@ -2737,6 +2737,27 @@ package body Sem_Ch6 is
             Set_Defining_Identifier (Form,
               Make_Defining_Identifier (Loc,
                 Chars (Defining_Identifier (Form))));
+
+            --  Resolve the types of the formals now, because the freeze point
+            --  may appear in a different context, e.g. an instantiation.
+
+            if Nkind (Parameter_Type (Form)) /= N_Access_Definition then
+               Find_Type (Parameter_Type (Form));
+
+            elsif
+              No (Access_To_Subprogram_Definition (Parameter_Type (Form)))
+            then
+               Find_Type (Subtype_Mark (Parameter_Type (Form)));
+
+            else
+
+               --  the case of a null procedure with a formal that is an
+               --  access_to_subprogram type, and that is used as an actual
+               --  in an instantiation is left to the enthusiastic reader.
+
+               null;
+            end if;
+
             Next (Form);
          end loop;
 

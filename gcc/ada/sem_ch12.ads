@@ -64,7 +64,9 @@ package Sem_Ch12 is
    --  repeatedly: once to produce a copy on which semantic analysis of
    --  the generic is performed, and once for each instantiation. The tree
    --  being copied is not semantically analyzed, except that references to
-   --  global entities are marked on terminal nodes.
+   --  global entities are marked on terminal nodes. Note that this function
+   --  copies any aspect specifications from the input node N to the returned
+   --  node, as well as the setting of the Has_Aspects flag.
 
    function Get_Instance_Of (A : Entity_Id) return Entity_Id;
    --  Retrieve actual associated with given generic parameter.

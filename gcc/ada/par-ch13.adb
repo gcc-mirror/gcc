@@ -378,17 +378,19 @@ package body Ch13 is
       Aspect  : Node_Id;
       A_Id    : Aspect_Id;
       OK      : Boolean;
+      Ptr     : Source_Ptr;
 
    begin
       --  Check if aspect specification present
 
       if not Aspect_Specifications_Present then
-         T_Semicolon;
+         TF_Semicolon;
          return;
       end if;
 
       --  Aspect Specification is present
 
+      Ptr := Token_Ptr;
       Scan; -- past WITH
 
       --  Here we have an aspect specification to scan, note that we don;t
@@ -511,8 +513,12 @@ package body Ch13 is
       --  If aspects scanned, store them
 
       if Is_Non_Empty_List (Aspects) then
-         Set_Parent (Aspects, Decl);
-         Set_Aspect_Specifications (Decl, Aspects);
+         if Decl = Error then
+            Error_Msg ("aspect specifications not allowed here", Ptr);
+         else
+            Set_Parent (Aspects, Decl);
+            Set_Aspect_Specifications (Decl, Aspects);
+         end if;
       end if;
    end P_Aspect_Specifications;
 

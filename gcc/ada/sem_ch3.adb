@@ -4150,10 +4150,16 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  Make sure that generic actual types are properly frozen
+      --  Make sure that generic actual types are properly frozen The subtype
+      --  is marked as a generic actual type when the enclosing instance is
+      --  analyzed, so here we identify the subtype from the tree structure.
 
       if Expander_Active
         and then Is_Generic_Actual_Type (Id)
+        and then In_Instance
+        and then not Comes_From_Source (N)
+        and then Nkind (Subtype_Indication (N)) /= N_Subtype_Indication
+        and then Is_Frozen (T)
       then
          Insert_Actions (N, Freeze_Entity (Id, N));
       end if;

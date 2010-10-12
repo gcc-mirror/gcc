@@ -276,7 +276,8 @@ package body Ch3 is
    --  | PRIVATE_EXTENSION_DECLARATION
 
    --  FULL_TYPE_DECLARATION ::=
-   --    type DEFINING_IDENTIFIER [KNOWN_DISCRIMINANT_PART] is TYPE_DEFINITION;
+   --    type DEFINING_IDENTIFIER [KNOWN_DISCRIMINANT_PART] is TYPE_DEFINITION
+   --      [ASPECT_SPECIFICATIONS];
    --  | CONCURRENT_TYPE_DECLARATION
 
    --  INCOMPLETE_TYPE_DECLARATION ::=
@@ -1260,11 +1261,14 @@ package body Ch3 is
 
    --  OBJECT_DECLARATION ::=
    --    DEFINING_IDENTIFIER_LIST : [aliased] [constant]
-   --      [NULL_EXCLUSION] SUBTYPE_INDICATION [:= EXPRESSION];
+   --      [NULL_EXCLUSION] SUBTYPE_INDICATION [:= EXPRESSION]
+   --        [ASPECT_SPECIFICATIONS];
    --  | DEFINING_IDENTIFIER_LIST : [aliased] [constant]
-   --      ACCESS_DEFINITION [:= EXPRESSION];
+   --      ACCESS_DEFINITION [:= EXPRESSION]
+   --        [ASPECT_SPECIFICATIONS];
    --  | DEFINING_IDENTIFIER_LIST : [aliased] [constant]
-   --      ARRAY_TYPE_DEFINITION [:= EXPRESSION];
+   --      ARRAY_TYPE_DEFINITION [:= EXPRESSION]
+   --        [ASPECT_SPECIFICATIONS];
 
    --  NUMBER_DECLARATION ::=
    --    DEFINING_IDENTIFIER_LIST : constant ::= static_EXPRESSION;
@@ -1279,7 +1283,8 @@ package body Ch3 is
    --    DEFINING_IDENTIFIER : exception renames exception_NAME;
 
    --  EXCEPTION_DECLARATION ::=
-   --    DEFINING_IDENTIFIER_LIST : exception;
+   --    DEFINING_IDENTIFIER_LIST : exception
+   --      [ASPECT_SPECIFICATIONS];
 
    --  Note that the ALIASED indication in an object declaration is
    --  marked by a flag in the parent node.
@@ -3322,7 +3327,8 @@ package body Ch3 is
 
    --  COMPONENT_DECLARATION ::=
    --    DEFINING_IDENTIFIER_LIST : COMPONENT_DEFINITION
-   --      [:= DEFAULT_EXPRESSION];
+   --      [:= DEFAULT_EXPRESSION]
+   --        [ASPECT_SPECIFICATIONS];
 
    --  COMPONENT_DEFINITION ::=
    --    [aliased] [NULL_EXCLUSION] SUBTYPE_INDICATION | ACCESS_DEFINITION
