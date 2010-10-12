@@ -6211,15 +6211,25 @@ package body Sem_Ch12 is
             end if;
          end;
 
-      elsif Nkind_In (N, N_Integer_Literal,
-                         N_Real_Literal,
-                         N_String_Literal)
-      then
+      elsif Nkind_In (N, N_Integer_Literal, N_Real_Literal) then
+
          --  No descendant fields need traversing
 
          null;
 
-      --  For the remaining nodes, copy recursively their descendants
+      elsif Nkind (N) = N_String_Literal
+        and then Present (Etype (N))
+        and then Instantiating
+      then
+         --  If the string is declared in an outer scope, the string_literal
+         --  subtype created for it may have the wrong scope. We force the
+         --  reanalysis of the constant to generate a new itype in the proper
+         --  context.
+
+         Set_Etype (New_N, Empty);
+         Set_Analyzed (New_N, False);
+
+      --  For the remaining nodes, copy their descendants recursively
 
       else
          Copy_Descendants;

@@ -1,3 +1,17 @@
+2010-10-12  Thomas Quinot  <quinot@adacore.com>
+
+	* a-exetim.ads: Minor reformatting.
+	* g-socket.ads (Port_Type): Better definition corresponding to the
+	actual standard range.
+	* exp_ch5.adb: Add comment.
+	* sem_aux.adb: Minor reformatting.
+
+2010-10-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Copy_Generic_Node): If node is a string literal, remove
+	string_literal_subtype so that a new one can be constructed in the
+	scope of the instance.
+
 2010-10-12  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch9.adb (Has_Pragma_Priority): New name for Has_Priority_Pragma

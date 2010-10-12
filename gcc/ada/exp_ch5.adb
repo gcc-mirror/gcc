@@ -1759,6 +1759,7 @@ package body Exp_Ch5 is
       --  has discriminants (necessarily with defaults) a check may still be
       --  necessary if the Lhs is aliased. The private determinants must be
       --  visible to build the discriminant constraints.
+      --  What is a "determinant"???
 
       --  Only an explicit dereference that comes from source indicates
       --  aliasing. Access to formals of protected operations and entries

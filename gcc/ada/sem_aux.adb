@@ -204,8 +204,7 @@ package body Sem_Aux is
 
    begin
       pragma Assert
-        (Has_Discriminants (Typ)
-          or else Has_Unknown_Discriminants (Typ));
+        (Has_Discriminants (Typ) or else Has_Unknown_Discriminants (Typ));
 
       Ent := First_Entity (Typ);
 
