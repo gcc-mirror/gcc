@@ -36,8 +36,8 @@ case "$invoked" in
     ;;
   collect-ld)
     # when using a linker plugin, gcc will always pass '-plugin' as the
-    # first option to the linker.
-    if test x"$1" = "x-plugin"; then
+    # first or second option to the linker.
+    if test x"$1" = "x-plugin" || test x"$2" = "x-plugin"; then
       original=$ORIGINAL_PLUGIN_LD_FOR_TARGET
     else
       original=$ORIGINAL_LD_FOR_TARGET
