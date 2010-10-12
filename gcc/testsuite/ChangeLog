@@ -1,3 +1,7 @@
+2010-10-12  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/abi/mangle40.C: Robustify tests for defined symbols.
+
 2010-10-12  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/38936
