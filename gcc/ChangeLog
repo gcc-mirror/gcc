@@ -1,3 +1,17 @@
+2010-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* rtl.h: Include hashtab.h.
+	(iterative_hash_rtx): New prototype.
+	* rtl.c (iterative_hash_rtx): New function.
+	* dwarf2out.c (dw_loc_list_node): Add hash and emitted fields.
+	(output_loc_list): Return immediately if emitted is set,
+	set it.
+	(hash_loc_operands, hash_locs, hash_loc_list,
+	compare_loc_operands, compare_locs, loc_list_hash, loc_list_eq,
+	optimize_location_lists_1, optimize_location_lists): New function.
+	(dwarf2out_finish): Call optimize_location_lists.
+	* Makefile.in (RTL_BASE_H): Depend on $(HASHTAB_H).
+
 2010-10-12  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR testsuite/45974
