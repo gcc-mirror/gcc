@@ -277,8 +277,17 @@ proc lto-get-options-main { src } {
 		warning "lto.exp does not support dg-lto-do $dgdo"
 	    }
 	} elseif { ![string compare "dg-extra-ld-options" $cmd] } {
-	    set dg-extra-ld-options [lindex $op 2]
-	    verbose "dg-extra-ld-options for main is ${dg-extra-ld-options}"
+	    if { [llength $op] > 4 } {
+		error "[lindex $op 0]: too many arguments"
+	    } else {
+		if { [llength $op] == 3
+		     || ([llength $op] > 3
+			 && [dg-process-target [lindex $op 3]] == "S") } {
+		    set dg-extra-ld-options [lindex $op 2]
+		    verbose \
+			"dg-extra-ld-options for main is ${dg-extra-ld-options}"
+		}
+	    }
 	} elseif { ![string compare "dg-suppress-ld-options" $cmd] } {
 	    set dg-suppress-ld-options [lindex $op 2]
 	    verbose \

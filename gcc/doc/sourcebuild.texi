@@ -2300,7 +2300,7 @@ This directive provides a list of one or more sets of compiler options
 to override @var{LTO_OPTIONS}.  Each test will be compiled and run with
 each of these sets of options.
 
-@item @{ dg-extra-ld-options @var{options} @}
+@item @{ dg-extra-ld-options @var{options} [@{ target @var{selector} @}]@}
 This directive adds @var{options} to the linker options used.
 
 @item @{ dg-suppress-ld-options @var{options} @}

@@ -1,3 +1,9 @@
+2010-10-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/45851
+	* doc/sourcebuild.texi (LTO Testing, dg-extra-ld-options):
+	Document optional target selector.
+
 2010-10-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* flag-types.h: New.
