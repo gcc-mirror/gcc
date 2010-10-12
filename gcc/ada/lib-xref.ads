@@ -549,7 +549,7 @@ package Lib.Xref is
    --    g     C/C++ macro                     C/C++ fun-like macro
    --    h     Interface (Ada 2005)            Abstract type
    --    i     signed integer object           signed integer type
-   --    j     (unused)                        (unused)
+   --    j     C++ class object                C++ class
    --    k     generic package                 package
    --    l     label on loop                   label on statement
    --    m     modular integer object          modular integer type

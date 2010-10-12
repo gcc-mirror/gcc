@@ -4815,11 +4815,13 @@ pragma Suppress_All;
 @end smallexample
 
 @noindent
-This pragma can only appear immediately following a compilation
-unit.  The effect is to apply @code{Suppress (All_Checks)} to the unit
-which it follows.  This pragma is implemented for compatibility with DEC
-Ada 83 usage.  The use of pragma @code{Suppress (All_Checks)} as a normal
-configuration pragma is the preferred usage in GNAT@.
+This pragma can appear anywhere within a unit.
+The effect is to apply @code{Suppress (All_Checks)} to the unit
+in which it appears.  This pragma is implemented for compatibility with DEC
+Ada 83 usage where it appears at the end of a unit, and for compatibility
+with Rational Ada, where it appears as a program unit pragma.
+The use of the standard Ada pragma @code{Suppress (All_Checks)}
+as a normal configuration pragma is the preferred usage in GNAT@.
 
 @node Pragma Suppress_Exception_Locations
 @unnumberedsec Pragma Suppress_Exception_Locations

@@ -1453,7 +1453,7 @@ package body Sinfo is
       return Flag17 (N);
    end Has_No_Elaboration_Code;
 
-   function Has_Priority_Pragma
+   function Has_Pragma_Priority
       (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
@@ -1461,7 +1461,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Subprogram_Body
         or else NT (N).Nkind = N_Task_Definition);
       return Flag6 (N);
-   end Has_Priority_Pragma;
+   end Has_Pragma_Priority;
+
+   function Has_Pragma_Suppress_All
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Compilation_Unit);
+      return Flag14 (N);
+   end Has_Pragma_Suppress_All;
 
    function Has_Private_View
       (N : Node_Id) return Boolean is
@@ -4406,7 +4414,7 @@ package body Sinfo is
       Set_Flag17 (N, Val);
    end Set_Has_No_Elaboration_Code;
 
-   procedure Set_Has_Priority_Pragma
+   procedure Set_Has_Pragma_Priority
       (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
@@ -4414,7 +4422,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Subprogram_Body
         or else NT (N).Nkind = N_Task_Definition);
       Set_Flag6 (N, Val);
-   end Set_Has_Priority_Pragma;
+   end Set_Has_Pragma_Priority;
+
+   procedure Set_Has_Pragma_Suppress_All
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Compilation_Unit);
+      Set_Flag14 (N, Val);
+   end Set_Has_Pragma_Suppress_All;
 
    procedure Set_Has_Private_View
       (N : Node_Id; Val : Boolean := True) is
