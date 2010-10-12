@@ -7536,7 +7536,11 @@ package body Exp_Disp is
          --  excluded from this check because interfaces must be visible in
          --  the public and private part (RM 7.3 (7.3/2))
 
-         if Is_Abstract_Type (Typ)
+         --  We disable this check in CodePeer mode, to accomodate legacy
+         --  Ada code.
+
+         if not CodePeer_Mode
+           and then Is_Abstract_Type (Typ)
            and then Is_Abstract_Subprogram (Prim)
            and then Present (Alias (Prim))
            and then not Is_Interface
