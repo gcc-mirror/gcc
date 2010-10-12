@@ -253,6 +253,8 @@ alloc_stack_frame_space (HOST_WIDE_INT size, unsigned HOST_WIDE_INT align)
 static void
 add_stack_var (tree decl)
 {
+  struct stack_var *v;
+
   if (stack_vars_num >= stack_vars_alloc)
     {
       if (stack_vars_alloc)
@@ -262,17 +264,23 @@ add_stack_var (tree decl)
       stack_vars
 	= XRESIZEVEC (struct stack_var, stack_vars, stack_vars_alloc);
     }
-  stack_vars[stack_vars_num].decl = decl;
-  stack_vars[stack_vars_num].offset = 0;
-  stack_vars[stack_vars_num].size = tree_low_cst (DECL_SIZE_UNIT (SSAVAR (decl)), 1);
-  stack_vars[stack_vars_num].alignb = get_decl_align_unit (SSAVAR (decl));
+  v = &stack_vars[stack_vars_num];
+
+  v->decl = decl;
+  v->offset = 0;
+  v->size = tree_low_cst (DECL_SIZE_UNIT (SSAVAR (decl)), 1);
+  /* Ensure that all variables have size, so that &a != &b for any two
+     variables that are simultaneously live.  */
+  if (v->size == 0)
+    v->size = 1;
+  v->alignb = get_decl_align_unit (SSAVAR (decl));
 
   /* All variables are initially in their own partition.  */
-  stack_vars[stack_vars_num].representative = stack_vars_num;
-  stack_vars[stack_vars_num].next = EOC;
+  v->representative = stack_vars_num;
+  v->next = EOC;
 
   /* All variables initially conflict with no other.  */
-  stack_vars[stack_vars_num].conflicts = NULL;
+  v->conflicts = NULL;
 
   /* Ensure that this decl doesn't get put onto the list twice.  */
   set_rtl (decl, pc_rtx);
@@ -839,6 +847,7 @@ expand_stack_vars (bool (*pred) (tree))
 	  /* Large alignment is only processed in the last pass.  */
 	  if (pred)
 	    continue;
+	  gcc_assert (large_base != NULL);
 
 	  large_alloc += alignb - 1;
 	  large_alloc &= -(HOST_WIDE_INT)alignb;
