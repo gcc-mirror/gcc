@@ -76,9 +76,10 @@ PROGRAM main
   ! Association to derived type and component.
   tp = myt (1)
   ASSOCIATE (x => tp, y => tp%comp)
-    ! FIXME: Parsing of derived-type associate names, tests with x.
+    IF (x%comp /= 1) CALL abort ()
     IF (y /= 1) CALL abort ()
     y = 5
+    IF (x%comp /= 5) CALL abort ()
   END ASSOCIATE
   IF (tp%comp /= 5) CALL abort ()
 

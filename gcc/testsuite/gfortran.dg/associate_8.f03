@@ -1,4 +1,4 @@
-! { dg-do run}
+! { dg-do run }
 ! { dg-options "-std=f2003 -fall-intrinsics" }
 
 ! PR fortran/38936
