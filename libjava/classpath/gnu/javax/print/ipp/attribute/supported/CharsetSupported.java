@@ -1,4 +1,4 @@
-/* CharsetSupported.java -- 
+/* CharsetSupported.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,23 +40,24 @@ package gnu.javax.print.ipp.attribute.supported;
 
 import gnu.javax.print.ipp.attribute.CharsetSyntax;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.SupportedValuesAttribute;
 
 /**
  * CharsetSupported attribute as described in RFC 2911 section
  * 4.4.18 provides the charset which are supported by the
- * IPP implementation to be used in the name and text syntax 
+ * IPP implementation to be used in the name and text syntax
  * attribute types.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class CharsetSupported extends CharsetSyntax 
+public final class CharsetSupported extends CharsetSyntax
   implements SupportedValuesAttribute
 {
 
   /**
    * Creates a <code>CharsetSupported</code> object.
-   * 
+   *
    * @param value the charset string value.
    */
   public CharsetSupported(String value)
@@ -69,7 +70,7 @@ public final class CharsetSupported extends CharsetSyntax
    *
    * @return The class <code>CharsetSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return CharsetSupported.class;
   }

@@ -381,10 +381,10 @@ public class VariableHeightLayoutCache
 
     TreePath path = null;
     // Search row in the nodes map. TODO: This is inefficient, optimize this.
-    Enumeration nodesEnum = nodes.elements();
+    Enumeration<NodeRecord> nodesEnum = nodes.elements();
     while (nodesEnum.hasMoreElements() && path == null)
       {
-        NodeRecord record = (NodeRecord) nodesEnum.nextElement();
+        NodeRecord record = nodesEnum.nextElement();
         if (record.row == row)
           path = record.getPath();
       }
@@ -498,7 +498,7 @@ public class VariableHeightLayoutCache
   {
     if (dirty)
       update();
-    Vector p = new Vector(parentPath.getPathCount());
+    Vector<TreePath> p = new Vector<TreePath>(parentPath.getPathCount());
     Object node;
     NodeRecord nr;
 
@@ -507,7 +507,7 @@ public class VariableHeightLayoutCache
         node = parentPath.getPathComponent(i);
         nr = nodes.get(node);
         if (nr != null && nr.row >= 0)
-          p.add(node);
+          p.add((TreePath) node);
       }
     return p.elements();
   }

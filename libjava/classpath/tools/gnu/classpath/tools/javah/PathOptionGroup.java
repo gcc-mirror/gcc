@@ -55,11 +55,11 @@ import java.util.StringTokenizer;
 public class PathOptionGroup
     extends OptionGroup
 {
-  ArrayList classpath = new ArrayList();
+  ArrayList<String> classpath = new ArrayList<String>();
 
-  ArrayList bootclasspath = new ArrayList();
+  ArrayList<String> bootclasspath = new ArrayList<String>();
 
-  void setPath(ArrayList list, String path)
+  void setPath(ArrayList<String> list, String path)
   {
     list.clear();
     StringTokenizer st = new StringTokenizer(path, File.pathSeparator);
@@ -69,7 +69,7 @@ public class PathOptionGroup
       }
   }
 
-  void addExtDirs(ArrayList list, String path)
+  void addExtDirs(ArrayList<String> list, String path)
   {
     StringTokenizer tok = new StringTokenizer(path, File.pathSeparator);
     while (tok.hasMoreTokens())
@@ -133,15 +133,15 @@ public class PathOptionGroup
 
   public URLClassLoader getLoader() throws MalformedURLException
   {
-    ArrayList urls = new ArrayList();
+    ArrayList<URL> urls = new ArrayList<URL>();
     classpath.addAll(bootclasspath);
-    Iterator i = classpath.iterator();
+    Iterator<String> i = classpath.iterator();
     while (i.hasNext())
       {
-        String f = (String) i.next();
+        String f = i.next();
         urls.add(new File(f).toURL());
       }
-    URL[] urlArray = (URL[]) urls.toArray(new URL[0]);
+    URL[] urlArray = urls.toArray(new URL[0]);
     return new URLClassLoader(urlArray);
   }
 }

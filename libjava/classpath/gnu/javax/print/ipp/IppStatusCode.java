@@ -1,4 +1,4 @@
-/* IppStatusCode.java -- 
+/* IppStatusCode.java --
  Copyright (C) 2006 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
@@ -39,20 +39,20 @@
 package gnu.javax.print.ipp;
 
 /**
- * IPP Status codes as described in RFC 2911 APPENDIX B 
+ * IPP Status codes as described in RFC 2911 APPENDIX B
  * (Status Codes and Suggested Status Code Messages)
  *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class IppStatusCode
-{  
-  /** 
-   * Indicates a successful request with no attributes being 
-   * ignored or substituted. 
+{
+  /**
+   * Indicates a successful request with no attributes being
+   * ignored or substituted.
    */
   public static final int SUCCESSFUL_OK = 0x0000;
 
-  /** 
+  /**
    * Indicates a successful request, however some of the supplied
    * attributes are ignored or substituted.
    */
@@ -67,7 +67,7 @@ public final class IppStatusCode
   // Client Error Status Codes
   // Indicates that the client has done something wrong in its
   // requests send to the IPP server object
-  
+
   /** Indicates a bad request e.g. malformed syntax. */
   public static final int CLIENT_ERROR_BAD_REQUEST = 0x0400;
 
@@ -80,9 +80,9 @@ public final class IppStatusCode
   /** Indicates that the client is not authorized. */
   public static final int CLIENT_ERROR_NOT_AUTHORIZED = 0x0403;
 
-  /** 
+  /**
    * Indicates a request which is not possible to process.
-   * For example if the request is directed at a job already finished. 
+   * For example if the request is directed at a job already finished.
    */
   public static final int CLIENT_ERROR_NOT_POSSIBLE = 0x0404;
 
@@ -106,16 +106,16 @@ public final class IppStatusCode
 
   /**
    * Indicates that the supplied attributes or values of attributes are not
-   * supported by the printer object. Returning this code depends on the 
+   * supported by the printer object. Returning this code depends on the
    * given "ipp-attribute-fidelity" operation attribute value.
    */
-  public static final int CLIENT_ERROR_ATTRIBUTES_OR_VALUES_NOT_SUPPORTED 
+  public static final int CLIENT_ERROR_ATTRIBUTES_OR_VALUES_NOT_SUPPORTED
     = 0x040B;
 
-  /** 
+  /**
    * Indicates the the URI scheme in a supplied print-uri or send-uri attribute
    * is not supported.
-   */ 
+   */
   public static final int CLIENT_ERROR_URI_SCHEME_NOT_SUPPORTED = 0x040C;
 
   /** Indicates that a supplied attributes-charset is not supported. */
@@ -127,8 +127,8 @@ public final class IppStatusCode
   /** Indicates that the specified algorithm is not supported. */
   public static final int CLIENT_ERROR_COMPRESSION_NOT_SUPPORTED =  0x040F;
 
-  /** 
-   * Indicates that the document cannot be decompressed with the client 
+  /**
+   * Indicates that the document cannot be decompressed with the client
    * compression algorithm specified by the client.
    */
   public static final int CLIENT_ERROR_COMPRESSION_ERROR =  0x0410;
@@ -136,13 +136,13 @@ public final class IppStatusCode
   /** Indicates an error in the document format of the document. */
   public static final int CLIENT_ERROR_DOCUMENT_FORMAT_ERROR =  0x0411;
 
-  /** 
-   * Indicates that the document supplied via print-uri or send-uri cannot be 
+  /**
+   * Indicates that the document supplied via print-uri or send-uri cannot be
    * accessed by the printer object.
    */
   public static final int CLIENT_ERROR_DOCUMENT_ACCESS_ERROR =  0x0412;
 
-  
+
   /** Indicates an internal server error. */
   public static final int SERVER_ERROR_INTERNAL_ERROR = 0x0500;
 
@@ -164,7 +164,7 @@ public final class IppStatusCode
   /** Indicates that the server is currently not accepting jobs. */
   public static final int SERVER_ERROR_NOT_ACCEPTING_JOBS = 0x0506;
 
-  /** 
+  /**
    * Indicates that the server is currently busy with processing.
    * Requests may be tried later again.
    */
@@ -174,11 +174,11 @@ public final class IppStatusCode
   public static final int SERVER_ERROR_JOB_CANCELED = 0x0508;
 
   /** Indicates that the server does not support multidocument jobs. */
-  public static final int SERVER_ERROR_MULTIPLE_DOCUMENT_JOBS_NOT_SUPPORTED 
+  public static final int SERVER_ERROR_MULTIPLE_DOCUMENT_JOBS_NOT_SUPPORTED
     = 0x0509;
 
   private IppStatusCode()
-  {    
+  {
     // not to be instantiated
   }
 

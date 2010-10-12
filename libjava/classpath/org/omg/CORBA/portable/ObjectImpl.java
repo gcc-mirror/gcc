@@ -341,6 +341,7 @@ public abstract class ObjectImpl
    * @return the servant or null if the servant is not an expected type
    * of the method is not supported, for example, due security reasons.
    */
+  @SuppressWarnings("unchecked") // Needed for API compatibility
   public ServantObject _servant_preinvoke(String method, Class expected_type)
   {
     return delegate.servant_preinvoke(this, method, expected_type);

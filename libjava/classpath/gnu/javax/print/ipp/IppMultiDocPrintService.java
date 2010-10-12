@@ -1,4 +1,4 @@
-/* IppMultiDocPrintService.java -- 
+/* IppMultiDocPrintService.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,25 +47,25 @@ import javax.print.MultiDocPrintService;
 /**
  * Implementation of the MultiDocPrintService interface
  * for IPP based printers.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public class IppMultiDocPrintService extends IppPrintService 
+public class IppMultiDocPrintService extends IppPrintService
   implements MultiDocPrintService
 {
   /** The username. */
   private transient String user;
-  
+
   /** The password of the user. */
   private transient String passwd;
 
   /**
    * Creates a <code>IppMultiDocPrintService</code> object.
-   * 
+   *
    * @param uri the URI of the IPP printer.
    * @param username the user of this print service.
    * @param password the password of the user.
-   * 
+   *
    * @throws IppException if an error during connection occurs.
    */
   public IppMultiDocPrintService(URI uri, String username, String password)
@@ -74,12 +74,12 @@ public class IppMultiDocPrintService extends IppPrintService
     super(uri, username, password);
     user = username;
     passwd = password;
-  }  
+  }
 
   /**
    * @see MultiDocPrintService#createMultiDocPrintJob()
    */
-  public MultiDocPrintJob createMultiDocPrintJob() 
+  public MultiDocPrintJob createMultiDocPrintJob()
   {
     return new MultiDocPrintJobImpl(this, user, passwd);
   }

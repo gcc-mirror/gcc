@@ -46,24 +46,24 @@ import javax.print.attribute.Attribute;
  * AttributesCharset attribute as described in RFC 2911 chapter
  * 3.1.4 Character Set and Natural Language Operation Attributes.
  * <p>
- * This operation attribute identifies the charset used by any text 
+ * This operation attribute identifies the charset used by any text
  * and name attribute supplied by the client in the request. This
  * charset must be used by the printer object in the response.<br>
  * All clients and IPP objects must support the 'utf-8' charset.
  * </p>
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class AttributesCharset extends CharsetSyntax 
+public final class AttributesCharset extends CharsetSyntax
   implements Attribute
 {
-  
+
   /** Defines a default UTF-8 charset instance */
   public static final AttributesCharset UTF8 = new AttributesCharset("utf-8");
 
   /**
    * Creates a <code>AttributesCharset</code> object.
-   * 
+   *
    * @param value the charset string value.
    */
   public AttributesCharset(String value)
@@ -76,7 +76,7 @@ public final class AttributesCharset extends CharsetSyntax
    *
    * @return The class <code>AttributesCharset</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return AttributesCharset.class;
   }

@@ -1,4 +1,4 @@
-/* IppException.java -- 
+/* IppException.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -44,7 +44,7 @@ import javax.print.PrintException;
  * <code>IppException</code> signals exception thrown by
  * the IPP implementation for various things like a failed
  * ipp request or a wrapped io exception.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public class IppException extends PrintException
@@ -65,7 +65,7 @@ public class IppException extends PrintException
   {
     super(s);
   }
-  
+
   /**
    * Creates an <code>IppException</code>.
    * @param e the exception cause this one.

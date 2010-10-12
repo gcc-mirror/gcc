@@ -1,4 +1,4 @@
-/* UriSecuritySupported.java -- 
+/* UriSecuritySupported.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.javax.print.ipp.attribute.supported;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.EnumSyntax;
 import javax.print.attribute.SupportedValuesAttribute;
 
@@ -46,35 +47,35 @@ import javax.print.attribute.SupportedValuesAttribute;
  * 4.4.3 provides the keywords (implemented as EnumSyntax) for
  * the security mechanisms supported by the corresponding uri's
  * supported (same place in setOf).
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class UriSecuritySupported extends EnumSyntax 
+public final class UriSecuritySupported extends EnumSyntax
   implements SupportedValuesAttribute
 {
-  
+
   // a keyword based attribute in IPP - int values just starting at 0
-  
+
   /** The URI has no secure communication */
-  public static final UriSecuritySupported NONE = 
+  public static final UriSecuritySupported NONE =
     new UriSecuritySupported(0);
-  
+
   /** The URI has SSL3 communication */
-  public static final UriSecuritySupported SSL3 = 
+  public static final UriSecuritySupported SSL3 =
     new UriSecuritySupported(1);
-  
+
   /**  The URI has TLS (RFC 2246) communication */
-  public static final UriSecuritySupported TLS = 
+  public static final UriSecuritySupported TLS =
     new UriSecuritySupported(2);
-  
+
   private static final String[] stringTable = { "none", "ssl3", "tls" };
-  
-  private static final UriSecuritySupported[] enumValueTable = { NONE, 
+
+  private static final UriSecuritySupported[] enumValueTable = { NONE,
                                                                  SSL3, TLS };
 
   /**
    * Constructs a <code>UriSecuritySupported</code> object.
-   * 
+   *
    * @param value the enum value
    */
   public UriSecuritySupported(int value)
@@ -87,7 +88,7 @@ public final class UriSecuritySupported extends EnumSyntax
    *
    * @return The class <code>UriSecuritySupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return UriSecuritySupported.class;
   }
@@ -101,7 +102,7 @@ public final class UriSecuritySupported extends EnumSyntax
   {
     return "uri-security-supported";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

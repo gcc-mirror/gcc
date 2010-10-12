@@ -1,4 +1,4 @@
-/* PrinterCurrentTime.java -- 
+/* PrinterCurrentTime.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,6 +40,7 @@ package gnu.javax.print.ipp.attribute.printer;
 
 import java.util.Date;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.DateTimeSyntax;
 import javax.print.attribute.PrintServiceAttribute;
 
@@ -48,10 +49,10 @@ import javax.print.attribute.PrintServiceAttribute;
  * 4.4.30 provides the current time of the print service.
  * Its to be used by other attributes like the date-time-at-xxx
  * attributes in the creation process.
- *  
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class PrinterCurrentTime extends DateTimeSyntax 
+public final class PrinterCurrentTime extends DateTimeSyntax
   implements PrintServiceAttribute
 {
 
@@ -72,7 +73,7 @@ public final class PrinterCurrentTime extends DateTimeSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
@@ -82,13 +83,13 @@ public final class PrinterCurrentTime extends DateTimeSyntax
 
     return super.equals(obj);
   }
-  
+
   /**
    * Returns category of this class.
    *
    * @return The class <code>PrinterCurrentTime</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return PrinterCurrentTime.class;
   }

@@ -1,4 +1,4 @@
-/* CharsetSyntax.java -- 
+/* CharsetSyntax.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,7 +41,7 @@ package gnu.javax.print.ipp.attribute;
 import java.io.Serializable;
 
 /**
- * <code>CharsetSyntax</code> is the abstract base class of all attribute 
+ * <code>CharsetSyntax</code> is the abstract base class of all attribute
  * classes which provide a charset (US-ASCII) string as value.
  *
  * @author Wolfgang Baer (WBaer@gmx.de)
@@ -62,7 +62,7 @@ public abstract class CharsetSyntax implements Cloneable, Serializable
   {
     if (value == null)
       throw new NullPointerException("value may not be null");
-    
+
     this.value = value;
   }
 
@@ -98,14 +98,14 @@ public abstract class CharsetSyntax implements Cloneable, Serializable
     if (! (obj instanceof CharsetSyntax))
       return false;
 
-    CharsetSyntax tmp = (CharsetSyntax) obj;    
+    CharsetSyntax tmp = (CharsetSyntax) obj;
     return value.equals(tmp.getValue());
   }
 
   /**
    * Returns a string representing the object. The returned
    * string is the underlying text value of this object.
-   * 
+   *
    * @return The string representation.
    */
   public String toString()

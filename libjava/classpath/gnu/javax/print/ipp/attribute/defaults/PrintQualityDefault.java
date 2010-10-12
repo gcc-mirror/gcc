@@ -47,7 +47,7 @@ import javax.print.attribute.EnumSyntax;
 /**
  * <code>PrintQualityDefault</code> provides the
  * default value for the print-quality attribute.
- *  
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class PrintQualityDefault extends EnumSyntax
@@ -55,20 +55,20 @@ public final class PrintQualityDefault extends EnumSyntax
 {
   /** Draft quality of the printer. */
   public static final PrintQualityDefault DRAFT = new PrintQualityDefault(3);
-  
+
   /** Normal quality of the printer. */
   public static final PrintQualityDefault NORMAL = new PrintQualityDefault(4);
-  
+
   /** High quality of the printer. */
   public static final PrintQualityDefault HIGH = new PrintQualityDefault(5);
 
   private static final String[] stringTable = { "draft", "normal", "high" };
-  
+
   private static final PrintQualityDefault[] enumValueTable = { DRAFT, NORMAL, HIGH };
-  
+
   /**
    * Constructs a <code>PrintQualityDefault</code> object.
-   * 
+   *
    * @param value the value of the enum
    */
   protected PrintQualityDefault(int value)
@@ -81,7 +81,7 @@ public final class PrintQualityDefault extends EnumSyntax
    *
    * @return The class <code>PrintQualityDefault</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return PrintQualityDefault.class;
   }
@@ -95,7 +95,7 @@ public final class PrintQualityDefault extends EnumSyntax
   {
     return "print-quality-default";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.
@@ -116,7 +116,7 @@ public final class PrintQualityDefault extends EnumSyntax
   {
     return enumValueTable;
   }
-  
+
   /**
    * Returns the lowest used value by the enumerations of this class.
    * .
@@ -126,14 +126,14 @@ public final class PrintQualityDefault extends EnumSyntax
   {
     return 3;
   }
-  
+
   /**
    * Returns the equally enum of the standard attribute class
    * of this DefaultValuesAttribute enum.
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
-  public Attribute getAssociatedAttribute() 
+  public Attribute getAssociatedAttribute()
   {
     return IppUtilities.getEnumAttribute(
       "print-quality", new Integer(getValue()));

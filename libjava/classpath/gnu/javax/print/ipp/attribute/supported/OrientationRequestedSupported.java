@@ -42,33 +42,34 @@ import gnu.javax.print.ipp.IppUtilities;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.EnumSyntax;
 import javax.print.attribute.SupportedValuesAttribute;
 import javax.print.attribute.standard.OrientationRequested;
 
 
 /**
- * The <code>OrientationRequestedSupported</code> attribute provides 
+ * The <code>OrientationRequestedSupported</code> attribute provides
  * the supported values for the job attribute orientation-requested.
- *  
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class OrientationRequestedSupported extends EnumSyntax
   implements SupportedValuesAttribute
 {
-  
+
   /** Orientation as portrait. */
   public static final OrientationRequestedSupported PORTRAIT =
     new OrientationRequestedSupported(3);
-  
+
   /** Orientation as landscape. */
   public static final OrientationRequestedSupported LANDSCAPE =
     new OrientationRequestedSupported(4);
-  
+
   /** Orientation as reversed landscape. */
   public static final OrientationRequestedSupported REVERSE_LANDSCAPE =
     new OrientationRequestedSupported(5);
-  
+
   /** Orientation as reversed portrait. */
   public static final OrientationRequestedSupported REVERSE_PORTRAIT =
     new OrientationRequestedSupported(6);
@@ -77,14 +78,14 @@ public final class OrientationRequestedSupported extends EnumSyntax
   private static final String[] stringTable = { "portrait", "landscape",
                                                 "reverse-landscape",
                                                 "reverse-portrait" };
-  
-  private static final OrientationRequestedSupported[] 
-      enumValueTable = { PORTRAIT, LANDSCAPE, 
+
+  private static final OrientationRequestedSupported[]
+      enumValueTable = { PORTRAIT, LANDSCAPE,
                          REVERSE_LANDSCAPE, REVERSE_PORTRAIT };
-  
+
   /**
    * Constructs a <code>OrientationRequestedSupported</code> object.
-   * 
+   *
    * @param value the value
    */
   protected OrientationRequestedSupported(int value)
@@ -97,7 +98,7 @@ public final class OrientationRequestedSupported extends EnumSyntax
    *
    * @return The class <code>OrientationRequestedSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return OrientationRequestedSupported.class;
   }
@@ -111,7 +112,7 @@ public final class OrientationRequestedSupported extends EnumSyntax
   {
     return "orientation-requested-supported";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.
@@ -132,7 +133,7 @@ public final class OrientationRequestedSupported extends EnumSyntax
   {
     return enumValueTable;
   }
-  
+
   /**
    * Returns the lowest used value by the enumerations of this class.
    * .
@@ -142,38 +143,36 @@ public final class OrientationRequestedSupported extends EnumSyntax
   {
     return 3;
   }
-  
+
   /**
    * Returns the equally enum of the standard attribute class
    * of this SupportedValuesAttribute enum.
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
-  public OrientationRequested getAssociatedAttribute() 
+  public OrientationRequested getAssociatedAttribute()
   {
     return (OrientationRequested) IppUtilities.getEnumAttribute(
             "orientation-requested", new Integer(getValue()));
   }
-  
+
   /**
    * Constructs an array from a set of -supported attributes.
    * @param set set to process
    * @return The constructed array.
-   * 
+   *
    * @see #getAssociatedAttribute()
    */
-  public static OrientationRequested[] getAssociatedAttributeArray(Set set) 
+  public static OrientationRequested[]
+    getAssociatedAttributeArray(Set<Attribute> set)
   {
-    OrientationRequestedSupported tmp;
-    OrientationRequested[] result = new OrientationRequested[set.size()];      
-    Iterator it = set.iterator();
+    OrientationRequested[] result = new OrientationRequested[set.size()];
     int j = 0;
-    while (it.hasNext())
+    for (Attribute tmp : set)
       {
-        tmp = (OrientationRequestedSupported) it.next();
-        result[j] = tmp.getAssociatedAttribute();
+        result[j] = ((OrientationRequestedSupported) tmp).getAssociatedAttribute();
         j++;
-      }            
+      }
     return result;
   }
 }

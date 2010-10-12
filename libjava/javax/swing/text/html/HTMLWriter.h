@@ -66,7 +66,7 @@ private:
   ::java::lang::String * escapeCharHtmlEntity(jchar);
   ::java::io::Writer * __attribute__((aligned(__alignof__( ::javax::swing::text::AbstractWriter)))) outWriter;
   ::javax::swing::text::html::HTMLDocument * htmlDoc;
-  ::java::util::HashSet * openEmbededTagHashSet;
+  ::java::util::HashSet * openEmbeddedTagHashSet;
   ::java::lang::String * new_line_str;
   JArray< jchar > * html_entity_char_arr;
   JArray< ::java::lang::String * > * html_entity_escape_str_arr;

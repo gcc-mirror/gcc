@@ -323,8 +323,6 @@ public class ImageView extends View
    */
   public float getPreferredSpan(int axis)
   {
-    AttributeSet attrs = getAttributes();
-    
     Image image = getImage();
 
     if (axis == View.X_AXIS)
@@ -522,7 +520,6 @@ public class ImageView extends View
     Image newIm = getImage();
     if (newIm != null)
       {
-        AttributeSet atts = getAttributes();
         // Fetch width.
         Length l = spans[X_AXIS];
         if (l != null)

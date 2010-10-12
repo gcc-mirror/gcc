@@ -1,4 +1,4 @@
-/* IppUtilities.java -- 
+/* IppUtilities.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -140,28 +140,30 @@ import javax.print.attribute.standard.Sides;
  * Also provides mapping from the attribute name values to
  * the actual class object. Used to construct objects via reflection.
  * </p>
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class IppUtilities
 {
   // These are reused in the reflection code to not instantiate an array everytime
   private static Object[] INTEGER_ATT_VALUE = new Object[1];
-  private static Class[] INTEGER_CLASS_ARRAY = new Class[] {int.class};
+  private static Class<?>[] INTEGER_CLASS_ARRAY = new Class[] {int.class};
   private static Object[] TEXT_ATT_VALUE = new Object[2];
-  private static Class[] TEXT_CLASS_ARRAY = new Class[] {String.class, Locale.class};
-  
+  private static Class<?>[] TEXT_CLASS_ARRAY = new Class[] {String.class, Locale.class};
+
   // The map -> Attribute name to Attribute class
-  private static HashMap classesByName = new HashMap();
+  private static HashMap<String,Class<? extends Attribute>> classesByName =
+                                                new HashMap<String,Class<? extends Attribute>>();
   // The map -> StandardAttribute class to SupportedAttribute category name
-  private static HashMap instanceByClass = new HashMap();
+  private static HashMap<Class<? extends Attribute>,SupportedValuesAttribute> instanceByClass =
+                                         new HashMap<Class<? extends Attribute>,SupportedValuesAttribute>();
 
   /**
    * All the currently needed attributes
    */
   static
     {
-      // enums      
+      // enums
       classesByName.put(JobState.ABORTED.getName(), JobState.class);
       classesByName.put(Sides.DUPLEX.getName(), Sides.class);
       classesByName.put(SheetCollate.COLLATED.getName(), SheetCollate.class);
@@ -174,113 +176,113 @@ public final class IppUtilities
       classesByName.put(PrintQuality.DRAFT.getName(), PrintQuality.class);
       classesByName.put(PrinterState.IDLE.getName(), PrinterState.class);
       classesByName.put(SidesDefault.ONE_SIDED.getName(), SidesDefault.class);
-      classesByName.put(ReferenceUriSchemesSupported.FILE.getName(), 
-                        ReferenceUriSchemesSupported.class);           
-      classesByName.put(PrinterStateReason.DOOR_OPEN.getName(),
-                        PrinterStateReason.class);            
-      classesByName.put(PresentationDirection.TOLEFT_TOTOP.getName(), 
-                        PresentationDirection.class);
-      classesByName.put(PDLOverrideSupported.ATTEMPTED.getName(), 
-                        PDLOverrideSupported.class);
-      classesByName.put(OrientationRequested.PORTRAIT.getName(), 
-                        OrientationRequested.class);
-      classesByName.put(MultipleDocumentHandling.SINGLE_DOCUMENT.getName(), 
-                        MultipleDocumentHandling.class);
-      classesByName.put(JobStateReason.JOB_QUEUED.getName(), 
-                        JobStateReason.class);
-      classesByName.put(UriAuthenticationSupported.NONE.getName(), 
-                        UriAuthenticationSupported.class);      
-      classesByName.put(OperationsSupported.GET_JOBS.getName(), 
-                        OperationsSupported.class);      
-      classesByName.put(UriSecuritySupported.NONE.getName(), 
-                        UriSecuritySupported.class);          
-      classesByName.put(FinishingsSupported.NONE.getName(), 
-                        FinishingsSupported.class);      
-      classesByName.put(FinishingsDefault.NONE.getName(), 
-                        FinishingsDefault.class);      
-      classesByName.put(IppVersionsSupported.V_1_0.getName(), 
-                        IppVersionsSupported.class);      
-      classesByName.put(MultipleDocumentHandlingSupported.SINGLE_DOCUMENT.getName(), 
-                        MultipleDocumentHandlingSupported.class);      
-      classesByName.put(MultipleDocumentHandlingDefault.SINGLE_DOCUMENT.getName(), 
-                        MultipleDocumentHandlingDefault.class);      
-      classesByName.put(CompressionSupported.NONE.getName(), 
-                        CompressionSupported.class);      
-      classesByName.put(OrientationRequestedSupported.PORTRAIT.getName(), 
-                        OrientationRequestedSupported.class);      
-      classesByName.put(OrientationRequestedDefault.PORTRAIT.getName(), 
-                        OrientationRequestedDefault.class);        
-      classesByName.put(SidesSupported.ONE_SIDED.getName(), 
-                        SidesSupported.class);     
-      classesByName.put(PrintQualityDefault.DRAFT.getName(), 
-                        PrintQualityDefault.class);      
-      classesByName.put(PrintQualitySupported.DRAFT.getName(), 
-                        PrintQualitySupported.class);      
-      classesByName.put(ReferenceUriSchemesSupported.FTP.getName(), 
+      classesByName.put(ReferenceUriSchemesSupported.FILE.getName(),
                         ReferenceUriSchemesSupported.class);
-      
-      // the boolean types 
-      classesByName.put(ColorSupported.SUPPORTED.getName(), ColorSupported.class);      
-      classesByName.put(PrinterIsAcceptingJobs.ACCEPTING_JOBS.getName(), 
+      classesByName.put(PrinterStateReason.DOOR_OPEN.getName(),
+                        PrinterStateReason.class);
+      classesByName.put(PresentationDirection.TOLEFT_TOTOP.getName(),
+                        PresentationDirection.class);
+      classesByName.put(PDLOverrideSupported.ATTEMPTED.getName(),
+                        PDLOverrideSupported.class);
+      classesByName.put(OrientationRequested.PORTRAIT.getName(),
+                        OrientationRequested.class);
+      classesByName.put(MultipleDocumentHandling.SINGLE_DOCUMENT.getName(),
+                        MultipleDocumentHandling.class);
+      classesByName.put(JobStateReason.JOB_QUEUED.getName(),
+                        JobStateReason.class);
+      classesByName.put(UriAuthenticationSupported.NONE.getName(),
+                        UriAuthenticationSupported.class);
+      classesByName.put(OperationsSupported.GET_JOBS.getName(),
+                        OperationsSupported.class);
+      classesByName.put(UriSecuritySupported.NONE.getName(),
+                        UriSecuritySupported.class);
+      classesByName.put(FinishingsSupported.NONE.getName(),
+                        FinishingsSupported.class);
+      classesByName.put(FinishingsDefault.NONE.getName(),
+                        FinishingsDefault.class);
+      classesByName.put(IppVersionsSupported.V_1_0.getName(),
+                        IppVersionsSupported.class);
+      classesByName.put(MultipleDocumentHandlingSupported.SINGLE_DOCUMENT.getName(),
+                        MultipleDocumentHandlingSupported.class);
+      classesByName.put(MultipleDocumentHandlingDefault.SINGLE_DOCUMENT.getName(),
+                        MultipleDocumentHandlingDefault.class);
+      classesByName.put(CompressionSupported.NONE.getName(),
+                        CompressionSupported.class);
+      classesByName.put(OrientationRequestedSupported.PORTRAIT.getName(),
+                        OrientationRequestedSupported.class);
+      classesByName.put(OrientationRequestedDefault.PORTRAIT.getName(),
+                        OrientationRequestedDefault.class);
+      classesByName.put(SidesSupported.ONE_SIDED.getName(),
+                        SidesSupported.class);
+      classesByName.put(PrintQualityDefault.DRAFT.getName(),
+                        PrintQualityDefault.class);
+      classesByName.put(PrintQualitySupported.DRAFT.getName(),
+                        PrintQualitySupported.class);
+      classesByName.put(ReferenceUriSchemesSupported.FTP.getName(),
+                        ReferenceUriSchemesSupported.class);
+
+      // the boolean types
+      classesByName.put(ColorSupported.SUPPORTED.getName(), ColorSupported.class);
+      classesByName.put(PrinterIsAcceptingJobs.ACCEPTING_JOBS.getName(),
                         PrinterIsAcceptingJobs.class);
-      classesByName.put(MultipleDocumentJobsSupported.SUPPORTED.getName(), 
+      classesByName.put(MultipleDocumentJobsSupported.SUPPORTED.getName(),
                         MultipleDocumentJobsSupported.class);
-      classesByName.put(PageRangesSupported.SUPPORTED.getName(), 
+      classesByName.put(PageRangesSupported.SUPPORTED.getName(),
                         PageRangesSupported.class);
-                 
+
       // TextSyntax derived attributes
-      classesByName.put("media-default", MediaDefault.class); 
+      classesByName.put("media-default", MediaDefault.class);
       classesByName.put("media-supported", MediaSupported.class);
-      classesByName.put("media", MediaSizeName.class); 
-      classesByName.put("printer-location", PrinterLocation.class); 
-      classesByName.put("printer-info", PrinterInfo.class); 
-      classesByName.put("printer-make-and-model", PrinterMakeAndModel.class); 
+      classesByName.put("media", MediaSizeName.class);
+      classesByName.put("printer-location", PrinterLocation.class);
+      classesByName.put("printer-info", PrinterInfo.class);
+      classesByName.put("printer-make-and-model", PrinterMakeAndModel.class);
       classesByName.put("printer-state-message", PrinterStateMessage.class);
-      classesByName.put("job-state-message", JobStateMessage.class);         
-      classesByName.put("job-sheets-default", JobSheetsDefault.class); 
-      classesByName.put("job-sheets-supported", JobSheetsSupported.class); 
-      classesByName.put("job-name", JobName.class); 
-      classesByName.put("printer-name", PrinterName.class); 
-      classesByName.put("status-message", StatusMessage.class); 
-      classesByName.put("detailed-status-message", DetailedStatusMessage.class); 
-      classesByName.put("document-access-error", DocumentAccessError.class); 
-      classesByName.put("output-device-assigned", OutputDeviceAssigned.class); 
-      classesByName.put("job-hold-until-default", JobHoldUntilDefault.class);       
-      classesByName.put("job-originating-user-name", 
-                        JobOriginatingUserName.class); 
-      classesByName.put("job-hold-until-supported", 
+      classesByName.put("job-state-message", JobStateMessage.class);
+      classesByName.put("job-sheets-default", JobSheetsDefault.class);
+      classesByName.put("job-sheets-supported", JobSheetsSupported.class);
+      classesByName.put("job-name", JobName.class);
+      classesByName.put("printer-name", PrinterName.class);
+      classesByName.put("status-message", StatusMessage.class);
+      classesByName.put("detailed-status-message", DetailedStatusMessage.class);
+      classesByName.put("document-access-error", DocumentAccessError.class);
+      classesByName.put("output-device-assigned", OutputDeviceAssigned.class);
+      classesByName.put("job-hold-until-default", JobHoldUntilDefault.class);
+      classesByName.put("job-originating-user-name",
+                        JobOriginatingUserName.class);
+      classesByName.put("job-hold-until-supported",
                         JobHoldUntilSupported.class);
-      classesByName.put("job-message-from-operator", 
-                        JobMessageFromOperator.class); 
-      classesByName.put("printer-message-from-operator", 
-                        PrinterMessageFromOperator.class); 
-      classesByName.put("job-detailed-status-messages", 
+      classesByName.put("job-message-from-operator",
+                        JobMessageFromOperator.class);
+      classesByName.put("printer-message-from-operator",
+                        PrinterMessageFromOperator.class);
+      classesByName.put("job-detailed-status-messages",
                         JobDetailedStatusMessages.class);
-      classesByName.put("job-document-access-errors", 
-                        JobDocumentAccessErrors.class);    
-      
+      classesByName.put("job-document-access-errors",
+                        JobDocumentAccessErrors.class);
+
       // IntegerSyntax derived Attributes
-      classesByName.put("copies-default", CopiesDefault.class); 
-      classesByName.put("job-id", JobId.class); 
+      classesByName.put("copies-default", CopiesDefault.class);
+      classesByName.put("job-id", JobId.class);
       classesByName.put("job-priority-supported", JobPrioritySupported.class);
       classesByName.put("job-priority-default", JobPriorityDefault.class);
       classesByName.put("number-up-supported", NumberUpSupported.class);
       classesByName.put("number-up-default", NumberUpDefault.class);
       classesByName.put("queued-job-count", QueuedJobCount.class);
-      classesByName.put("printer-up-time", PrinterUpTime.class);      
+      classesByName.put("printer-up-time", PrinterUpTime.class);
       classesByName.put("pages-per-minute", PagesPerMinute.class);
-      classesByName.put("pages-per-minute-color", PagesPerMinuteColor.class);       
+      classesByName.put("pages-per-minute-color", PagesPerMinuteColor.class);
       classesByName.put("job-k-octets-processed", JobKOctetsProcessed.class);
-      classesByName.put("number-of-intervening-jobs", 
+      classesByName.put("number-of-intervening-jobs",
                         NumberOfInterveningJobs.class);
-      classesByName.put("job-impressions-completed", 
-                        JobImpressionsCompleted.class); 
-      classesByName.put("job-media-sheets-completed", 
+      classesByName.put("job-impressions-completed",
+                        JobImpressionsCompleted.class);
+      classesByName.put("job-media-sheets-completed",
                         JobMediaSheetsCompleted.class);
-      classesByName.put("multiple-operation-time-out", 
+      classesByName.put("multiple-operation-time-out",
                         MultipleOperationTimeOut.class);
-      
-      
+
+
       // 4.2 job template attributes
       instanceByClass.put(JobPriority.class, new JobPrioritySupported(1));
       instanceByClass.put(JobHoldUntil.class, new JobHoldUntilSupported("", null));
@@ -299,7 +301,7 @@ public final class IppUtilities
       // 4.4 printer attributes
       instanceByClass.put(Compression.class, CompressionSupported.COMPRESS);
     }
-  
+
   private IppUtilities()
   {
     // not to be instantiated
@@ -308,38 +310,38 @@ public final class IppUtilities
   /**
    * Returns the implementing class object for given
    * attribute name objects.
-   * 
+   *
    * @param name the attribute name
    * @return The <code>Class</code> object.
    */
-  public static Class getClass(String name)
+  public static Class<? extends Attribute> getClass(String name)
   {
-    return (Class) classesByName.get(name);
+    return classesByName.get(name);
   }
-  
+
   /**
-   * Returns the name of the supported attribute 
+   * Returns the name of the supported attribute
    * based on the given standard attribute category.
-   * 
+   *
    * @param clazz the standard attribute category
    * @return The name of the supported attribute category.
    */
-  public static String getSupportedAttrName(Class clazz)
+  public static String getSupportedAttrName(Class<? extends Attribute> clazz)
   {
-    return ((SupportedValuesAttribute) instanceByClass.get(clazz)).getName();
+    return instanceByClass.get(clazz).getName();
   }
-  
+
   /**
-   * Returns the category of the supported attribute 
+   * Returns the category of the supported attribute
    * based on the given standard attribute category.
-   * 
+   *
    * @param clazz the standard attribute category
    * @return The supported attribute category.
    */
-  public static Class getSupportedCategory(Class clazz)
+  public static Class<? extends Attribute> getSupportedCategory(Class<? extends Attribute> clazz)
   {
-    return ((SupportedValuesAttribute) instanceByClass.get(clazz)).getCategory();
-  }  
+    return instanceByClass.get(clazz).getCategory();
+  }
 
   /**
    * Helper method to convert to an int.
@@ -351,7 +353,7 @@ public final class IppUtilities
     return (((b[0] & 0xff) << 24) | ((b[1] & 0xff) << 16)
             | ((b[2] & 0xff) << 8) | (b[3] & 0xff));
   }
-  
+
   /**
    * Helper method to convert to an int.
    * @param b1 the 1th byte
@@ -376,22 +378,22 @@ public final class IppUtilities
   {
     return (short) ((b1 << 8) | (b2 & 0xff));
   }
-  
+
   /**
    * Instantiates an <code>EnumSyntax</code> based attribute with the given IPP
    * name and the given value (Enums maybe int or String based).
-   * 
+   *
    * @param name the attribute name of the subclass.
    * @param value the integer value of the specific enum.
    * @return The Attribute (a subclass of EnumSyntax)
    */
   public static Attribute getEnumAttribute(String name, Object value)
   {
-    Class attrClass = getClass(name);
-    
+    Class<?> attrClass = getClass(name);
+
     // There might be unknown enums we have no mapped class for
     if (attrClass ==  null)
-      return null;    
+      return null;
 
     try
       {
@@ -423,33 +425,33 @@ public final class IppUtilities
       {
         // should not happen, all fields are public
       }
-    
+
     return null;
   }
-  
-  
-  
+
+
+
   /**
-   * Instantiates an <code>IntegerSyntax</code> based attribute with the 
+   * Instantiates an <code>IntegerSyntax</code> based attribute with the
    * given IPP name for the given int value.
-   * 
+   *
    * @param name the attribute name of the subclass.
    * @param value the integer value
    * @return The Attribute (a subclass of IntegerSyntax)
    */
   public static Attribute getIntegerAttribute(String name, int value)
-  {    
-    Class attrClass = getClass(name);
-    
+  {
+    Class<?> attrClass = getClass(name);
+
     // There might be unknown attributes we have no mapped class for
     if (attrClass ==  null)
       return null;
 
     try
       {
-        INTEGER_ATT_VALUE[0] = new Integer(value);
-        Constructor c = attrClass.getDeclaredConstructor(INTEGER_CLASS_ARRAY);       
-        return (Attribute) c.newInstance(INTEGER_ATT_VALUE);         
+        INTEGER_ATT_VALUE[0] = Integer.valueOf(value);
+        Constructor<?> c = attrClass.getDeclaredConstructor(INTEGER_CLASS_ARRAY);
+        return (Attribute) c.newInstance(INTEGER_ATT_VALUE);
       }
     catch (SecurityException e)
       {
@@ -471,21 +473,21 @@ public final class IppUtilities
     {
       // should not happen, all fields are public
     }
-    
+
     return null;
-  }  
-  
+  }
+
   /**
    * Instantiates an <code>TextSyntax</code> based attribute with the given
    * IPP name for the given text value (will be decoded).
-   * 
+   *
    * @param name the attribute name of the subclass.
    * @param tag the tag defined in {@link IppValueTag}
    * @param value the byte[] value to be decoded based on the tag value.
    * @return The Attribute (a subclass of TextSyntax)
    */
   public static Attribute getTextAttribute(String name, byte tag, byte[] value)
-  { 
+  {
     // without language tag is rather easy - default locale
     if (tag == IppValueTag.NAME_WITHOUT_LANGUAGE
         || tag == IppValueTag.TEXT_WITHOUT_LANGUAGE)
@@ -504,7 +506,7 @@ public final class IppUtilities
         String language = new String(tmp);
         String text = new String(tmp2);
         Locale locale = null;
-        
+
         if (language.length() > 2)
           locale = new Locale(language.substring(0, 2), language.substring(3));
         else
@@ -512,18 +514,18 @@ public final class IppUtilities
 
         TEXT_ATT_VALUE[0] = text;
         TEXT_ATT_VALUE[1] = locale;
-      }    
-    
-    Class attrClass = getClass(name);
-    
+      }
+
+    Class<?> attrClass = getClass(name);
+
     // There might be unknown attributes we have no mapped class for
     if (attrClass ==  null)
       return null;
 
     try
       {
-        Constructor c = attrClass.getDeclaredConstructor(TEXT_CLASS_ARRAY);       
-        return (Attribute) c.newInstance(TEXT_ATT_VALUE);         
+        Constructor<?> c = attrClass.getDeclaredConstructor(TEXT_CLASS_ARRAY);
+        return (Attribute) c.newInstance(TEXT_ATT_VALUE);
       }
     catch (SecurityException e)
       {
@@ -545,7 +547,7 @@ public final class IppUtilities
       {
         // should not happen, all fields are public
       }
-    
+
     return null;
   }
 }

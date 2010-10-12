@@ -40,10 +40,10 @@ package gnu.xml.stream;
 import javax.xml.stream.StreamFilter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.util.ReaderDelegate;
+import javax.xml.stream.util.StreamReaderDelegate;
 
 class FilteredStreamReader
-  extends ReaderDelegate
+  extends StreamReaderDelegate
 {
 
   final XMLStreamReader reader;

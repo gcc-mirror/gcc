@@ -12,6 +12,5 @@ else
         test "x$JAVA" = x && AC_CHECK_PROGS(JAVA, cacao$EXEEXT jamvm$EXEEXT kaffe$EXEEXT gij$EXEEXT java$EXEEXT, $JAVAPREFIX)
 fi
 test "x$JAVA" = x && AC_MSG_ERROR([no acceptable Java virtual machine found in \$PATH])
-AC_PROG_JAVA_WORKS
 AC_PROVIDE([$0])dnl
 ])

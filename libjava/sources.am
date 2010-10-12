@@ -7624,7 +7624,7 @@ classpath/javax/xml/stream/events/StartDocument.java \
 classpath/javax/xml/stream/events/StartElement.java \
 classpath/javax/xml/stream/events/XMLEvent.java \
 classpath/javax/xml/stream/util/EventReaderDelegate.java \
-classpath/javax/xml/stream/util/ReaderDelegate.java \
+classpath/javax/xml/stream/util/StreamReaderDelegate.java \
 classpath/javax/xml/stream/util/XMLEventAllocator.java \
 classpath/javax/xml/stream/util/XMLEventConsumer.java \
 classpath/javax/xml/transform/ErrorListener.java \

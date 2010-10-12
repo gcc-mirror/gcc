@@ -47,45 +47,45 @@ import javax.print.attribute.EnumSyntax;
 /**
  * <code>SidesDefault</code> provides the
  * default for the sides attribute.
- *  
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class SidesDefault extends EnumSyntax
   implements DefaultValueAttribute
 {
-  
+
   /** Specifies that each page should be printed on one sheet. */
   public static final SidesDefault ONE_SIDED = new SidesDefault(0);
-  
-  /** 
-   * Specifies that two following pages should be printed on the 
+
+  /**
+   * Specifies that two following pages should be printed on the
    * front and back of one sheet for binding on the long edge.
    */
-  public static final SidesDefault TWO_SIDED_LONG_EDGE = 
+  public static final SidesDefault TWO_SIDED_LONG_EDGE =
     new SidesDefault(1);
-  
-  /** 
-   * Specifies that two following pages should be printed on the 
+
+  /**
+   * Specifies that two following pages should be printed on the
    * front and back of one sheet for binding on the short edge.
    */
-  public static final SidesDefault TWO_SIDED_SHORT_EDGE = 
+  public static final SidesDefault TWO_SIDED_SHORT_EDGE =
     new SidesDefault(2);
-  
+
   /** An alias constant for "two sided long edge". */
   public static final SidesDefault DUPLEX = new SidesDefault(1);
-  
+
   /** An alias constant for "two sided short edge". */
   public static final SidesDefault TUMBLE = new SidesDefault(2);
 
-  private static final String[] stringTable = { "one-sided", 
+  private static final String[] stringTable = { "one-sided",
                                                 "two-sided-long-edge",
                                                 "two-sided-short-edge" };
-  
-  private static final SidesDefault[] enumValueTable = { ONE_SIDED, 
-                                                         TWO_SIDED_LONG_EDGE, 
+
+  private static final SidesDefault[] enumValueTable = { ONE_SIDED,
+                                                         TWO_SIDED_LONG_EDGE,
                                                          TWO_SIDED_SHORT_EDGE };
-  
-  
+
+
   /**
    * Creates a <code>SidesDefault</code> object.
    *
@@ -101,7 +101,7 @@ public final class SidesDefault extends EnumSyntax
    *
    * @return The class <code>SidesDefault</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return SidesDefault.class;
   }
@@ -115,7 +115,7 @@ public final class SidesDefault extends EnumSyntax
   {
     return "sides-default";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.
@@ -136,14 +136,14 @@ public final class SidesDefault extends EnumSyntax
   {
     return enumValueTable;
   }
-  
+
   /**
    * Returns the equally enum of the standard attribute class
    * of this DefaultValuesAttribute enum.
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
-  public Attribute getAssociatedAttribute() 
+  public Attribute getAssociatedAttribute()
   {
     return IppUtilities.getEnumAttribute("sides", new Integer(getValue()));
   }

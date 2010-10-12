@@ -311,37 +311,29 @@ public class Inflater
    */
   public int inflate (byte[] buf, int off, int len) throws DataFormatException
   {
-    /* Special case: len may be zero */
-    if (len == 0)
-      return 0;
     /* Check for correct buff, off, len triple */
     if (0 > off || off > off + len || off + len > buf.length)
       throw new ArrayIndexOutOfBoundsException();
     int count = 0;
-    int more;
-    do
+    for (;;)
       {
-	if (mode != DECODE_CHKSUM)
-	  {
-	    /* Don't give away any output, if we are waiting for the
-	     * checksum in the input stream.
-	     *
-	     * With this trick we have always:
-	     *   needsInput() and not finished() 
-	     *   implies more output can be produced.  
-	     */
-	    more = outputWindow.copyOutput(buf, off, len);
-	    adler.update(buf, off, more);
-	    off += more;
-	    count += more;
-	    totalOut += more;
-	    len -= more;
-	    if (len == 0)
-	      return count;
-	  }
+        if (outputWindow.getAvailable() == 0)
+          {
+            if (!decode())
+              break;
+          }
+        else if (len > 0)
+          {
+            int more = outputWindow.copyOutput(buf, off, len);
+            adler.update(buf, off, more);
+            off += more;
+            count += more;
+            totalOut += more;
+            len -= more;
+          }
+        else
+          break;
       }
-    while (decode() || (outputWindow.getAvailable() > 0
-			&& mode != DECODE_CHKSUM));
     return count;
   }
 

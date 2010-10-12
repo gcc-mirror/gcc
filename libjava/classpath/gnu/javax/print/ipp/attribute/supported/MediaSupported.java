@@ -1,4 +1,4 @@
-/* MediaSupported.java -- 
+/* MediaSupported.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.SupportedValuesAttribute;
 import javax.print.attribute.TextSyntax;
 import javax.print.attribute.standard.Media;
@@ -52,15 +53,15 @@ import javax.print.attribute.standard.Media;
 /**
  * MediaSupported attribute provides the keyword values
  * of the media types supported by the printer object.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class MediaSupported extends TextSyntax 
+public final class MediaSupported extends TextSyntax
     implements SupportedValuesAttribute
 {
 
   /**
-   * Creates a <code>MediaSupported</code> object with the 
+   * Creates a <code>MediaSupported</code> object with the
    * given value and locale.
    *
    * @param value the value for this syntax
@@ -79,7 +80,7 @@ public final class MediaSupported extends TextSyntax
    *
    * @return The class <code>MediaSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return MediaSupported.class;
   }
@@ -93,26 +94,23 @@ public final class MediaSupported extends TextSyntax
   {
     return "media-supported";
   }
-  
+
   /**
    * Constructs an array from a set of -supported attributes.
    * @param set set to process
    * @return The constructed array.
    */
-  public static Media[] getAssociatedAttributeArray(Set set) 
+  public static Media[] getAssociatedAttributeArray(Set<Attribute> set)
   {
-    MediaSupported tmp;
     Media tmp2;
-    ArrayList result = new ArrayList();          
-    Iterator it = set.iterator();
-    while (it.hasNext())
+    ArrayList<Media> result = new ArrayList<Media>();
+    for (Attribute tmp : set)
       {
-        tmp = (MediaSupported) it.next();
         tmp2 = (Media) IppUtilities.getEnumAttribute("media", tmp.toString());
         if (tmp2 != null)
           result.add(tmp2);
-      }            
-    return (Media[]) result.toArray(new Media[result.size()]);
+      }
+    return result.toArray(new Media[result.size()]);
   }
 
 }

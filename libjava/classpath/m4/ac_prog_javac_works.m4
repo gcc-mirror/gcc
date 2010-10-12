@@ -16,7 +16,8 @@ dnl @license GPLWithACException
 dnl
 dnl Modified to test for 1.5 by Andrew John Hughes on 2008-02-11
 
-AC_DEFUN([AC_PROG_JAVAC_WORKS],[
+AC_DEFUN_ONCE([AC_PROG_JAVAC_WORKS],[
+AC_REQUIRE([AC_PROG_JAVAC])
 AC_CACHE_CHECK([if $JAVAC works], ac_cv_prog_javac_works, [
 JAVA_TEST=Object.java
 CLASS_TEST=Object.class

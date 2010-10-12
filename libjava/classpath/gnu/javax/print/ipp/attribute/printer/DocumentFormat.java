@@ -1,4 +1,4 @@
-/* DocumentFormat.java -- 
+/* DocumentFormat.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,21 +41,22 @@ package gnu.javax.print.ipp.attribute.printer;
 import java.util.Locale;
 
 import javax.print.DocFlavor;
+import javax.print.attribute.Attribute;
 import javax.print.attribute.SupportedValuesAttribute;
 import javax.print.attribute.TextSyntax;
 
 /**
  * <code>DocumentFormatSupported</code> specifies the supported document
  * formats of a printer. Printer are supplying a set of this attribute.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class DocumentFormat extends TextSyntax 
+public final class DocumentFormat extends TextSyntax
   implements SupportedValuesAttribute
 {
 
   /**
-   * Creates a <code>DocumentFormat</code> object with the 
+   * Creates a <code>DocumentFormat</code> object with the
    * given value and locale.
    *
    * @param value the value for this syntax
@@ -68,12 +69,12 @@ public final class DocumentFormat extends TextSyntax
   {
     super(value, locale);
   }
-  
+
   /**
    * Constructs a document format object for the given flavor.
    * The constructor reworkes the mimetype of the given flavor
    * to remove the quoted charset parameter if present.
-   * 
+   *
    * @param flavor the flavor with the mimetype
    * @return The created document format.
    */
@@ -83,7 +84,7 @@ public final class DocumentFormat extends TextSyntax
     String mimetype = flavor.getMediaType() + "/" + flavor.getMediaSubtype();
     if (charset != null)
       mimetype += "; charset=" + charset;
-    
+
     return new DocumentFormat(mimetype, null);
   }
 
@@ -92,7 +93,7 @@ public final class DocumentFormat extends TextSyntax
    *
    * @return The class <code>DocumentFormat</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return DocumentFormat.class;
   }

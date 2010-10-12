@@ -48,9 +48,9 @@ import javax.print.DocFlavor;
 import javax.print.attribute.AttributeSet;
 
 /**
- * Implementation of the PrintService/MultiDocPrintService 
+ * Implementation of the PrintService/MultiDocPrintService
  * interface for Cups printers (supports Cups 1.1 and up)
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class CupsPrintService extends IppMultiDocPrintService
@@ -58,26 +58,26 @@ public final class CupsPrintService extends IppMultiDocPrintService
 
   /**
    * Creates a <code>CupsPrintService</code> object.
-   * 
+   *
    * @param uri the URI of the IPP printer.
    * @param username the user of this print service.
    * @param password the password of the user.
-   * 
+   *
    * @throws IppException if an error during connection occurs.
    */
   public CupsPrintService(URI uri, String username, String password)
       throws IppException
   {
     super(uri, username, password);
-  }  
-  
+  }
+
   /**
    * Overridden for CUPS specific handling of the media attribute.
    */
-  protected Object handleSupportedAttributeValuesResponse(IppResponse response, 
+  protected Object handleSupportedAttributeValuesResponse(IppResponse response,
     Class category)
   {
-    //  TODO Implement different behaviour of cups here - actually the Media 
+    //  TODO Implement different behaviour of cups here - actually the Media
     // printing attribute stuff. For now just use IPP reference implementation.
     return super.handleSupportedAttributeValuesResponse(response, category);
   }
@@ -89,7 +89,7 @@ public final class CupsPrintService extends IppMultiDocPrintService
   {
     // TODO Implement media attribute behaviour for cups here
     //if (category.equals(Media.class)
-    
+
     return super.getDefaultAttributeValue(category);
   }
 

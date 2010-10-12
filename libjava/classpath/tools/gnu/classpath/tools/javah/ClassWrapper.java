@@ -58,21 +58,21 @@ public class ClassWrapper
 
   ClassWrapper superClass;
 
-  ArrayList interfaceClasses;
+  ArrayList<ClassWrapper> interfaceClasses;
 
   // The virtual table for this class.
-  ArrayList vtable;
+  ArrayList<MethodNode> vtable;
 
   // A set of all the bridge method targets we've found.
-  HashSet bridgeTargets;
+  HashSet<String> bridgeTargets;
 
   // A set of all the method names in this class.
-  HashSet methodNames = new HashSet();
+  HashSet<String> methodNames = new HashSet<String>();
 
   // This maps a method name + descriptor, e.g. "method()V", to the
   // name chosen for the method.  This is used when computing the
   // names of bridge method targets.
-  HashMap methodNameMap = new HashMap();
+  HashMap<String,String> methodNameMap = new HashMap<String,String>();
 
   public ClassWrapper(Main classpath)
   {
@@ -81,7 +81,7 @@ public class ClassWrapper
 
   public boolean hasNativeMethod()
   {
-    Iterator i = methods.iterator();
+    Iterator<?> i = methods.iterator();
     while (i.hasNext())
       {
         MethodNode method = (MethodNode) i.next();
@@ -104,7 +104,7 @@ public class ClassWrapper
     return false;
   }
 
-  private void linkSupers() throws IOException
+  void linkSupers() throws IOException
   {
     if (superName == null)
       {
@@ -115,7 +115,7 @@ public class ClassWrapper
       {
         superClass = classpath.getClass(superName);
         assert interfaceClasses == null;
-        interfaceClasses = new ArrayList();
+        interfaceClasses = new ArrayList<ClassWrapper>();
         for (int i = 0; i < interfaces.size(); ++i)
           {
             String ifname = (String) interfaces.get(i);
@@ -131,7 +131,7 @@ public class ClassWrapper
   {
     for (int i = vtable.size() - 1; i >= 0; --i)
       {
-        MethodNode base = (MethodNode) vtable.get(i);
+        MethodNode base = vtable.get(i);
         if (MethodHelper.overrides(method, base))
           return i;
       }
@@ -140,7 +140,7 @@ public class ClassWrapper
 
   private void addInterfaceMethods(ClassWrapper iface)
   {
-    Iterator i = iface.methods.iterator();
+    Iterator<?> i = iface.methods.iterator();
     while (i.hasNext())
       {
         MethodNode im = (MethodNode) i.next();
@@ -159,7 +159,7 @@ public class ClassWrapper
   {
     if (base.interfaceClasses == null)
       return;
-    Iterator i = base.interfaceClasses.iterator();
+    Iterator<?> i = base.interfaceClasses.iterator();
     while (i.hasNext())
       {
         ClassWrapper iface = (ClassWrapper) i.next();
@@ -169,7 +169,7 @@ public class ClassWrapper
 
   private void addLocalMethods()
   {
-    Iterator i = methods.iterator();
+    Iterator<?> i = methods.iterator();
     while (i.hasNext())
       {
         MethodNode meth = (MethodNode) i.next();
@@ -191,16 +191,16 @@ public class ClassWrapper
     if (superClass != null)
       {
         superClass.makeVtable();
-        vtable = new ArrayList(superClass.vtable);
-        bridgeTargets = new HashSet(superClass.bridgeTargets);
-	methodNameMap = new HashMap(superClass.methodNameMap);
+        vtable = new ArrayList<MethodNode>(superClass.vtable);
+        bridgeTargets = new HashSet<String>(superClass.bridgeTargets);
+	methodNameMap = new HashMap<String,String>(superClass.methodNameMap);
       }
     else
       {
         // Object.
-        vtable = new ArrayList();
-        bridgeTargets = new HashSet();
-	methodNameMap = new HashMap();
+        vtable = new ArrayList<MethodNode>();
+        bridgeTargets = new HashSet<String>();
+	methodNameMap = new HashMap<String,String>();
       }
     addLocalMethods();
     addInterfaces(this);
@@ -211,7 +211,7 @@ public class ClassWrapper
     // methods by definition override a method from the superclass --
     // and we have to consider the superclass' header as an
     // unchangeable entity.
-    Iterator i = methods.iterator();
+    Iterator<?> i = methods.iterator();
     while (i.hasNext())
       {
         MethodNode m = (MethodNode) i.next();
@@ -234,7 +234,7 @@ public class ClassWrapper
 
   private void printFields(CniPrintStream out)
   {
-    Iterator i = fields.iterator();
+    Iterator<?> i = fields.iterator();
     ClassWrapper self = superClass;
     while (i.hasNext())
       {
@@ -251,7 +251,7 @@ public class ClassWrapper
 
     // A given method is either static, overrides a super method, or
     // is already in vtable order.
-    Iterator i = methods.iterator();
+    Iterator<?> i = methods.iterator();
     while (i.hasNext())
       {
         MethodNode m = (MethodNode) i.next();
@@ -266,15 +266,15 @@ public class ClassWrapper
       }
   }
 
-  private void printTextList(PrintStream out, int what, ArrayList textList)
+  private void printTextList(PrintStream out, int what, ArrayList<Text> textList)
   {
     if (textList == null)
       return;
-    Iterator i = textList.iterator();
+    Iterator<Text> i = textList.iterator();
     boolean first = true;
     while (i.hasNext())
       {
-        Text item = (Text) i.next();
+        Text item = i.next();
         if (item.type == what)
           {
             if (first)
@@ -296,7 +296,7 @@ public class ClassWrapper
   }
 
   // This prints the body of a class to a CxxPrintStream.
-  private void printContents(CniPrintStream out, ArrayList textList)
+  private void printContents(CniPrintStream out, ArrayList<Text> textList)
       throws IOException
   {
     printTextList(out, Text.PREPEND, textList);
@@ -338,7 +338,7 @@ public class ClassWrapper
   {
     linkSupers();
 
-    ArrayList textList = classpath.getClassTextList(name);
+    ArrayList<Text> textList = classpath.getClassTextList(name);
 
     out.println("// DO NOT EDIT THIS FILE - it is machine generated -*- c++ -*-");
     out.println();

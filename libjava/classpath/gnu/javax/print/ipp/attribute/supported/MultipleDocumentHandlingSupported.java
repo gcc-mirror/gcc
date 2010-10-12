@@ -42,6 +42,7 @@ import gnu.javax.print.ipp.IppUtilities;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.EnumSyntax;
 import javax.print.attribute.SupportedValuesAttribute;
 import javax.print.attribute.standard.MultipleDocumentHandling;
@@ -50,49 +51,49 @@ import javax.print.attribute.standard.MultipleDocumentHandling;
 /**
  * <code>MultipleDocumentHandlingSupported</code> provides the
  * supported values for the MultipleDocumentHandling attribute.
- *  
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class MultipleDocumentHandlingSupported extends EnumSyntax
   implements SupportedValuesAttribute
 {
-  
+
   //a keyword based attribute in IPP - int values just starting at 0
-  
-  /** 
-   * Supports only multiple documents treated as a single document. This 
+
+  /**
+   * Supports only multiple documents treated as a single document. This
    * applies to attributes which specify treatment of multiple document jobs.
    */
   public static final MultipleDocumentHandlingSupported SINGLE_DOCUMENT =
     new MultipleDocumentHandlingSupported(0);
-  
+
   /** Supports multiple documents as uncollated copies */
   public static final MultipleDocumentHandlingSupported SEPARATE_DOCUMENTS_UNCOLLATED_COPIES =
     new MultipleDocumentHandlingSupported(1);
-  
+
   /** Supports multiple documents as collated copies */
   public static final MultipleDocumentHandlingSupported SEPARATE_DOCUMENTS_COLLATED_COPIES =
     new MultipleDocumentHandlingSupported(2);
-  
-  /** 
+
+  /**
    * Supports multiple documents where every single document starts
-   * with a new sheet. 
+   * with a new sheet.
    */
   public static final MultipleDocumentHandlingSupported SINGLE_DOCUMENT_NEW_SHEET =
     new MultipleDocumentHandlingSupported(3);
 
-  private static final String[] stringTable = { "single-document", 
+  private static final String[] stringTable = { "single-document",
                                                 "separate-documents-uncollated-copies",
                                                 "separate-documents-collated-copies",
                                                 "single-document-new-sheet" };
-  
-  private static final MultipleDocumentHandlingSupported[] enumValueTable = 
+
+  private static final MultipleDocumentHandlingSupported[] enumValueTable =
     { SINGLE_DOCUMENT, SEPARATE_DOCUMENTS_UNCOLLATED_COPIES,
       SEPARATE_DOCUMENTS_COLLATED_COPIES, SINGLE_DOCUMENT_NEW_SHEET};
-  
+
   /**
    * Constructs a <code>MultipleDocumentHandlingSupported</code> object.
-   * 
+   *
    * @param value the enum value
    */
   protected MultipleDocumentHandlingSupported(int value)
@@ -105,7 +106,7 @@ public final class MultipleDocumentHandlingSupported extends EnumSyntax
    *
    * @return The class <code>MultipleDocumentHandlingSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return MultipleDocumentHandlingSupported.class;
   }
@@ -119,7 +120,7 @@ public final class MultipleDocumentHandlingSupported extends EnumSyntax
   {
     return "multiple-document-handling-supported";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.
@@ -140,38 +141,36 @@ public final class MultipleDocumentHandlingSupported extends EnumSyntax
   {
     return enumValueTable;
   }
-  
+
   /**
    * Returns the equally enum of the standard attribute class
    * of this SupportedValuesAttribute enum.
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
-  public MultipleDocumentHandling getAssociatedAttribute() 
+  public MultipleDocumentHandling getAssociatedAttribute()
   {
     return (MultipleDocumentHandling) IppUtilities.getEnumAttribute(
             "multiple-document-handling", new Integer(getValue()));
   }
-  
+
   /**
    * Constructs an array from a set of -supported attributes.
    * @param set set to process
    * @return The constructed array.
-   * 
+   *
    * @see #getAssociatedAttribute()
    */
-  public static MultipleDocumentHandling[] getAssociatedAttributeArray(Set set)
+  public static MultipleDocumentHandling[]
+    getAssociatedAttributeArray(Set<Attribute> set)
   {
-    MultipleDocumentHandlingSupported tmp;
-    MultipleDocumentHandling[] result = new MultipleDocumentHandling[set.size()];      
-    Iterator it = set.iterator();
+    MultipleDocumentHandling[] result = new MultipleDocumentHandling[set.size()];
     int j = 0;
-    while (it.hasNext())
+    for (Attribute tmp : set)
       {
-        tmp = (MultipleDocumentHandlingSupported) it.next();
-        result[j] = tmp.getAssociatedAttribute();
+        result[j] = ((MultipleDocumentHandlingSupported) tmp).getAssociatedAttribute();
         j++;
-      }            
+      }
     return result;
   }
 }

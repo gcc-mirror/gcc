@@ -90,4 +90,13 @@ final class KeyImpl implements Serializable, SecretKey
     // FIXME.
     return null;
   }
+
+  public String toString()
+  {
+    return getClass().getName() +
+      "[type=" + type +
+      ",algorithm=" + algorithm +
+      "]";
+  }
+
 }

@@ -242,7 +242,7 @@ public class XMLStreamWriterImpl
       {
         if (namespaceURI != null && !isURI(namespaceURI))
           throw new IllegalArgumentException("illegal URI: " + namespaceURI);
-        if (prefix != null && !isNCName(prefix))
+        if (prefix != null && !isPrefix(prefix))
           throw new IllegalArgumentException("illegal NCName: " + prefix);
         if (!isNCName(localName))
           throw new IllegalArgumentException("illegal NCName: " + localName);
@@ -394,7 +394,7 @@ public class XMLStreamWriterImpl
       {
         if (namespaceURI != null && !isURI(namespaceURI))
           throw new IllegalArgumentException("illegal URI: " + namespaceURI);
-        if (prefix != null && !isNCName(prefix))
+        if (prefix != null && !isPrefix(prefix))
           throw new IllegalArgumentException("illegal NCName: " + prefix);
         if (!isNCName(localName))
           throw new IllegalArgumentException("illegal NCName: " + localName);
@@ -490,13 +490,18 @@ public class XMLStreamWriterImpl
   public void writeNamespace(String prefix, String namespaceURI)
     throws XMLStreamException
   {
+    if (prefix == null || "".equals(prefix) || "xmlns".equals(prefix))
+    {
+      writeDefaultNamespace(namespaceURI);
+      return;
+    }
     if (!inStartElement)
       throw new IllegalStateException();
     try
       {
         if (!isURI(namespaceURI))
           throw new IllegalArgumentException("illegal URI: " + namespaceURI);
-        if (!isNCName(prefix))
+        if (!isPrefix(prefix))
           throw new IllegalArgumentException("illegal NCName: " + prefix);
       }
     catch (IOException e)
@@ -790,7 +795,7 @@ public class XMLStreamWriterImpl
       {
         if (!isURI(uri))
           throw new IllegalArgumentException("illegal URI: " + uri);
-        if (!isNCName(prefix))
+        if (!isPrefix(prefix))
           throw new IllegalArgumentException("illegal NCName: " + prefix);
       }
     catch (IOException e)
@@ -938,6 +943,15 @@ public class XMLStreamWriterImpl
     return true;
   }
 
+  private boolean isPrefix(String text)
+    throws IOException
+  {
+    if (XMLConstants.DEFAULT_NS_PREFIX.equals(text)) {
+        return true;
+    }
+    return isNCName(text);
+  }
+
   private boolean isNCName(String text)
     throws IOException
   {
@@ -1000,4 +1014,5 @@ public class XMLStreamWriterImpl
   }
   
 }
+
 
