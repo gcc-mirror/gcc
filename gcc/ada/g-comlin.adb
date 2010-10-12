@@ -194,9 +194,10 @@ package body GNAT.Command_Line is
    --  Return True if the characters starting at Index in Type_Str are
    --  equivalent to Substring.
 
+   generic
+      with function Callback (S : String; Index : Integer) return Boolean;
    procedure Foreach_Switch
      (Config   : Command_Line_Configuration;
-      Callback : access function (S : String; Index : Integer) return Boolean;
       Section  : String);
    --  Iterate over all switches defined in Config, for a specific section.
    --  Index is set to the index in Config.Switches
@@ -1400,7 +1401,6 @@ package body GNAT.Command_Line is
 
    procedure Foreach_Switch
      (Config   : Command_Line_Configuration;
-      Callback : access function (S : String; Index : Integer) return Boolean;
       Section  : String)
    is
    begin
@@ -1457,10 +1457,12 @@ package body GNAT.Command_Line is
       Tmp : Boolean;
       pragma Unreferenced (Tmp);
 
+      procedure Foreach is new Foreach_Switch (Add_Switch);
+
    --  Start of processing for Get_Switches
 
    begin
-      Foreach_Switch (Config, Add_Switch'Access, Section => Section);
+      Foreach (Config, Section => Section);
 
       --  Adding relevant aliases
 
@@ -1816,6 +1818,8 @@ package body GNAT.Command_Line is
             return True;
          end Analyze_Simple_Switch;
 
+         procedure Foreach is new Foreach_Switch (Analyze_Simple_Switch);
+
       --  Start of processing for Group_Analysis
 
       begin
@@ -1823,7 +1827,7 @@ package body GNAT.Command_Line is
          while Idx <= Group'Last loop
             Found := False;
 
-            Foreach_Switch (Config, Analyze_Simple_Switch'Access, Section);
+            Foreach (Config, Section);
 
             if not Found then
                For_Each_Simple_Switch
@@ -1945,13 +1949,16 @@ package body GNAT.Command_Line is
          return True;
       end Starts_With;
 
+      procedure Foreach_In_Config is new Foreach_Switch (Is_In_Config);
+      procedure Foreach_Starts_With is new Foreach_Switch (Starts_With);
+
    --  Start of processing for For_Each_Simple_Switch
 
    begin
       --  First determine if the switch corresponds to one belonging to the
       --  configuration. If so, run callback and exit.
 
-      Foreach_Switch (Config, Is_In_Config'Access, Section);
+      Foreach_In_Config (Config, Section);
 
       if Found_In_Config then
          return;
@@ -2024,7 +2031,7 @@ package body GNAT.Command_Line is
         and then Config.Switches /= null
       then
          Found_In_Config := False;
-         Foreach_Switch (Config, Starts_With'Access, Section);
+         Foreach_Starts_With (Config, Section);
          if Found_In_Config then
             return;
          end if;
