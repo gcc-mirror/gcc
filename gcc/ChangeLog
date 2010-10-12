@@ -1,3 +1,9 @@
+2010-10-12  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/45962
+	* cfgexpand.c (add_stack_var): Ensure every variable has 1 byte.
+	(expand_stack_vars): Assert large base allocated when used.
+
 2010-10-12  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (get_constraint_for_1): Constants
