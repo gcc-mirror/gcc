@@ -327,7 +327,7 @@ static char picochip_get_vliw_alu_id (void);
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE picochip_option_override
 
 #undef TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO picochip_except_unwind_info
+#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
