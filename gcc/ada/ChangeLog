@@ -1,3 +1,12 @@
+2010-10-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* g-comlin.adb (Foreach_Switch): Make this procedure generic to avoid
+	using 'Access.
+
+2010-10-12  Emmanuel Briot  <briot@adacore.com>
+
+	* switch-m.adb: Allow building even in -gnat05 mode.
+
 2010-10-12  Robert Dewar  <dewar@adacore.com>
 
 	* debug.adb: Add comment.

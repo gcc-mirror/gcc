@@ -31,7 +31,9 @@ with Prj;      use Prj;
 with Prj.Env;  use Prj.Env;
 with Table;
 
+pragma Warnings (Off, "*is an Ada 2012 unit");
 with System.Multiprocessors; use System.Multiprocessors;
+pragma Warnings (On, "*is an Ada 2012 unit");
 
 package body Switch.M is
 
