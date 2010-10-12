@@ -1,3 +1,10 @@
+2010-10-12  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb, g-comlin.ads (Display_Help, Getopt, Current_Section,
+	Set_Usage): New subprograms.
+	(Define_Switch): Change profile to add support for help messages and
+	long switches.
+
 2010-10-12  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch6.adb (New_Overloaded_Entity): Add missing decoration of
