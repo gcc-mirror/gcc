@@ -1727,6 +1727,47 @@ package body Sem_Disp is
    end Find_Primitive_Covering_Interface;
 
    ---------------------------
+   -- Inherited_Subprograms --
+   ---------------------------
+
+   function Inherited_Subprograms (S : Entity_Id) return Subprogram_List is
+      Result : Subprogram_List (1 .. 6000);
+      --  6000 here is intended to be infinity. We could use an expandable
+      --  table, but it would be awfully heavy, and there is no way that we
+      --  could reasonably exceed this value.
+
+      N : Int := 0;
+      --  Number of entries in Result
+
+      Parent_Op : Entity_Id;
+      --  Traverses the Overridden_Operation chain
+
+   begin
+      if Present (S) then
+
+         --  Deal with direct inheritance
+
+         Parent_Op := S;
+         loop
+            Parent_Op := Overridden_Operation (Parent_Op);
+            exit when No (Parent_Op);
+
+            if Is_Subprogram (Parent_Op)
+              or else Is_Generic_Subprogram (Parent_Op)
+            then
+               N := N + 1;
+               Result (N) := Parent_Op;
+            end if;
+         end loop;
+
+         --  For now don't bother with interfaces, TBD ???
+
+      end if;
+
+      return Result (1 .. N);
+   end Inherited_Subprograms;
+
+   ---------------------------
    -- Is_Dynamically_Tagged --
    ---------------------------
 

@@ -6158,14 +6158,17 @@ will be 64 (8 bytes).
 @cindex Postconditions
 @noindent
 The attribute Prefix'Old can be used within a
-subprogram to refer to the value of the prefix on entry. So for
+subprogram body or within a precondition or
+postcondition pragma. The effect is to
+refer to the value of the prefix on entry. So for
 example if you have an argument of a record type X called Arg1,
 you can refer to Arg1.Field'Old which yields the value of
 Arg1.Field on entry. The implementation simply involves generating
 an object declaration which captures the value on entry. Any
 prefix is allowed except one of a limited type (since limited
-types cannot be copied to capture their values) or a local variable
-(since it does not exist at subprogram entry time).
+types cannot be copied to capture their values) or an expression
+which references a local variable
+(since local variables do not exist at subprogram entry time).
 
 The following example shows the use of 'Old to implement
 a test of a postcondition:

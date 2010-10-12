@@ -2877,6 +2877,8 @@ package body Sem_Ch12 is
       End_Scope;
       Exit_Generic_Scope (Id);
       Generate_Reference_To_Formals (Id);
+
+      List_Inherited_Pre_Post_Aspects (Id);
       Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Generic_Subprogram_Declaration;
 

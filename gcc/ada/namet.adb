@@ -867,6 +867,19 @@ package body Namet is
       null;
    end Initialize;
 
+   -------------------------------
+   -- Insert_Str_In_Name_Buffer --
+   -------------------------------
+
+   procedure Insert_Str_In_Name_Buffer (S : String; Index : Positive) is
+      SL : constant Natural := S'Length;
+   begin
+      Name_Buffer (Index + SL .. Name_Len + SL) :=
+        Name_Buffer (Index .. Name_Len);
+      Name_Buffer (Index .. Index + SL - 1) := S;
+      Name_Len := Name_Len + SL;
+   end Insert_Str_In_Name_Buffer;
+
    ----------------------
    -- Is_Internal_Name --
    ----------------------

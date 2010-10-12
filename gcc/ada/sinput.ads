@@ -471,6 +471,10 @@ package Sinput is
    --  ASCII.NUL, with Name_Length indicating the length not including the
    --  terminating Nul.
 
+   function Build_Location_String (Loc : Source_Ptr) return String;
+   --  Functional form returning a string, which does not include a terminating
+   --  null character. The contents of Name_Buffer is destroyed.
+
    function Get_Column_Number (P : Source_Ptr) return Column_Number;
    --  The ones-origin column number of the specified Source_Ptr value is
    --  determined and returned. Tab characters if present are assumed to
