@@ -1,5 +1,23 @@
 2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* encoding.c: Tidied up comments.
+	(objc_skip_variable_name): New static inline function.
+	(objc_sizeof_type): Use objc_skip_variable_name instead of copying
+	the same code over and over.
+	(objc_alignof_type): Same.
+	(objc_aligned_size): Same.
+	(objc_promoted_size): Same.
+	(objc_skip_typespec): Same.
+	(objc_layout_structure_next_member): Same.
+	(objc_skip_offset): Skip a '-' before the digits (if any).  Fixed
+	historical bug where objc_skip_offset would skip one byte even if
+	there is no offset: check that the first offset digit is actually
+	a digit before skipping it.
+	(objc_skip_type_qualifiers): Mark as inline.
+	(objc_skip_typespec): Mark as inline.	
+	
+2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Makefile.in (C_SOURCE_FILES): Added methods.c.
 	* encoding.c (method_getNumberOfArguments): New.
 	(method_get_number_of_arguments): Call
