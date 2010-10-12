@@ -2623,6 +2623,9 @@ namespace std
 	  __aurng(__urng);
 
 	const double __p = __aurng();
+	if (__param._M_m.empty())
+	  return __p;
+
 	auto __pos = std::lower_bound(__param._M_cp.begin(),
 				      __param._M_cp.end(), __p);
 	const size_t __i = __pos - __param._M_cp.begin();

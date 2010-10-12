@@ -1,3 +1,10 @@
+2010-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.tcc (piecewise_linear_distribution<>::
+	operator()): Don't crash when the dist is default-constructed.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/
+	operators/call-default.cc: New.
+
 2010-10-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/23_containers/bitset/cons/2.cc: Tweak.
