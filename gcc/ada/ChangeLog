@@ -1,3 +1,8 @@
+2010-10-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/Make-lang.in (ada/misc.o): Use $(OPTIONS_H)
+	instead of options.h.
+
 2010-10-12  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Clarify that 'Old can be used in preconditions and
