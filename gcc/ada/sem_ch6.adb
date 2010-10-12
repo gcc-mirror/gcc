@@ -8103,12 +8103,13 @@ package body Sem_Ch6 is
                      Check_Overriding_Indicator (S, E, Is_Primitive => True);
 
                      --  If S is a user-defined subprogram or a null procedure
-                     --  expanded to override an inherited null procedure, then
-                     --  indicate that E overrides the operation from which S
-                     --  is inherited. It seems odd that Overridden_Operation
-                     --  isn't set in all cases where Is_Overriding_Operation
-                     --  is true, but doing so causes infinite loops in the
-                     --  compiler for implicit overriding subprograms. ???
+                     --  expanded to override an inherited null procedure, or a
+                     --  predefined dispatching primitive then indicate that E
+                     --  overrides the operation from which S is inherited. It
+                     --  seems odd that Overridden_Operation isn't set in all
+                     --  cases where Is_Overriding_Operation is true, but doing
+                     --  so causes infinite loops in the compiler for implicit
+                     --  overriding subprograms. ???
 
                      if Comes_From_Source (S)
                        or else
@@ -8117,6 +8118,10 @@ package body Sem_Ch6 is
                              Nkind (Parent (S)) = N_Procedure_Specification
                            and then
                              Null_Present (Parent (S)))
+                       or else
+                         (Present (Alias (E))
+                            and then
+                          Is_Predefined_Dispatching_Operation (Alias (E)))
                      then
                         if Present (Alias (E)) then
                            Set_Overridden_Operation (S, Alias (E));

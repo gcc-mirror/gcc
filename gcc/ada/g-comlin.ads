@@ -33,8 +33,9 @@
 
 --  High level package for command line parsing and manipulation
 
---  Parsing the command line
---  ========================
+--------------------------------------
+--  Simple parsing of the command line
+--------------------------------------
 
 --  This package provides an interface for parsing command line arguments,
 --  when they are either read from Ada.Command_Line or read from a string list.
@@ -81,6 +82,10 @@
 --     when Invalid_Parameter => Put_Line ("No parameter for " & Full_Switch);
 --  end;
 
+-------------
+--  Sections
+-------------
+
 --  A more complicated example would involve the use of sections for the
 --  switches, as for instance in gnatmake. The same command line is used to
 --  provide switches for several tools. Each tool recognizes its switches by
@@ -105,6 +110,10 @@
 --        --  The supported switches in Getopt might be different
 --     end loop;
 --  end;
+
+------------------------------
+--  Parsing a list of strings
+------------------------------
 
 --  The examples above show how to parse the command line when the arguments
 --  are read directly from Ada.Command_Line. However, these arguments can also
@@ -132,9 +141,10 @@
 --     end loop;
 --     Free (Parser);
 --  end;
---
+
+----------------------------------------------
 --  Creating and manipulating the command line
---  ===========================================
+----------------------------------------------
 
 --  This package provides mechanisms to create and modify command lines by
 --  adding or removing arguments from them. The resulting command line is kept
@@ -204,13 +214,14 @@
 
 --  This is done by passing an extra argument to Add_Switch, as in:
 
---     Add_Switch (Cmd, "-foo", "arg1");
+--     Add_Switch (Cmd, "-foo", Parameter => "arg1");
 
 --  This ensures that "arg1" will always be treated as the argument to -foo,
 --  and will not be grouped with other parts of the command line.
 
+---------------------------------------------------
 --  Parsing the command line with grouped arguments
---  ===============================================
+---------------------------------------------------
 
 --  The command line construction facility can also be used in conjunction with
 --  Getopt to interpret a command line. For example when implementing the tool
@@ -230,8 +241,10 @@
 
 --      Start (Cmd, Iter, Expanded => True);
 --      while Has_More (Iter) loop
---        if Current_Switch (Iter) = "-gnatwu" then ..
---        elsif Current_Switch (Iter) = "-gnatwv" then ...
+--        if Current_Switch (Iter) = "-gnatwu" then
+--           ...
+--        elsif Current_Switch (Iter) = "-gnatwv" then
+--           ...
 --        end if;
 --        Next (Iter);
 --      end loop;
@@ -444,6 +457,24 @@ package GNAT.Command_Line is
    --  the parameter were concatenated. A space is returned if the switch and
    --  its argument were in two separate arguments.
 
+   Invalid_Section : exception;
+   --  Raised when an invalid section is selected by Goto_Section
+
+   Invalid_Switch : exception;
+   --  Raised when an invalid switch is detected in the command line
+
+   Invalid_Parameter : exception;
+   --  Raised when a parameter is missing, or an attempt is made to obtain a
+   --  parameter for a switch that does not allow a parameter
+
+   -----------------------------------------
+   -- Expansion of command line arguments --
+   -----------------------------------------
+   --  These subprograms take care of of expanding globbing patterns on the
+   --  command line. On Unix, such expansion is done by the shell before your
+   --  application is called. But on Windows you must do this expansion
+   --  yourself.
+
    type Expansion_Iterator is limited private;
    --  Type used during expansion of file names
 
@@ -475,19 +506,16 @@ package GNAT.Command_Line is
    --  If Expansion is called again after an empty string has been returned,
    --  then the exception GNAT.Directory_Operations.Directory_Error is raised.
 
-   Invalid_Section : exception;
-   --  Raised when an invalid section is selected by Goto_Section
-
-   Invalid_Switch : exception;
-   --  Raised when an invalid switch is detected in the command line
-
-   Invalid_Parameter : exception;
-   --  Raised when a parameter is missing, or an attempt is made to obtain a
-   --  parameter for a switch that does not allow a parameter
-
    -----------------
    -- Configuring --
    -----------------
+   --  The following subprograms are used to manipulate a command line
+   --  represented as a string (for instance "-g -O2"), as well as parsing
+   --  the switches from such a string. They provide high-level configurations
+   --  to define aliases (a switch is equivalent to one or more other switches)
+   --  or grouping of switches ("-gnatyac" is equivalent to "-gnatya" and
+   --  "-gnatyc").
+   --  See the top of this file for examples on how to use these subprograms
 
    type Command_Line_Configuration is private;
 
@@ -499,9 +527,6 @@ package GNAT.Command_Line is
    --  be expanded as Expanded. For instance, for the GNAT compiler switches,
    --  we would define "-gnatwa" as an alias for "-gnatwcfijkmopruvz", ie some
    --  default warnings to be activated.
-   --
-   --  Likewise, in some context you could define "--verbose" as an alias for
-   --  ("-v", "--full"), ie two switches.
 
    procedure Define_Prefix
      (Config   : in out Command_Line_Configuration;
@@ -537,20 +562,25 @@ package GNAT.Command_Line is
    procedure Free (Config : in out Command_Line_Configuration);
    --  Free the memory used by Config
 
-   -------------
-   -- Editing --
-   -------------
+   ------------------------------
+   -- Generating command lines --
+   ------------------------------
+   --  Once the command line configuration has been created, you can build your
+   --  own command line. This will be done in general because you need to spawn
+   --  external tools from your application.
+   --  Although it could be done by concatenating strings, the following
+   --  subprograms will properly take care of grouping switches when possible,
+   --  so as to keep the command line as short as possible. They also provide a
+   --  way to remove a switch from an existing command line.
 
    type Command_Line is private;
 
    procedure Set_Configuration
      (Cmd    : in out Command_Line;
       Config : Command_Line_Configuration);
-   --  Set the configuration for this command line
-
    function Get_Configuration
      (Cmd : Command_Line) return Command_Line_Configuration;
-   --  Return the configuration used for that command line
+   --  Set or retrieve the configuration used for that command line
 
    procedure Set_Command_Line
      (Cmd                : in out Command_Line;
@@ -608,7 +638,10 @@ package GNAT.Command_Line is
    --  If the switch is part of a section, then it should be specified so that
    --  the switch is correctly placed in the command line, and the section
    --  added if not already present. For example, to add the -g switch into the
-   --  -cargs section, you need to pass (Cmd, "-g", Section => "-cargs").
+   --  -cargs section, you need to call (Cmd, "-g", Section => "-cargs").
+   --
+   --  Invalid_Section is raised if Section was not defined in the
+   --  configuration of the command line.
    --
    --  Add_Before allows insertion of the switch at the beginning of the
    --  command line.
@@ -672,13 +705,15 @@ package GNAT.Command_Line is
    ---------------
    -- Iteration --
    ---------------
+   --  When a command line was created with the above, you can then iterate
+   --  over its contents using the following iterator.
 
    type Command_Line_Iterator is private;
 
    procedure Start
      (Cmd      : in out Command_Line;
       Iter     : in out Command_Line_Iterator;
-      Expanded : Boolean);
+      Expanded : Boolean := False);
    --  Start iterating over the command line arguments. If Expanded is true,
    --  then the arguments are not grouped and no alias is used. For instance,
    --  "-gnatwv" and "-gnatwu" would be returned instead of "-gnatwuv".

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1755,7 +1755,21 @@ package body GNAT.Command_Line is
 
    --  Start of processing for Add_Switch
 
+      Section_Valid : Boolean := False;
    begin
+      if Section /= "" and then Cmd.Config /= null then
+         for S in Cmd.Config.Sections'Range loop
+            if Section = Cmd.Config.Sections (S).all then
+               Section_Valid := True;
+               exit;
+            end if;
+         end loop;
+
+         if not Section_Valid then
+            raise Invalid_Section;
+         end if;
+      end if;
+
       Success := False;
       Add_Simple_Switches (Cmd, Switch, Parameter);
       Free (Cmd.Coalesce);
@@ -2252,7 +2266,7 @@ package body GNAT.Command_Line is
    procedure Start
      (Cmd      : in out Command_Line;
       Iter     : in out Command_Line_Iterator;
-      Expanded : Boolean)
+      Expanded : Boolean := False)
    is
    begin
       if Cmd.Expanded = null then
