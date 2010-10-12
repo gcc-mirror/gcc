@@ -876,6 +876,7 @@ package body Prj is
          Array_Table.Free (Tree.Arrays);
          Package_Table.Free (Tree.Packages);
          Source_Paths_Htable.Reset (Tree.Source_Paths_HT);
+         Source_Files_Htable.Reset (Tree.Source_Files_HT);
 
          Free_List (Tree.Projects, Free_Project => True);
          Free_Units (Tree.Units_HT);
@@ -904,6 +905,7 @@ package body Prj is
       Array_Table.Init              (Tree.Arrays);
       Package_Table.Init            (Tree.Packages);
       Source_Paths_Htable.Reset     (Tree.Source_Paths_HT);
+      Source_Files_Htable.Reset     (Tree.Source_Files_HT);
       Replaced_Source_HTable.Reset  (Tree.Replaced_Sources);
 
       Tree.Replaced_Source_Number := 0;

@@ -1,3 +1,20 @@
+2010-10-12  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Add_Source): Put source in hash table Source_Files_HT
+	(Process_Exceptions_File_Based): Use hash table Source_Files_HT, instead
+	of iterating through all sources of the project.
+	* prj.adb (Free): Reset hash table Source_Files_HT
+	(Reset): Reset hash table Source_Files_HT
+	* prj.ads (Source_Data): New component Next_With_File_Name
+	(Source_Files_Htable): New hash table
+	(Project_Tree_Data): New component Source_Files_HT
+
+2010-10-12  Tristan Gingold  <gingold@adacore.com>
+
+	* g-trasym-vms-ia64.adb: Use the documented API.
+	* gcc-interface/Makefile.in: Always set NO_REORDER_ADAFLAGS.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2010-10-12  Thomas Quinot  <quinot@adacore.com>
 
 	* rtsfind.ads, exp_dist.adb, exp_dist.ads (Build_General_Calling_Stubs,

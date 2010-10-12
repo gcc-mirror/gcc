@@ -2724,15 +2724,9 @@ s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
 	      $< $(OUTPUT_OPTION)
 
 # force no function reordering on a-except.o because of the exclusion bounds
-# mechanism (see the source file for more detailed information). However we
-# can do that only when building the runtime (not the compiler) because the
-# -fno-toplevel-reorder option exists only in GCC 4.2 and above.
+# mechanism (see the source file for more detailed information).
 
-ifneq (,$(findstring xgcc,$(CC)))
 NO_REORDER_ADAFLAGS=-fno-toplevel-reorder
-else
-NO_REORDER_ADAFLAGS=
-endif
 
 # force debugging information on a-except.o so that it is always
 # possible to set conditional breakpoints on exceptions.
