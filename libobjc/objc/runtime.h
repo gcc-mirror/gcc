@@ -284,15 +284,26 @@ objc_EXPORT id object_getIvar (id object, Ivar variable);
    object_setInstanceVariable.  */
 objc_EXPORT void object_setIvar (id object, Ivar variable, id value);
 
-/* Return the name of the instance variable.  */
+/* Return the name of the instance variable.  Return NULL if
+   'variable' is NULL.  */
 objc_EXPORT const char * ivar_getName (Ivar variable);
 
 /* Return the offset of the instance variable from the start of the
-   object data.  */
+   object data.  Return 0 if 'variable' is NULL.  */
 objc_EXPORT ptrdiff_t ivar_getOffset (Ivar variable);
 
-/* Return the type encoding of the variable.  */
+/* Return the type encoding of the variable.  Return NULL if
+   'variable' is NULL.  */
 objc_EXPORT const char * ivar_getTypeEncoding (Ivar variable);
+
+/* Return all the instance variables of the class.  The return value
+   of the function is a pointer to an area, allocated with malloc(),
+   that contains all the instance variables of the class.  It does not
+   include instance variables of superclasses.  The list is terminated
+   by NULL.  Optionally, if you pass a non-NULL
+   'numberOfReturnedIvars' pointer, the unsigned int that it points to
+   will be filled with the number of instance variables returned.  */
+objc_EXPORT Ivar * class_copyIvarList (Class class_, unsigned int *numberOfReturnedIvars);
 
 
 /** Implementation: the following functions are in class.c.  */
@@ -410,6 +421,84 @@ objc_EXPORT void class_setVersion (Class class_, int version);
    a non-zero number (since the 'isa' instance variable is required
    for all classes).  */
 objc_EXPORT size_t class_getInstanceSize (Class class_);
+
+
+/** Implementation: the following functions are in sendmsg.c.  */
+
+/* Return the instance method with selector 'selector' of class
+   'class_', or NULL if the class (or one of its superclasses) does
+   not implement the method.  Return NULL if class_ is Nil or selector
+   is NULL.  */
+objc_EXPORT Method class_getInstanceMethod (Class class_, SEL selector);
+
+/* Return the class method with selector 'selector' of class 'class_',
+   or NULL if the class (or one of its superclasses) does not
+   implement the method.  Return NULL if class_ is Nil or selector is
+   NULL.  */
+objc_EXPORT Method class_getClassMethod (Class class_, SEL selector);
+
+/* Return the IMP (pointer to the function implementing a method) for
+   the instance method with selector 'selector' in class 'class_'.
+   This is the same routine that is used while messaging, and should
+   be very fast.  Note that you most likely would need to cast the
+   return function pointer to a function pointer with the appropriate
+   arguments and return type before calling it.  To get a class
+   method, you can pass the meta-class as the class_ argument (ie, use
+   class_getMethodImplementation (object_getClass (class_),
+   selector)).  Return NULL if class_ is Nil or selector is NULL.  */
+objc_EXPORT IMP class_getMethodImplementation (Class class_, SEL selector);
+
+/* Compatibility Note: the Apple/NeXT runtime has the function
+   class_getMethodImplementation_stret () which currently does not
+   exist on the GNU runtime because the messaging implementation is
+   different.  */
+
+/* Return YES if class 'class_' has an instance method implementing
+   selector 'selector', and NO if not.  Return NO if class_ is Nil or
+   selector is NULL.  If you need to check a class method, use the
+   meta-class as the class_ argument (ie, use class_respondsToSelector
+   (object_getClass (class_), selector)).  */
+objc_EXPORT BOOL class_respondsToSelector (Class class_, SEL selector);
+
+
+/** Implementation: the following functions are in methods.c.  */
+
+/* Return the selector for method 'method'.  Return NULL if 'method'
+   is NULL.
+
+   This function is misnamed; it should be called
+   'method_getSelector'.  To get the actual name, get the selector,
+   then the name from the selector (ie, use sel_getName
+   (method_getName (method))).  */
+objc_EXPORT SEL method_getName (Method method);
+
+/* Return the IMP of the method.  Return NULL if 'method' is NULL.  */
+objc_EXPORT IMP method_getImplementation (Method method);
+
+/* Return the type encoding of the method.  Return NULL if 'method' is
+   NULL.  */
+objc_EXPORT const char * method_getTypeEncoding (Method method);
+
+/* Return all the instance methods of the class.  The return value of
+   the function is a pointer to an area, allocated with malloc(), that
+   contains all the instance methods of the class.  It does not
+   include instance methods of superclasses.  The list is terminated
+   by NULL.  Optionally, if you pass a non-NULL
+   'numberOfReturnedMethods' pointer, the unsigned int that it points
+   to will be filled with the number of instance methods returned.  To
+   get the list of class methods, pass the meta-class in the 'class_'
+   argument, (ie, use class_copyMethodList (object_getClass (class_),
+   &numberOfReturnedMethods)).  */
+objc_EXPORT Method * class_copyMethodList (Class class_, unsigned int *numberOfReturnedMethods);
+
+
+/** Implementation: the following functions are in encoding.c.  */
+
+/* Return the number of arguments that the method 'method' expects.
+   Note that all methods need two implicit arguments ('self' for the
+   receiver, and '_cmd' for the selector).  Return 0 if 'method' is
+   NULL.  */
+objc_EXPORT unsigned int method_getNumberOfArguments (Method method);
 
 
 /** Implementation: the following functions are in protocols.c.  */

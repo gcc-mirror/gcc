@@ -173,6 +173,7 @@ C_SOURCE_FILES = \
    init.c \
    ivars.c \
    memory.c \
+   methods.c \
    nil_method.c \
    objc-foreach.c \
    objc-sync.c \

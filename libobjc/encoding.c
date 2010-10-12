@@ -797,22 +797,39 @@ objc_skip_argspec (const char *type)
   return type;
 }
 
-/*
-  Return the number of arguments that the method MTH expects.
-  Note that all methods need two implicit arguments `self' and
-  `_cmd'.
-*/
+unsigned int
+method_getNumberOfArguments (struct objc_method *method)
+{
+  if (method == NULL)
+    return 0;
+  else
+    {
+      unsigned int i = 0;
+      const char *type = method->method_types;
+      while (*type)
+	{
+	  type = objc_skip_argspec (type);
+	  i += 1;
+	}
+
+      if (i == 0)
+	{
+	  /* This could only happen if method_types is invalid; in
+	     that case, return 0.  */
+	  return 0;
+	}
+      else
+	{
+	  /* Remove the return type.  */
+	  return (i - 1);
+	}
+    }
+}
+
 int
 method_get_number_of_arguments (struct objc_method *mth)
 {
-  int i = 0;
-  const char *type = mth->method_types;
-  while (*type)
-    {
-      type = objc_skip_argspec (type);
-      i += 1;
-    }
-  return i - 1;
+  return method_getNumberOfArguments (mth);
 }
 
 /*

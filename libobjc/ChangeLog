@@ -1,5 +1,36 @@
 2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Makefile.in (C_SOURCE_FILES): Added methods.c.
+	* encoding.c (method_getNumberOfArguments): New.
+	(method_get_number_of_arguments): Call
+	method_getNumberOfArguments.
+	* ivars.c (ivar_getName): Check for NULL variable argument.
+	(ivar_getOffset): Check for NULL variable argument.
+	(ivar_getTypeEncoding): Check for NULL variable argument.
+	(class_copyIvarList): New.
+	* methods.c: New.
+	* protocols.c (class_copyProtocolList): Check for Nil class_
+	argument.
+	* sendmsg.c: Use 'struct objc_method *' instead of Method_t, and
+	'struct objc_method_list *' instead of MethodList_t.
+	(class_getMethodImplementation): New.
+	(class_respondsToSelector): New.
+	(class_getInstanceMethod): New.
+	(class_getClassMethod): New.
+	* objc/runtime.h: Updated comments.
+	(class_copyIvarList): New.
+	(class_getInstanceMethod): New.
+	(class_getClassMethod): New.
+	(class_getMethodImplementation): New.
+	(class_respondsToSelector): New.
+	(method_getName): New.
+	(method_getImplementation): New.
+	(method_getTypeEncoding): New.
+	(class_copyMethodList): New.
+	(method_getNumberOfArguments): New.
+	
+2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* class.c: Include objc/runtime.h and objc-private/module-abi-8.h
 	instead of objc/objc-api.h.
 	(objc_get_unknown_class_handler): Do not define.
