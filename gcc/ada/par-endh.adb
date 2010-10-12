@@ -387,48 +387,51 @@ package body Endh is
             end if;
          end if;
 
-         --  Scan aspect specifications if permitted here
+         --  Deal with terminating aspect specifications and following semi-
+         --  colon. We skip this in the case of END RECORD, since in this
+         --  case the aspect specifications and semicolon are handled at
+         --  a higher level.
 
-         if Aspect_Specifications_Present then
-            if No (Decl) then
-               P_Aspect_Specifications (Error);
-            else
-               P_Aspect_Specifications (Decl);
-            end if;
+         if End_Type /= E_Record then
 
-         --  Except in case of END RECORD, semicolon must follow. For END
-         --  RECORD, a semicolon does follow, but it is part of a higher level
-         --  construct. In any case, a missing semicolon is not serious enough
-         --  to consider the END statement to be bad in the sense that we
-         --  are dealing with (i.e. to be suspicious that it is not in fact
-         --  the END statement we are looking for!)
+            --  Scan aspect specifications if permitted here
 
-         elsif End_Type /= E_Record then
-            if Token = Tok_Semicolon then
-               T_Semicolon;
+            if Aspect_Specifications_Present then
+               if No (Decl) then
+                  P_Aspect_Specifications (Error);
+               else
+                  P_Aspect_Specifications (Decl);
+               end if;
 
-            --  Semicolon is missing. If the missing semicolon is at the end
-            --  of the line, i.e. we are at the start of the line now, then
-            --  a missing semicolon gets flagged, but is not serious enough
-            --  to consider the END statement to be bad in the sense that we
-            --  are dealing with (i.e. to be suspicious that this END is not
-            --  the END statement we are looking for).
+            --  If no aspect specifications, must have a semicolon
 
-            --  Similarly, if we are at a colon, we flag it but a colon for
-            --  a semicolon is not serious enough to consider the END to be
-            --  incorrect. Same thing for a period in place of a semicolon.
+            elsif End_Type /= E_Record then
+               if Token = Tok_Semicolon then
+                  T_Semicolon;
 
-            elsif Token_Is_At_Start_Of_Line
-              or else Token = Tok_Colon
-              or else Token = Tok_Dot
-            then
-               T_Semicolon;
+               --  Semicolon is missing. If the missing semicolon is at the end
+               --  of the line, i.e. we are at the start of the line now, then
+               --  a missing semicolon gets flagged, but is not serious enough
+               --  to consider the END statement to be bad in the sense that we
+               --  are dealing with (i.e. to be suspicious that this END is not
+               --  the END statement we are looking for).
 
-            --  If the missing semicolon is not at the start of the line,
-            --  then we do consider the END line to be dubious in this sense.
+               --  Similarly, if we are at a colon, we flag it but a colon for
+               --  a semicolon is not serious enough to consider the END to be
+               --  incorrect. Same thing for a period in place of a semicolon.
 
-            else
-               End_OK := False;
+               elsif Token_Is_At_Start_Of_Line
+                 or else Token = Tok_Colon
+                 or else Token = Tok_Dot
+               then
+                  T_Semicolon;
+
+               --  If the missing semicolon is not at the start of the line,
+               --  then we consider the END line to be dubious in this sense.
+
+               else
+                  End_OK := False;
+               end if;
             end if;
          end if;
       end if;

@@ -5375,33 +5375,20 @@ package body Sem_Attr is
       --  constructs from this test comes from some internal usage in packed
       --  arrays, which otherwise fails, could use more analysis perhaps???
 
-      declare
-         function Within_Aspect (N : Node_Id) return Boolean;
-         --  True if within aspect expression. Giant kludge, do this test only
-         --  within an aspect, since doing it more widely, even though clearly
-         --  correct, causes regressions notably in GA19-001 ???
+      --  We do however go ahead with generic actual types, otherwise we get
+      --  some regressions, probably these types should be frozen anyway???
 
-         function Within_Aspect (N : Node_Id) return Boolean
-         is
-         begin
-            if No (Parent (N)) then
-               return False;
-            elsif Nkind (N) = N_Aspect_Specification then
-               return True;
-            else
-               return Within_Aspect (Parent (N));
-            end if;
-         end Within_Aspect;
-
-      begin
-         if In_Spec_Expression
-           and then Comes_From_Source (N)
-           and then not (Is_Entity_Name (P) and then Is_Frozen (Entity (P)))
-           and then Within_Aspect (N)
-         then
-            return;
-         end if;
-      end;
+      if In_Spec_Expression
+        and then Comes_From_Source (N)
+        and then not (Is_Entity_Name (P)
+                       and then
+                        (Is_Frozen (Entity (P))
+                          or else (Is_Type (Entity (P))
+                                    and then
+                                      Is_Generic_Actual_Type (Entity (P)))))
+      then
+         return;
+      end if;
 
       --  Acquire first two expressions (at the moment, no attributes take more
       --  than two expressions in any case).

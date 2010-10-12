@@ -834,6 +834,20 @@ package body Ch12 is
 
       Set_Sloc (Def_Node, Token_Ptr);
       T_Private;
+
+      if Token = Tok_Tagged then -- CODEFIX
+         Error_Msg_SC ("TAGGED must come before PRIVATE");
+         Scan; -- past TAGGED
+
+      elsif Token = Tok_Abstract then -- CODEFIX
+         Error_Msg_SC ("`ABSTRACT TAGGED` must come before PRIVATE");
+         Scan; -- past ABSTRACT
+
+         if Token = Tok_Tagged then
+            Scan; -- past TAGGED
+         end if;
+      end if;
+
       return Def_Node;
    end P_Formal_Private_Type_Definition;
 

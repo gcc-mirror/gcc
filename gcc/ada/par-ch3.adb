@@ -309,11 +309,11 @@ package body Ch3 is
 
    --  Error recovery: can raise Error_Resync
 
-   --  Note: The processing for full type declaration, incomplete type
-   --  declaration, private type declaration and type definition is
-   --  included in this function. The processing for concurrent type
-   --  declarations is NOT here, but rather in chapter 9 (i.e. this
-   --  function handles only declarations starting with TYPE).
+   --  The processing for full type declarations, incomplete type declarations,
+   --  private type declarations and type definitions is included in this
+   --  function. The processing for concurrent type declarations is NOT here,
+   --  but rather in chapter 9 (this function handles only declarations
+   --  starting with TYPE).
 
    function P_Type_Declaration return Node_Id is
       Abstract_Present : Boolean := False;
@@ -770,6 +770,22 @@ package body Ch3 is
             when Tok_Private =>
                Decl_Node := New_Node (N_Private_Type_Declaration, Type_Loc);
                Scan; -- past PRIVATE
+
+               --  Check error cases of private [abstract] tagged
+
+               if Token = Tok_Abstract then
+                  Error_Msg_SC ("`ABSTRACT TAGGED` must come before PRIVATE");
+                  Scan; -- past ABSTRACT
+
+                  if Token = Tok_Tagged then
+                     Scan; -- past TAGGED
+                  end if;
+
+               elsif Token = Tok_Tagged then
+                  Error_Msg_SC ("TAGGED must come before PRIVATE");
+                  Scan; -- past TAGGED
+               end if;
+
                exit;
 
             --  Ada 2005 (AI-345): Protected, synchronized or task interface

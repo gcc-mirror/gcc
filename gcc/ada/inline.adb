@@ -626,19 +626,19 @@ package body Inline is
       Pack      : Entity_Id;
       S         : Succ_Index;
 
-      function Is_Ancestor
+      function Is_Ancestor_Of_Main
         (U_Name : Entity_Id;
          Nam    : Node_Id) return Boolean;
       --  Determine whether the unit whose body is loaded is an ancestor of
-      --  a unit mentioned in a with_clause of that body. The body is not
+      --  the main unit, and has a with_clause on it. The body is not
       --  analyzed yet, so the check is purely lexical: the name of the with
       --  clause is a selected component, and names of ancestors must match.
 
-      -----------------
-      -- Is_Ancestor --
-      -----------------
+      -------------------------
+      -- Is_Ancestor_Of_Main --
+      -------------------------
 
-      function Is_Ancestor
+      function Is_Ancestor_Of_Main
         (U_Name : Entity_Id;
          Nam    : Node_Id) return Boolean
       is
@@ -649,6 +649,12 @@ package body Inline is
             return False;
 
          else
+            if Chars (Selector_Name (Nam)) /=
+               Chars (Cunit_Entity (Main_Unit))
+            then
+               return False;
+            end if;
+
             Pref := Prefix (Nam);
             if Nkind (Pref) = N_Identifier then
 
@@ -666,10 +672,10 @@ package body Inline is
             else
                --  A is an ancestor of A.B.C if it is an ancestor of A.B
 
-               return Is_Ancestor (U_Name, Pref);
+               return Is_Ancestor_Of_Main (U_Name, Pref);
             end if;
          end if;
-      end Is_Ancestor;
+      end Is_Ancestor_Of_Main;
 
    --  Start of processing for  Analyze_Inlined_Bodies
 
@@ -751,7 +757,8 @@ package body Inline is
                            Item := First (Context_Items (Body_Unit));
                            while Present (Item) loop
                               if Nkind (Item) = N_With_Clause
-                                and then Is_Ancestor (U_Id, Name (Item))
+                                and then
+                                  Is_Ancestor_Of_Main (U_Id, Name (Item))
                               then
                                  Set_Is_Inlined (U_Id, False);
                                  exit;
