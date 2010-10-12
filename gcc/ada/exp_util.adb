@@ -4839,21 +4839,6 @@ package body Exp_Util is
          return;
       end if;
 
-      --  No action needed for renamings of class-wide expressions because for
-      --  class-wide types Remove_Side_Effects uses a renaming to capture the
-      --  expression (and hence we would generate a never-ending loop in the
-      --  front end).
-
-      --  For now, disable this test. class-wide renamings can have side
-      --  effects, and this test causes such side effects to be duplicated.
-      --  To be sorted out later ???
-
-      if False and then Is_Class_Wide_Type (Exp_Type)
-        and then Nkind (Parent (Exp)) = N_Object_Renaming_Declaration
-      then
-         return;
-      end if;
-
       --  All this must not have any checks
 
       Scope_Suppress := (others => True);

@@ -190,6 +190,10 @@ package Sem_Ch6 is
    --  conformant, and Prim is defined in the scope of Tagged_Type. Special
    --  management is done for functions returning interfaces.
 
+   procedure List_Inherited_Pre_Post_Aspects (E : Entity_Id);
+   --  E is the entity for a subprogram or generic subprogram spec. This call
+   --  lists all inherited Pre/Post aspects if List_Inherited_Pre_Post is True.
+
    function Mode_Conformant (New_Id, Old_Id : Entity_Id) return Boolean;
    --  Determine whether two callable entities (subprograms, entries,
    --  literals) are mode conformant (RM 6.3.1(15))

@@ -1689,6 +1689,14 @@ package Sinfo is
    --    source type entity for the unchecked conversion instantiation
    --    which gigi must do size validation for.
 
+   --  Split_PPC (Flag17)
+   --     When a Pre or Postaspect specification is processed, it is broken
+   --     into AND THEN sections. The left most section has Split_PPC set to
+   --     False, indicating that it is the original specification (e.g. for
+   --     posting errors). For other sections, Split_PPC is set to True.
+   --     This flag is set in both the N_Aspect_Specification node itself,
+   --     and in the pragma which is generated from this node.
+
    --  Static_Processing_OK (Flag4-Sem)
    --    Present in N_Aggregate nodes. When the Compile_Time_Known_Aggregate
    --    flag is set, the full value of the aggregate can be determined at
@@ -2037,7 +2045,8 @@ package Sinfo is
       --  Is_Delayed_Aspect (Flag14-Sem)
       --  Import_Interface_Present (Flag16-Sem)
       --  Aspect_Cancel (Flag11-Sem)
-      --  Class_Present (Flag6) (set False if not from Aspect with 'Class)
+      --  Split_PPC (Flag17) set if corresponding aspect had Split_PPC set
+      --  Class_Present (Flag6) set if from Aspect with 'Class
 
       --  Note: we should have a section on what pragmas are passed on to
       --  the back end to be processed. This section should note that pragma
@@ -6442,8 +6451,14 @@ package Sinfo is
       --  Entity (Node4-Sem) entity to which the aspect applies
       --  Class_Present (Flag6) Set if 'Class present
       --  Next_Rep_Item (Node5-Sem)
+      --  Split_PPC (Flag17) Set if split pre/post attribute
 
       --  Note: Aspect_Specification is an Ada 2012 feature
+
+      --  Note: When a Pre or Post aspect specification is processed, it is
+      --  broken into AND THEN sections. The left most section has Split_PPC
+      --  set to False, indicating that it is the original specification (e.g.
+      --  for posting errors). For the other sections, Split_PPC is set True.
 
       ---------------------------------------------
       -- 13.4  Enumeration representation clause --
@@ -8709,6 +8724,9 @@ package Sinfo is
    function Specification
      (N : Node_Id) return Node_Id;    -- Node1
 
+   function Split_PPC
+     (N : Node_Id) return Boolean;    -- Flag17
+
    function Statements
      (N : Node_Id) return List_Id;    -- List3
 
@@ -9653,6 +9671,9 @@ package Sinfo is
 
    procedure Set_Specification
      (N : Node_Id; Val : Node_Id);            -- Node1
+
+   procedure Set_Split_PPC
+     (N : Node_Id; Val : Boolean);            -- Flag17
 
    procedure Set_Statements
      (N : Node_Id; Val : List_Id);            -- List3
@@ -11744,6 +11765,7 @@ package Sinfo is
    pragma Inline (Shift_Count_OK);
    pragma Inline (Source_Type);
    pragma Inline (Specification);
+   pragma Inline (Split_PPC);
    pragma Inline (Statements);
    pragma Inline (Static_Processing_OK);
    pragma Inline (Storage_Pool);
@@ -12055,6 +12077,7 @@ package Sinfo is
    pragma Inline (Set_Shift_Count_OK);
    pragma Inline (Set_Source_Type);
    pragma Inline (Set_Specification);
+   pragma Inline (Set_Split_PPC);
    pragma Inline (Set_Statements);
    pragma Inline (Set_Static_Processing_OK);
    pragma Inline (Set_Storage_Pool);

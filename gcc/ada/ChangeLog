@@ -1,3 +1,45 @@
+2010-10-12  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Clarify that 'Old can be used in preconditions and
+	postcondition pragmas.
+
+2010-10-12  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads, erroutc.adb: The # insertion now handles from in place of
+	at.
+	* exp_prag.adb (Expand_Pragma_Check): Suppress generated default
+	message if new switch Exception_Locations_Suppressed is set.
+	(Expand_Pragma_Check): Revised wording for default message for case
+	of precondition or postcondition.
+	* namet.ads, namet.adb (Build_Location_String): New procedure.
+	* opt.ads (List_Inherited_Pre_Post): New flag.
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration): Add call to
+	list inherited pre/post aspects.
+	* sem_ch13.adb (Analyze_Aspect_Specification): Improve generation of
+	messages for precondition/postcondition cases.
+	* sem_ch6.adb (Process_PPCs): General cleanup, and list inherited PPC's
+	if flag List_Inherited_Pre_Post is set True.
+	(Process_PPCs): Add initial handling for inherited preconditions
+	(List_Inherited_Pre_Post_Aspects): New procedure
+	* sem_ch6.ads (List_Inherited_Pre_Post_Aspects): New procedure
+	* sem_disp.adb (Inherited_Subprograms): New function
+	* sem_disp.ads (Inherited_Subprograms): New function
+	* sem_prag.adb (Check_Duplicate_Pragma): Clean up handling of
+	pre/postcondition.
+	(Check_Precondition_Postcondition): Check for inherited aspects
+	* sem_warn.adb: Process -gnatw.l/w.L setting List_Inherited_Pre_Post
+	* sinfo.ads, sinfo.adb (Split_PPC): New flag.
+	* sinput.ads, sinput.adb (Build_Location_String): New function.
+	* usage.adb: Add line for -gnatw.l/-gnatw.L
+
+2010-10-12  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): Remove wrong code.
+
+2010-10-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* xref_lib.adb: Add handling of j/J letters.
+
 2010-10-12  Pascal Obry  <obry@adacore.com>
 
 	* adaint.c (__gnat_number_of_cpus): Add implementation for Windows.

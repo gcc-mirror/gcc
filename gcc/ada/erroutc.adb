@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -717,11 +717,31 @@ package body Erroutc is
       Sindex_Loc  : Source_File_Index;
       Sindex_Flag : Source_File_Index;
 
+      procedure Set_At;
+      --  Outputs "at " unless last characters in buffer are " from ". Certain
+      --  messages read better with from than at.
+
+      ------------
+      -- Set_At --
+      ------------
+
+      procedure Set_At is
+      begin
+         if Msglen < 6
+           or else Msg_Buffer (Msglen - 5 .. Msglen) /= " from "
+         then
+            Set_Msg_Str ("at ");
+         end if;
+      end Set_At;
+
+   --  Start of processing for Set_Msg_Insertion_Line_Number
+
    begin
       Set_Msg_Blank;
 
       if Loc = No_Location then
-         Set_Msg_Str ("at unknown location");
+         Set_At;
+         Set_Msg_Str ("unknown location");
 
       elsif Loc = System_Location then
          Set_Msg_Str ("in package System");
@@ -743,7 +763,7 @@ package body Erroutc is
          Sindex_Flag := Get_Source_File_Index (Flag);
 
          if Full_File_Name (Sindex_Loc) /= Full_File_Name (Sindex_Flag) then
-            Set_Msg_Str ("at ");
+            Set_At;
             Get_Name_String
               (Reference_Name (Get_Source_File_Index (Loc)));
             Set_Msg_Name_Buffer;
@@ -752,7 +772,8 @@ package body Erroutc is
          --  If in current file, add text "at line "
 
          else
-            Set_Msg_Str ("at line ");
+            Set_At;
+            Set_Msg_Str ("line ");
          end if;
 
          --  Output line number for reference

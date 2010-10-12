@@ -238,6 +238,13 @@ package body Sinput is
       return;
    end Build_Location_String;
 
+   function Build_Location_String (Loc : Source_Ptr) return String is
+   begin
+      Name_Len := 0;
+      Build_Location_String (Loc);
+      return Name_Buffer (1 .. Name_Len);
+   end Build_Location_String;
+
    -----------------------
    -- Get_Column_Number --
    -----------------------

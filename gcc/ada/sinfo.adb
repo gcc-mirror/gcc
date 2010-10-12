@@ -2745,6 +2745,15 @@ package body Sinfo is
       return Node1 (N);
    end Specification;
 
+   function Split_PPC
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification
+        or else NT (N).Nkind = N_Pragma);
+      return Flag17 (N);
+   end Split_PPC;
+
    function Statements
       (N : Node_Id) return List_Id is
    begin
@@ -5705,6 +5714,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Subprogram_Renaming_Declaration);
       Set_Node1_With_Parent (N, Val);
    end Set_Specification;
+
+   procedure Set_Split_PPC
+      (N : Node_Id; Val : Boolean) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag17 (N, Val);
+   end Set_Split_PPC;
 
    procedure Set_Statements
       (N : Node_Id; Val : List_Id) is

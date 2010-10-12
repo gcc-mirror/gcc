@@ -2766,7 +2766,7 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      Designator :=  Analyze_Subprogram_Specification (Specification (N));
+      Designator := Analyze_Subprogram_Specification (Specification (N));
       Generate_Definition (Designator);
 
       if Debug_Flag_C then
@@ -2916,6 +2916,7 @@ package body Sem_Ch6 is
          Write_Eol;
       end if;
 
+      List_Inherited_Pre_Post_Aspects (Designator);
       Analyze_Aspect_Specifications (N, Designator, Aspect_Specifications (N));
    end Analyze_Subprogram_Declaration;
 
@@ -6937,6 +6938,43 @@ package body Sem_Ch6 is
       end if;
    end Is_Non_Overriding_Operation;
 
+   -------------------------------------
+   -- List_Inherited_Pre_Post_Aspects --
+   -------------------------------------
+
+   procedure List_Inherited_Pre_Post_Aspects (E : Entity_Id) is
+   begin
+      if Opt.List_Inherited_Pre_Post
+        and then (Is_Subprogram (E) or else Is_Generic_Subprogram (E))
+      then
+         declare
+            Inherited : constant Subprogram_List :=
+                          Inherited_Subprograms (E);
+            P         : Node_Id;
+
+         begin
+            for J in Inherited'Range loop
+               P := Spec_PPC_List (Inherited (J));
+               while Present (P) loop
+                  Error_Msg_Sloc := Sloc (P);
+
+                  if Class_Present (P) and then not Split_PPC (P) then
+                     if Pragma_Name (P) = Name_Precondition then
+                        Error_Msg_N
+                          ("?info: & inherits `Pre''Class` aspect from #", E);
+                     else
+                        Error_Msg_N
+                          ("?info: & inherits `Post''Class` aspect from #", E);
+                     end if;
+                  end if;
+
+                  P := Next_Pragma (P);
+               end loop;
+            end loop;
+         end;
+      end if;
+   end List_Inherited_Pre_Post_Aspects;
+
    ------------------------------
    -- Make_Inequality_Operator --
    ------------------------------
@@ -8586,10 +8624,24 @@ package body Sem_Ch6 is
       Body_Id : Entity_Id)
    is
       Loc   : constant Source_Ptr := Sloc (N);
-      Plist : List_Id             := No_List;
       Prag  : Node_Id;
       Subp  : Entity_Id;
       Parms : List_Id;
+
+      Precond : Node_Id := Empty;
+      --  Set non-Empty if we prepend precondition to the declarations. This
+      --  is used to hook up inherited preconditions (adding the condition
+      --  expression with OR ELSE, and adding the message).
+
+      Inherited_Precond : Node_Id;
+      --  Precondition inherited from parent subprogram
+
+      Inherited : constant Subprogram_List :=
+                    Inherited_Subprograms (Spec_Id);
+      --  List of subprograms inherited by this subprogram, null if no Spec_Id
+
+      Plist : List_Id := No_List;
+      --  List of generated postconditions
 
       function Grab_PPC (Pspec : Entity_Id := Empty) return Node_Id;
       --  Prag contains an analyzed precondition or postcondition pragma. This
@@ -8665,19 +8717,26 @@ package body Sem_Ch6 is
            Make_Identifier (Sloc (Prag),
              Chars => Name_Check));
 
-         --  If this is inherited case then the current message starts with
-         --  "failed p" and we change this to "failed inherited p".
+         --  If this is inherited case and the current message starts with
+         --  "failed p", we change it to "failed inherited p...".
 
          if Present (Pspec) then
-            String_To_Name_Buffer
-              (Strval (Expression (Last (Pragma_Argument_Associations (CP)))));
-            pragma Assert (Name_Buffer (1 .. 8) = "failed p");
-            Name_Len := Name_Len + 10;
-            Name_Buffer (17 .. Name_Len) := Name_Buffer (7 .. Name_Len - 10);
-            Name_Buffer (7 .. 16) := " inherited";
-            Set_Strval
-              (Expression (Last (Pragma_Argument_Associations (CP))),
-               String_From_Name_Buffer);
+            declare
+               Msg : constant Node_Id :=
+                       Last (Pragma_Argument_Associations (CP));
+
+            begin
+               if Chars (Msg) = Name_Message then
+                  String_To_Name_Buffer (Strval (Expression (Msg)));
+
+                  if Name_Buffer (1 .. 8) = "failed p" then
+                     Insert_Str_In_Name_Buffer ("inherited ", 8);
+                     Set_Strval
+                       (Expression (Last (Pragma_Argument_Associations (CP))),
+                        String_From_Name_Buffer);
+                  end if;
+               end if;
+            end;
          end if;
 
          --  Return the check pragma
@@ -8688,12 +8747,6 @@ package body Sem_Ch6 is
    --  Start of processing for Process_PPCs
 
    begin
-      --  Nothing to do if we are not generating code
-
-      if Operating_Mode /= Generate_Code then
-         return;
-      end if;
-
       --  Grab preconditions from spec
 
       if Present (Spec_Id) then
@@ -8707,16 +8760,115 @@ package body Sem_Ch6 is
             if Pragma_Name (Prag) = Name_Precondition
               and then Pragma_Enabled (Prag)
             then
-               --  Add pragma Check at the start of the declarations of N.
-               --  Note that this processing reverses the order of the list,
-               --  which is what we want since new entries were chained to
-               --  the head of the list.
+               --  For Pre (or Precondition pragma), we simply prepend the
+               --  pragma to the list of declarations right away so that it
+               --  will be executed at the start of the procedure. Note that
+               --  this processing reverses the order of the list, which is
+               --  what we want since new entries were chained to the head of
+               --  the list. There can be more then one precondition when we
+               --  use pragma Precondition
 
-               Prepend (Grab_PPC, Declarations (N));
+               if not Class_Present (Prag) then
+                  Prepend (Grab_PPC, Declarations (N));
+
+               --  For Pre'Class there can only be one pragma, and we save
+               --  it in Precond for now. We will add inherited Pre'Class
+               --  stuff before inserting this pragma in the declarations.
+               else
+                  Precond := Grab_PPC;
+               end if;
             end if;
 
             Prag := Next_Pragma (Prag);
          end loop;
+
+         --  Now deal with inherited preconditions
+
+         for J in Inherited'Range loop
+            Prag := Spec_PPC_List (Inherited (J));
+
+            while Present (Prag) loop
+               if Pragma_Name (Prag) = Name_Precondition
+                 and then Class_Present (Prag)
+               then
+                  Inherited_Precond := Grab_PPC;
+
+                  --  No precondition so far, so establish this as the first
+
+                  if No (Precond) then
+                     Precond := Inherited_Precond;
+
+                  --  Here we already have a precondition, add inherited one
+
+                  else
+                     --  Add new precondition to old one using OR ELSE
+
+                     declare
+                        New_Expr : constant Node_Id :=
+                                     Get_Pragma_Arg
+                                       (Next
+                                         (First
+                                           (Pragma_Argument_Associations
+                                             (Inherited_Precond))));
+                        Old_Expr : constant Node_Id :=
+                                     Get_Pragma_Arg
+                                       (Next
+                                         (First
+                                           (Pragma_Argument_Associations
+                                             (Precond))));
+
+                     begin
+                        if Paren_Count (Old_Expr) = 0 then
+                           Set_Paren_Count (Old_Expr, 1);
+                        end if;
+
+                        if Paren_Count (New_Expr) = 0 then
+                           Set_Paren_Count (New_Expr, 1);
+                        end if;
+
+                        Rewrite (Old_Expr,
+                          Make_Or_Else (Sloc (Old_Expr),
+                            Left_Opnd  => Relocate_Node (Old_Expr),
+                            Right_Opnd => New_Expr));
+                     end;
+
+                     --  Add new message in the form:
+
+                     --     failed precondition from bla
+                     --       also failed inherited precondition from bla
+                     --       ...
+
+                     declare
+                        New_Msg : constant Node_Id :=
+                                    Get_Pragma_Arg
+                                      (Last
+                                        (Pragma_Argument_Associations
+                                          (Inherited_Precond)));
+                        Old_Msg : constant Node_Id :=
+                                    Get_Pragma_Arg
+                                      (Last
+                                        (Pragma_Argument_Associations
+                                          (Precond)));
+                     begin
+                        Start_String (Strval (Old_Msg));
+                        Store_String_Chars (ASCII.LF & "  also ");
+                        Store_String_Chars (Strval (New_Msg));
+                        Set_Strval (Old_Msg, End_String);
+                     end;
+                  end if;
+               end if;
+
+               Prag := Next_Pragma (Prag);
+            end loop;
+         end loop;
+
+         --  If we have built a precondition for Pre'Class (including any
+         --  Pre'Class aspects inherited from parent subprograms), then we
+         --  insert this composite precondition at this stage.
+
+         if Present (Precond) then
+            Prepend (Precond, Declarations (N));
+         end if;
       end if;
 
       --  Build postconditions procedure if needed and prepend the following
@@ -8779,8 +8931,6 @@ package body Sem_Ch6 is
 
       if Present (Spec_Id) then
          declare
-            Parent_Op : Node_Id;
-
             procedure Process_Post_Conditions
               (Spec  : Node_Id;
                Class : Boolean);
@@ -8836,17 +8986,11 @@ package body Sem_Ch6 is
                Process_Post_Conditions (Spec_Id, Class => False);
             end if;
 
-            --  Process directly inherited specifications
+            --  Process inherited postconditions
 
-            Parent_Op := Spec_Id;
-            loop
-               Parent_Op := Overridden_Operation (Parent_Op);
-               exit when No (Parent_Op);
-
-               if Ekind (Parent_Op) /= E_Enumeration_Literal
-                 and then Present (Spec_PPC_List (Parent_Op))
-               then
-                  Process_Post_Conditions (Parent_Op, Class => True);
+            for J in Inherited'Range loop
+               if Present (Spec_PPC_List (Inherited (J))) then
+                  Process_Post_Conditions (Inherited (J), Class => True);
                end if;
             end loop;
          end;

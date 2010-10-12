@@ -438,6 +438,10 @@ begin
                                                   "elaboration pragma");
    Write_Line ("        L*   turn off warnings for missing " &
                                                   "elaboration pragma");
+   Write_Line ("        .l*  turn on info messages for inherited pre/" &
+                                                  "postconditions");
+   Write_Line ("        .L   turn off info messages for inherited pre/" &
+                                                  "postconditions");
    Write_Line ("        m+   turn on warnings for variable assigned " &
                                                   "but not read");
    Write_Line ("        M*   turn off warnings for variable assigned " &

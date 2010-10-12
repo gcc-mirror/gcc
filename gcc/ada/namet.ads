@@ -350,6 +350,11 @@ package Namet is
    --  Add characters of string S to the end of the string currently stored
    --  in the Name_Buffer, incrementing Name_Len by the length of the string.
 
+   procedure Insert_Str_In_Name_Buffer (S : String; Index : Positive);
+   --  Inserts given string in name buffer, starting at Index. Any existing
+   --  characters at or past this location get moved beyond the inserted string
+   --  and Name_Len is incremented by the length of the string.
+
    procedure Set_Character_Literal_Name (C : Char_Code);
    --  This procedure sets the proper encoded name for the character literal
    --  for the given character code. On return Name_Buffer and Name_Len are

@@ -207,6 +207,10 @@ package Errout is
    --      The idea is that for any use of -gnatj, it will still be the case
    --      that a location reference appears only at the end of a line.
 
+   --      Note: the output of the string "at " is suppressed if the string
+   --      " from" or " from " immediately precedes the insertion character #.
+   --      Certain messages read better with from than at.
+
    --    Insertion character } (Right brace: insert type reference)
    --      The character } is replaced by a string describing the type
    --      referenced by the entity whose Id is stored in Error_Msg_Node_1.

@@ -58,6 +58,7 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
+with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
 with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
@@ -90,10 +91,9 @@ package body Sem_Prag is
    -- Common Handling of Import-Export Pragmas --
    ----------------------------------------------
 
-   --  In the following section, a number of Import_xxx and Export_xxx
-   --  pragmas are defined by GNAT. These are compatible with the DEC
-   --  pragmas of the same name, and all have the following common
-   --  form and processing:
+   --  In the following section, a number of Import_xxx and Export_xxx pragmas
+   --  are defined by GNAT. These are compatible with the DEC pragmas of the
+   --  same name, and all have the following common form and processing:
 
    --  pragma Export_xxx
    --        [Internal                 =>] LOCAL_NAME
@@ -1247,7 +1247,7 @@ package body Sem_Prag is
             if Nkind (P) = N_Aspect_Specification
               or else From_Aspect_Specification (P)
             then
-               Error_Msg_NE ("aspect% for & previously specified#", N, E);
+               Error_Msg_NE ("aspect% for & previously given#", N, E);
             else
                Error_Msg_NE ("pragma% for & duplicates pragma#", N, E);
             end if;
@@ -1529,33 +1529,58 @@ package body Sem_Prag is
 
             S := Defining_Unit_Name (Specification (PO));
 
-            --  Make sure we do not have the case of a pre/postcondition
-            --  pragma when the corresponding aspect is present. This is
-            --  never allowed. We allow either pragmas or aspects, not both.
+            --  Make sure we do not have the case of a precondition pragma when
+            --  the Pre'Class aspect is present.
 
             --  We do this by looking at pragmas already chained to the entity
             --  since the aspect derived pragma will be put on this list first.
 
-            if not From_Aspect_Specification (N) then
-               P := Spec_PPC_List (S);
-               while Present (P) loop
-                  if Pragma_Name (P) = Pragma_Name (N)
-                    and then From_Aspect_Specification (P)
-                  then
-                     Error_Msg_Sloc := Sloc (P);
-
-                     if Prag_Id = Pragma_Precondition then
-                        Error_Msg_Name_2 := Name_Pre;
-                     else
-                        Error_Msg_Name_2 := Name_Post;
+            if Pragma_Name (N) = Name_Precondition then
+               if not From_Aspect_Specification (N) then
+                  P := Spec_PPC_List (S);
+                  while Present (P) loop
+                     if Pragma_Name (P) = Name_Precondition
+                       and then From_Aspect_Specification (P)
+                       and then Class_Present (P)
+                     then
+                        Error_Msg_Sloc := Sloc (P);
+                        Error_Pragma
+                          ("pragma% not allowed, `Pre''Class` aspect given#");
                      end if;
 
-                     Error_Pragma
-                       ("pragma% not allowed, % aspect given#");
-                  end if;
+                     P := Next_Pragma (P);
+                  end loop;
+               end if;
+            end if;
 
-                  P := Next_Pragma (P);
-               end loop;
+            --  Similarly check for Pre with inherited Pre'Class. Note that
+            --  we cover the aspect case as well here.
+
+            if Pragma_Name (N) = Name_Precondition
+              and then not Class_Present (N)
+            then
+               declare
+                  Inherited : constant Subprogram_List :=
+                                Inherited_Subprograms (S);
+                  P         : Node_Id;
+
+               begin
+                  for J in Inherited'Range loop
+                     P := Spec_PPC_List (Inherited (J));
+                     while Present (P) loop
+                        if Pragma_Name (P) = Name_Precondition
+                          and then Class_Present (P)
+                        then
+                           Error_Msg_Sloc := Sloc (P);
+                           Error_Pragma
+                             ("pragma% not allowed, `Pre''Class` "
+                              & "aspect inherited from#");
+                        end if;
+
+                        P := Next_Pragma (P);
+                     end loop;
+                  end loop;
+               end;
             end if;
 
             --  Analyze the pragma unless it appears within a package spec,
@@ -1645,9 +1670,7 @@ package body Sem_Prag is
             if Operating_Mode /= Generate_Code
               or else Inside_A_Generic
             then
-
-               --  Analyze expression in pragma, for correctness
-               --  and for ASIS use.
+               --  Analyze pragma expression for correctness and for ASIS use
 
                Preanalyze_Spec_Expression
                  (Get_Pragma_Arg (Arg1), Standard_Boolean);
@@ -3639,7 +3662,7 @@ package body Sem_Prag is
                               Set_Mechanism_Value
                                 (Formal, Expression (Massoc));
 
-                              --  Set entity on identifier for ASIS
+                              --  Set entity on identifier (needed by ASIS)
 
                               Set_Entity (Choice, Formal);
 
@@ -3814,15 +3837,15 @@ package body Sem_Prag is
          elsif Is_Subprogram (Def_Id)
            or else Is_Generic_Subprogram (Def_Id)
          then
-            --  If the name is overloaded, pragma applies to all of the
-            --  denoted entities in the same declarative part.
+            --  If the name is overloaded, pragma applies to all of the denoted
+            --  entities in the same declarative part.
 
             Hom_Id := Def_Id;
             while Present (Hom_Id) loop
                Def_Id := Get_Base_Subprogram (Hom_Id);
 
-               --  Ignore inherited subprograms because the pragma will
-               --  apply to the parent operation, which is the one called.
+               --  Ignore inherited subprograms because the pragma will apply
+               --  to the parent operation, which is the one called.
 
                if Is_Overloadable (Def_Id)
                  and then Present (Alias (Def_Id))

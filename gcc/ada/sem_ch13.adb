@@ -667,11 +667,13 @@ package body Sem_Ch13 is
             Loc  : constant Source_Ptr := Sloc (Aspect);
             Id   : constant Node_Id    := Identifier (Aspect);
             Expr : constant Node_Id    := Expression (Aspect);
-            Eloc :          Source_Ptr := Sloc (Expr);
             Nam  : constant Name_Id    := Chars (Id);
             A_Id : constant Aspect_Id  := Get_Aspect_Id (Nam);
             Anod : Node_Id;
             T    : Entity_Id;
+
+            Eloc : Source_Ptr := Sloc (Expr);
+            --  Source location of expression, modified when we split PPC's
 
          begin
             Set_Entity (Aspect, E);
@@ -688,8 +690,41 @@ package body Sem_Ch13 is
                then
                   Error_Msg_Name_1 := Nam;
                   Error_Msg_Sloc := Sloc (Anod);
-                  Error_Msg_NE
-                    ("aspect% for & ignored, already given at#", Id, E);
+
+                  --  Case of same aspect specified twice
+
+                  if Class_Present (Anod) = Class_Present (Aspect) then
+                     if not Class_Present (Anod) then
+                        Error_Msg_NE
+                          ("aspect% for & previously given#",
+                           Id, E);
+                     else
+                        Error_Msg_NE
+                          ("aspect `%''Class` for & previously given#",
+                           Id, E);
+                     end if;
+
+                  --  Case of Pre and Pre'Class both specified
+
+                  elsif Nam = Name_Pre then
+                     if Class_Present (Aspect) then
+                        Error_Msg_NE
+                          ("aspect `Pre''Class` for & is not allowed here",
+                           Id, E);
+                        Error_Msg_NE
+                          ("\since aspect `Pre` previously given#",
+                           Id, E);
+
+                     else
+                        Error_Msg_NE
+                          ("aspect `Pre` for & is not allowed here",
+                           Id, E);
+                        Error_Msg_NE
+                          ("\since aspect `Pre''Class` previously given#",
+                           Id, E);
+                     end if;
+                  end if;
+
                   goto Continue;
                end if;
 
@@ -872,7 +907,6 @@ package body Sem_Ch13 is
 
                when Aspect_Pre | Aspect_Post => declare
                   Pname : Name_Id;
-                  Msg   : Node_Id;
 
                begin
                   if A_Id = Aspect_Pre then
@@ -886,26 +920,25 @@ package body Sem_Ch13 is
                   --  clauses. Since we allow multiple pragmas, there is no
                   --  problem in allowing multiple Pre/Post aspects internally.
 
-                  while Nkind (Expr) = N_And_Then loop
-                     Insert_After (Aspect,
-                       Make_Aspect_Specification (Sloc (Right_Opnd (Expr)),
-                         Identifier    => Identifier (Aspect),
-                         Expression    => Relocate_Node (Right_Opnd (Expr)),
-                         Class_Present => Class_Present (Aspect)));
-                     Rewrite (Expr, Relocate_Node (Left_Opnd (Expr)));
-                     Eloc := Sloc (Expr);
-                  end loop;
+                  --  We do not do this for Pre'Class, since we have to put
+                  --  these conditions together in a complex OR expression
 
-                  --  Proceed with handling what's left after this split up
+                  if Pname = Name_Postcondition
+                       or else not Class_Present (Aspect)
+                  then
+                     while Nkind (Expr) = N_And_Then loop
+                        Insert_After (Aspect,
+                          Make_Aspect_Specification (Sloc (Right_Opnd (Expr)),
+                            Identifier    => Identifier (Aspect),
+                            Expression    => Relocate_Node (Right_Opnd (Expr)),
+                            Class_Present => Class_Present (Aspect),
+                            Split_PPC     => True));
+                        Rewrite (Expr, Relocate_Node (Left_Opnd (Expr)));
+                        Eloc := Sloc (Expr);
+                     end loop;
+                  end if;
 
-                  Msg :=
-                    Make_String_Literal (Eloc,
-                      Strval => "failed "
-                                  & Get_Name_String (Pname)
-                                  & " from line "
-                                  & Get_Logical_Line_Number_Img (Eloc));
-
-                  --  Construct the pragma
+                  --  Build the precondition/postcondition pragma
 
                   Aitem :=
                     Make_Pragma (Loc,
@@ -913,13 +946,25 @@ package body Sem_Ch13 is
                         Make_Identifier (Sloc (Id),
                           Chars => Pname),
                       Class_Present                => Class_Present (Aspect),
+                      Split_PPC                    => Split_PPC (Aspect),
                       Pragma_Argument_Associations => New_List (
                         Make_Pragma_Argument_Association (Eloc,
                           Chars      => Name_Check,
-                          Expression => Relocate_Node (Expr)),
-                        Make_Pragma_Argument_Association (Eloc,
-                          Chars      => Name_Message,
-                          Expression => Msg)));
+                          Expression => Relocate_Node (Expr))));
+
+                  --  Add message unless exception messages are suppressed
+
+                  if not Opt.Exception_Locations_Suppressed then
+                     Append_To (Pragma_Argument_Associations (Aitem),
+                       Make_Pragma_Argument_Association (Eloc,
+                         Chars     => Name_Message,
+                         Expression =>
+                           Make_String_Literal (Eloc,
+                             Strval => "failed "
+                                       & Get_Name_String (Pname)
+                                       & " from "
+                                       & Build_Location_String (Eloc))));
+                  end if;
 
                   Set_From_Aspect_Specification (Aitem, True);
 
@@ -1213,7 +1258,7 @@ package body Sem_Ch13 is
             if Entity (A) = U_Ent then
                Error_Msg_Name_1 := Chars (N);
                Error_Msg_Sloc := Sloc (A);
-               Error_Msg_NE ("aspect% for & previously specified#", N, U_Ent);
+               Error_Msg_NE ("aspect% for & previously given#", N, U_Ent);
                return True;
             end if;
          end if;
