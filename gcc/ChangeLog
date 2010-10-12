@@ -1,3 +1,9 @@
+2010-10-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/45958
+	* exec-tool.in: Support '-plugin' as the second option to the
+	linker.
+
 2010-10-12  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/45962
