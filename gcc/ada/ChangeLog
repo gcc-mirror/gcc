@@ -1,3 +1,14 @@
+2010-10-12  Thomas Quinot  <quinot@adacore.com>
+
+	* rtsfind.ads, exp_dist.adb, exp_dist.ads (Build_General_Calling_Stubs,
+	PolyORB case): Request is now a controlled type: we can declare the
+	request on the stack, and we do not need explicit cleanup actions
+	anymore.
+
+2010-10-12  Bob Duff  <duff@adacore.com>
+
+	* s-rident.ads (Profile_Info): This variable is now constant.
+
 2010-10-12  Emmanuel Briot  <briot@adacore.com>
 
 	* g-comlin.adb, g-comlin.ads (Define_Switch): Put back (unused)
