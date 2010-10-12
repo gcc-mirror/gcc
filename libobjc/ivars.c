@@ -60,6 +60,25 @@ class_getInstanceVariable (Class class_, const char *name)
   return NULL;
 }
 
+struct objc_ivar *
+class_getClassVariable (Class class_, const char *name)
+{
+  if (class_ == Nil)
+    return NULL;
+
+  /* Logically, since a class is an instance of its meta-class, and
+     since its class methods are the instance methods of the
+     meta-class, class variables should be instance variables of the
+     meta-class.  That is different from the normal use of having
+     'static' variables in the class implementation file, because
+     every class would have its own variables.
+
+     Anyway, it is all speculative at this stage, but if we get class
+     variables in Objective-C, it is conceivable that this
+     implementation should work.  */
+  return class_getInstanceVariable (class_->class_pointer, name);
+}
+
 void *
 object_getIndexedIvars (id object)
 {

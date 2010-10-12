@@ -23,10 +23,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "objc-private/common.h"
-#include "objc/objc-api.h"
-#include "objc-private/runtime.h"		/* the kitchen sink */
+#include "objc/runtime.h"
+#include "objc/thr.h"                   /* Required by objc-private/runtime.h.  */
+#include "objc-private/module-abi-8.h"  /* For CLS_ISCLASS and similar.  */
+#include "objc-private/runtime.h"	/* the kitchen sink */
 
-#include <string.h> /* For memcpy()  */
+#include <string.h>                     /* For memcpy()  */
 
 #if OBJC_WITH_GC
 # include <gc.h>

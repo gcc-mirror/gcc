@@ -1,5 +1,43 @@
 2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* class.c: Include objc/runtime.h and objc-private/module-abi-8.h
+	instead of objc/objc-api.h.
+	(objc_get_unknown_class_handler): Do not define.
+	(class_isMetaClass): New.
+	(class_getSuperclass): New.
+	(class_getVersion): New.
+	(class_setVersion): New.
+	(class_getInstanceSize): New.
+	* exceptions.c: Include objc/runtime.h instead of objc/objc-api.h.
+	(is_kind_of_exception_matcher): Use objc_getSuperclass instead of
+	objc_get_super_class.
+	(get_ttype_entry): Use objc_getRequiredClass instead of
+	objc_get_class.
+	* ivars.c (class_getClassVariable): New.
+	* objects.c: Include objc/runtime.h, objc/thr.h and
+	objc-private/module-abi-8.h instead of objc/objc-api.h
+	* objc/runtime.h (class_getClassVariable): New.
+	(class_isMetaClass): New.
+	(class_getSuperclass): New.
+	(class_getVersion): New.
+	(class_setVersion): New.
+	(class_getInstanceSize): New.
+	* objc-private/module-abi-8.h (HOST_BITS_PER_LONG): New (from
+	objc/objc-api.h)
+	(__CLS_INFO): Same.
+	(__CLS_ISINFO): Same.
+	(__CLS_SETINFO): Same.
+	(CLS_ISMETA): Same.
+	(CLS_ISCLASS): Same.
+	(CLS_ISRESOLV): Same.
+	(CLS_SETRESOLV): Same.
+	(CLS_ISINITIALIZED): Same.
+	(CLS_SETINITIALIZED): Same.
+	(CLS_GETNUMBER): Same.
+	(CLS_SETNUMBER): Same.
+
+2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* archive.c: Do not include objc/objc.h.
 	* class.c: Do not include objc/objc.h.
 	* encoding.c: Include objc/runtime.h, ctype.h and
