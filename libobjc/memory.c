@@ -42,8 +42,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define __USE_FIXED_PROTOTYPES__
 #include <stdlib.h>
 
-#include "objc/objc.h"
-#include "objc/objc-api.h"
+#include "objc/runtime.h"
 
 #if OBJC_WITH_GC
 #include <gc.h>

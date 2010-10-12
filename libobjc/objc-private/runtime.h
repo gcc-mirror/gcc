@@ -34,7 +34,8 @@ The original list was:
 
 but can almost certainly be shrinked down.
 
-*/
+Note that you can use this file both with objc/objc-api.h and with
+objc/runtime.h.  */
 
 #ifndef __objc_private_runtime_INCLUDE_GNU
 #define __objc_private_runtime_INCLUDE_GNU

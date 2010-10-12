@@ -89,7 +89,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "objc-private/common.h"
 #include "objc-private/error.h"
-#include "objc/objc.h"
 #include "objc/objc-api.h"
 #include "objc/thr.h"
 #include "objc-private/runtime.h"            /* the kitchen sink */

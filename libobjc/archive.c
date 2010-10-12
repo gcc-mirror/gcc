@@ -27,7 +27,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/common.h"
 #include "objc-private/error.h"
 #include "tconfig.h"
-#include "objc/objc.h"
 #include "objc/objc-api.h"
 #include "objc/hash.h"
 #include "objc/objc-list.h" 

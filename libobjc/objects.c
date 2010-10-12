@@ -23,7 +23,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "objc-private/common.h"
-#include "objc/objc.h"
 #include "objc/objc-api.h"
 #include "objc-private/runtime.h"		/* the kitchen sink */
 

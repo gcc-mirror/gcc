@@ -48,6 +48,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* TODO: This file is incomplete.  */
 
 #include "objc.h"
+#include "objc-decls.h"
 
 /* An 'Ivar' represents an instance variable.  It holds information
    about the name, type and offset of the instance variable.  */
@@ -543,11 +544,38 @@ struct __objcFastEnumerationState
 */
 
 
+/** Implementation: the following functions are in memory.c.  */
+
+/* Traditional GNU Objective-C Runtime functions that are used for
+   memory allocation and disposal.  These functions are used in the
+   same way as you use malloc, realloc, calloc and free and make sure
+   that memory allocation works properly with the garbage
+   collector.
+
+   Compatibility Note: these functions are not available with the
+   Apple/NeXT runtime.  */
+
+objc_EXPORT void *objc_malloc(size_t size);
+
+/* FIXME: Shouldn't the following be called objc_malloc_atomic ?  The
+   GC function is GC_malloc_atomic() which makes sense.
+ */
+objc_EXPORT void *objc_atomic_malloc(size_t size);
+
+objc_EXPORT void *objc_realloc(void *mem, size_t size);
+
+objc_EXPORT void *objc_calloc(size_t nelem, size_t size);
+
+objc_EXPORT void objc_free(void *mem);
+
+
 /** Implementation: the following functions are in encoding.c.  */
 
 /* Traditional GNU Objective-C Runtime functions that are currently
    used to implement method forwarding.
-*/
+
+   Compatibility Note: these functions are not available with the
+   Apple/NeXT runtime.  */
 
 /* Return the size of a variable which has the specified 'type'
    encoding.  */
