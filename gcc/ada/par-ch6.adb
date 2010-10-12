@@ -84,10 +84,13 @@ package body Ch6 is
    --  subprogram renaming declaration or subprogram generic instantiation.
    --  It also handles the new Ada 2012 parameterized expression form
 
-   --  SUBPROGRAM_DECLARATION ::= SUBPROGRAM_SPECIFICATION;
+   --  SUBPROGRAM_DECLARATION ::=
+   --    SUBPROGRAM_SPECIFICATION
+   --     [ASPECT_SPECIFICATIONS];
 
    --  ABSTRACT_SUBPROGRAM_DECLARATION ::=
-   --    SUBPROGRAM_SPECIFICATION is abstract;
+   --    SUBPROGRAM_SPECIFICATION is abstract
+   --      [ASPECT_SPECIFICATIONS];
 
    --  SUBPROGRAM_SPECIFICATION ::=
    --      procedure DEFINING_PROGRAM_UNIT_NAME PARAMETER_PROFILE
@@ -445,13 +448,19 @@ package body Ch6 is
          end if;
       end if;
 
+      --  Subprogram declaration ended by aspect specifications
+
+      if Aspect_Specifications_Present then
+         goto Subprogram_Declaration;
+
       --  Deal with case of semicolon ending a subprogram declaration
 
-      if Token = Tok_Semicolon then
+      elsif Token = Tok_Semicolon then
          if not Pf_Flags.Decl then
             T_Is;
          end if;
 
+         Save_Scan_State (Scan_State);
          Scan; -- past semicolon
 
          --  If semicolon is immediately followed by IS, then ignore the
@@ -476,6 +485,7 @@ package body Ch6 is
             goto Subprogram_Body;
 
          else
+            Restore_Scan_State (Scan_State);
             goto Subprogram_Declaration;
          end if;
 
@@ -544,7 +554,6 @@ package body Ch6 is
                   Set_Null_Present (Specification_Node);
                end if;
 
-               TF_Semicolon;
                goto Subprogram_Declaration;
 
             --  Check for IS NEW with Formal_Part present and handle nicely
@@ -571,6 +580,11 @@ package body Ch6 is
             else
                goto Subprogram_Body;
             end if;
+
+         --  Aspect specifications present
+
+         elsif Aspect_Specifications_Present then
+            goto Subprogram_Declaration;
 
          --  Here we have a missing IS or missing semicolon, we always guess
          --  a missing semicolon, since we are pretty good at fixing up a
@@ -770,6 +784,7 @@ package body Ch6 is
          Decl_Node :=
            New_Node (N_Subprogram_Declaration, Sloc (Specification_Node));
          Set_Specification (Decl_Node, Specification_Node);
+         P_Aspect_Specifications (Decl_Node);
 
          --  If this is a context in which a subprogram body is permitted,
          --  set active SIS entry in case (see section titled "Handling

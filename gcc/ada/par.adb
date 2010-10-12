@@ -754,10 +754,14 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    -------------
 
    package Ch7 is
-      function P_Package (Pf_Flags : Pf_Rec) return Node_Id;
+      function P_Package
+        (Pf_Flags : Pf_Rec;
+         Decl     : Node_Id := Empty) return Node_Id;
       --  Scans out any construct starting with the keyword PACKAGE. The
       --  parameter indicates which possible kinds of construct (body, spec,
-      --  instantiation etc.) are permissible in the current context.
+      --  instantiation etc.) are permissible in the current context. Decl
+      --  is set in the specification case to request that if there are aspect
+      --  specifications present, they be associated with this declaration.
    end Ch7;
 
    -------------
@@ -854,7 +858,9 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  the given declaration node, and the list of aspect specifications is
       --  constructed and associated with this declaration node using a call to
       --  Set_Aspect_Specifications. If no WITH keyword is present, then this
-      --  call has no effect other than scanning out the semicolon.
+      --  call has no effect other than scanning out the semicolon. If Decl is
+      --  Error on entry, any scanned aspect specifications are ignored and a
+      --  message is output saying aspect specifications not permitted here.
 
       function P_Code_Statement (Subtype_Mark : Node_Id) return Node_Id;
       --  Function to parse a code statement. The caller has scanned out
@@ -880,7 +886,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    --  Routines for handling end lines, including scope recovery
 
    package Endh is
-      function Check_End return Boolean;
+      function Check_End (Decl : Node_Id := Empty) return Boolean;
       --  Called when an end sequence is required. In the absence of an error
       --  situation, Token contains Tok_End on entry, but in a missing end
       --  case, this may not be the case. Pop_End_Context is used to determine
@@ -891,6 +897,10 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  Skip_And_Reject). Note that the END sequence includes a semicolon,
       --  except in the case of END RECORD, where a semicolon follows the END
       --  RECORD, but is not part of the record type definition itself.
+      --
+      --  If Decl is non-empty, then aspect specifications are permitted
+      --  following the end, and Decl is the declaration node with which
+      --  these aspect specifications are to be associated.
 
       procedure End_Skip;
       --  Skip past an end sequence. On entry Token contains Tok_End, and we
@@ -900,13 +910,19 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  position after the end sequence. We do not issue any additional
       --  error messages while carrying this out.
 
-      procedure End_Statements (Parent : Node_Id := Empty);
+      procedure End_Statements
+        (Parent : Node_Id := Empty;
+         Decl   : Node_Id := Empty);
       --  Called when an end is required or expected to terminate a sequence
       --  of statements. The caller has already made an appropriate entry in
       --  the Scope.Table to describe the expected form of the end. This can
       --  only be used in cases where the only appropriate terminator is end.
       --  If Parent is non-empty, then if a correct END line is encountered,
       --  the End_Label field of Parent is set appropriately.
+      --
+      --  If Decl is non-null, then it is a declaration node, and aspect
+      --  specifications are permitted after the end statement. These aspect
+      --  specifications, if present, are stored in this declaration node.
    end Endh;
 
    --------------

@@ -279,7 +279,7 @@ begin
    --  Line for -gnatn switch
 
    Write_Switch_Char ("n");
-   Write_Line ("Inlining of subprograms (apply pragma Inline across units)");
+   Write_Line ("Enable pragma Inline (both within and across units)");
 
    --  Line for -gnatN switch
 

@@ -1191,7 +1191,6 @@ package body Atree is
 
    begin
       if Source > Empty_Or_Error then
-
          New_Id := Allocate_Initialize_Node (Source, Has_Extension (Source));
 
          Nodes.Table (New_Id).Link := Empty_List_Or_Node;
@@ -1202,6 +1201,11 @@ package body Atree is
 
          Nodes.Table (New_Id).Rewrite_Ins := False;
          pragma Debug (New_Node_Debugging_Output (New_Id));
+
+         --  Always clear Has_Aspects, the caller must take care of copying
+         --  aspects if this is required for the particular situation.
+
+         Set_Has_Aspects (New_Id, False);
       end if;
 
       return New_Id;
@@ -1659,6 +1663,7 @@ package body Atree is
          --  of aspect specifications if aspect specifications are present.
 
          if Has_Aspects (Sav_Node) then
+            Set_Has_Aspects (Sav_Node, False);
             Set_Aspect_Specifications
               (Sav_Node, Aspect_Specifications (Old_Node));
          end if;

@@ -5371,16 +5371,37 @@ package body Sem_Attr is
       --       P;
       --    end;
 
-      --  which shouold print 64 rather than 32. The exclusion of non-source
+      --  which should print 64 rather than 32. The exclusion of non-source
       --  constructs from this test comes from some internal usage in packed
       --  arrays, which otherwise fails, could use more analysis perhaps???
 
-      if In_Spec_Expression
-        and then Comes_From_Source (N)
-        and then not (Is_Entity_Name (P) and then Is_Frozen (Entity (P)))
-      then
-         return;
-      end if;
+      declare
+         function Within_Aspect (N : Node_Id) return Boolean;
+         --  True if within aspect expression. Giant kludge, do this test only
+         --  within an aspect, since doing it more widely, even though clearly
+         --  correct, causes regressions notably in GA19-001 ???
+
+         function Within_Aspect (N : Node_Id) return Boolean
+         is
+         begin
+            if No (Parent (N)) then
+               return False;
+            elsif Nkind (N) = N_Aspect_Specification then
+               return True;
+            else
+               return Within_Aspect (Parent (N));
+            end if;
+         end Within_Aspect;
+
+      begin
+         if In_Spec_Expression
+           and then Comes_From_Source (N)
+           and then not (Is_Entity_Name (P) and then Is_Frozen (Entity (P)))
+           and then Within_Aspect (N)
+         then
+            return;
+         end if;
+      end;
 
       --  Acquire first two expressions (at the moment, no attributes take more
       --  than two expressions in any case).

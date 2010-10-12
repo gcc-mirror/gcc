@@ -1691,6 +1691,7 @@ package body Sem_Ch9 is
           Defining_Identifier => O_Name,
           Object_Definition   => Make_Identifier (Loc,  Chars (T)));
 
+      Move_Aspects (N, O_Decl);
       Rewrite (N, T_Decl);
       Insert_After (N, O_Decl);
       Mark_Rewrite_Insertion (O_Decl);
@@ -1749,13 +1750,15 @@ package body Sem_Ch9 is
       --  entity is the new object declaration. The single_task_declaration
       --  is not used further in semantics or code generation, but is scanned
       --  when generating debug information, and therefore needs the updated
-      --  Sloc information for the entity (see Sprint).
+      --  Sloc information for the entity (see Sprint). Aspect specifications
+      --  are moved from the single task node to the object declaration node.
 
       O_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => O_Name,
           Object_Definition   => Make_Identifier (Loc, Chars (T)));
 
+      Move_Aspects (N, O_Decl);
       Rewrite (N, T_Decl);
       Insert_After (N, O_Decl);
       Mark_Rewrite_Insertion (O_Decl);

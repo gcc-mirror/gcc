@@ -5768,6 +5768,14 @@ package body Sem_Ch12 is
 
       New_N := New_Copy (N);
 
+      --  Copy aspects if present
+
+      if Has_Aspects (N) then
+         Set_Has_Aspects (New_N, False);
+         Set_Aspect_Specifications
+           (New_N, Copy_Generic_List (Aspect_Specifications (N), Parent_Id));
+      end if;
+
       if Instantiating then
          Adjust_Instantiation_Sloc (New_N, S_Adjustment);
       end if;
