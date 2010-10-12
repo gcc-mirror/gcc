@@ -4697,8 +4697,8 @@ namespace std
 	friend class discrete_distribution<_IntType>;
 
 	param_type()
-	: _M_prob(), _M_cp()
-	{ _M_initialize(); }
+	: _M_prob(1, 1.0), _M_cp()
+	{ }
 
 	template<typename _InputIterator>
 	  param_type(_InputIterator __wbegin,
@@ -4713,6 +4713,10 @@ namespace std
 	template<typename _Func>
 	  param_type(size_t __nw, double __xmin, double __xmax,
 		     _Func __fw);
+
+	// See: http://cpp-next.com/archive/2010/10/implicit-move-must-go/
+	param_type(const param_type&) = default;
+	param_type& operator=(const param_type&) = default;
 
 	std::vector<double>
 	probabilities() const
@@ -4889,8 +4893,8 @@ namespace std
 	friend class piecewise_constant_distribution<_RealType>;
 
 	param_type()
-	: _M_int(), _M_den(), _M_cp()
-	{ _M_initialize(); }
+	: _M_int(2), _M_den(1, 1.0), _M_cp()
+	{ _M_int[1] = _RealType(1); }
 
 	template<typename _InputIteratorB, typename _InputIteratorW>
 	  param_type(_InputIteratorB __bfirst,
@@ -4903,6 +4907,10 @@ namespace std
 	template<typename _Func>
 	  param_type(size_t __nw, _RealType __xmin, _RealType __xmax,
 		     _Func __fw);
+
+	// See: http://cpp-next.com/archive/2010/10/implicit-move-must-go/
+	param_type(const param_type&) = default;
+	param_type& operator=(const param_type&) = default;
 
 	std::vector<_RealType>
 	intervals() const
@@ -5097,8 +5105,8 @@ namespace std
 	friend class piecewise_linear_distribution<_RealType>;
 
 	param_type()
-	: _M_int(), _M_den(), _M_cp(), _M_m()
-	{ _M_initialize(); }
+	: _M_int(2), _M_den(2, 1.0), _M_cp(), _M_m()
+	{ _M_int[1] = _RealType(1); }
 
 	template<typename _InputIteratorB, typename _InputIteratorW>
 	  param_type(_InputIteratorB __bfirst,
@@ -5111,6 +5119,10 @@ namespace std
 	template<typename _Func>
 	  param_type(size_t __nw, _RealType __xmin, _RealType __xmax,
 		     _Func __fw);
+
+	// See: http://cpp-next.com/archive/2010/10/implicit-move-must-go/
+	param_type(const param_type&) = default;
+	param_type& operator=(const param_type&) = default;
 
 	std::vector<_RealType>
 	intervals() const
