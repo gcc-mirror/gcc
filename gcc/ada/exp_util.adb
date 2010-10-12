@@ -4844,8 +4844,12 @@ package body Exp_Util is
       --  expression (and hence we would generate a never-ending loop in the
       --  front end).
 
-      if Is_Class_Wide_Type (Exp_Type)
-         and then Nkind (Parent (Exp)) = N_Object_Renaming_Declaration
+      --  For now, disable this test. class-wide renamings can have side
+      --  effects, and this test causes such side effects to be duplicated.
+      --  To be sorted out later ???
+
+      if False and then Is_Class_Wide_Type (Exp_Type)
+        and then Nkind (Parent (Exp)) = N_Object_Renaming_Declaration
       then
          return;
       end if;
