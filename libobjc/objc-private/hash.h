@@ -104,9 +104,6 @@ typedef struct cache
 } *cache_ptr;
 
 
-/* Two important hash tables.  */
-extern cache_ptr module_hash_table, class_hash_table;
-
 /* Allocate and initialize a hash table.  */ 
 
 cache_ptr objc_hash_new (unsigned int size,

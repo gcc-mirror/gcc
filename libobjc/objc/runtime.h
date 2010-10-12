@@ -168,7 +168,8 @@ object_getClass (id object)
 
 /** Implementation: the following functions are in selector.c.  */
 
-/* Return the name of a given selector.  */
+/* Return the name of a given selector.  If 'selector' is NULL, return
+   "<null selector>".  */
 objc_EXPORT const char *sel_getName (SEL selector);
 
 /* Return the type of a given selector.
