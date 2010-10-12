@@ -1,5 +1,15 @@
 2010-10-12  Robert Dewar  <dewar@adacore.com>
 
+	* par-ch13.adb (P_Aspect_Specifications): Fix handling of 'Class aspects
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Fix bad Sloc on aspects
+	* sem_prag.adb (Fix_Error): Only change pragma names for pragmas from
+	aspects.
+	(Check_Optional_Identifier): Handle case of direct arguments
+	(Chain_PPC): Test for abstract case, giving appropriate messages
+	* sinfo.ads, sinfo.adb (Class_Present): Allowed on N_Pragma node
+
+2010-10-12  Robert Dewar  <dewar@adacore.com>
+
 	* par-endh.adb (Check_End): Don't swallow semicolon or aspects after
 	END RECORD.
 	* sem_attr.adb (Eval_Attribute): Code clean up.
