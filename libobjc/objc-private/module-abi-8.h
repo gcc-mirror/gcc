@@ -138,6 +138,24 @@ struct objc_method_list
 					     structure. */
 };
 
+/* Currently defined in Protocol.m (that definition should go away
+   once we include this file).  */
+struct objc_method_description_list
+{
+  int count;
+  struct objc_method_description list[1];
+};
+
+/* Currently defined by objc/objc.h.  */
+/*
+struct objc_protocol {
+  struct objc_class* class_pointer;
+  char *protocol_name;
+  struct objc_protocol_list *protocol_list;
+  struct objc_method_description_list *instance_methods, *class_methods; 
+};
+*/
+
 struct objc_protocol_list
 {
   struct objc_protocol_list *next;
@@ -155,6 +173,7 @@ struct objc_protocol_list
   some members change type. The compiler generates "char* const" and
   places a string in the following member variables: super_class.
 */
+#ifndef __objc_STRUCT_OBJC_CLASS_defined
 struct objc_class {     
   struct objc_class*  class_pointer;    /* Pointer to the class's meta
 					   class. */
@@ -197,6 +216,7 @@ struct objc_class {
   struct objc_protocol_list *protocols; /* Protocols conformed to */
   void* gc_object_type;
 };
+#endif /* __objc_STRUCT_OBJC_CLASS_defined */
 
 /* The compiler generates one of these structures for each category.
    A class may have many categories and contain both instance and

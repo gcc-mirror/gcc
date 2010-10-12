@@ -1,4 +1,5 @@
 /* This structure used to be public, but is now private to the runtime.  */
+#define __objc_STRUCT_OBJC_CLASS_defined
 
 /*
 ** The compiler generates one of these structures for each class.  

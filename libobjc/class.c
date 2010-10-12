@@ -139,7 +139,8 @@ static class_node_ptr class_table_array[CLASS_TABLE_SIZE];
 /* The table writing mutex - we lock on writing to avoid conflicts
    between different writers, but we read without locks.  That is
    possible because we assume pointer assignment to be an atomic
-   operation.  */
+   operation.  TODO: This is only true under certain circumstances,
+   which should be clarified.  */
 static objc_mutex_t __class_table_lock = NULL;
 
 /* CLASS_TABLE_HASH is how we compute the hash of a class name.  It is
@@ -730,7 +731,14 @@ __objc_resolve_class_links (void)
   objc_mutex_unlock (__objc_runtime_mutex);
 }
 
+const char *
+class_getName (Class class_)
+{
+  if (class_ == Nil)
+    return "nil";
 
+  return class_->name;
+}
 
 #define CLASSOF(c) ((c)->class_pointer)
 

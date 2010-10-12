@@ -177,6 +177,7 @@ C_SOURCE_FILES = \
    objc-foreach.c \
    objc-sync.c \
    objects.c \
+   protocols.c \
    sarray.c \
    selector.c \
    sendmsg.c \

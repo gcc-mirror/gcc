@@ -33,6 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/objc-list.h" 
 #include "objc-private/runtime.h"
 #include "objc-private/objc-sync.h" /* For __objc_sync_init() */
+#include "objc-private/protocols.h" /* For __objc_protocols_init() and __objc_protocols_add_protocol() */
 
 /* The version number of this runtime.  This must match the number 
    defined in gcc (objc-act.c).  */
@@ -48,7 +49,17 @@ static struct objc_list *unclaimed_proto_list = 0; 	/* !T:MUTEX */
 /* List of unresolved static instances.  */
 static struct objc_list *uninitialized_statics = 0; 	/* !T:MUTEX */
 
-/* Global runtime "write" mutex.  */
+/* Global runtime "write" mutex.  Having a single mutex prevents
+   deadlocks, but reduces concurrency.  To improve concurrency, some
+   groups of functions in the runtime have their own separate mutex
+   (eg, __class_table_lock in class.c); to avoid deadlocks, these
+   routines must make sure that they never acquire any other lock
+   while holding their own local lock.  Ie, they should lock, execute
+   some C code that does not perform any calls to other runtime
+   functions which may potentially lock different locks, then unlock.
+   If they need to perform any calls to other runtime functions that
+   may potentially lock other locks, then they should use the global
+   __objc_runtime_mutex.  */
 objc_mutex_t __objc_runtime_mutex = 0;
 
 /* Number of threads that are alive.  */
@@ -551,6 +562,7 @@ __objc_exec_class (Module_t module)
       __objc_load_methods = objc_hash_new (128, 
 					   (hash_func_type)objc_hash_ptr,
 					   objc_compare_ptrs);
+      __objc_protocols_init ();
       __objc_sync_init ();
       previous_constructors = 1;
     }
@@ -862,10 +874,14 @@ __objc_init_protocols (struct objc_protocol_list *protos)
       struct objc_protocol *aProto = protos->list[i];
       if (((size_t)aProto->class_pointer) == PROTOCOL_VERSION)
 	{
-	  /* assign class pointer */
+	  /* Assign class pointer */
 	  aProto->class_pointer = proto_class;
 
-	  /* init super protocols */
+	  /* Register the protocol in the hashtable or protocols by
+	     name.  */
+	  __objc_protocols_add_protocol (aProto->protocol_name, aProto);
+
+	  /* Init super protocols */
 	  __objc_init_protocols (aProto->protocol_list);
 	}
       else if (protos->list[i]->class_pointer != proto_class)

@@ -1,5 +1,38 @@
 2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Makefile.in (C_SOURCE_FILES): Added protocols.c.
+	* objc-private/protocols.h: New.
+	* protocols.c: New.
+	* init.c: Include objc-private/protocols.h.
+	(__objc_exec_class): Call __objc_protocols_init on startup.
+	(__objc_init_protocols): Call __objc_protocols_add_protocol.
+	* objc-private/runtime.h: Use (struct objc_method_list *) instead
+	of MethodList_t, and (struct objc_method *) instead of Method_t.
+	* objc/deprecated/struct_objc_class.h: Define
+	__objc_STRUCT_OBJC_CLASS_defined.
+	* objc-private/module-abi-8.h (struct
+	objc_method_description_list): New.
+	(struct objc_class): Only define if
+	__objc_STRUCT_OBJC_CLASS_defined is undefined.
+	* objc/runtime.h (class_getName): New.
+	(objc_getProtocol): New.
+	(objc_copyProtocolList): New.
+	(class_addProtocol): New.
+	(class_conformsToProtocol): New.
+	(class_copyProtocolList): New.
+	(protocol_conformsToProtocol): New.
+	(protocol_isEqual): New.
+	(protocol_getName): New.
+	(protocol_getMethodDescription): New.
+	(protocol_copyMethodDescriptionList): New.
+	(protocol_getProperty): New.
+	(protocol_copyPropertyList): New.
+	(protocol_copyProtocolList): New.
+	* class.c (class_getName): New.
+	* selector.c (sel_isEqual): New.
+	
+2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* selector.c (sel_getName): Return "<null selector>" for a NULL
 	argument.
 	(sel_get_name): Return 0 for a NULL argument.
