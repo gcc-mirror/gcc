@@ -5321,6 +5321,11 @@ package body Make is
          Saved_Maximum_Processes := Maximum_Processes;
       end if;
 
+      if Debug.Debug_Flag_M then
+         Write_Line ("Maximum number of simultaneous compilations =" &
+                     Saved_Maximum_Processes'Img);
+      end if;
+
       --  Allocate as many temporary mapping file names as the maximum number
       --  of compilations processed, for each possible project.
 

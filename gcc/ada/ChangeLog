@@ -1,3 +1,25 @@
+2010-10-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Process_PPCs): Fix error in inheriting Pre'Class when no
+	exception messages are generated.
+	(Process_PPCs): Fix error in inheriting Pre'Class.
+
+2010-10-12  Jose Ruiz  <ruiz@adacore.com>
+
+	* gnatcmd.adb: Use response file for GNATstack.
+	(Check_Files): Pass the list of .ci files for GNATstack using a response
+	file to avoid problems with command line length.
+	Factor out the code handling response file into a new procedure named
+	Add_To_Response_File.
+
+2010-10-12  Vincent Celier  <celier@adacore.com>
+
+	* debug.adb: For gnatmake, document the meaning of -dm
+	* make.adb (Gnatmake): If -dm is used, indicate the maximum number of
+	simultaneous compilations.
+	* switch-m.adb (Scan_Make_Switches): Allow -j0, meaning as many
+	simultaneous compilations as the number of processors.
+
 2010-10-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/Make-lang.in (ada/misc.o): Use $(OPTIONS_H)

@@ -8569,7 +8569,6 @@ package body Sem_Ch6 is
       --  Now set the kind (mode) of each formal
 
       Param_Spec := First (T);
-
       while Present (Param_Spec) loop
          Formal := Defining_Identifier (Param_Spec);
          Set_Formal_Mode (Formal);
@@ -8791,7 +8790,7 @@ package body Sem_Ch6 is
                if Pragma_Name (Prag) = Name_Precondition
                  and then Class_Present (Prag)
                then
-                  Inherited_Precond := Grab_PPC;
+                  Inherited_Precond := Grab_PPC (Inherited (J));
 
                   --  No precondition so far, so establish this as the first
 
@@ -8838,23 +8837,27 @@ package body Sem_Ch6 is
                      --       also failed inherited precondition from bla
                      --       ...
 
-                     declare
-                        New_Msg : constant Node_Id :=
-                                    Get_Pragma_Arg
-                                      (Last
-                                        (Pragma_Argument_Associations
-                                          (Inherited_Precond)));
-                        Old_Msg : constant Node_Id :=
-                                    Get_Pragma_Arg
-                                      (Last
-                                        (Pragma_Argument_Associations
-                                          (Precond)));
-                     begin
-                        Start_String (Strval (Old_Msg));
-                        Store_String_Chars (ASCII.LF & "  also ");
-                        Store_String_Chars (Strval (New_Msg));
-                        Set_Strval (Old_Msg, End_String);
-                     end;
+                     --  Skip this if exception locations are suppressed
+
+                     if not Exception_Locations_Suppressed then
+                        declare
+                           New_Msg : constant Node_Id :=
+                                       Get_Pragma_Arg
+                                         (Last
+                                            (Pragma_Argument_Associations
+                                               (Inherited_Precond)));
+                           Old_Msg : constant Node_Id :=
+                                       Get_Pragma_Arg
+                                         (Last
+                                            (Pragma_Argument_Associations
+                                               (Precond)));
+                        begin
+                           Start_String (Strval (Old_Msg));
+                           Store_String_Chars (ASCII.LF & "  also ");
+                           Store_String_Chars (Strval (New_Msg));
+                           Set_Strval (Old_Msg, End_String);
+                        end;
+                     end if;
                   end if;
                end if;
 
