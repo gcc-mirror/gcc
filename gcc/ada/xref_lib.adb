@@ -555,6 +555,7 @@ package body Xref_Lib is
          when 'Y' => return "entry";
 
          when '+' => return "private type";
+         when '*' => return "private variable";
 
          --  The above should be the only possibilities, but for this kind
          --  of informational output, we don't want to bomb if we find

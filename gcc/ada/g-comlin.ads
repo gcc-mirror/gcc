@@ -33,9 +33,9 @@
 
 --  High level package for command line parsing and manipulation
 
---------------------------------------
---  Simple parsing of the command line
---------------------------------------
+----------------------------------------
+-- Simple Parsing of the Command Line --
+----------------------------------------
 
 --  This package provides an interface for parsing command line arguments,
 --  when they are either read from Ada.Command_Line or read from a string list.
@@ -84,9 +84,9 @@
 --     when Invalid_Parameter => Put_Line ("No parameter for " & Full_Switch);
 --  end;
 
--------------
---  Sections
--------------
+--------------
+-- Sections --
+--------------
 
 --  A more complicated example would involve the use of sections for the
 --  switches, as for instance in gnatmake. The same command line is used to
@@ -113,9 +113,9 @@
 --     end loop;
 --  end;
 
-------------------------------
---  Parsing a list of strings
-------------------------------
+-------------------------------
+-- Parsing a List of Strings --
+-------------------------------
 
 --  The examples above show how to parse the command line when the arguments
 --  are read directly from Ada.Command_Line. However, these arguments can also
@@ -144,9 +144,9 @@
 --     Free (Parser);
 --  end;
 
-----------------------------------------------
---  High level command line configuration
-----------------------------------------------
+-------------------------------------------
+-- High-Level Command Line Configuration --
+-------------------------------------------
 
 --  As shown above, the code is still relatively low-level. For instance, there
 --  is no way to indicate which switches are related (thus if "-l" and "--long"
@@ -219,9 +219,9 @@
 --  Optimization and Verbose have been properly initialized, either to the
 --  default value or to the value found on the command line.
 
-----------------------------------------------
---  Creating and manipulating the command line
-----------------------------------------------
+------------------------------------------------
+-- Creating and Manipulating the Command Line --
+------------------------------------------------
 
 --  This package provides mechanisms to create and modify command lines by
 --  adding or removing arguments from them. The resulting command line is kept
@@ -276,6 +276,7 @@
 --  and will not be grouped with other parts of the command line.
 
 with Ada.Command_Line;
+
 with GNAT.Directory_Operations;
 with GNAT.OS_Lib;
 with GNAT.Regexp;
@@ -537,12 +538,14 @@ package GNAT.Command_Line is
    -----------------
    -- Configuring --
    -----------------
+
    --  The following subprograms are used to manipulate a command line
    --  represented as a string (for instance "-g -O2"), as well as parsing
    --  the switches from such a string. They provide high-level configurations
    --  to define aliases (a switch is equivalent to one or more other switches)
    --  or grouping of switches ("-gnatyac" is equivalent to "-gnatya" and
    --  "-gnatyc").
+
    --  See the top of this file for examples on how to use these subprograms
 
    type Command_Line_Configuration is private;
@@ -553,8 +556,10 @@ package GNAT.Command_Line is
    --  Indicates a new switch section. All switches belonging to the same
    --  section are ordered together, preceded by the section. They are placed
    --  at the end of the command line (as in "gnatmake somefile.adb -cargs -g")
-   --  The section name should not include the leading '-'.
-   --  So for instance in the case of gnatmake we would use:
+   --
+   --  The section name should not include the leading '-'. So for instance in
+   --  the case of gnatmake we would use:
+   --
    --      Define_Section (Config, "cargs");
    --      Define_Section (Config, "bargs");
 
@@ -567,12 +572,13 @@ package GNAT.Command_Line is
    --  be expanded as Expanded. For instance, for the GNAT compiler switches,
    --  we would define "-gnatwa" as an alias for "-gnatwcfijkmopruvz", ie some
    --  default warnings to be activated.
+   --
    --  This expansion is only done within the specified section, which must
    --  have been defined first through a call to [Define_Section].
 
    procedure Define_Prefix
-     (Config   : in out Command_Line_Configuration;
-      Prefix   : String);
+     (Config : in out Command_Line_Configuration;
+      Prefix : String);
    --  Indicates that all switches starting with the given prefix should be
    --  grouped. For instance, for the GNAT compiler we would define "-gnatw" as
    --  a prefix, so that "-gnatwu -gnatwv" can be grouped into "-gnatwuv" It is
@@ -666,14 +672,14 @@ package GNAT.Command_Line is
 
    function Get_Switches
      (Config      : Command_Line_Configuration;
-      Section     : String := "";
-      Switch_Char : Character := '-') return String;
+      Switch_Char : Character := '-';
+      Section     : String := "") return String;
    --  Get the switches list as expected by Getopt, for a specific section of
    --  the command line. This list is built using all switches defined
    --  previously via Define_Switch above.
 
    function Section_Delimiters
-     (Config      : Command_Line_Configuration) return String;
+     (Config : Command_Line_Configuration) return String;
    --  Return a string suitable for use in Initialize_Option_Scan
 
    procedure Free (Config : in out Command_Line_Configuration);
@@ -728,13 +734,16 @@ package GNAT.Command_Line is
    ------------------------------
    -- Generating command lines --
    ------------------------------
+
    --  Once the command line configuration has been created, you can build your
    --  own command line. This will be done in general because you need to spawn
    --  external tools from your application.
+
    --  Although it could be done by concatenating strings, the following
    --  subprograms will properly take care of grouping switches when possible,
    --  so as to keep the command line as short as possible. They also provide a
    --  way to remove a switch from an existing command line.
+
    --  For instance:
    --      declare
    --         Config : Command_Line_Configuration;
@@ -920,11 +929,12 @@ package GNAT.Command_Line is
       Args        : out GNAT.OS_Lib.Argument_List_Access;
       Expanded    : Boolean := False;
       Switch_Char : Character := '-');
-   --  This is a wrapper using the Command_Line_Iterator.
-   --  It provides a simple way to get all switches (grouped as much as
-   --  possible), and possibly create an Opt_Parser.
-   --  [Args] must be freed by the caller.
-   --  [Expanded] has the same meaning as in [Start].
+   --  This is a wrapper using the Command_Line_Iterator. It provides a simple
+   --  way to get all switches (grouped as much as possible), and possibly
+   --  create an Opt_Parser.
+   --
+   --  Args must be freed by the caller.
+   --  Expanded has the same meaning as in Start.
 
 private
 
@@ -1020,7 +1030,7 @@ private
    end record;
 
    Command_Line_Parser_Data : aliased Opt_Parser_Data
-     (Ada.Command_Line.Argument_Count);
+                                        (Ada.Command_Line.Argument_Count);
    --  The internal data used when parsing the command line
 
    type Opt_Parser is access all Opt_Parser_Data;
@@ -1057,24 +1067,24 @@ private
    --  [Switch] includes the leading '-'
 
    type Alias_Definition is record
-      Alias       : GNAT.OS_Lib.String_Access;
-      Expansion   : GNAT.OS_Lib.String_Access;
-      Section     : GNAT.OS_Lib.String_Access;
+      Alias     : GNAT.OS_Lib.String_Access;
+      Expansion : GNAT.OS_Lib.String_Access;
+      Section   : GNAT.OS_Lib.String_Access;
    end record;
    type Alias_Definitions is array (Natural range <>) of Alias_Definition;
    type Alias_Definitions_List is access all Alias_Definitions;
 
    type Command_Line_Configuration_Record is record
-      Prefixes          : GNAT.OS_Lib.Argument_List_Access;
+      Prefixes : GNAT.OS_Lib.Argument_List_Access;
       --  The list of prefixes
 
-      Sections          : GNAT.OS_Lib.Argument_List_Access;
+      Sections : GNAT.OS_Lib.Argument_List_Access;
       --  The list of sections
 
-      Aliases           : Alias_Definitions_List;
-      Usage             : GNAT.OS_Lib.String_Access;
-      Help              : GNAT.OS_Lib.String_Access;
-      Switches          : Switch_Definitions_List;
+      Aliases  : Alias_Definitions_List;
+      Usage    : GNAT.OS_Lib.String_Access;
+      Help     : GNAT.OS_Lib.String_Access;
+      Switches : Switch_Definitions_List;
       --  List of expected switches (Used when expanding switch groups)
    end record;
    type Command_Line_Configuration is access Command_Line_Configuration_Record;
