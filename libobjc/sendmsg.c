@@ -1,6 +1,6 @@
 /* GNU Objective C Runtime message lookup 
    Copyright (C) 1993, 1995, 1996, 1997, 1998,
-   2001, 2002, 2004, 2009 Free Software Foundation, Inc.
+   2001, 2002, 2004, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GCC.
@@ -91,8 +91,8 @@ static __big
 static id
 #endif
 __objc_block_forward (id, SEL, ...);
-static Method_t search_for_method_in_hierarchy (Class class, SEL sel);
-Method_t search_for_method_in_list (MethodList_t list, SEL op);
+static struct objc_method * search_for_method_in_hierarchy (Class class, SEL sel);
+struct objc_method * search_for_method_in_list (struct objc_method_list * list, SEL op);
 id nil_method (id, SEL);
 
 /* Given a selector, return the proper forwarding implementation. */
@@ -193,11 +193,22 @@ get_imp (Class class, SEL sel)
   return res;
 }
 
+/* The new name of get_imp().  */
+IMP
+class_getMethodImplementation (Class class_, SEL selector)
+{
+  if (class_ == Nil  ||  selector == NULL)
+    return NULL;
+
+  /* get_imp is inlined, so we're good.  */
+  return get_imp (class_, selector);
+}
+
 /* Given a method, return its implementation.  */
 IMP
-method_get_imp (Method_t method)
+method_get_imp (struct objc_method * method)
 {
-  return (method != (Method_t)0) ? method->method_imp : (IMP)0;
+  return (method != (struct objc_method *)0) ? method->method_imp : (IMP)0;
 }
 
 /* Query if an object can respond to a selector, returns YES if the
@@ -222,6 +233,30 @@ __objc_responds_to (id object, SEL sel)
 
   /* Get the method from the dispatch table */
   res = sarray_get_safe (object->class_pointer->dtable, (size_t) sel->sel_id);
+  return (res != 0);
+}
+
+BOOL
+class_respondsToSelector (Class class_, SEL selector)
+{
+  void *res;
+
+  if (class_ == Nil  ||  selector == NULL)
+    return NO;
+
+  /* Install dispatch table if need be */
+  if (class_->dtable == __objc_uninstalled_dtable)
+    {
+      objc_mutex_lock (__objc_runtime_mutex);
+      if (class_->dtable == __objc_uninstalled_dtable)
+	{
+	  __objc_install_dispatch_table_for_class (class_);
+	}
+      objc_mutex_unlock (__objc_runtime_mutex);
+    }
+
+  /* Get the method from the dispatch table */
+  res = sarray_get_safe (class_->dtable, (size_t) selector->sel_id);
   return (res != 0);
 }
 
@@ -374,11 +409,11 @@ __objc_send_initialize (Class class)
       {
 	SEL 	     op = sel_register_name ("initialize");
 	IMP	     imp = 0;
-        MethodList_t method_list = class->class_pointer->methods;
+        struct objc_method_list * method_list = class->class_pointer->methods;
 
         while (method_list) {
 	  int i;
-          Method_t method;
+          struct objc_method * method;
 
           for (i = 0; i < method_list->method_count; i++) {
 	    method = &(method_list->method_list[i]);
@@ -409,7 +444,7 @@ __objc_send_initialize (Class class)
    method nothing is guaranteed about what method will be used.
    Assumes that __objc_runtime_mutex is locked down. */
 static void
-__objc_install_methods_in_dtable (Class class, MethodList_t method_list)
+__objc_install_methods_in_dtable (Class class, struct objc_method_list * method_list)
 {
   int i;
 
@@ -421,7 +456,7 @@ __objc_install_methods_in_dtable (Class class, MethodList_t method_list)
 
   for (i = 0; i < method_list->method_count; i++)
     {
-      Method_t method = &(method_list->method_list[i]);
+      struct objc_method * method = &(method_list->method_list[i]);
       sarray_at_put_safe (class->dtable,
 			  (sidx) method->method_name->sel_id,
 			  method->method_imp);
@@ -492,7 +527,7 @@ __objc_update_dispatch_table_for_class (Class class)
    methods installed right away, and their selectors are made into
    SEL's by the function __objc_register_selectors_from_class. */
 void
-class_add_method_list (Class class, MethodList_t list)
+class_add_method_list (Class class, struct objc_method_list * list)
 {
   /* Passing of a linked list is not allowed.  Do multiple calls.  */
   assert (! list->method_next);
@@ -507,27 +542,44 @@ class_add_method_list (Class class, MethodList_t list)
   __objc_update_dispatch_table_for_class (class);
 }
 
-Method_t
+struct objc_method *
 class_get_instance_method (Class class, SEL op)
 {
   return search_for_method_in_hierarchy (class, op);
 }
 
-Method_t
+struct objc_method *
 class_get_class_method (MetaClass class, SEL op)
 {
   return search_for_method_in_hierarchy (class, op);
 }
 
+struct objc_method *
+class_getInstanceMethod (Class class_, SEL selector)
+{
+  if (class_ == Nil  ||  selector == NULL)
+    return NULL;
+
+  return search_for_method_in_hierarchy (class_, selector);
+}
+
+struct objc_method *
+class_getClassMethod (Class class_, SEL selector)
+{
+  if (class_ == Nil  ||  selector == NULL)
+    return NULL;
+  
+  return search_for_method_in_hierarchy (class_->class_pointer, 
+					 selector);
+}
 
 /* Search for a method starting from the current class up its hierarchy.
    Return a pointer to the method's method structure if found.  NULL
    otherwise. */   
-
-static Method_t
+static struct objc_method *
 search_for_method_in_hierarchy (Class cls, SEL sel)
 {
-  Method_t method = NULL;
+  struct objc_method * method = NULL;
   Class class;
 
   if (! sel_is_mapped (sel))
@@ -546,10 +598,10 @@ search_for_method_in_hierarchy (Class cls, SEL sel)
 /* Given a linked list of method and a method's name.  Search for the named
    method's method structure.  Return a pointer to the method's method
    structure if found.  NULL otherwise. */  
-Method_t
-search_for_method_in_list (MethodList_t list, SEL op)
+struct objc_method *
+search_for_method_in_list (struct objc_method_list * list, SEL op)
 {
-  MethodList_t method_list = list;
+  struct objc_method_list * method_list = list;
 
   if (! sel_is_mapped (op))
     return NULL;
@@ -562,7 +614,7 @@ search_for_method_in_list (MethodList_t list, SEL op)
       /* Search the method list.  */
       for (i = 0; i < method_list->method_count; ++i)
         {
-          Method_t method = &method_list->method_list[i];
+          struct objc_method * method = &method_list->method_list[i];
 
           if (method->method_name)
             if (method->method_name->sel_id == op->sel_id)

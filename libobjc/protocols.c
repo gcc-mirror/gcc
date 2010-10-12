@@ -211,6 +211,13 @@ class_copyProtocolList (Class class_, unsigned int *numberOfReturnedProtocols)
   Protocol **returnValue = NULL;
   struct objc_protocol_list* proto_list;
 
+  if (class_ == Nil)
+    {
+      if (numberOfReturnedProtocols)
+	*numberOfReturnedProtocols = 0;
+      return NULL;
+    }
+
   /* Lock the runtime mutex because the class protocols may be
      concurrently modified.  */
   objc_mutex_lock (__objc_runtime_mutex);
