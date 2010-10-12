@@ -1,3 +1,8 @@
+2010-10-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc_update: Run $GCC_HG pull and update separately.
+	Check parents for SVN revision.
+
 2010-10-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* test_recheck: New script.
