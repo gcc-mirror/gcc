@@ -1,3 +1,9 @@
+2010-10-12  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38936
+	* parse.c (parse_associate): Set typespec of associate-name if that of
+	the target is already available.
+
 2010-10-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45961

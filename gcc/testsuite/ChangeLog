@@ -1,3 +1,11 @@
+2010-10-12  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38936
+	* gfortran.dg/associate_1.f03: More tests with derived-types.
+	* gfortran.dg/associate_9.f03: New test (XFAIL for now).
+	* gfortran.dg/associate_8.f03: Fix typo.
+	* gfortran.dg/initialization_27.f90: Fix typo.
+
 2010-10-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR testsuite/45851
