@@ -784,6 +784,9 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	TARGET_PROMOTE_FUNCTION_ARGS TARGET_PROMOTE_FUNCTION_RETURN \
 	LANG_HOOKS_MISSING_ARGUMENT LANG_HOOKS_HASH_TYPES
 
+/* Hooks into libgcc2.  */
+ #pragma GCC poison LIBGCC2_DOUBLE_TYPE_SIZE
+
 /* Miscellaneous macros that are no longer used.  */
  #pragma GCC poison USE_MAPPED_LOCATION
 

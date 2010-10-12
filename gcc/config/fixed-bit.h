@@ -49,9 +49,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LIBGCC2_WORDS_BIG_ENDIAN WORDS_BIG_ENDIAN
 #endif
 
-#ifndef LIBGCC2_DOUBLE_TYPE_SIZE
-#define LIBGCC2_DOUBLE_TYPE_SIZE DOUBLE_TYPE_SIZE
-#endif
 #ifndef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE LONG_DOUBLE_TYPE_SIZE
 #endif
@@ -63,7 +60,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef LIBGCC2_HAS_DF_MODE
 #define LIBGCC2_HAS_DF_MODE \
   (BITS_PER_UNIT == 8 \
-   && (LIBGCC2_DOUBLE_TYPE_SIZE == 64 \
+   && (__SIZEOF_DOUBLE__ * __CHAR_BIT__ == 64 \
        || LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 64))
 #endif
 

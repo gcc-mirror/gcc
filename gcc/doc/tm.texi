@@ -1628,10 +1628,10 @@ default is @code{LONG_DOUBLE_TYPE_SIZE}.
 @end defmac
 
 @defmac LIBGCC2_HAS_DF_MODE
-Define this macro if neither @code{LIBGCC2_DOUBLE_TYPE_SIZE} nor
+Define this macro if neither @code{DOUBLE_TYPE_SIZE} nor
 @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is
 @code{DFmode} but you want @code{DFmode} routines in @file{libgcc2.a}
-anyway.  If you don't define this and either @code{LIBGCC2_DOUBLE_TYPE_SIZE}
+anyway.  If you don't define this and either @code{DOUBLE_TYPE_SIZE}
 or @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is 64 then the default is 1,
 otherwise it is 0.
 @end defmac
@@ -1660,7 +1660,7 @@ if the defaults in @file{libgcc2.h} are inappropriate.  By default,
 @code{FLT_MANT_DIG} is used for @code{SF_SIZE}, @code{LDBL_MANT_DIG}
 for @code{XF_SIZE} and @code{TF_SIZE}, and @code{DBL_MANT_DIG} or
 @code{LDBL_MANT_DIG} for @code{DF_SIZE} according to whether
-@code{LIBGCC2_DOUBLE_TYPE_SIZE} or
+@code{DOUBLE_TYPE_SIZE} or
 @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is 64.
 @end defmac
 

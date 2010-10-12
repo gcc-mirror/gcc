@@ -115,11 +115,9 @@ extern enum rx_cpu_types  rx_cpu_type;
 #ifdef __RX_32BIT_DOUBLES__
 #define LIBGCC2_HAS_DF_MODE		0
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE   32
-#define LIBGCC2_DOUBLE_TYPE_SIZE	32
 #else
 #define LIBGCC2_HAS_DF_MODE		1
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE   64
-#define LIBGCC2_DOUBLE_TYPE_SIZE	64
 #endif
 
 #define DEFAULT_SIGNED_CHAR		0
