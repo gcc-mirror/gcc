@@ -1,4 +1,4 @@
-/* JobDocumentAccessErrors.java -- 
+/* JobDocumentAccessErrors.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,10 +47,10 @@ import javax.print.attribute.TextSyntax;
  * JobDocumentAccessErrors provides additional information
  * for each access error for print-uri or document-uri jobs.
  * technical job informations.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class JobDocumentAccessErrors 
+public final class JobDocumentAccessErrors
   extends TextSyntax implements Attribute
 {
 
@@ -74,7 +74,7 @@ public final class JobDocumentAccessErrors
    *
    * @return The class <code>JobDocumentAccessErrors</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return JobDocumentAccessErrors.class;
   }

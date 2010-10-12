@@ -54,7 +54,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.util.ReaderDelegate;
+import javax.xml.stream.util.StreamReaderDelegate;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -81,7 +81,7 @@ import org.xml.sax.SAXException;
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 class XIncludeFilter
-  extends ReaderDelegate
+  extends StreamReaderDelegate
 {
 
   static final String XINCLUDE_NS_URI = "http://www.w3.org/2001/XInclude";

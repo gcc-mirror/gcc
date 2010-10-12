@@ -49,7 +49,7 @@ import java.util.ArrayList;
 
 public class GcjhMain extends Main
 {
-  ArrayList commands = new ArrayList();
+  ArrayList<Text> commands = new ArrayList<Text>();
 
   public GcjhMain()
   {

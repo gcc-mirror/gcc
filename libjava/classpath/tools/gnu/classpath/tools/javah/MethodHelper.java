@@ -64,7 +64,7 @@ public class MethodHelper
   {
     if ((meth.access & Opcodes.ACC_BRIDGE) == 0)
       return null;
-    Iterator i = meth.instructions.iterator();
+    Iterator<?> i = meth.instructions.iterator();
     while (i.hasNext())
       {
         AbstractInsnNode insn = (AbstractInsnNode) i.next();

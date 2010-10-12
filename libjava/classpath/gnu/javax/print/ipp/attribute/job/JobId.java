@@ -1,4 +1,4 @@
-/* JobId.java -- 
+/* JobId.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -44,7 +44,7 @@ import javax.print.attribute.IntegerSyntax;
 /**
  * The <code>JobId</code> attribute contains the ID of a
  * print job created or currently being processed.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class JobId extends IntegerSyntax implements Attribute
@@ -59,7 +59,7 @@ public final class JobId extends IntegerSyntax implements Attribute
   public JobId(int value)
   {
     super(value);
-    
+
     if (value < 1)
       throw new IllegalArgumentException("job-id may not be less than 1");
   }
@@ -69,7 +69,7 @@ public final class JobId extends IntegerSyntax implements Attribute
    *
    * @return The class <code>JobId</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return JobId.class;
   }

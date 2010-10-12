@@ -1,4 +1,4 @@
-/* JobHoldUntilSupported.java -- 
+/* JobHoldUntilSupported.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,63 +40,64 @@ package gnu.javax.print.ipp.attribute.supported;
 
 import java.util.Locale;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.SupportedValuesAttribute;
 import javax.print.attribute.TextSyntax;
 
 /**
  * JobHoldUntilSupported attribute provides the supported
  * values for the attribute type job-hold-until.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class JobHoldUntilSupported extends TextSyntax 
+public final class JobHoldUntilSupported extends TextSyntax
   implements SupportedValuesAttribute
 {
-  
-  // a keyword/name based attribute in IPP 
+
+  // a keyword/name based attribute in IPP
   // can be extended by administrators
   // standard values are predefined
-  
+
   /** Job should be printed immediately. */
-  public static final JobHoldUntilSupported NO_HOLD = 
+  public static final JobHoldUntilSupported NO_HOLD =
     new JobHoldUntilSupported("no-hold", null);
-  
+
   /** Job should be hold indefinitely. */
-  public static final JobHoldUntilSupported INDEFINITE = 
+  public static final JobHoldUntilSupported INDEFINITE =
     new JobHoldUntilSupported("indefinite", null);
-  
+
   /**  Job should be processed during the day. */
-  public static final JobHoldUntilSupported DAY_TIME = 
+  public static final JobHoldUntilSupported DAY_TIME =
     new JobHoldUntilSupported("day-time", null);
-  
+
   /**  Job should be processed in the evening. */
-  public static final JobHoldUntilSupported EVENING = 
+  public static final JobHoldUntilSupported EVENING =
     new JobHoldUntilSupported("evening", null);
-  
+
   /**  Job should be processed during night. */
-  public static final JobHoldUntilSupported NIGHT = 
+  public static final JobHoldUntilSupported NIGHT =
     new JobHoldUntilSupported("night", null);
-  
+
   /**  Job should be processed during the weekend. */
-  public static final JobHoldUntilSupported WEEKEND = 
+  public static final JobHoldUntilSupported WEEKEND =
     new JobHoldUntilSupported("weekend", null);
-  
-  /**  
-   * Job should be processed as second-shift 
-   * (after close of business). 
-   */
-  public static final JobHoldUntilSupported SECOND_SHIFT = 
-    new JobHoldUntilSupported("second-shift", null);
-  
-  /**  
-   * Job should be processed as third-shift 
-   * (after midnight). 
-   */
-  public static final JobHoldUntilSupported THIRD_SHIFT = 
-    new JobHoldUntilSupported("third-shift", null); 
 
   /**
-   * Creates a <code>JobHoldUntilSupported</code> object with the 
+   * Job should be processed as second-shift
+   * (after close of business).
+   */
+  public static final JobHoldUntilSupported SECOND_SHIFT =
+    new JobHoldUntilSupported("second-shift", null);
+
+  /**
+   * Job should be processed as third-shift
+   * (after midnight).
+   */
+  public static final JobHoldUntilSupported THIRD_SHIFT =
+    new JobHoldUntilSupported("third-shift", null);
+
+  /**
+   * Creates a <code>JobHoldUntilSupported</code> object with the
    * given value and locale.
    *
    * @param value the value for this syntax
@@ -115,7 +116,7 @@ public final class JobHoldUntilSupported extends TextSyntax
    *
    * @return The class <code>JobHoldUntilSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return JobHoldUntilSupported.class;
   }

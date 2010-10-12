@@ -54,7 +54,7 @@ public class JniPrintStream
   Main classpath;
 
   // This is used to determine whether a method has an overload.
-  HashMap methodNameMap = new HashMap();
+  HashMap<String,Integer> methodNameMap = new HashMap<String,Integer>();
 
   public JniPrintStream(Main classpath, OutputStream out, ClassWrapper klass)
   {
@@ -65,7 +65,7 @@ public class JniPrintStream
 
   private void computeOverloads(ClassWrapper klass)
   {
-    Iterator i = klass.methods.iterator();
+    Iterator<?> i = klass.methods.iterator();
     while (i.hasNext())
       {
         MethodNode method = (MethodNode) i.next();
@@ -73,11 +73,11 @@ public class JniPrintStream
           continue;
         if (methodNameMap.containsKey(method.name))
           {
-            Integer val = (Integer) methodNameMap.get(method.name);
-            methodNameMap.put(method.name, new Integer(val.intValue() + 1));
+            Integer val = methodNameMap.get(method.name);
+            methodNameMap.put(method.name, Integer.valueOf(val.intValue() + 1));
           }
         else
-          methodNameMap.put(method.name, new Integer(1));
+          methodNameMap.put(method.name, Integer.valueOf(1));
       }
   }
 

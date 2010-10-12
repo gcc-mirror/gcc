@@ -1,4 +1,4 @@
-/* NumberUpDefault.java -- 
+/* NumberUpDefault.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,13 +46,13 @@ import javax.print.attribute.standard.NumberUp;
 /**
  * NumberUpDefault attribute provides the default value of
  * the numper up attribute.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class NumberUpDefault extends IntegerSyntax
   implements DefaultValueAttribute
 {
-    
+
   /**
    * Creates a <code>NumberUpDefault</code> object.
    *
@@ -63,13 +63,13 @@ public final class NumberUpDefault extends IntegerSyntax
   {
     super(value);
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
@@ -85,7 +85,7 @@ public final class NumberUpDefault extends IntegerSyntax
    *
    * @return The class <code>NumberUpDefault</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return NumberUpDefault.class;
   }
@@ -99,15 +99,15 @@ public final class NumberUpDefault extends IntegerSyntax
   {
     return "number-up-default";
   }
-  
+
   /**
    * Returns the equally enum of the standard attribute class
    * of this DefaultValuesAttribute enum.
    * <p>May return null if no value exists in JPS API.</p>
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
-  public Attribute getAssociatedAttribute() 
+  public Attribute getAssociatedAttribute()
   {
     return new NumberUp(getValue());
   }

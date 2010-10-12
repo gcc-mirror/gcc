@@ -1,4 +1,4 @@
-/* PrinterDriverInstaller.java -- 
+/* PrinterDriverInstaller.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,10 +47,10 @@ import javax.print.attribute.URISyntax;
  * PrinterDriverInstaller attribute as described in RFC 2911 section
  * 4.4.81 provides the URI where a printer driver installer
  * can be found.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class PrinterDriverInstaller extends URISyntax 
+public final class PrinterDriverInstaller extends URISyntax
   implements Attribute
 {
 
@@ -70,7 +70,7 @@ public final class PrinterDriverInstaller extends URISyntax
    *
    * @return The class <code>PrinterDriverInstaller</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return PrinterDriverInstaller.class;
   }

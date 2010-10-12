@@ -12,10 +12,357 @@
 
 	* configure: Regenerate.
 
+2010-05-27  Andrew John Hughes  <ahughes@redhat.com>
+
+	* configure.ac:
+	Disable plugin by default and warn about
+	unmaintained status when enabled.
+
+2010-05-04  Andrew John Hughes  <ahughes@redhat.com>
+
+	* configure.ac:
+	Call AC_PROG_JAVA_WORKS and AC_PROG_JAVAC_WORKS
+	in place of AC_PROG_JAVA and AC_PROG_JAVAC
+	respectively, as this is the real test we want.
+	* m4/ac_prog_java.m4:
+	(AC_PROG_JAVA): Don't include AC_PROG_JAVA_WORKS.
+	* m4/ac_prog_java_works.m4:
+	(AC_PROG_JAVA_WORKS): Require AC_PROG_JAVA and be
+	defined only once.  Require AC_PROG_JAVAC_WORKS for
+	compilation of test class.  Remove inclusion of
+	AC_PROG_JAVAC.
+	(AC_TRY_COMPILE_JAVA): Require AC_PROG_JAVAC_WORKS
+	rather than AC_PROG_JAVAC.  Be defined only once.
+	* m4/ac_prog_javac.m:
+	(AC_PROG_JAVAC): Be defined only once.  Don't include
+	AC_PROG_JAVAC_WORKS.
+	* m4/ac_prog_javac_works.m4:
+	(AC_PROG_JAVAC_WORKS): Be defined only once.  Require
+	AC_PROG_JAVAC.
+
 2010-05-04  Andrew Haley  <aph@redhat.com>
 
 	* lib/gen-classlist.sh.in: Use absolute pathnames for all the
 	directory names in the output file.
+
+2010-05-04  Andrew John Hughes  <ahughes@redhat.com>
+
+	* m4/ac_prog_javac.m4:
+	Capture all output from javac --version
+	to avoid excess output.  Make sure no appears
+	when javac is not gcj.
+
+2010-05-04  Andrew John Hughes  <ahughes@redhat.com>
+
+	* configure.ac:
+	Add output to GMP directory detection and
+	only perform when compiling GMP.
+
+2010-05-04  Mike Stump  <mikestump@comcast.net>
+
+	* configure.ac:
+	Allow prefix, libdir and includedir of GMP
+	to be specified via --with-gmp, --with-gmp-include
+	and --with-gmp-lib.
+
+2010-04-28  Andrew John Hughes  <ahughes@redhat.com>
+
+	* gnu/javax/print/ipp/IppPrintService.java:
+	(printerAttr): Add generic typing.
+	(printServiceAttributeListener): Likewise.
+	(flavors): Likewise.
+	(printerUris): Likewise.
+	(IppPrintService(URI uri, String username, String password)):
+	Use generic types in initialising listener set.
+	(getPrinterAttributes()): Add generic types.  Remove cast.
+	(getPrinterAttributeSet(Class<T>)): Return a set containing
+	attributes of type T.  Now creates a new set and checks that
+	all elements of the original set can be cast and added to this
+	new set.
+	(getPrinterDefaultAttribute(Class<? extends Attribute>)): Add
+	generic types.
+	(processResponse()): Add generic types.
+	(getAttribute(Class<T>)): Use generic types corresponding to
+	parent interface.
+	(getSupportedAttributeCategories()): Use generic types.
+	(getSupportedAttributeValues()): Likewise.
+	(handleSupportedAttributeValuesResponse(IppResponse,Class<? extends Attribute>)):
+	Likewise.
+	(isAttributeCategorySupported(Class<? extends Attribute>)): Likewise.
+	* gnu/javax/print/ipp/IppResponse.java:
+	(parseResponse(InputStream)): Use generic types.
+	(parseAttributes(Map<Class<? extends Attribute>, Set<Attribute>, DataInputStream)):
+	Likewise.
+	(addAttribute(Map<Class<? extends Attribute>, Set<Attribute>>, Attribute): Likewise.
+	(IppResponse(URI, short)): Create lists with appropriate type parameters.
+	(getJobAttributes()): Use generic return type.
+	(getOperationAttributes()): Likewise.
+	(getPrinterAttributes()): Likewise.
+	(getUnsupportedAttributes()): Likewise.
+	* gnu/javax/print/ipp/attribute/supported/CompressionSupported.java:
+	(getAssociatedAttributeArray(Set<Attribute>)): Use superclass Attribute
+	as set type parameter and cast when looping over it.
+	* gnu/javax/print/ipp/attribute/supported/FinishingsSupported.java,
+	(getAssociatedAttributeArray(Set<Attribute>)): Use superclass Attribute
+	as set type parameter and cast when looping over it.
+	* gnu/javax/print/ipp/attribute/supported/JobSheetsSupported.java,
+	(getAssociatedAttributeArray(Set<Attribute>)): Use superclass Attribute
+	as set type parameter and cast when looping over it.
+	* gnu/javax/print/ipp/attribute/supported/MediaSupported.java,
+	(getAssociatedAttributeArray(Set<Attribute>)): Use superclass Attribute
+	as set type parameter and cast when looping over it.
+	* gnu/javax/print/ipp/attribute/supported/MultipleDocumentHandlingSupported.java,
+	(getAssociatedAttributeArray(Set<Attribute>)): Use superclass Attribute
+	as set type parameter and cast when looping over it.
+	* gnu/javax/print/ipp/attribute/supported/OrientationRequestedSupported.java,
+	(getAssociatedAttributeArray(Set<Attribute>)): Use superclass Attribute
+	as set type parameter and cast when looping over it.
+	* gnu/javax/print/ipp/attribute/supported/PrintQualitySupported.java,
+	(getAssociatedAttributeArray(Set<Attribute>)): Use superclass Attribute
+	as set type parameter and cast when looping over it.
+	* gnu/javax/print/ipp/attribute/supported/PrinterResolutionSupported.java,
+	(getAssociatedAttributeArray(Set<Attribute>)): Use superclass Attribute
+	as set type parameter and cast when looping over it.
+
+2010-04-28  Andrew John Hughes  <ahughes@redhat.com>
+
+	* gnu/javax/print/ipp/IppUtilities.java:
+	(INTEGER_CLASS_ARRAY): Use generic typing.
+	(TEXT_CLASS_ARRAY): Likewise.
+	(classesByName): Likewise.
+	(instanceByClass): Likewise.
+	(getClass(String)): Remove cast.  Return generic type.
+	(getSupportedAttrName(Class<? extends Attribute>)): Remove cast.
+	Add generic type to parameter.
+	(getSupportedCategory(Class<?> extends Attribute>)): Likewise.
+	(getEnumAttribute(String,Object)): Add missing generic types on Class.
+	(getIntegerAttribute(String,int)): Likewise and on Constructor.
+	(getTextAttribute(String,byte,byte[])): Likewise.
+
+2010-04-27  Andrew John Hughes  <ahughes@redhat.com>
+
+	* gnu/javax/print/ipp/IppRequest.java:
+	(write(RequestedAttributes)): Fix for change in return value
+	of RequestedAttributes.getValues().
+	* gnu/javax/print/ipp/attribute/DetailedStatusMessage.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/DocumentAccessError.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/RequestedAttributes.java:
+	(RequestedAttributes()): Use appropriate generic type with attributes
+	ArrayList.
+	(getValues()): Return an array-based snapshot of the current state of
+	attributes rather than providing direct mutable access to it.
+	* gnu/javax/print/ipp/attribute/StatusMessage.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/UnknownAttribute.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/defaults/CopiesDefault.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/defaults/DocumentFormatDefault.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/defaults/FinishingsDefault.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/defaults/JobHoldUntilDefault.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/defaults/JobPriorityDefault.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/defaults/JobSheetsDefault.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/defaults/MediaDefault.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/defaults/MultipleDocumentHandlingDefault.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/defaults/NumberUpDefault.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/defaults/OrientationRequestedDefault.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/defaults/PrintQualityDefault.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/defaults/PrinterResolutionDefault.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/defaults/SidesDefault.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/job/AttributesCharset.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/job/AttributesNaturalLanguage.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/job/JobDetailedStatusMessages.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/job/JobDocumentAccessErrors.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/job/JobId.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/job/JobMoreInfo.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/job/JobPrinterUri.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/job/JobStateMessage.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/job/JobUri.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/printer/CharsetConfigured.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/printer/DocumentFormat.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/printer/MultipleOperationTimeOut.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/printer/NaturalLanguageConfigured.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/printer/PrinterCurrentTime.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/printer/PrinterDriverInstaller.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/printer/PrinterStateMessage.java:
+	(getCategory()): Fix return value.
+	* gnu/javax/print/ipp/attribute/printer/PrinterUpTime.java:
+	(getCategory()): Fix return value.
+
+2010-04-27  Andrew John Hughes  <ahughes@redhat.com>
+
+	* gnu/javax/print/CupsIppOperation.java,
+	* gnu/javax/print/CupsMediaMapping.java,
+	* gnu/javax/print/CupsPrintService.java,
+	* gnu/javax/print/CupsPrintServiceLookup.java,
+	* gnu/javax/print/CupsServer.java,
+	* gnu/javax/print/PrintAttributeException.java,
+	* gnu/javax/print/PrintFlavorException.java,
+	* gnu/javax/print/PrintUriException.java,
+	* gnu/javax/print/PrinterDialog.java,
+	* gnu/javax/print/ipp/DocPrintJobImpl.java,
+	* gnu/javax/print/ipp/IppDelimiterTag.java,
+	* gnu/javax/print/ipp/IppException.java,
+	* gnu/javax/print/ipp/IppMultiDocPrintService.java,
+	* gnu/javax/print/ipp/IppRequest.java,
+	* gnu/javax/print/ipp/IppResponse.java,
+	* gnu/javax/print/ipp/IppStatusCode.java,
+	* gnu/javax/print/ipp/IppUtilities.java,
+	* gnu/javax/print/ipp/IppValueTag.java,
+	* gnu/javax/print/ipp/MultiDocPrintJobImpl.java,
+	* gnu/javax/print/ipp/attribute/CharsetSyntax.java,
+	* gnu/javax/print/ipp/attribute/DefaultValueAttribute.java,
+	* gnu/javax/print/ipp/attribute/DetailedStatusMessage.java,
+	* gnu/javax/print/ipp/attribute/DocumentAccessError.java,
+	* gnu/javax/print/ipp/attribute/NaturalLanguageSyntax.java,
+	* gnu/javax/print/ipp/attribute/RequestedAttributes.java,
+	* gnu/javax/print/ipp/attribute/StatusMessage.java,
+	* gnu/javax/print/ipp/attribute/UnknownAttribute.java,
+	* gnu/javax/print/ipp/attribute/defaults/CopiesDefault.java,
+	* gnu/javax/print/ipp/attribute/defaults/DocumentFormatDefault.java,
+	* gnu/javax/print/ipp/attribute/defaults/FinishingsDefault.java,
+	* gnu/javax/print/ipp/attribute/defaults/JobHoldUntilDefault.java,
+	* gnu/javax/print/ipp/attribute/defaults/JobPriorityDefault.java,
+	* gnu/javax/print/ipp/attribute/defaults/JobSheetsDefault.java,
+	* gnu/javax/print/ipp/attribute/defaults/MediaDefault.java,
+	* gnu/javax/print/ipp/attribute/defaults/MultipleDocumentHandlingDefault.java,
+	* gnu/javax/print/ipp/attribute/defaults/NumberUpDefault.java,
+	* gnu/javax/print/ipp/attribute/defaults/OrientationRequestedDefault.java,
+	* gnu/javax/print/ipp/attribute/defaults/PrintQualityDefault.java,
+	* gnu/javax/print/ipp/attribute/defaults/PrinterResolutionDefault.java,
+	* gnu/javax/print/ipp/attribute/defaults/SidesDefault.java,
+	* gnu/javax/print/ipp/attribute/job/AttributesCharset.java,
+	* gnu/javax/print/ipp/attribute/job/AttributesNaturalLanguage.java,
+	* gnu/javax/print/ipp/attribute/job/JobDetailedStatusMessages.java,
+	* gnu/javax/print/ipp/attribute/job/JobDocumentAccessErrors.java,
+	* gnu/javax/print/ipp/attribute/job/JobId.java,
+	* gnu/javax/print/ipp/attribute/job/JobMoreInfo.java,
+	* gnu/javax/print/ipp/attribute/job/JobPrinterUri.java,
+	* gnu/javax/print/ipp/attribute/job/JobStateMessage.java,
+	* gnu/javax/print/ipp/attribute/job/JobUri.java,
+	* gnu/javax/print/ipp/attribute/printer/CharsetConfigured.java,
+	* gnu/javax/print/ipp/attribute/printer/DocumentFormat.java,
+	* gnu/javax/print/ipp/attribute/printer/MultipleOperationTimeOut.java,
+	* gnu/javax/print/ipp/attribute/printer/NaturalLanguageConfigured.java,
+	* gnu/javax/print/ipp/attribute/printer/PrinterCurrentTime.java,
+	* gnu/javax/print/ipp/attribute/printer/PrinterDriverInstaller.java,
+	* gnu/javax/print/ipp/attribute/printer/PrinterStateMessage.java,
+	* gnu/javax/print/ipp/attribute/printer/PrinterUpTime.java:
+	Normalise whitespace; replace tabs with spaces and removing
+	trailing whitespace.
+
+2010-04-27  Andrew John Hughes  <ahughes@redhat.com>
+
+	* gnu/javax/print/ipp/IppPrintService.java:
+	Fix whitespace.  Use correct generic type for printerAttr
+	map.
+	(getPrinterAttributeSet(Class<? extends Attribute>)): Add
+	appropriate generic type.
+	* gnu/javax/print/ipp/attribute/supported/CharsetSupported.java:
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	* gnu/javax/print/ipp/attribute/supported/CompressionSupported.java:
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	(getAssociatedAttributeArray(Set<CompressionSupported>)): Add generic
+	type to set and use for-each loop.
+	* gnu/javax/print/ipp/attribute/supported/DocumentFormatSupported.java:
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	* gnu/javax/print/ipp/attribute/supported/FinishingsSupported.java:
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	(getAssociatedAttributeArray(Set<FinishingsSupported>)): Add generic
+	type to set and use for-each loop.
+	* gnu/javax/print/ipp/attribute/supported/GeneratedNaturalLanguageSupported.java:
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	* gnu/javax/print/ipp/attribute/supported/IppVersionsSupported.java:
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	* gnu/javax/print/ipp/attribute/supported/JobHoldUntilSupported.java:
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	* gnu/javax/print/ipp/attribute/supported/JobSheetsSupported.java:
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	(getAssociatedAttributeArray(Set<JobSheetsSupported>)): Add generic
+	type to set and use for-each loop.
+	* gnu/javax/print/ipp/attribute/supported/MediaSupported.java:
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	(getAssociatedAttributeArray(Set<MediaSupported>)): Add generic
+	type to set and use for-each loop.
+	* gnu/javax/print/ipp/attribute/supported/MultipleDocumentHandlingSupported.java:
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	(getAssociatedAttributeArray(Set<MultipleDocumentHandlingSupported>)): Add generic
+	type to set and use for-each loop.
+	* gnu/javax/print/ipp/attribute/supported/MultipleDocumentJobsSupported.java,
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	* gnu/javax/print/ipp/attribute/supported/OperationsSupported.java,
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	* gnu/javax/print/ipp/attribute/supported/OrientationRequestedSupported.java,
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	(getAssociatedAttributeArray(Set<OrientationRequestedSupported>)): Add generic
+	type to set and use for-each loop.
+	* gnu/javax/print/ipp/attribute/supported/PageRangesSupported.java,
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	* gnu/javax/print/ipp/attribute/supported/PrintQualitySupported.java,
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	(getAssociatedAttributeArray(Set<PrintQualitySupported>)): Add generic
+	type to set and use for-each loop.
+	* gnu/javax/print/ipp/attribute/supported/PrinterResolutionSupported.java,
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	(getAssociatedAttributeArray(Set<PrinterResolutionSupported>)): Add generic
+	type to set and use for-each loop.
+	* gnu/javax/print/ipp/attribute/supported/PrinterUriSupported.java,
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	* gnu/javax/print/ipp/attribute/supported/SidesSupported.java,
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	* gnu/javax/print/ipp/attribute/supported/UriAuthenticationSupported.java,
+	Fix whitespace.
+	(getCategory()): Fix return type.
+	* gnu/javax/print/ipp/attribute/supported/UriSecuritySupported.java,
+	Fix whitespace.
+	(getCategory()): Fix return type.
 
 2010-04-27  Andrew Haley  <aph@redhat.com>
 
@@ -25,7 +372,7 @@
 2010-04-27  Andrew Haley  <aph@redhat.com>
 
 	* gnu/javax/print/ipp/IppResponse.java (parseAttributes): Handle
-	IppValueTag.UNKNOWN.  
+	IppValueTag.UNKNOWN.
 	* gnu/javax/print/ipp/IppRequest.java (writeOperationAttributes):
 	Handle RequestedAttributes.
 	* gnu/javax/print/ipp/IppPrintService.java (processResponse): Add
@@ -70,6 +417,7 @@
 	* resource/Makefile.in: Regenerate.
 	* scripts/Makefile.in: Regenerate.
 	* tools/Makefile.in: Regenerate.
+
 2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libgcj/38251
@@ -83,10 +431,41 @@
 	* tools/Makefile.am (UPDATE_TOOLS_ZIP, CREATE_TOOLS_ZIP): Exclude
 	.svn direcories.
 
+2010-01-30  Andrew John Hughes  <ahughes@redhat.com>
+
+	* doc/www.gnu.org/home.wml:
+	Add newer JAPI results.
+
+2010-01-30  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/41686
+	* javax/security/auth/kerberos/KerberosTicket.java:
+	Fix formatting.
+	(toString()): Add full implementation.
+	(getSessionKeyType()): Implemented.
+	* javax/security/auth/kerberos/KeyImpl.java:
+	(toString()): Implemented.
+
+2010-01-30  Andrew John Hughes  <ahughes@redhat.com>
+
+	* autogen.sh:
+	Allow libtool 2.* through.
+	* configure.ac:
+	Updated via autoupdate.
+	* m4/lib-ld.m4,
+	* m4/lib-link.m4,
+	* m4/lib-prefix.m4:
+	Drop old libtool macros which
+	result in build failure.
+
 2010-01-18  Andreas Tobler  <andreast@fgznet.ch>
 
 	* tools/Makefile.am (GJDOC_EX): Use find -name pattern -prune -o.
 	* tools/Makefile.in: Regenerate.
+
+2010-01-12  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/util/zip/Inflater. java (inflate(byte[],int,int)): Fix for #41696.
 
 2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
@@ -125,6 +504,17 @@
 	* resource/Makefile.in: Regenerate.
 	* scripts/Makefile.in: Regenerate.
 	* tools/Makefile.in: Regenerate.
+
+2009-11-18  Andrew Haley  <aph@redhat.com>
+
+	* java/util/TreeMap.java (anonymous class.size()): Debogosify.
+	anonymous class.clear(): Likewise.
+
+2009-10-22  Andrew Haley  <aph@redhat.com>
+
+	* native/jni/native-lib/cpnet.c (cpnet_addMembership): Fix
+	aliasing warning.
+	(cpnet_dropMembership): Likewise.
 
 2009-10-22  Richard Guenther  <rguenther@suse.de>
 
@@ -193,6 +583,48 @@
 	(func_mode_link): Add new -bindir option, and use it to place
 	output DLL if specified.
 
+2009-07-08  Chris Burdess  <dog@gnu.org>
+
+	PR xml/40663:
+	* javax/xml/stream/XMLEventFactory.java,
+	* javax/xml/stream/XMLInputFactory.java,
+	* javax/xml/stream/XMLOutputFactory.java,
+	* javax/xml/stream/events/Namespace.java: Update API to match final
+	  version of StAX.
+	* javax/xml/stream/util/ReaderDelegate.java: Removed.
+	* javax/xml/stream/util/StreamReaderDelegate.java: Added (renamed
+	  from ReaderDelegate)
+	* gnu/xml/stream/FilteredStreamReader.java,
+	* gnu/xml/stream/NamespaceImpl.java,
+	* gnu/xml/stream/XIncludeFilter.java,
+	* gnu/xml/stream/XMLEventAllocatorImpl.java,
+	* gnu/xml/stream/XMLEventFactoryImpl.java: Update implementation to
+	  match final version of StAX API.
+
+2009-07-06  Ludovic Claude  <ludovic.claude@laposte.net>
+
+	PR xml/40653:
+	* gnu/xml/stream/XMLStreamWriterImpl.java:
+	Weaken testing of namespace prefix to match
+	reference implementation and spec.
+
+2009-07-07  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/40630
+	* java/util/Scanner.java:
+	(myCoreNext(boolean, Pattern)): Set tmp2 to
+	null if the string is empty (i.e. we are at
+	the end of the file).
+	* java/util/regex/Matcher.java:
+	(toMatchResult()): Check that match is non-null
+	before attempting to clone it.
+
+2009-07-07  Andrew John Hughes  <ahughes@redhat.com>
+
+	* java/util/Scanner.java,
+	* java/util/regex/Matcher.java:
+	Replace tab characters with spaces.
+
 2009-06-29  Andrew Haley  <aph@redhat.com>
 
 	PR java/40590	
@@ -216,6 +648,285 @@
 	New methods.
 	(moveToPackage): Use printName().
 
+2009-03-29  Mark Wielaard  <mark@klomp.org>
+
+	* doc/www.gnu.org/faq/faq.wml: Fix link to cp-hacking.html.
+
+2009-03-29  Mark Wielaard  <mark@klomp.org>
+
+	* m4/ac_prog_antlr.m4: Check whether ANTLR_JAR is empty.
+
+2009-03-26  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/39408:
+	* tools/gnu/classpath/tools/javah/ClassWrapper.java:
+	(linkSupers()): Make package-private.
+	* tools/gnu/classpath/tools/javah/JniIncludePrinter.java:
+	(writeFields(ClassWrapper, JniPrintStream)):
+	Link in data from superclass before searching for fields.
+
+2009-03-20  Andrew John Hughes  <ahughes@redhat.com>
+
+	* tools/gnu/classpath/tools/javah/ClassWrapper.java,
+	* tools/gnu/classpath/tools/javah/CniPrintStream.java,
+	* tools/gnu/classpath/tools/javah/CniStubPrinter.java,
+	* tools/gnu/classpath/tools/javah/GcjhMain.java,
+	* tools/gnu/classpath/tools/javah/JniIncludePrinter.java,
+	* tools/gnu/classpath/tools/javah/JniPrintStream.java,
+	* tools/gnu/classpath/tools/javah/JniStubPrinter.java,
+	* tools/gnu/classpath/tools/javah/Keywords.java,
+	* tools/gnu/classpath/tools/javah/Main.java,
+	* tools/gnu/classpath/tools/javah/MethodHelper.java,
+	* tools/gnu/classpath/tools/javah/PathOptionGroup.java:
+	Fix generic issues in gjavah.
+
+2009-03-17  Andrew John Hughes  <ahughes@redhat.com>
+
+	* tools/gnu/classpath/tools/FileSystemClassLoader.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/Driver.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/Driver1_4.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/HtmlRepairer.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/TargetContext.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/OutputFileInfo.java,
+	* tools/gnu/classpath/tools/gjdoc/ErrorReporter.java,
+	* tools/gnu/classpath/tools/gjdoc/TemporaryStore.java,
+	* tools/gnu/classpath/tools/gjdoc/WritableType.java,
+	* tools/gnu/classpath/tools/taglets/AuthorTaglet.java,
+	* tools/gnu/classpath/tools/taglets/CopyrightTaglet.java,
+	* tools/gnu/classpath/tools/taglets/DeprecatedTaglet.java,
+	* tools/gnu/classpath/tools/taglets/GenericTaglet.java,
+	* tools/gnu/classpath/tools/taglets/SinceTaglet.java,
+	* tools/gnu/classpath/tools/taglets/VersionTaglet.java:
+	Switch to UNIX line endings.
+
+2009-03-17  Andrew John Hughes  <ahughes@redhat.com>
+
+	* tools/com/sun/tools/javadoc/Main.java,
+	* tools/gnu/classpath/tools/FileSystemClassLoader.java,
+	* tools/gnu/classpath/tools/IOToolkit.java,
+	* tools/gnu/classpath/tools/MalformedInputEvent.java,
+	* tools/gnu/classpath/tools/MalformedInputListener.java,
+	* tools/gnu/classpath/tools/NotifyingInputStreamReader.java,
+	* tools/gnu/classpath/tools/StringToolkit.java,
+	* tools/gnu/classpath/tools/doclets/AbstractDoclet.java,
+	* tools/gnu/classpath/tools/doclets/DocletConfigurationException.java,
+	* tools/gnu/classpath/tools/doclets/DocletOption.java,
+	* tools/gnu/classpath/tools/doclets/DocletOptionColonSeparated.java,
+	* tools/gnu/classpath/tools/doclets/DocletOptionFile.java,
+	* tools/gnu/classpath/tools/doclets/DocletOptionFlag.java,
+	* tools/gnu/classpath/tools/doclets/DocletOptionPackageWildcard.java,
+	* tools/gnu/classpath/tools/doclets/DocletOptionString.java,
+	* tools/gnu/classpath/tools/doclets/InlineTagRenderer.java,
+	* tools/gnu/classpath/tools/doclets/InvalidPackageWildcardException.java,
+	* tools/gnu/classpath/tools/doclets/PackageGroup.java,
+	* tools/gnu/classpath/tools/doclets/PackageMatcher.java,
+	* tools/gnu/classpath/tools/doclets/StandardTaglet.java,
+	* tools/gnu/classpath/tools/doclets/TagletPrinter.java,
+	* tools/gnu/classpath/tools/doclets/debugdoclet/DebugDoclet.java,
+	* tools/gnu/classpath/tools/doclets/htmldoclet/CssClass.java,
+	* tools/gnu/classpath/tools/doclets/htmldoclet/ExternalDocSet.java,
+	* tools/gnu/classpath/tools/doclets/htmldoclet/HtmlDoclet.java,
+	* tools/gnu/classpath/tools/doclets/htmldoclet/HtmlPage.java,
+	* tools/gnu/classpath/tools/doclets/htmldoclet/HtmlTagletContext.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/Driver.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/Driver1_4.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/HtmlRepairer.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/TargetContext.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/DocTranslet.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/DocTransletConfigurationException.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/DocTransletException.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/DocTransletOptions.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/JarClassLoader.java,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/OutputFileInfo.java,
+	* tools/gnu/classpath/tools/gjdoc/AbstractTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ArrayCharacterIterator.java,
+	* tools/gnu/classpath/tools/gjdoc/ClassDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ClassDocProxy.java,
+	* tools/gnu/classpath/tools/gjdoc/ClassDocReflectedImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ConstructorDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/Debug.java,
+	* tools/gnu/classpath/tools/gjdoc/DirectoryTree.java,
+	* tools/gnu/classpath/tools/gjdoc/DocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ErrorReporter.java,
+	* tools/gnu/classpath/tools/gjdoc/ExecutableMemberDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/FieldDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/GjdocPackageDoc.java,
+	* tools/gnu/classpath/tools/gjdoc/GjdocRootDoc.java,
+	* tools/gnu/classpath/tools/gjdoc/InheritDocTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/JavadocWrapper.java,
+	* tools/gnu/classpath/tools/gjdoc/LinkTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/Main.java,
+	* tools/gnu/classpath/tools/gjdoc/MemberDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/MethodDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/PackageDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ParamTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ParameterImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ParseException.java,
+	* tools/gnu/classpath/tools/gjdoc/Parser.java,
+	* tools/gnu/classpath/tools/gjdoc/ProgramElementDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/RootDocImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/SeeTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/SerialFieldTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/SourcePositionImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/TagContainer.java,
+	* tools/gnu/classpath/tools/gjdoc/TagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/TemporaryStore.java,
+	* tools/gnu/classpath/tools/gjdoc/TextTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ThrowsTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/Timer.java,
+	* tools/gnu/classpath/tools/gjdoc/TimerDoclet.java,
+	* tools/gnu/classpath/tools/gjdoc/TypeImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/TypeVariableImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/ValueTagImpl.java,
+	* tools/gnu/classpath/tools/gjdoc/WritableType.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/AdditionExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/AndExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BinaryBitwiseExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BinaryComputationExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BinaryEqualityExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BinaryExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BinaryLogicalExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BinaryRelationExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BinaryShiftExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/BitShiftRightExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/CircularExpressionException.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConditionalExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantBoolean.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantByte.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantChar.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantDouble.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantFloat.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantInteger.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantLong.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantNull.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantShort.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ConstantString.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/Context.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/DivisionExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/EqualExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/Evaluator.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/EvaluatorEnvironment.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ExclusiveOrExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/Expression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/GreaterThanExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/GreaterThanOrEqualExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/IdentifierExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/IllegalExpressionException.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/InclusiveOrExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/LessThanExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/LessThanOrEqualExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/LogicalAndExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/LogicalNotExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/LogicalOrExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ModuloExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/MultiplicationExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/NegateExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/NotEqualExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/NotExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ShiftLeftExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/ShiftRightExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/SubtractionExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/Type.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/TypeCastExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/UnaryExpression.java,
+	* tools/gnu/classpath/tools/gjdoc/expr/UnknownIdentifierException.java,
+	* tools/gnu/classpath/tools/java2xhtml/Java2xhtml.java,
+	* tools/gnu/classpath/tools/rmic/ClassRmicCompiler.java,
+	* tools/gnu/classpath/tools/rmic/CompilationError.java,
+	* tools/gnu/classpath/tools/rmic/Generator.java,
+	* tools/gnu/classpath/tools/rmic/GiopIo.java,
+	* tools/gnu/classpath/tools/rmic/HashFinder.java,
+	* tools/gnu/classpath/tools/rmic/Main.java,
+	* tools/gnu/classpath/tools/rmic/MethodGenerator.java,
+	* tools/gnu/classpath/tools/rmic/RMICException.java,
+	* tools/gnu/classpath/tools/rmic/RmiMethodGenerator.java,
+	* tools/gnu/classpath/tools/rmic/RmicBackend.java,
+	* tools/gnu/classpath/tools/rmic/SourceRmicCompiler.java,
+	* tools/gnu/classpath/tools/rmic/Variables.java,
+	* tools/gnu/classpath/tools/rmic/WrapUnWrapper.java,
+	* tools/gnu/classpath/tools/serialver/SerialVer.java,
+	* tools/gnu/classpath/tools/taglets/AuthorTaglet.java,
+	* tools/gnu/classpath/tools/taglets/CodeTaglet.java,
+	* tools/gnu/classpath/tools/taglets/CopyrightTaglet.java,
+	* tools/gnu/classpath/tools/taglets/DeprecatedTaglet.java,
+	* tools/gnu/classpath/tools/taglets/GenericTaglet.java,
+	* tools/gnu/classpath/tools/taglets/GnuExtendedTaglet.java,
+	* tools/gnu/classpath/tools/taglets/SinceTaglet.java,
+	* tools/gnu/classpath/tools/taglets/TagletContext.java,
+	* tools/gnu/classpath/tools/taglets/ValueTaglet.java,
+	* tools/gnu/classpath/tools/taglets/VersionTaglet.java:
+	Fix license headers to GPLv2+Classpath exception.
+
+2009-03-09  Andrew John Hughes  <ahughes@redhat.com>
+
+	* gnu/javax/swing/text/html/css/Selector.java:
+	Use CPStringBuilder.  Use typed list of maps
+	rather than an array for type safety.
+	* javax/swing/text/html/HTMLEditorKit.java,
+	* javax/swing/text/html/HTMLWriter.java:
+	Add generic typing where appropriate.
+	* javax/swing/text/html/ImageView.java:
+	Remove unused AttributeSet variables.
+	* javax/swing/text/html/MinimalHTMLWriter.java:
+	Switch to an ArrayDeque to avoid unnecessary
+	internal synchronisation on a private variable.
+	Add generic typing.
+	* javax/swing/text/html/MultiAttributeSet.java:
+	Add generic typing.
+	* javax/swing/text/html/MultiStyle.java:
+	Add generic typing, make class package-private
+	as not part of the standard classes.
+	* javax/swing/text/html/ObjectView.java,
+	* javax/swing/text/html/StyleSheet.java:
+	Add generic typing.
+	* javax/swing/text/html/TableView.java:
+	Remove unused variable.
+	* javax/swing/tree/DefaultMutableTreeNode.java:
+	Add generic typing, mute warnings where necessary.
+	* javax/swing/tree/FixedHeightLayoutCache.java:
+	Add generic typing.
+	* javax/swing/tree/TreeNode.java:
+	Mute warnings where necessary.
+	* javax/swing/tree/VariableHeightLayoutCache.java,
+	* javax/swing/undo/StateEdit.java,
+	* javax/swing/undo/UndoableEditSupport.java,
+	* org/ietf/jgss/GSSManager.java:
+	Add generic typing.
+
+2009-02-14  Andrew John Hughes  <ahughes@redhat.com>
+
+	* org/omg/CORBA/LocalObject.java,
+	* org/omg/CORBA/portable/Delegate.java,
+	* org/omg/CORBA/portable/InputStream.java,
+	* org/omg/CORBA/portable/ObjectImpl.java,
+	* org/omg/CORBA_2_3/portable/InputStream.java,
+	* org/omg/CORBA_2_3/portable/OutputStream.java,
+	* org/omg/DynamicAny/_DynAnyFactoryStub.java,
+	* org/omg/DynamicAny/_DynAnyStub.java,
+	* org/omg/DynamicAny/_DynArrayStub.java,
+	* org/omg/DynamicAny/_DynEnumStub.java,
+	* org/omg/DynamicAny/_DynFixedStub.java,
+	* org/omg/DynamicAny/_DynSequenceStub.java,
+	* org/omg/DynamicAny/_DynStructStub.java,
+	* org/omg/DynamicAny/_DynUnionStub.java,
+	* org/omg/DynamicAny/_DynValueStub.java,
+	* org/omg/PortableServer/_ServantActivatorStub.java,
+	* org/omg/PortableServer/_ServantLocatorStub.java:
+	Turn off warnings where Class is used; forced
+	to use raw type for API compatibility.
+
+2009-02-06  Andrew John Hughes  <ahughes@redhat.com>
+
+	* NEWS:
+	Add stub for 0.99.
+	* configure.ac:
+	Bump to 0.99.
+	* doc/www.gnu.org/announce/20090205.wml,
+	* doc/www.gnu.org/downloads/downloads.wml,
+	* doc/www.gnu.org/newsitems.txt:
+	Update website.
+
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
@@ -223,7 +934,7 @@
 2009-02-05  Andrew John Hughes  <ahughes@redhat.com>
 
 	* NEWS: Add VM updates.
-	
+
 2009-02-05  Andrew John Hughes  <ahughes@redhat.com>
 
 	* NEWS: Updated.

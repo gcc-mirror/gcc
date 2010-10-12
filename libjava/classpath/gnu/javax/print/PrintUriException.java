@@ -1,4 +1,4 @@
-/* PrintUriException.java -- 
+/* PrintUriException.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,13 +47,13 @@ import javax.print.URIException;
  * A <code>PrintException</code> further refining the exception
  * cause by providing an implementation of the print exception
  * interface <code>URIException</code>.
- * 
+ *
  * @see javax.print.PrintException
  * @see javax.print.URIException
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class PrintUriException extends PrintException 
+public final class PrintUriException extends PrintException
   implements URIException
 {
   private int reason;
@@ -65,20 +65,20 @@ public final class PrintUriException extends PrintException
    *
    * @param reason the reason for the exception.
    * @param unsupportedUri the URI which is unsupported.
-   * 
+   *
    * @see URIException
    */
   public PrintUriException(int reason, URI unsupportedUri)
   {
     super();
     this.reason = reason;
-    uri = unsupportedUri;     
+    uri = unsupportedUri;
   }
 
   /**
    * Constructs a <code>PrintUriException</code> with the given reason
    * and unsupported URI instance.
-   * 
+   *
    * @param e chained exception
    * @param reason the reason for the exception.
    * @param unsupportedUri the URI which is unsupported.
@@ -87,13 +87,13 @@ public final class PrintUriException extends PrintException
   {
     super(e);
     this.reason = reason;
-    uri = unsupportedUri;     
+    uri = unsupportedUri;
   }
 
   /**
    * Constructs a <code>PrintUriException</code> with the given reason
    * and unsupported URI instance.
-   * 
+   *
    * @param s detailed message
    * @param reason the reason for the exception.
    * @param unsupportedUri the URI which is unsupported.
@@ -102,24 +102,24 @@ public final class PrintUriException extends PrintException
   {
     super(s);
     this.reason = reason;
-    uri = unsupportedUri;     
+    uri = unsupportedUri;
   }
 
   /**
    * Constructs a <code>PrintUriException</code> with the given reason
    * and unsupported URI instance.
-   * 
+   *
    * @param s detailed message
    * @param e chained exception
    * @param reason the reason for the exception.
    * @param unsupportedUri the URI which is unsupported.
    */
-  public PrintUriException(String s, Exception e, 
+  public PrintUriException(String s, Exception e,
     int reason, URI unsupportedUri)
   {
     super(s, e);
     this.reason = reason;
-    uri = unsupportedUri;     
+    uri = unsupportedUri;
   }
 
   /**

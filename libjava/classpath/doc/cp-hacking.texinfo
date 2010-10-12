@@ -11,7 +11,7 @@
 This file contains important information you will need to know if you
 are going to hack on the GNU Classpath project code.
 
-Copyright (C) 1998,1999,2000,2001,2002,2003,2004,2005,2007 Free Software Foundation, Inc.
+Copyright (C) 1998,1999,2000,2001,2002,2003,2004,2005,2007,2009 Free Software Foundation, Inc.
 
 @ifnotplaintext
 @dircategory GNU Libraries

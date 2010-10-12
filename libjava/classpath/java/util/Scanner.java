@@ -64,30 +64,30 @@ import java.util.regex.Pattern;
 
 /**
  * @author E0327023 Hernadi Laszlo
- */
-public class Scanner 
+*/
+public class Scanner
   implements Iterator <String>
 {
-  private static final String NOT_LONG = "\" is not a long";	//$NON-NLS-1$
+  private static final String NOT_LONG = "\" is not a long";    //$NON-NLS-1$
 
-  private static final String ERR_PREFIX = "\"";	//$NON-NLS-1$
+  private static final String ERR_PREFIX = "\"";        //$NON-NLS-1$
 
-  private static final String NOT_INT = "\" is not an integer";	//$NON-NLS-1$
+  private static final String NOT_INT = "\" is not an integer"; //$NON-NLS-1$
 
-  private static final String NOT_DOUBLE = "\" is not a double";	//$NON-NLS-1$
+  private static final String NOT_DOUBLE = "\" is not a double";        //$NON-NLS-1$
 
-  private static final String NOT_BYTE = "\" is not a byte";	//$NON-NLS-1$
+  private static final String NOT_BYTE = "\" is not a byte";    //$NON-NLS-1$
 
-  private static final String NOT_BOOLEAN = "\" is not a boolean";	//$NON-NLS-1$
+  private static final String NOT_BOOLEAN = "\" is not a boolean";      //$NON-NLS-1$
 
-  private static final String IS_NOT = "\" is not ";	//$NON-NLS-1$
+  private static final String IS_NOT = "\" is not ";    //$NON-NLS-1$
 
-  private static final String DEFAULT_PATTERN_S = "\\p{javaWhitespace}+";	//$NON-NLS-1$
+  private static final String DEFAULT_PATTERN_S = "\\p{javaWhitespace}+";       //$NON-NLS-1$
 
   private static final Pattern DEFAULT_PATTERN =
     Pattern.compile (DEFAULT_PATTERN_S);
 
-  private static final String BIG_INTEGER = "BigInteger";	//$NON-NLS-1$
+  private static final String BIG_INTEGER = "BigInteger";       //$NON-NLS-1$
 
   private final static String NEW_LINE =
     System.getProperty ("line.separator");
@@ -131,7 +131,7 @@ public class Scanner
 
   /**
    * The current locale.
-   * 
+   *
    * @see #useLocale(Locale)
    * @see #locale()
    */
@@ -172,7 +172,7 @@ public class Scanner
    * <source> null </source>.
    */
   private Readable readableSource = null;
-  
+
   /**
    * A ReadableByteChannel source if a Constructor with a ReadableByteChannel source is called,
    * otherwise it stays <source> null </source>.
@@ -183,7 +183,7 @@ public class Scanner
    * Indicates if the close() method was called.
    */
   private boolean isClosed = false;
-  
+
   /**
    * For performance reasons the last Found is saved, if a hasNextXXX method was called.
    */
@@ -247,21 +247,21 @@ public class Scanner
   /**
    * Constructs a new Scanner with the given File as source.
    * {@link #Scanner(InputStream, String)} is called with <code> null </code> as charsetName.
-   * 
+   *
    * @param source
    *            The File to use as source.
    * @throws FileNotFoundException
    *             If the file is not found an Exception is thrown.
    */
-  public Scanner (final File source) throws FileNotFoundException	// TESTED
+  public Scanner (final File source) throws FileNotFoundException       // TESTED
   {
     this (source, null);
   }
-  
+
   /**
    * Constructs a new Scanner with the given File as source. <br>
    * {@link #Scanner(InputStream, String)} is called with the given charsetName.
-   * 
+   *
    * @param source
    *            The File to use as source.
    * @param charsetName
@@ -271,7 +271,7 @@ public class Scanner
    *             If the file is not found an Exception is thrown.
    */
   public Scanner (final File source,
-		  final String charsetName) throws FileNotFoundException
+                  final String charsetName) throws FileNotFoundException
   {
     this (new FileInputStream (source), charsetName);
   }
@@ -279,11 +279,11 @@ public class Scanner
   /**
    * Constructs a new Scanner with the given inputStream. <br>
    * {@link #Scanner(InputStream, String)} is called with <code> null </code> as charsetName.
-   * 
+   *
    * @param source
    *            The InputStream to use as source.
    */
-  public Scanner (final InputStream source)	// TESTED
+  public Scanner (final InputStream source)     // TESTED
   {
     this (source, null);
   }
@@ -291,7 +291,7 @@ public class Scanner
   /**
    * Constructs a new Scanner with the InputSream and a charsetName. Afterwards the Buffer is
    * filled.
-   * 
+   *
    * @param source
    *            The InputStream to use as source.
    * @param charsetName
@@ -303,10 +303,10 @@ public class Scanner
     this.charsetName = charsetName;
     myFillBuffer ();
   }
-  
+
   /**
    * Constructs a new Scanner with a Readable input as source.
-   * 
+   *
    * @param source
    *            The Readable to use as source.
    */
@@ -320,7 +320,7 @@ public class Scanner
    * Constructs a new Scanner with a ReadableByteChannel as
    * source. Therfore the {@link #Scanner(ReadableByteChannel,
    * String)} is called with <code> null </code> as charsetName.
-   * 
+   *
    * @param source
    *            The ReadableByteChannel to use as source.
    */
@@ -333,7 +333,7 @@ public class Scanner
    * Constructs a new Scanner with a ReadableByteChannel as source and
    * a given charsetName, which is to be applied on it. <br> It also
    * initiates the main Buffer.
-   * 
+   *
    * @param source
    *            The ReadableByteChannel to use as source.
    * @param charsetName
@@ -348,11 +348,11 @@ public class Scanner
 
   /**
    * Constructs a new Scanner using the given String as input only.
-   * 
+   *
    * @param source
    *            The whole String to be used as source.
    */
-  public Scanner (final String source)	// TESTED
+  public Scanner (final String source)  // TESTED
   {
     this.actBuffer = new String (source);
     this.myMatcher.reset (this.actBuffer);
@@ -364,14 +364,14 @@ public class Scanner
    * the Scanner is closed, all searches will lead to a {@link
    * IllegalStateException}.
    */
-  public void close ()	       
+  public void close ()
   {
     try
     {
       if (this.bIS != null)
-	this.bIS.close ();
+        this.bIS.close ();
       if (this.rbcSource != null)
-	this.rbcSource.close ();
+        this.rbcSource.close ();
       this.isClosed = true;
     }
     catch (IOException ioe)
@@ -382,17 +382,17 @@ public class Scanner
 
   /**
    * Returns the current delimiter.
-   * 
+   *
    * @return the current delimiter.
    */
-  public Pattern delimiter ()	// TESTED
+  public Pattern delimiter ()   // TESTED
   {
     return this.p;
   }
 
   /**
    * Tries to find the pattern in the current line.
-   * 
+   *
    * @param pattern The pattern which should be searched in the
    * current line of the input.
    * @throws NoSuchElementException
@@ -400,31 +400,31 @@ public class Scanner
    * @return If the search was successful, the result or otherwise a
    *         {@link NoSuchElementException} is thrown.
    */
-  public String findInLine (final Pattern pattern) throws NoSuchElementException	// TESTED
+  public String findInLine (final Pattern pattern) throws NoSuchElementException        // TESTED
   {
     String tmpStr = myNextLine (false);
     return myFindPInStr (pattern, tmpStr, 0);
   }
-  
+
   /**
    * Compiles the given pattern into a {@link Pattern} and calls
    * {@link #findInLine(Pattern)} with the compiled pattern and
    * returns whatever it returns.
-   * 
+   *
    * @param pattern
    *            The pattern which should be matched in the input.
    * @throws NoSuchElementException
    *             If the pattern was not found.
    * @return The match in the current line.
    */
-  public String findInLine (final String pattern)	// TESTED
+  public String findInLine (final String pattern)       // TESTED
   {
     return findInLine (Pattern.compile (pattern));
   }
 
   /**
    * Trys to match the pattern within the given horizon.
-   * 
+   *
    * @param pattern
    *            Pattern to search.
    * @param horizon
@@ -439,12 +439,12 @@ public class Scanner
   {
     if (horizon < 0)
       {
-	throw new IllegalArgumentException (horizon + " is negative");
+        throw new IllegalArgumentException (horizon + " is negative");
       }
 
     if (this.isClosed)
       {
-	throw new IllegalStateException ("Scanner is closed");
+        throw new IllegalStateException ("Scanner is closed");
       }
 
     // doSkipp is set true to get the matching patern together with the found String
@@ -453,7 +453,7 @@ public class Scanner
 
     if (rc != null)
       {
-	this.actPos += rc.length ();
+        this.actPos += rc.length ();
       }
 
     return rc;
@@ -462,7 +462,7 @@ public class Scanner
   /**
    * Compile the pattern and call {@link #findWithinHorizon(Pattern,
    * int)}.
-   * 
+   *
    * @param pattern
    *            Pattern to search.
    * @param horizon
@@ -484,16 +484,16 @@ public class Scanner
    * and the length must be greater then 0. If a {@link
    * NoSuchElementException} is thrown by the search method, it is
    * catched and false is returned.
-   * 
+   *
    * @return <code> true </code> if there is any result using the current delimiter. This wouldn't
    *         lead to a {@link NoSuchElementException}.
    * @throws IllegalStateException
    *             if the Scanner is closed.
    */
-  public boolean hasNext () throws IllegalStateException	// TESTED
+  public boolean hasNext () throws IllegalStateException        // TESTED
   {
     String tmpStr = null;
-    
+
     try
     {
       tmpStr = myCoreNext (false, this.p);
@@ -504,7 +504,7 @@ public class Scanner
 
     if (tmpStr == null || tmpStr.length () <= 0)
       {
-	return false;
+        return false;
       }
     return true;
   }
@@ -512,14 +512,14 @@ public class Scanner
   /**
    * Searches the pattern in the next subString before the next
    * current delimiter.
-   * 
+   *
    * @param pattern
    *            The pattern to search for.
    * @return <code> true </code> if the pattern is found before the current delimiter.
    * @throws IllegalStateException
    *             if the Scanner is closed.
    */
-  public boolean hasNext (final Pattern pattern) throws IllegalStateException	// TESTED
+  public boolean hasNext (final Pattern pattern) throws IllegalStateException   // TESTED
   {
     String tmpStr;
 
@@ -527,7 +527,7 @@ public class Scanner
 
     if (tmpStr == null || tmpStr.length () <= 0)
       {
-	return false;
+        return false;
       }
     return true;
   }
@@ -535,7 +535,7 @@ public class Scanner
   /**
    * Compiles the pattern to a {@link Pattern} and calls {@link
    * #hasNext(Pattern)}.
-   * 
+   *
    * @see #hasNext(Pattern)
    * @param pattern
    *            The pattern as string to search for.
@@ -543,7 +543,7 @@ public class Scanner
    * @throws IllegalStateException
    *             if the Scanner is closed.
    */
-  public boolean hasNext (final String pattern) throws IllegalStateException	// TESTED
+  public boolean hasNext (final String pattern) throws IllegalStateException    // TESTED
   {
     return hasNext (Pattern.compile (pattern));
   }
@@ -552,13 +552,13 @@ public class Scanner
    * Checks if the string to the next delimiter can be interpreted as
    * a BigDecimal number. <br> BigDecimal numbers are always tryed
    * with radix 10.
-   * 
+   *
    * @see #nextBigDecimal()
    * @return <code> true </code> if the next string is a BigDecimal number.
    * @throws IllegalStateException
    *             if the Scanner is closed.
    */
-  public boolean hasNextBigDecimal () throws IllegalStateException	// TESTED
+  public boolean hasNextBigDecimal () throws IllegalStateException      // TESTED
   {
     try
     {
@@ -575,13 +575,13 @@ public class Scanner
    * Checks if the string to the next delimiter can be interpreted as
    * a BigInteger number. <br> Call {@link #hasNextBigInteger(int)}
    * with the current radix.
-   * 
+   *
    * @see #nextBigInteger()
    * @return <code> true </code> if the next string is a BigInteger number.
    * @throws IllegalStateException
    *             if the Scanner is closed.
    */
-  public boolean hasNextBigInteger () throws IllegalStateException	// TESTED
+  public boolean hasNextBigInteger () throws IllegalStateException      // TESTED
   {
     return hasNextBigInteger (this.currentRadix);
   }
@@ -589,7 +589,7 @@ public class Scanner
   /**
    * Checks if the string to the next delimiter can be interpreted as
    * a BigInteger number. <br>
-   * 
+   *
    * @param radix
    *            The radix to use for this check. The global radix of the Scanner will not be
    *            changed.
@@ -615,13 +615,13 @@ public class Scanner
    * Checks if the next string could be a boolean. The method handles
    * the input not case sensitiv, so "true" and "TRUE" and even "tRuE"
    * are <code> true </code>.
-   * 
+   *
    * @see #nextBoolean()
    * @return Return <code> true </code> if the next string is a boolean.
    * @throws IllegalStateException
    *             if the Scanner is closed.
    */
-  public boolean hasNextBoolean () throws IllegalStateException	// TESTED
+  public boolean hasNextBoolean () throws IllegalStateException // TESTED
   {
     try
     {
@@ -638,13 +638,13 @@ public class Scanner
    * Checks if the string to the next delimiter can be interpreted as
    * a byte number. <br> Calls {@link #hasNextByte(int)} with the
    * current radix.
-   * 
+   *
    * @see #nextByte()
    * @return <code> true </code> if the next string is a byte number.
    * @throws IllegalStateException
    *             if the Scanner is closed.
    */
-  public boolean hasNextByte () throws IllegalStateException	// TESTED
+  public boolean hasNextByte () throws IllegalStateException    // TESTED
   {
     return hasNextByte (this.currentRadix);
   }
@@ -654,7 +654,7 @@ public class Scanner
    * a byte number with the given radix. <br> To check, the private
    * method {@link #myNextByte(int, boolean)} is called, and if no
    * error occurs the next string could be a byte.
-   * 
+   *
    * @see #nextByte(int)
    * @param radix The radix to use for this check. The global radix of
    * the Scanner will not be changed.
@@ -680,13 +680,13 @@ public class Scanner
    * a double number. <br> To check, the private method {@link
    * #myNextDouble(boolean)} is called, and if no error occurs the
    * next string could be a double.
-   * 
+   *
    * @see #nextDouble()
    * @return <code> true </code> if the next string is a double number.
    * @throws IllegalStateException
    *             if the Scanner is closed.
    */
-  public boolean hasNextDouble () throws IllegalStateException	// TESTED
+  public boolean hasNextDouble () throws IllegalStateException  // TESTED
   {
     try
     {
@@ -705,13 +705,13 @@ public class Scanner
    * checked.<br> To check, the private method {@link
    * #myNextDouble(boolean)} is called, and if no error occurs the
    * next string could be a double.
-   * 
+   *
    * @see #nextFloat()
    * @return <code> true </code> if the next string is a double number.
    * @throws IllegalStateException
    *             if the Scanner is closed.
    */
-  public boolean hasNextFloat () throws IllegalStateException	// TESTED
+  public boolean hasNextFloat () throws IllegalStateException   // TESTED
   {
     try
     {
@@ -730,13 +730,13 @@ public class Scanner
    * an int number. <br> To check, the private method {@link
    * #myNextInt(int, boolean)} is called, and if no error occurs the
    * next string could be an int.
-   * 
+   *
    * @see #nextInt(int)
    * @return <code> true </code> if the next string is an int number.
    * @throws IllegalStateException
    *             if the Scanner is closed.
    */
-  public boolean hasNextInt () throws IllegalStateException	// TESTED
+  public boolean hasNextInt () throws IllegalStateException     // TESTED
   {
     return hasNextInt (this.currentRadix);
   }
@@ -746,7 +746,7 @@ public class Scanner
    * an int number with the given radix. <br> To check, the private
    * method {@link #myNextInt(int, boolean)} is called, and if no
    * error occurs the next string could be an int.
-   * 
+   *
    * @see #nextInt(int)
    * @param radix
    *            The radix to use for this check. The global radix of the Scanner will not be
@@ -771,12 +771,12 @@ public class Scanner
   /**
    * Checks if there is a current line, which ends at the next line
    * break or the end of the input.
-   * 
+   *
    * @return <code> true </code> if there is a current line.
    * @throws IllegalStateException
    *             if the Scanner is closed.
    */
-  public boolean hasNextLine () throws IllegalStateException	// TESTED
+  public boolean hasNextLine () throws IllegalStateException    // TESTED
   {
     return (myNextLine (false) != null);
   }
@@ -786,13 +786,13 @@ public class Scanner
    * a long number. <br> To check, the private method {@link
    * #myNextLong(int, boolean)} is called, and if no error occurs the
    * next string could be a long.
-   * 
+   *
    * @see #nextLong()
    * @return <code> true </code> if the next string is a long number.
    * @throws IllegalStateException
    *             if the Scanner is closed.
    */
-  public boolean hasNextLong () throws IllegalStateException	// TESTED
+  public boolean hasNextLong () throws IllegalStateException    // TESTED
   {
     return hasNextLong (this.currentRadix);
   }
@@ -802,7 +802,7 @@ public class Scanner
    * a long number with the given radix. <br> To check, the private
    * method {@link #myNextLong(int, boolean)} is called, and if no
    * error occurs the next string could be a long.
-   * 
+   *
    * @see #nextLong(int)
    * @param radix
    *            The radix to use for this check. The global radix of the Scanner will not be
@@ -829,13 +829,13 @@ public class Scanner
    * a short number with the given radix. <br> To check, the private
    * method {@link #myNextShort(int, boolean)} is called, and if no
    * error occurs the next string could be a short.
-   * 
+   *
    * @see #nextShort(int)
    * @return <code> true </code> if the next string is a short number.
    * @throws IllegalStateException
    *             if the Scanner is closed.
    */
-  public boolean hasNextShort () throws IllegalStateException	// TESTED
+  public boolean hasNextShort () throws IllegalStateException   // TESTED
   {
     return hasNextShort (this.currentRadix);
   }
@@ -845,7 +845,7 @@ public class Scanner
    * a short number. <br> To check, the private method {@link
    * #myNextShort(int, boolean)} is called, and if no error occurs the
    * next string could be a short.
-   * 
+   *
    * @see #nextShort(int)
    * @param radix
    *            The radix to use for this check. The global radix of the Scanner will not be
@@ -869,7 +869,7 @@ public class Scanner
 
   /**
    * Returns the last {@link IOException} occured.
-   * 
+   *
    * @return Returns the last {@link IOException}.
    */
   public IOException ioException ()
@@ -881,11 +881,11 @@ public class Scanner
    * Returns the current value of {@link #useLocale}. This is used to
    * tell the Scanner if it should use the Locale format or just
    * handle numbers of the default format.
-   * 
+   *
    * @see #setUseLocale(boolean)
    * @return the useLoclae.
    */
-  public boolean isUseLocale ()	// TESTED
+  public boolean isUseLocale () // TESTED
   {
     return this.useLocale;
   }
@@ -893,11 +893,11 @@ public class Scanner
   /**
    * Returns the current Locale. It is initialized with {@link
    * Locale#getDefault()}.
-   * 
+   *
    * @see #useLocale(Locale)
    * @return Returns the current Locale.
    */
-  public Locale locale ()	// TESTED
+  public Locale locale ()       // TESTED
   {
     return this.actLocale;
   }
@@ -905,10 +905,10 @@ public class Scanner
   /**
    * Returns the last MatchResult found. This is updated after every
    * successfully search.
-   * 
+   *
    * @return Returns the last {@link MatchResult} found.
    */
-  public MatchResult match ()	// TESTED
+  public MatchResult match ()   // TESTED
   {
     return this.actResult;
   }
@@ -918,7 +918,7 @@ public class Scanner
    * buffer. If a string is found the current position is set after
    * the delimiter, otherwise a {@link NoSuchElementException} is
    * thrown. A successful match sets the matchResult.
-   * 
+   *
    * @see #match()
    * @return Returns the next string of the buffer.
    * @throws NoSuchElementException
@@ -926,7 +926,7 @@ public class Scanner
    * @throws IllegalStateException
    *             If the Scanner is closed.
    */
-  public String next () throws NoSuchElementException, IllegalStateException	// TESTED
+  public String next () throws NoSuchElementException, IllegalStateException    // TESTED
   {
     return myCoreNext (true, this.p);
   }
@@ -934,7 +934,7 @@ public class Scanner
   /**
    * Tries to match the buffer with the given pattern. The current
    * delimiter will not be changed.
-   * 
+   *
    * @param pattern
    *            The pattern to match.
    * @return Returns the next string matching the pattern.
@@ -943,7 +943,7 @@ public class Scanner
    * @throws IllegalStateException
    *             If the Scanner is closed.
    */
-  public String next (final Pattern pattern) throws NoSuchElementException, IllegalStateException	// TESTED
+  public String next (final Pattern pattern) throws NoSuchElementException, IllegalStateException       // TESTED
   {
     return myNext (pattern, true);
   }
@@ -952,7 +952,7 @@ public class Scanner
    * Tries to match the buffer with the given pattern. The current
    * delimiter will not be changed.  Calls the {@link #next(Pattern)}
    * with the compiled pattern.
-   * 
+   *
    * @see #next(Pattern)
    * @param pattern
    *            The pattern to match.
@@ -962,21 +962,21 @@ public class Scanner
    * @throws IllegalStateException
    *             If the Scanner is closed.
    */
-  public String next (final String pattern) throws NoSuchElementException, IllegalStateException	// TESTED
+  public String next (final String pattern) throws NoSuchElementException, IllegalStateException        // TESTED
   {
     return next (Pattern.compile (pattern));
   }
 
   /**
    * Tries to interpret the next string as a BigDecimal value.
-   * 
+   *
    * @return Returns the BigDecimal value of the next string.
    * @throws NoSuchElementException
    *             If no string is found or the string is not a BigDecimal.
    * @throws IllegalStateException
    *             If the Scanner is closed.
    */
-  public BigDecimal nextBigDecimal () throws NoSuchElementException, IllegalStateException	// TESTED
+  public BigDecimal nextBigDecimal () throws NoSuchElementException, IllegalStateException      // TESTED
   {
     return myBigDecimal (true);
   }
@@ -985,7 +985,7 @@ public class Scanner
    * Tries to interpret the next string as a BigInteger value. Call
    * {@link #nextBigInteger(int)} with the current radix as parameter,
    * and return the value.
-   * 
+   *
    * @see #nextBigInteger(int)
    * @return Returns the BigInteger value of the next string.
    * @throws NoSuchElementException
@@ -993,7 +993,7 @@ public class Scanner
    * @throws IllegalStateException
    *             If the Scanner is closed.
    */
-  public BigInteger nextBigInteger () throws NoSuchElementException, IllegalStateException	// TESTED
+  public BigInteger nextBigInteger () throws NoSuchElementException, IllegalStateException      // TESTED
   {
     return nextBigInteger (this.currentRadix);
   }
@@ -1001,7 +1001,7 @@ public class Scanner
   /**
    * Tries to interpret the next string as a BigInteger value with the
    * given radix.
-   * 
+   *
    * @param radix
    *            The radix to be used for this BigInteger. The current radix of the Scanner is not
    *            changed.
@@ -1020,14 +1020,14 @@ public class Scanner
   /**
    * Tries to interpret the next string to the delimiter as a boolean
    * value, ignoring case.
-   * 
+   *
    * @return Returns the boolean value of the next matching string or throws an exception.
    * @throws NoSuchElementException
    *             If no string is found or the string is not a boolean.
    * @throws IllegalStateException
    *             If the Scanner is closed.
    */
-  public boolean nextBoolean () throws NoSuchElementException, IllegalStateException	// TESTED
+  public boolean nextBoolean () throws NoSuchElementException, IllegalStateException    // TESTED
   {
     return myNextBoolean (true);
   }
@@ -1036,7 +1036,7 @@ public class Scanner
    * Tries to interpret the next string as a byte value. Call {@link
    * #nextByte(int)} with the current radix as parameter, and return
    * the value.
-   * 
+   *
    * @see #nextByte(int)
    * @return Returns the byte value of the next string.
    * @throws NoSuchElementException
@@ -1044,7 +1044,7 @@ public class Scanner
    * @throws IllegalStateException
    *             If the Scanner is closed.
    */
-  public byte nextByte () throws NoSuchElementException, IllegalStateException	// TESTED
+  public byte nextByte () throws NoSuchElementException, IllegalStateException  // TESTED
   {
     return nextByte (this.currentRadix);
   }
@@ -1052,7 +1052,7 @@ public class Scanner
   /**
    * Tries to interpret the next string as a byte value with the given
    * radix.
-   * 
+   *
    * @param radix
    *            The radix to be used for this byte. The current radix of the Scanner is not
    *            changed.
@@ -1070,14 +1070,14 @@ public class Scanner
 
   /**
    * Tries to interpret the next string as a double value.
-   * 
+   *
    * @return Returns the int value of the next string.
    * @throws NoSuchElementException
    *             If no string is found or the string is not a double.
    * @throws IllegalStateException
    *             If the Scanner is closed.
    */
-  public double nextDouble () throws NoSuchElementException, IllegalStateException	// TESTED
+  public double nextDouble () throws NoSuchElementException, IllegalStateException      // TESTED
   {
     return myNextDouble (true);
   }
@@ -1085,14 +1085,14 @@ public class Scanner
   /**
    * Tries to interpret the next string as a double value, and then
    * casts down to float.
-   * 
+   *
    * @return Returns the int value of the next string.
    * @throws NoSuchElementException
    *             If no string is found or the string is not a double.
    * @throws IllegalStateException
    *             If the Scanner is closed.
    */
-  public float nextFloat () throws NoSuchElementException, IllegalStateException	// TESTED
+  public float nextFloat () throws NoSuchElementException, IllegalStateException        // TESTED
   {
     return (float) myNextDouble (true);
     // return myNextFloat(true);
@@ -1102,7 +1102,7 @@ public class Scanner
    * Tries to interpret the next string as an int value. Calls {@link
    * #nextInt(int)} with the current radix as parameter, and return
    * the value.
-   * 
+   *
    * @see #nextInt(int)
    * @return Returns the int value of the next string.
    * @throws NoSuchElementException
@@ -1110,7 +1110,7 @@ public class Scanner
    * @throws IllegalStateException
    *             If the Scanner is closed.
    */
-  public int nextInt () throws NoSuchElementException, IllegalStateException	// TESTED
+  public int nextInt () throws NoSuchElementException, IllegalStateException    // TESTED
   {
     return nextInt (this.currentRadix);
   }
@@ -1118,7 +1118,7 @@ public class Scanner
   /**
    * Tries to interpret the next string as an int value with the given
    * radix.
-   * 
+   *
    * @param radix
    *            The radix to be used for this int. The current radix of the Scanner is not changed
    * @return Returns the int value of the next string.
@@ -1136,14 +1136,14 @@ public class Scanner
   /**
    * Tries to match the system line seperator, and returns the current
    * line.
-   * 
+   *
    * @return Returns the current line.
    * @throws NoSuchElementException
    *             If the current delimiter is not found.
    * @throws IllegalStateException
    *             If the Scanner is closed.
    */
-  public String nextLine () throws NoSuchElementException, IllegalStateException	// TESTED
+  public String nextLine () throws NoSuchElementException, IllegalStateException        // TESTED
   {
     return myNextLine (true);
   }
@@ -1152,7 +1152,7 @@ public class Scanner
    * Tries to interpret the next string as a long value. Calls {@link
    * #nextLong(int)} with the current radix as parameter, and return
    * the value.
-   * 
+   *
    * @see #nextLong(int)
    * @return Returns the long value of the next string.
    * @throws NoSuchElementException
@@ -1160,7 +1160,7 @@ public class Scanner
    * @throws IllegalStateException
    *             If the Scanner is closed.
    */
-  public long nextLong () throws NoSuchElementException, IllegalStateException	// TESTED
+  public long nextLong () throws NoSuchElementException, IllegalStateException  // TESTED
   {
     return nextLong (this.currentRadix);
   }
@@ -1168,7 +1168,7 @@ public class Scanner
   /**
    * Tries to interpret the next string as a long value with the given
    * radix.
-   * 
+   *
    * @param radix
    *            The radix to be used for this long. The current radix of the Scanner is not
    *            changed
@@ -1188,13 +1188,13 @@ public class Scanner
    * Tries to interpret the next string as a short value. Calls {@link
    * #nextShort(int)} with the current radix as parameter, and return
    * the value.
-   * 
+   *
    * @see #nextShort(int)
    * @return Returns the short value of the next string.
    * @throws NoSuchElementException
    *             If no string is found or the string is not a short.
    */
-  public short nextShort () throws NoSuchElementException	// TESTED
+  public short nextShort () throws NoSuchElementException       // TESTED
   {
     return nextShort (this.currentRadix);
   }
@@ -1202,7 +1202,7 @@ public class Scanner
   /**
    * Tries to interpret the next string as a short value with the
    * given radix.
-   * 
+   *
    * @param radix
    *            The radix to be used for this short. The current radix of the Scanner is not
    *            changed.
@@ -1234,14 +1234,14 @@ public class Scanner
   /**
    * @param useLocale the useLocale to set.
    */
-  public void setUseLocale (final boolean useLocale)	// TESTED
+  public void setUseLocale (final boolean useLocale)    // TESTED
   {
     this.useLocale = useLocale;
   }
 
   /**
    * Skips the given pattern. Sets skipped <code>true</code>.
-   * 
+   *
    * @param pattern
    *            Pattern which should be skipped.
    * @return <code>this</code> with the skipped buffer.
@@ -1269,7 +1269,7 @@ public class Scanner
 
     if (!found)
       {
-	throw new NoSuchElementException ();
+        throw new NoSuchElementException ();
       }
     return this;
   }
@@ -1277,7 +1277,7 @@ public class Scanner
   /**
    * Skips a given pattern. Calls {@link #skip(Pattern)} with the
    * compiled pattern.
-   * 
+   *
    * @see #skip(Pattern)
    * @param pattern
    *            Pattern which should be skipped.
@@ -1291,7 +1291,7 @@ public class Scanner
   /**
    * Returns the string representation of this Scanner.
    */
-  @Override 
+  @Override
     public String toString ()
   {
     String tmpStr2;
@@ -1335,17 +1335,17 @@ public class Scanner
   /**
    * Sets the current pattern to the given parameter, and updates the
    * {@link Matcher} with the new pattern.
-   * 
+   *
    * @param pattern
    *            The new pattern to use.
    * @return Returns the Scanner (<code>this</code>) with the new pattern.
    */
-  public Scanner useDelimiter (final Pattern pattern)	// TESTED
+  public Scanner useDelimiter (final Pattern pattern)   // TESTED
   {
     if (pattern != null)
       {
-	this.p = pattern;
-	this.myMatcher = this.p.matcher (this.actBuffer);
+        this.p = pattern;
+        this.myMatcher = this.p.matcher (this.actBuffer);
       }
     return this;
   }
@@ -1353,13 +1353,13 @@ public class Scanner
   /**
    * Sets the current pattern to the given parameter. Compiles the
    * pattern and calls {@link #useDelimiter(Pattern)}
-   * 
+   *
    * @see #useDelimiter(Pattern)
    * @param pattern
    *            The new pattern to use.
    * @return Returns the Scanner (<code>this</code>) with the new pattern.
    */
-  public Scanner useDelimiter (final String pattern)	// TESTED
+  public Scanner useDelimiter (final String pattern)    // TESTED
   {
     return useDelimiter (Pattern.compile (pattern));
   }
@@ -1367,19 +1367,19 @@ public class Scanner
   /**
    * Sets the current Locale to the given parameter. Formats and
    * Symbols are also set using the new Locale.
-   * 
+   *
    * @param locale The new Locale to use. If it is <code>null</code>
    * nothing happens.
    * @return Returns the Scanner (<code>this</code>) with the new Locale.
    */
-  public Scanner useLocale (final Locale locale)	// TESTED
+  public Scanner useLocale (final Locale locale)        // TESTED
   {
     if (locale != null)
       {
-	this.actLocale = locale;
-	this.actFormat = NumberFormat.getInstance (this.actLocale);
-	this.dfs = new DecimalFormatSymbols (this.actLocale);
-	this.df = (DecimalFormat) this.actFormat;
+        this.actLocale = locale;
+        this.actFormat = NumberFormat.getInstance (this.actLocale);
+        this.dfs = new DecimalFormatSymbols (this.actLocale);
+        this.df = (DecimalFormat) this.actFormat;
       }
     return this;
   }
@@ -1388,7 +1388,7 @@ public class Scanner
    * Sets the current radix to the current value if the given radix is
    * >= 2 and <= 36 otherwise an {@link IllegalArgumentException} is
    * thrown.
-   * 
+   *
    * @param radix
    *            the new radix to use as default.
    * @return <code> this </code> with the new radix value.
@@ -1399,7 +1399,7 @@ public class Scanner
   {
     if (radix < 2 || radix > 36)
       {
-	throw new IllegalArgumentException ();
+        throw new IllegalArgumentException ();
       }
     this.currentRadix = radix;
     return this;
@@ -1410,7 +1410,7 @@ public class Scanner
    * String. If so the String is converted using the {@link
    * NumberFormat#parse(String)} into a Number and then back to a
    * default stringrepresentation of that Number.
-   * 
+   *
    * @see #setUseLocale(boolean)
    * @param str
    *            String to convert into another string.
@@ -1422,14 +1422,14 @@ public class Scanner
    *             if {@link NumberFormat#parse(String)} fails to parse.
    */
   private String myApplyLocale (final String str,
-				final int radix) throws ParseException
+                                final int radix) throws ParseException
   {
     String rc;
 
     if (this.useLocale && radix == 10)
       {
-	rc = this.actFormat.parse (str).toString ();
-	return rc;
+        rc = this.actFormat.parse (str).toString ();
+        return rc;
       }
 
     return str;
@@ -1444,7 +1444,7 @@ public class Scanner
    * integer part which is converted to a long, and the fraction part
    * is appended afterwards. Between the integer and the fraction part
    * comes a ".". Finally the resulting string is returned.
-   * 
+   *
    * @see #setUseLocale(boolean)
    * @param str String representation of a BigDecimal number.
    * @return The default String representation (without Locale) of the
@@ -1456,7 +1456,7 @@ public class Scanner
   {
     if (!this.useLocale || this.currentRadix != 10)
       {
-	return str;
+        return str;
       }
 
     String negPrefix = this.df.getNegativePrefix ();
@@ -1476,43 +1476,43 @@ public class Scanner
 
     if (begin2 > 0)
       {
-	throw new ParseException ("more than one Decimal seperators", begin2);
+        throw new ParseException ("more than one Decimal seperators", begin2);
       }
 
     parts = str.substring (0, begin1);
 
     if ((negPrefix.length () > 0
-	 && str.substring (0, negPrefix.length ()).equals (negPrefix))
-	|| (negSuffix.length () > 0
-	    && str.substring (str.length () -
-			      negSuffix.length ()).equals (negSuffix)))
+         && str.substring (0, negPrefix.length ()).equals (negPrefix))
+        || (negSuffix.length () > 0
+            && str.substring (str.length () -
+                              negSuffix.length ()).equals (negSuffix)))
       {
-	parts += negSuffix;
-	isNegativ = true;
+        parts += negSuffix;
+        isNegativ = true;
       }
     else
       if ((posPrefix.length () > 0
-	   && str.substring (0, posPrefix.length ()).equals (posPrefix))
-	  || (posSuffix.length () > 0
-	      && str.substring (str.length () -
-				posSuffix.length ()).equals (posSuffix)))
+           && str.substring (0, posPrefix.length ()).equals (posPrefix))
+          || (posSuffix.length () > 0
+              && str.substring (str.length () -
+                                posSuffix.length ()).equals (posSuffix)))
       {
-	parts += posSuffix;
+        parts += posSuffix;
       }
 
     tmpStr1 = this.actFormat.parse (parts).toString ();
 
     if (isNegativ)
       {
-	tmpStr1 +=
-	  "." + str.substring (str.indexOf (d) + 1,
-			       str.length () - negSuffix.length ());
+        tmpStr1 +=
+          "." + str.substring (str.indexOf (d) + 1,
+                               str.length () - negSuffix.length ());
       }
     else
       {
-	tmpStr1 +=
-	  "." + str.substring (str.indexOf (d) + 1,
-			       str.length () - posSuffix.length ());
+        tmpStr1 +=
+          "." + str.substring (str.indexOf (d) + 1,
+                               str.length () - posSuffix.length ());
       }
 
     return tmpStr1;
@@ -1523,7 +1523,7 @@ public class Scanner
    * next String is get with {@link #myCoreNext(boolean, Pattern)} and
    * then {@link #myApplyLocaleBD(String)} is called to convert the
    * String into a BigDecimal.
-   * 
+   *
    * @param delete
    *            Should the found string be deleted or not.
    * @return Returns the BigDecimal value of the next string.
@@ -1542,7 +1542,7 @@ public class Scanner
     catch (ParseException e)
     {
       throw new InputMismatchException (ERR_PREFIX + tmp + IS_NOT +
-					"BigDecimal!!");
+                                        "BigDecimal!!");
     }
     rc = new BigDecimal (tmp);
 
@@ -1552,7 +1552,7 @@ public class Scanner
   /**
    * Applies suffix ("\E") and prefix ("\Q") if str.length != 0 Used
    * by the toString method.
-   * 
+   *
    * @param str
    *            the string on which the suffix and prefix should be applied.
    * @return The new new string with the suffix and prefix.
@@ -1561,7 +1561,7 @@ public class Scanner
   {
     if (str != null && str.length () > 0)
       {
-	return "\\Q" + str + "\\E";
+        return "\\Q" + str + "\\E";
       }
     return str;
   }
@@ -1572,7 +1572,7 @@ public class Scanner
    * source. The search results are always saved in {@link #actResult}
    * which is returned when match() is called. If doSkip is true the
    * pattern is also taken.
-   * 
+   *
    * @param delete
    *            if true the aktPos is set.
    * @param pattern
@@ -1586,24 +1586,24 @@ public class Scanner
   {
     if (this.isClosed)
       {
-	throw new IllegalStateException ("Scanner closed");
+        throw new IllegalStateException ("Scanner closed");
       }
     if (shallUseLastFound (pattern != null ? pattern : this.p))
       {
-	if (this.last_RegionEnd != this.myMatcher.regionEnd ())
-	  {
-	    System.out.println (this.last_RegionEnd + " != " +
-				this.myMatcher.regionEnd () + " (" +
-				(this.last_RegionEnd -
-				 this.myMatcher.regionEnd ()) + ")");
-	  }
-	if (delete)
-	  {
-	    this.actPos = this.lastNextPos;
-	    this.lastFoundPresent = false;
-	    this.actResult = this.lastResult;
-	  }
-	return this.lastFound;
+        if (this.last_RegionEnd != this.myMatcher.regionEnd ())
+          {
+            System.out.println (this.last_RegionEnd + " != " +
+                                this.myMatcher.regionEnd () + " (" +
+                                (this.last_RegionEnd -
+                                 this.myMatcher.regionEnd ()) + ")");
+          }
+        if (delete)
+          {
+            this.actPos = this.lastNextPos;
+            this.lastFoundPresent = false;
+            this.actResult = this.lastResult;
+          }
+        return this.lastFound;
       }
 
     boolean found = false;
@@ -1614,18 +1614,18 @@ public class Scanner
 
     if (this.actPos > this.MAX_PREFIX)
       {
-	// skipp the processed chars so that the size of the buffer don't grow to much even with
-	// huge files
-	this.procesedChars += this.actPos;
-	this.actBuffer = this.actBuffer.substring (this.actPos);
-	this.actPos = 0;
-	this.myMatcher = pattern.matcher (this.actBuffer);
+        // skipp the processed chars so that the size of the buffer don't grow to much even with
+        // huge files
+        this.procesedChars += this.actPos;
+        this.actBuffer = this.actBuffer.substring (this.actPos);
+        this.actPos = 0;
+        this.myMatcher = pattern.matcher (this.actBuffer);
       }
 
     left = this.actBuffer.length () - this.actPos;
     if (left < this.MIN_BUF_LEN)
       {
-	myFillBuffer ();
+        myFillBuffer ();
       }
     found = this.myMatcher.find (this.actPos);
 
@@ -1635,61 +1635,63 @@ public class Scanner
 
     if (found)
       {
-	if (this.doSkipp)
-	  {
-	    endIndex = this.myMatcher.end ();
-	  }
-	else
-	  {
-	    endIndex = this.myMatcher.start ();
-	  }
-	tmp2 = this.actBuffer.substring (this.actPos, endIndex);
-	this.lastNextPos = this.myMatcher.end ();
-	/*
-	 * if the delete flag is set, just set the current position after the end of the matched
-	 * pattern.
-	 */
-	if (delete)
-	  {
-	    this.actPos = this.lastNextPos;
-	  }
-	else
-	  {
-	    this.lastFound = tmp2;
-	    this.lastFoundPresent = true;
-	    this.lastPatternHash = pattern.hashCode ();
-	  }
-	this.last_RegionStart = this.myMatcher.regionStart ();
-	this.last_RegionEnd = this.myMatcher.regionEnd ();
-	this.last_anchor = this.myMatcher.hasAnchoringBounds ();
-	this.last_transparent = this.myMatcher.hasTransparentBounds ();
+        if (this.doSkipp)
+          {
+            endIndex = this.myMatcher.end ();
+          }
+        else
+          {
+            endIndex = this.myMatcher.start ();
+          }
+        tmp2 = this.actBuffer.substring (this.actPos, endIndex);
+        this.lastNextPos = this.myMatcher.end ();
+        /*
+         * if the delete flag is set, just set the current position after the end of the matched
+         * pattern.
+         */
+        if (delete)
+          {
+            this.actPos = this.lastNextPos;
+          }
+        else
+          {
+            this.lastFound = tmp2;
+            this.lastFoundPresent = true;
+            this.lastPatternHash = pattern.hashCode ();
+          }
+        this.last_RegionStart = this.myMatcher.regionStart ();
+        this.last_RegionEnd = this.myMatcher.regionEnd ();
+        this.last_anchor = this.myMatcher.hasAnchoringBounds ();
+        this.last_transparent = this.myMatcher.hasTransparentBounds ();
       }
     else if (this.myMatcher.hitEnd ())
       // the end of input is matched
       {
-	tmp2 = this.actBuffer.substring (this.actPos);
-	this.lastNextPos = this.actBuffer.length ();
-	if (delete)
-	  {
-	    this.actPos = this.lastNextPos;
-	  }
-	else
-	  {
-	    this.lastFound = tmp2;
-	    this.lastFoundPresent = true;
-	    this.lastPatternHash = pattern.hashCode ();
-	  }
-	this.last_RegionStart = this.myMatcher.regionStart ();
-	this.last_RegionEnd = this.myMatcher.regionEnd ();
-	this.last_anchor = this.myMatcher.hasAnchoringBounds ();
-	this.last_transparent = this.myMatcher.hasTransparentBounds ();
+        tmp2 = this.actBuffer.substring (this.actPos);
+        if (tmp2.length() == 0)
+          tmp2 = null;
+        this.lastNextPos = this.actBuffer.length ();
+        if (delete)
+          {
+            this.actPos = this.lastNextPos;
+          }
+        else
+          {
+            this.lastFound = tmp2;
+            this.lastFoundPresent = true;
+            this.lastPatternHash = pattern.hashCode ();
+          }
+        this.last_RegionStart = this.myMatcher.regionStart ();
+        this.last_RegionEnd = this.myMatcher.regionEnd ();
+        this.last_anchor = this.myMatcher.hasAnchoringBounds ();
+        this.last_transparent = this.myMatcher.hasTransparentBounds ();
       }
     else
       {
-	/*
-	 * if no match found an Exception is throwed
-	 */
-	throw new NoSuchElementException ();
+        /*
+         * if no match found an Exception is throwed
+         */
+        throw new NoSuchElementException ();
       }
     /*
      * change the Result only when a nextXXX() method was called, not if a hasNextXXX() method
@@ -1697,13 +1699,13 @@ public class Scanner
      */
     if (delete)
       {
-	this.actResult = this.myMatcher.toMatchResult ();
+        this.actResult = this.myMatcher.toMatchResult ();
 
-	this.matchValid = this.actResult != null;
+        this.matchValid = this.actResult != null;
       }
     else
       {
-	this.lastResult = this.myMatcher.toMatchResult ();
+        this.lastResult = this.myMatcher.toMatchResult ();
       }
 
     this.skipped = this.doSkipp;
@@ -1728,74 +1730,74 @@ public class Scanner
 
     if (this.bIS != null)
       {
-	try
-	{
-	  len = this.bIS.read (this.tmpBuffer);
-	  if (len < 0)
-	    {
-	      return;
-	    }
-	  if (this.charsetName != null)
-	    {
-	      tmpStr = new String (this.tmpBuffer, 0, len, this.charsetName);
-	    }
-	  else
-	    {
-	      tmpStr = new String (this.tmpBuffer, 0, len);
-	    }
-	  this.actBuffer += tmpStr;
-	}
-	catch (IOException e)
-	{
-	  this.lastIOException = e;
-	}
+        try
+        {
+          len = this.bIS.read (this.tmpBuffer);
+          if (len < 0)
+            {
+              return;
+            }
+          if (this.charsetName != null)
+            {
+              tmpStr = new String (this.tmpBuffer, 0, len, this.charsetName);
+            }
+          else
+            {
+              tmpStr = new String (this.tmpBuffer, 0, len);
+            }
+          this.actBuffer += tmpStr;
+        }
+        catch (IOException e)
+        {
+          this.lastIOException = e;
+        }
       }
     else if (this.readableSource != null)
       {
-	try
-	{
-	  cb = CharBuffer.allocate (1000);
-	  this.needInput = true;
-	  len = this.readableSource.read (cb);
-	  if (len < 0)
-	    {
-	      return;
-	    }
-	  this.needInput = false;
-	  tmpStr = new String (cb.array ());
-	  this.actBuffer += tmpStr;
-	}
-	catch (IOException e)
-	{
-	  this.lastIOException = e;
-	}
+        try
+        {
+          cb = CharBuffer.allocate (1000);
+          this.needInput = true;
+          len = this.readableSource.read (cb);
+          if (len < 0)
+            {
+              return;
+            }
+          this.needInput = false;
+          tmpStr = new String (cb.array ());
+          this.actBuffer += tmpStr;
+        }
+        catch (IOException e)
+        {
+          this.lastIOException = e;
+        }
       }
     else if (this.rbcSource != null)
       {
-	try
-	{
-	  bb = ByteBuffer.allocate (1000);
-	  this.needInput = true;
-	  len = this.rbcSource.read (bb);
-	  this.needInput = false;
-	  if (len < 0)
-	    {
-	      return;
-	    }
-	  if (this.charsetName != null)
-	    {
-	      tmpStr = new String (bb.array (), 0, len, this.charsetName);
-	    }
-	  else
-	    {
-	      tmpStr = new String (bb.array (), 0, len);
-	    }
-	  this.actBuffer += tmpStr;
-	}
-	catch (IOException e)
-	{
-	  this.lastIOException = e;
-	}
+        try
+        {
+          bb = ByteBuffer.allocate (1000);
+          this.needInput = true;
+          len = this.rbcSource.read (bb);
+          this.needInput = false;
+          if (len < 0)
+            {
+              return;
+            }
+          if (this.charsetName != null)
+            {
+              tmpStr = new String (bb.array (), 0, len, this.charsetName);
+            }
+          else
+            {
+              tmpStr = new String (bb.array (), 0, len);
+            }
+          this.actBuffer += tmpStr;
+        }
+        catch (IOException e)
+        {
+          this.lastIOException = e;
+        }
       }
 
     this.myMatcher.reset (this.actBuffer);
@@ -1805,7 +1807,7 @@ public class Scanner
    * A loop in which the {@link #myFillBuffer()} is called and checked
    * if the pattern is found in the matcher and if the buffersize
    * changes after the read.
-   * 
+   *
    * @param aktM
    *            The current Matcher.
    * @param pos
@@ -1815,22 +1817,22 @@ public class Scanner
    * @return <code> true </code> if the matcher has found a match.
    */
   private boolean myFillBuffer_loop (final Matcher aktM, final int pos,
-				     boolean found)
+                                     boolean found)
   {
     int tmp;
 
     tmp = this.actBuffer.length ();
     while (aktM.hitEnd ()
-	   && ((this.bIS != null) || (this.readableSource != null)
-	       || (this.rbcSource != null)))
+           && ((this.bIS != null) || (this.readableSource != null)
+               || (this.rbcSource != null)))
       {
-	myFillBuffer ();
-	if (tmp == this.actBuffer.length ())
-	  {
-	    break;
-	  }
-	found = aktM.find (pos);
-	this.needInput = true;
+        myFillBuffer ();
+        if (tmp == this.actBuffer.length ())
+          {
+            break;
+          }
+        found = aktM.find (pos);
+        this.needInput = true;
       }
     return found;
   }
@@ -1841,7 +1843,7 @@ public class Scanner
    * overwritten using the given pattern and the given Sting. <br>
    * After the search the original values are restored, and skipped is
    * set <code> true </code>.
-   * 
+   *
    * @param pattern
    *            Pattern which should be matched.
    * @param str
@@ -1851,7 +1853,7 @@ public class Scanner
    * @return Returns the String in the given String that matches the pattern.
    */
   private String myFindPInStr (final Pattern pattern, final String str,
-			       final int horizon)
+                               final int horizon)
   {
     String rc = null;
     int curPos = this.actPos;
@@ -1860,9 +1862,9 @@ public class Scanner
     this.myMatcher = pattern.matcher (str);
     if (horizon > 0)
       {
-	this.myMatcher.useAnchoringBounds (true);
-	this.myMatcher.useTransparentBounds (true);
-	this.myMatcher.region (this.actPos, this.actPos + horizon);
+        this.myMatcher.useAnchoringBounds (true);
+        this.myMatcher.useTransparentBounds (true);
+        this.myMatcher.region (this.actPos, this.actPos + horizon);
       }
     rc = myCoreNext (true, pattern);
     this.myMatcher = aktMatcher;
@@ -1880,7 +1882,7 @@ public class Scanner
    * subsring.<br> Finally the current Buffer and matcher (which have
    * been temporarily changed) are set back.<br> <br> The {@link
    * #skipped} is set <code> true </code>.
-   * 
+   *
    * @param pattern
    *            Pattern to find until the current delimiter.
    * @param delete
@@ -1917,7 +1919,7 @@ public class Scanner
    * and useLocale is <code> true </code>. Afterwards it is tried to
    * call the Constructor of a {@link BigInteger} with the given
    * radix.
-   * 
+   *
    * @param radix The radix to use.
    * @param delete If the found String should be removed from input or
    * not.
@@ -1927,7 +1929,7 @@ public class Scanner
    *             If there is a {@link ParseException} or a {@link NumberFormatException}.
    */
   private BigInteger myNextBigInteger (final int radix, final boolean delete,
-				       final String name)
+                                       final String name)
   {
     BigInteger rc;
     String tmp = myPrepareForNext (this.p, delete);
@@ -1952,7 +1954,7 @@ public class Scanner
    * an {@link InputMismatchException} is thrown. It ignores the case
    * of the string so that "true" and "TRUE" and even "TrUe" are
    * accepted.
-   * 
+   *
    * @param delete Should the found value be removed from the input or
    * not.
    * @return Returns the boolean value (if it is a boolean).
@@ -1965,15 +1967,15 @@ public class Scanner
     String tmp = myPrepareForNext (this.p, delete);
     if (tmp.equalsIgnoreCase ("true"))
       {
-	return true;
+        return true;
       }
     else if (tmp.equalsIgnoreCase ("false"))
       {
-	return false;
+        return false;
       }
     else
       {
-	throw new InputMismatchException (ERR_PREFIX + tmp + NOT_BOOLEAN);
+        throw new InputMismatchException (ERR_PREFIX + tmp + NOT_BOOLEAN);
       }
   }
 
@@ -1983,14 +1985,14 @@ public class Scanner
    * String matching the current delimier. Afterwards it is tryed to
    * convert the String into a byte. Any Error will lead into a {@link
    * InputMismatchException}.
-   * 
+   *
    * @param radix The radix to use.
    * @param delete Should the found String be removed from the input.
    * @return Returns the byte value of the String.
    * @throws InputMismatchException if the next String is not a byte.
    */
   private byte myNextByte (final int radix,
-			   final boolean delete) throws InputMismatchException
+                           final boolean delete) throws InputMismatchException
   {
     byte rc;
     String tmp = myPrepareForNext (this.p, delete);
@@ -2018,7 +2020,7 @@ public class Scanner
    * don't match, an {@link InputMismatchException} is thrown.<br>
    * <br> The radix used is always 10 even if the global radix is
    * changed.
-   * 
+   *
    * @param delete Should the String be removed, if true it will be
    * also removed if the String is not a double value.
    * @return Returns the double value of the next String.
@@ -2036,9 +2038,9 @@ public class Scanner
       tmp = myApplyLocale (tmp, 10);
       rc = Double.parseDouble (tmp);
       if (("" + rc).equals (tmp))
-	{
-	  return rc;
-	}
+        {
+          return rc;
+        }
     }
     catch (ParseException e)
     {
@@ -2052,7 +2054,7 @@ public class Scanner
    * should be applied or not and then the result is parsed using
    * {@link Integer#parseInt(String, int)}. Any Error will lead to an
    * {@link InputMismatchException}.
-   * 
+   *
    * @param radix The radix to use.
    * @param delete <code> true </code> if the String should be deleted
    * from the input.
@@ -2060,15 +2062,15 @@ public class Scanner
    * @throws InputMismatchException if the next String is not an int.
    */
   private int myNextInt (final int radix,
-			 final boolean delete) throws InputMismatchException
+                         final boolean delete) throws InputMismatchException
   {
     int rc;
     String tmp = myPrepareForNext (this.p, delete);
     try
       {
-	tmp = myApplyLocale (tmp, radix);
-	rc = Integer.parseInt (tmp, radix);
-	return rc;
+        tmp = myApplyLocale (tmp, radix);
+        rc = Integer.parseInt (tmp, radix);
+        return rc;
       }
     catch (NumberFormatException nfe)
     {
@@ -2082,38 +2084,36 @@ public class Scanner
   /**
    * Finds the next line using the {@link #NEW_LINE} constant which is
    * set to the system specific line seperator.
-   * 
-   * @param delete Should the found line be deleted from the input.
-   * @return Returns the current line.
+   *
+   * @param delete should the found line be deleted from the input.
+   * @return the current line.
    */
   private String myNextLine (final boolean delete)
   {
-    String rc = null;
-    rc = myPrepareForNext (Pattern.compile (NEW_LINE), delete);
-    return rc;
+    return myPrepareForNext (Pattern.compile (NEW_LINE), delete);
   }
 
   /**
    * Tries to interpret the next String as a long value with the given
    * radix. Therfore the {@link Long#parseLong(String, int)} is called
    * and every Error will lead into a {@link InputMismatchException}.
-   * 
+   *
    * @param radix The radix to be used.
    * @param delete Should the found String be deleted from the input.
    * @return the long value of the next String.
    * @throws InputMismatchException if the next String is not a long.
    */
   private long myNextLong (final int radix,
-			   final boolean delete) throws InputMismatchException
+                           final boolean delete) throws InputMismatchException
   {
     long rc;
     String tmp = myPrepareForNext (this.p, delete);
 
     try
       {
-	tmp = myApplyLocale (tmp, radix);
-	rc = Long.parseLong (tmp, radix);
-	return rc;
+        tmp = myApplyLocale (tmp, radix);
+        rc = Long.parseLong (tmp, radix);
+        return rc;
       }
     catch (NumberFormatException nfe)
       {
@@ -2129,7 +2129,7 @@ public class Scanner
    * given radix. Therfore the {@link Short#parseShort(String, int)}
    * is called and every Error will lead into a {@link
    * InputMismatchException} .
-   * 
+   *
    * @param radix
    *            The radix to be used.
    * @param delete
@@ -2139,17 +2139,17 @@ public class Scanner
    *             if the next String is not a short.
    */
   private short myNextShort (final int radix,
-			     final boolean delete) throws
+                             final boolean delete) throws
     InputMismatchException
   {
     short rc;
     String tmp = myPrepareForNext (this.p, delete);
-    
+
     try
       {
-	tmp = myApplyLocale (tmp, radix);
-	rc = Short.parseShort (tmp, radix);
-	return rc;
+        tmp = myApplyLocale (tmp, radix);
+        rc = Short.parseShort (tmp, radix);
+        return rc;
       }
     catch (NumberFormatException nfe)
       {
@@ -2158,21 +2158,21 @@ public class Scanner
       {
       }
     throw new InputMismatchException (ERR_PREFIX + tmp +
-				      "\" is not a short");
+                                      "\" is not a short");
   }
 
   /**
    * Sets the current pattern to the given pattern and calls the
    * {@link #myCoreNext(boolean, Pattern)}. Finally sets the pattern
    * back to its old value.
-   * 
+   *
    * @param aktPattern Pattern to be used for the next match.
    * @param delete Should the found String be deleted or not.
    * @return Return the String returned from {@link
    * #myCoreNext(boolean, Pattern)}.
    */
   private String myPrepareForNext (final Pattern aktPattern,
-				   final boolean delete)
+                                   final boolean delete)
   {
 
     String rc;
@@ -2190,32 +2190,32 @@ public class Scanner
    * Determinates if the last found can be used, so that after a
    * hasNextXXX the nextXXX has not to search if nothing has
    * changed.<br /> Used in {@link #myCoreNext(boolean, Pattern)}.
-   * 
+   *
    * @param aktP The pattern which should be checked.
    * @return <code> true </code> if the searchresult is already ready.
    */
   private boolean shallUseLastFound (final Pattern aktP)
   {
     if (this.lastFoundPresent &&
-	this.lastPatternHash == aktP.hashCode () &&
-	this.last_RegionStart == this.myMatcher.regionStart () &&
-	this.last_anchor == this.myMatcher.hasAnchoringBounds () &&
-	this.last_transparent == this.myMatcher.hasTransparentBounds ())
+        this.lastPatternHash == aktP.hashCode () &&
+        this.last_RegionStart == this.myMatcher.regionStart () &&
+        this.last_anchor == this.myMatcher.hasAnchoringBounds () &&
+        this.last_transparent == this.myMatcher.hasTransparentBounds ())
       {
-	if (this.last_RegionEnd != this.myMatcher.regionEnd ())
-	  {
-	    int tmpVal =
-	      this.myMatcher.regionEnd () -
-	      this.last_RegionEnd - this.MAX_PREFIX;
-	    if (tmpVal > 0 && tmpVal < 20)
-	      {
-		this.last_RegionEnd =
-		  this.myMatcher.regionEnd ();
-		return true;
-	      }
-	  }
-	else
-	  return true;
+        if (this.last_RegionEnd != this.myMatcher.regionEnd ())
+          {
+            int tmpVal =
+              this.myMatcher.regionEnd () -
+              this.last_RegionEnd - this.MAX_PREFIX;
+            if (tmpVal > 0 && tmpVal < 20)
+              {
+                this.last_RegionEnd =
+                  this.myMatcher.regionEnd ();
+                return true;
+              }
+          }
+        else
+          return true;
       }
     return false;
   }

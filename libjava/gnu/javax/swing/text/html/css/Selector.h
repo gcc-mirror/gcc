@@ -37,7 +37,7 @@ class gnu::javax::swing::text::html::css::Selector : public ::java::lang::Object
 
 public:
   Selector(::java::lang::String *);
-  virtual jboolean matches(JArray< ::java::lang::String * > *, JArray< ::java::util::Map * > *);
+  virtual jboolean matches(JArray< ::java::lang::String * > *, ::java::util::List *);
   virtual jint getSpecificity();
   virtual ::java::lang::String * toString();
 private:

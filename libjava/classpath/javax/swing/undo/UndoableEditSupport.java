@@ -167,7 +167,7 @@ public class UndoableEditSupport
   protected void _postEdit(UndoableEdit edit)
   {
     UndoableEditEvent event;
-    Iterator iter;
+    Iterator<UndoableEditListener> iter;
 
     // Do nothing if we have no listeners.
     if (listeners.isEmpty())
@@ -181,9 +181,9 @@ public class UndoableEditSupport
     // Iterator, a java.util.ConcurrentModificationException; in the
     // case of a direct loop over the Vector elements, some
     // index-out-of-bounds exception).
-    iter = ((Vector) listeners.clone()).iterator();
+    iter = new Vector<UndoableEditListener>(listeners).iterator();
     while (iter.hasNext())
-      ((UndoableEditListener) iter.next()).undoableEditHappened(event);
+      iter.next().undoableEditHappened(event);
   }
 
 

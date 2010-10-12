@@ -40,23 +40,24 @@ package gnu.javax.print.ipp.attribute.supported;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.ResolutionSyntax;
 import javax.print.attribute.SupportedValuesAttribute;
 import javax.print.attribute.standard.PrinterResolution;
 
 
 /**
- * The <code>PrinterResolutionSupported</code> attribute provides 
+ * The <code>PrinterResolutionSupported</code> attribute provides
  * the supported values for the job attribute printer-resolution.
- *  
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class PrinterResolutionSupported extends ResolutionSyntax
   implements SupportedValuesAttribute
 {
-  
+
   /**
-   * Creates a <code>PrinterResolutionSupported</code> object with the 
+   * Creates a <code>PrinterResolutionSupported</code> object with the
    * given arguments.
    *
    * @param crossFeedResolution the cross feed resolution
@@ -65,25 +66,25 @@ public final class PrinterResolutionSupported extends ResolutionSyntax
    *
    * @exception IllegalArgumentException if preconditions fail
    */
-  public PrinterResolutionSupported(int crossFeedResolution, 
+  public PrinterResolutionSupported(int crossFeedResolution,
       int feedResolution, int units)
   {
     super(crossFeedResolution, feedResolution, units);
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
     if(! (obj instanceof PrinterResolutionSupported))
       return false;
-    
+
     return super.equals(obj);
   }
 
@@ -92,7 +93,7 @@ public final class PrinterResolutionSupported extends ResolutionSyntax
    *
    * @return The class <code>PrinterResolutionSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return PrinterResolutionSupported.class;
   }
@@ -106,38 +107,36 @@ public final class PrinterResolutionSupported extends ResolutionSyntax
   {
     return "printer-resolution-supported";
   }
-  
+
   /**
    * Returns the equally enum of the standard attribute class
    * of this SupportedValuesAttribute enum.
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
-  public PrinterResolution getAssociatedAttribute() 
+  public PrinterResolution getAssociatedAttribute()
   {
-    return new PrinterResolution(getCrossFeedResolutionDphi(), 
+    return new PrinterResolution(getCrossFeedResolutionDphi(),
                                  getFeedResolutionDphi(), 1);
   }
-  
+
   /**
    * Constructs an array from a set of -supported attributes.
    * @param set set to process
    * @return The constructed array.
-   * 
+   *
    * @see #getAssociatedAttribute()
    */
-  public static PrinterResolution[] getAssociatedAttributeArray(Set set) 
+  public static PrinterResolution[]
+    getAssociatedAttributeArray(Set<Attribute> set)
   {
-    PrinterResolutionSupported tmp;
-    PrinterResolution[] result = new PrinterResolution[set.size()];      
-    Iterator it = set.iterator();
+    PrinterResolution[] result = new PrinterResolution[set.size()];
     int j = 0;
-    while (it.hasNext())
+    for (Attribute tmp : set)
       {
-        tmp = (PrinterResolutionSupported) it.next();
-        result[j] = tmp.getAssociatedAttribute();
+        result[j] = ((PrinterResolutionSupported) tmp).getAssociatedAttribute();
         j++;
-      }            
+      }
     return result;
   }
 }

@@ -1,4 +1,4 @@
-/* StatusMessage.java -- 
+/* StatusMessage.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,9 +45,9 @@ import javax.print.attribute.TextSyntax;
 
 /**
  * StatusMessage attribute as described in RFC 2911 section
- * 3.1.6  Operation Response Status Codes and Status Message 
+ * 3.1.6  Operation Response Status Codes and Status Message
  * provides a short description of the status of the operation.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class StatusMessage extends TextSyntax implements Attribute
@@ -73,7 +73,7 @@ public final class StatusMessage extends TextSyntax implements Attribute
    *
    * @return The class <code>StatusMessage</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return StatusMessage.class;
   }

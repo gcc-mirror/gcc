@@ -76,52 +76,52 @@ import javax.print.event.PrintJobEvent;
 import javax.print.event.PrintJobListener;
 
 /**
- * Implementation of the DocPrintJob interface. Implementation is 
+ * Implementation of the DocPrintJob interface. Implementation is
  * specific to the <code>IppPrintService</code> implementation.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public class DocPrintJobImpl implements CancelablePrintJob
 {
   /** The print service this job is bound to. */
   private IppPrintService service;
-  
+
   /** The set of print job listeners. */
   private HashSet printJobListener = new HashSet();
-  
+
   /** The print job attributes listeners. */
   private ArrayList attributesListener = new ArrayList();
   /** The print job attributes listeners associated attribute set. */
   private ArrayList attributesListenerAttributes = new ArrayList();
-  
+
   /** The username. */
   private String username;
   /** The password of the user. */
   private String password;
-  
+
   /** Returned job uri. */
   private JobUri jobUri = null;
   /** Returned job id. */
   private JobId jobId = null;
-  
+
   /** The requesting-username for later canceling */
   private RequestingUserName requestingUser;
-  
+
   /** The print job sets. */
   private PrintJobAttributeSet oldSet = new HashPrintJobAttributeSet();
   private PrintJobAttributeSet currentSet = new HashPrintJobAttributeSet();
-  
-  /** 
+
+  /**
    * State variable if we already started printing.
    */
   private boolean printing = false;
- 
+
   // TODO Implement complete PrintJobListener notification
   // TODO Implement PrintJobAttributeListener notification
 
   /**
    * Constructs a DocPrintJobImpl instance bound to the given print service.
-   * 
+   *
    * @param service the print service instance.
    * @param user the user of this print service.
    * @param passwd the password of the user.
@@ -141,7 +141,7 @@ public class DocPrintJobImpl implements CancelablePrintJob
   {
     if (listener == null)
       return;
-    
+
     attributesListener.add(listener);
     attributesListenerAttributes.add(attributes);
   }
@@ -153,7 +153,7 @@ public class DocPrintJobImpl implements CancelablePrintJob
   {
     if (listener == null)
       return;
-    
+
     printJobListener.add(listener);
   }
 
@@ -181,30 +181,30 @@ public class DocPrintJobImpl implements CancelablePrintJob
   {
     if (printing)
       throw new PrintException("already printing");
-    
+
     printing = true;
-    
+
     DocAttributeSet docAtts = doc.getAttributes();
     DocFlavor flavor = doc.getDocFlavor();
-    
+
     if (flavor == null || (!service.isDocFlavorSupported(flavor)))
       {
         notifyPrintJobListeners(new PrintJobEvent(this, PrintJobEvent.JOB_FAILED));
         throw new PrintFlavorException("Invalid flavor", new DocFlavor[] {flavor});
       }
-            
-    // merge attributes as doc attributes take precendence 
+
+    // merge attributes as doc attributes take precendence
     // over the print request attributes
     HashAttributeSet mergedAtts = new HashAttributeSet();
-    
+
     if (attributes != null)
       mergedAtts.addAll(attributes);
     if (docAtts != null)
       mergedAtts.addAll(docAtts);
-    
+
     // check for requesting-user-name -add the
     // executing username if no other is specified
-    // save user name so we can make a cancel operation under same user    
+    // save user name so we can make a cancel operation under same user
     if (! mergedAtts.containsKey(RequestingUserName.class))
       {
         mergedAtts.add(IppPrintService.REQUESTING_USER_NAME);
@@ -212,53 +212,53 @@ public class DocPrintJobImpl implements CancelablePrintJob
       }
     else
       {
-        requestingUser = (RequestingUserName) 
+        requestingUser = (RequestingUserName)
           mergedAtts.get(RequestingUserName.class);
       }
-    
+
     // same for job-name
     if (! mergedAtts.containsKey(JobName.class))
       mergedAtts.add(IppPrintService.JOB_NAME);
-          
+
     IppResponse response = null;
-    
+
     try
       {
         PrinterURI printerUri = service.getPrinterURI();
         String printerUriStr = "http" + printerUri.toString().substring(3);
-     
+
         URI uri = null;
         try
           {
             uri = new URI(printerUriStr);
           }
-        catch (URISyntaxException e) 
+        catch (URISyntaxException e)
           {
-            // does not happen 
+            // does not happen
           }
-        
-        IppRequest request = 
-          new IppRequest(uri, username, password);   
-        
+
+        IppRequest request =
+          new IppRequest(uri, username, password);
+
         request.setOperationID( (short) OperationsSupported.PRINT_JOB.getValue());
         request.setOperationAttributeDefaults();
         request.addOperationAttribute(printerUri);
-        
+
         if (mergedAtts != null)
           {
              request.addAndFilterJobOperationAttributes(mergedAtts);
              request.addAndFilterJobTemplateAttributes(mergedAtts);
-          }        
-        
+          }
+
         // DocFlavor getMimeType returns charset quoted
         DocumentFormat format = DocumentFormat.createDocumentFormat(flavor);
         request.addOperationAttribute(format);
-        
-        // Get and set the printdata based on the 
+
+        // Get and set the printdata based on the
         // representation classname
-        String className = flavor.getRepresentationClassName();    
-        
-        if (className.equals("[B")) 
+        String className = flavor.getRepresentationClassName();
+
+        if (className.equals("[B"))
           {
             request.setData((byte[]) doc.getPrintData());
             response = request.send();
@@ -275,7 +275,7 @@ public class DocPrintJobImpl implements CancelablePrintJob
             try
               {
                 // CUPS only supports UTF-8 currently so we convert
-                // We also assume that char[] is always utf-16 - correct ?                
+                // We also assume that char[] is always utf-16 - correct ?
                 String str = new String((char[]) doc.getPrintData());
                 request.setData(str.getBytes("utf-16"));
                 response = request.send();
@@ -285,7 +285,7 @@ public class DocPrintJobImpl implements CancelablePrintJob
                 notifyPrintJobListeners(new PrintJobEvent(this, PrintJobEvent.JOB_FAILED));
                 throw new PrintFlavorException("Invalid charset of flavor", e, new DocFlavor[] {flavor});
               }
-          }          
+          }
         else if (className.equals("java.io.Reader"))
           {
             try
@@ -300,13 +300,13 @@ public class DocPrintJobImpl implements CancelablePrintJob
                 notifyPrintJobListeners(new PrintJobEvent(this, PrintJobEvent.JOB_FAILED));
                 throw new PrintFlavorException("Invalid charset of flavor", e, new DocFlavor[] {flavor});
               }
-          }  
+          }
         else if (className.equals("java.lang.String"))
           {
             try
               {
                 // CUPS only supports UTF-8 currently so we convert
-                // We also assume that String is always utf-16 - correct ?                
+                // We also assume that String is always utf-16 - correct ?
                 String str = (String) doc.getPrintData();
                 request.setData(str.getBytes("utf-16"));
                 response = request.send();
@@ -316,7 +316,7 @@ public class DocPrintJobImpl implements CancelablePrintJob
                 notifyPrintJobListeners(new PrintJobEvent(this, PrintJobEvent.JOB_FAILED));
                 throw new PrintFlavorException("Invalid charset of flavor", e, new DocFlavor[] {flavor});
               }
-          }  
+          }
         else if (className.equals("java.net.URL"))
           {
             URL url = (URL) doc.getPrintData();
@@ -332,22 +332,22 @@ public class DocPrintJobImpl implements CancelablePrintJob
             // For the future :-)
             throw new PrintException("Not yet supported.");
           }
-        else 
+        else
           {
             // should not happen - however
             notifyPrintJobListeners(new PrintJobEvent(this, PrintJobEvent.JOB_FAILED));
             throw new PrintFlavorException("Invalid flavor", new DocFlavor[] {flavor});
-          }        
-        
+          }
+
         // at this point the data is transfered
         notifyPrintJobListeners(new PrintJobEvent(
           this, PrintJobEvent.DATA_TRANSFER_COMPLETE));
-      }   
+      }
     catch (IOException e)
       {
         throw new PrintException("IOException occured.", e);
-      } 
-      
+      }
+
     int status = response.getStatusCode();
     if (! (status == IppStatusCode.SUCCESSFUL_OK
          || status == IppStatusCode.SUCCESSFUL_OK_IGNORED_OR_SUBSTITUED_ATTRIBUTES
@@ -356,7 +356,7 @@ public class DocPrintJobImpl implements CancelablePrintJob
         notifyPrintJobListeners(new PrintJobEvent(
           this, PrintJobEvent.JOB_FAILED));
         throw new PrintException("Printing failed - received statuscode " + Integer.toHexString(status));
-        
+
         // TODO maybe specific status codes may require to throw a specific
         // detailed attribute exception
       }
@@ -364,18 +364,18 @@ public class DocPrintJobImpl implements CancelablePrintJob
       {
         // start print job progress monitoring thread
         // FIXME Implement
-        
+
         // for now we just notify as finished
         notifyPrintJobListeners(
           new PrintJobEvent(this, PrintJobEvent.JOB_COMPLETE));
       }
-            
+
     List jobAtts = response.getJobAttributes();
-    
+
     // extract the uri and id of job for canceling and further monitoring
     Map jobAttributes = (Map) jobAtts.get(0);
     jobUri = (JobUri) ((HashSet)jobAttributes.get(JobUri.class)).toArray()[0];
-    jobId = (JobId) ((HashSet)jobAttributes.get(JobId.class)).toArray()[0];   
+    jobId = (JobId) ((HashSet)jobAttributes.get(JobId.class)).toArray()[0];
   }
 
   /**
@@ -385,7 +385,7 @@ public class DocPrintJobImpl implements CancelablePrintJob
   {
     if (listener == null)
       return;
-    
+
     int index = attributesListener.indexOf(listener);
     if (index != -1)
       {
@@ -401,10 +401,10 @@ public class DocPrintJobImpl implements CancelablePrintJob
   {
     if (listener == null)
       return;
-    
+
     printJobListener.remove(listener);
   }
- 
+
   /**
    * @see CancelablePrintJob#cancel()
    */
@@ -414,23 +414,23 @@ public class DocPrintJobImpl implements CancelablePrintJob
       {
         throw new PrintException("print job is not yet send");
       }
-    
+
     IppResponse response = null;
-    
+
     try
       {
-        IppRequest request = new IppRequest(jobUri.getURI(), username, password);   
+        IppRequest request = new IppRequest(jobUri.getURI(), username, password);
         request.setOperationID( (short) OperationsSupported.CANCEL_JOB.getValue());
         request.setOperationAttributeDefaults();
         request.addOperationAttribute(jobUri);
         request.addOperationAttribute(requestingUser);
-        response = request.send();        
-      }   
+        response = request.send();
+      }
     catch (IOException e)
-      { 
+      {
         throw new IppException("IOException occured during cancel request.", e);
-      } 
-    
+      }
+
     int status = response.getStatusCode();
     if (! (status == IppStatusCode.SUCCESSFUL_OK
          || status == IppStatusCode.SUCCESSFUL_OK_IGNORED_OR_SUBSTITUED_ATTRIBUTES
@@ -438,15 +438,15 @@ public class DocPrintJobImpl implements CancelablePrintJob
       {
         notifyPrintJobListeners(new PrintJobEvent(
           this, PrintJobEvent.JOB_FAILED));
-        throw new PrintException("Canceling failed - received statuscode " + Integer.toHexString(status));        
+        throw new PrintException("Canceling failed - received statuscode " + Integer.toHexString(status));
       }
-    else 
+    else
       {
         notifyPrintJobListeners(new PrintJobEvent(
           this, PrintJobEvent.JOB_CANCELED));
       }
   }
-  
+
   private void notifyPrintJobListeners(PrintJobEvent e)
   {
     Iterator it = printJobListener.iterator();
@@ -463,9 +463,9 @@ public class DocPrintJobImpl implements CancelablePrintJob
           l.printJobFailed(e);
         else if (e.getPrintEventType() == PrintJobEvent.NO_MORE_EVENTS)
           l.printJobNoMoreEvents(e);
-        else 
+        else
           l.printJobRequiresAttention(e);
-      }    
+      }
   }
-  
+
 }

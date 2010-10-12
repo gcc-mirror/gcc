@@ -1,4 +1,4 @@
-/* IppVersionsSupported.java -- 
+/* IppVersionsSupported.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.javax.print.ipp.attribute.supported;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.EnumSyntax;
 import javax.print.attribute.SupportedValuesAttribute;
 
@@ -45,31 +46,31 @@ import javax.print.attribute.SupportedValuesAttribute;
  * IppVersionsSupported attribute as described in RFC 2911 section
  * 4.4.14 provides the value(s) (implemented as EnumSyntax)
  * of the supported IPP versions.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class IppVersionsSupported extends EnumSyntax 
+public final class IppVersionsSupported extends EnumSyntax
   implements SupportedValuesAttribute
 {
-  
+
   // a keyword based attribute in IPP - int values just starting at 0
-  
+
   /** IPP version 1.0 */
-  public static final IppVersionsSupported V_1_0 = 
+  public static final IppVersionsSupported V_1_0 =
     new IppVersionsSupported(0);
-  
+
   /** IPP version 1.1 */
-  public static final IppVersionsSupported V_1_1 = 
+  public static final IppVersionsSupported V_1_1 =
     new IppVersionsSupported(1);
-  
+
   private static final String[] stringTable = { "1.0", "1.1" };
-  
-  private static final IppVersionsSupported[] enumValueTable = { V_1_0, 
+
+  private static final IppVersionsSupported[] enumValueTable = { V_1_0,
                                                                  V_1_1 };
 
   /**
    * Constructs a <code>IppVersionsSupported</code> object.
-   * 
+   *
    * @param value the enum value
    */
   public IppVersionsSupported(int value)
@@ -78,11 +79,11 @@ public final class IppVersionsSupported extends EnumSyntax
   }
 
   /**
-   * Returns category of this class.
+   * Returns the category of this class.
    *
    * @return The class <code>IppVersionsSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return IppVersionsSupported.class;
   }
@@ -96,7 +97,7 @@ public final class IppVersionsSupported extends EnumSyntax
   {
     return "ipp-versions-supported";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

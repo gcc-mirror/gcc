@@ -1,5 +1,5 @@
-/* ReaderDelegate.java -- 
-   Copyright (C) 2005,2006  Free Software Foundation, Inc.
+/* StreamReaderDelegate.java -- 
+   Copyright (C) 2005,2006,2009  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,7 +47,7 @@ import javax.xml.stream.XMLStreamReader;
 /**
  * Base class for XML stream reader filters.
  */
-public class ReaderDelegate
+public class StreamReaderDelegate
   implements XMLStreamReader, XMLStreamConstants
 {
 
@@ -56,14 +56,14 @@ public class ReaderDelegate
   /**
    * Constructs an empty filter with no parent set.
    */
-  public ReaderDelegate()
+  public StreamReaderDelegate()
   {
   }
 
   /**
    * Constructs an empty filter with the specfied parent.
    */
-  public ReaderDelegate(XMLStreamReader reader)
+  public StreamReaderDelegate(XMLStreamReader reader)
   {
     parent = reader;
   }

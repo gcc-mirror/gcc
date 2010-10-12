@@ -181,7 +181,6 @@ class TableView
                                    int spans[])
     {
       updateGrid();
-      int numCols = offsets.length;
       int realColumn = 0;
       int colCount = getViewCount();
       for (int i = 0; i < numColumns;)

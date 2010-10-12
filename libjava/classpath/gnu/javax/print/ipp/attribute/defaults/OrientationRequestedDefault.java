@@ -45,27 +45,27 @@ import javax.print.attribute.EnumSyntax;
 
 
 /**
- * The <code>OrientationRequestedDefault</code> attribute provides 
+ * The <code>OrientationRequestedDefault</code> attribute provides
  * the default value for the job attribute orientation-requested.
- *  
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class OrientationRequestedDefault extends EnumSyntax
   implements DefaultValueAttribute
 {
-  
+
   /** Orientation as portrait. */
   public static final OrientationRequestedDefault PORTRAIT =
     new OrientationRequestedDefault(3);
-  
+
   /** Orientation as landscape. */
   public static final OrientationRequestedDefault LANDSCAPE =
     new OrientationRequestedDefault(4);
-  
+
   /** Orientation as reversed landscape. */
   public static final OrientationRequestedDefault REVERSE_LANDSCAPE =
     new OrientationRequestedDefault(5);
-  
+
   /** Orientation as reversed portrait. */
   public static final OrientationRequestedDefault REVERSE_PORTRAIT =
     new OrientationRequestedDefault(6);
@@ -74,14 +74,14 @@ public final class OrientationRequestedDefault extends EnumSyntax
   private static final String[] stringTable = { "portrait", "landscape",
                                                 "reverse-landscape",
                                                 "reverse-portrait" };
-  
-  private static final OrientationRequestedDefault[] 
-      enumValueTable = { PORTRAIT, LANDSCAPE, 
+
+  private static final OrientationRequestedDefault[]
+      enumValueTable = { PORTRAIT, LANDSCAPE,
                          REVERSE_LANDSCAPE, REVERSE_PORTRAIT };
-  
+
   /**
    * Constructs a <code>OrientationRequestedDefault</code> object.
-   * 
+   *
    * @param value the value
    */
   protected OrientationRequestedDefault(int value)
@@ -94,7 +94,7 @@ public final class OrientationRequestedDefault extends EnumSyntax
    *
    * @return The class <code>OrientationRequestedDefault</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return OrientationRequestedDefault.class;
   }
@@ -108,7 +108,7 @@ public final class OrientationRequestedDefault extends EnumSyntax
   {
     return "orientation-requested-default";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.
@@ -129,7 +129,7 @@ public final class OrientationRequestedDefault extends EnumSyntax
   {
     return enumValueTable;
   }
-  
+
   /**
    * Returns the lowest used value by the enumerations of this class.
    * .
@@ -139,16 +139,16 @@ public final class OrientationRequestedDefault extends EnumSyntax
   {
     return 3;
   }
-  
+
   /**
    * Returns the equally enum of the standard attribute class
    * of this DefaultValuesAttribute enum.
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
-  public Attribute getAssociatedAttribute() 
+  public Attribute getAssociatedAttribute()
   {
-    return IppUtilities.getEnumAttribute("orientation-requested", 
+    return IppUtilities.getEnumAttribute("orientation-requested",
                                          new Integer(getValue()));
   }
 }

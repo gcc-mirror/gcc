@@ -267,6 +267,7 @@ public class LocalObject
    * 
    * @throws NO_IMPLEMENT always. If used, the method must be overridden.
    */
+  @SuppressWarnings("unchecked") // Needed for API compatibility
   public ServantObject _servant_preinvoke(String operation, Class expectedType)
   {
     throw new NO_IMPLEMENT(INAPPROPRIATE);

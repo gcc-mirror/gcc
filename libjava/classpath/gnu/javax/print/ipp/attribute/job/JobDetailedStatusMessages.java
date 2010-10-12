@@ -1,4 +1,4 @@
-/* JobDetailedStatusMessages.java -- 
+/* JobDetailedStatusMessages.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,10 +46,10 @@ import javax.print.attribute.TextSyntax;
 /**
  * JobDetailedStatusMessages provides additional detailed and
  * technical job informations.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class JobDetailedStatusMessages 
+public final class JobDetailedStatusMessages
   extends TextSyntax implements Attribute
 {
 
@@ -73,7 +73,7 @@ public final class JobDetailedStatusMessages
    *
    * @return The class <code>JobDetailedStatusMessages</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return JobDetailedStatusMessages.class;
   }

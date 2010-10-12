@@ -152,10 +152,10 @@ public class Keywords
       "xor_eq"
     };
 
-  private static final HashSet keywords;
+  private static final HashSet<String> keywords;
   static
     {
-      keywords = new HashSet();
+      keywords = new HashSet<String>();
       for (int i = 0; i < words.length; ++i)
         keywords.add(words[i]);
     }

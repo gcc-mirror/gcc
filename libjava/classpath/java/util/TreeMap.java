@@ -2745,7 +2745,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
 	  {
 	    public int size()
 	    {
-	      return size();
+	      return DescendingMap.this.size();
 	    }
 	    
 	    public Iterator<DV> iterator()
@@ -2786,7 +2786,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
 	    
 	    public void clear()
 	    {
-	      clear();
+	      DescendingMap.this.clear();
 	    }
 	  };
       return values;
