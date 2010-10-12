@@ -1,3 +1,8 @@
+2010-10-12  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (get_constraint_for_1): Constants
+	only point to nonlocal, not anything.
+
 2010-10-11  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (TARGET_EXCEPT_UNWIND_INFO): Use sjlj
