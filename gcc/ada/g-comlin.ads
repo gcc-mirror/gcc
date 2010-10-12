@@ -799,6 +799,7 @@ package GNAT.Command_Line is
      (Cmd        : in out Command_Line;
       Switch     : String;
       Parameter  : String    := "";
+      Separator  : Character := ' ';
       Section    : String    := "";
       Add_Before : Boolean   := False);
    --  Add a new switch to the command line, and combine/group it with existing
@@ -825,6 +826,9 @@ package GNAT.Command_Line is
    --  added if not already present. For example, to add the -g switch into the
    --  -cargs section, you need to call (Cmd, "-g", Section => "-cargs").
    --
+   --  [Separator] is ignored, and kept for backward compatibility only.
+   --  ??? It might be removed in future versions.
+   --
    --  Invalid_Section is raised if Section was not defined in the
    --  configuration of the command line.
    --
@@ -835,6 +839,7 @@ package GNAT.Command_Line is
      (Cmd        : in out Command_Line;
       Switch     : String;
       Parameter  : String    := "";
+      Separator  : Character := ' ';
       Section    : String    := "";
       Add_Before : Boolean   := False;
       Success    : out Boolean);

@@ -863,9 +863,17 @@ begin
             Write_Str (" (missing subunits)");
             Write_Eol;
 
+            --  Force generation of ALI file, for backward compatibility
+
+            Opt.Force_ALI_Tree_File := True;
+
          elsif Main_Kind = N_Subunit then
             Write_Str (" (subunit)");
             Write_Eol;
+
+            --  Force generation of ALI file, for backward compatibility
+
+            Opt.Force_ALI_Tree_File := True;
 
          elsif Main_Kind = N_Subprogram_Declaration then
             Write_Str (" (subprogram spec)");
@@ -876,6 +884,10 @@ begin
          elsif Main_Kind = N_Package_Body and then GNAT_Mode then
             Write_Str (" (predefined generic)");
             Write_Eol;
+
+            --  Force generation of ALI file, for backward compatibility
+
+            Opt.Force_ALI_Tree_File := True;
 
          --  Only other case is a package spec
 
@@ -893,7 +905,14 @@ begin
          Errout.Output_Messages;
          Treepr.Tree_Dump;
          Tree_Gen;
-         Write_ALI (Object => False);
+
+         --  Generate ALI file if specially requested, or for missing subunits,
+         --  subunits or predefined generic.
+
+         if Opt.Force_ALI_Tree_File then
+            Write_ALI (Object => False);
+         end if;
+
          Namet.Finalize;
          Check_Rep_Info;
 

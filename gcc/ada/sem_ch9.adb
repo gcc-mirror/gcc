@@ -194,11 +194,11 @@ package body Sem_Ch9 is
          return;
       end if;
 
-      --  In order to process the parameters, we create a defining
-      --  identifier that can be used as the name of the scope. The
-      --  name of the accept statement itself is not a defining identifier,
-      --  and we cannot use its name directly because the task may have
-      --  any number of accept statements for the same entry.
+      --  In order to process the parameters, we create a defining identifier
+      --  that can be used as the name of the scope. The name of the accept
+      --  statement itself is not a defining identifier, and we cannot use
+      --  its name directly because the task may have any number of accept
+      --  statements for the same entry.
 
       if Present (Index) then
          Accept_Id := New_Internal_Entity
@@ -277,7 +277,6 @@ package body Sem_Ch9 is
          if Entry_Nam = Scope_Stack.Table (J).Entity then
             Error_Msg_N ("duplicate accept statement for same entry", N);
          end if;
-
       end loop;
 
       declare
