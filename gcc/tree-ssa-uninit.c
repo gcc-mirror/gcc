@@ -149,6 +149,9 @@ compute_uninit_opnds_pos (gimple phi)
   unsigned uninit_opnds = 0;
 
   n = gimple_phi_num_args (phi);
+  /* Bail out for phi with too many args.  */
+  if (n > 32)
+    return 0;
 
   for (i = 0; i < n; ++i)
     {
