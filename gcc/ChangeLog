@@ -1,3 +1,12 @@
+2010-10-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/predicates.md (scc_rev_comparison_operator): New.
+	* config/rs6000/rs6000.md (*isel_reversed_signed_<mode>): New.
+	(*isel_reversed_unsigned_<mode>): New.
+	* config/rs6000/rs6000.c (output_isel): Accept GE/GEU/LE/LEU/NE
+	as valid comparisons and adjust operands and output appropriately.
+	(rs6000_rtx_costs) <CONST_INT>: Accept NE as a cost-0 outer_code.
+
 2010-10-12  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/arm/arm.h (ARM_EXPAND_ALIGNMENT): Rename from

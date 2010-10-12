@@ -17159,7 +17159,13 @@ output_isel (rtx *operands)
 
   code = GET_CODE (operands[1]);
 
-  gcc_assert (!(code == GE || code == GEU || code == LE || code == LEU || code == NE));
+  if (code == GE || code == GEU || code == LE || code == LEU || code == NE)
+    {
+      gcc_assert (GET_CODE (operands[2]) == REG
+		  && GET_CODE (operands[3]) == REG);
+      PUT_CODE (operands[1], reverse_condition (code));
+      return "isel %0,%3,%2,%j1";
+    }
 
   return "isel %0,%2,%3,%j1";
 }
@@ -25731,7 +25737,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total,
 	  || (outer_code == COMPARE
 	      && (satisfies_constraint_I (x)
 		  || satisfies_constraint_K (x)))
-	  || (outer_code == EQ
+	  || ((outer_code == EQ || outer_code == NE)
 	      && (satisfies_constraint_I (x)
 		  || satisfies_constraint_K (x)
 		  || (mode == SImode
