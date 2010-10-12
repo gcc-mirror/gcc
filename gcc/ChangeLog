@@ -1,3 +1,11 @@
+2010-10-12  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/arm/arm.h (ARM_EXPAND_ALIGNMENT): Rename from
+	DATA_ALIGNMENT and add COND parameter. Update comments above.
+	(DATA_ALIGNMENT): Use ARM_EXPAND_ALIGNMENT, with !optimize_size.
+	(LOCAL_ALIGNMENT): Use ARM_EXPAND_ALIGNMENT, with
+	!flag_conserve_stack.
+
 2010-10-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/45958
