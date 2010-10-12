@@ -239,6 +239,14 @@ objc_EXPORT Class object_setClass (id object, Class class_);
    reuse the returned Ivar if you can.  */
 objc_EXPORT Ivar class_getInstanceVariable (Class class_, const char *name);
 
+/* Return a class variable given the class and the class variable
+   name.  This is an expensive function to call, so try to reuse the
+   returned Ivar if you can.  
+   
+   This function always returns NULL since class variables are
+   currently unavailable in Objective-C.  */
+objc_EXPORT Ivar class_getClassVariable (Class class_, const char *name);
+
 /* If the object was created in class_createInstance() with some
    extraBytes, returns a pointer to them.  If it was not, then the
    returned pointer may make no sense.  */
@@ -360,6 +368,48 @@ objc_EXPORT int objc_getClassList (Class *returnValue, int maxNumberOfClassesToR
 /* Return the name of the class 'class_', or the string "nil" if the
    class_ is Nil.  */
 objc_EXPORT const char * class_getName (Class class_);
+
+/* Return YES if 'class_' is a meta class, and NO if not.  If 'class_'
+   is Nil, return NO.  */
+objc_EXPORT BOOL class_isMetaClass (Class class_);
+
+/* Return the superclass of 'class_'.  If 'class_' is Nil, or it is a root
+   class, return Nil.
+
+   TODO: It may be worth to define this inline, since it is usually
+   used in loops when traversing the class hierarchy.  */
+objc_EXPORT Class class_getSuperclass (Class class_);
+
+/* Return the 'version' number of the class, which is an integer that
+   can be used to track changes in the class API, methods and
+   variables.  If class_ is Nil, return 0.  If class_ is not Nil, the
+   version is 0 unless class_setVersion() has been called to set a
+   different one.
+
+   Please note that internally the version is a long, but the API only
+   allows you to set and retrieve int values.  */
+objc_EXPORT int class_getVersion (Class class_);
+
+/* Set the 'version' number of the class, which is an integer that can
+   be used to track changes in the class API, methods and variables.
+   If 'class_' is Nil, does nothing.
+
+   This is typically used internally by "Foundation" libraries such as
+   GNUstep Base to support serialization / deserialization of objects
+   that work across changes in the classes.  If you are using such a
+   library, you probably want to use their versioning API, which may
+   be based on this one, but is integrated with the rest of the
+   library.
+
+   Please note that internally the version is a long, but the API only
+   allows you to set and retrieve int values.  */
+objc_EXPORT void class_setVersion (Class class_, int version);
+
+/* Return the size in bytes (a byte is the size of a char) of an
+   instance of the class.  If class_ is Nil, return 0; else it return
+   a non-zero number (since the 'isa' instance variable is required
+   for all classes).  */
+objc_EXPORT size_t class_getInstanceSize (Class class_);
 
 
 /** Implementation: the following functions are in protocols.c.  */

@@ -89,10 +89,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "objc-private/common.h"
 #include "objc-private/error.h"
-#include "objc/objc-api.h"
+#include "objc/runtime.h"
 #include "objc/thr.h"
-#include "objc-private/runtime.h"            /* the kitchen sink */
-#include <string.h> /* For memset */
+#include "objc-private/module-abi-8.h"  /* For CLS_ISCLASS and similar.  */
+#include "objc-private/runtime.h"       /* the kitchen sink */
+#include <string.h>                     /* For memset */
 
 /* We use a table which maps a class name to the corresponding class
  * pointer.  The first part of this file defines this table, and
@@ -417,11 +418,6 @@ class_table_print_histogram (void)
 */
 Class (*_objc_lookup_class) (const char *name) = 0;      /* !T:SAFE */
 
-/* Temporarily while we still include objc/objc-api.h instead of objc/runtime.h.  */
-#ifndef __objc_runtime_INCLUDE_GNU
-typedef Class (*objc_get_unknown_class_handler)(const char *class_name);
-#endif
-
 /* The handler currently in use.  PS: if both
    __obj_get_unknown_class_handler and _objc_lookup_class are defined,
    __objc_get_unknown_class_handler is called first.  */
@@ -591,6 +587,7 @@ objc_lookup_class (const char *name)
    called automatically by the compiler while messaging (if using the
    traditional ABI), so it is worth keeping it fast; don't make it
    just a wrapper around objc_getClass().  */
+/* Note that this is roughly equivalent to objc_getRequiredClass().  */
 /* Get the class object for the class named NAME.  If NAME does not
    identify a known class, the hook _objc_lookup_class is called.  If
    this fails, an error message is issued and the system aborts.  */
@@ -737,6 +734,49 @@ class_getName (Class class_)
     return "nil";
 
   return class_->name;
+}
+
+BOOL
+class_isMetaClass (Class class_)
+{
+  /* CLS_ISMETA includes the check for Nil class_.  */
+  return CLS_ISMETA (class_);
+}
+
+Class
+class_getSuperclass (Class class_)
+{
+  if (class_ == Nil)
+    return Nil;
+
+  return class_->super_class;
+}
+
+int
+class_getVersion (Class class_)
+{
+  if (class_ == Nil)
+    return 0;
+
+  return (int)(class_->version);
+}
+
+void
+class_setVersion (Class class_, int version)
+{
+  if (class_ == Nil)
+    return;
+
+  class_->version = version;
+}
+
+size_t
+class_getInstanceSize (Class class_)
+{
+  if (class_ == Nil)
+    return 0;
+
+  return class_->instance_size;
 }
 
 #define CLASSOF(c) ((c)->class_pointer)
