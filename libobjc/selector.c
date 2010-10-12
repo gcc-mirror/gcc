@@ -293,6 +293,9 @@ const char *sel_getName (SEL selector)
 {
   const char *ret;
 
+  if (selector == NULL)
+    return "<null selector>";
+
   objc_mutex_lock (__objc_runtime_mutex);
   if ((soffset_decode ((sidx)selector->sel_id) > 0)
       && (soffset_decode ((sidx)selector->sel_id) <= __objc_selector_max_index))
@@ -306,6 +309,9 @@ const char *sel_getName (SEL selector)
 /* Traditional GNU Objective-C Runtime API.  */
 const char *sel_get_name (SEL selector)
 {
+  if (selector == NULL)
+    return 0;
+
   return sel_getName (selector);
 }
 

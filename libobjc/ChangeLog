@@ -1,3 +1,15 @@
+2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* selector.c (sel_getName): Return "<null selector>" for a NULL
+	argument.
+	(sel_get_name): Return 0 for a NULL argument.
+	* objc/runtime.h (sel_getName): Updated documentation.
+
+	* objc-private/hash.h (class_hash_table): Unused declaration
+	removed.
+	(module_hash_table): Same.
+	* objc/deprecated/hash.h: Same changes.
+	
 2010-10-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* class.c (objc_getClassList): New.
