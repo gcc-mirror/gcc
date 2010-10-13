@@ -1,3 +1,8 @@
+2010-10-13  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vect-slp.c (vect_get_constant_vectors): Fix comment.
+	Use operand's type for POINTER_PLUS_EXPR.
+
 2010-10-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c-parser.c (c_parser_for_statement): Initialize incr.

@@ -1811,8 +1811,8 @@ vect_update_slp_costs_according_to_vf (loop_vec_info loop_vinfo)
 
 /* For constant and loop invariant defs of SLP_NODE this function returns
    (vector) defs (VEC_OPRNDS) that will be used in the vectorized stmts.
-   OP_NUM determines if we gather defs for operand 0 or operand 1 of the scalar
-   stmts. NUMBER_OF_VECTORS is the number of vector defs to create.  
+   OP_NUM determines if we gather defs for operand 0 or operand 1 of the RHS of
+   scalar stmts.  NUMBER_OF_VECTORS is the number of vector defs to create.
    REDUC_INDEX is the index of the reduction operand in the statements, unless
    it is -1.  */
 
@@ -1836,10 +1836,10 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
   VEC (tree, heap) *voprnds = VEC_alloc (tree, heap, number_of_vectors);
   bool constant_p, is_store;
   tree neutral_op = NULL;
+  enum tree_code code = gimple_assign_rhs_code (stmt);
 
   if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def)
     {
-      enum tree_code code = gimple_assign_rhs_code (stmt);
       if (reduc_index == -1)
         {
           VEC_free (tree, heap, *vec_oprnds);
@@ -1895,18 +1895,18 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
     }
 
   if (CONSTANT_CLASS_P (op))
-    {
-      constant_p = true;
-      if (POINTER_TYPE_P (TREE_TYPE (gimple_assign_lhs (stmt))))
-        vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
-      else
-        vector_type = STMT_VINFO_VECTYPE (stmt_vinfo);
-    }
+    constant_p = true;
   else
-    {
-      constant_p = false;
-      vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
-    }
+    constant_p = false;
+
+  /* For POINTER_PLUS_EXPR we use the type of the constant/invariant itself.
+     If OP is the first operand of POINTER_PLUS_EXPR, its type is the type of
+     the statement, so it's OK to use OP's type for both first and second
+     operands.  */
+  if (code == POINTER_PLUS_EXPR)
+    vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
+  else
+    vector_type = STMT_VINFO_VECTYPE (stmt_vinfo);
 
   gcc_assert (vector_type);
   nunits = TYPE_VECTOR_SUBPARTS (vector_type);
