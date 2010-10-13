@@ -1,3 +1,44 @@
+2010-10-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.h (discrete_distribution<>::param_type::
+	param_type()): Default construct the vectors.
+	(discrete_distribution<>::param_type::probabilities): Adjust.
+	(discrete_distribution<>::probabilities): Likewise.
+	(discrete_distribution<>::max): Likewise.
+	(piecewise_constant_distribution<>::param_type::
+	param_type()): Default construct the vectors.
+	(piecewise_constant_distribution<>::param_type::intervals): Adjust.
+	(piecewise_constant_distribution<>::param_type::densities): Likewise.
+	(piecewise_constant_distribution<>::intervals): Likewise.
+	(piecewise_constant_distribution<>::densities): Likewise.
+	(piecewise_constant_distribution<>::min): Likewise.
+	(piecewise_constant_distribution<>::max): Likewise.
+	(piecewise_linear_distribution<>::param_type::
+	param_type()): Default construct the vectors.
+	(piecewise_linear_distribution<>::param_type::intervals): Adjust.
+	(piecewise_linear_distribution<>::param_type::densities): Likewise.
+	(piecewise_linear_distribution<>::intervals): Likewise.
+	(piecewise_linear_distribution<>::densities): Likewise.
+	(piecewise_linear_distribution<>::min): Likewise.
+	(piecewise_linear_distribution<>::max): Likewise.
+	* include/bits/random.tcc (discrete_distribution<>::param_type::
+	_M_initialize): Deal quickly with raw _M_prob equivalent to
+	a default constructed param_type, just clear the vector.
+	(discrete_distribution<>::operator()): Early return 0 for a
+	default constructed distribution.
+	(piecewise_constant_distribution<>::param_type::_M_initialize):
+	Likewise for _M_int and _M_den.
+	(piecewise_constant_distribution<>::operator()): Early return
+	for a default constructed distribution.
+	(piecewise_linear_distribution<>::param_type::_M_initialize):
+	Likewise.
+	(piecewise_linear_distribution<>::operator()): Early return
+	for a default constructed distribution.
+	* testsuite/26_numerics/random/discrete_distribution/operators/
+	call-default.cc: New.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/
+	operators/call-default.cc: Likewise.
+
 2010-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/random.h (discrete_distribution<>::param_type):

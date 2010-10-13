@@ -2217,7 +2217,6 @@ namespace std
       if (_M_prob.size() < 2)
 	{
 	  _M_prob.clear();
-	  _M_prob.push_back(1.0);
 	  return;
 	}
 
@@ -2257,6 +2256,9 @@ namespace std
       operator()(_UniformRandomNumberGenerator& __urng,
 		 const param_type& __param)
       {
+	if (__param._M_cp.empty())
+	  return result_type(0);
+
 	__detail::_Adaptor<_UniformRandomNumberGenerator, double>
 	  __aurng(__urng);
 
@@ -2330,16 +2332,13 @@ namespace std
     piecewise_constant_distribution<_RealType>::param_type::
     _M_initialize()
     {
-      if (_M_int.size() < 2)
+      if (_M_int.size() < 2
+	  || (_M_int.size() == 2
+	      && _M_int[0] == _RealType(0)
+	      && _M_int[1] == _RealType(1)))
 	{
 	  _M_int.clear();
-	  _M_int.reserve(2);
-	  _M_int.push_back(_RealType(0));
-	  _M_int.push_back(_RealType(1));
-
 	  _M_den.clear();
-	  _M_den.push_back(1.0);
-
 	  return;
 	}
 
@@ -2433,6 +2432,9 @@ namespace std
 	  __aurng(__urng);
 
 	const double __p = __aurng();
+	if (__param._M_cp.empty())
+	  return __p;
+
 	auto __pos = std::lower_bound(__param._M_cp.begin(),
 				      __param._M_cp.end(), __p);
 	const size_t __i = __pos - __param._M_cp.begin();
@@ -2519,18 +2521,14 @@ namespace std
     piecewise_linear_distribution<_RealType>::param_type::
     _M_initialize()
     {
-      if (_M_int.size() < 2)
+      if (_M_int.size() < 2
+	  || (_M_int.size() == 2
+	      && _M_int[0] == _RealType(0)
+	      && _M_int[1] == _RealType(1)
+	      && _M_den[0] == _M_den[1]))
 	{
 	  _M_int.clear();
-	  _M_int.reserve(2);
-	  _M_int.push_back(_RealType(0));
-	  _M_int.push_back(_RealType(1));
-
 	  _M_den.clear();
-	  _M_den.reserve(2);
-	  _M_den.push_back(1.0);
-	  _M_den.push_back(1.0);
-
 	  return;
 	}
 
@@ -2623,7 +2621,7 @@ namespace std
 	  __aurng(__urng);
 
 	const double __p = __aurng();
-	if (__param._M_m.empty())
+	if (__param._M_cp.empty())
 	  return __p;
 
 	auto __pos = std::lower_bound(__param._M_cp.begin(),
