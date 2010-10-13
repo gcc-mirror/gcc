@@ -217,6 +217,12 @@ objc_finish_method_definition (tree ARG_UNUSED (fndecl))
 {
 }
 
+bool 
+objc_method_decl (enum tree_code ARG_UNUSED(opcode))
+{
+  return false;
+}
+
 tree
 objc_build_keyword_decl (tree ARG_UNUSED (selector),
 			 tree ARG_UNUSED (type),

@@ -1009,6 +1009,7 @@ extern tree objc_generate_static_init_call (tree);
 extern tree objc_generate_write_barrier (tree, enum tree_code, tree);
 extern void objc_set_method_opt (bool);
 extern void objc_finish_foreach_loop (location_t, tree, tree, tree, tree, tree);
+extern bool  objc_method_decl (enum tree_code);
 
 /* The following are provided by the C and C++ front-ends, and called by
    ObjC/ObjC++.  */

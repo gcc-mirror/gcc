@@ -1,3 +1,13 @@
+2010-10-13  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc.dg/attributes/method-attribute-1.m: Update to respond
+	to implemented method attributes..
+	* objc.dg/attributes/method-attribute-2.m: Likewise.
+	* objc.dg/attributes/method-attribute-3.m: Likewise.
+	* obj-c++.dg/attributes/method-attribute-1.mm: Likewise.
+	* obj-c++.dg/attributes/method-attribute-2.mm: Likewise.
+	* obj-c++.dg/attributes/method-attribute-3.mm: Likewise.
+
 2010-10-13  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/23214

@@ -52,6 +52,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "langhooks-def.h"
 
+/* For default_tree_printer ().  */
+#include "tree-pretty-print.h"
+
 /* For enum gimplify_status */
 #include "gimple.h"
 
@@ -177,6 +180,9 @@ static void build_fast_enumeration_state_template (void);
 static void objc_generate_cxx_cdtors (void);
 #endif
 
+/* objc attribute */
+static void objc_decl_method_attributes (tree*, tree, int); 
+static tree build_keyword_selector (tree);
 static const char *synth_id_with_class_suffix (const char *, tree);
 
 /* Hash tables to manage the global pool of method prototypes.  */
@@ -215,6 +221,7 @@ static void really_start_method (tree, tree);
 static void really_start_method (tree, struct c_arg_info *);
 #endif
 static int comp_proto_with_proto (tree, tree, int);
+static tree get_arg_type_list (tree, int, int);
 static tree objc_decay_parm_type (tree);
 static void objc_push_parm (tree);
 #ifdef OBJCPLUS
@@ -511,6 +518,30 @@ generate_struct_by_value_array (void)
   exit (0);
 }
 
+/* FIXME: We need to intercept calls to warn_deprecated_use, since that 
+   ultimately calls warning () with a "qD" formatter for decls.  The 'D' 
+   formatter does not handle ObjC-specific decls (in ObjC++).  For now, we
+   interpose a switch to the  default handler which simply prints the decl
+   identifier.  
+   Eventually, we should handle this within the objc{,p}/ code.  */
+
+static void
+objc_warn_deprecated_use (tree depitem, tree attr)
+{
+  if (DECL_P (depitem))
+    {
+      static bool (*sav_printer) (pretty_printer *, text_info *, const char *,
+				  int, bool, bool, bool) = NULL ;
+      if (sav_printer == NULL)
+	sav_printer = diagnostic_format_decoder (global_dc) ;
+      diagnostic_format_decoder (global_dc) = &default_tree_printer;
+      warn_deprecated_use (depitem, attr);
+      diagnostic_format_decoder (global_dc) = sav_printer;
+    }
+  else
+    warn_deprecated_use (depitem, attr);
+}
+
 bool
 objc_init (void)
 {
@@ -804,11 +835,7 @@ objc_add_method_declaration (tree decl, tree attributes)
       fatal_error ("method declaration not in @interface context");
     }
 
-  if (attributes)
-    warning_at (input_location, OPT_Wattributes, 
-		"method attributes are not available in this version"
-		" of the compiler, (ignored)");
-
+  objc_decl_method_attributes (&decl, attributes, 0);
   objc_add_method (objc_interface_context,
 		   decl,
 		   objc_inherit_code == CLASS_METHOD_DECL,
@@ -830,11 +857,6 @@ objc_start_method_definition (tree decl, tree attributes)
   if (decl != NULL_TREE  && METHOD_SEL_NAME (decl) == error_mark_node)
     return false;
 
-  if (attributes)
-    warning_at (input_location, OPT_Wattributes, 
-		"method attributes are not available in this version"
-		" of the compiler, (ignored)");
-
 #ifndef OBJCPLUS
   /* Indicate no valid break/continue context by setting these variables
      to some non-null, non-label value.  We'll notice and emit the proper
@@ -842,6 +864,7 @@ objc_start_method_definition (tree decl, tree attributes)
   c_break_label = c_cont_label = size_zero_node;
 #endif
 
+  objc_decl_method_attributes (&decl, attributes, 0);
   objc_add_method (objc_implementation_context,
 		   decl,
 		   objc_inherit_code == CLASS_METHOD_DECL, 
@@ -6154,6 +6177,32 @@ build_method_decl (enum tree_code code, tree ret_type, tree selector,
 #define METHOD_DEF 0
 #define METHOD_REF 1
 
+/* This routine processes objective-c method attributes. */
+
+static void
+objc_decl_method_attributes (tree *node, tree attributes, int flags)
+{
+  tree sentinel_attr = lookup_attribute ("sentinel", attributes);
+  if (sentinel_attr)
+    {
+      /* hackery to make an obj method look like a function type. */
+      tree rettype = TREE_TYPE (*node);
+      TREE_TYPE (*node) = build_function_type (TREE_VALUE (rettype), 
+		       	    get_arg_type_list (*node, METHOD_REF, 0));
+      decl_attributes (node, attributes, flags);
+      METHOD_TYPE_ATTRIBUTES (*node) = TYPE_ATTRIBUTES (TREE_TYPE (*node));
+      TREE_TYPE (*node) = rettype;
+    }
+  else
+    decl_attributes (node, attributes, flags);
+}
+
+bool 
+objc_method_decl (enum tree_code opcode)
+{
+  return opcode == INSTANCE_METHOD_DECL || opcode == CLASS_METHOD_DECL;
+}
+
 /* Used by `build_objc_method_call' and `comp_proto_with_proto'.  Return
    an argument list for method METH.  CONTEXT is either METHOD_DEF or
    METHOD_REF, saying whether we are trying to define a method or call
@@ -6699,13 +6748,21 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
     = (method_prototype
        ? TREE_VALUE (TREE_TYPE (method_prototype))
        : objc_object_type);
-  tree sender_cast
-    = build_pointer_type
-      (build_function_type
-       (ret_type,
-	get_arg_type_list
-	(method_prototype, METHOD_REF, super_flag)));
+
+  tree method_param_types = 
+  		get_arg_type_list (method_prototype, METHOD_REF, super_flag);
+  tree ftype = build_function_type (ret_type, method_param_types);
+  tree sender_cast;
   tree method, t;
+
+  if (method_prototype && METHOD_TYPE_ATTRIBUTES (method_prototype))
+    ftype = build_type_attribute_variant (
+	      ftype, METHOD_TYPE_ATTRIBUTES (method_prototype));
+
+  sender_cast = build_pointer_type (ftype);
+
+  if (method_prototype && TREE_DEPRECATED (method_prototype))
+    objc_warn_deprecated_use (method_prototype, NULL_TREE);
 
   lookup_object = build_c_cast (loc, rcv_p, lookup_object);
 

@@ -7,25 +7,27 @@
 @public 
   int var; 
 } 
-- (int) depmtharg:(int) iarg __attribute__((deprecated)); /* { dg-warning "method attributes are not available in this version" } */
-- (int) unusedarg:(int) __attribute__((unused)) uarg ; /* { dg-warning "method parameter attributes are not available in this version" } */
-- (int) depunusedarg:(int) __attribute__((unused)) uarg __attribute__((deprecated)) ; /* { dg-warning "method attributes are not available in this version" } */
-				/* { dg-warning "method parameter attributes are not available in this version" "" { target *-*-* } 12 } */
+- (int) depmth __attribute__((deprecated)); 
+- (int) depmtharg:(int) iarg __attribute__((deprecated)); 
+- (int) unusedarg:(int) __attribute__((unused)) uarg ;  /* { dg-warning "method parameter attributes are not available in this version" } */
+- (int) depunusedarg:(int) __attribute__((unused)) uarg __attribute__((deprecated)) ; /* { dg-warning "method parameter attributes are not available in this version" } */
 @end
 
 @implementation obj
-- (int) depmtharg:(int) iarg { return var + iarg ; };
-- (int) unusedarg:(int) __attribute__((unused)) uarg { return var; } ; /* { dg-warning "method parameter attributes are not available in this version" } */
-- (int) depunusedarg:(int) __attribute__((unused)) uarg { return var; }; /* { dg-warning "method parameter attributes are not available in this version" } */
+- (int) depmth __attribute__((deprecated)) { return var; }  
+- (int) depmtharg:(int) iarg { return var + iarg ; }
+- (int) unusedarg:(int) __attribute__((unused)) uarg { return var; }  /* { dg-warning "method parameter attributes are not available in this version" } */
+- (int) depunusedarg:(int) __attribute__((unused)) uarg { return var; } /* { dg-warning "method parameter attributes are not available in this version" } */
 @end 
 
 int foo (void)
 {
   obj *p = [obj new];
   
-  [p depmtharg:1];
-  [p unusedarg:2];
-  [p depunusedarg:3 ];
+  [p depmth];		/* { dg-warning "is deprecated" } */
+  [p depmtharg:1];	/* { dg-warning "is deprecated" } */
+  [p unusedarg:2];	/* { dg-bogus "is deprecated" } */
+  [p depunusedarg:3 ];	/* { dg-warning "is deprecated" } */
 
-  return [p depmtharg:0];    
+  return [p depmtharg:0]; /* { dg-warning "is deprecated" } */   
 }

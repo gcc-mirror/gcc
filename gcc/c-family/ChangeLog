@@ -1,3 +1,14 @@
+2010-10-13  Iain Sandoe  <iains@gcc.gnu.org>
+
+	merge from FSF apple 'trunk' branch. 
+	2006-04-26 Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 3803157 (method attributes)
+	* c-common.c (handle_deprecated_attribute): Recognize
+	objc methods as valid declarations.
+	* c-common.h: Declare objc_method_decl ().
+	* stub-objc.c (objc_method_decl): New stub. 
+
 2010-10-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (parse_optimize_options): Call
