@@ -1522,6 +1522,45 @@ stmt_may_clobber_ref_p (gimple stmt, tree ref)
   return stmt_may_clobber_ref_p_1 (stmt, &r);
 }
 
+/* If STMT kills the memory reference REF return true, otherwise
+   return false.  */
+
+static bool
+stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
+{
+  if (gimple_has_lhs (stmt)
+      && TREE_CODE (gimple_get_lhs (stmt)) != SSA_NAME)
+    {
+      tree base, lhs = gimple_get_lhs (stmt);
+      HOST_WIDE_INT size, offset, max_size;
+      ao_ref_base (ref);
+      base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
+      /* We can get MEM[symbol: sZ, index: D.8862_1] here,
+	 so base == ref->base does not always hold.  */
+      if (base == ref->base)
+	{
+	  /* For a must-alias check we need to be able to constrain
+	     the accesses properly.  */
+	  if (size != -1 && size == max_size
+	      && ref->max_size != -1)
+	    {
+	      if (offset <= ref->offset
+		  && offset + size >= ref->offset + ref->max_size)
+		return true;
+	    }
+	}
+    }
+  return false;
+}
+
+bool
+stmt_kills_ref_p (gimple stmt, tree ref)
+{
+  ao_ref r;
+  ao_ref_init (&r, ref);
+  return stmt_kills_ref_p_1 (stmt, &r);
+}
+
 
 /* Walk the virtual use-def chain of VUSE until hitting the virtual operand
    TARGET or a statement clobbering the memory reference REF in which
