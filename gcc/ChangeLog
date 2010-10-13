@@ -1,3 +1,10 @@
+2010-10-13  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.h (REG_CLASS_CONTENTS): Remove soft frame pointer
+	from CORE_REGS and GENERAL_REGS classes.
+	* config/arm/arm.md (*thumb1_movsi_insn): Ignore all parts of
+	final constraint for register preferencing.
+
 2010-10-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45970
