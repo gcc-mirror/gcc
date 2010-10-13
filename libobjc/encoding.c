@@ -39,6 +39,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/module-abi-8.h" /* For struct objc_method */
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>                    /* For memcpy.  */
 
 #undef  MAX
 #define MAX(X, Y)                    \
@@ -769,6 +770,172 @@ objc_skip_argspec (const char *type)
   return type;
 }
 
+char *
+method_copyReturnType (struct objc_method *method)
+{
+  if (method == NULL)
+    return 0;
+  else
+    {
+      char *returnValue;
+      size_t returnValueSize;
+
+      /* Determine returnValueSize.  */
+      {
+	/* Find the end of the first argument.  We want to return the
+	   first argument spec, plus 1 byte for the \0 at the end.  */
+	const char *type = method->method_types;
+	if (*type == '\0')
+	  return NULL;
+	type = objc_skip_argspec (type);
+	returnValueSize = type - method->method_types + 1;
+      }
+
+      /* Copy the first argument into returnValue.  */
+      returnValue = malloc (sizeof (char) * returnValueSize);
+      memcpy (returnValue, method->method_types, returnValueSize);
+      returnValue[returnValueSize - 1] = '\0';
+
+      return returnValue;
+    }
+}
+
+char *
+method_copyArgumentType (struct objc_method * method, unsigned int argumentNumber)
+{
+  if (method == NULL)
+    return 0;
+  else
+    {
+      char *returnValue;
+      const char *returnValueStart;
+      size_t returnValueSize;
+
+      /* Determine returnValueStart and returnValueSize.  */
+      {
+	const char *type = method->method_types;
+
+	/* Skip the first argument (return type).  */
+	type = objc_skip_argspec (type);
+
+	/* Now keep skipping arguments until we get to
+	   argumentNumber.  */
+	while (argumentNumber > 0)
+	  {
+	    /* We are supposed to skip an argument, but the string is
+	       finished.  This means we were asked for a non-existing
+	       argument.  */
+	    if (*type == '\0')
+	      return NULL;
+
+	    type = objc_skip_argspec (type);
+	    argumentNumber--;
+	  }
+
+	/* If the argument does not exist, return NULL.  */
+	if (*type == '\0')
+	  return NULL;
+
+	returnValueStart = type;
+	type = objc_skip_argspec (type);
+	returnValueSize = type - returnValueStart + 1;
+      }
+      
+      /* Copy the argument into returnValue.  */
+      returnValue = malloc (sizeof (char) * returnValueSize);
+      memcpy (returnValue, returnValueStart, returnValueSize);
+      returnValue[returnValueSize - 1] = '\0';
+
+      return returnValue;
+    }
+}
+
+void method_getReturnType (struct objc_method * method, char *returnValue, 
+			   size_t returnValueSize)
+{
+  if (returnValue == NULL  ||  returnValueSize == 0)
+    return;
+
+  /* Zero the string; we'll then write the argument type at the
+     beginning of it, if needed.  */
+  memset (returnValue, 0, returnValueSize);
+
+  if (method == NULL)
+    return;
+  else
+    {
+      size_t argumentTypeSize;
+
+      /* Determine argumentTypeSize.  */
+      {
+	/* Find the end of the first argument.  We want to return the
+	   first argument spec.  */
+	const char *type = method->method_types;
+	if (*type == '\0')
+	  return;
+	type = objc_skip_argspec (type);
+	argumentTypeSize = type - method->method_types;
+	if (argumentTypeSize > returnValueSize)
+	  argumentTypeSize = returnValueSize;
+      }
+      /* Copy the argument at the beginning of the string.  */
+      memcpy (returnValue, method->method_types, argumentTypeSize);
+    }
+}
+
+void method_getArgumentType (struct objc_method * method, unsigned int argumentNumber,
+			     char *returnValue, size_t returnValueSize)
+{
+  if (returnValue == NULL  ||  returnValueSize == 0)
+    return;
+
+  /* Zero the string; we'll then write the argument type at the
+     beginning of it, if needed.  */
+  memset (returnValue, 0, returnValueSize);
+
+  if (method == NULL)
+    return;
+  else
+    {
+      const char *returnValueStart;
+      size_t argumentTypeSize;
+
+      /* Determine returnValueStart and argumentTypeSize.  */
+      {
+	const char *type = method->method_types;
+
+	/* Skip the first argument (return type).  */
+	type = objc_skip_argspec (type);
+
+	/* Now keep skipping arguments until we get to
+	   argumentNumber.  */
+	while (argumentNumber > 0)
+	  {
+	    /* We are supposed to skip an argument, but the string is
+	       finished.  This means we were asked for a non-existing
+	       argument.  */
+	    if (*type == '\0')
+	      return;
+
+	    type = objc_skip_argspec (type);
+	    argumentNumber--;
+	  }
+
+	/* If the argument does not exist, it's game over.  */
+	if (*type == '\0')
+	  return;
+
+	returnValueStart = type;
+	type = objc_skip_argspec (type);
+	argumentTypeSize = type - returnValueStart;
+	if (argumentTypeSize > returnValueSize)
+	  argumentTypeSize = returnValueSize;
+      }
+      /* Copy the argument at the beginning of the string.  */
+      memcpy (returnValue, returnValueStart, argumentTypeSize);
+    }
+}
+
 unsigned int
 method_getNumberOfArguments (struct objc_method *method)
 {
@@ -835,7 +1002,6 @@ method_get_sizeof_arguments (struct objc_method *mth)
       }
   }
 */
-
 char *
 method_get_next_argument (arglist_t argframe, const char **type)
 {
