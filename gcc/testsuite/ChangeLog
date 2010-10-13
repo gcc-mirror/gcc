@@ -1,3 +1,9 @@
+2010-10-12  Michael Eager  <eager@eagercon.com>
+
+	PR testsuite/45856
+	* gcc.c-torture/execute/cmpsi-2.c: Use int, not long.
+	* gcc.c-torture/execute/cmpsf-1.c: Use float, regen correct table.
+
 2010-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/45636
