@@ -1,5 +1,13 @@
 2010-10-13  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR libobjc/23214
+	* init.c (objc_init_statics): Do not skip the initialization of a
+	statics list if the first object has already been initialized; in
+	the case of Protocols, while the first one may have been
+	initialized, some others may not have been initialized yet.
+
+2010-10-13  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Makefile.in (OBJC_DEPRECATED_H): Added
 	objc_get_uninstalled_dtable, objc_object_alloc.h and
 	struct_objc_static_instances.h.

@@ -473,28 +473,28 @@ objc_init_statics (void)
 	  Class class = objc_lookup_class (statics->class_name);
 
 	  if (! class)
-	    module_initialized = 0;
-	  /* Actually, the static's class_pointer will be NULL when we
-             haven't been here before.  However, the comparison is to be
-             reminded of taking into account class posing and to think about
-             possible semantics...  */
-	  else if (class != statics->instances[0]->class_pointer)
 	    {
+	      /* It is unfortunate that this will cause all the
+		 statics initialization to be done again (eg, if we
+		 already initialized constant strings, and are now
+		 initializing protocols, setting module_initialized to
+		 0 would cause constant strings to be initialized
+		 again).  It would be good to be able to track if we
+		 have already initialized some of them.  */
+	      module_initialized = 0;
+	    }
+	  else
+	    {
+	      /* Note that if this is a list of Protocol objects, some
+		 of them may have been initialized already (because
+		 they were attached to classes or categories, and the
+		 class/category loading code automatically fixes them
+		 up), and some of them may not.  We really need to go
+		 through the whole list to be sure!  */
 	      id *inst;
 
 	      for (inst = &statics->instances[0]; *inst; inst++)
-		{
-		  (*inst)->class_pointer = class;
-
-		  /* ??? Make sure the object will not be freed.  With
-                     refcounting, invoke `-retain'.  Without refcounting, do
-                     nothing and hope that `-free' will never be invoked.  */
-
-		  /* ??? Send the object an `-initStatic' or something to
-                     that effect now or later on?  What are the semantics of
-                     statically allocated instances, besides the trivial
-                     NXConstantString, anyway?  */
-		}
+		(*inst)->class_pointer = class;
 	    }
 	}
       if (module_initialized)
