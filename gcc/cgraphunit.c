@@ -2156,6 +2156,7 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
   if (e->callee->clone.combined_args_to_skip)
     {
       gimple_stmt_iterator gsi;
+      int lp_nr;
 
       new_stmt
 	= gimple_call_copy_skip_args (e->call_stmt,
@@ -2168,16 +2169,22 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 
       gsi = gsi_for_stmt (e->call_stmt);
       gsi_replace (&gsi, new_stmt, false);
-      if (maybe_clean_or_replace_eh_stmt (e->call_stmt, new_stmt))
-	gimple_purge_dead_eh_edges (gimple_bb (new_stmt));
+      /* We need to defer cleaning EH info on the new statement to
+         fixup-cfg.  We may not have dominator information at this point
+	 and thus would end up with unreachable blocks and have no way
+	 to communicate that we need to run CFG cleanup then.  */
+      lp_nr = lookup_stmt_eh_lp (e->call_stmt);
+      if (lp_nr != 0)
+	{
+	  remove_stmt_from_eh_lp (e->call_stmt);
+	  add_stmt_to_eh_lp (new_stmt, lp_nr);
+	}
     }
   else
     {
       new_stmt = e->call_stmt;
       gimple_call_set_fndecl (new_stmt, e->callee->decl);
       update_stmt (new_stmt);
-      if (maybe_clean_eh_stmt (new_stmt))
-	gimple_purge_dead_eh_edges (gimple_bb (new_stmt));
     }
 
   cgraph_set_call_stmt_including_clones (e->caller, e->call_stmt, new_stmt);
