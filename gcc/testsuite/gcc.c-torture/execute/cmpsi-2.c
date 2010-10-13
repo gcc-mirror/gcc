@@ -1,7 +1,7 @@
 #define F 140
 #define T 13
 
-feq (long x, long y)
+feq (int x, int y)
 {
   if (x == y)
     return T;
@@ -9,7 +9,7 @@ feq (long x, long y)
     return F;
 }
 
-fne (long x, long y)
+fne (int x, int y)
 {
   if (x != y)
     return T;
@@ -17,7 +17,7 @@ fne (long x, long y)
     return F;
 }
 
-flt (long x, long y)
+flt (int x, int y)
 {
   if (x < y)
     return T;
@@ -25,7 +25,7 @@ flt (long x, long y)
     return F;
 }
 
-fge (long x, long y)
+fge (int x, int y)
 {
   if (x >= y)
     return T;
@@ -33,7 +33,7 @@ fge (long x, long y)
     return F;
 }
 
-fgt (long x, long y)
+fgt (int x, int y)
 {
   if (x > y)
     return T;
@@ -41,7 +41,7 @@ fgt (long x, long y)
     return F;
 }
 
-fle (long x, long y)
+fle (int x, int y)
 {
   if (x <= y)
     return T;
@@ -49,7 +49,7 @@ fle (long x, long y)
     return F;
 }
 
-fltu (unsigned long x, unsigned long y)
+fltu (unsigned int x, unsigned int y)
 {
   if (x < y)
     return T;
@@ -57,7 +57,7 @@ fltu (unsigned long x, unsigned long y)
     return F;
 }
 
-fgeu (unsigned long x, unsigned long y)
+fgeu (unsigned int x, unsigned int y)
 {
   if (x >= y)
     return T;
@@ -65,7 +65,7 @@ fgeu (unsigned long x, unsigned long y)
     return F;
 }
 
-fgtu (unsigned long x, unsigned long y)
+fgtu (unsigned int x, unsigned int y)
 {
   if (x > y)
     return T;
@@ -73,7 +73,7 @@ fgtu (unsigned long x, unsigned long y)
     return F;
 }
 
-fleu (unsigned long x, unsigned long y)
+fleu (unsigned int x, unsigned int y)
 {
   if (x <= y)
     return T;
@@ -81,7 +81,7 @@ fleu (unsigned long x, unsigned long y)
     return F;
 }
 
-long args[] =
+unsigned int args[] =
 {
   0L,
   1L,
@@ -168,10 +168,10 @@ main (void)
 
   for (i = 0; i < 8; i++)
     {
-      long arg0 = args[i];
+      unsigned int arg0 = args[i];
       for (j = 0; j < 8; j++)
 	{
-	  long arg1 = args[j];
+	  unsigned int arg1 = args[j];
 
 	  if (feq (arg0, arg1) != *res++)
 	    abort ();
