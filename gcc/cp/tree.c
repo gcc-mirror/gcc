@@ -3265,6 +3265,15 @@ cp_free_lang_data (tree t)
 	  && ANON_AGGRNAME_P (name))
 	TYPE_NAME (t) = NULL_TREE;
     }
+  if (TREE_CODE (t) == NAMESPACE_DECL)
+    {
+      /* The list of users of a namespace isn't useful for the middle-end
+	 or debug generators.  */
+      DECL_NAMESPACE_USERS (t) = NULL_TREE;
+      /* Neither do we need the leftover chaining of namespaces
+         from the binding level.  */
+      DECL_CHAIN (t) = NULL_TREE;
+    }
 }
 
 /* Stub for c-common.  Please keep in sync with c-decl.c.

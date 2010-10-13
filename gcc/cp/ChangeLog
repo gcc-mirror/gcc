@@ -1,3 +1,8 @@
+2010-10-13  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (cp_free_lang_data): Free DECL_NAMESPACE_USERS and
+	clear DECL_CHAIN of NAMESPACE_DECLs.
+
 2010-10-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR c++/45562
