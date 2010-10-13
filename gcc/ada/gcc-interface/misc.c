@@ -687,11 +687,7 @@ static tree
 gnat_eh_personality (void)
 {
   if (!gnat_eh_personality_decl)
-    gnat_eh_personality_decl
-      = build_personality_function (targetm.except_unwind_info () == UI_SJLJ
-				    ? "__gnat_eh_personality_sj"
-				    : "__gnat_eh_personality");
-
+    gnat_eh_personality_decl = build_personality_function ("gnat");
   return gnat_eh_personality_decl;
 }
 

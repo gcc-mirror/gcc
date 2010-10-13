@@ -1,3 +1,9 @@
+2010-10-13  Richard Henderson  <rth@redhat.com>
+
+	* cp-lang.c (cp_eh_personality): Update call to
+	build_personality_function.
+	* except.c (choose_personality_routine): Update function comment.
+
 2010-10-13  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (cp_free_lang_data): Free DECL_NAMESPACE_USERS and

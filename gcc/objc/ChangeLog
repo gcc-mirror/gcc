@@ -1,3 +1,8 @@
+2010-10-13  Richard Henderson  <rth@redhat.com>
+
+	* objc-act.c (objc_eh_personality): Update call to
+	build_personality_function.
+
 2010-10-13  Iain Sandoe  <iains@gcc.gnu.org>
 
 	merge from FSF apple 'trunk' branch. 

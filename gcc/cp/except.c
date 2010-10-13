@@ -295,9 +295,8 @@ decl_is_java_type (tree decl, int err)
 /* Select the personality routine to be used for exception handling,
    or issue an error if we need two different ones in the same
    translation unit.
-   ??? At present eh_personality_decl is set to
-   __gxx_personality_(sj|v)0 in init_exception_processing - should it
-   be done here instead?  */
+   ??? At present DECL_FUNCTION_PERSONALITY is set via
+   LANG_HOOKS_EH_PERSONALITY.  Should it be done here instead?  */
 void
 choose_personality_routine (enum languages lang)
 {

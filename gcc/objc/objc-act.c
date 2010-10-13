@@ -3716,13 +3716,8 @@ objc_eh_runtime_type (tree type)
 tree
 objc_eh_personality (void)
 {
-  if (!flag_objc_sjlj_exceptions
-      && !objc_eh_personality_decl)
-    objc_eh_personality_decl
-      = build_personality_function (targetm.except_unwind_info () == UI_SJLJ
-				    ? "__gnu_objc_personality_sj0"
-				    : "__gnu_objc_personality_v0");
-
+  if (!flag_objc_sjlj_exceptions && !objc_eh_personality_decl)
+    objc_eh_personality_decl = build_personality_function ("gnu_objc");
   return objc_eh_personality_decl;
 }
 #endif

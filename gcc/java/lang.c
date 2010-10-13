@@ -911,11 +911,7 @@ static tree
 java_eh_personality (void)
 {
   if (!java_eh_personality_decl)
-    java_eh_personality_decl
-      = build_personality_function (targetm.except_unwind_info () == UI_SJLJ
-				    ? "__gcj_personality_sj0"
-				    : "__gcj_personality_v0");
-
+    java_eh_personality_decl = build_personality_function ("gcj");
   return java_eh_personality_decl;
 }
 

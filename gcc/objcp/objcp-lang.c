@@ -147,11 +147,7 @@ static tree
 objcxx_eh_personality (void)
 {
   if (!objcp_eh_personality_decl)
-    objcp_eh_personality_decl
-	= build_personality_function (targetm.except_unwind_info () == UI_SJLJ
-				      ? "__gxx_personality_sj0"
-				      : "__gxx_personality_v0");
-
+    objcp_eh_personality_decl = build_personality_function ("gxx");
   return objcp_eh_personality_decl;
 }
 
