@@ -9,11 +9,14 @@ void link_error();
 int g(void)
 {
   int t = 0, t1 = 2;
+  /* ???  That's not true.  The pointers escape to the integer return
+     value which we do not track in PTA.  */
   int t2 = h(&t, &t1);
   if (t != 0)
     link_error ();
   if (t1 != 2)
     link_error ();
+  /* ???  And it would finally escape here even if we did.  */
   g1(t2);
   if (t != 0)
     link_error ();
@@ -21,5 +24,6 @@ int g(void)
     link_error ();
   return t2 == 2;
 }
-/* { dg-final { scan-tree-dump-times "link_error" 0 "optimized" } } */
+/* We are allowed to optimize the first two link_error calls.  */
+/* { dg-final { scan-tree-dump-times "link_error" 2 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

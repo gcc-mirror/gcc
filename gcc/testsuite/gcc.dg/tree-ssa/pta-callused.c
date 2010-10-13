@@ -5,7 +5,7 @@ struct Foo {
   int *p, *q;
 };
 
-int foo (int ***x) __attribute__((pure));
+int *foo (int ***x) __attribute__((pure));
 
 int bar (int b)
 {
@@ -19,7 +19,7 @@ int bar (int b)
     q = &f.p;
   else
     q = &f.q;
-  return foo (&q);
+  return *foo (&q);
 }
 
 /* { dg-final { scan-tree-dump "CALLUSED = { f.* i q }" "alias" } } */

@@ -1,5 +1,13 @@
 2010-10-13  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/45982
+	* tree-ssa-structalias.c (make_constraints_to): New function.
+	(make_constraint_to): Implement in terms of make_constraints_to.
+	(find_func_aliases): Properly make return values of pure/const
+	functions escape if they assign to sth that is not a pointer.
+
+2010-10-13  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/45874
 	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee):
 	Fixup the CFG when EH was fixed up.
