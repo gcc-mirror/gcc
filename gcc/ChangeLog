@@ -1,5 +1,13 @@
 2010-10-13  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/45970
+	* tree-ssa-alias.h (stmt_kills_ref_p): Declare.
+	* tree-ssa-alias.c (stmt_kills_ref_p_1): New function.
+	(stmt_kills_ref_p): Likewise.
+	* tree-ssa-dse.c (dse_optimize_stmt): Use it.
+
+2010-10-13  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/45982
 	* tree-ssa-structalias.c (make_constraints_to): New function.
 	(make_constraint_to): Implement in terms of make_constraints_to.

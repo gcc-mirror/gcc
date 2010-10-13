@@ -105,6 +105,7 @@ extern bool ref_maybe_used_by_stmt_p (gimple, tree);
 extern bool stmt_may_clobber_ref_p (gimple, tree);
 extern bool stmt_may_clobber_ref_p_1 (gimple, ao_ref *);
 extern bool call_may_clobber_ref_p (gimple, tree);
+extern bool stmt_kills_ref_p (gimple, tree);
 extern tree get_continuation_for_phi (gimple, ao_ref *, bitmap *);
 extern void *walk_non_aliased_vuses (ao_ref *, tree,
 				     void *(*)(ao_ref *, tree, void *),
