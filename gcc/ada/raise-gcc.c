@@ -407,7 +407,7 @@ db_phases (int phases)
    ===================================
 
    The major point of this unit is to provide an exception propagation
-   personality routine for Ada. This is __gnat_eh_personality.
+   personality routine for Ada. This is __gnat_personality_v0.
 
    It is provided with a pointer to the propagated exception, an unwind
    context describing a location the propagation is going through, and a
@@ -440,7 +440,7 @@ db_phases (int phases)
      |
      |   (Ada frame)
      |
-     +--> __gnat_eh_personality (context, exception)
+     +--> __gnat_personality_v0 (context, exception)
 	   |
 	   +--> get_region_descriptor_for (context)
 	   |
@@ -1028,9 +1028,9 @@ extern void __gnat_notify_unhandled_exception (void);
    GNU-Ada exceptions are met.  */
 
 #ifdef __USING_SJLJ_EXCEPTIONS__
-#define PERSONALITY_FUNCTION    __gnat_eh_personality_sj
+#define PERSONALITY_FUNCTION    __gnat_personality_sj0
 #else
-#define PERSONALITY_FUNCTION    __gnat_eh_personality
+#define PERSONALITY_FUNCTION    __gnat_personality_v0
 #endif
 
 /* Major tweak for ia64-vms : the CHF propagation phase calls this personality

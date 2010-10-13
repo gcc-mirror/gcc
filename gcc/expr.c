@@ -10255,13 +10255,31 @@ const_vector_from_tree (tree exp)
   return gen_rtx_CONST_VECTOR (mode, v);
 }
 
-
-/* Build a decl for a EH personality function named NAME. */
+/* Build a decl for a personality function given a language prefix.  */
 
 tree
-build_personality_function (const char *name)
+build_personality_function (const char *lang)
 {
+  const char *unwind_and_version;
   tree decl, type;
+  char *name;
+
+  switch (targetm.except_unwind_info ())
+    {
+    case UI_NONE:
+      return NULL;
+    case UI_SJLJ:
+      unwind_and_version = "_sj0";
+      break;
+    case UI_DWARF2:
+    case UI_TARGET:
+      unwind_and_version = "_v0";
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  name = ACONCAT (("__", lang, "_personality", unwind_and_version, NULL));
 
   type = build_function_type_list (integer_type_node, integer_type_node,
 				   long_long_unsigned_type_node,

@@ -1,3 +1,11 @@
+2010-10-13  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (build_personality_function): Take parameter LANG instead
+	of parameter NAME.  Build the name based on the lang prefix and the
+	unwind method in use.
+	* tree.c (lhd_gcc_personality): Update call to
+	build_personality_function.
+
 2010-10-13  Richard Guenther  <rguenther@suse.de>
 
 	PR objc/45878

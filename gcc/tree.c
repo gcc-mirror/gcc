@@ -10874,11 +10874,7 @@ tree
 lhd_gcc_personality (void)
 {
   if (!gcc_eh_personality_decl)
-    gcc_eh_personality_decl
-      = build_personality_function (targetm.except_unwind_info () == UI_SJLJ
-				    ? "__gcc_personality_sj0"
-				    : "__gcc_personality_v0");
-
+    gcc_eh_personality_decl = build_personality_function ("gcc");
   return gcc_eh_personality_decl;
 }
 

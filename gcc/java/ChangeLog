@@ -1,3 +1,8 @@
+2010-10-13  Richard Henderson  <rth@redhat.com>
+
+	* lang.c (java_eh_personality): Update call to
+	build_personality_function.
+
 2010-10-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* Make-lang.in (java/lang.o): Use $(OPTIONS_H) instead of
