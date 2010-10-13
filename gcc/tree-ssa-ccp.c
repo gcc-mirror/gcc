@@ -2267,6 +2267,7 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 	tree lhs = gimple_call_lhs (stmt);
 	tree val;
 	tree argt;
+	tree callee;
 	bool changed = false;
 	unsigned i;
 
@@ -2306,16 +2307,24 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 		changed = true;
 	      }
 	  }
-	if (TREE_CODE (gimple_call_fn (stmt)) == OBJ_TYPE_REF)
+
+	callee = gimple_call_fn (stmt);
+	if (TREE_CODE (callee) == OBJ_TYPE_REF
+	    && TREE_CODE (OBJ_TYPE_REF_EXPR (callee)) == SSA_NAME)
 	  {
-	    tree expr = OBJ_TYPE_REF_EXPR (gimple_call_fn (stmt));
-	    expr = valueize_op (expr);
-	    if (TREE_CODE (expr) == ADDR_EXPR
-	        && TREE_CODE (TREE_OPERAND (expr, 0)) == FUNCTION_DECL)
-	     {
-	       gimple_call_set_fn (stmt, expr);
-	       changed = true;
-	     }
+	    tree expr = OBJ_TYPE_REF_EXPR (callee);
+	    OBJ_TYPE_REF_EXPR (callee) = valueize_op (expr);
+	    if (TREE_CODE (OBJ_TYPE_REF_EXPR (callee)) == ADDR_EXPR)
+	      {
+		tree t;
+		t = gimple_fold_obj_type_ref (callee, NULL_TREE);
+		if (t)
+		  {
+		    gimple_call_set_fn (stmt, t);
+		    changed = true;
+		  }
+	      }
+	    OBJ_TYPE_REF_EXPR (callee) = expr;
 	  }
 
 	return changed;

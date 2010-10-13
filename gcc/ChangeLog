@@ -1,3 +1,8 @@
+2010-10-13  Richard Guenther  <rguenther@suse.de>
+
+	PR objc/45878
+	* tree-ssa-ccpc (ccp_fold_stmt): Use gimple_fold_obj_type_ref.
+
 2010-10-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cse.c (cse_insn): Fix thinko in the canonicalization of USE insns.
