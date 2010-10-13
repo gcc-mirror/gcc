@@ -4338,12 +4338,23 @@ cse_insn (rtx insn)
       if (MEM_P (XEXP (x, 0)))
 	canon_reg (XEXP (x, 0), insn);
     }
-
   /* Canonicalize a USE of a pseudo register or memory location.  */
   else if (GET_CODE (x) == USE
 	   && ! (REG_P (XEXP (x, 0))
 		 && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER))
-    canon_reg (XEXP (x, 0), insn);
+    canon_reg (x, insn);
+  else if (GET_CODE (x) == ASM_OPERANDS)
+    {
+      for (i = ASM_OPERANDS_INPUT_LENGTH (x) - 1; i >= 0; i--)
+	{
+	  rtx input = ASM_OPERANDS_INPUT (x, i);
+	  if (!(REG_P (input) && REGNO (input) < FIRST_PSEUDO_REGISTER))
+	    {
+	      input = canon_reg (input, insn);
+	      validate_change (insn, &ASM_OPERANDS_INPUT (x, i), input, 1);
+	    }
+	}
+    }
   else if (GET_CODE (x) == CALL)
     {
       /* The result of apply_change_group can be ignored; see canon_reg.  */
