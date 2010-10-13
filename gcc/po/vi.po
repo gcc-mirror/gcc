@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.5.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-04-06 14:11+0000\n"
-"PO-Revision-Date: 2010-10-07 20:53+1030\n"
+"PO-Revision-Date: 2010-10-13 22:15+1030\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -2782,7 +2782,7 @@ msgstr "Số tối đa các câu lệnh được phép trong một khối cần 
 
 #: params.def:645
 msgid "Maximum number of fields in a structure before pointer analysis treats the structure as a single variable"
-msgstr "Số tối đa các trường trong một cấu trúc trước khi tiến trình phân tích mẫu trỏ thấy cấu trúc đó là một biến riêng lẻ"
+msgstr "Số tối đa các trường trong một cấu trúc trước khi tiến trình phân tích hàm trỏ thấy cấu trúc đó là một biến riêng lẻ"
 
 #: params.def:650
 msgid "The maximum number of instructions ready to be issued to be considered by the scheduler during the first scheduling pass"
@@ -2874,7 +2874,7 @@ msgstr "UID tối thiểu cần sử dụng cho một lệnh không gỡ rối"
 
 #: params.def:802
 msgid "Maximum allowed growth of size of new parameters ipa-sra replaces a pointer to an aggregate with"
-msgstr "Độ tăng lên tối đa được pháp của kích cỡ tham số mới ipa-sra thì thay thế một bộ trỏ theo một chiều rộng tập hợp"
+msgstr "Độ tăng lên tối đa được pháp của kích cỡ tham số mới ipa-sra thì thay thế một hàm trỏ theo một chiều rộng tập hợp"
 
 #: config/alpha/alpha.c:5135
 #, c-format
@@ -3567,7 +3567,7 @@ msgstr "sai sử dụng « %%%c »"
 
 #: config/mips/mips.c:7833
 msgid "mips_debugger_offset called with non stack/frame/arg pointer"
-msgstr "mips_debugger_offset bị gọi mà không có bộ trỏ tới đống/khung/đối_số"
+msgstr "mips_debugger_offset bị gọi mà không có hàm trỏ tới đống/khung/đối_số"
 
 #: config/mmix/mmix.c:1494 config/mmix/mmix.c:1624
 msgid "MMIX Internal: Expected a CONST_INT, not this"
@@ -4111,27 +4111,27 @@ msgstr "thiếu đối số tới « %s »\n"
 
 #: cp/rtti.c:529
 msgid "target is not pointer or reference to class"
-msgstr "đích không phải là bộ trỏ hoặc tham chiếu đến hạng"
+msgstr "đích không phải là hàm trỏ hoặc tham chiếu đến hạng"
 
 #: cp/rtti.c:534
 msgid "target is not pointer or reference to complete type"
-msgstr "đích không phải là bộ trỏ hoặc tham chiếu đến loại hoàn toàn"
+msgstr "đích không phải là hàm trỏ hoặc tham chiếu đến loại hoàn toàn"
 
 #: cp/rtti.c:540
 msgid "target is not pointer or reference"
-msgstr "đích không phải là bộ trỏ hoặc tham chiếu"
+msgstr "đích không phải là một hàm trỏ hoặc một tham chiếu"
 
 #: cp/rtti.c:551
 msgid "source is not a pointer"
-msgstr "nguồn không phải là một bộ trỏ"
+msgstr "nguồn không phải là một hàm trỏ"
 
 #: cp/rtti.c:556
 msgid "source is not a pointer to class"
-msgstr "nguồn không phải là một bộ trỏ tới hạng"
+msgstr "nguồn không phải là một hàm trỏ tới hạng"
 
 #: cp/rtti.c:561
 msgid "source is a pointer to incomplete type"
-msgstr "nguồn là một bộ trỏ tới loại không hoàn toàn"
+msgstr "nguồn là một hàm trỏ tới loại không hoàn toàn"
 
 #: cp/rtti.c:574
 msgid "source is not of class type"
@@ -4482,7 +4482,7 @@ msgstr "sự gán"
 
 #: fortran/parse.c:1365
 msgid "pointer assignment"
-msgstr "sự gán bộ trỏ"
+msgstr "sự gán hàm trỏ"
 
 #: fortran/parse.c:1383
 msgid "simple IF"
@@ -4503,7 +4503,7 @@ msgstr "thủ tục loại yếu tố"
 #: fortran/resolve.c:3330
 #, c-format
 msgid "Invalid context for NULL() pointer at %%L"
-msgstr "Gặp ngữ cảnh sai cho bộ trỏ NULL() tại %%L"
+msgstr "Gặp ngữ cảnh sai cho hàm trỏ NULL() tại %%L"
 
 #: fortran/resolve.c:3346
 #, c-format
@@ -4960,4227 +4960,4252 @@ msgstr "C của GNU không còn hỗ trợ « -traditional » mà không có « 
 
 #: gcc.c:1089
 msgid "-E or -x required when input is from standard input"
-msgstr ""
+msgstr "Nhập từ đầu vào tiêu chuẩn thì cũng yêu cầu tuỳ chọn « -E » hoặc « -x »"
 
 #: config/i386/mingw-w64.h:61 config/i386/mingw32.h:81
 #: config/i386/cygwin.h:123
 msgid "shared and mdll are not compatible"
-msgstr ""
+msgstr "« shared » và « mdll » không tương thích với nhau"
 
 #: config/rs6000/sysv4.h:907 config/rs6000/sysv4.h:909
 #: config/alpha/linux-elf.h:33 config/alpha/linux-elf.h:35
 #: config/rs6000/linux64.h:356 config/rs6000/linux64.h:358 config/linux.h:111
 #: config/linux.h:113
 msgid "-mglibc and -muclibc used together"
-msgstr ""
+msgstr "« -mglibc » và « -muclibc » bị dùng với nhau"
 
 #: config/pa/pa-hpux10.h:87 config/pa/pa-hpux10.h:90 config/pa/pa-hpux10.h:98
 #: config/pa/pa-hpux10.h:101 config/pa/pa-hpux11.h:108
 #: config/pa/pa-hpux11.h:111 config/pa/pa64-hpux.h:30 config/pa/pa64-hpux.h:33
 #: config/pa/pa64-hpux.h:42 config/pa/pa64-hpux.h:45
 msgid "Warning: consider linking with `-static' as system libraries with"
-msgstr ""
+msgstr "Cảnh báo : đề nghị bạn liên kết dùng « -static » vì thư viện hệ thống"
 
 #: config/pa/pa-hpux10.h:88 config/pa/pa-hpux10.h:91 config/pa/pa-hpux10.h:99
 #: config/pa/pa-hpux10.h:102 config/pa/pa-hpux11.h:109
 #: config/pa/pa-hpux11.h:112 config/pa/pa64-hpux.h:31 config/pa/pa64-hpux.h:34
 #: config/pa/pa64-hpux.h:43 config/pa/pa64-hpux.h:46
 msgid "  profiling support are only provided in archive format"
-msgstr ""
+msgstr "  cũng hỗ trợ chức năng đo hiệu năng sử dụng chỉ được cung cấp theo định dạng kho lưu"
 
 #: config/rs6000/darwin.h:95
 msgid " conflicting code gen style switches are used"
-msgstr ""
+msgstr " sử dụng các cái chuyển loại tạo mã xung đột với nhau"
 
 #: config/arm/arm.h:154
 msgid "-msoft-float and -mhard_float may not be used together"
-msgstr ""
+msgstr "không cho phép sử dụng đồng thời hai tuỳ chọn « -msoft-float » (loại mềm) và « -mhard_float » (loại cứng)"
 
 #: config/arm/arm.h:156
 msgid "-mbig-endian and -mlittle-endian may not be used together"
-msgstr ""
+msgstr "không cho phép sử dụng đồng thời hai tuỳ chọn « -mbig-endian » (về cuối lớn) và « -mlittle-endian » (về cuối nhỏ)"
 
 #: config/vxworks.h:71
 msgid "-Xbind-now and -Xbind-lazy are incompatible"
-msgstr ""
+msgstr "hai tùy chọn « -Xbind-now » và « -Xbind-lazy » không tương thích với nhau"
 
 #: config/bfin/elf.h:54
 msgid "no processor type specified for linking"
-msgstr ""
+msgstr "chưa ghi rõ loại bộ xử lý cần liên kết"
 
 #: config/i386/nwld.h:34
 msgid "Static linking is not supported."
-msgstr ""
+msgstr "Không hỗ trợ chức năng liên kết tĩnh."
 
 #: config/i386/cygwin.h:28
 msgid "mno-cygwin and mno-win32 are not compatible"
-msgstr ""
+msgstr "hai tùy chọn « mno-cygwin » và « mno-win32 » không tương thích với nhau"
 
 #: config/sh/sh.h:463
 msgid "SH2a does not support little-endian"
-msgstr ""
+msgstr "SH2a không hỗ trợ tình trạng về cuối nhỏ"
 
 #: config/rx/rx.h:63
 msgid "-mas100-syntax is incompatible with -gdwarf"
-msgstr ""
+msgstr "« -mas100-syntax » không tương thích với « -gdwarf »"
 
 #: config/rx/rx.h:64
 msgid "rx200 cpu does not have FPU hardware"
-msgstr ""
+msgstr "CPU rx200 không có phần cứng đơn vị điểm phù động (FPU)"
 
 #: config/arm/freebsd.h:31
 msgid "consider using `-pg' instead of `-p' with gprof(1) "
-msgstr ""
+msgstr "sử dụng gprof(1) thì đề nghị bạn sử dụng « -pg » thay cho « -p »"
 
 #: objc/lang-specs.h:31 objc/lang-specs.h:46
 msgid "GNU Objective C no longer supports traditional compilation"
-msgstr ""
+msgstr "Objective C của GNU không còn hỗ trợ chức năng biên dịch truyền thống"
 
 #: config/cris/cris.h:207
 msgid "Do not specify both -march=... and -mcpu=..."
-msgstr ""
+msgstr "Đừng ghi rõ đồng thời hai tuỳ chọn « -march=... » và « -mcpu=... »"
 
 #: config/i386/i386.h:543
 msgid "`-mcpu=' is deprecated. Use `-mtune=' or '-march=' instead."
-msgstr ""
+msgstr "« -mcpu » bị phản đối. Hãy sử dụng « -mtune » hoặc « -march » để thay thế."
 
 #: config/i386/i386.h:546
 msgid "`-mintel-syntax' is deprecated. Use `-masm=intel' instead."
-msgstr ""
+msgstr "« -mintel-syntax » bị phản đối. Hãy sử dụng « -masm=intel » để thay thế."
 
 #: config/i386/i386.h:548
 msgid "'-msse5' was removed."
-msgstr ""
+msgstr "« -msse5 » đã bị gỡ bỏ."
 
 #: config/i386/i386.h:550
 msgid "`-mno-intel-syntax' is deprecated. Use `-masm=att' instead."
-msgstr ""
+msgstr "« -mno-intel-syntax » bị phản đối. Hãy sử dụng « -masm=att » để thay thế."
 
 #: config/s390/tpf.h:119
 msgid "static is not supported on TPF-OS"
-msgstr ""
+msgstr "trên TPF-OS thì không hỗ trợ « static »"
 
 #: config/mips/r3900.h:34
 msgid "-mhard-float not supported"
-msgstr ""
+msgstr "không hỗ trợ « -mhard-float »"
 
 #: config/mips/r3900.h:36
 msgid "-msingle-float and -msoft-float cannot both be specified"
-msgstr ""
+msgstr "không cho phép sử dụng đồng thời hai tuỳ chọn « -msingle-float » và « -msoft-float »"
 
 #: config/lynx.h:70
 msgid "cannot use mthreads and mlegacy-threads together"
-msgstr ""
+msgstr "không cho phép sử dụng đồng thời hai tuỳ chọn « mthreads » và « mlegacy-threads »"
 
 #: config/lynx.h:95
 msgid "cannot use mshared and static together"
-msgstr ""
+msgstr "không cho phép sử dụng đồng thời hai tuỳ chọn « mshared » và « static »"
 
 #: java/lang.opt:69
 msgid "Warn if deprecated empty statements are found"
-msgstr ""
+msgstr "Cảnh báo nếu tìm câu lệnh trống bị phản đối"
 
 #: java/lang.opt:73
 msgid "Warn if .class files are out of date"
-msgstr ""
+msgstr "Cảnh báo nếu có tập tin .class quá cũ"
 
 #: java/lang.opt:77
 msgid "Warn if modifiers are specified when not necessary"
-msgstr ""
+msgstr "Cảnh báo nếu ghi rõ bộ sửa đổi không cần thiết"
 
 #: java/lang.opt:81
 msgid "--CLASSPATH\tDeprecated; use --classpath instead"
-msgstr ""
+msgstr "--CLASSPATH\tBị phản đối; có nên sử dụng « --classpath » để thay thế"
 
 #: java/lang.opt:88
 msgid "Permit the use of the assert keyword"
-msgstr ""
+msgstr "Cho phép sử dụng từ khoá « assert »"
 
 #: java/lang.opt:110
 msgid "--bootclasspath=<path>\tReplace system path"
-msgstr ""
+msgstr "--bootclasspath=<đường_dẫn>\tThay thế đường dẫn hệ thống"
 
 #: java/lang.opt:114
 msgid "Generate checks for references to NULL"
-msgstr ""
+msgstr "Tạo ra sự kiểm tra có tham chiếu đến NULL (vô giá trị)"
 
 #: java/lang.opt:118
 msgid "--classpath=<path>\tSet class path"
-msgstr ""
+msgstr "--classpath=<đường_dẫn>\tLập đường dẫn hạng"
 
 #: java/lang.opt:125
 msgid "Output a class file"
-msgstr ""
+msgstr "Xuất một tập tin hạng"
 
 #: java/lang.opt:129
 msgid "Alias for -femit-class-file"
-msgstr ""
+msgstr "Bí danh cho « -femit-class-file »"
 
 #: java/lang.opt:133
 msgid "--encoding=<encoding>\tChoose input encoding (defaults from your locale)"
-msgstr ""
+msgstr "--encoding=<mã_ký_tự>\tChọn mã ký tự của đầu vào (mặc định là miền địa phương)"
 
 #: java/lang.opt:137
 msgid "--extdirs=<path>\tSet the extension directory path"
-msgstr ""
+msgstr "--extdirs=<đường_dẫn>\tLập đường dẫn đến thư mục phần mở rộng"
 
 #: java/lang.opt:144
 msgid "Input file is a file with a list of filenames to compile"
-msgstr ""
+msgstr "Tập tin nhập vào là một tập tin chứa danh sách các tên tập tin cần biên dịch"
 
 #: java/lang.opt:151
 msgid "Always check for non gcj generated classes archives"
-msgstr ""
+msgstr "Lúc nào cũng kiểm tra có kho lưu hạng không phải được gcj tạo ra"
 
 #: java/lang.opt:155
 msgid "Assume the runtime uses a hash table to map an object to its synchronization structure"
-msgstr ""
+msgstr "Giả sử là lúc chạy thì sử dụng một bảng chuỗi duy nhất để ánh xạ một đối tượng tới cấu trúc đồng bộ của nó"
 
 #: java/lang.opt:159
 msgid "Generate instances of Class at runtime"
-msgstr ""
+msgstr "Lúc chạy thì tạo ra các thể hiện Hạng"
 
 #: java/lang.opt:163
 msgid "Use offset tables for virtual method calls"
-msgstr ""
+msgstr "Sử dụng bảng hiệu số cho cuộc gọi phương pháp ảo"
 
 #: java/lang.opt:170
 msgid "Assume native functions are implemented using JNI"
-msgstr ""
+msgstr "Giả sử là các hàm sở hữu được thực hiện dùng JNI"
 
 #: java/lang.opt:174
 msgid "Enable optimization of static class initialization code"
-msgstr ""
+msgstr "Hiệu lực sự tối ưu hoá mã sơ khởi hạng tĩnh"
 
 #: java/lang.opt:181
 msgid "Reduce the amount of reflection meta-data generated"
-msgstr ""
+msgstr "Giảm số lượng siêu dữ liệu phản chiếu được tạo ra"
 
 #: java/lang.opt:185
 msgid "Enable assignability checks for stores into object arrays"
-msgstr ""
+msgstr "Hiệu lực sự kiểm tra khả năng sự gán cho việc lưu vào mảng đối tượng"
 
 #: java/lang.opt:189
 msgid "Generate code for the Boehm GC"
-msgstr ""
+msgstr "Tạo ra mã cho Boehm GC"
 
 #: java/lang.opt:193
 msgid "Call a library routine to do integer divisions"
-msgstr ""
+msgstr "Gọi một hàm thư viện để chia số nguyên"
 
 #: java/lang.opt:197
 msgid "Generate code for built-in atomic operations"
-msgstr ""
+msgstr "Tạo ra mã cho các thao tác atomic dựng sẵn"
 
 #: java/lang.opt:201
 msgid "Generated should be loaded by bootstrap loader"
-msgstr ""
+msgstr "Điều được tạo ra thì nên được nạp bởi bộ nạp và khởi động"
 
 #: java/lang.opt:205
 msgid "Set the source language version"
-msgstr ""
+msgstr "Lập phiên bản ngôn ngữ nguồn"
 
 #: java/lang.opt:209
 msgid "Set the target VM version"
-msgstr ""
+msgstr "Lập phiên bản VM đích"
 
 #: ada/gcc-interface/lang.opt:100
 msgid "-gnat<options>\tSpecify options to GNAT"
-msgstr ""
+msgstr "-gnat<tuỳ_chọn>\tGhi rõ các tuỳ chọn tới GNAT"
 
 #: fortran/lang.opt:57
 msgid "-J<directory>\tPut MODULE files in 'directory'"
-msgstr ""
+msgstr "-J<thư_mục>\tĐể vào thư mục này các tập tin MÔ-ĐUN"
 
 #: fortran/lang.opt:73
 msgid "Warn about possible aliasing of dummy arguments"
-msgstr ""
+msgstr "Cảnh báo về đối số giả có thể bị chồng lấp"
 
 #: fortran/lang.opt:77
 msgid "Warn about alignment of COMMON blocks"
-msgstr ""
+msgstr "Cảnh báo về sự xếp hàng các khối CHUNG"
 
 #: fortran/lang.opt:81
 msgid "Warn about missing ampersand in continued character constants"
-msgstr ""
+msgstr "Cảnh báo về ký hiệu « & » còn thiếu trong hằng ký tự tiếp tục"
 
 #: fortran/lang.opt:85
 msgid "Warn about creation of array temporaries"
-msgstr ""
+msgstr "Cảnh báo về sự tạo mục mảng tạm thời"
 
 #: fortran/lang.opt:89
 msgid "Warn about truncated character expressions"
-msgstr ""
+msgstr "Cảnh báo về biểu thức ký tự bị cắt ngắn"
 
 #: fortran/lang.opt:97
 msgid "Warn about calls with implicit interface"
-msgstr ""
+msgstr "Cảnh báo về cuộc gọi có giao diện ngầm"
 
 #: fortran/lang.opt:101
 msgid "Warn about called procedures not explicitly declared"
-msgstr ""
+msgstr "Cảnh báo về thủ tục được gọi mà không phải được tuyên bố dứt khoát"
 
 #: fortran/lang.opt:105
 msgid "Warn about truncated source lines"
-msgstr ""
+msgstr "Cảnh báo về dòng nguồn bị cắt ngắn"
 
 #: fortran/lang.opt:109
 msgid "Warn on intrinsics not part of the selected standard"
-msgstr ""
+msgstr "Cảnh báo về điều thực chất không phải thuộc về tiêu chuẩn được chọn"
 
 #: fortran/lang.opt:117
 msgid "Warn about \"suspicious\" constructs"
-msgstr ""
+msgstr "Cảnh báo về cấu trúc « đáng ngờ"
 
 #: fortran/lang.opt:121
 msgid "Permit nonconforming uses of the tab character"
-msgstr ""
+msgstr "Cho phép sử dụng ký tự tab một cách không phù hợp"
 
 #: fortran/lang.opt:125
 msgid "Warn about underflow of numerical constant expressions"
-msgstr ""
+msgstr "Cảnh báo về biểu thức hằng thuộc số bị tràn ngược"
 
 #: fortran/lang.opt:129
 msgid "Warn if a user-procedure has the same name as an intrinsic"
-msgstr ""
+msgstr "Cảnh báo nếu một thủ tục người dùng có cùng một tên với một điều thực chất"
 
 #: fortran/lang.opt:133
 msgid "Enable preprocessing"
-msgstr ""
+msgstr "Bật khả năng tiền xử lý"
 
 #: fortran/lang.opt:137
 msgid "Disable preprocessing"
-msgstr ""
+msgstr "Tắt khả năng tiền xử lý"
 
 #: fortran/lang.opt:145
 msgid "Enable alignment of COMMON blocks"
-msgstr ""
+msgstr "Bật sự xếp hàng các khối CHUNG"
 
 #: fortran/lang.opt:149
 msgid "All intrinsics procedures are available regardless of selected standard"
-msgstr ""
+msgstr "Tất cả các thủ tục về điều thực chất vẫn sẵn sàng bất chấp tiêu chuẩn được chọn"
 
 #: fortran/lang.opt:157
 msgid "Do not treat local variables and COMMON blocks as if they were named in SAVE statements"
-msgstr ""
+msgstr "Đừng xử lý giá trị cục bộ hoặc khối CHUNG như là nó được đặt tên trong câu lệnh LƯU"
 
 #: fortran/lang.opt:161
 msgid "Specify that backslash in string introduces an escape character"
-msgstr ""
+msgstr "Ghi rõ rằng một dấu chéo ngược trong một chuỗi thì giới thiệu một ký tự thoát"
 
 #: fortran/lang.opt:165
 msgid "Produce a backtrace when a runtime error is encountered"
-msgstr ""
+msgstr "Xuất một vết ngược khi gặp lỗi lúc chạy"
 
 #: fortran/lang.opt:169
 msgid "-fblas-matmul-limit=<n>\tSize of the smallest matrix for which matmul will use BLAS"
-msgstr ""
+msgstr "-fblas-matmul-limit=<số>\tKích cỡ của ma trận nhỏ nhất cho đó matmul sẽ sử dụng BLAS"
 
 #: fortran/lang.opt:173
 msgid "Produce a warning at runtime if a array temporary has been created for a procedure argument"
-msgstr ""
+msgstr "Cảnh báo lúc chạy nếu một mục mảng tạm thời đã được tạo cho một đối số thủ tục"
 
 #: fortran/lang.opt:177
 msgid "Use big-endian format for unformatted files"
-msgstr ""
+msgstr "Có tập tin chưa định dạng thì sử dụng định dạng về cuối lớn"
 
 #: fortran/lang.opt:181
 msgid "Use little-endian format for unformatted files"
-msgstr ""
+msgstr "Có tập tin chưa định dạng thì sử dụng định dạng về cuối nhỏ"
 
 #: fortran/lang.opt:185
 msgid "Use native format for unformatted files"
-msgstr ""
+msgstr "Có tập tin chưa định dạng thì sử dụng định dạng sở hữu"
 
 #: fortran/lang.opt:189
 msgid "Swap endianness for unformatted files"
-msgstr ""
+msgstr "Có tập tin chưa định dạng thì trao đổi tình trạng cuối"
 
 #: fortran/lang.opt:193
 msgid "Use the Cray Pointer extension"
-msgstr ""
+msgstr "Sử dụng phần mở rộng hàm trỏ Cray Pointer"
 
 #: fortran/lang.opt:197
 msgid "Ignore 'D' in column one in fixed form"
-msgstr ""
+msgstr "Có dạng cố định thì qua chữ « D » trong cột đầu tiên"
 
 #: fortran/lang.opt:201
 msgid "Treat lines with 'D' in column one as comments"
-msgstr ""
+msgstr "Thấy dòng có chữ « D » trong cột đầu tiên là ghi chú"
 
 #: fortran/lang.opt:205
 msgid "Set the default double precision kind to an 8 byte wide type"
-msgstr ""
+msgstr "Lập loại độ chính xác đôi mặc định thành một loại có chiều rộng 8 byte"
 
 #: fortran/lang.opt:209
 msgid "Set the default integer kind to an 8 byte wide type"
-msgstr ""
+msgstr "Lập loại số nguyên mặc định thành một loại có chiều rộng 8 byte"
 
 #: fortran/lang.opt:213
 msgid "Set the default real kind to an 8 byte wide type"
-msgstr ""
+msgstr "Lập loại thật mặc định thành một loại có chiều rộng 8 byte"
 
 #: fortran/lang.opt:217
 msgid "Allow dollar signs in entity names"
-msgstr ""
+msgstr "Cho phép tên thực thể chứa dấu đồng đô la « $ »"
 
 #: fortran/lang.opt:221
 msgid "Dump a core file when a runtime error occurs"
-msgstr ""
+msgstr "Gặp lỗi lúc chạy thì đổ một tập tin lõi"
 
 #: fortran/lang.opt:225
 msgid "Display the code tree after parsing"
-msgstr ""
+msgstr "Một khi phân tích cú pháp thì hiển thị cây mã nguồn"
 
 #: fortran/lang.opt:229
 msgid "Specify that an external BLAS library should be used for matmul calls on large-size arrays"
-msgstr ""
+msgstr "Ghi rõ rằng có nên sử dụng một thư viện BLAS bên ngoài cho cuộc gọi matmul trên mạng có kích cỡ lớn"
 
 #: fortran/lang.opt:233
 msgid "Use f2c calling convention"
-msgstr ""
+msgstr "Sử dụng quy ước gọi f2c"
 
 #: fortran/lang.opt:237
 msgid "Assume that the source file is fixed form"
-msgstr ""
+msgstr "Giả sử là tập tin nguồn có dạng cố định"
 
 #: fortran/lang.opt:241
 msgid "Specify where to find the compiled intrinsic modules"
-msgstr ""
+msgstr "Ghi rõ vị trí ở đó có các mô-đun thực chất đã biên dịch"
 
 #: fortran/lang.opt:245
 msgid "Allow arbitrary character line width in fixed mode"
-msgstr ""
+msgstr "Trong chế độ cố định thì cũng cho phép chiều rộng dòng ký tự tùy ý"
 
 #: fortran/lang.opt:249
 msgid "-ffixed-line-length-<n>\tUse n as character line width in fixed mode"
-msgstr ""
+msgstr "-ffixed-line-length-<số>\tTrong chế độ cố định thì chiều rộng dòng ký tự là số này"
 
 #: fortran/lang.opt:253
 msgid "-ffpe-trap=[...]\tStop on following floating point exceptions"
-msgstr ""
+msgstr "-ffpe-trap=[...]\tĐừng lại theo ngoại lệ điểm phù động"
 
 #: fortran/lang.opt:257
 msgid "Assume that the source file is free form"
-msgstr ""
+msgstr "Giả sử là tập tin nguồn có dạng tự do"
 
 #: fortran/lang.opt:261
 msgid "Allow arbitrary character line width in free mode"
-msgstr ""
+msgstr "Trong chế độ tự do thì cũng cho phép chiều rộng dòng ký tự tùy ý"
 
 #: fortran/lang.opt:265
 msgid "-ffree-line-length-<n>\tUse n as character line width in free mode"
-msgstr ""
+msgstr "-ffree-line-length-<số>\tTrong chế độ tự do thì chiều rộng dòng ký tự là số này"
 
 #: fortran/lang.opt:269
 msgid "Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements"
-msgstr ""
+msgstr "Ghi rõ rằng không cho phép tạo loại ngầm nào, nếu không bị ghi đè bởi câu lệnh THỰC CHẤT dứt khoát"
 
 #: fortran/lang.opt:273
 msgid "-finit-character=<n>\tInitialize local character variables to ASCII value n"
-msgstr ""
+msgstr "-finit-character=<số>\tSơ khởi các biến ký tự cục bộ thành giá trị ASCII này"
 
 #: fortran/lang.opt:277
 msgid "-finit-integer=<n>\tInitialize local integer variables to n"
-msgstr ""
+msgstr "-finit-integer=<số>\tSơ khởi các biến số nguyên cục bộ thành giá trị này"
 
 #: fortran/lang.opt:281
 msgid "Initialize local variables to zero (from g77)"
-msgstr ""
+msgstr "Sơ khởi các biến cục bộ thành số không (từ g77)"
 
 #: fortran/lang.opt:285
 msgid "-finit-logical=<true|false>\tInitialize local logical variables"
-msgstr ""
+msgstr "-finit-logical=<true|false>\tSơ khởi các biến hợp lý cục bộ (true=đúng, false=sai)"
 
 #: fortran/lang.opt:289
 msgid "-finit-real=<zero|nan|inf|-inf>\tInitialize local real variables"
 msgstr ""
+"-finit-real=<zero|nan|inf|-inf>\tSơ khởi các biến thật cục bộ\n"
+"\tzero\t\tsố không\n"
+"\tnan\t\tkhông phải là một con số\n"
+"\tinf\t\tvô hạn\n"
+"\t-inf\t\tkhông vô hạn"
 
 #: fortran/lang.opt:293
 msgid "-fmax-array-constructor=<n>\tMaximum number of objects in an array constructor"
-msgstr ""
+msgstr "-fmax-array-constructor=<số>\tSố tối đa các đối tượng trong một bộ cấu tạo mảng"
 
 #: fortran/lang.opt:297
 msgid "-fmax-errors=<n>\tMaximum number of errors to report"
-msgstr ""
+msgstr "-fmax-errors=<số>\tSố tối đa các lỗi cần thông báo"
 
 #: fortran/lang.opt:301
 msgid "-fmax-identifier-length=<n>\tMaximum identifier length"
-msgstr ""
+msgstr "-fmax-identifier-length=<số>\tChiều dài tối đa của bộ nhận diện"
 
 #: fortran/lang.opt:305
 msgid "-fmax-subrecord-length=<n>\tMaximum length for subrecords"
-msgstr ""
+msgstr "-fmax-subrecord-length=<số>\tChiều dài tối đa của mục ghi phụ"
 
 #: fortran/lang.opt:309
 msgid "-fmax-stack-var-size=<n>\tSize in bytes of the largest array that will be put on the stack"
-msgstr ""
+msgstr "-fmax-stack-var-size=<số>\tKích cỡ theo byte của mảng lớn nhất sẽ được để vào đống"
 
 #: fortran/lang.opt:313
 msgid "Set default accessibility of module entities to PRIVATE."
-msgstr ""
+msgstr "Lập thành PRIVATE (riêng) tình trạng truy cập của thực thể mô-đun."
 
 #: fortran/lang.opt:321
 msgid "Try to lay out derived types as compactly as possible"
-msgstr ""
+msgstr "Thử bố trí các loại có hướng một cách tóm gọn nhất có thể"
 
 #: fortran/lang.opt:329
 msgid "Protect parentheses in expressions"
-msgstr ""
+msgstr "Bảo vệ dấu ngoặc đơn trong biểu thức"
 
 #: fortran/lang.opt:333
 msgid "Enable range checking during compilation"
-msgstr ""
+msgstr "Hiệu lực chức năng kiểm tra phạm vi trong khi biên dịch"
 
 #: fortran/lang.opt:337
 msgid "Use a 4-byte record marker for unformatted files"
-msgstr ""
+msgstr "Có tập tin chưa định dạng thì sử dụng một ký hiệu đánh dấu mục ghi loại 4 byte"
 
 #: fortran/lang.opt:341
 msgid "Use an 8-byte record marker for unformatted files"
-msgstr ""
+msgstr "Có tập tin chưa định dạng thì sử dụng một ký hiệu đánh dấu mục ghi loại 8 byte"
 
 #: fortran/lang.opt:345
 msgid "Allocate local variables on the stack to allow indirect recursion"
-msgstr ""
+msgstr "Cấp phát các biến cúc bộ trên đống để cho phép đệ quy một cách gián tiếp"
 
 #: fortran/lang.opt:349
 msgid "Copy array sections into a contiguous block on procedure entry"
-msgstr ""
+msgstr "Vào thủ tục thì cũng sao chép các phần mảng vào một khối kề nhau"
 
 #: fortran/lang.opt:353
 msgid "-fcheck=[...]\tSpecify which runtime checks are to be performed"
-msgstr ""
+msgstr "-fcheck=[...]\tGhi rõ có nên thực hiện những hàm kiểm tra lúc chạy nào"
 
 #: fortran/lang.opt:357
 msgid "Append a second underscore if the name already contains an underscore"
-msgstr ""
+msgstr "Tên đã chứa một dấu gạch dưới thì phụ thêm một dấu gạch dưới bổ sung"
 
 #: fortran/lang.opt:365
 msgid "Apply negative sign to zero values"
-msgstr ""
+msgstr "Có giá trị số không thì áp dụng ký hiệu trừ"
 
 #: fortran/lang.opt:369
 msgid "Append underscores to externally visible names"
-msgstr ""
+msgstr "Có tên hiển thị bên ngoài thì phụ thêm dấu gạch dưới"
 
 #: fortran/lang.opt:373
 msgid "Compile all program units at once and check all interfaces"
-msgstr ""
+msgstr "Biên dịch đồng thời tất cả các đơn vị chương trình, và kiểm tra tất cả các giao diện"
 
 #: fortran/lang.opt:413
 msgid "Statically link the GNU Fortran helper library (libgfortran)"
-msgstr ""
+msgstr "Liên kết tĩnh thư viện bổ trợ Fortran của GNU (libgfortran)"
 
 #: fortran/lang.opt:417
 msgid "Conform to the ISO Fortran 2003 standard"
-msgstr ""
+msgstr "Làm cho hợp với tiêu chuẩn ISO Fortran 2003"
 
 #: fortran/lang.opt:421
 msgid "Conform to the ISO Fortran 2008 standard"
-msgstr ""
+msgstr "Làm cho hợp với tiêu chuẩn ISO Fortran 2008"
 
 #: fortran/lang.opt:425
 msgid "Conform to the ISO Fortran 95 standard"
-msgstr ""
+msgstr "Làm cho hợp với tiêu chuẩn ISO Fortran 95"
 
 #: fortran/lang.opt:429
 msgid "Conform to nothing in particular"
-msgstr ""
+msgstr "Làm cho hợp với không gì đặc biệt"
 
 #: fortran/lang.opt:433
 msgid "Accept extensions to support legacy code"
-msgstr ""
+msgstr "Chấp nhận phần mở rộng để hỗ trợ mã nguồn thừa tự"
 
 #: config/alpha/alpha.opt:23 config/i386/i386.opt:201
 msgid "Do not use hardware fp"
-msgstr ""
+msgstr "Đừng sử dụng điểm phù động loại phần cứng"
 
 #: config/alpha/alpha.opt:27
 msgid "Use fp registers"
-msgstr ""
+msgstr "Sử dụng thanh ghi loại điểm phù động"
 
 #: config/alpha/alpha.opt:31
 msgid "Assume GAS"
-msgstr ""
+msgstr "Giả sử GAS"
 
 #: config/alpha/alpha.opt:35
 msgid "Do not assume GAS"
-msgstr ""
+msgstr "Đừng giả sử GAS"
 
 #: config/alpha/alpha.opt:39
 msgid "Request IEEE-conformant math library routines (OSF/1)"
-msgstr ""
+msgstr "Yêu cầu hàm thư viện toán học thích hợp với IEEE (OSF/1)"
 
 #: config/alpha/alpha.opt:43
 msgid "Emit IEEE-conformant code, without inexact exceptions"
-msgstr ""
+msgstr "Xuất mã thích hợp với IEEE mà không có ngoại lệ không chính xác"
 
 #: config/alpha/alpha.opt:50
 msgid "Do not emit complex integer constants to read-only memory"
-msgstr ""
+msgstr "Đừng xuất hằng số nguyên phức tạp vào vùng nhớ chỉ đọc"
 
 #: config/alpha/alpha.opt:54
 msgid "Use VAX fp"
-msgstr ""
+msgstr "Sử dụng điểm phù động loại VAX"
 
 #: config/alpha/alpha.opt:58
 msgid "Do not use VAX fp"
-msgstr ""
+msgstr "Đừng sử dụng điểm phù động loại VAX"
 
 #: config/alpha/alpha.opt:62
 msgid "Emit code for the byte/word ISA extension"
-msgstr ""
+msgstr "Xuất mã cho phần mở rộng ISA byte/từ"
 
 #: config/alpha/alpha.opt:66
 msgid "Emit code for the motion video ISA extension"
-msgstr ""
+msgstr "Xuất mã cho phần mở rộng ISA ảnh động di chuyển"
 
 #: config/alpha/alpha.opt:70
 msgid "Emit code for the fp move and sqrt ISA extension"
-msgstr ""
+msgstr "Xuất mã cho phần mở rộng ISA loại điểm phù động về di chuyển v tính căn bậc hai"
 
 #: config/alpha/alpha.opt:74
 msgid "Emit code for the counting ISA extension"
-msgstr ""
+msgstr "Xuất mã cho phần mở rộng ISA đếm"
 
 #: config/alpha/alpha.opt:78
 msgid "Emit code using explicit relocation directives"
-msgstr ""
+msgstr "Xuất mã dùng chỉ thị định vị lại dứt khoát"
 
 #: config/alpha/alpha.opt:82
 msgid "Emit 16-bit relocations to the small data areas"
-msgstr ""
+msgstr "Xuất vào vùng dữ liệu nhỏ sự định vị lại 16-bit"
 
 #: config/alpha/alpha.opt:86
 msgid "Emit 32-bit relocations to the small data areas"
-msgstr ""
+msgstr "Xuất vào vùng dữ liệu nhỏ sự định vị lại 32-bit"
 
 #: config/alpha/alpha.opt:90
 msgid "Emit direct branches to local functions"
-msgstr ""
+msgstr "Xuất nhánh trực tiếp tới hàm cục bộ"
 
 #: config/alpha/alpha.opt:94
 msgid "Emit indirect branches to local functions"
-msgstr ""
+msgstr "Xuất nhánh gián tiếp tới hàm cục bộ"
 
 #: config/alpha/alpha.opt:98
 msgid "Emit rdval instead of rduniq for thread pointer"
-msgstr ""
+msgstr "Đối với hàm trỏ nhánh thì xuất rdval thay cho rduniq"
 
 #: config/alpha/alpha.opt:102 config/s390/s390.opt:59
 #: config/sparc/long-double-switch.opt:23
 msgid "Use 128-bit long double"
-msgstr ""
+msgstr "Sử dụng đôi dài 128-bit"
 
 #: config/alpha/alpha.opt:106 config/s390/s390.opt:63
 #: config/sparc/long-double-switch.opt:27
 msgid "Use 64-bit long double"
-msgstr ""
+msgstr "Sử dụng đôi dài 64-bit"
 
 #: config/alpha/alpha.opt:110
 msgid "Use features of and schedule given CPU"
-msgstr ""
+msgstr "Sử dụng các tính năng của CPU đưa ra, và định thời CPU đó"
 
 #: config/alpha/alpha.opt:114
 msgid "Schedule given CPU"
-msgstr ""
+msgstr "Định thời CPU đưa ra"
 
 #: config/alpha/alpha.opt:118
 msgid "Control the generated fp rounding mode"
-msgstr ""
+msgstr "Điều khiển chế độ làm tròn loại điểm phù động đã tạo ra"
 
 #: config/alpha/alpha.opt:122
 msgid "Control the IEEE trap mode"
-msgstr ""
+msgstr "Điều khiển chế độ đặt bẫy IEEE"
 
 #: config/alpha/alpha.opt:126
 msgid "Control the precision given to fp exceptions"
-msgstr ""
+msgstr "Điều khiển độ chính xác đưa ra cho ngoại lệ về điểm phù động"
 
 #: config/alpha/alpha.opt:130
 msgid "Tune expected memory latency"
-msgstr ""
+msgstr "Điều chỉnh độ ngấm ngầm vùng nhớ mong đợi"
 
 #: config/alpha/alpha.opt:134 config/ia64/ia64.opt:111
 #: config/rs6000/sysv4.opt:32
 msgid "Specify bit size of immediate TLS offsets"
-msgstr ""
+msgstr "Ghi rõ kích cỡ bit của hiệu số TLS lập tức"
 
 #: config/frv/frv.opt:23
 msgid "Use 4 media accumulators"
-msgstr ""
+msgstr "Sử dụng 4 bộ tích luỹ môi giới"
 
 #: config/frv/frv.opt:27
 msgid "Use 8 media accumulators"
-msgstr ""
+msgstr "Sử dụng 8 bộ tích luỹ môi giới"
 
 #: config/frv/frv.opt:31
 msgid "Enable label alignment optimizations"
-msgstr ""
+msgstr "Hiệu lực sự tối ưu hoá cách xếp hàng nhãn"
 
 #: config/frv/frv.opt:35
 msgid "Dynamically allocate cc registers"
-msgstr ""
+msgstr "Cấp phát động các thanh ghi CC"
 
 #: config/frv/frv.opt:42
 msgid "Set the cost of branches"
-msgstr ""
+msgstr "Lập giá của nhánh"
 
 #: config/frv/frv.opt:46
 msgid "Enable conditional execution other than moves/scc"
-msgstr ""
+msgstr "Hiệu lực sự thực hiện có điều kiện mà khác với moves/scc"
 
 #: config/frv/frv.opt:50
 msgid "Change the maximum length of conditionally-executed sequences"
-msgstr ""
+msgstr "Thay đổi chiều dài tối đa của dãy được thực hiện có điều kiện"
 
 #: config/frv/frv.opt:54
 msgid "Change the number of temporary registers that are available to conditionally-executed sequences"
-msgstr ""
+msgstr "Thay đổi số các thanh ghi tạm thời còn sẵn sàng cho dãy được thực hiện có điều kiện"
 
 #: config/frv/frv.opt:58
 msgid "Enable conditional moves"
-msgstr ""
+msgstr "Hiệu lực sự di chuyển có điều kiện"
 
 #: config/frv/frv.opt:62
 msgid "Set the target CPU type"
-msgstr ""
+msgstr "Lập loại CPU đích"
 
 #: config/frv/frv.opt:84
 msgid "Use fp double instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh đôi loại điểm phù động"
 
 #: config/frv/frv.opt:88
 msgid "Change the ABI to allow double word insns"
-msgstr ""
+msgstr "Sửa đổi ABI để cho phép câu lệnh từ đôi"
 
 #: config/frv/frv.opt:92 config/bfin/bfin.opt:73
 msgid "Enable Function Descriptor PIC mode"
-msgstr ""
+msgstr "Hiệu lực chế độ PIC Mô tả Hàm"
 
 #: config/frv/frv.opt:96
 msgid "Just use icc0/fcc0"
-msgstr ""
+msgstr "Chỉ sử dụng icc0/fcc0"
 
 #: config/frv/frv.opt:100
 msgid "Only use 32 FPRs"
-msgstr ""
+msgstr "Chỉ sử dụng 32 FPR"
 
 #: config/frv/frv.opt:104
 msgid "Use 64 FPRs"
-msgstr ""
+msgstr "Sử dụng 64 FPR"
 
 #: config/frv/frv.opt:108
 msgid "Only use 32 GPRs"
-msgstr ""
+msgstr "Chỉ sử dụng 32 GPR"
 
 #: config/frv/frv.opt:112
 msgid "Use 64 GPRs"
-msgstr ""
+msgstr "Sử dụng 64 GPR"
 
 #: config/frv/frv.opt:116
 msgid "Enable use of GPREL for read-only data in FDPIC"
-msgstr ""
+msgstr "Hiệu lực sử dụng GPREL cho dữ liệu chỉ đọc trong FDPIC"
 
 #: config/frv/frv.opt:120 config/rs6000/rs6000.opt:112
 #: config/pdp11/pdp11.opt:71
 msgid "Use hardware floating point"
-msgstr ""
+msgstr "Sử dụng điểm phù động loại phần cứng"
 
 #: config/frv/frv.opt:124 config/bfin/bfin.opt:77
 msgid "Enable inlining of PLT in function calls"
-msgstr ""
+msgstr "Hiệu lực sự chèn trực tiếp PLT vào cuộc gọi hàm"
 
 #: config/frv/frv.opt:128
 msgid "Enable PIC support for building libraries"
-msgstr ""
+msgstr "Hiệu lực sự hỗ trợ PIC để xây dựng thư viện"
 
 #: config/frv/frv.opt:132
 msgid "Follow the EABI linkage requirements"
-msgstr ""
+msgstr "Tùy theo các yêu cầu của sự liên kết EABI"
 
 #: config/frv/frv.opt:136
 msgid "Disallow direct calls to global functions"
-msgstr ""
+msgstr "Không cho phép gọi trực tiếp cho hàm toàn cục"
 
 #: config/frv/frv.opt:140
 msgid "Use media instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh môi giới"
 
 #: config/frv/frv.opt:144
 msgid "Use multiply add/subtract instructions"
-msgstr ""
+msgstr "Sử dụng nhiều câu lệnh nhân_cộng/trừ"
 
 #: config/frv/frv.opt:148
 msgid "Enable optimizing &&/|| in conditional execution"
-msgstr ""
+msgstr "Hiệu lực sự tối ưu hoá &&/|| trong quá trình thực hiện có điều kiện"
 
 #: config/frv/frv.opt:152
 msgid "Enable nested conditional execution optimizations"
-msgstr ""
+msgstr "Hiệu lực sự tối ưu hoá quá trình thực hiện có điều kiện mà cũng lồng nhau"
 
 #: config/frv/frv.opt:157
 msgid "Do not mark ABI switches in e_flags"
-msgstr ""
+msgstr "Đừng đánh dấu cái chuyển ABI trong e_flags"
 
 #: config/frv/frv.opt:161
 msgid "Remove redundant membars"
-msgstr ""
+msgstr "Gỡ bỏ thanh vùng nhớ thừa"
 
 #: config/frv/frv.opt:165
 msgid "Pack VLIW instructions"
-msgstr ""
+msgstr "Đóng gói các câu lệnh VLIW"
 
 #: config/frv/frv.opt:169
 msgid "Enable setting GPRs to the result of comparisons"
-msgstr ""
+msgstr "Hiệu lực chức năng lập GPR thành kết quả của phép so sánh"
 
 #: config/frv/frv.opt:173
 msgid "Change the amount of scheduler lookahead"
-msgstr ""
+msgstr "Sửa đổi khoảng thời gian nhìn trước của công cụ định thời"
 
 #: config/frv/frv.opt:177 config/pa/pa.opt:104
 msgid "Use software floating point"
-msgstr ""
+msgstr "Sử dụng điểm phù động loại phần mềm"
 
 #: config/frv/frv.opt:181
 msgid "Assume a large TLS segment"
-msgstr ""
+msgstr "Giả sử một đoạn TLS lớn"
 
 #: config/frv/frv.opt:185
 msgid "Do not assume a large TLS segment"
-msgstr ""
+msgstr "Đừng giả sử một đoạn TLS lớn"
 
 #: config/frv/frv.opt:190
 msgid "Cause gas to print tomcat statistics"
-msgstr ""
+msgstr "Gây ra chương trình gas in ra thống kê về tomcat"
 
 #: config/frv/frv.opt:195
 msgid "Link with the library-pic libraries"
-msgstr ""
+msgstr "Liên kết với các thư viện library-pic"
 
 #: config/frv/frv.opt:199
 msgid "Allow branches to be packed with other instructions"
-msgstr ""
+msgstr "Cho phép đóng gói nhánh với câu lệnh khác"
 
 #: config/mn10300/mn10300.opt:23
 msgid "Target the AM33 processor"
-msgstr ""
+msgstr "Đặt mục đích là bộ xử lý AM33"
 
 #: config/mn10300/mn10300.opt:27
 msgid "Target the AM33/2.0 processor"
-msgstr ""
+msgstr "Đặt mục đích là bộ xử lý AM33/2.0"
 
 #: config/mn10300/mn10300.opt:31
 msgid "Work around hardware multiply bug"
-msgstr ""
+msgstr "Khắc phục lỗi nhân lên phần cứng"
 
 #: config/mn10300/mn10300.opt:36
 msgid "Enable linker relaxations"
-msgstr ""
+msgstr "Hiệu lực hàm yếu về bộ liên kết"
 
 #: config/mn10300/mn10300.opt:40
 msgid "Return pointers in both a0 and d0"
-msgstr ""
+msgstr "Trả lại hàm trỏ trong cả hai a0 và d0"
 
 #: config/s390/tpf.opt:23
 msgid "Enable TPF-OS tracing code"
-msgstr ""
+msgstr "Hiệu lực mã tìm đường TFP-OS"
 
 #: config/s390/tpf.opt:27
 msgid "Specify main object for TPF-OS"
-msgstr ""
+msgstr "Ghi rõ đối tượng chính cho TFP-OS"
 
 #: config/s390/s390.opt:23
 msgid "31 bit ABI"
-msgstr ""
+msgstr "ABI 31-bit"
 
 #: config/s390/s390.opt:27
 msgid "64 bit ABI"
-msgstr ""
+msgstr "ABI 64-bit"
 
 #: config/s390/s390.opt:31 config/i386/i386.opt:97 config/spu/spu.opt:80
 msgid "Generate code for given CPU"
-msgstr ""
+msgstr "Tạo ra mã cho CPU đưa ra"
 
 #: config/s390/s390.opt:35
 msgid "Maintain backchain pointer"
-msgstr ""
+msgstr "Bảo tồn hàm trỏ dây chuyền ngược"
 
 #: config/s390/s390.opt:39
 msgid "Additional debug prints"
-msgstr ""
+msgstr "Lần bổ sung in ra thông tin gỡ rối"
 
 #: config/s390/s390.opt:43
 msgid "ESA/390 architecture"
-msgstr ""
+msgstr "Kiến trúc ESA/390"
 
 #: config/s390/s390.opt:47
 msgid "Enable fused multiply/add instructions"
-msgstr ""
+msgstr "Hiệu lực câu lệnh nhân/cộng hợp nhau"
 
 #: config/s390/s390.opt:51
 msgid "Enable decimal floating point hardware support"
-msgstr ""
+msgstr "Hiệu lực sự hỗ trợ phần cứng điểm phù động thập phân"
 
 #: config/s390/s390.opt:55
 msgid "Enable hardware floating point"
-msgstr ""
+msgstr "Hiệu lực điểm phù động loại phần cứng"
 
 #: config/s390/s390.opt:67
 msgid "Use packed stack layout"
-msgstr ""
+msgstr "Sử dụng bố trí đống đóng gói"
 
 #: config/s390/s390.opt:71
 msgid "Use bras for executable < 64k"
-msgstr ""
+msgstr "Sử dụng BRAS cho tập tin thực thị < 64k"
 
 #: config/s390/s390.opt:75
 msgid "Disable hardware floating point"
-msgstr ""
+msgstr "Tắt điểm phù động loại phần cứng"
 
 #: config/s390/s390.opt:79
 msgid "Set the max. number of bytes which has to be left to stack size before a trap instruction is triggered"
-msgstr ""
+msgstr "Lập số tối đa các byte cần để cho kích cỡ đống trước khi gây ra một câu lệnh đặt bẫy"
 
 #: config/s390/s390.opt:83
 msgid "Emit extra code in the function prologue in order to trap if the stack size exceeds the given limit"
-msgstr ""
+msgstr "Xuất mã bổ sung trong đoạn mở đầu hàm để đặt bẫy nếu kích cỡ đống vượt quá giới hạn đưa ra"
 
 #: config/s390/s390.opt:87 config/ia64/ia64.opt:115 config/sparc/sparc.opt:95
 #: config/i386/i386.opt:229 config/spu/spu.opt:84
 msgid "Schedule code for given CPU"
-msgstr ""
+msgstr "Định thời mã cho CPU đưa ra"
 
 #: config/s390/s390.opt:91
 msgid "mvcle use"
-msgstr ""
+msgstr "Cách sử dụng mvcle"
 
 #: config/s390/s390.opt:95
 msgid "Warn if a function uses alloca or creates an array with dynamic size"
-msgstr ""
+msgstr "Cảnh báo nếu một hàm sử dụng alloca hoặc tạo một mảng có kích cỡ năng động"
 
 #: config/s390/s390.opt:99
 msgid "Warn if a single function's framesize exceeds the given framesize"
-msgstr ""
+msgstr "Cảnh báo nếu có một hàm riêng lẻ với kích cỡ khung vượt quá kích cỡ khung đưa ra"
 
 #: config/s390/s390.opt:103
 msgid "z/Architecture"
-msgstr ""
+msgstr "z/Kiến trúc"
 
 #: config/ia64/ilp32.opt:3
 msgid "Generate ILP32 code"
-msgstr ""
+msgstr "Tạo ra mã ILP32"
 
 #: config/ia64/ilp32.opt:7
 msgid "Generate LP64 code"
-msgstr ""
+msgstr "Tạo ra mã LP64"
 
 #: config/ia64/ia64.opt:21
 msgid "Generate big endian code"
-msgstr ""
+msgstr "Tạo ra mã về cuối lớn"
 
 #: config/ia64/ia64.opt:25
 msgid "Generate little endian code"
-msgstr ""
+msgstr "Tạo ra mã về cuối nhỏ"
 
 #: config/ia64/ia64.opt:29
 msgid "Generate code for GNU as"
-msgstr ""
+msgstr "Tạo ra mã cho as của GNU"
 
 #: config/ia64/ia64.opt:33
 msgid "Generate code for GNU ld"
-msgstr ""
+msgstr "Tạo ra mã cho ld của GNU"
 
 #: config/ia64/ia64.opt:37
 msgid "Emit stop bits before and after volatile extended asms"
-msgstr ""
+msgstr "Xuất bit dừng lại đẳng trước và sau asm mở rộng hay thay đổi"
 
 #: config/ia64/ia64.opt:41
 msgid "Use in/loc/out register names"
-msgstr ""
+msgstr "Sử dụng tên thanh ghi loại in/loc/out"
 
 #: config/ia64/ia64.opt:48
 msgid "Enable use of sdata/scommon/sbss"
-msgstr ""
+msgstr "Hiệu lực sử dụng « sdata/scommon/sbss »"
 
 #: config/ia64/ia64.opt:52
 msgid "Generate code without GP reg"
-msgstr ""
+msgstr "Tạo ra mã không có GP reg"
 
 #: config/ia64/ia64.opt:56
 msgid "gp is constant (but save/restore gp on indirect calls)"
-msgstr ""
+msgstr "gp bất biến (mà lưu/phục_hồi gp khi được gọi gián tiếp)"
 
 #: config/ia64/ia64.opt:60
 msgid "Generate self-relocatable code"
-msgstr ""
+msgstr "Tạo ra mã có thể tự định vị lại"
 
 #: config/ia64/ia64.opt:64
 msgid "Generate inline floating point division, optimize for latency"
-msgstr ""
+msgstr "Tạo ra phép chia điểm phù động trực tiếp, tối ưu hoá cho sự ngấm ngầm"
 
 #: config/ia64/ia64.opt:68
 msgid "Generate inline floating point division, optimize for throughput"
-msgstr ""
+msgstr "Tạo ra phép chia điểm phù động trực tiếp, tối ưu hoá cho tốc độ truyền dữ liệu"
 
 #: config/ia64/ia64.opt:75
 msgid "Generate inline integer division, optimize for latency"
-msgstr ""
+msgstr "Tạo ra phép chia số nguyên trực tiếp, tối ưu hoá cho sự ngấm ngầm"
 
 #: config/ia64/ia64.opt:79
 msgid "Generate inline integer division, optimize for throughput"
-msgstr ""
+msgstr "Tạo ra phép chia số nguyên trực tiếp, tối ưu hoá cho tốc độ truyền dữ liệu"
 
 #: config/ia64/ia64.opt:83
 msgid "Do not inline integer division"
-msgstr ""
+msgstr "Đừng chèn vào trực tiếp phép chia số nguyên"
 
 #: config/ia64/ia64.opt:87
 msgid "Generate inline square root, optimize for latency"
-msgstr ""
+msgstr "Tạo ra căn bậc hai trực tiếp, tối ưu cho sự ngấm ngầm"
 
 #: config/ia64/ia64.opt:91
 msgid "Generate inline square root, optimize for throughput"
-msgstr ""
+msgstr "Tạo ra căn bậc hai trực tiếp, tối ưu cho tốc độ truyền dữ liệu"
 
 #: config/ia64/ia64.opt:95
 msgid "Do not inline square root"
-msgstr ""
+msgstr "Đừng chèn vào trực tiếp căn bậc hai"
 
 #: config/ia64/ia64.opt:99
 msgid "Enable Dwarf 2 line debug info via GNU as"
-msgstr ""
+msgstr "Hiệu lực thông tin gỡ rối dòng Dwarf 2 thông qua as của GNU"
 
 #: config/ia64/ia64.opt:103
 msgid "Enable earlier placing stop bits for better scheduling"
-msgstr ""
+msgstr "Hiệu lực sự để sớm hơn các bit dừng lại, để định thời một cách thành công hơn"
 
 #: config/ia64/ia64.opt:107 config/spu/spu.opt:72 config/sh/sh.opt:253
 #: config/pa/pa.opt:51
 msgid "Specify range of registers to make fixed"
-msgstr ""
+msgstr "Ghi rõ phạm vi các thanh ghi cần làm cho cố định"
 
 #: config/ia64/ia64.opt:119
 msgid "Use data speculation before reload"
-msgstr ""
+msgstr "Sử dụng phép đầu cơ loại dữ liệu trước khi nạp lại"
 
 #: config/ia64/ia64.opt:123
 msgid "Use data speculation after reload"
-msgstr ""
+msgstr "Sử dụng phép đầu cơ loại dữ liệu sau khi nạp lại"
 
 #: config/ia64/ia64.opt:127
 msgid "Use control speculation"
-msgstr ""
+msgstr "Sử dụng phép đầu cơ loại điều khiển"
 
 #: config/ia64/ia64.opt:131
 msgid "Use in block data speculation before reload"
-msgstr ""
+msgstr "Sử dụng phép đầu cơ loại dữ liệu theo khối trước khi nạp lại"
 
 #: config/ia64/ia64.opt:135
 msgid "Use in block data speculation after reload"
-msgstr ""
+msgstr "Sử dụng phép đầu cơ loại dữ liệu theo khối sau khi nạp lại"
 
 #: config/ia64/ia64.opt:139
 msgid "Use in block control speculation"
-msgstr ""
+msgstr "Sử dụng phép đầu cơ loại điều khiển theo khối"
 
 #: config/ia64/ia64.opt:143
 msgid "Use simple data speculation check"
-msgstr ""
+msgstr "Sử dụng hàm kiểm tra phép đầu cơ loại dữ liệu đơn giản"
 
 #: config/ia64/ia64.opt:147
 msgid "Use simple data speculation check for control speculation"
-msgstr ""
+msgstr "Sử dụng hàm kiểm tra phép đầu cơ loại dữ liệu đơn giản để đầu cơ về điều khiển"
 
 #: config/ia64/ia64.opt:151
 msgid "If set, data speculative instructions will be chosen for schedule only if there are no other choices at the moment "
-msgstr ""
+msgstr "Lập thì câu lệnh đầu cơ về dữ liệu sẽ được chọn để định thời chỉ nếu không có sự chọn khác nào vào lúc này"
 
 #: config/ia64/ia64.opt:155
 msgid "If set, control speculative instructions will be chosen for schedule only if there are no other choices at the moment "
-msgstr ""
+msgstr "Lập thì câu lệnh đầu cơ về điều khiển sẽ được chọn để định thời chỉ nếu không có sự chọn khác nào vào lúc này"
 
 #: config/ia64/ia64.opt:159
 msgid "Count speculative dependencies while calculating priority of instructions"
-msgstr ""
+msgstr "Đếm các quan hệ phụ thuộc loại đầu cơ trong khi tính mức ưu tiên của câu lệnh"
 
 #: config/ia64/ia64.opt:163
 msgid "Place a stop bit after every cycle when scheduling"
-msgstr ""
+msgstr "Đang định thời thì cũng để một bit dừng lại vào đẳng sau mọi chu kỳ"
 
 #: config/ia64/ia64.opt:167
 msgid "Assume that floating-point stores and loads are not likely to cause conflict when placed into one instruction group"
-msgstr ""
+msgstr "Giả sử rằng các việc nạp/lưu loại điểm phù động không phải rất có thể gây ra sự xung đột khi được để vào cùng một nhóm câu lệnh"
 
 #: config/ia64/ia64.opt:171
 msgid "Soft limit on number of memory insns per instruction group, giving lower priority to subsequent memory insns attempting to schedule in the same insn group. Frequently useful to prevent cache bank conflicts.  Default value is 1"
-msgstr ""
+msgstr "Giới hạn mềm về số các câu lệnh vùng nhớ mỗi nhóm câu lệnh, gán mức ưu tiên thấp hơn cho câu lệnh vùng nhớ theo sau mà thử định thời trong cùng một nhóm câu lệnh. Hữu ích để ngăn cản sự xung đột đối với nhóm vùng nhớ tạm. Giá trị mặc định là 1"
 
 #: config/ia64/ia64.opt:175
 msgid "Disallow more than `msched-max-memory-insns' in instruction group. Otherwise, limit is `soft' (prefer non-memory operations when limit is reached)"
-msgstr ""
+msgstr "Ép buộc giới hạn cứng là số tối đa các câu lệnh vùng nhớ « msched-max-memory-insns » trong nhóm câu lệnh. Không thì giới hạn là « mềm » (thích thao tác không phải vùng nhớ hơn khi tới giới hạn này)"
 
 #: config/ia64/ia64.opt:179
 msgid "Don't generate checks for control speculation in selective scheduling"
-msgstr ""
+msgstr "Đừng tạo ra hàm kiểm tra đối với đầu cơ về điều khiển khi định thời một cách lựa chọn"
 
 #: config/ia64/ia64.opt:183
 msgid "Enable fused multiply/add and multiply/subtract instructions"
-msgstr ""
+msgstr "Hiệu lực câu lệnh hợp nhau loại nhân/cộng và nhân/trừ"
 
 #: config/ia64/vms_symvec_libgcc_s.opt:3
 msgid "! It would be better to auto-generate this file."
-msgstr ""
+msgstr "! Tốt hơn nếu tự động tạo ra tập tin này."
 
 #: config/ia64/vms_symvec_libgcc_s.opt:7
 msgid "SYMBOL_VECTOR=(__divdi3=PROCEDURE)"
-msgstr ""
+msgstr "VÉC_TƠ-KÝ_HIỆU=(__divdi3=THỦ_TỤC)"
 
 #: config/m32c/m32c.opt:24
 msgid "-msim\tUse simulator runtime"
-msgstr ""
+msgstr "-msim\tSử dụng khoảng thời gian chạy của bộ mô phỏng"
 
 #: config/m32c/m32c.opt:28
 msgid "-mcpu=r8c\tCompile code for R8C variants"
-msgstr ""
+msgstr "-mcpu=r8c\tBiên dịch mã cho biến thế R8C"
 
 #: config/m32c/m32c.opt:32
 msgid "-mcpu=m16c\tCompile code for M16C variants"
-msgstr ""
+msgstr "-mcpu=m16c\tBiên dịch mã cho biến thế M16C"
 
 #: config/m32c/m32c.opt:36
 msgid "-mcpu=m32cm\tCompile code for M32CM variants"
-msgstr ""
+msgstr "-mcpu=m32cm\tBiên dịch mã cho biến thế M32CM"
 
 #: config/m32c/m32c.opt:40
 msgid "-mcpu=m32c\tCompile code for M32C variants"
-msgstr ""
+msgstr "-mcpu=m32c\tBiên dịch mã cho biến thế M32C"
 
 #: config/m32c/m32c.opt:44
 msgid "-memregs=\tNumber of memreg bytes (default: 16, range: 0..16)"
-msgstr ""
+msgstr "-memregs=\tSố các byte memreg (mặc định: 16, phạm vi: 0..16)"
 
 #: config/sparc/little-endian.opt:23
 msgid "Generate code for little-endian"
-msgstr ""
+msgstr "Tạo ra mã cho tình trạng cuối nhỏ"
 
 #: config/sparc/little-endian.opt:27
 msgid "Generate code for big-endian"
-msgstr ""
+msgstr "Tạo ra mã cho tình trạng cuối lớn"
 
 #: config/sparc/sparc.opt:23 config/sparc/sparc.opt:27
 msgid "Use hardware FP"
-msgstr ""
+msgstr "Sử dụng điểm phù động loại phần cứng"
 
 #: config/sparc/sparc.opt:31
 msgid "Do not use hardware FP"
-msgstr ""
+msgstr "Đừng sử dụng điểm phù động loại phần cứng"
 
 #: config/sparc/sparc.opt:35
 msgid "Assume possible double misalignment"
-msgstr ""
+msgstr "Giả sử có thể bị sai đôi xếp hàng"
 
 #: config/sparc/sparc.opt:39
 msgid "Pass -assert pure-text to linker"
-msgstr ""
+msgstr "Gửi cho bộ liên kết « -assert pure-text »"
 
 #: config/sparc/sparc.opt:43
 msgid "Use ABI reserved registers"
-msgstr ""
+msgstr "Sử dụng thanh ghi dành riêng cho ABI"
 
 #: config/sparc/sparc.opt:47
 msgid "Use hardware quad FP instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh loại bốn điểm phù động phần cứng"
 
 #: config/sparc/sparc.opt:51
 msgid "Do not use hardware quad fp instructions"
-msgstr ""
+msgstr "Đừng sử dụng câu lệnh loại bốn điểm phù động phần cứng"
 
 #: config/sparc/sparc.opt:55
 msgid "Compile for V8+ ABI"
-msgstr ""
+msgstr "Biên dịch cho ABI loại V8+"
 
 #: config/sparc/sparc.opt:59
 msgid "Use UltraSPARC Visual Instruction Set extensions"
-msgstr ""
+msgstr "Sử dụng phần mở rộng của Tập hợp Câu lệnh Trực quan UltraSPARC"
 
 #: config/sparc/sparc.opt:63
 msgid "Pointers are 64-bit"
-msgstr ""
+msgstr "Hàm trỏ là 64-bit"
 
 #: config/sparc/sparc.opt:67
 msgid "Pointers are 32-bit"
-msgstr ""
+msgstr "Hàm trỏ là 32-bit"
 
 #: config/sparc/sparc.opt:71
 msgid "Use 64-bit ABI"
-msgstr ""
+msgstr "Sử dụng ABI 64-bit"
 
 #: config/sparc/sparc.opt:75
 msgid "Use 32-bit ABI"
-msgstr ""
+msgstr "Sử dụng ABI 32-bit"
 
 #: config/sparc/sparc.opt:79
 msgid "Use stack bias"
-msgstr ""
+msgstr "Sử dụng khuynh hướng về đống"
 
 #: config/sparc/sparc.opt:83
 msgid "Use structs on stronger alignment for double-word copies"
-msgstr ""
+msgstr "Sử dụng cấu trúc khi xếp hàng mạnh hơn các bản sao từ đôi"
 
 #: config/sparc/sparc.opt:87
 msgid "Optimize tail call instructions in assembler and linker"
-msgstr ""
+msgstr "Tối ưu hoá các câu lệnh gọi đuôi trong bộ dịch mã số và bộ liên kết"
 
 #: config/sparc/sparc.opt:91
 msgid "Use features of and schedule code for given CPU"
-msgstr ""
+msgstr "Sử dụng các tính năng của CPU đưa ra, và định thời mã cho CPU đó"
 
 #: config/sparc/sparc.opt:99
 msgid "Use given SPARC-V9 code model"
-msgstr ""
+msgstr "Sử dụng mẫu mã SPARC-V9 đưa ra"
 
 #: config/sparc/sparc.opt:103
 msgid "Enable strict 32-bit psABI struct return checking."
-msgstr ""
+msgstr "Hiệu lực chức năng kiểm tra trả lại cấu trúc psABI 32-bit ngặt"
 
 #: config/m32r/m32r.opt:23
 msgid "Compile for the m32rx"
-msgstr ""
+msgstr "Biên dịch cho m32x"
 
 #: config/m32r/m32r.opt:27
 msgid "Compile for the m32r2"
-msgstr ""
+msgstr "Biên dịch cho m32r2"
 
 #: config/m32r/m32r.opt:31
 msgid "Compile for the m32r"
-msgstr ""
+msgstr "Biên dịch cho m32r"
 
 #: config/m32r/m32r.opt:35
 msgid "Align all loops to 32 byte boundary"
-msgstr ""
+msgstr "Xếp hàng tất cả các vòng lặp theo biên giới 32-byte"
 
 #: config/m32r/m32r.opt:39
 msgid "Prefer branches over conditional execution"
-msgstr ""
+msgstr "Thích nhánh hơn sự thực hiện có điều kiện"
 
 #: config/m32r/m32r.opt:43
 msgid "Give branches their default cost"
-msgstr ""
+msgstr "Gán cho mỗi nhánh giá mặc định của nó"
 
 #: config/m32r/m32r.opt:47
 msgid "Display compile time statistics"
-msgstr ""
+msgstr "Hiển thị thống kê về khoảng thời gian biên dịch"
 
 #: config/m32r/m32r.opt:51
 msgid "Specify cache flush function"
-msgstr ""
+msgstr "Ghi rõ hàm chuyển hết vùng nhớ tạm ra ngoài"
 
 #: config/m32r/m32r.opt:55
 msgid "Specify cache flush trap number"
-msgstr ""
+msgstr "Ghi rõ số thứ tự bẫy chuyển hết vùng nhớ tạm ra ngoài"
 
 #: config/m32r/m32r.opt:59
 msgid "Only issue one instruction per cycle"
-msgstr ""
+msgstr "Chỉ đưa ra một câu lệnh từng chu kỳ"
 
 #: config/m32r/m32r.opt:63
 msgid "Allow two instructions to be issued per cycle"
-msgstr ""
+msgstr "Cho phép đưa ra hai câu lệnh từng chu kỳ"
 
 #: config/m32r/m32r.opt:67
 msgid "Code size: small, medium or large"
 msgstr ""
+"Kích cỡ mã:\n"
+" • small\t\t\tnhỏ\n"
+" • medium\t\tvừa\n"
+" • large\t\t\tlớn."
 
 #: config/m32r/m32r.opt:71
 msgid "Don't call any cache flush functions"
-msgstr ""
+msgstr "Đừng gọi hàm nào chuyển hết vùng nhớ tạm ra ngoài"
 
 #: config/m32r/m32r.opt:75
 msgid "Don't call any cache flush trap"
-msgstr ""
+msgstr "Đừng gọi bẫy nào chuyển hết vùng nhớ tạm ra ngoài"
 
 #: config/m32r/m32r.opt:82
 msgid "Small data area: none, sdata, use"
 msgstr ""
+"Vùng dữ liệu nhỏ :\n"
+" • none\tkhông có\n"
+" • sdata\n"
+" • use\tsử dụng"
 
 #: config/m68k/m68k.opt:23
 msgid "Generate code for a 520X"
-msgstr ""
+msgstr "Tạo ra mã cho một 520X"
 
 #: config/m68k/m68k.opt:27
 msgid "Generate code for a 5206e"
-msgstr ""
+msgstr "Tạo ra mã cho một 5206e"
 
 #: config/m68k/m68k.opt:31
 msgid "Generate code for a 528x"
-msgstr ""
+msgstr "Tạo ra mã cho một 528X"
 
 #: config/m68k/m68k.opt:35
 msgid "Generate code for a 5307"
-msgstr ""
+msgstr "Tạo ra mã cho một 5307"
 
 #: config/m68k/m68k.opt:39
 msgid "Generate code for a 5407"
-msgstr ""
+msgstr "Tạo ra mã cho một 5407"
 
 #: config/m68k/m68k.opt:43 config/m68k/m68k.opt:104
 msgid "Generate code for a 68000"
-msgstr ""
+msgstr "Tạo ra mã cho một 68000"
 
 #: config/m68k/m68k.opt:47
 msgid "Generate code for a 68010"
-msgstr ""
+msgstr "Tạo ra mã cho một 68010"
 
 #: config/m68k/m68k.opt:51 config/m68k/m68k.opt:108
 msgid "Generate code for a 68020"
-msgstr ""
+msgstr "Tạo ra mã cho một 68020"
 
 #: config/m68k/m68k.opt:55
 msgid "Generate code for a 68040, without any new instructions"
-msgstr ""
+msgstr "Tạo ra mã cho một 68040 mà không có câu lệnh mới nào"
 
 #: config/m68k/m68k.opt:59
 msgid "Generate code for a 68060, without any new instructions"
-msgstr ""
+msgstr "Tạo ra mã cho một 68060 mà không có câu lệnh mới nào"
 
 #: config/m68k/m68k.opt:63
 msgid "Generate code for a 68030"
-msgstr ""
+msgstr "Tạo ra mã cho một 68030"
 
 #: config/m68k/m68k.opt:67
 msgid "Generate code for a 68040"
-msgstr ""
+msgstr "Tạo ra mã cho một 68040"
 
 #: config/m68k/m68k.opt:71
 msgid "Generate code for a 68060"
-msgstr ""
+msgstr "Tạo ra mã cho một 680220"
 
 #: config/m68k/m68k.opt:75
 msgid "Generate code for a 68302"
-msgstr ""
+msgstr "Tạo ra mã cho một 68302"
 
 #: config/m68k/m68k.opt:79
 msgid "Generate code for a 68332"
-msgstr ""
+msgstr "Tạo ra mã cho một 68332"
 
 #: config/m68k/m68k.opt:84
 msgid "Generate code for a 68851"
-msgstr ""
+msgstr "Tạo ra mã cho một 68851"
 
 #: config/m68k/m68k.opt:88
 msgid "Generate code that uses 68881 floating-point instructions"
-msgstr ""
+msgstr "Tạo ra mã sử dụng câu lệnh loại điểm phù động 68881"
 
 #: config/m68k/m68k.opt:92
 msgid "Align variables on a 32-bit boundary"
-msgstr ""
+msgstr "Xếp hàng tất cả các biến theo một biên giới 32-byte"
 
 #: config/m68k/m68k.opt:96 config/arm/arm.opt:49 config/score/score.opt:63
 msgid "Specify the name of the target architecture"
-msgstr ""
+msgstr "Ghi rõ tên của kiến trúc đích"
 
 #: config/m68k/m68k.opt:100
 msgid "Use the bit-field instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh loại trường-bit"
 
 #: config/m68k/m68k.opt:112
 msgid "Generate code for a ColdFire v4e"
-msgstr ""
+msgstr "Tạo ra mã cho một ColdFire v4e"
 
 #: config/m68k/m68k.opt:116
 msgid "Specify the target CPU"
-msgstr ""
+msgstr "Ghi rõ CPU đích"
 
 #: config/m68k/m68k.opt:120
 msgid "Generate code for a cpu32"
-msgstr ""
+msgstr "Tạo ra mã cho một cpu32"
 
 #: config/m68k/m68k.opt:124
 msgid "Use hardware division instructions on ColdFire"
-msgstr ""
+msgstr "Sử dụng câu lệnh chia phần cứng trong ColdFire"
 
 #: config/m68k/m68k.opt:128
 msgid "Generate code for a Fido A"
-msgstr ""
+msgstr "Tạo ra mã cho một Fido A"
 
 #: config/m68k/m68k.opt:132
 msgid "Generate code which uses hardware floating point instructions"
-msgstr ""
+msgstr "Tạo ra mã mả sử dụng câu lệnh loại điểm phù động phần cứng"
 
 #: config/m68k/m68k.opt:136
 msgid "Enable ID based shared library"
-msgstr ""
+msgstr "Hiệu lực thư viện dùng chung dựa vào mã số (ID)"
 
 #: config/m68k/m68k.opt:140
 msgid "Do not use the bit-field instructions"
-msgstr ""
+msgstr "Đừng sử dụng câu lệnh loại trường-bit"
 
 #: config/m68k/m68k.opt:144
 msgid "Use normal calling convention"
-msgstr ""
+msgstr "Sử dụng quy ước gọi thông thường"
 
 #: config/m68k/m68k.opt:148
 msgid "Consider type 'int' to be 32 bits wide"
-msgstr ""
+msgstr "Thấy « type » (loại) « int » (số nguyên) có chiều rộng 32 bit"
 
 #: config/m68k/m68k.opt:152
 msgid "Generate pc-relative code"
-msgstr ""
+msgstr "Tạo ra mã tương đối với PC (pc-relative)"
 
 #: config/m68k/m68k.opt:156
 msgid "Use different calling convention using 'rtd'"
-msgstr ""
+msgstr "Sử dụng một quy ước gọi khác bằng « rtd »"
 
 #: config/m68k/m68k.opt:160 config/bfin/bfin.opt:61
 msgid "Enable separate data segment"
-msgstr ""
+msgstr "Hiệu lực đoạn dữ liệu riêng"
 
 #: config/m68k/m68k.opt:164 config/bfin/bfin.opt:57
 msgid "ID of shared library to build"
-msgstr ""
+msgstr "mã số (ID) của thư viện dùng chung cần xây dựng"
 
 #: config/m68k/m68k.opt:168
 msgid "Consider type 'int' to be 16 bits wide"
-msgstr ""
+msgstr "Thấy « type » (loại) « int » (số nguyên) có chiều rộng 16 bit"
 
 #: config/m68k/m68k.opt:172
 msgid "Generate code with library calls for floating point"
-msgstr ""
+msgstr "Tạo ra mã chứa cuộc gọi thư viện cho điểm phù động"
 
 #: config/m68k/m68k.opt:176
 msgid "Do not use unaligned memory references"
-msgstr ""
+msgstr "Đừng sử dụng tham chiếu vùng nhớ tạm chưa xếp hàng"
 
 #: config/m68k/m68k.opt:180
 msgid "Tune for the specified target CPU or architecture"
-msgstr ""
+msgstr "Điều chỉnh cho CPU hay kiến trúc đưa ra"
 
 #: config/m68k/m68k.opt:184
 msgid "Support more than 8192 GOT entries on ColdFire"
-msgstr ""
+msgstr "Hỗ trợ nhiều hơn 8192 mục nhập GOT trên ColdFire"
 
 #: config/m68k/m68k.opt:188
 msgid "Support TLS segment larger than 64K"
-msgstr ""
+msgstr "Hỗ trợ đoạn TLS lớn hơn 64K"
 
 #: config/m68k/ieee.opt:24 config/i386/i386.opt:137
 msgid "Use IEEE math for fp comparisons"
-msgstr ""
+msgstr "Sử dụng toán học IEEE cho phép so sánh loại điểm phù động"
 
 #: config/i386/djgpp.opt:25
 msgid "Ignored (obsolete)"
-msgstr ""
+msgstr "Bị bỏ qua (quá cũ)"
 
 #: config/i386/mingw.opt:23
 msgid "Warn about none ISO msvcrt scanf/printf width extensions"
-msgstr ""
+msgstr "Cảnh báo về phần mở rộng chiều rộng scanf/printf không phải tùy theo ISO"
 
 #: config/i386/mingw.opt:27
 msgid "For nested functions on stack executable permission is set."
-msgstr ""
+msgstr "Gán quyền thực hiện cho hàm lồng nhau trên đống."
 
 #: config/i386/i386.opt:61
 msgid "sizeof(long double) is 16"
-msgstr ""
+msgstr "kích cỡ (đôi dài) là 16"
 
 #: config/i386/i386.opt:65 config/i386/i386.opt:133
 msgid "Use hardware fp"
-msgstr ""
+msgstr "Sử dụng điểm phù động loại phần cứng"
 
 #: config/i386/i386.opt:69
 msgid "sizeof(long double) is 12"
-msgstr ""
+msgstr "kích cỡ (đôi dài) là 12"
 
 #: config/i386/i386.opt:73
 msgid "Reserve space for outgoing arguments in the function prologue"
-msgstr ""
+msgstr "Trong đoạn mở đầu hàm thì dành riêng sức chứa cho đối số gửi ra"
 
 #: config/i386/i386.opt:77
 msgid "Align some doubles on dword boundary"
-msgstr ""
+msgstr "Xếp hàng một số đôi theo biên giới dword"
 
 #: config/i386/i386.opt:81
 msgid "Function starts are aligned to this power of 2"
-msgstr ""
+msgstr "Đầu hàng được xếp hàng theo lũy thừa 2 này"
 
 #: config/i386/i386.opt:85
 msgid "Jump targets are aligned to this power of 2"
-msgstr ""
+msgstr "Đích nhảy được xếp hàng theo lũy thừa 2 này"
 
 #: config/i386/i386.opt:89
 msgid "Loop code aligned to this power of 2"
-msgstr ""
+msgstr "Mã vòng lặp được xếp hàng theo lũy thừa 2 này"
 
 #: config/i386/i386.opt:93
 msgid "Align destination of the string operations"
-msgstr ""
+msgstr "Đích xếp hàng của các thao tác chuỗi"
 
 #: config/i386/i386.opt:101
 msgid "Use given assembler dialect"
-msgstr ""
+msgstr "Sử dụng phương ngôn dịch mã số đưa ra"
 
 #: config/i386/i386.opt:105
 msgid "Branches are this expensive (1-5, arbitrary units)"
-msgstr ""
+msgstr "Nhánh có giá này (1-5, đơn vị tùy ý)"
 
 #: config/i386/i386.opt:109
 msgid "Data greater than given threshold will go into .ldata section in x86-64 medium model"
-msgstr ""
+msgstr "Dữ liệu vượt quá ngưỡng này thì để vào phần « .ldata » trong mẫu môi giới x86-64"
 
 #: config/i386/i386.opt:113
 msgid "Use given x86-64 code model"
-msgstr ""
+msgstr "Sử dụng mẫu mã x86-64 đưa ra"
 
 #: config/i386/i386.opt:117
 msgid "Generate sin, cos, sqrt for FPU"
-msgstr ""
+msgstr "Tạo ra sin, cos, sqrt cho FPU (đơn vị điểm phù động)"
 
 #: config/i386/i386.opt:121
 msgid "Always use Dynamic Realigned Argument Pointer (DRAP) to realign stack"
-msgstr ""
+msgstr "Lúc nào cũng sử dụng DRAP (hàm trỏ đối số đã xếp hàng năng động) để xếp hàng lại đống"
 
 #: config/i386/i386.opt:125
 msgid "Return values of functions in FPU registers"
-msgstr ""
+msgstr "Trả lại giá trị của hàm trong thanh ghi FPU (đơn vị điểm phù động)"
 
 #: config/i386/i386.opt:129
 msgid "Generate floating point mathematics using given instruction set"
-msgstr ""
+msgstr "Tạo ra toán học loại điểm phù động dùng tập hợp câu lệnh đưa ra"
 
 #: config/i386/i386.opt:141
 msgid "Inline all known string operations"
-msgstr ""
+msgstr "Chèn vào trực tiếp tất cả các thao tác chuỗi được biết"
 
 #: config/i386/i386.opt:145
 msgid "Inline memset/memcpy string operations, but perform inline version only for small blocks"
-msgstr ""
+msgstr "Chèn vào trực tiếp các thao tác chuỗi loại memset/memcpy, mà thực hiện phiên bản trực tiếp chỉ cho khối nhỏ"
 
 #: config/i386/i386.opt:153
 msgid "Use native (MS) bitfield layout"
-msgstr ""
+msgstr "Sử dụng bố trí trường bit sở hữu (MS)"
 
 #: config/i386/i386.opt:169
 msgid "Omit the frame pointer in leaf functions"
-msgstr ""
+msgstr "Bỏ sót hàm trỏ khung trong hàm lá"
 
 #: config/i386/i386.opt:173
 msgid "Set 80387 floating-point precision (-mpc32, -mpc64, -mpc80)"
-msgstr ""
+msgstr "Lập độ chính xác điểm phù động 80387 (-mpc32, -mpc64, -mpc80)"
 
 #: config/i386/i386.opt:177
 msgid "Attempt to keep stack aligned to this power of 2"
-msgstr ""
+msgstr "Thử bảo tồn đống được xếp hàng theo lũy thừa 2 này"
 
 #: config/i386/i386.opt:181
 msgid "Assume incoming stack aligned to this power of 2"
-msgstr ""
+msgstr "Giả sử đống gửi đến được xếp hàng theo lũy thừa 2 này"
 
 #: config/i386/i386.opt:185
 msgid "Use push instructions to save outgoing arguments"
-msgstr ""
+msgstr "Sử dụng câu lệnh đẩy để lưu các đối số gửi đi"
 
 #: config/i386/i386.opt:189
 msgid "Use red-zone in the x86-64 code"
-msgstr ""
+msgstr "Sử dụng vùng màu đỏ trong mã x86-64"
 
 #: config/i386/i386.opt:193
 msgid "Number of registers used to pass integer arguments"
-msgstr ""
+msgstr "Số các thanh ghi được sử dụng để gửi đối số nguyên cho đích"
 
 #: config/i386/i386.opt:197
 msgid "Alternate calling convention"
-msgstr ""
+msgstr "Quy ước gọi xen kẽ"
 
 #: config/i386/i386.opt:205
 msgid "Use SSE register passing conventions for SF and DF mode"
-msgstr ""
+msgstr "Sử dụng quy ước gửi qua thanh ghi loại SSE cho chế độ SF và DF"
 
 #: config/i386/i386.opt:209
 msgid "Realign stack in prologue"
-msgstr ""
+msgstr "Xếp hàng lại đống trong đoạn mở đầu"
 
 #: config/i386/i386.opt:213
 msgid "Enable stack probing"
-msgstr ""
+msgstr "Hiệu lực chức năng dò đống"
 
 #: config/i386/i386.opt:217
 msgid "Chose strategy to generate stringop using"
-msgstr ""
+msgstr "Chọn chiến lược để tạo ra thao tác chuỗi dùng"
 
 #: config/i386/i386.opt:221
 msgid "Use given thread-local storage dialect"
-msgstr ""
+msgstr "Sử dụng phương ngôn lưu theo nhánh cục bộ"
 
 #: config/i386/i386.opt:225
 #, c-format
 msgid "Use direct references against %gs when accessing tls data"
-msgstr ""
+msgstr "Sử dụng tham chiếu trực tiếp đối với %gs khi truy cập đến dữ liệu của nó"
 
 #: config/i386/i386.opt:233
 msgid "Generate code that conforms to the given ABI"
-msgstr ""
+msgstr "Tạo ra mã thích hợp với ABI đưa ra"
 
 #: config/i386/i386.opt:237
 msgid "Vector library ABI to use"
-msgstr ""
+msgstr "ABI thư viện véc-tơ cần sử dụng"
 
 #: config/i386/i386.opt:241
 msgid "Generate reciprocals instead of divss and sqrtss."
-msgstr ""
+msgstr "Tạo ra số đảo thay cho divss và sqrtss."
 
 #: config/i386/i386.opt:245
 msgid "Generate cld instruction in the function prologue."
-msgstr ""
+msgstr "Tạo ra câu lệnh cld trong đoạn mở đầu hàm."
 
 #: config/i386/i386.opt:249
 msgid "Enable automatic generation of fused floating point multiply-add instructions"
-msgstr ""
+msgstr "Hiệu lực khả năng tự động tạo ra câu lệnh nhân-cộng loại điểm phù động hợp nhau"
 
 #: config/i386/i386.opt:257
 msgid "Generate 32bit i386 code"
-msgstr ""
+msgstr "Tạo ra mã i386 32-bit"
 
 #: config/i386/i386.opt:261
 msgid "Generate 64bit x86-64 code"
-msgstr ""
+msgstr "Tạo ra mã x86-64 64-bit"
 
 #: config/i386/i386.opt:265
 msgid "Support MMX built-in functions"
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn MMX"
 
 #: config/i386/i386.opt:269
 msgid "Support 3DNow! built-in functions"
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn 3DNow!"
 
 #: config/i386/i386.opt:273
 msgid "Support Athlon 3Dnow! built-in functions"
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn 3DNow! Athlon"
 
 #: config/i386/i386.opt:277
 msgid "Support MMX and SSE built-in functions and code generation"
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại MMX và SSE"
 
 #: config/i386/i386.opt:281
 msgid "Support MMX, SSE and SSE2 built-in functions and code generation"
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại MMX, SSE và SSE2"
 
 #: config/i386/i386.opt:285
 msgid "Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation"
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại MMX, SSE, SSE2 và SSE3"
 
 #: config/i386/i386.opt:289
 msgid "Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation"
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại MMX, SSE, SSE2, SSE3 và SSSE3"
 
 #: config/i386/i386.opt:293
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation"
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại MMX, SSE, SSE2, SSE3, SSSE3 và SSE4.1"
 
 #: config/i386/i386.opt:297 config/i386/i386.opt:301
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation"
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 và SSE4.2"
 
 #: config/i386/i386.opt:305
 msgid "Do not support SSE4.1 and SSE4.2 built-in functions and code generation"
-msgstr ""
+msgstr "Đừng hỗ trợ hàm dựng sẵn và chức năng tạo ra mã loại SSE4.1 và SSE4.2"
 
 #: config/i386/i386.opt:309
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation"
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 và AVX"
 
 #: config/i386/i386.opt:313
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation"
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX và FMA"
 
 #: config/i386/i386.opt:317
 msgid "Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation"
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại MMX, SSE, SSE2, SSE3 và SSE4A"
 
 #: config/i386/i386.opt:321
 msgid "Support FMA4 built-in functions and code generation "
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại FMA4"
 
 #: config/i386/i386.opt:325
 msgid "Support XOP built-in functions and code generation "
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại XOP"
 
 #: config/i386/i386.opt:329
 msgid "Support LWP built-in functions and code generation "
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại LWP"
 
 #: config/i386/i386.opt:333
 msgid "Support code generation of Advanced Bit Manipulation (ABM) instructions."
-msgstr ""
+msgstr "Hỗ trợ chức năng tạo ra mã là câu lệnh ABM (thao tác bit cấp cao)."
 
 #: config/i386/i386.opt:337
 msgid "Support code generation of popcnt instruction."
-msgstr ""
+msgstr "Hỗ trợ chức năng tạo ra mã là câu lệnh popcnt."
 
 #: config/i386/i386.opt:341
 msgid "Support code generation of cmpxchg16b instruction."
-msgstr ""
+msgstr "Hỗ trợ chức năng tạo ra mã là câu lệnh cmpxchg16b."
 
 #: config/i386/i386.opt:345
 msgid "Support code generation of sahf instruction in 64bit x86-64 code."
-msgstr ""
+msgstr "Hỗ trợ chức năng tạo ra mã là câu lệnh sahf trong mã x86-64 64-bit."
 
 #: config/i386/i386.opt:349
 msgid "Support code generation of movbe instruction."
-msgstr ""
+msgstr "Hỗ trợ chức năng tạo ra mã là câu lệnh movbe."
 
 #: config/i386/i386.opt:353
 msgid "Support code generation of crc32 instruction."
-msgstr ""
+msgstr "Hỗ trợ chức năng tạo ra mã là câu lệnh crc32."
 
 #: config/i386/i386.opt:357
 msgid "Support AES built-in functions and code generation"
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại AES"
 
 #: config/i386/i386.opt:361
 msgid "Support PCLMUL built-in functions and code generation"
-msgstr ""
+msgstr "Hỗ trợ các hàm dựng sẵn và chức năng tạo ra mã loại PCLMUL"
 
 #: config/i386/i386.opt:365
 msgid "Encode SSE instructions with VEX prefix"
-msgstr ""
+msgstr "Mã hoá câu lệnh SSE với tiền tố VEX"
 
 #: config/i386/cygming.opt:23
 msgid "Create console application"
-msgstr ""
+msgstr "Tạo ứng dụng bàn giao tiép"
 
 #: config/i386/cygming.opt:27
 msgid "Use the Cygwin interface"
-msgstr ""
+msgstr "Sử dụng giao diện Cygwin"
 
 #: config/i386/cygming.opt:31
 msgid "Generate code for a DLL"
-msgstr ""
+msgstr "Tạo ra mã cho một DLL"
 
 #: config/i386/cygming.opt:35
 msgid "Ignore dllimport for functions"
-msgstr ""
+msgstr "Bỏ qua dllimport đối với chức năng"
 
 #: config/i386/cygming.opt:39
 msgid "Use Mingw-specific thread support"
-msgstr ""
+msgstr "Sử dụng hỗ trợ nhánh đặc trưng cho Mingw"
 
 #: config/i386/cygming.opt:43
 msgid "Set Windows defines"
-msgstr ""
+msgstr "Lập lời xác định Windows"
 
 #: config/i386/cygming.opt:47
 msgid "Create GUI application"
-msgstr ""
+msgstr "Tạo ứng dụng GUI"
 
 #: config/i386/cygming.opt:51
 msgid "Use the GNU extension to the PE format for aligned common data"
-msgstr ""
+msgstr "Sử dụng phần mở rộng GNU tới định dạng PE cho dữ liệu chung xếp hàng"
 
 #: config/i386/cygming.opt:55
 msgid "Compile code that relies on Cygwin DLL wrappers to support C++ operator new/delete replacement"
-msgstr ""
+msgstr "Biên dịch mã nhờ trình bao bọc DLL Cygwin để hỗ trợ chức năng thay thế toán tử C++ mới/xoá"
 
 #: config/i386/mingw-w64.opt:23
 msgid "Use unicode startup and define UNICODE macro"
-msgstr ""
+msgstr "Sử dụng hàm khởi chạy Unicode và xác định vĩ lệnh UNICODE"
 
 #: config/rs6000/aix.opt:24 config/rs6000/rs6000.opt:195
 msgid "Conform more closely to IBM XLC semantics"
-msgstr ""
+msgstr "Làm cho hợp hơn với cú pháp XLC của IBM"
 
 #: config/rs6000/darwin.opt:24 config/rs6000/sysv4.opt:129
 msgid "Generate 64-bit code"
-msgstr ""
+msgstr "Tạo ra mã 64-bit"
 
 #: config/rs6000/darwin.opt:28 config/rs6000/sysv4.opt:133
 msgid "Generate 32-bit code"
-msgstr ""
+msgstr "Tạo ra mã 32-bit"
 
 #: config/rs6000/darwin.opt:32
 msgid "Generate code suitable for executables (NOT shared libs)"
-msgstr ""
+msgstr "Tạo ra mã thích hợp với bản thực thị (KHÔNG PHẢI thư viện dùng chung)"
 
 #: config/rs6000/rs6000.opt:24
 msgid "Use POWER instruction set"
-msgstr ""
+msgstr "Sử dụng tập hợp câu lệnh POWER"
 
 #: config/rs6000/rs6000.opt:28
 msgid "Do not use POWER instruction set"
-msgstr ""
+msgstr "Đừng sử dụng tập hợp câu lệnh POWER"
 
 #: config/rs6000/rs6000.opt:32
 msgid "Use POWER2 instruction set"
-msgstr ""
+msgstr "Sử dụng tập hợp câu lệnh POWER2"
 
 #: config/rs6000/rs6000.opt:36
 msgid "Use PowerPC instruction set"
-msgstr ""
+msgstr "Sử dụng tập hợp câu lệnh PowerPC"
 
 #: config/rs6000/rs6000.opt:40
 msgid "Do not use PowerPC instruction set"
-msgstr ""
+msgstr "Đừng sử dụng tập hợp câu lệnh PowerPC"
 
 #: config/rs6000/rs6000.opt:44
 msgid "Use PowerPC-64 instruction set"
-msgstr ""
+msgstr "Sử dụng tập hợp câu lệnh PowerPC-64"
 
 #: config/rs6000/rs6000.opt:48
 msgid "Use PowerPC General Purpose group optional instructions"
-msgstr ""
+msgstr "Sử dụng các câu lệnh tùy chọn của nhóm General Purpose (thường dụng) PowerPC"
 
 #: config/rs6000/rs6000.opt:52
 msgid "Use PowerPC Graphics group optional instructions"
-msgstr ""
+msgstr "Sử dụng các câu lệnh tùy chọn của nhóm Graphics (đồ họa) PowerPC"
 
 #: config/rs6000/rs6000.opt:56
 msgid "Use PowerPC V2.01 single field mfcr instruction"
-msgstr ""
+msgstr "Sử dụng câu lệnh mfcr trường đơn PowerPC V2.01"
 
 #: config/rs6000/rs6000.opt:60
 msgid "Use PowerPC V2.02 popcntb instruction"
-msgstr ""
+msgstr "Sử dụng câu lệnh popcntb PowerPC V2.02"
 
 #: config/rs6000/rs6000.opt:64
 msgid "Use PowerPC V2.02 floating point rounding instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh làm tròn loại điểm phù động PowerPC V2.02"
 
 #: config/rs6000/rs6000.opt:68
 msgid "Use PowerPC V2.05 compare bytes instruction"
-msgstr ""
+msgstr "Sử dụng câu lệnh so sánh các byte PowerPC V2.05"
 
 #: config/rs6000/rs6000.opt:72
 msgid "Use extended PowerPC V2.05 move floating point to/from GPR instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh dời điểm phù động đến/từ GPR PowerPC V2.05 mở rộng"
 
 #: config/rs6000/rs6000.opt:76
 msgid "Use AltiVec instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh AltiVec"
 
 #: config/rs6000/rs6000.opt:80
 msgid "Use decimal floating point instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh loại điểm phù động thập phân"
 
 #: config/rs6000/rs6000.opt:84
 msgid "Use 4xx half-word multiply instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh nhân nửa từ 4xx"
 
 #: config/rs6000/rs6000.opt:88
 msgid "Use 4xx string-search dlmzb instruction"
-msgstr ""
+msgstr "Sử dụng câu lệnh dlmzb tìm kiếm chuỗi 4xx"
 
 #: config/rs6000/rs6000.opt:92
 msgid "Generate load/store multiple instructions"
-msgstr ""
+msgstr "Tạo ra câu lệnh nạp/lưu nội"
 
 #: config/rs6000/rs6000.opt:96
 msgid "Generate string instructions for block moves"
-msgstr ""
+msgstr "Tạo ra câu lệnh chuỗi để di chuyển khối"
 
 #: config/rs6000/rs6000.opt:100
 msgid "Use new mnemonics for PowerPC architecture"
-msgstr ""
+msgstr "Sử dụng phím gọi nhớ mới cho kiến trúc PowerPC"
 
 #: config/rs6000/rs6000.opt:104
 msgid "Use old mnemonics for PowerPC architecture"
-msgstr ""
+msgstr "Sử dụng phím gọi nhớ cũ cho kiến trúc PowerPC"
 
 #: config/rs6000/rs6000.opt:108 config/pdp11/pdp11.opt:83
 msgid "Do not use hardware floating point"
-msgstr ""
+msgstr "Đừng sử dụng điểm phù động loại phần cứng"
 
 #: config/rs6000/rs6000.opt:116
 msgid "Use PowerPC V2.06 popcntd instruction"
-msgstr ""
+msgstr "Sử dụng câu lệnh popcntd PowerPC V2.06"
 
 #: config/rs6000/rs6000.opt:120
 msgid "Use vector/scalar (VSX) instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh véc-tơ/vô_hướng (VSX)"
 
 #: config/rs6000/rs6000.opt:160
 msgid "Do not generate load/store with update instructions"
-msgstr ""
+msgstr "Đừng tạo ra câu lệnh nạp/lưu với bản cập nhật"
 
 #: config/rs6000/rs6000.opt:164
 msgid "Generate load/store with update instructions"
-msgstr ""
+msgstr "Tạo ra câu lệnh nạp/lưu với bản cập nhật"
 
 #: config/rs6000/rs6000.opt:168
 msgid "Avoid generation of indexed load/store instructions when possible"
-msgstr ""
+msgstr "Tránh sự tạo ra câu lệnh nạp/lưu phụ lục khi có thể"
 
 #: config/rs6000/rs6000.opt:172
 msgid "Generate fused multiply/add instructions"
-msgstr ""
+msgstr "Tạo ra câu lệnh nhân/cộng hợp nhau"
 
 #: config/rs6000/rs6000.opt:176
 msgid "Mark __tls_get_addr calls with argument info"
-msgstr ""
+msgstr "Đánh dấu cuộc gọi « __tls_get_addr » bằng thông tin về đối số"
 
 #: config/rs6000/rs6000.opt:183
 msgid "Schedule the start and end of the procedure"
-msgstr ""
+msgstr "Định thời bắt đầu và kết thúc thủ tục"
 
 #: config/rs6000/rs6000.opt:187
 msgid "Return all structures in memory (AIX default)"
-msgstr ""
+msgstr "Trả lại tất cả các cấu trúc trong vùng nhớ (AIX mặc định)"
 
 #: config/rs6000/rs6000.opt:191
 msgid "Return small structures in registers (SVR4 default)"
-msgstr ""
+msgstr "Trả lại các cấu trúc nhỏ trong thanh ghi (SVR4 mặc định)"
 
 #: config/rs6000/rs6000.opt:199
 msgid "Generate software reciprocal sqrt for better throughput"
-msgstr ""
+msgstr "Tạo ra cân bậc hai đảo loại phần mềm để tăng tốc độ truyền dữ liệu"
 
 #: config/rs6000/rs6000.opt:203
 msgid "Do not place floating point constants in TOC"
-msgstr ""
+msgstr "Đừng để vào TOC hằng số loại điểm phù động"
 
 #: config/rs6000/rs6000.opt:207
 msgid "Place floating point constants in TOC"
-msgstr ""
+msgstr "Để vào TOC hằng số loại điểm phù động"
 
 #: config/rs6000/rs6000.opt:211
 msgid "Do not place symbol+offset constants in TOC"
-msgstr ""
+msgstr "Đừng để vào TOC hằng số loại ký_hiệu+hiệu_số"
 
 #: config/rs6000/rs6000.opt:215
 msgid "Place symbol+offset constants in TOC"
-msgstr ""
+msgstr "Để vào TOC hằng số loại ký_hiệu+hiệu_số"
 
 #: config/rs6000/rs6000.opt:226
 msgid "Use only one TOC entry per procedure"
-msgstr ""
+msgstr "Sử dụng chỉ một mục nhập TOC từng thủ tục"
 
 #: config/rs6000/rs6000.opt:230
 msgid "Put everything in the regular TOC"
-msgstr ""
+msgstr "Để tất cả vào TOC bình thường"
 
 #: config/rs6000/rs6000.opt:234
 msgid "Generate VRSAVE instructions when generating AltiVec code"
-msgstr ""
+msgstr "Tạo ra câu lệnh VRSAVE khi tạo ra mã AltiVec"
 
 #: config/rs6000/rs6000.opt:238
 msgid "-mvrsave=yes/no\tDeprecated option.  Use -mvrsave/-mno-vrsave instead"
 msgstr ""
+"-mvrsave=yes/no\t\tTùy chọn bị phản đối.\n"
+"\tHãy sử dụng « -mvrsave/-mno-vrsave » để thay thế. (yes=có, no=không)"
 
 #: config/rs6000/rs6000.opt:242
 msgid "Generate isel instructions"
-msgstr ""
+msgstr "Tạo ra câu lệnh isel"
 
 #: config/rs6000/rs6000.opt:246
 msgid "-misel=yes/no\tDeprecated option.  Use -misel/-mno-isel instead"
 msgstr ""
+"-misel=yes/no\t\tTùy chọn bị phản đối.\n"
+"\tHãy sử dụng « -misel/-mno-isel » để thay thế. (yes=có, no=không)"
 
 #: config/rs6000/rs6000.opt:250
 msgid "Generate SPE SIMD instructions on E500"
-msgstr ""
+msgstr "Tạo ra câu lệnh SIMD SPE trong E500"
 
 #: config/rs6000/rs6000.opt:254
 msgid "Generate PPC750CL paired-single instructions"
-msgstr ""
+msgstr "Tạo ra câu lệnh đôi-đơn PPC750CL"
 
 #: config/rs6000/rs6000.opt:258
 msgid "-mspe=yes/no\tDeprecated option.  Use -mspe/-mno-spe instead"
 msgstr ""
+"-mspe=yes/no\t\tTùy chọn bị phản đối.\n"
+"\tHãy sử dụng « -mspe/-mno-spe » để thay thế. (yes=có, no=không)"
 
 #: config/rs6000/rs6000.opt:262
 msgid "-mdebug=\tEnable debug output"
-msgstr ""
+msgstr "-mdebug=\tBật kết xuất gỡ rối"
 
 #: config/rs6000/rs6000.opt:266
 msgid "-mabi=\tSpecify ABI to use"
-msgstr ""
+msgstr "-mabi=\tGhi rõ ABI cần sử dụng"
 
 #: config/rs6000/rs6000.opt:270
 msgid "-mcpu=\tUse features of and schedule code for given CPU"
-msgstr ""
+msgstr "-mcpu=\tSử dụng các tính năng của CPU đưa ra, và định thời mã cho CPU đó"
 
 #: config/rs6000/rs6000.opt:274
 msgid "-mtune=\tSchedule code for given CPU"
-msgstr ""
+msgstr "-mtune=\tĐịnh thời mã cho CPU đưa ra"
 
 #: config/rs6000/rs6000.opt:278
 msgid "-mtraceback=\tSelect full, part, or no traceback table"
-msgstr ""
+msgstr "-mtraceback=\tChọn bảng vét lùi đầy đủ (full), bộ phận (part) hoặc không có (none)"
 
 #: config/rs6000/rs6000.opt:282
 msgid "Avoid all range limits on call instructions"
-msgstr ""
+msgstr "Tránh giới hạn phạm vi nào trong câu lệnh gọi"
 
 #: config/rs6000/rs6000.opt:286
 msgid "Generate Cell microcode"
-msgstr ""
+msgstr "Tạo ra mã vi Cell"
 
 #: config/rs6000/rs6000.opt:290
 msgid "Warn when a Cell microcoded instruction is emitted"
-msgstr ""
+msgstr "Cảnh báo khi xuất một câu lệnh mã vi Cell"
 
 #: config/rs6000/rs6000.opt:294
 msgid "Warn about deprecated 'vector long ...' AltiVec type usage"
-msgstr ""
+msgstr "Cảnh báo về sử dụng loại AltiVec « vector long ... »"
 
 #: config/rs6000/rs6000.opt:298
 msgid "-mfloat-gprs=\tSelect GPR floating point method"
-msgstr ""
+msgstr "-mfloat-gprs=\tChọn phương pháp điểm phù động GPR"
 
 #: config/rs6000/rs6000.opt:302
 msgid "-mlong-double-<n>\tSpecify size of long double (64 or 128 bits)"
-msgstr ""
+msgstr "-mlong-double-<số>\tGhi rõ kích cỡ của đôi dài (64 hay 128 bit)"
 
 #: config/rs6000/rs6000.opt:306
 msgid "Determine which dependences between insns are considered costly"
-msgstr ""
+msgstr "Quyết định những quan hệ phụ thuộc nào giữa các câu lệnh thì được thấy có giá cao"
 
 #: config/rs6000/rs6000.opt:310
 msgid "Specify which post scheduling nop insertion scheme to apply"
-msgstr ""
+msgstr "Ghi rõ lược đồ chèn nop hậu định thời nào cần áp dụng"
 
 #: config/rs6000/rs6000.opt:314
 msgid "Specify alignment of structure fields default/natural"
-msgstr ""
+msgstr "Ghi rõ cách xếp hàng các trường cấu trúc: mặc định (default) hay tự nhiên (natural)"
 
 #: config/rs6000/rs6000.opt:318
 msgid "Specify scheduling priority for dispatch slot restricted insns"
-msgstr ""
+msgstr "Ghi rõ mức ưu tiên định thời cho câu lệnh bị hạn chế khe gửi đi"
 
 #: config/rs6000/rs6000.opt:322
 msgid "Single-precision floating point unit"
-msgstr ""
+msgstr "Đơn vị điểm phù động chính xác đơn"
 
 #: config/rs6000/rs6000.opt:326
 msgid "Double-precision floating point unit"
-msgstr ""
+msgstr "Đơn vị điểm phù động chính xác đôi"
 
 #: config/rs6000/rs6000.opt:330
 msgid "Floating point unit does not support divide & sqrt"
-msgstr ""
+msgstr "Đơn vị điểm phù động không hỗ trợ phép chia và phép tính căn bậc hai"
 
 #: config/rs6000/rs6000.opt:334
 msgid "-mfpu=\tSpecify FP (sp, dp, sp-lite, dp-lite) (implies -mxilinx-fpu)"
-msgstr ""
+msgstr "-mfpu=\tGhi rõ điểm phù động (sp, dp, sp-lite, dp-lite) (cũng ngụ ý « -mxilinx-fpu »)"
 
 #: config/rs6000/rs6000.opt:338
 msgid "Specify Xilinx FPU."
-msgstr ""
+msgstr "Ghi rõ FPU loại Xilinx."
 
 #: config/rs6000/aix64.opt:24
 msgid "Compile for 64-bit pointers"
-msgstr ""
+msgstr "Biên dịch cho hàm trỏ loại 64-bit"
 
 #: config/rs6000/aix64.opt:28
 msgid "Compile for 32-bit pointers"
-msgstr ""
+msgstr "Biên dịch cho hàm trỏ loại 32-bit"
 
 #: config/rs6000/aix64.opt:32
 msgid "Support message passing with the Parallel Environment"
-msgstr ""
+msgstr "Hỗ trợ chức năng gửi thông điệp qua với Môi trường Song song (Parellel Environment)"
 
 #: config/rs6000/linux64.opt:24
 msgid "Call mcount for profiling before a function prologue"
-msgstr ""
+msgstr "Gọi mcount để đo hiệu năng sử dụng đẳng trước một đoạn mở đầu hàm"
 
 #: config/rs6000/sysv4.opt:24
 msgid "Select ABI calling convention"
-msgstr ""
+msgstr "Chọn quy ước gọi ABI"
 
 #: config/rs6000/sysv4.opt:28
 msgid "Select method for sdata handling"
-msgstr ""
+msgstr "Chọn phương pháp để quản lý sdata"
 
 #: config/rs6000/sysv4.opt:36 config/rs6000/sysv4.opt:40
 msgid "Align to the base type of the bit-field"
-msgstr ""
+msgstr "Xếp hàng theo loại cơ bản của trường bit"
 
 #: config/rs6000/sysv4.opt:45 config/rs6000/sysv4.opt:49
 msgid "Produce code relocatable at runtime"
-msgstr ""
+msgstr "Xuất mã có thể định vị lại vào lúc chạy"
 
 #: config/rs6000/sysv4.opt:53 config/rs6000/sysv4.opt:57
 msgid "Produce little endian code"
-msgstr ""
+msgstr "Xuất mã về cuối nhỏ"
 
 #: config/rs6000/sysv4.opt:61 config/rs6000/sysv4.opt:65
 msgid "Produce big endian code"
-msgstr ""
+msgstr "Xuất mã về cuối lớn"
 
 #: config/rs6000/sysv4.opt:70 config/rs6000/sysv4.opt:74
 #: config/rs6000/sysv4.opt:83 config/rs6000/sysv4.opt:125
 #: config/rs6000/sysv4.opt:137
 msgid "no description yet"
-msgstr ""
+msgstr "chưa có mô tả"
 
 #: config/rs6000/sysv4.opt:78
 msgid "Assume all variable arg functions are prototyped"
-msgstr ""
+msgstr "Gia sử là mọi biến đối số biến đổi đều được nguyên mẫu"
 
 #: config/rs6000/sysv4.opt:87
 msgid "Use EABI"
-msgstr ""
+msgstr "Sử dụng EABI"
 
 #: config/rs6000/sysv4.opt:91
 msgid "Allow bit-fields to cross word boundaries"
-msgstr ""
+msgstr "Cho phép trường bit đi qua biên giới từ"
 
 #: config/rs6000/sysv4.opt:95
 msgid "Use alternate register names"
-msgstr ""
+msgstr "Sử dụng tên thanh ghi xen kẽ"
 
 #: config/rs6000/sysv4.opt:101
 msgid "Use default method for sdata handling"
-msgstr ""
+msgstr "Sử dụng phương pháp mặc định để quản lý sdata"
 
 #: config/rs6000/sysv4.opt:105
 msgid "Link with libsim.a, libc.a and sim-crt0.o"
-msgstr ""
+msgstr "Liên kết với « libsim.a », « libc.a » và « sim-crt0.o »"
 
 #: config/rs6000/sysv4.opt:109
 msgid "Link with libads.a, libc.a and crt0.o"
-msgstr ""
+msgstr "Liên kết với « libads.a », « libc.a » và « crt0.o »"
 
 #: config/rs6000/sysv4.opt:113
 msgid "Link with libyk.a, libc.a and crt0.o"
-msgstr ""
+msgstr "Liên kết với « libyk.a », « libc.a » và « crt0.o »"
 
 #: config/rs6000/sysv4.opt:117
 msgid "Link with libmvme.a, libc.a and crt0.o"
-msgstr ""
+msgstr "Liên kết với « libmvme.a », « libc.a » và « crt0.o »"
 
 #: config/rs6000/sysv4.opt:121
 msgid "Set the PPC_EMB bit in the ELF flags header"
-msgstr ""
+msgstr "Lập bit « PPC_EMB » trong phần đầu cờ ELF"
 
 #: config/rs6000/sysv4.opt:141
 msgid "Generate code to use a non-exec PLT and GOT"
-msgstr ""
+msgstr "Tạo ra mã để sử dụng một PLT và GOT không thực hiện"
 
 #: config/rs6000/sysv4.opt:145
 msgid "Generate code for old exec BSS PLT"
-msgstr ""
+msgstr "Tạo ra mã cho BSS PLT thực hiện cũ"
 
 #: config/spu/spu.opt:20
 msgid "Emit warnings when run-time relocations are generated"
-msgstr ""
+msgstr "Cảnh báo khi tạo ra sự định vị lại vào lúc chạy"
 
 #: config/spu/spu.opt:24
 msgid "Emit errors when run-time relocations are generated"
-msgstr ""
+msgstr "Xuất lỗi khi tạo ra sự định vị lại vào lúc chạy"
 
 #: config/spu/spu.opt:28
 msgid "Specify cost of branches (Default 20)"
-msgstr ""
+msgstr "Ghi rõ giá của nhánh (mặc định là 20)"
 
 #: config/spu/spu.opt:32
 msgid "Make sure loads and stores are not moved past DMA instructions"
-msgstr ""
+msgstr "Kiểm tra lại hàm nạp và hàm lưu không đi qua câu lệnh DMA"
 
 #: config/spu/spu.opt:36
 msgid "volatile must be specified on any memory that is effected by DMA"
-msgstr ""
+msgstr "Thuộc tính hay thay đổi (volatile) phải được ghi rõ trên bất cứ vùng nhớ nào bị DMA tác động."
 
 #: config/spu/spu.opt:40 config/spu/spu.opt:44
 msgid "Insert nops when it might improve performance by allowing dual issue (default)"
-msgstr ""
+msgstr "Chèn nops khi có thể tăng hiệu suất bằng cách cho phép đưa ra đôi (mặc định)"
 
 #: config/spu/spu.opt:48
 msgid "Use standard main function as entry for startup"
-msgstr ""
+msgstr "Sử dụng hàm chính tiêu chuẩn làm điểm vào để khởi chạy"
 
 #: config/spu/spu.opt:52
 msgid "Generate branch hints for branches"
-msgstr ""
+msgstr "Đối với nhánh thì tạo ra lời gợi ý nhánh"
 
 #: config/spu/spu.opt:56
 msgid "Maximum number of nops to insert for a hint (Default 2)"
-msgstr ""
+msgstr "Số tối đa các nops cần chèn cho một lời gợi ý (mặc định là 2)"
 
 #: config/spu/spu.opt:60
 msgid "Approximate maximum number of instructions to allow between a hint and its branch [125]"
-msgstr ""
+msgstr "Số tối đa (xấp xỉ) các câu lệnh cần cho phép giữa một lời gợi ý và nhánh tương ứng [125]"
 
 #: config/spu/spu.opt:64
 msgid "Generate code for 18 bit addressing"
-msgstr ""
+msgstr "Tạo ra mã để đặt địa chỉ 18 bit"
 
 #: config/spu/spu.opt:68
 msgid "Generate code for 32 bit addressing"
-msgstr ""
+msgstr "Tạo ra mã để đặt địa chỉ 32 bit"
 
 #: config/spu/spu.opt:76
 msgid "Insert hbrp instructions after hinted branch targets to avoid the SPU hang issue"
-msgstr ""
+msgstr "Chèn câu lệnh hbrp đẳng sau đích nhánh đã gợi ý để tránh vấn đề SPU đang treo cứng"
 
 #: config/spu/spu.opt:88
 msgid "Access variables in 32-bit PPU objects (default)"
-msgstr ""
+msgstr "Truy cập đến biến trong đối tượng PPU 32-bit (mặc định)"
 
 #: config/spu/spu.opt:92
 msgid "Access variables in 64-bit PPU objects"
-msgstr ""
+msgstr "Truy cập đến biến trong đối tượng PPU 64-bit"
 
 #: config/spu/spu.opt:96
 msgid "Allow conversions between __ea and generic pointers (default)"
-msgstr ""
+msgstr "Cho phép chuyển đổi giữa hàm trỏ loại « __ea » và chung (mặc định)"
 
 #: config/spu/spu.opt:100
 msgid "Size (in KB) of software data cache"
-msgstr ""
+msgstr "Kích cỡ (theo KB) của vùng nhớ tạm dữ liệu loại phần mềm"
 
 #: config/spu/spu.opt:104
 msgid "Atomically write back software data cache lines (default)"
-msgstr ""
+msgstr "Tự động ghi trả lại các đường dẫn vùng nhớ tạm dữ liệu loại phần mềm (mặc định)"
 
 #: config/mcore/mcore.opt:23
 msgid "Generate code for the M*Core M210"
-msgstr ""
+msgstr "Tạo ra mã cho M*Core M210"
 
 #: config/mcore/mcore.opt:27
 msgid "Generate code for the M*Core M340"
-msgstr ""
+msgstr "Tạo ra mã cho M*Core M340"
 
 #: config/mcore/mcore.opt:31
 msgid "Force functions to be aligned to a 4 byte boundary"
-msgstr ""
+msgstr "Ép buộc các hàm được xếp hàng theo một biên giới 4-byte"
 
 #: config/mcore/mcore.opt:35 config/score/score.opt:23
 msgid "Generate big-endian code"
-msgstr ""
+msgstr "Tạo ra mã về cuối lớn"
 
 #: config/mcore/mcore.opt:39
 msgid "Emit call graph information"
-msgstr ""
+msgstr "Xuất thông tin về đồ thị gọi"
 
 #: config/mcore/mcore.opt:43
 msgid "Use the divide instruction"
-msgstr ""
+msgstr "Sử dụng câu lệnh chia"
 
 #: config/mcore/mcore.opt:47
 msgid "Inline constants if it can be done in 2 insns or less"
-msgstr ""
+msgstr "Chèn hằng số vào trực tiếp nếu có thể làm trong nhiều nhất 2 câu lệnh"
 
 #: config/mcore/mcore.opt:51 config/score/score.opt:27
 msgid "Generate little-endian code"
-msgstr ""
+msgstr "Tạo ra mã về cuối nhỏ"
 
 #: config/mcore/mcore.opt:56 config/fr30/fr30.opt:27
 msgid "Assume that run-time support has been provided, so omit -lsim from the linker command line"
-msgstr ""
+msgstr "Giả sử đã cung cấp hỗ trợ vào lúc chạy, vì thế bỏ sót « -lsim » khỏi dòng lệnh liên kết"
 
 #: config/mcore/mcore.opt:60
 msgid "Use arbitrary sized immediates in bit operations"
-msgstr ""
+msgstr "Trong thao tác bit thì sử dụng điều lập tức có kích cỡ tùy ý"
 
 #: config/mcore/mcore.opt:64
 msgid "Prefer word accesses over byte accesses"
-msgstr ""
+msgstr "Thích truy cập loại từ hơn truy cập loại byte"
 
 #: config/mcore/mcore.opt:68
 msgid "Set the maximum amount for a single stack increment operation"
-msgstr ""
+msgstr "Lập số lượng tối đa cho một thao tác lượng gia loại đống đơn"
 
 #: config/mcore/mcore.opt:72
 msgid "Always treat bitfields as int-sized"
-msgstr ""
+msgstr "Lúc nào cũng thấy trường bit có kích cỡ số nguyên"
 
 #: config/arc/arc.opt:32
 msgid "Prepend the name of the cpu to all public symbol names"
-msgstr ""
+msgstr "Phụ thêm tên CPU vào tất cả các tên ký hiệu công cộng"
 
 #: config/arc/arc.opt:42
 msgid "-mcpu=CPU\tCompile code for ARC variant CPU"
-msgstr ""
+msgstr "-mcpu=CPU\tBiên dịch mã cho CPU biến thế ARC"
 
 #: config/arc/arc.opt:46
 msgid "-mtext=SECTION\tPut functions in SECTION"
-msgstr ""
+msgstr "-mtext=PHẦN\tĐể các hàm vào phần này"
 
 #: config/arc/arc.opt:50
 msgid "-mdata=SECTION\tPut data in SECTION"
-msgstr ""
+msgstr "-mdata=PHẦN\tĐể dữ liệu vào phần này"
 
 #: config/arc/arc.opt:54
 msgid "-mrodata=SECTION\tPut read-only data in SECTION"
-msgstr ""
+msgstr "-mrodata=PHẦN\tĐể dữ liệu chỉ-đọc vào phần này"
 
 #: config/sh/sh.opt:44
 msgid "Generate SH1 code"
-msgstr ""
+msgstr "Tạo ra mã SH1"
 
 #: config/sh/sh.opt:48
 msgid "Generate SH2 code"
-msgstr ""
+msgstr "Tạo ra mã SH2"
 
 #: config/sh/sh.opt:52
 msgid "Generate default double-precision SH2a-FPU code"
-msgstr ""
+msgstr "Tạo ra mã SH2a-FPU chính xác đôi mặc định"
 
 #: config/sh/sh.opt:56
 msgid "Generate SH2a FPU-less code"
-msgstr ""
+msgstr "Tạo ra mã SH2a không có FPU"
 
 #: config/sh/sh.opt:60
 msgid "Generate default single-precision SH2a-FPU code"
-msgstr ""
+msgstr "Tạo ra mã SH2a-FPU chính xác đơn mặc định"
 
 #: config/sh/sh.opt:64
 msgid "Generate only single-precision SH2a-FPU code"
-msgstr ""
+msgstr "Tạo ra chỉ mã SH2a-FPU chính xác đơn"
 
 #: config/sh/sh.opt:68
 msgid "Generate SH2e code"
-msgstr ""
+msgstr "Tạo ra mã SH2e"
 
 #: config/sh/sh.opt:72
 msgid "Generate SH3 code"
-msgstr ""
+msgstr "Tạo ra mã SH3"
 
 #: config/sh/sh.opt:76
 msgid "Generate SH3e code"
-msgstr ""
+msgstr "Tạo ra mã SH3e"
 
 #: config/sh/sh.opt:80
 msgid "Generate SH4 code"
-msgstr ""
+msgstr "Tạo ra mã SH4"
 
 #: config/sh/sh.opt:84
 msgid "Generate SH4-100 code"
-msgstr ""
+msgstr "Tạo ra mã SH4-100"
 
 #: config/sh/sh.opt:88
 msgid "Generate SH4-200 code"
-msgstr ""
+msgstr "Tạo ra mã SH4-200"
 
 #: config/sh/sh.opt:94
 msgid "Generate SH4-300 code"
-msgstr ""
+msgstr "Tạo ra mã SH4-300"
 
 #: config/sh/sh.opt:98
 msgid "Generate SH4 FPU-less code"
-msgstr ""
+msgstr "Tạo ra mã SH4 không có FPU"
 
 #: config/sh/sh.opt:102
 msgid "Generate SH4-100 FPU-less code"
-msgstr ""
+msgstr "Tạo ra mã SH4-100 không có FPU"
 
 #: config/sh/sh.opt:106
 msgid "Generate SH4-200 FPU-less code"
-msgstr ""
+msgstr "Tạo ra mã SH4-200 không có FPU"
 
 #: config/sh/sh.opt:110
 msgid "Generate SH4-300 FPU-less code"
-msgstr ""
+msgstr "Tạo ra mã SH4-300 không có FPU"
 
 #: config/sh/sh.opt:114
 msgid "Generate code for SH4 340 series (MMU/FPU-less)"
-msgstr ""
+msgstr "Tạo ra mã cho loạt SH4 340 (không có MMU/FPU)"
 
 #: config/sh/sh.opt:119
 msgid "Generate code for SH4 400 series (MMU/FPU-less)"
-msgstr ""
+msgstr "Tạo ra mã cho loạt SH4 400 (không có MMU/FPU)"
 
 #: config/sh/sh.opt:124
 msgid "Generate code for SH4 500 series (FPU-less)."
-msgstr ""
+msgstr "Tạo ra mã cho loạt SH4 500 (không có MMU/FPU)"
 
 #: config/sh/sh.opt:129
 msgid "Generate default single-precision SH4 code"
-msgstr ""
+msgstr "Tạo ra mã SH4 chính xác đơn mặc định"
 
 #: config/sh/sh.opt:133
 msgid "Generate default single-precision SH4-100 code"
-msgstr ""
+msgstr "Tạo ra mã SH4-100 chính xác đơn mặc định"
 
 #: config/sh/sh.opt:137
 msgid "Generate default single-precision SH4-200 code"
-msgstr ""
+msgstr "Tạo ra mã SH4-200 chính xác đơn mặc định"
 
 #: config/sh/sh.opt:141
 msgid "Generate default single-precision SH4-300 code"
-msgstr ""
+msgstr "Tạo ra mã SH4-300 chính xác đơn mặc định"
 
 #: config/sh/sh.opt:145
 msgid "Generate only single-precision SH4 code"
-msgstr ""
+msgstr "Tạo ra chỉ mã SH4 chính xác đơn"
 
 #: config/sh/sh.opt:149
 msgid "Generate only single-precision SH4-100 code"
-msgstr ""
+msgstr "Tạo ra chỉ mã SH4-100 chính xác đơn"
 
 #: config/sh/sh.opt:153
 msgid "Generate only single-precision SH4-200 code"
-msgstr ""
+msgstr "Tạo ra chỉ mã SH4-200 chính xác đơn"
 
 #: config/sh/sh.opt:157
 msgid "Generate only single-precision SH4-300 code"
-msgstr ""
+msgstr "Tạo ra chỉ mã SH4-300 chính xác đơn"
 
 #: config/sh/sh.opt:161
 msgid "Generate SH4a code"
-msgstr ""
+msgstr "Tạo ra mã SH4a"
 
 #: config/sh/sh.opt:165
 msgid "Generate SH4a FPU-less code"
-msgstr ""
+msgstr "Tạo ra mã SH4a không có FPU"
 
 #: config/sh/sh.opt:169
 msgid "Generate default single-precision SH4a code"
-msgstr ""
+msgstr "Tạo ra mã SH4a chính xác đơn mặc định"
 
 #: config/sh/sh.opt:173
 msgid "Generate only single-precision SH4a code"
-msgstr ""
+msgstr "Tạo ra chỉ mã SH4a chính xác đơn"
 
 #: config/sh/sh.opt:177
 msgid "Generate SH4al-dsp code"
-msgstr ""
+msgstr "Tạo ra mã SH4al-dsp"
 
 #: config/sh/sh.opt:181
 msgid "Generate 32-bit SHmedia code"
-msgstr ""
+msgstr "Tạo ra mã SHmedia 32-bit"
 
 #: config/sh/sh.opt:185
 msgid "Generate 32-bit FPU-less SHmedia code"
-msgstr ""
+msgstr "Tạo ra mã SHmedia 32-bit không có FPU"
 
 #: config/sh/sh.opt:189
 msgid "Generate 64-bit SHmedia code"
-msgstr ""
+msgstr "Tạo ra mã SHmedia 64-bit"
 
 #: config/sh/sh.opt:193
 msgid "Generate 64-bit FPU-less SHmedia code"
-msgstr ""
+msgstr "Tạo ra mã SHmedia 64-bit không có FPU"
 
 #: config/sh/sh.opt:197
 msgid "Generate SHcompact code"
-msgstr ""
+msgstr "Tạo ra mã SHcompact"
 
 #: config/sh/sh.opt:201
 msgid "Generate FPU-less SHcompact code"
-msgstr ""
+msgstr "Tạo ra mã SHcompact không có FPU"
 
 #: config/sh/sh.opt:205
 msgid "Throttle unrolling to avoid thrashing target registers unless the unroll benefit outweighs this"
-msgstr ""
+msgstr "Điều chỉnh tốc độ bỏ cuộn để tránh quá tải thanh ghi đích, nếu lợi ích bỏ cuộn không có nhiều giá trị hơn"
 
 #: config/sh/sh.opt:209
 msgid "Generate code in big endian mode"
-msgstr ""
+msgstr "Tạo mã trong chế độ về cuối lớn"
 
 #: config/sh/sh.opt:213
 msgid "Generate 32-bit offsets in switch tables"
-msgstr ""
+msgstr "Tạo ra hiệu số 32-bit trong bảng cái chuyển"
 
 #: config/sh/sh.opt:217
 msgid "Generate bit instructions"
-msgstr ""
+msgstr "Tạo ra câu lệnh bit"
 
 #: config/sh/sh.opt:221
 msgid "Cost to assume for a branch insn"
-msgstr ""
+msgstr "Giá cần giả sử đối với một câu lệnh nhánh"
 
 #: config/sh/sh.opt:225
 msgid "Enable cbranchdi4 pattern"
-msgstr ""
+msgstr "Hiệu lực mẫu cbranchdi4"
 
 #: config/sh/sh.opt:229
 msgid "Emit cmpeqdi_t pattern even when -mcbranchdi is in effect."
-msgstr ""
+msgstr "Xuất mẫu « cmpeqdi_t pattern » ngay cả khi tuỳ chọn « -mcbranchdi » vẫn hoạt động."
 
 #: config/sh/sh.opt:233
 msgid "Enable SH5 cut2 workaround"
-msgstr ""
+msgstr "Hiệu lực khắc phục cut2 SH5"
 
 #: config/sh/sh.opt:237
 msgid "Align doubles at 64-bit boundaries"
-msgstr ""
+msgstr "Xếp hàng các đôi theo biên giới 64-bit"
 
 #: config/sh/sh.opt:241
 msgid "Division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp, call-div1, call-fp, call-table"
-msgstr ""
+msgstr "Chiến lược chia là một của: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp, call-div1, call-fp, call-table"
 
 #: config/sh/sh.opt:245
 msgid "Specify name for 32 bit signed division function"
-msgstr ""
+msgstr "Ghi rõ tên cho hàm chia đã ký 32-bit"
 
 #: config/sh/sh.opt:249
 msgid "Enable the use of 64-bit floating point registers in fmov instructions.  See -mdalign if 64-bit alignment is required."
-msgstr ""
+msgstr "Hiệu lực sử dụng thay ghi điểm phù động 64-bit trong câu lệnh fmov. Xem « -mdalign » nếu cũng yêu cầu xếp hàng theo 64-bit."
 
 #: config/sh/sh.opt:257
 msgid "Enable the use of the fused floating point multiply-accumulate operation"
-msgstr ""
+msgstr "Hiệu lực sử dụng thao tác nhân-tích_lũy loại điểm phù động hợp nhau"
 
 #: config/sh/sh.opt:261
 msgid "Cost to assume for gettr insn"
-msgstr ""
+msgstr "Giá cần giả sử đối với câu lệnh gettr"
 
 #: config/sh/sh.opt:265 config/sh/sh.opt:315
 msgid "Follow Renesas (formerly Hitachi) / SuperH calling conventions"
-msgstr ""
+msgstr "Theo quy ước gọi SuperH / Renesas (còn gọi là Hitachi)"
 
 #: config/sh/sh.opt:269
 msgid "Increase the IEEE compliance for floating-point code"
-msgstr ""
+msgstr "Đối với mã điểm phù động thì làm hợp hơn với IEEE"
 
 #: config/sh/sh.opt:273
 msgid "Enable the use of the indexed addressing mode for SHmedia32/SHcompact"
-msgstr ""
+msgstr "Hiệu lực sử dụng chế độ đặt địa chỉ loại phụ lục cho SHmedia32/SHcompact"
 
 #: config/sh/sh.opt:277
 msgid "inline code to invalidate instruction cache entries after setting up nested function trampolines"
-msgstr ""
+msgstr "chèn mã vào trực tiếp để làm mất hiệu lực các mục nhập vùng nhớ tạm câu lệnh sau khi thiết lập các trampoline hàm lồng nhau"
 
 #: config/sh/sh.opt:281
 msgid "Assume symbols might be invalid"
-msgstr ""
+msgstr "Giả sử là ký hiệu có thể không hợp lệ"
 
 #: config/sh/sh.opt:285
 msgid "Annotate assembler instructions with estimated addresses"
-msgstr ""
+msgstr "Phụ chú câu lệnh dịch mã số bằng địa chỉ ước lượng"
 
 #: config/sh/sh.opt:289
 msgid "Generate code in little endian mode"
-msgstr ""
+msgstr "Tạo ra mã trong chế độ về cuối nhỏ"
 
 #: config/sh/sh.opt:293
 msgid "Mark MAC register as call-clobbered"
-msgstr ""
+msgstr "Đánh dấu thanh ghi MAC như là bị cuộc gọi ghi đè"
 
 #: config/sh/sh.opt:299
 msgid "Make structs a multiple of 4 bytes (warning: ABI altered)"
-msgstr ""
+msgstr "Làm cho cấu trúc là một bội số cho 4 byte (cảnh báo : ABI bị sửa đổi)"
 
 #: config/sh/sh.opt:303
 msgid "Emit function-calls using global offset table when generating PIC"
-msgstr ""
+msgstr "Xuất cuộc gọi hàm dùng bảng hiệu số toàn cục khi tạo ra PIC"
 
 #: config/sh/sh.opt:307
 msgid "Assume pt* instructions won't trap"
-msgstr ""
+msgstr "Giả sử là câu oệnh pt* sẽ không bẫy"
 
 #: config/sh/sh.opt:311
 msgid "Shorten address references during linking"
-msgstr ""
+msgstr "Cắt ngắn tham chiếu địa chỉ trong khi liên kết"
 
 #: config/sh/sh.opt:319
 msgid "Deprecated.  Use -Os instead"
-msgstr ""
+msgstr "Bị phân đối nên hãy sử dụng đối số « -Os » để thay thế"
 
 #: config/sh/sh.opt:323
 msgid "Cost to assume for a multiply insn"
-msgstr ""
+msgstr "Giá cần giả sử cho một câu lệnh nhân lên"
 
 #: config/sh/sh.opt:327
 msgid "Don't generate privileged-mode only code; implies -mno-inline-ic_invalidate if the inline code would not work in user mode."
-msgstr ""
+msgstr "Đừng tạo ra mã chỉ có chế độ quyền đặc biệt; cũng ngụ ý « -mno-inline-ic_invalidate » nếu mã trực tiếp không có tác động trong chế độ người dùng"
 
 #: config/sh/sh.opt:333
 msgid "Pretend a branch-around-a-move is a conditional move."
-msgstr ""
+msgstr "Làm ra vẻ rằng « branch-around-a-move » là một sự di chuyển có điều kiện."
 
 #: config/sh/superh.opt:6
 msgid "Board name [and memory region]."
-msgstr ""
+msgstr "Tên bộ mạch [và vùng nhớ]."
 
 #: config/sh/superh.opt:10
 msgid "Runtime name."
-msgstr ""
+msgstr "Tên lúc chạy."
 
 #: config/arm/eabi.opt:23
 msgid "Generate code for the Android operating system."
-msgstr ""
+msgstr "Tạo ra mã cho hệ điều hành Android."
 
 #: config/arm/arm.opt:23
 msgid "Specify an ABI"
-msgstr ""
+msgstr "Ghi rõ một ABI"
 
 #: config/arm/arm.opt:27
 msgid "Generate a call to abort if a noreturn function returns"
-msgstr ""
+msgstr "Tạo ra một cuộc gọi nên hủy bỏ nếu một hàm không trả lại còn trả lại"
 
 #: config/arm/arm.opt:34
 msgid "Pass FP arguments in FP registers"
-msgstr ""
+msgstr "Gửi đối số loại điểm phù động trong thanh ghi loại điểm phù động"
 
 #: config/arm/arm.opt:38
 msgid "Generate APCS conformant stack frames"
-msgstr ""
+msgstr "Tạo ra các khung đống làm hợp với APCS"
 
 #: config/arm/arm.opt:42
 msgid "Generate re-entrant, PIC code"
-msgstr ""
+msgstr "Tạo ra mã PIC loại vào lại"
 
 #: config/arm/arm.opt:56
 msgid "Assume target CPU is configured as big endian"
-msgstr ""
+msgstr "Giả sử là CPU đích được cấu hình về cuối lớn"
 
 #: config/arm/arm.opt:60
 msgid "Thumb: Assume non-static functions may be called from ARM code"
-msgstr ""
+msgstr "Thumb: Giả sử là hàm không phải tĩnh có thể được gọi từ mã ARM"
 
 #: config/arm/arm.opt:64
 msgid "Thumb: Assume function pointers may go to non-Thumb aware code"
-msgstr ""
+msgstr "Thumb: Giả sử là hàm trỏ có thể trở tới mã không phải tùy theo Thumb"
 
 #: config/arm/arm.opt:68
 msgid "Cirrus: Place NOPs to avoid invalid instruction combinations"
-msgstr ""
+msgstr "Cirrus: Để các NOP để tránh sai kết hợp các câu lệnh"
 
 #: config/arm/arm.opt:72 config/bfin/bfin.opt:27
 msgid "Specify the name of the target CPU"
-msgstr ""
+msgstr "Ghi rõ tên của CPU đích"
 
 #: config/arm/arm.opt:76
 msgid "Specify if floating point hardware should be used"
-msgstr ""
+msgstr "Ghi rõ có nên sử dụng phần cứng điểm phù động hay không"
 
 #: config/arm/arm.opt:83
 msgid "Specify the __fp16 floating-point format"
-msgstr ""
+msgstr "Ghi rõ định dạng điểm phù động « __fp16 »"
 
 #: config/arm/arm.opt:94
 msgid "Specify the name of the target floating point hardware/format"
-msgstr ""
+msgstr "Ghi rõ tên của phần cứng / định dạng đích về điểm phù động"
 
 #: config/arm/arm.opt:98
 msgid "Alias for -mfloat-abi=hard"
-msgstr ""
+msgstr "Bí danh cho « -mfloat-abi=hard »"
 
 #: config/arm/arm.opt:102
 msgid "Assume target CPU is configured as little endian"
-msgstr ""
+msgstr "Giả sử là CPU đích được cấu hình về cuối nhỏ"
 
 #: config/arm/arm.opt:106
 msgid "Generate call insns as indirect calls, if necessary"
-msgstr ""
+msgstr "Tạo ra câu lệnh gọi dưới dạng cuộc gọi gián tiếp, nếu cần thiết"
 
 #: config/arm/arm.opt:110
 msgid "Specify the register to be used for PIC addressing"
-msgstr ""
+msgstr "Ghi rõ thanh ghi cần sử dụng để đặt địa chỉ PIC"
 
 #: config/arm/arm.opt:114
 msgid "Store function names in object code"
-msgstr ""
+msgstr "Lưu các tên hàm trong mã đối tượng"
 
 #: config/arm/arm.opt:118
 msgid "Permit scheduling of a function's prologue sequence"
-msgstr ""
+msgstr "Cho phép định thời dãy đoạn mở đầu của một hàm nào đó"
 
 #: config/arm/arm.opt:122
 msgid "Do not load the PIC register in function prologues"
-msgstr ""
+msgstr "Đừng nạp thanh ghi PIC trong đoạn mở đầu hàm"
 
 #: config/arm/arm.opt:126
 msgid "Alias for -mfloat-abi=soft"
-msgstr ""
+msgstr "Bí danh cho « -mfloat-abi=soft »"
 
 #: config/arm/arm.opt:130
 msgid "Specify the minimum bit alignment of structures"
-msgstr ""
+msgstr "Ghi rõ sự xếp hàng bit tối thiểu của cấu trúc"
 
 #: config/arm/arm.opt:134
 msgid "Compile for the Thumb not the ARM"
-msgstr ""
+msgstr "Biên dịch cho Thumb, không phải cho ARM"
 
 #: config/arm/arm.opt:138
 msgid "Support calls between Thumb and ARM instruction sets"
-msgstr ""
+msgstr "Hỗ trợ cuộc gọi giữa các tập hợp câu lệnh loại Thumb và ARM"
 
 #: config/arm/arm.opt:142
 msgid "Specify how to access the thread pointer"
-msgstr ""
+msgstr "Ghi rõ cách truy cập đến hàm trỏ mạch"
 
 #: config/arm/arm.opt:146
 msgid "Thumb: Generate (non-leaf) stack frames even if not needed"
-msgstr ""
+msgstr "Thumb: Tạo ra khung đống (không phải loại lá) ngay cả khi không cần thiết"
 
 #: config/arm/arm.opt:150
 msgid "Thumb: Generate (leaf) stack frames even if not needed"
-msgstr ""
+msgstr "Thumb: Tạo ra khung đống (loại lá) ngay cả khi không cần thiết"
 
 #: config/arm/arm.opt:154
 msgid "Tune code for the given processor"
-msgstr ""
+msgstr "Điều chỉnh mã cho bộ xử lý đưa ra"
 
 #: config/arm/arm.opt:158
 msgid "Assume big endian bytes, little endian words"
-msgstr ""
+msgstr "Giả sử các byte về cuối lớn, các từ về cuối nhỏ"
 
 #: config/arm/arm.opt:162
 msgid "Use Neon quad-word (rather than double-word) registers for vectorization"
-msgstr ""
+msgstr "Sử dụng thanh ghi từ bốn (thay cho từ đôi) Neon để véc-tơ hoá"
 
 #: config/arm/arm.opt:166
 msgid "Only generate absolute relocations on word sized values."
-msgstr ""
+msgstr "Chỉ tạo ra sự định vị lại tuyệt đối với giá trị kích cỡ từ."
 
 #: config/arm/arm.opt:170
 msgid "Avoid overlapping destination and address registers on LDRD instructions"
-msgstr ""
+msgstr "Tránh các thanh ghi đích và địa chỉ chồng chéo lên nhau đối với câu lệnh LDRD"
 
 #: config/arm/pe.opt:23
 msgid "Ignore dllimport attribute for functions"
-msgstr ""
+msgstr "Bỏ qua thuộc tính dllimport về hàm"
 
 #: config/pdp11/pdp11.opt:23
 msgid "Generate code for an 11/10"
-msgstr ""
+msgstr "Tạo ra mã cho một 11/10"
 
 #: config/pdp11/pdp11.opt:27
 msgid "Generate code for an 11/40"
-msgstr ""
+msgstr "Tạo ra mã cho một 11/40"
 
 #: config/pdp11/pdp11.opt:31
 msgid "Generate code for an 11/45"
-msgstr ""
+msgstr "Tạo ra mã cho một 11/45"
 
 #: config/pdp11/pdp11.opt:35
 msgid "Use 16-bit abs patterns"
-msgstr ""
+msgstr "Sử dụng mẫu tuyệt đối 16-bit"
 
 #: config/pdp11/pdp11.opt:39
 msgid "Return floating-point results in ac0 (fr0 in Unix assembler syntax)"
-msgstr ""
+msgstr "Trả lại kết quả điểm phù động bằng ac0 (bằng fr0 trong cú pháp dịch mã số UNIX)"
 
 #: config/pdp11/pdp11.opt:43
 msgid "Do not use inline patterns for copying memory"
-msgstr ""
+msgstr "Đừng sử dụng mẫu được chèn vào trực tiếp để sao chép vùng nhớ"
 
 #: config/pdp11/pdp11.opt:47
 msgid "Use inline patterns for copying memory"
-msgstr ""
+msgstr "Sử dụng mẫu được chèn vào trực tiếp để sao chép vùng nhớ"
 
 #: config/pdp11/pdp11.opt:51
 msgid "Do not pretend that branches are expensive"
-msgstr ""
+msgstr "Đừng làm ra vẻ là nhánh có giá cao"
 
 #: config/pdp11/pdp11.opt:55
 msgid "Pretend that branches are expensive"
-msgstr ""
+msgstr "Làm ra vẻ là nhánh có giá cao"
 
 #: config/pdp11/pdp11.opt:59
 msgid "Use the DEC assembler syntax"
-msgstr ""
+msgstr "Sử dụng cú pháp dịch mã số DEC"
 
 #: config/pdp11/pdp11.opt:63
 msgid "Use 32 bit float"
-msgstr ""
+msgstr "Sử dụng điểm phù động 32-bit"
 
 #: config/pdp11/pdp11.opt:67
 msgid "Use 64 bit float"
-msgstr ""
+msgstr "Sử dụng điểm phù động 64-bit"
 
 #: config/pdp11/pdp11.opt:75
 msgid "Use 16 bit int"
-msgstr ""
+msgstr "Sử dụng số nguyên 16-bit"
 
 #: config/pdp11/pdp11.opt:79
 msgid "Use 32 bit int"
-msgstr ""
+msgstr "Sử dụng số nguyên 32-bit"
 
 #: config/pdp11/pdp11.opt:87
 msgid "Target has split I&D"
-msgstr ""
+msgstr "Đích có I&D bị chia ra"
 
 #: config/pdp11/pdp11.opt:91
 msgid "Use UNIX assembler syntax"
-msgstr ""
+msgstr "Sử dụng cú pháp dịch mã số UNIX"
 
 #: config/avr/avr.opt:23
 msgid "Use subroutines for function prologues and epilogues"
-msgstr ""
+msgstr "Sử dụng chương trình con cho đoạn mở/đóng hàm"
 
 #: config/avr/avr.opt:27
 msgid "-mmcu=MCU\tSelect the target MCU"
-msgstr ""
+msgstr "-mmcu=MCU\tChọn MCU đích"
 
 #: config/avr/avr.opt:34
 msgid "Use an 8-bit 'int' type"
-msgstr ""
+msgstr "Sử dụng một loại số nguyên 8-bit"
 
 #: config/avr/avr.opt:38
 msgid "Change the stack pointer without disabling interrupts"
-msgstr ""
+msgstr "Thay đổi hàm trỏ đống mà không tắt tín hiệu gián đoạn"
 
 #: config/avr/avr.opt:48
 msgid "Use rjmp/rcall (limited range) on >8K devices"
-msgstr ""
+msgstr "Sử dụng rjmp/rcall (phạm vi bị hạn chế) trên thiết bị >8K"
 
 #: config/avr/avr.opt:52
 msgid "Change only the low 8 bits of the stack pointer"
-msgstr ""
+msgstr "Thay đổi chỉ 8 bit thấp của hàm trỏ đống"
 
 #: config/avr/avr.opt:56
 msgid "Relax branches"
-msgstr ""
+msgstr "Làm yếu các nhánh"
 
 #: config/avr/avr.opt:60
 msgid "Make the linker relaxation machine assume that a program counter wrap-around occures."
-msgstr ""
+msgstr "Làm cho máy làm yếu bộ liên kết giả sử rằng bộ đếm chương trình đã cuộn lại."
 
 #: config/crx/crx.opt:23
 msgid "Support multiply accumulate instructions"
-msgstr ""
+msgstr "Hỗ trợ câu lệnh nhân-tích_lũy"
 
 #: config/crx/crx.opt:27
 msgid "Do not use push to store function arguments"
-msgstr ""
+msgstr "Đừng sử dụng push để lưu các đối số hàm"
 
 #: config/crx/crx.opt:31
 msgid "Restrict doloop to the given nesting level"
-msgstr ""
+msgstr "Hạn chế doloop thành cấp lồng nhau đưa ra"
 
 #: config/pa/pa-hpux.opt:23
 msgid "Generate cpp defines for server IO"
-msgstr ""
+msgstr "Tạo ra các lời xác định cpp cho V/R máy phục vụ"
 
 #: config/pa/pa-hpux.opt:27 config/pa/pa-hpux1010.opt:23
 #: config/pa/pa-hpux1111.opt:23
 msgid "Specify UNIX standard for predefines and linking"
-msgstr ""
+msgstr "Ghi rõ tiêu chuẩn UNIX cho lời xác định sẵn và chức năng liên kết"
 
 #: config/pa/pa-hpux.opt:31
 msgid "Generate cpp defines for workstation IO"
-msgstr ""
+msgstr "Tạo ra các lời xác định cpp cho V/R máy trạm"
 
 #: config/pa/pa.opt:23 config/pa/pa.opt:76 config/pa/pa.opt:84
 msgid "Generate PA1.0 code"
-msgstr ""
+msgstr "Tạo ra mã PA1.0"
 
 #: config/pa/pa.opt:27 config/pa/pa.opt:88 config/pa/pa.opt:108
 msgid "Generate PA1.1 code"
-msgstr ""
+msgstr "Tạo ra mã PA1.1"
 
 #: config/pa/pa.opt:31 config/pa/pa.opt:92
 msgid "Generate PA2.0 code (requires binutils 2.10 or later)"
-msgstr ""
+msgstr "Tạo ra mã PA2.0 (yêu cầu binutils 2.10 hay sau)"
 
 #: config/pa/pa.opt:35
 msgid "Generate code for huge switch statements"
-msgstr ""
+msgstr "Tạo ra mã cho câu lệnh chuyển rất lớn"
 
 #: config/pa/pa.opt:39
 msgid "Disable FP regs"
-msgstr ""
+msgstr "Tắt các thanh ghi loại điểm phù động"
 
 #: config/pa/pa.opt:43
 msgid "Disable indexed addressing"
-msgstr ""
+msgstr "Tắt chức năng đặt địa chỉ loại phụ lục"
 
 #: config/pa/pa.opt:47
 msgid "Generate fast indirect calls"
-msgstr ""
+msgstr "Tạo ra các cuộc gọi gián tiếp nhanh"
 
 #: config/pa/pa.opt:55
 msgid "Assume code will be assembled by GAS"
-msgstr ""
+msgstr "Giả sử là mã sẽ được GAS dịch"
 
 #: config/pa/pa.opt:59
 msgid "Put jumps in call delay slots"
-msgstr ""
+msgstr "Để bước nhảy vào khe hàng đợi cuộc gọi"
 
 #: config/pa/pa.opt:64
 msgid "Enable linker optimizations"
-msgstr ""
+msgstr "Hiệu lực số tối ưu hoá bộ liên kết"
 
 #: config/pa/pa.opt:68
 msgid "Always generate long calls"
-msgstr ""
+msgstr "Lúc nào cũng tạo ra cuộc gọi dài"
 
 #: config/pa/pa.opt:72
 msgid "Emit long load/store sequences"
-msgstr ""
+msgstr "Xuất dãy nạp/lưu dài"
 
 #: config/pa/pa.opt:80
 msgid "Disable space regs"
-msgstr ""
+msgstr "Tắt thanh ghi loại sức chứa"
 
 #: config/pa/pa.opt:96
 msgid "Use portable calling conventions"
-msgstr ""
+msgstr "Sử dụng quy ước gọi di động"
 
 #: config/pa/pa.opt:100
 msgid "Specify CPU for scheduling purposes.  Valid arguments are 700, 7100, 7100LC, 7200, 7300, and 8000"
-msgstr ""
+msgstr "Ghi rõ CPU cho mục đích định thời, một của: 700, 7100, 7100LC, 7200, 7300, 8000"
 
 #: config/pa/pa.opt:112
 msgid "Do not disable space regs"
-msgstr ""
+msgstr "Đừng tắt thanh ghi loại sức chứa"
 
 #: config/pa/pa64-hpux.opt:23
 msgid "Assume code will be linked by GNU ld"
-msgstr ""
+msgstr "Giả sử là mã sẽ được liên kết bởi ld của GNU"
 
 #: config/pa/pa64-hpux.opt:27
 msgid "Assume code will be linked by HP ld"
-msgstr ""
+msgstr "Giả sử là mã sẽ được liên kết bởi ld của HP"
 
 #: config/xtensa/xtensa.opt:23
 msgid "Use CONST16 instruction to load constants"
-msgstr ""
+msgstr "Sử dụng câu lệnh CONST16 để nạp các hằng số"
 
 #: config/xtensa/xtensa.opt:27
 msgid "Enable fused multiply/add and multiply/subtract FP instructions"
-msgstr ""
+msgstr "Hiệu lực câu lệnh nhân/cộng và nhân/trừ loại điểm phù động hợp nhau"
 
 #: config/xtensa/xtensa.opt:31
 msgid "Use indirect CALLXn instructions for large programs"
-msgstr ""
+msgstr "Sử dụng câu lệnh CALLXn gián tiếp cho chương trình lớn"
 
 #: config/xtensa/xtensa.opt:35
 msgid "Automatically align branch targets to reduce branch penalties"
-msgstr ""
+msgstr "Tự động xếp hàng các đích nhánh để giảm giá nhánh thừa"
 
 #: config/xtensa/xtensa.opt:39
 msgid "Intersperse literal pools with code in the text section"
-msgstr ""
+msgstr "Chèn vào nhau các vùng gộp nghĩa chữ và mã trong phần văn bản"
 
 #: config/xtensa/xtensa.opt:43
 msgid "-mno-serialize-volatile\tDo not serialize volatile memory references with MEMW instructions"
-msgstr ""
+msgstr "-mno-serialize-volatile\tĐối với câu lệnh MEMW thì đừng cũng xếp theo thứ tự các tham chiếu đến vùng nhớ hay thay đổi"
 
 #: config/stormy16/stormy16.opt:24
 msgid "Provide libraries for the simulator"
-msgstr ""
+msgstr "Cung cấp thư viện cho bộ mô phỏng"
 
 #: config/mips/mips.opt:23
 msgid "-mabi=ABI\tGenerate code that conforms to the given ABI"
-msgstr ""
+msgstr "-mabi=ABI\tTạo ra làm hợp với ABI đưa ra"
 
 #: config/mips/mips.opt:27
 msgid "Generate code that can be used in SVR4-style dynamic objects"
-msgstr ""
+msgstr "Tạo ra mã có thể sử dụng được trong đối tượng năng động có kiểu SVR4"
 
 #: config/mips/mips.opt:31
 msgid "Use PMC-style 'mad' instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh « mad » loại PMC"
 
 #: config/mips/mips.opt:35
 msgid "-march=ISA\tGenerate code for the given ISA"
-msgstr ""
+msgstr "-march=ISA\tTạo ra mã cho ISA đưa ra"
 
 #: config/mips/mips.opt:39
 msgid "-mbranch-cost=COST\tSet the cost of branches to roughly COST instructions"
-msgstr ""
+msgstr "-mbranch-cost=GIÁ\tLập giá của nhánh thành khoảng số các câu lệnh này"
 
 #: config/mips/mips.opt:43
 msgid "Use Branch Likely instructions, overriding the architecture default"
-msgstr ""
+msgstr "Sử dụng câu lệnh rất có thể thích hợp với nhanh (Branch Likely), thì ghi đè lên giá trị mặc định của kiến trúc đó"
 
 #: config/mips/mips.opt:47
 msgid "Switch on/off MIPS16 ASE on alternating functions for compiler testing"
-msgstr ""
+msgstr "Bật/tắt ASE MIPS16 trên các hàm qua lại, để kiểm tra chức năng của bộ dịch mã số"
 
 #: config/mips/mips.opt:51
 msgid "Trap on integer divide by zero"
-msgstr ""
+msgstr "Bẫy khi số nguyên chia cho số không"
 
 #: config/mips/mips.opt:55
 msgid "-mcode-readable=SETTING\tSpecify when instructions are allowed to access code"
-msgstr ""
+msgstr "-mcode-readable=THIẾT_LẬP\tGhi rõ khi nào câu lệnh có quyền truy cập đến mã"
 
 #: config/mips/mips.opt:59
 msgid "Use branch-and-break sequences to check for integer divide by zero"
-msgstr ""
+msgstr "Sử dụng dãy tạo-nhánh-và-ngắt (branch-and-break) để kiểm tra có số nguyên chia cho số không"
 
 #: config/mips/mips.opt:63
 msgid "Use trap instructions to check for integer divide by zero"
-msgstr ""
+msgstr "Sử dụng câu lệnh bẫy để kiểm tra có số nguyên chia cho số không"
 
 #: config/mips/mips.opt:67
 msgid "Allow the use of MDMX instructions"
-msgstr ""
+msgstr "Cho phép sử dụng câu lệnh MDMX"
 
 #: config/mips/mips.opt:71
 msgid "Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations"
-msgstr ""
+msgstr "Cho phép câu lệnh điểm phù động phần cứng bao quát thao tác cả hai 32-bit và 64-bit"
 
 #: config/mips/mips.opt:75
 msgid "Use MIPS-DSP instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh MIPS-DSP"
 
 #: config/mips/mips.opt:79
 msgid "Use MIPS-DSP REV 2 instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh MIPS-DSP REV 2"
 
 #: config/mips/mips.opt:89 config/mep/mep.opt:80
 msgid "Use big-endian byte order"
-msgstr ""
+msgstr "Sử dụng thứ tự byte về cuối lớn"
 
 #: config/mips/mips.opt:93 config/mep/mep.opt:84
 msgid "Use little-endian byte order"
-msgstr ""
+msgstr "Sử dụng thứ tự byte về cuối nhỏ"
 
 #: config/mips/mips.opt:97 config/iq2000/iq2000.opt:31
 msgid "Use ROM instead of RAM"
-msgstr ""
+msgstr "Sử dụng ROM thay cho RAM"
 
 #: config/mips/mips.opt:101
 msgid "Use NewABI-style %reloc() assembly operators"
-msgstr ""
+msgstr "Sử dụng toán tử dịch mã số %reloc() kiểu NewABI"
 
 #: config/mips/mips.opt:105
 msgid "Use -G for data that is not defined by the current object"
-msgstr ""
+msgstr "Sử dụng « -G » cho dữ liệu không phải được xác định bởi đối tượng hiện thời"
 
 #: config/mips/mips.opt:109
 msgid "Work around certain R4000 errata"
-msgstr ""
+msgstr "Khắc phục một số lỗi R4000 nào đó"
 
 #: config/mips/mips.opt:113
 msgid "Work around certain R4400 errata"
-msgstr ""
+msgstr "Khắc phục một số lỗi R4400 nào đó"
 
 #: config/mips/mips.opt:117
 msgid "Work around certain R10000 errata"
-msgstr ""
+msgstr "Khắc phục một số lỗi R10000 nào đó"
 
 #: config/mips/mips.opt:121
 msgid "Work around errata for early SB-1 revision 2 cores"
-msgstr ""
+msgstr "Khắc phục một những lỗi cho các lõi SB-1 bản sửa đổi 2 sớm"
 
 #: config/mips/mips.opt:125
 msgid "Work around certain VR4120 errata"
-msgstr ""
+msgstr "Khắc phục một số lỗi VR4120 nào đó"
 
 #: config/mips/mips.opt:129
 msgid "Work around VR4130 mflo/mfhi errata"
-msgstr ""
+msgstr "Khắc phục một số lỗi mflo/mfhi VR4130 nào đó"
 
 #: config/mips/mips.opt:133
 msgid "Work around an early 4300 hardware bug"
-msgstr ""
+msgstr "Khắc phục một lỗi phần cứng 4300 sớm"
 
 #: config/mips/mips.opt:137
 msgid "FP exceptions are enabled"
-msgstr ""
+msgstr "Đã bật ngoại lệ điểm phù động"
 
 #: config/mips/mips.opt:141
 msgid "Use 32-bit floating-point registers"
-msgstr ""
+msgstr "Sử dụng thanh ghi điểm phù động 32-bit"
 
 #: config/mips/mips.opt:145
 msgid "Use 64-bit floating-point registers"
-msgstr ""
+msgstr "Sử dụng thanh ghi điểm phù động 64-bit"
 
 #: config/mips/mips.opt:149
 msgid "-mflush-func=FUNC\tUse FUNC to flush the cache before calling stack trampolines"
-msgstr ""
+msgstr "-mflush-func=HÀM\tSử dụng hàm này để chuyển hết vùng nhớ tạm ra ngoài trước khi gọi trampoline đống"
 
 #: config/mips/mips.opt:153
 msgid "Generate floating-point multiply-add instructions"
-msgstr ""
+msgstr "Tạo ra câu lệnh nhân-cộng loại điểm phù động"
 
 #: config/mips/mips.opt:157
 msgid "Use 32-bit general registers"
-msgstr ""
+msgstr "Sử dụng thanh ghi chung 32-bit"
 
 #: config/mips/mips.opt:161
 msgid "Use 64-bit general registers"
-msgstr ""
+msgstr "Sử dụng thanh ghi chung 64-bit"
 
 #: config/mips/mips.opt:165
 msgid "Use GP-relative addressing to access small data"
-msgstr ""
+msgstr "Sử dụng chức năng đặt địa chỉ tương đối với GP để truy cập đến dữ liệu nhỏ"
 
 #: config/mips/mips.opt:169
 msgid "When generating -mabicalls code, allow executables to use PLTs and copy relocations"
-msgstr ""
+msgstr "Khi tạo ra mãn « -mabicalls » thì cho phép tập tin thực thi sử dụng PLT và sao chép sự định vị lại"
 
 #: config/mips/mips.opt:173
 msgid "Allow the use of hardware floating-point ABI and instructions"
-msgstr ""
+msgstr "Cho phép sử dụng ABI và các câu lệnh loại điểm phù động phần cứng"
 
 #: config/mips/mips.opt:177
 msgid "Generate code that can be safely linked with MIPS16 code."
-msgstr ""
+msgstr "Tạo ra mã có thể được liên kết an toàn với mã MIPS16."
 
 #: config/mips/mips.opt:181
 msgid "-mipsN\tGenerate code for ISA level N"
-msgstr ""
+msgstr "-mipsSỐ\tTạo ra mã cho cấp ISA SỐ"
 
 #: config/mips/mips.opt:185
 msgid "Generate MIPS16 code"
-msgstr ""
+msgstr "Tạo ra mã MIPS16"
 
 #: config/mips/mips.opt:189
 msgid "Use MIPS-3D instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh MIPS-3D"
 
 #: config/mips/mips.opt:193
 msgid "Use ll, sc and sync instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh ll, sc và sync"
 
 #: config/mips/mips.opt:197
 msgid "Use -G for object-local data"
-msgstr ""
+msgstr "Sử dụng « -G » cho dữ liệu cục bộ với đối tượng"
 
 #: config/mips/mips.opt:201
 msgid "Use indirect calls"
-msgstr ""
+msgstr "Sử dụng cuộc gọi gián tiếp"
 
 #: config/mips/mips.opt:205
 msgid "Use a 32-bit long type"
-msgstr ""
+msgstr "Sử dụng một loại dài 32-bit"
 
 #: config/mips/mips.opt:209
 msgid "Use a 64-bit long type"
-msgstr ""
+msgstr "Sử dụng một loại dài 64-bit"
 
 #: config/mips/mips.opt:213
 msgid "Pass the address of the ra save location to _mcount in $12"
-msgstr ""
+msgstr "Gửi địa chỉ của vị trí lưu « ra » cho « _mcount » trong $12"
 
 #: config/mips/mips.opt:217
 msgid "Don't optimize block moves"
-msgstr ""
+msgstr "Đừng tối ưu hoá sự di chuyển khối"
 
 #: config/mips/mips.opt:221
 msgid "Use the mips-tfile postpass"
-msgstr ""
+msgstr "Sử dụng postpass loại mips-tfile"
 
 #: config/mips/mips.opt:225
 msgid "Allow the use of MT instructions"
-msgstr ""
+msgstr "Cho phép sử dụng câu lệnh MT"
 
 #: config/mips/mips.opt:229
 msgid "Do not use a cache-flushing function before calling stack trampolines"
-msgstr ""
+msgstr "Đừng sử dụng một hàm chuyển hết vùng nhớ tạm ra ngoài trước khi gọi trampoline stack"
 
 #: config/mips/mips.opt:233
 msgid "Do not use MDMX instructions"
-msgstr ""
+msgstr "Đừng sử dụng câu lệnh MDMX"
 
 #: config/mips/mips.opt:237
 msgid "Generate normal-mode code"
-msgstr ""
+msgstr "Tạo ra mã có chế độ thông thường"
 
 #: config/mips/mips.opt:241
 msgid "Do not use MIPS-3D instructions"
-msgstr ""
+msgstr "Đừng sử dụng câu lệnh MIPS-3D"
 
 #: config/mips/mips.opt:245
 msgid "Use paired-single floating-point instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh điểm phù động đôi-đơn"
 
 #: config/mips/mips.opt:249
 msgid "-mr10k-cache-barrier=SETTING\tSpecify when r10k cache barriers should be inserted"
-msgstr ""
+msgstr "-mr10k-cache-barrier=THIẾT_LẬP\tGhi rõ khi nào nên chèn rào cản vùng nhớ tạm r10k"
 
 #: config/mips/mips.opt:253
 msgid "Try to allow the linker to turn PIC calls into direct calls"
-msgstr ""
+msgstr "Thử cho phép bộ liên kết chuyển đổi cuộc gọi PIC sang cuộc gọi trực tiếp"
 
 #: config/mips/mips.opt:257
 msgid "When generating -mabicalls code, make the code suitable for use in shared libraries"
-msgstr ""
+msgstr "Khi tạo ra mã « -mabicalls », làm cho mã thích hợp với sử dụng trong thư viện dùng chung"
 
 #: config/mips/mips.opt:261
 msgid "Restrict the use of hardware floating-point instructions to 32-bit operations"
-msgstr ""
+msgstr "Hạn chế sử dụng câu lệnh điểm phù động phần cứng thành thao tác 32-bit"
 
 #: config/mips/mips.opt:265
 msgid "Use SmartMIPS instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh SmartMIPS"
 
 #: config/mips/mips.opt:269
 msgid "Prevent the use of all hardware floating-point instructions"
-msgstr ""
+msgstr "Ngăn cản sử dụng câu lệnh nào có loại điểm phù động phần cứng"
 
 #: config/mips/mips.opt:273
 msgid "Optimize lui/addiu address loads"
-msgstr ""
+msgstr "Tối ưu hoá việc nạp địa chỉ lui/addiu"
 
 #: config/mips/mips.opt:277
 msgid "Assume all symbols have 32-bit values"
-msgstr ""
+msgstr "Giả sử là mọi ký hiệu đều có giá trị 32-bit"
 
 #: config/mips/mips.opt:281
 msgid "Use synci instruction to invalidate i-cache"
-msgstr ""
+msgstr "Sử dụng câu lệnh synci để làm mất hiệu lực i-cache"
 
 #: config/mips/mips.opt:285
 msgid "-mtune=PROCESSOR\tOptimize the output for PROCESSOR"
-msgstr ""
+msgstr "-mtune=BỘ_XỬ_LÝ\tTối ưu hoá kết xuất cho bộ xử lý này"
 
 #: config/mips/mips.opt:289 config/iq2000/iq2000.opt:44
 msgid "Put uninitialized constants in ROM (needs -membedded-data)"
-msgstr ""
+msgstr "Để vào ROM các hằng số chưa sơ khởi (yêu cầu « -membedded-data »)"
 
 #: config/mips/mips.opt:293
 msgid "Perform VR4130-specific alignment optimizations"
-msgstr ""
+msgstr "Tối ưu hoá sự xếp hàng một cách đặc trưng cho VR4130"
 
 #: config/mips/mips.opt:297
 msgid "Lift restrictions on GOT size"
-msgstr ""
+msgstr "Bỏ giới hạn về kích cỡ GOT"
 
 #: config/mips/sdemtk.opt:23
 msgid "Prevent the use of all floating-point operations"
-msgstr ""
+msgstr "Ngăn cản sử dụng câu lệnh nào loại điểm phù động"
 
 #: config/fr30/fr30.opt:23
 msgid "Assume small address space"
-msgstr ""
+msgstr "Giả sử là có một vùng địa chỉ nhỏ"
 
 #: config/m68hc11/m68hc11.opt:23 config/m68hc11/m68hc11.opt:31
 msgid "Compile for a 68HC11"
-msgstr ""
+msgstr "Biên dịch cho một 68HC11"
 
 #: config/m68hc11/m68hc11.opt:27 config/m68hc11/m68hc11.opt:35
 msgid "Compile for a 68HC12"
-msgstr ""
+msgstr "Biên dịch cho một 68HC12"
 
 #: config/m68hc11/m68hc11.opt:41 config/m68hc11/m68hc11.opt:45
 msgid "Compile for a 68HCS12"
-msgstr ""
+msgstr "Biên dịch cho một 68HCS12"
 
 #: config/m68hc11/m68hc11.opt:49
 msgid "Auto pre/post decrement increment allowed"
-msgstr ""
+msgstr "Cho phép tự động tiền/hậu giảm/tăng dần"
 
 #: config/m68hc11/m68hc11.opt:53
 msgid "Min/max instructions allowed"
-msgstr ""
+msgstr "Cho phép câu lệnh tối đa/thiểu"
 
 #: config/m68hc11/m68hc11.opt:57
 msgid "Use call and rtc for function calls and returns"
-msgstr ""
+msgstr "Sử dụng call và rtc cho cuộc gọi và cuộc trả lại của hàm"
 
 #: config/m68hc11/m68hc11.opt:61
 msgid "Auto pre/post decrement increment not allowed"
-msgstr ""
+msgstr "Không cho phép tự động tiền/hậu tăng/giảm dần"
 
 #: config/m68hc11/m68hc11.opt:65
 msgid "Use jsr and rts for function calls and returns"
-msgstr ""
+msgstr "Sử dụng jsr và rts cho cuộc gọi và cuộc trả lại của hàm"
 
 #: config/m68hc11/m68hc11.opt:69
 msgid "Min/max instructions not allowed"
-msgstr ""
+msgstr "Không cho phép câu lệnh tối đa/thiểu"
 
 #: config/m68hc11/m68hc11.opt:73
 msgid "Use direct addressing mode for soft registers"
-msgstr ""
+msgstr "Sử dụng chế độ đặt địa chỉ trực tiếp cho thanh ghi mềm"
 
 #: config/m68hc11/m68hc11.opt:77
 msgid "Compile with 32-bit integer mode"
-msgstr ""
+msgstr "Biên dịch với chế độ số nguyên 32-bit"
 
 #: config/m68hc11/m68hc11.opt:82
 msgid "Specify the register allocation order"
-msgstr ""
+msgstr "Ghi rõ thứ tự cấp phát thanh ghi"
 
 #: config/m68hc11/m68hc11.opt:86
 msgid "Do not use direct addressing mode for soft registers"
-msgstr ""
+msgstr "Đừng sử dụng chế độ đặt địa chỉ trực tiếp cho thanh ghi mềm"
 
 #: config/m68hc11/m68hc11.opt:90
 msgid "Compile with 16-bit integer mode"
-msgstr ""
+msgstr "Biên dịch với chế độ số nguyên 16-bit"
 
 #: config/m68hc11/m68hc11.opt:94
 msgid "Indicate the number of soft registers available"
-msgstr ""
+msgstr "Ngụ ý số các thanh ghi mềm còn sẵn sàng"
 
 #: config/vax/vax.opt:23 config/vax/vax.opt:27
 msgid "Target DFLOAT double precision code"
-msgstr ""
+msgstr "Đặt mục đích là mã chính xác đôi DFLOAT"
 
 #: config/vax/vax.opt:31 config/vax/vax.opt:35
 msgid "Generate GFLOAT double precision code"
-msgstr ""
+msgstr "Tạo ra mã chính xác đôi GFLOAT"
 
 #: config/vax/vax.opt:39
 msgid "Generate code for GNU assembler (gas)"
-msgstr ""
+msgstr "Tạo ra mã cho bộ dịch mã số GNU (gas)"
 
 #: config/vax/vax.opt:43
 msgid "Generate code for UNIX assembler"
-msgstr ""
+msgstr "Tạo ra mã cho bộ dịch mã số UNIX"
 
 #: config/vax/vax.opt:47
 msgid "Use VAXC structure conventions"
-msgstr ""
+msgstr "Sử dụng quy ước cấu trúc VAXC"
 
 #: config/vax/vax.opt:51
 msgid "Use new adddi3/subdi3 patterns"
-msgstr ""
+msgstr "Sử dụng các mẫu adddi3/subdi3 mới"
 
 #: config/cris/linux.opt:27
 msgid "Together with -fpic and -fPIC, do not use GOTPLT references"
-msgstr ""
+msgstr "Đừng sử dụng tham chiếu GOTPLT cùng với « -fpic » hoặc « -fPIC »"
 
 #: config/cris/cris.opt:45
 msgid "Work around bug in multiplication instruction"
-msgstr ""
+msgstr "Khắc phục lỗi trong câu lệnh nhân lên"
 
 #: config/cris/cris.opt:51
 msgid "Compile for ETRAX 4 (CRIS v3)"
-msgstr ""
+msgstr "Biên dịch cho ETRAX 4 (CRIS v3)"
 
 #: config/cris/cris.opt:56
 msgid "Compile for ETRAX 100 (CRIS v8)"
-msgstr ""
+msgstr "Biên dịch cho ETRAX 100 (CRIS v8)"
 
 #: config/cris/cris.opt:64
 msgid "Emit verbose debug information in assembly code"
-msgstr ""
+msgstr "Xuất nhiều thông tin gỡ rối trong mã dịch mã số"
 
 #: config/cris/cris.opt:71
 msgid "Do not use condition codes from normal instructions"
-msgstr ""
+msgstr "Đừng sử dụng mã điều kiện từ câu lệnh thông thường"
 
 #: config/cris/cris.opt:80
 msgid "Do not emit addressing modes with side-effect assignment"
-msgstr ""
+msgstr "Đừng xuất chế độ đặt địa chỉ với sự gán hiệu ứng khác"
 
 #: config/cris/cris.opt:89
 msgid "Do not tune stack alignment"
-msgstr ""
+msgstr "Đừng điều chỉnh sự xếp hàng đống"
 
 #: config/cris/cris.opt:98
 msgid "Do not tune writable data alignment"
-msgstr ""
+msgstr "Đừng điều chỉnh sự xếp hàng dữ liệu có thể ghi được"
 
 #: config/cris/cris.opt:107
 msgid "Do not tune code and read-only data alignment"
-msgstr ""
+msgstr "Đừng điều chỉnh sự xếp hàng mã và dữ liệu chỉ-đọc"
 
 #: config/cris/cris.opt:116
 msgid "Align code and data to 32 bits"
-msgstr ""
+msgstr "Xếp hàng mã và dữ liệu theo 32-bit"
 
 #: config/cris/cris.opt:133
 msgid "Don't align items in code or data"
-msgstr ""
+msgstr "Đừng xếp hàng các mục trong mã hoặc dữ liệu"
 
 #: config/cris/cris.opt:142
 msgid "Do not emit function prologue or epilogue"
-msgstr ""
+msgstr "Đừng xuất đoạn mở/đóng hàm"
 
 #: config/cris/cris.opt:149
 msgid "Use the most feature-enabling options allowed by other options"
-msgstr ""
+msgstr "Sử dụng những tuỳ chọn hiệu lực nhiều tính năng nhất tùy theo giới hạn của tuỳ chọn khác"
 
 #: config/cris/cris.opt:158
 msgid "Override -mbest-lib-options"
-msgstr ""
+msgstr "Ghi đè lên « -mbest-lib-options »"
 
 #: config/cris/cris.opt:165
 msgid "-march=ARCH\tGenerate code for the specified chip or CPU version"
-msgstr ""
+msgstr "-march=KIẾN_TRÚC\tTạo ra mã cho phiến tinh thể hoặc CPU đưa ra"
 
 #: config/cris/cris.opt:169
 msgid "-mtune=ARCH\tTune alignment for the specified chip or CPU version"
-msgstr ""
+msgstr "-mtune=KIẾN_TRÚC\tĐiều chỉnh sự xếp hàng cho phiến tinh thể hoặc CPU đưa ra"
 
 #: config/cris/cris.opt:173
 msgid "-mmax-stackframe=SIZE\tWarn when a stackframe is larger than the specified size"
-msgstr ""
+msgstr "-mmax-stackframe=KÍCH_CỠ\tCảnh báo khung đống nào vượt quá kích cỡ này"
 
 #: config/h8300/h8300.opt:23
 msgid "Generate H8S code"
-msgstr ""
+msgstr "Tạo ra mã H8S"
 
 #: config/h8300/h8300.opt:27
 msgid "Generate H8SX code"
-msgstr ""
+msgstr "Tạo ra mã H8SX"
 
 #: config/h8300/h8300.opt:31
 msgid "Generate H8S/2600 code"
-msgstr ""
+msgstr "Tạo ra mã H8S/2600"
 
 #: config/h8300/h8300.opt:35
 msgid "Make integers 32 bits wide"
-msgstr ""
+msgstr "Làm cho số nguyên có chiều rộng 32 bit"
 
 #: config/h8300/h8300.opt:42
 msgid "Use registers for argument passing"
-msgstr ""
+msgstr "Sử dụng thanh ghi để gửi đối số qua"
 
 #: config/h8300/h8300.opt:46
 msgid "Consider access to byte sized memory slow"
-msgstr ""
+msgstr "Tính là truy cập chậm đến vùng nhớ tạm theo byte"
 
 #: config/h8300/h8300.opt:50
 msgid "Enable linker relaxing"
-msgstr ""
+msgstr "Hiệu lực làm yếu bộ liên kết"
 
 #: config/h8300/h8300.opt:54
 msgid "Generate H8/300H code"
-msgstr ""
+msgstr "Tạo ra mã H8/300H"
 
 #: config/h8300/h8300.opt:58
 msgid "Enable the normal mode"
-msgstr ""
+msgstr "Hiệu lực chế độ thông thường"
 
 #: config/h8300/h8300.opt:62
 msgid "Use H8/300 alignment rules"
-msgstr ""
+msgstr "Sử dụng các quy tắc xếp hàng H8/300"
 
 #: config/v850/v850.opt:23
 msgid "Use registers r2 and r5"
-msgstr ""
+msgstr "Sử dụng những thanh ghi r2 và r5"
 
 #: config/v850/v850.opt:27
 msgid "Use 4 byte entries in switch tables"
-msgstr ""
+msgstr "Sử dụng mục nhập 4-byte trong bảng cái chuyển"
 
 #: config/v850/v850.opt:31
 msgid "Enable backend debugging"
-msgstr ""
+msgstr "Hiệu lực chức năng gỡ rối hậu phương"
 
 #: config/v850/v850.opt:35
 msgid "Do not use the callt instruction"
-msgstr ""
+msgstr "Đừng sử dụng câu lệnh « callt »"
 
 #: config/v850/v850.opt:39
 msgid "Reuse r30 on a per function basis"
-msgstr ""
+msgstr "Sử dụng lại r30 một cách từng hàm"
 
 #: config/v850/v850.opt:43
 msgid "Support Green Hills ABI"
-msgstr ""
+msgstr "Hỗ trợ ABI Green Hills"
 
 #: config/v850/v850.opt:47
 msgid "Prohibit PC relative function calls"
-msgstr ""
+msgstr "Cấm cuộc gọi hàm tương đối với PC"
 
 #: config/v850/v850.opt:51
 msgid "Use stubs for function prologues"
-msgstr ""
+msgstr "Sử dụng mẩu cho đoạn mở đầu hàm"
 
 #: config/v850/v850.opt:55
 msgid "Set the max size of data eligible for the SDA area"
-msgstr ""
+msgstr "Lập kích cỡ tối đa của dữ liệu thích hợp với vùng SDA"
 
 #: config/v850/v850.opt:59
 msgid "Enable the use of the short load instructions"
-msgstr ""
+msgstr "Hiệu lực sử dụng câu lệnh nạp ngắn"
 
 #: config/v850/v850.opt:63
 msgid "Same as: -mep -mprolog-function"
-msgstr ""
+msgstr "Bằng: -mep -mprolog-function"
 
 #: config/v850/v850.opt:67
 msgid "Set the max size of data eligible for the TDA area"
-msgstr ""
+msgstr "Lập kích cỡ tối đa của dữ liệu thích hợp với vùng TDA"
 
 #: config/v850/v850.opt:71
 msgid "Enforce strict alignment"
-msgstr ""
+msgstr "Ép buộc sự xếp hàng ngặt"
 
 #: config/v850/v850.opt:78
 msgid "Compile for the v850 processor"
-msgstr ""
+msgstr "Biên dịch cho bộ xử lý v850"
 
 #: config/v850/v850.opt:82
 msgid "Compile for the v850e processor"
-msgstr ""
+msgstr "Biên dịch cho bộ xử lý v850e"
 
 #: config/v850/v850.opt:86
 msgid "Compile for the v850e1 processor"
-msgstr ""
+msgstr "Biên dịch cho bộ xử lý v850e1"
 
 #: config/v850/v850.opt:90
 msgid "Set the max size of data eligible for the ZDA area"
-msgstr ""
+msgstr "Lập kích cỡ tối đa của dữ liệu thích hợp với vùng ZDA"
 
 #: config/mmix/mmix.opt:24
 msgid "For intrinsics library: pass all parameters in registers"
-msgstr ""
+msgstr "Cho thư viện các bản thực chất: gửi mọi tham số qua thanh ghi"
 
 #: config/mmix/mmix.opt:28
 msgid "Use register stack for parameters and return value"
-msgstr ""
+msgstr "Sử dụng đống thanh ghi cho tham số và giá trị trả lại"
 
 #: config/mmix/mmix.opt:32
 msgid "Use call-clobbered registers for parameters and return value"
-msgstr ""
+msgstr "Sử dụng thanh ghi bị cuộc gọi ghi đè cho tham số và giá trị trả lại"
 
 #: config/mmix/mmix.opt:37
 msgid "Use epsilon-respecting floating point compare instructions"
-msgstr ""
+msgstr "Sử dụng câu lệnh so sánh loại điểm phù động tùy theo épxilông"
 
 #: config/mmix/mmix.opt:41
 msgid "Use zero-extending memory loads, not sign-extending ones"
-msgstr ""
+msgstr "Sử dụng việc nạp vùng nhớ loại mở rộng số không, không phải việc mở rộng ký hiệu"
 
 #: config/mmix/mmix.opt:45
 msgid "Generate divide results with reminder having the same sign as the divisor (not the dividend)"
-msgstr ""
+msgstr "Tạo ra kết quả chia có phần dư với cùng một ký hiệu (-/+) với số chia (không phải với số bị chia)"
 
 #: config/mmix/mmix.opt:49
 msgid "Prepend global symbols with \":\" (for use with PREFIX)"
-msgstr ""
+msgstr "Thêm dấu hai chấm « : » vào trước ký hiệu toàn cục (để sử dụng với TIỀN_TỐ)"
 
 #: config/mmix/mmix.opt:53
 msgid "Do not provide a default start-address 0x100 of the program"
-msgstr ""
+msgstr "Đừng cung cấp một địa chỉ bắt đầu mặc định 0x100 của chương trình"
 
 #: config/mmix/mmix.opt:57
 msgid "Link to emit program in ELF format (rather than mmo)"
-msgstr ""
+msgstr "Liên kết tới chương trình xuất theo định dạng ELF (hơn là mmo)"
 
 #: config/mmix/mmix.opt:61
 msgid "Use P-mnemonics for branches statically predicted as taken"
-msgstr ""
+msgstr "Sử dụng phím gới nhớ P cho nhánh dự đoán tĩnh là không còn sẵn sàng"
 
 #: config/mmix/mmix.opt:65
 msgid "Don't use P-mnemonics for branches"
-msgstr ""
+msgstr "Đừng sử dụng phím gới nhớ P cho nhánh"
 
 #: config/mmix/mmix.opt:79
 msgid "Use addresses that allocate global registers"
-msgstr ""
+msgstr "Sử dụng địa chỉ mà cấp phát thanh ghi toàn cục"
 
 #: config/mmix/mmix.opt:83
 msgid "Do not use addresses that allocate global registers"
-msgstr ""
+msgstr "Đừng sử dụng địa chỉ mà cấp phát thanh ghi toàn cục"
 
 #: config/mmix/mmix.opt:87
 msgid "Generate a single exit point for each function"
-msgstr ""
+msgstr "Tạo ra một điểm ra khỏi riêng lẻ cho mỗi hàm"
 
 #: config/mmix/mmix.opt:91
 msgid "Do not generate a single exit point for each function"
-msgstr ""
+msgstr "Đừng sạo ra một điểm ra khỏi riêng lẻ cho mỗi hàm"
 
 #: config/mmix/mmix.opt:95
 msgid "Set start-address of the program"
-msgstr ""
+msgstr "Lập địa chỉ bắt đầu của chương trình"
 
 #: config/mmix/mmix.opt:99
 msgid "Set start-address of data"
-msgstr ""
+msgstr "Lập địa chỉ bắt đầu của dữ liệu"
 
 #: config/iq2000/iq2000.opt:23
 msgid "Specify CPU for code generation purposes"
-msgstr ""
+msgstr "Ghi rõ CPU cho mục đích tạo ra mã"
 
 #: config/iq2000/iq2000.opt:27
 msgid "Specify CPU for scheduling purposes"
-msgstr ""
+msgstr "Ghi rõ CPU cho mục đích định thời"
 
 #: config/iq2000/iq2000.opt:35
 msgid "Use GP relative sdata/sbss sections"
-msgstr ""
+msgstr "Sử dụng phần sdata/sbss tương đối với GP"
 
 #: config/iq2000/iq2000.opt:40
 msgid "No default crt0.o"
-msgstr ""
+msgstr "Không có « crt0.o » mặc định"
 
 #: config/bfin/bfin.opt:23 config/mep/mep.opt:138
 msgid "Use simulator runtime"
-msgstr ""
+msgstr "Sử dụng thời gian chạy của bộ mô phỏng"
 
 #: config/bfin/bfin.opt:31
 msgid "Omit frame pointer for leaf functions"
-msgstr ""
+msgstr "Bỏ sót hàm trỏ khung cho hàm lá"
 
 #: config/bfin/bfin.opt:35
 msgid "Program is entirely located in low 64k of memory"
-msgstr ""
+msgstr "Chương trình nằm hoàn toàn trong 64k thấp của vùng nhớ"
 
 #: config/bfin/bfin.opt:39
 msgid "Work around a hardware anomaly by adding a number of NOPs before a"
-msgstr ""
+msgstr "Khắc phục một sự dị thường phần cứng bằng cách thêm một số NOP vào trước nó"
 
 #: config/bfin/bfin.opt:44
 msgid "Avoid speculative loads to work around a hardware anomaly."
-msgstr ""
+msgstr "Tránh sự nạp suy đoán để khắc phục một sự dị thường loại phần cứng."
 
 #: config/bfin/bfin.opt:48
 msgid "Enabled ID based shared library"
-msgstr ""
+msgstr "Hiệu lực thư viện dùng chung dựa vào mã số (ID)"
 
 #: config/bfin/bfin.opt:52
 msgid "Generate code that won't be linked against any other ID shared libraries,"
-msgstr ""
+msgstr "Tạo ra mã sẽ không được liên kết đối với thư viện dùng chung mã số khác nào,"
 
 #: config/bfin/bfin.opt:65
 msgid "Avoid generating pc-relative calls; use indirection"
-msgstr ""
+msgstr "Tránh sự tạo ra cuộc gọi tương đối với PC; sử dụng hành động gián tiếp"
 
 #: config/bfin/bfin.opt:69
 msgid "Link with the fast floating-point library"
-msgstr ""
+msgstr "Liên kết với thư viện điểm phù động nhanh"
 
 #: config/bfin/bfin.opt:81
 msgid "Do stack checking using bounds in L1 scratch memory"
-msgstr ""
+msgstr "Kiểm tra đống dùng biên giới trong vùng nhớ nháp cấp 1"
 
 #: config/bfin/bfin.opt:85
 msgid "Enable multicore support"
-msgstr ""
+msgstr "Hiệu lực khả năng hỗ trợ đa lõi"
 
 #: config/bfin/bfin.opt:89
 msgid "Build for Core A"
-msgstr ""
+msgstr "Xây dựng cho Lõi A"
 
 #: config/bfin/bfin.opt:93
 msgid "Build for Core B"
-msgstr ""
+msgstr "Xây dựng cho Lõi B"
 
 #: config/bfin/bfin.opt:97
 msgid "Build for SDRAM"
-msgstr ""
+msgstr "Xây dựng cho SDRAM"
 
 #: config/bfin/bfin.opt:101
 msgid "Assume ICPLBs are enabled at runtime."
-msgstr ""
+msgstr "Giả sử là các ICPLB được hiệu lực vào lúc chạy."
 
 #: config/picochip/picochip.opt:23
 msgid "Specify which type of AE to target. This option sets the mul-type and byte-access."
-msgstr ""
+msgstr "Ghi rõ có nên đặt mục đích là loại AE nào. Tuỳ chọn này cũng lập mul-type (đa loại) và byte-access (truy cập từng byte)."
 
 #: config/picochip/picochip.opt:27
 msgid "Specify which type of multiplication to use. Can be mem, mac or none."
-msgstr ""
+msgstr "Ghi rõ có nên sử dụng cách nhân lên nào: mem, mac, hoặc none (không có)."
 
 #: config/picochip/picochip.opt:31
 msgid "Specify whether the byte access instructions should be used. Enabled by default."
-msgstr ""
+msgstr "Ghi rõ có nên sử dụng các câu lệnh truy cập từng byte hay không. (Tùy chọn này được hiệu lực theo mặc định.)"
 
 #: config/picochip/picochip.opt:35
 msgid "Enable debug output to be generated."
-msgstr ""
+msgstr "Hiệu lực chức năng tạo ra kết xuất gỡ rối."
 
 #: config/picochip/picochip.opt:39
 msgid "Allow a symbol value to be used as an immediate value in an instruction."
-msgstr ""
+msgstr "Cho phép sử dụng một giá trị ký hiệu dưới dạng một giá trị lập tức trong một câu lệnh."
 
 #: config/picochip/picochip.opt:43
 msgid "Generate warnings when inefficient code is known to be generated."
-msgstr ""
+msgstr "Tạo ra cảnh báo khi thấy là mã thiếu khả năng bị tạo ra."
 
 #: config/vxworks.opt:24
 msgid "Assume the VxWorks RTP environment"
-msgstr ""
+msgstr "Giả sử có môi trường RTP VxWorks"
 
 #: config/vxworks.opt:31
 msgid "Assume the VxWorks vThreads environment"
-msgstr ""
+msgstr "Giả sử có môi trường vThreads VxWorks"
 
 #: config/darwin.opt:23
 msgid "Generate code suitable for fast turn around debugging"
-msgstr ""
+msgstr "Tạo ra mã thích hợp với chức năng gỡ rối trả kết quả nhanh"
 
 #: config/darwin.opt:31
 msgid "The earliest MacOS X version on which this program will run"
-msgstr ""
+msgstr "Phiên bản Mac OSX cũ nhất trên đó chương trình này chạy được"
 
 #: config/darwin.opt:35
 msgid "Set sizeof(bool) to 1"
-msgstr ""
+msgstr "Lập kích cỡ biểu thức bun thành 1"
 
 #: config/darwin.opt:39
 msgid "Generate code for darwin loadable kernel extensions"
-msgstr ""
+msgstr "Tạo ra mã cho phần mở rộng hạt nhân có thể nạp được với Darwin"
 
 #: config/darwin.opt:43
 msgid "Generate code for the kernel or loadable kernel extensions"
-msgstr ""
+msgstr "Tạo ra mã cho hạt nhân hoặc phần mở rộng hạt nhân có thể nạp được"
 
 #: config/darwin.opt:47
 msgid "-iframework <dir>\tAdd <dir> to the end of the system framework include path"
-msgstr ""
+msgstr "-iframework <thư_mục>\tPhụ thêm thư mục này vào đường dẫn bao gồm khuôn khổ hệ thống"
 
 #: config/lynx.opt:23
 msgid "Support legacy multi-threading"
-msgstr ""
+msgstr "Hỗ trợ chức năng đa luồng thừa tự"
 
 #: config/lynx.opt:27
 msgid "Use shared libraries"
-msgstr ""
+msgstr "Sử dụng thư viện dùng chung"
 
 #: config/lynx.opt:31
 msgid "Support multi-threading"
-msgstr ""
+msgstr "Hỗ trợ chức năng đa luồng"
 
 #: config/score/score.opt:31
 msgid "Disable bcnz instruction"
-msgstr ""
+msgstr "Tắt câu lệnh bcnz"
 
 #: config/score/score.opt:35
 msgid "Enable unaligned load/store instruction"
-msgstr ""
+msgstr "Hiệu lực câu lệnh nạp/lưu chưa xếp hàng"
 
 #: config/score/score.opt:39
 msgid "Support SCORE 5 ISA"
-msgstr ""
+msgstr "Hỗ trợ SCORE 5 ISA"
 
 #: config/score/score.opt:43
 msgid "Support SCORE 5U ISA"
-msgstr ""
+msgstr "Hỗ trợ SCORE 5U ISA"
 
 #: config/score/score.opt:47
 msgid "Support SCORE 7 ISA"
-msgstr ""
+msgstr "Hỗ trợ SCORE 7 ISA"
 
 #: config/score/score.opt:51
 msgid "Support SCORE 7D ISA"
-msgstr ""
+msgstr "Hỗ trợ SCORE 7D ISA"
 
 #: config/score/score.opt:55
 msgid "Support SCORE 3 ISA"
-msgstr ""
+msgstr "Hỗ trợ SCORE 3 ISA"
 
 #: config/score/score.opt:59
 msgid "Support SCORE 3d ISA"
-msgstr ""
+msgstr "Hỗ trợ SCORE 3d ISA"
 
 #: config/linux.opt:24
 msgid "Use GNU libc instead of uClibc"
-msgstr ""
+msgstr "Sử dụng thư viện libc của GNU thay cho uClibc"
 
 #: config/linux.opt:28
 msgid "Use uClibc instead of GNU libc"
-msgstr ""
+msgstr "Sử dụng thư viện uClibc thay cho libc của GNU"
 
 #: config/mep/mep.opt:21
 msgid "Enable absolute difference instructions"
-msgstr ""
+msgstr "Hiệu lực câu lệnh khác biệt tuyệt đối"
 
 #: config/mep/mep.opt:25
 msgid "Enable all optional instructions"
-msgstr ""
+msgstr "Hiệu lực tất cả các câu lệnh vẫn tuỳ chọn"
 
 #: config/mep/mep.opt:29
 msgid "Enable average instructions"
-msgstr ""
+msgstr "Hiệu lực các câu lệnh tính số trung bình"
 
 #: config/mep/mep.opt:33
 msgid "Variables this size and smaller go in the based section. (default 0)"
-msgstr ""
+msgstr "Giá trị có thể lập được có kích cỡ đến số này thì nằm trong phần based (dựa vào). (mặc định là 0)"
 
 #: config/mep/mep.opt:37
 msgid "Enable bit manipulation instructions"
-msgstr ""
+msgstr "Hiệu lực các câu lệnh thao tác bit"
 
 #: config/mep/mep.opt:41
 msgid "Section to put all const variables in (tiny, near, far) (no default)"
 msgstr ""
+"Phần vào đó cần để tất cả các giá trị bất biến có thể lập được (tiny, near, far) (không có giá trị mặc định)\n"
+"tiny\t\trất nhỏ\n"
+"near\t\tgần\n"
+"far\t\txa"
 
 #: config/mep/mep.opt:45
 msgid "Enable clip instructions"
-msgstr ""
+msgstr "Hiệu lực các câu lệnh trích đoạn"
 
 #: config/mep/mep.opt:49
 msgid "Configuration name"
-msgstr ""
+msgstr "Tên cấu hình"
 
 #: config/mep/mep.opt:53
 msgid "Enable MeP Coprocessor"
-msgstr ""
+msgstr "Hiệu lực bộ đồng xử lý MeP"
 
 #: config/mep/mep.opt:57
 msgid "Enable MeP Coprocessor with 32-bit registers"
-msgstr ""
+msgstr "Hiệu lực bộ đồng xử lý MeP với thanh ghi 32-bit"
 
 #: config/mep/mep.opt:61
 msgid "Enable MeP Coprocessor with 64-bit registers"
-msgstr ""
+msgstr "Hiệu lực bộ đồng xử lý MeP với thanh ghi 64-bit"
 
 #: config/mep/mep.opt:65
 msgid "Enable IVC2 scheduling"
-msgstr ""
+msgstr "Hiệu lực chức năng định thời IVC2"
 
 #: config/mep/mep.opt:69
 msgid "Const variables default to the near section"
-msgstr ""
+msgstr "Giá trị bất biến có thể lập được thì có phần mặc định là « near » (gần)"
 
 #: config/mep/mep.opt:76
 msgid "Enable 32-bit divide instructions"
-msgstr ""
+msgstr "Hiệu lực câu lệnh chia loại 32-bit"
 
 #: config/mep/mep.opt:88
 msgid "__io vars are volatile by default"
-msgstr ""
+msgstr "Biến __io thì hay thay đổi theo mặc định"
 
 #: config/mep/mep.opt:92
 msgid "All variables default to the far section"
-msgstr ""
+msgstr "Tất cả các giá trị có thể lập được thì có phần mặc định là « far » (xa)"
 
 #: config/mep/mep.opt:96
 msgid "Enable leading zero instructions"
-msgstr ""
+msgstr "Hiệu lực câu lệnh có số không đi trước"
 
 #: config/mep/mep.opt:103
 msgid "All variables default to the near section"
-msgstr ""
+msgstr "Tất cả các giá trị có thể lập được thì có phần mặc định là « near » (gần)"
 
 #: config/mep/mep.opt:107
 msgid "Enable min/max instructions"
-msgstr ""
+msgstr "Hiệu lực câu lệnh tính số tối đa/thiểu"
 
 #: config/mep/mep.opt:111
 msgid "Enable 32-bit multiply instructions"
-msgstr ""
+msgstr "Hiệu lực câu lệnh nhân lên loại 32-bit"
 
 #: config/mep/mep.opt:115
 msgid "Disable all optional instructions"
-msgstr ""
+msgstr "Tắt tất cả các câu lệnh vẫn tuỳ chọn"
 
 #: config/mep/mep.opt:122
 msgid "Allow gcc to use the repeat/erepeat instructions"
-msgstr ""
+msgstr "Cho phép gcc sử dụng câu lệnh repeat/erepeat"
 
 #: config/mep/mep.opt:126
 msgid "All variables default to the tiny section"
-msgstr ""
+msgstr "Tất cả các giá trị có thể lập được thì có phần mặc định là « tiny » (rất nhỏ)"
 
 #: config/mep/mep.opt:130
 msgid "Enable saturation instructions"
-msgstr ""
+msgstr "Hiệu lực câu lệnh lập trạng thái bão hoà"
 
 #: config/mep/mep.opt:134
 msgid "Use sdram version of runtime"
-msgstr ""
+msgstr "Sử dụng phiên bản sdram của thời gian chạy"
 
 #: config/mep/mep.opt:142
 msgid "Use simulator runtime without vectors"
-msgstr ""
+msgstr "Sử dụng thời gian chạy của bộ mô phỏng mà không có véc-tơ"
 
 #: config/mep/mep.opt:146
 msgid "All functions default to the far section"
-msgstr ""
+msgstr "Tất cả các hàm thì có phần mặc định là « far » (xa)"
 
 #: config/mep/mep.opt:150
 msgid "Variables this size and smaller go in the tiny section. (default 4)"
-msgstr ""
+msgstr "Giá trị có thể lập được có kích cỡ đến số này thì nằm trong phần tiny (rất nhỏ). (mặc định là 4)"
 
 #: config/vms/vms.opt:21
 msgid "Malloc data into P2 space"
-msgstr ""
+msgstr "Malloc dữ liệu vào vùng P2"
 
 #: config/vms/vms.opt:25
 msgid "Set name of main routine for the debugger"
-msgstr ""
+msgstr "Lập tên của hàm chính cho chương trình gỡ rối"
 
 #: config/rx/rx.opt:26
 msgid "Store doubles in 64 bits."
-msgstr ""
+msgstr "Lưu đôi theo 64 bit."
 
 #: config/rx/rx.opt:30
 msgid "Stores doubles in 32 bits.  This is the default."
-msgstr ""
+msgstr "Lưu đôi theo 32 bit. Đây là thiết lập mặc định."
 
 #: config/rx/rx.opt:34
 msgid "Disable the use of RX FPU instructions.  "
-msgstr ""
+msgstr "Tắt khả năng sử dụng câu lệnh điểm phù động RX."
 
 #: config/rx/rx.opt:41
 msgid "Enable the use of RX FPU instructions.  This is the default."
-msgstr ""
+msgstr "Bật khả năng sử dụng câu lệnh điểm phù động RX. Đây là thiết lập mặc định."
 
 #: config/rx/rx.opt:47
 msgid "Specify the target RX cpu type."
-msgstr ""
+msgstr "Ghi rõ loại CPU RX đích."
 
 #: config/rx/rx.opt:51
 msgid "Alias for -mcpu."
-msgstr ""
+msgstr "Bí danh cho « -mcpu »."
 
 #: config/rx/rx.opt:57
 msgid "Data is stored in big-endian format."
-msgstr ""
+msgstr "Dữ liệu được lưu theo định dạng về cuối lớn."
 
 #: config/rx/rx.opt:61
 msgid "Data is stored in little-endian format.  (Default)."
-msgstr ""
+msgstr "Dữ liệu được lưu theo định dạng về cuối nhỏ. (Mặc định)."
 
 #: config/rx/rx.opt:67
 msgid "Maximum size of global and static variables which can be placed into the small data area."
-msgstr ""
+msgstr "Kích cỡ tối đa của biến loại toàn cục và tĩnh mà có thể được để vào vùng dữ liệu nhỏ."
 
 #: config/rx/rx.opt:73
 msgid "Use the simulator runtime."
-msgstr ""
+msgstr "Sử dụng thời gian chạy của bộ mô phỏng."
 
 #: config/rx/rx.opt:79
 msgid "Generate assembler output that is compatible with the Renesas AS100 assembler.  This may restrict some of the compiler's capabilities.  The default is to generate GAS compatable syntax."
-msgstr ""
+msgstr "Tạo ra kết xuất chương trình dịch mã số vẫn thích hợp với chương trình dịch mã số AS100 Renesas. Trường hợp này có thể hạn chế khả năng của bộ biên dịch. Thiết lập mặc định là tạo ra cú pháp tương thích với GAS."
 
 #: config/rx/rx.opt:85
 msgid "Enable linker relaxation."
-msgstr ""
+msgstr "Hiệu lực chức năng làm yếu bộ liên kết."
 
 #: config/rx/rx.opt:91
 msgid "Maximum size in bytes of constant values allowed as operands."
-msgstr ""
+msgstr "Kích cỡ tối đa (theo byte) của giá trị bất biến được phép làm toán hạng."
 
 #: config/rx/rx.opt:97
 msgid "Specifies the number of registers to reserve for interrupt handlers."
-msgstr ""
+msgstr "Ghi rõ số các thanh ghi cần dành riêng cho bộ quản lý tín hiệu gián đoạn."
 
 #: config/rx/rx.opt:103
 msgid "Specifies whether interrupt functions should save and restore the accumulator register."
-msgstr ""
+msgstr "Ghi rõ nếu hàm gián đoạn nên lưu và phục hồi thanh ghi tích lũy hay không."
 
 #: config/lm32/lm32.opt:24
 msgid "Enable multiply instructions"
-msgstr ""
+msgstr "Hiệu lực câu lệnh nhân lên"
 
 #: config/lm32/lm32.opt:28
 msgid "Enable divide and modulus instructions"
-msgstr ""
+msgstr "Hiệu lực câu lệnh chia và câu lệnh tạo giá trị tuyệt đối"
 
 #: config/lm32/lm32.opt:32
 msgid "Enable barrel shift instructions"
-msgstr ""
+msgstr "Hiệu lực câu lệnh « barrel shift »"
 
 #: config/lm32/lm32.opt:36
 msgid "Enable sign extend instructions"
-msgstr ""
+msgstr "Hiệu lực câu lệnh mở rộng ký hiệu"
 
 #: config/lm32/lm32.opt:40
 msgid "Enable user-defined instructions"
-msgstr ""
+msgstr "Hiệu lực câu lệnh được người dùng xác định"
 
 #: c.opt:42
 msgid "-A<question>=<answer>\tAssert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>"
 msgstr ""
+"-A<hỏi>=<đáp>\tKhắng định trả lời cho một câu hỏi nào đó.\n"
+"\t\tThêm dấu trừ « - » vào trước <hỏi> thì tắt <đáp> đó."
 
 #: c.opt:46
 msgid "Do not discard comments"
-msgstr ""
+msgstr "Đừng loại bỏ ghi chú"
 
 #: c.opt:50
 msgid "Do not discard comments in macro expansions"
-msgstr ""
+msgstr "Đừng loại bỏ ghi chú trong sự mở rộng vĩ lệnh"
 
 #: c.opt:54
 msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1"
-msgstr ""
+msgstr "-D<vĩ_lệnh>[=<giá_trị>]\tXác định vĩ lệnh này có giá trị này. Chỉ đưa ra vĩ lệnh thì giá trị được giả sử là 1"
 
 #: c.opt:61
 msgid "-F <dir>\tAdd <dir> to the end of the main framework include path"
-msgstr ""
+msgstr "-F <thư_mục>\tPhụ thêm thư mục này vào đường dẫn bao gồm khuôn khổ chính"
 
 #: c.opt:65
 msgid "Print the name of header files as they are used"
-msgstr ""
+msgstr "In ra tên của tập tin phần đầu nào đang được sử dụng"
 
 #: c.opt:69
 msgid "-I <dir>\tAdd <dir> to the end of the main include path"
-msgstr ""
+msgstr "-I <thư_mục>\tPhụ thêm thư mục này vào đường dẫn bao gồm chính"
 
 #: c.opt:73
 msgid "Generate make dependencies"
-msgstr ""
+msgstr "Tạo ra quan hệ phụ thuộc của make"
 
 #: c.opt:77
 msgid "Generate make dependencies and compile"
-msgstr ""
+msgstr "Tạo ra quan hệ phụ thuộc của make, và biên dịch"
 
 #: c.opt:81
 msgid "-MF <file>\tWrite dependency output to the given file"
-msgstr ""
+msgstr "-MF <tệp>\tGhi vào tập tin này kết xuất về quan hệ phụ thuộc"
 
 #: c.opt:85
 msgid "Treat missing header files as generated files"
-msgstr ""
+msgstr "Thấy tập tin phần đầu còn thiếu là tập tin được tạo ra"
 
 #: c.opt:89
 msgid "Like -M but ignore system header files"
-msgstr ""
+msgstr "Giống như « -M » mà bỏ qua tập tin phần đầu của hệ thống"
 
 #: c.opt:93
 msgid "Like -MD but ignore system header files"
-msgstr ""
+msgstr "Giống như « -MD » mà bỏ qua tập tin phần đầu của hệ thống"
 
 #: c.opt:97
 msgid "Generate phony targets for all headers"
-msgstr ""
+msgstr "Tạo ra đích giả cho mọi phần đầu"
 
 #: c.opt:101
 msgid "-MQ <target>\tAdd a MAKE-quoted target"
-msgstr ""
+msgstr "-MQ <đích>\tThêm một đích được MAKE trích dẫn"
 
 #: c.opt:105
 msgid "-MT <target>\tAdd an unquoted target"
-msgstr ""
+msgstr "-MT <đích>\tThêm một đích không phải được trích dẫn"
 
 #: c.opt:109
 msgid "Do not generate #line directives"
-msgstr ""
+msgstr "Đừng tạo ra chỉ thị « #line »"
 
 #: c.opt:113
 msgid "-U<macro>\tUndefine <macro>"
-msgstr ""
+msgstr "-U<vĩ_lệnh>\tHủy xác định vĩ lệnh này"
 
 #: c.opt:117
 msgid "Warn about things that will change when compiling with an ABI-compliant compiler"
-msgstr ""
+msgstr "Cảnh báo về trường hợp sẽ thay đổi khi biên dịch bằng một bộ biên dịch tương thích với ABI"
 
 #: c.opt:124
 msgid "Warn about suspicious uses of memory addresses"
-msgstr ""
+msgstr "Cảnh báo về sử dụng địa chỉ vùng nhớ một cách đáng ngờ"
 
 #: c.opt:128
 msgid "Enable most warning messages"
-msgstr ""
+msgstr "Hiệu lực phần lớn các thông điệp cảnh báo"
 
 #: c.opt:132
 msgid "Warn whenever an Objective-C assignment is being intercepted by the garbage collector"
-msgstr ""
+msgstr "Cảnh báo khi nào một sự gán Objective-C bị chặn bởi bộ nhặt rác"
 
 #: c.opt:136
 msgid "Warn about casting functions to incompatible types"
-msgstr ""
+msgstr "Cảnh báo về gán hàm cho loại không tương thích"
 
 #: c.opt:140
 msgid "Warn when a built-in preprocessor macro is undefined or redefined"
-msgstr ""
+msgstr "Cảnh báo khi một vĩ lệnh bộ tiền xử lý dựng sẵn chưa được xác định hoặc được xác định lại"
 
 #: c.opt:144
 msgid "Warn about C constructs that are not in the common subset of C and C++"
-msgstr ""
+msgstr "Cảnh báo về cấu trúc C không nằm trong tập hợp phụ chung của C và C++"
 
 #: c.opt:148
 msgid "Warn about C++ constructs whose meaning differs between ISO C++ 1998 and ISO C++ 200x"
-msgstr ""
+msgstr "Cảnh báo về cấu trúc C++ có nghĩa khác nhau giữa ISO C++ 1998 và ISO C++ 200x"
 
 #: c.opt:152
 msgid "Warn about casts which discard qualifiers"
-msgstr ""
+msgstr "Cảnh báo về sự gán mà loại bỏ đoạn điều kiện"
 
 #: c.opt:156
 msgid "Warn about subscripts whose type is \"char\""
-msgstr ""
+msgstr "Cảnh báo về chữ in thấp có loại « char »"
 
 #: c.opt:160
 msgid "Warn about variables that might be changed by \"longjmp\" or \"vfork\""
-msgstr ""
+msgstr "Cảnh báo về biến có thể bị thay đổi bởi « longjmp » hoặc « vfork »"
 
 #: c.opt:164
 msgid "Warn about possibly nested block comments, and C++ comments spanning more than one physical line"
-msgstr ""
+msgstr "Cảnh báo về ghi chú khối có thể lồng nhau, và ghi chú C++ chiếm giữ nhiều dòng vật lý"
 
 #: c.opt:168
 msgid "Synonym for -Wcomment"
-msgstr ""
+msgstr "Từ đồng nghĩa với « -Wcomment »"
 
 #: c.opt:172
 msgid "Warn for implicit type conversions that may change a value"
-msgstr ""
+msgstr "Cảnh báo về sự chuyển đổi loại ngầm có thể thay đổi một giá trị"
 
 #: c.opt:176
 msgid "Warn for converting NULL from/to a non-pointer type"
-msgstr ""
+msgstr "Cảnh báo về chuyển đổi NULL từ/đến một loại không phải hàm trỏ"
 
 #: c.opt:180
 msgid "Warn for implicit type conversions between signed and unsigned integers"
-msgstr ""
+msgstr "Cảnh báo về sự chuyển đổi loại ngầm giữa số nguyên có dấu và không có dấu"
 
 #: c.opt:184
 msgid "Warn when all constructors and destructors are private"
-msgstr ""
+msgstr "Cảnh báo khi mọi bộ cấu trúc và bộ hủy cấu trúc đều là riêng"
 
 #: c.opt:188
 msgid "Warn when a declaration is found after a statement"
-msgstr ""
+msgstr "Cảnh báo khi phát hiện một lời tuyên bố đẳng sau một câu lệnh"
 
 #: c.opt:192
 msgid "Warn if a deprecated compiler feature, class, method, or field is used"
-msgstr ""
+msgstr "Cảnh báo nếu sử dụng một tính năng bộ biên dịch, hạng, phương pháp hay trường bị phản đối"
 
 #: c.opt:196
 msgid "Warn about compile-time integer division by zero"
-msgstr ""
+msgstr "Cảnh báo về số nguyên chia cho số không vào lúc biên dịch"
 
 #: c.opt:200
 msgid "Warn about violations of Effective C++ style rules"
-msgstr ""
+msgstr "Cảnh báo về sự vượt quá quy tắc Effective C++"
 
 #: c.opt:204
 msgid "Warn about an empty body in an if or else statement"
-msgstr ""
+msgstr "Cảnh báo về thân trống trong một câu lệnh « if » (nếu) hay « else » (không thì)"
 
 #: c.opt:208
 msgid "Warn about stray tokens after #elif and #endif"
-msgstr ""
+msgstr "Cảnh báo về hiệu bài thừa đẳng sau « #elif » và « #endif »"
 
 #: c.opt:212
 msgid "Warn about comparison of different enum types"
-msgstr ""
+msgstr "Cảnh báo về sự so sánh các loại đếm (enum) khác nhau"
 
 #: c.opt:220
 msgid "This switch is deprecated; use -Werror=implicit-function-declaration instead"
-msgstr ""
+msgstr "Cái chuyển này bị phản đối: hãy thay thế bằng « -Werror=implicit-function-declaration »"
 
 #: c.opt:224
 msgid "Warn if testing floating point numbers for equality"
-msgstr ""
+msgstr "Cảnh báo nếu kiểm tra đẳng thức của con số điểm phù động"
 
 #: c.opt:228
 msgid "Warn about printf/scanf/strftime/strfmon format string anomalies"
-msgstr ""
+msgstr "Cảnh báo khi phát hiện sự dị thường về chuỗi định dạng printf/scanf/strftime/strfmon"
 
 #: c.opt:232
 msgid "Warn if passing too many arguments to a function for its format string"
-msgstr ""
+msgstr "Cảnh báo nếu gửi cho hàm quá nhiều đối số đối với chuỗi định dạng của nó"
 
 #: c.opt:236
 msgid "Warn about format strings that are not literals"
-msgstr ""
+msgstr "Cảnh báo về chuỗi định dạng không phải có nghĩa chữ"
 
 #: c.opt:240
 msgid "Warn about format strings that contain NUL bytes"
-msgstr ""
+msgstr "Cảnh báo về chuỗi định dạng chứa NUL byte"
 
 #: c.opt:244
 msgid "Warn about possible security problems with format functions"
-msgstr ""
+msgstr "Cảnh báo về hàm định dạng có thể gây ra vấn đề bảo mật"
 
 #: c.opt:248
 msgid "Warn about strftime formats yielding 2-digit years"
-msgstr ""
+msgstr "Cảnh báo về định dạng strftime xuất năm chỉ có hai chữ số"
 
 #: c.opt:252
 msgid "Warn about zero-length formats"
-msgstr ""
+msgstr "Cảnh báo về định dạng có chiều dài số không"
 
 #: c.opt:259
 msgid "Warn whenever type qualifiers are ignored."
-msgstr ""
+msgstr "Cảnh báo khi nào đoạn điều kiện loại bị bỏ qua."
 
 #: c.opt:263
 msgid "Warn about variables which are initialized to themselves"
-msgstr ""
+msgstr "Cảnh báo về biến bị tự sơ khởi"
 
 #: c.opt:270
 msgid "Warn about implicit function declarations"
-msgstr ""
+msgstr "Cảnh báo về lời tuyên bố hàm ngầm"
 
 #: c.opt:274
 msgid "Warn when a declaration does not specify a type"
-msgstr ""
+msgstr "Cảnh báo khi một lời tuyên bố không ghi rõ loại"
 
 #: c.opt:281
 msgid "Warn when there is a cast to a pointer from an integer of a different size"
-msgstr ""
+msgstr "Cảnh báo khi có một sự gán cho một hàm trỏ từ một số nguyên có kích cỡ khác"
 
 #: c.opt:285
 msgid "Warn about invalid uses of the \"offsetof\" macro"
-msgstr ""
+msgstr "Cảnh báo khi sai sử dụng vĩ lệnh « offsetof »"
 
 #: c.opt:289
 msgid "Warn about PCH files that are found but not used"
-msgstr ""
+msgstr "Cảnh báo về tập tin PCH được tìm thấy mà không phải được sử dụng"
 
 #: c.opt:293
 msgid "Warn when a jump misses a variable initialization"
-msgstr ""
+msgstr "Cảnh báo khi một bước nhảy còn thiếu sự sơ khởi biến"
 
 #: c.opt:297
 msgid "Warn when a logical operator is suspiciously always evaluating to true or false"
-msgstr ""
+msgstr "Cảnh báo khi một toán tử hợp lý cứ ước lượng là đúng hoặc là sai một cách đáng ngờ"
 
 #: c.opt:301
 msgid "Do not warn about using \"long long\" when -pedantic"
-msgstr ""
+msgstr "Bật « -pedantic » thì đừng cảnh báo về sử dụng « long long »"
 
 #: c.opt:305
 msgid "Warn about suspicious declarations of \"main\""
-msgstr ""
+msgstr "Cảnh báo về lời tuyên bố « main » đáng ngờ"
 
 #: c.opt:309
 msgid "Warn about possibly missing braces around initializers"
-msgstr ""
+msgstr "Cảnh báo về đoạn sơ khởi có thể thiếu dấu ngoặc móc"
 
 #: c.opt:313
 msgid "Warn about global functions without previous declarations"
-msgstr ""
+msgstr "Cảnh báo về hàm toàn cục không có lời tuyên bố trước"
 
 #: c.opt:317
 msgid "Warn about missing fields in struct initializers"
-msgstr ""
+msgstr "Cảnh báo về đoạn sơ khởi cấu trúc thiếu trường"
 
 #: c.opt:321
 msgid "Warn about functions which might be candidates for format attributes"
-msgstr ""
+msgstr "Cảnh báo về hàm có thể yêu cầu thuộc tính định dạng"
 
 #: c.opt:325
 msgid "Warn about user-specified include directories that do not exist"
-msgstr ""
+msgstr "Cảnh báo khi người dùng xác định một thư mục không tồn tại"
 
 #: c.opt:329
 msgid "Warn about function parameters declared without a type specifier in K&R-style functions"
-msgstr ""
+msgstr "Cảnh báo về tham số hàm được tuyên bố mà không ghi rõ loại, trong hàm kiểu K&R"
 
 #: c.opt:333
 msgid "Warn about global functions without prototypes"
-msgstr ""
+msgstr "Cảnh báo về hàm toàn cục mà không có nguyên mẫu"
 
 #: c.opt:337
 msgid "Warn about use of multi-character character constants"
-msgstr ""
+msgstr "Cảnh báo về sử dụng hằng số ký tự đa ký tự"
 
 #: c.opt:341
 msgid "Warn about \"extern\" declarations not at file scope"
-msgstr ""
+msgstr "Cảnh báo về lời tuyên bố « extern » (bên ngoài) ở ngoại phạm vi tập tin"
 
 #: c.opt:345
 msgid "Warn when non-templatized friend functions are declared within a template"
-msgstr ""
+msgstr "Cảnh báo khi hàm bạn không làm mẫu được tuyên bố bên trong một mẫu"
 
 #: c.opt:349
 msgid "Warn about non-virtual destructors"
-msgstr ""
+msgstr "Cảnh báo về bộ hủy cấu trúc không phải ảo"
 
 #: c.opt:353
 msgid "Warn about NULL being passed to argument slots marked as requiring non-NULL"
-msgstr ""
+msgstr "Cảnh báo khi NULL được gửi cho khe đối số đánh dấu là yêu cầu giá trị không phải NULL"
 
 #: c.opt:357
 msgid "-Wnormalized=<id|nfc|nfkc>\tWarn about non-normalised Unicode strings"
-msgstr ""
+msgstr "-Wnormalized=<id|nfc|nfkc>\tCảnh báo về chuỗi Unicode không phải chuẩn hoá"
 
 #: c.opt:361
 msgid "Warn if a C-style cast is used in a program"
-msgstr ""
+msgstr "Cảnh báo nếu một sự gán kiểu C được sử dụng trong một chương trình"
 
 #: c.opt:365
 msgid "Warn for obsolescent usage in a declaration"
-msgstr ""
+msgstr "Cảnh báo về lời tuyên bố kiểu cũ"
 
 #: c.opt:369
 msgid "Warn if an old-style parameter definition is used"
-msgstr ""
+msgstr "Cảnh báo về lời xác định tham số kiểu cũ"
 
 #: c.opt:373
 msgid "Warn if a string is longer than the maximum portable length specified by the standard"
-msgstr ""
+msgstr "Cảnh báo về chuỗi dài hơn chiều dài di động tối đa được tiêu chuẩn ghi rõ"
 
 #: c.opt:377
 msgid "Warn about overloaded virtual function names"
-msgstr ""
+msgstr "Cảnh báo về tên hàm ảo quá tải"
 
 #: c.opt:381
 msgid "Warn about overriding initializers without side effects"
-msgstr ""
+msgstr "Cảnh báo về ghi đẻ lên đoạn sơ khởi mà không có hiệu ứng khác"
 
 #: c.opt:385
 msgid "Warn about packed bit-fields whose offset changed in GCC 4.4"
-msgstr ""
+msgstr "Cảnh báo về trường bit đóng gói có hiệu số bị thay đổi trong GCC 4.4"
 
 #: c.opt:389
 msgid "Warn about possibly missing parentheses"
-msgstr ""
+msgstr "Cảnh báo về dấu ngoặc đơn có thể bị thiếu"
 
 #: c.opt:393
 msgid "Warn when converting the type of pointers to member functions"
-msgstr ""
+msgstr "Cảnh báo khi chuyển đổi loại hàm trỏ sang hàm bộ phận"
 
 #: c.opt:397
 msgid "Warn about function pointer arithmetic"
-msgstr ""
+msgstr "Cảnh báo về số học trỏ đến hàm"
 
 #: c.opt:401
 msgid "Warn when a pointer is cast to an integer of a different size"
