@@ -1,3 +1,9 @@
+2010-10-13  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gcc.dg/format/dfp-scanf-1.c: Disable for *-*-mingw* targets.
+	* gcc.dg/format/dfp-printf-1.c: Likewise.
+	* gcc.dg/format/ms_unnamed-1.c: Adjust linenumber for warning.
+
 2010-10-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45788
