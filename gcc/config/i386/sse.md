@@ -86,6 +86,25 @@
    (V8HI "TARGET_SSE2") (V16QI "TARGET_SSE2")
    (V4DF "TARGET_AVX") (V8SF "TARGET_AVX")])
 
+;; Modes handled by storent patterns.
+(define_mode_iterator STORENT_MODE
+  [(SF "TARGET_SSE4A") (DF "TARGET_SSE4A")
+   (SI "TARGET_SSE2") (V2DI "TARGET_SSE2") (V2DF "TARGET_SSE2")
+   (V4SF "TARGET_SSE")
+   (V4DF "TARGET_AVX") (V8SF "TARGET_AVX")])
+
+;; Modes handled by vector float patterns.
+(define_mode_iterator VEC_FLOAT_MODE
+  [(V2DF "TARGET_SSE2") (V4SF "TARGET_SSE")
+   (V4DF "TARGET_AVX") (V8SF "TARGET_AVX")])
+
+;; Modes handled by vector extract patterns.
+(define_mode_iterator VEC_EXTRACT_MODE
+  [(V2DI "TARGET_SSE") (V4SI "TARGET_SSE")
+   (V8HI "TARGET_SSE") (V16QI "TARGET_SSE")
+   (V2DF "TARGET_SSE") (V4SF "TARGET_SSE")
+   (V4DF "TARGET_AVX") (V8SF "TARGET_AVX")])
+
 ;; Mapping from float mode to required SSE level
 (define_mode_attr sse [(SF "sse") (DF "sse2") (V4SF "sse") (V2DF "sse2")])
 
@@ -504,30 +523,10 @@
 ; define patterns for other modes that would expand to several insns.
 
 (define_expand "storent<mode>"
-  [(set (match_operand:SSEMODEF2P 0 "memory_operand" "")
-	(unspec:SSEMODEF2P
-	  [(match_operand:SSEMODEF2P 1 "register_operand" "")]
-	  UNSPEC_MOVNT))]
-  "SSE_VEC_FLOAT_MODE_P (<MODE>mode)")
-
-(define_expand "storent<mode>"
-  [(set (match_operand:MODEF 0 "memory_operand" "")
-	(unspec:MODEF
-	  [(match_operand:MODEF 1 "register_operand" "")]
-	  UNSPEC_MOVNT))]
-  "TARGET_SSE4A")
-
-(define_expand "storentv2di"
-  [(set (match_operand:V2DI 0 "memory_operand" "")
-	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "")]
-		     UNSPEC_MOVNT))]
-  "TARGET_SSE2")
-
-(define_expand "storentsi"
-  [(set (match_operand:SI 0 "memory_operand" "")
-	(unspec:SI [(match_operand:SI 1 "register_operand" "")]
-		   UNSPEC_MOVNT))]
-  "TARGET_SSE2")
+  [(set (match_operand:STORENT_MODE 0 "memory_operand" "")
+	(unspec:STORENT_MODE
+	  [(match_operand:STORENT_MODE 1 "register_operand" "")]
+	  UNSPEC_MOVNT))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -536,10 +535,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_expand "<code><mode>2"
-  [(set (match_operand:SSEMODEF2P 0 "register_operand" "")
-	(absneg:SSEMODEF2P
-	  (match_operand:SSEMODEF2P 1 "register_operand" "")))]
-  "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
+  [(set (match_operand:VEC_FLOAT_MODE 0 "register_operand" "")
+	(absneg:VEC_FLOAT_MODE
+	  (match_operand:VEC_FLOAT_MODE 1 "register_operand" "")))]
+  ""
   "ix86_expand_fp_absneg_operator (<CODE>, <MODE>mode, operands); DONE;")
 
 (define_expand "<plusminus_insn><mode>3"
@@ -1380,6 +1379,19 @@
   [(set_attr "type" "sseadd")
    (set_attr "mode" "V2DF")])
 
+(define_expand "reduc_splus_v8sf"
+  [(match_operand:V8SF 0 "register_operand" "")
+   (match_operand:V8SF 1 "register_operand" "")]
+  "TARGET_AVX"
+{
+  rtx tmp = gen_reg_rtx (V8SFmode);
+  rtx tmp2 = gen_reg_rtx (V8SFmode);
+  emit_insn (gen_avx_haddv8sf3 (tmp, operands[1], operands[1]));
+  emit_insn (gen_avx_haddv8sf3 (tmp2, operands[1], operands[1]));
+  emit_insn (gen_avx_haddv8sf3 (operands[0], tmp2, tmp2));
+  DONE;
+})
+
 (define_expand "reduc_splus_v4sf"
   [(match_operand:V4SF 0 "register_operand" "")
    (match_operand:V4SF 1 "register_operand" "")]
@@ -1393,6 +1405,17 @@
     }
   else
     ix86_expand_reduc_v4sf (gen_addv4sf3, operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "reduc_splus_v4df"
+  [(match_operand:V4DF 0 "register_operand" "")
+   (match_operand:V4DF 1 "register_operand" "")]
+  "TARGET_AVX"
+{
+  rtx tmp = gen_reg_rtx (V4DFmode);
+  emit_insn (gen_avx_haddv4df3 (tmp, operands[1], operands[1]));
+  emit_insn (gen_avx_haddv4df3 (operands[0], tmp, tmp));
   DONE;
 })
 
@@ -1650,17 +1673,17 @@
 
 (define_expand "copysign<mode>3"
   [(set (match_dup 4)
-	(and:SSEMODEF2P 
-	  (not:SSEMODEF2P (match_dup 3))
-	  (match_operand:SSEMODEF2P 1 "nonimmediate_operand" "")))
+	(and:VEC_FLOAT_MODE
+	  (not:VEC_FLOAT_MODE (match_dup 3))
+	  (match_operand:VEC_FLOAT_MODE 1 "nonimmediate_operand" "")))
    (set (match_dup 5)
-	(and:SSEMODEF2P (match_dup 3)
-			(match_operand:SSEMODEF2P 2 "nonimmediate_operand" "")))
-   (set (match_operand:SSEMODEF2P 0 "register_operand" "")
-	(ior:SSEMODEF2P (match_dup 4) (match_dup 5)))]
-  "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
+	(and:VEC_FLOAT_MODE (match_dup 3)
+			    (match_operand:VEC_FLOAT_MODE 2 "nonimmediate_operand" "")))
+   (set (match_operand:VEC_FLOAT_MODE 0 "register_operand" "")
+	(ior:VEC_FLOAT_MODE (match_dup 4) (match_dup 5)))]
+  ""
 {
-  operands[3] = ix86_build_signbit_mask (<ssescalarmode>mode, 1, 0);
+  operands[3] = ix86_build_signbit_mask (<MODE>mode, 1, 0);
 
   operands[4] = gen_reg_rtx (<MODE>mode);
   operands[5] = gen_reg_rtx (<MODE>mode);
@@ -2657,7 +2680,8 @@
   x = const_double_from_real_value (TWO32r, SFmode);
 
   operands[3] = force_reg (V4SFmode, CONST0_RTX (V4SFmode));
-  operands[4] = force_reg (V4SFmode, ix86_build_const_vector (SFmode, 1, x));
+  operands[4] = force_reg (V4SFmode,
+			   ix86_build_const_vector (V4SFmode, 1, x));
 
   for (i = 5; i < 8; i++)
     operands[i] = gen_reg_rtx (V4SFmode);
@@ -2892,6 +2916,18 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
 
+(define_insn "*avx_cvtdq2pd256_2"
+  [(set (match_operand:V4DF 0 "register_operand" "=x")
+	(float:V4DF
+	  (vec_select:V4SI
+	    (match_operand:V8SI 1 "nonimmediate_operand" "xm")
+	    (parallel [(const_int 0) (const_int 1) (const_int 2) (const_int 3)]))))]
+  "TARGET_AVX"
+  "vcvtdq2pd\t{%x1, %0|%0, %x1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "V4DF")])
+
 (define_insn "sse2_cvtdq2pd"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(float:V2DF
@@ -3072,6 +3108,18 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
 
+(define_insn "*avx_cvtps2pd256_2"
+  [(set (match_operand:V4DF 0 "register_operand" "=x")
+	(float_extend:V4DF
+	  (vec_select:V4SF
+	    (match_operand:V8SF 1 "nonimmediate_operand" "xm")
+	    (parallel [(const_int 0) (const_int 1) (const_int 2) (const_int 3)]))))]
+  "TARGET_AVX"
+  "vcvtps2pd\t{%x1, %0|%0, %x1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "V4DF")])
+
 (define_insn "sse2_cvtps2pd"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(float_extend:V2DF
@@ -3104,6 +3152,22 @@
   "TARGET_SSE2"
   "operands[2] = gen_reg_rtx (V4SFmode);")
 
+(define_expand "vec_unpacks_hi_v8sf"
+  [(set (match_dup 2)
+	(vec_select:V4SF
+	  (match_operand:V8SF 1 "nonimmediate_operand" "")
+	  (parallel [(const_int 4)
+		     (const_int 5)
+		     (const_int 6)
+		     (const_int 7)])))
+   (set (match_operand:V4DF 0 "register_operand" "")
+	(float_extend:V4DF
+	  (match_dup 2)))]
+  "TARGET_AVX"
+{
+  operands[2] = gen_reg_rtx (V4SFmode);
+})
+
 (define_expand "vec_unpacks_lo_v4sf"
   [(set (match_operand:V2DF 0 "register_operand" "")
 	(float_extend:V2DF
@@ -3111,6 +3175,14 @@
 	    (match_operand:V4SF 1 "nonimmediate_operand" "")
 	    (parallel [(const_int 0) (const_int 1)]))))]
   "TARGET_SSE2")
+
+(define_expand "vec_unpacks_lo_v8sf"
+  [(set (match_operand:V4DF 0 "register_operand" "")
+	(float_extend:V4DF
+	  (vec_select:V4SF
+	    (match_operand:V8SF 1 "nonimmediate_operand" "")
+	    (parallel [(const_int 0) (const_int 1) (const_int 2) (const_int 3)]))))]
+  "TARGET_AVX")
 
 (define_expand "vec_unpacks_float_hi_v8hi"
   [(match_operand:V4SF 0 "register_operand" "")
@@ -3184,6 +3256,28 @@
 	    (parallel [(const_int 0) (const_int 1)]))))]
   "TARGET_SSE2")
 
+(define_expand "vec_unpacks_float_hi_v8si"
+  [(set (match_dup 2)
+	(vec_select:V4SI
+	  (match_operand:V8SI 1 "nonimmediate_operand" "")
+	  (parallel [(const_int 4)
+		     (const_int 5)
+		     (const_int 6)
+		     (const_int 7)])))
+   (set (match_operand:V4DF 0 "register_operand" "")
+        (float:V4DF
+	  (match_dup 2)))]
+  "TARGET_AVX"
+  "operands[2] = gen_reg_rtx (V4SImode);")
+
+(define_expand "vec_unpacks_float_lo_v8si"
+  [(set (match_operand:V4DF 0 "register_operand" "")
+	(float:V4DF
+	  (vec_select:V4SI
+	    (match_operand:V8SI 1 "nonimmediate_operand" "")
+	    (parallel [(const_int 0) (const_int 1) (const_int 2) (const_int 3)]))))]
+  "TARGET_AVX")
+
 (define_expand "vec_unpacku_float_hi_v4si"
   [(set (match_dup 5)
 	(vec_select:V4SI
@@ -3213,7 +3307,8 @@
   x = const_double_from_real_value (TWO32r, DFmode);
 
   operands[3] = force_reg (V2DFmode, CONST0_RTX (V2DFmode));
-  operands[4] = force_reg (V2DFmode, ix86_build_const_vector (DFmode, 1, x));
+  operands[4] = force_reg (V2DFmode,
+			   ix86_build_const_vector (V2DFmode, 1, x));
 
   operands[5] = gen_reg_rtx (V4SImode);
  
@@ -3243,10 +3338,28 @@
   x = const_double_from_real_value (TWO32r, DFmode);
 
   operands[3] = force_reg (V2DFmode, CONST0_RTX (V2DFmode));
-  operands[4] = force_reg (V2DFmode, ix86_build_const_vector (DFmode, 1, x));
+  operands[4] = force_reg (V2DFmode,
+			   ix86_build_const_vector (V2DFmode, 1, x));
 
   for (i = 5; i < 8; i++)
     operands[i] = gen_reg_rtx (V2DFmode);
+})
+
+(define_expand "vec_pack_trunc_v4df"
+  [(set (match_dup 3)
+	(float_truncate:V4SF
+	  (match_operand:V4DF 1 "nonimmediate_operand" "")))
+   (set (match_dup 4)
+	(float_truncate:V4SF
+	  (match_operand:V4DF 2 "nonimmediate_operand" "")))
+   (set (match_operand:V8SF 0 "register_operand" "")
+	(vec_concat:V8SF
+	  (match_dup 3)
+	  (match_dup 4)))]
+  "TARGET_AVX"
+{
+  operands[3] = gen_reg_rtx (V4SFmode);
+  operands[4] = gen_reg_rtx (V4SFmode);
 })
 
 (define_expand "vec_pack_trunc_v2df"
@@ -3441,6 +3554,41 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4SF")])
 
+(define_expand "vec_interleave_highv8sf"
+  [(set (match_dup 3)
+	(vec_select:V8SF
+	  (vec_concat:V16SF
+	    (match_operand:V8SF 1 "register_operand" "x")
+	    (match_operand:V8SF 2 "nonimmediate_operand" "xm"))
+	  (parallel [(const_int 0) (const_int 8)
+		     (const_int 1) (const_int 9)
+		     (const_int 4) (const_int 12)
+		     (const_int 5) (const_int 13)])))
+   (set (match_dup 4)
+	(vec_select:V8SF
+	  (vec_concat:V16SF
+	    (match_dup 1)
+	    (match_dup 2))
+	  (parallel [(const_int 2) (const_int 10)
+		     (const_int 3) (const_int 11)
+		     (const_int 6) (const_int 14)
+		     (const_int 7) (const_int 15)])))
+   (set (match_operand:V8SF 0 "register_operand" "")
+	(vec_concat:V8SF
+	  (vec_select:V4SF
+	    (match_dup 3)
+	    (parallel [(const_int 4) (const_int 5)
+		       (const_int 6) (const_int 7)]))
+	  (vec_select:V4SF
+	    (match_dup 4)
+	    (parallel [(const_int 4) (const_int 5)
+		       (const_int 6) (const_int 7)]))))]
+ "TARGET_AVX"
+{
+  operands[3] = gen_reg_rtx (V8SFmode);
+  operands[4] = gen_reg_rtx (V8SFmode);
+})
+
 (define_insn "vec_interleave_highv4sf"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(vec_select:V4SF
@@ -3484,6 +3632,41 @@
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4SF")])
+
+(define_expand "vec_interleave_lowv8sf"
+  [(set (match_dup 3)
+	(vec_select:V8SF
+	  (vec_concat:V16SF
+	    (match_operand:V8SF 1 "register_operand" "x")
+	    (match_operand:V8SF 2 "nonimmediate_operand" "xm"))
+	  (parallel [(const_int 0) (const_int 8)
+		     (const_int 1) (const_int 9)
+		     (const_int 4) (const_int 12)
+		     (const_int 5) (const_int 13)])))
+   (set (match_dup 4)
+	(vec_select:V8SF
+	  (vec_concat:V16SF
+	    (match_dup 1)
+	    (match_dup 2))
+	  (parallel [(const_int 2) (const_int 10)
+		     (const_int 3) (const_int 11)
+		     (const_int 6) (const_int 14)
+		     (const_int 7) (const_int 15)])))
+   (set (match_operand:V8SF 0 "register_operand" "")
+	(vec_concat:V8SF
+	  (vec_select:V4SF
+	    (match_dup 3)
+	    (parallel [(const_int 0) (const_int 1)
+		       (const_int 2) (const_int 3)]))
+	  (vec_select:V4SF
+	    (match_dup 4)
+	    (parallel [(const_int 0) (const_int 1)
+		       (const_int 2) (const_int 3)]))))]
+ "TARGET_AVX"
+{
+  operands[3] = gen_reg_rtx (V8SFmode);
+  operands[4] = gen_reg_rtx (V8SFmode);
+})
 
 (define_insn "vec_interleave_lowv4sf"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
@@ -4353,8 +4536,8 @@
 })
 
 (define_expand "vec_extract<mode>"
-  [(match_operand:<ssescalarmode> 0 "register_operand" "")
-   (match_operand:SSEMODE 1 "register_operand" "")
+  [(match_operand:<avxscalarmode> 0 "register_operand" "")
+   (match_operand:VEC_EXTRACT_MODE 1 "register_operand" "")
    (match_operand 2 "const_int_operand" "")]
   "TARGET_SSE"
 {
@@ -4383,6 +4566,36 @@
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
+
+(define_expand "vec_interleave_highv4df"
+  [(set (match_dup 3)
+	(vec_select:V4DF
+	  (vec_concat:V8DF
+	    (match_operand:V4DF 1 "register_operand" "x")
+	    (match_operand:V4DF 2 "nonimmediate_operand" "xm"))
+	  (parallel [(const_int 0) (const_int 4)
+		     (const_int 2) (const_int 6)])))
+   (set (match_dup 4)
+	(vec_select:V4DF
+	  (vec_concat:V8DF
+	    (match_dup 1)
+	    (match_dup 2))
+	  (parallel [(const_int 1) (const_int 5)
+		     (const_int 3) (const_int 7)])))
+   (set (match_operand:V4DF 0 "register_operand" "")
+	(vec_concat:V4DF
+	  (vec_select:V2DF
+	    (match_dup 3)
+	    (parallel [(const_int 2) (const_int 3)]))
+	  (vec_select:V2DF
+	    (match_dup 4)
+	    (parallel [(const_int 2) (const_int 3)]))))]
+ "TARGET_AVX"
+{
+  operands[3] = gen_reg_rtx (V4DFmode);
+  operands[4] = gen_reg_rtx (V4DFmode);
+})
+
 
 (define_expand "vec_interleave_highv2df"
   [(set (match_operand:V2DF 0 "register_operand" "")
@@ -4488,6 +4701,35 @@
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
+
+(define_expand "vec_interleave_lowv4df"
+  [(set (match_dup 3)
+	(vec_select:V4DF
+	  (vec_concat:V8DF
+	    (match_operand:V4DF 1 "register_operand" "x")
+	    (match_operand:V4DF 2 "nonimmediate_operand" "xm"))
+	  (parallel [(const_int 0) (const_int 4)
+		     (const_int 2) (const_int 6)])))
+   (set (match_dup 4)
+	(vec_select:V4DF
+	  (vec_concat:V8DF
+	    (match_dup 1)
+	    (match_dup 2))
+	  (parallel [(const_int 1) (const_int 5)
+		     (const_int 3) (const_int 7)])))
+   (set (match_operand:V4DF 0 "register_operand" "")
+	(vec_concat:V4DF
+	  (vec_select:V2DF
+	    (match_dup 3)
+	    (parallel [(const_int 0) (const_int 1)]))
+	  (vec_select:V2DF
+	    (match_dup 4)
+	    (parallel [(const_int 0) (const_int 1)]))))]
+ "TARGET_AVX"
+{
+  operands[3] = gen_reg_rtx (V4DFmode);
+  operands[4] = gen_reg_rtx (V4DFmode);
+})
 
 (define_expand "vec_interleave_lowv2df"
   [(set (match_operand:V2DF 0 "register_operand" "")

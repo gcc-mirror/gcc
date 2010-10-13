@@ -1,3 +1,58 @@
+2010-10-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_build_const_vector): Check vector
+	mode instead of scalar mode.
+	(ix86_build_signbit_mask): Likewise.
+	(ix86_expand_fp_absneg_operator): Updated.
+	(ix86_expand_copysign): Likewise.
+	(ix86_expand_int_vcond): Likewise.
+	(ix86_emit_swdivsf): Likewise.
+	(ix86_sse_copysign_to_positive): Likewise.
+	(ix86_expand_sse_fabs): Likewise.
+	* config/i386/i386.md (fixuns_trunc<mode>si2): Likewise.
+	* config/i386/sse.md (copysign<mode>3): Likewise.
+	(sse2_cvtudq2ps): Likewise.
+	(vec_unpacku_float_hi_v4si): Likewise.
+	(vec_unpacku_float_lo_v4si): Likewise.
+
+	* config/i386/i386.c (ix86_builtins): Add
+	IX86_BUILTIN_CPYSGNPS256 and IX86_BUILTIN_CPYSGNPD256.
+	(bdesc_args): Likewise.
+	(ix86_builtin_vectorized_function): Support 
+	IX86_BUILTIN_CPYSGNPS256, IX86_BUILTIN_CPYSGNPD256,
+	IX86_BUILTIN_SQRTPD256, IX86_BUILTIN_SQRTPS_NR256,
+	and IX86_BUILTIN_CVTPS2DQ256.
+	(ix86_builtin_reciprocal): Support IX86_BUILTIN_SQRTPS_NR256.
+
+	* config/i386/sse.md (STORENT_MODE): New.
+	(VEC_FLOAT_MODE): Likewise.
+	(VEC_EXTRACT_MODE): Likewise.
+	(*avx_cvtdq2pd256_2): Likewise.
+	(vec_pack_trunc_v4df): Likewise.
+	(vec_interleave_highv8sf): Likewise.
+	(vec_interleave_lowv8sf): Likewise.
+	(storent<mode>): Macroized.
+	(<code><mode>2: absneg): Likewise.
+	(copysign<mode>3): Likewise.
+	(vec_extract<mode>): Likewise.
+
+	PR target/44180
+	* config/i386/i386.c (expand_vec_perm_even_odd_1): Rewritten
+	for V8SFmode.
+
+2010-10-13  Richard Guenther  <rguenther@suse.de>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (reduc_splus_v8sf): Add.
+	(reduc_splus_v4df): Likewise.
+	(vec_unpacks_hi_v8sf): Likewise.
+	(vec_unpacks_lo_v8sf): Likewise.
+	(*avx_cvtps2pd256_2): Likewise.
+	(vec_unpacks_float_hi_v8si): Likewise.
+	(vec_unpacks_float_lo_v8si): Likewise.
+	(vec_interleave_highv4df): Likewise.
+	(vec_interleave_lowv4df): Likewise.
+
 2010-10-13  Richard Guenther  <rguenther@suse.de>
 
 	PR objc/45878
