@@ -479,6 +479,10 @@ objc_EXPORT IMP method_getImplementation (Method method);
    NULL.  */
 objc_EXPORT const char * method_getTypeEncoding (Method method);
 
+/* Return a method description for the method.  Return NULL if
+   'method' is NULL.  */
+objc_EXPORT struct objc_method_description * method_getDescription (Method method);
+
 /* Return all the instance methods of the class.  The return value of
    the function is a pointer to an area, allocated with malloc(), that
    contains all the instance methods of the class.  It does not
@@ -499,6 +503,48 @@ objc_EXPORT Method * class_copyMethodList (Class class_, unsigned int *numberOfR
    receiver, and '_cmd' for the selector).  Return 0 if 'method' is
    NULL.  */
 objc_EXPORT unsigned int method_getNumberOfArguments (Method method);
+
+/* Return the string encoding for the return type of method 'method'.
+   The string is a standard NULL-terminated string in an area of
+   memory allocated with malloc(); you should free it with free() when
+   you finish using it.  Return an empty string if method is NULL.  */
+objc_EXPORT char * method_copyReturnType (Method method);
+
+/* Return the string encoding for the argument type of method
+   'method', argument number 'argumentNumber' ('argumentNumber' is 0
+   for self, 1 for _cmd, and 2 or more for the additional arguments if
+   any).  The string is a standard NULL-terminated string in an area
+   of memory allocated with malloc(); you should free it with free()
+   when you finish using it.  Return an empty string if method is NULL
+   or if 'argumentNumber' refers to a non-existing argument.  */
+objc_EXPORT char * method_copyArgumentType (Method method, unsigned int argumentNumber);
+
+/* Return the string encoding for the return type of method 'method'.
+   The string is returned by copying it into the supplied
+   'returnValue' string, which is of size 'returnValueSize'.  No more
+   than 'returnValueSize' characters are copied; if the encoding is
+   smaller than 'returnValueSize', the rest of 'returnValue' is filled
+   with NULLs.  If it is bigger, it is truncated (and would not be
+   NULL-terminated).  You should supply a big enough
+   'returnValueSize'.  If the method is NULL, returnValue is set to a
+   string of NULLs.  */
+objc_EXPORT void method_getReturnType (Method method, char *returnValue, 
+				       size_t returnValueSize);
+
+/* Return the string encoding for the argument type of method
+   'method', argument number 'argumentNumber' ('argumentNumber' is 0
+   for self, 1 for _cmd, and 2 or more for the additional arguments if
+   any).  The string is returned by copying it into the supplied
+   'returnValue' string, which is of size 'returnValueSize'.  No more
+   than 'returnValueSize' characters are copied; if the encoding is
+   smaller than 'returnValueSize', the rest of 'returnValue' is filled
+   with NULLs.  If it is bigger, it is truncated (and would not be
+   NULL-terminated).  You should supply a big enough
+   'returnValueSize'.  If the method is NULL, returnValue is set to a
+   string of NULLs.  */
+objc_EXPORT void method_getArgumentType (Method method, unsigned int argumentNumber,
+					 char *returnValue, size_t returnValueSize);
+
 
 
 /** Implementation: the following functions are in protocols.c.  */

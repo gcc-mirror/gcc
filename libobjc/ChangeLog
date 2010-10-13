@@ -1,3 +1,16 @@
+2010-10-13  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* encoding.c (method_copyReturnType): New.
+	(method_copyArgumentType): New.
+	(method_getReturnType): New.
+	(method_getArgumentType): New.
+	* methods.c (method_getDescription): New.
+	* objc/runtime.h (method_copyReturnType): New.
+	(method_copyArgumentType): New.
+	(method_getReturnType): New.
+	(method_getArgumentType): New.
+	(method_getDescription): New.
+	
 2010-10-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* encoding.c: Tidied up comments.

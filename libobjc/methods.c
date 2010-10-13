@@ -29,7 +29,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/runtime.h"      /* For __objc_runtime_mutex.  */
 #include <stdlib.h>                    /* For malloc.  */
 
-SEL method_getName (struct objc_method * method)
+SEL
+method_getName (struct objc_method * method)
 {
   if (method == NULL)
     return NULL;
@@ -37,7 +38,8 @@ SEL method_getName (struct objc_method * method)
   return method->method_name;
 }
 
-const char * method_getTypeEncoding (struct objc_method * method)
+const char *
+method_getTypeEncoding (struct objc_method * method)
 {
   if (method == NULL)
     return NULL;
@@ -45,7 +47,8 @@ const char * method_getTypeEncoding (struct objc_method * method)
   return method->method_types;
 }
 
-IMP method_getImplementation (struct objc_method * method)
+IMP
+method_getImplementation (struct objc_method * method)
 {
   if (method == NULL)
     return NULL;
@@ -53,7 +56,16 @@ IMP method_getImplementation (struct objc_method * method)
   return method->method_imp;
 }
 
-struct objc_method ** class_copyMethodList (Class class_, unsigned int *numberOfReturnedMethods)
+struct objc_method_description *
+method_getDescription (struct objc_method * method)
+{
+  /* Note that the following returns NULL if method is NULL, which is
+     fine.  */
+  return (struct objc_method_description *)method;
+}
+
+struct objc_method **
+class_copyMethodList (Class class_, unsigned int *numberOfReturnedMethods)
 {
   unsigned int count = 0;
   struct objc_method **returnValue = NULL;
