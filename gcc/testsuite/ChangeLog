@@ -1,5 +1,10 @@
 2010-10-13  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/45788
+	* g++.dg/pr45788.C: New testcase.
+
+2010-10-13  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/45970
 	* gcc.dg/tree-ssa/ssa-dse-13.c: New testcase.
 
