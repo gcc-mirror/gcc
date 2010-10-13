@@ -1,3 +1,8 @@
+2010-10-13  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/45990
+	* include/bits/regex.h (regex_traits::isctype): DR 1337.
+
 2010-10-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/random.h (discrete_distribution<>::param_type::
