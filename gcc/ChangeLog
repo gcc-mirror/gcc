@@ -1,3 +1,9 @@
+2010-10-13  Richard Guenther  <rguenther@suse.de>
+
+	PR objc/45878
+	* gimple-fold.c (gimple_fold_obj_type_ref): Leave OBJ_TYPE_REFs
+	alone if there are no virtual methods.
+
 2010-10-13  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (build_personality_function): Take parameter LANG instead

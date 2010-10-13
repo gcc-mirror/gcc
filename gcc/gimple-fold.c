@@ -1524,9 +1524,9 @@ gimple_fold_obj_type_ref (tree ref, tree known_type)
   if (binfo)
     {
       HOST_WIDE_INT token = tree_low_cst (OBJ_TYPE_REF_TOKEN (ref), 1);
-      /* If there is no virtual methods fold this to an indirect call.  */
+      /* If there is no virtual methods leave the OBJ_TYPE_REF alone.  */
       if (!BINFO_VIRTUALS (binfo))
-	return OBJ_TYPE_REF_EXPR (ref);
+	return NULL_TREE;
       return gimple_fold_obj_type_ref_known_binfo (token, binfo);
     }
   else

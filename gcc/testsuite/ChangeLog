@@ -1,3 +1,8 @@
+2010-10-13  Richard Guenther  <rguenther@suse.de>
+
+	PR objc/45878
+	* objc.dg/pr45878.m: New testcase.
+
 2010-10-13  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gcc.dg/format/dfp-scanf-1.c: Disable for *-*-mingw* targets.
