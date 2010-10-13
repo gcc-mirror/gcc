@@ -3357,12 +3357,11 @@ do_structure_copy (tree lhsop, tree rhsop)
   VEC_free (ce_s, heap, rhsc);
 }
 
-/* Create a constraint ID = OP.  */
+/* Create constraints ID = { rhsc }.  */
 
 static void
-make_constraint_to (unsigned id, tree op)
+make_constraints_to (unsigned id, VEC(ce_s, heap) *rhsc)
 {
-  VEC(ce_s, heap) *rhsc = NULL;
   struct constraint_expr *c;
   struct constraint_expr includes;
   unsigned int j;
@@ -3371,9 +3370,18 @@ make_constraint_to (unsigned id, tree op)
   includes.offset = 0;
   includes.type = SCALAR;
 
-  get_constraint_for_rhs (op, &rhsc);
   for (j = 0; VEC_iterate (ce_s, rhsc, j, c); j++)
     process_constraint (new_constraint (includes, *c));
+}
+
+/* Create a constraint ID = OP.  */
+
+static void
+make_constraint_to (unsigned id, tree op)
+{
+  VEC(ce_s, heap) *rhsc = NULL;
+  get_constraint_for_rhs (op, &rhsc);
+  make_constraints_to (id, rhsc);
   VEC_free (ce_s, heap, rhsc);
 }
 
@@ -3835,8 +3843,7 @@ find_func_aliases (gimple origt)
 	     of global memory but not of escaped memory.  */
 	  if (flags & (ECF_CONST|ECF_NOVOPS))
 	    {
-	      if (gimple_call_lhs (t)
-		  && could_have_pointers (gimple_call_lhs (t)))
+	      if (gimple_call_lhs (t))
 		handle_const_call (t, &rhsc);
 	    }
 	  /* Pure functions can return addresses in and of memory
@@ -3846,9 +3853,17 @@ find_func_aliases (gimple origt)
 	    handle_pure_call (t, &rhsc);
 	  else
 	    handle_rhs_call (t, &rhsc);
-	  if (gimple_call_lhs (t)
-	      && could_have_pointers (gimple_call_lhs (t)))
-	    handle_lhs_call (gimple_call_lhs (t), flags, rhsc, fndecl);
+	  if (gimple_call_lhs (t))
+	    {
+	      if (could_have_pointers (gimple_call_lhs (t)))
+		handle_lhs_call (gimple_call_lhs (t), flags, rhsc, fndecl);
+	      /* Similar to conversions a result that is not a pointer
+	         is an escape point for any pointer the function might
+		 return.  */
+	      else if (flags & (ECF_CONST|ECF_PURE
+				|ECF_NOVOPS|ECF_LOOPING_CONST_OR_PURE))
+		make_constraints_to (escaped_id, rhsc);
+	    }
 	  VEC_free (ce_s, heap, rhsc);
 	}
       else
