@@ -45,7 +45,7 @@
 2010-10-12  Xinliang David Li  <davidxl@google.com>
 
 	PR tree-optimization/45972
-	* gcc/tree-ssa-uninit.c (compute_uninit_opnds_pos): skip phis
+	* tree-ssa-uninit.c (compute_uninit_opnds_pos): Skip phis
 	with too many arguments.
 
 2010-10-12  Jakub Jelinek  <jakub@redhat.com>
