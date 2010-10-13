@@ -287,7 +287,7 @@ namespace std
       const ctype<_Ch_type>& __ctype(use_facet<
 				     ctype<_Ch_type> >(_M_locale));
       
-      if (__ctype.is(__c, __f))
+      if (__ctype.is(__f, __c))
 	return true;
       
       // special case of underscore in [[:w:]]
