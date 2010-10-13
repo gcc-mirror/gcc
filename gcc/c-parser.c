@@ -4538,6 +4538,9 @@ c_parser_for_statement (c_parser *parser)
       /* Parse the initialization declaration or expression.  */
       cond = error_mark_node;
       object_expression = error_mark_node;
+      /* Initializing incr should not be necessary, but it avoids
+	 bogus warnings of uninitialized uses.  */
+      incr = error_mark_node;
 
       if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	{

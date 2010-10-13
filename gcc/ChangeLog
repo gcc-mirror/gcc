@@ -1,3 +1,7 @@
+2010-10-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* c-parser.c (c_parser_for_statement): Initialize incr.
+
 2010-10-12  Xinliang David Li  <davidxl@google.com>
 
 	PR tree-optimization/45972
