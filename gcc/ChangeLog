@@ -1,3 +1,9 @@
+2010-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/45912
+	* ira-costs.c (ira_tune_allocno_costs_and_cover_classes): Test the
+	regno of registers instead of their index to compute the alignment.
+
 2010-10-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_build_const_vector): Check vector
