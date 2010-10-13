@@ -2167,13 +2167,17 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 	SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
 
       gsi = gsi_for_stmt (e->call_stmt);
-      gsi_replace (&gsi, new_stmt, true);
+      gsi_replace (&gsi, new_stmt, false);
+      if (maybe_clean_or_replace_eh_stmt (e->call_stmt, new_stmt))
+	gimple_purge_dead_eh_edges (gimple_bb (new_stmt));
     }
   else
     {
       new_stmt = e->call_stmt;
       gimple_call_set_fndecl (new_stmt, e->callee->decl);
       update_stmt (new_stmt);
+      if (maybe_clean_eh_stmt (new_stmt))
+	gimple_purge_dead_eh_edges (gimple_bb (new_stmt));
     }
 
   cgraph_set_call_stmt_including_clones (e->caller, e->call_stmt, new_stmt);

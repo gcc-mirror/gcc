@@ -1,3 +1,8 @@
+2010-10-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/45874
+	* g++.dg/torture/pr45874.C: New testcase.
+
 2010-10-13  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/attributes/method-attribute-1.m: Update to respond
