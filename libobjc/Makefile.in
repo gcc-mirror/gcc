@@ -138,7 +138,9 @@ OBJC_DEPRECATED_H = \
   hash.h \
   objc-list.h \
   objc_error.h \
+  objc_get_uninstalled_dtable.h \
   objc_malloc.h \
+  objc_object_alloc.h \
   objc_unexpected_exception.h \
   objc_valloc.h \
   sarray.h \
@@ -152,6 +154,7 @@ OBJC_DEPRECATED_H = \
   struct_objc_protocol.h \
   struct_objc_protocol_list.h \
   struct_objc_selector.h \
+  struct_objc_static_instances.h \
   struct_objc_symtab.h \
   typedstream.h 
 

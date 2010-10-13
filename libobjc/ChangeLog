@@ -1,5 +1,11 @@
 2010-10-13  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Makefile.in (OBJC_DEPRECATED_H): Added
+	objc_get_uninstalled_dtable, objc_object_alloc.h and
+	struct_objc_static_instances.h.
+
+2010-10-13  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* encoding.c (method_copyReturnType): New.
 	(method_copyArgumentType): New.
 	(method_getReturnType): New.
