@@ -8,9 +8,9 @@
   int var; 
 } 
 - (int) mth;
-+ (id) dep_cls_mth __attribute__((deprecated)) ;/* { dg-warning "method attributes are not available in this version" } */
-- (int) dep_ins_mth __attribute__((deprecated)) ;/* { dg-warning "method attributes are not available in this version" } */
-- (int) dep_ins_mtharg: (int) i __attribute__((deprecated)) ;/* { dg-warning "method attributes are not available in this version" } */
++ (id) dep_cls_mth __attribute__((deprecated)) ;
+- (int) dep_ins_mth __attribute__((deprecated)) ;
+- (int) dep_ins_mtharg: (int) i __attribute__((deprecated)) ;
 - (int) dep_ins_mtharg1: (int) i __attribute__((deprecated)) add: (int) j;/* { dg-error "expected ';' or '\{' after method attribute definition" } */
 - (int) nodef __attribute__((deprecated)) { return var-2; } ; /* { dg-error "expected ';' before '\{' token" } */
 __attribute__((deprecated))
@@ -30,11 +30,11 @@ __attribute__((deprecated))
 int foo (void)
 {
   obj *p = [obj new];
-  id n = [obj dep_cls_mth];
+  id n = [obj dep_cls_mth];	/* { dg-warning "is deprecated" } */
   
-  [p dep_ins_mth];
-  [p dep_ins_mtharg:2];
+  [p dep_ins_mth];		/* { dg-warning "is deprecated" } */
+  [p dep_ins_mtharg:2];		/* { dg-warning "is deprecated" } */
   [p dep_ins_mtharg1:3 add:3];
-
-  return [p mth];    
+	
+  return [p mth];
 }

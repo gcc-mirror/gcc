@@ -6,7 +6,7 @@
 @public 
   int var;
 }
-- (int) vargsn: (int) count, ... __attribute__((deprecated)); /* { dg-warning " method attributes are not available in this version of the compiler" } */
+- (int) vargsn: (int) count, ... __attribute__((deprecated));
 @end
 
 @implementation obj
@@ -20,5 +20,5 @@ int foo (void)
 {
   obj *p = [obj new];
   
-  return [p vargsn:0];
+  return [p vargsn:0];  /* { dg-warning "'vargsn:' is deprecated .declared at" } */
 }

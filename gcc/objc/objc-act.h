@@ -52,6 +52,7 @@ tree objc_eh_personality (void);
 #define METHOD_ADD_ARGS_ELLIPSIS_P(DECL) ((DECL)->decl_common.lang_flag_0)
 #define METHOD_DEFINITION(DECL) ((DECL)->decl_common.initial)
 #define METHOD_ENCODING(DECL) ((DECL)->decl_minimal.context)
+#define METHOD_TYPE_ATTRIBUTES(DECL) ((DECL)->decl_common.abstract_origin)
 
 /* CLASS_INTERFACE_TYPE, CLASS_IMPLEMENTATION_TYPE,
    CATEGORY_INTERFACE_TYPE, CATEGORY_IMPLEMENTATION_TYPE,
