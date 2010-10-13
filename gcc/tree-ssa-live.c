@@ -381,6 +381,14 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees, void *data)
 	}
       set_is_used (t);
     }
+  /* remove_unused_scope_block_p requires information about labels
+     which are not DECL_IGNORED_P to tell if they might be used in the IL.  */
+  if (TREE_CODE (t) == LABEL_DECL)
+    /* Although the TREE_USED values that the frontend uses would be
+       acceptable (albeit slightly over-conservative) for our purposes,
+       init_vars_expansion clears TREE_USED for LABEL_DECLs too, so we
+       must re-compute it here.  */
+    TREE_USED (t) = 1;
 
   if (IS_TYPE_OR_DECL_P (t))
     *walk_subtrees = 0;
@@ -459,6 +467,19 @@ remove_unused_scope_block_p (tree scope)
 	 at all so user can't get into the scopes at first place.  */
       else if ((ann = var_ann (*t)) != NULL
 		&& ann->used)
+	unused = false;
+      else if (TREE_CODE (*t) == LABEL_DECL && TREE_USED (*t))
+	/* For labels that are still used in the IL, the decision to
+	   preserve them must not depend DEBUG_INFO_LEVEL, otherwise we
+	   risk having different ordering in debug vs.  non-debug builds
+	   during inlining or versioning.
+	   A label appearing here (we have already checked DECL_IGNORED_P)
+	   should not be used in the IL unless it has been explicitly used
+	   before, so we use TREE_USED as an approximation.  */
+	/* In principle, we should do the same here as for the debug case
+	   below, however, when debugging, there might be additional nested
+	   levels that keep an upper level with a label live, so we have to
+	   force this block to be considered used, too.  */
 	unused = false;
 
       /* When we are not doing full debug info, we however can keep around
