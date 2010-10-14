@@ -1,5 +1,12 @@
 2010-10-14  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR rtl-optimization/45570
+	* sel-sched-ir.c (cfg_preds_1): When walking out of the region,
+	assert that we are pipelining outer loops.  Allow returning
+	zero predecessors.
+
+2010-10-14  Andrey Belevantsev  <abel@ispras.ru>
+
 	* sel-sched-ir.c (maybe_tidy_empty_bb): Simplify comment.
 	(tidy_control_flow): Tidy vertical space.
 	(sel_remove_bb): New variable idx.  Use it to remember the basic

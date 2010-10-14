@@ -1,3 +1,8 @@
+2010-10-14  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/45570
+	* gcc.dg/pr45570.c: New test.
+
 2010-10-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/recip-vec-sqrtf-avx.c: New.
