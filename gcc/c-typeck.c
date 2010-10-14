@@ -9423,6 +9423,10 @@ build_binary_op (location_t location, enum tree_code code,
      precision.  */
   bool may_need_excess_precision;
 
+  /* True means this is a boolean operation that converts both its
+     operands to truth-values.  */
+  bool boolean_op = false;
+
   if (location == UNKNOWN_LOCATION)
     location = input_location;
 
@@ -9650,6 +9654,7 @@ build_binary_op (location_t location, enum tree_code code,
 	  op0 = c_common_truthvalue_conversion (location, op0);
 	  op1 = c_common_truthvalue_conversion (location, op1);
 	  converted = 1;
+	  boolean_op = true;
 	}
       if (code == TRUTH_ANDIF_EXPR)
 	{
@@ -10192,7 +10197,8 @@ build_binary_op (location_t location, enum tree_code code,
   if (build_type == NULL_TREE)
     {
       build_type = result_type;
-      if (type0 != orig_type0 || type1 != orig_type1)
+      if ((type0 != orig_type0 || type1 != orig_type1)
+	  && !boolean_op)
 	{
 	  gcc_assert (may_need_excess_precision && common);
 	  semantic_result_type = c_common_type (orig_type0, orig_type1);

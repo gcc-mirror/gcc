@@ -1,3 +1,8 @@
+2010-10-14  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/45969
+	* gcc.c-torture/compile/pr45969-1.c: New test.
+
 2010-10-14  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/45382

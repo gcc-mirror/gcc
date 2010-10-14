@@ -1,3 +1,9 @@
+2010-10-14  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/45969
+	* c-typeck.c (build_binary_op): Don't try to compute a semantic
+	type with excess precision for boolean operations.
+
 2010-10-14  Jeremie Salvucci  <jeremie.salvucci@free.fr>
 	    Basile Starynkevitch  <basile@starynkevitch.net>
 
