@@ -2862,18 +2862,38 @@ init_global_and_expr_for_insn (insn_t insn)
     bool force_unique_p;
     ds_t spec_done_ds;
 
-    /* Certain instructions cannot be cloned.  */
-    if (CANT_MOVE (insn)
-	|| INSN_ASM_P (insn)
-	|| SCHED_GROUP_P (insn)
-	|| prologue_epilogue_contains (insn)
-	/* Exception handling insns are always unique.  */
-	|| (cfun->can_throw_non_call_exceptions && can_throw_internal (insn))
-	/* TRAP_IF though have an INSN code is control_flow_insn_p ().  */
-	|| control_flow_insn_p (insn))
-      force_unique_p = true;
+    /* Certain instructions cannot be cloned, and frame related insns and
+       the insn adjacent to NOTE_INSN_EPILOGUE_BEG cannot be moved out of
+       their block.  */
+    if (prologue_epilogue_contains (insn))
+      {
+        if (RTX_FRAME_RELATED_P (insn))
+          CANT_MOVE (insn) = 1;
+        else
+          {
+            rtx note;
+            for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+              if (REG_NOTE_KIND (note) == REG_SAVE_NOTE
+                  && ((enum insn_note) INTVAL (XEXP (note, 0))
+                      == NOTE_INSN_EPILOGUE_BEG))
+                {
+                  CANT_MOVE (insn) = 1;
+                  break;
+                }
+          }
+        force_unique_p = true;
+      }
     else
-      force_unique_p = false;
+      if (CANT_MOVE (insn)
+          || INSN_ASM_P (insn)
+          || SCHED_GROUP_P (insn)
+          /* Exception handling insns are always unique.  */
+          || (cfun->can_throw_non_call_exceptions && can_throw_internal (insn))
+          /* TRAP_IF though have an INSN code is control_flow_insn_p ().  */
+          || control_flow_insn_p (insn))
+        force_unique_p = true;
+      else
+        force_unique_p = false;
 
     if (targetm.sched.get_insn_spec_ds)
       {

@@ -1,5 +1,12 @@
 2010-10-14  Andrey Belevantsev  <abel@ispras.ru>
 
+	* sel-sched-ir.c (init_global_and_expr_for_insn): Set CANT_MOVE
+	on RTX_FRAME_RELATED_P insns and the insn to which
+	NOTE_INSN_EPILOGUE_BEG is attached.
+	* sched-vis.c (print_value): Allow NULL value.
+
+2010-10-14  Andrey Belevantsev  <abel@ispras.ru>
+
 	PR rtl-optimization/45570
 	* sel-sched-ir.c (cfg_preds_1): When walking out of the region,
 	assert that we are pipelining outer loops.  Allow returning

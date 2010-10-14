@@ -1,5 +1,9 @@
 2010-10-14  Andrey Belevantsev  <abel@ispras.ru>
 
+	* gcc.target/ia64/20101005.c: New test.
+
+2010-10-14  Andrey Belevantsev  <abel@ispras.ru>
+
 	PR rtl-optimization/45570
 	* gcc.dg/pr45570.c: New test.
 
