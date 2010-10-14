@@ -117,28 +117,32 @@ extern enum processor_type mn10300_processor;
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.  */
 
-#define FIRST_PSEUDO_REGISTER 51
+#define FIRST_PSEUDO_REGISTER 52
 
-/* Specify machine-specific register numbers.  */
-#define FIRST_DATA_REGNUM 0
-#define LAST_DATA_REGNUM 3
-#define FIRST_ADDRESS_REGNUM 4
-#define LAST_ADDRESS_REGNUM 8
+/* Specify machine-specific register numbers.  The commented out entries
+   are defined in mn10300.md.  */
+#define FIRST_DATA_REGNUM      0
+#define LAST_DATA_REGNUM       3
+#define FIRST_ADDRESS_REGNUM   4
+/* #define PIC_REG             6 */
+#define LAST_ADDRESS_REGNUM    8
+/* #define SP_REG              9 */
 #define FIRST_EXTENDED_REGNUM 10
-#define LAST_EXTENDED_REGNUM 17
-#define FIRST_FP_REGNUM 18
-#define LAST_FP_REGNUM 49
-#define MDR_REGNUM 50
-#define FIRST_ARGUMENT_REGNUM 0
+#define LAST_EXTENDED_REGNUM  17
+#define FIRST_FP_REGNUM       18
+#define LAST_FP_REGNUM        49
+#define MDR_REGNUM            50
+/* #define CC_REG             51 */
+#define FIRST_ARGUMENT_REGNUM  0
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 
 /* Register to use for pushing function arguments.  */
-#define STACK_POINTER_REGNUM (LAST_ADDRESS_REGNUM+1)
+#define STACK_POINTER_REGNUM (LAST_ADDRESS_REGNUM + 1)
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM (LAST_ADDRESS_REGNUM-1)
+#define FRAME_POINTER_REGNUM (LAST_ADDRESS_REGNUM - 1)
 
 /* Base register for access to arguments of the function.  This
    is a fake register and will be eliminated into either the frame
@@ -146,15 +150,15 @@ extern enum processor_type mn10300_processor;
 #define ARG_POINTER_REGNUM LAST_ADDRESS_REGNUM
 
 /* Register in which static-chain is passed to a function.  */
-#define STATIC_CHAIN_REGNUM (FIRST_ADDRESS_REGNUM+1)
+#define STATIC_CHAIN_REGNUM (FIRST_ADDRESS_REGNUM + 1)
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */
 
 #define FIXED_REGISTERS \
   { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 \
-  , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
-  , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 \
+  , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	 \
+  , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1 \
   }
 
 /* 1 for registers not available across function calls.
@@ -167,8 +171,8 @@ extern enum processor_type mn10300_processor;
 
 #define CALL_USED_REGISTERS \
   { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 \
-  , 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
-  , 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 \
+  , 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	 \
+  , 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 \
   }
 
 /* Note: The definition of CALL_REALLY_USED_REGISTERS is not
@@ -181,7 +185,7 @@ extern enum processor_type mn10300_processor;
 #define REG_ALLOC_ORDER \
   { 0, 1, 4, 5, 2, 3, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17, 8, 9 \
   , 42, 43, 44, 45, 46, 47, 48, 49, 34, 35, 36, 37, 38, 39, 40, 41 \
-  , 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 \
+  , 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 51 \
   }
 
 #define CONDITIONAL_REGISTER_USAGE \
@@ -197,8 +201,7 @@ extern enum processor_type mn10300_processor;
   if (!TARGET_AM33_2)				\
     {						\
       for (i = FIRST_FP_REGNUM;			\
-	   i <= LAST_FP_REGNUM; 		\
-           i++) 				\
+	   i <= LAST_FP_REGNUM; i++) 		\
 	fixed_regs[i] = call_used_regs[i] = 1;	\
     }						\
   if (flag_pic)					\
@@ -217,22 +220,15 @@ extern enum processor_type mn10300_processor;
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode
    MODE.  */
-
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
- ((REGNO_REG_CLASS (REGNO) == DATA_REGS \
-   || (TARGET_AM33 && REGNO_REG_CLASS (REGNO) == ADDRESS_REGS) \
-   || REGNO_REG_CLASS (REGNO) == EXTENDED_REGS) \
-  ? ((REGNO) & 1) == 0 || GET_MODE_SIZE (MODE) <= 4	\
-  : ((REGNO) & 1) == 0 || GET_MODE_SIZE (MODE) == 4)
+  mn10300_hard_regno_mode_ok ((REGNO), (MODE))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
 #define MODES_TIEABLE_P(MODE1, MODE2) \
-  (TARGET_AM33  \
-   || MODE1 == MODE2 \
-   || (GET_MODE_SIZE (MODE1) <= 4 && GET_MODE_SIZE (MODE2) <= 4))
+  mn10300_modes_tieable ((MODE1), (MODE2))
 
 /* 4 data, and effectively 3 address registers is small as far as I'm
    concerned.  */
@@ -263,7 +259,7 @@ enum reg_class {
   DATA_OR_ADDRESS_REGS, SP_OR_ADDRESS_REGS,
   EXTENDED_REGS, DATA_OR_EXTENDED_REGS, ADDRESS_OR_EXTENDED_REGS,
   SP_OR_EXTENDED_REGS, SP_OR_ADDRESS_OR_EXTENDED_REGS,
-  FP_REGS, FP_ACC_REGS,
+  FP_REGS, FP_ACC_REGS, CC_REGS,
   GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
@@ -271,35 +267,36 @@ enum reg_class {
 
 /* Give names of register classes as strings for dump file.  */
 
-#define REG_CLASS_NAMES \
-{ "NO_REGS", "DATA_REGS", "ADDRESS_REGS", \
-  "SP_REGS", "DATA_OR_ADDRESS_REGS", "SP_OR_ADDRESS_REGS", \
-  "EXTENDED_REGS", \
-  "DATA_OR_EXTENDED_REGS", "ADDRESS_OR_EXTENDED_REGS", \
-  "SP_OR_EXTENDED_REGS", "SP_OR_ADDRESS_OR_EXTENDED_REGS", \
-  "FP_REGS", "FP_ACC_REGS", \
+#define REG_CLASS_NAMES						\
+{ "NO_REGS", "DATA_REGS", "ADDRESS_REGS",			\
+  "SP_REGS", "DATA_OR_ADDRESS_REGS", "SP_OR_ADDRESS_REGS",	\
+  "EXTENDED_REGS",						\
+  "DATA_OR_EXTENDED_REGS", "ADDRESS_OR_EXTENDED_REGS",		\
+  "SP_OR_EXTENDED_REGS", "SP_OR_ADDRESS_OR_EXTENDED_REGS",	\
+  "FP_REGS", "FP_ACC_REGS", "CC_REGS",				\
   "GENERAL_REGS", "ALL_REGS", "LIM_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS  			\
-{  { 0,	0 },		/* No regs      */	\
- { 0x0000f, 0 },	/* DATA_REGS */		\
- { 0x001f0, 0 },	/* ADDRESS_REGS */	\
- { 0x00200, 0 },	/* SP_REGS */		\
- { 0x001ff, 0 },	/* DATA_OR_ADDRESS_REGS */\
- { 0x003f0, 0 },	/* SP_OR_ADDRESS_REGS */\
- { 0x3fc00, 0 },	/* EXTENDED_REGS */	\
- { 0x3fc0f, 0 },	/* DATA_OR_EXTENDED_REGS */	\
- { 0x3fdf0, 0 },	/* ADDRESS_OR_EXTENDED_REGS */	\
- { 0x3fe00, 0 },	/* SP_OR_EXTENDED_REGS */	\
- { 0x3fff0, 0 },	/* SP_OR_ADDRESS_OR_EXTENDED_REGS */	\
- { 0xfffc0000, 0x3ffff }, /* FP_REGS */		\
- { 0x03fc0000, 0 },	/* FP_ACC_REGS */	\
- { 0x3fdff, 0 }, 	/* GENERAL_REGS */	\
- { 0xffffffff, 0x7ffff } /* ALL_REGS 	*/	\
+#define REG_CLASS_CONTENTS					\
+{ { 0,	        0 },	  /* No regs      */			\
+  { 0x0000000f, 0 },	  /* DATA_REGS */			\
+  { 0x000001f0, 0 },	  /* ADDRESS_REGS */			\
+  { 0x00000200, 0 },	  /* SP_REGS */				\
+  { 0x000001ff, 0 },	  /* DATA_OR_ADDRESS_REGS */		\
+  { 0x000003f0, 0 },	  /* SP_OR_ADDRESS_REGS */		\
+  { 0x0003fc00, 0 },	  /* EXTENDED_REGS */			\
+  { 0x0003fc0f, 0 },	  /* DATA_OR_EXTENDED_REGS */		\
+  { 0x0003fdf0, 0 },	  /* ADDRESS_OR_EXTENDED_REGS */	\
+  { 0x0003fe00, 0 },	  /* SP_OR_EXTENDED_REGS */		\
+  { 0x0003fff0, 0 },	  /* SP_OR_ADDRESS_OR_EXTENDED_REGS */	\
+  { 0xfffc0000, 0x3ffff },/* FP_REGS */				\
+  { 0x03fc0000, 0 },	  /* FP_ACC_REGS */			\
+  { 0x00000000, 0x80000 },/* CC_REGS */				\
+  { 0x0003fdff, 0 }, 	  /* GENERAL_REGS */			\
+  { 0xffffffff, 0xfffff } /* ALL_REGS 	*/			\
 }
 
 /* The following macro defines cover classes for Integrated Register
@@ -326,6 +323,7 @@ enum reg_class {
    (REGNO) == STACK_POINTER_REGNUM ? SP_REGS : \
    (REGNO) <= LAST_EXTENDED_REGNUM ? EXTENDED_REGS : \
    (REGNO) <= LAST_FP_REGNUM ? FP_REGS : \
+   (REGNO) == CC_REG ? CC_REGS : \
    NO_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
@@ -496,10 +494,11 @@ enum reg_class {
 #define REG_PARM_STACK_SPACE(DECL) 8
 #define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
 #define ACCUMULATE_OUTGOING_ARGS 1
-
+#if 1
 /* So we can allocate space for return pointers once for the function
    instead of around every call.  */
 #define STACK_POINTER_OFFSET 4
+#endif
 
 /* 1 if N is a possible register number for function argument passing.
    On the MN10300, d0 and d1 are used in this way.  */
@@ -611,8 +610,7 @@ struct cum_arg {int nbytes; };
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
-
-#define LEGITIMATE_CONSTANT_P(X) 1
+#define LEGITIMATE_CONSTANT_P(X) mn10300_legitimate_constant_p (X)
 
 /* Zero if this needs fixing up to become PIC.  */
 
@@ -675,20 +673,9 @@ struct cum_arg {int nbytes; };
       goto FAIL;							\
   while (0)
 
-/* Tell final.c how to eliminate redundant test instructions.  */
-
-/* Here we define machine-dependent flags and fields in cc_status
-   (see `conditions.h').  No extra ones are needed for the VAX.  */
-
-/* Store in cc_status the expressions
-   that the condition codes will describe
-   after execution of an instruction whose pattern is EXP.
-   Do not alter them if the instruction would not alter the cc's.  */
-
-#define CC_OVERFLOW_UNUSABLE 0x200
-#define CC_NO_CARRY CC_NO_OVERFLOW
-#define NOTICE_UPDATE_CC(EXP, INSN) notice_update_cc(EXP, INSN)
-
+#define SELECT_CC_MODE(OP, X, Y)  mn10300_select_cc_mode (X)
+#define REVERSIBLE_CC_MODE(MODE)  0
+
 #define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) \
   ((CLASS1 == CLASS2 && (CLASS1 == ADDRESS_REGS || CLASS1 == DATA_REGS)) ? 2 :\
    ((CLASS1 == ADDRESS_REGS || CLASS1 == DATA_REGS) && \
@@ -762,24 +749,26 @@ struct cum_arg {int nbytes; };
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
-#define REGISTER_NAMES \
-{ "d0", "d1", "d2", "d3", "a0", "a1", "a2", "a3", "ap", "sp", \
-  "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7" \
-, "fs0", "fs1", "fs2", "fs3", "fs4", "fs5", "fs6", "fs7" \
-, "fs8", "fs9", "fs10", "fs11", "fs12", "fs13", "fs14", "fs15" \
-, "fs16", "fs17", "fs18", "fs19", "fs20", "fs21", "fs22", "fs23" \
-    , "fs24", "fs25", "fs26", "fs27", "fs28", "fs29", "fs30", "fs31", "mdr"	\
+#define REGISTER_NAMES							\
+{ "d0", "d1", "d2", "d3", "a0", "a1", "a2", "a3", "ap", "sp",		\
+  "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"			\
+, "fs0", "fs1", "fs2", "fs3", "fs4", "fs5", "fs6", "fs7"		\
+, "fs8", "fs9", "fs10", "fs11", "fs12", "fs13", "fs14", "fs15"		\
+, "fs16", "fs17", "fs18", "fs19", "fs20", "fs21", "fs22", "fs23"	\
+, "fs24", "fs25", "fs26", "fs27", "fs28", "fs29", "fs30", "fs31"	\
+, "mdr", "EPSW"								\
 }
 
-#define ADDITIONAL_REGISTER_NAMES \
-{ {"r8",  4}, {"r9",  5}, {"r10", 6}, {"r11", 7}, \
-  {"r12", 0}, {"r13", 1}, {"r14", 2}, {"r15", 3}, \
-  {"e0", 10}, {"e1", 11}, {"e2", 12}, {"e3", 13}, \
-  {"e4", 14}, {"e5", 15}, {"e6", 16}, {"e7", 17} \
-, {"fd0", 18}, {"fd2", 20}, {"fd4", 22}, {"fd6", 24} \
-, {"fd8", 26}, {"fd10", 28}, {"fd12", 30}, {"fd14", 32} \
-, {"fd16", 34}, {"fd18", 36}, {"fd20", 38}, {"fd22", 40} \
-, {"fd24", 42}, {"fd26", 44}, {"fd28", 46}, {"fd30", 48} \
+#define ADDITIONAL_REGISTER_NAMES				\
+{ {"r8",  4}, {"r9",  5}, {"r10", 6}, {"r11", 7},		\
+  {"r12", 0}, {"r13", 1}, {"r14", 2}, {"r15", 3},		\
+  {"e0", 10}, {"e1", 11}, {"e2", 12}, {"e3", 13},		\
+  {"e4", 14}, {"e5", 15}, {"e6", 16}, {"e7", 17}		\
+, {"fd0", 18}, {"fd2", 20}, {"fd4", 22}, {"fd6", 24}		\
+, {"fd8", 26}, {"fd10", 28}, {"fd12", 30}, {"fd14", 32}		\
+, {"fd16", 34}, {"fd18", 36}, {"fd20", 38}, {"fd22", 40}	\
+, {"fd24", 42}, {"fd26", 44}, {"fd28", 46}, {"fd30", 48}	\
+, {"cc", CC_REG}						\
 }
 
 /* Print an instruction operand X on file FILE.
@@ -791,9 +780,6 @@ struct cum_arg {int nbytes; };
    This uses a function in output-vax.c.  */
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
-
-#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)
-#define ASM_OUTPUT_REG_POP(FILE,REGNO)
 
 /* This is how to output an element of a case-vector that is absolute.  */
 
@@ -883,12 +869,3 @@ struct cum_arg {int nbytes; };
 
 #define FILE_ASM_OP "\t.file\n"
 
-typedef struct mn10300_cc_status_mdep
-  {
-    int fpCC;
-  }
-cc_status_mdep;
-
-#define CC_STATUS_MDEP cc_status_mdep
-
-#define CC_STATUS_MDEP_INIT (cc_status.mdep.fpCC = 0)

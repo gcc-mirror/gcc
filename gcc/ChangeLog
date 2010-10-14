@@ -1,3 +1,53 @@
+2010-10-14  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.h (CONSTANT_ALIGNMENT): Define.
+	(DATA_ALIGNMENT, LOCAL_ALIGNMENT): Define.
+	(FIRST_PSEUDO_REGISTER): Increase by one.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Update with CC_REG.
+	(HARD_REGNO_MODE_OK): Call mn10300_hard_regno_mode_ok.
+	(MODES_TIEABLE): Call mn10300_modes_tieable.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS, REGNO_REG_CLASS): Add
+	CC_REGS.
+	(LEGITIMATE_CONSTANT_P): Call mn10300_legitimate_constant_p.
+	(CC_OVERFLOW_UNUSABLE, CC_NO_CARRY, NOTICE_UPDATE_CC)
+	(SELECT_CC_MODE, REVERSIBLE_CC_MODE): Delete.
+	(REGISTER_NAMES, ADDITIONAL_REGISTER_NAMES): Add CC register.
+	(ASM_OUTPUT_REG_PUSH, ASM_OUTPUT_REG_POP): Delete.
+	(mn10300_cc_status_mdep): Delete.
+	(CC_STATUS_MDEP, CC_STATUS_MDEP_INIT): Delete.
+	* config/mn10300/mn10300 (mn10300_option_override): Stop disabling
+	the combine-stack-adjust pass.
+	(print_operand): Use the mode of the comparison operation to
+	select the comparison suffix.
+	(notice_update_cc): Delete.
+	(mn10300_secondary_reload_class): Remove test for stack pointer
+	based arithmetic.
+	(output_tst): Rename to mn10300_output_cmp.
+	(impossible_plus_operand): Move into predicates.md.
+	(mn10300_legitimize_address): Make static.
+	(mn10300_legitimate_address_p): Make static.  Only allow SI sized
+	constant pic operands.
+	(mn10300_legitimate_constant_p): New function.
+	(mn10300_case_values_threshold): Make static.
+	(mn10300_hard_regno_mode_ok): New function.
+	(mn10300_modes_tieable): New function.
+	(mn10300_select_cc_mode): New function.
+	* config/mn10300/predicates.md (impossible_plus_operand): Define.
+	* config/mn10300/mn10300-protos.h: Tidy.
+	(mn10300_legitimate_constant_p, mn10300_modes_tieable)
+	(mn10300_hard_regno_mode_ok, mn10300_select_cc_mode): Prototype.
+	* config/mn10300/mn10300.md (cc attribute): Delete.  Replace
+	with clobbers or sets of CC_REG.
+	(CC_REG): Define.
+	(mov*): Remove use of CLR instruction.
+	(cbranch_si4_<code>): New pattern/split.
+	(integer_conditional_branch): New pattern.
+	(cbranch_sf4_<code>): New pattern/split.
+	(float_conditional_branch): New	pattern.
+	(casesi): Use addsi3 pattern instead of movsi pattern to add and
+	move a value at the same time.
+	(cc0 peepholes): Remove.
+
 2010-10-14  Andrey Belevantsev  <abel@ispras.ru>
 
 	* sel-sched-ir.c (init_global_and_expr_for_insn): Set CANT_MOVE
