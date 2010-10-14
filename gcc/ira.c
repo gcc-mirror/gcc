@@ -397,8 +397,8 @@ setup_class_hard_regs (void)
       CLEAR_HARD_REG_SET (processed_hard_reg_set);
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	{
-	  ira_non_ordered_class_hard_regs[cl][0] = -1;
-	  ira_class_hard_reg_index[cl][0] = -1;
+	  ira_non_ordered_class_hard_regs[cl][i] = -1;
+	  ira_class_hard_reg_index[cl][i] = -1;
 	}
       for (n = 0, i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	{

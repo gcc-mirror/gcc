@@ -1,3 +1,8 @@
+2010-10-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira.c (setup_class_hard_regs): Fix typo in indexing
+	ira_non_ordered_class_hard_regs and ira_class_hard_reg_index.
+
 2010-10-14  Tijs Wiebe Lefering  <twlevo@gmail.com>
 
 	* graph.c (inbb): New variable.
