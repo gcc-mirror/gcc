@@ -4578,8 +4578,12 @@ cfg_preds_1 (basic_block bb, insn_t **preds, int *n, int *size)
       basic_block pred_bb = e->src;
       insn_t bb_end = BB_END (pred_bb);
 
-      /* ??? This code is not supposed to walk out of a region.  */
-      gcc_assert (in_current_region_p (pred_bb));
+      if (!in_current_region_p (pred_bb))
+	{
+	  gcc_assert (flag_sel_sched_pipelining_outer_loops
+		      && current_loop_nest);
+	  continue;
+	}
 
       if (sel_bb_empty_p (pred_bb))
 	cfg_preds_1 (pred_bb, preds, n, size);
@@ -4592,7 +4596,9 @@ cfg_preds_1 (basic_block bb, insn_t **preds, int *n, int *size)
 	}
     }
 
-  gcc_assert (*n != 0);
+  gcc_assert (*n != 0
+	      || (flag_sel_sched_pipelining_outer_loops
+		  && current_loop_nest));
 }
 
 /* Find all predecessors of BB and record them in PREDS and their number
