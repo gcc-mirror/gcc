@@ -598,8 +598,8 @@ sched_insn_is_legitimate_for_speculation_p (const_rtx insn, ds_t ds)
     /* The following instructions, which depend on a speculatively scheduled
        instruction, cannot be speculatively scheduled along.  */
     {
-      if (may_trap_p (PATTERN (insn)))
-	/* If instruction might trap, it cannot be speculatively scheduled.
+      if (may_trap_or_fault_p (PATTERN (insn)))
+	/* If instruction might fault, it cannot be speculatively scheduled.
 	   For control speculation it's obvious why and for data speculation
 	   it's because the insn might get wrong input if speculation
 	   wasn't successful.  */

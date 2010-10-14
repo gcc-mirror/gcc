@@ -1,3 +1,14 @@
+2010-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sched-deps.c (sched_insn_is_legitimate_for_speculation): Invoke
+	may_trap_or_fault_p instead of may_trap_p predicate.
+	* tree.c (substitute_in_expr): Propagate the TREE_THIS_NOTRAP flag.
+	(substitute_placeholder_in_expr): Likewise.
+	* tree-inline.c (remap_gimple_op_r): Propagate the TREE_THIS_NOTRAP
+	flag on MEM_REF nodes.
+	(copy_tree_body_r): Propagate the TREE_READONLY and TREE_THIS_NOTRAP
+	flags on INDIRECT_REF nodes.
+
 2010-10-14  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config.gcc (arm*-*-linux-*eabi) <tm_file>: Add bpabi.h from
