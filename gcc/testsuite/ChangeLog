@@ -1,3 +1,12 @@
+2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc.dg/pr45878.m: Update to include NSConstantString interface
+	for -fnext-runtime.
+	* objc.dg/pr23214.m: Use the Object1.m implementation to build m64 on
+	-fnext-runtime, XFAIL the m64 -fnext-runtime run.
+	* objc.dg/objc-foreach-4.m: Provide an NSConstantString dummy class
+	reference for m64 -fnext-runtime.
+
 2010-10-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/vect-sizes-1.c: New.

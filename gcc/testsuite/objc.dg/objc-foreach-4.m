@@ -6,6 +6,12 @@
 #include <objc/objc-api.h>
 #include <Foundation/Foundation.h>
 
+#if defined (__NEXT_RUNTIME__) && defined (__LP64__)
+/* Fudge the class reference until we implement the compiler-side 
+   const strings.  */
+extern void *_NSConstantStringClassReference;
+#endif
+
 // gcc -o foo foo.m -framework Foundation
 
 int main (int argc, char const* argv[]) {
