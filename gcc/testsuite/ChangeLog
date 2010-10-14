@@ -1,3 +1,9 @@
+2010-10-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/recip-vec-sqrtf-avx.c: Scan 256bit AVX
+	register.
+	* gcc.target/i386/recip-vec-divf-avx.c: Likewise.
+
 2010-10-14  Andrey Belevantsev  <abel@ispras.ru>
 
 	* gcc.target/ia64/20101005.c: New test.
