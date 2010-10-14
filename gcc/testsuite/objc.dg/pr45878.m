@@ -11,12 +11,22 @@ typedef unsigned char  BOOL;
 - (BOOL)isEqual:anObject;
 @end
 
+#ifdef __NEXT_RUNTIME__
+@interface NSConstantString: Object
+{
+  char *c_string;
+  unsigned int len;
+}
+@end
+extern void *_NSConstantStringClassReference;
+#else
 @interface NXConstantString: Object
 {
   char *c_string;
   unsigned int len;
 }
 @end
+#endif
 
 void function (void)
 {
