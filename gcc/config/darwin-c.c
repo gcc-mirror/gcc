@@ -610,6 +610,22 @@ darwin_cpp_builtins (cpp_reader *pfile)
 
   builtin_define_with_value ("__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__",
 			     version_as_macro(), false);
+
+  /* Since we do not (at 4.6) support ObjC gc for the NeXT runtime, the
+     following will cause a syntax error if one tries to compile gc attributed
+     items.  However, without this, NeXT system headers cannot be parsed 
+     properly (on systems >= darwin 9).  */
+  if (flag_objc_gc)
+    {
+      builtin_define ("__strong=__attribute__((objc_gc(strong)))");
+      builtin_define ("__weak=__attribute__((objc_gc(weak)))");
+      builtin_define ("__OBJC_GC__");
+    }
+  else
+    {
+      builtin_define ("__strong=");
+      builtin_define ("__weak=");
+    }
 }
 
 /* Handle C family front-end options.  */

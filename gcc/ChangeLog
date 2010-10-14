@@ -1,3 +1,9 @@
+2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
+
+	Partial merge of 'ObjC GC' from FSF apple 'trunk' branch.
+	* config/darwin-c.c (darwin_cpp_builtins): Define __weak and
+	__strong macros.
+
 2010-10-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sched-deps.c (sched_insn_is_legitimate_for_speculation): Invoke
