@@ -2593,7 +2593,11 @@ finish_class_member_access_expr (tree object, tree name, bool template_p,
 	return build_min_nt (COMPONENT_REF, object, name, NULL_TREE);
       object = build_non_dependent_expr (object);
     }
-
+  else if (c_dialect_objc ()
+	   && TREE_CODE (name) == IDENTIFIER_NODE
+	   && (expr = objc_build_getter_call (object, name)))
+    return expr;
+    
   /* [expr.ref]
 
      The type of the first expression shall be "class object" (of a
@@ -6758,6 +6762,13 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 
       if (modifycode == NOP_EXPR)
 	{
+	  if (c_dialect_objc ())
+	    {
+	      result = objc_build_setter_call (lhs, rhs);
+	      if (result)
+		return result;
+	    }
+
 	  /* `operator=' is not an inheritable operator.  */
 	  if (! MAYBE_CLASS_TYPE_P (lhstype))
 	    /* Do the default thing.  */;
@@ -6796,6 +6807,12 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 
 	  /* Now it looks like a plain assignment.  */
 	  modifycode = NOP_EXPR;
+	  if (c_dialect_objc ())
+	    {
+	      result = objc_build_setter_call (lhs, newrhs);
+	      if (result)
+		return result;
+	    }
 	}
       gcc_assert (TREE_CODE (lhstype) != REFERENCE_TYPE);
       gcc_assert (TREE_CODE (TREE_TYPE (newrhs)) != REFERENCE_TYPE);

@@ -34,6 +34,7 @@ DEFTREECODE (PROTOCOL_INTERFACE_TYPE, "protocol_interface_type", tcc_type, 0)
 DEFTREECODE (KEYWORD_DECL, "keyword_decl", tcc_declaration, 0)
 DEFTREECODE (INSTANCE_METHOD_DECL, "instance_method_decl", tcc_declaration, 0)
 DEFTREECODE (CLASS_METHOD_DECL, "class_method_decl", tcc_declaration, 0)
+DEFTREECODE (PROPERTY_DECL, "property_decl", tcc_declaration, 0)
 
 /* Objective-C expressions.  */
 DEFTREECODE (MESSAGE_SEND_EXPR, "message_send_expr", tcc_expression, 3)

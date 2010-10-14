@@ -543,6 +543,7 @@ const struct c_common_resword c_common_reswords[] =
   { "synchronized",	RID_AT_SYNCHRONIZED,	D_OBJC },
   { "optional",		RID_AT_OPTIONAL,	D_OBJC },
   { "required",		RID_AT_REQUIRED,	D_OBJC },
+  { "property",		RID_AT_PROPERTY,	D_OBJC },
   /* These are recognized only in protocol-qualifier context
      (see above) */
   { "bycopy",		RID_BYCOPY,		D_OBJC },
@@ -551,6 +552,12 @@ const struct c_common_resword c_common_reswords[] =
   { "inout",		RID_INOUT,		D_OBJC },
   { "oneway",		RID_ONEWAY,		D_OBJC },
   { "out",		RID_OUT,		D_OBJC },
+  /* These are recognized inside a property attribute list */
+  { "readonly",		RID_READONLY,		D_OBJC }, 
+  { "copies",		RID_COPIES,		D_OBJC },
+  { "getter",		RID_GETTER,		D_OBJC }, 
+  { "setter",		RID_SETTER,		D_OBJC }, 
+  { "ivar",		RID_IVAR,		D_OBJC }, 
 };
 
 const unsigned int num_c_common_reswords =

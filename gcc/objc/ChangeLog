@@ -1,3 +1,48 @@
+2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
+
+	merge from FSF apple 'trunk' branch. 
+	2006 Fariborz Jahanian <fjahanian@apple.com>
+	
+	Radars 4436866, 4505126, 4506903, 4517826
+	* objc-act.c (CALL_EXPR_OBJC_PROPERTY_GETTER): New.
+	property_readonly, property_getter, property_setter, property_ivar,
+	property_copies, in_objc_property_setter_name_context: New vars.
+	(objc_set_property_attr): New.
+	(objc_add_property_variable): New.
+	(lookup_property_in_list): New.
+	(lookup_property): New.
+	(objc_build_getter_call): New.
+	(objc_setter_func_call): New.
+	(get_selector_from_reference): New.
+	(objc_build_setter_call): New.
+	(is_property): New.
+	(build_property_reference): New.
+	(objc_finish_message_expr): Detect readonly property and warn.
+	(objc_build_property_ivar_name): New.
+	(objc_build_property_setter_name): New.
+	(objc_gen_one_property_datum): New.
+	(objc_process_getter_setter): New.
+	(objc_synthesize_getter): New.
+	(objc_synthesize_setter): New.
+	(objc_gen_property_data): New.
+	(finish_class): Generate property data.
+	(comp_proto_with_proto): Separated from ...
+	(match_proto_with_proto): ... New.
+	(objc_lookup_ivar): Handle properties.
+	* objc-tree.def (PROPERTY_DECL): New tree code.
+	* objc-act.h: CLASS_LANG_SLOT_ELTS, PROTOCOL_LANG_SLOT_ELTS update size.
+	(METHOD_PROPERTY_CONTEXT): New.
+	(PROPERTY_NAME): New.
+	(PROPERTY_GETTER_NAME): New.
+	(PROPERTY_SETTER_NAME): New.
+	(PROPERTY_IVAR_NAME): New.
+	(PROPERTY_READONLY): New.
+	(PROPERTY_COPIES): New.
+	(TOTAL_CLASS_RAW_IVARS): New.
+	(CLASS_PROPERTY_DECL): New.
+	(IMPL_PROPERTY_DECL): New.
+	* objc-lang.c (objc_init_ts): Update fields for property_decl.
+
 2010-10-13  Richard Henderson  <rth@redhat.com>
 
 	* objc-act.c (objc_eh_personality): Update call to
