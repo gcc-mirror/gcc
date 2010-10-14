@@ -8,7 +8,7 @@
 2010-10-12  Vincent Celier  <celier@adacore.com>
 
 	* prj-nmsc.adb (Add_Source): Put source in hash table Source_Files_HT
-	(Process_Exceptions_File_Based): Use hash table Source_Files_HT, instead
+	(Process_Exceptions_File_Based): Use hash table Source_Files_HT instead
 	of iterating through all sources of the project.
 	* prj.adb (Free): Reset hash table Source_Files_HT
 	(Reset): Reset hash table Source_Files_HT
@@ -99,7 +99,7 @@
 2010-10-12  Jose Ruiz  <ruiz@adacore.com>
 
 	* gnatcmd.adb: Use response file for GNATstack.
-	(Check_Files): Pass the list of .ci files for GNATstack using a response
+	(Check_Files): Pass the list of ci files for GNATstack using a response
 	file to avoid problems with command line length.
 	Factor out the code handling response file into a new procedure named
 	Add_To_Response_File.
@@ -239,7 +239,8 @@
 
 2010-10-12  Robert Dewar  <dewar@adacore.com>
 
-	* par-ch13.adb (P_Aspect_Specifications): Fix handling of 'Class aspects
+	* par-ch13.adb (P_Aspect_Specifications): Fix handling of 'Class
+	aspects.
 	* sem_ch13.adb (Analyze_Aspect_Specifications): Fix bad Sloc on aspects
 	* sem_prag.adb (Fix_Error): Only change pragma names for pragmas from
 	aspects.
@@ -365,14 +366,16 @@
 	(Duplicate_Clause): Simplify using Get_Rep_Item_For_Entity, and also
 	accomodate delayed aspects.
 	(Rep_Item_Too_Late): Deal with delayed aspects case
-	* sem_ch13.ads (Rep_Item_Too_Late): Document handling of delayed aspects
+	* sem_ch13.ads (Rep_Item_Too_Late): Document handling of delayed
+	aspects.
 	* sem_ch3.adb (Analyze_Subtype_Declaration): Make sure that generic
 	actual types are properly frozen (this is needed because of the new
 	check in Eval_Attribute that declines to evaluate attributes
 	for unfrozen types).
 	Simplify analysis of aspect specifications now that the flag
 	Has_Aspects applies to all nodes (no need to save aspects).
-	* sem_ch3.ads (Preanalyze_Spec_Expression): Note use for delayed aspects
+	* sem_ch3.ads (Preanalyze_Spec_Expression): Note use for delayed
+	aspects.
 	* sem_ch5.adb: Simplify analysis of aspect specifications now that the
 	flag Has_Aspects applies to all nodes (no need to save aspects).
 	New calling sequence for Freeze_Entity.
@@ -551,8 +554,8 @@
 	* sem_ch10.adb (Install_Limited_With_Clause): Do not process context
 	item if misplaced.
 	(Install_Limited_Withed_Unit): Refine legality checks when both the
-	limited and the non-limited view of a package are visible in the context
-	of a unit.
+	limited and the non-limited view of a package are visible in the
+	context of a unit.
 	If this is not an error case, the limited view is ignored.
 	freeze.adb (Freeze_Entity): In Ada2012, an incomplete type is legal in
 	access to subprogram declarations
@@ -602,8 +605,8 @@
 
 	* sem_prag.adb (Process_Suppress_Unsuppress): Ignore
 	Suppress/Unsuppress pragmas in codepeer mode.
-	(Analyze_Pragma [Pragma_Suppress_All]): Do not generate error message in
-	codepeer mode.
+	(Analyze_Pragma [Pragma_Suppress_All]): Do not generate error message
+	in codepeer mode.
 	* einfo.ads: Fix typo.
 
 2010-10-11  Emmanuel Briot  <briot@adacore.com>
