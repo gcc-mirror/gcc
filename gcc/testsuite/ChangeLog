@@ -5,6 +5,11 @@
 
 2010-10-14  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/44913
+	* gcc.dg/torture/pr44913.c: New testcase.
+
+2010-10-14  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/45382
 	* g++.dg/lto/20101014-2_0.C: New testcase.
 
