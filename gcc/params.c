@@ -35,11 +35,17 @@ param_info *compiler_params;
 /* The number of entries in the table.  */
 static size_t num_compiler_params;
 
+/* Whether the parameters have all been initialized and had their
+   default values determined.  */
+static bool params_finished;
+
 /* Add the N PARAMS to the current list of compiler parameters.  */
 
 void
 add_params (const param_info params[], size_t n)
 {
+  gcc_assert (!params_finished);
+
   /* Allocate enough space for the new parameters.  */
   compiler_params = XRESIZEVEC (param_info, compiler_params,
 				num_compiler_params + n);
@@ -51,25 +57,39 @@ add_params (const param_info params[], size_t n)
   num_compiler_params += n;
 }
 
-/* Set the value of the parameter given by NUM to VALUE.  If
-   EXPLICIT_P, this is being set by the user; otherwise it is being
-   set implicitly by the compiler.  */
+/* Note that all parameters have been added and all default values
+   set.  */
+
+void
+finish_params (void)
+{
+  params_finished = true;
+}
+
+/* Set the value of the parameter given by NUM to VALUE in PARAMS and
+   PARAMS_SET.  If EXPLICIT_P, this is being set by the user;
+   otherwise it is being set implicitly by the compiler.  */
 
 static void
 set_param_value_internal (compiler_param num, int value,
+			  int *params, int *params_set,
 			  bool explicit_p)
 {
   size_t i = (size_t) num;
 
-  compiler_params[i].value = value;
+  gcc_assert (params_finished);
+
+  params[i] = value;
   if (explicit_p)
-    compiler_params[i].set = true;
+    params_set[i] = true;
 }
 
-/* Set the VALUE associated with the parameter given by NAME.  */
+/* Set the VALUE associated with the parameter given by NAME in PARAMS
+   and PARAMS_SET.  */
 
 void
-set_param_value (const char *name, int value)
+set_param_value (const char *name, int value,
+		 int *params, int *params_set)
 {
   size_t i;
 
@@ -90,7 +110,8 @@ set_param_value (const char *name, int value)
 		 compiler_params[i].option,
 		 compiler_params[i].max_value);
 	else
-	  set_param_value_internal ((compiler_param) i, value, true);
+	  set_param_value_internal ((compiler_param) i, value,
+				    params, params_set, true);
 	return;
       }
 
@@ -98,14 +119,16 @@ set_param_value (const char *name, int value)
   error ("invalid parameter %qs", name);
 }
 
-/* Set the value of the parameter given by NUM to VALUE, implicitly,
-   if it has not been set explicitly by the user.  */
+/* Set the value of the parameter given by NUM to VALUE in PARAMS and
+   PARAMS_SET, implicitly, if it has not been set explicitly by the
+   user.  */
 
 void
-maybe_set_param_value (compiler_param num, int value)
+maybe_set_param_value (compiler_param num, int value,
+		       int *params, int *params_set)
 {
-  if (!PARAM_SET_P (num))
-    set_param_value_internal (num, value, false);
+  if (!params_set[(int) num])
+    set_param_value_internal (num, value, params, params_set, false);
 }
 
 /* Set the default value of a parameter given by NUM to VALUE, before
@@ -114,8 +137,31 @@ maybe_set_param_value (compiler_param num, int value)
 void
 set_default_param_value (compiler_param num, int value)
 {
-  gcc_assert (!PARAM_SET_P (num));
-  set_param_value_internal (num, value, false);
+  gcc_assert (!params_finished);
+
+  compiler_params[(int) num].default_value = value;
+}
+
+/* Return the default value of parameter NUM.  */
+
+int
+default_param_value (compiler_param num)
+{
+  return compiler_params[(int) num].default_value;
+}
+
+/* Initialize an array PARAMS with default values of the
+   parameters.  */
+
+void
+init_param_values (int *params)
+{
+  size_t i;
+
+  gcc_assert (params_finished);
+
+  for (i = 0; i < num_compiler_params; i++)
+    params[i] = compiler_params[i].default_value;
 }
 
 /* Return the current value of num_compiler_params, for the benefit of

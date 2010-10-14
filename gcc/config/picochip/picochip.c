@@ -354,8 +354,12 @@ picochip_option_override (void)
      that could potentially increase stack size.*/
    if (flag_conserve_stack)
      {
-       maybe_set_param_value (PARAM_LARGE_STACK_FRAME, 0);
-       maybe_set_param_value (PARAM_STACK_FRAME_GROWTH, 0);
+       maybe_set_param_value (PARAM_LARGE_STACK_FRAME, 0,
+			      global_options.x_param_values,
+			      global_options_set.x_param_values);
+       maybe_set_param_value (PARAM_STACK_FRAME_GROWTH, 0,
+			      global_options.x_param_values,
+			      global_options_set.x_param_values);
      }
 
   /* Turn off the elimination of unused types. The elaborator

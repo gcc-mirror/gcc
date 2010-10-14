@@ -44,11 +44,9 @@ typedef struct param_info
   /* The name used with the `--param <name>=<value>' switch to set this
      value.  */
   const char *const option;
-  /* The associated value.  */
-  int value;
 
-  /* True if the parameter was explicitly set.  */
-  bool set;
+  /* The default value.  */
+  int default_value;
 
   /* Minimum acceptable value.  */
   int min_value;
@@ -72,9 +70,12 @@ extern size_t get_num_compiler_params (void);
 
 extern void add_params (const param_info params[], size_t n);
 
-/* Set the VALUE associated with the parameter given by NAME.  */
+/* Set the VALUE associated with the parameter given by NAME in the
+   table PARAMS using PARAMS_SET to indicate which have been
+   explicitly set.  */
 
-extern void set_param_value (const char *name, int value);
+extern void set_param_value (const char *name, int value,
+			     int *params, int *params_set);
 
 
 /* The parameters in use by language-independent code.  */
@@ -90,22 +91,31 @@ typedef enum compiler_param
 
 /* The value of the parameter given by ENUM.  Not an lvalue.  */
 #define PARAM_VALUE(ENUM) \
-  ((int) compiler_params[(int) ENUM].value)
+  ((int) global_options.x_param_values[(int) ENUM])
 
 /* Set the value of the parameter given by NUM to VALUE, implicitly,
-   if it has not been set explicitly by the user.  */
+   if it has not been set explicitly by the user, in the table PARAMS
+   using PARAMS_SET to indicate which have been explicitly set.  */
 
-extern void maybe_set_param_value (compiler_param num, int value);
+extern void maybe_set_param_value (compiler_param num, int value,
+				   int *params, int *params_set);
 
 /* Set the default value of a parameter given by NUM to VALUE, before
    option processing.  */
 
 extern void set_default_param_value (compiler_param num, int value);
 
-/* True if the value of the parameter was explicitly changed.  Not an
-   lvalue.  */
-#define PARAM_SET_P(ENUM) \
-  ((bool) compiler_params[(int) ENUM].set)
+/* Note that all parameters have been added and all default values
+   set.  */
+extern void finish_params (void);
+
+/* Return the default value of parameter NUM.  */
+
+extern int default_param_value (compiler_param num);
+
+/* Initialize an array PARAMS with default values of the
+   parameters.  */
+extern void init_param_values (int *params);
 
 /* Macros for the various parameters.  */
 #define STRUCT_REORG_COLD_STRUCT_RATIO \

@@ -362,7 +362,8 @@ static bool common_handle_option (struct gcc_options *opts,
 				  const struct cl_decoded_option *decoded,
 				  unsigned int lang_mask, int kind,
 				  const struct cl_option_handlers *handlers);
-static void handle_param (const char *);
+static void handle_param (struct gcc_options *opts,
+			  struct gcc_options *opts_set, const char *carg);
 static char *write_langs (unsigned int lang_mask);
 static void complain_wrong_lang (const struct cl_decoded_option *,
 				 unsigned int lang_mask);
@@ -652,11 +653,6 @@ read_cmdline_options (struct gcc_options *opts, struct gcc_options *opts_set,
 /* Language mask determined at initialization.  */
 static unsigned int initial_lang_mask;
 
-/* Initial values of parameters we reset.  */
-static int initial_min_crossjump_insns;
-static int initial_max_fields_for_field_sensitive;
-static int initial_loop_invariant_max_bbs_in_loop;
-
 /* Initialize global options-related settings at start-up.  */
 
 void
@@ -666,14 +662,6 @@ init_options_once (void)
   initial_lang_mask = lang_hooks.option_lang_mask ();
 
   lang_hooks.initialize_diagnostics (global_dc);
-
-  /* Save initial values of parameters we reset.  */
-  initial_min_crossjump_insns
-    = PARAM_VALUE (PARAM_MIN_CROSSJUMP_INSNS);
-  initial_max_fields_for_field_sensitive
-    = PARAM_VALUE (PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE);
-  initial_loop_invariant_max_bbs_in_loop
-    = PARAM_VALUE (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP);
 }
 
 /* Initialize OPTS and OPTS_SET before using them in parsing options.  */
@@ -681,8 +669,14 @@ init_options_once (void)
 void
 init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
 {
+  size_t num_params = get_num_compiler_params ();
+
   *opts = global_options_init;
   memset (opts_set, 0, sizeof (*opts_set));
+
+  opts->x_param_values = XNEWVEC (int, num_params);
+  opts_set->x_param_values = XCNEWVEC (int, num_params);
+  init_param_values (opts->x_param_values);
 
   /* Use priority coloring if cover classes is not defined for the
      target.  */
@@ -853,12 +847,16 @@ default_options_optimization (struct gcc_options *opts,
   flag_ipa_sra = opt2;
 
   /* Track fields in field-sensitive alias analysis.  */
-  maybe_set_param_value (PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE,
-			 opt2 ? 100 : initial_max_fields_for_field_sensitive);
+  maybe_set_param_value
+    (PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE,
+     opt2 ? 100 : default_param_value (PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE),
+     opts->x_param_values, opts_set->x_param_values);
 
   /* For -O1 only do loop invariant motion for very small loops.  */
-  maybe_set_param_value (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP,
-			 opt2 ? initial_loop_invariant_max_bbs_in_loop : 1000);
+  maybe_set_param_value
+    (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP,
+     opt2 ? default_param_value (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP) : 1000,
+     opts->x_param_values, opts_set->x_param_values);
 
   /* -O3 optimizations.  */
   opt3 = (optimize >= 3);
@@ -891,11 +889,13 @@ default_options_optimization (struct gcc_options *opts,
 	optimize = 2;
 
       /* We want to crossjump as much as possible.  */
-      maybe_set_param_value (PARAM_MIN_CROSSJUMP_INSNS, 1);
+      maybe_set_param_value (PARAM_MIN_CROSSJUMP_INSNS, 1,
+			     opts->x_param_values, opts_set->x_param_values);
     }
   else
     maybe_set_param_value (PARAM_MIN_CROSSJUMP_INSNS,
-			   initial_min_crossjump_insns);
+			   default_param_value (PARAM_MIN_CROSSJUMP_INSNS),
+			   opts->x_param_values, opts_set->x_param_values);
 
   /* -Ofast adds optimizations to -O3.  */
   if (ofast)
@@ -1115,8 +1115,10 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set)
 
   if (flag_conserve_stack)
     {
-      maybe_set_param_value (PARAM_LARGE_STACK_FRAME, 100);
-      maybe_set_param_value (PARAM_STACK_FRAME_GROWTH, 40);
+      maybe_set_param_value (PARAM_LARGE_STACK_FRAME, 100,
+			     opts->x_param_values, opts_set->x_param_values);
+      maybe_set_param_value (PARAM_STACK_FRAME_GROWTH, 40,
+			     opts->x_param_values, opts_set->x_param_values);
     }
   if (flag_wpa || flag_ltrans)
     {
@@ -1506,7 +1508,7 @@ common_handle_option (struct gcc_options *opts,
   switch (code)
     {
     case OPT__param:
-      handle_param (arg);
+      handle_param (opts, opts_set, arg);
       break;
 
     case OPT_v:
@@ -1826,8 +1828,10 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_finline_limit_:
-      set_param_value ("max-inline-insns-single", value / 2);
-      set_param_value ("max-inline-insns-auto", value / 2);
+      set_param_value ("max-inline-insns-single", value / 2,
+		       opts->x_param_values, opts_set->x_param_values);
+      set_param_value ("max-inline-insns-auto", value / 2,
+		       opts->x_param_values, opts_set->x_param_values);
       break;
 
     case OPT_finstrument_functions_exclude_function_list_:
@@ -2122,7 +2126,8 @@ common_handle_option (struct gcc_options *opts,
 
 /* Handle --param NAME=VALUE.  */
 static void
-handle_param (const char *carg)
+handle_param (struct gcc_options *opts, struct gcc_options *opts_set,
+	      const char *carg)
 {
   char *equal, *arg;
   int value;
@@ -2139,7 +2144,8 @@ handle_param (const char *carg)
       else
 	{
 	  *equal = '\0';
-	  set_param_value (arg, value);
+	  set_param_value (arg, value,
+			   opts->x_param_values, opts_set->x_param_values);
 	}
     }
 

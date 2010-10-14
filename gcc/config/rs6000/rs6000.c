@@ -3159,11 +3159,19 @@ rs6000_option_override_internal (const char *default_cpu)
       }
 
   maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			 rs6000_cost->simultaneous_prefetches);
-  maybe_set_param_value (PARAM_L1_CACHE_SIZE, rs6000_cost->l1_cache_size);
+			 rs6000_cost->simultaneous_prefetches,
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
+  maybe_set_param_value (PARAM_L1_CACHE_SIZE, rs6000_cost->l1_cache_size,
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
   maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
-			 rs6000_cost->cache_line_size);
-  maybe_set_param_value (PARAM_L2_CACHE_SIZE, rs6000_cost->l2_cache_size);
+			 rs6000_cost->cache_line_size,
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
+  maybe_set_param_value (PARAM_L2_CACHE_SIZE, rs6000_cost->l2_cache_size,
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
 
   /* If using typedef char *va_list, signal that __builtin_va_start (&ap, 0)
      can be optimized to ap = __builtin_next_arg (0).  */

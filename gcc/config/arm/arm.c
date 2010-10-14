@@ -1958,7 +1958,9 @@ arm_option_override (void)
        but measurable, size reduction for PIC code.  Therefore, we decrease
        the bar for unrestricted expression hoisting to the cost of PIC address
        calculation, which is 2 instructions.  */
-    maybe_set_param_value (PARAM_GCSE_UNRESTRICTED_COST, 2);
+    maybe_set_param_value (PARAM_GCSE_UNRESTRICTED_COST, 2,
+			   global_options.x_param_values,
+			   global_options_set.x_param_values);
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();

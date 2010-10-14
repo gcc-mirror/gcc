@@ -3633,10 +3633,18 @@ ix86_option_override_internal (bool main_args_p)
     flag_schedule_insns_after_reload = flag_schedule_insns = 0;
 
   maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-			 ix86_cost->simultaneous_prefetches);
-  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE, ix86_cost->prefetch_block);
-  maybe_set_param_value (PARAM_L1_CACHE_SIZE, ix86_cost->l1_cache_size);
-  maybe_set_param_value (PARAM_L2_CACHE_SIZE, ix86_cost->l2_cache_size);
+			 ix86_cost->simultaneous_prefetches,
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
+  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE, ix86_cost->prefetch_block,
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
+  maybe_set_param_value (PARAM_L1_CACHE_SIZE, ix86_cost->l1_cache_size,
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
+  maybe_set_param_value (PARAM_L2_CACHE_SIZE, ix86_cost->l2_cache_size,
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
 
   /* Enable sw prefetching at -O3 for CPUS that prefetching is helpful.  */
   if (flag_prefetch_loop_arrays < 0
