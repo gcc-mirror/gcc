@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -mavx" } */
+/* { dg-options "-O2 -ftree-vectorize -mavx -mtune=generic" } */
 /* { dg-final { scan-assembler "and\[lq\]?\[\\t \]*\\$-32,\[\\t \]*%\[re\]?sp" } } */
 /* { dg-final { scan-assembler "vmovaps\[\\t \]*%ymm" } } */
 
