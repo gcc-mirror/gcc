@@ -1,3 +1,54 @@
+2010-10-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* params.c (params_finished): New.
+	(add_params): Assert !params_finished.
+	(finish_params): New.
+	(set_param_value_internal): Take params and params_set
+	parameters.  Assert params_finished.
+	(set_param_value, maybe_set_param_value): Take params and
+	params_set parameters.  Update calls to set_param_value_internal.
+	(set_default_param_value): Assert !params_finished.  Don't use
+	set_param_value_internal.
+	(default_param_value, init_param_values): New.
+	* params.h (struct param_info): Change value to default_value.
+	Remove set.
+	(set_param_value, maybe_set_param_value): Add params and
+	params_set parameters.
+	(PARAM_VALUE): Get parameters from global_options.
+	(PARAM_SET_P): Remove.
+	(finish_params, default_param_value, init_param_values): New.
+	* common.opt (param_values): New Variable.
+	* config/arm/arm.c (arm_option_override): Pass extra arguments to
+	maybe_set_param_value.
+	* config/i386/i386.c (ix86_option_override_internal): Pass extra
+	arguments to maybe_set_param_value.
+	* config/picochip/picochip.c (picochip_option_override): Pass
+	extra arguments to maybe_set_param_value.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Pass
+	extra arguments to maybe_set_param_value.
+	* config/s390/s390.c (s390_option_override): Use
+	maybe_set_param_value instead of set_param_value.  Pass extra
+	arguments to maybe_set_param_value.
+	* config/sparc/sparc.c (sparc_option_override): Pass extra
+	arguments to maybe_set_param_value.
+	* config/spu/spu.c (spu_option_override): Pass extra arguments to
+	maybe_set_param_value.
+	* opts.c (handle_param): Take opts and opts_set parameters.
+	Update call to set_param_value.
+	(initial_min_crossjump_insns,
+	initial_max_fields_for_field_sensitive,
+	initial_loop_invariant_max_bbs_in_loop): Remove.
+	(init_options_once): Don't set them.
+	(init_options_struct): Initialize parameters structures.
+	(default_options_optimization): Use default_param_value when
+	restoring defaults.  Update calls to maybe_set_param_value.
+	(finish_options): Update calls to maybe_set_param_value.
+	(common_handle_option): Update calls to handle_param and
+	set_param_value.
+	* toplev.c (DEFPARAM): Update definition for changes to
+	param_info.
+	(general_init): Call finish_params.
+
 2010-10-14  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.h (CONSTANT_ALIGNMENT): Define.

@@ -514,7 +514,9 @@ spu_option_override (void)
   /* Small loops will be unpeeled at -O3.  For SPU it is more important
      to keep code small by default.  */
   if (!flag_unroll_loops && !flag_peel_loops)
-    maybe_set_param_value (PARAM_MAX_COMPLETELY_PEEL_TIMES, 1);
+    maybe_set_param_value (PARAM_MAX_COMPLETELY_PEEL_TIMES, 1,
+			   global_options.x_param_values,
+			   global_options_set.x_param_values);
 
   flag_omit_frame_pointer = 1;
 

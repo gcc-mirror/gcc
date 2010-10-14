@@ -922,13 +922,17 @@ sparc_option_override (void)
 			   || sparc_cpu == PROCESSOR_NIAGARA2)
 			  ? 2
 			  : (sparc_cpu == PROCESSOR_ULTRASPARC3
-			     ? 8 : 3)));
+			     ? 8 : 3)),
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
   maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
 			 ((sparc_cpu == PROCESSOR_ULTRASPARC
 			   || sparc_cpu == PROCESSOR_ULTRASPARC3
 			   || sparc_cpu == PROCESSOR_NIAGARA
 			   || sparc_cpu == PROCESSOR_NIAGARA2)
-			  ? 64 : 32));
+			  ? 64 : 32),
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
 }
 
 /* Miscellaneous utilities.  */
