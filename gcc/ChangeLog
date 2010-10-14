@@ -1,3 +1,7 @@
+2010-10-14  Zdenek Dvorak  <rakdver@kam.uniff.cz>
+	* et-forest.c (et_nca): Return NULL immediately when
+	the dominance forest has disjoint components.
+
 2010-10-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira.c (setup_class_hard_regs): Fix typo in indexing
