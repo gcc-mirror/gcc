@@ -1,3 +1,34 @@
+2010-10-14  Jeremie Salvucci  <jeremie.salvucci@free.fr>
+	    Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* gengtype.c:  Include getopt.h and version.h.
+
+	(lang_bitmap, struct outf, outf_p)
+	(get_output_file_with_visibility, oprintf): Definitions moved to
+	gengtype.h
+	(output_files, header_file, srcdir, srcdir_len, this_file)
+	(do_dump): No more static variables.
+	(do_debug): New.
+	(dbgprint_count_type_at): Added new function.
+	(gengtype_long_options): New.
+	(print_usage, print_version, parse_program_options): New.
+	(main): Call parse_program_options, and removed old option
+	handling code.  Added some debug output.
+
+	* gengtype.h:  Updated copyright year.
+	(lang_bitmap, struct outf, outf_p, header_file, oprintf)
+	(get_output_file_with_visibility, srcdir, srcdir_len, do_dump):
+	Moved from gengtype.c to here.
+	(do_debug, read_state_filename, write_state_filename): New
+	variables. (DBGPRINTF, DBGPRINT_COUNT_TYPE): New macros.
+
+	* Makefile.in:
+	(REVISION): Always defined.
+	(version.o): Removed ifdef REVISION_c.
+	(s-gtype): Pass arguments to build/gengtype program.
+	(build/version.o): Added building rule.
+	(build/gengtype$(build_exeext)): Added build/version.o.
+
 2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
 	Partial merge of 'ObjC GC' from FSF apple 'trunk' branch.

@@ -20,10 +20,12 @@
 
 #include "bconfig.h"
 #include "system.h"
-#include "gengtype.h"
 #include "errors.h"		/* for fatal */
+#include "getopt.h"
 #include "double-int.h"
+#include "version.h"		/* for version_string & pkgversion_string.  */
 #include "hashtab.h"
+#include "gengtype.h"
 
 /* Data types, macros, etc. used only in this file.  */
 
@@ -40,7 +42,6 @@ enum typekind
   TYPE_PARAM_STRUCT
 };
 
-typedef unsigned lang_bitmap;
 
 /* A way to pass data through to the output end.  */
 struct options
@@ -117,55 +118,50 @@ struct type
 };
 
 #define UNION_P(x)					\
-  ((x)->kind == TYPE_UNION || 				\
-   ((x)->kind == TYPE_LANG_STRUCT 			\
-    && (x)->u.s.lang_struct->kind == TYPE_UNION))
+ ((x)->kind == TYPE_UNION || 				\
+  ((x)->kind == TYPE_LANG_STRUCT 			\
+   && (x)->u.s.lang_struct->kind == TYPE_UNION))
 #define UNION_OR_STRUCT_P(x)			\
-  ((x)->kind == TYPE_UNION 			\
-   || (x)->kind == TYPE_STRUCT 			\
-   || (x)->kind == TYPE_LANG_STRUCT)
+ ((x)->kind == TYPE_UNION 			\
+  || (x)->kind == TYPE_STRUCT 			\
+  || (x)->kind == TYPE_LANG_STRUCT)
 
-/* Structure representing an output file.  */
-struct outf
-{
-  struct outf *next;
-  const char *name;
-  size_t buflength;
-  size_t bufused;
-  char *buf;
-};
-typedef struct outf *outf_p;
 
-/* An output file, suitable for definitions, that can see declarations
-   made in INPUT_FILE and is linked into every language that uses
-   INPUT_FILE.  May return NULL in plugin mode. */
-extern outf_p get_output_file_with_visibility (const char *input_file);
+
 const char *get_output_file_name (const char *);
 
-/* Print, like fprintf, to O.  No-op if O is NULL. */
-static void
-oprintf (outf_p o, const char *S, ...)
-  ATTRIBUTE_PRINTF_2;
 
 /* The list of output files.  */
-static outf_p output_files;
+outf_p output_files;
+
+/* The output header file that is included into pretty much every
+   source file.  */
+outf_p header_file;
+
+
+/* The name of the file containing the list of input files.  */
+static char *inputlist;
 
 /* The plugin input files and their number; in that case only
    a single file is produced.  */
 static char **plugin_files;
 static size_t nb_plugin_files;
-/* the generated plugin output name & file */
+
+/* The generated plugin output file and name.  */
 static outf_p plugin_output;
+static char *plugin_output_filename;
 
-/* The output header file that is included into pretty much every
-   source file.  */
-static outf_p header_file;
+/* Our source directory and its length.  */
+const char *srcdir;
+size_t srcdir_len;
 
-/* Source directory.  */
-static const char *srcdir;
+/* Variables used for reading and writing the state.  */
+const char *read_state_filename;
+const char *write_state_filename;
 
-/* Length of srcdir name.  */
-static size_t srcdir_len = 0;
+/* Variables to help debugging.  */
+int do_dump;
+int do_debug;
 
 static outf_p create_file (const char *, const char *);
 
@@ -225,10 +221,12 @@ xasprintf (const char *format, ...)
 static const char **gt_files;
 static size_t num_gt_files;
 
-/* A number of places use the name of this file for a location for
-   things that we can't rely on the source to define.  Make sure we
-   can still use pointer comparison on filenames.  */
-static const char this_file[] = __FILE__;
+/* A number of places use the name of this "gengtype.h" file for a
+   location for things that we can't rely on the source to define.
+   Make sure we can still use pointer comparison on filenames.  */
+const char this_file[] = __FILE__;
+/* The "system.h" file is likewise specially useful.  */
+const char system_h_file[] = "system.h";
 
 /* Vector of per-language directories.  */
 static const char **lang_dir_names;
@@ -254,9 +252,13 @@ static lang_bitmap
 get_lang_bitmap (const char *gtfile)
 {
 
-  if (gtfile == this_file)
-    /* Things defined in this file are universal.  */
-    return (((lang_bitmap) 1) << num_lang_dirs) - 1;
+  if (gtfile == this_file || gtfile == system_h_file)
+    {
+      /* Things defined in this "gengtype.c" file or in "system.h" are
+	 universal (and there is no space for their lang_bitmap before
+	 their file names).  */
+      return (((lang_bitmap) 1) << num_lang_dirs) - 1;
+    }
   else
     {
       lang_bitmap n = 0;
@@ -279,6 +281,65 @@ set_lang_bitmap (char *gtfile, lang_bitmap n)
       n >>= CHAR_BIT;
     }
 }
+
+
+#if ENABLE_CHECKING
+/* Utility debugging function, printing the various type counts within
+   a list of types.  Called thru the DBGPRINT_COUNT_TYPE macro.  */
+void
+dbgprint_count_type_at (const char *fil, int lin, const char *msg, type_p t)
+{
+  int nb_types = 0, nb_scalar = 0, nb_string = 0;
+  int nb_struct = 0, nb_union = 0, nb_array = 0, nb_pointer = 0;
+  int nb_lang_struct = 0, nb_param_struct = 0;
+  type_p p = NULL;
+  for (p = t; p; p = p->next)
+    {
+      nb_types++;
+      switch (p->kind)
+	{
+	case TYPE_SCALAR:
+	  nb_scalar++;
+	  break;
+	case TYPE_STRING:
+	  nb_string++;
+	  break;
+	case TYPE_STRUCT:
+	  nb_struct++;
+	  break;
+	case TYPE_UNION:
+	  nb_union++;
+	  break;
+	case TYPE_POINTER:
+	  nb_pointer++;
+	  break;
+	case TYPE_ARRAY:
+	  nb_array++;
+	  break;
+	case TYPE_LANG_STRUCT:
+	  nb_lang_struct++;
+	  break;
+	case TYPE_PARAM_STRUCT:
+	  nb_param_struct++;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  fprintf (stderr, "\n" "%s:%d: %s: @@%%@@ %d types ::\n",
+	   lbasename (fil), lin, msg, nb_types);
+  if (nb_scalar > 0 || nb_string > 0)
+    fprintf (stderr, "@@%%@@ %d scalars, %d strings\n", nb_scalar, nb_string);
+  if (nb_struct > 0 || nb_union > 0)
+    fprintf (stderr, "@@%%@@ %d structs, %d unions\n", nb_struct, nb_union);
+  if (nb_pointer > 0 || nb_array > 0)
+    fprintf (stderr, "@@%%@@ %d pointers, %d arrays\n", nb_pointer, nb_array);
+  if (nb_lang_struct > 0 || nb_param_struct > 0)
+    fprintf (stderr, "@@%%@@ %d lang_structs, %d param_structs\n",
+	     nb_lang_struct, nb_param_struct);
+  fprintf (stderr, "\n");
+}
+#endif /* ENABLE_CHECKING */
 
 /* Scan the input file, LIST, and determine how much space we need to
    store strings in.  Also, count the number of language directories
@@ -864,7 +925,7 @@ create_field_at (pair_p next, type_p type, const char *name, options_p opt,
 /* Create a fake field with the given type and name.  NEXT is the next
    field in the chain.  */
 #define create_field(next,type,name) \
-  create_field_all(next,type,name, 0, this_file, __LINE__)
+    create_field_all(next,type,name, 0, this_file, __LINE__)
 
 /* Like create_field, but the field is only valid when condition COND
    is true.  */
@@ -893,7 +954,7 @@ create_optional_field_ (pair_p next, type_p type, const char *name,
 }
 
 #define create_optional_field(next,type,name,cond)	\
-  create_optional_field_(next,type,name,cond,__LINE__)
+       create_optional_field_(next,type,name,cond,__LINE__)
 
 /* Reverse a linked list of 'struct pair's in place.  */
 pair_p
@@ -3230,13 +3291,13 @@ write_field_root (outf_p f, pair_p v, type_p type, const char *name,
 /* Write out to F the table entry and any marker routines needed to
    mark NAME as TYPE.  V can be one of three values:
 
-   - null, if NAME is too complex to represent using a single
-   count and stride.  In this case, it is an error for NAME to
-   contain any gc-ed data.
+     - null, if NAME is too complex to represent using a single
+       count and stride.  In this case, it is an error for NAME to
+       contain any gc-ed data.
 
-   - the outermost array that contains NAME, if NAME is part of an array.
+     - the outermost array that contains NAME, if NAME is part of an array.
 
-   - the C variable that contains NAME, if NAME is not part of an array.
+     - the C variable that contains NAME, if NAME is not part of an array.
 
    LINE is the line of the C source that declares the root variable.
    HAS_LENGTH is nonzero iff V was a variable-length array.  IF_MARKED
@@ -3732,7 +3793,7 @@ note_def_vec (const char *type_name, bool is_scalar, struct fileloc *pos)
    we had expanded the macros in vec.h:
 
    typedef struct VEC_<type>_<astrat> {
-   VEC_<type>_base base;
+     VEC_<type>_base base;
    } VEC_<type>_<astrat>;
 */
 void
@@ -4223,100 +4284,264 @@ dump_everything (void)
 }
 
 
+
+/* Option specification for getopt_long.  */
+static const struct option gengtype_long_options[] = {
+  {"help", no_argument, NULL, 'h'},
+  {"version", no_argument, NULL, 'V'},
+  {"dump", no_argument, NULL, 'd'},
+  {"debug", no_argument, NULL, 'D'},
+  {"plugin", required_argument, NULL, 'P'},
+  {"srcdir", required_argument, NULL, 'S'},
+  {"inputs", required_argument, NULL, 'I'},
+  {"read-state", required_argument, NULL, 'r'},
+  {"write-state", required_argument, NULL, 'w'},
+  /* Terminating NULL placeholder.  */
+  {NULL, no_argument, NULL, 0},
+};
+
+
+static void
+print_usage (void)
+{
+  printf ("Usage: %s\n", progname);
+  printf ("\t -h | --help " " \t# Give this help.\n");
+  printf ("\t -D | --debug "
+	  " \t# Give debug output to debug %s itself.\n", progname);
+  printf ("\t -V | --version " " \t# Give version information.\n");
+  printf ("\t -d | --dump " " \t# Dump state for debugging.\n");
+  printf ("\t -P | --plugin <output-file> <plugin-src> ... "
+	  " \t# Generate for plugin.\n");
+  printf ("\t -S | --srcdir <GCC-directory> "
+	  " \t# Specify the GCC source directory.\n");
+  printf ("\t -I | --inputs <input-list> "
+	  " \t# Specify the file with source files list.\n");
+  printf ("\t -w | --write-state <state-file> " " \t# Write a state file.\n");
+  printf ("\t -r | --read-state <state-file> " " \t# Read a state file.\n");
+}
+
+static void
+print_version (void)
+{
+  printf ("%s %s%s\n", progname, pkgversion_string, version_string);
+  printf ("Report bugs: %s\n", bug_report_url);
+}
+
+/* Parse the program options using getopt_long... */
+static void
+parse_program_options (int argc, char **argv)
+{
+  int opt = -1;
+  while ((opt = getopt_long (argc, argv, "hVdP:S:I:w:r:D",
+			     gengtype_long_options, NULL)) >= 0)
+    {
+      switch (opt)
+	{
+	case 'h':		/* --help */
+	  print_usage ();
+	  break;
+	case 'V':		/* --version */
+	  print_version ();
+	  break;
+	case 'd':		/* --dump */
+	  do_dump = 1;
+	  break;
+	case 'D':		/* --debug */
+	  do_debug = 1;
+	  break;
+	case 'P':		/* --plugin */
+	  if (optarg)
+	    plugin_output_filename = optarg;
+	  else
+	    fatal ("missing plugin output file name");
+	  break;
+	case 'S':		/* --srcdir */
+	  if (optarg)
+	    srcdir = optarg;
+	  else
+	    fatal ("missing source directory");
+	  srcdir_len = strlen (srcdir);
+	  break;
+	case 'I':		/* --inputs */
+	  if (optarg)
+	    inputlist = optarg;
+	  else
+	    fatal ("missing input list");
+	  break;
+	case 'r':		/* --read-state */
+	  if (optarg)
+	    read_state_filename = optarg;
+	  else
+	    fatal ("missing read state file");
+	  DBGPRINTF ("read state %s\n", optarg);
+	  break;
+	case 'w':		/* --write-state */
+	  DBGPRINTF ("write state %s\n", optarg);
+	  if (optarg)
+	    write_state_filename = optarg;
+	  else
+	    fatal ("missing write state file");
+	  break;
+	default:
+	  fprintf (stderr, "%s: unknown flag '%c'\n", progname, opt);
+	  print_usage ();
+	  fatal ("unexpected flag");
+	}
+    };
+  if (plugin_output_filename)
+    {
+      /* In plugin mode we require some input files.  */
+      int i = 0;
+      if (optind >= argc)
+	fatal ("no source files given in plugin mode");
+      nb_plugin_files = argc - optind;
+      for (i = 0; i < (int) nb_plugin_files; i++)
+	{
+	  char *name = argv[i + optind];
+	  plugin_files[i] = name;
+	}
+    }
+}
+
+
 int
 main (int argc, char **argv)
 {
   size_t i;
-  static struct fileloc pos = { this_file, 0 };
-  char *inputlist = 0;
-  int do_dump = 0;
+  static struct fileloc pos = { NULL, 0 };
   outf_p output_header;
-  char *plugin_output_filename = NULL;
-  /* fatal uses this */
-  progname = "gengtype";
 
-  if (argc >= 2 && !strcmp (argv[1], "-d"))
+  /* Mandatory common initializations.  */
+  progname = "gengtype";	/* For fatal and messages.  */
+  /* Set the scalar_is_char union number for predefined scalar types.  */
+  scalar_nonchar.u.scalar_is_char = FALSE;
+  scalar_char.u.scalar_is_char = TRUE;
+
+  parse_program_options (argc, argv);
+
+#if ENABLE_CHECKING
+  if (do_debug)
     {
-      do_dump = 1;
-      argv = &argv[1];
-      argc--;
+      time_t now = (time_t) 0;
+      time (&now);
+      DBGPRINTF ("gengtype started pid %d at %s",
+		 (int) getpid (), ctime (&now));
     }
+#endif	/* ENABLE_CHECKING */
 
-  if (argc >= 6 && !strcmp (argv[1], "-P"))
+  /* Parse the input list and the input files.  */
+  DBGPRINTF ("inputlist %s", inputlist);
+  if (read_state_filename)
     {
-      plugin_output_filename = argv[2];
-      plugin_output = create_file ("GCC", plugin_output_filename);
-      srcdir = argv[3];
-      inputlist = argv[4];
-      nb_plugin_files = argc - 5;
-      plugin_files = XCNEWVEC (char *, nb_plugin_files);
-      for (i = 0; i < nb_plugin_files; i++)
+      fatal ("read state %s not implemented yet", read_state_filename);
+      /* TODO: implement read state.  */
+    }
+  else if (inputlist)
+    {
+      /* These types are set up with #define or else outside of where
+         we can see them.  We should initialize them before calling
+         read_input_list.  */
+      pos.file = this_file;
+      pos.line = __LINE__ + 1;
+      do_scalar_typedef ("CUMULATIVE_ARGS", &pos);
+      pos.line++;
+      do_scalar_typedef ("REAL_VALUE_TYPE", &pos);
+      pos.line++;
+      do_scalar_typedef ("FIXED_VALUE_TYPE", &pos);
+      pos.line++;
+      do_scalar_typedef ("double_int", &pos);
+      pos.line++;
+      do_scalar_typedef ("uint64_t", &pos);
+      pos.line++;
+      do_scalar_typedef ("uint8", &pos);
+      pos.line++;
+      do_scalar_typedef ("jword", &pos);
+      pos.line++;
+      do_scalar_typedef ("JCF_u2", &pos);
+      pos.line++;
+      do_scalar_typedef ("void", &pos);
+      pos.line++;
+      do_typedef ("PTR", create_pointer (resolve_typedef ("void", &pos)),
+		  &pos);
+      read_input_list (inputlist);
+      for (i = 0; i < num_gt_files; i++)
 	{
-	  /* Place an all zero lang_bitmap before the plugin file
-	     name.  */
-	  char *name = argv[i + 5];
-	  int len = strlen (name) + 1 + sizeof (lang_bitmap);
-	  plugin_files[i] = XCNEWVEC (char, len) + sizeof (lang_bitmap);
-	  strcpy (plugin_files[i], name);
+	  parse_file (gt_files[i]);
+	  DBGPRINTF ("parsed file #%d %s", (int) i, gt_files[i]);
 	}
-    }
-  else if (argc == 3)
-    {
-      srcdir = argv[1];
-      inputlist = argv[2];
+      DBGPRINT_COUNT_TYPE ("structures after parsing", structures);
+      DBGPRINT_COUNT_TYPE ("param_structs after parsing", param_structs);
+
     }
   else
-    fatal ("usage: gengtype [-d] [-P pluginout.h] srcdir input-list "
-	   "[file1 file2 ... fileN]");
-
-  srcdir_len = strlen (srcdir);
-
-  read_input_list (inputlist);
+    fatal ("either an input list or a read state file should be given");
   if (hit_error)
     return 1;
 
-  scalar_char.u.scalar_is_char = true;
-  scalar_nonchar.u.scalar_is_char = false;
+
+  if (plugin_output_filename)
+    {
+      size_t ix = 0;
+      /* In plugin mode, we should have read a state file, and have
+         given at least one plugin file.  */
+      if (!read_state_filename)
+	fatal ("No read state given in plugin mode for %s",
+	       plugin_output_filename);
+
+      if (nb_plugin_files <= 0 || !plugin_files)
+	fatal ("No plugin files given in plugin mode for %s",
+	       plugin_output_filename);
+
+      /* Parse our plugin files.  */
+      for (ix = 0; ix < nb_plugin_files; ix++)
+	parse_file (plugin_files[ix]);
+
+      if (hit_error)
+	return 1;
+
+      plugin_output = create_file ("GCC", plugin_output_filename);
+      DBGPRINTF ("created plugin_output %p named %s",
+		 (void *) plugin_output, plugin_output->name);
+    }
+  else
+    {				/* No plugin files, we are in normal mode.  */
+      if (!srcdir)
+	fatal ("gengtype needs a source directory in normal mode");
+    }
+  if (hit_error)
+    return 1;
+
   gen_rtx_next ();
 
-  /* These types are set up with #define or else outside of where
-     we can see them.  */
-  pos.line = __LINE__ + 1;
-  do_scalar_typedef ("CUMULATIVE_ARGS", &pos);
-  pos.line++;
-  do_scalar_typedef ("REAL_VALUE_TYPE", &pos);
-  pos.line++;
-  do_scalar_typedef ("FIXED_VALUE_TYPE", &pos);
-  pos.line++;
-  do_scalar_typedef ("double_int", &pos);
-  pos.line++;
-  do_scalar_typedef ("uint64_t", &pos);
-  pos.line++;
-  do_scalar_typedef ("uint8", &pos);
-  pos.line++;
-  do_scalar_typedef ("jword", &pos);
-  pos.line++;
-  do_scalar_typedef ("JCF_u2", &pos);
-  pos.line++;
-  do_scalar_typedef ("void", &pos);
-  pos.line++;
-  do_typedef ("PTR", create_pointer (resolve_typedef ("void", &pos)), &pos);
-
-  for (i = 0; i < num_gt_files; i++)
-    parse_file (gt_files[i]);
-
-  if (hit_error)
-    return 1;
-
+  /* The call to set_gc_used may indirectly call find_param_structure
+     hence enlarge the param_structs list of types.  */
   set_gc_used (variables);
 
+  /* We should write the state here, but it is not yet implemented.  */
+  if (write_state_filename)
+    {
+      fatal ("write state %s in not yet implemented", write_state_filename);
+      /* TODO: implement write state.  */
+    }
+
+
   open_base_files ();
+
   write_enum_defn (structures, param_structs);
   write_typed_alloc_defns (structures, typedefs);
   output_header = plugin_output ? plugin_output : header_file;
+  DBGPRINT_COUNT_TYPE ("structures before write_types outputheader",
+		       structures);
+  DBGPRINT_COUNT_TYPE ("param_structs before write_types outputheader",
+		       param_structs);
+
   write_types (output_header, structures, param_structs, &ggc_wtd);
   if (plugin_files == NULL)
     {
+      DBGPRINT_COUNT_TYPE ("structures before write_types headerfil",
+			   structures);
+      DBGPRINT_COUNT_TYPE ("param_structs before write_types headerfil",
+			   param_structs);
       write_types (header_file, structures, param_structs, &pch_wtd);
       write_local (header_file, structures, param_structs);
     }
@@ -4328,12 +4553,7 @@ main (int argc, char **argv)
   if (do_dump)
     dump_everything ();
 
-  if (plugin_files)
-    {
-      for (i = 0; i < nb_plugin_files; i++)
-	free (plugin_files[i] - sizeof (lang_bitmap));
-      free (plugin_files);
-    }
+  /* Don't bother about free-ing any input or plugin file, etc.  */
 
   if (hit_error)
     return 1;

@@ -1,5 +1,6 @@
 /* Process source files and output type information.
-   Copyright (C) 2002, 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2007, 2008, 2010 
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -20,6 +21,10 @@
 #ifndef GCC_GENGTYPE_H
 #define GCC_GENGTYPE_H
 
+/* Sets of accepted source languages like C, C++, Ada... are
+   represented by a bitmap.  */
+typedef unsigned lang_bitmap;
+
 /* A file position, mostly for error messages.
    The FILE element may be compared using pointer equality.  */
 struct fileloc
@@ -38,14 +43,50 @@ typedef struct options *options_p;
 extern int lexer_toplevel_done;
 extern struct fileloc lexer_line;
 
+/* Structure representing an output file.  */
+struct outf
+{
+  struct outf *next;
+  const char *name;
+  size_t buflength;
+  size_t bufused;
+  char *buf;
+};
+typedef struct outf *outf_p;
+
+/* The list of output files.  */
+extern outf_p output_files;
+
+/* The output header file that is included into pretty much every
+   source file.  */
+extern outf_p header_file;
+
+/* Print, like fprintf, to O.  No-op if O is NULL.  */
+void
+oprintf (outf_p o, const char *S, ...)
+  ATTRIBUTE_PRINTF_2;
+
+/* An output file, suitable for definitions, that can see declarations
+   made in INPUT_FILE and is linked into every language that uses
+   INPUT_FILE.  May return NULL in plugin mode.  */
+extern outf_p get_output_file_with_visibility (const char *input_file);
+
+/* Source directory.  */
+extern const char *srcdir;	/* (-S) program argument. */
+
+/* Length of srcdir name.  */
+extern size_t srcdir_len;
+
+/* Variable used for reading and writing the state.  */
+extern const char *read_state_filename; /* (-r) program argument. */
+extern const char *write_state_filename; /* (-w) program argument. */
+
 /* Print an error message.  */
 extern void error_at_line
 (const struct fileloc *pos, const char *msg, ...) ATTRIBUTE_PRINTF_2;
 
 /* Like asprintf, but calls fatal() on out of memory.  */
-extern char *
-xasprintf (const char *, ...)
-  ATTRIBUTE_PRINTF_1;
+extern char *xasprintf (const char *, ...) ATTRIBUTE_PRINTF_1;
 
 /* Constructor routines for types.  */
 extern void do_typedef (const char *s, type_p t, struct fileloc *pos);
@@ -117,4 +158,28 @@ enum
        a meaningful value to be printed.  */
     FIRST_TOKEN_WITH_VALUE = PARAM_IS
   };
+
+
+/* For debugging purposes we provide two flags.  */
+
+/* Dump everything to understand gengtype's state. Might be useful to
+   gengtype users.  */
+extern int do_dump;		/* (-d) program argument. */
+
+/* Trace the execution by many DBGPRINTF (with the position inside
+   gengtype source code).  Only useful to debug gengtype itself.  */
+extern int do_debug;		/* (-D) program argument. */
+
+#if ENABLE_CHECKING
+#define DBGPRINTF(Fmt,...) do {if (do_debug)				\
+      fprintf (stderr, "%s:%d: " Fmt "\n",				\
+	       lbasename (__FILE__),__LINE__, ##__VA_ARGS__);} while (0)
+void dbgprint_count_type_at (const char *, int, const char *, type_p);
+#define DBGPRINT_COUNT_TYPE(Msg,Ty) do {if (do_debug)			\
+      dbgprint_count_type_at (__FILE__, __LINE__, Msg, Ty);}while (0)
+#else
+#define DBGPRINTF(Fmt,...) do {/*nodbgrintf*/} while (0)
+#define DBGPRINT_COUNT_TYPE(Msg,Ty) do{/*nodbgprint_count_type*/}while (0)
+#endif /*ENABLE_CHECKING */
+
 #endif
