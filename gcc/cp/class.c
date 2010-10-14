@@ -1515,12 +1515,31 @@ fixup_type_variants (tree t)
       TYPE_VFIELD (variants) = TYPE_VFIELD (t);
       TYPE_METHODS (variants) = TYPE_METHODS (t);
       TYPE_FIELDS (variants) = TYPE_FIELDS (t);
-
-      /* All variants of a class have the same attributes.  */
-      TYPE_ATTRIBUTES (variants) = TYPE_ATTRIBUTES (t);
     }
 }
 
+/* Early variant fixups: we apply attributes at the beginning of the class
+   definition, and we need to fix up any variants that have already been
+   made via elaborated-type-specifier so that check_qualified_type works.  */
+
+void
+fixup_attribute_variants (tree t)
+{
+  tree variants;
+
+  if (!t)
+    return;
+
+  for (variants = TYPE_NEXT_VARIANT (t);
+       variants;
+       variants = TYPE_NEXT_VARIANT (variants))
+    {
+      /* These are the two fields that check_qualified_type looks at and
+	 are affected by attributes.  */
+      TYPE_ATTRIBUTES (variants) = TYPE_ATTRIBUTES (t);
+      TYPE_ALIGN (variants) = TYPE_ALIGN (t);
+    }
+}
 
 /* Set memoizing fields and bits of T (and its variants) for later
    use.  */

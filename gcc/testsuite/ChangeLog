@@ -1,3 +1,7 @@
+2010-10-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/canon-type-8.C: New.
+
 2010-10-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20101013-1.c: New test.
