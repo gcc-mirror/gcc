@@ -7943,6 +7943,7 @@ instantiate_class_template (tree type)
   apply_late_template_attributes (&type, TYPE_ATTRIBUTES (pattern),
 				  (int) ATTR_FLAG_TYPE_IN_PLACE,
 				  args, tf_error, NULL_TREE);
+  fixup_attribute_variants (type);
 
   /* Now that our base classes are set up, enter the scope of the
      class, so that name lookups into base classes, etc. will work

@@ -4711,6 +4711,7 @@ extern bool type_has_move_assign		(tree);
 extern void defaulted_late_check		(tree);
 extern bool defaultable_fn_check		(tree);
 extern void fixup_type_variants			(tree);
+extern void fixup_attribute_variants		(tree);
 extern tree* decl_cloned_function_p		(const_tree, bool);
 extern void clone_function_decl			(tree, int);
 extern void adjust_clone_args			(tree);

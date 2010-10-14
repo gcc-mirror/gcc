@@ -1,3 +1,11 @@
+2010-10-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45984
+	* class.c (fixup_attribute_variants): New fn.
+	* cp-tree.h: Declare it.
+	* pt.c (instantiate_class_template): Call it.
+	* semantics.c (begin_class_definition): Call it.
+
 2010-10-13  Richard Henderson  <rth@redhat.com>
 
 	* cp-lang.c (cp_eh_personality): Update call to
