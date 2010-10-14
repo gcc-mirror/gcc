@@ -1,5 +1,10 @@
 2010-10-13  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR middle-end/44130
+	* gcc.target/i386/pr44130.c: New.
+
+2010-10-13  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR middle-end/44144
 	* gcc.target/i386/pr44144.c: New.
 
