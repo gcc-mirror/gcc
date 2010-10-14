@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -ffast-math -mavx" } */
+/* { dg-options "-O3 -ffast-math -mavx -mtune=generic" } */
 
 double a[1024];
 

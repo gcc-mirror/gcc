@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -mavx" } */
+/* { dg-options "-O2 -ftree-vectorize -mavx -mtune=generic" } */
 
 void
 foo (char * dest, int xcount, int ycount)

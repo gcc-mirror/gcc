@@ -1,3 +1,15 @@
+2010-10-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/avx-copysign-vec.c: Add -mtune=generic.
+	* gcc.target/i386/avx-copysignf-vec.c: Likewise.
+	* gcc.target/i386/pr44130.c: Likewise.
+	* gcc.target/i386/pr44144.c: Likewise.
+	* gcc.target/i386/pr44180.c: Likewise.
+	* gcc.target/i386/recip-vec-divf-avx.c: Likewise.
+	* gcc.target/i386/recip-vec-sqrtf-avx.c: Likewise.
+	* gcc.target/i386/vect-sizes-1.c: Likewise.
+	* gcc.target/i386/vectorize4-avx.c: Likewise.
+
 2010-10-14  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44561

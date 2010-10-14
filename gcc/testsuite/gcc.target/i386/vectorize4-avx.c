@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ffast-math -ftree-vectorize -mavx" } */
+/* { dg-options "-O2 -ffast-math -ftree-vectorize -mavx -mtune=generic" } */
 
 
 extern double sqrt (double __x);
