@@ -1,5 +1,9 @@
 2010-10-14  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* gcc.target/i386/vect-sizes-1.c: New.
+
+2010-10-14  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR middle-end/46011
 	* gcc.target/i386/vectorize4-avx.c: Scan 256bit AVX register
 	and xfail.
