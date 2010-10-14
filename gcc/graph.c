@@ -40,6 +40,9 @@ static const char *const graph_ext[] =
   /* vcg */      ".vcg",
 };
 
+/* The flag to indicate if output is inside of a building block.  */
+static int inbb = 0;
+
 static void start_fct (FILE *);
 static void start_bb (FILE *, int);
 static void node_data (FILE *, rtx);
@@ -77,6 +80,7 @@ start_bb (FILE *fp, int bb)
 graph: {\ntitle: \"%s.BB%d\"\nfolding: 1\ncolor: lightblue\n\
 label: \"basic block %d",
 	       current_function_name (), bb, bb);
+      inbb = 1; /* Now We are inside of a building block.  */
       break;
     case no_graph:
       break;
@@ -198,7 +202,12 @@ end_bb (FILE *fp)
   switch (graph_dump_format)
     {
     case vcg:
-      fputs ("}\n", fp);
+      /* Check if we are inside of a building block.  */
+      if (inbb != 0)
+        {
+          fputs ("}\n", fp);
+          inbb = 0; /* Now we are outside of a building block.  */
+        }
       break;
     case no_graph:
       break;

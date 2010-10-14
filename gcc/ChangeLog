@@ -1,3 +1,9 @@
+2010-10-14  Tijs Wiebe Lefering  <twlevo@gmail.com>
+
+	* graph.c (inbb): New variable.
+	(start_bb): Set inbb to 1 if output is inside of a building block.
+	(end_bb): Check if output is inside of a building block.
+
 2010-10-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/45912
