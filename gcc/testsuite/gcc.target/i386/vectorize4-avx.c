@@ -11,4 +11,4 @@ calc_freq (int *dest)
     dest[i] = sqrt (tmp_out[i]);
 }
 
-/* { dg-final { scan-assembler "vsqrtpd" } } */
+/* { dg-final { scan-assembler "vsqrtpd\[ \\t\]+\[^\n\]*%ymm" { xfail *-*-* } } } */
