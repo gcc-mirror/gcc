@@ -1,4 +1,18 @@
+2010-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* cse.c (is_dead_reg): Change into inline function that is not
+	called through for_each_rtx.
+	(set_live_p): Adjust caller.
+	(insn_live_p): Don't reset DEBUG_INSNs here.
+	(struct dead_debug_insn_data): New data. 
+	(count_stores, is_dead_debug_insn, replace_dead_reg): New functions.
+	(delete_trivially_dead_insns): If there is just one setter for the
+	dead reg that is referenced by some DEBUG_INSNs, create a DEBUG_EXPR
+	and add DEBUG_INSN for it right before the removed setter and
+	use the DEBUG_EXPR instead of the dead pseudo.
+
 2010-10-14  Zdenek Dvorak  <rakdver@kam.uniff.cz>
+
 	* et-forest.c (et_nca): Return NULL immediately when
 	the dominance forest has disjoint components.
 
