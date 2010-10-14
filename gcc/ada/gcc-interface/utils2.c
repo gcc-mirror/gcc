@@ -960,14 +960,19 @@ build_binary_op (enum tree_code op_code, tree result_type,
     result
       = fold_build2 (op_code, operation_type, left_operand, right_operand);
 
-  TREE_SIDE_EFFECTS (result) |= has_side_effects;
-  TREE_CONSTANT (result)
-    |= (TREE_CONSTANT (left_operand) & TREE_CONSTANT (right_operand)
-	&& op_code != ARRAY_REF && op_code != ARRAY_RANGE_REF);
+  if (TREE_CONSTANT (result))
+    ;
+  else if (op_code == ARRAY_REF || op_code == ARRAY_RANGE_REF)
+    {
+      TREE_THIS_NOTRAP (result) = 1;
+      if (TYPE_VOLATILE (operation_type))
+	TREE_THIS_VOLATILE (result) = 1;
+    }
+  else
+    TREE_CONSTANT (result)
+      |= (TREE_CONSTANT (left_operand) && TREE_CONSTANT (right_operand));
 
-  if ((op_code == ARRAY_REF || op_code == ARRAY_RANGE_REF)
-      && TYPE_VOLATILE (operation_type))
-    TREE_THIS_VOLATILE (result) = 1;
+  TREE_SIDE_EFFECTS (result) |= has_side_effects;
 
   /* If we are working with modular types, perform the MOD operation
      if something above hasn't eliminated the need for it.  */
@@ -2346,6 +2351,9 @@ gnat_stabilize_reference_1 (tree e, bool force)
   TREE_READONLY (result) = TREE_READONLY (e);
   TREE_SIDE_EFFECTS (result) |= TREE_SIDE_EFFECTS (e);
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (e);
+
+  if (code == INDIRECT_REF || code == ARRAY_REF || code == ARRAY_RANGE_REF)
+    TREE_THIS_NOTRAP (result) = TREE_THIS_NOTRAP (e);
 
   return result;
 }

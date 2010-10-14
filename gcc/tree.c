@@ -3190,6 +3190,10 @@ substitute_in_expr (tree exp, tree f, tree r)
       }
 
   TREE_READONLY (new_tree) |= TREE_READONLY (exp);
+
+  if (code == INDIRECT_REF || code == ARRAY_REF || code == ARRAY_RANGE_REF)
+    TREE_THIS_NOTRAP (new_tree) |= TREE_THIS_NOTRAP (exp);
+
   return new_tree;
 }
 
@@ -3357,6 +3361,10 @@ substitute_placeholder_in_expr (tree exp, tree obj)
       }
 
   TREE_READONLY (new_tree) |= TREE_READONLY (exp);
+
+  if (code == INDIRECT_REF || code == ARRAY_REF || code == ARRAY_RANGE_REF)
+    TREE_THIS_NOTRAP (new_tree) |= TREE_THIS_NOTRAP (exp);
+
   return new_tree;
 }
 

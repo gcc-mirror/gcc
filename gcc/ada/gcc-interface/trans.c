@@ -978,14 +978,22 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 
       if (TREE_CODE (gnu_result) == PARM_DECL
 	  && DECL_BY_DOUBLE_REF_P (gnu_result))
-	gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
+	{
+	  gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
+	  if (TREE_CODE (gnu_result) == INDIRECT_REF)
+	    TREE_THIS_NOTRAP (gnu_result) = 1;
+	}
 
       if (TREE_CODE (gnu_result) == PARM_DECL
 	  && DECL_BY_COMPONENT_PTR_P (gnu_result))
-	gnu_result
-	  = build_unary_op (INDIRECT_REF, NULL_TREE,
-			    convert (build_pointer_type (gnu_result_type),
-				     gnu_result));
+	{
+	  gnu_result
+	    = build_unary_op (INDIRECT_REF, NULL_TREE,
+			      convert (build_pointer_type (gnu_result_type),
+				       gnu_result));
+	  if (TREE_CODE (gnu_result) == INDIRECT_REF)
+	    TREE_THIS_NOTRAP (gnu_result) = 1;
+	}
 
       /* If it's a renaming pointer and we are at the right binding level,
 	 we can reference the renamed object directly, since the renamed
@@ -1003,7 +1011,11 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 				     DECL_INITIAL (gnu_result));
 
       else
-	gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
+	{
+	  gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
+	  if (TREE_CODE (gnu_result) == INDIRECT_REF)
+	    TREE_THIS_NOTRAP (gnu_result) = 1;
+	}
 
       if (read_only)
 	TREE_READONLY (gnu_result) = 1;
