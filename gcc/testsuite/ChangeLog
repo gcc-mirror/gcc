@@ -1,5 +1,11 @@
 2010-10-13  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* gcc.target/i386/recip-vec-sqrtf-avx.c: New.
+	* gcc.target/i386/recip-vec-divf-avx.c: Likewise.
+	* gcc.target/i386/vectorize4-avx.c: Likewise.
+
+2010-10-13  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* gcc.target/i386/avx-copysign-vec.c: New.
 	* gcc.target/i386/avx-copysignf-vec.c: Likewise.
 
