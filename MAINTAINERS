@@ -121,6 +121,7 @@ netbsd			Krister Walfridsson	krister.walfridsson@gmail.com
 sh-linux-gnu		Kaz Kojima		kkojima@gcc.gnu.org
 RTEMS Ports		Joel Sherrill		joel@oarcorp.com
 RTEMS Ports		Ralf Corsepius		ralf.corsepius@rtems.org
+VMS			Douglas Rupp		rupp@gnat.com
 VxWorks ports		Nathan Sidwell		nathan@codesourcery.com
 windows, cygwin, mingw	Christopher Faylor	cgf@gcc.gnu.org
 windows, cygwin, mingw	Kai Tietz		kai.tietz@onevision.com
@@ -449,7 +450,6 @@ Craig Rodrigues					rodrigc@gcc.gnu.org
 Erven Rohou					erven.rohou@inria.fr
 Ira Rosen					irar@il.ibm.com
 Maciej W. Rozycki				macro@linux-mips.org
-Douglas Rupp					rupp@gnat.com
 Silvius Rus					rus@google.com
 Matthew Sachs					msachs@apple.com
 Iain Sandoe					iains@gcc.gnu.org
