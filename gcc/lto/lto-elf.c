@@ -42,8 +42,13 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef ELFOSABI_NONE
 # define ELFOSABI_NONE 0
 #endif
+
 #ifndef ELFOSABI_LINUX
 # define ELFOSABI_LINUX 3
+#endif
+
+#ifndef SHN_XINDEX
+# define SHN_XINDEX 0xffff
 #endif
 
 
