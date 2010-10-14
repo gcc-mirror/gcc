@@ -3552,15 +3552,14 @@ cxx_init_decl_processing (void)
     global_delete_fndecl = push_cp_library_fn (DELETE_EXPR, deltype);
     push_cp_library_fn (VEC_DELETE_EXPR, deltype);
 
-    nullptr_type_node = make_node (LANG_TYPE);
+    nullptr_type_node = make_node (NULLPTR_TYPE);
     TYPE_SIZE (nullptr_type_node) = bitsize_int (GET_MODE_BITSIZE (ptr_mode));
     TYPE_SIZE_UNIT (nullptr_type_node) = size_int (GET_MODE_SIZE (ptr_mode));
     TYPE_UNSIGNED (nullptr_type_node) = 1;
     TYPE_PRECISION (nullptr_type_node) = GET_MODE_BITSIZE (ptr_mode);
     SET_TYPE_MODE (nullptr_type_node, Pmode);
     record_builtin_type (RID_MAX, "decltype(nullptr)", nullptr_type_node);
-    nullptr_node = make_node (INTEGER_CST);
-    TREE_TYPE (nullptr_node) = nullptr_type_node;
+    nullptr_node = build_int_cst (nullptr_type_node, 0);
   }
 
   abort_fndecl

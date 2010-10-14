@@ -1178,6 +1178,10 @@ build_int_cst_wide (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
 
   switch (TREE_CODE (type))
     {
+    case NULLPTR_TYPE:
+      gcc_assert (hi == 0 && low == 0);
+      /* Fallthru.  */
+
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       /* Cache NULL pointer.  */

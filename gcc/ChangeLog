@@ -1,3 +1,15 @@
+2010-10-14  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44561
+	* tree.def (NULLPTR_TYPE): New tree code.
+	* dbxout.c (dbxout_type): Handle NULLPTR_TYPE.
+	* dwarf2out.c (is_base_type): Likewise.
+	(gen_type_die_with_usage): Likewise.
+	* sdbout.c (plain_type_1): Likewise.
+	* tree.c (build_int_cst_wide): Likewise.
+	* gimple.c (gimple_types_compatible_p_1): NULLPTR_TYPE types
+	are equal.
+
 2010-10-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* params.c (params_finished): New.

@@ -3051,9 +3051,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    || TREE_CODE (TYPE) == COMPLEX_TYPE)
 
 /* True iff TYPE is cv decltype(nullptr).  */
-#define NULLPTR_TYPE_P(TYPE)				\
-  (TREE_CODE (TYPE) == LANG_TYPE			\
-   && TYPE_MAIN_VARIANT (TYPE) == nullptr_type_node)
+#define NULLPTR_TYPE_P(TYPE) (TREE_CODE (TYPE) == NULLPTR_TYPE)
 
 /* [basic.types]
 

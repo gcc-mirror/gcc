@@ -1863,6 +1863,7 @@ dbxout_type (tree type, int full)
   switch (TREE_CODE (type))
     {
     case VOID_TYPE:
+    case NULLPTR_TYPE:
     case LANG_TYPE:
       /* For a void type, just define it as itself; i.e., "5=5".
 	 This makes us consider it defined

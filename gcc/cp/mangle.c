@@ -1943,17 +1943,16 @@ write_type (tree type)
               write_char ('E');
               break;
 
+	    case NULLPTR_TYPE:
+	      write_string ("Dn");
+	      break;
+
 	    case TYPEOF_TYPE:
 	      sorry ("mangling typeof, use decltype instead");
 	      break;
 
 	    case LANG_TYPE:
-	      if (NULLPTR_TYPE_P (type))
-		{
-		  write_string ("Dn");
-		  break;
-		}
-	      /* else fall through.  */
+	      /* fall through.  */
 
 	    default:
 	      gcc_unreachable ();

@@ -10097,6 +10097,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
     case BOOLEAN_TYPE:
+    case NULLPTR_TYPE:
     case LANG_TYPE:
       return t;
 
