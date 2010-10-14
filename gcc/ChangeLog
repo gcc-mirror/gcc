@@ -1,3 +1,9 @@
+2010-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46008
+	* tree-if-conv.c (predicate_bbs): Try to canonicalize c2
+	if possible.
+
 2010-10-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44913
