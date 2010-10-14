@@ -1,3 +1,41 @@
+2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc.dg/property: New.
+	* objc.dg/property/fsf-property-basic.m: New.
+	* objc.dg/property/fsf-property-method-access.m: New.
+	* objc.dg/property/fsf-property-named-ivar.m: New.
+	* obj-c++.dg/property: New.
+	* obj-c++.dg/property/fsf-property-basic.mm: New.
+	* obj-c++.dg/property/fsf-property-method-access.mm: New.
+	* obj-c++.dg/property/fsf-property-named-ivar.mm: New.
+
+	merge from FSF apple 'trunk' branch. 
+	2006 Fariborz Jahanian <fjahanian@apple.com>
+	
+	Radars 4436866, 4505126, 4506903, 4517826
+	* objc.dg/property/property-1.m: New.
+	* objc.dg/property/property-2.m: New.
+	* objc.dg/property/property-3.m: New.
+	* objc.dg/property/property-neg-1.m: New.
+	* objc.dg/property/property-neg-2.m: New.
+	* objc.dg/property/property-neg-3.m: New.
+	* objc.dg/property/property-neg-4.m: New.
+	* objc.dg/property/property-neg-5.m: New.
+	* objc.dg/property/property-neg-6.m: New.
+	* objc.dg/property/property-neg-7.m: New.
+	* objc.dg/property/property.exp: New.
+	* obj-c++.dg/property/property-1.mm: New.
+	* obj-c++.dg/property/property-2.mm: New.
+	* obj-c++.dg/property/property-3.mm: New.
+	* obj-c++.dg/property/property-neg-1.mm: New.
+	* obj-c++.dg/property/property-neg-2.mm: New.
+	* obj-c++.dg/property/property-neg-3.mm: New.
+	* obj-c++.dg/property/property-neg-4.mm: New.
+	* obj-c++.dg/property/property-neg-5.mm: New.
+	* obj-c++.dg/property/property-neg-6.mm: New.
+	* obj-c++.dg/property/property-neg-7.mm: New.
+	* obj-c++.dg/property/property.exp: New.
+
 2010-10-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/pr45570.c: Fix typos.  Also run for i?86-*-*.
