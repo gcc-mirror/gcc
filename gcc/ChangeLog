@@ -1,3 +1,15 @@
+2010-10-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44913
+	* tree-data-ref.c (disjoint_objects_p): Remove.
+	(dr_may_alias_p): Simplify.  Only hand the base object to
+	the alias-oracle.
+	* tree-ssa-alias.c (ptr_deref_may_alias_decl_p): Handle
+	some more trees, bail out instead of asserting.
+	(ptr_derefs_may_alias_p): Likewise.  Export.
+	(refs_may_alias_p_1): Handle STRING_CSTs.
+	* tree-ssa-alias.h (ptr_derefs_may_alias_p): Declare.
+
 2010-10-14  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/45969
