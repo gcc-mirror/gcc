@@ -1,3 +1,15 @@
+2010-10-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config.gcc (arm*-*-linux-*eabi) <tm_file>: Add bpabi.h from
+	libgcc.
+	(arm*-*-uclinux*eabi) <tm_file>: Likewise.
+	(arm*-*-eabi*) <tm_file>: Likewise.
+	(frv-*-elf) <tm_file>: Add frv-abi.h from libgcc.
+	(frv-*-*linux*) <tm_file>: Likewise.
+	* config/arm/bpabi.h: Delete DECLARE_LIBRARY_RENAMES stanzas
+	and associated helper macros.
+	* config/frv/frv-abi.h: Delete.
+
 2010-10-14  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44561

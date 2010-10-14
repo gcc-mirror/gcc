@@ -787,6 +787,7 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 	case ${target} in
 	arm*-*-linux-*eabi)
 	    tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h"
+	    tm_file="$tm_file ../../libgcc/config/arm/bpabi.h"
 	    tmake_file="$tmake_file arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi t-slibgcc-libgcc"
 	    # Define multilib configuration for arm-linux-androideabi.
 	    case ${target} in
@@ -814,6 +815,7 @@ arm*-*-uclinux*)		# ARM ucLinux
 	case ${target} in
 	arm*-*-uclinux*eabi)
 	    tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h"
+	    tm_file="$tm_file ../../libgcc/config/arm/bpabi.h"
 	    tmake_file="$tmake_file arm/t-bpabi"
   	    # The BPABI long long divmod functions return a 128-bit value in
 	    # registers r0-r3.  Correctly modeling that requires the use of
@@ -837,6 +839,7 @@ arm*-*-eabi* | arm*-*-symbianelf* )
 	need_64bit_hwint=yes
 	default_use_cxa_atexit=yes
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/bpabi.h"
+	tm_file="$tm_file ../../libgcc/config/arm/bpabi.h"
 	tmake_file="arm/t-arm arm/t-arm-elf"
 	case ${target} in
 	arm*-*-eabi*)
@@ -957,12 +960,14 @@ fr30-*-elf)
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	;;
 frv-*-elf)
-	tm_file="dbxelf.h elfos.h svr4.h newlib-stdint.h ${tm_file} frv/frv-abi.h"
+	tm_file="dbxelf.h elfos.h svr4.h newlib-stdint.h ${tm_file}"
+	tm_file="${tm_file} ../../libgcc/config/frv/frv-abi.h"
 	tmake_file=frv/t-frv
 	;;
 frv-*-*linux*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} \
-	         linux.h glibc-stdint.h frv/linux.h frv/frv-abi.h"
+	         linux.h glibc-stdint.h frv/linux.h"
+	tm_file="${tm_file} ../../libgcc/config/frv/frv-abi.h"
 	tmake_file="${tmake_file} frv/t-frv frv/t-linux"
 	;;
 moxie-*-elf)

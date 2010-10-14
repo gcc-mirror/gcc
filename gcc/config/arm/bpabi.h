@@ -1,5 +1,5 @@
 /* Configuration file for ARM BPABI targets.
-   Copyright (C) 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC   
 
@@ -72,65 +72,6 @@
 
 #undef  LINK_SPEC
 #define LINK_SPEC BPABI_LINK_SPEC
-
-#if defined (__thumb__)
-#define RENAME_LIBRARY_SET ".thumb_set"
-#else
-#define RENAME_LIBRARY_SET ".set"
-#endif
-
-/* Make __aeabi_AEABI_NAME an alias for __GCC_NAME.  */
-#define RENAME_LIBRARY(GCC_NAME, AEABI_NAME)		\
-  __asm__ (".globl\t__aeabi_" #AEABI_NAME "\n"		\
-	   RENAME_LIBRARY_SET "\t__aeabi_" #AEABI_NAME 	\
-	     ", __" #GCC_NAME "\n");
-
-/* Give some libgcc functions an additional __aeabi name.  */
-#ifdef L_muldi3
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (muldi3, lmul)
-#endif
-#ifdef L_muldi3
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (muldi3, lmul)
-#endif
-#ifdef L_fixdfdi
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixdfdi, d2lz) \
-  extern DWtype __fixdfdi (DFtype) __attribute__((pcs("aapcs"))); \
-  extern UDWtype __fixunsdfdi (DFtype) __asm__("__aeabi_d2ulz") __attribute__((pcs("aapcs")));
-#endif
-#ifdef L_fixunsdfdi
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixunsdfdi, d2ulz) \
-  extern UDWtype __fixunsdfdi (DFtype) __attribute__((pcs("aapcs")));
-#endif
-#ifdef L_fixsfdi
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixsfdi, f2lz) \
-  extern DWtype __fixsfdi (SFtype) __attribute__((pcs("aapcs"))); \
-  extern UDWtype __fixunssfdi (SFtype) __asm__("__aeabi_f2ulz") __attribute__((pcs("aapcs")));
-#endif
-#ifdef L_fixunssfdi
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixunssfdi, f2ulz) \
-  extern UDWtype __fixunssfdi (SFtype) __attribute__((pcs("aapcs")));
-#endif
-#ifdef L_floatdidf
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (floatdidf, l2d)
-#endif
-#ifdef L_floatdisf
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (floatdisf, l2f)
-#endif
-
-/* These renames are needed on ARMv6M.  Other targets get them from
-   assembly routines.  */
-#ifdef L_fixunsdfsi
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixunsdfsi, d2uiz)
-#endif
-#ifdef L_fixunssfsi
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixunssfsi, f2uiz)
-#endif
-#ifdef L_floatundidf
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (floatundidf, ul2d)
-#endif
-#ifdef L_floatundisf
-#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (floatundisf, ul2f)
-#endif
 
 /* The BPABI requires that we always use an out-of-line implementation
    of RTTI comparison, even if the target supports weak symbols,
