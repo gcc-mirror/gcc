@@ -1,3 +1,13 @@
+2010-10-14  Andrey Belevantsev  <abel@ispras.ru>
+
+	* sel-sched-ir.c (maybe_tidy_empty_bb): Simplify comment.
+	(tidy_control_flow): Tidy vertical space.
+	(sel_remove_bb): New variable idx.  Use it to remember the basic
+	block index before deleting the block.
+	(sel_remove_empty_bb): Remove dead code, simplify and insert to ...
+	(sel_merge_blocks): ... here.
+	* sel-sched-ir.h (sel_remove_empty_bb): Remove prototype.
+
 2010-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* cse.c (is_dead_reg): Change into inline function that is not
