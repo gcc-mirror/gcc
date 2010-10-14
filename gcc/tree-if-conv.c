@@ -915,7 +915,7 @@ predicate_bbs (loop_p loop)
 
 	    case GIMPLE_COND:
 	      {
-		tree c2;
+		tree c2, tem;
 		edge true_edge, false_edge;
 		location_t loc = gimple_location (stmt);
 		tree c = fold_build2_loc (loc, gimple_cond_code (stmt),
@@ -932,6 +932,9 @@ predicate_bbs (loop_p loop)
 
 		/* If C is false, then FALSE_EDGE is taken.  */
 		c2 = invert_truthvalue_loc (loc, unshare_expr (c));
+		tem = canonicalize_cond_expr_cond (c2);
+		if (tem)
+		  c2 = tem;
 		add_to_dst_predicate_list (loop, false_edge, cond, c2);
 
 		cond = NULL_TREE;
