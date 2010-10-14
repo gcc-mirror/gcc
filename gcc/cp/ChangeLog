@@ -1,3 +1,17 @@
+2010-10-14  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44561
+	* cp-tree.h (NULLPTR_TYPE_P): Adjust.
+	* decl.c (cxx_init_decl_processing): Build a NULLPTR_TYPE node,
+	use build_int_cst.
+	* error.c (dump_type): Handle NULLPTR_TYPE.
+	(dump_type_prefix): Likewise.
+	(dump_type_suffix): Likewise.
+	* mangle.c (write_type): Likewise.
+	* name-lookup.c (arg_assoc_type): Likewise.
+	* rtti.c (typeinfo_in_lib_p): Likewise.
+	* pt.c (tsubst): Likewise.
+
 2010-10-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/45984

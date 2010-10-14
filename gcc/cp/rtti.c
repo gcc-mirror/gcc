@@ -1051,12 +1051,11 @@ typeinfo_in_lib_p (tree type)
     case BOOLEAN_TYPE:
     case REAL_TYPE:
     case VOID_TYPE:
+    case NULLPTR_TYPE:
       return true;
 
     case LANG_TYPE:
-      if (NULLPTR_TYPE_P (type))
-	return true;
-      /* else fall through.  */
+      /* fall through.  */
 
     default:
       return false;

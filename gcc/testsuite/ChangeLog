@@ -1,3 +1,9 @@
+2010-10-14  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44561
+	* g++.dg/lto/20101010-3_0.C: New testcase.
+	* g++.dg/lto/20101010-4_0.C: Likewise.
+
 2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/pr45878.m: Update to include NSConstantString interface

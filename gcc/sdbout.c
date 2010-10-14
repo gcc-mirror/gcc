@@ -495,6 +495,7 @@ plain_type_1 (tree type, int level)
   switch (TREE_CODE (type))
     {
     case VOID_TYPE:
+    case NULLPTR_TYPE:
       return T_VOID;
     case BOOLEAN_TYPE:
     case INTEGER_TYPE:

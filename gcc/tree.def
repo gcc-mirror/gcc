@@ -162,14 +162,17 @@ DEFTREECODE (REAL_TYPE, "real_type", tcc_type, 0)
    The TREE_TYPE points to the node for the type pointed to.  */
 DEFTREECODE (POINTER_TYPE, "pointer_type", tcc_type, 0)
 
+/* A reference is like a pointer except that it is coerced
+   automatically to the value it points to.  Used in C++.  */
+DEFTREECODE (REFERENCE_TYPE, "reference_type", tcc_type, 0)
+
+/* The C++ decltype(nullptr) type.  */
+DEFTREECODE (NULLPTR_TYPE, "nullptr_type", tcc_type, 0)
+
 /* _Fract and _Accum types in Embedded-C.  Different fixed-point types
    are distinguished by machine mode and by the TYPE_SIZE and the
    TYPE_PRECISION.  */
 DEFTREECODE (FIXED_POINT_TYPE, "fixed_point_type", tcc_type, 0)
-
-/* A reference is like a pointer except that it is coerced
-   automatically to the value it points to.  Used in C++.  */
-DEFTREECODE (REFERENCE_TYPE, "reference_type", tcc_type, 0)
 
 /* The ordering of the following codes is optimized for the checking
    macros in tree.h.  Changing the order will degrade the speed of the

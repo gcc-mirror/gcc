@@ -4932,6 +4932,7 @@ arg_assoc_type (struct arg_lookup *k, tree type)
     case BOOLEAN_TYPE:
     case FIXED_POINT_TYPE:
     case DECLTYPE_TYPE:
+    case NULLPTR_TYPE:
       return false;
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (type))
@@ -4963,7 +4964,6 @@ arg_assoc_type (struct arg_lookup *k, tree type)
       return false;
     case LANG_TYPE:
       gcc_assert (type == unknown_type_node
-		  || NULLPTR_TYPE_P (type)
 		  || type == init_list_type_node);
       return false;
     case TYPE_PACK_EXPANSION:
