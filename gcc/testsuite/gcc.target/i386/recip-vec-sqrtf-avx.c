@@ -31,4 +31,4 @@ void t3(void)
    r[i] = sqrtf (a[i]);
 }
 
-/* { dg-final { scan-assembler-times "vrsqrtps" 3 } } */
+/* { dg-final { scan-assembler-times "vrsqrtps\[ \\t\]+\[^\n\]*%ymm" 3 } } */

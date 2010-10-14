@@ -13,4 +13,4 @@ void t1(void)
    r[i] = a[i] / b[i];
 }
 
-/* { dg-final { scan-assembler "vrcpps" } } */
+/* { dg-final { scan-assembler "vrcpps\[ \\t\]+\[^\n\]*%ymm" } } */
