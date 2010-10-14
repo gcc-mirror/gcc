@@ -37,8 +37,8 @@ tree objc_eh_personality (void);
 
 /* Objective-C structures */
 
-#define CLASS_LANG_SLOT_ELTS		5
-#define PROTOCOL_LANG_SLOT_ELTS		4
+#define CLASS_LANG_SLOT_ELTS		7
+#define PROTOCOL_LANG_SLOT_ELTS		7
 #define OBJC_INFO_SLOT_ELTS		2
 
 /* KEYWORD_DECL */
@@ -53,6 +53,14 @@ tree objc_eh_personality (void);
 #define METHOD_DEFINITION(DECL) ((DECL)->decl_common.initial)
 #define METHOD_ENCODING(DECL) ((DECL)->decl_minimal.context)
 #define METHOD_TYPE_ATTRIBUTES(DECL) ((DECL)->decl_common.abstract_origin)
+#define METHOD_PROPERTY_CONTEXT(DECL) ((DECL)->decl_common.size_unit)
+
+#define PROPERTY_NAME(DECL) ((DECL)->decl_minimal.name)
+#define PROPERTY_GETTER_NAME(DECL) ((DECL)->decl_non_common.arguments)
+#define PROPERTY_SETTER_NAME(DECL) ((DECL)->decl_non_common.result)
+#define PROPERTY_IVAR_NAME(DECL) ((DECL)->decl_common.initial)
+#define PROPERTY_READONLY(DECL) ((DECL)->decl_minimal.context)
+#define PROPERTY_COPIES(DECL) ((DECL)->decl_common.size_unit)
 
 /* CLASS_INTERFACE_TYPE, CLASS_IMPLEMENTATION_TYPE,
    CATEGORY_INTERFACE_TYPE, CATEGORY_IMPLEMENTATION_TYPE,
@@ -66,6 +74,8 @@ tree objc_eh_personality (void);
 #define CLASS_STATIC_TEMPLATE(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 2)
 #define CLASS_CATEGORY_LIST(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 3)
 #define CLASS_PROTOCOL_LIST(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 4)
+#define TOTAL_CLASS_RAW_IVARS(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 5)
+
 #define PROTOCOL_NAME(CLASS) ((CLASS)->type.name)
 #define PROTOCOL_LIST(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 0)
 #define PROTOCOL_NST_METHODS(CLASS) ((CLASS)->type.minval)
@@ -74,6 +84,11 @@ tree objc_eh_personality (void);
 #define PROTOCOL_DEFINED(CLASS) TREE_USED (CLASS)
 #define PROTOCOL_OPTIONAL_CLS_METHODS(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 2)
 #define PROTOCOL_OPTIONAL_NST_METHODS(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 3)
+
+/* For CATEGORY_INTERFACE_TYPE, CLASS_INTERFACE_TYPE or PROTOCOL_INTERFACE_TYPE */
+#define CLASS_PROPERTY_DECL(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 6)
+/* For CLASS_IMPLEMENTATION_TYPE or CATEGORY_IMPLEMENTATION_TYPE. */
+#define IMPL_PROPERTY_DECL(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 6)
 
 /* ObjC-specific information pertaining to RECORD_TYPEs are stored in
    the LANG_SPECIFIC structures, which may itself need allocating first.  */

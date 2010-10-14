@@ -80,6 +80,10 @@ enum rid
      are keywords only in specific contexts)  */
   RID_IN, RID_OUT, RID_INOUT, RID_BYCOPY, RID_BYREF, RID_ONEWAY,
 
+  /* ObjC ("PATTR" reserved words - they do not appear after a '@' 
+     and are keywords only as property attributes)  */
+  RID_READONLY, RID_COPIES, RID_GETTER, RID_SETTER, RID_IVAR,
+
   /* C (reserved and imaginary types not implemented, so any use is a
      syntax error) */
   RID_IMAGINARY,
@@ -143,7 +147,7 @@ enum rid
   RID_AT_PROTOCOL, RID_AT_SELECTOR,
   RID_AT_THROW,	   RID_AT_TRY,       RID_AT_CATCH,
   RID_AT_FINALLY,  RID_AT_SYNCHRONIZED, 
-  RID_AT_OPTIONAL, RID_AT_REQUIRED,
+  RID_AT_OPTIONAL, RID_AT_REQUIRED, RID_AT_PROPERTY,
   RID_AT_INTERFACE,
   RID_AT_IMPLEMENTATION,
 
@@ -181,7 +185,9 @@ enum rid
   RID_FIRST_AT = RID_AT_ENCODE,
   RID_LAST_AT = RID_AT_IMPLEMENTATION,
   RID_FIRST_PQ = RID_IN,
-  RID_LAST_PQ = RID_ONEWAY
+  RID_LAST_PQ = RID_ONEWAY,
+  RID_FIRST_PATTR = RID_READONLY,
+  RID_LAST_PATTR = RID_IVAR
 };
 
 #define OBJC_IS_AT_KEYWORD(rid) \
@@ -191,6 +197,10 @@ enum rid
 #define OBJC_IS_PQ_KEYWORD(rid) \
   ((unsigned int) (rid) >= (unsigned int) RID_FIRST_PQ && \
    (unsigned int) (rid) <= (unsigned int) RID_LAST_PQ)
+
+#define OBJC_IS_PATTR_KEYWORD(rid) \
+  ((unsigned int) (rid) >= (unsigned int) RID_FIRST_PATTR && \
+   (unsigned int) (rid) <= (unsigned int) RID_LAST_PATTR)
 
 /* OBJC_IS_CXX_KEYWORD recognizes the 'CXX_OBJC' keywords (such as
    'class') which are shared in a subtle way between Objective-C and
@@ -419,6 +429,16 @@ extern c_language_kind c_language;
 
 #define c_dialect_cxx()		((c_language & clk_cxx) != 0)
 #define c_dialect_objc()	((c_language & clk_objc) != 0)
+
+/* ObjC Property Attribute types.  */
+typedef enum objc_property_attribute_kind {
+  OBJC_PATTR_INIT	= 0,
+  OBJC_PATTR_READONLY	= 1,
+  OBJC_PATTR_GETTER	= 2,
+  OBJC_PATTR_SETTER	= 3,
+  OBJC_PATTR_IVAR	= 4,
+  OBJC_PATTR_COPIES	= 5
+} objc_property_attribute_kind;
 
 /* The various name of operator that appears in error messages. */
 typedef enum ref_operator {
@@ -1009,7 +1029,12 @@ extern tree objc_generate_static_init_call (tree);
 extern tree objc_generate_write_barrier (tree, enum tree_code, tree);
 extern void objc_set_method_opt (bool);
 extern void objc_finish_foreach_loop (location_t, tree, tree, tree, tree, tree);
+extern void objc_set_property_attr 
+  (location_t, objc_property_attribute_kind, tree);
 extern bool  objc_method_decl (enum tree_code);
+extern void objc_add_property_variable (tree);
+extern tree objc_build_getter_call (tree, tree);
+extern tree objc_build_setter_call (tree, tree);
 
 /* The following are provided by the C and C++ front-ends, and called by
    ObjC/ObjC++.  */

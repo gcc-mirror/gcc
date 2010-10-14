@@ -1,3 +1,18 @@
+2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
+
+	merge from FSF apple 'trunk' branch. 
+	2006 Fariborz Jahanian <fjahanian@apple.com>
+	
+	Radars 4436866, 4505126, 4506903, 4517826
+	* typeck.c (finish_class_member_access_expr): Handle CLASS.property
+	syntax. 
+	(cp_build_modify_expr): Likewise.
+	* parser.c (cp_parser_objc_method_prototype_list): Handle @property.
+	(cp_parser_objc_method_definition_list): Likewise.
+	(cp_parser_objc_property_decl): New.
+	(cp_parser_objc_property_attrlist): New.
+	(cp_parser_objc_at_property): New.
+
 2010-10-14  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44561

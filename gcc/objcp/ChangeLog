@@ -1,3 +1,11 @@
+2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
+
+	merge from FSF apple 'trunk' branch. 
+	2006 Fariborz Jahanian <fjahanian@apple.com>
+	
+	Radars 4436866, 4505126, 4506903, 4517826
+	* objcp-lang.c (objcxx_init_ts): Update for property_decl.
+
 2010-10-13  Richard Henderson  <rth@redhat.com>
 
 	* objcp-lang.c (objcxx_eh_personality): Update call to

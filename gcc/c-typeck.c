@@ -2130,6 +2130,10 @@ build_component_ref (location_t loc, tree datum, tree component)
   if (!objc_is_public (datum, component))
     return error_mark_node;
 
+  if (c_dialect_objc ()
+      && (ref = objc_build_getter_call (datum, component)))
+    return ref;
+
   /* See if there is a field or component with name COMPONENT.  */
 
   if (code == RECORD_TYPE || code == UNION_TYPE)
@@ -4837,7 +4841,8 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
   if (TREE_CODE (lhs) == ERROR_MARK || TREE_CODE (rhs) == ERROR_MARK)
     return error_mark_node;
 
-  if (!lvalue_or_else (lhs, lv_assign))
+  /* For ObjC, defer this check until we have assessed CLASS.property.   */
+  if (!c_dialect_objc () && !lvalue_or_else (lhs, lv_assign))
     return error_mark_node;
 
   if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
@@ -4876,6 +4881,15 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
       /* The original type of the right hand side is no longer
 	 meaningful.  */
       rhs_origtype = NULL_TREE;
+    }
+
+  if (c_dialect_objc ())
+    {
+      result = objc_build_setter_call (lhs, newrhs);
+      if (result)
+	return result;
+      if (!lvalue_or_else (lhs, lv_assign))
+	return error_mark_node;
     }
 
   /* Give an error for storing in something that is 'const'.  */

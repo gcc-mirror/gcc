@@ -2097,7 +2097,11 @@ static void cp_parser_objc_declaration
 static tree cp_parser_objc_statement
   (cp_parser *);
 static bool cp_parser_objc_valid_prefix_attributes
-  (cp_parser* parser, tree *attrib);
+  (cp_parser *, tree *);
+static void cp_parser_objc_at_property 
+  (cp_parser *) ;
+static void cp_parser_objc_property_decl 
+  (cp_parser *) ;
 
 /* Utility Routines */
 
@@ -21718,6 +21722,8 @@ cp_parser_objc_method_prototype_list (cp_parser* parser)
 	  objc_add_method_declaration (sig, attributes);
 	  cp_parser_consume_semicolon_at_end_of_statement (parser);
 	}
+      else if (token->keyword == RID_AT_PROPERTY)
+	cp_parser_objc_at_property (parser);
       else if (token->keyword == RID_ATTRIBUTE 
       	       && cp_parser_objc_method_maybe_bad_prefix_attributes(parser))
 	warning_at (cp_lexer_peek_token (parser->lexer)->location, 
@@ -21779,6 +21785,8 @@ cp_parser_objc_method_definition_list (cp_parser* parser)
 	      objc_finish_method_definition (meth);
 	    }
 	}
+      else if (token->keyword == RID_AT_PROPERTY)
+	cp_parser_objc_at_property (parser);
       else if (token->keyword == RID_ATTRIBUTE 
       	       && cp_parser_objc_method_maybe_bad_prefix_attributes(parser))
 	warning_at (token->location, OPT_Wattributes,
@@ -22270,6 +22278,146 @@ cp_parser_objc_valid_prefix_attributes (cp_parser* parser, tree *attrib)
     }
   cp_lexer_rollback_tokens (parser->lexer);
   return false;  
+}
+
+/* This routine parses the propery declarations. */
+
+static void
+cp_parser_objc_property_decl (cp_parser *parser)
+{
+  int declares_class_or_enum;
+  cp_decl_specifier_seq declspecs;
+
+  cp_parser_decl_specifier_seq (parser,
+                                CP_PARSER_FLAGS_NONE,
+                                &declspecs,
+                                &declares_class_or_enum);
+  /* Keep going until we hit the `;' at the end of the declaration. */
+  while (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
+    {
+      tree property;
+      cp_token *token;
+      cp_declarator *declarator
+	= cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
+				NULL, NULL, false);
+      property = grokdeclarator (declarator, &declspecs, NORMAL,0, NULL);
+      /* Recover from any kind of error in property declaration. */
+      if (property == error_mark_node || property == NULL_TREE)
+	return;
+
+      /* Add to property list. */
+      objc_add_property_variable (copy_node (property));
+      token = cp_lexer_peek_token (parser->lexer);
+      if (token->type == CPP_COMMA)
+	{
+	  cp_lexer_consume_token (parser->lexer);  /* Eat ','.  */
+	  continue;
+	}
+      else if (token->type == CPP_EOF)
+	break;
+    }
+  /* Eat ';' if present, or issue an error.  */
+  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+}
+
+/* ObjC @property. */
+/* Parse a comma-separated list of property attributes.  
+   The lexer does not recognize */
+
+static void 
+cp_parser_objc_property_attrlist (cp_parser *parser)
+{
+  cp_token *token;
+  /* Initialize to an empty list.  */
+  objc_set_property_attr (cp_lexer_peek_token (parser->lexer)->location,
+			  OBJC_PATTR_INIT, NULL_TREE);
+
+  /* The list is optional.  */
+  if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN))
+    return;
+
+  /* Eat the '('.  */
+  cp_lexer_consume_token (parser->lexer);
+
+  token = cp_lexer_peek_token (parser->lexer);
+  while (token->type != CPP_CLOSE_PAREN && token->type != CPP_EOF)
+    {
+      location_t loc = token->location;
+      tree node = cp_parser_identifier (parser);
+      if (node == ridpointers [(int) RID_READONLY])
+	objc_set_property_attr (loc, OBJC_PATTR_READONLY, NULL_TREE);
+      else if (node == ridpointers [(int) RID_GETTER]
+	       || node == ridpointers [(int) RID_SETTER]
+	       || node == ridpointers [(int) RID_IVAR])
+	{
+	  /* Do the getter/setter/ivar attribute. */
+	  token = cp_lexer_consume_token (parser->lexer);
+	  if (token->type == CPP_EQ)
+	    {
+	      tree attr_ident = cp_parser_identifier (parser);
+	      objc_property_attribute_kind pkind;
+	      if (node == ridpointers [(int) RID_GETTER])
+		pkind = OBJC_PATTR_GETTER;
+	      else if (node == ridpointers [(int) RID_SETTER])
+		{
+		  pkind = OBJC_PATTR_SETTER;
+		  /* Consume the ':' which must always follow the setter name. */
+		  if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+		    cp_lexer_consume_token (parser->lexer); 
+		  else
+		    {
+		      error_at (token->location,
+				"setter name must be followed by %<:%>");
+		      break;
+		    }
+		}
+	      else 
+		pkind = OBJC_PATTR_IVAR;
+	      objc_set_property_attr (loc, pkind, attr_ident);	  
+	    }
+	  else
+	    {
+	      error_at (token->location,
+	      	"getter/setter/ivar attribute must be followed by %<=%>");
+	      break;
+	    }
+	}
+      else if (node == ridpointers [(int) RID_COPIES])
+	objc_set_property_attr (loc, OBJC_PATTR_COPIES, NULL_TREE);
+      else
+	{
+	  error_at (token->location,"unknown property attribute");
+	  break;
+	}
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	cp_lexer_consume_token (parser->lexer);
+      else if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
+	warning_at (token->location, 0, 
+		    "property attributes should be separated by a %<,%>");
+      token = cp_lexer_peek_token (parser->lexer);	  
+    }
+
+  if (token->type != CPP_CLOSE_PAREN)
+    error_at (token->location,
+	      "syntax error in @property's attribute declaration");
+  else
+    /* Consume ')' */
+    cp_lexer_consume_token (parser->lexer);
+}
+
+/* This function parses a @property declaration inside an objective class
+   or its implementation. */
+
+static void 
+cp_parser_objc_at_property (cp_parser *parser)
+{
+  /* Consume @property */
+  cp_lexer_consume_token (parser->lexer);
+
+  /* Parse optional attributes list...  */
+  cp_parser_objc_property_attrlist (parser);
+  /* ... and the property declaration(s).  */
+  cp_parser_objc_property_decl (parser);
 }
 
 /* OpenMP 2.5 parsing routines.  */
