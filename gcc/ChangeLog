@@ -1,3 +1,9 @@
+2010-10-15  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-out.c (write_symbol): Use pointer set of seen
+	objects instead of bitmap.
+	(produce_symtab): Likewise; output defined symbols first.
+
 2010-10-15  Jie Zhang  <jie@codesourcery.com>
 
 	* doc/invoke.texi: Add -fstrict-volatile-bitfields to
