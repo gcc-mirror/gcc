@@ -942,7 +942,7 @@ See S/390 and zSeries Options.
 -fno-stack-limit -fsplit-stack @gol
 -fleading-underscore  -ftls-model=@var{model} @gol
 -ftrapv  -fwrapv  -fbounds-check @gol
--fvisibility}
+-fvisibility -fstrict-volatile-bitfields}
 @end table
 
 @menu
@@ -18117,6 +18117,7 @@ An overview of these techniques, their benefits and how to use them
 is at @uref{http://gcc.gnu.org/@/wiki/@/Visibility}.
 
 @item -fstrict-volatile-bitfields
+@opindex fstrict-volatile-bitfields
 This option should be used if accesses to volatile bitfields (or other
 structure fields, although the compiler usually honors those types
 anyway) should use a single access in a mode of the same size as the

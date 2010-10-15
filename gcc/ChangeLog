@@ -1,3 +1,8 @@
+2010-10-15  Jie Zhang  <jie@codesourcery.com>
+
+	* doc/invoke.texi: Add -fstrict-volatile-bitfields to
+	Option Summary and Index.
+
 2010-10-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (free_lang_data_in_decl): Clear DECL_INITIAL
