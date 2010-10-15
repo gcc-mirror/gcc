@@ -85,7 +85,7 @@ struct objc_method_description_list {
   if (instance_methods)
     for (i = 0; i < instance_methods->count; i++)
       {
-	if (!strcmp ((char*)instance_methods->list[i].name, name))
+	if (!strcmp (sel_get_name (instance_methods->list[i].name), name))
 	  return &(instance_methods->list[i]);
       }
 
@@ -113,7 +113,7 @@ struct objc_method_description_list {
   if (class_methods)
     for (i = 0; i < class_methods->count; i++)
       {
-	if (!strcmp ((char*)class_methods->list[i].name, name))
+	if (!strcmp (sel_get_name (class_methods->list[i].name), name))
 	  return &(class_methods->list[i]);
       }
 

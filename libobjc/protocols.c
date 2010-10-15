@@ -383,7 +383,7 @@ struct objc_method_description protocol_getMethodDescription (Protocol *protocol
     {
       for (i = 0; i < methods->count; i++)
 	{
-	  if (strcmp ((char*)(methods->list[i].name), selector_name) == 0)
+	  if (strcmp (sel_getName (methods->list[i].name), selector_name) == 0)
 	    return methods->list[i];
 	}
     }

@@ -60,6 +60,8 @@ extern void __objc_install_premature_dtable(Class); /* (objc-dispatch.c) */
 extern void __objc_resolve_class_links(void);  /* (objc-class.c) */
 extern void __objc_register_selectors_from_class(Class); /* (objc-sel.c) */
 extern void __objc_register_selectors_from_list (struct objc_method_list *); /* (selector.c) */
+extern void __objc_register_selectors_from_description_list
+(struct objc_method_description_list *method_list); /* (selector.c) */
 extern void __objc_update_dispatch_table_for_class (Class);/* (objc-msg.c) */
 
 extern int  __objc_init_thread_system(void);    /* thread.c */

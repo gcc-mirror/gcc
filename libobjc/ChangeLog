@@ -1,3 +1,24 @@
+2010-10-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* init.c (__objc_init_protocol): New function which fixes up a
+	protocol's class pointer, registers it with the runtime, register
+	all protocol selectors and registers associated protocols too.
+	(objc_init_statics): Detect if we are initializing protocols, and
+	if so, use __objc_init_protocol instead of only fixing up the
+	class pointer.
+	(__objc_init_protocls): Use __objc_init_protocol.
+	* objc-private/module-abi-8.h: Updated comments.
+	* objc-private/runtime.h
+	(__objc_register_selectors_from_description_list): New.
+	* selector.c (__objc_register_selectors_from_description_list):
+	New.  (struct objc_method_description_list): Declare.
+	* Protocol.m ([-descriptionForInstanceMethod:]): Use sel_get_name
+	when accessing the name of a method, which is now correctly a SEL.
+	([-descriptionForClassMethod:]): Same change.
+	* protocols.c (protocol_getMethodDescription): Same change.
+	* objc/runtime.h: Updated comments.
+	(sel_registerTypedName): Fixed typo in function name.
+	
 2010-10-13  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/23214

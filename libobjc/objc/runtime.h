@@ -195,7 +195,7 @@ objc_EXPORT SEL sel_registerName (const char *name);
    Compatibility Note: the Apple/NeXT runtime has untyped selectors,
    so it does not have this function, which is specific to the GNU
    Runtime.  */
-objc_EXPORT SEL set_registerTypedName (const char *name, const char *type);
+objc_EXPORT SEL sel_registerTypedName (const char *name, const char *type);
 
 /* Return YES if first_selector is the same as second_selector, and NO
    if not.  */
@@ -505,7 +505,7 @@ objc_EXPORT Method * class_copyMethodList (Class class_, unsigned int *numberOfR
 objc_EXPORT unsigned int method_getNumberOfArguments (Method method);
 
 /* Return the string encoding for the return type of method 'method'.
-   The string is a standard NULL-terminated string in an area of
+   The string is a standard zero-terminated string in an area of
    memory allocated with malloc(); you should free it with free() when
    you finish using it.  Return an empty string if method is NULL.  */
 objc_EXPORT char * method_copyReturnType (Method method);
@@ -513,7 +513,7 @@ objc_EXPORT char * method_copyReturnType (Method method);
 /* Return the string encoding for the argument type of method
    'method', argument number 'argumentNumber' ('argumentNumber' is 0
    for self, 1 for _cmd, and 2 or more for the additional arguments if
-   any).  The string is a standard NULL-terminated string in an area
+   any).  The string is a standard zero-terminated string in an area
    of memory allocated with malloc(); you should free it with free()
    when you finish using it.  Return an empty string if method is NULL
    or if 'argumentNumber' refers to a non-existing argument.  */
@@ -524,10 +524,10 @@ objc_EXPORT char * method_copyArgumentType (Method method, unsigned int argument
    'returnValue' string, which is of size 'returnValueSize'.  No more
    than 'returnValueSize' characters are copied; if the encoding is
    smaller than 'returnValueSize', the rest of 'returnValue' is filled
-   with NULLs.  If it is bigger, it is truncated (and would not be
-   NULL-terminated).  You should supply a big enough
+   with zeros.  If it is bigger, it is truncated (and would not be
+   zero-terminated).  You should supply a big enough
    'returnValueSize'.  If the method is NULL, returnValue is set to a
-   string of NULLs.  */
+   string of zeros.  */
 objc_EXPORT void method_getReturnType (Method method, char *returnValue, 
 				       size_t returnValueSize);
 
@@ -538,10 +538,10 @@ objc_EXPORT void method_getReturnType (Method method, char *returnValue,
    'returnValue' string, which is of size 'returnValueSize'.  No more
    than 'returnValueSize' characters are copied; if the encoding is
    smaller than 'returnValueSize', the rest of 'returnValue' is filled
-   with NULLs.  If it is bigger, it is truncated (and would not be
-   NULL-terminated).  You should supply a big enough
+   with zeros.  If it is bigger, it is truncated (and would not be
+   zero-terminated).  You should supply a big enough
    'returnValueSize'.  If the method is NULL, returnValue is set to a
-   string of NULLs.  */
+   string of zeros.  */
 objc_EXPORT void method_getArgumentType (Method method, unsigned int argumentNumber,
 					 char *returnValue, size_t returnValueSize);
 
