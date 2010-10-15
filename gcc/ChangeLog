@@ -1,3 +1,10 @@
+2010-10-15  Xinliang David Li  <davidxl@google.com>
+
+	* tree-ssa-uninit.c (prune_uninit_phi_opnds_in_unrealizable_paths): New
+	function.
+	(use_pred_not_overlap_with_undef_path_pred): Outline phi arg pruning
+	into a recursive function.
+
 2010-10-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movdfcc_1_rex64): Correct mode attribute.
