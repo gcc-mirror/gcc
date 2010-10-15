@@ -1,3 +1,9 @@
+2010-10-14  Yao Qi  <yao@codesourcery.com>
+
+	PR target/45447
+	* config/arm/arm.c (arm_build_builtin_va_list): Assign
+	va_list_name to TYPE_STUB_DECL (va_list_type).
+
 2010-10-14  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/45621
