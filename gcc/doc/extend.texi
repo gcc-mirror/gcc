@@ -1345,9 +1345,7 @@ member of type @code{char}.
 @cindex VLAs
 
 Variable-length automatic arrays are allowed in ISO C99, and as an
-extension GCC accepts them in C90 mode and in C++.  (However, GCC's
-implementation of variable-length arrays does not yet conform in detail
-to the ISO C99 standard.)  These arrays are
+extension GCC accepts them in C90 mode and in C++.  These arrays are
 declared like any other automatic arrays, but with a length that is not
 a constant expression.  The storage is allocated at the point of
 declaration and deallocated when the brace-level is exited.  For

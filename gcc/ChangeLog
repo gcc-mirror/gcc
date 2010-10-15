@@ -1,3 +1,8 @@
+2010-10-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/extend.texi (Variable Length): Don't refer to VLAs not
+	conforming to C99.
+
 2010-10-14  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/45969
