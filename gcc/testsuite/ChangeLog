@@ -1,3 +1,13 @@
+2010-10-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/ppc-fma-1.c: New tests for powerpc FMA
+	builtin combiner patterns.
+	* gcc.target/powerpc/ppc-fma-2.c: Ditto.
+	* gcc.target/powerpc/ppc-fma-3.c: Ditto.
+	* gcc.target/powerpc/ppc-fma-4.c: Ditto.
+	* gcc.target/powerpc/ppc-fma-5.c: Ditto.
+	* gcc.target/powerpc/ppc-fma-6.c: Ditto.
+
 2010-10-15  Richard Guenther  <rguenther@suse.de>
 
 	* g++.dg/lto/20101015-1_0.C: New testcase.

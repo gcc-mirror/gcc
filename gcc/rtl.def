@@ -706,6 +706,9 @@ DEF_RTL_EXPR(SS_TRUNCATE, "ss_truncate", "e", RTX_UNARY)
 /* Unsigned saturating truncate.  */
 DEF_RTL_EXPR(US_TRUNCATE, "us_truncate", "e", RTX_UNARY)
 
+/* Floating point multiply/add combined instruction.  */
+DEF_RTL_EXPR(FMA, "fma", "eee", RTX_TERNARY)
+
 /* Information about the variable and its location.  */
 /* Changed 'te' to 'tei'; the 'i' field is for recording
    initialization status of variables.  */

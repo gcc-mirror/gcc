@@ -62,6 +62,7 @@ static void builtin_define_type_sizeof (const char *, tree);
 static void builtin_define_float_constants (const char *,
 					    const char *,
 					    const char *,
+					    const char *,
 					    tree);
 
 /* Define NAME with value TYPE size_unit.  */
@@ -78,6 +79,7 @@ static void
 builtin_define_float_constants (const char *name_prefix,
 		                const char *fp_suffix,
 				const char *fp_cast,
+				const char *fma_suffix,
 				tree type)
 {
   /* Used to convert radix-based values to base 10 values in several cases.
@@ -260,6 +262,13 @@ builtin_define_float_constants (const char *name_prefix,
      NaN has quiet NaNs.  */
   sprintf (name, "__%s_HAS_QUIET_NAN__", name_prefix);
   builtin_define_with_int_value (name, MODE_HAS_NANS (TYPE_MODE (type)));
+
+  /* Note whether we have fast FMA.  */
+  if (mode_has_fma (TYPE_MODE (type)))
+    {
+      sprintf (name, "__FP_FAST_FMA%s", fma_suffix);
+      builtin_define_with_int_value (name, 1);
+    }
 }
 
 /* Define __DECx__ constants for TYPE using NAME_PREFIX and SUFFIX. */
@@ -607,13 +616,15 @@ c_cpp_builtins (cpp_reader *pfile)
   builtin_define_with_int_value ("__DEC_EVAL_METHOD__",
                                  TARGET_DEC_EVAL_METHOD);
 
-  builtin_define_float_constants ("FLT", "F", "%s", float_type_node);
+  builtin_define_float_constants ("FLT", "F", "%s", "F", float_type_node);
   /* Cast the double precision constants.  This is needed when single
      precision constants are specified or when pragma FLOAT_CONST_DECIMAL64
      is used.  The correct result is computed by the compiler when using
      macros that include a cast.  */
-  builtin_define_float_constants ("DBL", "L", "((double)%s)", double_type_node);
-  builtin_define_float_constants ("LDBL", "L", "%s", long_double_type_node);
+  builtin_define_float_constants ("DBL", "L", "((double)%s)", "",
+				  double_type_node);
+  builtin_define_float_constants ("LDBL", "L", "%s", "L",
+				  long_double_type_node);
 
   /* For decfloat.h.  */
   builtin_define_decimal_float_constants ("DEC32", "DF", dfloat32_type_node);

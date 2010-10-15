@@ -1357,10 +1357,10 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
   vectype_in = NULL_TREE;
   nargs = gimple_call_num_args (stmt);
 
-  /* Bail out if the function has more than two arguments, we
-     do not have interesting builtin functions to vectorize with
-     more than two arguments.  No arguments is also not good.  */
-  if (nargs == 0 || nargs > 2)
+  /* Bail out if the function has more than three arguments, we do not have
+     interesting builtin functions to vectorize with more than two arguments
+     except for fma.  No arguments is also not good.  */
+  if (nargs == 0 || nargs > 3)
     return false;
 
   for (i = 0; i < nargs; i++)

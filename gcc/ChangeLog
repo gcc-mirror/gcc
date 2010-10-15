@@ -1,3 +1,74 @@
+2010-10-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* doc/md.texi (Standard Names): Add fma@var{m}4 documentation.
+
+	* doc/rtl.texi (RTX_TERNARY): Document FMA is ternary.  Add
+	SIGN_EXTRACT and ZERO_EXTRACT which were missing.
+	(Standard names): Document fma.
+
+	* doc/cpp.texi (Common Predefined Macros): Document __FP_FAST_FMA,
+	__FP_FAST_FMAF, __FP_FAST_FMAL.
+
+	* builitns.c (expand_builtin_mathfn_ternary): New function for
+	expanding ternary math functions, like fma.
+	(expand_builtin): Call it for the fma builtins.
+
+	* simplify-rtx.c (simplify_ternary_operation): Don't simplify FMA
+	ops at present.
+
+	* tree-vect-stmts.c (vectorizable_call): Allow 3 argument
+	vectorizable functions to support vectorizing fma.
+
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorized_function):
+	Handle fma builtins.
+
+	* config/rs6000/vsx.md (UNSPEC_VSX_MADD): Delete.
+	(UNSPEC_VSX_MSUB): Ditto.
+	(UNSPEC_VSX_NMADD): Ditto.
+	(UNSPEC_VSX_NMSUB): Ditto.
+	(vsx_fmadd<mode>4*): Rewrite to use FMA rtl in some cases instead
+	of UNSPEC. Renumber combiner patterns.
+	(vsx_fmsub<mode>4*): Ditto.
+	(vsx_fnmadd<mode>4*): Ditto.
+	(vsx_fnmsub<mode>4*): Ditto.
+
+	* config/rs6000/altivec.md (UNSPEC_VNMSUBFP): Delete.
+	(altivec_vmaddfp): Rewrite to use FMA rtl if no fused
+	multiply/add.  Rename combiner pattern, and add TARGET_FUSED_MADD
+	test.
+	(altivec_vmaddfp_1): Ditto.
+	(altivec_vmaddfp_2): Ditto.
+	(atlivec_mulv4sf3): Ditto.
+	(altivec_vnmsubfp): Ditto.
+	(altivec_vnmsubfp_1): Ditto.
+	(altivec_vnmsubfp_2): Ditto.
+	(altivec_vnmsubfp_3): Delete.
+
+	* config/rs6000/rs6000.md (UNSPEC_FMA): Delete.
+	(fmasf4): Rewrite to always use FMA rtl.  Add combiners to
+	generate the four fused multiply/add ops.  Combine power, powerpc
+	ops.
+	(fmasf4_fpr): Ditto.
+	(fmssf4_fpr): Ditto.
+	(fnmasf4_fpr): Ditto.
+	(fnmssf4_fpr): Ditto.
+	(fmadf4): Ditto.
+	(fmadf4_fpr): Ditto.
+	(fmsdf4_fpr): Ditto.
+	(fnmadf4_fpr): Ditto.
+	(fnmsdf4_fpr): Ditto.
+
+	* optabs.h (OTI_fma): Add fma optab.
+	(fma_optab): Ditto.
+
+	* genopinit.c (optabs): Set fma optab.
+
+	* rtl.def (FMA): Add FMA rtl.
+
+	* tree.h (mode_has_fma): New function to return if MODE supports a
+	fast multiply and add instruction.
+	* builtins.c (mode_has_fma): Ditto.
+
 2010-10-15  Jan Hubicka  <jh@suse.cz>
 
 	* lto-streamer-out.c (write_symbol): Use pointer set of seen
