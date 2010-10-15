@@ -2356,6 +2356,12 @@ DEFHOOK
  void, (void),
  hook_void_void)
 
+DEFHOOK
+(init_struct,
+"Set target-dependent initial values of fields in @var{opts}.",
+ void, (struct gcc_options *opts),
+ hook_void_gcc_optionsp)
+
 /* Function to determine if one function can inline another function.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_"

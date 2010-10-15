@@ -146,6 +146,7 @@ decode_pdp11_d (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
 static bool pdp11_handle_option (size_t, const char *, int);
 static void pdp11_option_optimization (int, int);
+static void pdp11_option_init_struct (struct gcc_options *);
 static rtx find_addr_reg (rtx); 
 static const char *singlemove_string (rtx *);
 static bool pdp11_assemble_integer (rtx, unsigned int, int);
@@ -189,6 +190,8 @@ static void pdp11_function_arg_advance (CUMULATIVE_ARGS *,
 #define TARGET_HANDLE_OPTION pdp11_handle_option
 #undef TARGET_OPTION_OPTIMIZATION
 #define TARGET_OPTION_OPTIMIZATION pdp11_option_optimization
+#undef TARGET_OPTION_INIT_STRUCT
+#define TARGET_OPTION_INIT_STRUCT pdp11_option_init_struct
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS pdp11_rtx_costs
@@ -235,14 +238,21 @@ pdp11_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED,
 static void
 pdp11_option_optimization (int level, int size ATTRIBUTE_UNUSED)
 {
-  flag_finite_math_only = 0;
-  flag_trapping_math = 0;
-  flag_signaling_nans = 0;
   if (level >= 3)
     {
       flag_omit_frame_pointer = 1;
       /* flag_unroll_loops = 1; */
     }
+}
+
+/* Implement TARGET_OPTION_INIT_STRUCT.  */
+
+static void
+pdp11_option_init_struct (struct gcc_options *opts)
+{
+  opts->x_flag_finite_math_only = 0;
+  opts->x_flag_trapping_math = 0;
+  opts->x_flag_signaling_nans = 0;
 }
 
 /* Nonzero if OP is a valid second operand for an arithmetic insn.  */

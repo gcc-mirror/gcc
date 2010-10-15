@@ -812,6 +812,10 @@ this hook!}  The debugging options are not supposed to alter the
 generated code.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_OPTION_INIT_STRUCT (struct gcc_options *@var{opts})
+Set target-dependent initial values of fields in @var{opts}.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_OPTION_DEFAULT_PARAMS (void)
 Set target-dependent default values for @option{--param} settings, using calls to @code{set_default_param_value}.
 @end deftypefn

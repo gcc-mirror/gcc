@@ -1136,7 +1136,7 @@ static rtx altivec_expand_vec_set_builtin (tree);
 static rtx altivec_expand_vec_ext_builtin (tree, rtx);
 static int get_element_number (tree, tree);
 static void rs6000_option_override (void);
-static void rs6000_option_optimization (int, int);
+static void rs6000_option_init_struct (struct gcc_options *);
 static void rs6000_option_default_params (void);
 static bool rs6000_handle_option (size_t, const char *, int);
 static void rs6000_parse_tls_size_option (void);
@@ -1602,8 +1602,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE rs6000_option_override
 
-#undef TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION rs6000_option_optimization
+#undef TARGET_OPTION_INIT_STRUCT
+#define TARGET_OPTION_INIT_STRUCT rs6000_option_init_struct
 
 #undef TARGET_OPTION_DEFAULT_PARAMS
 #define TARGET_OPTION_DEFAULT_PARAMS rs6000_option_default_params
@@ -3681,18 +3681,19 @@ rs6000_parse_tls_size_option (void)
     error ("bad value %qs for -mtls-size switch", rs6000_tls_size_string);
 }
 
+/* Implement TARGET_OPTION_INIT_STRUCT.  */
+
 static void
-rs6000_option_optimization (int level ATTRIBUTE_UNUSED,
-			    int size ATTRIBUTE_UNUSED)
+rs6000_option_init_struct (struct gcc_options *opts)
 {
   if (DEFAULT_ABI == ABI_DARWIN)
     /* The Darwin libraries never set errno, so we might as well
        avoid calling them when that's the only reason we would.  */
-    flag_errno_math = 0;
+    opts->x_flag_errno_math = 0;
 
   /* Enable section anchors by default.  */
   if (!TARGET_MACHO)
-    flag_section_anchors = 2;
+    opts->x_flag_section_anchors = 2;
 }
 
 /* Implement TARGET_OPTION_DEFAULT_PARAMS.  */

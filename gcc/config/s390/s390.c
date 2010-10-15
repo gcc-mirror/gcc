@@ -1503,13 +1503,19 @@ s390_option_optimization (int level ATTRIBUTE_UNUSED, int size)
   /* ??? There are apparently still problems with -fcaller-saves.  */
   flag_caller_saves = 0;
 
-  /* By default, always emit DWARF-2 unwind info.  This allows debugging
-     without maintaining a stack frame back-chain.  */
-  flag_asynchronous_unwind_tables = 1;
-
   /* Use MVCLE instructions to decrease code size if requested.  */
   if (size != 0)
     target_flags |= MASK_MVCLE;
+}
+
+/* Implement TARGET_OPTION_INIT_STRUCT.  */
+
+static void
+s390_option_init_struct (struct gcc_options *opts)
+{
+  /* By default, always emit DWARF-2 unwind info.  This allows debugging
+     without maintaining a stack frame back-chain.  */
+  opts->x_flag_asynchronous_unwind_tables = 1;
 }
 
 /* Return true if ARG is the name of a processor.  Set *TYPE and *FLAGS
@@ -10506,6 +10512,9 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_OPTION_OPTIMIZATION
 #define TARGET_OPTION_OPTIMIZATION s390_option_optimization
+
+#undef TARGET_OPTION_INIT_STRUCT
+#define TARGET_OPTION_INIT_STRUCT s390_option_init_struct
 
 #undef	TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO s390_encode_section_info

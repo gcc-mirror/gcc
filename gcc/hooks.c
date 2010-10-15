@@ -360,3 +360,10 @@ void
 hook_void_rtx_int (rtx insn ATTRIBUTE_UNUSED, int mode ATTRIBUTE_UNUSED)
 {
 }
+
+/* Generic hook that takes a struct gcc_options * and returns void.  */
+
+void
+hook_void_gcc_optionsp (struct gcc_options *opts ATTRIBUTE_UNUSED)
+{
+}

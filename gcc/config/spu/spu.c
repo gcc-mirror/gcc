@@ -150,7 +150,7 @@ char regs_ever_allocated[FIRST_PSEUDO_REGISTER];
 
 /*  Prototypes and external defs.  */
 static void spu_option_override (void);
-static void spu_option_optimization (int, int);
+static void spu_option_init_struct (struct gcc_options *opts);
 static void spu_option_default_params (void);
 static void spu_init_builtins (void);
 static tree spu_builtin_decl (unsigned, bool);
@@ -480,8 +480,8 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE spu_option_override
 
-#undef TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION spu_option_optimization
+#undef TARGET_OPTION_INIT_STRUCT
+#define TARGET_OPTION_INIT_STRUCT spu_option_init_struct
 
 #undef TARGET_OPTION_DEFAULT_PARAMS
 #define TARGET_OPTION_DEFAULT_PARAMS spu_option_default_params
@@ -492,10 +492,10 @@ static const struct attribute_spec spu_attribute_table[] =
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 static void
-spu_option_optimization (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
+spu_option_init_struct (struct gcc_options *opts)
 {
   /* With so many registers this is better on by default. */
-  flag_rename_registers = 1;
+  opts->x_flag_rename_registers = 1;
 }
 
 /* Implement TARGET_OPTION_DEFAULT_PARAMS.  */

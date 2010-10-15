@@ -1,3 +1,40 @@
+2010-10-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* target.def (target_option.init_struct): New hook.
+	* doc/tm.texi.in (TARGET_OPTION_INIT_STRUCT): New @hook.
+	* doc/tm.texi: Regenerate.
+	* hooks.c (hook_void_gcc_optionsp): New.
+	* hooks.h (hook_void_gcc_optionsp): Declare.
+	* langhooks-def.h (lhd_init_options_struct): Remove.
+	(LANG_HOOKS_INIT_OPTIONS_STRUCT): Define to
+	hook_void_gcc_optionsp.
+	* langhooks.c (lhd_init_options_struct): Remove.
+	* opts.c (init_options_struct): Also call
+	targetm.target_option.init_struct.
+	* config/i386/i386.c (ix86_option_init_struct,
+	TARGET_OPTION_INIT_STRUCT): New.
+	(ix86_option_optimization): Move some settings to
+	ix86_option_init_struct.
+	* config/pdp11/pdp11.c (pdp11_option_init_struct,
+	TARGET_OPTION_INIT_STRUCT): New.
+	(pdp11_option_optimization): Move some settings to
+	pdp11_option_init_struct.
+	* config/rs6000/rs6000.c (rs6000_option_optimization): Replace by
+	rs6000_option_init_struct.  Use options structure pointer.
+	(TARGET_OPTION_OPTIMIZATION): Replace by
+	TARGET_OPTION_INIT_STRUCT.
+	* config/s390/s390.c (s390_option_init_struct,
+	TARGET_OPTION_INIT_STRUCT): New.
+	(s390_option_optimization): Don't set
+	flag_asynchronous_unwind_tables here.
+	* config/sh/sh.c (sh_option_init_struct,
+	TARGET_OPTION_INIT_STRUCT): New.
+	(sh_option_optimization): Don't set flag_finite_math_only here.
+	* config/spu/spu.c (spu_option_optimization): Replace by
+	spu_option_optimization.  Use options structure pointer.
+	(TARGET_OPTION_OPTIMIZATION): Replace by
+	TARGET_OPTION_INIT_STRUCT.
+
 2010-10-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* doc/md.texi (Standard Names): Add fma@var{m}4 documentation.
