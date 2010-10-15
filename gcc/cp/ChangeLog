@@ -1,3 +1,9 @@
+2010-10-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45983
+	* tree.c (cp_build_qualified_type_real): Don't reuse a variant
+	with a different typedef variant of the element type.
+
 2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
 	merge from FSF apple 'trunk' branch. 
