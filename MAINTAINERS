@@ -122,6 +122,7 @@ sh-linux-gnu		Kaz Kojima		kkojima@gcc.gnu.org
 RTEMS Ports		Joel Sherrill		joel@oarcorp.com
 RTEMS Ports		Ralf Corsepius		ralf.corsepius@rtems.org
 VMS			Douglas Rupp		rupp@gnat.com
+VMS			Tristan Gingold		gingold@adacore.com
 VxWorks ports		Nathan Sidwell		nathan@codesourcery.com
 windows, cygwin, mingw	Christopher Faylor	cgf@gcc.gnu.org
 windows, cygwin, mingw	Kai Tietz		kai.tietz@onevision.com

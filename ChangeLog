@@ -1,3 +1,7 @@
+2010-10-15  Tristan Gingold  <gingold@adacore.com>
+
+	* MAINTAINERS (OS Port Maintainers): Add myself for VMS.
+
 2010-10-14  Douglas Rupp  <rupp@gnat.com>
 
 	* MAINTAINERS (OS Port Maintainers): Add myself for VMS.
