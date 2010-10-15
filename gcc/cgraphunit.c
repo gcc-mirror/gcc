@@ -396,7 +396,6 @@ cgraph_mark_if_needed (tree decl)
     cgraph_mark_needed_node (node);
 }
 
-#ifdef ENABLE_CHECKING
 /* Return TRUE if NODE2 is equivalent to NODE or its clone.  */
 static bool
 clone_of_p (struct cgraph_node *node, struct cgraph_node *node2)
@@ -405,7 +404,6 @@ clone_of_p (struct cgraph_node *node, struct cgraph_node *node2)
     node2 = node2->clone_of;
   return node2 != NULL;
 }
-#endif
 
 /* Verify edge E count and frequency.  */
 
