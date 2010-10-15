@@ -2345,6 +2345,15 @@ and swap operations on operands 1, 2, 4, 8 or 16 bytes in length, respectively.
 This macro is defined when the compiler is emitting Dwarf2 CFI directives
 to the assembler.  When this is defined, it is possible to emit those same
 directives in inline assembly.
+
+@item __FP_FAST_FMA
+@itemx __FP_FAST_FMAF
+@itemx __FP_FAST_FMAL
+These macros are defined with value 1 if the backend supports the
+@code{fma}, @code{fmaf}, and @code{fmal} builtin functions, so that
+the include file @file{math.h} can define the macros
+@code{FP_FAST_FMA}, @code{FP_FAST_FMAF}, and @code{FP_FAST_FMAL}
+for compatibility with the 1999 C standard.
 @end table
 
 @node System-specific Predefined Macros

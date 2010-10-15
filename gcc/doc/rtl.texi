@@ -182,7 +182,8 @@ and are lvalues (so they can be used for insertion as well).
 
 @item RTX_TERNARY
 An RTX code for other three input operations.  Currently only
-@code{IF_THEN_ELSE} and @code{VEC_MERGE}.
+@code{IF_THEN_ELSE},  @code{VEC_MERGE}, @code{SIGN_EXTRACT},
+@code{ZERO_EXTRACT}, and @code{FMA}.
 
 @item RTX_INSN
 An RTX code for an entire instruction:  @code{INSN}, @code{JUMP_INSN}, and
@@ -2233,6 +2234,12 @@ not be the same.
 
 For unsigned widening multiplication, use the same idiom, but with
 @code{zero_extend} instead of @code{sign_extend}.
+
+@findex fma
+@item (fma:@var{m} @var{x} @var{y} @var{z})
+Represents the @code{fma}, @code{fmaf}, and @code{fmal} builtin
+functions that do a combined multiply of @var{x} and @var{y} and then
+adding to@var{z} without doing an intermediate rounding step.
 
 @findex div
 @findex ss_div

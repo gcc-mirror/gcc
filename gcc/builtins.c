@@ -106,6 +106,7 @@ static void expand_errno_check (tree, rtx);
 static rtx expand_builtin_mathfn (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_2 (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_3 (tree, rtx, rtx);
+static rtx expand_builtin_mathfn_ternary (tree, rtx, rtx);
 static rtx expand_builtin_interclass_mathfn (tree, rtx);
 static rtx expand_builtin_sincos (tree);
 static rtx expand_builtin_cexpi (tree, rtx);
@@ -2176,6 +2177,79 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
 
   if (errno_set)
     expand_errno_check (exp, target);
+
+  /* Output the entire sequence.  */
+  insns = get_insns ();
+  end_sequence ();
+  emit_insn (insns);
+
+  return target;
+}
+
+/* Expand a call to the builtin trinary math functions (fma).
+   Return NULL_RTX if a normal call should be emitted rather than expanding the
+   function in-line.  EXP is the expression that is a call to the builtin
+   function; if convenient, the result should be placed in TARGET.
+   SUBTARGET may be used as the target for computing one of EXP's
+   operands.  */
+
+static rtx
+expand_builtin_mathfn_ternary (tree exp, rtx target, rtx subtarget)
+{
+  optab builtin_optab;
+  rtx op0, op1, op2, insns;
+  tree fndecl = get_callee_fndecl (exp);
+  tree arg0, arg1, arg2;
+  enum machine_mode mode;
+
+  if (!validate_arglist (exp, REAL_TYPE, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+    return NULL_RTX;
+
+  arg0 = CALL_EXPR_ARG (exp, 0);
+  arg1 = CALL_EXPR_ARG (exp, 1);
+  arg2 = CALL_EXPR_ARG (exp, 2);
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    CASE_FLT_FN (BUILT_IN_FMA):
+      builtin_optab = fma_optab; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Make a suitable register to place result in.  */
+  mode = TYPE_MODE (TREE_TYPE (exp));
+
+  /* Before working hard, check whether the instruction is available.  */
+  if (optab_handler (builtin_optab, mode) == CODE_FOR_nothing)
+    return NULL_RTX;
+
+  target = gen_reg_rtx (mode);
+
+  /* Always stabilize the argument list.  */
+  CALL_EXPR_ARG (exp, 0) = arg0 = builtin_save_expr (arg0);
+  CALL_EXPR_ARG (exp, 1) = arg1 = builtin_save_expr (arg1);
+  CALL_EXPR_ARG (exp, 2) = arg2 = builtin_save_expr (arg2);
+
+  op0 = expand_expr (arg0, subtarget, VOIDmode, EXPAND_NORMAL);
+  op1 = expand_normal (arg1);
+  op2 = expand_normal (arg2);
+
+  start_sequence ();
+
+  /* Compute into TARGET.
+     Set TARGET to wherever the result comes back.  */
+  target = expand_ternary_op (mode, builtin_optab, op0, op1, op2,
+			      target, 0);
+
+  /* If we were unable to expand via the builtin, stop the sequence
+     (without outputting the insns) and call to the library function
+     with the stabilized argument list.  */
+  if (target == 0)
+    {
+      end_sequence ();
+      return expand_call (exp, target, target == const0_rtx);
+    }
 
   /* Output the entire sequence.  */
   insns = get_insns ();
@@ -5824,6 +5898,12 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     CASE_FLT_FN (BUILT_IN_NEARBYINT):
     CASE_FLT_FN (BUILT_IN_RINT):
       target = expand_builtin_mathfn (exp, target, subtarget);
+      if (target)
+	return target;
+      break;
+
+    CASE_FLT_FN (BUILT_IN_FMA):
+      target = expand_builtin_mathfn_ternary (exp, target, subtarget);
       if (target)
 	return target;
       break;
@@ -13830,3 +13910,10 @@ is_inexpensive_builtin (tree decl)
   return false;
 }
 
+/* Return true if MODE provides a fast multiply/add (FMA) builtin function.  */
+
+bool
+mode_has_fma (enum machine_mode mode)
+{
+  return optab_handler (fma_optab, mode) != CODE_FOR_nothing;
+}

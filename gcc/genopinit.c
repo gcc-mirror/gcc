@@ -159,6 +159,7 @@ static const char * const optabs[] =
   "set_optab_handler (sqrt_optab, $A, CODE_FOR_$(sqrt$a2$))",
   "set_optab_handler (floor_optab, $A, CODE_FOR_$(floor$a2$))",
   "set_convert_optab_handler (lfloor_optab, $B, $A, CODE_FOR_$(lfloor$F$a$I$b2$))",
+  "set_optab_handler (fma_optab, $A, CODE_FOR_$(fma$a4$))",
   "set_optab_handler (ceil_optab, $A, CODE_FOR_$(ceil$a2$))",
   "set_convert_optab_handler (lceil_optab, $B, $A, CODE_FOR_$(lceil$F$a$I$b2$))",
   "set_optab_handler (round_optab, $A, CODE_FOR_$(round$a2$))",
