@@ -812,6 +812,8 @@ this hook!}  The debugging options are not supposed to alter the
 generated code.
 @end deftypefn
 
+@hook TARGET_OPTION_INIT_STRUCT
+
 @hook TARGET_OPTION_DEFAULT_PARAMS
 
 @hook TARGET_HELP

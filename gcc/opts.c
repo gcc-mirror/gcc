@@ -695,6 +695,9 @@ init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
 
   /* Some targets have ABI-specified unwind tables.  */
   opts->x_flag_unwind_tables = targetm.unwind_tables_default;
+
+  /* Some targets have other target-specific initialization.  */
+  targetm.target_option.init_struct (opts);
 }
 
 /* Decode command-line options to an array, like
