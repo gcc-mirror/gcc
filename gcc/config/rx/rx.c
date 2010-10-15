@@ -2191,29 +2191,21 @@ rx_handle_option (size_t code, const char *  arg ATTRIBUTE_UNUSED, int value)
   return true;
 }
 
-/* Implement TARGET_OPTION_OPTIMIZATION.  */
+/* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.  */
 
 static void
-rx_option_optimization (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
+rx_override_options_after_change (void)
 {
   static bool first_time = TRUE;
-  static bool saved_allow_rx_fpu = TRUE;
 
   if (first_time)
     {
       /* If this is the first time through and the user has not disabled
-	 the use of RX FPU hardware then enable unsafe math optimizations,
-	 since the FPU instructions themselves are unsafe.  */
+	 the use of RX FPU hardware then enable -ffinite-math-only,
+	 since the FPU instructions do not support NaNs and infinities.  */
       if (TARGET_USE_FPU)
-	set_fast_math_flags (true);
+	flag_finite_math_only = 1;
 
-      /* FIXME: For some unknown reason LTO compression is not working,
-	 at least on my local system.  So set the default compression
-	 level to none, for now.  */
-      if (flag_lto_compression_level == -1)
-        flag_lto_compression_level = 0;
-
-      saved_allow_rx_fpu = ALLOW_RX_FPU_INSNS;
       first_time = FALSE;
     }
   else
@@ -2221,11 +2213,8 @@ rx_option_optimization (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
       /* Alert the user if they are changing the optimization options
 	 to use IEEE compliant floating point arithmetic with RX FPU insns.  */
       if (TARGET_USE_FPU
-	  && ! fast_math_flags_set_p ())
-	warning (0, "RX FPU instructions are not IEEE compliant");
-
-      if (saved_allow_rx_fpu != ALLOW_RX_FPU_INSNS)
-	error ("Changing the FPU insns/math optimizations pairing is not supported");
+	  && !flag_finite_math_only)
+	warning (0, "RX FPU instructions do not support NaNs and infinities");
     }
 }
 
@@ -2235,6 +2224,8 @@ rx_option_override (void)
   /* This target defaults to strict volatile bitfields.  */
   if (flag_strict_volatile_bitfields < 0)
     flag_strict_volatile_bitfields = 1;
+
+  rx_override_options_after_change ();
 }
 
 
@@ -2834,8 +2825,8 @@ rx_memory_move_cost (enum machine_mode mode, enum reg_class regclass, bool in)
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE			rx_option_override
 
-#undef  TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION		rx_option_optimization
+#undef  TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE	rx_override_options_after_change
 
 #undef  TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO		sjlj_except_unwind_info

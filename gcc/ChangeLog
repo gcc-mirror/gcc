@@ -1,5 +1,16 @@
 2010-10-15  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/rx/rx.c (rx_option_optimization): Change to
+	rx_override_options_after_change.  Don't change
+	flag_lto_compression_level.  Don't check for changes to whether
+	FPU instructions can be used.  Check and set only
+	flag_finite_math_only, not other fast-math flags.
+	(rx_option_override): Call rx_override_options_after_change.
+	(TARGET_OPTION_OPTIMIZATION): Remove.
+	(TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): Define.
+
+2010-10-15  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/rs6000/rs6000.c (rs6000_option_optimization): Don't
 	disable section anchors for lang_hooks.name[4] != 'O'.
 
