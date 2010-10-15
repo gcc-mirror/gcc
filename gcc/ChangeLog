@@ -1,3 +1,8 @@
+2010-10-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (free_lang_data_in_decl): Clear DECL_INITIAL
+	for automatic variables again.
+
 2010-10-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/extend.texi (Variable Length): Don't refer to VLAs not
