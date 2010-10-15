@@ -305,6 +305,37 @@ objc_EXPORT const char * ivar_getTypeEncoding (Ivar variable);
    will be filled with the number of instance variables returned.  */
 objc_EXPORT Ivar * class_copyIvarList (Class class_, unsigned int *numberOfReturnedIvars);
 
+/* Return the name of the property.  Return NULL if 'property' is
+   NULL.  */
+objc_EXPORT const char * property_getName (Property property);
+
+/* Return the attributes of the property as a string.  Return NULL if
+   'property' is NULL.  */
+objc_EXPORT const char * property_getAttributes (Property property);
+
+/* Return the property with name 'propertyName' of the class 'class_'.
+   This function returns NULL if the required property can not be
+   found.  Return NULL if 'class_' or 'propertyName' is NULL.
+
+   Note that the traditional ABI does not store the list of properties
+   of a class in a compiled module, so the traditional ABI will always
+   return NULL.  */
+objc_EXPORT Property class_getProperty (Class class_, const char *propertyName);
+
+/* Return all the properties of the class.  The return value
+   of the function is a pointer to an area, allocated with malloc(),
+   that contains all the properties of the class.  It does not
+   include properties of superclasses.  The list is terminated
+   by NULL.  Optionally, if you pass a non-NULL
+   'numberOfReturnedIvars' pointer, the unsigned int that it points to
+   will be filled with the number of properties returned.
+
+   Note that the traditional ABI does not store the list of properties
+   of a class in a compiled module, so the traditional ABI will always
+   return an empty list.  */
+objc_EXPORT Property * class_copyPropertyList 
+(Class class_, unsigned int *numberOfReturnedProperties);
+
 
 /** Implementation: the following functions are in class.c.  */
 
@@ -421,6 +452,27 @@ objc_EXPORT void class_setVersion (Class class_, int version);
    a non-zero number (since the 'isa' instance variable is required
    for all classes).  */
 objc_EXPORT size_t class_getInstanceSize (Class class_);
+
+/* Change the implementation of the method.  It also searches all
+   classes for any class implementing the method, and replaces the
+   existing implementation with the new one.  For that to work,
+   'method' must be a method returned by class_getInstanceMethod() or
+   class_getClassMethod() as the matching is done by comparing the
+   pointers; in that case, only the implementation in the class is
+   modified.  Return the previous implementation that has been
+   replaced.  If method or implementation is NULL, do nothing and
+   return NULL.  */
+objc_EXPORT IMP
+method_setImplementation (Method method, IMP implementation);
+
+/* Swap the implementation of two methods in a single, atomic
+   operation.  This is equivalent to getting the implementation of
+   each method and then calling method_setImplementation() on the
+   other one.  For this to work, the two methods must have been
+   returned by class_getInstanceMethod() or class_getClassMethod().
+   If 'method_a' or 'method_b' is NULL, do nothing.  */
+objc_EXPORT void
+method_exchangeImplementations (Method method_a, Method method_b);
 
 
 /** Implementation: the following functions are in sendmsg.c.  */
@@ -545,26 +597,6 @@ objc_EXPORT void method_getReturnType (Method method, char *returnValue,
 objc_EXPORT void method_getArgumentType (Method method, unsigned int argumentNumber,
 					 char *returnValue, size_t returnValueSize);
 
-/* Change the implementation of the method.  It also searches all
-   classes for any class implementing the method, and replaces the
-   existing implementation with the new one.  For that to work,
-   'method' must be a method returned by class_getInstanceMethod() or
-   class_getClassMethod() as the matching is done by comparing the
-   pointers; in that case, only the implementation in the class is
-   modified.  Return the previous implementation that has been
-   replaced.  If method or implementation is NULL, do nothing and
-   return NULL.  */
-objc_EXPORT IMP
-method_setImplementation (Method method, IMP implementation);
-
-/* Swap the implementation of two methods in a single, atomic
-   operation.  This is equivalent to getting the implementation of
-   each method and then calling method_setImplementation() on the
-   other one.  For this to work, the two methods must have been
-   returned by class_getInstanceMethod() or class_getClassMethod().
-   If 'method_a' or 'method_b' is NULL, do nothing.  */
-objc_EXPORT void
-method_exchangeImplementations (Method method_a, Method method_b);
 
 /** Implementation: the following functions are in protocols.c.  */
 

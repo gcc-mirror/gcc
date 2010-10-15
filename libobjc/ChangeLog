@@ -1,4 +1,15 @@
 2010-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	* objc/runtime.h (class_copyPropertyList): New.
+	(class_getProperty): New.
+	(property_getAttributes): New.
+	(property_getName): New.
+	* ivars.c (class_copyPropertyList): New.
+	(class_getProperty): New.
+	(property_getAttributes): New.
+	(property_getName): New.
+	
+2010-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-private/runtime.h (__objc_update_classes_with_methods): New.
 	* class.c (__objc_update_classes_with_methods): New.
