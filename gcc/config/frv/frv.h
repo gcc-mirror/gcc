@@ -2460,11 +2460,6 @@ frv_ifcvt_modify_multiple_tests (CE_INFO, BB, &TRUE_EXPR, &FALSE_EXPR)
 
 
 /* If the following macro is defined and nonzero and deterministic
-   finite state automata are used for pipeline hazard recognition, the
-   code making resource-constrained software pipelining is on.  */
-#define RCSP_SOFTWARE_PIPELINING 1
-
-/* If the following macro is defined and nonzero and deterministic
    finite state automata are used for pipeline hazard recognition, we
    will try to exchange insns in queue ready to improve the schedule.
    The more macro value, the more tries will be made.  */
