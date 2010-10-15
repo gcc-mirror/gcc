@@ -1,5 +1,10 @@
 2010-10-15  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/rs6000/rs6000.c (rs6000_option_optimization): Don't
+	disable section anchors for lang_hooks.name[4] != 'O'.
+
+2010-10-15  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/frv/frv.c (frv_option_optimization,
 	TARGET_OPTION_OPTIMIZATION): Remove.
 	* config/frv/frv.h (RCSP_SOFTWARE_PIPELINING): Remove.
