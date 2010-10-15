@@ -1,5 +1,5 @@
 /* This file contains the implementation of class Protocol.
-   Copyright (C) 1993, 2004, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1993, 2004, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC. 
 
@@ -23,69 +23,33 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */ 
 
 #include "objc-private/common.h"
+#include "objc/runtime.h"
+#include "objc-private/module-abi-8.h"
 #include "objc/Protocol.h"
-#include "objc/objc-api.h"
-
-/* Method description list */
-struct objc_method_description_list {
-        int count;
-        struct objc_method_description list[1];
-};
 
 
 @implementation Protocol
-{
-@private
-        char *protocol_name;
-        struct objc_protocol_list *protocol_list;
-        struct objc_method_description_list *instance_methods, *class_methods; 
-}
-
-/* Obtaining attributes intrinsic to the protocol */
 
 - (const char *)name
 {
   return protocol_name;
 }
 
-/* Testing protocol conformance */
-
 - (BOOL) conformsTo: (Protocol *)aProtocolObject
 {
-  size_t i;
-  struct objc_protocol_list* proto_list;
-
-  if (aProtocolObject == nil)
-    return NO;
-
-  if (!strcmp(aProtocolObject->protocol_name, self->protocol_name))
-    return YES;
-
-  for (proto_list = protocol_list; proto_list; proto_list = proto_list->next)
-    {
-      for (i=0; i < proto_list->count; i++)
-	{
-	  if ([proto_list->list[i] conformsTo: aProtocolObject])
-	    return YES;
-	}
-    }
-
-  return NO;
+  return protocol_conformsToProtocol (self, aProtocolObject);
 }
-
-/* Looking up information specific to a protocol */
 
 - (struct objc_method_description *) descriptionForInstanceMethod:(SEL)aSel
 {
   int i;
   struct objc_protocol_list* proto_list;
-  const char* name = sel_get_name (aSel);
   struct objc_method_description *result;
 
   if (instance_methods)
     for (i = 0; i < instance_methods->count; i++)
       {
-	if (!strcmp (sel_get_name (instance_methods->list[i].name), name))
+	if (sel_isEqual (instance_methods->list[i].name, aSel))
 	  return &(instance_methods->list[i]);
       }
 
@@ -95,7 +59,7 @@ struct objc_method_description_list {
       for (j=0; j < proto_list->count; j++)
 	{
 	  if ((result = [proto_list->list[j]
-			 descriptionForInstanceMethod: aSel]))
+				   descriptionForInstanceMethod: aSel]))
 	    return result;
 	}
     }
@@ -107,13 +71,12 @@ struct objc_method_description_list {
 {
   int i;
   struct objc_protocol_list* proto_list;
-  const char* name = sel_get_name (aSel);
   struct objc_method_description *result;
 
   if (class_methods)
     for (i = 0; i < class_methods->count; i++)
       {
-	if (!strcmp (sel_get_name (class_methods->list[i].name), name))
+	if (sel_isEqual (class_methods->list[i].name, aSel))
 	  return &(class_methods->list[i]);
       }
 
@@ -123,7 +86,7 @@ struct objc_method_description_list {
       for (j=0; j < proto_list->count; j++)
 	{
 	  if ((result = [proto_list->list[j]
-			 descriptionForClassMethod: aSel]))
+				   descriptionForClassMethod: aSel]))
 	    return result;
 	}
     }
@@ -149,33 +112,9 @@ struct objc_method_description_list {
   return hash;
 }
 
-/*
- * Equality between formal protocols is only formal (nothing to do
- * with actually checking the list of methods they have!).  Two formal
- * Protocols are equal if and only if they have the same name.
- *
- * Please note (for comparisons with other implementations) that
- * checking the names is equivalent to checking that Protocol A
- * conforms to Protocol B and Protocol B conforms to Protocol A,
- * because this happens iff they have the same name.  If they have
- * different names, A conforms to B if and only if A includes B, but
- * the situation where A includes B and B includes A is a circular
- * dependency between Protocols which is forbidden by the compiler, so
- * A conforms to B and B conforms to A with A and B having different
- * names is an impossible case.
- */
 - (BOOL) isEqual: (id)obj
 {
-  if (obj == self)
-    return YES;
-
-  if ([obj isKindOf: [Protocol class]])
-    {
-      if (strcmp (protocol_name, ((Protocol *)obj)->protocol_name) == 0)
-	return YES;
-    }
-
-  return NO;
+  return protocol_isEqual (self, obj);
 }
 @end
 
