@@ -1,3 +1,9 @@
+2010-10-15  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/45957
+	* tree.c (free_lang_data_in_decl): Do not clear DECL_INITIAL
+	of vars.
+
 2010-10-15  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* ifcvt.c (find_active_insn_before): New function.
