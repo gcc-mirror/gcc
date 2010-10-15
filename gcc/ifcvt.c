@@ -88,6 +88,8 @@ static int count_bb_insns (const_basic_block);
 static bool cheap_bb_rtx_cost_p (const_basic_block, int);
 static rtx first_active_insn (basic_block);
 static rtx last_active_insn (basic_block, int);
+static rtx find_active_insn_before (basic_block, rtx);
+static rtx find_active_insn_after (basic_block, rtx);
 static basic_block block_fallthru (basic_block);
 static int cond_exec_process_insns (ce_if_block_t *, rtx, rtx, rtx, rtx, int);
 static rtx cond_exec_get_condition (rtx);
@@ -225,6 +227,48 @@ last_active_insn (basic_block bb, int skip_use_p)
 
   if (LABEL_P (insn))
     return NULL_RTX;
+
+  return insn;
+}
+
+/* Return the active insn before INSN inside basic block CURR_BB. */
+
+static rtx
+find_active_insn_before (basic_block curr_bb, rtx insn)
+{
+  if (!insn || insn == BB_HEAD (curr_bb))
+    return NULL_RTX;
+
+  while ((insn = PREV_INSN (insn)) != NULL_RTX)
+    {
+      if (NONJUMP_INSN_P (insn) || JUMP_P (insn) || CALL_P (insn))
+        break;
+
+      /* No other active insn all the way to the start of the basic block. */
+      if (insn == BB_HEAD (curr_bb))
+        return NULL_RTX;
+    }
+
+  return insn;
+}
+
+/* Return the active insn after INSN inside basic block CURR_BB. */
+
+static rtx
+find_active_insn_after (basic_block curr_bb, rtx insn)
+{
+  if (!insn || insn == BB_END (curr_bb))
+    return NULL_RTX;
+
+  while ((insn = NEXT_INSN (insn)) != NULL_RTX)
+    {
+      if (NONJUMP_INSN_P (insn) || JUMP_P (insn) || CALL_P (insn))
+        break;
+
+      /* No other active insn all the way to the end of the basic block. */
+      if (insn == BB_END (curr_bb))
+        return NULL_RTX;
+    }
 
   return insn;
 }
@@ -447,9 +491,9 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
       if (n_matching > 0)
 	{
 	  if (then_end)
-	    then_end = prev_active_insn (then_first_tail);
+	    then_end = find_active_insn_before (then_bb, then_first_tail);
 	  if (else_end)
-	    else_end = prev_active_insn (else_first_tail);
+	    else_end = find_active_insn_before (else_bb, else_first_tail);
 	  n_insns -= 2 * n_matching;
 	}
 
@@ -487,9 +531,9 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
 	  if (n_matching > 0)
 	    {
 	      if (then_start)
-		then_start = next_active_insn (then_last_head);
+		then_start = find_active_insn_after (then_bb, then_last_head);
 	      if (else_start)
-		else_start = next_active_insn (else_last_head);
+		else_start = find_active_insn_after (else_bb, else_last_head);
 	      n_insns -= 2 * n_matching;
 	    }
 	}
@@ -645,7 +689,7 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
     {
       rtx from = then_first_tail;
       if (!INSN_P (from))
-	from = next_active_insn (from);
+	from = find_active_insn_after (then_bb, from);
       delete_insn_chain (from, BB_END (then_bb), false);
     }
   if (else_last_head)
