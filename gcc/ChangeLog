@@ -1,5 +1,10 @@
 2010-10-15  Joseph Myers  <joseph@codesourcery.com>
 
+	* doc/extend.texi (Variable Length): Don't refer to VLAs not
+	conforming to C99.
+
+2010-10-15  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/rx/rx.c (rx_option_optimization): Change to
 	rx_override_options_after_change.  Don't change
 	flag_lto_compression_level.  Don't check for changes to whether
