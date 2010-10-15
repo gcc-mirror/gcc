@@ -2340,13 +2340,13 @@ lto_out_decl_state_written_size (struct lto_out_decl_state *state)
 }
 
 
-/* Write symbol T into STREAM in CACHE. SEEN specify symbols we wrote so
-   far.  */
+/* Write symbol T into STREAM in CACHE. SEEN specifies symbols we wrote
+   so far.  */
 
 static void
 write_symbol (struct lto_streamer_cache_d *cache,
 	      struct lto_output_stream *stream,
-	      tree t, bitmap seen, bool alias)
+	      tree t, struct pointer_set_t *seen, bool alias)
 {
   const char *name;
   enum gcc_plugin_symbol_kind kind;
@@ -2368,6 +2368,10 @@ write_symbol (struct lto_streamer_cache_d *cache,
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (t));
 
+  if (pointer_set_contains (seen, name))
+    return;
+  pointer_set_insert (seen, name);
+
   /* FIXME lto: this is from assemble_name_raw in varasm.c. For some
      architectures we might have to do the same name manipulations that
      ASM_OUTPUT_LABELREF does. */
@@ -2376,10 +2380,6 @@ write_symbol (struct lto_streamer_cache_d *cache,
 
   lto_streamer_cache_lookup (cache, t, &slot_num);
   gcc_assert (slot_num >= 0);
-
-  /* Avoid duplicate symbols. */
-  if (!bitmap_set_bit (seen, slot_num))
-    return;
 
   if (DECL_EXTERNAL (t))
     {
@@ -2397,9 +2397,9 @@ write_symbol (struct lto_streamer_cache_d *cache,
       else
 	kind = GCCPK_DEF;
 
-      /* When something is defined, it should have a node attached.
-	 FIXME: For fortran this is still not the case since wrapup global
-	 decls is done after streaming.  */
+      /* When something is defined, it should have node attached.  */
+      gcc_assert (alias || TREE_CODE (t) != VAR_DECL
+		  || varpool_get_node (t)->finalized);
       gcc_assert (alias || TREE_CODE (t) != FUNCTION_DECL
 		  || (cgraph_get_node (t)
 		      && cgraph_get_node (t)->analyzed));
@@ -2463,7 +2463,7 @@ produce_symtab (struct output_block *ob,
 {
   struct lto_streamer_cache_d *cache = ob->writer_cache;
   char *section_name = lto_get_section_name (LTO_section_symtab, NULL, NULL);
-  bitmap seen;
+  struct pointer_set_t *seen;
   struct cgraph_node *node, *alias;
   struct varpool_node *vnode, *valias;
   struct lto_output_stream stream;
@@ -2475,14 +2475,35 @@ produce_symtab (struct output_block *ob,
   lto_begin_section (section_name, false);
   free (section_name);
 
-  seen = lto_bitmap_alloc ();
+  seen = pointer_set_create ();
   memset (&stream, 0, sizeof (stream));
 
-  /* Write all functions.  */
+  /* Write all functions. 
+     First write all defined functions and the write all used functions.
+     This is done so only to handle duplicated symbols in cgraph.  */
   for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
     {
       node = lto_cgraph_encoder_deref (encoder, i);
-      if (node->alias)
+      if (DECL_EXTERNAL (node->decl))
+	continue;
+      if (DECL_COMDAT (node->decl)
+	  && cgraph_can_remove_if_no_direct_calls_p (node))
+	continue;
+      if (node->alias || node->global.inlined_to)
+	continue;
+      write_symbol (cache, &stream, node->decl, seen, false);
+      for (alias = node->same_body; alias; alias = alias->next)
+        write_symbol (cache, &stream, alias->decl, seen, true);
+    }
+  for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
+    {
+      node = lto_cgraph_encoder_deref (encoder, i);
+      if (!DECL_EXTERNAL (node->decl))
+	continue;
+      if (DECL_COMDAT (node->decl)
+	  && cgraph_can_remove_if_no_direct_calls_p (node))
+	continue;
+      if (node->alias || node->global.inlined_to)
 	continue;
       write_symbol (cache, &stream, node->decl, seen, false);
       for (alias = node->same_body; alias; alias = alias->next)
@@ -2493,6 +2514,19 @@ produce_symtab (struct output_block *ob,
   for (i = 0; i < lto_varpool_encoder_size (varpool_encoder); i++)
     {
       vnode = lto_varpool_encoder_deref (varpool_encoder, i);
+      if (DECL_EXTERNAL (vnode->decl))
+	continue;
+      if (vnode->alias)
+	continue;
+      write_symbol (cache, &stream, vnode->decl, seen, false);
+      for (valias = vnode->extra_name; valias; valias = valias->next)
+        write_symbol (cache, &stream, valias->decl, seen, true);
+    }
+  for (i = 0; i < lto_varpool_encoder_size (varpool_encoder); i++)
+    {
+      vnode = lto_varpool_encoder_deref (varpool_encoder, i);
+      if (!DECL_EXTERNAL (vnode->decl))
+	continue;
       if (vnode->alias)
 	continue;
       write_symbol (cache, &stream, vnode->decl, seen, false);
@@ -2506,7 +2540,7 @@ produce_symtab (struct output_block *ob,
       write_symbol (cache, &stream, p->decl, seen, true);
 
   lto_write_stream (&stream);
-  lto_bitmap_free (seen);
+  pointer_set_destroy (seen);
 
   lto_end_section ();
 }
