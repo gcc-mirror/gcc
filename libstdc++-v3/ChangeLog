@@ -1,3 +1,9 @@
+2010-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/functional (function<>::operator==, operator!=):
+	Remove, per LWG 1240.
+	* testsuite/20_util/function/cmp/cmp_neg.cc: Adjust dg-* directives.
+
 2010-10-13  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/45990

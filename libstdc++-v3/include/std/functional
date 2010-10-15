@@ -2096,12 +2096,6 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       template<typename _Functor> const _Functor* target() const;
 #endif
 
-      // deleted overloads
-      template<typename _Res2, typename... _ArgTypes2>
-	void operator==(const function<_Res2(_ArgTypes2...)>&) const = delete;
-      template<typename _Res2, typename... _ArgTypes2>
-	void operator!=(const function<_Res2(_ArgTypes2...)>&) const = delete;
-
     private:
       typedef _Res (*_Invoker_type)(const _Any_data&, _ArgTypes...);
       _Invoker_type _M_invoker;
