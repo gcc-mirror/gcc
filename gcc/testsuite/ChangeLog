@@ -1,3 +1,10 @@
+2010-10-14  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/45621
+	* g++.dg/lto/pr45621.h : New.
+	* g++.dg/lto/pr45621_0.C: New.
+	* g++.dg/lto/pr45621_1.C: New.
+
 2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/property: New.
