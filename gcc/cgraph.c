@@ -1241,9 +1241,18 @@ cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
 	{
 	  /* See if the edge is already there and has the correct callee.  It
 	     might be so because of indirect inlining has already updated
-	     it.  */
-	  if (new_call && e->callee && e->callee->decl == new_call)
-	    return;
+	     it.  We also might've cloned and redirected the edge.  */
+	  if (new_call && e->callee)
+	    {
+	      struct cgraph_node *callee = e->callee;
+	      while (callee)
+		{
+		  if (callee->decl == new_call
+		      || callee->former_clone_of == new_call)
+		    return;
+		  callee = callee->clone_of;
+		}
+	    }
 
 	  /* Otherwise remove edge and create new one; we can't simply redirect
 	     since function has changed, so inline plan and other information
