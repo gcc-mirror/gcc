@@ -3690,10 +3690,8 @@ rs6000_option_optimization (int level ATTRIBUTE_UNUSED,
        avoid calling them when that's the only reason we would.  */
     flag_errno_math = 0;
 
-  /* Enable section anchors by default.
-     Skip section anchors for Objective C and Objective C++
-     until front-ends fixed.  */
-  if (!TARGET_MACHO && lang_hooks.name[4] != 'O')
+  /* Enable section anchors by default.  */
+  if (!TARGET_MACHO)
     flag_section_anchors = 2;
 }
 
