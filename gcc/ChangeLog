@@ -1,3 +1,7 @@
+2010-10-15  Michael Matz  <matz@suse.de>
+
+	* cgraphunit.c (clone_of_p): Define unconditionally.
+
 2010-10-15  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/45957
@@ -24,7 +28,7 @@
 	redirected to clone, be happy.
 	* cgraph.h (cgraph node): Enable former_clone_of unconditinally.
 	* cgraphunit.c (verify_cgraph_node, cgraph_materialize_clone): Handle
-	former_clone_of unconditinally.
+	former_clone_of unconditionally.
 	
 2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
