@@ -93,6 +93,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc/thr.h"
 #include "objc-private/module-abi-8.h"  /* For CLS_ISCLASS and similar.  */
 #include "objc-private/runtime.h"       /* the kitchen sink */
+#include "objc-private/sarray.h"        /* For sarray_put_at_safe.  */
 #include <string.h>                     /* For memset */
 
 /* We use a table which maps a class name to the corresponding class
@@ -546,8 +547,6 @@ objc_getClassList (Class *returnValue, int maxNumberOfClassesToReturn)
   /* Iterate over all entries in the table.  */
   int hash, count = 0;
 
-  objc_mutex_lock (__class_table_lock); 
-
   for (hash = 0; hash < CLASS_TABLE_SIZE; hash++)
     {
       class_node_ptr node = class_table_array[hash];
@@ -560,7 +559,6 @@ objc_getClassList (Class *returnValue, int maxNumberOfClassesToReturn)
 		returnValue[count] = node->pointer;
 	      else
 		{
-		  objc_mutex_unlock (__class_table_lock);
 		  return count;
 		}
 	    }
@@ -569,7 +567,6 @@ objc_getClassList (Class *returnValue, int maxNumberOfClassesToReturn)
 	}
     }
   
-  objc_mutex_unlock (__class_table_lock);
   return count;
 }
 
@@ -645,6 +642,62 @@ objc_next_class (void **enum_state)
   objc_mutex_unlock (__objc_runtime_mutex);
   
   return class;
+}
+
+/* This is used when the implementation of a method changes.  It goes
+   through all classes, looking for the ones that have these methods
+   (either method_a or method_b; method_b can be NULL), and reloads
+   the implementation for these.  You should call this with the
+   runtime mutex already locked.  */
+void
+__objc_update_classes_with_methods (struct objc_method *method_a, struct objc_method *method_b)
+{
+  int hash;
+
+  /* Iterate over all classes.  */
+  for (hash = 0; hash < CLASS_TABLE_SIZE; hash++)
+    {
+      class_node_ptr node = class_table_array[hash];
+      
+      while (node != NULL)
+	{
+	  /* Iterate over all methods in the class.  */
+	  Class class = node->pointer;
+	  struct objc_method_list * method_list = class->methods;
+
+	  while (method_list)
+	    {
+	      int i;
+
+	      for (i = 0; i < method_list->method_count; ++i)
+		{
+		  struct objc_method *method = &method_list->method_list[i];
+
+		  /* If the method is one of the ones we are looking
+		     for, update the implementation.  */
+		  if (method == method_a)
+		    {
+		      sarray_at_put_safe (class->dtable,
+					  (sidx) method_a->method_name->sel_id,
+					  method_a->method_imp);
+		    }
+
+		  if (method == method_b)
+		    {
+		      if (method_b != NULL)
+			{
+			  sarray_at_put_safe (class->dtable,
+					      (sidx) method_b->method_name->sel_id,
+					      method_b->method_imp);
+			}
+		    }
+		}
+	  
+	      method_list = method_list->method_next;
+	    }
+	  node = node->next;
+	}
+    }
 }
 
 /* Resolve super/subclass links for all classes.  The only thing we

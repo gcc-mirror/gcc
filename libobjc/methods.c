@@ -124,3 +124,54 @@ class_copyMethodList (Class class_, unsigned int *numberOfReturnedMethods)
 
   return returnValue;
 }
+
+IMP
+method_setImplementation (struct objc_method * method, IMP implementation)
+{
+  IMP old_implementation;
+
+  if (method == NULL  ||  implementation == NULL)
+    return NULL;
+
+  /* We lock the runtime mutex so that concurrent calls to change the
+     same method won't conflict with each other.  */
+  objc_mutex_lock (__objc_runtime_mutex);
+
+  old_implementation = method->method_imp;
+  method->method_imp = implementation;
+
+  /* That was easy :-).  But now we need to find all classes that use
+     this method, and update the IMP in the dispatch tables.  */
+  __objc_update_classes_with_methods (method, NULL);
+
+  objc_mutex_unlock (__objc_runtime_mutex);
+
+  return old_implementation;
+}
+
+void
+method_exchangeImplementations (struct objc_method * method_a, struct objc_method * method_b)
+{
+  IMP old_implementation_a;
+  IMP old_implementation_b;
+
+  if (method_a == NULL  ||  method_b == NULL)
+    return;
+
+  /* We lock the runtime mutex so that concurrent calls to exchange
+     similar methods won't conflict with each other.  Each of them
+     should be atomic.  */
+  objc_mutex_lock (__objc_runtime_mutex);
+
+  old_implementation_a = method_a->method_imp;
+  old_implementation_b = method_b->method_imp;
+
+  method_a->method_imp = old_implementation_b;
+  method_b->method_imp = old_implementation_a;
+
+  /* That was easy :-).  But now we need to find all classes that use
+     these methods, and update the IMP in the dispatch tables.  */
+  __objc_update_classes_with_methods (method_a, method_b);
+
+  objc_mutex_unlock (__objc_runtime_mutex);
+}

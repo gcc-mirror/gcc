@@ -1,5 +1,15 @@
 2010-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-private/runtime.h (__objc_update_classes_with_methods): New.
+	* class.c (__objc_update_classes_with_methods): New.
+	(objc_getClassList): Do not lock the class lock.
+	* methods.c (method_exchangeImplementations): New.
+	(method_setImplementation): New.
+	* objc/runtime.h (method_setImplementation): New.
+	(method_exchangeImplementations): New.
+	
+2010-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Protocol.m: Include objc/runtime.h and
 	objc-private/module-abi-8.h instead of objc/objc-api.h.  Do not
 	repeat Protocol's instance variables.
