@@ -1,5 +1,9 @@
 2010-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/gnu-api-2-object.m: New.
+
+2010-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/gnu-api-2-method.m: New.
 
 2010-10-15  Jason Merrill  <jason@redhat.com>
