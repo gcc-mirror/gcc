@@ -228,3 +228,56 @@ struct objc_ivar ** class_copyIvarList (Class class_, unsigned int *numberOfRetu
 
   return returnValue;
 }
+
+const char *
+property_getName (struct objc_property * property __attribute__ ((__unused__)))
+{
+  if (property == NULL)
+    return NULL;
+
+  /* TODO: New ABI.  */
+  /* The current ABI does not have any information on properties.  */
+  return NULL;
+}
+
+const char *
+property_getAttributes (struct objc_property * property __attribute__ ((__unused__)))
+{
+  if (property == NULL)
+    return NULL;
+
+  /* TODO: New ABI.  */
+  /* The current ABI does not have any information on properties.  */
+  return NULL;
+}
+
+struct objc_property *
+class_getProperty (Class class_ __attribute__ ((__unused__)),
+		   const char *propertyName __attribute__ ((__unused__)))
+{
+  if (class_ == NULL  ||  propertyName == NULL)
+    return NULL;
+
+  /* TODO: New ABI.  */
+  /* The current ABI does not have any information on class properties.  */
+  return NULL;
+}
+
+struct objc_property ** 
+class_copyPropertyList (Class class_ __attribute__ ((__unused__)), 
+			unsigned int *numberOfReturnedProperties __attribute__ ((__unused__)))
+{
+  if (class_ == Nil)
+    {
+      if (numberOfReturnedProperties)
+	*numberOfReturnedProperties = 0;
+      return NULL;
+    }
+
+  /* TODO: New ABI.  */
+  /* The current ABI does not have any information on class properties.  */
+  if (numberOfReturnedProperties)
+    *numberOfReturnedProperties = 0;
+
+  return NULL;
+}
