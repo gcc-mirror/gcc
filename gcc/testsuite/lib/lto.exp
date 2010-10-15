@@ -163,6 +163,7 @@ proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
     global testcase
     global tool
     global compile_type
+    global board_info
 
     # Check that all of the objects were built successfully.
     foreach obj [split $objlist] {
@@ -177,9 +178,28 @@ proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
     set options ""
     lappend options "additional_flags=$optall $optfile"
 
+    set target_board [target_info name]
+    set relocatable 0
+
+    # Some LTO tests do relocatable linking. Some target boards set
+    # a linker script which can't be used for relocatable linking.
+    # Use the default linker script instead.
+    if { [lsearch -exact [split "$optall $optfile"] "-r"] >= 0 } {
+	set relocatable 1
+    }
+
+    if { $relocatable } {
+	set saved_ldscript [board_info $target_board ldscript]
+	set board_info($target_board,ldscript) ""
+    }
+
     # Link the objects into an executable.
     set comp_output [${tool}_target_compile "$objlist" $dest executable \
 		     "$options"]
+
+    if { $relocatable } {
+	set board_info($target_board,ldscript) $saved_ldscript
+    }
 
     # Prune unimportant visibility warnings before checking output.
     set comp_output [lto_prune_warns $comp_output]
