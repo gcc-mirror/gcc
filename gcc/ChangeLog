@@ -1,3 +1,8 @@
+2010-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdfcc_1_rex64): Correct mode attribute.
+	(*movdfcc_1): ditto.
+
 2010-10-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* target.def (target_option.init_struct): New hook.
@@ -154,8 +159,7 @@
 2010-10-15  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/45957
-	* tree.c (free_lang_data_in_decl): Do not clear DECL_INITIAL
-	of vars.
+	* tree.c (free_lang_data_in_decl): Do not clear DECL_INITIAL of vars.
 
 2010-10-15  Chung-Lin Tang  <cltang@codesourcery.com>
 
@@ -178,12 +182,12 @@
 	* cgraph.h (cgraph node): Enable former_clone_of unconditinally.
 	* cgraphunit.c (verify_cgraph_node, cgraph_materialize_clone): Handle
 	former_clone_of unconditionally.
-	
+
 2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
-	merge from FSF apple 'trunk' branch. 
+	merge from FSF apple 'trunk' branch.
 	2006 Fariborz Jahanian <fjahanian@apple.com>
-	
+
 	Radars 4436866, 4505126, 4506903, 4517826
 	* c-parser.c (c_parser, objc_property_attr_context) New flag.
 	(c_lex_one_token): Handle property attributes.
@@ -199,8 +203,7 @@
 2010-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46008
-	* tree-if-conv.c (predicate_bbs): Try to canonicalize c2
-	if possible.
+	* tree-if-conv.c (predicate_bbs): Try to canonicalize c2 if possible.
 
 2010-10-14  Richard Guenther  <rguenther@suse.de>
 
@@ -241,8 +244,8 @@
 	(lang_bitmap, struct outf, outf_p, header_file, oprintf)
 	(get_output_file_with_visibility, srcdir, srcdir_len, do_dump):
 	Moved from gengtype.c to here.
-	(do_debug, read_state_filename, write_state_filename): New
-	variables. (DBGPRINTF, DBGPRINT_COUNT_TYPE): New macros.
+	(do_debug, read_state_filename, write_state_filename): New variables.
+	(DBGPRINTF, DBGPRINT_COUNT_TYPE): New macros.
 
 	* Makefile.in:
 	(REVISION): Always defined.
@@ -270,8 +273,7 @@
 
 2010-10-14  Nathan Froyd  <froydnj@codesourcery.com>
 
-	* config.gcc (arm*-*-linux-*eabi) <tm_file>: Add bpabi.h from
-	libgcc.
+	* config.gcc (arm*-*-linux-*eabi) <tm_file>: Add bpabi.h from libgcc.
 	(arm*-*-uclinux*eabi) <tm_file>: Likewise.
 	(arm*-*-eabi*) <tm_file>: Likewise.
 	(frv-*-elf) <tm_file>: Add frv-abi.h from libgcc.
@@ -289,8 +291,7 @@
 	(gen_type_die_with_usage): Likewise.
 	* sdbout.c (plain_type_1): Likewise.
 	* tree.c (build_int_cst_wide): Likewise.
-	* gimple.c (gimple_types_compatible_p_1): NULLPTR_TYPE types
-	are equal.
+	* gimple.c (gimple_types_compatible_p_1): NULLPTR_TYPE types are equal.
 
 2010-10-14  Joseph Myers  <joseph@codesourcery.com>
 
@@ -329,8 +330,7 @@
 	maybe_set_param_value.
 	* opts.c (handle_param): Take opts and opts_set parameters.
 	Update call to set_param_value.
-	(initial_min_crossjump_insns,
-	initial_max_fields_for_field_sensitive,
+	(initial_min_crossjump_insns, initial_max_fields_for_field_sensitive,
 	initial_loop_invariant_max_bbs_in_loop): Remove.
 	(init_options_once): Don't set them.
 	(init_options_struct): Initialize parameters structures.
@@ -339,8 +339,7 @@
 	(finish_options): Update calls to maybe_set_param_value.
 	(common_handle_option): Update calls to handle_param and
 	set_param_value.
-	* toplev.c (DEFPARAM): Update definition for changes to
-	param_info.
+	* toplev.c (DEFPARAM): Update definition for changes to param_info.
 	(general_init): Call finish_params.
 
 2010-10-14  Nick Clifton  <nickc@redhat.com>
@@ -351,8 +350,7 @@
 	(FIXED_REGISTERS, CALL_USED_REGISTERS): Update with CC_REG.
 	(HARD_REGNO_MODE_OK): Call mn10300_hard_regno_mode_ok.
 	(MODES_TIEABLE): Call mn10300_modes_tieable.
-	(REG_CLASS_NAMES, REG_CLASS_CONTENTS, REGNO_REG_CLASS): Add
-	CC_REGS.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS, REGNO_REG_CLASS): Add CC_REGS.
 	(LEGITIMATE_CONSTANT_P): Call mn10300_legitimate_constant_p.
 	(CC_OVERFLOW_UNUSABLE, CC_NO_CARRY, NOTICE_UPDATE_CC)
 	(SELECT_CC_MODE, REVERSIBLE_CC_MODE): Delete.
@@ -423,7 +421,7 @@
 	called through for_each_rtx.
 	(set_live_p): Adjust caller.
 	(insn_live_p): Don't reset DEBUG_INSNs here.
-	(struct dead_debug_insn_data): New data. 
+	(struct dead_debug_insn_data): New data.
 	(count_stores, is_dead_debug_insn, replace_dead_reg): New functions.
 	(delete_trivially_dead_insns): If there is just one setter for the
 	dead reg that is referenced by some DEBUG_INSNs, create a DEBUG_EXPR
@@ -472,7 +470,7 @@
 	* config/i386/i386.c (ix86_builtins): Add
 	IX86_BUILTIN_CPYSGNPS256 and IX86_BUILTIN_CPYSGNPD256.
 	(bdesc_args): Likewise.
-	(ix86_builtin_vectorized_function): Support 
+	(ix86_builtin_vectorized_function): Support
 	IX86_BUILTIN_CPYSGNPS256, IX86_BUILTIN_CPYSGNPD256,
 	IX86_BUILTIN_SQRTPD256, IX86_BUILTIN_SQRTPS_NR256,
 	and IX86_BUILTIN_CVTPS2DQ256.
@@ -599,8 +597,7 @@
 
 2010-10-12  Nathan Froyd  <froydnj@codesourcery.com>
 
-	* libgcc2.h: Use __SIZEOF_DOUBLE__ instead of
-	LIBGCC2_DOUBLE_TYPE_SIZE.
+	* libgcc2.h: Use __SIZEOF_DOUBLE__ instead of LIBGCC2_DOUBLE_TYPE_SIZE.
 	(LIBGCC2_DOUBLE_TYPE_SIZE): Delete.
 	* config/fixed-bit.h: Likewise.
 	* config/rx/rx.h (LIBGCC2_DOUBLE_TYPE_SIZE): Delete.
@@ -624,14 +621,12 @@
 	* config/arm/arm.h (ARM_EXPAND_ALIGNMENT): Rename from
 	DATA_ALIGNMENT and add COND parameter. Update comments above.
 	(DATA_ALIGNMENT): Use ARM_EXPAND_ALIGNMENT, with !optimize_size.
-	(LOCAL_ALIGNMENT): Use ARM_EXPAND_ALIGNMENT, with
-	!flag_conserve_stack.
+	(LOCAL_ALIGNMENT): Use ARM_EXPAND_ALIGNMENT, with !flag_conserve_stack.
 
 2010-10-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/45958
-	* exec-tool.in: Support '-plugin' as the second option to the
-	linker.
+	* exec-tool.in: Support '-plugin' as the second option to the linker.
 
 2010-10-12  Richard Henderson  <rth@redhat.com>
 
@@ -671,8 +666,8 @@
 	(enum debug_info_type, enum debug_info_level, enum
 	debug_info_usage, enum symbol_visibility, struct visibility_flags,
 	enum ira_algorithm, enum ira_region, enum excess_precision, enum
-	graph_dump_types, enum stack_check_type, enum
-	warn_strict_overflow_code): Move to flag-types.h
+	graph_dump_types, enum stack_check_type,
+	enum warn_strict_overflow_code): Move to flag-types.h
 	* opth-gen.awk: Include flag-types.h in options.h.
 
 2010-10-12  Jakub Jelinek  <jakub@redhat.com>
@@ -685,8 +680,7 @@
 	(iterative_hash_rtx): New prototype.
 	* rtl.c (iterative_hash_rtx): New function.
 	* dwarf2out.c (dw_loc_list_node): Add hash and emitted fields.
-	(output_loc_list): Return immediately if emitted is set,
-	set it.
+	(output_loc_list): Return immediately if emitted is set, set it.
 	(hash_loc_operands, hash_locs, hash_loc_list,
 	compare_loc_operands, compare_locs, loc_list_hash, loc_list_eq,
 	optimize_location_lists_1, optimize_location_lists): New function.
