@@ -115,13 +115,15 @@ struct objc_ivar_list
    problem is a singly linked list of methods.  */
 struct objc_method
 {
-  SEL         method_name;  /* This variable is the method's name.  It
-			       is a char*.  The unique integer passed
-			       to objc_msg_send is a char* too.  It is
-			       compared against method_name using
-			       strcmp. */
+  SEL         method_name;  /* This variable is the method's name.
+			       The compiler puts a char* here, and
+			       it's replaced by a real SEL at runtime
+			       when the method is registered.  */
   const char* method_types; /* Description of the method's parameter
-			       list.  Useful for debuggers. */
+			       list.  Used when registering the
+			       selector with the runtime.  When that
+			       happens, method_name will contain the
+			       method's parameter list.  */
   IMP         method_imp;   /* Address of the method in the
 			       executable. */
 };
@@ -139,7 +141,12 @@ struct objc_method_list
 };
 
 /* Currently defined in Protocol.m (that definition should go away
-   once we include this file).  */
+   once we include this file).  Note that a 'struct
+   objc_method_description' as embedded inside a Protocol uses the
+   same trick as a 'struct objc_method': the method_name is a 'char *'
+   according to the compiler, who puts the method name as a string in
+   there.  At runtime, the selectors need to be registered, and the
+   method_name then becomes a SEL.  */
 struct objc_method_description_list
 {
   int count;

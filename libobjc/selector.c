@@ -95,6 +95,40 @@ __objc_register_selectors_from_list (MethodList_t method_list)
   objc_mutex_unlock (__objc_runtime_mutex);
 }
 
+/* Temporary definition while we include objc/objc-api.h instead of
+   objc-private/module-abi-8.h.  It should go away once we include
+   module-abi-8.h.  */
+struct objc_method_description_list
+{
+  int count;
+  struct objc_method_description list[1];
+};
+
+/* The same as __objc_register_selectors_from_list, but works on a
+   struct objc_method_description_list* instead of a struct
+   objc_method_list*.  This is only used for protocols, which have
+   lists of method descriptions, not methods.
+   */
+void
+__objc_register_selectors_from_description_list 
+(struct objc_method_description_list *method_list)
+{
+  int i = 0;
+  
+  objc_mutex_lock (__objc_runtime_mutex);
+  while (i < method_list->count)
+    {
+      struct objc_method_description *method = &method_list->list[i];
+      if (method->name)
+	{
+	  method->name
+	    = __sel_register_typed_name ((const char *) method->name,
+					 method->types, 0, YES);
+	}
+      i += 1;
+    }
+  objc_mutex_unlock (__objc_runtime_mutex);
+}
 
 /* Register instance methods as class methods for root classes */
 void __objc_register_instance_methods_to_class (Class class)
