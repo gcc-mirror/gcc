@@ -1,3 +1,7 @@
+2010-10-15  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gcc.dg/20101010-1.c: New testcase.
+
 2010-10-15  Jie Zhang  <jie@codesourcery.com>
 
 	* lib/lto.exp (lto-link-and-maybe-run): Use the default linker
