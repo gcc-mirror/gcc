@@ -1,3 +1,8 @@
+2010-10-15  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+       * g++.dg/torture/stackalign/eh-vararg-2.C: Fix dg-options for
+       arm-eabi targets.
+
 2010-10-15  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* gcc.dg/20101010-1.c: New testcase.
