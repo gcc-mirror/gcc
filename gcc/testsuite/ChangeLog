@@ -1,5 +1,11 @@
 2010-10-15  Richard Guenther  <rguenther@suse.de>
 
+	PR testsuite/46021
+	* gcc.dg/tree-ssa/20031106-3.c: Remove XFAIL.
+	* gcc.dg/tree-ssa/fre-vce-1.c: Likewise.
+
+2010-10-15  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/45957
 	* g++.dg/lto/20101014-1_0.C: New testcase.
 
