@@ -1,3 +1,8 @@
+2010-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-protocol.m: New.
+	* objc.dg/gnu-api-2-sel.m: New.
+
 2010-10-15  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
        * g++.dg/torture/stackalign/eh-vararg-2.C: Fix dg-options for
