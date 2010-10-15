@@ -1,3 +1,7 @@
+2010-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-property.m: New.
+
 2010-10-15  Xinliang David Li  <davidxl@google.com>
 
 	* g++.dg/uninit-pred-3_a.C: New test.
