@@ -44,10 +44,8 @@
 	(altivec_vnmsubfp_2): Ditto.
 	(altivec_vnmsubfp_3): Delete.
 
-	* config/rs6000/rs6000.md (UNSPEC_FMA): Delete.
-	(fmasf4): Rewrite to always use FMA rtl.  Add combiners to
-	generate the four fused multiply/add ops.  Combine power, powerpc
-	ops.
+	* config/rs6000/rs6000.md (fmasf4): New insns for fma builtin
+	support.
 	(fmasf4_fpr): Ditto.
 	(fmssf4_fpr): Ditto.
 	(fnmasf4_fpr): Ditto.
