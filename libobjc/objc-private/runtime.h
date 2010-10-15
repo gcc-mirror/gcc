@@ -74,6 +74,9 @@ extern void class_add_method_list(Class, struct objc_method_list *);
 extern void __objc_register_instance_methods_to_class(Class);
 extern struct objc_method * search_for_method_in_list(struct objc_method_list * list, SEL op);
 
+extern void
+__objc_update_classes_with_methods (struct objc_method *method_a, struct objc_method *method_b); /* class.c */
+
 /* True when class links has been resolved */     
 extern BOOL __objc_class_links_resolved;
 
