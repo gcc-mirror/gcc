@@ -717,6 +717,7 @@ gfc_trans_if_1 (gfc_code * code)
 {
   gfc_se if_se;
   tree stmt, elsestmt;
+  location_t loc;
 
   /* Check for an unconditional ELSE clause.  */
   if (!code->expr1)
@@ -739,8 +740,9 @@ gfc_trans_if_1 (gfc_code * code)
     elsestmt = build_empty_stmt (input_location);
 
   /* Build the condition expression and add it to the condition block.  */
-  stmt = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-			  if_se.expr, stmt, elsestmt);
+  loc = code->expr1->where.lb ? code->expr1->where.lb->location : input_location;
+  stmt = fold_build3_loc (loc, COND_EXPR, void_type_node, if_se.expr, stmt,
+			  elsestmt);
   
   gfc_add_expr_to_block (&if_se.pre, stmt);
 
@@ -942,17 +944,20 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   tree saved_dovar = NULL;
   tree cycle_label;
   tree exit_label;
+  location_t loc;
   
   type = TREE_TYPE (dovar);
 
+  loc = code->ext.iterator->start->where.lb->location;
+
   /* Initialize the DO variable: dovar = from.  */
-  gfc_add_modify (pblock, dovar, from);
+  gfc_add_modify_loc (loc, pblock, dovar, from);
   
   /* Save value for do-tinkering checking. */
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     {
       saved_dovar = gfc_create_var (type, ".saved_dovar");
-      gfc_add_modify (pblock, saved_dovar, dovar);
+      gfc_add_modify_loc (loc, pblock, saved_dovar, dovar);
     }
 
   /* Cycle and exit statements are implemented with gotos.  */
@@ -980,7 +985,7 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   /* Check whether someone has modified the loop variable. */
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     {
-      tmp = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+      tmp = fold_build2_loc (loc, NE_EXPR, boolean_type_node,
 			     dovar, saved_dovar);
       gfc_trans_runtime_check (true, false, tmp, &body, &code->loc,
 			       "Loop variable has been modified");
@@ -990,44 +995,44 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   if (exit_cond)
     {
       tmp = build1_v (GOTO_EXPR, exit_label);
-      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+      tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
 			     exit_cond, tmp,
-			     build_empty_stmt (input_location));
+			     build_empty_stmt (loc));
       gfc_add_expr_to_block (&body, tmp);
     }
 
   /* Evaluate the loop condition.  */
-  cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node, dovar,
+  cond = fold_build2_loc (loc, EQ_EXPR, boolean_type_node, dovar,
 			  to);
-  cond = gfc_evaluate_now (cond, &body);
+  cond = gfc_evaluate_now_loc (loc, cond, &body);
 
   /* Increment the loop variable.  */
-  tmp = fold_build2_loc (input_location, PLUS_EXPR, type, dovar, step);
-  gfc_add_modify (&body, dovar, tmp);
+  tmp = fold_build2_loc (loc, PLUS_EXPR, type, dovar, step);
+  gfc_add_modify_loc (loc, &body, dovar, tmp);
 
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
-    gfc_add_modify (&body, saved_dovar, dovar);
+    gfc_add_modify_loc (loc, &body, saved_dovar, dovar);
 
   /* The loop exit.  */
-  tmp = build1_v (GOTO_EXPR, exit_label);
+  tmp = fold_build1_loc (loc, GOTO_EXPR, void_type_node, exit_label);
   TREE_USED (exit_label) = 1;
-  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-			 cond, tmp, build_empty_stmt (input_location));
+  tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
+			 cond, tmp, build_empty_stmt (loc));
   gfc_add_expr_to_block (&body, tmp);
 
   /* Finish the loop body.  */
   tmp = gfc_finish_block (&body);
-  tmp = build1_v (LOOP_EXPR, tmp);
+  tmp = fold_build1_loc (loc, LOOP_EXPR, void_type_node, tmp);
 
   /* Only execute the loop if the number of iterations is positive.  */
   if (tree_int_cst_sgn (step) > 0)
-    cond = fold_build2_loc (input_location, LE_EXPR, boolean_type_node, dovar,
+    cond = fold_build2_loc (loc, LE_EXPR, boolean_type_node, dovar,
 			    to);
   else
-    cond = fold_build2_loc (input_location, GE_EXPR, boolean_type_node, dovar,
+    cond = fold_build2_loc (loc, GE_EXPR, boolean_type_node, dovar,
 			    to);
-  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, cond, tmp,
-			 build_empty_stmt (input_location));
+  tmp = fold_build3_loc (loc, COND_EXPR, void_type_node, cond, tmp,
+			 build_empty_stmt (loc));
   gfc_add_expr_to_block (pblock, tmp);
 
   /* Add the exit label.  */
@@ -1090,8 +1095,11 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
   tree pos_step;
   stmtblock_t block;
   stmtblock_t body;
+  location_t loc;
 
   gfc_start_block (&block);
+
+  loc = code->ext.iterator->start->where.lb->location;
 
   /* Evaluate all the expressions in the iterator.  */
   gfc_init_se (&se, NULL);
@@ -1129,7 +1137,7 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
 	|| tree_int_cst_equal (step, integer_minus_one_node)))
     return gfc_trans_simple_do (code, &block, dovar, from, to, step, exit_cond);
 
-  pos_step = fold_build2_loc (input_location, GT_EXPR, boolean_type_node, step,
+  pos_step = fold_build2_loc (loc, GT_EXPR, boolean_type_node, step,
 			      fold_convert (type, integer_zero_node));
 
   if (TREE_CODE (type) == INTEGER_TYPE)
@@ -1154,7 +1162,7 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     {
       saved_dovar = gfc_create_var (type, ".saved_dovar");
-      gfc_add_modify (&block, saved_dovar, dovar);
+      gfc_add_modify_loc (loc, &block, saved_dovar, dovar);
     }
 
   /* Initialize loop count and jump to exit label if the loop is empty.
@@ -1180,24 +1188,25 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
 
       /* Calculate SIGN (1,step), as (step < 0 ? -1 : 1)  */
 
-      tmp = fold_build2_loc (input_location, LT_EXPR, boolean_type_node, step,
+      tmp = fold_build2_loc (loc, LT_EXPR, boolean_type_node, step,
 			     build_int_cst (TREE_TYPE (step), 0));
-      step_sign = fold_build3_loc (input_location, COND_EXPR, type, tmp, 
+      step_sign = fold_build3_loc (loc, COND_EXPR, type, tmp, 
 				   build_int_cst (type, -1), 
 				   build_int_cst (type, 1));
 
-      tmp = fold_build2_loc (input_location, LT_EXPR, boolean_type_node, to,
-			     from);
-      pos = fold_build3_loc (input_location, COND_EXPR, void_type_node, tmp,
-			     build1_v (GOTO_EXPR, exit_label),
-			     build_empty_stmt (input_location));
+      tmp = fold_build2_loc (loc, LT_EXPR, boolean_type_node, to, from);
+      pos = fold_build3_loc (loc, COND_EXPR, void_type_node, tmp,
+			     fold_build1_loc (loc, GOTO_EXPR, void_type_node,
+					      exit_label),
+			     build_empty_stmt (loc));
 
-      tmp = fold_build2_loc (input_location, GT_EXPR, boolean_type_node, to,
+      tmp = fold_build2_loc (loc, GT_EXPR, boolean_type_node, to,
 			     from);
-      neg = fold_build3_loc (input_location, COND_EXPR, void_type_node, tmp,
-			     build1_v (GOTO_EXPR, exit_label),
-			     build_empty_stmt (input_location));
-      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+      neg = fold_build3_loc (loc, COND_EXPR, void_type_node, tmp,
+			     fold_build1_loc (loc, GOTO_EXPR, void_type_node,
+					      exit_label),
+			     build_empty_stmt (loc));
+      tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
 			     pos_step, pos, neg);
 
       gfc_add_expr_to_block (&block, tmp);
@@ -1205,18 +1214,14 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
       /* Calculate the loop count.  to-from can overflow, so
 	 we cast to unsigned.  */
 
-      to2 = fold_build2_loc (input_location, MULT_EXPR, type, step_sign, to);
-      from2 = fold_build2_loc (input_location, MULT_EXPR, type, step_sign,
-			       from);
-      step2 = fold_build2_loc (input_location, MULT_EXPR, type, step_sign,
-			       step);
+      to2 = fold_build2_loc (loc, MULT_EXPR, type, step_sign, to);
+      from2 = fold_build2_loc (loc, MULT_EXPR, type, step_sign, from);
+      step2 = fold_build2_loc (loc, MULT_EXPR, type, step_sign, step);
       step2 = fold_convert (utype, step2);
-      tmp = fold_build2_loc (input_location, MINUS_EXPR, type, to2, from2);
+      tmp = fold_build2_loc (loc, MINUS_EXPR, type, to2, from2);
       tmp = fold_convert (utype, tmp);
-      tmp = fold_build2_loc (input_location, TRUNC_DIV_EXPR, utype, tmp,
-			     step2);
-      tmp = fold_build2_loc (input_location, MODIFY_EXPR, void_type_node,
-			     countm1, tmp);
+      tmp = fold_build2_loc (loc, TRUNC_DIV_EXPR, utype, tmp, step2);
+      tmp = fold_build2_loc (loc, MODIFY_EXPR, void_type_node, countm1, tmp);
       gfc_add_expr_to_block (&block, tmp);
     }
   else
@@ -1225,21 +1230,20 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
 	 This would probably cause more problems that it solves
 	 when we implement "long double" types.  */
 
-      tmp = fold_build2_loc (input_location, MINUS_EXPR, type, to, from);
-      tmp = fold_build2_loc (input_location, RDIV_EXPR, type, tmp, step);
-      tmp = fold_build1_loc (input_location, FIX_TRUNC_EXPR, utype, tmp);
+      tmp = fold_build2_loc (loc, MINUS_EXPR, type, to, from);
+      tmp = fold_build2_loc (loc, RDIV_EXPR, type, tmp, step);
+      tmp = fold_build1_loc (loc, FIX_TRUNC_EXPR, utype, tmp);
       gfc_add_modify (&block, countm1, tmp);
 
       /* We need a special check for empty loops:
 	 empty = (step > 0 ? to < from : to > from);  */
-      tmp = fold_build3_loc (input_location, COND_EXPR, boolean_type_node,
-			     pos_step,
-			     fold_build2_loc (input_location, LT_EXPR,
+      tmp = fold_build3_loc (loc, COND_EXPR, boolean_type_node, pos_step,
+			     fold_build2_loc (loc, LT_EXPR,
 					      boolean_type_node, to, from),
-			     fold_build2_loc (input_location, GT_EXPR,
+			     fold_build2_loc (loc, GT_EXPR,
 					      boolean_type_node, to, from));
       /* If the loop is empty, go directly to the exit label.  */
-      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, tmp,
+      tmp = fold_build3_loc (loc, COND_EXPR, void_type_node, tmp,
 			 build1_v (GOTO_EXPR, exit_label),
 			 build_empty_stmt (input_location));
       gfc_add_expr_to_block (&block, tmp);
@@ -1262,7 +1266,7 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
   /* Check whether someone has modified the loop variable. */
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     {
-      tmp = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, dovar,
+      tmp = fold_build2_loc (loc, NE_EXPR, boolean_type_node, dovar,
 			     saved_dovar);
       gfc_trans_runtime_check (true, false, tmp, &body, &code->loc,
 			       "Loop variable has been modified");
@@ -1272,37 +1276,37 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
   if (exit_cond)
     {
       tmp = build1_v (GOTO_EXPR, exit_label);
-      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+      tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
 			     exit_cond, tmp,
 			     build_empty_stmt (input_location));
       gfc_add_expr_to_block (&body, tmp);
     }
 
   /* Increment the loop variable.  */
-  tmp = fold_build2_loc (input_location, PLUS_EXPR, type, dovar, step);
-  gfc_add_modify (&body, dovar, tmp);
+  tmp = fold_build2_loc (loc, PLUS_EXPR, type, dovar, step);
+  gfc_add_modify_loc (loc, &body, dovar, tmp);
 
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
-    gfc_add_modify (&body, saved_dovar, dovar);
+    gfc_add_modify_loc (loc, &body, saved_dovar, dovar);
 
   /* End with the loop condition.  Loop until countm1 == 0.  */
-  cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node, countm1,
+  cond = fold_build2_loc (loc, EQ_EXPR, boolean_type_node, countm1,
 			  build_int_cst (utype, 0));
-  tmp = build1_v (GOTO_EXPR, exit_label);
-  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-			 cond, tmp, build_empty_stmt (input_location));
+  tmp = fold_build1_loc (loc, GOTO_EXPR, void_type_node, exit_label);
+  tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
+			 cond, tmp, build_empty_stmt (loc));
   gfc_add_expr_to_block (&body, tmp);
 
   /* Decrement the loop count.  */
-  tmp = fold_build2_loc (input_location, MINUS_EXPR, utype, countm1,
+  tmp = fold_build2_loc (loc, MINUS_EXPR, utype, countm1,
 			 build_int_cst (utype, 1));
-  gfc_add_modify (&body, countm1, tmp);
+  gfc_add_modify_loc (loc, &body, countm1, tmp);
 
   /* End of loop body.  */
   tmp = gfc_finish_block (&body);
 
   /* The for loop itself.  */
-  tmp = build1_v (LOOP_EXPR, tmp);
+  tmp = fold_build1_loc (loc, LOOP_EXPR, void_type_node, tmp);
   gfc_add_expr_to_block (&block, tmp);
 
   /* Add the exit label.  */
@@ -1360,14 +1364,15 @@ gfc_trans_do_while (gfc_code * code)
   gfc_init_se (&cond, NULL);
   gfc_conv_expr_val (&cond, code->expr1);
   gfc_add_block_to_block (&block, &cond.pre);
-  cond.expr = fold_build1_loc (input_location, TRUTH_NOT_EXPR,
-			       boolean_type_node, cond.expr);
+  cond.expr = fold_build1_loc (code->expr1->where.lb->location,
+			       TRUTH_NOT_EXPR, boolean_type_node, cond.expr);
 
   /* Build "IF (! cond) GOTO exit_label".  */
   tmp = build1_v (GOTO_EXPR, exit_label);
   TREE_USED (exit_label) = 1;
-  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-			 cond.expr, tmp, build_empty_stmt (input_location));
+  tmp = fold_build3_loc (code->expr1->where.lb->location, COND_EXPR,
+			 void_type_node, cond.expr, tmp,
+			 build_empty_stmt (code->expr1->where.lb->location));
   gfc_add_expr_to_block (&block, tmp);
 
   /* The main body of the loop.  */
@@ -1386,7 +1391,8 @@ gfc_trans_do_while (gfc_code * code)
 
   gfc_init_block (&block);
   /* Build the loop.  */
-  tmp = build1_v (LOOP_EXPR, tmp);
+  tmp = fold_build1_loc (code->expr1->where.lb->location, LOOP_EXPR,
+			 void_type_node, tmp);
   gfc_add_expr_to_block (&block, tmp);
 
   /* Add the exit label.  */

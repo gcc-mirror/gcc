@@ -1,3 +1,18 @@
+2010-10-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45186
+	* trans.h (gfc_add_modify_loc, gfc_evaluate_now_loc): New prototypes.
+	(gfc_trans_runtime_error_vararg): Remove prototype.
+	* trans.c (gfc_add_modify_loc, gfc_evaluate_now_loc): New functions.
+	(gfc_add_modify, gfc_evaluate_now): Use them.
+	(trans_runtime_error_vararg): Renamed from
+	gfc_trans_runtime_error_vararg, made static and use locus.
+	(gfc_trans_runtime_error): Use it.
+	(gfc_trans_runtime_check): Ditto and make use of locus.
+	* trans-stmt.c (gfc_trans_if_1, gfc_trans_simple_do,
+	gfc_trans_do, gfc_trans_do_while): Improve line number
+	associated with generated expressions.
+
 2010-10-12  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/38936

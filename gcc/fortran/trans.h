@@ -342,6 +342,7 @@ tree gfc_string_to_single_character (tree len, tree str, int kind);
 /* Find the decl containing the auxiliary variables for assigned variables.  */
 void gfc_conv_label_variable (gfc_se * se, gfc_expr * expr);
 /* If the value is not constant, Create a temporary and copy the value.  */
+tree gfc_evaluate_now_loc (location_t, tree, stmtblock_t *);
 tree gfc_evaluate_now (tree, stmtblock_t *);
 
 /* Find the appropriate variant of a math intrinsic.  */
@@ -398,6 +399,7 @@ void gfc_add_expr_to_block (stmtblock_t *, tree);
 /* Add a block to the end of a block.  */
 void gfc_add_block_to_block (stmtblock_t *, stmtblock_t *);
 /* Add a MODIFY_EXPR to a block.  */
+void gfc_add_modify_loc (location_t, stmtblock_t *, tree, tree);
 void gfc_add_modify (stmtblock_t *, tree, tree);
 
 /* Initialize a statement block.  */
@@ -504,7 +506,6 @@ bool get_array_ctor_strlen (stmtblock_t *, gfc_constructor_base, tree *);
 
 /* Generate a runtime error call.  */
 tree gfc_trans_runtime_error (bool, locus*, const char*, ...);
-tree gfc_trans_runtime_error_vararg (bool, locus*, const char*, va_list);
 
 /* Generate a runtime warning/error check.  */
 void gfc_trans_runtime_check (bool, bool, tree, stmtblock_t *, locus *,
