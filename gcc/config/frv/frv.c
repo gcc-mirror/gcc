@@ -265,7 +265,6 @@ frv_cpu_t frv_cpu_type = CPU_TYPE;	/* value of -mcpu= */
 
 static bool frv_handle_option			(size_t, const char *, int);
 static void frv_option_override			(void);
-static void frv_option_optimization		(int, int);
 static bool frv_legitimate_address_p		(enum machine_mode, rtx, bool);
 static int frv_default_flags_for_cpu		(void);
 static int frv_string_begins_with		(const_tree, const char *);
@@ -432,8 +431,6 @@ static bool frv_class_likely_spilled_p 		(reg_class_t);
 #define TARGET_HANDLE_OPTION frv_handle_option
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE frv_option_override
-#undef TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION frv_option_optimization
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS frv_init_builtins
 #undef TARGET_EXPAND_BUILTIN
@@ -844,25 +841,6 @@ frv_option_override (void)
     frv_type_to_unit[i] = ARRAY_SIZE (frv_unit_codes);
 
   init_machine_status = frv_init_machine_status;
-}
-
-
-/* Implement TARGET_OPTION_OPTIMIZATION.
-
-   On the FRV, possibly disable VLIW packing which is done by the 2nd
-   scheduling pass at the current time.  */
-static void
-frv_option_optimization (int level, int size ATTRIBUTE_UNUSED)
-{
-  if (level >= 2)
-    {
-#ifdef DISABLE_SCHED2
-      flag_schedule_insns_after_reload = 0;
-#endif
-#ifdef ENABLE_RCSP
-      flag_rcsp = 1;
-#endif
-    }
 }
 
 

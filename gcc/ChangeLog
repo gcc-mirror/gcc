@@ -1,3 +1,9 @@
+2010-10-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/frv/frv.c (frv_option_optimization,
+	TARGET_OPTION_OPTIMIZATION): Remove.
+	* config/frv/frv.h (RCSP_SOFTWARE_PIPELINING): Remove.
+
 2010-10-15  Michael Matz  <matz@suse.de>
 
 	* cgraphunit.c (clone_of_p): Define unconditionally.
