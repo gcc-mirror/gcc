@@ -1,3 +1,8 @@
+2010-10-15  Dave Korn  <dave.korn.cygwin@gmail.com> 
+
+	Sync LD plugin patch series (part 1/6) with src/include/.
+	* plugin-api.h (LDPT_GNU_LD_VERSION): New ld_plugin_tag enum member.
+
 2010-10-06  Andi Kleen <ak@linux.intel.com>
 
 	* libiberty.h (setproctitle): Add prototype.
