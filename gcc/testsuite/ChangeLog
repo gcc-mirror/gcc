@@ -1,5 +1,10 @@
 2010-10-16  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/gnu-api-2-class.m: New.
+	* objc.dg/gnu-api-2-objc.m: New.
+
+2010-10-16  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/gnu-api-2-ivar.m: New.
 
 2010-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
