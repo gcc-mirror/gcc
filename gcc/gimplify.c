@@ -7535,7 +7535,10 @@ gimplify_type_sizes (tree type, gimple_seq *list_p)
       /* Ensure VLA bounds aren't removed, for -O0 they should be variables
 	 with assigned stack slots, for -O1+ -g they should be tracked
 	 by VTA.  */
-      if (TYPE_DOMAIN (type)
+      if (!(TYPE_NAME (type)
+	    && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	    && DECL_IGNORED_P (TYPE_NAME (type)))
+	  && TYPE_DOMAIN (type)
 	  && INTEGRAL_TYPE_P (TYPE_DOMAIN (type)))
 	{
 	  t = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
