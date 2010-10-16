@@ -1,3 +1,8 @@
+2010-10-16  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/44206
+	* g++.dg/torture/pr44206.C: New.
+
 2010-10-16  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/gnu-api-2-class.m: New.

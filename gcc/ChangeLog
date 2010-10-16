@@ -1,5 +1,11 @@
 2010-10-16  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/44206
+	* ipa.c (cgraph_remove_unreachable_nodes): Cleanup; check
+	existence of refrences before removing the function.
+
+2010-10-16  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (dump_cgraph_node): Dump same_comdat_group,
 	only_called_at_startup and only_called_at_exit.
 	(cgraph_propagate_frequency): Compute only_called_at_startup and 
