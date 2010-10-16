@@ -336,6 +336,28 @@ objc_EXPORT Property class_getProperty (Class class_, const char *propertyName);
 objc_EXPORT Property * class_copyPropertyList 
 (Class class_, unsigned int *numberOfReturnedProperties);
 
+/* Return the ivar layout for class 'class_'.
+
+   At the moment this function always returns NULL.  */
+objc_EXPORT const char * class_getIvarLayout (Class class_);
+
+/* Return the weak ivar layout for class 'class_'.
+
+   At the moment this function always returns NULL.  */
+objc_EXPORT const char * class_getWeakIvarLayout (Class class_);
+
+/* Set the ivar layout for class 'class_'.
+
+   At the moment, this function does nothing.  */
+objc_EXPORT void class_setIvarLayout (Class class_, const char *layout);
+
+/* Set the weak ivar layout for class 'class_'.
+
+   At the moment, this function does nothing.  With the GNU runtime,
+   you should use class_ivar_set_gcinvisible () to hide variables from
+   the Garbage Collector.  */
+objc_EXPORT void class_setWeakIvarLayout (Class class_, const char *layout);
+
 
 /** Implementation: the following functions are in class.c.  */
 

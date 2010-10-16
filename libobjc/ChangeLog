@@ -1,3 +1,14 @@
+2010-10-16  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc/runtime.h (class_getIvarLayout): New.
+	(class_getWeakIvarLayout): New.
+	(class_setIvarLayout): New.
+	(class_setWeakIvarLayout): New.
+	* ivars.c (class_getIvarLayout): New.
+	(class_getWeakIvarLayout): New.
+	(class_setIvarLayout): New.
+	(class_setWeakIvarLayout): New.	
+
 2010-10-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 	
 	* objc/runtime.h (class_copyPropertyList): New.
