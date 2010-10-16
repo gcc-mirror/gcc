@@ -115,12 +115,19 @@ enum iocall
   IOCALL_WRITE,
   IOCALL_WRITE_DONE,
   IOCALL_X_INTEGER,
+  IOCALL_X_INTEGER_WRITE,
   IOCALL_X_LOGICAL,
+  IOCALL_X_LOGICAL_WRITE,
   IOCALL_X_CHARACTER,
+  IOCALL_X_CHARACTER_WRITE,
   IOCALL_X_CHARACTER_WIDE,
+  IOCALL_X_CHARACTER_WIDE_WRITE,
   IOCALL_X_REAL,
+  IOCALL_X_REAL_WRITE,
   IOCALL_X_COMPLEX,
+  IOCALL_X_COMPLEX_WRITE,
   IOCALL_X_ARRAY,
+  IOCALL_X_ARRAY_WRITE,
   IOCALL_OPEN,
   IOCALL_CLOSE,
   IOCALL_INQUIRE,
@@ -303,9 +310,7 @@ gfc_build_io_library_fndecls (void)
   for (ptype = IOPARM_ptype_common; ptype < IOPARM_ptype_num; ptype++)
     gfc_build_st_parameter ((enum ioparam_type) ptype, types);
 
-  /* Define the transfer functions.
-     TODO: Split them between READ and WRITE to allow further
-     optimizations, e.g. by using aliases?  */
+  /* Define the transfer functions.  */
 
   dt_parm_type = build_pointer_type (st_parameter[IOPARM_ptype_dt].type);
 
@@ -313,12 +318,24 @@ gfc_build_io_library_fndecls (void)
 	get_identifier (PREFIX("transfer_integer")), ".wW",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
+  iocall[IOCALL_X_INTEGER_WRITE] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_integer_write")), ".wR",
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+
   iocall[IOCALL_X_LOGICAL] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_logical")), ".wW",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
+  iocall[IOCALL_X_LOGICAL_WRITE] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_logical_write")), ".wR",
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+
   iocall[IOCALL_X_CHARACTER] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_character")), ".wW",
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+
+  iocall[IOCALL_X_CHARACTER_WRITE] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_character_write")), ".wR",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_CHARACTER_WIDE] = gfc_build_library_function_decl_with_spec (
@@ -326,16 +343,35 @@ gfc_build_io_library_fndecls (void)
 	void_type_node, 4, dt_parm_type, pvoid_type_node,
 	gfc_charlen_type_node, gfc_int4_type_node);
 
+  iocall[IOCALL_X_CHARACTER_WIDE_WRITE] =
+    gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_character_wide_write")), ".wR",
+	void_type_node, 4, dt_parm_type, pvoid_type_node,
+	gfc_charlen_type_node, gfc_int4_type_node);
+
   iocall[IOCALL_X_REAL] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_real")), ".wW",
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+
+  iocall[IOCALL_X_REAL_WRITE] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_real_write")), ".wR",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_COMPLEX] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_complex")), ".wW",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
+  iocall[IOCALL_X_COMPLEX_WRITE] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_complex_write")), ".wR",
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+
   iocall[IOCALL_X_ARRAY] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_array")), ".wW",
+	void_type_node, 4, dt_parm_type, pvoid_type_node,
+	integer_type_node, gfc_charlen_type_node);
+
+  iocall[IOCALL_X_ARRAY_WRITE] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_array_write")), ".wr",
 	void_type_node, 4, dt_parm_type, pvoid_type_node,
 	integer_type_node, gfc_charlen_type_node);
 
@@ -2037,22 +2073,38 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
     {
     case BT_INTEGER:
       arg2 = build_int_cst (NULL_TREE, kind);
-      function = iocall[IOCALL_X_INTEGER];
+      if (last_dt == READ)
+	function = iocall[IOCALL_X_INTEGER];
+      else
+	function = iocall[IOCALL_X_INTEGER_WRITE];
+
       break;
 
     case BT_REAL:
       arg2 = build_int_cst (NULL_TREE, kind);
-      function = iocall[IOCALL_X_REAL];
+      if (last_dt == READ)
+	function = iocall[IOCALL_X_REAL];
+      else
+	function = iocall[IOCALL_X_REAL_WRITE];
+
       break;
 
     case BT_COMPLEX:
       arg2 = build_int_cst (NULL_TREE, kind);
-      function = iocall[IOCALL_X_COMPLEX];
+      if (last_dt == READ)
+	function = iocall[IOCALL_X_COMPLEX];
+      else
+	function = iocall[IOCALL_X_COMPLEX_WRITE];
+
       break;
 
     case BT_LOGICAL:
       arg2 = build_int_cst (NULL_TREE, kind);
-      function = iocall[IOCALL_X_LOGICAL];
+      if (last_dt == READ)
+	function = iocall[IOCALL_X_LOGICAL];
+      else
+	function = iocall[IOCALL_X_LOGICAL_WRITE];
+
       break;
 
     case BT_CHARACTER:
@@ -2069,7 +2121,11 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
 	      arg2 = fold_convert (gfc_charlen_type_node, arg2);
 	    }
 	  arg3 = build_int_cst (NULL_TREE, kind);
-	  function = iocall[IOCALL_X_CHARACTER_WIDE];
+	  if (last_dt == READ)
+	    function = iocall[IOCALL_X_CHARACTER_WIDE];
+	  else
+	    function = iocall[IOCALL_X_CHARACTER_WIDE_WRITE];
+	    
 	  tmp = gfc_build_addr_expr (NULL_TREE, dt_parm);
 	  tmp = build_call_expr_loc (input_location,
 				 function, 4, tmp, addr_expr, arg2, arg3);
@@ -2088,7 +2144,11 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
 	  gcc_assert (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE);
 	  arg2 = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (tmp)));
 	}
-      function = iocall[IOCALL_X_CHARACTER];
+      if (last_dt == READ)
+	function = iocall[IOCALL_X_CHARACTER];
+      else
+	function = iocall[IOCALL_X_CHARACTER_WRITE];
+
       break;
 
     case BT_DERIVED:
@@ -2139,7 +2199,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
 static void
 transfer_array_desc (gfc_se * se, gfc_typespec * ts, tree addr_expr)
 {
-  tree tmp, charlen_arg, kind_arg;
+  tree tmp, charlen_arg, kind_arg, io_call;
 
   if (ts->type == BT_CHARACTER)
     charlen_arg = se->string_length;
@@ -2149,8 +2209,13 @@ transfer_array_desc (gfc_se * se, gfc_typespec * ts, tree addr_expr)
   kind_arg = build_int_cst (NULL_TREE, ts->kind);
 
   tmp = gfc_build_addr_expr (NULL_TREE, dt_parm);
+  if (last_dt == READ)
+    io_call = iocall[IOCALL_X_ARRAY];
+  else
+    io_call = iocall[IOCALL_X_ARRAY_WRITE];
+
   tmp = build_call_expr_loc (UNKNOWN_LOCATION,
-			 iocall[IOCALL_X_ARRAY], 4,
+			 io_call, 4,
 			 tmp, addr_expr, kind_arg, charlen_arg);
   gfc_add_expr_to_block (&se->pre, tmp);
   gfc_add_block_to_block (&se->pre, &se->post);
