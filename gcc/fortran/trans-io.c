@@ -366,7 +366,7 @@ gfc_build_io_library_fndecls (void)
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_ARRAY] = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("transfer_array")), ".wW",
+	get_identifier (PREFIX("transfer_array")), ".ww",
 	void_type_node, 4, dt_parm_type, pvoid_type_node,
 	integer_type_node, gfc_charlen_type_node);
 
