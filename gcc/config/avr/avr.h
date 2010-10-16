@@ -329,8 +329,6 @@ enum reg_class {
 
 #define REGNO_OK_FOR_INDEX_P(NUM) 0
 
-#define PREFERRED_RELOAD_CLASS(X, CLASS) preferred_reload_class(X,CLASS)
-
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
 #define CLASS_MAX_NREGS(CLASS, MODE)   class_max_nregs (CLASS, MODE)

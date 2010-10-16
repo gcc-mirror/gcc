@@ -5840,16 +5840,6 @@ avr_function_value (const_tree type,
   return gen_rtx_REG (BLKmode, RET_REGISTER + 2 - offs);
 }
 
-/* Places additional restrictions on the register class to
-   use when it is necessary to copy value X into a register
-   in class CLASS.  */
-
-enum reg_class
-preferred_reload_class (rtx x ATTRIBUTE_UNUSED, enum reg_class rclass)
-{
-  return rclass;
-}
-
 int
 test_hard_reg_class (enum reg_class rclass, rtx x)
 {

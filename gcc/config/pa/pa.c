@@ -1665,7 +1665,7 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 
      Use scratch_reg to hold the address of the memory location.
 
-     The proper fix is to change PREFERRED_RELOAD_CLASS to return
+     The proper fix is to change TARGET_PREFERRED_RELOAD_CLASS to return
      NO_REGS when presented with a const_int and a register class
      containing only FP registers.  Doing so unfortunately creates
      more problems than it solves.   Fix this for 2.5.  */

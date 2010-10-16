@@ -1,3 +1,24 @@
+2010-10-16  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/avr/avr-protos.h (preferred_reload_class): Remove.
+	* config/avr/avr.c (preferred_reload_class): Remove.
+	* config/pa/pa.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/pa/pa.c (emit_move_sequence): Update comment
+	* config/arc/arc.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/crx/crx.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/fr30/fr30.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/frv/frv.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/h8300/h8300.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/lm32/lm32.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/m32r/m32r.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/moxie/moxie.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/picochip/picochip.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/rx/rx.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/spu/spu.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/v850/v850.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/vax/vax.h (PREFERRED_RELOAD_CLASS): Remove.
+
 2010-10-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* opts.c (set_fast_math_flags,

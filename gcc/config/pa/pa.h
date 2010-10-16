@@ -491,12 +491,6 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
 /* True if register is floating-point.  */
 #define FP_REGNO_P(N) ((N) >= FP_REG_FIRST && (N) <= FP_REG_LAST)
 
-/* Given an rtx X being reloaded into a reg required to be
-   in class CLASS, return the class of reg to actually use.
-   In general this is just CLASS; but on some machines
-   in some cases it is preferable to use a more restrictive class.  */
-#define PREFERRED_RELOAD_CLASS(X,CLASS) (CLASS)
-
 #define MAYBE_FP_REG_CLASS_P(CLASS) \
   reg_classes_intersect_p ((CLASS), FP_REGS)
 

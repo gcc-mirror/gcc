@@ -201,11 +201,6 @@ enum reg_class
 #define CLASS_MAX_NREGS(CLASS, MODE) \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* A C expression that places additional restrictions on the register
-   class to use when it is necessary to copy value X into a register
-   in class CLASS.  */
-#define PREFERRED_RELOAD_CLASS(X,CLASS) CLASS
-
 /* The Overall Framework of an Assembler File */
 
 #undef  ASM_SPEC

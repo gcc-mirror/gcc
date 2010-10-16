@@ -229,8 +229,6 @@ enum reg_class
 
 #define REGNO_OK_FOR_INDEX_P(REGNO)	   REGNO_OK_FOR_BASE_P(REGNO)
 
-#define PREFERRED_RELOAD_CLASS(X,CLASS) CLASS
-
 #define SECONDARY_RELOAD_CLASS(CLASS, MODE, X) \
   crx_secondary_reload_class (CLASS, MODE, X)
 

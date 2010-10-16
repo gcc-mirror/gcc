@@ -83,7 +83,6 @@ extern void avr_output_bld (rtx operands[], int bit_nr);
 extern void avr_output_addr_vec_elt (FILE *stream, int value);
 extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
 
-extern enum reg_class preferred_reload_class (rtx x, enum reg_class rclass);
 extern int extra_constraint_Q (rtx x);
 extern int adjust_insn_length (rtx insn, int len);
 extern rtx avr_libcall_value (enum machine_mode mode);

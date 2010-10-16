@@ -268,8 +268,6 @@ enum reg_class
 {  7,  10,  11,  12,  13,  14,  4,  3,  2,  1, 9, 8, 6, 5, 15	\
 }
 
-#define PREFERRED_RELOAD_CLASS(X,CLASS)		CLASS
-
 #define REGNO_IN_RANGE(REGNO, MIN, MAX)		\
   (IN_RANGE ((REGNO), (MIN), (MAX)) 		\
    || (reg_renumber != NULL			\
