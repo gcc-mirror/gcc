@@ -1,3 +1,15 @@
+2010-10-16  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (dump_cgraph_node): Dump same_comdat_group,
+	only_called_at_startup and only_called_at_exit.
+	(cgraph_propagate_frequency): Compute only_called_at_startup and 
+	only_called_at_exit.
+	* cgraph.h (struct cgraph_node): New fileds only_called_at_startup and
+	only_called_at_exit.
+	* lto-cgraph.c (lto_output_node, input_overwrite_node): Stream the new
+	flags.
+	* predict.c (compute_function_frequency): Initialize the new flags.
+
 2010-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_type_sizes) <ARRAY_TYPE>: If the type is to be
