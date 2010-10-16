@@ -302,8 +302,35 @@ objc_EXPORT const char * ivar_getTypeEncoding (Ivar variable);
    include instance variables of superclasses.  The list is terminated
    by NULL.  Optionally, if you pass a non-NULL
    'numberOfReturnedIvars' pointer, the unsigned int that it points to
-   will be filled with the number of instance variables returned.  */
+   will be filled with the number of instance variables returned.
+   Return NULL for classes still in construction (ie, allocated using
+   objc_allocatedClassPair() but not yet registered with the runtime
+   using objc_registerClassPair()).  */
 objc_EXPORT Ivar * class_copyIvarList (Class class_, unsigned int *numberOfReturnedIvars);
+
+/* Add an instance variable with name 'ivar_name' to class 'class_',
+   where 'class_' is a class in construction that has been created
+   using objc_allocateClassPair() and has not been registered with the
+   runtime using objc_registerClassPair() yet.  You can not add
+   instance variables to classes already registered with the runtime.
+   'size' is the size of the instance variable, 'alignment' the
+   alignment, and 'type' the type encoding of the variable type.  You
+   can use objc_sizeof_type() (or sizeof()), objc_alignof_type() (or
+   __alignof__()) and @encode() to determine the right 'size',
+   'alignment' and 'type' for your instance variable.  For example, to
+   add an instance variable name "my_variable" and of type 'id', you
+   can use:
+
+   class_addIvar (class, "my_variable", sizeof (id), __alignof__ (id), 
+                  @encode (id));
+
+   Return YES if the variable was added, and NO if not.  In
+   particular, return NO if 'class_' is Nil, or a meta-class or a
+   class not in construction.  Return Nil also if 'ivar_name' or
+   'type' is NULL, or 'size' is 0.
+ */
+objc_EXPORT BOOL class_addIvar (Class class_, const char * ivar_name, size_t size,
+				unsigned char alignment, const char *type);
 
 /* Return the name of the property.  Return NULL if 'property' is
    NULL.  */
@@ -383,7 +410,6 @@ typedef Class (*objc_get_unknown_class_handler)(const char *class_name);
 objc_get_unknown_class_handler
 objc_setGetUnknownClassHandler (objc_get_unknown_class_handler new_handler);
 
-
 /* Return the class with name 'name', if it is already registered with
    the runtime.  If it is not registered, and
    objc_setGetUnknownClassHandler() has been called to set a handler
@@ -437,11 +463,11 @@ objc_EXPORT const char * class_getName (Class class_);
    is Nil, return NO.  */
 objc_EXPORT BOOL class_isMetaClass (Class class_);
 
-/* Return the superclass of 'class_'.  If 'class_' is Nil, or it is a root
-   class, return Nil.
-
-   TODO: It may be worth to define this inline, since it is usually
-   used in loops when traversing the class hierarchy.  */
+/* Return the superclass of 'class_'.  If 'class_' is Nil, or it is a
+   root class, return Nil.  If 'class_' is a class being constructed,
+   that is, a class returned by objc_allocateClassPair() but before it
+   has been registered with the runtime using
+   objc_registerClassPair(), return Nil.  */
 objc_EXPORT Class class_getSuperclass (Class class_);
 
 /* Return the 'version' number of the class, which is an integer that
@@ -496,6 +522,64 @@ method_setImplementation (Method method, IMP implementation);
 objc_EXPORT void
 method_exchangeImplementations (Method method_a, Method method_b);
 
+/* Create a new class/meta-class pair.  This function is called to
+   create a new class at runtime.  The class is created with
+   superclass 'superclass' (use 'Nil' to create a new root class) and
+   name 'class_name'.  'extraBytes' can be used to specify some extra
+   space for indexed variables to be added at the end of the class and
+   meta-class objects (it is recommended that you set extraBytes to
+   0).  Once you have created the class, it is not usable yet.  You
+   need to add any instance variables (by using class_addIvar()), any
+   instance methods (by using class_addMethod()) and any class methods
+   (by using class_addMethod() on the meta-class, as in
+   class_addMethod (object_getClass (class), method)) that are
+   required, and then you need to call objc_registerClassPair() to
+   activate the class.  If you need to create a hierarchy of classes,
+   you need to create and register them one at a time.  You can not
+   create a new class using another class in construction as
+   superclass.  Return Nil if 'class-name' is NULL or if a class with
+   that name already exists or 'superclass' is a class still in
+   construction.
+
+   Implementation Note: in the GNU runtime, allocating a class pair
+   only creates the structures for the class pair, but does not
+   register anything with the runtime.  The class is registered with
+   the runtime only when objc_registerClassPair() is called.  In
+   particular, if a class is in construction, objc_getClass() will not
+   find it, the superclass will not know about it,
+   class_getSuperclass() will return Nil and another thread may
+   allocate a class pair with the same name; the conflict will only be
+   detected when the classes are registered with the runtime.
+ */
+objc_EXPORT Class
+objc_allocateClassPair (Class super_class, const char *class_name, 
+			size_t extraBytes);
+
+/* Register a class pair that was created with
+   objc_allocateClassPair().  After you register a class, you can no
+   longer make changes to its instance variables, but you can start
+   creating instances of it.  Do nothing if 'class_' is NULL or if it
+   is not a class allocated by objc_allocateClassPair() and still in
+   construction.  */
+objc_EXPORT void
+objc_registerClassPair (Class class_);
+
+/* Dispose of a class pair created using objc_allocateClassPair().
+   Call this function if you started creating a new class with
+   objc_allocateClassPair() but then want to abort the process.  You
+   should not access 'class_' after calling this method.  Note that if
+   'class_' has already been registered with the runtime via
+   objc_registerClassPair(), this function does nothing; you can only
+   dispose of class pairs that are still being constructed.  Do
+   nothing if class is 'Nil' or if 'class_' is not a class being
+   constructed.  */
+objc_EXPORT void
+objc_disposeClassPair (Class class_);
+
+/* Compatibility Note: The Apple/NeXT runtime has the function
+   objc_duplicateClass () but it's undocumented.  The GNU runtime does
+   not have it.  */
+
 
 /** Implementation: the following functions are in sendmsg.c.  */
 
@@ -533,6 +617,33 @@ objc_EXPORT IMP class_getMethodImplementation (Class class_, SEL selector);
    meta-class as the class_ argument (ie, use class_respondsToSelector
    (object_getClass (class_), selector)).  */
 objc_EXPORT BOOL class_respondsToSelector (Class class_, SEL selector);
+
+/* Add a method to a class.  Use this function to add a new method to
+   a class (potentially overriding a method with the same selector in
+   the superclass); if you want to modify an existing method, use
+   method_setImplementation() instead (or class_replaceMethod ()).
+   This method adds an instance method to 'class_'; to add a class
+   method, get the meta class first, then add the method to the meta
+   class, that is, use
+
+   class_addMethod (object_getClass (class_), selector,
+   implementation, type);
+
+   Return YES if the method was added, and NO if not.  Do nothing if
+   one of the arguments is NULL.  */
+objc_EXPORT BOOL class_addMethod (Class class_, SEL selector, IMP implementation,
+				  const char *method_types);
+
+/* Replace a method in a class.  If the class already have a method
+   with this 'selector', find it and use method_setImplementation() to
+   replace the implementation with 'implementation' (method_types is
+   ignored in that case).  If the class does not already have a method
+   with this 'selector', call 'class_addMethod() to add it.
+
+   Return the previous implementation of the method, or NULL if none
+   was found.  Return NULL if any of the arguments is NULL.  */
+objc_EXPORT IMP class_replaceMethod (Class class_, SEL selector, IMP implementation,
+				     const char *method_types);
 
 
 /** Implementation: the following functions are in methods.c.  */

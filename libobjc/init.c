@@ -623,23 +623,7 @@ __objc_exec_class (Module_t module)
 	 In some cases it isn't and this crashes the program.  */
       class->subclass_list = NULL;
 
-      /* Store the class in the class table and assign class numbers.  */
-      __objc_add_class_to_hash (class);
-
-      /* Register all of the selectors in the class and meta class.  */
-      __objc_register_selectors_from_class (class);
-      __objc_register_selectors_from_class ((Class) class->class_pointer);
-
-      /* Install the fake dispatch tables */
-      __objc_install_premature_dtable (class);
-      __objc_install_premature_dtable (class->class_pointer);
-
-      /* Register the instance methods as class methods, this is
-	 only done for root classes.  */
-      __objc_register_instance_methods_to_class (class);
-
-      if (class->protocols)
-	__objc_init_protocols (class->protocols);
+      __objc_init_class (class);
 
       /* Check to see if the superclass is known in this point. If it's not
 	 add the class to the unresolved_classes list.  */
@@ -862,6 +846,29 @@ init_check_module_version (Module_t module)
       _objc_abort ("Module %s version %d doesn't match runtime %d\n",
 		   module->name, (int)module->version, OBJC_VERSION);
     }
+}
+
+/* __objc_init_class must be called with __objc_runtime_mutex already locked.  */
+void
+__objc_init_class (Class class)
+{
+  /* Store the class in the class table and assign class numbers.  */
+  __objc_add_class_to_hash (class);
+  
+  /* Register all of the selectors in the class and meta class.  */
+  __objc_register_selectors_from_class (class);
+  __objc_register_selectors_from_class ((Class) class->class_pointer);
+
+  /* Install the fake dispatch tables */
+  __objc_install_premature_dtable (class);
+  __objc_install_premature_dtable (class->class_pointer);
+
+  /* Register the instance methods as class methods, this is only done
+     for root classes.  */
+  __objc_register_instance_methods_to_class (class);
+
+  if (class->protocols)
+    __objc_init_protocols (class->protocols);
 }
 
 /* __objc_init_protocol must be called with __objc_runtime_mutex

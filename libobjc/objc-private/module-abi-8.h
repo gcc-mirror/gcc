@@ -181,7 +181,7 @@ struct objc_protocol_list
   places a string in the following member variables: super_class.
 */
 #ifndef __objc_STRUCT_OBJC_CLASS_defined
-struct objc_class {     
+struct objc_class {
   struct objc_class*  class_pointer;    /* Pointer to the class's meta
 					   class. */
   struct objc_class*  super_class;      /* Pointer to the super
@@ -234,6 +234,7 @@ struct objc_class {
 #define __CLS_INFO(cls) ((cls)->info)
 #define __CLS_ISINFO(cls, mask) ((__CLS_INFO(cls)&mask)==mask)
 #define __CLS_SETINFO(cls, mask) (__CLS_INFO(cls) |= mask)
+#define __CLS_SETNOTINFO(cls, mask) (__CLS_INFO(cls) &= ~mask)
 
 /* The structure is of type MetaClass */
 #define _CLS_META 0x2L
@@ -254,6 +255,16 @@ struct objc_class {
 #define _CLS_INITIALIZED 0x04L
 #define CLS_ISINITIALIZED(cls) __CLS_ISINFO(cls, _CLS_INITIALIZED)
 #define CLS_SETINITIALIZED(cls) __CLS_SETINFO(cls, _CLS_INITIALIZED)
+
+/* The class is being constructed; it has been allocated using
+   objc_allocateClassPair(), but has not been registered yet by using
+   objc_registerClassPair().  This means it is possible to freely add
+   instance variables to the class, but it can't be used for anything
+   yet.  */
+#define _CLS_IN_CONSTRUCTION 0x10L
+#define CLS_IS_IN_CONSTRUCTION(cls) __CLS_ISINFO(cls, _CLS_IN_CONSTRUCTION)
+#define CLS_SET_IN_CONSTRUCTION(cls) __CLS_SETINFO(cls, _CLS_IN_CONSTRUCTION)
+#define CLS_SET_NOT_IN_CONSTRUCTION(cls) __CLS_SETNOTINFO(cls, _CLS_IN_CONSTRUCTION)
 
 /* The class number of this class.  This must be the same for both the
    class and its meta class object.  */

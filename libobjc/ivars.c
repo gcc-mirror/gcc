@@ -32,9 +32,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 struct objc_ivar *
 class_getInstanceVariable (Class class_, const char *name)
 {
-  if (class_ != Nil  &&  name != NULL)
+  if (class_ != Nil  &&  name != NULL  &&  ! CLS_IS_IN_CONSTRUCTION (class_))
     {
-      objc_mutex_lock (__objc_runtime_mutex);
       while (class_ != Nil)
 	{
 	  struct objc_ivar_list *ivars = class_->ivars;
@@ -48,14 +47,12 @@ class_getInstanceVariable (Class class_, const char *name)
 		  
 		  if (!strcmp (ivar->ivar_name, name))
 		    {
-		      objc_mutex_unlock (__objc_runtime_mutex);
 		      return ivar;
 		    }
 		}
 	    }
 	  class_ = class_getSuperclass (class_);
 	}
-      objc_mutex_unlock (__objc_runtime_mutex);
     }
   return NULL;
 }
@@ -185,22 +182,13 @@ struct objc_ivar ** class_copyIvarList (Class class_, unsigned int *numberOfRetu
   struct objc_ivar **returnValue = NULL;
   struct objc_ivar_list* ivar_list;
 
-  if (class_ == Nil)
+  if (class_ == Nil  ||  CLS_IS_IN_CONSTRUCTION (class_))
     {
       if (numberOfReturnedIvars)
 	*numberOfReturnedIvars = 0;
       return NULL;
     }
-
-  /* TODO: We do not need to lock the runtime mutex if the class has
-     been registered with the runtime, since the instance variable
-     list can not change after the class is registered.  The only case
-     where the lock may be useful if the class is still being created
-     using objc_allocateClassPair(), but has not been registered using
-     objc_registerClassPair() yet.  I'm not even sure that is
-     allowed.  */
-  objc_mutex_lock (__objc_runtime_mutex);
-
+    
   /* Count how many ivars we have.  */
   ivar_list = class_->ivars;
   count = ivar_list->ivar_count;
@@ -221,13 +209,98 @@ struct objc_ivar ** class_copyIvarList (Class class_, unsigned int *numberOfRetu
       returnValue[i] = NULL;
     }
   
-  objc_mutex_unlock (__objc_runtime_mutex);
-
   if (numberOfReturnedIvars)
     *numberOfReturnedIvars = count;
 
   return returnValue;
 }
+
+BOOL
+class_addIvar (Class class_, const char * ivar_name, size_t size,
+	       unsigned char alignment, const char *type)
+{
+  struct objc_ivar_list *ivars;
+
+  if (class_ == Nil
+      || (! CLS_IS_IN_CONSTRUCTION (class_))  
+      || ivar_name == NULL  
+      || (strcmp (ivar_name, "") == 0)
+      || size == 0
+      || type == NULL)
+    return NO;
+
+  /* Check if the class has an instance variable with that name
+     already.  */
+  ivars = class_->ivars;
+
+  if (ivars != NULL)
+    {
+      int i;
+      
+      for (i = 0; i < ivars->ivar_count; i++)
+	{
+	  struct objc_ivar *ivar = &(ivars->ivar_list[i]);
+	  
+	  if (strcmp (ivar->ivar_name, ivar_name) == 0)
+	    {
+	      return NO;
+	    }
+	}
+    }
+
+  /* Ok, no direct ivars.  Check superclasses.  */
+  if (class_getInstanceVariable (objc_getClass ((char *)(class_->super_class)),
+				 ivar_name))
+    return NO;
+
+  /* Good.  Create space for the new instance variable.  */
+  if (ivars)
+    {
+      int ivar_count = ivars->ivar_count + 1;
+      int new_size = sizeof (struct objc_ivar_list) 
+	+ (ivar_count - 1) * sizeof (struct objc_ivar);
+      
+      ivars = (struct objc_ivar_list*) objc_realloc (ivars, new_size);
+      ivars->ivar_count = ivar_count;
+      class_->ivars = ivars;
+    }
+  else
+    {
+      int new_size = sizeof (struct objc_ivar_list);
+      
+      ivars = (struct objc_ivar_list*) objc_malloc (new_size);
+      ivars->ivar_count = 1;
+      class_->ivars = ivars;
+    }
+    
+  /* Now ivars is set to a list of instance variables of the right
+     size. */
+  {
+    struct objc_ivar *ivar = &(ivars->ivar_list[ivars->ivar_count - 1]);
+    int misalignment;
+    
+    ivar->ivar_name = objc_malloc (strlen (ivar_name) + 1);
+    strcpy ((char *)ivar->ivar_name, ivar_name);
+
+    ivar->ivar_type = objc_malloc (strlen (type) + 1);
+    strcpy ((char *)ivar->ivar_type, type);
+
+    /* The new instance variable is placed at the end of the existing
+       instance_size, at the first byte that is aligned with
+       alignment.  */
+    misalignment = class_->instance_size % alignment;
+    
+    if (misalignment == 0)
+      ivar->ivar_offset = class_->instance_size;
+    else
+      ivar->ivar_offset = class_->instance_size - misalignment + alignment;
+    
+    class_->instance_size = ivar->ivar_offset + objc_sizeof_type (ivar->ivar_type);
+  }
+  
+  return YES;
+}
+
 
 const char *
 property_getName (struct objc_property * property __attribute__ ((__unused__)))

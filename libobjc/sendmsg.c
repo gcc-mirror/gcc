@@ -42,6 +42,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h> /* For assert */
 #include <string.h> /* For strlen */
 
+/* Temporarily while we include objc/objc-api.h instead of objc-private/module-abi-8.h.  */
+#define _CLS_IN_CONSTRUCTION 0x10L
+#define CLS_IS_IN_CONSTRUCTION(cls) __CLS_ISINFO(cls, _CLS_IN_CONSTRUCTION)
+
 /* This is how we hack STRUCT_VALUE to be 1 or 0.   */
 #define gen_rtx(args...) 1
 #define gen_rtx_MEM(args...) 1
@@ -571,6 +575,80 @@ class_getClassMethod (Class class_, SEL selector)
   
   return search_for_method_in_hierarchy (class_->class_pointer, 
 					 selector);
+}
+
+BOOL
+class_addMethod (Class class_, SEL selector, IMP implementation,
+		 const char *method_types)
+{
+  struct objc_method_list *method_list;
+  struct objc_method *method;
+  const char *method_name;
+
+  if (class_ == Nil  ||  selector == NULL  ||  implementation == NULL  
+      || method_types == NULL  || (strcmp (method_types, "") == 0))
+    return NO;
+
+  method_name = sel_get_name (selector);
+  if (method_name == NULL)
+    return NO;
+
+  method_list = (struct objc_method_list *)objc_calloc (1, sizeof (struct objc_method_list));
+  method_list->method_count = 1;
+
+  method = &(method_list->method_list[0]);
+  method->method_name = objc_malloc (strlen (method_name) + 1);
+  strcpy ((char *)method->method_name, method_name);
+
+  method->method_types = objc_malloc (strlen (method_types) + 1);
+  strcpy ((char *)method->method_types, method_types);
+  
+  method->method_imp = implementation;
+  
+  if (CLS_IS_IN_CONSTRUCTION (class_))
+    {
+      /* We only need to add the method to the list.  It will be
+	 registered with the runtime when the class pair is registered
+	 (if ever).  */
+      method_list->method_next = class_->methods;
+      class_->methods = method_list;
+    }
+  else
+    {
+      /* Add the method to a live class.  */
+      objc_mutex_lock (__objc_runtime_mutex);
+      class_add_method_list (class_, method_list);
+      objc_mutex_unlock (__objc_runtime_mutex);
+    }
+
+  return YES;
+}
+
+/* Temporarily, until we include objc/runtime.h.  */
+extern IMP
+method_setImplementation (struct objc_method * method, IMP implementation);
+
+IMP
+class_replaceMethod (Class class_, SEL selector, IMP implementation,
+		     const char *method_types)
+{
+  struct objc_method * method;
+
+  if (class_ == Nil  ||  selector == NULL  ||  implementation == NULL
+      || method_types == NULL)
+    return NULL;
+
+  method = search_for_method_in_hierarchy (class_, selector);
+
+  if (method)
+    {
+      return method_setImplementation (method, implementation);
+    }
+  else
+    {
+      class_addMethod (class_, selector, implementation, method_types);
+      return NULL;
+    }
 }
 
 /* Search for a method starting from the current class up its hierarchy.
