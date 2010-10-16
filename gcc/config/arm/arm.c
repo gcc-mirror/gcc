@@ -22823,11 +22823,9 @@ arm_order_regs_for_local_alloc (void)
 static void
 arm_option_optimization (int level, int size ATTRIBUTE_UNUSED)
 {
-  /* Enable section anchors by default at -O1 or higher.
-     Use 2 to distinguish from an explicit -fsection-anchors
-     given on the command line.  */
+  /* Enable section anchors by default at -O1 or higher.  */
   if (level > 0)
-    flag_section_anchors = 2;
+    flag_section_anchors = 1;
 }
 
 /* Implement TARGET_FRAME_POINTER_REQUIRED.  */

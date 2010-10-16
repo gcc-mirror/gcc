@@ -84,7 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #define SUBTARGET_OVERRIDE_OPTIONS				\
   do								\
     {								\
-      if (flag_omit_frame_pointer == 2)				\
+      if (!global_options_set.x_flag_omit_frame_pointer)	\
 	flag_omit_frame_pointer = 0;				\
     }								\
   while (0)
