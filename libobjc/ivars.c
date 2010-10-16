@@ -53,7 +53,7 @@ class_getInstanceVariable (Class class_, const char *name)
 		    }
 		}
 	    }
-	  class_ = class_->super_class;
+	  class_ = class_getSuperclass (class_);
 	}
       objc_mutex_unlock (__objc_runtime_mutex);
     }
