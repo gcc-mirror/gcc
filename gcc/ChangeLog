@@ -1,3 +1,9 @@
+2010-10-16  Kai Tietz  <kai.tietz@onevision.com>
+
+	* configure.ac: Make sure inhibit_libc remains false for mingw targets
+	as cross.
+	* configure: Regenerated.
+
 2010-10-15  Xinliang David Li  <davidxl@google.com>
 
 	* tree-ssa-uninit.c (prune_uninit_phi_opnds_in_unrealizable_paths): New
