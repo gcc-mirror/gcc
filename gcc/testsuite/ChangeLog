@@ -1,3 +1,16 @@
+2010-10-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport from mainline
+	2010-09-04  Andreas Schwab  <schwab@linux-m68k.org>
+	* g++.dg/debug/dwarf2/pubnames-1.C: Replace ".*" by "\[^\n\]*".
+
+	2010-07-07  Tom Tromey  <tromey@redhat.com>
+	* g++.dg/debug/dwarf2/pubnames-1.C: Make darwin-specific.
+
+	2009-09-08  Dodji Seketeli  <dodji@redhat.com>
+	* g++.dg/debug/dwarf2/pubnames-1.C: Use -fno-merge-debug-string
+	and adjust.  Also, adjust to take darwin specifics in account.
+
 2010-10-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/pragma-init-fini.c: Skip on i?86-*-solaris2.8 && !gas.
