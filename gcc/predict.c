@@ -2187,6 +2187,11 @@ compute_function_frequency (void)
 {
   basic_block bb;
   struct cgraph_node *node = cgraph_node (current_function_decl);
+  if (DECL_STATIC_CONSTRUCTOR (current_function_decl)
+      || MAIN_NAME_P (DECL_NAME (current_function_decl)))
+    node->only_called_at_startup = true;
+  if (DECL_STATIC_DESTRUCTOR (current_function_decl))
+    node->only_called_at_exit = true;
 
   if (!profile_info || !flag_branch_probabilities)
     {

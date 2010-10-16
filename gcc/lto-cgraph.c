@@ -518,6 +518,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->alias, 1);
   bp_pack_value (&bp, node->finalized_by_frontend, 1);
   bp_pack_value (&bp, node->frequency, 2);
+  bp_pack_value (&bp, node->only_called_at_startup, 1);
+  bp_pack_value (&bp, node->only_called_at_exit, 1);
   lto_output_bitpack (&bp);
   lto_output_uleb128_stream (ob->main_stream, node->resolution);
 
@@ -978,6 +980,8 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->alias = bp_unpack_value (bp, 1);
   node->finalized_by_frontend = bp_unpack_value (bp, 1);
   node->frequency = (enum node_frequency)bp_unpack_value (bp, 2);
+  node->only_called_at_startup = bp_unpack_value (bp, 1);
+  node->only_called_at_exit = bp_unpack_value (bp, 1);
   node->resolution = resolution;
 }
 

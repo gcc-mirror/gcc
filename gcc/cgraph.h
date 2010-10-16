@@ -298,6 +298,10 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   /* How commonly executed the node is.  Initialized during branch
      probabilities pass.  */
   ENUM_BITFIELD (node_frequency) frequency : 2;
+  /* True when function can only be called at startup (from static ctor).  */
+  unsigned only_called_at_startup : 1;
+  /* True when function can only be called at startup (from static dtor).  */
+  unsigned only_called_at_exit : 1;
 };
 
 typedef struct cgraph_node *cgraph_node_ptr;
