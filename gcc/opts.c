@@ -369,6 +369,8 @@ static void complain_wrong_lang (const struct cl_decoded_option *,
 				 unsigned int lang_mask);
 static void set_debug_level (enum debug_info_type type, int extended,
 			     const char *arg);
+static void set_fast_math_flags (int set);
+static void set_unsafe_math_optimizations_flags (int set);
 
 /* Return a malloced slash-separated list of languages in MASK.  */
 static char *
@@ -2175,7 +2177,7 @@ set_Wstrict_aliasing (int onoff)
 
 /* The following routines are useful in setting all the flags that
    -ffast-math and -fno-fast-math imply.  */
-void
+static void
 set_fast_math_flags (int set)
 {
   flag_unsafe_math_optimizations = set;
@@ -2192,7 +2194,7 @@ set_fast_math_flags (int set)
 
 /* When -funsafe-math-optimizations is set the following
    flags are set as well.  */
-void
+static void
 set_unsafe_math_optimizations_flags (int set)
 {
   flag_trapping_math = !set;
