@@ -3693,7 +3693,7 @@ rs6000_option_init_struct (struct gcc_options *opts)
 
   /* Enable section anchors by default.  */
   if (!TARGET_MACHO)
-    opts->x_flag_section_anchors = 2;
+    opts->x_flag_section_anchors = 1;
 }
 
 /* Implement TARGET_OPTION_DEFAULT_PARAMS.  */

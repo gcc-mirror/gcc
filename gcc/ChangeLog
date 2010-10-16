@@ -1,3 +1,22 @@
+2010-10-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.c (arm_option_optimization): Set
+	flag_section_anchors to 1 not 2.
+	* config/i386/i386.c (ix86_option_override_internal): Check
+	global_options_set.x_flag_zee and
+	global_options_set.x_flag_omit_frame_pointer.
+	(ix86_option_optimization): Don't set flag_omit_frame_pointer and
+	flag_zee to 2.
+	* config/i386/sol2-10.h (SUBTARGET_OVERRIDE_OPTIONS): Check
+	global_options_set.x_flag_omit_frame_pointer.
+	* config/rs6000/rs6000.c (rs6000_option_init_struct): Set
+	opts->x_flag_section_anchors to 1 not 2.
+	* config/sh/sh.c (sh_option_optimization): Don't set
+	flag_schedule_insns to 2.
+	(sh_option_override): Check
+	global_options_set.x_flag_schedule_insns.
+	* opts.c (finish_options): Check opts_set->x_flag_section_anchors.
+
 2010-10-16  Kai Tietz  <kai.tietz@onevision.com>
 
 	* configure.ac: Make sure inhibit_libc remains false for mingw targets

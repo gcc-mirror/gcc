@@ -1005,7 +1005,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set)
      section-anchors.  */
   if (!flag_unit_at_a_time)
     {
-      if (flag_section_anchors == 1)
+      if (flag_section_anchors && opts_set->x_flag_section_anchors)
 	error ("Section anchors must be disabled when unit-at-a-time "
 	       "is disabled.");
       flag_section_anchors = 0;
@@ -1022,14 +1022,16 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set)
   /* Unless the user has asked for section anchors, we disable toplevel
      reordering at -O0 to disable transformations that might be surprising
      to end users and to get -fno-toplevel-reorder tested.  */
-  if (!optimize && flag_toplevel_reorder == 2 && flag_section_anchors != 1)
+  if (!optimize
+      && flag_toplevel_reorder == 2
+      && !(flag_section_anchors && opts_set->x_flag_section_anchors))
     {
       flag_toplevel_reorder = 0;
       flag_section_anchors = 0;
     }
   if (!flag_toplevel_reorder)
     {
-      if (flag_section_anchors == 1)
+      if (flag_section_anchors && opts_set->x_flag_section_anchors)
 	error ("section anchors must be disabled when toplevel reorder"
 	       " is disabled");
       flag_section_anchors = 0;

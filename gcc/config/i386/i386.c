@@ -3276,9 +3276,9 @@ ix86_option_override_internal (bool main_args_p)
      in case they weren't overwritten by command line options.  */
   if (TARGET_64BIT)
     {
-      if (flag_zee == 2)
+      if (optimize > 1 && !global_options_set.x_flag_zee)
         flag_zee = 1;
-      if (flag_omit_frame_pointer == 2)
+      if (optimize >= 1 && !global_options_set.x_flag_omit_frame_pointer)
 	flag_omit_frame_pointer = 1;
       if (flag_asynchronous_unwind_tables == 2)
 	flag_asynchronous_unwind_tables = 1;
@@ -3287,9 +3287,7 @@ ix86_option_override_internal (bool main_args_p)
     }
   else
     {
-      if (flag_zee == 2)
-        flag_zee = 0;
-      if (flag_omit_frame_pointer == 2)
+      if (optimize >= 1 && !global_options_set.x_flag_omit_frame_pointer)
 	flag_omit_frame_pointer = !(USE_IX86_FRAME_POINTER || optimize_size);
       if (flag_asynchronous_unwind_tables == 2)
 	flag_asynchronous_unwind_tables = !USE_IX86_FRAME_POINTER;
@@ -4536,18 +4534,6 @@ ix86_option_optimization (int level, int size ATTRIBUTE_UNUSED)
   if (level > 1)
     flag_schedule_insns = 0;
 #endif
-
-  /* The default values of these switches depend on the TARGET_64BIT
-     that is not known at this moment.  Mark these values with 2 and
-     let user the to override these.  In case there is no command line
-     option specifying them, we will set the defaults in
-     ix86_option_override_internal.  */
-  if (optimize >= 1)
-    flag_omit_frame_pointer = 2;
-
-  /* For -O2 and beyond, turn on -fzee for x86_64 target. */
-  if (level > 1)
-    flag_zee = 2;
 
 #ifdef SUBTARGET_OPTIMIZATION_OPTIONS
   SUBTARGET_OPTIMIZATION_OPTIONS;
