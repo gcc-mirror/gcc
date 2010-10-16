@@ -500,7 +500,7 @@ objc_getClass (const char *name)
   
   if (class)
     return class;
-  
+
   if (__objc_get_unknown_class_handler)
     return (*__objc_get_unknown_class_handler) (name);
 
@@ -796,12 +796,24 @@ class_isMetaClass (Class class_)
   return CLS_ISMETA (class_);
 }
 
+/* Even inside libobjc it may be worth using class_getSuperclass
+   instead of accessing class_->super_class directly because it
+   resolves the class links if needed.  If you access
+   class_->super_class directly, make sure to deal with the situation
+   where the class is not resolved yet!  */
 Class
 class_getSuperclass (Class class_)
 {
   if (class_ == Nil)
     return Nil;
 
+  /* If the class is not resolved yet, super_class would point to a
+     string (the name of the super class) as opposed to the actual
+     super class.  In that case, we need to resolve the class links
+     before we can return super_class.  */
+  if (! CLS_ISRESOLV (class_))
+    __objc_resolve_class_links ();
+  
   return class_->super_class;
 }
 
