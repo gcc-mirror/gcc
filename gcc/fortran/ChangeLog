@@ -1,5 +1,11 @@
 2010-10-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	* trans-io.c (gfc_build_io_library_fndecls):
+	Array descriptor arguments to transfer_array can be
+	dereferenced recursively.
+
+2010-10-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/20165
 	PR fortran/31593
 	PR fortran/43665
