@@ -10973,6 +10973,16 @@ then
 	    | powerpc*-*-*,powerpc64*-*-*)
 		CROSS="$CROSS -DNATIVE_CROSS" ;;
 	esac
+
+	case $target in
+		*-*-mingw*)
+			if test "x$with_headers" = x; then
+				with_headers=yes
+			fi
+			;;
+		*)
+			;;
+	esac
 elif test "x$TARGET_SYSTEM_ROOT" != x; then
         SYSTEM_HEADER_DIR=$build_system_header_dir
 fi
@@ -17133,7 +17143,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17136 "configure"
+#line 17146 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17239,7 +17249,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17242 "configure"
+#line 17252 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

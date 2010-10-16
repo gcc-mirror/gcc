@@ -1739,6 +1739,16 @@ then
 	    | powerpc*-*-*,powerpc64*-*-*)
 		CROSS="$CROSS -DNATIVE_CROSS" ;;
 	esac
+
+	case $target in
+		*-*-mingw*)
+			if test "x$with_headers" = x; then
+				with_headers=yes
+			fi
+			;;
+		*)
+			;;
+	esac
 elif test "x$TARGET_SYSTEM_ROOT" != x; then
         SYSTEM_HEADER_DIR=$build_system_header_dir 
 fi
