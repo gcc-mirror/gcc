@@ -1,6 +1,27 @@
 2010-10-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline
+	2010-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/45543
+	* g++.dg/debug/dwarf2/typedef1.C: Expect just one
+	DW_TAG_enumeration_type DIE.
+
+	2010-09-04  Andreas Schwab  <schwab@linux-m68k.org>
+	* g++.dg/debug/dwarf2/typedef1.C: Replace ".*" by "\[^\n\]*".
+
+	2009-11-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/18451
+	PR c++/40738
+	* g++.dg/other/typedef1.C: Update expected errors.
+
+	2009-08-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/40858
+	* g++.dg/debug/dwarf2/typedef1.C: Also match assembler string used with
+	.ascii.
+
 	2010-09-04  Andreas Schwab  <schwab@linux-m68k.org>
 	* g++.dg/debug/dwarf2/pubnames-1.C: Replace ".*" by "\[^\n\]*".
 
