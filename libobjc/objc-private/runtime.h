@@ -67,7 +67,7 @@ extern void __objc_update_dispatch_table_for_class (Class);/* (objc-msg.c) */
 extern int  __objc_init_thread_system(void);    /* thread.c */
 extern int  __objc_fini_thread_system(void);    /* thread.c */
 extern void __objc_print_dtable_stats(void);    /* sendmsg.c */
-
+extern void __objc_init_class (Class class);  /* init.c */
 extern void class_add_method_list(Class, struct objc_method_list *);
 
 /* Registering instance methods as class methods for root classes */

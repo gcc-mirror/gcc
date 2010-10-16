@@ -1,5 +1,34 @@
 2010-10-16  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/runtime.h: Updated comments.
+	(class_addMethod): New.
+	(class_addIvar): New.
+	(class_replaceMethod): New.
+	(objc_allocateClassPair): New.
+	(objc_registerClassPair): New.
+	(objc_disposeClassPair): New.
+	* class.c (objc_allocateClassPair): New.
+	(objc_registerClassPair): New.
+	(objc_disposeClassPair): New.
+	(class_getSuperclass): Return Nil if a class is in construction.
+	* init.c (__objc_exec_class): Call __objc_init_class.
+	(__objc_init_class): New.
+	* ivars.c (class_copyIvarList): Return NULL if class is in
+	construction.  Do not lock the runtime mutex.
+	(class_getInstanceVariable): Return NULL if class is in
+	construction.  Do not lock the runtime mutex.
+	(class_addIvar): New.
+	* sendmsg.c (class_addMethod): New.
+	(class_replaceMethod): New.
+	* objc-private/module-abi-8.h (__CLS_SETNOTINFO): New.
+	(_CLS_IN_CONSTRUCTION): New.
+	(CLS_IS_IN_CONSTRUCTION): New.
+	(CLS_SET_IN_CONSTRUCTION): New.
+	(CLS_SET_NOT_IN_CONSTRUCTION): New.
+	* objc-private/runtime.h (__objc_init_class): New.
+
+2010-10-16  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* class.c (class_getSuperclass): Call __objc_resolve_class_links
 	if the class is not resolved yet.
 	* ivars.c (class_getInstanceVariable): Use class_getSuperclass.
