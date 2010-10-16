@@ -281,3 +281,29 @@ class_copyPropertyList (Class class_ __attribute__ ((__unused__)),
 
   return NULL;
 }
+
+const char *
+class_getIvarLayout (Class class_ __attribute__ ((__unused__)))
+{
+  return NULL;
+}
+
+const char *
+class_getWeakIvarLayout (Class class_ __attribute__ ((__unused__)))
+{
+  return NULL;
+}
+
+void
+class_setIvarLayout (Class class_ __attribute__ ((__unused__)),
+		     const char *layout __attribute__ ((__unused__)))
+{
+  return;
+}
+
+void
+class_setWeakIvarLayout (Class class_ __attribute__ ((__unused__)),
+			 const char *layout __attribute__ ((__unused__)))
+{
+  return;
+}
