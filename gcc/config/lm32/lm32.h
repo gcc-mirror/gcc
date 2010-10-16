@@ -227,8 +227,6 @@ enum reg_class
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) 0
 
-#define PREFERRED_RELOAD_CLASS(X,CLASS) (CLASS)
-
 /*----------------------------------------*/
 /* Stack Layout and Calling Conventions.  */
 /*----------------------------------------*/

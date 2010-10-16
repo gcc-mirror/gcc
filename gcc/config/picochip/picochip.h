@@ -355,8 +355,6 @@ extern const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) 0
 
-#define PREFERRED_RELOAD_CLASS(X, CLASS) CLASS
-
 #define CLASS_MAX_NREGS(CLASS, MODE) picochip_class_max_nregs(CLASS, MODE)
 
 
