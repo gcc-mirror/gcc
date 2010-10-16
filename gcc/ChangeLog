@@ -1,3 +1,10 @@
+2010-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_type_sizes) <ARRAY_TYPE>: If the type is to be
+	ignored for debug info purposes, do not clear the DECL_IGNORED_P flag
+	on the bounds of its domain.
+	* tree.h (DECL_IGNORED_P): Document effect on TYPE_DECL specifically.
+
 2010-10-16  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.h (PREFERRED_RELOAD_CLASS): Remove.
