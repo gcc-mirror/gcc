@@ -26,12 +26,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef __objc_message_INCLUDE_GNU
 #define __objc_message_INCLUDE_GNU
 
+#include "objc.h"
+#include "objc-decls.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "objc.h"
-#include "objc-decls.h"
 
 /* This file includes declarations of the messaging functions and
    types.

@@ -1,3 +1,14 @@
+2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* obj-c++.dg/gnu-api-2-class.mm: New.
+	* obj-c++.dg/gnu-api-2-ivar.mm: New.
+	* obj-c++.dg/gnu-api-2-method.mm: New.
+	* obj-c++.dg/gnu-api-2-objc.mm: New.
+	* obj-c++.dg/gnu-api-2-object.mm: New.
+	* obj-c++.dg/gnu-api-2-property.mm: New.
+	* obj-c++.dg/gnu-api-2-protocol.mm: New.
+	* obj-c++.dg/gnu-api-2-sel.mm: New.
+
 2010-10-17  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/fsf-package-0.m: New.

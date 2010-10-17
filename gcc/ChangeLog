@@ -1,3 +1,12 @@
+2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* doc/objc.texi (GNU Objective-C runtime API): New section.
+	(Modern GNU Objective-C runtime API): New section.
+	(Traditional GNU Objective-C runtime API): New section.
+	(Executing code before main): Mention that this section is
+	specific to the GNU Objective-C runtime.
+	(Garbage Collection): Same.
+
 2010-10-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* c-parser.c (c_parser_for_statement): Move initialization of
