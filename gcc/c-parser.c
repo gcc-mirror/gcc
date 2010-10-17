@@ -4568,15 +4568,12 @@ c_parser_for_statement (c_parser *parser)
   /* Open a compound statement in Objective-C as well, just in case this is
      as foreach expression.  */
   block = c_begin_compound_stmt (flag_isoc99 || c_dialect_objc ());
+  cond = error_mark_node;
+  incr = error_mark_node;
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       /* Parse the initialization declaration or expression.  */
-      cond = error_mark_node;
       object_expression = error_mark_node;
-      /* Initializing incr should not be necessary, but it avoids
-	 bogus warnings of uninitialized uses.  */
-      incr = error_mark_node;
-
       if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	{
 	  c_parser_consume_token (parser);
@@ -4693,11 +4690,6 @@ c_parser_for_statement (c_parser *parser)
 	    incr = c_process_expr_stmt (loc, c_parser_expression (parser).value);
 	}
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
-    }
-  else
-    {
-      cond = error_mark_node;
-      incr = error_mark_node;
     }
   save_break = c_break_label;
   c_break_label = NULL_TREE;

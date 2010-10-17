@@ -1,3 +1,8 @@
+2010-10-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* c-parser.c (c_parser_for_statement): Move initialization of
+	cond and incr before if.
+
 2010-10-17  Anatoly Sokolov  <aesok@post.ru>
 
 	* target.def (preferred_output_reload_class): New hook.
@@ -5,7 +10,7 @@
 	* doc/tm.texi: Regenerate.
 	* targhooks.c (default_preferred_output_reload_class): New function.
 	* targhooks.h (default_preferred_output_reload_class): Declare.
-	* reload.c (find_dummy_reload): Change rclass argument type from 
+	* reload.c (find_dummy_reload): Change rclass argument type from
 	enum reg_class to reg_class_t. Change this_alternative array type
 	from enum reg_class to reg_class_t.
 	Use TARGET_PREFERRED_OUTPUT_RELOAD_CLASS target hook.
@@ -17,7 +22,8 @@
 	* recog.h (reg_fits_class_p): Update prototype.
 
 	* config/i386/i386.h (PREFERRED_OUTPUT_RELOAD_CLASS): Remove.
-	* config/i386/i386-protos.h (ix86_preferred_output_reload_class): Remove.
+	* config/i386/i386-protos.h (ix86_preferred_output_reload_class):
+	Remove.
 	* config/i386/i386.c (ix86_preferred_output_reload_class): Make
 	static. Change regclass argument and result types from enum reg_class
 	to reg_class_t.
@@ -25,7 +31,7 @@
 
 2010-10-17  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* c-parser.c (c_parser_objc_class_instance_variables): Update to use 
+	* c-parser.c (c_parser_objc_class_instance_variables): Update to use
 	visibility enum, and handle @package.
 
 2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
@@ -44,7 +50,7 @@
 
 	* cgraph.c (dump_cgraph_node): Dump same_comdat_group,
 	only_called_at_startup and only_called_at_exit.
-	(cgraph_propagate_frequency): Compute only_called_at_startup and 
+	(cgraph_propagate_frequency): Compute only_called_at_startup and
 	only_called_at_exit.
 	* cgraph.h (struct cgraph_node): New fileds only_called_at_startup and
 	only_called_at_exit.
@@ -132,8 +138,7 @@
 	* hooks.c (hook_void_gcc_optionsp): New.
 	* hooks.h (hook_void_gcc_optionsp): Declare.
 	* langhooks-def.h (lhd_init_options_struct): Remove.
-	(LANG_HOOKS_INIT_OPTIONS_STRUCT): Define to
-	hook_void_gcc_optionsp.
+	(LANG_HOOKS_INIT_OPTIONS_STRUCT): Define to hook_void_gcc_optionsp.
 	* langhooks.c (lhd_init_options_struct): Remove.
 	* opts.c (init_options_struct): Also call
 	targetm.target_option.init_struct.
@@ -147,8 +152,7 @@
 	pdp11_option_init_struct.
 	* config/rs6000/rs6000.c (rs6000_option_optimization): Replace by
 	rs6000_option_init_struct.  Use options structure pointer.
-	(TARGET_OPTION_OPTIMIZATION): Replace by
-	TARGET_OPTION_INIT_STRUCT.
+	(TARGET_OPTION_OPTIMIZATION): Replace by TARGET_OPTION_INIT_STRUCT.
 	* config/s390/s390.c (s390_option_init_struct,
 	TARGET_OPTION_INIT_STRUCT): New.
 	(s390_option_optimization): Don't set
@@ -158,8 +162,7 @@
 	(sh_option_optimization): Don't set flag_finite_math_only here.
 	* config/spu/spu.c (spu_option_optimization): Replace by
 	spu_option_optimization.  Use options structure pointer.
-	(TARGET_OPTION_OPTIMIZATION): Replace by
-	TARGET_OPTION_INIT_STRUCT.
+	(TARGET_OPTION_OPTIMIZATION): Replace by TARGET_OPTION_INIT_STRUCT.
 
 2010-10-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
@@ -197,8 +200,7 @@
 
 	* config/rs6000/altivec.md (UNSPEC_VNMSUBFP): Delete.
 	(altivec_vmaddfp): Rewrite to use FMA rtl if no fused
-	multiply/add.  Rename combiner pattern, and add TARGET_FUSED_MADD
-	test.
+	multiply/add.  Rename combiner pattern, and add TARGET_FUSED_MADD test.
 	(altivec_vmaddfp_1): Ditto.
 	(altivec_vmaddfp_2): Ditto.
 	(atlivec_mulv4sf3): Ditto.
@@ -207,8 +209,7 @@
 	(altivec_vnmsubfp_2): Ditto.
 	(altivec_vnmsubfp_3): Delete.
 
-	* config/rs6000/rs6000.md (fmasf4): New insns for fma builtin
-	support.
+	* config/rs6000/rs6000.md (fmasf4): New insns for fma builtin support.
 	(fmasf4_fpr): Ditto.
 	(fmssf4_fpr): Ditto.
 	(fnmasf4_fpr): Ditto.
@@ -306,7 +307,7 @@
 
 2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
-	merge from FSF apple 'trunk' branch.
+	Merge from FSF apple 'trunk' branch.
 	2006 Fariborz Jahanian <fjahanian@apple.com>
 
 	Radars 4436866, 4505126, 4506903, 4517826
