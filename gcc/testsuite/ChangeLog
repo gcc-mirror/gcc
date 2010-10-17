@@ -1,3 +1,8 @@
+2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/18255
+	* objc.dg/pr18255.m: New.
+
 2010-10-16  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/44206
