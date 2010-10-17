@@ -63,7 +63,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       }
 
   template<typename _Tp, typename _Alloc>
-    void
+    _Fwd_list_node_base*
     _Fwd_list_base<_Tp, _Alloc>::
     _M_erase_after(_Fwd_list_node_base* __pos)
     {
@@ -71,10 +71,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       __pos->_M_next = __curr->_M_next;
       _M_get_Node_allocator().destroy(__curr);
       _M_put_node(__curr);
+      return __pos->_M_next;
     }
 
   template<typename _Tp, typename _Alloc>
-    void
+    _Fwd_list_node_base*
     _Fwd_list_base<_Tp, _Alloc>::
     _M_erase_after(_Fwd_list_node_base* __pos, 
                    _Fwd_list_node_base* __last)
@@ -88,8 +89,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
           _M_put_node(__temp);
         }
       __pos->_M_next = __last;
+      return __last;
     }
-  
+
   // Called by the range constructor to implement [23.1.1]/9
   template<typename _Tp, typename _Alloc>
     template<typename _InputIterator>

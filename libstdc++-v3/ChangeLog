@@ -1,5 +1,25 @@
 2010-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/forward_list.h (forward_list<>::erase_after): Return
+	an iterator.
+	(_M_erase_after): Return _Fwd_list_node_base*.
+	* include/bits/forward_list.tcc: Likewise.
+	* include/debug/forward_list: Likewise.
+	* testsuite/23_containers/forward_list/modifiers/3.cc: Update
+	and extend.
+	* testsuite/util/exception/safety.h (erase_base<forward_list<>>):
+	Adjust.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2010-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/43554
 	* include/profile/forward_list: New file.
 	* include/std/forward_list: Include <profile/forward_list>.

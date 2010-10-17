@@ -288,26 +288,27 @@ namespace __debug
 	return iterator(_Base::insert_after(__pos.base(), __il), this);
       }
 
-      void
+      iterator
       erase_after(const_iterator __pos)
       {
 	__glibcxx_check_erase_after(__pos);
 	const_iterator __victim = __pos;
 	++__victim;
 	__victim._M_invalidate();
-	_Base::erase_after(__pos.base());
+	return iterator(_Base::erase_after(__pos.base()), this);
       }
 
-      void
+      iterator
       erase_after(const_iterator __pos, const_iterator __last)
       {
 	__glibcxx_check_erase_range_after(__pos, __last);
 	for (const_iterator __victim = std::next(__pos); __victim != __last; )
 	  {
-	    const_iterator __old = __victim++;
+	    const_iterator __old = __victim;
+	    ++__victim;
 	    __old._M_invalidate();
 	  }
-	_Base::erase_after(__pos.base(), __last.base());
+	return iterator(_Base::erase_after(__pos.base(), __last.base()), this);
       }
 
       void
