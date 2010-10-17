@@ -265,10 +265,11 @@ namespace __gnu_test
       {
 	typedef std::forward_list<_Tp1, _Tp2> 		container_type;
 	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator 	const_iterator;
+	typedef typename container_type::const_iterator const_iterator;
 
-	void (container_type::* _F_erase_point)(const_iterator);
-	void (container_type::* _F_erase_range)(const_iterator, const_iterator);
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
 
 	erase_base()
 	: _F_erase_point(&container_type::erase_after),

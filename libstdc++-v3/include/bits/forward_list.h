@@ -364,10 +364,10 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _M_put_node(_Node* __p)
       { _M_get_Node_allocator().deallocate(__p, 1); }
 
-      void
+      _Fwd_list_node_base*
       _M_erase_after(_Fwd_list_node_base* __pos);
 
-      void
+      _Fwd_list_node_base*
       _M_erase_after(_Fwd_list_node_base* __pos, 
                      _Fwd_list_node_base* __last);
     };
@@ -924,6 +924,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  @brief  Removes the element pointed to by the iterator following
        *          @c pos.
        *  @param  pos  Iterator pointing before element to be erased.
+       *  @return  An iterator pointing to the element following the one
+       *           that was erased, or end() if no such element exists.
        *
        *  This function will erase the element at the given position and
        *  thus shorten the %forward_list by one.
@@ -935,9 +937,10 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  is itself a pointer, the pointed-to memory is not touched in
        *  any way.  Managing the pointer is the user's responsibility.
        */
-      void
+      iterator
       erase_after(const_iterator __pos)
-      { this->_M_erase_after(const_cast<_Node_base*>(__pos._M_node)); }
+      { return iterator(this->_M_erase_after(const_cast<_Node_base*>
+					     (__pos._M_node))); }
 
       /**
        *  @brief  Remove a range of elements.
@@ -945,6 +948,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *               erased.
        *  @param  last  Iterator pointing to one past the last element to be
        *                erased.
+       *  @return  @last.
        *
        *  This function will erase the elements in the range @a
        *  (pos,last) and shorten the %forward_list accordingly.
@@ -956,10 +960,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  pointed-to memory is not touched in any way.  Managing the pointer
        *  is the user's responsibility.
        */
-      void
+      iterator
       erase_after(const_iterator __pos, const_iterator __last)
-      { this->_M_erase_after(const_cast<_Node_base*>(__pos._M_node),
-			     const_cast<_Node_base*>(__last._M_node)); }
+      { return iterator(this->_M_erase_after(const_cast<_Node_base*>
+					     (__pos._M_node),
+					     const_cast<_Node_base*>
+					     (__last._M_node))); }
 
       /**
        *  @brief  Swaps data with another %forward_list.
