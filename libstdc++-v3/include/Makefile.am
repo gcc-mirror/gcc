@@ -800,6 +800,7 @@ profile_headers = \
 	${profile_srcdir}/vector \
 	${profile_srcdir}/bitset \
 	${profile_srcdir}/deque \
+	${profile_srcdir}/forward_list \
 	${profile_srcdir}/list \
 	${profile_srcdir}/map \
 	${profile_srcdir}/map.h \

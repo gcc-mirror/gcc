@@ -46,6 +46,10 @@
 # include <debug/forward_list>
 #endif
 
+#ifdef _GLIBCXX_PROFILE
+# include <profile/forward_list>
+#endif
+
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif // _GLIBCXX_FORWARD_LIST

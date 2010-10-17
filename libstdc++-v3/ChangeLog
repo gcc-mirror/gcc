@@ -1,3 +1,12 @@
+2010-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/43554
+	* include/profile/forward_list: New file.
+	* include/std/forward_list: Include <profile/forward_list>.
+	* include/Makefile.am: Add.
+	* testsuite/23_containers/forward_list/capacity/1.cc: Adjust.
+	* include/Makefile.in: Regenerate.
+
 2010-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/functional (function<>::operator==, operator!=):
