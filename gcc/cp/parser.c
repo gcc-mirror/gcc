@@ -12753,7 +12753,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       /* As a last-ditch effort, see if TYPE is an Objective-C type.
 	 If it is, then the '<'...'>' enclose protocol names rather than
 	 template arguments, and so everything is fine.  */
-      if (c_dialect_objc ()
+      if (c_dialect_objc () && !parser->scope
 	  && (objc_is_id (type) || objc_is_class_name (type)))
 	{
 	  tree protos = cp_parser_objc_protocol_refs_opt (parser);
