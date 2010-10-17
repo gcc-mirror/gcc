@@ -1,3 +1,12 @@
+2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* init.c (objc_send_load): Do not wait for NXConstantString to be
+	registered before executing +load.  There is no point if
+	-fconstant-string-class=xxx is used when compiling all modules,
+	as is the case for almost all users.
+	* linking.m (__objc_linking): Do not try to forcefully link in
+	NXConstantString.
+	
 2010-10-16  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/runtime.h: Updated comments.

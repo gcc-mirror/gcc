@@ -444,8 +444,7 @@ class_is_subclass_of_class (Class class, Class superclass)
    their superclasses are not yet known to the runtime.  */
 static struct objc_list *unresolved_classes = 0;
 
-/* Extern function used to reference the Object and NXConstantString
-   classes.  */
+/* Extern function used to reference the Object class.  */
 
 extern void __objc_force_linking (void);
 
@@ -755,11 +754,9 @@ objc_send_load (void)
 	return;
     }
 
-  /* Special check to allow creating and sending messages to constant
-     strings in +load methods. If these classes are not yet known,
-     even if all the other classes are known, delay sending of +load.  */
-  if (! objc_lookup_class ("NXConstantString") ||
-      ! objc_lookup_class ("Object"))
+  /* Special check.  If 'Object', which is used by meta-classes, has
+     not been loaded yet, delay sending of +load.  */
+  if (! objc_lookup_class ("Object"))
     return;
 
   /* Iterate over all modules in the __objc_module_list and call on

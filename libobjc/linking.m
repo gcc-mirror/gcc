@@ -27,12 +27,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <objc/Object.h>
 #include <objc/NXConstStr.h>
 
-/* Generate references to Object and NXConstanstString classes since they are
-   needed by the runtime system to run correctly.  */
+/* Generate references to Object class since it is needed by the
+   runtime system to run correctly.  */
 
 void __objc_linking (void)
 {
   [Object name];
-  [NXConstantString name];
 }
 

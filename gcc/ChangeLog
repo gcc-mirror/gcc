@@ -1,3 +1,9 @@
+2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* doc/objc.texi (What you can and what you cannot do in +load):
+	Document that sending messages to constant string objects in +load
+	is not guaranteed to work.
+
 2010-10-16  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/44206
