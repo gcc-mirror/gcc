@@ -1,3 +1,8 @@
+2010-10-17  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc.dg/fsf-package-0.m: New.
+	* obj-c++.dg/fsf-package-0.m: New.
+
 2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/18255

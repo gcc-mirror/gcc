@@ -1,3 +1,12 @@
+2010-10-17  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* c-common.c (c_common_reswords): Add package, RID_AT_PACKAGE.
+	* c-common.h (enum rid): Add RID_AT_PACKAGE.
+	(objc_ivar_visibility_kind): New enum.
+	(objc_set_visibility): Adjust prototype to use visibility enum.
+	* stub-objc.c (objc_set_visibility): Adjust stub to use 
+	visibility enum.
+
 2010-10-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* c-cppbuiltin.c (builtin_define_float_constants): Emit

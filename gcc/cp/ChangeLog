@@ -1,3 +1,8 @@
+2010-10-17  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* parser.c (cp_parser_objc_visibility_spec): Update to use visibility 
+	enum, and handle @package.
+
 2010-10-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/45983
