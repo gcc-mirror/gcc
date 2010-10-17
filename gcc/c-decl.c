@@ -2961,7 +2961,8 @@ undeclared_variable (location_t loc, tree id)
     }
   else
     {
-      error_at (loc, "%qE undeclared (first use in this function)", id);
+      if (!objc_diagnose_private_ivar (id))
+        error_at (loc, "%qE undeclared (first use in this function)", id);
       if (!already)
 	{
           inform (loc, "each undeclared identifier is reported only"
