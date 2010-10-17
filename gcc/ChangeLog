@@ -1,3 +1,12 @@
+2010-10-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46051
+	* config/i386/sse.md (vec_interleave_highv4df): Fix third RTX of
+	generated sequence to match *avx_vperm2f128<mode>_nozero.
+	(vec_interleave_lowv4df): Ditto.
+	(vec_interleave_highv8sf): Ditto.
+	(vec_interleave_lowv8sf): Ditto.
+
 2010-10-17  Kai Tietz  <kai.tietz@onevision.com>
 
 	* libgcov.c (create_file_directory): Enable it for win32 case.
