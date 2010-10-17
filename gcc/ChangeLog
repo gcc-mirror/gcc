@@ -1,3 +1,10 @@
+2010-10-17  Kai Tietz  <kai.tietz@onevision.com>
+
+	* libgcov.c (create_file_directory): Enable it for win32 case.
+	(gcov_exit): De-couple GCOV_PREFIX and GCOV_PREFIX_STRIP.
+	* doc/gcov.texi (GCOV_PREFIX): Adjusted.
+	(GCOV_PREFIX_SKIP): Likewise.
+
 2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* doc/objc.texi (GNU Objective-C runtime API): New section.

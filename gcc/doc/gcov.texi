@@ -554,15 +554,15 @@ can relocate the data files based on two environment variables:
 @itemize @bullet
 @item
 GCOV_PREFIX contains the prefix to add to the absolute paths 
-in the object file. Prefix must be absolute as well, otherwise its 
-value is ignored. The default is no prefix.
+in the object file. Prefix can be absolute, or relative.  The
+default is no prefix.
 
 @item
 GCOV_PREFIX_STRIP indicates the how many initial directory names to strip off
 the hardwired absolute paths. Default value is 0.
 
-@emph{Note:} GCOV_PREFIX_STRIP has no effect if GCOV_PREFIX is undefined, empty
-or non-absolute.
+@emph{Note:} If GCOV_PREFIX_STRIP is set without GCOV_PREFIX is undefined,
+ then a relative path is made out of the hardwired absolute paths.
 @end itemize
 
 For example, if the object file @file{/user/build/foo.o} was built with
