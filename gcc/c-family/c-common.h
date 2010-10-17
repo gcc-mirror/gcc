@@ -987,6 +987,7 @@ extern void objc_check_global_decl (tree);
 extern tree objc_common_type (tree, tree);
 extern bool objc_compare_types (tree, tree, int, tree);
 extern bool objc_have_common_type (tree, tree, int, tree);
+extern bool objc_diagnose_private_ivar (tree);
 extern void objc_volatilize_decl (tree);
 extern bool objc_type_quals_match (tree, tree);
 extern tree objc_rewrite_function_call (tree, tree);

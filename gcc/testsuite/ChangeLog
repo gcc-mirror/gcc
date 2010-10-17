@@ -1,3 +1,13 @@
+2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2006-03-27 Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4133425
+	* objc.dg/private-1.m: Test modified.
+	* obj-c++.dg/private-1.mm: Test modified.
+	
 2010-10-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/45987

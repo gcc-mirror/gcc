@@ -1,3 +1,13 @@
+2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.		
+
+	2006-03-27 Fariborz Jahanian <fjahanian@apple.com>
+
+        Radar 4133425
+	* c-common.h (objc_diagnose_private_ivar): New decl.
+	* stub-objc.c (objc_diagnose_private_ivar): New stub.	
+
 2010-10-17  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* c-common.c (c_common_reswords): Add package, RID_AT_PACKAGE.

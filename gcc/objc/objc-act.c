@@ -10821,6 +10821,25 @@ generate_objc_image_info (void)
   finish_var_decl (decl, objc_build_constructor (TREE_TYPE (decl), v));
 }
 
+/* Routine is called to issue diagnostic when reference to a private 
+   ivar is made and no other variable with same name is found in 
+   current scope.  */
+bool
+objc_diagnose_private_ivar (tree id)
+{
+  tree ivar;
+  if (!objc_method_context)
+    return false;
+  ivar = is_ivar (objc_ivar_chain, id);
+  if (ivar && is_private (ivar))
+    {
+      error ("instance variable %qs is declared private", 
+	     IDENTIFIER_POINTER (id));
+      return true;
+    }
+  return false;
+}
+
 /* Look up ID as an instance variable.  OTHER contains the result of
    the C or C++ lookup, which we may want to use instead.  */
 /* Also handle use of property as setter/getter. */

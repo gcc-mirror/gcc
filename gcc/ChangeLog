@@ -1,3 +1,13 @@
+2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+	
+	2006-03-27 Fariborz Jahanian <fjahanian@apple.com>
+
+        Radar 4133425
+	* c-decl.c (undeclared_variable): Issue diagnostic on
+	private 'ivar' access.
+	
 2010-10-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46051
