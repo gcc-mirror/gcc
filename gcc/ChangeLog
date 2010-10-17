@@ -1,3 +1,8 @@
+2010-10-17  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* c-parser.c (c_parser_objc_class_instance_variables): Update to use 
+	visibility enum, and handle @package.
+
 2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* doc/objc.texi (What you can and what you cannot do in +load):

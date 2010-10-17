@@ -143,7 +143,7 @@ enum rid
      they follow '@')  */
   RID_AT_ENCODE,   RID_AT_END,
   RID_AT_CLASS,    RID_AT_ALIAS,     RID_AT_DEFS,
-  RID_AT_PRIVATE,  RID_AT_PROTECTED, RID_AT_PUBLIC,
+  RID_AT_PRIVATE,  RID_AT_PROTECTED, RID_AT_PUBLIC,  RID_AT_PACKAGE,
   RID_AT_PROTOCOL, RID_AT_SELECTOR,
   RID_AT_THROW,	   RID_AT_TRY,       RID_AT_CATCH,
   RID_AT_FINALLY,  RID_AT_SYNCHRONIZED, 
@@ -439,6 +439,14 @@ typedef enum objc_property_attribute_kind {
   OBJC_PATTR_IVAR	= 4,
   OBJC_PATTR_COPIES	= 5
 } objc_property_attribute_kind;
+
+/* ObjC ivar visibility types.  */
+typedef enum objc_ivar_visibility_kind {
+  OBJC_IVAR_VIS_PROTECTED = 0,
+  OBJC_IVAR_VIS_PUBLIC    = 1,
+  OBJC_IVAR_VIS_PRIVATE   = 2,
+  OBJC_IVAR_VIS_PACKAGE   = 3
+} objc_ivar_visibility_kind;
 
 /* The various name of operator that appears in error messages. */
 typedef enum ref_operator {
@@ -1009,7 +1017,7 @@ extern void objc_start_class_implementation (tree, tree);
 extern void objc_start_category_implementation (tree, tree);
 extern void objc_continue_implementation (void);
 extern void objc_finish_implementation (void);
-extern void objc_set_visibility (int);
+extern void objc_set_visibility (objc_ivar_visibility_kind);
 extern void objc_set_method_type (enum tree_code);
 extern tree objc_build_method_signature (tree, tree, tree, bool);
 extern void objc_add_method_declaration (tree, tree);

@@ -6703,19 +6703,25 @@ c_parser_objc_class_instance_variables (c_parser *parser)
       if (c_parser_next_token_is_keyword (parser, RID_AT_PRIVATE))
 	{
 	  c_parser_consume_token (parser);
-	  objc_set_visibility (2);
+	  objc_set_visibility (OBJC_IVAR_VIS_PRIVATE);
 	  continue;
 	}
       else if (c_parser_next_token_is_keyword (parser, RID_AT_PROTECTED))
 	{
 	  c_parser_consume_token (parser);
-	  objc_set_visibility (0);
+	  objc_set_visibility (OBJC_IVAR_VIS_PROTECTED);
 	  continue;
 	}
       else if (c_parser_next_token_is_keyword (parser, RID_AT_PUBLIC))
 	{
 	  c_parser_consume_token (parser);
-	  objc_set_visibility (1);
+	  objc_set_visibility (OBJC_IVAR_VIS_PUBLIC);
+	  continue;
+	}
+      else if (c_parser_next_token_is_keyword (parser, RID_AT_PACKAGE))
+	{
+	  c_parser_consume_token (parser);
+	  objc_set_visibility (OBJC_IVAR_VIS_PACKAGE);
 	  continue;
 	}
       else if (c_parser_next_token_is (parser, CPP_PRAGMA))

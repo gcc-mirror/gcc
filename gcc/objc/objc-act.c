@@ -150,7 +150,7 @@ static void objc_start_function (tree, tree, tree, struct c_arg_info *);
 static tree start_protocol (enum tree_code, tree, tree);
 static tree build_method_decl (enum tree_code, tree, tree, tree, bool);
 static tree objc_add_method (tree, tree, int, bool);
-static tree add_instance_variable (tree, int, tree);
+static tree add_instance_variable (tree, objc_ivar_visibility_kind, tree);
 static tree build_ivar_reference (tree);
 static tree is_ivar (tree, tree);
 
@@ -385,7 +385,7 @@ int imp_count = 0;	/* `@implementation' */
 int cat_count = 0;	/* `@category' */
 
 enum tree_code objc_inherit_code;
-int objc_public_flag;
+objc_ivar_visibility_kind objc_ivar_visibility;
 
 /* Use to generate method labels.  */
 static int method_slot = 0;
@@ -734,7 +734,7 @@ objc_start_class_interface (tree klass, tree super_class,
   objc_interface_context
     = objc_ivar_context
     = start_class (CLASS_INTERFACE_TYPE, klass, super_class, protos);
-  objc_public_flag = 0;
+  objc_ivar_visibility = OBJC_IVAR_VIS_PROTECTED;
 }
 
 void
@@ -784,7 +784,7 @@ objc_start_class_implementation (tree klass, tree super_class)
   objc_implementation_context
     = objc_ivar_context
     = start_class (CLASS_IMPLEMENTATION_TYPE, klass, super_class, NULL_TREE);
-  objc_public_flag = 0;
+  objc_ivar_visibility = OBJC_IVAR_VIS_PROTECTED;
 }
 
 void
@@ -822,9 +822,11 @@ objc_finish_implementation (void)
 }
 
 void
-objc_set_visibility (int visibility)
+objc_set_visibility (objc_ivar_visibility_kind visibility)
 {
-  objc_public_flag = visibility;
+  if (visibility == OBJC_IVAR_VIS_PACKAGE)
+    warning (0, "%<@package%> presently has the same effect as %<@public%>");
+  objc_ivar_visibility = visibility;
 }
 
 void
@@ -1352,7 +1354,7 @@ void
 objc_add_instance_variable (tree decl)
 {
   (void) add_instance_variable (objc_ivar_context,
-				objc_public_flag,
+				objc_ivar_visibility,
 				decl);
 }
 
@@ -2592,7 +2594,7 @@ string_eq (const void *ptr1, const void *ptr2)
 tree
 objc_build_string_object (tree string)
 {
-  tree constructor, constant_string_class;
+  tree constructor = NULL_TREE, constant_string_class;
   int length;
   tree fields, addr;
   struct string_descriptor *desc, key;
@@ -7795,7 +7797,8 @@ add_category (tree klass, tree category)
    VISIBILITY is 1 for public, 0 for protected, and 2 for private.  */
 
 static tree
-add_instance_variable (tree klass, int visibility, tree field_decl)
+add_instance_variable (tree klass, objc_ivar_visibility_kind visibility, 
+		       tree field_decl)
 {
   tree field_type = TREE_TYPE (field_decl);
   const char *ivar_name = DECL_NAME (field_decl)
@@ -7887,19 +7890,21 @@ add_instance_variable (tree klass, int visibility, tree field_decl)
   /* Overload the public attribute, it is not used for FIELD_DECLs.  */
   switch (visibility)
     {
-    case 0:
+    case OBJC_IVAR_VIS_PROTECTED:
       TREE_PUBLIC (field_decl) = 0;
       TREE_PRIVATE (field_decl) = 0;
       TREE_PROTECTED (field_decl) = 1;
       break;
 
-    case 1:
+    case OBJC_IVAR_VIS_PACKAGE:
+    /* TODO: Implement the package variant.  */
+    case OBJC_IVAR_VIS_PUBLIC:
       TREE_PUBLIC (field_decl) = 1;
       TREE_PRIVATE (field_decl) = 0;
       TREE_PROTECTED (field_decl) = 0;
       break;
 
-    case 2:
+    case OBJC_IVAR_VIS_PRIVATE:
       TREE_PUBLIC (field_decl) = 0;
       TREE_PRIVATE (field_decl) = 1;
       TREE_PROTECTED (field_decl) = 0;
@@ -8520,7 +8525,7 @@ objc_gen_one_property_datum (tree klass, tree property, tree class_methods, bool
 				      objc_build_property_ivar_name (property));
       DECL_CONTEXT (field_decl) = record;
       (void) add_instance_variable (klass, 
-				    1, field_decl);
+				    OBJC_IVAR_VIS_PUBLIC, field_decl);
       /* Unfortunately, CLASS_IVARS is completed when interface is completed.
 	 Must add the new ivar by hand to its list here. */
       

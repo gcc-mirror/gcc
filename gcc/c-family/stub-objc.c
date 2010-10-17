@@ -163,7 +163,7 @@ objc_add_instance_variable (tree ARG_UNUSED (decl))
 }
 
 void
-objc_set_visibility (int ARG_UNUSED (vis))
+objc_set_visibility (objc_ivar_visibility_kind ARG_UNUSED (vis))
 {
 }
 
