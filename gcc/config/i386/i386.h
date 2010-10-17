@@ -1373,12 +1373,6 @@ enum reg_class
        || (CLASS) == LEGACY_REGS || (CLASS) == INDEX_REGS)	\
    ? Q_REGS : (CLASS))
 
-/* Discourage putting floating-point values in SSE registers unless
-   SSE math is being used, and likewise for the 387 registers.  */
-
-#define PREFERRED_OUTPUT_RELOAD_CLASS(X, CLASS) \
-   ix86_preferred_output_reload_class ((X), (CLASS))
-
 /* If we are copying between general and FP registers, we need a memory
    location. The same is true for SSE and MMX registers.  */
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \

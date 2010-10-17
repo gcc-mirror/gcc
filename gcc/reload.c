@@ -264,7 +264,7 @@ static void combine_reloads (void);
 static int find_reusable_reload (rtx *, rtx, enum reg_class,
 				 enum reload_type, int, int);
 static rtx find_dummy_reload (rtx, rtx, rtx *, rtx *, enum machine_mode,
-			      enum machine_mode, enum reg_class, int, int);
+			      enum machine_mode, reg_class_t, int, int);
 static int hard_reg_set_here_p (unsigned int, unsigned int, rtx);
 static struct decomposition decompose (rtx);
 static int immune_p (rtx, rtx, struct decomposition);
@@ -1224,21 +1224,20 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
   /* Narrow down the class of register wanted if that is
      desirable on this machine for efficiency.  */
   {
-    enum reg_class preferred_class = rclass;
+    reg_class_t preferred_class = rclass;
 
     if (in != 0)
-      preferred_class = (enum reg_class) targetm.preferred_reload_class (in, rclass);
+      preferred_class = targetm.preferred_reload_class (in, rclass);
 
-  /* Output reloads may need analogous treatment, different in detail.  */
-#ifdef PREFERRED_OUTPUT_RELOAD_CLASS
+    /* Output reloads may need analogous treatment, different in detail.  */
     if (out != 0)
-      preferred_class = PREFERRED_OUTPUT_RELOAD_CLASS (out, preferred_class);
-#endif
+      preferred_class
+	= targetm.preferred_output_reload_class (out, preferred_class);
 
     /* Discard what the target said if we cannot do it.  */
     if (preferred_class != NO_REGS
 	|| (optional && type == RELOAD_FOR_OUTPUT))
-      rclass = preferred_class;
+      rclass = (enum reg_class) preferred_class;
   }
 
   /* Make sure we use a class that can handle the actual pseudo
@@ -1920,7 +1919,7 @@ combine_reloads (void)
 static rtx
 find_dummy_reload (rtx real_in, rtx real_out, rtx *inloc, rtx *outloc,
 		   enum machine_mode inmode, enum machine_mode outmode,
-		   enum reg_class rclass, int for_real, int earlyclobber)
+		   reg_class_t rclass, int for_real, int earlyclobber)
 {
   rtx in = real_in;
   rtx out = real_out;
@@ -2588,7 +2587,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
   enum reload_usage { RELOAD_READ, RELOAD_READ_WRITE, RELOAD_WRITE } modified[MAX_RECOG_OPERANDS];
   int no_input_reloads = 0, no_output_reloads = 0;
   int n_alternatives;
-  enum reg_class this_alternative[MAX_RECOG_OPERANDS];
+  reg_class_t this_alternative[MAX_RECOG_OPERANDS];
   char this_alternative_match_win[MAX_RECOG_OPERANDS];
   char this_alternative_win[MAX_RECOG_OPERANDS];
   char this_alternative_offmemok[MAX_RECOG_OPERANDS];
@@ -3539,13 +3538,11 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		      == NO_REGS)
 		    reject = 600;
 
-#ifdef PREFERRED_OUTPUT_RELOAD_CLASS
 		  if (operand_type[i] == RELOAD_FOR_OUTPUT
-		      && (PREFERRED_OUTPUT_RELOAD_CLASS (operand,
-							this_alternative[i])
+		      && (targetm.preferred_output_reload_class (operand,
+								 this_alternative[i])
 			  == NO_REGS))
 		    reject = 600;
-#endif
 		}
 
 	      /* We prefer to reload pseudos over reloading other things,
@@ -3696,7 +3693,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	    {
 	      goal_alternative_win[i] = this_alternative_win[i];
 	      goal_alternative_match_win[i] = this_alternative_match_win[i];
-	      goal_alternative[i] = (reg_class_t) this_alternative[i];
+	      goal_alternative[i] = this_alternative[i];
 	      goal_alternative_offmemok[i] = this_alternative_offmemok[i];
 	      goal_alternative_matches[i] = this_alternative_matches[i];
 	      goal_alternative_earlyclobber[i]
@@ -3723,7 +3720,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	    {
 	      for (i = 0; i < noperands; i++)
 		{
-		  goal_alternative[i] = (reg_class_t) this_alternative[i];
+		  goal_alternative[i] = this_alternative[i];
 		  goal_alternative_win[i] = this_alternative_win[i];
 		  goal_alternative_match_win[i]
 		    = this_alternative_match_win[i];

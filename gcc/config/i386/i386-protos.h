@@ -153,7 +153,6 @@ extern bool ix86_secondary_memory_needed (enum reg_class, enum reg_class,
 					  enum machine_mode, int);
 extern bool ix86_cannot_change_mode_class (enum machine_mode,
 					   enum machine_mode, enum reg_class);
-extern enum reg_class ix86_preferred_output_reload_class (rtx, enum reg_class);
 extern int ix86_mode_needed (int, rtx);
 extern void emit_i387_cw_initialization (int);
 extern void x86_order_regs_for_local_alloc (void);
