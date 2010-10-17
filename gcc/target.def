@@ -2042,6 +2042,15 @@ DEFHOOK
  (rtx x, reg_class_t rclass),
  default_preferred_reload_class)
 
+/* Like TARGET_PREFERRED_RELOAD_CLASS, but for output reloads instead of
+   input reloads.  */
+DEFHOOK
+(preferred_output_reload_class,
+ "",
+ reg_class_t,
+ (rtx x, reg_class_t rclass),
+ default_preferred_output_reload_class)
+
 DEFHOOK
 (class_likely_spilled_p,
  "",

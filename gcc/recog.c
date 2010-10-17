@@ -2751,21 +2751,21 @@ constrain_operands (int strict)
     return 0;
 }
 
-/* Return 1 iff OPERAND (assumed to be a REG rtx)
+/* Return true iff OPERAND (assumed to be a REG rtx)
    is a hard reg in class CLASS when its regno is offset by OFFSET
    and changed to mode MODE.
    If REG occupies multiple hard regs, all of them must be in CLASS.  */
 
-int
-reg_fits_class_p (rtx operand, enum reg_class cl, int offset,
+bool
+reg_fits_class_p (const_rtx operand, reg_class_t cl, int offset,
 		  enum machine_mode mode)
 {
   int regno = REGNO (operand);
 
   if (cl == NO_REGS)
-    return 0;
+    return false;
 
-  return (regno < FIRST_PSEUDO_REGISTER
+  return (HARD_REGISTER_NUM_P (regno)
 	  && in_hard_reg_set_p (reg_class_contents[(int) cl],
 				mode, regno + offset));
 }

@@ -1,3 +1,28 @@
+2010-10-17  Anatoly Sokolov  <aesok@post.ru>
+
+	* target.def (preferred_output_reload_class): New hook.
+	* doc/tm.texi.in (TARGET_PREFERRED_OUTPUT_RELOAD_CLASS): Document.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_preferred_output_reload_class): New function.
+	* targhooks.h (default_preferred_output_reload_class): Declare.
+	* reload.c (find_dummy_reload): Change rclass argument type from 
+	enum reg_class to reg_class_t. Change this_alternative array type
+	from enum reg_class to reg_class_t.
+	Use TARGET_PREFERRED_OUTPUT_RELOAD_CLASS target hook.
+	(push_reload): Change preferred_class variable type to reg_class_t.
+	Use TARGET_PREFERRED_OUTPUT_RELOAD_CLASS target hook.
+	* recog.c (reg_fits_class_p): Change result type to bool. Change cl
+	argument type from enum reg_class to reg_class_t. Use
+	HARD_REGISTER_NUM_P predicate.
+	* recog.h (reg_fits_class_p): Update prototype.
+
+	* config/i386/i386.h (PREFERRED_OUTPUT_RELOAD_CLASS): Remove.
+	* config/i386/i386-protos.h (ix86_preferred_output_reload_class): Remove.
+	* config/i386/i386.c (ix86_preferred_output_reload_class): Make
+	static. Change regclass argument and result types from enum reg_class
+	to reg_class_t.
+	(TARGET_PREFERRED_OUTPUT_RELOAD_CLASS): Define.
+
 2010-10-17  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* c-parser.c (c_parser_objc_class_instance_variables): Update to use 
