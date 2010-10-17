@@ -9,10 +9,11 @@
 @chapter GNU Objective-C features
 
 This document is meant to describe some of the GNU Objective-C
-features.  It is not intended to teach you Objective-C, there are
+features.  It is not intended to teach you Objective-C.  There are
 several resources on the Internet that present the language.
 
 @menu
+* GNU Objective-C runtime API::
 * Executing code before main::
 * Type encoding::
 * Garbage Collection::
@@ -23,8 +24,123 @@ several resources on the Internet that present the language.
 * Fast enumeration::
 @end menu
 
+@c =========================================================================
+@node GNU Objective-C runtime API
+@section GNU Objective-C runtime API
+
+This section is specific for the GNU Objective-C runtime.  If you are
+using a different runtime, you can skip it.
+
+The GNU Objective-C runtime provides an API that allows you to
+interact with the Objective-C runtime system, querying the live
+runtime structures and even manipulating them.  This allows you for
+example to inspect and navigate classes, methods and protocols; to
+define new classes or new methods, and even to modify existing classes
+or protocols.
+
+If you are using a ``Foundation'' library such as GNUstep-Base, this
+library will provide you with a rich set of functionality to do most
+of the inspection tasks, and you probably will only need direct access
+to the GNU Objective-C runtime API to define new classes or methods.
+
+@menu
+* Modern GNU Objective-C runtime API::
+* Traditional GNU Objective-C runtime API::
+@end menu
+
+@c =========================================================================
+@node Modern GNU Objective-C runtime API
+@subsection Modern GNU Objective-C runtime API
+
+The GNU Objective-C runtime provides an API which is similar to the
+one provided by the ``Objective-C 2.0'' Apple/NeXT Objective-C
+runtime.  The API is documented in the public header files of the GNU
+Objective-C runtime:
+
+@itemize @bullet
+
+@item
+@file{objc/objc.h}: this is the basic Objective-C header file,
+defining the basic Objective-C types such as @code{id}, @code{Class}
+and @code{BOOL}.  You have to include this header to do almost
+anything with Objective-C.
+
+@item
+@file{objc/runtime.h}: this header declares most of the public runtime
+API functions allowing you to inspect and manipulate the Objective-C
+runtime data structures.  These functions are fairly standardized
+across Objective-C runtimes and are almost identical to the Apple/NeXT
+Objective-C runtime ones.  It does not declare functions in some
+specialized areas (constructing and forwarding message invocations,
+threading) which are in the other headers below.  You have to include
+@file{objc/objc.h} and @file{objc/runtime.h} to use any of the
+functions, such as @code{class_getName()}, declared in
+@file{objc/runtime.h}.
+
+@item
+@file{objc/message.h}: this header declares public functions used to
+construct, deconstruct and forward message invocations.  Because
+messaging is done in quite a different way on different runtimes,
+functions in this header are specific to the GNU Objective-C runtime
+implementation.
+
+@item
+@file{objc/objc-exception.h}: this header declares some public
+functions related to Objective-C exceptions.  For example functions in
+this header allow you to throw an Objective-C exception from plain
+C/C++ code.
+
+@item
+@file{objc/objc-sync.h}: this header declares some public functions
+related to the Objective-C @code{@@synchronized()} syntax, allowing
+you to emulate an Objective-C @code{@@synchronized()} block in plain
+C/C++ code.
+
+@item
+@file{objc/thr.h}: this header declares a public runtime API threading
+layer that is only provided by the GNU Objective-C runtime.  It
+declares functions such as @code{objc_mutex_lock()}, which provide a
+platform-independent set of threading functions.
+
+@end itemize
+
+@c =========================================================================
+@node Traditional GNU Objective-C runtime API
+@subsection Traditional GNU Objective-C runtime API
+
+The GNU Objective-C runtime used to provide a different API, which we
+call the ``traditional'' GNU Objective-C runtime API.  Functions
+belonging to this API are easy to recognize because they use a
+different naming convention, such as @code{class_get_super_class()}
+(traditional API) instead of @code{class_getSuperclass()} (modern
+API).  Software using this API includes the file
+@file{objc/objc-api.h} where it is declared.
+
+The traditional API is deprecated but it is still supported in this
+release of the runtime; you can access it as usual by including
+@file{objc/objc-api.h}.
+
+If you are using the traditional API you are urged to upgrade your
+software to use the modern API because the traditional API requires
+access to private runtime internals to do anything serious with it;
+for this reason, there is no guarantee that future releases of the GNU
+Objective-C runtime library will be able to provide a fully compatible
+@file{objc/objc-api.h} as the private runtime internals change.  It is
+expected that the next release will hide a number of runtime internals
+making the traditional API nominally supported but fairly useless
+beyond very simple use cases.
+
+Finally, you can not include both @file{objc/objc-api.h} and
+@file{objc/runtime.h} at the same time.  The traditional and modern
+APIs unfortunately have some conflicting declarations (such as the one
+for @code{Method}) and can not be used at the same time.
+
+@c =========================================================================
 @node Executing code before main
 @section @code{+load}: Executing code before main
+
+This section is specific for the GNU Objective-C runtime.  If you are
+using a different runtime, you can skip it.
 
 The GNU Objective-C runtime provides a way that allows you to execute
 code before the execution of the program enters the @code{main}
@@ -479,6 +595,9 @@ of Objective-C methods.
 
 @node Garbage Collection
 @section Garbage Collection
+
+This section is specific for the GNU Objective-C runtime.  If you are
+using a different runtime, you can skip it.
 
 Support for garbage collection with the GNU runtime has been added by
 using a powerful conservative garbage collector, known as the

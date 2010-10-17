@@ -50,6 +50,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc.h"
 #include "objc-decls.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* An 'Ivar' represents an instance variable.  It holds information
    about the name, type and offset of the instance variable.  */
 typedef struct objc_ivar *Ivar;
@@ -1041,5 +1045,9 @@ void objc_layout_structure_get_info (struct objc_struct_layout *layout,
                                      unsigned int *offset,
                                      unsigned int *align,
                                      const char **type);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif
