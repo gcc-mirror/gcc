@@ -107,8 +107,14 @@ instead of @code{+initialize}.
 @node What you can and what you cannot do in +load
 @subsection What you can and what you cannot do in @code{+load}
 
-The @code{+load} implementation in the GNU runtime guarantees you the following
-things:
+@code{+load} is to be used only as a last resort.  Because it is
+executed very early, most of the Objective-C runtime machinery will
+not be ready when @code{+load} is executed; hence @code{+load} works
+best for executing C code that is independent on the Objective-C
+runtime.
+
+The @code{+load} implementation in the GNU runtime guarantees you the
+following things:
 
 @itemize @bullet
 
@@ -116,15 +122,12 @@ things:
 you can write whatever C code you like;
 
 @item
-you can send messages to Objective-C constant strings (@code{@@"this is a
-constant string"});
-
-@item
 you can allocate and send messages to objects whose class is implemented
 in the same file;
 
 @item
-the @code{+load} implementation of all super classes of a class are executed before the @code{+load} of that class is executed;
+the @code{+load} implementation of all super classes of a class are
+executed before the @code{+load} of that class is executed;
 
 @item
 the @code{+load} implementation of a class is executed before the
@@ -143,6 +146,10 @@ allocation of or sending messages to arbitrary objects;
 @item
 allocation of or sending messages to objects whose classes have a
 category implemented in the same file;
+
+@item
+sending messages to Objective-C constant strings (@code{@@"this is a
+constant string"});
 
 @end itemize
 
