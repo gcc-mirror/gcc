@@ -3574,15 +3574,14 @@
 		     (const_int 6) (const_int 14)
 		     (const_int 7) (const_int 15)])))
    (set (match_operand:V8SF 0 "register_operand" "")
-	(vec_concat:V8SF
-	  (vec_select:V4SF
+	(vec_select:V8SF
+	  (vec_concat:V16SF
 	    (match_dup 3)
-	    (parallel [(const_int 4) (const_int 5)
-		       (const_int 6) (const_int 7)]))
-	  (vec_select:V4SF
-	    (match_dup 4)
-	    (parallel [(const_int 4) (const_int 5)
-		       (const_int 6) (const_int 7)]))))]
+	    (match_dup 4))
+	  (parallel [(const_int 4) (const_int 5)
+		     (const_int 6) (const_int 7)
+		     (const_int 12) (const_int 13)
+		     (const_int 14) (const_int 15)])))]
  "TARGET_AVX"
 {
   operands[3] = gen_reg_rtx (V8SFmode);
@@ -3653,15 +3652,14 @@
 		     (const_int 6) (const_int 14)
 		     (const_int 7) (const_int 15)])))
    (set (match_operand:V8SF 0 "register_operand" "")
-	(vec_concat:V8SF
-	  (vec_select:V4SF
+	(vec_select:V8SF
+	  (vec_concat:V16SF
 	    (match_dup 3)
-	    (parallel [(const_int 0) (const_int 1)
-		       (const_int 2) (const_int 3)]))
-	  (vec_select:V4SF
-	    (match_dup 4)
-	    (parallel [(const_int 0) (const_int 1)
-		       (const_int 2) (const_int 3)]))))]
+	    (match_dup 4))
+	  (parallel [(const_int 0) (const_int 1)
+		     (const_int 2) (const_int 3)
+		     (const_int 8) (const_int 9)
+		     (const_int 10) (const_int 11)])))]
  "TARGET_AVX"
 {
   operands[3] = gen_reg_rtx (V8SFmode);
@@ -4583,13 +4581,12 @@
 	  (parallel [(const_int 1) (const_int 5)
 		     (const_int 3) (const_int 7)])))
    (set (match_operand:V4DF 0 "register_operand" "")
-	(vec_concat:V4DF
-	  (vec_select:V2DF
+	(vec_select:V4DF
+	  (vec_concat:V8DF
 	    (match_dup 3)
-	    (parallel [(const_int 2) (const_int 3)]))
-	  (vec_select:V2DF
-	    (match_dup 4)
-	    (parallel [(const_int 2) (const_int 3)]))))]
+	    (match_dup 4))
+	  (parallel [(const_int 2) (const_int 3)
+		     (const_int 6) (const_int 7)])))]
  "TARGET_AVX"
 {
   operands[3] = gen_reg_rtx (V4DFmode);
@@ -4718,13 +4715,12 @@
 	  (parallel [(const_int 1) (const_int 5)
 		     (const_int 3) (const_int 7)])))
    (set (match_operand:V4DF 0 "register_operand" "")
-	(vec_concat:V4DF
-	  (vec_select:V2DF
+	(vec_select:V4DF
+	  (vec_concat:V8DF
 	    (match_dup 3)
-	    (parallel [(const_int 0) (const_int 1)]))
-	  (vec_select:V2DF
-	    (match_dup 4)
-	    (parallel [(const_int 0) (const_int 1)]))))]
+	    (match_dup 4))
+	  (parallel [(const_int 0) (const_int 1)
+	  	     (const_int 4) (const_int 5)])))]
  "TARGET_AVX"
 {
   operands[3] = gen_reg_rtx (V4DFmode);
