@@ -160,6 +160,9 @@ enum
   };
 
 
+/* Level for verbose messages, e.g. output file generation...  */
+extern int verbosity_level;	/* (-v) program argument.  */
+
 /* For debugging purposes we provide two flags.  */
 
 /* Dump everything to understand gengtype's state. Might be useful to
