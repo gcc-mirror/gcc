@@ -1,5 +1,17 @@
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	Implemented parsing @synthesize and @dynamic for
+	Objective-C/Objective-C++.
+	* objc-act.c (objc_add_synthesize_declaration): New.
+	(objc_add_dynamic_declaration): New.
+
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>	
+
+	* objc-act.c (lookup_and_install_protocols): Return NULL if passed
+	error_mark_node.
+	
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	Merge from 'apple/trunk' branch on FSF servers.
 
 	2006-03-10  Fariborz Jahanian <fjahanian@apple.com>

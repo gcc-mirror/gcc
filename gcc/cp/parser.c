@@ -2100,6 +2100,10 @@ static bool cp_parser_objc_valid_prefix_attributes
   (cp_parser *, tree *);
 static void cp_parser_objc_at_property 
   (cp_parser *) ;
+static void cp_parser_objc_at_synthesize_declaration 
+  (cp_parser *) ;
+static void cp_parser_objc_at_dynamic_declaration
+  (cp_parser *) ;
 static void cp_parser_objc_property_decl 
   (cp_parser *) ;
 
@@ -21270,18 +21274,29 @@ cp_parser_objc_selector_expression (cp_parser* parser)
 static tree
 cp_parser_objc_identifier_list (cp_parser* parser)
 {
-  tree list = build_tree_list (NULL_TREE, cp_parser_identifier (parser));
-  cp_token *sep = cp_lexer_peek_token (parser->lexer);
+  tree identifier;
+  tree list;
+  cp_token *sep;
+
+  identifier = cp_parser_identifier (parser);
+  if (identifier == error_mark_node)
+    return error_mark_node;      
+
+  list = build_tree_list (NULL_TREE, identifier);
+  sep = cp_lexer_peek_token (parser->lexer);
 
   while (sep->type == CPP_COMMA)
     {
       cp_lexer_consume_token (parser->lexer);  /* Eat ','.  */
-      list = chainon (list,
-		      build_tree_list (NULL_TREE,
-				       cp_parser_identifier (parser)));
+      identifier = cp_parser_identifier (parser);
+      if (identifier == error_mark_node)
+	return list;
+
+      list = chainon (list, build_tree_list (NULL_TREE,
+					     identifier));
       sep = cp_lexer_peek_token (parser->lexer);
     }
-
+  
   return list;
 }
 
@@ -21790,6 +21805,10 @@ cp_parser_objc_method_definition_list (cp_parser* parser)
 	}
       else if (token->keyword == RID_AT_PROPERTY)
 	cp_parser_objc_at_property (parser);
+      else if (token->keyword == RID_AT_SYNTHESIZE)
+	cp_parser_objc_at_synthesize_declaration (parser);
+      else if (token->keyword == RID_AT_DYNAMIC)
+	cp_parser_objc_at_dynamic_declaration (parser);
       else if (token->keyword == RID_ATTRIBUTE 
       	       && cp_parser_objc_method_maybe_bad_prefix_attributes(parser))
 	warning_at (token->location, OPT_Wattributes,
@@ -22422,6 +22441,105 @@ cp_parser_objc_at_property (cp_parser *parser)
   /* ... and the property declaration(s).  */
   cp_parser_objc_property_decl (parser);
 }
+
+/* Parse an Objective-C++ @synthesize declaration.  The syntax is:
+
+   objc-synthesize-declaration:
+     @synthesize objc-synthesize-identifier-list ;
+
+   objc-synthesize-identifier-list:
+     objc-synthesize-identifier
+     objc-synthesize-identifier-list, objc-synthesize-identifier
+
+   objc-synthesize-identifier
+     identifier
+     identifier = identifier
+
+  For example:
+    @synthesize MyProperty;
+    @synthesize OneProperty, AnotherProperty=MyIvar, YetAnotherProperty;
+
+  PS: This function is identical to c_parser_objc_at_synthesize_declaration
+  for C.  Keep them in sync.
+*/
+static void 
+cp_parser_objc_at_synthesize_declaration (cp_parser *parser)
+{
+  tree list = NULL_TREE;
+  location_t loc;
+  loc = cp_lexer_peek_token (parser->lexer)->location;
+
+  cp_lexer_consume_token (parser->lexer);  /* Eat '@synthesize'.  */
+  while (true)
+    {
+      tree property, ivar;
+      property = cp_parser_identifier (parser);
+      if (property == error_mark_node)
+	{
+	  cp_parser_consume_semicolon_at_end_of_statement (parser);
+	  return;
+	}
+      if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  ivar = cp_parser_identifier (parser);
+	  if (ivar == error_mark_node)
+	    {
+	      cp_parser_consume_semicolon_at_end_of_statement (parser);
+	      return;
+	    }
+	}
+      else
+	ivar = NULL_TREE;
+      list = chainon (list, build_tree_list (ivar, property));
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	cp_lexer_consume_token (parser->lexer);
+      else
+	break;
+    }
+  cp_parser_consume_semicolon_at_end_of_statement (parser);
+  objc_add_synthesize_declaration (loc, list);
+}
+
+/* Parse an Objective-C++ @dynamic declaration.  The syntax is:
+
+   objc-dynamic-declaration:
+     @dynamic identifier-list ;
+
+   For example:
+     @dynamic MyProperty;
+     @dynamic MyProperty, AnotherProperty;
+
+  PS: This function is identical to c_parser_objc_at_dynamic_declaration
+  for C.  Keep them in sync.
+*/
+static void 
+cp_parser_objc_at_dynamic_declaration (cp_parser *parser)
+{
+  tree list = NULL_TREE;
+  location_t loc;
+  loc = cp_lexer_peek_token (parser->lexer)->location;
+
+  cp_lexer_consume_token (parser->lexer);  /* Eat '@dynamic'.  */
+  while (true)
+    {
+      tree property;
+      property = cp_parser_identifier (parser);
+      if (property == error_mark_node)
+	{
+	  cp_parser_consume_semicolon_at_end_of_statement (parser);
+	  return;
+	}
+      list = chainon (list, build_tree_list (NULL, property));
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	cp_lexer_consume_token (parser->lexer);
+      else
+	break;
+    }
+  cp_parser_consume_semicolon_at_end_of_statement (parser);
+  objc_add_dynamic_declaration (loc, list);
+}
+
 
 /* OpenMP 2.5 parsing routines.  */
 

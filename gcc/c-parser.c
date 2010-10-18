@@ -1082,6 +1082,8 @@ static tree c_parser_objc_receiver (c_parser *);
 static tree c_parser_objc_message_args (c_parser *);
 static tree c_parser_objc_keywordexpr (c_parser *);
 static void c_parser_objc_at_property (c_parser *) ;
+static void c_parser_objc_at_synthesize_declaration (c_parser *);
+static void c_parser_objc_at_dynamic_declaration (c_parser *);
 static bool c_parser_objc_diagnose_bad_element_prefix
   (c_parser *, struct c_declspecs *);
 
@@ -1184,6 +1186,14 @@ c_parser_external_declaration (c_parser *parser)
 	case RID_AT_PROPERTY:
 	  gcc_assert (c_dialect_objc ());
 	  c_parser_objc_at_property (parser);
+	  break;
+	case RID_AT_SYNTHESIZE:
+	  gcc_assert (c_dialect_objc ());
+	  c_parser_objc_at_synthesize_declaration (parser);
+	  break;
+	case RID_AT_DYNAMIC:
+	  gcc_assert (c_dialect_objc ());
+	  c_parser_objc_at_dynamic_declaration (parser);
 	  break;
 	case RID_AT_END:
 	  gcc_assert (c_dialect_objc ());
@@ -6763,7 +6773,9 @@ c_parser_objc_class_declaration (c_parser *parser)
       if (c_parser_next_token_is_not (parser, CPP_NAME))
 	{
 	  c_parser_error (parser, "expected identifier");
-	  break;
+	  c_parser_skip_until_found (parser, CPP_SEMICOLON, NULL);
+	  parser->error = false;
+	  return;
 	}
       id = c_parser_peek_token (parser)->value;
       list = chainon (list, build_tree_list (NULL_TREE, id));
@@ -7687,6 +7699,119 @@ c_parser_objc_at_property (c_parser *parser)
     objc_add_property_variable (copy_node (props));
 
   c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+}
+
+/* Parse an Objective-C @synthesize declaration.  The syntax is:
+
+   objc-synthesize-declaration:
+     @synthesize objc-synthesize-identifier-list ;
+
+   objc-synthesize-identifier-list:
+     objc-synthesize-identifier
+     objc-synthesize-identifier-list, objc-synthesize-identifier
+
+   objc-synthesize-identifier
+     identifier
+     identifier = identifier
+
+  For example:
+    @synthesize MyProperty;
+    @synthesize OneProperty, AnotherProperty=MyIvar, YetAnotherProperty;
+
+  PS: This function is identical to cp_parser_objc_at_synthesize_declaration
+  for C++.  Keep them in sync.
+*/
+static void
+c_parser_objc_at_synthesize_declaration (c_parser *parser)
+{
+  tree list = NULL_TREE;
+  location_t loc;
+  gcc_assert (c_parser_next_token_is_keyword (parser, RID_AT_SYNTHESIZE));
+  loc = c_parser_peek_token (parser)->location;
+
+  c_parser_consume_token (parser);
+  while (true)
+    {
+      tree property, ivar;
+      if (c_parser_next_token_is_not (parser, CPP_NAME))
+	{
+	  c_parser_error (parser, "expected identifier");
+	  c_parser_skip_until_found (parser, CPP_SEMICOLON, NULL);
+	  /* Once we find the semicolon, we can resume normal parsing.
+	     We have to reset parser->error manually because
+	     c_parser_skip_until_found() won't reset it for us if the
+	     next token is precisely a semicolon.  */
+	  parser->error = false;
+	  return;
+	}
+      property = c_parser_peek_token (parser)->value;
+      c_parser_consume_token (parser);
+      if (c_parser_next_token_is (parser, CPP_EQ))
+	{
+	  c_parser_consume_token (parser);
+	  if (c_parser_next_token_is_not (parser, CPP_NAME))
+	    {
+	      c_parser_error (parser, "expected identifier");
+	      c_parser_skip_until_found (parser, CPP_SEMICOLON, NULL);
+	      parser->error = false;
+	      return;
+	    }
+	  ivar = c_parser_peek_token (parser)->value;
+	  c_parser_consume_token (parser);
+	}
+      else
+	ivar = NULL_TREE;
+      list = chainon (list, build_tree_list (ivar, property));
+      if (c_parser_next_token_is (parser, CPP_COMMA))
+	c_parser_consume_token (parser);
+      else
+	break;
+    }
+  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+  objc_add_synthesize_declaration (loc, list);
+}
+
+/* Parse an Objective-C @dynamic declaration.  The syntax is:
+
+   objc-dynamic-declaration:
+     @dynamic identifier-list ;
+
+   For example:
+     @dynamic MyProperty;
+     @dynamic MyProperty, AnotherProperty;
+
+  PS: This function is identical to cp_parser_objc_at_dynamic_declaration
+  for C++.  Keep them in sync.
+*/
+static void
+c_parser_objc_at_dynamic_declaration (c_parser *parser)
+{
+  tree list = NULL_TREE;
+  location_t loc;
+  gcc_assert (c_parser_next_token_is_keyword (parser, RID_AT_DYNAMIC));
+  loc = c_parser_peek_token (parser)->location;
+
+  c_parser_consume_token (parser);
+  while (true)
+    {
+      tree property;
+      if (c_parser_next_token_is_not (parser, CPP_NAME))
+	{
+	  c_parser_error (parser, "expected identifier");
+	  c_parser_skip_until_found (parser, CPP_SEMICOLON, NULL);
+	  parser->error = false;
+	  return;
+	}
+      property = c_parser_peek_token (parser)->value;
+      list = chainon (list, build_tree_list (NULL_TREE, property));
+      c_parser_consume_token (parser);
+      if (c_parser_next_token_is (parser, CPP_COMMA))
+	c_parser_consume_token (parser);
+      else
+	break;
+    }
+  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+  objc_add_dynamic_declaration (loc, list);
 }
 
 

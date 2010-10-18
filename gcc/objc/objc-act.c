@@ -2114,6 +2114,9 @@ lookup_and_install_protocols (tree protocols)
   tree proto;
   tree return_value = NULL_TREE;
 
+  if (protocols == error_mark_node)
+    return NULL;
+
   for (proto = protocols; proto; proto = TREE_CHAIN (proto))
     {
       tree ident = TREE_VALUE (proto);
@@ -8699,6 +8702,55 @@ objc_synthesize_setter (tree klass, tree class_method, tree property)
   finish_function ();
 #endif
   objc_finish_method_definition (fn);
+}
+
+/* This function is called by the parser after a @synthesize
+   expression is parsed.  'start_locus' is the location of the
+   @synthesize expression, and 'property_and_ivar_list' is a chained
+   list of the property and ivar names.
+ */
+void
+objc_add_synthesize_declaration (location_t start_locus ATTRIBUTE_UNUSED, tree property_and_ivar_list ATTRIBUTE_UNUSED)
+{
+  if (property_and_ivar_list == error_mark_node)
+    return;
+
+  if (!objc_implementation_context)
+    {
+      /* We can get here only in Objective-C; the Objective-C++ parser
+	 detects the problem while parsing, outputs the error
+	 "misplaced '@synthesize' Objective-C++ construct" and skips
+	 the declaration.  */
+      error ("%<@synthesize%> not in @implementation context");
+      return;
+    }
+
+  /* TODO */
+  error ("%<@synthesize%> is not supported in this version of the compiler");
+}
+
+/* This function is called by the parser after a @dynamic expression
+   is parsed.  'start_locus' is the location of the @dynamic
+   expression, and 'property_list' is a chained list of all the
+   property names.  */
+void
+objc_add_dynamic_declaration (location_t start_locus ATTRIBUTE_UNUSED, tree property_list ATTRIBUTE_UNUSED)
+{
+  if (property_list == error_mark_node)
+    return;
+
+  if (!objc_implementation_context)
+    {
+      /* We can get here only in Objective-C; the Objective-C++ parser
+	 detects the problem while parsing, outputs the error
+	 "misplaced '@dynamic' Objective-C++ construct" and skips the
+	 declaration.  */
+      error ("%<@dynamic%> not in @implementation context");
+      return;
+    }
+
+  /* TODO */
+  error ("%<@dynamic%> is not supported in this version of the compiler");
 }
 
 /* Main routine to generate code/data for all the property information for 

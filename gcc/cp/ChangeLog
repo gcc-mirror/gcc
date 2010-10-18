@@ -1,4 +1,17 @@
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented parsing @synthesize and @dynamic for Objective-C++.
+	* parser.c (cp_parser_objc_method_definition_list): Recognize
+	RID_AT_SYNTHESIZE and RID_AT_DYNAMIC.
+	(cp_parser_objc_at_dynamic_declaration): New.
+	(cp_parser_objc_at_synthesize_declaration): New.
+
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>	
+
+	* parser.c (cp_parser_objc_identifier_list): Check the return
+	value of cp_parser_identifier and react if it is error_mark_node.
+
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 	
 	Merge from apple/trunk branch on FSF servers.
 	

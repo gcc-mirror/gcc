@@ -349,6 +349,18 @@ objc_build_setter_call (tree ARG_UNUSED (lhs), tree ARG_UNUSED (rhs))
   return 0;
 }
 
+void
+objc_add_synthesize_declaration (location_t ARG_UNUSED (start_locus), 
+				 tree ARG_UNUSED (property_and_ivar_list))
+{
+}
+
+void
+objc_add_dynamic_declaration (location_t ARG_UNUSED (start_locus), 
+			      tree ARG_UNUSED (property_list))
+{
+}
+
 tree
 objc_build_throw_stmt (location_t ARG_UNUSED (loc), tree ARG_UNUSED (expr))
 {

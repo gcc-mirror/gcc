@@ -1,3 +1,16 @@
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented parsing @synthesize and @dynamic for Objective-C.
+	* c-parser.c (c_parser_external_declaration): Recognize
+	RID_AT_SYNTHESIZE and RID_AT_DYNAMIC.
+	(c_parser_objc_at_synthesize_declaration): New.
+	(c_parser_objc_at_dynamic_declaration): New.
+
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	* c-parser.c (c_parser_objc_class_declaration): After finding an
+	error, parse the whole declaration then reset parser->error.
+	
 2010-10-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/46041
