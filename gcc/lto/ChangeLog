@@ -1,3 +1,8 @@
+2010-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/45638
+	* Make-lang.in (check-lto): New dummy target.
+
 2010-10-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lto-elf.c (SHN_XINDEX): Define if not already defined.
