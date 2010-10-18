@@ -1,3 +1,8 @@
+2010-10-18  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44950
+	* g++.dg/lto/20101015-2_0.C: New testcase.
+
 2010-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46019

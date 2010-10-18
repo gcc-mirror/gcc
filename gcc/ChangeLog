@@ -1,3 +1,9 @@
+2010-10-18  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44950
+	* tree.c (free_lang_data_in_decl): As we clear TYPE_METHODS
+	also clear references to entries of it.
+
 2010-10-18  Andi Kleen  <ak@linux.intel.com>
 
 	PR other/43448
