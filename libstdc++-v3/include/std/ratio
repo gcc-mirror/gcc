@@ -160,6 +160,8 @@ namespace std
 
       static const intmax_t den =
         __static_abs<_Den>::value / __static_gcd<_Num, _Den>::value;
+
+      typedef ratio<num, den> type;
     };
 
   template<intmax_t _Num, intmax_t _Den>
@@ -182,7 +184,16 @@ namespace std
           __safe_multiply<_R1::num, (_R2::den / __gcd)>::value,
           __safe_multiply<_R2::num, (_R1::den / __gcd)>::value>::value,
         __safe_multiply<_R1::den, (_R2::den / __gcd)>::value> type;
+
+      static const intmax_t num = type::num;
+      static const intmax_t den = type::den;
     };
+
+  template<typename _R1, typename _R2>
+    const intmax_t ratio_add<_R1, _R2>::num;
+
+  template<typename _R1, typename _R2>
+    const intmax_t ratio_add<_R1, _R2>::den;
 
   /// ratio_subtract
   template<typename _R1, typename _R2>
@@ -191,7 +202,16 @@ namespace std
       typedef typename ratio_add<
         _R1,
         ratio<-_R2::num, _R2::den>>::type type;
+
+      static const intmax_t num = type::num;
+      static const intmax_t den = type::den;
     };
+
+  template<typename _R1, typename _R2>
+    const intmax_t ratio_subtract<_R1, _R2>::num;
+
+  template<typename _R1, typename _R2>
+    const intmax_t ratio_subtract<_R1, _R2>::den;
 
   /// ratio_multiply
   template<typename _R1, typename _R2>
@@ -209,7 +229,16 @@ namespace std
                         (_R2::num / __gcd2)>::value,
         __safe_multiply<(_R1::den / __gcd2),
                         (_R2::den / __gcd1)>::value> type;
+
+      static const intmax_t num = type::num;
+      static const intmax_t den = type::den;
     };
+
+  template<typename _R1, typename _R2>
+    const intmax_t ratio_multiply<_R1, _R2>::num;
+
+  template<typename _R1, typename _R2>
+    const intmax_t ratio_multiply<_R1, _R2>::den;
 
   /// ratio_divide
   template<typename _R1, typename _R2>
@@ -220,7 +249,16 @@ namespace std
       typedef typename ratio_multiply<
         _R1,
         ratio<_R2::den, _R2::num>>::type type;
+
+      static const intmax_t num = type::num;
+      static const intmax_t den = type::den;
     };
+
+  template<typename _R1, typename _R2>
+    const intmax_t ratio_divide<_R1, _R2>::num;
+
+  template<typename _R1, typename _R2>
+    const intmax_t ratio_divide<_R1, _R2>::den;
 
   /// ratio_equal
   template<typename _R1, typename _R2>
