@@ -7921,7 +7921,7 @@ package body Sem_Attr is
                   --  Avoid insertion of freeze actions in spec expression mode
 
                   if not In_Spec_Expression then
-                     Insert_Actions (N, Freeze_Entity (Entity (P), N));
+                     Freeze_Before (N, Entity (P));
                   end if;
 
                elsif Is_Type (Entity (P)) then

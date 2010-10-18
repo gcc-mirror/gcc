@@ -1,3 +1,11 @@
+2010-10-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Subprogram_Declaration): Use Freeze_Before.
+	(Expand_Protected_Object_Reference): Likewise.
+	* sem_attr.adb (Resolve_Attribute): Likewise.
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Likewise.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Likewise.
+
 2010-10-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* g-comlin.adb (Get_Switches): Prevent dereferencing null Config.

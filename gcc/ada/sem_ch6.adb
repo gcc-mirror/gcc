@@ -2167,7 +2167,7 @@ package body Sem_Ch6 is
             --  why, to be investigated further???
 
             Set_Has_Delayed_Freeze (Spec_Id);
-            Insert_Actions (N, Freeze_Entity (Spec_Id, N));
+            Freeze_Before (N, Spec_Id);
          end if;
       end if;
 
