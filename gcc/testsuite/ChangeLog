@@ -1,3 +1,8 @@
+2010-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/46019
+	* gcc.c-torture/execute/pr46019.c: New test.
+
 2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 	
 	Merge from 'apple/trunk' branch on FSF servers.
