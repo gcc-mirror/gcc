@@ -1,3 +1,7 @@
+2010-10-18  Richard Henderson  <rth@redhat.com>
+
+	* gcc.target/ia64/20101014.c: Fix double-paste of test case.
+
 2010-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/46015
