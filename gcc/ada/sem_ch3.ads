@@ -157,7 +157,10 @@ package Sem_Ch3 is
    function Find_Type_Name (N : Node_Id) return Entity_Id;
    --  Enter the identifier in a type definition, or find the entity already
    --  declared, in the case of the full declaration of an incomplete or
-   --  private type.
+   --  private type. If the previous declaration is tagged then the class-wide
+   --  entity is propagated to the identifier to prevent multiple incompatible
+   --  class-wide types that may be created for self-referential anonymous
+   --  access components.
 
    function Get_Discriminant_Value
      (Discriminant       : Entity_Id;

@@ -2171,24 +2171,10 @@ package body Sem_Ch3 is
       --  imported through a LIMITED WITH clause, it appears as incomplete
       --  but has no full view.
 
-      --  If the incomplete view is tagged, a class_wide type has been
-      --  created already. Use it for the full view as well, to prevent
-      --  multiple incompatible class-wide types that may be  created for
-      --  self-referential anonymous access components.
-
       if Ekind (Prev) = E_Incomplete_Type
         and then Present (Full_View (Prev))
       then
          T := Full_View (Prev);
-
-         if Is_Tagged_Type (Prev)
-           and then Present (Class_Wide_Type (Prev))
-         then
-            Set_Ekind (T, Ekind (Prev));         --  will be reset later
-            Set_Class_Wide_Type (T, Class_Wide_Type (Prev));
-            Set_Etype (Class_Wide_Type (T), T);
-         end if;
-
       else
          T := Prev;
       end if;
@@ -3605,7 +3591,26 @@ package body Sem_Ch3 is
       end if;
 
       Generate_Definition (T);
-      Enter_Name (T);
+
+      if Ada_Version < Ada_2012 then
+         Enter_Name (T);
+
+      --  Ada 2012 (AI05-0162): Enter the name in the current scope handling
+      --  case of private type that completes an incomplete type.
+
+      else
+         declare
+            Prev : Entity_Id;
+
+         begin
+            Prev := Find_Type_Name (N);
+
+            pragma Assert (Prev = T
+              or else (Ekind (Prev) = E_Incomplete_Type
+                         and then Present (Full_View (Prev))
+                         and then Full_View (Prev) = T));
+         end;
+      end if;
 
       Parent_Type := Find_Type_Of_Subtype_Indic (Indic);
       Parent_Base := Base_Type (Parent_Type);
@@ -14085,11 +14090,25 @@ package body Sem_Ch3 is
       procedure Tag_Mismatch is
       begin
          if Sloc (Prev) < Sloc (Id) then
-            Error_Msg_NE
-              ("full declaration of } must be a tagged type ", Id, Prev);
+            if Ada_Version >= Ada_2012
+              and then Nkind (N) = N_Private_Type_Declaration
+            then
+               Error_Msg_NE
+                 ("declaration of private } must be a tagged type ", Id, Prev);
+            else
+               Error_Msg_NE
+                 ("full declaration of } must be a tagged type ", Id, Prev);
+            end if;
          else
-            Error_Msg_NE
-              ("full declaration of } must be a tagged type ", Prev, Id);
+            if Ada_Version >= Ada_2012
+              and then Nkind (N) = N_Private_Type_Declaration
+            then
+               Error_Msg_NE
+                 ("declaration of private } must be a tagged type ", Prev, Id);
+            else
+               Error_Msg_NE
+                 ("full declaration of } must be a tagged type ", Prev, Id);
+            end if;
          end if;
       end Tag_Mismatch;
 
@@ -14100,21 +14119,35 @@ package body Sem_Ch3 is
 
       Prev := Current_Entity_In_Scope (Id);
 
-      if Present (Prev) then
+      --  New type declaration
 
-         --  Previous declaration exists. Error if not incomplete/private case
-         --  except if previous declaration is implicit, etc. Enter_Name will
-         --  emit error if appropriate.
+      if No (Prev) then
+         Enter_Name (Id);
+         return Id;
 
+      --  Previous declaration exists
+
+      else
          Prev_Par := Parent (Prev);
+
+         --  Error if not incomplete/private case except if previous
+         --  declaration is implicit, etc. Enter_Name will emit error if
+         --  appropriate.
 
          if not Is_Incomplete_Or_Private_Type (Prev) then
             Enter_Name (Id);
             New_Id := Id;
 
+         --  Check invalid completion of private or incomplete type
+
          elsif not Nkind_In (N, N_Full_Type_Declaration,
                                 N_Task_Type_Declaration,
                                 N_Protected_Type_Declaration)
+           and then
+             (Ada_Version < Ada_2012
+                or else not Is_Incomplete_Type (Prev)
+                or else not Nkind_In (N, N_Private_Type_Declaration,
+                                         N_Private_Extension_Declaration))
          then
             --  Completion must be a full type declarations (RM 7.3(4))
 
@@ -14136,7 +14169,11 @@ package body Sem_Ch3 is
 
          --  Case of full declaration of incomplete type
 
-         elsif Ekind (Prev) = E_Incomplete_Type then
+         elsif Ekind (Prev) = E_Incomplete_Type
+           and then (Ada_Version < Ada_2012
+                       or else No (Full_View (Prev))
+                       or else not Is_Private_Type (Full_View (Prev)))
+         then
 
             --  Indicate that the incomplete declaration has a matching full
             --  declaration. The defining occurrence of the incomplete
@@ -14153,9 +14190,34 @@ package body Sem_Ch3 is
             Set_Is_Internal (Id);
             New_Id := Prev;
 
+            --  If the incomplete view is tagged, a class_wide type has been
+            --  created already. Use it for the private type as well, in order
+            --  to prevent multiple incompatible class-wide types that may be
+            --  created for self-referential anonymous access components.
+
+            if Is_Tagged_Type (Prev)
+              and then Present (Class_Wide_Type (Prev))
+            then
+               Set_Ekind (Id, Ekind (Prev));         --  will be reset later
+               Set_Class_Wide_Type (Id, Class_Wide_Type (Prev));
+               Set_Etype (Class_Wide_Type (Id), Id);
+            end if;
+
          --  Case of full declaration of private type
 
          else
+            --  If the private type was a completion of an incomplete type then
+            --  update Prev to reference the private type
+
+            if Ada_Version >= Ada_2012
+              and then Ekind (Prev) = E_Incomplete_Type
+              and then Present (Full_View (Prev))
+              and then Is_Private_Type (Full_View (Prev))
+            then
+               Prev := Full_View (Prev);
+               Prev_Par := Parent (Prev);
+            end if;
+
             if Nkind (Parent (Prev)) /= N_Private_Extension_Declaration then
                if Etype (Prev) /= Prev then
 
@@ -14273,14 +14335,30 @@ package body Sem_Ch3 is
 
          if Is_Type (Prev)
            and then (Is_Tagged_Type (Prev)
-                      or else Present (Class_Wide_Type (Prev)))
+                       or else Present (Class_Wide_Type (Prev)))
          then
+            --  Ada 2012 (AI05-0162): A private type may be the completion of
+            --  an incomplete type
+
+            if Ada_Version >= Ada_2012
+              and then Is_Incomplete_Type (Prev)
+              and then Nkind_In (N, N_Private_Type_Declaration,
+                                    N_Private_Extension_Declaration)
+            then
+               --  No need to check private extensions since they are tagged
+
+               if Nkind (N) = N_Private_Type_Declaration
+                 and then not Tagged_Present (N)
+               then
+                  Tag_Mismatch;
+               end if;
+
             --  The full declaration is either a tagged type (including
             --  a synchronized type that implements interfaces) or a
             --  type extension, otherwise this is an error.
 
-            if Nkind_In (N, N_Task_Type_Declaration,
-                            N_Protected_Type_Declaration)
+            elsif Nkind_In (N, N_Task_Type_Declaration,
+                               N_Protected_Type_Declaration)
             then
                if No (Interface_List (N))
                  and then not Error_Posted (N)
@@ -14315,12 +14393,6 @@ package body Sem_Ch3 is
          end if;
 
          return New_Id;
-
-      else
-         --  New type declaration
-
-         Enter_Name (Id);
-         return Id;
       end if;
    end Find_Type_Name;
 
