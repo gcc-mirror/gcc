@@ -4045,14 +4045,14 @@ Allow full Ada 2005 features.
 
 @item -gnat2005
 @cindex @option{-gnat2005} (@command{gcc})
-Allow full Ada 2005 features (same as @option{-gnat05}
+Allow full Ada 2005 features (same as @option{-gnat05})
 
 @item -gnat12
 @cindex @option{-gnat12} (@command{gcc})
 
 @item -gnat2012
 @cindex @option{-gnat2012} (@command{gcc})
-Allow full Ada 2012 features (same as @option{-gnat12}
+Allow full Ada 2012 features (same as @option{-gnat12})
 
 @item -gnata
 @cindex @option{-gnata} (@command{gcc})
@@ -4716,14 +4716,14 @@ standard output is redirected, a brief summary is written to
 @file{stderr} (standard error) giving the number of error messages and
 warning messages generated.
 
-@item -^gnatl^OUTPUT_FILE^=file
-@cindex @option{^-gnatl^OUTPUT_FILE^=fname} (@command{gcc})
+@item ^-gnatl^/OUTPUT_FILE^=file
+@cindex @option{^-gnatl^/OUTPUT_FILE^=fname} (@command{gcc})
 This has the same effect as @option{-gnatl} except that the output is
 written to a file instead of to standard output. If the given name
 @file{fname} does not start with a period, then it is the full name
 of the file to be written. If @file{fname} is an extension, it is
 appended to the name of the file being compiled. For example, if
-file @file{xyz.adb} is compiled with @option{^-gnatl^OUTPUT_FILE^=.lst},
+file @file{xyz.adb} is compiled with @option{^-gnatl^/OUTPUT_FILE^=.lst},
 then the output is written to file ^xyz.adb.lst^xyz.adb_lst^.
 
 @item -gnatU

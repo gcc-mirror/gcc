@@ -1,6 +1,24 @@
 2010-10-18  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.ads, einfo.adb: Minor reformatting.
+	* gnat_ugn.texi, ug_words: Add missing entries, fix typos.
+
+2010-10-18  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb (Is_In_Config): When the switch accepts either a space
+	or equal, we output an equal every time.
+
+2010-10-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Entry_Call): Handle call to an entry family
+	member when pre/post conditions are present.
+	* exp_ch9.adb (Build_PPC_Wrapper): The PPC_Wrapper for an entry family
+	includes an index parameter, and the name of the enclosed entry call is
+	an indexed component.
+
+2010-10-18  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, einfo.adb: Minor reformatting.
 
 2010-10-18  Jose Ruiz  <ruiz@adacore.com>
 
