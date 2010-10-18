@@ -4986,7 +4986,7 @@ package body Sem_Prag is
             Error_Pragma_Arg
               ("cannot export entity& that was previously imported", Arg);
 
-         elsif Present (Address_Clause (E)) then
+         elsif Present (Address_Clause (E)) and then not CodePeer_Mode then
             Error_Pragma_Arg
               ("cannot export entity& that has an address clause", Arg);
          end if;

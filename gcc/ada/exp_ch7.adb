@@ -1739,11 +1739,7 @@ package body Exp_Ch7 is
          end if;
 
       else
-         if Is_Dynamic_Scope (E) then
-            S := E;
-         else
-            S := Enclosing_Dynamic_Scope (E);
-         end if;
+         S := Nearest_Dynamic_Scope (E);
 
          --  When the finalization chain entity is 'Error', it means that there
          --  should not be any chain at that level and that the enclosing one

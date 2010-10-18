@@ -6130,6 +6130,10 @@ package body Einfo is
           or else
         Ekind (Id) = E_Task_Type
           or else
+       (Ekind (Id) = E_Limited_Private_Type
+         and then Present (Full_View (Id))
+         and then Ekind (Full_View (Id)) = E_Task_Type)
+          or else
         Ekind (Id) = E_Entry
           or else
         Ekind (Id) = E_Entry_Family

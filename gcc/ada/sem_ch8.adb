@@ -3361,24 +3361,25 @@ package body Sem_Ch8 is
       Id        : Entity_Id;
       Elmt      : Elmt_Id;
 
-      function Is_Primitive_Operator
+      function Is_Primitive_Operator_In_Use
         (Op : Entity_Id;
          F  : Entity_Id) return Boolean;
       --  Check whether Op is a primitive operator of a use-visible type
 
-      ---------------------------
-      -- Is_Primitive_Operator --
-      ---------------------------
+      ----------------------------------
+      -- Is_Primitive_Operator_In_Use --
+      ----------------------------------
 
-      function Is_Primitive_Operator
+      function Is_Primitive_Operator_In_Use
         (Op : Entity_Id;
          F  : Entity_Id) return Boolean
       is
          T : constant Entity_Id := Etype (F);
       begin
-         return In_Use (T)
+         return (In_Use (T)
+                  or else Present (Current_Use_Clause (Base_Type (T))))
            and then Scope (T) = Scope (Op);
-      end Is_Primitive_Operator;
+      end Is_Primitive_Operator_In_Use;
 
    --  Start of processing for End_Use_Package
 
@@ -3409,11 +3410,12 @@ package body Sem_Ch8 is
 
                   if Nkind (Id) = N_Defining_Operator_Symbol
                        and then
-                         (Is_Primitive_Operator (Id, First_Formal (Id))
+                         (Is_Primitive_Operator_In_Use
+                           (Id, First_Formal (Id))
                             or else
                           (Present (Next_Formal (First_Formal (Id)))
                              and then
-                               Is_Primitive_Operator
+                               Is_Primitive_Operator_In_Use
                                  (Id, Next_Formal (First_Formal (Id)))))
                   then
                      null;
