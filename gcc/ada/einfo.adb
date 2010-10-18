@@ -214,6 +214,7 @@ package body Einfo is
    --    Interfaces                      Elist25
    --    Debug_Renaming_Link             Node25
    --    DT_Offset_To_Top_Func           Node25
+   --    PPC_Wrapper                     Node25
    --    Task_Body_Procedure             Node25
 
    --    Dispatch_Table_Wrappers         Elist26
@@ -512,7 +513,6 @@ package body Einfo is
    --    OK_To_Rename                    Flag247
 
    --    (unused)                        Flag232
-
    --    (unused)                        Flag248
    --    (unused)                        Flag249
    --    (unused)                        Flag250
@@ -2359,6 +2359,12 @@ package body Einfo is
       return Node8 (Id);
    end Postcondition_Proc;
 
+   function PPC_Wrapper (Id : E) return E is
+   begin
+      pragma Assert (Ekind_In (Id, E_Entry, E_Entry_Family));
+      return Node25 (Id);
+   end PPC_Wrapper;
+
    function Prival (Id : E) return E is
    begin
       pragma Assert (Is_Protected_Component (Id));
@@ -2582,7 +2588,7 @@ package body Einfo is
    function Spec_PPC_List (Id : E) return N is
    begin
       pragma Assert
-        (Ekind (Id) = E_Entry
+        (Ekind_In (Id,  E_Entry, E_Entry_Family)
           or else Is_Subprogram (Id)
           or else Is_Generic_Subprogram (Id));
       return Node24 (Id);
@@ -4817,6 +4823,12 @@ package body Einfo is
       Set_Node8 (Id, V);
    end Set_Postcondition_Proc;
 
+   procedure Set_PPC_Wrapper (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Entry, E_Entry_Family));
+      Set_Node25 (Id, V);
+   end Set_PPC_Wrapper;
+
    procedure Set_Direct_Primitive_Operations (Id : E; V : L) is
    begin
       pragma Assert
@@ -5057,7 +5069,7 @@ package body Einfo is
    procedure Set_Spec_PPC_List (Id : E; V : N) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Entry, E_Void)
+        (Ekind_In (Id, E_Entry, E_Entry_Family, E_Void)
           or else Is_Subprogram (Id)
           or else Is_Generic_Subprogram (Id));
       Set_Node24 (Id, V);
@@ -6575,16 +6587,6 @@ package body Einfo is
       return Ekind (Id);
    end Parameter_Mode;
 
-   ---------------------
-   -- Record_Rep_Item --
-   ---------------------
-
-   procedure Record_Rep_Item (E : Entity_Id; N : Node_Id) is
-   begin
-      Set_Next_Rep_Item (N, First_Rep_Item (E));
-      Set_First_Rep_Item (E, N);
-   end Record_Rep_Item;
-
    --------------------------
    -- Primitive_Operations --
    --------------------------
@@ -6602,6 +6604,16 @@ package body Einfo is
          return Direct_Primitive_Operations (Id);
       end if;
    end Primitive_Operations;
+
+   ---------------------
+   -- Record_Rep_Item --
+   ---------------------
+
+   procedure Record_Rep_Item (E : Entity_Id; N : Node_Id) is
+   begin
+      Set_Next_Rep_Item (N, First_Rep_Item (E));
+      Set_First_Rep_Item (E, N);
+   end Record_Rep_Item;
 
    ---------------
    -- Root_Type --
@@ -8131,6 +8143,10 @@ package body Einfo is
 
          when E_Variable                                   =>
             Write_Str ("Debug_Renaming_Link");
+
+         when E_Entry                                      |
+              E_Entry_Family                               =>
+            Write_Str ("PPC_Wrapper");
 
          when others                                       =>
             Write_Str ("Field25??");

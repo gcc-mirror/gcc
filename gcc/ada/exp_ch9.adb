@@ -162,6 +162,14 @@ package body Exp_Ch9 is
    --       <formalN> : AnnN;
    --    end record;
 
+   procedure Build_PPC_Wrapper (E : Entity_Id; Decl : Node_Id);
+   --  Build body of wrapper procedure for an entry or entry family that has
+   --  pre/postconditions. The body gathers the PPC's and expands them in the
+   --  usual way, and performs the entry call itself. This way preconditions
+   --  are evaluated before the call is queued. E is the entry in question,
+   --  and Decl is the enclosing synchronized type declaration at whose
+   --  freeze point the generated body is analyzed.
+
    procedure Build_Wrapper_Bodies
      (Loc : Source_Ptr;
       Typ : Entity_Id;
@@ -1568,6 +1576,147 @@ package body Exp_Ch9 is
       return Rec_Nam;
    end Build_Parameter_Block;
 
+   -----------------------
+   -- Build_PPC_Wrapper --
+   -----------------------
+
+   procedure Build_PPC_Wrapper (E : Entity_Id; Decl : Node_Id) is
+      Loc        : constant Source_Ptr := Sloc (E);
+      Synch_Type : constant Entity_Id := Scope (E);
+
+      Wrapper_Id : constant Entity_Id :=
+                     Make_Defining_Identifier (Loc,
+                       Chars => New_External_Name (Chars (E), 'E'));
+      --  the wrapper procedure name
+
+      Wrapper_Body : Node_Id;
+
+      Synch_Id : constant Entity_Id :=
+                   Make_Defining_Identifier (Loc,
+                     Chars => New_External_Name (Chars (Scope (E)), 'A'));
+      --  The parameter that designates the synchronized object in the call
+
+      Actuals : constant List_Id := New_List;
+      --  the actuals in the entry call.
+
+      Entry_Call : constant Node_Id :=
+                     Make_Procedure_Call_Statement (Loc,
+                       Name =>
+                         Make_Selected_Component (Loc,
+                           Prefix        => New_Occurrence_Of (Synch_Id, Loc),
+                           Selector_Name => New_Occurrence_Of (E, Loc)),
+                       Parameter_Associations => Actuals);
+
+      Decls      : constant List_Id := New_List;
+
+      Specs : List_Id;
+      --  The specification of the wrapper procedure
+
+   begin
+
+      --  Only build the wrapper if entry has pre/postconditions.
+      --  Should this be done unconditionally instead ???
+
+      declare
+         P : Node_Id;
+
+      begin
+         P := Spec_PPC_List (E);
+         if No (P) then
+            return;
+         end if;
+
+         --  Transfer ppc pragmas to the declarations of the wrapper
+
+         while Present (P) loop
+            if Pragma_Name (P) = Name_Precondition
+              or else Pragma_Name (P) = Name_Postcondition
+            then
+               Append (Relocate_Node (P), Decls);
+               Set_Analyzed (Last (Decls), False);
+            end if;
+
+            P := Next_Pragma (P);
+         end loop;
+      end;
+
+      --  First formal is synchronized object
+
+      Specs := New_List (
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier => Synch_Id,
+          Out_Present         =>  True,
+          In_Present          =>  True,
+          Parameter_Type      => New_Occurrence_Of (Scope (E), Loc)));
+
+      --  Now add formals that match those of the entry, and build actuals
+      --  for the nested entry call.
+
+      declare
+         Form      : Entity_Id;
+         New_Form  : Entity_Id;
+         Parm_Spec : Node_Id;
+
+      begin
+         Form := First_Formal (E);
+         while Present (Form) loop
+            New_Form := Make_Defining_Identifier (Loc, Chars (Form));
+            Parm_Spec :=
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier => New_Form,
+                Out_Present         =>  Out_Present (Parent (Form)),
+                In_Present          =>  In_Present  (Parent (Form)),
+                Parameter_Type      => New_Occurrence_Of (Etype (Form), Loc));
+
+            Append (Parm_Spec, Specs);
+            Append (New_Occurrence_Of (New_Form, Loc), Actuals);
+            Next_Formal (Form);
+         end loop;
+      end;
+
+      --  Add renaming declarations for the discriminants of the enclosing
+      --  type, which may be visible in the preconditions.
+
+      if Has_Discriminants (Synch_Type) then
+         declare
+            D : Entity_Id;
+            Decl : Node_Id;
+
+         begin
+            D := First_Discriminant (Synch_Type);
+            while Present (D) loop
+               Decl :=
+                 Make_Object_Renaming_Declaration (Loc,
+                   Defining_Identifier =>
+                     Make_Defining_Identifier (Loc, Chars (D)),
+                   Subtype_Mark        => New_Reference_To (Etype (D), Loc),
+                   Name                =>
+                     Make_Selected_Component (Loc,
+                       Prefix        => New_Reference_To (Synch_Id, Loc),
+                       Selector_Name => Make_Identifier (Loc, Chars (D))));
+               Prepend (Decl, Decls);
+               Next_Discriminant (D);
+            end loop;
+         end;
+      end if;
+
+      Set_PPC_Wrapper (E, Wrapper_Id);
+      Wrapper_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification =>
+            Make_Procedure_Specification (Loc,
+              Defining_Unit_Name => Wrapper_Id,
+              Parameter_Specifications => Specs),
+         Declarations => Decls,
+         Handled_Statement_Sequence =>
+           Make_Handled_Sequence_Of_Statements (Loc,
+             Statements => New_List (Entry_Call)));
+
+      --  The wrapper body is analyzed when the enclosing type is frozen.
+
+      Append_Freeze_Action (Defining_Entity (Decl), Wrapper_Body);
+   end Build_PPC_Wrapper;
+
    --------------------------
    -- Build_Wrapper_Bodies --
    --------------------------
@@ -1613,11 +1762,11 @@ package body Exp_Ch9 is
          end if;
 
          declare
-            Actuals      : List_Id := No_List;
-            Conv_Id      : Node_Id;
-            First_Form   : Node_Id;
-            Formal       : Node_Id;
-            Nam          : Node_Id;
+            Actuals    : List_Id := No_List;
+            Conv_Id    : Node_Id;
+            First_Form : Node_Id;
+            Formal     : Node_Id;
+            Nam        : Node_Id;
 
          begin
             --  Map formals to actuals. Use the list built for the wrapper
@@ -1630,7 +1779,6 @@ package body Exp_Ch9 is
 
             if Present (Formal) then
                Actuals := New_List;
-
                while Present (Formal) loop
                   Append_To (Actuals,
                     Make_Identifier (Loc, Chars =>
@@ -1653,9 +1801,9 @@ package body Exp_Ch9 is
 
                if Is_Controlling_Formal (First_Formal (Subp_Id)) then
                   Prepend_To (Actuals,
-                    Unchecked_Convert_To (
-                      Corresponding_Concurrent_Type (Obj_Typ),
-                      Make_Identifier (Loc, Name_uO)));
+                    Unchecked_Convert_To
+                      (Corresponding_Concurrent_Type (Obj_Typ),
+                       Make_Identifier (Loc, Name_uO)));
 
                else
                   Prepend_To (Actuals,
@@ -1685,11 +1833,9 @@ package body Exp_Ch9 is
                Nam :=
                  Make_Selected_Component (Loc,
                    Prefix =>
-                     Unchecked_Convert_To (
-                       Corresponding_Concurrent_Type (Obj_Typ),
-                       Conv_Id),
-                   Selector_Name =>
-                     New_Reference_To (Subp_Id, Loc));
+                     Unchecked_Convert_To
+                       (Corresponding_Concurrent_Type (Obj_Typ), Conv_Id),
+                   Selector_Name => New_Reference_To (Subp_Id, Loc));
             end if;
 
             --  Create the subprogram body. For a function, the call to the
@@ -8050,6 +8196,10 @@ package body Exp_Ch9 is
             Insert_After (Current_Node, Sub);
             Analyze (Sub);
 
+            --  build wrapper procedure for pre/postconditions.
+
+            Build_PPC_Wrapper (Comp_Id, N);
+
             Set_Protected_Body_Subprogram
               (Defining_Identifier (Comp),
                Defining_Unit_Name (Specification (Sub)));
@@ -10599,6 +10749,24 @@ package body Exp_Ch9 is
       --  any were declared.
 
       Expand_Previous_Access_Type (Tasktyp);
+
+      --  Create wrappers for entries that have pre/postconditions
+
+      declare
+         Ent : Entity_Id;
+
+      begin
+         Ent := First_Entity (Tasktyp);
+         while Present (Ent) loop
+            if Ekind_In (Ent, E_Entry, E_Entry_Family)
+              and then Present (Spec_PPC_List (Ent))
+            then
+               Build_PPC_Wrapper (Ent, N);
+            end if;
+
+            Next_Entity (Ent);
+         end loop;
+      end;
    end Expand_N_Task_Type_Declaration;
 
    -------------------------------
