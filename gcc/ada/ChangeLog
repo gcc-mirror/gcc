@@ -1,3 +1,16 @@
+2010-10-18  Jose Ruiz  <ruiz@adacore.com>
+
+	* adaint.c (__gnat_pthread_setaffinity_np,
+	__gnat_pthread_attr_setaffinity_np): Add these wrappers which check the
+	availability of the underlying OS functionality before calling.
+	* s-osinte-linux.ads (pthread_setaffinity_np,
+	pthread_attr_setaffinity_np): Call a wrapper instead of the OS function
+	to perform a check of its availability.
+	* s-taprop-linux.adb (Create_Task): Remove the check to verify whether
+	the affinity functionality is available in the OS. Now done in a wrapper
+	* gcc-interface/Makefile.in: Remove vmshandler.asm, unused.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2010-10-18  Robert Dewar  <dewar@adacore.com>
 
 	* sinfo.ads, sinfo.adb: Change Has_Pragma_CPU to Flag14 (Flag10 is

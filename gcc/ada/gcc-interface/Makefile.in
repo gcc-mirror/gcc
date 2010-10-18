@@ -1566,10 +1566,6 @@ adamsg.o: adamsg.msg
   GMEM_LIB = gmemlib
   EH_MECHANISM=-gcc
   GNATLIB_SHARED=gnatlib-shared-vms
-  ifeq ($(strip $(filter-out alpha64 dec vms% openvms% alphavms%,$(targ))),)
-    EXTRA_LIBGNAT_SRCS=vmshandler.asm
-    EXTRA_LIBGNAT_OBJS=vmshandler.o
-  endif
   EXTRA_LIBGNAT_SRCS+=adamsg.msg
   EXTRA_LIBGNAT_OBJS+=adamsg.o
   EXTRA_GNATRTL_TASKING_OBJS=s-tpopde.o

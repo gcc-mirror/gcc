@@ -490,18 +490,18 @@ package System.OS_Interface is
      (thread     : pthread_t;
       cpusetsize : size_t;
       cpuset     : access cpu_set_t) return int;
-   pragma Import (C, pthread_setaffinity_np, "pthread_setaffinity_np");
-   pragma Weak_External (pthread_setaffinity_np);
-   --  Use a weak symbol because this function may be available or not,
-   --  depending on the version of the system.
+   pragma Import (C, pthread_setaffinity_np, "__gnat_pthread_setaffinity_np");
+   --  Use a wrapper because this function may be available or not, depending
+   --  on the version of the system.
 
    function pthread_attr_setaffinity_np
      (attr       : access pthread_attr_t;
       cpusetsize : size_t;
       cpuset     : access cpu_set_t) return int;
    pragma Import (C, pthread_attr_setaffinity_np,
-                  "pthread_attr_setaffinity_np");
-   pragma Weak_External (pthread_attr_setaffinity_np);
+                  "__gnat_pthread_attr_setaffinity_np");
+   --  Use a wrapper because this function may be available or not, depending
+   --  on the version of the system.
 
 private
 
