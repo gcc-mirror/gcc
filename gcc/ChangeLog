@@ -1,3 +1,11 @@
+2010-10-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Define and
+	use USE_X86_64_FRAME_POINTER for 64-bit flag_omit_frame_pointer
+	default.
+	* config/i386/sol2-10.h (SUBTARGET_OVERRIDE_OPTIONS): Remove.
+	(USE_IX86_FRAME_POINTER, USE_X86_64_FRAME_POINTER): Define.
+
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.	

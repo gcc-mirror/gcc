@@ -81,13 +81,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef WINT_TYPE_SIZE
 #define WINT_TYPE_SIZE 32
 
-#define SUBTARGET_OVERRIDE_OPTIONS				\
-  do								\
-    {								\
-      if (!global_options_set.x_flag_omit_frame_pointer)	\
-	flag_omit_frame_pointer = 0;				\
-    }								\
-  while (0)
+#define USE_IX86_FRAME_POINTER 1
+#define USE_X86_64_FRAME_POINTER 1
 
 /* Override i386/sol2.h version: return 8-byte vectors in MMX registers if
    possible, matching Sun Studio 12 Update 1+ compilers and other x86
