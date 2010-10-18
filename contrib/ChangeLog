@@ -1,3 +1,7 @@
+2010-10-18  Andi Kleen  <ak@linux.intel.com>
+
+	* gccbug.el: Remove.
+
 2010-10-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc_update: Run $GCC_HG pull and update separately.
