@@ -1459,7 +1459,7 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind = N_Subprogram_Body
         or else NT (N).Nkind = N_Task_Definition);
-      return Flag10 (N);
+      return Flag14 (N);
    end Has_Pragma_CPU;
 
    function Has_Pragma_Priority
@@ -4438,7 +4438,7 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind = N_Subprogram_Body
         or else NT (N).Nkind = N_Task_Definition);
-      Set_Flag10 (N, Val);
+      Set_Flag14 (N, Val);
    end Set_Has_Pragma_CPU;
 
    procedure Set_Has_Pragma_Priority

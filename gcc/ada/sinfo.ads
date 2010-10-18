@@ -1133,7 +1133,7 @@ package Sinfo is
    --    generate elaboration code, and non-preelaborated packages which do
    --    not generate elaboration code.
 
-   --  Has_Pragma_CPU (Flag10-Sem)
+   --  Has_Pragma_CPU (Flag14-Sem)
    --    A flag present in N_Subprogram_Body and N_Task_Definition nodes to
    --    flag the presence of a CPU pragma in the declaration sequence (public
    --    or private in the task case).
@@ -4491,7 +4491,7 @@ package Sinfo is
       --  Is_Task_Master (Flag5-Sem)
       --  Was_Originally_Stub (Flag13-Sem)
       --  Has_Relative_Deadline_Pragma (Flag9-Sem)
-      --  Has_Pragma_CPU (Flag10-Sem)
+      --  Has_Pragma_CPU (Flag14-Sem)
 
       ------------------------------
       -- Parameterized Expression --
@@ -4975,7 +4975,7 @@ package Sinfo is
       --  Has_Task_Info_Pragma (Flag7-Sem)
       --  Has_Task_Name_Pragma (Flag8-Sem)
       --  Has_Relative_Deadline_Pragma (Flag9-Sem)
-      --  Has_Pragma_CPU (Flag10-Sem)
+      --  Has_Pragma_CPU (Flag14-Sem)
 
       --------------------
       -- 9.1  Task Item --
@@ -8324,7 +8324,7 @@ package Sinfo is
      (N : Node_Id) return Boolean;    -- Flag17
 
    function Has_Pragma_CPU
-     (N : Node_Id) return Boolean;    -- Flag10
+     (N : Node_Id) return Boolean;    -- Flag14
 
    function Has_Pragma_Priority
      (N : Node_Id) return Boolean;    -- Flag6
@@ -9275,7 +9275,7 @@ package Sinfo is
      (N : Node_Id; Val : Boolean := True);    -- Flag17
 
    procedure Set_Has_Pragma_CPU
-     (N : Node_Id; Val : Boolean := True);    -- Flag10
+     (N : Node_Id; Val : Boolean := True);    -- Flag14
 
    procedure Set_Has_Pragma_Priority
      (N : Node_Id; Val : Boolean := True);    -- Flag6

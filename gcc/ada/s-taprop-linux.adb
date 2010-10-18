@@ -851,8 +851,8 @@ package body System.Task_Primitives.Operations is
       --  more appropriate.
 
       if pthread_attr_setaffinity_np'Address = System.Null_Address then
-         --  Nothing to do with the affinities if there is not the underlying
-         --  support.
+
+         --  Nothing to do with the affinities if no underlying support
 
          null;
 
@@ -861,10 +861,8 @@ package body System.Task_Primitives.Operations is
       elsif T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
          declare
             CPU_Set : aliased cpu_set_t := (bits => (others => False));
-
          begin
             CPU_Set.bits (Integer (T.Common.Base_CPU)) := True;
-
             Result :=
               pthread_attr_setaffinity_np
                 (Attributes'Access,
@@ -1340,10 +1338,8 @@ package body System.Task_Primitives.Operations is
       then
          declare
             CPU_Set : aliased cpu_set_t := (bits => (others => False));
-
          begin
             CPU_Set.bits (Integer (Environment_Task.Common.Base_CPU)) := True;
-
             Result :=
               pthread_setaffinity_np
                 (Environment_Task.Common.LL.Thread,

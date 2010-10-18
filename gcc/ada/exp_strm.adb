@@ -29,6 +29,8 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Util; use Sem_Util;
@@ -455,6 +457,8 @@ package body Exp_Strm is
       Lib_RE  : RE_Id;
 
    begin
+      Check_Restriction (No_Default_Stream_Attributes, N);
+
       --  Compute the size of the stream element. This is either the size of
       --  the first subtype or if given the size of the Stream_Size attribute.
 
@@ -667,6 +671,8 @@ package body Exp_Strm is
       Libent  : Entity_Id;
 
    begin
+      Check_Restriction (No_Default_Stream_Attributes, N);
+
       --  Compute the size of the stream element. This is either the size of
       --  the first subtype or if given the size of the Stream_Size attribute.
 

@@ -955,6 +955,7 @@ package body System.Task_Primitives.Operations is
       --  Step 4: Handle pragma CPU and Task_Info
 
       if T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
+
          --  The CPU numbering in pragma CPU starts at 1 while the subprogram
          --  to set the affinity starts at 0, therefore we must substract 1.
 
@@ -1116,9 +1117,10 @@ package body System.Task_Primitives.Operations is
          --  The CPU numbering in pragma CPU starts at 1 while the subprogram
          --  to set the affinity starts at 0, therefore we must substract 1.
 
-         Result := SetThreadIdealProcessor
-           (Environment_Task.Common.LL.Thread,
-            ProcessorId (Environment_Task.Common.Base_CPU) - 1);
+         Result :=
+           SetThreadIdealProcessor
+             (Environment_Task.Common.LL.Thread,
+              ProcessorId (Environment_Task.Common.Base_CPU) - 1);
          pragma Assert (Result = 1);
       end if;
    end Initialize;
