@@ -1,3 +1,8 @@
+2010-10-18  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/arm/neon.md (neon_move_hi_quad_<mode>): Fix the order
+	of operands to vec_concat.
+
 2010-10-18  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44950
