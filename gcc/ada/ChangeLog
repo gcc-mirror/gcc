@@ -1,3 +1,14 @@
+2010-10-18  Jose Ruiz  <ruiz@adacore.com>
+
+	* adaint.c (__gnat_pthread_setaffinity_np,
+	__gnat_pthread_attr_setaffinity_np): Remove wrappers, no longer needed.
+	* s-osinte-linux.ads (pthread_setaffinity_np,
+	pthread_attr_setaffinity_np): Remove use of wrappers.
+	* s-taprop-linux.adb (Create_Task, Initialize): Restore check to verify
+	whether the affinity functionality is available in the OS.
+	* gcc-interface/utils.c: Set TREE_STATIC on functions only when there
+	are defined.
+
 2010-10-18  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.ads, einfo.adb: Minor reformatting.
