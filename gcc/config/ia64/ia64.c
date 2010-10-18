@@ -5875,15 +5875,14 @@ rws_access_regno (int regno, struct reg_flags flags, int pred)
 	  break;
 
 	case 1:
-	  /* The register has been written via a predicate.  If this is
-	     not a complementary predicate, then we need a barrier.  */
-	  /* ??? This assumes that P and P+1 are always complementary
-	     predicates for P even.  */
+	  /* The register has been written via a predicate.  Treat
+	     it like a unconditional write and do not try to check
+	     for complementary pred reg in earlier write.  */
 	  if (flags.is_and && rws_sum[regno].written_by_and)
 	    ;
 	  else if (flags.is_or && rws_sum[regno].written_by_or)
 	    ;
-	  else if ((rws_sum[regno].first_pred ^ 1) != pred)
+	  else
 	    need_barrier = 1;
 	  if (!in_safe_group_barrier)
 	    rws_update (regno, flags, pred);
@@ -5944,12 +5943,9 @@ rws_access_regno (int regno, struct reg_flags flags, int pred)
 	  break;
 
 	case 1:
-	  /* The register has been written via a predicate.  If this is
-	     not a complementary predicate, then we need a barrier.  */
-	  /* ??? This assumes that P and P+1 are always complementary
-	     predicates for P even.  */
-	  if ((rws_sum[regno].first_pred ^ 1) != pred)
-	    need_barrier = 1;
+	  /* The register has been written via a predicate, assume we
+	     need a barrier (don't check for complementary regs).  */
+	  need_barrier = 1;
 	  break;
 
 	case 2:
