@@ -2359,20 +2359,6 @@ package body Einfo is
       return Node8 (Id);
    end Postcondition_Proc;
 
-   function Primitive_Operations (Id : E) return L is
-   begin
-      if Is_Concurrent_Type (Id) then
-         if Present (Corresponding_Record_Type (Id)) then
-            return Direct_Primitive_Operations
-                     (Corresponding_Record_Type (Id));
-         else
-            return No_Elist;
-         end if;
-      else
-         return Direct_Primitive_Operations (Id);
-      end if;
-   end Primitive_Operations;
-
    function Prival (Id : E) return E is
    begin
       pragma Assert (Is_Protected_Component (Id));
@@ -6598,6 +6584,24 @@ package body Einfo is
       Set_Next_Rep_Item (N, First_Rep_Item (E));
       Set_First_Rep_Item (E, N);
    end Record_Rep_Item;
+
+   --------------------------
+   -- Primitive_Operations --
+   --------------------------
+
+   function Primitive_Operations (Id : E) return L is
+   begin
+      if Is_Concurrent_Type (Id) then
+         if Present (Corresponding_Record_Type (Id)) then
+            return Direct_Primitive_Operations
+                     (Corresponding_Record_Type (Id));
+         else
+            return No_Elist;
+         end if;
+      else
+         return Direct_Primitive_Operations (Id);
+      end if;
+   end Primitive_Operations;
 
    ---------------
    -- Root_Type --

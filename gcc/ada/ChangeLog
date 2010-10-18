@@ -1,5 +1,21 @@
 2010-10-18  Tristan Gingold  <gingold@adacore.com>
 
+	* init.c: Add __gnat_set_stack_guard_page and __gnat_set_stack_limit.
+	Implement stack limitation on VMS.
+	Minor reformatting.
+
+2010-10-18  Vincent Celier  <celier@adacore.com>
+
+	* prj.adb (Is_Compilable): Do not modify Source.Compilable until the
+	source record has been initialized.
+
+2010-10-18  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb: Minor code reorganization (Primitive_Operations is a
+	synthesized attribute routine and was in the wrong place).
+
+2010-10-18  Tristan Gingold  <gingold@adacore.com>
+
 	* init.c: Indentation, and minor changes to more closely follow GNU
 	style rules.  Make more variable statics.
 

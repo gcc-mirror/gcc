@@ -1164,10 +1164,19 @@ package body Prj is
                         or else
                           Source.Kind /= Spec)
             then
-               Source.Compilable := Yes;
+               --  Do not modify Source.Compilable before the source record
+               --  has been initilaized.
+
+               if Source.Source_TS /= Empty_Time_Stamp then
+                  Source.Compilable := Yes;
+               end if;
+
                return True;
             else
-               Source.Compilable := No;
+               if Source.Source_TS /= Empty_Time_Stamp then
+                  Source.Compilable := No;
+               end if;
+
                return False;
             end if;
 

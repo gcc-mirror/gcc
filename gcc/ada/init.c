@@ -1050,10 +1050,8 @@ __gnat_install_handler (void)
 #elif defined (VMS)
 
 /* Routine called from binder to override default feature values. */
-void __gnat_set_features ();
+void __gnat_set_features (void);
 int __gnat_features_set = 0;
-
-long __gnat_error_handler (int *, void *);
 
 #ifdef __IA64
 #define lib_get_curr_invo_context LIB$I64_GET_CURR_INVO_CONTEXT
@@ -1063,15 +1061,6 @@ long __gnat_error_handler (int *, void *);
 #define lib_get_curr_invo_context LIB$GET_CURR_INVO_CONTEXT
 #define lib_get_prev_invo_context LIB$GET_PREV_INVO_CONTEXT
 #define lib_get_invo_handle LIB$GET_INVO_HANDLE
-#endif
-
-#if defined (IN_RTS) && !defined (__IA64)
-
-/* The prehandler actually gets control first on a condition.  It swaps the
-   stack pointer and calls the handler (__gnat_error_handler).  */
-extern long __gnat_error_prehandler (void);
-
-extern char *__gnat_error_prehandler_stack;   /* Alternate signal stack */
 #endif
 
 /* Define macro symbols for the VMS conditions that become Ada exceptions.
@@ -1105,7 +1094,10 @@ struct cond_except {
   const struct Exception_Data *except;
 };
 
-struct descriptor_s {unsigned short len, mbz; __char_ptr32 adr; };
+struct descriptor_s {
+  unsigned short len, mbz;
+  __char_ptr32 adr;
+};
 
 /* Conditions that don't have an Ada exception counterpart must raise
    Non_Ada_Error.  Since this is defined in s-auxdec, it should only be
@@ -1545,62 +1537,187 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 
 #endif
 
+/* Easier interface for LIB$GET_LOGICAL: put the equivalence of NAME into BUF,
+   always NUL terminated.  In case of error or if the result is longer than
+   LEN (length of BUF) an empty string is written info BUF.  */
+
+static void
+__gnat_vms_get_logical (const char *name, char *buf, int len)
+{
+  struct descriptor_s name_desc, result_desc;
+  int status;
+  unsigned short rlen;
+
+  /* Build the descriptor for NAME.  */
+  name_desc.len = strlen (name);
+  name_desc.mbz = 0;
+  name_desc.adr = (char *)name;
+
+  /* Build the descriptor for the result.  */
+  result_desc.len = len;
+  result_desc.mbz = 0;
+  result_desc.adr = buf;
+
+  status = LIB$GET_LOGICAL (&name_desc, &result_desc, &rlen);
+
+  if ((status & 1) == 1 && rlen < len)
+    buf[rlen] = 0;
+  else
+    buf[0] = 0;
+}
+
+/* Size of a page on ia64 and alpha VMS.  */
+#define VMS_PAGESIZE 8192
+
+/* User mode.  */
+#define PSL__C_USER 3
+
+/* No access.  */
+#define PRT__C_NA 0
+
+/* Descending region.  */
+#define VA__M_DESCEND 1
+
+/* Get by virtual address.  */
+#define VA___REGSUM_BY_VA 1
+
+/* Memory region summary.  */
+struct regsum
+{
+  unsigned long long q_region_id;
+  unsigned int l_flags;
+  unsigned int l_region_protection;
+  void *pq_start_va;
+  unsigned long long q_region_size;
+  void *pq_first_free_va;
+};
+
+extern int SYS$GET_REGION_INFO (unsigned int, unsigned long long *,
+                                void *, void *, unsigned int,
+                                void *, unsigned int *);
+extern int SYS$EXPREG_64 (unsigned long long *, unsigned long long,
+                          unsigned int, unsigned int, void **,
+                          unsigned long long *);
+extern int SYS$SETPRT_64 (void *, unsigned long long, unsigned int,
+                          unsigned int, void **, unsigned long long *,
+                          unsigned int *);
+extern int SYS$PUTMSG (void *, int (*)(), void *, unsigned long long);
+
+/* Add a guard page in the memory region containing ADDR at ADDR +/- SIZE.
+   (The sign depends on the kind of the memory region).  */
+
+static int
+__gnat_set_stack_guard_page (void *addr, unsigned long size)
+{
+  int status;
+  void *ret_va;
+  unsigned long long ret_len;
+  unsigned int ret_prot;
+  void *start_va;
+  unsigned long long length;
+  unsigned int retlen;
+  struct regsum buffer;
+
+  /* Get the region for ADDR.  */
+  status = SYS$GET_REGION_INFO
+    (VA___REGSUM_BY_VA, NULL, addr, NULL, sizeof (buffer), &buffer, &retlen);
+
+  if ((status & 1) != 1)
+    return -1;
+
+  /* Extend the region.  */
+  status = SYS$EXPREG_64 (&buffer.q_region_id,
+                          size, 0, 0, &start_va, &length);
+
+  if ((status & 1) != 1)
+    return -1;
+
+  /* Create a guard page.  */
+  if (!(buffer.l_flags & VA__M_DESCEND))
+    start_va = (void *)((unsigned long long)start_va + length - VMS_PAGESIZE);
+
+  status = SYS$SETPRT_64 (start_va, VMS_PAGESIZE, PSL__C_USER, PRT__C_NA,
+                          &ret_va, &ret_len, &ret_prot);
+
+  if ((status & 1) != 1)
+    return -1;
+  return 0;
+}
+
+/* Read logicals to limit the stack(s) size.  */
+
+static void
+__gnat_set_stack_limit (void)
+{
+#ifdef __ia64__
+  void *sp;
+  unsigned long size;
+  char value[16];
+  char *e;
+
+  /* The main stack.  */
+  __gnat_vms_get_logical ("GNAT_STACK_SIZE", value, sizeof (value));
+  size = strtoul (value, &e, 0);
+  if (e > value && *e == 0)
+    {
+      asm ("mov %0=sp" : "=r" (sp));
+      __gnat_set_stack_guard_page (sp, size * 1024);
+    }
+
+  /* The register stack.  */
+  __gnat_vms_get_logical ("GNAT_RBS_SIZE", value, sizeof (value));
+  size = strtoul (value, &e, 0);
+  if (e > value && *e == 0)
+    {
+      asm ("mov %0=ar.bsp" : "=r" (sp));
+      __gnat_set_stack_guard_page (sp, size * 1024);
+    }
+#endif
+}
+
 /* Feature logical name and global variable address pair.
    If we ever add another feature logical to this list, the
    feature struct will need to be enhanced to take into account
    possible values for *gl_addr.  */
 struct feature {
-  char *name;
+  const char *name;
   int *gl_addr;
 };
 
-/* Default values for GNAT features set by environment. */
+/* Default values for GNAT features set by environment.  */
 int __gl_heap_size = 64;
 
-/* Array feature logical names and global variable addresses */
-static struct feature features[] = {
+/* Array feature logical names and global variable addresses.  */
+static const struct feature features[] = {
   {"GNAT$NO_MALLOC_64", &__gl_heap_size},
   {0, 0}
 };
 
-void __gnat_set_features (void)
+void
+__gnat_set_features (void)
 {
-  struct descriptor_s name_desc, result_desc;
-  int i, status;
-  unsigned short rlen;
+  int i;
+  char buff[16];
 
-#define MAXEQUIV 10
-  char buff[MAXEQUIV];
-
-  /* Loop through features array and test name for enable/disable */
+  /* Loop through features array and test name for enable/disable.  */
   for (i = 0; features[i].name; i++)
     {
-       name_desc.len = strlen (features[i].name);
-       name_desc.mbz = 0;
-       name_desc.adr = features[i].name;
+      __gnat_vms_get_logical (features[i].name, buff, sizeof (buff));
 
-       result_desc.len = MAXEQUIV - 1;
-       result_desc.mbz = 0;
-       result_desc.adr = buff;
-
-       status = LIB$GET_LOGICAL (&name_desc, &result_desc, &rlen);
-
-       if (((status & 1) == 1) && (rlen < MAXEQUIV))
-         buff[rlen] = 0;
-       else
-         strcpy (buff, "");
-
-       if ((strcmp (buff, "ENABLE") == 0) ||
-           (strcmp (buff, "TRUE") == 0) ||
-           (strcmp (buff, "1") == 0))
-          *features[i].gl_addr = 32;
-       else if ((strcmp (buff, "DISABLE") == 0) ||
-                (strcmp (buff, "FALSE") == 0) ||
-                (strcmp (buff, "0") == 0))
-          *features[i].gl_addr = 64;
+      if (strcmp (buff, "ENABLE") == 0
+          || strcmp (buff, "TRUE") == 0
+          || strcmp (buff, "1") == 0)
+        *features[i].gl_addr = 32;
+      else if (strcmp (buff, "DISABLE") == 0
+               || strcmp (buff, "FALSE") == 0
+               || strcmp (buff, "0") == 0)
+        *features[i].gl_addr = 64;
     }
 
-    __gnat_features_set = 1;
+  /* Features to artificially limit the stack size.  */
+  __gnat_set_stack_limit ();
+
+  __gnat_features_set = 1;
 }
 
 /*******************/
