@@ -1,3 +1,8 @@
+2010-10-18  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* gengtype.c (parse_program_options): Added allocation of
+	plugin_files, and corrected test on nb_plugin_files.
+
 2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.

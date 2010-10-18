@@ -4395,6 +4395,7 @@ parse_program_options (int argc, char **argv)
       if (optind >= argc)
 	fatal ("no source files given in plugin mode");
       nb_plugin_files = argc - optind;
+      plugin_files = XNEWVEC (char*, nb_plugin_files);
       for (i = 0; i < (int) nb_plugin_files; i++)
 	{
 	  char *name = argv[i + optind];
@@ -4488,7 +4489,7 @@ main (int argc, char **argv)
 	fatal ("No read state given in plugin mode for %s",
 	       plugin_output_filename);
 
-      if (nb_plugin_files <= 0 || !plugin_files)
+      if (nb_plugin_files == 0 || !plugin_files)
 	fatal ("No plugin files given in plugin mode for %s",
 	       plugin_output_filename);
 
