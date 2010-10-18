@@ -2509,6 +2509,11 @@ c_parser_typeof_specifier (c_parser *parser)
 	error_at (here, "%<typeof%> applied to a bit-field");
       mark_exp_read (expr.value);
       ret.spec = TREE_TYPE (expr.value);
+      if (c_dialect_objc() 
+	  && ret.spec != error_mark_node
+	  && lookup_attribute ("objc_volatilized", TYPE_ATTRIBUTES (ret.spec)))
+	ret.spec = build_qualified_type
+	  (ret.spec, (TYPE_QUALS (ret.spec) & ~TYPE_QUAL_VOLATILE));
       was_vm = variably_modified_type_p (ret.spec, NULL_TREE);
       /* This is returned with the type so that when the type is
 	 evaluated, this can be evaluated.  */

@@ -430,13 +430,6 @@ struct GTY(()) string_descriptor {
 
 static GTY((param_is (struct string_descriptor))) htab_t string_htab;
 
-/* Store the EH-volatilized types in a hash table, for easy retrieval.  */
-struct GTY(()) volatilized_type {
-  tree type;
-};
-
-static GTY((param_is (struct volatilized_type))) htab_t volatilized_htab;
-
 FILE *gen_declaration_file;
 
 /* Tells "encode_pointer/encode_aggregate" whether we are generating
@@ -1490,6 +1483,11 @@ objc_build_volatilized_type (tree type)
 	  && (TREE_TYPE (t) != TREE_TYPE (type)))
 	continue;
 
+      /* Only match up the types which were previously volatilized in similar fashion and not
+	 because they were declared as such. */
+      if (!lookup_attribute ("objc_volatilized", TYPE_ATTRIBUTES (t)))
+	continue;
+
       /* Everything matches up!  */
       return t;
     }
@@ -1498,6 +1496,13 @@ objc_build_volatilized_type (tree type)
      a new one.  */
   t = build_variant_type_copy (type);
   TYPE_VOLATILE (t) = 1;
+
+  TYPE_ATTRIBUTES (t) = merge_attributes (TYPE_ATTRIBUTES (type),
+                      			  tree_cons (get_identifier ("objc_volatilized"),
+                                 	  NULL_TREE,
+                                 	  NULL_TREE));
+  if (TREE_CODE (t) == ARRAY_TYPE)
+    TREE_TYPE (t) = objc_build_volatilized_type (TREE_TYPE (t));
 
   /* Set up the canonical type information. */
   if (TYPE_STRUCTURAL_EQUALITY_P (type))
@@ -1523,18 +1528,8 @@ objc_volatilize_decl (tree decl)
 	  || TREE_CODE (decl) == PARM_DECL))
     {
       tree t = TREE_TYPE (decl);
-      struct volatilized_type key;
-      void **loc;
 
       t = objc_build_volatilized_type (t);
-      key.type = t;
-      loc = htab_find_slot (volatilized_htab, &key, INSERT);
-
-      if (!*loc)
-	{
-	  *loc = ggc_alloc_volatilized_type ();
-	  ((struct volatilized_type *) *loc)->type = t;
-	}
 
       TREE_TYPE (decl) = t;
       TREE_THIS_VOLATILE (decl) = 1;
@@ -1881,16 +1876,11 @@ bool
 objc_type_quals_match (tree ltyp, tree rtyp)
 {
   int lquals = TYPE_QUALS (ltyp), rquals = TYPE_QUALS (rtyp);
-  struct volatilized_type key;
 
-  key.type = ltyp;
-
-  if (htab_find_slot (volatilized_htab, &key, NO_INSERT))
+  if (lookup_attribute ("objc_volatilized", TYPE_ATTRIBUTES (ltyp)))
     lquals &= ~TYPE_QUAL_VOLATILE;
 
-  key.type = rtyp;
-
-  if (htab_find_slot (volatilized_htab, &key, NO_INSERT))
+  if (lookup_attribute ("objc_volatilized", TYPE_ATTRIBUTES (rtyp)))
     rquals &= ~TYPE_QUAL_VOLATILE;
 
   return (lquals == rquals);
@@ -1993,23 +1983,6 @@ objc_xref_basetypes (tree ref, tree basetype)
     }
 }
 
-static hashval_t
-volatilized_hash (const void *ptr)
-{
-  const_tree const typ = ((const struct volatilized_type *)ptr)->type;
-
-  return htab_hash_pointer(typ);
-}
-
-static int
-volatilized_eq (const void *ptr1, const void *ptr2)
-{
-  const_tree const typ1 = ((const struct volatilized_type *)ptr1)->type;
-  const_tree const typ2 = ((const struct volatilized_type *)ptr2)->type;
-
-  return typ1 == typ2;
-}
-
 /* Called from finish_decl.  */
 
 void
@@ -2030,6 +2003,16 @@ objc_check_global_decl (tree decl)
   tree id = DECL_NAME (decl);
   if (objc_is_class_name (id) && global_bindings_p())
     error ("redeclaration of Objective-C class %qs", IDENTIFIER_POINTER (id));
+}
+
+/* Return a non-volatalized version of TYPE. */
+
+tree
+objc_non_volatilized_type (tree type)
+{
+  if (lookup_attribute ("objc_volatilized", TYPE_ATTRIBUTES (type)))
+    type = build_qualified_type (type, (TYPE_QUALS (type) & ~TYPE_QUAL_VOLATILE));
+  return type;
 }
 
 /* Construct a PROTOCOLS-qualified variant of INTERFACE, where INTERFACE may
@@ -7498,10 +7481,6 @@ hash_init (void)
   /* Initialize the hash table used to hold the constant string objects.  */
   string_htab = htab_create_ggc (31, string_hash,
 				   string_eq, NULL);
-
-  /* Initialize the hash table used to hold EH-volatilized types.  */
-  volatilized_htab = htab_create_ggc (31, volatilized_hash,
-				      volatilized_eq, NULL);
 }
 
 /* WARNING!!!!  hash_enter is called with a method, and will peek

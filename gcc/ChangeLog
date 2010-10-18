@@ -1,3 +1,15 @@
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+	* c-parser.c (c_parser_typeof_specifier): Adapted to new parser
+	the following Objective-C change:
+
+	2005-10-07  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4204796
+	* c-parse.in (typespec_nonreserved_nonattr): Remove volatile from
+	'volatilized' type used in a typeof operator.
+
 2010-10-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-flow.h (gimple_purge_all_dead_abnormal_call_edges): Declare.

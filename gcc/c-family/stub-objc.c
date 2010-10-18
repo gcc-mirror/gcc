@@ -67,6 +67,12 @@ objc_check_global_decl (tree ARG_UNUSED (decl))
 }
 
 tree
+objc_non_volatilized_type (tree type)
+{
+  return type;
+}
+
+tree
 objc_common_type (tree ARG_UNUSED (type1), tree ARG_UNUSED (type2))
 {
   return 0;

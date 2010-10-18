@@ -8006,12 +8006,13 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
 	  /* In Objective-C++, some types may have been 'volatilized' by
 	     the compiler for EH; when comparing them here, the volatile
 	     qualification must be ignored.  */
-	  bool objc_quals_match = objc_type_quals_match (to, from);
+	  tree nv_to = objc_non_volatilized_type (to);
+	  tree nv_from = objc_non_volatilized_type (from);
 
-	  if (!at_least_as_qualified_p (to, from) && !objc_quals_match)
+	  if (!at_least_as_qualified_p (nv_to, nv_from))
 	    return 0;
 
-	  if (!at_least_as_qualified_p (from, to) && !objc_quals_match)
+	  if (!at_least_as_qualified_p (nv_from, nv_to))
 	    {
 	      if (constp == 0)
 		return 0;
@@ -8019,7 +8020,7 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
 	    }
 
 	  if (constp > 0)
-	    constp &= TYPE_READONLY (to);
+	    constp &= TYPE_READONLY (nv_to);
 	}
 
       if (TREE_CODE (to) == VECTOR_TYPE)

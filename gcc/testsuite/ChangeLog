@@ -1,3 +1,28 @@
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2005-03-01 Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4451818
+	* obj-c++.dg/try-catch-16.mm: New.
+	* obj-c++.dg/try-catch-17.mm: New.
+
+	2005-11-08  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4330422
+	* obj-c++.dg/try-catch-15.mm: New
+
+	2005-10-07  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4204796
+	* obj-c++.dg/try-catch-12.mm: New
+	* obj-c++.dg/try-catch-13.mm: New
+	* obj-c++.dg/try-catch-14.mm: New
+	* objc.dg/try-catch-11.m: New
+	* objc.dg/try-catch-12.m: New
+	* objc.dg/try-catch-13.m: New
+	
 2010-10-18  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/ia64/20101014.c: Fix double-paste of test case.
