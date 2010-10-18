@@ -2112,6 +2112,15 @@ package body Sem_Ch12 is
       --  Check for a formal package that is a package renaming
 
       if Present (Renamed_Object (Gen_Unit)) then
+
+         --  Indicate that unit is used, before replacing it with renamed
+         --  entity for use below.
+
+         if In_Extended_Main_Source_Unit (N) then
+            Set_Is_Instantiated (Gen_Unit);
+            Generate_Reference  (Gen_Unit, N);
+         end if;
+
          Gen_Unit := Renamed_Object (Gen_Unit);
       end if;
 

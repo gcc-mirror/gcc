@@ -4570,8 +4570,12 @@ package body Freeze is
             --  The current scope may be that of a constrained component of
             --  an enclosing record declaration, which is above the current
             --  scope in the scope stack.
+            --  If the expression is within a top-level pragma, as for a pre-
+            --  condition on a library-level subprogram, nothing to do.
 
-            if Is_Record_Type (Scope (Current_Scope)) then
+            if not Is_Compilation_Unit (Current_Scope)
+              and then Is_Record_Type (Scope (Current_Scope))
+            then
                Pos := Pos - 1;
             end if;
 

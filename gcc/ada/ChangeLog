@@ -1,3 +1,34 @@
+2010-10-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): If subprogram is at the
+	library level, the pre/postconditions must be treated as global
+	declarations, i.e. placed on the Aux_Decl nodes of the compilation unit.
+	* freeze.adb (Freeze_Expression): If the expression is at library level
+	there is no enclosing record to check.
+
+2010-10-18  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.ads (Find_Type_Name): Add documentation.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Code cleanup because the
+	propagation of the class-wide entity is now done by routine
+	Find_Type_Name to factorize this code.
+	(Analyze_Private_Extension_Declaration): Handle private type that
+	completes an incomplete type.
+	(Tag_Mismatch): Add error message for tag mismatch in a private type
+	declaration that completes an incomplete type.
+	(Find_Type_Name): Handle completion of incomplete type by means of
+	a private declaration. Generate an error if a tagged incomplete type
+	is completed by an untagged private type.
+	* sem_ch7.adb (New_Private_Type): Handle private type that completes an
+	incomplete type.
+	* einfo.ads (Full_View): Add documentation.
+
+2010-10-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Formal_Package_Declaration): If the package is
+	a renaming, generate a reference for it before analyzing the renamed
+	entity, to prevent spurious warnings.
+
 2010-10-18  Jose Ruiz  <ruiz@adacore.com>
 
 	* adaint.c (__gnat_pthread_setaffinity_np,

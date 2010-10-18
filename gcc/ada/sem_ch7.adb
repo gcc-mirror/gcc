@@ -1919,7 +1919,25 @@ package body Sem_Ch7 is
 
    procedure New_Private_Type (N : Node_Id; Id : Entity_Id; Def : Node_Id) is
    begin
-      Enter_Name (Id);
+      if Ada_Version < Ada_2012 then
+         Enter_Name (Id);
+
+      --  Ada 2012 (AI05-0162): Enter the name in the current scope handling
+      --  private type that completes an incomplete type.
+
+      else
+         declare
+            Prev : Entity_Id;
+
+         begin
+            Prev := Find_Type_Name (N);
+
+            pragma Assert (Prev = Id
+              or else (Ekind (Prev) = E_Incomplete_Type
+                         and then Present (Full_View (Prev))
+                         and then Full_View (Prev) = Id));
+         end;
+      end if;
 
       if Limited_Present (Def) then
          Set_Ekind (Id, E_Limited_Private_Type);

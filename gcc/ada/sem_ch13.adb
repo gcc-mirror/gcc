@@ -995,11 +995,19 @@ package body Sem_Ch13 is
                   --  about delay issues, since the pragmas themselves deal
                   --  with delay of visibility for the expression analysis.
 
-                  Insert_After (N, Aitem);
+                  --  If the entity is a library-level subprogram, the pre/
+                  --  postconditions must be treated as late pragmas.
+
+                  if Nkind (Parent (N)) = N_Compilation_Unit then
+                     Add_Global_Declaration (Aitem);
+                  else
+                     Insert_After (N, Aitem);
+                  end if;
+
                   goto Continue;
                end;
 
-               --  Aspects currently unimplemented
+                  --  Aspects currently unimplemented
 
                when Aspect_Invariant |
                     Aspect_Predicate =>
