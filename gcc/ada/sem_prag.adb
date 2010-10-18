@@ -7112,6 +7112,54 @@ package body Sem_Prag is
             Check_Valid_Configuration_Pragma;
             Detect_Blocking := True;
 
+         --------------------------
+         -- Default_Storage_Pool --
+         --------------------------
+
+         --  pragma Default_Storage_Pool (storage_pool_NAME | null);
+
+         when Pragma_Default_Storage_Pool =>
+            Ada_2012_Pragma;
+            Check_Arg_Count (1);
+
+            --  Default_Storage_Pool can appear as a configuration pragma, or
+            --  in a declarative part or a package spec.
+
+            if not Is_Configuration_Pragma then
+               Check_Is_In_Decl_Part_Or_Package_Spec;
+            end if;
+
+            --  Case of Default_Storage_Pool (null);
+
+            if Nkind (Expression (Arg1)) = N_Null then
+               Analyze (Expression (Arg1));
+               Set_Etype (Expression (Arg1), Empty);
+               --  It's not really an expression, and we have no type for it
+
+            --  Case of Default_Storage_Pool (storage_pool_NAME);
+
+            else
+               --  If it's a configuration pragma, then the only allowed
+               --  argument is "null".
+
+               if Is_Configuration_Pragma then
+                  Error_Pragma_Arg ("NULL expected", Arg1);
+               end if;
+
+               --  The expected type for a non-"null" argument is
+               --  Root_Storage_Pool'Class.
+
+               Analyze_And_Resolve
+                 (Get_Pragma_Arg (Arg1),
+                  Typ => Class_Wide_Type (RTE (RE_Root_Storage_Pool)));
+            end if;
+
+            --  Finally, record the pool name (or null). Freeze.Freeze_Entity
+            --  for an access type will use this information to set the
+            --  appropriate attributes of the access type.
+
+            Default_Pool := Expression (Arg1);
+
          ---------------
          -- Dimension --
          ---------------
@@ -13615,6 +13663,7 @@ package body Sem_Prag is
       Pragma_Debug                         => -1,
       Pragma_Debug_Policy                  =>  0,
       Pragma_Detect_Blocking               => -1,
+      Pragma_Default_Storage_Pool          => -1,
       Pragma_Dimension                     => -1,
       Pragma_Discard_Names                 =>  0,
       Pragma_Elaborate                     => -1,

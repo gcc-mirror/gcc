@@ -59,15 +59,19 @@ package Sinfo is
 
    --  If changes are made to this file, a number of related steps must be
    --  carried out to ensure consistency. First, if a field access function is
-   --  added, it appears in seven places:
+   --  added, it appears in these places:
 
-   --    The documentation associated with the node
-   --    The spec of the access function in sinfo.ads
-   --    The body of the access function in sinfo.adb
-   --    The pragma Inline at the end of sinfo.ads for the access function
-   --    The spec of the set procedure in sinfo.ads
-   --    The body of the set procedure in sinfo.adb
-   --    The pragma Inline at the end of sinfo.ads for the set procedure
+   --    In sinfo.ads:
+   --      The documentation associated with the field (if semantic)
+   --      The documentation associated with the node
+   --      The spec of the access function
+   --      The spec of the set procedure
+   --      The entries in Is_Syntactic_Field
+   --      The pragma Inline for the access function
+   --      The pragma Inline for the set procedure
+   --    In sinfo.adb:
+   --      The body of the access function
+   --      The body of the set procedure
 
    --  The field chosen must be consistent in all places, and, for a node that
    --  is a subexpression, must not overlap any of the standard expression
@@ -804,6 +808,12 @@ package Sinfo is
    --    simply contains a copy of the Expression field (both point to the tree
    --    for the default expression). Default_Expression is used for
    --    conformance checking.
+
+   --  Default_Storage_Pool (Node3-Sem)
+   --    This field is present in N_Compilation_Unit_Aux nodes. It is set to a
+   --    copy of Opt.Default_Pool at the end of the compilation unit. See
+   --    package Opt for details. This is used for inheriting the
+   --    Default_Storage_Pool in child units.
 
    --  Discr_Check_Funcs_Built (Flag11-Sem)
    --    This flag is present in N_Full_Type_Declaration nodes. It is set when
@@ -5557,8 +5567,8 @@ package Sinfo is
       --  the library item.
 
       --  To deal with all these problems, we create an auxiliary node for
-      --  a compilation unit, referenced from the N_Compilation_Unit node
-      --  that contains these three items.
+      --  a compilation unit, referenced from the N_Compilation_Unit node,
+      --  that contains these items.
 
       --  N_Compilation_Unit
       --  Sloc points to first token of defining unit name
@@ -5580,6 +5590,7 @@ package Sinfo is
       --  Actions (List1) (set to No_List if no actions)
       --  Pragmas_After (List5) pragmas after unit (set to No_List if none)
       --  Config_Pragmas (List4) config pragmas (set to Empty_List if none)
+      --  Default_Storage_Pool (Node3-Sem)
 
       --------------------------
       -- 10.1.1  Library Item --
@@ -8095,6 +8106,9 @@ package Sinfo is
    function Default_Expression
      (N : Node_Id) return Node_Id;    -- Node5
 
+   function Default_Storage_Pool
+     (N : Node_Id) return Node_Id;    -- Node3
+
    function Default_Name
      (N : Node_Id) return Node_Id;    -- Node2
 
@@ -9048,6 +9062,9 @@ package Sinfo is
 
    procedure Set_Default_Expression
      (N : Node_Id; Val : Node_Id);            -- Node5
+
+   procedure Set_Default_Storage_Pool
+     (N : Node_Id; Val : Node_Id);            -- Node3
 
    procedure Set_Default_Name
      (N : Node_Id; Val : Node_Id);            -- Node2
@@ -10984,7 +11001,7 @@ package Sinfo is
      N_Compilation_Unit_Aux =>
        (1 => True,    --  Actions (List1)
         2 => True,    --  Declarations (List2)
-        3 => False,   --  unused
+        3 => False,   --  Default_Storage_Pool (Node3)
         4 => True,    --  Config_Pragmas (List4)
         5 => True),   --  Pragmas_After (List5)
 
@@ -11566,6 +11583,7 @@ package Sinfo is
    pragma Inline (Debug_Statement);
    pragma Inline (Declarations);
    pragma Inline (Default_Expression);
+   pragma Inline (Default_Storage_Pool);
    pragma Inline (Default_Name);
    pragma Inline (Defining_Identifier);
    pragma Inline (Defining_Unit_Name);
@@ -11881,6 +11899,7 @@ package Sinfo is
    pragma Inline (Set_Debug_Statement);
    pragma Inline (Set_Declarations);
    pragma Inline (Set_Default_Expression);
+   pragma Inline (Set_Default_Storage_Pool);
    pragma Inline (Set_Default_Name);
    pragma Inline (Set_Defining_Identifier);
    pragma Inline (Set_Defining_Unit_Name);

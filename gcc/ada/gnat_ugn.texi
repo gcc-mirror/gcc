@@ -11541,6 +11541,7 @@ recognized by GNAT:
    Convention_Identifier
    Debug_Policy
    Detect_Blocking
+   Default_Storage_Pool
    Discard_Names
    Elaboration_Checks
    Eliminate

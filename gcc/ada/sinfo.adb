@@ -707,6 +707,14 @@ package body Sinfo is
       return Node5 (N);
    end Default_Expression;
 
+   function Default_Storage_Pool
+      (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Compilation_Unit_Aux);
+      return Node3 (N);
+   end Default_Storage_Pool;
+
    function Default_Name
       (N : Node_Id) return Node_Id is
    begin
@@ -3693,6 +3701,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Parameter_Specification);
       Set_Node5 (N, Val); -- semantic field, no parent set
    end Set_Default_Expression;
+
+   procedure Set_Default_Storage_Pool
+      (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Compilation_Unit_Aux);
+      Set_Node3 (N, Val); -- semantic field, no parent set
+   end Set_Default_Storage_Pool;
 
    procedure Set_Default_Name
       (N : Node_Id; Val : Node_Id) is

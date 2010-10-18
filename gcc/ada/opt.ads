@@ -359,6 +359,16 @@ package Opt is
    --  default was set by the binder, and that the default should be the
    --  initial value of System.Secondary_Stack.Default_Secondary_Stack_Size.
 
+   Default_Pool : Node_Id := Empty;
+   --  GNAT
+   --  Used to record the storage pool name (or null literal) that is the
+   --  argument of an applicable pragma Default_Storage_Pool.
+   --    Empty: No pragma Default_Storage_Pool applies.
+   --    N_Null node: "pragma Default_Storage_Pool (null);" applies.
+   --    otherwise: "pragma Default_Storage_Pool (X);" applies, and
+   --    this points to the name X.
+   --  Push_Scope and Pop_Scope in Sem_Ch8 save and restore this.
+
    Detect_Blocking : Boolean := False;
    --  GNAT
    --  Set True to force the run time to raise Program_Error if calls to
@@ -1585,6 +1595,11 @@ package Opt is
    --  mode, as possibly set by the command line switch -gnata and possibly
    --  modified by the use of the configuration pragma Debug_Policy.
 
+   Default_Pool_Config : Node_Id := Empty;
+   --  GNAT
+   --  Same as Default_Pool above, except this is only for Default_Storage_Pool
+   --  pragmas that are configuration pragmas.
+
    Dynamic_Elaboration_Checks_Config : Boolean := False;
    --  GNAT
    --  Set True for dynamic elaboration checking mode, as set by the -gnatE
@@ -1793,6 +1808,7 @@ private
       Assume_No_Invalid_Values       : Boolean;
       Check_Policy_List              : Node_Id;
       Debug_Pragmas_Enabled          : Boolean;
+      Default_Pool                   : Node_Id;
       Dynamic_Elaboration_Checks     : Boolean;
       Exception_Locations_Suppressed : Boolean;
       Extensions_Allowed             : Boolean;
