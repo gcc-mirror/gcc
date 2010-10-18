@@ -545,6 +545,8 @@ const struct c_common_resword c_common_reswords[] =
   { "required",		RID_AT_REQUIRED,	D_OBJC },
   { "property",		RID_AT_PROPERTY,	D_OBJC },
   { "package",		RID_AT_PACKAGE,		D_OBJC },
+  { "synthesize",	RID_AT_SYNTHESIZE,	D_OBJC },
+  { "dynamic",		RID_AT_DYNAMIC,		D_OBJC },
   /* These are recognized only in protocol-qualifier context
      (see above) */
   { "bycopy",		RID_BYCOPY,		D_OBJC },

@@ -148,6 +148,7 @@ enum rid
   RID_AT_THROW,	   RID_AT_TRY,       RID_AT_CATCH,
   RID_AT_FINALLY,  RID_AT_SYNCHRONIZED, 
   RID_AT_OPTIONAL, RID_AT_REQUIRED, RID_AT_PROPERTY,
+  RID_AT_SYNTHESIZE, RID_AT_DYNAMIC,
   RID_AT_INTERFACE,
   RID_AT_IMPLEMENTATION,
 
@@ -1045,6 +1046,8 @@ extern bool  objc_method_decl (enum tree_code);
 extern void objc_add_property_variable (tree);
 extern tree objc_build_getter_call (tree, tree);
 extern tree objc_build_setter_call (tree, tree);
+extern void objc_add_synthesize_declaration (location_t, tree);
+extern void objc_add_dynamic_declaration (location_t, tree);
 
 /* The following are provided by the C and C++ front-ends, and called by
    ObjC/ObjC++.  */
