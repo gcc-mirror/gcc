@@ -1,7 +1,11 @@
-! { dg-do run }
+! { dg-do run { xfail *-*-mingw* } }
 !
 ! PR fortran/36158
 ! PR fortran/33197
+!
+! For mingw targets this test is disabled as the MS implementation
+! of BESSEL_YN(n,x) has different results.  It returns NAN rather than
+! -INF for "x=0.0" and all "n".
 !
 ! Run-time tests for transformations BESSEL_YN
 !
