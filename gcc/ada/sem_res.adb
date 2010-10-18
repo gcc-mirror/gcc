@@ -6331,19 +6331,20 @@ package body Sem_Res is
         and then Present (PPC_Wrapper (Nam))
         and then Current_Scope /= PPC_Wrapper (Nam)
       then
-
-         --  Rewrite as call to the precondition wrapper, adding the
-         --  task object to the list of actuals.
+         --  Rewrite as call to the precondition wrapper, adding the task
+         --  object to the list of actuals.
 
          declare
-            New_Call : Node_Id;
+            New_Call    : Node_Id;
             New_Actuals : List_Id;
          begin
             New_Actuals := New_List (Obj);
             Append_List (Parameter_Associations (N), New_Actuals);
-            New_Call := Make_Procedure_Call_Statement (Loc,
-              Name => New_Occurrence_Of (PPC_Wrapper (Nam), Loc),
-              Parameter_Associations => New_Actuals);
+            New_Call :=
+              Make_Procedure_Call_Statement (Loc,
+                Name                   =>
+                  New_Occurrence_Of (PPC_Wrapper (Nam), Loc),
+                Parameter_Associations => New_Actuals);
             Rewrite (N, New_Call);
             Analyze_And_Resolve (N);
             return;

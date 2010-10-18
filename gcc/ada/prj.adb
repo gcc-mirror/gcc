@@ -1161,8 +1161,7 @@ package body Prj is
                 Length_Of_Name (Source.Language.Config.Compiler_Driver) /= 0
               and then not Source.Locally_Removed
               and then (Source.Language.Config.Kind /= File_Based
-                        or else
-                          Source.Kind /= Spec)
+                         or else Source.Kind /= Spec)
             then
                --  Do not modify Source.Compilable before the source record
                --  has been initilaized.
@@ -1172,6 +1171,7 @@ package body Prj is
                end if;
 
                return True;
+
             else
                if Source.Source_TS /= Empty_Time_Stamp then
                   Source.Compilable := No;

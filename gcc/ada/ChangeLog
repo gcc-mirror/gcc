@@ -1,3 +1,19 @@
+2010-10-18  Robert Dewar  <dewar@adacore.com>
+
+	* prj-nmsc.adb, prj.adb, sem_res.adb: Minor reformatting.
+
+2010-10-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Insert_Explicit_Dereference): If operand is a selected
+	component, we generate a reference to the ultimate prefix when it is an
+	entity name. We must place the reference on the identifier for that
+	prefix, and not on the operand itself, to prevent spurious extra
+	references in the ali file.
+
+2010-10-18  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Add documentation for attribute Ignore_Source_Sub_Dirs
+
 2010-10-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* einfo.ads, einfo.adb: New attribute PPC_Wrapper for entries and entry
