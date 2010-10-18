@@ -325,7 +325,7 @@ package body GNAT.Traceback.Symbolic is
                Len := Last;
             end;
 
-         --  Even status values
+         --  Failure (bit 0 clear)
 
          else
             Res (Len + 1 .. Len + 6) := "ERROR" & ASCII.LF;

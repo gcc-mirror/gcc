@@ -2581,7 +2581,10 @@ package body Einfo is
 
    function Spec_PPC_List (Id : E) return N is
    begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
+      pragma Assert
+        (Ekind (Id) = E_Entry
+          or else Is_Subprogram (Id)
+          or else Is_Generic_Subprogram (Id));
       return Node24 (Id);
    end Spec_PPC_List;
 
@@ -5046,7 +5049,10 @@ package body Einfo is
 
    procedure Set_Spec_PPC_List (Id : E; V : N) is
    begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
+      pragma Assert
+        (Ekind_In (Id, E_Entry, E_Void)
+          or else Is_Subprogram (Id)
+          or else Is_Generic_Subprogram (Id));
       Set_Node24 (Id, V);
    end Set_Spec_PPC_List;
 

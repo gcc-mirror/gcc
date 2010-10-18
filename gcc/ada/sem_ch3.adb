@@ -62,6 +62,7 @@ with Sem_Dist; use Sem_Dist;
 with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
+with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Smem; use Sem_Smem;
 with Sem_Type; use Sem_Type;
@@ -2069,6 +2070,35 @@ package body Sem_Ch3 is
 
          D := Next_Node;
       end loop;
+
+      --  One more thing to do, we need to scan the declarations to check
+      --  for any precondition/postcondition pragmas (Pre/Post aspects have
+      --  by this stage been converted into corresponding pragmas). It is
+      --  at this point that we analyze the expressions in such pragmas,
+      --  to implement the delayed visibility requirement.
+
+      declare
+         Decl : Node_Id;
+         Spec : Node_Id;
+         Sent : Entity_Id;
+         Prag : Node_Id;
+
+      begin
+         Decl := First (L);
+         while Present (Decl) loop
+            if Nkind (Original_Node (Decl)) = N_Subprogram_Declaration then
+               Spec := Specification (Original_Node (Decl));
+               Sent := Defining_Unit_Name (Spec);
+               Prag := Spec_PPC_List (Sent);
+               while Present (Prag) loop
+                  Analyze_PPC_In_Decl_Part (Prag, Sent);
+                  Prag := Next_Pragma (Prag);
+               end loop;
+            end if;
+
+            Next (Decl);
+         end loop;
+      end;
    end Analyze_Declarations;
 
    -----------------------------------

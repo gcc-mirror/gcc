@@ -69,7 +69,7 @@ package System.VxWorks.Ext is
    pragma Convention (C, Interrupt_Number_To_Vector);
 
    function semDelete (Sem : SEM_ID) return int;
-   pragma Import (C, semDelete, "semDelete");
+   pragma Convention (C, semDelete);
 
    function Task_Cont (tid : t_id) return int;
    pragma Import (C, Task_Cont, "taskResume");

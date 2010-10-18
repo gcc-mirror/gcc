@@ -755,6 +755,14 @@ package body Sem_Type is
          end if;
       end if;
 
+      --  First check for Standard_Void_Type, which is special. Subsequent
+      --  processing in this routine assumes T1 and T2 are bona fide types;
+      --  Standard_Void_Type is a special entity that has some, but not all,
+      --  properties of types.
+
+      if (T1 = Standard_Void_Type) /= (T2 = Standard_Void_Type) then
+         return False;
+
       --  Simplest case: same types are compatible, and types that have the
       --  same base type and are not generic actuals are compatible. Generic
       --  actuals  belong to their class but are not compatible with other
@@ -770,7 +778,7 @@ package body Sem_Type is
       --  the same actual, so that different subprograms end up with the same
       --  signature in the instance.
 
-      if T1 = T2 then
+      elsif T1 = T2 then
          return True;
 
       elsif BT1 = BT2

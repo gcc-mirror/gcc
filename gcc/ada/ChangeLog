@@ -1,5 +1,44 @@
 2010-10-18  Robert Dewar  <dewar@adacore.com>
 
+	* g-trasym-vms-ia64.adb: Minor reformatting.
+
+2010-10-18  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_type.adb (Covers): If either argument is Standard_Void_Type and
+	the other isn't, return False early.
+
+2010-10-18  Ed Falis  <falis@adacore.com>
+
+	* s-vxwext-rtp.ads, s-vxext-rtp.adb: Adapt for missing APIs for RTPs in
+	VxWorks Cert.
+
+2010-10-18  Robert Dewar  <dewar@adacore.com>
+
+	* sem_disp.ads: Minor comment update.
+
+2010-10-18  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, einfo.adb (Spec_PPC_List): Is now present in Entries
+	* sem_ch3.adb (Analyze_Declarations): Add processing for delaying
+	visibility analysis of precondition and postcondition pragmas (and
+	Pre/Post aspects).
+	* sem_ch6.adb (Process_PPCs): Add handling of inherited Pre'Class
+	aspects.
+	* sem_ch7.adb (Analyze_Package_Specification): Remove special handling
+	of pre/post conditions (no longer needed).
+	* sem_disp.adb (Inherit_Subprograms): Deal with interface case.
+	* sem_prag.adb (Analyze_PPC_In_Decl_Part): Remove analysis of message
+	argument, since this is now done in the main processing for
+	pre/postcondition pragmas when they are first seen.
+	(Chain_PPC): Pre'Class and Post'Class now handled properly
+	(Chain_PPC): Handle Pre/Post aspects for entries
+	(Check_Precondition_Postcondition): Handle entry declaration case
+	(Check_Precondition_Postcondition): Handle delay of visibility analysis
+	(Check_Precondition_Postcondition): Preanalyze message argument if
+	present.
+
+2010-10-18  Robert Dewar  <dewar@adacore.com>
+
 	* g-trasym-vms-ia64.adb, prj-nmsc.adb, prj.ads: Minor reformatting.
 
 2010-10-14  Eric Botcazou  <ebotcazou@adacore.com>

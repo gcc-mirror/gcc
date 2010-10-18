@@ -76,8 +76,9 @@ package Sem_Disp is
    --  and Empty if it is not dynamically tagged.
 
    function Find_Dispatching_Type (Subp : Entity_Id) return Entity_Id;
-   --  Check whether a subprogram is dispatching, and find the tagged
-   --  type of the controlling argument or arguments.
+   --  Check whether a subprogram is dispatching, and find the tagged type of
+   --  the controlling argument or arguments. Returns Empty if Subp is not a
+   --  dispatching operation.
 
    function Find_Primitive_Covering_Interface
      (Tagged_Type : Entity_Id;
