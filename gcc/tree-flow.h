@@ -450,9 +450,10 @@ extern void gather_blocks_in_sese_region (basic_block entry, basic_block exit,
 					  VEC(basic_block,heap) **bbs_p);
 extern void add_phi_args_after_copy_bb (basic_block);
 extern void add_phi_args_after_copy (basic_block *, unsigned, edge);
-extern bool gimple_purge_dead_abnormal_call_edges (basic_block);
 extern bool gimple_purge_dead_eh_edges (basic_block);
 extern bool gimple_purge_all_dead_eh_edges (const_bitmap);
+extern bool gimple_purge_dead_abnormal_call_edges (basic_block);
+extern bool gimple_purge_all_dead_abnormal_call_edges (const_bitmap);
 extern tree gimplify_build1 (gimple_stmt_iterator *, enum tree_code,
 			     tree, tree);
 extern tree gimplify_build2 (gimple_stmt_iterator *, enum tree_code,

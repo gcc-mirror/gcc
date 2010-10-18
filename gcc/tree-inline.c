@@ -4010,7 +4010,10 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
     }
 
   if (purge_dead_abnormal_edges)
-    gimple_purge_dead_abnormal_call_edges (return_block);
+    {
+      gimple_purge_dead_eh_edges (return_block);
+      gimple_purge_dead_abnormal_call_edges (return_block);
+    }
 
   /* If the value of the new expression is ignored, that's OK.  We
      don't warn about this for CALL_EXPRs, so we shouldn't warn about

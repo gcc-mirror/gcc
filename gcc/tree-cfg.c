@@ -6824,39 +6824,6 @@ gimple_flow_call_edges_add (sbitmap blocks)
   return blocks_split;
 }
 
-/* Purge dead abnormal call edges from basic block BB.  */
-
-bool
-gimple_purge_dead_abnormal_call_edges (basic_block bb)
-{
-  bool changed = gimple_purge_dead_eh_edges (bb);
-
-  if (cfun->has_nonlocal_label)
-    {
-      gimple stmt = last_stmt (bb);
-      edge_iterator ei;
-      edge e;
-
-      if (!(stmt && stmt_can_make_abnormal_goto (stmt)))
-	for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
-	  {
-	    if (e->flags & EDGE_ABNORMAL)
-	      {
-		remove_edge (e);
-		changed = true;
-	      }
-	    else
-	      ei_next (&ei);
-	  }
-
-      /* See gimple_purge_dead_eh_edges below.  */
-      if (changed)
-	free_dominance_info (CDI_DOMINATORS);
-    }
-
-  return changed;
-}
-
 /* Removes edge E and all the blocks dominated by it, and updates dominance
    information.  The IL in E->src needs to be updated separately.
    If dominance info is not available, only the edge E is removed.*/
@@ -7010,6 +6977,8 @@ gimple_purge_dead_eh_edges (basic_block bb)
   return changed;
 }
 
+/* Purge dead EH edges from basic block listed in BLOCKS.  */
+
 bool
 gimple_purge_all_dead_eh_edges (const_bitmap blocks)
 {
@@ -7026,6 +6995,59 @@ gimple_purge_all_dead_eh_edges (const_bitmap blocks)
       gcc_assert (bb || changed);
       if (bb != NULL)
 	changed |= gimple_purge_dead_eh_edges (bb);
+    }
+
+  return changed;
+}
+
+/* Purge dead abnormal call edges from basic block BB.  */
+
+bool
+gimple_purge_dead_abnormal_call_edges (basic_block bb)
+{
+  bool changed = false;
+  edge e;
+  edge_iterator ei;
+  gimple stmt = last_stmt (bb);
+
+  if (!cfun->has_nonlocal_label)
+    return false;
+
+  if (stmt && stmt_can_make_abnormal_goto (stmt))
+    return false;
+
+  for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
+    {
+      if (e->flags & EDGE_ABNORMAL)
+	{
+	  remove_edge_and_dominated_blocks (e);
+	  changed = true;
+	}
+      else
+	ei_next (&ei);
+    }
+
+  return changed;
+}
+
+/* Purge dead abnormal call edges from basic block listed in BLOCKS.  */
+
+bool
+gimple_purge_all_dead_abnormal_call_edges (const_bitmap blocks)
+{
+  bool changed = false;
+  unsigned i;
+  bitmap_iterator bi;
+
+  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i, bi)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+
+      /* Earlier gimple_purge_dead_abnormal_call_edges could have removed
+	 this basic block already.  */
+      gcc_assert (bb || changed);
+      if (bb != NULL)
+	changed |= gimple_purge_dead_abnormal_call_edges (bb);
     }
 
   return changed;

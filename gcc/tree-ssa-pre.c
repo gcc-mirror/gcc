@@ -484,9 +484,11 @@ static tree pretemp;
 static tree storetemp;
 static tree prephitemp;
 
-/* Set of blocks with statements that have had its EH information
-   cleaned up.  */
+/* Set of blocks with statements that have had their EH properties changed.  */
 static bitmap need_eh_cleanup;
+
+/* Set of blocks with statements that have had their AB properties changed.  */
+static bitmap need_ab_cleanup;
 
 /* The phi_translate_table caches phi translations for a given
    expression and predecessor.  */
@@ -4253,6 +4255,10 @@ eliminate (void)
 		      || TREE_CODE (rhs) != SSA_NAME
 		      || may_propagate_copy (rhs, sprime)))
 		{
+		  bool can_make_abnormal_goto
+		    = is_gimple_call (stmt)
+		      && stmt_can_make_abnormal_goto (stmt);
+
 		  gcc_assert (sprime != rhs);
 
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4281,14 +4287,24 @@ eliminate (void)
 		  stmt = gsi_stmt (gsi);
 		  update_stmt (stmt);
 
-		  /* If we removed EH side effects from the statement, clean
+		  /* If we removed EH side-effects from the statement, clean
 		     its EH information.  */
 		  if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
 		    {
 		      bitmap_set_bit (need_eh_cleanup,
 				      gimple_bb (stmt)->index);
 		      if (dump_file && (dump_flags & TDF_DETAILS))
-			fprintf (dump_file, "  Removed EH side effects.\n");
+			fprintf (dump_file, "  Removed EH side-effects.\n");
+		    }
+
+		  /* Likewise for AB side-effects.  */
+		  if (can_make_abnormal_goto
+		      && !stmt_can_make_abnormal_goto (stmt))
+		    {
+		      bitmap_set_bit (need_ab_cleanup,
+				      gimple_bb (stmt)->index);
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file, "  Removed AB side-effects.\n");
 		    }
 		}
 	    }
@@ -4345,13 +4361,16 @@ eliminate (void)
 	    }
 	  /* Visit indirect calls and turn them into direct calls if
 	     possible.  */
-	  if (gimple_code (stmt) == GIMPLE_CALL
+	  if (is_gimple_call (stmt)
 	      && TREE_CODE (gimple_call_fn (stmt)) == SSA_NAME)
 	    {
 	      tree fn = VN_INFO (gimple_call_fn (stmt))->valnum;
 	      if (TREE_CODE (fn) == ADDR_EXPR
 		  && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL)
 		{
+		  bool can_make_abnormal_goto
+		    = stmt_can_make_abnormal_goto (stmt);
+
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
 		      fprintf (dump_file, "Replacing call target with ");
@@ -4362,12 +4381,25 @@ eliminate (void)
 
 		  gimple_call_set_fn (stmt, fn);
 		  update_stmt (stmt);
+
+		  /* If we removed EH side-effects from the statement, clean
+		     its EH information.  */
 		  if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
 		    {
 		      bitmap_set_bit (need_eh_cleanup,
 				      gimple_bb (stmt)->index);
 		      if (dump_file && (dump_flags & TDF_DETAILS))
-			fprintf (dump_file, "  Removed EH side effects.\n");
+			fprintf (dump_file, "  Removed EH side-effects.\n");
+		    }
+
+		  /* Likewise for AB side-effects.  */
+		  if (can_make_abnormal_goto
+		      && !stmt_can_make_abnormal_goto (stmt))
+		    {
+		      bitmap_set_bit (need_ab_cleanup,
+				      gimple_bb (stmt)->index);
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file, "  Removed AB side-effects.\n");
 		    }
 
 		  /* Changing an indirect call to a direct call may
@@ -4746,6 +4778,7 @@ init_pre (bool do_fre)
     }
 
   need_eh_cleanup = BITMAP_ALLOC (NULL);
+  need_ab_cleanup = BITMAP_ALLOC (NULL);
 }
 
 
@@ -4776,6 +4809,14 @@ fini_pre (bool do_fre)
     }
 
   BITMAP_FREE (need_eh_cleanup);
+
+  if (!bitmap_empty_p (need_ab_cleanup))
+    {
+      gimple_purge_all_dead_abnormal_call_edges (need_ab_cleanup);
+      cleanup_tree_cfg ();
+    }
+
+  BITMAP_FREE (need_ab_cleanup);
 
   if (!do_fre)
     loop_optimizer_finalize ();
