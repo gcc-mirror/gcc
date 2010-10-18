@@ -6896,20 +6896,20 @@ package body Prj.Nmsc is
                      if Ignore /= Nil_String then
                         declare
                            Dir_Name : String := Name (1 .. Last);
-                           List : String_List_Id := Ignore;
+                           List     : String_List_Id := Ignore;
+
                         begin
                            Canonical_Case_File_Name (Dir_Name);
 
                            while List /= Nil_String loop
                               Get_Name_String
-                                (Data.Tree.String_Elements.Table
-                                   (List).Value);
+                                (Data.Tree.String_Elements.Table (List).Value);
                               Canonical_Case_File_Name
                                 (Name_Buffer (1 .. Name_Len));
                               OK := Name_Buffer (1 .. Name_Len) /= Dir_Name;
                               exit when not OK;
-                              List := Data.Tree.String_Elements.Table
-                                                                 (List).Next;
+                              List :=
+                                Data.Tree.String_Elements.Table (List).Next;
                            end loop;
                         end;
                      end if;
@@ -7649,6 +7649,10 @@ package body Prj.Nmsc is
               (Ada.Directories.Simple_Name
                  (Get_Name_String (Src.Path_Name)));
             Id.File := Name_Find;
+
+            Id.Next_With_File_Name :=
+              Source_Files_Htable.Get (Data.Tree.Source_Files_HT, Id.File);
+            Source_Files_Htable.Set (Data.Tree.Source_Files_HT, Id.File, Id);
 
             Name_Len := 0;
             Add_Str_To_Name_Buffer

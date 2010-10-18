@@ -278,6 +278,14 @@ There are several ways of defining source directories:
   be excluded. It is also possible to exclude a complete directory subtree
   using the "/**" notation.
 
+@cindex @code{Ignore_Source_Sub_Dirs}
+  It is often desirable to remove, from the source directories, directory
+  subtrees rooted at some subdirectories. An example is the subdirectories
+  created by a Version Control System such as Subversion that creates directory
+  subtrees .svn/**. To do that, attribute  @b{Ignore_Source_Sub_Dirs} can be
+  used. It specifies the list of simple file names for the root of these
+  undesirable directory subtrees.
+
 @end itemize
 
 @noindent
