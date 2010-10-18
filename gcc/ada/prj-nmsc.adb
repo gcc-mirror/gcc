@@ -223,6 +223,7 @@ package body Prj.Nmsc is
      (Project       : Project_Id;
       Data          : in out Tree_Processing_Data;
       Patterns      : String_List_Id;
+      Ignore        : String_List_Id;
       Search_For    : Search_Type;
       Resolve_Links : Boolean);
    --  Search the subdirectories of Project's directory for files or
@@ -966,6 +967,7 @@ package body Prj.Nmsc is
         (Project       => Project,
          Data          => Data,
          Patterns      => Project_Files.Values,
+         Ignore        => Nil_String,
          Search_For    => Search_Files,
          Resolve_Links => Opt.Follow_Links_For_Files);
 
@@ -4950,6 +4952,12 @@ package body Prj.Nmsc is
                       Util.Value_Of
                         (Name_Source_Dirs, Project.Decl.Attributes, Data.Tree);
 
+      Ignore_Source_Sub_Dirs : constant Variable_Value :=
+                                 Util.Value_Of
+                                   (Name_Ignore_Source_Sub_Dirs,
+                                    Project.Decl.Attributes,
+                                    Data.Tree);
+
       Excluded_Source_Dirs : constant Variable_Value :=
                               Util.Value_Of
                                 (Name_Excluded_Source_Dirs,
@@ -5259,6 +5267,7 @@ package body Prj.Nmsc is
            (Project         => Project,
             Data            => Data,
             Patterns        => Source_Dirs.Values,
+            Ignore          => Ignore_Source_Sub_Dirs.Values,
             Search_For      => Search_Directories,
             Resolve_Links   => Opt.Follow_Links_For_Dirs);
 
@@ -5280,6 +5289,7 @@ package body Prj.Nmsc is
            (Project         => Project,
             Data            => Data,
             Patterns        => Excluded_Source_Dirs.Values,
+            Ignore          => Nil_String,
             Search_For      => Search_Directories,
             Resolve_Links   => Opt.Follow_Links_For_Dirs);
       end if;
@@ -6745,6 +6755,7 @@ package body Prj.Nmsc is
      (Project       : Project_Id;
       Data          : in out Tree_Processing_Data;
       Patterns      : String_List_Id;
+      Ignore        : String_List_Id;
       Search_For    : Search_Type;
       Resolve_Links : Boolean)
    is
@@ -6878,17 +6889,42 @@ package body Prj.Nmsc is
                        Resolve_Links  => Resolve_Links)
                     & Directory_Separator;
                   Path2     : Path_Information;
+                  OK        : Boolean := True;
 
                begin
                   if Is_Directory (Path_Name) then
-                     Name_Len := 0;
-                     Add_Str_To_Name_Buffer (Path_Name);
-                     Path2.Display_Name := Name_Find;
+                     if Ignore /= Nil_String then
+                        declare
+                           Dir_Name : String := Name (1 .. Last);
+                           List : String_List_Id := Ignore;
+                        begin
+                           Canonical_Case_File_Name (Dir_Name);
 
-                     Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-                     Path2.Name := Name_Find;
+                           while List /= Nil_String loop
+                              Get_Name_String
+                                (Data.Tree.String_Elements.Table
+                                   (List).Value);
+                              Canonical_Case_File_Name
+                                (Name_Buffer (1 .. Name_Len));
+                              OK := Name_Buffer (1 .. Name_Len) /= Dir_Name;
+                              exit when not OK;
+                              List := Data.Tree.String_Elements.Table
+                                                                 (List).Next;
+                           end loop;
+                        end;
+                     end if;
 
-                     Success := Recursive_Find_Dirs (Path2, Rank) or Success;
+                     if OK then
+                        Name_Len := 0;
+                        Add_Str_To_Name_Buffer (Path_Name);
+                        Path2.Display_Name := Name_Find;
+
+                        Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+                        Path2.Name := Name_Find;
+
+                        Success :=
+                          Recursive_Find_Dirs (Path2, Rank) or Success;
+                     end if;
                   end if;
                end;
             end if;

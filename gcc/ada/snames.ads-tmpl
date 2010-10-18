@@ -1089,6 +1089,7 @@ package Snames is
    Name_Gnatstub                         : constant Name_Id := N + $;
    Name_Gnu                              : constant Name_Id := N + $;
    Name_Ide                              : constant Name_Id := N + $;
+   Name_Ignore_Source_Sub_Dirs           : constant Name_Id := N + $;
    Name_Implementation                   : constant Name_Id := N + $;
    Name_Implementation_Exceptions        : constant Name_Id := N + $;
    Name_Implementation_Suffix            : constant Name_Id := N + $;
