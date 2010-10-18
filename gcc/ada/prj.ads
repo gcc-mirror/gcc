@@ -710,6 +710,9 @@ package Prj is
       --  Updated at the first call to Is_Compilable. Yes if source file is
       --  compilable.
 
+      In_The_Queue : Boolean := False;
+      --  True if the source has been put in the queue
+
       Locally_Removed : Boolean := False;
       --  True if the source has been "excluded"
 
@@ -793,6 +796,7 @@ package Prj is
                        Index                  => 0,
                        Locally_Removed        => False,
                        Compilable             => Unknown,
+                       In_The_Queue           => False,
                        Replaced_By            => No_Source,
                        File                   => No_File,
                        Display_File           => No_File,

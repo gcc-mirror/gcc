@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1093,11 +1093,6 @@ package body System.Tasking.Stages is
 
       --  Assume a size of the stack taken at this stage
 
-      Overflow_Guard :=
-        (if Size < Small_Stack_Limit
-         then Small_Overflow_Guard
-         else Big_Overflow_Guard);
-
       if not Parameters.Sec_Stack_Dynamic then
          Self_ID.Common.Compiler_Data.Sec_Stack_Addr :=
            Secondary_Stack'Address;
@@ -1109,22 +1104,6 @@ package body System.Tasking.Stages is
          Self_ID.Common.Task_Alternate_Stack := Task_Alternate_Stack'Address;
       end if;
 
-      Size := Size - Overflow_Guard;
-
-      if System.Stack_Usage.Is_Enabled then
-         STPO.Lock_RTS;
-         Initialize_Analyzer
-           (Self_ID.Common.Analyzer,
-            Self_ID.Common.Task_Image
-              (1 .. Self_ID.Common.Task_Image_Len),
-            Natural
-              (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size),
-            Size,
-            SSE.To_Integer (Bottom_Of_Stack'Address));
-         STPO.Unlock_RTS;
-         Fill_Stack (Self_ID.Common.Analyzer);
-      end if;
-
       --  Set the guard page at the bottom of the stack. The call to unprotect
       --  the page is done in Terminate_Task
 
@@ -1134,6 +1113,29 @@ package body System.Tasking.Stages is
       --  the creator. Enter_Task sets Self_ID.LL.Thread
 
       Enter_Task (Self_ID);
+
+      --  Initialize dynamic stack usage
+
+      if System.Stack_Usage.Is_Enabled then
+         Overflow_Guard :=
+           (if Size < Small_Stack_Limit
+              then Small_Overflow_Guard
+              else Big_Overflow_Guard);
+
+         STPO.Lock_RTS;
+         Initialize_Analyzer
+           (Self_ID.Common.Analyzer,
+            Self_ID.Common.Task_Image
+              (1 .. Self_ID.Common.Task_Image_Len),
+            Natural
+              (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size),
+            Size - Overflow_Guard,
+            SSE.To_Integer (Bottom_Of_Stack'Address),
+            SSE.To_Integer
+              (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Limit));
+         STPO.Unlock_RTS;
+         Fill_Stack (Self_ID.Common.Analyzer);
+      end if;
 
       --  We setup the SEH (Structured Exception Handling) handler if supported
       --  on the target.

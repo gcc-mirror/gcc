@@ -1,3 +1,21 @@
+2010-10-18  Vincent Celier  <celier@adacore.com>
+
+	* prj.ads (Source_Data): New Boolean flag In_The_Queue.
+
+2010-10-18  Tristan Gingold  <gingold@adacore.com>
+
+	* s-stausa.ads: Add the Top parameter to Initialize_Analyzer.
+	* s-stausa.adb: Use the top parameter.  In Fill_Stack, use the
+	stack top if known.
+	* s-tassta.adb (Task_Wrapper): Call Initialize_Analyzer after Enter_Task
+	so that Pri_Stack_Info.Limit can be set and used.
+
+2010-10-18  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+	* sem_res.adb (Resolve_Allocator): Add test for violating
+	No_Anonymous_Allocators.
+
 2010-10-18  Robert Dewar  <dewar@adacore.com>
 
 	* prj-nmsc.adb, prj.adb, sem_res.adb: Minor reformatting.
