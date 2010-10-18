@@ -532,8 +532,7 @@ following are also necessary:
 @itemize @bullet
 @item
 At least one Bugzilla component for bugs in that front end and runtime
-libraries.  This category needs to be mentioned in
-@file{gcc/gccbug.in}, as well as being added to the Bugzilla database.
+libraries.  This category needs to be added to the Bugzilla database.
 @item
 Normally, one or more maintainers of that front end listed in
 @file{MAINTAINERS}.

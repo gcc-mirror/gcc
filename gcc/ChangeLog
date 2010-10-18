@@ -1,3 +1,14 @@
+2010-10-18  Andi Kleen  <ak@linux.intel.com>
+
+	PR other/43448
+	* gccbug.in: Remove.
+	* Makefile.in (GCCBUG_INSTALL_NAME, gccbug): Remove
+	(doc, distclean, install-common): Remove reference to gccbug.
+	* configure: Regenerate.
+	* configure.ac (all_outputs): Remove gccbug.
+	* doc/configfiles.texi: Remove references to gccbug.
+	* doc/sourcebuild.texi: Dito.
+
 2010-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46019

@@ -33,9 +33,6 @@ used.
 @item
 @file{cstamp-h} is used as a timestamp.
 @item
-@file{gccbug}, a script for reporting bugs in GCC, is constructed from
-@file{gccbug.in}.
-@item
 If a language @file{config-lang.in} file (@pxref{Front End Config, ,
 The Front End @file{config-lang.in} File}) sets @code{outputs}, then
 the files listed in @code{outputs} there are also generated.
