@@ -1,4 +1,14 @@
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2006-03-16 Fariborz Jahanian <fjahanian@apple.com>
+
+        Radar 4293709
+	* objc.dg/proto-init-mimatch-1.m: New.
+	* obj-c++.dg/proto-init-mimatch-1.mm: New.
+
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented parsing @synthesize and @dynamic for
 	Objective-C/Objective-C++.
