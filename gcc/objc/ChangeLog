@@ -1,6 +1,18 @@
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
+
+	2006-03-10  Fariborz Jahanian <fjahanian@apple.com>
+
+        Radar 4407151
+	* objc/objc-act.c (objc_is_class_name): template parameter is not
+        an objective class name.
+        (objc_generate_cxx_cdtors): Check for the null
+        objc_implementation_context.	
+
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.	
 	
 	2005-11-08  Fariborz Jahanian <fjahanian@apple.com>
 
