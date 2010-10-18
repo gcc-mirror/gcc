@@ -1,3 +1,9 @@
+2010-10-18  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/36898
+	PR middle-end/43760
+	* config/ia64/ia64.c (rws_access_regno): Remove predicate check.
+
 2010-10-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/i386.c (ix86_option_override_internal): Define and
