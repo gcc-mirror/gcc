@@ -48,6 +48,7 @@ with System.Tasking.Debug;
 with System.Interrupt_Management;
 with System.OS_Primitives;
 with System.Stack_Checking.Operations;
+with System.Multiprocessors;
 
 with System.Soft_Links;
 --  We use System.Soft_Links instead of System.Tasking.Initialization
@@ -819,6 +820,8 @@ package body System.Task_Primitives.Operations is
       Adjusted_Stack_Size : Interfaces.C.size_t;
       Result              : Interfaces.C.int;
 
+      use type System.Multiprocessors.CPU_Range;
+
    begin
       Adjusted_Stack_Size :=
          Interfaces.C.size_t (Stack_Size + Alternate_Stack_Size);
@@ -841,6 +844,48 @@ package body System.Task_Primitives.Operations is
           (Attributes'Access, PTHREAD_CREATE_DETACHED);
       pragma Assert (Result = 0);
 
+      --  We were calling pthread_setaffinity_np (after thread creation but
+      --  before thread activation) to set the affinity but it was not
+      --  behaving as expected. Now we set the required attributes for the
+      --  creation of the thread, which is working correctly and it is
+      --  more appropriate.
+
+      if pthread_attr_setaffinity_np'Address = System.Null_Address then
+         --  Nothing to do with the affinities if there is not the underlying
+         --  support.
+
+         null;
+
+      --  Handle pragma CPU
+
+      elsif T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
+         declare
+            CPU_Set : aliased cpu_set_t := (bits => (others => False));
+
+         begin
+            CPU_Set.bits (Integer (T.Common.Base_CPU)) := True;
+
+            Result :=
+              pthread_attr_setaffinity_np
+                (Attributes'Access,
+                 CPU_SETSIZE / 8,
+                 CPU_Set'Access);
+            pragma Assert (Result = 0);
+         end;
+
+      --  Handle Task_Info
+
+      elsif T.Common.Task_Info /= null
+        and then T.Common.Task_Info.CPU_Affinity /= Task_Info.Any_CPU
+      then
+         Result :=
+           pthread_attr_setaffinity_np
+             (Attributes'Access,
+              CPU_SETSIZE / 8,
+              T.Common.Task_Info.CPU_Affinity'Access);
+         pragma Assert (Result = 0);
+      end if;
+
       --  Since the initial signal mask of a thread is inherited from the
       --  creator, and the Environment task has all its signals masked, we
       --  do not need to manipulate caller's signal mask at this point.
@@ -862,19 +907,6 @@ package body System.Task_Primitives.Operations is
       end if;
 
       Succeeded := True;
-
-      --  Handle Task_Info
-
-      if T.Common.Task_Info /= null then
-         if T.Common.Task_Info.CPU_Affinity /= Task_Info.Any_CPU then
-            Result :=
-              pthread_setaffinity_np
-                (T.Common.LL.Thread,
-                 CPU_SETSIZE / 8,
-                 T.Common.Task_Info.CPU_Affinity'Access);
-            pragma Assert (Result = 0);
-         end if;
-      end if;
 
       Result := pthread_attr_destroy (Attributes'Access);
       pragma Assert (Result = 0);
@@ -1238,6 +1270,8 @@ package body System.Task_Primitives.Operations is
       --    's'   Interrupt_State pragma set state to System (use "default"
       --           system handler)
 
+      use type System.Multiprocessors.CPU_Range;
+
    begin
       Environment_Task_Id := Environment_Task;
 
@@ -1297,6 +1331,26 @@ package body System.Task_Primitives.Operations is
             old_act'Unchecked_Access);
          pragma Assert (Result = 0);
          Abort_Handler_Installed := True;
+      end if;
+
+      --  pragma CPU for the environment task
+
+      if Environment_Task.Common.Base_CPU /=
+        System.Multiprocessors.Not_A_Specific_CPU
+      then
+         declare
+            CPU_Set : aliased cpu_set_t := (bits => (others => False));
+
+         begin
+            CPU_Set.bits (Integer (Environment_Task.Common.Base_CPU)) := True;
+
+            Result :=
+              pthread_setaffinity_np
+                (Environment_Task.Common.LL.Thread,
+                 CPU_SETSIZE / 8,
+                 CPU_Set'Access);
+            pragma Assert (Result = 0);
+         end;
       end if;
    end Initialize;
 

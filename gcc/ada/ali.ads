@@ -131,6 +131,12 @@ package ALI is
       --  that no parameter was found, or no M line was present. Not set if
       --  'M' appears in Ignore_Lines.
 
+      Main_CPU : Int;
+      --  Indicates processor if Main_Program field indicates that this can
+      --  be a main program. A value of -1 (No_Main_CPU) indicates that no C
+      --  parameter was found, or no M line was present. Not set if 'M' appears
+      --  in Ignore_Lines.
+
       Time_Slice_Value : Int;
       --  Indicates value of time slice parameter from T=xxx on main program
       --  line. A value of -1 indicates that no T=xxx parameter was found, or
@@ -211,6 +217,9 @@ package ALI is
 
    No_Main_Priority : constant Int := -1;
    --  Code for no main priority set
+
+   No_Main_CPU : constant Int := -1;
+   --  Code for no main cpu set
 
    package ALIs is new Table.Table (
      Table_Component_Type => ALIs_Record,

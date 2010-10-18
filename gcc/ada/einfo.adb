@@ -819,7 +819,8 @@ package body Einfo is
 
    function Direct_Primitive_Operations (Id : E) return L is
    begin
-      pragma Assert (Is_Tagged_Type (Id));
+      pragma Assert (Is_Tagged_Type (Id)
+        and then not Is_Concurrent_Type (Id));
       return Elist15 (Id);
    end Direct_Primitive_Operations;
 

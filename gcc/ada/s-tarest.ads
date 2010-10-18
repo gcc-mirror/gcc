@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,9 +87,9 @@ package System.Tasking.Restricted.Stages is
    --         system__tasking__ada_task_control_blockIP (_init._atcb, 0);
    --         _init._task_id := _init._atcb'unchecked_access;
    --         create_restricted_task (unspecified_priority, tZ,
-   --           unspecified_task_info, task_procedure_access!(tB'address),
-   --           _init'address, tE'unchecked_access, _chain, _task_name, _init.
-   --           _task_id);
+   --           unspecified_task_info, unspecified_cpu,
+   --           task_procedure_access!(tB'address), _init'address,
+   --           tE'unchecked_access, _chain, _task_name, _init._task_id);
    --         return;
    --      end tVIP;
 
@@ -127,6 +127,7 @@ package System.Tasking.Restricted.Stages is
       Stack_Address : System.Address;
       Size          : System.Parameters.Size_Type;
       Task_Info     : System.Task_Info.Task_Info_Type;
+      CPU           : Integer;
       State         : Task_Procedure_Access;
       Discriminants : System.Address;
       Elaborated    : Access_Boolean;
@@ -148,6 +149,11 @@ package System.Tasking.Restricted.Stages is
    --
    --  Task_Info is the task info associated with the created task, or
    --  Unspecified_Task_Info if none.
+   --
+   --  CPU is the task affinity. We pass it as an Integer to avoid an explicit
+   --   dependency from System.Multiprocessors when not needed. Static range
+   --   checks are performed when analyzing the pragma, and dynamic ones are
+   --   performed before setting the affinity at run time.
    --
    --  State is the compiler generated task's procedure body
    --

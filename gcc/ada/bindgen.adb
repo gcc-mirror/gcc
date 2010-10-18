@@ -127,6 +127,7 @@ package body Bindgen is
    --     Detect_Blocking               : Integer;
    --     Default_Stack_Size            : Integer;
    --     Leap_Seconds_Support          : Integer;
+   --     Main_CPU                      : Integer;
 
    --  Main_Priority is the priority value set by pragma Priority in the main
    --  program. If no such pragma is present, the value is -1.
@@ -214,6 +215,9 @@ package body Bindgen is
    --  Leap_Seconds_Support denotes whether leap seconds have been enabled or
    --  disabled. A value of zero indicates that leap seconds are turned "off",
    --  while a value of one signifies "on" status.
+
+   --  Main_CPU is the processor set by pragma CPU in the main program. If no
+   --  such pragma is present, the value is -1.
 
    -----------------------
    -- Local Subprograms --
@@ -436,6 +440,7 @@ package body Bindgen is
 
    procedure Gen_Adainit_Ada is
       Main_Priority : Int renames ALIs.Table (ALIs.First).Main_Priority;
+      Main_CPU      : Int renames ALIs.Table (ALIs.First).Main_CPU;
 
    begin
       WBI ("   procedure " & Ada_Init_Name.all & " is");
@@ -520,15 +525,22 @@ package body Bindgen is
 
       Write_Statement_Buffer;
 
-      --  If the standard library is suppressed, then the only global variable
-      --  that might be needed (by the Ravenscar profile) is the priority of
-      --  the environment.
+      --  If the standard library is suppressed, then the only global variables
+      --  that might be needed (by the Ravenscar profile) are the priority and
+      --  the processor for the environment task.
 
       if Suppress_Standard_Library_On_Target then
          if Main_Priority /= No_Main_Priority then
             WBI ("      Main_Priority : Integer;");
             WBI ("      pragma Import (C, Main_Priority," &
                  " ""__gl_main_priority"");");
+            WBI ("");
+         end if;
+
+         if Main_CPU /= No_Main_CPU then
+            WBI ("      Main_CPU : Integer;");
+            WBI ("      pragma Import (C, Main_CPU," &
+                 " ""__gl_main_cpu"");");
             WBI ("");
          end if;
 
@@ -539,8 +551,18 @@ package body Bindgen is
             Set_Int    (Main_Priority);
             Set_Char   (';');
             Write_Statement_Buffer;
+         end if;
 
-         else
+         if Main_CPU /= No_Main_CPU then
+            Set_String ("      Main_CPU := ");
+            Set_Int    (Main_CPU);
+            Set_Char   (';');
+            Write_Statement_Buffer;
+         end if;
+
+         if Main_Priority = No_Main_Priority
+           and then Main_CPU = No_Main_CPU
+         then
             WBI ("      null;");
          end if;
 
@@ -571,6 +593,9 @@ package body Bindgen is
          WBI ("      Num_Specific_Dispatching : Integer;");
          WBI ("      pragma Import (C, Num_Specific_Dispatching, " &
               """__gl_num_specific_dispatching"");");
+         WBI ("      Main_CPU : Integer;");
+         WBI ("      pragma Import (C, Main_CPU, " &
+              """__gl_main_cpu"");");
 
          WBI ("      Interrupt_States : System.Address;");
          WBI ("      pragma Import (C, Interrupt_States, " &
@@ -729,6 +754,11 @@ package body Bindgen is
          Set_String ("      Num_Specific_Dispatching := ");
          Set_Int (PSD_Pragma_Settings.Last + 1);
          Set_Char (';');
+         Write_Statement_Buffer;
+
+         Set_String ("      Main_CPU := ");
+         Set_Int    (Main_CPU);
+         Set_Char   (';');
          Write_Statement_Buffer;
 
          WBI ("      Interrupt_States := Local_Interrupt_States'Address;");
@@ -891,6 +921,7 @@ package body Bindgen is
 
    procedure Gen_Adainit_C is
       Main_Priority : Int renames ALIs.Table (ALIs.First).Main_Priority;
+      Main_CPU      : Int renames ALIs.Table (ALIs.First).Main_CPU;
 
    begin
       WBI ("void " & Ada_Init_Name.all & " (void)");
@@ -934,13 +965,21 @@ package body Bindgen is
 
       if Suppress_Standard_Library_On_Target then
 
-         --  Case of High_Integrity_Mode mode. Set __gl_main_priority if needed
-         --  for the Ravenscar profile.
+         --  Case of High_Integrity_Mode mode. Set __gl_main_priority and
+         --  __gl_main_cpu if needed for the Ravenscar profile.
 
          if Main_Priority /= No_Main_Priority then
             WBI ("   extern int __gl_main_priority;");
             Set_String ("   __gl_main_priority = ");
             Set_Int    (Main_Priority);
+            Set_Char   (';');
+            Write_Statement_Buffer;
+         end if;
+
+         if Main_CPU /= No_Main_CPU then
+            WBI ("   extern int __gl_main_cpu;");
+            Set_String ("   __gl_main_cpu = ");
+            Set_Int    (Main_CPU);
             Set_Char   (';');
             Write_Statement_Buffer;
          end if;
@@ -1028,6 +1067,12 @@ package body Bindgen is
          Set_String ("   __gl_task_dispatching_policy = '");
          Set_Char (Task_Dispatching_Policy_Specified);
          Set_String ("';");
+         Write_Statement_Buffer;
+
+         WBI ("   extern int __gl_main_cpu;");
+         Set_String ("   __gl_main_cpu = ");
+         Set_Int (Main_CPU);
+         Set_Char (';');
          Write_Statement_Buffer;
 
          Gen_Restrictions_C;

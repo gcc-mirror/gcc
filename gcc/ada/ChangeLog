@@ -1,3 +1,80 @@
+2010-10-18  Jose Ruiz  <ruiz@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Task_Type_Declaration): Add field corresponding
+	to the affinity when expanding the task declaration.
+	(Make_Task_Create_Call): Add the affinity parameter to the call to
+	create task.
+	* sem_prag.adb (Analyze_Pragma): Add the analysis for pragma CPU,
+	taking into account the case when it applies to a subprogram (only for
+	main and with static expression) or to a task.
+	* par_prag.adb:(Prag): Make pragma CPU a valid one.
+	* snames.ads-tmpl (Name_uCPU, Name_CPU): Add these new name identifiers
+	used by the expander for handling the affinity parameter when creating
+	a task.
+	(Pragma_Id): Add Pragma_CPU as a valid one.
+	* rtsfind.ads (RTU_Id): Make System_Multiprocessors accesible.
+	(RE_Id, RE_Unit_Table): Make the entities RE_CPU_Range and
+	RE_Unspecified_CPU visible.
+	* sinfo.ads, sinfo.adb (Has_Pragma_CPU, Set_Has_Pragma_CPU): Add these
+	two subprograms to set/get the flag indicating whether there is a
+	pragma CPU which applies to the entity.
+	* lib.ads, lib.adb (Unit_Record, Default_Main_CPU, Main_CPU,
+	Set_Main_CPU): Add the field Main_CPU to Unit_Record to store the value
+	of the affinity associated to the main subprogram (if any).
+	Default_Main_CPU is used when no affinity is set. Subprograms
+	Set_Main_CPU and Main_CPU are added to set/get the affinity of the main
+	subprogram.
+	* ali.ads, ali.adb (ALIs_Record): Add field Main_CPU to contain the
+	value of the affinity of the main subprogram.
+	(Scan_ALI): Get the affinity of the main subprogram (encoded as C=XX in
+	the M line).
+	* lib-writ.ads, lib-writ.adb (M_Parameters): Encode the affinity of the
+	main subprogram in the M (main) line using C=XX.
+	* lib-load.adb (Create_Dummy_Package_Unit, Load_Main_Source,
+	Load_Unit): Add new field Main_CPU.
+	* bindgen.adb (Gen_Adainit_Ada, Gen_Adainit_C): Add the code to pass
+	the affinity of the main subprogram to the run time.
+	* s-taskin.ads (Common_ATCB): Add the field Base_CPU to store the
+	affinity.
+	(Unspecified_CPU): Add this constant to identify the case when no
+	affinity is set for tasks.
+	* s-taskin.adb (Initialize_ATCB): Store the value coming from pragma
+	CPU in the common part of the ATCB.
+	(Initialize): Store the value coming from pragma CPU (for the
+	environment task) in the common part of the ATCB.
+	* s-tassta.ads, s-tassta.adb (Create_Task): Add the affinity specified
+	by pragma CPU to the ATCB.
+	* s-tarest.ads, s-tarest.adb (Create_Restricted_Task): Add the affinity
+	specified by pragma CPU to the ATCB.
+	* s-tporft.adb (Register_Foreign_Thread): Add the new affinity
+	parameter to the call to Initialize_ATCB.
+	* s-taprop-linux.adb (Create_Task): Change the attributes of the thread
+	to include the task affinity before creation. Additionally, the
+	affinity selected with Task_Info is also enforced changing the
+	attributes at task creation time, instead of changing it after creation.
+	(Initialize): Change the affinity of the environment task if required
+	by a pragma CPU.
+	* s-osinte-linux.ads (pthread_setaffinity_np): Instead of using a
+	wrapper to check whether the function is available or not, use a weak
+	symbol.
+	(pthread_attr_setaffinity_np): Add the import of this function which is
+	used to change the affinity in the attributes used to create a thread.
+	* adaint.c (__gnat_pthread_attr_setaffinity_np): Remove this wrapper.
+	It was used to check whether the pthread function was available or not,
+	but the use of a weak symbol handles this situation in a cleaner way.
+	* s-taprop-mingw.adb (Create_Task, Initialize): Change the affinity of
+	tasks (including the environment task) if required by a pragma CPU.
+	* s-taprop-solaris.adb (Enter_Task): Change the affinity of tasks
+	(including the environment task) if required by a pragma CPU.
+	* s-taprop-vxworks.adb (Create_Task, Initialize): Change the affinity
+	of tasks (including the environment task) if required by a pragma CPU.
+	* init.c (__gl_main_cpu): Make this value visible to the run time. It
+	will pass the affinity of the environment task.
+
+2010-10-18  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.adb (Direct_Primitive_Operations): Complete assertion.
+
 2010-10-18  Vincent Celier  <celier@adacore.com>
 
 	* prj.ads (Source_Data): New Boolean flag In_The_Queue.

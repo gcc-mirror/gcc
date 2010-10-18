@@ -35,6 +35,8 @@ with System.Task_Info;
 with System.Soft_Links;
 --  used to initialize TSD for a C thread, in function Self
 
+with System.Multiprocessors;
+
 separate (System.Task_Primitives.Operations)
 function Register_Foreign_Thread (Thread : Thread_Id) return Task_Id is
    Local_ATCB : aliased Ada_Task_Control_Block (0);
@@ -63,8 +65,8 @@ begin
    System.Tasking.Initialize_ATCB
      (Self_Id, null, Null_Address, Null_Task,
       Foreign_Task_Elaborated'Access,
-      System.Priority'First, Task_Info.Unspecified_Task_Info, 0, Self_Id,
-      Succeeded);
+      System.Priority'First, System.Multiprocessors.Not_A_Specific_CPU,
+      Task_Info.Unspecified_Task_Info, 0, Self_Id, Succeeded);
    Unlock_RTS;
    pragma Assert (Succeeded);
 

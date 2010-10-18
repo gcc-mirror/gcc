@@ -818,6 +818,7 @@ package body ALI is
         Last_Unit                  => No_Unit_Id,
         Locking_Policy             => ' ',
         Main_Priority              => -1,
+        Main_CPU                   => -1,
         Main_Program               => None,
         No_Object                  => False,
         Normalize_Scalars          => False,
@@ -915,6 +916,14 @@ package body ALI is
                   P := P + 1;
                   Checkc ('B');
                   ALIs.Table (Id).Allocator_In_Body := True;
+               end if;
+
+               Skip_Space;
+
+               if Nextc = 'C' then
+                  P := P + 1;
+                  Checkc ('=');
+                  ALIs.Table (Id).Main_CPU := Get_Nat;
                end if;
 
                Skip_Space;

@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -490,7 +490,18 @@ package System.OS_Interface is
      (thread     : pthread_t;
       cpusetsize : size_t;
       cpuset     : access cpu_set_t) return int;
-   pragma Import (C, pthread_setaffinity_np, "__gnat_pthread_setaffinity_np");
+   pragma Import (C, pthread_setaffinity_np, "pthread_setaffinity_np");
+   pragma Weak_External (pthread_setaffinity_np);
+   --  Use a weak symbol because this function may be available or not,
+   --  depending on the version of the system.
+
+   function pthread_attr_setaffinity_np
+     (attr       : access pthread_attr_t;
+      cpusetsize : size_t;
+      cpuset     : access cpu_set_t) return int;
+   pragma Import (C, pthread_attr_setaffinity_np,
+                  "pthread_attr_setaffinity_np");
+   pragma Weak_External (pthread_attr_setaffinity_np);
 
 private
 

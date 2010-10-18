@@ -116,7 +116,7 @@ package Lib.Writ is
    --  -- M  Main Program --
    --  ---------------------
 
-   --    M type [priority] [T=time-slice] [AB] W=?
+   --    M type [priority] [T=time-slice] [AB] [C=cpu] W=?
 
    --      This line appears only if the main unit for this file is suitable
    --      for use as a main program. The parameters are:
@@ -148,7 +148,12 @@ package Lib.Writ is
    --          No_Allocators_After_Elaboration if it is present, and this
    --          unit is used as a main program (only the binder can find the
    --          violation, since only the binder knows the main program).
-   --
+
+   --        C=cpu
+
+   --          Present only if there was a valid pragma CPU in the
+   --          corresponding unit to set the main task affinity. It is an
+   --          unsigned decimal integer.
 
    --        W=?
 
