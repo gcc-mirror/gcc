@@ -5459,7 +5459,7 @@ package body Exp_Ch6 is
 
             Push_Scope (Scope (Scop));
             Analyze (Prot_Decl);
-            Insert_Actions (N, Freeze_Entity (Prot_Id, N));
+            Freeze_Before (N, Prot_Id);
             Set_Protected_Body_Subprogram (Subp, Prot_Id);
 
             --  Create protected operation as well. Even though the operation
@@ -5699,7 +5699,7 @@ package body Exp_Ch6 is
                            (Corresponding_Record_Type (Scop), Loc))));
 
             Insert_Actions (N, Decls);
-            Insert_Actions (N, Freeze_Entity (Obj_Ptr, N));
+            Freeze_Before (N, Obj_Ptr);
 
             Rec :=
               Make_Explicit_Dereference (Loc,
