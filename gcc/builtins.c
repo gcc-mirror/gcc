@@ -13909,11 +13909,3 @@ is_inexpensive_builtin (tree decl)
 
   return false;
 }
-
-/* Return true if MODE provides a fast multiply/add (FMA) builtin function.  */
-
-bool
-mode_has_fma (enum machine_mode mode)
-{
-  return optab_handler (fma_optab, mode) != CODE_FOR_nothing;
-}

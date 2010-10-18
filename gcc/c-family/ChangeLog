@@ -1,7 +1,15 @@
+2010-10-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/46041
+	* c-cppbuiltin.c (mode_has_fma): Move function here from
+	builtins.c.  Don't use the fma optab, instead just use the
+	HAVE_fma* macros, so that __FP_FAST_FMA* will be defined when
+	using -save-temps.
+
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
-	
+
 	2005-11-08  Fariborz Jahanian <fjahanian@apple.com>
 
         Radar 4330422
@@ -16,7 +24,7 @@
 
         Radar 4133425
 	* c-common.h (objc_diagnose_private_ivar): New decl.
-	* stub-objc.c (objc_diagnose_private_ivar): New stub.	
+	* stub-objc.c (objc_diagnose_private_ivar): New stub.
 
 2010-10-17  Iain Sandoe  <iains@gcc.gnu.org>
 
@@ -24,7 +32,7 @@
 	* c-common.h (enum rid): Add RID_AT_PACKAGE.
 	(objc_ivar_visibility_kind): New enum.
 	(objc_set_visibility): Adjust prototype to use visibility enum.
-	* stub-objc.c (objc_set_visibility): Adjust stub to use 
+	* stub-objc.c (objc_set_visibility): Adjust stub to use
 	visibility enum.
 
 2010-10-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
