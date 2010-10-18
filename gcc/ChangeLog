@@ -1,4 +1,21 @@
 2010-10-18  Basile Starynkevitch  <basile@starynkevitch.net>
+	    Jeremie Salvucci  <jeremie.salvucci@free.fr>
+
+	* gengtype.c (verbosity_level): Added variable.
+	(set_gc_used): Count variables for verbosity.
+	(close_output_files): Backing up files, counting written ones
+	verbosily.
+	(write_types): Count emitted functions for verbosity. Added
+	debug messages.
+	(write_enum_defn): Count structures for verbosity. Added debug
+	messages.
+	(gengtype_long_options): Added "verbose" & "backupdir".
+	(print_usage): Ditto.
+	(main): Verbose display of parsed files.
+
+	* gengtype.h (verbosity_level): Added declaration.
+
+2010-10-18  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* gengtype.c (parse_program_options): Added allocation of
 	plugin_files, and corrected test on nb_plugin_files.

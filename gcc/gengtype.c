@@ -163,6 +163,15 @@ const char *write_state_filename;
 int do_dump;
 int do_debug;
 
+/* Level for verbose messages.  */
+int verbosity_level;
+
+/* The backup directory should be in the same file system as the
+   generated files, otherwise the rename(2) system call would fail.
+   If NULL, no backup is made when overwriting a generated file.  */
+static const char* backup_dir;	/* (-B) program option.  */
+
+
 static outf_p create_file (const char *, const char *);
 
 static const char *get_file_basename (const char *);
@@ -1515,9 +1524,15 @@ set_gc_used_type (type_p t, enum gc_used_enum level, type_p param[NUM_PARAM])
 static void
 set_gc_used (pair_p variables)
 {
+  int nbvars = 0;
   pair_p p;
   for (p = variables; p; p = p->next)
-    set_gc_used_type (p->type, GC_USED, NULL);
+    {
+      set_gc_used_type (p->type, GC_USED, NULL);
+      nbvars++;
+    };
+  if (verbosity_level >= 2)
+    printf ("%s used %d GTY-ed variables\n", progname, nbvars);
 }
 
 /* File mapping routines.  For each input file, there is one output .c file
@@ -1907,6 +1922,7 @@ is_file_equal (outf_p of)
 static void
 close_output_files (void)
 {
+  int nbwrittenfiles = 0;
   outf_p of;
 
   for (of = output_files; of; of = of->next)
@@ -1914,18 +1930,46 @@ close_output_files (void)
 
       if (!is_file_equal (of))
 	{
-	  FILE *newfile = fopen (of->name, "w");
+	  FILE *newfile = NULL;
+	  char *backupname = NULL;
+	  /* Back up the old version of the output file gt-FOO.c as
+	     BACKUPDIR/gt-FOO.c~ if we have a backup directory.  */
+	  if (backup_dir)
+	    {
+	      backupname = concat (backup_dir, "/",
+				   lbasename (of->name), "~", NULL);
+	      if (!access (of->name, F_OK) && rename (of->name, backupname))
+		fatal ("failed to back up %s as %s: %s",
+		       of->name, backupname, xstrerror (errno));
+	    }
+
+	  newfile = fopen (of->name, "w");
 	  if (newfile == NULL)
 	    fatal ("opening output file %s: %s", of->name, xstrerror (errno));
 	  if (fwrite (of->buf, 1, of->bufused, newfile) != of->bufused)
 	    fatal ("writing output file %s: %s", of->name, xstrerror (errno));
 	  if (fclose (newfile) != 0)
 	    fatal ("closing output file %s: %s", of->name, xstrerror (errno));
+	  nbwrittenfiles++;
+	  if (verbosity_level >= 2 && backupname)
+	    printf ("%s wrote #%-3d %s backed-up in %s\n",
+		    progname, nbwrittenfiles, of->name, backupname);
+	  else if (verbosity_level >= 1)
+	    printf ("%s write #%-3d %s\n", progname, nbwrittenfiles, of->name);
+	  free (backupname);
+	}
+      else 
+	{ 
+	  /* output file remains unchanged. */
+	  if (verbosity_level >= 2)
+	    printf ("%s keep %s\n", progname, of->name);
 	}
       free (of->buf);
       of->buf = NULL;
       of->bufused = of->buflength = 0;
     }
+  if (verbosity_level >= 1)
+    printf ("%s wrote %d files.\n", progname, nbwrittenfiles);
 }
 
 struct flist
@@ -2801,6 +2845,7 @@ static void
 write_types (outf_p output_header, type_p structures, type_p param_structs,
 	     const struct write_types_data *wtd)
 {
+  int nbfun = 0;		/* Count the emitted functions.  */
   type_p s;
 
   oprintf (output_header, "\n/* %s*/\n", wtd->comment);
@@ -2890,11 +2935,29 @@ write_types (outf_p output_header, type_p structures, type_p param_structs,
 	  {
 	    type_p ss;
 	    for (ss = s->u.s.lang_struct; ss; ss = ss->next)
-	      write_func_for_structure (s, ss, NULL, wtd);
+	      {
+		nbfun++;
+		DBGPRINTF ("writing func #%d lang_struct ss @ %p '%s'",
+			   nbfun, (void*) ss, ss->u.s.tag);
+		write_func_for_structure (s, ss, NULL, wtd);
+	      }
 	  }
 	else
-	  write_func_for_structure (s, s, NULL, wtd);
+	  {
+	    nbfun++;
+	    DBGPRINTF ("writing func #%d struct s @ %p '%s'",
+		       nbfun, (void*) s, s->u.s.tag);
+	    write_func_for_structure (s, s, NULL, wtd);
+	  }
       }
+    else
+      {
+	/* Structure s is not possibly pointed to, so can be ignored.  */
+	DBGPRINTF ("ignored s @ %p  '%s' gc_used#%d",
+		   (void*)s,  s->u.s.tag,
+		   (int) s->gc_used);
+      }
+
   for (s = param_structs; s; s = s->next)
     if (s->gc_used == GC_POINTED_TO)
       {
@@ -2906,11 +2969,30 @@ write_types (outf_p output_header, type_p structures, type_p param_structs,
 	  {
 	    type_p ss;
 	    for (ss = stru->u.s.lang_struct; ss; ss = ss->next)
-	      write_func_for_structure (s, ss, param, wtd);
+	      {
+		nbfun++;
+		DBGPRINTF ("writing func #%d param lang_struct ss @ %p '%s'",
+			   nbfun, (void*) ss,  ss->u.s.tag);
+		write_func_for_structure (s, ss, param, wtd);
+	      }
 	  }
 	else
-	  write_func_for_structure (s, stru, param, wtd);
+	  {
+	    nbfun++;
+	    DBGPRINTF ("writing func #%d param struct s @ %p stru @ %p '%s'",
+		       nbfun, (void*) s,
+		       (void*) stru,  stru->u.s.tag);
+	    write_func_for_structure (s, stru, param, wtd);
+	  }
       }
+    else
+      { 
+	/* Param structure s is not pointed to, so should be ignored.  */
+	DBGPRINTF ("ignored s @ %p", (void*)s);
+      }
+  if (verbosity_level >= 2)
+    printf ("%s emitted %d routines for %s\n",
+	    progname, nbfun, wtd->comment);
 }
 
 static const struct write_types_data ggc_wtd = {
@@ -3100,6 +3182,8 @@ static void
 write_enum_defn (type_p structures, type_p param_structs)
 {
   type_p s;
+  int nbstruct = 0;
+  int nbparamstruct = 0;
 
   if (!header_file)
     return;
@@ -3108,6 +3192,12 @@ write_enum_defn (type_p structures, type_p param_structs)
   for (s = structures; s; s = s->next)
     if (USED_BY_TYPED_GC_P (s))
       {
+	nbstruct++;
+	DBGPRINTF ("write_enum_defn s @ %p nbstruct %d",
+		   (void*) s, nbstruct);
+	if (UNION_OR_STRUCT_P (s))
+	  DBGPRINTF ("write_enum_defn s %p #%d is unionorstruct tagged %s",
+		     (void*) s, nbstruct, s->u.s.tag);
 	oprintf (header_file, " gt_ggc_e_");
 	output_mangled_typename (header_file, s);
 	oprintf (header_file, ",\n");
@@ -3115,12 +3205,19 @@ write_enum_defn (type_p structures, type_p param_structs)
   for (s = param_structs; s; s = s->next)
     if (s->gc_used == GC_POINTED_TO)
       {
+	nbparamstruct++;
+	DBGPRINTF ("write_enum_defn s %p nbparamstruct %d",
+		   (void*) s, nbparamstruct);
 	oprintf (header_file, " gt_e_");
 	output_mangled_typename (header_file, s);
 	oprintf (header_file, ",\n");
       }
   oprintf (header_file, " gt_types_enum_last\n");
   oprintf (header_file, "};\n");
+  if (verbosity_level >= 2)
+    printf ("%s handled %d GTY-ed structures & %d parameterized structures.\n",
+	    progname, nbstruct, nbparamstruct);
+
 }
 
 /* Might T contain any non-pointer elements?  */
@@ -4289,10 +4386,12 @@ dump_everything (void)
 static const struct option gengtype_long_options[] = {
   {"help", no_argument, NULL, 'h'},
   {"version", no_argument, NULL, 'V'},
+  {"verbose", no_argument, NULL, 'v'},
   {"dump", no_argument, NULL, 'd'},
   {"debug", no_argument, NULL, 'D'},
   {"plugin", required_argument, NULL, 'P'},
   {"srcdir", required_argument, NULL, 'S'},
+  {"backupdir", required_argument, NULL, 'B'},
   {"inputs", required_argument, NULL, 'I'},
   {"read-state", required_argument, NULL, 'r'},
   {"write-state", required_argument, NULL, 'w'},
@@ -4309,11 +4408,14 @@ print_usage (void)
   printf ("\t -D | --debug "
 	  " \t# Give debug output to debug %s itself.\n", progname);
   printf ("\t -V | --version " " \t# Give version information.\n");
+  printf ("\t -v | --verbose  \t# Increase verbosity.  Can be given several times.\n");
   printf ("\t -d | --dump " " \t# Dump state for debugging.\n");
   printf ("\t -P | --plugin <output-file> <plugin-src> ... "
 	  " \t# Generate for plugin.\n");
   printf ("\t -S | --srcdir <GCC-directory> "
 	  " \t# Specify the GCC source directory.\n");
+  printf ("\t -B | --backupdir <directory> "
+	  " \t# Specify the backup directory for updated files.\n");
   printf ("\t -I | --inputs <input-list> "
 	  " \t# Specify the file with source files list.\n");
   printf ("\t -w | --write-state <state-file> " " \t# Write a state file.\n");
@@ -4332,7 +4434,7 @@ static void
 parse_program_options (int argc, char **argv)
 {
   int opt = -1;
-  while ((opt = getopt_long (argc, argv, "hVdP:S:I:w:r:D",
+  while ((opt = getopt_long (argc, argv, "hVvdP:S:B:I:w:r:D",
 			     gengtype_long_options, NULL)) >= 0)
     {
       switch (opt)
@@ -4349,6 +4451,9 @@ parse_program_options (int argc, char **argv)
 	case 'D':		/* --debug */
 	  do_debug = 1;
 	  break;
+	case 'v':		/* --verbose */
+	  verbosity_level++;
+	  break;
 	case 'P':		/* --plugin */
 	  if (optarg)
 	    plugin_output_filename = optarg;
@@ -4361,6 +4466,12 @@ parse_program_options (int argc, char **argv)
 	  else
 	    fatal ("missing source directory");
 	  srcdir_len = strlen (srcdir);
+	  break;
+	case 'B':		/* --backupdir */
+	  if (optarg)
+	    backup_dir = optarg;
+	  else
+	    fatal ("missing backup directory");
 	  break;
 	case 'I':		/* --inputs */
 	  if (optarg)
@@ -4470,6 +4581,9 @@ main (int argc, char **argv)
 	  parse_file (gt_files[i]);
 	  DBGPRINTF ("parsed file #%d %s", (int) i, gt_files[i]);
 	}
+      if (verbosity_level >= 1)
+	printf ("%s parsed %d files\n", progname, (int) num_gt_files);
+
       DBGPRINT_COUNT_TYPE ("structures after parsing", structures);
       DBGPRINT_COUNT_TYPE ("param_structs after parsing", param_structs);
 
