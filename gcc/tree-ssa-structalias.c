@@ -2931,38 +2931,6 @@ process_constraint (constraint_t t)
     }
 }
 
-/* Return true if T is a type that could contain pointers.  */
-
-static bool
-type_could_have_pointers (tree type)
-{
-  if (POINTER_TYPE_P (type))
-    return true;
-
-  if (TREE_CODE (type) == ARRAY_TYPE)
-    return type_could_have_pointers (TREE_TYPE (type));
-
-  /* A function or method can consume pointers.
-     ???  We could be more precise here.  */
-  if (TREE_CODE (type) == FUNCTION_TYPE
-      || TREE_CODE (type) == METHOD_TYPE)
-    return true;
-
-  return AGGREGATE_TYPE_P (type);
-}
-
-/* Return true if T is a variable of a type that could contain
-   pointers.  */
-
-static bool
-could_have_pointers (tree t)
-{
-  return (((TREE_CODE (t) == VAR_DECL
-	    || TREE_CODE (t) == PARM_DECL
-	    || TREE_CODE (t) == RESULT_DECL)
-	   && (TREE_PUBLIC (t) || DECL_EXTERNAL (t) || TREE_ADDRESSABLE (t)))
-	  || type_could_have_pointers (TREE_TYPE (t)));
-}
 
 /* Return the position, in bits, of FIELD_DECL from the beginning of its
    structure.  */
@@ -3786,10 +3754,8 @@ handle_rhs_call (gimple stmt, VEC(ce_s, heap) **results)
       tree arg = gimple_call_arg (stmt, i);
       int flags = gimple_call_arg_flags (stmt, i);
 
-      /* If the argument is not used or it does not contain pointers
-	 we can ignore it.  */
-      if ((flags & EAF_UNUSED)
-	  || !could_have_pointers (arg))
+      /* If the argument is not used we can ignore it.  */
+      if (flags & EAF_UNUSED)
 	continue;
 
       /* As we compute ESCAPED context-insensitive we do not gain
@@ -3952,17 +3918,13 @@ handle_const_call (gimple stmt, VEC(ce_s, heap) **results)
   for (k = 0; k < gimple_call_num_args (stmt); ++k)
     {
       tree arg = gimple_call_arg (stmt, k);
-
-      if (could_have_pointers (arg))
-	{
-	  VEC(ce_s, heap) *argc = NULL;
-	  unsigned i;
-	  struct constraint_expr *argp;
-	  get_constraint_for_rhs (arg, &argc);
-	  FOR_EACH_VEC_ELT (ce_s, argc, i, argp)
-	    VEC_safe_push (ce_s, heap, *results, argp);
-	  VEC_free(ce_s, heap, argc);
-	}
+      VEC(ce_s, heap) *argc = NULL;
+      unsigned i;
+      struct constraint_expr *argp;
+      get_constraint_for_rhs (arg, &argc);
+      FOR_EACH_VEC_ELT (ce_s, argc, i, argp)
+	VEC_safe_push (ce_s, heap, *results, argp);
+      VEC_free(ce_s, heap, argc);
     }
 
   /* May return addresses of globals.  */
@@ -3986,16 +3948,12 @@ handle_pure_call (gimple stmt, VEC(ce_s, heap) **results)
   for (i = 0; i < gimple_call_num_args (stmt); ++i)
     {
       tree arg = gimple_call_arg (stmt, i);
-
-      if (could_have_pointers (arg))
+      if (!uses)
 	{
-	  if (!uses)
-	    {
-	      uses = get_call_use_vi (stmt);
-	      make_transitive_closure_constraints (uses);
-	    }
-	  make_constraint_to (uses->id, arg);
+	  uses = get_call_use_vi (stmt);
+	  make_transitive_closure_constraints (uses);
 	}
+      make_constraint_to (uses->id, arg);
     }
 
   /* The static chain is used as well.  */
@@ -4075,34 +4033,27 @@ find_func_aliases (gimple origt)
   /* Now build constraints expressions.  */
   if (gimple_code (t) == GIMPLE_PHI)
     {
-      gcc_assert (!AGGREGATE_TYPE_P (TREE_TYPE (gimple_phi_result (t))));
+      size_t i;
+      unsigned int j;
 
-      /* Only care about pointers and structures containing
-	 pointers.  */
-      if (could_have_pointers (gimple_phi_result (t)))
+      /* For a phi node, assign all the arguments to
+	 the result.  */
+      get_constraint_for (gimple_phi_result (t), &lhsc);
+      for (i = 0; i < gimple_phi_num_args (t); i++)
 	{
-	  size_t i;
-	  unsigned int j;
+	  tree strippedrhs = PHI_ARG_DEF (t, i);
 
-	  /* For a phi node, assign all the arguments to
-	     the result.  */
-	  get_constraint_for (gimple_phi_result (t), &lhsc);
-	  for (i = 0; i < gimple_phi_num_args (t); i++)
+	  STRIP_NOPS (strippedrhs);
+	  get_constraint_for_rhs (gimple_phi_arg_def (t, i), &rhsc);
+
+	  FOR_EACH_VEC_ELT (ce_s, lhsc, j, c)
 	    {
-	      tree strippedrhs = PHI_ARG_DEF (t, i);
-
-	      STRIP_NOPS (strippedrhs);
-	      get_constraint_for_rhs (gimple_phi_arg_def (t, i), &rhsc);
-
-	      FOR_EACH_VEC_ELT (ce_s, lhsc, j, c)
+	      struct constraint_expr *c2;
+	      while (VEC_length (ce_s, rhsc) > 0)
 		{
-		  struct constraint_expr *c2;
-		  while (VEC_length (ce_s, rhsc) > 0)
-		    {
-		      c2 = VEC_last (ce_s, rhsc);
-		      process_constraint (new_constraint (*c, *c2));
-		      VEC_pop (ce_s, rhsc);
-		    }
+		  c2 = VEC_last (ce_s, rhsc);
+		  process_constraint (new_constraint (*c, *c2));
+		  VEC_pop (ce_s, rhsc);
 		}
 	    }
 	}
@@ -4353,16 +4304,7 @@ find_func_aliases (gimple origt)
 	  else
 	    handle_rhs_call (t, &rhsc);
 	  if (gimple_call_lhs (t))
-	    {
-	      if (could_have_pointers (gimple_call_lhs (t)))
-		handle_lhs_call (t, gimple_call_lhs (t), flags, rhsc, fndecl);
-	      /* Similar to conversions a result that is not a pointer
-		 is an escape point for any pointer the function might
-		 return.  */
-	      else if (flags & (ECF_CONST|ECF_PURE
-				|ECF_NOVOPS|ECF_LOOPING_CONST_OR_PURE))
-		make_constraints_to (escaped_id, rhsc);
-	    }
+	    handle_lhs_call (t, gimple_call_lhs (t), flags, rhsc, fndecl);
 	  VEC_free (ce_s, heap, rhsc);
 	}
       else
@@ -4380,9 +4322,6 @@ find_func_aliases (gimple origt)
 	      struct constraint_expr *rhsp;
 	      tree arg = gimple_call_arg (t, j);
 
-	      if (!could_have_pointers (arg))
-		continue;
-
 	      get_constraint_for_rhs (arg, &rhsc);
 	      lhs = get_function_part_constraint (fi, fi_parm_base + j);
 	      while (VEC_length (ce_s, rhsc) != 0)
@@ -4395,8 +4334,7 @@ find_func_aliases (gimple origt)
 
 	  /* If we are returning a value, assign it to the result.  */
 	  lhsop = gimple_call_lhs (t);
-	  if (lhsop
-	      && type_could_have_pointers (TREE_TYPE (lhsop)))
+	  if (lhsop)
 	    {
 	      struct constraint_expr rhs;
 	      struct constraint_expr *lhsp;
@@ -4449,8 +4387,7 @@ find_func_aliases (gimple origt)
   /* Otherwise, just a regular assignment statement.  Only care about
      operations with pointer result, others are dealt with as escape
      points if they have pointer operands.  */
-  else if (is_gimple_assign (t)
-	   && type_could_have_pointers (TREE_TYPE (gimple_assign_lhs (t))))
+  else if (is_gimple_assign (t))
     {
       /* Otherwise, just a regular assignment statement.  */
       tree lhsop = gimple_assign_lhs (t);
@@ -4460,7 +4397,6 @@ find_func_aliases (gimple origt)
 	do_structure_copy (lhsop, rhsop);
       else
 	{
-	  struct constraint_expr temp;
 	  get_constraint_for (lhsop, &lhsc);
 
 	  if (gimple_assign_rhs_code (t) == POINTER_PLUS_EXPR)
@@ -4481,10 +4417,19 @@ find_func_aliases (gimple origt)
 	    get_constraint_for_rhs (rhsop, &rhsc);
 	  else
 	    {
-	      temp.type = ADDRESSOF;
-	      temp.var = anything_id;
-	      temp.offset = 0;
-	      VEC_safe_push (ce_s, heap, rhsc, &temp);
+	      /* All other operations are merges.  */
+	      VEC (ce_s, heap) *tmp = NULL;
+	      struct constraint_expr *rhsp;
+	      unsigned i, j;
+	      get_constraint_for_rhs (gimple_assign_rhs1 (t), &rhsc);
+	      for (i = 2; i < gimple_num_ops (t); ++i)
+		{
+		  get_constraint_for_rhs (gimple_op (t, i), &tmp);
+		  FOR_EACH_VEC_ELT (ce_s, tmp, j, rhsp)
+		    VEC_safe_push (ce_s, heap, rhsc, rhsp);
+		  VEC_truncate (ce_s, tmp, 0);
+		}
+	      VEC_free (ce_s, heap, tmp);
 	    }
 	  process_all_all_constraints (lhsc, rhsc);
 	}
@@ -4505,17 +4450,9 @@ find_func_aliases (gimple origt)
 	make_constraint_from_restrict (get_vi_for_tree (lhsop),
 				       "CAST_RESTRICT");
     }
-  /* For conversions of pointers to non-pointers the pointer escapes.  */
-  else if (gimple_assign_cast_p (t)
-	   && POINTER_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (t)))
-	   && !POINTER_TYPE_P (TREE_TYPE (gimple_assign_lhs (t))))
-    {
-      make_escape_constraint (gimple_assign_rhs1 (t));
-    }
   /* Handle escapes through return.  */
   else if (gimple_code (t) == GIMPLE_RETURN
-	   && gimple_return_retval (t) != NULL_TREE
-	   && could_have_pointers (gimple_return_retval (t)))
+	   && gimple_return_retval (t) != NULL_TREE)
     {
       fi = NULL;
       if (!in_ipa_mode
@@ -4561,7 +4498,7 @@ find_func_aliases (gimple origt)
 
 	  /* The asm may read global memory, so outputs may point to
 	     any global memory.  */
-	  if (op && could_have_pointers (op))
+	  if (op)
 	    {
 	      VEC(ce_s, heap) *lhsc = NULL;
 	      struct constraint_expr rhsc, *lhsp;
@@ -4591,7 +4528,7 @@ find_func_aliases (gimple origt)
 	  /* Strictly we'd only need the constraint to ESCAPED if
 	     the asm clobbers memory, otherwise using something
 	     along the lines of per-call clobbers/uses would be enough.  */
-	  else if (op && could_have_pointers (op))
+	  else if (op)
 	    make_escape_constraint (op);
 	}
     }
@@ -4960,6 +4897,8 @@ struct fieldoff
 
   unsigned has_unknown_size : 1;
 
+  unsigned must_have_pointers : 1;
+
   unsigned may_have_pointers : 1;
 
   unsigned only_restrict_pointers : 1;
@@ -5021,6 +4960,32 @@ var_can_have_subvars (const_tree v)
   return false;
 }
 
+/* Return true if T is a type that does contain pointers.  */
+
+static bool
+type_must_have_pointers (tree type)
+{
+  if (POINTER_TYPE_P (type))
+    return true;
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    return type_must_have_pointers (TREE_TYPE (type));
+
+  /* A function or method can have pointers as arguments, so track
+     those separately.  */
+  if (TREE_CODE (type) == FUNCTION_TYPE
+      || TREE_CODE (type) == METHOD_TYPE)
+    return true;
+
+  return false;
+}
+
+static bool
+field_must_have_pointers (tree t)
+{
+  return type_must_have_pointers (TREE_TYPE (t));
+}
+
 /* Given a TYPE, and a vector of field offsets FIELDSTACK, push all
    the fields of TYPE onto fieldstack, recording their offsets along
    the way.
@@ -5032,7 +4997,7 @@ var_can_have_subvars (const_tree v)
 
 static bool
 push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
-			     HOST_WIDE_INT offset, bool must_have_pointers_p)
+			     HOST_WIDE_INT offset)
 {
   tree field;
   bool empty_p = true;
@@ -5057,8 +5022,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	    || TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
 	  push = true;
 	else if (!push_fields_onto_fieldstack
-		    (TREE_TYPE (field), fieldstack, offset + foff,
-		     must_have_pointers_p)
+		    (TREE_TYPE (field), fieldstack, offset + foff)
 		 && (DECL_SIZE (field)
 		     && !integer_zerop (DECL_SIZE (field))))
 	  /* Empty structures may have actual size, like in C++.  So
@@ -5070,6 +5034,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	  {
 	    fieldoff_s *pair = NULL;
 	    bool has_unknown_size = false;
+	    bool must_have_pointers_p;
 
 	    if (!VEC_empty (fieldoff_s, *fieldstack))
 	      pair = VEC_last (fieldoff_s, *fieldstack);
@@ -5079,13 +5044,13 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	      has_unknown_size = true;
 
 	    /* If adjacent fields do not contain pointers merge them.  */
+	    must_have_pointers_p = field_must_have_pointers (field);
 	    if (pair
-		&& !pair->may_have_pointers
-		&& !pair->has_unknown_size
 		&& !has_unknown_size
-		&& pair->offset + (HOST_WIDE_INT)pair->size == offset + foff
 		&& !must_have_pointers_p
-		&& !could_have_pointers (field))
+		&& !pair->must_have_pointers
+		&& !pair->has_unknown_size
+		&& pair->offset + (HOST_WIDE_INT)pair->size == offset + foff)
 	      {
 		pair->size += TREE_INT_CST_LOW (DECL_SIZE (field));
 	      }
@@ -5098,8 +5063,8 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 		  pair->size = TREE_INT_CST_LOW (DECL_SIZE (field));
 		else
 		  pair->size = -1;
-		pair->may_have_pointers
-		  = must_have_pointers_p || could_have_pointers (field);
+		pair->must_have_pointers = must_have_pointers_p;
+		pair->may_have_pointers = true;
 		pair->only_restrict_pointers
 		  = (!has_unknown_size
 		     && POINTER_TYPE_P (TREE_TYPE (field))
@@ -5245,7 +5210,7 @@ create_function_info_for (tree decl, const char *name)
       resultvi->fullsize = vi->fullsize;
       resultvi->is_full_var = true;
       if (DECL_RESULT (decl))
-	resultvi->may_have_pointers = could_have_pointers (DECL_RESULT (decl));
+	resultvi->may_have_pointers = true;
       gcc_assert (prev_vi->offset < resultvi->offset);
       prev_vi->next = resultvi;
       prev_vi = resultvi;
@@ -5275,7 +5240,7 @@ create_function_info_for (tree decl, const char *name)
       argvi->is_full_var = true;
       argvi->fullsize = vi->fullsize;
       if (arg)
-	argvi->may_have_pointers = could_have_pointers (arg);
+	argvi->may_have_pointers = true;
       gcc_assert (prev_vi->offset < argvi->offset);
       prev_vi->next = argvi;
       prev_vi = argvi;
@@ -5359,7 +5324,7 @@ create_variable_info_for_1 (tree decl, const char *name)
       vi->fullsize = ~0;
       vi->is_unknown_size_var = true;
       vi->is_full_var = true;
-      vi->may_have_pointers = could_have_pointers (decl);
+      vi->may_have_pointers = true;
       return vi;
     }
 
@@ -5376,10 +5341,7 @@ create_variable_info_for_1 (tree decl, const char *name)
       bool notokay = false;
       unsigned int i;
 
-      push_fields_onto_fieldstack (decl_type, &fieldstack, 0,
-				   TREE_PUBLIC (decl)
-				   || DECL_EXTERNAL (decl)
-				   || TREE_ADDRESSABLE (decl));
+      push_fields_onto_fieldstack (decl_type, &fieldstack, 0);
 
       for (i = 0; !notokay && VEC_iterate (fieldoff_s, fieldstack, i, fo); i++)
 	if (fo->has_unknown_size
@@ -5414,7 +5376,7 @@ create_variable_info_for_1 (tree decl, const char *name)
     {
       vi = new_var_info (decl, name);
       vi->offset = 0;
-      vi->may_have_pointers = could_have_pointers (decl);
+      vi->may_have_pointers = true;
       vi->fullsize = TREE_INT_CST_LOW (declsize);
       vi->size = vi->fullsize;
       vi->is_full_var = true;
@@ -5557,9 +5519,6 @@ intra_create_variable_infos (void)
   for (t = DECL_ARGUMENTS (current_function_decl); t; t = DECL_CHAIN (t))
     {
       varinfo_t p;
-
-      if (!could_have_pointers (t))
-	continue;
 
       /* For restrict qualified pointers to objects passed by
          reference build a real representative for the pointed-to object.  */

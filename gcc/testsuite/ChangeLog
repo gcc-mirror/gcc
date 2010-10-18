@@ -1,3 +1,18 @@
+2010-10-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45967
+	* gcc.dg/torture/pr45967.c: New testcase.
+	* gcc.dg/ipa/ipa-pta-10.c: Adjust.
+	* gcc.dg/ipa/ipa-pta-13.c: Likewise
+	* gcc.dg/torture/pr39074-2.c: Likewise
+	* gcc.dg/torture/pta-escape-1.c: Likewise
+	* gcc.dg/torture/pta-ptrarith-1.c: Likewise
+	* gcc.dg/tree-ssa/pta-callused.c: Likewise
+	* gcc.dg/tree-ssa/pta-escape-1.c: Likewise
+	* gcc.dg/tree-ssa/pta-escape-2.c: Likewise
+	* gcc.dg/tree-ssa/pta-escape-3.c: Likewise
+	* gcc.dg/tree-ssa/ssa-pre-21.c: Likewise
+
 2010-10-18  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gfortran.dg/bessel_7.f90: Set xfail for mingw targets.
