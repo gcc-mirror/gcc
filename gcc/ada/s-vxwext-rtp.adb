@@ -26,7 +26,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides vxworks specific support functions needed
+--  This package provides VxWorks specific support functions needed
 --  by System.OS_Interface.
 
 --  This is the VxWorks 6 RTP version of this package
@@ -89,6 +89,17 @@ package body System.VxWorks.Ext is
    begin
       return 0;
    end Interrupt_Number_To_Vector;
+
+   ---------------
+   -- semDelete --
+   ---------------
+
+   function semDelete (Sem : SEM_ID) return int is
+      function OS_semDelete (Sem : SEM_ID) return int;
+      pragma Import (C, OS_semDelete, "semDelete");
+   begin
+      return OS_semDelete (Sem);
+   end semDelete;
 
    --------------------
    -- Set_Time_Slice --

@@ -240,9 +240,7 @@ package body Sem_Prag is
    ------------------------------
 
    procedure Analyze_PPC_In_Decl_Part (N : Node_Id; S : Entity_Id) is
-      Arg1 : constant Node_Id :=
-               First (Pragma_Argument_Associations (N));
-      Arg2 : constant Node_Id := Next (Arg1);
+      Arg1 : constant Node_Id := First (Pragma_Argument_Associations (N));
 
    begin
       --  Install formals and push subprogram spec onto scope stack so that we
@@ -256,13 +254,6 @@ package body Sem_Prag is
 
       Preanalyze_Spec_Expression
         (Get_Pragma_Arg (Arg1), Standard_Boolean);
-
-      --  If there is a message argument, analyze it the same way
-
-      if Present (Arg2) then
-         Preanalyze_Spec_Expression
-           (Get_Pragma_Arg (Arg2), Standard_String);
-      end if;
 
       --  Remove the subprogram from the scope stack now that the pre-analysis
       --  of the precondition/postcondition is done.
@@ -1511,8 +1502,7 @@ package body Sem_Prag is
                     ("pragma% cannot be applied to abstract subprogram");
 
                elsif Class_Present (N) then
-                  Error_Pragma
-                    ("aspect `%''Class` not implemented yet");
+                  null;
 
                else
                   Error_Pragma
@@ -1520,14 +1510,19 @@ package body Sem_Prag is
                end if;
 
             elsif not Nkind_In (PO, N_Subprogram_Declaration,
-                                    N_Generic_Subprogram_Declaration)
+                                    N_Generic_Subprogram_Declaration,
+                                    N_Entry_Declaration)
             then
                Pragma_Misplaced;
             end if;
 
-            --  Here if we have subprogram or generic subprogram declaration
+            --  Here if we have [generic] subprogram or entry declaration
 
-            S := Defining_Unit_Name (Specification (PO));
+            if Nkind (PO) = N_Entry_Declaration then
+               S := Defining_Entity (PO);
+            else
+               S := Defining_Unit_Name (Specification (PO));
+            end if;
 
             --  Make sure we do not have the case of a precondition pragma when
             --  the Pre'Class aspect is present.
@@ -1583,14 +1578,11 @@ package body Sem_Prag is
                end;
             end if;
 
-            --  Analyze the pragma unless it appears within a package spec,
-            --  which is the case where we delay the analysis of the PPC until
-            --  the end of the package declarations (for details, see
-            --  Analyze_Package_Specification.Analyze_PPCs).
-
-            if not Is_Package_Or_Generic_Package (Scope (S)) then
-               Analyze_PPC_In_Decl_Part (N, S);
-            end if;
+            --  Note: we do not analye the pragma at this point. Instead we
+            --  delay this analysis until the end of the declarative part in
+            --  which the pragma appears. This implements the required delay
+            --  in this analysis, allowing forward references. The analysis
+            --  happens at the end of Analyze_Declarations.
 
             --  Chain spec PPC pragma to list for subprogram
 
@@ -1608,6 +1600,15 @@ package body Sem_Prag is
       begin
          if not Is_List_Member (N) then
             Pragma_Misplaced;
+         end if;
+
+         --  Preanalyze message argument if present. Visibility in this
+         --  argument is established at the point of pragma occurrence.
+
+         if Arg_Count = 2 then
+            Check_Optional_Identifier (Arg2, Name_Message);
+            Preanalyze_Spec_Expression
+              (Get_Pragma_Arg (Arg2), Standard_String);
          end if;
 
          --  Record if pragma is enabled
@@ -10823,7 +10824,6 @@ package body Sem_Prag is
             Check_At_Least_N_Arguments (1);
             Check_At_Most_N_Arguments (2);
             Check_Optional_Identifier (Arg1, Name_Check);
-
             Check_Precondition_Postcondition (In_Body);
 
             --  If in spec, nothing more to do. If in body, then we convert the
@@ -10833,11 +10833,6 @@ package body Sem_Prag is
             --  analyze the condition itself in the proper context.
 
             if In_Body then
-               if Arg_Count = 2 then
-                  Check_Optional_Identifier (Arg3, Name_Message);
-                  Analyze_And_Resolve (Get_Pragma_Arg (Arg2), Standard_String);
-               end if;
-
                Rewrite (N,
                  Make_Pragma (Loc,
                    Chars => Name_Check,

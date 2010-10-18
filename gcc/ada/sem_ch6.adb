@@ -8699,10 +8699,14 @@ package body Sem_Ch6 is
          --  do this fiddling, for the spec cases, the already preanalyzed
          --  parameters are not affected.
 
+         Set_Analyzed (CP, False);
+
+         --  We also make sure Comes_From_Source is False for the copy
+
+         Set_Comes_From_Source (CP, False);
+
          --  For a postcondition pragma within a generic, preserve the pragma
          --  for later expansion.
-
-         Set_Analyzed (CP, False);
 
          if Nam = Name_Postcondition
            and then not Expander_Active
@@ -8710,7 +8714,7 @@ package body Sem_Ch6 is
             return CP;
          end if;
 
-         --  Change pragma into corresponding pragma Check
+         --  Change copy of pragma into corresponding pragma Check
 
          Prepend_To (Pragma_Argument_Associations (CP),
            Make_Pragma_Argument_Association (Sloc (Prag),
@@ -8761,9 +8765,8 @@ package body Sem_Ch6 is
 
          Prag := Spec_PPC_List (Spec_Id);
          while Present (Prag) loop
-            if Pragma_Name (Prag) = Name_Precondition
-              and then Pragma_Enabled (Prag)
-            then
+            if Pragma_Name (Prag) = Name_Precondition then
+
                --  For Pre (or Precondition pragma), we simply prepend the
                --  pragma to the list of declarations right away so that it
                --  will be executed at the start of the procedure. Note that
@@ -8969,7 +8972,6 @@ package body Sem_Ch6 is
                Prag := Spec_PPC_List (Spec);
                loop
                   if Pragma_Name (Prag) = Name_Postcondition
-                    and then Pragma_Enabled (Prag)
                     and then (not Class or else Class_Present (Prag))
                   then
                      if Plist = No_List then

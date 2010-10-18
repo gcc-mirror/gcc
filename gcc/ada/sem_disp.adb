@@ -1742,8 +1742,29 @@ package body Sem_Disp is
       Parent_Op : Entity_Id;
       --  Traverses the Overridden_Operation chain
 
+      procedure Store_IS (E : Entity_Id);
+      --  Stores E in Result if not already stored
+
+      --------------
+      -- Store_IS --
+      --------------
+
+      procedure Store_IS (E : Entity_Id) is
+      begin
+         for J in 1 .. N loop
+            if E = Result (J) then
+               return;
+            end if;
+         end loop;
+
+         N := N + 1;
+         Result (N) := E;
+      end Store_IS;
+
+   --  Start of processing for Inherited_Subprograms
+
    begin
-      if Present (S) then
+      if Present (S) and then Is_Dispatching_Operation (S) then
 
          --  Deal with direct inheritance
 
@@ -1755,13 +1776,56 @@ package body Sem_Disp is
             if Is_Subprogram (Parent_Op)
               or else Is_Generic_Subprogram (Parent_Op)
             then
-               N := N + 1;
-               Result (N) := Parent_Op;
+               Store_IS (Parent_Op);
             end if;
          end loop;
 
-         --  For now don't bother with interfaces, TBD ???
+         --  Now deal with interfaces
 
+         declare
+            Tag_Typ : Entity_Id;
+            Prim    : Entity_Id;
+            Elmt    : Elmt_Id;
+
+         begin
+            Tag_Typ := Find_Dispatching_Type (S);
+
+            if Is_Concurrent_Type (Tag_Typ) then
+               Tag_Typ := Corresponding_Record_Type (Tag_Typ);
+            end if;
+
+            --  Search primitive operations of dispatching type
+
+            if Present (Tag_Typ)
+              and then Present (Primitive_Operations (Tag_Typ))
+            then
+               Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
+               while Present (Elmt) loop
+                  Prim := Node (Elmt);
+
+                  --  The following test eliminates some odd cases in which
+                  --  Ekind (Prim) is Void, to be investigated further ???
+
+                  if not (Is_Subprogram (Prim)
+                            or else
+                          Is_Generic_Subprogram (Prim))
+                  then
+                     null;
+
+                     --  For [generic] subprogram, look at interface alias
+
+                  elsif Present (Interface_Alias (Prim))
+                    and then Alias (Prim) = S
+                  then
+                     --  We have found a primitive covered by S
+
+                     Store_IS (Interface_Alias (Prim));
+                  end if;
+
+                  Next_Elmt (Elmt);
+               end loop;
+            end if;
+         end;
       end if;
 
       return Result (1 .. N);
