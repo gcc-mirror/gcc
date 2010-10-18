@@ -1316,7 +1316,9 @@ package body Exp_Dist is
       --  Build callers, receivers for every primitive operations and a RPC
       --  receiver for this type.
 
-      if Present (Primitive_Operations (Designated_Type)) then
+      if not Is_Concurrent_Type (Designated_Type)
+        and then Present (Primitive_Operations (Designated_Type))
+      then
          Overload_Counter_Table.Reset;
 
          Current_Primitive_Elmt :=
@@ -1336,8 +1338,9 @@ package body Exp_Dist is
                  Is_TSS (Current_Primitive, TSS_Stream_Input)  or else
                  Is_TSS (Current_Primitive, TSS_Stream_Output) or else
                  Is_TSS (Current_Primitive, TSS_Stream_Read)   or else
-                 Is_TSS (Current_Primitive, TSS_Stream_Write)  or else
-                 Is_Predefined_Interface_Primitive (Current_Primitive))
+                 Is_TSS (Current_Primitive, TSS_Stream_Write)
+                   or else
+                     Is_Predefined_Interface_Primitive (Current_Primitive))
               and then not Is_Hidden (Current_Primitive)
             then
                --  The first thing to do is build an up-to-date copy of the
@@ -1413,8 +1416,8 @@ package body Exp_Dist is
                        RACW_Type                => Stub_Elements.RACW_Type,
                        Parent_Primitive         => Current_Primitive);
 
-                  Current_Receiver := Defining_Unit_Name (
-                    Specification (Current_Receiver_Body));
+                  Current_Receiver :=
+                    Defining_Unit_Name (Specification (Current_Receiver_Body));
 
                   Append_To (Body_Decls, Current_Receiver_Body);
 

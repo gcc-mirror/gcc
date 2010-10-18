@@ -1334,6 +1334,12 @@ package body Sem_Cat is
    begin
       Desig_Type := Etype (Designated_Type (T));
 
+      --  No action needed for concurrent types
+
+      if Is_Concurrent_Type (Desig_Type) then
+         return;
+      end if;
+
       Primitive_Subprograms := Primitive_Operations (Desig_Type);
 
       Subprogram_Elmt := First_Elmt (Primitive_Subprograms);

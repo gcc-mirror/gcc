@@ -1956,11 +1956,11 @@ package body Sem_Ch7 is
       Set_Private_Dependents (Id, New_Elmt_List);
 
       if Tagged_Present (Def) then
-         Set_Ekind                (Id, E_Record_Type_With_Private);
-         Set_Primitive_Operations (Id, New_Elmt_List);
-         Set_Is_Abstract_Type     (Id, Abstract_Present (Def));
-         Set_Is_Limited_Record    (Id, Limited_Present (Def));
-         Set_Has_Delayed_Freeze   (Id, True);
+         Set_Ekind                       (Id, E_Record_Type_With_Private);
+         Set_Direct_Primitive_Operations (Id, New_Elmt_List);
+         Set_Is_Abstract_Type            (Id, Abstract_Present (Def));
+         Set_Is_Limited_Record           (Id, Limited_Present (Def));
+         Set_Has_Delayed_Freeze          (Id, True);
 
          --  Create a class-wide type with the same attributes
 

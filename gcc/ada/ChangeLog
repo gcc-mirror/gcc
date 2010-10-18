@@ -1,3 +1,19 @@
+2010-10-18  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads, einfo.adb (Primitive_Operations): New synthesized
+	attribute.
+	(Direct_Primitive_Operations): Renaming of old Primitive_Operations.
+	(Set_Direct_Primitive_Operations): Renaming of old
+	Set_Primitive_Operations. Update documentation
+	* sem_ch3.adb, exp_util.adb, sem_ch7.adb, sem_ch8.adb, exp_ch3.adb:
+	Replace occurrences of Set_Primitive_Operations by
+	Set_Direct_Primitive_Operations.
+	* sem_cat.adb (Validate_RACW_Primitives): No action needed for tagged
+	concurrent types.
+	* exp_dist.adb (Add_RACW_Primitive_Declarations_And_Bodies): Do not
+	process primitives of concurrent types.
+	* lib-xref.adb (Generate_Prim_Op_References): Minor code cleanup.
+
 2010-10-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch6.adb (Expand_N_Subprogram_Declaration): Use Freeze_Before.
