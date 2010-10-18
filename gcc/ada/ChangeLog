@@ -1,3 +1,15 @@
+2010-10-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb: New attribute PPC_Wrapper for entries and entry
+	families. Denotes a procedure that performs pre/postcondition checks
+	and then performs the entry call.
+	* sem_res.adb (Resolve_Entry_Call): If the entry has
+	pre/postconditions, replace call with a call to the PPC_Wrapper of the
+	entry.
+	* exp_ch9.adb (Build_PPC_Wrapper): new procedure.
+	(Expand_N_Entry_Declaration, Expand_N_Protected_Type_Declaration): call
+	Build_PPC_Wrapper for all entries in task and protected definitions.
+
 2010-10-18  Tristan Gingold  <gingold@adacore.com>
 
 	* init.c: Add __gnat_set_stack_guard_page and __gnat_set_stack_limit.
