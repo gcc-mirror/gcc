@@ -1,3 +1,28 @@
+2010-10-18  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.adb (Side_Effect_Free): Code clean up.
+
+2010-10-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Is_Primitive_Operator_In_Use): Renamed from
+	Is_Primitive_Operator. When ending the scope of a use package scope, a
+	primitive operator remains in use if the base type has a current use
+	(type) clause.
+
+2010-10-18  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads (Is_Dynamic_Support): Add missing support for limited
+	private types whose full-view is a task type.
+	* sem_util.adb (Enclosing_Subprogram): Add missing support for limited
+	private types whose full-view is a task type.
+	* exp_ch7.adb (Find_Final_List): Minor code cleanup replacing code by
+	function Nearest_Dynamic_Scope which provides the needed functionality.
+
+2010-10-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Set_Exported): Do not generate error when exporting a
+	variable with an address clause in codepeer mode.
+
 2010-10-18  Robert Dewar  <dewar@adacore.com>
 
 	* g-trasym-vms-ia64.adb: Minor reformatting.

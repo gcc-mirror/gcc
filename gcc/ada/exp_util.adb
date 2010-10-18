@@ -4655,8 +4655,8 @@ package body Exp_Util is
 
          elsif VM_Target /= No_VM
             and then not Comes_From_Source (N)
-            and then Is_Class_Wide_Type (Etype (N))
             and then Nkind (Parent (N)) = N_Object_Renaming_Declaration
+            and then Is_Class_Wide_Type (Etype (N))
          then
             return True;
          end if;
