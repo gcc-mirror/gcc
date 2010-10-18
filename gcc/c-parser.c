@@ -7228,7 +7228,7 @@ c_parser_objc_type_name (c_parser *parser)
 	      || token->keyword == RID_BYREF
 	      || token->keyword == RID_ONEWAY))
 	{
-	  quals = chainon (quals, build_tree_list (NULL_TREE, token->value));
+	  quals = chainon (build_tree_list (NULL_TREE, token->value), quals);
 	  c_parser_consume_token (parser);
 	}
       else

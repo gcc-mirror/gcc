@@ -44,20 +44,10 @@ static void scan_initial(const char *pattern) {
 
 int main(void) {
   meth = [proto descriptionForInstanceMethod: @selector(address:with:)];
-#ifndef __NEXT_RUNTIME__
-  scan_initial("O@%u@%u:%uRN@%uo^^S%u");
-#else
-  /* The NEXT runtime tries to be compatible with gcc-3.3  */
   scan_initial("O@%u@%u:%uNR@%uo^^S%u");
-#endif
   CHECK_IF(offs3 == offs2 + aligned_sizeof(id) && totsize == offs3 + aligned_sizeof(unsigned));
   meth = [proto descriptionForClassMethod: @selector(retainArgument:with:)];
-#ifndef __NEXT_RUNTIME__
-  scan_initial("Vv%u@%u:%uoO@%un^*%u");
-#else
-  /* The NEXT runtime tries to be compatible with gcc-3.3  */
   scan_initial("Vv%u@%u:%uOo@%un^*%u");
-#endif
   CHECK_IF(offs3 == offs2 + aligned_sizeof(id) && totsize == offs3 + aligned_sizeof(char **));
   return 0;
 }
