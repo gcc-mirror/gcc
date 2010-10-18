@@ -593,7 +593,6 @@ ipa_discover_readonly_nonaddressable_vars (void)
 static bool
 cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool aliased)
 {
-  struct cgraph_node *alias;
   if (!node->local.finalized)
     return false;
   if (!DECL_COMDAT (node->decl)
@@ -608,23 +607,6 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool 
   /* If linker counts on us, we must preserve the function.  */
   if (cgraph_used_from_object_file_p (node))
     return true;
-  if (DECL_PRESERVE_P (node->decl))
-    return true;
-  if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (node->decl)))
-    return true;
-
-  /* See if we have linker information about symbol not being used or
-     if we need to make guess based on the declaration.
-
-     Even if the linker clams the symbol is unused, never bring internal
-     symbols that are declared by user as used or externally visible.
-     This is needed for i.e. references from asm statements.   */
-  for (alias = node->same_body; alias; alias = alias->next)
-    if (alias->resolution != LDPR_PREVAILING_DEF_IRONLY)
-      break;
-  if (!alias && node->resolution == LDPR_PREVAILING_DEF_IRONLY)
-    return false;
-
   /* When doing link time optimizations, hidden symbols become local.  */
   if (in_lto_p
       && (DECL_VISIBILITY (node->decl) == VISIBILITY_HIDDEN
@@ -656,70 +638,11 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool 
 	      return true;
 	}
     }
-
+  if (DECL_PRESERVE_P (node->decl))
+    return true;
   if (MAIN_NAME_P (DECL_NAME (node->decl)))
     return true;
-
-  return false;
-}
-
-/* Return true when variable VNODE should be considered externally visible.  */
-
-static bool
-varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
-{
-  struct varpool_node *alias;
-  if (!DECL_COMDAT (vnode->decl) && !TREE_PUBLIC (vnode->decl))
-    return false;
-
-  /* Do not even try to be smart about aliased nodes.  Until we properly
-     represent everything by same body alias, these are just evil.  */
-  if (aliased)
-    return true;
-
-  /* If linker counts on us, we must preserve the function.  */
-  if (varpool_used_from_object_file_p (vnode))
-    return true;
-
-  if (DECL_PRESERVE_P (vnode->decl))
-    return true;
-  if (lookup_attribute ("externally_visible",
-			DECL_ATTRIBUTES (vnode->decl)))
-    return true;
-
-  /* See if we have linker information about symbol not being used or
-     if we need to make guess based on the declaration.
-
-     Even if the linker clams the symbol is unused, never bring internal
-     symbols that are declared by user as used or externally visible.
-     This is needed for i.e. references from asm statements.   */
-  if (varpool_used_from_object_file_p (vnode))
-    return true;
-  for (alias = vnode->extra_name; alias; alias = alias->next)
-    if (alias->resolution != LDPR_PREVAILING_DEF_IRONLY)
-      break;
-  if (!alias && vnode->resolution == LDPR_PREVAILING_DEF_IRONLY)
-    return false;
-
-  /* When doing link time optimizations, hidden symbols become local.  */
-  if (in_lto_p
-      && (DECL_VISIBILITY (vnode->decl) == VISIBILITY_HIDDEN
-	  || DECL_VISIBILITY (vnode->decl) == VISIBILITY_INTERNAL)
-      /* Be sure that node is defined in IR file, not in other object
-	 file.  In that case we don't set used_from_other_object_file.  */
-      && vnode->finalized)
-    ;
-  else if (!flag_whole_program)
-    return true;
-
-  /* Do not attempt to privatize COMDATS by default.
-     This would break linking with C++ libraries sharing
-     inline definitions.
-
-     FIXME: We can do so for readonly vars with no address taken and
-     possibly also for vtables since no direct pointer comparsion is done.
-     It might be interesting to do so to reduce linking overhead.  */
-  if (DECL_COMDAT (vnode->decl) || DECL_WEAK (vnode->decl))
+  if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (node->decl)))
     return true;
   return false;
 }
@@ -875,9 +798,27 @@ function_and_variable_visibility (bool whole_program)
       if (!vnode->finalized)
         continue;
       if (vnode->needed
-	  && varpool_externally_visible_p
-	      (vnode, 
-	       pointer_set_contains (aliased_vnodes, vnode)))
+	  && (DECL_COMDAT (vnode->decl) || TREE_PUBLIC (vnode->decl))
+	  && (((!whole_program
+	        /* We can privatize comdat readonly variables whose address is
+		   not taken, but doing so is not going to bring us
+		   optimization oppurtunities until we start reordering
+		   datastructures.  */
+		|| DECL_COMDAT (vnode->decl)
+		|| DECL_WEAK (vnode->decl))
+	       /* When doing linktime optimizations, all hidden symbols will
+		  become local.  */
+	       && (!in_lto_p
+		   || (DECL_VISIBILITY (vnode->decl) != VISIBILITY_HIDDEN
+		       && DECL_VISIBILITY (vnode->decl) != VISIBILITY_INTERNAL)
+		   /* We can get prevailing decision in other object file.
+		      In this case we do not sed used_from_object_file.  */
+		   || !vnode->finalized))
+	      || DECL_PRESERVE_P (vnode->decl)
+              || varpool_used_from_object_file_p (vnode)
+	      || pointer_set_contains (aliased_vnodes, vnode)
+	      || lookup_attribute ("externally_visible",
+				   DECL_ATTRIBUTES (vnode->decl))))
 	vnode->externally_visible = true;
       else
         vnode->externally_visible = false;
