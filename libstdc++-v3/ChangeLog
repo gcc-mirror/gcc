@@ -1,3 +1,13 @@
+2010-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/45866
+	* include/std/ratio (ratio<>::type): Add.
+	(ratio_add<>::num, ratio_add<>::den,
+	ratio_subtract<>::num, ratio_subtract<>::den,
+	ratio_multiply<>::num, ratio_multiply<>::den,
+	ratio_divide<>::num, ratio_divide<>::den): Likewise.
+	* testsuite/20_util/ratio/operations/45866.cc: New.
+
 2010-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/forward_list.h (forward_list<>::erase_after): Return
