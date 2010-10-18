@@ -3778,15 +3778,14 @@ package Einfo is
    --  E_Access_Subtype is for an access subtype created by a subtype
    --  declaration.
 
-   --  In addition, we define the kind E_Allocator_Type to label
-   --  allocators. This is because special resolution rules apply to this
-   --  construct. Eventually the constructs are labeled with the access
-   --  type imposed by the context. Gigi should never see the type
-   --  E_Allocator.
+   --  In addition, we define the kind E_Allocator_Type to label allocators.
+   --  This is because special resolution rules apply to this construct.
+   --  Eventually the constructs are labeled with the access type imposed by
+   --  the context. Gigi should never see the type E_Allocator.
 
-   --  Similarly, the type E_Access_Attribute_Type is used as the initial
-   --  kind associated with an access attribute. After resolution a specific
-   --  access type will be established as determined by the context.
+   --  Similarly, the type E_Access_Attribute_Type is used as the initial kind
+   --  associated with an access attribute. After resolution a specific access
+   --  type will be established as determined by the context.
 
    --  Finally, the type Any_Access is used to label -null- during type
    --  resolution. Any_Access is also replaced by the context type after

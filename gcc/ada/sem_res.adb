@@ -4324,6 +4324,10 @@ package body Sem_Res is
            (Typ, Associated_Storage_Pool (Etype (Parent (N))));
       end if;
 
+      if Ekind (Etype (N)) = E_Anonymous_Access_Type then
+         Check_Restriction (No_Anonymous_Allocators, N);
+      end if;
+
       --  An erroneous allocator may be rewritten as a raise Program_Error
       --  statement.
 

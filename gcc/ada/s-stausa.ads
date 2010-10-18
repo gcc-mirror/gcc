@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2004-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 2004-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -218,10 +218,11 @@ package System.Stack_Usage is
    --  |  of Fill_Stack         |                                     |
    --  |  (deallocated at       |                                     |
    --  |  the end of the call)  |                                     |
-   --  ^                        |                                     |
-   --  Analyzer.Bottom_Of_Stack ^                                     |
-   --                    Analyzer.Bottom_Pattern_Mark                 ^
-   --                                            Analyzer.Top_Pattern_Mark
+   --  ^                        |                                     ^
+   --  Analyzer.Bottom_Of_Stack |                  Analyzer.Top_Pattern_Mark
+   --                           ^
+   --                    Analyzer.Bottom_Pattern_Mark
+   --
 
    procedure Initialize_Analyzer
      (Analyzer         : in out Stack_Analyzer;
@@ -229,6 +230,7 @@ package System.Stack_Usage is
       My_Stack_Size    : Natural;
       Max_Pattern_Size : Natural;
       Bottom           : Stack_Address;
+      Top              : Stack_Address;
       Pattern          : Interfaces.Unsigned_32 := 16#DEAD_BEEF#);
    --  Should be called before any use of a Stack_Analyzer, to initialize it.
    --  Max_Pattern_Size is the size of the pattern zone, might be smaller than
