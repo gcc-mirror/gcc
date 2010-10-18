@@ -56,10 +56,12 @@ package Aspects is
       Aspect_Favor_Top_Level,               -- GNAT
       Aspect_Inline,
       Aspect_Inline_Always,                 -- GNAT
+      Aspect_Input,
       Aspect_Invariant,
       Aspect_Machine_Radix,
       Aspect_No_Return,
       Aspect_Object_Size,                   -- GNAT
+      Aspect_Output,
       Aspect_Pack,
       Aspect_Persistent_BSS,                -- GNAT
       Aspect_Post,
@@ -67,6 +69,7 @@ package Aspects is
       Aspect_Predicate,                     -- GNAT???
       Aspect_Preelaborable_Initialization,
       Aspect_Pure_Function,                 -- GNAT
+      Aspect_Read,
       Aspect_Shared,                        -- GNAT (equivalent to Atomic)
       Aspect_Size,
       Aspect_Storage_Pool,
@@ -83,7 +86,8 @@ package Aspects is
       Aspect_Value_Size,                    -- GNAT
       Aspect_Volatile,
       Aspect_Volatile_Components,
-      Aspect_Warnings);                     -- GNAT
+      Aspect_Warnings,
+      Aspect_Write);                        -- GNAT
 
    --  The following array indicates aspects that accept 'Class
 
@@ -118,10 +122,12 @@ package Aspects is
                         Aspect_Favor_Top_Level              => Optional,
                         Aspect_Inline                       => Optional,
                         Aspect_Inline_Always                => Optional,
+                        Aspect_Input                        => Name,
                         Aspect_Invariant                    => Expression,
                         Aspect_Machine_Radix                => Expression,
                         Aspect_No_Return                    => Optional,
                         Aspect_Object_Size                  => Expression,
+                        Aspect_Output                       => Name,
                         Aspect_Persistent_BSS               => Optional,
                         Aspect_Pack                         => Optional,
                         Aspect_Post                         => Expression,
@@ -129,6 +135,7 @@ package Aspects is
                         Aspect_Predicate                    => Expression,
                         Aspect_Preelaborable_Initialization => Optional,
                         Aspect_Pure_Function                => Optional,
+                        Aspect_Read                         => Name,
                         Aspect_Shared                       => Optional,
                         Aspect_Size                         => Expression,
                         Aspect_Storage_Pool                 => Name,
@@ -145,7 +152,8 @@ package Aspects is
                         Aspect_Value_Size                   => Expression,
                         Aspect_Volatile                     => Optional,
                         Aspect_Volatile_Components          => Optional,
-                        Aspect_Warnings                     => Name);
+                        Aspect_Warnings                     => Name,
+                        Aspect_Write                        => Name);
 
    function Get_Aspect_Id (Name : Name_Id) return Aspect_Id;
    pragma Inline (Get_Aspect_Id);

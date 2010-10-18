@@ -86,9 +86,11 @@ package body Aspects is
      (Name_Favor_Top_Level,              Aspect_Favor_Top_Level),
      (Name_Inline,                       Aspect_Inline),
      (Name_Inline_Always,                Aspect_Inline_Always),
+     (Name_Input,                        Aspect_Input),
      (Name_Invariant,                    Aspect_Invariant),
      (Name_Machine_Radix,                Aspect_Machine_Radix),
      (Name_Object_Size,                  Aspect_Object_Size),
+     (Name_Output,                       Aspect_Output),
      (Name_Pack,                         Aspect_Pack),
      (Name_Persistent_BSS,               Aspect_Persistent_BSS),
      (Name_Post,                         Aspect_Post),
@@ -96,6 +98,7 @@ package body Aspects is
      (Name_Predicate,                    Aspect_Predicate),
      (Name_Preelaborable_Initialization, Aspect_Preelaborable_Initialization),
      (Name_Pure_Function,                Aspect_Pure_Function),
+     (Name_Read,                         Aspect_Read),
      (Name_Shared,                       Aspect_Shared),
      (Name_Size,                         Aspect_Size),
      (Name_Storage_Pool,                 Aspect_Storage_Pool),
@@ -112,7 +115,8 @@ package body Aspects is
      (Name_Value_Size,                   Aspect_Value_Size),
      (Name_Volatile,                     Aspect_Volatile),
      (Name_Volatile_Components,          Aspect_Volatile_Components),
-     (Name_Warnings,                     Aspect_Warnings));
+     (Name_Warnings,                     Aspect_Warnings),
+     (Name_Write,                        Aspect_Write));
 
    -------------------------------------
    -- Hash Table for Aspect Id Values --

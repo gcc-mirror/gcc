@@ -99,7 +99,7 @@ package body Sem_Ch4 is
    --  the operand of the operator node.
 
    procedure Ambiguous_Operands (N : Node_Id);
-   --  for equality, membership, and comparison operators with overloaded
+   --  For equality, membership, and comparison operators with overloaded
    --  arguments, list possible interpretations.
 
    procedure Analyze_One_Call

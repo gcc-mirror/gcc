@@ -86,8 +86,8 @@ package body Sem_Ch10 is
    --  included in a standalone library.
 
    procedure Check_Private_Child_Unit (N : Node_Id);
-   --  If a with_clause mentions a private child unit, the compilation
-   --  unit must be a member of the same family, as described in 10.1.2.
+   --  If a with_clause mentions a private child unit, the compilation unit
+   --  must be a member of the same family, as described in 10.1.2.
 
    procedure Check_Stub_Level (N : Node_Id);
    --  Verify that a stub is declared immediately within a compilation unit,
@@ -126,8 +126,8 @@ package body Sem_Ch10 is
    --  example through a limited_with clause in a parent unit.
 
    procedure Install_Context_Clauses (N : Node_Id);
-   --  Subsidiary to Install_Context and Install_Parents. Process only with_
-   --  and use_clauses for current unit and its library unit if any.
+   --  Subsidiary to Install_Context and Install_Parents. Process all with
+   --  and use clauses for current unit and its library unit if any.
 
    procedure Install_Limited_Context_Clauses (N : Node_Id);
    --  Subsidiary to Install_Context. Process only limited with_clauses for
@@ -187,18 +187,18 @@ package body Sem_Ch10 is
    --  that all parents are removed in the nested case.
 
    procedure Remove_Unit_From_Visibility (Unit_Name : Entity_Id);
-   --  Reset all visibility flags on unit after compiling it, either as a
-   --  main unit or as a unit in the context.
+   --  Reset all visibility flags on unit after compiling it, either as a main
+   --  unit or as a unit in the context.
 
    procedure Unchain (E : Entity_Id);
    --  Remove single entity from visibility list
 
    procedure Analyze_Proper_Body (N : Node_Id; Nam : Entity_Id);
    --  Common processing for all stubs (subprograms, tasks, packages, and
-   --  protected cases). N is the stub to be analyzed. Once the subunit
-   --  name is established, load and analyze. Nam is the non-overloadable
-   --  entity for which the proper body provides a completion. Subprogram
-   --  stubs are handled differently because they can be declarations.
+   --  protected cases). N is the stub to be analyzed. Once the subunit name
+   --  is established, load and analyze. Nam is the non-overloadable entity
+   --  for which the proper body provides a completion. Subprogram stubs are
+   --  handled differently because they can be declarations.
 
    procedure sm;
    --  A dummy procedure, for debugging use, called just before analyzing the
@@ -272,11 +272,10 @@ package body Sem_Ch10 is
            Clause            : Node_Id;
            Used              : in out Boolean;
            Used_Type_Or_Elab : in out Boolean);
-         --  Examine the context clauses of a package body, trying to match
-         --  the name entity of Clause with any list element. If the match
-         --  occurs on a use package clause, set Used to True, for a use
-         --  type clause, pragma Elaborate or pragma Elaborate_All, set
-         --  Used_Type_Or_Elab to True.
+         --  Examine the context clauses of a package body, trying to match the
+         --  name entity of Clause with any list element. If the match occurs
+         --  on a use package clause set Used to True, for a use type clause or
+         --  pragma Elaborate[_All], set Used_Type_Or_Elab to True.
 
          procedure Process_Spec_Clauses
           (Context_List : List_Id;

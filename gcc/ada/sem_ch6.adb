@@ -180,7 +180,7 @@ package body Sem_Ch6 is
    --  entity with that name.
 
    procedure Install_Entity (E : Entity_Id);
-   --  Make single entity visible. Used for generic formals as well
+   --  Make single entity visible (used for generic formals as well)
 
    function Is_Non_Overriding_Operation
      (Prev_E : Entity_Id;

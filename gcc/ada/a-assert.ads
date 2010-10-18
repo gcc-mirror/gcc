@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                           A D A . A S S E R T                            --
+--                       A D A . A S S E R T I O N S                        --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --

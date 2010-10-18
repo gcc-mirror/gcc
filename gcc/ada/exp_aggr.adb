@@ -5421,7 +5421,7 @@ package body Exp_Aggr is
       --  of the following form (c1 and c2 are inherited components)
 
       --   (Exp with c3 => a, c4 => b)
-      --      ==> (c1 => Exp.c1, c2 => Exp.c2, c1 => a, c2 => b)
+      --      ==> (c1 => Exp.c1, c2 => Exp.c2, c3 => a, c4 => b)
 
       else
          Set_Etype (N, Typ);

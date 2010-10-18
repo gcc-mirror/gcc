@@ -1462,6 +1462,10 @@ package body GNAT.Command_Line is
    --  Start of processing for Get_Switches
 
    begin
+      if Config = null then
+         return "";
+      end if;
+
       Foreach (Config, Section => Section);
 
       --  Adding relevant aliases
