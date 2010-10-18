@@ -3038,10 +3038,11 @@ package body Prj.Nmsc is
                     In_Tree   => Data.Tree);
          end case;
 
-         Exception_List := Value_Of
-           (Index    => Lang,
-            In_Array => Exceptions,
-            In_Tree  => Data.Tree);
+         Exception_List :=
+           Value_Of
+             (Index    => Lang,
+              In_Array => Exceptions,
+              In_Tree  => Data.Tree);
 
          if Exception_List /= Nil_Variable_Value then
             Element_Id := Exception_List.Values;
@@ -3049,11 +3050,11 @@ package body Prj.Nmsc is
                Element   := Data.Tree.String_Elements.Table (Element_Id);
                File_Name := Canonical_Case_File_Name (Element.Value);
 
-               Source := Source_Files_Htable.Get
-                 (Data.Tree.Source_Files_HT, File_Name);
-
+               Source :=
+                 Source_Files_Htable.Get
+                   (Data.Tree.Source_Files_HT, File_Name);
                while Source /= No_Source
-                     and then Source.Project /= Project
+                 and then Source.Project /= Project
                loop
                   Source := Source.Next_With_File_Name;
                end loop;

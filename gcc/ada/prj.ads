@@ -771,7 +771,7 @@ package Prj is
       Next_In_Lang : Source_Id := No_Source;
       --  Link to another source of the same language in the same project
 
-      Next_With_File_Name    : Source_Id := No_Source;
+      Next_With_File_Name : Source_Id := No_Source;
       --  Link to another source with the same base file name
 
    end record;
@@ -1373,7 +1373,7 @@ package Prj is
          Packages          : Package_Table.Instance;
          Projects          : Project_List;
 
-         Replaced_Sources  : Replaced_Source_HTable.Instance;
+         Replaced_Sources : Replaced_Source_HTable.Instance;
          --  The list of sources that have been replaced by sources with
          --  different file names.
 
@@ -1383,7 +1383,7 @@ package Prj is
          Units_HT : Units_Htable.Instance;
          --  Unit name to Unit_Index (and from there to Source_Id)
 
-         Source_Files_HT        : Source_Files_Htable.Instance;
+         Source_Files_HT : Source_Files_Htable.Instance;
          --  Base source file names to Source_Id list.
 
          Source_Paths_HT : Source_Paths_Htable.Instance;
@@ -1432,13 +1432,17 @@ package Prj is
       Imported_First : Boolean := False);
    --  Call Action for each project imported directly or indirectly by project
    --  By, as well as extended projects.
+   --
    --  The order of processing depends on Imported_First:
-   --  If False, Action is called according to the order of importation: if A
-   --  imports B, directly or indirectly, Action will be called for A before
-   --  it is called for B. If two projects import each other directly or
-   --  indirectly (using at least one "limited with"), it is not specified
-   --  for which of these two projects Action will be called first.
-   --  The order is reversed if Imported_First is True.
+   --
+   --    If False, Action is called according to the order of importation: if A
+   --    imports B, directly or indirectly, Action will be called for A before
+   --    it is called for B. If two projects import each other directly or
+   --    indirectly (using at least one "limited with"), it is not specified
+   --    for which of these two projects Action will be called first.
+   --
+   --    The order is reversed if Imported_First is True
+   --
    --  With_State may be used by Action to choose a behavior or to report some
    --  global result.
 
