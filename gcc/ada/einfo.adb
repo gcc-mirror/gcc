@@ -1545,17 +1545,17 @@ package body Einfo is
       return Node4 (Id);
    end Homonym;
 
-   function Interfaces (Id : E) return L is
-   begin
-      pragma Assert (Is_Record_Type (Id));
-      return Elist25 (Id);
-   end Interfaces;
-
    function Interface_Alias (Id : E) return E is
    begin
       pragma Assert (Is_Subprogram (Id));
       return Node25 (Id);
    end Interface_Alias;
+
+   function Interfaces (Id : E) return L is
+   begin
+      pragma Assert (Is_Record_Type (Id));
+      return Elist25 (Id);
+   end Interfaces;
 
    function In_Package_Body (Id : E) return B is
    begin
@@ -3970,12 +3970,6 @@ package body Einfo is
       Set_Node4 (Id, V);
    end Set_Homonym;
 
-   procedure Set_Interfaces (Id : E; V : L) is
-   begin
-      pragma Assert (Is_Record_Type (Id));
-      Set_Elist25 (Id, V);
-   end Set_Interfaces;
-
    procedure Set_Interface_Alias (Id : E; V : E) is
    begin
       pragma Assert
@@ -3984,6 +3978,12 @@ package body Einfo is
           and then (Ekind_In (Id, E_Procedure, E_Function)));
       Set_Node25 (Id, V);
    end Set_Interface_Alias;
+
+   procedure Set_Interfaces (Id : E; V : L) is
+   begin
+      pragma Assert (Is_Record_Type (Id));
+      Set_Elist25 (Id, V);
+   end Set_Interfaces;
 
    procedure Set_In_Package_Body (Id : E; V : B := True) is
    begin

@@ -1711,10 +1711,10 @@ package Einfo is
 --       representation clause, and thus is not inherited by a derived type.
 --       This flag is always False for non-record types.
 
---    Has_Specified_Stream_Input (Flag190)
+--    Has_Specified_Stream_Input  (Flag190)
 --    Has_Specified_Stream_Output (Flag191)
---    Has_Specified_Stream_Read (Flag192)
---    Has_Specified_Stream_Write (Flag193)
+--    Has_Specified_Stream_Read   (Flag192)
+--    Has_Specified_Stream_Write  (Flag193)
 --       Present in all type and subtype entities. Set for a given view if the
 --       corresponding stream-oriented attribute has been defined by an
 --       attribute definition clause. When such a clause occurs, a TSS is set
@@ -1822,17 +1822,17 @@ package Einfo is
 --       that we still have a concrete type. For entities other than types,
 --       returns the entity unchanged.
 
---    Interfaces (Elist25)
---       Present in record types and subtypes. List of abstract interfaces
---       implemented by a tagged type that are not already implemented by the
---       ancestors (Ada 2005: AI-251).
-
 --    Interface_Alias (Node25)
 --       Present in subprograms that cover a primitive operation of an abstract
 --       interface type. Can be set only if the Is_Hidden flag is also set,
 --       since such entities are always hidden. Points to its associated
 --       interface subprogram. It is used to register the subprogram in
 --       secondary dispatch table of the interface (Ada 2005: AI-251).
+
+--    Interfaces (Elist25)
+--       Present in record types and subtypes. List of abstract interfaces
+--       implemented by a tagged type that are not already implemented by the
+--       ancestors (Ada 2005: AI-251).
 
 --    In_Package_Body (Flag48)
 --       Present in package entities. Set on the entity that denotes the
@@ -5948,8 +5948,8 @@ package Einfo is
    function In_Private_Part                     (Id : E) return B;
    function In_Use                              (Id : E) return B;
    function Inner_Instances                     (Id : E) return L;
-   function Interfaces                          (Id : E) return L;
    function Interface_Alias                     (Id : E) return E;
+   function Interfaces                          (Id : E) return L;
    function Interface_Name                      (Id : E) return N;
    function Is_AST_Entry                        (Id : E) return B;
    function Is_Abstract_Subprogram              (Id : E) return B;
