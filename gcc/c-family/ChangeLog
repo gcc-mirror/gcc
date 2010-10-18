@@ -1,6 +1,16 @@
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+	
+	2005-11-08  Fariborz Jahanian <fjahanian@apple.com>
+
+        Radar 4330422
+	* c-common.h (objc_non_volatilized_type): New declaration
+	* stub-objc.c (objc_non_volatilized_type): New stub.
+
 2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	Merge from 'apple/trunk' branch on FSF servers.		
+	Merge from 'apple/trunk' branch on FSF servers.
 
 	2006-03-27 Fariborz Jahanian <fjahanian@apple.com>
 
