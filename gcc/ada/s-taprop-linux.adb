@@ -844,21 +844,14 @@ package body System.Task_Primitives.Operations is
           (Attributes'Access, PTHREAD_CREATE_DETACHED);
       pragma Assert (Result = 0);
 
-      --  We were calling pthread_setaffinity_np (after thread creation but
-      --  before thread activation) to set the affinity but it was not
-      --  behaving as expected. Now we set the required attributes for the
-      --  creation of the thread, which is working correctly and it is
-      --  more appropriate.
+      --  Set the required attributes for the creation of the thread
 
-      if pthread_attr_setaffinity_np'Address = System.Null_Address then
+      --  Note: Previously, we called pthread_setaffinity_np (after thread
+      --  creation but before thread activation) to set the affinity but it was
+      --  not behaving as expected. Setting the required attributes for the
+      --  creation of the thread works correctly and it is more appropriate.
 
-         --  Nothing to do with the affinities if no underlying support
-
-         null;
-
-      --  Handle pragma CPU
-
-      elsif T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
+      if T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
          declare
             CPU_Set : aliased cpu_set_t := (bits => (others => False));
          begin
