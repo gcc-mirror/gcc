@@ -1262,7 +1262,7 @@ static const struct cond_except cond_except_table [] = {
 typedef int
 resignal_predicate (int code);
 
-const int *cond_resignal_table [] = {
+static const int * const cond_resignal_table [] = {
   &C$_SIGKILL,
   &CMA$_EXIT_THREAD,
   &SS$_DEBUG,
@@ -1273,7 +1273,7 @@ const int *cond_resignal_table [] = {
   0
 };
 
-const int facility_resignal_table [] = {
+static const int facility_resignal_table [] = {
   0x1380000, /* RDB */
   0x2220000, /* SQL */
   0
@@ -1301,15 +1301,15 @@ __gnat_default_resignal_p (int code)
 /* Static pointer to predicate that the __gnat_error_handler exception
    vector invokes to determine if it should resignal a condition.  */
 
-static resignal_predicate * __gnat_resignal_p = __gnat_default_resignal_p;
+static resignal_predicate *__gnat_resignal_p = __gnat_default_resignal_p;
 
 /* User interface to change the predicate pointer to PREDICATE. Reset to
    the default if PREDICATE is null.  */
 
 void
-__gnat_set_resignal_predicate (resignal_predicate * predicate)
+__gnat_set_resignal_predicate (resignal_predicate *predicate)
 {
-  if (predicate == 0)
+  if (predicate == NULL)
     __gnat_resignal_p = __gnat_default_resignal_p;
   else
     __gnat_resignal_p = predicate;
@@ -1323,9 +1323,7 @@ __gnat_set_resignal_predicate (resignal_predicate * predicate)
    and separated by line termination.  */
 
 static int
-copy_msg (msgdesc, message)
-     struct descriptor_s *msgdesc;
-     char *message;
+copy_msg (struct descriptor_s *msgdesc, char *message)
 {
   int len = strlen (message);
   int copy_len;
@@ -1352,7 +1350,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 {
   struct Exception_Data *exception = 0;
   Exception_Code base_code;
-  struct descriptor_s gnat_facility = {4,0,"GNAT"};
+  struct descriptor_s gnat_facility = {4, 0, "GNAT"};
   char message [Default_Exception_Msg_Max_Length];
 
   const char *msg = "";
@@ -1365,17 +1363,17 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 #ifdef IN_RTS
   /* See if it's an imported exception.  Beware that registered exceptions
      are bound to their base code, with the severity bits masked off.  */
-  base_code = Base_Code_In ((Exception_Code) sigargs [1]);
+  base_code = Base_Code_In ((Exception_Code) sigargs[1]);
   exception = Coded_Exception (base_code);
 
   if (exception)
     {
-      message [0] = 0;
+      message[0] = 0;
 
       /* Subtract PC & PSL fields which messes with PUTMSG.  */
-      sigargs [0] -= 2;
+      sigargs[0] -= 2;
       SYS$PUTMSG (sigargs, copy_msg, &gnat_facility, message);
-      sigargs [0] += 2;
+      sigargs[0] += 2;
       msg = message;
 
       exception->Name_Length = 19;
@@ -1448,8 +1446,8 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 	      /* Scan the VMS standard condition table for a match and fetch
 		 the associated GNAT exception pointer.  */
 	      for (i = 0;
-		   cond_except_table [i].cond &&
-		   !LIB$MATCH_COND (&sigargs [1], &cond_except_table [i].cond);
+		   cond_except_table[i].cond &&
+		   !LIB$MATCH_COND (&sigargs[1], &cond_except_table[i].cond);
 		   i++);
 	      exception = (struct Exception_Data *)
 		cond_except_table [i].except;
@@ -1463,22 +1461,16 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 #else
 	exception = &program_error;
 #endif
-	message [0] = 0;
+	message[0] = 0;
 	/* Subtract PC & PSL fields which messes with PUTMSG.  */
-	sigargs [0] -= 2;
+	sigargs[0] -= 2;
 	SYS$PUTMSG (sigargs, copy_msg, &gnat_facility, message);
-	sigargs [0] += 2;
+	sigargs[0] += 2;
 	msg = message;
 	break;
       }
 
   Raise_From_Signal_Handler (exception, msg);
-}
-
-long
-__gnat_error_handler (int *sigargs, void *mechargs)
-{
-  return __gnat_handle_vms_condition (sigargs, mechargs);
 }
 
 void
@@ -1487,22 +1479,7 @@ __gnat_install_handler (void)
   long prvhnd ATTRIBUTE_UNUSED;
 
 #if !defined (IN_RTS)
-  SYS$SETEXV (1, __gnat_error_handler, 3, &prvhnd);
-#endif
-
-  /* On alpha-vms, we avoid the global vector annoyance thanks to frame based
-     handlers to turn conditions into exceptions since GCC 3.4.  The global
-     vector is still required for earlier GCC versions.  We're resorting to
-     the __gnat_error_prehandler assembly function in this case.  */
-
-#if defined (IN_RTS) && defined (__alpha__)
-  if ((__GNUC__ * 10 + __GNUC_MINOR__) < 34)
-    {
-      char * c = (char *) xmalloc (2049);
-
-      __gnat_error_prehandler_stack = &c[2048];
-      SYS$SETEXV (1, __gnat_error_prehandler, 3, &prvhnd);
-    }
+  SYS$SETEXV (1, __gnat_handle_vms_condition, 3, &prvhnd);
 #endif
 
   __gnat_handler_installed = 1;
@@ -1572,7 +1549,10 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
    If we ever add another feature logical to this list, the
    feature struct will need to be enhanced to take into account
    possible values for *gl_addr.  */
-struct feature {char *name; int* gl_addr;};
+struct feature {
+  char *name;
+  int *gl_addr;
+};
 
 /* Default values for GNAT features set by environment. */
 int __gl_heap_size = 64;
@@ -1583,21 +1563,21 @@ static struct feature features[] = {
   {0, 0}
 };
 
-void __gnat_set_features ()
+void __gnat_set_features (void)
 {
   struct descriptor_s name_desc, result_desc;
   int i, status;
   unsigned short rlen;
 
 #define MAXEQUIV 10
-  char buff [MAXEQUIV];
+  char buff[MAXEQUIV];
 
   /* Loop through features array and test name for enable/disable */
-  for (i=0; features [i].name; i++)
+  for (i = 0; features[i].name; i++)
     {
-       name_desc.len = strlen (features [i].name);
+       name_desc.len = strlen (features[i].name);
        name_desc.mbz = 0;
-       name_desc.adr = features [i].name;
+       name_desc.adr = features[i].name;
 
        result_desc.len = MAXEQUIV - 1;
        result_desc.mbz = 0;
@@ -1606,18 +1586,18 @@ void __gnat_set_features ()
        status = LIB$GET_LOGICAL (&name_desc, &result_desc, &rlen);
 
        if (((status & 1) == 1) && (rlen < MAXEQUIV))
-         buff [rlen] = 0;
+         buff[rlen] = 0;
        else
          strcpy (buff, "");
 
        if ((strcmp (buff, "ENABLE") == 0) ||
            (strcmp (buff, "TRUE") == 0) ||
            (strcmp (buff, "1") == 0))
-          *features [i].gl_addr = 32;
+          *features[i].gl_addr = 32;
        else if ((strcmp (buff, "DISABLE") == 0) ||
                 (strcmp (buff, "FALSE") == 0) ||
                 (strcmp (buff, "0") == 0))
-          *features [i].gl_addr = 64;
+          *features[i].gl_addr = 64;
     }
 
     __gnat_features_set = 1;

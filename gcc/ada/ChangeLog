@@ -1,3 +1,25 @@
+2010-10-18  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c: Indentation, and minor changes to more closely follow GNU
+	style rules.  Make more variable statics.
+
+2010-10-18  Vincent Celier  <celier@adacore.com>
+
+	* prj.adb (Is_Compilable): On first call for a source, cache value in
+	component Compilable.
+	* prj.ads (Source_Data): New component Compilable, to cache the value
+	returned by function Is_Compilable.
+
+2010-10-18  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New project level attribute Ignore_Source_Sub_Dirs.
+	* prj-nmsc.adb (Expand_Subdirectory_Pattern): New string list parameter
+	Ignore.
+	(Recursive_Find_Dirs): Do not consider subdirectories listed in Ignore.
+	(Get_Directories): Call Find_Source_Dirs with the string list
+	indicated by attribute Ignore_Source_Sub_Dirs.
+	* snames.ads-tmpl: New standard name Ignore_Source_Sub_Dirs.
+
 2010-10-18  Javier Miranda  <miranda@adacore.com>
 
 	* einfo.ads, einfo.adb (Primitive_Operations): New synthesized

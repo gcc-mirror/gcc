@@ -706,6 +706,10 @@ package Prj is
       --  file). Index is 0 if there is either no unit or a single one, and
       --  starts at 1 when there are multiple units
 
+      Compilable : Yes_No_Unknown := Unknown;
+      --  Updated at the first call to Is_Compilable. Yes if source file is
+      --  compilable.
+
       Locally_Removed : Boolean := False;
       --  True if the source has been "excluded"
 
@@ -788,6 +792,7 @@ package Prj is
                        Unit                   => No_Unit_Index,
                        Index                  => 0,
                        Locally_Removed        => False,
+                       Compilable             => Unknown,
                        Replaced_By            => No_Source,
                        File                   => No_File,
                        Display_File           => No_File,
