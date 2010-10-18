@@ -537,6 +537,7 @@ finish_goto_stmt (tree destination)
     TREE_USED (destination) = 1;
   else
     {
+      destination = mark_rvalue_use (destination);
       if (!processing_template_decl)
 	{
 	  destination = cp_convert (ptr_type_node, destination);

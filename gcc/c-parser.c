@@ -4151,9 +4151,12 @@ c_parser_statement_after_labels (c_parser *parser)
 	    }
 	  else if (c_parser_next_token_is (parser, CPP_MULT))
 	    {
+	      tree val;
+
 	      c_parser_consume_token (parser);
-	      stmt = c_finish_goto_ptr (loc,
-					c_parser_expression (parser).value);
+	      val = c_parser_expression (parser).value;
+	      mark_exp_read (val);
+	      stmt = c_finish_goto_ptr (loc, val);
 	    }
 	  else
 	    c_parser_error (parser, "expected identifier or %<*%>");

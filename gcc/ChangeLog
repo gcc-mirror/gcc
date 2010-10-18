@@ -1,3 +1,9 @@
+2010-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/46015
+	* c-parser.c (c_parser_statement_after_labels): Call mark_exp_read
+	on computed goto argument.
+
 2010-10-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45967

@@ -1,3 +1,9 @@
+2010-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/46015
+	* semantics.c (finish_goto_stmt): Call mark_rvalue_use on computed
+	goto destination.
+
 2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 	
 	Merge from apple/trunk branch on FSF servers.
