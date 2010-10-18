@@ -1,3 +1,18 @@
+2010-10-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-flow.h (gimple_purge_all_dead_abnormal_call_edges): Declare.
+	* tree-cfg.c (gimple_purge_dead_abnormal_call_edges): Move around and
+	rewrite modelled on gimple_purge_dead_eh_edges.
+	(gimple_purge_all_dead_abnormal_call_edges): New function.
+	* tree-inline.c (expand_call_inline): Call gimple_purge_dead_eh_edges
+	directly instead of through gimple_purge_dead_abnormal_call_edges.
+	* tree-ssa-pre.c (need_ab_cleanup): New static variable.
+	(eliminate): Set bit in need_ab_cleanup for the basic block if we have
+	removed AB side-effects from one of its statements.
+	(init_pre): Initialize need_ab_cleanup.
+	(fini_pre): Purge dead abnormal call edges and clean up the CFG if bits
+	are set in need_ab_cleanup.  Free need_ab_cleanup afterward.
+
 2010-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/46015
