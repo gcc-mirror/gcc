@@ -1866,10 +1866,16 @@ package body GNAT.Command_Line is
                      return False;
                   end if;
 
-               when Parameter_With_Optional_Space
-                  | Parameter_With_Space_Or_Equal =>
+               when Parameter_With_Optional_Space =>
                   if Parameter /= "" then
                      Callback (Switch, " ", Parameter, Index => Index);
+                     Found_In_Config := True;
+                     return False;
+                  end if;
+
+               when Parameter_With_Space_Or_Equal =>
+                  if Parameter /= "" then
+                     Callback (Switch, "=", Parameter, Index => Index);
                      Found_In_Config := True;
                      return False;
                   end if;
@@ -1925,8 +1931,9 @@ package body GNAT.Command_Line is
                   null;
 
                when Parameter_With_Space_Or_Equal =>
-                  if Switch (Param) = ' '
-                    or else Switch (Param) = '='
+                  if Param <= Switch'Last
+                    and then
+                      (Switch (Param) = ' ' or else Switch (Param) = '=')
                   then
                      Callback (Switch (Switch'First .. Last),
                                "=", Switch (Param + 1 .. Switch'Last), Index);

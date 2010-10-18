@@ -1599,15 +1599,10 @@ package body Exp_Ch9 is
       Actuals : constant List_Id := New_List;
       --  the actuals in the entry call.
 
-      Entry_Call : constant Node_Id :=
-                     Make_Procedure_Call_Statement (Loc,
-                       Name =>
-                         Make_Selected_Component (Loc,
-                           Prefix        => New_Occurrence_Of (Synch_Id, Loc),
-                           Selector_Name => New_Occurrence_Of (E, Loc)),
-                       Parameter_Associations => Actuals);
+      Decls : constant List_Id := New_List;
 
-      Decls      : constant List_Id := New_List;
+      Entry_Call : Node_Id;
+      Entry_Name : Node_Id;
 
       Specs : List_Id;
       --  The specification of the wrapper procedure
@@ -1648,6 +1643,36 @@ package body Exp_Ch9 is
           Out_Present         =>  True,
           In_Present          =>  True,
           Parameter_Type      => New_Occurrence_Of (Scope (E), Loc)));
+
+      Entry_Name :=
+        Make_Selected_Component (Loc,
+          Prefix        => New_Occurrence_Of (Synch_Id, Loc),
+          Selector_Name => New_Occurrence_Of (E, Loc));
+
+      --  If entity is entry family, second formal is the corresponding index,
+      --  and entry name is an indexed component.
+
+      if Ekind (E) = E_Entry_Family then
+         declare
+            Index : constant Entity_Id :=
+                      Make_Defining_Identifier (Loc, Name_I);
+         begin
+            Append_To (Specs,
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier => Index,
+                Parameter_Type      =>
+                 New_Occurrence_Of (Entry_Index_Type (E), Loc)));
+
+            Entry_Name := Make_Indexed_Component (Loc,
+               Prefix => Entry_Name,
+               Expressions => New_List (New_Occurrence_Of (Index, Loc)));
+         end;
+      end if;
+
+      Entry_Call :=
+        Make_Procedure_Call_Statement (Loc,
+          Name => Entry_Name,
+          Parameter_Associations => Actuals);
 
       --  Now add formals that match those of the entry, and build actuals
       --  for the nested entry call.

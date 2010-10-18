@@ -7921,7 +7921,6 @@ package body Einfo is
               E_Return_Statement                           |
               E_Subprogram_Body                            |
               E_Subprogram_Type                            =>
-
             Write_Str ("Last_Entity");
 
          when Scalar_Kind                                  =>

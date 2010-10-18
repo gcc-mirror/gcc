@@ -6336,13 +6336,20 @@ package body Sem_Res is
         and then Current_Scope /= PPC_Wrapper (Nam)
       then
          --  Rewrite as call to the precondition wrapper, adding the task
-         --  object to the list of actuals.
+         --  object to the list of actuals. If the call is to a member of
+         --  an entry family, include the index as well.
 
          declare
             New_Call    : Node_Id;
             New_Actuals : List_Id;
          begin
             New_Actuals := New_List (Obj);
+
+            if  Nkind (Entry_Name) = N_Indexed_Component then
+               Append_To (New_Actuals,
+                 New_Copy_Tree (First (Expressions (Entry_Name))));
+            end if;
+
             Append_List (Parameter_Associations (N), New_Actuals);
             New_Call :=
               Make_Procedure_Call_Statement (Loc,
