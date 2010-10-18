@@ -65,6 +65,43 @@ static void builtin_define_float_constants (const char *,
 					    const char *,
 					    tree);
 
+/* Return true if MODE provides a fast multiply/add (FMA) builtin function.
+   Originally this function used the fma optab, but that doesn't work with
+   -save-temps, so just rely on the HAVE_fma macros for the standard floating
+   point types.  */
+
+static bool
+mode_has_fma (enum machine_mode mode)
+{
+  switch (mode)
+    {
+#ifdef HAVE_fmasf4
+    case SFmode:
+      return !!HAVE_fmasf4;
+#endif
+
+#ifdef HAVE_fmadf4
+    case DFmode:
+      return !!HAVE_fmadf4;
+#endif
+
+#ifdef HAVE_fmaxf4
+    case XFmode:
+      return !!HAVE_fmaxf4;
+#endif
+
+#ifdef HAVE_fmatf4
+    case TFmode:
+      return !!HAVE_fmatf4;
+#endif
+
+    default:
+      break;
+    }
+
+  return false;
+}
+
 /* Define NAME with value TYPE size_unit.  */
 static void
 builtin_define_type_sizeof (const char *name, tree type)

@@ -5069,7 +5069,6 @@ extern bool merge_ranges (int *, tree *, tree *, int, tree, tree, int,
 extern void set_builtin_user_assembler_name (tree decl, const char *asmspec);
 extern bool is_simple_builtin (tree);
 extern bool is_inexpensive_builtin (tree);
-extern bool mode_has_fma (enum machine_mode mode);
 
 /* In convert.c */
 extern tree strip_float_extensions (tree);
