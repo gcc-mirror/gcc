@@ -1187,10 +1187,11 @@
 (define_insn "neon_move_hi_quad_<mode>"
   [(set (match_operand:ANY128 0 "s_register_operand" "+w")
         (vec_concat:ANY128
-          (match_operand:<V_HALF> 1 "s_register_operand" "w")
           (vec_select:<V_HALF>
 		(match_dup 0)
-	        (match_operand:ANY128 2 "vect_par_constant_low" ""))))]
+	        (match_operand:ANY128 2 "vect_par_constant_low" ""))
+          (match_operand:<V_HALF> 1 "s_register_operand" "w")))]
+	   
   "TARGET_NEON"
 {
   int dest = REGNO (operands[0]);
