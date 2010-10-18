@@ -4115,8 +4115,8 @@ package body Exp_Util is
          if Is_Tagged_Type  (Priv_Subtyp) then
             Set_Class_Wide_Type
               (Base_Type (Priv_Subtyp), Class_Wide_Type (Unc_Typ));
-            Set_Primitive_Operations (Priv_Subtyp,
-              Primitive_Operations (Unc_Typ));
+            Set_Direct_Primitive_Operations (Priv_Subtyp,
+              Direct_Primitive_Operations (Unc_Typ));
          end if;
 
          Set_Full_View (Priv_Subtyp, Full_Subtyp);

@@ -2444,7 +2444,7 @@ package body Sem_Ch3 is
       if Tagged_Present (N) then
          Set_Is_Tagged_Type (T);
          Make_Class_Wide_Type (T);
-         Set_Primitive_Operations (T, New_Elmt_List);
+         Set_Direct_Primitive_Operations (T, New_Elmt_List);
       end if;
 
       Push_Scope (T);
@@ -2496,7 +2496,7 @@ package body Sem_Ch3 is
               or else Task_Present (Def));
 
       Set_Interfaces (T, New_Elmt_List);
-      Set_Primitive_Operations (T, New_Elmt_List);
+      Set_Direct_Primitive_Operations (T, New_Elmt_List);
 
       --  Complete the decoration of the class-wide entity if it was already
       --  built (i.e. during the creation of the limited view)
@@ -3936,8 +3936,8 @@ package body Sem_Ch3 is
                if Is_Tagged_Type (T) then
                   Set_Is_Tagged_Type    (Id);
                   Set_Is_Abstract_Type  (Id, Is_Abstract_Type (T));
-                  Set_Primitive_Operations
-                                        (Id, Primitive_Operations (T));
+                  Set_Direct_Primitive_Operations
+                                        (Id, Direct_Primitive_Operations (T));
                   Set_Class_Wide_Type   (Id, Class_Wide_Type (T));
 
                   if Is_Interface (T) then
@@ -3960,10 +3960,11 @@ package body Sem_Ch3 is
                                       (Id, Known_To_Have_Preelab_Init (T));
 
                if Is_Tagged_Type (T) then
-                  Set_Is_Tagged_Type       (Id);
-                  Set_Is_Abstract_Type     (Id, Is_Abstract_Type (T));
-                  Set_Primitive_Operations (Id, Primitive_Operations (T));
-                  Set_Class_Wide_Type      (Id, Class_Wide_Type (T));
+                  Set_Is_Tagged_Type              (Id);
+                  Set_Is_Abstract_Type            (Id, Is_Abstract_Type (T));
+                  Set_Class_Wide_Type             (Id, Class_Wide_Type (T));
+                  Set_Direct_Primitive_Operations (Id,
+                    Direct_Primitive_Operations (T));
                end if;
 
                --  In general the attributes of the subtype of a private type
@@ -7352,7 +7353,7 @@ package body Sem_Ch3 is
       --  Set fields for tagged types
 
       if Is_Tagged then
-         Set_Primitive_Operations (Derived_Type, New_Elmt_List);
+         Set_Direct_Primitive_Operations (Derived_Type, New_Elmt_List);
 
          --  All tagged types defined in Ada.Finalization are controlled
 
@@ -8237,7 +8238,8 @@ package body Sem_Ch3 is
             Set_Corresponding_Record_Type (Def_Id,
                Corresponding_Record_Type (T));
          else
-            Set_Primitive_Operations (Def_Id, Primitive_Operations (T));
+            Set_Direct_Primitive_Operations (Def_Id,
+              Direct_Primitive_Operations (T));
          end if;
 
          Set_Is_Abstract_Type (Def_Id, Is_Abstract_Type (T));
@@ -9811,7 +9813,8 @@ package body Sem_Ch3 is
 
       if Is_Tagged_Type (Full_Base) then
          Set_Is_Tagged_Type (Full);
-         Set_Primitive_Operations (Full, Primitive_Operations (Full_Base));
+         Set_Direct_Primitive_Operations (Full,
+           Direct_Primitive_Operations (Full_Base));
 
          --  Inherit class_wide type of full_base in case the partial view was
          --  not tagged. Otherwise it has already been created when the private
@@ -11552,7 +11555,8 @@ package body Sem_Ch3 is
       Conditional_Delay              (Full,                          Priv);
 
       if Is_Tagged_Type (Full) then
-         Set_Primitive_Operations    (Full, Primitive_Operations    (Priv));
+         Set_Direct_Primitive_Operations (Full,
+           Direct_Primitive_Operations (Priv));
 
          if Priv = Base_Type (Priv) then
             Set_Class_Wide_Type      (Full, Class_Wide_Type         (Priv));
@@ -13529,8 +13533,10 @@ package body Sem_Ch3 is
          Set_Etype        (T, Any_Type);
          Set_Scalar_Range (T, Scalar_Range (Any_Type));
 
-         if Is_Tagged_Type (T) then
-            Set_Primitive_Operations (T, New_Elmt_List);
+         if Is_Tagged_Type (T)
+           and then Is_Record_Type (T)
+         then
+            Set_Direct_Primitive_Operations (T, New_Elmt_List);
          end if;
 
          return;
@@ -14290,7 +14296,6 @@ package body Sem_Ch3 is
                if not Tagged_Present (Type_Definition (N)) then
                   Tag_Mismatch;
                   Set_Is_Tagged_Type (Id);
-                  Set_Primitive_Operations (Id, New_Elmt_List);
                end if;
 
             elsif Nkind (Type_Definition (N)) = N_Derived_Type_Definition then
@@ -14302,7 +14307,6 @@ package body Sem_Ch3 is
                   --  Set some attributes to produce a usable full view
 
                   Set_Is_Tagged_Type (Id);
-                  Set_Primitive_Operations (Id, New_Elmt_List);
                end if;
 
             else
@@ -15421,12 +15425,12 @@ package body Sem_Ch3 is
       --  Customize the class-wide type: It has no prim. op., it cannot be
       --  abstract and its Etype points back to the specific root type.
 
-      Set_Ekind                (CW_Type, E_Class_Wide_Type);
-      Set_Is_Tagged_Type       (CW_Type, True);
-      Set_Primitive_Operations (CW_Type, New_Elmt_List);
-      Set_Is_Abstract_Type     (CW_Type, False);
-      Set_Is_Constrained       (CW_Type, False);
-      Set_Is_First_Subtype     (CW_Type, Is_First_Subtype (T));
+      Set_Ekind                       (CW_Type, E_Class_Wide_Type);
+      Set_Is_Tagged_Type              (CW_Type, True);
+      Set_Direct_Primitive_Operations (CW_Type, New_Elmt_List);
+      Set_Is_Abstract_Type            (CW_Type, False);
+      Set_Is_Constrained              (CW_Type, False);
+      Set_Is_First_Subtype            (CW_Type, Is_First_Subtype (T));
 
       if Ekind (T) = E_Class_Wide_Subtype then
          Set_Etype             (CW_Type, Etype (Base_Type (T)));
@@ -16990,7 +16994,7 @@ package body Sem_Ch3 is
             --  of the class-wide type which depend on the full declaration.
 
             if Is_Tagged_Type (Priv_T) then
-               Set_Primitive_Operations (Priv_T, Full_List);
+               Set_Direct_Primitive_Operations (Priv_T, Full_List);
                Set_Class_Wide_Type
                  (Base_Type (Full_T), Class_Wide_Type (Priv_T));
 
@@ -18268,14 +18272,13 @@ package body Sem_Ch3 is
          end if;
 
          Make_Class_Wide_Type (T);
-         Set_Primitive_Operations (T, New_Elmt_List);
+         Set_Direct_Primitive_Operations (T, New_Elmt_List);
       end if;
 
-      --  We must suppress range checks when processing the components
-      --  of a record in the presence of discriminants, since we don't
-      --  want spurious checks to be generated during their analysis, but
-      --  must reset the Suppress_Range_Checks flags after having processed
-      --  the record definition.
+      --  We must suppress range checks when processing record components in
+      --  the presence of discriminants, since we don't want spurious checks to
+      --  be generated during their analysis, but Suppress_Range_Checks flags
+      --  must be reset the after processing the record definition.
 
       --  Note: this is the only use of Kill_Range_Checks, and is a bit odd,
       --  couldn't we just use the normal range check suppression method here.

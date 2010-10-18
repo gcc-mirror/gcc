@@ -6144,8 +6144,8 @@ package body Exp_Ch3 is
                     (Rep, Access_Disp_Table       (Def_Id));
                   Set_Dispatch_Table_Wrappers
                     (Rep, Dispatch_Table_Wrappers (Def_Id));
-                  Set_Primitive_Operations
-                    (Rep, Primitive_Operations    (Def_Id));
+                  Set_Direct_Primitive_Operations
+                    (Rep, Direct_Primitive_Operations (Def_Id));
                end;
             end if;
 

@@ -121,7 +121,7 @@ package body Einfo is
    --    Entry_Parameters_Type           Node15
    --    Extra_Formal                    Node15
    --    Lit_Indexes                     Node15
-   --    Primitive_Operations            Elist15
+   --    Direct_Primitive_Operations     Elist15
    --    Related_Instance                Node15
    --    Scale_Value                     Uint15
    --    Storage_Size_Variable           Node15
@@ -816,6 +816,12 @@ package body Einfo is
           or else Is_Decimal_Fixed_Point_Type (Id));
       return Uint17 (Id);
    end Digits_Value;
+
+   function Direct_Primitive_Operations (Id : E) return L is
+   begin
+      pragma Assert (Is_Tagged_Type (Id));
+      return Elist15 (Id);
+   end Direct_Primitive_Operations;
 
    function Directly_Designated_Type (Id : E) return E is
    begin
@@ -2355,8 +2361,16 @@ package body Einfo is
 
    function Primitive_Operations (Id : E) return L is
    begin
-      pragma Assert (Is_Tagged_Type (Id));
-      return Elist15 (Id);
+      if Is_Concurrent_Type (Id) then
+         if Present (Corresponding_Record_Type (Id)) then
+            return Direct_Primitive_Operations
+                     (Corresponding_Record_Type (Id));
+         else
+            return No_Elist;
+         end if;
+      else
+         return Direct_Primitive_Operations (Id);
+      end if;
    end Primitive_Operations;
 
    function Prival (Id : E) return E is
@@ -4817,11 +4831,18 @@ package body Einfo is
       Set_Node8 (Id, V);
    end Set_Postcondition_Proc;
 
-   procedure Set_Primitive_Operations (Id : E; V : L) is
+   procedure Set_Direct_Primitive_Operations (Id : E; V : L) is
    begin
-      pragma Assert (Is_Tagged_Type (Id));
+      pragma Assert
+        (Is_Tagged_Type (Id)
+           and then
+             (Is_Record_Type (Id)
+                or else
+              Is_Incomplete_Type (Id)
+                or else
+              Ekind_In (Id, E_Private_Type, E_Private_Subtype)));
       Set_Elist15 (Id, V);
-   end Set_Primitive_Operations;
+   end Set_Direct_Primitive_Operations;
 
    procedure Set_Prival (Id : E; V : E) is
    begin
@@ -7583,7 +7604,7 @@ package body Einfo is
               E_Record_Type                                |
               E_Record_Subtype                             |
               Private_Kind                                 =>
-            Write_Str ("Primitive_Operations");
+            Write_Str ("Direct_Primitive_Operations");
 
          when E_Component                                  =>
             Write_Str ("DT_Entry_Count");

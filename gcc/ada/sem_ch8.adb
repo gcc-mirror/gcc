@@ -5707,7 +5707,7 @@ package body Sem_Ch8 is
                   end if;
 
                   Set_Is_Tagged_Type (T);
-                  Set_Primitive_Operations (T, New_Elmt_List);
+                  Set_Direct_Primitive_Operations (T, New_Elmt_List);
                   Make_Class_Wide_Type (T);
                   Set_Entity (N, Class_Wide_Type (T));
                   Set_Etype  (N, Class_Wide_Type (T));
