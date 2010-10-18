@@ -851,7 +851,14 @@ package body System.Task_Primitives.Operations is
       --  not behaving as expected. Setting the required attributes for the
       --  creation of the thread works correctly and it is more appropriate.
 
-      if T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
+      --  Do nothing if required support not provided by the operating system
+
+      if pthread_attr_setaffinity_np'Address = System.Null_Address then
+         null;
+
+      --  Support is available
+
+      elsif T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
          declare
             CPU_Set : aliased cpu_set_t := (bits => (others => False));
          begin
@@ -1326,8 +1333,9 @@ package body System.Task_Primitives.Operations is
 
       --  pragma CPU for the environment task
 
-      if Environment_Task.Common.Base_CPU /=
-        System.Multiprocessors.Not_A_Specific_CPU
+      if pthread_setaffinity_np'Address /= System.Null_Address
+        and then Environment_Task.Common.Base_CPU /=
+                   System.Multiprocessors.Not_A_Specific_CPU
       then
          declare
             CPU_Set : aliased cpu_set_t := (bits => (others => False));
