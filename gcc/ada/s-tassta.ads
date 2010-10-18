@@ -184,15 +184,15 @@ package System.Tasking.Stages is
    --  Compiler interface only. Do not call from within the RTS.
    --  This must be called to create a new task.
    --
-   --  Priority is the task's priority (assumed to be in the
-   --   System.Any_Priority'Range)
+   --  Priority is the task's priority (assumed to be in range of type
+   --   System.Any_Priority)
    --  Size is the stack size of the task to create
    --  Task_Info is the task info associated with the created task, or
    --   Unspecified_Task_Info if none.
-   --  CPU is the task affinity. We pass it as an Integer because the
-   --   undefined value is not in the range of CPU_Range. Static range
-   --   checks are performed when analyzing the pragma, and dynamic ones are
-   --   performed before setting the affinity at run time.
+   --  CPU is the task affinity. Passed as an Integer because the undefined
+   --   value is not in the range of CPU_Range. Static range checks are
+   --   performed when analyzing the pragma, and dynamic ones are performed
+   --   before setting the affinity at run time.
    --  Relative_Deadline is the relative deadline associated with the created
    --   task by means of a pragma Relative_Deadline, or 0.0 if none.
    --  State is the compiler generated task's procedure body

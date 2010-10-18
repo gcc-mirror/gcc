@@ -1,3 +1,21 @@
+2010-10-18  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads, sinfo.adb: Change Has_Pragma_CPU to Flag14 (Flag10 is
+	standard field).
+
+2010-10-18  Robert Dewar  <dewar@adacore.com>
+
+	* s-stausa.adb, s-taprop-linux.adb, s-taprop-mingw.adb, s-tassta.ads:
+	Minor reformatting.
+
+2010-10-18  Robert Dewar  <dewar@adacore.com>
+
+	* exp_strm.adb (Build_Elementary_Input_Call): Check
+	No_Default_Stream_Attributes.
+	(Build_Elementary_Write_Call): Check No_Default_Stream_Attributes
+	* s-rident.ads: Add restriction No_Default_Stream_Attributes
+	Put restriction No_Allocators_After_Elaboration in alpha order
+
 2010-10-18  Jose Ruiz  <ruiz@adacore.com>
 
 	* exp_ch9.adb (Expand_N_Task_Type_Declaration): Add field corresponding

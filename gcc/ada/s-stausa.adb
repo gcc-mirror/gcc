@@ -263,10 +263,11 @@ package body System.Stack_Usage is
       Guard : constant Integer := 256;
       --  Guard space between the Current_Stack_Level'Address and the last
       --  allocated byte on the stack.
-   begin
-      if Analyzer.Top_Pattern_Mark /= 0 then
-         --  Easiest and most accurate method: the top of the stack is known.
 
+   begin
+      --  Easiest and most accurate method: the top of the stack is known.
+
+      if Analyzer.Top_Pattern_Mark /= 0 then
          Analyzer.Pattern_Size :=
            Stack_Size (Analyzer.Top_Pattern_Mark,
                        To_Stack_Address (Current_Stack_Level'Address))
@@ -283,19 +284,23 @@ package body System.Stack_Usage is
 
          declare
             Pattern : aliased Stack_Slots
-              (1 .. Analyzer.Pattern_Size / Bytes_Per_Pattern);
+                        (1 .. Analyzer.Pattern_Size / Bytes_Per_Pattern);
             for Pattern'Address use Analyzer.Stack_Overlay_Address;
+
          begin
             if System.Parameters.Stack_Grows_Down then
-               for I in reverse Pattern'Range loop
-                  Pattern (I) := Analyzer.Pattern;
+               for J in reverse Pattern'Range loop
+                  Pattern (J) := Analyzer.Pattern;
                end loop;
+
                Analyzer.Bottom_Pattern_Mark :=
                  To_Stack_Address (Pattern (Pattern'Last)'Address);
+
             else
-               for I in Pattern'Range loop
-                  Pattern (I) := Analyzer.Pattern;
+               for J in Pattern'Range loop
+                  Pattern (J) := Analyzer.Pattern;
                end loop;
+
                Analyzer.Bottom_Pattern_Mark :=
                  To_Stack_Address (Pattern (Pattern'First)'Address);
             end if;
@@ -310,6 +315,7 @@ package body System.Stack_Usage is
                        To_Stack_Address (Current_Stack_Level'Address));
 
          if Stack_Used_When_Filling > Analyzer.Pattern_Size then
+
             --  In this case, the known size of the stack is too small, we've
             --  already taken more than expected, so there's no possible
             --  computation
