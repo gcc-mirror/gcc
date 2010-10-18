@@ -254,9 +254,8 @@ package body Sem_Ch7 is
          end if;
 
          if Is_Package_Or_Generic_Package (Spec_Id)
-           and then
-             (Scope (Spec_Id) = Standard_Standard
-               or else Is_Child_Unit (Spec_Id))
+           and then (Scope (Spec_Id) = Standard_Standard
+                      or else Is_Child_Unit (Spec_Id))
            and then not Unit_Requires_Body (Spec_Id)
          then
             if Ada_Version = Ada_83 then

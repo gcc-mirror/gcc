@@ -1,3 +1,31 @@
+2010-10-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* g-comlin.adb (Get_Switches): Prevent dereferencing null Config.
+
+2010-10-18  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads, aspects.adb: Add entries for aspects
+	Read/Write/Input/Output.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add processing for
+	handling aspects Read/Write/Input/Output.
+
+2010-10-18  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb (Note_Possible_Modification): Do not give warning for
+	use of pragma Unmodified unless we are sure this is a modification.
+
+2010-10-18  Tristan Gingold  <gingold@adacore.com>
+
+	* sysdep.c: Add __gnat_get_stack_bounds.
+	* s-taprop-mingw.adb Call __gnat_get_stack_bounds to set Pri_Stack_Info.
+
+2010-10-18  Robert Dewar  <dewar@adacore.com>
+
+	* a-assert.ads: Fix bad name in header.
+	* sem_ch4.adb, sem_ch6.adb, sem_ch7.adb, sem_ch10.adb: Minor
+	reformatting.
+	* exp_aggr.adb: Fix typo in comment.
+
 2010-10-18  Javier Miranda  <miranda@adacore.com>
 
 	* exp_util.adb (Side_Effect_Free): Code clean up.

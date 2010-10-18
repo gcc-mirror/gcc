@@ -794,6 +794,9 @@ package body System.Task_Primitives.Operations is
       pragma Import (C, Init_Float, "__gnat_init_float");
       --  Properly initializes the FPU for x86 systems
 
+      procedure Get_Stack_Bounds (Base : Address; Limit : Address);
+      pragma Import (C, Get_Stack_Bounds, "__gnat_get_stack_bounds");
+      --  Get stack boundaries
    begin
       Specific.Set (Self_ID);
       Init_Float;
@@ -806,6 +809,10 @@ package body System.Task_Primitives.Operations is
       end if;
 
       Self_ID.Common.LL.Thread_Id := GetCurrentThreadId;
+
+      Get_Stack_Bounds
+        (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Base'Address,
+         Self_ID.Common.Compiler_Data.Pri_Stack_Info.Limit'Address);
    end Enter_Task;
 
    --------------
