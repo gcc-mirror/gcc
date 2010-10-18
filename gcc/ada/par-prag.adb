@@ -1129,6 +1129,7 @@ begin
            Pragma_Convention                    |
            Pragma_Debug_Policy                  |
            Pragma_Detect_Blocking               |
+           Pragma_Default_Storage_Pool          |
            Pragma_Dimension                     |
            Pragma_Discard_Names                 |
            Pragma_Eliminate                     |

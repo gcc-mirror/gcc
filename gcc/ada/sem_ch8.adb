@@ -6636,18 +6636,36 @@ package body Sem_Ch8 is
 
    procedure Pop_Scope is
       SST : Scope_Stack_Entry renames Scope_Stack.Table (Scope_Stack.Last);
+      S   : constant Entity_Id := SST.Entity;
 
    begin
       if Debug_Flag_E then
          Write_Info;
       end if;
 
+      --  Set Default_Storage_Pool field of the library unit if necessary
+
+      if Ekind_In (S, E_Package, E_Generic_Package)
+        and then
+          Nkind (Parent (Unit_Declaration_Node (S))) = N_Compilation_Unit
+      then
+         declare
+            Aux : constant Node_Id :=
+              Aux_Decls_Node (Parent (Unit_Declaration_Node (S)));
+         begin
+            if No (Default_Storage_Pool (Aux)) then
+               Set_Default_Storage_Pool (Aux, Default_Pool);
+            end if;
+         end;
+      end if;
+
       Scope_Suppress           := SST.Save_Scope_Suppress;
       Local_Suppress_Stack_Top := SST.Save_Local_Suppress_Stack_Top;
       Check_Policy_List        := SST.Save_Check_Policy_List;
+      Default_Pool             := SST.Save_Default_Storage_Pool;
 
       if Debug_Flag_W then
-         Write_Str ("--> exiting scope: ");
+         Write_Str ("<-- exiting scope: ");
          Write_Name (Chars (Current_Scope));
          Write_Str (", Depth=");
          Write_Int (Int (Scope_Stack.Last));
@@ -6679,7 +6697,7 @@ package body Sem_Ch8 is
    ---------------
 
    procedure Push_Scope (S : Entity_Id) is
-      E : Entity_Id;
+      E : constant Entity_Id := Scope (S);
 
    begin
       if Ekind (S) = E_Void then
@@ -6717,6 +6735,7 @@ package body Sem_Ch8 is
          SST.Save_Scope_Suppress           := Scope_Suppress;
          SST.Save_Local_Suppress_Stack_Top := Local_Suppress_Stack_Top;
          SST.Save_Check_Policy_List        := Check_Policy_List;
+         SST.Save_Default_Storage_Pool     := Default_Pool;
 
          if Scope_Stack.Last > Scope_Stack.First then
             SST.Component_Alignment_Default := Scope_Stack.Table
@@ -6753,8 +6772,6 @@ package body Sem_Ch8 is
         and then Scope (S) /= Standard_Standard
         and then not Is_Child_Unit (S)
       then
-         E := Scope (S);
-
          if Nkind (E) not in N_Entity then
             return;
          end if;
@@ -6775,6 +6792,22 @@ package body Sem_Ch8 is
                                   (S, Suppress_Value_Tracking_On_Call (E));
             Set_Categorization_From_Scope (E => S, Scop => E);
          end if;
+      end if;
+
+      if Is_Child_Unit (S)
+        and then Present (E)
+        and then Ekind_In (E, E_Package, E_Generic_Package)
+        and then
+          Nkind (Parent (Unit_Declaration_Node (E))) = N_Compilation_Unit
+      then
+         declare
+            Aux : constant Node_Id :=
+              Aux_Decls_Node (Parent (Unit_Declaration_Node (E)));
+         begin
+            if Present (Default_Storage_Pool (Aux)) then
+               Default_Pool := Default_Storage_Pool (Aux);
+            end if;
+         end;
       end if;
    end Push_Scope;
 

@@ -770,13 +770,12 @@ package Einfo is
 --       subtypes. Contains the Digits value specified in the declaration.
 
 --    Direct_Primitive_Operations (Elist15)
---       Present in tagged record types and subtypes, in tagged private types
---       and in tagged incomplete types. Points to an element list of entities
---       for primitive operations for the tagged type. Not present in untagged
---       types (it is an error to reference the primitive operations field of a
---       type that is not tagged). In order to fulfill the C++ ABI, entities of
---       primitives that come from source must be stored in this list following
---       their order of occurrence in the sources. For incomplete types the
+--       Present in tagged types and subtypes (including synchronized types),
+--       in tagged private types and in tagged incomplete types. Element list
+--       of entities for primitive operations of the tagged type. Not present
+--       in untagged types. In order to follow the C++ ABI, entities of
+--       primitives that come from source must be stored in this list in the
+--       order of their occurrence in the sources. For incomplete types the
 --       list is always empty.
 
 --    Directly_Designated_Type (Node20)
@@ -1048,6 +1047,9 @@ package Einfo is
 --       a class wide type, points to the parent type. For a subprogram or
 --       subprogram type, Etype has the return type of a function or is set
 --       to Standard_Void_Type to represent a procedure.
+--
+--       Note one obscure case: for pragma Default_Storage_Pool (null), the
+--       Etype of the N_Null node is Empty.
 
 --    Exception_Code (Uint22)
 --       Present in exception entitites. Set to zero unless either an
@@ -1663,7 +1665,7 @@ package Einfo is
 --       of a private type declaration or its corresponding full declaration.
 --       This flag is thus preserved when the full and the partial views are
 --       exchanged, to indicate if a full type declaration is a completion.
---       Used for semantic checks in E.4 (18), and elsewhere.
+--       Used for semantic checks in E.4(18) and elsewhere.
 
 --    Has_Qualified_Name (Flag161)
 --       Present in all entities. Set True if the name in the Chars field
@@ -3221,10 +3223,10 @@ package Einfo is
 
 --    Primitive_Operations (synthesized)
 --       Present in concurrent types, tagged record types and subtypes, tagged
---       private types and tagged incomplete types. For concurrent types that
---       have available their Corresponding_Record_Type (CRT) returns the list
---       of Direct_Primitive_Operations of its CRT; otherwise returns No_Elist.
---       For all the other types returns its Direct_Primitive_Operations.
+--       private types and tagged incomplete types. For concurrent types whose
+--       Corresponding_Record_Type (CRT) is available, returns the list of
+--       Direct_Primitive_Operations of its CRT; otherwise returns No_Elist.
+--       For all the other types returns the Direct_Primitive_Operations.
 
 --    Prival (Node17)
 --       Present in private components of protected types. Refers to the entity
@@ -3817,11 +3819,11 @@ package Einfo is
    type Entity_Kind is (
 
       E_Void,
-      --  The initial Ekind value for a newly created entity. Also used as
-      --  the Ekind for Standard_Void_Type, a type entity in Standard used
-      --  as a dummy type for the return type of a procedure (the reason we
-      --  create this type is to share the circuits for performing overload
-      --  resolution on calls).
+      --  The initial Ekind value for a newly created entity. Also used as the
+      --  Ekind for Standard_Void_Type, a type entity in Standard used as a
+      --  dummy type for the return type of a procedure (the reason we create
+      --  this type is to share the circuits for performing overload resolution
+      --  on calls).
 
       -------------
       -- Objects --

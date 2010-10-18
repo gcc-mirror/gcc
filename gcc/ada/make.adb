@@ -8464,13 +8464,13 @@ package body Make is
             Naming      : Lang_Naming_Data renames Lang.Config.Naming_Data;
             Name        : String (1 .. Source_File_Name'Length + 3);
             Last        : Positive := Source_File_Name'Length;
-            Spec_Suffix : constant String :=
-                            Get_Name_String (Naming.Spec_Suffix);
-            Body_Suffix : constant String :=
-                            Get_Name_String (Naming.Body_Suffix);
-            Truncated   : Boolean := False;
+            Spec_Suffix : String   := Get_Name_String (Naming.Spec_Suffix);
+            Body_Suffix : String   := Get_Name_String (Naming.Body_Suffix);
+            Truncated   : Boolean  := False;
 
          begin
+            Canonical_Case_File_Name (Spec_Suffix);
+            Canonical_Case_File_Name (Body_Suffix);
             Name (1 .. Last) := Source_File_Name;
 
             if Last > Body_Suffix'Length

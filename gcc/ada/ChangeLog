@@ -1,3 +1,35 @@
+2010-10-18  Bob Duff  <duff@adacore.com>
+
+	* sinfo.ads, sinfo.adb: Modify comment about adding fields to be more
+	correct, and to be in a more convenient order.
+	(Default_Storage_Pool): New field of N_Compilation_Unit_Aux, for
+	recording the Default_Storage_Pool for a parent library unit.
+	* einfo.ads (Etype): Document the case in which Etype can be Empty.
+	* sem_prag.adb (Pragma_Default_Storage_Pool): Analyze the new
+	Default_Storage_Pool pragma.
+	* sem.ads (Save_Default_Storage_Pool): Save area for push/pop scopes.
+	* gnat_ugn.texi: Document Default_Storage_Pool as a new configuration
+	pragma.
+	* freeze.adb (Freeze_Entity): When freezing an access type, take into
+	account any Default_Storage_Pool pragma that applies. We have to do
+	this at the freezing point, because up until that point, a Storage_Pool
+	or Storage_Size clause could occur, which should override the
+	Default_Storage_Pool.
+	* par-prag.adb: Add this pragma to the list of pragmas handled entirely
+	during semantics.
+	* sem_ch8.adb (Push_Scope, Pop_Scope): Save and restore the
+	Default_Storage_Pool information.
+	* opt.ads (Default_Pool, Default_Pool_Config): New globals for recording
+	currently-applicable Default_Storage_Pool pragmas.
+	* opt.adb: Save/restore the globals as appropriate.
+	* snames.ads-tmpl (Name_Default_Storage_Pool,
+	Pragma_Default_Storage_Pool): New pragma name.
+
+2010-10-18  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Switches_Of): Put the spec and body suffix in canonical
+	case.
+
 2010-10-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Analyze_Aspect_Specifications): If subprogram is at the

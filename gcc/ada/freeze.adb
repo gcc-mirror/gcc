@@ -3846,6 +3846,28 @@ package body Freeze is
 
          elsif Is_Access_Type (E) then
 
+            --  If a pragma Default_Storage_Pool applies, and this type has no
+            --  Storage_Pool or Storage_Size clause (which must have occurred
+            --  before the freezing point), then use the default. This applies
+            --  only to base types.
+
+            if Present (Default_Pool)
+              and then E = Base_Type (E)
+              and then not Has_Storage_Size_Clause (E)
+              and then No (Associated_Storage_Pool (E))
+            then
+               --  Case of pragma Default_Storage_Pool (null)
+
+               if Nkind (Default_Pool) = N_Null then
+                  Set_No_Pool_Assigned (E);
+
+               --  Case of pragma Default_Storage_Pool (storage_pool_NAME)
+
+               else
+                  Set_Associated_Storage_Pool (E, Entity (Default_Pool));
+               end if;
+            end if;
+
             --  Check restriction for standard storage pool
 
             if No (Associated_Storage_Pool (E)) then
