@@ -64,7 +64,8 @@ package body GNAT.Traceback.Symbolic is
 
    subtype Cond_Value_Type is Unsigned_Longword;
 
-   --  TBK_API_PARAM as defined in TBKDEF.
+   --  TBK_API_PARAM as defined in TBKDEF
+
    type Tbk_Api_Param is record
       Length              : Unsigned_Word;
       T_Type              : Unsigned_Byte;
@@ -92,13 +93,14 @@ package body GNAT.Traceback.Symbolic is
    pragma Convention (C, Tbk_Api_Param);
 
    K_Version : constant Unsigned_Byte := 1;
-   --  Current API version.
-   K_Length  : constant Unsigned_Word := 152;
-   --  Length of the parameter.
+   --  Current API version
+
+   K_Length : constant Unsigned_Word := 152;
+   --  Length of the parameter
 
    pragma Compile_Time_Error (Tbk_Api_Param'Size = K_Length * 8,
                               "Bad length for tbk_api_param");
-   --  Sanity check.
+   --  Sanity check
 
    function Symbolize (Param : Address) return Cond_Value_Type;
    pragma Import (C, Symbolize, "TBK$I64_SYMBOLIZE");
@@ -246,28 +248,31 @@ package body GNAT.Traceback.Symbolic is
                    Faulting_Fp         => 0,
                    Filename_Desc       => Null_Address,
                    Library_Module_Desc => Null_Address,
-                   Record_Number => Record_Number'Address,
-                   Image_Desc       => Image_Dsc'Address,
-                   Module_Desc      => Module_Dsc'Address,
-                   Routine_Desc     => Routine_Dsc'Address,
-                   Listing_Lineno   => Line_Number'Address,
-                   Rel_Pc           => Null_Address,
-                   Image_Base_Addr  => Null_Address,
-                   Module_Base_Addr => Null_Address,
-                   Malloc_Rtn       => Null_Address,
-                   Free_Rtn         => Null_Address,
-                   Symbolize_Flags  => Null_Address,
-                   Reserved0        => (0, 0),
-                   Reserved1        => (0, 0),
-                   Reserved2        => (0, 0));
+                   Record_Number       => Record_Number'Address,
+                   Image_Desc          => Image_Dsc'Address,
+                   Module_Desc         => Module_Dsc'Address,
+                   Routine_Desc        => Routine_Dsc'Address,
+                   Listing_Lineno      => Line_Number'Address,
+                   Rel_Pc              => Null_Address,
+                   Image_Base_Addr     => Null_Address,
+                   Module_Base_Addr    => Null_Address,
+                   Malloc_Rtn          => Null_Address,
+                   Free_Rtn            => Null_Address,
+                   Symbolize_Flags     => Null_Address,
+                   Reserved0           => (0, 0),
+                   Reserved1           => (0, 0),
+                   Reserved2           => (0, 0));
 
          Status := Symbolize (Param'Address);
+
+         --  Check for success (marked by bit 0)
 
          if (Status rem 2) = 1 then
 
             --  Success
 
             if Line_Number = 0 then
+
                --  As GCC doesn't emit source file correlation, use record
                --  number of line number is not set
 
@@ -280,11 +285,12 @@ package body GNAT.Traceback.Symbolic is
                Pos   : Integer;
 
                Routine_Name_D : constant String :=
-                 Decode_Ada_Name (Routine_Name.Buf
-                                    (1 .. Natural (Routine_Name.Curlen)));
+                                  Decode_Ada_Name
+                                    (Routine_Name.Buf
+                                      (1 .. Natural (Routine_Name.Curlen)));
 
                Lineno : constant String :=
-                 Unsigned_Longword'Image (Line_Number);
+                          Unsigned_Longword'Image (Line_Number);
 
             begin
                Res (First .. Last) := (others => ' ');
@@ -300,8 +306,8 @@ package body GNAT.Traceback.Symbolic is
                       First + 30 + Routine_Name_D'Length - 1) :=
                  Routine_Name_D;
 
-               --  If routine name doesn't fit 20 characters, output
-               --  the line number on next line at 50th position
+               --  If routine name doesn't fit 20 characters, output the line
+               --  number on next line at 50th position.
 
                if Routine_Name_D'Length > 20 then
                   Pos := First + 30 + Routine_Name_D'Length;
@@ -318,6 +324,9 @@ package body GNAT.Traceback.Symbolic is
                Res (Last) := ASCII.LF;
                Len := Last;
             end;
+
+         --  Even status values
+
          else
             Res (Len + 1 .. Len + 6) := "ERROR" & ASCII.LF;
             Len := Len + 6;
