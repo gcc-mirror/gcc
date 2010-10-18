@@ -3652,7 +3652,12 @@ objc_is_class_name (tree ident)
     ident = OBJC_TYPE_NAME (ident);
 #ifdef OBJCPLUS
   if (ident && TREE_CODE (ident) == TYPE_DECL)
-    ident = DECL_NAME (ident);
+    {
+      tree type = TREE_TYPE (ident);
+      if (type && TREE_CODE (type) == TEMPLATE_TYPE_PARM)
+        return NULL_TREE;
+      ident = DECL_NAME (ident);
+    }
 #endif
   if (!ident || TREE_CODE (ident) != IDENTIFIER_NODE)
     return NULL_TREE;
@@ -5235,6 +5240,10 @@ objc_generate_cxx_cdtors (void)
 {
   bool need_ctor = false, need_dtor = false;
   tree ivar;
+
+  /* Error case, due to possibly an extra @end. */
+  if (!objc_implementation_context)
+    return;
 
   /* We do not want to do this for categories, since they do not have
      their own ivars.  */
