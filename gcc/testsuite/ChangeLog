@@ -1,3 +1,7 @@
+2010-10-18  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gfortran.dg/bessel_7.f90: Set xfail for mingw targets.
+
 2010-10-18  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44950
