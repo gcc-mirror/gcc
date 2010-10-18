@@ -357,6 +357,12 @@ package Lib is
    --      that the default priority is to be used (and is also used for
    --      entries that do not correspond to possible main programs).
 
+   --    Main_CPU
+   --      This field is used to indicate the affinity of a possible main
+   --      program, as set by a pragma CPU. A value of -1 indicates
+   --      that the default affinity is to be used (and is also used for
+   --      entries that do not correspond to possible main programs).
+
    --    Has_Allocator
    --      This flag is set if a subprogram unit has an allocator after the
    --      BEGIN (it is used to set the AB flag in the M ALI line).
@@ -392,6 +398,9 @@ package Lib is
    Default_Main_Priority : constant Int := -1;
    --  Value used in Main_Priority field to indicate default main priority
 
+   Default_Main_CPU : constant Int := -1;
+   --  Value used in Main_CPU field to indicate default main affinity
+
    function Cunit            (U : Unit_Number_Type) return Node_Id;
    function Cunit_Entity     (U : Unit_Number_Type) return Entity_Id;
    function Dependency_Num   (U : Unit_Number_Type) return Nat;
@@ -405,6 +414,7 @@ package Lib is
    function Has_RACW         (U : Unit_Number_Type) return Boolean;
    function Is_Compiler_Unit (U : Unit_Number_Type) return Boolean;
    function Loading          (U : Unit_Number_Type) return Boolean;
+   function Main_CPU         (U : Unit_Number_Type) return Int;
    function Main_Priority    (U : Unit_Number_Type) return Int;
    function Munit_Index      (U : Unit_Number_Type) return Nat;
    function OA_Setting       (U : Unit_Number_Type) return Character;
@@ -424,6 +434,7 @@ package Lib is
    procedure Set_Is_Compiler_Unit (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Ident_String     (U : Unit_Number_Type; N : Node_Id);
    procedure Set_Loading          (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Main_CPU         (U : Unit_Number_Type; P : Int);
    procedure Set_Main_Priority    (U : Unit_Number_Type; P : Int);
    procedure Set_OA_Setting       (U : Unit_Number_Type; C : Character);
    procedure Set_Unit_Name        (U : Unit_Number_Type; N : Unit_Name_Type);
@@ -664,6 +675,7 @@ private
    pragma Inline (Is_Compiler_Unit);
    pragma Inline (Increment_Serial_Number);
    pragma Inline (Loading);
+   pragma Inline (Main_CPU);
    pragma Inline (Main_Priority);
    pragma Inline (Munit_Index);
    pragma Inline (OA_Setting);
@@ -674,6 +686,7 @@ private
    pragma Inline (Set_Has_Allocator);
    pragma Inline (Set_Has_RACW);
    pragma Inline (Set_Loading);
+   pragma Inline (Set_Main_CPU);
    pragma Inline (Set_Main_Priority);
    pragma Inline (Set_OA_Setting);
    pragma Inline (Set_Unit_Name);
@@ -692,6 +705,7 @@ private
       Dependency_Num   : Int;
       Ident_String     : Node_Id;
       Main_Priority    : Int;
+      Main_CPU         : Int;
       Serial_Number    : Nat;
       Version          : Word;
       Error_Location   : Source_Ptr;
@@ -720,20 +734,21 @@ private
       Dependency_Num   at 28 range 0 .. 31;
       Ident_String     at 32 range 0 .. 31;
       Main_Priority    at 36 range 0 .. 31;
-      Serial_Number    at 40 range 0 .. 31;
-      Version          at 44 range 0 .. 31;
-      Error_Location   at 48 range 0 .. 31;
-      Fatal_Error      at 52 range 0 ..  7;
-      Generate_Code    at 53 range 0 ..  7;
-      Has_RACW         at 54 range 0 ..  7;
-      Dynamic_Elab     at 55 range 0 ..  7;
-      Is_Compiler_Unit at 56 range 0 ..  7;
-      OA_Setting       at 57 range 0 ..  7;
-      Loading          at 58 range 0 ..  7;
-      Has_Allocator    at 59 range 0 ..  7;
+      Main_CPU         at 40 range 0 .. 31;
+      Serial_Number    at 44 range 0 .. 31;
+      Version          at 48 range 0 .. 31;
+      Error_Location   at 52 range 0 .. 31;
+      Fatal_Error      at 56 range 0 ..  7;
+      Generate_Code    at 57 range 0 ..  7;
+      Has_RACW         at 58 range 0 ..  7;
+      Dynamic_Elab     at 59 range 0 ..  7;
+      Is_Compiler_Unit at 60 range 0 ..  7;
+      OA_Setting       at 61 range 0 ..  7;
+      Loading          at 62 range 0 ..  7;
+      Has_Allocator    at 63 range 0 ..  7;
    end record;
 
-   for Unit_Record'Size use 60 * 8;
+   for Unit_Record'Size use 64 * 8;
    --  This ensures that we did not leave out any fields
 
    package Units is new Table.Table (

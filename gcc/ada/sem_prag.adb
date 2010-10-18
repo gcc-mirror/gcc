@@ -415,7 +415,7 @@ package body Sem_Prag is
 
       procedure Check_In_Main_Program;
       --  Common checks for pragmas that appear within a main program
-      --  (Priority, Main_Storage, Time_Slice, Relative_Deadline).
+      --  (Priority, Main_Storage, Time_Slice, Relative_Deadline, CPU).
 
       procedure Check_Interrupt_Or_Attach_Handler;
       --  Common processing for first argument of pragma Interrupt_Handler or
@@ -6960,6 +6960,92 @@ package body Sem_Prag is
                   "no effect?", N);
             end if;
          end CPP_Vtable;
+
+         ---------
+         -- CPU --
+         ---------
+
+         --  pragma CPU (EXPRESSION);
+
+         when Pragma_CPU => CPU : declare
+            P   : constant Node_Id := Parent (N);
+            Arg : Node_Id;
+
+         begin
+            Ada_2012_Pragma;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+
+            --  Subprogram case
+
+            if Nkind (P) = N_Subprogram_Body then
+               Check_In_Main_Program;
+
+               Arg := Get_Pragma_Arg (Arg1);
+               Analyze_And_Resolve (Arg, Any_Integer);
+
+               --  Must be static
+
+               if not Is_Static_Expression (Arg) then
+                  Flag_Non_Static_Expr
+                    ("main subprogram affinity is not static!", Arg);
+                  raise Pragma_Exit;
+
+               --  If constraint error, then we already signalled an error
+
+               elsif Raises_Constraint_Error (Arg) then
+                  null;
+
+               --  Otherwise check in range
+
+               else
+                  declare
+                     CPU_Id : constant Entity_Id := RTE (RE_CPU_Range);
+                     --  This is the entity System.Multiprocessors.CPU_Range;
+
+                     Val : constant Uint := Expr_Value (Arg);
+
+                  begin
+                     if Val < Expr_Value (Type_Low_Bound (CPU_Id))
+                          or else
+                        Val > Expr_Value (Type_High_Bound (CPU_Id))
+                     then
+                        Error_Pragma_Arg
+                          ("main subprogram CPU is out of range", Arg1);
+                     end if;
+                  end;
+               end if;
+
+               Set_Main_CPU
+                    (Current_Sem_Unit, UI_To_Int (Expr_Value (Arg)));
+
+            --  Task case
+
+            elsif Nkind (P) = N_Task_Definition then
+               Arg := Get_Pragma_Arg (Arg1);
+
+               --  The expression must be analyzed in the special manner
+               --  described in "Handling of Default and Per-Object
+               --  Expressions" in sem.ads.
+
+               Preanalyze_Spec_Expression (Arg, RTE (RE_CPU_Range));
+
+            --  Anything else is incorrect
+
+            else
+               Pragma_Misplaced;
+            end if;
+
+            if Has_Pragma_CPU (P) then
+               Error_Pragma ("duplicate pragma% not allowed");
+            else
+               Set_Has_Pragma_CPU (P, True);
+
+               if Nkind (P) = N_Task_Definition then
+                  Record_Rep_Item (Defining_Identifier (Parent (P)), N);
+               end if;
+            end if;
+         end CPU;
 
          -----------
          -- Debug --
@@ -13513,6 +13599,7 @@ package body Sem_Prag is
       Pragma_CPP_Constructor               =>  0,
       Pragma_CPP_Virtual                   =>  0,
       Pragma_CPP_Vtable                    =>  0,
+      Pragma_CPU                           => -1,
       Pragma_C_Pass_By_Copy                =>  0,
       Pragma_Comment                       =>  0,
       Pragma_Common_Object                 => -1,

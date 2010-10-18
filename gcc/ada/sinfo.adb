@@ -1453,6 +1453,15 @@ package body Sinfo is
       return Flag17 (N);
    end Has_No_Elaboration_Code;
 
+   function Has_Pragma_CPU
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Subprogram_Body
+        or else NT (N).Nkind = N_Task_Definition);
+      return Flag10 (N);
+   end Has_Pragma_CPU;
+
    function Has_Pragma_Priority
       (N : Node_Id) return Boolean is
    begin
@@ -4422,6 +4431,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Compilation_Unit);
       Set_Flag17 (N, Val);
    end Set_Has_No_Elaboration_Code;
+
+   procedure Set_Has_Pragma_CPU
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Subprogram_Body
+        or else NT (N).Nkind = N_Task_Definition);
+      Set_Flag10 (N, Val);
+   end Set_Has_Pragma_CPU;
 
    procedure Set_Has_Pragma_Priority
       (N : Node_Id; Val : Boolean := True) is

@@ -811,7 +811,10 @@ __gnat_fopen (char *path, char *mode, int encoding ATTRIBUTE_UNUSED)
 }
 
 FILE *
-__gnat_freopen (char *path, char *mode, FILE *stream, int encoding ATTRIBUTE_UNUSED)
+__gnat_freopen (char *path,
+		char *mode,
+		FILE *stream,
+		int encoding ATTRIBUTE_UNUSED)
 {
 #if defined (_WIN32) && ! defined (__vxworks) && ! defined (IS_CROSS)
   TCHAR wpath[GNAT_MAX_PATH_LEN];
@@ -1094,7 +1097,8 @@ __gnat_stat_to_attr (int fd, char* name, struct file_attributes* attr)
     attr->file_length = statbuf.st_size;  /* all systems */
 
 #ifndef __MINGW32__
-  /* on Windows requires extra system call, see comment in __gnat_file_exists_attr */
+  /* on Windows requires extra system call, see comment in
+     __gnat_file_exists_attr */
   attr->exists = !ret;
 #endif
 
@@ -2035,7 +2039,8 @@ __gnat_is_readable_file_attr (char* name, struct file_attributes* attr)
      {
         ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
         GenericMapping.GenericRead = GENERIC_READ;
-        attr->readable = __gnat_check_OWNER_ACL (wname, FILE_READ_DATA, GenericMapping);
+	attr->readable =
+	  __gnat_check_OWNER_ACL (wname, FILE_READ_DATA, GenericMapping);
      }
      else
         attr->readable = GetFileAttributes (wname) != INVALID_FILE_ATTRIBUTES;
@@ -2108,7 +2113,8 @@ __gnat_is_executable_file_attr (char* name, struct file_attributes* attr)
          ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
          GenericMapping.GenericExecute = GENERIC_EXECUTE;
 
-         attr->executable = __gnat_check_OWNER_ACL (wname, FILE_EXECUTE, GenericMapping);
+         attr->executable =
+           __gnat_check_OWNER_ACL (wname, FILE_EXECUTE, GenericMapping);
        }
      else
        attr->executable = GetFileAttributes (wname) != INVALID_FILE_ATTRIBUTES
@@ -2717,7 +2723,8 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
 
   {
     /* The result has to be smaller than path_val + file_name.  */
-    char *file_path = (char *) alloca (strlen (path_val) + strlen (file_name) + 2);
+    char *file_path =
+      (char *) alloca (strlen (path_val) + strlen (file_name) + 2);
 
     for (;;)
       {
@@ -2773,8 +2780,9 @@ __gnat_locate_exec (char *exec_name, char *path_val)
   char *ptr;
   if (!strstr (exec_name, HOST_EXECUTABLE_SUFFIX))
     {
-      char *full_exec_name
-        = (char *) alloca (strlen (exec_name) + strlen (HOST_EXECUTABLE_SUFFIX) + 1);
+      char *full_exec_name =
+        (char *) alloca
+	  (strlen (exec_name) + strlen (HOST_EXECUTABLE_SUFFIX) + 1);
 
       strcpy (full_exec_name, exec_name);
       strcat (full_exec_name, HOST_EXECUTABLE_SUFFIX);
@@ -3651,33 +3659,6 @@ void GetTimeAsFileTime(LPFILETIME pTime)
 extern void __main (void);
 
 void __main (void) {}
-#endif
-#endif
-
-#if defined (linux) || defined(__GLIBC__)
-/* pthread affinity support */
-
-int __gnat_pthread_setaffinity_np (pthread_t th,
-			           size_t cpusetsize,
-			           const void *cpuset);
-
-#ifdef CPU_SETSIZE
-#include <pthread.h>
-int
-__gnat_pthread_setaffinity_np (pthread_t th,
-			       size_t cpusetsize,
-			       const cpu_set_t *cpuset)
-{
-  return pthread_setaffinity_np (th, cpusetsize, cpuset);
-}
-#else
-int
-__gnat_pthread_setaffinity_np (pthread_t th ATTRIBUTE_UNUSED,
-			       size_t cpusetsize ATTRIBUTE_UNUSED,
-			       const void *cpuset ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
 #endif
 #endif
 

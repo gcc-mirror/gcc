@@ -473,6 +473,7 @@ package body System.Tasking.Stages is
      (Priority          : Integer;
       Size              : System.Parameters.Size_Type;
       Task_Info         : System.Task_Info.Task_Info_Type;
+      CPU               : Integer;
       Relative_Deadline : Ada.Real_Time.Time_Span;
       Num_Entries       : Task_Entry_Index;
       Master            : Master_Level;
@@ -489,6 +490,7 @@ package body System.Tasking.Stages is
       Success       : Boolean;
       Base_Priority : System.Any_Priority;
       Len           : Natural;
+      Base_CPU      : System.Multiprocessors.CPU_Range;
 
       pragma Unreferenced (Relative_Deadline);
       --  EDF scheduling is not supported by any of the target platforms so
@@ -521,6 +523,21 @@ package body System.Tasking.Stages is
         (if Priority = Unspecified_Priority
          then Self_ID.Common.Base_Priority
          else System.Any_Priority (Priority));
+
+      if CPU /= Unspecified_CPU
+        and then (CPU < Integer (System.Multiprocessors.CPU_Range'First)
+          or else CPU > Integer (System.Multiprocessors.CPU_Range'Last)
+          or else CPU > Integer (System.Multiprocessors.Number_Of_CPUs))
+      then
+         raise Tasking_Error with "CPU not in range";
+
+      --  Normal CPU affinity
+      else
+         Base_CPU :=
+           (if CPU = Unspecified_CPU
+            then Self_ID.Common.Base_CPU
+            else System.Multiprocessors.CPU_Range (CPU));
+      end if;
 
       --  Find parent P of new Task, via master level number
 
@@ -570,7 +587,7 @@ package body System.Tasking.Stages is
       end if;
 
       Initialize_ATCB (Self_ID, State, Discriminants, P, Elaborated,
-        Base_Priority, Task_Info, Size, T, Success);
+        Base_Priority, Base_CPU, Task_Info, Size, T, Success);
 
       if not Success then
          Free (T);

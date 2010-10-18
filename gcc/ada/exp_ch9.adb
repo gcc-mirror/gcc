@@ -10315,6 +10315,7 @@ package body Exp_Ch9 is
    --      _Priority    : Integer         := priority_expression;
    --      _Size        : Size_Type       := Size_Type (size_expression);
    --      _Task_Info   : Task_Info_Type  := task_info_expression;
+   --      _CPU         : Integer         := cpu_range_expression;
    --    end record;
 
    --  The discriminants are present only if the corresponding task type has
@@ -10347,6 +10348,11 @@ package body Exp_Ch9 is
    --  the task definition. The expression captures the argument that was
    --  present in the pragma, and is used to provide the Task_Image parameter
    --  to the call to Create_Task.
+
+   --  The _CPU field is present only if a CPU pragma appears in the task
+   --  definition. The expression captures the argument that was present in
+   --  the pragma, and is used to provide the CPU parameter to the call to
+   --  Create_Task.
 
    --  The _Relative_Deadline field is present only if a Relative_Deadline
    --  pragma appears in the task definition. The expression captures the
@@ -10664,6 +10670,27 @@ package body Exp_Ch9 is
                  Pragma_Argument_Associations (
                    Find_Task_Or_Protected_Pragma
                      (Taskdef, Name_Task_Info)))))));
+      end if;
+
+      --  Add the _CPU component if a CPU pragma is present
+
+      if Present (Taskdef) and then Has_Pragma_CPU (Taskdef) then
+         Append_To (Cdecls,
+           Make_Component_Declaration (Loc,
+             Defining_Identifier =>
+               Make_Defining_Identifier (Loc, Name_uCPU),
+
+             Component_Definition =>
+               Make_Component_Definition (Loc,
+                 Aliased_Present    => False,
+                 Subtype_Indication =>
+                   New_Reference_To (RTE (RE_CPU_Range), Loc)),
+
+             Expression => New_Copy (
+               Expression (First (
+                 Pragma_Argument_Associations (
+                   Find_Task_Or_Protected_Pragma
+                     (Taskdef, Name_CPU)))))));
       end if;
 
       --  Add the _Relative_Deadline component if a Relative_Deadline pragma is
@@ -12591,6 +12618,23 @@ package body Exp_Ch9 is
       else
          Append_To (Args,
            New_Reference_To (RTE (RE_Unspecified_Task_Info), Loc));
+      end if;
+
+      --  CPU parameter. Set to Unspecified_CPU unless there is a CPU pragma,
+      --  in which case we take the value from the pragma. The parameter is
+      --  passed as an Integer because in the case of unspecified CPU the
+      --  value is not in the range of CPU_Range.
+
+      if Present (Tdef) and then Has_Pragma_CPU (Tdef) then
+         Append_To (Args,
+           Convert_To (Standard_Integer,
+             Make_Selected_Component (Loc,
+               Prefix => Make_Identifier (Loc, Name_uInit),
+               Selector_Name => Make_Identifier (Loc, Name_uCPU))));
+
+      else
+         Append_To (Args,
+           New_Reference_To (RTE (RE_Unspecified_CPU), Loc));
       end if;
 
       if not Restricted_Profile then

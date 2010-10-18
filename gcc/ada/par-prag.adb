@@ -1118,6 +1118,7 @@ begin
            Pragma_CPP_Constructor               |
            Pragma_CPP_Virtual                   |
            Pragma_CPP_Vtable                    |
+           Pragma_CPU                           |
            Pragma_C_Pass_By_Copy                |
            Pragma_Comment                       |
            Pragma_Common_Object                 |

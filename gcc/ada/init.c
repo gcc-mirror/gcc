@@ -86,6 +86,7 @@ extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
 
 /* Global values computed by the binder.  */
 int   __gl_main_priority                 = -1;
+int   __gl_main_cpu                      = -1;
 int   __gl_time_slice_val                = -1;
 char  __gl_wc_encoding                   = 'n';
 char  __gl_locking_policy                = ' ';

@@ -43,6 +43,7 @@ with Ada.Unchecked_Deallocation;
 
 with Interfaces.C;
 
+with System.Multiprocessors;
 with System.Tasking.Debug;
 with System.Interrupt_Management;
 
@@ -868,9 +869,10 @@ package body System.Task_Primitives.Operations is
       Succeeded  : out Boolean)
    is
       Adjusted_Stack_Size : size_t;
-      Result : int;
+      Result : int := 0;
 
       use System.Task_Info;
+      use type System.Multiprocessors.CPU_Range;
 
    begin
       --  Ask for four extra bytes of stack space so that the ATCB pointer can
@@ -936,14 +938,18 @@ package body System.Task_Primitives.Operations is
 
       --  Set processor affinity
 
-      if T.Common.Task_Info /= Unspecified_Task_Info then
+      if T.Common.Base_CPU /= System.Multiprocessors.Not_A_Specific_CPU then
+         Result :=
+           taskCpuAffinitySet (T.Common.LL.Thread, int (T.Common.Base_CPU));
+
+      elsif T.Common.Task_Info /= Unspecified_Task_Info then
          Result :=
            taskCpuAffinitySet (T.Common.LL.Thread, T.Common.Task_Info);
+      end if;
 
-         if Result = -1 then
-            taskDelete (T.Common.LL.Thread);
-            T.Common.LL.Thread := -1;
-         end if;
+      if Result = -1 then
+         taskDelete (T.Common.LL.Thread);
+         T.Common.LL.Thread := -1;
       end if;
 
       if T.Common.LL.Thread = -1 then
@@ -1347,6 +1353,8 @@ package body System.Task_Primitives.Operations is
    procedure Initialize (Environment_Task : Task_Id) is
       Result : int;
 
+      use type System.Multiprocessors.CPU_Range;
+
    begin
       Environment_Task_Id := Environment_Task;
 
@@ -1393,6 +1401,18 @@ package body System.Task_Primitives.Operations is
       Environment_Task.Known_Tasks_Index := Known_Tasks'First;
 
       Enter_Task (Environment_Task);
+
+      --  Set processor affinity
+
+      if Environment_Task.Common.Base_CPU /=
+         System.Multiprocessors.Not_A_Specific_CPU
+      then
+         Result :=
+           taskCpuAffinitySet
+             (Environment_Task.Common.LL.Thread,
+              int (Environment_Task.Common.Base_CPU));
+         pragma Assert (Result /= -1);
+      end if;
    end Initialize;
 
 end System.Task_Primitives.Operations;

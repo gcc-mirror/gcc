@@ -265,6 +265,7 @@ package Rtsfind is
       System_Machine_Code,
       System_Mantissa,
       System_Memcop,
+      System_Multiprocessors,
       System_Pack_03,
       System_Pack_05,
       System_Pack_06,
@@ -838,6 +839,8 @@ package Rtsfind is
      RE_Asm_Output_Operand,              -- System.Machine_Code
 
      RE_Mantissa_Value,                  -- System_Mantissa
+
+     RE_CPU_Range,                       -- System.Multiprocessors
 
      RE_Bits_03,                         -- System.Pack_03
      RE_Get_03,                          -- System.Pack_03
@@ -1426,6 +1429,8 @@ package Rtsfind is
      RE_Activation_Chain_Access,         -- System.Tasking
      RE_Storage_Size,                    -- System.Tasking
 
+     RE_Unspecified_CPU,                 -- System.Tasking
+
      RE_Abort_Defer,                     -- System.Soft_Links
      RE_Abort_Undefer,                   -- System.Soft_Links
      RE_Complete_Master,                 -- System.Soft_Links
@@ -2011,6 +2016,8 @@ package Rtsfind is
      RE_Asm_Output_Operand               => System_Machine_Code,
 
      RE_Mantissa_Value                   => System_Mantissa,
+
+     RE_CPU_Range                        => System_Multiprocessors,
 
      RE_Bits_03                          => System_Pack_03,
      RE_Get_03                           => System_Pack_03,
@@ -2598,6 +2605,8 @@ package Rtsfind is
      RE_Activation_Chain                 => System_Tasking,
      RE_Activation_Chain_Access          => System_Tasking,
      RE_Storage_Size                     => System_Tasking,
+
+     RE_Unspecified_CPU                  => System_Tasking,
 
      RE_Abort_Defer                      => System_Soft_Links,
      RE_Abort_Undefer                    => System_Soft_Links,

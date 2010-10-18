@@ -86,6 +86,7 @@ package body Lib.Writ is
          Ident_String     => Empty,
          Loading          => False,
          Main_Priority    => -1,
+         Main_CPU         => -1,
          Munit_Index      => 0,
          Serial_Number    => 0,
          Version          => 0,
@@ -142,6 +143,7 @@ package body Lib.Writ is
         Ident_String     => Empty,
         Loading          => False,
         Main_Priority    => -1,
+        Main_CPU         => -1,
         Munit_Index      => 0,
         Serial_Number    => 0,
         Version          => 0,
@@ -929,6 +931,11 @@ package body Lib.Writ is
 
             if Has_Allocator (Main_Unit) then
                Write_Info_Str (" AB");
+            end if;
+
+            if Main_CPU (Main_Unit) /= Default_Main_CPU then
+               Write_Info_Str (" C=");
+               Write_Info_Nat (Main_CPU (Main_Unit));
             end if;
 
             Write_Info_Str (" W=");
