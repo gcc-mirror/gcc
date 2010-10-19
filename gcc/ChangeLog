@@ -1,5 +1,12 @@
 2010-10-19  Nick Clifton  <nickc@redhat.com>
 
+	* config/rx/rx.c (rx_function_value): Small integer types are
+	promotes to SImode.
+	(rx_promote_function_mode): New function.
+	(TARGET_PROMOTE_FUNCTION_MODE): Define.
+
+2010-10-19  Nick Clifton  <nickc@redhat.com>
+
 	* config/mep/mep.c (mep_print_operand): Use
 	targetm.strip_name_encoding.
 	(mep_output_aligned_common): Likewise.
