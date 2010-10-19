@@ -1,3 +1,8 @@
+2010-10-19  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/46081
+	* gcc.dg/ipa/ipa-pta-10.c: Adjust.
+
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 	
 	Merge from 'apple/trunk' branch on FSF servers.
