@@ -46,6 +46,7 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Case; use Sem_Case;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Disp; use Sem_Disp;
@@ -3175,6 +3176,32 @@ package body Sem_Ch4 is
 
       Set_Etype  (N, T);
    end Analyze_Qualified_Expression;
+
+   -----------------------------------
+   -- Analyze_Quantified_Expression --
+   -----------------------------------
+
+   procedure Analyze_Quantified_Expression (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+      Ent : constant Entity_Id :=
+              New_Internal_Entity
+                (E_Loop, Current_Scope, Sloc (N), 'L');
+
+      Iterator : Node_Id;
+   begin
+      Set_Etype  (Ent,  Standard_Void_Type);
+      Set_Parent (Ent, N);
+
+      Iterator :=
+        Make_Iteration_Scheme (Loc,
+           Loop_Parameter_Specification =>  Loop_Parameter_Specification (N));
+
+      Push_Scope (Ent);
+      Analyze_Iteration_Scheme (Iterator);
+      Analyze (Condition (N));
+      End_Scope;
+      Set_Etype (N, Standard_Boolean);
+   end Analyze_Quantified_Expression;
 
    -------------------
    -- Analyze_Range --

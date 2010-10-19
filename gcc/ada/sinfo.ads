@@ -3817,6 +3817,22 @@ package Sinfo is
       --  point operands if the Treat_Fixed_As_Integer flag is set and will
       --  thus treat these nodes in identical manner, ignoring small values.
 
+      ---------------------------------
+      -- 4.5.9 Quantified Expression --
+      ---------------------------------
+
+      --  QUANTIFIED_EXPRESSION ::=
+      --    for QUANTIFIER LOOP_PARAMETER_SPECIFICATION => PREDICATE |
+      --    for QUANTIFIER ITERATOR_SPECIFICATION => PREDICATE
+      --
+      --  QUANTIFIER ::= all  |  some
+
+      --  N_Quantified_Expression
+      --  Sloc points to token for
+      --  Loop_Parameter_Specification (Node4)
+      --  Condition (Node1)
+      --  All_Present (Flag15)
+
       --------------------------
       -- 4.6  Type Conversion --
       --------------------------
@@ -7447,6 +7463,7 @@ package Sinfo is
       N_Null,
       N_Procedure_Call_Statement,
       N_Qualified_Expression,
+      N_Quantified_Expression,
 
       --  N_Raise_xxx_Error, N_Subexpr, N_Has_Etype
 
@@ -10471,6 +10488,13 @@ package Sinfo is
         2 => False,   --  unused
         3 => True,    --  Expression (Node3)
         4 => True,    --  Subtype_Mark (Node4)
+        5 => False),  --  Etype (Node5-Sem)
+
+     N_Quantified_Expression =>
+       (1 => True,    --  Condition (Node1)
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => True,    --  Loop_Parameter_Specification (Node4)
         5 => False),  --  Etype (Node5-Sem)
 
      N_Allocator =>

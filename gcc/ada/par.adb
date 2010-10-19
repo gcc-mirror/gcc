@@ -703,6 +703,10 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Qualified_Expression (Subtype_Mark : Node_Id) return Node_Id;
       --  This routine scans out a qualified expression when the caller has
       --  already scanned out the name and apostrophe of the construct.
+
+      function P_Quantified_Expression return Node_Id;
+      --  This routine scans out a quantified expression when the caller has
+      --  already scanned out the keyword "for" of the construct.
    end Ch4;
 
    -------------
@@ -712,6 +716,9 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    package Ch5 is
       function P_Condition return Node_Id;
       --  Scan out and return a condition
+
+      function P_Loop_Parameter_Specification return Node_Id;
+      --  Used in loop constructs and quantified expressions.
 
       function P_Statement_Name (Name_Node : Node_Id) return Node_Id;
       --  Given a node representing a name (which is a call), converts it

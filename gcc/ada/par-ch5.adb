@@ -38,7 +38,6 @@ package body Ch5 is
    function P_Goto_Statement                     return Node_Id;
    function P_If_Statement                       return Node_Id;
    function P_Label                              return Node_Id;
-   function P_Loop_Parameter_Specification       return Node_Id;
    function P_Null_Statement                     return Node_Id;
 
    function P_Assignment_Statement (LHS : Node_Id)  return Node_Id;

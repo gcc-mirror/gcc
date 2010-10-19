@@ -130,6 +130,7 @@ package Scans is
       Tok_Record,          -- RECORD       Eterm, Sterm
       Tok_Renames,         -- RENAMES      Eterm, Sterm
       Tok_Reverse,         -- REVERSE      Eterm, Sterm
+      Tok_Some,            -- SOME         Eterm, Sterm
       Tok_Tagged,          -- TAGGED       Eterm, Sterm
       Tok_Then,            -- THEN         Eterm, Sterm
 

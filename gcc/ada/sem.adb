@@ -470,6 +470,9 @@ package body Sem is
          when N_Qualified_Expression =>
             Analyze_Qualified_Expression (N);
 
+         when N_Quantified_Expression =>
+            Analyze_Quantified_Expression (N);
+
          when N_Raise_Statement =>
             Analyze_Raise_Statement (N);
 

@@ -2626,6 +2626,19 @@ package body Sprint is
                Write_Char (')');
             end if;
 
+         when N_Quantified_Expression =>
+            Write_Str (" for");
+
+            if All_Present (Node) then
+               Write_Str (" all ");
+            else
+               Write_Str (" some ");
+            end if;
+
+            Sprint_Node (Loop_Parameter_Specification (Node));
+            Write_Str (" => ");
+            Sprint_Node (Condition (Node));
+
          when N_Raise_Constraint_Error =>
 
             --  This node can be used either as a subexpression or as a
