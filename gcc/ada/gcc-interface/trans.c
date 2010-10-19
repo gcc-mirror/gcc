@@ -203,6 +203,7 @@ static tree maybe_implicit_deref (tree);
 static void set_expr_location_from_node (tree, Node_Id);
 static void set_gnu_expr_location_from_node (tree, Node_Id);
 static int lvalue_required_p (Node_Id, tree, bool, bool, bool);
+static tree build_raise_check (int, tree, enum exception_info_kind);
 
 /* Hooks for debug info back-ends, only supported and used in a restricted set
    of configurations.  */
@@ -467,34 +468,22 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 
       for (i = 0; i < (int) ARRAY_SIZE (gnat_raise_decls); i++)
 	gnat_raise_decls[i] = decl;
+      TREE_THIS_VOLATILE (decl) = 1;
+      TREE_SIDE_EFFECTS (decl) = 1;
+      TREE_TYPE (decl)
+	= build_qualified_type (TREE_TYPE (decl), TYPE_QUAL_VOLATILE);
     }
   else
-    /* Otherwise, make one decl for each exception reason.  */
-    for (i = 0; i < (int) ARRAY_SIZE (gnat_raise_decls); i++)
-      {
-	char name[17];
-
-	sprintf (name, "__gnat_rcheck_%.2d", i);
-	gnat_raise_decls[i]
-	  = create_subprog_decl
-	    (get_identifier (name), NULL_TREE,
-	     build_function_type (void_type_node,
-				  tree_cons (NULL_TREE,
-					     build_pointer_type
-					     (unsigned_char_type_node),
-					     tree_cons (NULL_TREE,
-							integer_type_node,
-							t))),
-	     NULL_TREE, false, true, true, NULL, Empty);
-      }
-
-  for (i = 0; i < (int) ARRAY_SIZE (gnat_raise_decls); i++)
     {
-      TREE_THIS_VOLATILE (gnat_raise_decls[i]) = 1;
-      TREE_SIDE_EFFECTS (gnat_raise_decls[i]) = 1;
-      TREE_TYPE (gnat_raise_decls[i])
-	= build_qualified_type (TREE_TYPE (gnat_raise_decls[i]),
-				TYPE_QUAL_VOLATILE);
+      /* Otherwise, make one decl for each exception reason.  */
+      for (i = 0; i < (int) ARRAY_SIZE (gnat_raise_decls); i++)
+	gnat_raise_decls[i] = build_raise_check (i, t, exception_simple);
+      for (i = 0; i < (int) ARRAY_SIZE (gnat_raise_decls_ext); i++)
+	gnat_raise_decls_ext[i]
+	  = build_raise_check (i, t,
+			       i == CE_Index_Check_Failed
+			       || i == CE_Range_Check_Failed ?
+			       exception_range : exception_column);
     }
 
   /* Set the types that GCC and Gigi use from the front end.  */
@@ -638,6 +627,53 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 
   /* We cannot track the location of errors past this point.  */
   error_gnat_node = Empty;
+}
+
+/* Return a subprogram decl corresponding to __gnat_rcheck_xx for the given
+   CHECK (if EXTENDED is false), or __gnat_rcheck_xx_ext (if EXTENDED is
+   true).  */
+
+static tree
+build_raise_check (int check, tree void_tree, enum exception_info_kind kind)
+{
+  char name[21];
+  tree result;
+
+  if (kind != exception_simple)
+    {
+      sprintf (name, "__gnat_rcheck_%.2d_ext", check);
+      result = create_subprog_decl
+	(get_identifier (name), NULL_TREE,
+	 build_function_type
+	   (void_type_node,
+	    tree_cons
+	      (NULL_TREE,
+	       build_pointer_type (unsigned_char_type_node),
+	       tree_cons (NULL_TREE, integer_type_node,
+		 tree_cons (NULL_TREE, integer_type_node,
+		   kind == exception_column ? void_tree :
+		     tree_cons (NULL_TREE, integer_type_node,
+		       tree_cons (NULL_TREE, integer_type_node, void_tree)))))),
+	 NULL_TREE, false, true, true, NULL, Empty);
+    }
+  else
+    {
+      sprintf (name, "__gnat_rcheck_%.2d", check);
+      result = create_subprog_decl
+	(get_identifier (name), NULL_TREE,
+	 build_function_type
+	   (void_type_node,
+	    tree_cons
+	      (NULL_TREE,
+	       build_pointer_type (unsigned_char_type_node),
+	       tree_cons (NULL_TREE, integer_type_node, void_tree))),
+	 NULL_TREE, false, true, true, NULL, Empty);
+    }
+  TREE_THIS_VOLATILE (result) = 1;
+  TREE_SIDE_EFFECTS (result) = 1;
+  TREE_TYPE (result)
+    = build_qualified_type (TREE_TYPE (result), TYPE_QUAL_VOLATILE);
+  return result;
 }
 
 /* Return a positive value if an lvalue is required for GNAT_NODE, which is
@@ -5457,30 +5493,81 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Raise_Constraint_Error:
     case N_Raise_Program_Error:
     case N_Raise_Storage_Error:
-      if (type_annotate_only)
-	{
-	  gnu_result = alloc_stmt_list ();
-	  break;
-	}
+      {
+	int reason = UI_To_Int (Reason (gnat_node));
+	Node_Id cond = Condition (gnat_node);
+	bool handled = false;
 
-      gnu_result_type = get_unpadded_type (Etype (gnat_node));
-      gnu_result
-	= build_call_raise (UI_To_Int (Reason (gnat_node)), gnat_node, kind);
+	if (type_annotate_only)
+	  {
+	    gnu_result = alloc_stmt_list ();
+	    break;
+	  }
 
-      /* If the type is VOID, this is a statement, so we need to
-	 generate the code for the call.  Handle a Condition, if there
-	 is one.  */
-      if (TREE_CODE (gnu_result_type) == VOID_TYPE)
-	{
-	  set_expr_location_from_node (gnu_result, gnat_node);
+        gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
-	  if (Present (Condition (gnat_node)))
+	if (Exception_Extra_Info
+	    && !No_Exception_Handlers_Set ()
+	    && !get_exception_label (kind)
+	    && TREE_CODE (gnu_result_type) == VOID_TYPE
+	    && Present (cond))
+	  {
+	    if (reason == CE_Access_Check_Failed)
+	      {
+		handled = true;
+		gnu_result = build_call_raise_column (reason, gnat_node);
+	      }
+	    else if ((reason == CE_Index_Check_Failed
+		      || reason == CE_Range_Check_Failed)
+		     && Nkind (cond) == N_Op_Not
+		     && Nkind (Right_Opnd (cond)) == N_In
+		     && Nkind (Right_Opnd (Right_Opnd (cond))) == N_Range)
+	      {
+		Node_Id op = Right_Opnd (cond);  /* N_In node */
+		Node_Id index = Left_Opnd (op);
+		Node_Id type = Etype (index);
+
+		if (Is_Type (type)
+		    && Known_Esize (type)
+		    && UI_To_Int (Esize (type)) <= 32)
+		  {
+		    handled = true;
+		    gnu_result = build_call_raise_range
+		      (reason, gnat_node,
+		       gnat_to_gnu (index),                         /* index */
+		       gnat_to_gnu (Low_Bound (Right_Opnd (op))),   /* first */
+		       gnat_to_gnu (High_Bound (Right_Opnd (op)))); /* last  */
+		  }
+	      }
+	  }
+
+	if (handled)
+	  {
+	    set_expr_location_from_node (gnu_result, gnat_node);
 	    gnu_result = build3 (COND_EXPR, void_type_node,
-				 gnat_to_gnu (Condition (gnat_node)),
+	    			 gnat_to_gnu (cond),
 				 gnu_result, alloc_stmt_list ());
-	}
-      else
-	gnu_result = build1 (NULL_EXPR, gnu_result_type, gnu_result);
+	  }
+	else
+	  {
+	    gnu_result = build_call_raise (reason, gnat_node, kind);
+
+	    /* If the type is VOID, this is a statement, so we need to
+	       generate the code for the call.  Handle a Condition, if there
+	       is one.  */
+	    if (TREE_CODE (gnu_result_type) == VOID_TYPE)
+	      {
+		set_expr_location_from_node (gnu_result, gnat_node);
+
+		if (Present (cond))
+		  gnu_result = build3 (COND_EXPR, void_type_node,
+				       gnat_to_gnu (cond),
+				       gnu_result, alloc_stmt_list ());
+	      }
+	    else
+	      gnu_result = build1 (NULL_EXPR, gnu_result_type, gnu_result);
+	  }
+      }
       break;
 
     case N_Validate_Unchecked_Conversion:

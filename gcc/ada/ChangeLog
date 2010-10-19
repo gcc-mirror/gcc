@@ -1,3 +1,46 @@
+2010-10-19  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.adb: Minor reformatting.
+
+2010-10-19  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch4.adb (Expand_N_And_Op, Expand_N_Or_Op, Expand_N_Xor_Op): Call
+	Expand_Intrinsic_Call if the function is intrinsic.
+	* exp_intr_adb (Expand_Binary_Operator): Handle VMS case for logical
+	binary operator on the unsigned_quadword record.
+	* exp_intr.ads (Expand_Intrinsic_Call): Update comments.
+
+2010-10-19  Geert Bosch  <bosch@adacore.com>
+
+	* gnat_rm.texi (pragma Float_Representation): Fix typo.
+
+2010-10-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* switch-c.adb (Scan_Front_End_Switches): Add handling of -gnateE.
+	* fe.h (Exception_Extra_Info): Declare.
+	* usage.adb (usage): Add -gnateE doc.
+	* checks.adb (Install_Null_Excluding_Check): Use better sloc.
+	* sem_util.adb (Insert_Explicit_Dereference): Ditto.
+	* gnat_ugn.texi: Document -gnateE switch.
+	* a-except.adb (Set_Exception_C_Msg): New parameter Column.
+	* a-except-2005.adb (Set_Exception_C_Msg): New parameter Column.
+	(Raise_Constraint_Error_Msg): Ditto.
+	(Image): New helper function.
+	(Rcheck_00_Ext, Rcheck_05_Ext, Rcheck_12_Ext): New procedure with more
+	detailed exception information.
+	Adjust calls to Set_Exception_C_Msg and Raise_Constraint_Error_Msg.
+	* a-exexda.adb (Set_Exception_C_Msg): New parameter Column.
+	* opt.ads (Exception_Extra_Info): New flag.
+	* gcc-interface/utils.c (gnat_raise_decls_ext): New.
+	* gcc-interface/utils2.c (build_call_raise_range,
+	build_call_raise_column): New functions.
+	* gcc-interface/gigi.h (exception_info_kind, gnat_raise_decls_ext,
+	build_call_raise_range, build_call_raise_column): Declare.
+	gcc-interface/trans.c (build_raise_check): New function.
+	(gigi): Initialize gnat_raise_decls_ext.
+	(gnat_to_gnu): Add initial support for -gnateE switch.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2010-10-19  Geert Bosch  <bosch@adacore.com>
 
 	* ttypef.ads: Change VAXDF_Last to be -VAXDF_First, as type is

@@ -5569,7 +5569,8 @@ package body Sem_Util is
    begin
       Save_Interps (N, New_Prefix);
 
-      Rewrite (N, Make_Explicit_Dereference (Sloc (N), Prefix => New_Prefix));
+      Rewrite (N,
+        Make_Explicit_Dereference (Sloc (Parent (N)), Prefix => New_Prefix));
 
       Set_Etype (N, Designated_Type (Etype (New_Prefix)));
 

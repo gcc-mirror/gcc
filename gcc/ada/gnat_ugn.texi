@@ -4123,6 +4123,12 @@ Specify a configuration pragma file
 Defines a symbol, associated with @var{value}, for preprocessing.
 (@pxref{Integrated Preprocessing}).
 
+@item -gnateE
+@cindex @option{-gnateE} (@command{gcc})
+Generate extra information in exception messages, in particular display
+extra column information and the value and range associated with index and
+range check failures, and extra column information for access checks.
+
 @item -gnatef
 @cindex @option{-gnatef} (@command{gcc})
 Display full source path name in brief error messages.

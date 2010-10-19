@@ -1519,6 +1519,113 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
 			       filename),
 		       build_int_cst (NULL_TREE, line_number));
 }
+
+/* Similar to build_call_raise, for an index or range check exception as
+   determined by MSG, with extra information generated of the form
+   "INDEX out of range FIRST..LAST".  */
+
+tree
+build_call_raise_range (int msg, Node_Id gnat_node,
+			tree index, tree first, tree last)
+{
+  tree call;
+  tree fndecl = gnat_raise_decls_ext[msg];
+  tree filename;
+  int line_number, column_number;
+  const char *str;
+  int len;
+
+  str
+    = (Debug_Flag_NN || Exception_Locations_Suppressed)
+      ? ""
+      : (gnat_node != Empty && Sloc (gnat_node) != No_Location)
+        ? IDENTIFIER_POINTER
+          (get_identifier (Get_Name_String
+			   (Debug_Source_Name
+			    (Get_Source_File_Index (Sloc (gnat_node))))))
+        : ref_filename;
+
+  len = strlen (str);
+  filename = build_string (len, str);
+  if (gnat_node != Empty && Sloc (gnat_node) != No_Location)
+    {
+      line_number = Get_Logical_Line_Number (Sloc (gnat_node));
+      column_number = Get_Column_Number (Sloc (gnat_node));
+    }
+  else
+    {
+      line_number = input_line;
+      column_number = 0;
+    }
+
+  TREE_TYPE (filename) = build_array_type (unsigned_char_type_node,
+					   build_index_type (size_int (len)));
+
+  call = build_call_nary (TREE_TYPE (TREE_TYPE (fndecl)),
+                          build_unary_op (ADDR_EXPR, NULL_TREE, fndecl),
+                          6,
+			  build1 (ADDR_EXPR,
+				  build_pointer_type (unsigned_char_type_node),
+				  filename),
+			  build_int_cst (NULL_TREE, line_number),
+			  build_int_cst (NULL_TREE, column_number),
+			  convert (integer_type_node, index),
+			  convert (integer_type_node, first),
+			  convert (integer_type_node, last));
+  TREE_SIDE_EFFECTS (call) = 1;
+  return call;
+}
+
+/* Similar to build_call_raise, with extra information about the column
+   where the check failed.  */
+
+tree
+build_call_raise_column (int msg, Node_Id gnat_node)
+{
+  tree fndecl = gnat_raise_decls_ext[msg];
+  tree call;
+  tree filename;
+  int line_number, column_number;
+  const char *str;
+  int len;
+
+  str
+    = (Debug_Flag_NN || Exception_Locations_Suppressed)
+      ? ""
+      : (gnat_node != Empty && Sloc (gnat_node) != No_Location)
+        ? IDENTIFIER_POINTER
+          (get_identifier (Get_Name_String
+			   (Debug_Source_Name
+			    (Get_Source_File_Index (Sloc (gnat_node))))))
+        : ref_filename;
+
+  len = strlen (str);
+  filename = build_string (len, str);
+  if (gnat_node != Empty && Sloc (gnat_node) != No_Location)
+    {
+      line_number = Get_Logical_Line_Number (Sloc (gnat_node));
+      column_number = Get_Column_Number (Sloc (gnat_node));
+    }
+  else
+    {
+      line_number = input_line;
+      column_number = 0;
+    }
+
+  TREE_TYPE (filename) = build_array_type (unsigned_char_type_node,
+					   build_index_type (size_int (len)));
+
+  call = build_call_nary (TREE_TYPE (TREE_TYPE (fndecl)),
+                          build_unary_op (ADDR_EXPR, NULL_TREE, fndecl),
+                          3,
+			  build1 (ADDR_EXPR,
+				  build_pointer_type (unsigned_char_type_node),
+				  filename),
+			  build_int_cst (NULL_TREE, line_number),
+			  build_int_cst (NULL_TREE, column_number));
+  TREE_SIDE_EFFECTS (call) = 1;
+  return call;
+}
 
 /* qsort comparer for the bit positions of two constructor elements
    for record components.  */

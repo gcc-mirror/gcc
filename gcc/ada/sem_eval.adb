@@ -4548,6 +4548,8 @@ package body Sem_Eval is
       T2 : Entity_Id) return Boolean
    is
    begin
+      --  Scalar types
+
       if Is_Scalar_Type (T1) then
 
          --  Definitely compatible if we match
@@ -4606,10 +4608,19 @@ package body Sem_Eval is
             end;
          end if;
 
+      --  Access types
+
       elsif Is_Access_Type (T1) then
          return not Is_Constrained (T2)
-           or else Subtypes_Statically_Match
-                     (Designated_Type (T1), Designated_Type (T2));
+                  or else Subtypes_Statically_Match
+                            (Designated_Type (T1), Designated_Type (T2));
+
+         --  Also check that null exclusion matches (AI05-0086-1)
+         --  commented out because this causes many mail test failures ???
+
+         --  and then Can_Never_Be_Null (T1) = Can_Never_Be_Null (T2);
+
+      --  All other cases
 
       else
          return (Is_Composite_Type (T1) and then not Is_Constrained (T2))

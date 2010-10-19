@@ -2444,9 +2444,9 @@ format, as follows:
 @item
 For digits values up to 6, F float format will be used.
 @item
-For digits values from 7 to 9, G float format will be used.
+For digits values from 7 to 9, D float format will be used.
 @item
-For digits values from 10 to 15, F float format will be used.
+For digits values from 10 to 15, G float format will be used.
 @item
 Digits values above 15 are not allowed.
 @end itemize
