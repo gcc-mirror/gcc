@@ -1250,7 +1250,7 @@ package Einfo is
 --          Alignment attribute definition clause
 --          Machine_Attribute pragma
 --          Link_Alias pragma
---          Link-Section pragma
+--          Linker_Section pragma
 --          Weak_External pragma
 --
 --       If any of these items are present, then the flag Has_Gigi_Rep_Item
@@ -4703,6 +4703,7 @@ package Einfo is
    --    RM_Size                             (Uint13)
    --    Alignment                           (Uint14)
    --    Related_Expression                  (Node24)
+   --    Current_Use_Clause                  (Node27)
 
    --    Depends_On_Private                  (Flag14)
    --    Discard_Names                       (Flag88)

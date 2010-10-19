@@ -1,3 +1,7 @@
+2010-10-19  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.ads, atree.ads: Minor comment fixes.
+
 2010-10-18  Bob Duff  <duff@adacore.com>
 
 	* sinfo.ads, sinfo.adb: Modify comment about adding fields to be more

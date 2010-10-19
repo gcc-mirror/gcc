@@ -277,7 +277,7 @@ package Atree is
 
    --  Field1-5 fields are set to Empty
 
-   --  Field6-22 fields in extended nodes are set to Empty
+   --  Field6-29 fields in extended nodes are set to Empty
 
    --  Parent is set to Empty
 
