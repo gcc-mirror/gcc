@@ -162,3 +162,8 @@ extern enum unwind_info_type default_debug_unwind_info (void);
 extern enum unwind_info_type default_except_unwind_info (void);
 extern enum unwind_info_type dwarf2_except_unwind_info (void);
 extern enum unwind_info_type sjlj_except_unwind_info (void);
+
+extern int default_label_align_after_barrier_max_skip (rtx);
+extern int default_loop_align_max_skip (rtx);
+extern int default_label_align_max_skip (rtx);
+extern int default_jump_align_max_skip (rtx);
