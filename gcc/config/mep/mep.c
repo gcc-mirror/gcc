@@ -3402,7 +3402,7 @@ mep_print_operand (FILE *file, rtx x, int code)
 			  (unsigned long) CONST_DOUBLE_HIGH(r));
 		  break;
 		case SYMBOL_REF:
-		  real_name = TARGET_STRIP_NAME_ENCODING (XSTR (r, 0));
+		  real_name = targetm.strip_name_encoding (XSTR (r, 0));
 		  assemble_name (file, real_name);
 		  break;
 		case LABEL_REF:
@@ -4834,7 +4834,7 @@ mep_output_aligned_common (FILE *stream, tree decl, const char *name,
 	      align /= 2;
 	      p2align ++;
 	    }
-	  name2 = TARGET_STRIP_NAME_ENCODING (name);
+	  name2 = targetm.strip_name_encoding (name);
 	  if (global)
 	    fprintf (stream, "\t.globl\t%s\n", name2);
 	  fprintf (stream, "\t.p2align %d\n", p2align);
