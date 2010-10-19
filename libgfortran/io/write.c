@@ -1705,7 +1705,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
   /* Write namelist variable names in upper case. If a derived type,
      nothing is output.  If a component, base and base_name are set.  */
 
-  if (obj->type != GFC_DTYPE_DERIVED)
+  if (obj->type != BT_DERIVED)
     {
       namelist_write_newline (dtp);
       write_character (dtp, " ", 1, 1);
@@ -1739,15 +1739,15 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
   switch (obj->type)
     {
 
-    case GFC_DTYPE_REAL:
+    case BT_REAL:
       obj_size = size_from_real_kind (len);
       break;
 
-    case GFC_DTYPE_COMPLEX:
+    case BT_COMPLEX:
       obj_size = size_from_complex_kind (len);
       break;
 
-    case GFC_DTYPE_CHARACTER:
+    case BT_CHARACTER:
       obj_size = obj->string_length;
       break;
 
@@ -1783,7 +1783,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
       /* Check for repeat counts of intrinsic types.  */
 
       if ((elem_ctr < (nelem - 1)) &&
-	  (obj->type != GFC_DTYPE_DERIVED) &&
+	  (obj->type != BT_DERIVED) &&
 	  !memcmp (p, (void*)(p + obj_size ), obj_size ))
 	{
 	  rep_ctr++;
@@ -1808,15 +1808,15 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 	  switch (obj->type)
 	    {
 
-	    case GFC_DTYPE_INTEGER:
+	    case BT_INTEGER:
 	      write_integer (dtp, p, len);
               break;
 
-	    case GFC_DTYPE_LOGICAL:
+	    case BT_LOGICAL:
 	      write_logical (dtp, p, len);
               break;
 
-	    case GFC_DTYPE_CHARACTER:
+	    case BT_CHARACTER:
 	      tmp_delim = dtp->u.p.current_unit->delim_status;
 	      if (dtp->u.p.nml_delim == '"')
 		dtp->u.p.current_unit->delim_status = DELIM_QUOTE;
@@ -1826,17 +1826,17 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 		dtp->u.p.current_unit->delim_status = tmp_delim;
               break;
 
-	    case GFC_DTYPE_REAL:
+	    case BT_REAL:
 	      write_real (dtp, p, len);
               break;
 
-	   case GFC_DTYPE_COMPLEX:
+	   case BT_COMPLEX:
 	      dtp->u.p.no_leading_blank = 0;
 	      num++;
               write_complex (dtp, p, len, obj_size);
               break;
 
-	    case GFC_DTYPE_DERIVED:
+	    case BT_DERIVED:
 
 	      /* To treat a derived type, we need to build two strings:
 		 ext_name = the name, including qualifiers that prepends

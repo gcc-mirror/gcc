@@ -34,14 +34,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <setjmp.h>
 #include <gthr.h>
 
-/* Basic types used in data transfers.  */
-
-typedef enum
-{ BT_NULL, BT_INTEGER, BT_LOGICAL, BT_CHARACTER, BT_REAL,
-  BT_COMPLEX
-}
-bt;
-
 /* Forward declarations.  */
 struct st_parameter_dt;
 typedef struct stream stream;
@@ -114,8 +106,8 @@ format_hash_entry;
 
 typedef struct namelist_type
 {
-  /* Object type, stored as GFC_DTYPE_xxxx.  */
-  dtype type;
+  /* Object type.  */
+  bt type;
 
   /* Object name.  */
   char * var_name;

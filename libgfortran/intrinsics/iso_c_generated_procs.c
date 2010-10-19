@@ -139,7 +139,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_i1) (void *c_ptr_in,
 {
   /* Here we have an integer(kind=1).  */
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_INTEGER,
+				      (int) BT_INTEGER,
 				      (int) sizeof (GFC_INTEGER_1));
 }
 #endif
@@ -162,7 +162,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_i2) (void *c_ptr_in,
 {
   /* Here we have an integer(kind=2).  */
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_INTEGER,
+				      (int) BT_INTEGER,
 				      (int) sizeof (GFC_INTEGER_2));
 }
 #endif
@@ -181,7 +181,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_i4) (void *c_ptr_in,
 {
   /* Here we have an integer(kind=4).  */
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_INTEGER,
+				      (int) BT_INTEGER,
 				      (int) sizeof (GFC_INTEGER_4));
 }
 #endif
@@ -200,7 +200,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_i8) (void *c_ptr_in,
 {
   /* Here we have an integer(kind=8).  */
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_INTEGER,
+				      (int) BT_INTEGER,
 				      (int) sizeof (GFC_INTEGER_8));
 }
 #endif
@@ -223,7 +223,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_i16) (void *c_ptr_in,
 {
   /* Here we have an integer(kind=16).  */
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_INTEGER,
+				      (int) BT_INTEGER,
 				      (int) sizeof (GFC_INTEGER_16));
 }
 #endif
@@ -242,7 +242,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_r4) (void *c_ptr_in,
 {
   /* Here we have an real(kind=4).  */
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_REAL,
+				      (int) BT_REAL,
 				      (int) sizeof (GFC_REAL_4));
 }
 #endif
@@ -261,7 +261,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_r8) (void *c_ptr_in,
 {
   /* Here we have an real(kind=8).  */
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_REAL,
+				      (int) BT_REAL,
 				      (int) sizeof (GFC_REAL_8));
 }
 #endif
@@ -280,7 +280,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_r10) (void *c_ptr_in,
 {
   /* Here we have an real(kind=10).  */
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_REAL,
+				      (int) BT_REAL,
 				      (int) sizeof (GFC_REAL_10));
 }
 #endif
@@ -299,7 +299,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_r16) (void *c_ptr_in,
 {
   /* Here we have an real(kind=16).  */
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_REAL,
+				      (int) BT_REAL,
 				      (int) sizeof (GFC_REAL_16));
 }
 #endif
@@ -318,7 +318,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_c4) (void *c_ptr_in,
 {
   /* Here we have an complex(kind=4).  */
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_COMPLEX,
+				      (int) BT_COMPLEX,
 				      (int) sizeof (GFC_COMPLEX_4));
 }
 #endif
@@ -337,7 +337,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_c8) (void *c_ptr_in,
 {
   /* Here we have an complex(kind=8).  */
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_COMPLEX,
+				      (int) BT_COMPLEX,
 				      (int) sizeof (GFC_COMPLEX_8));
 }
 #endif
@@ -356,7 +356,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_c10) (void *c_ptr_in,
 {
   /* Here we have an complex(kind=10).  */
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_COMPLEX,
+				      (int) BT_COMPLEX,
 				      (int) sizeof (GFC_COMPLEX_10));
 }
 #endif
@@ -375,7 +375,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_c16) (void *c_ptr_in,
 {
   /* Here we have an complex(kind=16).  */
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_COMPLEX,
+				      (int) BT_COMPLEX,
 				      (int) sizeof (GFC_COMPLEX_16));
 }
 #endif
@@ -392,7 +392,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_s0) (void *c_ptr_in,
 {
   /* Here we have a character string of len=1.  */
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_CHARACTER,
+				      (int) BT_CHARACTER,
 				      (int) sizeof (char));
 }
 #endif
@@ -409,7 +409,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_l1) (void *c_ptr_in,
 {
   /* Here we have a logical of kind=1.	*/
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_LOGICAL,
+				      (int) BT_LOGICAL,
 				      (int) sizeof (GFC_LOGICAL_1));
 }
 #endif
@@ -426,7 +426,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_l2) (void *c_ptr_in,
 {
   /* Here we have a logical of kind=2.	*/
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_LOGICAL,
+				      (int) BT_LOGICAL,
 				      (int) sizeof (GFC_LOGICAL_2));
 }
 #endif
@@ -443,7 +443,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_l4) (void *c_ptr_in,
 {
   /* Here we have a logical of kind=4.	*/
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_LOGICAL,
+				      (int) BT_LOGICAL,
 				      (int) sizeof (GFC_LOGICAL_4));
 }
 #endif
@@ -460,7 +460,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer_l8) (void *c_ptr_in,
 {
   /* Here we have a logical of kind=8.	*/
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
-				      (int) GFC_DTYPE_LOGICAL,
+				      (int) BT_LOGICAL,
 				      (int) sizeof (GFC_LOGICAL_8));
 }
 #endif

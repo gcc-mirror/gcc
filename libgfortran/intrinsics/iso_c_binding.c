@@ -65,7 +65,7 @@ ISO_C_BINDING_PREFIX (c_f_pointer) (void *c_ptr_in,
       /* Put in the element size.  */
       f_ptr_out->dtype = f_ptr_out->dtype | (elemSize << GFC_DTYPE_SIZE_SHIFT);
 
-      /* Set the data type (e.g., GFC_DTYPE_INTEGER).  */
+      /* Set the data type (e.g., BT_INTEGER).  */
       f_ptr_out->dtype = f_ptr_out->dtype | (type << GFC_DTYPE_TYPE_SHIFT);
     }
   
@@ -184,6 +184,6 @@ ISO_C_BINDING_PREFIX (c_f_pointer_d0) (void *c_ptr_in,
     {
       f_ptr_out->dtype = f_ptr_out->dtype & (~GFC_DTYPE_TYPE_MASK);
       f_ptr_out->dtype = f_ptr_out->dtype
-			 | (GFC_DTYPE_DERIVED << GFC_DTYPE_TYPE_SHIFT);
+			 | (BT_DERIVED << GFC_DTYPE_TYPE_SHIFT);
     }
 }
