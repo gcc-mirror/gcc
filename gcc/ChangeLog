@@ -1,3 +1,9 @@
+2010-10-18  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/45966
+	* combine.c (try_combine): If added_sets_2, deal with the case
+	where i0 feeds i1 and i1 feeds i2.
+
 2010-10-18  Jan Hubicka  <jh@suse.cz>
 
 	* ipa.c (cgraph_externally_visible_p): Handle externally visible and
