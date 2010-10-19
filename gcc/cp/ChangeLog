@@ -1,3 +1,9 @@
+2010-10-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/46046
+	* pt.c (add_to_template_args): Check extra_args for error_mark_node.
+	(coerce_template_parms): Likewise for args.
+
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented parsing @synthesize and @dynamic for Objective-C++.
@@ -6,15 +12,15 @@
 	(cp_parser_objc_at_dynamic_declaration): New.
 	(cp_parser_objc_at_synthesize_declaration): New.
 
-2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>	
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* parser.c (cp_parser_objc_identifier_list): Check the return
 	value of cp_parser_identifier and react if it is error_mark_node.
 
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	Merge from apple/trunk branch on FSF servers.
-	
+
 	2005-03-01 Fariborz Jahanian <fjahanian@apple.com>
 
         Radar 4451818
@@ -27,7 +33,7 @@
 	Radar 4330422
 	* typeck.c (comp_ptr_ttypes_real): Remove the hack. un-volatize the
 	artiificially 'volatized' type before doing pointer comparison.
-	
+
 2010-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/46015
@@ -35,7 +41,7 @@
 	goto destination.
 
 2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	Merge from apple/trunk branch on FSF servers.
 
 	2006-04-19 Fariborz Jahanian <fjahanian@apple.com>
@@ -43,20 +49,20 @@
         Radar 4516785
 	* parser.c (cp_parser_simple_type_specifier): Don't lookup for
 	objc object types if type is scope qualified.
-	
+
 2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	Merge from apple/trunk branch on FSF servers.
-	
+
 	2006-03-27 Fariborz Jahanian <fjahanian@apple.com>
 
         Radar 4133425
 	* lex.c (unqualified_name_lookup_error): Issue diagnostic
 	for private 'ivar' access.
-	
+
 2010-10-17  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* parser.c (cp_parser_objc_visibility_spec): Update to use visibility 
+	* parser.c (cp_parser_objc_visibility_spec): Update to use visibility
 	enum, and handle @package.
 
 2010-10-15  Jason Merrill  <jason@redhat.com>
@@ -67,12 +73,12 @@
 
 2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
-	merge from FSF apple 'trunk' branch. 
+	merge from FSF apple 'trunk' branch.
 	2006 Fariborz Jahanian <fjahanian@apple.com>
-	
+
 	Radars 4436866, 4505126, 4506903, 4517826
 	* typeck.c (finish_class_member_access_expr): Handle CLASS.property
-	syntax. 
+	syntax.
 	(cp_build_modify_expr): Likewise.
 	* parser.c (cp_parser_objc_method_prototype_list): Handle @property.
 	(cp_parser_objc_method_definition_list): Likewise.
@@ -160,7 +166,7 @@
 	(value_dependent_expression_p): Added case for AT_ENCODE_EXPR.
 	(type_dependent_expression_p): Added case for AT_ENCODE_EXPR.
 	* parser.c (cp_parser_objc_encode_expression): Updated comment.
-	
+
 2010-10-07  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
 
 	Merge from apple/trunk branch on FSF servers.
@@ -181,19 +187,19 @@
 	Merge from apple/trunk branch on FSF servers.
 	* cp-tree.def: Added AT_ENCODE_EXPR here instead of to the no
 	longer existing gcc/c-common.def.
-	
+
 	2005-12-14  Fariborz Jahanian <fjahanian@apple.com>
 
 	Radar 4278774
 	* pt.c (tsubst_copy_and_build): Instantiate @endcode(T).
-	* parser.c (cp_parser_objc_encode_expression): Build a templatized 
+	* parser.c (cp_parser_objc_encode_expression): Build a templatized
 	parse tree for @encode(T).
 
 	2005-12-14  Fariborz Jahanian <fjahanian@apple.com>
 
 	Radar 4278774
 	* c-common.def: Add new expression code AT_ENCODE_EXPR.
-	
+
 2010-10-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR c++/45908
@@ -229,9 +235,9 @@
 	(cp_parser_objc_method_definition_list): Same change.
 
 2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	Merge from apple/trunk branch on FSF servers:
-	
+
 	2005-10-17  Fariborz Jahanian <fjahanian@apple.com>
 
 	Radar 4290840
@@ -257,14 +263,14 @@
 	Radar 4093475
 	* parser.c (cp_parser_objc_interstitial_code): Catch stray
 	'{' and '}' tokens and issue appropriate errors.
-	
+
 	2005-08-02  Ziemowit Laski  <zlaski@apple.com>
 
 	Radar 4185810
 	(cp_parser_statement_seq_opt): In addition to '}' and
 	end-of-file, a statement sequence may also be terminated
 	by a stray '@end'.
-	
+
 2010-10-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* cp-tree.h (cxx_print_error_function,
@@ -298,7 +304,7 @@
 	Radar 4386773
 	* cp/parser.c (cp_parser_objc_interstitial_code): For
 	@optional/@required set the optional/required flag.
-	
+
 2010-09-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* parser.c (cp_lexer_get_preprocessor_token): Tidied up comments
@@ -341,11 +347,11 @@
 	(cp_build_addr_expr_1): Likewise.
 
 2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
-	
+
 	Partially merged from apple/trunk branch on FSF servers:
 	2006-04-26 Fariborz Jahanian <fjahanian@apple.com>
 	Radar 3803157 (method attributes)
-	
+
 	* parser.c (cp_parser_objc_method_keyword_params): Handle attributes.
 	(cp_parser_objc_method_tail_params_opt): Likewise.
 	(cp_parser_objc_method_signature): Likewise.
@@ -392,7 +398,7 @@
 2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from apple/trunk branch on FSF servers:
-	
+
 	2005-12-15  Fariborz Jahanian <fjahanian@apple.com>
 
 	Radar 4229905
@@ -404,7 +410,7 @@
 	Radar 4175534
 	* call.c (standard_conversion): Do not issue warnings when
 	comparing ObjC pointer types.
-	
+
 	2005-06-22  Ziemowit Laski  <zlaski@apple.com>
 
 	Radar 4154928
@@ -412,11 +418,12 @@
 	between any two ObjC pointer types.
 	* typeck.c (composite_pointer_type): Determine common type
 	for two ObjC pointer types.
-	
+
 2010-09-24  Jan Hubicka  <jh@suse.cz>
 
 	* decl.c (finish_function): Use decl_replaceable_p
-	* method.c (make_alias_for_thunk): Update call of cgraph_same_body_alias.
+	* method.c (make_alias_for_thunk): Update call of
+	cgraph_same_body_alias.
 
 2010-09-24  Jason Merrill  <jason@redhat.com>
 
