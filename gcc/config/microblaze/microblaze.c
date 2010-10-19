@@ -3028,6 +3028,9 @@ microblaze_adjust_cost (rtx insn ATTRIBUTE_UNUSED, rtx link,
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE		microblaze_option_override 
 
+#undef TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO  sjlj_except_unwind_info
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-microblaze.h"

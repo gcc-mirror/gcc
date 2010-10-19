@@ -1,3 +1,8 @@
+2010-10-19  Michael Eager  <eager@eagercon.com>
+
+	* config/microblaze/microblaze.c (TARGET_EXCEPT_UNWIND_INFO): 
+	Use sjlj unwind info for exceptions.
+
 2010-10-19  Francois-Xavier Coudert<fxcoudert@gcc.gnu.org>
 
 	PR fortran/43414
