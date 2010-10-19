@@ -1,3 +1,17 @@
+2010-10-19  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (bdesc_multi_arg): Use fma4i_fmadd_<mode>.
+	* config/i386/sse.md (fma<mode>4): Enable for FMA & SSE_MATH.
+	(fma4i_fmadd_<mode>): New.
+	(*split_fma, *split_fms, *split_fnma, *split_fnms): Rename from
+	fma4_fm*_<mode> and adjust to be pre-reload splitters to the 
+	standard fma patterns.
+	(fmaddsub_<mode>): Rename from fma4i_fmaddsub_<mode> and
+	enable for FMA.
+	(*fma_fmadd_<mode>, *fma_fmsub_<mode>): New.
+	(*fma_fmadd_<mode>, *fma_fmsub_<mode>): New.
+	(*fma_fmaddsub_<mode>, *fma_fmsubadd_<mode>): New.
+
 2010-10-19  Paul Koning  <pkoning@equallogic.com>
 
 	* lower-subreg.c (resolve_shift_zext): Delete conditional code for
