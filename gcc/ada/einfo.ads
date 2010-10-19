@@ -504,7 +504,7 @@ package Einfo is
 --       which can never have a null value. This is set True for constant
 --       access values initialized to a non-null value. This is also True for
 --       all access parameters in Ada 83 and Ada 95 modes, and for access
---       parameters that explicily exlude null in Ada 2005.
+--       parameters that explicily exclude null in Ada 2005.
 --
 --       This is used to avoid unnecessary resetting of the Is_Known_Non_Null
 --       flag for such entities. In Ada 2005 mode, this is also used when
@@ -1505,6 +1505,25 @@ package Einfo is
 --       definition contains at least one procedure to which a pragma
 --       Interrupt_Handler applies.
 
+--    Has_Invariants (Flag232)
+--       Present in all type entities. Set True in private types if an
+--       Invariant or Invariant'Class aspect applies to the type, or if the
+--       type inherits one or more Invariant'Class aspects. Also set in the
+--       corresponding full type. Note: if this flag is set True, then usually
+--       the Invariant_Procedure field is set once the type is frozen, however
+--       this may not be true in some error situations. Note that it might be
+--       the full type which has inheritable invariants, and then the flag will
+--       also be set in the private type.
+
+--    Has_Inheritable_Invariants (Flag248)
+--       Present in all type entities. Set True in private types from which one
+--       or more Invariant'Class aspects will be inherited if a another type is
+--       derived from the type (i.e. those types which have an Invariant'Class
+--       aspect, or which inherit one or more Invariant'Class aspects). Also
+--       set in the corresponding full types. Note that it might be the full
+--       type which has inheritable invariants, and in this case the flag will
+--       also be set in the private type.
+
 --    Has_Machine_Radix_Clause (Flag83)
 --       Present in decimal types and subtypes, set if a Machine_Radix
 --       representation clause is present. This flag is used to detect
@@ -1716,10 +1735,10 @@ package Einfo is
 --       representation clause, and thus is not inherited by a derived type.
 --       This flag is always False for non-record types.
 
---    Has_Specified_Stream_Input  (Flag190)
+--    Has_Specified_Stream_Input (Flag190)
 --    Has_Specified_Stream_Output (Flag191)
---    Has_Specified_Stream_Read   (Flag192)
---    Has_Specified_Stream_Write  (Flag193)
+--    Has_Specified_Stream_Read (Flag192)
+--    Has_Specified_Stream_Write (Flag193)
 --       Present in all type and subtype entities. Set for a given view if the
 --       corresponding stream-oriented attribute has been defined by an
 --       attribute definition clause. When such a clause occurs, a TSS is set
@@ -1879,6 +1898,16 @@ package Einfo is
 --       object fields. A pragma Import for a component can define the
 --       External_Name of the imported Java field (which is generally needed,
 --       because Java names are case sensitive).
+
+--    Invariant_Procedure (Node29)
+--       Present in types and subtypes. Set for private types if one or more
+--       Invariant, or Invariant'Class, or inherited Invariant'Class aspects
+--       apply to the type. Points to the entity for a procedure which checks
+--       the invariant. This invariant procedure takes a single argument of the
+--       given type, and returns if the invariant holds, or raises exception
+--       Assertion_Error with an appropriate message if it does not hold. This
+--       field is present but always empty for private subtypes. This field is
+--       also set for the corresponding full type.
 
 --    In_Use (Flag8)
 --       Present in packages and types. Set when analyzing a use clause for
@@ -3107,6 +3136,12 @@ package Einfo is
 --    Number_Formals (synthesized)
 --       Applies to subprograms and subprogram types. Yields the number of
 --       formals as a value of type Pos.
+
+--    OK_To_Reference (Flag249)
+--       Present in all entities for types and subtypes. If set it indicates
+--       that a naked reference to the type is permitted within an expression
+--       that is being analyzed or preanalyed (for example, a type name may
+--       be referenced within the Invariant aspect expression for the type).
 
 --    OK_To_Rename (Flag247)
 --       Present only in entities for variables. If this flag is set, it
@@ -4697,6 +4732,7 @@ package Einfo is
    --    Alignment                           (Uint14)
    --    Related_Expression                  (Node24)
    --    Current_Use_Clause                  (Node27)
+   --    Invariant_Procedure                 (Node29)
 
    --    Depends_On_Private                  (Flag14)
    --    Discard_Names                       (Flag88)
@@ -4709,6 +4745,8 @@ package Einfo is
    --    Has_Complex_Representation          (Flag140)  (base type only)
    --    Has_Constrained_Partial_View        (Flag187)
    --    Has_Discriminants                   (Flag5)
+   --    Has_Inheritable_Invariants          (Flag248)
+   --    Has_Invariants                      (Flag232)
    --    Has_Non_Standard_Rep                (Flag75)   (base type only)
    --    Has_Object_Size_Clause              (Flag172)
    --    Has_Pragma_Preelab_Init             (Flag221)
@@ -4743,6 +4781,7 @@ package Einfo is
    --    Known_To_Have_Preelab_Init          (Flag207)
    --    Must_Be_On_Byte_Boundary            (Flag183)
    --    Must_Have_Preelab_Init              (Flag208)
+   --    OK_To_Reference                     (Flag249)
    --    Optimize_Alignment_Space            (Flag241)
    --    Optimize_Alignment_Time             (Flag242)
    --    Size_Depends_On_Discriminant        (Flag177)
@@ -5897,7 +5936,9 @@ package Einfo is
    function Has_Fully_Qualified_Name            (Id : E) return B;
    function Has_Gigi_Rep_Item                   (Id : E) return B;
    function Has_Homonym                         (Id : E) return B;
+   function Has_Inheritable_Invariants          (Id : E) return B;
    function Has_Initial_Value                   (Id : E) return B;
+   function Has_Invariants                      (Id : E) return B;
    function Has_Interrupt_Handler               (Id : E) return B;
    function Has_Machine_Radix_Clause            (Id : E) return B;
    function Has_Master_Entity                   (Id : E) return B;
@@ -5954,6 +5995,7 @@ package Einfo is
    function Interface_Alias                     (Id : E) return E;
    function Interfaces                          (Id : E) return L;
    function Interface_Name                      (Id : E) return N;
+   function Invariant_Procedure                 (Id : E) return N;
    function Is_AST_Entry                        (Id : E) return B;
    function Is_Abstract_Subprogram              (Id : E) return B;
    function Is_Abstract_Type                    (Id : E) return B;
@@ -6075,6 +6117,7 @@ package Einfo is
    function Normalized_First_Bit                (Id : E) return U;
    function Normalized_Position                 (Id : E) return U;
    function Normalized_Position_Max             (Id : E) return U;
+   function OK_To_Reference                     (Id : E) return B;
    function OK_To_Rename                        (Id : E) return B;
    function OK_To_Reorder_Components            (Id : E) return B;
    function Optimize_Alignment_Space            (Id : E) return B;
@@ -6460,7 +6503,9 @@ package Einfo is
    procedure Set_Has_Fully_Qualified_Name        (Id : E; V : B := True);
    procedure Set_Has_Gigi_Rep_Item               (Id : E; V : B := True);
    procedure Set_Has_Homonym                     (Id : E; V : B := True);
+   procedure Set_Has_Inheritable_Invariants      (Id : E; V : B := True);
    procedure Set_Has_Initial_Value               (Id : E; V : B := True);
+   procedure Set_Has_Invariants                  (Id : E; V : B := True);
    procedure Set_Has_Machine_Radix_Clause        (Id : E; V : B := True);
    procedure Set_Has_Master_Entity               (Id : E; V : B := True);
    procedure Set_Has_Missing_Return              (Id : E; V : B := True);
@@ -6517,6 +6562,7 @@ package Einfo is
    procedure Set_Inner_Instances                 (Id : E; V : L);
    procedure Set_Interface_Alias                 (Id : E; V : E);
    procedure Set_Interface_Name                  (Id : E; V : N);
+   procedure Set_Invariant_Procedure             (Id : E; V : N);
    procedure Set_Is_AST_Entry                    (Id : E; V : B := True);
    procedure Set_Is_Abstract_Subprogram          (Id : E; V : B := True);
    procedure Set_Is_Abstract_Type                (Id : E; V : B := True);
@@ -6645,6 +6691,7 @@ package Einfo is
    procedure Set_Normalized_First_Bit            (Id : E; V : U);
    procedure Set_Normalized_Position             (Id : E; V : U);
    procedure Set_Normalized_Position_Max         (Id : E; V : U);
+   procedure Set_OK_To_Reference                 (Id : E; V : B := True);
    procedure Set_OK_To_Rename                    (Id : E; V : B := True);
    procedure Set_OK_To_Reorder_Components        (Id : E; V : B := True);
    procedure Set_Optimize_Alignment_Space        (Id : E; V : B := True);
@@ -7002,9 +7049,10 @@ package Einfo is
    procedure Write_Field26_Name (Id : Entity_Id);
    procedure Write_Field27_Name (Id : Entity_Id);
    procedure Write_Field28_Name (Id : Entity_Id);
-   --  These routines are used to output a nice symbolic name for the given
-   --  field, depending on the Ekind. No blanks or end of lines are output,
-   --  just the characters of the field name.
+   procedure Write_Field29_Name (Id : Entity_Id);
+   --  These routines are used in Treepr to output a nice symbolic name for
+   --  the given field, depending on the Ekind. No blanks or end of lines are
+   --  output, just the characters of the field name.
 
    --------------------
    -- Inline Pragmas --
@@ -7135,7 +7183,9 @@ package Einfo is
    pragma Inline (Has_Fully_Qualified_Name);
    pragma Inline (Has_Gigi_Rep_Item);
    pragma Inline (Has_Homonym);
+   pragma Inline (Has_Inheritable_Invariants);
    pragma Inline (Has_Initial_Value);
+   pragma Inline (Has_Invariants);
    pragma Inline (Has_Machine_Radix_Clause);
    pragma Inline (Has_Master_Entity);
    pragma Inline (Has_Missing_Return);
@@ -7192,6 +7242,7 @@ package Einfo is
    pragma Inline (Inner_Instances);
    pragma Inline (Interface_Alias);
    pragma Inline (Interface_Name);
+   pragma Inline (Invariant_Procedure);
    pragma Inline (Is_AST_Entry);
    pragma Inline (Is_Abstract_Subprogram);
    pragma Inline (Is_Abstract_Type);
@@ -7362,6 +7413,7 @@ package Einfo is
    pragma Inline (Normalized_First_Bit);
    pragma Inline (Normalized_Position);
    pragma Inline (Normalized_Position_Max);
+   pragma Inline (OK_To_Reference);
    pragma Inline (OK_To_Rename);
    pragma Inline (OK_To_Reorder_Components);
    pragma Inline (Optimize_Alignment_Space);
@@ -7568,7 +7620,9 @@ package Einfo is
    pragma Inline (Set_Has_Fully_Qualified_Name);
    pragma Inline (Set_Has_Gigi_Rep_Item);
    pragma Inline (Set_Has_Homonym);
+   pragma Inline (Set_Has_Inheritable_Invariants);
    pragma Inline (Set_Has_Initial_Value);
+   pragma Inline (Set_Has_Invariants);
    pragma Inline (Set_Has_Machine_Radix_Clause);
    pragma Inline (Set_Has_Master_Entity);
    pragma Inline (Set_Has_Missing_Return);
@@ -7625,6 +7679,7 @@ package Einfo is
    pragma Inline (Set_Inner_Instances);
    pragma Inline (Set_Interface_Alias);
    pragma Inline (Set_Interface_Name);
+   pragma Inline (Set_Invariant_Procedure);
    pragma Inline (Set_Is_AST_Entry);
    pragma Inline (Set_Is_Abstract_Subprogram);
    pragma Inline (Set_Is_Abstract_Type);
@@ -7754,6 +7809,7 @@ package Einfo is
    pragma Inline (Set_Normalized_Position);
    pragma Inline (Set_Normalized_Position_Max);
    pragma Inline (Set_OK_To_Reorder_Components);
+   pragma Inline (Set_OK_To_Reference);
    pragma Inline (Set_OK_To_Rename);
    pragma Inline (Set_Optimize_Alignment_Space);
    pragma Inline (Set_Optimize_Alignment_Time);

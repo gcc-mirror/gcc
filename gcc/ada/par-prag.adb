@@ -1172,6 +1172,7 @@ begin
            Pragma_Interrupt_Handler             |
            Pragma_Interrupt_State               |
            Pragma_Interrupt_Priority            |
+           Pragma_Invariant                     |
            Pragma_Java_Constructor              |
            Pragma_Java_Interface                |
            Pragma_Keep_Names                    |

@@ -5930,16 +5930,28 @@ package body Sem_Res is
          Set_Entity_With_Style_Check (N, E);
          Eval_Entity_Name (N);
 
-      --  Allow use of subtype only if it is a concurrent type where we are
-      --  currently inside the body. This will eventually be expanded into a
-      --  call to Self (for tasks) or _object (for protected objects). Any
-      --  other use of a subtype is invalid.
+      --  Case of subtype name appearing as an operand in expression
 
       elsif Is_Type (E) then
+
+         --  Allow use of subtype if it is a concurrent type where we are
+         --  currently inside the body. This will eventually be expanded into a
+         --  call to Self (for tasks) or _object (for protected objects). Any
+         --  other use of a subtype is invalid.
+
          if Is_Concurrent_Type (E)
            and then In_Open_Scopes (E)
          then
             null;
+
+         --  Allow reference to type specifically marked as being OK in this
+         --  context (this is used for example for type names in invariants).
+
+         elsif OK_To_Reference (E) then
+            null;
+
+         --  Any other use is an eror
+
          else
             Error_Msg_N
                ("invalid use of subtype mark in expression or call", N);

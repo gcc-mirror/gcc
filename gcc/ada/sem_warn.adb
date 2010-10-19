@@ -3068,7 +3068,7 @@ package body Sem_Warn is
             Elab_Warnings                       := True;
             Implementation_Unit_Warnings        := True;
             Ineffective_Inline_Warnings         := True;
-            List_Inherited_Pre_Post             := True;
+            List_Inherited_Aspects              := True;
             Warn_On_Ada_2005_Compatibility      := True;
             Warn_On_Ada_2012_Compatibility      := True;
             Warn_On_All_Unread_Out_Parameters   := True;
@@ -3115,10 +3115,10 @@ package body Sem_Warn is
             Warn_On_Overlap                     := False;
 
          when 'l' =>
-            List_Inherited_Pre_Post             := True;
+            List_Inherited_Aspects              := True;
 
          when 'L' =>
-            List_Inherited_Pre_Post             := False;
+            List_Inherited_Aspects              := False;
 
          when 'm' =>
             Warn_On_Suspicious_Modulus_Value    := True;
@@ -3196,7 +3196,7 @@ package body Sem_Warn is
       Elab_Warnings                       := False;
       Implementation_Unit_Warnings        := False;
       Ineffective_Inline_Warnings         := True;
-      List_Inherited_Pre_Post             := False;
+      List_Inherited_Aspects              := False;
       Warn_On_Ada_2005_Compatibility      := True;
       Warn_On_Ada_2012_Compatibility      := True;
       Warn_On_All_Unread_Out_Parameters   := False;
@@ -3239,7 +3239,7 @@ package body Sem_Warn is
             Constant_Condition_Warnings         := True;
             Implementation_Unit_Warnings        := True;
             Ineffective_Inline_Warnings         := True;
-            List_Inherited_Pre_Post             := True;
+            List_Inherited_Aspects              := True;
             Warn_On_Ada_2005_Compatibility      := True;
             Warn_On_Ada_2012_Compatibility      := True;
             Warn_On_Assertion_Failure           := True;
@@ -3270,7 +3270,7 @@ package body Sem_Warn is
             Elab_Warnings                       := False;
             Implementation_Unit_Warnings        := False;
             Ineffective_Inline_Warnings         := False;
-            List_Inherited_Pre_Post             := False;
+            List_Inherited_Aspects              := False;
             Warn_On_Ada_2005_Compatibility      := False;
             Warn_On_Ada_2012_Compatibility      := False;
             Warn_On_All_Unread_Out_Parameters   := False;

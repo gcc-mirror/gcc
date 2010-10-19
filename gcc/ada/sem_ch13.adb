@@ -54,6 +54,7 @@ with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Sinfo;    use Sinfo;
+with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Ttypes;   use Ttypes;
 with Tbuild;   use Tbuild;
@@ -740,9 +741,9 @@ package body Sem_Ch13 is
                when No_Aspect =>
                   raise Program_Error;
 
-                  --  Aspects taking an optional boolean argument. For all of
-                  --  these we just create a matching pragma and insert it,
-                  --  setting flag Cancel_Aspect if the expression is False.
+               --  Aspects taking an optional boolean argument. For all of
+               --  these we just create a matching pragma and insert it,
+               --  setting flag Cancel_Aspect if the expression is False.
 
                when Aspect_Ada_2005                     |
                     Aspect_Ada_2012                     |
@@ -803,8 +804,7 @@ package body Sem_Ch13 is
                      end if;
                   end if;
 
-               --  Aspects corresponding to attribute definition clauses with
-               --  the exception of Address which is treated specially.
+               --  Aspects corresponding to attribute definition clauses
 
                when Aspect_Address        |
                     Aspect_Alignment      |
@@ -924,7 +924,8 @@ package body Sem_Ch13 is
                --  with a first argument that is the expression, and a second
                --  argument that is an informative message if the test fails.
                --  This is inserted right after the declaration, to get the
-               --  required pragma placement.
+               --  required pragma placement. The processing for the pragmas
+               --  takes care of the required delay.
 
                when Aspect_Pre | Aspect_Post => declare
                   Pname : Name_Id;
@@ -1007,11 +1008,48 @@ package body Sem_Ch13 is
                   goto Continue;
                end;
 
-                  --  Aspects currently unimplemented
+               --  Invariant aspect generates an Invariant pragma with a first
+               --  argument that is the entity, and the second argument is the
+               --  expression. This is inserted right after the declaration, to
+               --  get the required pragma placement. The processing for the
+               --  pragma takes care of the required delay.
 
-               when Aspect_Invariant |
-                    Aspect_Predicate =>
+               when Aspect_Invariant =>
 
+                  --  Construct the pragma
+
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Argument_Associations =>
+                        New_List (Ent, Relocate_Node (Expr)),
+                      Class_Present                => Class_Present (Aspect),
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Name_Invariant));
+
+                  --  Add message unless exception messages are suppressed
+
+                  if not Opt.Exception_Locations_Suppressed then
+                     Append_To (Pragma_Argument_Associations (Aitem),
+                       Make_Pragma_Argument_Association (Eloc,
+                         Chars     => Name_Message,
+                         Expression =>
+                           Make_String_Literal (Eloc,
+                             Strval => "failed invariant from "
+                                       & Build_Location_String (Eloc))));
+                  end if;
+
+                  Set_From_Aspect_Specification (Aitem, True);
+
+                  --  For Invariant case, insert immediately after the entity
+                  --  declaration. We do not have to worry about delay issues
+                  --  since the pragma processing takes care of this.
+
+                  Insert_After (N, Aitem);
+                  goto Continue;
+
+               --  Aspects currently unimplemented
+
+               when Aspect_Predicate =>
                   Error_Msg_N ("aspect& not implemented", Identifier (Aspect));
                   goto Continue;
             end case;
@@ -3392,6 +3430,329 @@ package body Sem_Ch13 is
          end;
       end if;
    end Analyze_Record_Representation_Clause;
+
+   -------------------------------
+   -- Build_Invariant_Procedure --
+   -------------------------------
+
+   --  The procedure that is constructed here has the form
+
+   --  procedure typInvariant (Ixxx : typ) is
+   --  begin
+   --     pragma Check (Invariant, exp, "failed invariant from xxx");
+   --     pragma Check (Invariant, exp, "failed invariant from xxx");
+   --     ...
+   --     pragma Check (Invariant, exp, "failed inherited invariant from xxx");
+   --     ...
+   --  end typInvariant;
+
+   procedure Build_Invariant_Procedure
+     (Typ   : Entity_Id;
+      PDecl : out Node_Id;
+      PBody : out Node_Id)
+   is
+      Loc   : constant Source_Ptr := Sloc (Typ);
+      Stmts : List_Id;
+      Spec  : Node_Id;
+      SId   : Entity_Id;
+
+      procedure Add_Invariants (T : Entity_Id; Inherit : Boolean);
+      --  Appends statements to Stmts for any invariants in the rep item chain
+      --  of the given type. If Inherit is False, then we only process entries
+      --  on the chain for the type Typ. If Inherit is True, then we ignore any
+      --  Invariant aspects, but we process all Invariant'Class aspects, adding
+      --  "inherited" to the exception message and generating an informational
+      --  message about the inheritance of an invariant.
+
+      Object_Name : constant Name_Id := New_Internal_Name ('I');
+      --  Name for argument of invariant procedure
+
+      --------------------
+      -- Add_Invariants --
+      --------------------
+
+      procedure Add_Invariants (T : Entity_Id; Inherit : Boolean) is
+         Ritem : Node_Id;
+         Arg1  : Node_Id;
+         Arg2  : Node_Id;
+         Arg3  : Node_Id;
+         Exp   : Node_Id;
+         Loc   : Source_Ptr;
+         Assoc : List_Id;
+         Str   : String_Id;
+
+         function Replace_Node (N : Node_Id) return Traverse_Result;
+         --  Process single node for traversal to replace type references
+
+         procedure Replace_Type is new Traverse_Proc (Replace_Node);
+         --  Traverse an expression changing every occurrence of an entity
+         --  reference to type T with a reference to the object argument.
+
+         ------------------
+         -- Replace_Node --
+         ------------------
+
+         function Replace_Node (N : Node_Id) return Traverse_Result is
+         begin
+            --  Case of entity name referencing the type
+
+            if Is_Entity_Name (N)
+              and then Entity (N) = T
+            then
+               --  Invariant'Class, replace with T'Class (obj)
+
+               if Class_Present (Ritem) then
+                  Rewrite (N,
+                    Make_Type_Conversion (Loc,
+                      Subtype_Mark =>
+                        Make_Attribute_Reference (Loc,
+                          Prefix         =>
+                            New_Occurrence_Of (T, Loc),
+                          Attribute_Name => Name_Class),
+                      Expression =>
+                        Make_Identifier (Loc,
+                          Chars => Object_Name)));
+
+               --  Invariant, replace with obj
+
+               else
+                  Rewrite (N,
+                    Make_Identifier (Loc,
+                      Chars => Object_Name));
+               end if;
+
+               --  All done with this node
+
+               return Skip;
+
+            --  Not an instance of the type entity, keep going
+
+            else
+               return OK;
+            end if;
+         end Replace_Node;
+
+      --  Start of processing for Add_Invariants
+
+      begin
+         Ritem := First_Rep_Item (T);
+         while Present (Ritem) loop
+            if Nkind (Ritem) = N_Pragma
+              and then Pragma_Name (Ritem) = Name_Invariant
+            then
+               Arg1 := First (Pragma_Argument_Associations (Ritem));
+               Arg2 := Next (Arg1);
+               Arg3 := Next (Arg2);
+
+               Arg1 := Get_Pragma_Arg (Arg1);
+               Arg2 := Get_Pragma_Arg (Arg2);
+
+               --  For Inherit case, ignore Invariant, process only Class case
+
+               if Inherit then
+                  if not Class_Present (Ritem) then
+                     goto Continue;
+                  end if;
+
+               --  For Inherit false, process only item for right type
+
+               else
+                  if Entity (Arg1) /= Typ then
+                     goto Continue;
+                  end if;
+               end if;
+
+               if No (Stmts) then
+                  Stmts := Empty_List;
+               end if;
+
+               Exp := New_Copy_Tree (Arg2);
+               Loc := Sloc (Exp);
+
+               --  We need to replace any occurrences of the name of the type
+               --  with references to the object, converted to type'Class in
+               --  the case of Invariant'Class aspects. We do this by first
+               --  doing a preanalysis, to identify all the entities, then
+               --  we traverse looking for the type entity, and doing the
+               --  necessary substitution. The preanalysis is done with the
+               --  special OK_To_Reference flag set on the type, so that if
+               --  we get an occurrence of this type, it will be reognized
+               --  as legitimate.
+
+               Set_OK_To_Reference (T, True);
+               Preanalyze_Spec_Expression (Exp, Standard_Boolean);
+               Set_OK_To_Reference (T, False);
+
+               --  Do the traversal
+
+               Replace_Type (Exp);
+
+               --  Build first two arguments for Check pragma
+
+               Assoc := New_List (
+                 Make_Pragma_Argument_Association (Loc,
+                    Expression =>
+                      Make_Identifier (Loc,
+                        Chars => Name_Invariant)),
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Exp));
+
+               --  Add message if present in Invariant pragma
+
+               if Present (Arg3) then
+                  Str := Strval (Get_Pragma_Arg (Arg3));
+
+                  --  If inherited case, and message starts "failed invariant",
+                  --  change it to be "failed inherited invariant".
+
+                  if Inherit then
+                     String_To_Name_Buffer (Str);
+
+                     if Name_Buffer (1 .. 16) = "failed invariant" then
+                        Insert_Str_In_Name_Buffer ("inherited ", 8);
+                        Str := String_From_Name_Buffer;
+                     end if;
+                  end if;
+
+                  Append_To (Assoc,
+                    Make_Pragma_Argument_Association (Loc,
+                      Expression => Make_String_Literal (Loc, Str)));
+               end if;
+
+               --  Add Check pragma to list of statements
+
+               Append_To (Stmts,
+                 Make_Pragma (Loc,
+                   Pragma_Identifier            =>
+                     Make_Identifier (Loc,
+                       Chars => Name_Check),
+                   Pragma_Argument_Associations => Assoc));
+
+               --  If Inherited case and option enabled, output info msg. Note
+               --  that we know this is a case of Invariant'Class.
+
+               if Inherit and Opt.List_Inherited_Aspects then
+                  Error_Msg_Sloc := Sloc (Ritem);
+                  Error_Msg_N
+                    ("?info: & inherits `Invariant''Class` aspect from #",
+                     Typ);
+               end if;
+            end if;
+
+         <<Continue>>
+            Next_Rep_Item (Ritem);
+         end loop;
+      end Add_Invariants;
+
+   --  Start of processing for Build_Invariant_Procedure
+
+   begin
+      Stmts := No_List;
+      PDecl := Empty;
+      PBody := Empty;
+
+      --  Add invariants for the current type
+
+      Add_Invariants (Typ, Inherit => False);
+
+      --  Add invariants for parent types
+
+      declare
+         Current_Typ : Entity_Id;
+         Parent_Typ  : Entity_Id;
+
+      begin
+         Current_Typ := Typ;
+         loop
+            Parent_Typ := Etype (Current_Typ);
+
+            if Is_Private_Type (Parent_Typ)
+              and then Present (Full_View (Base_Type (Parent_Typ)))
+            then
+               Parent_Typ := Full_View (Base_Type (Parent_Typ));
+            end if;
+
+            exit when Parent_Typ = Current_Typ;
+
+            Current_Typ := Parent_Typ;
+            Add_Invariants (Current_Typ, Inherit => True);
+         end loop;
+      end;
+
+      --  Add invariants for inherited interfaces
+      --  (commented out because it blows up on simpleinv in J701-022)
+
+--        declare
+--           Ifaces : Elist_Id;
+--           Iface  : Elmt_Id;
+--
+--        begin
+--           Collect_Interfaces
+--             (T               => Typ,
+--              Ifaces_List     => Ifaces,
+--              Exclude_Parents => True,
+--              Use_Full_View   => True);
+--
+--           loop
+--              Iface := First_Elmt (Ifaces);
+--              exit when Iface = No_Elmt;
+--              Add_Invariants (Node (Iface), Inherit => True);
+--              Remove_Elmt (Ifaces, Iface);
+--           end loop;
+--        end;
+
+      --  Build the procedure if we generated at least one Check pragma
+
+      if Stmts /= No_List then
+
+         --  Build procedure declaration
+
+         SId :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (Typ), "Invariant"));
+         Set_Invariant_Procedure (Typ, SId);
+
+         Spec :=
+           Make_Procedure_Specification (Loc,
+             Defining_Unit_Name       => SId,
+             Parameter_Specifications => New_List (
+               Make_Parameter_Specification (Loc,
+                 Defining_Identifier =>
+                   Make_Defining_Identifier (Loc,
+                     Chars => Object_Name),
+                 Parameter_Type =>
+                   New_Occurrence_Of (Typ, Loc))));
+
+         PDecl :=
+           Make_Subprogram_Declaration (Loc,
+             Specification => Spec);
+
+         --  Build procedure body
+
+         SId :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (Typ), "Invariant"));
+
+         Spec :=
+           Make_Procedure_Specification (Loc,
+             Defining_Unit_Name       => SId,
+             Parameter_Specifications => New_List (
+               Make_Parameter_Specification (Loc,
+                 Defining_Identifier =>
+                   Make_Defining_Identifier (Loc,
+                     Chars => Object_Name),
+                 Parameter_Type =>
+                   New_Occurrence_Of (Typ, Loc))));
+
+         PBody :=
+           Make_Subprogram_Body (Loc,
+             Specification              => Spec,
+             Declarations               => Empty_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => Stmts));
+      end if;
+   end Build_Invariant_Procedure;
 
    -----------------------------------
    -- Check_Constant_Address_Clause --
