@@ -1739,8 +1739,7 @@ package body Ch4 is
 
    --  RELATION ::=
    --    SIMPLE_EXPRESSION [RELATIONAL_OPERATOR SIMPLE_EXPRESSION]
-   --  | SIMPLE_EXPRESSION [not] in RANGE
-   --  | SIMPLE_EXPRESSION [not] in SUBTYPE_MARK
+   --  | SIMPLE_EXPRESSION [not] in MEMBERSHIP_CHOICE_LIST
 
    --  On return, Expr_Form indicates the categorization of the expression
 
@@ -2881,6 +2880,9 @@ package body Ch4 is
    -----------------------
    -- P_Membership_Test --
    -----------------------
+
+   --  MEMBERSHIP_CHOICE_LIST ::= MEMBERHIP_CHOICE {'|' MEMBERSHIP_CHOICE}
+   --  MEMBERSHIP_CHOICE      ::= CHOICE_EXPRESSION | range | subtype_mark
 
    procedure P_Membership_Test (N : Node_Id) is
       Alt : constant Node_Id :=

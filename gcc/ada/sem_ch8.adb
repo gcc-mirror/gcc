@@ -6651,7 +6651,7 @@ package body Sem_Ch8 is
       then
          declare
             Aux : constant Node_Id :=
-              Aux_Decls_Node (Parent (Unit_Declaration_Node (S)));
+                    Aux_Decls_Node (Parent (Unit_Declaration_Node (S)));
          begin
             if No (Default_Storage_Pool (Aux)) then
                Set_Default_Storage_Pool (Aux, Default_Pool);
@@ -6802,7 +6802,7 @@ package body Sem_Ch8 is
       then
          declare
             Aux : constant Node_Id :=
-              Aux_Decls_Node (Parent (Unit_Declaration_Node (E)));
+                    Aux_Decls_Node (Parent (Unit_Declaration_Node (E)));
          begin
             if Present (Default_Storage_Pool (Aux)) then
                Default_Pool := Default_Storage_Pool (Aux);

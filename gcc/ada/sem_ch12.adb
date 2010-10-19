@@ -5320,7 +5320,7 @@ package body Sem_Ch12 is
             then
                declare
                   Renamed_Package : constant Node_Id :=
-                    Name (Parent (Entity (Gen_Id)));
+                                      Name (Parent (Entity (Gen_Id)));
                begin
                   if Nkind (Renamed_Package) = N_Expanded_Name then
                      Inst_Par := Entity (Prefix (Renamed_Package));

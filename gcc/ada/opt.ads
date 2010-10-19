@@ -363,11 +363,11 @@ package Opt is
    --  GNAT
    --  Used to record the storage pool name (or null literal) that is the
    --  argument of an applicable pragma Default_Storage_Pool.
-   --    Empty: No pragma Default_Storage_Pool applies.
+   --    Empty:       No pragma Default_Storage_Pool applies.
    --    N_Null node: "pragma Default_Storage_Pool (null);" applies.
-   --    otherwise: "pragma Default_Storage_Pool (X);" applies, and
-   --    this points to the name X.
-   --  Push_Scope and Pop_Scope in Sem_Ch8 save and restore this.
+   --    otherwise:   "pragma Default_Storage_Pool (X);" applies, and
+   --                 this points to the name X.
+   --  Push_Scope and Pop_Scope in Sem_Ch8 save and restore this value.
 
    Detect_Blocking : Boolean := False;
    --  GNAT
