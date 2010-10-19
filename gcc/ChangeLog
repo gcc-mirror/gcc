@@ -1,3 +1,46 @@
+2010-10-18  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (IX86_BUILTIN_VFMSUBSS, IX86_BUILTIN_VFMSUBSD,
+	IX86_BUILTIN_VFMSUBPS, IX86_BUILTIN_VFMSUBPD,
+	IX86_BUILTIN_VFMSUBADDPS, IX86_BUILTIN_VFMSUBADDPD,
+	IX86_BUILTIN_VFNMADDSS, IX86_BUILTIN_VFNMADDSD,
+	IX86_BUILTIN_VFNMADDPS, IX86_BUILTIN_VFNMADDPD,
+	IX86_BUILTIN_VFNMSUBSS, IX86_BUILTIN_VFNMSUBSD,
+	IX86_BUILTIN_VFNMSUBPS, IX86_BUILTIN_VFNMSUBPD,
+	IX86_BUILTIN_VFMSUBADDPS256, IX86_BUILTIN_VFMSUBADDPD256,
+	IX86_BUILTIN_VFNMADDPS256, IX86_BUILTIN_VFNMADDPD256,
+	IX86_BUILTIN_VFNMSUBPS256, IX86_BUILTIN_VFNMSUBPD256): Remove.
+	(bdesc_multi_arg): Remove the corresponding builtins.
+	* config/i386/i386.md (UNSPEC_FMA4_INTRINSIC): Remove.
+	(UNSPEC_FMA4_FMSUBADD): Remove.
+	(UNSPEC_FMADDSUB): Rename from UNSPEC_FMA4_FMADDSUB.
+	* config/i386/sse.md (FMA4MODEF4): Remove.
+	(FMAMODE): Add.
+	(fma<mode>4): New expander.
+	(*fma4i_fmadd_<mode>): Macroize from fma4i_fmadd<mode>4 patterns,
+	and use FMA rtx code instead of UNSPEC_FMA4_INTRINSIC.
+	(*fma4i_fmsub_<mode>): Similarly.
+	(*fma4i_fnmadd_<mode>): Similarly.
+	(*fma4i_fnmsub_<mode>): Similarly.
+	(fma4i_vmfmadd_<mode>): Scalar patterns zero-extend, not merge
+	with the first operand.
+	(fma4i_fmaddsub_<mode>): Represent with UNSPEC_FMADDSUB instead
+	of explicit arithmetic.  Macroize with AVXMODEF2P.
+	(*fma4i_fmsubadd_<mode>): Represent with UNSPEC_FMADDSUB + NEG.
+	(xop_frcz<mode>2): Macroize with FMAMODE.
+	(xop_vmfrcz<mode>2): Scalar patterns zero-extend, not merge with
+	the first operand.
+	* config/i386/fma4intrin.h (_mm_msub_ps): Use vfmadd intrinsic with
+	extra negations.
+	(_mm_msub_pd, _mm_msub_ss, _mm_msub_sd): Likewise.
+	(_mm_nmacc_ps, _mm_nmacc_pd, _mm_nmacc_ss, _mm_nmacc_sd): Likewise.
+	(_mm_nmsub_ps, _mm_nmsub_pd, _mm_nmsub_ss, _mm_nmsub_sd): Likewise.
+	(_mm256_msub_ps, _mm256_msub_pd): Likewise.
+	(_mm256_nmacc_ps, _mm256_nmacc_pd): Likewise.
+	(_mm256_nmsub_ps, _mm256_nmsub_pd): Likewise.
+	(_mm_msubadd_ps): Use vfmaddsub intrinsic with extra negation.
+	(_mm_msubadd_pd, _mm256_msubadd_ps, _mm256_msubadd_pd): Likewise.
+
 2010-10-18  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/45966
