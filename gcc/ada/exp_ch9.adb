@@ -7420,11 +7420,10 @@ package body Exp_Ch9 is
          --  Generate a specification without a letter suffix in order to
          --  override an interface function or procedure.
 
-         Spec :=
-           Build_Protected_Sub_Specification (N, Pid, Dispatching_Mode);
+         Spec := Build_Protected_Sub_Specification (N, Pid, Dispatching_Mode);
 
-         --  The formal parameters become the actuals of the protected
-         --  function or procedure call.
+         --  The formal parameters become the actuals of the protected function
+         --  or procedure call.
 
          Actuals := New_List;
          Formal  := First (Parameter_Specifications (Spec));
@@ -7457,8 +7456,8 @@ package body Exp_Ch9 is
 
          return
            Make_Subprogram_Body (Loc,
-             Declarations  => Empty_List,
-             Specification => Spec,
+             Declarations               => Empty_List,
+             Specification              => Spec,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc, Stmts));
       end Build_Dispatching_Subprogram_Body;

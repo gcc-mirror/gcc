@@ -1314,15 +1314,17 @@ package body Exp_Dist is
       end if;
 
       --  Build callers, receivers for every primitive operations and a RPC
-      --  receiver for this type.
+      --  receiver for this type. Note that we use Direct_Primitive_Operations,
+      --  not Primitive_Operations, because we really want just the primitives
+      --  of the tagged type itself, and in the case of a tagged synchronized
+      --  type we do not want to get the primitives of the corresponding
+      --  record type).
 
-      if not Is_Concurrent_Type (Designated_Type)
-        and then Present (Primitive_Operations (Designated_Type))
-      then
+      if Present (Direct_Primitive_Operations (Designated_Type)) then
          Overload_Counter_Table.Reset;
 
          Current_Primitive_Elmt :=
-           First_Elmt (Primitive_Operations (Designated_Type));
+           First_Elmt (Direct_Primitive_Operations (Designated_Type));
          while Current_Primitive_Elmt /= No_Elmt loop
             Current_Primitive := Node (Current_Primitive_Elmt);
 

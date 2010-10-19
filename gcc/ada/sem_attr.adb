@@ -6910,6 +6910,13 @@ package body Sem_Attr is
             end case;
          end;
 
+      ---------
+      -- Ref --
+      ---------
+
+      when Attribute_Ref =>
+         Fold_Uint (N, Expr_Value (E1), True);
+
       ---------------
       -- Remainder --
       ---------------
@@ -7679,7 +7686,6 @@ package body Sem_Attr is
            Attribute_Position                 |
            Attribute_Priority                 |
            Attribute_Read                     |
-           Attribute_Ref                      |
            Attribute_Result                   |
            Attribute_Storage_Pool             |
            Attribute_Storage_Size             |

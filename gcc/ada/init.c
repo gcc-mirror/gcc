@@ -1396,13 +1396,13 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 	    exception = &storage_error;
 	    msg = "stack overflow (or erroneous memory access)";
 	  }
-	__gnat_adjust_context_for_raise (0, (void *)mechargs);
+	__gnat_adjust_context_for_raise (SS$_ACCVIO, (void *)mechargs);
 	break;
 
       case SS$_STKOVF:
 	exception = &storage_error;
 	msg = "stack overflow";
-	__gnat_adjust_context_for_raise (0, (void *)mechargs);
+	__gnat_adjust_context_for_raise (SS$_STKOVF, (void *)mechargs);
 	break;
 
       case SS$_HPARITH:
@@ -1411,11 +1411,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 #else
 	exception = &constraint_error;
 	msg = "arithmetic error";
-#ifndef __alpha__
-	/* No need to adjust pc on Alpha: the pc is already on the instruction
-	   after the trapping one.  */
-	__gnat_adjust_context_for_raise (0, (void *)mechargs);
-#endif
+	__gnat_adjust_context_for_raise (SS$_HPARITH, (void *)mechargs);
 #endif
 	break;
 
@@ -1491,17 +1487,20 @@ __gnat_install_handler (void)
 void
 __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 {
-  /* Add one to the address of the instruction signaling the condition,
-     located in the sigargs array.  */
+  if (signo == SS$_HPARITH)
+    {
+      /* Sub one to the address of the instruction signaling the condition,
+         located in the sigargs array.  */
 
-  CHF$MECH_ARRAY * mechargs = (CHF$MECH_ARRAY *) ucontext;
-  CHF$SIGNAL_ARRAY * sigargs
-    = (CHF$SIGNAL_ARRAY *) mechargs->chf$q_mch_sig_addr;
+      CHF$MECH_ARRAY * mechargs = (CHF$MECH_ARRAY *) ucontext;
+      CHF$SIGNAL_ARRAY * sigargs
+        = (CHF$SIGNAL_ARRAY *) mechargs->chf$q_mch_sig_addr;
 
-  int vcount = sigargs->chf$is_sig_args;
-  int * pc_slot = & (&sigargs->chf$l_sig_name)[vcount-2];
+      int vcount = sigargs->chf$is_sig_args;
+      int * pc_slot = & (&sigargs->chf$l_sig_name)[vcount-2];
 
-  (*pc_slot) ++;
+      (*pc_slot)--;
+    }
 }
 
 #endif
