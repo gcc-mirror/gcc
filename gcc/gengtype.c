@@ -689,12 +689,6 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
   type_p s = NULL;
   lang_bitmap bitmap = get_lang_bitmap (pos->file);
 
-  /* temporary kludge - gengtype doesn't handle conditionals or
-     macros.  Ignore any attempt to define struct location_s, unless
-     it is coming from this file (main() sets it up safely). */
-  if (!strcmp (name, "location_s") && !isunion && pos->file != this_file)
-    return find_structure (name, 0);
-
   for (si = structures; si != NULL; si = si->next)
     if (strcmp (name, si->u.s.tag) == 0 && UNION_P (si) == isunion)
       {
@@ -755,20 +749,6 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
   s->u.s.bitmap = bitmap;
   if (s->u.s.lang_struct)
     s->u.s.lang_struct->u.s.bitmap |= bitmap;
-
-  /* Reset location_s's location to input.h so that we know where to
-     write out its mark routine.  */
-  if (!strcmp (name, "location_s") && !isunion && pos->file == this_file)
-    {
-      size_t n;
-      for (n = 0; n < num_gt_files; n++)
-	if (!strcmp (gt_files[n] + strlen (gt_files[n]) - strlen ("input.h"),
-		     "input.h"))
-	  {
-	    s->u.s.line.file = gt_files[n];
-	    break;
-	  }
-    }
 
   return s;
 }
