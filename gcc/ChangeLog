@@ -1,3 +1,7 @@
+2010-10-19  Basile Starynkevitch  <basile@starynkevitch.net>
+	* gengtype.c (new_structure): Remove ad-hoc "location_s"
+	processing.
+
 2010-10-18  Richard Henderson  <rth@redhat.com>
 
 	 * simplify-rtx.c (simplify_ternary_operation) [FMA]: Simplify
