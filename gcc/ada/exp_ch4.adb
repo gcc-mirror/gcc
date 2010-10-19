@@ -4348,24 +4348,19 @@ package body Exp_Ch4 is
             R    : constant Node_Id := Relocate_Node (Alt);
 
          begin
-            if (Is_Entity_Name (Alt)
-                  and then Is_Type (Entity (Alt)))
-              or else Nkind (Alt) = N_Range
+            if (Is_Entity_Name (Alt) and then Is_Type (Entity (Alt)))
+               or else Nkind (Alt) = N_Range
             then
-               Cond :=
-                 Make_In (Sloc (Alt),
-                   Left_Opnd  => L,
-                   Right_Opnd => R);
+               Cond := Make_In (Sloc (Alt), Left_Opnd  => L, Right_Opnd => R);
             else
-               Cond := Make_Op_Eq (Sloc (Alt),
-                 Left_Opnd  => L,
-                 Right_Opnd => R);
+               Cond :=
+                 Make_Op_Eq (Sloc (Alt), Left_Opnd  => L, Right_Opnd => R);
             end if;
 
             return Cond;
          end Make_Cond;
 
-      --  Start of proessing for Expand_N_In
+      --  Start of processing for Expand_N_In
 
       begin
          Alt := Last (Alternatives (N));
@@ -4419,7 +4414,7 @@ package body Exp_Ch4 is
       --  Check case of explicit test for an expression in range of its
       --  subtype. This is suspicious usage and we replace it with a 'Valid
       --  test and give a warning. For floating point types however, this is a
-      --  standard way to check for finite numbers, and using 'Valid vould
+      --  standard way to check for finite numbers, and using 'Valid would
       --  typically be a pessimization.
 
       if Is_Scalar_Type (Etype (Lop))
@@ -4475,17 +4470,19 @@ package body Exp_Ch4 is
             --  the same as the type of the expression.
 
          begin
-            --  If test is explicit x'first .. x'last, replace by valid check
+            --  If test is explicit x'First .. x'Last, replace by valid check
 
             if Is_Scalar_Type (Ltyp)
               and then Nkind (Lo_Orig) = N_Attribute_Reference
               and then Attribute_Name (Lo_Orig) = Name_First
               and then Nkind (Prefix (Lo_Orig)) in N_Has_Entity
               and then Entity (Prefix (Lo_Orig)) = Ltyp
+
               and then Nkind (Hi_Orig) = N_Attribute_Reference
               and then Attribute_Name (Hi_Orig) = Name_Last
               and then Nkind (Prefix (Hi_Orig)) in N_Has_Entity
               and then Entity (Prefix (Hi_Orig)) = Ltyp
+
               and then Comes_From_Source (N)
               and then VM_Target = No_VM
             then
@@ -4669,7 +4666,7 @@ package body Exp_Ch4 is
 
                return;
 
-            --  If type is scalar type, rewrite as x in t'first .. t'last.
+            --  If type is scalar type, rewrite as x in t'First .. t'Last.
             --  This reason we do this is that the bounds may have the wrong
             --  type if they come from the original type definition. Also this
             --  way we get all the processing above for an explicit range.

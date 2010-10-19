@@ -6263,11 +6263,14 @@ package body Exp_Disp is
       --  Import the dispatch table DT of tagged type Tag_Typ. Required to
       --  generate forward references and statically allocate the table. For
       --  primary dispatch tables that require no dispatch table generate:
+
       --     DT : static aliased constant Non_Dispatch_Table_Wrapper;
-      --     $pragma import (ada, DT);
+      --     pragma Import (Ada, DT);
+
       --  Otherwise generate:
+
       --     DT : static aliased constant Dispatch_Table_Wrapper (Nb_Prim);
-      --     $pragma import (ada, DT);
+      --     pragma Import (Ada, DT);
 
       ---------------
       -- Import_DT --
@@ -6292,8 +6295,7 @@ package body Exp_Disp is
 
          Get_External_Name (DT, True);
          Set_Interface_Name (DT,
-           Make_String_Literal (Loc,
-             Strval => String_From_Name_Buffer));
+           Make_String_Literal (Loc, Strval => String_From_Name_Buffer));
 
          --  Ensure proper Sprint output of this implicit importation
 
@@ -6305,9 +6307,7 @@ package body Exp_Disp is
 
          --  No dispatch table required
 
-         if not Is_Secondary_DT
-           and then not Has_DT (Tag_Typ)
-         then
+         if not Is_Secondary_DT and then not Has_DT (Tag_Typ) then
             Append_To (Result,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => DT,
@@ -6323,8 +6323,8 @@ package body Exp_Disp is
             Nb_Prim :=
               UI_To_Int (DT_Entry_Count (First_Tag_Component (Tag_Typ)));
 
-            --  If the tagged type has no primitives we add a dummy slot
-            --  whose address will be the tag of this type.
+            --  If the tagged type has no primitives we add a dummy slot whose
+            --  address will be the tag of this type.
 
             if Nb_Prim = 0 then
                DT_Constr_List :=
@@ -6384,8 +6384,8 @@ package body Exp_Disp is
       --  For CPP types there is no need to build the dispatch tables since
       --  they are imported from the C++ side. If the CPP type has an IP then
       --  we declare now the variable that will store the copy of the C++ tag.
-      --  If the CPP type is an interface, we need the variable as well,
-      --  because it becomes the pointer to the corresponding secondary table.
+      --  If the CPP type is an interface, we need the variable as well because
+      --  it becomes the pointer to the corresponding secondary table.
 
       if Is_CPP_Class (Typ) then
          if Has_CPP_Constructors (Typ) or else Is_Interface (Typ) then
@@ -6413,7 +6413,7 @@ package body Exp_Disp is
          Append_Elmt (Predef_Prims_Ptr, Access_Disp_Table (Typ));
 
          --  Import the forward declaration of the Dispatch Table wrapper
-         --  record (Make_DT will take care of its exportation)
+         --  record (Make_DT will take care of exporting it).
 
          if Building_Static_DT (Typ) then
             Set_Dispatch_Table_Wrappers (Typ, New_Elmt_List);
@@ -6499,12 +6499,12 @@ package body Exp_Disp is
       if Has_Interfaces (Typ) then
          Collect_Interface_Components (Typ, Typ_Comps);
 
-         --  For each interface type we build an unique external name
-         --  associated with its secondary dispatch table. This name is used to
-         --  declare an object that references this secondary dispatch table,
-         --  value that will be used for the elaboration of Typ's objects and
-         --  also for the elaboration of objects of derivations of Typ that do
-         --  not override the primitives of this interface type.
+         --  For each interface type we build a unique external name associated
+         --  with its secondary dispatch table. This name is used to declare an
+         --  object that references this secondary dispatch table, whose value
+         --  will be used for the elaboration of Typ objects, and also for the
+         --  elaboration of objects of types derived from Typ that do not
+         --  override the primitives of this interface type.
 
          Suffix_Index := 1;
 
@@ -6520,7 +6520,7 @@ package body Exp_Disp is
                Typ_Name := Name_Find;
 
                --  Declare variables that will store the copy of the C++
-               --  secondary tags
+               --  secondary tags.
 
                Iface_DT_Ptr :=
                  Make_Defining_Identifier (Loc,
@@ -6727,6 +6727,7 @@ package body Exp_Disp is
             --  Add the freezing nodes of these declarations; required to avoid
             --  generating these freezing nodes in wrong scopes (for example in
             --  the IC routine of a derivation of Typ).
+            --  What is an "IC routine"? Is "init_proc" meant here???
 
             Append_List_To (Result, Freeze_Entity (DT_Prims, Typ));
             Append_List_To (Result, Freeze_Entity (DT_Prims_Acc, Typ));

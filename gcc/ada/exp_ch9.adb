@@ -1661,21 +1661,22 @@ package body Exp_Ch9 is
               Make_Parameter_Specification (Loc,
                 Defining_Identifier => Index,
                 Parameter_Type      =>
-                 New_Occurrence_Of (Entry_Index_Type (E), Loc)));
+                  New_Occurrence_Of (Entry_Index_Type (E), Loc)));
 
-            Entry_Name := Make_Indexed_Component (Loc,
-               Prefix => Entry_Name,
-               Expressions => New_List (New_Occurrence_Of (Index, Loc)));
+            Entry_Name :=
+              Make_Indexed_Component (Loc,
+                Prefix      => Entry_Name,
+                Expressions => New_List (New_Occurrence_Of (Index, Loc)));
          end;
       end if;
 
       Entry_Call :=
         Make_Procedure_Call_Statement (Loc,
-          Name => Entry_Name,
+          Name                   => Entry_Name,
           Parameter_Associations => Actuals);
 
-      --  Now add formals that match those of the entry, and build actuals
-      --  for the nested entry call.
+      --  Now add formals that match those of the entry, and build actuals for
+      --  the nested entry call.
 
       declare
          Form      : Entity_Id;
@@ -1689,8 +1690,8 @@ package body Exp_Ch9 is
             Parm_Spec :=
               Make_Parameter_Specification (Loc,
                 Defining_Identifier => New_Form,
-                Out_Present         =>  Out_Present (Parent (Form)),
-                In_Present          =>  In_Present  (Parent (Form)),
+                Out_Present         => Out_Present (Parent (Form)),
+                In_Present          => In_Present  (Parent (Form)),
                 Parameter_Type      => New_Occurrence_Of (Etype (Form), Loc));
 
             Append (Parm_Spec, Specs);
@@ -1728,16 +1729,16 @@ package body Exp_Ch9 is
       Set_PPC_Wrapper (E, Wrapper_Id);
       Wrapper_Body :=
         Make_Subprogram_Body (Loc,
-          Specification =>
+          Specification              =>
             Make_Procedure_Specification (Loc,
-              Defining_Unit_Name => Wrapper_Id,
+              Defining_Unit_Name       => Wrapper_Id,
               Parameter_Specifications => Specs),
-         Declarations => Decls,
-         Handled_Statement_Sequence =>
-           Make_Handled_Sequence_Of_Statements (Loc,
-             Statements => New_List (Entry_Call)));
+          Declarations               => Decls,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => New_List (Entry_Call)));
 
-      --  The wrapper body is analyzed when the enclosing type is frozen.
+      --  The wrapper body is analyzed when the enclosing type is frozen
 
       Append_Freeze_Action (Defining_Entity (Decl), Wrapper_Body);
    end Build_PPC_Wrapper;
@@ -1857,7 +1858,7 @@ package body Exp_Ch9 is
 
                Nam :=
                  Make_Selected_Component (Loc,
-                   Prefix =>
+                   Prefix        =>
                      Unchecked_Convert_To
                        (Corresponding_Concurrent_Type (Obj_Typ), Conv_Id),
                    Selector_Name => New_Reference_To (Subp_Id, Loc));
