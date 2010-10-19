@@ -3192,6 +3192,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 	    t = subst (t, i0dest, i0src, 0, 0);
 	  if (i1_feeds_i2_n)
 	    t = subst (t, i1dest, i1src, 0, 0);
+	  if (i0_feeds_i1_n && i1_feeds_i2_n)
+	    t = subst (t, i0dest, i0src, 0, 0);
 
 	  XVECEXP (newpat, 0, --total_sets) = t;
 	}
