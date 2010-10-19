@@ -36,7 +36,7 @@ with System;
 
 package Interfaces.C.Extensions is
 
-   --  Definitions for C "void" and "void*" types
+   --  Definitions for C "void" and "void *" types
 
    subtype void     is System.Address;
    subtype void_ptr is System.Address;
@@ -55,12 +55,12 @@ package Interfaces.C.Extensions is
 
    subtype bool is plain_char;
 
-   --  64bit integer types
+   --  64-bit integer types
 
    subtype long_long is Long_Long_Integer;
    type unsigned_long_long is mod 2 ** 64;
 
-   --  128bit integer type available on 64bit platforms:
+   --  128-bit integer type available on 64-bit platforms:
    --  typedef int signed_128 __attribute__ ((mode (TI)));
 
    type Signed_128 is record
