@@ -490,7 +490,7 @@ add_to_template_args (tree args, tree extra_args)
   int i;
   int j;
 
-  if (args == NULL_TREE)
+  if (args == NULL_TREE || extra_args == error_mark_node)
     return extra_args;
 
   extra_depth = TMPL_ARGS_DEPTH (extra_args);
@@ -5969,6 +5969,9 @@ coerce_template_parms (tree parms,
      subtract it from nparms to get the number of non-variadic
      parameters.  */
   int variadic_p = 0;
+
+  if (args == error_mark_node)
+    return error_mark_node;
 
   nparms = TREE_VEC_LENGTH (parms);
 
