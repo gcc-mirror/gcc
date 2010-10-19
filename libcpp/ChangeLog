@@ -1,3 +1,7 @@
+2010-10-19  Basile Starynkevitch  <basile@starynkevitch.net>
+	* line-map.h (source_location): Remove obsolete comment
+	mentioning location_s.
+
 2010-09-29  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR preprocessor/45362
