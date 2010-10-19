@@ -1008,13 +1008,6 @@ resolve_shift_zext (rtx insn)
   offset2 = UNITS_PER_WORD * (1 - dest_reg_num);
   src_offset = UNITS_PER_WORD * src_reg_num;
 
-  if (WORDS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
-    {
-      offset1 += UNITS_PER_WORD - 1;
-      offset2 += UNITS_PER_WORD - 1;
-      src_offset += UNITS_PER_WORD - 1;
-    }
-
   start_sequence ();
 
   dest_reg = simplify_gen_subreg_concatn (word_mode, SET_DEST (set),
