@@ -42,6 +42,7 @@ package Sem_Ch4  is
    procedure Analyze_Negation                           (N : Node_Id);
    procedure Analyze_Null                               (N : Node_Id);
    procedure Analyze_Qualified_Expression               (N : Node_Id);
+   procedure Analyze_Quantified_Expression              (N : Node_Id);
    procedure Analyze_Range                              (N : Node_Id);
    procedure Analyze_Reference                          (N : Node_Id);
    procedure Analyze_Selected_Component                 (N : Node_Id);

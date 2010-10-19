@@ -224,6 +224,7 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind = N_Access_Definition
         or else NT (N).Nkind = N_Access_To_Object_Definition
+        or else NT (N).Nkind = N_Quantified_Expression
         or else NT (N).Nkind = N_Use_Type_Clause);
       return Flag15 (N);
    end All_Present;
@@ -512,6 +513,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Exit_Statement
         or else NT (N).Nkind = N_If_Statement
         or else NT (N).Nkind = N_Iteration_Scheme
+        or else NT (N).Nkind = N_Quantified_Expression
         or else NT (N).Nkind = N_Raise_Constraint_Error
         or else NT (N).Nkind = N_Raise_Program_Error
         or else NT (N).Nkind = N_Raise_Storage_Error
@@ -1988,7 +1990,8 @@ package body Sinfo is
       (N : Node_Id) return Node_Id is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Iteration_Scheme);
+        or else NT (N).Nkind = N_Iteration_Scheme
+        or else NT (N).Nkind = N_Quantified_Expression);
       return Node4 (N);
    end Loop_Parameter_Specification;
 
@@ -3219,6 +3222,7 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind = N_Access_Definition
         or else NT (N).Nkind = N_Access_To_Object_Definition
+        or else NT (N).Nkind = N_Quantified_Expression
         or else NT (N).Nkind = N_Use_Type_Clause);
       Set_Flag15 (N, Val);
    end Set_All_Present;
@@ -3507,6 +3511,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Exit_Statement
         or else NT (N).Nkind = N_If_Statement
         or else NT (N).Nkind = N_Iteration_Scheme
+        or else NT (N).Nkind = N_Quantified_Expression
         or else NT (N).Nkind = N_Raise_Constraint_Error
         or else NT (N).Nkind = N_Raise_Program_Error
         or else NT (N).Nkind = N_Raise_Storage_Error
@@ -4975,7 +4980,8 @@ package body Sinfo is
       (N : Node_Id; Val : Node_Id) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Iteration_Scheme);
+        or else NT (N).Nkind = N_Iteration_Scheme
+        or else NT (N).Nkind = N_Quantified_Expression);
       Set_Node4_With_Parent (N, Val);
    end Set_Loop_Parameter_Specification;
 

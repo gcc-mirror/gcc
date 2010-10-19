@@ -192,6 +192,7 @@ package body Sem_Res is
    procedure Resolve_Op_Expon                  (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Op_Not                    (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Qualified_Expression      (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_Quantified_Expression     (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Range                     (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Real_Literal              (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Reference                 (N : Node_Id; Typ : Entity_Id);
@@ -2697,6 +2698,9 @@ package body Sem_Res is
 
             when N_Qualified_Expression
                              => Resolve_Qualified_Expression     (N, Ctx_Type);
+
+            when N_Quantified_Expression
+                             => Resolve_Quantified_Expression    (N, Ctx_Type);
 
             when N_Raise_xxx_Error
                              => Set_Etype (N, Ctx_Type);
@@ -7766,6 +7770,18 @@ package body Sem_Res is
 
       Eval_Qualified_Expression (N);
    end Resolve_Qualified_Expression;
+
+   -----------------------------------
+   -- Resolve_Quantified_Expression --
+   -----------------------------------
+
+   procedure Resolve_Quantified_Expression (N : Node_Id; Typ : Entity_Id) is
+   begin
+      --  The loop structure is already resolved during its analysis, only the
+      --  resolution of the condition needs to be done.
+
+      Resolve (Condition (N), Typ);
+   end Resolve_Quantified_Expression;
 
    -------------------
    -- Resolve_Range --

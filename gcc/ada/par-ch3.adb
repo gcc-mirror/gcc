@@ -1137,6 +1137,16 @@ package body Ch3 is
          Discard_Junk_Node (P_Array_Type_Definition);
          return Error;
 
+      --  If Some becomes a keyword, the following is needed to make it
+      --  acceptable in older versions of Ada.
+
+      elsif Token = Tok_Some
+        and then Ada_Version < Ada_2012
+      then
+         Scan_Reserved_Identifier (False);
+         Scan;
+         return Token_Node;
+
       else
          Type_Node := P_Qualified_Simple_Name_Resync;
 

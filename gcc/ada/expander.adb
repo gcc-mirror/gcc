@@ -364,6 +364,9 @@ package body Expander is
                when N_Qualified_Expression =>
                   Expand_N_Qualified_Expression (N);
 
+               when N_Quantified_Expression  =>
+                  Expand_N_Quantified_Expression (N);
+
                when N_Raise_Statement =>
                   Expand_N_Raise_Statement (N);
 

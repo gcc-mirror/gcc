@@ -1,3 +1,32 @@
+2010-10-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb, exp_ch4.ads (Expand_Quantified_Expression): New procedure
+	* exp_util.adb (Insert_Actions): Include Quantified_Expression.
+	* expander.adb: Call Expand_Qualified_Expression.
+	* par.adb: New procedure P_Quantified_Expression. Make
+	P_Loop_Parameter_Specification global for use in quantified expressions.
+	* par-ch3.adb (P_Subtype_Mark_Resync): Allow "some" as an identifier if
+	version < Ada2012.
+	* par-ch4.adb: New procedure P_Quantified_Expression.
+	* par-ch5.adb: P_Loop_Parameter_Specification is now global.
+	* scans.adb, scans.ads: Introduce token Some. For now leave as
+	unreserved.
+	* scn.adb (Scan_Reserved_Identifier): For earlier versions of Ada,
+	treat Some as a regular identifier.
+	* sem.adb: Call Analyze_Quantified_Expression.
+	* sem_ch4.adb, sem_ch4.ads: New procedure Analyze_Quantified_Expression.
+	* sem_ch5.adb, sem_ch5.ads: Analyze_Iteration_Scheme is public, for use
+	in quantified expressions.
+	* sem_res.adb: New procedure Resolve_Qualified_Expression.
+	* sinfo.adb, sinfo.ads: New node N_Quantified_Expression
+	* snames.ads-tmpl: New name Some.
+	* sprint.adb: Output quantified_expression.
+
+2010-10-19  Robert Dewar  <dewar@adacore.com>
+
+	* a-exexda.adb: Minor reformatting
+	Minor code reorganization.
+
 2010-10-19  Robert Dewar  <dewar@adacore.com>
 
 	* sem_eval.adb: Minor reformatting.

@@ -648,7 +648,7 @@ package body Ch4 is
             Error_Msg
               ("expect identifier in parameter association",
                 Sloc (Expr_Node));
-            Scan;  --   past arrow.
+            Scan;  --   past arrow
 
          elsif not Comma_Present then
             T_Right_Paren;
@@ -1214,6 +1214,13 @@ package body Ch4 is
          T_Right_Paren;
          return Expr_Node;
 
+      --  Quantified expression case
+
+      elsif Token = Tok_For then
+         Expr_Node := P_Quantified_Expression;
+         T_Right_Paren;
+         return Expr_Node;
+
       --  Note: the mechanism used here of rescanning the initial expression
       --  is distinctly unpleasant, but it saves a lot of fiddling in scanning
       --  out the discrete choice list.
@@ -1415,8 +1422,19 @@ package body Ch4 is
          --  that doesn't belong to us!
 
          if Token in Token_Class_Eterm then
-            Error_Msg_AP ("expecting expression or component association");
-            exit;
+
+            --  If Some becomes a keyword, the following is needed to make it
+            --  acceptable in older versions of Ada.
+
+            if Token = Tok_Some
+              and then Ada_Version < Ada_2012
+            then
+               Scan_Reserved_Identifier (False);
+            else
+               Error_Msg_AP
+                 ("expecting expression or component association");
+               exit;
+            end if;
          end if;
 
          --  Deal with misused box
@@ -1616,15 +1634,20 @@ package body Ch4 is
    end P_Expression;
 
    --  This function is identical to the normal P_Expression, except that it
-   --  also permits the appearence of a case of conditional expression without
-   --  the usual surrounding parentheses.
+   --  also permits the appearance of a case, conditional, or quantified
+   --  expression without the usual surrounding parentheses.
 
    function P_Expression_If_OK return Node_Id is
    begin
       if Token = Tok_Case then
          return P_Case_Expression;
+
       elsif Token = Tok_If then
          return P_Conditional_Expression;
+
+      elsif Token = Tok_For then
+         return P_Quantified_Expression;
+
       else
          return P_Expression;
       end if;
@@ -1720,14 +1743,20 @@ package body Ch4 is
       end if;
    end P_Expression_Or_Range_Attribute;
 
-   --  Version that allows a non-parenthesized case or conditional expression
+   --  Version that allows a non-parenthesized case, conditional, or quantified
+   --  expression
 
    function P_Expression_Or_Range_Attribute_If_OK return Node_Id is
    begin
       if Token = Tok_Case then
          return P_Case_Expression;
+
       elsif Token = Tok_If then
          return P_Conditional_Expression;
+
+      elsif Token = Tok_For then
+         return P_Quantified_Expression;
+
       else
          return P_Expression_Or_Range_Attribute;
       end if;
@@ -2285,7 +2314,7 @@ package body Ch4 is
    --    NUMERIC_LITERAL  | null
    --  | STRING_LITERAL   | AGGREGATE
    --  | NAME             | QUALIFIED_EXPRESSION
-   --  | ALLOCATOR        | (EXPRESSION)
+   --  | ALLOCATOR        | (EXPRESSION) | QUANTIFIED_EXPRESSION
 
    --  Error recovery: can raise Error_Resync
 
@@ -2436,6 +2465,25 @@ package body Ch4 is
                   return P_Identifier;
                end if;
 
+            --  For [all | some]  indicates a quantified expression
+
+            when Tok_For =>
+
+               if Token_Is_At_Start_Of_Line then
+                  Error_Msg_AP ("misplaced loop");
+                  return Error;
+
+               elsif Ada_Version >= Ada_2012 then
+                  Error_Msg_SC ("quantified expression must be parenthesized");
+                  return P_Quantified_Expression;
+
+               else
+
+               --  Otherwise treat as misused identifier
+
+                  return P_Identifier;
+               end if;
+
             --  Anything else is illegal as the first token of a primary, but
             --  we test for a reserved identifier so that it is treated nicely
 
@@ -2456,6 +2504,48 @@ package body Ch4 is
          end case;
       end loop;
    end P_Primary;
+
+   -------------------------------
+   -- 4.4 Quantified_Expression --
+   -------------------------------
+
+   --  QUANTIFIED_EXPRESSION ::=
+   --    for QUANTIFIER LOOP_PARAMETER_SPECIFICATION => PREDICATE |
+   --    for QUANTIFIER ITERATOR_SPECIFICATION => PREDICATE
+
+   function P_Quantified_Expression return Node_Id is
+      Node1 : Node_Id;
+
+   begin
+      Scan;  --  past FOR
+
+      Node1 := New_Node (N_Quantified_Expression, Prev_Token_Ptr);
+
+      if Token = Tok_All then
+         Set_All_Present (Node1);
+
+      --  We treat Some as a non-reserved keyword, so it appears to
+      --  the scanner as an identifier. If Some is made into a reserved
+      --  work, the check below is against Tok_Some.
+
+      elsif Token /= Tok_Identifier
+        or else Chars (Token_Node) /= Name_Some
+      then
+         Error_Msg_AP ("missing quantifier");
+         raise Error_Resync;
+      end if;
+
+      Scan;
+      Set_Loop_Parameter_Specification (Node1, P_Loop_Parameter_Specification);
+      if Token = Tok_Arrow then
+         Scan;
+         Set_Condition (Node1, P_Expression);
+         return Node1;
+      else
+         Error_Msg_AP ("missing arrow");
+         raise Error_Resync;
+      end if;
+   end P_Quantified_Expression;
 
    ---------------------------
    -- 4.5  Logical Operator --

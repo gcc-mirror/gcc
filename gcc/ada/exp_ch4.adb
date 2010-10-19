@@ -7393,6 +7393,91 @@ package body Exp_Ch4 is
       end if;
    end Expand_N_Qualified_Expression;
 
+   ------------------------------------
+   -- Expand_N_Quantified_Expression --
+   ------------------------------------
+
+   procedure Expand_N_Quantified_Expression (N : Node_Id) is
+      Loc      : constant Source_Ptr := Sloc (N);
+      Iterator : constant Node_Id := Loop_Parameter_Specification (N);
+      Cond     : constant Node_Id := Condition (N);
+
+      Actions : List_Id;
+      Decl    : Node_Id;
+      Test    : Node_Id;
+      Tnn     : Entity_Id;
+
+      --  We expand
+      --      for all X in range => Cond
+      --    into
+      --        R := True;
+      --        for all X in range loop
+      --           if not Cond then
+      --              R := False;
+      --              exit;
+      --           end if;
+      --        end loop;
+      --
+      --  Conversely, an existentially quantified expression becomes:
+      --
+      --        R := False;
+      --        for all X in range loop
+      --           if Cond then
+      --              R := True;
+      --              exit;
+      --           end if;
+      --        end loop;
+
+   begin
+      Actions := New_List;
+      Tnn := Make_Temporary (Loc, 'T');
+      Decl := Make_Object_Declaration (Loc,
+        Defining_Identifier => Tnn,
+        Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc));
+
+      Append_To (Actions, Decl);
+
+      if All_Present (N) then
+         Set_Expression (Decl, New_Occurrence_Of (Standard_True, Loc));
+
+         Test :=
+           Make_If_Statement (Loc,
+             Condition =>
+                Make_Op_Not (Loc, Relocate_Node (Cond)),
+             Then_Statements => New_List (
+               Make_Assignment_Statement (Loc,
+                 Name => New_Occurrence_Of (Tnn, Loc),
+                 Expression => New_Occurrence_Of (Standard_False, Loc)),
+               Make_Exit_Statement (Loc)));
+      else
+         Set_Expression (Decl, New_Occurrence_Of (Standard_False, Loc));
+
+         Test :=
+           Make_If_Statement (Loc,
+             Condition => Relocate_Node (Cond),
+             Then_Statements => New_List (
+               Make_Assignment_Statement (Loc,
+                 Name => New_Occurrence_Of (Tnn, Loc),
+                 Expression => New_Occurrence_Of (Standard_True, Loc)),
+               Make_Exit_Statement (Loc)));
+      end if;
+
+      Append_To (Actions,
+        Make_Loop_Statement (Loc,
+          Iteration_Scheme =>
+            Make_Iteration_Scheme (Loc,
+              Loop_Parameter_Specification => Iterator),
+              Statements => New_List (Test),
+              End_Label  => Empty));
+
+      Rewrite (N,
+        Make_Expression_With_Actions (Loc,
+          Expression => New_Occurrence_Of (Tnn, Loc),
+          Actions    => Actions));
+
+      Analyze_And_Resolve (N, Standard_Boolean);
+   end Expand_N_Quantified_Expression;
+
    ---------------------------------
    -- Expand_N_Selected_Component --
    ---------------------------------

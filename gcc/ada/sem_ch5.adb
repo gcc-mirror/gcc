@@ -70,12 +70,6 @@ package body Sem_Ch5 is
    --  messages. This variable is recursively saved on entry to processing the
    --  construct, and restored on exit.
 
-   -----------------------
-   -- Local Subprograms --
-   -----------------------
-
-   procedure Analyze_Iteration_Scheme (N : Node_Id);
-
    ------------------------
    -- Analyze_Assignment --
    ------------------------

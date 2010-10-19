@@ -574,8 +574,9 @@ package body Exception_Data is
       -------------------
 
       procedure Append_Number (Number : Integer) is
-         Val  : Integer := Number;
-         Size : Integer := 1;
+         Val  : Integer;
+         Size : Integer;
+
       begin
          if Number <= 0 then
             return;
@@ -583,6 +584,8 @@ package body Exception_Data is
 
          --  Compute the number of needed characters
 
+         Size := 1;
+         Val := Number;
          while Val > 0 loop
             Val := Val / 10;
             Size := Size + 1;
@@ -605,6 +608,8 @@ package body Exception_Data is
             end loop;
          end if;
       end Append_Number;
+
+   --  Start of processing for Set_Exception_C_Msg
 
    begin
       Exception_Propagation.Setup_Exception (Excep, Excep);

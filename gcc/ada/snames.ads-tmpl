@@ -985,6 +985,7 @@ package Snames is
    Name_Reverse                          : constant Name_Id := N + $;
    Name_Select                           : constant Name_Id := N + $;
    Name_Separate                         : constant Name_Id := N + $;
+   Name_Some                             : constant Name_Id := N + $;
    Name_Subtype                          : constant Name_Id := N + $;
    Name_Task                             : constant Name_Id := N + $;
    Name_Terminate                        : constant Name_Id := N + $;

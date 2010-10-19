@@ -472,9 +472,20 @@ package body Scn is
       Token_Name := Name_Find;
 
       if not Used_As_Identifier (Token) or else Force_Msg then
-         Error_Msg_Name_1 := Token_Name;
-         Error_Msg_SC ("reserved word* cannot be used as identifier!");
-         Used_As_Identifier (Token) := True;
+
+         --  If "some" is made into a reseverd work in Ada2012, the following
+         --  check will make it into a regular identifer in earlier versions
+         --  of the language.
+
+         if Token = Tok_Some
+           and then Ada_Version < Ada_2012
+         then
+            null;
+         else
+            Error_Msg_Name_1 := Token_Name;
+            Error_Msg_SC ("reserved word* cannot be used as identifier!");
+            Used_As_Identifier (Token) := True;
+         end if;
       end if;
 
       Token := Tok_Identifier;
