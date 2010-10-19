@@ -1,3 +1,14 @@
+2010-10-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/io.h: Remove definition of the BT enumerator.
+	* libgfortran.h: Replace GFC_DTYPE enumerator with BT.
+	* intrinsics/iso_c_generated_procs.c: Likewise
+	* intrinsics/date_and_time.c: Likewise.
+	* intrinsics/iso_c_binding.c: Likewise.
+	* io/list_read.c: Likewise.
+	* io/transfer.c: Likewise.
+	* io/write.c: Likewise.
+
 2010-10-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/20165

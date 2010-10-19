@@ -1319,28 +1319,28 @@ gfc_get_dtype (tree type)
   switch (TREE_CODE (etype))
     {
     case INTEGER_TYPE:
-      n = GFC_DTYPE_INTEGER;
+      n = BT_INTEGER;
       break;
 
     case BOOLEAN_TYPE:
-      n = GFC_DTYPE_LOGICAL;
+      n = BT_LOGICAL;
       break;
 
     case REAL_TYPE:
-      n = GFC_DTYPE_REAL;
+      n = BT_REAL;
       break;
 
     case COMPLEX_TYPE:
-      n = GFC_DTYPE_COMPLEX;
+      n = BT_COMPLEX;
       break;
 
     /* We will never have arrays of arrays.  */
     case RECORD_TYPE:
-      n = GFC_DTYPE_DERIVED;
+      n = BT_DERIVED;
       break;
 
     case ARRAY_TYPE:
-      n = GFC_DTYPE_CHARACTER;
+      n = BT_CHARACTER;
       break;
 
     default:

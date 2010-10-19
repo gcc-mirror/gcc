@@ -1572,33 +1572,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
     }
   else
     {
-      itype = GFC_DTYPE_UNKNOWN;
-
-      switch (ts->type)
-
-	{
-	case BT_INTEGER:
-	  itype = GFC_DTYPE_INTEGER;
-	  break;
-	case BT_LOGICAL:
-	  itype = GFC_DTYPE_LOGICAL;
-	  break;
-	case BT_REAL:
-	  itype = GFC_DTYPE_REAL;
-	  break;
-	case BT_COMPLEX:
-	  itype = GFC_DTYPE_COMPLEX;
-	break;
-	case BT_DERIVED:
-	  itype = GFC_DTYPE_DERIVED;
-	  break;
-	case BT_CHARACTER:
-	  itype = GFC_DTYPE_CHARACTER;
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-
+      itype = ts->type;
       dtype = IARG (itype << GFC_DTYPE_TYPE_SHIFT);
     }
 

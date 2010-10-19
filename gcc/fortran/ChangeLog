@@ -1,3 +1,12 @@
+2010-10-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.h: Remove definition of bt enumerator.
+	* libgfortran.h: Add bt enumerator type alighned with defintion.
+	Remove the dtype enumerator, no longer used.
+	previously given in libgfortran/io.h
+	* trans-types.c: Use new bt enumerator.
+	* trans-io.c: Likewise.
+
 2010-10-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* trans-io.c (gfc_build_io_library_fndecls):
@@ -19,6 +28,7 @@
 	the iocall with the original version, otherwise the version
 	with _WRITE.
 	(transfer_array_desc):  Likewise.
+
 2010-10-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45186

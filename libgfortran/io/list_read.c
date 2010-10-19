@@ -1668,7 +1668,7 @@ check_type (st_parameter_dt *dtp, bt type, int len)
 {
   char message[100];
 
-  if (dtp->u.p.saved_type != BT_NULL && dtp->u.p.saved_type != type)
+  if (dtp->u.p.saved_type != BT_UNKNOWN && dtp->u.p.saved_type != type)
     {
       sprintf (message, "Read type %s where %s was expected for item %d",
 		  type_name (dtp->u.p.saved_type), type_name (type),
@@ -1678,7 +1678,7 @@ check_type (st_parameter_dt *dtp, bt type, int len)
       return 1;
     }
 
-  if (dtp->u.p.saved_type == BT_NULL || dtp->u.p.saved_type == BT_CHARACTER)
+  if (dtp->u.p.saved_type == BT_UNKNOWN || dtp->u.p.saved_type == BT_CHARACTER)
     return 0;
 
   if (dtp->u.p.saved_length != len)
@@ -1771,7 +1771,7 @@ list_formatted_read_scalar (st_parameter_dt *dtp, volatile bt type, void *p,
 	    finish_separator (dtp);
         }
 
-      dtp->u.p.saved_type = BT_NULL;
+      dtp->u.p.saved_type = BT_UNKNOWN;
       dtp->u.p.repeat_count = 1;
     }
 
@@ -1802,7 +1802,7 @@ list_formatted_read_scalar (st_parameter_dt *dtp, volatile bt type, void *p,
       internal_error (&dtp->common, "Bad type for list read");
     }
 
-  if (dtp->u.p.saved_type != BT_CHARACTER && dtp->u.p.saved_type != BT_NULL)
+  if (dtp->u.p.saved_type != BT_CHARACTER && dtp->u.p.saved_type != BT_UNKNOWN)
     dtp->u.p.saved_length = size;
 
   if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
@@ -1853,8 +1853,11 @@ list_formatted_read_scalar (st_parameter_dt *dtp, volatile bt type, void *p,
 	}
       break;
 
-    case BT_NULL:
+    case BT_UNKNOWN:
       break;
+
+    default:
+      internal_error (&dtp->common, "Bad type for list read");
     }
 
   if (--dtp->u.p.repeat_count <= 0)
@@ -2362,20 +2365,20 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
   len = nl->len;
   switch (nl->type)
   {
-    case GFC_DTYPE_INTEGER:
-    case GFC_DTYPE_LOGICAL:
+    case BT_INTEGER:
+    case BT_LOGICAL:
       dlen = len;
       break;
 
-    case GFC_DTYPE_REAL:
+    case BT_REAL:
       dlen = size_from_real_kind (len);
       break;
 
-    case GFC_DTYPE_COMPLEX:
+    case BT_COMPLEX:
       dlen = size_from_complex_kind (len);
       break;
 
-    case GFC_DTYPE_CHARACTER:
+    case BT_CHARACTER:
       dlen = chigh ? (chigh - clow + 1) : nl->string_length;
       break;
 
@@ -2407,40 +2410,37 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	  if (dtp->u.p.input_complete)
 	    return SUCCESS;
 
-	  /* BT_NULL (equivalent to GFC_DTYPE_UNKNOWN) falls through
-	     for nulls and is detected at default: of switch block.  */
-
-	  dtp->u.p.saved_type = BT_NULL;
+	  dtp->u.p.saved_type = BT_UNKNOWN;
 	  free_saved (dtp);
 
           switch (nl->type)
 	  {
-	  case GFC_DTYPE_INTEGER:
+	  case BT_INTEGER:
 	      read_integer (dtp, len);
               break;
 
-	  case GFC_DTYPE_LOGICAL:
+	  case BT_LOGICAL:
 	      read_logical (dtp, len);
               break;
 
-	  case GFC_DTYPE_CHARACTER:
+	  case BT_CHARACTER:
 	      read_character (dtp, len);
               break;
 
-	  case GFC_DTYPE_REAL:
+	  case BT_REAL:
 	    /* Need to copy data back from the real location to the temp in order
 	       to handle nml reads into arrays.  */
 	    read_real (dtp, pdata, len);
 	    memcpy (dtp->u.p.value, pdata, dlen);
 	    break;
 
-	  case GFC_DTYPE_COMPLEX:
+	  case BT_COMPLEX:
 	    /* Same as for REAL, copy back to temp.  */
 	    read_complex (dtp, pdata, len, dlen);
 	    memcpy (dtp->u.p.value, pdata, dlen);
 	    break;
 
-	  case GFC_DTYPE_DERIVED:
+	  case BT_DERIVED:
 	    obj_name_len = strlen (nl->var_name) + 1;
 	    obj_name = get_mem (obj_name_len+1);
 	    memcpy (obj_name, nl->var_name, obj_name_len-1);
@@ -2500,14 +2500,11 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	  return SUCCESS;
 	}
 
-      if (dtp->u.p.saved_type == BT_NULL)
+      if (dtp->u.p.saved_type == BT_UNKNOWN)
 	{
 	  dtp->u.p.expanded_read = 0;
 	  goto incr_idx;
 	}
-
-      /* Note the switch from GFC_DTYPE_type to BT_type at this point.
-	 This comes about because the read functions return BT_types.  */
 
       switch (dtp->u.p.saved_type)
       {
@@ -2750,7 +2747,7 @@ get_name:
 
   if (c == '%')
     {
-      if (nl->type != GFC_DTYPE_DERIVED)
+      if (nl->type != BT_DERIVED)
 	{
 	  snprintf (nml_err_msg, nml_err_msg_size,
 		    "Attempt to get derived component for %s", nl->var_name);
@@ -2774,7 +2771,7 @@ get_name:
   clow = 1;
   chigh = 0;
 
-  if (c == '(' && nl->type == GFC_DTYPE_CHARACTER)
+  if (c == '(' && nl->type == BT_CHARACTER)
     {
       descriptor_dimension chd[1] = { {1, clow, nl->string_length} };
       array_loop_spec ind[1] = { {1, clow, nl->string_length, 1} };
@@ -2852,7 +2849,7 @@ get_name:
      namelist_info if we have parsed a qualified derived type
      component.  */
 
-  if (nl->type == GFC_DTYPE_DERIVED)
+  if (nl->type == BT_DERIVED)
     nml_touch_nodes (nl);
 
   if (first_nl)
