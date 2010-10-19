@@ -117,8 +117,8 @@ package body Exp_Intr is
    ---------------------------------
 
    procedure Expand_Binary_Operator_Call (N : Node_Id) is
-      T1  : constant Entity_Id := Underlying_Type (Left_Opnd  (N));
-      T2  : constant Entity_Id := Underlying_Type (Right_Opnd (N));
+      T1  : constant Entity_Id := Underlying_Type (Etype (Left_Opnd  (N)));
+      T2  : constant Entity_Id := Underlying_Type (Etype (Right_Opnd (N)));
       TR  : constant Entity_Id := Etype (N);
       T3  : Entity_Id;
       Res : Node_Id;
@@ -127,6 +127,14 @@ package body Exp_Intr is
       --  Maximum of operand sizes
 
    begin
+      --  Nothing to do if the operands have the same modular type.
+
+      if Base_Type (T1) = Base_Type (T2)
+        and then Is_Modular_Integer_Type (T1)
+      then
+         return;
+      end if;
+
       --  Use Unsigned_32 for sizes of 32 or below, else Unsigned_64
 
       if Siz > 32 then
@@ -139,8 +147,17 @@ package body Exp_Intr is
       --  subsequent reanalysis.
 
       Res := New_Copy (N);
-      Set_Etype (Res, Empty);
-      Set_Entity (Res, Empty);
+      Set_Etype (Res, T3);
+      case Nkind (N) is
+         when N_Op_And =>
+            Set_Entity (Res, Standard_Op_And);
+         when N_Op_Or =>
+            Set_Entity (Res, Standard_Op_Or);
+         when N_Op_Xor =>
+            Set_Entity (Res, Standard_Op_Xor);
+         when others =>
+            raise Program_Error;
+      end case;
 
       --  Convert operands to large enough intermediate type
 

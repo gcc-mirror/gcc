@@ -422,6 +422,12 @@ package body Switch.C is
                        ("-gnateD" & Switch_Chars (Ptr .. Max));
                      Ptr := Max + 1;
 
+                  --  -gnateE (extra exception information)
+
+                  when 'E' =>
+                     Exception_Extra_Info := True;
+                     Ptr := Ptr + 1;
+
                   --  -gnatef (full source path for brief error messages)
 
                   when 'f' =>

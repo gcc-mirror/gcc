@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -93,17 +93,18 @@ package body Ada.Exceptions is
       ---------------------------------
 
       procedure Set_Exception_C_Msg
-        (Id   : Exception_Id;
-         Msg1 : System.Address;
-         Line : Integer        := 0;
-         Msg2 : System.Address := System.Null_Address);
+        (Id     : Exception_Id;
+         Msg1   : System.Address;
+         Line   : Integer        := 0;
+         Column : Integer        := 0;
+         Msg2   : System.Address := System.Null_Address);
       --  This routine is called to setup the exception referenced by the
       --  Current_Excep field in the TSD to contain the indicated Id value
       --  and message. Msg1 is a null terminated string which is generated
       --  as the exception message. If line is non-zero, then a colon and
       --  the decimal representation of this integer is appended to the
-      --  message. When Msg2 is non-null, a space and this additional null
-      --  terminated string is added to the message.
+      --  message. Ditto for Column. When Msg2 is non-null, a space and this
+      --  additional null terminated string is added to the message.
 
       procedure Set_Exception_Msg
         (Id      : Exception_Id;
@@ -958,7 +959,7 @@ package body Ada.Exceptions is
       M : System.Address := System.Null_Address)
    is
    begin
-      Exception_Data.Set_Exception_C_Msg (E, F, L, M);
+      Exception_Data.Set_Exception_C_Msg (E, F, L, Msg2 => M);
       Abort_Defer.all;
       Raise_Current_Excep (E);
    end Raise_With_Location_And_Msg;

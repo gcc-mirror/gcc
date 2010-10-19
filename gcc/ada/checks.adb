@@ -5244,7 +5244,7 @@ package body Checks is
    ----------------------------------
 
    procedure Install_Null_Excluding_Check (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (Parent (N));
       Typ : constant Entity_Id  := Etype (N);
 
       function Safe_To_Capture_In_Parameter_Value return Boolean;

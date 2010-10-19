@@ -454,10 +454,16 @@ package Opt is
    --  It is used to set Warn_On_Exception_Propagation True if the restriction
    --  No_Exception_Propagation is set.
 
+   Exception_Extra_Info : Boolean := False;
+   --  GNAT
+   --  True when switch -gnateE is used. When True, generate extra information
+   --  associated with exception messages (in particular range and index
+   --  checks).
+
    Exception_Locations_Suppressed : Boolean := False;
    --  GNAT
-   --  This flag is set True if a Suppress_Exception_Locations configuration
-   --  pragma is currently active.
+   --  Set to True if a Suppress_Exception_Locations configuration pragma is
+   --  currently active.
 
    type Exception_Mechanism_Type is
    --  Determines the handling of exceptions. See Exp_Ch11 for details

@@ -79,6 +79,9 @@ tree gnat_std_decls[(int) ADT_LAST];
 /* Functions to call for each of the possible raise reasons.  */
 tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
 
+/* Functions to call with extra info for each of the possible raise reasons.  */
+tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
+
 /* Forward declarations for handlers of attributes.  */
 static tree handle_const_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);

@@ -37,6 +37,7 @@ with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
 with Exp_Disp; use Exp_Disp;
 with Exp_Fixd; use Exp_Fixd;
+with Exp_Intr; use Exp_Intr;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
@@ -5187,6 +5188,10 @@ package body Exp_Ch4 is
             Set_Etype (N, Standard_Boolean);
             Adjust_Result_Type (N, Typ);
          end if;
+
+      elsif Is_Intrinsic_Subprogram (Entity (N)) then
+         Expand_Intrinsic_Call (N, Entity (N));
+
       end if;
    end Expand_N_Op_And;
 
@@ -7148,6 +7153,10 @@ package body Exp_Ch4 is
             Set_Etype (N, Standard_Boolean);
             Adjust_Result_Type (N, Typ);
          end if;
+
+      elsif Is_Intrinsic_Subprogram (Entity (N)) then
+         Expand_Intrinsic_Call (N, Entity (N));
+
       end if;
    end Expand_N_Op_Or;
 
@@ -7343,6 +7352,10 @@ package body Exp_Ch4 is
          Adjust_Condition (Right_Opnd (N));
          Set_Etype (N, Standard_Boolean);
          Adjust_Result_Type (N, Typ);
+
+      elsif Is_Intrinsic_Subprogram (Entity (N)) then
+         Expand_Intrinsic_Call (N, Entity (N));
+
       end if;
    end Expand_N_Op_Xor;
 

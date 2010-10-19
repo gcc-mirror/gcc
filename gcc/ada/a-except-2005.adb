@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,6 +94,9 @@ package body Ada.Exceptions is
    --  Store up to Max_Tracebacks in Excep, corresponding to the current
    --  call chain.
 
+   function Image (Index : Integer) return String;
+   --  Return string image corresponding to Index
+
    procedure To_Stderr (S : String);
    pragma Export (Ada, To_Stderr, "__gnat_to_stderr");
    --  Little routine to output string to stderr that is also used
@@ -112,17 +115,18 @@ package body Ada.Exceptions is
       ---------------------------------
 
       procedure Set_Exception_C_Msg
-        (Id   : Exception_Id;
-         Msg1 : System.Address;
-         Line : Integer        := 0;
-         Msg2 : System.Address := System.Null_Address);
+        (Id     : Exception_Id;
+         Msg1   : System.Address;
+         Line   : Integer        := 0;
+         Column : Integer        := 0;
+         Msg2   : System.Address := System.Null_Address);
       --  This routine is called to setup the exception referenced by the
       --  Current_Excep field in the TSD to contain the indicated Id value
       --  and message. Msg1 is a null terminated string which is generated
       --  as the exception message. If line is non-zero, then a colon and
       --  the decimal representation of this integer is appended to the
-      --  message. When Msg2 is non-null, a space and this additional null
-      --  terminated string is added to the message.
+      --  message. Ditto for Column. When Msg2 is non-null, a space and this
+      --  additional null terminated string is added to the message.
 
       procedure Set_Exception_Msg
         (Id      : Exception_Id;
@@ -307,12 +311,13 @@ package body Ada.Exceptions is
      (E : Exception_Id;
       F : System.Address;
       L : Integer;
+      C : Integer := 0;
       M : System.Address := System.Null_Address);
    pragma No_Return (Raise_With_Location_And_Msg);
    --  Raise an exception with given exception id value. A filename and line
    --  number is associated with the raise and is stored in the exception
-   --  occurrence and in addition a string message M is appended to
-   --  this (if M is not null).
+   --  occurrence and in addition a column and a string message M may be
+   --  appended to this (if not null/0).
 
    procedure Raise_Constraint_Error
      (File : System.Address;
@@ -323,13 +328,14 @@ package body Ada.Exceptions is
    --  Raise constraint error with file:line information
 
    procedure Raise_Constraint_Error_Msg
-     (File : System.Address;
-      Line : Integer;
-      Msg  : System.Address);
+     (File   : System.Address;
+      Line   : Integer;
+      Column : Integer;
+      Msg    : System.Address);
    pragma No_Return (Raise_Constraint_Error_Msg);
    pragma Export
      (C, Raise_Constraint_Error_Msg, "__gnat_raise_constraint_error_msg");
-   --  Raise constraint error with file:line + msg information
+   --  Raise constraint error with file:line:col + msg information
 
    procedure Raise_Program_Error
      (File : System.Address;
@@ -459,6 +465,13 @@ package body Ada.Exceptions is
    procedure Rcheck_32 (File : System.Address; Line : Integer);
    procedure Rcheck_33 (File : System.Address; Line : Integer);
 
+   procedure Rcheck_00_Ext
+     (File : System.Address; Line, Column : Integer);
+   procedure Rcheck_05_Ext
+     (File : System.Address; Line, Column, Index, First, Last : Integer);
+   procedure Rcheck_12_Ext
+     (File : System.Address; Line, Column, Index, First, Last : Integer);
+
    pragma Export (C, Rcheck_00, "__gnat_rcheck_00");
    pragma Export (C, Rcheck_01, "__gnat_rcheck_01");
    pragma Export (C, Rcheck_02, "__gnat_rcheck_02");
@@ -493,6 +506,10 @@ package body Ada.Exceptions is
    pragma Export (C, Rcheck_31, "__gnat_rcheck_31");
    pragma Export (C, Rcheck_32, "__gnat_rcheck_32");
    pragma Export (C, Rcheck_33, "__gnat_rcheck_33");
+
+   pragma Export (C, Rcheck_00_Ext, "__gnat_rcheck_00_ext");
+   pragma Export (C, Rcheck_05_Ext, "__gnat_rcheck_05_ext");
+   pragma Export (C, Rcheck_12_Ext, "__gnat_rcheck_12_ext");
 
    --  None of these procedures ever returns (they raise an exception!). By
    --  using pragma No_Return, we ensure that any junk code after the call,
@@ -531,6 +548,10 @@ package body Ada.Exceptions is
    pragma No_Return (Rcheck_30);
    pragma No_Return (Rcheck_32);
    pragma No_Return (Rcheck_33);
+
+   pragma No_Return (Rcheck_00_Ext);
+   pragma No_Return (Rcheck_05_Ext);
+   pragma No_Return (Rcheck_12_Ext);
 
    ---------------------------------------------
    -- Reason Strings for Run-Time Check Calls --
@@ -774,13 +795,9 @@ package body Ada.Exceptions is
    -- Raise_Constraint_Error --
    ----------------------------
 
-   procedure Raise_Constraint_Error
-     (File : System.Address;
-      Line : Integer)
-   is
+   procedure Raise_Constraint_Error (File : System.Address; Line : Integer) is
    begin
-      Raise_With_Location_And_Msg
-        (Constraint_Error_Def'Access, File, Line);
+      Raise_With_Location_And_Msg (Constraint_Error_Def'Access, File, Line);
    end Raise_Constraint_Error;
 
    --------------------------------
@@ -788,13 +805,14 @@ package body Ada.Exceptions is
    --------------------------------
 
    procedure Raise_Constraint_Error_Msg
-     (File : System.Address;
-      Line : Integer;
-      Msg  : System.Address)
+     (File   : System.Address;
+      Line   : Integer;
+      Column : Integer;
+      Msg    : System.Address)
    is
    begin
       Raise_With_Location_And_Msg
-        (Constraint_Error_Def'Access, File, Line, Msg);
+        (Constraint_Error_Def'Access, File, Line, Column, Msg);
    end Raise_Constraint_Error_Msg;
 
    -------------------------
@@ -935,8 +953,7 @@ package body Ada.Exceptions is
       Line : Integer)
    is
    begin
-      Raise_With_Location_And_Msg
-        (Program_Error_Def'Access, File, Line);
+      Raise_With_Location_And_Msg (Program_Error_Def'Access, File, Line);
    end Raise_Program_Error;
 
    -----------------------------
@@ -950,7 +967,7 @@ package body Ada.Exceptions is
    is
    begin
       Raise_With_Location_And_Msg
-        (Program_Error_Def'Access, File, Line, Msg);
+        (Program_Error_Def'Access, File, Line, M => Msg);
    end Raise_Program_Error_Msg;
 
    -------------------------
@@ -962,8 +979,7 @@ package body Ada.Exceptions is
       Line : Integer)
    is
    begin
-      Raise_With_Location_And_Msg
-        (Storage_Error_Def'Access, File, Line);
+      Raise_With_Location_And_Msg (Storage_Error_Def'Access, File, Line);
    end Raise_Storage_Error;
 
    -----------------------------
@@ -977,7 +993,7 @@ package body Ada.Exceptions is
    is
    begin
       Raise_With_Location_And_Msg
-        (Storage_Error_Def'Access, File, Line, Msg);
+        (Storage_Error_Def'Access, File, Line, M => Msg);
    end Raise_Storage_Error_Msg;
 
    ---------------------------------
@@ -988,10 +1004,11 @@ package body Ada.Exceptions is
      (E : Exception_Id;
       F : System.Address;
       L : Integer;
+      C : Integer := 0;
       M : System.Address := System.Null_Address)
    is
    begin
-      Exception_Data.Set_Exception_C_Msg (E, F, L, M);
+      Exception_Data.Set_Exception_C_Msg (E, F, L, C, M);
       Abort_Defer.all;
       Raise_Current_Excep (E);
    end Raise_With_Location_And_Msg;
@@ -1015,78 +1032,92 @@ package body Ada.Exceptions is
       Raise_Current_Excep (E);
    end Raise_With_Msg;
 
+   -----------
+   -- Image --
+   -----------
+
+   function Image (Index : Integer) return String is
+      Result : constant String := Integer'Image (Index);
+   begin
+      if Result (1) = ' ' then
+         return Result (2 .. Result'Last);
+      else
+         return Result;
+      end if;
+   end Image;
+
    --------------------------------------
    -- Calls to Run-Time Check Routines --
    --------------------------------------
 
    procedure Rcheck_00 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, Rmsg_00'Address);
+      Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_00'Address);
    end Rcheck_00;
 
    procedure Rcheck_01 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, Rmsg_01'Address);
+      Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_01'Address);
    end Rcheck_01;
 
    procedure Rcheck_02 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, Rmsg_02'Address);
+      Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_02'Address);
    end Rcheck_02;
 
    procedure Rcheck_03 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, Rmsg_03'Address);
+      Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_03'Address);
    end Rcheck_03;
 
    procedure Rcheck_04 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, Rmsg_04'Address);
+      Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_04'Address);
    end Rcheck_04;
 
    procedure Rcheck_05 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, Rmsg_05'Address);
+      Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_05'Address);
    end Rcheck_05;
 
    procedure Rcheck_06 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, Rmsg_06'Address);
+      Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_06'Address);
    end Rcheck_06;
 
    procedure Rcheck_07 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, Rmsg_07'Address);
+      Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_07'Address);
    end Rcheck_07;
 
    procedure Rcheck_08 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, Rmsg_08'Address);
+      Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_08'Address);
    end Rcheck_08;
 
    procedure Rcheck_09 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, Rmsg_09'Address);
+      Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_09'Address);
    end Rcheck_09;
 
    procedure Rcheck_10 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, Rmsg_10'Address);
+      Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_10'Address);
    end Rcheck_10;
 
    procedure Rcheck_11 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, Rmsg_11'Address);
+      Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_11'Address);
    end Rcheck_11;
 
    procedure Rcheck_12 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, Rmsg_12'Address);
+      Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_12'Address);
    end Rcheck_12;
 
    procedure Rcheck_13 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, Rmsg_13'Address);
+      Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_13'Address);
    end Rcheck_13;
 
    procedure Rcheck_14 (File : System.Address; Line : Integer) is
@@ -1188,6 +1219,35 @@ package body Ada.Exceptions is
    begin
       Raise_Storage_Error_Msg (File, Line, Rmsg_33'Address);
    end Rcheck_33;
+
+   procedure Rcheck_00_Ext (File : System.Address; Line, Column : Integer) is
+   begin
+      Raise_Constraint_Error_Msg (File, Line, Column, Rmsg_00'Address);
+   end Rcheck_00_Ext;
+
+   procedure Rcheck_05_Ext
+     (File : System.Address; Line, Column, Index, First, Last : Integer)
+   is
+      Msg : constant String :=
+              Rmsg_05 (Rmsg_05'First .. Rmsg_05'Last - 1) & ASCII.LF &
+              "index " & Image (Index) & " not in " & Image (First) &
+              ".." & Image (Last) & ASCII.NUL;
+
+   begin
+      Raise_Constraint_Error_Msg (File, Line, Column, Msg'Address);
+   end Rcheck_05_Ext;
+
+   procedure Rcheck_12_Ext
+     (File : System.Address; Line, Column, Index, First, Last : Integer)
+   is
+      Msg : constant String :=
+              Rmsg_12 (Rmsg_12'First .. Rmsg_12'Last - 1) & ASCII.LF &
+              "value " & Image (Index) & " not in " & Image (First) &
+              ".." & Image (Last) & ASCII.NUL;
+
+   begin
+      Raise_Constraint_Error_Msg (File, Line, Column, Msg'Address);
+   end Rcheck_12_Ext;
 
    -------------
    -- Reraise --
