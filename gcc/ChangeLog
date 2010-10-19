@@ -1,5 +1,10 @@
 2010-10-18  Richard Henderson  <rth@redhat.com>
 
+	 * simplify-rtx.c (simplify_ternary_operation) [FMA]: Simplify
+	(fma (neg a) (neg b) c) and (fma a (neg b) c).
+
+2010-10-18  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.c (IX86_BUILTIN_VFMSUBSS, IX86_BUILTIN_VFMSUBSD,
 	IX86_BUILTIN_VFMSUBPS, IX86_BUILTIN_VFMSUBPD,
 	IX86_BUILTIN_VFMSUBADDPS, IX86_BUILTIN_VFMSUBADDPD,
