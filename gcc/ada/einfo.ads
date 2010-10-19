@@ -769,7 +769,7 @@ package Einfo is
 --       Present in floating point types and subtypes and decimal types and
 --       subtypes. Contains the Digits value specified in the declaration.
 
---    Direct_Primitive_Operations (Elist15)
+--    Direct_Primitive_Operations (Elist10)
 --       Present in tagged types and subtypes (including synchronized types),
 --       in tagged private types and in tagged incomplete types. Element list
 --       of entities for primitive operations of the tagged type. Not present
@@ -3308,12 +3308,6 @@ package Einfo is
 --       we have a separate warning for variables that are only assigned and
 --       never read, and out parameters are a special case.
 
---    Referenced_Object (Node10)
---       Present in all type entities. Set non-Empty only for type entities
---       constructed for unconstrained objects, or objects that depend on
---       discriminants. Points to the expression from which the actual
---       subtype of the object can be evaluated.
-
 --    Register_Exception_Call (Node20)
 --       Present in exception entities. When an exception is declared,
 --       a call is expanded to Register_Exception. This field points to
@@ -4697,7 +4691,6 @@ package Einfo is
 
    --    Associated_Node_For_Itype           (Node8)
    --    Class_Wide_Type                     (Node9)
-   --    Referenced_Object                   (Node10)
    --    Full_View                           (Node11)
    --    Esize                               (Uint12)
    --    RM_Size                             (Uint13)
@@ -4854,6 +4847,7 @@ package Einfo is
 
    --  E_Class_Wide_Type
    --  E_Class_Wide_Subtype
+   --    Direct_Primitive_Operations         (Elist10)
    --    Cloned_Subtype                      (Node16)   (subtype case only)
    --    First_Entity                        (Node17)
    --    Equivalent_Type                     (Node18)   (always Empty for type)
@@ -5126,6 +5120,7 @@ package Einfo is
 
    --  E_Incomplete_Type
    --  E_Incomplete_Subtype
+   --    Direct_Primitive_Operations         (Elist10)
    --    Non_Limited_View                    (Node17)
    --    Private_Dependents                  (Elist18)
    --    Discriminant_Constraint             (Elist21)
@@ -5280,7 +5275,7 @@ package Einfo is
 
    --  E_Private_Type
    --  E_Private_Subtype
-   --    Direct_Primitive_Operations         (Elist15)
+   --    Direct_Primitive_Operations         (Elist10)
    --    First_Entity                        (Node17)
    --    Private_Dependents                  (Elist18)
    --    Underlying_Full_View                (Node19)
@@ -5369,6 +5364,7 @@ package Einfo is
 
    --  E_Protected_Type
    --  E_Protected_Subtype
+   --    Direct_Primitive_Operations         (Elist10)
    --    Entry_Bodies_Array                  (Node15)
    --    First_Private_Entity                (Node16)
    --    First_Entity                        (Node17)
@@ -5387,7 +5383,7 @@ package Einfo is
 
    --  E_Record_Type
    --  E_Record_Subtype
-   --    Direct_Primitive_Operations         (Elist15)
+   --    Direct_Primitive_Operations         (Elist10)
    --    Access_Disp_Table                   (Elist16)  (base type only)
    --    Dispatch_Table_Wrappers             (Elist26)  (base type only)
    --    Cloned_Subtype                      (Node16)   (subtype case only)
@@ -5420,7 +5416,7 @@ package Einfo is
 
    --  E_Record_Type_With_Private
    --  E_Record_Subtype_With_Private
-   --    Direct_Primitive_Operations         (Elist15)
+   --    Direct_Primitive_Operations         (Elist10)
    --    Access_Disp_Table                   (Elist16)  (base type only)
    --    Dispatch_Table_Wrappers             (Elist26)  (base type only)
    --    First_Entity                        (Node17)
@@ -5494,6 +5490,7 @@ package Einfo is
 
    --  E_Task_Type
    --  E_Task_Subtype
+   --    Direct_Primitive_Operations         (Elist10)
    --    Storage_Size_Variable               (Node15)   (base type only)
    --    First_Private_Entity                (Node16)
    --    First_Entity                        (Node17)
@@ -6104,7 +6101,6 @@ package Einfo is
    function Referenced                          (Id : E) return B;
    function Referenced_As_LHS                   (Id : E) return B;
    function Referenced_As_Out_Parameter         (Id : E) return B;
-   function Referenced_Object                   (Id : E) return N;
    function Register_Exception_Call             (Id : E) return N;
    function Related_Array_Object                (Id : E) return E;
    function Related_Expression                  (Id : E) return N;
@@ -6287,7 +6283,7 @@ package Einfo is
    --  predicate is true only if the value is set (Known) and is set to a
    --  compile time known value. Note that in the case of Alignment and
    --  Normalized_First_Bit, dynamic values are not possible, so we do not
-   --  need a separate Known_Static calls in these cases. The not set (unknown
+   --  need a separate Known_Static calls in these cases. The not set (unknown)
    --  values are as follows:
 
    --    Alignment               Uint_0 or No_Uint
@@ -6675,7 +6671,6 @@ package Einfo is
    procedure Set_Referenced                      (Id : E; V : B := True);
    procedure Set_Referenced_As_LHS               (Id : E; V : B := True);
    procedure Set_Referenced_As_Out_Parameter     (Id : E; V : B := True);
-   procedure Set_Referenced_Object               (Id : E; V : N);
    procedure Set_Register_Exception_Call         (Id : E; V : N);
    procedure Set_Related_Array_Object            (Id : E; V : E);
    procedure Set_Related_Expression              (Id : E; V : N);
@@ -7393,7 +7388,6 @@ package Einfo is
    pragma Inline (Referenced);
    pragma Inline (Referenced_As_LHS);
    pragma Inline (Referenced_As_Out_Parameter);
-   pragma Inline (Referenced_Object);
    pragma Inline (Register_Exception_Call);
    pragma Inline (Related_Array_Object);
    pragma Inline (Related_Expression);
@@ -7784,7 +7778,6 @@ package Einfo is
    pragma Inline (Set_Referenced);
    pragma Inline (Set_Referenced_As_LHS);
    pragma Inline (Set_Referenced_As_Out_Parameter);
-   pragma Inline (Set_Referenced_Object);
    pragma Inline (Set_Register_Exception_Call);
    pragma Inline (Set_Related_Array_Object);
    pragma Inline (Set_Related_Expression);

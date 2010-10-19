@@ -85,10 +85,10 @@ package body Einfo is
    --    Current_Value                   Node9
    --    Renaming_Map                    Uint9
 
+   --    Direct_Primitive_Operations     Elist10
    --    Discriminal_Link                Node10
    --    Handler_Records                 List10
    --    Normalized_Position_Max         Uint10
-   --    Referenced_Object               Node10
 
    --    Component_Bit_Offset            Uint11
    --    Full_View                       Node11
@@ -121,7 +121,6 @@ package body Einfo is
    --    Entry_Parameters_Type           Node15
    --    Extra_Formal                    Node15
    --    Lit_Indexes                     Node15
-   --    Direct_Primitive_Operations     Elist15
    --    Related_Instance                Node15
    --    Scale_Value                     Uint15
    --    Storage_Size_Variable           Node15
@@ -819,9 +818,8 @@ package body Einfo is
 
    function Direct_Primitive_Operations (Id : E) return L is
    begin
-      pragma Assert (Is_Tagged_Type (Id)
-        and then not Is_Concurrent_Type (Id));
-      return Elist15 (Id);
+      pragma Assert (Is_Tagged_Type (Id));
+      return Elist10 (Id);
    end Direct_Primitive_Operations;
 
    function Directly_Designated_Type (Id : E) return E is
@@ -2428,12 +2426,6 @@ package body Einfo is
    begin
       return Flag227 (Id);
    end Referenced_As_Out_Parameter;
-
-   function Referenced_Object (Id : E) return N is
-   begin
-      pragma Assert (Is_Type (Id));
-      return Node10 (Id);
-   end Referenced_Object;
 
    function Register_Exception_Call (Id : E) return N is
    begin
@@ -4832,15 +4824,8 @@ package body Einfo is
 
    procedure Set_Direct_Primitive_Operations (Id : E; V : L) is
    begin
-      pragma Assert
-        (Is_Tagged_Type (Id)
-           and then
-             (Is_Record_Type (Id)
-                or else
-              Is_Incomplete_Type (Id)
-                or else
-              Ekind_In (Id, E_Private_Type, E_Private_Subtype)));
-      Set_Elist15 (Id, V);
+      pragma Assert (Is_Tagged_Type (Id));
+      Set_Elist10 (Id, V);
    end Set_Direct_Primitive_Operations;
 
    procedure Set_Prival (Id : E; V : E) is
@@ -4907,12 +4892,6 @@ package body Einfo is
    begin
       Set_Flag227 (Id, V);
    end Set_Referenced_As_Out_Parameter;
-
-   procedure Set_Referenced_Object (Id : E; V : N) is
-   begin
-      pragma Assert (Is_Type (Id));
-      Set_Node10 (Id, V);
-   end Set_Referenced_Object;
 
    procedure Set_Register_Exception_Call (Id : E; V : N) is
    begin
@@ -7432,8 +7411,13 @@ package body Einfo is
    procedure Write_Field10_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Type_Kind                                    =>
-            Write_Str ("Referenced_Object");
+         when Class_Wide_Kind                              |
+              Incomplete_Kind                              |
+              E_Record_Type                                |
+              E_Record_Subtype                             |
+              Private_Kind                                 |
+              Concurrent_Kind                              =>
+            Write_Str ("Direct_Primitive_Operations");
 
          when E_In_Parameter                               |
               E_Constant                                   =>
@@ -7615,13 +7599,6 @@ package body Einfo is
          when Access_Kind                                  |
               Task_Kind                                    =>
             Write_Str ("Storage_Size_Variable");
-
-         when Class_Wide_Kind                              |
-              Incomplete_Kind                              |
-              E_Record_Type                                |
-              E_Record_Subtype                             |
-              Private_Kind                                 =>
-            Write_Str ("Direct_Primitive_Operations");
 
          when E_Component                                  =>
             Write_Str ("DT_Entry_Count");

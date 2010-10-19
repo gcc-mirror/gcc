@@ -3351,7 +3351,7 @@ package body Exp_Ch4 is
 
          --    number-of-elements * component_type'Max_Size_In_Storage_Elements
 
-         --  which avoids this problem. All this is a big bogus, but it does
+         --  which avoids this problem. All this is a bit bogus, but it does
          --  mean we catch common cases of trying to allocate arrays that
          --  are too large, and which in the absence of a check results in
          --  undetected chaos ???
@@ -4348,8 +4348,9 @@ package body Exp_Ch4 is
             R    : constant Node_Id := Relocate_Node (Alt);
 
          begin
-            if Is_Entity_Name (Alt)
-              and then Is_Type (Entity (Alt))
+            if (Is_Entity_Name (Alt)
+                  and then Is_Type (Entity (Alt)))
+              or else Nkind (Alt) = N_Range
             then
                Cond :=
                  Make_In (Sloc (Alt),

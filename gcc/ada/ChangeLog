@@ -1,3 +1,42 @@
+2010-10-19  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c: On Alpha/VMS, only adjust PC for HPARITH.
+
+2010-10-19  Tristan Gingold  <gingold@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Handle Attribute_Ref, which can be
+	evaluated on VMS.
+
+2010-10-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Check_Generic_Child_Unit): Handle properly the case of
+	an instantiation of a renaming of the implicit generic child that
+	appears within an instance of its parent.
+
+2010-10-19  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch9.adb: Minor reformatting.
+	* einfo.adb, einfo.ads, atree.adb, atree.ads, exp_dist.adb, atree.h:
+	(Referenced_Object): Remove unused entity attribute.
+	(Direct_Primitive_Operations): Move to Elist10, this is set for all
+	tagged types, including synchronous ones, so can't use field15 which is
+	used as Storage_Size_Variable for task types and Entry_Bodies_Array for
+	protected types.
+	(Add_RACW_Primitive_Declarations_And_Bodies): Remove bogus guard
+	against Concurrent_Types (we must handle the case of a RACW designating
+	a class-wide private synchronous type).
+	Use Direct_Primitive_Operations, not Primitive_Operations, since we
+	really want the former.
+
+2010-10-19  Bob Duff  <duff@adacore.com>
+
+	* sem_ch8.adb (Pop_Scope): Change "return;" to "raise Program_Error;".
+
+2010-10-19  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_Set_Membership.Make_Cond): Add missing support
+	for N_Range nodes.
+
 2010-10-19  Thomas Quinot  <quinot@adacore.com>
 
 	* einfo.ads, atree.ads: Minor comment fixes.

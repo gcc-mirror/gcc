@@ -6683,7 +6683,7 @@ package body Sem_Ch8 is
            or else
          SST.Actions_To_Be_Wrapped_After  /= No_List
       then
-         return;
+         raise Program_Error;
       end if;
 
       --  Free last subprogram name if allocated, and pop scope
