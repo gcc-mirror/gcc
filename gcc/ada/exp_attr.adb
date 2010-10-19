@@ -5310,8 +5310,8 @@ package body Exp_Attr is
       --  that the result is in range.
 
       when Attribute_Aft                          |
-           Attribute_Max_Size_In_Storage_Elements
-      =>
+           Attribute_Max_Alignment_For_Allocation |
+           Attribute_Max_Size_In_Storage_Elements =>
          Apply_Universal_Integer_Attribute_Checks (N);
 
       --  The following attributes should not appear at this stage, since they

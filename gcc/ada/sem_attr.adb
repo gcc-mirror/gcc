@@ -3420,10 +3420,12 @@ package body Sem_Attr is
          Set_Etype (N, P_Base_Type);
 
       ----------------------------------
+      -- Max_Alignment_For_Allocation --
       -- Max_Size_In_Storage_Elements --
       ----------------------------------
 
-      when Attribute_Max_Size_In_Storage_Elements =>
+      when Attribute_Max_Alignment_For_Allocation |
+        Attribute_Max_Size_In_Storage_Elements =>
          Check_E0;
          Check_Type;
          Check_Not_Incomplete_Type;
@@ -5589,7 +5591,9 @@ package body Sem_Attr is
                or else
              Id = Attribute_Type_Class
                or else
-             Id = Attribute_Unconstrained_Array)
+             Id = Attribute_Unconstrained_Array
+               or else
+             Id = Attribute_Max_Alignment_For_Allocation)
         and then not Is_Generic_Type (P_Entity)
       then
          P_Type := P_Entity;
@@ -5714,7 +5718,7 @@ package body Sem_Attr is
       then
          Static := False;
 
-      else
+      elsif Id /= Attribute_Max_Alignment_For_Allocation then
          if not Is_Constrained (P_Type)
            or else (Id /= Attribute_First and then
                     Id /= Attribute_Last  and then
@@ -6622,6 +6626,29 @@ package body Sem_Attr is
             Fold_Uint (N, UI_Max (Expr_Value (E1), Expr_Value (E2)), Static);
          end if;
       end Max;
+
+      ----------------------------------
+      -- Max_Alignment_For_Allocation --
+      ----------------------------------
+
+      --  Max_Alignment_For_Allocation is usually the Alignment. However,
+      --  arrays are allocated with dope, so we need to take into account both
+      --  the alignment of the array, which comes from the component alignment,
+      --  and the alignment of the dope. Also, if the alignment is unknown, we
+      --  use the max (it's OK to be pessimistic).
+
+      when Attribute_Max_Alignment_For_Allocation =>
+         declare
+            A : Uint := UI_From_Int (Ttypes.Maximum_Alignment);
+         begin
+            if Known_Alignment (P_Type) and then
+              (not Is_Array_Type (P_Type) or else Alignment (P_Type) > A)
+            then
+               A := Alignment (P_Type);
+            end if;
+
+            Fold_Uint (N, A, Static);
+         end;
 
       ----------------------------------
       -- Max_Size_In_Storage_Elements --
@@ -7641,7 +7668,7 @@ package body Sem_Attr is
          end if;
       end Width;
 
-      --  The following attributes denote function that cannot be folded
+      --  The following attributes denote functions that cannot be folded
 
       when Attribute_From_Any |
            Attribute_To_Any   |

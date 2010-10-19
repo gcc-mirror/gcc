@@ -1693,6 +1693,27 @@ package body Sem_Util is
       Formal_Derived : Boolean := False;
       Id             : Entity_Id;
 
+      function Match (E : Entity_Id) return Boolean;
+      --  True if E's base type is B_Type, or E is of an anonymous access type
+      --  and the base type of its designated type is B_Type.
+
+      -----------
+      -- Match --
+      -----------
+
+      function Match (E : Entity_Id) return Boolean is
+         Etyp : Entity_Id := Etype (E);
+
+      begin
+         if Ekind (Etyp) = E_Anonymous_Access_Type then
+            Etyp := Designated_Type (Etyp);
+         end if;
+
+         return Base_Type (Etyp) = B_Type;
+      end Match;
+
+   --  Start of processing for Collect_Primitive_Operations
+
    begin
       --  For tagged types, the primitive operations are collected as they
       --  are declared, and held in an explicit list which is simply returned.
@@ -1761,19 +1782,13 @@ package body Sem_Util is
             then
                Is_Prim := False;
 
-               if Base_Type (Etype (Id)) = B_Type then
+               if Match (Id) then
                   Is_Prim := True;
+
                else
                   Formal := First_Formal (Id);
                   while Present (Formal) loop
-                     if Base_Type (Etype (Formal)) = B_Type then
-                        Is_Prim := True;
-                        exit;
-
-                     elsif Ekind (Etype (Formal)) = E_Anonymous_Access_Type
-                       and then Base_Type
-                         (Designated_Type (Etype (Formal))) = B_Type
-                     then
+                     if Match (Formal) then
                         Is_Prim := True;
                         exit;
                      end if;

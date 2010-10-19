@@ -764,6 +764,7 @@ package Snames is
    Name_Machine_Rounds                 : constant Name_Id := N + $;
    Name_Machine_Size                   : constant Name_Id := N + $; -- GNAT
    Name_Mantissa                       : constant Name_Id := N + $; -- Ada 83
+   Name_Max_Alignment_For_Allocation   : constant Name_Id := N + $; -- Ada 12
    Name_Max_Size_In_Storage_Elements   : constant Name_Id := N + $;
    Name_Maximum_Alignment              : constant Name_Id := N + $; -- GNAT
    Name_Mechanism_Code                 : constant Name_Id := N + $; -- GNAT
@@ -1282,6 +1283,7 @@ package Snames is
       Attribute_Machine_Rounds,
       Attribute_Machine_Size,
       Attribute_Mantissa,
+      Attribute_Max_Alignment_For_Allocation,
       Attribute_Max_Size_In_Storage_Elements,
       Attribute_Maximum_Alignment,
       Attribute_Mechanism_Code,

@@ -1,3 +1,32 @@
+2010-10-19  Javier Miranda  <miranda@adacore.com>
+
+	* par-ch4.adb: Update documentation of Ada 2012 syntax rules for
+	membership test.
+
+2010-10-19  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Implement Max_Alignment_For_Allocation
+	attribute.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Add
+	Attribute_Max_Alignment_For_Allocation to the case statement.
+	* snames.ads-tmpl (Name_Max_Alignment_For_Allocation,
+	Attribute_Max_Alignment_For_Allocation): New attribute name.
+
+2010-10-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (OK_For_Limited_Init_In_05): a call to an access to
+	parameterless function appears syntactically as an explicit dereference.
+
+2010-10-19  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch8.adb, sem_ch12.adb, opt.ads, sem_ch6.adb, sem_res.adb,
+	i-cexten.ads, exp_disp.adb, exp_ch4.adb, exp_ch9.adb: Minor reformatting
+
+2010-10-19  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb (Collect_Primitive_Operations): A function with an
+	anonymous access result designating T is a primitive operation of T.
+
 2010-10-19  Tristan Gingold  <gingold@adacore.com>
 
 	* init.c: On Alpha/VMS, only adjust PC for HPARITH.

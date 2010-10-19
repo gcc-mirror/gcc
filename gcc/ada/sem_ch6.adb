@@ -5472,7 +5472,6 @@ package body Sem_Ch6 is
             end if;
 
             Desig_1 := Find_Designated_Type (Type_1);
-
             Desig_2 := Find_Designated_Type (Type_2);
 
             --  If the context is an instance association for a formal
@@ -5493,7 +5492,8 @@ package body Sem_Ch6 is
             --  of an incomplete Class_Wide_Type are illegal.
 
             if Is_Class_Wide_Type (Desig_1)
-              and then Is_Class_Wide_Type (Desig_2)
+                 and then
+               Is_Class_Wide_Type (Desig_2)
             then
                return
                  Conforming_Types
@@ -7518,13 +7518,13 @@ package body Sem_Ch6 is
             In_Scope := True;
 
          --  The enclosing scope is not a synchronized type and the subprogram
-         --  has no formals
+         --  has no formals.
 
          elsif No (First_Formal (Def_Id)) then
             return;
 
          --  The subprogram has formals and hence it may be a primitive of a
-         --  concurrent type
+         --  concurrent type.
 
          else
             Typ := Etype (First_Formal (Def_Id));
@@ -7573,7 +7573,7 @@ package body Sem_Ch6 is
             Subp      : Entity_Id := Empty;
 
          begin
-            --  Traverse the homonym chain, looking at a potentially
+            --  Traverse the homonym chain, looking for a potentially
             --  overridden subprogram that belongs to an implemented
             --  interface.
 
@@ -7591,7 +7591,7 @@ package body Sem_Ch6 is
                   null;
 
                --  Entries and procedures can override abstract or null
-               --  interface procedures
+               --  interface procedures.
 
                elsif (Ekind (Def_Id) = E_Procedure
                         or else Ekind (Def_Id) = E_Entry)
@@ -7652,23 +7652,20 @@ package body Sem_Ch6 is
                Hom := Homonym (Hom);
             end loop;
 
-            --  After examining all candidates for overriding, we are
-            --  left with the best match which is a mode incompatible
-            --  interface routine. Do not emit an error if the Expander
-            --  is active since this error will be detected later on
-            --  after all concurrent types are expanded and all wrappers
-            --  are built. This check is meant for spec-only
-            --  compilations.
+            --  After examining all candidates for overriding, we are left with
+            --  the best match which is a mode incompatible interface routine.
+            --  Do not emit an error if the Expander is active since this error
+            --  will be detected later on after all concurrent types are
+            --  expanded and all wrappers are built. This check is meant for
+            --  spec-only compilations.
 
-            if Present (Candidate)
-              and then not Expander_Active
-            then
+            if Present (Candidate) and then not Expander_Active then
                Iface_Typ :=
                  Find_Parameter_Type (Parent (First_Formal (Candidate)));
 
-               --  Def_Id is primitive of a protected type, declared
-               --  inside the type, and the candidate is primitive of a
-               --  limited or synchronized interface.
+               --  Def_Id is primitive of a protected type, declared inside the
+               --  type, and the candidate is primitive of a limited or
+               --  synchronized interface.
 
                if In_Scope
                  and then Is_Protected_Type (Typ)
@@ -7678,15 +7675,12 @@ package body Sem_Ch6 is
                       or else Is_Synchronized_Interface (Iface_Typ)
                       or else Is_Task_Interface (Iface_Typ))
                then
-                  --  Must reword this message, comma before to in -gnatj
-                  --  mode ???
-
                   Error_Msg_NE
                     ("first formal of & must be of mode `OUT`, `IN OUT`"
                       & " or access-to-variable", Typ, Candidate);
                   Error_Msg_N
-                    ("\to be overridden by protected procedure or entry "
-                      & "(RM 9.4(11.9/2))", Typ);
+                    ("\in order to be overridden by protected procedure or "
+                      & "entry (RM 9.4(11.9/2))", Typ);
                end if;
             end if;
 
@@ -7775,7 +7769,7 @@ package body Sem_Ch6 is
          --  Inside_Freeze_Actions is non zero when S corresponds with an
          --  internal entity that links an interface primitive with its
          --  covering primitive through attribute Interface_Alias (see
-         --  Add_Internal_Interface_Entities)
+         --  Add_Internal_Interface_Entities).
 
          if Inside_Freezing_Actions = 0
            and then Is_Package_Or_Generic_Package (Current_Scope)
@@ -7846,9 +7840,7 @@ package body Sem_Ch6 is
          --  dispatch table anyway, because it can be dispatched to even if it
          --  cannot be called directly.
 
-         elsif Present (Alias (S))
-           and then not Comes_From_Source (S)
-         then
+         elsif Present (Alias (S)) and then not Comes_From_Source (S) then
             Set_Scope (S, Current_Scope);
 
             if Is_Dispatching_Operation (Alias (S)) then
