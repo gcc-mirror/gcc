@@ -17848,14 +17848,21 @@ add_calling_convention_attribute (dw_die_ref subr_die, tree decl)
   value = ((enum dwarf_calling_convention)
 	   targetm.dwarf_calling_convention (TREE_TYPE (decl)));
 
-  /* DWARF doesn't provide a way to identify a program's source-level
-     entry point.  DW_AT_calling_convention attributes are only meant
-     to describe functions' calling conventions.  However, lacking a
-     better way to signal the Fortran main program, we use this for the
-     time being, following existing custom.  */
   if (is_fortran ()
       && !strcmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), "MAIN__"))
-    value = DW_CC_program;
+    {
+      /* DWARF 2 doesn't provide a way to identify a program's source-level
+	entry point.  DW_AT_calling_convention attributes are only meant
+	to describe functions' calling conventions.  However, lacking a
+	better way to signal the Fortran main program, we used this for 
+	a long time, following existing custom.  Now, DWARF 4 has 
+	DW_AT_main_subprogram, which we add below, but some tools still
+	rely on the old way, which we thus keep.  */
+      value = DW_CC_program;
+
+      if (dwarf_version >= 4 || !dwarf_strict)
+	add_AT_flag (subr_die, DW_AT_main_subprogram, 1);
+    }
 
   /* Only add the attribute if the backend requests it, and
      is not DW_CC_normal.  */
