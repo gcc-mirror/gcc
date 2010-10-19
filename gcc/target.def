@@ -101,6 +101,38 @@ DEFHOOKPOD
 DEFHOOKPOD (aligned_op, "*", struct asm_int_op, TARGET_ASM_ALIGNED_INT_OP)
 DEFHOOKPOD (unaligned_op, "*", struct asm_int_op, TARGET_ASM_UNALIGNED_INT_OP)
 
+/* The maximum number of bytes to skip when applying
+   LABEL_ALIGN_AFTER_BARRIER.  */
+DEFHOOK
+(label_align_after_barrier_max_skip,
+ "",
+ int, (rtx label),
+ default_label_align_after_barrier_max_skip)
+
+/* The maximum number of bytes to skip when applying
+   LOOP_ALIGN.  */
+DEFHOOK
+(loop_align_max_skip,
+ "",
+ int, (rtx label),
+ default_loop_align_max_skip)
+
+/* The maximum number of bytes to skip when applying
+   LABEL_ALIGN.  */
+DEFHOOK
+(label_align_max_skip,
+ "",
+ int, (rtx label),
+ default_label_align_max_skip)
+
+/* The maximum number of bytes to skip when applying
+   JUMP_ALIGN.  */
+DEFHOOK
+(jump_align_max_skip,
+ "",
+ int, (rtx label),
+ default_jump_align_max_skip)
+
 /* Try to output the assembler code for an integer object whose
    value is given by X.  SIZE is the size of the object in bytes and
    ALIGNED_P indicates whether it is aligned.  Return true if

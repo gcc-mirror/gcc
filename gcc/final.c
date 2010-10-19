@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "basic-block.h"
 #include "target.h"
+#include "targhooks.h"
 #include "debug.h"
 #include "expr.h"
 #include "cfglayout.h"
@@ -497,33 +498,41 @@ get_attr_min_length (rtx insn)
 #define LABEL_ALIGN(LABEL) align_labels_log
 #endif
 
-#ifndef LABEL_ALIGN_MAX_SKIP
-#define LABEL_ALIGN_MAX_SKIP align_labels_max_skip
-#endif
-
 #ifndef LOOP_ALIGN
 #define LOOP_ALIGN(LABEL) align_loops_log
-#endif
-
-#ifndef LOOP_ALIGN_MAX_SKIP
-#define LOOP_ALIGN_MAX_SKIP align_loops_max_skip
 #endif
 
 #ifndef LABEL_ALIGN_AFTER_BARRIER
 #define LABEL_ALIGN_AFTER_BARRIER(LABEL) 0
 #endif
 
-#ifndef LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
-#define LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP 0
-#endif
-
 #ifndef JUMP_ALIGN
 #define JUMP_ALIGN(LABEL) align_jumps_log
 #endif
 
-#ifndef JUMP_ALIGN_MAX_SKIP
-#define JUMP_ALIGN_MAX_SKIP align_jumps_max_skip
-#endif
+int
+default_label_align_after_barrier_max_skip (rtx insn ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
+int
+default_loop_align_max_skip (rtx insn ATTRIBUTE_UNUSED)
+{
+  return align_loops_max_skip;
+}
+
+int
+default_label_align_max_skip (rtx insn ATTRIBUTE_UNUSED)
+{
+  return align_labels_max_skip;
+}
+
+int
+default_jump_align_max_skip (rtx insn ATTRIBUTE_UNUSED)
+{
+  return align_jumps_max_skip;
+}
 
 #ifndef ADDR_VEC_ALIGN
 static int
@@ -731,7 +740,7 @@ compute_alignments (void)
 	  continue;
 	}
       max_log = LABEL_ALIGN (label);
-      max_skip = LABEL_ALIGN_MAX_SKIP;
+      max_skip = targetm.asm_out.label_align_max_skip (label);
 
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
@@ -775,7 +784,7 @@ compute_alignments (void)
 	  if (max_log < log)
 	    {
 	      max_log = log;
-	      max_skip = JUMP_ALIGN_MAX_SKIP;
+	      max_skip = targetm.asm_out.jump_align_max_skip (label);
 	    }
 	}
       /* In case block is frequent and reached mostly by non-fallthru edge,
@@ -792,7 +801,7 @@ compute_alignments (void)
 	  if (max_log < log)
 	    {
 	      max_log = log;
-	      max_skip = LOOP_ALIGN_MAX_SKIP;
+	      max_skip = targetm.asm_out.loop_align_max_skip (label);
 	    }
 	}
       LABEL_TO_ALIGNMENT (label) = max_log;
@@ -925,7 +934,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
 	      if (max_log < log)
 		{
 		  max_log = log;
-		  max_skip = LABEL_ALIGN_MAX_SKIP;
+		  max_skip = targetm.asm_out.label_align_max_skip (insn);
 		}
 	    }
 	  /* ADDR_VECs only take room if read-only data goes into the text
@@ -938,7 +947,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
 	      if (max_log < log)
 		{
 		  max_log = log;
-		  max_skip = LABEL_ALIGN_MAX_SKIP;
+		  max_skip = targetm.asm_out.label_align_max_skip (insn);
 		}
 	    }
 	  LABEL_TO_ALIGNMENT (insn) = max_log;
@@ -958,7 +967,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
 		if (max_log < log)
 		  {
 		    max_log = log;
-		    max_skip = LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP;
+		    max_skip = targetm.asm_out.label_align_after_barrier_max_skip (label);
 		  }
 		break;
 	      }
