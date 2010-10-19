@@ -1,3 +1,8 @@
+2010-10-19  Paul Koning  <pkoning@equallogic.com>
+
+	* lower-subreg.c (resolve_shift_zext): Delete conditional code for
+	WORDS_BIG_ENDIAN != BYTES_BIG_ENDIAN.
+
 2010-10-19  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.md (fmasf4, *fmssf4, *nfmasf4): New.
