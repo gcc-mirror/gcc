@@ -1,3 +1,10 @@
+2010-10-18  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (cgraph_externally_visible_p): Handle externally visible and
+	preserve flags before trying to guess on visibility.
+	(varpool_externally_visible_p): New function.
+	(function_and_variable_visibility): Use it.
+
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented parsing @synthesize and @dynamic for Objective-C.
