@@ -4349,12 +4349,17 @@ package body Exp_Ch4 is
 
          begin
             if (Is_Entity_Name (Alt) and then Is_Type (Entity (Alt)))
-               or else Nkind (Alt) = N_Range
+              or else Nkind (Alt) = N_Range
             then
-               Cond := Make_In (Sloc (Alt), Left_Opnd  => L, Right_Opnd => R);
+               Cond :=
+                 Make_In (Sloc (Alt),
+                   Left_Opnd  => L,
+                   Right_Opnd => R);
             else
                Cond :=
-                 Make_Op_Eq (Sloc (Alt), Left_Opnd  => L, Right_Opnd => R);
+                 Make_Op_Eq (Sloc (Alt),
+                   Left_Opnd  => L,
+                   Right_Opnd => R);
             end if;
 
             return Cond;
@@ -4472,17 +4477,17 @@ package body Exp_Ch4 is
          begin
             --  If test is explicit x'First .. x'Last, replace by valid check
 
+            --  Could use some individual comments for this complex test ???
+
             if Is_Scalar_Type (Ltyp)
               and then Nkind (Lo_Orig) = N_Attribute_Reference
               and then Attribute_Name (Lo_Orig) = Name_First
               and then Nkind (Prefix (Lo_Orig)) in N_Has_Entity
               and then Entity (Prefix (Lo_Orig)) = Ltyp
-
               and then Nkind (Hi_Orig) = N_Attribute_Reference
               and then Attribute_Name (Hi_Orig) = Name_Last
               and then Nkind (Prefix (Hi_Orig)) in N_Has_Entity
               and then Entity (Prefix (Hi_Orig)) = Ltyp
-
               and then Comes_From_Source (N)
               and then VM_Target = No_VM
             then
@@ -8143,7 +8148,7 @@ package body Exp_Ch4 is
          end if;
 
          Rewrite (N, Relocate_Node (Operand));
-         return;
+         goto Done;
       end if;
 
       --  Nothing to do if this is the second argument of read. This is a
@@ -8154,7 +8159,34 @@ package body Exp_Ch4 is
         and then Attribute_Name (Parent (N)) = Name_Read
         and then Next (First (Expressions (Parent (N)))) = N
       then
-         return;
+         goto Done;
+      end if;
+
+      --  Check for case of converting to a type that has an invariant
+      --  associated with it. This required an invariant check. We convert
+
+      --    typ (expr)
+
+      --  into
+
+      --    do invariant_check (typ (expr)) in typ (expr);
+
+      --  using Duplicate_Subexpr to avoid multiple side effects
+
+      --  Note: the Comes_From_Source check, and then the resetting of this
+      --  flag prevents what would otherwise be an infinite recursion.
+
+      if Present (Invariant_Procedure (Target_Type))
+        and then Comes_From_Source (N)
+      then
+         Set_Comes_From_Source (N, False);
+         Rewrite (N,
+           Make_Expression_With_Actions (Loc,
+             Actions    => New_List (
+               Make_Invariant_Call (Duplicate_Subexpr (N))),
+             Expression => Duplicate_Subexpr_No_Checks (N)));
+         Analyze_And_Resolve (N, Target_Type);
+         goto Done;
       end if;
 
       --  Here if we may need to expand conversion
@@ -8227,7 +8259,7 @@ package body Exp_Ch4 is
                 Expression   => Opnd));
 
             Analyze_And_Resolve (N, Target_Type);
-            return;
+            goto Done;
          end;
       end if;
 
@@ -8300,7 +8332,7 @@ package body Exp_Ch4 is
                       Type_Access_Level (Target_Type)
          then
             Raise_Accessibility_Error;
-            return;
+            goto Done;
          end if;
       end if;
 
@@ -8328,7 +8360,7 @@ package body Exp_Ch4 is
          --  Sem_Ch8, and the expansion can interfere with this error check.
 
          if Is_Access_Type (Target_Type) and then Is_Renamed_Object (N) then
-            return;
+            goto Done;
          end if;
 
          --  Otherwise, proceed with processing tagged conversion
@@ -8410,7 +8442,7 @@ package body Exp_Ch4 is
 
             if Is_Interface (Actual_Op_Typ) then
                Expand_Interface_Conversion (N, Is_Static => False);
-               return;
+               goto Done;
             end if;
 
             if not Tag_Checks_Suppressed (Actual_Targ_Typ) then
@@ -8764,8 +8796,13 @@ package body Exp_Ch4 is
         and then (Vax_Float (Operand_Type) or else Vax_Float (Target_Type))
       then
          Expand_Vax_Conversion (N);
-         return;
+         goto Done;
       end if;
+
+      --  Here at end of processing
+
+      <<Done>>
+         null;
    end Expand_N_Type_Conversion;
 
    -----------------------------------

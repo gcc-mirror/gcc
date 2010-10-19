@@ -636,6 +636,14 @@ package body Treepr is
          Print_Eol;
       end if;
 
+      if Field_Present (Field29 (Ent)) then
+         Print_Str (Prefix);
+         Write_Field29_Name (Ent);
+         Write_Str (" = ");
+         Print_Field (Field29 (Ent));
+         Print_Eol;
+      end if;
+
       Write_Entity_Flags (Ent, Prefix);
    end Print_Entity_Info;
 

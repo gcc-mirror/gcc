@@ -3592,6 +3592,8 @@ package body Sem_Ch3 is
 
       Generate_Definition (T);
 
+      --  For other than Ada 2012, just enter the name in the current scope
+
       if Ada_Version < Ada_2012 then
          Enter_Name (T);
 
@@ -7656,6 +7658,15 @@ package body Sem_Ch3 is
       Set_Convention     (Derived_Type, Convention     (Parent_Type));
       Set_Is_Controlled  (Derived_Type, Is_Controlled  (Parent_Type));
       Set_Is_Tagged_Type (Derived_Type, Is_Tagged_Type (Parent_Type));
+
+      --  Propagate invariant information. The new type has invariants if
+      --  they are inherited from the parent type, and these invariants can
+      --  be further inherited, so both flags are set.
+
+      if Has_Inheritable_Invariants (Parent_Type) then
+         Set_Has_Inheritable_Invariants (Derived_Type);
+         Set_Has_Invariants (Derived_Type);
+      end if;
 
       --  The derived type inherits the representation clauses of the parent.
       --  However, for a private type that is completed by a derivation, there
@@ -14171,8 +14182,8 @@ package body Sem_Ch3 is
 
          elsif Ekind (Prev) = E_Incomplete_Type
            and then (Ada_Version < Ada_2012
-                       or else No (Full_View (Prev))
-                       or else not Is_Private_Type (Full_View (Prev)))
+                      or else No (Full_View (Prev))
+                      or else not Is_Private_Type (Full_View (Prev)))
          then
 
             --  Indicate that the incomplete declaration has a matching full
@@ -16038,14 +16049,16 @@ package body Sem_Ch3 is
          --  A return statement for a build-in-place function returning a
          --  synchronized type also introduces an unchecked conversion.
 
-         when N_Type_Conversion | N_Unchecked_Type_Conversion =>
+         when N_Type_Conversion           |
+              N_Unchecked_Type_Conversion =>
             return not Comes_From_Source (Exp)
               and then
                 OK_For_Limited_Init_In_05
                   (Typ, Expression (Original_Node (Exp)));
 
-         when N_Indexed_Component | N_Selected_Component |
-               N_Explicit_Dereference  =>
+         when N_Indexed_Component     |
+              N_Selected_Component    |
+              N_Explicit_Dereference  =>
             return Nkind (Exp) = N_Function_Call;
 
          --  A use of 'Input is a function call, hence allowed. Normally the
@@ -17106,17 +17119,75 @@ package body Sem_Ch3 is
       --  If the private view has user specified stream attributes, then so has
       --  the full view.
 
+      --  Why the test, how could these flags be already set in Full_T ???
+
       if Has_Specified_Stream_Read (Priv_T) then
          Set_Has_Specified_Stream_Read (Full_T);
       end if;
+
       if Has_Specified_Stream_Write (Priv_T) then
          Set_Has_Specified_Stream_Write (Full_T);
       end if;
+
       if Has_Specified_Stream_Input (Priv_T) then
          Set_Has_Specified_Stream_Input (Full_T);
       end if;
+
       if Has_Specified_Stream_Output (Priv_T) then
          Set_Has_Specified_Stream_Output (Full_T);
+      end if;
+
+      --  Deal with invariants
+
+      if Has_Invariants (Full_T)
+           or else
+         Has_Invariants (Priv_T)
+      then
+         Set_Has_Invariants (Full_T);
+         Set_Has_Invariants (Priv_T);
+      end if;
+
+      if Has_Inheritable_Invariants (Full_T)
+           or else
+         Has_Inheritable_Invariants (Priv_T)
+      then
+         Set_Has_Inheritable_Invariants (Full_T);
+         Set_Has_Inheritable_Invariants (Priv_T);
+      end if;
+
+      --  This is where we build the invariant procedure if needed
+
+      if Has_Invariants (Priv_T) then
+         declare
+            PDecl : Entity_Id;
+            PBody : Entity_Id;
+            Packg : constant Node_Id := Declaration_Node (Scope (Priv_T));
+
+         begin
+            Build_Invariant_Procedure (Full_T, PDecl, PBody);
+
+            --  Error defense, normally these should be set
+
+            if Present (PDecl) and then Present (PBody) then
+
+               --  Spec goes at the end of the public part of the package.
+               --  That's behind us, so we have to manually analyze the
+               --  inserted spec.
+
+               Append_To (Visible_Declarations (Packg), PDecl);
+               Analyze (PDecl);
+
+               --  Body goes at the end of the private part of the package.
+               --  That's ahead of us so it will get analyzed later on when
+               --  we come to it.
+
+               Append_To (Private_Declarations (Packg), PBody);
+
+               --  Copy Invariant procedure to private declaration
+
+               Set_Invariant_Procedure (Priv_T, Invariant_Procedure (Full_T));
+            end if;
+         end;
       end if;
    end Process_Full_View;
 

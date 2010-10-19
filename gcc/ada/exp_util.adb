@@ -45,6 +45,7 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Eval; use Sem_Eval;
+with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
@@ -3986,6 +3987,31 @@ package body Exp_Util is
       Insert_Actions (E, List_Def, Suppress => All_Checks);
       return Equiv_Type;
    end Make_CW_Equivalent_Type;
+
+   -------------------------
+   -- Make_Invariant_Call --
+   -------------------------
+
+   function Make_Invariant_Call (Expr : Node_Id) return Node_Id is
+      Loc : constant Source_Ptr := Sloc (Expr);
+      Typ : constant Entity_Id  := Etype (Expr);
+
+   begin
+      if Check_Enabled (Name_Invariant)
+           or else
+         Check_Enabled (Name_Assertion)
+      then
+         return
+           Make_Procedure_Call_Statement (Loc,
+             Name                   =>
+               New_Occurrence_Of (Invariant_Procedure (Typ), Loc),
+             Parameter_Associations => New_List (Relocate_Node (Expr)));
+
+      else
+         return
+           Make_Null_Statement (Loc);
+      end if;
+   end Make_Invariant_Call;
 
    ------------------------
    -- Make_Literal_Range --

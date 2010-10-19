@@ -52,6 +52,17 @@ package Sem_Ch13 is
    --  order is specified and there is at least one component clause. Adjusts
    --  component positions according to either Ada 95 or Ada 2005 (AI-133).
 
+   procedure Build_Invariant_Procedure
+     (Typ   : Entity_Id;
+      PDecl : out Node_Id;
+      PBody : out Node_Id);
+   --  If Typ has Invariants (indicated by Has_Invariants being set for Typ,
+   --  indicating the presence of Pragma Invariant entries on the rep chain,
+   --  note that Invariant aspects are converted to pragma Invariant), then
+   --  this procedure builds the spec and body for the corresponding Invariant
+   --  procedure, returning themn in PDecl and PBody. In some error situations
+   --  no procedure is built, in which case PDecl/PBody are empty on return.
+
    procedure Check_Record_Representation_Clause (N : Node_Id);
    --  This procedure completes the analysis of a record representation clause
    --  N. It is called at freeze time after adjustment of component clause bit

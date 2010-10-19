@@ -4570,6 +4570,19 @@ package body Exp_Ch3 is
 
       if No (Expr) then
 
+         --  For the default initialization case, if we have a private type
+         --  with invariants, and invariant checks are enabled, then insert an
+         --  invariant check after the object declaration. Note that it is OK
+         --  to clobber the object with an invalid value since if the exception
+         --  is raised, then the object will go out of scope.
+
+         if Is_Private_Type (Typ)
+           and then Present (Invariant_Procedure (Typ))
+         then
+            Insert_After (N,
+              Make_Invariant_Call (New_Occurrence_Of (Def_Id, Loc)));
+         end if;
+
          --  Expand Initialize call for controlled objects. One may wonder why
          --  the Initialize Call is not done in the regular Init procedure
          --  attached to the record type. That's because the init procedure is
@@ -5176,8 +5189,9 @@ package body Exp_Ch3 is
             Set_Renamed_Object (Defining_Identifier (N), Expr_Q);
             Set_Analyzed (N);
          end if;
-
       end if;
+
+   --  Exception on library entity not available
 
    exception
       when RE_Not_Available =>

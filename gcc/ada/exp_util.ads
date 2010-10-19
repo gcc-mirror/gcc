@@ -562,6 +562,12 @@ package Exp_Util is
    --  and returns True if so. Returns False otherwise. It is an error to call
    --  this function if N is not of an access type.
 
+   function Make_Invariant_Call (Expr : Node_Id) return Node_Id;
+   --  Expr is an object of a type which Has_Invariants set (and which thus
+   --  also has an Invariant_Procedure set). If invariants are enabled, this
+   --  function returns a call to the Invariant procedure passing Expr as the
+   --  argument.
+
    function Make_Subtype_From_Expr
      (E       : Node_Id;
       Unc_Typ : Entity_Id) return Node_Id;

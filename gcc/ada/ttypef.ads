@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -123,20 +123,20 @@ package Ttypef is
    IEEES_Model_Epsilon     : constant := 2#1.0#E-23;
    IEEEL_Model_Epsilon     : constant := 2#1.0#E-52;
    IEEEX_Model_Epsilon     : constant := 2#1.0#E-63;
-   VAXFF_Model_Epsilon     : constant := 16#0.1000_000#E-4;
-   VAXDF_Model_Epsilon     : constant := 16#0.4000_0000_0000_000#E-7;
-   VAXGF_Model_Epsilon     : constant := 16#0.4000_0000_0000_00#E-12;
+   VAXFF_Model_Epsilon     : constant := 2#1.0#E-23;
+   VAXDF_Model_Epsilon     : constant := 2#1.0#E-55;
+   VAXGF_Model_Epsilon     : constant := 2#1.0#E-52;
    AAMPS_Model_Epsilon     : constant := 2#1.0#E-23;
    AAMPL_Model_Epsilon     : constant := 2#1.0#E-39;
 
    IEEES_Model_Small       : constant := 2#1.0#E-126;
    IEEEL_Model_Small       : constant := 2#1.0#E-1022;
-   IEEEX_Model_Small       : constant := 2#1.0#E-16381;
-   VAXFF_Model_Small       : constant := 16#0.8000_000#E-21;
-   VAXDF_Model_Small       : constant := 16#0.8000_0000_0000_000#E-31;
-   VAXGF_Model_Small       : constant := 16#0.8000_0000_0000_00#E-51;
-   AAMPS_Model_Small       : constant := 16#0.8000_000#E-21;
-   AAMPL_Model_Small       : constant := 16#0.8000_0000_000#E-31;
+   IEEEX_Model_Small       : constant := 2#1.0#E-16382;
+   VAXFF_Model_Small       : constant := 2#1.0#E-128;
+   VAXDF_Model_Small       : constant := 2#1.0#E-128;
+   VAXGF_Model_Small       : constant := 2#1.0#E-1024;
+   AAMPS_Model_Small       : constant := 2#1.0#E-128;
+   AAMPL_Model_Small       : constant := 2#1.0#E-128;
 
    IEEES_Safe_First        : constant := -16#0.FFFF_FF#E+32;
    IEEEL_Safe_First        : constant := -16#0.FFFF_FFFF_FFFF_F8#E+256;
@@ -167,12 +167,12 @@ package Ttypef is
 
    IEEES_Safe_Small        : constant := 2#1.0#E-126;
    IEEEL_Safe_Small        : constant := 2#1.0#E-1022;
-   IEEEX_Safe_Small        : constant := 2#1.0#E-16381;
-   VAXFF_Safe_Small        : constant := 16#0.1000_000#E-31;
-   VAXDF_Safe_Small        : constant := 16#0.1000_0000_0000_000#E-31;
-   VAXGF_Safe_Small        : constant := 16#0.1000_0000_0000_00#E-255;
-   AAMPS_Safe_Small        : constant := 16#0.1000_000#E-31;
-   AAMPL_Safe_Small        : constant := 16#0.1000_0000_000#E-31;
+   IEEEX_Safe_Small        : constant := 2#1.0#E-16382;
+   VAXFF_Safe_Small        : constant := 2#1.0#E-128;
+   VAXDF_Safe_Small        : constant := 2#1.0#E-128;
+   VAXGF_Safe_Small        : constant := 2#1.0#E-1024;
+   AAMPS_Safe_Small        : constant := 2#1.0#E-128;
+   AAMPL_Safe_Small        : constant := 2#1.0#E-128;
 
    ----------------------
    -- Typed Attributes --
@@ -196,7 +196,7 @@ package Ttypef is
    IEEEL_Last              : constant := 16#0.FFFF_FFFF_FFFF_F8#E+256;
    IEEEX_Last              : constant := 16#0.FFFF_FFFF_FFFF_FFFF#E+4096;
    VAXFF_Last              : constant := 16#0.7FFF_FF8#E+32;
-   VAXDF_Last              : constant := 16#0.7FFF_FFFF_FFFF_FC0#E+32;
+   VAXDF_Last              : constant := 16#0.7FFF_FFFF_FFFF_FF8#E+32;
    VAXGF_Last              : constant := 16#0.7FFF_FFFF_FFFF_FC#E+256;
    AAMPS_Last              : constant := 16#0.7FFF_FF8#E+32;
    AAMPL_Last              : constant := 16#0.7FFF_FFFF_FF8#E+32;

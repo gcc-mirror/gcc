@@ -7133,8 +7133,11 @@ package body Sem_Prag is
 
             if Nkind (Expression (Arg1)) = N_Null then
                Analyze (Expression (Arg1));
+
+               --  This is an odd case, this is not really an expression, so
+               --  we don't have a type for it. So just set the type to Empty.
+
                Set_Etype (Expression (Arg1), Empty);
-               --  It's not really an expression, and we have no type for it
 
             --  Case of Default_Storage_Pool (storage_pool_NAME);
 
@@ -9271,6 +9274,67 @@ package body Sem_Prag is
                IST_Num := IST_Num + 1;
             end loop;
          end Interrupt_State;
+
+         ---------------
+         -- Invariant --
+         ---------------
+
+         --  pragma Invariant
+         --    ([Entity =>]    type_LOCAL_NAME,
+         --     [Check  =>]    EXPRESSION
+         --     [,[Message =>] String_Expression]);
+
+         when Pragma_Invariant => Invariant : declare
+            Type_Id : Node_Id;
+            Typ     : Entity_Id;
+
+            Discard : Boolean;
+            pragma Unreferenced (Discard);
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (2);
+            Check_At_Most_N_Arguments (3);
+            Check_Optional_Identifier (Arg1, Name_Entity);
+            Check_Optional_Identifier (Arg2, Name_Check);
+
+            if Arg_Count = 3 then
+               Check_Optional_Identifier (Arg3, Name_Message);
+               Check_Arg_Is_Static_Expression (Arg3, Standard_String);
+            end if;
+
+            Check_Arg_Is_Local_Name (Arg1);
+
+            Type_Id := Get_Pragma_Arg (Arg1);
+            Find_Type (Type_Id);
+            Typ := Entity (Type_Id);
+
+            if Typ = Any_Type then
+               return;
+
+            elsif not Ekind_In (Typ, E_Private_Type,
+                                     E_Record_Type_With_Private,
+                                     E_Limited_Private_Type)
+            then
+               Error_Pragma_Arg
+                 ("pragma% only allowed for private type", Arg1);
+            end if;
+
+            --  Note that the type has at least one invariant, and also that
+            --  it has inheritable invariants if we have Invariant'Class.
+
+            Set_Has_Invariants (Typ);
+
+            if Class_Present (N) then
+               Set_Has_Inheritable_Invariants (Typ);
+            end if;
+
+            --  The remaining processing is simply to link the pragma on to
+            --  the rep item chain, for processing when the type is frozen.
+            --  This is accomplished by a call to Rep_Item_Too_Late.
+
+            Discard := Rep_Item_Too_Late (Typ, N, FOnly => True);
+         end Invariant;
 
          ----------------------
          -- Java_Constructor --
@@ -13707,6 +13771,7 @@ package body Sem_Prag is
       Pragma_Interrupt_Handler             => -1,
       Pragma_Interrupt_Priority            => -1,
       Pragma_Interrupt_State               => -1,
+      Pragma_Invariant                     => -1,
       Pragma_Java_Constructor              => -1,
       Pragma_Java_Interface                => -1,
       Pragma_Keep_Names                    =>  0,
