@@ -4705,6 +4705,8 @@ simplify_ternary_operation (enum rtx_code code, enum machine_mode mode,
 			    rtx op2)
 {
   unsigned int width = GET_MODE_BITSIZE (mode);
+  bool any_change = false;
+  rtx tem;
 
   /* VOIDmode means "infinite" precision.  */
   if (width == 0)
@@ -4712,10 +4714,29 @@ simplify_ternary_operation (enum rtx_code code, enum machine_mode mode,
 
   switch (code)
     {
-      /* At present, don't simplify fused multiply and add ops, because we need
-	 to make sure there are no intermediate rounding steps used, and that
-	 we get the right sign if negative 0 would be returned.  */
     case FMA:
+      /* Simplify negations around the multiplication.  */
+      /* -a * -b + c  =>  a * b + c.  */
+      if (GET_CODE (op0) == NEG)
+	{
+	  tem = simplify_unary_operation (NEG, mode, op1, mode);
+	  if (tem)
+	    op1 = tem, op0 = XEXP (op0, 0), any_change = true;
+	}
+      else if (GET_CODE (op1) == NEG)
+	{
+	  tem = simplify_unary_operation (NEG, mode, op0, mode);
+	  if (tem)
+	    op0 = tem, op1 = XEXP (op1, 0), any_change = true;
+	}
+
+      /* Canonicalize the two multiplication operands.  */
+      /* a * -b + c  =>  -b * a + c.  */
+      if (swap_commutative_operands_p (op0, op1))
+	tem = op0, op0 = op1, op1 = tem, any_change = true;
+
+      if (any_change)
+	return gen_rtx_FMA (mode, op0, op1, op2);
       return NULL_RTX;
 
     case SIGN_EXTRACT:
