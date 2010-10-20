@@ -1451,7 +1451,7 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
 	   initvar);
   cvar_next = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop));
 
-  gsi = gsi_last_bb (loop->latch);
+  gsi = gsi_last_nondebug_bb (loop->latch);
   gcc_assert (gsi_stmt (gsi) == SSA_NAME_DEF_STMT (cvar_next));
   gsi_remove (&gsi, true);
 
