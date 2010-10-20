@@ -1204,10 +1204,11 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
       || TREE_CODE (TREE_OPERAND (lhs, 0)) != SSA_NAME)
     return false;
 
-  /* RHS is either a single SSA_NAME or a constant. */
+  /* RHS is either a single SSA_NAME or a constant of register type. */
   code = gimple_assign_rhs_code (assign);
   if (get_gimple_rhs_class (code) != GIMPLE_SINGLE_RHS
-      || (code != SSA_NAME && !is_gimple_min_invariant (rhs)))
+      || (code != SSA_NAME && !is_gimple_min_invariant (rhs))
+      || !is_gimple_reg_type (TREE_TYPE (lhs)))
     return false;
   /* Prove that we can move the store down.  We could also check
      TREE_THIS_NOTRAP here, but in that case we also could move stores,
@@ -1217,8 +1218,8 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
 
   /* Now we've checked the constraints, so do the transformation:
      1) Remove the single store.  */
-  mark_symbols_for_renaming (assign);
   gsi = gsi_for_stmt (assign);
+  unlink_stmt_vdef (assign);
   gsi_remove (&gsi, true);
 
   /* 2) Create a temporary where we can store the old content
@@ -1237,7 +1238,6 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   name = make_ssa_name (condstoretemp, new_stmt);
   gimple_assign_set_lhs (new_stmt, name);
   gimple_set_location (new_stmt, locus);
-  mark_symbols_for_renaming (new_stmt);
   gsi_insert_on_edge (e1, new_stmt);
 
   /* 4) Create a PHI node at the join block, with one argument
@@ -1249,7 +1249,6 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
 
   lhs = unshare_expr (lhs);
   new_stmt = gimple_build_assign (lhs, PHI_RESULT (newphi));
-  mark_symbols_for_renaming (new_stmt);
 
   /* 5) Insert that PHI node.  */
   gsi = gsi_after_labels (join_bb);
