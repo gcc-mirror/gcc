@@ -1,3 +1,8 @@
+2010-10-20  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* tree-ssa-ter.c (find_replaceable_in_bb): Allow replacement over
+	call for single operand expression.
+
 2010-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-optimize.c (execute_fixup_cfg): Purge dead abnormal call edges

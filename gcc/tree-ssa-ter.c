@@ -644,8 +644,10 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 		 def variable has the same root variable as something in the
 		 substitution list, or the def and use span a call such that
 		 we'll expand lifetimes across a call.  */
-	      if (gimple_has_volatile_ops (stmt) || same_root_var ||
-		  tab->call_cnt[ver] != cur_call_cnt)
+	      if (gimple_has_volatile_ops (stmt) || same_root_var
+		  || (tab->call_cnt[ver] != cur_call_cnt
+		      && SINGLE_SSA_USE_OPERAND (SSA_NAME_DEF_STMT (use), SSA_OP_USE)
+			 == NULL_USE_OPERAND_P))
 		finished_with_expr (tab, ver, true);
 	      else
 		mark_replaceable (tab, use, stmt_replaceable);
