@@ -1,3 +1,9 @@
+2010-10-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/46085
+	* gcc.target/i386/pr46085-1.c: New.
+	* gcc.target/i386/pr46085-2.c: Likewise.
+
 2010-10-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45860

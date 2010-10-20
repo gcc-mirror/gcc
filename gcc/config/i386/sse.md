@@ -1388,8 +1388,9 @@
   rtx tmp = gen_reg_rtx (V8SFmode);
   rtx tmp2 = gen_reg_rtx (V8SFmode);
   emit_insn (gen_avx_haddv8sf3 (tmp, operands[1], operands[1]));
-  emit_insn (gen_avx_haddv8sf3 (tmp2, operands[1], operands[1]));
-  emit_insn (gen_avx_haddv8sf3 (operands[0], tmp2, tmp2));
+  emit_insn (gen_avx_haddv8sf3 (tmp2, tmp, tmp));
+  emit_insn (gen_avx_vperm2f128v8sf3 (tmp, tmp2, tmp2, GEN_INT (1)));
+  emit_insn (gen_addv8sf3 (operands[0], tmp, tmp2));
   DONE;
 })
 
@@ -1415,8 +1416,10 @@
   "TARGET_AVX"
 {
   rtx tmp = gen_reg_rtx (V4DFmode);
+  rtx tmp2 = gen_reg_rtx (V4DFmode);
   emit_insn (gen_avx_haddv4df3 (tmp, operands[1], operands[1]));
-  emit_insn (gen_avx_haddv4df3 (operands[0], tmp, tmp));
+  emit_insn (gen_avx_vperm2f128v4df3 (tmp2, tmp, tmp, GEN_INT (1)));
+  emit_insn (gen_addv4df3 (operands[0], tmp, tmp2));
   DONE;
 })
 
