@@ -429,6 +429,21 @@ m32c_option_override (void)
   /* This target defaults to strict volatile bitfields.  */
   if (flag_strict_volatile_bitfields < 0)
     flag_strict_volatile_bitfields = 1;
+
+  /* r8c/m16c have no 16-bit indirect call, so thunks are involved.
+     This is always worse than an absolute call.  */
+  if (TARGET_A16)
+    flag_no_function_cse = 1;
+}
+
+#undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE m32c_override_options_after_change
+
+static void
+m32c_override_options_after_change (void)
+{
+  if (TARGET_A16)
+    flag_no_function_cse = 1;
 }
 
 /* Defining data structures for per-function information */
