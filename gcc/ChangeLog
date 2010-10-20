@@ -1,3 +1,9 @@
+2010-10-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR fortran/42169
+	* ira-emit.c (store_can_be_removed_p): Return false instead of
+	gcc_unreachable.
+
 2010-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (skip_simple_constant_arithmetic): New function.
