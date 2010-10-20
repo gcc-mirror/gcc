@@ -1,3 +1,8 @@
+2010-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (skip_simple_constant_arithmetic): New function.
+	(self_referential_size): Use it instead of skip_simple_arithmetic.
+
 2010-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46019
