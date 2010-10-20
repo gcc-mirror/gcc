@@ -1,3 +1,10 @@
+2010-10-20  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_option_override): Always disable
+	function-cse in 16-bit mode.  Indirect calls are always worse than
+	direct calls as there is no 16-bit indirect call opcode.
+	(m32c_override_options_after_change): New, likewise.
+
 2010-10-20  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* ifcvt.c (noce_emit_cmove): If both of the values are SUBREGs, try
