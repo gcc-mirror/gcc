@@ -1,5 +1,9 @@
 2010-10-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/45919
+	* tree-ssa-ccp.c (fold_nonarray_ctor_reference): Handle flexible
+	array members.
+
 	PR tree-optimization/46066
 	* tree-parloops.c (create_parallel_loop): Use gsi_last_nondebug_bb
 	instead of gsi_last_bb.
