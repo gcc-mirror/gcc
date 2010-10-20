@@ -1,3 +1,9 @@
+2010-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46066
+	* tree-parloops.c (create_parallel_loop): Use gsi_last_nondebug_bb
+	instead of gsi_last_bb.
+
 2010-10-20  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.c (m32c_option_override): Always disable

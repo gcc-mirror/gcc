@@ -1,9 +1,14 @@
+2010-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46066
+	* gcc.dg/autopar/pr46066.c: New test.
+
 2010-10-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR c++/46024
 	* g++.dg/warn/miss-format-1.C: Enclose dg-error target list in braces.
 
-2010-10-20  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+2010-10-20  Rodrigo Rivas Costa  <rodrigorivascosta@gmail.com>
 
 	PR c++/46056
 	* g++.dg/cpp0x/range-for7.C: New.
@@ -1900,7 +1905,7 @@
 
 	* gfortran.dg/promotion.f90: Fix options.
 
-2010-09-11  Rodrigo Rivas <rodrigorivascosta@gmail.com>
+2010-09-11  Rodrigo Rivas  <rodrigorivascosta@gmail.com>
 
 	* g++.dg/cpp0x/range-for1.C: New.
 	* g++.dg/cpp0x/range-for2.C: New.
@@ -1915,7 +1920,7 @@
 	and counts. Check that transpose is not called.
 	* gfortran.dg/transpose_2.f90: Update error message.
 
-2010-09-10  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+2010-09-10  Rodrigo Rivas Costa  <rodrigorivascosta@gmail.com>
 
 	PR c++/43824
 	* g++.dg/lookup/strong-using-1.C: Set dg-options to "".
