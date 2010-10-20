@@ -1,3 +1,9 @@
+2010-10-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR fortran/42169
+	* ira-emit.c (store_can_be_removed_p): Return false instead of
+	gcc_unreachable.
+
 2010-10-20  Dmitry Melnik  <dm@ispras.ru>
 
 	* fold-const.c (fold_binary_loc): New transformation.
