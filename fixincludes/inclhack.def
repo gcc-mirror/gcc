@@ -3694,6 +3694,34 @@ fix = {
 
 
 /*
+ * On Solaris 8 and 9, __va_list needs to become a typedef for
+ * __builtin_va_list to make -Wmissing-format-attribute work.
+ */
+fix = {
+    hackname = solaris_sys_va_list;
+    files    = sys/va_list.h;
+    mach     = '*-*-solaris2.[89]';
+    select   = "#if.*__STDC__.*\n"
+	       "typedef void \\*__va_list;\n"
+	       "#else\n"
+	       "typedef char \\*__va_list;\n"
+	       "#endif";
+
+    c_fix    = format;
+    c_fix_arg = "#ifdef __GNUC__\n"
+		"typedef __builtin_va_list __va_list;\n"
+		"#else\n"
+		"%0\n"
+		"#endif";
+    test_text = "#if defined(__STDC__) && !defined(__ia64)\n"
+    		"typedef void *__va_list;\n"
+	        "#else\n"
+	        "typedef char *__va_list;\n"
+	        "#endif";
+};
+
+
+/*
  *  a missing semi-colon at the end of the statsswtch structure definition.
  */
 fix = {

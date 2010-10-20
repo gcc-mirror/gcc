@@ -1,3 +1,10 @@
+2010-10-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/46024
+	* inclhack.def (solaris_sys_va_list): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/va_list.h: New test.
+
 2010-09-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* inclhack.def (hpux_htonl): Allow trailing whitespace in select.
