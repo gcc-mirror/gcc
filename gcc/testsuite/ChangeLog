@@ -1,3 +1,8 @@
+2010-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr25.adb: New test.
+	* gnat.dg/discr25_pkg.ad[sb]: New helper.
+
 2010-10-20  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc.target/powerpc/ehreturn.c: New test.

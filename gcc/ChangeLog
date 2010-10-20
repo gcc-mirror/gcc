@@ -1,3 +1,8 @@
+2010-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (skip_simple_constant_arithmetic): New function.
+	(self_referential_size): Use it instead of skip_simple_arithmetic.
+
 2010-10-20  Olivier Hainque  <hainque@adacore.com>
 
 	* config/rs6000/rs6000.c (rs6000_reg_live_or_pic_offset_p):
