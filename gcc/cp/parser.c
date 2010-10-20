@@ -8773,8 +8773,10 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr)
   TREE_USED (range_temp) = 1;
   DECL_ARTIFICIAL (range_temp) = 1;
   pushdecl (range_temp);
-  finish_expr_stmt (cp_build_modify_expr (range_temp, INIT_EXPR, range_expr,
-					  tf_warning_or_error));
+  cp_finish_decl (range_temp, range_expr,
+		  /*is_constant_init*/false, NULL_TREE,
+		  LOOKUP_ONLYCONVERTING);
+
   range_temp = convert_from_reference (range_temp);
 
   if (TREE_CODE (TREE_TYPE (range_temp)) == ARRAY_TYPE)
@@ -8824,16 +8826,18 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr)
   TREE_USED (begin) = 1;
   DECL_ARTIFICIAL (begin) = 1;
   pushdecl (begin);
-  finish_expr_stmt (cp_build_modify_expr (begin, INIT_EXPR, begin_expr,
-					  tf_warning_or_error));
+  cp_finish_decl (begin, begin_expr,
+		  /*is_constant_init*/false, NULL_TREE,
+		  LOOKUP_ONLYCONVERTING);
+
   end = build_decl (input_location, VAR_DECL,
 		    get_identifier ("__for_end"), iter_type);
   TREE_USED (end) = 1;
   DECL_ARTIFICIAL (end) = 1;
   pushdecl (end);
-
-  finish_expr_stmt (cp_build_modify_expr (end, INIT_EXPR, end_expr,
-					  tf_warning_or_error));
+  cp_finish_decl (end, end_expr,
+		  /*is_constant_init*/false, NULL_TREE,
+		  LOOKUP_ONLYCONVERTING);
 
   finish_for_init_stmt (statement);
 
