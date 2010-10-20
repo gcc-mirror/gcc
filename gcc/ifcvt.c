@@ -1337,6 +1337,9 @@ static rtx
 noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
 		 rtx cmp_a, rtx cmp_b, rtx vfalse, rtx vtrue)
 {
+  rtx target;
+  int unsignedp;
+
   /* If earliest == jump, try to build the cmove insn directly.
      This is helpful when combine has created some complex condition
      (like for alpha's cmovlbs) that we can't hope to regenerate
@@ -1371,10 +1374,62 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
     return NULL_RTX;
 
 #if HAVE_conditional_move
-  return emit_conditional_move (x, code, cmp_a, cmp_b, VOIDmode,
-				vtrue, vfalse, GET_MODE (x),
-			        (code == LTU || code == GEU
-				 || code == LEU || code == GTU));
+  unsignedp = (code == LTU || code == GEU
+	       || code == LEU || code == GTU);
+
+  target = emit_conditional_move (x, code, cmp_a, cmp_b, VOIDmode,
+				  vtrue, vfalse, GET_MODE (x),
+				  unsignedp);
+  if (target)
+    return target;
+
+  /* We might be faced with a situation like:
+
+     x = (reg:M TARGET)
+     vtrue = (subreg:M (reg:N VTRUE) BYTE)
+     vfalse = (subreg:M (reg:N VFALSE) BYTE)
+
+     We can't do a conditional move in mode M, but it's possible that we
+     could do a conditional move in mode N instead and take a subreg of
+     the result.
+
+     If we can't create new pseudos, though, don't bother.  */
+  if (reload_completed)
+    return NULL_RTX;
+
+  if (GET_CODE (vtrue) == SUBREG && GET_CODE (vfalse) == SUBREG)
+    {
+      rtx reg_vtrue = SUBREG_REG (vtrue);
+      rtx reg_vfalse = SUBREG_REG (vfalse);
+      unsigned int byte_vtrue = SUBREG_BYTE (vtrue);
+      unsigned int byte_vfalse = SUBREG_BYTE (vfalse);
+      rtx promoted_target;
+
+      if (GET_MODE (reg_vtrue) != GET_MODE (reg_vfalse)
+	  || byte_vtrue != byte_vfalse
+	  || (SUBREG_PROMOTED_VAR_P (vtrue)
+	      != SUBREG_PROMOTED_VAR_P (vfalse))
+	  || (SUBREG_PROMOTED_UNSIGNED_P (vtrue)
+	      != SUBREG_PROMOTED_UNSIGNED_P (vfalse)))
+	return NULL_RTX;
+
+      promoted_target = gen_reg_rtx (GET_MODE (reg_vtrue));
+
+      target = emit_conditional_move (promoted_target, code, cmp_a, cmp_b,
+				      VOIDmode, reg_vtrue, reg_vfalse,
+				      GET_MODE (reg_vtrue), unsignedp);
+      /* Nope, couldn't do it in that mode either.  */
+      if (!target)
+	return NULL_RTX;
+
+      target = gen_rtx_SUBREG (GET_MODE (vtrue), promoted_target, byte_vtrue);
+      SUBREG_PROMOTED_VAR_P (target) = SUBREG_PROMOTED_VAR_P (vtrue);
+      SUBREG_PROMOTED_UNSIGNED_SET (target, SUBREG_PROMOTED_UNSIGNED_P (vtrue));
+      emit_move_insn (x, target);
+      return x;
+    }
+  else
+    return NULL_RTX;
 #else
   /* We'll never get here, as noce_process_if_block doesn't call the
      functions involved.  Ifdef code, however, should be discouraged
