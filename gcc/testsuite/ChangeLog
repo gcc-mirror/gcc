@@ -1,3 +1,7 @@
+2010-10-20  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.target/powerpc/ehreturn.c: New test.
+
 2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 	
 	Merge from 'apple/trunk' branch on FSF servers.  Test adapted to

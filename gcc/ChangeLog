@@ -1,3 +1,9 @@
+2010-10-20  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/rs6000.c (rs6000_reg_live_or_pic_offset_p):
+	If the current function calls eh_return, claim live all registers
+	that we need to check for liveness otherwise.
+
 2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-decl.c (c_write_global_declarations): Call
