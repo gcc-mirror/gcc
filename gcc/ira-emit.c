@@ -368,7 +368,8 @@ store_can_be_removed_p (ira_allocno_t src_allocno, ira_allocno_t dest_allocno)
 	   prohibit removal of the store in such complicated case.  */
 	return false;
     }
-  gcc_unreachable ();
+  /* It is actually a loop entry -- do not remove the store.  */
+  return false;
 }
 
 /* Generate and attach moves to the edge E.  This looks at the final
