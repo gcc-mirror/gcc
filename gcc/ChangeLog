@@ -1,3 +1,8 @@
+2010-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-optimize.c (execute_fixup_cfg): Purge dead abnormal call edges
+	if there is a call statement to pure or const function in the block.
+
 2010-10-20  Paul Koning  <pkoning@equallogic.com>
 
 	Fix several build errors for pdp11 target.
