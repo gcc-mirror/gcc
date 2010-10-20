@@ -560,11 +560,11 @@ all:
 ###
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
-# so that prorgams built for the target machine work.
+# so that programs built for the target machine work.
 TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libmudflap)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(HOST_LIB_PATH_gcc)
 
 @if target-libstdc++-v3
-TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/.libs:
+TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:
 @endif target-libstdc++-v3
 
 @if target-libmudflap
