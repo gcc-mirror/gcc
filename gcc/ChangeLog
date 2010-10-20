@@ -1,3 +1,11 @@
+2010-10-20  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/45667
+	* lto-streamer-out.c (output_gimple_stmt): Fix typo.
+	* tree-cfg.c (verify_gimple_call): Properly get the call fndecl.
+	(verify_gimple_assign_single): Disable ADDR_EXPR type check
+	when in LTO.
+
 2010-10-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR fortran/42169

@@ -1,3 +1,10 @@
+2010-10-20  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/45667
+	* g++.dg/lto/20101020-1_0.h: New testcase.
+	* g++.dg/lto/20101020-1_0.C: Likewise.
+	* g++.dg/lto/20101020-1_1.C: Likewise.
+
 2010-10-20  Dmitry Melnik  <dm@ispras.ru>
 
 	* gcc.dg/20101013-1.c: New test.

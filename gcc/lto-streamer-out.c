@@ -1763,7 +1763,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
 	  if (op)
 	    {
 	      tree *basep = &op;
-	      if (handled_component_p (*basep))
+	      while (handled_component_p (*basep))
 		basep = &TREE_OPERAND (*basep, 0);
 	      if (TREE_CODE (*basep) == VAR_DECL
 		  && !auto_var_in_fn_p (*basep, current_function_decl))

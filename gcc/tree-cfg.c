@@ -3107,8 +3107,7 @@ verify_gimple_call (gimple stmt)
      call, and the decl should have DECL_STATIC_CHAIN set.  */
   if (gimple_call_chain (stmt))
     {
-      if (TREE_CODE (fn) != ADDR_EXPR
-	  || TREE_CODE (TREE_OPERAND (fn, 0)) != FUNCTION_DECL)
+      if (!gimple_call_fndecl (stmt))
 	{
 	  error ("static chain in indirect gimple call");
 	  return true;
@@ -3698,7 +3697,13 @@ verify_gimple_assign_single (gimple stmt)
 	    return true;
 	  }
 
-	if (!types_compatible_p (TREE_TYPE (op), TREE_TYPE (TREE_TYPE (rhs1)))
+	/* Technically there is no longer a need for matching types, but
+	   gimple hygiene asks for this check.  In LTO we can end up
+	   combining incompatible units and thus end up with addresses
+	   of globals that change their type to a common one.  */
+	if (!in_lto_p
+	    && !types_compatible_p (TREE_TYPE (op),
+				    TREE_TYPE (TREE_TYPE (rhs1)))
 	    && !one_pointer_to_useless_type_conversion_p (TREE_TYPE (rhs1),
 							  TREE_TYPE (op)))
 	  {
