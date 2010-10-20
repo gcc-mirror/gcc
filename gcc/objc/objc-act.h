@@ -176,7 +176,6 @@ extern GTY(()) struct imp_entry *imp_list;
 extern GTY(()) int imp_count;	/* `@implementation' */
 extern GTY(()) int cat_count;	/* `@category' */
 
-extern GTY(()) enum tree_code objc_inherit_code;
 extern GTY(()) objc_ivar_visibility_kind objc_ivar_visibility;
 
 /* Objective-C/Objective-C++ global tree enumeration.  */

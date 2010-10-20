@@ -1,5 +1,16 @@
 2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* c-common.h (objc_set_method_type): Removed.
+	(objc_add_method_declaration): Added boolean argument.
+	(objc_start_method_definition): Same change.
+	(objc_build_method_signature): Same change.
+	* stub-objc.c (objc_set_method_type): Removed.
+	(objc_add_method_declaration): Added boolean argument.
+	(objc_start_method_definition): Same change.
+	(objc_build_method_signature): Same change.
+
+2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* c-common.h (finish_file): Removed.
 	(objc_write_global_declarations): New.
 	* c-opts.c (c_common_parse_file): Do not call finish_file.

@@ -1,5 +1,22 @@
 2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.h (objc_inherit_code): Removed.
+	* objc-act.c (objc_inherit_code): Removed.
+	(objc_set_method_type): Removed.
+	(objc_build_method_signature): Added is_class_method argument.
+	Use it instead of the global objc_inherit_code variable.
+	(objc_add_method_declaration): Same change.
+	(objc_start_method_definition): Same change.
+	(objc_generate_cxx_ctor_or_dtor): Updated call to
+	objc_start_method_definition.  Do not call objc_set_method_type.
+	(adjust_type_for_id_default): Mark as inline.
+	(objc_synthesize_getter): Updated call to
+	objc_start_method_definition.  Do not set objc_inherit_code.
+	(objc_synthesize_setter): Updated call to
+	objc_start_method_definition.  Do not set objc_inherit_code.	
+	
+2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	Merge from 'apple/trunk' branch on FSF servers.  Obvious updates
 	to gcc_alloc_xxx calls in hash_init and hash_class_name_enter to
 	get it to compile in the current trunk.

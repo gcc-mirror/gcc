@@ -1067,11 +1067,11 @@ static void c_parser_objc_class_instance_variables (c_parser *);
 static void c_parser_objc_class_declaration (c_parser *);
 static void c_parser_objc_alias_declaration (c_parser *);
 static void c_parser_objc_protocol_definition (c_parser *, tree);
-static enum tree_code c_parser_objc_method_type (c_parser *);
+static bool c_parser_objc_method_type (c_parser *);
 static void c_parser_objc_method_definition (c_parser *);
 static void c_parser_objc_methodprotolist (c_parser *);
 static void c_parser_objc_methodproto (c_parser *);
-static tree c_parser_objc_method_decl (c_parser *, tree *);
+static tree c_parser_objc_method_decl (c_parser *, bool, tree *);
 static tree c_parser_objc_type_name (c_parser *);
 static tree c_parser_objc_protocol_refs (c_parser *);
 static void c_parser_objc_try_catch_statement (c_parser *);
@@ -6889,19 +6889,21 @@ c_parser_objc_protocol_definition (c_parser *parser, tree attributes)
    objc-method-type:
      +
      -
-*/
 
-static enum tree_code
+   Return true if it is a class method (+) and false if it is
+   an instance method (-).
+*/
+static inline bool
 c_parser_objc_method_type (c_parser *parser)
 {
   switch (c_parser_peek_token (parser)->type)
     {
     case CPP_PLUS:
       c_parser_consume_token (parser);
-      return PLUS_EXPR;
+      return true;
     case CPP_MINUS:
       c_parser_consume_token (parser);
-      return MINUS_EXPR;
+      return false;
     default:
       gcc_unreachable ();
     }
@@ -6916,11 +6918,10 @@ c_parser_objc_method_type (c_parser *parser)
 static void
 c_parser_objc_method_definition (c_parser *parser)
 {
-  enum tree_code type = c_parser_objc_method_type (parser);
+  bool is_class_method = c_parser_objc_method_type (parser);
   tree decl, attributes = NULL_TREE;
-  objc_set_method_type (type);
   parser->objc_pq_context = true;
-  decl = c_parser_objc_method_decl (parser, &attributes);
+  decl = c_parser_objc_method_decl (parser, is_class_method, &attributes);
   if (decl == error_mark_node)
     return;  /* Bail here. */
 
@@ -6938,7 +6939,7 @@ c_parser_objc_method_definition (c_parser *parser)
     }
 
   parser->objc_pq_context = false;
-  if (objc_start_method_definition (decl, attributes))
+  if (objc_start_method_definition (is_class_method, decl, attributes))
     {
       add_stmt (c_parser_compound_statement (parser));
       objc_finish_method_definition (current_function_decl);
@@ -7024,12 +7025,12 @@ c_parser_objc_methodprotolist (c_parser *parser)
 static void
 c_parser_objc_methodproto (c_parser *parser)
 {
-  enum tree_code type = c_parser_objc_method_type (parser);
+  bool is_class_method = c_parser_objc_method_type (parser);
   tree decl, attributes = NULL_TREE;
-  objc_set_method_type (type);
+
   /* Remember protocol qualifiers in prototypes.  */
   parser->objc_pq_context = true;
-  decl = c_parser_objc_method_decl (parser, &attributes);
+  decl = c_parser_objc_method_decl (parser, is_class_method, &attributes);
   /* Forget protocol qualifiers now.  */
   parser->objc_pq_context = false;
 
@@ -7042,7 +7043,7 @@ c_parser_objc_methodproto (c_parser *parser)
     }
   
   if (decl != error_mark_node)
-    objc_add_method_declaration (decl, attributes);
+    objc_add_method_declaration (is_class_method, decl, attributes);
 
   c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
 }
@@ -7115,7 +7116,7 @@ c_parser_objc_maybe_method_attributes (c_parser* parser, tree* attributes)
 */
 
 static tree
-c_parser_objc_method_decl (c_parser *parser, tree *attributes)
+c_parser_objc_method_decl (c_parser *parser, bool is_class_method, tree *attributes)
 {
   tree type = NULL_TREE;
   tree sel;
@@ -7206,7 +7207,7 @@ c_parser_objc_method_decl (c_parser *parser, tree *attributes)
   if (attr_err)
     return error_mark_node;
 
-  return objc_build_method_signature (type, sel, parms, ellipsis);
+  return objc_build_method_signature (is_class_method, type, sel, parms, ellipsis);
 }
 
 /* Parse an objc-type-name.

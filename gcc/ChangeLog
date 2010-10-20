@@ -1,3 +1,16 @@
+2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (c_parser_objc_method_type): Mark inline.  Return a
+	bool instead of a tree.
+	(c_parser_objc_method_decl): Added bool argument.  Updated call to
+	objc_build_method_signature.
+	(c_parser_objc_method_definition): Do not call
+	objc_set_method_type.  Updated calls to c_parser_objc_method_type,
+	c_parser_objc_method_decl and objc_start_method_definition.
+	(c_parser_objc_methodproto): Do not call objc_set_method_type.
+	Updated calls to c_parser_objc_method_type,
+	c_parser_objc_method_decl and objc_add_method_declaration.
+	
 2010-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/45919

@@ -392,7 +392,6 @@ struct imp_entry *imp_list = 0;
 int imp_count = 0;	/* `@implementation' */
 int cat_count = 0;	/* `@category' */
 
-enum tree_code objc_inherit_code;
 objc_ivar_visibility_kind objc_ivar_visibility;
 
 /* Use to generate method labels.  */
@@ -1278,24 +1277,20 @@ build_property_reference (tree property, tree id)
   return getter;
 }
 
-void
-objc_set_method_type (enum tree_code type)
-{
-  objc_inherit_code = (type == PLUS_EXPR
-		       ? CLASS_METHOD_DECL
-		       : INSTANCE_METHOD_DECL);
-}
-
 tree
-objc_build_method_signature (tree rettype, tree selector,
+objc_build_method_signature (bool is_class_method, tree rettype, tree selector,
 			     tree optparms, bool ellipsis)
 {
-  return build_method_decl (objc_inherit_code, rettype, selector,
-			    optparms, ellipsis);
+  if (is_class_method)
+    return build_method_decl (CLASS_METHOD_DECL, rettype, selector,
+			      optparms, ellipsis);
+  else
+    return build_method_decl (INSTANCE_METHOD_DECL, rettype, selector,
+			      optparms, ellipsis);
 }
 
 void
-objc_add_method_declaration (tree decl, tree attributes)
+objc_add_method_declaration (bool is_class_method, tree decl, tree attributes)
 {
   if (!objc_interface_context)
     {
@@ -1309,7 +1304,7 @@ objc_add_method_declaration (tree decl, tree attributes)
   objc_decl_method_attributes (&decl, attributes, 0);
   objc_add_method (objc_interface_context,
 		   decl,
-		   objc_inherit_code == CLASS_METHOD_DECL,
+		   is_class_method,
 		   objc_method_optional_flag);
 }
 
@@ -1317,7 +1312,7 @@ objc_add_method_declaration (tree decl, tree attributes)
    'false' if not (because we are outside an @implementation context).
 */
 bool
-objc_start_method_definition (tree decl, tree attributes)
+objc_start_method_definition (bool is_class_method, tree decl, tree attributes)
 {
   if (!objc_implementation_context)
     {
@@ -1338,7 +1333,7 @@ objc_start_method_definition (tree decl, tree attributes)
   objc_decl_method_attributes (&decl, attributes, 0);
   objc_add_method (objc_implementation_context,
 		   decl,
-		   objc_inherit_code == CLASS_METHOD_DECL, 
+		   is_class_method,
 		   /* is optional */ false);
   start_method_def (decl);
   return true;
@@ -5179,17 +5174,18 @@ objc_generate_cxx_ctor_or_dtor (bool dtor)
   /* - (id) .cxx_construct { ... return self; } */
   /* - (void) .cxx_construct { ... }            */
 
-  objc_set_method_type (MINUS_EXPR);
   objc_start_method_definition
-   (objc_build_method_signature (build_tree_list (NULL_TREE,
-						  dtor
-						  ? void_type_node
-						  : objc_object_type),
-				 get_identifier (dtor
-						 ? TAG_CXX_DESTRUCT
-						 : TAG_CXX_CONSTRUCT),
-				 make_node (TREE_LIST),
-				 false), NULL);
+    (false /* is_class_method */,
+     objc_build_method_signature (false /* is_class_method */,
+				  build_tree_list (NULL_TREE,
+						   dtor
+						   ? void_type_node
+						   : objc_object_type),
+				  get_identifier (dtor
+						  ? TAG_CXX_DESTRUCT
+						  : TAG_CXX_CONSTRUCT),
+				  make_node (TREE_LIST),
+				  false), NULL);
   body = begin_function_body ();
   compound_stmt = begin_compound_stmt (0);
 
@@ -6498,8 +6494,7 @@ synth_id_with_class_suffix (const char *preamble, tree ctxt)
 
 /* If type is empty or only type qualifiers are present, add default
    type of id (otherwise grokdeclarator will default to int).  */
-
-static tree
+static inline tree
 adjust_type_for_id_default (tree type)
 {
   if (!type)
@@ -6557,7 +6552,6 @@ objc_build_keyword_decl (tree key_name, tree arg_type,
 }
 
 /* Given a chain of keyword_decl's, synthesize the full keyword selector.  */
-
 static tree
 build_keyword_selector (tree selector)
 {
@@ -8660,9 +8654,8 @@ objc_synthesize_getter (tree klass, tree class_method, tree property)
   if (!decl)
     return;
 
-  objc_inherit_code = INSTANCE_METHOD_DECL;
   /* For now no attributes.  */
-  objc_start_method_definition (copy_node (decl), NULL_TREE);
+  objc_start_method_definition (false /* is_class_method */, copy_node (decl), NULL_TREE);
 
   body = c_begin_compound_stmt (true);
   /* return self->_property_name; */
@@ -8720,9 +8713,8 @@ objc_synthesize_setter (tree klass, tree class_method, tree property)
   if (!decl)
     return;
 
-  objc_inherit_code = INSTANCE_METHOD_DECL;
   /* For now, no attributes.  */
-  objc_start_method_definition (copy_node (decl), NULL_TREE);
+  objc_start_method_definition (false /* is_class_method */, copy_node (decl), NULL_TREE);
 
   body = c_begin_compound_stmt (true);
   /* _property_name = _value; */
