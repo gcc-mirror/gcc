@@ -810,7 +810,7 @@ cp_build_qualified_type_real (tree type,
       /* See if we already have an identically qualified type.  Tests
 	 should be equivalent to those in check_qualified_type.  */
       for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-	if (cp_type_quals (t) == type_quals
+	if (TREE_TYPE (t) == element_type
 	    && TYPE_NAME (t) == TYPE_NAME (type)
 	    && TYPE_CONTEXT (t) == TYPE_CONTEXT (type)
 	    && attribute_list_equal (TYPE_ATTRIBUTES (t),
