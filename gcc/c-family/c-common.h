@@ -788,8 +788,6 @@ extern HOST_WIDE_INT c_common_to_target_charset (HOST_WIDE_INT);
 
 /* This is the basic parsing function.  */
 extern void c_parse_file (void);
-/* This is misnamed, it actually performs end-of-compilation processing.  */
-extern void finish_file	(void);
 
 extern void warn_for_omitted_condop (location_t, tree);
 
@@ -981,6 +979,7 @@ extern void c_parse_error (const char *, enum cpp_ttype, tree, unsigned char);
 
 /* The following ObjC/ObjC++ functions are called by the C and/or C++
    front-ends; they all must have corresponding stubs in stub-objc.c.  */
+extern void objc_write_global_declarations (void);
 extern tree objc_is_class_name (tree);
 extern tree objc_is_object_ptr (tree);
 extern void objc_check_decl (tree);

@@ -92,10 +92,4 @@ objc_init_ts (void)
   tree_contains_struct[PROPERTY_DECL][TS_DECL_COMMON] = 1;
 }
 
-void
-finish_file (void)
-{
-  objc_finish_file ();
-}
-
 #include "gtype-objc.h"

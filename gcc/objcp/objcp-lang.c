@@ -156,11 +156,4 @@ objcxx_eh_personality (void)
   return objcp_eh_personality_decl;
 }
 
-
-void
-finish_file (void)
-{
-  objc_finish_file ();
-}
-
 #include "gtype-objcp.h"

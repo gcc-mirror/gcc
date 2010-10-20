@@ -1,3 +1,9 @@
+2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-decl.c (c_write_global_declarations): Call
+	objc_write_global_declarations when compiling Objective-C.
+	* c-lang.c (finish_file): Removed.
+
 2010-10-19  DJ Delorie  <dj@redhat.com>
 
 	* doc/tm.texi.in (TARGET_ASM_JUMP_ALIGN_MAX_SKIP): New.
