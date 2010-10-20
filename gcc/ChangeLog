@@ -1,3 +1,9 @@
+2010-10-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45860
+	* tree-ssa-phiopt.c (cond_store_replacement): Do not do
+	conditional store replacement for non-register type stores.
+
 2010-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (skip_simple_constant_arithmetic): New function.
