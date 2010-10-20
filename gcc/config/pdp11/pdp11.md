@@ -1,6 +1,6 @@
 ;;- Machine description for the pdp11 for GNU C compiler
 ;; Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2004, 2005
-;; 2007, 2008 Free Software Foundation, Inc.
+;; 2007, 2008, 2010 Free Software Foundation, Inc.
 ;; Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 ;; This file is part of GCC.
@@ -95,7 +95,7 @@
 {
   cc_status.flags = CC_IN_FPU;
   if (which_alternative == 0 || which_alternative == 2)
-    return \"{tstd|tstf} %0, %1\;cfcc\";
+    return \"{tstd|tstf} %0\;cfcc\";
   else
     return \"{cmpd|cmpf} %0, %1\;cfcc\";
 }"
@@ -187,7 +187,7 @@
 		       [(cc0) (const_int 0)])
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))]
-  ""
+  "TARGET_FPU"
   "")
 
 (define_expand "cbranchhi4"
@@ -306,12 +306,12 @@
 ;; do we have to supply all these moves? e.g. to 
 ;; NO_LOAD_FPU_REGs ? 
 (define_insn "movdf"
-  [(set (match_operand:DF 0 "general_operand" "=a,fR,a,Q,m")
-        (match_operand:DF 1 "general_operand" "fFR,a,Q,a,m"))]
-  ""
-  "* if (which_alternative ==0)
+  [(set (match_operand:DF 0 "general_operand" "=a,fR,a,Q,g")
+        (match_operand:DF 1 "general_operand" "fFR,a,Q,a,g"))]
+  "TARGET_FPU"
+  "* if (which_alternative ==0 || which_alternative == 2)
        return \"ldd %1, %0\";
-     else if (which_alternative == 1)
+     else if (which_alternative == 1 || which_alternative == 3)
        return \"std %1, %0\";
      else 
        return output_move_quad (operands); "
@@ -353,9 +353,9 @@
 
 
 (define_insn "" ; "movmemhi"
-  [(set (mem:BLK (match_operand:HI 0 "general_operand" "=r,r"))
-	(mem:BLK (match_operand:HI 1 "general_operand" "r,r")))
-   (use (match_operand:HI 2 "arith_operand" "n,&r"))
+  [(set (mem:BLK (match_operand 0 "pmode_register_operand" "+r,r"))
+	(mem:BLK (match_operand 1 "pmode_register_operand" "+r,r")))
+   (use (match_operand:HI 2 "general_operand" "+n,&r"))
    (use (match_operand:HI 3 "immediate_operand" "i,i"))
    (clobber (match_scratch:HI 4 "=&r,X"))
    (clobber (match_dup 0))

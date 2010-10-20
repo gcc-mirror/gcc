@@ -224,7 +224,7 @@ extern const struct real_format pdp11_d_format;
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
 (((REGNO) < 8)?						\
   ((GET_MODE_BITSIZE(MODE) <= 16) 			\
-   || (GET_MODE_BITSIZE(MODE) == 32 && !((REGNO) & 1)))	\
+   || (GET_MODE_BITSIZE(MODE) >= 32 && !((REGNO) & 1)))	\
   :(MODE) == DFmode)
     
 
