@@ -1,5 +1,8 @@
 2010-10-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/45919
+	* gcc.c-torture/compile/pr45919.c: New test.
+
 	PR tree-optimization/46066
 	* gcc.dg/autopar/pr46066.c: New test.
 
