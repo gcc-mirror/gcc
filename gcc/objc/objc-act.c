@@ -211,6 +211,14 @@ static const char *synth_id_with_class_suffix (const char *, tree);
 hash *nst_method_hash_list = 0;
 hash *cls_method_hash_list = 0;
 
+/* Hash tables to manage the global pool of class names.  */
+
+hash *cls_name_hash_list = 0;
+hash *als_name_hash_list = 0;
+
+static void hash_class_name_enter (hash *, tree, tree);
+static hash hash_class_name_lookup (hash *, tree);
+
 static hash hash_lookup (hash *, tree);
 static tree lookup_method (tree, tree);
 static tree lookup_method_static (tree, tree, int);
@@ -3586,7 +3594,8 @@ objc_declare_alias (tree alias_ident, tree class_ident)
 #ifdef OBJCPLUS
       pop_lang_context ();
 #endif
-      alias_chain = tree_cons (underlying_class, alias_ident, alias_chain);
+      hash_class_name_enter (als_name_hash_list, alias_ident, 
+			     underlying_class);
     }
 }
 
@@ -3628,7 +3637,7 @@ objc_declare_class (tree ident_list)
 	  record = xref_tag (RECORD_TYPE, ident);
 	  INIT_TYPE_OBJC_INFO (record);
 	  TYPE_OBJC_INTERFACE (record) = ident;
-	  class_chain = tree_cons (NULL_TREE, ident, class_chain);
+	  hash_class_name_enter (cls_name_hash_list, ident, NULL_TREE);
 	}
     }
 }
@@ -3636,7 +3645,7 @@ objc_declare_class (tree ident_list)
 tree
 objc_is_class_name (tree ident)
 {
-  tree chain;
+  hash target;
 
   if (ident && TREE_CODE (ident) == IDENTIFIER_NODE
       && identifier_global_value (ident))
@@ -3661,16 +3670,15 @@ objc_is_class_name (tree ident)
   if (lookup_interface (ident))
     return ident;
 
-  for (chain = class_chain; chain; chain = TREE_CHAIN (chain))
-    {
-      if (ident == TREE_VALUE (chain))
-	return ident;
-    }
+  target = hash_class_name_lookup (cls_name_hash_list, ident);
+  if (target)
+    return target->key;
 
-  for (chain = alias_chain; chain; chain = TREE_CHAIN (chain))
+  target = hash_class_name_lookup (als_name_hash_list, ident);
+  if (target)
     {
-      if (ident == TREE_VALUE (chain))
-	return TREE_PURPOSE (chain);
+      gcc_assert (target->list && target->list->value);
+      return target->list->value;
     }
 
   return 0;
@@ -7483,9 +7491,60 @@ hash_init (void)
   nst_method_hash_list = ggc_alloc_cleared_vec_hash (SIZEHASHTABLE);
   cls_method_hash_list = ggc_alloc_cleared_vec_hash (SIZEHASHTABLE);
 
+  cls_name_hash_list = ggc_alloc_cleared_vec_hash (SIZEHASHTABLE);
+  als_name_hash_list = ggc_alloc_cleared_vec_hash (SIZEHASHTABLE);
+
   /* Initialize the hash table used to hold the constant string objects.  */
   string_htab = htab_create_ggc (31, string_hash,
 				   string_eq, NULL);
+}
+
+/* This routine adds sel_name to the hash list. sel_name  is a class or alias
+   name for the class. If alias name, then value is its underlying class.
+   If class, the value is NULL_TREE. */
+
+static void
+hash_class_name_enter (hash *hashlist, tree sel_name, tree value)
+{
+  hash obj;
+  int slot = hash_func (sel_name) % SIZEHASHTABLE;
+
+  obj = ggc_alloc_hashed_entry ();
+  if (value != NULL_TREE)
+    {
+      /* Save the underlying class for the 'alias' in the hash table */
+      attr obj_attr = ggc_alloc_hashed_attribute ();
+      obj_attr->value = value;
+      obj->list = obj_attr;
+    }
+  else
+    obj->list = 0;
+  obj->next = hashlist[slot];
+  obj->key = sel_name;
+
+  hashlist[slot] = obj;         /* append to front */
+
+}
+
+/*
+   Searches in the hash table looking for a match for class or alias name.
+*/
+
+static hash
+hash_class_name_lookup (hash *hashlist, tree sel_name)
+{
+  hash target;
+
+  target = hashlist[hash_func (sel_name) % SIZEHASHTABLE];
+
+  while (target)
+    {
+      if (sel_name == target->key)
+	return target;
+
+      target = target->next;
+    }
+  return 0;
 }
 
 /* WARNING!!!!  hash_enter is called with a method, and will peek

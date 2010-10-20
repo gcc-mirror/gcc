@@ -156,6 +156,9 @@ struct GTY(()) hashed_entry {
 extern GTY ((length ("SIZEHASHTABLE"))) hash *nst_method_hash_list;
 extern GTY ((length ("SIZEHASHTABLE"))) hash *cls_method_hash_list;
 
+extern GTY ((length ("SIZEHASHTABLE"))) hash *cls_name_hash_list;
+extern GTY ((length ("SIZEHASHTABLE"))) hash *als_name_hash_list;
+
 #define SIZEHASHTABLE		257
 
 /* Objective-C/Objective-C++ @implementation list.  */
@@ -200,8 +203,6 @@ enum objc_tree_index
     OCTI_NST_TYPE,
     OCTI_PROTO_TYPE,
 
-    OCTI_CLS_CHAIN,
-    OCTI_ALIAS_CHAIN,
     OCTI_INTF_CHAIN,
     OCTI_PROTO_CHAIN,
     OCTI_IMPL_CHAIN,
@@ -338,8 +339,6 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 	(TREE_CODE (TYPE) == POINTER_TYPE				\
 	 && TREE_TYPE (TYPE) == objc_super_template)
 
-#define class_chain		objc_global_trees[OCTI_CLS_CHAIN]
-#define alias_chain		objc_global_trees[OCTI_ALIAS_CHAIN]
 #define interface_chain		objc_global_trees[OCTI_INTF_CHAIN]
 #define protocol_chain		objc_global_trees[OCTI_PROTO_CHAIN]
 #define implemented_classes	objc_global_trees[OCTI_IMPL_CHAIN]
