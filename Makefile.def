@@ -149,7 +149,7 @@ host_modules= { module= lto-plugin; bootstrap=true; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
-		   lib_path=.libs;
+		   lib_path=src/.libs;
 		   raw_cxx=true; };
 target_modules = { module= libmudflap; lib_path=.libs; };
 target_modules = { module= libssp; lib_path=.libs; };

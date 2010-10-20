@@ -513,7 +513,7 @@ all:
 ###
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
-# so that prorgams built for the target machine work.
+# so that programs built for the target machine work.
 TARGET_LIB_PATH = [+ FOR target_modules +][+
   IF lib_path +]$(TARGET_LIB_PATH_[+module+])[+ ENDIF lib_path +][+
   ENDFOR target_modules +]$(HOST_LIB_PATH_gcc)
