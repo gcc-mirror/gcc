@@ -324,6 +324,8 @@ static void ia64_override_options_after_change (void);
 
 static void ia64_dwarf_handle_frame_unspec (const char *, rtx, int);
 static tree ia64_builtin_decl (unsigned, bool);
+
+static reg_class_t ia64_preferred_reload_class (rtx, reg_class_t);
 
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ia64_attribute_table[] =
@@ -594,6 +596,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE ia64_override_options_after_change
+
+#undef TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS ia64_preferred_reload_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5346,11 +5351,11 @@ ia64_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
     return 10;
 }
 
-/* Implement PREFERRED_RELOAD_CLASS.  Place additional restrictions on RCLASS
-   to use when copying X into that class.  */
+/* Implement TARGET_PREFERRED_RELOAD_CLASS.  Place additional restrictions
+   on RCLASS to use when copying X into that class.  */
 
-enum reg_class
-ia64_preferred_reload_class (rtx x, enum reg_class rclass)
+static reg_class_t
+ia64_preferred_reload_class (rtx x, reg_class_t rclass)
 {
   switch (rclass)
     {

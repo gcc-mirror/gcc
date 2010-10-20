@@ -56,7 +56,6 @@ extern int ia64_hard_regno_rename_ok (int, int);
 
 extern void ia64_print_operand_address (FILE *, rtx);
 extern void ia64_print_operand (FILE *, rtx, int);
-extern enum reg_class ia64_preferred_reload_class (rtx, enum reg_class);
 extern enum reg_class ia64_secondary_reload_class (enum reg_class,
 						   enum machine_mode, rtx);
 extern const char *get_bundle_name (int);
