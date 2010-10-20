@@ -1,3 +1,8 @@
+2010-10-20  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	PR c++/46056
+	* g++.dg/cpp0x/range-for7.C: New.
+
 2010-10-20  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/45667

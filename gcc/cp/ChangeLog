@@ -1,3 +1,9 @@
+2010-10-20  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	PR c++/46056
+	* parser.c (cp_convert_range_for): Call cp_finish_decl
+	instead of finish_expr_stmt.
+
 2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* cp-lang.c (finish_file): Removed.
