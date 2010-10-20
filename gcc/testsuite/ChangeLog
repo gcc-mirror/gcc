@@ -1,3 +1,8 @@
+2010-10-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/46024
+	* g++.dg/warn/miss-format-1.C: Enclose dg-error target list in braces.
+
 2010-10-20  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
 
 	PR c++/46056
