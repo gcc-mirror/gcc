@@ -1,3 +1,8 @@
+2010-10-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* ifcvt.c (noce_emit_cmove): If both of the values are SUBREGs, try
+	emitting the conditional move in the inner mode of the SUBREG.
+
 2010-10-20  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/ia64/ia64.h (PREFERRED_RELOAD_CLASS): Remove macros.
