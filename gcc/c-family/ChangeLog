@@ -1,3 +1,10 @@
+2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-common.h (finish_file): Removed.
+	(objc_write_global_declarations): New.
+	* c-opts.c (c_common_parse_file): Do not call finish_file.
+	* stub-objc.c (objc_write_global_declarations): New.
+	
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented parsing @synthesize and @dynamic for

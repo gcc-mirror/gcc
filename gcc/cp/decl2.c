@@ -3896,6 +3896,14 @@ cp_write_global_declarations (void)
     if (!decl_defined_p (decl))
       no_linkage_error (decl);
 
+  /* Then, do the Objective-C stuff.  This is where all the
+     Objective-C module stuff gets generated (symtab,
+     class/protocol/selector lists etc).  This must be done after C++
+     templates, destructors etc. so that selectors used in C++
+     templates are properly allocated.  */
+  if (c_dialect_objc ())
+    objc_write_global_declarations ();
+
   /* We give C linkage to static constructors and destructors.  */
   push_lang_context (lang_name_c);
 

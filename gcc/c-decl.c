@@ -9782,6 +9782,12 @@ c_write_global_declarations (void)
   if (pch_file)
     return;
 
+  /* Do the Objective-C stuff.  This is where all the Objective-C
+     module stuff gets generated (symtab, class/protocol/selector
+     lists etc).  */
+  if (c_dialect_objc ())
+    objc_write_global_declarations ();
+
   /* Close the external scope.  */
   ext_block = pop_scope ();
   external_scope = 0;

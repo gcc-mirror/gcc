@@ -1,3 +1,14 @@
+2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-lang.c (finish_file): Removed.
+	* objc-act.c (objc_finish_file): Renamed to
+	objc_write_global_declarations.  Do not try to instantiate C++
+	templates when compiling Objective-C++ as this is now
+	automatically done before this function is called.  Do not check
+	for syntax-only run or PCH generation as this is done by the
+	callers.
+	* objc-act.h (objc_finish_file): Removed.
+	
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented parsing @synthesize and @dynamic for

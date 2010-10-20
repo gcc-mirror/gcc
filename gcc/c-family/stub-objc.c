@@ -416,3 +416,8 @@ objc_finish_foreach_loop (location_t ARG_UNUSED (location), tree ARG_UNUSED (obj
 {
   return;
 }
+
+void
+objc_write_global_declarations (void)
+{
+}

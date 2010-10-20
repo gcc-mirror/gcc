@@ -154,11 +154,6 @@ cp_classify_record (tree type)
   return RECORD_IS_STRUCT;
 }
 
-void
-finish_file (void)
-{
-}
-
 static GTY(()) tree cp_eh_personality_decl;
 
 static tree

@@ -1,4 +1,14 @@
 2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	Merge from 'apple/trunk' branch on FSF servers.  Test adapted to
+	not require Foundation and run with the GNU runtime as well.
+
+	2006-03-13  Fariborz Jahanian <fjahanian@apple.com>
+
+        Radar 4439126
+	* obj-c++.dg/template-8.mm: New.	
+
+2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/23709
 	* objc.dg/pr23709.m: New.
