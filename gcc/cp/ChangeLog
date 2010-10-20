@@ -1,3 +1,14 @@
+2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (cp_parser_objc_method_type): Mark inline.  Return a
+	bool instead of calling objc_set_method_type.
+	(cp_parser_objc_method_signature): Updated calls to
+	cp_parser_objc_method_type and to objc_build_method_signature.
+	(cp_parser_objc_method_prototype_list): Updated calls to
+	objc_add_method_declaration.  Use token->type to determine if it
+	is a class method or not.	
+	(cp_parser_objc_method_definition_list): Same change.
+	
 2010-10-20  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
 
 	PR c++/46056

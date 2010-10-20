@@ -179,11 +179,6 @@ objc_set_visibility (objc_ivar_visibility_kind ARG_UNUSED (vis))
 }
 
 void
-objc_set_method_type (enum tree_code ARG_UNUSED (code))
-{
-}
-
-void
 objc_start_class_implementation (tree ARG_UNUSED (name),
 				 tree ARG_UNUSED (super))
 {
@@ -211,13 +206,15 @@ objc_finish_implementation (void)
 }
 
 void
-objc_add_method_declaration (tree ARG_UNUSED (signature),
+objc_add_method_declaration (bool ARG_UNUSED (is_class_method),
+			     tree ARG_UNUSED (signature),
 			     tree ARG_UNUSED (attributes))
 {
 }
 
 bool
-objc_start_method_definition (tree ARG_UNUSED (signature),
+objc_start_method_definition (bool ARG_UNUSED (is_class_method),
+			      tree ARG_UNUSED (signature),
 			      tree ARG_UNUSED (attributes))
 {
   return true;
@@ -244,7 +241,8 @@ objc_build_keyword_decl (tree ARG_UNUSED (selector),
 }
 
 tree
-objc_build_method_signature (tree ARG_UNUSED (rettype),
+objc_build_method_signature (bool ARG_UNUSED (is_class_method),
+			     tree ARG_UNUSED (rettype),
 			     tree ARG_UNUSED (selectors),
 			     tree ARG_UNUSED (optparms),
 			     bool ARG_UNUSED (ellipsis))

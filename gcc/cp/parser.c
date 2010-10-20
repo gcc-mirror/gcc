@@ -21394,15 +21394,16 @@ cp_parser_objc_visibility_spec (cp_parser* parser)
   cp_lexer_consume_token (parser->lexer);
 }
 
-/* Parse an Objective-C method type.  */
+/* Parse an Objective-C method type.  Return 'true' if it is a class
+   (+) method, and 'false' if it is an instance (-) method.  */
 
-static void
+static inline bool
 cp_parser_objc_method_type (cp_parser* parser)
 {
-  objc_set_method_type
-   (cp_lexer_consume_token (parser->lexer)->type == CPP_PLUS
-    ? PLUS_EXPR
-    : MINUS_EXPR);
+  if (cp_lexer_consume_token (parser->lexer)->type == CPP_PLUS)
+    return true;
+  else
+    return false;
 }
 
 /* Parse an Objective-C protocol qualifier.  */
@@ -21688,8 +21689,9 @@ cp_parser_objc_method_signature (cp_parser* parser, tree* attributes)
 {
   tree rettype, kwdparms, optparms;
   bool ellipsis = false;
+  bool is_class_method;
 
-  cp_parser_objc_method_type (parser);
+  is_class_method = cp_parser_objc_method_type (parser);
   rettype = cp_parser_objc_typename (parser);
   *attributes = NULL_TREE;
   kwdparms = cp_parser_objc_method_keyword_params (parser, attributes);
@@ -21699,7 +21701,7 @@ cp_parser_objc_method_signature (cp_parser* parser, tree* attributes)
   if (optparms == error_mark_node)
     return error_mark_node;
 
-  return objc_build_method_signature (rettype, kwdparms, optparms, ellipsis);
+  return objc_build_method_signature (is_class_method, rettype, kwdparms, optparms, ellipsis);
 }
 
 static bool
@@ -21734,6 +21736,11 @@ cp_parser_objc_method_prototype_list (cp_parser* parser)
       if (token->type == CPP_PLUS || token->type == CPP_MINUS)
 	{
 	  tree attributes, sig;
+	  bool is_class_method;
+	  if (token->type == CPP_PLUS)
+	    is_class_method = true;
+	  else
+	    is_class_method = false;
 	  sig = cp_parser_objc_method_signature (parser, &attributes);
 	  if (sig == error_mark_node)
 	    {
@@ -21741,7 +21748,7 @@ cp_parser_objc_method_prototype_list (cp_parser* parser)
 	      token = cp_lexer_peek_token (parser->lexer);
 	      continue;
 	    }
-	  objc_add_method_declaration (sig, attributes);
+	  objc_add_method_declaration (is_class_method, sig, attributes);
 	  cp_parser_consume_semicolon_at_end_of_statement (parser);
 	}
       else if (token->keyword == RID_AT_PROPERTY)
@@ -21781,6 +21788,11 @@ cp_parser_objc_method_definition_list (cp_parser* parser)
 	{
 	  cp_token *ptk;
 	  tree sig, attribute;
+	  bool is_class_method;
+	  if (token->type == CPP_PLUS)
+	    is_class_method = true;
+	  else
+	    is_class_method = false;
 	  push_deferring_access_checks (dk_deferred);
 	  sig = cp_parser_objc_method_signature (parser, &attribute);
 	  if (sig == error_mark_node)
@@ -21789,7 +21801,7 @@ cp_parser_objc_method_definition_list (cp_parser* parser)
 	      token = cp_lexer_peek_token (parser->lexer);
 	      continue;
 	    }
-	  objc_start_method_definition (sig, attribute);
+	  objc_start_method_definition (is_class_method, sig, attribute);
 
 	  /* For historical reasons, we accept an optional semicolon.  */
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
