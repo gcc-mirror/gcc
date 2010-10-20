@@ -11599,6 +11599,31 @@ fold_binary_loc (location_t loc,
       return NULL_TREE;
 
     case TRUNC_DIV_EXPR:
+      /* Optimize (X & (-A)) / A where A is a power of 2,
+	 to X >> log2(A) */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && !TYPE_UNSIGNED (type) && TREE_CODE (arg1) == INTEGER_CST
+	  && integer_pow2p (arg1) && tree_int_cst_sgn (arg1) > 0)
+	{
+	  tree sum = fold_binary_loc (loc, PLUS_EXPR, TREE_TYPE (arg1),
+				      arg1, TREE_OPERAND (arg0, 1));
+	  if (sum && integer_zerop (sum)) {
+	    unsigned long pow2;
+
+	    if (TREE_INT_CST_LOW (arg1))
+	      pow2 = exact_log2 (TREE_INT_CST_LOW (arg1));
+	    else
+	      pow2 = exact_log2 (TREE_INT_CST_HIGH (arg1))
+		      + HOST_BITS_PER_WIDE_INT;
+
+	    return fold_build2_loc (loc, RSHIFT_EXPR, type,
+			  TREE_OPERAND (arg0, 0),
+			  build_int_cst (NULL_TREE, pow2));
+	  }
+	}
+
+      /* Fall thru */
+      
     case FLOOR_DIV_EXPR:
       /* Simplify A / (B << N) where A and B are positive and B is
 	 a power of 2, to A >> (N + log2(B)).  */
