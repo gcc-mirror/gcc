@@ -1,3 +1,7 @@
+2010-10-20  Dmitry Melnik  <dm@ispras.ru>
+
+	* fold-const.c (fold_binary_loc): New transformation.
+
 2010-10-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/46085
