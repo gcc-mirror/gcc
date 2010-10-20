@@ -30,3 +30,6 @@ gtfiles="\$(srcdir)/lto/lto-tree.h \$(srcdir)/lto/lto-lang.c \$(srcdir)/lto/lto.
 # enabling this "language". To enable LTO functionality, use
 # --enable-lto when configuring the compiler.
 build_by_default=no
+
+# Add LTO to boot language if it is enabled.
+boot_language=$enable_lto

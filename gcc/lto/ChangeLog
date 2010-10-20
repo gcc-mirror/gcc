@@ -1,3 +1,8 @@
+2010-10-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/45954
+	* config-lang.in (boot_language): Set to $enable_lto.
+
 2010-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/45638
