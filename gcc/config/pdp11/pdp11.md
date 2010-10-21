@@ -980,7 +980,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(ashift:SI (match_operand:SI 1 "register_operand" "0,0")
 		   (match_operand:HI 2 "general_operand" "rR,Qi")))]
-  "TARGET_45"
+  "TARGET_40_PLUS"
   "ashc %2,%0"
   [(set_attr "length" "1,2")])
 
@@ -1141,7 +1141,7 @@
   [(set (match_operand:HI 0 "register_operand" "=r,r")
 	(ashift:HI (match_operand:HI 1 "register_operand" "0,0")
 		   (match_operand:HI 2 "general_operand" "rR,Qi")))]
-  ""
+  "TARGET_40_PLUS"
   "*
 {
   if (GET_CODE(operands[2]) == CONST_INT)
@@ -1369,7 +1369,7 @@
   [(set (match_operand:HI 0 "register_operand" "=d,d") ; multiply regs
 	(mult:HI (match_operand:HI 1 "register_operand" "%0,0")
 		 (match_operand:HI 2 "general_operand" "rR,Qi")))]
-  "TARGET_45"
+  "TARGET_40_PLUS"
   "mul %2, %0"
   [(set_attr "length" "1,2")])
 
@@ -1381,7 +1381,7 @@
 	(mult:SI (truncate:HI 
                   (match_dup 0))
 		 (match_operand:HI 2 "general_operand" "rR,Qi")))]
-  "TARGET_45"
+  "TARGET_40_PLUS"
   "operands[3] = gen_lowpart(HImode, operands[1]);")
 
 (define_insn ""
@@ -1389,7 +1389,7 @@
 	(mult:SI (truncate:HI 
                   (match_operand:SI 1 "register_operand" "%0,0"))
 		 (match_operand:HI 2 "general_operand" "rR,Qi")))]
-  "TARGET_45"
+  "TARGET_40_PLUS"
   "mul %2, %0"
   [(set_attr "length" "1,2")])
 
@@ -1398,7 +1398,7 @@
 ;	(mult:SI (truncate:HI 
 ;                  (match_operand:SI 1 "register_operand" "%0,0"))
 ;		 (match_operand:HI 2 "general_operand" "rR,Qi")))]
-;  "TARGET_45"
+;  "TARGET_40_PLUS"
 ;  "mul %2, %0"
 ;  [(set_attr "length" "1,2")])
 
@@ -1418,14 +1418,14 @@
 		(match_operand:HI 2 "general_operand" "g")))
    (set (match_operand:HI 0 "general_operand" "=r")
         (subreg:HI (match_dup 1) 0))]
-  "TARGET_45"
+  "TARGET_40_PLUS"
   "")
 
 (define_insn ""
   [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r") 0)
 	(div:HI (match_operand:SI 1 "general_operand" "0")
 		(match_operand:HI 2 "general_operand" "g")))]
-  "TARGET_45"
+  "TARGET_40_PLUS"
   "div %2,%0"
   [(set_attr "length" "2")])
 
@@ -1435,14 +1435,14 @@
 		(match_operand:HI 2 "general_operand" "g")))
    (set (match_operand:HI 0 "general_operand" "=r")
         (subreg:HI (match_dup 1) 2))]
-  "TARGET_45"
+  "TARGET_40_PLUS"
   "")
 
 (define_insn ""
   [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r") 2)
 	(mod:HI (match_operand:SI 1 "general_operand" "0")
 		(match_operand:HI 2 "general_operand" "g")))]
-  "TARGET_45"
+  "TARGET_40_PLUS"
   "div %2,%0"
   [(set_attr "length" "2")])
 
@@ -1457,7 +1457,7 @@
 ;        (subreg:HI (match_dup 1) 2))
 ;   (set (match_operand:HI 0 "general_operand" "=r")
 ;        (subreg:HI (match_dup 1) 0))]
-;  "TARGET_45"
+;  "TARGET_40_PLUS"
 ;  "")
 ;
 ;(define_insn ""
@@ -1467,7 +1467,7 @@
 ;   (set (subreg:HI (match_dup 0) 2)
 ;	           (mod:HI (match_dup 1)
 ;		           (match_dup 2)))]
-;  "TARGET_45"
+;  "TARGET_40_PLUS"
 ;  "div %2, %0")
 ;
    
