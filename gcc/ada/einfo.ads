@@ -850,10 +850,11 @@ package Einfo is
 --       index starting at 1 and ranging up to number of discriminants.
 
 --    Dispatch_Table_Wrappers (Elist26) [implementation base type only]
---       Present in library level record type entities if we are generating
---       statically allocated dispatch tables. For a tagged type, points to
---       the list of dispatch table wrappers associated with the tagged type.
---       For a non-tagged record, contains No_Elist.
+--       Present in record type [with private] entities. Set in library level
+--       record type entities if we are generating statically allocated
+--       dispatch tables. For a tagged type, points to the list of dispatch
+--       table wrappers associated with the tagged type. For a non-tagged
+--       record, contains No_Elist.
 
 --    DTC_Entity (Node16)
 --       Present in function and procedure entities. Set to Empty unless
@@ -5424,7 +5425,6 @@ package Einfo is
    --  E_Record_Subtype
    --    Direct_Primitive_Operations         (Elist10)
    --    Access_Disp_Table                   (Elist16)  (base type only)
-   --    Dispatch_Table_Wrappers             (Elist26)  (base type only)
    --    Cloned_Subtype                      (Node16)   (subtype case only)
    --    First_Entity                        (Node17)
    --    Corresponding_Concurrent_Type       (Node18)
@@ -5434,6 +5434,7 @@ package Einfo is
    --    Corresponding_Remote_Type           (Node22)
    --    Stored_Constraint                   (Elist23)
    --    Interfaces                          (Elist25)
+   --    Dispatch_Table_Wrappers             (Elist26)  (base type only)
    --    Underlying_Record_View              (Node28)   (base type only)
    --    Component_Alignment                 (special)  (base type only)
    --    C_Pass_By_Copy                      (Flag125)  (base type only)
@@ -5457,7 +5458,6 @@ package Einfo is
    --  E_Record_Subtype_With_Private
    --    Direct_Primitive_Operations         (Elist10)
    --    Access_Disp_Table                   (Elist16)  (base type only)
-   --    Dispatch_Table_Wrappers             (Elist26)  (base type only)
    --    First_Entity                        (Node17)
    --    Private_Dependents                  (Elist18)
    --    Underlying_Full_View                (Node19)
@@ -5466,6 +5466,7 @@ package Einfo is
    --    Private_View                        (Node22)
    --    Stored_Constraint                   (Elist23)
    --    Interfaces                          (Elist25)
+   --    Dispatch_Table_Wrappers             (Elist26)  (base type only)
    --    Has_Completion                      (Flag26)
    --    Has_Record_Rep_Clause               (Flag65)   (base type only)
    --    Has_External_Tag_Rep_Clause         (Flag110)
