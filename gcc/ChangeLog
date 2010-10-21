@@ -1,5 +1,11 @@
 2010-10-21  Tristan Gingold  <gingold@adacore.com>
 
+	* config/alpha/vms-unwind.h (alpha_vms_fallback_frame_state): Set
+	signa_frame.
+	* config/alpha/alpha.c (alpha_function_arg): Adjust call.
+
+2010-10-21  Tristan Gingold  <gingold@adacore.com>
+
 	* config/ia64/vms64.h (TARGET_DEFAULT): Add MASK_FUSED_MADD.
 	* config/ia64/vms.h (TARGET_DEFAULT): Ditto.
 
