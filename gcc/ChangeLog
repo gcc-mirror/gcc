@@ -1,3 +1,8 @@
+2010-10-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46111
+	* tree-parloops.c (take_address_of): Re-organize for MEM_REF.
+
 2010-10-21  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md (*xordi3_cc): Mark xgrk as z196 only.

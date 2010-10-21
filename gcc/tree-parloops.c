@@ -333,14 +333,23 @@ take_address_of (tree obj, tree type, edge entry, htab_t decl_address)
        handled_component_p (*var_p);
        var_p = &TREE_OPERAND (*var_p, 0))
     continue;
-  uid = DECL_UID (*var_p);
 
+  /* Canonicalize the access to base on a MEM_REF.  */
+  if (DECL_P (*var_p))
+    *var_p = build_simple_mem_ref (build_fold_addr_expr (*var_p));
+
+  /* Assign a canonical SSA name to the address of the base decl used
+     in the address and share it for all accesses and addresses based
+     on it.  */
+  uid = DECL_UID (TREE_OPERAND (TREE_OPERAND (*var_p, 0), 0));
   ielt.uid = uid;
   dslot = htab_find_slot_with_hash (decl_address, &ielt, uid, INSERT);
   if (!*dslot)
     {
-      addr = build_addr (*var_p, current_function_decl);
-      bvar = create_tmp_var (TREE_TYPE (addr), get_name (*var_p));
+      addr = TREE_OPERAND (*var_p, 0);
+      bvar = create_tmp_var (TREE_TYPE (addr),
+			     get_name (TREE_OPERAND
+				         (TREE_OPERAND (*var_p, 0), 0)));
       add_referenced_var (bvar);
       stmt = gimple_build_assign (bvar, addr);
       name = make_ssa_name (bvar, stmt);
@@ -355,16 +364,14 @@ take_address_of (tree obj, tree type, edge entry, htab_t decl_address)
   else
     name = ((struct int_tree_map *) *dslot)->to;
 
-  if (var_p != &obj)
-    {
-      *var_p = build_simple_mem_ref (name);
-      name = force_gimple_operand (build_addr (obj, current_function_decl),
-				   &stmts, true, NULL_TREE);
-      if (!gimple_seq_empty_p (stmts))
-	gsi_insert_seq_on_edge_immediate (entry, stmts);
-    }
+  /* Express the address in terms of the canonical SSA name.  */
+  TREE_OPERAND (*var_p, 0) = name;
+  name = force_gimple_operand (build_addr (obj, current_function_decl),
+			       &stmts, true, NULL_TREE);
+  if (!gimple_seq_empty_p (stmts))
+    gsi_insert_seq_on_edge_immediate (entry, stmts);
 
-  if (TREE_TYPE (name) != type)
+  if (!useless_type_conversion_p (type, TREE_TYPE (name)))
     {
       name = force_gimple_operand (fold_convert (type, name), &stmts, true,
 				   NULL_TREE);
