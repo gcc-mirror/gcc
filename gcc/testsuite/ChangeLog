@@ -1,3 +1,9 @@
+2010-10-21  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/45946
+	* gcc.target/i386/pr45946.c: New test.
+
 2010-10-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/45875
@@ -93,25 +99,25 @@
 	* gcc.target/powerpc/ehreturn.c: New test.
 
 2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	Merge from 'apple/trunk' branch on FSF servers.  Test adapted to
 	not require Foundation and run with the GNU runtime as well.
 
 	2006-03-13  Fariborz Jahanian <fjahanian@apple.com>
 
-        Radar 4439126
-	* obj-c++.dg/template-8.mm: New.	
+	Radar 4439126
+	* obj-c++.dg/template-8.mm: New.
 
 2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/23709
 	* objc.dg/pr23709.m: New.
-	* obj-c++.dg/pr23709.m: New.	
+	* obj-c++.dg/pr23709.m: New.
 
 2010-10-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
-        PR c++/46046
-        * g++.dg/template/crash104.C: New.
+	PR c++/46046
+	* g++.dg/template/crash104.C: New.
 
 2010-10-19  Richard Henderson  <rth@redhat.com>
 
@@ -130,7 +136,7 @@
 
 	2006-03-16 Fariborz Jahanian <fjahanian@apple.com>
 
-        Radar 4293709
+	Radar 4293709
 	* objc.dg/proto-init-mimatch-1.m: New.
 	* obj-c++.dg/proto-init-mimatch-1.mm: New.
 
