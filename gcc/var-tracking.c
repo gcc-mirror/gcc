@@ -1075,9 +1075,7 @@ dv_is_value_p (decl_or_value dv)
 static inline tree
 dv_as_decl (decl_or_value dv)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (dv_is_decl_p (dv));
-#endif
+  gcc_checking_assert (dv_is_decl_p (dv));
   return (tree) dv;
 }
 
@@ -1085,9 +1083,7 @@ dv_as_decl (decl_or_value dv)
 static inline rtx
 dv_as_value (decl_or_value dv)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (dv_is_value_p (dv));
-#endif
+  gcc_checking_assert (dv_is_value_p (dv));
   return (rtx)dv;
 }
 
@@ -1136,9 +1132,7 @@ dv_from_decl (tree decl)
 {
   decl_or_value dv;
   dv = decl;
-#ifdef ENABLE_CHECKING
-  gcc_assert (dv_is_decl_p (dv));
-#endif
+  gcc_checking_assert (dv_is_decl_p (dv));
   return dv;
 }
 
@@ -1148,9 +1142,7 @@ dv_from_value (rtx value)
 {
   decl_or_value dv;
   dv = value;
-#ifdef ENABLE_CHECKING
-  gcc_assert (dv_is_value_p (dv));
-#endif
+  gcc_checking_assert (dv_is_value_p (dv));
   return dv;
 }
 
@@ -2182,10 +2174,8 @@ variable_union (variable src, dataflow_set *set)
 	      nnode->next = dnode;
 	      dnode = nnode;
 	    }
-#ifdef ENABLE_CHECKING
 	  else if (r == 0)
-	    gcc_assert (rtx_equal_p (dnode->loc, snode->loc));
-#endif
+	    gcc_checking_assert (rtx_equal_p (dnode->loc, snode->loc));
 
 	  if (r >= 0)
 	    snode = snode->next;
@@ -2549,17 +2539,13 @@ find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
   if (!var)
     return NULL;
 
-#ifdef ENABLE_CHECKING
-  gcc_assert (dv_onepart_p (var->dv));
-#endif
+  gcc_checking_assert (dv_onepart_p (var->dv));
 
   if (!var->n_var_parts)
     return NULL;
 
-#ifdef ENABLE_CHECKING
-  gcc_assert (var->var_part[0].offset == 0);
-  gcc_assert (loc != dv_as_opaque (var->dv));
-#endif
+  gcc_checking_assert (var->var_part[0].offset == 0);
+  gcc_checking_assert (loc != dv_as_opaque (var->dv));
 
   loc_code = GET_CODE (loc);
   for (node = var->var_part[0].loc_chain; node; node = node->next)
@@ -2591,20 +2577,16 @@ find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
 	  while (node->next && GET_CODE (node->next->loc) == VALUE)
 	    {
 	      node = node->next;
-#ifdef ENABLE_CHECKING
-	      gcc_assert (!canon_value_cmp (node->loc,
-					    dv_as_value (var->dv)));
-#endif
+	      gcc_checking_assert (!canon_value_cmp (node->loc,
+						     dv_as_value (var->dv)));
 	      if (loc == node->loc)
 		return node;
 	    }
 	  continue;
 	}
 
-#ifdef ENABLE_CHECKING
-      gcc_assert (node == var->var_part[0].loc_chain);
-      gcc_assert (!node->next);
-#endif
+      gcc_checking_assert (node == var->var_part[0].loc_chain);
+      gcc_checking_assert (!node->next);
 
       dv = dv_from_value (node->loc);
       rvar = (variable) htab_find_with_hash (vars, dv, dv_htab_hash (dv));
@@ -2672,15 +2654,11 @@ intersect_loc_chains (rtx val, location_chain *dest, struct dfset_merge *dsm,
     {
       location_chain s2node;
 
-#ifdef ENABLE_CHECKING
-      gcc_assert (dv_onepart_p (s2var->dv));
-#endif
+      gcc_checking_assert (dv_onepart_p (s2var->dv));
 
       if (s2var->n_var_parts)
 	{
-#ifdef ENABLE_CHECKING
-	  gcc_assert (s2var->var_part[0].offset == 0);
-#endif
+	  gcc_checking_assert (s2var->var_part[0].offset == 0);
 	  s2node = s2var->var_part[0].loc_chain;
 
 	  for (; s1node && s2node;
@@ -2829,10 +2807,8 @@ loc_cmp (rtx x, rtx y)
       if (DEBUG_TEMP_UID (DEBUG_EXPR_TREE_DECL (x))
 	  < DEBUG_TEMP_UID (DEBUG_EXPR_TREE_DECL (y)))
 	return -1;
-#ifdef ENABLE_CHECKING
-      gcc_assert (DEBUG_TEMP_UID (DEBUG_EXPR_TREE_DECL (x))
-		  > DEBUG_TEMP_UID (DEBUG_EXPR_TREE_DECL (y)));
-#endif
+      gcc_checking_assert (DEBUG_TEMP_UID (DEBUG_EXPR_TREE_DECL (x))
+			   > DEBUG_TEMP_UID (DEBUG_EXPR_TREE_DECL (y)));
       return 1;
     }
 
@@ -3592,10 +3568,9 @@ variable_merge_over_cur (variable s1var, struct dfset_merge *dsm)
       dstslot = shared_hash_find_slot_noinsert_1 (dst->vars, dv, dvhash);
       gcc_assert (*dstslot == dvar);
       canonicalize_values_star (dstslot, dst);
-#ifdef ENABLE_CHECKING
-      gcc_assert (dstslot
-		  == shared_hash_find_slot_noinsert_1 (dst->vars, dv, dvhash));
-#endif
+      gcc_checking_assert (dstslot
+			   == shared_hash_find_slot_noinsert_1 (dst->vars,
+								dv, dvhash));
       dvar = (variable)*dstslot;
     }
   else
@@ -3660,11 +3635,9 @@ variable_merge_over_cur (variable s1var, struct dfset_merge *dsm)
 	  dstslot = shared_hash_find_slot_noinsert_1 (dst->vars, dv, dvhash);
 	  gcc_assert (*dstslot == dvar);
 	  canonicalize_values_star (dstslot, dst);
-#ifdef ENABLE_CHECKING
-	  gcc_assert (dstslot
-		      == shared_hash_find_slot_noinsert_1 (dst->vars,
-							   dv, dvhash));
-#endif
+	  gcc_checking_assert (dstslot
+			       == shared_hash_find_slot_noinsert_1 (dst->vars,
+								    dv, dvhash));
 	  dvar = (variable)*dstslot;
 	}
     }

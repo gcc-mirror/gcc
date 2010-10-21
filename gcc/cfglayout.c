@@ -828,10 +828,8 @@ fixup_reorder_chain (void)
 				       : label_for_bb (e_fall->dest)), 0))
 		    {
 		      e_fall->flags &= ~EDGE_FALLTHRU;
-#ifdef ENABLE_CHECKING
-		      gcc_assert (could_fall_through
-				  (e_taken->src, e_taken->dest));
-#endif
+		      gcc_checking_assert (could_fall_through
+					   (e_taken->src, e_taken->dest));
 		      e_taken->flags |= EDGE_FALLTHRU;
 		      update_br_prob_note (bb);
 		      e = e_fall, e_fall = e_taken, e_taken = e;
@@ -852,10 +850,8 @@ fixup_reorder_chain (void)
 				     : label_for_bb (e_fall->dest)), 0))
 		{
 		  e_fall->flags &= ~EDGE_FALLTHRU;
-#ifdef ENABLE_CHECKING
-		  gcc_assert (could_fall_through
-			      (e_taken->src, e_taken->dest));
-#endif
+		  gcc_checking_assert (could_fall_through
+				       (e_taken->src, e_taken->dest));
 		  e_taken->flags |= EDGE_FALLTHRU;
 		  update_br_prob_note (bb);
 		  continue;

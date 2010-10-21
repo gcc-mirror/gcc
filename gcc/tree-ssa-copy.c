@@ -211,12 +211,10 @@ replace_exp (use_operand_p op_p, tree val)
 void
 propagate_tree_value (tree *op_p, tree val)
 {
-#if defined ENABLE_CHECKING
-  gcc_assert (!(TREE_CODE (val) == SSA_NAME
-                && *op_p
-		&& TREE_CODE (*op_p) == SSA_NAME
-		&& !may_propagate_copy (*op_p, val)));
-#endif
+  gcc_checking_assert (!(TREE_CODE (val) == SSA_NAME
+			 && *op_p
+			 && TREE_CODE (*op_p) == SSA_NAME
+			 && !may_propagate_copy (*op_p, val)));
 
   if (TREE_CODE (val) == SSA_NAME)
     *op_p = val;

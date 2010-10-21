@@ -2692,9 +2692,7 @@ cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
 static void
 cfg_layout_merge_blocks (basic_block a, basic_block b)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (cfg_layout_can_merge_blocks_p (a, b));
-#endif
+  gcc_checking_assert (cfg_layout_can_merge_blocks_p (a, b));
 
   if (dump_file)
     fprintf (dump_file, "merging block %d into block %d\n", b->index, a->index);

@@ -1852,10 +1852,8 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi)
            || useless_type_conversion_p (expr_type, TREE_TYPE (cached_lhs))))
       || may_propagate_copy_into_stmt (stmt, cached_lhs))
   {
-#if defined ENABLE_CHECKING
-      gcc_assert (TREE_CODE (cached_lhs) == SSA_NAME
-		  || is_gimple_min_invariant (cached_lhs));
-#endif
+      gcc_checking_assert (TREE_CODE (cached_lhs) == SSA_NAME
+			   || is_gimple_min_invariant (cached_lhs));
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{

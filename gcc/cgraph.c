@@ -594,10 +594,9 @@ cgraph_add_thunk (tree alias, tree decl, bool this_adjusting,
   
   node = cgraph_same_body_alias_1 (alias, decl);
   gcc_assert (node);
-#ifdef ENABLE_CHECKING
-  gcc_assert (!virtual_offset
-  	      || tree_int_cst_equal (virtual_offset, size_int (virtual_value)));
-#endif
+  gcc_checking_assert (!virtual_offset
+		       || tree_int_cst_equal (virtual_offset,
+					      size_int (virtual_value)));
   node->thunk.fixed_offset = fixed_offset;
   node->thunk.this_adjusting = this_adjusting;
   node->thunk.virtual_value = virtual_value;
@@ -984,11 +983,9 @@ cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
      have not been loaded yet.  */
   if (call_stmt)
     {
-#ifdef ENABLE_CHECKING
-      /* This is rather pricely check possibly trigerring construction of
-	 call stmt hashtable.  */
-      gcc_assert (!cgraph_edge (caller, call_stmt));
-#endif
+      /* This is a rather expensive check possibly trigerring
+	 construction of call stmt hashtable.  */
+      gcc_checking_assert (!cgraph_edge (caller, call_stmt));
 
       gcc_assert (is_gimple_call (call_stmt));
     }
@@ -2258,10 +2255,8 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   size_t i;
   struct ipa_replace_map *map;
 
-#ifdef ENABLE_CHECKING
   if (!flag_wpa)
-    gcc_assert  (tree_versionable_function_p (old_decl));
-#endif
+    gcc_checking_assert  (tree_versionable_function_p (old_decl));
 
   /* Make a new FUNCTION_DECL tree node */
   if (!args_to_skip)

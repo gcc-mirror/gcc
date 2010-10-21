@@ -3999,10 +3999,8 @@ iterative_hash_gimple_type (tree type, hashval_t val,
   void **slot;
   struct sccs *state;
 
-#ifdef ENABLE_CHECKING
   /* Not visited during this DFS walk.  */
-  gcc_assert (!pointer_map_contains (sccstate, type));
-#endif
+  gcc_checking_assert (!pointer_map_contains (sccstate, type));
   state = XOBNEW (sccstate_obstack, struct sccs);
   *pointer_map_insert (sccstate, type) = state;
 

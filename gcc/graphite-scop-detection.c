@@ -899,9 +899,7 @@ create_single_entry_edge (sd_region *region)
        single edge pointing from outside into the loop.  */
     gcc_unreachable ();
 
-#ifdef ENABLE_CHECKING
-  gcc_assert (find_single_entry_edge (region));
-#endif
+  gcc_checking_assert (find_single_entry_edge (region));
 }
 
 /* Check if the sd_region, mentioned in EDGE, has no exit bb.  */
@@ -967,9 +965,7 @@ create_single_exit_edge (sd_region *region)
     if (e->aux)
       ((sd_region *) e->aux)->exit = forwarder->dest;
 
-#ifdef ENABLE_CHECKING
-  gcc_assert (find_single_exit_edge (region));
-#endif
+  gcc_checking_assert (find_single_exit_edge (region));
 }
 
 /* Unmark the exit edges of all REGIONS.

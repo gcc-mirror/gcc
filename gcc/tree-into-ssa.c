@@ -2998,12 +2998,10 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
   bitmap_iterator bi;
   unsigned i;
 
-#if defined ENABLE_CHECKING
   if (TREE_CODE (var) == SSA_NAME)
-    gcc_assert (is_old_name (var));
+    gcc_checking_assert (is_old_name (var));
   else
-    gcc_assert (symbol_marked_for_renaming (var));
-#endif
+    gcc_checking_assert (symbol_marked_for_renaming (var));
 
   /* Get all the definition sites for VAR.  */
   db = find_def_blocks_for (var);

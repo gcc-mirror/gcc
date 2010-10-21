@@ -895,9 +895,7 @@ bitmap_value_insert_into_set (bitmap_set_t set, pre_expr expr)
 {
   unsigned int val = get_expr_value_id (expr);
 
-#ifdef ENABLE_CHECKING
-  gcc_assert (expr->id == get_or_alloc_expression_id (expr));
-#endif
+  gcc_checking_assert (expr->id == get_or_alloc_expression_id (expr));
 
   /* Constant values are always considered to be part of the set.  */
   if (value_id_constant_p (val))
@@ -2608,10 +2606,8 @@ compute_antic (void)
 						      block->index));
 	    }
 	}
-#ifdef ENABLE_CHECKING
       /* Theoretically possible, but *highly* unlikely.  */
-      gcc_assert (num_iterations < 500);
-#endif
+      gcc_checking_assert (num_iterations < 500);
     }
 
   statistics_histogram_event (cfun, "compute_antic iterations",
@@ -2640,10 +2636,8 @@ compute_antic (void)
 							    block->index));
 		}
 	    }
-#ifdef ENABLE_CHECKING
 	  /* Theoretically possible, but *highly* unlikely.  */
-	  gcc_assert (num_iterations < 500);
-#endif
+	  gcc_checking_assert (num_iterations < 500);
 	}
       statistics_histogram_event (cfun, "compute_partial_antic iterations",
 				  num_iterations);

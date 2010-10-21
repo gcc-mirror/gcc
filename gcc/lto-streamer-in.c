@@ -973,9 +973,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 		     to unify some types and thus not find a proper
 		     field-decl here.  So only assert here if checking
 		     is enabled.  */
-#ifdef ENABLE_CHECKING
-		  gcc_assert (tem != NULL_TREE);
-#endif
+		  gcc_checking_assert (tem != NULL_TREE);
 		  if (tem != NULL_TREE)
 		    TREE_OPERAND (op, 1) = tem;
 		}

@@ -1310,9 +1310,7 @@ execute_todo (unsigned int flags)
 static void
 verify_interpass_invariants (void)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (!fold_deferring_overflow_warnings_p ());
-#endif
+  gcc_checking_assert (!fold_deferring_overflow_warnings_p ());
 }
 
 /* Clear the last verified flag.  */
