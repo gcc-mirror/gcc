@@ -1507,14 +1507,16 @@ package Einfo is
 --       Interrupt_Handler applies.
 
 --    Has_Invariants (Flag232)
---       Present in all type entities. Set True in private types if an
---       Invariant or Invariant'Class aspect applies to the type, or if the
---       type inherits one or more Invariant'Class aspects. Also set in the
---       corresponding full type. Note: if this flag is set True, then usually
---       the Invariant_Procedure field is set once the type is frozen, however
---       this may not be true in some error situations. Note that it might be
---       the full type which has inheritable invariants, and then the flag will
---       also be set in the private type.
+--       Present in all type entities and in subprogram entities. Set True in
+--       private types if an Invariant or Invariant'Class aspect applies to the
+--       type, or if the type inherits one or more Invariant'Class aspects.
+--       Also set in the corresponding full type. Note: if this flag is set
+--       True, then usually the Invariant_Procedure attribute is set once the
+--       type is frozen, however this may not be true in some error situations.
+--       Note that it might be the full type which has inheritable invariants,
+--       and then the flag will also be set in the private type. Also set in
+--       the invariant procedure entity, to distinguish it among entries in the
+--       Subprograms_For_Type.
 
 --    Has_Inheritable_Invariants (Flag248)
 --       Present in all type entities. Set True in private types from which one
@@ -1670,6 +1672,13 @@ package Einfo is
 --       should be given for objects of such a type for being unreferenced
 --       (but unlike the case with pragma Unreferenced, it is ok to reference
 --       such an object and no warning is generated.
+
+--    Has_Predicates (Flag250)
+--       Present in type and subtype entities and in subprogram entities. Set
+--       if a pragma Predicate or Predicate aspect applies to the type, or if
+--       it inherits a Predicate aspect from its parent or progenitor types.
+--       Also set in the predicate procedure entity, to distinguish it among
+--       entries in the Subprograms_For_Type.
 
 --    Has_Primitive_Operations (Flag120) [base type only]
 --       Present in all type entities. Set if at least one primitive operation
@@ -1900,15 +1909,18 @@ package Einfo is
 --       External_Name of the imported Java field (which is generally needed,
 --       because Java names are case sensitive).
 
---    Invariant_Procedure (Node29)
+--    Invariant_Procedure (synthesized)
 --       Present in types and subtypes. Set for private types if one or more
 --       Invariant, or Invariant'Class, or inherited Invariant'Class aspects
 --       apply to the type. Points to the entity for a procedure which checks
 --       the invariant. This invariant procedure takes a single argument of the
 --       given type, and returns if the invariant holds, or raises exception
 --       Assertion_Error with an appropriate message if it does not hold. This
---       field is present but always empty for private subtypes. This field is
---       also set for the corresponding full type.
+--       attribute is present but always empty for private subtypes. This
+--       attribute is also set for the corresponding full type.
+--
+--       Note: the reason this is marked as a synthesized attribute is that the
+--       way this is stored is as an element of the Subprograms_For_Type field.
 
 --    In_Use (Flag8)
 --       Present in packages and types. Set when analyzing a use clause for
@@ -3264,6 +3276,17 @@ package Einfo is
 --       Direct_Primitive_Operations of its CRT; otherwise returns No_Elist.
 --       For all the other types returns the Direct_Primitive_Operations.
 
+--    Predicate_Procedure (synthesized)
+--       Present in all types. Set for types for which (Has_Predicates is True)
+--       and for which a predicate procedure has been built that tests that the
+--       specified predicates are True. Contains the entity for the procedure
+--       which takes a single argument of the given type, and returns if the
+--       predicate holds, or raises exception Assertion_Error with an exception
+--       message if it does not hold.
+--
+--       Note: the reason this is marked as a synthesized attribute is that the
+--       way this is stored is as an element of the Subprograms_For_Type field.
+
 --    Prival (Node17)
 --       Present in private components of protected types. Refers to the entity
 --       of the component renaming declaration generated inside protected
@@ -3631,6 +3654,16 @@ package Einfo is
 --       value represents the low bound of the literal. This is a copy of
 --       the low bound of the applicable index constraint if there is one,
 --       or a copy of the low bound of the index base type if not.
+
+--    Subprograms_For_Type (Node29)
+--       Present in all type entities, and in subprogram entities. This is used
+--       to hold a list of subprogram entities for subprograms associated with
+--       the type, linked through the Suprogram_List field of the subprogram
+--       entity. Basically this is a way of multiplexing the single field to
+--       hold more than one entity (since we ran out of space in some type
+--       entities). This is currently used for Invariant_Procedure and also
+--       for Predicate_Procedure, and clients will always use the latter two
+--       names to access entries in this list.
 
 --    Suppress_Elaboration_Warnings (Flag148)
 --       Present in all entities, can be set only for subprogram entities and
@@ -4733,7 +4766,7 @@ package Einfo is
    --    Alignment                           (Uint14)
    --    Related_Expression                  (Node24)
    --    Current_Use_Clause                  (Node27)
-   --    Invariant_Procedure                 (Node29)
+   --    Subprograms_For_Type                (Node29)
 
    --    Depends_On_Private                  (Flag14)
    --    Discard_Names                       (Flag88)
@@ -4752,6 +4785,7 @@ package Einfo is
    --    Has_Object_Size_Clause              (Flag172)
    --    Has_Pragma_Preelab_Init             (Flag221)
    --    Has_Pragma_Unreferenced_Objects     (Flag212)
+   --    Has_Predicates                      (Flag250)
    --    Has_Primitive_Operations            (Flag120)  (base type only)
    --    Has_Size_Clause                     (Flag29)
    --    Has_Specified_Layout                (Flag100)  (base type only)
@@ -4796,7 +4830,9 @@ package Einfo is
    --    Base_Type                           (synth)
    --    Has_Private_Ancestor                (synth)
    --    Implementation_Base_Type            (synth)
+   --    Invariant_Procedure                 (synth)
    --    Is_Access_Protected_Subprogram_Type (synth)
+   --    Predicate_Procedure                 (synth)
    --    Root_Type                           (synth)
    --    Size_Clause                         (synth)
 
@@ -5095,6 +5131,7 @@ package Einfo is
    --    Overridden_Operation                (Node26)
    --    Wrapped_Entity                      (Node27)   (non-generic case only)
    --    Extra_Formals                       (Node28)
+   --    Subprograms_For_Type                (Node29)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Elaboration_Entity_Required         (Flag174)
    --    Default_Expressions_Processed       (Flag108)
@@ -5103,10 +5140,12 @@ package Einfo is
    --    Discard_Names                       (Flag88)
    --    Has_Completion                      (Flag26)
    --    Has_Controlling_Result              (Flag98)
+   --    Has_Invariants                      (Flag232)
    --    Has_Master_Entity                   (Flag21)
    --    Has_Missing_Return                  (Flag142)
    --    Has_Nested_Block_With_Handler       (Flag101)
    --    Has_Postconditions                  (Flag240)
+   --    Has_Predicates                      (Flag250)
    --    Has_Recursive_Call                  (Flag143)
    --    Has_Subprogram_Descriptor           (Flag93)
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
@@ -5236,7 +5275,10 @@ package Einfo is
    --    First_Entity                        (Node17)
    --    Alias                               (Node18)
    --    Last_Entity                         (Node20)
+   --    Subprograms_For_Type                (Node29)
+   --    Has_Invariants                      (Flag232)
    --    Has_Postconditions                  (Flag240)
+   --    Has_Predicates                      (Flag250)
    --    Is_Machine_Code_Subprogram          (Flag137)
    --    Is_Pure                             (Flag44)
    --    Is_Intrinsic_Subprogram             (Flag64)
@@ -5364,9 +5406,11 @@ package Einfo is
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Discard_Names                       (Flag88)
    --    Has_Completion                      (Flag26)
+   --    Has_Invariants                      (Flag232)
    --    Has_Master_Entity                   (Flag21)
    --    Has_Nested_Block_With_Handler       (Flag101)
    --    Has_Postconditions                  (Flag240)
+   --    Has_Predicates                      (Flag250)
    --    Has_Subprogram_Descriptor           (Flag93)
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
    --    Is_Asynchronous                     (Flag81)
@@ -5965,6 +6009,7 @@ package Einfo is
    function Has_Pragma_Unmodified               (Id : E) return B;
    function Has_Pragma_Unreferenced             (Id : E) return B;
    function Has_Pragma_Unreferenced_Objects     (Id : E) return B;
+   function Has_Predicates                      (Id : E) return B;
    function Has_Primitive_Operations            (Id : E) return B;
    function Has_Qualified_Name                  (Id : E) return B;
    function Has_RACW                            (Id : E) return B;
@@ -5996,7 +6041,6 @@ package Einfo is
    function Interface_Alias                     (Id : E) return E;
    function Interfaces                          (Id : E) return L;
    function Interface_Name                      (Id : E) return N;
-   function Invariant_Procedure                 (Id : E) return N;
    function Is_AST_Entry                        (Id : E) return B;
    function Is_Abstract_Subprogram              (Id : E) return B;
    function Is_Abstract_Type                    (Id : E) return B;
@@ -6179,6 +6223,7 @@ package Einfo is
    function Strict_Alignment                    (Id : E) return B;
    function String_Literal_Length               (Id : E) return U;
    function String_Literal_Low_Bound            (Id : E) return N;
+   function Subprograms_For_Type                (Id : E) return E;
    function Suppress_Elaboration_Warnings       (Id : E) return B;
    function Suppress_Init_Proc                  (Id : E) return B;
    function Suppress_Style_Checks               (Id : E) return B;
@@ -6531,6 +6576,7 @@ package Einfo is
    procedure Set_Has_Pragma_Unmodified           (Id : E; V : B := True);
    procedure Set_Has_Pragma_Unreferenced         (Id : E; V : B := True);
    procedure Set_Has_Pragma_Unreferenced_Objects (Id : E; V : B := True);
+   procedure Set_Has_Predicates                  (Id : E; V : B := True);
    procedure Set_Has_Primitive_Operations        (Id : E; V : B := True);
    procedure Set_Has_Private_Declaration         (Id : E; V : B := True);
    procedure Set_Has_Qualified_Name              (Id : E; V : B := True);
@@ -6563,7 +6609,6 @@ package Einfo is
    procedure Set_Inner_Instances                 (Id : E; V : L);
    procedure Set_Interface_Alias                 (Id : E; V : E);
    procedure Set_Interface_Name                  (Id : E; V : N);
-   procedure Set_Invariant_Procedure             (Id : E; V : N);
    procedure Set_Is_AST_Entry                    (Id : E; V : B := True);
    procedure Set_Is_Abstract_Subprogram          (Id : E; V : B := True);
    procedure Set_Is_Abstract_Type                (Id : E; V : B := True);
@@ -6753,6 +6798,7 @@ package Einfo is
    procedure Set_Strict_Alignment                (Id : E; V : B := True);
    procedure Set_String_Literal_Length           (Id : E; V : U);
    procedure Set_String_Literal_Low_Bound        (Id : E; V : N);
+   procedure Set_Subprograms_For_Type            (Id : E; V : E);
    procedure Set_Suppress_Elaboration_Warnings   (Id : E; V : B := True);
    procedure Set_Suppress_Init_Proc              (Id : E; V : B := True);
    procedure Set_Suppress_Style_Checks           (Id : E; V : B := True);
@@ -6772,6 +6818,16 @@ package Einfo is
    procedure Set_Warnings_Off_Used_Unreferenced  (Id : E; V : B := True);
    procedure Set_Was_Hidden                      (Id : E; V : B := True);
    procedure Set_Wrapped_Entity                  (Id : E; V : E);
+
+   ---------------------------------------------------
+   -- Access to Subprograms in Subprograms_For_Type --
+   ---------------------------------------------------
+
+   function Invariant_Procedure                 (Id : E) return N;
+   function Predicate_Procedure                 (Id : E) return N;
+
+   procedure Set_Invariant_Procedure            (Id : E; V : E);
+   procedure Set_Predicate_Procedure            (Id : E; V : E);
 
    -----------------------------------
    -- Field Initialization Routines --
@@ -7210,6 +7266,7 @@ package Einfo is
    pragma Inline (Has_Pragma_Unmodified);
    pragma Inline (Has_Pragma_Unreferenced);
    pragma Inline (Has_Pragma_Unreferenced_Objects);
+   pragma Inline (Has_Predicates);
    pragma Inline (Has_Primitive_Operations);
    pragma Inline (Has_Private_Declaration);
    pragma Inline (Has_Qualified_Name);
@@ -7243,7 +7300,6 @@ package Einfo is
    pragma Inline (Inner_Instances);
    pragma Inline (Interface_Alias);
    pragma Inline (Interface_Name);
-   pragma Inline (Invariant_Procedure);
    pragma Inline (Is_AST_Entry);
    pragma Inline (Is_Abstract_Subprogram);
    pragma Inline (Is_Abstract_Type);
@@ -7475,6 +7531,7 @@ package Einfo is
    pragma Inline (Strict_Alignment);
    pragma Inline (String_Literal_Length);
    pragma Inline (String_Literal_Low_Bound);
+   pragma Inline (Subprograms_For_Type);
    pragma Inline (Suppress_Elaboration_Warnings);
    pragma Inline (Suppress_Init_Proc);
    pragma Inline (Suppress_Style_Checks);
@@ -7647,6 +7704,7 @@ package Einfo is
    pragma Inline (Set_Has_Pragma_Unmodified);
    pragma Inline (Set_Has_Pragma_Unreferenced);
    pragma Inline (Set_Has_Pragma_Unreferenced_Objects);
+   pragma Inline (Set_Has_Predicates);
    pragma Inline (Set_Has_Primitive_Operations);
    pragma Inline (Set_Has_Private_Declaration);
    pragma Inline (Set_Has_Qualified_Name);
@@ -7680,7 +7738,6 @@ package Einfo is
    pragma Inline (Set_Inner_Instances);
    pragma Inline (Set_Interface_Alias);
    pragma Inline (Set_Interface_Name);
-   pragma Inline (Set_Invariant_Procedure);
    pragma Inline (Set_Is_AST_Entry);
    pragma Inline (Set_Is_Abstract_Subprogram);
    pragma Inline (Set_Is_Abstract_Type);
@@ -7868,6 +7925,7 @@ package Einfo is
    pragma Inline (Set_Strict_Alignment);
    pragma Inline (Set_String_Literal_Length);
    pragma Inline (Set_String_Literal_Low_Bound);
+   pragma Inline (Set_Subprograms_For_Type);
    pragma Inline (Set_Suppress_Elaboration_Warnings);
    pragma Inline (Set_Suppress_Init_Proc);
    pragma Inline (Set_Suppress_Style_Checks);

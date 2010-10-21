@@ -139,7 +139,6 @@ package Snames is
 
    Name_Post                           : constant Name_Id := N + $;
    Name_Pre                            : constant Name_Id := N + $;
-   Name_Predicate                      : constant Name_Id := N + $;
 
    --  Some special names used by the expander. Note that the lower case u's
    --  at the start of these names get translated to extra underscores. These
@@ -507,6 +506,7 @@ package Snames is
    Name_Passive                        : constant Name_Id := N + $; -- GNAT
    Name_Postcondition                  : constant Name_Id := N + $; -- GNAT
    Name_Precondition                   : constant Name_Id := N + $; -- GNAT
+   Name_Predicate                      : constant Name_Id := N + $; -- GNAT
    Name_Preelaborable_Initialization   : constant Name_Id := N + $; -- Ada 05
    Name_Preelaborate                   : constant Name_Id := N + $;
    Name_Preelaborate_05                : constant Name_Id := N + $; -- GNAT
@@ -1596,6 +1596,7 @@ package Snames is
       Pragma_Passive,
       Pragma_Postcondition,
       Pragma_Precondition,
+      Pragma_Predicate,
       Pragma_Preelaborable_Initialization,
       Pragma_Preelaborate,
       Pragma_Preelaborate_05,

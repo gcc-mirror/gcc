@@ -4576,7 +4576,7 @@ package body Exp_Ch3 is
          --  to clobber the object with an invalid value since if the exception
          --  is raised, then the object will go out of scope.
 
-         if Is_Private_Type (Typ)
+         if Has_Invariants (Typ)
            and then Present (Invariant_Procedure (Typ))
          then
             Insert_After (N,

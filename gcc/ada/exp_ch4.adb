@@ -8278,7 +8278,8 @@ package body Exp_Ch4 is
       --  Note: the Comes_From_Source check, and then the resetting of this
       --  flag prevents what would otherwise be an infinite recursion.
 
-      if Present (Invariant_Procedure (Target_Type))
+      if Has_Invariants (Target_Type)
+        and then Present (Invariant_Procedure (Target_Type))
         and then Comes_From_Source (N)
       then
          Set_Comes_From_Source (N, False);

@@ -11166,6 +11166,51 @@ package body Sem_Prag is
             end if;
          end Precondition;
 
+         ---------------
+         -- Predicate --
+         ---------------
+
+         --  pragma Predicate
+         --    ([Entity =>]    type_LOCAL_NAME,
+         --     [Check  =>]    EXPRESSION
+         --     [,[Message =>] String_Expression]);
+
+         when Pragma_Predicate => Predicate : declare
+            Type_Id : Node_Id;
+            Typ     : Entity_Id;
+
+            Discard : Boolean;
+            pragma Unreferenced (Discard);
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (2);
+            Check_At_Most_N_Arguments (3);
+            Check_Optional_Identifier (Arg1, Name_Entity);
+            Check_Optional_Identifier (Arg2, Name_Check);
+
+            if Arg_Count = 3 then
+               Check_Optional_Identifier (Arg3, Name_Message);
+               Check_Arg_Is_Static_Expression (Arg3, Standard_String);
+            end if;
+
+            Check_Arg_Is_Local_Name (Arg1);
+
+            Type_Id := Get_Pragma_Arg (Arg1);
+            Find_Type (Type_Id);
+            Typ := Entity (Type_Id);
+
+            if Typ = Any_Type then
+               return;
+            end if;
+
+            --  The remaining processing is simply to link the pragma on to
+            --  the rep item chain, for processing when the type is frozen.
+            --  This is accomplished by a call to Rep_Item_Too_Late.
+
+            Discard := Rep_Item_Too_Late (Typ, N, FOnly => True);
+         end Predicate;
+
          ------------------
          -- Preelaborate --
          ------------------
@@ -13919,6 +13964,7 @@ package body Sem_Prag is
       Pragma_Persistent_BSS                =>  0,
       Pragma_Postcondition                 => -1,
       Pragma_Precondition                  => -1,
+      Pragma_Predicate                     => -1,
       Pragma_Preelaborate                  => -1,
       Pragma_Preelaborate_05               => -1,
       Pragma_Priority                      => -1,

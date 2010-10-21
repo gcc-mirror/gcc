@@ -3998,6 +3998,9 @@ package body Exp_Util is
       Typ : constant Entity_Id  := Etype (Expr);
 
    begin
+      pragma Assert
+        (Has_Invariants (Typ) and then Present (Invariant_Procedure (Typ)));
+
       if Check_Enabled (Name_Invariant)
            or else
          Check_Enabled (Name_Assertion)
