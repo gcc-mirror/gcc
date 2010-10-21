@@ -156,6 +156,7 @@ Implementation Defined Pragmas
 * Pragma Interface_Name::
 * Pragma Interrupt_Handler::
 * Pragma Interrupt_State::
+* Pragma Invariant::
 * Pragma Keep_Names::
 * Pragma License::
 * Pragma Link_With::
@@ -774,6 +775,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Interface_Name::
 * Pragma Interrupt_Handler::
 * Pragma Interrupt_State::
+* Pragma Invariant::
 * Pragma Keep_Names::
 * Pragma License::
 * Pragma Link_With::
@@ -3051,6 +3053,43 @@ declared in the spec of package @code{System.OS_Interface}.
 Overriding the default state of signals used by the Ada runtime may interfere
 with an application's runtime behavior in the cases of the synchronous signals,
 and in the case of the signal used to implement the @code{abort} statement.
+
+@node Pragma Invariant
+@unnumberedsec Pragma Invariant
+@findex Invariant
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Invariant
+  ([Entity =>]    private_type_LOCAL_NAME,
+   [Check  =>]    EXPRESSION
+   [,[Message =>] String_Expression]);
+@end smallexample
+
+@noindent
+This pragma provides exactly the same capabilities as the Invariant aspect
+defined in AI05-0146-1, and in the Ada 2012 Reference Manual. The Invariant
+aspect is fully implemented in Ada 2012 mode, but since it requires the use
+of the aspect syntax, which is not available exception in 2012 mode, it is
+not possible to use the Invariant aspect in earlier versions of Ada. However
+the Invariant pragma may be used in any version of Ada.
+
+The pragma must appear within the visible part of the package specification,
+after the type to which its Entity argument appears. As with the Invariant
+aspect, the Check expression is not analyzed until the end of the visible
+part of the package, so it may contain forward references. The Message
+argument, if present, provides the exception message used if the invariant
+is violated. If no Message parameter is provided, a default message that
+identifies the line on which the pragma appears is used.
+
+It is permissible to have multiple Invariants for the same type entity, in
+which case they are and'ed together. It is permissible to use this pragma
+in Ada 2012 mode, but you cannot have both an invariant aspect and an
+invariant pragma for the same entity.
+
+For further details on the use of this pragma, see the Ada 2012 documentation
+of the Invariant aspect.
 
 @node Pragma Keep_Names
 @unnumberedsec Pragma Keep_Names

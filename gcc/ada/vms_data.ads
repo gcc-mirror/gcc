@@ -2242,6 +2242,13 @@ package VMS_Data is
    --
    --    When looking for source files also look in directories specified.
 
+   S_GCC_Src_Info : aliased constant S := "/SRC_INFO=<"                    &
+                                             "--source-info=>";
+   --        /SRC_INFO=source-info-file
+   --
+   --   Specify a source info file to be read or written by the Project
+   --   Manager when project files are used.
+
    S_GCC_Style   : aliased constant S := "/STYLE_CHECKS="                  &
                                             "ALL_BUILTIN "                 &
                                                "-gnatyy "                  &
@@ -2775,6 +2782,13 @@ package VMS_Data is
    --   detection of more errors in a single run. On the other hand, the
    --   semantic analyzer is more likely to encounter some internal fatal
    --   error when given a syntactically invalid tree.
+
+   S_GCC_USL : aliased constant S := "/UNCHECKED_SHARED_LIB_IMPORTS "      &
+                                         "--unchecked-shared-lib-imports";
+   --        /NOUNCHECKED_SHARED_LIB_IMPORTS (D)
+   --        /UNCHECKED_SHARED_LIB_IMPORTS
+   --
+   --   Allow shared library projects to import static library projects
 
    S_GCC_Units   : aliased constant S := "/UNITS_LIST "                    &
                                             "-gnatu";
@@ -3551,6 +3565,7 @@ package VMS_Data is
                      S_GCC_RTS     'Access,
                      S_GCC_SCO     'Access,
                      S_GCC_Search  'Access,
+                     S_GCC_Src_Info'Access,
                      S_GCC_Style   'Access,
                      S_GCC_StyleX  'Access,
                      S_GCC_Subdirs 'Access,
@@ -3560,6 +3575,7 @@ package VMS_Data is
                      S_GCC_Trace   'Access,
                      S_GCC_Tree    'Access,
                      S_GCC_Trys    'Access,
+                     S_GCC_USL     'Access,
                      S_GCC_Units   'Access,
                      S_GCC_Unique  'Access,
                      S_GCC_Upcase  'Access,
@@ -4903,7 +4919,7 @@ package VMS_Data is
    --   When looking for source files also look in the specified directories.
 
    S_Make_Src_Info : aliased constant S := "/SRC_INFO=<"                   &
-                                            "--source-info-file=>";
+                                             "--source-info=>";
    --        /SRC_INFO=source-info-file
    --
    --   Specify a source info file to be read or written by the Project
