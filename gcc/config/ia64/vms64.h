@@ -36,6 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #define POINTER_SIZE 64
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_GNU_AS | MASK_MALLOC64)
+#define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_GNU_AS | MASK_FUSED_MADD | MASK_MALLOC64)
 
 #include "config/vms/vms-crtl-64.h"
