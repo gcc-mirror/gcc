@@ -1,3 +1,7 @@
+2010-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (ssescalarmodesuffix): Add V8SI and V4DI.
+
 2010-10-21  Richard Guenther  <rguenther@suse.de>
 	Michael Matz  <matz@suse.de>
 

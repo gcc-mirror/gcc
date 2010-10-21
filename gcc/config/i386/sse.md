@@ -117,8 +117,8 @@
   [(SF "ss") (DF "sd") (V4SF "ps") (V2DF "pd") (V8SF "ps") (V4DF "pd")
    (V8SI "ps") (V4DI "pd")])
 (define_mode_attr ssescalarmodesuffix 
-  [(SF "ss") (DF "sd") (V4SF "ss") (V2DF "sd") (V8SF "ss") (V4DF "sd")
-   (V4SI "d")])
+  [(SF "ss") (DF "sd") (V4SF "ss") (V2DF "sd") (V8SF "ss") (V8SI "ss")
+   (V4DF "sd") (V4SI "d") (V4DI "sd")])
 
 ;; Mapping of the max integer size for xop rotate immediate constraint
 (define_mode_attr sserotatemax [(V16QI "7") (V8HI "15") (V4SI "31") (V2DI "63")])
