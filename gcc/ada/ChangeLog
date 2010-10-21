@@ -1,3 +1,13 @@
+2010-10-21  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb, exp_ch13.adb: Minor reformatting.
+
+2010-10-21  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb (Check_Or_Process_Discriminant): Reject illegal attempt
+	to provide a tagged full view as the completion of an untagged partial
+	view if the partial view has a discriminant with default.
+
 2010-10-21  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.

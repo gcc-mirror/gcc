@@ -284,9 +284,11 @@ package body Sem_Ch3 is
      (N    : Node_Id;
       T    : Entity_Id;
       Prev : Entity_Id := Empty);
-   --  If T is the full declaration of an incomplete or private type, check the
-   --  conformance of the discriminants, otherwise process them. Prev is the
-   --  entity of the partial declaration, if any.
+   --  If N is the full declaration of the completion T of an incomplete or
+   --  private type, check its discriminants (which are already known to be
+   --  conformant with those of the partial view, see Find_Type_Name),
+   --  otherwise process them. Prev is the entity of the partial declaration,
+   --  if any.
 
    procedure Check_Real_Bound (Bound : Node_Id);
    --  Check given bound for being of real type and static. If not, post an
@@ -9589,7 +9591,9 @@ package body Sem_Ch3 is
    --  If an incomplete or private type declaration was already given for the
    --  type, the discriminants may have already been processed if they were
    --  present on the incomplete declaration. In this case a full conformance
-   --  check is performed otherwise just process them.
+   --  check has been performed in Find_Type_Name, and we then recheck here
+   --  some properties that can't be checked on the partial view alone.
+   --  Otherwise we call Process_Discriminants.
 
    procedure Check_Or_Process_Discriminants
      (N    : Node_Id;
@@ -9599,19 +9603,46 @@ package body Sem_Ch3 is
    begin
       if Has_Discriminants (T) then
 
-         --  Make the discriminants visible to component declarations
+         --  Discriminants are already set on T if they were already present
+         --  on the partial view. Make them visible to component declarations.
 
          declare
             D    : Entity_Id;
-            Prev : Entity_Id;
+            --  Discriminant on T (full view) referencing expression on partial
+            --  view.
 
+            Prev_D : Entity_Id;
+            --  Entity of corresponding discriminant on partial view
+
+            New_D : Node_Id;
+            --  Discriminant specification for full view, expression is the
+            --  syntactic copy on full view (which has been checked for
+            --  conformance with partial view), only used here to post error
+            --  message.
          begin
             D := First_Discriminant (T);
+            New_D := First (Discriminant_Specifications (N));
+
             while Present (D) loop
-               Prev := Current_Entity (D);
+               Prev_D := Current_Entity (D);
                Set_Current_Entity (D);
                Set_Is_Immediately_Visible (D);
-               Set_Homonym (D, Prev);
+               Set_Homonym (D, Prev_D);
+
+               --  Handle the case where there is an untagged partial view and
+               --  the full view is tagged: must disallow discriminants with
+               --  defaults. However suppress the error here if it was already
+               --  reported on the default expression of the partial view.
+
+               if Is_Tagged_Type (T)
+                    and then Present (Expression (Parent (D)))
+                    and then not Error_Posted (Expression (Parent (D)))
+               then
+                  Error_Msg_N
+                    ("discriminants of tagged type "
+                     & "cannot have defaults",
+                     Expression (New_D));
+               end if;
 
                --  Ada 2005 (AI-230): Access discriminant allowed in
                --  non-limited record types.
@@ -9625,6 +9656,7 @@ package body Sem_Ch3 is
                end if;
 
                Next_Discriminant (D);
+               Next (New_D);
             end loop;
          end;
 
@@ -16354,13 +16386,18 @@ package body Sem_Ch3 is
                  ("discriminant defaults not allowed for formal type",
                   Expression (Discr));
 
-            --  Tagged types declarations cannot have defaulted discriminants,
-            --  but an untagged private type with defaulted discriminants can
-            --  have a tagged completion.
-
             elsif Is_Tagged_Type (Current_Scope)
-              and then Comes_From_Source (N)
+                    and then Comes_From_Source (N)
             then
+               --  Note: see also similar test in Check_Or_Process_
+               --  Discriminants, to handle the (illegal) case of the
+               --  completion of an untagged view with discriminants
+               --  with defaults by a tagged full view. We skip the check if
+               --  Discr does not come from source to account for the case of
+               --  an untagged derived type providing defaults for a renamed
+               --  discriminant from a private nontagged ancestor with a tagged
+               --  full view (ACATS B460006).
+
                Error_Msg_N
                  ("discriminants of tagged type cannot have defaults",
                   Expression (Discr));

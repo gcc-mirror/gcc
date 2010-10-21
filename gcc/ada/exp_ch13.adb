@@ -105,8 +105,8 @@ package body Exp_Ch13 is
       --  is build by connecting the component predicates with AND THEN.
 
       procedure Add_Call (T : Entity_Id);
-      --  Includes a call statement to the predicate function for type T in
-      --  Expr if T has predicates and Predicate_Function (T) is non-empty.
+      --  Includes a call to the predicate function for type T in Expr if T
+      --  has predicates and Predicate_Function (T) is non-empty.
 
       procedure Add_Predicates;
       --  Appends expressions for any Predicate pragmas in the rep item chain
@@ -125,15 +125,12 @@ package body Exp_Ch13 is
          Exp : Node_Id;
 
       begin
-         if Present (T)
-           and then Present (Predicate_Function (T))
-         then
+         if Present (T) and then Present (Predicate_Function (T)) then
             Exp :=
               Make_Predicate_Call
                 (T,
                  Convert_To (T,
-                   Make_Identifier (Loc,
-                     Chars => Object_Name)));
+                   Make_Identifier (Loc, Chars => Object_Name)));
 
             if No (Expr) then
                Expr := Exp;
@@ -170,9 +167,8 @@ package body Exp_Ch13 is
          begin
             --  Case of entity name referencing the type
 
-            if Is_Entity_Name (N)
-              and then Entity (N) = Typ
-            then
+            if Is_Entity_Name (N) and then Entity (N) = Typ then
+
                --  Replace with object
 
                Rewrite (N,
@@ -183,12 +179,14 @@ package body Exp_Ch13 is
 
                return Skip;
 
-            --  Not an instance of the type entity, keep going
+            --  Not an occurrence of the type entity, keep going
 
             else
                return OK;
             end if;
          end Replace_Node;
+
+      --  Start of processing for Add_Predicates
 
       begin
          Ritem := First_Rep_Item (Typ);
@@ -208,7 +206,7 @@ package body Exp_Ch13 is
                --  looking for the type entity, doing the needed substitution.
                --  The preanalysis is done with the special OK_To_Reference
                --  flag set on the type, so that if we get an occurrence of
-               --  this type, it will be reognized as legitimate.
+               --  this type, it will be recognized as legitimate.
 
                Set_OK_To_Reference (Typ, True);
                Preanalyze_Spec_Expression (Arg2, Standard_Boolean);
@@ -241,7 +239,7 @@ package body Exp_Ch13 is
    begin
       --  Initialize for construction of statement list
 
-      Expr := Empty;
+      Expr  := Empty;
       FDecl := Empty;
       FBody := Empty;
 
@@ -289,6 +287,7 @@ package body Exp_Ch13 is
                loop
                   Elmt := First_Elmt (Iface_List);
                   exit when No (Elmt);
+
                   Add_Call (Node (Elmt));
                   Remove_Elmt (Iface_List, Elmt);
                end loop;
@@ -313,10 +312,8 @@ package body Exp_Ch13 is
              Parameter_Specifications => New_List (
                Make_Parameter_Specification (Loc,
                  Defining_Identifier =>
-                   Make_Defining_Identifier (Loc,
-                     Chars => Object_Name),
-                 Parameter_Type =>
-                   New_Occurrence_Of (Typ, Loc))),
+                   Make_Defining_Identifier (Loc, Chars => Object_Name),
+                 Parameter_Type      => New_Occurrence_Of (Typ, Loc))),
              Result_Definition        =>
                New_Occurrence_Of (Standard_Boolean, Loc));
 
@@ -336,8 +333,7 @@ package body Exp_Ch13 is
              Parameter_Specifications => New_List (
                Make_Parameter_Specification (Loc,
                  Defining_Identifier =>
-                   Make_Defining_Identifier (Loc,
-                     Chars => Object_Name),
+                   Make_Defining_Identifier (Loc, Chars => Object_Name),
                  Parameter_Type =>
                    New_Occurrence_Of (Typ, Loc))),
              Result_Definition        =>
@@ -737,7 +733,7 @@ package body Exp_Ch13 is
          end;
       end if;
 
-      --  Pop scope if we intalled one for the analysis
+      --  Pop scope if we installed one for the analysis
 
       if In_Other_Scope then
          if Ekind (Current_Scope) = E_Package then
