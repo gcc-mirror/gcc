@@ -5665,7 +5665,7 @@ alpha_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 #if TARGET_ABI_OPEN_VMS
     {
       if (mode == VOIDmode)
-	return alpha_arg_info_reg_val (cum);
+	return alpha_arg_info_reg_val (*cum);
 
       num_args = cum->num_args;
       if (num_args >= 6
