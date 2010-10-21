@@ -635,7 +635,7 @@ package body Sem_Ch13 is
       Ent    : Node_Id;
 
       Ins_Node : Node_Id := N;
-      --  Insert pragmas (other than Pre/Post) after this node
+      --  Insert pragmas (except Pre/Post/Invariant/Predicate) after this node
 
       --  The general processing involves building an attribute definition
       --  clause or a pragma node that corresponds to the access type. Then
@@ -1008,13 +1008,14 @@ package body Sem_Ch13 is
                   goto Continue;
                end;
 
-               --  Invariant aspect generates an Invariant pragma with a first
-               --  argument that is the entity, and the second argument is the
-               --  expression. This is inserted right after the declaration, to
-               --  get the required pragma placement. The processing for the
-               --  pragma takes care of the required delay.
+               --  Invariant and Predicate aspects generate a corresponding
+               --  pragma with a first argument that is the entity, and the
+               --  second argument is the expression. This is inserted right
+               --  after the declaration, to get the required pragma placement.
+               --  The pragma processing takes care of the required delay.
 
-               when Aspect_Invariant =>
+               when Aspect_Invariant |
+                    Aspect_Predicate =>
 
                   --  Construct the pragma
 
@@ -1024,7 +1025,7 @@ package body Sem_Ch13 is
                         New_List (Ent, Relocate_Node (Expr)),
                       Class_Present                => Class_Present (Aspect),
                       Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Name_Invariant));
+                        Make_Identifier (Sloc (Id), Chars (Id)));
 
                   --  Add message unless exception messages are suppressed
 
@@ -1040,17 +1041,12 @@ package body Sem_Ch13 is
 
                   Set_From_Aspect_Specification (Aitem, True);
 
-                  --  For Invariant case, insert immediately after the entity
-                  --  declaration. We do not have to worry about delay issues
-                  --  since the pragma processing takes care of this.
+                  --  For Invariant and Predicate cases, insert immediately
+                  --  after the entity declaration. We do not have to worry
+                  --  about delay issues since the pragma processing takes
+                  --  care of this.
 
                   Insert_After (N, Aitem);
-                  goto Continue;
-
-               --  Aspects currently unimplemented
-
-               when Aspect_Predicate =>
-                  Error_Msg_N ("aspect& not implemented", Identifier (Aspect));
                   goto Continue;
             end case;
 
@@ -3685,9 +3681,11 @@ package body Sem_Ch13 is
 
          --  Build procedure declaration
 
+         pragma Assert (Has_Invariants (Typ));
          SId :=
            Make_Defining_Identifier (Loc,
              Chars => New_External_Name (Chars (Typ), "Invariant"));
+         Set_Has_Invariants (SId);
          Set_Invariant_Procedure (Typ, SId);
 
          Spec :=

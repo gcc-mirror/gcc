@@ -9099,7 +9099,9 @@ package body Sem_Ch6 is
 
                --  Add invariant call if returning type with invariants
 
-               if Present (Invariant_Procedure (Etype (Rent))) then
+               if Has_Invariants (Etype (Rent))
+                 and then Present (Invariant_Procedure (Etype (Rent)))
+               then
                   Append_To (Plist,
                     Make_Invariant_Call (New_Occurrence_Of (Rent, Loc)));
                end if;
@@ -9121,6 +9123,7 @@ package body Sem_Ch6 is
             Formal := First_Formal (Designator);
             while Present (Formal) loop
                if Ekind (Formal) /= E_In_Parameter
+                 and then Has_Invariants (Etype (Formal))
                  and then Present (Invariant_Procedure (Etype (Formal)))
                then
                   Append_To (Plist,

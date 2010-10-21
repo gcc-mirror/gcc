@@ -230,7 +230,7 @@ package body Einfo is
    --    Extra_Formals                   Node28
    --    Underlying_Record_View          Node28
 
-   --    Invariant_Procedure             Node29
+   --    Subprograms_For_Type            Node29
 
    ---------------------------------------------
    -- Usage of Flags in Defining Entity Nodes --
@@ -513,8 +513,8 @@ package body Einfo is
    --    OK_To_Rename                    Flag247
    --    Has_Inheritable_Invariants      Flag248
    --    OK_To_Reference                 Flag249
+   --    Has_Predicates                  Flag250
 
-   --    (unused)                        Flag250
    --    (unused)                        Flag251
    --    (unused)                        Flag252
    --    (unused)                        Flag253
@@ -1287,7 +1287,7 @@ package body Einfo is
 
    function Has_Invariants (Id : E) return B is
    begin
-      pragma Assert (Is_Type (Id));
+      pragma Assert (Is_Type (Id) or else Ekind (Id) = E_Procedure);
       return Flag232 (Id);
    end Has_Invariants;
 
@@ -1408,6 +1408,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag212 (Id);
    end Has_Pragma_Unreferenced_Objects;
+
+   function Has_Predicates (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id) or else Ekind (Id) = E_Procedure);
+      return Flag250 (Id);
+   end Has_Predicates;
 
    function Has_Primitive_Operations (Id : E) return B is
    begin
@@ -1565,12 +1571,6 @@ package body Einfo is
       pragma Assert (Is_Record_Type (Id));
       return Elist25 (Id);
    end Interfaces;
-
-   function Invariant_Procedure (Id : E) return N is
-   begin
-      pragma Assert (Is_Type (Id));
-      return Node29 (Id);
-   end Invariant_Procedure;
 
    function In_Package_Body (Id : E) return B is
    begin
@@ -2651,6 +2651,12 @@ package body Einfo is
       return Node15 (Id);
    end String_Literal_Low_Bound;
 
+   function Subprograms_For_Type (Id : E) return E is
+   begin
+      pragma Assert (Is_Type (Id) or else Is_Subprogram (Id));
+      return Node29 (Id);
+   end Subprograms_For_Type;
+
    function Suppress_Elaboration_Warnings (Id : E) return B is
    begin
       return Flag148 (Id);
@@ -3722,7 +3728,9 @@ package body Einfo is
 
    procedure Set_Has_Invariants (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Type (Id));
+      pragma Assert (Is_Type (Id)
+        or else Ekind (Id) = E_Procedure
+        or else Ekind (Id) = E_Void);
       Set_Flag232 (Id, V);
    end Set_Has_Invariants;
 
@@ -3852,6 +3860,14 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       Set_Flag212 (Id, V);
    end Set_Has_Pragma_Unreferenced_Objects;
+
+   procedure Set_Has_Predicates (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id)
+        or else Ekind (Id) = E_Procedure
+        or else Ekind (Id) = E_Void);
+      Set_Flag250 (Id, V);
+   end Set_Has_Predicates;
 
    procedure Set_Has_Primitive_Operations (Id : E; V : B := True) is
    begin
@@ -4011,12 +4027,6 @@ package body Einfo is
       pragma Assert (Is_Record_Type (Id));
       Set_Elist25 (Id, V);
    end Set_Interfaces;
-
-   procedure Set_Invariant_Procedure (Id : E; V : N) is
-   begin
-      pragma Assert (Is_Type (Id));
-      Set_Node29 (Id, V);
-   end Set_Invariant_Procedure;
 
    procedure Set_In_Package_Body (Id : E; V : B := True) is
    begin
@@ -5146,6 +5156,12 @@ package body Einfo is
       Set_Node15 (Id, V);
    end Set_String_Literal_Low_Bound;
 
+   procedure Set_Subprograms_For_Type (Id : E; V : E) is
+   begin
+      pragma Assert (Is_Type (Id) or else Is_Subprogram (Id));
+      Set_Node29 (Id, V);
+   end Set_Subprograms_For_Type;
+
    procedure Set_Suppress_Elaboration_Warnings (Id : E; V : B := True) is
    begin
       Set_Flag148 (Id, V);
@@ -6129,6 +6145,33 @@ package body Einfo is
       end if;
    end Implementation_Base_Type;
 
+   -------------------------
+   -- Invariant_Procedure --
+   -------------------------
+
+   function Invariant_Procedure (Id : E) return E is
+      S : Entity_Id;
+
+   begin
+      pragma Assert (Is_Type (Id) and then Has_Invariants (Id));
+
+      if No (Subprograms_For_Type (Id)) then
+         return Empty;
+
+      else
+         S := Subprograms_For_Type (Id);
+         while Present (S) loop
+            if Has_Invariants (S) then
+               return S;
+            else
+               S := Subprograms_For_Type (S);
+            end if;
+         end loop;
+
+         return Empty;
+      end if;
+   end Invariant_Procedure;
+
    ---------------------
    -- Is_Boolean_Type --
    ---------------------
@@ -6221,6 +6264,33 @@ package body Einfo is
           or else
         Ekind (Id) = E_Generic_Package;
    end Is_Package_Or_Generic_Package;
+
+   -------------------------
+   -- Predicate_Procedure --
+   -------------------------
+
+   function Predicate_Procedure (Id : E) return E is
+      S : Entity_Id;
+
+   begin
+      pragma Assert (Is_Type (Id) and then Has_Predicates (Id));
+
+      if No (Subprograms_For_Type (Id)) then
+         return Empty;
+
+      else
+         S := Subprograms_For_Type (Id);
+         while Present (S) loop
+            if Has_Predicates (S) then
+               return S;
+            else
+               S := Subprograms_For_Type (S);
+            end if;
+         end loop;
+
+         return Empty;
+      end if;
+   end Predicate_Procedure;
 
    ---------------
    -- Is_Prival --
@@ -6766,6 +6836,54 @@ package body Einfo is
       end case;
    end Set_Component_Alignment;
 
+   -----------------------------
+   -- Set_Invariant_Procedure --
+   -----------------------------
+
+   procedure Set_Invariant_Procedure (Id : E; V : E) is
+      S : Entity_Id;
+
+   begin
+      pragma Assert (Is_Type (Id) and then Has_Invariants (Id));
+
+      S := Subprograms_For_Type (Id);
+      Set_Subprograms_For_Type (Id, V);
+
+      while Present (S) loop
+         if Has_Invariants (S) then
+            raise Program_Error;
+         else
+            S := Subprograms_For_Type (S);
+         end if;
+      end loop;
+
+      Set_Subprograms_For_Type (Id, V);
+   end Set_Invariant_Procedure;
+
+   -----------------------------
+   -- Set_Predicate_Procedure --
+   -----------------------------
+
+   procedure Set_Predicate_Procedure (Id : E; V : E) is
+      S : Entity_Id;
+
+   begin
+      pragma Assert (Is_Type (Id) and then Has_Predicates (Id));
+
+      S := Subprograms_For_Type (Id);
+      Set_Subprograms_For_Type (Id, V);
+
+      while Present (S) loop
+         if Has_Predicates (S) then
+            raise Program_Error;
+         else
+            S := Subprograms_For_Type (S);
+         end if;
+      end loop;
+
+      Set_Subprograms_For_Type (Id, V);
+   end Set_Predicate_Procedure;
+
    -----------------
    -- Size_Clause --
    -----------------
@@ -7063,6 +7181,7 @@ package body Einfo is
       W ("Has_Pragma_Unmodified",           Flag233 (Id));
       W ("Has_Pragma_Unreferenced",         Flag180 (Id));
       W ("Has_Pragma_Unreferenced_Objects", Flag212 (Id));
+      W ("Has_Predicates",                  Flag250 (Id));
       W ("Has_Primitive_Operations",        Flag120 (Id));
       W ("Has_Private_Declaration",         Flag155 (Id));
       W ("Has_Qualified_Name",              Flag161 (Id));
@@ -8246,9 +8365,6 @@ package body Einfo is
    procedure Write_Field28_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when Private_Kind =>
-            Write_Str ("Invariant_Procedure");
-
          when E_Procedure | E_Function | E_Entry           =>
             Write_Str ("Extra_Formals");
 
@@ -8264,7 +8380,7 @@ package body Einfo is
    begin
       case Ekind (Id) is
          when Type_Kind =>
-            Write_Str ("Invariant_Procedure");
+            Write_Str ("Subprograms_For_Type");
 
          when others                                       =>
             Write_Str ("Field29??");

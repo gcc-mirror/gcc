@@ -1205,6 +1205,7 @@ begin
            Pragma_Persistent_BSS                |
            Pragma_Postcondition                 |
            Pragma_Precondition                  |
+           Pragma_Predicate                     |
            Pragma_Preelaborate                  |
            Pragma_Preelaborate_05               |
            Pragma_Priority                      |

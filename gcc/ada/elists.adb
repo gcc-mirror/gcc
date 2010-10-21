@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -389,7 +389,6 @@ package body Elists is
       --  Case of removing only element in the list
 
       if Elmts.Table (Nxt).Next in Elist_Range then
-
          pragma Assert (Nxt = Elmt);
 
          Elists.Table (List).First := No_Elmt;
