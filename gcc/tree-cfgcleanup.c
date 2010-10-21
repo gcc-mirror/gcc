@@ -279,9 +279,7 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
       || (single_succ_edge (bb)->flags & EDGE_ABNORMAL))
     return false;
 
-#if ENABLE_CHECKING
-  gcc_assert (bb != ENTRY_BLOCK_PTR);
-#endif
+  gcc_checking_assert (bb != ENTRY_BLOCK_PTR);
 
   locus = single_succ_edge (bb)->goto_locus;
 

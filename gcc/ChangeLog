@@ -1,5 +1,51 @@
 2010-10-21  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* basic-block.h (single_succ_edge): Use gcc_checking_assert.
+	(single_pred_edge, ei_container, ei_next, ei_prev): Likewise.
+	* cfghooks.c (fixup_reorder_chain): Likewise.
+	* cfgrtl.c (cfg_layout_merge_blocks): Likewise.
+	* cgraph.c (cgraph_add_thunk): Likewise.
+	(cgraph_create_edge_1): Likewise.
+	(cgraph_create_virtual_clone): Likewise.
+	* ddg.c (add_cross_iteration_register_deps): Likewise.
+	* dwarf2out.c (modified_type_die): Likewise.
+	* emit-rtl.c (set_mem_alias_set): Likewise.
+	* ggc-zone.c (zone_allocate_marks): Likewise.
+	* gimple-iterator.c (gsi_move_to_bb_end): Likewise.
+	* gimple.c (iterative_hash_gimple_type): Likewise.
+	* graphite-scop-detection.c (create_single_entry_edge): Likewise.
+	(create_single_exit_edge): Likewise.
+	* haifa-sched.c (choose_ready): Likewise.
+	* lto-streamer-in.c (input_gimple_stmt): Likewise.
+	* passes.c (execute_todo): Likewise.
+	* sched-ebb.c (begin_schedule_ready): Likewise.
+	* sel-sched.c (code_motion_process_successors): Likewise.
+	* tree-call-cdce.c (gen_conditions_for_pow): Likewise.
+	* tree-cfg-cleanup.c (tree_forwarder_block_p): Likewise.
+	* tree-flow-inline.h (link_imm_use, move_use_after_head): Likewise.
+	(phi_arg_index_from_use, phi_ssa_name_p): Likewise.
+	* tree-into-ssa.c (insert_updated_phi_nodes_for): Likewise.
+	* tree-ssa-coalesce.c (ssa_conflicts_test_p): Likewise.
+	(ssa_conflicts_add): Likewise.
+	* tree-ssa-copy.c (replace_exp): Likewise.
+	* tree-ssa-dom.c (eliminate_redundant_computations): Likewise.
+	* tree-ssa-forwprop.c (simple_gimple_switch): Likewise.
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Likewise.
+	* tree-ssa-pre.c (bitmap_value_insert_into_set): Likewise.
+	(compute_antic): Likewise.
+	* tree-ssa-ter.c (add_to_partition_kill_list): Likewise.
+	(add_dependence): Likewise.
+	(process_replaceable, kill_expr, find_replaceable_exprs): Likewise.
+	* tree-vrp.c (supports_overflow_infinity): Likewise.
+	(make_overflow_infinity, negative_overflow_infinity): Likewise.
+	(avoid_overflow_infinity, register_new_assert_for): Likewise.
+	(process_assert_insertions_for): Likewise.
+	* var-tracking.c (dv_is_value_p, dv_as_decl, dv_from_decl): Likewise.
+	(dv_from_value, variable_union, find_loc_in_1pdv): Likewise.
+	(intersect_loc_chains, variable_merge_over_cur): Likewise.
+
+2010-10-21  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* cfgloop.c (flow_loops_find): Call bb_has_abnormal_pred.
 	* reload1.c (has_nonexceptional_receiver): Likewise.
 	* tree-into-ssa.c (rewrite_update_enter_block): Likewise.

@@ -1286,10 +1286,8 @@ simplify_gimple_switch (gimple stmt)
 
 	      def = gimple_assign_rhs1 (def_stmt);
 
-#ifdef ENABLE_CHECKING
 	      /* ??? Why was Jeff testing this?  We are gimple...  */
-	      gcc_assert (is_gimple_val (def));
-#endif
+	      gcc_checking_assert (is_gimple_val (def));
 
 	      to = TREE_TYPE (cond);
 	      ti = TREE_TYPE (def);

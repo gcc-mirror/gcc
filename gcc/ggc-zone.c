@@ -802,9 +802,7 @@ zone_allocate_marks (void)
 	  n++;
 #endif
 	}
-#ifdef ENABLE_CHECKING
-      gcc_assert (n == zone->n_small_pages);
-#endif
+      gcc_checking_assert (n == zone->n_small_pages);
     }
 
   /* We don't collect the PCH zone, but we do have to mark it

@@ -597,9 +597,7 @@ void
 gsi_move_to_bb_end (gimple_stmt_iterator *from, basic_block bb)
 {
   gimple_stmt_iterator last = gsi_last_bb (bb);
-#ifdef ENABLE_CHECKING
-  gcc_assert (gsi_bb (last) == bb);
-#endif
+  gcc_checking_assert (gsi_bb (last) == bb);
 
   /* Have to check gsi_end_p because it could be an empty block.  */
   if (!gsi_end_p (last) && is_ctrl_stmt (gsi_stmt (last)))

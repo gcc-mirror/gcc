@@ -2727,14 +2727,12 @@ choose_ready (struct ready_list *ready, rtx *insn_ptr)
 	  {
 	    insn = ready_element (ready, i);
 
-#ifdef ENABLE_CHECKING
 	    /* If this insn is recognizable we should have already
 	       recognized it earlier.
 	       ??? Not very clear where this is supposed to be done.
 	       See dep_cost_1.  */
-	    gcc_assert (INSN_CODE (insn) >= 0
-			|| recog_memoized (insn) < 0);
-#endif
+	    gcc_checking_assert (INSN_CODE (insn) >= 0
+				 || recog_memoized (insn) < 0);
 
 	    ready_try [i]
 	      = (/* INSN_CODE check can be omitted here as it is also done later

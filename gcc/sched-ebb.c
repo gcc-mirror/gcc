@@ -147,24 +147,22 @@ begin_schedule_ready (rtx insn, rtx last)
 
       e = find_fallthru_edge (last_bb->succs);
 
-#ifdef ENABLE_CHECKING
-      gcc_assert (!e || !(e->flags & EDGE_COMPLEX));
+      gcc_checking_assert (!e || !(e->flags & EDGE_COMPLEX));
 
-      gcc_assert (BLOCK_FOR_INSN (insn) == last_bb
-		  && !IS_SPECULATION_CHECK_P (insn)
-		  && BB_HEAD (last_bb) != insn
-		  && BB_END (last_bb) == insn);
+      gcc_checking_assert (BLOCK_FOR_INSN (insn) == last_bb
+			   && !IS_SPECULATION_CHECK_P (insn)
+			   && BB_HEAD (last_bb) != insn
+			   && BB_END (last_bb) == insn);
 
       {
 	rtx x;
 
 	x = NEXT_INSN (insn);
 	if (e)
-	  gcc_assert (NOTE_P (x) || LABEL_P (x));
+	  gcc_checking_assert (NOTE_P (x) || LABEL_P (x));
 	else
-	  gcc_assert (BARRIER_P (x));
+	  gcc_checking_assert (BARRIER_P (x));
       }
-#endif
 
       if (e)
 	{

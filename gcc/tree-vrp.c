@@ -243,9 +243,7 @@ supports_overflow_infinity (const_tree type)
 static inline tree
 make_overflow_infinity (tree val)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (val != NULL_TREE && CONSTANT_CLASS_P (val));
-#endif
+  gcc_checking_assert (val != NULL_TREE && CONSTANT_CLASS_P (val));
   val = copy_node (val);
   TREE_OVERFLOW (val) = 1;
   return val;
@@ -256,9 +254,7 @@ make_overflow_infinity (tree val)
 static inline tree
 negative_overflow_infinity (tree type)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (supports_overflow_infinity (type));
-#endif
+  gcc_checking_assert (supports_overflow_infinity (type));
   return make_overflow_infinity (vrp_val_min (type));
 }
 
@@ -267,9 +263,7 @@ negative_overflow_infinity (tree type)
 static inline tree
 positive_overflow_infinity (tree type)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (supports_overflow_infinity (type));
-#endif
+  gcc_checking_assert (supports_overflow_infinity (type));
   return make_overflow_infinity (vrp_val_max (type));
 }
 
@@ -332,9 +326,7 @@ avoid_overflow_infinity (tree val)
     return vrp_val_max (TREE_TYPE (val));
   else
     {
-#ifdef ENABLE_CHECKING
-      gcc_assert (vrp_val_is_min (val));
-#endif
+      gcc_checking_assert (vrp_val_is_min (val));
       return vrp_val_min (TREE_TYPE (val));
     }
 }
@@ -4131,13 +4123,11 @@ register_new_assert_for (tree name, tree expr,
   assert_locus_t n, loc, last_loc;
   basic_block dest_bb;
 
-#if defined ENABLE_CHECKING
-  gcc_assert (bb == NULL || e == NULL);
+  gcc_checking_assert (bb == NULL || e == NULL);
 
   if (e == NULL)
-    gcc_assert (gimple_code (gsi_stmt (si)) != GIMPLE_COND
-		&& gimple_code (gsi_stmt (si)) != GIMPLE_SWITCH);
-#endif
+    gcc_checking_assert (gimple_code (gsi_stmt (si)) != GIMPLE_COND
+			 && gimple_code (gsi_stmt (si)) != GIMPLE_SWITCH);
 
   /* Never build an assert comparing against an integer constant with
      TREE_OVERFLOW set.  This confuses our undefined overflow warning
@@ -5059,10 +5049,9 @@ process_assert_insertions_for (tree name, assert_locus_t loc)
     {
       /* We have been asked to insert the assertion on an edge.  This
 	 is used only by COND_EXPR and SWITCH_EXPR assertions.  */
-#if defined ENABLE_CHECKING
-      gcc_assert (gimple_code (gsi_stmt (loc->si)) == GIMPLE_COND
-	  || gimple_code (gsi_stmt (loc->si)) == GIMPLE_SWITCH);
-#endif
+      gcc_checking_assert (gimple_code (gsi_stmt (loc->si)) == GIMPLE_COND
+			   || (gimple_code (gsi_stmt (loc->si))
+			       == GIMPLE_SWITCH));
 
       gsi_insert_on_edge (loc->e, assert_stmt);
       return true;

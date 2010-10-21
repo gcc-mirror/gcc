@@ -262,10 +262,9 @@ add_cross_iteration_register_deps (ddg_ptr g, df_ref last_def)
   gcc_assert (last_def_node);
   gcc_assert (first_def);
 
-#ifdef ENABLE_CHECKING
   if (DF_REF_ID (last_def) != DF_REF_ID (first_def))
-    gcc_assert (!bitmap_bit_p (&bb_info->gen, DF_REF_ID (first_def)));
-#endif
+    gcc_checking_assert (!bitmap_bit_p (&bb_info->gen,
+					DF_REF_ID (first_def)));
 
   /* Create inter-loop true dependences and anti dependences.  */
   for (r_use = DF_REF_CHAIN (last_def); r_use != NULL; r_use = r_use->next)
