@@ -89,10 +89,12 @@ along with GCC; see the file COPYING3.  If not see
 {"getenv",       "decc$getenv",       0},   \
 {"geteuid",      "decc$geteuid",      0},   \
 {"getgid",       "decc$getgid",       0},   \
+{"gethostbyaddr","decc$gethostbyaddr",0},   \
 {"gethostbyname","decc$gethostbyname",0},   \
 {"getpagesize",  "decc$getpagesize",  0},   \
 {"getpid",       "decc$getpid",       0},   \
 {"getservbyname","decc$getservbyname",0},   \
+{"getservbyport","decc$getservbyport",0},   \
 {"gettimeofday", "decc$gettimeofday", 0},   \
 {"getuid",       "decc$getuid",       0},   \
 {"htons",        "decc$htons",        0},   \
@@ -117,6 +119,7 @@ along with GCC; see the file COPYING3.  If not see
 {"mmap",         "decc$_mmap64",      0},   \
 {"munmap",       "decc$munmap",       0},   \
 {"nl_langinfo",  "decc$nl_langinfo",  0},   \
+{"open",         "decc$open",         0},   \
 {"pclose",       "decc$pclose",       0},   \
 {"popen",        "decc$popen",        0},   \
 {"pow",          "decc$tpow",         0},   \
@@ -128,11 +131,13 @@ along with GCC; see the file COPYING3.  If not see
 {"realloc",      "decc$realloc",      0},   \
 {"recv",         "decc$recv",         0},   \
 {"recvfrom",     "decc$recvfrom",     0},   \
+{"recvmsg",      "decc$__bsd44___recvmsg64", 0}, \
 {"rename",       "decc$rename",       0},   \
 {"rewind",       "decc$rewind",       0},   \
 {"rindex",       "decc$_rindex64",    0},   \
 {"rmdir",        "decc$rmdir",        0},   \
 {"send",         "decc$send",         0},   \
+{"sendmsg",      "decc$__bsd44___sendmsg64", 0}, \
 {"sendto",       "decc$sendto",       0},   \
 {"setenv",       "decc$setenv",       0},   \
 {"setlocale",    "decc$setlocale",    0},   \

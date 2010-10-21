@@ -1,7 +1,12 @@
 2010-10-21  Tristan Gingold  <gingold@adacore.com>
 
+	* config/vms/vms-crtl.h (CRTL_NAMES): Add new translations.
+	* config/vms/vms-crtl-64.h (CRTL_NAMES): Ditto.
+
+2010-10-21  Tristan Gingold  <gingold@adacore.com>
+
 	* config/alpha/vms-unwind.h (alpha_vms_fallback_frame_state): Set
-	signa_frame.
+	signal_frame.
 	* config/alpha/alpha.c (alpha_function_arg): Adjust call.
 
 2010-10-21  Tristan Gingold  <gingold@adacore.com>
