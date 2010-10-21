@@ -199,7 +199,7 @@ extern int max_issue (struct ready_list *, int, state_t, int *);
 
 extern void ebb_compute_jump_reg_dependencies (rtx, regset, regset, regset);
 
-extern edge find_fallthru_edge (basic_block);
+extern edge find_fallthru_edge_from (basic_block);
 
 extern void (* sched_init_only_bb) (basic_block, basic_block);
 extern basic_block (* sched_split_block) (basic_block, rtx);

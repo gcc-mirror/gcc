@@ -793,7 +793,6 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
       edge tmp_edge, b_fallthru_edge;
       bool c_has_outgoing_fallthru;
       bool b_has_incoming_fallthru;
-      edge_iterator ei;
 
       /* Avoid overactive code motion, as the forwarder blocks should be
 	 eliminated by edge redirection instead.  One exception might have
@@ -806,16 +805,10 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
 	 and loop notes.  This is done by squeezing out all the notes
 	 and leaving them there to lie.  Not ideal, but functional.  */
 
-      FOR_EACH_EDGE (tmp_edge, ei, c->succs)
-	if (tmp_edge->flags & EDGE_FALLTHRU)
-	  break;
-
+      tmp_edge = find_fallthru_edge (c->succs);
       c_has_outgoing_fallthru = (tmp_edge != NULL);
 
-      FOR_EACH_EDGE (tmp_edge, ei, b->preds)
-	if (tmp_edge->flags & EDGE_FALLTHRU)
-	  break;
-
+      tmp_edge = find_fallthru_edge (b->preds);
       b_has_incoming_fallthru = (tmp_edge != NULL);
       b_fallthru_edge = tmp_edge;
       next = b->prev_bb;
@@ -1801,7 +1794,6 @@ try_crossjump_bb (int mode, basic_block bb)
   bool changed;
   unsigned max, ix, ix2;
   basic_block ev, ev2;
-  edge_iterator ei;
 
   /* Nothing to do if there is not at least two incoming edges.  */
   if (EDGE_COUNT (bb->preds) < 2)
@@ -1838,14 +1830,7 @@ try_crossjump_bb (int mode, basic_block bb)
   if (EDGE_COUNT (bb->preds) > max)
     return false;
 
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    {
-      if (e->flags & EDGE_FALLTHRU)
-	{
-	  fallthru = e;
-	  break;
-	}
-    }
+  fallthru = find_fallthru_edge (bb->preds);
 
   changed = false;
   for (ix = 0, ev = bb; ix < EDGE_COUNT (ev->preds); )

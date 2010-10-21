@@ -689,7 +689,7 @@ merge_fences (fence_t f, insn_t insn,
 
       /* Find fallthrough edge.  */
       gcc_assert (BLOCK_FOR_INSN (insn)->prev_bb);
-      candidate = find_fallthru_edge (BLOCK_FOR_INSN (insn)->prev_bb);
+      candidate = find_fallthru_edge_from (BLOCK_FOR_INSN (insn)->prev_bb);
 
       if (!candidate
           || (candidate->src != BLOCK_FOR_INSN (last_scheduled_insn)
@@ -4667,7 +4667,6 @@ bb_ends_ebb_p (basic_block bb)
 {
   basic_block next_bb = bb_next_bb (bb);
   edge e;
-  edge_iterator ei;
 
   if (next_bb == EXIT_BLOCK_PTR
       || bitmap_bit_p (forced_ebb_heads, next_bb->index)
@@ -4680,13 +4679,13 @@ bb_ends_ebb_p (basic_block bb)
   if (!in_current_region_p (next_bb))
     return true;
 
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if ((e->flags & EDGE_FALLTHRU) != 0)
-      {
-	gcc_assert (e->dest == next_bb);
-
-	return false;
-      }
+  e = find_fallthru_edge (bb->succs);
+  if (e)
+    {
+      gcc_assert (e->dest == next_bb);
+      
+      return false;
+    }
 
   return true;
 }

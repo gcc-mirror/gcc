@@ -5311,9 +5311,7 @@ thread_prologue_and_epilogue_insns (void)
       basic_block last;
       rtx label;
 
-      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
-	if (e->flags & EDGE_FALLTHRU)
-	  break;
+      e = find_fallthru_edge (EXIT_BLOCK_PTR->preds);
       if (e == NULL)
 	goto epilogue_done;
       last = e->src;
@@ -5434,9 +5432,7 @@ thread_prologue_and_epilogue_insns (void)
      There really shouldn't be a mixture -- either all should have
      been converted or none, however...  */
 
-  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
-    if (e->flags & EDGE_FALLTHRU)
-      break;
+  e = find_fallthru_edge (EXIT_BLOCK_PTR->preds);
   if (e == NULL)
     goto epilogue_done;
 

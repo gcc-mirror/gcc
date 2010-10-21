@@ -138,7 +138,6 @@ begin_schedule_ready (rtx insn, rtx last)
       && last != PREV_INSN (insn))
     {
       edge e;
-      edge_iterator ei;
       basic_block bb;
 
       /* An obscure special case, where we do have partially dead
@@ -146,9 +145,7 @@ begin_schedule_ready (rtx insn, rtx last)
 	 In this case we can create new basic block.  It is
 	 always exactly one basic block last in the sequence.  */
 
-      FOR_EACH_EDGE (e, ei, last_bb->succs)
-	if (e->flags & EDGE_FALLTHRU)
-	  break;
+      e = find_fallthru_edge (last_bb->succs);
 
 #ifdef ENABLE_CHECKING
       gcc_assert (!e || !(e->flags & EDGE_COMPLEX));
@@ -589,14 +586,11 @@ schedule_ebbs (void)
       for (;;)
 	{
 	  edge e;
-	  edge_iterator ei;
 	  tail = BB_END (bb);
 	  if (bb->next_bb == EXIT_BLOCK_PTR
 	      || LABEL_P (BB_HEAD (bb->next_bb)))
 	    break;
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if ((e->flags & EDGE_FALLTHRU) != 0)
-	      break;
+	  e = find_fallthru_edge (bb->succs);
 	  if (! e)
 	    break;
 	  if (e->probability <= probability_cutoff)

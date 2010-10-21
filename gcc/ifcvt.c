@@ -278,12 +278,7 @@ find_active_insn_after (basic_block curr_bb, rtx insn)
 static basic_block
 block_fallthru (basic_block bb)
 {
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if (e->flags & EDGE_FALLTHRU)
-      break;
+  edge e = find_fallthru_edge (bb->succs);
 
   return (e) ? e->dest : NULL_BLOCK;
 }

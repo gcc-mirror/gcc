@@ -487,7 +487,6 @@ find_single_block_region (bool ebbs_p)
         for (bb = ebb_start; ; bb = bb->next_bb)
           {
             edge e;
-            edge_iterator ei;
 
             rgn_bb_table[i] = bb->index;
             RGN_NR_BLOCKS (nr_regions)++;
@@ -499,9 +498,7 @@ find_single_block_region (bool ebbs_p)
                 || LABEL_P (BB_HEAD (bb->next_bb)))
               break;
 
-            FOR_EACH_EDGE (e, ei, bb->succs)
-             if ((e->flags & EDGE_FALLTHRU) != 0)
-               break;
+	    e = find_fallthru_edge (bb->succs);
             if (! e)
               break;
             if (e->probability <= probability_cutoff)
