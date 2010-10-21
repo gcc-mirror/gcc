@@ -3679,28 +3679,6 @@ package body Sem_Ch13 is
          end loop;
       end;
 
-      --  Add invariants for inherited interfaces
-      --  (commented out because it blows up on simpleinv in J701-022)
-
---        declare
---           Ifaces : Elist_Id;
---           Iface  : Elmt_Id;
---
---        begin
---           Collect_Interfaces
---             (T               => Typ,
---              Ifaces_List     => Ifaces,
---              Exclude_Parents => True,
---              Use_Full_View   => True);
---
---           loop
---              Iface := First_Elmt (Ifaces);
---              exit when Iface = No_Elmt;
---              Add_Invariants (Node (Iface), Inherit => True);
---              Remove_Elmt (Ifaces, Iface);
---           end loop;
---        end;
-
       --  Build the procedure if we generated at least one Check pragma
 
       if Stmts /= No_List then

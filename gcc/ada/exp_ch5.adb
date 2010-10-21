@@ -562,8 +562,8 @@ package body Exp_Ch5 is
          --  cannot assign to elements of the array without this extra
          --  unchecked conversion.
 
-         --  Note: We must propagate Parent to the conversion node to allow
-         --  climbing the subtree if Insert_Action is invoked later.
+         --  Note: We propagate Parent to the conversion nodes to generate
+         --  a well-formed subtree.
 
          if Nkind (Act_Lhs) = N_Slice then
             Larray := Prefix (Act_Lhs);

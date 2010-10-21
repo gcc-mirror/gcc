@@ -1,5 +1,15 @@
 2010-10-21  Javier Miranda  <miranda@adacore.com>
 
+	* exp_ch5.adb: Update comment.
+
+2010-10-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Build_Invariant_Procedure): Remove commented out code
+	for interfaces, since invariants are not allowed on interfaces in any
+	case.
+
+2010-10-21  Javier Miranda  <miranda@adacore.com>
+
 	* sem_attr.adb (Resolve_Attribute): After replacing the range attribute
 	node with a range expression ensure that its evaluation will not have
 	side effects.
