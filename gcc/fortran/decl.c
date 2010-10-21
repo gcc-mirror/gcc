@@ -1673,8 +1673,10 @@ match_pointer_init (gfc_expr **init, int procptr)
     return m;
 
   /* Match non-NULL initialization.  */
+  gfc_matching_ptr_assignment = !procptr;
   gfc_matching_procptr_assignment = procptr;
   m = gfc_match_rvalue (init);
+  gfc_matching_ptr_assignment = 0;
   gfc_matching_procptr_assignment = 0;
   if (m == MATCH_ERROR)
     return MATCH_ERROR;

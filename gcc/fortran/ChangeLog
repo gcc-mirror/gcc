@@ -1,5 +1,18 @@
 2010-10-21  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/46060
+	* match.h (gfc_matching_ptr_assignment): New global variable to indicate
+	we're currently matching a (non-proc-)pointer assignment.
+	* decl.c (match_pointer_init): Set it.
+	* match.c (gfc_match_pointer_assignment): Ditto.
+	* primary.c (matching_actual_arglist): New global variable to indicate
+	we're currently matching an actual argument list.
+	(gfc_match_actual_arglist): Set it.
+	(gfc_match_varspec): Reject procedure pointer component calls with
+	missing argument list.
+
+2010-10-21  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/46067
 	* interface.c (gfc_compare_interfaces): Switch arguments of type
 	comparison (important for polymorphic variables).
