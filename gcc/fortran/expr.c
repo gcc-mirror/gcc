@@ -4316,7 +4316,18 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, const char* context)
   symbol_attribute attr;
   gfc_ref* ref;
 
-  if (e->expr_type != EXPR_VARIABLE)
+  if (!pointer && e->expr_type == EXPR_FUNCTION
+      && e->symtree->n.sym->result->attr.pointer)
+    {
+      if (!(gfc_option.allow_std & GFC_STD_F2008))
+	{
+	  if (context)
+	    gfc_error ("Fortran 2008: Pointer functions in variable definition"
+		       " context (%s) at %L", context, &e->where);
+	  return FAILURE;
+	}
+    }
+  else if (e->expr_type != EXPR_VARIABLE)
     {
       if (context)
 	gfc_error ("Non-variable expression in variable definition context (%s)"
