@@ -1,3 +1,9 @@
+2010-10-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/46007
+	Backport from trunk
+	* gfortran.dg/shape_5.f90:  New test case.
+
 2010-10-15  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/lto/pr45983_0.C: New.
