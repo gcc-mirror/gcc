@@ -2109,14 +2109,21 @@ package body GNAT.Command_Line is
          Index     : Integer)
       is
          pragma Unreferenced (Index);
+         Sep : Character;
 
       begin
+         if Separator = "" then
+            Sep := ASCII.NUL;
+         else
+            Sep := Separator (Separator'First);
+         end if;
+
          if Cmd.Expanded = null then
             Cmd.Expanded := new Argument_List'(1 .. 1 => new String'(Simple));
 
             if Param /= "" then
                Cmd.Params :=
-                 new Argument_List'(1 .. 1 => new String'(Separator & Param));
+                 new Argument_List'(1 .. 1 => new String'(Sep & Param));
             else
                Cmd.Params := new Argument_List'(1 .. 1 => null);
             end if;
@@ -2137,7 +2144,7 @@ package body GNAT.Command_Line is
                    ((Cmd.Params (C) = null and then Param = "")
                      or else
                        (Cmd.Params (C) /= null
-                         and then Cmd.Params (C).all = Separator & Param))
+                         and then Cmd.Params (C).all = Sep & Param))
                  and then
                    ((Cmd.Sections (C) = null and then Section = "")
                      or else
@@ -2156,7 +2163,7 @@ package body GNAT.Command_Line is
             if Param /= "" then
                Add
                  (Cmd.Params,
-                  new String'(Separator & Param),
+                  new String'(Sep & Param),
                   Add_Before);
             else
                Add

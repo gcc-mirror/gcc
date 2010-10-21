@@ -5410,7 +5410,20 @@ package body Sem_Prag is
 
       --    Set required restrictions (see System.Rident for detailed list)
 
+      --    Set the No_Dependence rules
+      --      No_Dependence => Ada.Asynchronous_Task_Control
+      --      No_Dependence => Ada.Calendar
+      --      No_Dependence => Ada.Execution_Time.Group_Budget
+      --      No_Dependence => Ada.Execution_Time.Timers
+      --      No_Dependence => Ada.Task_Attributes
+      --      No_Dependence => System.Multiprocessors.Dispatching_Domains
+
       procedure Set_Ravenscar_Profile (N : Node_Id) is
+         Prefix_Entity   : Entity_Id;
+         Selector_Entity : Entity_Id;
+         Prefix_Node     : Node_Id;
+         Node            : Node_Id;
+
       begin
          --  pragma Task_Dispatching_Policy (FIFO_Within_Priorities)
 
@@ -5459,6 +5472,106 @@ package body Sem_Prag is
 
          Set_Profile_Restrictions
            (Ravenscar, N, Warn => Treat_Restrictions_As_Warnings);
+
+         --  Set the No_Dependence restrictions
+
+         --  The following No_Dependence restrictions:
+         --    No_Dependence => Ada.Asynchronous_Task_Control
+         --    No_Dependence => Ada.Calendar
+         --    No_Dependence => Ada.Task_Attributes
+         --  are already set by previous call to Set_Profile_Restrictions.
+
+         --  Set the following restrictions which were added to Ada 2005:
+         --    No_Dependence => Ada.Execution_Time.Group_Budget
+         --    No_Dependence => Ada.Execution_Time.Timers
+
+         if Ada_Version >= Ada_2005 then
+            Name_Buffer (1 .. 3) := "ada";
+            Name_Len := 3;
+
+            Prefix_Entity := Make_Identifier (Loc, Name_Find);
+
+            Name_Buffer (1 .. 14) := "execution_time";
+            Name_Len := 14;
+
+            Selector_Entity := Make_Identifier (Loc, Name_Find);
+
+            Prefix_Node :=
+              Make_Selected_Component
+                (Sloc          => Loc,
+                 Prefix        => Prefix_Entity,
+                 Selector_Name => Selector_Entity);
+
+            Name_Buffer (1 .. 13) := "group_budgets";
+            Name_Len := 13;
+
+            Selector_Entity := Make_Identifier (Loc, Name_Find);
+
+            Node :=
+              Make_Selected_Component
+                (Sloc          => Loc,
+                 Prefix        => Prefix_Node,
+                 Selector_Name => Selector_Entity);
+
+            Set_Restriction_No_Dependence
+              (Unit    => Node,
+               Warn    => Treat_Restrictions_As_Warnings,
+               Profile => Ravenscar);
+
+            Name_Buffer (1 .. 6) := "timers";
+            Name_Len := 6;
+
+            Selector_Entity := Make_Identifier (Loc, Name_Find);
+
+            Node :=
+              Make_Selected_Component
+                (Sloc          => Loc,
+                 Prefix        => Prefix_Node,
+                 Selector_Name => Selector_Entity);
+
+            Set_Restriction_No_Dependence
+              (Unit    => Node,
+               Warn    => Treat_Restrictions_As_Warnings,
+               Profile => Ravenscar);
+         end if;
+
+         --  Set the following restrictions which was added to Ada 2012 (see
+         --  AI-0171):
+         --    No_Dependence => System.Multiprocessors.Dispatching_Domains
+
+         if Ada_Version >= Ada_2012 then
+            Name_Buffer (1 .. 6) := "system";
+            Name_Len := 6;
+
+            Prefix_Entity := Make_Identifier (Loc, Name_Find);
+
+            Name_Buffer (1 .. 15) := "multiprocessors";
+            Name_Len := 15;
+
+            Selector_Entity := Make_Identifier (Loc, Name_Find);
+
+            Prefix_Node :=
+              Make_Selected_Component
+                (Sloc          => Loc,
+                 Prefix        => Prefix_Entity,
+                 Selector_Name => Selector_Entity);
+
+            Name_Buffer (1 .. 19) := "dispatching_domains";
+            Name_Len := 19;
+
+            Selector_Entity := Make_Identifier (Loc, Name_Find);
+
+            Node :=
+              Make_Selected_Component
+                (Sloc          => Loc,
+                 Prefix        => Prefix_Node,
+                 Selector_Name => Selector_Entity);
+
+            Set_Restriction_No_Dependence
+              (Unit    => Node,
+               Warn    => Treat_Restrictions_As_Warnings,
+               Profile => Ravenscar);
+         end if;
       end Set_Ravenscar_Profile;
 
    --  Start of processing for Analyze_Pragma

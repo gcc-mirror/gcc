@@ -1543,6 +1543,15 @@ package VMS_Data is
                                             "-gnatm999999";
    --  NODOC (see /ERROR_LIMIT)
 
+   S_GCC_Except  : aliased constant S := "/EXTRA_EXCEPTION_INFORMATION "   &
+                                            "-gnateE";
+   --        /EXTRA_EXCEPTION_INFORMATION
+   --
+   --   Generate extra information in exception messages, in particular
+   --   display extra column information and the value and range associated
+   --   with index and range check failures, and extra column information for
+   --   access checks.
+
    S_GCC_Expand  : aliased constant S := "/EXPAND_SOURCE "                 &
                                             "-gnatG";
    --        /NOEXPAND_SOURCE (D)
@@ -3522,6 +3531,7 @@ package VMS_Data is
                      S_GCC_ErrorX  'Access,
                      S_GCC_Expand  'Access,
                      S_GCC_Lexpand 'Access,
+                     S_GCC_Except  'Access,
                      S_GCC_Extend  'Access,
                      S_GCC_Ext     'Access,
                      S_GCC_File    'Access,

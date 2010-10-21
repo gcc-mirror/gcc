@@ -1,3 +1,41 @@
+2010-10-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Enter_Overloaded_Entity): Refine warning message about
+	hiding, to remove noise warnings about hiding predefined operators.
+
+2010-10-21  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb (Add_Switch): Fix handling of switches with no separator
+	when the parameter has length 1.
+
+2010-10-21  Jose Ruiz  <ruiz@adacore.com>
+
+	* sem_prag.adb (Set_Ravenscar_Profile): Enforce the restrictions of no
+	dependence on Ada.Execution_Time.Timers,
+	Ada.Execution_Time.Group_Budget, and
+	System.Multiprocessors.Dispatching_Domains which are part of the
+	Ravenscar Profile.
+	* impunit.adb (Non_Imp_File_Names_05): Add the file "a-etgrbu" to the
+	list of Ada 2005 files for package Ada.Execution_Time.Group_Budgets.
+	(Non_Imp_File_Names_12): Add the file "s-mudido" to the list of Ada 2012
+	files for package System.Mutiprocessors.Dispatching_Domains.
+
+2010-10-21  Tristan Gingold  <gingold@adacore.com>
+
+	* ug_words, vms_data.ads: Define the VMS qualifier for -gnateE.
+
+2010-10-21  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.ads (Process_Discriminants): Clarify cases where this is
+	called for a completion.
+
+2010-10-21  Geert Bosch  <bosch@adacore.com>
+
+	* uintp.ads: Expand image buffer to have enough room for 128-bit values
+	* urealp.ads (UR_Write): Write constants in base 16 in hexadecimal
+	notation; either as fixed point literal or in canonical radix 16
+	floating point form.
+
 2010-10-21  Robert Dewar  <dewar@adacore.com>
 
 	* a-cgaaso.ads, a-tags.ads, exp_ch3.adb, exp_attr.adb, exp_ch4.adb,

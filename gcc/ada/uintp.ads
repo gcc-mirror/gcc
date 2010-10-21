@@ -261,7 +261,7 @@ package Uintp is
    --  or decimal format. Auto, the default setting, lets the routine make
    --  a decision based on the value.
 
-   UI_Image_Max    : constant := 32;
+   UI_Image_Max    : constant := 48; -- Enough for a 128-bit number
    UI_Image_Buffer : String (1 .. UI_Image_Max);
    UI_Image_Length : Natural;
    --  Buffer used for UI_Image as described below
