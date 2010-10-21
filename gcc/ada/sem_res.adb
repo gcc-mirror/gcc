@@ -3848,8 +3848,8 @@ package body Sem_Res is
 
             Eval_Actual (A);
 
-            --  If it is a named association, treat the selector_name as
-            --  a proper identifier, and mark the corresponding entity.
+            --  If it is a named association, treat the selector_name as a
+            --  proper identifier, and mark the corresponding entity.
 
             if Nkind (Parent (A)) = N_Parameter_Association then
                Set_Entity (Selector_Name (Parent (A)), F);
