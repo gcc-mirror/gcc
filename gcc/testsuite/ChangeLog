@@ -1,3 +1,9 @@
+2010-10-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46100
+	* gfortran.dg/ptr-func-1.f90: New.
+	* gfortran.dg/ptr-func-2.f90: New.
+
 2010-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/45919
