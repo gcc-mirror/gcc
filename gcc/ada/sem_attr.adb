@@ -8791,6 +8791,11 @@ package body Sem_Attr is
                Rewrite (N, Make_Range (Loc, LB, HB));
                Analyze_And_Resolve (N, Typ);
 
+               --  Ensure that the expanded range does not have side effects
+
+               Force_Evaluation (LB);
+               Force_Evaluation (HB);
+
                --  Normally after resolving attribute nodes, Eval_Attribute
                --  is called to do any possible static evaluation of the node.
                --  However, here since the Range attribute has just been

@@ -3784,7 +3784,7 @@ package body Ch3 is
       --  Ada 2005 (AI-345): In case of interfaces with a null list of
       --  interfaces we build a record_definition node.
 
-      if Token = Tok_Semicolon then
+      if Token = Tok_Semicolon or else Aspect_Specifications_Present then
          Typedef_Node := New_Node (N_Record_Definition, Token_Ptr);
 
          Set_Abstract_Present  (Typedef_Node);
