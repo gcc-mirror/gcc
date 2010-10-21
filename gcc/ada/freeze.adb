@@ -3787,28 +3787,6 @@ package body Freeze is
             end if;
          end if;
 
-         --  If we have predicates, then this is where we build the predicate
-         --  function, and return the spec and body as freeze actions.
-
-         if Has_Predicates (E) then
-            declare
-               FDecl : Node_Id;
-               FBody : Node_Id;
-
-            begin
-               Build_Predicate_Function (E, FDecl, FBody);
-
-               if Present (FDecl) then
-                  if No (Result) then
-                     Result := Empty_List;
-                  end if;
-
-                  Append_To (Result, FDecl);
-                  Append_To (Result, FBody);
-               end if;
-            end;
-         end if;
-
          --  Generic types are never seen by the back-end, and are also not
          --  processed by the expander (since the expander is turned off for
          --  generic processing), so we never need freeze nodes for them.

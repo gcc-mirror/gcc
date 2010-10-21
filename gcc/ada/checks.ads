@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -134,10 +134,10 @@ package Checks is
      (N          : Node_Id;
       Typ        : Entity_Id;
       No_Sliding : Boolean := False);
-   --  Top-level procedure, calls all the others depending on the class of Typ.
-   --  Checks that expression N satisfies the constraint of type Typ.
-   --  No_Sliding is only relevant for constrained array types, if set to True,
-   --  it checks that indexes are in range.
+   --  Top-level procedure, calls all the others depending on the class of
+   --  Typ. Checks that expression N satisfies the constraint of type Typ.
+   --  No_Sliding is only relevant for constrained array types, if set to
+   --  True, it checks that indexes are in range.
 
    procedure Apply_Discriminant_Check
      (N   : Node_Id;
@@ -152,6 +152,11 @@ package Checks is
    --  and unconstrained aliased objects). For the case of unconstrained
    --  formals, the check is peformed only if the corresponding actual is
    --  constrained, i.e., whether Lhs'Constrained is True.
+
+   procedure Apply_Predicate_Check (N : Node_Id; Typ : Entity_Id);
+   --  N is an expression to which a predicate check may need to be applied
+   --  for Typ, if Typ has a predicate function. The check is applied only
+   --  if the type of N does not match Typ.
 
    function Build_Discriminant_Checks
      (N     : Node_Id;

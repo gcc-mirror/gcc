@@ -1626,6 +1626,10 @@ package body Exp_Ch5 is
          Generate_Range_Check (Rhs, Typ, CE_Range_Check_Failed);
       end if;
 
+      --  Generate predicate check if required
+
+      Apply_Predicate_Check (Rhs, Typ);
+
       --  Check for a special case where a high level transformation is
       --  required. If we have either of:
 

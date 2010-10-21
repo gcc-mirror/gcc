@@ -294,7 +294,7 @@ package body Exp_Prag is
       --  where Str is the message if one is present, or the default of
       --  name failed at file:line if no message is given (the "name failed
       --  at" is omitted for name = Assertion, since it is redundant, given
-      --  that the name of the exception is Assert_Failure.
+      --  that the name of the exception is Assert_Failure.)
 
       --  An alternative expansion is used when the No_Exception_Propagation
       --  restriction is active and there is a local Assert_Failure handler.
@@ -353,22 +353,18 @@ package body Exp_Prag is
                Msg_Loc : constant String := Build_Location_String (Loc);
 
             begin
+               Name_Len := 0;
+
                --  For Assert, we just use the location
 
                if Nam = Name_Assertion then
-                  Name_Len := 0;
+                  null;
 
-                  --  For any check except Precondition/Postcondition, the
-                  --  string is "xxx failed at yyy" where xxx is the name of
-                  --  the check with current source file casing.
+               --  For predicate, we generate the string "predicate failed
+               --  at yyy". We prefer all lower case for predicate.
 
-               elsif Nam /= Name_Precondition
-                       and then
-                     Nam /= Name_Postcondition
-               then
-                  Get_Name_String (Nam);
-                  Set_Casing (Identifier_Casing (Current_Source_File));
-                  Add_Str_To_Name_Buffer (" failed at ");
+               elsif Nam = Name_Predicate then
+                  Add_Str_To_Name_Buffer ("predicate failed at ");
 
                --  For special case of Precondition/Postcondition the string is
                --  "failed xx from yy" where xx is precondition/postcondition
@@ -376,10 +372,21 @@ package body Exp_Prag is
                --  that the failure is not at the point of occurrence of the
                --  pragma, unlike the other Check cases.
 
-               else
+               elsif Nam = Name_Precondition
+                       or else
+                     Nam = Name_Postcondition
+               then
                   Get_Name_String (Nam);
                   Insert_Str_In_Name_Buffer ("failed ", 1);
                   Add_Str_To_Name_Buffer (" from ");
+
+               --  For all other checks, the string is "xxx failed at yyy"
+               --  where xxx is the check name with current source file casing.
+
+               else
+                  Get_Name_String (Nam);
+                  Set_Casing (Identifier_Casing (Current_Source_File));
+                  Add_Str_To_Name_Buffer (" failed at ");
                end if;
 
                --  In all cases, add location string
