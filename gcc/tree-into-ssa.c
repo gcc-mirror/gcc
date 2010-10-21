@@ -2080,13 +2080,7 @@ rewrite_update_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 
   /* Mark the LHS if any of the arguments flows through an abnormal
      edge.  */
-  is_abnormal_phi = false;
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    if (e->flags & EDGE_ABNORMAL)
-      {
-	is_abnormal_phi = true;
-	break;
-      }
+  is_abnormal_phi = bb_has_abnormal_pred (bb);
 
   /* If any of the PHI nodes is a replacement for a name in
      OLD_SSA_NAMES or it's one of the names in NEW_SSA_NAMES, then
@@ -2843,12 +2837,7 @@ create_new_def_for (tree old_name, gimple stmt, def_operand_p def)
       basic_block bb = gimple_bb (stmt);
 
       /* If needed, mark NEW_NAME as occurring in an abnormal PHI node. */
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	if (e->flags & EDGE_ABNORMAL)
-	  {
-	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_name) = 1;
-	    break;
-	  }
+      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_name) = bb_has_abnormal_pred (bb);
     }
 
   register_new_name_mapping (new_name, old_name);
