@@ -1,3 +1,11 @@
+2010-10-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/45946
+	* config/i386/i386.md (*pushti2): New insn pattern.
+	(pushti2 splitter): New insn splitter.
+	(*push<mode>2): Macroize insn pattern from *push{di,ti}2 using
+	DWI mode iterator.
+
 2010-10-21  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11-protos.md (arith_operand,
@@ -15,9 +23,9 @@
 2010-10-21  Bingfeng Mei  <bmei@broadcom.com>
 
 	PR c/45834
-        * alias.c (true_dependence_1): Remove obsolete check for QImode.
-        (may_alias_p): Ditto.
-        
+	* alias.c (true_dependence_1): Remove obsolete check for QImode.
+	(may_alias_p): Ditto.
+
 2010-10-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/45875
@@ -32,8 +40,8 @@
 2010-10-21  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c: Fold code to 80-character width.
-        Replace GET_CODE (foo) == REG with REG_P (foo).  Likewise for
-        MEM, CONST_INT and CONST_DOUBLE.
+	Replace GET_CODE (foo) == REG with REG_P (foo).  Likewise for
+	MEM, CONST_INT and CONST_DOUBLE.
 	(targetm): Move initialization to end of file.
 	(print_operand): Rename to mn10300_print_operand.
 	(print_operand_address): Rename to mn10300_print_operand_address.
@@ -48,20 +56,19 @@
 	(legitimate_pic_operand_p): Rename to mn10300_legitimate_pic_operand_p.
 	* config/mn10300/mn10300-protos.h: Update prototypes.
 	* config/mn10300/mn10300.h: Fold code to 80-character width.
-        Replace GET_CODE (foo) == REG with REG_P (foo).  Likewise for
-        MEM, CONST_INT and CONST_DOUBLE.
-        (CPP_SPEC): Move to...
-        (TARGET_CPU_CPP_BUILTINS): ... here.
+	Replace GET_CODE (foo) == REG with REG_P (foo).  Likewise for
+	MEM, CONST_INT and CONST_DOUBLE.
+	(CPP_SPEC): Move to...
+	(TARGET_CPU_CPP_BUILTINS): ... here.
 	* config/mn10300/mn10300.md: Fold code to 80-character width.
-        Replace GET_CODE (foo) == REG with REG_P (foo).  Likewise for
-        MEM, CONST_INT and CONST_DOUBLE.
+	Replace GET_CODE (foo) == REG with REG_P (foo).  Likewise for
+	MEM, CONST_INT and CONST_DOUBLE.
 
 2010-10-21  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/46049
 	PR tree-optimization/46052
-	* tree-vectorizer.h (enum stmt_vec_info_type): Add new value for
-	shift.
+	* tree-vectorizer.h (enum stmt_vec_info_type): Add new value for shift.
 	(vect_get_slp_defs): Add arguments.
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Pass scalar
 	operands to vect_get_slp_defs.
@@ -147,7 +154,7 @@
 	* config/i386/sse.md (ssescalarmodesuffix): Add V8SI and V4DI.
 
 2010-10-21  Richard Guenther  <rguenther@suse.de>
-	Michael Matz  <matz@suse.de>
+	    Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/45764
 	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):
@@ -224,7 +231,7 @@
 	(c_parser_objc_methodproto): Do not call objc_set_method_type.
 	Updated calls to c_parser_objc_method_type,
 	c_parser_objc_method_decl and objc_add_method_declaration.
-	
+
 2010-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/45919
@@ -346,14 +353,14 @@
 	(default_jump_align_max_skip): New.
 	(compute_alignments): Use the new hooks.
 	(shorten_branches): Likewise.
-	
+
 2010-10-19  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (bdesc_multi_arg): Use fma4i_fmadd_<mode>.
 	* config/i386/sse.md (fma<mode>4): Enable for FMA & SSE_MATH.
 	(fma4i_fmadd_<mode>): New.
 	(*split_fma, *split_fms, *split_fnma, *split_fnms): Rename from
-	fma4_fm*_<mode> and adjust to be pre-reload splitters to the 
+	fma4_fm*_<mode> and adjust to be pre-reload splitters to the
 	standard fma patterns.
 	(fmaddsub_<mode>): Rename from fma4i_fmaddsub_<mode> and
 	enable for FMA.
@@ -374,7 +381,7 @@
 
 2010-10-19  Michael Eager  <eager@eagercon.com>
 
-	* config/microblaze/microblaze.c (TARGET_EXCEPT_UNWIND_INFO): 
+	* config/microblaze/microblaze.c (TARGET_EXCEPT_UNWIND_INFO):
 	Use sjlj unwind info for exceptions.
 
 2010-10-19  Francois-Xavier Coudert<fxcoudert@gcc.gnu.org>
@@ -386,7 +393,7 @@
 2010-10-19  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.c (rx_function_value): Small integer types are
-	promotes to SImode.
+	promoted to SImode.
 	(rx_promote_function_mode): New function.
 	(TARGET_PROMOTE_FUNCTION_MODE): Define.
 
@@ -397,12 +404,12 @@
 	(mep_output_aligned_common): Likewise.
 
 2010-10-19  Basile Starynkevitch  <basile@starynkevitch.net>
-	* gengtype.c (new_structure): Remove ad-hoc "location_s"
-	processing.
+
+	* gengtype.c (new_structure): Remove ad-hoc "location_s" processing.
 
 2010-10-18  Richard Henderson  <rth@redhat.com>
 
-	 * simplify-rtx.c (simplify_ternary_operation) [FMA]: Simplify
+	* simplify-rtx.c (simplify_ternary_operation) [FMA]: Simplify
 	(fma (neg a) (neg b) c) and (fma a (neg b) c).
 
 2010-10-18  Richard Henderson  <rth@redhat.com>
@@ -470,10 +477,10 @@
 	(c_parser_objc_at_dynamic_declaration): New.
 
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	* c-parser.c (c_parser_objc_class_declaration): After finding an
 	error, parse the whole declaration then reset parser->error.
-	
+
 2010-10-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/46041
@@ -496,7 +503,7 @@
 
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	Merge from 'apple/trunk' branch on FSF servers.	
+	Merge from 'apple/trunk' branch on FSF servers.
 	* c-parser.c (c_parser_objc_type_name): Adapted to new parser the
 	following Objective-C change:
 
@@ -613,13 +620,13 @@
 2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
-	
+
 	2006-03-27 Fariborz Jahanian <fjahanian@apple.com>
 
-        Radar 4133425
+	Radar 4133425
 	* c-decl.c (undeclared_variable): Issue diagnostic on
 	private 'ivar' access.
-	
+
 2010-10-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46051
