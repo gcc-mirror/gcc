@@ -340,9 +340,9 @@ package body Exp_Util is
    --  local to the init proc for the array type, and is called for each one
    --  of the components. The constructed image has the form of an indexed
    --  component, whose prefix is the outer variable of the array type.
-   --  The n-dimensional array type has known indices Index, Index2...
+   --  The n-dimensional array type has known indexes Index, Index2...
    --  Id_Ref is an indexed component form created by the enclosing init proc.
-   --  Its successive indices are Val1, Val2, ... which are the loop variables
+   --  Its successive indexes are Val1, Val2, ... which are the loop variables
    --  in the loops that call the individual task init proc on each component.
 
    --  The generated function has the following structure:
@@ -404,7 +404,7 @@ package body Exp_Util is
       --  String to hold result
 
       Val : Node_Id;
-      --  Value of successive indices
+      --  Value of successive indexes
 
       Sum : Node_Id;
       --  Expression to compute total size of string

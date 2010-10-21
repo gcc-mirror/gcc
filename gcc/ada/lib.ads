@@ -824,7 +824,7 @@ private
       With_Node   : Node_Id;
    end record;
 
-   --  The Load_Stack table contains a list of unit numbers (indices into the
+   --  The Load_Stack table contains a list of unit numbers (indexes into the
    --  unit table) of units being loaded on a single dependency chain, and a
    --  flag to indicate whether this unit is loaded through a limited_with
    --  clause. The First entry is the main unit. The second entry, if present

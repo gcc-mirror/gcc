@@ -7866,9 +7866,9 @@ package body Sem_Attr is
    --  Start of processing for Resolve_Attribute
 
    begin
-      --  If error during analysis, no point in continuing, except for
-      --  array types, where we get  better recovery by using unconstrained
-      --  indices than nothing at all (see Check_Array_Type).
+      --  If error during analysis, no point in continuing, except for array
+      --  types, where we get better recovery by using unconstrained indexes
+      --  than nothing at all (see Check_Array_Type).
 
       if Error_Posted (N)
         and then Attr_Id /= Attribute_First

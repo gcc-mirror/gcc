@@ -61,6 +61,6 @@ package Sem_Ch4  is
    --    c) A conversion
    --    d) A slice
    --  The resolution of the construct requires some semantic information
-   --  on the prefix and the indices.
+   --  on the prefix and the indexes.
 
 end Sem_Ch4;

@@ -2877,6 +2877,11 @@ package body Sem_Ch4 is
                      if All_Errors_Mode then
                         Error_Msg_Sloc := Sloc (Nam);
 
+                        if Etype (Formal) = Any_Type then
+                           Error_Msg_N
+                             ("there is no legal actual parameter", Actual);
+                        end if;
+
                         if Is_Overloadable (Nam)
                           and then Present (Alias (Nam))
                           and then not Comes_From_Source (Nam)
@@ -6375,8 +6380,8 @@ package body Sem_Ch4 is
 
          if Present (Arr_Type) then
 
-            --  Verify that the actuals (excluding the object)
-            --  match the types of the indices.
+            --  Verify that the actuals (excluding the object) match the types
+            --  of the indexes.
 
             declare
                Actual : Node_Id;

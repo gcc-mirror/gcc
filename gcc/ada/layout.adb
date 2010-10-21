@@ -727,7 +727,7 @@ package body Layout is
          Size := (Dynamic, Expr_From_SO_Ref (Loc, Component_Size (E)));
       end if;
 
-      --  Loop through indices
+      --  Loop through indexes
 
       Indx := First_Index (E);
       while Present (Indx) loop
@@ -1059,7 +1059,7 @@ package body Layout is
          Size := (Dynamic, Expr_From_SO_Ref (Loc, Component_Size (E)));
       end if;
 
-      --  Loop to process array indices
+      --  Loop to process array indexes
 
       Indx := First_Index (E);
       while Present (Indx) loop

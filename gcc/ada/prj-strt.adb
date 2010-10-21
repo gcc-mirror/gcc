@@ -74,8 +74,8 @@ package body Prj.Strt is
         Table_Initial        => 10,
         Table_Increment      => 100,
         Table_Name           => "Prj.Strt.Choice_Lasts");
-   --  Used to store the indices of the choices in table Choices,
-   --  to distinguish nested case constructions.
+   --  Used to store the indexes of the choices in table Choices, to
+   --  distinguish nested case constructions.
 
    Choice_First : Choice_Node_Id := 0;
    --  Index in table Choices of the first case label of the current

@@ -643,7 +643,7 @@ package body Sem_Ch5 is
             or else Nkind (N) /= N_Block_Statement)
       then
          --  Assignment verifies that the length of the Lsh and Rhs are equal,
-         --  but of course the indices do not have to match. If the right-hand
+         --  but of course the indexes do not have to match. If the right-hand
          --  side is a type conversion to an unconstrained type, a length check
          --  is performed on the expression itself during expansion. In rare
          --  cases, the redundant length check is computed on an index type

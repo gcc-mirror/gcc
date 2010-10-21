@@ -2163,8 +2163,8 @@ package body Lib.Xref is
                            end loop;
                         end;
 
-                     --  For array types, list index types as well.
-                     --  (This is not C, indices have distinct types).
+                     --  For array types, list index types as well. (This is
+                     --  not C, indexes have distinct types).
 
                      elsif Is_Array_Type (XE.Ent) then
                         declare

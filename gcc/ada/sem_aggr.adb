@@ -636,7 +636,7 @@ package body Sem_Aggr is
       Set_Parent (Index_Constraints, N);
       Collect_Aggr_Bounds (N, 1);
 
-      --  Build the list of constrained indices of our aggregate itype
+      --  Build the list of constrained indexes of our aggregate itype
 
       for J in 1 .. Aggr_Dimension loop
          Create_Index : declare
@@ -1262,7 +1262,7 @@ package body Sem_Aggr is
             Error_Msg_N ("\Constraint_Error will be raised at run time?", AH);
 
             --  You need to set AH to BH or else in the case of enumerations
-            --  indices we will not be able to resolve the aggregate bounds.
+            --  indexes we will not be able to resolve the aggregate bounds.
 
             AH := Duplicate_Subexpr (BH);
          end if;

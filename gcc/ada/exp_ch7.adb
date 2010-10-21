@@ -2537,7 +2537,7 @@ package body Exp_Ch7 is
 
       function One_Component return List_Id;
       --  Create one statement to initialize/adjust/finalize one array
-      --  component, designated by a full set of indices.
+      --  component, designated by a full set of indexes.
 
       function One_Dimension (N : Int) return List_Id;
       --  Create loop to deal with one dimension of the array. The single

@@ -8207,7 +8207,7 @@ package body Exp_Dist is
             Arry : Entity_Id;
             --  For 'Range and Etype
 
-            Indices : List_Id;
+            Indexes : List_Id;
             --  For the construction of the innermost element expression
 
             with procedure Add_Process_Element
@@ -8223,7 +8223,7 @@ package body Exp_Dist is
             Depth   : Pos       := 1);
          --  Build nested loop statements that iterate over the elements of an
          --  array Arry. The statement(s) built by Add_Process_Element are
-         --  executed for each element; Indices is the list of indices to be
+         --  executed for each element; Indexes is the list of indexes to be
          --  used in the construction of the indexed component that denotes the
          --  current element. Subprogram is the entity for the subprogram for
          --  which this iterator is generated. The generated statements are
@@ -8992,7 +8992,7 @@ package body Exp_Dist is
                     new Append_Array_Traversal (
                       Subprogram => Fnam,
                       Arry       => Res,
-                      Indices    => New_List,
+                      Indexes    => New_List,
                       Add_Process_Element => FA_Ary_Add_Process_Element);
 
                   Res_Subtype_Indication : Node_Id :=
@@ -9868,7 +9868,7 @@ package body Exp_Dist is
                     new Append_Array_Traversal (
                       Subprogram => Fnam,
                       Arry       => Expr_Parameter,
-                      Indices    => New_List,
+                      Indexes    => New_List,
                       Add_Process_Element => TA_Ary_Add_Process_Element);
 
                   Index : Node_Id;
@@ -10850,7 +10850,7 @@ package body Exp_Dist is
                   Element_Expr : constant Node_Id :=
                                    Make_Indexed_Component (Loc,
                                      New_Occurrence_Of (Arry, Loc),
-                                     Indices);
+                                     Indexes);
                begin
                   Set_Etype (Element_Expr, Component_Type (Typ));
                   Add_Process_Element (Stmts,
@@ -10862,7 +10862,7 @@ package body Exp_Dist is
                return;
             end if;
 
-            Append_To (Indices,
+            Append_To (Indexes,
               Make_Identifier (Loc, New_External_Name ('L', Depth)));
 
             if not Constrained or else Depth > 1 then

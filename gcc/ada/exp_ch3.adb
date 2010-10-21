@@ -560,7 +560,7 @@ package body Exp_Ch3 is
 
       function Init_Component return List_Id;
       --  Create one statement to initialize one array component, designated
-      --  by a full set of indices.
+      --  by a full set of indexes.
 
       function Init_One_Dimension (N : Int) return List_Id;
       --  Create loop to initialize one dimension of the array. The single
@@ -3540,7 +3540,7 @@ package body Exp_Ch3 is
       Stats : List_Id;
 
    begin
-      --  Build declarations for indices
+      --  Build declarations for indexes
 
       Decls := New_List;
 
@@ -3568,7 +3568,7 @@ package body Exp_Ch3 is
                Right_Opnd => New_Occurrence_Of (Left_Lo, Loc)),
           Then_Statements => New_List (Make_Simple_Return_Statement (Loc))));
 
-      --  Build initializations for indices
+      --  Build initializations for indexes
 
       declare
          F_Init : constant List_Id := New_List;
