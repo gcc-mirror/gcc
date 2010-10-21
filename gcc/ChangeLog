@@ -1,5 +1,9 @@
 2010-10-21  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/spu/spu.c (spu_function_arg): Dereference CUM parameter.
+
+2010-10-21  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* ddg.c (add_cross_iteration_register_deps): Call gcc_assert instead
 	of gcc_checking_assert.
 	* sel-sched.c (code_motion_process_successors): Likewise.
