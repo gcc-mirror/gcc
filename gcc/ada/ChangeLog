@@ -1,3 +1,18 @@
+2010-10-21  Javier Miranda  <miranda@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): After replacing the range attribute
+	node with a range expression ensure that its evaluation will not have
+	side effects.
+	* exp_ch5.adb (Expand_Assign_Array): Propagate the Parent to the
+	unchecked conversion node generated to handle assignment of private
+	types. Required to allow climbing the subtree if Insert_Action is
+	invoked later.
+
+2010-10-21  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch3.adb (P_Interface_Type_Definition): Allow for possibility of
+	aspect clause presence terminating the type definition.
+
 2010-10-21  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch4.adb, exp_intr.adb, par-ch4.adb, scn.adb, sem_ch4.adb,

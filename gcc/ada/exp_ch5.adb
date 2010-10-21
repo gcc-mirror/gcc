@@ -562,15 +562,23 @@ package body Exp_Ch5 is
          --  cannot assign to elements of the array without this extra
          --  unchecked conversion.
 
+         --  Note: We must propagate Parent to the conversion node to allow
+         --  climbing the subtree if Insert_Action is invoked later.
+
          if Nkind (Act_Lhs) = N_Slice then
             Larray := Prefix (Act_Lhs);
          else
             Larray := Act_Lhs;
 
             if Is_Private_Type (Etype (Larray)) then
-               Larray :=
-                 Unchecked_Convert_To
-                   (Underlying_Type (Etype (Larray)), Larray);
+               declare
+                  Par : constant Node_Id := Parent (Larray);
+               begin
+                  Larray :=
+                    Unchecked_Convert_To
+                      (Underlying_Type (Etype (Larray)), Larray);
+                  Set_Parent (Larray, Par);
+               end;
             end if;
          end if;
 
@@ -580,9 +588,14 @@ package body Exp_Ch5 is
             Rarray := Act_Rhs;
 
             if Is_Private_Type (Etype (Rarray)) then
-               Rarray :=
-                 Unchecked_Convert_To
-                   (Underlying_Type (Etype (Rarray)), Rarray);
+               declare
+                  Par : constant Node_Id := Parent (Rarray);
+               begin
+                  Rarray :=
+                    Unchecked_Convert_To
+                      (Underlying_Type (Etype (Rarray)), Rarray);
+                  Set_Parent (Rarray, Par);
+               end;
             end if;
          end if;
 
@@ -1048,6 +1061,8 @@ package body Exp_Ch5 is
 
          return Step;
       end Build_Step;
+
+   --  Start of processing for Expand_Assign_Array_Loop
 
    begin
       if Rev then
