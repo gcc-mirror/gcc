@@ -84,7 +84,7 @@ package body Exp_Attr is
       Check : Boolean);
    --  The body for a stream subprogram may be generated outside of the scope
    --  of the type. If the type is fully private, it may depend on the full
-   --  view of other types (e.g. indices) that are currently private as well.
+   --  view of other types (e.g. indexes) that are currently private as well.
    --  We install the declarations of the package in which the type is declared
    --  before compiling the body in what is its proper environment. The Check
    --  parameter indicates if checks are to be suppressed for the stream body.

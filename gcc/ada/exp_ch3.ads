@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,7 +77,7 @@ package Exp_Ch3 is
    --  enable the use of discriminals. Enclos_Type is the enclosing type when
    --  initializing a component in an outer init proc, and it is used for
    --  various expansion cases including the case where Typ is a task type
-   --  which is an array component, the indices of the enclosing type are
+   --  which is an array component, the indexes of the enclosing type are
    --  used to build the string that identifies each task at runtime.
    --
    --  Discr_Map is used to replace discriminants by their discriminals in

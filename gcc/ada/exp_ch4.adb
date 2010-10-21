@@ -1420,7 +1420,7 @@ package body Exp_Ch4 is
 
       function Component_Equality (Typ : Entity_Id) return Node_Id;
       --  Create one statement to compare corresponding components, designated
-      --  by a full set of indices.
+      --  by a full set of indexes.
 
       function Get_Arg_Type (N : Node_Id) return Entity_Id;
       --  Given one of the arguments, computes the appropriate type to be used
@@ -1442,7 +1442,7 @@ package body Exp_Ch4 is
       --       end loop;
       --    end;
       --
-      --  If both indices are constrained and identical, the procedure
+      --  If both indexes are constrained and identical, the procedure
       --  returns a simpler loop:
       --
       --      for An in A'Range (N) loop
@@ -1616,7 +1616,7 @@ package body Exp_Ch4 is
 
          if Need_Separate_Indexes then
 
-            --  Generate guard for loop, followed by increments of indices
+            --  Generate guard for loop, followed by increments of indexes
 
             Append_To (Stm_List,
                Make_Exit_Statement (Loc,

@@ -2367,7 +2367,7 @@ package body Sem_Util is
               and then Denotes_Same_Object (Hi1, Hi2);
          end;
 
-         --  Literals will appear as indices. Isn't this where we should check
+         --  Literals will appear as indexes. Isn't this where we should check
          --  Known_At_Compile_Time at least if we are generating warnings ???
 
       elsif Nkind (A1) = N_Integer_Literal then

@@ -870,7 +870,7 @@ package System.Tasking is
 
    type Direct_Index is range 0 .. Parameters.Default_Attribute_Count;
    subtype Direct_Index_Range is Direct_Index range 1 .. Direct_Index'Last;
-   --  Attributes with indices in this range are stored directly in the task
+   --  Attributes with indexes in this range are stored directly in the task
    --  control block. Such attributes must be Address-sized. Other attributes
    --  will be held in dynamically allocated records chained off of the task
    --  control block.

@@ -5171,7 +5171,7 @@ package body Sem_Res is
                      --  An Ada 2005 prefixed call to a primitive operation
                      --  whose first parameter is the prefix. This prefix was
                      --  prepended to the parameter list, which is actually a
-                     --  list of indices. Remove the prefix in order to build
+                     --  list of indexes. Remove the prefix in order to build
                      --  the proper indexed component.
 
                      Index_Node :=

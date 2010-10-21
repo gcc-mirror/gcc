@@ -799,8 +799,8 @@ package body Make is
    type Temp_Path_Names is array (Positive range <>) of Path_Name_Type;
    type Temp_Path_Ptr is access Temp_Path_Names;
 
-   type Free_File_Indices is array (Positive range <>) of Positive;
-   type Free_Indices_Ptr is access Free_File_Indices;
+   type Free_File_Indexes is array (Positive range <>) of Positive;
+   type Free_Indexes_Ptr is access Free_File_Indexes;
 
    type Project_Compilation_Data is record
       Mapping_File_Names : Temp_Path_Ptr;
@@ -811,11 +811,11 @@ package body Make is
       Last_Mapping_File_Names : Natural;
       --  Index of the last mapping file created for this project
 
-      Free_Mapping_File_Indices : Free_Indices_Ptr;
-      --  Indices in Mapping_File_Names of the mapping file names that can be
+      Free_Mapping_File_Indexes : Free_Indexes_Ptr;
+      --  Indexes in Mapping_File_Names of the mapping file names that can be
       --  reused for subsequent compilations.
 
-      Last_Free_Indices : Natural;
+      Last_Free_Indexes : Natural;
       --  Number of mapping files that can be reused
    end record;
    --  Information necessary when compiling a project
@@ -2669,10 +2669,10 @@ package body Make is
                      Comp_Data :=
                        Project_Compilation_Htable.Get
                          (Project_Compilation, Project);
-                     Comp_Data.Last_Free_Indices :=
-                       Comp_Data.Last_Free_Indices + 1;
-                     Comp_Data.Free_Mapping_File_Indices
-                       (Comp_Data.Last_Free_Indices) :=
+                     Comp_Data.Last_Free_Indexes :=
+                       Comp_Data.Last_Free_Indexes + 1;
+                     Comp_Data.Free_Mapping_File_Indexes
+                       (Comp_Data.Last_Free_Indexes) :=
                          Running_Compile (J).Mapping_File;
                   end if;
 
@@ -3182,9 +3182,9 @@ package body Make is
 
          --  If there is a mapping file ready to be reused, reuse it
 
-         if Data.Last_Free_Indices > 0 then
-            Mfile := Data.Free_Mapping_File_Indices (Data.Last_Free_Indices);
-            Data.Last_Free_Indices := Data.Last_Free_Indices - 1;
+         if Data.Last_Free_Indexes > 0 then
+            Mfile := Data.Free_Mapping_File_Indexes (Data.Last_Free_Indexes);
+            Data.Last_Free_Indexes := Data.Last_Free_Indexes - 1;
 
          --  Otherwise, create and initialize a new one
 
@@ -5338,9 +5338,9 @@ package body Make is
               (Mapping_File_Names        => new Temp_Path_Names
                                               (1 .. Saved_Maximum_Processes),
                Last_Mapping_File_Names   => 0,
-               Free_Mapping_File_Indices => new Free_File_Indices
+               Free_Mapping_File_Indexes => new Free_File_Indexes
                                               (1 .. Saved_Maximum_Processes),
-               Last_Free_Indices         => 0);
+               Last_Free_Indexes         => 0);
 
             Project_Compilation_Htable.Set
               (Project_Compilation, Proj.Project, Data);
@@ -5351,9 +5351,9 @@ package body Make is
            (Mapping_File_Names        => new Temp_Path_Names
                                            (1 .. Saved_Maximum_Processes),
             Last_Mapping_File_Names   => 0,
-            Free_Mapping_File_Indices => new Free_File_Indices
+            Free_Mapping_File_Indexes => new Free_File_Indexes
                                            (1 .. Saved_Maximum_Processes),
-            Last_Free_Indices         => 0);
+            Last_Free_Indexes         => 0);
 
          Project_Compilation_Htable.Set
            (Project_Compilation, No_Project, Data);

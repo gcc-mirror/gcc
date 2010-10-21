@@ -1421,7 +1421,7 @@ package body Exp_Disp is
            and then Is_Class_Wide_Type (Formal_Typ)
          then
             --  No need to displace the pointer if the type of the actual
-            --  coindices with the type of the formal.
+            --  coincides with the type of the formal.
 
             if Actual_Typ = Formal_Typ then
                null;

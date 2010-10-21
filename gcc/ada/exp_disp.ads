@@ -340,7 +340,7 @@ package Exp_Disp is
    --  Ada 2005 (AI-345): Create and populate the auxiliary table in the TSD
    --  of Typ used for dispatching in asynchronous, conditional and timed
    --  selects. Generate code to set the primitive operation kinds and entry
-   --  indices of primitive operations and primitive wrappers.
+   --  indexes of primitive operations and primitive wrappers.
 
    function Make_Tags (Typ : Entity_Id) return List_Id;
    --  Generate the entities associated with the primary and secondary tags of

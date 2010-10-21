@@ -316,7 +316,7 @@ package body Exp_Ch9 is
       Lo   : Node_Id;
       Ttyp : Entity_Id;
       Cap  : Boolean) return Node_Id;
-   --  Compute (Hi - Lo) for two entry family indices. Hi is the index in
+   --  Compute (Hi - Lo) for two entry family indexes. Hi is the index in
    --  an accept statement, or the upper bound in the discrete subtype of
    --  an entry declaration. Lo is the corresponding lower bound. Ttyp is
    --  the concurrent type of the entry. If Cap is true, the result is
@@ -2485,7 +2485,7 @@ package body Exp_Ch9 is
              Left_Opnd => Make_Identifier (Loc, Name_uE),
              Right_Opnd => Siz);
 
-         --  Map entry queue indices in the range of the current family
+         --  Map entry queue indexes in the range of the current family
          --  into the current index, that designates the entry body.
 
          if No (If_St) then

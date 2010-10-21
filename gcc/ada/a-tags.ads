@@ -120,7 +120,7 @@ private
    --         +------------------+       +-------------------+   +------------+
    --         |table of          |
    --         :   entry          :
-   --         |      indices     |
+   --         |      indexes     |
    --         +------------------+
 
    --  Structure of the GNAT Secondary Dispatch Table
