@@ -485,22 +485,28 @@ try_forward_edges (int mode, basic_block b)
 		{
 		  /* When not optimizing, ensure that edges or forwarder
 		     blocks with different locus are not optimized out.  */
-		  int locus = single_succ_edge (target)->goto_locus;
+		  int new_locus = single_succ_edge (target)->goto_locus;
+		  int locus = goto_locus;
 
-		  if (locus && goto_locus && !locator_eq (locus, goto_locus))
-		    counter = n_basic_blocks;
-		  else if (locus)
-		    goto_locus = locus;
-
-		  if (INSN_P (BB_END (target)))
+		  if (new_locus && locus && !locator_eq (new_locus, locus))
+		    new_target = NULL;
+		  else
 		    {
-		      locus = INSN_LOCATOR (BB_END (target));
+		      if (new_locus)
+			locus = new_locus;
 
-		      if (locus && goto_locus
-			  && !locator_eq (locus, goto_locus))
-			counter = n_basic_blocks;
-		      else if (locus)
-			goto_locus = locus;
+		      new_locus = INSN_P (BB_END (target))
+				  ? INSN_LOCATOR (BB_END (target)) : 0;
+
+		      if (new_locus && locus && !locator_eq (new_locus, locus))
+			new_target = NULL;
+		      else
+			{
+			  if (new_locus)
+			    locus = new_locus;
+
+			  goto_locus = locus;
+			}
 		    }
 		}
 	    }
@@ -2379,6 +2385,7 @@ try_optimize_cfg (int mode)
 		  continue;
 		}
 
+	      /* Merge B with its single successor, if any.  */
 	      if (single_succ_p (b)
 		  && (s = single_succ_edge (b))
 		  && !(s->flags & EDGE_COMPLEX)
