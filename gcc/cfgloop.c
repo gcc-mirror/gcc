@@ -410,10 +410,7 @@ flow_loops_find (struct loops *loops)
 
       /* If we have an abnormal predecessor, do not consider the
 	 loop (not worth the problems).  */
-      FOR_EACH_EDGE (e, ei, header->preds)
-	if (e->flags & EDGE_ABNORMAL)
-	  break;
-      if (e)
+      if (bb_has_abnormal_pred (header))
 	continue;
 
       FOR_EACH_EDGE (e, ei, header->preds)

@@ -1,3 +1,13 @@
+2010-10-21  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cfgloop.c (flow_loops_find): Call bb_has_abnormal_pred.
+	* reload1.c (has_nonexceptional_receiver): Likewise.
+	* tree-into-ssa.c (rewrite_update_enter_block): Likewise.
+	(create_new_def_for): Likewise.
+	* tree-cfgcleanup.c (remove_forwarder_block): Likewise.
+	(merge_phi_nodes): Likewise.
+	(has_abnormal_incoming_edge_p): Delete.
+
 2010-10-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/sse.md (ssescalarmodesuffix): Add V8SI and V4DI.
