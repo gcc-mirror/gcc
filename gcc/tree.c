@@ -10893,9 +10893,6 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
 {
   tree type;
 
-  if (offset == 0)
-    return binfo;
-
   type = TREE_TYPE (binfo);
   while (offset > 0)
     {
