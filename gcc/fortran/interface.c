@@ -1056,7 +1056,7 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 	  }
 
 	/* Check type and rank.  */
-	if (!compare_type_rank (f1->sym, f2->sym))
+	if (!compare_type_rank (f2->sym, f1->sym))
 	  {
 	    if (errmsg != NULL)
 	      snprintf (errmsg, err_len, "Type/rank mismatch in argument '%s'",
