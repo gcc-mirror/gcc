@@ -6360,6 +6360,7 @@ code_motion_process_successors (insn_t insn, av_set_t orig_ops,
         goto rescan;
     }
 
+#ifdef ENABLE_CHECKING
   /* Here, RES==1 if original expr was found at least for one of the
      successors.  After the loop, RES may happen to have zero value
      only if at some point the expr searched is present in av_set, but is
@@ -6367,11 +6368,12 @@ code_motion_process_successors (insn_t insn, av_set_t orig_ops,
      The exception is when the original operation is blocked by
      bookkeeping generated for another fence or for another path in current
      move_op.  */
-  gcc_checking_assert (res == 1
-		       || (res == 0
-			   && av_set_could_be_blocked_by_bookkeeping_p (orig_ops,
-									static_params))
-		       || res == -1);
+  gcc_assert (res == 1
+	      || (res == 0
+		  && av_set_could_be_blocked_by_bookkeeping_p (orig_ops,
+							       static_params))
+	      || res == -1);
+#endif
 
   /* Merge data, clean up, etc.  */
   if (res != -1 && code_motion_path_driver_info->after_merge_succs)
