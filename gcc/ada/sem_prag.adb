@@ -11172,8 +11172,7 @@ package body Sem_Prag is
 
          --  pragma Predicate
          --    ([Entity =>]    type_LOCAL_NAME,
-         --     [Check  =>]    EXPRESSION
-         --     [,[Message =>] String_Expression]);
+         --     [Check  =>]    EXPRESSION);
 
          when Pragma_Predicate => Predicate : declare
             Type_Id : Node_Id;
@@ -11184,15 +11183,9 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
-            Check_At_Least_N_Arguments (2);
-            Check_At_Most_N_Arguments (3);
+            Check_Arg_Count (2);
             Check_Optional_Identifier (Arg1, Name_Entity);
             Check_Optional_Identifier (Arg2, Name_Check);
-
-            if Arg_Count = 3 then
-               Check_Optional_Identifier (Arg3, Name_Message);
-               Check_Arg_Is_Static_Expression (Arg3, Standard_String);
-            end if;
 
             Check_Arg_Is_Local_Name (Arg1);
 
@@ -11206,8 +11199,10 @@ package body Sem_Prag is
 
             --  The remaining processing is simply to link the pragma on to
             --  the rep item chain, for processing when the type is frozen.
-            --  This is accomplished by a call to Rep_Item_Too_Late.
+            --  This is accomplished by a call to Rep_Item_Too_Late. We also
+            --  mark the type as having predicates.
 
+            Set_Has_Predicates (Typ);
             Discard := Rep_Item_Too_Late (Typ, N, FOnly => True);
          end Predicate;
 

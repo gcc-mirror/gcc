@@ -1008,14 +1008,14 @@ package body Sem_Ch13 is
                   goto Continue;
                end;
 
-               --  Invariant and Predicate aspects generate a corresponding
-               --  pragma with a first argument that is the entity, and the
-               --  second argument is the expression. This is inserted right
-               --  after the declaration, to get the required pragma placement.
-               --  The pragma processing takes care of the required delay.
+               --  Invariant aspects generate a corresponding pragma with a
+               --  first argument that is the entity, and the second argument
+               --  is the expression and anthird argument with an appropriate
+               --  message. This is inserted right after the declaration, to
+               --  get the required pragma placement. The pragma processing
+               --  takes care of the required delay.
 
-               when Aspect_Invariant |
-                    Aspect_Predicate =>
+               when Aspect_Invariant =>
 
                   --  Construct the pragma
 
@@ -1025,14 +1025,14 @@ package body Sem_Ch13 is
                         New_List (Ent, Relocate_Node (Expr)),
                       Class_Present                => Class_Present (Aspect),
                       Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id), Chars (Id)));
+                        Make_Identifier (Sloc (Id), Name_Invariant));
 
                   --  Add message unless exception messages are suppressed
 
                   if not Opt.Exception_Locations_Suppressed then
                      Append_To (Pragma_Argument_Associations (Aitem),
                        Make_Pragma_Argument_Association (Eloc,
-                         Chars     => Name_Message,
+                         Chars      => Name_Message,
                          Expression =>
                            Make_String_Literal (Eloc,
                              Strval => "failed invariant from "
@@ -1041,10 +1041,36 @@ package body Sem_Ch13 is
 
                   Set_From_Aspect_Specification (Aitem, True);
 
-                  --  For Invariant and Predicate cases, insert immediately
-                  --  after the entity declaration. We do not have to worry
-                  --  about delay issues since the pragma processing takes
-                  --  care of this.
+                  --  For Invariant case, insert immediately after the entity
+                  --  declaration. We do not have to worry about delay issues
+                  --  since the pragma processing takes care of this.
+
+                  Insert_After (N, Aitem);
+                  goto Continue;
+
+               --  Predicate aspects generate a corresponding pragma with a
+               --  first argument that is the entity, and the second argument
+               --  is the expression. This is inserted immediately after the
+               --  declaration, to get the required pragma placement. The
+               --  pragma processing takes care of the required delay.
+
+               when Aspect_Predicate =>
+
+                  --  Construct the pragma
+
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Argument_Associations =>
+                        New_List (Ent, Relocate_Node (Expr)),
+                      Class_Present                => Class_Present (Aspect),
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Name_Predicate));
+
+                  Set_From_Aspect_Specification (Aitem, True);
+
+                  --  For Predicate case, insert immediately after the entity
+                  --  declaration. We do not have to worry about delay issues
+                  --  since the pragma processing takes care of this.
 
                   Insert_After (N, Aitem);
                   goto Continue;
@@ -3729,6 +3755,291 @@ package body Sem_Ch13 is
                  Statements => Stmts));
       end if;
    end Build_Invariant_Procedure;
+
+   ------------------------------
+   -- Build_Predicate_Function --
+   ------------------------------
+
+   --  The procedure that is constructed here has the form
+
+   --  function typPredicate (Ixxx : typ) return Boolean is
+   --  begin
+   --     return
+   --        exp1 and then exp2 and then ...
+   --        and then typ1Predicate (typ1 (Ixxx))
+   --        and then typ2Predicate (typ2 (Ixxx))
+   --        and then ...;
+   --  end typPredicate;
+
+   --  Here exp1, and exp2 are expressions from Predicate pragmas. Note that
+   --  this is the point at which these expressions get analyzed, providing the
+   --  required delay, and typ1, typ2, are entities from which predicates are
+   --  inherited. Note that we do NOT generate Check pragmas, that's because we
+   --  use this function even if checks are off, e.g. for membership tests.
+
+   procedure Build_Predicate_Function
+     (Typ   : Entity_Id;
+      FDecl : out Node_Id;
+      FBody : out Node_Id)
+   is
+      Loc  : constant Source_Ptr := Sloc (Typ);
+      Spec : Node_Id;
+      SId  : Entity_Id;
+
+      Expr : Node_Id;
+      --  This is the expression for the return statement in the function. It
+      --  is build by connecting the component predicates with AND THEN.
+
+      procedure Add_Call (T : Entity_Id);
+      --  Includes a call statement to the predicate function for type T in
+      --  Expr if T has predicates and Predicate_Function (T) is non-empty.
+
+      procedure Add_Predicates;
+      --  Appends expressions for any Predicate pragmas in the rep item chain
+      --  Typ to Expr. Note that we look only at items for this exact entity.
+      --  Inheritance of predicates for the parent type is done by calling the
+      --  Predicate_Function of the parent type, using Add_Call above.
+
+      Object_Name : constant Name_Id := New_Internal_Name ('I');
+      --  Name for argument of Predicate procedure
+
+      --------------
+      -- Add_Call --
+      --------------
+
+      procedure Add_Call (T : Entity_Id) is
+         Exp : Node_Id;
+
+      begin
+         if Present (T)
+           and then Present (Predicate_Function (T))
+         then
+            Exp :=
+              Make_Predicate_Call
+                (T,
+                 Convert_To (T,
+                   Make_Identifier (Loc,
+                     Chars => Object_Name)));
+
+            if No (Expr) then
+               Expr := Exp;
+            else
+               Expr :=
+                 Make_And_Then (Loc,
+                   Left_Opnd  => Relocate_Node (Expr),
+                   Right_Opnd => Exp);
+            end if;
+         end if;
+      end Add_Call;
+
+      --------------------
+      -- Add_Predicates --
+      --------------------
+
+      procedure Add_Predicates is
+         Ritem : Node_Id;
+         Arg1  : Node_Id;
+         Arg2  : Node_Id;
+
+         function Replace_Node (N : Node_Id) return Traverse_Result;
+         --  Process single node for traversal to replace type references
+
+         procedure Replace_Type is new Traverse_Proc (Replace_Node);
+         --  Traverse an expression changing every occurrence of an entity
+         --  reference to type T with a reference to the object argument.
+
+         ------------------
+         -- Replace_Node --
+         ------------------
+
+         function Replace_Node (N : Node_Id) return Traverse_Result is
+         begin
+            --  Case of entity name referencing the type
+
+            if Is_Entity_Name (N)
+              and then Entity (N) = Typ
+            then
+               --  Replace with object
+
+               Rewrite (N,
+                 Make_Identifier (Loc,
+                   Chars => Object_Name));
+
+               --  All done with this node
+
+               return Skip;
+
+            --  Not an instance of the type entity, keep going
+
+            else
+               return OK;
+            end if;
+         end Replace_Node;
+
+      begin
+         Ritem := First_Rep_Item (Typ);
+         while Present (Ritem) loop
+            if Nkind (Ritem) = N_Pragma
+              and then Pragma_Name (Ritem) = Name_Predicate
+            then
+               Arg1 := First (Pragma_Argument_Associations (Ritem));
+               Arg2 := Next (Arg1);
+
+               Arg1 := Get_Pragma_Arg (Arg1);
+               Arg2 := Get_Pragma_Arg (Arg2);
+
+               --  We need to replace any occurrences of the name of the type
+               --  with references to the object. We do this by first doing a
+               --  preanalysis, to identify all the entities, then we traverse
+               --  looking for the type entity, doing the needed substitution.
+               --  The preanalysis is done with the special OK_To_Reference
+               --  flag set on the type, so that if we get an occurrence of
+               --  this type, it will be reognized as legitimate.
+
+               Set_OK_To_Reference (Typ, True);
+               Preanalyze_Spec_Expression (Arg2, Standard_Boolean);
+               Set_OK_To_Reference (Typ, False);
+               Replace_Type (Arg2);
+
+               --  See if this predicate pragma is for the current type
+
+               if Entity (Arg1) = Typ then
+
+                  --  We have a match, add the expression
+
+                  if No (Expr) then
+                     Expr := Relocate_Node (Arg2);
+                  else
+                     Expr :=
+                       Make_And_Then (Loc,
+                         Left_Opnd  => Relocate_Node (Expr),
+                         Right_Opnd => Relocate_Node (Arg2));
+                  end if;
+               end if;
+            end if;
+
+            Next_Rep_Item (Ritem);
+         end loop;
+      end Add_Predicates;
+
+   --  Start of processing for Build_Predicate_Function
+
+   begin
+      --  Initialize for construction of statement list
+
+      Expr := Empty;
+      FDecl := Empty;
+      FBody := Empty;
+
+      --  Return if already built or if type does not have predicates
+
+      if not Has_Predicates (Typ)
+        or else Present (Predicate_Function (Typ))
+      then
+         return;
+      end if;
+
+      --  Add Predicates for the current type
+
+      Add_Predicates;
+
+      --  Deal with ancestor subtype and parent type
+
+      declare
+         Atyp : constant Entity_Id := Ancestor_Subtype (Typ);
+
+      begin
+         --  If ancestor subtype present, add its predicates
+
+         if Present (Atyp) then
+            Add_Call (Atyp);
+
+         --  Else if this is derived, add predicates of parent type
+
+         elsif Is_Derived_Type (Typ) then
+            Add_Call (Etype (Base_Type (Typ)));
+         end if;
+      end;
+
+      --  Add predicates of any interfaces of a tagged type
+
+      if Is_Tagged_Type (Typ) then
+         declare
+            Iface_List : Elist_Id;
+            Elmt       : Elmt_Id;
+
+         begin
+            Collect_Interfaces (Typ, Iface_List);
+
+            if Present (Iface_List) then
+               loop
+                  Elmt := First_Elmt (Iface_List);
+                  exit when No (Elmt);
+                  Add_Call (Node (Elmt));
+                  Remove_Elmt (Iface_List, Elmt);
+               end loop;
+            end if;
+         end;
+      end if;
+
+      if Present (Expr) then
+
+         --  Build function declaration
+
+         pragma Assert (Has_Predicates (Typ));
+         SId :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (Typ), "Predicate"));
+         Set_Has_Predicates (SId);
+         Set_Predicate_Function (Typ, SId);
+
+         Spec :=
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name       => SId,
+             Parameter_Specifications => New_List (
+               Make_Parameter_Specification (Loc,
+                 Defining_Identifier =>
+                   Make_Defining_Identifier (Loc,
+                     Chars => Object_Name),
+                 Parameter_Type =>
+                   New_Occurrence_Of (Typ, Loc))),
+             Result_Definition        =>
+               New_Occurrence_Of (Standard_Boolean, Loc));
+
+         FDecl :=
+           Make_Subprogram_Declaration (Loc,
+             Specification => Spec);
+
+         --  Build function body
+
+         SId :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (Typ), "Predicate"));
+
+         Spec :=
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name       => SId,
+             Parameter_Specifications => New_List (
+               Make_Parameter_Specification (Loc,
+                 Defining_Identifier =>
+                   Make_Defining_Identifier (Loc,
+                     Chars => Object_Name),
+                 Parameter_Type =>
+                   New_Occurrence_Of (Typ, Loc))),
+             Result_Definition        =>
+               New_Occurrence_Of (Standard_Boolean, Loc));
+
+         FBody :=
+           Make_Subprogram_Body (Loc,
+             Specification              => Spec,
+             Declarations               => Empty_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (
+                   Make_Simple_Return_Statement (Loc,
+                     Expression => Expr))));
+      end if;
+   end Build_Predicate_Function;
 
    -----------------------------------
    -- Check_Constant_Address_Clause --

@@ -4086,6 +4086,51 @@ package body Exp_Util is
             Make_Integer_Literal (Loc, 0));
    end Make_Non_Empty_Check;
 
+   -------------------------
+   -- Make_Predicate_Call --
+   -------------------------
+
+   function Make_Predicate_Call
+     (Typ  : Entity_Id;
+      Expr : Node_Id) return Node_Id
+   is
+      Loc : constant Source_Ptr := Sloc (Expr);
+
+   begin
+      pragma Assert (Present (Predicate_Function (Typ)));
+
+      return
+        Make_Function_Call (Loc,
+          Name                   =>
+            New_Occurrence_Of (Predicate_Function (Typ), Loc),
+          Parameter_Associations => New_List (Relocate_Node (Expr)));
+   end Make_Predicate_Call;
+
+   --------------------------
+   -- Make_Predicate_Check --
+   --------------------------
+
+   function Make_Predicate_Check
+     (Typ  : Entity_Id;
+      Expr : Node_Id) return Node_Id
+   is
+      Loc : constant Source_Ptr := Sloc (Expr);
+
+   begin
+      return
+        Make_Pragma (Loc,
+          Pragma_Identifier            =>
+            Make_Identifier (Loc,
+              Name_Check),
+          Pragma_Argument_Associations => New_List (
+            Make_Pragma_Argument_Association (Loc,
+              Expression =>
+                Make_Identifier (Loc,
+                  Chars => Name_Predicate)),
+            Make_Pragma_Argument_Association (Loc,
+              Expression => Make_Predicate_Call (Typ, Expr))));
+   end Make_Predicate_Check;
+
    ----------------------------
    -- Make_Subtype_From_Expr --
    ----------------------------

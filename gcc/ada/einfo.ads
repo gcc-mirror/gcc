@@ -1677,7 +1677,7 @@ package Einfo is
 --       Present in type and subtype entities and in subprogram entities. Set
 --       if a pragma Predicate or Predicate aspect applies to the type, or if
 --       it inherits a Predicate aspect from its parent or progenitor types.
---       Also set in the predicate procedure entity, to distinguish it among
+--       Also set in the predicate function entity, to distinguish it among
 --       entries in the Subprograms_For_Type.
 
 --    Has_Primitive_Operations (Flag120) [base type only]
@@ -3276,13 +3276,12 @@ package Einfo is
 --       Direct_Primitive_Operations of its CRT; otherwise returns No_Elist.
 --       For all the other types returns the Direct_Primitive_Operations.
 
---    Predicate_Procedure (synthesized)
+--    Predicate_Function (synthesized)
 --       Present in all types. Set for types for which (Has_Predicates is True)
 --       and for which a predicate procedure has been built that tests that the
---       specified predicates are True. Contains the entity for the procedure
---       which takes a single argument of the given type, and returns if the
---       predicate holds, or raises exception Assertion_Error with an exception
---       message if it does not hold.
+--       specified predicates are True. Contains the entity for the function
+--       which takes a single argument of the given type, and returns True if
+--       the predicate holds and False if it does not.
 --
 --       Note: the reason this is marked as a synthesized attribute is that the
 --       way this is stored is as an element of the Subprograms_For_Type field.
@@ -3662,7 +3661,7 @@ package Einfo is
 --       entity. Basically this is a way of multiplexing the single field to
 --       hold more than one entity (since we ran out of space in some type
 --       entities). This is currently used for Invariant_Procedure and also
---       for Predicate_Procedure, and clients will always use the latter two
+--       for Predicate_Function, and clients will always use the latter two
 --       names to access entries in this list.
 
 --    Suppress_Elaboration_Warnings (Flag148)
@@ -4832,7 +4831,7 @@ package Einfo is
    --    Implementation_Base_Type            (synth)
    --    Invariant_Procedure                 (synth)
    --    Is_Access_Protected_Subprogram_Type (synth)
-   --    Predicate_Procedure                 (synth)
+   --    Predicate_Function                  (synth)
    --    Root_Type                           (synth)
    --    Size_Clause                         (synth)
 
@@ -6824,10 +6823,10 @@ package Einfo is
    ---------------------------------------------------
 
    function Invariant_Procedure                 (Id : E) return N;
-   function Predicate_Procedure                 (Id : E) return N;
+   function Predicate_Function                  (Id : E) return N;
 
    procedure Set_Invariant_Procedure            (Id : E; V : E);
-   procedure Set_Predicate_Procedure            (Id : E; V : E);
+   procedure Set_Predicate_Function             (Id : E; V : E);
 
    -----------------------------------
    -- Field Initialization Routines --
