@@ -1,3 +1,12 @@
+2010-10-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/46079
+	* trans_stmt.c (gfc_trans_stop): Fix whitespace.  Build a call to new
+	F08 numeric stop function.
+	* trans.h: Add declaration for gfor_fndecl_stop_numeric_f08.
+	* trans-decl.c (gfc_build_builtin_function_decls): Build declaration
+	for stop_numeric_f08.
+
 2010-10-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.h: Remove definition of bt enumerator.

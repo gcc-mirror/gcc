@@ -1141,6 +1141,7 @@ GFORTRAN_1.4 {
     _gfortran_parity_l8;
     _gfortran_parity_l16;
     _gfortran_selected_real_kind2008;
+    _gfortran_stop_numeric_f08;
     _gfortran_transfer_array_write;
     _gfortran_transfer_character_write;
     _gfortran_transfer_character_wide_write;
