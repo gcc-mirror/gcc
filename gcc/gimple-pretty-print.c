@@ -1976,7 +1976,6 @@ dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent,
 		     int flags)
 {
   edge e;
-  edge_iterator ei;
   gimple stmt;
 
   stmt = last_stmt (bb);
@@ -2004,9 +2003,7 @@ dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent,
 
   /* If there is a fallthru edge, we may need to add an artificial
      goto to the dump.  */
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if (e->flags & EDGE_FALLTHRU)
-      break;
+  e = find_fallthru_edge (bb->succs);
 
   if (e && e->dest != bb->next_bb)
     {

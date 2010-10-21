@@ -4247,10 +4247,9 @@ xrecalloc (void *p, size_t new_nmemb, size_t old_nmemb, size_t size)
 /* Helper function.
    Find fallthru edge from PRED.  */
 edge
-find_fallthru_edge (basic_block pred)
+find_fallthru_edge_from (basic_block pred)
 {
   edge e;
-  edge_iterator ei;
   basic_block succ;
 
   succ = pred->next_bb;
@@ -4258,21 +4257,23 @@ find_fallthru_edge (basic_block pred)
 
   if (EDGE_COUNT (pred->succs) <= EDGE_COUNT (succ->preds))
     {
-      FOR_EACH_EDGE (e, ei, pred->succs)
-	if (e->flags & EDGE_FALLTHRU)
-	  {
-	    gcc_assert (e->dest == succ);
-	    return e;
-	  }
+      e = find_fallthru_edge (pred->succs);
+
+      if (e)
+	{
+	  gcc_assert (e->dest == succ);
+	  return e;
+	}
     }
   else
     {
-      FOR_EACH_EDGE (e, ei, succ->preds)
-	if (e->flags & EDGE_FALLTHRU)
-	  {
-	    gcc_assert (e->src == pred);
-	    return e;
-	  }
+      e = find_fallthru_edge (succ->preds);
+
+      if (e)
+	{
+	  gcc_assert (e->src == pred);
+	  return e;
+	}
     }
 
   return NULL;
@@ -4314,7 +4315,7 @@ init_before_recovery (basic_block *before_recovery_ptr)
   edge e;
 
   last = EXIT_BLOCK_PTR->prev_bb;
-  e = find_fallthru_edge (last);
+  e = find_fallthru_edge_from (last);
 
   if (e)
     {

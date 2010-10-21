@@ -926,6 +926,20 @@ bb_has_abnormal_pred (basic_block bb)
   return false;
 }
 
+/* Return the fallthru edge in EDGES if it exists, NULL otherwise.  */
+static inline edge
+find_fallthru_edge (VEC(edge,gc) *edges)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, edges)
+    if (e->flags & EDGE_FALLTHRU)
+      break;
+
+  return e;
+}
+
 /* In cfgloopmanip.c.  */
 extern edge mfb_kj_edge;
 extern bool mfb_keep_just (edge);

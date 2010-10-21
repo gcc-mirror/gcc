@@ -1,3 +1,30 @@
+2010-10-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* basic-block.h (find_fallthru_edge): Define.
+	* cfgcleanup.c (merge_blocks_move): Use it.
+	(try_crossjump_bb): Likewise.
+	* cfglayout.c (fixup_reorder_chains): Likewise.
+	(fixup_fallthru_exit_predecessor): Likewise.
+	* cfgrtl.c (rtl_split_edge): Likewise.
+	(rtl_verify_flow_info): Likewise.
+	* function.c (thread_prologue_and_epilogue_insns): Likewise.
+	* gimple-pretty-print.c (dump_implicit_edges): Likewise.
+	* ifcvt.c (block_fallthru): Likewise.
+	* reload1.c (fixup_abnormal_edges): Likewise.
+	* sched-ebb.c (being_schedule_ready): Likewise.
+	(schedule_ebb): Likwise.
+	* sched-rgn.c (find_single_block_region): Likewise.
+	* sel-sched-ir.c (bb_ends_ebb_p): Likewise.
+	* tree-complex.c (expand_complex_move): Likewise.
+	* sched-int.h (find_fallthru_edge): Rename to...
+	(find_fallthru_edge_from): ...this.
+	* haifa-sched.c (find_fallthru_edge): Rename to...
+	(find_fallthru_edge_from): ...this.  Use new find_fallthru_edge.
+	(init_before_recovery): Call find_fallthru_edge_from.
+	* sel-sched-ir.c (merge_fences): Likewise.
+	* sel-sched.c (in_fallthru_bb_p): Likewise.
+	(move_cond_jump): Likewise.
+
 2010-10-20  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.md (various): Fix conditions on a number of

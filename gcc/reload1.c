@@ -9161,9 +9161,7 @@ fixup_abnormal_edges (void)
 	      BB_END (bb) = insn;
 	      insn = NEXT_INSN (insn);
 
-	      FOR_EACH_EDGE (e, ei, bb->succs)
-		if (e->flags & EDGE_FALLTHRU)
-		  break;
+	      e = find_fallthru_edge (bb->succs);
 
 	      while (insn && insn != stop)
 		{

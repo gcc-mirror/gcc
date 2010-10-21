@@ -612,12 +612,14 @@ static bool
 in_fallthru_bb_p (rtx insn, rtx succ)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
+  edge e;
 
   if (bb == BLOCK_FOR_INSN (succ))
     return true;
 
-  if (find_fallthru_edge (bb))
-    bb = find_fallthru_edge (bb)->dest;
+  e = find_fallthru_edge_from (bb);
+  if (e)
+    bb = e->dest;
   else
     return false;
 
@@ -4905,7 +4907,7 @@ move_cond_jump (rtx insn, bnd_t bnd)
   next = PREV_INSN (insn);
   BND_TO (bnd) = insn;
 
-  ft_edge = find_fallthru_edge (block_from);
+  ft_edge = find_fallthru_edge_from (block_from);
   block_next = ft_edge->dest;
   /* There must be a fallthrough block (or where should go
   control flow in case of false jump predicate otherwise?).  */

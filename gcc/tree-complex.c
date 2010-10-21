@@ -782,17 +782,14 @@ expand_complex_move (gimple_stmt_iterator *gsi, tree type)
     {
       if (is_ctrl_altering_stmt (stmt))
 	{
-	  edge_iterator ei;
 	  edge e;
 
 	  /* The value is not assigned on the exception edges, so we need not
 	     concern ourselves there.  We do need to update on the fallthru
 	     edge.  Find it.  */
-	  FOR_EACH_EDGE (e, ei, gsi_bb (*gsi)->succs)
-	    if (e->flags & EDGE_FALLTHRU)
-	      goto found_fallthru;
-	  gcc_unreachable ();
-	found_fallthru:
+	  e = find_fallthru_edge (gsi_bb (*gsi)->succs);
+	  if (!e)
+	    gcc_unreachable ();
 
 	  r = build1 (REALPART_EXPR, inner_type, lhs);
 	  i = build1 (IMAGPART_EXPR, inner_type, lhs);
