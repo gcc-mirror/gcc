@@ -35,9 +35,28 @@ export_proto(stop_numeric);
 void
 stop_numeric (GFC_INTEGER_4 code)
 {
+  if (code == -1)
+    code = 0;
+  else
+    st_printf ("STOP %d\n", (int)code);
+
+  sys_exit (code);
+}
+
+
+/* A Fortran 2008 numeric STOP statement.  */
+
+extern void stop_numeric_f08 (GFC_INTEGER_4)
+  __attribute__ ((noreturn));
+export_proto(stop_numeric_f08);
+
+void
+stop_numeric_f08 (GFC_INTEGER_4 code)
+{
   st_printf ("STOP %d\n", (int)code);
   sys_exit (code);
 }
+
 
 /* A character string or blank STOP statement.  */
 
@@ -75,7 +94,8 @@ error_stop_string (const char *string, GFC_INTEGER_4 len)
   sys_exit (1);
 }
 
-/* A numeric or blank ERROR STOP statement.  */
+
+/* A numeric ERROR STOP statement.  */
 
 extern void error_stop_numeric (GFC_INTEGER_4)
   __attribute__ ((noreturn));

@@ -87,6 +87,7 @@ tree gfc_static_ctors;
 tree gfor_fndecl_pause_numeric;
 tree gfor_fndecl_pause_string;
 tree gfor_fndecl_stop_numeric;
+tree gfor_fndecl_stop_numeric_f08;
 tree gfor_fndecl_stop_string;
 tree gfor_fndecl_error_stop_numeric;
 tree gfor_fndecl_error_stop_string;
@@ -2801,6 +2802,12 @@ gfc_build_builtin_function_decls (void)
 	void_type_node, 1, gfc_int4_type_node);
   /* STOP doesn't return.  */
   TREE_THIS_VOLATILE (gfor_fndecl_stop_numeric) = 1;
+
+  gfor_fndecl_stop_numeric_f08 = gfc_build_library_function_decl (
+	get_identifier (PREFIX("stop_numeric_f08")),
+	void_type_node, 1, gfc_int4_type_node);
+  /* STOP doesn't return.  */
+  TREE_THIS_VOLATILE (gfor_fndecl_stop_numeric_f08) = 1;
 
   gfor_fndecl_stop_string = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("stop_string")), ".R.",

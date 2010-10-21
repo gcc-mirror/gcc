@@ -589,6 +589,7 @@ void gfc_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *, tree);
 extern GTY(()) tree gfor_fndecl_pause_numeric;
 extern GTY(()) tree gfor_fndecl_pause_string;
 extern GTY(()) tree gfor_fndecl_stop_numeric;
+extern GTY(()) tree gfor_fndecl_stop_numeric_f08;
 extern GTY(()) tree gfor_fndecl_stop_string;
 extern GTY(()) tree gfor_fndecl_error_stop_numeric;
 extern GTY(()) tree gfor_fndecl_error_stop_string;
