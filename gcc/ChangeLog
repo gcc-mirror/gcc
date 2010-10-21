@@ -1,3 +1,8 @@
+2010-10-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/45875
+	* tree.c (get_binfo_at_offset): Remove initial zero offset test.
+
 2010-10-21  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree-into-ssa.c (rewrite_update_enter_block): Remove unused
