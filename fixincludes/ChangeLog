@@ -1,3 +1,13 @@
+2010-10-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-10-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/46024
+	* inclhack.def (solaris_sys_va_list): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/va_list.h: New test.
+
 2010-07-31  Release Manager
 
 	* GCC 4.5.1 released.
