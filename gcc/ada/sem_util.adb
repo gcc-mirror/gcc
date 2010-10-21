@@ -5570,7 +5570,8 @@ package body Sem_Util is
       Save_Interps (N, New_Prefix);
 
       Rewrite (N,
-        Make_Explicit_Dereference (Sloc (Parent (N)), Prefix => New_Prefix));
+        Make_Explicit_Dereference (Sloc (Parent (N)),
+          Prefix => New_Prefix));
 
       Set_Etype (N, Designated_Type (Etype (New_Prefix)));
 
@@ -5623,7 +5624,7 @@ package body Sem_Util is
             end if;
          end if;
 
-         --  Place the reference on the entity node.
+         --  Place the reference on the entity node
 
          if Present (Ent) then
             Generate_Reference (Ent, Pref);
@@ -5652,8 +5653,8 @@ package body Sem_Util is
 
            and then Comes_From_Source (Decl)
 
-            --  The constant is not completed. A full object declaration
-            --  or a pragma Import complete a deferred constant.
+            --  The constant is not completed. A full object declaration or a
+            --  pragma Import complete a deferred constant.
 
            and then not Has_Completion (Defining_Identifier (Decl))
          then
@@ -5687,8 +5688,7 @@ package body Sem_Util is
       Call   : Node_Id;
    begin
       Find_Actual (N, Formal, Call);
-      return Present (Formal)
-        and then Ekind (Formal) = E_Out_Parameter;
+      return Present (Formal) and then Ekind (Formal) = E_Out_Parameter;
    end Is_Actual_Out_Parameter;
 
    -------------------------
@@ -5860,9 +5860,7 @@ package body Sem_Util is
    begin
       --  Predicate is not relevant to subprograms
 
-      if Is_Entity_Name (N)
-        and then Is_Overloadable (Entity (N))
-      then
+      if Is_Entity_Name (N) and then Is_Overloadable (Entity (N)) then
          return False;
 
       elsif Is_Atomic (Etype (N))
@@ -6015,7 +6013,7 @@ package body Sem_Util is
    ----------------------------------------------
 
    function Is_Dependent_Component_Of_Mutable_Object
-     (Object : Node_Id) return   Boolean
+     (Object : Node_Id) return Boolean
    is
       P           : Node_Id;
       Prefix_Type : Entity_Id;
@@ -6055,10 +6053,9 @@ package body Sem_Util is
                   P_Aliased := True;
                end if;
 
-            --  A discriminant check on a selected component may be
-            --  expanded into a dereference when removing side-effects.
-            --  Recover the original node and its type, which may be
-            --  unconstrained.
+            --  A discriminant check on a selected component may be expanded
+            --  into a dereference when removing side-effects. Recover the
+            --  original node and its type, which may be unconstrained.
 
             elsif Nkind (P) = N_Explicit_Dereference
               and then not (Comes_From_Source (P))
@@ -6067,7 +6064,8 @@ package body Sem_Util is
                Prefix_Type := Etype (P);
 
             else
-               --  Check for prefix being an aliased component ???
+               --  Check for prefix being an aliased component???
+
                null;
 
             end if;
@@ -6116,8 +6114,8 @@ package body Sem_Util is
             Comp :=
               Original_Record_Component (Entity (Selector_Name (Object)));
 
-            --  As per AI-0017, the renaming is illegal in a generic body,
-            --  even if the subtype is indefinite.
+            --  As per AI-0017, the renaming is illegal in a generic body, even
+            --  if the subtype is indefinite.
 
             --  Ada 2005 (AI-363): In Ada 2005 an aliased object can be mutable
 

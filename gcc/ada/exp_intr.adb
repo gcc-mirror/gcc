@@ -127,7 +127,7 @@ package body Exp_Intr is
       --  Maximum of operand sizes
 
    begin
-      --  Nothing to do if the operands have the same modular type.
+      --  Nothing to do if the operands have the same modular type
 
       if Base_Type (T1) = Base_Type (T2)
         and then Is_Modular_Integer_Type (T1)
@@ -148,6 +148,7 @@ package body Exp_Intr is
 
       Res := New_Copy (N);
       Set_Etype (Res, T3);
+
       case Nkind (N) is
          when N_Op_And =>
             Set_Entity (Res, Standard_Op_And);

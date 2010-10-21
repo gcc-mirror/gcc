@@ -1232,7 +1232,6 @@ package body Ada.Exceptions is
               Rmsg_05 (Rmsg_05'First .. Rmsg_05'Last - 1) & ASCII.LF &
               "index " & Image (Index) & " not in " & Image (First) &
               ".." & Image (Last) & ASCII.NUL;
-
    begin
       Raise_Constraint_Error_Msg (File, Line, Column, Msg'Address);
    end Rcheck_05_Ext;
@@ -1244,7 +1243,6 @@ package body Ada.Exceptions is
               Rmsg_12 (Rmsg_12'First .. Rmsg_12'Last - 1) & ASCII.LF &
               "value " & Image (Index) & " not in " & Image (First) &
               ".." & Image (Last) & ASCII.NUL;
-
    begin
       Raise_Constraint_Error_Msg (File, Line, Column, Msg'Address);
    end Rcheck_12_Ext;
@@ -1255,7 +1253,6 @@ package body Ada.Exceptions is
 
    procedure Reraise is
       Excep : constant EOA := Get_Current_Excep.all;
-
    begin
       Abort_Defer.all;
       Exception_Propagation.Setup_Exception (Excep, Excep, Reraised => True);
@@ -1397,7 +1394,6 @@ package body Ada.Exceptions is
    ---------------
 
    procedure To_Stderr (C : Character) is
-
       type int is new Integer;
 
       procedure put_char_stderr (C : int);

@@ -3188,6 +3188,7 @@ package body Sem_Ch4 is
                 (E_Loop, Current_Scope, Sloc (N), 'L');
 
       Iterator : Node_Id;
+
    begin
       Set_Etype  (Ent,  Standard_Void_Type);
       Set_Parent (Ent, N);
@@ -3200,6 +3201,7 @@ package body Sem_Ch4 is
       Analyze_Iteration_Scheme (Iterator);
       Analyze (Condition (N));
       End_Scope;
+
       Set_Etype (N, Standard_Boolean);
    end Analyze_Quantified_Expression;
 

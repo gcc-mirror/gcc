@@ -477,9 +477,7 @@ package body Scn is
          --  check will make it into a regular identifer in earlier versions
          --  of the language.
 
-         if Token = Tok_Some
-           and then Ada_Version < Ada_2012
-         then
+         if Token = Tok_Some and then Ada_Version < Ada_2012 then
             null;
          else
             Error_Msg_Name_1 := Token_Name;
