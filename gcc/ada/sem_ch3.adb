@@ -9607,9 +9607,8 @@ package body Sem_Ch3 is
          --  on the partial view. Make them visible to component declarations.
 
          declare
-            D    : Entity_Id;
-            --  Discriminant on T (full view) referencing expression on partial
-            --  view.
+            D : Entity_Id;
+            --  Discriminant on T (full view) referencing expr on partial view
 
             Prev_D : Entity_Id;
             --  Entity of corresponding discriminant on partial view
@@ -9619,10 +9618,10 @@ package body Sem_Ch3 is
             --  syntactic copy on full view (which has been checked for
             --  conformance with partial view), only used here to post error
             --  message.
-         begin
-            D := First_Discriminant (T);
-            New_D := First (Discriminant_Specifications (N));
 
+         begin
+            D     := First_Discriminant (T);
+            New_D := First (Discriminant_Specifications (N));
             while Present (D) loop
                Prev_D := Current_Entity (D);
                Set_Current_Entity (D);
@@ -9639,8 +9638,7 @@ package body Sem_Ch3 is
                     and then not Error_Posted (Expression (Parent (D)))
                then
                   Error_Msg_N
-                    ("discriminants of tagged type "
-                     & "cannot have defaults",
+                    ("discriminants of tagged type cannot have defaults",
                      Expression (New_D));
                end if;
 
@@ -10765,7 +10763,7 @@ package body Sem_Ch3 is
             Next_Elmt (E);
          end loop;
 
-         --  The corresponding_Discriminant mechanism is incomplete, because
+         --  The Corresponding_Discriminant mechanism is incomplete, because
          --  the correspondence between new and old discriminants is not one
          --  to one: one new discriminant can constrain several old ones. In
          --  that case, scan sequentially the stored_constraint, the list of
@@ -16387,16 +16385,15 @@ package body Sem_Ch3 is
                   Expression (Discr));
 
             elsif Is_Tagged_Type (Current_Scope)
-                    and then Comes_From_Source (N)
+              and then Comes_From_Source (N)
             then
-               --  Note: see also similar test in Check_Or_Process_
-               --  Discriminants, to handle the (illegal) case of the
-               --  completion of an untagged view with discriminants
-               --  with defaults by a tagged full view. We skip the check if
-               --  Discr does not come from source to account for the case of
-               --  an untagged derived type providing defaults for a renamed
-               --  discriminant from a private nontagged ancestor with a tagged
-               --  full view (ACATS B460006).
+               --  Note: see similar test in Check_Or_Process_Discriminants, to
+               --  handle the (illegal) case of the completion of an untagged
+               --  view with discriminants with defaults by a tagged full view.
+               --  We skip the check if Discr does not come from source to
+               --  account for the case of an untagged derived type providing
+               --  defaults for a renamed discriminant from a private nontagged
+               --  ancestor with a tagged full view (ACATS B460006).
 
                Error_Msg_N
                  ("discriminants of tagged type cannot have defaults",

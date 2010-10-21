@@ -1,3 +1,17 @@
+2010-10-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting.
+
+2010-10-21  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.ads (Next_Girder_Discriminant): Remove obsolete description for
+	removed routine.
+
+2010-10-21  Nicolas Roche  <roche@adacore.com>
+
+	* gnatmem.adb, memroot.adb, memroot.ads, gmem.c,
+	gcc-interface/Makefile.in: Remove gnatmem specific files.
+
 2010-10-21  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_res.adb, exp_ch13.adb: Minor reformatting.

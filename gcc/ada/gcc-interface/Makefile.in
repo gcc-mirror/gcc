@@ -2756,7 +2756,6 @@ errno.o   : errno.c
 exit.o    : adaint.h exit.c
 expect.o  : expect.c
 final.o   : final.c
-gmem.o    : gmem.c
 link.o    : link.c
 mkdir.o   : mkdir.c
 socket.o  : socket.c gsocket.h
