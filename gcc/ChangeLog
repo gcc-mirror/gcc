@@ -1,3 +1,30 @@
+2010-10-21  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c: Fold code to 80-character width.
+        Replace GET_CODE (foo) == REG with REG_P (foo).  Likewise for
+        MEM, CONST_INT and CONST_DOUBLE.
+	(targetm): Move initialization to end of file.
+	(print_operand): Rename to mn10300_print_operand.
+	(print_operand_address): Rename to mn10300_print_operand_address.
+	(can_use_return_insn): Rename to mn10300_can_use_return_insn.
+	(expand_prologue): Rename to mn10300_expand_prologue.
+	(expand_epilogue): Rename to mn10300_expand_epilogue.
+	(initial_offset): Rename to mn10300_initial_offset.
+	(function_arg): Rename to mn10300_function_arg.
+	(mask_ok_for_mem_btst): Rename to mn10300_mask_ok_for_mem_btst.
+	(symbolic_operand): Rename to mn10300_symbolic_operand.
+	(legitimize_pic_address): Rename to mn10300_legitimize_pic_address.
+	(legitimate_pic_operand_p): Rename to mn10300_legitimate_pic_operand_p.
+	* config/mn10300/mn10300-protos.h: Update prototypes.
+	* config/mn10300/mn10300.h: Fold code to 80-character width.
+        Replace GET_CODE (foo) == REG with REG_P (foo).  Likewise for
+        MEM, CONST_INT and CONST_DOUBLE.
+        (CPP_SPEC): Move to...
+        (TARGET_CPU_CPP_BUILTINS): ... here.
+	* config/mn10300/mn10300.md: Fold code to 80-character width.
+        Replace GET_CODE (foo) == REG with REG_P (foo).  Likewise for
+        MEM, CONST_INT and CONST_DOUBLE.
+
 2010-10-21  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/46049
