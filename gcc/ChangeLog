@@ -1,3 +1,7 @@
+2010-10-21  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md (*xordi3_cc): Mark xgrk as z196 only.
+
 2010-10-21  Tristan Gingold  <gingold@adacore.com>
 
 	* config/vms/vms-crtl.h (CRTL_NAMES): Add new translations.
