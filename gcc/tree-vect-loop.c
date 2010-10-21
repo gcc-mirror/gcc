@@ -3193,7 +3193,8 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
 
   /* Get the loop-entry arguments.  */
   if (slp_node)
-    vect_get_slp_defs (slp_node, &vec_initial_defs, NULL, reduc_index);
+    vect_get_slp_defs (reduction_op, NULL_TREE, slp_node, &vec_initial_defs,
+                       NULL, reduc_index);
   else
     {
       vec_initial_defs = VEC_alloc (tree, heap, 1);
@@ -3965,7 +3966,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 
   gcc_assert (is_gimple_assign (stmt));
 
-  /* Flatten RHS */
+  /* Flatten RHS.  */
   switch (get_gimple_rhs_class (gimple_assign_rhs_code (stmt)))
     {
     case GIMPLE_SINGLE_RHS:
@@ -4332,8 +4333,20 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       /* Handle uses.  */
       if (j == 0)
         {
+          tree op0, op1 = NULL_TREE;
+
+          op0 = ops[!reduc_index];
+          if (op_type == ternary_op)
+            {
+              if (reduc_index == 0)
+                op1 = ops[2];
+              else
+                op1 = ops[1];
+            }
+
           if (slp_node)
-            vect_get_slp_defs (slp_node, &vec_oprnds0, &vec_oprnds1, -1);
+            vect_get_slp_defs (op0, op1, slp_node, &vec_oprnds0, &vec_oprnds1,
+                               -1);
           else
             {
               loop_vec_def0 = vect_get_vec_def_for_operand (ops[!reduc_index],
@@ -4341,13 +4354,8 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
               VEC_quick_push (tree, vec_oprnds0, loop_vec_def0);
               if (op_type == ternary_op)
                {
-                 if (reduc_index == 0)
-                   loop_vec_def1 = vect_get_vec_def_for_operand (ops[2], stmt,
-                                                                 NULL);
-                 else
-                   loop_vec_def1 = vect_get_vec_def_for_operand (ops[1], stmt,
-                                                                 NULL);
-
+                 loop_vec_def1 = vect_get_vec_def_for_operand (op1, stmt,
+                                                               NULL);
                  VEC_quick_push (tree, vec_oprnds1, loop_vec_def1);
                }
             }
