@@ -1,4 +1,13 @@
 2010-10-21  Richard Guenther  <rguenther@suse.de>
+	Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/45764
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):
+	Adjust initial misalignment for negative DR_STEP.
+	(vect_find_same_alignment_drs): Two DRs with different DR_STEP
+	do not have the same alignment over the whole iteration domain.
+
+2010-10-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46111
 	* tree-parloops.c (take_address_of): Re-organize for MEM_REF.
