@@ -1,3 +1,33 @@
+2010-10-21  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/46049
+	PR tree-optimization/46052
+	* tree-vectorizer.h (enum stmt_vec_info_type): Add new value for
+	shift.
+	(vect_get_slp_defs): Add arguments.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Pass scalar
+	operands to vect_get_slp_defs.
+	(vectorizable_reduction): Fix comment, pass scalar operands to
+	vect_get_slp_defs.
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Use operand's
+	type to determine number of units in the created vector.
+	(vect_get_vec_defs): Pass scalar operands to vect_get_slp_defs.
+	(vectorizable_conversion): Fix comment.
+	(vectorizable_shift): New function.
+	(vectorizable_operation): Move code that handles shifts to
+	vectorizable_shift.
+	(vectorizable_type_demotion): Fix comment, pass scalar operands to
+	vect_get_slp_defs.
+	(vectorizable_type_promotion, vectorizable_store): Likewise.
+	(vectorizable_condition): Fix comment.
+	(vect_analyze_stmt): Call vectorizable_shift.
+	(vect_transform_stmt): Likewise.
+	* tree-vect-slp.c (vect_get_constant_vectors): Add new argument.
+	Use it as the operand to create vectors for, except reduction
+	initial definition and store.  Use operands type.
+	(vect_get_slp_defs): Add new arguments.  Pass them to
+	 vect_get_constant_vectors.
+
 2010-10-21  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* basic-block.h (single_succ_edge): Use gcc_checking_assert.

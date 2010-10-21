@@ -1817,7 +1817,8 @@ vect_update_slp_costs_according_to_vf (loop_vec_info loop_vinfo)
    it is -1.  */
 
 static void
-vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
+vect_get_constant_vectors (tree op, slp_tree slp_node,
+                           VEC (tree, heap) **vec_oprnds,
 			   unsigned int op_num, unsigned int number_of_vectors,
                            int reduc_index)
 {
@@ -1829,7 +1830,7 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
   tree t = NULL_TREE;
   int j, number_of_places_left_in_vector;
   tree vector_type;
-  tree op, vop;
+  tree vop;
   int group_size = VEC_length (gimple, stmts);
   unsigned int vec_num, i;
   int number_of_copies = 1;
@@ -1847,7 +1848,7 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
         }
 
       op_num = reduc_index - 1;
-      op = gimple_op (stmt, op_num + 1);
+      op = gimple_op (stmt, reduc_index);
       /* For additional copies (see the explanation of NUMBER_OF_COPIES below)
          we need either neutral operands or the original operands.  See
          get_initial_def_for_reduction() for details.  */
@@ -1889,25 +1890,16 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
       op = gimple_assign_rhs1 (stmt);
     }
   else
-    {
-      is_store = false;
-      op = gimple_op (stmt, op_num + 1);
-    }
+    is_store = false;
+
+  gcc_assert (op);
 
   if (CONSTANT_CLASS_P (op))
     constant_p = true;
   else
     constant_p = false;
 
-  /* For POINTER_PLUS_EXPR we use the type of the constant/invariant itself.
-     If OP is the first operand of POINTER_PLUS_EXPR, its type is the type of
-     the statement, so it's OK to use OP's type for both first and second
-     operands.  */
-  if (code == POINTER_PLUS_EXPR)
-    vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
-  else
-    vector_type = STMT_VINFO_VECTYPE (stmt_vinfo);
-
+  vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
   gcc_assert (vector_type);
   nunits = TYPE_VECTOR_SUBPARTS (vector_type);
 
@@ -2043,7 +2035,8 @@ vect_get_slp_vect_defs (slp_tree slp_node, VEC (tree,heap) **vec_oprnds)
    the right node. This is used when the second operand must remain scalar.  */
 
 void
-vect_get_slp_defs (slp_tree slp_node, VEC (tree,heap) **vec_oprnds0,
+vect_get_slp_defs (tree op0, tree op1, slp_tree slp_node,
+                   VEC (tree,heap) **vec_oprnds0,
                    VEC (tree,heap) **vec_oprnds1, int reduc_index)
 {
   gimple first_stmt;
@@ -2083,7 +2076,7 @@ vect_get_slp_defs (slp_tree slp_node, VEC (tree,heap) **vec_oprnds0,
     vect_get_slp_vect_defs (SLP_TREE_LEFT (slp_node), vec_oprnds0);
   else
     /* Build vectors from scalar defs.  */
-    vect_get_constant_vectors (slp_node, vec_oprnds0, 0, number_of_vects,
+    vect_get_constant_vectors (op0, slp_node, vec_oprnds0, 0, number_of_vects,
                                reduc_index);
 
   if (STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt)))
@@ -2113,7 +2106,8 @@ vect_get_slp_defs (slp_tree slp_node, VEC (tree,heap) **vec_oprnds0,
     vect_get_slp_vect_defs (SLP_TREE_RIGHT (slp_node), vec_oprnds1);
   else
     /* Build vectors from scalar defs.  */
-    vect_get_constant_vectors (slp_node, vec_oprnds1, 1, number_of_vects, -1);
+    vect_get_constant_vectors (op1, slp_node, vec_oprnds1, 1, number_of_vects,
+                               -1);
 }
 
 
