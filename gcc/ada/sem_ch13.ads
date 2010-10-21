@@ -57,11 +57,25 @@ package Sem_Ch13 is
       PDecl : out Node_Id;
       PBody : out Node_Id);
    --  If Typ has Invariants (indicated by Has_Invariants being set for Typ,
-   --  indicating the presence of Pragma Invariant entries on the rep chain,
+   --  indicating the presence of pragma Invariant entries on the rep chain,
    --  note that Invariant aspects are converted to pragma Invariant), then
    --  this procedure builds the spec and body for the corresponding Invariant
-   --  procedure, returning themn in PDecl and PBody. In some error situations
-   --  no procedure is built, in which case PDecl/PBody are empty on return.
+   --  procedure, returning themn in PDecl and PBody. Invariant_Procedure is
+   --  set for Typ. In some error situations no procedure is built, in which
+   --  case PDecl/PBody are empty on return.
+
+   procedure Build_Predicate_Function
+     (Typ   : Entity_Id;
+      FDecl : out Node_Id;
+      FBody : out Node_Id);
+   --  If Typ has predicates (indicated by Has_Predicates being set for Typ,
+   --  then either there are pragma Invariant entries on the rep chain for the
+   --  type (note that Predicate aspects are converted to pragam Predicate), or
+   --  there are inherited aspects from a parent type, or ancestor subtypes,
+   --  or interfaces. This procedure builds the spec and body for the Predicate
+   --  function that tests these predicates, returning them in PDecl and Pbody
+   --  and setting Predicate_Procedure for Typ. In some error situations no
+   --  procedure is built, in which case PDecl/PBody are empty on return.
 
    procedure Check_Record_Representation_Clause (N : Node_Id);
    --  This procedure completes the analysis of a record representation clause

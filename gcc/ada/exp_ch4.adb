@@ -4318,14 +4318,17 @@ package body Exp_Ch4 is
 
    procedure Expand_N_In (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
-      Rtyp   : constant Entity_Id  := Etype (N);
+      Restyp : constant Entity_Id  := Etype (N);
       Lop    : constant Node_Id    := Left_Opnd (N);
       Rop    : constant Node_Id    := Right_Opnd (N);
       Static : constant Boolean    := Is_OK_Static_Expression (N);
 
+      Ltyp  : Entity_Id;
+      Rtyp  : Entity_Id;
+
       procedure Expand_Set_Membership;
-      --  For each disjunct we create a simple equality or membership test.
-      --  The whole membership is rewritten as a short-circuit disjunction.
+      --  For each choice we create a simple equality or membership test.
+      --  The whole membership is rewritten connecting these with OR ELSE.
 
       ---------------------------
       -- Expand_Set_Membership --
@@ -4400,7 +4403,7 @@ package body Exp_Ch4 is
              Prefix         => Relocate_Node (Lop),
              Attribute_Name => Name_Valid));
 
-         Analyze_And_Resolve (N, Rtyp);
+         Analyze_And_Resolve (N, Restyp);
 
          Error_Msg_N ("?explicit membership test may be optimized away", N);
          Error_Msg_N -- CODEFIX
@@ -4411,11 +4414,18 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_N_In
 
    begin
+      --  If set membersip case, expand with separate procedure
+
       if Present (Alternatives (N)) then
          Remove_Side_Effects (Lop);
          Expand_Set_Membership;
          return;
       end if;
+
+      --  Not set membership, proceed with expansion
+
+      Ltyp := Etype (Left_Opnd  (N));
+      Rtyp := Etype (Right_Opnd (N));
 
       --  Check case of explicit test for an expression in range of its
       --  subtype. This is suspicious usage and we replace it with a 'Valid
@@ -4423,12 +4433,13 @@ package body Exp_Ch4 is
       --  standard way to check for finite numbers, and using 'Valid would
       --  typically be a pessimization.
 
-      if Is_Scalar_Type (Etype (Lop))
-        and then not Is_Floating_Point_Type (Etype (Lop))
+      if Is_Scalar_Type (Ltyp)
+        and then not Is_Floating_Point_Type (Ltyp)
         and then Nkind (Rop) in N_Has_Entity
-        and then Etype (Lop) = Entity (Rop)
+        and then Ltyp = Entity (Rop)
         and then Comes_From_Source (N)
         and then VM_Target = No_VM
+        and then No (Predicate_Function (Rtyp))
       then
          Substitute_Valid_Check;
          return;
@@ -4447,8 +4458,6 @@ package body Exp_Ch4 is
          declare
             Lo : constant Node_Id := Low_Bound (Rop);
             Hi : constant Node_Id := High_Bound (Rop);
-
-            Ltyp : constant Entity_Id := Etype (Lop);
 
             Lo_Orig : constant Node_Id := Original_Node (Lo);
             Hi_Orig : constant Node_Id := Original_Node (Hi);
@@ -4493,7 +4502,7 @@ package body Exp_Ch4 is
               and then VM_Target = No_VM
             then
                Substitute_Valid_Check;
-               return;
+               goto Leave;
             end if;
 
             --  If bounds of type are known at compile time, and the end points
@@ -4517,7 +4526,7 @@ package body Exp_Ch4 is
               and then not In_Instance
             then
                Substitute_Valid_Check;
-               return;
+               goto Leave;
             end if;
 
             --  If we have an explicit range, do a bit of optimization based on
@@ -4537,10 +4546,9 @@ package body Exp_Ch4 is
                end if;
 
                Rewrite (N, New_Reference_To (Standard_False, Loc));
-               Analyze_And_Resolve (N, Rtyp);
+               Analyze_And_Resolve (N, Restyp);
                Set_Is_Static_Expression (N, Static);
-
-               return;
+               goto Leave;
 
             --  If both checks are known to succeed, replace result by True,
             --  since we know we are in range.
@@ -4552,10 +4560,9 @@ package body Exp_Ch4 is
                end if;
 
                Rewrite (N, New_Reference_To (Standard_True, Loc));
-               Analyze_And_Resolve (N, Rtyp);
+               Analyze_And_Resolve (N, Restyp);
                Set_Is_Static_Expression (N, Static);
-
-               return;
+               goto Leave;
 
             --  If lower bound check succeeds and upper bound check is not
             --  known to succeed or fail, then replace the range check with
@@ -4571,9 +4578,8 @@ package body Exp_Ch4 is
                  Make_Op_Le (Loc,
                    Left_Opnd  => Lop,
                    Right_Opnd => High_Bound (Rop)));
-               Analyze_And_Resolve (N, Rtyp);
-
-               return;
+               Analyze_And_Resolve (N, Restyp);
+               goto Leave;
 
             --  If upper bound check succeeds and lower bound check is not
             --  known to succeed or fail, then replace the range check with
@@ -4589,9 +4595,8 @@ package body Exp_Ch4 is
                  Make_Op_Ge (Loc,
                    Left_Opnd  => Lop,
                    Right_Opnd => Low_Bound (Rop)));
-               Analyze_And_Resolve (N, Rtyp);
-
-               return;
+               Analyze_And_Resolve (N, Restyp);
+               goto Leave;
             end if;
 
             --  We couldn't optimize away the range check, but there is one
@@ -4632,7 +4637,7 @@ package body Exp_Ch4 is
 
          --  For all other cases of an explicit range, nothing to be done
 
-         return;
+         goto Leave;
 
       --  Here right operand is a subtype mark
 
@@ -4660,7 +4665,7 @@ package body Exp_Ch4 is
                if Tagged_Type_Expansion then
                   Tagged_Membership (N, SCIL_Node, New_N);
                   Rewrite (N, New_N);
-                  Analyze_And_Resolve (N, Rtyp);
+                  Analyze_And_Resolve (N, Restyp);
 
                   --  Update decoration of relocated node referenced by the
                   --  SCIL node.
@@ -4670,7 +4675,7 @@ package body Exp_Ch4 is
                   end if;
                end if;
 
-               return;
+               goto Leave;
 
             --  If type is scalar type, rewrite as x in t'First .. t'Last.
             --  This reason we do this is that the bounds may have the wrong
@@ -4689,8 +4694,8 @@ package body Exp_Ch4 is
                      Make_Attribute_Reference (Loc,
                        Attribute_Name => Name_Last,
                        Prefix => New_Reference_To (Typ, Loc))));
-               Analyze_And_Resolve (N, Rtyp);
-               return;
+               Analyze_And_Resolve (N, Restyp);
+               goto Leave;
 
             --  Ada 2005 (AI-216): Program_Error is raised when evaluating
             --  a membership test if the subtype mark denotes a constrained
@@ -4709,7 +4714,7 @@ package body Exp_Ch4 is
                --  test as False.
 
                Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
-               return;
+               goto Leave;
             end if;
 
             --  Here we have a non-scalar type
@@ -4720,7 +4725,7 @@ package body Exp_Ch4 is
 
             if not Is_Constrained (Typ) then
                Rewrite (N, New_Reference_To (Standard_True, Loc));
-               Analyze_And_Resolve (N, Rtyp);
+               Analyze_And_Resolve (N, Restyp);
 
             --  For the constrained array case, we have to check the subscripts
             --  for an exact match if the lengths are non-zero (the lengths
@@ -4788,7 +4793,7 @@ package body Exp_Ch4 is
                   end if;
 
                   Rewrite (N, Cond);
-                  Analyze_And_Resolve (N, Rtyp);
+                  Analyze_And_Resolve (N, Restyp);
                end Check_Subscripts;
 
             --  These are the cases where constraint checks may be required,
@@ -4819,9 +4824,33 @@ package body Exp_Ch4 is
                end if;
 
                Rewrite (N, Cond);
-               Analyze_And_Resolve (N, Rtyp);
+               Analyze_And_Resolve (N, Restyp);
             end if;
          end;
+      end if;
+
+   --  At this point, we have done the processing required for the basic
+   --  membership test, but not yet dealt with the predicate.
+
+   <<Leave>>
+
+      --  If a predicate is present, then we do the predicate test
+
+      if Present (Predicate_Function (Rtyp)) then
+         Rewrite (N,
+           Make_And_Then (Loc,
+             Left_Opnd  => Relocate_Node (N),
+             Right_Opnd => Make_Predicate_Call (Rtyp, Lop)));
+
+         --  Analyze new expression, mark left operand as analyzed to
+         --  avoid infinite recursion adding predicate calls.
+
+         Set_Analyzed (Left_Opnd (N));
+         Analyze_And_Resolve (N, Standard_Boolean);
+
+         --  All done, skip attempt at compile time determination of result
+
+         return;
       end if;
    end Expand_N_In;
 

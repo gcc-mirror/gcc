@@ -566,7 +566,21 @@ package Exp_Util is
    --  Expr is an object of a type which Has_Invariants set (and which thus
    --  also has an Invariant_Procedure set). If invariants are enabled, this
    --  function returns a call to the Invariant procedure passing Expr as the
-   --  argument.
+   --  argument, and returns it unanalyzed. If invariants are not enabled,
+   --  returns a null statement.
+
+   function Make_Predicate_Call
+     (Typ  : Entity_Id;
+      Expr : Node_Id) return Node_Id;
+   --  Typ is a type with Predicate_Function set. This routine builds a call to
+   --  this function passing Expr as the argument, and returns it unanalyzed.
+
+   function Make_Predicate_Check
+     (Typ  : Entity_Id;
+      Expr : Node_Id) return Node_Id;
+   --  Typ is a type with Predicate_Function set. This routine builds a Check
+   --  pragma whose first argument is Predicate, and the second argument is a
+   --  call to the this predicate function with Expr as the argument.
 
    function Make_Subtype_From_Expr
      (E       : Node_Id;

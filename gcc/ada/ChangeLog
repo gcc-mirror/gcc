@@ -1,5 +1,23 @@
 2010-10-21  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.ads, einfo.adb: Replace Predicate_Procedure by
+	Predicate_Functions.
+	* exp_ch4.adb (Expand_N_In): Handle predicates.
+	* exp_util.ads, exp_util.adb (Make_Predicate_Call): New function.
+	(Make_Predicate_Check): New function.
+	* freeze.adb (Freee_Entity): Build predicate function if needed.
+	* sem_ch13.adb (Build_Predicate_Function): New procedure.
+	(Analyze_Aspect_Specifications): No third argument for Predicate pragma
+	built from Predicate aspect.
+	* sem_ch13.ads (Build_Predicate_Function): New procedure.
+	* sem_ch3.adb: Add handling for predicates.
+	* sem_eval.adb (Eval_Membership_Op): Never static if predicate
+	functions around.
+	* sem_prag.adb (Analye_Pragma, case Predicate): Does not take a third
+	argument.
+
+2010-10-21  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.ads, einfo.adb: Add handling of predicates.
 	Rework handling of invariants.
 	* exp_ch3.adb, exp_ch4.adb, exp_util.adb, sem_ch6.adb: Minor changes to

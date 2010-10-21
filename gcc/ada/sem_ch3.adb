@@ -484,8 +484,8 @@ package body Sem_Ch3 is
    --  operations of progenitors of Tagged_Type, and replace the subsidiary
    --  subtypes with Tagged_Type, to build the specs of the inherited interface
    --  primitives. The derived primitives are aliased to those of the
-   --  interface. This routine takes care also of transferring to the full-view
-   --  subprograms associated with the partial-view of Tagged_Type that cover
+   --  interface. This routine takes care also of transferring to the full view
+   --  subprograms associated with the partial view of Tagged_Type that cover
    --  interface primitives.
 
    procedure Derived_Standard_Character
@@ -1358,6 +1358,12 @@ package body Sem_Ch3 is
       begin
          pragma Assert (Is_Tagged_Type (Iface)
            and then Is_Interface (Iface));
+
+         --  This is a reasonable place to propagate predicates
+
+         if Has_Predicates (Iface) then
+            Set_Has_Predicates (Typ);
+         end if;
 
          Def :=
            Make_Component_Definition (Loc,
@@ -2300,7 +2306,7 @@ package body Sem_Ch3 is
       end if;
 
       if Etype (T) = Any_Type then
-         goto Leave;
+         return;
       end if;
 
       --  Some common processing for all types
@@ -2395,8 +2401,9 @@ package body Sem_Ch3 is
       Set_Optimize_Alignment_Flags (Def_Id);
       Check_Eliminated (Def_Id);
 
-      <<Leave>>
+      if Nkind (N) = N_Full_Type_Declaration then
          Analyze_Aspect_Specifications (N, Def_Id, Aspect_Specifications (N));
+      end if;
    end Analyze_Full_Type_Declaration;
 
    ----------------------------------
@@ -3835,6 +3842,7 @@ package body Sem_Ch3 is
       Set_Is_Ada_2005_Only  (Id, Is_Ada_2005_Only  (T));
       Set_Is_Ada_2012_Only  (Id, Is_Ada_2012_Only  (T));
       Set_Convention        (Id, Convention        (T));
+      Set_Has_Predicates    (Id, Has_Predicates    (T));
 
       --  In the case where there is no constraint given in the subtype
       --  indication, Process_Subtype just returns the Subtype_Mark, so its
@@ -7666,6 +7674,12 @@ package body Sem_Ch3 is
       if Has_Inheritable_Invariants (Parent_Type) then
          Set_Has_Inheritable_Invariants (Derived_Type);
          Set_Has_Invariants (Derived_Type);
+      end if;
+
+      --  We similarly inherit predicates
+
+      if Has_Predicates (Parent_Type) then
+         Set_Has_Predicates (Derived_Type);
       end if;
 
       --  The derived type inherits the representation clauses of the parent.
@@ -17186,6 +17200,44 @@ package body Sem_Ch3 is
                --  Copy Invariant procedure to private declaration
 
                Set_Invariant_Procedure (Priv_T, Invariant_Procedure (Full_T));
+               Set_Has_Invariants (Priv_T);
+            end if;
+         end;
+      end if;
+
+      --  Propagate predicates to full type, and also build the predicate
+      --  procedure at this time, in the same way as we did for invariants.
+
+      if Has_Predicates (Priv_T) then
+         declare
+            FDecl : Entity_Id;
+            FBody : Entity_Id;
+            Packg : constant Node_Id := Declaration_Node (Scope (Priv_T));
+
+         begin
+            Build_Predicate_Function (Full_T, FDecl, FBody);
+
+            --  Error defense, normally this should be set
+
+            if Present (FDecl) then
+
+               --  Spec goes at the end of the public part of the package.
+               --  That's behind us, so we have to manually analyze the
+               --  inserted spec.
+
+               Append_To (Visible_Declarations (Packg), FDecl);
+               Analyze (FDecl);
+
+               --  Body goes at the end of the private part of the package.
+               --  That's ahead of us so it will get analyzed later on when
+               --  we come to it.
+
+               Append_To (Private_Declarations (Packg), FBody);
+
+               --  Copy Predicate procedure to private declaration
+
+               Set_Predicate_Function (Priv_T, Predicate_Function (Full_T));
+               Set_Has_Predicates (Priv_T);
             end if;
          end;
       end if;

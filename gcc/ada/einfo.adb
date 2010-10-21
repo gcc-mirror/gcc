@@ -1411,7 +1411,7 @@ package body Einfo is
 
    function Has_Predicates (Id : E) return B is
    begin
-      pragma Assert (Is_Type (Id) or else Ekind (Id) = E_Procedure);
+      pragma Assert (Is_Type (Id) or else Ekind (Id) = E_Function);
       return Flag250 (Id);
    end Has_Predicates;
 
@@ -3864,7 +3864,7 @@ package body Einfo is
    procedure Set_Has_Predicates (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Type (Id)
-        or else Ekind (Id) = E_Procedure
+        or else Ekind (Id) = E_Function
         or else Ekind (Id) = E_Void);
       Set_Flag250 (Id, V);
    end Set_Has_Predicates;
@@ -6265,15 +6265,15 @@ package body Einfo is
         Ekind (Id) = E_Generic_Package;
    end Is_Package_Or_Generic_Package;
 
-   -------------------------
-   -- Predicate_Procedure --
-   -------------------------
+   ------------------------
+   -- Predicate_Function --
+   ------------------------
 
-   function Predicate_Procedure (Id : E) return E is
+   function Predicate_Function (Id : E) return E is
       S : Entity_Id;
 
    begin
-      pragma Assert (Is_Type (Id) and then Has_Predicates (Id));
+      pragma Assert (Is_Type (Id));
 
       if No (Subprograms_For_Type (Id)) then
          return Empty;
@@ -6290,7 +6290,7 @@ package body Einfo is
 
          return Empty;
       end if;
-   end Predicate_Procedure;
+   end Predicate_Function;
 
    ---------------
    -- Is_Prival --
@@ -6860,11 +6860,11 @@ package body Einfo is
       Set_Subprograms_For_Type (Id, V);
    end Set_Invariant_Procedure;
 
-   -----------------------------
-   -- Set_Predicate_Procedure --
-   -----------------------------
+   ----------------------------
+   -- Set_Predicate_Function --
+   ----------------------------
 
-   procedure Set_Predicate_Procedure (Id : E; V : E) is
+   procedure Set_Predicate_Function (Id : E; V : E) is
       S : Entity_Id;
 
    begin
@@ -6882,7 +6882,7 @@ package body Einfo is
       end loop;
 
       Set_Subprograms_For_Type (Id, V);
-   end Set_Predicate_Procedure;
+   end Set_Predicate_Function;
 
    -----------------
    -- Size_Clause --

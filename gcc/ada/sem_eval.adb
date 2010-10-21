@@ -2282,6 +2282,15 @@ package body Sem_Eval is
          return;
       end if;
 
+      --  Ignore if types involved have predicates
+
+      if Present (Predicate_Function (Etype (Left)))
+           or else
+         Present (Predicate_Function (Etype (Right)))
+      then
+         return;
+      end if;
+
       --  Case of right operand is a subtype name
 
       if Is_Entity_Name (Right) then
