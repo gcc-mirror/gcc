@@ -1,3 +1,12 @@
+2010-10-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/46007
+	* m4/shape.m4 (shape_'rtype_kind`):  Use variable for rank.
+	Allocate return array if unallocated.
+	* generated/shape_i4.c:  Regenerated.
+	* generated/shape_i8.c:  Regenerated.
+	* generated/shape_i16.c:  Regenerated.
+
 2010-10-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/46079
