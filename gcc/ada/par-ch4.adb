@@ -2524,9 +2524,9 @@ package body Ch4 is
       if Token = Tok_All then
          Set_All_Present (Node1);
 
-      --  We treat Some as a non-reserved keyword, so it appears to
-      --  the scanner as an identifier. If Some is made into a reserved
-      --  work, the check below is against Tok_Some.
+      --  We treat Some as a non-reserved keyword, so it appears to the scanner
+      --  as an identifier. If Some is made into a reserved word, the check
+      --  below is against Tok_Some.
 
       elsif Token /= Tok_Identifier
         or else Chars (Token_Node) /= Name_Some
@@ -2537,6 +2537,7 @@ package body Ch4 is
 
       Scan;
       Set_Loop_Parameter_Specification (Node1, P_Loop_Parameter_Specification);
+
       if Token = Tok_Arrow then
          Scan;
          Set_Condition (Node1, P_Expression);

@@ -3825,10 +3825,10 @@ package Sinfo is
       --    for QUANTIFIER LOOP_PARAMETER_SPECIFICATION => PREDICATE |
       --    for QUANTIFIER ITERATOR_SPECIFICATION => PREDICATE
       --
-      --  QUANTIFIER ::= all  |  some
+      --  QUANTIFIER ::= all | some
 
       --  N_Quantified_Expression
-      --  Sloc points to token for
+      --  Sloc points to FOR
       --  Loop_Parameter_Specification (Node4)
       --  Condition (Node1)
       --  All_Present (Flag15)

@@ -7758,9 +7758,9 @@ package body Sem_Res is
          Wrong_Type (Expr, Target_Typ);
       end if;
 
-      --  If the target type is unconstrained, then we reset the type of
-      --  the result from the type of the expression. For other cases, the
-      --  actual subtype of the expression is the target type.
+      --  If the target type is unconstrained, then we reset the type of the
+      --  result from the type of the expression. For other cases, the actual
+      --  subtype of the expression is the target type.
 
       if Is_Composite_Type (Target_Typ)
         and then not Is_Constrained (Target_Typ)

@@ -142,7 +142,7 @@ package Ttypef is
    IEEEL_Safe_First        : constant := -16#0.FFFF_FFFF_FFFF_F8#E+256;
    IEEEX_Safe_First        : constant := -16#0.FFFF_FFFF_FFFF_FFFF#E+4096;
    VAXFF_Safe_First        : constant := -16#0.7FFF_FF8#E+32;
-   VAXDF_Safe_First        : constant := -16#0.7FFF_FFFF_FFFF_FC0#E+32;
+   VAXDF_Safe_First        : constant := -16#0.7FFF_FFFF_FFFF_FF8#E+32;
    VAXGF_Safe_First        : constant := -16#0.7FFF_FFFF_FFFF_FC#E+256;
    AAMPS_Safe_First        : constant := -16#0.7FFF_FF8#E+32;
    AAMPL_Safe_First        : constant := -16#0.7FFF_FFFF_FF8#E+32;
@@ -150,17 +150,17 @@ package Ttypef is
    IEEES_Safe_Large        : constant := 16#0.FFFF_FF#E+32;
    IEEEL_Safe_Large        : constant := 16#0.FFFF_FFFF_FFFF_F8#E+256;
    IEEEX_Safe_Large        : constant := 16#0.FFFF_FFFF_FFFF_FFFF#E+4096;
-   VAXFF_Safe_Large        : constant := 16#0.7FFF_FC0#E+32;
-   VAXDF_Safe_Large        : constant := 16#0.7FFF_FFFF_0000_000#E+32;
-   VAXGF_Safe_Large        : constant := 16#0.7FFF_FFFF_FFFF_F0#E+256;
-   AAMPS_Safe_Large        : constant := 16#0.7FFF_FC0#E+32;
-   AAMPL_Safe_Large        : constant := 16#0.7FFF_FFFF#E+32;
+   VAXFF_Safe_Large        : constant := 16#0.7FFF_FF8#E+32;
+   VAXDF_Safe_Large        : constant := 16#0.7FFF_FFFF_FFFF_FF8#E+32;
+   VAXGF_Safe_Large        : constant := 16#0.7FFF_FFFF_FFFF_FC#E+256;
+   AAMPS_Safe_Large        : constant := 16#0.7FFF_FF8#E+32;
+   AAMPL_Safe_Large        : constant := 16#0.7FFF_FFFF_FF8#E+32;
 
    IEEES_Safe_Last         : constant := 16#0.FFFF_FF#E+32;
    IEEEL_Safe_Last         : constant := 16#0.FFFF_FFFF_FFFF_F8#E+256;
    IEEEX_Safe_Last         : constant := 16#0.FFFF_FFFF_FFFF_FFFF#E+4096;
    VAXFF_Safe_Last         : constant := 16#0.7FFF_FF8#E+32;
-   VAXDF_Safe_Last         : constant := 16#0.7FFF_FFFF_FFFF_FC0#E+32;
+   VAXDF_Safe_Last         : constant := 16#0.7FFF_FFFF_FFFF_FF8#E+32;
    VAXGF_Safe_Last         : constant := 16#0.7FFF_FFFF_FFFF_FC#E+256;
    AAMPS_Safe_Last         : constant := 16#0.7FFF_FF8#E+32;
    AAMPL_Safe_Last         : constant := 16#0.7FFF_FFFF_FF8#E+32;

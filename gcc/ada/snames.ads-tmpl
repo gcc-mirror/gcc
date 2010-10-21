@@ -937,6 +937,10 @@ package Snames is
    --  Names corresponding to reserved keywords, excluding those already
    --  declared in the attribute list (Access, Delta, Digits, Mod, Range).
 
+   --  Note: Name_Some is here even though for now we do not treat it as being
+   --  reserved. We treat it instead as an unreserved keyword. This may change
+   --  in the future, but in any case it belongs in the following list.
+
    Name_Abort                            : constant Name_Id := N + $;
    Name_Abs                              : constant Name_Id := N + $;
    Name_Accept                           : constant Name_Id := N + $;

@@ -1,3 +1,14 @@
+2010-10-21  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb, exp_intr.adb, par-ch4.adb, scn.adb, sem_ch4.adb,
+	sem_res.adb, sem_util.adb, sinfo.ads, a-except-2005.adb: Minor
+	reformatting.
+	* snames.ads-tmpl: Add note on Name_Some (not a reserved keyword).
+
+2010-10-21  Geert Bosch  <bosch@adacore.com>
+
+	* ttypef.ads: Further cleanup of Safe_XXX float attributes.
+
 2010-10-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.adb, exp_ch4.ads (Expand_Quantified_Expression): New procedure
