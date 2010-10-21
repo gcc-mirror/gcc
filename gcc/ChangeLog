@@ -1,3 +1,9 @@
+2010-10-21  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree-into-ssa.c (rewrite_update_enter_block): Remove unused
+	variables.
+	(create_new_def_for): Likewise.
+
 2010-10-21  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c: Fold code to 80-character width.

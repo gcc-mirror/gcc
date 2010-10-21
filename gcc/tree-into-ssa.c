@@ -2063,8 +2063,6 @@ static void
 rewrite_update_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 		            basic_block bb)
 {
-  edge e;
-  edge_iterator ei;
   bool is_abnormal_phi;
   gimple_stmt_iterator gsi;
 
@@ -2832,8 +2830,6 @@ create_new_def_for (tree old_name, gimple stmt, def_operand_p def)
 
   if (gimple_code (stmt) == GIMPLE_PHI)
     {
-      edge e;
-      edge_iterator ei;
       basic_block bb = gimple_bb (stmt);
 
       /* If needed, mark NEW_NAME as occurring in an abnormal PHI node. */
