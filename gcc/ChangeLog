@@ -1,3 +1,9 @@
+2010-10-21  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* ddg.c (add_cross_iteration_register_deps): Call gcc_assert instead
+	of gcc_checking_assert.
+	* sel-sched.c (code_motion_process_successors): Likewise.
+
 2010-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgcleanup.c (try_forward_edges): Do not throw away previous steps
