@@ -900,6 +900,19 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 	      || (TREE_CODE (base) == VAR_DECL
 		  && DECL_ALIGN (base) >= TYPE_ALIGN (vectype)));
 
+  /* If this is a backward running DR then first access in the larger
+     vectype actually is N-1 elements before the address in the DR.
+     Adjust misalign accordingly.  */
+  if (tree_int_cst_compare (DR_STEP (dr), size_zero_node) < 0)
+    {
+      tree offset = ssize_int (TYPE_VECTOR_SUBPARTS (vectype) - 1);
+      /* DR_STEP(dr) is the same as -TYPE_SIZE of the scalar type,
+	 otherwise we wouldn't be here.  */
+      offset = fold_build2 (MULT_EXPR, ssizetype, offset, DR_STEP (dr));
+      /* PLUS because DR_STEP was negative.  */
+      misalign = size_binop (PLUS_EXPR, misalign, offset);
+    }
+
   /* Modulo alignment.  */
   misalign = size_binop (FLOOR_MOD_EXPR, misalign, alignment);
 
@@ -1932,6 +1945,13 @@ vect_find_same_alignment_drs (struct data_dependence_relation *ddr,
 
   /* Loop-based vectorization and known data dependence.  */
   if (DDR_NUM_DIST_VECTS (ddr) == 0)
+    return;
+
+  /* Data-dependence analysis reports a distance vector of zero
+     for data-references that overlap only in the first iteration
+     but have different sign step (see PR45764).
+     So as a sanity check require equal DR_STEP.  */
+  if (!operand_equal_p (DR_STEP (dra), DR_STEP (drb), 0))
     return;
 
   loop_depth = index_in_loop_nest (loop->num, DDR_LOOP_NEST (ddr));
