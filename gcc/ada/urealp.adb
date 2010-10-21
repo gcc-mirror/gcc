@@ -1323,48 +1323,8 @@ package body Urealp is
       if Val.Num = 0 then
          Write_Str ("0.0");
 
-      --  Constants in base 10 can be written in normal Ada literal style
-
-      elsif Val.Rbase = 10 then
-
-         --  Use fixed-point format for small scaling values
-
-         if Val.Den = 0 then
-            UI_Write (Val.Num, Decimal);
-            Write_Str (".0");
-
-         elsif Val.Den = 1 then
-            UI_Write (Val.Num / 10, Decimal);
-            Write_Char ('.');
-            UI_Write (Val.Num mod 10, Decimal);
-
-         elsif Val.Den = 2 then
-            UI_Write (Val.Num / 100, Decimal);
-            Write_Char ('.');
-            UI_Write (Val.Num mod 100 / 10, Decimal);
-            UI_Write (Val.Num mod 10, Decimal);
-
-         elsif Val.Den = -1 then
-            UI_Write (Val.Num, Decimal);
-            Write_Str ("0.0");
-
-         elsif Val.Den = -2 then
-            UI_Write (Val.Num, Decimal);
-            Write_Str ("00.0");
-
-         --  Else use exponential format
-
-         else
-            UI_Write (Val.Num / 10, Decimal);
-            Write_Char ('.');
-            UI_Write (Val.Num mod 10, Decimal);
-            Write_Char ('E');
-            UI_Write (1 - Val.Den, Decimal);
-         end if;
-
-      --  If we have a constant in a base other than 10, and the denominator
-      --  is zero, then the value is simply the numerator value, since we are
-      --  dividing by base**0, which is 1.
+      --  For constants with a denominator of zero, the value is simply the
+      --  numerator value, since we are dividing by base**0, which is 1.
 
       elsif Val.Den = 0 then
          UI_Write (Val.Num, Decimal);
@@ -1410,6 +1370,96 @@ package body Urealp is
             UI_Write (Val.Num * (Uint_2 ** (-Val.Den)), Decimal);
             Write_Str (".0");
          end if;
+
+      --  Constants in base 2, 10 or 16 can be written in normal Ada literal
+      --  style, as long as they fit in the UI_Image_Buffer. Using hexadecimal
+      --  notation, 4 bytes are required for the 16# # part, and every fifth
+      --  character is an underscore. So, a buffer of size N has room for
+
+      --     ((N - 4) - (N - 4) / 5) * 4 bits
+
+      --   or at least
+
+      --     N * 16 / 5 - 12 bits
+
+      elsif (Val.Rbase = 10 or else Val.Rbase = 16)
+        and then Num_Bits (Val.Num) < UI_Image_Buffer'Length * 16 / 5 - 12
+      then
+         declare
+            Format : UI_Format := Decimal;
+            Scale  : Uint;
+
+         begin
+            if Val.Rbase = 16 then
+               Write_Str ("16#");
+               Format := Hex;
+            end if;
+
+            --  Use fixed-point format for small scaling values
+
+            if Val.Den = 1 then
+               UI_Write (Val.Num / Val.Rbase, Format);
+               Write_Char ('.');
+               UI_Write (Val.Num mod Val.Rbase, Format);
+
+            elsif Val.Den = 2 then
+               UI_Write (Val.Num / Val.Rbase**Uint_2, Format);
+               Write_Char ('.');
+               UI_Write (Val.Num mod Val.Rbase**Uint_2 / Val.Rbase, Format);
+               UI_Write (Val.Num mod Val.Rbase, Format);
+
+            elsif Val.Den = -1 then
+               UI_Write (Val.Num, Format);
+               Write_Str ("0.0");
+
+            elsif Val.Den = -2 then
+               UI_Write (Val.Num, Format);
+               Write_Str ("00.0");
+
+            --  Else use exponential format
+
+            else
+               UI_Image (Val.Num, Format);
+               Scale := UI_From_Int (Int (UI_Image_Length));
+
+               if Format = Decimal then
+
+                  --  Write decimal constants with a non-zero unit digit. This
+                  --  matches usual scientific notation.
+
+                  Write_Char (UI_Image_Buffer (1));
+                  Write_Char ('.');
+
+                  if UI_Image_Length = 1 then
+                     Write_Char ('0');
+                  else
+                     Write_Str (UI_Image_Buffer (2 .. UI_Image_Length));
+                  end if;
+
+                  Scale := Scale - 1; -- First digit is at unit position
+               else
+                  pragma Assert (Format = Hex);
+
+                  --  Write hexadecimal constants with a zero unit digit. This
+                  --  matches the Ada canonical form for binary floating point
+                  --  numbers, and also ensures that the underscores end up in
+                  --  the correct place.
+
+                  Write_Str ("0.");
+                  Write_Str (UI_Image_Buffer (4 .. UI_Image_Length));
+                  Scale := Scale - 4;         -- Subtract 16# #
+                  Scale := Scale - Scale / 5; -- Subtract underscores;
+               end if;
+
+               Write_Char ('E');
+               Format := Decimal;
+               UI_Write (Scale - Val.Den, Decimal);
+            end if;
+
+            if Format = Hex then
+               Write_Char ('#');
+            end if;
+         end;
 
       --  Constants in a base other than 10 can still be easily written
       --  in normal Ada literal style if the numerator is one.

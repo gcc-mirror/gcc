@@ -5914,15 +5914,30 @@ package body Sem_Ch6 is
             E := Homonym (E);
             exit when No (E);
 
-            --  Warn unless genuine overloading
+            --  Warn unless genuine overloading. Do not emit warning on
+            --  hiding predefined operators in Standard (these are either an
+            --  (artifact of our implicit declarations, or simple noise) but
+            --  keep warning on a operator defined on a local subtype, because
+            --  of the real danger that different operators may be applied in
+            --  various parts of the program.
 
             if (not Is_Overloadable (E) or else Subtype_Conformant (E, S))
                   and then (Is_Immediately_Visible (E)
                               or else
                             Is_Potentially_Use_Visible (S))
             then
-               Error_Msg_Sloc := Sloc (E);
-               Error_Msg_N ("declaration of & hides one#?", S);
+               if Scope (E) /= Standard_Standard then
+                  Error_Msg_Sloc := Sloc (E);
+                  Error_Msg_N ("declaration of & hides one#?", S);
+
+               elsif Nkind (S) = N_Defining_Operator_Symbol
+                 and then
+                   Scope (
+                     Base_Type (Etype (First_Formal (S)))) /= Scope (S)
+               then
+                  Error_Msg_N
+                    ("declaration of & hides predefined operator?", S);
+               end if;
             end if;
          end loop;
       end if;

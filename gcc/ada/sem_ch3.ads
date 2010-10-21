@@ -277,6 +277,10 @@ package Sem_Ch3 is
    --  Process the discriminants contained in an N_Full_Type_Declaration or
    --  N_Incomplete_Type_Decl node N. If the declaration is a completion,
    --  Prev is entity on the partial view, on which references are posted.
+   --  However, note that Process_Discriminants is called for a completion only
+   --  if partial view had no discriminants (else we just check conformance
+   --  between the two views and do not call Process_Discriminants again for
+   --  the completion).
 
    function Replace_Anonymous_Access_To_Protected_Subprogram
      (N : Node_Id) return Entity_Id;

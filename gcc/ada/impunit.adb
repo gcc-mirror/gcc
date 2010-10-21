@@ -394,6 +394,7 @@ package body Impunit is
      "a-disedf",    -- Ada.Dispatching.EDF
      "a-dispat",    -- Ada.Dispatching
      "a-envvar",    -- Ada.Environment_Variables
+     "a-etgrbu",    -- Ada.Execution_Time.Group_Budgets
      "a-exetim",    -- Ada.Execution_Time
      "a-extiti",    -- Ada.Execution_Time.Timers
      "a-izteio",    -- Ada.Integer_Wide_Wide_Text_IO
@@ -504,7 +505,8 @@ package body Impunit is
    --  The following units should be used only in Ada 2012 mode
 
    Non_Imp_File_Names_12 : constant File_List := (
-     0 => "s-multip");   -- System.Mutiprocessors
+     "s-multip",    -- System.Multiprocessors
+     "s-mudido");   -- System.Multiprocessors.Dispatching_Domains
 
    -----------------------
    -- Alternative Units --
