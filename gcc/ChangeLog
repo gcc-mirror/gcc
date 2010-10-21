@@ -1,3 +1,12 @@
+2010-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgcleanup.c (try_forward_edges): Do not throw away previous steps
+	when stopping because of a different locus on edge or insn.
+	(try_optimize_cfg): Add comment.
+	* cfgrtl.c (rtl_merge_blocks): Tweak log message.  If the destination
+	block is a forwarder block, propagate locus on the edge.
+	(cfg_layout_merge_blocks): Likewise.
+
 2010-10-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/45946
