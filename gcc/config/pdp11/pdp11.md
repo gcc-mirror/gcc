@@ -19,10 +19,8 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-;; Match CONST_DOUBLE zero for tstd/tstf.
-(define_predicate "register_or_const0_operand"
-  (ior (match_operand 0 "register_operand")
-       (match_test "op == CONST0_RTX (GET_MODE (op))")))
+(include "predicates.md")
+(include "constraints.md")
 
 
 ;; HI is 16 bit
@@ -331,7 +329,7 @@
 (define_expand "movmemhi"
   [(parallel [(set (match_operand:BLK 0 "general_operand" "=g,g")
 		   (match_operand:BLK 1 "general_operand" "g,g"))
-	      (use (match_operand:HI 2 "arith_operand" "n,&mr"))
+	      (use (match_operand:HI 2 "general_operand" "n,&mr"))
 	      (use (match_operand:HI 3 "immediate_operand" "i,i"))
 	      (clobber (match_scratch:HI 4 "=&r,X"))
 	      (clobber (match_dup 5))
@@ -925,7 +923,7 @@
 (define_insn "xorsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
         (xor:SI (match_operand:SI 1 "register_operand" "%0")
-                (match_operand:SI 2 "arith_operand" "r")))]
+                (match_operand:SI 2 "register_operand" "r")))]
   "TARGET_40_PLUS"
   "*
 { /* Here we trust that operands don't overlap */
@@ -1078,7 +1076,7 @@
 (define_insn "" 
   [(set (match_operand:QI 0 "general_operand" "=r,o")
 	(ashift:QI (match_operand:QI 1 "general_operand" "0,0")
-		   (match_operand:HI 2 "const_immediate_operand" "n,n")))]
+		   (match_operand:HI 2 "const_int_operand" "n,n")))]
   ""
   "*
 { /* allowing predec or post_inc is possible, but hairy! */
@@ -1109,7 +1107,7 @@
 (define_insn "" 
   [(set (match_operand:QI 0 "general_operand" "=r,o")
 	(ashiftrt:QI (match_operand:QI 1 "general_operand" "0,0")
-		     (match_operand:HI 2 "const_immediate_operand" "n,n")))]
+		     (match_operand:HI 2 "const_int_operand" "n,n")))]
   ""
   "*
 { /* allowing predec or post_inc is possible, but hairy! */
@@ -1171,7 +1169,7 @@
 ;;(define_insn "lshrsi3"
 ;;  [(set (match_operand:HI 0 "register_operand" "=r")
 ;;	(lshiftrt:HI (match_operand:HI 1 "register_operand" "0")
-;;		     (match_operand:HI 2 "arith_operand" "rI")))]
+;;		     (match_operand:HI 2 "general_operand" "rI")))]
 ;;  ""
 ;;  "srl %0,%2")
 

@@ -320,62 +320,6 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
 #define INDEX_REG_CLASS GENERAL_REGS
 #define BASE_REG_CLASS GENERAL_REGS
 
-/* Get reg_class from a letter such as appears in the machine description.  */
-
-#define REG_CLASS_FROM_LETTER(C)	\
-((C) == 'f' ? FPU_REGS :			\
-  ((C) == 'd' ? MUL_REGS : 			\
-   ((C) == 'a' ? LOAD_FPU_REGS : NO_REGS)))
-    
-
-/* The letters I, J, K, L and M in a register constraint string
-   can be used to stand for particular ranges of immediate operands.
-   This macro defines what the ranges are.
-   C is the letter, and VALUE is a constant value.
-   Return 1 if VALUE is in the range specified by C.
-
-   I		bits 31-16 0000
-   J		bits 15-00 0000
-   K		completely random 32 bit
-   L,M,N	-1,1,0 respectively
-   O 		where doing shifts in sequence is faster than 
-                one big shift 
-*/
-
-#define CONST_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'I' ? ((VALUE) & 0xffff0000) == 0		\
-   : (C) == 'J' ? ((VALUE) & 0x0000ffff) == 0  	       	\
-   : (C) == 'K' ? (((VALUE) & 0xffff0000) != 0		\
-		   && ((VALUE) & 0x0000ffff) != 0)	\
-   : (C) == 'L' ? ((VALUE) == 1)			\
-   : (C) == 'M' ? ((VALUE) == -1)			\
-   : (C) == 'N' ? ((VALUE) == 0)			\
-   : (C) == 'O' ? (abs(VALUE) >1 && abs(VALUE) <= 4)		\
-   : 0)
-
-/* Similar, but for floating constants, and defining letters G and H.
-   Here VALUE is the CONST_DOUBLE rtx itself.  */
-
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'G' && XINT (VALUE, 0) == 0 && XINT (VALUE, 1) == 0)
-
-
-/* Letters in the range `Q' through `U' may be defined in a
-   machine-dependent fashion to stand for arbitrary operand types. 
-   The machine description macro `EXTRA_CONSTRAINT' is passed the
-   operand as its first argument and the constraint letter as its
-   second operand.
-
-   `Q'	is for memory references that require an extra word after the opcode.
-   `R'	is for memory references which are encoded within the opcode.  */
-
-#define EXTRA_CONSTRAINT(OP,CODE)					\
-  ((GET_CODE (OP) != MEM) ? 0						\
-   : !memory_address_p (GET_MODE (OP), XEXP (OP, 0)) ? 0		\
-   : ((CODE) == 'Q')	  ? !simple_memory_operand (OP, GET_MODE (OP))	\
-   : ((CODE) == 'R')	  ? simple_memory_operand (OP, GET_MODE (OP))	\
-   : 0)
-
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
    In general this is just CLASS; but on some machines
