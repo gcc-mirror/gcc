@@ -1,3 +1,9 @@
+2010-10-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/46117
+	* call.c (add_function_candidate): Don't use TREE_VALUE on null
+	parmnode.
+
 2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* parser.c (cp_parser_objc_method_type): Mark inline.  Return a
@@ -6,9 +12,9 @@
 	cp_parser_objc_method_type and to objc_build_method_signature.
 	(cp_parser_objc_method_prototype_list): Updated calls to
 	objc_add_method_declaration.  Use token->type to determine if it
-	is a class method or not.	
+	is a class method or not.
 	(cp_parser_objc_method_definition_list): Same change.
-	
+
 2010-10-20  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
 
 	PR c++/46056
@@ -20,7 +26,7 @@
 	* cp-lang.c (finish_file): Removed.
 	* decl2.c (cp_write_global_declarations): Call
 	objc_write_global_declarations when compiling Objective-C++.
-	
+
 2010-10-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/46046

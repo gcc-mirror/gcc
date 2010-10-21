@@ -1613,9 +1613,10 @@ add_function_candidate (struct z_candidate **candidates,
   /* Kludge: When looking for a function from a subobject while generating
      an implicit copy/move constructor/operator=, don't consider anything
      that takes (a reference to) an unrelated type.  See c++/44909.  */
-  else if ((flags & LOOKUP_SPECULATIVE)
-	   || (current_function_decl
-	       && DECL_DEFAULTED_FN (current_function_decl)))
+  else if (parmlist
+	   && ((flags & LOOKUP_SPECULATIVE)
+	       || (current_function_decl
+		   && DECL_DEFAULTED_FN (current_function_decl))))
     {
       if (DECL_CONSTRUCTOR_P (fn))
 	i = 1;
