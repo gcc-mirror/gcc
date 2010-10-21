@@ -3648,6 +3648,19 @@ package body Sem_Res is
             --  any analysis. More thought required about this ???
 
             if Ekind_In (F, E_In_Parameter, E_In_Out_Parameter) then
+
+               --  Apply predicate checks, unless this is a call to the
+               --  predicate check function itself, which would cause an
+               --  infinite recursion.
+
+               if not (Ekind (Nam) = E_Function
+                        and then Has_Predicates (Nam))
+               then
+                  Apply_Predicate_Check (A, F_Typ);
+               end if;
+
+               --  Apply required constraint checks
+
                if Is_Scalar_Type (Etype (A)) then
                   Apply_Scalar_Range_Check (A, F_Typ);
 

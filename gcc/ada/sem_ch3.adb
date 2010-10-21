@@ -17205,41 +17205,11 @@ package body Sem_Ch3 is
          end;
       end if;
 
-      --  Propagate predicates to full type, and also build the predicate
-      --  procedure at this time, in the same way as we did for invariants.
+      --  Propagate predicates to full type
 
       if Has_Predicates (Priv_T) then
-         declare
-            FDecl : Entity_Id;
-            FBody : Entity_Id;
-            Packg : constant Node_Id := Declaration_Node (Scope (Priv_T));
-
-         begin
-            Build_Predicate_Function (Full_T, FDecl, FBody);
-
-            --  Error defense, normally this should be set
-
-            if Present (FDecl) then
-
-               --  Spec goes at the end of the public part of the package.
-               --  That's behind us, so we have to manually analyze the
-               --  inserted spec.
-
-               Append_To (Visible_Declarations (Packg), FDecl);
-               Analyze (FDecl);
-
-               --  Body goes at the end of the private part of the package.
-               --  That's ahead of us so it will get analyzed later on when
-               --  we come to it.
-
-               Append_To (Private_Declarations (Packg), FBody);
-
-               --  Copy Predicate procedure to private declaration
-
-               Set_Predicate_Function (Priv_T, Predicate_Function (Full_T));
-               Set_Has_Predicates (Priv_T);
-            end if;
-         end;
+         Set_Predicate_Function (Priv_T, Predicate_Function (Full_T));
+         Set_Has_Predicates (Priv_T);
       end if;
    end Process_Full_View;
 

@@ -8767,7 +8767,6 @@ package body Exp_Ch4 is
       --  this case, see Handle_Changed_Representation.
 
       elsif Is_Array_Type (Target_Type) then
-
          if Is_Constrained (Target_Type) then
             Apply_Length_Check (Operand, Target_Type);
          else
@@ -8933,8 +8932,20 @@ package body Exp_Ch4 is
 
       --  Here at end of processing
 
-      <<Done>>
-         null;
+   <<Done>>
+      --  Apply predicate check if required. Note that we can't just call
+      --  Apply_Predicate_Check here, because the type looks right after
+      --  the conversion and it would omit the check. The Comes_From_Source
+      --  guard is necessary to prevent infinite recursions when we generate
+      --  internal conversions for the purpose of checking predicates.
+
+      if Present (Predicate_Function (Target_Type))
+        and then Target_Type /= Operand_Type
+        and then Comes_From_Source (N)
+      then
+         Insert_Action (N,
+           Make_Predicate_Check (Target_Type, Duplicate_Subexpr (N)));
+      end if;
    end Expand_N_Type_Conversion;
 
    -----------------------------------

@@ -1,5 +1,27 @@
 2010-10-21  Robert Dewar  <dewar@adacore.com>
 
+	* checks.ads, checks.adb (Apply_Predicate_Check): New procedure
+	Minor code reorganization.
+	* einfo.adb (Has_Predicates): Fix assertion.
+	* exp_ch13.adb (Build_Predicate_Function): Move from Sem_Ch13 spec to
+	Exp_Ch13 body.
+	(Expand_N_Freeze_Entity): Call build predicate function.
+	* exp_ch4.adb (Expand_N_Type_Conversion): Add predicate check.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Add predicate check.
+	* exp_prag.adb (Expand_Pragma_Check): Use all lower case for name of
+	check.
+	* freeze.adb (Freeze_Entity): Move building of predicate function to
+	Exp_Ch13.
+	* sem_ch13.adb (Build_Predicate_Function): Move from Sem_Ch13 to
+	Exp_Ch13.
+	* sem_ch13.ads (Build_Predicate_Function): Move from Sem_Ch13 to
+	Exp_Ch13.
+	* sem_ch3.adb (Analyze_Declarations): Remove call to build predicate
+	function.
+	* sem_res.adb (Resolve_Actuals): Apply predicate check.
+
+2010-10-21  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.ads, einfo.adb: Replace Predicate_Procedure by
 	Predicate_Functions.
 	* exp_ch4.adb (Expand_N_In): Handle predicates.

@@ -997,10 +997,15 @@ package body Checks is
       Desig_Typ : Entity_Id;
 
    begin
+      --  No checks inside a generic (check the instantiations)
+
       if Inside_A_Generic then
          return;
+      end if;
 
-      elsif Is_Scalar_Type (Typ) then
+      --  Apply required constaint checks
+
+      if Is_Scalar_Type (Typ) then
          Apply_Scalar_Range_Check (N, Typ);
 
       elsif Is_Array_Type (Typ) then
@@ -1747,6 +1752,20 @@ package body Checks is
       Apply_Selected_Length_Checks
         (Ck_Node, Target_Typ, Source_Typ, Do_Static => False);
    end Apply_Length_Check;
+
+   ---------------------------
+   -- Apply_Predicate_Check --
+   ---------------------------
+
+   procedure Apply_Predicate_Check (N : Node_Id; Typ : Entity_Id) is
+   begin
+      if Etype (N) /= Typ
+        and then Present (Predicate_Function (Typ))
+      then
+         Insert_Action (N,
+           Make_Predicate_Check (Typ, Duplicate_Subexpr (N)));
+      end if;
+   end Apply_Predicate_Check;
 
    -----------------------
    -- Apply_Range_Check --
