@@ -1,3 +1,15 @@
+2010-10-21  Geert Bosch  <bosch@adacore.com>
+
+	* urealp.adb (UR_Write): Write hexadecimal constants with exponent 1 as
+	decimal constants, and write any others using the exponent notation.
+	Minor reformatting throughout
+	(Store_Ureal_Normalized): New function (minor code reorganization)
+
+2010-10-21  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, xeinfo.adb: Minor reformatting.
+	* s-stalib.ads: Minor comment fixes.
+
 2010-10-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Enter_Overloaded_Entity): Refine warning message about
