@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "parse.h"
 
+int gfc_matching_ptr_assignment = 0;
 int gfc_matching_procptr_assignment = 0;
 bool gfc_matching_prefix = false;
 
@@ -1331,6 +1332,7 @@ gfc_match_pointer_assignment (void)
   old_loc = gfc_current_locus;
 
   lvalue = rvalue = NULL;
+  gfc_matching_ptr_assignment = 0;
   gfc_matching_procptr_assignment = 0;
 
   m = gfc_match (" %v =>", &lvalue);
@@ -1343,8 +1345,11 @@ gfc_match_pointer_assignment (void)
   if (lvalue->symtree->n.sym->attr.proc_pointer
       || gfc_is_proc_ptr_comp (lvalue, NULL))
     gfc_matching_procptr_assignment = 1;
+  else
+    gfc_matching_ptr_assignment = 1;
 
   m = gfc_match (" %e%t", &rvalue);
+  gfc_matching_ptr_assignment = 0;
   gfc_matching_procptr_assignment = 0;
   if (m != MATCH_YES)
     goto cleanup;
