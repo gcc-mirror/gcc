@@ -1,3 +1,9 @@
+2010-10-21  Bingfeng Mei  <bmei@broadcom.com>
+
+	PR c/45834
+        * alias.c (true_dependence_1): Remove obsolete check for QImode.
+        (may_alias_p): Ditto.
+        
 2010-10-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/45875

@@ -2459,7 +2459,7 @@ true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
 
   /* We cannot use aliases_everything_p to test MEM, since we must look
      at MEM_ADDR, rather than XEXP (mem, 0).  */
-  if (mem_mode == QImode || GET_CODE (mem_addr) == AND)
+  if (GET_CODE (mem_addr) == AND)
     return 1;
 
   /* ??? In true_dependence we also allow BLKmode to alias anything.  Why
@@ -2655,7 +2655,7 @@ may_alias_p (const_rtx mem, const_rtx x)
 
   /* We cannot use aliases_everything_p to test MEM, since we must look
      at MEM_ADDR, rather than XEXP (mem, 0).  */
-  if (GET_MODE (mem) == QImode || GET_CODE (mem_addr) == AND)
+  if (GET_CODE (mem_addr) == AND)
     return 1;
 
   if (fixed_scalar_and_varying_struct_p (mem, x, mem_addr, x_addr,
