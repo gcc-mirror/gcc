@@ -1,3 +1,23 @@
+2010-10-21  Vincent Celier  <celier@adacore.com>
+
+	* vms_data.ads: Add new qualifiers /SRC_INFO= and
+	/UNCHECKED_SHARED_LIB_IMPORTS for GNAT COMPILE.
+	Correct qualifier /SRC_INFO= for GNAT MAKE
+
+2010-10-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Flatten): An association for a subtype may be an
+	expanded name.
+	(Safe_Left_Hand_Side): An unchecked conversion is part of a safe
+	left-hand side if the expression is.
+	(Is_Safe_Index): new predicate
+	* exp_ch3.adb (Expand_Freeze_Enumeration_Type): Indicate that the
+	generated Rep_To_Pos function is a Pure_Function.
+
+2010-10-21  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document Invariant pragma.
+
 2010-10-21  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch5.adb: Update comment.

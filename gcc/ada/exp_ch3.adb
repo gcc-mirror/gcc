@@ -5858,6 +5858,11 @@ package body Exp_Ch3 is
 
       Set_TSS (Typ, Fent);
       Set_Is_Pure (Fent);
+      --  The Pure flag will be reset is the current context is not pure.
+      --  For optimization purposes and constant-folding, indicate that the
+      --  Rep_To_Pos function can be considered free of side effects.
+
+      Set_Has_Pragma_Pure_Function (Fent);
 
       if not Debug_Generated_Code then
          Set_Debug_Info_Off (Fent);
