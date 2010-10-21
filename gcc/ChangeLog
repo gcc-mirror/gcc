@@ -1,3 +1,17 @@
+2010-10-21  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11-protos.md (arith_operand,
+	const_immediate_operand, expand_shift_operand,
+	immediate15_operand): Delete
+	* config/pdp11/pdp11.c: Ditto.
+	* config/pdp11/pdp11.h (REG_CLASS_FROM_LETTER,
+	CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P,
+	EXTRA_CONSTRAINT): Delete.
+	* config/pdp11/pdp11.md (various): Use standard constraints
+	instead of removed ones.
+	* config/pdp11/constraints.md: New file.
+	* config/pdp11/predicates.md: New file.
+
 2010-10-21  Bingfeng Mei  <bmei@broadcom.com>
 
 	PR c/45834

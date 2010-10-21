@@ -255,34 +255,6 @@ pdp11_option_init_struct (struct gcc_options *opts)
   opts->x_flag_signaling_nans = 0;
 }
 
-/* Nonzero if OP is a valid second operand for an arithmetic insn.  */
-
-int
-arith_operand (rtx op, enum machine_mode mode)
-{
-  return (register_operand (op, mode) || GET_CODE (op) == CONST_INT);
-}
-
-int
-const_immediate_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == CONST_INT);
-}
-
-int 
-immediate15_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-    return (GET_CODE (op) == CONST_INT && ((INTVAL (op) & 0x8000) == 0x0000));
-}
-
-int
-expand_shift_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-    return (GET_CODE (op) == CONST_INT 
-	    && abs (INTVAL(op)) > 1 
-	    && abs (INTVAL(op)) <= 4);
-}
-
 /*
    stream is a stdio stream to output the code to.
    size is an int: how many units of temporary storage to allocate.
