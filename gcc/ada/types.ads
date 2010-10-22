@@ -789,7 +789,7 @@ package Types is
       PE_Accessibility_Check_Failed,     -- 15
       PE_Address_Of_Intrinsic,           -- 16
       PE_All_Guards_Closed,              -- 17
-      PE_Bad_Attribute_For_Predicate,    -- 18
+      PE_Bad_Predicated_Generic_Type,    -- 18
       PE_Current_Task_In_Entry_Body,     -- 19
       PE_Duplicated_Entry_Address,       -- 20
       PE_Explicit_Raise,                 -- 21

@@ -1,3 +1,36 @@
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* a-except-2005.adb (Rmsg_18): New message text.
+	* a-except.adb (Rmsg_18): New message text.
+	* atree.adb (List25): New function
+	(Set_List25): New procedure
+	* atree.ads (List25): New function
+	(Set_List25): New procedure
+	* einfo.adb (Static_Predicate): Is now a list
+	(OK_To_Reference): Present in all entities
+	* einfo.ads (Static_Predicate): Is now a list
+	(OK_To_Reference): Applies to all entities
+	* exp_ch13.adb (Build_Predicate_Function): Moved to Sem_Ch13
+	* sem_attr.adb (Bad_Attribute_For_Predicate): Call
+	Bad_Predicated_Subtype_Use.
+	* sem_case.ads, sem_case.adb: Major surgery to deal with predicated
+	subtype case.
+	* sem_ch13.adb (Build_Predicate_Function): Moved from Exp_Ch13 to
+	Sem_Ch13.
+	(Build_Static_Predicate): New procedure handles static predicates.
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Delay freeze on subtype
+	with no constraint if ancestor subtype has predicates.
+	(Analyze_Variant_Part): New calling sequence for Analyze_Choices
+	* sem_ch4.adb (Junk_Operand): Don't complain about OK_To_Reference
+	entity.
+	(Analyze_Case_Expression): New calling sequence for Analyze_Choices
+	* sem_ch5.adb (Analyze_Case_Statement): New calling sequence for
+	Analyze_Choices.
+	* sem_util.ads, sem_util.adb (Bad_Predicated_Subtype_Use): New procedure
+	* types.ads (PE_Bad_Predicated_Generic_Type): Replaces
+	PE_Bad_Attribute_For_Predicate.
+	* atree.h: Add definition of List25.
+
 2010-10-22  Jerome Lambourg  <lambourg@adacore.com>
 
 	* gnatlink.adb (Process_Binder_File): Remove CLI-specific code, now

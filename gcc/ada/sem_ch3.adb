@@ -3842,7 +3842,14 @@ package body Sem_Ch3 is
       Set_Is_Ada_2005_Only  (Id, Is_Ada_2005_Only  (T));
       Set_Is_Ada_2012_Only  (Id, Is_Ada_2012_Only  (T));
       Set_Convention        (Id, Convention        (T));
-      Set_Has_Predicates    (Id, Has_Predicates    (T));
+
+      --  If ancestor has predicates then so does the subtype, and in addition
+      --  we must delay the freeze to properly arrange predicate inheritance.
+
+      if Has_Predicates (T) then
+         Set_Has_Predicates (Id);
+         Set_Has_Delayed_Freeze (Id);
+      end if;
 
       --  In the case where there is no constraint given in the subtype
       --  indication, Process_Subtype just returns the Subtype_Mark, so its
@@ -4292,13 +4299,9 @@ package body Sem_Ch3 is
       Discr_Name : Node_Id;
       Discr_Type : Entity_Id;
 
-      Case_Table     : Choice_Table_Type (1 .. Number_Of_Choices (N));
-      Last_Choice    : Nat;
       Dont_Care      : Boolean;
       Others_Present : Boolean := False;
 
-      pragma Warnings (Off, Case_Table);
-      pragma Warnings (Off, Last_Choice);
       pragma Warnings (Off, Dont_Care);
       pragma Warnings (Off, Others_Present);
       --  We don't care about the assigned values of any of these
@@ -4332,8 +4335,7 @@ package body Sem_Ch3 is
 
       --  Call the instantiated Analyze_Choices which does the rest of the work
 
-      Analyze_Choices
-        (N, Discr_Type, Case_Table, Last_Choice, Dont_Care, Others_Present);
+      Analyze_Choices (N, Discr_Type, Dont_Care, Others_Present);
    end Analyze_Variant_Part;
 
    ----------------------------

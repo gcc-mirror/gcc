@@ -1137,7 +1137,6 @@ package body Sem_Ch4 is
       Exp_Type  : Entity_Id;
       Exp_Btype : Entity_Id;
 
-      Last_Choice    : Nat;
       Dont_Care      : Boolean;
       Others_Present : Boolean;
 
@@ -1153,8 +1152,6 @@ package body Sem_Ch4 is
            Process_Non_Static_Choice => Non_Static_Choice_Error,
            Process_Associated_Node   => No_OP);
       use Case_Choices_Processing;
-
-      Case_Table : Choice_Table_Type (1 .. Number_Of_Choices (N));
 
       -----------------------------
       -- Non_Static_Choice_Error --
@@ -1252,8 +1249,7 @@ package body Sem_Ch4 is
 
       --  Call instantiated Analyze_Choices which does the rest of the work
 
-      Analyze_Choices
-        (N, Exp_Type, Case_Table, Last_Choice, Dont_Care, Others_Present);
+      Analyze_Choices (N, Exp_Type, Dont_Care, Others_Present);
 
       if Exp_Type = Universal_Integer and then not Others_Present then
          Error_Msg_N
@@ -5560,6 +5556,13 @@ package body Sem_Ch4 is
          Enode := Selector_Name (N);
 
       else
+         return False;
+      end if;
+
+      --  If OK_To_Reference is set for the entity, then don't complain, it
+      --  means we are doing a preanalysis in which such complaints are wrong.
+
+      if OK_To_Reference (Entity (Enode)) then
          return False;
       end if;
 

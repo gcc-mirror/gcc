@@ -329,6 +329,30 @@ package body Sem_Util is
       end if;
    end Apply_Compile_Time_Constraint_Error;
 
+   --------------------------------
+   -- Bad_Predicated_Subtype_Use --
+   --------------------------------
+
+   procedure Bad_Predicated_Subtype_Use
+     (Typ : Entity_Id;
+      N   : Node_Id;
+      Msg : String)
+   is
+   begin
+      if Has_Predicates (Typ) then
+         if Is_Generic_Actual_Type (Typ) then
+            Error_Msg_F (Msg & '?', Typ);
+            Error_Msg_F ("\Program_Error will be raised at run time?", Typ);
+            Insert_Action (N,
+              Make_Raise_Program_Error (Sloc (N),
+                Reason => PE_Bad_Predicated_Generic_Type));
+
+         else
+            Error_Msg_F (Msg, Typ);
+         end if;
+      end if;
+   end Bad_Predicated_Subtype_Use;
+
    --------------------------
    -- Build_Actual_Subtype --
    --------------------------

@@ -77,6 +77,23 @@ package body Sem_Ch13 is
    --  inherited from a derived type that is no longer appropriate for the
    --  new Esize value. In this case, we reset the Alignment to unknown.
 
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   procedure Build_Predicate_Function
+     (Typ   : Entity_Id;
+      FDecl : out Node_Id;
+      FBody : out Node_Id);
+   --  If Typ has predicates (indicated by Has_Predicates being set for Typ,
+   --  then either there are pragma Invariant entries on the rep chain for the
+   --  type (note that Predicate aspects are converted to pragam Predicate), or
+   --  there are inherited aspects from a parent type, or ancestor subtypes,
+   --  or interfaces. This procedure builds the spec and body for the Predicate
+   --  function that tests these predicates, returning them in PDecl and Pbody
+   --  and setting Predicate_Procedure for Typ. In some error situations no
+   --  procedure is built, in which case PDecl/PBody are empty on return.
+
    function Get_Alignment_Value (Expr : Node_Id) return Uint;
    --  Given the expression for an alignment value, returns the corresponding
    --  Uint value. If the value is inappropriate, then error messages are
@@ -3038,6 +3055,23 @@ package body Sem_Ch13 is
       end if;
 
       Inside_Freezing_Actions := Inside_Freezing_Actions - 1;
+
+      --  If we have a type with predicates, build predicate function
+
+      if Is_Type (E) and then Has_Predicates (E) then
+         declare
+            FDecl : Node_Id;
+            FBody : Node_Id;
+
+         begin
+            Build_Predicate_Function (E, FDecl, FBody);
+
+            if Present (FDecl) then
+               Insert_After (N, FBody);
+               Insert_After (N, FDecl);
+            end if;
+         end;
+      end if;
    end Analyze_Freeze_Entity;
 
    ------------------------------------------
@@ -3772,6 +3806,605 @@ package body Sem_Ch13 is
                  Statements => Stmts));
       end if;
    end Build_Invariant_Procedure;
+
+   ------------------------------
+   -- Build_Predicate_Function --
+   ------------------------------
+
+   --  The procedure that is constructed here has the form
+
+   --  function typPredicate (Ixxx : typ) return Boolean is
+   --  begin
+   --     return
+   --        exp1 and then exp2 and then ...
+   --        and then typ1Predicate (typ1 (Ixxx))
+   --        and then typ2Predicate (typ2 (Ixxx))
+   --        and then ...;
+   --  end typPredicate;
+
+   --  Here exp1, and exp2 are expressions from Predicate pragmas. Note that
+   --  this is the point at which these expressions get analyzed, providing the
+   --  required delay, and typ1, typ2, are entities from which predicates are
+   --  inherited. Note that we do NOT generate Check pragmas, that's because we
+   --  use this function even if checks are off, e.g. for membership tests.
+
+   procedure Build_Predicate_Function
+     (Typ   : Entity_Id;
+      FDecl : out Node_Id;
+      FBody : out Node_Id)
+   is
+      Loc  : constant Source_Ptr := Sloc (Typ);
+      Spec : Node_Id;
+      SId  : Entity_Id;
+
+      Expr : Node_Id;
+      --  This is the expression for the return statement in the function. It
+      --  is build by connecting the component predicates with AND THEN.
+
+      procedure Add_Call (T : Entity_Id);
+      --  Includes a call to the predicate function for type T in Expr if T
+      --  has predicates and Predicate_Function (T) is non-empty.
+
+      procedure Add_Predicates;
+      --  Appends expressions for any Predicate pragmas in the rep item chain
+      --  Typ to Expr. Note that we look only at items for this exact entity.
+      --  Inheritance of predicates for the parent type is done by calling the
+      --  Predicate_Function of the parent type, using Add_Call above.
+
+      procedure Build_Static_Predicate;
+      --  This function is called to process a static predicate, and put it in
+      --  canonical form and store it in Static_Predicate (Typ).
+
+      Object_Name : constant Name_Id := New_Internal_Name ('I');
+      --  Name for argument of Predicate procedure
+
+      --------------
+      -- Add_Call --
+      --------------
+
+      procedure Add_Call (T : Entity_Id) is
+         Exp : Node_Id;
+
+      begin
+         if Present (T) and then Present (Predicate_Function (T)) then
+            Set_Has_Predicates (Typ);
+
+            --  Build the call to the predicate function of T
+
+            Exp :=
+              Make_Predicate_Call
+                (T,
+                 Convert_To (T,
+                   Make_Identifier (Loc, Chars => Object_Name)));
+
+            --  Add call to evolving expression, using AND THEN if needed
+
+            if No (Expr) then
+               Expr := Exp;
+            else
+               Expr :=
+                 Make_And_Then (Loc,
+                   Left_Opnd  => Relocate_Node (Expr),
+                   Right_Opnd => Exp);
+            end if;
+
+            --  Output info message on inheritance if required
+
+            if Opt.List_Inherited_Aspects then
+               Error_Msg_Sloc := Sloc (Predicate_Function (T));
+               Error_Msg_Node_2 := T;
+               Error_Msg_N ("?info: & inherits predicate from & #", Typ);
+            end if;
+         end if;
+      end Add_Call;
+
+      --------------------
+      -- Add_Predicates --
+      --------------------
+
+      procedure Add_Predicates is
+         Ritem : Node_Id;
+         Arg1  : Node_Id;
+         Arg2  : Node_Id;
+
+         function Replace_Node (N : Node_Id) return Traverse_Result;
+         --  Process single node for traversal to replace type references
+
+         procedure Replace_Type is new Traverse_Proc (Replace_Node);
+         --  Traverse an expression changing every occurrence of an entity
+         --  reference to type T with a reference to the object argument.
+
+         ------------------
+         -- Replace_Node --
+         ------------------
+
+         function Replace_Node (N : Node_Id) return Traverse_Result is
+         begin
+            --  Case of entity name referencing the type
+
+            if Is_Entity_Name (N) and then Entity (N) = Typ then
+
+               --  Replace with object
+
+               Rewrite (N,
+                 Make_Identifier (Loc,
+                   Chars => Object_Name));
+
+               --  All done with this node
+
+               return Skip;
+
+            --  Not an occurrence of the type entity, keep going
+
+            else
+               return OK;
+            end if;
+         end Replace_Node;
+
+      --  Start of processing for Add_Predicates
+
+      begin
+         Ritem := First_Rep_Item (Typ);
+         while Present (Ritem) loop
+            if Nkind (Ritem) = N_Pragma
+              and then Pragma_Name (Ritem) = Name_Predicate
+            then
+               Arg1 := First (Pragma_Argument_Associations (Ritem));
+               Arg2 := Next (Arg1);
+
+               Arg1 := Get_Pragma_Arg (Arg1);
+               Arg2 := Get_Pragma_Arg (Arg2);
+
+               --  See if this predicate pragma is for the current type
+
+               if Entity (Arg1) = Typ then
+
+                  --  We have a match, this entry is for our subtype
+
+                  --  First We need to replace any occurrences of the name of
+                  --  the type with references to the object. We do this by
+                  --  first doing a preanalysis, to identify all the entities,
+                  --  then we traverse looking for the type entity, doing the
+                  --  needed substitution. The preanalysis is done with the
+                  --  special OK_To_Reference flag set on the type, so that if
+                  --  we get an occurrence of this type, it will be recognized
+                  --  as legitimate.
+
+                  Set_OK_To_Reference (Typ, True);
+                  Preanalyze_Spec_Expression (Arg2, Standard_Boolean);
+                  Set_OK_To_Reference (Typ, False);
+                  Replace_Type (Arg2);
+
+                  --  OK, replacement complete, now we can add the expression
+
+                  if No (Expr) then
+                     Expr := Relocate_Node (Arg2);
+
+                  --  There already was a predicate, so add to it
+
+                  else
+                     Expr :=
+                       Make_And_Then (Loc,
+                         Left_Opnd  => Relocate_Node (Expr),
+                         Right_Opnd => Relocate_Node (Arg2));
+                  end if;
+               end if;
+            end if;
+
+            Next_Rep_Item (Ritem);
+         end loop;
+      end Add_Predicates;
+
+      ----------------------------
+      -- Build_Static_Predicate --
+      ----------------------------
+
+      procedure Build_Static_Predicate is
+         Exp : Node_Id;
+         Alt : Node_Id;
+
+         Non_Static : Boolean := False;
+         --  Set True if something non-static is found
+
+         Plist : List_Id := No_List;
+         --  The entries in Plist are either static expressions which represent
+         --  a possible value, or ranges of values. Subtype marks don't appear,
+         --  since we expand them out.
+
+         Lo, Hi : Uint;
+         --  Low bound and high bound values of static subtype of Typ
+
+         procedure Process_Entry (N : Node_Id);
+         --  Process one entry (range or value or subtype mark)
+
+         -------------------
+         -- Process_Entry --
+         -------------------
+
+         procedure Process_Entry (N : Node_Id) is
+            SLo, SHi : Uint;
+            --  Low and high bounds of range in list
+
+            P : Node_Id;
+
+            function Build_Val (V : Uint) return Node_Id;
+            --  Return an analyzed N_Identifier node referencing this value
+
+            function Build_Range (Lo, Hi : Uint) return Node_Id;
+            --  Return an analyzed N_Range node referencing this range
+
+            function Lo_Val (N : Node_Id) return Uint;
+            --  Given static expression or static range, gets expression value
+            --  or low bound of range.
+
+            function Hi_Val (N : Node_Id) return Uint;
+            --  Given static expression or static range, gets expression value
+            --  of high bound of range.
+
+            -----------------
+            -- Build_Range --
+            -----------------
+
+            function Build_Range (Lo, Hi : Uint) return Node_Id is
+               Result : Node_Id;
+            begin
+               if Lo = Hi then
+                  return Build_Val (Hi);
+               else
+                  Result :=
+                    Make_Range (Sloc (N),
+                      Low_Bound  => Build_Val (Lo),
+                      High_Bound => Build_Val (Hi));
+                  Set_Etype (Result, Typ);
+                  Set_Analyzed (Result);
+                  return Result;
+               end if;
+            end Build_Range;
+
+            ---------------
+            -- Build_Val --
+            ---------------
+
+            function Build_Val (V : Uint) return Node_Id is
+               Result : Node_Id;
+
+            begin
+               if Is_Enumeration_Type (Typ) then
+                  Result := Get_Enum_Lit_From_Pos (Typ, V, Sloc (N));
+               else
+                  Result := Make_Integer_Literal (Sloc (N), Intval => V);
+               end if;
+
+               Set_Etype (Result, Typ);
+               Set_Is_Static_Expression (Result);
+               Set_Analyzed (Result);
+               return Result;
+            end Build_Val;
+
+            ------------
+            -- Hi_Val --
+            ------------
+
+            function Hi_Val (N : Node_Id) return Uint is
+            begin
+               if Nkind (N) = N_Identifier then
+                  return Expr_Value (N);
+               else
+                  return Expr_Value (High_Bound (N));
+               end if;
+            end Hi_Val;
+
+            ------------
+            -- Lo_Val --
+            ------------
+
+            function Lo_Val (N : Node_Id) return Uint is
+            begin
+               if Nkind (N) = N_Identifier then
+                  return Expr_Value (N);
+               else
+                  return Expr_Value (Low_Bound (N));
+               end if;
+            end Lo_Val;
+
+         --  Start of processing for Process_Entry
+
+         begin
+            --  Range case
+
+            if Nkind (N) = N_Range then
+               if not Is_Static_Expression (Low_Bound (N))
+                    or else
+                  not Is_Static_Expression (High_Bound (N))
+               then
+                  Non_Static := True;
+                  return;
+               else
+                  SLo := Lo_Val (N);
+                  SHi := Hi_Val (N);
+               end if;
+
+            --  Identifier case
+
+            else pragma Assert (Nkind (N) = N_Identifier);
+
+               --  Static expression case
+
+               if Is_Static_Expression (N) then
+                  SLo := Lo_Val (N);
+                  SHi := Hi_Val (N);
+
+               --  Type case
+
+               elsif Is_Type (Entity (N)) then
+
+                  --  If type has static predicates, process them recursively
+
+                  if Present (Static_Predicate (Entity (N))) then
+                     P := First (Static_Predicate (Entity (N)));
+                     while Present (P) loop
+                        Process_Entry (P);
+
+                        if Non_Static then
+                           return;
+                        else
+                           Next (P);
+                        end if;
+                     end loop;
+
+                     return;
+
+                  --  For static subtype without predicates, get range
+
+                  elsif Is_Static_Subtype (Entity (N))
+                    and then not Has_Predicates (Entity (N))
+                  then
+                     SLo := Expr_Value (Type_Low_Bound  (Entity (N)));
+                     SHi := Expr_Value (Type_High_Bound (Entity (N)));
+
+                  --  Any other type makes us non-static
+
+                  else
+                     Non_Static := True;
+                     return;
+                  end if;
+
+               --  Any other kind of identifier in predicate (e.g. a non-static
+               --  expression value) means this is not a static predicate.
+
+               else
+                  Non_Static := True;
+                  return;
+               end if;
+            end if;
+
+            --  Here with SLo and SHi set for (possibly single element) range
+            --  of entry to insert in Plist. Non-static if out of range.
+
+            if SLo < Lo or else SHi > Hi then
+               Non_Static := True;
+               return;
+            end if;
+
+            --  If no Plist currently, create it
+
+            if No (Plist) then
+               Plist := New_List (Build_Range (SLo, SHi));
+               return;
+
+            --  Otherwise search Plist for insertion point
+
+            else
+               P := First (Plist);
+               loop
+                  --  Case of inserting before current entry
+
+                  if SHi < Lo_Val (P) - 1 then
+                     Insert_Before (P, Build_Range (SLo, SHi));
+                     exit;
+
+                  --  Case of belongs past current entry
+
+                  elsif SLo > Hi_Val (P) + 1 then
+
+                     --  End of list case
+
+                     if No (Next (P)) then
+                        Append_To (Plist, Build_Range (SLo, SHi));
+                        exit;
+
+                     --  Else just move to next item on list
+
+                     else
+                        Next (P);
+                     end if;
+
+                  --  Case of extending current entyr, and in overlap cases
+                  --  may also eat up entries past this one.
+
+                  else
+                     declare
+                        New_Lo : constant Uint := UI_Min (Lo_Val (P), SLo);
+                        New_Hi : Uint          := UI_Max (Hi_Val (P), SHi);
+
+                     begin
+                        --  See if there are entries past us that we eat up
+
+                        while Present (Next (P))
+                          and then Lo_Val (Next (P)) <= New_Hi + 1
+                        loop
+                           New_Hi := Hi_Val (Next (P));
+                           Remove (Next (P));
+                        end loop;
+
+                        --  We now need to replace the current node P with
+                        --  a new entry New_Lo .. New_Hi.
+
+                        Insert_After (P, Build_Range (New_Lo, New_Hi));
+                        Remove (P);
+                        exit;
+                     end;
+                  end if;
+               end loop;
+            end if;
+         end Process_Entry;
+
+      --  Start of processing for Build_Static_Predicate
+
+      begin
+         --  Immediately non-static if our subtype is non static, or we
+         --  do not have an appropriate discrete subtype in the first place.
+
+         if not Ekind_In (Typ, E_Enumeration_Subtype,
+                               E_Modular_Integer_Subtype,
+                               E_Signed_Integer_Subtype)
+           or else not Is_Static_Subtype (Typ)
+         then
+            return;
+         end if;
+
+         Lo := Expr_Value (Type_Low_Bound  (Typ));
+         Hi := Expr_Value (Type_High_Bound (Typ));
+
+         --  Check if we have membership predicate
+
+         if Nkind (Expr) = N_In then
+            Exp := Expr;
+
+         --  Allow qualified expression with membership predicate inside
+
+         elsif Nkind (Expr) = N_Qualified_Expression
+           and then Nkind (Expression (Expr)) = N_In
+         then
+            Exp := Expression (Expr);
+
+         --  Anything else cannot be a static predicate
+
+         else
+            return;
+         end if;
+
+         --  We have a membership operation, so we have a potentially static
+         --  predicate, collect and canonicalize the entries in the list.
+
+         if Present (Right_Opnd (Exp)) then
+            Process_Entry (Right_Opnd (Exp));
+
+            if Non_Static then
+               return;
+            end if;
+
+         else
+            Alt := First (Alternatives (Exp));
+            while Present (Alt) loop
+               Process_Entry (Alt);
+
+               if Non_Static then
+                  return;
+               end if;
+
+               Next (Alt);
+            end loop;
+         end if;
+
+         --  Processing was successful and all entries were static, so
+         --  now we can store the result as the predicate list.
+
+         Set_Static_Predicate (Typ, Plist);
+      end Build_Static_Predicate;
+
+   --  Start of processing for Build_Predicate_Function
+
+   begin
+      --  Initialize for construction of statement list
+
+      Expr  := Empty;
+      FDecl := Empty;
+      FBody := Empty;
+
+      --  Return if already built or if type does not have predicates
+
+      if not Has_Predicates (Typ)
+        or else Present (Predicate_Function (Typ))
+      then
+         return;
+      end if;
+
+      --  Add Predicates for the current type
+
+      Add_Predicates;
+
+      --  Add predicates for ancestor if present
+
+      declare
+         Atyp : constant Entity_Id := Nearest_Ancestor (Typ);
+      begin
+         if Present (Atyp) then
+            Add_Call (Atyp);
+         end if;
+      end;
+
+      --  If we have predicates, build the function
+
+      if Present (Expr) then
+
+         --  Deal with static predicate case
+
+         Build_Static_Predicate;
+
+         --  Build function declaration
+
+         pragma Assert (Has_Predicates (Typ));
+         SId :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (Typ), "Predicate"));
+         Set_Has_Predicates (SId);
+         Set_Predicate_Function (Typ, SId);
+
+         Spec :=
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name       => SId,
+             Parameter_Specifications => New_List (
+               Make_Parameter_Specification (Loc,
+                 Defining_Identifier =>
+                   Make_Defining_Identifier (Loc, Chars => Object_Name),
+                 Parameter_Type      => New_Occurrence_Of (Typ, Loc))),
+             Result_Definition        =>
+               New_Occurrence_Of (Standard_Boolean, Loc));
+
+         FDecl :=
+           Make_Subprogram_Declaration (Loc,
+             Specification => Spec);
+
+         --  Build function body
+
+         SId :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (Typ), "Predicate"));
+
+         Spec :=
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name       => SId,
+             Parameter_Specifications => New_List (
+               Make_Parameter_Specification (Loc,
+                 Defining_Identifier =>
+                   Make_Defining_Identifier (Loc, Chars => Object_Name),
+                 Parameter_Type =>
+                   New_Occurrence_Of (Typ, Loc))),
+             Result_Definition        =>
+               New_Occurrence_Of (Standard_Boolean, Loc));
+
+         FBody :=
+           Make_Subprogram_Body (Loc,
+             Specification              => Spec,
+             Declarations               => Empty_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (
+                   Make_Simple_Return_Statement (Loc,
+                     Expression => Expr))));
+      end if;
+   end Build_Predicate_Function;
 
    -----------------------------------
    -- Check_Constant_Address_Clause --

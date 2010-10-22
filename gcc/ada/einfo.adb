@@ -215,7 +215,7 @@ package body Einfo is
    --    Debug_Renaming_Link             Node25
    --    DT_Offset_To_Top_Func           Node25
    --    PPC_Wrapper                     Node25
-   --    Static_Predicate                Node25
+   --    Static_Predicate                List25
    --    Task_Body_Procedure             Node25
 
    --    Dispatch_Table_Wrappers         Elist26
@@ -2316,7 +2316,6 @@ package body Einfo is
 
    function OK_To_Reference (Id : E) return B is
    begin
-      pragma Assert (Is_Type (Id));
       return Flag249 (Id);
    end OK_To_Reference;
 
@@ -2621,10 +2620,10 @@ package body Einfo is
       return Node24 (Id);
    end Spec_PPC_List;
 
-   function Static_Predicate (Id : E) return N is
+   function Static_Predicate (Id : E) return S is
    begin
       pragma Assert (Is_Discrete_Type (Id));
-      return Node25 (Id);
+      return List25 (Id);
    end Static_Predicate;
 
    function Storage_Size_Variable (Id : E) return E is
@@ -4811,7 +4810,6 @@ package body Einfo is
 
    procedure Set_OK_To_Reference (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Type (Id));
       Set_Flag249 (Id, V);
    end Set_OK_To_Reference;
 
@@ -5127,14 +5125,14 @@ package body Einfo is
       Set_Node24 (Id, V);
    end Set_Spec_PPC_List;
 
-   procedure Set_Static_Predicate (Id : E; V : N) is
+   procedure Set_Static_Predicate (Id : E; V : S) is
    begin
       pragma Assert
         (Ekind_In (Id, E_Enumeration_Subtype,
                        E_Modular_Integer_Subtype,
                        E_Signed_Integer_Subtype)
           and then Has_Predicates (Id));
-      Set_Node25 (Id, V);
+      Set_List25 (Id, V);
    end Set_Static_Predicate;
 
    procedure Set_Storage_Size_Variable (Id : E; V : E) is
