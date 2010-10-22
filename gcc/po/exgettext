@@ -234,7 +234,7 @@ echo "scanning option files..." >&2
 		printf("#line %d \"%s\"\n", lineno, file)
 		printf("_(\"%s\")\n", line)
 	    }
-	    if ((field == 1) && /Warn/) {
+	    if ((field == 1) && /Warn\(/) {
 		line = $0
 		sub(".*Warn\\(", "", line)
 		if (line ~ "^{") {
