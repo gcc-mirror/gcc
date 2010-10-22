@@ -1,3 +1,13 @@
+2010-10-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45720
+	* tree-vect-data-refs.c (vect_update_misalignment_for_peel):
+	Handle negative step.
+	(vect_enhance_data_refs_alignment): Likewise.
+	* tree-vect-loop-manip.c (vect_gen_niters_for_prolog_loop): Likewise.
+	(vect_create_cond_for_align_checks): Likewise.
+	(vect_create_cond_for_alias_checks): Likewise.
+
 2010-10-22  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/46126
