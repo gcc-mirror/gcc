@@ -1995,10 +1995,35 @@ package body Sprint is
                Sprint_Node (Condition (Node));
             else
                Write_Str_With_Col_Check_Sloc ("for ");
-               Sprint_Node (Loop_Parameter_Specification (Node));
+               if Present (Iterator_Specification (Node)) then
+                  Sprint_Node (Iterator_Specification (Node));
+               else
+                  Sprint_Node (Loop_Parameter_Specification (Node));
+               end if;
             end if;
 
             Write_Char (' ');
+
+         when N_Iterator_Specification =>
+            Set_Debug_Sloc;
+            Write_Id (Defining_Identifier (Node));
+
+            if Present (Subtype_Indication (Node)) then
+               Write_Str_With_Col_Check (" : ");
+               Sprint_Node (Subtype_Indication (Node));
+            end if;
+
+            if Of_Present (Node) then
+               Write_Str_With_Col_Check (" of ");
+            else
+               Write_Str_With_Col_Check (" in ");
+            end if;
+
+            if Reverse_Present (Node) then
+               Write_Str_With_Col_Check ("reverse ");
+            end if;
+
+            Sprint_Node (Name (Node));
 
          when N_Itype_Reference =>
             Write_Indent_Str_Sloc ("reference ");

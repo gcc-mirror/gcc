@@ -159,6 +159,11 @@ package Sem_Aux is
    --  Determines if the given entity Ent is a derived type. Result is always
    --  false if argument is not a type.
 
+   function Is_Generic_Formal (E : Entity_Id) return Boolean;
+   --  Determine whether E is a generic formal parameter. In particular this is
+   --  used to set the visibility of generic formals of a generic package
+   --  declared with a box or with partial parametrization.
+
    function Is_Indefinite_Subtype (Ent : Entity_Id) return Boolean;
    --  Ent is any entity. Determines if given entity is an unconstrained array
    --  type or subtype, a discriminated record type or subtype with no initial

@@ -1544,6 +1544,10 @@ package Sinfo is
    --    is used for properly setting out of range values for use by pragmas
    --    Initialize_Scalars and Normalize_Scalars.
 
+   --  Of_Present (Flag16)
+   --  Present in N_Iterastor_Specification nodes, to mark the Ada2012 iterator
+   --  form over arrays and containers.
+
    --  Original_Discriminant (Node2-Sem)
    --    Present in identifiers. Used in references to discriminants that
    --    appear in generic units. Because the names of the discriminants may be
@@ -3829,6 +3833,7 @@ package Sinfo is
 
       --  N_Quantified_Expression
       --  Sloc points to FOR
+      --  Iterator_Specification (Node2) (set to Empty if not Present)
       --  Loop_Parameter_Specification (Node4)
       --  Condition (Node1)
       --  All_Present (Flag15)
@@ -4164,7 +4169,11 @@ package Sinfo is
       --------------------------
 
       --  ITERATION_SCHEME ::=
-      --    while CONDITION | for LOOP_PARAMETER_SPECIFICATION
+      --    while CONDITION | for LOOP_PARAMETER_SPECIFICATION |
+      --    for ITERATOR_SPECIFICATION
+
+      --  Only one of (Iterator_Specification, Loop_Parameter_Specification)
+      --  is present at a time, the other one is empty.
 
       --  Gigi restriction: This expander ensures that the type of the
       --  Condition field is always Standard.Boolean, even if the type
@@ -4174,6 +4183,7 @@ package Sinfo is
       --  Sloc points to WHILE or FOR
       --  Condition (Node1) (set to Empty if FOR case)
       --  Condition_Actions (List3-Sem)
+      --  Iterator_Specification (Node2) (set to Empty if not Present)
       --  Loop_Parameter_Specification (Node4) (set to Empty if WHILE case)
 
       ---------------------------------------
@@ -4188,6 +4198,22 @@ package Sinfo is
       --  Defining_Identifier (Node1)
       --  Reverse_Present (Flag15)
       --  Discrete_Subtype_Definition (Node4)
+
+      ----------------------------------
+      -- 5.5.1 Iterator specification --
+      ----------------------------------
+
+      --  ITERATOR_SPECIFICATION ::=
+      --    DEFINING_IDENTIFIER in [reverse] NAME
+      --    DEFINING_IDENTIFIER [: SUBTYPE_INDICATION] of [reverse] NAME
+
+      --  N_Iterator_Specification
+      --  Sloc points to defining identifier
+      --  Defining_Identifier (Node1)
+      --  Name (Node2)
+      --  Reverse_Present (Flag15)
+      --  Of_Present (Flag16)
+      --  Subtype_Indication (Node5)
 
       --------------------------
       -- 5.6  Block Statement --
@@ -7500,6 +7526,7 @@ package Sinfo is
       N_Formal_Type_Declaration,
       N_Full_Type_Declaration,
       N_Incomplete_Type_Declaration,
+      N_Iterator_Specification,
       N_Loop_Parameter_Specification,
       N_Object_Declaration,
       N_Parameterized_Expression,
@@ -8492,6 +8519,9 @@ package Sinfo is
    function Iteration_Scheme
      (N : Node_Id) return Node_Id;    -- Node2
 
+   function Iterator_Specification
+     (N : Node_Id) return Node_Id;    -- Node2
+
    function Itype
      (N : Node_Id) return Entity_Id;  -- Node1
 
@@ -8611,6 +8641,9 @@ package Sinfo is
 
    function Object_Definition
      (N : Node_Id) return Node_Id;    -- Node4
+
+   function Of_Present
+     (N : Node_Id) return Boolean;    -- Flag16
 
    function Original_Discriminant
      (N : Node_Id) return Node_Id;    -- Node2
@@ -9446,6 +9479,9 @@ package Sinfo is
    procedure Set_Iteration_Scheme
      (N : Node_Id; Val : Node_Id);            -- Node2
 
+   procedure Set_Iterator_Specification
+     (N : Node_Id; Val : Node_Id);            -- Node2
+
    procedure Set_Itype
      (N : Node_Id; Val : Entity_Id);          -- Node1
 
@@ -9565,6 +9601,9 @@ package Sinfo is
 
    procedure Set_Object_Definition
      (N : Node_Id; Val : Node_Id);            -- Node4
+
+   procedure Set_Of_Present
+     (N : Node_Id; Val : Boolean := True);   -- Flag16
 
    procedure Set_Original_Discriminant
      (N : Node_Id; Val : Node_Id);            -- Node2
@@ -10492,7 +10531,7 @@ package Sinfo is
 
      N_Quantified_Expression =>
        (1 => True,    --  Condition (Node1)
-        2 => False,   --  unused
+        2 => True,    --  Iterator_Specification
         3 => False,   --  unused
         4 => True,    --  Loop_Parameter_Specification (Node4)
         5 => False),  --  Etype (Node5-Sem)
@@ -10576,7 +10615,7 @@ package Sinfo is
 
      N_Iteration_Scheme =>
        (1 => True,    --  Condition (Node1)
-        2 => False,   --  unused
+        2 => True,    --  Iterator_Specification (Node2)
         3 => False,   --  Condition_Actions (List3-Sem)
         4 => True,    --  Loop_Parameter_Specification (Node4)
         5 => False),  --  unused
@@ -10587,6 +10626,13 @@ package Sinfo is
         3 => False,   --  unused
         4 => True,    --  Discrete_Subtype_Definition (Node4)
         5 => False),  --  unused
+
+     N_Iterator_Specification =>
+       (1 => True,    --  Defining_Identifier (Node1)
+        2 => True,    --  Name (Node2)
+        3 => False,   --  Unused
+        4 => False,   --  Unused
+        5 => True),   --  Subtype_Indication (Node5)
 
      N_Block_Statement =>
        (1 => True,    --  Identifier (Node1)

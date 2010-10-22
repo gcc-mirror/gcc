@@ -1198,6 +1198,14 @@ package Snames is
 
    Name_Unaligned_Valid                  : constant Name_Id := N + $;
 
+   --  Names used to implement iterators over predefined  containers.
+
+   Name_Cursor                           : constant Name_Id := N + $;
+   Name_Element                          : constant Name_Id := N + $;
+   Name_Element_Type                     : constant Name_Id := N + $;
+   Name_No_Element                       : constant Name_Id := N + $;
+   Name_Previous                         : constant Name_Id := N + $;
+
    --  Ada 05 reserved words
 
    First_2005_Reserved_Word              : constant Name_Id := N + $;

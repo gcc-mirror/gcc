@@ -2514,7 +2514,8 @@ package body Ch4 is
    --    for QUANTIFIER ITERATOR_SPECIFICATION => PREDICATE
 
    function P_Quantified_Expression return Node_Id is
-      Node1 : Node_Id;
+      I_Spec : Node_Id;
+      Node1  : Node_Id;
 
    begin
       Scan;  --  past FOR
@@ -2536,7 +2537,13 @@ package body Ch4 is
       end if;
 
       Scan;
-      Set_Loop_Parameter_Specification (Node1, P_Loop_Parameter_Specification);
+      I_Spec := P_Loop_Parameter_Specification;
+
+      if Nkind (I_Spec) = N_Loop_Parameter_Specification then
+         Set_Loop_Parameter_Specification (Node1, I_Spec);
+      else
+         Set_Iterator_Specification (Node1, I_Spec);
+      end if;
 
       if Token = Tok_Arrow then
          Scan;

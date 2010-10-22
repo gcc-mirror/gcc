@@ -60,6 +60,11 @@ package body Ch5 is
    --  the N_Identifier node for the label on the loop. If Loop_Name is
    --  Empty on entry (the default), then the for statement is unlabeled.
 
+   function P_Iterator_Specification (Def_Id : Node_Id) return Node_Id;
+   --  Parse an iterator specification. The defining identifier has already
+   --  been scanned, as it is the common prefix between loop and iterator
+   --  specification.
+
    function P_Loop_Statement (Loop_Name : Node_Id := Empty) return Node_Id;
    --  Parse loop statement. If Loop_Name is non-Empty on entry, it is
    --  the N_Identifier node for the label on the loop. If Loop_Name is
@@ -1552,6 +1557,7 @@ package body Ch5 is
       Iter_Scheme_Node : Node_Id;
       Loop_For_Flag    : Boolean;
       Created_Name     : Node_Id;
+      Spec             : Node_Id;
 
    begin
       Push_Scope_Stack;
@@ -1563,8 +1569,13 @@ package body Ch5 is
       Loop_For_Flag := (Prev_Token = Tok_Loop);
       Scan; -- past FOR
       Iter_Scheme_Node := New_Node (N_Iteration_Scheme, Token_Ptr);
-      Set_Loop_Parameter_Specification
-         (Iter_Scheme_Node, P_Loop_Parameter_Specification);
+      Spec := P_Loop_Parameter_Specification;
+      if Nkind (Spec) = N_Loop_Parameter_Specification then
+         Set_Loop_Parameter_Specification
+           (Iter_Scheme_Node, Spec);
+      else
+         Set_Iterator_Specification (Iter_Scheme_Node, Spec);
+      end if;
 
       --  The following is a special test so that a miswritten for loop such
       --  as "loop for I in 1..10;" is handled nicely, without making an extra
@@ -1686,11 +1697,27 @@ package body Ch5 is
       Scan_State : Saved_Scan_State;
 
    begin
-      Loop_Param_Specification_Node :=
-        New_Node (N_Loop_Parameter_Specification, Token_Ptr);
 
       Save_Scan_State (Scan_State);
       ID_Node := P_Defining_Identifier (C_In);
+
+      --  If the next token is OF it indicates the Ada2012 iterator. If the
+      --  next token is a colon, the iterator includes a subtype indication
+      --  for the bound variable of the iteration. Otherwise we parse the
+      --  construct as a loop parameter specification. Note that the form:
+      --  "for A in B" is ambiguous, and must be resolved semantically: if B
+      --  is a discrete subtype this is a loop specification, but if it is an
+      --  expression it is an iterator specification. Ambiguity is resolved
+      --  during analysis of the loop parameter specification.
+
+      if Token = Tok_Of
+        or else Token = Tok_Colon
+      then
+         return P_Iterator_Specification (ID_Node);
+      end if;
+
+      Loop_Param_Specification_Node :=
+        New_Node (N_Loop_Parameter_Specification, Token_Ptr);
       Set_Defining_Identifier (Loop_Param_Specification_Node, ID_Node);
 
       if Token = Tok_Left_Paren then
@@ -1719,6 +1746,40 @@ package body Ch5 is
       when Error_Resync =>
          return Error;
    end P_Loop_Parameter_Specification;
+
+   ----------------------------------
+   -- 5.5.1 Iterator_Specification --
+   ----------------------------------
+
+   function P_Iterator_Specification (Def_Id : Node_Id) return Node_Id is
+      Node1 : Node_Id;
+   begin
+      Node1 :=  New_Node (N_Iterator_Specification, Token_Ptr);
+      Set_Defining_Identifier (Node1, Def_Id);
+
+      if Token = Tok_Colon then
+         Scan;  --  past :
+         Set_Subtype_Indication (Node1, P_Subtype_Indication);
+      end if;
+
+      if Token = Tok_Of then
+         Set_Of_Present (Node1);
+         Scan;  --  past OF
+      elsif Token = Tok_In then
+         Scan;  --  past IN
+      else
+         return Error;
+      end if;
+
+      if Token = Tok_Reverse then
+         Scan; -- past REVERSE
+         Set_Reverse_Present (Node1, True);
+      end if;
+
+      Set_Name (Node1, P_Name);
+
+      return Node1;
+   end P_Iterator_Specification;
 
    --------------------------
    -- 5.6  Block Statement --

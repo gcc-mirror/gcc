@@ -1734,6 +1734,10 @@ package body Sem_Ch5 is
    --  Start of processing for Analyze_Iteration_Scheme
 
    begin
+      if Analyzed (N) then
+         return;
+      end if;
+
       --  For an infinite loop, there is no iteration scheme
 
       if No (N) then
@@ -1752,6 +1756,9 @@ package body Sem_Ch5 is
                Check_Unset_Reference (Cond);
                Set_Current_Value_Condition (N);
                return;
+
+            elsif Present (Iterator_Specification (N)) then
+               Analyze_Iterator_Specification (Iterator_Specification (N));
 
             --  Else we have a FOR loop
 
@@ -1795,6 +1802,31 @@ package body Sem_Ch5 is
                      Process_Bounds (DS);
                   else
                      Analyze (DS);
+
+                     if Nkind (DS) = N_Function_Call
+                       or else
+                         (Is_Entity_Name (DS)
+                            and then not Is_Type (Entity (DS)))
+                     then
+
+                        --  this is an iterator specification. Rewrite as
+                        --  such and analyze.
+
+                        declare
+                           I_Spec : constant Node_Id :=
+                             Make_Iterator_Specification (Sloc (LP),
+                               Defining_Identifier => Relocate_Node (Id),
+                               Name => Relocate_Node (DS),
+                               Subtype_Indication => Empty,
+                               Reverse_Present => Reverse_Present (LP));
+
+                        begin
+                           Set_Iterator_Specification (N, I_Spec);
+                           Set_Loop_Parameter_Specification (N, Empty);
+                           Analyze_Iterator_Specification (I_Spec);
+                           return;
+                        end;
+                     end if;
                   end if;
 
                   if DS = Error then
@@ -1937,6 +1969,73 @@ package body Sem_Ch5 is
          end;
       end if;
    end Analyze_Iteration_Scheme;
+
+   -------------------------------------
+   --  Analyze_Iterator_Specification --
+   -------------------------------------
+
+   procedure Analyze_Iterator_Specification (N : Node_Id) is
+      Def_Id    : constant Node_Id := Defining_Identifier (N);
+      Subt      : constant Node_Id := Subtype_Indication (N);
+      Container : constant Node_Id := Name (N);
+
+      Ent       : Entity_Id;
+      Typ       : Entity_Id;
+
+   begin
+      Enter_Name (Def_Id);
+      Set_Ekind (Def_Id, E_Variable);
+
+      if Present (Subt) then
+         Analyze (Subt);
+      end if;
+
+      Analyze_And_Resolve (Container);
+      Typ := Etype (Container);
+
+      if Is_Array_Type (Typ) then
+         if Of_Present (N) then
+            Set_Etype (Def_Id, Component_Type (Typ));
+
+         else
+            Set_Etype (Def_Id, Etype (First_Index (Typ)));
+         end if;
+
+      else
+         --  Iteration over a container.
+
+         Set_Ekind (Def_Id, E_Loop_Parameter);
+         if Of_Present (N) then
+
+            --  Find the Element_Type in the package instance that defines
+            --  the container type.
+
+            Ent := First_Entity (Scope (Typ));
+            while Present (Ent) loop
+               if Chars (Ent) = Name_Element_Type then
+                  Set_Etype (Def_Id, Ent);
+                  exit;
+               end if;
+
+               Next_Entity (Ent);
+            end loop;
+
+         else
+
+            --  Find the Cursor type in similar fashion.
+
+            Ent := First_Entity (Scope (Typ));
+            while Present (Ent) loop
+               if Chars (Ent) = Name_Cursor then
+                  Set_Etype (Def_Id, Ent);
+                  exit;
+               end if;
+
+               Next_Entity (Ent);
+            end loop;
+         end if;
+      end if;
+   end Analyze_Iterator_Specification;
 
    -------------------
    -- Analyze_Label --
