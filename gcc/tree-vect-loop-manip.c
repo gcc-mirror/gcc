@@ -1993,8 +1993,11 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters,
   else
     {
       gimple_seq new_stmts = NULL;
+      bool negative = tree_int_cst_compare (DR_STEP (dr), size_zero_node) < 0;
+      tree offset = negative
+	  ? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1) : NULL_TREE;
       tree start_addr = vect_create_addr_base_for_vector_ref (dr_stmt,
-						&new_stmts, NULL_TREE, loop);
+						&new_stmts, offset, loop);
       tree ptr_type = TREE_TYPE (start_addr);
       tree size = TYPE_SIZE (ptr_type);
       tree type = lang_hooks.types.type_for_size (tree_low_cst (size, 1), 1);
@@ -2019,7 +2022,10 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters,
         fold_build2 (RSHIFT_EXPR, type, byte_misalign, elem_size_log);
 
       /* Create:  (niters_type) (nelements - elem_misalign)&(nelements - 1)  */
-      iters = fold_build2 (MINUS_EXPR, type, nelements_tree, elem_misalign);
+      if (negative)
+	iters = fold_build2 (MINUS_EXPR, type, elem_misalign, nelements_tree);
+      else
+	iters = fold_build2 (MINUS_EXPR, type, nelements_tree, elem_misalign);
       iters = fold_build2 (BIT_AND_EXPR, type, iters, nelements_minus_1);
       iters = fold_convert (niters_type, iters);
     }
@@ -2236,11 +2242,17 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
       tree addr_tmp, addr_tmp_name;
       tree or_tmp, new_or_tmp_name;
       gimple addr_stmt, or_stmt;
+      stmt_vec_info stmt_vinfo = vinfo_for_stmt (ref_stmt);
+      tree vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
+      bool negative = tree_int_cst_compare
+	(DR_STEP (STMT_VINFO_DATA_REF (stmt_vinfo)), size_zero_node) < 0;
+      tree offset = negative
+	? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1) : NULL_TREE;
 
       /* create: addr_tmp = (int)(address_of_first_vector) */
       addr_base =
 	vect_create_addr_base_for_vector_ref (ref_stmt, &new_stmt_list,
-					      NULL_TREE, loop);
+					      offset, loop);
       if (new_stmt_list != NULL)
 	gimple_seq_add_seq (cond_expr_stmt_list, new_stmt_list);
 
@@ -2387,6 +2399,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
       tree addr_base_a, addr_base_b;
       tree segment_length_a, segment_length_b;
       gimple stmt_a, stmt_b;
+      tree seg_a_min, seg_a_max, seg_b_min, seg_b_max;
 
       dr_a = DDR_A (ddr);
       stmt_a = DR_STMT (DDR_A (ddr));
@@ -2425,19 +2438,22 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
 	  print_generic_expr (vect_dump, DR_REF (dr_b), TDF_SLIM);
 	}
 
+      seg_a_min = addr_base_a;
+      seg_a_max = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (addr_base_a), 
+			       addr_base_a, segment_length_a);
+      if (tree_int_cst_compare (DR_STEP (dr_a), size_zero_node) < 0)
+	seg_a_min = seg_a_max, seg_a_max = addr_base_a;
+
+      seg_b_min = addr_base_b;
+      seg_b_max = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (addr_base_b),
+			       addr_base_b, segment_length_b);
+      if (tree_int_cst_compare (DR_STEP (dr_b), size_zero_node) < 0)
+	seg_b_min = seg_b_max, seg_b_max = addr_base_b;
 
       part_cond_expr =
       	fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
-	  fold_build2 (LT_EXPR, boolean_type_node,
-	    fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (addr_base_a),
-	      addr_base_a,
-	      segment_length_a),
-	    addr_base_b),
-	  fold_build2 (LT_EXPR, boolean_type_node,
-	    fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (addr_base_b),
-	      addr_base_b,
-	      segment_length_b),
-	    addr_base_a));
+	  fold_build2 (LT_EXPR, boolean_type_node, seg_a_max, seg_b_min),
+	  fold_build2 (LT_EXPR, boolean_type_node, seg_b_max, seg_a_min));
 
       if (*cond_expr)
 	*cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,

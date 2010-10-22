@@ -1016,10 +1016,11 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
   if (known_alignment_for_access_p (dr)
       && known_alignment_for_access_p (dr_peel))
     {
+      bool negative = tree_int_cst_compare (DR_STEP (dr), size_zero_node) < 0;
       int misal = DR_MISALIGNMENT (dr);
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-      misal += npeel * dr_size;
-      misal %= GET_MODE_SIZE (TYPE_MODE (vectype));
+      misal += negative ? -npeel * dr_size : npeel * dr_size;
+      misal &= GET_MODE_SIZE (TYPE_MODE (vectype)) - 1;
       SET_DR_MISALIGNMENT (dr, misal);
       return;
     }
@@ -1503,6 +1504,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           if (known_alignment_for_access_p (dr))
             {
               unsigned int npeel_tmp;
+	      bool negative = tree_int_cst_compare (DR_STEP (dr),
+						    size_zero_node) < 0;
 
               /* Save info about DR in the hash table.  */
               if (!LOOP_VINFO_PEELING_HTAB (loop_vinfo))
@@ -1514,7 +1517,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
               nelements = TYPE_VECTOR_SUBPARTS (vectype);
               mis = DR_MISALIGNMENT (dr) / GET_MODE_SIZE (TYPE_MODE (
                                                 TREE_TYPE (DR_REF (dr))));
-              npeel_tmp = (nelements - mis) % vf;
+              npeel_tmp = (negative
+			   ? (mis - nelements) : (nelements - mis)) & (vf - 1);
 
               /* For multiple types, it is possible that the bigger type access
                  will have more than one peeling option.  E.g., a loop with two
@@ -1707,6 +1711,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
       if (known_alignment_for_access_p (dr0))
         {
+	  bool negative = tree_int_cst_compare (DR_STEP (dr0),
+						size_zero_node) < 0;
           if (!npeel)
             {
               /* Since it's known at compile time, compute the number of
@@ -1716,7 +1722,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                  count.  */
               mis = DR_MISALIGNMENT (dr0);
               mis /= GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr0))));
-              npeel = nelements - mis;
+              npeel = (negative ? mis - nelements : nelements - mis) & (vf - 1);
             }
 
 	  /* For interleaved data access every iteration accesses all the
