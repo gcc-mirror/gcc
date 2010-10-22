@@ -181,6 +181,24 @@ package Sem_Aux is
    --  composite containing a limited component, or a subtype of any of
    --  these types).
 
+   function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id;
+   --  Given a subtype Typ, this function finds out the nearest ancestor from
+   --  which constraints and predicates are inherited. There is no simple link
+   --  for doing this, consider:
+   --
+   --     subtype R is Integer range 1 .. 10;
+   --     type T is new R;
+   --
+   --  In this case the nearest ancestor is R, but the Etype of T'Base will
+   --  point to R'Base, so we have to go rummaging in the declarations to get
+   --  this information. It is used for making sure we freeze this before we
+   --  freeze Typ, and also for retrieving inherited predicate information.
+   --  For the case of base types or first subtypes, there is no useful entity
+   --  to return, so Empty is returned.
+   --
+   --  Note: this is similar to Ancestor_Subtype except that it also deals
+   --  with the case of derived types.
+
    function Nearest_Dynamic_Scope (Ent : Entity_Id) return Entity_Id;
    --  This is similar to Enclosing_Dynamic_Scope except that if Ent is itself
    --  a dynamic scope, then it is returned. Otherwise the result is the same

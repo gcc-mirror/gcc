@@ -1,3 +1,14 @@
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): Remove attempt at optimization
+	when subtype is the same, caused legitimate checks to be missed.
+	* exp_ch13.adb (Build_Predicate_Function): Use Nearest_Ancestor to get
+	inheritance from right entity.
+	* freeze.adb (Freeze_Entity): Use Nearest_Ancestor to freeze in the
+	derived type case if the ancestor type has predicates.
+	* sem_aux.ads, sem_aux.adb (Nearest_Ancestor): New function.
+	* sem_prag.adb (Check_Enabled): Minor code reorganization.
+
 2010-10-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/utils.c, gcc-interface/gigi.h: Minor reformatting.

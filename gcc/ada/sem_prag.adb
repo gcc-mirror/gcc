@@ -13696,27 +13696,39 @@ package body Sem_Prag is
       PP : Node_Id;
 
    begin
+      --  Loop through entries in check policy list
+
       PP := Opt.Check_Policy_List;
       loop
+         --  If there are no specific entries that matched, then we let the
+         --  setting of assertions govern. Note that this provides the needed
+         --  compatibility with the RM for the cases of assertion, invariant,
+         --  precondition, predicate, and postcondition.
+
          if No (PP) then
             return Assertions_Enabled;
 
-         elsif
-           Nam = Chars (Expression (First (Pragma_Argument_Associations (PP))))
-         then
-            case
-              Chars (Expression (Last (Pragma_Argument_Associations (PP))))
-            is
-            when Name_On | Name_Check =>
-               return True;
-            when Name_Off | Name_Ignore =>
-               return False;
-            when others =>
-               raise Program_Error;
-            end case;
+         --  Here we have an entry see if it matches
 
          else
-            PP := Next_Pragma (PP);
+            declare
+               PPA : constant List_Id := Pragma_Argument_Associations (PP);
+
+            begin
+               if Nam = Chars (Get_Pragma_Arg (First (PPA))) then
+                  case (Chars (Get_Pragma_Arg (Last (PPA)))) is
+                     when Name_On | Name_Check =>
+                        return True;
+                     when Name_Off | Name_Ignore =>
+                        return False;
+                     when others =>
+                        raise Program_Error;
+                  end case;
+
+               else
+                  PP := Next_Pragma (PP);
+               end if;
+            end;
          end if;
       end loop;
    end Check_Enabled;

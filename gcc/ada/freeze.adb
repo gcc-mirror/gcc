@@ -3096,18 +3096,31 @@ package body Freeze is
             end if;
 
             --  If ancestor subtype present, freeze that first. Note that this
-            --  will also get the base type frozen.
+            --  will also get the base type frozen. Need RM reference ???
 
             Atype := Ancestor_Subtype (E);
 
             if Present (Atype) then
                Freeze_And_Append (Atype, N, Result);
 
-            --  Otherwise freeze the base type of the entity before freezing
-            --  the entity itself (RM 13.14(15)).
+            --  No ancestor subtype present
 
-            elsif E /= Base_Type (E) then
-               Freeze_And_Append (Base_Type (E), N, Result);
+            else
+               --  See if we have a nearest ancestor that has a predicate.
+               --  That catches the case of derived type with a predicate.
+               --  Need RM reference here ???
+
+               Atype := Nearest_Ancestor (E);
+
+               if Present (Atype) and then Has_Predicates (Atype) then
+                  Freeze_And_Append (Atype, N, Result);
+               end if;
+
+               --  Freeze base type before freezing the entity (RM 13.14(15))
+
+               if E /= Base_Type (E) then
+                  Freeze_And_Append (Base_Type (E), N, Result);
+               end if;
             end if;
 
          --  For a derived type, freeze its parent type first (RM 13.14(15))
