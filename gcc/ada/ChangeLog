@@ -1,3 +1,7 @@
+2010-10-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/utils.c, gcc-interface/gigi.h: Minor reformatting.
+
 2010-10-22  Thomas Quinot  <quinot@adacore.com>
 
 	* einfo.ads (Declaration_Node): Clarify documentation, in particular
