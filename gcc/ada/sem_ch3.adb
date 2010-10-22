@@ -5030,33 +5030,35 @@ package body Sem_Ch3 is
          end loop;
       end if;
 
-      if Present (Old_Disc) then
+      if Present (Old_Disc) and then Expander_Active then
 
          --  The new type has fewer discriminants, so we need to create a new
          --  corresponding record, which is derived from the corresponding
          --  record of the parent, and has a stored constraint that captures
          --  the values of the discriminant constraints.
+         --  The corresponding record is needed only if expander is active
+         --  and code generation is enabled.
 
-         --  The type declaration for the derived corresponding record has
-         --  the same discriminant part and constraints as the current
-         --  declaration. Copy the unanalyzed tree to build declaration.
+         --  The type declaration for the derived corresponding record has the
+         --  same discriminant part and constraints as the current declaration.
+         --  Copy the unanalyzed tree to build declaration.
 
          Corr_Decl_Needed := True;
          New_N := Copy_Separate_Tree (N);
 
          Corr_Decl :=
            Make_Full_Type_Declaration (Loc,
-             Defining_Identifier => Corr_Record,
+             Defining_Identifier         => Corr_Record,
              Discriminant_Specifications =>
                 Discriminant_Specifications (New_N),
-             Type_Definition =>
+             Type_Definition             =>
                Make_Derived_Type_Definition (Loc,
                  Subtype_Indication =>
                    Make_Subtype_Indication (Loc,
                      Subtype_Mark =>
                         New_Occurrence_Of
                           (Corresponding_Record_Type (Parent_Type), Loc),
-                     Constraint =>
+                     Constraint   =>
                        Constraint
                          (Subtype_Indication (Type_Definition (New_N))))));
       end if;

@@ -1,3 +1,17 @@
+2010-10-22  Javier Miranda  <miranda@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate.Add): If the type of the
+	aggregate has a non standard representation the attributes 'Val and
+	'Pos expand into function calls and the resulting expression is
+	considered non-safe for reevaluation by the backend. Relocate it into
+	a constant temporary to indicate to the backend that it is side
+	effects free.
+
+2010-10-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Concurrent_Derived_Type): Create declaration for
+	derived corresponding record type only when expansion is enabled.
+
 2010-10-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_case.adb, sem_attr.adb (Bad_Predicated_Subtype_Use): Change order

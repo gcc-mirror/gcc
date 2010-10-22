@@ -891,6 +891,7 @@ package body Sem_Aggr is
    -----------------------
 
    procedure Resolve_Aggregate (N : Node_Id; Typ : Entity_Id) is
+      Loc   : constant Source_Ptr := Sloc (N);
       Pkind : constant Node_Kind := Nkind (Parent (N));
 
       Aggr_Subtyp : Entity_Id;
@@ -978,8 +979,7 @@ package body Sem_Aggr is
                      Next (Expr);
                   end loop;
 
-                  Rewrite (N,
-                    Make_String_Literal (Sloc (N), End_String));
+                  Rewrite (N, Make_String_Literal (Loc, End_String));
 
                   Analyze_And_Resolve (N, Typ);
                   return;
@@ -999,16 +999,16 @@ package body Sem_Aggr is
             --  subtype for the final aggregate.
 
          begin
-            --  In the following we determine whether an others choice is
+            --  In the following we determine whether an OTHERS choice is
             --  allowed inside the array aggregate. The test checks the context
             --  in which the array aggregate occurs. If the context does not
-            --  permit it, or the aggregate type is unconstrained, an others
+            --  permit it, or the aggregate type is unconstrained, an OTHERS
             --  choice is not allowed.
 
             --  If expansion is disabled (generic context, or semantics-only
             --  mode) actual subtypes cannot be constructed, and the type of an
             --  object may be its unconstrained nominal type. However, if the
-            --  context is an assignment, we assume that "others" is allowed,
+            --  context is an assignment, we assume that OTHERS is allowed,
             --  because the target of the assignment will have a constrained
             --  subtype when fully compiled.
 
@@ -1054,6 +1054,7 @@ package body Sem_Aggr is
                     Index_Constr   => First_Index (Typ),
                     Component_Typ  => Component_Type (Typ),
                     Others_Allowed => True);
+
             else
                Aggr_Resolved :=
                  Resolve_Array_Aggregate
@@ -1092,7 +1093,7 @@ package body Sem_Aggr is
       if Raises_Constraint_Error (N) then
          Aggr_Subtyp := Etype (N);
          Rewrite (N,
-           Make_Raise_Constraint_Error (Sloc (N),
+           Make_Raise_Constraint_Error (Loc,
              Reason => CE_Range_Check_Failed));
          Set_Raises_Constraint_Error (N);
          Set_Etype (N, Aggr_Subtyp);
@@ -1133,10 +1134,10 @@ package body Sem_Aggr is
       --  analyzed expression.
 
       procedure Check_Bound (BH : Node_Id; AH : in out Node_Id);
-      --  Checks that AH (the upper bound of an array aggregate) is <= BH
-      --  (the upper bound of the index base type). If the check fails a
-      --  warning is emitted, the Raises_Constraint_Error flag of N is set,
-      --  and AH is replaced with a duplicate of BH.
+      --  Checks that AH (the upper bound of an array aggregate) is less than
+      --  or equal to BH (the upper bound of the index base type). If the check
+      --  fails, a warning is emitted, the Raises_Constraint_Error flag of N is
+      --  set, and AH is replaced with a duplicate of BH.
 
       procedure Check_Bounds (L, H : Node_Id; AL, AH : Node_Id);
       --  Checks that range AL .. AH is compatible with range L .. H. Emits a
@@ -1160,7 +1161,7 @@ package body Sem_Aggr is
       --  Resolves aggregate expression Expr. Returns False if resolution
       --  fails. If Single_Elmt is set to False, the expression Expr may be
       --  used to initialize several array aggregate elements (this can happen
-      --  for discrete choices such as "L .. H => Expr" or the others choice).
+      --  for discrete choices such as "L .. H => Expr" or the OTHERS choice).
       --  In this event we do not resolve Expr unless expansion is disabled.
       --  To know why, see the DELAYED COMPONENT RESOLUTION note above.
 
@@ -1211,8 +1212,8 @@ package body Sem_Aggr is
          if not Is_Enumeration_Type (Index_Base) then
             Expr :=
               Make_Op_Add (Loc,
-                           Left_Opnd  => Duplicate_Subexpr (To),
-                           Right_Opnd => Make_Integer_Literal (Loc, Val));
+                Left_Opnd  => Duplicate_Subexpr (To),
+                Right_Opnd => Make_Integer_Literal (Loc, Val));
 
          --  If we are dealing with enumeration return
          --    Index_Typ'Val (Index_Typ'Pos (To) + Val)
@@ -1236,6 +1237,30 @@ package body Sem_Aggr is
                  Prefix         => New_Reference_To (Index_Typ, Loc),
                  Attribute_Name => Name_Val,
                  Expressions    => New_List (Expr_Pos));
+
+            --  If the index type has a non standard representation, the
+            --  attributes 'Val and 'Pos expand into function calls and the
+            --  resulting expression is considered non-safe for reevaluation
+            --  by the backend. Relocate it into a constant temporary in order
+            --  to make it safe for reevaluation.
+
+            if Has_Non_Standard_Rep (Etype (N)) then
+               declare
+                  Def_Id : Entity_Id;
+
+               begin
+                  Def_Id := Make_Temporary (Loc, 'R', Expr);
+                  Set_Etype (Def_Id, Index_Typ);
+                  Insert_Action (N,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Def_Id,
+                      Object_Definition   => New_Reference_To (Index_Typ, Loc),
+                      Constant_Present    => True,
+                      Expression          => Relocate_Node (Expr)));
+
+                  Expr := New_Reference_To (Def_Id, Loc);
+               end;
+            end if;
          end if;
 
          return Expr;
