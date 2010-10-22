@@ -1,3 +1,9 @@
+2010-10-22  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/45946
+	* gcc.target/i386/pr45946.c: New test.
+
 2010-10-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
@@ -83,7 +89,8 @@
 	2010-08-18  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR debug/42487
-	* lib/target-supports.exp (check_effective_target_function_sections): New.
+	* lib/target-supports.exp (check_effective_target_function_sections):
+	New.
 	* gcc.dg/debug/dwarf2/aranges-fnsec-1.c: Check that the target supports
 	function sections before proceding.
 
@@ -267,7 +274,7 @@
 
 	PR middle-end/40386
 	* gcc.c-torture/execute/{pr40386.c,pr40386.x}: New testcase.
-	
+
 2010-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/45595
@@ -317,20 +324,20 @@
 
 	Backport from mainline
 	2010-08-19  Ian Bolton  <ian.bolton@arm.com>
-	
+
 	PR target/45070
 	* gcc.c-torture/execute/pr45070.c: New.
 
 	2010-08-19  Ian Bolton  <ian.bolton@arm.com>
 
 	* g++.dg/pr44328.C: New test.
-	
+
 	2010-08-07  Marcus Shawcroft <marcus.shawcroft@arm.com>
 
 	* lib/target-supports.exp: (check_effective_target_sync_int_long):
 	Add arm*-*-linux-gnueabi.
 	(check_effective_target_sync_char_short): Likewise.
-	
+
 2010-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/45458
@@ -399,8 +406,8 @@
 
 2010-08-16  Changpeng Fang  <changpeng.fang@amd.com>
 
-        PR tree-optimization/45241
-        * gcc.dg/vect/no-tree-pre-pr45241.c: New test.
+	PR tree-optimization/45241
+	* gcc.dg/vect/no-tree-pre-pr45241.c: New test.
 
 2010-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
