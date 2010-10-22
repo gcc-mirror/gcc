@@ -1,3 +1,7 @@
+2010-10-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* exgettext: Only handle Warn when followed by '('.
+
 2010-10-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* vi.po: Update.
