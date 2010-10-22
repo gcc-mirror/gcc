@@ -35,7 +35,7 @@ g (void)
   f().c[0];
   0[f().c];
   /* Various invalid cases.  */
-  c[c]; /* { dg-error "subscripted value is neither array nor pointer" } */
+  c[c]; /* { dg-error "subscripted value is neither array nor pointer nor vector" } */
   p[1.0]; /* { dg-error "array subscript is not an integer" } */
   1.0[a]; /* { dg-error "array subscript is not an integer" } */
   fp[0]; /* { dg-error "subscripted value is pointer to function" } */

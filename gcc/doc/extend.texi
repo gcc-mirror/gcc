@@ -6310,6 +6310,12 @@ minus or complement operators on a vector type is a vector whose
 elements are the negative or complemented values of the corresponding
 elements in the operand.
 
+In C vectors can be subscripted as if the vector were an array with
+the same number of elements and base type.  Out of bound accesses
+invoke undefined behavior at runtime.  Warnings for out of bound
+accesses for vector subscription can be enabled with
+@option{-Warray-bounds}.
+
 You can declare variables and use them in function calls and returns, as
 well as in assignments and some casts.  You can specify a vector type as
 a return type for a function.  Vector types can also be used as function

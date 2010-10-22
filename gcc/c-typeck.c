@@ -2305,6 +2305,9 @@ build_indirect_ref (location_t loc, tree ptr, ref_operator errstring)
    arrays that are not lvalues (for example, members of structures returned
    by functions).
 
+   For vector types, allow vector[i] but not i[vector], and create
+   *(((type*)&vectortype) + i) for the expression.
+
    LOC is the location to use for the returned expression.  */
 
 tree
@@ -2317,13 +2320,17 @@ build_array_ref (location_t loc, tree array, tree index)
     return error_mark_node;
 
   if (TREE_CODE (TREE_TYPE (array)) != ARRAY_TYPE
-      && TREE_CODE (TREE_TYPE (array)) != POINTER_TYPE)
+      && TREE_CODE (TREE_TYPE (array)) != POINTER_TYPE
+      /* Allow vector[index] but not index[vector].  */
+      && TREE_CODE (TREE_TYPE (array)) != VECTOR_TYPE)
     {
       tree temp;
       if (TREE_CODE (TREE_TYPE (index)) != ARRAY_TYPE
 	  && TREE_CODE (TREE_TYPE (index)) != POINTER_TYPE)
 	{
-	  error_at (loc, "subscripted value is neither array nor pointer");
+          error_at (loc, 
+            "subscripted value is neither array nor pointer nor vector");
+
 	  return error_mark_node;
 	}
       temp = array;
@@ -2353,6 +2360,27 @@ build_array_ref (location_t loc, tree array, tree index)
   index = default_conversion (index);
 
   gcc_assert (TREE_CODE (TREE_TYPE (index)) == INTEGER_TYPE);
+  
+  /* For vector[index], convert the vector to a 
+     pointer of the underlying type.  */
+  if (TREE_CODE (TREE_TYPE (array)) == VECTOR_TYPE)
+    {
+      tree type = TREE_TYPE (array);
+      tree type1;
+
+      if (TREE_CODE (index) == INTEGER_CST)
+        if (!host_integerp (index, 1) 
+            || ((unsigned HOST_WIDE_INT) tree_low_cst (index, 1) 
+               >= TYPE_VECTOR_SUBPARTS (TREE_TYPE (array))))
+          warning_at (loc, OPT_Warray_bounds, "index value is out of bound");
+     
+      c_common_mark_addressable_vec (array);
+      type = build_qualified_type (TREE_TYPE (type), TYPE_QUALS (type));
+      type = build_pointer_type (type);
+      type1 = build_pointer_type (TREE_TYPE (array));
+      array = build1 (ADDR_EXPR, type1, array);
+      array = convert (type, array);
+    }
 
   if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
     {
