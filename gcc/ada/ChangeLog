@@ -1,3 +1,23 @@
+2010-10-22  Geert Bosch  <bosch@adacore.com>
+
+	* cstand.adb (Build_Float_Type): Set Float_Rep according to platform.
+	* einfo.ads (Float_Rep): New attribute.
+	(Float_Rep_Kind): Move from body. Add comments.
+	* einfo.adb (Float_Rep_Kind): Move to spec
+	(Float_Rep): Now a real field instead of local function.
+	(Set_Float_Rep): New procedure to set floating point representation
+	(Set_Vax_Float): Remove.
+	(Write_Entity_Flags): Remove Vax_Float flag.
+	(Write_Field10_Name): Add E_Floating_Point_Type case for Float_Rep.
+	* exp_attr.adb (Attribute_Valid): Use case statement for representation
+	specific processing.
+	* sem_ch3.adb (Build_Derived_Numeric_Type,
+	Floating_Point_Type_Declaration): Set Float_Rep instead of Vax_Float
+	attribute.
+	* sem_util.ads, sem_util.adb (Is_AAMP_Float): Remove.
+	* sem_vfpt.adb (Set_D_Float, Set_F_Float, Set_G_Float, Set_IEEE_Long,
+	Set_IEEE_Short): Set Float_Rep instead of Vax_Float attribute.
+
 2010-10-22  Robert Dewar  <dewar@adacore.com>
 
 	* sprint.adb: Minor reformatting.

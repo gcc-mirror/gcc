@@ -37,12 +37,11 @@ package body Sem_VFpt is
 
    procedure Set_D_Float (E : Entity_Id) is
       VAXDF_Digits : constant := 9;
-
    begin
       Init_Size         (Base_Type (E), 64);
       Init_Alignment    (Base_Type (E));
       Init_Digits_Value (Base_Type (E), VAXDF_Digits);
-      Set_Vax_Float     (Base_Type (E), True);
+      Set_Float_Rep     (Base_Type (E), VAX_Native);
       Set_Float_Bounds  (Base_Type (E));
 
       Init_Size         (E, 64);
@@ -57,12 +56,11 @@ package body Sem_VFpt is
 
    procedure Set_F_Float (E : Entity_Id) is
       VAXFF_Digits : constant := 6;
-
    begin
       Init_Size         (Base_Type (E), 32);
       Init_Alignment    (Base_Type (E));
       Init_Digits_Value (Base_Type (E), VAXFF_Digits);
-      Set_Vax_Float     (Base_Type (E), True);
+      Set_Float_Rep     (Base_Type (E), VAX_Native);
       Set_Float_Bounds  (Base_Type (E));
 
       Init_Size         (E, 32);
@@ -77,12 +75,11 @@ package body Sem_VFpt is
 
    procedure Set_G_Float (E : Entity_Id) is
       VAXGF_Digits : constant := 15;
-
    begin
       Init_Size         (Base_Type (E), 64);
       Init_Alignment    (Base_Type (E));
       Init_Digits_Value (Base_Type (E), VAXGF_Digits);
-      Set_Vax_Float     (Base_Type (E), True);
+      Set_Float_Rep     (Base_Type (E), VAX_Native);
       Set_Float_Bounds  (Base_Type (E));
 
       Init_Size         (E, 64);
@@ -97,12 +94,11 @@ package body Sem_VFpt is
 
    procedure Set_IEEE_Long (E : Entity_Id) is
       IEEEL_Digits : constant := 15;
-
    begin
       Init_Size         (Base_Type (E), 64);
       Init_Alignment    (Base_Type (E));
       Init_Digits_Value (Base_Type (E), IEEEL_Digits);
-      Set_Vax_Float     (Base_Type (E), False);
+      Set_Float_Rep     (Base_Type (E), IEEE_Binary);
       Set_Float_Bounds  (Base_Type (E));
 
       Init_Size         (E, 64);
@@ -117,12 +113,11 @@ package body Sem_VFpt is
 
    procedure Set_IEEE_Short (E : Entity_Id) is
       IEEES_Digits : constant := 6;
-
    begin
       Init_Size         (Base_Type (E), 32);
       Init_Alignment    (Base_Type (E));
       Init_Digits_Value (Base_Type (E), IEEES_Digits);
-      Set_Vax_Float     (Base_Type (E), False);
+      Set_Float_Rep     (Base_Type (E), IEEE_Binary);
       Set_Float_Bounds  (Base_Type (E));
 
       Init_Size         (E, 32);
