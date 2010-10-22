@@ -1,3 +1,32 @@
+2010-10-22  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c-pragma.c (m32c_register_pragmas): Register the
+	__far address space.
+	* config/m32c/m32c.h (ADDR_SPACE_FAR): New.  Add support for
+	"__far" address space for R8C and M16C processor variants.
+	* config/m32c/m32c.c (m32c_addr_space_legitimate_address_p): New.
+	(far_addr_space_p): New.
+	(encode_pattern_1): Add sign and zero extend support.
+	(m32c_hard_regno_nregs_1): Large pointers in A16 mode are SImode.
+	(m32c_extra_constraint_p2): Add SF constraint.
+	(m32c_legitimate_address_p): Support __far addresses.
+	(m32c_addr_space_pointer_mode): New.
+	(m32c_addr_space_address_mode): New.
+	(m32c_addr_space_legitimate_address_p): New.
+	(m32c_addr_space_legitimize_address): New.
+	(m32c_addr_space_subset_p): New.
+	(m32c_addr_space_convert): New.
+	(conversions): Add __far operand patterns.
+	(m32c_prepare_move): Force constants into registers for __far
+	moves.
+	(m32c_split_move): __far moves are always split.
+	* config/m32c/addsub.md (addsi3_1): Support SImode symbols.
+	* config/m32c/mov.md (mov<mode>_far_op1): New.
+	(mov<mode>_far_op2): New.
+	(movqi_op): Add __far (SF) support.
+	(movhi_op): Likewise.
+	(movsi_splittable): Split A1A0 also.
+
 2010-10-22  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
 	Andrew Pinski <pinskia@gmail.com>
 

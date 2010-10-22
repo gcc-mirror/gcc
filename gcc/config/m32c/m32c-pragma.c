@@ -131,4 +131,13 @@ m32c_register_pragmas (void)
   c_register_pragma ("GCC", "memregs", m32c_pragma_memregs);
   c_register_pragma (NULL, "ADDRESS", m32c_pragma_address);
   c_register_pragma (NULL, "address", m32c_pragma_address);
+
+  /* R8C and M16C have 16-bit pointers in a 20-bit address zpace.
+     M32C has 24-bit pointers in a 24-bit address space, so does not
+     need far pointers, but we accept the qualifier anyway, as a
+     no-op.  */
+  if (TARGET_A16)
+    c_register_addr_space ("__far", ADDR_SPACE_FAR);
+  else
+    c_register_addr_space ("__far", ADDR_SPACE_GENERIC);
 }
