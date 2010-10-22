@@ -1,5 +1,9 @@
 2010-10-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.pot: Regenerate.
+
+2010-10-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* EXCLUDES: Add read-md.c.
 
 2010-10-22  Joseph Myers  <joseph@codesourcery.com>
