@@ -152,7 +152,7 @@ package body Exp_Ch13 is
             if Opt.List_Inherited_Aspects then
                Error_Msg_Sloc := Sloc (Predicate_Function (T));
                Error_Msg_Node_2 := T;
-               Error_Msg_N ("?info: & inherits predicate from & at #", Typ);
+               Error_Msg_N ("?info: & inherits predicate from & #", Typ);
             end if;
          end if;
       end Add_Call;
@@ -272,21 +272,13 @@ package body Exp_Ch13 is
 
       Add_Predicates;
 
-      --  Deal with ancestor subtype and parent type
+      --  Add predicates for ancestor if present
 
       declare
-         Atyp : constant Entity_Id := Ancestor_Subtype (Typ);
-
+         Atyp : constant Entity_Id := Nearest_Ancestor (Typ);
       begin
-         --  If ancestor subtype present, add its predicates
-
          if Present (Atyp) then
             Add_Call (Atyp);
-
-         --  Else if this is derived, add predicates of parent type
-
-         elsif Is_Derived_Type (Typ) then
-            Add_Call (Etype (Base_Type (Typ)));
          end if;
       end;
 

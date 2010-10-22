@@ -1759,9 +1759,7 @@ package body Checks is
 
    procedure Apply_Predicate_Check (N : Node_Id; Typ : Entity_Id) is
    begin
-      if Etype (N) /= Typ
-        and then Present (Predicate_Function (Typ))
-      then
+      if Present (Predicate_Function (Typ)) then
          Insert_Action (N,
            Make_Predicate_Check (Typ, Duplicate_Subexpr (N)));
       end if;

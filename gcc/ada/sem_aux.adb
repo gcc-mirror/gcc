@@ -749,6 +749,46 @@ package body Sem_Aux is
       end if;
    end Is_Limited_Type;
 
+   ----------------------
+   -- Nearest_Ancestor --
+   ----------------------
+
+   function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id is
+         D : constant Node_Id := Declaration_Node (Typ);
+
+   begin
+      --  If we have a subtype declaration, get the ancestor subtype
+
+      if Nkind (D) = N_Subtype_Declaration then
+         if Nkind (Subtype_Indication (D)) = N_Subtype_Indication then
+            return Entity (Subtype_Mark (Subtype_Indication (D)));
+         else
+            return Entity (Subtype_Indication (D));
+         end if;
+
+      --  If derived type declaration, find who we are derived from
+
+      elsif Nkind (D) = N_Full_Type_Declaration
+        and then Nkind (Type_Definition (D)) = N_Derived_Type_Definition
+      then
+         declare
+            DTD : constant Entity_Id := Type_Definition (D);
+            SI  : constant Entity_Id := Subtype_Indication (DTD);
+         begin
+            if Is_Entity_Name (SI) then
+               return Entity (SI);
+            else
+               return Entity (Subtype_Mark (SI));
+            end if;
+         end;
+
+      --  Otherwise, nothing useful to return, return Empty
+
+      else
+         return Empty;
+      end if;
+   end Nearest_Ancestor;
+
    ---------------------------
    -- Nearest_Dynamic_Scope --
    ---------------------------
