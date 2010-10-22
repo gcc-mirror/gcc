@@ -859,17 +859,6 @@ struct user_specs
 static struct user_specs *user_specs_head, *user_specs_tail;
 
 
-#ifdef HAVE_TARGET_EXECUTABLE_SUFFIX
-/* This defines which switches stop a full compilation.  */
-#define DEFAULT_SWITCH_CURTAILS_COMPILATION(CHAR) \
-  ((CHAR) == 'c' || (CHAR) == 'S' || (CHAR) == 'E')
-
-#ifndef SWITCH_CURTAILS_COMPILATION
-#define SWITCH_CURTAILS_COMPILATION(CHAR) \
-  DEFAULT_SWITCH_CURTAILS_COMPILATION(CHAR)
-#endif
-#endif
-
 /* Record the mapping from file suffixes for compilation specs.  */
 
 struct compiler

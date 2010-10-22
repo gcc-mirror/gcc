@@ -1,3 +1,12 @@
+2010-10-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c (DEFAULT_SWITCH_CURTAILS_COMPILATION,
+	SWITCH_CURTAILS_COMPILATION): Remove.
+	* doc/tm.texi.in (SWITCH_CURTAILS_COMPILATION): Remove
+	documentation.
+	* doc/tm.texi: Regenerate.
+	* system.h (SWITCH_CURTAILS_COMPILATION): Poison.
+
 2010-10-22  Changpeng Fang  <changpeng.fang@amd.com>
 
 	* gcc/config/i386/bdver1.md: New file.
