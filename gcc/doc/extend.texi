@@ -1220,7 +1220,7 @@ As an extension, the GNU C compiler supports named address spaces as
 defined in the N1275 draft of ISO/IEC DTR 18037.  Support for named
 address spaces in GCC will evolve as the draft technical report changes.
 Calling conventions for any target might also change.  At present, only
-the SPU target supports other address spaces.  On the SPU target, for
+the SPU and M32C targets support other address spaces.  On the SPU target, for
 example, variables may be declared as belonging to another address space
 by qualifying the type with the @code{__ea} address space identifier:
 
@@ -1236,6 +1236,11 @@ space.
 The @code{__ea} identifier may be used exactly like any other C type
 qualifier (e.g., @code{const} or @code{volatile}).  See the N1275
 document for more details.
+
+On the M32C target, with the R8C and M16C cpu variants, variables
+qualified with @code{__far} are accessed using 32-bit addresses in
+order to access memory beyond the first 64k bytes.  If @code{__far} is
+used with the M32CM or M32C cpu variants, it has no effect.
 
 @node Zero Length
 @section Arrays of Length Zero
