@@ -2536,7 +2536,7 @@ package body Ch4 is
          raise Error_Resync;
       end if;
 
-      Scan;
+      Scan; -- past SOME
       I_Spec := P_Loop_Parameter_Specification;
 
       if Nkind (I_Spec) = N_Loop_Parameter_Specification then

@@ -2760,13 +2760,12 @@ package body Exp_Ch5 is
       Isc        : constant Node_Id    := Iteration_Scheme (N);
       I_Spec     : constant Node_Id    := Iterator_Specification (Isc);
       Id         : constant Entity_Id  := Defining_Identifier (I_Spec);
-      Container  : constant Entity_Id :=  Entity (Name (I_Spec));
+      Container  : constant Entity_Id  :=  Entity (Name (I_Spec));
+      Typ        : constant Entity_Id  := Etype (Container);
 
-      Typ        : constant Entity_Id := Etype (Container);
-
-      Cursor     : Entity_Id;
-      New_Loop   : Node_Id;
-      Stats      : List_Id;
+      Cursor   : Entity_Id;
+      New_Loop : Node_Id;
+      Stats    : List_Id;
 
    begin
       if Is_Array_Type (Typ) then
@@ -2809,7 +2808,6 @@ package body Exp_Ch5 is
             end;
 
          else
-
             --  for Index in Array loop ...
 
             --  The cursor (index into the array) is the source Id
@@ -2832,31 +2830,29 @@ package body Exp_Ch5 is
                 End_Label        => Empty);
          end if;
 
+      --  Iterators over containers
+
       else
+         --  In both cases these require a cursor of the proper type
 
-         --  Iterators over containers. In both cases these require a cursor of
-         --  the proper type.
+         --    Cursor : P.Cursor_Type := Container.First;
+         --    while Cursor /= P.No_Element loop
 
-         --  Cursor : P.Cursor_Type := Container.First;
-         --  while Cursor /= P.No_Element loop
+         --       Obj : P.Element_Type renames Element (Cursor);
+         --       --  For the "of" form, the element name renames the element
+         --       --  designated by the cursor.
 
-         --     Obj : P.Element_Type renames Element (Cursor);
-         --     --  For the "of" form, the element name renames the element
-         --     --  designated by the cursor.
+         --       Statements;
+         --       P.Next (Cursor);
+         --    end loop;
 
-         --     Statements;
-         --     P.Next (Cursor);
-         --  end loop;
-         --
          --  with the obvious replacements if "reverse" is specified.
 
          declare
             Element_Type  : constant Entity_Id := Etype (Id);
             Pack          : constant Entity_Id := Scope (Etype (Container));
-
             Name_Init     : Name_Id;
             Name_Step     : Name_Id;
-
             Cond          : Node_Id;
             Cursor_Decl   : Node_Id;
             Renaming_Decl : Node_Id;
@@ -2866,7 +2862,6 @@ package body Exp_Ch5 is
 
             if Of_Present (I_Spec) then
                Cursor := Make_Temporary (Loc, 'C');
-
             else
                Cursor := Id;
             end if;

@@ -1570,6 +1570,7 @@ package body Ch5 is
       Scan; -- past FOR
       Iter_Scheme_Node := New_Node (N_Iteration_Scheme, Token_Ptr);
       Spec := P_Loop_Parameter_Specification;
+
       if Nkind (Spec) = N_Loop_Parameter_Specification then
          Set_Loop_Parameter_Specification (Iter_Scheme_Node, Spec);
       else
@@ -1750,6 +1751,7 @@ package body Ch5 is
 
    function P_Iterator_Specification (Def_Id : Node_Id) return Node_Id is
       Node1 : Node_Id;
+
    begin
       Node1 :=  New_Node (N_Iterator_Specification, Token_Ptr);
       Set_Defining_Identifier (Node1, Def_Id);
@@ -1776,7 +1778,6 @@ package body Ch5 is
       end if;
 
       Set_Name (Node1, P_Name);
-
       return Node1;
    end P_Iterator_Specification;
 
