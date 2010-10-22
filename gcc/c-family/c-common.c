@@ -8703,6 +8703,18 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
   return failure;
 }
 
+/* Like c_mark_addressable but don't check register qualifier.  */
+void 
+c_common_mark_addressable_vec (tree t)
+{   
+  while (handled_component_p (t))
+    t = TREE_OPERAND (t, 0);
+  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
+    return;
+  TREE_ADDRESSABLE (t) = 1;
+}
+
+
 
 /* Used to help initialize the builtin-types.def table.  When a type of
    the correct size doesn't exist, use error_mark_node instead of NULL.
