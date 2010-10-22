@@ -1,5 +1,8 @@
 2010-10-22  DJ Delorie  <dj@redhat.com>
 
+	* doc/extend.texi (Named Address Spaces): Document the M32C named
+	address space.
+
 	* config/m32c/m32c-pragma.c (m32c_register_pragmas): Register the
 	__far address space.
 	* config/m32c/m32c.h (ADDR_SPACE_FAR): New.  Add support for
