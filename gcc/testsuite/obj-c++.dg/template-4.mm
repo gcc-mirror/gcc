@@ -2,6 +2,9 @@
 
 /* { dg-do run } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+/* { dg-options "-mno-constant-cfstrings" { target *-*-darwin* } } */
+/* { dg-additional-sources "../objc-obj-c++-shared/Object1.mm" } */
+
 #include "../objc-obj-c++-shared/Object1.h"
 #include "../objc-obj-c++-shared/next-mapping.h"
 #include <stdarg.h>
@@ -76,4 +79,3 @@ int main(void) {
   CHECK_IF(abc(a1, a2) * t.k == 35);
   return 0;
 }
-#include "../objc-obj-c++-shared/Object1-implementation.h"
