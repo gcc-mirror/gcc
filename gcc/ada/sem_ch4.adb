@@ -3198,12 +3198,32 @@ package body Sem_Ch4 is
       Set_Etype  (Ent,  Standard_Void_Type);
       Set_Parent (Ent, N);
 
-      Iterator :=
-        Make_Iteration_Scheme (Loc,
-           Loop_Parameter_Specification =>  Loop_Parameter_Specification (N));
+      if Present (Loop_Parameter_Specification (N)) then
+         Iterator :=
+           Make_Iteration_Scheme (Loc,
+              Loop_Parameter_Specification =>
+                Loop_Parameter_Specification (N));
+      else
+         Iterator :=
+           Make_Iteration_Scheme (Loc,
+              Iterator_Specification =>
+                Iterator_Specification (N));
+      end if;
 
       Push_Scope (Ent);
+      Set_Parent (Iterator, N);
       Analyze_Iteration_Scheme (Iterator);
+
+      --  The loop specification may have been converted into an
+      --  iterator specification during its analysis. Update the
+      --  quantified node accordingly.
+
+      if Present (Iterator_Specification (Iterator)) then
+         Set_Iterator_Specification
+           (N, Iterator_Specification (Iterator));
+         Set_Loop_Parameter_Specification (N, Empty);
+      end if;
+
       Analyze (Condition (N));
       End_Scope;
 

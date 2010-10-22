@@ -7428,13 +7428,13 @@ package body Exp_Ch4 is
 
    procedure Expand_N_Quantified_Expression (N : Node_Id) is
       Loc      : constant Source_Ptr := Sloc (N);
-      Iterator : constant Node_Id    := Loop_Parameter_Specification (N);
       Cond     : constant Node_Id    := Condition (N);
 
-      Actions : List_Id;
-      Decl    : Node_Id;
-      Test    : Node_Id;
-      Tnn     : Entity_Id;
+      Actions  : List_Id;
+      Decl     : Node_Id;
+      I_Scheme : Node_Id;
+      Test     : Node_Id;
+      Tnn      : Entity_Id;
 
       --  We expand:
 
@@ -7459,6 +7459,9 @@ package body Exp_Ch4 is
       --              exit;
       --           end if;
       --        end loop;
+
+      --  In both cases, the iteration may be over a container, in which
+      --  case it is given by an iterator specification, not a loop.
 
    begin
       Actions := New_List;
@@ -7496,13 +7499,27 @@ package body Exp_Ch4 is
                Make_Exit_Statement (Loc)));
       end if;
 
+      if Present (Loop_Parameter_Specification (N)) then
+         I_Scheme :=
+           Make_Iteration_Scheme (Loc,
+              Loop_Parameter_Specification =>
+                Loop_Parameter_Specification (N));
+      else
+         I_Scheme :=
+           Make_Iteration_Scheme (Loc,
+             Iterator_Specification => Iterator_Specification (N));
+      end if;
+
       Append_To (Actions,
         Make_Loop_Statement (Loc,
-          Iteration_Scheme =>
-            Make_Iteration_Scheme (Loc,
-              Loop_Parameter_Specification => Iterator),
+          Iteration_Scheme => I_Scheme,
               Statements                   => New_List (Test),
               End_Label                    => Empty));
+
+      --  The components of the scheme have already been analyzed, and the
+      --  loop index declaration has been processed.
+
+      Set_Analyzed (Iteration_Scheme (Last (Actions)));
 
       Rewrite (N,
         Make_Expression_With_Actions (Loc,

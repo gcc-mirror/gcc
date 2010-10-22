@@ -1,3 +1,29 @@
+2010-10-22  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch5.adb, sem_ch5.adb, sinfo.ads, snames.ads-tmpl, par-ch5.adb:
+	Minor reformatting.
+
+2010-10-22  Geert Bosch  <bosch@adacore.com>
+
+	* stand.ads: Fix typo in comment.
+
+2010-10-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: Enable in-out parameter for functions.
+
+2010-10-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Quantified_Expression): Handle properly loop
+	iterators that are transformed into container iterators after analysis.
+	* exp_ch4.adb (Expand_N_Quantified_Expression): Handle properly both
+	iterator forms before rewriting as a loop.
+
+2010-10-22  Brett Porter  <porter@adacore.com>
+
+	* a-locale.adb, a-locale.ads, locales.c: New files.
+	* Makefile.rtl: Add a-locale
+	* gcc-interface/Makefile.in: Add locales.c
+
 2010-10-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.ads, sem_util.adb, sem_aux.ads, sem_aux.adb

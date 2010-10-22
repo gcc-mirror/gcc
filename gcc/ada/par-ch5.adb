@@ -1571,8 +1571,7 @@ package body Ch5 is
       Iter_Scheme_Node := New_Node (N_Iteration_Scheme, Token_Ptr);
       Spec := P_Loop_Parameter_Specification;
       if Nkind (Spec) = N_Loop_Parameter_Specification then
-         Set_Loop_Parameter_Specification
-           (Iter_Scheme_Node, Spec);
+         Set_Loop_Parameter_Specification (Iter_Scheme_Node, Spec);
       else
          Set_Iterator_Specification (Iter_Scheme_Node, Spec);
       end if;
@@ -1701,18 +1700,16 @@ package body Ch5 is
       Save_Scan_State (Scan_State);
       ID_Node := P_Defining_Identifier (C_In);
 
-      --  If the next token is OF it indicates the Ada2012 iterator. If the
-      --  next token is a colon, the iterator includes a subtype indication
-      --  for the bound variable of the iteration. Otherwise we parse the
-      --  construct as a loop parameter specification. Note that the form:
+      --  If the next token is OF, it indicates an Ada 2012 iterator. If the
+      --  next token is a colon, this is also an Ada 2012 iterator, including a
+      --  subtype indication for the loop parameter. Otherwise we parse the
+      --  construct as a loop parameter specification. Note that the form
       --  "for A in B" is ambiguous, and must be resolved semantically: if B
       --  is a discrete subtype this is a loop specification, but if it is an
       --  expression it is an iterator specification. Ambiguity is resolved
       --  during analysis of the loop parameter specification.
 
-      if Token = Tok_Of
-        or else Token = Tok_Colon
-      then
+      if Token = Tok_Of or else Token = Tok_Colon then
          return P_Iterator_Specification (ID_Node);
       end if;
 
@@ -1765,8 +1762,10 @@ package body Ch5 is
       if Token = Tok_Of then
          Set_Of_Present (Node1);
          Scan;  --  past OF
+
       elsif Token = Tok_In then
          Scan;  --  past IN
+
       else
          return Error;
       end if;

@@ -104,8 +104,8 @@ package body Exp_Ch5 is
    --  might be filled with components from child types).
 
    procedure Expand_Iterator_Loop (N : Node_Id);
-   --  Expand loops over arrays and containers that use the form "for X of C"
-   --  with an optional subtype mark, and "for Y in C".
+   --  Expand loop over arrays and containers that uses the form "for X of C"
+   --  with an optional subtype mark, or "for Y in C".
 
    function Make_Tag_Ctrl_Assignment (N : Node_Id) return List_Id;
    --  Generate the necessary code for controlled and tagged assignment, that
@@ -2773,71 +2773,77 @@ package body Exp_Ch5 is
          if Of_Present (I_Spec) then
             Cursor := Make_Temporary (Loc, 'C');
 
-            --  For Elem of Arr loop ..
+            --  for Elem of Arr loop ...
 
             declare
                Decl : constant Node_Id :=
                         Make_Object_Renaming_Declaration (Loc,
                           Defining_Identifier => Id,
-                          Subtype_Mark =>
+                          Subtype_Mark        =>
                             New_Occurrence_Of (Component_Type (Typ), Loc),
-                          Name => Make_Indexed_Component (Loc,
-                            Prefix => New_Occurrence_Of (Container, Loc),
-                            Expressions =>
-                              New_List (New_Occurrence_Of (Cursor, Loc))));
+                          Name                =>
+                            Make_Indexed_Component (Loc,
+                              Prefix      =>
+                                New_Occurrence_Of (Container, Loc),
+                              Expressions =>
+                                New_List (New_Occurrence_Of (Cursor, Loc))));
             begin
                Stats := Statements (N);
                Prepend (Decl, Stats);
 
-               New_Loop := Make_Loop_Statement (Loc,
-                 Iteration_Scheme =>
-                   Make_Iteration_Scheme (Loc,
-                     Loop_Parameter_Specification =>
-                       Make_Loop_Parameter_Specification (Loc,
-                         Defining_Identifier => Cursor,
-                         Discrete_Subtype_Definition =>
-                            Make_Attribute_Reference (Loc,
-                              Prefix => New_Occurrence_Of (Container, Loc),
-                              Attribute_Name => Name_Range),
-                         Reverse_Present => Reverse_Present (I_Spec))),
-                 Statements => Stats,
-                 End_Label => Empty);
+               New_Loop :=
+                 Make_Loop_Statement (Loc,
+                   Iteration_Scheme =>
+                     Make_Iteration_Scheme (Loc,
+                       Loop_Parameter_Specification =>
+                         Make_Loop_Parameter_Specification (Loc,
+                           Defining_Identifier         => Cursor,
+                           Discrete_Subtype_Definition =>
+                              Make_Attribute_Reference (Loc,
+                                Prefix         =>
+                                  New_Occurrence_Of (Container, Loc),
+                                Attribute_Name => Name_Range),
+                           Reverse_Present => Reverse_Present (I_Spec))),
+                   Statements       => Stats,
+                   End_Label        => Empty);
             end;
 
          else
 
-            --  For Index in Array loop
-            --
-            --  The cursor (index into the array) is the source Id.
+            --  for Index in Array loop ...
+
+            --  The cursor (index into the array) is the source Id
 
             Cursor := Id;
-            New_Loop := Make_Loop_Statement (Loc,
-              Iteration_Scheme =>
-                Make_Iteration_Scheme (Loc,
-                  Loop_Parameter_Specification =>
-                    Make_Loop_Parameter_Specification (Loc,
-                      Defining_Identifier => Cursor,
-                      Discrete_Subtype_Definition =>
-                         Make_Attribute_Reference (Loc,
-                           Prefix => New_Occurrence_Of (Container, Loc),
-                           Attribute_Name => Name_Range),
-                      Reverse_Present => Reverse_Present (I_Spec))),
-              Statements => Statements (N),
-              End_Label => Empty);
+            New_Loop :=
+              Make_Loop_Statement (Loc,
+                Iteration_Scheme =>
+                  Make_Iteration_Scheme (Loc,
+                    Loop_Parameter_Specification =>
+                      Make_Loop_Parameter_Specification (Loc,
+                        Defining_Identifier         => Cursor,
+                        Discrete_Subtype_Definition =>
+                           Make_Attribute_Reference (Loc,
+                             Prefix         =>
+                               New_Occurrence_Of (Container, Loc),
+                             Attribute_Name => Name_Range),
+                        Reverse_Present => Reverse_Present (I_Spec))),
+                Statements       => Statements (N),
+                End_Label        => Empty);
          end if;
 
       else
 
-         --  Iterators over containers. In both cases these require a
-         --  cursor of the proper type.
+         --  Iterators over containers. In both cases these require a cursor of
+         --  the proper type.
 
          --  Cursor : P.Cursor_Type := Container.First;
          --  while Cursor /= P.No_Element loop
 
-         --     --  for the "of" form, the element name renames
-         --     --  the element denoted by the cursor.
-
          --     Obj : P.Element_Type renames Element (Cursor);
+         --     --  For the "of" form, the element name renames the element
+         --     --  designated by the cursor.
+
          --     Statements;
          --     P.Next (Cursor);
          --  end loop;
@@ -2879,28 +2885,28 @@ package body Exp_Ch5 is
 
             --  C : Cursor_Type := Container.First;
 
-            Cursor_Decl := Make_Object_Declaration (Loc,
-              Defining_Identifier => Cursor,
-              Object_Definition =>
-                Make_Selected_Component (Loc,
-                  Prefix => New_Occurrence_Of (Pack, Loc),
-                  Selector_Name =>
-                    Make_Identifier (Loc, Name_Cursor)),
-              Expression =>
-                Make_Selected_Component (Loc,
-                  Prefix => New_Occurrence_Of (Container, Loc),
-                  Selector_Name => Make_Identifier (Loc, Name_Init)));
+            Cursor_Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Cursor,
+                Object_Definition   =>
+                  Make_Selected_Component (Loc,
+                    Prefix        => New_Occurrence_Of (Pack, Loc),
+                    Selector_Name => Make_Identifier (Loc, Name_Cursor)),
+                Expression =>
+                  Make_Selected_Component (Loc,
+                    Prefix        => New_Occurrence_Of (Container, Loc),
+                    Selector_Name => Make_Identifier (Loc, Name_Init)));
 
             Insert_Action (N, Cursor_Decl);
 
             --  while C /= No_Element loop
 
             Cond := Make_Op_Ne (Loc,
-              Left_Opnd => New_Occurrence_Of (Cursor, Loc),
-              Right_Opnd => Make_Selected_Component (Loc,
-                 Prefix => New_Occurrence_Of (Pack, Loc),
-                 Selector_Name => Make_Identifier (Loc,
-                   Chars => Name_No_Element)));
+                      Left_Opnd  => New_Occurrence_Of (Cursor, Loc),
+                      Right_Opnd => Make_Selected_Component (Loc,
+                         Prefix        => New_Occurrence_Of (Pack, Loc),
+                         Selector_Name =>
+                           Make_Identifier (Loc, Chars => Name_No_Element)));
 
             if Of_Present (I_Spec) then
 
@@ -2909,39 +2915,44 @@ package body Exp_Ch5 is
                Renaming_Decl :=
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Id,
-                   Subtype_Mark => New_Occurrence_Of (Element_Type, Loc),
-                   Name => Make_Indexed_Component (Loc,
-                     Prefix =>
-                     Make_Selected_Component (Loc,
-                       Prefix =>  New_Occurrence_Of (Pack, Loc),
-                       Selector_Name =>
-                         Make_Identifier (Loc, Chars => Name_Element)),
-                     Expressions =>
-                       New_List (New_Occurrence_Of (Cursor, Loc))));
+                   Subtype_Mark        =>
+                     New_Occurrence_Of (Element_Type, Loc),
+                   Name                =>
+                     Make_Indexed_Component (Loc,
+                       Prefix =>
+                         Make_Selected_Component (Loc,
+                           Prefix        =>  New_Occurrence_Of (Pack, Loc),
+                           Selector_Name =>
+                             Make_Identifier (Loc, Chars => Name_Element)),
+                       Expressions =>
+                         New_List (New_Occurrence_Of (Cursor, Loc))));
 
                Prepend (Renaming_Decl, Stats);
             end if;
 
-            --  For both iterator forms, add call to Next to advance cursor.
+            --  For both iterator forms, add call to step operation (Next or
+            --  Previous) to advance cursor.
 
             Append_To (Stats,
               Make_Procedure_Call_Statement (Loc,
-                Name => Make_Selected_Component (Loc,
-                  Prefix => New_Occurrence_Of (Pack, Loc),
-                  Selector_Name => Make_Identifier (Loc, Name_Step)),
+                Name =>
+                  Make_Selected_Component (Loc,
+                    Prefix        => New_Occurrence_Of (Pack, Loc),
+                    Selector_Name => Make_Identifier (Loc, Name_Step)),
                 Parameter_Associations =>
                   New_List (New_Occurrence_Of (Cursor, Loc))));
 
             New_Loop := Make_Loop_Statement (Loc,
               Iteration_Scheme =>
-                Make_Iteration_Scheme (Loc,
-                  Condition => Cond),
-              Statements => Stats,
-              End_Label => Empty);
+                Make_Iteration_Scheme (Loc, Condition => Cond),
+              Statements       => Stats,
+              End_Label        => Empty);
          end;
       end if;
 
       --  Set_Analyzed (I_Spec);
+      --  Why is this commented out???
+
       Rewrite (N, New_Loop);
       Analyze (N);
    end Expand_Iterator_Loop;

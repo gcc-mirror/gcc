@@ -1198,7 +1198,7 @@ package Snames is
 
    Name_Unaligned_Valid                  : constant Name_Id := N + $;
 
-   --  Names used to implement iterators over predefined  containers.
+   --  Names used to implement iterators over predefined  containers
 
    Name_Cursor                           : constant Name_Id := N + $;
    Name_Element                          : constant Name_Id := N + $;

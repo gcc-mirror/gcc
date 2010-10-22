@@ -9365,8 +9365,18 @@ package body Sem_Ch6 is
          if Ekind (Scope (Formal_Id)) = E_Function
            or else Ekind (Scope (Formal_Id)) = E_Generic_Function
          then
-            Error_Msg_N ("functions can only have IN parameters", Spec);
-            Set_Ekind (Formal_Id, E_In_Parameter);
+
+            if Ada_Version >= Ada_2012 then
+               if In_Present (Spec) then
+                  Set_Ekind (Formal_Id, E_In_Out_Parameter);
+               else
+                  Set_Ekind (Formal_Id, E_Out_Parameter);
+               end if;
+
+            else
+               Error_Msg_N ("functions can only have IN parameters", Spec);
+               Set_Ekind (Formal_Id, E_In_Parameter);
+            end if;
 
          elsif In_Present (Spec) then
             Set_Ekind (Formal_Id, E_In_Out_Parameter);
