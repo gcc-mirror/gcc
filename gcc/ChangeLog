@@ -1,3 +1,71 @@
+2010-10-22  Changpeng Fang  <changpeng.fang@amd.com>
+
+	* gcc/config/i386/bdver1.md: New file.
+	* gcc/config/i386/i386.md (include "bdver1.md"): Invoke the
+	pipeline description for bdver1.
+	(x86_sahf_1): Add "bdver1_decode" attribute.
+	(*cmpfp_i_mixed): Likewise.
+	(*cmpfp_i_sse): Likewise.
+	(*cmpfp_i_i387): Likewise.
+	(*cmpfp_iu_mixed): Likewise.
+	(*cmpfp_iu_sse): Likewise.
+	(*cmpfp_iu_387): Likewise.
+	(*swap<mode>,*swap<mode>_1): Likewise.
+	(fixuns_trunc<mode>hi2): Likewise.
+	(fix_trunc<mode>si_sse): Likewise.
+	(x86_fnstcw_1): Likewise.
+	(x86_fldcw_1): Likewise.
+	(*floatsi<mode>2_vector_mixed_with_temp): Likewise.
+	(*floatsi<mode>2_vector_mixed): Likewise.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_mixed_with_temp): Likewise.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_mixed_interunit): Likewise.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_mixed_nointerunit): Likewise.
+	(*floatsi<mode>2_vector_sse_with_temp): Likewise.
+	(*floatsi<mode>2_vector_sse): Likewise.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_sse_with_temp): Likewise.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_sse_interunit): Likewise.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_sse_nointerunit): Likewise.
+	(*mul<mode>3_1): Likewise.
+	(*mulsi3_1_zext): Likewise.
+	(*mulhi3_1): Likewise.
+	(*mulqi3_1): Likewise.
+	(*<u>mul<mode><dwi>3_1): Likewise.
+	(*<u>mulqihi3_1): Likewise.
+	(*<s>muldi3_highpart_1): Likewise.
+	(*<s>mulsi3_highpart_1): Likewise.
+	(*<s>mulsi3_highpart_zext): Likewise.
+	(x86_64_shld): Likewise.
+	(x86_shld): Likewise.
+	(x86_64_shrd): Likewise.
+	(x86_shrd): Likewise.
+	(sqrtxf2): Likewise.
+	(sqrt_extend<mode>xf2_i387): Likewise.
+	(*sqrt<mode>2_sse): Likewise.
+	* gcc/config/i386/sse.md (sse_cvtsi2ss): Add "bdver1_decode" attribute.
+	(sse_cvtsi2ssq): Likewise.
+	(sse_cvtss2si): Likewise.
+	(sse_cvtss2si_2): Likewise.
+	(sse_cvtss2siq): Likewise.
+	(sse_cvtss2siq_2): Likewise.
+	(sse_cvttss2si): Likewise.
+	(sse_cvttss2siq): Likewise.
+	(sse2_cvtpi2pd): Likewise.
+	(sse2_cvttpd2pi): Likewise.
+	(sse2_cvtsi2sd): Likewise.
+	(sse2_cvtsi2sdq): Likewise.
+	(sse2_cvtsd2si): Likewise.
+	(sse2_cvtsd2si_2): Likewise.
+	(sse2_cvtsd2siq): Likewise.
+	(sse2_cvtsd2siq_2): Likewise.
+	(sse2_cvttsd2si): Likewise.
+	(sse2_cvttsd2siq): Likewise.
+	(*sse2_cvtpd2dq): Likewise.
+	(*sse2_cvttpd2dq): Likewise.
+	(sse2_cvtsd2ss): Likewise.
+	(sse2_cvtss2sd): Likewise.
+	(*sse2_cvtpd2ps): Likewise.
+	(sse2_cvtps2pd): Likewise.
+
 2010-10-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/46137
