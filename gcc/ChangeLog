@@ -1,3 +1,8 @@
+2010-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_variable_sized_compare): Preserve the source
+	location info of the expression.
+
 2010-10-22  DJ Delorie  <dj@redhat.com>
 
 	* doc/extend.texi (Named Address Spaces): Document the M32C named
@@ -31,7 +36,7 @@
 	(movsi_splittable): Split A1A0 also.
 
 2010-10-22  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
-	Andrew Pinski <pinskia@gmail.com>
+	    Andrew Pinski <pinskia@gmail.com>
 
 	* c-typeck.c (build_array_ref): Handle subscripting of vectors.
 	* doc/extend.texi: New paragraph
