@@ -2556,6 +2556,22 @@ package body Sem_Ch10 is
          Par_Name := Scope (E_Name);
          while Nkind (Pref) = N_Selected_Component loop
             Change_Selected_Component_To_Expanded_Name (Pref);
+
+            if Present (Entity (Selector_Name (Pref)))
+              and then
+                Present (Renamed_Entity (Entity (Selector_Name (Pref))))
+              and then Entity (Selector_Name (Pref)) /= Par_Name
+            then
+
+            --  The prefix is a child unit that denotes a renaming
+            --  declaration. Replace the prefix directly with the renamed
+            --  unit, because the rest of the prefix is irrelevant to the
+            --  visibility of the real unit.
+
+               Rewrite (Pref, New_Occurrence_Of (Par_Name, Sloc (Pref)));
+               exit;
+            end if;
+
             Set_Entity_With_Style_Check (Pref, Par_Name);
 
             Generate_Reference (Par_Name, Pref);

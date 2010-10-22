@@ -482,8 +482,9 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 	gnat_raise_decls_ext[i]
 	  = build_raise_check (i, t,
 			       i == CE_Index_Check_Failed
-			       || i == CE_Range_Check_Failed ?
-			       exception_range : exception_column);
+			       || i == CE_Range_Check_Failed
+			       || i == CE_Invalid_Data
+			       ? exception_range : exception_column);
     }
 
   /* Set the types that GCC and Gigi use from the front end.  */
@@ -5518,7 +5519,8 @@ gnat_to_gnu (Node_Id gnat_node)
 		gnu_result = build_call_raise_column (reason, gnat_node);
 	      }
 	    else if ((reason == CE_Index_Check_Failed
-		      || reason == CE_Range_Check_Failed)
+		      || reason == CE_Range_Check_Failed
+		      || reason == CE_Invalid_Data)
 		     && Nkind (cond) == N_Op_Not
 		     && Nkind (Right_Opnd (cond)) == N_In
 		     && Nkind (Right_Opnd (Right_Opnd (cond))) == N_Range)

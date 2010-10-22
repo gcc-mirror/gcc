@@ -879,18 +879,35 @@ package body Sem_Ch9 is
       Generate_Definition (Def_Id);
       Tasking_Used := True;
 
+      --  Case of no discrete subtype definition
+
       if No (D_Sdef) then
          Set_Ekind (Def_Id, E_Entry);
+
+      --  Processing for discrete subtype definition present
+
       else
          Enter_Name (Def_Id);
          Set_Ekind (Def_Id, E_Entry_Family);
          Analyze (D_Sdef);
          Make_Index (D_Sdef, N, Def_Id);
+
+         --  Check subtype with predicate in entry family
+
+         if Has_Predicates (Etype (D_Sdef)) then
+            Error_Msg_NE
+              ("subtype& has predicate, not allowed in entry family",
+               D_Sdef, Etype (D_Sdef));
+         end if;
       end if;
+
+      --  Decorate Def_Id
 
       Set_Etype          (Def_Id, Standard_Void_Type);
       Set_Convention     (Def_Id, Convention_Entry);
       Set_Accept_Address (Def_Id, New_Elmt_List);
+
+      --  Process formals
 
       if Present (Formals) then
          Set_Scope (Def_Id, Current_Scope);

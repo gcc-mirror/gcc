@@ -197,6 +197,13 @@ package Sem_Util is
    --  of elements, and elements at the same position on these tables provide
    --  information on the same interface type.
 
+   procedure Collect_Parents
+     (T             : Entity_Id;
+      List          : out Elist_Id;
+      Use_Full_View : Boolean := True);
+   --  Collect all the parents of Typ. Use_Full_View is used to collect them
+   --  using the full-view of private parents (if available).
+
    function Collect_Primitive_Operations (T : Entity_Id) return Elist_Id;
    --  Called upon type derivation and extension. We scan the declarative part
    --  in which the type appears, and collect subprograms that have one
@@ -1052,6 +1059,12 @@ package Sem_Util is
    --  (e.g. target of assignment, or out parameter), and to False if the
    --  modification is only potential (e.g. address of entity taken).
 
+   function Original_Corresponding_Operation (S : Entity_Id) return Entity_Id;
+   --  [Ada 2012: AI05-0125-1]: If S is an inherited dispatching primitive S2,
+   --  or overrides an inherited dispatching primitive S2, the original
+   --  corresponding operation of S is the original corresponding operation of
+   --  S2. Otherwise, it is S itself.
+
    function Object_Access_Level (Obj : Node_Id) return Uint;
    --  Return the accessibility level of the view of the object Obj.
    --  For convenience, qualified expressions applied to object names
@@ -1289,6 +1302,13 @@ package Sem_Util is
    pragma Inline (Unqualify);
    --  Removes any qualifications from Expr. For example, for T1'(T2'(X)), this
    --  returns X. If Expr is not a qualified expression, returns Expr.
+
+   function Visible_Ancestors (Typ : Entity_Id) return Elist_Id;
+   --  [Ada 2012:AI-0125-1]: Collect all the visible parents and progenitors
+   --  of a type extension or private extension declaration. If the full-view
+   --  of private parents and progenitors is available then it is used to
+   --  generate the list of visible ancestors; otherwise their partial
+   --  view is added to the resulting list.
 
    function Within_Init_Proc return Boolean;
    --  Determines if Current_Scope is within an init proc

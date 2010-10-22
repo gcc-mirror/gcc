@@ -469,6 +469,8 @@ package body Ada.Exceptions is
      (File : System.Address; Line, Column : Integer);
    procedure Rcheck_05_Ext
      (File : System.Address; Line, Column, Index, First, Last : Integer);
+   procedure Rcheck_06_Ext
+     (File : System.Address; Line, Column, Index, First, Last : Integer);
    procedure Rcheck_12_Ext
      (File : System.Address; Line, Column, Index, First, Last : Integer);
 
@@ -509,6 +511,7 @@ package body Ada.Exceptions is
 
    pragma Export (C, Rcheck_00_Ext, "__gnat_rcheck_00_ext");
    pragma Export (C, Rcheck_05_Ext, "__gnat_rcheck_05_ext");
+   pragma Export (C, Rcheck_06_Ext, "__gnat_rcheck_06_ext");
    pragma Export (C, Rcheck_12_Ext, "__gnat_rcheck_12_ext");
 
    --  None of these procedures ever returns (they raise an exception!). By
@@ -551,6 +554,7 @@ package body Ada.Exceptions is
 
    pragma No_Return (Rcheck_00_Ext);
    pragma No_Return (Rcheck_05_Ext);
+   pragma No_Return (Rcheck_06_Ext);
    pragma No_Return (Rcheck_12_Ext);
 
    ---------------------------------------------
@@ -1235,6 +1239,17 @@ package body Ada.Exceptions is
    begin
       Raise_Constraint_Error_Msg (File, Line, Column, Msg'Address);
    end Rcheck_05_Ext;
+
+   procedure Rcheck_06_Ext
+     (File : System.Address; Line, Column, Index, First, Last : Integer)
+   is
+      Msg : constant String :=
+              Rmsg_06 (Rmsg_06'First .. Rmsg_06'Last - 1) & ASCII.LF &
+              "value " & Image (Index) & " not in " & Image (First) &
+              ".." & Image (Last) & ASCII.NUL;
+   begin
+      Raise_Constraint_Error_Msg (File, Line, Column, Msg'Address);
+   end Rcheck_06_Ext;
 
    procedure Rcheck_12_Ext
      (File : System.Address; Line, Column, Index, First, Last : Integer)

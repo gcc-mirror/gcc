@@ -1,3 +1,45 @@
+2010-10-22  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.ads (Declaration_Node): Clarify documentation, in particular
+	regarding what is returned for subprogram entities.
+
+2010-10-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_attr.adb (Make_Range_Test): Generate a Range node instead of
+	explicit comparisons, generates simpler expanded code.
+	* a-except-2005.adb (Rcheck_06_Ext): New.
+	* gcc-interface/trans.c (gigi, gnat_to_gnu): Handle validity checks
+	like range checks.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb (Array_Type_Declaration): Error for subtype wi predicate
+	for index type
+	(Constrain_Index): Error of subtype wi predicate in index constraint
+	* sem_ch9.adb (Analyze_Entry_Declaration): Error of subtype wi
+	predicate in entry family.
+	* sem_res.adb (Resolve_Slice): Error of type wi predicate in slice.
+
+2010-10-22  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Collect_Parents): New subprogram.
+	(Original_Corresponding_Operation): New subprogram.
+	(Visible_Ancestors): New subprogram.
+	* sem_ch6.adb (New_Overloaded_Entity): Handle new case of dispatching
+	operation that overrides a hidden inherited primitive.
+	* sem_disp.adb (Find_Hidden_Overridden_Primitive): New subprogram.
+	(Check_Dispatching_Operation): if the new dispatching operation
+	does not override a visible primtive then check if it overrides
+	some hidden inherited primitive.
+
+2010-10-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Analyze_With_Clause): If the parent_unit_name in a with
+	clause is a child unit that denotes a renaming, replace the
+	parent_unit_name with a reference to the renamed unit, because the
+	prefix is irrelevant to subsequent visibility..
+
 2010-10-22  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.ads, einfo.adb (Has_Predicates): Flag is now on all entities

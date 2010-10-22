@@ -72,6 +72,18 @@ package body Sem_Disp is
    --  (returning the designated tagged type in the case of an access
    --  parameter); otherwise returns empty.
 
+   function Find_Hidden_Overridden_Primitive (S : Entity_Id) return Entity_Id;
+   --  [Ada 2012:AI-0125] Find an inherited hidden primitive of the dispatching
+   --  type of S that has the same name of S, a type-conformant profile, an
+   --  original corresponding operation O that is a primitive of a visible
+   --  ancestor of the dispatching type of S and O is visible at the point of
+   --  of declaration of S. If the entity is found the Alias of S is set to the
+   --  original corresponding operation S and its Overridden_Operation is set
+   --  to the found entity; otherwise return Empty.
+   --
+   --  This routine does not search for non-hidden primitives since they are
+   --  covered by the normal Ada 2005 rules.
+
    -------------------------------
    -- Add_Dispatching_Operation --
    -------------------------------
@@ -741,8 +753,9 @@ package body Sem_Disp is
 
    procedure Check_Dispatching_Operation (Subp, Old_Subp : Entity_Id) is
       Tagged_Type            : Entity_Id;
-      Has_Dispatching_Parent : Boolean := False;
-      Body_Is_Last_Primitive : Boolean := False;
+      Has_Dispatching_Parent : Boolean   := False;
+      Body_Is_Last_Primitive : Boolean   := False;
+      Ovr_Subp               : Entity_Id := Empty;
 
    begin
       if not Ekind_In (Subp, E_Procedure, E_Function) then
@@ -1078,14 +1091,25 @@ package body Sem_Disp is
 
       Check_Controlling_Formals (Tagged_Type, Subp);
 
+      Ovr_Subp := Old_Subp;
+
+      --  [Ada 2012:AI-0125]: Search for inherited hidden primitive that may be
+      --  overridden by Subp
+
+      if No (Ovr_Subp)
+        and then Ada_Version >= Ada_2012
+      then
+         Ovr_Subp := Find_Hidden_Overridden_Primitive (Subp);
+      end if;
+
       --  Now it should be a correct primitive operation, put it in the list
 
-      if Present (Old_Subp) then
+      if Present (Ovr_Subp) then
 
          --  If the type has interfaces we complete this check after we set
          --  attribute Is_Dispatching_Operation.
 
-         Check_Subtype_Conformant (Subp, Old_Subp);
+         Check_Subtype_Conformant (Subp, Ovr_Subp);
 
          if (Chars (Subp) = Name_Initialize
            or else Chars (Subp) = Name_Adjust
@@ -1114,7 +1138,7 @@ package body Sem_Disp is
             end if;
 
          else
-            Override_Dispatching_Operation (Tagged_Type, Old_Subp, Subp);
+            Override_Dispatching_Operation (Tagged_Type, Ovr_Subp, Subp);
             Set_Is_Overriding_Operation (Subp);
 
             --  Ada 2005 (AI-251): In case of late overriding of a primitive
@@ -1183,7 +1207,7 @@ package body Sem_Disp is
       --  subtype conformance against all the interfaces covered by this
       --  primitive.
 
-      if Present (Old_Subp)
+      if Present (Ovr_Subp)
         and then Has_Interfaces (Tagged_Type)
       then
          declare
@@ -1648,6 +1672,89 @@ package body Sem_Disp is
       pragma Assert (not Is_Dispatching_Operation (Subp));
       return Empty;
    end Find_Dispatching_Type;
+
+   --------------------------------------
+   -- Find_Hidden_Overridden_Primitive --
+   --------------------------------------
+
+   function Find_Hidden_Overridden_Primitive (S : Entity_Id) return Entity_Id
+   is
+      Tag_Typ   : constant Entity_Id := Find_Dispatching_Type (S);
+      Elmt      : Elmt_Id;
+      Orig_Prim : Entity_Id;
+      Prim      : Entity_Id;
+      Vis_List  : Elist_Id;
+
+   begin
+      --  This Ada 2012 rule is valid only for type extensions or private
+      --  extensions
+
+      if No (Tag_Typ)
+        or else not Is_Record_Type (Tag_Typ)
+        or else Etype (Tag_Typ) = Tag_Typ
+      then
+         return Empty;
+      end if;
+
+      --  Collect the list of visible ancestor of the tagged type
+
+      Vis_List := Visible_Ancestors (Tag_Typ);
+
+      Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
+      while Present (Elmt) loop
+         Prim := Node (Elmt);
+
+         --  Find an inherited hidden dispatching primitive with the name of S
+         --  and a type-conformant profile
+
+         if Present (Alias (Prim))
+           and then Is_Hidden (Alias (Prim))
+           and then Find_Dispatching_Type (Alias (Prim)) /= Tag_Typ
+           and then Primitive_Names_Match (S, Prim)
+           and then Type_Conformant (S, Prim)
+         then
+            declare
+               Vis_Ancestor : Elmt_Id;
+               Elmt         : Elmt_Id;
+
+            begin
+               --  The original corresponding operation of Prim must be an
+               --  operation of a visible ancestor of the dispatching type
+               --  of S, and the original corresponding operation of S2 must
+               --  be visible.
+
+               Orig_Prim := Original_Corresponding_Operation (Prim);
+
+               if Orig_Prim /= Prim
+                 and then Is_Immediately_Visible (Orig_Prim)
+               then
+                  Vis_Ancestor := First_Elmt (Vis_List);
+
+                  while Present (Vis_Ancestor) loop
+                     Elmt :=
+                       First_Elmt (Primitive_Operations (Node (Vis_Ancestor)));
+                     while Present (Elmt) loop
+                        if Node (Elmt) = Orig_Prim then
+                           Set_Overridden_Operation (S, Prim);
+                           Set_Alias (Prim, Orig_Prim);
+
+                           return Prim;
+                        end if;
+
+                        Next_Elmt (Elmt);
+                     end loop;
+
+                     Next_Elmt (Vis_Ancestor);
+                  end loop;
+               end if;
+            end;
+         end if;
+
+         Next_Elmt (Elmt);
+      end loop;
+
+      return Empty;
+   end Find_Hidden_Overridden_Primitive;
 
    ---------------------------------------
    -- Find_Primitive_Covering_Interface --
