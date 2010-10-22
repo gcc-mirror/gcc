@@ -1,3 +1,7 @@
+2010-10-22  Paul Koning  <ni1d@arrl.net>
+
+	* config.pdp11/pdp11.h (DBX_DEBUGGING_INFO): Define.
+
 2010-10-22  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c-lib1.S (m32c_jsri16): Make reentrant.
