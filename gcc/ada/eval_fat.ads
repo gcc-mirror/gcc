@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,10 +64,6 @@ package Eval_Fat is
    function Fraction          (RT : R; X : T)                       return T;
 
    function Leading_Part      (RT : R; X : T; Radix_Digits : UI)    return T;
-
-   function Machine_Mantissa  (RT : R)                              return Nat;
-
-   function Machine_Radix     (RT : R)                              return Nat;
 
    function Model             (RT : R; X : T)                       return T;
 

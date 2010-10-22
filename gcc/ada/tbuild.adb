@@ -36,7 +36,7 @@ with Sem_Aux;  use Sem_Aux;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
-with Uintp;    use Uintp;
+with Urealp;   use Urealp;
 
 package body Tbuild is
 
@@ -197,6 +197,40 @@ package body Tbuild is
             Selector_Name =>
               New_Reference_To (First_Tag_Component (Full_Type), Loc)));
    end Make_DT_Access;
+
+   ------------------------
+   -- Make_Float_Literal --
+   ------------------------
+
+   function Make_Float_Literal
+     (Loc         : Source_Ptr;
+      Radix       : Uint;
+      Significand : Uint;
+      Exponent    : Uint) return Node_Id
+   is
+   begin
+      if Radix = 2 and then abs Significand /= 1 then
+         return
+           Make_Float_Literal
+             (Loc, Uint_16,
+              Significand * Radix**(Exponent mod 4),
+              Exponent / 4);
+
+      else
+         declare
+            N : constant Node_Id := New_Node (N_Real_Literal, Loc);
+
+         begin
+            Set_Realval (N,
+              UR_From_Components
+                (Num      => abs Significand,
+                 Den      => -Exponent,
+                 Rbase    => UI_To_Int (Radix),
+                 Negative => Significand < 0));
+            return N;
+         end;
+      end if;
+   end Make_Float_Literal;
 
    -------------------------------------
    -- Make_Implicit_Exception_Handler --

@@ -29,6 +29,7 @@
 with Namet; use Namet;
 with Sinfo; use Sinfo;
 with Types; use Types;
+with Uintp; use Uintp;
 
 package Tbuild is
 
@@ -74,6 +75,14 @@ package Tbuild is
      (Loc : Source_Ptr; Rec : Node_Id; Typ : Entity_Id) return Node_Id;
    --  Create an access to the Dispatch Table by using the Tag field of a
    --  tagged record : Acc_Dt (Rec.tag).all
+
+   function Make_Float_Literal
+     (Loc         : Source_Ptr;
+      Radix       : Uint;
+      Significand : Uint;
+      Exponent    : Uint) return Node_Id;
+   --  Create a real literal for the floating point expression value
+   --  Significand * Radix ** Exponent. Radix must be greater than 1.
 
    function Make_Implicit_Exception_Handler
      (Sloc              : Source_Ptr;

@@ -36,7 +36,6 @@ with Output;   use Output;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
-with Ttypef;   use Ttypef;
 with Scn;
 with Sem_Mech; use Sem_Mech;
 with Sem_Util; use Sem_Util;
@@ -1670,61 +1669,11 @@ package body CStand is
       -------------------
 
       procedure P_Float_Range (Id : Entity_Id) is
-         Digs : constant Nat := UI_To_Int (Digits_Value (Id));
-
       begin
          Write_Str ("     range ");
-
-         if Vax_Float (Id) then
-            if Digs = VAXFF_Digits then
-               Write_Str (VAXFF_First'Universal_Literal_String);
-               Write_Str (" .. ");
-               Write_Str (VAXFF_Last'Universal_Literal_String);
-
-            elsif Digs = VAXDF_Digits then
-               Write_Str (VAXDF_First'Universal_Literal_String);
-               Write_Str (" .. ");
-               Write_Str (VAXDF_Last'Universal_Literal_String);
-
-            else
-               pragma Assert (Digs = VAXGF_Digits);
-
-               Write_Str (VAXGF_First'Universal_Literal_String);
-               Write_Str (" .. ");
-               Write_Str (VAXGF_Last'Universal_Literal_String);
-            end if;
-
-         elsif Is_AAMP_Float (Id) then
-            if Digs = AAMPS_Digits then
-               Write_Str (AAMPS_First'Universal_Literal_String);
-               Write_Str (" .. ");
-               Write_Str (AAMPS_Last'Universal_Literal_String);
-
-            else
-               pragma Assert (Digs = AAMPL_Digits);
-               Write_Str (AAMPL_First'Universal_Literal_String);
-               Write_Str (" .. ");
-               Write_Str (AAMPL_Last'Universal_Literal_String);
-            end if;
-
-         elsif Digs = IEEES_Digits then
-            Write_Str (IEEES_First'Universal_Literal_String);
-            Write_Str (" .. ");
-            Write_Str (IEEES_Last'Universal_Literal_String);
-
-         elsif Digs = IEEEL_Digits then
-            Write_Str (IEEEL_First'Universal_Literal_String);
-            Write_Str (" .. ");
-            Write_Str (IEEEL_Last'Universal_Literal_String);
-
-         else
-            pragma Assert (Digs = IEEEX_Digits);
-
-            Write_Str (IEEEX_First'Universal_Literal_String);
-            Write_Str (" .. ");
-            Write_Str (IEEEX_Last'Universal_Literal_String);
-         end if;
-
+         UR_Write (Realval (Type_Low_Bound (Id)));
+         Write_Str (" .. ");
+         UR_Write (Realval (Type_High_Bound (Id)));
          Write_Str (";");
          Write_Eol;
       end P_Float_Range;
@@ -1908,81 +1857,29 @@ package body CStand is
    ----------------------
 
    procedure Set_Float_Bounds (Id  : Entity_Id) is
-      L  : Node_Id;
+      L : Node_Id;
       --  Low bound of literal value
 
-      H  : Node_Id;
+      H : Node_Id;
       --  High bound of literal value
 
-      R  : Node_Id;
+      R : Node_Id;
       --  Range specification
 
-      Digs  : constant Nat := UI_To_Int (Digits_Value (Id));
-      --  Digits value, used to select bounds
+      Radix       : constant Uint := Machine_Radix_Value (Id);
+      Mantissa    : constant Uint := Machine_Mantissa_Value (Id);
+      Emax        : constant Uint := Machine_Emax_Value (Id);
+      Significand : constant Uint := Radix ** Mantissa - 1;
+      Exponent    : constant Uint := Emax - Mantissa;
 
    begin
       --  Note: for the call from Cstand to initially create the types in
       --  Standard, Vax_Float will always be False. Circuitry in Sem_Vfpt
-      --  will adjust these types appropriately in the Vax_Float case if
-      --  a pragma Float_Representation (VAX_Float) is used.
+      --  will adjust these types appropriately in the Vax_Float case if a
+      --  pragma Float_Representation (VAX_Float) is used.
 
-      if Vax_Float (Id) then
-         if Digs = VAXFF_Digits then
-            L := Real_Convert
-                   (VAXFF_First'Universal_Literal_String);
-            H := Real_Convert
-                   (VAXFF_Last'Universal_Literal_String);
-
-         elsif Digs = VAXDF_Digits then
-            L := Real_Convert
-                   (VAXDF_First'Universal_Literal_String);
-            H := Real_Convert
-                   (VAXDF_Last'Universal_Literal_String);
-
-         else
-            pragma Assert (Digs = VAXGF_Digits);
-
-            L := Real_Convert
-                   (VAXGF_First'Universal_Literal_String);
-            H := Real_Convert
-                   (VAXGF_Last'Universal_Literal_String);
-         end if;
-
-      elsif Is_AAMP_Float (Id) then
-         if Digs = AAMPS_Digits then
-            L := Real_Convert
-                   (AAMPS_First'Universal_Literal_String);
-            H := Real_Convert
-                   (AAMPS_Last'Universal_Literal_String);
-
-         else
-            pragma Assert (Digs = AAMPL_Digits);
-            L := Real_Convert
-                   (AAMPL_First'Universal_Literal_String);
-            H := Real_Convert
-                   (AAMPL_Last'Universal_Literal_String);
-         end if;
-
-      elsif Digs = IEEES_Digits then
-         L := Real_Convert
-                (IEEES_First'Universal_Literal_String);
-         H := Real_Convert
-                (IEEES_Last'Universal_Literal_String);
-
-      elsif Digs = IEEEL_Digits then
-         L := Real_Convert
-                (IEEEL_First'Universal_Literal_String);
-         H := Real_Convert
-                (IEEEL_Last'Universal_Literal_String);
-
-      else
-         pragma Assert (Digs = IEEEX_Digits);
-
-         L := Real_Convert
-                (IEEEX_First'Universal_Literal_String);
-         H := Real_Convert
-                (IEEEX_Last'Universal_Literal_String);
-      end if;
+      H := Make_Float_Literal (Stloc, Radix, Significand, Exponent);
+      L := Make_Float_Literal (Stloc, Radix, -Significand, Exponent);
 
       Set_Etype                (L, Id);
       Set_Is_Static_Expression (L);

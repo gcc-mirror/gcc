@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,11 +32,14 @@ with Sem_Res;  use Sem_Res;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
 with Tbuild;   use Tbuild;
-with Ttypef;   use Ttypef;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
 
 package body Exp_VFpt is
+
+   VAXFF_Digits : constant := 6;
+   VAXDF_Digits : constant := 9;
+   VAXGF_Digits : constant := 15;
 
    ----------------------
    -- Expand_Vax_Arith --

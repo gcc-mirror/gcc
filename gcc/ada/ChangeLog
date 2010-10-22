@@ -1,3 +1,52 @@
+2010-10-22  Geert Bosch  <bosch@adacore.com>
+
+	* gcc-interface/Make-lang.in: Remove ttypef.ads
+	* checks.adb: Use Machine_Mantissa_Value and Machine_Radix_Value instead
+	of Machine_Mantissa and Machine_Radix.
+	* cstand.adb (P_Float_Range): Directly print the Type_Low_Bound and
+	Type_High_Bound of the type, instead of choosing constants from Ttypef.
+	(Set_Float_Bounds): Compute the bounds based on Machine_Radix_Value,
+	Machine_Emax_Value and Machine_Mantissa_Value instead of special-casing
+	each type.
+	* einfo.ads (Machine_Emax_Value, Machine_Emin_Value,
+	Machine_Mantissa_Value, Machine_Radix_Value, Model_Emin_Value,
+	Model_Epsilon_Value, Model_Mantissa_Value, Model_Small_Value,
+	Safe_Emax_Value, Safe_First_Value, Safe_Last_Value): Add new
+	synthesized floating point attributes.
+	* einfo.adb (Float_Rep): Determine the kind of floating point
+	representation used for a given type.
+	(Machine_Emax_Value, Machine_Emin_Value, Machine_Mantissa_Value,
+	Machine_Radix_Value): Implement based on Float_Rep_Kind of a type and
+	the number of digits in the type.
+	(Model_Emin_Value, Model_Epsilon_Value, Model_Mantissa_Value,
+	Model_Small_Value, Safe_Emax_Value, Safe_First_Value, Safe_Last_Value):
+	Implement new synthesized floating point attributes based on the various
+	machine attributes.
+	* eval_fat.ads: Remove Machine_Mantissa and Machine_Radix.
+	* eval_fat.adb (Machine_Mantissa, Machine_Radix): Remove. Use the
+	Machine_Mantissa_Value and Machine_Radix_Value functions instead.
+	* exp_vfpt.adb (VAXFF_Digits, VAXDF_Digits, VAXFG_Digits): Define local
+	constants, instead of using constants from Ttypef.
+	* gnat_rm.texi: Reword comments referencing Ttypef.
+	* sem_attr.ads: Reword comment referencing Ttypef.
+	* sem_attr.adb (Float_Attribute_Universal_Integer,
+	Float_Attribute_Universal_Real): Remove.
+	(Attribute_Machine_Emax, Attribute_Machine_Emin,
+	Attribute_Machine_Mantissa, Attribute_Model_Epsilon,
+	Attribute_Model_Mantissa, Attribute_Model_Small, Attribute_Safe_Emax,
+	Attribute_Safe_First, Attribute_Safe_Last, Model_Small_Value): Use
+	attributes in Einfo instead of Float_Attribute_Universal_Real and
+	Float_Attribute_Universal_Integer and all explicit constants.
+	* sem_util.ads, sem_util.adb (Real_Convert): Remove.
+	* sem_vfpt.adb (VAXDF_Digits, VAXFF_Digits, VAXGF_Digits, IEEEL_Digits,
+	IEEES_Digits): New local constants, in order to remove dependency on
+	Ttypef.
+	* tbuild.ads (Make_Float_Literal): New function.
+	* tbuild.adb (Make_Float_Literal): New function to create a new
+	N_Real_Literal, constructing it as simple as possible for best
+	output of constants in -gnatS.
+	* ttypef.ads: Remove.
+
 2010-10-22  Robert Dewar  <dewar@adacore.com>
 
 	* checks.adb (Apply_Predicate_Check): Remove attempt at optimization

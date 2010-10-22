@@ -41,8 +41,6 @@ with Nlists;   use Nlists;
 with Output;   use Output;
 with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
-with Scans;    use Scans;
-with Scn;      use Scn;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Attr; use Sem_Attr;
@@ -10163,45 +10161,6 @@ package body Sem_Util is
 
       Set_Sloc (Endl, Loc);
    end Process_End_Label;
-
-   ------------------
-   -- Real_Convert --
-   ------------------
-
-   --  We do the conversion to get the value of the real string by using
-   --  the scanner, see Sinput for details on use of the internal source
-   --  buffer for scanning internal strings.
-
-   function Real_Convert (S : String) return Node_Id is
-      Save_Src : constant Source_Buffer_Ptr := Source;
-      Negative : Boolean;
-
-   begin
-      Source := Internal_Source_Ptr;
-      Scan_Ptr := 1;
-
-      for J in S'Range loop
-         Source (Source_Ptr (J)) := S (J);
-      end loop;
-
-      Source (S'Length + 1) := EOF;
-
-      if Source (Scan_Ptr) = '-' then
-         Negative := True;
-         Scan_Ptr := Scan_Ptr + 1;
-      else
-         Negative := False;
-      end if;
-
-      Scan;
-
-      if Negative then
-         Set_Realval (Token_Node, UR_Negate (Realval (Token_Node)));
-      end if;
-
-      Source := Save_Src;
-      return Token_Node;
-   end Real_Convert;
 
    ------------------------------------
    -- References_Generic_Formal_Type --
