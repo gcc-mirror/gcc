@@ -1544,10 +1544,6 @@ package Sinfo is
    --    is used for properly setting out of range values for use by pragmas
    --    Initialize_Scalars and Normalize_Scalars.
 
-   --  Of_Present (Flag16)
-   --  Present in N_Iterator_Specification nodes, to mark the Ada 2012 iterator
-   --  form over arrays and containers.
-
    --  Original_Discriminant (Node2-Sem)
    --    Present in identifiers. Used in references to discriminants that
    --    appear in generic units. Because the names of the discriminants may be
@@ -4219,6 +4215,8 @@ package Sinfo is
       --  Reverse_Present (Flag15)
       --  Of_Present (Flag16)
       --  Subtype_Indication (Node5)
+
+      --  Note: The Of_Present flag distinguishes the two forms
 
       --------------------------
       -- 5.6  Block Statement --
@@ -11758,6 +11756,7 @@ package Sinfo is
    pragma Inline (Inherited_Discriminant);
    pragma Inline (Instance_Spec);
    pragma Inline (Intval);
+   pragma Inline (Iterator_Specification);
    pragma Inline (Is_Accessibility_Actual);
    pragma Inline (Is_Asynchronous_Call_Block);
    pragma Inline (Is_Component_Left_Opnd);
@@ -11821,6 +11820,7 @@ package Sinfo is
    pragma Inline (Null_Exclusion_In_Return_Present);
    pragma Inline (Null_Record_Present);
    pragma Inline (Object_Definition);
+   pragma Inline (Of_Present);
    pragma Inline (Original_Discriminant);
    pragma Inline (Original_Entity);
    pragma Inline (Others_Discrete_Choices);
@@ -12072,6 +12072,7 @@ package Sinfo is
    pragma Inline (Set_Inherited_Discriminant);
    pragma Inline (Set_Instance_Spec);
    pragma Inline (Set_Intval);
+   pragma Inline (Set_Iterator_Specification);
    pragma Inline (Set_Is_Accessibility_Actual);
    pragma Inline (Set_Is_Asynchronous_Call_Block);
    pragma Inline (Set_Is_Component_Left_Opnd);
@@ -12136,6 +12137,7 @@ package Sinfo is
    pragma Inline (Set_Null_Exclusion_In_Return_Present);
    pragma Inline (Set_Null_Record_Present);
    pragma Inline (Set_Object_Definition);
+   pragma Inline (Set_Of_Present);
    pragma Inline (Set_Original_Discriminant);
    pragma Inline (Set_Original_Entity);
    pragma Inline (Set_Others_Discrete_Choices);

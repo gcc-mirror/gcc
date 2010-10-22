@@ -1734,6 +1734,8 @@ package body Sem_Ch5 is
    --  Start of processing for Analyze_Iteration_Scheme
 
    begin
+      --  Why is following check needed ???
+
       if Analyzed (N) then
          return;
       end if;
@@ -1806,9 +1808,8 @@ package body Sem_Ch5 is
                      if Nkind (DS) = N_Function_Call
                        or else
                          (Is_Entity_Name (DS)
-                            and then not Is_Type (Entity (DS)))
+                           and then not Is_Type (Entity (DS)))
                      then
-
                         --  This is an iterator specification. Rewrite as such
                         --  and analyze.
 
@@ -1823,7 +1824,6 @@ package body Sem_Ch5 is
                                           Empty,
                                         Reverse_Present     =>
                                           Reverse_Present (LP));
-
                         begin
                            Set_Iterator_Specification (N, I_Spec);
                            Set_Loop_Parameter_Specification (N, Empty);
@@ -1981,8 +1981,8 @@ package body Sem_Ch5 is
       Subt      : constant Node_Id := Subtype_Indication (N);
       Container : constant Node_Id := Name (N);
 
-      Ent       : Entity_Id;
-      Typ       : Entity_Id;
+      Ent : Entity_Id;
+      Typ : Entity_Id;
 
    begin
       Enter_Name (Def_Id);
@@ -1998,15 +1998,15 @@ package body Sem_Ch5 is
       if Is_Array_Type (Typ) then
          if Of_Present (N) then
             Set_Etype (Def_Id, Component_Type (Typ));
-
          else
             Set_Etype (Def_Id, Etype (First_Index (Typ)));
          end if;
 
-      else
-         --  Iteration over a container
+      --  Iteration over a container
 
+      else
          Set_Ekind (Def_Id, E_Loop_Parameter);
+
          if Of_Present (N) then
 
             --  Find the Element_Type in the package instance that defines the
@@ -2023,7 +2023,6 @@ package body Sem_Ch5 is
             end loop;
 
          else
-
             --  Find the Cursor type in similar fashion
 
             Ent := First_Entity (Scope (Typ));
