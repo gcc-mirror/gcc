@@ -821,14 +821,14 @@ struct processor_costs amdfam10_cost = {
 
 struct processor_costs bdver1_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (2),			/* cost of a lea instruction */
+  COSTS_N_INSNS (1),			/* cost of a lea instruction */
   COSTS_N_INSNS (1),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
+  {COSTS_N_INSNS (4),			/* cost of starting multiply for QI */
    COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (5)},			/*			      other */
+   COSTS_N_INSNS (4),			/*				 SI */
+   COSTS_N_INSNS (6),			/*				 DI */
+   COSTS_N_INSNS (6)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI */
    COSTS_N_INSNS (35),			/*			    HI */
@@ -840,26 +840,26 @@ struct processor_costs bdver1_cost = {
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
   4,				     /* cost for loading QImode using movzbl */
-  {3, 4, 3},				/* cost of loading integer registers
+  {5, 5, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {3, 4, 3},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {4, 4, 12},				/* cost of loading fp registers
+  {4, 4, 4},				/* cost of storing integer registers */
+  2,					/* cost of reg,reg fld/fst */
+  {5, 5, 12},				/* cost of loading fp registers
 		   			   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
+  {4, 4, 8},				/* cost of storing fp registers
  		   			   in SFmode, DFmode and XFmode */
   2,					/* cost of moving MMX register */
-  {3, 3},				/* cost of loading MMX registers
+  {4, 4},				/* cost of loading MMX registers
 					   in SImode and DImode */
   {4, 4},				/* cost of storing MMX registers
 					   in SImode and DImode */
   2,					/* cost of moving SSE register */
-  {4, 4, 3},				/* cost of loading SSE registers
+  {4, 4, 4},				/* cost of loading SSE registers
 					   in SImode, DImode and TImode */
-  {4, 4, 5},				/* cost of storing SSE registers
+  {4, 4, 4},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
-  3,					/* MMX or SSE register to integer */
+  2,					/* MMX or SSE register to integer */
   					/* On K8:
 					    MOVD reg64, xmmreg Double FSTORE 4
 					    MOVD reg32, xmmreg Double FSTORE 4
@@ -868,8 +868,8 @@ struct processor_costs bdver1_cost = {
 							       1/1  1/1
 					    MOVD reg32, xmmreg Double FADD 3
 							       1/1  1/1 */
-  64,					/* size of l1 cache.  */
-  1024,					/* size of l2 cache.  */
+  16,					/* size of l1 cache.  */
+  2048,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
   /* New AMD processors never drop prefetches; if they cannot be performed
      immediately, they are queued.  We set number of simultaneous prefetches
@@ -878,12 +878,12 @@ struct processor_costs bdver1_cost = {
      time).  */
   100,					/* number of parallel prefetches */
   2,					/* Branch cost */
-  COSTS_N_INSNS (4),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (4),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (19),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (6),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (42),			/* cost of FDIV instruction.  */
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
+  COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
 
   /*  BDVER1 has optimized REP instruction for medium sized blocks, but for
       very small blocks it is better to use loop. For large blocks, libcall
@@ -893,15 +893,15 @@ struct processor_costs bdver1_cost = {
   {{libcall, {{8, loop}, {24, unrolled_loop},
 	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
    {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  4,					/* scalar_stmt_cost.  */
-  2,					/* scalar load_cost.  */
-  2,					/* scalar_store_cost.  */
+  6,					/* scalar_stmt_cost.  */
+  4,					/* scalar load_cost.  */
+  4,					/* scalar_store_cost.  */
   6,					/* vec_stmt_cost.  */
   0,					/* vec_to_scalar_cost.  */
   2,					/* scalar_to_vec_cost.  */
-  2,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  2,					/* vec_store_cost.  */
+  4,					/* vec_align_load_cost.  */
+  4,					/* vec_unalign_load_cost.  */
+  4,					/* vec_store_cost.  */
   2,					/* cond_taken_branch_cost.  */
   1,					/* cond_not_taken_branch_cost.  */
 };
