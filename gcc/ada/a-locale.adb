@@ -45,7 +45,7 @@ package body Ada.Locales is
       pragma Import (C, C_Get_Language_Code);
       F : Lower_4;
    begin
-      C_Get_Language_Code (F (1)'Address);
+      C_Get_Language_Code (F'Address);
       return Language_Code (F (1 .. 3));
    end Language;
 
@@ -58,7 +58,7 @@ package body Ada.Locales is
       pragma Import (C, C_Get_Country_Code);
       F : Upper_4;
    begin
-      C_Get_Country_Code (F (1)'Address);
+      C_Get_Country_Code (F'Address);
       return Country_Code (F (1 .. 2));
    end Country;
 

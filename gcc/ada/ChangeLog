@@ -1,3 +1,11 @@
+2010-10-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-locale.adb: Minor code clean up.
+
+2010-10-22  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb: Minor code reorganization and factoring.
+
 2010-10-22  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch5.adb, sem_ch5.adb, sinfo.ads, snames.ads-tmpl, par-ch5.adb:
