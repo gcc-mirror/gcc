@@ -1734,204 +1734,207 @@ package body Sem_Ch5 is
 
       if No (N) then
          return;
+      end if;
 
-      else
-         declare
-            Cond : constant Node_Id := Condition (N);
+      --  Iteration scheme is present
 
-         begin
-            --  For WHILE loop, verify that the condition is a Boolean
-            --  expression and resolve and check it.
+      declare
+         Cond : constant Node_Id := Condition (N);
 
-            if Present (Cond) then
-               Analyze_And_Resolve (Cond, Any_Boolean);
-               Check_Unset_Reference (Cond);
-               Set_Current_Value_Condition (N);
-               return;
+      begin
+         --  For WHILE loop, verify that the condition is a Boolean
+         --  expression and resolve and check it.
 
-            elsif Present (Iterator_Specification (N)) then
-               Analyze_Iterator_Specification (Iterator_Specification (N));
+         if Present (Cond) then
+            Analyze_And_Resolve (Cond, Any_Boolean);
+            Check_Unset_Reference (Cond);
+            Set_Current_Value_Condition (N);
+            return;
 
-            --  Else we have a FOR loop
+         elsif Present (Iterator_Specification (N)) then
+            Analyze_Iterator_Specification (Iterator_Specification (N));
 
-            else
+         --  Else we have a FOR loop
+
+         else
+            declare
+               LP : constant Node_Id   := Loop_Parameter_Specification (N);
+               Id : constant Entity_Id := Defining_Identifier (LP);
+               DS : constant Node_Id   := Discrete_Subtype_Definition (LP);
+
+            begin
+               Enter_Name (Id);
+
+               --  We always consider the loop variable to be referenced,
+               --  since the loop may be used just for counting purposes.
+
+               Generate_Reference (Id, N, ' ');
+
+               --  Check for the case of loop variable hiding a local variable
+               --  (used later on to give a nice warning if the hidden variable
+               --  is never assigned).
+
                declare
-                  LP : constant Node_Id   := Loop_Parameter_Specification (N);
-                  Id : constant Entity_Id := Defining_Identifier (LP);
-                  DS : constant Node_Id   := Discrete_Subtype_Definition (LP);
-
+                  H : constant Entity_Id := Homonym (Id);
                begin
-                  Enter_Name (Id);
-
-                  --  We always consider the loop variable to be referenced,
-                  --  since the loop may be used just for counting purposes.
-
-                  Generate_Reference (Id, N, ' ');
-
-                  --  Check for case of loop variable hiding a local
-                  --  variable (used later on to give a nice warning
-                  --  if the hidden variable is never assigned).
-
-                  declare
-                     H : constant Entity_Id := Homonym (Id);
-                  begin
-                     if Present (H)
-                       and then Enclosing_Dynamic_Scope (H) =
-                                Enclosing_Dynamic_Scope (Id)
-                       and then Ekind (H) = E_Variable
-                       and then Is_Discrete_Type (Etype (H))
-                     then
-                        Set_Hiding_Loop_Variable (H, Id);
-                     end if;
-                  end;
-
-                  --  Now analyze the subtype definition. If it is
-                  --  a range, create temporaries for bounds.
-
-                  if Nkind (DS) = N_Range
-                    and then Expander_Active
+                  if Present (H)
+                    and then Enclosing_Dynamic_Scope (H) =
+                    Enclosing_Dynamic_Scope (Id)
+                    and then Ekind (H) = E_Variable
+                    and then Is_Discrete_Type (Etype (H))
                   then
-                     Process_Bounds (DS);
-                  else
-                     Analyze (DS);
-
-                     if Nkind (DS) = N_Function_Call
-                       or else
-                         (Is_Entity_Name (DS)
-                           and then not Is_Type (Entity (DS)))
-                     then
-                        --  This is an iterator specification. Rewrite as such
-                        --  and analyze.
-
-                        declare
-                           I_Spec : constant Node_Id :=
-                                      Make_Iterator_Specification (Sloc (LP),
-                                        Defining_Identifier =>
-                                          Relocate_Node (Id),
-                                        Name                =>
-                                          Relocate_Node (DS),
-                                        Subtype_Indication  =>
-                                          Empty,
-                                        Reverse_Present     =>
-                                          Reverse_Present (LP));
-                        begin
-                           Set_Iterator_Specification (N, I_Spec);
-                           Set_Loop_Parameter_Specification (N, Empty);
-                           Analyze_Iterator_Specification (I_Spec);
-                           return;
-                        end;
-                     end if;
+                     Set_Hiding_Loop_Variable (H, Id);
                   end if;
+               end;
 
-                  if DS = Error then
-                     return;
-                  end if;
+               --  Now analyze the subtype definition. If it is a range, create
+               --  temporaries for bounds.
 
-                  --  The subtype indication may denote the completion of an
-                  --  incomplete type declaration.
+               if Nkind (DS) = N_Range
+                 and then Expander_Active
+               then
+                  Process_Bounds (DS);
 
-                  if Is_Entity_Name (DS)
-                    and then Present (Entity (DS))
-                    and then Is_Type (Entity (DS))
-                    and then Ekind (Entity (DS)) = E_Incomplete_Type
+               --  Not a range or expander not active (is that right???)
+
+               else
+                  Analyze (DS);
+
+                  if Nkind (DS) = N_Function_Call
+                    or else
+                      (Is_Entity_Name (DS)
+                        and then not Is_Type (Entity (DS)))
                   then
-                     Set_Entity (DS, Get_Full_View (Entity (DS)));
-                     Set_Etype  (DS, Entity (DS));
-                  end if;
+                     --  This is an iterator specification. Rewrite as such
+                     --  and analyze.
 
-                  if not Is_Discrete_Type (Etype (DS)) then
-                     Wrong_Type (DS, Any_Discrete);
-                     Set_Etype (DS, Any_Type);
-                  end if;
-
-                  Check_Controlled_Array_Attribute (DS);
-
-                  Make_Index (DS, LP);
-
-                  Set_Ekind (Id, E_Loop_Parameter);
-                  Set_Etype (Id, Etype (DS));
-
-                  --  Treat a range as an implicit reference to the type, to
-                  --  inhibit spurious warnings.
-
-                  Generate_Reference (Base_Type (Etype (DS)), N, ' ');
-                  Set_Is_Known_Valid (Id, True);
-
-                  --  The loop is not a declarative part, so the only entity
-                  --  declared "within" must be frozen explicitly.
-
-                  declare
-                     Flist : constant List_Id := Freeze_Entity (Id, N);
-                  begin
-                     if Is_Non_Empty_List (Flist) then
-                        Insert_Actions (N, Flist);
-                     end if;
-                  end;
-
-                  --  Check for null or possibly null range and issue warning.
-                  --  We suppress such messages in generic templates and
-                  --  instances, because in practice they tend to be dubious
-                  --  in these cases.
-
-                  if Nkind (DS) = N_Range and then Comes_From_Source (N) then
                      declare
-                        L : constant Node_Id := Low_Bound  (DS);
-                        H : constant Node_Id := High_Bound (DS);
-
+                        I_Spec : constant Node_Id :=
+                                   Make_Iterator_Specification (Sloc (LP),
+                                     Defining_Identifier =>
+                                       Relocate_Node (Id),
+                                     Name                =>
+                                       Relocate_Node (DS),
+                                     Subtype_Indication  =>
+                                       Empty,
+                                     Reverse_Present     =>
+                                       Reverse_Present (LP));
                      begin
-                        --  If range of loop is null, issue warning
+                        Set_Iterator_Specification (N, I_Spec);
+                        Set_Loop_Parameter_Specification (N, Empty);
+                        Analyze_Iterator_Specification (I_Spec);
+                        return;
+                     end;
+                  end if;
+               end if;
 
-                        if Compile_Time_Compare
-                            (L, H, Assume_Valid => True) = GT
+               if DS = Error then
+                  return;
+               end if;
+
+               --  The subtype indication may denote the completion of an
+               --  incomplete type declaration.
+
+               if Is_Entity_Name (DS)
+                 and then Present (Entity (DS))
+                 and then Is_Type (Entity (DS))
+                 and then Ekind (Entity (DS)) = E_Incomplete_Type
+               then
+                  Set_Entity (DS, Get_Full_View (Entity (DS)));
+                  Set_Etype  (DS, Entity (DS));
+               end if;
+
+               if not Is_Discrete_Type (Etype (DS)) then
+                  Wrong_Type (DS, Any_Discrete);
+                  Set_Etype (DS, Any_Type);
+               end if;
+
+               Check_Controlled_Array_Attribute (DS);
+
+               Make_Index (DS, LP);
+
+               Set_Ekind (Id, E_Loop_Parameter);
+               Set_Etype (Id, Etype (DS));
+
+               --  Treat a range as an implicit reference to the type, to
+               --  inhibit spurious warnings.
+
+               Generate_Reference (Base_Type (Etype (DS)), N, ' ');
+               Set_Is_Known_Valid (Id, True);
+
+               --  The loop is not a declarative part, so the only entity
+               --  declared "within" must be frozen explicitly.
+
+               declare
+                  Flist : constant List_Id := Freeze_Entity (Id, N);
+               begin
+                  if Is_Non_Empty_List (Flist) then
+                     Insert_Actions (N, Flist);
+                  end if;
+               end;
+
+               --  Check for null or possibly null range and issue warning. We
+               --  suppress such messages in generic templates and instances,
+               --  because in practice they tend to be dubious in these cases.
+
+               if Nkind (DS) = N_Range and then Comes_From_Source (N) then
+                  declare
+                     L : constant Node_Id := Low_Bound  (DS);
+                     H : constant Node_Id := High_Bound (DS);
+
+                  begin
+                     --  If range of loop is null, issue warning
+
+                     if Compile_Time_Compare
+                          (L, H, Assume_Valid => True) = GT
+                     then
+                        --  Suppress the warning if inside a generic template
+                        --  or instance, since in practice they tend to be
+                        --  dubious in these cases since they can result from
+                        --  intended parametrization.
+
+                        if not Inside_A_Generic
+                          and then not In_Instance
                         then
-                           --  Suppress the warning if inside a generic
-                           --  template or instance, since in practice they
-                           --  tend to be dubious in these cases since they can
-                           --  result from intended parametrization.
+                           --  Specialize msg if invalid values could make
+                           --  the loop non-null after all.
 
-                           if not Inside_A_Generic
-                              and then not In_Instance
+                           if Compile_Time_Compare
+                                (L, H, Assume_Valid => False) = GT
                            then
-                              --  Specialize msg if invalid values could make
-                              --  the loop non-null after all.
+                              Error_Msg_N
+                                ("?loop range is null, loop will not execute",
+                                 DS);
 
-                              if Compile_Time_Compare
-                                   (L, H, Assume_Valid => False) = GT
-                              then
-                                 Error_Msg_N
-                                   ("?loop range is null, "
-                                    & "loop will not execute",
-                                    DS);
+                              --  Since we know the range of the loop is
+                              --  null, set the appropriate flag to remove
+                              --  the loop entirely during expansion.
 
-                                 --  Since we know the range of the loop is
-                                 --  null, set the appropriate flag to remove
-                                 --  the loop entirely during expansion.
-
-                                 Set_Is_Null_Loop (Parent (N));
+                              Set_Is_Null_Loop (Parent (N));
 
                               --  Here is where the loop could execute because
                               --  of invalid values, so issue appropriate
                               --  message and in this case we do not set the
                               --  Is_Null_Loop flag since the loop may execute.
 
-                              else
-                                 Error_Msg_N
-                                   ("?loop range may be null, "
-                                    & "loop may not execute",
-                                    DS);
-                                 Error_Msg_N
-                                   ("?can only execute if invalid values "
-                                    & "are present",
-                                    DS);
-                              end if;
+                           else
+                              Error_Msg_N
+                                ("?loop range may be null, "
+                                 & "loop may not execute",
+                                 DS);
+                              Error_Msg_N
+                                ("?can only execute if invalid values "
+                                 & "are present",
+                                 DS);
                            end if;
+                        end if;
 
-                           --  In either case, suppress warnings in the body of
-                           --  the loop, since it is likely that these warnings
-                           --  will be inappropriate if the loop never actually
-                           --  executes, which is likely.
+                        --  In either case, suppress warnings in the body of
+                        --  the loop, since it is likely that these warnings
+                        --  will be inappropriate if the loop never actually
+                        --  executes, which is likely.
 
-                           Set_Suppress_Loop_Warnings (Parent (N));
+                        Set_Suppress_Loop_Warnings (Parent (N));
 
                         --  The other case for a warning is a reverse loop
                         --  where the upper bound is the integer literal zero
@@ -1944,22 +1947,21 @@ package body Sem_Ch5 is
                         --  In practice, this is very likely to be a case of
                         --  reversing the bounds incorrectly in the range.
 
-                        elsif Reverse_Present (LP)
-                          and then Nkind (Original_Node (H)) =
-                                                          N_Integer_Literal
-                          and then (Intval (Original_Node (H)) = Uint_0
-                                      or else
+                     elsif Reverse_Present (LP)
+                       and then Nkind (Original_Node (H)) =
+                                                      N_Integer_Literal
+                       and then (Intval (Original_Node (H)) = Uint_0
+                                  or else
                                     Intval (Original_Node (H)) = Uint_1)
-                        then
-                           Error_Msg_N ("?loop range may be null", DS);
-                           Error_Msg_N ("\?bounds may be wrong way round", DS);
-                        end if;
-                     end;
-                  end if;
-               end;
-            end if;
-         end;
-      end if;
+                     then
+                        Error_Msg_N ("?loop range may be null", DS);
+                        Error_Msg_N ("\?bounds may be wrong way round", DS);
+                     end if;
+                  end;
+               end if;
+            end;
+         end if;
+      end;
    end Analyze_Iteration_Scheme;
 
    -------------------------------------

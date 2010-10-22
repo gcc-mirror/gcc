@@ -334,21 +334,21 @@ package body Sem_Util is
    --------------------------------
 
    procedure Bad_Predicated_Subtype_Use
-     (Typ : Entity_Id;
+     (Msg : String;
       N   : Node_Id;
-      Msg : String)
+      Typ : Entity_Id)
    is
    begin
       if Has_Predicates (Typ) then
          if Is_Generic_Actual_Type (Typ) then
-            Error_Msg_F (Msg & '?', Typ);
-            Error_Msg_F ("\Program_Error will be raised at run time?", Typ);
+            Error_Msg_FE (Msg & '?', N, Typ);
+            Error_Msg_F ("\Program_Error will be raised at run time?", N);
             Insert_Action (N,
               Make_Raise_Program_Error (Sloc (N),
                 Reason => PE_Bad_Predicated_Generic_Type));
 
          else
-            Error_Msg_F (Msg, Typ);
+            Error_Msg_FE (Msg, N, Typ);
          end if;
       end if;
    end Bad_Predicated_Subtype_Use;

@@ -3888,9 +3888,13 @@ package body Sem_Ch13 is
                    Right_Opnd => Exp);
             end if;
 
-            --  Output info message on inheritance if required
+            --  Output info message on inheritance if required. Note we do not
+            --  give this information for generic actual types, since it is
+            --  unwelcome noise in that case in instantiations.
 
-            if Opt.List_Inherited_Aspects then
+            if Opt.List_Inherited_Aspects
+              and then not Is_Generic_Actual_Type (Typ)
+            then
                Error_Msg_Sloc := Sloc (Predicate_Function (T));
                Error_Msg_Node_2 := T;
                Error_Msg_N ("?info: & inherits predicate from & #", Typ);
@@ -4087,9 +4091,10 @@ package body Sem_Ch13 is
 
             function Hi_Val (N : Node_Id) return Uint is
             begin
-               if Nkind (N) = N_Identifier then
+               if Is_Static_Expression (N) then
                   return Expr_Value (N);
                else
+                  pragma Assert (Nkind (N) = N_Range);
                   return Expr_Value (High_Bound (N));
                end if;
             end Hi_Val;
@@ -4100,9 +4105,10 @@ package body Sem_Ch13 is
 
             function Lo_Val (N : Node_Id) return Uint is
             begin
-               if Nkind (N) = N_Identifier then
+               if Is_Static_Expression (N) then
                   return Expr_Value (N);
                else
+                  pragma Assert (Nkind (N) = N_Range);
                   return Expr_Value (Low_Bound (N));
                end if;
             end Lo_Val;
@@ -4124,19 +4130,19 @@ package body Sem_Ch13 is
                   SHi := Hi_Val (N);
                end if;
 
-            --  Identifier case
+            --  Static expression case
+
+            elsif Is_Static_Expression (N) then
+               SLo := Lo_Val (N);
+               SHi := Hi_Val (N);
+
+            --  Identifier (other than static expression) case
 
             else pragma Assert (Nkind (N) = N_Identifier);
 
-               --  Static expression case
-
-               if Is_Static_Expression (N) then
-                  SLo := Lo_Val (N);
-                  SHi := Hi_Val (N);
-
                --  Type case
 
-               elsif Is_Type (Entity (N)) then
+               if Is_Type (Entity (N)) then
 
                   --  If type has static predicates, process them recursively
 

@@ -894,11 +894,9 @@ package body Sem_Ch9 is
 
          --  Check subtype with predicate in entry family
 
-         if Has_Predicates (Etype (D_Sdef)) then
-            Error_Msg_NE
-              ("subtype& has predicate, not allowed in entry family",
-               D_Sdef, Etype (D_Sdef));
-         end if;
+         Bad_Predicated_Subtype_Use
+           ("subtype& has predicate, not allowed in entry family",
+            D_Sdef, Etype (D_Sdef));
       end if;
 
       --  Decorate Def_Id

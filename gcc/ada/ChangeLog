@@ -1,5 +1,18 @@
 2010-10-22  Robert Dewar  <dewar@adacore.com>
 
+	* sem_case.adb, sem_attr.adb (Bad_Predicated_Subtype_Use): Change order
+	of parameters.
+	* sem_ch13.adb (Build_Predicate_Function): Don't give inheritance
+	messages for generic actual subtypes.
+	* sem_ch9.adb, sem_res.adb, sem_util.adb, sem_util.ads, sem_ch3.adb
+	(Bad_Predicated_Subtype_Use): Use this procedure.
+
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb: Minor reformatting.
+
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
 	* a-except-2005.adb (Rmsg_18): New message text.
 	* a-except.adb (Rmsg_18): New message text.
 	* atree.adb (List25): New function

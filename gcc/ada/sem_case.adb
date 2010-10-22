@@ -866,9 +866,8 @@ package body Sem_Case is
                              or else No (Static_Predicate (E))
                            then
                               Bad_Predicated_Subtype_Use
-                                (E, N,
-                                 "cannot use subtype&  with non-static "
-                                 & "predicate as case alternative");
+                                ("cannot use subtype&  with non-static "
+                                 & "predicate as case alternative", N, E);
 
                               --  Static predicate case
 
