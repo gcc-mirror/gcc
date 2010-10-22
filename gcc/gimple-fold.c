@@ -1044,6 +1044,8 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 	  if (TREE_CODE (gimple_vdef (stmt)) == SSA_NAME)
 	    SSA_NAME_DEF_STMT (gimple_vdef (stmt)) = new_stmt;
 	}
+      else if (reaching_vuse == gimple_vuse (stmt))
+	unlink_stmt_vdef (stmt);
     }
 
   gimple_set_location (new_stmt, gimple_location (stmt));
