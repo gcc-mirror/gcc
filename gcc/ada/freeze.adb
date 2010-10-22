@@ -3464,9 +3464,9 @@ package body Freeze is
                   end;
                end if;
 
-               --  If any of the index types was an enumeration type with
-               --  a non-standard rep clause, then we indicate that the
-               --  array type is always packed (even if it is not bit packed).
+               --  If any of the index types was an enumeration type with a
+               --  non-standard rep clause, then we indicate that the array
+               --  type is always packed (even if it is not bit packed).
 
                if Non_Standard_Enum then
                   Set_Has_Non_Standard_Rep (Base_Type (E));

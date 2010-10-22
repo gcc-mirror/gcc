@@ -1674,11 +1674,11 @@ package Einfo is
 --       such an object and no warning is generated.
 
 --    Has_Predicates (Flag250)
---       Present in type and subtype entities and in subprogram entities. Set
---       if a pragma Predicate or Predicate aspect applies to the type, or if
---       it inherits a Predicate aspect from its parent or progenitor types.
---       Also set in the predicate function entity, to distinguish it among
---       entries in the Subprograms_For_Type.
+--       Present in all entities. Set in type and subtype entities if a pragma
+--       Predicate or Predicate aspect applies to the type, or if it inherits a
+--       Predicate aspect from its parent or progenitor types. Also set in the
+--       predicate function entity, to distinguish it among entries in the
+--       Subprograms_For_Type.
 
 --    Has_Primitive_Operations (Flag120) [base type only]
 --       Present in all type entities. Set if at least one primitive operation
@@ -4666,6 +4666,7 @@ package Einfo is
    --    Has_Pragma_Thread_Local_Storage     (Flag169)
    --    Has_Pragma_Unmodified               (Flag233)
    --    Has_Pragma_Unreferenced             (Flag180)
+   --    Has_Predicates                      (Flag250)
    --    Has_Private_Declaration             (Flag155)
    --    Has_Qualified_Name                  (Flag161)
    --    Has_Stream_Size_Clause              (Flag184)
@@ -4778,7 +4779,6 @@ package Einfo is
    --    Has_Object_Size_Clause              (Flag172)
    --    Has_Pragma_Preelab_Init             (Flag221)
    --    Has_Pragma_Unreferenced_Objects     (Flag212)
-   --    Has_Predicates                      (Flag250)
    --    Has_Primitive_Operations            (Flag120)  (base type only)
    --    Has_Size_Clause                     (Flag29)
    --    Has_Specified_Layout                (Flag100)  (base type only)
@@ -5138,7 +5138,6 @@ package Einfo is
    --    Has_Missing_Return                  (Flag142)
    --    Has_Nested_Block_With_Handler       (Flag101)
    --    Has_Postconditions                  (Flag240)
-   --    Has_Predicates                      (Flag250)
    --    Has_Recursive_Call                  (Flag143)
    --    Has_Subprogram_Descriptor           (Flag93)
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
@@ -5271,7 +5270,6 @@ package Einfo is
    --    Subprograms_For_Type                (Node29)
    --    Has_Invariants                      (Flag232)
    --    Has_Postconditions                  (Flag240)
-   --    Has_Predicates                      (Flag250)
    --    Is_Machine_Code_Subprogram          (Flag137)
    --    Is_Pure                             (Flag44)
    --    Is_Intrinsic_Subprogram             (Flag64)
@@ -5403,7 +5401,6 @@ package Einfo is
    --    Has_Master_Entity                   (Flag21)
    --    Has_Nested_Block_With_Handler       (Flag101)
    --    Has_Postconditions                  (Flag240)
-   --    Has_Predicates                      (Flag250)
    --    Has_Subprogram_Descriptor           (Flag93)
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
    --    Is_Asynchronous                     (Flag81)

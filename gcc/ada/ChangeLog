@@ -1,3 +1,19 @@
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, einfo.adb (Has_Predicates): Flag is now on all entities
+	(simplifies code).
+	* exp_ch13.adb (Build_Predicate_Function): Output info msgs for
+	inheritance.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Make sure we have a
+	freeze node for entities for which a predicate is specified.
+	(Analyze_Aspect_Specifications): Avoid duplicate calls
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Remove attempt to avoid
+	duplicate calls to Analye_Aspect_Specifications.
+
+2010-10-22  Thomas Quinot  <quinot@adacore.com>
+
+	* a-exextr.adb, atree.ads, freeze.adb: Minor reformatting.
+
 2010-10-21  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb: Minor reformatting.

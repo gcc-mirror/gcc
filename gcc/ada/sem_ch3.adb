@@ -2403,9 +2403,7 @@ package body Sem_Ch3 is
       Set_Optimize_Alignment_Flags (Def_Id);
       Check_Eliminated (Def_Id);
 
-      if Nkind (N) = N_Full_Type_Declaration then
-         Analyze_Aspect_Specifications (N, Def_Id, Aspect_Specifications (N));
-      end if;
+      Analyze_Aspect_Specifications (N, Def_Id, Aspect_Specifications (N));
    end Analyze_Full_Type_Declaration;
 
    ----------------------------------
@@ -4215,8 +4213,8 @@ package body Sem_Ch3 is
       Set_Optimize_Alignment_Flags (Id);
       Check_Eliminated (Id);
 
-      <<Leave>>
-         Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+   <<Leave>>
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Subtype_Declaration;
 
    --------------------------------

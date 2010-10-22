@@ -1411,7 +1411,6 @@ package body Einfo is
 
    function Has_Predicates (Id : E) return B is
    begin
-      pragma Assert (Is_Type (Id) or else Is_Subprogram (Id));
       return Flag250 (Id);
    end Has_Predicates;
 
@@ -3863,9 +3862,6 @@ package body Einfo is
 
    procedure Set_Has_Predicates (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Type (Id)
-        or else Ekind (Id) = E_Function
-        or else Ekind (Id) = E_Void);
       Set_Flag250 (Id, V);
    end Set_Has_Predicates;
 
