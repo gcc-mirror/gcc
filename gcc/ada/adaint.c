@@ -188,6 +188,9 @@ struct vstring
   char string[NAM$C_MAXRSS+1];
 };
 
+#define SYI$_ACTIVECPU_CNT 0x111e
+extern int LIB$GETSYI (int *, unsigned int *);
+
 #else
 #include <utime.h>
 #endif
@@ -2394,6 +2397,15 @@ __gnat_number_of_cpus (void)
   SYSTEM_INFO sysinfo;
   GetSystemInfo (&sysinfo);
   cores = (int) sysinfo.dwNumberOfProcessors;
+
+#elif defined (VMS)
+  int code = SYI$_ACTIVECPU_CNT;
+  unsigned int res;
+  int status;
+
+  status = LIB$GETSYI (&code, &res);
+  if ((status & 1) != 0)
+    cores = res;
 #endif
 
   return cores;

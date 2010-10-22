@@ -1711,11 +1711,19 @@ package body Ch5 is
       --  during analysis of the loop parameter specification.
 
       if Token = Tok_Of or else Token = Tok_Colon then
+
+         if Ada_Version < Ada_2012 then
+            Error_Msg_SC ("iterator is an Ada2012 feature");
+         end if;
+
          return P_Iterator_Specification (ID_Node);
       end if;
 
+      --  The span of the Loop_Parameter_Specification starts at the
+      --  defining identifier.
+
       Loop_Param_Specification_Node :=
-        New_Node (N_Loop_Parameter_Specification, Token_Ptr);
+        New_Node (N_Loop_Parameter_Specification, Sloc (ID_Node));
       Set_Defining_Identifier (Loop_Param_Specification_Node, ID_Node);
 
       if Token = Tok_Left_Paren then
@@ -1753,7 +1761,7 @@ package body Ch5 is
       Node1 : Node_Id;
 
    begin
-      Node1 :=  New_Node (N_Iterator_Specification, Token_Ptr);
+      Node1 :=  New_Node (N_Iterator_Specification, Sloc (Def_Id));
       Set_Defining_Identifier (Node1, Def_Id);
 
       if Token = Tok_Colon then

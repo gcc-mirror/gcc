@@ -14553,12 +14553,6 @@ Verbose mode;
 @command{gnatmetric} generates version information and then
 a trace of sources being processed.
 
-@item ^-dv^/DEBUG_OUTPUT^
-@cindex @option{^-dv^/DEBUG_OUTPUT^} (@code{gnatmetric})
-Debug mode;
-@command{gnatmetric} generates various messages useful to understand what
-happens during the metrics computation
-
 @item ^-q^/QUIET^
 @cindex @option{^-q^/QUIET^} (@code{gnatmetric})
 Quiet mode.

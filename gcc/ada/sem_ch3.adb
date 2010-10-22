@@ -9914,12 +9914,47 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  Copy rep item chain, and also setting of Has_Predicates from
-      --  private subtype to full subtype, since we will need these on the
-      --  full subtype to create the predicate function.
+      --  Link rep item chain, and also setting of Has_Predicates from private
+      --  subtype to full subtype, since we will need these on the full subtype
+      --  to create the predicate function. Note that the full subtype may
+      --  already have rep items, inherited from the full view of the base
+      --  type, so we must be sure not to overwrite these entries.
 
-      Set_First_Rep_Item (Full, First_Rep_Item (Priv));
-      Set_Has_Predicates (Full, Has_Predicates (Priv));
+      declare
+         Item      : Node_Id;
+         Next_Item : Node_Id;
+
+      begin
+         Item := First_Rep_Item (Full);
+
+         --  If no existing rep items on full type, we can just link directly
+         --  to the list of items on the private type.
+
+         if No (Item) then
+            Set_First_Rep_Item (Full, First_Rep_Item (Priv));
+
+         --  Else search to end of items currently linked to the full subtype
+
+         else
+            loop
+               Next_Item := Next_Rep_Item (Item);
+               exit when No (Next_Item);
+               Item := Next_Item;
+            end loop;
+
+            --  And link the private type items at the end of the chain
+
+            Set_Next_Rep_Item (Item, First_Rep_Item (Priv));
+         end if;
+      end;
+
+      --  Make sure Has_Predicates is set on full type if it is set on the
+      --  private type. Note that it may already be set on the full type and
+      --  if so, we don't want to unset it.
+
+      if Has_Predicates (Priv) then
+         Set_Has_Predicates (Full);
+      end if;
    end Complete_Private_Subtype;
 
    ----------------------------
