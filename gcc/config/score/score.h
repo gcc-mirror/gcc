@@ -98,9 +98,6 @@
 #define TARGET_VERSION \
       fprintf (stderr, "Sunplus S+core rev=%s", SCORE_GCC_VERSION);
 
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
-
 /* Target machine storage layout.  */
 #define BITS_BIG_ENDIAN        0
 #define BYTES_BIG_ENDIAN       (TARGET_LITTLE_ENDIAN == 0)

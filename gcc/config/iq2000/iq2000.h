@@ -68,8 +68,6 @@
 #ifndef TARGET_VERSION
 #define TARGET_VERSION TARGET_VERSION_INTERNAL (stderr)
 #endif
-
-#define CAN_DEBUG_WITHOUT_FP
 
 /* Storage Layout.  */
 

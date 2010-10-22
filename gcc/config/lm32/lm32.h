@@ -536,8 +536,6 @@ do {                                                            \
 
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
 
-#define CAN_DEBUG_WITHOUT_FP
-
 #define DEFAULT_GDB_EXTENSIONS 1
 
 /*--------*/

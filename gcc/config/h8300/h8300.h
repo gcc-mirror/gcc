@@ -125,9 +125,6 @@ extern const char * const *h8_reg_names;
 #define TARGET_DEFAULT (MASK_QUICKCALL)
 #endif
 
-/* Show we can debug even without a frame pointer.  */
-/* #define CAN_DEBUG_WITHOUT_FP */
-
 /* We want dwarf2 info available to gdb...  */
 #define DWARF2_DEBUGGING_INFO        1
 /* ... but we don't actually support full dwarf2 EH.  */

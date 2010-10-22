@@ -1490,23 +1490,20 @@ s390_init_machine_status (void)
 }
 
 /* Change optimizations to be performed, depending on the
-   optimization level.
+   optimization level.  */
 
-   LEVEL is the optimization level specified; 2 if `-O2' is
-   specified, 1 if `-O' is specified, and 0 if neither is specified.
+static const struct default_options s390_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
 
-   SIZE is nonzero if `-Os' is specified and zero otherwise.  */
+    /* ??? There are apparently still problems with -fcaller-saves.  */
+    { OPT_LEVELS_ALL, OPT_fcaller_saves, NULL, 0 },
 
-static void
-s390_option_optimization (int level ATTRIBUTE_UNUSED, int size)
-{
-  /* ??? There are apparently still problems with -fcaller-saves.  */
-  flag_caller_saves = 0;
+    /* Use MVCLE instructions to decrease code size if requested.  */
+    { OPT_LEVELS_SIZE, OPT_mmvcle, NULL, 1 },
 
-  /* Use MVCLE instructions to decrease code size if requested.  */
-  if (size != 0)
-    target_flags |= MASK_MVCLE;
-}
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Implement TARGET_OPTION_INIT_STRUCT.  */
 
@@ -1730,7 +1727,7 @@ s390_option_override (void)
 			 global_options.x_param_values,
 			 global_options_set.x_param_values);
 
-  /* This cannot reside in s390_option_optimization since HAVE_prefetch
+  /* This cannot reside in s390_option_optimization_table since HAVE_prefetch
      requires the arch flags to be evaluated already.  Since prefetching
      is beneficial on s390, we enable it if available.  */
   if (flag_prefetch_loop_arrays < 0 && HAVE_prefetch && optimize >= 3)
@@ -10510,8 +10507,8 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE s390_option_override
 
-#undef TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION s390_option_optimization
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE s390_option_optimization_table
 
 #undef TARGET_OPTION_INIT_STRUCT
 #define TARGET_OPTION_INIT_STRUCT s390_option_init_struct

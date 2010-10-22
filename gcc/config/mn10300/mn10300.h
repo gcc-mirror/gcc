@@ -493,10 +493,6 @@ enum reg_class
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
   OFFSET = mn10300_initial_offset (FROM, TO)
 
-/* We can debug without frame pointers on the mn10300, so eliminate
-   them whenever possible.  */
-#define CAN_DEBUG_WITHOUT_FP
-
 /* We use d0/d1 for passing parameters, so allocate 8 bytes of space
    for a register flushback area.  */
 #define REG_PARM_STACK_SPACE(DECL) 8

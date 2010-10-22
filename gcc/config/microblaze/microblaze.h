@@ -61,9 +61,6 @@ extern enum pipeline_type microblaze_pipe;
 #define SWITCH_TAKES_ARG(CHAR)						\
   (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
 
-/*  We can debug without having a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
-
 #define DRIVER_SELF_SPECS    				\
 	"%{mxl-soft-mul:%<mno-xl-soft-mul}", 		\
 	"%{mno-xl-barrel-shift:%<mxl-barrel-shift}", 	\

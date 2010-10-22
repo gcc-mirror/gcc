@@ -132,7 +132,6 @@ static int cris_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 static tree cris_md_asm_clobbers (tree, tree, tree);
 
 static bool cris_handle_option (size_t, const char *, int);
-static void cris_option_optimization (int, int);
 static void cris_option_override (void);
 
 static bool cris_frame_pointer_required (void);
@@ -149,6 +148,14 @@ int cris_max_stackframe = 0;
 
 /* This is the parsed result of the "-march=" option, if given.  */
 int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
+
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+
+static const struct default_options cris_option_optimization_table[] =
+  {
+    { OPT_LEVELS_2_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -218,8 +225,8 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE cris_option_override
-#undef TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION cris_option_optimization
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE cris_option_optimization_table
 
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE cris_asm_trampoline_template
@@ -2420,15 +2427,6 @@ cris_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED,
   CRIS_SUBTARGET_HANDLE_OPTION(code, arg, value);
 
   return true;
-}
-
-/* Implement TARGET_OPTION_OPTIMIZATION.  */
-
-static void
-cris_option_optimization (int level, int size)
-{
-  if (level >= 2 || size)
-    flag_omit_frame_pointer = 1;
 }
 
 /* The TARGET_OPTION_OVERRIDE worker.

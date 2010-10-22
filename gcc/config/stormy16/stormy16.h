@@ -53,8 +53,6 @@
   while (0)
 
 #define TARGET_VERSION fprintf (stderr, " (xstormy16 cpu core)");
-
-#define CAN_DEBUG_WITHOUT_FP
 
 /* Storage Layout.  */
 

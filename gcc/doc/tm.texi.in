@@ -793,26 +793,19 @@ used to alter option flag variables which only exist in those
 frontends.
 @end defmac
 
-@hook TARGET_OPTION_OPTIMIZATION
+@hook TARGET_OPTION_OPTIMIZATION_TABLE
 Some machines may desire to change what optimizations are performed for
-various optimization levels.   This hook, if defined, is executed once
+various optimization levels.   This variable, if defined, describes
+options to enable at particular sets of optimization levels.  These
+options are processed once
 just after the optimization level is determined and before the remainder
-of the command options have been parsed.  Values set in this macro are
-used as the default values for the other command line options.
+of the command options have been parsed, so may be overridden by other
+options passed explicily.
 
-@var{level} is the optimization level specified; 2 if @option{-O2} is
-specified, 1 if @option{-O} is specified, and 0 if neither is specified.
-
-@var{size} is nonzero if @option{-Os} is specified and zero otherwise.
-
-This macro is run once at program startup and when the optimization
+This processing is run once at program startup and when the optimization
 options are changed via @code{#pragma GCC optimize} or by using the
 @code{optimize} attribute.
-
-@strong{Do not examine @code{write_symbols} in
-this hook!}  The debugging options are not supposed to alter the
-generated code.
-@end deftypefn
+@end deftypevr
 
 @hook TARGET_OPTION_INIT_STRUCT
 
@@ -824,12 +817,6 @@ This hook is called in response to the user invoking
 chance to display extra information on the target specific command
 line options found in its @file{.opt} file.
 @end deftypefn
-
-@defmac CAN_DEBUG_WITHOUT_FP
-Define this macro if debugging can be performed even without a frame
-pointer.  If this macro is defined, GCC will turn on the
-@option{-fomit-frame-pointer} option whenever @option{-O} is specified.
-@end defmac
 
 @defmac SWITCHABLE_TARGET
 Some targets need to switch between substantially different subtargets

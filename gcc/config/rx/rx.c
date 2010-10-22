@@ -2253,6 +2253,13 @@ rx_option_override (void)
   rx_override_options_after_change ();
 }
 
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+static const struct default_options rx_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
+
 
 static bool
 rx_allocate_stack_slots_for_args (void)
@@ -2849,6 +2856,9 @@ rx_memory_move_cost (enum machine_mode mode, enum reg_class regclass, bool in)
 
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE			rx_option_override
+
+#undef  TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE	rx_option_optimization_table
 
 #undef  TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE		rx_promote_function_mode

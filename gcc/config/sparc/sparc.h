@@ -496,9 +496,6 @@ extern enum cmodel sparc_cmodel;
 /* ??? This should be 32 bits for v9 but what can we do?  */
 #define WCHAR_TYPE "short unsigned int"
 #define WCHAR_TYPE_SIZE 16
-
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
 
 /* Mask of all CPU selection flags.  */
 #define MASK_ISA \

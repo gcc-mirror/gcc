@@ -91,13 +91,8 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_SUBTARGET_DEFAULT \
 	(MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS)
 
-#define SUBTARGET_OPTIMIZATION_OPTIONS			\
-  do							\
-    {							\
-      if (optimize >= 1)				\
-	target_flags |= MASK_OMIT_LEAF_FRAME_POINTER;	\
-    }							\
-  while (0)
+#define SUBTARGET_OPTIMIZATION_OPTIONS				\
+  { OPT_LEVELS_1_PLUS, OPT_momit_leaf_frame_pointer, NULL, 1 }
 
 #define MULTILIB_DEFAULTS { "m32" }
 

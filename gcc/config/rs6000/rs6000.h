@@ -625,9 +625,6 @@ extern unsigned char rs6000_recip_bits[];
 /* The default CPU for TARGET_OPTION_OVERRIDE.  */
 #define OPTION_TARGET_CPU_DEFAULT TARGET_CPU_DEFAULT
 
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
-
 /* Target pragma.  */
 #define REGISTER_TARGET_PRAGMAS() do {				\
   c_register_pragma (0, "longcall", rs6000_pragma_longcall);	\

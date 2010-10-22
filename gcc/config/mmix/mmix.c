@@ -114,7 +114,6 @@ rtx mmix_compare_op1;
 static int mmix_output_destination_register;
 
 static void mmix_option_override (void);
-static void mmix_option_optimization (int, int);
 static void mmix_asm_output_source_filename (FILE *, const char *);
 static void mmix_output_shiftvalue_op_from_str
   (FILE *, const char *, HOST_WIDEST_INT);
@@ -159,6 +158,15 @@ static bool mmix_pass_by_reference (CUMULATIVE_ARGS *,
 static bool mmix_frame_pointer_required (void);
 static void mmix_asm_trampoline_template (FILE *);
 static void mmix_trampoline_init (rtx, tree, rtx);
+
+/* TARGET_OPTION_OPTIMIZATION_TABLE.  */
+
+static const struct default_options mmix_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fregmove, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
    for a general description.  */
@@ -251,8 +259,8 @@ static void mmix_trampoline_init (rtx, tree, rtx);
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE mmix_option_override
-#undef TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION mmix_option_optimization
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE mmix_option_optimization_table
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -274,18 +282,6 @@ mmix_option_override (void)
       warning (0, "-f%s not supported: ignored", (flag_pic > 1) ? "PIC" : "pic");
       flag_pic = 0;
     }
-}
-
-/* TARGET_OPTION_OPTIMIZATION.  */
-
-static void
-mmix_option_optimization (int level, int size)
-{
-  if (level >= 1)
-    flag_regmove = 1;
-
-  if (size || level > 1)
-    flag_omit_frame_pointer = 1;
 }
 
 /* INIT_EXPANDERS.  */

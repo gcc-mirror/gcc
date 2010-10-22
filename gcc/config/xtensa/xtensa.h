@@ -100,9 +100,6 @@ extern unsigned xtensa_current_frame_size;
 #define LIBGCC2_WORDS_BIG_ENDIAN 0
 #endif
 
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
-
 
 /* Target machine storage layout */
 

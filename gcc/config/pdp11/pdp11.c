@@ -145,7 +145,6 @@ decode_pdp11_d (const struct real_format *fmt ATTRIBUTE_UNUSED,
 /* rtx cc0_reg_rtx; - no longer needed? */
 
 static bool pdp11_handle_option (size_t, const char *, int);
-static void pdp11_option_optimization (int, int);
 static void pdp11_option_init_struct (struct gcc_options *);
 static rtx find_addr_reg (rtx); 
 static const char *singlemove_string (rtx *);
@@ -162,6 +161,14 @@ static rtx pdp11_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 			       const_tree, bool);
 static void pdp11_function_arg_advance (CUMULATIVE_ARGS *,
 					enum machine_mode, const_tree, bool);
+
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+
+static const struct default_options pdp11_option_optimization_table[] =
+  {
+    { OPT_LEVELS_3_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -188,8 +195,8 @@ static void pdp11_function_arg_advance (CUMULATIVE_ARGS *,
   (MASK_FPU | MASK_45 | MASK_ABSHI_BUILTIN | TARGET_UNIX_ASM_DEFAULT)
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION pdp11_handle_option
-#undef TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION pdp11_option_optimization
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE pdp11_option_optimization_table
 #undef TARGET_OPTION_INIT_STRUCT
 #define TARGET_OPTION_INIT_STRUCT pdp11_option_init_struct
 
@@ -230,18 +237,6 @@ pdp11_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED,
 
     default:
       return true;
-    }
-}
-
-/* Implement TARGET_OPTION_OPTIMIZATION.  */
-
-static void
-pdp11_option_optimization (int level, int size ATTRIBUTE_UNUSED)
-{
-  if (level >= 3)
-    {
-      flag_omit_frame_pointer = 1;
-      /* flag_unroll_loops = 1; */
     }
 }
 

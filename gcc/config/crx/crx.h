@@ -54,9 +54,6 @@ do {								\
 
 #define TARGET_VERSION fputs (" (CRX/ELF)", stderr);
 
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
-
 /*****************************************************************************/
 /* STORAGE LAYOUT							     */
 /*****************************************************************************/

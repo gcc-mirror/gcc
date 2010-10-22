@@ -305,15 +305,6 @@ extern enum m32r_sdata m32r_sdata;
 #ifndef SUBTARGET_OVERRIDE_OPTIONS
 #define SUBTARGET_OVERRIDE_OPTIONS
 #endif
-
-#ifndef SUBTARGET_OPTIMIZATION_OPTIONS
-#define SUBTARGET_OPTIMIZATION_OPTIONS
-#endif
-
-/* Define this macro if debugging can be performed even without a
-   frame pointer.  If this macro is defined, GCC will turn on the
-   `-fomit-frame-pointer' option whenever `-O' is specified.  */
-#define CAN_DEBUG_WITHOUT_FP
 
 /* Target machine storage layout.  */
 

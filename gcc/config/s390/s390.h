@@ -158,9 +158,6 @@ extern int s390_arch_flags;
 #define TARGET_VERSION fprintf (stderr, " (S/390)");
 #endif
 
-/* Frame pointer is not used for debugging.  */
-#define CAN_DEBUG_WITHOUT_FP
-
 /* Constants needed to control the TEST DATA CLASS (TDC) instruction.  */
 #define S390_TDC_POSITIVE_ZERO                     (1 << 11)
 #define S390_TDC_NEGATIVE_ZERO                     (1 << 10)

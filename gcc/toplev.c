@@ -1822,11 +1822,7 @@ process_options (void)
   if (flag_unroll_all_loops)
     flag_unroll_loops = 1;
 
-  /* The loop unrolling code assumes that cse will be run after loop.
-     web and rename-registers also help when run after loop unrolling.  */
-  if (flag_rerun_cse_after_loop == AUTODETECT_VALUE)
-    flag_rerun_cse_after_loop = flag_unroll_loops || flag_peel_loops;
-
+  /* web and rename-registers help when run after loop unrolling.  */
   if (flag_web == AUTODETECT_VALUE)
     flag_web = flag_unroll_loops || flag_peel_loops;
 

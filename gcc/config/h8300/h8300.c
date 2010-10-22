@@ -303,17 +303,16 @@ enum h8_cpu
   H8_S
 };
 
-/* Implement TARGET_OPTION_OPTIMIZATION.  */
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 
-static void
-h8300_option_optimization (int level ATTRIBUTE_UNUSED,
-			   int size ATTRIBUTE_UNUSED)
-{
-  /* Basic block reordering is only beneficial on targets with cache
-     and/or variable-cycle branches where (cycle count taken != cycle
-     count not taken).  */
-  flag_reorder_blocks = 0;
-}
+static const struct default_options h8300_option_optimization_table[] =
+  {
+    /* Basic block reordering is only beneficial on targets with cache
+       and/or variable-cycle branches where (cycle count taken !=
+       cycle count not taken).  */
+    { OPT_LEVELS_ALL, OPT_freorder_blocks, NULL, 0 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Initialize various cpu specific globals at start up.  */
 
@@ -5937,7 +5936,7 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE h8300_option_override
 
-#undef TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION h8300_option_optimization
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE h8300_option_optimization_table
 
 struct gcc_target targetm = TARGET_INITIALIZER;
