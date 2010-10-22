@@ -1,3 +1,24 @@
+2010-10-22  Thomas Quinot  <quinot@adacore.com>
+
+	* uname.adb (Get_Unit_Name.Add_Node_Name): If encountering an error
+	node in the unit name, propagate Program_Error to guard against
+	cascaded errors.
+
+2010-10-22  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch8.adb (Find_Selected_Component): Do not generate a subtype for
+	selected components of dispatch table wrappers.
+
+2010-10-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Make_Initialize_Protection): A protected type that
+	implements an interface must be treated as if it has entries, to
+	support dispatching select statements.
+
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb, sem_ch3.adb: Minor reformatting.
+
 2010-10-22  Javier Miranda  <miranda@adacore.com>
 
 	* sem_aggr.adb (Resolve_Array_Aggregate.Add): If the type of the

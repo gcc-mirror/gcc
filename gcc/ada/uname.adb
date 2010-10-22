@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009  Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -225,10 +225,10 @@ package body Uname is
          Kind : constant Node_Kind := Nkind (Node);
 
       begin
-         --  Just ignore an error node (someone else will give a message)
+         --  Bail out on error node (guard against parse error)
 
          if Node = Error then
-            return;
+            raise Program_Error;
 
          --  Otherwise see what kind of node we have
 
