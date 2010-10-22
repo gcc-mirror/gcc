@@ -1644,17 +1644,30 @@ package body Exp_Attr is
                --  internally for passing to the Extra_Constrained parameter.
 
                else
-                  Res := Is_Constrained (Underlying_Type (Etype (Ent)));
+                  --  In Ada 2012, test for case of a limited tagged type, in
+                  --  which case the attribute is always required to return
+                  --  True. The underlying type is tested, to make sure we also
+                  --  return True for cases where there is an unconstrained
+                  --  object with an untagged limited partial view which has
+                  --  defaulted discriminants (such objects always produce a
+                  --  False in earlier versions of Ada). (Ada 2012: AI05-0214)
+
+                  Res := Is_Constrained (Underlying_Type (Etype (Ent)))
+                           or else
+                             (Ada_Version >= Ada_2012
+                               and then Is_Tagged_Type (Underlying_Type (Ptyp))
+                               and then Is_Limited_Type (Ptyp));
                end if;
 
-               Rewrite (N,
-                 New_Reference_To (Boolean_Literals (Res), Loc));
+               Rewrite (N, New_Reference_To (Boolean_Literals (Res), Loc));
             end;
 
          --  Prefix is not an entity name. These are also cases where we can
          --  always tell at compile time by looking at the form and type of the
          --  prefix. If an explicit dereference of an object with constrained
-         --  partial view, this is unconstrained (Ada 2005 AI-363).
+         --  partial view, this is unconstrained (Ada 2005: AI95-0363). If the
+         --  underlying type is a limited tagged type, then Constrained is
+         --  required to always return True (Ada 2012: AI05-0214).
 
          else
             Rewrite (N,
@@ -1663,9 +1676,12 @@ package body Exp_Attr is
                   not Is_Variable (Pref)
                     or else
                      (Nkind (Pref) = N_Explicit_Dereference
-                        and then
-                          not Has_Constrained_Partial_View (Base_Type (Ptyp)))
-                    or else Is_Constrained (Underlying_Type (Ptyp))),
+                       and then
+                         not Has_Constrained_Partial_View (Base_Type (Ptyp)))
+                    or else Is_Constrained (Underlying_Type (Ptyp))
+                    or else (Ada_Version >= Ada_2012
+                              and then Is_Tagged_Type (Underlying_Type (Ptyp))
+                              and then Is_Limited_Type (Ptyp))),
                 Loc));
          end if;
 
