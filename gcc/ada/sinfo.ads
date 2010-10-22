@@ -1733,6 +1733,13 @@ package Sinfo is
    --    value of a type whose size is not known at compile time on the
    --    secondary stack.
 
+   --  Suppress_Assignment_Checks (Flag18-Sem)
+   --    Used in genererated N_Assignment_Statement nodes to suppress predicate
+   --    and range checks in cases where the generated code knows that the
+   --    value being assigned is in range and satisifies any predicate. Also
+   --    can be set in N_Object_Declaration nodes, to similarly suppress any
+   --    checks on the initializing value.
+
    --  Suppress_Loop_Warnings (Flag17-Sem)
    --    Used in N_Loop_Statement node to indicate that warnings within the
    --    body of the loop should be suppressed. This is set when the range
@@ -2331,6 +2338,7 @@ package Sinfo is
       --  Exception_Junk (Flag8-Sem)
       --  Is_Subprogram_Descriptor (Flag16-Sem)
       --  Has_Init_Expression (Flag14)
+      --  Suppress_Assignment_Checks (Flag18-Sem)
 
       -------------------------------------
       -- 3.3.1  Defining Identifier List --
@@ -4052,9 +4060,10 @@ package Sinfo is
       --  Backwards_OK (Flag6-Sem)
       --  No_Ctrl_Actions (Flag7-Sem)
       --  Componentwise_Assignment (Flag14-Sem)
+      --  Suppress_Assignment_Checks (Flag18-Sem)
 
       --  Note: if a range check is required, then the Do_Range_Check flag
-      --  is set in the Expression (right hand side), with the check being
+      --  is set in the Expression (right hand side), with the check b6ing
       --  done against the type of the Name (left hand side).
 
       --  Note: the back end places some restrictions on the form of the
@@ -8844,6 +8853,9 @@ package Sinfo is
    function Subtype_Marks
      (N : Node_Id) return List_Id;    -- List2
 
+   function Suppress_Assignment_Checks
+     (N : Node_Id) return Boolean;    -- Flag18
+
    function Suppress_Loop_Warnings
      (N : Node_Id) return Boolean;    -- Flag17
 
@@ -9803,6 +9815,9 @@ package Sinfo is
 
    procedure Set_Subtype_Marks
      (N : Node_Id; Val : List_Id);            -- List2
+
+   procedure Set_Suppress_Assignment_Checks
+     (N : Node_Id; Val : Boolean := True);    -- Flag18
 
    procedure Set_Suppress_Loop_Warnings
      (N : Node_Id; Val : Boolean := True);    -- Flag17
@@ -11899,6 +11914,7 @@ package Sinfo is
    pragma Inline (Subtype_Indication);
    pragma Inline (Subtype_Mark);
    pragma Inline (Subtype_Marks);
+   pragma Inline (Suppress_Assignment_Checks);
    pragma Inline (Suppress_Loop_Warnings);
    pragma Inline (Synchronized_Present);
    pragma Inline (Tagged_Present);
@@ -12215,6 +12231,7 @@ package Sinfo is
    pragma Inline (Set_Subtype_Indication);
    pragma Inline (Set_Subtype_Mark);
    pragma Inline (Set_Subtype_Marks);
+   pragma Inline (Set_Suppress_Assignment_Checks);
    pragma Inline (Set_Suppress_Loop_Warnings);
    pragma Inline (Set_Synchronized_Present);
    pragma Inline (Set_Tagged_Present);

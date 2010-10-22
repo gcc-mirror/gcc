@@ -4398,23 +4398,17 @@ package body Exp_Ch4 is
 
       procedure Substitute_Valid_Check is
       begin
-         --  Don't do this for type with predicates, since we don't care in
-         --  this case if it gets optimized away, the critical test is the
-         --  call to the predicate function
+         Rewrite (N,
+           Make_Attribute_Reference (Loc,
+             Prefix         => Relocate_Node (Lop),
+             Attribute_Name => Name_Valid));
 
-         if not Has_Predicates (Ltyp) then
-            Rewrite (N,
-              Make_Attribute_Reference (Loc,
-                Prefix         => Relocate_Node (Lop),
-                Attribute_Name => Name_Valid));
+         Analyze_And_Resolve (N, Restyp);
 
-            Analyze_And_Resolve (N, Restyp);
-
-            Error_Msg_N ("?explicit membership test may be optimized away", N);
-            Error_Msg_N -- CODEFIX
-              ("\?use ''Valid attribute instead", N);
-            return;
-         end if;
+         Error_Msg_N ("?explicit membership test may be optimized away", N);
+         Error_Msg_N -- CODEFIX
+           ("\?use ''Valid attribute instead", N);
+         return;
       end Substitute_Valid_Check;
 
    --  Start of processing for Expand_N_In
@@ -4437,7 +4431,9 @@ package body Exp_Ch4 is
       --  subtype. This is suspicious usage and we replace it with a 'Valid
       --  test and give a warning. For floating point types however, this is a
       --  standard way to check for finite numbers, and using 'Valid would
-      --  typically be a pessimization.
+      --  typically be a pessimization. Also skip this test for predicated
+      --  types, since it is perfectly reasonable to check if a value meets
+      --  its predicate.
 
       if Is_Scalar_Type (Ltyp)
         and then not Is_Floating_Point_Type (Ltyp)
@@ -4445,7 +4441,8 @@ package body Exp_Ch4 is
         and then Ltyp = Entity (Rop)
         and then Comes_From_Source (N)
         and then VM_Target = No_VM
-        and then No (Predicate_Function (Rtyp))
+        and then not (Is_Discrete_Type (Ltyp)
+                       and then Present (Predicate_Function (Ltyp)))
       then
          Substitute_Valid_Check;
          return;
@@ -4688,22 +4685,25 @@ package body Exp_Ch4 is
             --  type if they come from the original type definition. Also this
             --  way we get all the processing above for an explicit range.
 
-            --  Don't do this for a type with predicates, since we would lose
-            --  the predicate from this rewriting (test goes to base type).
+               --  Don't do this for predicated types, since in this case we
+               --  want to check the predicate!
 
-            elsif Is_Scalar_Type (Typ) and then not Has_Predicates (Typ) then
-               Rewrite (Rop,
-                 Make_Range (Loc,
-                   Low_Bound =>
-                     Make_Attribute_Reference (Loc,
-                       Attribute_Name => Name_First,
-                       Prefix => New_Reference_To (Typ, Loc)),
+            elsif Is_Scalar_Type (Typ) then
+               if No (Predicate_Function (Typ)) then
+                  Rewrite (Rop,
+                    Make_Range (Loc,
+                      Low_Bound =>
+                        Make_Attribute_Reference (Loc,
+                          Attribute_Name => Name_First,
+                          Prefix => New_Reference_To (Typ, Loc)),
 
-                   High_Bound =>
-                     Make_Attribute_Reference (Loc,
-                       Attribute_Name => Name_Last,
-                       Prefix => New_Reference_To (Typ, Loc))));
-               Analyze_And_Resolve (N, Restyp);
+                      High_Bound =>
+                        Make_Attribute_Reference (Loc,
+                          Attribute_Name => Name_Last,
+                          Prefix => New_Reference_To (Typ, Loc))));
+                  Analyze_And_Resolve (N, Restyp);
+               end if;
+
                goto Leave;
 
             --  Ada 2005 (AI-216): Program_Error is raised when evaluating
@@ -4843,24 +4843,33 @@ package body Exp_Ch4 is
 
    <<Leave>>
 
-      --  If a predicate is present, then we do the predicate test
+      --  If a predicate is present, then we do the predicate test, but we
+      --  most certainly want to omit this if we are within the predicate
+      --  function itself, since otherwise we have an infinite recursion!
 
-      if Present (Predicate_Function (Rtyp)) then
-         Rewrite (N,
-           Make_And_Then (Loc,
-             Left_Opnd  => Relocate_Node (N),
-             Right_Opnd => Make_Predicate_Call (Rtyp, Lop)));
+      declare
+         PFunc : constant Entity_Id := Predicate_Function (Rtyp);
 
-         --  Analyze new expression, mark left operand as analyzed to
-         --  avoid infinite recursion adding predicate calls.
+      begin
+         if Present (PFunc)
+           and then Current_Scope /= PFunc
+         then
+            Rewrite (N,
+              Make_And_Then (Loc,
+                Left_Opnd  => Relocate_Node (N),
+                Right_Opnd => Make_Predicate_Call (Rtyp, Lop)));
 
-         Set_Analyzed (Left_Opnd (N));
-         Analyze_And_Resolve (N, Standard_Boolean);
+            --  Analyze new expression, mark left operand as analyzed to
+            --  avoid infinite recursion adding predicate calls.
 
-         --  All done, skip attempt at compile time determination of result
+            Set_Analyzed (Left_Opnd (N));
+            Analyze_And_Resolve (N, Standard_Boolean);
 
-         return;
-      end if;
+            --  All done, skip attempt at compile time determination of result
+
+            return;
+         end if;
+      end;
    end Expand_N_In;
 
    --------------------------------

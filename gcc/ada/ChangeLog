@@ -1,3 +1,41 @@
+2010-10-22  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_rm.texi: Add chapter on Ada 2012 support.
+
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch12.adb: Minor reformatting.
+
+2010-10-22  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb: Mark missing case of nested package when expanding
+	stubs.
+
+2010-10-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch10.adb: Discard incomplete with_clause.
+
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Enable_Range_Check): Remove code suppressing range check
+	if static predicate present, not needed.
+	* exp_attr.adb (Expand_Pred_Succ): Check Suppress_Assignment_Checks flag
+	* exp_ch3.adb (Expand_N_Object_Declaration): Check
+	Suppress_Assignment_Checks flag.
+	* exp_ch4.adb (Expand_N_In): Make some corrections for proper handling
+	of ranges when predicates are present.
+	* exp_ch5.adb (Expand_Predicated_Loop): New procedure
+	(Expand_N_Assignment_Statement): Check Suppress_Assignment_Checks flag
+	(Expand_N_Loop_Statement): Handle loops over predicated types
+	* sem_case.adb (Analyze_Choices): Remove extra blank in error message.
+	* sem_ch13.adb (Build_Predicate_Function.Add_Call): Suppress info
+	message for inheritance if within a generic instance, not useful there!
+	(Build_Static_Predicate): Optimize test in predicate function
+	based on static ranges determined.
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Error for loop through
+	subtype with non-static predicate.
+	* sinfo.ads, sinfo.adb (Suppress_Assignment_Checks): New flag.
+
 2010-10-22  Thomas Quinot  <quinot@adacore.com>
 
 	* uname.adb (Get_Unit_Name.Add_Node_Name): If encountering an error

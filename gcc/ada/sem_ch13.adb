@@ -3890,10 +3890,12 @@ package body Sem_Ch13 is
 
             --  Output info message on inheritance if required. Note we do not
             --  give this information for generic actual types, since it is
-            --  unwelcome noise in that case in instantiations.
+            --  unwelcome noise in that case in instantiations. We also
+            --  generally suppress the message in instantiations.
 
             if Opt.List_Inherited_Aspects
               and then not Is_Generic_Actual_Type (Typ)
+              and then Instantiation_Depth (Sloc (Typ)) = 0
             then
                Error_Msg_Sloc := Sloc (Predicate_Function (T));
                Error_Msg_Node_2 := T;
@@ -4317,6 +4319,43 @@ package body Sem_Ch13 is
          --  now we can store the result as the predicate list.
 
          Set_Static_Predicate (Typ, Plist);
+
+         --  The processing for static predicates coalesced ranges and also
+         --  eliminated duplicates. We might as well replace the alternatives
+         --  list of the right operand of the membership test with the static
+         --  predicate list, which will be more efficient.
+
+         declare
+            New_Alts : constant List_Id := New_List;
+            Old_Node : Node_Id;
+            New_Node : Node_Id;
+
+         begin
+            Old_Node := First (Plist);
+            while Present (Old_Node) loop
+               New_Node := New_Copy (Old_Node);
+
+               if Nkind (New_Node) = N_Range then
+                  Set_Low_Bound  (New_Node, New_Copy (Low_Bound  (Old_Node)));
+                  Set_High_Bound (New_Node, New_Copy (High_Bound (Old_Node)));
+               end if;
+
+               Append_To (New_Alts, New_Node);
+               Next (Old_Node);
+            end loop;
+
+            --  Now update the membership test node
+
+            pragma Assert (Nkind (Expr) = N_In);
+
+            if List_Length (New_Alts) = 1 then
+               Set_Right_Opnd   (Expr, First (New_Alts));
+               Set_Alternatives (Expr, No_List);
+            else
+               Set_Alternatives (Expr, New_Alts);
+               Set_Right_Opnd   (Expr, Empty);
+            end if;
+         end;
       end Build_Static_Predicate;
 
    --  Start of processing for Build_Predicate_Function

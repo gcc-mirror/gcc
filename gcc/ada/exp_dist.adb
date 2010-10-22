@@ -986,6 +986,8 @@ package body Exp_Dist is
             Current_Subprogram_Number := Current_Subprogram_Number + 1;
          end if;
 
+         --  Need to handle the case of nested packages???
+
          Next (Current_Declaration);
       end loop;
    end Add_Calling_Stubs_To_Declarations;
@@ -3915,6 +3917,8 @@ package body Exp_Dist is
 
                Current_Subprogram_Number := Current_Subprogram_Number + 1;
             end if;
+
+            --  Need to handle case of a nested package???
 
             Next (Current_Declaration);
          end loop;
@@ -6902,6 +6906,8 @@ package body Exp_Dist is
 
                Current_Subprogram_Number := Current_Subprogram_Number + 1;
             end if;
+
+            --  Need to handle case of a nested package???
 
             Next (Current_Declaration);
          end loop;

@@ -1375,7 +1375,7 @@ package body Sem_Ch12 is
                when N_Use_Package_Clause |
                     N_Use_Type_Clause    =>
                   if Nkind (Original_Node (I_Node)) =
-                    N_Formal_Package_Declaration
+                                     N_Formal_Package_Declaration
                   then
                      Append (New_Copy_Tree (Formal), Assoc);
                   else

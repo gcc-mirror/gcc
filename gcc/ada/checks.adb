@@ -3749,6 +3749,15 @@ package body Checks is
          return;
       end if;
 
+      --  Do not set range check flag if parent is assignment statement or
+      --  object declaration with Suppress_Assignment_Checks flag set
+
+      if Nkind_In (Parent (N), N_Assignment_Statement, N_Object_Declaration)
+        and then Suppress_Assignment_Checks (Parent (N))
+      then
+         return;
+      end if;
+
       --  Check for various cases where we should suppress the range check
 
       --  No check if range checks suppressed for type of node
