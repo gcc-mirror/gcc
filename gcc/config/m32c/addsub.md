@@ -93,9 +93,17 @@
     case 1:
       return \"add.w %X2,%h0\;adcf.w %H0\";
     case 2:
-      output_asm_insn (\"add.w %X2,%h0\",operands);
-      operands[2]= GEN_INT (INTVAL (operands[2]) >> 16);
-      return \"adc.w %X2,%H0\";
+      if (GET_CODE (operands[2]) == SYMBOL_REF)
+        {
+          output_asm_insn (\"add.w #%%lo(%d2),%h0\",operands);
+          return \"adc.w #%%hi(%d2),%H0\";
+        }
+      else
+        {
+          output_asm_insn (\"add.w %X2,%h0\",operands);
+          operands[2]= GEN_INT (INTVAL (operands[2]) >> 16);
+          return \"adc.w %X2,%H0\";
+        }
     case 3:
       return \"add.w %h2,%h0\;adc.w %H2,%H0\";
     case 4:

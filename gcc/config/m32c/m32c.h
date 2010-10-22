@@ -567,6 +567,10 @@ typedef struct m32c_cumulative_args
 
 #define LEGITIMATE_CONSTANT_P(X) m32c_legitimate_constant_p (X)
 
+/* Address spaces.  */
+#define ADDR_SPACE_FAR	1
+
+
 /* Condition Code Status */
 
 #define REVERSIBLE_CC_MODE(MODE) 1

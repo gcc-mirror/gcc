@@ -73,6 +73,7 @@ static bool m32c_fixed_condition_code_regs (unsigned int *, unsigned int *);
 static struct machine_function *m32c_init_machine_status (void);
 static void m32c_insert_attributes (tree, tree *);
 static bool m32c_legitimate_address_p (enum machine_mode, rtx, bool);
+static bool m32c_addr_space_legitimate_address_p (enum machine_mode, rtx, bool, addr_space_t);
 static rtx m32_function_arg (CUMULATIVE_ARGS *, enum machine_mode
 			     const_tree, bool);
 static bool m32c_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
@@ -124,6 +125,18 @@ static GTY(()) rtx patternr[30];
 #define IS_CR_REGNO(regno) ((regno) >= SB_REGNO && (regno) <= PC_REGNO)
 #define IS_CR_REG(rtx) (GET_CODE (rtx) == REG && IS_CR_REGNO (REGNO (rtx)))
 
+static int
+far_addr_space_p (rtx x)
+{
+  if (GET_CODE (x) != MEM)
+    return 0;
+#if DEBUG0
+  fprintf(stderr, "\033[35mfar_addr_space: "); debug_rtx(x);
+  fprintf(stderr, " = %d\033[0m\n", MEM_ADDR_SPACE (x) == ADDR_SPACE_FAR);
+#endif
+  return MEM_ADDR_SPACE (x) == ADDR_SPACE_FAR;
+}
+
 /* We do most RTX matching by converting the RTX into a string, and
    using string compares.  This vastly simplifies the logic in many of
    the functions in this file.
@@ -164,6 +177,16 @@ encode_pattern_1 (rtx x)
     case MEM:
       *patternp++ = 'm';
     case CONST:
+      encode_pattern_1 (XEXP (x, 0));
+      break;
+    case SIGN_EXTEND:
+      *patternp++ = '^';
+      *patternp++ = 'S';
+      encode_pattern_1 (XEXP (x, 0));
+      break;
+    case ZERO_EXTEND:
+      *patternp++ = '^';
+      *patternp++ = 'Z';
       encode_pattern_1 (XEXP (x, 0));
       break;
     case PLUS:
@@ -553,7 +576,7 @@ m32c_hard_regno_nregs_1 (int regno, enum machine_mode mode)
     return nregs_table[regno].qi_regs;
   if (GET_MODE_SIZE (mode) <= 2)
     return nregs_table[regno].hi_regs;
-  if (regno == A0_REGNO && mode == PSImode && TARGET_A16)
+  if (regno == A0_REGNO && mode == SImode && TARGET_A16)
     return 2;
   if ((GET_MODE_SIZE (mode) <= 3 || mode == PSImode) && TARGET_A24)
     return nregs_table[regno].pi_regs;
@@ -993,6 +1016,8 @@ m32c_const_ok_for_constraint_p (HOST_WIDE_INT value,
   return 0;
 }
 
+#define A0_OR_PSEUDO(x) (IS_REG(x, A0_REGNO) || REGNO (x) >= FIRST_PSEUDO_REGISTER)
+
 /* Implements EXTRA_CONSTRAINT_STR (see next function too).  'S' is
    for memory constraints, plus "Rpa" for PARALLEL rtx's we use for
    call return values.  */
@@ -1000,6 +1025,29 @@ int
 m32c_extra_constraint_p2 (rtx value, char c ATTRIBUTE_UNUSED, const char *str)
 {
   encode_pattern (value);
+
+  if (far_addr_space_p (value))
+    {
+      if (memcmp (str, "SF", 2) == 0)
+	{
+	  return (   (RTX_IS ("mr")
+		      && A0_OR_PSEUDO (patternr[1])
+		      && GET_MODE (patternr[1]) == SImode)
+		     || (RTX_IS ("m+^Sri")
+			 && A0_OR_PSEUDO (patternr[4])
+			 && GET_MODE (patternr[4]) == HImode)
+		     || (RTX_IS ("m+^Srs")
+			 && A0_OR_PSEUDO (patternr[4])
+			 && GET_MODE (patternr[4]) == HImode)
+		     || (RTX_IS ("m+^S+ris")
+			 && A0_OR_PSEUDO (patternr[5])
+			 && GET_MODE (patternr[5]) == HImode)
+		     || RTX_IS ("ms")
+		     );
+	}
+      return 0;
+    }
+
   if (memcmp (str, "Sd", 2) == 0)
     {
       /* This is the common "src/dest" address */
@@ -1066,6 +1114,10 @@ m32c_extra_constraint_p2 (rtx value, char c ATTRIBUTE_UNUSED, const char *str)
   else if (memcmp (str, "S1", 2) == 0)
     {
       return r1h_operand (value, QImode);
+    }
+  else if (memcmp (str, "SF", 2) == 0)
+    {
+      return 0;
     }
 
   gcc_assert (str[0] != 'S');
@@ -1837,6 +1889,11 @@ m32c_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
   if (CONSTANT_P (x))
     return 1;
 
+  if (TARGET_A16 && GET_MODE (x) != HImode && GET_MODE (x) != SImode)
+    return 0;
+  if (TARGET_A24 && GET_MODE (x) != PSImode)
+    return 0;
+
   /* Wide references to memory will be split after reload, so we must
      ensure that all parts of such splits remain legitimate
      addresses.  */
@@ -1871,11 +1928,13 @@ m32c_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 	 to please the assembler.  */
       switch (REGNO (patternr[0]))
 	{
-	case A0_REGNO:
 	case A1_REGNO:
 	case SB_REGNO:
 	case FB_REGNO:
 	case SP_REGNO:
+	  if (TARGET_A16 && GET_MODE (x) == SImode)
+	    return 0;
+	case A0_REGNO:
 	  return 1;
 
 	default:
@@ -1884,6 +1943,10 @@ m32c_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 	  return 0;
 	}
     }
+
+  if (TARGET_A16 && GET_MODE (x) == SImode)
+    return 0;
+
   if (RTX_IS ("+ri"))
     {
       /* This is more interesting, because different base registers
@@ -2096,6 +2159,204 @@ m32c_legitimate_constant_p (rtx x ATTRIBUTE_UNUSED)
   return 1;
 }
 
+
+/* Return the appropriate mode for a named address pointer.  */
+#undef TARGET_ADDR_SPACE_POINTER_MODE
+#define TARGET_ADDR_SPACE_POINTER_MODE m32c_addr_space_pointer_mode
+static enum machine_mode
+m32c_addr_space_pointer_mode (addr_space_t addrspace)
+{
+  switch (addrspace)
+    {
+    case ADDR_SPACE_GENERIC:
+      return TARGET_A24 ? PSImode : HImode;
+    case ADDR_SPACE_FAR:
+      return SImode;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Return the appropriate mode for a named address address.  */
+#undef TARGET_ADDR_SPACE_ADDRESS_MODE
+#define TARGET_ADDR_SPACE_ADDRESS_MODE m32c_addr_space_address_mode
+static enum machine_mode
+m32c_addr_space_address_mode (addr_space_t addrspace)
+{
+  switch (addrspace)
+    {
+    case ADDR_SPACE_GENERIC:
+      return TARGET_A24 ? PSImode : HImode;
+    case ADDR_SPACE_FAR:
+      return SImode;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Like m32c_legitimate_address_p, except with named addresses.  */
+#undef TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
+#define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P \
+  m32c_addr_space_legitimate_address_p
+static bool
+m32c_addr_space_legitimate_address_p (enum machine_mode mode, rtx x,
+				      bool strict, addr_space_t as)
+{
+  if (as == ADDR_SPACE_FAR)
+    {
+      if (TARGET_A24)
+	return 0;
+      encode_pattern (x);
+      if (RTX_IS ("r"))
+	{
+	  if (GET_MODE (x) != SImode)
+	    return 0;
+	  switch (REGNO (patternr[0]))
+	    {
+	    case A0_REGNO:
+	      return 1;
+
+	    default:
+	      if (IS_PSEUDO (patternr[0], strict))
+		return 1;
+	      return 0;
+	    }
+	}
+      if (RTX_IS ("+^Sri"))
+	{
+	  int rn = REGNO (patternr[3]);
+	  HOST_WIDE_INT offs = INTVAL (patternr[4]);
+	  if (GET_MODE (patternr[3]) != HImode)
+	    return 0;
+	  switch (rn)
+	    {
+	    case A0_REGNO:
+	      return (offs >= 0 && offs <= 0xfffff);
+
+	    default:
+	      if (IS_PSEUDO (patternr[3], strict))
+		return 1;
+	      return 0;
+	    }
+	}
+      if (RTX_IS ("+^Srs"))
+	{
+	  int rn = REGNO (patternr[3]);
+	  if (GET_MODE (patternr[3]) != HImode)
+	    return 0;
+	  switch (rn)
+	    {
+	    case A0_REGNO:
+	      return 1;
+
+	    default:
+	      if (IS_PSEUDO (patternr[3], strict))
+		return 1;
+	      return 0;
+	    }
+	}
+      if (RTX_IS ("+^S+ris"))
+	{
+	  int rn = REGNO (patternr[4]);
+	  if (GET_MODE (patternr[4]) != HImode)
+	    return 0;
+	  switch (rn)
+	    {
+	    case A0_REGNO:
+	      return 1;
+
+	    default:
+	      if (IS_PSEUDO (patternr[4], strict))
+		return 1;
+	      return 0;
+	    }
+	}
+      if (RTX_IS ("s"))
+	{
+	  return 1;
+	}
+      return 0;
+    }
+
+  else if (as != ADDR_SPACE_GENERIC)
+    gcc_unreachable ();
+
+  return m32c_legitimate_address_p (mode, x, strict);
+}
+
+/* Like m32c_legitimate_address, except with named address support.  */
+#undef TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS
+#define TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS m32c_addr_space_legitimize_address
+static rtx
+m32c_addr_space_legitimize_address (rtx x, rtx oldx, enum machine_mode mode,
+				    addr_space_t as)
+{
+  if (as != ADDR_SPACE_GENERIC)
+    {
+#if DEBUG0
+      fprintf (stderr, "\033[36mm32c_addr_space_legitimize_address for mode %s\033[0m\n", mode_name[mode]);
+      debug_rtx (x);
+      fprintf (stderr, "\n");
+#endif
+
+      if (GET_CODE (x) != REG)
+	{
+	  x = force_reg (SImode, x);
+	}
+      return x;
+    }
+
+  return m32c_legitimize_address (x, oldx, mode);
+}
+
+/* Determine if one named address space is a subset of another.  */
+#undef TARGET_ADDR_SPACE_SUBSET_P
+#define TARGET_ADDR_SPACE_SUBSET_P m32c_addr_space_subset_p
+static bool
+m32c_addr_space_subset_p (addr_space_t subset, addr_space_t superset)
+{
+  gcc_assert (subset == ADDR_SPACE_GENERIC || subset == ADDR_SPACE_FAR);
+  gcc_assert (superset == ADDR_SPACE_GENERIC || superset == ADDR_SPACE_FAR);
+
+  if (subset == superset)
+    return true;
+
+  else
+    return (subset == ADDR_SPACE_GENERIC && superset == ADDR_SPACE_FAR);
+}
+
+#undef TARGET_ADDR_SPACE_CONVERT
+#define TARGET_ADDR_SPACE_CONVERT m32c_addr_space_convert
+/* Convert from one address space to another.  */
+static rtx
+m32c_addr_space_convert (rtx op, tree from_type, tree to_type)
+{
+  addr_space_t from_as = TYPE_ADDR_SPACE (TREE_TYPE (from_type));
+  addr_space_t to_as = TYPE_ADDR_SPACE (TREE_TYPE (to_type));
+  rtx result;
+
+  gcc_assert (from_as == ADDR_SPACE_GENERIC || from_as == ADDR_SPACE_FAR);
+  gcc_assert (to_as == ADDR_SPACE_GENERIC || to_as == ADDR_SPACE_FAR);
+
+  if (to_as == ADDR_SPACE_GENERIC && from_as == ADDR_SPACE_FAR)
+    {
+      /* This is unpredictable, as we're truncating off usable address
+	 bits.  */
+
+      result = gen_reg_rtx (HImode);
+      emit_move_insn (result, simplify_subreg (HImode, op, SImode, 0));
+      return result;
+    }
+  else if (to_as == ADDR_SPACE_FAR && from_as == ADDR_SPACE_GENERIC)
+    {
+      /* This always works.  */
+      result = gen_reg_rtx (SImode);
+      emit_insn (gen_zero_extendhisi2 (result, op));
+      return result;
+    }
+  else
+    gcc_unreachable ();
+}
 
 /* Condition Code Status */
 
@@ -2350,6 +2611,12 @@ const conversions[] = {
   { 0, "mr", "z[1]" },
   { 0, "m+ri", "3[2]" },
   { 0, "m+rs", "3[2]" },
+  { 0, "m+^Zrs", "5[4]" },
+  { 0, "m+^Zri", "5[4]" },
+  { 0, "m+^Z+ris", "7+6[5]" },
+  { 0, "m+^Srs", "5[4]" },
+  { 0, "m+^Sri", "5[4]" },
+  { 0, "m+^S+ris", "7+6[5]" },
   { 0, "m+r+si", "4+5[2]" },
   { 0, "ms", "1" },
   { 0, "mi", "1" },
@@ -3392,6 +3659,11 @@ m32c_subreg (enum machine_mode outer,
 int
 m32c_prepare_move (rtx * operands, enum machine_mode mode)
 {
+  if (far_addr_space_p (operands[0])
+      && CONSTANT_P (operands[1]))
+    {
+      operands[1] = force_reg (GET_MODE (operands[0]), operands[1]);
+    }
   if (TARGET_A16 && mode == PSImode)
     return m32c_split_move (operands, mode, 1);
   if ((GET_CODE (operands[0]) == MEM)
@@ -3496,6 +3768,11 @@ m32c_split_move (rtx * operands, enum machine_mode mode, int split_all)
      so we always split those.  */
   if (m32c_extra_constraint_p (operands[0], 'S', "Ss"))
     split_all = 3;
+
+  if (TARGET_A16
+      && (far_addr_space_p (operands[0])
+	  || far_addr_space_p (operands[1])))
+    split_all |= 1;
 
   /* We don't need to split these.  */
   if (TARGET_A24
