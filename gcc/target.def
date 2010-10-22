@@ -2542,4 +2542,10 @@ DEFHOOK
  bool, (size_t code, const char *arg, int value),
  default_handle_c_option)
 
+DEFHOOK
+(objc_construct_string,
+ "Construct a constant string representation for @var{string}",
+ tree, (tree string),
+ NULL)
+
 HOOK_VECTOR_END (C90_EMPTY_HACK)

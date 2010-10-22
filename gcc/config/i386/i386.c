@@ -24410,6 +24410,10 @@ ix86_init_builtins (void)
 
   if (TARGET_64BIT)
     ix86_init_builtins_va_builtins_abi ();
+
+#ifdef SUBTARGET_INIT_BUILTINS
+  SUBTARGET_INIT_BUILTINS;
+#endif
 }
 
 /* Return the ix86 builtin for CODE.  */

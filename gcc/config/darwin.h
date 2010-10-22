@@ -1054,6 +1054,12 @@ __enable_execute_stack (void *addr)                                     \
 #define TARGET_CXX_CDTOR_RETURNS_THIS (darwin_kextabi_p)
 #define TARGET_KEXTABI flag_apple_kext
 
+/* We have target-specific builtins.  */
+#define TARGET_FOLD_BUILTIN darwin_fold_builtin
+
+#define TARGET_OBJC_CONSTRUCT_STRING \
+  darwin_objc_construct_string
+
 #define TARGET_HAS_TARGETCM 1
 
 #ifndef CROSS_DIRECTORY_STRUCTURE

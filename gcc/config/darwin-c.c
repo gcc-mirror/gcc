@@ -608,6 +608,9 @@ darwin_cpp_builtins (cpp_reader *pfile)
      to be defined and won't work if it isn't.  */
   builtin_define_with_value ("__APPLE_CC__", "1", false);
 
+  if (darwin_constant_cfstrings)
+    builtin_define ("__CONSTANT_CFSTRINGS__");
+
   builtin_define_with_value ("__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__",
 			     version_as_macro(), false);
 
@@ -658,3 +661,20 @@ handle_c_option (size_t code,
 #define TARGET_HANDLE_C_OPTION handle_c_option
 
 struct gcc_targetcm targetcm = TARGETCM_INITIALIZER;
+
+/* Allow ObjC* access to CFStrings.  */
+tree
+darwin_objc_construct_string (tree str)
+{
+  if (!darwin_constant_cfstrings)
+    {
+    /* Even though we are not using CFStrings, place our literal
+       into the cfstring_htab hash table, so that the
+       darwin_constant_cfstring_p() function will see it.  */
+      darwin_enter_string_into_cfstring_table (str);
+      /* Fall back to NSConstantString.  */
+      return NULL_TREE;
+    }
+
+  return darwin_build_constant_cfstring (str);
+}

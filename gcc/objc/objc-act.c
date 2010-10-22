@@ -2576,7 +2576,7 @@ string_eq (const void *ptr1, const void *ptr2)
 tree
 objc_build_string_object (tree string)
 {
-  tree constructor = NULL_TREE, constant_string_class;
+  tree constant_string_class;
   int length;
   tree fields, addr;
   struct string_descriptor *desc, key;
@@ -2586,6 +2586,17 @@ objc_build_string_object (tree string)
   string = fix_string_type (string);
   TREE_SET_CODE (string, STRING_CST);
   length = TREE_STRING_LENGTH (string) - 1;
+
+  /* The target may have different ideas on how to construct an ObjC string 
+     literal.  On Darwin (Mac OS X), for example, we may wish to obtain a 
+     constant CFString reference instead.
+     At present, this is only supported for the NeXT runtime.  */
+  if (flag_next_runtime && targetcm.objc_construct_string)
+    {
+      tree constructor = (*targetcm.objc_construct_string) (string);
+      if (constructor)
+	return build1 (NOP_EXPR, objc_object_type, constructor);
+    }
 
   /* Check whether the string class being used actually exists and has the
      correct ivar layout.  */
@@ -2626,7 +2637,7 @@ objc_build_string_object (tree string)
 
   if (!desc)
     {
-      tree var;
+      tree var, constructor;
       VEC(constructor_elt,gc) *v = NULL;
       *loc = desc = ggc_alloc_string_descriptor ();
       desc->literal = string;

@@ -18,6 +18,14 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+mconstant-cfstrings
+Target Report Var(darwin_constant_cfstrings) Init(1)
+Generate compile-time CFString objects
+
+Wnonportable-cfstrings
+Target Report Var(darwin_warn_nonportable_cfstrings) Init(1) Warning
+Warn if constant CFString objects contain non-portable characters
+
 mfix-and-continue
 Target Report Var(darwin_fix_and_continue)
 Generate code suitable for fast turn around debugging
