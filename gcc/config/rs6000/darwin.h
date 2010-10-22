@@ -436,5 +436,10 @@ extern int darwin_emit_branch_islands;
    default, as kernel code doesn't save/restore those registers.  */
 #define OS_MISSING_ALTIVEC (flag_mkernel || flag_apple_kext)
 
-/* Darwin has to rename some of the long double builtins.  */
-#define SUBTARGET_INIT_BUILTINS darwin_patch_builtins ()
+/* PPC Darwin has to rename some of the long double builtins.  */
+#undef  SUBTARGET_INIT_BUILTINS
+#define SUBTARGET_INIT_BUILTINS						\
+do {									\
+  darwin_patch_builtins ();						\
+  darwin_init_cfstring_builtins ((unsigned) (RS6000_BUILTIN_COUNT));	\
+} while(0)

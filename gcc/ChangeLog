@@ -1,3 +1,37 @@
+2010-10-21  Iain Sandoe  <iains@gcc.gnu.org>
+
+	Based on the CFString implementation in FSF apple/trunk branch.
+	
+	* target.def (objc_construct_string): New Hook.
+	* doc/tm.texi (objc_construct_string): Document.
+	* doc/tm.texi.in (TARGET_OBJC_CONSTRUCT_STRING): New.
+	* config/t-darwin: Amend build rules for darwin.o.
+	* config/darwin.opt: Add cfstrings flags.
+	* config/darwin-c.c: Define __CONSTANT_CFSTRINGS__.
+	(darwin_objc_construct_string): New.
+	* config/i386/darwin.h (SUBTARGET_INIT_BUILTINS): Define.
+	* config/i386/i386.c (ix86_init_builtins): Add SUBTARGET_INIT_BUILTINS.
+	* config/darwin-protos.h (darwin_init_cfstring_builtins): New prototype.
+	(darwin_fold_builtin): Likewise.
+	(darwin_build_constant_cfstring): Likewise.
+	(darwin_objc_construct_string): Likewise.
+	(darwin_cfstring_p): Likewise.
+	(darwin_enter_string_into_cfstring_table): Likewise.
+	* config/rs6000/darwin.h (SUBTARGET_INIT_BUILTINS) Update for CFString.
+	* config/darwin.c (darwin_running_cxx): New var. 
+	(machopic_select_section): Return cfstring_constant_object_section.
+	(darwin_override_options): Set darwin_running_cxx.
+	(add_builtin_field_decl): New.
+	(darwin_init_cfstring_builtins): New.
+	(darwin_build_constant_cfstring): New.
+	(darwin_fold_builtin): New.
+	(cfstring_hash): New.
+	(cfstring_eq): New.
+	(darwin_enter_string_into_cfstring_table): New.
+	* config/darwin-sections.def (cfstring_constant_object_section): New.
+	* config/darwin.h (TARGET_FOLD_BUILTIN): Define.
+	(TARGET_OBJC_CONSTRUCT_STRING): Define.
+
 2010-10-21  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/alpha/alpha.c (alpha_build_builtin_va_list): Use

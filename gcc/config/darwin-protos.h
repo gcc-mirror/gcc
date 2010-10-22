@@ -91,6 +91,14 @@ extern void darwin_asm_declare_constant_name (FILE *, const char *,
 					      const_tree, HOST_WIDE_INT);
 extern bool darwin_binds_local_p (const_tree);
 extern void darwin_cpp_builtins (struct cpp_reader *);
+
+extern void darwin_init_cfstring_builtins (unsigned);
+extern tree darwin_fold_builtin (tree, int, tree *, bool);
+extern tree darwin_objc_construct_string (tree);
+extern bool darwin_cfstring_p (tree);
+extern tree darwin_build_constant_cfstring (tree str);
+extern void darwin_enter_string_into_cfstring_table (tree);
+
 extern void darwin_asm_output_anchor (rtx symbol);
 extern bool darwin_kextabi_p (void);
 extern void darwin_override_options (void);

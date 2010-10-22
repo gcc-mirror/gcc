@@ -314,3 +314,10 @@ extern int darwin_emit_branch_islands;
 #define MACHO_SYMBOL_FLAG_VARIABLE ((SYMBOL_FLAG_MACH_DEP) << 3)
 
 #define SUBTARGET32_DEFAULT_CPU "i686"
+
+#undef  SUBTARGET_INIT_BUILTINS
+#define SUBTARGET_INIT_BUILTINS					\
+do {								\
+  darwin_init_cfstring_builtins ((unsigned) (IX86_BUILTIN_MAX));\
+} while(0)
+

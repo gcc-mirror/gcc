@@ -1,3 +1,9 @@
+2010-10-21  Iain Sandoe  <iains@gcc.gnu.org>
+
+	Based on the CFString implementation in FSF apple/trunk branch.
+	
+	* objc/objc-act.c (objc_build_string_object): Handle CFStrings.
+
 2010-10-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (get_objc_string_decl): Use a switch instead of a
