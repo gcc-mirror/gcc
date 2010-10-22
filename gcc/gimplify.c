@@ -4634,10 +4634,10 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 static enum gimplify_status
 gimplify_variable_sized_compare (tree *expr_p)
 {
+  location_t loc = EXPR_LOCATION (*expr_p);
   tree op0 = TREE_OPERAND (*expr_p, 0);
   tree op1 = TREE_OPERAND (*expr_p, 1);
-  tree t, arg, dest, src;
-  location_t loc = EXPR_LOCATION (*expr_p);
+  tree t, arg, dest, src, expr;
 
   arg = TYPE_SIZE_UNIT (TREE_TYPE (op0));
   arg = unshare_expr (arg);
@@ -4646,8 +4646,11 @@ gimplify_variable_sized_compare (tree *expr_p)
   dest = build_fold_addr_expr_loc (loc, op0);
   t = implicit_built_in_decls[BUILT_IN_MEMCMP];
   t = build_call_expr_loc (loc, t, 3, dest, src, arg);
-  *expr_p
+
+  expr
     = build2 (TREE_CODE (*expr_p), TREE_TYPE (*expr_p), t, integer_zero_node);
+  SET_EXPR_LOCATION (expr, loc);
+  *expr_p = expr;
 
   return GS_OK;
 }
