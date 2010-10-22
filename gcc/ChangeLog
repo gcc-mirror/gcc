@@ -1,3 +1,9 @@
+2010-10-22  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/46126
+	* tree-vect-stmts.c (vect_analyze_stmt): Pass NODE to
+	vectorizable_shift in case of basic block vectorization.
+
 2010-10-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* target.h (enum opt_levels, struct default_options): New.
