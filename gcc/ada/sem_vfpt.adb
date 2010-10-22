@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,6 @@ with Einfo;    use Einfo;
 with Opt;      use Opt;
 with Stand;    use Stand;
 with Targparm; use Targparm;
-with Ttypef;   use Ttypef;
 
 package body Sem_VFpt is
 
@@ -37,6 +36,8 @@ package body Sem_VFpt is
    -----------------
 
    procedure Set_D_Float (E : Entity_Id) is
+      VAXDF_Digits : constant := 9;
+
    begin
       Init_Size         (Base_Type (E), 64);
       Init_Alignment    (Base_Type (E));
@@ -55,6 +56,8 @@ package body Sem_VFpt is
    -----------------
 
    procedure Set_F_Float (E : Entity_Id) is
+      VAXFF_Digits : constant := 6;
+
    begin
       Init_Size         (Base_Type (E), 32);
       Init_Alignment    (Base_Type (E));
@@ -73,6 +76,8 @@ package body Sem_VFpt is
    -----------------
 
    procedure Set_G_Float (E : Entity_Id) is
+      VAXGF_Digits : constant := 15;
+
    begin
       Init_Size         (Base_Type (E), 64);
       Init_Alignment    (Base_Type (E));
@@ -91,6 +96,8 @@ package body Sem_VFpt is
    -------------------
 
    procedure Set_IEEE_Long (E : Entity_Id) is
+      IEEEL_Digits : constant := 15;
+
    begin
       Init_Size         (Base_Type (E), 64);
       Init_Alignment    (Base_Type (E));
@@ -109,6 +116,8 @@ package body Sem_VFpt is
    --------------------
 
    procedure Set_IEEE_Short (E : Entity_Id) is
+      IEEES_Digits : constant := 6;
+
    begin
       Init_Size         (Base_Type (E), 32);
       Init_Alignment    (Base_Type (E));

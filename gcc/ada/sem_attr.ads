@@ -502,15 +502,12 @@ package Sem_Attr is
       ------------------------------
 
       Attribute_Universal_Literal_String => True,
-      --  The prefix of 'Universal_Literal_String must be a named number. The
-      --  static result is the string consisting of the characters of the
-      --  number as defined in the original source. This allows the user
-      --  program to access the actual text of named numbers without
-      --  intermediate conversions and without the need to enclose the strings
-      --  in quotes (which would preclude their use as numbers). This is used
-      --  internally for the construction of values of the floating-point
-      --  attributes from the file ttypef.ads, but may also be used by user
-      --  programs.
+      --  The prefix of 'Universal_Literal_String must be a named number.
+      --  The static result is the string consisting of the characters of
+      --  the number as defined in the original source. This allows the
+      --  user program to access the actual text of named numbers without
+      --  intermediate conversions and without the need to enclose the
+      --  strings in quotes (which would preclude their use as numbers).
 
       -------------------------
       -- Unrestricted_Access --

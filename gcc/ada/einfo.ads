@@ -5094,6 +5094,17 @@ package Einfo is
    --  E_Floating_Point_Type
    --  E_Floating_Point_Subtype
    --    Digits_Value                        (Uint17)
+   --    Machine_Emax_Value                  (synth)
+   --    Machine_Emin_Value                  (synth)
+   --    Machine_Mantissa_Value              (synth)
+   --    Machine_Radix_Value                 (synth)
+   --    Model_Emin_Value                    (synth)
+   --    Model_Epsilon_Value                 (synth)
+   --    Model_Mantissa_Value                (synth)
+   --    Model_Small_Value                   (synth)
+   --    Safe_Emax_Value                     (synth)
+   --    Safe_First_Value                    (synth)
+   --    Safe_Last_Value                     (synth)
    --    Scalar_Range                        (Node20)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
@@ -6334,6 +6345,14 @@ package Einfo is
    function Is_Task_Record_Type                 (Id : E) return B;
    function Is_Wrapper_Package                  (Id : E) return B;
    function Last_Formal                         (Id : E) return E;
+   function Machine_Emax_Value                  (Id : E) return U;
+   function Machine_Emin_Value                  (Id : E) return U;
+   function Machine_Mantissa_Value              (Id : E) return U;
+   function Machine_Radix_Value                 (Id : E) return U;
+   function Model_Emin_Value                    (Id : E) return U;
+   function Model_Epsilon_Value                 (Id : E) return R;
+   function Model_Mantissa_Value                (Id : E) return U;
+   function Model_Small_Value                   (Id : E) return R;
    function Next_Component                      (Id : E) return E;
    function Next_Component_Or_Discriminant      (Id : E) return E;
    function Next_Discriminant                   (Id : E) return E;
@@ -6347,6 +6366,9 @@ package Einfo is
    function Parameter_Mode                      (Id : E) return Formal_Kind;
    function Primitive_Operations                (Id : E) return L;
    function Root_Type                           (Id : E) return E;
+   function Safe_Emax_Value                     (Id : E) return U;
+   function Safe_First_Value                    (Id : E) return R;
+   function Safe_Last_Value                     (Id : E) return R;
    function Scope_Depth_Set                     (Id : E) return B;
    function Size_Clause                         (Id : E) return N;
    function Stream_Size_Clause                  (Id : E) return N;

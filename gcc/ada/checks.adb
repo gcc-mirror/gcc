@@ -1564,8 +1564,8 @@ package body Checks is
       Truncate  : constant Boolean := Float_Truncate (Par);
       Max_Bound : constant Uint :=
                     UI_Expon
-                      (Machine_Radix (Expr_Type),
-                       Machine_Mantissa (Expr_Type) - 1) - 1;
+                      (Machine_Radix_Value (Expr_Type),
+                       Machine_Mantissa_Value (Expr_Type) - 1) - 1;
 
       --  Largest bound, so bound plus or minus half is a machine number of F
 
