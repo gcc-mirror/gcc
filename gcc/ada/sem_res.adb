@@ -8478,7 +8478,16 @@ package body Sem_Res is
 
       Set_Slice_Subtype (N);
 
-      if Nkind (Drange) = N_Range then
+      --  Check bad use of type with predicates
+
+      if Has_Predicates (Etype (Drange)) then
+         Error_Msg_NE
+           ("subtype& has predicate, not allowed in slice",
+            Drange, Etype (Drange));
+
+      --  Otherwise here is where we check suspicious indexes
+
+      elsif Nkind (Drange) = N_Range then
          Warn_On_Suspicious_Index (Name, Low_Bound  (Drange));
          Warn_On_Suspicious_Index (Name, High_Bound (Drange));
       end if;

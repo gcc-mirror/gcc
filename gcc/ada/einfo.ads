@@ -692,13 +692,15 @@ package Einfo is
 --       details of the use of this field.
 
 --    Declaration_Node (synthesized)
---       Applies to all entities. Returns the tree node for the declaration
---       that declared the entity. Normally this is just the Parent of the
---       entity. One exception arises with child units, where the parent of
---       the entity is a selected component or a defining program unit name.
---       Another exception is that if the entity is an incomplete type that
---       has been completed, then we obtain the declaration node denoted by
---       the full type, i.e. the full type declaration node.
+--       Applies to all entities. Returns the tree node for the construct that
+--       declared the entity. Normally this is just the Parent of the entity.
+--       One exception arises with child units, where the parent of the entity
+--       is a selected component/defining program unit name. Another exception
+--       is that if the entity is an incomplete type that has been completed,
+--       then we obtain the declaration node denoted by the full type, i.e. the
+--       full type declaration node. Also note that for subprograms, this
+--       returns the {function,procedure}_specification, not the subprogram_
+--       declaration.
 
 --    Default_Expr_Function (Node21)
 --       Present in parameters. It holds the entity of the parameterless

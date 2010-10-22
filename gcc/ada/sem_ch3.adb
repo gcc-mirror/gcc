@@ -446,7 +446,7 @@ package body Sem_Ch3 is
       Related_Id   : Entity_Id;
       Suffix       : Character;
       Suffix_Index : Nat);
-   --  Process an index constraint in a constrained array declaration. The
+   --  Process an index constraint S in a constrained array declaration. The
    --  constraint can be a subtype name, or a range with or without an explicit
    --  subtype mark. The index is the corresponding index of the unconstrained
    --  array. The Related_Id and Suffix parameters are used to build the
@@ -4424,6 +4424,17 @@ package body Sem_Ch3 is
          end if;
 
          Make_Index (Index, P, Related_Id, Nb_Index);
+
+         --  Check error of subtype with predicate for index type
+
+         if Has_Predicates (Etype (Index)) then
+            Error_Msg_NE
+              ("subtype& has predicate, not allowed as index subtype",
+               Index, Etype (Index));
+         end if;
+
+         --  Move to next index
+
          Next_Index (Index);
          Nb_Index := Nb_Index + 1;
       end loop;
@@ -11332,6 +11343,13 @@ package body Sem_Ch3 is
 
             elsif Base_Type (Entity (S)) /= Base_Type (T) then
                Wrong_Type (S, Base_Type (T));
+
+            --  Check error of subtype with predicate in index constraint
+
+            elsif Has_Predicates (Entity (S)) then
+               Error_Msg_NE
+                 ("subtype& has predicate, not allowed in index consraint",
+                  S, Entity (S));
             end if;
 
             return;

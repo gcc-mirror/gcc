@@ -7824,6 +7824,20 @@ package body Sem_Ch6 is
 
          if Comes_From_Source (S) then
             Check_Synchronized_Overriding (S, Overridden_Subp);
+
+            --  (Ada 2012: AI05-0125-1): If S is a dispatching operation then
+            --  it may have overridden some hidden inherited primitive. Update
+            --  Overriden_Subp to avoid spurious errors when checking the
+            --  overriding indicator.
+
+            if Ada_Version >= Ada_2012
+              and then No (Overridden_Subp)
+              and then Is_Dispatching_Operation (S)
+              and then Is_Overriding_Operation (S)
+            then
+               Overridden_Subp := Overridden_Operation (S);
+            end if;
+
             Check_Overriding_Indicator
               (S, Overridden_Subp, Is_Primitive => Is_Primitive_Subp);
          end if;

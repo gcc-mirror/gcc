@@ -1797,20 +1797,21 @@ ada/exp_ch12.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
 ada/exp_ch13.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \
    ada/atree.adb ada/casing.ads ada/checks.ads ada/debug.ads ada/einfo.ads \
-   ada/einfo.adb ada/elists.ads ada/elists.adb ada/exp_ch13.ads \
-   ada/exp_ch13.adb ada/exp_ch3.ads ada/exp_ch6.ads ada/exp_imgv.ads \
-   ada/exp_tss.ads ada/exp_util.ads ada/gnat.ads ada/g-htable.ads \
-   ada/hostparm.ads ada/namet.ads ada/nlists.ads ada/nlists.adb \
-   ada/nmake.ads ada/nmake.adb ada/opt.ads ada/output.ads ada/rtsfind.ads \
-   ada/sem.ads ada/sem_aux.ads ada/sem_ch3.ads ada/sem_ch7.ads \
-   ada/sem_ch8.ads ada/sem_eval.ads ada/sem_util.ads ada/sinfo.ads \
-   ada/sinfo.adb ada/sinput.ads ada/snames.ads ada/stand.ads \
-   ada/system.ads ada/s-exctab.ads ada/s-htable.ads ada/s-imenne.ads \
-   ada/s-memory.ads ada/s-os_lib.ads ada/s-parame.ads ada/s-stalib.ads \
-   ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads ada/s-wchcon.ads \
-   ada/table.ads ada/table.adb ada/tbuild.ads ada/tree_io.ads \
-   ada/types.ads ada/uintp.ads ada/uintp.adb ada/unchconv.ads \
-   ada/unchdeal.ads ada/urealp.ads ada/validsw.ads 
+   ada/einfo.adb ada/elists.ads ada/elists.adb ada/err_vars.ads \
+   ada/errout.ads ada/erroutc.ads ada/exp_ch13.ads ada/exp_ch13.adb \
+   ada/exp_ch3.ads ada/exp_ch6.ads ada/exp_imgv.ads ada/exp_tss.ads \
+   ada/exp_util.ads ada/gnat.ads ada/g-htable.ads ada/hostparm.ads \
+   ada/namet.ads ada/nlists.ads ada/nlists.adb ada/nmake.ads ada/nmake.adb \
+   ada/opt.ads ada/output.ads ada/rtsfind.ads ada/sem.ads ada/sem_aux.ads \
+   ada/sem_ch3.ads ada/sem_ch7.ads ada/sem_ch8.ads ada/sem_eval.ads \
+   ada/sem_util.ads ada/sinfo.ads ada/sinfo.adb ada/sinput.ads \
+   ada/snames.ads ada/stand.ads ada/system.ads ada/s-exctab.ads \
+   ada/s-htable.ads ada/s-imenne.ads ada/s-memory.ads ada/s-os_lib.ads \
+   ada/s-parame.ads ada/s-stalib.ads ada/s-string.ads ada/s-traent.ads \
+   ada/s-unstyp.ads ada/s-wchcon.ads ada/table.ads ada/table.adb \
+   ada/tbuild.ads ada/tree_io.ads ada/types.ads ada/uintp.ads \
+   ada/uintp.adb ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads \
+   ada/validsw.ads 
 
 ada/exp_ch2.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \

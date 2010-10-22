@@ -4711,9 +4711,7 @@ package body Exp_Attr is
 
          function Make_Range_Test return Node_Id;
          --  Build the code for a range test of the form
-         --    Btyp!(Pref) >= Btyp!(Ptyp'First)
-         --      and then
-         --    Btyp!(Pref) <= Btyp!(Ptyp'Last)
+         --    Btyp!(Pref) in Btyp!(Ptyp'First) .. Btyp!(Ptyp'Last)
 
          ---------------------
          -- Make_Range_Test --
@@ -4732,24 +4730,17 @@ package body Exp_Attr is
             end if;
 
             return
-              Make_And_Then (Loc,
-                Left_Opnd =>
-                  Make_Op_Ge (Loc,
-                    Left_Opnd =>
-                      Unchecked_Convert_To (Btyp, Temp),
-
-                    Right_Opnd =>
+              Make_In (Loc,
+                Left_Opnd  =>
+                  Unchecked_Convert_To (Btyp, Temp),
+                Right_Opnd =>
+                  Make_Range (Loc,
+                    Low_Bound =>
                       Unchecked_Convert_To (Btyp,
                         Make_Attribute_Reference (Loc,
                           Prefix => New_Occurrence_Of (Ptyp, Loc),
-                          Attribute_Name => Name_First))),
-
-                Right_Opnd =>
-                  Make_Op_Le (Loc,
-                    Left_Opnd =>
-                      Unchecked_Convert_To (Btyp, Temp),
-
-                    Right_Opnd =>
+                          Attribute_Name => Name_First)),
+                    High_Bound =>
                       Unchecked_Convert_To (Btyp,
                         Make_Attribute_Reference (Loc,
                           Prefix => New_Occurrence_Of (Ptyp, Loc),
