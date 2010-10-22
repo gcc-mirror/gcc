@@ -1710,10 +1710,14 @@ lto_fixup_type (tree t, void *data)
 	LTO_FIXUP_SUBTREE (TYPE_CONTEXT (t));
     }
 
-  /* TYPE_CANONICAL does not need to be fixed up, instead it should
-     always point to ourselves at this time as we never fixup
-     non-canonical ones.  */
-  gcc_assert (TYPE_CANONICAL (t) == t);
+  /* Compute the canonical type of t and fix that up.  From this point
+     there are no longer any types with TYPE_STRUCTURAL_EQUALITY_P
+     and its type-based alias problems.  */
+  if (!TYPE_CANONICAL (t))
+    {
+      TYPE_CANONICAL (t) = gimple_register_canonical_type (t);
+      LTO_FIXUP_SUBTREE (TYPE_CANONICAL (t));
+    }
 
   /* The following re-creates proper variant lists while fixing up
      the variant leaders.  We do not stream TYPE_NEXT_VARIANT so the

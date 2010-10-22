@@ -44,6 +44,8 @@ along with GCC; see the file COPYING3.  If not see
    build_*_type routines which is not the case with the streamer.  */
 static GTY((if_marked ("ggc_marked_p"), param_is (union tree_node)))
   htab_t gimple_types;
+static GTY((if_marked ("ggc_marked_p"), param_is (union tree_node)))
+  htab_t gimple_canonical_types;
 static GTY((if_marked ("tree_int_map_marked_p"), param_is (struct tree_int_map)))
   htab_t type_hash_cache;
 
@@ -3257,6 +3259,36 @@ struct sccs
 static unsigned int next_dfs_num;
 static unsigned int gtc_next_dfs_num;
 
+
+/* GIMPLE type merging cache.  A direct-mapped cache based on TYPE_UID.  */
+
+typedef struct GTY(()) gimple_type_leader_entry_s {
+  tree type;
+  tree leader;
+} gimple_type_leader_entry;
+
+#define GIMPLE_TYPE_LEADER_SIZE 16381
+static GTY((length("GIMPLE_TYPE_LEADER_SIZE"))) gimple_type_leader_entry
+  *gimple_type_leader;
+
+/* Lookup an existing leader for T and return it or NULL_TREE, if
+   there is none in the cache.  */
+
+static tree
+gimple_lookup_type_leader (tree t)
+{
+  gimple_type_leader_entry *leader;
+
+  if (!gimple_type_leader)
+    return NULL_TREE;
+
+  leader = &gimple_type_leader[TYPE_UID (t) % GIMPLE_TYPE_LEADER_SIZE];
+  if (leader->type != t)
+    return NULL_TREE;
+
+  return leader->leader;
+}
+
 /* Return true if T1 and T2 have the same name.  If FOR_COMPLETION_P is
    true then if any type has no name return false, otherwise return
    true if both types have no names.  */
@@ -3401,9 +3433,21 @@ gtc_visit (tree t1, tree t2, enum gtc_mode mode,
 
   /* If the types have been previously registered and found equal
      they still are.  */
-  if (TYPE_CANONICAL (t1)
-      && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2))
-    return true;
+  if (mode == GTC_MERGE)
+    {
+      tree leader1 = gimple_lookup_type_leader (t1);
+      tree leader2 = gimple_lookup_type_leader (t2);
+      if (leader1 == t2
+	  || t1 == leader2
+	  || (leader1 && leader1 == leader2))
+	return true;
+    }
+  else if (mode == GTC_DIAG)
+    {
+      if (TYPE_CANONICAL (t1)
+	  && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2))
+	return true;
+    }
 
   /* Can't be the same type if the types don't have the same code.  */
   if (TREE_CODE (t1) != TREE_CODE (t2))
@@ -3826,9 +3870,21 @@ gimple_types_compatible_p (tree t1, tree t2, enum gtc_mode mode)
 
   /* If the types have been previously registered and found equal
      they still are.  */
-  if (TYPE_CANONICAL (t1)
-      && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2))
-    return true;
+  if (mode == GTC_MERGE)
+    {
+      tree leader1 = gimple_lookup_type_leader (t1);
+      tree leader2 = gimple_lookup_type_leader (t2);
+      if (leader1 == t2
+	  || t1 == leader2
+	  || (leader1 && leader1 == leader2))
+	return true;
+    }
+  else if (mode == GTC_DIAG)
+    {
+      if (TYPE_CANONICAL (t1)
+	  && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2))
+	return true;
+    }
 
   /* Can't be the same type if the types don't have the same code.  */
   if (TREE_CODE (t1) != TREE_CODE (t2))
@@ -4226,14 +4282,17 @@ tree
 gimple_register_type (tree t)
 {
   void **slot;
+  gimple_type_leader_entry *leader;
 
   gcc_assert (TYPE_P (t));
 
-  /* In TYPE_CANONICAL we cache the result of gimple_register_type.
-     It is initially set to NULL during LTO streaming.
-     But do not mess with TYPE_CANONICAL when not in WPA or link phase.  */
-  if (in_lto_p && TYPE_CANONICAL (t))
-    return TYPE_CANONICAL (t);
+  if (!gimple_type_leader)
+    gimple_type_leader = ggc_alloc_cleared_vec_gimple_type_leader_entry_s
+				(GIMPLE_TYPE_LEADER_SIZE);
+  /* If we registered this type before return the cached result.  */
+  leader = &gimple_type_leader[TYPE_UID (t) % GIMPLE_TYPE_LEADER_SIZE];
+  if (leader->type == t)
+    return leader->leader;
 
   /* Always register the main variant first.  This is important so we
      pick up the non-typedef variants as canonical, otherwise we'll end
@@ -4298,14 +4357,69 @@ gimple_register_type (tree t)
 	  TYPE_NEXT_REF_TO (t) = NULL_TREE;
 	}
 
-      if (in_lto_p)
-	TYPE_CANONICAL (t) = new_type;
+      leader->type = t;
+      leader->leader = new_type;
       t = new_type;
     }
   else
     {
-      if (in_lto_p)
-	TYPE_CANONICAL (t) = t;
+      leader->type = t;
+      leader->leader = t;
+      *slot = (void *) t;
+    }
+
+  return t;
+}
+
+
+/* Returns nonzero if P1 and P2 are equal.  */
+
+static int
+gimple_canonical_type_eq (const void *p1, const void *p2)
+{
+  const_tree t1 = (const_tree) p1;
+  const_tree t2 = (const_tree) p2;
+  return gimple_types_compatible_p (CONST_CAST_TREE (t1),
+				    CONST_CAST_TREE (t2), GTC_DIAG);
+}
+
+/* Register type T in the global type table gimple_types.
+   If another type T', compatible with T, already existed in
+   gimple_types then return T', otherwise return T.  This is used by
+   LTO to merge identical types read from different TUs.  */
+
+tree
+gimple_register_canonical_type (tree t)
+{
+  void **slot;
+
+  gcc_assert (TYPE_P (t));
+
+  if (TYPE_CANONICAL (t))
+    return TYPE_CANONICAL (t);
+
+  /* Always register the main variant first.  This is important so we
+     pick up the non-typedef variants as canonical, otherwise we'll end
+     up taking typedef ids for structure tags during comparison.  */
+  if (TYPE_MAIN_VARIANT (t) != t)
+    gimple_register_canonical_type (TYPE_MAIN_VARIANT (t));
+
+  if (gimple_canonical_types == NULL)
+    gimple_canonical_types = htab_create_ggc (16381, gimple_type_hash,
+					      gimple_canonical_type_eq, 0);
+
+  slot = htab_find_slot (gimple_canonical_types, t, INSERT);
+  if (*slot
+      && *(tree *)slot != t)
+    {
+      tree new_type = (tree) *((tree *) slot);
+
+      TYPE_CANONICAL (t) = new_type;
+      t = new_type;
+    }
+  else
+    {
+      TYPE_CANONICAL (t) = t;
       *slot = (void *) t;
     }
 
@@ -4328,6 +4442,16 @@ print_gimple_types_stats (void)
 	     htab_collisions (gimple_types));
   else
     fprintf (stderr, "GIMPLE type table is empty\n");
+  if (gimple_canonical_types)
+    fprintf (stderr, "GIMPLE canonical type table: size %ld, %ld elements, "
+	     "%ld searches, %ld collisions (ratio: %f)\n",
+	     (long) htab_size (gimple_canonical_types),
+	     (long) htab_elements (gimple_canonical_types),
+	     (long) gimple_canonical_types->searches,
+	     (long) gimple_canonical_types->collisions,
+	     htab_collisions (gimple_canonical_types));
+  else
+    fprintf (stderr, "GIMPLE canonical type table is empty\n");
   if (type_hash_cache)
     fprintf (stderr, "GIMPLE type hash table: size %ld, %ld elements, "
 	     "%ld searches, %ld collisions (ratio: %f)\n",
@@ -4364,6 +4488,11 @@ free_gimple_type_tables (void)
       htab_delete (gimple_types);
       gimple_types = NULL;
     }
+  if (gimple_canonical_types)
+    {
+      htab_delete (gimple_canonical_types);
+      gimple_canonical_types = NULL;
+    }
   if (type_hash_cache)
     {
       htab_delete (type_hash_cache);
@@ -4375,6 +4504,7 @@ free_gimple_type_tables (void)
       obstack_free (&gtc_ob, NULL);
       gtc_visited = NULL;
     }
+  gimple_type_leader = NULL;
 }
 
 

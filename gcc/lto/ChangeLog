@@ -1,3 +1,8 @@
+2010-10-22  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (lto_fixup_type): Fixup TYPE_CANONICAL again, via
+	the new gimple_register_canonical_type.
+
 2010-10-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/45954
