@@ -1,5 +1,19 @@
 2010-10-22  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/46098
+	* config/i386/sse.md (*avx_movup<avxmodesuffixf2c><avxmodesuffix>):
+	Rename from avx_movup<avxmodesuffixf2c><avxmodesuffix>.
+	(avx_movup<avxmodesuffixf2c><avxmodesuffix>): New expander.
+	(*<sse>_movup<ssemodesuffixf2c>): Rename from
+	<sse>_movup<ssemodesuffixf2c>.
+	(<sse>_movup<ssemodesuffixf2c>): New expander.
+	(*avx_movdqu<avxmodesuffix>): Rename from avx_movdqu<avxmodesuffix>.
+	(avx_movdqu<avxmodesuffix>): New expander.
+	(*sse2_movdqu): Rename from sse2_movdqu.
+	(sse2_movdqu): New expander.
+
+2010-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/45946
 	* config/i386/i386.md (*pushti2): New insn pattern.
 	(pushti2 splitter): New insn splitter.
