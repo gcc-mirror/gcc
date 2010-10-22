@@ -465,11 +465,12 @@ package Sem_Util is
    function Get_Enum_Lit_From_Pos
      (T   : Entity_Id;
       Pos : Uint;
-      Loc : Source_Ptr) return Entity_Id;
+      Loc : Source_Ptr) return Node_Id;
    --  This function obtains the E_Enumeration_Literal entity for the specified
-   --  value from the enumeration type or subtype T. The second argument is the
-   --  Pos value, which is assumed to be in range. The third argument supplies
-   --  a source location for constructed nodes returned by this function.
+   --  value from the enumeration type or subtype T and returns an identifier
+   --  node referencing this value. The second argument is the Pos value, which
+   --  is assumed to be in range. The third argument supplies a source location
+   --  for constructed nodes returned by this function.
 
    procedure Get_Library_Unit_Name_String (Decl_Node : Node_Id);
    --  Retrieve the fully expanded name of the library unit declared by

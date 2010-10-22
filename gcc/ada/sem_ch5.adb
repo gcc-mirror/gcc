@@ -1550,23 +1550,20 @@ package body Sem_Ch5 is
                return Expression (Decl);
             end if;
 
-            --  Here we make a declaration with a separate assignment statement
+            --  Here we make a declaration with a separate assignment
+            --   statement, and insert before loop header.
 
             Decl :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Id,
                 Object_Definition   => New_Occurrence_Of (Typ, Loc));
 
-            Insert_Before (Parent (N), Decl);
-            Analyze (Decl);
-
             Assign :=
               Make_Assignment_Statement (Loc,
                 Name        => New_Occurrence_Of (Id, Loc),
                 Expression  => Relocate_Node (Original_Bound));
 
-            Insert_Before (Parent (N), Assign);
-            Analyze (Assign);
+            Insert_Actions (Parent (N), New_List (Decl, Assign));
 
             Rewrite (Original_Bound, New_Occurrence_Of (Id, Loc));
 

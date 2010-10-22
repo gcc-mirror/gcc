@@ -2074,17 +2074,18 @@ package body Bindgen is
       end if;
 
       --  Add a "-Ldir" for each directory in the object path
-
-      for J in 1 .. Nb_Dir_In_Obj_Search_Path loop
-         declare
-            Dir : constant String_Ptr := Dir_In_Obj_Search_Path (J);
-         begin
-            Name_Len := 0;
-            Add_Str_To_Name_Buffer ("-L");
-            Add_Str_To_Name_Buffer (Dir.all);
-            Write_Linker_Option;
-         end;
-      end loop;
+      if VM_Target /= CLI_Target then
+         for J in 1 .. Nb_Dir_In_Obj_Search_Path loop
+            declare
+               Dir : constant String_Ptr := Dir_In_Obj_Search_Path (J);
+            begin
+               Name_Len := 0;
+               Add_Str_To_Name_Buffer ("-L");
+               Add_Str_To_Name_Buffer (Dir.all);
+               Write_Linker_Option;
+            end;
+         end loop;
+      end if;
 
       --  Sort linker options
 

@@ -1,3 +1,22 @@
+2010-10-22  Jerome Lambourg  <lambourg@adacore.com>
+
+	* gnatlink.adb (Process_Binder_File): Remove CLI-specific code, now
+	moved to dotnet-ld.
+	(Gnatlink): Remove CLI-specific code, moved to dotnet-ld
+	* bindgen.adb (Gen_Object_Files_Options): Do not issue -L switches with
+	the .NET compiler, useless and unsupported.
+
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.ads (Get_Num_Lit_From_Pos): Fix errors in documentation,
+	this returns a Node_Id for a reference to the entity, not the entity
+	itself!
+
+2010-10-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iteration_Scheme): use Insert_Actions when
+	bounds require a temporary.
+
 2010-10-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch4.adb: Minor reformatting.
