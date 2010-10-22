@@ -1,5 +1,10 @@
 2010-10-22  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch4.adb: Minor reformatting.
+	* sinfo.ads: Minor comment fixes for Ada 2012 syntax.
+
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
 	* par-ch5.adb: Minor reformatting.
 	* gcc-interface/Make-lang.in: Update dependencies.
 

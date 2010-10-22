@@ -1941,7 +1941,7 @@ package Sinfo is
 
       --  Note: the value of an integer literal node created by the front end
       --  is never outside the range of values of the base type. However, it
-      --  can be the case that the value is outside the range of the
+      --  can be the case that the created value is outside the range of the
       --  particular subtype. This happens in the case of integer overflows
       --  with checks suppressed.
 
@@ -3633,8 +3633,13 @@ package Sinfo is
       ---------------------------
 
       --  RELATION ::=
-      --    SIMPLE_EXPRESSION [not] in RANGE
-      --  | SIMPLE_EXPRESSION [not] in SUBTYPE_MARK
+      --    SIMPLE_EXPRESSION [not] in MEMBERSHIP_CHOICE_LIST
+
+      --  MEMBERSHIP_CHOICE_LIST ::=
+      --    MEMBERSHIP_CHOICE {'|' MEMBERSHIP CHOICE}
+
+      --  MEMBERSHIP_CHOICE ::=
+      --    CHOICE_EXPRESSION | RANGE | SUBTYPE_MARK
 
       --  Note: although the grammar above allows only a range or a subtype
       --  mark, the parser in fact will accept any simple expression in place
@@ -3642,19 +3647,15 @@ package Sinfo is
       --  to deal with, and diagnose a simple expression other than a name for
       --  the right operand. This simplifies error recovery in the parser.
 
-      --  If extensions are enabled, the grammar is as follows:
+      --  The Alternatives field below is present only if there is more
+      --  than one Membership_Choice present (which is legitimate only in
+      --  Ada 2012 mode) in which case Right_Opnd is Empty, and Alternatives
+      --  contains the list of choices. In the tree passed to the back end,
+      --  Alternatives is always No_List, and Right_Opnd is set (i.e. the
+      --  expansion circuitry expands out the complex set membership case
+      --  using simple membership operations).
 
-      --  RELATION ::=
-      --    SIMPLE_EXPRESSION [not] in SET_ALTERNATIVE {| SET_ALTERNATIVE}
-
-      --  SET_ALTERNATIVE ::= RANGE | SUBTYPE_MARK
-
-      --  The Alternatives field below is present only if there is more than
-      --  one Set_Alternative present, in which case Right_Opnd is set to
-      --  Empty, and Alternatives contains the list of alternatives. In the
-      --  tree passed to the back end, Alternatives is always No_List, and
-      --  Right_Opnd is set (i.e. the expansion circuitry expands out the
-      --  complex set membership case using simple membership operations).
+      --  Should we rename Alternatives here to Membership_Choices ???
 
       --  N_In
       --  Sloc points to IN
