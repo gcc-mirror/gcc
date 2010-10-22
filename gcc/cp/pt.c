@@ -8238,17 +8238,12 @@ instantiate_class_template (tree type)
   finish_struct_1 (type);
   TYPE_BEING_DEFINED (type) = 0;
 
-  /* Now that the class is complete, instantiate default arguments for
-     any member functions.  We don't do this earlier because the
-     default arguments may reference members of the class.  */
-  if (!PRIMARY_TEMPLATE_P (templ))
-    for (t = TYPE_METHODS (type); t; t = DECL_CHAIN (t))
-      if (TREE_CODE (t) == FUNCTION_DECL
-	  /* Implicitly generated member functions will not have template
-	     information; they are not instantiations, but instead are
-	     created "fresh" for each instantiation.  */
-	  && DECL_TEMPLATE_INFO (t))
-	tsubst_default_arguments (t);
+  /* We don't instantiate default arguments for member functions.  14.7.1:
+
+     The implicit instantiation of a class template specialization causes
+     the implicit instantiation of the declarations, but not of the
+     definitions or default arguments, of the class member functions,
+     member classes, static data members and member templates....  */
 
   /* Some typedefs referenced from within the template code need to be access
      checked at template instantiation time, i.e now. These types were
