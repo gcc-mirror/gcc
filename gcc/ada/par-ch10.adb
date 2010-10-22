@@ -913,6 +913,10 @@ package body Ch10 is
                   --  place where such an "error" should be caught.
 
                   Set_Name (With_Node, P_Qualified_Simple_Name);
+                  if Name (With_Node) = Error then
+                     Remove (With_Node);
+                  end if;
+
                   Set_First_Name (With_Node, First_Flag);
                   Set_Limited_Present (With_Node, Has_Limited);
                   Set_Private_Present (With_Node, Has_Private);

@@ -2851,6 +2851,15 @@ package body Sinfo is
       return Node5 (N);
    end Subtype_Indication;
 
+   function Suppress_Assignment_Checks
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Assignment_Statement
+        or else NT (N).Nkind = N_Object_Declaration);
+      return Flag18 (N);
+   end Suppress_Assignment_Checks;
+
    function Suppress_Loop_Warnings
       (N : Node_Id) return Boolean is
    begin
@@ -5885,6 +5894,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Use_Type_Clause);
       Set_List2_With_Parent (N, Val);
    end Set_Subtype_Marks;
+
+   procedure Set_Suppress_Assignment_Checks
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Assignment_Statement
+        or else NT (N).Nkind = N_Object_Declaration);
+      Set_Flag18 (N, Val);
+   end Set_Suppress_Assignment_Checks;
 
    procedure Set_Suppress_Loop_Warnings
       (N : Node_Id; Val : Boolean := True) is

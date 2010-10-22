@@ -1832,17 +1832,33 @@ package body Sem_Ch5 is
                   return;
                end if;
 
-               --  The subtype indication may denote the completion of an
-               --  incomplete type declaration.
+               --  Some additional checks if we are iterating through a type
 
                if Is_Entity_Name (DS)
                  and then Present (Entity (DS))
                  and then Is_Type (Entity (DS))
-                 and then Ekind (Entity (DS)) = E_Incomplete_Type
                then
-                  Set_Entity (DS, Get_Full_View (Entity (DS)));
-                  Set_Etype  (DS, Entity (DS));
+                  --  The subtype indication may denote the completion of an
+                  --  incomplete type declaration.
+
+                  if Ekind (Entity (DS)) = E_Incomplete_Type then
+                     Set_Entity (DS, Get_Full_View (Entity (DS)));
+                     Set_Etype  (DS, Entity (DS));
+                  end if;
+
+                  --  Attempt to iterate through non-static predicate
+
+                  if Is_Discrete_Type (Entity (DS))
+                    and then Present (Predicate_Function (Entity (DS)))
+                    and then No (Static_Predicate (Entity (DS)))
+                  then
+                     Bad_Predicated_Subtype_Use
+                       ("cannot use subtype& with non-static "
+                        & "predicate for loop iteration", DS, Entity (DS));
+                  end if;
                end if;
+
+               --  Error if not discrete type
 
                if not Is_Discrete_Type (Etype (DS)) then
                   Wrong_Type (DS, Any_Discrete);

@@ -107,6 +107,9 @@ package body Exp_Ch5 is
    --  Expand loop over arrays and containers that uses the form "for X of C"
    --  with an optional subtype mark, or "for Y in C".
 
+   procedure Expand_Predicated_Loop (N : Node_Id);
+   --  Expand for loop over predicated subtype
+
    function Make_Tag_Ctrl_Assignment (N : Node_Id) return List_Id;
    --  Generate the necessary code for controlled and tagged assignment, that
    --  is to say, finalization of the target before, adjustment of the target
@@ -1623,16 +1626,21 @@ package body Exp_Ch5 is
          end;
       end if;
 
-      --  First deal with generation of range check if required
+      --  Deal with assignment checks unless suppressed
 
-      if Do_Range_Check (Rhs) then
-         Set_Do_Range_Check (Rhs, False);
-         Generate_Range_Check (Rhs, Typ, CE_Range_Check_Failed);
+      if not Suppress_Assignment_Checks (N) then
+
+         --  First deal with generation of range check if required
+
+         if Do_Range_Check (Rhs) then
+            Set_Do_Range_Check (Rhs, False);
+            Generate_Range_Check (Rhs, Typ, CE_Range_Check_Failed);
+         end if;
+
+         --  Then generate predicate check if required
+
+         Apply_Predicate_Check (Rhs, Typ);
       end if;
-
-      --  Generate predicate check if required
-
-      Apply_Predicate_Check (Rhs, Typ);
 
       --  Check for a special case where a high level transformation is
       --  required. If we have either of:
@@ -2960,8 +2968,9 @@ package body Exp_Ch5 is
    --  2. Deal with while condition for C/Fortran boolean
    --  3. Deal with loops with a non-standard enumeration type range
    --  4. Deal with while loops where Condition_Actions is set
-   --  5. Deal with loops with iterators over arrays and containers
-   --  6. Insert polling call if required
+   --  5. Deal with loops over predicated subtypes
+   --  6. Deal with loops with iterators over arrays and containers
+   --  7. Insert polling call if required
 
    procedure Expand_N_Loop_Statement (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
@@ -2990,33 +2999,15 @@ package body Exp_Ch5 is
       --  Nothing more to do for plain loop with no iteration scheme
 
       if No (Isc) then
-         return;
-      end if;
+         null;
+
+      --  Case of for loop (Loop_Parameter_Specfication present)
 
       --  Note: we do not have to worry about validity checking of the for loop
       --  range bounds here, since they were frozen with constant declarations
       --  and it is during that process that the validity checking is done.
 
-      --  Handle the case where we have a for loop with the range type being an
-      --  enumeration type with non-standard representation. In this case we
-      --  expand:
-
-      --    for x in [reverse] a .. b loop
-      --       ...
-      --    end loop;
-
-      --  to
-
-      --    for xP in [reverse] integer
-      --                          range etype'Pos (a) .. etype'Pos (b) loop
-      --       declare
-      --          x : constant etype := Pos_To_Rep (xP);
-      --       begin
-      --          ...
-      --       end;
-      --    end loop;
-
-      if Present (Loop_Parameter_Specification (Isc)) then
+      elsif Present (Loop_Parameter_Specification (Isc)) then
          declare
             LPS     : constant Node_Id   := Loop_Parameter_Specification (Isc);
             Loop_Id : constant Entity_Id := Defining_Identifier (LPS);
@@ -3026,95 +3017,129 @@ package body Exp_Ch5 is
             New_Id  : Entity_Id;
 
          begin
-            if not Is_Enumeration_Type (Btype)
-              or else No (Enum_Pos_To_Rep (Btype))
+            --  Deal with loop over predicates
+
+            if Is_Discrete_Type (Ltype)
+              and then Present (Predicate_Function (Ltype))
             then
-               return;
-            end if;
+               Expand_Predicated_Loop (N);
 
-            New_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_External_Name (Chars (Loop_Id), 'P'));
+            --  Handle the case where we have a for loop with the range type
+            --  being an enumeration type with non-standard representation.
+            --  In this case we expand:
 
-            --  If the type has a contiguous representation, successive values
-            --  can be generated as offsets from the first literal.
+            --    for x in [reverse] a .. b loop
+            --       ...
+            --    end loop;
 
-            if Has_Contiguous_Rep (Btype) then
-               Expr :=
-                  Unchecked_Convert_To (Btype,
-                    Make_Op_Add (Loc,
-                      Left_Opnd =>
-                         Make_Integer_Literal (Loc,
-                           Enumeration_Rep (First_Literal (Btype))),
-                      Right_Opnd => New_Reference_To (New_Id, Loc)));
+            --  to
+
+            --    for xP in [reverse] integer
+            --      range etype'Pos (a) .. etype'Pos (b)
+            --    loop
+            --       declare
+            --          x : constant etype := Pos_To_Rep (xP);
+            --       begin
+            --          ...
+            --       end;
+            --    end loop;
+
+            elsif Is_Enumeration_Type (Btype)
+              and then Present (Enum_Pos_To_Rep (Btype))
+            then
+               New_Id :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (Loop_Id), 'P'));
+
+               --  If the type has a contiguous representation, successive
+               --  values can be generated as offsets from the first literal.
+
+               if Has_Contiguous_Rep (Btype) then
+                  Expr :=
+                     Unchecked_Convert_To (Btype,
+                       Make_Op_Add (Loc,
+                         Left_Opnd =>
+                            Make_Integer_Literal (Loc,
+                              Enumeration_Rep (First_Literal (Btype))),
+                         Right_Opnd => New_Reference_To (New_Id, Loc)));
+               else
+                  --  Use the constructed array Enum_Pos_To_Rep
+
+                  Expr :=
+                    Make_Indexed_Component (Loc,
+                      Prefix      =>
+                        New_Reference_To (Enum_Pos_To_Rep (Btype), Loc),
+                      Expressions =>
+                        New_List (New_Reference_To (New_Id, Loc)));
+               end if;
+
+               Rewrite (N,
+                 Make_Loop_Statement (Loc,
+                   Identifier => Identifier (N),
+
+                   Iteration_Scheme =>
+                     Make_Iteration_Scheme (Loc,
+                       Loop_Parameter_Specification =>
+                         Make_Loop_Parameter_Specification (Loc,
+                           Defining_Identifier => New_Id,
+                           Reverse_Present => Reverse_Present (LPS),
+
+                           Discrete_Subtype_Definition =>
+                             Make_Subtype_Indication (Loc,
+
+                               Subtype_Mark =>
+                                 New_Reference_To (Standard_Natural, Loc),
+
+                               Constraint =>
+                                 Make_Range_Constraint (Loc,
+                                   Range_Expression =>
+                                     Make_Range (Loc,
+
+                                       Low_Bound =>
+                                         Make_Attribute_Reference (Loc,
+                                           Prefix =>
+                                             New_Reference_To (Btype, Loc),
+
+                                           Attribute_Name => Name_Pos,
+
+                                           Expressions => New_List (
+                                             Relocate_Node
+                                               (Type_Low_Bound (Ltype)))),
+
+                                       High_Bound =>
+                                         Make_Attribute_Reference (Loc,
+                                           Prefix =>
+                                             New_Reference_To (Btype, Loc),
+
+                                           Attribute_Name => Name_Pos,
+
+                                           Expressions => New_List (
+                                             Relocate_Node
+                                               (Type_High_Bound
+                                                  (Ltype))))))))),
+
+                   Statements => New_List (
+                     Make_Block_Statement (Loc,
+                       Declarations => New_List (
+                         Make_Object_Declaration (Loc,
+                           Defining_Identifier => Loop_Id,
+                           Constant_Present    => True,
+                           Object_Definition   =>
+                             New_Reference_To (Ltype, Loc),
+                           Expression          => Expr)),
+
+                       Handled_Statement_Sequence =>
+                         Make_Handled_Sequence_Of_Statements (Loc,
+                           Statements => Statements (N)))),
+
+                   End_Label => End_Label (N)));
+               Analyze (N);
+
+            --  Nothing to do with other cases of for loops
+
             else
-               --  Use the constructed array Enum_Pos_To_Rep
-
-               Expr :=
-                 Make_Indexed_Component (Loc,
-                   Prefix => New_Reference_To (Enum_Pos_To_Rep (Btype), Loc),
-                   Expressions => New_List (New_Reference_To (New_Id, Loc)));
+               null;
             end if;
-
-            Rewrite (N,
-              Make_Loop_Statement (Loc,
-                Identifier => Identifier (N),
-
-                Iteration_Scheme =>
-                  Make_Iteration_Scheme (Loc,
-                    Loop_Parameter_Specification =>
-                      Make_Loop_Parameter_Specification (Loc,
-                        Defining_Identifier => New_Id,
-                        Reverse_Present => Reverse_Present (LPS),
-
-                        Discrete_Subtype_Definition =>
-                          Make_Subtype_Indication (Loc,
-
-                            Subtype_Mark =>
-                              New_Reference_To (Standard_Natural, Loc),
-
-                            Constraint =>
-                              Make_Range_Constraint (Loc,
-                                Range_Expression =>
-                                  Make_Range (Loc,
-
-                                    Low_Bound =>
-                                      Make_Attribute_Reference (Loc,
-                                        Prefix =>
-                                          New_Reference_To (Btype, Loc),
-
-                                        Attribute_Name => Name_Pos,
-
-                                        Expressions => New_List (
-                                          Relocate_Node
-                                            (Type_Low_Bound (Ltype)))),
-
-                                    High_Bound =>
-                                      Make_Attribute_Reference (Loc,
-                                        Prefix =>
-                                          New_Reference_To (Btype, Loc),
-
-                                        Attribute_Name => Name_Pos,
-
-                                        Expressions => New_List (
-                                          Relocate_Node
-                                            (Type_High_Bound (Ltype))))))))),
-
-                Statements => New_List (
-                  Make_Block_Statement (Loc,
-                    Declarations => New_List (
-                      Make_Object_Declaration (Loc,
-                        Defining_Identifier => Loop_Id,
-                        Constant_Present    => True,
-                        Object_Definition   => New_Reference_To (Ltype, Loc),
-                        Expression          => Expr)),
-
-                    Handled_Statement_Sequence =>
-                      Make_Handled_Sequence_Of_Statements (Loc,
-                        Statements => Statements (N)))),
-
-                End_Label => End_Label (N)));
-            Analyze (N);
          end;
 
       --  Second case, if we have a while loop with Condition_Actions set, then
@@ -3162,12 +3187,223 @@ package body Exp_Ch5 is
             Analyze (N);
          end;
 
+      --  Here to deal with iterator case
+
       elsif Present (Isc)
         and then Present (Iterator_Specification (Isc))
       then
          Expand_Iterator_Loop (N);
       end if;
    end Expand_N_Loop_Statement;
+
+   ----------------------------
+   -- Expand_Predicated_Loop --
+   ----------------------------
+
+   --  Note: the expander can handle generation of loops over predicated
+   --  subtypes for both the dynamic and static cases. Depending on what
+   --  we decide is allowed in Ada 2012 mode and/or extentions allowed
+   --  mode, the semantic analyzer may disallow one or both forms.
+
+   procedure Expand_Predicated_Loop (N : Node_Id) is
+      Loc     : constant Source_Ptr := Sloc (N);
+      Isc     : constant Node_Id    := Iteration_Scheme (N);
+      LPS     : constant Node_Id    := Loop_Parameter_Specification (Isc);
+      Loop_Id : constant Entity_Id  := Defining_Identifier (LPS);
+      Ltype   : constant Entity_Id  := Etype (Loop_Id);
+      Stat    : constant List_Id    := Static_Predicate (Ltype);
+      Stmts   : constant List_Id    := Statements (N);
+
+   begin
+      --  Case of iteration over non-static predicate. In this case we
+      --  generate the sequence:
+
+      --     for J in Ltype'First .. Ltype'Last loop
+      --        if Ltype_Predicate_Function (J) then
+      --           body;
+      --        end if;
+      --     end loop;
+
+      if No (Stat) then
+
+         --  The analyzer already expanded the First/Last, so all we have
+         --  to do is wrap the body within the predicate function test.
+
+         Set_Statements (N, New_List (
+           Make_If_Statement (Loc,
+             Condition =>
+               Make_Predicate_Call (Ltype, New_Occurrence_Of (Loop_Id, Loc)),
+             Then_Statements => Stmts)));
+         Analyze (First (Statements (N)));
+
+      --  For expansion over a static predicate we generate the following
+
+      --     declare
+      --        J : Ltype := min-val;
+      --     begin
+      --        loop
+      --           body
+      --           case J is
+      --              when endpoint => J := startpoint;
+      --              when endpoint => J := startpoint;
+      --              ...
+      --              when max-val  => exit;
+      --              when others   => J := Lval'Succ (J);
+      --           end case;
+      --        end loop;
+      --     end;
+
+      --  To make this a little clearer, let's take a specific example:
+
+      --        type Int is range 1 .. 10;
+      --        subtype L is Int with
+      --          predicate => L in 3 | 10 | 5 .. 7;
+      --          ...
+      --        for L in StaticP loop
+      --           Put_Line ("static:" & J'Img);
+      --        end loop;
+
+      --  In this case, the loop is transformed into
+
+      --     begin
+      --        J : L := 3;
+      --        loop
+      --           body
+      --           case J is
+      --              when 3  => J := 5;
+      --              when 7  => J := 10;
+      --              when 10 => exit;
+      --              when others  => J := L'Succ (J);
+      --           end case;
+      --        end loop;
+      --     end;
+
+      else
+         Static_Predicate : declare
+            S    : Node_Id;
+            D    : Node_Id;
+            P    : Node_Id;
+            Alts : List_Id;
+            Cstm : Node_Id;
+
+            function Lo_Val (N : Node_Id) return Node_Id;
+            --  Given static expression or static range, returns an identifier
+            --  whose value is the low bound of the expression value or range.
+
+            function Hi_Val (N : Node_Id) return Node_Id;
+            --  Given static expression or static range, returns an identifier
+            --  whose value is the high bound of the expression value or range.
+
+            ------------
+            -- Hi_Val --
+            ------------
+
+            function Hi_Val (N : Node_Id) return Node_Id is
+            begin
+               if Is_Static_Expression (N) then
+                  return New_Copy (N);
+               else
+                  pragma Assert (Nkind (N) = N_Range);
+                  return New_Copy (High_Bound (N));
+               end if;
+            end Hi_Val;
+
+            ------------
+            -- Lo_Val --
+            ------------
+
+            function Lo_Val (N : Node_Id) return Node_Id is
+            begin
+               if Is_Static_Expression (N) then
+                  return New_Copy (N);
+               else
+                  pragma Assert (Nkind (N) = N_Range);
+                  return New_Copy (Low_Bound (N));
+               end if;
+            end Lo_Val;
+
+         --  Start of processing for Static_Predicate
+
+         begin
+            --  Convert loop identifier to normal variable and reanalyze it so
+            --  that this conversion works. We have to use the same defining
+            --  identifier, since there may be references in the loop body.
+
+            Set_Analyzed (Loop_Id, False);
+            Set_Ekind    (Loop_Id, E_Variable);
+
+            --  Loop to create branches of case statement
+
+            Alts := New_List;
+            P := First (Stat);
+            while Present (P) loop
+               if No (Next (P)) then
+                  S := Make_Exit_Statement (Loc);
+               else
+                  S :=
+                    Make_Assignment_Statement (Loc,
+                      Name       => New_Occurrence_Of (Loop_Id, Loc),
+                      Expression => Lo_Val (Next (P)));
+                  Set_Suppress_Assignment_Checks (S);
+               end if;
+
+               Append_To (Alts,
+                 Make_Case_Statement_Alternative (Loc,
+                   Statements       => New_List (S),
+                   Discrete_Choices => New_List (Hi_Val (P))));
+
+               Next (P);
+            end loop;
+
+            --  Add others choice
+
+            S :=
+               Make_Assignment_Statement (Loc,
+                 Name       => New_Occurrence_Of (Loop_Id, Loc),
+                 Expression =>
+                   Make_Attribute_Reference (Loc,
+                     Prefix => New_Occurrence_Of (Ltype, Loc),
+                     Attribute_Name => Name_Succ,
+                     Expressions    => New_List (
+                       New_Occurrence_Of (Loop_Id, Loc))));
+            Set_Suppress_Assignment_Checks (S);
+
+            Append_To (Alts,
+              Make_Case_Statement_Alternative (Loc,
+                Discrete_Choices => New_List (Make_Others_Choice (Loc)),
+                Statements       => New_List (S)));
+
+            --  Construct case statement and append to body statements
+
+            Cstm :=
+              Make_Case_Statement (Loc,
+                Expression   => New_Occurrence_Of (Loop_Id, Loc),
+                Alternatives => Alts);
+            Append_To (Stmts, Cstm);
+
+            --  Rewrite the loop
+
+            D :=
+               Make_Object_Declaration (Loc,
+                 Defining_Identifier => Loop_Id,
+                 Object_Definition   => New_Occurrence_Of (Ltype, Loc),
+                 Expression          => Lo_Val (First (Stat)));
+            Set_Suppress_Assignment_Checks (D);
+
+            Rewrite (N,
+              Make_Block_Statement (Loc,
+                Declarations               => New_List (D),
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (
+                      Make_Loop_Statement (Loc,
+                        Statements => Stmts,
+                        End_Label  => Empty)))));
+
+            Analyze (N);
+         end Static_Predicate;
+      end if;
+   end Expand_Predicated_Loop;
 
    ------------------------------
    -- Make_Tag_Ctrl_Assignment --

@@ -5407,9 +5407,13 @@ package body Exp_Attr is
 
    --  These checks are not generated for modular types, since the proper
    --  semantics for Succ and Pred on modular types is to wrap, not raise CE.
+   --  We also suppress these checks if we are the right side of an assignment
+   --  statement or the expression of an object declaration, where the flag
+   --  Suppress_Assignment_Checks is set for the assignment/declaration.
 
    procedure Expand_Pred_Succ (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
+      P    : constant Node_Id    := Parent (N);
       Cnam : Name_Id;
 
    begin
@@ -5419,18 +5423,22 @@ package body Exp_Attr is
          Cnam := Name_Last;
       end if;
 
-      Insert_Action (N,
-        Make_Raise_Constraint_Error (Loc,
-          Condition =>
-            Make_Op_Eq (Loc,
-              Left_Opnd =>
-                Duplicate_Subexpr_Move_Checks (First (Expressions (N))),
-              Right_Opnd =>
-                Make_Attribute_Reference (Loc,
-                  Prefix =>
-                    New_Reference_To (Base_Type (Etype (Prefix (N))), Loc),
-                  Attribute_Name => Cnam)),
-          Reason => CE_Overflow_Check_Failed));
+      if not Nkind_In (P, N_Assignment_Statement, N_Object_Declaration)
+        or else not Suppress_Assignment_Checks (P)
+      then
+         Insert_Action (N,
+           Make_Raise_Constraint_Error (Loc,
+             Condition =>
+               Make_Op_Eq (Loc,
+                 Left_Opnd =>
+                   Duplicate_Subexpr_Move_Checks (First (Expressions (N))),
+                 Right_Opnd =>
+                   Make_Attribute_Reference (Loc,
+                     Prefix =>
+                       New_Reference_To (Base_Type (Etype (Prefix (N))), Loc),
+                     Attribute_Name => Cnam)),
+             Reason => CE_Overflow_Check_Failed));
+      end if;
    end Expand_Pred_Succ;
 
    -------------------

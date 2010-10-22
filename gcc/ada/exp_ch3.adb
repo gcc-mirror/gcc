@@ -4516,7 +4516,8 @@ package body Exp_Ch3 is
       --  there is an initializing expression, or for default initialization
       --  when we have at least one case of an explicit default initial value.
 
-      if Present (Predicate_Function (Typ))
+      if not Suppress_Assignment_Checks (N)
+        and then Present (Predicate_Function (Typ))
         and then
           (Present (Expr)
             or else
@@ -5029,7 +5030,11 @@ package body Exp_Ch3 is
 
                   if Do_Range_Check (Expr) then
                      Set_Do_Range_Check (Expr, False);
-                     Generate_Range_Check (Expr, Typ, CE_Range_Check_Failed);
+
+                     if not Suppress_Assignment_Checks (N) then
+                        Generate_Range_Check
+                          (Expr, Typ, CE_Range_Check_Failed);
+                     end if;
                   end if;
                end if;
             end if;
