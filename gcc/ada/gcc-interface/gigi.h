@@ -374,7 +374,8 @@ enum exception_info_kind
   /* Range exception information: file:line + index, first, last.  */
   exception_range,
   /* Column exception information: file:line:column.  */
-  exception_column};
+  exception_column
+};
 
 extern GTY(()) tree gnat_std_decls[(int) ADT_LAST];
 extern GTY(()) tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
