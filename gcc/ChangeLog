@@ -1,3 +1,16 @@
+2010-10-21  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/alpha/alpha.c (alpha_build_builtin_va_list): Use
+	TYPE_STUB_DECL instead of TREE_CHAIN.
+	* config/i386/i386.c (ix86_build_builtin_va_list_abi): Likewise.
+	* config/rs6000/rs6000.c (rs6000_build_builtin_va_list): Likewise.
+	* config/s390/s390.c (s390_build_builtin_va_list): Likewise.
+	* config/sh/sh.c (sh_build_builtin_va_list): Likewise.
+	* config/spu/spu.c (spu_build_builtin_va_list): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_build_builtin_va_list):
+	Likewise.
+	* config/xtensa/xtensa.c (xtensa_build_builtin_va_list): Likewise.
+
 2010-10-22  Jie Zhang  <jie@codesourcery.com>
 
 	* expr.c (emit_group_load_1): Update calls to extract_bit_field.
