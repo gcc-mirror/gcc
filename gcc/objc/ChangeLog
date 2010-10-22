@@ -1,3 +1,30 @@
+2010-10-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (get_objc_string_decl): Use a switch instead of a
+	chain of ifs.  Use gcc_unreachable instead of abort.
+	(add_objc_string): Same change.
+	(generate_protocol_list): Same change - twice.
+	(synth_id_with_class_suffix): Same change.
+	(build_keyword_selector): Same change - twice.
+	(objc_build_message_expr): Same change.
+	(objc_build_selector_expr): Same change.
+	(check_methods): Same change - and added missing gcc_unreachable
+	for default case.
+	(check_methods_accessible): Same change - twice, and added missing
+	gcc_unreachable for default case in one of them.
+	(start_class): Same change - and added missing gcc_unreachable for
+	default case.
+	(continue_class): Same change.
+	(objc_gen_property_data): Same change.
+	(finish_class): Same change.
+	(encode_type_qualifiers): Added missing gcc_unreachable.
+	(encode_type): Small code tidy up to reduce duplicated code.  Use
+	gcc_unreachable instead of abort - twice.
+	(encode_gnu_bitfield): Use a switch instead of a chain of ifs -
+	twice.  Added missing gcc_unreachable for default case - twice.
+	(dump_interface): Use a switch instead of a chain of ifs.
+	(handle_impent): Same change.
+	
 2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.h (objc_inherit_code): Removed.
