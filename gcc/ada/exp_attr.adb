@@ -4771,53 +4771,54 @@ package body Exp_Attr is
                Ftp : Entity_Id;
 
             begin
-               --  For vax fpt types, call appropriate routine in special vax
-               --  floating point unit. We do not have to worry about loads in
-               --  this case, since these types have no signalling NaN's.
 
-               if Vax_Float (Btyp) then
-                  Expand_Vax_Valid (N);
+               case Float_Rep (Btyp) is
+                  --  For vax fpt types, call appropriate routine in special
+                  --  vax floating point unit. We do not have to worry about
+                  --  loads in this case, since these types have no signalling
+                  --  NaN's.
 
-               --  The AAMP back end handles Valid for floating-point types
+                  when VAX_Native => Expand_Vax_Valid (N);
 
-               elsif Is_AAMP_Float (Btyp) then
-                  Analyze_And_Resolve (Pref, Ptyp);
-                  Set_Etype (N, Standard_Boolean);
-                  Set_Analyzed (N);
+                  --  The AAMP back end handles Valid for floating-point types
 
-               --  Non VAX float case
+                  when AAMP =>
+                     Analyze_And_Resolve (Pref, Ptyp);
+                     Set_Etype (N, Standard_Boolean);
+                     Set_Analyzed (N);
 
-               else
-                  Find_Fat_Info (Ptyp, Ftp, Pkg);
+                  when IEEE_Binary =>
+                     Find_Fat_Info (Ptyp, Ftp, Pkg);
 
-                  --  If the floating-point object might be unaligned, we need
-                  --  to call the special routine Unaligned_Valid, which makes
-                  --  the needed copy, being careful not to load the value into
-                  --  any floating-point register. The argument in this case is
-                  --  obj'Address (see Unaligned_Valid routine in Fat_Gen).
+                     --  If the floating-point object might be unaligned, we
+                     --  need to call the special routine Unaligned_Valid,
+                     --  which makes the needed copy, being careful not to
+                     --  load the value into any floating-point register.
+                     --  The argument in this case is obj'Address (see
+                     --  Unaligned_Valid routine in Fat_Gen).
 
-                  if Is_Possibly_Unaligned_Object (Pref) then
-                     Expand_Fpt_Attribute
-                       (N, Pkg, Name_Unaligned_Valid,
-                        New_List (
-                          Make_Attribute_Reference (Loc,
-                            Prefix => Relocate_Node (Pref),
-                            Attribute_Name => Name_Address)));
+                     if Is_Possibly_Unaligned_Object (Pref) then
+                        Expand_Fpt_Attribute
+                          (N, Pkg, Name_Unaligned_Valid,
+                           New_List (
+                             Make_Attribute_Reference (Loc,
+                               Prefix => Relocate_Node (Pref),
+                               Attribute_Name => Name_Address)));
 
-                  --  In the normal case where we are sure the object is
-                  --  aligned, we generate a call to Valid, and the argument in
-                  --  this case is obj'Unrestricted_Access (after converting
-                  --  obj to the right floating-point type).
+                     --  In the normal case where we are sure the object is
+                     --  aligned, we generate a call to Valid, and the argument
+                     --  in this case is obj'Unrestricted_Access (after
+                     --  converting obj to the right floating-point type).
 
-                  else
-                     Expand_Fpt_Attribute
-                       (N, Pkg, Name_Valid,
-                        New_List (
-                          Make_Attribute_Reference (Loc,
-                            Prefix => Unchecked_Convert_To (Ftp, Pref),
-                            Attribute_Name => Name_Unrestricted_Access)));
-                  end if;
-               end if;
+                     else
+                        Expand_Fpt_Attribute
+                          (N, Pkg, Name_Valid,
+                           New_List (
+                             Make_Attribute_Reference (Loc,
+                               Prefix => Unchecked_Convert_To (Ftp, Pref),
+                               Attribute_Name => Name_Unrestricted_Access)));
+                     end if;
+               end case;
 
                --  One more task, we still need a range check. Required
                --  only if we have a constraint, since the Valid routine
@@ -5468,7 +5469,7 @@ package body Exp_Attr is
                raise Program_Error;
          end case;
 
-      --  If neither the base type nor the root type is VAX_Float then VAX
+      --  If neither the base type nor the root type is VAX_Native then VAX
       --  float is out of the picture, and we can just use the root type.
 
       else

@@ -5703,18 +5703,6 @@ package body Sem_Util is
       end loop;
    end Inspect_Deferred_Constant_Completion;
 
-   -------------------
-   -- Is_AAMP_Float --
-   -------------------
-
-   function Is_AAMP_Float (E : Entity_Id) return Boolean is
-      pragma Assert (Is_Type (E));
-   begin
-      return AAMP_On_Target
-         and then Is_Floating_Point_Type (E)
-         and then E = Base_Type (E);
-   end Is_AAMP_Float;
-
    -----------------------------
    -- Is_Actual_Out_Parameter --
    -----------------------------

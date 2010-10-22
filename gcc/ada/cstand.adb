@@ -140,8 +140,17 @@ package body CStand is
       Set_Type_Definition (Parent (E),
         Make_Floating_Point_Definition (Stloc,
           Digits_Expression => Make_Integer (UI_From_Int (Digs))));
+
       Set_Ekind                      (E, E_Floating_Point_Type);
       Set_Etype                      (E, E);
+
+      if AAMP_On_Target then
+         Set_Float_Rep (E, AAMP);
+
+      else
+         Set_Float_Rep (E, IEEE_Binary);
+      end if;
+
       Init_Size                      (E, Siz);
       Set_Elem_Alignment             (E);
       Init_Digits_Value              (E, Digs);
@@ -1874,9 +1883,9 @@ package body CStand is
 
    begin
       --  Note: for the call from Cstand to initially create the types in
-      --  Standard, Vax_Float will always be False. Circuitry in Sem_Vfpt
-      --  will adjust these types appropriately in the Vax_Float case if a
-      --  pragma Float_Representation (VAX_Float) is used.
+      --  Standard, Float_Rep will never be VAX_Native. Circuitry in Sem_Vfpt
+      --  will adjust these types appropriately VAX_Native if a pragma
+      --  Float_Representation (VAX_Float) is used.
 
       H := Make_Float_Literal (Stloc, Radix, Significand, Exponent);
       L := Make_Float_Literal (Stloc, Radix, -Significand, Exponent);

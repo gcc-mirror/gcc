@@ -5646,7 +5646,7 @@ package body Sem_Ch3 is
          --  already have been set if there was a constraint present.
 
          Set_Digits_Value (Implicit_Base, Digits_Value (Parent_Base));
-         Set_Vax_Float    (Implicit_Base, Vax_Float    (Parent_Base));
+         Set_Float_Rep    (Implicit_Base, Float_Rep    (Parent_Base));
 
          if No_Constraint then
             Set_Digits_Value (Derived_Type, Digits_Value (Parent_Type));
@@ -14730,7 +14730,7 @@ package body Sem_Ch3 is
       Set_RM_Size        (Implicit_Base, RM_Size        (Base_Typ));
       Set_First_Rep_Item (Implicit_Base, First_Rep_Item (Base_Typ));
       Set_Digits_Value   (Implicit_Base, Digits_Value   (Base_Typ));
-      Set_Vax_Float      (Implicit_Base, Vax_Float      (Base_Typ));
+      Set_Float_Rep      (Implicit_Base, Float_Rep      (Base_Typ));
 
       Set_Ekind          (T, E_Floating_Point_Subtype);
       Set_Etype          (T, Implicit_Base);

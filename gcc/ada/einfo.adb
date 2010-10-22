@@ -37,7 +37,6 @@ with Nlists;   use Nlists;
 with Output;   use Output;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
-with Targparm; use Targparm;
 
 package body Einfo is
 
@@ -88,6 +87,7 @@ package body Einfo is
 
    --    Direct_Primitive_Operations     Elist10
    --    Discriminal_Link                Node10
+   --    Float_Rep                       Uint10 (but returns Float_Rep_Kind)
    --    Handler_Records                 List10
    --    Normalized_Position_Max         Uint10
 
@@ -406,7 +406,7 @@ package body Einfo is
    --    Is_Compilation_Unit             Flag149
    --    Has_Pragma_Elaborate_Body       Flag150
 
-   --    Vax_Float                       Flag151
+   --    (unused)                        Flag151
    --    Entry_Accepted                  Flag152
    --    Is_Obsolescent                  Flag153
    --    Has_Per_Object_Constraint       Flag154
@@ -521,12 +521,6 @@ package body Einfo is
    --    (unused)                        Flag253
    --    (unused)                        Flag254
 
-   -----------------
-   -- Local types --
-   -----------------
-
-   type Float_Rep_Kind is (IEEE_Binary, VAX_Native, AAMP);
-
    -----------------------
    -- Local subprograms --
    -----------------------
@@ -535,23 +529,14 @@ package body Einfo is
    --  Returns the attribute definition clause for Id whose name is Rep_Name.
    --  Returns Empty if no matching attribute definition clause found for Id.
 
-   function Float_Rep (Id : E) return Float_Rep_Kind;
-   --  Returns the floating point representation used for the given type
-
    ---------------
    -- Float_Rep --
    ---------------
 
-   function Float_Rep (Id : E) return Float_Rep_Kind is
+   function Float_Rep (Id : E) return F is
       pragma Assert (Is_Floating_Point_Type (Id));
    begin
-      if AAMP_On_Target then
-         return AAMP;
-      elsif Vax_Float (Id) then
-         return VAX_Native;
-      else
-         return IEEE_Binary;
-      end if;
+      return F'Val (UI_To_Int (Uint10 (Base_Type (Id))));
    end Float_Rep;
 
    ----------------
@@ -2873,7 +2858,7 @@ package body Einfo is
 
    function Vax_Float (Id : E) return B is
    begin
-      return Flag151 (Base_Type (Id));
+      return Is_Floating_Point_Type (Id) and then Float_Rep (Id) = VAX_Native;
    end Vax_Float;
 
    function Warnings_Off (Id : E) return B is
@@ -3684,6 +3669,12 @@ package body Einfo is
    begin
       Set_Node6 (Id, V);
    end Set_First_Rep_Item;
+
+   procedure Set_Float_Rep (Id : E; V : F) is
+      pragma Assert (Ekind (Id) = E_Floating_Point_Type);
+   begin
+      Set_Uint10 (Id, UI_From_Int (F'Pos (V)));
+   end Set_Float_Rep;
 
    procedure Set_Freeze_Node (Id : E; V : N) is
    begin
@@ -5374,12 +5365,6 @@ package body Einfo is
    begin
       Set_Flag222 (Id, V);
    end Set_Used_As_Generic_Actual;
-
-   procedure Set_Vax_Float (Id : E; V : B := True) is
-   begin
-      pragma Assert (Id = Base_Type (Id));
-      Set_Flag151 (Id, V);
-   end Set_Vax_Float;
 
    procedure Set_Warnings_Off (Id : E; V : B := True) is
    begin
@@ -7499,7 +7484,6 @@ package body Einfo is
       W ("Universal_Aliasing",              Flag216 (Id));
       W ("Used_As_Generic_Actual",          Flag222 (Id));
       W ("Uses_Sec_Stack",                  Flag95  (Id));
-      W ("Vax_Float",                       Flag151 (Id));
       W ("Warnings_Off",                    Flag96  (Id));
       W ("Warnings_Off_Used",               Flag236 (Id));
       W ("Warnings_Off_Used_Unmodified",    Flag237 (Id));
@@ -7734,6 +7718,9 @@ package body Einfo is
               Private_Kind                                 |
               Concurrent_Kind                              =>
             Write_Str ("Direct_Primitive_Operations");
+
+         when Float_Kind                                 =>
+            Write_Str ("Float_Rep");
 
          when E_In_Parameter                               |
               E_Constant                                   =>

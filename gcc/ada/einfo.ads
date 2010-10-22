@@ -1264,6 +1264,11 @@ package Einfo is
 --       Note in particular that size clauses are present only for this
 --       purpose, and should only be accessed if Has_Size_Clause is set.
 
+--    Float_Rep (Uint8)
+--       Present in floating-point entities. Contains a value of type
+--       Float_Rep_Kind. Together with the Digits_Value uniquely defines
+--       the floating-point representation to be used.
+
 --    Freeze_Node (Node7)
 --       Present in all entities. If there is an associated freeze node for
 --       the entity, this field references this freeze node. If no freeze
@@ -3786,11 +3791,6 @@ package Einfo is
 --       entries). Set to True when secondary stack is used in this scope and
 --       must be released on exit unless Sec_Stack_Needed_For_Return is set.
 
---    Vax_Float (Flag151) [base type only]
---       Present in all type and subtype entities. Set only on the base type of
---       float types with Vax format. The particular format is determined by
---       the Digits_Value value which is 6,9,15 for F_Float, D_Float, G_Float.
-
 --    Warnings_Off (Flag96)
 --       Present in all entities. Set if a pragma Warnings (Off, entity-name)
 --       is used to suppress warnings for a given entity. It is also used by
@@ -5094,6 +5094,7 @@ package Einfo is
    --  E_Floating_Point_Type
    --  E_Floating_Point_Subtype
    --    Digits_Value                        (Uint17)
+   --    Float_Rep                           (Uint8)    (Float_Rep_Kind)
    --    Machine_Emax_Value                  (synth)
    --    Machine_Emin_Value                  (synth)
    --    Machine_Mantissa_Value              (synth)
@@ -5108,6 +5109,7 @@ package Einfo is
    --    Scalar_Range                        (Node20)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
+   --    Vax_Float                           (synth)
    --    (plus type attributes)
 
    --  E_Function
@@ -5669,6 +5671,15 @@ package Einfo is
       Calign_Component_Size_4, -- natural for size <= 4, 4 for size >= 4
       Calign_Storage_Unit);    -- all components byte aligned
 
+   ----------------------------------
+   -- Floating Point Repesentation --
+   ----------------------------------
+
+   type Float_Rep_Kind is (
+      IEEE_Binary,  -- IEEE 754p conform binary format
+      VAX_Native,   -- VAX D, F, G or H format
+      AAMP);        -- AAMP format
+
    ---------------
    -- Iterators --
    ---------------
@@ -5848,6 +5859,7 @@ package Einfo is
    subtype B is Boolean;
    subtype C is Component_Alignment_Kind;
    subtype E is Entity_Id;
+   subtype F is Float_Rep_Kind;
    subtype M is Mechanism_Type;
    subtype N is Node_Id;
    subtype U is Uint;
@@ -5953,6 +5965,7 @@ package Einfo is
    function First_Optional_Parameter            (Id : E) return E;
    function First_Private_Entity                (Id : E) return E;
    function First_Rep_Item                      (Id : E) return N;
+   function Float_Rep                           (Id : E) return F;
    function Freeze_Node                         (Id : E) return N;
    function From_With_Type                      (Id : E) return B;
    function Full_View                           (Id : E) return E;
@@ -6532,6 +6545,7 @@ package Einfo is
    procedure Set_First_Optional_Parameter        (Id : E; V : E);
    procedure Set_First_Private_Entity            (Id : E; V : E);
    procedure Set_First_Rep_Item                  (Id : E; V : N);
+   procedure Set_Float_Rep                       (Id : E; V : F);
    procedure Set_Freeze_Node                     (Id : E; V : N);
    procedure Set_From_With_Type                  (Id : E; V : B := True);
    procedure Set_Full_View                       (Id : E; V : E);
@@ -6825,7 +6839,6 @@ package Einfo is
    procedure Set_Unset_Reference                 (Id : E; V : N);
    procedure Set_Used_As_Generic_Actual          (Id : E; V : B := True);
    procedure Set_Uses_Sec_Stack                  (Id : E; V : B := True);
-   procedure Set_Vax_Float                       (Id : E; V : B := True);
    procedure Set_Warnings_Off                    (Id : E; V : B := True);
    procedure Set_Warnings_Off_Used               (Id : E; V : B := True);
    procedure Set_Warnings_Off_Used_Unmodified    (Id : E; V : B := True);
@@ -7558,7 +7571,6 @@ package Einfo is
    pragma Inline (Unset_Reference);
    pragma Inline (Used_As_Generic_Actual);
    pragma Inline (Uses_Sec_Stack);
-   pragma Inline (Vax_Float);
    pragma Inline (Warnings_Off);
    pragma Inline (Warnings_Off_Used);
    pragma Inline (Warnings_Off_Used_Unmodified);
@@ -7952,7 +7964,6 @@ package Einfo is
    pragma Inline (Set_Unset_Reference);
    pragma Inline (Set_Used_As_Generic_Actual);
    pragma Inline (Set_Uses_Sec_Stack);
-   pragma Inline (Set_Vax_Float);
    pragma Inline (Set_Warnings_Off);
    pragma Inline (Set_Warnings_Off_Used);
    pragma Inline (Set_Warnings_Off_Used_Unmodified);

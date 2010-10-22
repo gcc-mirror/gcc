@@ -653,14 +653,6 @@ package Sem_Util is
    --  whether they have been completed by a full constant declaration or an
    --  Import pragma. Emit the error message if that is not the case.
 
-   function Is_AAMP_Float (E : Entity_Id) return Boolean;
-   --  Defined for all type entities. Returns True only for the base type of
-   --  float types with AAMP format. The particular format is determined by the
-   --  Digits_Value value which is 6 for the 32-bit floating point type, or 9
-   --  for the 48-bit type. This is not an attribute function (like VAX_Float)
-   --  in order to not use up an extra flag and to prevent the dependency of
-   --  Einfo on Targparm which would be required for a synthesized attribute.
-
    function Is_Actual_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of out mode in a subprogram call
 
