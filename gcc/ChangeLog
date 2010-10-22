@@ -1,3 +1,10 @@
+2010-10-22  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_fp_absneg_operator): Produce
+	NEG+USE for vectors as well.
+	* config/i386/i386.md (*absneg<VEC_FLOAT_MODE>2): New pattern
+	and splitter.
+
 2010-10-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c (DEFAULT_SWITCH_CURTAILS_COMPILATION,

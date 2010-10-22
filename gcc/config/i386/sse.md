@@ -585,6 +585,24 @@
   ""
   "ix86_expand_fp_absneg_operator (<CODE>, <MODE>mode, operands); DONE;")
 
+(define_insn_and_split "*absneg<mode>2"
+  [(set (match_operand:VEC_FLOAT_MODE 0 "register_operand" "=x,x")
+	(match_operator:VEC_FLOAT_MODE 3 "absneg_operator"
+	  [(match_operand:VEC_FLOAT_MODE 1 "nonimmediate_operand" "0,xm")]))
+   (use (match_operand:VEC_FLOAT_MODE 2 "nonimmediate_operand" "xm,0"))]
+  "SSE_VEC_FLOAT_MODE_P (<MODE>mode) || AVX256_VEC_FLOAT_MODE_P (<MODE>mode)"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx set;
+  set = gen_rtx_fmt_ee (GET_CODE (operands[3]) == NEG ? XOR : AND,
+			<MODE>mode, operands[1], operands[2]);
+  set = gen_rtx_SET (VOIDmode, operands[0], set);
+  emit_insn (set);
+  DONE;
+})
+
 (define_expand "<plusminus_insn><mode>3"
   [(set (match_operand:AVX256MODEF2P 0 "register_operand" "")
 	(plusminus:AVX256MODEF2P
