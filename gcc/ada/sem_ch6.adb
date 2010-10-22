@@ -207,8 +207,8 @@ package body Sem_Ch6 is
    --  conditions for the body and assembling and inserting the _postconditions
    --  procedure. N is the node for the subprogram body and Body_Id/Spec_Id are
    --  the entities for the body and separate spec (if there is no separate
-   --  spec, Spec_Id is Empty). Note that invariants also provide a source
-   --  of postconditions, which are also handled in this procedure.
+   --  spec, Spec_Id is Empty). Note that invariants and predicates may also
+   --  provide postconditions, and are also handled in this procedure.
 
    procedure Set_Formal_Validity (Formal_Id : Entity_Id);
    --  Formal_Id is an formal parameter entity. This procedure deals with
@@ -8681,9 +8681,10 @@ package body Sem_Ch6 is
       --  references to parameters of the inherited subprogram to point to the
       --  corresponding parameters of the current subprogram.
 
-      function Invariants_Present return Boolean;
-      --  Determines if any invariants are present for any OUT or IN OUT
-      --  parameters of the subprogram, or (for a function) for the return.
+      function Invariants_Or_Predicates_Present return Boolean;
+      --  Determines if any invariants or predicates are present for any OUT
+      --  or IN OUT parameters of the subprogram, or (for a function) if the
+      --  return value has an invariant.
 
       --------------
       -- Grab_PPC --
@@ -8782,12 +8783,12 @@ package body Sem_Ch6 is
          return CP;
       end Grab_PPC;
 
-      ------------------------
-      -- Invariants_Present --
-      ------------------------
+      --------------------------------------
+      -- Invariants_Or_Predicates_Present --
+      --------------------------------------
 
-      function Invariants_Present return Boolean is
-         Formal     : Entity_Id;
+      function Invariants_Or_Predicates_Present return Boolean is
+         Formal : Entity_Id;
 
       begin
          --  Check function return result
@@ -8803,7 +8804,9 @@ package body Sem_Ch6 is
          Formal := First_Formal (Designator);
          while Present (Formal) loop
             if Ekind (Formal) /= E_In_Parameter
-              and then Has_Invariants (Etype (Formal))
+              and then
+                (Has_Invariants (Etype (Formal))
+                  or else Present (Predicate_Function (Etype (Formal))))
             then
                return True;
             end if;
@@ -8812,7 +8815,7 @@ package body Sem_Ch6 is
          end loop;
 
          return False;
-      end Invariants_Present;
+      end Invariants_Or_Predicates_Present;
 
    --  Start of processing for Process_PPCs
 
@@ -9084,7 +9087,7 @@ package body Sem_Ch6 is
       --  If we had any postconditions and expansion is enabled, or if the
       --  procedure has invariants, then build the _Postconditions procedure.
 
-      if (Present (Plist) or else Invariants_Present)
+      if (Present (Plist) or else Invariants_Or_Predicates_Present)
         and then Expander_Active
       then
          if No (Plist) then
@@ -9127,21 +9130,33 @@ package body Sem_Ch6 is
             Parms := No_List;
          end if;
 
-         --  Add invariant calls for parameters. Note that this is done for
-         --  functions as well, since in Ada 2012 they can have IN OUT args.
+         --  Add invariant calls and predicate calls for parameters. Note that
+         --  this is done for functions as well, since in Ada 2012 they can
+         --  have IN OUT args.
 
          declare
             Formal : Entity_Id;
+            Ftype  : Entity_Id;
 
          begin
             Formal := First_Formal (Designator);
             while Present (Formal) loop
-               if Ekind (Formal) /= E_In_Parameter
-                 and then Has_Invariants (Etype (Formal))
-                 and then Present (Invariant_Procedure (Etype (Formal)))
-               then
-                  Append_To (Plist,
-                    Make_Invariant_Call (New_Occurrence_Of (Formal, Loc)));
+               if Ekind (Formal) /= E_In_Parameter then
+                  Ftype := Etype (Formal);
+
+                  if Has_Invariants (Ftype)
+                    and then Present (Invariant_Procedure (Ftype))
+                  then
+                     Append_To (Plist,
+                       Make_Invariant_Call
+                         (New_Occurrence_Of (Formal, Loc)));
+                  end if;
+
+                  if Present (Predicate_Function (Ftype)) then
+                     Append_To (Plist,
+                       Make_Predicate_Check
+                         (Ftype, New_Occurrence_Of (Formal, Loc)));
+                  end if;
                end if;
 
                Next_Formal (Formal);
@@ -9365,6 +9380,7 @@ package body Sem_Ch6 is
          if Ekind (Scope (Formal_Id)) = E_Function
            or else Ekind (Scope (Formal_Id)) = E_Generic_Function
          then
+            --  [IN] OUT parameters allowed for functions in Ada 2012
 
             if Ada_Version >= Ada_2012 then
                if In_Present (Spec) then
@@ -9372,6 +9388,8 @@ package body Sem_Ch6 is
                else
                   Set_Ekind (Formal_Id, E_Out_Parameter);
                end if;
+
+            --  But not in earlier versions of Ada
 
             else
                Error_Msg_N ("functions can only have IN parameters", Spec);

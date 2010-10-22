@@ -10911,6 +10911,11 @@ Duplicate all the output sent to @file{stderr} into a specified log file.
 @item ^--no-elim-dispatch^/NO_DISPATCH^
 Do not generate pragmas for dispatching operations.
 
+@item ^--ignore^/IGNORE^=@var{filename}
+@cindex @option{^--ignore^/IGNORE^} (@command{gnatelim})
+Do not generate pragmas for subprograms declared in the sources
+listed in a specified file
+
 @cindex @option{^-o^/OUTPUT^} (@command{gnatelim})
 @item ^-o^/OUTPUT^=@var{report_file}
 Put @command{gnatelim} output into a specified file. If this file already exists,

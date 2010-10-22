@@ -410,8 +410,8 @@ package body Sem_Prag is
       --  case, and if found, issues an appropriate error message.
 
       procedure Check_First_Subtype (Arg : Node_Id);
-      --  Checks that Arg, whose expression is an entity name referencing a
-      --  subtype, does not reference a type that is not a first subtype.
+      --  Checks that Arg, whose expression is an entity name, references a
+      --  first subtype.
 
       procedure Check_In_Main_Program;
       --  Common checks for pragmas that appear within a main program
@@ -976,8 +976,7 @@ package body Sem_Prag is
          Check_Arg_Is_Identifier (Argx);
 
          if not Is_Locking_Policy_Name (Chars (Argx)) then
-            Error_Pragma_Arg
-              ("& is not a valid locking policy name", Argx);
+            Error_Pragma_Arg ("& is not a valid locking policy name", Argx);
          end if;
       end Check_Arg_Is_Locking_Policy;
 
@@ -1032,7 +1031,6 @@ package body Sem_Prag is
             Error_Pragma_Arg ("invalid argument for pragma%", Argx);
          end if;
       end Check_Arg_Is_One_Of;
-
       ---------------------------------
       -- Check_Arg_Is_Queuing_Policy --
       ---------------------------------
@@ -1044,8 +1042,7 @@ package body Sem_Prag is
          Check_Arg_Is_Identifier (Argx);
 
          if not Is_Queuing_Policy_Name (Chars (Argx)) then
-            Error_Pragma_Arg
-              ("& is not a valid queuing policy name", Argx);
+            Error_Pragma_Arg ("& is not a valid queuing policy name", Argx);
          end if;
       end Check_Arg_Is_Queuing_Policy;
 
@@ -1210,9 +1207,7 @@ package body Sem_Prag is
             S : Entity_Id := Id;
 
          begin
-            while Present (S)
-              and then S /= Standard_Standard
-            loop
+            while Present (S) and then S /= Standard_Standard loop
                if Ekind (S) = E_Generic_Package
                  and then In_Package_Body (S)
                then
@@ -1342,10 +1337,22 @@ package body Sem_Prag is
 
       procedure Check_First_Subtype (Arg : Node_Id) is
          Argx : constant Node_Id := Get_Pragma_Arg (Arg);
+         Ent  : constant Entity_Id := Entity (Argx);
       begin
-         if not Is_First_Subtype (Entity (Argx)) then
+         if Is_First_Subtype (Ent) then
+            null;
+
+         elsif Is_Type (Ent) then
             Error_Pragma_Arg
               ("pragma% cannot apply to subtype", Argx);
+
+         elsif Is_Object (Ent) then
+            Error_Pragma_Arg
+              ("pragma% cannot apply to object, requires a type", Argx);
+
+         else
+            Error_Pragma_Arg
+              ("pragma% cannot apply to&, requires a type", Argx);
          end if;
       end Check_First_Subtype;
 
@@ -2188,6 +2195,7 @@ package body Sem_Prag is
 
             if Error_Msg_Name_1 = Name_Precondition then
                Error_Msg_Name_1 := Name_Pre;
+
             elsif Error_Msg_Name_1 = Name_Postcondition then
                Error_Msg_Name_1 := Name_Post;
             end if;
