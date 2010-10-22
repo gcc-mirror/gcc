@@ -5035,9 +5035,9 @@ package body Sem_Ch3 is
          --  The new type has fewer discriminants, so we need to create a new
          --  corresponding record, which is derived from the corresponding
          --  record of the parent, and has a stored constraint that captures
-         --  the values of the discriminant constraints.
-         --  The corresponding record is needed only if expander is active
-         --  and code generation is enabled.
+         --  the values of the discriminant constraints. The corresponding
+         --  record is needed only if expander is active and code generation is
+         --  enabled.
 
          --  The type declaration for the derived corresponding record has the
          --  same discriminant part and constraints as the current declaration.

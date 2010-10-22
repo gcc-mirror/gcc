@@ -892,7 +892,7 @@ package body Sem_Aggr is
 
    procedure Resolve_Aggregate (N : Node_Id; Typ : Entity_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
-      Pkind : constant Node_Kind := Nkind (Parent (N));
+      Pkind : constant Node_Kind  := Nkind (Parent (N));
 
       Aggr_Subtyp : Entity_Id;
       --  The actual aggregate subtype. This is not necessarily the same as Typ

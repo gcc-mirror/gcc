@@ -5368,9 +5368,29 @@ package body Sem_Ch8 is
                  and then (not Is_Entity_Name (P)
                             or else Chars (Entity (P)) /= Name_uInit)
                then
-                  C_Etype :=
-                    Build_Actual_Subtype_Of_Component (
-                      Etype (Selector), N);
+                  --  Do not build the subtype when referencing components of
+                  --  dispatch table wrappers. Required to avoid generating
+                  --  elaboration code with HI runtimes.
+
+                  if RTU_Loaded (Ada_Tags)
+                    and then RTE_Available (RE_Dispatch_Table_Wrapper)
+                    and then Scope (Selector) = RTE (RE_Dispatch_Table_Wrapper)
+                  then
+                     C_Etype := Empty;
+
+                  elsif RTU_Loaded (Ada_Tags)
+                    and then RTE_Available (RE_No_Dispatch_Table_Wrapper)
+                    and then Scope (Selector)
+                               = RTE (RE_No_Dispatch_Table_Wrapper)
+                  then
+                     C_Etype := Empty;
+
+                  else
+                     C_Etype :=
+                       Build_Actual_Subtype_Of_Component (
+                         Etype (Selector), N);
+                  end if;
+
                else
                   C_Etype := Empty;
                end if;
