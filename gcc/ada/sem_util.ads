@@ -733,11 +733,6 @@ package Sem_Util is
    --  means that the result returned is not crucial, but should err on the
    --  side of thinking things are fully initialized if it does not know.
 
-   function Is_Generic_Formal (E : Entity_Id) return Boolean;
-   --  Determine whether E is a generic formal parameter. In particular this is
-   --  used to set the visibility of generic formals of a generic package
-   --  declared with a box or with partial parametrization.
-
    function Is_Inherited_Operation (E : Entity_Id) return Boolean;
    --  E is a subprogram. Return True is E is an implicit operation inherited
    --  by a derived type declarations.

@@ -34,6 +34,7 @@ package Sem_Ch5 is
    procedure Analyze_Goto_Statement             (N : Node_Id);
    procedure Analyze_If_Statement               (N : Node_Id);
    procedure Analyze_Implicit_Label_Declaration (N : Node_Id);
+   procedure Analyze_Iterator_Specification     (N : Node_Id);
    procedure Analyze_Iteration_Scheme           (N : Node_Id);
    procedure Analyze_Label                      (N : Node_Id);
    procedure Analyze_Loop_Statement             (N : Node_Id);

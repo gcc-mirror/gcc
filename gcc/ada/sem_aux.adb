@@ -537,6 +537,25 @@ package body Sem_Aux is
       end if;
    end Is_Derived_Type;
 
+   -----------------------
+   -- Is_Generic_Formal --
+   -----------------------
+
+   function Is_Generic_Formal (E : Entity_Id) return Boolean is
+      Kind : Node_Kind;
+   begin
+      if No (E) then
+         return False;
+      else
+         Kind := Nkind (Parent (E));
+         return
+           Nkind_In (Kind, N_Formal_Object_Declaration,
+                           N_Formal_Package_Declaration,
+                           N_Formal_Type_Declaration)
+             or else Is_Formal_Subprogram (E);
+      end if;
+   end Is_Generic_Formal;
+
    ---------------------------
    -- Is_Indefinite_Subtype --
    ---------------------------

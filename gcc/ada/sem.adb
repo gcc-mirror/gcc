@@ -302,6 +302,9 @@ package body Sem is
          when N_Integer_Literal =>
             Analyze_Integer_Literal (N);
 
+         when N_Iterator_Specification =>
+            Analyze_Iterator_Specification (N);
+
          when N_Itype_Reference =>
             Analyze_Itype_Reference (N);
 
