@@ -1,3 +1,9 @@
+2010-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/45946
+	* config/i386/i386.md (*pushti2): New insn pattern.
+	(pushti2 splitter): New insn splitter.
+
 2010-10-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/45820
