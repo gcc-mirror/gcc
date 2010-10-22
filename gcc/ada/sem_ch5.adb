@@ -1809,16 +1809,20 @@ package body Sem_Ch5 is
                             and then not Is_Type (Entity (DS)))
                      then
 
-                        --  this is an iterator specification. Rewrite as
-                        --  such and analyze.
+                        --  This is an iterator specification. Rewrite as such
+                        --  and analyze.
 
                         declare
                            I_Spec : constant Node_Id :=
-                             Make_Iterator_Specification (Sloc (LP),
-                               Defining_Identifier => Relocate_Node (Id),
-                               Name => Relocate_Node (DS),
-                               Subtype_Indication => Empty,
-                               Reverse_Present => Reverse_Present (LP));
+                                      Make_Iterator_Specification (Sloc (LP),
+                                        Defining_Identifier =>
+                                          Relocate_Node (Id),
+                                        Name                =>
+                                          Relocate_Node (DS),
+                                        Subtype_Indication  =>
+                                          Empty,
+                                        Reverse_Present     =>
+                                          Reverse_Present (LP));
 
                         begin
                            Set_Iterator_Specification (N, I_Spec);
@@ -1833,8 +1837,8 @@ package body Sem_Ch5 is
                      return;
                   end if;
 
-                  --  The subtype indication may denote the completion
-                  --  of an incomplete type declaration.
+                  --  The subtype indication may denote the completion of an
+                  --  incomplete type declaration.
 
                   if Is_Entity_Name (DS)
                     and then Present (Entity (DS))
@@ -1854,8 +1858,8 @@ package body Sem_Ch5 is
 
                   Make_Index (DS, LP);
 
-                  Set_Ekind          (Id, E_Loop_Parameter);
-                  Set_Etype          (Id, Etype (DS));
+                  Set_Ekind (Id, E_Loop_Parameter);
+                  Set_Etype (Id, Etype (DS));
 
                   --  Treat a range as an implicit reference to the type, to
                   --  inhibit spurious warnings.
@@ -1879,9 +1883,7 @@ package body Sem_Ch5 is
                   --  instances, because in practice they tend to be dubious
                   --  in these cases.
 
-                  if Nkind (DS) = N_Range
-                    and then Comes_From_Source (N)
-                  then
+                  if Nkind (DS) = N_Range and then Comes_From_Source (N) then
                      declare
                         L : constant Node_Id := Low_Bound  (DS);
                         H : constant Node_Id := High_Bound (DS);
@@ -1893,9 +1895,9 @@ package body Sem_Ch5 is
                             (L, H, Assume_Valid => True) = GT
                         then
                            --  Suppress the warning if inside a generic
-                           --  template or instance, since in practice
-                           --  they tend to be dubious in these cases since
-                           --  they can result from intended parametrization.
+                           --  template or instance, since in practice they
+                           --  tend to be dubious in these cases since they can
+                           --  result from intended parametrization.
 
                            if not Inside_A_Generic
                               and then not In_Instance
@@ -1937,20 +1939,20 @@ package body Sem_Ch5 is
                            --  In either case, suppress warnings in the body of
                            --  the loop, since it is likely that these warnings
                            --  will be inappropriate if the loop never actually
-                           --  executes, which is unlikely.
+                           --  executes, which is likely.
 
                            Set_Suppress_Loop_Warnings (Parent (N));
 
                         --  The other case for a warning is a reverse loop
-                        --  where the upper bound is the integer literal
-                        --  zero or one, and the lower bound can be positive.
+                        --  where the upper bound is the integer literal zero
+                        --  or one, and the lower bound can be positive.
 
                         --  For example, we have
 
                         --     for J in reverse N .. 1 loop
 
-                        --  In practice, this is very likely to be a case
-                        --  of reversing the bounds incorrectly in the range.
+                        --  In practice, this is very likely to be a case of
+                        --  reversing the bounds incorrectly in the range.
 
                         elsif Reverse_Present (LP)
                           and then Nkind (Original_Node (H)) =
@@ -2002,13 +2004,13 @@ package body Sem_Ch5 is
          end if;
 
       else
-         --  Iteration over a container.
+         --  Iteration over a container
 
          Set_Ekind (Def_Id, E_Loop_Parameter);
          if Of_Present (N) then
 
-            --  Find the Element_Type in the package instance that defines
-            --  the container type.
+            --  Find the Element_Type in the package instance that defines the
+            --  container type.
 
             Ent := First_Entity (Scope (Typ));
             while Present (Ent) loop
@@ -2022,7 +2024,7 @@ package body Sem_Ch5 is
 
          else
 
-            --  Find the Cursor type in similar fashion.
+            --  Find the Cursor type in similar fashion
 
             Ent := First_Entity (Scope (Typ));
             while Present (Ent) loop

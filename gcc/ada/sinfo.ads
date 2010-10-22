@@ -1545,7 +1545,7 @@ package Sinfo is
    --    Initialize_Scalars and Normalize_Scalars.
 
    --  Of_Present (Flag16)
-   --  Present in N_Iterastor_Specification nodes, to mark the Ada2012 iterator
+   --  Present in N_Iterator_Specification nodes, to mark the Ada 2012 iterator
    --  form over arrays and containers.
 
    --  Original_Discriminant (Node2-Sem)
@@ -3826,14 +3826,17 @@ package Sinfo is
       ---------------------------------
 
       --  QUANTIFIED_EXPRESSION ::=
-      --    for QUANTIFIER LOOP_PARAMETER_SPECIFICATION => PREDICATE |
-      --    for QUANTIFIER ITERATOR_SPECIFICATION => PREDICATE
+      --    for QUANTIFIER LOOP_PARAMETER_SPECIFICATION => PREDICATE
+      --  | for QUANTIFIER ITERATOR_SPECIFICATION => PREDICATE
       --
       --  QUANTIFIER ::= all | some
 
+      --  At most one of (Iterator_Specification, Loop_Parameter_Specification)
+      --  is present at a time, in which case the other one is empty.
+
       --  N_Quantified_Expression
       --  Sloc points to FOR
-      --  Iterator_Specification (Node2) (set to Empty if not Present)
+      --  Iterator_Specification (Node2)
       --  Loop_Parameter_Specification (Node4)
       --  Condition (Node1)
       --  All_Present (Flag15)
@@ -4169,11 +4172,13 @@ package Sinfo is
       --------------------------
 
       --  ITERATION_SCHEME ::=
-      --    while CONDITION | for LOOP_PARAMETER_SPECIFICATION |
-      --    for ITERATOR_SPECIFICATION
+      --    while CONDITION
+      --  | for LOOP_PARAMETER_SPECIFICATION
+      --  | for ITERATOR_SPECIFICATION
 
-      --  Only one of (Iterator_Specification, Loop_Parameter_Specification)
-      --  is present at a time, the other one is empty.
+      --  At most one of (Iterator_Specification, Loop_Parameter_Specification)
+      --  is present at a time, in which case the other one is empty. Both are
+      --  empty in the case of a WHILE loop.
 
       --  Gigi restriction: This expander ensures that the type of the
       --  Condition field is always Standard.Boolean, even if the type
@@ -4183,7 +4188,7 @@ package Sinfo is
       --  Sloc points to WHILE or FOR
       --  Condition (Node1) (set to Empty if FOR case)
       --  Condition_Actions (List3-Sem)
-      --  Iterator_Specification (Node2) (set to Empty if not Present)
+      --  Iterator_Specification (Node2) (set to Empty if WHILE case)
       --  Loop_Parameter_Specification (Node4) (set to Empty if WHILE case)
 
       ---------------------------------------
@@ -4205,7 +4210,7 @@ package Sinfo is
 
       --  ITERATOR_SPECIFICATION ::=
       --    DEFINING_IDENTIFIER in [reverse] NAME
-      --    DEFINING_IDENTIFIER [: SUBTYPE_INDICATION] of [reverse] NAME
+      --  | DEFINING_IDENTIFIER [: SUBTYPE_INDICATION] of [reverse] NAME
 
       --  N_Iterator_Specification
       --  Sloc points to defining identifier
