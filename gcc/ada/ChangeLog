@@ -1,3 +1,18 @@
+2010-10-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Check_Or_Process_Discriminants): In Ada 2012, allow
+	limited tagged types to have defaulted discriminants. Customize the
+	error message for the Ada 2012 case.
+	(Process_Discriminants): In Ada 2012, allow limited tagged types to have
+	defaulted discriminants. Customize the error message for the Ada 2012
+	case.
+	* sem_ch6.adb (Create_Extra_Formals): Suppress creation of the extra
+	formal for out formals of discriminated types in the case where the
+	underlying type is a limited tagged type.
+	* exp_attr.adb (Expand_N_Attribute_Reference, case
+	Attribute_Constrained): Return True for 'Constrained when the
+	underlying type of the prefix is a limited tagged type.
+
 2010-10-22  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch3.adb (Complete_Private_Subtype): The full view of the subtype

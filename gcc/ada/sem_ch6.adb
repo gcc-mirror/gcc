@@ -5697,9 +5697,23 @@ package body Sem_Ch6 is
                Formal_Type := Underlying_Type (Formal_Type);
             end if;
 
+            --  Suppress the extra formal if formal's subtype is constrained or
+            --  indefinite, or we're compiling for Ada 2012 and the underlying
+            --  type is tagged and limited. In Ada 2012, a limited tagged type
+            --  can have defaulted discriminants, but 'Constrained is required
+            --  to return True, so the formal is never needed (see AI05-0214).
+            --  Note that this ensures consistency of calling sequences for
+            --  dispatching operations when some types in a class have defaults
+            --  on discriminants and others do not (and requiring the extra
+            --  formal would introduce distributed overhead).
+
             if Has_Discriminants (Formal_Type)
               and then not Is_Constrained (Formal_Type)
               and then not Is_Indefinite_Subtype (Formal_Type)
+              and then (Ada_Version < Ada_2012
+                         or else
+                           not (Is_Tagged_Type (Underlying_Type (Formal_Type))
+                                 and then Is_Limited_Type (Formal_Type)))
             then
                Set_Extra_Constrained
                  (Formal, Add_Extra_Formal (Formal, Standard_Boolean, E, "O"));

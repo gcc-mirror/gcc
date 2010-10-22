@@ -9639,16 +9639,28 @@ package body Sem_Ch3 is
 
                --  Handle the case where there is an untagged partial view and
                --  the full view is tagged: must disallow discriminants with
-               --  defaults. However suppress the error here if it was already
-               --  reported on the default expression of the partial view.
+               --  defaults, unless compiling for Ada 2012, which allows a
+               --  limited tagged type to have defaulted discriminants (see
+               --  AI05-0214). However, suppress the error here if it was
+               --  already reported on the default expression of the partial
+               --  view.
 
                if Is_Tagged_Type (T)
                     and then Present (Expression (Parent (D)))
+                    and then (not Is_Limited_Type (Current_Scope)
+                               or else Ada_Version < Ada_2012)
                     and then not Error_Posted (Expression (Parent (D)))
                then
-                  Error_Msg_N
-                    ("discriminants of tagged type cannot have defaults",
-                     Expression (New_D));
+                  if Ada_Version >= Ada_2012 then
+                     Error_Msg_N
+                       ("discriminants of nonlimited tagged type cannot have"
+                          & " defaults",
+                        Expression (New_D));
+                  else
+                     Error_Msg_N
+                       ("discriminants of tagged type cannot have defaults",
+                        Expression (New_D));
+                  end if;
                end if;
 
                --  Ada 2005 (AI-230): Access discriminant allowed in
@@ -16442,20 +16454,33 @@ package body Sem_Ch3 is
                  ("discriminant defaults not allowed for formal type",
                   Expression (Discr));
 
+            --  Flag an error for a tagged type with defaulted discriminants,
+            --  excluding limited tagged types when compiling for Ada 2012
+            --  (see AI05-0214).
+
             elsif Is_Tagged_Type (Current_Scope)
+              and then (not Is_Limited_Type (Current_Scope)
+                         or else Ada_Version < Ada_2012)
               and then Comes_From_Source (N)
             then
                --  Note: see similar test in Check_Or_Process_Discriminants, to
                --  handle the (illegal) case of the completion of an untagged
                --  view with discriminants with defaults by a tagged full view.
-               --  We skip the check if Discr does not come from source to
+               --  We skip the check if Discr does not come from source, to
                --  account for the case of an untagged derived type providing
-               --  defaults for a renamed discriminant from a private nontagged
+               --  defaults for a renamed discriminant from a private untagged
                --  ancestor with a tagged full view (ACATS B460006).
 
-               Error_Msg_N
-                 ("discriminants of tagged type cannot have defaults",
-                  Expression (Discr));
+               if Ada_Version >= Ada_2012 then
+                  Error_Msg_N
+                    ("discriminants of nonlimited tagged type cannot have"
+                       & " defaults",
+                     Expression (Discr));
+               else
+                  Error_Msg_N
+                    ("discriminants of tagged type cannot have defaults",
+                     Expression (Discr));
+               end if;
 
             else
                Default_Present := True;
