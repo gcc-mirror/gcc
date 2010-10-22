@@ -8481,7 +8481,7 @@ package body Sem_Res is
       --  Check bad use of type with predicates
 
       if Has_Predicates (Etype (Drange)) then
-         Error_Msg_NE
+         Bad_Predicated_Subtype_Use
            ("subtype& has predicate, not allowed in slice",
             Drange, Etype (Drange));
 

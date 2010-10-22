@@ -842,7 +842,7 @@ package body Sem_Attr is
          if Comes_From_Source (N) then
             Error_Msg_Name_1 := Aname;
             Bad_Predicated_Subtype_Use
-              (P_Type, N, "type& has predicates, attribute % not allowed");
+              ("type& has predicates, attribute % not allowed", N, P_Type);
          end if;
       end Bad_Attribute_For_Predicate;
 

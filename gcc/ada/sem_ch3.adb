@@ -4429,11 +4429,9 @@ package body Sem_Ch3 is
 
          --  Check error of subtype with predicate for index type
 
-         if Has_Predicates (Etype (Index)) then
-            Error_Msg_NE
-              ("subtype& has predicate, not allowed as index subtype",
-               Index, Etype (Index));
-         end if;
+         Bad_Predicated_Subtype_Use
+           ("subtype& has predicate, not allowed as index subtype",
+            Index, Etype (Index));
 
          --  Move to next index
 
@@ -11402,9 +11400,9 @@ package body Sem_Ch3 is
 
             --  Check error of subtype with predicate in index constraint
 
-            elsif Has_Predicates (Entity (S)) then
-               Error_Msg_NE
-                 ("subtype& has predicate, not allowed in index consraint",
+            else
+               Bad_Predicated_Subtype_Use
+                 ("subtype& has predicate, not allowed in index constraint",
                   S, Entity (S));
             end if;
 
