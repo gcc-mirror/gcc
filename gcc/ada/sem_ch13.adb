@@ -658,9 +658,20 @@ package body Sem_Ch13 is
       --  Set True if delay is required
 
    begin
+      --  Return if no aspects
+
       if L = No_List then
          return;
       end if;
+
+      --  Return if already analyzed (avoids duplicate calls in some cases
+      --  where type declarations get rewritten and proessed twice).
+
+      if Analyzed (N) then
+         return;
+      end if;
+
+      --  Loop through apsects
 
       Aspect := First (L);
       while Present (Aspect) loop
@@ -1067,6 +1078,12 @@ package body Sem_Ch13 is
                         Make_Identifier (Sloc (Id), Name_Predicate));
 
                   Set_From_Aspect_Specification (Aitem, True);
+
+                  --  Make sure we have a freeze node (it might otherwise be
+                  --  missing in cases like subtype X is Y, and we would not
+                  --  have a place to build the predicate function).
+
+                  Ensure_Freeze_Node (E);
 
                   --  For Predicate case, insert immediately after the entity
                   --  declaration. We do not have to worry about delay issues

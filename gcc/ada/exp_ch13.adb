@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
+with Errout;   use Errout;
 with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Imgv; use Exp_Imgv;
@@ -126,11 +127,16 @@ package body Exp_Ch13 is
 
       begin
          if Present (T) and then Present (Predicate_Function (T)) then
+
+            --  Build the call to the predicate function of T
+
             Exp :=
               Make_Predicate_Call
                 (T,
                  Convert_To (T,
                    Make_Identifier (Loc, Chars => Object_Name)));
+
+            --  Add call to evolving expression, using AND THEN if needed
 
             if No (Expr) then
                Expr := Exp;
@@ -139,6 +145,14 @@ package body Exp_Ch13 is
                  Make_And_Then (Loc,
                    Left_Opnd  => Relocate_Node (Expr),
                    Right_Opnd => Exp);
+            end if;
+
+            --  Output info message on inheritance if required
+
+            if Opt.List_Inherited_Aspects then
+               Error_Msg_Sloc := Sloc (Predicate_Function (T));
+               Error_Msg_Node_2 := T;
+               Error_Msg_N ("?info: & inherits predicate from & at #", Typ);
             end if;
          end if;
       end Add_Call;
@@ -200,24 +214,27 @@ package body Exp_Ch13 is
                Arg1 := Get_Pragma_Arg (Arg1);
                Arg2 := Get_Pragma_Arg (Arg2);
 
-               --  We need to replace any occurrences of the name of the type
-               --  with references to the object. We do this by first doing a
-               --  preanalysis, to identify all the entities, then we traverse
-               --  looking for the type entity, doing the needed substitution.
-               --  The preanalysis is done with the special OK_To_Reference
-               --  flag set on the type, so that if we get an occurrence of
-               --  this type, it will be recognized as legitimate.
-
-               Set_OK_To_Reference (Typ, True);
-               Preanalyze_Spec_Expression (Arg2, Standard_Boolean);
-               Set_OK_To_Reference (Typ, False);
-               Replace_Type (Arg2);
-
                --  See if this predicate pragma is for the current type
 
                if Entity (Arg1) = Typ then
 
-                  --  We have a match, add the expression
+                  --  We have a match, this entry is for our subtype
+
+                  --  First We need to replace any occurrences of the name of
+                  --  the type with references to the object. We do this by
+                  --  first doing a preanalysis, to identify all the entities,
+                  --  then we traverse looking for the type entity, doing the
+                  --  needed substitution. The preanalysis is done with the
+                  --  special OK_To_Reference flag set on the type, so that if
+                  --  we get an occurrence of this type, it will be recognized
+                  --  as legitimate.
+
+                  Set_OK_To_Reference (Typ, True);
+                  Preanalyze_Spec_Expression (Arg2, Standard_Boolean);
+                  Set_OK_To_Reference (Typ, False);
+                  Replace_Type (Arg2);
+
+                  --  OK, replacement complete, now we can add the expression
 
                   if No (Expr) then
                      Expr := Relocate_Node (Arg2);
