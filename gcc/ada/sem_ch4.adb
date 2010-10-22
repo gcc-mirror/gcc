@@ -5650,7 +5650,6 @@ package body Sem_Ch4 is
                          or else Is_Array_Type (Etype (L))
                          or else Is_Array_Type (Etype (R)))
             then
-
                if Nkind (N) = N_Op_Concat then
                   if Etype (L) /= Any_Composite
                     and then Is_Array_Type (Etype (L))
