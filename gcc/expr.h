@@ -668,7 +668,7 @@ mode_for_extraction (enum extraction_pattern, int);
 extern void store_bit_field (rtx, unsigned HOST_WIDE_INT,
 			     unsigned HOST_WIDE_INT, enum machine_mode, rtx);
 extern rtx extract_bit_field (rtx, unsigned HOST_WIDE_INT,
-			      unsigned HOST_WIDE_INT, int, rtx,
+			      unsigned HOST_WIDE_INT, int, bool, rtx,
 			      enum machine_mode, enum machine_mode);
 extern rtx extract_low_bits (enum machine_mode, enum machine_mode, rtx);
 extern rtx expand_mult (enum machine_mode, rtx, rtx, rtx, int);

@@ -1,3 +1,22 @@
+2010-10-22  Jie Zhang  <jie@codesourcery.com>
+
+	* expr.c (emit_group_load_1): Update calls to extract_bit_field.
+	(copy_blkmode_from_reg): Likewise.
+	(read_complex_part): Likewise.
+	(expand_expr_real_1): Calculate packedp and pass it to
+	extract_bit_field.
+	* expr.h (extract_bit_field): Update declaration.
+	* calls.c (store_unaligned_arguments_into_pseudos): Update call
+	to extract_bit_field.
+	* expmed.c (extract_fixed_bit_field): Update calls to
+	extract_fixed_bit_field.
+	(store_split_bit_field): Likewise.
+	(extract_bit_field_1): Add new argument packedp.
+	(extract_bit_field): Add new argument packedp.
+	(extract_fixed_bit_field): Add new argument packedp and let
+	packed attribute override volatile.
+	* stmt.c (expand_return): Update call to extract_bit_field.
+
 2010-10-21  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/spu/spu.c (spu_function_arg): Dereference CUM parameter.
