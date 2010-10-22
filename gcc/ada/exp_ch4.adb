@@ -4398,17 +4398,23 @@ package body Exp_Ch4 is
 
       procedure Substitute_Valid_Check is
       begin
-         Rewrite (N,
-           Make_Attribute_Reference (Loc,
-             Prefix         => Relocate_Node (Lop),
-             Attribute_Name => Name_Valid));
+         --  Don't do this for type with predicates, since we don't care in
+         --  this case if it gets optimized away, the critical test is the
+         --  call to the predicate function
 
-         Analyze_And_Resolve (N, Restyp);
+         if not Has_Predicates (Ltyp) then
+            Rewrite (N,
+              Make_Attribute_Reference (Loc,
+                Prefix         => Relocate_Node (Lop),
+                Attribute_Name => Name_Valid));
 
-         Error_Msg_N ("?explicit membership test may be optimized away", N);
-         Error_Msg_N -- CODEFIX
-           ("\?use ''Valid attribute instead", N);
-         return;
+            Analyze_And_Resolve (N, Restyp);
+
+            Error_Msg_N ("?explicit membership test may be optimized away", N);
+            Error_Msg_N -- CODEFIX
+              ("\?use ''Valid attribute instead", N);
+            return;
+         end if;
       end Substitute_Valid_Check;
 
    --  Start of processing for Expand_N_In
@@ -4682,7 +4688,10 @@ package body Exp_Ch4 is
             --  type if they come from the original type definition. Also this
             --  way we get all the processing above for an explicit range.
 
-            elsif Is_Scalar_Type (Typ) then
+            --  Don't do this for a type with predicates, since we would lose
+            --  the predicate from this rewriting (test goes to base type).
+
+            elsif Is_Scalar_Type (Typ) and then not Has_Predicates (Typ) then
                Rewrite (Rop,
                  Make_Range (Loc,
                    Low_Bound =>
@@ -7426,78 +7435,71 @@ package body Exp_Ch4 is
    -- Expand_N_Quantified_Expression --
    ------------------------------------
 
+   --  We expand:
+
+   --    for all X in range => Cond
+
+   --  into:
+
+   --        T := True;
+   --        for X in range loop
+   --           if not Cond then
+   --              T := False;
+   --              exit;
+   --           end if;
+   --        end loop;
+
+   --  Conversely, an existentially quantified expression:
+
+   --    for some X in range => Cond
+
+   --  becomes:
+
+   --        T := False;
+   --        for X in range loop
+   --           if Cond then
+   --              T := True;
+   --              exit;
+   --           end if;
+   --        end loop;
+
+   --  In both cases, the iteration may be over a container in which case it is
+   --  given by an iterator specification, not a loop parameter specification.
+
    procedure Expand_N_Quantified_Expression (N : Node_Id) is
-      Loc      : constant Source_Ptr := Sloc (N);
-      Cond     : constant Node_Id    := Condition (N);
-
-      Actions  : List_Id;
-      Decl     : Node_Id;
-      I_Scheme : Node_Id;
-      Test     : Node_Id;
-      Tnn      : Entity_Id;
-
-      --  We expand:
-
-      --      for all X in range => Cond
-
-      --  into:
-
-      --        R := True;
-      --        for all X in range loop
-      --           if not Cond then
-      --              R := False;
-      --              exit;
-      --           end if;
-      --        end loop;
-
-      --  Conversely, an existentially quantified expression becomes:
-
-      --        R := False;
-      --        for all X in range loop
-      --           if Cond then
-      --              R := True;
-      --              exit;
-      --           end if;
-      --        end loop;
-
-      --  In both cases, the iteration may be over a container, in which
-      --  case it is given by an iterator specification, not a loop.
+      Loc          : constant Source_Ptr := Sloc (N);
+      Is_Universal : constant Boolean := All_Present (N);
+      Actions      : constant List_Id := New_List;
+      Tnn          : constant Entity_Id := Make_Temporary (Loc, 'T', N);
+      Cond         : Node_Id;
+      Decl         : Node_Id;
+      I_Scheme     : Node_Id;
+      Test         : Node_Id;
 
    begin
-      Actions := New_List;
-      Tnn := Make_Temporary (Loc, 'T');
       Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Tnn,
-          Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc));
-
+          Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+          Expression          =>
+            New_Occurrence_Of (Boolean_Literals (Is_Universal), Loc));
       Append_To (Actions, Decl);
 
-      if All_Present (N) then
-         Set_Expression (Decl, New_Occurrence_Of (Standard_True, Loc));
+      Cond := Relocate_Node (Condition (N));
 
-         Test :=
-           Make_If_Statement (Loc,
-             Condition       =>
-                Make_Op_Not (Loc, Relocate_Node (Cond)),
-             Then_Statements => New_List (
-               Make_Assignment_Statement (Loc,
-                 Name       => New_Occurrence_Of (Tnn, Loc),
-                 Expression => New_Occurrence_Of (Standard_False, Loc)),
-               Make_Exit_Statement (Loc)));
-
-      else
-         Set_Expression (Decl, New_Occurrence_Of (Standard_False, Loc));
-
-         Test :=
-           Make_If_Statement (Loc,
-             Condition       => Relocate_Node (Cond),
-             Then_Statements => New_List (
-               Make_Assignment_Statement (Loc,
-                 Name       => New_Occurrence_Of (Tnn, Loc),
-                 Expression => New_Occurrence_Of (Standard_True, Loc)),
-               Make_Exit_Statement (Loc)));
+      if Is_Universal then
+         Cond := Make_Op_Not (Loc, Cond);
       end if;
+
+      Test :=
+        Make_Implicit_If_Statement (N,
+          Condition       => Cond,
+          Then_Statements => New_List (
+            Make_Assignment_Statement (Loc,
+              Name       => New_Occurrence_Of (Tnn, Loc),
+              Expression =>
+                New_Occurrence_Of (Boolean_Literals (not Is_Universal), Loc)),
+            Make_Exit_Statement (Loc)));
 
       if Present (Loop_Parameter_Specification (N)) then
          I_Scheme :=
@@ -7513,11 +7515,11 @@ package body Exp_Ch4 is
       Append_To (Actions,
         Make_Loop_Statement (Loc,
           Iteration_Scheme => I_Scheme,
-              Statements                   => New_List (Test),
-              End_Label                    => Empty));
+          Statements       => New_List (Test),
+          End_Label        => Empty));
 
-      --  The components of the scheme have already been analyzed, and the
-      --  loop index declaration has been processed.
+      --  The components of the scheme have already been analyzed, and the loop
+      --  parameter declaration has been processed.
 
       Set_Analyzed (Iteration_Scheme (Last (Actions)));
 
