@@ -146,7 +146,6 @@ package body CStand is
 
       if AAMP_On_Target then
          Set_Float_Rep (E, AAMP);
-
       else
          Set_Float_Rep (E, IEEE_Binary);
       end if;

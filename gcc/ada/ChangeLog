@@ -1,3 +1,21 @@
+2010-10-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (May_Be_Lvalue): An actual in a function call can be an
+	lvalue in Ada2012, if the function has in-out parameters.
+
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* cstand.adb, einfo.adb, exp_attr.adb, sem_prag.adb, sem_vfpt.adb,
+	sem_ch10.adb: Minor reformatting.
+
+2010-10-22  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Remove most of the content of gnatcheck chapter.
+
+2010-10-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb: Handle indexed P'old.
+
 2010-10-22  Geert Bosch  <bosch@adacore.com>
 
 	* cstand.adb (Build_Float_Type): Set Float_Rep according to platform.

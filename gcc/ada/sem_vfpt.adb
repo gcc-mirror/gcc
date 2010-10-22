@@ -37,6 +37,7 @@ package body Sem_VFpt is
 
    procedure Set_D_Float (E : Entity_Id) is
       VAXDF_Digits : constant := 9;
+
    begin
       Init_Size         (Base_Type (E), 64);
       Init_Alignment    (Base_Type (E));
@@ -56,6 +57,7 @@ package body Sem_VFpt is
 
    procedure Set_F_Float (E : Entity_Id) is
       VAXFF_Digits : constant := 6;
+
    begin
       Init_Size         (Base_Type (E), 32);
       Init_Alignment    (Base_Type (E));
@@ -75,6 +77,7 @@ package body Sem_VFpt is
 
    procedure Set_G_Float (E : Entity_Id) is
       VAXGF_Digits : constant := 15;
+
    begin
       Init_Size         (Base_Type (E), 64);
       Init_Alignment    (Base_Type (E));
@@ -94,6 +97,7 @@ package body Sem_VFpt is
 
    procedure Set_IEEE_Long (E : Entity_Id) is
       IEEEL_Digits : constant := 15;
+
    begin
       Init_Size         (Base_Type (E), 64);
       Init_Alignment    (Base_Type (E));
@@ -113,6 +117,7 @@ package body Sem_VFpt is
 
    procedure Set_IEEE_Short (E : Entity_Id) is
       IEEES_Digits : constant := 6;
+
    begin
       Init_Size         (Base_Type (E), 32);
       Init_Alignment    (Base_Type (E));

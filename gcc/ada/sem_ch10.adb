@@ -2562,11 +2562,10 @@ package body Sem_Ch10 is
                 Present (Renamed_Entity (Entity (Selector_Name (Pref))))
               and then Entity (Selector_Name (Pref)) /= Par_Name
             then
-
-            --  The prefix is a child unit that denotes a renaming
-            --  declaration. Replace the prefix directly with the renamed
-            --  unit, because the rest of the prefix is irrelevant to the
-            --  visibility of the real unit.
+            --  The prefix is a child unit that denotes a renaming declaration.
+            --  Replace the prefix directly with the renamed unit, because the
+            --  rest of the prefix is irrelevant to the visibility of the real
+            --  unit.
 
                Rewrite (Pref, New_Occurrence_Of (Par_Name, Sloc (Pref)));
                exit;

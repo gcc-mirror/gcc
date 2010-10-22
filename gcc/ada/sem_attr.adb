@@ -3645,6 +3645,23 @@ package body Sem_Attr is
       ---------
 
       when Attribute_Old =>
+         --  The attribute reference is a primary. If expressions follow, the
+         --  attribute reference is an indexable object, so rewrite the node
+         --  accordingly.
+
+         if Present (E1) then
+            Rewrite (N,
+              Make_Indexed_Component (Loc,
+                Prefix      =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => Relocate_Node (Prefix (N)),
+                    Attribute_Name => Name_Old),
+                Expressions => Expressions (N)));
+
+            Analyze (N);
+            return;
+         end if;
+
          Check_E0;
          Set_Etype (N, P_Type);
 
@@ -3669,8 +3686,8 @@ package body Sem_Attr is
             Subp : Entity_Id := Current_Subprogram;
 
             function Process (N : Node_Id) return Traverse_Result;
-            --  Check that N does not contain references to local variables
-            --  or other local entities of Subp.
+            --  Check that N does not contain references to local variables or
+            --  other local entities of Subp.
 
             -------------
             -- Process --
@@ -3706,10 +3723,10 @@ package body Sem_Attr is
                if Present (Enclosing_Subprogram (Current_Subprogram)) then
 
                   --  Check that there is no reference to the enclosing
-                  --  subprogram local variables. Otherwise, we might end
-                  --  up being called from the enclosing subprogram and thus
-                  --  using 'Old on a local variable which is not defined
-                  --  at entry time.
+                  --  subprogram local variables. Otherwise, we might end up
+                  --  being called from the enclosing subprogram and thus using
+                  --  'Old on a local variable which is not defined at entry
+                  --  time.
 
                   Subp := Enclosing_Subprogram (Current_Subprogram);
                   Check_No_Local (P);
@@ -3755,8 +3772,7 @@ package body Sem_Attr is
             elsif Is_Entity_Name (P)
               and then Is_Pure (Entity (P))
             then
-               Error_Attr_P
-                 ("prefix of % attribute must not be declared pure");
+               Error_Attr_P ("prefix of% attribute must not be declared pure");
             end if;
          end if;
 
