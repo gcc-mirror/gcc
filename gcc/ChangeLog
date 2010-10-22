@@ -1,5 +1,10 @@
 2010-10-22  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (ix86_builtin_vectorized_function): Add
+	cases for __builtin_fma and __builtin_fmaf.
+
+2010-10-22  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.c (ix86_expand_fp_absneg_operator): Produce
 	NEG+USE for vectors as well.
 	* config/i386/i386.md (*absneg<VEC_FLOAT_MODE>2): New pattern

@@ -26105,8 +26105,28 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
       break;
 
+    case BUILT_IN_FMA:
+      if (out_mode == DFmode && in_mode == DFmode)
+	{
+	  if (out_n == 2 && in_n == 2)
+	    return ix86_builtins[IX86_BUILTIN_VFMADDPD];
+	  if (out_n == 4 && in_n == 4)
+	    return ix86_builtins[IX86_BUILTIN_VFMADDPD256];
+	}
+      break;
+
+    case BUILT_IN_FMAF:
+      if (out_mode == SFmode && in_mode == SFmode)
+	{
+	  if (out_n == 4 && in_n == 4)
+	    return ix86_builtins[IX86_BUILTIN_VFMADDPS];
+	  if (out_n == 8 && in_n == 8)
+	    return ix86_builtins[IX86_BUILTIN_VFMADDPS256];
+	}
+      break;
+
     default:
-      ;
+      break;
     }
 
   /* Dispatch to a handler for a vectorization library.  */
