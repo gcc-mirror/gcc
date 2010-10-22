@@ -1,3 +1,20 @@
+2010-10-22  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.h (gimple_register_canonical_type): Declare.
+	* gimple.c (gimple_canonical_types): New global hashtable.
+	(struct gimple_type_leader_entry_s): New type.
+	(gimple_type_leader): New global cache.
+	(gimple_lookup_type_leader): New function.
+	(gtc_visit): Query the proper cache.
+	(gimple_types_compatible_p): Likewise.
+	(gimple_register_type): Use the new cache instead of TYPE_CANONICAL.
+	(gimple_canonical_type_eq): New function.
+	(gimple_register_canonical_type): Likewise.
+	(print_gimple_types_stats): Adjust for gimple_canonical_types.
+	(free_gimple_type_tables): Likewise.  Free gimple_type_leader.
+	* tree-ssa.c (useless_type_conversion_p): Do not dispatch to
+	gimple_types_compatible_p for LTO.
+
 2010-10-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46098

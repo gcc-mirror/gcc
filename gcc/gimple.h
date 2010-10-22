@@ -957,6 +957,7 @@ extern tree get_call_expr_in (tree t);
 extern void recalculate_side_effects (tree);
 extern bool gimple_compare_field_offset (tree, tree);
 extern tree gimple_register_type (tree);
+extern tree gimple_register_canonical_type (tree);
 enum gtc_mode { GTC_MERGE = 0, GTC_DIAG = 1 };
 extern bool gimple_types_compatible_p (tree, tree, enum gtc_mode);
 extern void print_gimple_types_stats (void);
