@@ -1995,6 +1995,7 @@ package body Sprint is
                Sprint_Node (Condition (Node));
             else
                Write_Str_With_Col_Check_Sloc ("for ");
+
                if Present (Iterator_Specification (Node)) then
                   Sprint_Node (Iterator_Specification (Node));
                else

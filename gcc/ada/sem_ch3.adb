@@ -9913,6 +9913,13 @@ package body Sem_Ch3 is
               Corresponding_Record_Type (Full_Base));
          end if;
       end if;
+
+      --  Copy rep item chain, and also setting of Has_Predicates from
+      --  private subtype to full subtype, since we will need these on the
+      --  full subtype to create the predicate function.
+
+      Set_First_Rep_Item (Full, First_Rep_Item (Priv));
+      Set_Has_Predicates (Full, Has_Predicates (Priv));
    end Complete_Private_Subtype;
 
    ----------------------------

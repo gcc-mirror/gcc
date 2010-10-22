@@ -760,12 +760,18 @@ package Sem_Util is
    --  the Is_Variable sense) with a non-tagged type target are considered view
    --  conversions and hence variables.
 
-   function Is_Partially_Initialized_Type (Typ : Entity_Id) return Boolean;
+   function Is_Partially_Initialized_Type
+     (Typ          : Entity_Id;
+      Include_Null : Boolean := True) return Boolean;
    --  Typ is a type entity. This function returns true if this type is partly
    --  initialized, meaning that an object of the type is at least partly
    --  initialized (in particular in the record case, that at least one
    --  component has an initialization expression). Note that initialization
    --  resulting from the use of pragma Normalized_Scalars does not count.
+   --  Include_Null controls the handling of access types, and components of
+   --  access types not explicitly initialized. If set to True, the default,
+   --  default initialization of access types counts as making the type be
+   --  partially initialized. If False, this does not count.
 
    function Is_Potentially_Persistent_Type (T : Entity_Id) return Boolean;
    --  Determines if type T is a potentially persistent type. A potentially

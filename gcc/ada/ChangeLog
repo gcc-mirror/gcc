@@ -1,5 +1,32 @@
 2010-10-22  Robert Dewar  <dewar@adacore.com>
 
+	* sprint.adb: Minor reformatting.
+
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Do required predicate
+	checks.
+	* sem_ch3.adb (Complete_Private_Subtype): Propagate predicates to full
+	view.
+	* sem_ch6.adb (Invariants_Or_Predicates_Present): New name for
+	Invariants_Present.
+	(Process_PPCs): Handle predicates generating post conditions
+	* sem_util.adb (Is_Partially_Initialized_Type): Add
+	Include_Null parameter.
+	* sem_util.ads (Is_Partially_Initialized_Type): Add
+	Include_Null parameter.
+
+2010-10-22  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi (gnatelim): Add description for '--ignore' option
+
+2010-10-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_prag.adb (Check_First_Subtype): Specialize error messages for
+	case where argument is not a type.
+
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch5.adb, par-ch4.adb, par-ch5.adb, sem_ch5.adb, sinfo.ads: Minor
 	reformatting.
 
