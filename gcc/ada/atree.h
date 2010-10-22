@@ -421,6 +421,7 @@ extern Node_Id Current_Error_Node;
 #define List5(N)      Field5  (N)
 #define List10(N)     Field10 (N)
 #define List14(N)     Field14 (N)
+#define List25(N)     Field25 (N)
 
 #define Elist1(N)     Field1  (N)
 #define Elist2(N)     Field2  (N)

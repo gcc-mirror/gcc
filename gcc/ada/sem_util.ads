@@ -93,6 +93,20 @@ package Sem_Util is
    --  not end with a ? (this is used when the caller wants to parameterize
    --  whether an error or warning is given.
 
+   procedure Bad_Predicated_Subtype_Use
+     (Typ : Entity_Id;
+      N   : Node_Id;
+      Msg : String);
+   --  This is called when Typ, a predicated subtype, is used in a context
+   --  which does not allow the use of a predicated subtype. Msg will be
+   --  passed to Error_Msg_F to output an appropriate message. The caller
+   --  should set up any insertions other than the & for the type itself.
+   --  Note that if Typ is a generic actual type, then the message will be
+   --  output as a warning, and a raise Program_Error is inserted using
+   --  Insert_Action with node N as the insertion point. Node N also supplies
+   --  the source location for construction of the raise node. If Typ is NOT a
+   --  type with predicates this call has no effect.
+
    function Build_Actual_Subtype
      (T : Entity_Id;
       N : Node_Or_Entity_Id) return Node_Id;

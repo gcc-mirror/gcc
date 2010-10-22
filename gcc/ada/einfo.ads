@@ -3152,10 +3152,10 @@ package Einfo is
 --       formals as a value of type Pos.
 
 --    OK_To_Reference (Flag249)
---       Present in all entities for types and subtypes. If set it indicates
---       that a naked reference to the type is permitted within an expression
---       that is being analyzed or preanalyed (for example, a type name may
---       be referenced within the Invariant aspect expression for the type).
+--       Present in all entities. If set it indicates that a naked reference to
+--       the entity is permitted within an expression that is being preanalyzed
+--       (for example, a type name may be referenced within the Invariant
+--       or Predicate aspect expression for a type).
 
 --    OK_To_Rename (Flag247)
 --       Present only in entities for variables. If this flag is set, it
@@ -3609,11 +3609,14 @@ package Einfo is
 --       textual appearance. Note that this includes precondition/postcondition
 --       pragmas generated to correspond to Pre/Post aspects.
 
---    Static_Predicate (Node25)
+--    Static_Predicate (List25)
 --       Present in discrete types/subtypes with predicates (Has_Predicates
---       set True). Set for a subtype that has a predicate that is considered
---       static. Points to the fully analyzed predicate expression, which is
---       always a membership test (possibly a set membership).
+--       set True). Points to a list of expression and N_Range nodes that
+--       represent the predicate in canonical form. The canonical form has
+--       entries sorted in ascending order, with all duplicates eliminated,
+--       and adjacent ranges coalesced, so that there is always a gap in the
+--       values between successive entries. The entries in this list are
+--       fully analyzed.
 
 --    Storage_Size_Variable (Node15) [implementation base type only]
 --       Present in access types and task type entities. This flag is set
@@ -4735,6 +4738,7 @@ package Einfo is
    --    Needs_Debug_Info                    (Flag147)
    --    Never_Set_In_Source                 (Flag115)
    --    No_Return                           (Flag113)
+   --    OK_To_Reference                     (Flag249)
    --    Overlays_Constant                   (Flag243)
    --    Referenced                          (Flag156)
    --    Referenced_As_LHS                   (Flag36)
@@ -4817,7 +4821,6 @@ package Einfo is
    --    Known_To_Have_Preelab_Init          (Flag207)
    --    Must_Be_On_Byte_Boundary            (Flag183)
    --    Must_Have_Preelab_Init              (Flag208)
-   --    OK_To_Reference                     (Flag249)
    --    Optimize_Alignment_Space            (Flag241)
    --    Optimize_Alignment_Time             (Flag242)
    --    Size_Depends_On_Discriminant        (Flag177)
@@ -5073,7 +5076,7 @@ package Einfo is
    --    First_Literal                       (Node17)
    --    Scalar_Range                        (Node20)
    --    Enum_Pos_To_Rep                     (Node23)   (type only)
-   --    Static_Predicate                    (Node25)
+   --    Static_Predicate                    (List25)
    --    Has_Biased_Representation           (Flag139)
    --    Has_Contiguous_Rep                  (Flag181)
    --    Has_Enumeration_Rep_Clause          (Flag66)
@@ -5275,7 +5278,7 @@ package Einfo is
    --    Modulus                             (Uint17)    (base type only)
    --    Original_Array_Type                 (Node21)
    --    Scalar_Range                        (Node20)
-   --    Static_Predicate                    (Node25)
+   --    Static_Predicate                    (List25)
    --    Non_Binary_Modulus                  (Flag58)    (base type only)
    --    Has_Biased_Representation           (Flag139)
    --    Type_Low_Bound                      (synth)
@@ -5545,7 +5548,7 @@ package Einfo is
    --  E_Signed_Integer_Type
    --  E_Signed_Integer_Subtype
    --    Scalar_Range                        (Node20)
-   --    Static_Predicate                    (Node25)
+   --    Static_Predicate                    (List25)
    --    Has_Biased_Representation           (Flag139)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
@@ -6241,7 +6244,7 @@ package Einfo is
    function Small_Value                         (Id : E) return R;
    function Spec_Entity                         (Id : E) return E;
    function Spec_PPC_List                       (Id : E) return N;
-   function Static_Predicate                    (Id : E) return N;
+   function Static_Predicate                    (Id : E) return S;
    function Storage_Size_Variable               (Id : E) return E;
    function Static_Elaboration_Desired          (Id : E) return B;
    function Static_Initialization               (Id : E) return N;
@@ -6829,7 +6832,7 @@ package Einfo is
    procedure Set_Small_Value                     (Id : E; V : R);
    procedure Set_Spec_Entity                     (Id : E; V : E);
    procedure Set_Spec_PPC_List                   (Id : E; V : N);
-   procedure Set_Static_Predicate                (Id : E; V : N);
+   procedure Set_Static_Predicate                (Id : E; V : S);
    procedure Set_Storage_Size_Variable           (Id : E; V : E);
    procedure Set_Static_Elaboration_Desired      (Id : E; V : B);
    procedure Set_Static_Initialization           (Id : E; V : N);

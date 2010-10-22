@@ -588,8 +588,8 @@ package body Ada.Exceptions is
    Rmsg_16 : constant String := "attempt to take address of"       &
                                 " intrinsic subprogram"            & NUL;
    Rmsg_17 : constant String := "all guards closed"                & NUL;
-   Rmsg_18 : constant String := "attribute not allowed for "       &
-                                " generic subtype with predicate"  & NUL;
+   Rmsg_18 : constant String := "improper use of generic subtype"  &
+                                " with predicate"                  & NUL;
    Rmsg_19 : constant String := "Current_Task referenced in entry" &
                                 " body"                            & NUL;
    Rmsg_20 : constant String := "duplicated entry address"         & NUL;

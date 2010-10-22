@@ -215,7 +215,8 @@ package body Sem_Attr is
       --  Output error message for use of a predicate (First, Last, Range) not
       --  allowed with a type that has predicates. If the type is a generic
       --  actual, then the message is a warning, and we generate code to raise
-      --  program error with an appropriate reason.
+      --  program error with an appropriate reason. No error message is given
+      --  for internally generated uses of the attributes.
 
       procedure Check_Array_Or_Scalar_Type;
       --  Common procedure used by First, Last, Range attribute to check
@@ -838,23 +839,10 @@ package body Sem_Attr is
 
       procedure Bad_Attribute_For_Predicate is
       begin
-         if Has_Predicates (P_Type) then
+         if Comes_From_Source (N) then
             Error_Msg_Name_1 := Aname;
-
-            if Is_Generic_Actual_Type (P_Type) then
-               Error_Msg_F
-                 ("type& has predicates, attribute % not allowed?", P);
-               Error_Msg_F
-                 ("\?Program_Error will be raised at run time", P);
-               Rewrite (N,
-                 Make_Raise_Program_Error (Loc,
-                   Reason => PE_Bad_Attribute_For_Predicate));
-
-            else
-               Error_Msg_F
-                 ("type& has predicates, attribute % not allowed", P);
-               Error_Attr;
-            end if;
+            Bad_Predicated_Subtype_Use
+              (P_Type, N, "type& has predicates, attribute % not allowed");
          end if;
       end Bad_Attribute_For_Predicate;
 
