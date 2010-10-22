@@ -3508,14 +3508,24 @@ package Sinfo is
       --------------------------------------------------
 
       --  EXPRESSION ::=
-      --    RELATION {and RELATION} | RELATION {and then RELATION}
-      --  | RELATION {or RELATION}  | RELATION {or else RELATION}
-      --  | RELATION {xor RELATION}
+      --    RELATION {LOGICAL_OPERATOR RELATION}
+
+      --  CHOICE_EXPRESSION ::=
+      --    CHOICE_RELATION {LOGICAL_OPERATOR CHOICE_RELATION}
+
+      --  CHOICE_RELATION ::=
+      --    SIMPLE_EXPRESSION [RELATIONAL_OPERATOR SIMPLE_EXPRESSION]
 
       --  RELATION ::=
-      --    SIMPLE_EXPRESSION [RELATIONAL_OPERATOR SIMPLE_EXPRESSION]
-      --  | SIMPLE_EXPRESSION [not] in RANGE
-      --  | SIMPLE_EXPRESSION [not] in SUBTYPE_MARK
+      --    SIMPLE_EXPRESSION [not] in MEMBERSHIP_CHOICE_LIST
+
+      --  MEMBERSHIP_CHOICE_LIST ::=
+      --    MEMBERSHIP_CHOICE {'|' MEMBERSHIP CHOICE}
+
+      --  MEMBERSHIP_CHOICE ::=
+      --    CHOICE_EXPRESSION | RANGE | SUBTYPE_MARK
+
+      --  LOGICAL_OPERATOR ::= and | and then | or | or else | xor
 
       --  SIMPLE_EXPRESSION ::=
       --    [UNARY_ADDING_OPERATOR] TERM {BINARY_ADDING_OPERATOR TERM}
@@ -3529,6 +3539,14 @@ package Sinfo is
       --  expression in this description, we mean any of the possible
       --  constituent components of an expression (e.g. identifier is
       --  an example of an expression).
+
+      --  Note: the above syntax is that Ada 2012 syntax which restricts
+      --  choice relations to simple expressions to avoid ambiguities in
+      --  some contexts with set membership notation. It has been decided
+      --  that in retrospect, the Ada 95 change allowing general expressions
+      --  in this context was a mistake, so we have reverted to the above
+      --  syntax in Ada 95 and Ada 2005 modes (the restriction to simple
+      --  expressions was there in Ada 83 from the start).
 
       ------------------
       -- 4.4  Primary --

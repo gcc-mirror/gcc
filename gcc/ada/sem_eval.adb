@@ -4581,9 +4581,9 @@ package body Sem_Eval is
          then
             return True;
 
-         --  Base types must match, but we don't check that (should
-         --  we???) but we do at least check that both types are
-         --  real, or both types are not real.
+         --  Base types must match, but we don't check that (should we???) but
+         --  we do at least check that both types are real, or both types are
+         --  not real.
 
          elsif Is_Real_Type (T1) /= Is_Real_Type (T2) then
             return False;
@@ -4620,14 +4620,11 @@ package body Sem_Eval is
       --  Access types
 
       elsif Is_Access_Type (T1) then
-         return not Is_Constrained (T2)
-                  or else Subtypes_Statically_Match
-                            (Designated_Type (T1), Designated_Type (T2));
-
-         --  Also check that null exclusion matches (AI05-0086-1)
-         --  commented out because this causes many mail test failures ???
-
-         --  and then Can_Never_Be_Null (T1) = Can_Never_Be_Null (T2);
+         return (not Is_Constrained (T2)
+                  or else (Subtypes_Statically_Match
+                             (Designated_Type (T1), Designated_Type (T2))))
+           and then not (Can_Never_Be_Null (T2)
+                          and then not Can_Never_Be_Null (T1));
 
       --  All other cases
 

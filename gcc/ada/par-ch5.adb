@@ -1702,8 +1702,8 @@ package body Ch5 is
       ID_Node := P_Defining_Identifier (C_In);
 
       --  If the next token is OF, it indicates an Ada 2012 iterator. If the
-      --  next token is a colon, this is also an Ada 2012 iterator, including a
-      --  subtype indication for the loop parameter. Otherwise we parse the
+      --  next token is a colon, this is also an Ada 2012 iterator, including
+      --  a subtype indication for the loop parameter. Otherwise we parse the
       --  construct as a loop parameter specification. Note that the form
       --  "for A in B" is ambiguous, and must be resolved semantically: if B
       --  is a discrete subtype this is a loop specification, but if it is an
@@ -1711,7 +1711,6 @@ package body Ch5 is
       --  during analysis of the loop parameter specification.
 
       if Token = Tok_Of or else Token = Tok_Colon then
-
          if Ada_Version < Ada_2012 then
             Error_Msg_SC ("iterator is an Ada2012 feature");
          end if;

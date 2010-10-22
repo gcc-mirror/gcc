@@ -1,3 +1,41 @@
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch5.adb: Minor reformatting.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* a-except.adb, a-except-2005.adb: Add new Rcheck entry.
+	* exp_ch13.adb (Add_Call): Make sure subtype is marked with
+	Has_Predicates set to True if it inherits predicates.
+	* sem_attr.adb: Handle 'First/'Last/'Range for predicated types
+	* types.ads (PE_Bad_Attribute_For_Predicate): New reason code
+	* types.h: Add new Rcheck entry.
+	* einfo.ads, einfo.adb (Static_Predicate): New field.
+	Minor code reorganization (file float routines in proper section)
+	Fix bad field name in comments.
+
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.adb (Subtypes_Statically_Compatible): Check null exclusion
+	case.
+
+2010-10-22  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Get_Config_Switches): Detect if there is at least one
+	declaration of IDE'Compiler_Command for one of the language in the main
+	project.
+	(Do_Autoconf): If there were at least one Compiler_Command declared and
+	no target, invoke gprconfig with --target=all instead of the normalized
+	host name.
+
+2010-10-22  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch4.adb: Update syntax in comments for Ada 2012.
+	* sinfo.ads: Update syntax in comments for Ada 2012
+	* par-ch3.adb (Check_Restricted_Expression): Remove "in Ada 2012 mode"
+	from msg.
+
 2010-10-22  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch3.adb (Check_Or_Process_Discriminants): In Ada 2012, allow

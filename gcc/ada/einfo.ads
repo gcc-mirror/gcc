@@ -1264,7 +1264,7 @@ package Einfo is
 --       Note in particular that size clauses are present only for this
 --       purpose, and should only be accessed if Has_Size_Clause is set.
 
---    Float_Rep (Uint8)
+--    Float_Rep (Uint10)
 --       Present in floating-point entities. Contains a value of type
 --       Float_Rep_Kind. Together with the Digits_Value uniquely defines
 --       the floating-point representation to be used.
@@ -3609,6 +3609,12 @@ package Einfo is
 --       textual appearance. Note that this includes precondition/postcondition
 --       pragmas generated to correspond to Pre/Post aspects.
 
+--    Static_Predicate (Node25)
+--       Present in discrete types/subtypes with predicates (Has_Predicates
+--       set True). Set for a subtype that has a predicate that is considered
+--       static. Points to the fully analyzed predicate expression, which is
+--       always a membership test (possibly a set membership).
+
 --    Storage_Size_Variable (Node15) [implementation base type only]
 --       Present in access types and task type entities. This flag is set
 --       if a valid and effective pragma Storage_Size applies to the base
@@ -5067,6 +5073,7 @@ package Einfo is
    --    First_Literal                       (Node17)
    --    Scalar_Range                        (Node20)
    --    Enum_Pos_To_Rep                     (Node23)   (type only)
+   --    Static_Predicate                    (Node25)
    --    Has_Biased_Representation           (Flag139)
    --    Has_Contiguous_Rep                  (Flag181)
    --    Has_Enumeration_Rep_Clause          (Flag66)
@@ -5094,7 +5101,7 @@ package Einfo is
    --  E_Floating_Point_Type
    --  E_Floating_Point_Subtype
    --    Digits_Value                        (Uint17)
-   --    Float_Rep                           (Uint8)    (Float_Rep_Kind)
+   --    Float_Rep                           (Uint10)   (Float_Rep_Kind)
    --    Machine_Emax_Value                  (synth)
    --    Machine_Emin_Value                  (synth)
    --    Machine_Mantissa_Value              (synth)
@@ -5268,6 +5275,7 @@ package Einfo is
    --    Modulus                             (Uint17)    (base type only)
    --    Original_Array_Type                 (Node21)
    --    Scalar_Range                        (Node20)
+   --    Static_Predicate                    (Node25)
    --    Non_Binary_Modulus                  (Flag58)    (base type only)
    --    Has_Biased_Representation           (Flag139)
    --    Type_Low_Bound                      (synth)
@@ -5537,6 +5545,7 @@ package Einfo is
    --  E_Signed_Integer_Type
    --  E_Signed_Integer_Subtype
    --    Scalar_Range                        (Node20)
+   --    Static_Predicate                    (Node25)
    --    Has_Biased_Representation           (Flag139)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
@@ -6232,6 +6241,7 @@ package Einfo is
    function Small_Value                         (Id : E) return R;
    function Spec_Entity                         (Id : E) return E;
    function Spec_PPC_List                       (Id : E) return N;
+   function Static_Predicate                    (Id : E) return N;
    function Storage_Size_Variable               (Id : E) return E;
    function Static_Elaboration_Desired          (Id : E) return B;
    function Static_Initialization               (Id : E) return N;
@@ -6819,6 +6829,7 @@ package Einfo is
    procedure Set_Small_Value                     (Id : E; V : R);
    procedure Set_Spec_Entity                     (Id : E; V : E);
    procedure Set_Spec_PPC_List                   (Id : E; V : N);
+   procedure Set_Static_Predicate                (Id : E; V : N);
    procedure Set_Storage_Size_Variable           (Id : E; V : E);
    procedure Set_Static_Elaboration_Desired      (Id : E; V : B);
    procedure Set_Static_Initialization           (Id : E; V : N);
@@ -7551,6 +7562,7 @@ package Einfo is
    pragma Inline (Small_Value);
    pragma Inline (Spec_Entity);
    pragma Inline (Spec_PPC_List);
+   pragma Inline (Static_Predicate);
    pragma Inline (Storage_Size_Variable);
    pragma Inline (Static_Elaboration_Desired);
    pragma Inline (Static_Initialization);
@@ -7944,6 +7956,7 @@ package Einfo is
    pragma Inline (Set_Small_Value);
    pragma Inline (Set_Spec_Entity);
    pragma Inline (Set_Spec_PPC_List);
+   pragma Inline (Set_Static_Predicate);
    pragma Inline (Set_Storage_Size_Variable);
    pragma Inline (Set_Static_Elaboration_Desired);
    pragma Inline (Set_Static_Initialization);

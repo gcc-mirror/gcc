@@ -124,8 +124,7 @@ package body Ch3 is
       elsif Nkind_In (N, N_In, N_Not_In)
         and then Paren_Count (N) = 0
       then
-         Error_Msg_N
-           ("|this expression must be parenthesized in Ada 2012 mode!", N);
+         Error_Msg_N ("|this expression must be parenthesized!", N);
       end if;
    end Check_Restricted_Expression;
 
