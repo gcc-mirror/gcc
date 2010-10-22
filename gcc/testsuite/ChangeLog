@@ -1,3 +1,8 @@
+2010-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46098
+	* gcc.target/i386/pr46098.c: New test.
+
 2010-10-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45720
@@ -11,7 +16,7 @@
 2010-10-21  Iain Sandoe  <iains@gcc.gnu.org>
 
 	Based on the CFString implementation in FSF apple/trunk branch.
-	
+
 	* lib/objc-dg.exp (objc-dg-runtest): Merge flags and additional flags
 	so that the latter can be used in dg-skip and dg-xfail clauses.
 	* lib/obj-c++-dg.exp (obj-c++-dg-runtest): Likewise.
@@ -39,17 +44,17 @@
 	* obj-c++.dg/torture/strings/const-cfstring-1.mm: New.
 	* obj-c++.dg/torture/strings/const-cfstring-3.mm: New.
 	* obj-c++.dg/torture/strings/const-cfstring-4.mm: New.
-	
-	* objc/execute/string1.m: Don't use CFStrings on Darwin. Update test
-	to use dg-additional-files for Object1, move to objc.dg/torture/strings/.
+
+	* objc/execute/string1.m: Don't use CFStrings on Darwin. Update test to
+	use dg-additional-files for Object1, move to objc.dg/torture/strings/.
 	* objc/execute/string2.m: Likewise.
 	* objc/execute/string3.m: Likewise.
 	* objc/execute/string3.m: Likewise.
 	* objc.dg/foreach-2.m: Don't use CFStrings on Darwin.
 	* objc.dg/foreach-4.m: Likewise.
 	* objc.dg/foreach-5.m: Likewise.
-	* objc.dg/const-str-3.m: Don't use CFStrings on Darwin. Update test
-	to use dg-additional-files for Object1, move to objc.dg/torture/strings/.
+	* objc.dg/const-str-3.m: Don't use CFStrings on Darwin. Update test to
+	use dg-additional-files for Object1, move to objc.dg/torture/strings/.
 	* objc.dg/const-str-4.m: Likewise.
 	* objc.dg/const-str-7.m: Likewise.
 	* objc.dg/const-str-8.m: Likewise.

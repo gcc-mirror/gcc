@@ -1,3 +1,16 @@
+2010-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46098
+	* config/i386/sse.md (*avx_movu<ssemodesuffix><avxmodesuffix>):
+	Rename from avx_movu<ssemodesuffix><avxmodesuffix>.
+	(avx_movu<ssemodesuffix><avxmodesuffix>): New expander.
+	(*<sse>_movu<ssemodesuffix>): Rename from <sse>_movu<ssemodesuffix>.
+	(<sse>_movu<ssemodesuffix>): New expander.
+	(*avx_movdqu<avxmodesuffix>): Rename from avx_movdqu<avxmodesuffix>.
+	(avx_movdqu<avxmodesuffix>): New expander.
+	(*sse2_movdqu): Rename from sse2_movdqu.
+	(sse2_movdqu): New expander.
+
 2010-10-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45720
@@ -175,7 +188,7 @@
 2010-10-21  Iain Sandoe  <iains@gcc.gnu.org>
 
 	Based on the CFString implementation in FSF apple/trunk branch.
-	
+
 	* target.def (objc_construct_string): New Hook.
 	* doc/tm.texi (objc_construct_string): Document.
 	* doc/tm.texi.in (TARGET_OBJC_CONSTRUCT_STRING): New.
@@ -192,7 +205,7 @@
 	(darwin_cfstring_p): Likewise.
 	(darwin_enter_string_into_cfstring_table): Likewise.
 	* config/rs6000/darwin.h (SUBTARGET_INIT_BUILTINS) Update for CFString.
-	* config/darwin.c (darwin_running_cxx): New var. 
+	* config/darwin.c (darwin_running_cxx): New var.
 	(machopic_select_section): Return cfstring_constant_object_section.
 	(darwin_override_options): Set darwin_running_cxx.
 	(add_builtin_field_decl): New.
