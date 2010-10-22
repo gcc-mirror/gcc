@@ -295,16 +295,20 @@ mep_conditional_register_usage (void)
     global_regs[i] = 1;
 }
 
-static void
-mep_option_optimization (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
-{
-  /* The first scheduling pass often increases register pressure and tends
-     to result in more spill code.  Only run it when specifically asked.  */
-  flag_schedule_insns = 0;
 
-  /* Using $fp doesn't gain us much, even when debugging is important.  */
-  flag_omit_frame_pointer = 1;
-}
+static const struct default_options mep_option_optimization_table[] =
+  {
+    /* The first scheduling pass often increases register pressure and
+       tends to result in more spill code.  Only run it when
+       specifically asked.  */
+    { OPT_LEVELS_ALL, OPT_fschedule_insns, NULL, 0 },
+
+    /* Using $fp doesn't gain us much, even when debugging is
+       important.  */
+    { OPT_LEVELS_ALL, OPT_fomit_frame_pointer, NULL, 1 },
+
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 static void
 mep_option_override (void)
@@ -7426,8 +7430,8 @@ mep_asm_init_sections (void)
 #define TARGET_HANDLE_OPTION            mep_handle_option
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE		mep_option_override
-#undef  TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION	mep_option_optimization
+#undef  TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE	mep_option_optimization_table
 #undef  TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS	TARGET_DEFAULT
 #undef  TARGET_ALLOCATE_INITIAL_VALUE

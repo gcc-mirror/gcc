@@ -1082,9 +1082,6 @@ enum mips_code_readable_setting {
   (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
 
 #define CONDITIONAL_REGISTER_USAGE mips_conditional_register_usage ()
-
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
 
 /* Tell collect what flags to pass to nm.  */
 #ifndef NM_FLAGS

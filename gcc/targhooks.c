@@ -1333,4 +1333,9 @@ sjlj_except_unwind_info (void)
   return UI_SJLJ;
 }
 
+const struct default_options empty_optimization_table[] =
+  {
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
+
 #include "gt-targhooks.h"

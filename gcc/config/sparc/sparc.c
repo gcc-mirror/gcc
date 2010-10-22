@@ -477,6 +477,13 @@ enum processor_type sparc_cpu;
 /* Whetheran FPU option was specified.  */
 static bool fpu_option_set = false;
 
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+static const struct default_options sparc_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
+
 /* Initialize the GCC target structure.  */
 
 /* The default is to use .half rather than .short for aligned HI objects.  */
@@ -612,6 +619,8 @@ static bool fpu_option_set = false;
 #define TARGET_HANDLE_OPTION sparc_handle_option
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE sparc_option_override
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE sparc_option_optimization_table
 
 #if TARGET_GNU_TLS && defined(HAVE_AS_SPARC_UA_PCREL)
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL

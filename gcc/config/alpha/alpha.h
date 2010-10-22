@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2004, 2005, 2007, 2008, 2009
+   2000, 2001, 2002, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -223,10 +223,6 @@ extern enum alpha_fp_trap_mode alpha_fptm;
     for (i = 32; i < 63; i++)			\
       fixed_regs[i] = call_used_regs[i] = 1;	\
 }
-
-
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
 
 /* target machine storage layout */
 

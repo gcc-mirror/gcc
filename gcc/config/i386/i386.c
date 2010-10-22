@@ -4529,20 +4529,19 @@ x86_output_aligned_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
   ASM_OUTPUT_SKIP (file, size ? size : 1);
 }
 
-static void
-ix86_option_optimization (int level, int size ATTRIBUTE_UNUSED)
-{
-  /* For -O2 and beyond, turn off -fschedule-insns by default.  It tends to
-     make the problem with not enough registers even worse.  */
+static const struct default_options ix86_option_optimization_table[] =
+  {
+    /* Turn off -fschedule-insns by default.  It tends to make the
+       problem with not enough registers even worse.  */
 #ifdef INSN_SCHEDULING
-  if (level > 1)
-    flag_schedule_insns = 0;
+    { OPT_LEVELS_ALL, OPT_fschedule_insns, NULL, 0 },
 #endif
 
 #ifdef SUBTARGET_OPTIMIZATION_OPTIONS
-  SUBTARGET_OPTIMIZATION_OPTIONS;
+    SUBTARGET_OPTIMIZATION_OPTIONS,
 #endif
-}
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Implement TARGET_OPTION_INIT_STRUCT.  */
 
@@ -33241,8 +33240,8 @@ ix86_autovectorize_vector_sizes (void)
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE ix86_option_override
-#undef TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION ix86_option_optimization
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE ix86_option_optimization_table
 #undef TARGET_OPTION_INIT_STRUCT
 #define TARGET_OPTION_INIT_STRUCT ix86_option_init_struct
 

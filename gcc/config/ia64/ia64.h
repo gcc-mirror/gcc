@@ -993,9 +993,6 @@ enum reg_class
 
 /* Eliminating the Frame Pointer and the Arg Pointer */
 
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
-
 /* If defined, this macro specifies a table of register pairs used to eliminate
    unneeded registers that point into the stack frame.  */
 

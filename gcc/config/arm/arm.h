@@ -494,10 +494,6 @@ extern int arm_arch_hwdiv;
 #define TARGET_DEFAULT  (MASK_APCS_FRAME)
 #endif
 
-/* The frame pointer register used in gcc has nothing to do with debugging;
-   that is controlled by the APCS-FRAME option.  */
-#define CAN_DEBUG_WITHOUT_FP
-
 /* Nonzero if PIC code requires explicit qualifiers to generate
    PLT and GOT relocs rather than the assembler doing so implicitly.
    Subtargets can override these if required.  */

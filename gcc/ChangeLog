@@ -1,3 +1,161 @@
+2010-10-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* target.h (enum opt_levels, struct default_options): New.
+	* target.def (handle_ofast): Remove hook.
+	(target_option.optimization): Change to
+	target_option.optimization_table.
+	* doc/tm.texi.in (TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	(CAN_DEBUG_WITHOUT_FP): Remove.
+	* doc/tm.texi: Regenerate.
+	* opts.c (maybe_default_option, maybe_default_options,
+	default_options_table): New.
+	(default_options_optimization): Take extra parameters.  Don't
+	assert that global_options and global_options_set are in use.  Use
+	maybe_default_options.
+	(decode_options): Pass extra parameters to
+	default_options_optimization.
+	* common.opt (falign-loops): Use value 0 with Var.
+	(frerun-cse-after-loop, ftree-ter): Remove Init.
+	* system.h (CAN_DEBUG_WITHOUT_FP, TARGET_HANDLE_OFAST,
+	TARGET_OPTION_OPTIMIZATION): Remove.
+	* targhooks.c (empty_optimization_table): New.
+	* targhooks.h (empty_optimization_table): Declare.
+	* toplev.c (process_options): Don't set flag_rerun_cse_after_loop.
+	* config/alpha/alpha.c (alpha_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/alpha/alpha.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/arm/arm.c (arm_option_optimization: Change to
+	arm_option_optimization_table.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	* config/arm/arm.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/avr/avr.c (avr_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/avr/avr.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/cris/cris.c (cris_option_optimization): Change to
+	cris_option_optimization_table.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	* config/crx/crx.c (crx_option_optimization): Change to
+	crx_option_optimization_table.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	* config/crx/crx.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/fr30/fr30.c (fr30_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/fr30/fr30.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/frv/frv.c (frv_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/frv/frv.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/h8300/h8300.c (h8300_option_optimization): Change to
+	h8300_option_optimization_table.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	* config/h8300/h8300.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/i386/i386.c (ix86_option_optimization): Change to
+	ix86_option_optimization_table.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	* config/i386/sol2-10.h (SUBTARGET_OPTIMIZATION_OPTIONS): Define
+	as initializer.
+	* config/ia64/ia64.c (ia64_option_optimization): Change to
+	ia64_option_optimization_table.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	* config/ia64/ia64.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/ia64/vms.h (SUBTARGET_OPTIMIZATION_OPTIONS): Define as
+	initializer.
+	* config/iq2000/iq2000.c (iq2000_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/iq2000/iq2000.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/lm32/lm32.c (lm32_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/lm32/lm32.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/m32r/m32r.c (m32r_option_optimization): Change to
+	m32r_option_optimization_table.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	* config/m32r/m32r.h (SUBTARGET_OPTIMIZATION_OPTIONS,
+	CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/mcore/mcore.c (mcore_option_optimization): Change to
+	mcore_option_optimization_table.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	* config/mep/mep.c (mep_option_optimization): Change to
+	mep_option_optimization_table.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	* config/mep/mep.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/microblaze/microblaze.c
+	(microblaze_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/microblaze/microblaze.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/mips/mips.c (mips_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/mips/mips.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/mmix/mmix.c (mmix_option_optimization): Change to
+	mmix_option_optimization_table.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	* config/mmix/mmix.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/mn10300/mn10300.c (mn10300_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/mn10300/mn10300.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/pa/pa.c (pa_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/pa/pa.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/pdp11/pdp11.c (pdp11_option_optimization): Change to
+	pdp11_option_optimization_table.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	* config/picochip/picochip.c (picochip_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/picochip/picochip.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/rs6000/rs6000.c (rs6000_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/rs6000/rs6000.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/rx/rx.c (rx_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/rx/rx.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/s390/s390.c (s390_option_optimization): Change to
+	s390_option_optimization_table.
+	(s390_option_override): Update comment.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	* config/s390/s390.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/score/score.c (score_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/score/score.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/sh/sh.c (sh_option_optimization): Change to
+	sh_option_optimization_table.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	(sh_option_override): Set MASK_SAVE_ALL_TARGET_REGS here.
+	(sh_option_override, expand_block_move, multcosts, find_barrier,
+	barrier_align): Use optimize_size instead of TARGET_SMALLCODE.
+	* config/sh/sh.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	(LOOP_ALIGN, TRAMPOLINE_ALIGNMENT, MOVE_BY_PIECES_P,
+	STORE_BY_PIECES_P, SH_DYNAMIC_SHIFT_COST): Use optimize_size
+	instead of TARGET_SMALLCODE.
+	* config/sh/sh.opt (mspace): Make into an alias for -Os.
+	* config/sparc/sparc.c (sparc_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/sparc/sparc.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/stormy16/stormy16.c (xstorym16_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): New.
+	* config/stormy16/stormy16.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/v850/v850.c (v850_option_optimization): Change to
+	v850_option_optimization_table.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	* config/v850/v850.h (CAN_DEBUG_WITHOUT_FP): Remove.
+	* config/xtensa/xtensa.c (xtensa_option_optimization): Change to
+	xtensa_option_optimization_table.
+	(TARGET_OPTION_OPTIMIZATION): Change to
+	TARGET_OPTION_OPTIMIZATION_TABLE.
+	* config/xtensa/xtensa.h (CAN_DEBUG_WITHOUT_FP): Remove.
+
 2010-10-21  Iain Sandoe  <iains@gcc.gnu.org>
 
 	Based on the CFString implementation in FSF apple/trunk branch.

@@ -137,9 +137,6 @@ enum small_memory_type {
 };
 
 extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
-
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
 
 /* Target machine storage layout */
 

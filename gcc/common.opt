@@ -589,7 +589,7 @@ falign-labels=
 Common RejectNegative Joined UInteger
 
 falign-loops
-Common Report Var(align_loops) Optimization UInteger
+Common Report Var(align_loops,0) Optimization UInteger
 Align the start of loops
 
 falign-loops=
@@ -1318,7 +1318,7 @@ Common Report Var(flag_reorder_functions) Optimization
 Reorder functions to improve code placement
 
 frerun-cse-after-loop
-Common Report Var(flag_rerun_cse_after_loop) Init(2) Optimization
+Common Report Var(flag_rerun_cse_after_loop) Optimization
 Add a common subexpression elimination pass after loop optimizations
 
 frerun-loop-opt
@@ -1681,7 +1681,7 @@ Common Report Var(flag_tree_sra) Optimization
 Perform scalar replacement of aggregates
 
 ftree-ter
-Common Report Var(flag_tree_ter) Init(1) Optimization
+Common Report Var(flag_tree_ter) Optimization
 Replace temporary expressions in the SSA->normal pass
 
 ftree-lrs

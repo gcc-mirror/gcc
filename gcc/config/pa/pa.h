@@ -226,9 +226,6 @@ do {								\
 #define PTRDIFF_TYPE "int"
 #define WCHAR_TYPE "unsigned int"
 #define WCHAR_TYPE_SIZE 32
-
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
 
 /* target machine storage layout */
 typedef struct GTY(()) machine_function

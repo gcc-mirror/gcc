@@ -202,7 +202,6 @@ static rtx gen_fr_spill_x (rtx, rtx, rtx);
 static rtx gen_fr_restore_x (rtx, rtx, rtx);
 
 static void ia64_option_override (void);
-static void ia64_option_optimization (int, int);
 static void ia64_option_default_params (void);
 static bool ia64_can_eliminate (const int, const int);
 static enum machine_mode hfa_element_mode (const_tree, bool);
@@ -341,6 +340,16 @@ static const struct attribute_spec ia64_attribute_table[] =
   { NULL,	       0, 0, false, false, false, NULL }
 };
 
+/* Implement overriding of the optimization options.  */
+static const struct default_options ia64_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+#ifdef SUBTARGET_OPTIMIZATION_OPTIONS
+    SUBTARGET_OPTIMIZATION_OPTIONS,
+#endif
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE ia64_attribute_table
@@ -373,8 +382,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE ia64_option_override
-#undef TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION ia64_option_optimization
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE ia64_option_optimization_table
 #undef TARGET_OPTION_DEFAULT_PARAMS
 #define TARGET_OPTION_DEFAULT_PARAMS ia64_option_default_params
 
@@ -10833,16 +10842,6 @@ ia64_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree ty
   if (TYPE_MODE (type1) == RFmode || TYPE_MODE (type2) == RFmode)
     return N_("invalid operation on %<__fpreg%>");
   return NULL;
-}
-
-/* Implement overriding of the optimization options.  */
-static void
-ia64_option_optimization (int level ATTRIBUTE_UNUSED,
-			  int size ATTRIBUTE_UNUSED)
-{
-#ifdef SUBTARGET_OPTIMIZATION_OPTIONS
-  SUBTARGET_OPTIMIZATION_OPTIONS;
-#endif
 }
 
 /* Implement TARGET_OPTION_DEFAULT_PARAMS.  */

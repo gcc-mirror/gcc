@@ -71,6 +71,13 @@ enum processor_type mn10300_processor = PROCESSOR_DEFAULT;
 				|| df_regs_ever_live_p (17)))
 
 static int mn10300_address_cost (rtx, bool);
+
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+static const struct default_options mn10300_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -2280,6 +2287,8 @@ mn10300_select_cc_mode (rtx x)
 #define TARGET_HANDLE_OPTION mn10300_handle_option
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE mn10300_option_override
+#undef  TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE mn10300_option_optimization_table
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO mn10300_encode_section_info

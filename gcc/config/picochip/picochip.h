@@ -84,8 +84,6 @@ extern enum picochip_dfa_type picochip_schedule_type;
 #define TARGET_HAS_MAC_UNIT (picochip_has_mac_unit)
 #define TARGET_HAS_MULTIPLY (picochip_has_mac_unit || picochip_has_mul_unit)
 
-#define CAN_DEBUG_WITHOUT_FP 1
-
 #define TARGET_VERSION fprintf(stderr, "(picoChip)");
 
 /* Storage Layout */

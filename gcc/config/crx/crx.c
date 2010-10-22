@@ -130,7 +130,6 @@ static bool crx_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_U
 static int crx_address_cost (rtx, bool);
 static bool crx_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool crx_can_eliminate (const int, const int);
-static void crx_option_optimization (int, int);
 
 /*****************************************************************************/
 /* RTL VALIDITY								     */
@@ -177,8 +176,17 @@ static const struct attribute_spec crx_attribute_table[] = {
 
 /* Option handling.  */
 
-#undef	TARGET_OPTION_OPTIMIZATION
-#define	TARGET_OPTION_OPTIMIZATION	crx_option_optimization
+#undef	TARGET_OPTION_OPTIMIZATION_TABLE
+#define	TARGET_OPTION_OPTIMIZATION_TABLE	crx_option_optimization_table
+
+static const struct default_options crx_option_optimization_table[] =
+  {
+    /* Put each function in its own section so that PAGE-instruction
+       relaxation can do its best.  */
+    { OPT_LEVELS_1_PLUS, OPT_ffunction_sections, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Initialize 'targetm' variable which contains pointers to functions and data
  * relating to the target machine.  */
@@ -1446,14 +1454,4 @@ crx_expand_epilogue (void)
     emit_jump_insn (gen_popret_RA_return ());
   else
     emit_jump_insn (gen_pop_and_popret_return (GEN_INT (sum_regs)));
-}
-
-/* Implement TARGET_OPTION_OPTIMIZATION.  */
-static void
-crx_option_optimization (int level, int size)
-{
-  /* Put each function in its own section so that PAGE-instruction
-     relaxation can do its best.  */
-  if (level || size)
-    flag_function_sections = 1;
 }

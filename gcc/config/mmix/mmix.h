@@ -147,10 +147,6 @@ struct GTY(()) machine_function
 #define TARGET_VERSION \
   fprintf (stderr, " (MMIX)")
 
-/* This one will have to wait a little bit; right now we can't debug
-   neither with or without a frame-pointer.  */
-/* #define CAN_DEBUG_WITHOUT_FP */
-
 
 /* Node: Per-Function Data */
 #define INIT_EXPANDERS mmix_init_expanders ()

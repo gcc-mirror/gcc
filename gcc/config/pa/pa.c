@@ -222,11 +222,20 @@ static GTY((length ("n_deferred_plabels"))) struct deferred_plabel *
   deferred_plabels;
 static size_t n_deferred_plabels = 0;
 
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+static const struct default_options pa_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
+
 
 /* Initialize the GCC target structure.  */
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE pa_option_override
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE pa_option_optimization_table
 
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"

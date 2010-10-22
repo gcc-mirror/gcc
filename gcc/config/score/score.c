@@ -53,6 +53,13 @@
 
 static void score_option_override (void);
 
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+static const struct default_options score_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
+
 #undef  TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START           score_asm_file_start
 
@@ -71,6 +78,8 @@ static void score_option_override (void);
 #define TARGET_HANDLE_OPTION            score_handle_option
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE          score_option_override
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE score_option_optimization_table
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS	score_legitimize_address

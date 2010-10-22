@@ -15876,6 +15876,13 @@ mips_option_override (void)
   mips_set_mips16_mode (false);
 }
 
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+static const struct default_options mips_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
+
 /* Swap the register information for registers I and I + 1, which
    currently have the wrong endianness.  Note that the registers'
    fixedness and call-clobberedness might have been set on the
@@ -16390,6 +16397,8 @@ mips_shift_truncation_mask (enum machine_mode mode)
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE mips_option_override
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE mips_option_optimization_table
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS mips_legitimize_address

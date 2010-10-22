@@ -64,7 +64,6 @@ enum m32r_sdata m32r_sdata = M32R_SDATA_DEFAULT;
 /* Forward declaration.  */
 static bool  m32r_handle_option (size_t, const char *, int);
 static void  m32r_option_override (void);
-static void  m32r_option_optimization (int, int);
 static void  init_reg_tables (void);
 static void  block_move_call (rtx, rtx, rtx);
 static int   m32r_is_insn (rtx);
@@ -113,6 +112,13 @@ static const struct attribute_spec m32r_attribute_table[] =
   { "model",     1, 1, true,  false, false, m32r_handle_model_attribute },
   { NULL,        0, 0, false, false, false, NULL }
 };
+
+static const struct default_options m32r_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fregmove, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ATTRIBUTE_TABLE
@@ -154,8 +160,8 @@ static const struct attribute_spec m32r_attribute_table[] =
 #define TARGET_HANDLE_OPTION m32r_handle_option
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE m32r_option_override
-#undef  TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION m32r_option_optimization
+#undef  TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE m32r_option_optimization_table
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO m32r_encode_section_info
@@ -276,18 +282,6 @@ m32r_option_override (void)
      It's convenient to do them here.  */
   m32r_init ();
   SUBTARGET_OVERRIDE_OPTIONS;
-}
-
-static void
-m32r_option_optimization (int level, int size)
-{
-  if (level == 1)
-    flag_regmove = 1;
-
-  if (size)
-    flag_omit_frame_pointer = 1;
-
-  SUBTARGET_OPTIMIZATION_OPTIONS;
 }
 
 /* Vectors to keep interesting information about registers where it can easily

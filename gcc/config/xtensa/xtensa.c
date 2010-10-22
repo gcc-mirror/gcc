@@ -119,7 +119,6 @@ const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER] =
 };
 
 static void xtensa_option_override (void);
-static void xtensa_option_optimization (int, int);
 static enum internal_test map_test_to_internal_test (enum rtx_code);
 static rtx gen_int_relational (enum rtx_code, rtx, rtx, int *);
 static rtx gen_float_relational (enum rtx_code, rtx, rtx);
@@ -160,6 +159,20 @@ static void xtensa_trampoline_init (rtx, tree, rtx);
 
 static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
   REG_ALLOC_ORDER;
+
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+
+static const struct default_options xtensa_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    /* Reordering blocks for Xtensa is not a good idea unless the
+       compiler understands the range of conditional branches.
+       Currently all branch relaxation for Xtensa is handled in the
+       assembler, so GCC cannot do a good job of reordering blocks.
+       Do not enable reordering unless it is explicitly requested.  */
+    { OPT_LEVELS_ALL, OPT_freorder_blocks, NULL, 0 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 
 /* This macro generates the assembly code for function exit,
@@ -255,8 +268,8 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE xtensa_option_override
-#undef TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION xtensa_option_optimization
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE xtensa_option_optimization_table
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2169,20 +2182,6 @@ xtensa_option_override (void)
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
-}
-
-/* Implement TARGET_OPTION_OPTIMIZATION.  */
-
-static void
-xtensa_option_optimization (int level ATTRIBUTE_UNUSED,
-			    int size ATTRIBUTE_UNUSED)
-{
-  /* Reordering blocks for Xtensa is not a good idea unless the
-     compiler understands the range of conditional branches.
-     Currently all branch relaxation for Xtensa is handled in the
-     assembler, so GCC cannot do a good job of reordering blocks.  Do
-     not enable reordering unless it is explicitly requested.  */
-  flag_reorder_blocks = 0;
 }
 
 /* A C compound statement to output to stdio stream STREAM the

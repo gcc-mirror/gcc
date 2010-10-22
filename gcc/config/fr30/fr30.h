@@ -1,7 +1,7 @@
 /*{{{  Comment.  */ 
 
 /* Definitions of FR30 target. 
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2007, 2008, 2009
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
@@ -49,8 +49,6 @@ along with GCC; see the file COPYING3.  If not see
    while (0)
 
 #define TARGET_VERSION fprintf (stderr, " (fr30)");
-
-#define CAN_DEBUG_WITHOUT_FP
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "crt0.o%s crti.o%s crtbegin.o%s"

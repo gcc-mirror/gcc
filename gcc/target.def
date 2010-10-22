@@ -961,13 +961,6 @@ DEFHOOK
  bool, (size_t code, const char *arg, int value),
  hook_bool_size_t_constcharptr_int_true)
 
-/* ??? Documenting this hook requires a GFDL license grant.  */
-DEFHOOK_UNDOC
-(handle_ofast,
- "Handle target-specific parts of specifying -Ofast.",
- void, (void),
- hook_void_void)
-
 /* Display extra, target specific information in response to a
    --target-help switch.  */
 DEFHOOK
@@ -2384,11 +2377,10 @@ DEFHOOK
  hook_void_void)
 
 /* Set default optimizations for the target.  */
-DEFHOOK
-(optimization,
+DEFHOOKPOD
+(optimization_table,
  "",
- void, (int level, int size),
- hook_void_int_int)
+ const struct default_options *, empty_optimization_table)
 
 DEFHOOK
 (default_params,

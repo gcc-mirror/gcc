@@ -159,8 +159,6 @@ crtbegin.o%s"
 #define COPROC_SELECTION_TABLE \
 {"default", ISA_EXT1}
 /* end-coproc-selection-table */
-
-#define CAN_DEBUG_WITHOUT_FP
 
 
 #define BITS_BIG_ENDIAN 0

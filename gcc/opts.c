@@ -717,23 +717,205 @@ decode_cmdline_options_to_array_default_mask (unsigned int argc,
 				   decoded_options, decoded_options_count);
 }
 
+/* If indicated by the optimization level LEVEL (-Os if SIZE is set,
+   -Ofast if FAST is set), apply the option DEFAULT_OPT to OPTS and
+   OPTS_SET, diagnostic context DC, with language mask LANG_MASK and
+   option handlers HANDLERS.  */
+
+static void
+maybe_default_option (struct gcc_options *opts,
+		      struct gcc_options *opts_set,
+		      const struct default_options *default_opt,
+		      int level, bool size, bool fast,
+		      unsigned int lang_mask,
+		      const struct cl_option_handlers *handlers,
+		      diagnostic_context *dc)
+{
+  const struct cl_option *option = &cl_options[default_opt->opt_index];
+  bool enabled;
+
+  if (size)
+    gcc_assert (level == 2);
+  if (fast)
+    gcc_assert (level == 3);
+
+  switch (default_opt->levels)
+    {
+    case OPT_LEVELS_ALL:
+      enabled = true;
+      break;
+
+    case OPT_LEVELS_0_ONLY:
+      enabled = (level == 0);
+      break;
+
+    case OPT_LEVELS_1_PLUS:
+      enabled = (level >= 1);
+      break;
+
+    case OPT_LEVELS_1_PLUS_SPEED_ONLY:
+      enabled = (level >= 1 && !size);
+      break;
+
+    case OPT_LEVELS_2_PLUS:
+      enabled = (level >= 2);
+      break;
+
+    case OPT_LEVELS_2_PLUS_SPEED_ONLY:
+      enabled = (level >= 2 && !size);
+      break;
+
+    case OPT_LEVELS_3_PLUS:
+      enabled = (level >= 3);
+      break;
+
+    case OPT_LEVELS_3_PLUS_AND_SIZE:
+      enabled = (level >= 3 || size);
+      break;
+
+    case OPT_LEVELS_SIZE:
+      enabled = size;
+      break;
+
+    case OPT_LEVELS_FAST:
+      enabled = fast;
+      break;
+
+    case OPT_LEVELS_NONE:
+    default:
+      gcc_unreachable ();
+    }
+
+  if (enabled)
+    handle_generated_option (opts, opts_set, default_opt->opt_index,
+			     default_opt->arg, default_opt->value,
+			     lang_mask, DK_UNSPECIFIED, handlers, dc);
+  else if (default_opt->arg == NULL
+	   && !(option->flags & CL_REJECT_NEGATIVE))
+    handle_generated_option (opts, opts_set, default_opt->opt_index,
+			     default_opt->arg, !default_opt->value,
+			     lang_mask, DK_UNSPECIFIED, handlers, dc);
+}
+
+/* As indicated by the optimization level LEVEL (-Os if SIZE is set,
+   -Ofast if FAST is set), apply the options in array DEFAULT_OPTS to
+   OPTS and OPTS_SET, diagnostic context DC, with language mask
+   LANG_MASK and option handlers HANDLERS.  */
+
+static void
+maybe_default_options (struct gcc_options *opts,
+		       struct gcc_options *opts_set,
+		       const struct default_options *default_opts,
+		       int level, bool size, bool fast,
+		       unsigned int lang_mask,
+		       const struct cl_option_handlers *handlers,
+		       diagnostic_context *dc)
+{
+  size_t i;
+
+  for (i = 0; default_opts[i].levels != OPT_LEVELS_NONE; i++)
+    maybe_default_option (opts, opts_set, &default_opts[i],
+			  level, size, fast, lang_mask, handlers, dc);
+}
+
+/* Table of options enabled by default at different levels.  */
+
+static const struct default_options default_options_table[] =
+  {
+    /* -O1 optimizations.  */
+    { OPT_LEVELS_1_PLUS, OPT_fdefer_pop, NULL, 1 },
+#ifdef DELAY_SLOTS
+    { OPT_LEVELS_1_PLUS, OPT_fdelayed_branch, NULL, 1 },
+#endif
+    { OPT_LEVELS_1_PLUS, OPT_fguess_branch_probability, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fcprop_registers, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fforward_propagate, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fif_conversion, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fif_conversion2, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fipa_pure_const, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fipa_reference, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fipa_profile, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fmerge_constants, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fsplit_wide_types, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_ccp, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_bit_ccp, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_dce, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_dominator_opts, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_dse, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_ter, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_sra, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_copyrename, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_fre, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_copy_prop, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_sink, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_ch, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fcombine_stack_adjustments, NULL, 1 },
+
+    /* -O2 optimizations.  */
+    { OPT_LEVELS_2_PLUS, OPT_finline_small_functions, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_findirect_inlining, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fpartial_inlining, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fthread_jumps, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fcrossjumping, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_foptimize_sibling_calls, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fcse_follow_jumps, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fgcse, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fexpensive_optimizations, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_frerun_cse_after_loop, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fcaller_saves, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fpeephole2, NULL, 1 },
+#ifdef INSN_SCHEDULING
+  /* Only run the pre-regalloc scheduling pass if optimizing for speed.  */
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_fschedule_insns, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fschedule_insns2, NULL, 1 },
+#endif
+    { OPT_LEVELS_2_PLUS, OPT_fregmove, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fstrict_aliasing, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fstrict_overflow, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_freorder_blocks, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_freorder_functions, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_ftree_vrp, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_ftree_builtin_call_dce, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_ftree_pre, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_ftree_switch_conversion, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fipa_cp, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fipa_sra, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_falign_loops, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_falign_jumps, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_falign_labels, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_falign_functions, NULL, 1 },
+
+    /* -O3 optimizations.  */
+    { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_fpredictive_commoning, NULL, 1 },
+    /* Inlining of functions reducing size is a good idea with -Os
+       regardless of them being declared inline.  */
+    { OPT_LEVELS_3_PLUS_AND_SIZE, OPT_finline_functions, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_funswitch_loops, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_fgcse_after_reload, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_ftree_vectorize, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_fipa_cp_clone, NULL, 1 },
+
+    /* -Ofast adds optimizations to -O3.  */
+    { OPT_LEVELS_FAST, OPT_ffast_math, NULL, 1 },
+
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
+
 /* Default the options in OPTS and OPTS_SET based on the optimization
    settings in DECODED_OPTIONS and DECODED_OPTIONS_COUNT.  */
 static void
 default_options_optimization (struct gcc_options *opts,
 			      struct gcc_options *opts_set,
 			      struct cl_decoded_option *decoded_options,
-			      unsigned int decoded_options_count)
+			      unsigned int decoded_options_count,
+			      unsigned int lang_mask,
+			      const struct cl_option_handlers *handlers,
+			      diagnostic_context *dc)
 {
   unsigned int i;
-  int opt1;
   int opt2;
-  int opt3;
-  int opt1_max;
   int ofast = 0;
-
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set = &global_options_set);
 
   /* Scan to see what optimization level has been specified.  That will
      determine the default value of many flags.  */
@@ -745,8 +927,8 @@ default_options_optimization (struct gcc_options *opts,
 	case OPT_O:
 	  if (*opt->arg == '\0')
 	    {
-	      optimize = 1;
-	      optimize_size = 0;
+	      opts->x_optimize = 1;
+	      opts->x_optimize_size = 0;
 	      ofast = 0;
 	    }
 	  else
@@ -757,27 +939,27 @@ default_options_optimization (struct gcc_options *opts,
 		       "-O");
 	      else
 		{
-		  optimize = optimize_val;
-		  if ((unsigned int) optimize > 255)
-		    optimize = 255;
-		  optimize_size = 0;
+		  opts->x_optimize = optimize_val;
+		  if ((unsigned int) opts->x_optimize > 255)
+		    opts->x_optimize = 255;
+		  opts->x_optimize_size = 0;
 		  ofast = 0;
 		}
 	    }
 	  break;
 
 	case OPT_Os:
-	  optimize_size = 1;
+	  opts->x_optimize_size = 1;
 
 	  /* Optimizing for size forces optimize to be 2.  */
-	  optimize = 2;
+	  opts->x_optimize = 2;
 	  ofast = 0;
 	  break;
 
 	case OPT_Ofast:
 	  /* -Ofast only adds flags to -O3.  */
-	  optimize_size = 0;
-	  optimize = 3;
+	  opts->x_optimize_size = 0;
+	  opts->x_optimize = 3;
 	  ofast = 1;
 	  break;
 
@@ -787,69 +969,12 @@ default_options_optimization (struct gcc_options *opts,
 	}
     }
 
-  /* -O1 optimizations.  */
-  opt1 = (optimize >= 1);
-  flag_defer_pop = opt1;
-#ifdef DELAY_SLOTS
-  flag_delayed_branch = opt1;
-#endif
-#ifdef CAN_DEBUG_WITHOUT_FP
-  flag_omit_frame_pointer = opt1;
-#endif
-  flag_guess_branch_prob = opt1;
-  flag_cprop_registers = opt1;
-  flag_forward_propagate = opt1;
-  flag_if_conversion = opt1;
-  flag_if_conversion2 = opt1;
-  flag_ipa_pure_const = opt1;
-  flag_ipa_reference = opt1;
-  flag_ipa_profile = opt1;
-  flag_merge_constants = opt1;
-  flag_split_wide_types = opt1;
-  flag_tree_ccp = opt1;
-  flag_tree_bit_ccp = opt1;
-  flag_tree_dce = opt1;
-  flag_tree_dom = opt1;
-  flag_tree_dse = opt1;
-  flag_tree_ter = opt1;
-  flag_tree_sra = opt1;
-  flag_tree_copyrename = opt1;
-  flag_tree_fre = opt1;
-  flag_tree_copy_prop = opt1;
-  flag_tree_sink = opt1;
-  flag_tree_ch = opt1;
-  flag_combine_stack_adjustments = opt1;
+  maybe_default_options (opts, opts_set, default_options_table,
+			 opts->x_optimize, opts->x_optimize_size,
+			 ofast, lang_mask, handlers, dc);
 
-  /* -O2 optimizations.  */
-  opt2 = (optimize >= 2);
-  flag_inline_small_functions = opt2;
-  flag_indirect_inlining = opt2;
-  flag_partial_inlining = opt2;
-  flag_thread_jumps = opt2;
-  flag_crossjumping = opt2;
-  flag_optimize_sibling_calls = opt2;
-  flag_cse_follow_jumps = opt2;
-  flag_gcse = opt2;
-  flag_expensive_optimizations = opt2;
-  flag_rerun_cse_after_loop = opt2;
-  flag_caller_saves = opt2;
-  flag_peephole2 = opt2;
-#ifdef INSN_SCHEDULING
-  /* Only run the pre-regalloc scheduling pass if optimizing for speed.  */
-  flag_schedule_insns = opt2 && ! optimize_size;
-  flag_schedule_insns_after_reload = opt2;
-#endif
-  flag_regmove = opt2;
-  flag_strict_aliasing = opt2;
-  flag_strict_overflow = opt2;
-  flag_reorder_blocks = opt2;
-  flag_reorder_functions = opt2;
-  flag_tree_vrp = opt2;
-  flag_tree_builtin_call_dce = opt2;
-  flag_tree_pre = opt2;
-  flag_tree_switch_conversion = opt2;
-  flag_ipa_cp = opt2;
-  flag_ipa_sra = opt2;
+  /* -O2 param settings.  */
+  opt2 = (opts->x_optimize >= 2);
 
   /* Track fields in field-sensitive alias analysis.  */
   maybe_set_param_value
@@ -863,58 +988,20 @@ default_options_optimization (struct gcc_options *opts,
      opt2 ? default_param_value (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP) : 1000,
      opts->x_param_values, opts_set->x_param_values);
 
-  /* -O3 optimizations.  */
-  opt3 = (optimize >= 3);
-  flag_tree_loop_distribute_patterns = opt3;
-  flag_predictive_commoning = opt3;
-  flag_inline_functions = opt3;
-  flag_unswitch_loops = opt3;
-  flag_gcse_after_reload = opt3;
-  flag_tree_vectorize = opt3;
-  flag_ipa_cp_clone = opt3;
-  if (flag_ipa_cp_clone)
-    flag_ipa_cp = 1;
-
-  /* Just -O1/-O0 optimizations.  */
-  opt1_max = (optimize <= 1);
-  align_loops = opt1_max;
-  align_jumps = opt1_max;
-  align_labels = opt1_max;
-  align_functions = opt1_max;
-
-  if (optimize_size)
-    {
-      /* Inlining of functions reducing size is a good idea regardless of them
-	 being declared inline.  */
-      flag_inline_functions = 1;
-
-      /* Basic optimization options.  */
-      optimize_size = 1;
-      if (optimize > 2)
-	optimize = 2;
-
-      /* We want to crossjump as much as possible.  */
-      maybe_set_param_value (PARAM_MIN_CROSSJUMP_INSNS, 1,
-			     opts->x_param_values, opts_set->x_param_values);
-    }
+  if (opts->x_optimize_size)
+    /* We want to crossjump as much as possible.  */
+    maybe_set_param_value (PARAM_MIN_CROSSJUMP_INSNS, 1,
+			   opts->x_param_values, opts_set->x_param_values);
   else
     maybe_set_param_value (PARAM_MIN_CROSSJUMP_INSNS,
 			   default_param_value (PARAM_MIN_CROSSJUMP_INSNS),
 			   opts->x_param_values, opts_set->x_param_values);
 
-  /* -Ofast adds optimizations to -O3.  */
-  if (ofast)
-    {
-      /* Which is -ffast-math for now.  */
-      set_fast_math_flags (1);
-      /* Allow targets to enable extra options with -Ofast
-	 before general options processing so disabling them
-	 again afterwards works.  */
-      targetm.handle_ofast ();
-    }
-
   /* Allow default optimizations to be specified on a per-machine basis.  */
-  targetm.target_option.optimization (optimize, optimize_size);
+  maybe_default_options (opts, opts_set,
+			 targetm.target_option.optimization_table,
+			 opts->x_optimize, opts->x_optimize_size,
+			 ofast, lang_mask, handlers, dc);
 }
 
 static void finish_options (struct gcc_options *, struct gcc_options *);
@@ -949,7 +1036,8 @@ decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
 			   global_dc);
 
   default_options_optimization (opts, opts_set,
-				decoded_options, decoded_options_count);
+				decoded_options, decoded_options_count,
+				lang_mask, &handlers, global_dc);
 
 #ifdef ENABLE_LTO
   /* Clear any options currently held for LTO.  */

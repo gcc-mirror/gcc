@@ -145,7 +145,6 @@ static int        mcore_arg_partial_bytes       (CUMULATIVE_ARGS *,
 static void       mcore_asm_trampoline_template (FILE *);
 static void       mcore_trampoline_init		(rtx, tree, rtx);
 static void       mcore_option_override		(void);
-static void       mcore_option_optimization	(int, int);
 
 /* MCore specific attributes.  */
 
@@ -157,6 +156,23 @@ static const struct attribute_spec mcore_attribute_table[] =
   { "naked",     0, 0, true,  false, false, mcore_handle_naked_attribute },
   { NULL,        0, 0, false, false, false, NULL }
 };
+
+/* What options are we going to default to specific settings when
+   -O* happens; the user can subsequently override these settings.
+  
+   Omitting the frame pointer is a very good idea on the MCore.
+   Scheduling isn't worth anything on the current MCore implementation.  */
+
+static const struct default_options mcore_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_ffunction_cse, NULL, 0 },
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_ALL, OPT_fcaller_saves, NULL, 0 },
+    { OPT_LEVELS_ALL, OPT_fschedule_insns, NULL, 0 },
+    { OPT_LEVELS_ALL, OPT_fschedule_insns2, NULL, 0 },
+    { OPT_LEVELS_SIZE, OPT_mhardlit, NULL, 0 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_EXTERNAL_LIBCALL
@@ -224,8 +240,8 @@ static const struct attribute_spec mcore_attribute_table[] =
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE mcore_option_override
-#undef TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION mcore_option_optimization
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE mcore_option_optimization_table
 
 #undef TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
@@ -2690,33 +2706,6 @@ mcore_option_override (void)
   /* Only the m340 supports little endian code.  */
   if (TARGET_LITTLE_END && ! TARGET_M340)
     target_flags |= MASK_M340;
-}
-
-/* What options are we going to default to specific settings when
-   -O* happens; the user can subsequently override these settings.
-  
-   Omitting the frame pointer is a very good idea on the MCore.
-   Scheduling isn't worth anything on the current MCore implementation.  */
-
-static void
-mcore_option_optimization (int level, int size)
-{
-  if (level)
-    {
-      flag_no_function_cse = 1;
-      flag_omit_frame_pointer = 1;
-
-      if (level >= 2)
-        {
-          flag_caller_saves = 0;
-          flag_schedule_insns = 0;
-          flag_schedule_insns_after_reload = 0;
-        }
-    }
-  if (size)
-    {
-      target_flags &= ~MASK_HARDLIT;
-    }
 }
 
 

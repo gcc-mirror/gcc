@@ -328,13 +328,6 @@
         #endif  */
 #define TARGET_VERSION fprintf (stderr, _(" (frv)"))
 
-/* Define this macro if debugging can be performed even without a frame
-   pointer.  If this macro is defined, GCC will turn on the
-   `-fomit-frame-pointer' option whenever `-O' is specified.  */
-/* Frv needs a specific frame layout that includes the frame pointer.  */
-
-#define CAN_DEBUG_WITHOUT_FP
-
 #define LABEL_ALIGN_AFTER_BARRIER(LABEL) (TARGET_ALIGN_LABELS ? 3 : 0)
 
 /* Small Data Area Support.  */
