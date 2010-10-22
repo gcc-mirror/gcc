@@ -4773,10 +4773,10 @@ package body Exp_Attr is
             begin
 
                case Float_Rep (Btyp) is
+
                   --  For vax fpt types, call appropriate routine in special
-                  --  vax floating point unit. We do not have to worry about
-                  --  loads in this case, since these types have no signalling
-                  --  NaN's.
+                  --  vax floating point unit. No need to worry about loads in
+                  --  this case, since these types have no signalling NaN's.
 
                   when VAX_Native => Expand_Vax_Valid (N);
 

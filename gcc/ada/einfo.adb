@@ -406,7 +406,6 @@ package body Einfo is
    --    Is_Compilation_Unit             Flag149
    --    Has_Pragma_Elaborate_Body       Flag150
 
-   --    (unused)                        Flag151
    --    Entry_Accepted                  Flag152
    --    Is_Obsolescent                  Flag153
    --    Has_Per_Object_Constraint       Flag154
@@ -516,6 +515,7 @@ package body Einfo is
    --    OK_To_Reference                 Flag249
    --    Has_Predicates                  Flag250
 
+   --    (unused)                        Flag151
    --    (unused)                        Flag251
    --    (unused)                        Flag252
    --    (unused)                        Flag253

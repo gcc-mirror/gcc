@@ -1197,16 +1197,18 @@ package body Sem_Prag is
          Typ     : constant Entity_Id := Etype (Comp_Id);
 
          function Inside_Generic_Body (Id : Entity_Id) return Boolean;
-         --  Determine whether entity Id appears inside a generic body
+         --  Determine whether entity Id appears inside a generic body.
+         --  Shouldn't this be in a more general place ???
 
          -------------------------
          -- Inside_Generic_Body --
          -------------------------
 
          function Inside_Generic_Body (Id : Entity_Id) return Boolean is
-            S : Entity_Id := Id;
+            S : Entity_Id;
 
          begin
+            S := Id;
             while Present (S) and then S /= Standard_Standard loop
                if Ekind (S) = E_Generic_Package
                  and then In_Package_Body (S)
@@ -1338,6 +1340,7 @@ package body Sem_Prag is
       procedure Check_First_Subtype (Arg : Node_Id) is
          Argx : constant Node_Id := Get_Pragma_Arg (Arg);
          Ent  : constant Entity_Id := Entity (Argx);
+
       begin
          if Is_First_Subtype (Ent) then
             null;
@@ -2195,7 +2198,6 @@ package body Sem_Prag is
 
             if Error_Msg_Name_1 = Name_Precondition then
                Error_Msg_Name_1 := Name_Pre;
-
             elsif Error_Msg_Name_1 = Name_Postcondition then
                Error_Msg_Name_1 := Name_Post;
             end if;

@@ -7897,17 +7897,24 @@ package body Sem_Util is
          when N_Explicit_Dereference =>
             return False;
 
-         --  Function call arguments are never lvalues
+         --  Positional parameter for subprogram, entry, or accept call.
+         --  In older versions of Ada function call arguments are never
+         --  lvalues. In Ada2012 functions can have in-out parameters.
 
-         when N_Function_Call =>
-            return False;
-
-         --  Positional parameter for procedure, entry,  or accept call
-
-         when N_Procedure_Call_Statement |
+         when N_Function_Call            |
+              N_Procedure_Call_Statement |
               N_Entry_Call_Statement     |
               N_Accept_Statement
          =>
+            if Nkind (P) = N_Function_Call
+              and then Ada_Version < Ada_2012
+            then
+               return False;
+            end if;
+
+            --  The following mechanism is clumsy and fragile. A single
+            --  flag set in Resolve_Actuals would be preferable ???
+
             declare
                Proc : Entity_Id;
                Form : Entity_Id;
