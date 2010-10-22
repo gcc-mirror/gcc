@@ -1577,10 +1577,15 @@ package body Ch4 is
    -- 4.4  Expression --
    ---------------------
 
+   --  This procedure parses EXPRESSION or CHOICE_EXPRESSION
+
    --  EXPRESSION ::=
-   --    RELATION {and RELATION} | RELATION {and then RELATION}
-   --  | RELATION {or RELATION}  | RELATION {or else RELATION}
-   --  | RELATION {xor RELATION}
+   --    RELATION {LOGICAL_OPERATOR RELATION}
+
+   --  CHOICE_EXPRESSION ::=
+   --    CHOICE_RELATION {LOGICAL_OPERATOR CHOICE_RELATION}
+
+   --  LOGICAL_OPERATOR ::= and | and then | or | or else | xor
 
    --  On return, Expr_Form indicates the categorization of the expression
    --  EF_Range_Attr is not a possible value (if a range attribute is found,
@@ -1766,9 +1771,19 @@ package body Ch4 is
    -- 4.4  Relation --
    -------------------
 
-   --  RELATION ::=
+   --  This procedure scans both relations and choice relations
+
+   --  CHOICE_RELATION ::=
    --    SIMPLE_EXPRESSION [RELATIONAL_OPERATOR SIMPLE_EXPRESSION]
-   --  | SIMPLE_EXPRESSION [not] in MEMBERSHIP_CHOICE_LIST
+
+   --  RELATION ::=
+   --    SIMPLE_EXPRESSION [not] in MEMBERSHIP_CHOICE_LIST
+
+   --  MEMBERSHIP_CHOICE_LIST ::=
+   --    MEMBERSHIP_CHOICE {'|' MEMBERSHIP CHOICE}
+
+   --  MEMBERSHIP_CHOICE ::=
+   --    CHOICE_EXPRESSION | RANGE | SUBTYPE_MARK
 
    --  On return, Expr_Form indicates the categorization of the expression
 

@@ -127,6 +127,7 @@ package body Exp_Ch13 is
 
       begin
          if Present (T) and then Present (Predicate_Function (T)) then
+            Set_Has_Predicates (Typ);
 
             --  Build the call to the predicate function of T
 

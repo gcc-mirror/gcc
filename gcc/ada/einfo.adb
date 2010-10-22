@@ -215,6 +215,7 @@ package body Einfo is
    --    Debug_Renaming_Link             Node25
    --    DT_Offset_To_Top_Func           Node25
    --    PPC_Wrapper                     Node25
+   --    Static_Predicate                Node25
    --    Task_Body_Procedure             Node25
 
    --    Dispatch_Table_Wrappers         Elist26
@@ -2196,83 +2197,11 @@ package body Einfo is
       return Flag205 (Id);
    end Low_Bound_Tested;
 
-   function Machine_Emax_Value (Id : E) return Uint is
-      Digs : constant Pos := UI_To_Int (Digits_Value (Base_Type (Id)));
-
-   begin
-      case Float_Rep (Id) is
-         when IEEE_Binary =>
-            case Digs is
-               when  1 ..  6 => return Uint_128;
-               when  7 .. 15 => return 2**10;
-               when 16 .. 18 => return 2**14;
-               when others => return No_Uint;
-            end case;
-
-         when VAX_Native =>
-            case Digs is
-               when  1 ..  9 => return 2**7 - 1;
-               when 10 .. 15 => return 2**10 - 1;
-               when others => return No_Uint;
-            end case;
-
-         when AAMP =>
-            return Uint_2 ** Uint_7 - Uint_1;
-      end case;
-   end Machine_Emax_Value;
-
-   function Machine_Emin_Value (Id : E) return Uint is
-   begin
-      case Float_Rep (Id) is
-         when IEEE_Binary => return Uint_3 - Machine_Emax_Value (Id);
-         when VAX_Native  => return -Machine_Emax_Value (Id);
-         when AAMP        => return -Machine_Emax_Value (Id);
-      end case;
-   end Machine_Emin_Value;
-
-   function Machine_Mantissa_Value (Id : E) return Uint is
-      Digs : constant Pos := UI_To_Int (Digits_Value (Base_Type (Id)));
-
-   begin
-      case Float_Rep (Id) is
-         when IEEE_Binary =>
-            case Digs is
-               when  1 ..  6 => return Uint_24;
-               when  7 .. 15 => return UI_From_Int (53);
-               when 16 .. 18 => return Uint_64;
-               when others => return No_Uint;
-            end case;
-
-         when VAX_Native =>
-            case Digs is
-               when  1 ..  6 => return Uint_24;
-               when  7 ..  9 => return UI_From_Int (56);
-               when 10 .. 15 => return UI_From_Int (53);
-               when others => return No_Uint;
-            end case;
-
-         when AAMP =>
-            case Digs is
-               when  1 ..  6 => return Uint_24;
-               when  7 ..  9 => return UI_From_Int (40);
-               when others => return No_Uint;
-            end case;
-      end case;
-   end Machine_Mantissa_Value;
-
    function Machine_Radix_10 (Id : E) return B is
    begin
       pragma Assert (Is_Decimal_Fixed_Point_Type (Id));
       return Flag84 (Id);
    end Machine_Radix_10;
-
-   function Machine_Radix_Value (Id : E) return U is
-   begin
-      case Float_Rep (Id) is
-         when IEEE_Binary | VAX_Native | AAMP =>
-            return Uint_2;
-      end case;
-   end Machine_Radix_Value;
 
    function Master_Id (Id : E) return E is
    begin
@@ -2290,28 +2219,6 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Function or else Is_Formal (Id));
       return UI_To_Int (Uint8 (Id));
    end Mechanism;
-
-   function Model_Emin_Value (Id : E) return Uint is
-   begin
-      return Machine_Emin_Value (Id);
-   end Model_Emin_Value;
-
-   function Model_Epsilon_Value (Id : E) return Ureal is
-      Radix : constant Ureal := UR_From_Uint (Machine_Radix_Value (Id));
-   begin
-      return Radix ** (1 - Model_Mantissa_Value (Id));
-   end Model_Epsilon_Value;
-
-   function Model_Mantissa_Value (Id : E) return Uint is
-   begin
-      return Machine_Mantissa_Value (Id);
-   end Model_Mantissa_Value;
-
-   function Model_Small_Value (Id : E) return Ureal is
-      Radix : constant Ureal := UR_From_Uint (Machine_Radix_Value (Id));
-   begin
-      return Radix ** (Model_Emin_Value (Id) - 1);
-   end Model_Small_Value;
 
    function Modulus (Id : E) return Uint is
    begin
@@ -2645,38 +2552,6 @@ package body Einfo is
       return Uint13 (Id);
    end RM_Size;
 
-   function Safe_Emax_Value (Id : E) return Uint is
-   begin
-      return Machine_Emax_Value (Id);
-   end Safe_Emax_Value;
-
-   function Safe_First_Value (Id : E) return Ureal is
-   begin
-      return -Safe_Last_Value (Id);
-   end Safe_First_Value;
-
-   function Safe_Last_Value (Id : E) return Ureal is
-      Radix       : constant Uint := Machine_Radix_Value (Id);
-      Mantissa    : constant Uint := Machine_Mantissa_Value (Id);
-      Emax        : constant Uint := Safe_Emax_Value (Id);
-      Significand : constant Uint := Radix ** Mantissa - 1;
-      Exponent    : constant Uint := Emax - Mantissa;
-   begin
-      if Radix = 2 then
-         return
-           UR_From_Components
-             (Num   => Significand * 2 ** (Exponent mod 4),
-              Den   => -Exponent / 4,
-              Rbase => 16);
-      else
-         return
-           UR_From_Components
-             (Num => Significand,
-              Den => -Exponent,
-              Rbase => 16);
-      end if;
-   end Safe_Last_Value;
-
    function Scalar_Range (Id : E) return N is
    begin
       return Node20 (Id);
@@ -2745,6 +2620,12 @@ package body Einfo is
           or else Is_Generic_Subprogram (Id));
       return Node24 (Id);
    end Spec_PPC_List;
+
+   function Static_Predicate (Id : E) return N is
+   begin
+      pragma Assert (Is_Discrete_Type (Id));
+      return Node25 (Id);
+   end Static_Predicate;
 
    function Storage_Size_Variable (Id : E) return E is
    begin
@@ -2855,11 +2736,6 @@ package body Einfo is
    begin
       return Flag95 (Id);
    end Uses_Sec_Stack;
-
-   function Vax_Float (Id : E) return B is
-   begin
-      return Is_Floating_Point_Type (Id) and then Float_Rep (Id) = VAX_Native;
-   end Vax_Float;
 
    function Warnings_Off (Id : E) return B is
    begin
@@ -5251,6 +5127,16 @@ package body Einfo is
       Set_Node24 (Id, V);
    end Set_Spec_PPC_List;
 
+   procedure Set_Static_Predicate (Id : E; V : N) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Enumeration_Subtype,
+                       E_Modular_Integer_Subtype,
+                       E_Signed_Integer_Subtype)
+          and then Has_Predicates (Id));
+      Set_Node25 (Id, V);
+   end Set_Static_Predicate;
+
    procedure Set_Storage_Size_Variable (Id : E; V : E) is
    begin
       pragma Assert (Is_Access_Type (Id) or else Is_Task_Type (Id));
@@ -6596,6 +6482,128 @@ package body Einfo is
       end if;
    end Last_Formal;
 
+   function Model_Emin_Value (Id : E) return Uint is
+   begin
+      return Machine_Emin_Value (Id);
+   end Model_Emin_Value;
+
+   -------------------------
+   -- Model_Epsilon_Value --
+   -------------------------
+
+   function Model_Epsilon_Value (Id : E) return Ureal is
+      Radix : constant Ureal := UR_From_Uint (Machine_Radix_Value (Id));
+   begin
+      return Radix ** (1 - Model_Mantissa_Value (Id));
+   end Model_Epsilon_Value;
+
+   --------------------------
+   -- Model_Mantissa_Value --
+   --------------------------
+
+   function Model_Mantissa_Value (Id : E) return Uint is
+   begin
+      return Machine_Mantissa_Value (Id);
+   end Model_Mantissa_Value;
+
+   -----------------------
+   -- Model_Small_Value --
+   -----------------------
+
+   function Model_Small_Value (Id : E) return Ureal is
+      Radix : constant Ureal := UR_From_Uint (Machine_Radix_Value (Id));
+   begin
+      return Radix ** (Model_Emin_Value (Id) - 1);
+   end Model_Small_Value;
+
+   ------------------------
+   -- Machine_Emax_Value --
+   ------------------------
+
+   function Machine_Emax_Value (Id : E) return Uint is
+      Digs : constant Pos := UI_To_Int (Digits_Value (Base_Type (Id)));
+
+   begin
+      case Float_Rep (Id) is
+         when IEEE_Binary =>
+            case Digs is
+               when  1 ..  6 => return Uint_128;
+               when  7 .. 15 => return 2**10;
+               when 16 .. 18 => return 2**14;
+               when others => return No_Uint;
+            end case;
+
+         when VAX_Native =>
+            case Digs is
+               when  1 ..  9 => return 2**7 - 1;
+               when 10 .. 15 => return 2**10 - 1;
+               when others => return No_Uint;
+            end case;
+
+         when AAMP =>
+            return Uint_2 ** Uint_7 - Uint_1;
+      end case;
+   end Machine_Emax_Value;
+
+   ------------------------
+   -- Machine_Emin_Value --
+   ------------------------
+
+   function Machine_Emin_Value (Id : E) return Uint is
+   begin
+      case Float_Rep (Id) is
+         when IEEE_Binary => return Uint_3 - Machine_Emax_Value (Id);
+         when VAX_Native  => return -Machine_Emax_Value (Id);
+         when AAMP        => return -Machine_Emax_Value (Id);
+      end case;
+   end Machine_Emin_Value;
+
+   ----------------------------
+   -- Machine_Mantissa_Value --
+   ----------------------------
+
+   function Machine_Mantissa_Value (Id : E) return Uint is
+      Digs : constant Pos := UI_To_Int (Digits_Value (Base_Type (Id)));
+
+   begin
+      case Float_Rep (Id) is
+         when IEEE_Binary =>
+            case Digs is
+               when  1 ..  6 => return Uint_24;
+               when  7 .. 15 => return UI_From_Int (53);
+               when 16 .. 18 => return Uint_64;
+               when others => return No_Uint;
+            end case;
+
+         when VAX_Native =>
+            case Digs is
+               when  1 ..  6 => return Uint_24;
+               when  7 ..  9 => return UI_From_Int (56);
+               when 10 .. 15 => return UI_From_Int (53);
+               when others => return No_Uint;
+            end case;
+
+         when AAMP =>
+            case Digs is
+               when  1 ..  6 => return Uint_24;
+               when  7 ..  9 => return UI_From_Int (40);
+               when others => return No_Uint;
+            end case;
+      end case;
+   end Machine_Mantissa_Value;
+
+   -------------------------
+   -- Machine_Radix_Value --
+   -------------------------
+
+   function Machine_Radix_Value (Id : E) return U is
+   begin
+      case Float_Rep (Id) is
+         when IEEE_Binary | VAX_Native | AAMP =>
+            return Uint_2;
+      end case;
+   end Machine_Radix_Value;
+
    --------------------
    -- Next_Component --
    --------------------
@@ -6902,6 +6910,52 @@ package body Einfo is
       end if;
    end Root_Type;
 
+   ---------------------
+   -- Safe_Emax_Value --
+   ---------------------
+
+   function Safe_Emax_Value (Id : E) return Uint is
+   begin
+      return Machine_Emax_Value (Id);
+   end Safe_Emax_Value;
+
+   ----------------------
+   -- Safe_First_Value --
+   ----------------------
+
+   function Safe_First_Value (Id : E) return Ureal is
+   begin
+      return -Safe_Last_Value (Id);
+   end Safe_First_Value;
+
+   ---------------------
+   -- Safe_Last_Value --
+   ---------------------
+
+   function Safe_Last_Value (Id : E) return Ureal is
+      Radix       : constant Uint := Machine_Radix_Value (Id);
+      Mantissa    : constant Uint := Machine_Mantissa_Value (Id);
+      Emax        : constant Uint := Safe_Emax_Value (Id);
+      Significand : constant Uint := Radix ** Mantissa - 1;
+      Exponent    : constant Uint := Emax - Mantissa;
+
+   begin
+      if Radix = 2 then
+         return
+           UR_From_Components
+             (Num   => Significand * 2 ** (Exponent mod 4),
+              Den   => -Exponent / 4,
+              Rbase => 16);
+
+      else
+         return
+           UR_From_Components
+             (Num => Significand,
+              Den => -Exponent,
+              Rbase => 16);
+      end if;
+   end Safe_Last_Value;
+
    -----------------
    -- Scope_Depth --
    -----------------
@@ -7197,6 +7251,15 @@ package body Einfo is
          return Id;
       end if;
    end Underlying_Type;
+
+   ---------------
+   -- Vax_Float --
+   ---------------
+
+   function Vax_Float (Id : E) return B is
+   begin
+      return Is_Floating_Point_Type (Id) and then Float_Rep (Id) = VAX_Native;
+   end Vax_Float;
 
    ------------------------
    -- Write_Entity_Flags --
@@ -8427,6 +8490,11 @@ package body Einfo is
          when E_Entry                                      |
               E_Entry_Family                               =>
             Write_Str ("PPC_Wrapper");
+
+         when E_Enumeration_Subtype                        |
+              E_Modular_Integer_Subtype                    |
+              E_Signed_Integer_Subtype                     =>
+            Write_Str ("Static_Predicate");
 
          when others                                       =>
             Write_Str ("Field25??");

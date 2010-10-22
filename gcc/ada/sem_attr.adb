@@ -211,6 +211,12 @@ package body Sem_Attr is
       --  Used for Access, Unchecked_Access, Unrestricted_Access attributes.
       --  Internally, Id distinguishes which of the three cases is involved.
 
+      procedure Bad_Attribute_For_Predicate;
+      --  Output error message for use of a predicate (First, Last, Range) not
+      --  allowed with a type that has predicates. If the type is a generic
+      --  actual, then the message is a warning, and we generate code to raise
+      --  program error with an appropriate reason.
+
       procedure Check_Array_Or_Scalar_Type;
       --  Common procedure used by First, Last, Range attribute to check
       --  that the prefix is a constrained array or scalar type, or a name
@@ -825,6 +831,32 @@ package body Sem_Attr is
             Error_Attr_P ("prefix of % attribute must be aliased");
          end if;
       end Analyze_Access_Attribute;
+
+      ---------------------------------
+      -- Bad_Attribute_For_Predicate --
+      ---------------------------------
+
+      procedure Bad_Attribute_For_Predicate is
+      begin
+         if Has_Predicates (P_Type) then
+            Error_Msg_Name_1 := Aname;
+
+            if Is_Generic_Actual_Type (P_Type) then
+               Error_Msg_F
+                 ("type& has predicates, attribute % not allowed?", P);
+               Error_Msg_F
+                 ("\?Program_Error will be raised at run time", P);
+               Rewrite (N,
+                 Make_Raise_Program_Error (Loc,
+                   Reason => PE_Bad_Attribute_For_Predicate));
+
+            else
+               Error_Msg_F
+                 ("type& has predicates, attribute % not allowed", P);
+               Error_Attr;
+            end if;
+         end if;
+      end Bad_Attribute_For_Predicate;
 
       --------------------------------
       -- Check_Array_Or_Scalar_Type --
@@ -3078,6 +3110,7 @@ package body Sem_Attr is
 
       when Attribute_First =>
          Check_Array_Or_Scalar_Type;
+         Bad_Attribute_For_Predicate;
 
       ---------------
       -- First_Bit --
@@ -3292,6 +3325,7 @@ package body Sem_Attr is
 
       when Attribute_Last =>
          Check_Array_Or_Scalar_Type;
+         Bad_Attribute_For_Predicate;
 
       --------------
       -- Last_Bit --
@@ -3645,6 +3679,7 @@ package body Sem_Attr is
       ---------
 
       when Attribute_Old =>
+
          --  The attribute reference is a primary. If expressions follow, the
          --  attribute reference is an indexable object, so rewrite the node
          --  accordingly.
@@ -3895,6 +3930,7 @@ package body Sem_Attr is
 
       when Attribute_Range =>
          Check_Array_Or_Scalar_Type;
+         Bad_Attribute_For_Predicate;
 
          if Ada_Version = Ada_83
            and then Is_Scalar_Type (P_Type)

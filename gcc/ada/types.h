@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -361,22 +361,23 @@ typedef Int Mechanism_Type;
 #define PE_Accessibility_Check_Failed      15
 #define PE_Address_Of_Intrinsic            16
 #define PE_All_Guards_Closed               17
-#define PE_Current_Task_In_Entry_Body      18
-#define PE_Duplicated_Entry_Address        19
-#define PE_Explicit_Raise                  20
-#define PE_Finalize_Raised_Exception       21
-#define PE_Implicit_Return                 22
-#define PE_Misaligned_Address_Value        23
-#define PE_Missing_Return                  24
-#define PE_Overlaid_Controlled_Object      25
-#define PE_Potentially_Blocking_Operation  26
-#define PE_Stubbed_Subprogram_Called       27
-#define PE_Unchecked_Union_Restriction     28
-#define PE_Non_Transportable_Actual        29
+#define PE_Bad_Attribute_For_Predicate     18
+#define PE_Current_Task_In_Entry_Body      19
+#define PE_Duplicated_Entry_Address        20
+#define PE_Explicit_Raise                  21
+#define PE_Finalize_Raised_Exception       22
+#define PE_Implicit_Return                 23
+#define PE_Misaligned_Address_Value        24
+#define PE_Missing_Return                  25
+#define PE_Overlaid_Controlled_Object      26
+#define PE_Potentially_Blocking_Operation  27
+#define PE_Stubbed_Subprogram_Called       28
+#define PE_Unchecked_Union_Restriction     29
+#define PE_Non_Transportable_Actual        30
 
-#define SE_Empty_Storage_Pool              30
-#define SE_Explicit_Raise                  31
-#define SE_Infinite_Recursion              32
-#define SE_Object_Too_Large                33
+#define SE_Empty_Storage_Pool              31
+#define SE_Explicit_Raise                  32
+#define SE_Infinite_Recursion              33
+#define SE_Object_Too_Large                34
 
-#define LAST_REASON_CODE                   33
+#define LAST_REASON_CODE                   34

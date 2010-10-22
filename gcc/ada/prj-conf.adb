@@ -39,6 +39,7 @@ with Prj;      use Prj;
 with Snames;   use Snames;
 
 with Ada.Directories; use Ada.Directories;
+with Ada.Exceptions;  use Ada.Exceptions;
 
 with GNAT.Case_Util; use GNAT.Case_Util;
 with GNAT.HTable;    use GNAT.HTable;
@@ -66,6 +67,10 @@ package body Prj.Conf is
    --  Stores the runtime names for the various languages. This is in general
    --  set from a --RTS command line option.
 
+   -----------------------
+   -- Local_Subprograms --
+   -----------------------
+
    procedure Add_Attributes
      (Project_Tree : Project_Tree_Ref;
       Conf_Decl    : Declarations;
@@ -76,10 +81,6 @@ package body Prj.Conf is
    --  For string list values, prepend the value in the user declarations with
    --  the value in the config declarations.
 
-   function Locate_Config_File (Name : String) return String_Access;
-   --  Search for Name in the config files directory. Return full path if
-   --  found, or null otherwise
-
    function Check_Target
      (Config_File        : Prj.Project_Id;
       Autoconf_Specified : Boolean;
@@ -89,7 +90,16 @@ package body Prj.Conf is
    --  Target should be set to the empty string when the user did not specify
    --  a target. If the target in the configuration file is invalid, this
    --  function will raise Invalid_Config with an appropriate message.
-   --  Autoconf_Specified should be set to True if the user has used --autoconf
+   --  Autoconf_Specified should be set to True if the user has used
+   --  autoconf.
+
+   function Locate_Config_File (Name : String) return String_Access;
+   --  Search for Name in the config files directory. Return full path if
+   --  found, or null otherwise.
+
+   procedure Raise_Invalid_Config (Msg : String);
+   pragma No_Return (Raise_Invalid_Config);
+   --  Raises exception Invalid_Config with given message
 
    --------------------
    -- Add_Attributes --
@@ -542,13 +552,12 @@ package body Prj.Conf is
 
          else
             if Tgt_Name /= No_Name then
-               raise Invalid_Config
-                 with "invalid target name """
-                   & Get_Name_String (Tgt_Name) & """ in configuration";
-
+               Raise_Invalid_Config
+                 ("invalid target name """
+                  & Get_Name_String (Tgt_Name) & """ in configuration");
             else
-               raise Invalid_Config
-                 with "no target specified in configuration file";
+               Raise_Invalid_Config
+                 ("no target specified in configuration file");
             end if;
          end if;
       end if;
@@ -576,13 +585,17 @@ package body Prj.Conf is
       Flags                      : Processing_Flags;
       On_Load_Config             : Config_File_Hook := null)
    is
+
+      At_Least_One_Compiler_Command : Boolean := False;
+      --  Set to True if at least one attribute Ide'Compiler_Command is
+      --  specified for one language of the system.
+
       function Default_File_Name return String;
       --  Return the name of the default config file that should be tested
 
       procedure Do_Autoconf;
-      --  Generate a new config file through gprconfig.
-      --  In case of error, this raises the Invalid_Config exception with an
-      --  appropriate message
+      --  Generate a new config file through gprconfig. In case of error, this
+      --  raises the Invalid_Config exception with an appropriate message
 
       function Get_Config_Switches return Argument_List_Access;
       --  Return the --config switches to use for gprconfig
@@ -617,6 +630,7 @@ package body Prj.Conf is
 
             declare
                T : constant String := Tmp.all;
+
             begin
                Free (Tmp);
 
@@ -804,6 +818,8 @@ package body Prj.Conf is
                     new String'(Config_Command & ",," & Runtime_Name);
 
                else
+                  At_Least_One_Compiler_Command := True;
+
                   declare
                      Compiler_Command : constant String :=
                        Get_Name_String (Variable.Value);
@@ -850,8 +866,8 @@ package body Prj.Conf is
          Gprconfig_Path := Locate_Exec_On_Path (Gprconfig_Name);
 
          if Gprconfig_Path = null then
-            raise Invalid_Config
-              with "could not locate gprconfig for auto-configuration";
+            Raise_Invalid_Config
+              ("could not locate gprconfig for auto-configuration");
          end if;
 
          --  First, find the object directory of the user's project
@@ -910,16 +926,16 @@ package body Prj.Conf is
 
                exception
                   when others =>
-                     raise Invalid_Config
-                       with "could not create object directory " & Obj_Dir;
+                     Raise_Invalid_Config
+                       ("could not create object directory " & Obj_Dir);
                end;
             end if;
 
             if not Is_Directory (Obj_Dir) then
                case Flags.Require_Obj_Dirs is
                   when Error =>
-                     raise Invalid_Config
-                       with "object directory " & Obj_Dir & " does not exist";
+                     Raise_Invalid_Config
+                       ("object directory " & Obj_Dir & " does not exist");
                   when Warning =>
                      Prj.Err.Error_Msg
                        (Flags,
@@ -975,7 +991,14 @@ package body Prj.Conf is
                Arg_Last := 3;
             else
                if Target_Name = "" then
-                  Args (4) := new String'("--target=" & Normalized_Hostname);
+                  if At_Least_One_Compiler_Command then
+                     Args (4) := new String'("--target=all");
+
+                  else
+                     Args (4) :=
+                       new String'("--target=" & Normalized_Hostname);
+                  end if;
+
                else
                   Args (4) := new String'("--target=" & Target_Name);
                end if;
@@ -1024,8 +1047,8 @@ package body Prj.Conf is
             Config_File_Path := Locate_Config_File (Args (3).all);
 
             if Config_File_Path = null then
-               raise Invalid_Config
-                 with "could not create " & Args (3).all;
+               Raise_Invalid_Config
+                 ("could not create " & Args (3).all);
             end if;
 
             for F in Args'Range loop
@@ -1051,9 +1074,9 @@ package body Prj.Conf is
          if (not Allow_Automatic_Generation) and then
             Config_File_Name /= ""
          then
-            raise Invalid_Config
-              with "could not locate main configuration project "
-                & Config_File_Name;
+            Raise_Invalid_Config
+              ("could not locate main configuration project "
+               & Config_File_Name);
          end if;
       end if;
 
@@ -1067,8 +1090,8 @@ package body Prj.Conf is
 
             --  There is no gprconfig on VMS
 
-            raise Invalid_Config
-              with "could not locate any configuration project file";
+            Raise_Invalid_Config
+              ("could not locate any configuration project file");
 
          else
             --  This might raise an Invalid_Config exception
@@ -1119,9 +1142,9 @@ package body Prj.Conf is
       if Config_Project_Node = Empty_Node
         or else Config = No_Project
       then
-         raise Invalid_Config
-           with "processing of configuration project """
-             & Config_File_Path.all & """ failed";
+         Raise_Invalid_Config
+           ("processing of configuration project """
+            & Config_File_Path.all & """ failed");
       end if;
 
       --  Check that the target of the configuration file is the one the user
@@ -1334,6 +1357,15 @@ package body Prj.Conf is
          Main_Project := No_Project;
       end if;
    end Process_Project_And_Apply_Config;
+
+   --------------------------
+   -- Raise_Invalid_Config --
+   --------------------------
+
+   procedure Raise_Invalid_Config (Msg : String) is
+   begin
+      Raise_Exception (Invalid_Config'Identity, Msg);
+   end Raise_Invalid_Config;
 
    ----------------------
    -- Runtime_Name_For --
