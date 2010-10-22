@@ -901,11 +901,67 @@ package body Sem_Prag is
             Error_Pragma_Arg ("argument for pragma% must be local name", Argx);
          end if;
 
-         if Is_Entity_Name (Argx)
-           and then Scope (Entity (Argx)) /= Current_Scope
-         then
-            Error_Pragma_Arg
-              ("pragma% argument must be in same declarative part", Arg);
+         --  No further check required if not an entity name
+
+         if not Is_Entity_Name (Argx) then
+            null;
+
+         else
+            declare
+               OK   : Boolean;
+               Ent  : constant Entity_Id := Entity (Argx);
+               Scop : constant Entity_Id := Scope (Ent);
+            begin
+               --  Case of a pragma applied to a compilation unit: pragma must
+               --  occur immediately after the program unit in the compilation.
+
+               if Is_Compilation_Unit (Ent) then
+                  declare
+                     Decl : constant Node_Id := Unit_Declaration_Node (Ent);
+                  begin
+                     --  Case of pragma placed immediately after spec
+
+                     if Parent (N) = Aux_Decls_Node (Parent (Decl)) then
+                        OK := True;
+
+                     --  Case of pragma placed immediately after body
+
+                     elsif Nkind (Decl) = N_Subprogram_Declaration
+                             and then Present (Corresponding_Body (Decl))
+                     then
+                        OK := Parent (N) =
+                                Aux_Decls_Node
+                                  (Parent (Unit_Declaration_Node
+                                             (Corresponding_Body (Decl))));
+
+                     --  All other cases are illegal
+
+                     else
+                        OK := False;
+                     end if;
+                  end;
+
+               --  Special restricted placement rule from 10.2.1(11.8/2)
+
+               elsif Is_Generic_Formal (Ent)
+                       and then Prag_Id = Pragma_Preelaborable_Initialization
+               then
+                  OK := List_Containing (N) =
+                          Generic_Formal_Declarations
+                            (Unit_Declaration_Node (Scop));
+
+               --  Default case, just check that the pragma occurs in the scope
+               --  of the entity denoted by the name.
+
+               else
+                  OK := Current_Scope = Scop;
+               end if;
+
+               if not OK then
+                  Error_Pragma_Arg
+                    ("pragma% argument must be in same declarative part", Arg);
+               end if;
+            end;
          end if;
       end Check_Arg_Is_Local_Name;
 
@@ -10985,11 +11041,15 @@ package body Sem_Prag is
             Check_First_Subtype (Arg1);
             Ent := Entity (Get_Pragma_Arg (Arg1));
 
-            if not Is_Private_Type (Ent)
-              and then not Is_Protected_Type (Ent)
+            if not (Is_Private_Type (Ent)
+                      or else
+                    Is_Protected_Type (Ent)
+                      or else
+                    (Is_Generic_Type (Ent) and then Is_Derived_Type (Ent)))
             then
                Error_Pragma_Arg
-                 ("pragma % can only be applied to private or protected type",
+                 ("pragma % can only be applied to private, formal derived or "
+                  & "protected type",
                   Arg1);
             end if;
 

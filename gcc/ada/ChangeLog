@@ -1,3 +1,12 @@
+2010-10-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_prag.adb, sem_ch12.adb, sem_util.adb, sem_util.ads
+	(Is_Generic_Formal): Move from body of Sem_Ch12 to Sem_Util.
+	(Check_Arg_Is_Local_Name): Fix check in the case of a pragma appearing
+	immediately after a library unit.
+	(Analyze_Pragma, case Preelaborable_Initialization): Pragma may apply to
+	a formal derived type.
+
 2010-10-22  Geert Bosch  <bosch@adacore.com>
 
 	* gcc-interface/Make-lang.in: Remove ttypef.ads
