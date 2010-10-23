@@ -2456,6 +2456,22 @@ extract_range_from_binary_expr (value_range_t *vr,
 	    }
 	}
 
+      /* For divisions, if flag_non_call_exceptions is true, we must
+	 not eliminate a division by zero.  */
+      if ((code == TRUNC_DIV_EXPR
+	   || code == FLOOR_DIV_EXPR
+	   || code == CEIL_DIV_EXPR
+	   || code == EXACT_DIV_EXPR
+	   || code == ROUND_DIV_EXPR)
+	  && cfun->can_throw_non_call_exceptions
+	  && (vr1.type != VR_RANGE
+	      || symbolic_range_p (&vr1)
+	      || range_includes_zero_p (&vr1)))
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+
       /* For divisions, if op0 is VR_RANGE, we can deduce a range
 	 even if op1 is VR_VARYING, VR_ANTI_RANGE, symbolic or can
 	 include 0.  */

@@ -1,3 +1,9 @@
+2010-10-23  Ian Lance Taylor  <iant@google.com>
+
+	* tree-vrp.c (extract_range_from_binary_expr): If
+	flag_non_call_exceptions don't eliminate division by zero.
+	* simplify-rtx.c (simplify_binary_operation_1): Likewise.
+
 2010-10-23  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* cppbuiltin.c (define_builtin_macros_for_type_sizes): Define
