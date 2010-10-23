@@ -99,14 +99,6 @@ extern int arc_cpu_type;
    numbered.  */
 #define WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN)
 
-/* Define this to set the endianness to use in libgcc2.c, which can
-   not depend on target_flags.  */
-#ifdef __big_endian__
-#define LIBGCC2_WORDS_BIG_ENDIAN 1
-#else
-#define LIBGCC2_WORDS_BIG_ENDIAN 0
-#endif
-
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD 4
 

@@ -148,12 +148,6 @@ extern enum processor_type ia64_tune;
 
 #define WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
 
-#if defined(__BIG_ENDIAN__)
-#define LIBGCC2_WORDS_BIG_ENDIAN 1
-#else
-#define LIBGCC2_WORDS_BIG_ENDIAN 0
-#endif
-
 #define UNITS_PER_WORD 8
 
 #define POINTER_SIZE (TARGET_ILP32 ? 32 : 64)

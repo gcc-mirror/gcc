@@ -516,14 +516,6 @@ extern enum sh_divide_strategy_e sh_div_strategy;
    numbered.  */
 #define WORDS_BIG_ENDIAN (TARGET_LITTLE_ENDIAN == 0)
 
-/* Define this to set the endianness to use in libgcc2.c, which can
-   not depend on target_flags.  */
-#if defined(__LITTLE_ENDIAN__)
-#define LIBGCC2_WORDS_BIG_ENDIAN 0
-#else
-#define LIBGCC2_WORDS_BIG_ENDIAN 1
-#endif
-
 #define MAX_BITS_PER_WORD 64
 
 /* Width in bits of an `int'.  We want just 32-bits, even if words are

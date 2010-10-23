@@ -103,14 +103,6 @@
 #define BYTES_BIG_ENDIAN       (TARGET_LITTLE_ENDIAN == 0)
 #define WORDS_BIG_ENDIAN       (TARGET_LITTLE_ENDIAN == 0)
 
-/* Define this to set the endianness to use in libgcc2.c, which can
-   not depend on target_flags.  */
-#if defined(__scorele__)
-#define LIBGCC2_WORDS_BIG_ENDIAN       0
-#else
-#define LIBGCC2_WORDS_BIG_ENDIAN       1
-#endif
-
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD                 4
 

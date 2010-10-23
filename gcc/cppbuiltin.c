@@ -138,6 +138,24 @@ define_builtin_macros_for_type_sizes (cpp_reader *pfile)
   cpp_define_formatted (pfile, "__BIGGEST_ALIGNMENT__=%d",
 			BIGGEST_ALIGNMENT / BITS_PER_UNIT);
 
+  /* Define constants useful for implementing endian.h.  */
+  cpp_define (pfile, "__ORDER_LITTLE_ENDIAN__=1234");
+  cpp_define (pfile, "__ORDER_BIG_ENDIAN__=4321");
+  cpp_define (pfile, "__ORDER_PDP_ENDIAN__=3412");
+
+  if (WORDS_BIG_ENDIAN == BYTES_BIG_ENDIAN)
+    cpp_define_formatted (pfile, "__BYTE_ORDER__=%s",
+			  (WORDS_BIG_ENDIAN
+			   ? "__ORDER_BIG_ENDIAN__"
+			   : "__ORDER_LITTLE_ENDIAN__"));
+  else
+    {
+      /* Assert that we're only dealing with the PDP11 case.  */
+      gcc_assert (!BYTES_BIG_ENDIAN && WORDS_BIG_ENDIAN);
+
+      cpp_define (pfile, "__BYTE_ORDER__=__ORDER_PDP_ENDIAN__");
+    }
+
   /* ptr_type_node can't be used here since ptr_mode is only set when
      toplev calls backend_init which is not done with -E switch.  */
   cpp_define_formatted (pfile, "__SIZEOF_POINTER__=%d",

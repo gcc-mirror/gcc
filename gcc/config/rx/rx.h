@@ -96,12 +96,6 @@ extern enum rx_cpu_types  rx_cpu_type;
 #define BYTES_BIG_ENDIAN 		TARGET_BIG_ENDIAN_DATA
 #define WORDS_BIG_ENDIAN 		TARGET_BIG_ENDIAN_DATA
 
-#ifdef __RX_BIG_ENDIAN__
-#define LIBGCC2_WORDS_BIG_ENDIAN	1
-#else
-#define LIBGCC2_WORDS_BIG_ENDIAN	0
-#endif
-
 #define UNITS_PER_WORD 			4
 
 #define INT_TYPE_SIZE			32
