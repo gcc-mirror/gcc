@@ -1,3 +1,8 @@
+2010-10-23  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.c-torture/execute/20101011-1.c: New test.
+	* gcc.c-torture/execute/20101011-1.x: New test driver.
+
 2010-10-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46122
