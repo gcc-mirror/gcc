@@ -1,3 +1,13 @@
+2010-10-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/march-generic.c: Skip for -march in multilib options.
+	* gcc.target/i386/isa-9.c: Skip for -march other than
+	-march=amdfam10 in multilib options.
+	* gcc.target/i386/pr42589.c: Skip for -march other than
+	-march=i486 in multilib options.
+	* gcc.target/i386/sse-19.c: Add -march=x86-64 option and skip for
+	other -march in multilib options.
+
 2010-10-23  Jie Zhang  <jie@codesourcery.com>
 
 	PR rtl-optimization/37360
