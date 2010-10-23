@@ -1,3 +1,35 @@
+2010-10-23  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cppbuiltin.c (define_builtin_macros_for_type_sizes): Define
+	__BYTE_ORDER__, __ORDER_LITTLE_ENDIAN__, __ORDER_BIG_ENDIAN__, and
+	__ORDER_PDP_ENDIAN__.
+	* libgcc2.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	(struct DWstruct): Define based on __BYTE_ORDER__.
+	* config/fixed-bit.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	(struct INTstruct): Define based on __BYTE_ORDER__.
+	* config/dfp-bit.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	(LIBGCC2_FLOAT_WORDS_BIG_ENDIAN): Test __BYTE_ORDER__.
+	* system.h (LIBGCC2_WORDS_BIG_ENDIAN): Poison identifier.
+	* config/arc/arc.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* config/arm/arm.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* config/ia64/ia64.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* config/iq2000/iq2000.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* config/lm32/lm32.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* config/m32r/m32r.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* config/mcore/mcore.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* config/mep/mep.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* config/mips/mips.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* config/rs6000/sysv4.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* config/rx/rx.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* config/score/score.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* config/sh/sh.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* config/sparc/sparc.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* config/xtensa/xtensa.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* doc/tm.texi.in (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	* doc/tm.texi: Regenerate.
+	* doc/cpp.texi (__BYTE_ORDER__, __ORDER_LITTLE_ENDIAN__): Document.
+	(__ORDER_BIG_ENDIAN__, __ORDER_PDP_ENDIAN__): Likewise.
+
 2010-10-23  Jie Zhang  <jie@codesourcery.com>
 
 	PR rtl-optimization/37360

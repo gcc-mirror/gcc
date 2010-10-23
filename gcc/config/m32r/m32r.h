@@ -319,12 +319,6 @@ extern enum m32r_sdata m32r_sdata;
    numbered.  */
 #define WORDS_BIG_ENDIAN (TARGET_LITTLE_ENDIAN == 0)
 
-/* Define this macro if WORDS_BIG_ENDIAN is not constant.  This must
-   be a constant value with the same meaning as WORDS_BIG_ENDIAN,
-   which will be used only when compiling libgcc2.c.  Typically the
-   value will be set based on preprocessor defines.  */
-/*#define LIBGCC2_WORDS_BIG_ENDIAN 1*/
-
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD 4
 

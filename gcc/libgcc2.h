@@ -35,14 +35,6 @@ extern void __clear_cache (char *, char *);
 extern void __eprintf (const char *, const char *, unsigned int, const char *)
   __attribute__ ((__noreturn__));
 
-/* Permit the tm.h file to select the endianness to use just for this
-   file.  This is used when the endianness is determined when the
-   compiler is run.  */
-
-#ifndef LIBGCC2_WORDS_BIG_ENDIAN
-#define LIBGCC2_WORDS_BIG_ENDIAN WORDS_BIG_ENDIAN
-#endif
-
 #ifndef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE LONG_DOUBLE_TYPE_SIZE
 #endif
@@ -407,9 +399,9 @@ extern TCtype __multc3 (TFtype, TFtype, TFtype, TFtype);
 #define int bogus_type
 
 /* DWstructs are pairs of Wtype values in the order determined by
-   LIBGCC2_WORDS_BIG_ENDIAN.  */
+   __BYTE_ORDER__.  */
 
-#if LIBGCC2_WORDS_BIG_ENDIAN
+#if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
   struct DWstruct {Wtype high, low;};
 #else
   struct DWstruct {Wtype low, high;};

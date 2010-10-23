@@ -582,14 +582,6 @@ extern struct sparc_cpu_select sparc_select[];
    numbered.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* Define this to set the endianness to use in libgcc2.c, which can
-   not depend on target_flags.  */
-#if defined (__LITTLE_ENDIAN__) || defined(__LITTLE_ENDIAN_DATA__)
-#define LIBGCC2_WORDS_BIG_ENDIAN 0
-#else
-#define LIBGCC2_WORDS_BIG_ENDIAN 1
-#endif
-
 #define MAX_BITS_PER_WORD	64
 
 /* Width of a word, in units (bytes).  */

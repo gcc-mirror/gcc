@@ -2265,6 +2265,30 @@ Defined to the number of bytes of the C standard data types: @code{int},
 @code{double}, @code{long double}, @code{size_t}, @code{wchar_t}, @code{wint_t}
 and @code{ptrdiff_t}.
 
+@item __BYTE_ORDER__
+@itemx __ORDER_LITTLE_ENDIAN__
+@itemx __ORDER_BIG_ENDIAN__
+@itemx __ORDER_PDP_ENDIAN__
+@code{__BYTE_ORDER__} is defined to one of the values
+@code{__ORDER_LITTLE_ENDIAN__}, @code{__ORDER_BIG_ENDIAN__}, or
+@code{__ORDER_PDP_ENDIAN__} to reflect the layout of multi-byte and
+multi-word quantities in memory.  If @code{__BYTE_ORDER__} is equal to
+@code{__ORDER_LITTLE_ENDIAN__} or @code{__ORDER_BIG_ENDIAN__}, then
+multi-byte and multi-word quantities are laid out identically: the
+byte (word) at the lowest address is the least significant or most
+significant byte (word) of the quantity, respectively.  If
+@code{__BYTE_ORDER__} is equal to @code{__ORDER_PDP_ENDIAN__}, then
+bytes in 16-bit words are laid out in a little-endian fashion, whereas
+the 16-bit subwords of a 32-bit quantity are laid out in big-endian
+fashion.
+
+You should use these macros for testing like this:
+
+@smallexample
+/* @r{Test for a little-endian machine} */
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+@end smallexample
+
 @item __DEPRECATED
 This macro is defined, with value 1, when compiling a C++ source file
 with warnings about deprecated constructs enabled.  These warnings are

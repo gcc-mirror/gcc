@@ -94,13 +94,6 @@ extern unsigned xtensa_current_frame_size;
 #define EXTRA_SPECS							\
   { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },
 
-#ifdef __XTENSA_EB__
-#define LIBGCC2_WORDS_BIG_ENDIAN 1
-#else
-#define LIBGCC2_WORDS_BIG_ENDIAN 0
-#endif
-
-
 /* Target machine storage layout */
 
 /* Define this if most significant bit is lowest numbered
