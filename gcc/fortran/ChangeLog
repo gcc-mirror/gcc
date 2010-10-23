@@ -1,3 +1,8 @@
+2010-10-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46122
+	* expr.c (gfc_check_vardef_context): Fix PROTECTED check.
+
 2010-10-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46060
