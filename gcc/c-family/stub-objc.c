@@ -359,6 +359,13 @@ objc_add_dynamic_declaration (location_t ARG_UNUSED (start_locus),
 {
 }
 
+const char *
+objc_maybe_printable_name (tree ARG_UNUSED (decl), 
+			   int ARG_UNUSED (v))
+{
+  return NULL;
+}
+
 tree
 objc_build_throw_stmt (location_t ARG_UNUSED (loc), tree ARG_UNUSED (expr))
 {

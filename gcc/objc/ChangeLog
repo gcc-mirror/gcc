@@ -1,3 +1,15 @@
+2010-10-23  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (OBJC_GEN_METHOD_LABEL): Updated comments.
+	(objc_demangle): Return NULL if demangling can not be done because
+	the string to demangle is not an Objective-C mangled method name.
+	Be smarter in demangling method names so that at least for methods
+	with no arguments we are able to almost always demangle '_' correctly.
+	Updated comments.
+	(objc_maybe_printable_name): New.
+	(objc_printable_name): Call objc_maybe_printable_name.  If it
+	returns NULL, call cxx_printable_name in Objective-C++.
+
 2010-10-21  Iain Sandoe  <iains@gcc.gnu.org>
 
 	Based on the CFString implementation in FSF apple/trunk branch.
