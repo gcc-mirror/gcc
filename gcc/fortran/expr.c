@@ -4400,7 +4400,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, const char* context)
     }
 
   /* PROTECTED and use-associated.  */
-  if (sym->attr.is_protected && sym->attr.use_assoc)
+  if (sym->attr.is_protected && sym->attr.use_assoc  && check_intentin)
     {
       if (pointer && is_pointer)
 	{
