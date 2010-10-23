@@ -1,3 +1,20 @@
+2010-10-23  Jie Zhang  <jie@codesourcery.com>
+
+	PR rtl-optimization/37360
+	* config/mips/mips.c (cached_can_issue_more): New local variable.
+	(mips_sched_reorder_1): New.
+	(mips_sched_reorder): Use mips_sched_reorder_1.
+	(mips_sched_reorder2): New.
+	(mips_variable_issue): Set cached_can_issue_more.
+	(TARGET_SCHED_REORDER2): Define to mips_sched_reorder2
+	instead of mips_sched_reorder.
+
+	Revert
+	2008-09-09  Andrey Belevantsev  <abel@ispras.ru>
+	PR rtl-optimization/37360
+	* haifa-sched.c (max_issue): Do not assert that we never issue more
+	insns than issue_rate.  Add comment.
+
 2010-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_variable_sized_compare): Preserve the source
