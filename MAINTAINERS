@@ -32,7 +32,7 @@ Mark Mitchell					mark@codesourcery.com
 Diego Novillo					dnovillo@google.com
 Bernd Schmidt					bernds@codesourcery.com
 Ian Lance Taylor				ian@airs.com
-Jim Wilson					wilson@codesourcery.com
+Jim Wilson					wilson@tuliptree.org
 
 Note that while global reviewers can approve changes to any part of
 the compiler or associated libraries, they still need approval for
@@ -61,7 +61,7 @@ hppa port		John David Anglin	dave.anglin@nrc-cnrc.gc.ca
 i386 port		Richard Henderson	rth@redhat.com
 i386 port		Jan Hubicka		jh@suse.cz
 i386 port		Uros Bizjak		ubizjak@gmail.com
-ia64 port		Jim Wilson		wilson@codesourcery.com
+ia64 port		Jim Wilson		wilson@tuliptree.org
 ia64 port		Steve Ellcey		sje@cup.hp.com
 iq2000 port		Nick Clifton		nickc@redhat.com
 m32c port		DJ Delorie		dj@redhat.com
@@ -164,7 +164,7 @@ libobjc			Nicola Pero		nicola.pero@meta-innovation.com
 libobjc			Andrew Pinski		pinskia@gmail.com
 loop discovery		Michael Hayes		m.hayes@elec.canterbury.ac.nz
 soft-fp			Joseph Myers		joseph@codesourcery.com
-scheduler (+ haifa)	Jim Wilson		wilson@codesourcery.com
+scheduler (+ haifa)	Jim Wilson		wilson@tuliptree.org
 scheduler (+ haifa)	Michael Meissner	gnu@the-meissners.org
 scheduler (+ haifa)	Jeff Law		law@redhat.com
 scheduler (+ haifa)	Vladimir Makarov	vmakarov@redhat.com
@@ -172,7 +172,7 @@ modulo-scheduler	Ayal Zaks		zaks@il.ibm.com
 reorg			Jeff Law		law@redhat.com
 caller-save.c		Jeff Law		law@redhat.com
 callgraph		Jan Hubicka		jh@suse.cz
-debugging code		Jim Wilson		wilson@codesourcery.com
+debugging code		Jim Wilson		wilson@tuliptree.org
 dwarf debugging code	Jason Merrill		jason@redhat.com
 c++ runtime libs	Paolo Carlini		paolo.carlini@oracle.com
 c++ runtime libs	Gabriel Dos Reis	gdr@integrable-solutions.net
