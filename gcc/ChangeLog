@@ -1,3 +1,13 @@
+2010-10-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c (n_switches_alloc_debug_check): New.
+	(set_option_handlers): New.
+	(process_command): Use set_option_handlers.
+	(do_self_spec): Pass spec-generated options through option
+	handlers.
+	(main): Also save and restore n_switches_alloc when swapping
+	switch arrays.
+
 2010-10-23  Richard Henderson  <rth@redhat.com>
 
 	PR target/46144
