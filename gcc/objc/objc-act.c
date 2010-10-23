@@ -75,9 +75,14 @@ bool in_late_binary_op = false;
 #endif  /* OBJCPLUS */
 
 /* This is the default way of generating a method name.  */
-/* I am not sure it is really correct.
-   Perhaps there's a danger that it will make name conflicts
-   if method names contain underscores. -- rms.  */
+/* This has the problem that "test_method:argument:" and
+   "test:method_argument:" will generate the same name
+   ("_i_Test__test_method_argument_" for an instance method of the
+   class "Test"), so you can't have them both in the same class!
+   Moreover, the demangling (going from
+   "_i_Test__test_method_argument" back to the original name) is
+   undefined because there are two correct ways of demangling the
+   name.  */
 #ifndef OBJC_GEN_METHOD_LABEL
 #define OBJC_GEN_METHOD_LABEL(BUF, IS_INST, CLASS_NAME, CAT_NAME, SEL_NAME, NUM) \
   do {					    \
@@ -10615,7 +10620,64 @@ dump_interface (FILE *fp, tree chain)
   fprintf (fp, "@end\n");
 }
 
-/* Demangle function for Objective-C */
+#if 0
+/* Produce the pretty printing for an Objective-C method.  This is
+   currently unused, but could be handy while reorganizing the pretty
+   printing to be more robust.  */
+static const char *
+objc_pretty_print_method (bool is_class_method,
+			  const char *class_name,
+			  const char *category_name,
+			  const char *selector)
+{
+  if (category_name)
+    {
+      char *result = XNEWVEC (char, strlen (class_name) + strlen (category_name) 
+			      + strlen (selector) + 7);
+
+      if (is_class_method)
+	sprintf (result, "+[%s(%s) %s]", class_name, category_name, selector);
+      else
+	sprintf (result, "-[%s(%s) %s]", class_name, category_name, selector);
+
+      return result;
+    }
+  else
+    {
+      char *result = XNEWVEC (char, strlen (class_name)
+			      + strlen (selector) + 5);
+
+      if (is_class_method)
+	sprintf (result, "+[%s %s]", class_name, selector);
+      else
+	sprintf (result, "-[%s %s]", class_name, selector);
+
+      return result;      
+    }
+}
+#endif
+
+/* Demangle function for Objective-C.  Attempt to demangle the
+   function name associated with a method (eg, going from
+   "_i_NSObject__class" to "-[NSObject class]"); usually for the
+   purpose of pretty printing or error messages.  Return the demangled
+   name, or NULL if the string is not an Objective-C mangled method
+   name.
+
+   Because of how the mangling is done, any method that has a '_' in
+   its original name is at risk of being demangled incorrectly.  In
+   some cases there are multiple valid ways to demangle a method name
+   and there is no way we can decide.
+
+   TODO: objc_demangle() can't always get it right; the right way to
+   get this correct for all method names would be to store the
+   Objective-C method name somewhere in the function decl.  Then,
+   there is no demangling to do; we'd just pull the method name out of
+   the decl.  As an additional bonus, when printing error messages we
+   could check for such a method name, and if we find it, we know the
+   function is actually an Objective-C method and we could print error
+   messages saying "In method '+[NSObject class]" instead of "In
+   function '+[NSObject class]" as we do now.  */
 static const char *
 objc_demangle (const char *mangled)
 {
@@ -10638,7 +10700,7 @@ objc_demangle (const char *mangled)
       if (cp == NULL)
 	{
 	  free(demangled);      /* not mangled name */
-	  return mangled;
+	  return NULL;
 	}
       if (cp[1] == '_')  /* easy case: no category name */
 	{
@@ -10652,29 +10714,104 @@ objc_demangle (const char *mangled)
 	  if (cp == 0)
 	    {
 	      free(demangled);    /* not mangled name */
-	      return mangled;
+	      return NULL;
 	    }
 	  *cp++ = ')';
 	  *cp++ = ' ';            /* overwriting 1st char of method name... */
 	  strcpy(cp, mangled + (cp - demangled)); /* get it back */
 	}
+      /* Now we have the method name.  We need to generally replace
+	 '_' with ':' but trying to preserve '_' if it could only have
+	 been in the mangled string because it was already in the
+	 original name.  In cases where it's ambiguous, we assume that
+	 any '_' originated from a ':'.  */
+
+      /* Initial '_'s in method name can't have been generating by
+	 converting ':'s.  Skip them.  */
       while (*cp && *cp == '_')
-	cp++;                   /* skip any initial underbars in method name */
-      for (; *cp; cp++)
-	if (*cp == '_')
-	  *cp = ':';            /* replace remaining '_' with ':' */
+	cp++;
+
+      /* If the method name does not end with '_', then it has no
+	 arguments and there was no replacement of ':'s with '_'s
+	 during mangling.  Check for that case, and skip any
+	 replacement if so.  This at least guarantees that methods
+	 with no arguments are always demangled correctly (unless the
+	 original name ends with '_').  */
+      if (*(mangled + strlen (mangled) - 1) != '_')
+	{
+	  /* Skip to the end.  */
+	  for (; *cp; cp++)
+	    ;
+	}
+      else
+	{
+	  /* Replace remaining '_' with ':'.  This may get it wrong if
+	     there were '_'s in the original name.  In most cases it
+	     is impossible to disambiguate.  */
+	  for (; *cp; cp++)
+	    if (*cp == '_')
+	      *cp = ':';         
+	}
       *cp++ = ']';              /* closing right brace */
       *cp++ = 0;                /* string terminator */
       return demangled;
     }
   else
-    return mangled;             /* not an objc mangled name */
+    return NULL;             /* not an objc mangled name */
 }
 
+/* Try to pretty-print a decl.  If the 'decl' is an Objective-C
+   specific decl, return the printable name for it.  If not, return
+   NULL.  */
 const char *
-objc_printable_name (tree decl, int kind ATTRIBUTE_UNUSED)
+objc_maybe_printable_name (tree decl, int v ATTRIBUTE_UNUSED)
 {
-  return objc_demangle (IDENTIFIER_POINTER (DECL_NAME (decl)));
+  const char *decl_name = IDENTIFIER_POINTER (DECL_NAME (decl));  
+
+  switch (TREE_CODE (decl))
+    {
+    case FUNCTION_DECL:
+      return objc_demangle (decl_name);
+      break;
+      /* This unusual case (INSTANCE_METHOD_DECL and
+	 CLASS_METHOD_DECL) seems to happen only in ObjC++ and to be a
+	 by-product of the method attribute changes.  It would be nice
+	 to be able to print "-[NSObject autorelease] is deprecated",
+	 but to do that, we'd need to store the class and method name
+	 in the method decl, which we currently don't do.  For now,
+	 just return the name of the method.  We don't return NULL,
+	 because that may trigger further attempts to pretty-print the
+	 decl in C/C++, but they wouldn't know how to pretty-print
+	 it.  */
+    case INSTANCE_METHOD_DECL:
+    case CLASS_METHOD_DECL:
+      return decl_name;
+      break;
+    default:
+      return NULL;
+      break;
+    }
+}
+
+/* Return a printable name for 'decl'.  This first tries
+   objc_maybe_printable_name(), and if that fails, it hands it back to
+   C/C++.  'v' is the verbosity level, as this is a
+   LANG_HOOKS_DECL_PRINTABLE_NAME.  */
+const char *
+objc_printable_name (tree decl, int v)
+{
+  const char *demangled_name = objc_maybe_printable_name (decl, v);
+
+  if (demangled_name != NULL)
+    return demangled_name;
+  else
+    {
+#ifdef OBJCPLUS
+      return cxx_printable_name (decl, v);
+#else
+      return IDENTIFIER_POINTER (DECL_NAME (decl));
+#endif
+    }
 }
 
 static void

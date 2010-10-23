@@ -1048,6 +1048,7 @@ extern tree objc_build_getter_call (tree, tree);
 extern tree objc_build_setter_call (tree, tree);
 extern void objc_add_synthesize_declaration (location_t, tree);
 extern void objc_add_dynamic_declaration (location_t, tree);
+extern const char * objc_maybe_printable_name (tree, int);
 
 /* The following are provided by the C and C++ front-ends, and called by
    ObjC/ObjC++.  */
