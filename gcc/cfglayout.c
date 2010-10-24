@@ -940,7 +940,9 @@ fixup_reorder_chain (void)
         FOR_EACH_EDGE (e, ei, bb->succs)
 	  if (e->goto_locus && !(e->flags & EDGE_ABNORMAL))
 	    {
-	      basic_block nb;
+	      edge e2;
+	      edge_iterator ei2;
+	      basic_block dest, nb;
 	      rtx end;
 
 	      insn = BB_END (e->src);
@@ -957,10 +959,17 @@ fixup_reorder_chain (void)
 		  INSN_LOCATOR (BB_END (e->src)) = e->goto_locus;
 		  continue;
 		}
-	      if (e->dest != EXIT_BLOCK_PTR)
+	      dest = e->dest;
+	      if (dest == EXIT_BLOCK_PTR)
 		{
-		  insn = BB_HEAD (e->dest);
-		  end = NEXT_INSN (BB_END (e->dest));
+		  /* Non-fallthru edges to the exit block cannot be split.  */
+		  if (!(e->flags & EDGE_FALLTHRU))
+		    continue;
+		}
+	      else
+		{
+		  insn = BB_HEAD (dest);
+		  end = NEXT_INSN (BB_END (dest));
 		  while (insn != end && !NONDEBUG_INSN_P (insn))
 		    insn = NEXT_INSN (insn);
 		  if (insn != end && INSN_LOCATOR (insn)
@@ -972,6 +981,18 @@ fixup_reorder_chain (void)
 		BB_END (nb) = emit_insn_after_noloc (gen_nop (), BB_END (nb),
 						     nb);
 	      INSN_LOCATOR (BB_END (nb)) = e->goto_locus;
+
+	      /* If there are other incoming edges to the destination block
+		 with the same goto locus, redirect them to the new block as
+		 well, this can prevent other such blocks from being created
+		 in subsequent iterations of the loop.  */
+	      for (ei2 = ei_start (dest->preds); (e2 = ei_safe_edge (ei2)); )
+		if (e2->goto_locus
+		    && !(e2->flags & (EDGE_ABNORMAL | EDGE_FALLTHRU))
+		    && locator_eq (e->goto_locus, e2->goto_locus))
+		  redirect_edge_and_branch (e2, nb);
+		else
+		  ei_next (&ei2);
 	    }
       }
 }

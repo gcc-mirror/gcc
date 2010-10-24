@@ -1,3 +1,10 @@
+2010-10-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfglayout.c (fixup_reorder_chain): When ensuring that there is at
+	least one insn with a locus corresponding to an edge's goto_locus,
+	disregard non-fallthru edges to the exit block and merge the blocks
+	created for the same goto_locus.
+
 2010-10-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c (n_switches_alloc_debug_check): New.
