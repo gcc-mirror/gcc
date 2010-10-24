@@ -1,3 +1,9 @@
+2010-10-24  François Dumont  <francois.cppdevs@free.fr>
+
+	* src/debug.cc: Fix parameter indexes in __msg_valid_range2 message.
+	Replace 'before begin' decription in 'before-begin' for consistency
+	with 'paste-the-end'.
+
 2010-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/45866

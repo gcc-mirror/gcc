@@ -109,8 +109,8 @@ namespace __gnu_debug
     "attempt to insert into container after an end iterator",
     "attempt to erase from container after a %2.state; iterator not followed"
     " by a dereferenceable one",
-    "function requires a valid iterator range (%1.name;, %2.name;)"
-    ", %1.name; shall not be equal to %2.name;"
+    "function requires a valid iterator range (%2.name;, %3.name;)"
+    ", \"%2.name;\" shall be before and not equal to \"%3.name;\""
   };
 
   void
@@ -331,7 +331,7 @@ namespace __gnu_debug
 		"dereferenceable (start-of-sequence)",
 		"dereferenceable",
 		"past-the-end",
-		"before begin"
+		"before-begin"
 	      };
 	    __formatter->_M_print_word(__state_names[_M_variant.
 						     _M_iterator._M_state]);
