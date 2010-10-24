@@ -163,6 +163,7 @@ OBJC_SOURCE_FILES = \
    NXConstStr.m \
    Object.m \
    Protocol.m \
+   accessors.m \
    linking.m
 
 # C source files to compile
