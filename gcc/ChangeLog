@@ -1,3 +1,7 @@
+2010-10-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_type_code) <NULLPTR_TYPE>: New case.
+
 2010-10-24  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.md: Change length attribute to be in bytes.
