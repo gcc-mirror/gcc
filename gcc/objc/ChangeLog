@@ -1,3 +1,18 @@
+2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_build_keyword_decl): Updated comments.  Do not
+	emit a warning that method parameter attributes are unimplemented.
+	Instead, store them into DECL_ATTRIBUTES of the KEYWORD_DECL.
+	(start_method_def): Copy attributes from each KEYWORD_DECL into
+	the corresponding PARM_DECL.
+	(objc_warn_deprecated_use): Removed.
+	(build_objc_method_call): Call warn_deprecated_use, not
+	objc_warn_deprecated_use.
+	(objc_maybe_printable_name): Do not try to get the identifier name
+	of DECLs that we don't recognize.  Immediately return NULL for them.
+	(objc_printable_name): Removed C++-specific case, which is no
+	longer used.  Updated comments.
+	
 2010-10-23  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (OBJC_GEN_METHOD_LABEL): Updated comments.

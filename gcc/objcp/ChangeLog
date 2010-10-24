@@ -1,3 +1,7 @@
+2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objcp-lang.c (LANG_HOOKS_DECL_PRINTABLE_NAME): Do not define.
+
 2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objcp-lang.c (finish_file): Removed.

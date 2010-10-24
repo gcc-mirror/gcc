@@ -1409,15 +1409,6 @@ cxx_printable_name_internal (tree decl, int v, bool translate)
   static int ring_counter;
   int i;
 
-  /* If doing Objective-C++, give Objective-C a chance to demangle
-     Objective-C method names.  */
-  if (c_dialect_objc ())
-    {
-      const char *demangled = objc_maybe_printable_name (decl, v);
-      if (demangled)
-	return demangled;
-    }
-
   /* Only cache functions.  */
   if (v < 2
       || TREE_CODE (decl) != FUNCTION_DECL

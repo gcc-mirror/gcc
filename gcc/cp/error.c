@@ -896,6 +896,18 @@ dump_decl (tree t, int flags)
   if (t == NULL_TREE)
     return;
 
+  /* If doing Objective-C++, give Objective-C a chance to demangle
+     Objective-C method names.  */
+  if (c_dialect_objc ())
+    {
+      const char *demangled = objc_maybe_printable_name (t, flags);
+      if (demangled)
+	{
+	  pp_string (cxx_pp, demangled);
+	  return;
+	}
+    }
+
   switch (TREE_CODE (t))
     {
     case TYPE_DECL:

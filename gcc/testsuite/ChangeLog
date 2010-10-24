@@ -1,3 +1,13 @@
+2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/attributes/method-attribute-2.m: Updated test.  Method
+	parameter attributes are now supported.
+	* obj-c++.dg/attributes/method-attribute-2.m: Same change.
+	* objc.dg/attributes/parameter-attribute-1.m: New test.
+	* objc.dg/attributes/parameter-attribute-2.m: New test.	
+	* obj-c++.dg/attributes/parameter-attribute-1.m: New test.
+	* obj-c++.dg/attributes/parameter-attribute-2.m: New test.	
+	
 2010-10-23  Iain Sandoe  <iains@gcc.gnu.org>
 
 	Based on the CFString implementation in FSF apple/trunk branch.

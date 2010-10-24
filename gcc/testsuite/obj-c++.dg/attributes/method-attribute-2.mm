@@ -9,15 +9,15 @@
 } 
 - (int) depmth __attribute__((deprecated)); 
 - (int) depmtharg:(int) iarg __attribute__((deprecated)); 
-- (int) unusedarg:(int) __attribute__((unused)) uarg ;  /* { dg-warning "method parameter attributes are not available in this version" } */
-- (int) depunusedarg:(int) __attribute__((unused)) uarg __attribute__((deprecated)) ; /* { dg-warning "method parameter attributes are not available in this version" } */
+- (int) unusedarg:(int) __attribute__((unused)) uarg ;
+- (int) depunusedarg:(int) __attribute__((unused)) uarg __attribute__((deprecated)) ;
 @end
 
 @implementation obj
 - (int) depmth __attribute__((deprecated)) { return var; }  
 - (int) depmtharg:(int) iarg { return var + iarg ; }
-- (int) unusedarg:(int) __attribute__((unused)) uarg { return var; }  /* { dg-warning "method parameter attributes are not available in this version" } */
-- (int) depunusedarg:(int) __attribute__((unused)) uarg { return var; } /* { dg-warning "method parameter attributes are not available in this version" } */
+- (int) unusedarg:(int) __attribute__((unused)) uarg { return var; }
+- (int) depunusedarg:(int) __attribute__((unused)) uarg { return var; }
 @end 
 
 int foo (void)
