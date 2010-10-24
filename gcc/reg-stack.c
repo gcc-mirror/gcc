@@ -2877,9 +2877,10 @@ better_edge (edge e1, edge e2)
   return (e1->src->index < e2->src->index) ? e1 : e2;
 }
 
-/* Convert stack register references in one block.  */
+/* Convert stack register references in one block.  Return true if the CFG
+   has been modified in the process.  */
 
-static void
+static bool
 convert_regs_1 (basic_block block)
 {
   struct stack_def regstack;
@@ -2887,6 +2888,7 @@ convert_regs_1 (basic_block block)
   int reg;
   rtx insn, next;
   bool control_flow_insn_deleted = false;
+  bool cfg_altered = false;
   int debug_insns_with_starting_stack = 0;
 
   any_malformed_asm = false;
@@ -3042,7 +3044,7 @@ convert_regs_1 (basic_block block)
      place, still, but we don't have enough information at that time.  */
 
   if (control_flow_insn_deleted)
-    purge_dead_edges (block);
+    cfg_altered |= purge_dead_edges (block);
 
   /* Something failed if the stack lives don't match.  If we had malformed
      asms, we zapped the instruction itself, but that didn't produce the
@@ -3052,14 +3054,18 @@ convert_regs_1 (basic_block block)
 	      || any_malformed_asm);
   bi->stack_out = regstack;
   bi->done = true;
+
+  return cfg_altered;
 }
 
-/* Convert registers in all blocks reachable from BLOCK.  */
+/* Convert registers in all blocks reachable from BLOCK.  Return true if the
+   CFG has been modified in the process.  */
 
-static void
+static bool
 convert_regs_2 (basic_block block)
 {
   basic_block *stack, *sp;
+  bool cfg_altered = false;
 
   /* We process the blocks in a top-down manner, in a way such that one block
      is only processed after all its predecessors.  The number of predecessors
@@ -3098,11 +3104,13 @@ convert_regs_2 (basic_block block)
 	      *sp++ = e->dest;
 	  }
 
-      convert_regs_1 (block);
+      cfg_altered |= convert_regs_1 (block);
     }
   while (sp != stack);
 
   free (stack);
+
+  return cfg_altered;
 }
 
 /* Traverse all basic blocks in a function, converting the register
@@ -3112,6 +3120,7 @@ convert_regs_2 (basic_block block)
 static void
 convert_regs (void)
 {
+  bool cfg_altered = false;
   int inserted;
   basic_block b;
   edge e;
@@ -3130,7 +3139,7 @@ convert_regs (void)
 
   /* Process all blocks reachable from all entry points.  */
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
-    convert_regs_2 (e->dest);
+    cfg_altered |= convert_regs_2 (e->dest);
 
   /* ??? Process all unreachable blocks.  Though there's no excuse
      for keeping these even when not optimizing.  */
@@ -3139,7 +3148,7 @@ convert_regs (void)
       block_info bi = BLOCK_INFO (b);
 
       if (! bi->done)
-	convert_regs_2 (b);
+	cfg_altered |= convert_regs_2 (b);
     }
 
   inserted |= compensate_edges ();
@@ -3149,6 +3158,9 @@ convert_regs (void)
   fixup_abnormal_edges ();
   if (inserted)
     commit_edge_insertions ();
+
+  if (cfg_altered)
+    cleanup_cfg (0);
 
   if (dump_file)
     fputc ('\n', dump_file);
