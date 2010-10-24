@@ -1,5 +1,17 @@
 2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR objc/24393
+	* objc.dg/pr24393.m: New.
+	* obj-c++.dg/pr24393.mm: New.
+
+2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/28049
+	* objc.dg/pr28049.m: New.
+	* obj-c++.dg/pr28049.mm: New.
+
+2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/attributes/method-attribute-2.m: Updated test.  Method
 	parameter attributes are now supported.
 	* obj-c++.dg/attributes/method-attribute-2.m: Same change.
