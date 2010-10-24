@@ -1,3 +1,11 @@
+2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Makefile.in (OBJC_SOURCE_FILES): Added accessors.m.
+	* accessors.m: New.
+	* init.c: Include objc-private/accessors.h.
+	(__objc_exec_class): Call __objc_accessors_init.
+	* objc-private/accessors.h: New.
+
 2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/message.h: Moved initial includes outside of extern "C".
