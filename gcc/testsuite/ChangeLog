@@ -1,5 +1,11 @@
 2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR objc/45735	
+	* obj-c.dg/pr45735.mm: New.	
+	* obj-c++.dg/pr45735.mm: New.
+
+2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	PR objc/24393
 	* objc.dg/pr24393.m: New.
 	* obj-c++.dg/pr24393.mm: New.
