@@ -555,30 +555,6 @@ generate_struct_by_value_array (void)
   exit (0);
 }
 
-/* FIXME: We need to intercept calls to warn_deprecated_use, since that 
-   ultimately calls warning () with a "qD" formatter for decls.  The 'D' 
-   formatter does not handle ObjC-specific decls (in ObjC++).  For now, we
-   interpose a switch to the  default handler which simply prints the decl
-   identifier.  
-   Eventually, we should handle this within the objc{,p}/ code.  */
-
-static void
-objc_warn_deprecated_use (tree depitem, tree attr)
-{
-  if (DECL_P (depitem))
-    {
-      static bool (*sav_printer) (pretty_printer *, text_info *, const char *,
-				  int, bool, bool, bool) = NULL ;
-      if (sav_printer == NULL)
-	sav_printer = diagnostic_format_decoder (global_dc) ;
-      diagnostic_format_decoder (global_dc) = &default_tree_printer;
-      warn_deprecated_use (depitem, attr);
-      diagnostic_format_decoder (global_dc) = sav_printer;
-    }
-  else
-    warn_deprecated_use (depitem, attr);
-}
-
 bool
 objc_init (void)
 {
@@ -6546,35 +6522,43 @@ adjust_type_for_id_default (tree type)
   return type;
 }
 
-/*   Usage:
-		keyworddecl:
-			selector ':' '(' typename ')' identifier
+/* Return a KEYWORD_DECL built using the specified key_name, arg_type,
+   arg_name and attributes. (TODO: Rename KEYWORD_DECL to
+   OBJC_METHOD_PARM_DECL ?)
 
-     Purpose:
-		Transform an Objective-C keyword argument into
-		the C equivalent parameter declarator.
+   A KEYWORD_DECL is a tree representing the declaration of a
+   parameter of an Objective-C method.  It is produced when parsing a
+   fragment of Objective-C method declaration of the form
 
-     In:	key_name, an "identifier_node" (optional).
-		arg_type, a  "tree_list" (optional).
-		arg_name, an "identifier_node".
-		attributes, a optional tree containing param attributes.
+   keyworddecl:
+     selector ':' '(' typename ')' identifier
 
-     Note:	It would be really nice to strongly type the preceding
-		arguments in the function prototype; however, then I
-		could not use the "accessor" macros defined in "tree.h".
+   For example, take the Objective-C method
 
-     Out:	an instance of "keyword_decl".  */
+   -(NSString *)pathForResource:(NSString *)resource ofType:(NSString *)type; 
 
+   the two fragments "pathForResource:(NSString *)resource" and
+   "ofType:(NSString *)type" will generate a KEYWORD_DECL each.  The
+   KEYWORD_DECL stores the 'key_name' (eg, identifier for
+   "pathForResource"), the 'arg_type' (eg, tree representing a
+   NSString *), the 'arg_name' (eg identifier for "resource") and
+   potentially some attributes (for example, a tree representing
+   __attribute__ ((unused)) if such an attribute was attached to a
+   certain parameter).  You can access this information using the
+   TREE_TYPE (for arg_type), KEYWORD_ARG_NAME (for arg_name),
+   KEYWORD_KEY_NAME (for key_name), DECL_ATTRIBUTES (for attributes).
+
+   'key_name' is an identifier node (and is optional as you can omit
+   it in Objective-C methods).
+   'arg_type' is a tree list (and is optional too if no parameter type
+   was specified).
+   'arg_name' is an identifier node and is required.
+   'attributes' is an optional tree containing parameter attributes.  */
 tree
 objc_build_keyword_decl (tree key_name, tree arg_type, 
 			 tree arg_name, tree attributes)
 {
   tree keyword_decl;
-
-  if (attributes)
-    warning_at (input_location, OPT_Wattributes, 
-		"method parameter attributes are not available in this "
-		"version of the compiler, (ignored)");
 
   /* If no type is specified, default to "id".  */
   arg_type = adjust_type_for_id_default (arg_type);
@@ -6584,6 +6568,7 @@ objc_build_keyword_decl (tree key_name, tree arg_type,
   TREE_TYPE (keyword_decl) = arg_type;
   KEYWORD_ARG_NAME (keyword_decl) = arg_name;
   KEYWORD_KEY_NAME (keyword_decl) = key_name;
+  DECL_ATTRIBUTES (keyword_decl) = attributes;
 
   return keyword_decl;
 }
@@ -7278,7 +7263,7 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
   sender_cast = build_pointer_type (ftype);
 
   if (method_prototype && TREE_DEPRECATED (method_prototype))
-    objc_warn_deprecated_use (method_prototype, NULL_TREE);
+    warn_deprecated_use (method_prototype, NULL_TREE);
 
   lookup_object = build_c_cast (loc, rcv_p, lookup_object);
 
@@ -9918,10 +9903,13 @@ start_method_def (tree method)
   parmlist = METHOD_SEL_ARGS (method);
   while (parmlist)
     {
-      tree type = TREE_VALUE (TREE_TYPE (parmlist)), parm;
+      /* parmlist is a KEYWORD_DECL.  */
+      tree type = TREE_VALUE (TREE_TYPE (parmlist));
+      tree parm;
 
       parm = build_decl (input_location,
 			 PARM_DECL, KEYWORD_ARG_NAME (parmlist), type);
+      decl_attributes (&parm, DECL_ATTRIBUTES (parmlist), 0);
       objc_push_parm (parm);
       parmlist = DECL_CHAIN (parmlist);
     }
@@ -10083,7 +10071,6 @@ objc_start_function (tree name, tree type, tree attrs,
 #else
   current_function_returns_value = 0;  /* Assume, until we see it does.  */
   current_function_returns_null = 0;
-
   decl_attributes (&fndecl, attrs, 0);
   announce_function (fndecl);
   DECL_INITIAL (fndecl) = error_mark_node;
@@ -10766,26 +10753,25 @@ objc_demangle (const char *mangled)
 const char *
 objc_maybe_printable_name (tree decl, int v ATTRIBUTE_UNUSED)
 {
-  const char *decl_name = IDENTIFIER_POINTER (DECL_NAME (decl));  
-
   switch (TREE_CODE (decl))
     {
     case FUNCTION_DECL:
-      return objc_demangle (decl_name);
+      return objc_demangle (IDENTIFIER_POINTER (DECL_NAME (decl)));
       break;
-      /* This unusual case (INSTANCE_METHOD_DECL and
-	 CLASS_METHOD_DECL) seems to happen only in ObjC++ and to be a
-	 by-product of the method attribute changes.  It would be nice
-	 to be able to print "-[NSObject autorelease] is deprecated",
-	 but to do that, we'd need to store the class and method name
-	 in the method decl, which we currently don't do.  For now,
-	 just return the name of the method.  We don't return NULL,
-	 because that may trigger further attempts to pretty-print the
-	 decl in C/C++, but they wouldn't know how to pretty-print
-	 it.  */
+
+      /* The following happens when we are printing a deprecation
+	 warning for a method.  The warn_deprecation() will end up
+	 trying to print the decl for INSTANCE_METHOD_DECL or
+	 CLASS_METHOD_DECL.  It would be nice to be able to print
+	 "-[NSObject autorelease] is deprecated", but to do that, we'd
+	 need to store the class and method name in the method decl,
+	 which we currently don't do.  For now, just return the name
+	 of the method.  We don't return NULL, because that may
+	 trigger further attempts to pretty-print the decl in C/C++,
+	 but they wouldn't know how to pretty-print it.  */
     case INSTANCE_METHOD_DECL:
     case CLASS_METHOD_DECL:
-      return decl_name;
+      return IDENTIFIER_POINTER (DECL_NAME (decl));
       break;
     default:
       return NULL;
@@ -10794,9 +10780,12 @@ objc_maybe_printable_name (tree decl, int v ATTRIBUTE_UNUSED)
 }
 
 /* Return a printable name for 'decl'.  This first tries
-   objc_maybe_printable_name(), and if that fails, it hands it back to
-   C/C++.  'v' is the verbosity level, as this is a
-   LANG_HOOKS_DECL_PRINTABLE_NAME.  */
+   objc_maybe_printable_name(), and if that fails, it returns the name
+   in the decl.  This is used as LANG_HOOKS_DECL_PRINTABLE_NAME for
+   Objective-C; in Objective-C++, setting the hook is not enough
+   because lots of C++ Front-End code calls cxx_printable_name,
+   dump_decl and other C++ functions directly.  So instead we have
+   modified dump_decl to call objc_maybe_printable_name directly.  */
 const char *
 objc_printable_name (tree decl, int v)
 {
@@ -10805,13 +10794,7 @@ objc_printable_name (tree decl, int v)
   if (demangled_name != NULL)
     return demangled_name;
   else
-    {
-#ifdef OBJCPLUS
-      return cxx_printable_name (decl, v);
-#else
-      return IDENTIFIER_POINTER (DECL_NAME (decl));
-#endif
-    }
+    return IDENTIFIER_POINTER (DECL_NAME (decl));
 }
 
 static void

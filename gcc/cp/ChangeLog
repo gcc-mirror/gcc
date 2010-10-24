@@ -1,3 +1,14 @@
+2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Removed Objective-C++ specific replacement of cxx_printable_name.
+	* cp-objcp-common.h: Added LANG_HOOKS_DECL_PRINTABLE_NAME, set
+	to cxx_printable_name for both C++ and Objective-C++.
+	* cp-lang.h: Removed LANG_HOOKS_DECL_PRINTABLE_NAME.
+
+	* error.c (dump_decl): For Objective-C++, call
+	objc_maybe_printable_name here ...
+	* tree.c (cxx_printable_name_internal): ... instead of here.
+	
 2010-10-23  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* tree.c (cxx_printable_name_internal): In Objective-C++, call

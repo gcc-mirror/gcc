@@ -69,6 +69,8 @@ extern bool cp_function_decl_explicit_p (tree decl);
 #define LANG_HOOKS_PRINT_STATISTICS cxx_print_statistics
 #undef LANG_HOOKS_PRINT_XNODE
 #define LANG_HOOKS_PRINT_XNODE cxx_print_xnode
+#undef LANG_HOOKS_DECL_PRINTABLE_NAME
+#define LANG_HOOKS_DECL_PRINTABLE_NAME	cxx_printable_name
 #undef LANG_HOOKS_PRINT_DECL
 #define LANG_HOOKS_PRINT_DECL cxx_print_decl
 #undef LANG_HOOKS_PRINT_TYPE

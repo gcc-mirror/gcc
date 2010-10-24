@@ -72,8 +72,6 @@ static tree cp_eh_personality (void);
 	function_parameter_expanded_from_pack_p
 #undef LANG_HOOKS_GET_GENERIC_FUNCTION_DECL
 #define LANG_HOOKS_GET_GENERIC_FUNCTION_DECL get_function_template_decl
-#undef LANG_HOOKS_DECL_PRINTABLE_NAME
-#define LANG_HOOKS_DECL_PRINTABLE_NAME	cxx_printable_name
 #undef LANG_HOOKS_DWARF_NAME
 #define LANG_HOOKS_DWARF_NAME cxx_dwarf_name
 #undef LANG_HOOKS_INIT_TS
