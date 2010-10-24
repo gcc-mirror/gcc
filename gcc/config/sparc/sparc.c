@@ -7729,7 +7729,8 @@ sparc_type_code (register tree type)
 
 	case VECTOR_TYPE:
 	case BOOLEAN_TYPE:	/* Boolean truth value type.  */
-	case LANG_TYPE:		/* ? */
+	case LANG_TYPE:
+	case NULLPTR_TYPE:
 	  return qualifiers;
 
 	default:
