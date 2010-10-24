@@ -64,15 +64,16 @@
 ;; default is arith
 (define_attr "type" "unknown,arith,fp" (const_string "arith"))
 
-;; length default is 1 word each
-(define_attr "length" "" (const_int 1))
+;; length default is 2 bytes each
+(define_attr "length" "" (const_int 2))
 
 ;; a user's asm statement
 (define_asm_attributes
   [(set_attr "type" "unknown")
-; all bets are off how long it is - make it 256, forces long jumps 
-; whenever jumping around it !!!
-   (set_attr "length" "256")])
+; length for asm is the max length per statement.  That would be
+; 5 words, for a floating point instruction with a literal constant
+; argument.
+   (set_attr "length" "10")])
 
 ;; define function units
 
@@ -97,7 +98,7 @@
   else
     return \"{cmpd|cmpf} %0, %1\;cfcc\";
 }"
-  [(set_attr "length" "2,2,3,3,6")]) 
+  [(set_attr "length" "4,4,6,6,12")]) 
 
 (define_insn "*cmphi"
   [(set (cc0)
@@ -111,7 +112,7 @@
    tst %0
    cmp %0,%1
    cmp %0,%1"
-  [(set_attr "length" "1,1,2,2,2,3")])
+  [(set_attr "length" "2,2,4,4,4,6")])
 
 (define_insn "*cmpqi"
   [(set (cc0)
@@ -125,7 +126,7 @@
    tstb %0
    cmpb %0,%1
    cmpb %0,%1"
-  [(set_attr "length" "1,1,2,2,2,3")])
+  [(set_attr "length" "2,2,4,4,4,6")])
 			   
 
 ;; sob instruction - we need an assembler which can make this instruction
@@ -148,7 +149,7 @@
  static int labelcount = 0;
  static char buf[1000];
 
- if (get_attr_length (insn) == 1)
+ if (get_attr_length (insn) == 2)
     return \"sob %0, %l1\";
 
  /* emulate sob */
@@ -170,8 +171,8 @@
 					   (ge (minus (match_dup 0)
 						       (pc))
 						(const_int 0)))
-				      (const_int 4)
-				      (const_int 1)))])
+				      (const_int 8)
+				      (const_int 2)))])
 
 ;; These control RTL generation for conditional jump insns
 ;; and match them for register allocation.
@@ -229,12 +230,12 @@
   "* return output_jump(GET_CODE (operands[0]), 0, get_attr_length(insn));"
   [(set (attr "length") (if_then_else (ior (le (minus (match_dup 1)
 						      (pc))
-					       (const_int -128))
+					       (const_int -256))
 					   (ge (minus (match_dup 1)
 						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
+					       (const_int 256)))
+				      (const_int 6)
+				      (const_int 2)))])
 
 
 ;; These match inverted jump insns for register allocation.
@@ -249,12 +250,12 @@
   "* return output_jump(GET_CODE (operands[0]), 1, get_attr_length(insn));"
   [(set (attr "length") (if_then_else (ior (le (minus (match_dup 1)
 						      (pc))
-					       (const_int -128))
+					       (const_int -256))
 					   (ge (minus (match_dup 1)
 						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
+					       (const_int 256)))
+				      (const_int 6)
+				      (const_int 2)))])
 
 ;; Move instructions
 
@@ -264,7 +265,7 @@
   ""
   "* return output_move_quad (operands);"
 ;; what's the mose expensive code - say twice movsi = 16
-  [(set_attr "length" "16,16,16")])
+  [(set_attr "length" "32,32,32")])
 
 (define_insn "movsi"
   [(set (match_operand:SI 0 "general_operand" "=r,r,r,rm,m")
@@ -273,7 +274,7 @@
   "* return output_move_double (operands);"
 ;; what's the most expensive code ? - I think 8!
 ;; we could split it up and make several sub-cases...
-  [(set_attr "length" "2,3,4,8,8")])
+  [(set_attr "length" "4,6,8,16,16")])
 
 (define_insn "movhi"
   [(set (match_operand:HI 0 "general_operand" "=rR,rR,Q,Q")
@@ -286,11 +287,11 @@
 
   return \"mov %1, %0\";
 }"
-  [(set_attr "length" "1,2,2,3")])
+  [(set_attr "length" "2,4,4,6")])
 
 (define_insn "movqi"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=g")
-	(match_operand:QI 1 "general_operand" "g"))]
+  [(set (match_operand:QI 0 "general_operand" "=rR,rR,Q,Q")
+	(match_operand:QI 1 "general_operand" "rRN,Qi,rRN,Qi"))]
   ""
   "*
 {
@@ -299,7 +300,7 @@
 
   return \"movb %1, %0\";
 }"
-  [(set_attr "length" "1")])
+  [(set_attr "length" "2,4,4,6")])
 
 ;; do we have to supply all these moves? e.g. to 
 ;; NO_LOAD_FPU_REGs ? 
@@ -314,14 +315,14 @@
      else 
        return output_move_quad (operands); "
 ;; just a guess..
-  [(set_attr "length" "1,1,5,5,16")])
+  [(set_attr "length" "2,2,10,10,32")])
 
 (define_insn "movsf"
   [(set (match_operand:SF 0 "general_operand" "=g,r,g")
         (match_operand:SF 1 "general_operand" "r,rmF,g"))]
   "TARGET_FPU"
   "* return output_move_double (operands);"
-  [(set_attr "length" "8,8,8")])
+  [(set_attr "length" "16,16,16")])
 
 ;; maybe fiddle a bit with move_ratio, then 
 ;; let constraints only accept a register ...
@@ -362,7 +363,7 @@
   "(TARGET_BCOPY_BUILTIN)"
   "* return output_block_move (operands);"
 ;;; just a guess
-  [(set_attr "length" "40")])
+  [(set_attr "length" "80")])
    
 
 
@@ -385,7 +386,7 @@
      else 
        return \"{stcdf|movfo} %1, %0\";
   "
-  [(set_attr "length" "3,1,2")])
+  [(set_attr "length" "6,2,4")])
 
 
 (define_expand "truncsihi2"
@@ -400,11 +401,11 @@
 ;;- zero extension instructions
 
 (define_insn "zero_extendqihi2"
-  [(set (match_operand:HI 0 "general_operand" "=r")
-	(zero_extend:HI (match_operand:QI 1 "general_operand" "0")))]
+  [(set (match_operand:HI 0 "general_operand" "=rR,Q")
+	(zero_extend:HI (match_operand:QI 1 "general_operand" "0,0")))]
   ""
   "bic $0177400, %0"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "4,6")])
 			 
 (define_expand "zero_extendhisi2"
   [(set (subreg:HI 
@@ -429,7 +430,7 @@
    mov %1, -(sp)\;{ldcfd|movof} (sp)+,%0
    {ldcfd|movof} %1, %0
    {ldcfd|movof} %1, %0"
-  [(set_attr "length" "2,1,2")])
+  [(set_attr "length" "4,2,4")])
 
 ;; does movb sign extend in register-to-register move?
 (define_insn "extendqihi2"
@@ -437,7 +438,7 @@
 	(sign_extend:HI (match_operand:QI 1 "general_operand" "rR,Q")))]
   ""
   "movb %1, %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 (define_insn "extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -456,7 +457,7 @@
     
   return \"\";
 }"
-  [(set_attr "length" "2,3")])
+  [(set_attr "length" "4,6")])
 
 ;; maybe we have to use define_expand to say that we have the instruction,
 ;; unconditionally, and then match dependent on CPU type:
@@ -513,7 +514,7 @@
       gcc_unreachable ();
   }
 }"
-  [(set_attr "length" "5,3,3")])
+  [(set_attr "length" "10,6,6")])
 
 
 (define_insn ""
@@ -545,7 +546,7 @@
 
   return \"\";
 }"
-  [(set_attr "length" "6")])
+  [(set_attr "length" "12")])
 
 ;; make float to int and vice versa 
 ;; using the cc_status.flag field we could probably cut down
@@ -576,14 +577,14 @@
      else 
        return \"setl\;{ldcld|movif} %1, %0\;seti\";
   "
-  [(set_attr "length" "5,3,4")])
+  [(set_attr "length" "10,6,8")])
 
 (define_insn "floathidf2"
   [(set (match_operand:DF 0 "register_operand" "=a,a")
 	(float:DF (match_operand:HI 1 "general_operand" "rR,Qi")))]
   "TARGET_FPU"
   "{ldcid|movif} %1, %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 	
 ;; cut float to int
 (define_insn "fix_truncdfsi2"
@@ -605,14 +606,14 @@
      else 
        return \"setl\;{stcdl|movfi} %1, %0\;seti\";
   "
-  [(set_attr "length" "5,3,4")])
+  [(set_attr "length" "10,6,8")])
 
 (define_insn "fix_truncdfhi2"
   [(set (match_operand:HI 0 "general_operand" "=rR,Q")
 	(fix:HI (fix:DF (match_operand:DF 1 "register_operand" "a,a"))))]
   "TARGET_FPU"
   "{stcdi|movfi} %1, %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 
 ;;- arithmetic instructions
@@ -624,7 +625,7 @@
 		 (match_operand:DF 2 "general_operand" "fR,Q,F")))]
   "TARGET_FPU"
   "{addd|addf} %2, %0"
-  [(set_attr "length" "1,2,5")])
+  [(set_attr "length" "2,4,10")])
 
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "general_operand" "=r,r,o,o,r,r,r,o,o,o")
@@ -674,7 +675,7 @@
 
   return \"\";
 }"
-  [(set_attr "length" "3,5,6,8,3,1,5,5,3,8")])
+  [(set_attr "length" "6,10,12,16,6,2,10,10,6,16")])
 
 (define_insn "addhi3"
   [(set (match_operand:HI 0 "general_operand" "=rR,rR,Q,Q")
@@ -693,7 +694,7 @@
 
   return \"add %2, %0\";
 }"
-  [(set_attr "length" "1,2,2,3")])
+  [(set_attr "length" "2,4,4,6")])
 
 (define_insn "addqi3"
   [(set (match_operand:QI 0 "general_operand" "=rR,rR,Q,Q")
@@ -712,7 +713,7 @@
 
   return \"add %2, %0\";
 }"
-  [(set_attr "length" "1,2,2,3")])
+  [(set_attr "length" "2,4,4,6")])
 
 
 ;;- subtract instructions
@@ -726,7 +727,7 @@
 		  (match_operand:DF 2 "general_operand" "fR,Q")))]
   "TARGET_FPU"
   "{subd|subf} %2, %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "general_operand" "=r,r,o,o")
@@ -760,7 +761,7 @@
   return \"\";
 }"
 ;; offsettable memory addresses always are expensive!!!
-  [(set_attr "length" "3,5,6,8")])
+  [(set_attr "length" "6,10,12,16")])
 
 (define_insn "subhi3"
   [(set (match_operand:HI 0 "general_operand" "=rR,rR,Q,Q")
@@ -773,7 +774,7 @@
 
   return \"sub %2, %0\";
 }"
-  [(set_attr "length" "1,2,2,3")])
+  [(set_attr "length" "2,4,4,6")])
 
 (define_insn "subqi3"
   [(set (match_operand:QI 0 "general_operand" "=rR,rR,Q,Q")
@@ -786,7 +787,7 @@
 
   return \"sub %2, %0\";
 }"
-  [(set_attr "length" "1,2,2,3")])
+  [(set_attr "length" "2,4,4,6")])
 
 ;;;;- and instructions
 ;; Bit-and on the pdp (like on the VAX) is done with a clear-bits insn.
@@ -837,7 +838,7 @@
 
   return \"\";
 }"
-  [(set_attr "length" "2,4,4,6,2,2,4,3,3,6")])
+  [(set_attr "length" "4,8,8,12,4,4,8,6,6,12")])
 
 (define_insn "andhi3"
   [(set (match_operand:HI 0 "general_operand" "=rR,rR,Q,Q")
@@ -845,7 +846,7 @@
 		(not:HI (match_operand:HI 2 "general_operand" "rR,Qi,rR,Qi"))))]
   ""
   "bic %2, %0"
-  [(set_attr "length" "1,2,2,3")])
+  [(set_attr "length" "2,4,4,6")])
 
 (define_insn "andqi3"
   [(set (match_operand:QI 0 "general_operand" "=rR,rR,Q,Q")
@@ -853,7 +854,7 @@
 		(not:QI (match_operand:QI 2 "general_operand" "rR,Qi,rR,Qi"))))]
   ""
   "bicb %2, %0"
-  [(set_attr "length" "1,2,2,3")])
+  [(set_attr "length" "2,4,4,6")])
 
 ;;- Bit set (inclusive or) instructions
 (define_insn "iorsi3"
@@ -902,7 +903,7 @@
 
   return \"\";
 }"
-  [(set_attr "length" "2,4,4,6,2,2,4,3,3,6")])
+  [(set_attr "length" "4,8,8,12,4,4,8,6,6,12")])
 
 (define_insn "iorhi3"
   [(set (match_operand:HI 0 "general_operand" "=rR,rR,Q,Q")
@@ -910,7 +911,7 @@
 		(match_operand:HI 2 "general_operand" "rR,Qi,rR,Qi")))]
   ""
   "bis %2, %0"
-  [(set_attr "length" "1,2,2,3")])
+  [(set_attr "length" "2,4,4,6")])
 
 (define_insn "iorqi3"
   [(set (match_operand:QI 0 "general_operand" "=rR,rR,Q,Q")
@@ -945,7 +946,7 @@
     }
 
 }"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "4")])
 
 (define_insn "xorhi3"
   [(set (match_operand:HI 0 "general_operand" "=rR,Q")
@@ -953,7 +954,7 @@
 		(match_operand:HI 2 "register_operand" "r,r")))]
   "TARGET_40_PLUS"
   "xor %2, %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 ;;- one complement instructions
 
@@ -962,7 +963,7 @@
         (not:HI (match_operand:HI 1 "general_operand" "0,0")))]
   ""
   "com %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 (define_insn "one_cmplqi2"
   [(set (match_operand:QI 0 "general_operand" "=rR,rR")
@@ -971,7 +972,7 @@
   "@
   comb %0
   movb %1, %0\; comb %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 ;;- arithmetic shift instructions
 (define_insn "ashlsi3"
@@ -980,7 +981,7 @@
 		   (match_operand:HI 2 "general_operand" "rR,Qi")))]
   "TARGET_40_PLUS"
   "ashc %2,%0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 ;; Arithmetic right shift on the pdp works by negating the shift count.
 (define_expand "ashrsi3"
@@ -1002,7 +1003,7 @@
 		   (const_int 1)))]
   ""
   "asl %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 ;; and another possibility for asr is << -1
 ;; might cause problems since -1 can also be encoded as 65535!
@@ -1015,7 +1016,7 @@
 		   (const_int -1)))]
   ""
   "asr %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 ;; lsr
 (define_insn "" 
@@ -1024,7 +1025,7 @@
 		   (const_int 1)))]
   ""
   "clc\;ror %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 (define_insn "lshrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1047,7 +1048,7 @@
 
   return \"\";
 }
-  [(set_attr "length" "5")])
+  [(set_attr "length" "10")])
 
 ;; shift is by arbitrary count is expensive, 
 ;; shift by one cheap - so let's do that, if
@@ -1070,7 +1071,7 @@
   return \"\";
 }"
 ;; longest is 4
-  [(set (attr "length") (const_int 4))])
+  [(set (attr "length") (const_int 8))])
 
 ;; aslb
 (define_insn "" 
@@ -1091,8 +1092,8 @@
 }"
 ;; set attribute length ( match_dup 2 & 7 ) *(1 or 2) !!!
   [(set_attr_alternative "length" 
-                         [(const_int 7)
-                          (const_int 14)])])
+                         [(const_int 14)
+                          (const_int 28)])])
 
 ;;; asr 
 ;(define_insn "" 
@@ -1101,7 +1102,7 @@
 ;		     (const_int 1)))]
 ;  ""
 ;  "asr %0"
-;  [(set_attr "length" "1,2")])
+;  [(set_attr "length" "2,4")])
 
 ;; asrb
 (define_insn "" 
@@ -1121,14 +1122,14 @@
   return \"\";
 }"
   [(set_attr_alternative "length" 
-                         [(const_int 7)
-                          (const_int 14)])])
+                         [(const_int 14)
+                          (const_int 28)])])
 
 ;; the following is invalid - too complex!!! - just say 14 !!!
 ;  [(set (attr "length") (plus (and (match_dup 2)
-;                                   (const_int 7))
+;                                   (const_int 14))
 ;                              (and (match_dup 2)
-;                                   (const_int 7))))])
+;                                   (const_int 14))))])
 
 
 
@@ -1152,7 +1153,7 @@
 
   return \"ash %2,%0\";
 }"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 ;; Arithmetic right shift on the pdp works by negating the shift count.
 (define_expand "ashrhi3"
@@ -1180,7 +1181,7 @@
 	(abs:DF (match_operand:DF 1 "general_operand" "0,0")))]
   "TARGET_FPU"
   "{absd|absf} %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 (define_insn "abshi2"
   [(set (match_operand:HI 0 "general_operand" "=r,o")
@@ -1200,7 +1201,7 @@
 
   return \"\";
 }"
-  [(set_attr "length" "3,5")])
+  [(set_attr "length" "6,10")])
 
 
 ;; define expand abshi - is much better !!! - but
@@ -1244,7 +1245,7 @@
 	(neg:DF (match_operand:DF 1 "register_operand" "0,0")))]
   "TARGET_FPU"
   "{negd|negf} %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 (define_insn "negsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1267,21 +1268,21 @@
 
   return \"\";
 }
-  [(set_attr "length" "5")])
+  [(set_attr "length" "10")])
 
 (define_insn "neghi2"
   [(set (match_operand:HI 0 "general_operand" "=rR,Q")
 	(neg:HI (match_operand:HI 1 "general_operand" "0,0")))]
   ""
   "neg %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 (define_insn "negqi2"
   [(set (match_operand:QI 0 "general_operand" "=rR,Q")
 	(neg:QI (match_operand:QI 1 "general_operand" "0,0")))]
   ""
   "negb %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 
 ;; Unconditional and other jump instructions
@@ -1289,8 +1290,20 @@
   [(set (pc)
 	(label_ref (match_operand 0 "" "")))]
   ""
-  "jmp %l0"
-  [(set_attr "length" "2")])
+  "*
+{
+ if (get_attr_length (insn) == 2)
+    return \"br %l0\";
+ return \"jmp %l0\";
+}"
+  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
+						      (pc))
+					       (const_int -256))
+					   (ge (minus (match_dup 0)
+						      (pc))
+					       (const_int 256)))
+				      (const_int 4)
+				      (const_int 2)))])
 
 (define_insn ""
   [(set (pc)
@@ -1298,14 +1311,14 @@
    (clobber (const_int 1))]
   ""
   "jmp %l0"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "4")])
 
 (define_insn "tablejump"
   [(set (pc) (match_operand:HI 0 "general_operand" "rR,Q"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
   "jmp %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 ;; indirect jump - let's be conservative!
 ;; allow only register_operand, even though we could also 
@@ -1326,7 +1339,7 @@
   ;;- Don't use operand 1 for most machines.
   ""
   "jsr pc, %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 ;;- jump to subroutine
 (define_insn "call_value"
@@ -1338,7 +1351,7 @@
   ;;- Don't use operand 2 for most machines.
   ""
   "jsr pc, %1"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 ;;- nop instruction
 (define_insn "nop"
@@ -1355,7 +1368,7 @@
 		 (match_operand:DF 2 "general_operand" "fR,Q,F")))]
   "TARGET_FPU"
   "{muld|mulf} %2, %0"
-  [(set_attr "length" "1,2,5")])
+  [(set_attr "length" "2,4,10")])
 
 ;; 16 bit result multiply:
 ;; currently we multiply only into odd registers, so we don't use two 
@@ -1369,7 +1382,7 @@
 		 (match_operand:HI 2 "general_operand" "rR,Qi")))]
   "TARGET_40_PLUS"
   "mul %2, %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 ;; 32 bit result
 (define_expand "mulhisi3"
@@ -1389,7 +1402,7 @@
 		 (match_operand:HI 2 "general_operand" "rR,Qi")))]
   "TARGET_40_PLUS"
   "mul %2, %0"
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "2,4")])
 
 ;(define_insn "mulhisi3"
 ;  [(set (match_operand:SI 0 "register_operand" "=r,r") ; even numbered!
@@ -1398,7 +1411,7 @@
 ;		 (match_operand:HI 2 "general_operand" "rR,Qi")))]
 ;  "TARGET_40_PLUS"
 ;  "mul %2, %0"
-;  [(set_attr "length" "1,2")])
+;  [(set_attr "length" "2,4")])
 
 ;;- divide
 (define_insn "divdf3"
@@ -1407,7 +1420,7 @@
 		(match_operand:DF 2 "general_operand" "fR,Q,F")))]
   "TARGET_FPU"
   "{divd|divf} %2, %0"
-  [(set_attr "length" "1,2,5")])
+  [(set_attr "length" "2,4,10")])
 
 	 
 (define_expand "divhi3"
@@ -1425,7 +1438,7 @@
 		(match_operand:HI 2 "general_operand" "g")))]
   "TARGET_40_PLUS"
   "div %2,%0"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "4")])
 
 (define_expand "modhi3"
   [(set (subreg:HI (match_dup 1) 2)
@@ -1442,7 +1455,7 @@
 		(match_operand:HI 2 "general_operand" "g")))]
   "TARGET_40_PLUS"
   "div %2,%0"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "4")])
 
 ;(define_expand "divmodhi4"
 ;  [(parallel [(set (subreg:HI (match_dup 1) 0)
