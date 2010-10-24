@@ -7219,7 +7219,6 @@ ix86_va_start (tree valist, rtx nextarg)
   tree f_gpr, f_fpr, f_ovf, f_sav;
   tree gpr, fpr, ovf, sav, t;
   tree type;
-
   rtx ovf_rtx;
 
   if (flag_split_stack
