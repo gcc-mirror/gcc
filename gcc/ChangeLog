@@ -1,3 +1,8 @@
+2010-10-24  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.md: Change length attribute to be in bytes.
+	* config/pdp11/pdp11.c (output_jump): Ditto.
+
 2010-10-24  Ian Lance Taylor  <iant@google.com>
 
 	* config/i386/i386.c (ix86_va_start): Remove extraneous blank

@@ -1222,13 +1222,13 @@ output_jump (enum rtx_code code, int inv, int length)
 	
     switch (length)
     {
-      case 1:
+      case 2:
 	
 	sprintf(buf, "%s %%l1", inv ? neg : pos);
 	
 	return buf;
 	
-      case 3:
+      case 6:
 	
 	sprintf(buf, "%s JMP_%d\n\tjmp %%l1\nJMP_%d:", inv ? pos : neg, x, x);
 	
