@@ -1790,31 +1790,15 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
   s-intman.adb<s-intman-posix.adb \
   s-linux.ads<s-linux.ads \
   s-osinte.adb<s-osinte-posix.adb \
-  s-osinte.ads<s-osinte-linux.ads \
-  s-osprim.adb<s-osprim-posix.adb \
-  s-taprop.adb<s-taprop-linux.adb \
-  s-tasinf.ads<s-tasinf-linux.ads \
-  s-tasinf.adb<s-tasinf-linux.adb \
-  s-taspri.ads<s-taspri-posix-noaltstack.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   g-sercom.adb<g-sercom-linux.adb \
+  g-trasym.adb<g-trasym-dwarf.adb \
   $(ATOMICS_TARGET_PAIRS)
 
-  LIBGNAT_TARGET_PAIRS_32 = \
-  system.ads<system-linux-ppc.ads
-
-  LIBGNAT_TARGET_PAIRS_64 = \
-  system.ads<system-linux-ppc64.ads
-
-  ifeq ($(strip $(shell $(GCC_FOR_TARGET) $(GNATLIBCFLAGS) -print-multi-os-directory)),../lib64)
-    LIBGNAT_TARGET_PAIRS = \
-    $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
-  else
-    LIBGNAT_TARGET_PAIRS = \
-    $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
-  endif
-
   ifeq ($(strip $(filter-out xenomai,$(THREAD_KIND))),)
+    LIBGNAT_TARGET_PAIRS = \
+      $(LIBGNAT_TARGET_PAIRS_COMMON)
+
     LIBGNAT_TARGET_PAIRS += \
     s-osinte.ads<s-osinte-linux-xenomai.ads \
     s-osprim.adb<s-osprim-linux-xenomai.adb \
@@ -1822,14 +1806,27 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
     s-taspri.ads<s-taspri-linux-xenomai.ads \
     system.ads<system-linux-ppc-xenomai.ads
   else
+    LIBGNAT_TARGET_PAIRS_32 = \
+    system.ads<system-linux-ppc.ads
+
+    LIBGNAT_TARGET_PAIRS_64 = \
+    system.ads<system-linux-ppc64.ads
+
+    ifeq ($(strip $(shell $(GCC_FOR_TARGET) $(GNATLIBCFLAGS) -print-multi-os-directory)),../lib64)
+      LIBGNAT_TARGET_PAIRS = \
+      $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
+    else
+      LIBGNAT_TARGET_PAIRS = \
+      $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
+    endif
+
     LIBGNAT_TARGET_PAIRS += \
     s-osinte.ads<s-osinte-linux.ads \
     s-osprim.adb<s-osprim-posix.adb \
     s-taprop.adb<s-taprop-linux.adb \
     s-tasinf.ads<s-tasinf-linux.ads \
     s-tasinf.adb<s-tasinf-linux.adb \
-    s-taspri.ads<s-taspri-posix-noaltstack.ads \
-    system.ads<system-linux-ppc.ads
+    s-taspri.ads<s-taspri-posix-noaltstack.ads
   endif
 
   TOOLS_TARGET_PAIRS =  \

@@ -1,3 +1,8 @@
+2010-10-25  Jose Ruiz  <ruiz@adacore.com>
+
+	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS for powerpc-linux):
+	Reorganize target pairs so that it works on linux and ElinOS.
+
 2010-10-25  Pascal Obry  <obry@adacore.com>
 	
 	* adaint.c (__gnat_file_time_name_attr): Use GetFileAttributesEx to get
