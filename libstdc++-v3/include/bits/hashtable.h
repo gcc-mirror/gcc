@@ -271,10 +271,6 @@ namespace std
       get_allocator() const
       { return allocator_type(_M_node_allocator); }
 
-      _Value_allocator_type
-      _M_get_Value_allocator() const
-      { return _Value_allocator_type(_M_node_allocator); }
-
       size_type
       max_size() const
       { return _M_node_allocator.max_size(); }
