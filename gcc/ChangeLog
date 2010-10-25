@@ -1,7 +1,12 @@
+2010-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac: Use $cpu_type instead of $target to define the nop.
+	* configure: Regenerate.
+
 2010-10-25  Jie Zhang  <jie@codesourcery.com>
 
-	* combine.c (try_combine): If insns need to be kept around,
-	check that they can be copied in the merged instruction.
+	* combine.c (try_combine): If insns need to be kept around, check that
+	they can be copied in the merged instruction.
 
 2010-10-24  Eric Botcazou  <ebotcazou@adacore.com>
 
