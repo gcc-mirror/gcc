@@ -1,3 +1,17 @@
+2010-10-25  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb, einfo.ads, exp_ch4.adb: Minor comment fix
+	* sem_case.adb: Comment clarification for loops through false
+	predicates.
+	* sem_util.adb: Minor reformatting
+	(Check_Order_Dependence): Fix bad double blank in error message
+
+2010-10-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Membership_Op): in Ada_2012 a membership
+	operation can have a single alternative that is a value of the type.
+	Rewrite operation as an equality test.
+
 2010-10-25  Matthew Heaney  <heaney@adacore.com>
 
 	* Makefile.rtl, impunit.adb: Added a-cobove (bounded vector container)

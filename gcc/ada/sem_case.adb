@@ -878,6 +878,11 @@ package body Sem_Case is
                                  C    : Node_Id;
 
                               begin
+                                 --  Loop through entries in predicate list,
+                                 --  converting to choices. Note that if the
+                                 --  list is empty, corresponding to a False
+                                 --  predicate, then no choices are inserted.
+
                                  P := First (Static_Predicate (E));
                                  while Present (P) loop
                                     C := New_Copy (P);

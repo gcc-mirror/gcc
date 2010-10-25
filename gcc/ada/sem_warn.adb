@@ -3739,8 +3739,8 @@ package body Sem_Warn is
                   elsif Nkind (Act2) = N_Function_Call then
                      null;
 
-                  --  If type is not by-copy we can assume that  the aliasing
-                  --  is intended.
+                  --  If type is not by-copy we can assume that the aliasing is
+                  --  intended.
 
                   elsif
                     Is_By_Reference_Type (Underlying_Type (Etype (Form1)))

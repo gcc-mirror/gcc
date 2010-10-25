@@ -1226,11 +1226,11 @@ package body Sem_Util is
          return;
       end if;
 
-      --  Ada2012 AI04-0144-2 : dangerous order dependence.
-      --  Actuals in nested calls within a construct have been collected.
-      --  If one of them is writeable and overlaps with another one, evaluation
-      --  of the enclosing construct is non-deterministic.
-      --  This is illegal in Ada2012, but is treated as a warning for now.
+      --  Ada 2012 AI04-0144-2 : dangerous order dependence. Actuals in nested
+      --  calls within a construct have been collected. If one of them is
+      --  writable and overlaps with another one, evaluation of the enclosing
+      --  construct is nondeterministic. This is illegal in Ada 2012, but is
+      --  treated as a warning for now.
 
       for J in 1 .. Actuals_In_Call.Last loop
          if Actuals_In_Call.Table (J).Is_Writable then
@@ -1258,16 +1258,16 @@ package body Sem_Util is
                   elsif Denotes_Same_Object (Act1, Act2)
                     and then Parent (Act1) /= Parent (Act2)
                   then
-                     Error_Msg_N (
-                       "result may differ if evaluated "
-                        & " after other actual in expression?", Act1);
+                     Error_Msg_N
+                       ("result may differ if evaluated "
+                        & "after other actual in expression?", Act1);
                   end if;
                end if;
             end loop;
          end if;
       end loop;
 
-      --  Remove checked actuals from table.
+      --  Remove checked actuals from table
 
       Actuals_In_Call.Set_Last (0);
    end Check_Order_Dependence;
@@ -2366,9 +2366,13 @@ package body Sem_Util is
       Obj2 : Node_Id := A2;
 
       procedure Check_Renaming (Obj : in out Node_Id);
-      --  If an object is a renaming, examine renamed object. If is is a
-      --  dereference of a variable, or an indexed expression with non-
-      --  constant indices, no overlap check can be reported.
+      --  If an object is a renaming, examine renamed object. If it is a
+      --  dereference of a variable, or an indexed expression with non-constant
+      --  indexes, no overlap check can be reported.
+
+      --------------------
+      -- Check_Renaming --
+      --------------------
 
       procedure Check_Renaming (Obj : in out Node_Id) is
       begin
@@ -2399,6 +2403,8 @@ package body Sem_Util is
             end if;
          end if;
       end Check_Renaming;
+
+   --  Start of processing for Denotes_Same_Object
 
    begin
       Check_Renaming (Obj1);
@@ -2449,8 +2455,7 @@ package body Sem_Util is
                Indx2 := First (Expressions (Obj2));
                while Present (Indx1) loop
 
-                  --  Indices must denote the same static value or the same
-                  --  object.
+                  --  Indexes must denote the same static value or same object
 
                   if Is_OK_Static_Expression (Indx1) then
                      if not Is_OK_Static_Expression (Indx2) then
@@ -7989,7 +7994,7 @@ package body Sem_Util is
 
          --  Positional parameter for subprogram, entry, or accept call.
          --  In older versions of Ada function call arguments are never
-         --  lvalues. In Ada2012 functions can have in-out parameters.
+         --  lvalues. In Ada 2012 functions can have in-out parameters.
 
          when N_Function_Call            |
               N_Procedure_Call_Statement |

@@ -3616,7 +3616,8 @@ package Einfo is
 --       entries sorted in ascending order, with all duplicates eliminated,
 --       and adjacent ranges coalesced, so that there is always a gap in the
 --       values between successive entries. The entries in this list are
---       fully analyzed.
+--       fully analyzed and typed with the base type of the subtype. Note
+--       that all entries are static and have values within the subtype range.
 
 --    Storage_Size_Variable (Node15) [implementation base type only]
 --       Present in access types and task type entities. This flag is set

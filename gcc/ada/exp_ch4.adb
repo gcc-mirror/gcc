@@ -4369,7 +4369,7 @@ package body Exp_Ch4 is
             return Cond;
          end Make_Cond;
 
-      --  Start of processing for Expand_N_In
+      --  Start of processing for Expand_Set_Membership
 
       begin
          Alt := Last (Alternatives (N));
