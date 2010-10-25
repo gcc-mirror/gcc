@@ -1226,7 +1226,7 @@ package body Sem_Util is
          return;
       end if;
 
-      --  Ada 2012 AI04-0144-2 : dangerous order dependence. Actuals in nested
+      --  Ada 2012 AI04-0144-2: Dangerous order dependence. Actuals in nested
       --  calls within a construct have been collected. If one of them is
       --  writable and overlaps with another one, evaluation of the enclosing
       --  construct is nondeterministic. This is illegal in Ada 2012, but is
@@ -1278,6 +1278,7 @@ package body Sem_Util is
 
    procedure Check_Potentially_Blocking_Operation (N : Node_Id) is
       S : Entity_Id;
+
    begin
       --  N is one of the potentially blocking operations listed in 9.5.1(8).
       --  When pragma Detect_Blocking is active, the run time will raise
@@ -1294,7 +1295,6 @@ package body Sem_Util is
          if Is_Protected_Type (S) then
             Error_Msg_N
               ("potentially blocking operation in protected operation?", N);
-
             return;
          end if;
 
