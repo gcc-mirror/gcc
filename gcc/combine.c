@@ -2917,6 +2917,18 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
   else
     added_sets_0 = 0;
 
+  /* We are about to copy insns for the case where they need to be kept
+     around.  Check that they can be copied in the merged instruction.  */
+
+  if (targetm.cannot_copy_insn_p
+      && ((added_sets_2 && targetm.cannot_copy_insn_p (i2))
+	  || (i1 && added_sets_1 && targetm.cannot_copy_insn_p (i1))
+	  || (i0 && added_sets_0 && targetm.cannot_copy_insn_p (i0))))
+    {
+      undo_all ();
+      return 0;
+    }
+
   /* If the set in I2 needs to be kept around, we must make a copy of
      PATTERN (I2), so that when we substitute I1SRC for I1DEST in
      PATTERN (I2), we are only substituting for the original I1DEST, not into

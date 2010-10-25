@@ -1,3 +1,8 @@
+2010-10-25  Jie Zhang  <jie@codesourcery.com>
+
+	* combine.c (try_combine): If insns need to be kept around,
+	check that they can be copied in the merged instruction.
+
 2010-10-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* reg-stack.c (convert_regs_1): Return boolean value, true if the CFG
