@@ -1,3 +1,19 @@
+2010-10-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity, case E_Function): Allow
+	In Out/Out parameters for functions.
+	* gcc-interface/trans.c (gnu_return_var_stack): New variable.
+	(create_init_temporary): New static function.
+	(Subprogram_Body_to_gnu): Handle In Out/Out parameters for functions.
+	(call_to_gnu): Likewise.  Use create_init_temporary in order to create
+	temporaries for unaligned parameters and return value.  If there is an
+	unaligned In Out or Out parameter passed by reference, push a binding
+	level if not already done.  If a binding level has been pushed and the
+	call is returning a value, create the call statement.
+	(gnat_to_gnu) <N_Return_Statement>: Handle In Out/Out parameters for
+	functions.
+
 2010-10-22  Ben Brosgol  <brosgol@adacore.com>
 
 	* gnat_rm.texi: Add chapter on Ada 2012 support.
