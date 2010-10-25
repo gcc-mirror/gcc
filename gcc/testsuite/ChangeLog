@@ -1,5 +1,12 @@
 2010-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/pointer_discr1.adb: New test.
+	* gnat.dg/pointer_discr1_pkg1.ads: New helper.
+	* gnat.dg/pointer_discr1_pkg2.ads: Likewise.
+	* gnat.dg/pointer_discr1_pkg3.ads: Likewise.
+
+2010-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/loop_optimization8.adb: New test.
 	* gnat.dg/loop_optimization8_pkg1.ad[sb]: New helper.
 	* gnat.dg/loop_optimization8_pkg2.ad[sb]: Likewise.
