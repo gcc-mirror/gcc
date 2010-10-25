@@ -19,4 +19,6 @@ package Ada.Containers is
    type Hash_Type is mod 2**32;
    type Count_Type is range 0 .. 2**31 - 1;
 
+   Capacity_Error : exception;
+
 end Ada.Containers;

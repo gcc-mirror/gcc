@@ -811,9 +811,8 @@ package body Sem_Ch6 is
          end if;
 
          --  Apply checks suggested by AI05-0144 (dangerous order dependence)
-         --  (Disabled for now)
 
-         --  Check_Order_Dependence;
+         Check_Order_Dependence;
       end if;
    end Analyze_Function_Return;
 
@@ -1116,9 +1115,9 @@ package body Sem_Ch6 is
             Analyze_Call (N);
             Resolve (N, Standard_Void_Type);
 
-            --  Apply checks suggested by AI05-0144 (Disabled for now)
+            --  Apply checks suggested by AI05-0144
 
-            --  Check_Order_Dependence;
+            Check_Order_Dependence;
 
          else
             Analyze (N);

@@ -2744,6 +2744,18 @@ package body Sem_Res is
             return;
          end if;
 
+         --  AI05-144-2: Check dangerous order dependence within an expression
+         --  that is not a subexpression. Exclude RHS of an assignment, because
+         --  both sides may have side-effects and the check must be performed
+         --  over the statement.
+
+         if Nkind (Parent (N)) not in N_Subexpr
+           and then Nkind (Parent (N)) /= N_Assignment_Statement
+           and then Nkind (Parent (N)) /= N_Procedure_Call_Statement
+         then
+            Check_Order_Dependence;
+         end if;
+
          --  The expression is definitely NOT overloaded at this point, so
          --  we reset the Is_Overloaded flag to avoid any confusion when
          --  reanalyzing the node.
@@ -3529,12 +3541,10 @@ package body Sem_Res is
             A_Typ := Etype (A);
             F_Typ := Etype (F);
 
-            --  Save actual for subsequent check on order dependence,
-            --  and indicate whether actual is modifiable. For AI05-0144
+            --  Save actual for subsequent check on order dependence, and
+            --  indicate whether actual is modifiable. For AI05-0144-2.
 
-            --  Save_Actual (A,
-            --    Ekind (F) /= E_In_Parameter or else Is_Access_Type (F_Typ));
-            --  Why is this code commented out ???
+            Save_Actual (A, Ekind (F) /= E_In_Parameter);
 
             --  For mode IN, if actual is an entity, and the type of the formal
             --  has warnings suppressed, then we reset Never_Set_In_Source for
@@ -8228,11 +8238,8 @@ package body Sem_Res is
       R     : constant Node_Id   := Right_Opnd (N);
 
    begin
-      --  Why are the calls to Check_Order_Dependence commented out ???
       Resolve (L, B_Typ);
-      --  Check_Order_Dependence;   --  For AI05-0144
       Resolve (R, B_Typ);
-      --  Check_Order_Dependence;   --  For AI05-0144
 
       --  Check for issuing warning for always False assert/check, this happens
       --  when assertions are turned off, in which case the pragma Assert/Check

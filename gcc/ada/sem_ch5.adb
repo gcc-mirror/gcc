@@ -662,6 +662,7 @@ package body Sem_Ch5 is
       --  checks have been applied.
 
       Note_Possible_Modification (Lhs, Sure => True);
+      Check_Order_Dependence;
 
       --  ??? a real accessibility check is needed when ???
 

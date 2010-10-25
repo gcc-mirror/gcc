@@ -101,12 +101,12 @@ package body Sem_Util is
    --  whether the corresponding formal is OUT or IN OUT. Each top-level call
    --  (procedure call, condition, assignment) examines all the actuals for a
    --  possible order dependence. The table is reset after each such check.
+   --  The actuals to be checked in a call to Check_Order_Dependence are at
+   --  positions 1 .. Last.
 
    type Actual_Name is record
       Act         : Node_Id;
       Is_Writable : Boolean;
-      --  Comments needed???
-
    end record;
 
    package Actuals_In_Call is new Table.Table (
@@ -1222,9 +1222,17 @@ package body Sem_Util is
       Act2 : Node_Id;
 
    begin
-      --  This could use comments ???
+      if Ada_Version < Ada_2012 then
+         return;
+      end if;
 
-      for J in 0 .. Actuals_In_Call.Last loop
+      --  Ada2012 AI04-0144-2 : dangerous order dependence.
+      --  Actuals in nested calls within a construct have been collected.
+      --  If one of them is writeable and overlaps with another one, evaluation
+      --  of the enclosing construct is non-deterministic.
+      --  This is illegal in Ada2012, but is treated as a warning for now.
+
+      for J in 1 .. Actuals_In_Call.Last loop
          if Actuals_In_Call.Table (J).Is_Writable then
             Act1 := Actuals_In_Call.Table (J).Act;
 
@@ -1232,7 +1240,7 @@ package body Sem_Util is
                Act1 := Prefix (Act1);
             end if;
 
-            for K in 0 .. Actuals_In_Call.Last loop
+            for K in 1 .. Actuals_In_Call.Last loop
                if K /= J then
                   Act2 := Actuals_In_Call.Table (K).Act;
 
@@ -1248,14 +1256,18 @@ package body Sem_Util is
                      null;
 
                   elsif Denotes_Same_Object (Act1, Act2)
-                    and then False
+                    and then Parent (Act1) /= Parent (Act2)
                   then
-                     Error_Msg_N ("?,mighty suspicious!!!", Act1);
+                     Error_Msg_N (
+                       "result may differ if evaluated "
+                        & " after other actual in expression?", Act1);
                   end if;
                end if;
             end loop;
          end if;
       end loop;
+
+      --  Remove checked actuals from table.
 
       Actuals_In_Call.Set_Last (0);
    end Check_Order_Dependence;
@@ -2350,49 +2362,105 @@ package body Sem_Util is
    -------------------------
 
    function Denotes_Same_Object (A1, A2 : Node_Id) return Boolean is
+      Obj1 : Node_Id := A1;
+      Obj2 : Node_Id := A2;
+
+      procedure Check_Renaming (Obj : in out Node_Id);
+      --  If an object is a renaming, examine renamed object. If is is a
+      --  dereference of a variable, or an indexed expression with non-
+      --  constant indices, no overlap check can be reported.
+
+      procedure Check_Renaming (Obj : in out Node_Id) is
+      begin
+         if Is_Entity_Name (Obj)
+           and then Present (Renamed_Entity (Entity (Obj)))
+         then
+            Obj := Renamed_Entity (Entity (Obj));
+            if Nkind (Obj) = N_Explicit_Dereference
+              and then Is_Variable (Prefix (Obj))
+            then
+               Obj := Empty;
+
+            elsif Nkind (Obj) = N_Indexed_Component then
+               declare
+                  Indx : Node_Id;
+
+               begin
+                  Indx := First (Expressions (Obj));
+                  while Present (Indx) loop
+                     if not Is_OK_Static_Expression (Indx) then
+                        Obj := Empty;
+                        exit;
+                     end if;
+
+                     Next_Index (Indx);
+                  end loop;
+               end;
+            end if;
+         end if;
+      end Check_Renaming;
+
    begin
+      Check_Renaming (Obj1);
+      Check_Renaming (Obj2);
+
+      if No (Obj1)
+        or else No (Obj2)
+      then
+         return False;
+      end if;
+
       --  If we have entity names, then must be same entity
 
-      if Is_Entity_Name (A1) then
-         if Is_Entity_Name (A2) then
-            return Entity (A1) = Entity (A2);
+      if Is_Entity_Name (Obj1) then
+         if Is_Entity_Name (Obj2) then
+            return Entity (Obj1) = Entity (Obj2);
          else
             return False;
          end if;
 
       --  No match if not same node kind
 
-      elsif Nkind (A1) /= Nkind (A2) then
+      elsif Nkind (Obj1) /= Nkind (Obj2) then
          return False;
 
       --  For selected components, must have same prefix and selector
 
-      elsif Nkind (A1) = N_Selected_Component then
-         return Denotes_Same_Object (Prefix (A1), Prefix (A2))
+      elsif Nkind (Obj1) = N_Selected_Component then
+         return Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2))
            and then
-         Entity (Selector_Name (A1)) = Entity (Selector_Name (A2));
+         Entity (Selector_Name (Obj1)) = Entity (Selector_Name (Obj2));
 
       --  For explicit dereferences, prefixes must be same
 
-      elsif Nkind (A1) = N_Explicit_Dereference then
-         return Denotes_Same_Object (Prefix (A1), Prefix (A2));
+      elsif Nkind (Obj1) = N_Explicit_Dereference then
+         return Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2));
 
       --  For indexed components, prefixes and all subscripts must be the same
 
-      elsif Nkind (A1) = N_Indexed_Component then
-         if Denotes_Same_Object (Prefix (A1), Prefix (A2)) then
+      elsif Nkind (Obj1) = N_Indexed_Component then
+         if Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2)) then
             declare
                Indx1 : Node_Id;
                Indx2 : Node_Id;
 
             begin
-               Indx1 := First (Expressions (A1));
-               Indx2 := First (Expressions (A2));
+               Indx1 := First (Expressions (Obj1));
+               Indx2 := First (Expressions (Obj2));
                while Present (Indx1) loop
 
-                  --  Shouldn't we be checking that values are the same???
+                  --  Indices must denote the same static value or the same
+                  --  object.
 
-                  if not Denotes_Same_Object (Indx1, Indx2) then
+                  if Is_OK_Static_Expression (Indx1) then
+                     if not Is_OK_Static_Expression (Indx2) then
+                        return False;
+
+                     elsif Expr_Value (Indx1) /= Expr_Value (Indx2) then
+                        return False;
+                     end if;
+
+                  elsif not Denotes_Same_Object (Indx1, Indx2) then
                      return False;
                   end if;
 
@@ -2408,20 +2476,18 @@ package body Sem_Util is
 
       --  For slices, prefixes must match and bounds must match
 
-      elsif Nkind (A1) = N_Slice
-        and then Denotes_Same_Object (Prefix (A1), Prefix (A2))
+      elsif Nkind (Obj1) = N_Slice
+        and then Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2))
       then
          declare
             Lo1, Lo2, Hi1, Hi2 : Node_Id;
 
          begin
-            Get_Index_Bounds (Etype (A1), Lo1, Hi1);
-            Get_Index_Bounds (Etype (A2), Lo2, Hi2);
+            Get_Index_Bounds (Etype (Obj1), Lo1, Hi1);
+            Get_Index_Bounds (Etype (Obj2), Lo2, Hi2);
 
             --  Check whether bounds are statically identical. There is no
             --  attempt to detect partial overlap of slices.
-
-            --  What about an array and a slice of an array???
 
             return Denotes_Same_Object (Lo1, Lo2)
               and then Denotes_Same_Object (Hi1, Hi2);
@@ -2430,8 +2496,8 @@ package body Sem_Util is
          --  Literals will appear as indexes. Isn't this where we should check
          --  Known_At_Compile_Time at least if we are generating warnings ???
 
-      elsif Nkind (A1) = N_Integer_Literal then
-         return Intval (A1) = Intval (A2);
+      elsif Nkind (Obj1) = N_Integer_Literal then
+         return Intval (Obj1) = Intval (Obj2);
 
       else
          return False;
@@ -10696,7 +10762,10 @@ package body Sem_Util is
 
    procedure Save_Actual (N : Node_Id;  Writable : Boolean := False) is
    begin
-      if Is_Entity_Name (N)
+      if Ada_Version < Ada_2012 then
+         return;
+
+      elsif Is_Entity_Name (N)
         or else
           Nkind_In (N, N_Indexed_Component, N_Selected_Component, N_Slice)
         or else

@@ -225,10 +225,10 @@ package body Uname is
          Kind : constant Node_Kind := Nkind (Node);
 
       begin
-         --  Bail out on error node (guard against parse error)
+         --  Just ignore an error node (someone else will give a message)
 
          if Node = Error then
-            raise Program_Error;
+            return;
 
          --  Otherwise see what kind of node we have
 

@@ -3708,7 +3708,7 @@ package body Sem_Warn is
       Form1 := First_Formal (Subp);
       Act1  := First_Actual (N);
       while Present (Form1) and then Present (Act1) loop
-         if Ekind (Form1) = E_In_Out_Parameter then
+         if Ekind (Form1) /= E_In_Parameter then
             Form2 := First_Formal (Subp);
             Act2  := First_Actual (N);
             while Present (Form2) and then Present (Act2) loop
@@ -3739,11 +3739,11 @@ package body Sem_Warn is
                   elsif Nkind (Act2) = N_Function_Call then
                      null;
 
-                  --  If either type is elementary the aliasing is harmless.
+                  --  If type is not by-copy we can assume that  the aliasing
+                  --  is intended.
 
-                  elsif Is_Elementary_Type (Underlying_Type (Etype (Form1)))
-                          or else
-                        Is_Elementary_Type (Underlying_Type (Etype (Form2)))
+                  elsif
+                    Is_By_Reference_Type (Underlying_Type (Etype (Form1)))
                   then
                      null;
 
@@ -3762,11 +3762,21 @@ package body Sem_Warn is
                            Next_Actual (Act);
                         end loop;
 
+                        if Is_Elementary_Type (Etype (Act1))
+                          and then Ekind (Form2) = E_In_Parameter
+                        then
+                           null;  --  no real aliasing.
+
+                        elsif Is_Elementary_Type (Etype (Act2))
+                          and then Ekind (Form2) = E_In_Parameter
+                        then
+                           null;  --  ditto
+
                         --  If the call was written in prefix notation, and
                         --  thus its prefix before rewriting was a selected
                         --  component, count only visible actuals in the call.
 
-                        if Is_Entity_Name (First_Actual (N))
+                        elsif Is_Entity_Name (First_Actual (N))
                           and then Nkind (Original_Node (N)) = Nkind (N)
                           and then Nkind (Name (Original_Node (N))) =
                                                          N_Selected_Component
