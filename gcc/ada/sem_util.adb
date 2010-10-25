@@ -3045,9 +3045,9 @@ package body Sem_Util is
             Set_Scope (Def_Id, Current_Scope);
             return;
 
-         --  Analogous to privals, the discriminal generated for an entry
-         --  index parameter acts as a weak declaration. Perform minimal
-         --  decoration to avoid bogus errors.
+         --  Analogous to privals, the discriminal generated for an entry index
+         --  parameter acts as a weak declaration. Perform minimal decoration
+         --  to avoid bogus errors.
 
          elsif Is_Discriminal (Def_Id)
            and then Ekind (Discriminal_Link (Def_Id)) = E_Entry_Index_Parameter
@@ -3055,11 +3055,10 @@ package body Sem_Util is
             Set_Scope (Def_Id, Current_Scope);
             return;
 
-         --  In the body or private part of an instance, a type extension
-         --  may introduce a component with the same name as that of an
-         --  actual. The legality rule is not enforced, but the semantics
-         --  of the full type with two components of the same name are not
-         --  clear at this point ???
+         --  In the body or private part of an instance, a type extension may
+         --  introduce a component with the same name as that of an actual. The
+         --  legality rule is not enforced, but the semantics of the full type
+         --  with two components of same name are not clear at this point???
 
          elsif In_Instance_Not_Visible then
             null;
@@ -3073,9 +3072,9 @@ package body Sem_Util is
          then
             null;
 
-         --  Conversely, with front-end inlining we may compile the parent
-         --  body first, and a child unit subsequently. The context is now
-         --  the parent spec, and body entities are not visible.
+         --  Conversely, with front-end inlining we may compile the parent body
+         --  first, and a child unit subsequently. The context is now the
+         --  parent spec, and body entities are not visible.
 
          elsif Is_Child_Unit (Def_Id)
            and then Is_Package_Body_Entity (E)
@@ -3089,8 +3088,8 @@ package body Sem_Util is
             Error_Msg_Sloc := Sloc (E);
 
             --  If the previous declaration is an incomplete type declaration
-            --  this may be an attempt to complete it with a private type.
-            --  The following avoids confusing cascaded errors.
+            --  this may be an attempt to complete it with a private type. The
+            --  following avoids confusing cascaded errors.
 
             if Nkind (Parent (E)) = N_Incomplete_Type_Declaration
               and then Nkind (Parent (Def_Id)) = N_Private_Type_Declaration
@@ -3113,9 +3112,9 @@ package body Sem_Util is
                Error_Msg_N ("& conflicts with declaration#", E);
                return;
 
-            --  If the name of the unit appears in its own context clause,
-            --  a dummy package with the name has already been created, and
-            --  the error emitted. Try to continue quietly.
+            --  If the name of the unit appears in its own context clause, a
+            --  dummy package with the name has already been created, and the
+            --  error emitted. Try to continue quietly.
 
             elsif Error_Posted (E)
               and then Sloc (E) = No_Location
@@ -3144,9 +3143,9 @@ package body Sem_Util is
                Error_Msg_N ("\generic units cannot be overloaded", Def_Id);
             end if;
 
-            --  If entity is in standard, then we are in trouble, because
-            --  it means that we have a library package with a duplicated
-            --  name. That's hard to recover from, so abort!
+            --  If entity is in standard, then we are in trouble, because it
+            --  means that we have a library package with a duplicated name.
+            --  That's hard to recover from, so abort!
 
             if S = Standard_Standard then
                raise Unrecoverable_Error;
@@ -3160,17 +3159,17 @@ package body Sem_Util is
          end if;
       end if;
 
-      --  If we fall through, declaration is OK , or OK enough to continue
+      --  If we fall through, declaration is OK, at least OK enough to continue
 
-      --  If Def_Id is a discriminant or a record component we are in the
-      --  midst of inheriting components in a derived record definition.
-      --  Preserve their Ekind and Etype.
+      --  If Def_Id is a discriminant or a record component we are in the midst
+      --  of inheriting components in a derived record definition. Preserve
+      --  their Ekind and Etype.
 
       if Ekind_In (Def_Id, E_Discriminant, E_Component) then
          null;
 
-      --  If a type is already set, leave it alone (happens whey a type
-      --  declaration is reanalyzed following a call to the optimizer)
+      --  If a type is already set, leave it alone (happens when a type
+      --  declaration is reanalyzed following a call to the optimizer).
 
       elsif Present (Etype (Def_Id)) then
          null;
@@ -3227,8 +3226,8 @@ package body Sem_Util is
 
          and then In_Extended_Main_Source_Unit (Def_Id)
 
-         --  Finally, the hidden entity must be either immediately visible
-         --  or use visible (from a used package)
+         --  Finally, the hidden entity must be either immediately visible or
+         --  use visible (i.e. from a used package).
 
          and then
            (Is_Immediately_Visible (C)

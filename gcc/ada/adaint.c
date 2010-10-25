@@ -1099,11 +1099,7 @@ __gnat_stat_to_attr (int fd, char* name, struct file_attributes* attr)
        either case. */
     attr->file_length = statbuf.st_size;  /* all systems */
 
-#ifndef __MINGW32__
-  /* on Windows requires extra system call, see comment in
-     __gnat_file_exists_attr */
   attr->exists = !ret;
-#endif
 
 #if !defined (_WIN32) || defined (RTX)
   /* on Windows requires extra system call, see __gnat_is_readable_file_attr */
@@ -1343,7 +1339,8 @@ win32_filetime (HANDLE h)
 }
 
 /* As above but starting from a FILETIME.  */
-static void f2t (const FILETIME *ft, time_t *t)
+static void
+f2t (const FILETIME *ft, time_t *t)
 {
   union
   {
@@ -1363,18 +1360,14 @@ __gnat_file_time_name_attr (char* name, struct file_attributes* attr)
 {
    if (attr->timestamp == (OS_Time)-2) {
 #if defined (_WIN32) && !defined (RTX)
+      BOOL res;
+      WIN32_FILE_ATTRIBUTE_DATA fad;
       time_t ret = -1;
       TCHAR wname[GNAT_MAX_PATH_LEN];
       S2WSC (wname, name, GNAT_MAX_PATH_LEN);
 
-      HANDLE h = CreateFile
-        (wname, GENERIC_READ, FILE_SHARE_READ, 0,
-         OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0);
-
-      if (h != INVALID_HANDLE_VALUE) {
-         ret = win32_filetime (h);
-         CloseHandle (h);
-      }
+      if (res = GetFileAttributesEx (wname, GetFileExInfoStandard, &fad))
+	f2t (&fad.ftLastWriteTime, &ret);
       attr->timestamp = (OS_Time) ret;
 #else
       __gnat_stat_to_attr (-1, name, attr);
@@ -1713,17 +1706,17 @@ __gnat_stat (char *name, GNAT_STRUCT_STAT *statbuf)
 
   if (res == FALSE)
     switch (GetLastError()) {
-    case ERROR_ACCESS_DENIED:
-    case ERROR_SHARING_VIOLATION:
-    case ERROR_LOCK_VIOLATION:
-    case ERROR_SHARING_BUFFER_EXCEEDED:
-      return EACCES;
-    case ERROR_BUFFER_OVERFLOW:
-      return ENAMETOOLONG;
-    case ERROR_NOT_ENOUGH_MEMORY:
-      return ENOMEM;
-    default:
-      return ENOENT;
+      case ERROR_ACCESS_DENIED:
+      case ERROR_SHARING_VIOLATION:
+      case ERROR_LOCK_VIOLATION:
+      case ERROR_SHARING_BUFFER_EXCEEDED:
+	return EACCES;
+      case ERROR_BUFFER_OVERFLOW:
+	return ENAMETOOLONG;
+      case ERROR_NOT_ENOUGH_MEMORY:
+	return ENOMEM;
+      default:
+	return ENOENT;
     }
 
   f2t (&fad.ftCreationTime, &statbuf->st_ctime);
@@ -1758,16 +1751,7 @@ int
 __gnat_file_exists_attr (char* name, struct file_attributes* attr)
 {
    if (attr->exists == ATTR_UNSET) {
-#ifdef __MINGW32__
-      /*  On Windows do not use __gnat_stat() because of a bug in Microsoft
-         _stat() routine. When the system time-zone is set with a negative
-         offset the _stat() routine fails on specific files like CON:  */
-      TCHAR wname [GNAT_MAX_PATH_LEN + 2];
-      S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
-      attr->exists = GetFileAttributes (wname) != INVALID_FILE_ATTRIBUTES;
-#else
       __gnat_stat_to_attr (-1, name, attr);
-#endif
    }
 
    return attr->exists;

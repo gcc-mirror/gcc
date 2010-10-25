@@ -12949,8 +12949,17 @@ package body Sem_Ch3 is
                   Collect_Primitive_Operations (Parent_Type);
 
       function Check_Derived_Type return Boolean;
-      --  Check that all primitive inherited from Parent_Type are found in
+      --  Check that all the entities derived from Parent_Type are found in
       --  the list of primitives of Derived_Type exactly in the same order.
+
+      procedure Derive_Interface_Subprogram
+        (New_Subp    : in out Entity_Id;
+         Subp        : Entity_Id;
+         Actual_Subp : Entity_Id);
+      --  Derive New_Subp from the ultimate alias of the parent subprogram Subp
+      --  (which is an interface primitive). If Generic_Actual is present then
+      --  Actual_Subp is the actual subprogram corresponding with the generic
+      --  subprogram Subp.
 
       function Check_Derived_Type return Boolean is
          E        : Entity_Id;
@@ -13026,6 +13035,45 @@ package body Sem_Ch3 is
 
          return True;
       end Check_Derived_Type;
+
+      ---------------------------------
+      -- Derive_Interface_Subprogram --
+      ---------------------------------
+
+      procedure Derive_Interface_Subprogram
+        (New_Subp    : in out Entity_Id;
+         Subp        : Entity_Id;
+         Actual_Subp : Entity_Id)
+      is
+         Iface_Subp : constant Entity_Id := Ultimate_Alias (Subp);
+         Iface_Type : constant Entity_Id := Find_Dispatching_Type (Iface_Subp);
+
+      begin
+         pragma Assert (Is_Interface (Iface_Type));
+
+         Derive_Subprogram
+           (New_Subp     => New_Subp,
+            Parent_Subp  => Iface_Subp,
+            Derived_Type => Derived_Type,
+            Parent_Type  => Iface_Type,
+            Actual_Subp  => Actual_Subp);
+
+         --  Given that this new interface entity corresponds with a primitive
+         --  of the parent that was not overridden we must leave it associated
+         --  with its parent primitive to ensure that it will share the same
+         --  dispatch table slot when overridden.
+
+         if No (Actual_Subp) then
+            Set_Alias (New_Subp, Subp);
+
+         --  For instantiations this is not needed since the previous call to
+         --  Derive_Subprogram leaves the entity well decorated.
+
+         else
+            pragma Assert (Alias (New_Subp) = Actual_Subp);
+            null;
+         end if;
+      end Derive_Interface_Subprogram;
 
       --  Local variables
 
@@ -13179,7 +13227,7 @@ package body Sem_Ch3 is
             Alias_Subp := Ultimate_Alias (Subp);
 
             --  Do not derive internal entities of the parent that link
-            --  interface primitives and its covering primitive. These
+            --  interface primitives with their covering primitive. These
             --  entities will be added to this type when frozen.
 
             if Present (Interface_Alias (Subp)) then
@@ -13334,15 +13382,74 @@ package body Sem_Ch3 is
                 (Nkind (Parent (Alias_Subp)) = N_Procedure_Specification
                   and then Null_Present (Parent (Alias_Subp)))
             then
-               Derive_Subprogram
-                 (New_Subp     => New_Subp,
-                  Parent_Subp  => Alias_Subp,
-                  Derived_Type => Derived_Type,
-                  Parent_Type  => Find_Dispatching_Type (Alias_Subp),
-                  Actual_Subp  => Act_Subp);
+               --  If this is an abstract private type then we transfer the
+               --  derivation of the interface primitive from the partial view
+               --  to the full view. This is safe because all the interfaces
+               --  must be visible in the partial view. Done to avoid adding
+               --  a new interface derivation to the private part of the
+               --  enclosing package; otherwise this new derivation would be
+               --  decorated as hidden when the analysis of the enclosing
+               --  package completes.
 
-               if No (Generic_Actual) then
-                  Set_Alias (New_Subp, Subp);
+               if Is_Abstract_Type (Derived_Type)
+                 and then In_Private_Part (Current_Scope)
+                 and then Has_Private_Declaration (Derived_Type)
+               then
+                  declare
+                     Partial_View : Entity_Id;
+                     Elmt         : Elmt_Id;
+                     Ent          : Entity_Id;
+
+                  begin
+                     Partial_View := First_Entity (Current_Scope);
+                     loop
+                        exit when No (Partial_View)
+                          or else (Has_Private_Declaration (Partial_View)
+                                     and then
+                                   Full_View (Partial_View) = Derived_Type);
+
+                        Next_Entity (Partial_View);
+                     end loop;
+
+                     --  If the partial view was not found then the source code
+                     --  has errors and the derivation is not needed.
+
+                     if Present (Partial_View) then
+                        Elmt :=
+                          First_Elmt (Primitive_Operations (Partial_View));
+                        while Present (Elmt) loop
+                           Ent := Node (Elmt);
+
+                           if Present (Alias (Ent))
+                             and then Ultimate_Alias (Ent) = Alias (Subp)
+                           then
+                              Append_Elmt
+                                (Ent, Primitive_Operations (Derived_Type));
+                              exit;
+                           end if;
+
+                           Next_Elmt (Elmt);
+                        end loop;
+
+                        --  If the interface primitive was not found in the
+                        --  partial view then this interface primitive was
+                        --  overridden. We add a derivation to activate in
+                        --  Derive_Progenitor_Subprograms the machinery to
+                        --  search for it.
+
+                        if No (Elmt) then
+                           Derive_Interface_Subprogram
+                             (New_Subp    => New_Subp,
+                              Subp        => Subp,
+                              Actual_Subp => Act_Subp);
+                        end if;
+                     end if;
+                  end;
+               else
+                  Derive_Interface_Subprogram
+                    (New_Subp     => New_Subp,
+                     Subp         => Subp,
+                     Actual_Subp  => Act_Subp);
                end if;
 
             --  Case 3: Common derivation

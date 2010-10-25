@@ -3314,12 +3314,13 @@ package body Sem_Ch12 is
             end if;
          end;
 
-         --  If we are generating the calling stubs from the instantiation of
-         --  a generic RCI package, we will not use the body of the generic
-         --  package.
+         --  If we are generating calling stubs, we never need a body for an
+         --  instantiation from source. However normal processing occurs for
+         --  any generic instantiation appearing in generated code, since we
+         --  do not generate stubs in that case.
 
          if Distribution_Stub_Mode = Generate_Caller_Stub_Body
-           and then Is_Compilation_Unit (Defining_Entity (N))
+              and then Comes_From_Source (N)
          then
             Needs_Body := False;
          end if;
@@ -3999,6 +4000,9 @@ package body Sem_Ch12 is
          Analyze (Pack_Decl);
          Check_Formal_Packages (Pack_Id);
          Set_Is_Generic_Instance (Pack_Id, False);
+
+         --  Why do we clear Is_Generic_Instance??? We set it 20 lines
+         --  above???
 
          --  Body of the enclosing package is supplied when instantiating the
          --  subprogram body, after semantic analysis is completed.
