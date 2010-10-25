@@ -1,3 +1,8 @@
+2010-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/in_out_parameter2.adb: New test.
+	* gnat.dg/in_out_parameter3.adb: Likewise.
+
 2010-10-25  Jie Zhang  <jie@codesourcery.com>
 
 	g++.dg/opt/combine.c: New test.

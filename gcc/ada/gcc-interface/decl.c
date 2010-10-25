@@ -3941,7 +3941,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	bool return_by_direct_ref_p = false;
 	bool return_by_invisi_ref_p = false;
 	bool return_unconstrained_p = false;
-	bool has_copy_in_out = false;
 	bool has_stub = false;
 	int parmnum;
 
@@ -4194,15 +4193,31 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	    if (copy_in_copy_out)
 	      {
-		if (!has_copy_in_out)
+		if (!gnu_cico_list)
 		  {
-		    gcc_assert (TREE_CODE (gnu_return_type) == VOID_TYPE);
-		    gnu_return_type = make_node (RECORD_TYPE);
+		    tree gnu_new_ret_type = make_node (RECORD_TYPE);
+
+		    /* If this is a function, we also need a field for the
+		       return value to be placed.  */
+		    if (TREE_CODE (gnu_return_type) != VOID_TYPE)
+		      {
+			gnu_field
+			  = create_field_decl (get_identifier ("RETVAL"),
+					       gnu_return_type,
+					       gnu_new_ret_type, NULL_TREE,
+					       NULL_TREE, 0, 0);
+			Sloc_to_locus (Sloc (gnat_entity),
+				       &DECL_SOURCE_LOCATION (gnu_field));
+			gnu_field_list = gnu_field;
+			gnu_cico_list
+			  = tree_cons (gnu_field, void_type_node, NULL_TREE);
+		      }
+
+		    gnu_return_type = gnu_new_ret_type;
 		    TYPE_NAME (gnu_return_type) = get_identifier ("RETURN");
 		    /* Set a default alignment to speed up accesses.  */
 		    TYPE_ALIGN (gnu_return_type)
 		      = get_mode_alignment (ptr_mode);
-		    has_copy_in_out = true;
 		  }
 
 		gnu_field
