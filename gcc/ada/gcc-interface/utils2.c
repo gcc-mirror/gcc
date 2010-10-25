@@ -28,6 +28,7 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "flags.h"
 #include "ggc.h"
 #include "output.h"
 #include "tree-inline.h"
@@ -47,11 +48,6 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
-static tree find_common_type (tree, tree);
-static tree compare_arrays (tree, tree, tree);
-static tree nonbinary_modular_operation (enum tree_code, tree, tree, tree);
-static tree build_simple_component_ref (tree, tree, tree, bool);
-
 /* Return the base type of TYPE.  */
 
 tree
@@ -1024,6 +1020,11 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
       gcc_assert (TREE_CODE (get_base_type (result_type)) == BOOLEAN_TYPE);
 #endif
       result = invert_truthvalue_loc (EXPR_LOCATION (operand), operand);
+      /* When not optimizing, fold the result as invert_truthvalue_loc
+	 doesn't fold the result of comparisons.  This is intended to undo
+	 the trick used for boolean rvalues in gnat_to_gnu.  */
+      if (!optimize)
+	result = fold (result);
       break;
 
     case ATTR_ADDR_EXPR:
