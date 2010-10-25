@@ -1867,7 +1867,9 @@ include_line (gfc_char_t *line)
 		   read by anything else.  */
 
   filename = gfc_widechar_to_char (begin, -1);
-  load_file (filename, NULL, false);
+  if (load_file (filename, NULL, false) == FAILURE)
+    exit (1);
+
   gfc_free (filename);
   return true;
 }
