@@ -1,3 +1,8 @@
+2010-10-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/46140
+	* fortran/scanner.c (include_line): Check return value of load_file.
+
 2010-10-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45748
