@@ -240,7 +240,7 @@ package SCOs is
    --      expression ::= |sloc term term  (if expr is OR or OR ELSE)
    --      expression ::= !sloc term       (if expr is NOT)
 
-   --      In the last four cases, sloc is the source location of the AND, OR,
+   --      In the last three cases, sloc is the source location of the AND, OR,
    --      or NOT token, respectively.
 
    --      term ::= element

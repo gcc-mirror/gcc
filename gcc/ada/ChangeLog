@@ -1,3 +1,38 @@
+2010-10-25  Matthew Heaney  <heaney@adacore.com>
+
+	* Makefile.rtl, impunit.adb: Added a-cobove (bounded vector container)
+	to lists.
+	* a-contai.ads: Added declaration of Capacity_Error exception.
+	* a-cobove.ads, a-cobove.adb: New files.
+
+2010-10-25  Thomas Quinot  <quinot@adacore.com>
+
+	* uname.adb: Revert previous change, no longer needed after change
+	in par-ch10.adb.
+
+2010-10-25  Thomas Quinot  <quinot@adacore.com>
+
+	* scos.ads: Minor comment fix.
+
+2010-10-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment_Statement): Check dangerous order
+	dependence.
+	* sem_ch6.adb (Analyze_Procedure_Call_Statement): Ditto.
+	* sem_res.adb (Analyze_Actuals): Add actual to list of actuals for
+	current construct, for subsequent order dependence checking.
+	(Resolve): Check order dependence on expressions that are not
+	subexpressions.
+	* sem_util.adb (Check_Order_Dependence): Code cleanup, to correspond
+	to latest version of AI05-144-2.
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Code cleanup.
+
+2010-10-25  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Build_Static_Predicate): Moved out of
+	Build_Predicate_Function.
+	(Build_Static_Predicate): Complet rewrite for more general predicates
+
 2010-10-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
             Eric Botcazou  <ebotcazou@adacore.com>
 

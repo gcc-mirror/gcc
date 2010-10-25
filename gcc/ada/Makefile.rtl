@@ -114,6 +114,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-comlin$(objext) \
   a-contai$(objext) \
   a-convec$(objext) \
+  a-cobove$(objext) \
   a-coorma$(objext) \
   a-coormu$(objext) \
   a-coorse$(objext) \
