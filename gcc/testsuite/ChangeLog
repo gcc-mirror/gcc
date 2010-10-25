@@ -1,5 +1,11 @@
 2010-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/loop_optimization8.adb: New test.
+	* gnat.dg/loop_optimization8_pkg1.ad[sb]: New helper.
+	* gnat.dg/loop_optimization8_pkg2.ad[sb]: Likewise.
+
+2010-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/in_out_parameter2.adb: New test.
 	* gnat.dg/in_out_parameter3.adb: Likewise.
 
