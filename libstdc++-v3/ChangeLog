@@ -1,5 +1,25 @@
 2010-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/forward_list.h (_Fwd_list_node_base::swap): Remove.
+	(_Fwd_list_base<>::_Fwd_list_base(_Fwd_list_base&&),
+	_Fwd_list_base<>::_Fwd_list_base(_Fwd_list_base&&, const _Alloc&)):
+	Don't use swap.
+	(forward_list<>::swap): Just use std::swap.
+
+	* include/bits/forward_list.h (_Fwd_list_base<>::_Fwd_list_base(),
+	_Fwd_list_base(const _Alloc&)): Don't zero again _M_next.
+
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2010-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/hashtable.h (_Hashtable<>:_M_get_Value_allocator):
 	Remove, unused.
 

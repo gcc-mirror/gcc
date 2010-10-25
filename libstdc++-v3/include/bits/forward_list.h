@@ -47,10 +47,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
     _Fwd_list_node_base* _M_next;
 
-    static void
-    swap(_Fwd_list_node_base& __x, _Fwd_list_node_base& __y)
-    { std::swap(__x._M_next, __y._M_next); }
-
     _Fwd_list_node_base*
     _M_transfer_after(_Fwd_list_node_base* __begin)
     {
@@ -309,24 +305,26 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       { return *static_cast<const _Node_alloc_type*>(&this->_M_impl); }
 
       _Fwd_list_base()
-      : _M_impl()
-      { this->_M_impl._M_head._M_next = 0; }
+      : _M_impl() { }
 
       _Fwd_list_base(const _Alloc& __a)
-      : _M_impl(__a)
-      { this->_M_impl._M_head._M_next = 0; }
+      : _M_impl(__a) { }
 
       _Fwd_list_base(const _Fwd_list_base& __lst, const _Alloc& __a);
 
       _Fwd_list_base(_Fwd_list_base&& __lst, const _Alloc& __a)
       : _M_impl(__a)
-      { _Fwd_list_node_base::swap(this->_M_impl._M_head,
-				  __lst._M_impl._M_head); }
+      {
+	this->_M_impl._M_head._M_next = __lst._M_impl._M_head._M_next;
+	__lst._M_impl._M_head._M_next = 0;
+      }
 
       _Fwd_list_base(_Fwd_list_base&& __lst)
       : _M_impl(__lst._M_get_Node_allocator())
-      { _Fwd_list_node_base::swap(this->_M_impl._M_head,
-				  __lst._M_impl._M_head); }
+      {
+	this->_M_impl._M_head._M_next = __lst._M_impl._M_head._M_next;
+	__lst._M_impl._M_head._M_next = 0;
+      }
 
       ~_Fwd_list_base()
       { _M_erase_after(&_M_impl._M_head, 0); }
@@ -979,7 +977,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        */
       void
       swap(forward_list& __list)
-      { _Node_base::swap(this->_M_impl._M_head, __list._M_impl._M_head); }
+      { std::swap(this->_M_impl._M_head._M_next,
+		  __list._M_impl._M_head._M_next); }
 
       /**
        *  @brief Resizes the %forward_list to the specified number of
