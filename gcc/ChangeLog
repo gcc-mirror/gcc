@@ -1,3 +1,7 @@
+2010-10-25  Changpeng Fang  <changpeng.fang@amd.com>
+
+	* Changelog (2010-10-22  Changpeng Fang): Correct the Changelog entries.
+
 2010-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac: Use $cpu_type instead of $target to define the nop.
@@ -187,8 +191,8 @@
 
 2010-10-22  Changpeng Fang  <changpeng.fang@amd.com>
 
-	* gcc/config/i386/bdver1.md: New file.
-	* gcc/config/i386/i386.md (include "bdver1.md"): Invoke the
+	* config/i386/bdver1.md: New file.
+	* config/i386/i386.md (include "bdver1.md"): Invoke the
 	pipeline description for bdver1.
 	(x86_sahf_1): Add "bdver1_decode" attribute.
 	(*cmpfp_i_mixed): Likewise.
@@ -228,7 +232,7 @@
 	(sqrtxf2): Likewise.
 	(sqrt_extend<mode>xf2_i387): Likewise.
 	(*sqrt<mode>2_sse): Likewise.
-	* gcc/config/i386/sse.md (sse_cvtsi2ss): Add "bdver1_decode" attribute.
+	* config/i386/sse.md (sse_cvtsi2ss): Add "bdver1_decode" attribute.
 	(sse_cvtsi2ssq): Likewise.
 	(sse_cvtss2si): Likewise.
 	(sse_cvtss2si_2): Likewise.
@@ -261,7 +265,7 @@
 
 2010-10-22  Changpeng Fang  <changpeng.fang@amd.com>
 
-	* gcc/config/i386/i386.c (processor_costs bdver1_cost): Update
+	* config/i386/i386.c (processor_costs bdver1_cost): Update
 	insn costs and architectural parameters for bdver1.
 
 2010-10-22  Richard Guenther  <rguenther@suse.de>
