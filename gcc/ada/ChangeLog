@@ -1,3 +1,46 @@
+2010-10-25  Pascal Obry  <obry@adacore.com>
+	
+	* adaint.c (__gnat_file_time_name_attr): Use GetFileAttributesEx to get
+	the timestamp. A bit faster than opening/closing the file.
+	(__gnat_stat_to_attr): Remove kludge for Windows.
+	(__gnat_file_exists_attr): Likewise.
+	The timestamp is now retreived using GetFileAttributesEx as faster.
+
+2010-10-25  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Derive_Interface_Subprogram): New subprogram.
+	(Derive_Subprograms): For abstract private types transfer to the full
+	view entities of uncovered interface primitives. Required because if
+	the interface primitives are left in the private part of the package
+	they will be decorated as hidden when the analysis of the enclosing
+	package completes (and hence the interface primitive is not visible
+	for dispatching calls).
+
+2010-10-25  Matthew Heaney  <heaney@adacore.com>
+
+	* Makefile.rtl, impunit.adb: Added bounded set and bounded map
+	containers.
+	* a-crbltr.ads: Added declaration of generic package for bounded tree
+	types.
+	* a-rbtgbo.ads, a-rbtgbo.adb, a-rbtgbk.ads, a-rbtgbk.adb, a-btgbso.ads,
+	a-btgbso.adb, a-cborse.ads, a-cborse.adb, a-cborma.ads, a-cborma.adb:
+	New.
+
+2010-10-25  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb: Minor reformatting.
+	* usage.adb: Fix usage line for -gnatwh.
+
+2010-10-25  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation): For an
+	instantiation in an RCI spec, omit package body if instantiation comes
+	from source, even as a nested
+	package.
+	* exp_dist.adb (Add_Calling_Stubs_To_Declarations,
+	*_Support.Add_Receiving_Stubs_To_Declarations): Handle the case of
+	nested packages, package instantiations and subprogram instantiations.
+
 2010-10-25  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb (Expand_Predicated_Loop): Remove code for loop through
