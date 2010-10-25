@@ -2276,8 +2276,9 @@ package body Sem_Ch4 is
    ---------------------------
 
    procedure Analyze_Membership_Op (N : Node_Id) is
-      L     : constant Node_Id := Left_Opnd (N);
-      R     : constant Node_Id := Right_Opnd (N);
+      Loc   : constant Source_Ptr := Sloc (N);
+      L     : constant Node_Id     := Left_Opnd (N);
+      R     : constant Node_Id     := Right_Opnd (N);
 
       Index : Interp_Index;
       It    : Interp;
@@ -2439,14 +2440,39 @@ package body Sem_Ch4 is
             end loop;
          end if;
 
-      --  If not a range, it can only be a subtype mark, or else there
-      --  is a more basic error, to be diagnosed in Find_Type.
+      --  If not a range, it can be a subtype mark, or else it is
+      --  a degenerate membership test with a singleton value, i.e.
+      --  a test for equality.
 
       else
-         Find_Type (R);
-
-         if Is_Entity_Name (R) then
+         Analyze (R);
+         if Is_Entity_Name (R)
+           and then Is_Type (Entity (R))
+         then
+            Find_Type (R);
             Check_Fully_Declared (Entity (R), R);
+
+         elsif Ada_Version >= Ada_2012 then
+            if Nkind (N) = N_In then
+               Rewrite (N,
+                 Make_Op_Eq (Loc,
+                   Left_Opnd  => L,
+                   Right_Opnd => R));
+            else
+               Rewrite (N,
+                 Make_Op_Ne (Loc,
+                   Left_Opnd  => L,
+                   Right_Opnd => R));
+            end if;
+
+            Analyze (N);
+            return;
+
+         else
+            --  in previous version of the language this is an error
+            --  that will be diagnosed below.
+
+            Find_Type (R);
          end if;
       end if;
 
