@@ -1,5 +1,12 @@
 2010-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c: Include flags.h and remove prototypes.
+	(build_unary_op) <TRUTH_NOT_EXPR>: When not optimizing, fold the result
+	of the call to invert_truthvalue_loc.
+	* gcc-interface/Make-lang.in (utils2.o): Add $(FLAGS_H).
+
+2010-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (update_pointer_to): Clear TYPE_POINTER_TO and
 	TYPE_REFERENCE_TO of the old type after redirecting its pointer and
 	reference types.
