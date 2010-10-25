@@ -5479,6 +5479,11 @@ package body Sem_Ch8 is
 
             Analyze_Selected_Component (N);
 
+         --  Reference to type name in predicate/invariant expression
+
+         elsif OK_To_Reference (Etype (P)) then
+            Analyze_Selected_Component (N);
+
          elsif Is_Appropriate_For_Entry_Prefix (P_Type)
            and then not In_Open_Scopes (P_Name)
            and then (not Is_Concurrent_Type (Etype (P_Name))
@@ -5490,10 +5495,10 @@ package body Sem_Ch8 is
             Analyze_Selected_Component (N);
 
          elsif (In_Open_Scopes (P_Name)
-                  and then Ekind (P_Name) /= E_Void
-                  and then not Is_Overloadable (P_Name))
+                 and then Ekind (P_Name) /= E_Void
+                 and then not Is_Overloadable (P_Name))
            or else (Is_Concurrent_Type (Etype (P_Name))
-                      and then In_Open_Scopes (Etype (P_Name)))
+                     and then In_Open_Scopes (Etype (P_Name)))
          then
             --  Prefix denotes an enclosing loop, block, or task, i.e. an
             --  enclosing construct that is not a subprogram or accept.
@@ -5508,8 +5513,7 @@ package body Sem_Ch8 is
             --  The subprogram may be a renaming (of an enclosing scope) as
             --  in the case of the name of the generic within an instantiation.
 
-            if (Ekind (P_Name) = E_Procedure
-                 or else Ekind (P_Name) = E_Function)
+            if Ekind_In (P_Name, E_Procedure, E_Function)
               and then Present (Alias (P_Name))
               and then Is_Generic_Instance (Alias (P_Name))
             then

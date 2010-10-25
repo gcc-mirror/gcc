@@ -1,5 +1,26 @@
 2010-10-25  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch5.adb (Expand_Predicated_Loop): Remove code for loop through
+	non-static predicate, since we agree not to allow this.
+	(Expand_Predicated_Loop): Properlay handle false predicate (null
+	list in Static_Predicate field.
+	* sem_ch13.adb (Build_Static_Predicate): Extensive changes to clean up
+	handling of more general predicate forms.
+
+2010-10-25  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch4.adb, sem_util.adb: Minor reformatting.
+	* sem_ch8.adb (Find_Selected_Component): Allow selection from instance
+	of type in predicate or invariant expression.
+
+2010-10-25  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_stat_to_attr): Can set the timestamp on Windows now.
+	(f2t): New routine.
+	(__gnat_stat): Rewrite Win32 version.
+
+2010-10-25  Robert Dewar  <dewar@adacore.com>
+
 	* sem_warn.adb, einfo.ads, exp_ch4.adb: Minor comment fix
 	* sem_case.adb: Comment clarification for loops through false
 	predicates.

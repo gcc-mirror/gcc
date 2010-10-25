@@ -2440,9 +2440,8 @@ package body Sem_Ch4 is
             end loop;
          end if;
 
-      --  If not a range, it can be a subtype mark, or else it is
-      --  a degenerate membership test with a singleton value, i.e.
-      --  a test for equality.
+      --  If not a range, it can be a subtype mark, or else it is a degenerate
+      --  membership test with a singleton value, i.e. a test for equality.
 
       else
          Analyze (R);
@@ -2469,8 +2468,8 @@ package body Sem_Ch4 is
             return;
 
          else
-            --  in previous version of the language this is an error
-            --  that will be diagnosed below.
+            --  In previous version of the language this is an error that will
+            --  be diagnosed below.
 
             Find_Type (R);
          end if;
