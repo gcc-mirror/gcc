@@ -5,7 +5,7 @@
 
 2010-10-25  Jie Zhang  <jie@codesourcery.com>
 
-	g++.dg/opt/combine.c: New test.
+	* g++.dg/opt/combine.c: New test.
 
 2010-10-24  Eric Botcazou  <ebotcazou@adacore.com>
 
