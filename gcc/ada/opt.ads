@@ -933,6 +933,13 @@ package Opt is
    --  GNATMAKE
    --  Set to True when an object directory is specified with option -D
 
+   Old_Checksums     : Boolean := False;
+   Old_Old_Checksums : Boolean := False;
+   --  GPRBUILD
+   --  Set to True when the old ways of computing checksums needs to be used.
+   --  For reserved words, the old ways were to use the token value, while the
+   --  new way is to use Tok_Identifier for reserved word too.
+
    One_Compilation_Per_Obj_Dir : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  Set to True with switch --single-compile-per-obj-dir. When True, there

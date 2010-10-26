@@ -2399,6 +2399,53 @@ package body Prj.Nmsc is
                         Lang_Index.Config.Toolchain_Version :=
                           Element.Value.Value;
 
+                        --  We need a complete comment section discussing the
+                        --  need for three versions of the checksum algorithm
+                        --  and what is going on here??? Also Old and Old_Old
+                        --  are rather poor names I would say. How about
+
+                        --    Opt.Checksum_503
+                        --    Opt.Checksum_63
+
+                        --  If the Ada compiler is version 6.3 or before, then
+                        --  checksums need to be computed using the old way.
+
+                        --  Also, how about an abstraction for checking
+                        --  version numbers, something like ???
+
+                        --    if Version_Is_Before (5, 3) ....
+
+                        if Lang_Index.Name = Name_Ada then
+                           declare
+                              Vers : constant String :=
+                                       Get_Name_String (Element.Value.Value);
+                              pragma Assert (Vers'First = 1);
+
+                           begin
+                              if Vers'Length >= 8
+                                and then Vers (1 .. 5) = "GNAT "
+                                and then Vers (7) = '.'
+                                and then
+                                  (Vers (6) < '6'
+                                    or else
+                                      (Vers (6) = '6' and then Vers (8) < '4'))
+                              then
+                                 Opt.Old_Checksums := True;
+
+                                 --  If the Ada compiler is version 5.03 or
+                                 --  before, then checksums need to be computed
+                                 --  using the other old way.
+
+                                 if Vers (6) < '5'
+                                   or else (Vers (6) = '5'
+                                             and then Vers (Vers'Last) < '4')
+                                 then
+                                    Opt.Old_Old_Checksums := True;
+                                 end if;
+                              end if;
+                           end;
+                        end if;
+
                      when Name_Runtime_Library_Dir =>
 
                         --  Attribute Runtime_Library_Dir (<language>)

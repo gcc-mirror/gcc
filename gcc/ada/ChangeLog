@@ -1,3 +1,16 @@
+2010-10-26  Vincent Celier  <celier@adacore.com>
+
+	* opt.ads (Old_Checksums, Old_Old_Checksums): New Boolean flags,
+	defaulted to False.
+	* prj-nmsc.adb (Process_Project_Level_Array_Attributes): When
+	processing attribute Toolchain_Version ("Ada"), set Opt.Old_Checksums
+	and Opt.Old_Old_Checksums depending on the GNAT version.
+	* scng.adb (Accumulate_Token_Checksum_Old): New procedure.
+	(Accumulate_Token_Checksum_Old_Old): New procedure.
+	(Scan): For keywords, when Opt.Old_Checksums is True, call one of the
+	alternative procedures Accumulate_Token_Checksum_Old or
+	Accumulate_Token_Checksum_Old_Old, instead of Accumulate_Token_Checksum.
+
 2010-10-26  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcc-interface/utils2.c (build_compound_expr): New function.
