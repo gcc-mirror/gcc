@@ -18312,9 +18312,13 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 			  scope_die_for (type, context_die), type);
       equate_type_number_to_die (type, type_die);
       add_name_attribute (type_die, type_tag (type));
-      if ((dwarf_version >= 4 || !dwarf_strict)
-	  && ENUM_IS_SCOPED (type))
-	add_AT_flag (type_die, DW_AT_enum_class, 1);
+      if (dwarf_version >= 4 || !dwarf_strict)
+	{
+	  if (ENUM_IS_SCOPED (type))
+	    add_AT_flag (type_die, DW_AT_enum_class, 1);
+	  if (ENUM_IS_OPAQUE (type))
+	    add_AT_flag (type_die, DW_AT_declaration, 1);
+	}
     }
   else if (! TYPE_SIZE (type))
     return type_die;

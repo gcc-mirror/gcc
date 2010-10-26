@@ -40,7 +40,7 @@ int main()
   // { dg-error "expected" "exp" { target *-*-* } 39 }
   
   if (enum A { one, two, three } foo = one) // { dg-error "defined" "def" } 
-  // { dg-error "expected" "expected" { target *-*-* } 42 }
+  // { dg-error "not declared" "expected" { target *-*-* } 42 }
     ;
 
   struct B { operator int () { return 2; } };

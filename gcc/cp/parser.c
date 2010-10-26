@@ -12920,17 +12920,17 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       cp_lexer_consume_token (parser->lexer);
       /* Remember that it's an enumeration type.  */
       tag_type = enum_type;
-      /* Parse the optional `struct' or `class' key (for C++0x scoped
-         enums).  */
+      /* Issue a warning if the `struct' or `class' key (for C++0x scoped
+	 enums) is used here.  */
       if (cp_lexer_next_token_is_keyword (parser->lexer, RID_CLASS)
-          || cp_lexer_next_token_is_keyword (parser->lexer, RID_STRUCT))
-        {
-          if (cxx_dialect == cxx98)
-            maybe_warn_cpp0x (CPP0X_SCOPED_ENUMS);
-
-          /* Consume the `struct' or `class'.  */
-          cp_lexer_consume_token (parser->lexer);
-        }
+	  || cp_lexer_next_token_is_keyword (parser->lexer, RID_STRUCT))
+	{
+	    pedwarn (input_location, 0, "elaborated-type-specifier "
+		      "for a scoped enum must not use the %<%D%> keyword",
+		      cp_lexer_peek_token (parser->lexer)->u.value);
+	  /* Consume the `struct' or `class' and parse it anyway.  */
+	  cp_lexer_consume_token (parser->lexer);
+	}
       /* Parse the attributes.  */
       attributes = cp_parser_attributes_opt (parser);
     }
@@ -13220,7 +13220,11 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 /* Parse an enum-specifier.
 
    enum-specifier:
-     enum-key identifier [opt] enum-base [opt] { enumerator-list [opt] }
+     enum-head { enumerator-list [opt] }
+
+   enum-head:
+     enum-key identifier [opt] enum-base [opt]
+     enum-key nested-name-specifier identifier enum-base [opt]
 
    enum-key:
      enum
@@ -13229,6 +13233,9 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 
    enum-base:   [C++0x]
      : type-specifier-seq
+
+   opaque-enum-specifier:
+     enum-key identifier enum-base [opt] ;
 
    GNU Extensions:
      enum-key attributes[opt] identifier [opt] enum-base [opt] 
@@ -13241,11 +13248,18 @@ static tree
 cp_parser_enum_specifier (cp_parser* parser)
 {
   tree identifier;
-  tree type;
+  tree type = NULL_TREE;
+  tree prev_scope;
+  tree nested_name_specifier = NULL_TREE;
   tree attributes;
   bool scoped_enum_p = false;
   bool has_underlying_type = false;
+  bool nested_being_defined = false;
+  bool new_value_list = false;
+  bool is_new_type = false;
+  bool is_anonymous = false;
   tree underlying_type = NULL_TREE;
+  cp_token *type_start_token = NULL;
 
   /* Parse tentatively so that we can back up if we don't find a
      enum-specifier.  */
@@ -13262,7 +13276,7 @@ cp_parser_enum_specifier (cp_parser* parser)
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_CLASS)
       || cp_lexer_next_token_is_keyword (parser->lexer, RID_STRUCT))
     {
-      if (cxx_dialect == cxx98)
+      if (cxx_dialect < cxx0x)
         maybe_warn_cpp0x (CPP0X_SCOPED_ENUMS);
 
       /* Consume the `struct' or `class' token.  */
@@ -13273,10 +13287,65 @@ cp_parser_enum_specifier (cp_parser* parser)
 
   attributes = cp_parser_attributes_opt (parser);
 
-  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
-    identifier = cp_parser_identifier (parser);
+  /* Clear the qualification.  */
+  parser->scope = NULL_TREE;
+  parser->qualifying_scope = NULL_TREE;
+  parser->object_scope = NULL_TREE;
+
+  /* Figure out in what scope the declaration is being placed.  */
+  prev_scope = current_scope ();
+
+  type_start_token = cp_lexer_peek_token (parser->lexer);
+
+  push_deferring_access_checks (dk_no_check);
+  nested_name_specifier
+      = cp_parser_nested_name_specifier_opt (parser,
+					     /*typename_keyword_p=*/true,
+					     /*check_dependency_p=*/false,
+					     /*type_p=*/false,
+					     /*is_declaration=*/false);
+
+  if (nested_name_specifier)
+    {
+      tree name;
+
+      identifier = cp_parser_identifier (parser);
+      name =  cp_parser_lookup_name (parser, identifier,
+				     enum_type,
+				     /*is_template=*/false,
+				     /*is_namespace=*/false,
+				     /*check_dependency=*/true,
+				     /*ambiguous_decls=*/NULL,
+				     input_location);
+      if (name)
+	{
+	  type = TREE_TYPE (name);
+	  if (TREE_CODE (type) == TYPENAME_TYPE)
+	    {
+	      /* Are template enums allowed in ISO? */
+	      if (template_parm_scope_p ())
+		pedwarn (type_start_token->location, OPT_pedantic,
+			 "%qD is an enumeration template", name);
+	      /* ignore a typename reference, for it will be solved by name
+	         in start_enum.  */
+	      type = NULL_TREE;
+	    }
+	}
+      else
+	error_at (type_start_token->location,
+		  "%qD is not an enumerator-name", identifier);
+    }
   else
-    identifier = make_anon_name ();
+    {
+      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	identifier = cp_parser_identifier (parser);
+      else
+	{
+	  identifier = make_anon_name ();
+	  is_anonymous = true;
+	}
+    }
+  pop_deferring_access_checks ();
 
   /* Check for the `:' that denotes a specified underlying type in C++0x.
      Note that a ':' could also indicate a bitfield width, however.  */
@@ -13296,7 +13365,7 @@ cp_parser_enum_specifier (cp_parser* parser)
       if (!cp_parser_parse_definitely (parser))
 	return NULL_TREE;
 
-      if (cxx_dialect == cxx98)
+      if (cxx_dialect < cxx0x)
         maybe_warn_cpp0x (CPP0X_SCOPED_ENUMS);
 
       has_underlying_type = true;
@@ -13314,13 +13383,38 @@ cp_parser_enum_specifier (cp_parser* parser)
   /* Look for the `{' but don't consume it yet.  */
   if (!cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {
-      cp_parser_error (parser, "expected %<{%>");
-      if (has_underlying_type)
-	return NULL_TREE;
+      if (cxx_dialect < cxx0x || (!scoped_enum_p && !underlying_type))
+	{
+	  cp_parser_error (parser, "expected %<{%>");
+	  if (has_underlying_type)
+	    return NULL_TREE;
+	}
+      /* An opaque-enum-specifier must have a ';' here.  */
+      if ((scoped_enum_p || underlying_type)
+	  && cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
+	{
+	  cp_parser_error (parser, "expected %<;%> or %<{%>");
+	  if (has_underlying_type)
+	    return NULL_TREE;
+	}
     }
 
   if (!has_underlying_type && !cp_parser_parse_definitely (parser))
     return NULL_TREE;
+
+  if (nested_name_specifier)
+    {
+      if (CLASS_TYPE_P (nested_name_specifier))
+	{
+	  nested_being_defined = TYPE_BEING_DEFINED (nested_name_specifier);
+	  TYPE_BEING_DEFINED (nested_name_specifier) = 1;
+	  push_scope (nested_name_specifier);
+	}
+      else if (TREE_CODE (nested_name_specifier) == NAMESPACE_DECL)
+	{
+	  push_nested_namespace (nested_name_specifier);
+	}
+    }
 
   /* Issue an error message if type-definitions are forbidden here.  */
   if (!cp_parser_check_type_definition (parser))
@@ -13329,23 +13423,89 @@ cp_parser_enum_specifier (cp_parser* parser)
     /* Create the new type.  We do this before consuming the opening
        brace so the enum will be recorded as being on the line of its
        tag (or the 'enum' keyword, if there is no tag).  */
-    type = start_enum (identifier, underlying_type, scoped_enum_p);
-  
-  /* Consume the opening brace.  */
-  cp_lexer_consume_token (parser->lexer);
+    type = start_enum (identifier, type, underlying_type,
+		       scoped_enum_p, &is_new_type);
 
-  if (type == error_mark_node)
+  /* If the next token is not '{' it is an opaque-enum-specifier or an
+     elaborated-type-specifier.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {
-      cp_parser_skip_to_end_of_block_or_statement (parser);
-      return error_mark_node;
+      if (nested_name_specifier)
+	{
+	  /* The following catches invalid code such as:
+	     enum class S<int>::E { A, B, C }; */
+	  if (!processing_specialization
+	      && CLASS_TYPE_P (nested_name_specifier)
+	      && CLASSTYPE_USE_TEMPLATE (nested_name_specifier))
+	    error_at (type_start_token->location, "cannot add an enumerator "
+		      "list to a template instantiation");
+
+	  /* If that scope does not contain the scope in which the
+	     class was originally declared, the program is invalid.  */
+	  if (prev_scope && !is_ancestor (prev_scope, nested_name_specifier))
+	    {
+	      if (at_namespace_scope_p ())
+		error_at (type_start_token->location,
+			  "declaration of %qD in namespace %qD which does not "
+			  "enclose %qD",
+			  type, prev_scope, nested_name_specifier);
+	      else
+		error_at (type_start_token->location,
+			  "declaration of %qD in %qD which does not enclose %qD",
+			  type, prev_scope, nested_name_specifier);
+	      type = error_mark_node;
+	    }
+	}
+
+      if (scoped_enum_p)
+	begin_scope (sk_scoped_enum, type);
+
+      /* Consume the opening brace.  */
+      cp_lexer_consume_token (parser->lexer);
+
+      if (type == error_mark_node)
+	; /* Nothing to add */
+      else if (OPAQUE_ENUM_P (type)
+	       || (cxx_dialect > cxx98 && processing_specialization))
+	{
+	  new_value_list = true;
+	  SET_OPAQUE_ENUM_P (type, false);
+	  DECL_SOURCE_LOCATION (TYPE_NAME (type)) = type_start_token->location;
+	}
+      else
+	{
+	  error_at (type_start_token->location, "multiple definition of %q#T", type);
+	  error_at (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
+		    "previous definition here");
+	  type = error_mark_node;
+	}
+
+      if (type == error_mark_node)
+	cp_parser_skip_to_end_of_block_or_statement (parser);
+      /* If the next token is not '}', then there are some enumerators.  */
+      else if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_BRACE))
+	cp_parser_enumerator_list (parser, type);
+
+      /* Consume the final '}'.  */
+      cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
+
+      if (scoped_enum_p)
+	finish_scope ();
     }
-
-  /* If the next token is not '}', then there are some enumerators.  */
-  if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_BRACE))
-    cp_parser_enumerator_list (parser, type);
-
-  /* Consume the final '}'.  */
-  cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
+  else
+    {
+      /* If a ';' follows, then it is an opaque-enum-specifier
+	and additional restrictions apply.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	{
+	  if (is_anonymous)
+	    error_at (type_start_token->location,
+		      "opaque-enum-specifier without name");
+	  else if (nested_name_specifier)
+	    error_at (type_start_token->location,
+		      "opaque-enum-specifier must use a simple identifier");
+	}
+    }
 
   /* Look for trailing attributes to apply to this enumeration, and
      apply them if appropriate.  */
@@ -13359,8 +13519,26 @@ cp_parser_enum_specifier (cp_parser* parser)
     }
 
   /* Finish up the enumeration.  */
-  finish_enum (type);
+  if (type != error_mark_node)
+    {
+      if (new_value_list)
+	finish_enum_value_list (type);
+      if (is_new_type)
+	finish_enum (type);
+    }
 
+  if (nested_name_specifier)
+    {
+      if (CLASS_TYPE_P (nested_name_specifier))
+	{
+	  TYPE_BEING_DEFINED (nested_name_specifier) = nested_being_defined;
+	  pop_scope (nested_name_specifier);
+	}
+      else if (TREE_CODE (nested_name_specifier) == NAMESPACE_DECL)
+	{
+	  pop_nested_namespace (nested_name_specifier);
+	}
+    }
   return type;
 }
 

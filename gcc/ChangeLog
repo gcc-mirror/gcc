@@ -1,3 +1,9 @@
+2010-10-25  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	Implement opaque-enum-specifiesr for C++0x
+	* tree.h (ENUM_IS_OPAQUE): New.
+	* dwarf2out.c (gen_enumeration_type_die): Use ENUM_IS_OPAQUE.
+
 2010-10-26  Jie Zhang  <jie@codesourcery.com>
 
 	* stor-layout.c (layout_decl): Use the field's type to

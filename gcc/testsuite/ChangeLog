@@ -1,3 +1,20 @@
+2010-10-25  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	Implement opaque-enum-specifiers for C++0x
+	* g++.dg/cpp0x/forw_enum1.C: New.
+	* g++.dg/cpp0x/forw_enum2.C: New.
+	* g++.dg/cpp0x/forw_enum3.C: New.
+	* g++.dg/cpp0x/forw_enum4.C: New.
+	* g++.dg/cpp0x/forw_enum5.C: New.
+	* g++.dg/cpp0x/forw_enum6.C: New.
+	* g++.dg/cpp0x/forw_enum7.C: New.
+	* g++.dg/cpp0x/forw_enum8.C: New.
+	* g++.dg/cpp0x/forw_enum9.C: New.
+	* g++.dg/parse/enum3.C: Add new errors.
+	* g++.dg/cpp0x/scoped_enum.C: Avoid unwanted warning.
+	* g++.dg/cpp0x/auto9.C: Add new error.
+	* g++.dg/template/crash79.C: Add new errors.
+
 2010-10-26  Jie Zhang  <jie@codesourcery.com>
 
 	* gcc.target/arm/volatile-bitfields-1.c: New test.
