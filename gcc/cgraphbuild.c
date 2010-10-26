@@ -361,16 +361,19 @@ build_cgraph_edges (void)
 	      && gimple_omp_parallel_child_fn (stmt))
 	    {
 	      tree fn = gimple_omp_parallel_child_fn (stmt);
-	      cgraph_mark_needed_node (cgraph_node (fn));
+	      ipa_record_reference (node, NULL, cgraph_node (fn),
+				    NULL, IPA_REF_ADDR, stmt);
 	    }
 	  if (gimple_code (stmt) == GIMPLE_OMP_TASK)
 	    {
 	      tree fn = gimple_omp_task_child_fn (stmt);
 	      if (fn)
-		cgraph_mark_needed_node (cgraph_node (fn));
+		ipa_record_reference (node, NULL, cgraph_node (fn),
+				      NULL, IPA_REF_ADDR, stmt);
 	      fn = gimple_omp_task_copy_fn (stmt);
 	      if (fn)
-		cgraph_mark_needed_node (cgraph_node (fn));
+		ipa_record_reference (node, NULL, cgraph_node (fn),
+				      NULL, IPA_REF_ADDR, stmt);
 	    }
 	}
       for (gsi = gsi_start (phi_nodes (bb)); !gsi_end_p (gsi); gsi_next (&gsi))
