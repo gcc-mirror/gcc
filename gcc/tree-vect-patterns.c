@@ -257,7 +257,7 @@ vect_recog_dot_prod_pattern (gimple last_stmt, tree *type_in, tree *type_out)
   stmt = SSA_NAME_DEF_STMT (oprnd0);
 
   /* It could not be the dot_prod pattern if the stmt is outside the loop.  */
-  if (!flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
+  if (!gimple_bb (stmt) || !flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
     return NULL;
 
   /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi

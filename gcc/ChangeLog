@@ -1,3 +1,9 @@
+2010-10-26  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/46167
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Check that there
+	is basic block for the statement.
+
 2010-10-26  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.c (pdp11_f_format, pdp11_d_format): Update to

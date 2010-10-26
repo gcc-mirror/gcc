@@ -126,6 +126,11 @@ set O1_VECTCFLAGS $DEFAULT_VECTCFLAGS
 lappend O1_VECTCFLAGS "-O1"
 lappend O1_VECTCFLAGS "-fdump-tree-vect-details"
 
+global O_VECTCFLAGS
+set O_VECTCFLAGS $DEFAULT_VECTCFLAGS
+lappend O_VECTCFLAGS "-O"
+lappend O_VECTCFLAGS "-fdump-tree-vect-details"
+
 lappend DEFAULT_VECTCFLAGS "-O2"
 
 # Tests that should be run without generating dump info
@@ -286,6 +291,10 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/O3-*.\[cS\]]]  \
 # With -O1
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/O1-*.\[cS\]]]  \
         "" $O1_VECTCFLAGS
+
+# With -O
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/O-*.\[cS\]]]  \
+        "" $O_VECTCFLAGS
 
 # -fno-tree-reassoc
 set VECT_SLP_CFLAGS $SAVED_VECT_SLP_CFLAGS
