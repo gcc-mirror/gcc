@@ -170,12 +170,11 @@ process_references (struct ipa_ref_list *list,
 	{
 	  struct cgraph_node *node = ipa_ref_node (ref);
 	  if (!node->reachable
+	      && node->analyzed
 	      && (!DECL_EXTERNAL (node->decl)
 	          || before_inlining_p))
-	    {
-	      node->reachable = true;
-	      enqueue_cgraph_node (node, first);
-	    }
+	    node->reachable = true;
+	  enqueue_cgraph_node (node, first);
 	}
       else
 	{
@@ -304,15 +303,15 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  if (node->reachable)
 	    {
 	      for (e = node->callees; e; e = e->next_callee)
-		if (!e->callee->reachable
-		    && node->analyzed
-		    && (!e->inline_failed || !e->callee->analyzed
-			|| (!DECL_EXTERNAL (e->callee->decl))
-			|| before_inlining_p))
-		  {
+		{
+		  if (!e->callee->reachable
+		      && node->analyzed
+		      && (!e->inline_failed
+			  || !DECL_EXTERNAL (e->callee->decl)
+			  || before_inlining_p))
 		    e->callee->reachable = true;
-		    enqueue_cgraph_node (e->callee, &first);
-		  }
+		  enqueue_cgraph_node (e->callee, &first);
+		}
 	      process_references (&node->ref_list, &first, &first_varpool, before_inlining_p);
 	    }
 
@@ -416,7 +415,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	      found = true;
 
 	  /* If so, we need to keep node in the callgraph.  */
-	  if (found || node->needed)
+	  if (found)
 	    {
 	      if (node->analyzed)
 		{
