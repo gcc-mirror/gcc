@@ -87,6 +87,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-calfor$(objext) \
   a-catizo$(objext) \
   a-cborse$(objext) \
+  a-cbdlli$(objext) \
   a-cborma$(objext) \
   a-cdlili$(objext) \
   a-cgaaso$(objext) \
