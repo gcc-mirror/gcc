@@ -6859,22 +6859,22 @@ package body Sem_Util is
    -----------------------------------
 
    function Is_Partially_Initialized_Type
-     (Typ          : Entity_Id;
-      Include_Null : Boolean := True) return Boolean
+     (Typ              : Entity_Id;
+      Include_Implicit : Boolean := True) return Boolean
    is
    begin
       if Is_Scalar_Type (Typ) then
          return False;
 
       elsif Is_Access_Type (Typ) then
-         return Include_Null;
+         return Include_Implicit;
 
       elsif Is_Array_Type (Typ) then
 
          --  If component type is partially initialized, so is array type
 
          if Is_Partially_Initialized_Type
-              (Component_Type (Typ), Include_Null)
+              (Component_Type (Typ), Include_Implicit)
          then
             return True;
 
@@ -6888,9 +6888,10 @@ package body Sem_Util is
 
       elsif Is_Record_Type (Typ) then
 
-         --  A discriminated type is always partially initialized
+         --  A discriminated type is always partially initialized if in
+         --  all mode
 
-         if Has_Discriminants (Typ) then
+         if Has_Discriminants (Typ) and then Include_Implicit then
             return True;
 
          --  A tagged type is always partially initialized
@@ -6929,7 +6930,7 @@ package body Sem_Util is
                      --  initialized, then the enclosing record type is also.
 
                      elsif Is_Partially_Initialized_Type
-                             (Etype (Ent), Include_Null)
+                             (Etype (Ent), Include_Implicit)
                      then
                         return True;
                      end if;
@@ -6969,7 +6970,7 @@ package body Sem_Util is
             if No (U) then
                return True;
             else
-               return Is_Partially_Initialized_Type (U, Include_Null);
+               return Is_Partially_Initialized_Type (U, Include_Implicit);
             end if;
          end;
 

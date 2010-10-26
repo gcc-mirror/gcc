@@ -1,5 +1,51 @@
 2010-10-26  Matthew Heaney  <heaney@adacore.com>
 
+	* Makefile.rtl, impunit.adb: Add bounded hashed set and bounded hashed
+	map containers.
+	* a-cohata.ads: Add declaration of generic package for bounded hash
+	table types.
+	* a-chtgbo.ads, a-chtgbo.adb, a-chtgbk.ads, a-chtgbk.adb, a-cbhase.ads,
+	a-cbhase.adb, a-cbhama.ads, a-cbhama.adb: New files.
+
+2010-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb: Improve warning message on overlapping actuals.
+
+2010-10-26  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch4.adb, exp_dist.adb: Minor reformatting.
+
+2010-10-26  Vincent Celier  <celier@adacore.com>
+
+	* makeusg.adb (Makeusg): Add lines for switches -vl, -vm and -vh.
+
+2010-10-26  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Move generation of
+	predicate check to analyzer, since too much rewriting occurs in the
+	analyzer.
+	* sem_ch13.adb (Build_Predicate_Function): Change calling sequence, and
+	change the order in which things are done to fix several errors in
+	dealing with qualification of the type name.
+	(Build_Static_Predicate): Built static predicate after full analysis
+	of the body. This is necessary to fix several problems.
+	* sem_ch3.adb (Analyze_Object_Declaration): Move predicate check here
+	from expander, since too much expansion occurs in the analyzer to leave
+	it that late.
+	(Analyze_Object_Declaration): Change parameter Include_Null to new name
+	Include_Implicit in Is_Partially_Initialized_Type call.
+	(Analyze_Subtype_Declaration): Make sure predicates are proapagated in
+	some strange cases of internal subtype generation.
+	* sem_util.ads, sem_util.adb (Is_Partially_Initialized_Type): Change
+	Include_Null to Include_Implicit, now includes the case of
+	discriminants.
+
+2010-10-26  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_rm.texi: Revise the documentation for pragma Eliminate. 
+
+2010-10-26  Matthew Heaney  <heaney@adacore.com>
+
 	* Makefile.rtl, impunit.adb: Added bounded list container.
 	* a-cbdlli.ads, a-cbdlli.adb: New file.
 
