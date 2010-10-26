@@ -5151,7 +5151,7 @@ package body Sem_Ch3 is
             Loc  : constant Source_Ptr := Sloc (N);
             Anon : constant Entity_Id :=
                      Make_Defining_Identifier (Loc,
-                       New_External_Name (Chars (Derived_Type), 'T'));
+                       Chars => New_External_Name (Chars (Derived_Type), 'T'));
             Decl : Node_Id;
 
          begin
@@ -5450,7 +5450,7 @@ package body Sem_Ch3 is
 
          Implicit_Base :=
            Make_Defining_Identifier (Sloc (Derived_Type),
-             New_External_Name (Chars (Derived_Type), 'B'));
+             Chars => New_External_Name (Chars (Derived_Type), 'B'));
 
          --  Indicate the proper nature of the derived type. This must be done
          --  before analysis of the literals, to recognize cases when a literal
@@ -6102,8 +6102,9 @@ package body Sem_Ch3 is
          if not Is_Private_Type (Full_View (Parent_Type))
            and then (In_Open_Scopes (Scope (Parent_Type)))
          then
-            Full_Der := Make_Defining_Identifier (Sloc (Derived_Type),
-                                              Chars (Derived_Type));
+            Full_Der :=
+              Make_Defining_Identifier
+                (Sloc (Derived_Type), Chars (Derived_Type));
             Set_Is_Itype (Full_Der);
             Set_Has_Private_Declaration (Full_Der);
             Set_Has_Private_Declaration (Derived_Type);
@@ -6175,8 +6176,8 @@ package body Sem_Ch3 is
            and then not Is_Completion
          then
             Full_Der :=
-              Make_Defining_Identifier (Sloc (Derived_Type),
-                Chars => Chars (Derived_Type));
+              Make_Defining_Identifier
+                (Sloc (Derived_Type), Chars (Derived_Type));
             Set_Is_Itype (Full_Der);
             Set_Has_Private_Declaration (Full_Der);
             Set_Has_Private_Declaration (Derived_Type);
@@ -6249,8 +6250,8 @@ package body Sem_Ch3 is
             --  will be installed when the enclosing child body is compiled.
 
             Full_Der :=
-              Make_Defining_Identifier (Sloc (Derived_Type),
-                Chars => Chars (Derived_Type));
+              Make_Defining_Identifier
+                (Sloc (Derived_Type), Chars (Derived_Type));
             Set_Is_Itype (Full_Der);
             Build_Itype_Reference (Full_Der, N);
 
@@ -7878,9 +7879,7 @@ package body Sem_Ch3 is
    begin
       --  A discriminal has the same name as the discriminant
 
-      D_Minal :=
-        Make_Defining_Identifier (Sloc (Discrim),
-          Chars => Chars (Discrim));
+      D_Minal := Make_Defining_Identifier (Sloc (Discrim), Chars (Discrim));
 
       Set_Ekind     (D_Minal, E_In_Parameter);
       Set_Mechanism (D_Minal, Default_Mechanism);
@@ -8682,8 +8681,7 @@ package body Sem_Ch3 is
                    New_Reference_To (Subp, Loc)),
 
                Make_Pragma_Argument_Association (Loc,
-                 Expression =>
-                   Make_Identifier (Loc, Iface_Kind))));
+                 Expression => Make_Identifier (Loc, Iface_Kind))));
 
          --  The pragma doesn't need to be analyzed because it is internaly
          --  build. It is safe to directly register it as a rep item since we
@@ -13929,8 +13927,8 @@ package body Sem_Ch3 is
                           New_Copy (Subtype_Indication
                                      (Parent (Partial_View))));
 
-                        New_Iface := Make_Identifier (Sloc (N),
-                                       Chars (Parent_Type));
+                        New_Iface :=
+                          Make_Identifier (Sloc (N), Chars (Parent_Type));
                         Append (New_Iface, Interface_List (Def));
 
                         --  Analyze the transformed code
@@ -16179,10 +16177,8 @@ package body Sem_Ch3 is
 
       Set_Scalar_Range (T,
         Make_Range (Sloc (Mod_Expr),
-          Low_Bound  =>
-            Make_Integer_Literal (Sloc (Mod_Expr), 0),
-          High_Bound =>
-            Make_Integer_Literal (Sloc (Mod_Expr), M_Val - 1)));
+          Low_Bound  => Make_Integer_Literal (Sloc (Mod_Expr), 0),
+          High_Bound => Make_Integer_Literal (Sloc (Mod_Expr), M_Val - 1)));
 
       --  Properly analyze the literals for the range. We do this manually
       --  because we can't go calling Resolve, since we are resolving these

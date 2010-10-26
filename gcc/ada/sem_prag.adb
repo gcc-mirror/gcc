@@ -6032,9 +6032,7 @@ package body Sem_Prag is
             Expr := Get_Pragma_Arg (Arg1);
             Newa := New_List (
               Make_Pragma_Argument_Association (Loc,
-                Expression =>
-                  Make_Identifier (Loc,
-                    Chars => Name_Assertion)),
+                Expression => Make_Identifier (Loc, Name_Assertion)),
 
               Make_Pragma_Argument_Association (Sloc (Expr),
                 Expression => Expr));
@@ -6083,14 +6081,11 @@ package body Sem_Prag is
 
                 Pragma_Argument_Associations => New_List (
                   Make_Pragma_Argument_Association (Loc,
-                    Expression =>
-                      Make_Identifier (Loc,
-                        Chars => Name_Assertion)),
+                    Expression => Make_Identifier (Loc, Name_Assertion)),
 
                   Make_Pragma_Argument_Association (Loc,
                     Expression =>
-                      Make_Identifier (Sloc (Policy),
-                        Chars => Chars (Policy))))));
+                      Make_Identifier (Sloc (Policy), Chars (Policy))))));
 
             Set_Analyzed (N);
             Set_Next_Pragma (N, Opt.Check_Policy_List);
@@ -11228,9 +11223,7 @@ package body Sem_Prag is
                    Chars => Name_Check,
                    Pragma_Argument_Associations => New_List (
                      Make_Pragma_Argument_Association (Loc,
-                       Expression =>
-                         Make_Identifier (Loc,
-                           Chars => Name_Precondition)),
+                       Expression => Make_Identifier (Loc, Name_Precondition)),
 
                      Make_Pragma_Argument_Association (Sloc (Arg1),
                        Expression => Relocate_Node (Get_Pragma_Arg (Arg1))))));
@@ -14256,9 +14249,7 @@ package body Sem_Prag is
              Chars                        => Name_Suppress,
              Pragma_Argument_Associations => New_List (
                Make_Pragma_Argument_Association (Sloc (N),
-                 Expression =>
-                   Make_Identifier (Sloc (N),
-                     Chars => Name_All_Checks)))));
+                 Expression => Make_Identifier (Sloc (N), Name_All_Checks)))));
       end if;
 
       --  Nothing else to do at the current time!

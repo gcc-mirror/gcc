@@ -580,7 +580,7 @@ package body Exp_Ch3 is
       begin
          Comp :=
            Make_Indexed_Component (Loc,
-             Prefix => Make_Identifier (Loc, Name_uInit),
+             Prefix      => Make_Identifier (Loc, Name_uInit),
              Expressions => Index_List);
 
          if Needs_Simple_Initialization (Comp_Type) then
@@ -645,7 +645,7 @@ package body Exp_Ch3 is
                           Make_Attribute_Reference (Loc,
                             Prefix => Make_Identifier (Loc, Name_uInit),
                             Attribute_Name  => Name_Range,
-                            Expressions => New_List (
+                            Expressions     => New_List (
                               Make_Integer_Literal (Loc, N))))),
                 Statements =>  Init_One_Dimension (N + 1)));
          end if;
@@ -872,8 +872,8 @@ package body Exp_Ch3 is
       Decl :=
         Make_Object_Renaming_Declaration (Loc,
           Defining_Identifier => M_Id,
-          Subtype_Mark => New_Reference_To (Standard_Integer, Loc),
-          Name => Make_Identifier (Loc, Name_uMaster));
+          Subtype_Mark        => New_Reference_To (Standard_Integer, Loc),
+          Name                => Make_Identifier (Loc, Name_uMaster));
       Insert_Before (P, Decl);
       Analyze (Decl);
 
@@ -938,8 +938,7 @@ package body Exp_Ch3 is
          --  Replace the discriminant which controls the variant, with the name
          --  of the formal of the checking function.
 
-         Set_Expression (Case_Node,
-           Make_Identifier (Loc, Chars (Case_Id)));
+         Set_Expression (Case_Node, Make_Identifier (Loc, Chars (Case_Id)));
 
          Choice := First (Discrete_Choices (Variant));
 
@@ -1712,8 +1711,8 @@ package body Exp_Ch3 is
       Decl :=
         Make_Object_Renaming_Declaration (Loc,
           Defining_Identifier => M_Id,
-          Subtype_Mark => New_Reference_To (RTE (RE_Master_Id), Loc),
-          Name => Make_Identifier (Loc, Name_uMaster));
+          Subtype_Mark        => New_Reference_To (RTE (RE_Master_Id), Loc),
+          Name                => Make_Identifier (Loc, Name_uMaster));
       Insert_Before (N, Decl);
       Analyze (Decl);
       return M_Id;
@@ -1861,7 +1860,7 @@ package body Exp_Ch3 is
          Loc := Sloc (N);
          Lhs :=
            Make_Selected_Component (Loc,
-             Prefix => Make_Identifier (Loc, Name_uInit),
+             Prefix        => Make_Identifier (Loc, Name_uInit),
              Selector_Name => New_Occurrence_Of (Id, Loc));
          Set_Assignment_OK (Lhs);
 
@@ -2162,11 +2161,11 @@ package body Exp_Ch3 is
                   Make_Simple_Return_Statement (Loc,
                     Expression =>
                       Make_Attribute_Reference (Loc,
-                        Prefix =>
+                        Prefix         =>
                           Make_Selected_Component (Loc,
-                            Prefix => Make_Identifier (Loc, Name_uO),
-                            Selector_Name => New_Reference_To
-                                               (Iface_Comp, Loc)),
+                            Prefix        => Make_Identifier (Loc, Name_uO),
+                            Selector_Name =>
+                              New_Reference_To (Iface_Comp, Loc)),
                         Attribute_Name => Name_Position)))));
 
             Set_Ekind       (Func_Id, E_Function);
@@ -2446,7 +2445,7 @@ package body Exp_Ch3 is
                  Make_Assignment_Statement (Loc,
                    Name =>
                      Make_Selected_Component (Loc,
-                       Prefix => Make_Identifier (Loc, Name_uInit),
+                       Prefix        => Make_Identifier (Loc, Name_uInit),
                        Selector_Name =>
                          New_Reference_To
                            (First_Tag_Component (Rec_Type), Loc)),
@@ -2501,7 +2500,7 @@ package body Exp_Ch3 is
                  Make_Assignment_Statement (Loc,
                    Name =>
                      Make_Selected_Component (Loc,
-                       Prefix => Make_Identifier (Loc, Name_uInit),
+                       Prefix        => Make_Identifier (Loc, Name_uInit),
                        Selector_Name =>
                          New_Reference_To
                            (First_Tag_Component (Rec_Type), Loc)),
@@ -2863,14 +2862,13 @@ package body Exp_Ch3 is
                Append_To (Statement_List,
                  Make_Assignment_Statement (Loc,
                    Name => Make_Selected_Component (Loc,
-                     Prefix => Make_Identifier (Loc, Name_uInit),
+                     Prefix        => Make_Identifier (Loc, Name_uInit),
                      Selector_Name => Make_Identifier (Loc, Name_uTask_Id)),
                    Expression => Make_Attribute_Reference (Loc,
                      Prefix =>
                        Make_Selected_Component (Loc,
-                         Prefix => Make_Identifier (Loc, Name_uInit),
-                         Selector_Name =>
-                           Make_Identifier (Loc, Name_uATCB)),
+                         Prefix        => Make_Identifier (Loc, Name_uInit),
+                         Selector_Name => Make_Identifier (Loc, Name_uATCB)),
                      Attribute_Name => Name_Unchecked_Access)));
             end if;
 
@@ -2914,12 +2912,12 @@ package body Exp_Ch3 is
                                     RTE (RE_Bind_Interrupt_To_Entry), Loc),
                                   Parameter_Associations => New_List (
                                     Make_Selected_Component (Loc,
-                                      Prefix =>
+                                      Prefix        =>
                                         Make_Identifier (Loc, Name_uInit),
                                       Selector_Name =>
                                         Make_Identifier (Loc, Name_uTask_Id)),
-                                    Entry_Index_Expression (
-                                      Loc, Ent, Empty, Task_Type),
+                                    Entry_Index_Expression
+                                      (Loc, Ent, Empty, Task_Type),
                                     Expression (Vis_Decl))));
                            end if;
                         end if;
@@ -5757,13 +5755,12 @@ package body Exp_Ch3 is
             Pos_Expr :=
               Convert_To (Standard_Integer,
                 Make_Op_Subtract (Loc,
-                  Left_Opnd =>
-                     Unchecked_Convert_To (Ityp,
-                       Make_Identifier (Loc, Name_uA)),
-                   Right_Opnd =>
-                     Make_Integer_Literal (Loc,
-                        Intval =>
-                          Enumeration_Rep (First_Literal (Typ)))));
+                  Left_Opnd  =>
+                    Unchecked_Convert_To
+                     (Ityp, Make_Identifier (Loc, Name_uA)),
+                  Right_Opnd =>
+                    Make_Integer_Literal (Loc,
+                      Intval => Enumeration_Rep (First_Literal (Typ)))));
          end if;
 
          Append_To (Lst,
@@ -5856,8 +5853,8 @@ package body Exp_Ch3 is
                 Statements => New_List (
                   Make_Case_Statement (Loc,
                     Expression =>
-                      Unchecked_Convert_To (Ityp,
-                        Make_Identifier (Loc, Name_uA)),
+                      Unchecked_Convert_To
+                        (Ityp, Make_Identifier (Loc, Name_uA)),
                     Alternatives => Lst))));
 
       Set_TSS (Typ, Fent);
@@ -7972,7 +7969,7 @@ package body Exp_Ch3 is
            Make_Case_Statement (Loc,
              Expression =>
                Make_Selected_Component (Loc,
-                 Prefix => Make_Identifier (Loc, Name_X),
+                 Prefix        => Make_Identifier (Loc, Name_X),
                  Selector_Name => New_Copy (Name (Variant_Part (CL)))),
              Alternatives => Alt_List));
       end if;
@@ -8034,14 +8031,12 @@ package body Exp_Ch3 is
                    Left_Opnd =>
                      Make_Selected_Component (Loc,
                        Prefix        => Make_Identifier (Loc, Name_X),
-                       Selector_Name =>
-                         Make_Identifier (Loc, Field_Name)),
+                       Selector_Name => Make_Identifier (Loc, Field_Name)),
 
                    Right_Opnd =>
                      Make_Selected_Component (Loc,
                        Prefix        => Make_Identifier (Loc, Name_Y),
-                       Selector_Name =>
-                         Make_Identifier (Loc, Field_Name))));
+                       Selector_Name => Make_Identifier (Loc, Field_Name))));
             end if;
 
             Next_Non_Pragma (C);
@@ -8811,7 +8806,7 @@ package body Exp_Ch3 is
           Make_Simple_Return_Statement (Loc,
             Expression =>
               Make_Attribute_Reference (Loc,
-                Prefix => Make_Identifier (Loc, Name_X),
+                Prefix          => Make_Identifier (Loc, Name_X),
                 Attribute_Name  => Name_Alignment)))));
 
       Append_To (Res, Decl);
@@ -8834,7 +8829,7 @@ package body Exp_Ch3 is
           Make_Simple_Return_Statement (Loc,
             Expression =>
               Make_Attribute_Reference (Loc,
-                Prefix => Make_Identifier (Loc, Name_X),
+                Prefix          => Make_Identifier (Loc, Name_X),
                 Attribute_Name  => Name_Size)))));
 
       Append_To (Res, Decl);

@@ -2159,12 +2159,12 @@ package body Exp_Disp is
                           Make_Unchecked_Type_Conversion (Loc,  --  entry index
                             Subtype_Mark =>
                               New_Reference_To
-                                 (RTE (RE_Protected_Entry_Index), Loc),
+                                (RTE (RE_Protected_Entry_Index), Loc),
                             Expression => Make_Identifier (Loc, Name_uI)),
 
                           Make_Identifier (Loc, Name_uP), --  parameter block
-                          New_Reference_To (              --  Asynchronous_Call
-                            RTE (RE_Asynchronous_Call), Loc),
+                          New_Reference_To                --  Asynchronous_Call
+                            (RTE (RE_Asynchronous_Call), Loc),
 
                           New_Reference_To (Com_Block, Loc)))); -- comm block
 
@@ -2186,7 +2186,7 @@ package body Exp_Disp is
                           Obj_Ref,
 
                           Make_Attribute_Reference (Loc,
-                            Prefix => Make_Identifier (Loc, Name_uP),
+                            Prefix         => Make_Identifier (Loc, Name_uP),
                             Attribute_Name => Name_Address),
 
                             New_Reference_To
@@ -2201,8 +2201,7 @@ package body Exp_Disp is
 
             Append_To (Stmts,
               Make_Assignment_Statement (Loc,
-                Name =>
-                  Make_Identifier (Loc, Name_uB),
+                Name => Make_Identifier (Loc, Name_uB),
                 Expression =>
                   Make_Unchecked_Type_Conversion (Loc,
                     Subtype_Mark =>
@@ -2232,20 +2231,17 @@ package body Exp_Disp is
                 Parameter_Associations =>
                   New_List (
                     Make_Selected_Component (Loc,         -- T._task_id
-                      Prefix =>
-                        Make_Identifier (Loc, Name_uT),
-                      Selector_Name =>
-                        Make_Identifier (Loc, Name_uTask_Id)),
+                      Prefix        => Make_Identifier (Loc, Name_uT),
+                      Selector_Name => Make_Identifier (Loc, Name_uTask_Id)),
 
                     Make_Unchecked_Type_Conversion (Loc,  --  entry index
                       Subtype_Mark =>
                         New_Reference_To (RTE (RE_Task_Entry_Index), Loc),
-                      Expression =>
-                        Make_Identifier (Loc, Name_uI)),
+                      Expression => Make_Identifier (Loc, Name_uI)),
 
                     Make_Identifier (Loc, Name_uP),       --  parameter block
-                    New_Reference_To (                    --  Asynchronous_Call
-                      RTE (RE_Asynchronous_Call), Loc),
+                    New_Reference_To                      --  Asynchronous_Call
+                      (RTE (RE_Asynchronous_Call), Loc),
                     Make_Identifier (Loc, Name_uF))));    --  status flag
          end if;
 
@@ -2481,8 +2477,7 @@ package body Exp_Disp is
 
          Append_To (Stmts,
            Make_Assignment_Statement (Loc,
-             Name =>
-               Make_Identifier (Loc, Name_uI),
+             Name => Make_Identifier (Loc, Name_uI),
              Expression =>
                Make_Function_Call (Loc,
                  Name =>
@@ -2554,7 +2549,7 @@ package body Exp_Disp is
                           Obj_Ref,
 
                           Make_Attribute_Reference (Loc,
-                            Prefix => Make_Identifier (Loc, Name_uP),
+                            Prefix         => Make_Identifier (Loc, Name_uP),
                             Attribute_Name => Name_Address),
 
                             New_Reference_To
@@ -2571,8 +2566,7 @@ package body Exp_Disp is
 
             Append_To (Stmts,
               Make_Assignment_Statement (Loc,
-                Name =>
-                  Make_Identifier (Loc, Name_uF),
+                Name       => Make_Identifier (Loc, Name_uF),
                 Expression =>
                   Make_Op_Not (Loc,
                     Right_Opnd =>
@@ -2604,20 +2598,17 @@ package body Exp_Disp is
                   New_List (
 
                     Make_Selected_Component (Loc,         -- T._task_id
-                      Prefix =>
-                        Make_Identifier (Loc, Name_uT),
-                      Selector_Name =>
-                        Make_Identifier (Loc, Name_uTask_Id)),
+                      Prefix        => Make_Identifier (Loc, Name_uT),
+                      Selector_Name => Make_Identifier (Loc, Name_uTask_Id)),
 
                     Make_Unchecked_Type_Conversion (Loc,  --  entry index
                       Subtype_Mark =>
                         New_Reference_To (RTE (RE_Task_Entry_Index), Loc),
-                      Expression =>
-                        Make_Identifier (Loc, Name_uI)),
+                      Expression   => Make_Identifier (Loc, Name_uI)),
 
                     Make_Identifier (Loc, Name_uP),       --  parameter block
-                    New_Reference_To (                    --  Conditional_Call
-                      RTE (RE_Conditional_Call), Loc),
+                    New_Reference_To                      --  Conditional_Call
+                      (RTE (RE_Conditional_Call), Loc),
                     Make_Identifier (Loc, Name_uF))));    --  status flag
          end if;
 
@@ -2832,10 +2823,8 @@ package body Exp_Disp is
                    New_Reference_To (RTE (RE_Address), Loc),
                  Expression =>
                    Make_Selected_Component (Loc,
-                     Prefix =>
-                       Make_Identifier (Loc, Name_uT),
-                     Selector_Name =>
-                       Make_Identifier (Loc, Name_uTask_Id))));
+                     Prefix        => Make_Identifier (Loc, Name_uT),
+                     Selector_Name => Make_Identifier (Loc, Name_uTask_Id))));
 
       --  A null body is constructed for non-task types
 
@@ -2942,8 +2931,7 @@ package body Exp_Disp is
          else
             Append_To (Stmts,
               Make_If_Statement (Loc,
-                Condition =>
-                  Make_Identifier (Loc, Name_uF),
+                Condition       => Make_Identifier (Loc, Name_uF),
 
                 Then_Statements =>
                   New_List (
@@ -2969,7 +2957,7 @@ package body Exp_Disp is
                               Name_Unchecked_Access,
                             Prefix =>
                               Make_Selected_Component (Loc,
-                                Prefix =>
+                                Prefix        =>
                                   Make_Identifier (Loc, Name_uO),
                                 Selector_Name =>
                                   Make_Identifier (Loc, Name_uObject))),
@@ -2978,8 +2966,7 @@ package body Exp_Disp is
                             Subtype_Mark =>
                               New_Reference_To (
                                 RTE (RE_Protected_Entry_Index), Loc),
-                            Expression =>
-                              Make_Identifier (Loc, Name_uI)),
+                            Expression => Make_Identifier (Loc, Name_uI)),
 
                           Make_Identifier (Loc, Name_uA)))),   -- abort status
 
@@ -3033,70 +3020,55 @@ package body Exp_Disp is
 
          Append_To (Stmts,
            Make_If_Statement (Loc,
-             Condition =>
-               Make_Identifier (Loc, Name_uF),
+             Condition       => Make_Identifier (Loc, Name_uF),
 
-             Then_Statements =>
-               New_List (
+             Then_Statements => New_List (
 
-                  --  Call to Requeue_Protected_To_Task_Entry
+               --  Call to Requeue_Protected_To_Task_Entry
 
-                 Make_Procedure_Call_Statement (Loc,
-                   Name =>
-                     New_Reference_To (
-                       RTE (RE_Requeue_Protected_To_Task_Entry), Loc),
+               Make_Procedure_Call_Statement (Loc,
+                 Name =>
+                   New_Reference_To
+                     (RTE (RE_Requeue_Protected_To_Task_Entry), Loc),
 
-                   Parameter_Associations =>
-                     New_List (
+                 Parameter_Associations => New_List (
 
-                       Make_Unchecked_Type_Conversion (Loc,  -- PEA (P)
-                         Subtype_Mark =>
-                           New_Reference_To (
-                             RTE (RE_Protection_Entries_Access), Loc),
-                         Expression =>
-                           Make_Identifier (Loc, Name_uP)),
+                   Make_Unchecked_Type_Conversion (Loc,  -- PEA (P)
+                     Subtype_Mark =>
+                       New_Reference_To
+                         (RTE (RE_Protection_Entries_Access), Loc),
+                          Expression => Make_Identifier (Loc, Name_uP)),
 
-                       Make_Selected_Component (Loc,         -- O._task_id
-                         Prefix =>
-                           Make_Identifier (Loc, Name_uO),
-                         Selector_Name =>
-                           Make_Identifier (Loc, Name_uTask_Id)),
+                   Make_Selected_Component (Loc,         -- O._task_id
+                     Prefix        => Make_Identifier (Loc, Name_uO),
+                     Selector_Name => Make_Identifier (Loc, Name_uTask_Id)),
 
-                       Make_Unchecked_Type_Conversion (Loc,  -- entry index
-                         Subtype_Mark =>
-                           New_Reference_To (
-                             RTE (RE_Task_Entry_Index), Loc),
-                         Expression =>
-                           Make_Identifier (Loc, Name_uI)),
+                   Make_Unchecked_Type_Conversion (Loc,  -- entry index
+                     Subtype_Mark =>
+                       New_Reference_To (RTE (RE_Task_Entry_Index), Loc),
+                     Expression   => Make_Identifier (Loc, Name_uI)),
 
-                       Make_Identifier (Loc, Name_uA)))),    -- abort status
+                   Make_Identifier (Loc, Name_uA)))),    -- abort status
 
-             Else_Statements =>
-               New_List (
+             Else_Statements => New_List (
 
-                  --  Call to Requeue_Task_Entry
+               --  Call to Requeue_Task_Entry
 
-                 Make_Procedure_Call_Statement (Loc,
-                   Name =>
-                     New_Reference_To (RTE (RE_Requeue_Task_Entry), Loc),
+               Make_Procedure_Call_Statement (Loc,
+                 Name => New_Reference_To (RTE (RE_Requeue_Task_Entry), Loc),
 
-                   Parameter_Associations =>
-                     New_List (
+                 Parameter_Associations => New_List (
 
-                       Make_Selected_Component (Loc,         -- O._task_id
-                         Prefix =>
-                           Make_Identifier (Loc, Name_uO),
-                         Selector_Name =>
-                           Make_Identifier (Loc, Name_uTask_Id)),
+                   Make_Selected_Component (Loc,         -- O._task_id
+                     Prefix        => Make_Identifier (Loc, Name_uO),
+                     Selector_Name => Make_Identifier (Loc, Name_uTask_Id)),
 
-                       Make_Unchecked_Type_Conversion (Loc,  -- entry index
-                         Subtype_Mark =>
-                           New_Reference_To (
-                             RTE (RE_Task_Entry_Index), Loc),
-                         Expression =>
-                           Make_Identifier (Loc, Name_uI)),
+                   Make_Unchecked_Type_Conversion (Loc,  -- entry index
+                     Subtype_Mark =>
+                       New_Reference_To (RTE (RE_Task_Entry_Index), Loc),
+                     Expression   => Make_Identifier (Loc, Name_uI)),
 
-                       Make_Identifier (Loc, Name_uA))))));  -- abort status
+                   Make_Identifier (Loc, Name_uA))))));  -- abort status
       end if;
 
       --  Even though no declarations are needed in both cases, we allocate
@@ -3318,8 +3290,7 @@ package body Exp_Disp is
 
          Append_To (Stmts,
            Make_Assignment_Statement (Loc,
-             Name =>
-               Make_Identifier (Loc, Name_uI),
+             Name       => Make_Identifier (Loc, Name_uI),
              Expression =>
                Make_Function_Call (Loc,
                  Name =>
@@ -3432,16 +3403,13 @@ package body Exp_Disp is
                   New_List (
 
                     Make_Selected_Component (Loc,         --  T._task_id
-                      Prefix =>
-                        Make_Identifier (Loc, Name_uT),
-                      Selector_Name =>
-                        Make_Identifier (Loc, Name_uTask_Id)),
+                      Prefix        => Make_Identifier (Loc, Name_uT),
+                      Selector_Name => Make_Identifier (Loc, Name_uTask_Id)),
 
                     Make_Unchecked_Type_Conversion (Loc,  --  entry index
                       Subtype_Mark =>
                         New_Reference_To (RTE (RE_Task_Entry_Index), Loc),
-                      Expression =>
-                        Make_Identifier (Loc, Name_uI)),
+                      Expression   => Make_Identifier (Loc, Name_uI)),
 
                     Make_Identifier (Loc, Name_uP),       --  parameter block
                     Make_Identifier (Loc, Name_uD),       --  delay
@@ -7845,7 +7813,8 @@ package body Exp_Disp is
                         New_Reference_To (Node (Tag_Elmt), Loc),
                       Expression =>
                         Make_Selected_Component (Loc,
-                          Prefix => Make_Identifier (Loc, Name_uInit),
+                          Prefix        =>
+                            Make_Identifier (Loc, Name_uInit),
                           Selector_Name =>
                             New_Reference_To (Tag_Comp, Loc))));
 

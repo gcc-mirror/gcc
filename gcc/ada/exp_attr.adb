@@ -1882,16 +1882,13 @@ package body Exp_Attr is
               Make_Pragma (Loc,
                 Chars => Name_Import,
                 Pragma_Argument_Associations => New_List (
-                  Make_Pragma_Argument_Association (Loc,
-                    Expression => Lang),
+                  Make_Pragma_Argument_Association (Loc, Expression => Lang),
 
                   Make_Pragma_Argument_Association (Loc,
-                    Expression =>
-                      Make_Identifier (Loc, Chars (Ent))),
+                    Expression => Make_Identifier (Loc, Chars (Ent))),
 
                   Make_Pragma_Argument_Association (Loc,
-                    Expression =>
-                      Make_String_Literal (Loc, Str))))));
+                    Expression => Make_String_Literal (Loc, Str))))));
 
             Set_Entity (N, Ent);
             Rewrite (N, New_Occurrence_Of (Ent, Loc));
@@ -3533,16 +3530,16 @@ package body Exp_Attr is
 
                   Object_Parm :=
                     Make_Attribute_Reference (Loc,
-                       Prefix =>
-                         Make_Selected_Component (Loc,
-                           Prefix =>
-                             Unchecked_Convert_To (New_Itype,
-                               New_Reference_To
-                                 (First_Entity
-                                   (Protected_Body_Subprogram (Subprg)),
-                                  Loc)),
-                           Selector_Name =>
-                             Make_Identifier (Loc, Name_uObject)),
+                      Prefix =>
+                        Make_Selected_Component (Loc,
+                          Prefix =>
+                            Unchecked_Convert_To (New_Itype,
+                              New_Reference_To
+                                (First_Entity
+                                  (Protected_Body_Subprogram (Subprg)),
+                                 Loc)),
+                          Selector_Name =>
+                            Make_Identifier (Loc, Name_uObject)),
                        Attribute_Name => Name_Unchecked_Access);
                end;
 
@@ -3557,8 +3554,7 @@ package body Exp_Attr is
                                     (First_Entity
                                       (Protected_Body_Subprogram (Subprg)),
                                        Loc),
-                        Selector_Name =>
-                          Make_Identifier (Loc, Name_uObject)),
+                        Selector_Name => Make_Identifier (Loc, Name_uObject)),
                     Attribute_Name => Name_Unchecked_Access);
             end if;
 

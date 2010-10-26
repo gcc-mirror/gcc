@@ -89,7 +89,9 @@ package Opt is
 
    Checksum_Accumulate_Token_Checksum : Boolean := True;
    --  GPRBUILD
-   --  Set to False by gprbuild when the version of GNAT is 5.02 or before.
+   --  Set to False by gprbuild when the version of GNAT is 5.02 or before. If
+   --  this switch is False, then we do not call Accumulate_Token_Checksum, so
+   --  the setting of the following two flags is irrelevant.
 
    Checksum_GNAT_6_3 : Boolean := False;
    --  GPRBUILD

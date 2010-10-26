@@ -9008,13 +9008,21 @@ units, or in @code{Import} pragmas in any Ada units.
 switches.
 The default linker called by gnatlink is @command{gcc} which in
 turn calls the appropriate system linker.
+
+One useful option for the linker is @option{-s}: it reduces the size of the
+executable by removing all symbol table and relocation information from the
+executable.
+
 Standard options for the linker such as @option{-lmy_lib} or
 @option{-Ldir} can be added as is.
 For options that are not recognized by
 @command{gcc} as linker options, use the @command{gcc} switches
 @option{-Xlinker} or @option{-Wl,}.
+
 Refer to the GCC documentation for
-details. Here is an example showing how to generate a linker map:
+details.
+
+Here is an example showing how to generate a linker map:
 
 @smallexample
 $ ^gnatlink my_prog -Wl,-Map,MAPFILE^GNAT LINK my_prog.ali /MAP^

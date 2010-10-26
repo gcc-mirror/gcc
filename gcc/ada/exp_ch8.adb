@@ -409,15 +409,14 @@ package body Exp_Ch8 is
                    Statements => New_List (
                      Make_Simple_Return_Statement (Loc,
                        Expression =>
-                          Expand_Record_Equality (
-                            Id,
+                         Expand_Record_Equality
+                           (Id,
                             Typ => Typ,
                             Lhs =>
-                              Make_Identifier (Loc,
-                                Chars (First_Formal (Id))),
+                              Make_Identifier (Loc, Chars (First_Formal (Id))),
                             Rhs =>
-                              Make_Identifier (Loc,
-                                Chars (Next_Formal (First_Formal (Id)))),
+                              Make_Identifier
+                                (Loc, Chars (Next_Formal (First_Formal (Id)))),
                             Bodies => Declarations (Decl))))));
 
                Append (Decl, List_Containing (N));

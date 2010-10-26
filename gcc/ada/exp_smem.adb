@@ -93,7 +93,7 @@ package body Exp_Smem is
         Name => Make_Selected_Component (Loc,
           Prefix        =>
             New_Occurrence_Of (Shared_Var_Procs_Instance (E), Loc),
-          Selector_Name => Make_Identifier (Loc, Chars => N)));
+          Selector_Name => Make_Identifier (Loc, N)));
    end Build_Shared_Var_Proc_Call;
 
    ---------------------

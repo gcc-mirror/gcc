@@ -1524,8 +1524,7 @@ package body Ch5 is
 
       if No (Loop_Name) then
          Created_Name :=
-           Make_Identifier (Sloc (Loop_Node),
-             Chars => Set_Loop_Block_Name ('L'));
+           Make_Identifier (Sloc (Loop_Node), Set_Loop_Block_Name ('L'));
          Set_Comes_From_Source (Created_Name, False);
          Set_Has_Created_Identifier (Loop_Node, True);
          Set_Identifier (Loop_Node, Created_Name);
@@ -1596,8 +1595,7 @@ package body Ch5 is
 
          if No (Loop_Name) then
             Created_Name :=
-              Make_Identifier (Sloc (Loop_Node),
-                Chars => Set_Loop_Block_Name ('L'));
+              Make_Identifier (Sloc (Loop_Node), Set_Loop_Block_Name ('L'));
             Set_Comes_From_Source (Created_Name, False);
             Set_Has_Created_Identifier (Loop_Node, True);
             Set_Identifier (Loop_Node, Created_Name);
@@ -1663,8 +1661,7 @@ package body Ch5 is
 
          if No (Loop_Name) then
             Created_Name :=
-              Make_Identifier (Sloc (Loop_Node),
-                Chars => Set_Loop_Block_Name ('L'));
+              Make_Identifier (Sloc (Loop_Node), Set_Loop_Block_Name ('L'));
             Set_Comes_From_Source (Created_Name, False);
             Set_Has_Created_Identifier (Loop_Node, True);
             Set_Identifier (Loop_Node, Created_Name);
@@ -1833,8 +1830,7 @@ package body Ch5 is
 
       if No (Block_Name) then
          Created_Name :=
-           Make_Identifier (Sloc (Block_Node),
-             Chars => Set_Loop_Block_Name ('B'));
+           Make_Identifier (Sloc (Block_Node), Set_Loop_Block_Name ('B'));
          Set_Comes_From_Source (Created_Name, False);
          Set_Has_Created_Identifier (Block_Node, True);
          Set_Identifier (Block_Node, Created_Name);
@@ -1875,8 +1871,7 @@ package body Ch5 is
 
       if No (Block_Name) then
          Created_Name :=
-           Make_Identifier (Sloc (Block_Node),
-             Chars => Set_Loop_Block_Name ('B'));
+           Make_Identifier (Sloc (Block_Node), Set_Loop_Block_Name ('B'));
          Set_Comes_From_Source (Created_Name, False);
          Set_Has_Created_Identifier (Block_Node, True);
          Set_Identifier (Block_Node, Created_Name);

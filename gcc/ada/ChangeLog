@@ -1,5 +1,19 @@
 2010-10-26  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch5.adb, exp_prag.adb, sem_ch3.adb, exp_atag.adb, layout.adb,
+	sem_dist.adb, exp_ch7.adb, exp_util.adb, exp_attr.adb, exp_ch9.adb,
+	sem_ch10.adb, checks.adb, sem_prag.adb, par-endh.adb, sem_ch12.adb,
+	exp_smem.adb, sem_attr.adb, exp_ch4.adb, exp_ch6.adb, exp_ch8.adb,
+	sem_ch6.adb, exp_disp.adb, exp_aggr.adb, exp_dist.adb, sem_ch13.adb,
+	par-ch3.adb, par-ch5.adb, exp_strm.adb, exp_ch3.adb: Minor reformatting
+	* opt.ads: Minor comment fix.
+
+2010-10-26  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Document option -s for gnatlink.
+
+2010-10-26  Robert Dewar  <dewar@adacore.com>
+
 	* opt.ads: Move documentation on checksum stuff here from prj-nmsc
 	* prj-nmsc.adb (Process_Project_Level_Array_Attributes): Move
 	documentation on checksum versions to opt.ads.

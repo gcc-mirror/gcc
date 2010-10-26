@@ -673,11 +673,10 @@ package body Exp_Ch9 is
            Name =>
              Make_Explicit_Dereference (Loc,
                Make_Selected_Component (Loc,
-                 Prefix =>
+                 Prefix        =>
                    Unchecked_Convert_To (Entry_Parameters_Type (Ent),
                      Make_Identifier (Loc, Chars (Ptr))),
-                 Selector_Name =>
-                   New_Reference_To (Comp, Loc))));
+                 Selector_Name => New_Reference_To (Comp, Loc))));
 
          Append (Decl, Decls);
          Set_Renamed_Object (Formal, New_F);
@@ -719,8 +718,7 @@ package body Exp_Ch9 is
           Object_Definition =>
             New_Reference_To (Obj_Ptr, Loc),
           Expression =>
-            Unchecked_Convert_To (Obj_Ptr,
-              Make_Identifier (Loc, Name_uO)));
+            Unchecked_Convert_To (Obj_Ptr, Make_Identifier (Loc, Name_uO)));
       Set_Debug_Info_Needed (Defining_Identifier (Decl));
       Prepend_To (Decls, Decl);
 
@@ -1807,9 +1805,8 @@ package body Exp_Ch9 is
                Actuals := New_List;
                while Present (Formal) loop
                   Append_To (Actuals,
-                    Make_Identifier (Loc, Chars =>
-                      Chars (Defining_Identifier (Formal))));
-
+                    Make_Identifier (Loc,
+                      Chars => Chars (Defining_Identifier (Formal))));
                   Next (Formal);
                end loop;
             end if;
@@ -1833,8 +1830,8 @@ package body Exp_Ch9 is
 
                else
                   Prepend_To (Actuals,
-                    Make_Identifier (Loc, Chars =>
-                      Chars (Defining_Identifier (First_Form))));
+                    Make_Identifier (Loc,
+                      Chars => Chars (Defining_Identifier (First_Form))));
                end if;
 
                Nam := New_Reference_To (Subp_Id, Loc);
@@ -2482,7 +2479,7 @@ package body Exp_Ch9 is
 
          Cond :=
            Make_Op_Le (Loc,
-             Left_Opnd => Make_Identifier (Loc, Name_uE),
+             Left_Opnd  => Make_Identifier (Loc, Name_uE),
              Right_Opnd => Siz);
 
          --  Map entry queue indexes in the range of the current family
@@ -2854,10 +2851,8 @@ package body Exp_Ch9 is
             Make_Attribute_Reference (End_Loc,
               Prefix =>
                 Make_Selected_Component (End_Loc,
-                  Prefix =>
-                    Make_Identifier (End_Loc, Name_uObject),
-                  Selector_Name =>
-                    Make_Identifier (End_Loc, Name_uObject)),
+                  Prefix        => Make_Identifier (End_Loc, Name_uObject),
+                  Selector_Name => Make_Identifier (End_Loc, Name_uObject)),
               Attribute_Name => Name_Unchecked_Access))));
 
       --  When exceptions can not be propagated, we never need to call
@@ -2918,7 +2913,7 @@ package body Exp_Ch9 is
                            Make_Attribute_Reference (Han_Loc,
                              Prefix =>
                                Make_Selected_Component (Han_Loc,
-                                 Prefix =>
+                                 Prefix        =>
                                    Make_Identifier (Han_Loc, Name_uObject),
                                  Selector_Name =>
                                    Make_Identifier (Han_Loc, Name_uObject)),
@@ -3238,9 +3233,8 @@ package body Exp_Ch9 is
       Uactuals := New_List;
       Pformal := First (Parameter_Specifications (P_Op_Spec));
       while Present (Pformal) loop
-         Append (
-           Make_Identifier (Loc, Chars (Defining_Identifier (Pformal))),
-           Uactuals);
+         Append_To (Uactuals,
+           Make_Identifier (Loc, Chars (Defining_Identifier (Pformal))));
          Next (Pformal);
       end loop;
 
@@ -3258,7 +3252,7 @@ package body Exp_Ch9 is
                 Expression =>
                   Make_Function_Call (Loc,
                     Name => Make_Identifier (Loc,
-                      Chars (Defining_Unit_Name (N_Op_Spec))),
+                      Chars => Chars (Defining_Unit_Name (N_Op_Spec))),
                     Parameter_Associations => Uactuals));
 
             Return_Stmt :=
@@ -3270,7 +3264,7 @@ package body Exp_Ch9 is
               Expression => Make_Function_Call (Loc,
                 Name =>
                   Make_Identifier (Loc,
-                    Chars (Defining_Unit_Name (N_Op_Spec))),
+                    Chars => Chars (Defining_Unit_Name (N_Op_Spec))),
                 Parameter_Associations => Uactuals));
          end if;
 
@@ -3278,8 +3272,7 @@ package body Exp_Ch9 is
          Unprot_Call :=
            Make_Procedure_Call_Statement (Loc,
              Name =>
-               Make_Identifier (Loc,
-                 Chars (Defining_Unit_Name (N_Op_Spec))),
+               Make_Identifier (Loc, Chars (Defining_Unit_Name (N_Op_Spec))),
              Parameter_Associations => Uactuals);
       end if;
 
@@ -3316,10 +3309,8 @@ package body Exp_Ch9 is
         Make_Attribute_Reference (Loc,
            Prefix =>
              Make_Selected_Component (Loc,
-               Prefix =>
-                 Make_Identifier (Loc, Name_uObject),
-             Selector_Name =>
-                 Make_Identifier (Loc, Name_uObject)),
+               Prefix        => Make_Identifier (Loc, Name_uObject),
+               Selector_Name => Make_Identifier (Loc, Name_uObject)),
            Attribute_Name => Name_Unchecked_Access);
 
       Lock_Stmt := Make_Procedure_Call_Statement (Loc,
@@ -4572,7 +4563,7 @@ package body Exp_Ch9 is
 
          return
            Make_Selected_Component (Loc,
-             Prefix =>
+             Prefix        =>
                Unchecked_Convert_To (Corresponding_Record_Type (Ntyp),
                  New_Copy_Tree (N)),
              Selector_Name => Make_Identifier (Loc, Sel));
@@ -5256,8 +5247,7 @@ package body Exp_Ch9 is
                       New_Reference_To (RTE (RO_ST_Task_Id), Loc),
                     Expression =>
                       Make_Selected_Component (Loc,
-                        Prefix =>
-                          New_Copy_Tree (Tasknm),
+                        Prefix        => New_Copy_Tree (Tasknm),
                         Selector_Name =>
                           Make_Identifier (Loc, Name_uDisp_Get_Task_Id)))));
 
@@ -5924,8 +5914,7 @@ package body Exp_Ch9 is
                   Make_Unchecked_Type_Conversion (Loc,
                     Subtype_Mark =>
                       New_Reference_To (RTE (RE_Communication_Block), Loc),
-                    Expression =>
-                      Make_Identifier (Loc, Name_uD))));
+                    Expression   => Make_Identifier (Loc, Name_uD))));
 
             --  Generate:
             --    _Disp_Asynchronous_Select (<object>, S, P'Address, D, B);
@@ -6049,8 +6038,7 @@ package body Exp_Ch9 is
                   Make_Unchecked_Type_Conversion (Loc,
                     Subtype_Mark =>
                       New_Reference_To (RTE (RE_Communication_Block), Loc),
-                    Expression =>
-                      Make_Identifier (Loc, Name_uD))));
+                    Expression   => Make_Identifier (Loc, Name_uD))));
 
             --  Generate:
             --    _Disp_Asynchronous_Select (<object>, S, P'Address, D, B);
@@ -8675,10 +8663,8 @@ package body Exp_Ch9 is
            Make_Procedure_Call_Statement (Loc,
              Name =>
                Make_Selected_Component (Loc,
-                 Prefix =>
-                   Make_Identifier (Loc, Chars (Obj)),
-                 Selector_Name =>
-                   Make_Identifier (Loc, Chars (Call_Ent))),
+                 Prefix        => Make_Identifier (Loc, Chars (Obj)),
+                 Selector_Name => Make_Identifier (Loc, Chars (Call_Ent))),
 
              Parameter_Associations => Actuals);
       end Build_Dispatching_Call_Equivalent;
@@ -8745,8 +8731,7 @@ package body Exp_Ch9 is
 
          return
            Make_Procedure_Call_Statement (Loc,
-             Name =>
-               Make_Identifier (Loc, Name_uDisp_Requeue),
+             Name => Make_Identifier (Loc, Name_uDisp_Requeue),
              Parameter_Associations => Params);
       end Build_Dispatching_Requeue;
 
@@ -9221,10 +9206,11 @@ package body Exp_Ch9 is
          Cond := Make_Op_Ne (Loc,
            Left_Opnd =>
              Make_Selected_Component (Loc,
-               Prefix => Make_Indexed_Component (Loc,
-                 Prefix => New_Reference_To (Qnam, Loc),
-                   Expressions => New_List (New_Reference_To (J, Loc))),
-             Selector_Name => Make_Identifier (Loc, Name_S)),
+               Prefix        =>
+                 Make_Indexed_Component (Loc,
+                   Prefix => New_Reference_To (Qnam, Loc),
+                     Expressions => New_List (New_Reference_To (J, Loc))),
+               Selector_Name => Make_Identifier (Loc, Name_S)),
            Right_Opnd =>
              New_Reference_To (RTE (RE_Null_Task_Entry), Loc));
 
@@ -11942,10 +11928,8 @@ package body Exp_Ch9 is
                   New_Reference_To (RTE (Prot_Typ), Loc),
                 Name =>
                   Make_Selected_Component (Loc,
-                    Prefix =>
-                      New_Reference_To (Obj_Ent, Loc),
-                    Selector_Name =>
-                      Make_Identifier (Loc, Name_uObject)));
+                    Prefix        => New_Reference_To (Obj_Ent, Loc),
+                    Selector_Name => Make_Identifier (Loc, Name_uObject)));
             Add (Decl);
          end;
       end if;
@@ -12266,7 +12250,7 @@ package body Exp_Ch9 is
         Make_Attribute_Reference (Loc,
           Prefix =>
             Make_Selected_Component (Loc,
-              Prefix => Make_Identifier (Loc, Name_uInit),
+              Prefix        => Make_Identifier (Loc, Name_uInit),
               Selector_Name => Make_Identifier (Loc, Name_uObject)),
           Attribute_Name => Name_Unchecked_Access));
 
@@ -12379,7 +12363,7 @@ package body Exp_Ch9 is
             then
                Append_To (Args,
                  Make_Attribute_Reference (Loc,
-                   Prefix => Make_Identifier (Loc, Name_uInit),
+                   Prefix         => Make_Identifier (Loc, Name_uInit),
                    Attribute_Name => Name_Address));
             end if;
 
@@ -12521,7 +12505,7 @@ package body Exp_Ch9 is
                  Make_Attribute_Reference (Loc,
                    Prefix =>
                      Make_Selected_Component (Loc,
-                       Prefix => Make_Identifier (Loc, Name_uInit),
+                       Prefix        => Make_Identifier (Loc, Name_uInit),
                        Selector_Name => Make_Identifier (Loc, Name_uObject)),
                    Attribute_Name => Name_Unchecked_Access));
 
@@ -12588,7 +12572,7 @@ package body Exp_Ch9 is
       if Present (Tdef) and then Has_Pragma_Priority (Tdef) then
          Append_To (Args,
            Make_Selected_Component (Loc,
-             Prefix => Make_Identifier (Loc, Name_uInit),
+             Prefix        => Make_Identifier (Loc, Name_uInit),
              Selector_Name => Make_Identifier (Loc, Name_uPriority)));
       else
          Append_To (Args,
@@ -12605,10 +12589,10 @@ package body Exp_Ch9 is
          if Preallocated_Stacks_On_Target then
             Append_To (Args,
               Make_Attribute_Reference (Loc,
-                Prefix         => Make_Selected_Component (Loc,
-                  Prefix        => Make_Identifier (Loc, Name_uInit),
-                  Selector_Name =>
-                    Make_Identifier (Loc, Name_uStack)),
+                Prefix         =>
+                  Make_Selected_Component (Loc,
+                    Prefix        => Make_Identifier (Loc, Name_uInit),
+                    Selector_Name => Make_Identifier (Loc, Name_uStack)),
                 Attribute_Name => Name_Address));
 
          else
@@ -12629,7 +12613,7 @@ package body Exp_Ch9 is
       then
          Append_To (Args,
            Make_Selected_Component (Loc,
-             Prefix => Make_Identifier (Loc, Name_uInit),
+             Prefix        => Make_Identifier (Loc, Name_uInit),
              Selector_Name => Make_Identifier (Loc, Name_uSize)));
 
       else
@@ -12645,7 +12629,7 @@ package body Exp_Ch9 is
       then
          Append_To (Args,
            Make_Selected_Component (Loc,
-             Prefix => Make_Identifier (Loc, Name_uInit),
+             Prefix        => Make_Identifier (Loc, Name_uInit),
              Selector_Name => Make_Identifier (Loc, Name_uTask_Info)));
 
       else
@@ -12662,7 +12646,7 @@ package body Exp_Ch9 is
          Append_To (Args,
            Convert_To (Standard_Integer,
              Make_Selected_Component (Loc,
-               Prefix => Make_Identifier (Loc, Name_uInit),
+               Prefix        => Make_Identifier (Loc, Name_uInit),
                Selector_Name => Make_Identifier (Loc, Name_uCPU))));
 
       else
@@ -12684,7 +12668,8 @@ package body Exp_Ch9 is
          if Present (Tdef) and then Has_Relative_Deadline_Pragma (Tdef) then
             Append_To (Args,
               Make_Selected_Component (Loc,
-                Prefix => Make_Identifier (Loc, Name_uInit),
+                Prefix        =>
+                  Make_Identifier (Loc, Name_uInit),
                 Selector_Name =>
                   Make_Identifier (Loc, Name_uRelative_Deadline)));
 
@@ -12821,7 +12806,7 @@ package body Exp_Ch9 is
 
       Append_To (Args,
         Make_Selected_Component (Loc,
-          Prefix => Make_Identifier (Loc, Name_uInit),
+          Prefix        => Make_Identifier (Loc, Name_uInit),
           Selector_Name => Make_Identifier (Loc, Name_uTask_Id)));
 
       --  Build_Entry_Names generation flag. When set to true, the runtime
@@ -13036,7 +13021,7 @@ package body Exp_Ch9 is
                 Expression =>
                   Make_Explicit_Dereference (Loc,
                     Make_Selected_Component (Loc,
-                      Prefix =>
+                      Prefix        =>
                         New_Reference_To (P, Loc),
                       Selector_Name =>
                         Make_Identifier (Loc, Chars (Formal)))));

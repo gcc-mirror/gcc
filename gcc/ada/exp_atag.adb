@@ -83,8 +83,7 @@ package body Exp_Atag is
 
       Append_To (Stmts,
         Make_Assignment_Statement (Loc,
-          Name =>
-            Make_Identifier (Loc, Name_uC),
+          Name => Make_Identifier (Loc, Name_uC),
           Expression =>
             Make_Function_Call (Loc,
               Name => New_Occurrence_Of (RTE (RE_Get_Prim_Op_Kind), Loc),
@@ -112,26 +111,23 @@ package body Exp_Atag is
             Make_Or_Else (Loc,
               Left_Opnd =>
                 Make_Op_Eq (Loc,
-                  Left_Opnd =>
-                    Make_Identifier (Loc, Name_uC),
+                  Left_Opnd  => Make_Identifier (Loc, Name_uC),
                   Right_Opnd =>
                     New_Reference_To (RTE (RE_POK_Procedure), Loc)),
               Right_Opnd =>
                 Make_Or_Else (Loc,
                   Left_Opnd =>
                     Make_Op_Eq (Loc,
-                      Left_Opnd =>
-                        Make_Identifier (Loc, Name_uC),
+                      Left_Opnd => Make_Identifier (Loc, Name_uC),
                       Right_Opnd =>
-                        New_Reference_To (RTE (
-                          RE_POK_Protected_Procedure), Loc)),
+                        New_Reference_To
+                          (RTE (RE_POK_Protected_Procedure), Loc)),
                   Right_Opnd =>
                     Make_Op_Eq (Loc,
-                      Left_Opnd =>
-                        Make_Identifier (Loc, Name_uC),
+                      Left_Opnd  => Make_Identifier (Loc, Name_uC),
                       Right_Opnd =>
-                        New_Reference_To (RTE (
-                          RE_POK_Task_Procedure), Loc)))),
+                        New_Reference_To
+                          (RTE (RE_POK_Task_Procedure), Loc)))),
 
           Then_Statements =>
             New_List (
@@ -319,12 +315,11 @@ package body Exp_Atag is
                           New_Reference_To
                             (RTU_Entity (System_Storage_Elements), Loc),
                         Selector_Name =>
-                          Make_Identifier (Loc,
-                            Chars => Name_Op_Subtract)),
+                          Make_Identifier (Loc, Name_Op_Subtract)),
                     Parameter_Associations => New_List (
                       Ctrl_Tag,
-                      New_Reference_To (RTE (RE_DT_Predef_Prims_Offset),
-                                        Loc)))))),
+                      New_Reference_To
+                        (RTE (RE_DT_Predef_Prims_Offset), Loc)))))),
           Expressions =>
             New_List (Make_Integer_Literal (Loc, Position)));
    end Build_Get_Predefined_Prim_Op_Address;
@@ -764,15 +759,15 @@ package body Exp_Atag is
             Make_Function_Call (Loc,
               Name =>
                 Make_Expanded_Name (Loc,
-                  Chars => Name_Op_Subtract,
-                  Prefix => New_Reference_To
-                             (RTU_Entity (System_Storage_Elements), Loc),
-                  Selector_Name => Make_Identifier (Loc,
-                                     Chars => Name_Op_Subtract)),
+                  Chars         => Name_Op_Subtract,
+                  Prefix        =>
+                    New_Reference_To
+                      (RTU_Entity (System_Storage_Elements), Loc),
+                  Selector_Name => Make_Identifier (Loc, Name_Op_Subtract)),
               Parameter_Associations => New_List (
                 Unchecked_Convert_To (RTE (RE_Address), Tag_Node),
-                New_Reference_To (RTE (RE_DT_Offset_To_Top_Offset),
-                                  Loc)))));
+                New_Reference_To
+                  (RTE (RE_DT_Offset_To_Top_Offset), Loc)))));
    end Build_Offset_To_Top;
 
    ------------------------------------------
@@ -867,15 +862,15 @@ package body Exp_Atag is
               Make_Function_Call (Loc,
                 Name =>
                   Make_Expanded_Name (Loc,
-                    Chars => Name_Op_Subtract,
-                    Prefix => New_Reference_To
-                               (RTU_Entity (System_Storage_Elements), Loc),
-                    Selector_Name => Make_Identifier (Loc,
-                                       Chars => Name_Op_Subtract)),
+                    Chars         => Name_Op_Subtract,
+                    Prefix        =>
+                      New_Reference_To
+                        (RTU_Entity (System_Storage_Elements), Loc),
+                    Selector_Name => Make_Identifier (Loc, Name_Op_Subtract)),
                 Parameter_Associations => New_List (
                   Unchecked_Convert_To (RTE (RE_Address), Iface_Tag),
-                  New_Reference_To (RTE (RE_DT_Offset_To_Top_Offset),
-                                    Loc))))),
+                  New_Reference_To
+                    (RTE (RE_DT_Offset_To_Top_Offset), Loc))))),
           Offset_Value);
    end Build_Set_Static_Offset_To_Top;
 
@@ -898,9 +893,7 @@ package body Exp_Atag is
                     Prefix =>
                       New_Reference_To
                         (RTU_Entity (System_Storage_Elements), Loc),
-                    Selector_Name =>
-                      Make_Identifier (Loc,
-                        Chars => Name_Op_Subtract)),
+                    Selector_Name => Make_Identifier (Loc, Name_Op_Subtract)),
 
                 Parameter_Associations => New_List (
                   Tag_Node_Addr,

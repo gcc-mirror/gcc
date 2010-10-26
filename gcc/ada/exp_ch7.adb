@@ -1701,7 +1701,7 @@ package body Exp_Ch7 is
 
          return
            Make_Selected_Component (Loc,
-             Prefix =>
+             Prefix        =>
                Make_Selected_Component (Loc,
                  Prefix        => R,
                  Selector_Name => Make_Identifier (Loc, Name_uController)),
@@ -2308,10 +2308,10 @@ package body Exp_Ch7 is
                 Name => Name,
                 Parameter_Associations => New_List (
                   Make_Attribute_Reference (Loc,
-                    Prefix =>
+                    Prefix         =>
                       Make_Selected_Component (Loc,
-                        Prefix => New_Reference_To (
-                          Defining_Identifier (Param), Loc),
+                        Prefix        =>
+                          New_Reference_To (Defining_Identifier (Param), Loc),
                         Selector_Name =>
                           Make_Identifier (Loc, Name_uObject)),
                     Attribute_Name => Name_Unchecked_Access))));
@@ -2605,9 +2605,9 @@ package body Exp_Ch7 is
                         Defining_Identifier => Index,
                         Discrete_Subtype_Definition =>
                           Make_Attribute_Reference (Loc,
-                            Prefix => Make_Identifier (Loc, Name_V),
+                            Prefix          => Make_Identifier (Loc, Name_V),
                             Attribute_Name  => Name_Range,
-                            Expressions => New_List (
+                            Expressions     => New_List (
                               Make_Integer_Literal (Loc, N))),
                         Reverse_Present => Prim = Finalize_Case)),
                 Statements => One_Dimension (N + 1)));
@@ -2747,17 +2747,19 @@ package body Exp_Ch7 is
                    Parameter_Associations =>
                      New_List (New_Copy_Tree (Obj_Ref))));
 
-               Append_To (Res, Make_Attach_Call (
-                 Obj_Ref      => New_Copy_Tree (Obj_Ref),
-                 Flist_Ref    => Make_Identifier (Loc, Name_L),
-                 With_Attach => Make_Identifier (Loc, Name_B)));
+               Append_To (Res,
+                 Make_Attach_Call
+                   (Obj_Ref     => New_Copy_Tree (Obj_Ref),
+                    Flist_Ref   => Make_Identifier (Loc, Name_L),
+                    With_Attach => Make_Identifier (Loc, Name_B)));
             end if;
 
          when Adjust_Case =>
             Append_List_To (Res,
-              Make_Adjust_Call (Controller_Ref, Controller_Typ,
-                Make_Identifier (Loc, Name_L),
-                Make_Identifier (Loc, Name_B)));
+              Make_Adjust_Call
+                (Controller_Ref, Controller_Typ,
+                 Make_Identifier (Loc, Name_L),
+                 Make_Identifier (Loc, Name_B)));
 
             --  When the type is also a controlled type by itself,
             --  adjust it and attach it to the finalization chain.
@@ -2770,17 +2772,18 @@ package body Exp_Ch7 is
                    Parameter_Associations =>
                      New_List (New_Copy_Tree (Obj_Ref))));
 
-               Append_To (Res, Make_Attach_Call (
-                 Obj_Ref      => New_Copy_Tree (Obj_Ref),
-                 Flist_Ref    => Make_Identifier (Loc, Name_L),
-                 With_Attach => Make_Identifier (Loc, Name_B)));
+               Append_To (Res,
+                 Make_Attach_Call
+                   (Obj_Ref     => New_Copy_Tree (Obj_Ref),
+                    Flist_Ref   => Make_Identifier (Loc, Name_L),
+                    With_Attach => Make_Identifier (Loc, Name_B)));
             end if;
 
          when Finalize_Case =>
             if Is_Controlled (Typ) then
                Append_To (Res,
                  Make_Implicit_If_Statement (Obj_Ref,
-                   Condition => Make_Identifier (Loc, Name_B),
+                   Condition       => Make_Identifier (Loc, Name_B),
                    Then_Statements => New_List (
                      Make_Procedure_Call_Statement (Loc,
                        Name => New_Reference_To (RTE (RE_Finalize_One), Loc),
@@ -2797,9 +2800,11 @@ package body Exp_Ch7 is
             end if;
 
             Append_List_To (Res,
-              Make_Final_Call (Controller_Ref, Controller_Typ,
-                Make_Identifier (Loc, Name_B)));
+              Make_Final_Call
+                (Controller_Ref, Controller_Typ,
+                 Make_Identifier (Loc, Name_B)));
       end case;
+
       return Res;
    end Make_Deep_Record_Body;
 

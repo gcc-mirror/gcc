@@ -4120,14 +4120,10 @@ package body Exp_Util is
    begin
       return
         Make_Pragma (Loc,
-          Pragma_Identifier            =>
-            Make_Identifier (Loc,
-              Name_Check),
+          Pragma_Identifier            => Make_Identifier (Loc, Name_Check),
           Pragma_Argument_Associations => New_List (
             Make_Pragma_Argument_Association (Loc,
-              Expression =>
-                Make_Identifier (Loc,
-                  Chars => Name_Predicate)),
+              Expression => Make_Identifier (Loc, Name_Predicate)),
             Make_Pragma_Argument_Association (Loc,
               Expression => Make_Predicate_Call (Typ, Expr))));
    end Make_Predicate_Check;
@@ -5592,7 +5588,7 @@ package body Exp_Util is
          declare
             CS : constant Boolean := Comes_From_Source (N);
          begin
-            Rewrite (N, Make_Identifier (Sloc (N), Chars => Chars (E)));
+            Rewrite (N, Make_Identifier (Sloc (N), Chars (E)));
             Set_Entity (N, E);
             Set_Comes_From_Source (N, CS);
             Set_Analyzed (N, True);
