@@ -2920,6 +2920,7 @@ package body Sem_Prag is
 
          --  C_Pass_By_Copy is treated as a synonym for convention C (this is
          --  tested again below to set the critical flag).
+
          if Cname = Name_C_Pass_By_Copy then
             C := Convention_C;
 

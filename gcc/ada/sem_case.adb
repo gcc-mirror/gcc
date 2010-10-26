@@ -313,8 +313,16 @@ package body Sem_Case is
          Hi := Expr_Value (Choice_Table (J).Hi);
 
          if Lo <= Prev_Hi then
-            Prev_Choice := Choice_Table (J - 1).Node;
             Choice      := Choice_Table (J).Node;
+
+            --  Find first previous choice that overlaps.
+
+            for K in 1 .. J - 1 loop
+               if Lo <= Expr_Value (Choice_Table (K).Hi) then
+                  Prev_Choice := Choice_Table (K).Node;
+                  exit;
+               end if;
+            end loop;
 
             if Sloc (Prev_Choice) <= Sloc (Choice) then
                Error_Msg_Sloc := Sloc (Prev_Choice);

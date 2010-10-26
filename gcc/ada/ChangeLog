@@ -1,3 +1,42 @@
+2010-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Diagnose attempt to use thew
+	form "for X in A" when A is an array object. This form is only intended
+	for containers.
+	* sem_eval.adb: Fix reference to non-existing field of type conversion
+	node.
+	* sem_case.adb (Check_Choices): Improve error reporting for overlapping
+	choices in case statements.
+
+2010-10-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_disp.adb (Expand_Interface_Actuals): When expanding an actual for
+	a class-wide interface formal that involves applying a displacement
+	conversion to the actual, check for the case of calling a build-in-place
+	function and handle generation of the implicit BIP parameters (call
+	Make_Build_In_Place_Call_In_Anonymous_Context).
+	Add with and use of Exp_Ch6.
+
+2010-10-26  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, sem_cat.ads: Minor reformatting.
+
+2010-10-26  Sergey Rybin  <rybin@adacore.com>
+
+	* vms_data.ads: Define VMS qualifier for gnatelim '--ignore' option
+
+2010-10-26  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb (Has_Preelaborable_Initialization.Check_Components):
+	For a discriminant, use Discriminant_Default_Value rather than
+	Expression (Declaration_Node (D)).
+
+2010-10-26  Geert Bosch  <bosch@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Parameterized
+	expressions don't need a spec, even when style checks require
+	subprograms to have one.
+
 2010-10-26  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnatvsn.ads: Update comments.

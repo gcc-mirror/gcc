@@ -5432,8 +5432,8 @@ package body Sem_Eval is
          when N_Type_Conversion =>
             Why_Not_Static (Expression (N));
 
-            if not Is_Scalar_Type (Etype (Prefix (N)))
-              or else not Is_Static_Subtype (Etype (Prefix (N)))
+            if not Is_Scalar_Type (Entity (Subtype_Mark (N)))
+              or else not Is_Static_Subtype (Entity (Subtype_Mark (N)))
             then
                Error_Msg_N
                  ("static conversion requires static scalar subtype result " &

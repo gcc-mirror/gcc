@@ -3701,6 +3701,13 @@ package VMS_Data is
    --
    --   Do not generate pragmas for dispatching operations.
 
+   S_Elim_Ignore : aliased constant S := "/IGNORE=@"                       &
+                                         "--ignore=@";
+   --      /IGNORE=filename
+   --
+   --   Do not generate pragmas for subprograms declared in the sources
+   --  listed in a specified file
+
    S_Elim_Project : aliased constant S := "/PROJECT_FILE=<"                &
                                              "-P>";
    --        /PROJECT_FILE=filename

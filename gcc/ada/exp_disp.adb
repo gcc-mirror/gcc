@@ -30,6 +30,7 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Atag; use Exp_Atag;
+with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_CG;   use Exp_CG;
 with Exp_Dbug; use Exp_Dbug;
@@ -1437,6 +1438,19 @@ package body Exp_Disp is
             --  the displacement of the pointer.
 
             else
+               --  Normally, expansion of actuals for calls to build-in-place
+               --  functions happens as part of Expand_Actuals, but in this
+               --  case the call will be wrapped in a conversion and soon after
+               --  expanded further to handle the displacement for a class-wide
+               --  interface conversion, so if this is a BIP call then we need
+               --  to handle it now.
+
+               if Ada_Version >= Ada_2005
+                 and then Is_Build_In_Place_Function_Call (Actual)
+               then
+                  Make_Build_In_Place_Call_In_Anonymous_Context (Actual);
+               end if;
+
                Conversion := Convert_To (Formal_Typ, Relocate_Node (Actual));
                Rewrite (Actual, Conversion);
                Analyze_And_Resolve (Actual, Formal_Typ);
