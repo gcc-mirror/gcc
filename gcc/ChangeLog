@@ -1,3 +1,11 @@
+2010-10-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44948
+	* config/i386/i386.c (ix86_old_function_arg_boundary): New.
+	(ix86_function_arg_boundary): Always align parameters on stack
+	in 64bit and align parameters with alignment >= 16byte on stack 
+	in 32bit.  Warn alignment change.
+
 2010-10-26  Ian Lance Taylor  <iant@google.com>
 
 	PR middle-end/45687
