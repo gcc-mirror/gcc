@@ -661,11 +661,14 @@ layout_decl (tree decl, unsigned int known_align)
 	    }
 
 	  /* See if we can use an ordinary integer mode for a bit-field.
-	     Conditions are: a fixed size that is correct for another mode
-	     and occupying a complete byte or bytes on proper boundary.  */
+	     Conditions are: a fixed size that is correct for another mode,
+	     occupying a complete byte or bytes on proper boundary,
+	     and not volatile or not -fstrict-volatile-bitfields.  */
 	  if (TYPE_SIZE (type) != 0
 	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	      && GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT)
+	      && GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT
+	      && !(TREE_THIS_VOLATILE (decl)
+		   && flag_strict_volatile_bitfields > 0))
 	    {
 	      enum machine_mode xmode
 		= mode_for_size_tree (DECL_SIZE (decl), MODE_INT, 1);

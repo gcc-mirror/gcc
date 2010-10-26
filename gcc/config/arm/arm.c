@@ -1971,6 +1971,10 @@ arm_option_override (void)
 			   global_options.x_param_values,
 			   global_options_set.x_param_values);
 
+  /* ARM EABI defaults to strict volatile bitfields.  */
+  if (TARGET_AAPCS_BASED && flag_strict_volatile_bitfields < 0)
+    flag_strict_volatile_bitfields = 1;
+
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
 }
