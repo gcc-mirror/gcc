@@ -3928,6 +3928,14 @@ package body Sem_Prag is
                then
                   null;
 
+               --  The pragma does not apply to primitives of interfaces
+
+               elsif Is_Dispatching_Operation (Def_Id)
+                 and then Present (Find_Dispatching_Type (Def_Id))
+                 and then Is_Interface (Find_Dispatching_Type (Def_Id))
+               then
+                  null;
+
                --  Verify that the homonym is in the same declarative part (not
                --  just the same scope).
 
@@ -4047,10 +4055,10 @@ package body Sem_Prag is
            and then C = Convention_CPP
          then
             --  Types treated as CPP classes are treated as limited, but we
-            --  don't require them to be declared this way. A warning is
-            --  issued to encourage the user to declare them as limited.
-            --  This is not an error, for compatibility reasons, because
-            --  these types have been supported this way for some time.
+            --  don't require them to be declared this way. A warning is issued
+            --  to encourage the user to declare them as limited. This is not
+            --  an error, for compatibility reasons, because these types have
+            --  been supported this way for some time.
 
             if not Is_Limited_Type (Def_Id) then
                Error_Msg_N

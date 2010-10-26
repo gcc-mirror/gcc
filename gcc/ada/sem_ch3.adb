@@ -17627,10 +17627,10 @@ package body Sem_Ch3 is
       Check_List  : List_Id := Empty_List;
       R_Check_Off : Boolean := False)
    is
-      Lo, Hi    : Node_Id;
-      R_Checks  : Check_Result;
-      Type_Decl : Node_Id;
-      Def_Id    : Entity_Id;
+      Lo, Hi      : Node_Id;
+      R_Checks    : Check_Result;
+      Insert_Node : Node_Id;
+      Def_Id      : Entity_Id;
 
    begin
       Analyze_And_Resolve (R, Base_Type (T));
@@ -17738,32 +17738,43 @@ package body Sem_Ch3 is
             if not R_Check_Off then
                R_Checks := Get_Range_Checks (R, T);
 
-               --  Look up tree to find an appropriate insertion point.
-               --  This seems really junk code, and very brittle, couldn't
-               --  we just use an insert actions call of some kind ???
+               --  Look up tree to find an appropriate insertion point. We
+               --  can't just use insert_actions because later processing
+               --  depends on the insertion node. Prior to Ada2012 the
+               --  insertion point could only be a declaration or a loop, but
+               --  quantified expressions can appear within any context in an
+               --  expression, and the insertion point can be any statement,
+               --  pragma, or declaration.
 
-               Type_Decl := Parent (R);
-               while Present (Type_Decl) and then not
-                 (Nkind_In (Type_Decl, N_Full_Type_Declaration,
-                                       N_Subtype_Declaration,
-                                       N_Loop_Statement,
-                                       N_Task_Type_Declaration)
-                    or else
-                  Nkind_In (Type_Decl, N_Single_Task_Declaration,
-                                       N_Protected_Type_Declaration,
-                                       N_Single_Protected_Declaration))
-               loop
-                  Type_Decl := Parent (Type_Decl);
+               Insert_Node := Parent (R);
+               while Present (Insert_Node) loop
+                  exit when
+                    Nkind (Insert_Node) in N_Declaration
+                    and then
+                      not Nkind_In
+                        (Insert_Node, N_Component_Declaration,
+                                      N_Loop_Parameter_Specification,
+                                      N_Function_Specification,
+                                      N_Procedure_Specification);
+
+                  exit when Nkind (Insert_Node) in N_Later_Decl_Item
+                    or else Nkind (Insert_Node) in
+                              N_Statement_Other_Than_Procedure_Call
+                    or else Nkind_In (Insert_Node, N_Procedure_Call_Statement,
+                                                   N_Pragma);
+
+                  Insert_Node := Parent (Insert_Node);
                end loop;
 
                --  Why would Type_Decl not be present???  Without this test,
                --  short regression tests fail.
 
-               if Present (Type_Decl) then
+               if Present (Insert_Node) then
 
-                  --  Case of loop statement (more comments ???)
+                  --  Case of loop statement. Verify that the range is part
+                  --  of the subtype indication of the iteration scheme.
 
-                  if Nkind (Type_Decl) = N_Loop_Statement then
+                  if Nkind (Insert_Node) = N_Loop_Statement then
                      declare
                         Indic : Node_Id;
 
@@ -17780,18 +17791,20 @@ package body Sem_Ch3 is
 
                            Insert_Range_Checks
                              (R_Checks,
-                              Type_Decl,
+                              Insert_Node,
                               Def_Id,
-                              Sloc (Type_Decl),
+                              Sloc (Insert_Node),
                               R,
                               Do_Before => True);
                         end if;
                      end;
 
-                  --  All other cases (more comments ???)
+                  --  Insertion before a declaration. If the declaration
+                  --  includes discriminants, the list of applicable checks
+                  --  is given by the caller.
 
-                  else
-                     Def_Id := Defining_Identifier (Type_Decl);
+                  elsif Nkind (Insert_Node) in N_Declaration then
+                     Def_Id := Defining_Identifier (Insert_Node);
 
                      if (Ekind (Def_Id) = E_Record_Type
                           and then Depends_On_Discriminant (R))
@@ -17800,17 +17813,28 @@ package body Sem_Ch3 is
                           and then Has_Discriminants (Def_Id))
                      then
                         Append_Range_Checks
-                          (R_Checks, Check_List, Def_Id, Sloc (Type_Decl), R);
+                          (R_Checks,
+                            Check_List, Def_Id, Sloc (Insert_Node), R);
 
                      else
                         Insert_Range_Checks
-                          (R_Checks, Type_Decl, Def_Id, Sloc (Type_Decl), R);
+                          (R_Checks,
+                            Insert_Node, Def_Id, Sloc (Insert_Node), R);
 
                      end if;
+
+                  --  Insertion before a statement. Range appears in the
+                  --  context of a quantified expression. Insertion will
+                  --  take place when expression is expanded.
+
+                  else
+                     null;
                   end if;
                end if;
             end if;
          end if;
+
+      --  Case of other than an explicit N_Range node
 
       elsif Expander_Active then
          Get_Index_Bounds (R, Lo, Hi);
