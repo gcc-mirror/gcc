@@ -1,3 +1,31 @@
+2010-10-26  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads (Treat_Categorization_Errors_As_Warnings): New flag
+	* sem_cat.adb (Check_Categorization_Dependencies):
+	Use Check_Categorization_Dependencies
+	* switch-c.adb: GNAT Mode sets Treat_Categorization_Errors_As_Warnings
+	-gnateP sets Treat_Categorization_Errors_As_Warnings
+	* usage.adb: Add line for -gnateP switch
+
+2010-10-26  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Add_Internal_Interface_Entities): Handle primitives
+	inherited from the parent that cover interface primitives.
+	(Derive_Progenitor_Subprograms): Handle primitives inherited from
+	the parent that cover interface primitives.
+	* sem_disp.adb (Find_Primitive_Covering_Interface): When searching in
+	the list of primitives of the type extend the test to include inherited
+	private primitives.
+	* sem_ch6.ads (Is_Interface_Conformant): Add missing documentation.
+	* sem_ch7.adb (Declare_Inherited_Private_Subprograms): Add missing
+	barrier to the loop searching for explicit overriding primitives.
+	* sem_ch4.adb (Analyze_Indexed_Component_Form): Add missing barrier
+	before accessing attribute Entity.
+
+2010-10-26  Bob Duff  <duff@adacore.com>
+
+	* make.adb: Call Namet.Finalize, so we can get statistics.
+
 2010-10-26  Geert Bosch  <bosch@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Use the subprogram_body

@@ -2155,7 +2155,9 @@ package body Sem_Ch4 is
 
       P_T := Base_Type (Etype (P));
 
-      if Is_Entity_Name (P) then
+      if Is_Entity_Name (P)
+        and then Present (Entity (P))
+      then
          U_N := Entity (P);
 
          if Is_Type (U_N) then

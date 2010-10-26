@@ -495,6 +495,11 @@ package body Switch.C is
 
                      Ptr := Max + 1;
 
+                  --  -gnateP (Treat pragma Pure/Preelaborate errs as warnings)
+
+                  when 'P' =>
+                     Treat_Categorization_Errors_As_Warnings := True;
+
                   --  -gnatez (final delimiter of explicit switches)
 
                   --  All switches that come after -gnatez have been added by
@@ -561,6 +566,10 @@ package body Switch.C is
 
                Set_GNAT_Mode_Warnings;
                Set_GNAT_Style_Check_Options;
+
+               --  Other special modes set by -gnatg
+
+               Treat_Categorization_Errors_As_Warnings := True;
 
             --  Processing for G switch
 

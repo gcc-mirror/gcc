@@ -41,10 +41,10 @@
 with Hostparm; use Hostparm;
 with Types;    use Types;
 
-with System.WCh_Con; use System.WCh_Con;
-
 pragma Warnings (Off);
+--  This package is used also by gnatcoll
 with System.Strings; use System.Strings;
+with System.WCh_Con; use System.WCh_Con;
 pragma Warnings (On);
 
 package Opt is
@@ -1229,6 +1229,11 @@ package Opt is
    --  GNATBIND
    --  Tolerate time stamp and other consistency errors. If this flag is set to
    --  True (-t), then inconsistencies result in warnings rather than errors.
+
+   Treat_Categorization_Errors_As_Warnings : Boolean := False;
+   --  Normally categorization errors are true illegalities. If this switch
+   --  is set, then such errors result in warning messages rather than error
+   --  messages. Set True by -gnatg or -gnateP (P for Pure/Preelaborate).
 
    Treat_Restrictions_As_Warnings : Boolean := False;
    --  GNAT

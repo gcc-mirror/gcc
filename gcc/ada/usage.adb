@@ -207,6 +207,11 @@ begin
    Write_Switch_Char ("ep=?");
    Write_Line ("Specify preprocessing data file, e.g. -gnatep=prep.data");
 
+   --  Line for -gnateP switch
+
+   Write_Switch_Char ("eP");
+   Write_Line ("Pure/Prelaborate errors generate warnings rather than errors");
+
    --  Line for -gnateS switch
 
    Write_Switch_Char ("eS");
