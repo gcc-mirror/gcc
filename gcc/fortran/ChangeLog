@@ -1,3 +1,12 @@
+2010-10-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45451
+	* trans-stmt.c (gfc_trans_allocate): Do a deep-copy for SOURCE=.
+
+	PR fortran/43018
+	* trans-array.c (duplicate_allocatable): Use size of type and not
+	the size of the pointer to the type.
+
 2010-10-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/46140

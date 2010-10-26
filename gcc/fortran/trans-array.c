@@ -6072,7 +6072,7 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
       null_data = gfc_finish_block (&block);
 
       gfc_init_block (&block);
-      size = TYPE_SIZE_UNIT (type);
+      size = TYPE_SIZE_UNIT (TREE_TYPE (type));
       if (!no_malloc)
 	{
 	  tmp = gfc_call_malloc (&block, type, size);

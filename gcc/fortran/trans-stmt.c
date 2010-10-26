@@ -4487,8 +4487,12 @@ gfc_trans_allocate (gfc_code * code)
 	  /* Initialization via SOURCE block
 	     (or static default initializer).  */
 	  gfc_expr *rhs = gfc_copy_expr (code->expr3);
-	  if (al->expr->ts.type == BT_CLASS)
+	  if (al->expr->ts.type == BT_CLASS && rhs->expr_type == EXPR_VARIABLE
+	      && rhs->ts.type != BT_CLASS)
+	    tmp = gfc_trans_assignment (expr, rhs, false, false);
+	  else if (al->expr->ts.type == BT_CLASS)
 	    {
+	      /* TODO: One needs to do a deep-copy for BT_CLASS; cf. PR 46174.  */
 	      gfc_se dst,src;
 	      if (rhs->ts.type == BT_CLASS)
 		gfc_add_component_ref (rhs, "$data");
