@@ -1890,7 +1890,7 @@ package body Sem_Util is
                   if Chars (Id) = Name_Op_Eq
                     and then Is_Dispatching_Operation (Id)
                     and then Present (Alias (Id))
-                    and then Is_Overriding_Operation (Alias (Id))
+                    and then Present (Overridden_Operation (Alias (Id)))
                     and then Base_Type (Etype (First_Entity (Id))) =
                                Base_Type (Etype (First_Entity (Alias (Id))))
                   then
@@ -9957,9 +9957,7 @@ package body Sem_Util is
       --  If S overrides an inherted subprogram S2 the original corresponding
       --  operation of S is the original corresponding operation of S2
 
-      elsif Is_Overriding_Operation (S)
-        and then Present (Overridden_Operation (S))
-      then
+      elsif Present (Overridden_Operation (S)) then
          return Original_Corresponding_Operation (Overridden_Operation (S));
 
       --  otherwise it is S itself

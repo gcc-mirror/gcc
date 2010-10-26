@@ -374,7 +374,7 @@ package body Sem_Ch6 is
 
       elsif Warn_On_Redundant_Constructs
         and then not Is_Dispatching_Operation (Designator)
-        and then not Is_Overriding_Operation (Designator)
+        and then not Present (Overridden_Operation (Designator))
         and then (not Is_Operator_Symbol_Name (Chars (Designator))
                    or else Scop /= Scope (Etype (First_Formal (Designator))))
       then
@@ -1960,13 +1960,13 @@ package body Sem_Ch6 is
             then
                null;
 
-            elsif not Is_Overriding_Operation (Spec_Id) then
+            elsif not Present (Overridden_Operation (Spec_Id)) then
                Error_Msg_NE
                  ("subprogram& is not overriding", Body_Spec, Spec_Id);
             end if;
 
          elsif Must_Not_Override (Body_Spec) then
-            if Is_Overriding_Operation (Spec_Id) then
+            if Present (Overridden_Operation (Spec_Id)) then
                Error_Msg_NE
                  ("subprogram& overrides inherited operation",
                   Body_Spec, Spec_Id);
@@ -1991,7 +1991,7 @@ package body Sem_Ch6 is
             end if;
 
          elsif Style_Check --  ??? incorrect use of Style_Check!
-           and then Is_Overriding_Operation (Spec_Id)
+           and then Present (Overridden_Operation (Spec_Id))
          then
             pragma Assert (Unit_Declaration_Node (Body_Id) = N);
             Style.Missing_Overriding (N, Body_Id);
@@ -4196,7 +4196,7 @@ package body Sem_Ch6 is
                   Error_Msg_Sloc   := Sloc (Op);
 
                   if Comes_From_Source (Op) or else No (Alias (Op)) then
-                     if not Is_Overriding_Operation (Op) then
+                     if not Present (Overridden_Operation (Op)) then
                         Error_Msg_N ("\\primitive % defined #", Typ);
                      else
                         Error_Msg_N
@@ -4672,7 +4672,7 @@ package body Sem_Ch6 is
             end if;
 
          elsif Is_Subprogram (Subp) then
-            Set_Is_Overriding_Operation (Subp);
+            Set_Overridden_Operation (Subp, Overridden_Subp);
          end if;
 
          --  If primitive flag is set or this is a protected operation, then
@@ -4728,10 +4728,9 @@ package body Sem_Ch6 is
                end if;
 
             elsif Must_Override (Spec) then
-               if Is_Overriding_Operation (Subp) then
-                  null;
-
-               elsif not Can_Override then
+               if No (Overridden_Operation (Subp))
+                 and then not Can_Override
+               then
                   Error_Msg_NE ("subprogram & is not overriding", Spec, Subp);
                end if;
 
@@ -4742,8 +4741,6 @@ package body Sem_Ch6 is
                 not Is_Predefined_File_Name
                       (Unit_File_Name (Get_Source_Unit (Subp)))
             then
-               Set_Is_Overriding_Operation (Subp);
-
                --  If style checks are enabled, indicate that the indicator is
                --  missing. However, at the point of declaration, the type of
                --  which this is a primitive operation may be private, in which
@@ -7860,7 +7857,7 @@ package body Sem_Ch6 is
             if Ada_Version >= Ada_2012
               and then No (Overridden_Subp)
               and then Is_Dispatching_Operation (S)
-              and then Is_Overriding_Operation (S)
+              and then Present (Overridden_Operation (S))
             then
                Overridden_Subp := Overridden_Operation (S);
             end if;
@@ -7982,22 +7979,18 @@ package body Sem_Ch6 is
                      Check_Operation_From_Private_View (S, E);
                   end if;
 
-                  --  In any case the implicit operation remains hidden by
-                  --  the existing declaration, which is overriding.
+                  --  In any case the implicit operation remains hidden by the
+                  --  existing declaration, which is overriding. Indicate that
+                  --  E overrides the operation from which S is inherited.
 
-                  Set_Is_Overriding_Operation (E);
+                  if Present (Alias (S)) then
+                     Set_Overridden_Operation (E, Alias (S));
+                  else
+                     Set_Overridden_Operation (E, S);
+                  end if;
 
                   if Comes_From_Source (E) then
                      Check_Overriding_Indicator (E, S, Is_Primitive => False);
-
-                     --  Indicate that E overrides the operation from which
-                     --  S is inherited.
-
-                     if Present (Alias (S)) then
-                        Set_Overridden_Operation (E, Alias (S));
-                     else
-                        Set_Overridden_Operation (E, S);
-                     end if;
                   end if;
 
                   return;
@@ -8145,22 +8138,17 @@ package body Sem_Ch6 is
                            if No (Next_Entity (Prev)) then
                               Set_Last_Entity (Current_Scope, Prev);
                            end if;
-
                         end if;
                      end if;
 
                      Enter_Overloaded_Entity (S);
-                     Set_Is_Overriding_Operation (S);
+                     Set_Overridden_Operation (S, E);
                      Check_Overriding_Indicator (S, E, Is_Primitive => True);
 
                      --  If S is a user-defined subprogram or a null procedure
                      --  expanded to override an inherited null procedure, or a
                      --  predefined dispatching primitive then indicate that E
-                     --  overrides the operation from which S is inherited. It
-                     --  seems odd that Overridden_Operation isn't set in all
-                     --  cases where Is_Overriding_Operation is true, but doing
-                     --  so causes infinite loops in the compiler for implicit
-                     --  overriding subprograms. ???
+                     --  overrides the operation from which S is inherited.
 
                      if Comes_From_Source (S)
                        or else
@@ -8176,8 +8164,6 @@ package body Sem_Ch6 is
                      then
                         if Present (Alias (E)) then
                            Set_Overridden_Operation (S, Alias (E));
-                        else
-                           Set_Overridden_Operation (S, E);
                         end if;
                      end if;
 

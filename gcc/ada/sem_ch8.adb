@@ -1968,7 +1968,7 @@ package body Sem_Ch8 is
 
          --  Ada 2005: check overriding indicator
 
-         if Is_Overriding_Operation (Rename_Spec) then
+         if Present (Overridden_Operation (Rename_Spec)) then
             if Must_Not_Override (Specification (N)) then
                Error_Msg_NE
                  ("subprogram& overrides inherited operation",
@@ -2110,7 +2110,7 @@ package body Sem_Ch8 is
            and then No (DTC_Entity (Old_S))
            and then Present (Alias (Old_S))
            and then not Is_Abstract_Subprogram (Alias (Old_S))
-           and then Is_Overriding_Operation (Alias (Old_S))
+           and then Present (Overridden_Operation (Alias (Old_S)))
          then
             Old_S := Alias (Old_S);
          end if;

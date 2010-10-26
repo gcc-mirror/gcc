@@ -1537,7 +1537,6 @@ package body Sem_Ch7 is
                            New_Op := Node (Op_Elmt_2);
                            Replace_Elmt (Op_Elmt, New_Op);
                            Remove_Elmt  (Op_List, Op_Elmt_2);
-                           Set_Is_Overriding_Operation (New_Op);
                            Set_Overridden_Operation (New_Op, Parent_Subp);
 
                            --  We don't need to inherit its dispatching slot.

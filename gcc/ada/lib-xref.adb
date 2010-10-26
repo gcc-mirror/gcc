@@ -847,7 +847,7 @@ package body Lib.Xref is
 
          if Typ = 'p'
            and then Is_Subprogram (N)
-           and then Is_Overriding_Operation (N)
+           and then Present (Overridden_Operation (N))
          then
             Xrefs.Table (Indx).Typ := 'P';
          else
@@ -2183,7 +2183,7 @@ package body Lib.Xref is
                      --  on operation that was overridden.
 
                      if Is_Subprogram (XE.Ent)
-                       and then Is_Overriding_Operation (XE.Ent)
+                       and then Present (Overridden_Operation (XE.Ent))
                      then
                         Output_Overridden_Op (Overridden_Operation (XE.Ent));
                      end if;

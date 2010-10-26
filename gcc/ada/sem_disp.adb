@@ -889,7 +889,7 @@ package body Sem_Disp is
          --     New_Stream_Subprogram)
 
          if Present (Old_Subp)
-           and then Is_Overriding_Operation (Subp)
+           and then Present (Overridden_Operation (Subp))
            and then Is_Dispatching_Operation (Old_Subp)
          then
             pragma Assert
@@ -1117,7 +1117,7 @@ package body Sem_Disp is
            and then Is_Controlled (Tagged_Type)
            and then not Is_Visibly_Controlled (Tagged_Type)
          then
-            Set_Is_Overriding_Operation (Subp, False);
+            Set_Overridden_Operation (Subp, Empty);
 
             --  If the subprogram specification carries an overriding
             --  indicator, no need for the warning: it is either redundant,
@@ -1139,7 +1139,6 @@ package body Sem_Disp is
 
          else
             Override_Dispatching_Operation (Tagged_Type, Ovr_Subp, Subp);
-            Set_Is_Overriding_Operation (Subp);
 
             --  Ada 2005 (AI-251): In case of late overriding of a primitive
             --  that covers abstract interface subprograms we must register it

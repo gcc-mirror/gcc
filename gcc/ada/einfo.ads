@@ -2484,10 +2484,6 @@ package Einfo is
 --       Applies to all entities, true for ordinary fixed point types and
 --       subtypes.
 
---    Is_Overriding_Operation (Flag39)
---       Present in subprograms. Set if the subprogram is a primitive
---       operation of a derived type, that overrides an inherited operation.
-
 --    Is_Package_Or_Generic_Package (synthesized)
 --       Applies to all entities. True for packages and generic packages.
 --       False for all other entities.
@@ -5167,7 +5163,6 @@ package Einfo is
    --    Is_Instantiated                     (Flag126)  (generic case only)
    --    Is_Intrinsic_Subprogram             (Flag64)
    --    Is_Machine_Code_Subprogram          (Flag137)  (non-generic case only)
-   --    Is_Overriding_Operation             (Flag39)   (non-generic case only)
    --    Is_Primitive                        (Flag218)
    --    Is_Primitive_Wrapper                (Flag195)  (non-generic case only)
    --    Is_Private_Descendant               (Flag53)
@@ -5287,13 +5282,13 @@ package Einfo is
    --    First_Entity                        (Node17)
    --    Alias                               (Node18)
    --    Last_Entity                         (Node20)
+   --    Overridden_Operation                (Node26)
    --    Subprograms_For_Type                (Node29)
    --    Has_Invariants                      (Flag232)
    --    Has_Postconditions                  (Flag240)
    --    Is_Machine_Code_Subprogram          (Flag137)
    --    Is_Pure                             (Flag44)
    --    Is_Intrinsic_Subprogram             (Flag64)
-   --    Is_Overriding_Operation             (Flag39)
    --    Is_Primitive                        (Flag218)
    --    Is_Thunk                            (Flag225)
    --    Default_Expressions_Processed       (Flag108)
@@ -5432,7 +5427,6 @@ package Einfo is
    --    Is_Intrinsic_Subprogram             (Flag64)
    --    Is_Machine_Code_Subprogram          (Flag137)  (non-generic case only)
    --    Is_Null_Init_Proc                   (Flag178)
-   --    Is_Overriding_Operation             (Flag39)   (non-generic case only)
    --    Is_Primitive                        (Flag218)
    --    Is_Primitive_Wrapper                (Flag195)  (non-generic case only)
    --    Is_Private_Descendant               (Flag53)
@@ -6314,7 +6308,6 @@ package Einfo is
    function Is_Object                           (Id : E) return B;
    function Is_Ordinary_Fixed_Point_Type        (Id : E) return B;
    function Is_Overloadable                     (Id : E) return B;
-   function Is_Overriding_Operation             (Id : E) return B;
    function Is_Private_Type                     (Id : E) return B;
    function Is_Protected_Type                   (Id : E) return B;
    function Is_Real_Type                        (Id : E) return B;
@@ -6705,7 +6698,6 @@ package Einfo is
    procedure Set_Is_Obsolescent                  (Id : E; V : B := True);
    procedure Set_Is_Only_Out_Parameter           (Id : E; V : B := True);
    procedure Set_Is_Optional_Parameter           (Id : E; V : B := True);
-   procedure Set_Is_Overriding_Operation         (Id : E; V : B := True);
    procedure Set_Is_Package_Body_Entity          (Id : E; V : B := True);
    procedure Set_Is_Packed                       (Id : E; V : B := True);
    procedure Set_Is_Packed_Array_Type            (Id : E; V : B := True);
@@ -7428,7 +7420,6 @@ package Einfo is
    pragma Inline (Is_Package_Body_Entity);
    pragma Inline (Is_Ordinary_Fixed_Point_Type);
    pragma Inline (Is_Overloadable);
-   pragma Inline (Is_Overriding_Operation);
    pragma Inline (Is_Packed);
    pragma Inline (Is_Packed_Array_Type);
    pragma Inline (Is_Potentially_Use_Visible);
@@ -7832,7 +7823,6 @@ package Einfo is
    pragma Inline (Set_Is_Obsolescent);
    pragma Inline (Set_Is_Only_Out_Parameter);
    pragma Inline (Set_Is_Optional_Parameter);
-   pragma Inline (Set_Is_Overriding_Operation);
    pragma Inline (Set_Is_Package_Body_Entity);
    pragma Inline (Set_Is_Packed);
    pragma Inline (Set_Is_Packed_Array_Type);
