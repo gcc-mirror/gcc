@@ -1,3 +1,8 @@
+2010-10-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (split_stack_return): Replace
+	unspec_volatile with unspec.
+
 2010-10-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/install.texi: Fix typo in --with-sysroot description.
