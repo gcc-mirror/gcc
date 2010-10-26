@@ -22,10 +22,10 @@ along with GCC; see the file COPYING3.  If not see
 #define CONSTANT_POOL_BEFORE_FUNCTION	0
 
 /* check whether load_fpu_reg or not */
-#define LOAD_FPU_REG_P(x) ((x)>=8 && (x)<=11)
-#define NO_LOAD_FPU_REG_P(x) ((x)==12 || (x)==13)
+#define LOAD_FPU_REG_P(x) ((x) >= AC0_REGNUM && (x) <= AC3_REGNUM)
+#define NO_LOAD_FPU_REG_P(x) ((x) == AC4_REGNUM || (x) == AC5_REGNUM)
 #define FPU_REG_P(x)	(LOAD_FPU_REG_P(x) || NO_LOAD_FPU_REG_P(x))
-#define CPU_REG_P(x)	((x)<8)
+#define CPU_REG_P(x)	((x) <= PC_REGNUM)
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
@@ -140,8 +140,6 @@ extern const struct real_format pdp11_d_format;
    we have 8 integer registers, plus 6 float 
    (don't use scratch float !) */
 
-#define FIRST_PSEUDO_REGISTER 14
-
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
 
@@ -191,7 +189,7 @@ extern const struct real_format pdp11_d_format;
     } 						\
 						\
   if (TARGET_AC0)				\
-      call_used_regs[8] = 1;			\
+      call_used_regs[AC0_REGNUM] = 1;		\
   if (TARGET_UNIX_ASM)				\
     {						\
       /* Change names of FPU registers for the UNIX assembler.  */ \
@@ -211,7 +209,7 @@ extern const struct real_format pdp11_d_format;
 */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
-((REGNO < 8)?								\
+((REGNO <= PC_REGNUM)?							\
     ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)	\
     :1)
     
@@ -222,7 +220,7 @@ extern const struct real_format pdp11_d_format;
    FPU can only hold DF - simplifies life!
 */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
-(((REGNO) < 8)?						\
+(((REGNO) <= PC_REGNUM)?				\
   ((GET_MODE_BITSIZE(MODE) <= 16) 			\
    || (GET_MODE_BITSIZE(MODE) >= 32 && !((REGNO) & 1)))	\
   :(MODE) == DFmode)
@@ -237,17 +235,8 @@ extern const struct real_format pdp11_d_format;
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 
-/* the pdp11 pc overloaded on a register that the compiler knows about.  */
-#define PC_REGNUM  7
-
-/* Register to use for pushing function arguments.  */
-#define STACK_POINTER_REGNUM 6
-
-/* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM 5
-
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM 5
+#define ARG_POINTER_REGNUM FRAME_POINTER_REGNUM
 
 /* Register in which static-chain is passed to a function.  */
 /* ??? - i don't want to give up a reg for this! */
@@ -313,7 +302,10 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
    or could index an array.  */
 
 #define REGNO_REG_CLASS(REGNO) 		\
-((REGNO)>=8?((REGNO)<=11?LOAD_FPU_REGS:NO_LOAD_FPU_REGS):(((REGNO)&1)?MUL_REGS:GENERAL_REGS))
+((REGNO) >= AC0_REGNUM ? \
+ ((REGNO) <= AC3_REGNUM ? LOAD_FPU_REGS : \
+  NO_LOAD_FPU_REGS) :                     \
+ (((REGNO) & 1) ? MUL_REGS : GENERAL_REGS))
 
 
 /* The class value for index registers, and the one for base regs.  */
@@ -441,10 +433,10 @@ extern int may_call_alloca;
 {								\
   int offset, regno;		      				\
   offset = get_frame_size();					\
-  for (regno = 0; regno < 8; regno++)				\
+  for (regno = 0; regno <= PC_REGNUM; regno++)			\
     if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])	\
       offset += 2;						\
-  for (regno = 8; regno < 14; regno++)				\
+  for (regno = AC0_REGNUM; regno <= AC5_REGNUM; regno++)	\
     if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])	\
       offset += 8;						\
   /* offset -= 2;   no fp on stack frame */			\
@@ -467,9 +459,9 @@ extern int may_call_alloca;
    has been allocated, which happens in local-alloc.c.  */
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
-  ((REGNO) < 8 || (unsigned) reg_renumber[REGNO] < 8)
+  ((REGNO) <= PC_REGNUM || (unsigned) reg_renumber[REGNO] <= PC_REGNUM)
 #define REGNO_OK_FOR_BASE_P(REGNO)  \
-  ((REGNO) < 8 || (unsigned) reg_renumber[REGNO] < 8)
+  ((REGNO) <= PC_REGNUM || (unsigned) reg_renumber[REGNO] <= PC_REGNUM)
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.
@@ -560,10 +552,10 @@ extern int may_call_alloca;
     /* accept -(SP) -- which uses PRE_MODIFY for byte mode */		\
     if (GET_CODE (operand) == PRE_MODIFY				\
 	&& GET_CODE (XEXP (operand, 0)) == REG				\
-	&& REGNO (XEXP (operand, 0)) == 6        	        	\
+	&& REGNO (XEXP (operand, 0)) == STACK_POINTER_REGNUM       	\
 	&& GET_CODE ((xfoob = XEXP (operand, 1))) == PLUS		\
 	&& GET_CODE (XEXP (xfoob, 0)) == REG				\
-	&& REGNO (XEXP (xfoob, 0)) == 6	        	        	\
+	&& REGNO (XEXP (xfoob, 0)) == STACK_POINTER_REGNUM       	\
 	&& CONSTANT_P (XEXP (xfoob, 1))                                 \
 	&& INTVAL (XEXP (xfoob,1)) == -2)      	               		\
       goto ADDR;							\
@@ -571,10 +563,10 @@ extern int may_call_alloca;
     /* accept (SP)+ -- which uses POST_MODIFY for byte mode */		\
     if (GET_CODE (operand) == POST_MODIFY				\
 	&& GET_CODE (XEXP (operand, 0)) == REG				\
-	&& REGNO (XEXP (operand, 0)) == 6        	        	\
+	&& REGNO (XEXP (operand, 0)) == STACK_POINTER_REGNUM       	\
 	&& GET_CODE ((xfoob = XEXP (operand, 1))) == PLUS		\
 	&& GET_CODE (XEXP (xfoob, 0)) == REG				\
-	&& REGNO (XEXP (xfoob, 0)) == 6	        	        	\
+	&& REGNO (XEXP (xfoob, 0)) == STACK_POINTER_REGNUM		\
 	&& CONSTANT_P (XEXP (xfoob, 1))                                 \
 	&& INTVAL (XEXP (xfoob,1)) == 2)      	               		\
       goto ADDR;							\

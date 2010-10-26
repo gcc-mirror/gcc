@@ -1,3 +1,10 @@
+2010-10-25  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.md: Add define_constants for register
+	numbers, branch offset limits.
+	* config/pdp11/pdp11.c: Use named constants instead of numbers.
+	* config/pdp11.pdp11.h: Ditto.
+
 2010-10-25  Changpeng Fang  <changpeng.fang@amd.com>
 
 	* Changelog (2010-10-22  Changpeng Fang): Correct the Changelog entries.
