@@ -1,3 +1,7 @@
+2010-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2010-10-26  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.ads, einfo.adb (Is_Base_Type): New function, use it where
