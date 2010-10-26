@@ -1,3 +1,13 @@
+2010-10-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42647
+	* trans.h (gfc_deallocate_scalar_with_status): New prototype.
+	* trans.c (gfc_deallocate_scalar_with_status): New function for
+	deallocation of allocatable scalars.
+	* trans-array.c (structure_alloc_comps): Call it here ...
+	* trans-decl.c (gfc_trans_deferred_vars): ... here ...
+	* trans-stmt.c (gfc_trans_deallocate): ... and here.
+
 2010-10-26  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45451
