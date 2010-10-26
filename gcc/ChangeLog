@@ -1,5 +1,9 @@
 2010-10-26  Jan Hubicka  <jh@suse.cz>
 
+	* cgraphbuild.c (build_cgraph_edges): Use ipa-reference to represent OMP.
+
+2010-10-26  Jan Hubicka  <jh@suse.cz>
+
 	* ipa.c (process_references): Enqueue all referenced nodes;
 	mark as reachable only non-external nodes.
 	(cgraph_remove_unreachable_nodes): All referenced nodes should
