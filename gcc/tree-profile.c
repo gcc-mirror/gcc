@@ -510,9 +510,8 @@ tree_profiling (void)
 	  || DECL_STRUCT_FUNCTION (node->decl)->after_tree_profile)
 	continue;
 
-      cgraph_set_readonly_flag (node, false);
-      cgraph_set_pure_flag (node, false);
-      cgraph_set_looping_const_or_pure_flag (node, false);
+      cgraph_set_const_flag (node, false, false);
+      cgraph_set_pure_flag (node, false, false);
     }
 
   /* Update call statements and rebuild the cgraph.  */

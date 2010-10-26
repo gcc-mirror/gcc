@@ -1723,6 +1723,7 @@ cgraph_mark_needed_node (struct cgraph_node *node)
 void
 cgraph_mark_address_taken_node (struct cgraph_node *node)
 {
+  gcc_assert (!node->global.inlined_to);
   cgraph_mark_reachable_node (node);
   node->address_taken = 1;
 }
@@ -2591,37 +2592,50 @@ cgraph_set_nothrow_flag (struct cgraph_node *node, bool nothrow)
    if any to READONLY.  */
 
 void
-cgraph_set_readonly_flag (struct cgraph_node *node, bool readonly)
+cgraph_set_const_flag (struct cgraph_node *node, bool readonly, bool looping)
 {
   struct cgraph_node *alias;
+  /* Static constructors and destructors without a side effect can be
+     optimized out.  */
+  if (!looping && readonly)
+    {
+      if (DECL_STATIC_CONSTRUCTOR (node->decl))
+	DECL_STATIC_CONSTRUCTOR (node->decl) = 0;
+      if (DECL_STATIC_DESTRUCTOR (node->decl))
+	DECL_STATIC_DESTRUCTOR (node->decl) = 0;
+    }
   TREE_READONLY (node->decl) = readonly;
+  DECL_LOOPING_CONST_OR_PURE_P (node->decl) = looping;
   for (alias = node->same_body; alias; alias = alias->next)
-    TREE_READONLY (alias->decl) = readonly;
+    {
+      TREE_READONLY (alias->decl) = readonly;
+      DECL_LOOPING_CONST_OR_PURE_P (alias->decl) = looping;
+    }
 }
 
 /* Set DECL_PURE_P on NODE's decl and on same_body aliases of NODE
    if any to PURE.  */
 
 void
-cgraph_set_pure_flag (struct cgraph_node *node, bool pure)
+cgraph_set_pure_flag (struct cgraph_node *node, bool pure, bool looping)
 {
   struct cgraph_node *alias;
+  /* Static constructors and destructors without a side effect can be
+     optimized out.  */
+  if (!looping && pure)
+    {
+      if (DECL_STATIC_CONSTRUCTOR (node->decl))
+	DECL_STATIC_CONSTRUCTOR (node->decl) = 0;
+      if (DECL_STATIC_DESTRUCTOR (node->decl))
+	DECL_STATIC_DESTRUCTOR (node->decl) = 0;
+    }
   DECL_PURE_P (node->decl) = pure;
+  DECL_LOOPING_CONST_OR_PURE_P (node->decl) = looping;
   for (alias = node->same_body; alias; alias = alias->next)
-    DECL_PURE_P (alias->decl) = pure;
-}
-
-/* Set DECL_LOOPING_CONST_OR_PURE_P on NODE's decl and on
-   same_body aliases of NODE if any to LOOPING_CONST_OR_PURE.  */
-
-void
-cgraph_set_looping_const_or_pure_flag (struct cgraph_node *node,
-				       bool looping_const_or_pure)
-{
-  struct cgraph_node *alias;
-  DECL_LOOPING_CONST_OR_PURE_P (node->decl) = looping_const_or_pure;
-  for (alias = node->same_body; alias; alias = alias->next)
-    DECL_LOOPING_CONST_OR_PURE_P (alias->decl) = looping_const_or_pure;
+    {
+      DECL_PURE_P (alias->decl) = pure;
+      DECL_LOOPING_CONST_OR_PURE_P (alias->decl) = looping;
+    }
 }
 
 /* See if the frequency of NODE can be updated based on frequencies of its
@@ -2768,25 +2782,21 @@ cgraph_edge_cannot_lead_to_return (struct cgraph_edge *e)
 bool
 cgraph_can_remove_if_no_direct_calls_and_refs_p (struct cgraph_node *node)
 {
+  gcc_assert (!node->global.inlined_to);
+  /* Extern inlines can always go, we will use the external definition.  */
+  if (DECL_EXTERNAL (node->decl))
+    return true;
   /* When function is needed, we can not remove it.  */
   if (node->needed || node->reachable_from_other_partition)
+    return false;
+  if (DECL_STATIC_CONSTRUCTOR (node->decl)
+      || DECL_STATIC_DESTRUCTOR (node->decl))
     return false;
   /* Only COMDAT functions can be removed if externally visible.  */
   if (node->local.externally_visible
       && (!DECL_COMDAT (node->decl)
 	  || cgraph_used_from_object_file_p (node)))
     return false;
-  /* Constructors and destructors are executed by the runtime, however
-     we can get rid of all pure constructors and destructors.  */
-  if (DECL_STATIC_CONSTRUCTOR (node->decl)
-      || DECL_STATIC_DESTRUCTOR (node->decl))
-    {
-      int flags = flags_from_decl_or_type (node->decl);
-      if (!optimize
-	  || !(flags & (ECF_CONST | ECF_PURE))
-	  || (flags & ECF_LOOPING_CONST_OR_PURE))
-	return false;
-    }
   return true;
 }
 
@@ -2807,12 +2817,17 @@ cgraph_can_remove_if_no_direct_calls_and_refs_p (struct cgraph_node *node)
 bool
 cgraph_will_be_removed_from_program_if_no_direct_calls (struct cgraph_node *node)
 {
+  gcc_assert (!node->global.inlined_to);
   if (cgraph_used_from_object_file_p (node))
     return false;
   if (!in_lto_p && !flag_whole_program)
     return cgraph_only_called_directly_p (node);
   else
-    return cgraph_can_remove_if_no_direct_calls_p (node);
+    {
+       if (DECL_EXTERNAL (node->decl))
+         return true;
+      return cgraph_can_remove_if_no_direct_calls_p (node);
+    }
 }
 
 /* Return true when RESOLUTION indicate that linker will use
@@ -2835,7 +2850,8 @@ cgraph_used_from_object_file_p (struct cgraph_node *node)
 {
   struct cgraph_node *alias;
 
-  if (!TREE_PUBLIC (node->decl))
+  gcc_assert (!node->global.inlined_to);
+  if (!TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl))
     return false;
   if (resolution_used_from_other_file_p (node->resolution))
     return true;

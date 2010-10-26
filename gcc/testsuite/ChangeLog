@@ -1,3 +1,8 @@
+2010-10-26  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/45736
+	* testsuite/gcc.dg/lto/pr45736_0.c: New function.
+
 2010-10-26  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/46167

@@ -250,6 +250,10 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
       /* We may eliminate the need for out-of-line copy to be output.
 	 In that case just go ahead and re-use it.  */
       if (!e->callee->callers->next_caller
+	  /* FIXME: When address is taken of DECL_EXTERNAL function we still can remove its
+	     offline copy, but we would need to keep unanalyzed node in the callgraph so
+	     references can point to it.  */
+	  && !e->callee->address_taken
 	  && cgraph_can_remove_if_no_direct_calls_p (e->callee)
 	  /* Inlining might enable more devirtualizing, so we want to remove
 	     those only after all devirtualizable virtual calls are processed.
@@ -264,7 +268,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	  && !cgraph_new_nodes)
 	{
 	  gcc_assert (!e->callee->global.inlined_to);
-	  if (e->callee->analyzed)
+	  if (e->callee->analyzed && !DECL_EXTERNAL (e->callee->decl))
 	    {
 	      overall_size -= e->callee->global.size;
 	      nfunctions_inlined++;
@@ -1449,7 +1453,8 @@ cgraph_decide_inlining (void)
 	struct cgraph_edge *e;
 
 	gcc_assert (inline_summary (node)->self_size == node->global.size);
-	initial_size += node->global.size;
+	if (!DECL_EXTERNAL (node->decl))
+	  initial_size += node->global.size;
 	for (e = node->callees; e; e = e->next_callee)
 	  if (max_count < e->count)
 	    max_count = e->count;
@@ -1512,6 +1517,7 @@ cgraph_decide_inlining (void)
 
 	  if (node->callers
 	      && !node->callers->next_caller
+	      && !node->global.inlined_to
 	      && cgraph_will_be_removed_from_program_if_no_direct_calls (node)
 	      && node->local.inlinable
 	      && cgraph_function_body_availability (node) >= AVAIL_AVAILABLE
