@@ -2326,12 +2326,24 @@ package body Sem_Ch6 is
       --  Case of subprogram body with no previous spec
 
       else
+         --  Check for style warning required
+
          if Style_Check
+
+           --  Only apply check for source level subprograms for which checks
+           --  have not been suppressed.
+
            and then Comes_From_Source (Body_Id)
            and then not Suppress_Style_Checks (Body_Id)
+
+           --  No warnings within an instance
+
            and then not In_Instance
-           and then Nkind (Original_Node (Body_Id))
-                            /= N_Parameterized_Expression
+
+           --  No warnings for parameterized expressions
+
+           and then Nkind (Original_Node (Body_Id)) /=
+                                        N_Parameterized_Expression
          then
             Style.Body_With_No_Spec (N);
          end if;

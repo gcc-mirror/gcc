@@ -2084,7 +2084,7 @@ package body Prj.Env is
       Has_Dot   : Boolean := False;
       Key       : Name_Id;
 
-   --  Start of processing for Project_Path_Name_Of
+   --  Start of processing for Find_Project
 
    begin
       Initialize_Project_Path (Self, "");

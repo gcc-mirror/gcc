@@ -663,6 +663,9 @@ package Prj is
    --  Structure to define source data
 
    type Source_Data is record
+      Initialized : Boolean := False;
+      --  Set to True when Source_Data is completely initialized
+
       Project : Project_Id := No_Project;
       --  Project of the source
 
@@ -784,7 +787,8 @@ package Prj is
    end record;
 
    No_Source_Data : constant Source_Data :=
-                      (Project                => No_Project,
+                      (Initialized            => False,
+                       Project                => No_Project,
                        Location               => No_Location,
                        Source_Dir_Rank        => 0,
                        Language               => No_Language_Index,

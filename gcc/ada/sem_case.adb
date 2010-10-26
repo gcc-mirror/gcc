@@ -313,9 +313,9 @@ package body Sem_Case is
          Hi := Expr_Value (Choice_Table (J).Hi);
 
          if Lo <= Prev_Hi then
-            Choice      := Choice_Table (J).Node;
+            Choice := Choice_Table (J).Node;
 
-            --  Find first previous choice that overlaps.
+            --  Find first previous choice that overlaps
 
             for K in 1 .. J - 1 loop
                if Lo <= Expr_Value (Choice_Table (K).Hi) then
