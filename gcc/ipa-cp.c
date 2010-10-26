@@ -457,6 +457,15 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
   if (cgraph_only_called_directly_p (node) || !node->analyzed)
     return false;
 
+  /* When function address is taken, we are pretty sure it will be called in hidden way.  */
+  if (node->address_taken)
+    {
+      if (dump_file)
+        fprintf (dump_file, "Not considering %s for cloning; address is taken.\n",
+ 	         cgraph_node_name (node));
+      return false;
+    }
+
   if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
     {
       if (dump_file)
@@ -561,7 +570,7 @@ ipcp_initialize_node_lattices (struct cgraph_node *node)
 
   if (ipa_is_called_with_var_arguments (info))
     type = IPA_BOTTOM;
-  else if (cgraph_only_called_directly_p (node))
+  else if (node->local.local)
     type = IPA_TOP;
   /* When cloning is allowed, we can assume that externally visible functions
      are not called.  We will compensate this by cloning later.  */

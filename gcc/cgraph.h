@@ -602,9 +602,8 @@ struct cgraph_node * cgraph_create_virtual_clone (struct cgraph_node *old_node,
 						  const char *clone_name);
 
 void cgraph_set_nothrow_flag (struct cgraph_node *, bool);
-void cgraph_set_readonly_flag (struct cgraph_node *, bool);
-void cgraph_set_pure_flag (struct cgraph_node *, bool);
-void cgraph_set_looping_const_or_pure_flag (struct cgraph_node *, bool);
+void cgraph_set_const_flag (struct cgraph_node *, bool, bool);
+void cgraph_set_pure_flag (struct cgraph_node *, bool, bool);
 tree clone_function_name (tree decl, const char *);
 bool cgraph_node_cannot_return (struct cgraph_node *);
 bool cgraph_edge_cannot_lead_to_return (struct cgraph_edge *);
@@ -909,6 +908,7 @@ varpool_node_set_nonempty_p (varpool_node_set set)
 static inline bool
 cgraph_only_called_directly_p (struct cgraph_node *node)
 {
+  gcc_assert (!node->global.inlined_to);
   return (!node->needed && !node->address_taken
 	  && !node->reachable_from_other_partition
 	  && !DECL_STATIC_CONSTRUCTOR (node->decl)
@@ -922,6 +922,9 @@ cgraph_only_called_directly_p (struct cgraph_node *node)
 static inline bool
 cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node)
 {
+  /* Extern inlines can always go, we will use the external definition.  */
+  if (DECL_EXTERNAL (node->decl))
+    return true;
   return !node->address_taken && cgraph_can_remove_if_no_direct_calls_and_refs_p (node);
 }
 

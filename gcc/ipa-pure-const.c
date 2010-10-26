@@ -1322,8 +1322,7 @@ propagate_pure_const (void)
 			     this_looping ? "looping " : "",
 			     cgraph_node_name (w));
 		}
-	      cgraph_set_readonly_flag (w, true);
-	      cgraph_set_looping_const_or_pure_flag (w, this_looping);
+	      cgraph_set_const_flag (w, true, this_looping);
 	      break;
 
 	    case IPA_PURE:
@@ -1335,8 +1334,7 @@ propagate_pure_const (void)
 			     this_looping ? "looping " : "",
 			     cgraph_node_name (w));
 		}
-	      cgraph_set_pure_flag (w, true);
-	      cgraph_set_looping_const_or_pure_flag (w, this_looping);
+	      cgraph_set_pure_flag (w, true, this_looping);
 	      break;
 
 	    default:
@@ -1599,8 +1597,7 @@ local_pure_const (void)
 	  warn_function_const (current_function_decl, !l->looping);
 	  if (!skip)
 	    {
-	      cgraph_set_readonly_flag (node, true);
-	      cgraph_set_looping_const_or_pure_flag (node, l->looping);
+	      cgraph_set_const_flag (node, true, l->looping);
 	      changed = true;
 	    }
 	  if (dump_file)
@@ -1614,7 +1611,7 @@ local_pure_const (void)
 	{
 	  if (!skip)
 	    {
-	      cgraph_set_looping_const_or_pure_flag (node, false);
+	      cgraph_set_const_flag (node, true, false);
 	      changed = true;
 	    }
 	  if (dump_file)
@@ -1629,8 +1626,7 @@ local_pure_const (void)
 	{
 	  if (!skip)
 	    {
-	      cgraph_set_pure_flag (node, true);
-	      cgraph_set_looping_const_or_pure_flag (node, l->looping);
+	      cgraph_set_pure_flag (node, true, l->looping);
 	      changed = true;
 	    }
 	  warn_function_pure (current_function_decl, !l->looping);
@@ -1645,7 +1641,7 @@ local_pure_const (void)
 	{
 	  if (!skip)
 	    {
-	      cgraph_set_looping_const_or_pure_flag (node, false);
+	      cgraph_set_pure_flag (node, true, false);
 	      changed = true;
 	    }
 	  if (dump_file)

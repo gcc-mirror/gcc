@@ -57,8 +57,9 @@ cgraph_postorder (struct cgraph_node **order)
     for (node = cgraph_nodes; node; node = node->next)
       if (!node->aux
 	  && (pass
-	      || (!cgraph_only_called_directly_p (node)
-	  	  && !node->address_taken)))
+	      || (!node->address_taken
+		  && !node->global.inlined_to
+		  && !cgraph_only_called_directly_p (node))))
 	{
 	  node2 = node;
 	  if (!node->callers)
@@ -237,15 +238,22 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
     gcc_assert (!vnode->aux);
 #endif
   varpool_reset_queue ();
+  /* Mark functions whose bodies are obviously needed.
+     This is mostly when they can be referenced externally.  Inline clones
+     are special since their declarations are shared with master clone and thus
+     cgraph_can_remove_if_no_direct_calls_and_refs_p should not be called on them.  */
   for (node = cgraph_nodes; node; node = node->next)
-    if ((!cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
-	 /* Keep around virtual functions for possible devirtualization.  */
-	 || (!before_inlining_p
-	     && !node->global.inlined_to
-	     && DECL_VIRTUAL_P (node->decl)
-	     && (DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl))))
-	&& ((!DECL_EXTERNAL (node->decl))
-            || before_inlining_p))
+    if (node->analyzed && !node->global.inlined_to
+	&& (!cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
+	    /* Keep around virtual functions for possible devirtualization.  */
+	    || (before_inlining_p
+		&& DECL_VIRTUAL_P (node->decl)
+		&& (DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl)))
+	    /* Also external functions with address taken are better to stay
+	       for indirect inlining.  */
+	    || (before_inlining_p
+		&& DECL_EXTERNAL (node->decl)
+		&& node->address_taken)))
       {
         gcc_assert (!node->global.inlined_to);
 	enqueue_cgraph_node (node, &first);
@@ -256,6 +264,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
         gcc_assert (!node->aux);
 	node->reachable = false;
       }
+
+  /* Mark variables that are obviously needed.  */
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
     {
       vnode->next_needed = NULL;
@@ -428,10 +438,10 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 			node->clone_of->clones = node->next_sibling_clone;
 		      if (node->next_sibling_clone)
 			node->next_sibling_clone->prev_sibling_clone = node->prev_sibling_clone;
-    #ifdef ENABLE_CHECKING
+#ifdef ENABLE_CHECKING
 		      if (node->clone_of)
 			node->former_clone_of = node->clone_of->decl;
-    #endif
+#endif
 		      node->clone_of = NULL;
 		      node->next_sibling_clone = NULL;
 		      node->prev_sibling_clone = NULL;
@@ -771,6 +781,15 @@ function_and_variable_visibility (bool whole_program)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
+      int flags = flags_from_decl_or_type (node->decl);
+      if (optimize
+	  && (flags & (ECF_CONST | ECF_PURE))
+	  && !(flags & ECF_LOOPING_CONST_OR_PURE))
+	{
+	  DECL_STATIC_CONSTRUCTOR (node->decl) = 0;
+	  DECL_STATIC_DESTRUCTOR (node->decl) = 0;
+	}
+
       /* C++ FE on lack of COMDAT support create local COMDAT functions
 	 (that ought to be shared but can not due to object format
 	 limitations).  It is neccesary to keep the flag to make rest of C++ FE
