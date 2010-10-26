@@ -819,8 +819,10 @@ package body Sem_Res is
 
          if Nkind_In (P, N_Or_Else,
                          N_And_Then,
-                         N_If_Statement,
-                         N_Case_Statement)
+                         N_Case_Expression,
+                         N_Case_Statement,
+                         N_Conditional_Expression,
+                         N_If_Statement)
          then
             return False;
 
@@ -5277,7 +5279,7 @@ package body Sem_Res is
            and then Check_Infinite_Recursion (N)
          then
             --  Here we detected and flagged an infinite recursion, so we do
-            --  not need to test the case below for further warnings. Also if
+            --  not need to test the case below for further warnings. Also, if
             --  we now have a raise SE node, we are all done.
 
             if Nkind (N) = N_Raise_Storage_Error then
@@ -10095,7 +10097,7 @@ package body Sem_Res is
          --  this situation can arise in source code.
 
          elsif In_Instance or else In_Inlined_Body then
-               return True;
+            return True;
 
          --  Otherwise we need the conversion check
 

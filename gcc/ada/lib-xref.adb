@@ -1172,7 +1172,7 @@ package body Lib.Xref is
 
             if Is_Type (Ent)
               and then Is_Tagged_Type (Ent)
-              and then Ent = Base_Type (Ent)
+              and then Is_Base_Type (Ent)
               and then In_Extended_Main_Source_Unit (Ent)
             then
                Generate_Prim_Op_References (Ent);
@@ -1281,7 +1281,7 @@ package body Lib.Xref is
             if Is_Type (Ent)
               and then Is_Tagged_Type (Ent)
               and then Is_Derived_Type (Ent)
-              and then Ent = Base_Type (Ent)
+              and then Is_Base_Type (Ent)
               and then In_Extended_Main_Source_Unit (Ent)
             then
                declare

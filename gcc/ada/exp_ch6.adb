@@ -600,7 +600,7 @@ package body Exp_Ch6 is
       if Is_Derived_Type (Typ)
         and then not Is_Private_Type (Typ)
         and then In_Open_Scopes (Scope (Etype (Typ)))
-        and then Typ = Base_Type (Typ)
+        and then Is_Base_Type (Typ)
       then
          --  Subp overrides an inherited private operation if there is an
          --  inherited operation with a different name than Subp (see

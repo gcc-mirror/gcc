@@ -2996,7 +2996,7 @@ package body Einfo is
 
    procedure Set_Access_Disp_Table (Id : E; V : L) is
    begin
-      pragma Assert (Is_Tagged_Type (Id) and then Id = Base_Type (Id));
+      pragma Assert (Is_Tagged_Type (Id) and then Is_Base_Type (Id));
       Set_Elist16 (Id, V);
    end Set_Access_Disp_Table;
 
@@ -3018,7 +3018,7 @@ package body Einfo is
 
    procedure Set_Associated_Storage_Pool (Id : E; V : E) is
    begin
-      pragma Assert (Is_Access_Type (Id) and then Id = Base_Type (Id));
+      pragma Assert (Is_Access_Type (Id) and then Is_Base_Type (Id));
       Set_Node22 (Id, V);
    end Set_Associated_Storage_Pool;
 
@@ -3082,7 +3082,7 @@ package body Einfo is
 
    procedure Set_C_Pass_By_Copy (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Record_Type (Id) and then Id = Base_Type (Id));
+      pragma Assert (Is_Record_Type (Id) and then Is_Base_Type (Id));
       Set_Flag125 (Id, V);
    end Set_C_Pass_By_Copy;
 
@@ -3122,13 +3122,13 @@ package body Einfo is
 
    procedure Set_Component_Size (Id : E; V : U) is
    begin
-      pragma Assert (Is_Array_Type (Id) and then Id = Base_Type (Id));
+      pragma Assert (Is_Array_Type (Id) and then Is_Base_Type (Id));
       Set_Uint22 (Id, V);
    end Set_Component_Size;
 
    procedure Set_Component_Type (Id : E; V : E) is
    begin
-      pragma Assert (Is_Array_Type (Id) and then Id = Base_Type (Id));
+      pragma Assert (Is_Array_Type (Id) and then Is_Base_Type (Id));
       Set_Node20 (Id, V);
    end Set_Component_Type;
 
@@ -3302,7 +3302,7 @@ package body Einfo is
 
    procedure Set_Dispatch_Table_Wrappers (Id : E; V : L) is
    begin
-      pragma Assert (Is_Tagged_Type (Id) and then Id = Base_Type (Id));
+      pragma Assert (Is_Tagged_Type (Id) and then Is_Base_Type (Id));
       Set_Elist26 (Id, V);
    end Set_Dispatch_Table_Wrappers;
 
@@ -3477,8 +3477,7 @@ package body Einfo is
    procedure Set_Can_Use_Internal_Rep (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Is_Access_Subprogram_Type (Id)
-          and then Id = Base_Type (Id));
+        (Is_Access_Subprogram_Type (Id) and then Is_Base_Type (Id));
       Set_Flag229 (Id, V);
    end Set_Can_Use_Internal_Rep;
 
@@ -3489,7 +3488,7 @@ package body Einfo is
 
    procedure Set_Finalize_Storage_Only (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Type (Id) and then Id = Base_Type (Id));
+      pragma Assert (Is_Type (Id) and then Is_Base_Type (Id));
       Set_Flag158 (Id, V);
    end Set_Finalize_Storage_Only;
 
@@ -3597,7 +3596,7 @@ package body Einfo is
 
    procedure Set_Has_Atomic_Components (Id : E; V : B := True) is
    begin
-      pragma Assert (not Is_Type (Id) or else Id = Base_Type (Id));
+      pragma Assert (not Is_Type (Id) or else Is_Base_Type (Id));
       Set_Flag86 (Id, V);
    end Set_Has_Atomic_Components;
 
@@ -3995,7 +3994,7 @@ package body Einfo is
 
    procedure Set_Has_Volatile_Components (Id : E; V : B := True) is
    begin
-      pragma Assert (not Is_Type (Id) or else Id = Base_Type (Id));
+      pragma Assert (not Is_Type (Id) or else Is_Base_Type (Id));
       Set_Flag87 (Id, V);
    end Set_Has_Volatile_Components;
 
@@ -4118,7 +4117,7 @@ package body Einfo is
    procedure Set_Is_Bit_Packed_Array (Id : E; V : B := True) is
    begin
       pragma Assert ((not V)
-        or else (Is_Array_Type (Id) and then Id = Base_Type (Id)));
+        or else (Is_Array_Type (Id) and then Is_Base_Type (Id)));
 
       Set_Flag122 (Id, V);
    end Set_Is_Bit_Packed_Array;
@@ -4736,7 +4735,7 @@ package body Einfo is
 
    procedure Set_No_Pool_Assigned (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Access_Type (Id) and then Id = Base_Type (Id));
+      pragma Assert (Is_Access_Type (Id) and then Is_Base_Type (Id));
       Set_Flag131 (Id, V);
    end Set_No_Pool_Assigned;
 
@@ -4749,13 +4748,13 @@ package body Einfo is
 
    procedure Set_No_Strict_Aliasing (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Access_Type (Id) and then Id = Base_Type (Id));
+      pragma Assert (Is_Access_Type (Id) and then Is_Base_Type (Id));
       Set_Flag136 (Id, V);
    end Set_No_Strict_Aliasing;
 
    procedure Set_Non_Binary_Modulus (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Type (Id) and then Id = Base_Type (Id));
+      pragma Assert (Is_Type (Id) and then Is_Base_Type (Id));
       Set_Flag58 (Id, V);
    end Set_Non_Binary_Modulus;
 
@@ -4800,7 +4799,7 @@ package body Einfo is
    procedure Set_OK_To_Reorder_Components (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Is_Record_Type (Id) and then Id = Base_Type (Id));
+        (Is_Record_Type (Id) and then Is_Base_Type (Id));
       Set_Flag239 (Id, V);
    end Set_OK_To_Reorder_Components;
 
@@ -4974,7 +4973,7 @@ package body Einfo is
 
    procedure Set_Relative_Deadline_Variable (Id : E; V : E) is
    begin
-      pragma Assert (Is_Task_Type (Id) and then Id = Base_Type (Id));
+      pragma Assert (Is_Task_Type (Id) and then Is_Base_Type (Id));
       Set_Node26 (Id, V);
    end Set_Relative_Deadline_Variable;
 
@@ -5023,7 +5022,7 @@ package body Einfo is
    procedure Set_Reverse_Bit_Order (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Is_Record_Type (Id) and then Id = Base_Type (Id));
+        (Is_Record_Type (Id) and then Is_Base_Type (Id));
       Set_Flag164 (Id, V);
    end Set_Reverse_Bit_Order;
 
@@ -5209,7 +5208,7 @@ package body Einfo is
 
    procedure Set_Universal_Aliasing (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Type (Id) and then Id = Base_Type (Id));
+      pragma Assert (Is_Type (Id) and then Is_Base_Type (Id));
       Set_Flag216 (Id, V);
    end Set_Universal_Aliasing;
 
@@ -6167,6 +6166,15 @@ package body Einfo is
       end if;
    end Invariant_Procedure;
 
+   ------------------
+   -- Is_Base_Type --
+   ------------------
+
+   function Is_Base_Type (Id : E) return Boolean is
+   begin
+      return Id = Base_Type (Id);
+   end Is_Base_Type;
+
    ---------------------
    -- Is_Boolean_Type --
    ---------------------
@@ -6977,7 +6985,7 @@ package body Einfo is
    procedure Set_Component_Alignment (Id : E; V : C) is
    begin
       pragma Assert ((Is_Array_Type (Id) or else Is_Record_Type (Id))
-                       and then Id = Base_Type (Id));
+                       and then Is_Base_Type (Id));
 
       case V is
          when Calign_Default          =>
@@ -7264,7 +7272,7 @@ package body Einfo is
 
    begin
       if (Is_Array_Type (Id) or else Is_Record_Type (Id))
-        and then Id = Base_Type (Id)
+        and then Is_Base_Type (Id)
       then
          Write_Str (Prefix);
          Write_Str ("Component_Alignment = ");

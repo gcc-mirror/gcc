@@ -100,10 +100,10 @@ package Sinfo is
 
    --  Finally, four utility programs must be run:
 
-   --    Run CSinfo to check that you have made the changes consistently. It
-   --     checks most of the rules given above, with clear error messages. This
-   --     utility reads sinfo.ads and sinfo.adb and generates a report to
-   --     standard output.
+   --    (Optional.) Run CSinfo to check that you have made the changes
+   --     consistently. It checks most of the rules given above. This utility
+   --     reads sinfo.ads and sinfo.adb and generates a report to standard
+   --     output. This step is optional because XSinfo runs CSinfo.
 
    --    Run XSinfo to create sinfo.h, the corresponding C header. This
    --     utility reads sinfo.ads and generates sinfo.h. Note that it does
@@ -120,8 +120,8 @@ package Sinfo is
    --     spec of the Nmake package which contains functions for constructing
    --     nodes.
 
-   --  All of the above steps except CSinfo are done automatically by the
-   --  build scripts when you do a full bootstrap.
+   --  The above steps are done automatically by the build scripts when you do
+   --  a full bootstrap.
 
    --  Note: sometime we could write a utility that actually generated the body
    --  of sinfo from the spec instead of simply checking it, since, as noted

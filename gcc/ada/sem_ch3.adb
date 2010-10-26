@@ -11716,7 +11716,7 @@ package body Sem_Ch3 is
          Set_Direct_Primitive_Operations (Full,
            Direct_Primitive_Operations (Priv));
 
-         if Priv = Base_Type (Priv) then
+         if Is_Base_Type (Priv) then
             Set_Class_Wide_Type      (Full, Class_Wide_Type         (Priv));
          end if;
       end if;

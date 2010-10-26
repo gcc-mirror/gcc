@@ -9648,6 +9648,29 @@ package body Sem_Util is
 
                if Modification_Comes_From_Source then
                   Generate_Reference (Ent, Exp, 'm');
+
+                  --  If the target of the assignment is the bound variable
+                  --  in an iterator, indicate that the corresponding array
+                  --  or container is also modified.
+
+                  if Ada_Version >= Ada_2012
+                    and then
+                      Nkind (Parent (Ent)) = N_Iterator_Specification
+                  then
+                     declare
+                        Domain : constant Node_Id := Name (Parent (Ent));
+
+                     begin
+                        --  TBD : in the full version of the construct, the
+                        --  domain of iteration can be given by an expression.
+
+                        if Is_Entity_Name (Domain) then
+                           Generate_Reference      (Entity (Domain), Exp, 'm');
+                           Set_Is_True_Constant    (Entity (Domain), False);
+                           Set_Never_Set_In_Source (Entity (Domain), False);
+                        end if;
+                     end;
+                  end if;
                end if;
 
                Check_Nested_Access (Ent);

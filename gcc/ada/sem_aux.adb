@@ -48,7 +48,7 @@ package body Sem_Aux is
       --  If this is first subtype, or is a base type, then there is no
       --  ancestor subtype, so we return Empty to indicate this fact.
 
-      if Is_First_Subtype (Typ) or else Typ = Base_Type (Typ) then
+      if Is_First_Subtype (Typ) or else Is_Base_Type (Typ) then
          return Empty;
       end if;
 

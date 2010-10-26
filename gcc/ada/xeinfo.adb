@@ -57,6 +57,8 @@ with GNAT.Spitbol;                  use GNAT.Spitbol;
 with GNAT.Spitbol.Patterns;         use GNAT.Spitbol.Patterns;
 with GNAT.Spitbol.Table_Boolean;    use GNAT.Spitbol.Table_Boolean;
 
+with CEinfo;
+
 procedure XEinfo is
 
    package TB renames GNAT.Spitbol.Table_Boolean;
@@ -241,6 +243,11 @@ procedure XEinfo is
 --  Start of processing for XEinfo
 
 begin
+   --  First run CEinfo to check for errors. Note that CEinfo is also a
+   --  stand-alone program that can be run separately.
+
+   CEinfo;
+
    Anchored_Mode := True;
 
    if Argument_Count > 0 then
@@ -488,6 +495,9 @@ begin
    Put_Line
      (Ofile,
       "/* End of einfo.h (C version of Einfo package specification) */");
+
+   Close (InF);
+   Close (Ofile);
 
 exception
    when Err =>

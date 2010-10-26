@@ -29,13 +29,13 @@ $(ADA_GEN_SUBDIR)/treeprs.ads : $(ADA_GEN_SUBDIR)/treeprs.adt $(ADA_GEN_SUBDIR)/
 	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/treeprs
 	(cd $(ADA_GEN_SUBDIR)/bldtools/treeprs; gnatmake -q xtreeprs ; ./xtreeprs ../../treeprs.ads )
 
-$(ADA_GEN_SUBDIR)/einfo.h : $(ADA_GEN_SUBDIR)/einfo.ads $(ADA_GEN_SUBDIR)/einfo.adb $(ADA_GEN_SUBDIR)/xeinfo.adb
+$(ADA_GEN_SUBDIR)/einfo.h : $(ADA_GEN_SUBDIR)/einfo.ads $(ADA_GEN_SUBDIR)/einfo.adb $(ADA_GEN_SUBDIR)/xeinfo.adb $(ADA_GEN_SUBDIR)/ceinfo.adb
 	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/einfo
 	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/einfo/,$(notdir $^))
 	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/einfo
 	(cd $(ADA_GEN_SUBDIR)/bldtools/einfo; gnatmake -q xeinfo ; ./xeinfo ../../einfo.h )
 
-$(ADA_GEN_SUBDIR)/sinfo.h : $(ADA_GEN_SUBDIR)/sinfo.ads $(ADA_GEN_SUBDIR)/xsinfo.adb
+$(ADA_GEN_SUBDIR)/sinfo.h : $(ADA_GEN_SUBDIR)/sinfo.ads $(ADA_GEN_SUBDIR)/sinfo.adb $(ADA_GEN_SUBDIR)/xsinfo.adb $(ADA_GEN_SUBDIR)/csinfo.adb
 	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/sinfo
 	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/sinfo/,$(notdir $^))
 	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/sinfo
