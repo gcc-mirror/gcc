@@ -3101,6 +3101,16 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define SET_SCOPED_ENUM_P(TYPE, VAL)                    \
   (ENUM_IS_SCOPED (TYPE) = (VAL))
 
+#define SET_OPAQUE_ENUM_P(TYPE, VAL)                    \
+  (ENUM_IS_OPAQUE (TYPE) = (VAL))
+
+#define OPAQUE_ENUM_P(TYPE)				\
+  (TREE_CODE (TYPE) == ENUMERAL_TYPE && ENUM_IS_OPAQUE (TYPE))
+
+/* Determines whether an ENUMERAL_TYPE has an explicit
+   underlying type.  */
+#define ENUM_FIXED_UNDERLYING_TYPE_P(NODE) (TYPE_LANG_FLAG_3 (NODE))
+
 /* Returns the underlying type of the given enumeration type. The
    underlying type is determined in different ways, depending on the
    properties of the enum:
@@ -4785,7 +4795,8 @@ extern bool grok_op_properties			(tree, bool);
 extern tree xref_tag				(enum tag_types, tree, tag_scope, bool);
 extern tree xref_tag_from_type			(tree, tree, tag_scope);
 extern bool xref_basetypes			(tree, tree);
-extern tree start_enum				(tree, tree, bool);
+extern tree start_enum				(tree, tree, tree, bool, bool *);
+extern void finish_enum_value_list		(tree);
 extern void finish_enum				(tree);
 extern void build_enumerator			(tree, tree, tree, location_t);
 extern tree lookup_enumerator			(tree, tree);

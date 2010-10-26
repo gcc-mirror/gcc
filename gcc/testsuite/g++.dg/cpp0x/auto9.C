@@ -74,7 +74,7 @@ C<auto> c;					// { dg-error "auto|invalid" }
 C<auto *> c2;					// { dg-error "auto|invalid" }
 
 enum : auto { EE = 0 };				// { dg-error "must be an integral type" }
-enum struct D : auto * { FF = 0 };		// { dg-error "declar|expected" }
+enum struct D : auto * { FF = 0 };		// { dg-error "must be an integral type|declar|expected" }
 
 void
 bar ()

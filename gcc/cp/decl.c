@@ -92,6 +92,7 @@ static void layout_var_decl (tree);
 static tree check_initializer (tree, tree, int, tree *);
 static void make_rtl_for_nonlocal_decl (tree, tree, const char *);
 static void save_function_data (tree);
+static void copy_type_enum (tree , tree);
 static void check_function_type (tree, tree);
 static void finish_constructor_body (void);
 static void begin_destructor_body (void);
@@ -11309,8 +11310,26 @@ xref_basetypes (tree ref, tree base_list)
 }
 
 
+/* Copies the enum-related properties from type SRC to type DST.
+   Used with the underlying type of an enum and the enum itself.  */
+static void
+copy_type_enum (tree dst, tree src)
+{
+  TYPE_MIN_VALUE (dst) = TYPE_MIN_VALUE (src);
+  TYPE_MAX_VALUE (dst) = TYPE_MAX_VALUE (src);
+  TYPE_SIZE (dst) = TYPE_SIZE (src);
+  TYPE_SIZE_UNIT (dst) = TYPE_SIZE_UNIT (src);
+  SET_TYPE_MODE (dst, TYPE_MODE (src));
+  TYPE_PRECISION (dst) = TYPE_PRECISION (src);
+  TYPE_ALIGN (dst) = TYPE_ALIGN (src);
+  TYPE_USER_ALIGN (dst) = TYPE_USER_ALIGN (src);
+  TYPE_UNSIGNED (dst) = TYPE_UNSIGNED (src);
+}
+
 /* Begin compiling the definition of an enumeration type.
    NAME is its name, 
+
+   if ENUMTYPE is not NULL_TREE then the type has alredy been found.
 
    UNDERLYING_TYPE is the type that will be used as the storage for
    the enumeration type. This should be NULL_TREE if no storage type
@@ -11318,97 +11337,145 @@ xref_basetypes (tree ref, tree base_list)
 
    SCOPED_ENUM_P is true if this is a scoped enumeration type.
 
+   if IS_NEW is not NULL, gets TRUE iff a new type is created.
+
    Returns the type object, as yet incomplete.
    Also records info about it so that build_enumerator
    may be used to declare the individual values as they are read.  */
 
 tree
-start_enum (tree name, tree underlying_type, bool scoped_enum_p)
+start_enum (tree name, tree enumtype, tree underlying_type,
+	    bool scoped_enum_p, bool *is_new)
 {
-  tree enumtype;
-
+  tree prevtype = NULL_TREE;
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+
+  if (is_new)
+    *is_new = false;
+  /* [C++0x dcl.enum]p5:
+
+    If not explicitly specified, the underlying type of a scoped
+    enumeration type is int.  */
+  if (!underlying_type && scoped_enum_p)
+    underlying_type = integer_type_node;
+
+  if (underlying_type)
+    underlying_type = cv_unqualified (underlying_type);
 
   /* If this is the real definition for a previous forward reference,
      fill in the contents in the same object that used to be the
      forward reference.  */
+  if (!enumtype)
+    enumtype = lookup_and_check_tag (enum_type, name,
+				     /*tag_scope=*/ts_current,
+				     /*template_header_p=*/false);
 
-  enumtype = lookup_and_check_tag (enum_type, name,
-				   /*tag_scope=*/ts_current,
-				   /*template_header_p=*/false);
-
-  if (enumtype != NULL_TREE && TREE_CODE (enumtype) == ENUMERAL_TYPE)
+  /* In case of a template_decl, the only check that should be deferred
+     to instantiation time is the comparison of underlying types.  */
+  if (enumtype && TREE_CODE (enumtype) == ENUMERAL_TYPE)
     {
-      error_at (input_location, "multiple definition of %q#T", enumtype);
-      error_at (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
-		"previous definition here");
-      /* Clear out TYPE_VALUES, and start again.  */
-      TYPE_VALUES (enumtype) = NULL_TREE;
+      if (scoped_enum_p != SCOPED_ENUM_P (enumtype))
+	{
+	  error_at (input_location, "scoped/unscoped mismatch "
+		    "in enum %q#T", enumtype);
+	  error_at (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
+		    "previous definition here");
+	  enumtype = error_mark_node;
+	}
+      else if (ENUM_FIXED_UNDERLYING_TYPE_P (enumtype) != !! underlying_type)
+	{
+	  error_at (input_location, "underlying type mismatch "
+		    "in enum %q#T", enumtype);
+	  error_at (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
+		    "previous definition here");
+	  enumtype = error_mark_node;
+	}
+      else if (underlying_type && ENUM_UNDERLYING_TYPE (enumtype)
+	       && !dependent_type_p (underlying_type)
+	       && !dependent_type_p (ENUM_UNDERLYING_TYPE (enumtype))
+	       && !same_type_p (underlying_type,
+				ENUM_UNDERLYING_TYPE (enumtype)))
+	{
+	  error_at (input_location, "different underlying type "
+		    "in enum %q#T", enumtype);
+	  error_at (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)),
+		    "previous definition here");
+	  underlying_type = NULL_TREE;
+	}
     }
-  else
+
+  if (!enumtype || TREE_CODE (enumtype) != ENUMERAL_TYPE
+      || processing_template_decl)
     {
       /* In case of error, make a dummy enum to allow parsing to
 	 continue.  */
       if (enumtype == error_mark_node)
-	name = make_anon_name ();
+	{
+	  name = make_anon_name ();
+	  enumtype = NULL_TREE;
+	}
 
+      /* enumtype may be an ENUMERAL_TYPE if this is a redefinition
+         of an opaque enum, or an opaque enum of an already defined
+	 enumeration (C++0x only).
+	 In any other case, it'll be NULL_TREE. */
+      if (!enumtype)
+	{
+	  if (is_new)
+	    *is_new = true;
+	}
+      prevtype = enumtype;
       enumtype = cxx_make_type (ENUMERAL_TYPE);
       enumtype = pushtag (name, enumtype, /*tag_scope=*/ts_current);
+      if (enumtype == error_mark_node)
+	return error_mark_node;
+
+      /* The enum is considered opaque until the opening '{' of the
+	 enumerator list.  */
+      SET_OPAQUE_ENUM_P (enumtype, true);
+      ENUM_FIXED_UNDERLYING_TYPE_P (enumtype) = !! underlying_type;
     }
 
-  if (enumtype == error_mark_node)
-    return enumtype;
-
-  if (scoped_enum_p)
-    {
-      SET_SCOPED_ENUM_P (enumtype, 1);
-      begin_scope (sk_scoped_enum, enumtype);
-
-      /* [C++0x dcl.enum]p5: 
-
-          If not explicitly specified, the underlying type of a scoped
-          enumeration type is int.  */
-      if (!underlying_type)
-        underlying_type = integer_type_node;
-    }
+  SET_SCOPED_ENUM_P (enumtype, scoped_enum_p);
 
   if (underlying_type)
     {
       if (CP_INTEGRAL_TYPE_P (underlying_type))
         {
-          TYPE_MIN_VALUE (enumtype) = TYPE_MIN_VALUE (underlying_type);
-          TYPE_MAX_VALUE (enumtype) = TYPE_MAX_VALUE (underlying_type);
-          TYPE_SIZE (enumtype) = TYPE_SIZE (underlying_type);
-          TYPE_SIZE_UNIT (enumtype) = TYPE_SIZE_UNIT (underlying_type);
-          SET_TYPE_MODE (enumtype, TYPE_MODE (underlying_type));
-          TYPE_PRECISION (enumtype) = TYPE_PRECISION (underlying_type);
-          TYPE_ALIGN (enumtype) = TYPE_ALIGN (underlying_type);
-          TYPE_USER_ALIGN (enumtype) = TYPE_USER_ALIGN (underlying_type);
-          TYPE_UNSIGNED (enumtype) = TYPE_UNSIGNED (underlying_type);
+	  copy_type_enum (enumtype, underlying_type);
           ENUM_UNDERLYING_TYPE (enumtype) = underlying_type;
         }
-      else if (!dependent_type_p (underlying_type))
+      else if (dependent_type_p (underlying_type))
+	ENUM_UNDERLYING_TYPE (enumtype) = underlying_type;
+      else
         error ("underlying type %<%T%> of %<%T%> must be an integral type", 
                underlying_type, enumtype);
     }
 
-  return enumtype;
+  /* If into a template class, the returned enum is always the first
+     declaration (opaque or not) seen. This way all the references to
+     this type will be to the same declaration. The following ones are used
+     only to check for definition errors.  */
+  if (prevtype && processing_template_decl)
+    return prevtype;
+  else
+    return enumtype;
 }
 
 /* After processing and defining all the values of an enumeration type,
-   install their decls in the enumeration type and finish it off.
-   ENUMTYPE is the type object and VALUES a list of name-value pairs.  */
+   install their decls in the enumeration type.
+   ENUMTYPE is the type object.  */
 
 void
-finish_enum (tree enumtype)
+finish_enum_value_list (tree enumtype)
 {
   tree values;
+  tree underlying_type;
   tree decl;
-  tree minnode;
-  tree maxnode;
   tree value;
+  tree minnode, maxnode;
   tree t;
-  tree underlying_type = NULL_TREE;
+
   bool fixed_underlying_type_p 
     = ENUM_UNDERLYING_TYPE (enumtype) != NULL_TREE;
 
@@ -11425,10 +11492,6 @@ finish_enum (tree enumtype)
 	   values;
 	   values = TREE_CHAIN (values))
 	TREE_TYPE (TREE_VALUE (values)) = enumtype;
-      if (at_function_scope_p ())
-	add_stmt (build_min (TAG_DEFN, enumtype));
-      if (SCOPED_ENUM_P (enumtype))
-	finish_scope ();
       return;
     }
 
@@ -11438,34 +11501,34 @@ finish_enum (tree enumtype)
       minnode = maxnode = NULL_TREE;
 
       for (values = TYPE_VALUES (enumtype);
-           values;
-           values = TREE_CHAIN (values))
-        {
-          decl = TREE_VALUE (values);
+	   values;
+	   values = TREE_CHAIN (values))
+	{
+	  decl = TREE_VALUE (values);
 
-          /* [dcl.enum]: Following the closing brace of an enum-specifier,
-             each enumerator has the type of its enumeration.  Prior to the
-             closing brace, the type of each enumerator is the type of its
-             initializing value.  */
-          TREE_TYPE (decl) = enumtype;
+	  /* [dcl.enum]: Following the closing brace of an enum-specifier,
+	     each enumerator has the type of its enumeration.  Prior to the
+	     closing brace, the type of each enumerator is the type of its
+	     initializing value.  */
+	  TREE_TYPE (decl) = enumtype;
 
-          /* Update the minimum and maximum values, if appropriate.  */
-          value = DECL_INITIAL (decl);
-          if (value == error_mark_node)
-            value = integer_zero_node;
-          /* Figure out what the minimum and maximum values of the
-             enumerators are.  */
-          if (!minnode)
-            minnode = maxnode = value;
-          else if (tree_int_cst_lt (maxnode, value))
-            maxnode = value;
-          else if (tree_int_cst_lt (value, minnode))
-            minnode = value;
-        }
+	  /* Update the minimum and maximum values, if appropriate.  */
+	  value = DECL_INITIAL (decl);
+	  if (value == error_mark_node)
+	    value = integer_zero_node;
+	  /* Figure out what the minimum and maximum values of the
+	     enumerators are.  */
+	  if (!minnode)
+	    minnode = maxnode = value;
+	  else if (tree_int_cst_lt (maxnode, value))
+	    maxnode = value;
+	  else if (tree_int_cst_lt (value, minnode))
+	    minnode = value;
+	}
     }
   else
     /* [dcl.enum]
-       
+
        If the enumerator-list is empty, the underlying type is as if
        the enumeration had a single enumerator with value 0.  */
     minnode = maxnode = integer_zero_node;
@@ -11530,15 +11593,7 @@ finish_enum (tree enumtype)
          The value of sizeof() applied to an enumeration type, an object
          of an enumeration type, or an enumerator, is the value of sizeof()
          applied to the underlying type.  */
-      TYPE_MIN_VALUE (enumtype) = TYPE_MIN_VALUE (underlying_type);
-      TYPE_MAX_VALUE (enumtype) = TYPE_MAX_VALUE (underlying_type);
-      TYPE_SIZE (enumtype) = TYPE_SIZE (underlying_type);
-      TYPE_SIZE_UNIT (enumtype) = TYPE_SIZE_UNIT (underlying_type);
-      SET_TYPE_MODE (enumtype, TYPE_MODE (underlying_type));
-      TYPE_PRECISION (enumtype) = TYPE_PRECISION (underlying_type);
-      TYPE_ALIGN (enumtype) = TYPE_ALIGN (underlying_type);
-      TYPE_USER_ALIGN (enumtype) = TYPE_USER_ALIGN (underlying_type);
-      TYPE_UNSIGNED (enumtype) = TYPE_UNSIGNED (underlying_type);
+      copy_type_enum (enumtype, underlying_type);
 
       /* Compute the minimum and maximum values for the type.
 
@@ -11603,26 +11658,29 @@ finish_enum (tree enumtype)
 
   /* Fix up all variant types of this enum type.  */
   for (t = TYPE_MAIN_VARIANT (enumtype); t; t = TYPE_NEXT_VARIANT (t))
-    {
-      TYPE_VALUES (t) = TYPE_VALUES (enumtype);
-      TYPE_MIN_VALUE (t) = TYPE_MIN_VALUE (enumtype);
-      TYPE_MAX_VALUE (t) = TYPE_MAX_VALUE (enumtype);
-      TYPE_SIZE (t) = TYPE_SIZE (enumtype);
-      TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (enumtype);
-      SET_TYPE_MODE (t, TYPE_MODE (enumtype));
-      TYPE_PRECISION (t) = TYPE_PRECISION (enumtype);
-      TYPE_ALIGN (t) = TYPE_ALIGN (enumtype);
-      TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (enumtype);
-      TYPE_UNSIGNED (t) = TYPE_UNSIGNED (enumtype);
-      ENUM_UNDERLYING_TYPE (t) = ENUM_UNDERLYING_TYPE (enumtype);
-    }
-
-  /* Finish up the scope of a scoped enumeration.  */
-  if (SCOPED_ENUM_P (enumtype))
-    finish_scope ();
+    TYPE_VALUES (t) = TYPE_VALUES (enumtype);
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (enumtype, namespace_bindings_p ());
+}
+
+/* Finishes the enum type. This is called only the first time an
+   enumeration is seen, be it opaque or odinary.
+   ENUMTYPE is the type object.  */
+
+void
+finish_enum (tree enumtype)
+{
+  if (processing_template_decl)
+    {
+      if (at_function_scope_p ())
+	add_stmt (build_min (TAG_DEFN, enumtype));
+      return;
+    }
+
+  /* Here there should not be any variants of this type.  */
+  gcc_assert (enumtype == TYPE_MAIN_VARIANT (enumtype)
+	      && !TYPE_NEXT_VARIANT (enumtype));
 }
 
 /* Build and install a CONST_DECL for an enumeration constant of the

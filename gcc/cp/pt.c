@@ -907,8 +907,16 @@ maybe_process_partial_specialization (tree type)
     }
   else if (processing_specialization)
     {
-      error ("explicit specialization of non-template %qT", type);
-      return error_mark_node;
+       /* Someday C++0x may allow for enum template specialization.  */
+      if (cxx_dialect > cxx98 && TREE_CODE (type) == ENUMERAL_TYPE
+	  && CLASS_TYPE_P (context) && CLASSTYPE_USE_TEMPLATE (context))
+	pedwarn (input_location, OPT_pedantic, "template specialization "
+		 "of %qD not allowed by ISO C++", type);
+      else
+	{
+	  error ("explicit specialization of non-template %qT", type);
+	  return error_mark_node;
+	}
     }
 
   return type;
@@ -6657,10 +6665,10 @@ lookup_template_class (tree d1,
 	  if (!is_dependent_type)
 	    {
 	      set_current_access_from_decl (TYPE_NAME (template_type));
-	      t = start_enum (TYPE_IDENTIFIER (template_type),
-                              tsubst (ENUM_UNDERLYING_TYPE (template_type),
-                                      arglist, complain, in_decl),
-                              SCOPED_ENUM_P (template_type));
+	      t = start_enum (TYPE_IDENTIFIER (template_type), NULL_TREE,
+			      tsubst (ENUM_UNDERLYING_TYPE (template_type),
+				      arglist, complain, in_decl),
+			      SCOPED_ENUM_P (template_type), NULL);
 	    }
 	  else
             {
@@ -6671,6 +6679,7 @@ lookup_template_class (tree d1,
               t = cxx_make_type (ENUMERAL_TYPE);
               SET_SCOPED_ENUM_P (t, SCOPED_ENUM_P (template_type));
             }
+          SET_OPAQUE_ENUM_P (t, OPAQUE_ENUM_P (template_type));
 	}
       else
 	{
@@ -17309,6 +17318,9 @@ tsubst_enum (tree tag, tree newtag, tree args)
 {
   tree e;
 
+  if (SCOPED_ENUM_P (newtag))
+    begin_scope (sk_scoped_enum, newtag);
+
   for (e = TYPE_VALUES (tag); e; e = TREE_CHAIN (e))
     {
       tree value;
@@ -17329,7 +17341,12 @@ tsubst_enum (tree tag, tree newtag, tree args)
 	(DECL_NAME (decl), value, newtag, DECL_SOURCE_LOCATION (decl));
     }
 
+  if (SCOPED_ENUM_P (newtag))
+    finish_scope ();
+
+  finish_enum_value_list (newtag);
   finish_enum (newtag);
+
   DECL_SOURCE_LOCATION (TYPE_NAME (newtag))
     = DECL_SOURCE_LOCATION (TYPE_NAME (tag));
 }

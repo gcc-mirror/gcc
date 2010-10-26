@@ -1,3 +1,26 @@
+2010-10-25  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	Implement opaque-enum-specifiers for C++0x.
+	* cp-tree.h (SET_OPAQUE_ENUM_P): New.
+	(OPAQUE_ENUM_P): New.
+	(ENUM_FIXED_UNDERLYING_TYPE_P): New.
+	(start_enum): Update prototype.
+	(finish_enum_value_list): New prototype.
+	* parser.c (cp_parser_elaborated_type_specifier): Issue a pedwarn if
+	"enum class" is used in an elaborated-type-specifier.
+	(cp_parser_enum_specifier): Rewrite to parse opaque-enum-specifiers.
+	* decl.c (copy_type_enum): New.
+	(finish_enum_value_list): New, with code from finish_enum.
+	(finish_enum): A lot of code removed. Added a gcc_assert.
+	(start_enum): Add parameters enumtype and is_new.
+	Rewrite to work with opaque-enum-specifiers.
+	* pt.c (maybe_process_partial_specialization): Allow for template
+	specialization of enumerations, with a pedwarn.
+	(lookup_template_class): Update call to start_enum. Call to
+	SET_OPAQUE_ENUM_P.
+	(tsubst_enum): Call to begin_scope, finish_scope and
+	finish_enum_value_list.
+
 2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Removed Objective-C++ specific replacement of cxx_printable_name.
