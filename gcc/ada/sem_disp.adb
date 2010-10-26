@@ -1686,7 +1686,7 @@ package body Sem_Disp is
 
    begin
       --  This Ada 2012 rule is valid only for type extensions or private
-      --  extensions
+      --  extensions.
 
       if No (Tag_Typ)
         or else not Is_Record_Type (Tag_Typ)
@@ -1704,7 +1704,7 @@ package body Sem_Disp is
          Prim := Node (Elmt);
 
          --  Find an inherited hidden dispatching primitive with the name of S
-         --  and a type-conformant profile
+         --  and a type-conformant profile.
 
          if Present (Alias (Prim))
            and then Is_Hidden (Alias (Prim))
@@ -1719,7 +1719,7 @@ package body Sem_Disp is
             begin
                --  The original corresponding operation of Prim must be an
                --  operation of a visible ancestor of the dispatching type
-               --  of S, and the original corresponding operation of S2 must
+               --  S, and the original corresponding operation of S2 must
                --  be visible.
 
                Orig_Prim := Original_Corresponding_Operation (Prim);
@@ -1728,7 +1728,6 @@ package body Sem_Disp is
                  and then Is_Immediately_Visible (Orig_Prim)
                then
                   Vis_Ancestor := First_Elmt (Vis_List);
-
                   while Present (Vis_Ancestor) loop
                      Elmt :=
                        First_Elmt (Primitive_Operations (Node (Vis_Ancestor)));
@@ -1736,7 +1735,6 @@ package body Sem_Disp is
                         if Node (Elmt) = Orig_Prim then
                            Set_Overridden_Operation (S, Prim);
                            Set_Alias (Prim, Orig_Prim);
-
                            return Prim;
                         end if;
 
@@ -1769,9 +1767,9 @@ package body Sem_Disp is
    begin
       pragma Assert (Is_Interface (Find_Dispatching_Type (Iface_Prim))
         or else (Present (Alias (Iface_Prim))
-                   and then
-                     Is_Interface
-                       (Find_Dispatching_Type (Ultimate_Alias (Iface_Prim)))));
+                  and then
+                    Is_Interface
+                      (Find_Dispatching_Type (Ultimate_Alias (Iface_Prim)))));
 
       --  Search in the homonym chain. Done to speed up locating visible
       --  entities and required to catch primitives associated with the partial
@@ -1825,7 +1823,7 @@ package body Sem_Disp is
             end if;
 
          --  Use the internal entity that links the interface primitive with
-         --  the covering primitive to locate the entity
+         --  the covering primitive to locate the entity.
 
          elsif Interface_Alias (E) = Iface_Prim then
             return Alias (E);
@@ -2155,11 +2153,11 @@ package body Sem_Disp is
 
          --  Make the overriding operation into an alias of the implicit one.
          --  In this fashion a call from outside ends up calling the new body
-         --  even if non-dispatching, and a call from inside calls the
-         --  overriding operation because it hides the implicit one. To
-         --  indicate that the body of Prev_Op is never called, set its
-         --  dispatch table entity to Empty. If the overridden operation
-         --  has a dispatching result, so does the overriding one.
+         --  even if non-dispatching, and a call from inside calls the over-
+         --  riding operation because it hides the implicit one. To indicate
+         --  that the body of Prev_Op is never called, set its dispatch table
+         --  entity to Empty. If the overridden operation has a dispatching
+         --  result, so does the overriding one.
 
          Set_Alias (Prev_Op, New_Op);
          Set_DTC_Entity (Prev_Op, Empty);
@@ -2214,7 +2212,6 @@ package body Sem_Disp is
       end if;
 
       Arg := First_Actual (Call_Node);
-
       while Present (Arg) loop
          if Is_Tag_Indeterminate (Arg) then
             Propagate_Tag (Control,  Arg);
