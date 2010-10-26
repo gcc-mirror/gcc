@@ -267,7 +267,7 @@ package body Sem_Elim is
                   --  If an overriding dispatching primitive is eliminated then
                   --  its parent must have been eliminated.
 
-                  if Is_Overriding_Operation (E)
+                  if Present (Overridden_Operation (E))
                     and then not Is_Eliminated (Overridden_Operation (E))
                   then
                      Error_Msg_Name_1 := Chars (E);

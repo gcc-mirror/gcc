@@ -1,3 +1,58 @@
+2010-10-26  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads, einfo.adb (Is_Overriding_Operation): Removed.
+	(Set_Is_Overriding_Operation): Removed.
+	* sem_ch3.adb (Check_Abstract_Overriding): Remove redundant call to
+	Is_Overriding_Operation.
+	* exp_ch7.adb (Check_Visibly_Controlled): Remove redundant call to
+	Is_Overriding_Operation.
+	* sem_ch7.adb (Declare_Inherited_Private_Subprograms): Remove redundant
+	call to Set_Is_Overriding_Operation.
+	* sem_util.adb (Collect_Primitive_Operations): Replace test on
+	Is_Overriding_Operation by test on the presence of attribute
+	Overridden_Operation.
+	(Original_Corresponding_Operation): Remove redundant call to attribute
+	Is_Overriding_Operation.
+	* sem_ch6.adb (Analyze_Abstract_Subprogram_Declaration): Remove
+	redundant call to Is_Overriding_Operation.
+	(Verify_Overriding_Indicator): Replace several occurrences of test on
+	Is_Overriding_Operation by test on the presence of attribute
+	Overridden_Operation.
+	(Check_Convention): Replace test on Is_Overriding_Operation by test on
+	the presence of Overridden_Operation.
+	(Check_Overriding_Indicator): Add missing decoration of attribute
+	Overridden_Operation. Minor code cleanup.
+	(New_Overloaded_Entity): Replace occurrence of test on
+	Is_Overriding_Operation by test on the presence of attribute
+	Overridden_Operation. Remove redundant setting of attribute
+	Is_Overriding_Operation plus minor code reorganization.
+	Add missing decoration of attribute Overridden_Operation.
+	* sem_elim.adb (Set_Eliminated): Replace test on
+	Is_Overriding_Operation by test on the presence of Overridden_Operation.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Replace test on
+	Is_Overriding_Operation by test on the presence of
+	Overridden_Operation. Remove a redundant test on attribute
+	Is_Overriding_Operation. 
+	* lib-xref.adb (Generate_Reference): Replace test on
+	Is_Overriding_Operation by test on the presence of Overridden_Operation.
+	(Output_References): Replace test on Is_Overriding_Operation by test on
+	the presence of Overridden_Operation.
+	* sem_disp.adb (Override_Dispatching_Operation): Replace test on
+	Is_Overriding_Operation by test on the presence of Overridden_Operation.
+	Add missing decoration of attribute Overridden_Operation.
+
+2010-10-26  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Adjust_Record_For_Reverse_Bit_Order): Properly check
+	RM 13.4.1(10).
+
+2010-10-26  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): In case of certain
+	internally-generated type conversions (created by OK_Convert_To, so the
+	Conversion_OK flag is set), avoid fetching the component type when it's
+	not really an array type, but a private type completed by an array type.
+
 2010-10-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb: Adjust format of error message.

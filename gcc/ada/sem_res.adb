@@ -3334,45 +3334,55 @@ package body Sem_Res is
                if Ekind (F) = E_In_Out_Parameter
                  and then Is_Array_Type (Etype (F))
                then
-                  if Has_Aliased_Components (Etype (Expression (A)))
-                    /= Has_Aliased_Components (Etype (F))
+                  --  In a view conversion, the conversion must be legal in
+                  --  both directions, and thus both component types must be
+                  --  aliased, or neither (4.6 (8)).
+
+                  --  The extra rule in 4.6 (24.9.2) seems unduly restrictive:
+                  --  the privacy requirement should not apply to generic
+                  --  types, and should be checked in an instance. ARG query
+                  --  is in order ???
+
+                  if Has_Aliased_Components (Etype (Expression (A))) /=
+                     Has_Aliased_Components (Etype (F))
                   then
-
-                     --  In a view conversion, the conversion must be legal in
-                     --  both directions, and thus both component types must be
-                     --  aliased, or neither (4.6 (8)).
-
-                     --  The additional rule 4.6 (24.9.2) seems unduly
-                     --  restrictive: the privacy requirement should not apply
-                     --  to generic types, and should be checked in an
-                     --  instance. ARG query is in order ???
-
                      Error_Msg_N
                        ("both component types in a view conversion must be"
                          & " aliased, or neither", A);
 
+                  --  Comment here??? what set of cases???
+
                   elsif
                      not Same_Ancestor (Etype (F), Etype (Expression (A)))
                   then
+                     --  Check view conv between unrelated by ref array types
+
                      if Is_By_Reference_Type (Etype (F))
                         or else Is_By_Reference_Type (Etype (Expression (A)))
                      then
                         Error_Msg_N
                           ("view conversion between unrelated by reference " &
                            "array types not allowed (\'A'I-00246)", A);
-                     else
+
+                     --  In Ada 2005 mode, check view conversion component
+                     --  type cannot be private, tagged, or volatile. Note
+                     --  that we only apply this to source conversions. The
+                     --  generated code can contain conversions which are
+                     --  not subject to this test, and we cannot extract the
+                     --  component type in such cases since it is not present.
+
+                     elsif Comes_From_Source (A)
+                       and then Ada_Version >= Ada_2005
+                     then
                         declare
                            Comp_Type : constant Entity_Id :=
                                          Component_Type
                                            (Etype (Expression (A)));
                         begin
-                           if Comes_From_Source (A)
-                             and then Ada_Version >= Ada_2005
-                             and then
-                               ((Is_Private_Type (Comp_Type)
-                                   and then not Is_Generic_Type (Comp_Type))
-                                 or else Is_Tagged_Type (Comp_Type)
-                                 or else Is_Volatile (Comp_Type))
+                           if (Is_Private_Type (Comp_Type)
+                                 and then not Is_Generic_Type (Comp_Type))
+                             or else Is_Tagged_Type (Comp_Type)
+                             or else Is_Volatile (Comp_Type)
                            then
                               Error_Msg_N
                                 ("component type of a view conversion cannot"
@@ -3385,8 +3395,10 @@ package body Sem_Res is
                   end if;
                end if;
 
+               --  Resolve expression if conversion is all OK
+
                if (Conversion_OK (A)
-                     or else Valid_Conversion (A, Etype (A), Expression (A)))
+                    or else Valid_Conversion (A, Etype (A), Expression (A)))
                  and then not Is_Ref_To_Bit_Packed_Array (Expression (A))
                then
                   Resolve (Expression (A));

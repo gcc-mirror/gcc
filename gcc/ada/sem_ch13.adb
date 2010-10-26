@@ -390,62 +390,69 @@ package body Sem_Ch13 is
                   declare
                      Fbit : constant Uint :=
                               Static_Integer (First_Bit (CC));
+                     Lbit : constant Uint :=
+                              Static_Integer (Last_Bit (CC));
 
                   begin
-                     --  Case of component with size > max machine scalar
+                     --  Case of component with last bit >= max machine scalar
 
-                     if Esize (Comp) > Max_Machine_Scalar_Size then
+                     if Lbit >= Max_Machine_Scalar_Size then
 
-                        --  Must begin on byte boundary
+                        --  This is allowed only if first bit is zero, and
+                        --  last bit + 1 is a multiple of storage unit size.
 
-                        if Fbit mod SSU /= 0 then
-                           Error_Msg_N
-                             ("illegal first bit value for "
-                              & "reverse bit order",
-                              First_Bit (CC));
-                           Error_Msg_Uint_1 := SSU;
-                           Error_Msg_Uint_2 := Max_Machine_Scalar_Size;
+                        if Fbit = 0 and then (Lbit + 1) mod SSU = 0 then
 
-                           Error_Msg_N
-                             ("\must be a multiple of ^ "
-                              & "if size greater than ^",
-                              First_Bit (CC));
+                           --  This is the case to give a warning if enabled
 
-                           --  Must end on byte boundary
-
-                        elsif Esize (Comp) mod SSU /= 0 then
-                           Error_Msg_N
-                             ("illegal last bit value for "
-                              & "reverse bit order",
-                              Last_Bit (CC));
-                           Error_Msg_Uint_1 := SSU;
-                           Error_Msg_Uint_2 := Max_Machine_Scalar_Size;
-
-                           Error_Msg_N
-                             ("\must be a multiple of ^ if size "
-                              & "greater than ^",
-                              Last_Bit (CC));
-
-                           --  OK, give warning if enabled
-
-                        elsif Warn_On_Reverse_Bit_Order then
-                           Error_Msg_N
-                             ("multi-byte field specified with "
-                              & "  non-standard Bit_Order?", CC);
-
-                           if Bytes_Big_Endian then
+                           if Warn_On_Reverse_Bit_Order then
                               Error_Msg_N
-                                ("\bytes are not reversed "
-                                 & "(component is big-endian)?", CC);
+                                ("multi-byte field specified with "
+                                 & "  non-standard Bit_Order?", CC);
+
+                              if Bytes_Big_Endian then
+                                 Error_Msg_N
+                                   ("\bytes are not reversed "
+                                    & "(component is big-endian)?", CC);
+                              else
+                                 Error_Msg_N
+                                   ("\bytes are not reversed "
+                                    & "(component is little-endian)?", CC);
+                              end if;
+                           end if;
+
+                        --  Give error message for RM 13.4.1(10) violation
+
+                        else
+                           Error_Msg_FE
+                             ("machine scalar rules not followed for&",
+                              First_Bit (CC), Comp);
+
+                           Error_Msg_Uint_1 := Lbit;
+                           Error_Msg_Uint_2 := Max_Machine_Scalar_Size;
+                           Error_Msg_F
+                             ("\last bit (^) exceeds maximum machine "
+                              & "scalar size (^)",
+                              First_Bit (CC));
+
+                           if (Lbit + 1) mod SSU /= 0 then
+                              Error_Msg_Uint_1 := SSU;
+                              Error_Msg_F
+                                ("\and is not a multiple of Storage_Unit (^) "
+                                 & "('R'M 13.4.1(10))",
+                                 First_Bit (CC));
+
                            else
-                              Error_Msg_N
-                                ("\bytes are not reversed "
-                                 & "(component is little-endian)?", CC);
+                              Error_Msg_Uint_1 := Fbit;
+                              Error_Msg_F
+                                ("\and first bit (^) is non-zero "
+                                 & "('R'M 13.4.1(10))",
+                                 First_Bit (CC));
                            end if;
                         end if;
 
-                        --  Case where size is not greater than max machine
-                        --  scalar. For now, we just count these.
+                     --  OK case of machine scalar related component clause,
+                     --  For now, just count them.
 
                      else
                         Num_CC := Num_CC + 1;
@@ -509,17 +516,31 @@ package body Sem_Ch13 is
                --  Start of processing for Sort_CC
 
             begin
-               --  Collect the component clauses
+               --  Collect the machine scalar relevant component clauses
 
                Num_CC := 0;
                Comp   := First_Component_Or_Discriminant (R);
                while Present (Comp) loop
-                  if Present (Component_Clause (Comp))
-                    and then Esize (Comp) <= Max_Machine_Scalar_Size
-                  then
-                     Num_CC := Num_CC + 1;
-                     Comps (Num_CC) := Comp;
-                  end if;
+                  declare
+                     CC   : constant Node_Id := Component_Clause (Comp);
+
+                  begin
+                     --  Collect only component clauses whose last bit is less
+                     --  than machine scalar size. Any component clause whose
+                     --  last bit exceeds this value does not take part in
+                     --  machine scalar layout considerations. The test for
+                     --  Error_Posted makes sure we exclude component clauses
+                     --  for which we already posted an error.
+
+                     if Present (CC)
+                       and then not Error_Posted (Last_Bit (CC))
+                       and then Static_Integer (Last_Bit (CC)) <
+                                Max_Machine_Scalar_Size
+                     then
+                        Num_CC := Num_CC + 1;
+                        Comps (Num_CC) := Comp;
+                     end if;
+                  end;
 
                   Next_Component_Or_Discriminant (Comp);
                end loop;

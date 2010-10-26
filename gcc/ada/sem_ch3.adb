@@ -8895,7 +8895,6 @@ package body Sem_Ch3 is
          --  primitive marked with pragma Implemented.
 
          if Ada_Version >= Ada_2012
-           and then Is_Overriding_Operation (Subp)
            and then Present (Overridden_Operation (Subp))
            and then Has_Rep_Pragma
                       (Overridden_Operation (Subp), Name_Implemented)

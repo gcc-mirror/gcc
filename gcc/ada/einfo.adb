@@ -283,7 +283,6 @@ package body Einfo is
    --    Referenced_As_LHS               Flag36
    --    Is_Known_Non_Null               Flag37
    --    Can_Never_Be_Null               Flag38
-   --    Is_Overriding_Operation         Flag39
    --    Body_Needed_For_SAL             Flag40
 
    --    Treat_As_Volatile               Flag41
@@ -515,6 +514,7 @@ package body Einfo is
    --    Has_Inheritable_Invariants      Flag248
    --    Has_Predicates                  Flag250
 
+   --    (unused)                        Flag39
    --    (unused)                        Flag151
    --    (unused)                        Flag249
    --    (unused)                        Flag251
@@ -1937,12 +1937,6 @@ package body Einfo is
       pragma Assert (Is_Formal (Id));
       return Flag134 (Id);
    end Is_Optional_Parameter;
-
-   function Is_Overriding_Operation (Id : E) return B is
-   begin
-      pragma Assert (Is_Subprogram (Id));
-      return Flag39 (Id);
-   end Is_Overriding_Operation;
 
    function Is_Package_Body_Entity (Id : E) return B is
    begin
@@ -4417,12 +4411,6 @@ package body Einfo is
       pragma Assert (Is_Formal (Id));
       Set_Flag134 (Id, V);
    end Set_Is_Optional_Parameter;
-
-   procedure Set_Is_Overriding_Operation (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Subprogram (Id));
-      Set_Flag39 (Id, V);
-   end Set_Is_Overriding_Operation;
 
    procedure Set_Is_Package_Body_Entity (Id : E; V : B := True) is
    begin
@@ -7454,7 +7442,6 @@ package body Einfo is
       W ("Is_Obsolescent",                  Flag153 (Id));
       W ("Is_Only_Out_Parameter",           Flag226 (Id));
       W ("Is_Optional_Parameter",           Flag134 (Id));
-      W ("Is_Overriding_Operation",         Flag39  (Id));
       W ("Is_Package_Body_Entity",          Flag160 (Id));
       W ("Is_Packed",                       Flag51  (Id));
       W ("Is_Packed_Array_Type",            Flag138 (Id));
