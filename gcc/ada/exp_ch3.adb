@@ -5861,12 +5861,17 @@ package body Exp_Ch3 is
                     Alternatives => Lst))));
 
       Set_TSS (Typ, Fent);
-      Set_Is_Pure (Fent);
-      --  The Pure flag will be reset is the current context is not pure.
-      --  For optimization purposes and constant-folding, indicate that the
-      --  Rep_To_Pos function can be considered free of side effects.
 
+      --  Set Pure flag (it will be reset if the current context is not Pure).
+      --  We also pretend there was a pragma Pure_Function so that for purposes
+      --  of optimization and constant-folding, we will consider the function
+      --  Pure even if we are not in a Pure context).
+
+      Set_Is_Pure (Fent);
       Set_Has_Pragma_Pure_Function (Fent);
+
+      --  Unless we are in -gnatD mode, where we are debugging generated code,
+      --  this is an internal entity for which we don't need debug info.
 
       if not Debug_Generated_Code then
          Set_Debug_Info_Off (Fent);

@@ -140,9 +140,14 @@ package body Namet is
 
       Verbosity : constant Int range 1 .. 3 := 1;
       pragma Warnings (Off, Verbosity);
-      --  1 => print basic summary information
-      --  2 => in addition print number of entries per hash chain
-      --  3 => in addition print content of entries
+      --  This constant indicates the level of verbosity in the output from
+      --  this procedure. Currently this can only be changed by editing the
+      --  declaration above and recompiling. That's good enough in practice,
+      --  since we very rarely need to use this debug option. Settings are:
+      --
+      --    1 => print basic summary information
+      --    2 => in addition print number of entries per hash chain
+      --    3 => in addition print content of entries
 
       Zero : constant Int := Character'Pos ('0');
 

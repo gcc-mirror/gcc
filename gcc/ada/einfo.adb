@@ -3302,7 +3302,12 @@ package body Einfo is
 
    procedure Set_Dispatch_Table_Wrappers (Id : E; V : L) is
    begin
-      pragma Assert (Is_Tagged_Type (Id) and then Is_Base_Type (Id));
+      pragma Assert (Is_Tagged_Type (Id)
+        and then Is_Base_Type (Id)
+        and then Ekind_In (Id, E_Record_Type,
+                               E_Record_Subtype,
+                               E_Record_Type_With_Private,
+                               E_Record_Subtype_With_Private));
       Set_Elist26 (Id, V);
    end Set_Dispatch_Table_Wrappers;
 

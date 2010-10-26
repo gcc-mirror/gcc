@@ -39,7 +39,9 @@ package body Ch13 is
    -- Aspect_Specifications_Present --
    -----------------------------------
 
-   function Aspect_Specifications_Present return Boolean is
+   function Aspect_Specifications_Present
+     (Strict : Boolean := Ada_Version < Ada_2012) return Boolean
+   is
       Scan_State : Saved_Scan_State;
       Result     : Boolean;
 
@@ -52,7 +54,12 @@ package body Ch13 is
       if Token = Tok_Semicolon then
          Scan; -- past semicolon
 
-         if Aspect_Specifications_Present then
+         --  The recursive test is set Strict, since we already have one
+         --  error (the unexpected semicolon), so we will ignore that semicolon
+         --  only if we absolutely definitely have an aspect specification
+         --  following it.
+
+         if Aspect_Specifications_Present (Strict => True) then
             Error_Msg_SP ("|extra "";"" ignored");
             return True;
 
@@ -79,13 +86,14 @@ package body Ch13 is
       if Token /= Tok_Identifier then
          Result := False;
 
-      --  In Ada 2012 mode, we are less strict, and we consider that we have
+      --  This is where we pay attention to the Strict mode. Normally when we
+      --  are in Ada 2012 mode, Strict is False, and we consider that we have
       --  an aspect specification if the identifier is an aspect name (even if
       --  not followed by =>) or the identifier is not an aspect name but is
       --  followed by =>. P_Aspect_Specifications will generate messages if the
       --  aspect specification is ill-formed.
 
-      elsif Ada_Version >= Ada_2012 then
+      elsif not Strict then
          if Get_Aspect_Id (Token_Name) /= No_Aspect then
             Result := True;
          else
