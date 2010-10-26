@@ -1,3 +1,10 @@
+2010-10-26  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (process_references): Enqueue all referenced nodes;
+	mark as reachable only non-external nodes.
+	(cgraph_remove_unreachable_nodes): All referenced nodes should
+	be enqueued; remove bogues node->needed check.
+
 2010-10-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md (split_stack_return): Replace
