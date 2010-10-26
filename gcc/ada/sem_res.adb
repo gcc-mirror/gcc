@@ -5971,12 +5971,6 @@ package body Sem_Res is
          then
             null;
 
-         --  Allow reference to type specifically marked as being OK in this
-         --  context (this is used for example for type names in invariants).
-
-         elsif OK_To_Reference (E) then
-            null;
-
          --  Any other use is an eror
 
          else

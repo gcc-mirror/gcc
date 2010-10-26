@@ -134,6 +134,17 @@ package body Sem_Ch13 is
    --  renaming_as_body. For tagged types, the specification is one of the
    --  primitive specs.
 
+   generic
+      with procedure Replace_Type_Reference (N : Node_Id);
+   procedure Replace_Type_References_Generic (N : Node_Id; TName : Name_Id);
+   --  This is used to scan an expression for a predicate or invariant aspect
+   --  replacing occurrences of the name TName (the name of the subtype to
+   --  which the aspect applies) with appropriate references to the parameter
+   --  of the predicate function or invariant procedure. The procedure passed
+   --  as a generic parameter does the actual replacement of node N, which is
+   --  either a simple direct reference to TName, or a selected component that
+   --  represents an appropriately qualified occurrence of TName.
+
    procedure Set_Biased
      (E      : Entity_Id;
       N      : Node_Id;
@@ -3552,56 +3563,46 @@ package body Sem_Ch13 is
          Assoc : List_Id;
          Str   : String_Id;
 
-         function Replace_Node (N : Node_Id) return Traverse_Result;
-         --  Process single node for traversal to replace type references
+         procedure Replace_Type_Reference (N : Node_Id);
+         --  Replace a single occurrence N of the subtype name with a reference
+         --  to the formal of the predicate function. N can be an identifier
+         --  referencing the subtype, or a selected component, representing an
+         --  appropriately qualified occurrence of the subtype name.
 
-         procedure Replace_Type is new Traverse_Proc (Replace_Node);
-         --  Traverse an expression changing every occurrence of an entity
-         --  reference to type T with a reference to the object argument.
+         procedure Replace_Type_References is
+           new Replace_Type_References_Generic (Replace_Type_Reference);
+         --  Traverse an expression replacing all occurrences of the subtype
+         --  name with appropriate references to the object that is the formal
+         --  parameter of the predicate function.
 
-         ------------------
-         -- Replace_Node --
-         ------------------
+         ----------------------------
+         -- Replace_Type_Reference --
+         ----------------------------
 
-         function Replace_Node (N : Node_Id) return Traverse_Result is
+         procedure Replace_Type_Reference (N : Node_Id) is
          begin
-            --  Case of entity name referencing the type
+            --  Invariant'Class, replace with T'Class (obj)
 
-            if Is_Entity_Name (N)
-              and then Entity (N) = T
-            then
-               --  Invariant'Class, replace with T'Class (obj)
+            if Class_Present (Ritem) then
+               Rewrite (N,
+                 Make_Type_Conversion (Loc,
+                   Subtype_Mark =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         =>
+                         New_Occurrence_Of (T, Loc),
+                       Attribute_Name => Name_Class),
+                   Expression =>
+                     Make_Identifier (Loc,
+                       Chars => Object_Name)));
 
-               if Class_Present (Ritem) then
-                  Rewrite (N,
-                    Make_Type_Conversion (Loc,
-                      Subtype_Mark =>
-                        Make_Attribute_Reference (Loc,
-                          Prefix         =>
-                            New_Occurrence_Of (T, Loc),
-                          Attribute_Name => Name_Class),
-                      Expression =>
-                        Make_Identifier (Loc,
-                          Chars => Object_Name)));
-
-               --  Invariant, replace with obj
-
-               else
-                  Rewrite (N,
-                    Make_Identifier (Loc,
-                      Chars => Object_Name));
-               end if;
-
-               --  All done with this node
-
-               return Skip;
-
-            --  Not an instance of the type entity, keep going
+            --  Invariant, replace with obj
 
             else
-               return OK;
+               Rewrite (N,
+                 Make_Identifier (Loc,
+                   Chars => Object_Name));
             end if;
-         end Replace_Node;
+         end Replace_Type_Reference;
 
       --  Start of processing for Add_Invariants
 
@@ -3642,21 +3643,9 @@ package body Sem_Ch13 is
 
                --  We need to replace any occurrences of the name of the type
                --  with references to the object, converted to type'Class in
-               --  the case of Invariant'Class aspects. We do this by first
-               --  doing a preanalysis, to identify all the entities, then
-               --  we traverse looking for the type entity, and doing the
-               --  necessary substitution. The preanalysis is done with the
-               --  special OK_To_Reference flag set on the type, so that if
-               --  we get an occurrence of this type, it will be reognized
-               --  as legitimate.
+               --  the case of Invariant'Class aspects.
 
-               Set_OK_To_Reference (T, True);
-               Preanalyze_Spec_Expression (Exp, Standard_Boolean);
-               Set_OK_To_Reference (T, False);
-
-               --  Do the traversal
-
-               Replace_Type (Exp);
+               Replace_Type_References (Exp, Chars (T));
 
                --  Build first two arguments for Check pragma
 
@@ -3833,9 +3822,6 @@ package body Sem_Ch13 is
       FDecl : Node_Id;
       FBody : Node_Id;
 
-      TName : constant Name_Id := Chars (Typ);
-      --  Name of the type, used for replacement in predicate expression
-
       Expr : Node_Id;
       --  This is the expression for the return statement in the function. It
       --  is build by connecting the component predicates with AND THEN.
@@ -3911,107 +3897,26 @@ package body Sem_Ch13 is
          Arg1  : Node_Id;
          Arg2  : Node_Id;
 
-         function Replace_Node (N : Node_Id) return Traverse_Result;
-         --  Process single node for traversal to replace type references
+         procedure Replace_Type_Reference (N : Node_Id);
+         --  Replace a single occurrence N of the subtype name with a reference
+         --  to the formal of the predicate function. N can be an identifier
+         --  referencing the subtype, or a selected component, representing an
+         --  appropriately qualified occurrence of the subtype name.
 
-         procedure Replace_Type is new Traverse_Proc (Replace_Node);
+         procedure Replace_Type_References is
+           new Replace_Type_References_Generic (Replace_Type_Reference);
          --  Traverse an expression changing every occurrence of an identifier
-         --  whose name is TName with a reference to the object argument.
+         --  whose name mathches the name of the subtype with a reference to
+         --  the formal parameter of the predicate function.
 
-         ------------------
-         -- Replace_Node --
-         ------------------
+         ----------------------------
+         -- Replace_Type_Reference --
+         ----------------------------
 
-         function Replace_Node (N : Node_Id) return Traverse_Result is
-            S : Entity_Id;
-            P : Node_Id;
-
+         procedure Replace_Type_Reference (N : Node_Id) is
          begin
-            --  Case of identifier
-
-            if Nkind (N) = N_Identifier then
-
-               --  If not the type name, all done with this node
-
-               if Chars (N) /= TName then
-                  return Skip;
-
-               --  Otherwise do the replacement
-
-               else
-                  goto Do_Replace;
-               end if;
-
-               --  Case of selected component (which is what a qualification
-               --  looks like in the unanalyzed tree, which is what we have.
-
-            elsif Nkind (N) = N_Selected_Component then
-
-               --  If selector name is not our type, keeping going (we might
-               --  still have an occurrence of the type in the prefix).
-
-               if Nkind (Selector_Name (N)) /= N_Identifier
-                 or else Chars (Selector_Name (N)) /= TName
-               then
-                  return OK;
-
-               --  Selector name is our type, check qualification
-
-               else
-                  --  Loop through scopes and prefixes, doing comparison
-
-                  S := Current_Scope;
-                  P := Prefix (N);
-                  loop
-                     --  Continue if no more scopes or scope with no name
-
-                     if No (S) or else Nkind (S) not in N_Has_Chars then
-                        return OK;
-                     end if;
-
-                     --  Do replace if prefix is an identifier matching the
-                     --  scope that we are currently looking at.
-
-                     if Nkind (P) = N_Identifier
-                       and then Chars (P) = Chars (S)
-                     then
-                        goto Do_Replace;
-                     end if;
-
-                     --  Go check scope above us if prefix is itself of the
-                     --  form of a selected component, whose selector matches
-                     --  the scope we are currently looking at.
-
-                     if Nkind (P) = N_Selected_Component
-                       and then Nkind (Selector_Name (P)) = N_Identifier
-                       and then Chars (Selector_Name (P)) = Chars (S)
-                     then
-                        S := Scope (S);
-                        P := Prefix (P);
-
-                     --  For anything else, we don't have a match, so keep on
-                     --  going, there are still some weird cases where we may
-                     --  still have a replacement within the prefix.
-
-                     else
-                        return OK;
-                     end if;
-                  end loop;
-               end if;
-
-            --  Continue for any other node kind
-
-            else
-               return OK;
-            end if;
-
-         <<Do_Replace>>
-
-            --  Replace with object
-
             Rewrite (N, Make_Identifier (Loc, Chars => Object_Name));
-            return Skip;
-         end Replace_Node;
+         end Replace_Type_Reference;
 
       --  Start of processing for Add_Predicates
 
@@ -4036,7 +3941,7 @@ package body Sem_Ch13 is
                   --  First We need to replace any occurrences of the name of
                   --  the type with references to the object.
 
-                  Replace_Type (Arg2);
+                  Replace_Type_References (Arg2, Chars (Typ));
 
                   --  OK, replacement complete, now we can add the expression
 
@@ -6750,6 +6655,113 @@ package body Sem_Ch13 is
       Record_Rep_Item (T, N);
       return False;
    end Rep_Item_Too_Late;
+
+   -------------------------------------
+   -- Replace_Type_References_Generic --
+   -------------------------------------
+
+   procedure Replace_Type_References_Generic (N : Node_Id; TName : Name_Id) is
+
+      function Replace_Node (N : Node_Id) return Traverse_Result;
+      --  Processes a single node in the traversal procedure below, checking
+      --  if node N should be replaced, and if so, doing the replacement.
+
+      procedure Replace_Type_Refs is new Traverse_Proc (Replace_Node);
+      --  This instantiation provides the body of Replace_Type_References
+
+      ------------------
+      -- Replace_Node --
+      ------------------
+
+      function Replace_Node (N : Node_Id) return Traverse_Result is
+         S : Entity_Id;
+         P : Node_Id;
+
+      begin
+         --  Case of identifier
+
+         if Nkind (N) = N_Identifier then
+
+            --  If not the type name, all done with this node
+
+            if Chars (N) /= TName then
+               return Skip;
+
+            --  Otherwise do the replacement and we are done with this node
+
+            else
+               Replace_Type_Reference (N);
+               return Skip;
+            end if;
+
+         --  Case of selected component (which is what a qualification
+         --  looks like in the unanalyzed tree, which is what we have.
+
+         elsif Nkind (N) = N_Selected_Component then
+
+            --  If selector name is not our type, keeping going (we might
+            --  still have an occurrence of the type in the prefix).
+
+            if Nkind (Selector_Name (N)) /= N_Identifier
+              or else Chars (Selector_Name (N)) /= TName
+            then
+               return OK;
+
+            --  Selector name is our type, check qualification
+
+            else
+               --  Loop through scopes and prefixes, doing comparison
+
+               S := Current_Scope;
+               P := Prefix (N);
+               loop
+                  --  Continue if no more scopes or scope with no name
+
+                  if No (S) or else Nkind (S) not in N_Has_Chars then
+                     return OK;
+                  end if;
+
+                  --  Do replace if prefix is an identifier matching the
+                  --  scope that we are currently looking at.
+
+                  if Nkind (P) = N_Identifier
+                    and then Chars (P) = Chars (S)
+                  then
+                     Replace_Type_Reference (N);
+                     return Skip;
+                  end if;
+
+                  --  Go check scope above us if prefix is itself of the
+                  --  form of a selected component, whose selector matches
+                  --  the scope we are currently looking at.
+
+                  if Nkind (P) = N_Selected_Component
+                    and then Nkind (Selector_Name (P)) = N_Identifier
+                    and then Chars (Selector_Name (P)) = Chars (S)
+                  then
+                     S := Scope (S);
+                     P := Prefix (P);
+
+                  --  For anything else, we don't have a match, so keep on
+                  --  going, there are still some weird cases where we may
+                  --  still have a replacement within the prefix.
+
+                  else
+                     return OK;
+                  end if;
+               end loop;
+            end if;
+
+            --  Continue for any other node kind
+
+         else
+            return OK;
+         end if;
+      end Replace_Node;
+
+   begin
+      Replace_Type_Refs (N);
+   end Replace_Type_References_Generic;
 
    -------------------------
    -- Same_Representation --
