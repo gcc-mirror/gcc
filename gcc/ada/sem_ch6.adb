@@ -2342,8 +2342,7 @@ package body Sem_Ch6 is
 
            --  No warnings for parameterized expressions
 
-           and then Nkind (Original_Node (Body_Id)) /=
-                                        N_Parameterized_Expression
+           and then Nkind (Original_Node (N)) /= N_Parameterized_Expression
          then
             Style.Body_With_No_Spec (N);
          end if;
@@ -4679,10 +4678,10 @@ package body Sem_Ch6 is
                --  through the attribute alias)
 
                if (Is_Dispatching_Operation (Subp)
-                     or else Is_Dispatching_Operation (Overridden_Subp))
+                    or else Is_Dispatching_Operation (Overridden_Subp))
                  and then not Comes_From_Source (Overridden_Subp)
-                 and then Find_Dispatching_Type (Overridden_Subp)
-                            = Find_Dispatching_Type (Subp)
+                 and then Find_Dispatching_Type (Overridden_Subp) =
+                          Find_Dispatching_Type (Subp)
                  and then Present (Alias (Overridden_Subp))
                  and then Comes_From_Source (Alias (Overridden_Subp))
                then
@@ -8167,8 +8166,8 @@ package body Sem_Ch6 is
 
                      if not (Comes_From_Source (E))
                        and then Is_Dispatching_Operation (E)
-                       and then Find_Dispatching_Type (E)
-                                  = Find_Dispatching_Type (S)
+                       and then Find_Dispatching_Type (E) =
+                                Find_Dispatching_Type (S)
                        and then Present (Alias (E))
                        and then Comes_From_Source (Alias (E))
                      then
@@ -8204,8 +8203,7 @@ package body Sem_Ch6 is
                      if Is_Dispatching_Operation (E) then
 
                         --  An overriding dispatching subprogram inherits the
-                        --  convention of the overridden subprogram (by
-                        --  AI-117).
+                        --  convention of the overridden subprogram (AI-117).
 
                         Set_Convention (S, Convention (E));
                         Check_Dispatching_Operation (S, E);

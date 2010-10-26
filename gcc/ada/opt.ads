@@ -41,10 +41,10 @@
 with Hostparm; use Hostparm;
 with Types;    use Types;
 
-pragma Warnings (Off);
---  This package is used also by gnatcoll
-with System.Strings; use System.Strings;
 with System.WCh_Con; use System.WCh_Con;
+
+pragma Warnings (Off);
+with System.Strings; use System.Strings;
 pragma Warnings (On);
 
 package Opt is
@@ -1360,11 +1360,12 @@ package Opt is
    --  including warnings on Ada 2012 obsolescent features used in Ada 2012
    --  mode. Set False by -gnatwY.
 
-   Warn_On_Parameter_Order : Boolean := False;
+   Warn_On_All_Unread_Out_Parameters : Boolean := False;
    --  GNAT
-   --  Set to True to generate warnings for cases where the argument list for
-   --  a call is a sequence of identifiers that match the formal identifiers,
-   --  but are in the wrong order.
+   --  Set to True to generate warnings in all cases where a variable is
+   --  modified by being passed as to an OUT formal, but the resulting value is
+   --  never read. The default is that this warning is suppressed, except in
+   --  the case of
 
    Warn_On_Assertion_Failure : Boolean := True;
    --  GNAT
@@ -1421,13 +1422,6 @@ package Opt is
    --  but only if there is only one out parameter for the procedure involved.
    --  The default is that this warning is suppressed.
 
-   Warn_On_All_Unread_Out_Parameters : Boolean := False;
-   --  GNAT
-   --  Set to True to generate warnings in all cases where a variable is
-   --  modified by being passed as to an OUT formal, but the resulting value is
-   --  never read. The default is that this warning is suppressed, except in
-   --  the case of
-
    Warn_On_No_Value_Assigned : Boolean := True;
    --  GNAT
    --  Set to True to generate warnings if no value is ever assigned to a
@@ -1449,6 +1443,11 @@ package Opt is
    --  use this to avoid turning it on by default when No_Exception_Propagation
    --  restriction is set and an exception handler is present.
 
+   Warn_On_Object_Renames_Function : Boolean := False;
+   --  GNAT
+   --  Set to True to generate warnings when a function result is renamed as
+   --  an object. The default is that this warning is disabled.
+
    Warn_On_Obsolescent_Feature : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings on use of any feature in Annex or if a
@@ -1464,15 +1463,16 @@ package Opt is
    --  Set to True to generate warnings for cases where parentheses are missing
    --  and the usage is questionable, because the intent is unclear.
 
+   Warn_On_Parameter_Order : Boolean := False;
+   --  GNAT
+   --  Set to True to generate warnings for cases where the argument list for
+   --  a call is a sequence of identifiers that match the formal identifiers,
+   --  but are in the wrong order.
+
    Warn_On_Redundant_Constructs : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings for redundant constructs (e.g. useless
    --  assignments/conversions). The default is that this warning is disabled.
-
-   Warn_On_Object_Renames_Function : Boolean := False;
-   --  GNAT
-   --  Set to True to generate warnings when a function result is renamed as
-   --  an object. The default is that this warning is disabled.
 
    Warn_On_Reverse_Bit_Order : Boolean := True;
    --  GNAT
