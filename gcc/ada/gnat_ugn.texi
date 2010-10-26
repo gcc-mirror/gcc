@@ -4144,6 +4144,14 @@ Specify a preprocessing data file
 @end ifclear
 (@pxref{Integrated Preprocessing}).
 
+@item -gnateP
+@cindex @option{-gnateP} (@command{gcc})
+Turn categorization dependency errors into warnings.
+Ada requires that units that WITH one another have compatible categories, for
+example a Pure unit cannto WITH a Preelaborate unit. If this switch is used,
+these errors become warnings (which can be ignored, or suppressed in the usual
+manner). This can be useful in some specialized circumstances such as the
+temporary use of special test software.
 @item -gnateS
 @cindex @option{-gnateS} (@command{gcc})
 Generate SCO (Source Coverage Obligation) information in the ALI

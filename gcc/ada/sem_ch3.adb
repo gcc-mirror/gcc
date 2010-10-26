@@ -1588,8 +1588,8 @@ package body Sem_Ch3 is
                      Derived_Type => Tagged_Type,
                      Parent_Type  => Iface);
                   Set_Alias (New_Subp, Prim);
-                  Set_Is_Abstract_Subprogram (New_Subp,
-                    Is_Abstract_Subprogram (Prim));
+                  Set_Is_Abstract_Subprogram
+                    (New_Subp, Is_Abstract_Subprogram (Prim));
                end if;
 
                Derive_Subprogram

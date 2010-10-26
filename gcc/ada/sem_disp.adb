@@ -1818,7 +1818,7 @@ package body Sem_Disp is
             end if;
 
             --  Check if E covers the interface primitive (includes case in
-            --  which E is an inherited private primitive)
+            --  which E is an inherited private primitive).
 
             if Is_Interface_Conformant (Tagged_Type, Iface_Prim, E) then
                return E;
