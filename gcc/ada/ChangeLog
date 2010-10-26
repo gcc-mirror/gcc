@@ -1,3 +1,7 @@
+2010-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnatvsn.ads: Update comments.
+
 2010-10-26  Matthew Heaney  <heaney@adacore.com>
 
 	* Makefile.rtl, impunit.adb: Add bounded hashed set and bounded hashed
