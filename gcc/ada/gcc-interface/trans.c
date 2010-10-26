@@ -1955,8 +1955,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
      example in AARM 11.6(5.e).  */
   if (prefix_unused && TREE_SIDE_EFFECTS (gnu_prefix)
       && !Is_Entity_Name (Prefix (gnat_node)))
-    gnu_result = fold_build2 (COMPOUND_EXPR, TREE_TYPE (gnu_result),
-			      gnu_prefix, gnu_result);
+    gnu_result = build_compound_expr  (TREE_TYPE (gnu_result), gnu_prefix,
+				       gnu_result);
 
   *gnu_result_type_p = gnu_result_type;
   return gnu_result;
@@ -2921,8 +2921,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 
 	  /* But initialize it on the fly like for an implicit temporary as
 	     we aren't necessarily dealing with a statement.  */
-	  gnu_name = build2 (COMPOUND_EXPR, TREE_TYPE (gnu_name), gnu_stmt,
-			     gnu_temp);
+	  gnu_name = build_compound_expr (TREE_TYPE (gnu_name), gnu_stmt,
+					  gnu_temp);
 
 	  /* Set up to move the copy back to the original if needed.  */
 	  if (!in_param)
@@ -3307,19 +3307,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
   /* If we need a value, make a COMPOUND_EXPR to return it; otherwise,
      return the result.  Deal specially with UNCONSTRAINED_ARRAY_REF.  */
   if (returning_value)
-    {
-      if (TREE_CODE (gnu_call) == UNCONSTRAINED_ARRAY_REF
-	  || TREE_CODE (gnu_call) == INDIRECT_REF)
-	gnu_result = build1 (TREE_CODE (gnu_call), TREE_TYPE (gnu_call),
-			     fold_build2 (COMPOUND_EXPR,
-					  TREE_TYPE (TREE_OPERAND (gnu_call,
-								   0)),
-					  gnu_result,
-					  TREE_OPERAND (gnu_call, 0)));
-      else
-	gnu_result = fold_build2 (COMPOUND_EXPR, TREE_TYPE (gnu_call),
-				  gnu_result, gnu_call);
-    }
+    gnu_result = build_compound_expr (TREE_TYPE (gnu_call), gnu_result,
+				      gnu_call);
 
   return gnu_result;
 }
@@ -5525,7 +5514,7 @@ gnat_to_gnu (Node_Id gnat_node)
       TREE_SIDE_EFFECTS (gnu_result) = 1;
       gnu_expr = gnat_to_gnu (Expression (gnat_node));
       gnu_result
-	= build2 (COMPOUND_EXPR, TREE_TYPE (gnu_expr), gnu_result, gnu_expr);
+	= build_compound_expr (TREE_TYPE (gnu_expr), gnu_result, gnu_expr);
       break;
 
     case N_Freeze_Entity:
