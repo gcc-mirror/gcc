@@ -5631,9 +5631,7 @@ package body Exp_Ch6 is
       Proc  : Entity_Id;
 
    begin
-      Rec :=
-        Make_Identifier (Loc,
-          Chars => Name_uObject);
+      Rec := Make_Identifier (Loc, Name_uObject);
       Set_Etype (Rec, Corresponding_Record_Type (Scop));
 
       --  Find enclosing protected operation, and retrieve its first parameter,
@@ -6105,9 +6103,8 @@ package body Exp_Ch6 is
                   Make_Op_Ne (Loc,
                     Left_Opnd =>
                       Make_Selected_Component (Loc,
-                        Prefix => Duplicate_Subexpr (Exp),
-                        Selector_Name =>
-                          Make_Identifier (Loc, Chars => Name_uTag)),
+                        Prefix        => Duplicate_Subexpr (Exp),
+                        Selector_Name => Make_Identifier (Loc, Name_uTag)),
                     Right_Opnd =>
                       Make_Attribute_Reference (Loc,
                         Prefix => New_Occurrence_Of (Base_Type (Utyp), Loc),
@@ -6233,8 +6230,7 @@ package body Exp_Ch6 is
                    Left_Opnd  =>
                      Make_Selected_Component (Loc,
                        Prefix        => Duplicate_Subexpr (Exp),
-                       Selector_Name =>
-                         Make_Identifier (Loc, Chars => Name_uTag)),
+                       Selector_Name => Make_Identifier (Loc, Name_uTag)),
                    Right_Opnd =>
                      Make_Attribute_Reference (Loc,
                        Prefix         =>

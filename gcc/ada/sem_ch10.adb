@@ -2293,7 +2293,7 @@ package body Sem_Ch10 is
               Make_Assignment_Statement (Loc,
                 Name =>
                   Make_Identifier (Loc,
-                    New_External_Name (Chars (Etype (Nam)), 'E')),
+                    Chars => New_External_Name (Chars (Etype (Nam)), 'E')),
                  Expression => New_Reference_To (Standard_True, Loc)));
          end if;
       end if;

@@ -2419,14 +2419,14 @@ package body Checks is
                      --  one of the stored discriminants, this will provide the
                      --  required consistency check.
 
-                     Append_Elmt (
-                        Make_Selected_Component (Loc,
-                          Prefix =>
+                     Append_Elmt
+                       (Make_Selected_Component (Loc,
+                          Prefix        =>
                             Duplicate_Subexpr_No_Checks
                               (Expr, Name_Req => True),
                           Selector_Name =>
                             Make_Identifier (Loc, Chars (Discr))),
-                                New_Constraints);
+                        New_Constraints);
 
                   else
                      --  Discriminant of more remote ancestor ???

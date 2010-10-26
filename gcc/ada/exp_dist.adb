@@ -3952,8 +3952,7 @@ package body Exp_Dist is
                                  Prefix        => Request_Parameter,
                                  Selector_Name => Name_Params))))),
 
-                     Selector_Name =>
-                       Make_Identifier (Loc, Name_Subp_Id))))));
+                     Selector_Name => Make_Identifier (Loc, Name_Subp_Id))))));
 
          --  Build a subprogram for RAS information lookups
 
@@ -6540,8 +6539,7 @@ package body Exp_Dist is
                Make_Aggregate (Loc,
                  Component_Associations => New_List (
                    Make_Component_Association (Loc,
-                     Choices => New_List (
-                       Make_Identifier (Loc, Name_Ras)),
+                     Choices => New_List (Make_Identifier (Loc, Name_Ras)),
                      Expression =>
                        PolyORB_Support.Helpers.Build_From_Any_Call (
                          Underlying_RACW_Type (RAS_Type),
@@ -7628,7 +7626,8 @@ package body Exp_Dist is
          else
             Target_Info.Object :=
               Make_Selected_Component (Loc,
-                Prefix        => Make_Identifier (Loc, Chars (RCI_Locator)),
+                Prefix        =>
+                  Make_Identifier (Loc, Chars (RCI_Locator)),
                 Selector_Name =>
                   Make_Identifier (Loc, Name_Get_RCI_Package_Ref));
          end if;
@@ -7914,7 +7913,7 @@ package body Exp_Dist is
                            New_Occurrence_Of (RTE (RE_Get_Local_Address), Loc),
                          Parameter_Associations => New_List (
                            Make_Selected_Component (Loc,
-                             Prefix =>
+                             Prefix        =>
                                New_Occurrence_Of (
                                  Request_Parameter, Loc),
                              Selector_Name =>
@@ -9136,24 +9135,24 @@ package body Exp_Dist is
                                      Left_Opnd =>
                                        Make_Op_Add (Loc,
                                          Left_Opnd =>
-                                           OK_Convert_To (
-                                             Standard_Long_Integer,
-                                             Make_Identifier (Loc, Lnam)),
+                                           OK_Convert_To
+                                             (Standard_Long_Integer,
+                                              Make_Identifier (Loc, Lnam)),
 
                                          Right_Opnd =>
-                                           OK_Convert_To (
-                                             Standard_Long_Integer,
-                                             Make_Function_Call (Loc,
-                                               Name =>
-                                                 New_Occurrence_Of (RTE (
-                                                 RE_Get_Nested_Sequence_Length
-                                                 ), Loc),
-                                               Parameter_Associations =>
-                                                 New_List (
-                                                   New_Occurrence_Of (
-                                                     Any_Parameter, Loc),
-                                                   Make_Integer_Literal (Loc,
-                                                     Intval => J))))),
+                                           OK_Convert_To
+                                             (Standard_Long_Integer,
+                                              Make_Function_Call (Loc,
+                                                Name =>
+                                                  New_Occurrence_Of (RTE (
+                                                  RE_Get_Nested_Sequence_Length
+                                                  ), Loc),
+                                                Parameter_Associations =>
+                                                  New_List (
+                                                    New_Occurrence_Of (
+                                                      Any_Parameter, Loc),
+                                                    Make_Integer_Literal (Loc,
+                                                      Intval => J))))),
 
                                      Right_Opnd =>
                                        Make_Integer_Literal (Loc, 1))))));

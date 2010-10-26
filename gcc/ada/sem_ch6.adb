@@ -8794,12 +8794,8 @@ package body Sem_Ch6 is
 
          Prepend_To (Pragma_Argument_Associations (CP),
            Make_Pragma_Argument_Association (Sloc (Prag),
-             Expression =>
-               Make_Identifier (Loc,
-                 Chars => Nam)));
-         Set_Pragma_Identifier (CP,
-           Make_Identifier (Sloc (Prag),
-             Chars => Name_Check));
+             Expression => Make_Identifier (Loc, Nam)));
+         Set_Pragma_Identifier (CP, Make_Identifier (Sloc (Prag), Name_Check));
 
          --  If this is inherited case and the current message starts with
          --  "failed p", we change it to "failed inherited p...".

@@ -1332,7 +1332,7 @@ package body Exp_Ch5 is
                else
                   Expr :=
                     Make_Selected_Component (Loc,
-                      Prefix => Duplicate_Subexpr (Rhs),
+                      Prefix        => Duplicate_Subexpr (Rhs),
                       Selector_Name =>
                         Make_Identifier (Loc, Chars (Name (VP))));
                end if;
@@ -1986,14 +1986,12 @@ package body Exp_Ch5 is
                                  Make_Selected_Component (Loc,
                                    Prefix        => Duplicate_Subexpr (Lhs),
                                    Selector_Name =>
-                                     Make_Identifier (Loc,
-                                       Chars => Name_uTag)),
+                                     Make_Identifier (Loc, Name_uTag)),
                                Right_Opnd =>
                                  Make_Selected_Component (Loc,
                                    Prefix        => Duplicate_Subexpr (Rhs),
                                    Selector_Name =>
-                                     Make_Identifier (Loc,
-                                       Chars => Name_uTag))),
+                                     Make_Identifier (Loc, Name_uTag))),
                          Reason => CE_Tag_Check_Failed));
                   end if;
 
@@ -2909,7 +2907,7 @@ package body Exp_Ch5 is
                       Right_Opnd => Make_Selected_Component (Loc,
                          Prefix        => New_Occurrence_Of (Pack, Loc),
                          Selector_Name =>
-                           Make_Identifier (Loc, Chars => Name_No_Element)));
+                           Make_Identifier (Loc, Name_No_Element)));
 
             if Of_Present (I_Spec) then
 
@@ -3751,7 +3749,7 @@ package body Exp_Ch5 is
                if Has_Controlled_Component (T) then
                   Prev_Ref :=
                     Make_Selected_Component (Loc,
-                      Prefix =>
+                      Prefix        =>
                         Make_Selected_Component (Loc,
                           Prefix => Duplicate_Subexpr_No_Checks (L),
                           Selector_Name =>
@@ -3895,7 +3893,7 @@ package body Exp_Ch5 is
               Make_Assignment_Statement (Loc,
                 Name =>
                   Make_Selected_Component (Loc,
-                    Prefix =>
+                    Prefix        =>
                       Unchecked_Convert_To (RTE (RE_Finalizable),
                         New_Copy_Tree (Ctrl_Ref)),
                     Selector_Name => Make_Identifier (Loc, Name_Prev)),
@@ -3905,7 +3903,7 @@ package body Exp_Ch5 is
               Make_Assignment_Statement (Loc,
                 Name =>
                   Make_Selected_Component (Loc,
-                    Prefix =>
+                    Prefix        =>
                       Unchecked_Convert_To (RTE (RE_Finalizable),
                         New_Copy_Tree (Ctrl_Ref)),
                     Selector_Name => Make_Identifier (Loc, Name_Next)),

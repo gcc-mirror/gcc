@@ -1034,8 +1034,7 @@ package body Sem_Ch13 is
                   Aitem :=
                     Make_Pragma (Loc,
                       Pragma_Identifier            =>
-                        Make_Identifier (Sloc (Id),
-                          Chars => Pname),
+                        Make_Identifier (Sloc (Id), Pname),
                       Class_Present                => Class_Present (Aspect),
                       Split_PPC                    => Split_PPC (Aspect),
                       Pragma_Argument_Associations => New_List (
@@ -3617,12 +3616,9 @@ package body Sem_Ch13 is
                  Make_Type_Conversion (Loc,
                    Subtype_Mark =>
                      Make_Attribute_Reference (Loc,
-                       Prefix         =>
-                         New_Occurrence_Of (T, Loc),
+                       Prefix         => New_Occurrence_Of (T, Loc),
                        Attribute_Name => Name_Class),
-                   Expression =>
-                     Make_Identifier (Loc,
-                       Chars => Object_Name)));
+                   Expression   => Make_Identifier (Loc, Object_Name)));
 
                Set_Entity (Expression (N), Object_Entity);
                Set_Etype  (Expression (N), Typ);
@@ -3630,7 +3626,7 @@ package body Sem_Ch13 is
             --  Invariant, replace with obj
 
             else
-               Rewrite (N, Make_Identifier (Loc, Chars => Object_Name));
+               Rewrite (N, Make_Identifier (Loc, Object_Name));
                Set_Entity (N, Object_Entity);
                Set_Etype  (N, Typ);
             end if;
@@ -3691,10 +3687,8 @@ package body Sem_Ch13 is
 
                Assoc := New_List (
                  Make_Pragma_Argument_Association (Loc,
-                    Expression =>
-                      Make_Identifier (Loc, Chars => Name_Invariant)),
-                  Make_Pragma_Argument_Association (Loc,
-                    Expression => Exp));
+                   Expression => Make_Identifier (Loc, Name_Invariant)),
+                 Make_Pragma_Argument_Association (Loc, Expression => Exp));
 
                --  Add message if present in Invariant pragma
 
@@ -3723,7 +3717,7 @@ package body Sem_Ch13 is
                Append_To (Stmts,
                  Make_Pragma (Loc,
                    Pragma_Identifier            =>
-                     Make_Identifier (Loc, Chars => Name_Check),
+                     Make_Identifier (Loc, Name_Check),
                    Pragma_Argument_Associations => Assoc));
 
                --  If Inherited case and option enabled, output info msg. Note
@@ -3812,10 +3806,8 @@ package body Sem_Ch13 is
              Parameter_Specifications => New_List (
                Make_Parameter_Specification (Loc,
                  Defining_Identifier =>
-                   Make_Defining_Identifier (Loc,
-                     Chars => Object_Name),
-                 Parameter_Type =>
-                   New_Occurrence_Of (Typ, Loc))));
+                   Make_Defining_Identifier (Loc, Object_Name),
+                 Parameter_Type => New_Occurrence_Of (Typ, Loc))));
 
          PBody :=
            Make_Subprogram_Body (Loc,
@@ -3908,9 +3900,7 @@ package body Sem_Ch13 is
 
             Exp :=
               Make_Predicate_Call
-                (T,
-                 Convert_To (T,
-                   Make_Identifier (Loc, Chars => Object_Name)));
+                (T, Convert_To (T, Make_Identifier (Loc, Object_Name)));
 
             --  Add call to evolving expression, using AND THEN if needed
 
@@ -3969,7 +3959,7 @@ package body Sem_Ch13 is
 
          procedure Replace_Type_Reference (N : Node_Id) is
          begin
-            Rewrite (N, Make_Identifier (Loc, Chars => Object_Name));
+            Rewrite (N, Make_Identifier (Loc, Object_Name));
          end Replace_Type_Reference;
 
       --  Start of processing for Add_Predicates
@@ -4065,7 +4055,7 @@ package body Sem_Ch13 is
              Parameter_Specifications => New_List (
                Make_Parameter_Specification (Loc,
                  Defining_Identifier =>
-                   Make_Defining_Identifier (Loc, Chars => Object_Name),
+                   Make_Defining_Identifier (Loc, Object_Name),
                  Parameter_Type      => New_Occurrence_Of (Typ, Loc))),
              Result_Definition        =>
                New_Occurrence_Of (Standard_Boolean, Loc));
@@ -4084,7 +4074,7 @@ package body Sem_Ch13 is
              Parameter_Specifications => New_List (
                Make_Parameter_Specification (Loc,
                  Defining_Identifier =>
-                   Make_Defining_Identifier (Loc, Chars => Object_Name),
+                   Make_Defining_Identifier (Loc, Object_Name),
                  Parameter_Type =>
                    New_Occurrence_Of (Typ, Loc))),
              Result_Definition        =>
@@ -4471,7 +4461,7 @@ package body Sem_Ch13 is
          if Is_Enumeration_Type (Typ) then
             Result := Get_Enum_Lit_From_Pos (Typ, V, Loc);
          else
-            Result := Make_Integer_Literal (Loc, Intval => V);
+            Result := Make_Integer_Literal (Loc, V);
          end if;
 
          Set_Etype (Result, Btyp);
@@ -5527,18 +5517,10 @@ package body Sem_Ch13 is
 
          Set_Component_Clause (Fent,
            Make_Component_Clause (Loc,
-             Component_Name =>
-               Make_Identifier (Loc,
-                 Chars => Name_uTag),
+             Component_Name => Make_Identifier (Loc, Name_uTag),
 
-             Position  =>
-               Make_Integer_Literal (Loc,
-                 Intval => Uint_0),
-
-             First_Bit =>
-               Make_Integer_Literal (Loc,
-                 Intval => Uint_0),
-
+             Position  => Make_Integer_Literal (Loc, Uint_0),
+             First_Bit => Make_Integer_Literal (Loc, Uint_0),
              Last_Bit  =>
                Make_Integer_Literal (Loc,
                  UI_From_Int (System_Address_Size))));
@@ -6547,8 +6529,7 @@ package body Sem_Ch13 is
 
       else
          Subp_Id :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_External_Name (Sname, 'V'));
+           Make_Defining_Identifier (Loc, New_External_Name (Sname, 'V'));
          Subp_Decl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Subp_Id,

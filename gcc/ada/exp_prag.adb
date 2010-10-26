@@ -648,28 +648,20 @@ package body Exp_Prag is
                          (Loc,
                           Name_Export,
                           New_List
-                            (Make_Pragma_Argument_Association
-                               (Sloc => Loc,
-                                Expression => Make_Identifier (Loc, Name_C)),
+                            (Make_Pragma_Argument_Association (Loc,
+                               Expression => Make_Identifier (Loc, Name_C)),
 
-                             Make_Pragma_Argument_Association
-                               (Sloc => Loc,
-                                Expression =>
-                                  New_Reference_To (Excep_Internal, Loc)),
+                             Make_Pragma_Argument_Association (Loc,
+                               Expression =>
+                                 New_Reference_To (Excep_Internal, Loc)),
 
-                             Make_Pragma_Argument_Association
-                               (Sloc => Loc,
-                                Expression =>
-                                  Make_String_Literal
-                                    (Sloc => Loc,
-                                     Strval => Excep_Image)),
+                             Make_Pragma_Argument_Association (Loc,
+                               Expression =>
+                                 Make_String_Literal (Loc, Excep_Image)),
 
-                             Make_Pragma_Argument_Association
-                               (Sloc => Loc,
+                             Make_Pragma_Argument_Association (Loc,
                                 Expression =>
-                                  Make_String_Literal
-                                    (Sloc => Loc,
-                                     Strval => Excep_Image))));
+                                  Make_String_Literal (Loc, Excep_Image))));
 
                      Insert_Action (N, Export_Pragma);
                      Analyze (Export_Pragma);

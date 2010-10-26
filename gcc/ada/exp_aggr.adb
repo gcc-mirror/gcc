@@ -2226,8 +2226,7 @@ package body Exp_Aggr is
                    Prefix =>
                      New_Reference_To (
                        Associated_Final_Chain (Etype (Alloc)), Loc),
-                   Selector_Name =>
-                     Make_Identifier (Loc, Name_F));
+                   Selector_Name => Make_Identifier (Loc, Name_F));
 
             elsif Present (Flist) then
                External_Final_List := New_Copy_Tree (Flist);
@@ -2392,7 +2391,7 @@ package body Exp_Aggr is
                         Make_Identifier (Loc, Name_uController));
                   F :=
                     Make_Selected_Component (Loc,
-                      Prefix => F,
+                      Prefix        => F,
                       Selector_Name => Make_Identifier (Loc, Name_F));
 
                   Attach := Make_Integer_Literal (Loc, 1);
@@ -3001,15 +3000,14 @@ package body Exp_Aggr is
             if Needs_Finalization (Comp_Type) then
                Internal_Final_List :=
                  Make_Selected_Component (Loc,
-                   Prefix => Convert_To (
-                     Scope (Original_Record_Component (Selector)),
-                     New_Copy_Tree (Target)),
-                   Selector_Name =>
-                     Make_Identifier (Loc, Name_uController));
+                   Prefix        => Convert_To
+                     (Scope (Original_Record_Component (Selector)),
+                      New_Copy_Tree (Target)),
+                   Selector_Name => Make_Identifier (Loc, Name_uController));
 
                Internal_Final_List :=
                  Make_Selected_Component (Loc,
-                   Prefix => Internal_Final_List,
+                   Prefix        => Internal_Final_List,
                    Selector_Name => Make_Identifier (Loc, Name_F));
 
                --  The internal final list can be part of a constant object

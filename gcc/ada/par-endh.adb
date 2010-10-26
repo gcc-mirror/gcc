@@ -333,9 +333,7 @@ package body Endh is
                                     Copy_Name (Selector_Name (N)));
 
                            else
-                              R :=
-                                Make_Identifier (Token_Ptr,
-                                  Chars => Chars (N));
+                              R := Make_Identifier (Token_Ptr, Chars (N));
                               Set_Comes_From_Source (N, False);
                               return R;
                            end if;
@@ -357,9 +355,7 @@ package body Endh is
                   elsif Nkind (End_Labl) = N_Defining_Identifier
                     or else Nkind (End_Labl) = N_Identifier
                   then
-                     End_Labl :=
-                       Make_Identifier (Token_Ptr,
-                         Chars => Chars (End_Labl));
+                     End_Labl := Make_Identifier (Token_Ptr, Chars (End_Labl));
 
                   elsif Nkind (End_Labl) = N_Defining_Operator_Symbol
                     or else Nkind (End_Labl) = N_Operator_Symbol

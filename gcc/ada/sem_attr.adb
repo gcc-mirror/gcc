@@ -4018,9 +4018,7 @@ package body Sem_Attr is
                   Error_Attr;
                end if;
 
-               Rewrite (N,
-                 Make_Identifier (Sloc (N),
-                   Chars => Name_uResult));
+               Rewrite (N, Make_Identifier (Sloc (N), Name_uResult));
                Analyze_And_Resolve (N, Etype (PS));
 
             else

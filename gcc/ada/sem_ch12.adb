@@ -1049,7 +1049,7 @@ package body Sem_Ch12 is
          --  defining identifier for it.
 
          Decl := New_Copy_Tree (F);
-         Id := Make_Defining_Identifier (Sloc (F_Id), Chars => Chars (F_Id));
+         Id := Make_Defining_Identifier (Sloc (F_Id), Chars (F_Id));
 
          if Nkind (F) in N_Formal_Subprogram_Declaration then
             Set_Defining_Unit_Name (Specification (Decl), Id);
