@@ -1,3 +1,9 @@
+2010-10-26  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/46167
+	* gcc.dg/vect/O-pr46167.c: New.
+	* gcc.dg/vect/vect.exp: Run tests with -O.
+
 2010-10-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/44948
