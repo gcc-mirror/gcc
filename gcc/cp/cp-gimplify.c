@@ -424,7 +424,7 @@ gimplify_expr_stmt (tree *stmt_p)
 /* Gimplify initialization from an AGGR_INIT_EXPR.  */
 
 static void
-cp_gimplify_init_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
+cp_gimplify_init_expr (tree *expr_p)
 {
   tree from = TREE_OPERAND (*expr_p, 1);
   tree to = TREE_OPERAND (*expr_p, 0);
@@ -451,7 +451,6 @@ cp_gimplify_init_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       if (TREE_CODE (sub) == AGGR_INIT_EXPR
 	  || TREE_CODE (sub) == VEC_INIT_EXPR)
 	{
-	  gimplify_expr (&to, pre_p, post_p, is_gimple_lvalue, fb_lvalue);
 	  if (TREE_CODE (sub) == AGGR_INIT_EXPR)
 	    AGGR_INIT_EXPR_SLOT (sub) = to;
 	  else
@@ -531,10 +530,13 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     case VEC_INIT_EXPR:
       {
 	location_t loc = input_location;
+	tree init = VEC_INIT_EXPR_INIT (*expr_p);
+	int from_array = (init && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE);
 	gcc_assert (EXPR_HAS_LOCATION (*expr_p));
 	input_location = EXPR_LOCATION (*expr_p);
 	*expr_p = build_vec_init (VEC_INIT_EXPR_SLOT (*expr_p), NULL_TREE,
-				  VEC_INIT_EXPR_INIT (*expr_p), false, 1,
+				  init, /*explicit_value_init_p*/false,
+				  from_array,
 				  tf_warning_or_error);
 	ret = GS_OK;
 	input_location = loc;
@@ -556,7 +558,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	 LHS of an assignment might also be involved in the RHS, as in bug
 	 25979.  */
     case INIT_EXPR:
-      cp_gimplify_init_expr (expr_p, pre_p, post_p);
+      cp_gimplify_init_expr (expr_p);
       if (TREE_CODE (*expr_p) != INIT_EXPR)
 	return GS_OK;
       /* Otherwise fall through.  */

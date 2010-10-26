@@ -20,7 +20,7 @@ public:
         b();
 };
 
-b::b() : three(this)  // { dg-error "bad array initializer" }
+b::b() : three(this)  // { dg-error "array" }
 {
 }
 
