@@ -1,3 +1,8 @@
+2010-10-26  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (cgraph_externally_visible_p, varpool_externally_visible_p):
+	Use info provided by linker plugin.
+
 2010-10-26  Jason Merrill  <jason@redhat.com>
 
 	* varasm.c (constructor_static_from_elts_p): Don't require a

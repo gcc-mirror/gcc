@@ -603,6 +603,7 @@ ipa_discover_readonly_nonaddressable_vars (void)
 static bool
 cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool aliased)
 {
+  struct cgraph_node *alias;
   if (!node->local.finalized)
     return false;
   if (!DECL_COMDAT (node->decl)
@@ -621,6 +622,18 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool 
     return true;
   if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (node->decl)))
     return true;
+
+  /* See if we have linker information about symbol not being used or
+     if we need to make guess based on the declaration.
+
+     Even if the linker clams the symbol is unused, never bring internal
+     symbols that are declared by user as used or externally visible.
+     This is needed for i.e. references from asm statements.   */
+  for (alias = node->same_body; alias; alias = alias->next)
+    if (alias->resolution != LDPR_PREVAILING_DEF_IRONLY)
+      break;
+  if (!alias && node->resolution == LDPR_PREVAILING_DEF_IRONLY)
+    return false;
 
   /* When doing link time optimizations, hidden symbols become local.  */
   if (in_lto_p
@@ -665,6 +678,7 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool 
 static bool
 varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
 {
+  struct varpool_node *alias;
   if (!DECL_COMDAT (vnode->decl) && !TREE_PUBLIC (vnode->decl))
     return false;
 
@@ -691,6 +705,11 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
      This is needed for i.e. references from asm statements.   */
   if (varpool_used_from_object_file_p (vnode))
     return true;
+  for (alias = vnode->extra_name; alias; alias = alias->next)
+    if (alias->resolution != LDPR_PREVAILING_DEF_IRONLY)
+      break;
+  if (!alias && vnode->resolution == LDPR_PREVAILING_DEF_IRONLY)
+    return false;
 
   /* When doing link time optimizations, hidden symbols become local.  */
   if (in_lto_p
