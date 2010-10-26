@@ -1,5 +1,11 @@
 2010-10-26  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch3.adb, sem_ch4.adb, sem_disp.adb, switch-c.adb: Minor
+	reformatting.
+	* gnat_ugn.texi: Document -gnateP switch.
+
+2010-10-26  Robert Dewar  <dewar@adacore.com>
+
 	* opt.ads (Treat_Categorization_Errors_As_Warnings): New flag
 	* sem_cat.adb (Check_Categorization_Dependencies):
 	Use Check_Categorization_Dependencies
