@@ -1725,7 +1725,9 @@ package body Sem_Ch5 is
    --  Start of processing for Analyze_Iteration_Scheme
 
    begin
-      --  Why is following check needed ???
+      --  If this is a rewritten quantified expression, the iteration
+      --  scheme has been analyzed already. Do no repeat analysis because
+      --  the loop variable is already declared.
 
       if Analyzed (N) then
          return;
@@ -2008,6 +2010,8 @@ package body Sem_Ch5 is
          if Of_Present (N) then
             Set_Etype (Def_Id, Component_Type (Typ));
          else
+            Error_Msg_N
+              ("to iterate over the elements of an array, use 'O'F", N);
             Set_Etype (Def_Id, Etype (First_Index (Typ)));
          end if;
 

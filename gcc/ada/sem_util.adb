@@ -5121,36 +5121,50 @@ package body Sem_Util is
 
             --  We are interested only in components and discriminants
 
-            if Ekind_In (Ent, E_Component, E_Discriminant) then
+            Exp := Empty;
+            case Ekind (Ent) is
+               when E_Component =>
 
-               --  Get default expression if any. If there is no declaration
-               --  node, it means we have an internal entity. The parent and
-               --  tag fields are examples of such entities. For these cases,
-               --  we just test the type of the entity.
+                  --  Get default expression if any. If there is no declaration
+                  --  node, it means we have an internal entity. The parent and
+                  --  tag fields are examples of such entities. For such cases,
+                  --  we just test the type of the entity.
 
-               if Present (Declaration_Node (Ent)) then
-                  Exp := Expression (Declaration_Node (Ent));
-               else
-                  Exp := Empty;
-               end if;
-
-               --  A component has PI if it has no default expression and the
-               --  component type has PI.
-
-               if No (Exp) then
-                  if not Has_Preelaborable_Initialization (Etype (Ent)) then
-                     Has_PE := False;
-                     exit;
+                  if Present (Declaration_Node (Ent)) then
+                     Exp := Expression (Declaration_Node (Ent));
                   end if;
 
-               --  Require the default expression to be preelaborable
+               when E_Discriminant =>
 
-               elsif not Is_Preelaborable_Expression (Exp) then
+                  --  Note: for a renamed discriminant, the Declaration_Node
+                  --  may point to the one from the ancestor, and have a
+                  --  different expression, so use the proper attribute to
+                  --  retrieve the expression from the derived constraint.
+
+                  Exp := Discriminant_Default_Value (Ent);
+
+               when others =>
+                  goto Check_Next_Entity;
+
+            end case;
+
+            --  A component has PI if it has no default expression and the
+            --  component type has PI.
+
+            if No (Exp) then
+               if not Has_Preelaborable_Initialization (Etype (Ent)) then
                   Has_PE := False;
                   exit;
                end if;
+
+            --  Require the default expression to be preelaborable
+
+            elsif not Is_Preelaborable_Expression (Exp) then
+               Has_PE := False;
+               exit;
             end if;
 
+         <<Check_Next_Entity>>
             Next_Entity (Ent);
          end loop;
       end Check_Components;
