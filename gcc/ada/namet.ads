@@ -70,7 +70,7 @@ package Namet is
 --                       followed by an upper case letter or an underscore.
 
 --    Character literals Character literals have names that are used only for
---                       debugging and error message purposes. The form is a
+--                       debugging and error message purposes. The form is an
 --                       upper case Q followed by a single lower case letter,
 --                       or by a Uxx/Wxxxx/WWxxxxxxx encoding as described for
 --                       identifiers. The Set_Character_Literal_Name procedure
@@ -139,8 +139,8 @@ package Namet is
    -----------------------------
 
    --  Name_Id values are used to identify entries in the names table. Except
-   --  for the special values No_Name, and Error_Name, they are subscript
-   --  values for the Names table defined in package Namet.
+   --  for the special values No_Name and Error_Name, they are subscript values
+   --  for the Names table defined in this package.
 
    --  Note that with only a few exceptions, which are clearly documented, the
    --  type Name_Id should be regarded as a private type. In particular it is

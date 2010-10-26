@@ -123,11 +123,12 @@ package body Namet is
    --------------
 
    procedure Finalize is
-      Max_Chain_Length : constant := 50;
-      --  Max length of chains for which specific information is output
+      F : array (Int range 0 .. 50) of Int;
+      --  N'th entry is the number of chains of length N, except last entry,
+      --  which is the number of chains of length F'Last or more.
 
-      F : array (Int range 0 .. Max_Chain_Length) of Int;
-      --  N'th entry is number of chains of length N
+      Max_Chain_Length : Int := 0;
+      --  Maximum length of all chains
 
       Probes : Int := 0;
       --  Used to compute average number of probes
@@ -135,49 +136,68 @@ package body Namet is
       Nsyms : Int := 0;
       --  Number of symbols in table
 
+      Verbosity : constant Int range 1 .. 3 := 1;
+      pragma Warnings (Off, Verbosity);
+      --  1 => print basic summary information
+      --  2 => in addition print number of entries per hash chain
+      --  3 => in addition print content of entries
+
    begin
-      if Debug_Flag_H then
-         for J in F'Range loop
-            F (J) := 0;
-         end loop;
+      if not Debug_Flag_H then
+         return;
+      end if;
 
-         for J in Hash_Index_Type loop
-            if Hash_Table (J) = No_Name then
-               F (0) := F (0) + 1;
+      for J in F'Range loop
+         F (J) := 0;
+      end loop;
 
-            else
-               Write_Str ("Hash_Table (");
-               Write_Int (J);
-               Write_Str (") has ");
+      for J in Hash_Index_Type loop
+         if Hash_Table (J) = No_Name then
+            F (0) := F (0) + 1;
 
-               declare
-                  C : Int := 1;
-                  N : Name_Id;
-                  S : Int;
+         else
+            declare
+               C : Int;
+               N : Name_Id;
+               S : Int;
 
-               begin
-                  C := 0;
-                  N := Hash_Table (J);
+            begin
+               C := 0;
+               N := Hash_Table (J);
 
-                  while N /= No_Name loop
-                     N := Name_Entries.Table (N).Hash_Link;
-                     C := C + 1;
-                  end loop;
+               while N /= No_Name loop
+                  N := Name_Entries.Table (N).Hash_Link;
+                  C := C + 1;
+               end loop;
 
+               Nsyms := Nsyms + 1;
+               Probes := Probes + (1 + C) * 100;
+
+               if C > Max_Chain_Length then
+                  Max_Chain_Length := C;
+               end if;
+
+               if Verbosity >= 2 then
+                  Write_Str ("Hash_Table (");
+                  Write_Int (J);
+                  Write_Str (") has ");
                   Write_Int (C);
                   Write_Str (" entries");
                   Write_Eol;
+               end if;
 
-                  if C < Max_Chain_Length then
-                     F (C) := F (C) + 1;
-                  else
-                     F (Max_Chain_Length) := F (Max_Chain_Length) + 1;
-                  end if;
+               if C < F'Last then
+                  F (C) := F (C) + 1;
+               else
+                  F (F'Last) := F (F'Last) + 1;
+               end if;
 
-                  N := Hash_Table (J);
+               N := Hash_Table (J);
 
-                  while N /= No_Name loop
-                     S := Name_Entries.Table (N).Name_Chars_Index;
+               while N /= No_Name loop
+                  S := Name_Entries.Table (N).Name_Chars_Index;
+
+                  if Verbosity >= 3 then
                      Write_Str ("      ");
 
                      for J in 1 .. Name_Entries.Table (N).Name_Len loop
@@ -185,50 +205,61 @@ package body Namet is
                      end loop;
 
                      Write_Eol;
-                     N := Name_Entries.Table (N).Hash_Link;
-                  end loop;
-               end;
+                  end if;
+
+                  N := Name_Entries.Table (N).Hash_Link;
+               end loop;
+            end;
+         end if;
+      end loop;
+
+      Write_Eol;
+
+      for J in F'Range loop
+         if F (J) /= 0 then
+            Write_Str ("Number of hash chains of length ");
+
+            if J < 10 then
+               Write_Char (' ');
             end if;
-         end loop;
 
-         Write_Eol;
+            Write_Int (J);
 
-         for J in Int range 0 .. Max_Chain_Length loop
-            if F (J) /= 0 then
-               Write_Str ("Number of hash chains of length ");
-
-               if J < 10 then
-                  Write_Char (' ');
-               end if;
-
-               Write_Int (J);
-
-               if J = Max_Chain_Length then
-                  Write_Str (" or greater");
-               end if;
-
-               Write_Str (" = ");
-               Write_Int (F (J));
-               Write_Eol;
-
-               if J /= 0 then
-                  Nsyms := Nsyms + F (J);
-                  Probes := Probes + F (J) * (1 + J) * 100;
-               end if;
+            if J = F'Last then
+               Write_Str (" or greater");
             end if;
-         end loop;
 
-         Write_Eol;
-         Write_Str ("Average number of probes for lookup = ");
-         Probes := Probes / Nsyms;
-         Write_Int (Probes / 200);
-         Write_Char ('.');
-         Probes := (Probes mod 200) / 2;
-         Write_Char (Character'Val (48 + Probes / 10));
-         Write_Char (Character'Val (48 + Probes mod 10));
-         Write_Eol;
-         Write_Eol;
-      end if;
+            Write_Str (" = ");
+            Write_Int (F (J));
+            Write_Eol;
+         end if;
+      end loop;
+
+      --  Print out average number of probes, in the case where Name_Find is
+      --  called for a string that is already in the table.
+
+      Write_Eol;
+      Write_Str ("Average number of probes for lookup = ");
+      Probes := Probes / Nsyms;
+      Write_Int (Probes / 200);
+      Write_Char ('.');
+      Probes := (Probes mod 200) / 2;
+      Write_Char (Character'Val (48 + Probes / 10));
+      Write_Char (Character'Val (48 + Probes mod 10));
+      Write_Eol;
+
+      Write_Str ("Max_Chain_Length = ");
+      Write_Int (Max_Chain_Length);
+      Write_Eol;
+      Write_Str ("Name_Chars'Length = ");
+      Write_Int (Name_Chars.Last - Name_Chars.First + 1);
+      Write_Eol;
+      Write_Str ("Name_Entries'Length = ");
+      Write_Int (Int (Name_Entries.Last - Name_Entries.First + 1));
+      Write_Eol;
+      Write_Str ("Nsyms = ");
+      Write_Int (Nsyms);
+      Write_Eol;
    end Finalize;
 
    -----------------------------
