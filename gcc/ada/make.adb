@@ -6511,6 +6511,10 @@ package body Make is
 
       Delete_All_Temp_Files;
 
+      --  Output Namet statistics
+
+      Namet.Finalize;
+
    exception
       when X : others =>
          Set_Standard_Error;

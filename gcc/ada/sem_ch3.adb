@@ -1572,6 +1572,26 @@ package body Sem_Ch3 is
 
                pragma Assert (Present (Prim));
 
+               --  Ada 2012 (AI05-0197): If the name of the covering primitive
+               --  differs from the name of the interface primitive then it is
+               --  a private primitive inherited from a parent type. In such
+               --  case, given that Tagged_Type covers the interface, the
+               --  inherited private primitive becomes visible. For such
+               --  purpose we add a new entity that renames the inherited
+               --  private primitive.
+
+               if Chars (Prim) /= Chars (Iface_Prim) then
+                  pragma Assert (Has_Suffix (Prim, 'P'));
+                  Derive_Subprogram
+                    (New_Subp     => New_Subp,
+                     Parent_Subp  => Iface_Prim,
+                     Derived_Type => Tagged_Type,
+                     Parent_Type  => Iface);
+                  Set_Alias (New_Subp, Prim);
+                  Set_Is_Abstract_Subprogram (New_Subp,
+                    Is_Abstract_Subprogram (Prim));
+               end if;
+
                Derive_Subprogram
                  (New_Subp     => New_Subp,
                   Parent_Subp  => Iface_Prim,
@@ -12415,6 +12435,22 @@ package body Sem_Ch3 is
                   if No (E) then
                      Derive_Subprogram
                        (New_Subp, Iface_Subp, Tagged_Type, Iface);
+
+                  --  Ada 2012 (AI05-0197): If the covering primitive's name
+                  --  differs from the name of the interface primitive then it
+                  --  is a private primitive inherited from a parent type. In
+                  --  such case, given that Tagged_Type covers the interface,
+                  --  the inherited private primitive becomes visible. For such
+                  --  purpose we add a new entity that renames the inherited
+                  --  private primitive.
+
+                  elsif Chars (E) /= Chars (Iface_Subp) then
+                     pragma Assert (Has_Suffix (E, 'P'));
+                     Derive_Subprogram
+                       (New_Subp, Iface_Subp, Tagged_Type, Iface);
+                     Set_Alias (New_Subp, E);
+                     Set_Is_Abstract_Subprogram (New_Subp,
+                       Is_Abstract_Subprogram (E));
 
                   --  Propagate to the full view interface entities associated
                   --  with the partial view

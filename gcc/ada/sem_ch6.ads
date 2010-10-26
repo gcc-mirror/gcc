@@ -186,9 +186,10 @@ package Sem_Ch6 is
      (Tagged_Type : Entity_Id;
       Iface_Prim  : Entity_Id;
       Prim        : Entity_Id) return Boolean;
-   --  Returns true if both primitives have a matching name, they are type
-   --  conformant, and Prim is defined in the scope of Tagged_Type. Special
-   --  management is done for functions returning interfaces.
+   --  Returns true if both primitives have a matching name (including support
+   --  for names of inherited private primitives --which have suffix 'P'), they
+   --  are type conformant, and Prim is defined in the scope of Tagged_Type.
+   --  Special management is done for functions returning interfaces.
 
    procedure List_Inherited_Pre_Post_Aspects (E : Entity_Id);
    --  E is the entity for a subprogram or generic subprogram spec. This call

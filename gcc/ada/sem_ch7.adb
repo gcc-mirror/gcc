@@ -1527,8 +1527,15 @@ package body Sem_Ch7 is
 
                      Op_Elmt_2 := Next_Elmt (Op_Elmt);
                      while Present (Op_Elmt_2) loop
+
+                        --  Skip entities with attribute Interface_Alias since
+                        --  they are not overriding primitives (these entities
+                        --  link an interface primitive with their covering
+                        --  primitive)
+
                         if Chars (Node (Op_Elmt_2)) = Chars (Parent_Subp)
                           and then Type_Conformant (Prim_Op, Node (Op_Elmt_2))
+                          and then No (Interface_Alias (Node (Op_Elmt_2)))
                         then
                            --  The private inherited operation has been
                            --  overridden by an explicit subprogram: replace
