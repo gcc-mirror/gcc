@@ -1,3 +1,11 @@
+2010-10-26  Jie Zhang  <jie@codesourcery.com>
+
+	* stor-layout.c (layout_decl): Use the field's type to
+	determine the mode and keep DECL_BIT_FIELD for a volatile
+	bit-field.
+	* config/arm/arm.c (arm_override_options): Default to
+	-fstrict-volatile-bitfields.
+
 2010-10-25  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.md: Add define_constants for register
