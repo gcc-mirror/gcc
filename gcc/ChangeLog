@@ -1,3 +1,9 @@
+2010-10-26  Jason Merrill  <jason@redhat.com>
+
+	* varasm.c (constructor_static_from_elts_p): Don't require a
+	CONSTRUCTOR to have elements to be suitable for static
+	initialization.  Allow ARRAY_TYPE as well.
+
 2010-10-26  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/45736

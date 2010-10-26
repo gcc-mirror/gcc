@@ -3901,8 +3901,8 @@ constructor_static_from_elts_p (const_tree ctor)
 {
   return (TREE_CONSTANT (ctor)
 	  && (TREE_CODE (TREE_TYPE (ctor)) == UNION_TYPE
-	      || TREE_CODE (TREE_TYPE (ctor)) == RECORD_TYPE)
-	  && !VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (ctor)));
+	      || TREE_CODE (TREE_TYPE (ctor)) == RECORD_TYPE
+	      || TREE_CODE (TREE_TYPE (ctor)) == ARRAY_TYPE));
 }
 
 static tree initializer_constant_valid_p_1 (tree value, tree endtype,
