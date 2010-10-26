@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-fdump-tree-original" }
 !
 ! PR 43969: [OOP] ALLOCATED() with polymorphic variables
 !
@@ -37,5 +38,8 @@ program main
   call foo_checkit()
 
 end program main
+
+! { dg-final { scan-tree-dump-times "__builtin_free" 8 "original" } }
+! { dg-final { cleanup-tree-dump "original" } }
 
 ! { dg-final { cleanup-modules "foo_mod" } }

@@ -6281,22 +6281,18 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
       switch (purpose)
 	{
 	case DEALLOCATE_ALLOC_COMP:
-	  /* Do not deallocate the components of ultimate pointer
-	     components.  */
-	  if (cmp_has_alloc_comps && !c->attr.pointer)
-	    {
-	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
-				      decl, cdecl, NULL_TREE);
-	      rank = c->as ? c->as->rank : 0;
-	      tmp = structure_alloc_comps (c->ts.u.derived, comp, NULL_TREE,
-					   rank, purpose);
-	      gfc_add_expr_to_block (&fnblock, tmp);
-	    }
-
 	  if (c->attr.allocatable && c->attr.dimension)
 	    {
 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
 				      decl, cdecl, NULL_TREE);
+	      if (cmp_has_alloc_comps && !c->attr.pointer)
+		{
+		  /* Do not deallocate the components of ultimate pointer
+		     components.  */
+		  tmp = structure_alloc_comps (c->ts.u.derived, comp, NULL_TREE,
+					       c->as->rank, purpose);
+		  gfc_add_expr_to_block (&fnblock, tmp);
+		}
 	      tmp = gfc_trans_dealloc_allocated (comp);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
@@ -6306,7 +6302,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
 				      decl, cdecl, NULL_TREE);
 
-	      tmp = gfc_deallocate_with_status (comp, NULL_TREE, true, NULL);
+	      tmp = gfc_deallocate_scalar_with_status (comp, NULL, true, NULL,
+						       c->ts);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 
 	      tmp = fold_build2_loc (input_location, MODIFY_EXPR,
@@ -6325,7 +6322,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      comp = fold_build3_loc (input_location, COMPONENT_REF,
 				      TREE_TYPE (tmp), comp, tmp, NULL_TREE);
 
-	      tmp = gfc_deallocate_with_status (comp, NULL_TREE, true, NULL);
+	      tmp = gfc_deallocate_scalar_with_status (comp, NULL, true, NULL,
+						       CLASS_DATA (c)->ts);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 
 	      tmp = fold_build2_loc (input_location, MODIFY_EXPR,

@@ -945,6 +945,103 @@ gfc_deallocate_with_status (tree pointer, tree status, bool can_fail,
 }
 
 
+/* Generate code for deallocation of allocatable scalars (variables or
+   components). Before the object itself is freed, any allocatable
+   subcomponents are being deallocated.  */
+
+tree
+gfc_deallocate_scalar_with_status (tree pointer, tree status, bool can_fail,
+				   gfc_expr* expr, gfc_typespec ts)
+{
+  stmtblock_t null, non_null;
+  tree cond, tmp, error;
+
+  cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node, pointer,
+			  build_int_cst (TREE_TYPE (pointer), 0));
+
+  /* When POINTER is NULL, we set STATUS to 1 if it's present, otherwise
+     we emit a runtime error.  */
+  gfc_start_block (&null);
+  if (!can_fail)
+    {
+      tree varname;
+
+      gcc_assert (expr && expr->expr_type == EXPR_VARIABLE && expr->symtree);
+
+      varname = gfc_build_cstring_const (expr->symtree->name);
+      varname = gfc_build_addr_expr (pchar_type_node, varname);
+
+      error = gfc_trans_runtime_error (true, &expr->where,
+				       "Attempt to DEALLOCATE unallocated '%s'",
+				       varname);
+    }
+  else
+    error = build_empty_stmt (input_location);
+
+  if (status != NULL_TREE && !integer_zerop (status))
+    {
+      tree status_type = TREE_TYPE (TREE_TYPE (status));
+      tree cond2;
+
+      cond2 = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+			       status, build_int_cst (TREE_TYPE (status), 0));
+      tmp = fold_build2_loc (input_location, MODIFY_EXPR, status_type,
+			     fold_build1_loc (input_location, INDIRECT_REF,
+					      status_type, status),
+			     build_int_cst (status_type, 1));
+      error = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+			       cond2, tmp, error);
+    }
+
+  gfc_add_expr_to_block (&null, error);
+
+  /* When POINTER is not NULL, we free it.  */
+  gfc_start_block (&non_null);
+  
+  /* Free allocatable components.  */
+  if (ts.type == BT_DERIVED && ts.u.derived->attr.alloc_comp)
+    {
+      tmp = build_fold_indirect_ref_loc (input_location, pointer);
+      tmp = gfc_deallocate_alloc_comp (ts.u.derived, tmp, 0);
+      gfc_add_expr_to_block (&non_null, tmp);
+    }
+  else if (ts.type == BT_CLASS
+	   && ts.u.derived->components->ts.u.derived->attr.alloc_comp)
+    {
+      tmp = build_fold_indirect_ref_loc (input_location, pointer);
+      tmp = gfc_deallocate_alloc_comp (ts.u.derived->components->ts.u.derived,
+				       tmp, 0);
+      gfc_add_expr_to_block (&non_null, tmp);
+    }
+  
+  tmp = build_call_expr_loc (input_location,
+			 built_in_decls[BUILT_IN_FREE], 1,
+			 fold_convert (pvoid_type_node, pointer));
+  gfc_add_expr_to_block (&non_null, tmp);
+
+  if (status != NULL_TREE && !integer_zerop (status))
+    {
+      /* We set STATUS to zero if it is present.  */
+      tree status_type = TREE_TYPE (TREE_TYPE (status));
+      tree cond2;
+
+      cond2 = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+			       status, build_int_cst (TREE_TYPE (status), 0));
+      tmp = fold_build2_loc (input_location, MODIFY_EXPR, status_type,
+			     fold_build1_loc (input_location, INDIRECT_REF,
+					      status_type, status),
+			     build_int_cst (status_type, 0));
+      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, cond2,
+			     tmp, build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&non_null, tmp);
+    }
+
+  return fold_build3_loc (input_location, COND_EXPR, void_type_node, cond,
+			  gfc_finish_block (&null),
+			  gfc_finish_block (&non_null));
+}
+
+
 /* Reallocate MEM so it has SIZE bytes of data.  This behaves like the
    following pseudo-code:
 
