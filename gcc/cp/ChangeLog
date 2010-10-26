@@ -1,5 +1,14 @@
 2010-10-26  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (build_vec_init_expr): Split out from...
+	(build_array_copy): ...here.
+	* init.c (perform_member_init): Use it.
+	* cp-tree.h: Declare it.
+	* cp-gimplify.c (cp_gimplify_init_expr): Don't gimplify the slot for
+	VEC_INIT_EXPR and AGGR_INIT_EXPR here.  Drop pre/post parameters.
+	(cp_gimplify_expr): Handle array default-initialization via
+	VEC_INIT_EXPR.
+
 	* pt.c (lookup_template_class): push_tinst_level around call to
 	coerce_template_parms.
 

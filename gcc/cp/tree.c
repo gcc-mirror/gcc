@@ -452,20 +452,53 @@ build_cplus_new (tree type, tree init)
   return rval;
 }
 
-/* Return a TARGET_EXPR which expresses the direct-initialization of one
-   array from another.  */
+/* Return a TARGET_EXPR which expresses the initialization of an array to
+   be named later, either default-initialization or copy-initialization
+   from another array of the same type.  */
 
 tree
-build_array_copy (tree init)
+build_vec_init_expr (tree type, tree init)
 {
-  tree type = TREE_TYPE (init);
-  tree slot = build_local_temp (type);
+  tree slot;
+  tree inner_type = strip_array_types (type);
+
+  gcc_assert (init == NULL_TREE
+	      || (same_type_ignoring_top_level_qualifiers_p
+		  (type, TREE_TYPE (init))));
+
+  /* Since we're deferring building the actual constructor calls until
+     gimplification time, we need to build one now and throw it away so
+     that the relevant constructor gets mark_used before cgraph decides
+     what functions are needed.  Here we assume that init is either
+     NULL_TREE or another array to copy.  */
+  if (CLASS_TYPE_P (inner_type))
+    {
+      VEC(tree,gc) *argvec = make_tree_vector ();
+      if (init)
+	{
+	  tree dummy = build_dummy_object (inner_type);
+	  if (!real_lvalue_p (init))
+	    dummy = move (dummy);
+	  VEC_quick_push (tree, argvec, dummy);
+	}
+      build_special_member_call (NULL_TREE, complete_ctor_identifier,
+				 &argvec, inner_type, LOOKUP_NORMAL,
+				 tf_warning_or_error);
+    }
+
+  slot = build_local_temp (type);
   init = build2 (VEC_INIT_EXPR, type, slot, init);
   SET_EXPR_LOCATION (init, input_location);
   init = build_target_expr (slot, init);
   TARGET_EXPR_IMPLICIT_P (init) = 1;
 
   return init;
+}
+
+tree
+build_array_copy (tree init)
+{
+  return build_vec_init_expr (TREE_TYPE (init), init);
 }
 
 /* Build a TARGET_EXPR using INIT to initialize a new temporary of the
