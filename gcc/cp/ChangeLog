@@ -1,3 +1,7 @@
+2010-10-26  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (finish_function): Don't look at function_depth.
+
 2010-10-25  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
 
 	Implement opaque-enum-specifiers for C++0x.
