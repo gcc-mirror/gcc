@@ -4716,7 +4716,14 @@ package body Exp_Util is
          --  some cases, and an assignment can modify the component
          --  designated by N, so we need to create a temporary for it.
 
+         --  The guard testing for Entity being present is needed at least
+         --  in the case of rewritten predicate expressions, and may be
+         --  appropriate elsewhere. Obviously we can't go testing the entity
+         --  field if it does not exist, so it's reasonable to say that this
+         --  is not the renaming case if it does not exist.
+
          elsif Is_Entity_Name (Original_Node (N))
+           and then Present (Entity (Original_Node (N)))
            and then Is_Renaming_Of_Object (Entity (Original_Node (N)))
            and then Ekind (Entity (Original_Node (N))) /= E_Constant
          then

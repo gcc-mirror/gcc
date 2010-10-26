@@ -1,3 +1,18 @@
+2010-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb: Adjust format of error message.
+
+2010-10-26  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, einfo.adb (OK_To_Reference): Removed, no longer used.
+	* exp_util.adb (Side_Effect_Free): Put in safety barrier in code to
+	detect renamings to avoid problems with invariants.
+	* sem_ch13.adb (Replace_Type_References_Generic): New procedure
+	(Build_Invariant_Procedure): Use Replace_Type_Reference_Generic
+	(Build_Predicate_Function): Use Replace_Type_Reference_Generic
+	* sem_res.adb, sem_ch8.adb, sem_ch4.adb (OK_To_Reference): Remove
+	references, flag is no longer set.
+
 2010-10-26  Vincent Celier  <celier@adacore.com>
 
 	* prj.ads (Source_Data): New Boolean component Initialized, defaulted

@@ -2011,7 +2011,7 @@ package body Sem_Ch5 is
             Set_Etype (Def_Id, Component_Type (Typ));
          else
             Error_Msg_N
-              ("to iterate over the elements of an array, use 'O'F", N);
+              ("to iterate over the elements of an array, use OF", N);
             Set_Etype (Def_Id, Etype (First_Index (Typ)));
          end if;
 

@@ -513,10 +513,10 @@ package body Einfo is
    --    Is_Underlying_Record_View       Flag246
    --    OK_To_Rename                    Flag247
    --    Has_Inheritable_Invariants      Flag248
-   --    OK_To_Reference                 Flag249
    --    Has_Predicates                  Flag250
 
    --    (unused)                        Flag151
+   --    (unused)                        Flag249
    --    (unused)                        Flag251
    --    (unused)                        Flag252
    --    (unused)                        Flag253
@@ -2313,11 +2313,6 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
       return Uint10 (Id);
    end Normalized_Position_Max;
-
-   function OK_To_Reference (Id : E) return B is
-   begin
-      return Flag249 (Id);
-   end OK_To_Reference;
 
    function OK_To_Rename (Id : E) return B is
    begin
@@ -4807,11 +4802,6 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
       Set_Uint10 (Id, V);
    end Set_Normalized_Position_Max;
-
-   procedure Set_OK_To_Reference (Id : E; V : B := True) is
-   begin
-      Set_Flag249 (Id, V);
-   end Set_OK_To_Reference;
 
    procedure Set_OK_To_Rename (Id : E; V : B := True) is
    begin
@@ -7517,7 +7507,6 @@ package body Einfo is
       W ("No_Strict_Aliasing",              Flag136 (Id));
       W ("Non_Binary_Modulus",              Flag58  (Id));
       W ("Nonzero_Is_True",                 Flag162 (Id));
-      W ("OK_To_Reference",                 Flag249 (Id));
       W ("OK_To_Rename",                    Flag247 (Id));
       W ("OK_To_Reorder_Components",        Flag239 (Id));
       W ("Optimize_Alignment_Space",        Flag241 (Id));

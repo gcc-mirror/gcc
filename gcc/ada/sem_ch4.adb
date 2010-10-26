@@ -5584,13 +5584,6 @@ package body Sem_Ch4 is
          return False;
       end if;
 
-      --  If OK_To_Reference is set for the entity, then don't complain, it
-      --  means we are doing a preanalysis in which such complaints are wrong.
-
-      if OK_To_Reference (Entity (Enode)) then
-         return False;
-      end if;
-
       --  Now test the entity we got to see if it is a bad case
 
       case Ekind (Entity (Enode)) is

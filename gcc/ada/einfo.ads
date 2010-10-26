@@ -3151,12 +3151,6 @@ package Einfo is
 --       Applies to subprograms and subprogram types. Yields the number of
 --       formals as a value of type Pos.
 
---    OK_To_Reference (Flag249)
---       Present in all entities. If set it indicates that a naked reference to
---       the entity is permitted within an expression that is being preanalyzed
---       (for example, a type name may be referenced within the Invariant
---       or Predicate aspect expression for a type).
-
 --    OK_To_Rename (Flag247)
 --       Present only in entities for variables. If this flag is set, it
 --       means that if the entity is used as the initial value of an object
@@ -4739,7 +4733,6 @@ package Einfo is
    --    Needs_Debug_Info                    (Flag147)
    --    Never_Set_In_Source                 (Flag115)
    --    No_Return                           (Flag113)
-   --    OK_To_Reference                     (Flag249)
    --    Overlays_Constant                   (Flag243)
    --    Referenced                          (Flag156)
    --    Referenced_As_LHS                   (Flag36)
@@ -6191,7 +6184,6 @@ package Einfo is
    function Normalized_First_Bit                (Id : E) return U;
    function Normalized_Position                 (Id : E) return U;
    function Normalized_Position_Max             (Id : E) return U;
-   function OK_To_Reference                     (Id : E) return B;
    function OK_To_Rename                        (Id : E) return B;
    function OK_To_Reorder_Components            (Id : E) return B;
    function Optimize_Alignment_Space            (Id : E) return B;
@@ -6779,7 +6771,6 @@ package Einfo is
    procedure Set_Normalized_First_Bit            (Id : E; V : U);
    procedure Set_Normalized_Position             (Id : E; V : U);
    procedure Set_Normalized_Position_Max         (Id : E; V : U);
-   procedure Set_OK_To_Reference                 (Id : E; V : B := True);
    procedure Set_OK_To_Rename                    (Id : E; V : B := True);
    procedure Set_OK_To_Reorder_Components        (Id : E; V : B := True);
    procedure Set_Optimize_Alignment_Space        (Id : E; V : B := True);
@@ -7512,7 +7503,6 @@ package Einfo is
    pragma Inline (Normalized_First_Bit);
    pragma Inline (Normalized_Position);
    pragma Inline (Normalized_Position_Max);
-   pragma Inline (OK_To_Reference);
    pragma Inline (OK_To_Rename);
    pragma Inline (OK_To_Reorder_Components);
    pragma Inline (Optimize_Alignment_Space);
@@ -7909,7 +7899,6 @@ package Einfo is
    pragma Inline (Set_Normalized_Position);
    pragma Inline (Set_Normalized_Position_Max);
    pragma Inline (Set_OK_To_Reorder_Components);
-   pragma Inline (Set_OK_To_Reference);
    pragma Inline (Set_OK_To_Rename);
    pragma Inline (Set_Optimize_Alignment_Space);
    pragma Inline (Set_Optimize_Alignment_Time);
