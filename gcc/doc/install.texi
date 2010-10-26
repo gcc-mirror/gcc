@@ -1680,8 +1680,8 @@ The following options only apply to building cross compilers.
 @table @code
 @item --with-sysroot
 @itemx --with-sysroot=@var{dir}
-Tells GCC to consider @var{dir} as the root of a tree that contains a
-(subset of) the root filesystem of the target operating system.
+Tells GCC to consider @var{dir} as the root of a tree that contains
+(a subset of) the root filesystem of the target operating system.
 Target system headers, libraries and run-time object files will be
 searched in there.  More specifically, this acts as if
 @option{--sysroot=@var{dir}} was added to the default options of the built

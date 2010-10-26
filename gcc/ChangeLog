@@ -1,3 +1,7 @@
+2010-10-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/install.texi: Fix typo in --with-sysroot description.
+
 2010-10-26  Jan Hubicka  <jh@suse.cz>
 
 	* ipa.c (cgraph_externally_visible_p, varpool_externally_visible_p):
