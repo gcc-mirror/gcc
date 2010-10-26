@@ -1844,41 +1844,41 @@ else
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+/* Define $2 to an innocuous variant, in case <limits.h> declares $2.
+   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
+#define $2 innocuous_$2
+
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $2 (); below.
     Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-    <limits.h> exists even on freestanding compilers.  Under hpux,
-    including <limits.h> includes <sys/time.h> and causes problems
-    checking for functions defined therein.  */
-#if defined (__STDC__) && !defined (_HPUX_SOURCE)
+    <limits.h> exists even on freestanding compilers.  */
+
+#ifdef __STDC__
 # include <limits.h>
 #else
 # include <assert.h>
 #endif
-/* Override any gcc2 internal prototype to avoid an error.  */
+
+#undef $2
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
 #ifdef __cplusplus
 extern "C"
-{
 #endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
 char $2 ();
 /* The GNU C library defines this for functions which it implements
     to always fail with ENOSYS.  Some functions are actually named
     something starting with __ and the normal name is an alias.  */
-#if defined (__stub_$2) || defined (__stub___$2)
+#if defined __stub_$2 || defined __stub___$2
 choke me
-#else
-char (*f) () = $2;
-#endif
-#ifdef __cplusplus
-}
 #endif
 
 int
 main ()
 {
-return f != $2;
+return $2 ();
   ;
   return 0;
 }
