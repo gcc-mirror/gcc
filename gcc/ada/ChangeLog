@@ -1,3 +1,19 @@
+2010-10-26  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb (Process_Import_Or_Interface): Skip primitives of
+	interface types when processing all the entities in the homonym chain
+	that are declared in the same declarative part.
+
+2010-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Process_Range_In_Decl): If the range is part of a
+	quantified expression, the insertion point for range checks will be
+	arbitrarily far in the tree.
+	* sem_ch5.adb (One_Bound): Use Insert_Actions for the declaration of
+	the temporary that holds the value of the bounds.
+	* sem_res.adb (Resolve_Quantified_Expressions): Disable expansion of
+	condition until the full expression is expanded.
+
 2010-10-26  Robert Dewar  <dewar@adacore.com>
 
 	* opt.ads: Comment fix.

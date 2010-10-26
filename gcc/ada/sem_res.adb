@@ -7809,9 +7809,13 @@ package body Sem_Res is
    procedure Resolve_Quantified_Expression (N : Node_Id; Typ : Entity_Id) is
    begin
       --  The loop structure is already resolved during its analysis, only the
-      --  resolution of the condition needs to be done.
+      --  resolution of the condition needs to be done. Expansion is disabled
+      --  so that checks and other generated code are inserted in the tree
+      --  after expression has been rewritten as a loop.
 
+      Expander_Mode_Save_And_Set (False);
       Resolve (Condition (N), Typ);
+      Expander_Mode_Restore;
    end Resolve_Quantified_Expression;
 
    -------------------

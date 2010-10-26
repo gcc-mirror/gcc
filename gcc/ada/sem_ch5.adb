@@ -1538,8 +1538,11 @@ package body Sem_Ch5 is
                    Object_Definition   => New_Occurrence_Of (Typ, Loc),
                    Expression          => Relocate_Node (Original_Bound));
 
-               Insert_Before (Parent (N), Decl);
-               Analyze (Decl);
+               --  Insert declaration at proper place. If loop comes from an
+               --  enclosing quantified expression, the insertion point is
+               --  arbitrarily far up in the tree.
+
+               Insert_Action (Parent (N), Decl);
                Rewrite (Original_Bound, New_Occurrence_Of (Id, Loc));
                return Expression (Decl);
             end if;
