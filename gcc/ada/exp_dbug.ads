@@ -1323,9 +1323,8 @@ package Exp_Dbug is
 
    --  where discrim is the unqualified name of the variant. This field name is
    --  built by gigi (not by code in this unit). For Unchecked_Union record,
-   --  this discriminant will not appear in the record, and the debugger must
-   --  proceed accordingly (basically it can treat this case as it would a C
-   --  union).
+   --  this discriminant will not appear in the record (see Unchecked Unions,
+   --  below).
 
    --  The type corresponding to this field has a name that is obtained by
    --  concatenating the type name with the above string and is similar to a C
@@ -1338,7 +1337,7 @@ package Exp_Dbug is
    --  The name of the union member is encoded to indicate the choices, and
    --  is a string given by the following grammar:
 
-   --    union_name ::= {choice} | others_choice
+   --    member_name ::= {choice} | others_choice
    --    choice ::= simple_choice | range_choice
    --    simple_choice ::= S number
    --    range_choice  ::= R number T number
@@ -1377,12 +1376,34 @@ package Exp_Dbug is
 
    --    V1 : Var;
 
-   --  In this case, the type var is represented as a struct with three fields,
-   --  the first two are "disc" and "m", representing the values of these
-   --  record components.
+   --  In this case, the type var is represented as a struct with three fields.
+   --  The first two are "disc" and "m", representing the values of these
+   --  record components. The third field is a union of two types, with field
+   --  names S1 and O. S1 is a struct with fields "r" and "s", and O is a
+   --  struct with field "t".
 
-   --  The third field is a union of two types, with field names S1 and O. S1
-   --  is a struct with fields "r" and "s", and O is a struct with fields "t".
+   ----------------------
+   -- Unchecked Unions --
+   ----------------------
+
+   --  The encoding for variant records changes somewhat under the influence
+   --  of a "pragma Unchecked_Union" clause:
+
+   --     1. The discriminant will not be present in the record, although its
+   --        name is still used in the encodings.
+   --     2. Variants containing a single component named "x" of type "T" may
+   --        be encoded, as in ordinary C unions, as a single field of the
+   --        enclosing union type named "x" of type "T", dispensing with the
+   --        enclosing struct. In this case, of course, the discriminant values
+   --        corresponding to the variant are unavailable. As for normal
+   --        variants, the field name "x" may be suffixed with ___XVL if it
+   --        has dynamic size.
+
+   --  For example, the type Var in the preceding section, if followed by
+   --  "pragma Unchecked_Union (Var);" may be encoded as a struct with two
+   --  fields. The first is "m". The second field is a union of two types,
+   --  with field names S1 and "t". As before, S1 is a struct with fields
+   --  "r" and "s". "t" is a field of type Integer.
 
    ------------------------------------------------
    -- Subprograms for Handling Variant Encodings --

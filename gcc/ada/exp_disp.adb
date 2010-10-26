@@ -7359,7 +7359,7 @@ package body Exp_Disp is
                         (Nkind (Parent (Typ)) = N_Private_Extension_Declaration
                           and then Is_Generic_Type (Typ)))
            and then In_Open_Scopes (Scope (Etype (Typ)))
-           and then Typ = Base_Type (Typ)
+           and then Is_Base_Type (Typ)
          then
             Handle_Inherited_Private_Subprograms (Typ);
          end if;

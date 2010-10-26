@@ -2493,9 +2493,11 @@ package body Exp_Ch4 is
          Opnd_Typ := Etype (Opnd);
 
          --  The parent got messed up when we put the operands in a list,
-         --  so now put back the proper parent for the saved operand.
+         --  so now put back the proper parent for the saved operand, that
+         --  is to say the concatenation node, to make sure that each operand
+         --  is seen as a subexpression, e.g. if actions must be inserted.
 
-         Set_Parent (Opnd, Parent (Cnode));
+         Set_Parent (Opnd, Cnode);
 
          --  Set will be True when we have setup one entry in the array
 

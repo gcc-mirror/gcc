@@ -1,3 +1,45 @@
+2010-10-26  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, einfo.adb (Is_Base_Type): New function, use it where
+	appropriate.
+	* exp_ch6.adb, exp_dbug.adb, exp_disp.adb, freeze.adb, lib-xref.adb,
+	sem_aux.adb, sem_ch3.adb, sem_ch7.adb, sem_ch8.adb (Is_Base_Type): Use
+	this new abstraction where appropriate.
+
+2010-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Code clean up.
+
+2010-10-26  Paul Hilfinger  <hilfinger@adacore.com>
+
+	* exp_dbug.ads: Document effect of 'pragma Unchecked_Union' on
+	debugging data.
+
+2010-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Note_Possible_Modification): If the target of an
+	assignment is the bound variable in an iterator, the domain of
+	iteration, i.e. array or container, is modified as well.
+
+2010-10-26  Bob Duff  <duff@adacore.com>
+
+	* Make-generated.in: Make the relevant make targets depend on
+	ceinfo.adb and csinfo.adb.
+	* csinfo.adb, ceinfo.adb: Make sure it raises an exception on failure,
+	so when called from xeinfo, the failure will be noticed.
+	* sinfo.ads: Update comments to reflect the fact that xsinfo runs csinfo
+	* xsinfo.adb, xeinfo.adb: Run ceinfo to check for errors. Close files.
+
+2010-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb: Set properly parent field of operands of concatenation.
+
+2010-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Check_Infinite_Recursion): A recursive call within a
+	conditional expression or a case expression should not generate an
+	infinite recursion warning.
+
 2010-10-26  Javier Miranda  <miranda@adacore.com>
 
 	* einfo.ads, einfo.adb (Is_Overriding_Operation): Removed.

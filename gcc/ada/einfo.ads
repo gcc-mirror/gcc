@@ -1992,6 +1992,9 @@ package Einfo is
 --       Present in all type entities and in procedure entities. Set
 --       if a pragma Asynchronous applies to the entity.
 
+--    Is_Base_Type (synthesized)
+--       Applies to type and subtype entities. True if entity is a base type
+
 --    Is_Bit_Packed_Array (Flag122) [implementation base type only]
 --       Present in all entities. This flag is set for a packed array type that
 --       is bit packed (i.e. the component size is known by the front end and
@@ -6341,6 +6344,7 @@ package Einfo is
    function Has_Private_Ancestor                (Id : E) return B;
    function Has_Private_Declaration             (Id : E) return B;
    function Implementation_Base_Type            (Id : E) return E;
+   function Is_Base_Type                        (Id : E) return B;
    function Is_Boolean_Type                     (Id : E) return B;
    function Is_Constant_Object                  (Id : E) return B;
    function Is_Discriminal                      (Id : E) return B;
@@ -7976,6 +7980,7 @@ package Einfo is
    --  things here which are small, but not of the canonical attribute
    --  access/set format that can be handled by xeinfo.
 
+   pragma Inline (Is_Base_Type);
    pragma Inline (Is_Package_Or_Generic_Package);
    pragma Inline (Is_Volatile);
    pragma Inline (Is_Wrapper_Package);

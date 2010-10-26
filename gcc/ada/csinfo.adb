@@ -23,10 +23,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Program to check consistency of sinfo.ads and sinfo.adb. Checks that field
---  name usage is consistent and that assertion cross-reference lists are
---  correct, as well as making sure that all the comments on field name usage
---  are consistent.
+--  Check consistency of sinfo.ads and sinfo.adb. Checks that field name usage
+--  is consistent and that assertion cross-reference lists are correct, as well
+--  as making sure that all the comments on field name usage are consistent.
+
+--  Note that this is used both as a standalone program, and as a procedure
+--  called by XSinfo. This raises an unhandled exception if it finds any
+--  errors; we don't attempt any sophisticated error recovery.
 
 with Ada.Strings.Unbounded;         use Ada.Strings.Unbounded;
 with Ada.Strings.Unbounded.Text_IO; use Ada.Strings.Unbounded.Text_IO;
@@ -634,9 +637,5 @@ begin
    Put_Line ("     OK");
    New_Line;
    Put_Line ("All tests completed successfully, no errors detected");
-
-exception
-   when Done =>
-      null;
 
 end CSinfo;

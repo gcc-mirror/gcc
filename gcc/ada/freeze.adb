@@ -2062,9 +2062,7 @@ package body Freeze is
 
          --  Set OK_To_Reorder_Components depending on debug flags
 
-         if Rec = Base_Type (Rec)
-           and then Convention (Rec) = Convention_Ada
-         then
+         if Is_Base_Type (Rec) and then Convention (Rec) = Convention_Ada then
             if (Has_Discriminants (Rec) and then Debug_Flag_Dot_V)
                   or else
                (not Has_Discriminants (Rec) and then Debug_Flag_Dot_R)
@@ -3818,9 +3816,7 @@ package body Freeze is
             --  these till the freeze-point since we need the small and range
             --  values. We only do these checks for base types
 
-            if Is_Ordinary_Fixed_Point_Type (E)
-              and then E = Base_Type (E)
-            then
+            if Is_Ordinary_Fixed_Point_Type (E) and then Is_Base_Type (E) then
                if Small_Value (E) < Ureal_2_M_80 then
                   Error_Msg_Name_1 := Name_Small;
                   Error_Msg_N
@@ -3865,7 +3861,7 @@ package body Freeze is
             --  only to base types.
 
             if Present (Default_Pool)
-              and then E = Base_Type (E)
+              and then Is_Base_Type (E)
               and then not Has_Storage_Size_Clause (E)
               and then No (Associated_Storage_Pool (E))
             then

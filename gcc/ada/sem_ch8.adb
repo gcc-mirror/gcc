@@ -6001,9 +6001,8 @@ package body Sem_Ch8 is
       while Present (Id)
         and then Id /= Priv_Id
       loop
-         if Is_Standard_Character_Type (Id)
-           and then Id = Base_Type (Id)
-         then
+         if Is_Standard_Character_Type (Id) and then Is_Base_Type (Id) then
+
             --  We replace the node with the literal itself, resolve as a
             --  character, and set the type correctly.
 
@@ -6164,9 +6163,7 @@ package body Sem_Ch8 is
 
          when Name_Op_And | Name_Op_Not | Name_Op_Or  | Name_Op_Xor =>
             while Id  /= Priv_Id loop
-               if Valid_Boolean_Arg (Id)
-                 and then Id = Base_Type (Id)
-               then
+               if Valid_Boolean_Arg (Id) and then Is_Base_Type (Id) then
                   Add_Implicit_Operator (Id);
                   return True;
                end if;
@@ -6180,7 +6177,7 @@ package body Sem_Ch8 is
             while Id  /= Priv_Id loop
                if Is_Type (Id)
                  and then not Is_Limited_Type (Id)
-                 and then Id = Base_Type (Id)
+                 and then Is_Base_Type (Id)
                then
                   Add_Implicit_Operator (Standard_Boolean, Id);
                   return True;
@@ -6194,9 +6191,9 @@ package body Sem_Ch8 is
          when Name_Op_Lt | Name_Op_Le | Name_Op_Gt | Name_Op_Ge =>
             while Id  /= Priv_Id loop
                if (Is_Scalar_Type (Id)
-                 or else (Is_Array_Type (Id)
-                           and then Is_Scalar_Type (Component_Type (Id))))
-                 and then Id = Base_Type (Id)
+                    or else (Is_Array_Type (Id)
+                              and then Is_Scalar_Type (Component_Type (Id))))
+                 and then Is_Base_Type (Id)
                then
                   Add_Implicit_Operator (Standard_Boolean, Id);
                   return True;
@@ -6216,9 +6213,7 @@ package body Sem_Ch8 is
               Name_Op_Divide   |
               Name_Op_Expon    =>
             while Id  /= Priv_Id loop
-               if Is_Numeric_Type (Id)
-                 and then Id = Base_Type (Id)
-               then
+               if Is_Numeric_Type (Id) and then Is_Base_Type (Id) then
                   Add_Implicit_Operator (Id);
                   return True;
                end if;
@@ -6230,8 +6225,9 @@ package body Sem_Ch8 is
 
          when Name_Op_Concat =>
             while Id  /= Priv_Id loop
-               if Is_Array_Type (Id) and then Number_Dimensions (Id) = 1
-                 and then Id = Base_Type (Id)
+               if Is_Array_Type (Id)
+                 and then Number_Dimensions (Id) = 1
+                 and then Is_Base_Type (Id)
                then
                   Add_Implicit_Operator (Id);
                   return True;

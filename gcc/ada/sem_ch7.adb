@@ -1500,7 +1500,7 @@ package body Sem_Ch7 is
                  (Nkind (Parent (E)) = N_Private_Extension_Declaration
                    and then Is_Generic_Type (E)))
            and then In_Open_Scopes (Scope (Etype (E)))
-           and then E = Base_Type (E)
+           and then Is_Base_Type (E)
          then
             if Is_Tagged_Type (E) then
                Op_List := Primitive_Operations (E);
@@ -2010,7 +2010,7 @@ package body Sem_Ch7 is
       ------------------------------
 
       procedure Preserve_Full_Attributes (Priv, Full : Entity_Id) is
-         Priv_Is_Base_Type : constant Boolean := Priv = Base_Type (Priv);
+         Priv_Is_Base_Type : constant Boolean := Is_Base_Type (Priv);
 
       begin
          Set_Size_Info (Priv, (Full));
