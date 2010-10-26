@@ -1,3 +1,8 @@
+2010-10-26  Matthew Heaney  <heaney@adacore.com>
+
+	* Makefile.rtl, impunit.adb: Added bounded list container.
+	* a-cbdlli.ads, a-cbdlli.adb: New file.
+
 2010-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils2.c: Include flags.h and remove prototypes.

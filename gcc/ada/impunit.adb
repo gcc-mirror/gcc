@@ -508,6 +508,7 @@ package body Impunit is
      "s-multip",    -- System.Multiprocessors
      "s-mudido",    -- System.Multiprocessors.Dispatching_Domains
      "a-cobove",    -- Ada.Containers.Bounded_Vectors
+     "a-cbdlli",    -- Ada.Containers.Bounded_Doubly_Linked_Lists
      "a-cborse",    -- Ada.Containers.Bounded_Ordered_Sets
      "a-cborma");   -- Ada.Containers.Bounded_Ordered_Maps
 
