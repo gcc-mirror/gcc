@@ -567,16 +567,6 @@ package body Switch.C is
                Set_GNAT_Mode_Warnings;
                Set_GNAT_Style_Check_Options;
 
-               --  Suppress categorization errors. The run-time has several
-               --  instances of violations of the categorization errors (e.g.
-               --  Pure units withing Preelaborate units. These violations are
-               --  harmless in the cases where we intend them, and we suppress
-               --  the warnings with Warnings (Off). In cases where we do not
-               --  intend the violation, warnings are errors in -gnatg mode
-               --  anyway, so we will still get an error.
-
-               Treat_Categorization_Errors_As_Warnings := True;
-
             --  Processing for G switch
 
             when 'G' =>
