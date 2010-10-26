@@ -1,3 +1,10 @@
+2010-10-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/46010
+	* io/list_read.c (nml_parse_qualifier): Add additional conditions for
+	setting the end index for loop specification. Fix some whitespace.
+	* io/write.c (write_default_char4): Const-ify the source argument.
+
 2010-10-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/46007

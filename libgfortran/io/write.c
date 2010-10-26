@@ -65,7 +65,7 @@ memcpy4 (gfc_char4_t *dest, const char *source, int k)
 /* Write out default char4.  */
 
 static void
-write_default_char4 (st_parameter_dt *dtp, gfc_char4_t *source,
+write_default_char4 (st_parameter_dt *dtp, const gfc_char4_t *source,
 		     int src_len, int w_len)
 {
   char *p;
