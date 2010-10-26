@@ -1,3 +1,16 @@
+2010-10-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/lib/libstdc++.exp ([check_v3_target_normal_mode]): Add.
+	* testsuite/lib/dg-options.exp ([dg-require-normal-mode]): Likewise.
+	* testsuite/23_containers/headers/forward_list/synopsis.cc: Use the
+	latter.
+	* testsuite/23_containers/headers/vector/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/deque/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/bitset/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/list/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/set/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/map/synopsis.cc: Likewise.
+
 2010-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/forward_list.h (_Fwd_list_node_base::swap): Remove.

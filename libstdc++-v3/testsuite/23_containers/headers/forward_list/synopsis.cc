@@ -1,7 +1,8 @@
 // { dg-do compile }
+// { dg-require-normal-mode "" }
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,22 +25,28 @@ namespace std {
   template <class T, class Allocator> class forward_list;
 
   template <class T, class Allocator>
-  bool operator==(const forward_list<T,Allocator>& x, const forward_list<T,Allocator>&);
+  bool operator==(const forward_list<T,Allocator>& x,
+		  const forward_list<T,Allocator>&);
 
   template <class T, class Allocator>
-  bool operator< (const forward_list<T,Allocator>& x, const forward_list<T,Allocator>&);
+  bool operator< (const forward_list<T,Allocator>& x,
+		  const forward_list<T,Allocator>&);
 
   template <class T, class Allocator>
-    bool operator!=(const forward_list<T,Allocator>& x, const forward_list<T,Allocator>&);
+    bool operator!=(const forward_list<T,Allocator>& x,
+		    const forward_list<T,Allocator>&);
 
   template <class T, class Allocator>
-    bool operator> (const forward_list<T,Allocator>& x, const forward_list<T,Allocator>&);
+    bool operator> (const forward_list<T,Allocator>& x,
+		    const forward_list<T,Allocator>&);
 
   template <class T, class Allocator>
-    bool operator>=(const forward_list<T,Allocator>& x, const forward_list<T,Allocator>&);
+    bool operator>=(const forward_list<T,Allocator>& x,
+		    const forward_list<T,Allocator>&);
 
   template <class T, class Allocator>
-    bool operator<=(const forward_list<T,Allocator>& x, const forward_list<T,Allocator>&);
+    bool operator<=(const forward_list<T,Allocator>& x,
+		    const forward_list<T,Allocator>&);
 
   template <class T, class Allocator>
     void swap(forward_list<T,Allocator>& x, forward_list<T,Allocator>& y);

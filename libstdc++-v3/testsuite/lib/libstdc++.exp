@@ -922,7 +922,6 @@ proc check_v3_target_debug_mode { } {
 	set exe debug_mode[pid].exe
 
 	set f [open $src "w"]
-	puts $f "#include <string>"
 	puts $f "#ifndef _GLIBCXX_DEBUG"
 	puts $f "#  error No debug mode"
 	puts $f "#endif"
@@ -940,6 +939,55 @@ proc check_v3_target_debug_mode { } {
     }
     verbose "check_v3_target_debug_mode: $et_debug_mode" 2
     return $et_debug_mode
+}
+
+proc check_v3_target_normal_mode { } {
+    global et_normal_mode
+    global tool	
+
+    if { ![info exists et_normal_mode_target_name] } {
+	set et_normal_mode_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_normal_mode_target_name } {
+	verbose "check_v3_target_normal_mode: `$et_normal_mode_target_name'" 2
+	set et_normal_mode_target_name $current_target
+	if [info exists et_normal_mode] {
+	    verbose "check_v3_target_normal_mode: removing cached result" 2
+	    unset et_normal_mode
+	}
+    }
+
+    if [info exists et_normal_mode] {
+	verbose "check_v3_target_normal_mode: using cached result" 2
+    } else {
+	set et_normal_mode 0
+
+	# Set up and compile a C++ test program that depends
+	# on normal mode activated.
+	set src normal_mode[pid].cc
+	set exe normal_mode[pid].exe
+
+	set f [open $src "w"]
+	puts $f "#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PROFILE) || defined(_GLIBCXX_PARALLEL)"
+	puts $f "#  error No normal mode"
+	puts $f "#endif"
+	puts $f "int main()"
+	puts $f "{ return 0; }"
+	close $f
+
+	set lines [v3_target_compile $src $exe executable ""]
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, compilation succeeded.
+	    set et_normal_mode 1
+	}
+    }
+    verbose "check_v3_target_normal_mode: $et_normal_mode" 2
+    return $et_normal_mode
 }
 
 proc check_v3_target_parallel_mode { } {
