@@ -68,17 +68,18 @@ package body Scng is
    --  the token used is Tok_Identifier. This allows to detect additional
    --  spaces added in sources when using the builder switch -m.
 
-   procedure Accumulate_Token_Checksum_Old;
-   --  Used in place of Accumulate_Token_Checksum for previous releases, when
-   --  Tok_Some was not included in Token_Type and the actual Token_Type was
-   --  used for keywords. This procedure is never used in the compiler or
-   --  gnatmake.
+   procedure Accumulate_Token_Checksum_GNAT_6_3;
+   --  Used in place of Accumulate_Token_Checksum for GNAT versions 5.04 to
+   --  6.3, when Tok_Some was not included in Token_Type and the actual
+   --  Token_Type was used for keywords. This procedure is never used in the
+   --  compiler or gnatmake, only in gprbuild.
 
-   procedure Accumulate_Token_Checksum_Old_Old;
-   --  Used in place of Accumulate_Token_Checksum for previous releases, when
+   procedure Accumulate_Token_Checksum_GNAT_5_03;
+   --  Used in place of Accumulate_Token_Checksum for GNAT version 5.03, when
    --  Tok_Interface, Tok_Some, Tok_Synchronized and Tok_Overriding were not
    --  included in Token_Type and the actual Token_Type was used for keywords.
-   --  This procedure is never used in the compiler or gnatmake.
+   --  This procedure is never used in the compiler or gnatmake, only in
+   --  gprbuild.
 
    procedure Accumulate_Checksum (C : Character);
    pragma Inline (Accumulate_Checksum);
@@ -135,11 +136,11 @@ package body Scng is
          Character'Val (Token_Type'Pos (Token)));
    end Accumulate_Token_Checksum;
 
-   -----------------------------------
-   -- Accumulate_Token_Checksum_Old --
-   -----------------------------------
+   ----------------------------------------
+   -- Accumulate_Token_Checksum_GNAT_6_3 --
+   ----------------------------------------
 
-   procedure Accumulate_Token_Checksum_Old is
+   procedure Accumulate_Token_Checksum_GNAT_6_3 is
    begin
       --  Individual values of Token_Type are used, instead of subranges, so
       --  that additions or suppressions of enumerated values in type
@@ -189,13 +190,13 @@ package body Scng is
               (System.CRC32.CRC32 (Checksum),
                Character'Val (Token_Type'Pos (Token_Type'Pred (Token))));
       end case;
-   end Accumulate_Token_Checksum_Old;
+   end Accumulate_Token_Checksum_GNAT_6_3;
 
-   ---------------------------------------
-   -- Accumulate_Token_Checksum_Old_Old --
-   ---------------------------------------
+   -----------------------------------------
+   -- Accumulate_Token_Checksum_GNAT_5_03 --
+   -----------------------------------------
 
-   procedure Accumulate_Token_Checksum_Old_Old is
+   procedure Accumulate_Token_Checksum_GNAT_5_03 is
    begin
       --  Individual values of Token_Type are used, instead of subranges, so
       --  that additions or suppressions of enumerated values in type
@@ -254,7 +255,7 @@ package body Scng is
               (System.CRC32.CRC32 (Checksum),
                Character'Val (Token_Type'Pos (Token) - 4));
       end case;
-   end Accumulate_Token_Checksum_Old_Old;
+   end Accumulate_Token_Checksum_GNAT_5_03;
 
    ----------------------------
    -- Determine_Token_Casing --
@@ -891,7 +892,10 @@ package body Scng is
             end if;
          end if;
 
-         Accumulate_Token_Checksum;
+         if Checksum_Accumulate_Token_Checksum then
+            Accumulate_Token_Checksum;
+         end if;
+
          return;
       end Nlit;
 
@@ -2553,13 +2557,15 @@ package body Scng is
          --  Here is where we check if it was a keyword
 
          if Is_Keyword_Name (Token_Name) then
-            if Opt.Old_Checksums then
+            if Opt.Checksum_GNAT_6_3 then
                Token := Token_Type'Val (Get_Name_Table_Byte (Token_Name));
 
-               if Opt.Old_Old_Checksums then
-                  Accumulate_Token_Checksum_Old_Old;
-               else
-                  Accumulate_Token_Checksum_Old;
+               if Checksum_Accumulate_Token_Checksum then
+                  if Checksum_GNAT_5_03 then
+                     Accumulate_Token_Checksum_GNAT_5_03;
+                  else
+                     Accumulate_Token_Checksum_GNAT_6_3;
+                  end if;
                end if;
 
             else
@@ -2622,7 +2628,10 @@ package body Scng is
          --  It is an identifier after all
 
          else
-            Accumulate_Token_Checksum;
+            if Checksum_Accumulate_Token_Checksum then
+               Accumulate_Token_Checksum;
+            end if;
+
             Post_Scan;
             return;
          end if;

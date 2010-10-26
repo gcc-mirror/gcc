@@ -2399,23 +2399,44 @@ package body Prj.Nmsc is
                         Lang_Index.Config.Toolchain_Version :=
                           Element.Value.Value;
 
-                        --  We need a complete comment section discussing the
-                        --  need for three versions of the checksum algorithm
-                        --  and what is going on here??? Also Old and Old_Old
-                        --  are rather poor names I would say. How about
-
-                        --    Opt.Checksum_503
-                        --    Opt.Checksum_63
-
-                        --  If the Ada compiler is version 6.3 or before, then
-                        --  checksums need to be computed using the old way.
-
-                        --  Also, how about an abstraction for checking
-                        --  version numbers, something like ???
-
-                        --    if Version_Is_Before (5, 3) ....
-
                         if Lang_Index.Name = Name_Ada then
+                           --  The way the checksum is computed has evolved
+                           --  across the different versions of GNAT. When
+                           --  gprbuild is called with -m, the checksums need
+                           --  to be computed the same way in gprbuild as it
+                           --  was in the GNAT version of the compiler.
+                           --  The different ways are:
+                           --    - version 6.4 and later:
+                           --      procedure Accumulate_Token_Checksum is
+                           --      called after each numeric literal and each
+                           --      identifier/keyword. For keywords,
+                           --      Tok_Identifier is used in the call to
+                           --      Accumulate_Token_Checksum.
+                           --    - versions 5.04 to 6.3:
+                           --      for keywords, the token value were used in
+                           --      the call to Accumulate_Token_Checksum. Type
+                           --      Token_Type did not include Tok_Some.
+                           --    - versions 5.03:
+                           --      for keywords, the token value were used in
+                           --      the call to Accumulate_Token_Checksum. Type
+                           --      Token_Type did not include Tok_Interface,
+                           --      Tok_Overriding, Tok_Synchronized and
+                           --      Tok_Some.
+                           --    - versions 5.02 and before:
+                           --      no call to Accumulate_Token_Checksum.
+                           --
+                           --  To signal to the scanner that
+                           --  Accumulate_Token_Checksum needs to be called and
+                           --  what versions to call, 3 Booleans flags are used
+                           --  in Opt:
+                           --    - Checksum_Accumulate_Token_Checksum: True for
+                           --      versions 5.03 and later, False for 5.02 and
+                           --      before.
+                           --    - Checksum_GNAT_6_3: False for versions 6.4
+                           --      and later, True for versions 6.3 and before.
+                           --    - Checksum_GNAT_5_03: False for versions 5.04
+                           --    and later, True for versions 5.03 and before.
+
                            declare
                               Vers : constant String :=
                                        Get_Name_String (Element.Value.Value);
@@ -2430,17 +2451,20 @@ package body Prj.Nmsc is
                                     or else
                                       (Vers (6) = '6' and then Vers (8) < '4'))
                               then
-                                 Opt.Old_Checksums := True;
-
-                                 --  If the Ada compiler is version 5.03 or
-                                 --  before, then checksums need to be computed
-                                 --  using the other old way.
+                                 Checksum_GNAT_6_3 := True;
 
                                  if Vers (6) < '5'
                                    or else (Vers (6) = '5'
                                              and then Vers (Vers'Last) < '4')
                                  then
-                                    Opt.Old_Old_Checksums := True;
+                                    Checksum_GNAT_5_03 := True;
+
+                                    if Vers (6) /= '5'
+                                      or else Vers (Vers'Last) < '3'
+                                    then
+                                       Checksum_Accumulate_Token_Checksum :=
+                                       False;
+                                    end if;
                                  end if;
                               end if;
                            end;
