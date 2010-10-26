@@ -49,6 +49,56 @@ pragma Warnings (On);
 
 package Opt is
 
+   ----------------------
+   -- Checksum Control --
+   ----------------------
+
+   --  Checksums are computed for sources to check for sources being the same
+   --  from a compilation point of view (e.g. spelling of identifiers and
+   --  white space layout do not count in this computation).
+
+   --  The way the checksum is computed has evolved across the various versions
+   --  of GNAT. When gprbuild is called with -m, the checksums must be computed
+   --  the same way in gprbuild as it was in the GNAT version of the compiler.
+   --  The different ways are
+
+   --    Version 6.4 and later:
+
+   --      The Accumulate_Token_Checksum procedure is called after each numeric
+   --      literal and each identifier/keyword. For keywords, Tok_Identifier is
+   --      used in the call to Accumulate_Token_Checksum.
+
+   --    Versions 5.04 to 6.3:
+
+   --      For keywords, the token value were used in the call to procedure
+   --      Accumulate_Token_Checksum. Type Token_Type did not include Tok_Some.
+
+   --    Versions 5.03:
+
+   --      For keywords, the token value were used in the call to
+   --      Accumulate_Token_Checksum. Type Token_Type did not include
+   --      Tok_Interface, Tok_Overriding, Tok_Synchronized and Tok_Some.
+
+   --    Versions 5.02 and before:
+
+   --      No calls to procedure Accumulate_Token_Checksum (the checksum
+   --      mechanism was introduced in version 5.03).
+
+   --  To signal to the scanner whether Accumulate_Token_Checksum needs to be
+   --  called and what versions to call, the following Boolean flags are used:
+
+   Checksum_Accumulate_Token_Checksum : Boolean := True;
+   --  GPRBUILD
+   --  Set to False by gprbuild when the version of GNAT is 5.02 or before.
+
+   Checksum_GNAT_6_3 : Boolean := False;
+   --  GPRBUILD
+   --  Set to True by gprbuild when the version of GNAT is 6.3 or before.
+
+   Checksum_GNAT_5_03 : Boolean := False;
+   --  GPRBUILD
+   --  Set to True by gprbuild when the version of GNAT is 5.03 or before.
+
    ----------------------------------------------
    -- Settings of Modes for Current Processing --
    ----------------------------------------------
@@ -932,26 +982,6 @@ package Opt is
    Object_Directory_Present : Boolean := False;
    --  GNATMAKE
    --  Set to True when an object directory is specified with option -D
-
-   Checksum_Accumulate_Token_Checksum : Boolean := True;
-   --  GPRBUILD
-   --  Set to False by gprbuild when the version of GNAT is 5.02 or before.
-   --  There were no call to procedure Accumulate_Token_Checksum in these
-   --  versions.
-
-   Checksum_GNAT_6_3 : Boolean := False;
-   --  GPRBUILD
-   --  Set to True by gprbuild when the version of GNAT is 6.3 or before. For
-   --  GNAT versions 5.04 to 6.3, Accumulate_Token_Checksum were called with
-   --  the token values of the keywords, instead of Tok_Identifier for later
-   --  versions, and Tok_Some was not in Token_Type.
-
-   Checksum_GNAT_5_03 : Boolean := False;
-   --  GPRBUILD
-   --  Set to True by gprbuild when the version of GNAT is 5.03. For GNAT 5.04,
-   --  Accumulate_Token_Checksum were called with the token values of the
-   --  keywords, and Tok_Interface, Tok_Overriding, Tok_Synchronized and
-   --  Tok_Some were not in Token_Type.
 
    One_Compilation_Per_Obj_Dir : Boolean := False;
    --  GNATMAKE, GPRBUILD

@@ -1,3 +1,9 @@
+2010-10-26  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads: Move documentation on checksum stuff here from prj-nmsc
+	* prj-nmsc.adb (Process_Project_Level_Array_Attributes): Move
+	documentation on checksum versions to opt.ads.
+
 2010-10-26  Vincent Celier  <celier@adacore.com>
 
 	* opt.ads (Checksum_Accumulate_Token_Checksum): New Boolean flag,

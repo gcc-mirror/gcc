@@ -54,7 +54,10 @@ package body Prj.Nmsc is
    --  location.
 
    type Name_Location is record
-      Name     : File_Name_Type;  --  ??? duplicates the key
+      Name     : File_Name_Type;
+      --  Key is duplicated, so that it is known when using functions Get_First
+      --  and Get_Next, as these functions only return an Element.
+
       Location : Source_Ptr;
       Source   : Source_Id := No_Source;
       Listed   : Boolean := False;
@@ -81,7 +84,10 @@ package body Prj.Nmsc is
    --  found on the disk.
 
    type Unit_Exception is record
-      Name : Name_Id;  --  ??? duplicates the key
+      Name : Name_Id;
+      --  Key is duplicated, so that it is known when using functions Get_First
+      --  and Get_Next, as these functions only return an Element.
+
       Spec : File_Name_Type;
       Impl : File_Name_Type;
    end record;
@@ -2399,50 +2405,17 @@ package body Prj.Nmsc is
                         Lang_Index.Config.Toolchain_Version :=
                           Element.Value.Value;
 
-                        if Lang_Index.Name = Name_Ada then
-                           --  The way the checksum is computed has evolved
-                           --  across the different versions of GNAT. When
-                           --  gprbuild is called with -m, the checksums need
-                           --  to be computed the same way in gprbuild as it
-                           --  was in the GNAT version of the compiler.
-                           --  The different ways are:
-                           --    - version 6.4 and later:
-                           --      procedure Accumulate_Token_Checksum is
-                           --      called after each numeric literal and each
-                           --      identifier/keyword. For keywords,
-                           --      Tok_Identifier is used in the call to
-                           --      Accumulate_Token_Checksum.
-                           --    - versions 5.04 to 6.3:
-                           --      for keywords, the token value were used in
-                           --      the call to Accumulate_Token_Checksum. Type
-                           --      Token_Type did not include Tok_Some.
-                           --    - versions 5.03:
-                           --      for keywords, the token value were used in
-                           --      the call to Accumulate_Token_Checksum. Type
-                           --      Token_Type did not include Tok_Interface,
-                           --      Tok_Overriding, Tok_Synchronized and
-                           --      Tok_Some.
-                           --    - versions 5.02 and before:
-                           --      no call to Accumulate_Token_Checksum.
-                           --
-                           --  To signal to the scanner that
-                           --  Accumulate_Token_Checksum needs to be called and
-                           --  what versions to call, 3 Booleans flags are used
-                           --  in Opt:
-                           --    - Checksum_Accumulate_Token_Checksum: True for
-                           --      versions 5.03 and later, False for 5.02 and
-                           --      before.
-                           --    - Checksum_GNAT_6_3: False for versions 6.4
-                           --      and later, True for versions 6.3 and before.
-                           --    - Checksum_GNAT_5_03: False for versions 5.04
-                           --    and later, True for versions 5.03 and before.
+                        --  For Ada, set proper checksum computation mode
 
+                        if Lang_Index.Name = Name_Ada then
                            declare
                               Vers : constant String :=
                                        Get_Name_String (Element.Value.Value);
                               pragma Assert (Vers'First = 1);
 
                            begin
+                              --  Version 6.3 or earlier
+
                               if Vers'Length >= 8
                                 and then Vers (1 .. 5) = "GNAT "
                                 and then Vers (7) = '.'
@@ -2453,17 +2426,21 @@ package body Prj.Nmsc is
                               then
                                  Checksum_GNAT_6_3 := True;
 
+                                 --  Version 5.03 or earlier
+
                                  if Vers (6) < '5'
                                    or else (Vers (6) = '5'
                                              and then Vers (Vers'Last) < '4')
                                  then
                                     Checksum_GNAT_5_03 := True;
 
+                                    --  Version 5.02 or earlier
+
                                     if Vers (6) /= '5'
                                       or else Vers (Vers'Last) < '3'
                                     then
                                        Checksum_Accumulate_Token_Checksum :=
-                                       False;
+                                         False;
                                     end if;
                                  end if;
                               end if;
