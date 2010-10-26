@@ -848,14 +848,21 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    package Ch13 is
       function P_Representation_Clause                return Node_Id;
 
-      function Aspect_Specifications_Present return Boolean;
+      function Aspect_Specifications_Present
+        (Strict : Boolean := Ada_Version < Ada_2012) return Boolean;
       --  This function tests whether the next keyword is WITH followed by
       --  something that looks reasonably like an aspect specification. If so,
       --  True is returned. Otherwise False is returned. In either case control
       --  returns with the token pointer unchanged (i.e. pointing to the WITH
       --  token in the case where True is returned). This function takes care
       --  of generating appropriate messages if aspect specifications appear
-      --  in versions of Ada prior to Ada 2012.
+      --  in versions of Ada prior to Ada 2012. The parameter strict can be
+      --  set to True, to be rather strict about considering something to be
+      --  an aspect speficiation. If Strict is False, then the circuitry is
+      --  rather more generous in considering something ill-formed to be an
+      --  attempt at an aspect speciciation. The default is more strict for
+      --  Ada versions before Ada 2012 (where aspect specifications are not
+      --  permitted).
 
       procedure P_Aspect_Specifications (Decl : Node_Id);
       --  This subprogram is called with the current token pointing to either a

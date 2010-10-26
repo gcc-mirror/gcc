@@ -1651,7 +1651,9 @@ package Einfo is
 --    Has_Pragma_Pure_Function (Flag179)
 --       Present in all entities. If set, indicates that a valid pragma
 --       Pure_Function was given for the entity. In some cases, we need to
---       know that Is_Pure was explicitly set using this pragma.
+--       know that Is_Pure was explicitly set using this pragma. We also set
+--       this flag for some internal entities that we know should be treated
+--       as pure for optimization purposes.
 
 --    Has_Pragma_Thread_Local_Storage (Flag169)
 --       Present in all entities. If set, indicates that a valid pragma
