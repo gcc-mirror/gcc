@@ -18120,8 +18120,8 @@ is at @uref{http://gcc.gnu.org/@/wiki/@/Visibility}.
 @opindex fstrict-volatile-bitfields
 This option should be used if accesses to volatile bitfields (or other
 structure fields, although the compiler usually honors those types
-anyway) should use a single access in a mode of the same size as the
-container's type, aligned to a natural alignment if possible.  For
+anyway) should use a single access of the width of the
+field's type, aligned to a natural alignment if possible.  For
 example, targets with memory-mapped peripheral registers might require
 all such accesses to be 16 bits wide; with this flag the user could
 declare all peripheral bitfields as ``unsigned short'' (assuming short
@@ -18134,11 +18134,13 @@ instruction, even though that will access bytes that do not contain
 any portion of the bitfield, or memory-mapped registers unrelated to
 the one being updated.
 
-If the target requires strict alignment, and honoring the container
+If the target requires strict alignment, and honoring the field
 type would require violating this alignment, a warning is issued.
-However, the access happens as the user requested, under the
-assumption that the user knows something about the target hardware
-that GCC is unaware of.
+If the field has @code{packed} attribute, the access is done without
+honoring the field type.  If the field doesn't have @code{packed}
+attribute, the access is done honoring the field type.  In both cases,
+GCC assumes that the user knows something about the target hardware
+that it is unaware of.
 
 The default value of this option is determined by the application binary
 interface for the target processor.
