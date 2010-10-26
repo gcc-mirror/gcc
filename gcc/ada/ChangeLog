@@ -1,3 +1,14 @@
+2010-10-26  Geert Bosch  <bosch@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Use the subprogram_body
+	node to determine wether the subprogram is a rewritten parameterized
+	expression.
+
+2010-10-26  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads: Minor code reorganization
+	Alphabetize Warning switches.
+
 2010-10-26  Robert Dewar  <dewar@adacore.com>
 
 	* sem_res.adb, xsinfo.adb: Minor reformatting.
