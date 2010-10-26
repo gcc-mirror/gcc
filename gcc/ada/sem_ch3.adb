@@ -3731,6 +3731,15 @@ package body Sem_Ch3 is
 
       Build_Derived_Record_Type (N, Parent_Type, T);
 
+      --  Propagate inherited invariant information. The new type has
+      --  invariants, if the parent type has inheritable invariants,
+      --  and these invariants can in turn be inherited.
+
+      if Has_Inheritable_Invariants (Parent_Type) then
+         Set_Has_Inheritable_Invariants (T);
+         Set_Has_Invariants (T);
+      end if;
+
       --  Ada 2005 (AI-443): Synchronized private extension or a rewritten
       --  synchronized formal derived type.
 
@@ -17439,58 +17448,15 @@ package body Sem_Ch3 is
          Set_Has_Specified_Stream_Output (Full_T);
       end if;
 
-      --  Deal with invariants
-
-      if Has_Invariants (Full_T)
-           or else
-         Has_Invariants (Priv_T)
-      then
-         Set_Has_Invariants (Full_T);
-         Set_Has_Invariants (Priv_T);
-      end if;
-
-      if Has_Inheritable_Invariants (Full_T)
-           or else
-         Has_Inheritable_Invariants (Priv_T)
-      then
-         Set_Has_Inheritable_Invariants (Full_T);
-         Set_Has_Inheritable_Invariants (Priv_T);
-      end if;
-
-      --  This is where we build the invariant procedure if needed
+      --  Propagate invariants to full type
 
       if Has_Invariants (Priv_T) then
-         declare
-            PDecl : Entity_Id;
-            PBody : Entity_Id;
-            Packg : constant Node_Id := Declaration_Node (Scope (Priv_T));
+         Set_Has_Invariants (Full_T);
+         Set_Invariant_Procedure (Full_T, Invariant_Procedure (Priv_T));
+      end if;
 
-         begin
-            Build_Invariant_Procedure (Full_T, PDecl, PBody);
-
-            --  Error defense, normally these should be set
-
-            if Present (PDecl) and then Present (PBody) then
-
-               --  Spec goes at the end of the public part of the package.
-               --  That's behind us, so we have to manually analyze the
-               --  inserted spec.
-
-               Append_To (Visible_Declarations (Packg), PDecl);
-               Analyze (PDecl);
-
-               --  Body goes at the end of the private part of the package.
-               --  That's ahead of us so it will get analyzed later on when
-               --  we come to it.
-
-               Append_To (Private_Declarations (Packg), PBody);
-
-               --  Copy Invariant procedure to private declaration
-
-               Set_Invariant_Procedure (Priv_T, Invariant_Procedure (Full_T));
-               Set_Has_Invariants (Priv_T);
-            end if;
-         end;
+      if Has_Inheritable_Invariants (Priv_T) then
+         Set_Has_Inheritable_Invariants (Full_T);
       end if;
 
       --  Propagate predicates to full type

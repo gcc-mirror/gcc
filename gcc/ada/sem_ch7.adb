@@ -1128,14 +1128,24 @@ package body Sem_Ch7 is
          Analyze_Declarations (Vis_Decls);
       end if;
 
-      --  Verify that incomplete types have received full declarations
+      --  Verify that incomplete types have received full declarations and
+      --  also build invariant procedures for any types with invariants.
 
       E := First_Entity (Id);
       while Present (E) loop
+
+         --  Check on incomplete types
+
          if Ekind (E) = E_Incomplete_Type
            and then No (Full_View (E))
          then
             Error_Msg_N ("no declaration in visible part for incomplete}", E);
+         end if;
+
+         --  Build invariant procedures
+
+         if Is_Type (E) and then Has_Invariants (E) then
+            Build_Invariant_Procedure (E, N);
          end if;
 
          Next_Entity (E);
