@@ -1,3 +1,11 @@
+2010-10-26  Bob Duff  <duff@adacore.com>
+
+	* namet.adb (Finalize): More cleanup of statistics printouts.
+
+2010-10-26  Robert Dewar  <dewar@adacore.com>
+
+	* ceinfo.adb: Minor reformatting.
+
 2010-10-26  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch6.adb (Check_Overriding_Indicator, New_Overloaded_Entity): When

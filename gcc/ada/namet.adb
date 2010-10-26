@@ -142,6 +142,8 @@ package body Namet is
       --  2 => in addition print number of entries per hash chain
       --  3 => in addition print content of entries
 
+      Zero : constant Int := Character'Pos ('0');
+
    begin
       if not Debug_Flag_H then
          return;
@@ -192,12 +194,11 @@ package body Namet is
                   F (F'Last) := F (F'Last) + 1;
                end if;
 
-               N := Hash_Table (J);
+               if Verbosity >= 3 then
+                  N := Hash_Table (J);
+                  while N /= No_Name loop
+                     S := Name_Entries.Table (N).Name_Chars_Index;
 
-               while N /= No_Name loop
-                  S := Name_Entries.Table (N).Name_Chars_Index;
-
-                  if Verbosity >= 3 then
                      Write_Str ("      ");
 
                      for J in 1 .. Name_Entries.Table (N).Name_Len loop
@@ -205,10 +206,10 @@ package body Namet is
                      end loop;
 
                      Write_Eol;
-                  end if;
 
-                  N := Name_Entries.Table (N).Hash_Link;
-               end loop;
+                     N := Name_Entries.Table (N).Hash_Link;
+                  end loop;
+               end if;
             end;
          end if;
       end loop;
@@ -244,8 +245,8 @@ package body Namet is
       Write_Int (Probes / 200);
       Write_Char ('.');
       Probes := (Probes mod 200) / 2;
-      Write_Char (Character'Val (48 + Probes / 10));
-      Write_Char (Character'Val (48 + Probes mod 10));
+      Write_Char (Character'Val (Zero + Probes / 10));
+      Write_Char (Character'Val (Zero + Probes mod 10));
       Write_Eol;
 
       Write_Str ("Max_Chain_Length = ");
