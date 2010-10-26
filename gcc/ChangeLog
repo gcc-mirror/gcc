@@ -1,3 +1,9 @@
+2010-10-26  Ian Lance Taylor  <iant@google.com>
+
+	PR middle-end/45687
+	* ipa-prop.c (ipa_modify_call_arguments): Correct type of MEM_REF
+	offset.
+
 2010-10-25  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
 
 	Implement opaque-enum-specifiesr for C++0x

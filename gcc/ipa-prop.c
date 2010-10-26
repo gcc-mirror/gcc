@@ -2186,7 +2186,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 
 	  if (TREE_CODE (base) == ADDR_EXPR
 	      && DECL_P (TREE_OPERAND (base, 0)))
-	    off = build_int_cst (reference_alias_ptr_type (base),
+	    off = build_int_cst (TREE_TYPE (base),
 				 adj->offset / BITS_PER_UNIT);
 	  else if (TREE_CODE (base) != ADDR_EXPR
 		   && POINTER_TYPE_P (TREE_TYPE (base)))
@@ -2209,7 +2209,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 		}
 	      else if (TREE_CODE (base) == MEM_REF)
 		{
-		  off = build_int_cst (TREE_TYPE (TREE_OPERAND (base,1)),
+		  off = build_int_cst (TREE_TYPE (TREE_OPERAND (base, 1)),
 				       base_offset
 				       + adj->offset / BITS_PER_UNIT);
 		  off = int_const_binop (PLUS_EXPR, TREE_OPERAND (base, 1),
@@ -2218,7 +2218,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 		}
 	      else
 		{
-		  off = build_int_cst (reference_alias_ptr_type (base),
+		  off = build_int_cst (reference_alias_ptr_type (prev_base),
 				       base_offset
 				       + adj->offset / BITS_PER_UNIT);
 		  base = build_fold_addr_expr (base);
