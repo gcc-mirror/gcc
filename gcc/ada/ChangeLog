@@ -1,3 +1,13 @@
+2010-10-26  Vincent Celier  <celier@adacore.com>
+
+	* prj.ads (Source_Data): New Boolean component Initialized, defaulted
+	to False, set to True when Source_Data is completely initialized.
+	* prj-env.adb: Minor comment fix.
+
+2010-10-26  Robert Dewar  <dewar@adacore.com>
+
+	* sem_case.adb, sem_ch6.adb, sem_util.adb: Minor reformatting.
+
 2010-10-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb (Analyze_Iteration_Scheme): Diagnose attempt to use thew

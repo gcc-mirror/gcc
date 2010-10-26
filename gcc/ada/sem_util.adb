@@ -5122,6 +5122,7 @@ package body Sem_Util is
             --  We are interested only in components and discriminants
 
             Exp := Empty;
+
             case Ekind (Ent) is
                when E_Component =>
 
@@ -5145,7 +5146,6 @@ package body Sem_Util is
 
                when others =>
                   goto Check_Next_Entity;
-
             end case;
 
             --  A component has PI if it has no default expression and the
