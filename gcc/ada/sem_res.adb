@@ -5279,8 +5279,8 @@ package body Sem_Res is
            and then Check_Infinite_Recursion (N)
          then
             --  Here we detected and flagged an infinite recursion, so we do
-            --  not need to test the case below for further warnings. Also, if
-            --  we now have a raise SE node, we are all done.
+            --  not need to test the case below for further warnings. Also we
+            --  are all done if we now have a raise SE node.
 
             if Nkind (N) = N_Raise_Storage_Error then
                return;

@@ -241,7 +241,8 @@ begin
 
       Getline;
    end loop;
-   --  Can't get here; above loop only left via raise
+
+   --  Can't get here since above loop only left via raise
 
 exception
    when Done =>
