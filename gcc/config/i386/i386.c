@@ -6600,24 +6600,10 @@ contains_aligned_value_p (const_tree type)
   return false;
 }
 
-/* Gives the alignment boundary, in bits, of an argument with the
-   specified mode and type.  */
-
-int
-ix86_function_arg_boundary (enum machine_mode mode, const_tree type)
+static int
+ix86_old_function_arg_boundary (enum machine_mode mode, const_tree type,
+				int align)
 {
-  int align;
-  if (type)
-    {
-      /* Since the main variant type is used for call, we convert it to
-	 the main variant type.  */
-      type = TYPE_MAIN_VARIANT (type);
-      align = TYPE_ALIGN (type);
-    }
-  else
-    align = GET_MODE_ALIGNMENT (mode);
-  if (align < PARM_BOUNDARY)
-    align = PARM_BOUNDARY;
   /* In 32bit, only _Decimal128 and __float128 are aligned to their
      natural boundaries.  */
   if (!TARGET_64BIT && mode != TDmode && mode != TFmode)
@@ -6642,6 +6628,48 @@ ix86_function_arg_boundary (enum machine_mode mode, const_tree type)
     }
   if (align > BIGGEST_ALIGNMENT)
     align = BIGGEST_ALIGNMENT;
+  return align;
+}
+
+/* Gives the alignment boundary, in bits, of an argument with the
+   specified mode and type.  */
+
+int
+ix86_function_arg_boundary (enum machine_mode mode, const_tree type)
+{
+  int align;
+  if (type)
+    {
+      /* Since the main variant type is used for call, we convert it to
+	 the main variant type.  */
+      type = TYPE_MAIN_VARIANT (type);
+      align = TYPE_ALIGN (type);
+    }
+  else
+    align = GET_MODE_ALIGNMENT (mode);
+  if (align < PARM_BOUNDARY)
+    align = PARM_BOUNDARY;
+  else
+    {
+      static bool warned;
+      int saved_align = align;
+
+      if (!TARGET_64BIT && align < 128)
+	align = PARM_BOUNDARY;
+
+      if (warn_psabi
+	  && !warned
+	  && align != ix86_old_function_arg_boundary (mode, type,
+						      saved_align))
+	{
+	  warned = true;
+	  inform (input_location,
+		  "The ABI of passing parameter with %dbyte"
+		  " alignment has changed in GCC 4.6",
+		  align / BITS_PER_UNIT);
+	}
+    }
+
   return align;
 }
 

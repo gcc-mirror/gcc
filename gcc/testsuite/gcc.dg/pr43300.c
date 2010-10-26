@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-Os -w" } */
+/* { dg-options "-Os -w -Wno-psabi" { target { i?86-*-* x86_64-*-* } } } */
+
 typedef float V2SF __attribute__ ((vector_size (128)));
 
 V2SF

@@ -1,3 +1,42 @@
+2010-10-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44948
+	* g++.dg/abi/param2.C: Add -Wno-psabi for ilp32 x86.
+	* g++.dg/vect/pr33860a.cc: Likewise.
+	* gcc.c-torture/compile/20070522-1.c: Likewise.
+	* gcc.dg/compat/struct-align-1_x.c: Likewise.
+	* gcc.dg/compat/struct-align-1_y.c: Likewise.
+	* gcc.dg/compat/struct-align-2_x.c: Likewise.
+	* gcc.dg/compat/struct-align-2_y.c: Likewise.
+	* gcc.dg/pr44136.c: Likewise.
+
+	* gcc.c-torture/compile/pr33617.c: Add -Wno-psabi for x86.
+	* gcc.dg/compat/vector-1_x.c: Likewise.
+	* gcc.dg/compat/vector-1_y.c: Likewise.
+	* gcc.dg/compat/vector-2_x.c: Likewise.
+	* gcc.dg/compat/vector-2_y.c: Likewise.
+	* gcc.dg/pr43300.c: Likewise.
+
+	* gcc.dg/compat/vector-1a_x.c: Add -Wno-psabi.
+	* gcc.dg/compat/vector-1a_y.c: Likewise.
+	* gcc.dg/compat/vector-1b_x.c: Likewise.
+	* gcc.dg/compat/vector-1b_y.c: Likewise.
+	* gcc.dg/compat/vector-2a_x.c: Likewise.
+	* gcc.dg/compat/vector-2a_y.c: Likewise.
+	* gcc.dg/compat/vector-2b_x.c: Likewise.
+	* gcc.dg/compat/vector-2b_y.c: Likewise.
+	* gcc.target/i386/pr39162.c: Likewise.
+	* gcc.target/i386/pr40906-2.c: Likewise.
+	* gcc.target/i386/sse-5.c: Likewise.
+
+	* gcc.dg/pr35442.c: Prune ABI change warnings.
+
+	* gcc.c-torture/execute/pr38151.x: New.
+	* gcc.target/i386/pr44948-1a.c: Likewise.
+	* gcc.target/i386/pr44948-1b.c: Likewise.
+	* gcc.target/i386/pr44948-2a.c: Likewise.
+	* gcc.target/i386/pr44948-2b.c: Likewise.
+
 2010-10-26  Ian Lance Taylor  <iant@google.com>
 
 	PR middle-end/45687
