@@ -2277,8 +2277,8 @@ package body Sem_Ch4 is
 
    procedure Analyze_Membership_Op (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
-      L     : constant Node_Id     := Left_Opnd (N);
-      R     : constant Node_Id     := Right_Opnd (N);
+      L     : constant Node_Id    := Left_Opnd (N);
+      R     : constant Node_Id    := Right_Opnd (N);
 
       Index : Interp_Index;
       It    : Interp;

@@ -3797,9 +3797,10 @@ package body Sem_Warn is
                            end if;
 
                         else
+                           Error_Msg_Node_2 := Form;
                            Error_Msg_FE
-                             ("writable actual overlaps with actual for&?",
-                              Act1, Form);
+                             ("writable actual for & overlaps with"
+                               & " actual for&?", Act1, Form1);
                         end if;
                      end;
                   end if;

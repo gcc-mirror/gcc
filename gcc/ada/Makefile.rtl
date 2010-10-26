@@ -86,6 +86,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-calend$(objext) \
   a-calfor$(objext) \
   a-catizo$(objext) \
+  a-cbhama$(objext) \
+  a-cbhase$(objext) \
   a-cborse$(objext) \
   a-cbdlli$(objext) \
   a-cborma$(objext) \
@@ -98,6 +100,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-charac$(objext) \
   a-chlat1$(objext) \
   a-chlat9$(objext) \
+  a-chtgbo$(objext) \
+  a-chtgbk$(objext) \
   a-chtgke$(objext) \
   a-chtgop$(objext) \
   a-chzla1$(objext) \

@@ -44,6 +44,7 @@ with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
@@ -77,18 +78,15 @@ package body Sem_Ch13 is
    --  inherited from a derived type that is no longer appropriate for the
    --  new Esize value. In this case, we reset the Alignment to unknown.
 
-   procedure Build_Predicate_Function
-     (Typ   : Entity_Id;
-      FDecl : out Node_Id;
-      FBody : out Node_Id);
+   procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id);
    --  If Typ has predicates (indicated by Has_Predicates being set for Typ,
    --  then either there are pragma Invariant entries on the rep chain for the
    --  type (note that Predicate aspects are converted to pragam Predicate), or
-   --  there are inherited aspects from a parent type, or ancestor subtypes,
-   --  or interfaces. This procedure builds the spec and body for the Predicate
-   --  function that tests these predicates, returning them in PDecl and Pbody
-   --  and setting Predicate_Procedure for Typ. In some error situations no
-   --  procedure is built, in which case PDecl/PBody are empty on return.
+   --  there are inherited aspects from a parent type, or ancestor subtypes.
+   --  This procedure builds the spec and body for the Predicate function that
+   --  tests these predicates. N is the freeze node for the type. The spec of
+   --  the function is inserted before the freeze node, and the body of the
+   --  funtion is inserted after the freeze node.
 
    procedure Build_Static_Predicate
      (Typ  : Entity_Id;
@@ -3070,18 +3068,7 @@ package body Sem_Ch13 is
       --  If we have a type with predicates, build predicate function
 
       if Is_Type (E) and then Has_Predicates (E) then
-         declare
-            FDecl : Node_Id;
-            FBody : Node_Id;
-
-         begin
-            Build_Predicate_Function (E, FDecl, FBody);
-
-            if Present (FDecl) then
-               Insert_After (N, FBody);
-               Insert_After (N, FDecl);
-            end if;
-         end;
+         Build_Predicate_Function (E, N);
       end if;
    end Analyze_Freeze_Entity;
 
@@ -3839,14 +3826,15 @@ package body Sem_Ch13 is
    --  inherited. Note that we do NOT generate Check pragmas, that's because we
    --  use this function even if checks are off, e.g. for membership tests.
 
-   procedure Build_Predicate_Function
-     (Typ   : Entity_Id;
-      FDecl : out Node_Id;
-      FBody : out Node_Id)
-   is
+   procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (Typ);
       Spec : Node_Id;
       SId  : Entity_Id;
+      FDecl : Node_Id;
+      FBody : Node_Id;
+
+      TName : constant Name_Id := Chars (Typ);
+      --  Name of the type, used for replacement in predicate expression
 
       Expr : Node_Id;
       --  This is the expression for the return statement in the function. It
@@ -3898,11 +3886,14 @@ package body Sem_Ch13 is
             --  Output info message on inheritance if required. Note we do not
             --  give this information for generic actual types, since it is
             --  unwelcome noise in that case in instantiations. We also
-            --  generally suppress the message in instantiations.
+            --  generally suppress the message in instantiations, and also
+            --  if it involves internal names.
 
             if Opt.List_Inherited_Aspects
               and then not Is_Generic_Actual_Type (Typ)
               and then Instantiation_Depth (Sloc (Typ)) = 0
+              and then not Is_Internal_Name (Chars (T))
+              and then not Is_Internal_Name (Chars (Typ))
             then
                Error_Msg_Sloc := Sloc (Predicate_Function (T));
                Error_Msg_Node_2 := T;
@@ -3924,34 +3915,102 @@ package body Sem_Ch13 is
          --  Process single node for traversal to replace type references
 
          procedure Replace_Type is new Traverse_Proc (Replace_Node);
-         --  Traverse an expression changing every occurrence of an entity
-         --  reference to type T with a reference to the object argument.
+         --  Traverse an expression changing every occurrence of an identifier
+         --  whose name is TName with a reference to the object argument.
 
          ------------------
          -- Replace_Node --
          ------------------
 
          function Replace_Node (N : Node_Id) return Traverse_Result is
+            S : Entity_Id;
+            P : Node_Id;
+
          begin
-            --  Case of entity name referencing the type
+            --  Case of identifier
 
-            if Is_Entity_Name (N) and then Entity (N) = Typ then
+            if Nkind (N) = N_Identifier then
 
-               --  Replace with object
+               --  If not the type name, all done with this node
 
-               Rewrite (N,
-                 Make_Identifier (Loc,
-                   Chars => Object_Name));
+               if Chars (N) /= TName then
+                  return Skip;
 
-               --  All done with this node
+               --  Otherwise do the replacement
 
-               return Skip;
+               else
+                  goto Do_Replace;
+               end if;
 
-            --  Not an occurrence of the type entity, keep going
+               --  Case of selected component (which is what a qualification
+               --  looks like in the unanalyzed tree, which is what we have.
+
+            elsif Nkind (N) = N_Selected_Component then
+
+               --  If selector name is not our type, keeping going (we might
+               --  still have an occurrence of the type in the prefix).
+
+               if Nkind (Selector_Name (N)) /= N_Identifier
+                 or else Chars (Selector_Name (N)) /= TName
+               then
+                  return OK;
+
+               --  Selector name is our type, check qualification
+
+               else
+                  --  Loop through scopes and prefixes, doing comparison
+
+                  S := Current_Scope;
+                  P := Prefix (N);
+                  loop
+                     --  Continue if no more scopes or scope with no name
+
+                     if No (S) or else Nkind (S) not in N_Has_Chars then
+                        return OK;
+                     end if;
+
+                     --  Do replace if prefix is an identifier matching the
+                     --  scope that we are currently looking at.
+
+                     if Nkind (P) = N_Identifier
+                       and then Chars (P) = Chars (S)
+                     then
+                        goto Do_Replace;
+                     end if;
+
+                     --  Go check scope above us if prefix is itself of the
+                     --  form of a selected component, whose selector matches
+                     --  the scope we are currently looking at.
+
+                     if Nkind (P) = N_Selected_Component
+                       and then Nkind (Selector_Name (P)) = N_Identifier
+                       and then Chars (Selector_Name (P)) = Chars (S)
+                     then
+                        S := Scope (S);
+                        P := Prefix (P);
+
+                     --  For anything else, we don't have a match, so keep on
+                     --  going, there are still some weird cases where we may
+                     --  still have a replacement within the prefix.
+
+                     else
+                        return OK;
+                     end if;
+                  end loop;
+               end if;
+
+            --  Continue for any other node kind
 
             else
                return OK;
             end if;
+
+         <<Do_Replace>>
+
+            --  Replace with object
+
+            Rewrite (N, Make_Identifier (Loc, Chars => Object_Name));
+            return Skip;
          end Replace_Node;
 
       --  Start of processing for Add_Predicates
@@ -3975,17 +4034,8 @@ package body Sem_Ch13 is
                   --  We have a match, this entry is for our subtype
 
                   --  First We need to replace any occurrences of the name of
-                  --  the type with references to the object. We do this by
-                  --  first doing a preanalysis, to identify all the entities,
-                  --  then we traverse looking for the type entity, doing the
-                  --  needed substitution. The preanalysis is done with the
-                  --  special OK_To_Reference flag set on the type, so that if
-                  --  we get an occurrence of this type, it will be recognized
-                  --  as legitimate.
+                  --  the type with references to the object.
 
-                  Set_OK_To_Reference (Typ, True);
-                  Preanalyze_Spec_Expression (Arg2, Standard_Boolean);
-                  Set_OK_To_Reference (Typ, False);
                   Replace_Type (Arg2);
 
                   --  OK, replacement complete, now we can add the expression
@@ -4014,8 +4064,6 @@ package body Sem_Ch13 is
       --  Initialize for construction of statement list
 
       Expr  := Empty;
-      FDecl := Empty;
-      FBody := Empty;
 
       --  Return if already built or if type does not have predicates
 
@@ -4043,16 +4091,6 @@ package body Sem_Ch13 is
 
       if Present (Expr) then
 
-         --  Deal with static predicate case
-
-         if Ekind_In (Typ, E_Enumeration_Subtype,
-                           E_Modular_Integer_Subtype,
-                           E_Signed_Integer_Subtype)
-           and then Is_Static_Subtype (Typ)
-         then
-            Build_Static_Predicate (Typ, Expr, Object_Name);
-         end if;
-
          --  Build function declaration
 
          pragma Assert (Has_Predicates (Typ));
@@ -4073,9 +4111,7 @@ package body Sem_Ch13 is
              Result_Definition        =>
                New_Occurrence_Of (Standard_Boolean, Loc));
 
-         FDecl :=
-           Make_Subprogram_Declaration (Loc,
-             Specification => Spec);
+         FDecl := Make_Subprogram_Declaration (Loc, Specification => Spec);
 
          --  Build function body
 
@@ -4104,6 +4140,21 @@ package body Sem_Ch13 is
                  Statements => New_List (
                    Make_Simple_Return_Statement (Loc,
                      Expression => Expr))));
+
+         --  Insert declaration before freeze node and body after
+
+         Insert_Before_And_Analyze (N, FDecl);
+         Insert_After_And_Analyze  (N, FBody);
+
+         --  Deal with static predicate case
+
+         if Ekind_In (Typ, E_Enumeration_Subtype,
+                           E_Modular_Integer_Subtype,
+                           E_Signed_Integer_Subtype)
+           and then Is_Static_Subtype (Typ)
+         then
+            Build_Static_Predicate (Typ, Expr, Object_Name);
+         end if;
       end if;
    end Build_Predicate_Function;
 
@@ -4908,6 +4959,13 @@ package body Sem_Ch13 is
                    Left_Opnd    => Make_Identifier (Loc, Nam),
                    Right_Opnd   => Empty,
                    Alternatives => New_Alts));
+
+               --  Resolve new expression in function context
+
+               Install_Formals (Predicate_Function (Typ));
+               Push_Scope (Predicate_Function (Typ));
+               Analyze_And_Resolve (Expr, Standard_Boolean);
+               Pop_Scope;
             end if;
          end;
       end;

@@ -4508,25 +4508,6 @@ package body Exp_Ch3 is
          return;
       end if;
 
-      --  Deal with predicate check before we start to do major rewriting.
-      --  it is OK to initialize and then check the initialized value, since
-      --  the object goes out of scope if we get a predicate failure.
-
-      --  We need a predicate check if the type has predicates, and if either
-      --  there is an initializing expression, or for default initialization
-      --  when we have at least one case of an explicit default initial value.
-
-      if not Suppress_Assignment_Checks (N)
-        and then Present (Predicate_Function (Typ))
-        and then
-          (Present (Expr)
-            or else
-              Is_Partially_Initialized_Type (Typ, Include_Null => False))
-      then
-         Insert_After (N,
-           Make_Predicate_Check (Typ, New_Occurrence_Of (Def_Id, Loc)));
-      end if;
-
       --  Force construction of dispatch tables of library level tagged types
 
       if Tagged_Type_Expansion

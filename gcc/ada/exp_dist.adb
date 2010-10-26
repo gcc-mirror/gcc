@@ -1011,7 +1011,7 @@ package body Exp_Dist is
       --  Subprogram id 0 is reserved for calls received from
       --  remote access-to-subprogram dereferences.
 
-      RCI_Instantiation   : Node_Id;
+      RCI_Instantiation : Node_Id;
 
       procedure Visit_Subprogram (Decl : Node_Id);
       --  Generate calling stub for one remote subprogram
@@ -1024,7 +1024,8 @@ package body Exp_Dist is
          Loc        : constant Source_Ptr := Sloc (Decl);
          Spec       : constant Node_Id := Specification (Decl);
          Subp_Stubs : Node_Id;
-         Subp_Str   : String_Id;
+
+         Subp_Str : String_Id;
          pragma Warnings (Off, Subp_Str);
 
       begin
@@ -1032,13 +1033,13 @@ package body Exp_Dist is
            (Defining_Unit_Name (Spec), Current_Subprogram_Number, Subp_Str);
 
          Subp_Stubs :=
-           Build_Subprogram_Calling_Stubs (
-             Vis_Decl     => Decl,
-             Subp_Id      =>
-               Build_Subprogram_Id (Loc, Defining_Unit_Name (Spec)),
-             Asynchronous =>
-               Nkind (Spec) = N_Procedure_Specification
-                 and then Is_Asynchronous (Defining_Unit_Name (Spec)));
+           Build_Subprogram_Calling_Stubs
+             (Vis_Decl     => Decl,
+              Subp_Id      =>
+                Build_Subprogram_Id (Loc, Defining_Unit_Name (Spec)),
+              Asynchronous =>
+                Nkind (Spec) = N_Procedure_Specification
+                  and then Is_Asynchronous (Defining_Unit_Name (Spec)));
 
          Append_To (List_Containing (Decl), Subp_Stubs);
          Analyze (Subp_Stubs);
@@ -1067,7 +1068,7 @@ package body Exp_Dist is
 
       --  For each subprogram declaration visible in the spec, we do build a
       --  body. We also increment a counter to assign a different Subprogram_Id
-      --  to each subprograms. The receiving stubs processing uses the same
+      --  to each subprogram. The receiving stubs processing uses the same
       --  mechanism and will thus assign the same Id and do the correct
       --  dispatching.
 
@@ -6830,12 +6831,12 @@ package body Exp_Dist is
             Subp_Val : String_Id;
 
             Subp_Dist_Name : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars =>
-                  New_External_Name
-                    (Related_Id   => Chars (Subp_Def),
-                     Suffix       => 'D',
-                     Suffix_Index => -1));
+                               Make_Defining_Identifier (Loc,
+                                 Chars =>
+                                   New_External_Name
+                                     (Related_Id   => Chars (Subp_Def),
+                                      Suffix       => 'D',
+                                      Suffix_Index => -1));
 
             Current_Stubs  : Node_Id;
             Proxy_Obj_Addr : Entity_Id;
@@ -6846,9 +6847,8 @@ package body Exp_Dist is
             Current_Stubs :=
               Build_Subprogram_Receiving_Stubs
                 (Vis_Decl     => Decl,
-                 Asynchronous =>
-                   Nkind (Spec) = N_Procedure_Specification
-                 and then Is_Asynchronous (Subp_Def));
+                 Asynchronous => Nkind (Spec) = N_Procedure_Specification
+                                   and then Is_Asynchronous (Subp_Def));
 
             Append_To (Decls, Current_Stubs);
             Analyze (Current_Stubs);

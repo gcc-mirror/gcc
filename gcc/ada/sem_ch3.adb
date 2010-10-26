@@ -3077,6 +3077,27 @@ package body Sem_Ch3 is
          end if;
       end if;
 
+      --  Deal with predicate check before we start to do major rewriting.
+      --  it is OK to initialize and then check the initialized value, since
+      --  the object goes out of scope if we get a predicate failure. Note
+      --  that we do this in the analyzer and not the expander because the
+      --  analyzer does some substantial rewriting in some cases.
+
+      --  We need a predicate check if the type has predicates, and if either
+      --  there is an initializing expression, or for default initialization
+      --  when we have at least one case of an explicit default initial value.
+
+      if not Suppress_Assignment_Checks (N)
+        and then Present (Predicate_Function (T))
+        and then
+          (Present (E)
+            or else
+              Is_Partially_Initialized_Type (T, Include_Implicit => False))
+      then
+         Insert_After (N,
+           Make_Predicate_Check (T, New_Occurrence_Of (Id, Loc)));
+      end if;
+
       --  Case of unconstrained type
 
       if Is_Indefinite_Subtype (T) then
@@ -3846,7 +3867,13 @@ package body Sem_Ch3 is
       --  If ancestor has predicates then so does the subtype, and in addition
       --  we must delay the freeze to properly arrange predicate inheritance.
 
-      if Has_Predicates (T) then
+      --  The Ancestor_Type test is a big kludge, there seem to be cases in
+      --  which T = ID, so the above tests and assignments do nothing???
+
+      if Has_Predicates (T)
+        or else (Present (Ancestor_Subtype (T))
+                   and then Has_Predicates (Ancestor_Subtype (T)))
+      then
          Set_Has_Predicates (Id);
          Set_Has_Delayed_Freeze (Id);
       end if;

@@ -1762,124 +1762,70 @@ gnat_ugn, @value{EDITION} User's Guide}.
 Syntax:
 
 @smallexample @c ada
-pragma Eliminate (
-    [Unit_Name =>] IDENTIFIER |
-                   SELECTED_COMPONENT);
+pragma Eliminate (UNIT_NAME, ENTITY, Source_Location => SOURCE_TRACE)
 
-pragma Eliminate (
-    [Unit_Name       =>]  IDENTIFIER |
-                          SELECTED_COMPONENT,
-    [Entity          =>]  IDENTIFIER |
-                          SELECTED_COMPONENT |
-                          STRING_LITERAL
-    [,OVERLOADING_RESOLUTION]);
+UNIT_NAME        ::= IDENTIFIER |
+                     SELECTED_COMPONENT,
 
-OVERLOADING_RESOLUTION ::= PARAMETER_AND_RESULT_TYPE_PROFILE |
-                           SOURCE_LOCATION
+ENTITY           ::= IDENTIFIER |
+                     SELECTED_COMPONENT,
 
-PARAMETER_AND_RESULT_TYPE_PROFILE ::= PROCEDURE_PROFILE |
-                                      FUNCTION_PROFILE
+SOURCE_TRACE     ::= SOURCE_REFERENCE |
+                     SOURCE_REFERENCE LBRACKET SOURCE_TRACE RBRACKET
 
-PROCEDURE_PROFILE ::= Parameter_Types => PARAMETER_TYPES
+LBRACKET         ::= [
+RBRACKET         ::= ]
 
-FUNCTION_PROFILE ::= [Parameter_Types => PARAMETER_TYPES,]
-                      Result_Type => result_SUBTYPE_NAME]
+SOURCE_REFERENCE ::= FILE_NAME : LINE_NUMBER
 
-PARAMETER_TYPES ::= (SUBTYPE_NAME @{, SUBTYPE_NAME@})
-SUBTYPE_NAME    ::= STRING_VALUE
-
-SOURCE_LOCATION ::= Source_Location => SOURCE_TRACE
-SOURCE_TRACE    ::= STRING_VALUE
-
-STRING_VALUE ::= STRING_LITERAL @{& STRING_LITERAL@}
+FILE_NAME        ::= STRING_LITERAL
+LINE_NUMBER      ::= INTEGER_LITERAL
 @end smallexample
 
 @noindent
-This pragma indicates that the given entity is not used outside the
-compilation unit it is defined in. The entity must be an explicitly declared
-subprogram; this includes  generic subprogram instances and
-subprograms declared in generic package instances.
+This pragma indicates that the given entity is not used in the program
+to be compiled and built. The entity must be an explicitly declared
+subprogram; this includes generic subprogram instances and
+subprograms declared in generic package instances. @code{Unit_Name}
+must be the name of the compilation unit in which the entity is declared.
 
-If the entity to be eliminated is a library level subprogram, then
-the first form of pragma @code{Eliminate} is used with only a single argument.
-In this form, the @code{Unit_Name} argument specifies the name of the
-library  level unit to be eliminated.
-
-In all other cases, both @code{Unit_Name} and @code{Entity} arguments
-are required. If item is an entity of a library package, then the first
-argument specifies the unit name, and the second argument specifies
-the particular entity.  If the second argument is in string form, it must
-correspond to the internal manner in which GNAT stores entity names (see
-compilation unit Namet in the compiler sources for details).
-
-The remaining parameters (OVERLOADING_RESOLUTION) are optionally used
-to distinguish between overloaded subprograms. If a pragma does not contain
-the OVERLOADING_RESOLUTION parameter(s), it is applied to all the overloaded
-subprograms denoted by the first two parameters.
-
-Use PARAMETER_AND_RESULT_TYPE_PROFILE to specify the profile of the subprogram
-to be eliminated in a manner similar to that used for the extended
-@code{Import} and @code{Export} pragmas, except that the subtype names are
-always given as strings. At the moment, this form of distinguishing
-overloaded subprograms is implemented only partially, so we do not recommend
-using it for practical subprogram elimination.
-
-Note that in case of a parameterless procedure its profile is represented
-as @code{Parameter_Types => ("")}
-
-Alternatively, the @code{Source_Location} parameter is used to specify
-which overloaded alternative is to be eliminated by pointing to the
-location of the DEFINING_PROGRAM_UNIT_NAME of this subprogram in the
-source text. The string literal (or concatenation of string literals)
-given as SOURCE_TRACE must have the following format:
-
-@smallexample @c ada
-SOURCE_TRACE ::= SOURCE_LOCATION@{LBRACKET SOURCE_LOCATION RBRACKET@}
-
-LBRACKET ::= [
-RBRACKET ::= ]
-
-SOURCE_LOCATION ::= FILE_NAME:LINE_NUMBER
-FILE_NAME       ::= STRING_LITERAL
-LINE_NUMBER     ::= DIGIT @{DIGIT@}
-@end smallexample
-
-SOURCE_TRACE should be the short name of the source file (with no directory
-information), and LINE_NUMBER is supposed to point to the line where the
-defining name of the subprogram is located.
-
-For the subprograms that are not a part of generic instantiations, only one
-SOURCE_LOCATION is used. If a subprogram is declared in a package
-instantiation, SOURCE_TRACE contains two SOURCE_LOCATIONs, the first one is
-the location of the (DEFINING_PROGRAM_UNIT_NAME of the) instantiation, and the
-second one denotes the declaration of the corresponding subprogram in the
-generic package. This approach is recursively used to create SOURCE_LOCATIONs
-in case of nested instantiations.
+The @code{Source_Location} argument is used to resolve overloading
+in case more then one callable entity with the same name is declared
+in the given compilation unit. Each file name must be the short name of the
+source file (with no directory information).
+If an entity is not declared in
+a generic instantiation (this includes generic subprogram instances),
+the source trace includes only one source
+reference. If an entity is declared inside a generic instantiation,
+its source trace starts from the source location in the instantiation and
+ends with the source location of the declaration of the corresponding
+entity in the generic
+unit. This approach is recursively used in case of nested instantiations:
+the leftmost element of the
+source trace is the location of the outermost instantiation, the next
+element is the location of the next (first nested) instantiation in the
+code of the corresponding generic unit, and so on.
 
 The effect of the pragma is to allow the compiler to eliminate
 the code or data associated with the named entity.  Any reference to
-an eliminated entity outside the compilation unit it is defined in,
-causes a compile time or link time error.
+an eliminated entity outside the compilation unit where it is defined
+causes a compile-time or link-time error.
 
 The intention of pragma @code{Eliminate} is to allow a program to be compiled
-in a system independent manner, with unused entities eliminated, without
-the requirement of modifying the source text.  Normally the required set
+in a system-independent manner, with unused entities eliminated, without
+needing to modify the source text.  Normally the required set
 of @code{Eliminate} pragmas is constructed automatically using the gnatelim
 tool. Elimination of unused entities local to a compilation unit is
 automatic, without requiring the use of pragma @code{Eliminate}.
 
-Note that the reason this pragma takes string literals where names might
-be expected is that a pragma @code{Eliminate} can appear in a context where the
-relevant names are not visible.
+Any source file change that removes, splits, or
+adds lines may make the set of Eliminate pragmas invalid because their
+@code{Source_Location} argument values may get out of date.
 
-Note that any change in the source files that includes removing, splitting of
-adding lines may make the set of Eliminate pragmas using SOURCE_LOCATION
-parameter illegal.
-
-It is legal to use pragma Eliminate where the referenced entity is a
-dispatching operation, but it is not clear what this would mean, since
-in general the call does not know which entity is actually being called.
-Consequently, a pragma Eliminate for a dispatching operation is ignored.
+Pragma Eliminate may be used where the referenced entity is a
+dispatching operation. In this case all the subprograms to which the
+given operation can dispatch are considered to be unused (are never called
+as a result of a direct or a dispatching call).
 
 @node Pragma Export_Exception
 @unnumberedsec Pragma Export_Exception
