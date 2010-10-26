@@ -3018,18 +3018,23 @@ stabilize_expr (tree exp, tree* initp)
 
   if (!TREE_SIDE_EFFECTS (exp))
     init_expr = NULL_TREE;
-  else if (!real_lvalue_p (exp)
-	   || !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (exp)))
+  /* There are no expressions with REFERENCE_TYPE, but there can be call
+     arguments with such a type; just treat it as a pointer.  */
+  else if (TREE_CODE (TREE_TYPE (exp)) == REFERENCE_TYPE
+	   || !lvalue_or_rvalue_with_address_p (exp))
     {
       init_expr = get_target_expr (exp);
       exp = TARGET_EXPR_SLOT (init_expr);
     }
   else
     {
+      bool xval = !real_lvalue_p (exp);
       exp = cp_build_addr_expr (exp, tf_warning_or_error);
       init_expr = get_target_expr (exp);
       exp = TARGET_EXPR_SLOT (init_expr);
       exp = cp_build_indirect_ref (exp, RO_NULL, tf_warning_or_error);
+      if (xval)
+	exp = move (exp);
     }
   *initp = init_expr;
 
