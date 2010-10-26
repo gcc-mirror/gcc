@@ -1,3 +1,15 @@
+2010-10-26  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Build_Invariant_Procedure): New calling sequence.
+	(Build_Invariant_Procedure): Properly handle analysis of invariant
+	expression with proper end-of-visible-decls visibility.
+	* sem_ch13.ads (Build_Invariant_Procedure): Changed calling sequence.
+	* sem_ch3.adb (Process_Full_View): Don't build invariant procedure
+	(too late).
+	(Analyze_Private_Extension_Declaration): Propagate invariant flags.
+	* sem_ch7.adb (Analyze_Package_Specification): Build invariant
+	procedures.
+
 2010-10-26  Vincent Celier  <celier@adacore.com>
 
 	* opt.ads (Old_Checksums, Old_Old_Checksums): New Boolean flags,

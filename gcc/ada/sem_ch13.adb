@@ -3549,15 +3549,16 @@ package body Sem_Ch13 is
    --     ...
    --  end typInvariant;
 
-   procedure Build_Invariant_Procedure
-     (Typ   : Entity_Id;
-      PDecl : out Node_Id;
-      PBody : out Node_Id)
-   is
+   procedure Build_Invariant_Procedure (Typ : Entity_Id; N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (Typ);
       Stmts : List_Id;
       Spec  : Node_Id;
       SId   : Entity_Id;
+      PDecl : Node_Id;
+      PBody : Node_Id;
+
+      Visible_Decls : constant List_Id := Visible_Declarations (N);
+      Private_Decls : constant List_Id := Private_Declarations (N);
 
       procedure Add_Invariants (T : Entity_Id; Inherit : Boolean);
       --  Appends statements to Stmts for any invariants in the rep item chain
@@ -3569,6 +3570,10 @@ package body Sem_Ch13 is
 
       Object_Name : constant Name_Id := New_Internal_Name ('I');
       --  Name for argument of invariant procedure
+
+      Object_Entity : constant Node_Id :=
+                        Make_Defining_Identifier (Loc, Object_Name);
+      --  The procedure declaration entity for the argument
 
       --------------------
       -- Add_Invariants --
@@ -3594,7 +3599,10 @@ package body Sem_Ch13 is
            new Replace_Type_References_Generic (Replace_Type_Reference);
          --  Traverse an expression replacing all occurrences of the subtype
          --  name with appropriate references to the object that is the formal
-         --  parameter of the predicate function.
+         --  parameter of the predicate function. Note that we must ensure
+         --  that the type and entity information is properly set in the
+         --  replacement node, since we will do a Preanalyze call of this
+         --  expression without proper visibility of the procedure argument.
 
          ----------------------------
          -- Replace_Type_Reference --
@@ -3616,12 +3624,15 @@ package body Sem_Ch13 is
                      Make_Identifier (Loc,
                        Chars => Object_Name)));
 
+               Set_Entity (Expression (N), Object_Entity);
+               Set_Etype  (Expression (N), Typ);
+
             --  Invariant, replace with obj
 
             else
-               Rewrite (N,
-                 Make_Identifier (Loc,
-                   Chars => Object_Name));
+               Rewrite (N, Make_Identifier (Loc, Chars => Object_Name));
+               Set_Entity (N, Object_Entity);
+               Set_Etype  (N, Typ);
             end if;
          end Replace_Type_Reference;
 
@@ -3668,13 +3679,20 @@ package body Sem_Ch13 is
 
                Replace_Type_References (Exp, Chars (T));
 
+               --  Now we need to preanalyze the expression to properly capture
+               --  the visibility in the visible part. The expression will not
+               --  be analyzed for real until the body is analyzed, but that is
+               --  at the end of the private part and has the wrong visibility.
+
+               Set_Parent (Exp, N);
+               Preanalyze_Spec_Expression (Exp, Standard_Boolean);
+
                --  Build first two arguments for Check pragma
 
                Assoc := New_List (
                  Make_Pragma_Argument_Association (Loc,
                     Expression =>
-                      Make_Identifier (Loc,
-                        Chars => Name_Invariant)),
+                      Make_Identifier (Loc, Chars => Name_Invariant)),
                   Make_Pragma_Argument_Association (Loc,
                     Expression => Exp));
 
@@ -3705,8 +3723,7 @@ package body Sem_Ch13 is
                Append_To (Stmts,
                  Make_Pragma (Loc,
                    Pragma_Identifier            =>
-                     Make_Identifier (Loc,
-                       Chars => Name_Check),
+                     Make_Identifier (Loc, Chars => Name_Check),
                    Pragma_Argument_Associations => Assoc));
 
                --  If Inherited case and option enabled, output info msg. Note
@@ -3731,6 +3748,7 @@ package body Sem_Ch13 is
       Stmts := No_List;
       PDecl := Empty;
       PBody := Empty;
+      Set_Etype (Object_Entity, Typ);
 
       --  Add invariants for the current type
 
@@ -3766,7 +3784,6 @@ package body Sem_Ch13 is
 
          --  Build procedure declaration
 
-         pragma Assert (Has_Invariants (Typ));
          SId :=
            Make_Defining_Identifier (Loc,
              Chars => New_External_Name (Chars (Typ), "Invariant"));
@@ -3778,15 +3795,10 @@ package body Sem_Ch13 is
              Defining_Unit_Name       => SId,
              Parameter_Specifications => New_List (
                Make_Parameter_Specification (Loc,
-                 Defining_Identifier =>
-                   Make_Defining_Identifier (Loc,
-                     Chars => Object_Name),
-                 Parameter_Type =>
-                   New_Occurrence_Of (Typ, Loc))));
+                 Defining_Identifier => Object_Entity,
+                 Parameter_Type      => New_Occurrence_Of (Typ, Loc))));
 
-         PDecl :=
-           Make_Subprogram_Declaration (Loc,
-             Specification => Spec);
+         PDecl := Make_Subprogram_Declaration (Loc, Specification => Spec);
 
          --  Build procedure body
 
@@ -3812,6 +3824,27 @@ package body Sem_Ch13 is
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => Stmts));
+
+         --  Insert procedure declaration and spec at the appropriate points.
+         --  Skip this if there are no private declarations (that's an error
+         --  that will be diagnosed elsewhere, and there is no point in having
+         --  an invariant procedure set if the full declaration is missing).
+
+         if Present (Private_Decls) then
+
+            --  The spec goes at the end of visible declarations, but they have
+            --  already been analyzed, so we need to explicitly do the analyze.
+
+            Append_To (Visible_Decls, PDecl);
+            Analyze (PDecl);
+
+            --  The body goes at the end of the private declarations, which we
+            --  have not analyzed yet, so we do not need to perform an explicit
+            --  analyze call. We skip this if there are no private declarations
+            --  (this is an error that will be caught elsewhere);
+
+            Append_To (Private_Decls, PBody);
+         end if;
       end if;
    end Build_Invariant_Procedure;
 
