@@ -6595,17 +6595,13 @@ lookup_template_class (tree d1,
 	  arglist = bound_args;
 	}
       else
-	{
-	  push_tinst_level (templ);
-	  arglist
-	    = coerce_template_parms (INNERMOST_TEMPLATE_PARMS (parmlist),
-				     INNERMOST_TEMPLATE_ARGS (arglist),
-				     gen_tmpl,
-				     complain,
-				     /*require_all_args=*/true,
-				     /*use_default_args=*/true);
-	  pop_tinst_level ();
-	}
+	arglist
+	  = coerce_template_parms (INNERMOST_TEMPLATE_PARMS (parmlist),
+				   INNERMOST_TEMPLATE_ARGS (arglist),
+				   gen_tmpl,
+				   complain,
+				   /*require_all_args=*/true,
+				   /*use_default_args=*/true);
 
       if (arglist == error_mark_node)
 	/* We were unable to bind the arguments.  */

@@ -9,9 +9,6 @@
 	(cp_gimplify_expr): Handle array default-initialization via
 	VEC_INIT_EXPR.
 
-	* pt.c (lookup_template_class): push_tinst_level around call to
-	coerce_template_parms.
-
 	* tree.c (stabilize_expr): Handle xvalues properly.
 
 	* call.c (build_over_call): Use argarray[0] for 'this' argument.

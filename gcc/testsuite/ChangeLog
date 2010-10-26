@@ -4,10 +4,6 @@
 	* gfortran.dg/namelist_66.f90: New test.
 	* gfortran.dg/fmt_t_6.f: Fix whitespace.
 
-2010-10-26  Jason Merrill  <jason@redhat.com>
-
-	* g++.dg/template/arg8.C: Test for helpful diagnostic.
-
 2010-10-26  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42647
