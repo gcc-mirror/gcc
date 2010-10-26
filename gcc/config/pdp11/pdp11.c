@@ -42,11 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "df.h"
 
-/*
-#define FPU_REG_P(X)	((X)>=8 && (X)<14)
-#define CPU_REG_P(X)	((X)>=0 && (X)<8)
-*/
-
 /* this is the current value returned by the macro FIRST_PARM_OFFSET 
    defined in tm.h */
 int current_first_parm_offset;
@@ -295,7 +290,7 @@ pdp11_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 	asm_fprintf (stream, "\tsub $%#wo, sp\n", fsize);
 
     /* save CPU registers  */
-    for (regno = 0; regno < 8; regno++)				
+    for (regno = 0; regno <= PC_REGNUM; regno++)				
       if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])	
 	    if (! ((regno == FRAME_POINTER_REGNUM)			
 		   && frame_pointer_needed))				
@@ -305,7 +300,7 @@ pdp11_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
     /* via_ac specifies the ac to use for saving ac4, ac5 */
     via_ac = -1;
     
-    for (regno = 8; regno < FIRST_PSEUDO_REGISTER ; regno++) 
+    for (regno = AC0_REGNUM; regno <= AC5_REGNUM ; regno++) 
     {
 	/* ac0 - ac3 */						
 	if (LOAD_FPU_REG_P(regno)
@@ -366,7 +361,7 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 	/* hope this is safe - m68k does it also .... */		
         df_set_regs_ever_live (FRAME_POINTER_REGNUM, false);
 								
-	for (i =7, j = 0 ; i >= 0 ; i--)				
+	for (i = PC_REGNUM, j = 0 ; i >= 0 ; i--)				
 	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])		
 		j++;
 	
@@ -374,22 +369,22 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 	k = 2*j;
 	
 	/* change fp -> r5 due to the compile error on libgcc2.c */
-	for (i =7 ; i >= 0 ; i--)					
+	for (i = PC_REGNUM ; i >= 0 ; i--)					
 	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])		
 		fprintf(stream, "\tmov %#" HOST_WIDE_INT_PRINT "o(r5), %s\n",
 			(-fsize-2*j--)&0xffff, reg_names[i]);
 
 	/* get ACs */						
-	via_ac = FIRST_PSEUDO_REGISTER -1;
+	via_ac = AC5_REGNUM;
 	
-	for (i = FIRST_PSEUDO_REGISTER; i > 7; i--)
+	for (i = AC5_REGNUM; i >= AC0_REGNUM; i--)
 	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])
 	    {
 		via_ac = i;
 		k += 8;
 	    }
 	
-	for (i = FIRST_PSEUDO_REGISTER; i > 7; i--)
+	for (i = AC5_REGNUM; i >= AC0_REGNUM; i--)
 	{
 	    if (LOAD_FPU_REG_P(i)
 		&& df_regs_ever_live_p (i)
@@ -418,14 +413,14 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
     }								
     else								
     {		   
-	via_ac = FIRST_PSEUDO_REGISTER -1;
+      via_ac = AC5_REGNUM;
 	
 	/* get ACs */
-	for (i = FIRST_PSEUDO_REGISTER; i > 7; i--)
+	for (i = AC5_REGNUM; i >= AC0_REGNUM; i--)
 	  if (df_regs_ever_live_p (i) && call_used_regs[i])
 		via_ac = i;
 	
-	for (i = FIRST_PSEUDO_REGISTER; i > 7; i--)
+	for (i = AC5_REGNUM; i >= AC0_REGNUM; i--)
 	{
 	    if (LOAD_FPU_REG_P(i)
 		&& df_regs_ever_live_p (i)
@@ -443,7 +438,7 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 	    }
 	}
 
-	for (i=7; i >= 0; i--)					
+	for (i = PC_REGNUM; i >= 0; i--)					
 	  if (df_regs_ever_live_p (i) && !call_used_regs[i])		
 		fprintf(stream, "\tmov (sp)+, %s\n", reg_names[i]);	
 								

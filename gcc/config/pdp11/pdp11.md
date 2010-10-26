@@ -22,6 +22,22 @@
 (include "predicates.md")
 (include "constraints.md")
 
+(define_constants
+  [
+   ;; Register numbers
+   (FRAME_POINTER_REGNUM  5)
+   (STACK_POINTER_REGNUM  6)
+   (PC_REGNUM             7)
+   (AC0_REGNUM            8)
+   (AC3_REGNUM            11)
+   (AC4_REGNUM            12)
+   (AC5_REGNUM            13)
+   (FIRST_PSEUDO_REGISTER 14)
+   ;; Branch offset limits, as byte offsets from instruction address
+   (MIN_BRANCH            -254)
+   (MAX_BRANCH            256)
+   (MIN_SOB               -126)
+   (MAX_SOB               0)])
 
 ;; HI is 16 bit
 ;; QI is 8 bit 
@@ -165,12 +181,12 @@
 
  return \"\";
 }"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
+  [(set (attr "length") (if_then_else (ior (lt (minus (match_dup 0)
 						       (pc))
-						(const_int -256))
-					   (ge (minus (match_dup 0)
+						(const_int MIN_SOB))
+					   (gt (minus (match_dup 0)
 						       (pc))
-						(const_int 0)))
+						(const_int MAX_SOB)))
 				      (const_int 8)
 				      (const_int 2)))])
 
@@ -228,12 +244,12 @@
 		      (pc)))]
   ""
   "* return output_jump(GET_CODE (operands[0]), 0, get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 1)
+  [(set (attr "length") (if_then_else (ior (lt (minus (match_dup 1)
 						      (pc))
-					       (const_int -256))
-					   (ge (minus (match_dup 1)
+					       (const_int MIN_BRANCH))
+					   (gt (minus (match_dup 1)
 						      (pc))
-					       (const_int 256)))
+					       (const_int MAX_BRANCH)))
 				      (const_int 6)
 				      (const_int 2)))])
 
@@ -248,12 +264,12 @@
 		      (label_ref (match_operand 1 "" ""))))]
   ""
   "* return output_jump(GET_CODE (operands[0]), 1, get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 1)
+  [(set (attr "length") (if_then_else (ior (lt (minus (match_dup 1)
 						      (pc))
-					       (const_int -256))
-					   (ge (minus (match_dup 1)
+					       (const_int MIN_BRANCH))
+					   (gt (minus (match_dup 1)
 						      (pc))
-					       (const_int 256)))
+					       (const_int MAX_BRANCH)))
 				      (const_int 6)
 				      (const_int 2)))])
 
@@ -1296,12 +1312,12 @@
     return \"br %l0\";
  return \"jmp %l0\";
 }"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
+  [(set (attr "length") (if_then_else (ior (lt (minus (match_dup 0)
 						      (pc))
-					       (const_int -256))
-					   (ge (minus (match_dup 0)
+					       (const_int MIN_BRANCH))
+					   (gt (minus (match_dup 0)
 						      (pc))
-					       (const_int 256)))
+					       (const_int MAX_BRANCH)))
 				      (const_int 4)
 				      (const_int 2)))])
 
