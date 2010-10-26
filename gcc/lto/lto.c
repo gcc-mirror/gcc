@@ -760,7 +760,12 @@ add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
   part->insns += node->local.inline_summary.self_size;
 
   if (node->aux)
-    node->in_other_partition = 1;
+    {
+      node->in_other_partition = 1;
+      if (cgraph_dump_file)
+        fprintf (cgraph_dump_file, "Node %s/%i now used in multiple partitions\n",
+		 cgraph_node_name (node), node->uid);
+    }
   node->aux = (void *)((size_t)node->aux + 1);
 
   cgraph_node_set_add (part->cgraph_set, node);
@@ -785,7 +790,12 @@ add_varpool_node_to_partition (ltrans_partition part, struct varpool_node *vnode
   varpool_node_set_add (part->varpool_set, vnode);
 
   if (vnode->aux)
-    vnode->in_other_partition = 1;
+    {
+      vnode->in_other_partition = 1;
+      if (cgraph_dump_file)
+        fprintf (cgraph_dump_file, "Varpool node %s now used in multiple partitions\n",
+		 varpool_node_name (vnode));
+    }
   vnode->aux = (void *)((size_t)vnode->aux + 1);
 
   add_references_to_partition (part, &vnode->ref_list);
@@ -856,6 +866,7 @@ partition_varpool_node_p (struct varpool_node *vnode)
   /* Constant pool and comdat are always only in partitions they are needed.  */
   if (DECL_IN_CONSTANT_POOL (vnode->decl)
       || (DECL_COMDAT (vnode->decl)
+	  && !vnode->force_output
 	  && !varpool_used_from_object_file_p (vnode)))
     return false;
   return true;
@@ -911,7 +922,8 @@ lto_1_to_1_map (void)
 	  npartitions++;
 	}
 
-      add_cgraph_node_to_partition (partition, node);
+      if (!node->aux)
+        add_cgraph_node_to_partition (partition, node);
     }
 
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
@@ -930,7 +942,8 @@ lto_1_to_1_map (void)
 	  npartitions++;
 	}
 
-      add_varpool_node_to_partition (partition, vnode);
+      if (!vnode->aux)
+        add_varpool_node_to_partition (partition, vnode);
     }
   for (node = cgraph_nodes; node; node = node->next)
     node->aux = NULL;
@@ -1005,6 +1018,8 @@ lto_balanced_map (void)
     INT_MAX, best_internal = 0;
   int npartitions;
 
+  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+    gcc_assert (!vnode->aux);
   /* Until we have better ordering facility, use toplogical order.
      Include only nodes we will partition and compute estimate of program
      size.  Note that since nodes that are not partitioned might be put into
@@ -1034,7 +1049,8 @@ lto_balanced_map (void)
 
   for (i = 0; i < n_nodes; i++)
     {
-      add_cgraph_node_to_partition (partition, order[i]);
+      if (!order[i]->aux)
+        add_cgraph_node_to_partition (partition, order[i]);
       total_size -= order[i]->global.size;
 
       /* Once we added a new node to the partition, we also want to add
@@ -1198,8 +1214,8 @@ lto_balanced_map (void)
 	  best_total_size = total_size;
 	}
       if (cgraph_dump_file)
-	fprintf (cgraph_dump_file, "Step %i: added %s, size %i, cost %i/%i best %i/%i, step %i\n", i,
-		 cgraph_node_name (order[i]), partition->insns, cost, internal,
+	fprintf (cgraph_dump_file, "Step %i: added %s/%i, size %i, cost %i/%i best %i/%i, step %i\n", i,
+		 cgraph_node_name (order[i]), order[i]->uid, partition->insns, cost, internal,
 		 best_cost, best_internal, best_i);
       /* Partition is too large, unwind into step when best cost was reached and
 	 start new partition.  */
@@ -2314,13 +2330,13 @@ do_whole_program_analysis (void)
       dump_memory_report (false);
     }
 
+  cgraph_function_flags_ready = true;
+
   if (cgraph_dump_file)
     {
       dump_cgraph (cgraph_dump_file);
       dump_varpool (cgraph_dump_file);
     }
-
-  cgraph_function_flags_ready = true;
   bitmap_obstack_initialize (NULL);
   ipa_register_cgraph_hooks ();
   cgraph_state = CGRAPH_STATE_IPA_SSA;

@@ -1,3 +1,11 @@
+2010-10-22  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (add_cgraph_node_to_partition,
+	add_varpool_node_to_partition): Add debug info.
+	(lto_1_to_1_map, lto_balanced_map): Do not re-add already
+	partitioned nodes.
+	(do_whole_program_analysis): Set function flags before dumping.
+
 2010-10-22  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (lto_fixup_type): Fixup TYPE_CANONICAL again, via
