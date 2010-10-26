@@ -1,5 +1,7 @@
 2010-10-26  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (stabilize_expr): Handle xvalues properly.
+
 	* call.c (build_over_call): Use argarray[0] for 'this' argument.
 
 	* decl.c (finish_function): Don't look at function_depth.
