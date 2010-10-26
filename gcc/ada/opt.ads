@@ -933,12 +933,25 @@ package Opt is
    --  GNATMAKE
    --  Set to True when an object directory is specified with option -D
 
-   Old_Checksums     : Boolean := False;
-   Old_Old_Checksums : Boolean := False;
+   Checksum_Accumulate_Token_Checksum : Boolean := True;
    --  GPRBUILD
-   --  Set to True when the old ways of computing checksums needs to be used.
-   --  For reserved words, the old ways were to use the token value, while the
-   --  new way is to use Tok_Identifier for reserved word too.
+   --  Set to False by gprbuild when the version of GNAT is 5.02 or before.
+   --  There were no call to procedure Accumulate_Token_Checksum in these
+   --  versions.
+
+   Checksum_GNAT_6_3 : Boolean := False;
+   --  GPRBUILD
+   --  Set to True by gprbuild when the version of GNAT is 6.3 or before. For
+   --  GNAT versions 5.04 to 6.3, Accumulate_Token_Checksum were called with
+   --  the token values of the keywords, instead of Tok_Identifier for later
+   --  versions, and Tok_Some was not in Token_Type.
+
+   Checksum_GNAT_5_03 : Boolean := False;
+   --  GPRBUILD
+   --  Set to True by gprbuild when the version of GNAT is 5.03. For GNAT 5.04,
+   --  Accumulate_Token_Checksum were called with the token values of the
+   --  keywords, and Tok_Interface, Tok_Overriding, Tok_Synchronized and
+   --  Tok_Some were not in Token_Type.
 
    One_Compilation_Per_Obj_Dir : Boolean := False;
    --  GNATMAKE, GPRBUILD
