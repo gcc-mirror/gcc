@@ -6987,8 +6987,8 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  For the VMS "not" on signed integer types, use conversion to and
-      --  from a predefined modular type.
+      --  For the VMS "not" on signed integer types, use conversion to and from
+      --  a predefined modular type.
 
       if Is_VMS_Operator (Entity (N)) then
          declare

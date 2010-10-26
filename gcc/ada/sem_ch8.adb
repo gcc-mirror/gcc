@@ -2480,16 +2480,19 @@ package body Sem_Ch8 is
 
       --  A useful warning, suggested by Ada Bug Finder (Ada-Europe 2005)
       --  is to warn if an operator is being renamed as a different operator.
+      --  If the operator is predefined, examine the kind of the entity, not
+      --  the abbreviated declaration in Standard.
 
       if Comes_From_Source (N)
         and then Present (Old_S)
-        and then Nkind (Old_S) = N_Defining_Operator_Symbol
+        and then
+          (Nkind (Old_S) = N_Defining_Operator_Symbol
+            or else Ekind (Old_S) = E_Operator)
         and then Nkind (New_S) = N_Defining_Operator_Symbol
         and then Chars (Old_S) /= Chars (New_S)
       then
          Error_Msg_NE
-           ("?& is being renamed as a different operator",
-             New_S, Old_S);
+           ("?& is being renamed as a different operator", N, Old_S);
       end if;
 
       --  Check for renaming of obsolescent subprogram

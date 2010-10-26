@@ -1,3 +1,19 @@
+2010-10-26  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads: Comment fix.
+	* sem_cat.adb: Treat categorization errors as warnings in GNAT Mode.
+	* switch-c.adb: GNAT Mode does not set
+	Treat_Categorization_Errors_As_Warnings.
+
+2010-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Improve warning when an
+	operator renames another one with a different name.
+
+2010-10-26  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb, exp_pakd.adb: Minor reformatting.
+
 2010-10-26  Bob Duff  <duff@adacore.com>
 
 	* namet.adb: Improve hash function.

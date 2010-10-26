@@ -226,10 +226,19 @@ package body Sem_Cat is
 
       if Err then
 
-         --  These messages are warnings in GNAT mode or if the -gnateC switch
+         --  These messages are warnings in GNAT mode or if the -gnateP switch
          --  was set. Otherwise these are real errors for real illegalities.
 
-         Error_Msg_Warn := Treat_Categorization_Errors_As_Warnings;
+         --  The reason we suppress these errors in GNAT mode is that the run-
+         --  time has several instances of violations of the categorization
+         --  errors (e.g. Pure units withing Preelaborate units. All these
+         --  violations are harmless in the cases where we intend them, and
+         --  we suppress the warnings with Warnings (Off). In cases where we
+         --  do not intend the violation, warnings are errors in GNAT mode
+         --  anyway, so we will still get an error.
+
+         Error_Msg_Warn :=
+           Treat_Categorization_Errors_As_Warnings or GNAT_Mode;
 
          --  Don't give error if main unit is not an internal unit, and the
          --  unit generating the message is an internal unit. This is the

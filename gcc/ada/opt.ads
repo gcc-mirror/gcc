@@ -1233,7 +1233,7 @@ package Opt is
    Treat_Categorization_Errors_As_Warnings : Boolean := False;
    --  Normally categorization errors are true illegalities. If this switch
    --  is set, then such errors result in warning messages rather than error
-   --  messages. Set True by -gnatg or -gnateP (P for Pure/Preelaborate).
+   --  messages. Set True by -gnateP (P for Pure/Preelaborate).
 
    Treat_Restrictions_As_Warnings : Boolean := False;
    --  GNAT
