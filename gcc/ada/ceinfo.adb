@@ -133,6 +133,7 @@ begin
                Put_Line
                  ("*** unknown field name " & Fieldnm & " at line " & Lineno);
             end if;
+
             raise Err;
          end if;
       end if;
@@ -161,7 +162,8 @@ begin
             Put_Line
               ("*** unknown field name " & Fieldnm & " at line " & Lineno);
          end if;
-            raise Err;
+
+         raise Err;
       end if;
    end loop;
 
