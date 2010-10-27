@@ -1,5 +1,16 @@
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* c-parser.c (c_parser_objc_at_property_declaration): Recognize
+	RID_ASSIGN, RID_COPY, RID_RETAIN, RID_READWRITE and RID_NONATOMIC.
+	Do not use objc_set_property_attr, but use local variables
+	instead.  Detect repeated usage of setter, getter and ivar
+	attributes.  Improved error processing when a setter name does not
+	end in ':'.  Do not check for CPP_CLOSE_PAREN after we determined
+	that the token is a keyword.  Updated call to
+	objc_add_property_declaration.
+
+2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* c-parser.c (c_parser_objc_at_property): Renamed to
 	c_parser_objc_at_property_declaration.  Updated calls to
 	objc_add_property_variable, now objc_add_property_declaration.
