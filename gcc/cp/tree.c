@@ -441,7 +441,8 @@ build_cplus_new (tree type, tree init)
 
   if (TREE_CODE (rval) == AGGR_INIT_EXPR)
     slot = AGGR_INIT_EXPR_SLOT (rval);
-  else if (TREE_CODE (rval) == CALL_EXPR)
+  else if (TREE_CODE (rval) == CALL_EXPR
+	   || TREE_CODE (rval) == CONSTRUCTOR)
     slot = build_local_temp (type);
   else
     return rval;

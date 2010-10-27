@@ -1,5 +1,7 @@
 2010-10-27  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (build_cplus_new): Handle CONSTRUCTOR.
+
 	* semantics.c (finish_compound_stmt): Avoid creating an
 	unnecessary BIND_EXPR.
 
