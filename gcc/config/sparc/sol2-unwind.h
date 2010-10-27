@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for SPARC Solaris.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -118,7 +118,27 @@ sparc64_fallback_frame_state (struct _Unwind_Context *context,
       unsigned int cuh_pattern
 	= *(unsigned int *)(*(unsigned long *)(this_cfa + 15*8) - 4);
 
-      if (cuh_pattern == 0x9410001a || cuh_pattern == 0x94100013)
+      if (cuh_pattern == 0xd25fa7ef)
+	{
+	  /* This matches the call_user_handler pattern for Solaris 10.
+	     There are 2 cases so we look for the return address of the
+	     caller's caller frame in order to do more pattern matching.  */
+	  unsigned int sah_pattern
+	    = *(unsigned int *)(*(unsigned long *)(this_cfa + 176 + 15*8) - 4);
+
+          if (sah_pattern == 0x92100019)
+	    /* This is the same setup as for Solaris 9, see below.  */
+	    regs_off = 176 + 176 + 176 + 304;
+	  else
+	    /* We need to move up three frames (the kernel frame, the
+	       call_user_handler frame, the __sighndlr frame).  Two of them
+	       have the minimum stack frame size (kernel and __sighndlr
+	       frames) of 176 bytes, and there is another with a stack frame
+	       of 304 bytes (the call_user_handler frame).  The ucontext_t
+	       structure is after this offset.  */
+	    regs_off = 176 + 176 + 304;
+	}
+      else if (cuh_pattern == 0x9410001a || cuh_pattern == 0x94100013)
 	/* This matches the call_user_handler pattern for Solaris 9 and
 	   for Solaris 8 running inside Solaris Containers respectively.
 	   We need to move up four frames (the kernel frame, the signal
@@ -152,7 +172,7 @@ sparc64_fallback_frame_state (struct _Unwind_Context *context,
   fpu_save_off = regs_off + (8*10) + 176;
 
   /* The fpregs field contains 32 extended words at the beginning that
-     contain the fpu state.  Then there are 2 extended words and two
+     contain the FPU state.  Then there are 2 extended words and two
      bytes.  */
   fpu_save = *(unsigned char *)(this_cfa + fpu_save_off + (8*32) + (2*8) + 2);
 
@@ -195,7 +215,7 @@ sparc64_fallback_frame_state (struct _Unwind_Context *context,
       fs->regs.reg[i + 16].loc.offset = i*8;
     }
 
-  /* Check whether we need to restore fpu registers.  */
+  /* Check whether we need to restore FPU registers.  */
   if (fpu_save)
     {
       for (i = 0; i < 64; i++)
@@ -347,14 +367,25 @@ sparc_fallback_frame_state (struct _Unwind_Context *context,
 	= *(unsigned int *)(*(unsigned int *)(this_cfa + 15*4) - 4);
 
       if (cuh_pattern == 0xd407a04c)
-	/* This matches the call_user_handler pattern for Solaris 10.
-	   We need to move up three frames (the kernel frame, the
-	   call_user_handler frame, the __sighndlr frame).  Two of them
-	   have the minimum stack frame size (kernel and __sighndlr
-	   frames) of 96 bytes, and there is another with a stack frame
-	   of 160 bytes (the call_user_handler frame).  The ucontext_t
-	  structure is after this offset.  */
-	regs_off = 96 + 96 + 160;
+	{
+	  /* This matches the call_user_handler pattern for Solaris 10.
+	     There are 2 cases so we look for the return address of the
+	     caller's caller frame in order to do more pattern matching.  */
+	  unsigned int sah_pattern
+	    = *(unsigned int *)(*(unsigned int *)(this_cfa + 96 + 15*4) - 4);
+
+          if (sah_pattern == 0x92100019)
+	    /* This is the same setup as for Solaris 9, see below.  */
+	    regs_off = 96 + 96 + 96 + 160;
+	  else
+	    /* We need to move up three frames (the kernel frame, the
+	       call_user_handler frame, the __sighndlr frame).  Two of them
+	       have the minimum stack frame size (kernel and __sighndlr
+	       frames) of 96 bytes, and there is another with a stack frame
+	       of 160 bytes (the call_user_handler frame).  The ucontext_t
+	       structure is after this offset.  */
+	    regs_off = 96 + 96 + 160;
+	}
       else if (cuh_pattern == 0x9410001a || cuh_pattern == 0x9410001b)
 	/* This matches the call_user_handler pattern for Solaris 9 and
 	   for Solaris 8 running inside Solaris Containers respectively.
@@ -389,7 +420,7 @@ sparc_fallback_frame_state (struct _Unwind_Context *context,
   fpu_save_off = regs_off + (4*10) + (4*20);
 
   /* The fpregs field contains 32 words at the beginning that contain
-     the fpu state.  Then there are 2 words and two bytes.  */
+     the FPU state.  Then there are 2 words and two bytes.  */
   fpu_save = *(unsigned char *)(this_cfa + fpu_save_off + (4*32) + (2*4) + 2);
 
   /* We need to get the frame pointer for the kernel frame that
@@ -429,7 +460,7 @@ sparc_fallback_frame_state (struct _Unwind_Context *context,
       fs->regs.reg[i + 16].loc.offset = i*4;
     }
 
-  /* Check whether we need to restore fpu registers.  */
+  /* Check whether we need to restore FPU registers.  */
   if (fpu_save)
     {
       for (i = 0; i < 32; i++)
