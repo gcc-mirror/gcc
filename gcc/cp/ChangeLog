@@ -1,6 +1,13 @@
 2010-10-27  Gabriel Dos Reis  <gdr@cse.tamu.edu>
 	    Jason Merrill  <jason@redhat.com>
 
+	* method.c (synthesized_method_walk): Track constexprness too.
+	(process_subob_fn, walk_field_subobs): Likewise.
+	(implicitly_declare_fn): Set DECL_DECLARED_CONSTEXPR_P.
+	(defaulted_late_check): Handle DECL_DECLARED_CONSTEXPR_P.
+	* class.c (add_implicitly_declared_members): Handle
+	constexpr default ctor.
+
 	* parser.c (cp_parser_ctor_initializer_opt_and_function_body):
 	Make sure a constexpr ctor has an empty body.
 	* class.c (type_has_constexpr_default_constructor): New.
