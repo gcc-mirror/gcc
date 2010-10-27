@@ -1,5 +1,7 @@
 2010-10-27  Jason Merrill  <jason@redhat.com>
 
+	* cvt.c (build_up_reference): Use target_type for the temporary var.
+
 	* except.c (build_throw): Set EXPR_LOCATION.
 
 	* tree.c (build_cplus_new): Handle CONSTRUCTOR.
