@@ -1,5 +1,14 @@
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* obj-c.dg/property/at-property-4.m: New.
+	* obj-c++.dg/property/at-property-4.mm: New.
+	* obj-c++.dg/property/property-neg-5.m: Updated testcase for
+	updates in warning.
+	* obj-c++.dg/property/property-neg-5.mm: Updated testcase for
+	updates in warning.
+	
+2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/property/at-property-1.m: New.	
 	* objc.dg/property/at-property-2.m: New.
 	* objc.dg/property/at-property-3.m: New.

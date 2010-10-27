@@ -61,6 +61,12 @@ tree objc_eh_personality (void);
 #define PROPERTY_READONLY(DECL) ((DECL)->decl_minimal.context)
 #define PROPERTY_COPIES(DECL) ((DECL)->decl_common.size_unit)
 
+enum objc_property_assign_semantics {
+  OBJC_PROPERTY_ASSIGN = 1,
+  OBJC_PROPERTY_RETAIN = 2,
+  OBJC_PROPERTY_COPY = 3
+};
+
 /* CLASS_INTERFACE_TYPE, CLASS_IMPLEMENTATION_TYPE,
    CATEGORY_INTERFACE_TYPE, CATEGORY_IMPLEMENTATION_TYPE,
    PROTOCOL_INTERFACE_TYPE */

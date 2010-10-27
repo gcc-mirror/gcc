@@ -406,11 +406,6 @@ static int method_slot = 0;
    required.  */
 static bool objc_method_optional_flag = false;
 
-static bool property_readonly;
-static tree property_getter;
-static tree property_setter;
-static tree property_ivar;
-static bool property_copies;
 static bool in_objc_property_setter_name_context = false;
 
 static int objc_collecting_ivars = 0;
@@ -815,68 +810,93 @@ objc_set_method_opt (bool optional)
     }
 }
 
-/* This routine gathers property attribute information from the attribute
-   portion of a property declaration. */
-
+/* This routine is called by the parser when a
+   @property... declaration is found.  'decl' is the declaration of
+   the property (type/identifier), and the other arguments represent
+   property attributes that may have been specified in the Objective-C
+   declaration.  'parsed_property_readonly' is 'true' if the attribute
+   'readonly' was specified, and 'false' if not; similarly for the
+   other bool parameters.  'parsed_property_getter_ident' is NULL_TREE
+   if the attribute 'getter' was not specified, and is the identifier
+   corresponding to the specified getter if it was; similarly for
+   'parsed_property_setter_ident'.  */
 void
-objc_set_property_attr (location_t loc, objc_property_attribute_kind attr,
-			tree ident)
-{
-  static char string[BUFSIZE];
-  switch (attr)
-    {
-    case OBJC_PATTR_INIT: /* init */
-	property_readonly = property_copies = false;
-	property_setter = property_getter = property_ivar = NULL_TREE;
-	break;
-    case OBJC_PATTR_READONLY: /* readonly */
-	property_readonly = true;
-	break;
-    case OBJC_PATTR_GETTER: /* getter = ident */
-	if (property_getter != NULL_TREE)
-	  error_at (loc, "the %<getter%> attribute may only be specified once");
-        property_getter = ident;
-	break;
-    case OBJC_PATTR_SETTER: /* setter = ident */
-	if (property_setter != NULL_TREE)
-	  error_at (loc, "the %<setter%> attribute may only be specified once");
-	/* setters always have a trailing ':' in their name. In fact, this is the
-	   only syntax that parser recognizes for a setter name. Must add a trailing
-	   ':' here so name matches that of the declaration of user instance method
-	   for the setter. */
-	sprintf (string, "%s:", IDENTIFIER_POINTER (ident));
-	property_setter = get_identifier (string);;
-	break;
-    case OBJC_PATTR_IVAR: /* ivar = ident */
-	if (property_ivar != NULL_TREE)
-	  error_at (loc, "the %<ivar%> attribute may only be specified once");
-	else if (objc_interface_context) 
-	  {
-	    warning_at (loc, 0, "the %<ivar%> attribute is ignored in an @interface");
-	    property_ivar = NULL_TREE;
-	  }
-	else
-	  property_ivar = ident;
-	break;
-    case OBJC_PATTR_COPIES: /* copies */
-	property_copies = true;
-	break;
-    default:
-	break;
-    }
-}
-
-/* This routine builds a 'property_decl' tree node and adds it to the list
-   of such properties in the current class. It also checks for duplicates.
-*/
-
-void
-objc_add_property_declaration (location_t location, tree decl)
+objc_add_property_declaration (location_t location, tree decl,
+			       bool parsed_property_readonly, bool parsed_property_readwrite,
+			       bool parsed_property_assign, bool parsed_property_retain,
+			       bool parsed_property_copy, bool parsed_property_nonatomic,
+			       tree parsed_property_getter_ident, tree parsed_property_setter_ident,
+			       /* The following two will be removed.  */
+			       bool parsed_property_copies, tree parsed_property_ivar_ident)
 {
   tree property_decl;
   tree x;
   tree interface = NULL_TREE;
+  /* 'property_readonly' is the final readonly/rewrite attribute of
+     the property declaration after all things have been
+     considered.  */
+  bool property_readonly = false;
+  enum objc_property_assign_semantics property_assign_semantics = OBJC_PROPERTY_ASSIGN;
+  /* The following will be removed once @synthesize is implemented.  */
+  bool property_copies = false;
 
+  if (parsed_property_readonly && parsed_property_readwrite)
+    {
+      error_at (location, "%<readonly%> attribute conflicts with %<readwrite%> attribute");
+      /* In case of conflicting attributes (here and below), after
+	 producing an error, we pick one of the attributes and keep
+	 going.  */
+      property_readonly = false;
+    }
+  else
+    {
+      if (parsed_property_readonly)
+	property_readonly = true;
+  
+      if (parsed_property_readwrite)
+	property_readonly = false;
+    }
+
+  if (parsed_property_readonly && parsed_property_setter_ident)
+    {
+      /* Maybe this should be an error ? */
+      warning_at (location, 0, "%<readonly%> attribute conflicts with %<setter%> attribute");
+      parsed_property_readonly = false;
+    }
+
+  if (parsed_property_assign && parsed_property_retain)
+    {
+      error_at (location, "%<assign%> attribute conflicts with %<retain%> attribute");
+      property_assign_semantics = OBJC_PROPERTY_RETAIN;
+    }
+  else if (parsed_property_assign && parsed_property_copy)
+    {
+      error_at (location, "%<assign%> attribute conflicts with %<copy%> attribute");
+      property_assign_semantics = OBJC_PROPERTY_COPY;
+    }
+  else if (parsed_property_retain && parsed_property_copy)
+    {
+      error_at (location, "%<retain%> attribute conflicts with %<copy%> attribute");
+      property_assign_semantics = OBJC_PROPERTY_COPY;
+    }
+  else
+    {
+      if (parsed_property_assign)
+	property_assign_semantics = OBJC_PROPERTY_ASSIGN;
+
+      if (parsed_property_retain)
+	property_assign_semantics = OBJC_PROPERTY_RETAIN;
+
+      if (parsed_property_copy)
+	property_assign_semantics = OBJC_PROPERTY_COPY;
+    }
+
+  /* This will be removed when @synthesize is implemented.  */
+  if (parsed_property_copies)
+    property_copies = true;
+
+  /* This case will be removed when @synthesize is implemented; then
+     @property will only be allowed in an @interface context.  */
   if (objc_implementation_context)
     {
       interface = lookup_interface (CLASS_NAME (objc_implementation_context));
@@ -896,25 +916,61 @@ objc_add_property_declaration (location_t location, tree decl)
 	    }
         }
     }
+  else if (objc_interface_context) 
+    {
+      /* This will be removed when ivar is removed.  */
+      if (parsed_property_ivar_ident)
+	{
+	  warning_at (location, 0, "the %<ivar%> attribute is ignored in an @interface");
+	  parsed_property_ivar_ident = NULL_TREE;
+	}
+    }
   else if (!objc_interface_context)
     {
       error_at (location, "property declaration not in @interface or @implementation context");
       return;
     }
 
+  if (parsed_property_setter_ident)
+    {
+      /* The setter should be terminated by ':', but the parser only
+	 passes us an identifier without ':'.  So, we need to add ':'
+	 at the end.  */
+      const char *parsed_setter = IDENTIFIER_POINTER (parsed_property_setter_ident);
+      size_t length = strlen (parsed_setter);
+      char *final_setter = (char *)alloca (length + 2);
+
+      sprintf (final_setter, "%s:", parsed_setter);
+      parsed_property_setter_ident = get_identifier (final_setter);
+    }
+
   property_decl = make_node (PROPERTY_DECL);
   TREE_TYPE (property_decl) = TREE_TYPE (decl);
 
   PROPERTY_NAME (property_decl) = DECL_NAME (decl);
-  PROPERTY_GETTER_NAME (property_decl) = property_getter;
-  PROPERTY_SETTER_NAME (property_decl) = property_setter;
-  PROPERTY_IVAR_NAME (property_decl) = property_ivar;
+  PROPERTY_GETTER_NAME (property_decl) = parsed_property_getter_ident;
+  PROPERTY_SETTER_NAME (property_decl) = parsed_property_setter_ident;
+  PROPERTY_IVAR_NAME (property_decl) = parsed_property_ivar_ident;
   PROPERTY_READONLY (property_decl) = property_readonly 
 					? boolean_true_node 
 					: boolean_false_node;
   PROPERTY_COPIES (property_decl) = property_copies 
 					? boolean_true_node 
 					: boolean_false_node;
+
+  /* TODO: The following is temporary code that will be removed when
+     property_assign_semantics and property_nonatomic are
+     implemented.  */
+  if (objc_implementation_context && objc_interface_context)
+    {
+      /* This branch is impossible but the compiler can't know it.  Do
+	 something with property_assign_semantics and
+	 parsed_property_nonatomic (not implemented yet) to convince
+	 the compiler we're using them and prevent it from generating
+	 warnings and breaking bootstrap.  */
+      PROPERTY_COPIES (property_decl) = property_assign_semantics ? boolean_true_node : boolean_false_node;
+      PROPERTY_READONLY (property_decl) = parsed_property_nonatomic ? boolean_true_node : boolean_false_node;
+    }
 
   if (objc_interface_context)
     {
@@ -938,6 +994,8 @@ objc_add_property_declaration (location_t location, tree decl)
     }
   else
     {
+      /* This case will go away once @syhtensize is implemented.  */
+
       /* Doing the property in implementation context. */
       /* If property is not declared in the interface issue error. */
       for (x = CLASS_PROPERTY_DECL (interface); x; x = TREE_CHAIN (x))
@@ -964,7 +1022,8 @@ objc_add_property_declaration (location_t location, tree decl)
       if (PROPERTY_READONLY (property_decl) == boolean_true_node &&
 	  PROPERTY_SETTER_NAME (property_decl))
 	{
-	  warning_at (location, 0, "a %<readonly%> property cannot have a setter (ignored)");
+	  /* This error is already reported up there.  */
+	  /* warning_at (location, 0, "a %<readonly%> property cannot have a setter (ignored)"); */
 	  PROPERTY_SETTER_NAME (property_decl) = NULL_TREE;
 	}
       /* Add the property to the list of properties for current implementation. */
@@ -1039,7 +1098,7 @@ lookup_property (tree interface_type, tree property)
   return inter;
 }
 
-/* This routine recognizes a dot-notation for a propery reference and generates a call to
+/* This routine recognizes a dot-notation for a property reference and generates a call to
    the getter function for this property. In all other cases, it returns a NULL_TREE.
 */
 

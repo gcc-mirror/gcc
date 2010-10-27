@@ -1,5 +1,19 @@
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* c-common.h (enum rid): Added RID_READWRITE, RID_ASSIGN,
+	RID_RETAIN, RID_COPY and RID_NONATOMIC.  Updated RID_FIRST_PATTR
+	and RID_LAST_PATTR.
+	(objc_add_property_declaration): Added additional arguments.
+	(objc_property_attribute_kind): Removed.
+	(objc_set_property_attr): Removed.
+	* c-common.c (c_common_reswords): Added readwrite, assign, retain,
+	copy and nonatomic.
+	* stub-objc.c (objc_add_property_declaration): Added additional
+	arguments.
+	(objc_set_property_attr): Removed.
+	
+2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* c-common.h (objc_add_property_variable): Renamed to
 	objc_add_property_declaration.  Added location argument.
 	* stub-objc.c (objc_add_property_variable): Same change.

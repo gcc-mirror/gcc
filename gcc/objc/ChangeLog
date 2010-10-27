@@ -1,5 +1,22 @@
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_add_property_declaration): Added arguments to
+	pass the various property attributes that were parsed with the
+	property declaration.  Process arguments to determine the final
+	property attributes and produce error messages as appropriate.
+	Added temporary code to keep the compiler silent about variables
+	set but not used - for new attributes that are only checked but
+	have no effect yet.
+	(property_readonly): Removed.
+	(property_setter): Removed.
+	(property_getter): Removed.
+	(property_ivar): Removed.
+	(property_copies): Removed.	
+	(objc_set_property_attr): Removed.
+	* objc-act.h (enum property_assign_semantics): New.
+	
+2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (objc_add_property_variable): Renamed to
 	objc_add_property_declaration.  Added location argument.  Updated
 	warnings and errors to use it.  Use error, not fatal_error, if a

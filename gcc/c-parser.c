@@ -7603,23 +7603,41 @@ c_parser_objc_diagnose_bad_element_prefix (c_parser *parser,
     @property int a, b, c;
 
   PS: This function is identical to cp_parser_objc_at_propery_declaration
-  for C++.  Keep them in sync.
-
-  WORK IN PROGRESS: At the moment, the list of attributes that are
-  parsed is different from the above list.  It will be updated to use
-  the above list at the same time as @synthesize is implemented.  */
+  for C++.  Keep them in sync.  */
 static void
 c_parser_objc_at_property_declaration (c_parser *parser)
 {
+  /* The following variables hold the attributes of the properties as
+     parsed.  They are 'false' or 'NULL_TREE' if the attribute was not
+     seen.  When we see an attribute, we set them to 'true' (if they
+     are boolean properties) or to the identifier (if they have an
+     argument, ie, for getter and setter).  Note that here we only
+     parse the list of attributes, check the syntax and accumulate the
+     attributes that we find.  objc_add_property_declaration() will
+     then process the information.  */
+  bool property_assign = false;
+  bool property_copy = false;
+  tree property_getter_ident = NULL_TREE;
+  bool property_nonatomic = false;
+  bool property_readonly = false;
+  bool property_readwrite = false;
+  bool property_retain = false;
+  tree property_setter_ident = NULL_TREE;
+  /* The following two will be removed once @synthesize is
+     implemented.  */
+  bool property_copies = false;
+  tree property_ivar_ident = NULL_TREE;
+
+  /* 'properties' is the list of properties that we read.  Usually a
+     single one, but maybe more (eg, in "@property int a, b, c;" there
+     are three).  */
   tree properties;
   location_t loc;
+
   loc = c_parser_peek_token (parser)->location;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_AT_PROPERTY));
 
   c_parser_consume_token (parser);  /* Eat '@property'.  */
-
-  /* Initialize attributes to an empty list.  */
-  objc_set_property_attr (loc, OBJC_PATTR_INIT, NULL_TREE);
 
   /* Parse the optional attribute list...  */
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
@@ -7648,18 +7666,20 @@ c_parser_objc_at_property_declaration (c_parser *parser)
 	      break;
 	    }
 	  keyword = token->keyword;
+	  c_parser_consume_token (parser);
 	  switch (keyword)
 	    {
-	      tree ident;
-	      objc_property_attribute_kind pkind;
-	    case RID_READONLY:
-	      c_parser_consume_token (parser);
-	      objc_set_property_attr (loc, OBJC_PATTR_READONLY, NULL_TREE);
-	      break;
+	    case RID_ASSIGN:    property_assign = true;    break;
+	    case RID_COPIES:    property_copies = true;    break;
+	    case RID_COPY:      property_copy = true;      break;
+	    case RID_NONATOMIC: property_nonatomic = true; break;
+	    case RID_READONLY:  property_readonly = true;  break;
+	    case RID_READWRITE: property_readwrite = true; break;
+	    case RID_RETAIN:    property_retain = true;    break;
+
 	    case RID_GETTER:
 	    case RID_SETTER:
 	    case RID_IVAR:
-	      c_parser_consume_token (parser);
 	      if (c_parser_next_token_is_not (parser, CPP_EQ))
 		{
 		  c_parser_error (parser,
@@ -7674,39 +7694,37 @@ c_parser_objc_at_property_declaration (c_parser *parser)
 		  syntax_error = true;
 		  break;
 		}
-	      ident = c_parser_peek_token (parser)->value;
-	      c_parser_consume_token (parser);
 	      if (keyword == RID_SETTER)
 		{
-		  pkind = OBJC_PATTR_SETTER;
-		  /* Eat the identifier, and look for the following : */
-		  if (c_parser_next_token_is_not (parser, CPP_COLON))
-		    {
-		      c_parser_error (parser,
-				      "setter name must be followed by %<:%>");
-		      syntax_error = true;
-		      break;
-		    }
+		  if (property_setter_ident != NULL_TREE)
+		    c_parser_error (parser, "the %<setter%> attribute may only be specified once");
+		  else
+		    property_setter_ident = c_parser_peek_token (parser)->value;
 		  c_parser_consume_token (parser);
+		  if (c_parser_next_token_is_not (parser, CPP_COLON))
+		    c_parser_error (parser, "setter name must terminate with %<:%>");
+		  else
+		    c_parser_consume_token (parser);
 		}
 	      else if (keyword == RID_GETTER)
-		pkind = OBJC_PATTR_GETTER;
-	      else
-		pkind = OBJC_PATTR_IVAR;
-	      objc_set_property_attr (loc, pkind, ident);
-	      break;
-	    case RID_COPIES:
-	      c_parser_consume_token (parser);
-	      objc_set_property_attr (loc, OBJC_PATTR_COPIES, NULL_TREE);
+		{
+		  if (property_getter_ident != NULL_TREE)
+		    c_parser_error (parser, "the %<getter%> attribute may only be specified once");
+		  else
+		    property_getter_ident = c_parser_peek_token (parser)->value;
+		  c_parser_consume_token (parser);
+		}
+	      else /* RID_IVAR, this case will go away.  */
+		{
+		  if (property_ivar_ident != NULL_TREE)
+		    c_parser_error (parser, "the %<ivar%> attribute may only be specified once");
+		  else
+		    property_ivar_ident = c_parser_peek_token (parser)->value;
+		  c_parser_consume_token (parser);
+		}
 	      break;
 	    default:
-	      if (token->type == CPP_CLOSE_PAREN)
-		c_parser_error (parser, "expected identifier");
-	      else
-		{
-		  c_parser_consume_token (parser);
-		  c_parser_error (parser, "unknown property attribute");
-		}
+	      c_parser_error (parser, "unknown property attribute");
 	      syntax_error = true;
 	      break;
 	    }
@@ -7741,7 +7759,13 @@ c_parser_objc_at_property_declaration (c_parser *parser)
       properties = nreverse (properties);
       
       for (; properties; properties = TREE_CHAIN (properties))
-	objc_add_property_declaration (loc, copy_node (properties));
+	objc_add_property_declaration (loc, copy_node (properties),
+				       property_readonly, property_readwrite,
+				       property_assign, property_retain,
+				       property_copy, property_nonatomic,
+				       property_getter_ident, property_setter_ident,
+				       /* The following two will be removed.  */
+				       property_copies, property_ivar_ident);
     }
 
   c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
