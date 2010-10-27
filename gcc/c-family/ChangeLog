@@ -1,3 +1,7 @@
+2010-10-27  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (check_case_value): Remove special C++ code.
+
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-common.h (enum rid): Added RID_READWRITE, RID_ASSIGN,

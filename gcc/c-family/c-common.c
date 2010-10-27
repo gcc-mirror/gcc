@@ -2588,22 +2588,6 @@ check_case_value (tree value)
   if (value == NULL_TREE)
     return value;
 
-  /* ??? Can we ever get nops here for a valid case value?  We
-     shouldn't for C.  */
-  STRIP_TYPE_NOPS (value);
-  /* In C++, the following is allowed:
-
-       const int i = 3;
-       switch (...) { case i: ... }
-
-     So, we try to reduce the VALUE to a constant that way.  */
-  if (c_dialect_cxx ())
-    {
-      value = decl_constant_value (value);
-      STRIP_TYPE_NOPS (value);
-      value = fold (value);
-    }
-
   if (TREE_CODE (value) == INTEGER_CST)
     /* Promote char or short to int.  */
     value = perform_integral_promotions (value);

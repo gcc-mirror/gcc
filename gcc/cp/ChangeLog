@@ -1,6 +1,8 @@
 2010-10-27  Gabriel Dos Reis  <gdr@cse.tamu.edu>
 	    Jason Merrill  <jason@redhat.com>
 
+	* decl.c (finish_case_label): Use decl_constant_value.
+
 	* method.c (synthesized_method_walk): Track constexprness too.
 	(process_subob_fn, walk_field_subobs): Likewise.
 	(implicitly_declare_fn): Set DECL_DECLARED_CONSTEXPR_P.
