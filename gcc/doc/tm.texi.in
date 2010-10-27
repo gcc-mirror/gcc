@@ -4600,6 +4600,10 @@ This macro has effect in @option{-fpcc-struct-return} mode, but it does
 nothing when you use @option{-freg-struct-return} mode.
 @end defmac
 
+@hook TARGET_GET_RAW_RESULT_MODE
+
+@hook TARGET_GET_RAW_ARG_MODE
+
 @node Caller Saves
 @subsection Caller-Saves Register Allocation
 
