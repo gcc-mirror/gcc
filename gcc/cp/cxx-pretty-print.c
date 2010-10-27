@@ -2369,6 +2369,9 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
     case CPTK_IS_UNION:
       pp_cxx_ws_string (pp, "__is_union");
       break;
+    case CPTK_IS_LITERAL_TYPE:
+      pp_cxx_ws_string (pp, "__is_literal_type");
+      break;
 
     default:
       gcc_unreachable ();

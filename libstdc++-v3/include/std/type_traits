@@ -192,6 +192,12 @@ namespace std
     : public integral_constant<bool, __is_pod(_Tp)>
     { };
 
+  /// is_literal_type
+  template<typename _Tp>
+    struct is_literal_type
+    : public integral_constant<bool, __is_literal_type(_Tp)>
+    { };
+
   template<typename _Tp>
     typename add_rvalue_reference<_Tp>::type declval() noexcept;
 
