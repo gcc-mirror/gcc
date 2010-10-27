@@ -1,3 +1,11 @@
+2010-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gigi): Fix formatting issues.
+	(build_raise_check): Likewise.
+	(gnat_to_gnu): Likewise.
+	* gcc-interface/utils2.c (build_call_raise_range): Likewise.
+	(build_call_raise_column): Likewise.
+
 2010-10-26  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, exp_prag.adb, sem_ch3.adb, exp_atag.adb, layout.adb,
