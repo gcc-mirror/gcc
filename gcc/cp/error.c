@@ -867,6 +867,9 @@ dump_simple_decl (tree t, tree type, int flags)
 {
   if (flags & TFF_DECL_SPECIFIERS)
     {
+      if (TREE_CODE (t) == VAR_DECL
+	  && DECL_DECLARED_CONSTEXPR_P (t))
+	pp_cxx_ws_string (cxx_pp, "constexpr");
       dump_type_prefix (type, flags & ~TFF_UNQUALIFIED_NAME);
       pp_maybe_space (cxx_pp);
     }
@@ -1306,12 +1309,16 @@ dump_function_decl (tree t, int flags)
   else if (TREE_CODE (fntype) == METHOD_TYPE)
     cname = TREE_TYPE (TREE_VALUE (parmtypes));
 
-  if (!(flags & TFF_DECL_SPECIFIERS))
-    /* OK */;
-  else if (DECL_STATIC_FUNCTION_P (t))
-    pp_cxx_ws_string (cxx_pp, "static");
-  else if (DECL_VIRTUAL_P (t))
-    pp_cxx_ws_string (cxx_pp, "virtual");
+  if (flags & TFF_DECL_SPECIFIERS)
+    {
+      if (DECL_STATIC_FUNCTION_P (t))
+	pp_cxx_ws_string (cxx_pp, "static");
+      else if (DECL_VIRTUAL_P (t))
+	pp_cxx_ws_string (cxx_pp, "virtual");
+
+      if (DECL_DECLARED_CONSTEXPR_P (STRIP_TEMPLATE (t)))
+	pp_cxx_ws_string (cxx_pp, "constexpr");
+    }
 
   /* Print the return type?  */
   if (show_return)
