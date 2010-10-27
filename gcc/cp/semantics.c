@@ -5245,6 +5245,7 @@ float_const_decimal64_p (void)
   return 0;
 }
 
+
 /* Return true if T is a literal type.   */
 
 bool
@@ -5258,7 +5259,6 @@ literal_type_p (tree t)
     return literal_type_p (strip_array_types (t));
   return false;
 }
-
 
 /* If DECL is a variable declared `constexpr', require its type
    be literal.  Return the DECL if OK, otherwise NULL.  */

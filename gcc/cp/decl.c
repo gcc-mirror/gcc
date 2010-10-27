@@ -10292,6 +10292,10 @@ grok_special_member_properties (tree decl)
 	TYPE_HAS_COMPLEX_MOVE_CTOR (class_type) = 1;
       else if (is_list_ctor (decl))
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
+
+      if (DECL_DECLARED_CONSTEXPR_P (decl)
+	  && !copy_fn_p (decl) && !move_fn_p (decl))
+	TYPE_HAS_CONSTEXPR_CTOR (class_type) = 1;
     }
   else if (DECL_OVERLOADED_OPERATOR_P (decl) == NOP_EXPR)
     {
