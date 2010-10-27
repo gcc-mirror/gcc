@@ -1,3 +1,8 @@
+2010-10-27  Jason Merrill  <jason@redhat.com>
+
+	* gimplify.c (gimplify_decl_expr): Handle anonymous artificial
+	variables sooner.
+
 2010-10-27  Jie Zhang  <jie@codesourcery.com>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 
