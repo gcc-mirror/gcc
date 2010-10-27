@@ -1375,7 +1375,8 @@ compare_allocatable (gfc_symbol *formal, gfc_expr *actual)
 {
   symbol_attribute attr;
 
-  if (formal->attr.allocatable)
+  if (formal->attr.allocatable
+      || (formal->ts.type == BT_CLASS && CLASS_DATA (formal)->attr.allocatable))
     {
       attr = gfc_expr_attr (actual);
       if (!attr.allocatable)
@@ -1518,6 +1519,28 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		   formal->name, &actual->where, gfc_typename (&actual->ts),
 		   gfc_typename (&formal->ts));
       return 0;
+    }
+    
+  /* F2003, 12.5.2.5.  */
+  if (formal->ts.type == BT_CLASS
+      && (CLASS_DATA (formal)->attr.class_pointer
+          || CLASS_DATA (formal)->attr.allocatable))
+    {
+      if (actual->ts.type != BT_CLASS)
+	{
+	  if (where)
+	    gfc_error ("Actual argument to '%s' at %L must be polymorphic",
+			formal->name, &actual->where);
+	  return 0;
+	}
+      if (CLASS_DATA (actual)->ts.u.derived
+	  != CLASS_DATA (formal)->ts.u.derived)
+	{
+	  if (where)
+	    gfc_error ("Actual argument to '%s' at %L must have the same "
+		       "declared type", formal->name, &actual->where);
+	  return 0;
+	}
     }
 
   if (formal->attr.codimension)

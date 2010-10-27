@@ -1,3 +1,9 @@
+2010-10-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46161
+	* interface.c (compare_allocatable): Handle polymorphic allocatables.
+	(compare_parameter): Add two error messages for polymorphic dummies.
+
 2010-10-26  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42647
