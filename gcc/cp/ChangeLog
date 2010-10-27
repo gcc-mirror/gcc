@@ -1,3 +1,8 @@
+2010-10-27  Jason Merrill  <jason@redhat.com>
+
+	* call.c (convert_like_real): Don't check narrowing if the element
+	is also an initializer-list.
+
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* parser.c (cp_parser_objc_at_property_declaration): Recognize

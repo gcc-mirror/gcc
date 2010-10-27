@@ -5115,7 +5115,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 					  1, false, false, complain);
 	    if (sub == error_mark_node)
 	      return sub;
-	    check_narrowing (TREE_TYPE (sub), val);
+	    if (!BRACE_ENCLOSED_INITIALIZER_P (val))
+	      check_narrowing (TREE_TYPE (sub), val);
 	    CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_ctor), NULL_TREE, sub);
 	  }
 	/* Build up the array.  */
