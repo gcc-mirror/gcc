@@ -1,3 +1,10 @@
+2010-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* config/i386/w32-unwind.h (i386_w32_fallback_frame_state): Fix regnum
+	of EBP.  Do not restore reg #9.  Remove +1 adjustment to EIP and set
+	fs->signal_frame instead.
+
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-parser.c (c_parser_objc_at_property_declaration): Recognize
