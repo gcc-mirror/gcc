@@ -1334,7 +1334,7 @@ apply_args_size (void)
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	if (FUNCTION_ARG_REGNO_P (regno))
 	  {
-	    mode = reg_raw_mode[regno];
+	    mode = targetm.calls.get_raw_arg_mode (regno);
 
 	    gcc_assert (mode != VOIDmode);
 
@@ -1370,7 +1370,7 @@ apply_result_size (void)
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	if (targetm.calls.function_value_regno_p (regno))
 	  {
-	    mode = reg_raw_mode[regno];
+	    mode = targetm.calls.get_raw_result_mode (regno);
 
 	    gcc_assert (mode != VOIDmode);
 

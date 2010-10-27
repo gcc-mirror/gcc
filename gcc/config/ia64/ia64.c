@@ -209,6 +209,14 @@ static void ia64_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static int ia64_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
+static rtx ia64_function_arg_1 (const CUMULATIVE_ARGS *, enum machine_mode,
+				const_tree, bool, bool);
+static rtx ia64_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			      const_tree, bool);
+static rtx ia64_function_incoming_arg (CUMULATIVE_ARGS *,
+				       enum machine_mode, const_tree, bool);
+static void ia64_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				       const_tree, bool);
 static bool ia64_function_ok_for_sibcall (tree, tree);
 static bool ia64_return_in_memory (const_tree, const_tree);
 static rtx ia64_function_value (const_tree, const_tree, bool);
@@ -325,6 +333,7 @@ static void ia64_dwarf_handle_frame_unspec (const char *, rtx, int);
 static tree ia64_builtin_decl (unsigned, bool);
 
 static reg_class_t ia64_preferred_reload_class (rtx, reg_class_t);
+static enum machine_mode ia64_get_reg_raw_mode (int regno);
 
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ia64_attribute_table[] =
@@ -481,6 +490,12 @@ static const struct default_options ia64_option_optimization_table[] =
 #define TARGET_FUNCTION_OK_FOR_SIBCALL ia64_function_ok_for_sibcall
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES ia64_arg_partial_bytes
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG ia64_function_arg
+#undef TARGET_FUNCTION_INCOMING_ARG
+#define TARGET_FUNCTION_INCOMING_ARG ia64_function_incoming_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE ia64_function_arg_advance
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK ia64_output_mi_thunk
@@ -545,6 +560,10 @@ static const struct default_options ia64_option_optimization_table[] =
 #define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
+#undef TARGET_GET_RAW_RESULT_MODE
+#define TARGET_GET_RAW_RESULT_MODE ia64_get_reg_raw_mode
+#undef TARGET_GET_RAW_ARG_MODE
+#define TARGET_GET_RAW_ARG_MODE ia64_get_reg_raw_mode
 
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR ia64_gimplify_va_arg
@@ -4250,7 +4269,7 @@ hfa_element_mode (const_tree type, bool nested)
 /* Return the number of words required to hold a quantity of TYPE and MODE
    when passed as an argument.  */
 static int
-ia64_function_arg_words (tree type, enum machine_mode mode)
+ia64_function_arg_words (const_tree type, enum machine_mode mode)
 {
   int words;
 
@@ -4276,7 +4295,8 @@ ia64_function_arg_words (tree type, enum machine_mode mode)
    all as if they had 16 byte alignment.  Such aggregates can occur
    only if gcc extensions are used.  */
 static int
-ia64_function_arg_offset (CUMULATIVE_ARGS *cum, tree type, int words)
+ia64_function_arg_offset (const CUMULATIVE_ARGS *cum,
+			  const_tree type, int words)
 {
   /* No registers are skipped on VMS.  */
   if (TARGET_ABI_OPEN_VMS || (cum->words & 1) == 0)
@@ -4295,9 +4315,9 @@ ia64_function_arg_offset (CUMULATIVE_ARGS *cum, tree type, int words)
 /* ??? 128-bit quad-precision floats are always passed in general
    registers.  */
 
-rtx
-ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
-		   int named, int incoming)
+static rtx
+ia64_function_arg_1 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		     const_tree type, bool named, bool incoming)
 {
   int basereg = (incoming ? GR_ARG_FIRST : AR_ARG_FIRST);
   int words = ia64_function_arg_words (type, mode);
@@ -4486,6 +4506,25 @@ ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
     }
 }
 
+/* Implement TARGET_FUNCION_ARG target hook.  */
+
+static rtx
+ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		   const_tree type, bool named)
+{
+  return ia64_function_arg_1 (cum, mode, type, named, false);
+}
+
+/* Implement TARGET_FUNCION_INCOMING_ARG target hook.  */
+
+static rtx
+ia64_function_incoming_arg (CUMULATIVE_ARGS *cum,
+			    enum machine_mode mode,
+			    const_tree type, bool named)
+{
+  return ia64_function_arg_1 (cum, mode, type, named, true);
+}
+
 /* Return number of bytes, at the beginning of the argument, that must be
    put in registers.  0 is the argument is entirely in registers or entirely
    in memory.  */
@@ -4531,9 +4570,9 @@ ia64_arg_type (enum machine_mode mode)
 /* Update CUM to point after this argument.  This is patterned after
    ia64_function_arg.  */
 
-void
+static void
 ia64_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			   tree type, int named)
+			   const_tree type, bool named)
 {
   int words = ia64_function_arg_words (type, mode);
   int offset = ia64_function_arg_offset (cum, type, words);
@@ -10959,5 +10998,12 @@ ia64_dconst_0_375 (void)
   return ia64_dconst_0_375_rtx;
 }
 
+static enum machine_mode
+ia64_get_reg_raw_mode (int regno)
+{
+  if (FR_REGNO_P (regno))
+    return XFmode;
+  return default_get_reg_raw_mode(regno);
+}
 
 #include "gt-ia64.h"
