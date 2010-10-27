@@ -1,3 +1,11 @@
+2010-10-27  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (cp_trait_kind): Add CPTK_IS_LITERAL_TYPE.
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Handle it.
+	* semantics.c (trait_expr_value, finish_trait_expr): Likewise.
+	* parser.c (cp_parser_primary_expression): Handle RID_IS_LITERAL_TYPE.
+	(cp_parser_trait_expr): Likewise.
+
 2010-10-27  Gabriel Dos Reis  <gdr@cse.tamu.edu>
 	    Jason Merrill  <jason@redhat.com>
 

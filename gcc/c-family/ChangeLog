@@ -1,5 +1,8 @@
 2010-10-27  Jason Merrill  <jason@redhat.com>
 
+	* c-common.c (c_common_reswords): Add __is_literal_type.
+	* c-common.h (enum rid): Add RID_IS_LITERAL_TYPE.
+
 	* c-common.c (check_case_value): Remove special C++ code.
 
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>

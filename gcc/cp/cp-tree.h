@@ -567,6 +567,7 @@ typedef enum cp_trait_kind
   CPTK_IS_POLYMORPHIC,
   CPTK_IS_STD_LAYOUT,
   CPTK_IS_TRIVIAL,
+  CPTK_IS_LITERAL_TYPE,
   CPTK_IS_UNION
 } cp_trait_kind;
 

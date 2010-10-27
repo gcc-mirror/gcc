@@ -3814,6 +3814,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_STD_LAYOUT:
 	case RID_IS_TRIVIAL:
 	case RID_IS_UNION:
+	case RID_IS_LITERAL_TYPE:
 	  return cp_parser_trait_expr (parser, token->keyword);
 
 	/* Objective-C++ expressions.  */
@@ -7364,6 +7365,9 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
       break;
     case RID_IS_UNION:
       kind = CPTK_IS_UNION;
+      break;
+    case RID_IS_LITERAL_TYPE:
+      kind = CPTK_IS_LITERAL_TYPE;
       break;
     default:
       gcc_unreachable ();
