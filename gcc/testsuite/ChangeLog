@@ -1,3 +1,8 @@
+2010-10-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46161
+	* gfortran.dg/class_dummy_3.f03: New.
+
 2010-10-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/avx-vzeroupper-1.c: Add -mtune=generic.
