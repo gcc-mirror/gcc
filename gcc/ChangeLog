@@ -1,3 +1,33 @@
+2010-10-27  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/ia64/ia64-protos.h (ia64_function_arg): Delete.
+	(ia64_function_arg_advance): Delete.
+	* config/ia64/ia64.h (FUNCTION_ARG, FUNCTION_INCOMING_ARG): Delete.
+	(FUNCTION_ARG_ADVANCE): Delete.
+	* config/ia64/ia64.c (ia64_function_arg): Rename to...
+	(ia64_function_arg_1): ...this.  Make static.  Take const_tree and
+	bool arguments.
+	(ia64_function_arg, ia64_function_incoming_arg): New functions.
+	(ia64_function_arg_advance): Make static.  Take a const_tree and
+	a bool.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_INCOMING_ARG): Define.
+	(TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-10-27  Steve Ellcey  <sje@cup.hp.com>
+
+	* doc/tm.texi.in (TARGET_GET_RAW_RESULT_MODE): New.
+	(TARGET_GET_RAW_ARG_MODE): New.
+	* doc/tm.texi: Regenerate.
+	* target.def (get_raw_result_mode): New.
+	(get_raw_arg_mode): New.
+	* targhooks.c (default_get_reg_raw_mode): New.
+	* targhooks.h (default_get_reg_raw_mode): New.
+	* builtins.c (apply_args_size): Use targetm.calls.get_raw_arg_mode.
+	(apply_result_size): Ditto.
+	* config/ia64/ia64.c (ia64_get_reg_raw_mode): New.
+	(TARGET_GET_RAW_RESULT_MODE): Define.
+	(TARGET_GET_RAW_ARG_MODE): Ditto.
+
 2010-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sol2-unwind.h (sparc64_fallback_frame_state): Adjust
