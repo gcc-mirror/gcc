@@ -648,7 +648,9 @@ build_throw (tree exp)
     {
       if (cfun)
 	current_function_returns_abnormally = 1;
-      return build_min (THROW_EXPR, void_type_node, exp);
+      exp = build_min (THROW_EXPR, void_type_node, exp);
+      SET_EXPR_LOCATION (exp, input_location);
+      return exp;
     }
 
   if (exp == null_node)
@@ -834,6 +836,7 @@ build_throw (tree exp)
     }
 
   exp = build1 (THROW_EXPR, void_type_node, exp);
+  SET_EXPR_LOCATION (exp, input_location);
 
   return exp;
 }
