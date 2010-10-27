@@ -11508,29 +11508,11 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
 
-;; vzeroupper clobbers the upper 128bits of AVX registers.
-(define_expand "avx_vzeroupper"
-  [(match_par_dup 0 [(const_int 0)])]
-  "TARGET_AVX"
-{
-  int nregs = TARGET_64BIT ? 16 : 8;
-  int regno;
-
-  operands[0] = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs + 1));
-
-  XVECEXP (operands[0], 0, 0)
-    = gen_rtx_UNSPEC_VOLATILE (VOIDmode, gen_rtvec (1, const0_rtx),
-			       UNSPECV_VZEROUPPER);
-
-  for (regno = 0; regno < nregs; regno++)
-    XVECEXP (operands[0], 0, regno + 1)
-      = gen_rtx_CLOBBER (VOIDmode,
-			 gen_rtx_REG (V8SImode, SSE_REGNO (regno)));
-})
-
-(define_insn "*avx_vzeroupper"
-  [(match_parallel 0 "vzeroupper_operation"
-    [(unspec_volatile [(const_int 0)] UNSPECV_VZEROUPPER)])]
+;; Clear the upper 128bits of AVX registers, equivalent to a NOP
+;; if the upper 128bits are unused.
+(define_insn "avx_vzeroupper"
+  [(unspec_volatile [(match_operand 0 "const_int_operand" "")]
+		    UNSPECV_VZEROUPPER)]
   "TARGET_AVX"
   "vzeroupper"
   [(set_attr "type" "sse")

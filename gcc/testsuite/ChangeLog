@@ -1,3 +1,21 @@
+2010-10-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/avx-vzeroupper-1.c: Add -mtune=generic.
+	* gcc.target/i386/avx-vzeroupper-2.c: Likewise.
+
+	* gcc.target/i386/avx-vzeroupper-3.c: New.
+	* gcc.target/i386/avx-vzeroupper-4.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-5.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-6.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-7.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-8.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-9.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-10.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-11.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-12.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-13.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-14.c: Likewise.
+
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* obj-c.dg/property/at-property-4.m: New.

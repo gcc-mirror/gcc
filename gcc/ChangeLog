@@ -1,3 +1,54 @@
+2010-10-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386-protos.h (init_cumulative_args): Add an int.
+
+	* config/i386/i386.c (block_info): New.
+	(BLOCK_INFO): Likewise.
+	(call_avx256_state): Likewise.
+	(check_avx256_stores): Likewise.
+	(move_or_delete_vzeroupper_2): Likewise.
+	(move_or_delete_vzeroupper_1): Likewise.
+	(move_or_delete_vzeroupper): Likewise.
+	(use_avx256_p): Likewise.
+	(function_pass_avx256_p): Likewise.
+	(flag_opts): Add -mvzeroupper.
+	(ix86_option_override_internal): Turn on MASK_VZEROUPPER by
+	default for TARGET_AVX.  Turn off MASK_VZEROUPPER if TARGET_AVX
+	is disabled.
+	(ix86_function_ok_for_sibcall): Disable sibcall if we need to
+	generate vzeroupper.
+	(init_cumulative_args): Add an int to indicate caller.  Set
+	use_avx256_p, callee_return_avx256_p and caller_use_avx256_p
+	based on return type.
+	(ix86_function_arg): Set use_avx256_p, callee_pass_avx256_p and
+	caller_pass_avx256_p based on argument type.
+	(ix86_expand_epilogue): Emit vzeroupper if 256bit AVX register
+	is used, but not returned by caller.
+	(ix86_expand_call): Emit vzeroupper if 256bit AVX register is
+	used.
+	(ix86_local_alignment): Set use_avx256_p if 256bit AVX register
+	is used.
+	(ix86_minimum_alignment): Likewise.
+	(ix86_expand_special_args_builtin): Set target to
+	GEN_INT (vzeroupper_intrinsic) for CODE_FOR_avx_vzeroupper.
+	(ix86_reorg): Run the vzeroupper optimization if needed.
+
+	* config/i386/i386.h (ix86_args): Add caller.
+	(INIT_CUMULATIVE_ARGS): Updated.
+	(machine_function): Add use_vzeroupper_p, use_avx256_p,
+	caller_pass_avx256_p, caller_return_avx256_p,
+	callee_pass_avx256_p and callee_return_avx256_p.
+
+	* config/i386/i386.opt (-mvzeroupper): New.
+
+	* config/i386/predicates.md (vzeroupper_operation): Removed.
+
+	* config/i386/sse.md (avx_vzeroupper): Removed.
+	(*avx_vzeroupper): Removed.
+	(avx_vzeroupper): New.
+
+	* doc/invoke.texi: Document -mvzeroupper.
+
 2010-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/t-mingw32 (SHLIB_LC): Add -lmingwthrd.
