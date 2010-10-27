@@ -3165,6 +3165,76 @@ build_user_type_conversion (tree totype, tree expr, int flags)
   return NULL_TREE;
 }
 
+/* Subroutine of convert_nontype_argument.
+
+   EXPR is an argument for a template non-type parameter of integral or
+   enumeration type.  Do any necessary conversions (that are permitted for
+   non-type arguments) to convert it to the parameter type.
+
+   If conversion is successful, returns the converted expression;
+   otherwise, returns error_mark_node.  */
+
+tree
+build_integral_nontype_arg_conv (tree type, tree expr, tsubst_flags_t complain)
+{
+  conversion *conv;
+  void *p;
+  tree t;
+
+  if (error_operand_p (expr))
+    return error_mark_node;
+
+  gcc_assert (INTEGRAL_OR_ENUMERATION_TYPE_P (type));
+
+  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
+  p = conversion_obstack_alloc (0);
+
+  conv = implicit_conversion (type, TREE_TYPE (expr), expr,
+			      /*c_cast_p=*/false,
+			      LOOKUP_IMPLICIT);
+
+  /* for a non-type template-parameter of integral or
+     enumeration type, integral promotions (4.5) and integral
+     conversions (4.7) are applied.  */
+  /* It should be sufficient to check the outermost conversion step, since
+     there are no qualification conversions to integer type.  */
+  if (conv)
+    switch (conv->kind)
+      {
+	/* A conversion function is OK.  If it isn't constexpr, we'll
+	   complain later that the argument isn't constant.  */
+      case ck_user:
+	/* The lvalue-to-rvalue conversion is OK.  */
+      case ck_rvalue:
+      case ck_identity:
+	break;
+
+      case ck_std:
+	t = conv->u.next->type;
+	if (INTEGRAL_OR_ENUMERATION_TYPE_P (t))
+	  break;
+
+	if (complain & tf_error)
+	  error ("conversion from %qT to %qT not considered for "
+		 "non-type template argument", t, type);
+	/* and fall through.  */
+
+      default:
+	conv = NULL;
+	break;
+      }
+
+  if (conv)
+    expr = convert_like (conv, expr, complain);
+  else
+    expr = error_mark_node;
+
+  /* Free all the conversions we allocated.  */
+  obstack_free (&conversion_obstack, p);
+
+  return expr;
+}
+
 /* Do any initial processing on the arguments to a function call.  */
 
 static VEC(tree,gc) *

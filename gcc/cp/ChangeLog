@@ -1,5 +1,9 @@
 2010-10-27  Jason Merrill  <jason@redhat.com>
 
+	* call.c (build_integral_nontype_arg_conv): New.
+	* cp-tree.h: Declare it.
+	* pt.c (convert_nontype_argument): Use it.
+
 	* error.c (dump_simple_decl): Print constexpr.
 
 	* cvt.c (build_up_reference): Use target_type for the temporary var.
