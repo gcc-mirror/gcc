@@ -1,4 +1,10 @@
 2010-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/t-mingw32 (SHLIB_LC): Add -lmingwthrd.
+	* config/i386/t-mingw-w32 (SHLIB_LC): Likewise.
+	* config/i386/t-mingw-w64 (SHLIB_LC): Likewise.
+
+2010-10-27  Eric Botcazou  <ebotcazou@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
 
 	* config/i386/w32-unwind.h (i386_w32_fallback_frame_state): Fix regnum
