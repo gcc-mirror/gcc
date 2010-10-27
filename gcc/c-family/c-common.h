@@ -1043,7 +1043,7 @@ extern void objc_finish_foreach_loop (location_t, tree, tree, tree, tree, tree);
 extern void objc_set_property_attr 
   (location_t, objc_property_attribute_kind, tree);
 extern bool  objc_method_decl (enum tree_code);
-extern void objc_add_property_variable (tree);
+extern void objc_add_property_declaration (location_t, tree);
 extern tree objc_build_getter_call (tree, tree);
 extern tree objc_build_setter_call (tree, tree);
 extern void objc_add_synthesize_declaration (location_t, tree);

@@ -1,3 +1,11 @@
+2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_add_property_variable): Renamed to
+	objc_add_property_declaration.  Added location argument.  Updated
+	warnings and errors to use it.  Use error, not fatal_error, if a
+	property declaration is found outside an interface or
+	implementation context.
+	
 2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_build_keyword_decl): Updated comments.  Do not

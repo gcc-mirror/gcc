@@ -1,3 +1,16 @@
+2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_parser_objc_at_property): Renamed to
+	c_parser_objc_at_property_declaration.  Updated calls to
+	objc_add_property_variable, now objc_add_property_declaration.
+	Code rewritten to be much more robust in recovering from syntax
+	errors.  Added comments.
+	(c_parser_objc_property_attrlist): Removed.
+	(c_parser_external_declaration): Updated calls to
+	c_parser_objc_at_property, now
+	c_parser_objc_at_property_declaration.
+	(c_parser_objc_methodprotolist): Same change.
+	
 2010-10-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md (split_stack_return): Put back

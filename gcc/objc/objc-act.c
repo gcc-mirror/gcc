@@ -871,7 +871,7 @@ objc_set_property_attr (location_t loc, objc_property_attribute_kind attr,
 */
 
 void
-objc_add_property_variable (tree decl)
+objc_add_property_declaration (location_t location, tree decl)
 {
   tree property_decl;
   tree x;
@@ -882,7 +882,7 @@ objc_add_property_variable (tree decl)
       interface = lookup_interface (CLASS_NAME (objc_implementation_context));
       if (!interface)
 	{
-	  error ("no class property can be implemented without an interface");
+	  error_at (location, "no class property can be implemented without an interface");
 	  return;
 	}
       if (TREE_CODE (objc_implementation_context) == CATEGORY_IMPLEMENTATION_TYPE)
@@ -891,14 +891,14 @@ objc_add_property_variable (tree decl)
 				     CLASS_SUPER_NAME (objc_implementation_context));	
 	  if (!interface)
 	    {
-	      error ("no category property can be implemented without an interface");
+	      error_at (location, "no category property can be implemented without an interface");
 	      return;
 	    }
         }
     }
   else if (!objc_interface_context)
     {
-      fatal_error ("property declaration not in @interface or @implementation context");
+      error_at (location, "property declaration not in @interface or @implementation context");
       return;
     }
 
@@ -923,13 +923,13 @@ objc_add_property_variable (tree decl)
       /* Issue error if property and an ivar name match. */
       if (TREE_CODE (objc_interface_context) == CLASS_INTERFACE_TYPE
 	  && is_ivar (CLASS_IVARS (objc_interface_context), DECL_NAME (decl)))
-	error ("property %qD may not have the same name as an ivar in the class", decl);
+	error_at (location, "property %qD may not have the same name as an ivar in the class", decl);
       /* must check for duplicate property declarations. */
       for (x = CLASS_PROPERTY_DECL (objc_interface_context); x; x = TREE_CHAIN (x))
 	{
 	  if (PROPERTY_NAME (x) == DECL_NAME (decl))
 	    {
-	      error ("duplicate property declaration %qD", decl);
+	      error_at (location, "duplicate property declaration %qD", decl);
 	      return;
 	    }
 	}
@@ -945,26 +945,26 @@ objc_add_property_variable (tree decl)
 	  break;
       if (!x)
 	{
-	  error ("no declaration of property %qD found in the interface", decl);
+	  error_at (location, "no declaration of property %qD found in the interface", decl);
 	  return;
 	}
       /* readonlys must also match. */
       if (PROPERTY_READONLY (x) != PROPERTY_READONLY (property_decl))
 	{
-	  error ("property %qD %<readonly%> attribute conflicts with its" 
-		 " interface version", decl);
+	  error_at (location, "property %qD %<readonly%> attribute conflicts with its" 
+		    " interface version", decl);
 	}
       /* copies must also match. */
       if (PROPERTY_COPIES (x) != PROPERTY_COPIES (property_decl))
 	{
-	  error ("property %qD %<copies%> attribute conflicts with its" 
-		 " interface version", decl);
+	  error_at (location, "property %qD %<copies%> attribute conflicts with its" 
+		    " interface version", decl);
 	}
       /* Cannot have readonly and setter attribute for the same property. */
       if (PROPERTY_READONLY (property_decl) == boolean_true_node &&
 	  PROPERTY_SETTER_NAME (property_decl))
 	{
-	  warning (0, "a %<readonly%> property cannot have a setter (ignored)");
+	  warning_at (location, 0, "a %<readonly%> property cannot have a setter (ignored)");
 	  PROPERTY_SETTER_NAME (property_decl) = NULL_TREE;
 	}
       /* Add the property to the list of properties for current implementation. */
