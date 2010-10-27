@@ -2672,7 +2672,20 @@ add_implicitly_declared_members (tree t,
   if (! TYPE_HAS_USER_CONSTRUCTOR (t))
     {
       TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 1;
-      CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
+      if (TYPE_HAS_TRIVIAL_DFLT (t))
+	{
+	  /* A trivial default constructor is constexpr
+	     if there is nothing to initialize.  */
+	  if (cxx_dialect >= cxx0x && is_really_empty_class (t))
+	    TYPE_HAS_CONSTEXPR_CTOR (t) = 1;
+	  CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
+	}
+      else if (cxx_dialect >= cxx0x)
+	/* We need to go ahead and declare this to set
+	   TYPE_HAS_CONSTEXPR_CTOR.  */
+	lazily_declare_fn (sfk_constructor, t);
+      else
+	CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
     }
 
   /* [class.ctor]
