@@ -1081,7 +1081,7 @@ static tree c_parser_objc_selector_arg (c_parser *);
 static tree c_parser_objc_receiver (c_parser *);
 static tree c_parser_objc_message_args (c_parser *);
 static tree c_parser_objc_keywordexpr (c_parser *);
-static void c_parser_objc_at_property (c_parser *) ;
+static void c_parser_objc_at_property_declaration (c_parser *);
 static void c_parser_objc_at_synthesize_declaration (c_parser *);
 static void c_parser_objc_at_dynamic_declaration (c_parser *);
 static bool c_parser_objc_diagnose_bad_element_prefix
@@ -1185,7 +1185,7 @@ c_parser_external_declaration (c_parser *parser)
 	  break;
 	case RID_AT_PROPERTY:
 	  gcc_assert (c_dialect_objc ());
-	  c_parser_objc_at_property (parser);
+	  c_parser_objc_at_property_declaration (parser);
 	  break;
 	case RID_AT_SYNTHESIZE:
 	  gcc_assert (c_dialect_objc ());
@@ -6997,7 +6997,7 @@ c_parser_objc_methodprotolist (c_parser *parser)
 	  if (c_parser_next_token_is_keyword (parser, RID_AT_END))
 	    return;
 	  else if (c_parser_next_token_is_keyword (parser, RID_AT_PROPERTY))
-	    c_parser_objc_at_property (parser);
+	    c_parser_objc_at_property_declaration (parser);
 	  else if (c_parser_next_token_is_keyword (parser, RID_AT_OPTIONAL))
 	    {
 	      objc_set_method_opt (true);
@@ -7574,132 +7574,178 @@ c_parser_objc_diagnose_bad_element_prefix (c_parser *parser,
   return false;
 }
 
-/* ObjC @property. */
+/* Parse an Objective-C @property declaration.  The syntax is:
 
-/* Parse a comma-separated list of property attributes.  */
+   objc-property-declaration:
+     '@property' objc-property-attributes[opt] struct-declaration ;
 
+   objc-property-attributes:
+    '(' objc-property-attribute-list ')'
+
+   objc-property-attribute-list:
+     objc-property-attribute
+     objc-property-attribute-list, objc-property-attribute
+
+   objc-property-attribute
+     'getter' = identifier
+     'setter' = identifier
+     'readonly'
+     'readwrite'
+     'assign'
+     'retain'
+     'copy'
+     'nonatomic'
+
+  For example:
+    @property NSString *name;
+    @property (readonly) id object;
+    @property (retain, nonatomic, getter=getTheName) id name;
+    @property int a, b, c;
+
+  PS: This function is identical to cp_parser_objc_at_propery_declaration
+  for C++.  Keep them in sync.
+
+  WORK IN PROGRESS: At the moment, the list of attributes that are
+  parsed is different from the above list.  It will be updated to use
+  the above list at the same time as @synthesize is implemented.  */
 static void
-c_parser_objc_property_attrlist (c_parser *parser)
+c_parser_objc_at_property_declaration (c_parser *parser)
 {
-  bool err = false;
-  /* Initialize to an empty list.  */
-  objc_set_property_attr (c_parser_peek_token (parser)->location,
-			  OBJC_PATTR_INIT, NULL_TREE);
+  tree properties;
+  location_t loc;
+  loc = c_parser_peek_token (parser)->location;
+  gcc_assert (c_parser_next_token_is_keyword (parser, RID_AT_PROPERTY));
 
-  if (c_parser_next_token_is_not (parser, CPP_OPEN_PAREN))
-    return;
+  c_parser_consume_token (parser);  /* Eat '@property'.  */
 
-  /* Eat the '(' */
-  c_parser_consume_token (parser);
-  
-  /* Property attribute keywords are valid now.  */
-  parser->objc_property_attr_context = true;
-  while (c_parser_next_token_is_not (parser, CPP_CLOSE_PAREN)
-	 && c_parser_next_token_is_not (parser, CPP_EOF)
-	 && !err)
+  /* Initialize attributes to an empty list.  */
+  objc_set_property_attr (loc, OBJC_PATTR_INIT, NULL_TREE);
+
+  /* Parse the optional attribute list...  */
+  if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
     {
-      enum rid keywd;
-      location_t loc;
-      if (c_parser_peek_token (parser)->type != CPP_KEYWORD)
-	{
-	  c_parser_error (parser, "expected a property attribute");
-	  c_parser_consume_token (parser);
-	  err = true;
-	  break;
-	}
-      keywd = c_parser_peek_token (parser)->keyword;
-      /* Initially, make diagnostics point to the attribute.  */
-      loc = c_parser_peek_token (parser)->location;
-      switch (keywd)
-	{
-	  tree ident;
-	  objc_property_attribute_kind pkind;
-	  case RID_READONLY:
-	    objc_set_property_attr (loc, OBJC_PATTR_READONLY, NULL_TREE);
-	    break;
-	  case RID_GETTER:
-	  case RID_SETTER:
-	  case RID_IVAR:
-	    c_parser_consume_token (parser);
-	    if (c_parser_next_token_is_not (parser, CPP_EQ))
-	      {
-		c_parser_error (parser, 
-		  "getter/setter/ivar attribute must be followed by %<=%>");
-		err = true;
-		break;
-	      }
-	    c_parser_consume_token (parser); /* eat the = */
-	    if (c_parser_next_token_is_not (parser, CPP_NAME))
-	      {
-		c_parser_error (parser, "expected an identifier");
-		err = true;
-		break;
-	      }
-	    ident = c_parser_peek_token (parser)->value;
-	    if (keywd == RID_SETTER)
-	      {
-		pkind = OBJC_PATTR_SETTER;
-		/* Eat the identifier, and look for the following : */
-		c_parser_consume_token (parser);
-		if (c_parser_next_token_is_not (parser, CPP_COLON))
-		  {
-		    c_parser_error (parser,
-				"setter name must be followed by %<:%>");
-		    err = true;
-		  }
-	      }
-	    else if (keywd == RID_GETTER)
-	      pkind = OBJC_PATTR_GETTER;
-	    else
-	      pkind = OBJC_PATTR_IVAR;
-	    
-	    objc_set_property_attr (loc, pkind, ident);
-	    break;
-	  case RID_COPIES:
-	    objc_set_property_attr (loc, OBJC_PATTR_COPIES, NULL_TREE);
-	    break;
-	  default:
-	    c_parser_error (parser, "unknown property attribute");
-	    err = true;
-	    break;
-	}
-      /* Eat the attribute,identifier or colon that's been used.  */
+      /* Eat the '(' */
       c_parser_consume_token (parser);
-      if (err)
-        break;
+      
+      /* Property attribute keywords are valid now.  */
+      parser->objc_property_attr_context = true;
 
-      if (c_parser_next_token_is (parser, CPP_COMMA))
-	c_parser_consume_token (parser);
-      else if (c_parser_next_token_is_not (parser, CPP_CLOSE_PAREN))
-	warning_at (c_parser_peek_token (parser)->location, 0, 
-		    "property attributes should be separated by a %<,%>");
-    }  
-  parser->objc_property_attr_context = false;
-  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
-}
+      while (true)
+	{
+	  bool syntax_error = false;
+	  c_token *token = c_parser_peek_token (parser);
+	  enum rid keyword;
 
-/* Parse property attributes and then the definition.  */
+	  if (token->type != CPP_KEYWORD)
+	    {
+	      if (token->type == CPP_CLOSE_PAREN)
+		c_parser_error (parser, "expected identifier");
+	      else
+		{
+		  c_parser_consume_token (parser);
+		  c_parser_error (parser, "unknown property attribute");
+		}
+	      break;
+	    }
+	  keyword = token->keyword;
+	  switch (keyword)
+	    {
+	      tree ident;
+	      objc_property_attribute_kind pkind;
+	    case RID_READONLY:
+	      c_parser_consume_token (parser);
+	      objc_set_property_attr (loc, OBJC_PATTR_READONLY, NULL_TREE);
+	      break;
+	    case RID_GETTER:
+	    case RID_SETTER:
+	    case RID_IVAR:
+	      c_parser_consume_token (parser);
+	      if (c_parser_next_token_is_not (parser, CPP_EQ))
+		{
+		  c_parser_error (parser,
+				  "getter/setter/ivar attribute must be followed by %<=%>");
+		  syntax_error = true;
+		  break;
+		}
+	      c_parser_consume_token (parser); /* eat the = */
+	      if (c_parser_next_token_is_not (parser, CPP_NAME))
+		{
+		  c_parser_error (parser, "expected identifier");
+		  syntax_error = true;
+		  break;
+		}
+	      ident = c_parser_peek_token (parser)->value;
+	      c_parser_consume_token (parser);
+	      if (keyword == RID_SETTER)
+		{
+		  pkind = OBJC_PATTR_SETTER;
+		  /* Eat the identifier, and look for the following : */
+		  if (c_parser_next_token_is_not (parser, CPP_COLON))
+		    {
+		      c_parser_error (parser,
+				      "setter name must be followed by %<:%>");
+		      syntax_error = true;
+		      break;
+		    }
+		  c_parser_consume_token (parser);
+		}
+	      else if (keyword == RID_GETTER)
+		pkind = OBJC_PATTR_GETTER;
+	      else
+		pkind = OBJC_PATTR_IVAR;
+	      objc_set_property_attr (loc, pkind, ident);
+	      break;
+	    case RID_COPIES:
+	      c_parser_consume_token (parser);
+	      objc_set_property_attr (loc, OBJC_PATTR_COPIES, NULL_TREE);
+	      break;
+	    default:
+	      if (token->type == CPP_CLOSE_PAREN)
+		c_parser_error (parser, "expected identifier");
+	      else
+		{
+		  c_parser_consume_token (parser);
+		  c_parser_error (parser, "unknown property attribute");
+		}
+	      syntax_error = true;
+	      break;
+	    }
 
-static void
-c_parser_objc_at_property (c_parser *parser)
-{
-  tree props;
-  /* We should only arrive here with the property keyword.  */
-  c_parser_require_keyword (parser, RID_AT_PROPERTY, "expected %<@property%>");
+	  if (syntax_error)
+	    break;
+	  
+	  if (c_parser_next_token_is (parser, CPP_COMMA))
+	    c_parser_consume_token (parser);
+	  else
+	    break;
+	}
+      parser->objc_property_attr_context = false;
+      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
+    }
+  /* ... and the property declaration(s).  */
+  properties = c_parser_struct_declaration (parser);
 
-  /* Process the optional attribute list...  */
-  c_parser_objc_property_attrlist (parser) ;
-  /* ... and the property var decls.  */
-  props = c_parser_struct_declaration (parser);
+  if (properties == error_mark_node)
+    {
+      c_parser_skip_until_found (parser, CPP_SEMICOLON, NULL);
+      parser->error = false;
+      return;
+    }
 
-  /* Comma-separated properties are chained together in
-     reverse order; add them one by one.  */
-  props = nreverse (props);
-
-  for (; props; props = TREE_CHAIN (props))
-    objc_add_property_variable (copy_node (props));
+  if (properties == NULL_TREE)
+    c_parser_error (parser, "expected identifier");
+  else
+    {
+      /* Comma-separated properties are chained together in
+	 reverse order; add them one by one.  */
+      properties = nreverse (properties);
+      
+      for (; properties; properties = TREE_CHAIN (properties))
+	objc_add_property_declaration (loc, copy_node (properties));
+    }
 
   c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+  parser->error = false;
 }
 
 /* Parse an Objective-C @synthesize declaration.  The syntax is:

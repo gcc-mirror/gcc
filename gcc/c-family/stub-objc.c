@@ -331,7 +331,7 @@ objc_set_property_attr (location_t ARG_UNUSED (loc),
 }
 
 void
-objc_add_property_variable (tree ARG_UNUSED (prop))
+objc_add_property_declaration (location_t ARG_UNUSED (loc), tree ARG_UNUSED (prop))
 {
 }
 

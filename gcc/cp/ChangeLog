@@ -1,3 +1,26 @@
+2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (cp_parser_objc_property_decl): Renamed to
+	cp_parser_objc_struct_declaration.  Return the parsed trees
+	instead of calling objc_add_property_variable directly.  Detect
+	missing or invalid declspecs.  Implemented attributes.  Do not eat
+	the ';' at the end.  Exit loop whenever a non-comma is parsed, not
+	just EOF.
+	(cp_parser_objc_at_property): Renamed to
+	cp_parser_objc_at_property_declaration.  Updated calls to
+	objc_add_property_variable, now objc_add_property_declaration, and
+	to cp_parser_objc_property_decl, now
+	cp_parser_objc_struct_declaration.  Rewritten all code to be more
+	robust in dealing with syntax errors, and almost identical to the
+	one in c_parser_objc_at_property_declaration.
+	(cp_parser_objc_property_attrlist): Removed.
+	(cp_parser_objc_method_prototype_list): Updated call to
+	cp_parser_objc_at_property.
+	(cp_parser_objc_method_definition_list): Same change.
+	(cp_parser_objc_class_ivars): Detect a number of invalid
+	declarations of instance variables and produce errors when they
+	are found.
+	
 2010-10-26  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (build_vec_init_expr): Split out from...

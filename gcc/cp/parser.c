@@ -2098,13 +2098,13 @@ static tree cp_parser_objc_statement
   (cp_parser *);
 static bool cp_parser_objc_valid_prefix_attributes
   (cp_parser *, tree *);
-static void cp_parser_objc_at_property 
+static void cp_parser_objc_at_property_declaration 
   (cp_parser *) ;
 static void cp_parser_objc_at_synthesize_declaration 
   (cp_parser *) ;
 static void cp_parser_objc_at_dynamic_declaration
   (cp_parser *) ;
-static void cp_parser_objc_property_decl 
+static tree cp_parser_objc_struct_declaration
   (cp_parser *) ;
 
 /* Utility Routines */
@@ -21930,7 +21930,7 @@ cp_parser_objc_method_prototype_list (cp_parser* parser)
 	  cp_parser_consume_semicolon_at_end_of_statement (parser);
 	}
       else if (token->keyword == RID_AT_PROPERTY)
-	cp_parser_objc_at_property (parser);
+	cp_parser_objc_at_property_declaration (parser);
       else if (token->keyword == RID_ATTRIBUTE 
       	       && cp_parser_objc_method_maybe_bad_prefix_attributes(parser))
 	warning_at (cp_lexer_peek_token (parser->lexer)->location, 
@@ -21997,8 +21997,10 @@ cp_parser_objc_method_definition_list (cp_parser* parser)
 	      objc_finish_method_definition (meth);
 	    }
 	}
+      /* The following case will be removed once @synthesize is
+	 completely implemented.  */
       else if (token->keyword == RID_AT_PROPERTY)
-	cp_parser_objc_at_property (parser);
+	cp_parser_objc_at_property_declaration (parser);
       else if (token->keyword == RID_AT_SYNTHESIZE)
 	cp_parser_objc_at_synthesize_declaration (parser);
       else if (token->keyword == RID_AT_DYNAMIC)
@@ -22051,6 +22053,28 @@ cp_parser_objc_class_ivars (cp_parser* parser)
 				    CP_PARSER_FLAGS_OPTIONAL,
 				    &declspecs,
 				    &decl_class_or_enum_p);
+
+      /* auto, register, static, extern, mutable.  */
+      if (declspecs.storage_class != sc_none)
+	{
+	  cp_parser_error (parser, "invalid type for instance variable");	  
+	  declspecs.storage_class = sc_none;
+	}
+
+      /* __thread.  */
+      if (declspecs.specs[(int) ds_thread])
+	{
+	  cp_parser_error (parser, "invalid type for instance variable");
+	  declspecs.specs[(int) ds_thread] = 0;
+	}
+      
+      /* typedef.  */
+      if (declspecs.specs[(int) ds_typedef])
+	{
+	  cp_parser_error (parser, "invalid type for instance variable");
+	  declspecs.specs[(int) ds_typedef] = 0;
+	}
+
       prefix_attributes = declspecs.attributes;
       declspecs.attributes = NULL_TREE;
 
@@ -22496,144 +22520,275 @@ cp_parser_objc_valid_prefix_attributes (cp_parser* parser, tree *attrib)
   return false;  
 }
 
-/* This routine parses the propery declarations. */
+/* This routine is a minimal replacement for
+   c_parser_struct_declaration () used when parsing the list of
+   types/names or ObjC++ properties.  For example, when parsing the
+   code
 
-static void
-cp_parser_objc_property_decl (cp_parser *parser)
+   @property (readonly) int a, b, c;
+
+   this function is responsible for parsing "int a, int b, int c" and
+   returning the declarations as CHAIN of DECLs.
+
+   TODO: Share this code with cp_parser_objc_class_ivars.  It's very
+   similar parsing.  */
+static tree
+cp_parser_objc_struct_declaration (cp_parser *parser)
 {
-  int declares_class_or_enum;
+  tree decls = NULL_TREE;
   cp_decl_specifier_seq declspecs;
+  int decl_class_or_enum_p;
+  tree prefix_attributes;
 
   cp_parser_decl_specifier_seq (parser,
-                                CP_PARSER_FLAGS_NONE,
-                                &declspecs,
-                                &declares_class_or_enum);
+				CP_PARSER_FLAGS_NONE,
+				&declspecs,
+				&decl_class_or_enum_p);
+
+  if (declspecs.type == error_mark_node)
+    return error_mark_node;
+
+  /* auto, register, static, extern, mutable.  */
+  if (declspecs.storage_class != sc_none)
+    {
+      cp_parser_error (parser, "invalid type for property");
+      declspecs.storage_class = sc_none;
+    }
+  
+  /* __thread.  */
+  if (declspecs.specs[(int) ds_thread])
+    {
+      cp_parser_error (parser, "invalid type for property");
+      declspecs.specs[(int) ds_thread] = 0;
+    }
+  
+  /* typedef.  */
+  if (declspecs.specs[(int) ds_typedef])
+    {
+      cp_parser_error (parser, "invalid type for property");
+      declspecs.specs[(int) ds_typedef] = 0;
+    }
+
+  prefix_attributes = declspecs.attributes;
+  declspecs.attributes = NULL_TREE;
+
   /* Keep going until we hit the `;' at the end of the declaration. */
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
     {
-      tree property;
+      tree attributes, first_attribute, decl;
+      cp_declarator *declarator;
       cp_token *token;
-      cp_declarator *declarator
-	= cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
-				NULL, NULL, false);
-      property = grokdeclarator (declarator, &declspecs, NORMAL,0, NULL);
-      /* Recover from any kind of error in property declaration. */
-      if (property == error_mark_node || property == NULL_TREE)
-	return;
 
-      /* Add to property list. */
-      objc_add_property_variable (copy_node (property));
+      /* Parse the declarator.  */
+      declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
+					 NULL, NULL, false);
+
+      /* Look for attributes that apply to the ivar.  */
+      attributes = cp_parser_attributes_opt (parser);
+      /* Remember which attributes are prefix attributes and
+	 which are not.  */
+      first_attribute = attributes;
+      /* Combine the attributes.  */
+      attributes = chainon (prefix_attributes, attributes);
+      
+      decl = grokfield (declarator, &declspecs,
+			NULL_TREE, /*init_const_expr_p=*/false,
+			NULL_TREE, attributes);
+
+      if (decl == error_mark_node || decl == NULL_TREE)
+	return error_mark_node;
+      
+      /* Reset PREFIX_ATTRIBUTES.  */
+      while (attributes && TREE_CHAIN (attributes) != first_attribute)
+	attributes = TREE_CHAIN (attributes);
+      if (attributes)
+	TREE_CHAIN (attributes) = NULL_TREE;
+
+      DECL_CHAIN (decl) = decls;
+      decls = decl;
+
       token = cp_lexer_peek_token (parser->lexer);
       if (token->type == CPP_COMMA)
 	{
 	  cp_lexer_consume_token (parser->lexer);  /* Eat ','.  */
 	  continue;
 	}
-      else if (token->type == CPP_EOF)
+      else
 	break;
     }
-  /* Eat ';' if present, or issue an error.  */
-  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+  return decls;
 }
 
-/* ObjC @property. */
-/* Parse a comma-separated list of property attributes.  
-   The lexer does not recognize */
+/* Parse an Objective-C @property declaration.  The syntax is:
 
+   objc-property-declaration:
+     '@property' objc-property-attributes[opt] struct-declaration ;
+
+   objc-property-attributes:
+    '(' objc-property-attribute-list ')'
+
+   objc-property-attribute-list:
+     objc-property-attribute
+     objc-property-attribute-list, objc-property-attribute
+
+   objc-property-attribute
+     'getter' = identifier
+     'setter' = identifier
+     'readonly'
+     'readwrite'
+     'assign'
+     'retain'
+     'copy'
+     'nonatomic'
+
+  For example:
+    @property NSString *name;
+    @property (readonly) id object;
+    @property (retain, nonatomic, getter=getTheName) id name;
+    @property int a, b, c;
+
+   PS: This function is identical to
+   c_parser_objc_at_property_declaration for C.  Keep them in sync.
+
+   WORK IN PROGRESS: At the moment, the list of attributes that are
+   parsed is different from the above list.  It will be updated to use
+   the above list at the same time as @synthesize is implemented.  */
 static void 
-cp_parser_objc_property_attrlist (cp_parser *parser)
+cp_parser_objc_at_property_declaration (cp_parser *parser)
 {
-  cp_token *token;
-  /* Initialize to an empty list.  */
-  objc_set_property_attr (cp_lexer_peek_token (parser->lexer)->location,
-			  OBJC_PATTR_INIT, NULL_TREE);
+  tree properties;
+  location_t loc;
+  loc = cp_lexer_peek_token (parser->lexer)->location;
 
-  /* The list is optional.  */
-  if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN))
-    return;
+  cp_lexer_consume_token (parser->lexer);  /* Eat '@property'.  */
 
-  /* Eat the '('.  */
-  cp_lexer_consume_token (parser->lexer);
+  /* Initialize attributes to an empty list.  */
+  objc_set_property_attr (loc, OBJC_PATTR_INIT, NULL_TREE);
 
-  token = cp_lexer_peek_token (parser->lexer);
-  while (token->type != CPP_CLOSE_PAREN && token->type != CPP_EOF)
+  /* Parse the optional attribute list...  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
     {
-      location_t loc = token->location;
-      tree node = cp_parser_identifier (parser);
-      if (node == ridpointers [(int) RID_READONLY])
-	objc_set_property_attr (loc, OBJC_PATTR_READONLY, NULL_TREE);
-      else if (node == ridpointers [(int) RID_GETTER]
-	       || node == ridpointers [(int) RID_SETTER]
-	       || node == ridpointers [(int) RID_IVAR])
+      /* Eat the '('.  */
+      cp_lexer_consume_token (parser->lexer);
+
+      while (true)
 	{
-	  /* Do the getter/setter/ivar attribute. */
-	  token = cp_lexer_consume_token (parser->lexer);
-	  if (token->type == CPP_EQ)
+	  bool syntax_error = false;
+	  cp_token *token = cp_lexer_peek_token (parser->lexer);
+      	  enum rid keyword;
+
+	  if (token->type != CPP_NAME)
 	    {
-	      tree attr_ident = cp_parser_identifier (parser);
-	      objc_property_attribute_kind pkind;
-	      if (node == ridpointers [(int) RID_GETTER])
-		pkind = OBJC_PATTR_GETTER;
-	      else if (node == ridpointers [(int) RID_SETTER])
-		{
-		  pkind = OBJC_PATTR_SETTER;
-		  /* Consume the ':' which must always follow the setter name. */
-		  if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
-		    cp_lexer_consume_token (parser->lexer); 
-		  else
-		    {
-		      error_at (token->location,
-				"setter name must be followed by %<:%>");
-		      break;
-		    }
-		}
-	      else 
-		pkind = OBJC_PATTR_IVAR;
-	      objc_set_property_attr (loc, pkind, attr_ident);	  
-	    }
-	  else
-	    {
-	      error_at (token->location,
-	      	"getter/setter/ivar attribute must be followed by %<=%>");
+	      cp_parser_error (parser, "expected identifier");
 	      break;
 	    }
+	  keyword = C_RID_CODE (token->u.value);
+	  switch (keyword)
+	    {
+	      tree ident;
+	      objc_property_attribute_kind pkind;
+	    case RID_READONLY:
+	      cp_lexer_consume_token (parser->lexer);
+	      objc_set_property_attr (loc, OBJC_PATTR_READONLY, NULL_TREE);
+	      break;
+	    case RID_GETTER:
+	    case RID_SETTER:
+	    case RID_IVAR:
+	      cp_lexer_consume_token (parser->lexer);
+	      if (cp_lexer_next_token_is_not (parser->lexer, CPP_EQ))
+		{
+		  cp_parser_error (parser,
+				   "getter/setter/ivar attribute must be followed by %<=%>");
+		  syntax_error = true;
+		  break;
+		}
+	      cp_lexer_consume_token (parser->lexer); /* eat the = */
+	      if (cp_lexer_next_token_is_not (parser->lexer, CPP_NAME))
+		{
+		  cp_parser_error (parser, "expected identifier");
+		  syntax_error = true;
+		  break;
+		}
+	      ident = cp_lexer_peek_token (parser->lexer)->u.value;
+	      cp_lexer_consume_token (parser->lexer);
+	      if (keyword == RID_SETTER)
+		{
+		  pkind = OBJC_PATTR_SETTER;
+		  /* Eat the identifier, and look for the following : */
+		  if (cp_lexer_next_token_is_not (parser->lexer, CPP_COLON))
+		    {
+		      cp_parser_error (parser,
+				      "setter name must be followed by %<:%>");
+		      syntax_error = true;
+		      break;
+		    }
+		  cp_lexer_consume_token (parser->lexer);
+		}
+	      else if (keyword == RID_GETTER)
+		pkind = OBJC_PATTR_GETTER;
+	      else
+		pkind = OBJC_PATTR_IVAR;
+	      objc_set_property_attr (loc, pkind, ident);
+	      break;
+	    case RID_COPIES:
+	      cp_lexer_consume_token (parser->lexer);
+	      objc_set_property_attr (loc, OBJC_PATTR_COPIES, NULL_TREE);
+	      break;
+	    default:
+	      if (token->type == CPP_CLOSE_PAREN)
+		cp_parser_error (parser, "expected identifier");
+	      else
+		{
+		  cp_lexer_consume_token (parser->lexer);
+		  cp_parser_error (parser, "unknown property attribute");
+		}
+	      syntax_error = true;
+	      break;
+	    }
+
+	  if (syntax_error)
+	    break;
+	  
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	    cp_lexer_consume_token (parser->lexer);
+	  else
+	    break;
 	}
-      else if (node == ridpointers [(int) RID_COPIES])
-	objc_set_property_attr (loc, OBJC_PATTR_COPIES, NULL_TREE);
-      else
+
+      if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
 	{
-	  error_at (token->location,"unknown property attribute");
-	  break;
+	  cp_parser_skip_to_closing_parenthesis (parser,
+						 /*recovering=*/true,
+						 /*or_comma=*/false,
+						 /*consume_paren=*/true);
 	}
-      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
-	cp_lexer_consume_token (parser->lexer);
-      else if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
-	warning_at (token->location, 0, 
-		    "property attributes should be separated by a %<,%>");
-      token = cp_lexer_peek_token (parser->lexer);	  
     }
 
-  if (token->type != CPP_CLOSE_PAREN)
-    error_at (token->location,
-	      "syntax error in @property's attribute declaration");
-  else
-    /* Consume ')' */
-    cp_lexer_consume_token (parser->lexer);
-}
-
-/* This function parses a @property declaration inside an objective class
-   or its implementation. */
-
-static void 
-cp_parser_objc_at_property (cp_parser *parser)
-{
-  /* Consume @property */
-  cp_lexer_consume_token (parser->lexer);
-
-  /* Parse optional attributes list...  */
-  cp_parser_objc_property_attrlist (parser);
   /* ... and the property declaration(s).  */
-  cp_parser_objc_property_decl (parser);
+  properties = cp_parser_objc_struct_declaration (parser);
+
+  if (properties == error_mark_node)
+    {
+      cp_parser_skip_to_end_of_statement (parser);
+      /* If the next token is now a `;', consume it.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	cp_lexer_consume_token (parser->lexer);
+      return;
+    }
+
+  if (properties == NULL_TREE)
+    cp_parser_error (parser, "expected identifier");
+  else
+    {
+      /* Comma-separated properties are chained together in
+	 reverse order; add them one by one.  */
+      properties = nreverse (properties);
+      
+      for (; properties; properties = TREE_CHAIN (properties))
+	objc_add_property_declaration (loc, copy_node (properties));
+    }
+  
+  cp_parser_consume_semicolon_at_end_of_statement (parser);
 }
 
 /* Parse an Objective-C++ @synthesize declaration.  The syntax is:
