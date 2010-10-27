@@ -5277,6 +5277,59 @@ ensure_literal_type_for_constexpr_object (tree decl)
   return decl;
 }
 
+/* Return true if type expression T is a valid parameter type, or
+   a valid return type, of a constexpr function.  */
+
+static bool
+valid_type_in_constexpr_fundecl_p (tree t)
+{
+  return (literal_type_p (t)
+	  /* FIXME we allow ref to non-literal; should change standard to
+	     match, or change back if not.  */
+	  || TREE_CODE (t) == REFERENCE_TYPE);
+}
+
+/* Check whether the parameter and return types of FUN are valid for a
+   constexpr function, and complain if COMPLAIN.  */
+
+static bool
+is_valid_constexpr_fn (tree fun, bool complain)
+{
+  tree parm = FUNCTION_FIRST_USER_PARM (fun);
+  bool ret = true;
+  for (; parm != NULL; parm = TREE_CHAIN (parm))
+    if (!valid_type_in_constexpr_fundecl_p (TREE_TYPE (parm)))
+      {
+	ret = false;
+	if (complain)
+	  error ("invalid type for parameter %q#D of constexpr function",
+		 parm);
+      }
+
+  if (!DECL_CONSTRUCTOR_P (fun))
+    {
+      tree rettype = TREE_TYPE (TREE_TYPE (fun));
+      if (!valid_type_in_constexpr_fundecl_p (rettype))
+	{
+	  ret = false;
+	  if (complain)
+	    error ("invalid return type %qT of constexpr function %qD",
+		   rettype, fun);
+	}
+
+      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun)
+	  && COMPLETE_TYPE_P (DECL_CONTEXT (fun))
+	  && !valid_type_in_constexpr_fundecl_p (DECL_CONTEXT (fun)))
+	{
+	  ret = false;
+	  if (complain)
+	    error ("enclosing class of %q#D is not a literal type", fun);
+	}
+    }
+
+  return ret;
+}
+
 /* Return non-null if FUN certainly designates a valid constexpr function
    declaration.  Otherwise return NULL.  Issue appropriate diagnostics
    if necessary.  Note that we only check the declaration, not the body
@@ -5285,43 +5338,18 @@ ensure_literal_type_for_constexpr_object (tree decl)
 tree
 validate_constexpr_fundecl (tree fun)
 {
-  tree rettype = NULL;
-  tree parm = NULL;
-
-  /* Don't bother if FUN is not marked constexpr.  */
-  if (!DECL_DECLARED_CONSTEXPR_P (fun))
+  if (processing_template_decl || !DECL_DECLARED_CONSTEXPR_P (fun))
     return NULL;
-
-  /* For a function template, we have absolutely no guarantee that all
-     instantiations will be constexpr.  */
-  if (TREE_CODE (fun) == TEMPLATE_DECL)
-    return NULL;
-  
-  parm = FUNCTION_FIRST_USER_PARM (fun);
-  for (; parm != NULL; parm = TREE_CHAIN (parm))
-    {
-      tree type = TREE_TYPE (parm);
-      if (dependent_type_p (type))
-        return NULL;
-      if (!literal_type_p (type))
-        {
-           error ("parameter %q#D is not of literal type", parm);
-          return NULL;
-        }
-    }
-
-  if (DECL_CONSTRUCTOR_P (fun))
+  else if (DECL_CLONED_FUNCTION_P (fun))
+    /* We already checked the original function.  */
     return fun;
 
-  rettype = TREE_TYPE (TREE_TYPE (fun));
-  if (dependent_type_p (rettype))
-    return NULL;
-  if (!literal_type_p (rettype))
+  if (!is_valid_constexpr_fn (fun, !DECL_TEMPLATE_INSTANTIATION (fun)))
     {
-      error ("return type %qT of function %qD is not a literal type",
-             TREE_TYPE (TREE_TYPE (fun)), fun);
+      DECL_DECLARED_CONSTEXPR_P (fun) = false;
       return NULL;
     }
+
   return fun;
 }
 

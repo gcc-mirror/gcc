@@ -533,6 +533,15 @@ perform_member_init (tree member, tree init)
 		       "uninitialized member %qD with %<const%> type %qT",
 		       member, type);
 
+	  if (DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+	      && !type_has_constexpr_default_constructor (type))
+	    {
+	      if (!DECL_TEMPLATE_INSTANTIATION (current_function_decl))
+		error ("uninitialized member %qD in %<constexpr%> constructor",
+		       member);
+	      DECL_DECLARED_CONSTEXPR_P (current_function_decl) = false;
+	    }
+
 	  core_type = strip_array_types (type);
 	  if (CLASS_TYPE_P (core_type)
 	      && (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type)
@@ -864,17 +873,30 @@ emit_mem_initializers (tree mem_inits)
       tree subobject = TREE_PURPOSE (mem_inits);
       tree arguments = TREE_VALUE (mem_inits);
 
-      /* If these initializations are taking place in a copy constructor,
-	 the base class should probably be explicitly initialized if there
-	 is a user-defined constructor in the base class (other than the
-	 default constructor, which will be called anyway).  */
-      if (extra_warnings && !arguments
-	  && DECL_COPY_CONSTRUCTOR_P (current_function_decl)
-	  && type_has_user_nondefault_constructor (BINFO_TYPE (subobject)))
-	warning_at (DECL_SOURCE_LOCATION (current_function_decl), OPT_Wextra,
-		    "base class %q#T should be explicitly initialized in the "
-		    "copy constructor",
-		    BINFO_TYPE (subobject));
+      if (arguments == NULL_TREE)
+	{
+	  /* If these initializations are taking place in a copy constructor,
+	     the base class should probably be explicitly initialized if there
+	     is a user-defined constructor in the base class (other than the
+	     default constructor, which will be called anyway).  */
+	  if (extra_warnings
+	      && DECL_COPY_CONSTRUCTOR_P (current_function_decl)
+	      && type_has_user_nondefault_constructor (BINFO_TYPE (subobject)))
+	    warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+			OPT_Wextra, "base class %q#T should be explicitly "
+			"initialized in the copy constructor",
+			BINFO_TYPE (subobject));
+
+	  if (DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+	      && !(type_has_constexpr_default_constructor
+		   (BINFO_TYPE (subobject))))
+	    {
+	      if (!DECL_TEMPLATE_INSTANTIATION (current_function_decl))
+		error ("uninitialized base %qT in %<constexpr%> constructor",
+		       BINFO_TYPE (subobject));
+	      DECL_DECLARED_CONSTEXPR_P (current_function_decl) = false;
+	    }
+	}
 
       /* Initialize the base.  */
       if (BINFO_VIRTUAL_P (subobject))

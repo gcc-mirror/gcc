@@ -4325,6 +4325,19 @@ type_has_user_provided_default_constructor (tree t)
   return false;
 }
 
+/* Returns true iff class T has a constexpr default constructor.  */
+
+bool
+type_has_constexpr_default_constructor (tree t)
+{
+  tree fns;
+
+  if (!CLASS_TYPE_P (t))
+    return false;
+  fns = get_default_ctor (t);
+  return (fns && DECL_DECLARED_CONSTEXPR_P (fns));
+}
+
 /* Returns true iff class TYPE has a virtual destructor.  */
 
 bool
