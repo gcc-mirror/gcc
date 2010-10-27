@@ -1,3 +1,8 @@
+2010-10-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (split_stack_return): Put back
+	unspec_volatile.
+
 2010-10-26  Jan Hubicka  <jh@suse.cz>
 
 	* ipa.c (process_references): Enqueue all referenced nodes;
