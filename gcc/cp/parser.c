@@ -1334,7 +1334,10 @@ enum
   CP_PARSER_FLAGS_NO_USER_DEFINED_TYPES = 0x2,
   /* When parsing a type-specifier, do not try to parse a class-specifier
      or enum-specifier.  */
-  CP_PARSER_FLAGS_NO_TYPE_DEFINITIONS = 0x4
+  CP_PARSER_FLAGS_NO_TYPE_DEFINITIONS = 0x4,
+  /* When parsing a decl-specifier-seq, only allow type-specifier or
+     constexpr.  */
+  CP_PARSER_FLAGS_ONLY_TYPE_OR_CONSTEXPR = 0x8
 };
 
 /* This type is used for parameters and variables which hold
@@ -8509,6 +8512,7 @@ cp_parser_condition (cp_parser* parser)
 {
   cp_decl_specifier_seq type_specifiers;
   const char *saved_message;
+  int declares_class_or_enum;
 
   /* Try the declaration first.  */
   cp_parser_parse_tentatively (parser);
@@ -8518,9 +8522,10 @@ cp_parser_condition (cp_parser* parser)
   parser->type_definition_forbidden_message
     = G_("types may not be defined in conditions");
   /* Parse the type-specifier-seq.  */
-  cp_parser_type_specifier_seq (parser, /*is_declaration==*/true,
-				/*is_trailing_return=*/false,
-				&type_specifiers);
+  cp_parser_decl_specifier_seq (parser,
+				CP_PARSER_FLAGS_ONLY_TYPE_OR_CONSTEXPR,
+				&type_specifiers,
+				&declares_class_or_enum);
   /* Restore the saved message.  */
   parser->type_definition_forbidden_message = saved_message;
   /* If all is well, we might be looking at a declaration.  */
@@ -9850,6 +9855,11 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  found_decl_spec = false;
 	  break;
 	}
+
+      if (found_decl_spec
+	  && (flags & CP_PARSER_FLAGS_ONLY_TYPE_OR_CONSTEXPR)
+	  && token->keyword != RID_CONSTEXPR)
+	error ("decl-specifier invalid in condition");
 
       /* Constructors are a special case.  The `S' in `S()' is not a
 	 decl-specifier; it is the beginning of the declarator.  */
@@ -12231,6 +12241,13 @@ cp_parser_explicit_instantiation (cp_parser* parser)
 						       decl_specifiers.type_location);
       if (declarator != cp_error_declarator)
 	{
+	  if (decl_specifiers.specs[(int)ds_inline])
+	    permerror (input_location, "explicit instantiation shall not use"
+		       " %<inline%> specifier");
+	  if (decl_specifiers.specs[(int)ds_constexpr])
+	    permerror (input_location, "explicit instantiation shall not use"
+		       " %<constexpr%> specifier");
+
 	  decl = grokdeclarator (declarator, &decl_specifiers,
 				 NORMAL, 0, &decl_specifiers.attributes);
 	  /* Turn access control back on for names used during
@@ -16245,15 +16262,43 @@ cp_parser_function_body (cp_parser *parser)
 static bool
 cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser)
 {
-  tree body;
+  tree body, list;
   bool ctor_initializer_p;
+  const bool check_body_p =
+     DECL_CONSTRUCTOR_P (current_function_decl)
+     && DECL_DECLARED_CONSTEXPR_P (current_function_decl);
+  tree last = NULL;
 
   /* Begin the function body.  */
   body = begin_function_body ();
   /* Parse the optional ctor-initializer.  */
   ctor_initializer_p = cp_parser_ctor_initializer_opt (parser);
+
+  /* If we're parsing a constexpr constructor definition, we need
+     to check that the constructor body is indeed empty.  However,
+     before we get to cp_parser_function_body lot of junk has been
+     generated, so we can't just check that we have an empty block.
+     Rather we take a snapshot of the outermost block, and check whether
+     cp_parser_function_body changed its state.  */
+  if (check_body_p)
+    {
+      list = body;
+      if (TREE_CODE (list) == BIND_EXPR)
+	list = BIND_EXPR_BODY (list);
+      if (TREE_CODE (list) == STATEMENT_LIST
+	  && STATEMENT_LIST_TAIL (list) != NULL)
+	last = STATEMENT_LIST_TAIL (list)->stmt;
+    }
   /* Parse the function-body.  */
   cp_parser_function_body (parser);
+  if (check_body_p
+      && (TREE_CODE (list) != STATEMENT_LIST
+	  || (last == NULL && STATEMENT_LIST_TAIL (list) != NULL)
+	  || (last != NULL && last != STATEMENT_LIST_TAIL (list)->stmt)))
+    {
+      error ("constexpr constructor does not have empty body");
+      DECL_DECLARED_CONSTEXPR_P (current_function_decl) = false;
+    }
   /* Finish the function body.  */
   finish_function_body (body);
 

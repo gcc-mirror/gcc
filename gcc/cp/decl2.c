@@ -771,21 +771,6 @@ finish_static_data_member_decl (tree decl,
     permerror (input_location, "local class %q#T shall not have static data member %q#D",
 	       current_class_type, decl);
 
-  /* Static consts need not be initialized in the class definition.  */
-  if (init != NULL_TREE && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
-    {
-      static int explained = 0;
-
-      error ("initializer invalid for static member with constructor");
-      if (!explained)
-	{
-	  error ("(an out of class initialization is required)");
-	  explained = 1;
-	}
-      init = NULL_TREE;
-    }
-
-  DECL_INITIAL (decl) = init;
   DECL_IN_AGGR_P (decl) = 1;
 
   if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE

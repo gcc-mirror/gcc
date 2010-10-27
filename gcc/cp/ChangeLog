@@ -1,6 +1,38 @@
 2010-10-27  Gabriel Dos Reis  <gdr@cse.tamu.edu>
 	    Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_ctor_initializer_opt_and_function_body):
+	Make sure a constexpr ctor has an empty body.
+	* class.c (type_has_constexpr_default_constructor): New.
+	* cp-tree.h: Declare it.
+	* init.c (perform_member_init): Complain about uninitialized
+	member in constexpr ctor.
+	(emit_mem_initializers): And uninitialized base.
+	* decl.c (check_tag_decl): Fix typo.
+
+	* semantics.c (valid_type_in_constexpr_fundecl_p): New fn.
+	(is_valid_constexpr_fn): New fn.
+	(validate_constexpr_fundecl): Use it.
+	* decl.c (validate_constexpr_redeclaration): New.
+	(duplicate_decls): Use it.
+	(cp_finish_decl): Call validate_constexpr_fundecl and
+	ensure_literal_type_for_constexpr_object here.
+	(start_decl): Not here.  Don't ICE on constexpr reference.
+	(check_for_uninitialized_const_var): Don't handle constexpr specially.
+	(grokfndecl): Set DECL_DECLARED_CONSTEXPR_P.
+	(check_static_variable_definition): Give friendly message about
+	missing constexpr.
+	(grokdeclarator): Complain about typedef and volatile with constexpr.
+	Reorganize.  Give sorry about non-static data members in C++0x mode.
+	(start_preparsed_function): Check validate_constexpr_fundecl here.
+	(check_function_type): Not here.
+	* decl2.c (finish_static_data_member_decl): Don't complain about
+	in-class init.
+	* parser.c (CP_PARSER_FLAGS_ONLY_TYPE_OR_CONSTEXPR): New.
+	(cp_parser_condition): Pass it to cp_parser_decl_specifier_seq.
+	(cp_parser_decl_specifier_seq): Handle it.
+	(cp_parser_explicit_instantiation): Diagnose inline and constexpr.
+
 	* class.c (check_bases): Propagate non-literality.
 	(check_field_decls): Likewise.
 	(finalize_literal_type_property): New.
