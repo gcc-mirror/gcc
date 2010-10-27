@@ -1,5 +1,8 @@
 2010-10-27  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_compound_stmt): Avoid creating an
+	unnecessary BIND_EXPR.
+
 	* call.c (convert_like_real): Don't check narrowing if the element
 	is also an initializer-list.
 

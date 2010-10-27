@@ -1208,7 +1208,19 @@ void
 finish_compound_stmt (tree stmt)
 {
   if (TREE_CODE (stmt) == BIND_EXPR)
-    BIND_EXPR_BODY (stmt) = do_poplevel (BIND_EXPR_BODY (stmt));
+    {
+      tree body = do_poplevel (BIND_EXPR_BODY (stmt));
+      /* If the STATEMENT_LIST is empty and this BIND_EXPR isn't special,
+	 discard the BIND_EXPR so it can be merged with the containing
+	 STATEMENT_LIST.  */
+      if (TREE_CODE (body) == STATEMENT_LIST
+	  && STATEMENT_LIST_HEAD (body) == NULL
+	  && !BIND_EXPR_BODY_BLOCK (stmt)
+	  && !BIND_EXPR_TRY_BLOCK (stmt))
+	stmt = body;
+      else
+	BIND_EXPR_BODY (stmt) = body;
+    }
   else if (STATEMENT_LIST_NO_SCOPE (stmt))
     stmt = pop_stmt_list (stmt);
   else
