@@ -199,10 +199,6 @@ struct common_sched_info_def *common_sched_info;
 /* The minimal value of the INSN_TICK of an instruction.  */
 #define MIN_TICK (-max_insn_queue_index)
 
-/* Issue points are used to distinguish between instructions in max_issue ().
-   For now, all instructions are equally good.  */
-#define ISSUE_POINTS(INSN) 1
-
 /* List of important notes we must keep around.  This is a pointer to the
    last element in the list.  */
 rtx note_list;
@@ -2444,8 +2440,7 @@ static int cached_issue_rate = 0;
    insns is insns with the best rank (the first insn in READY).  To
    make this function tries different samples of ready insns.  READY
    is current queue `ready'.  Global array READY_TRY reflects what
-   insns are already issued in this try.  MAX_POINTS is the sum of points
-   of all instructions in READY.  The function stops immediately,
+   insns are already issued in this try.  The function stops immediately,
    if it reached the such a solution, that all instruction can be issued.
    INDEX will contain index of the best insn in READY.  The following
    function is used only for first cycle multipass scheduling.
@@ -2458,7 +2453,7 @@ int
 max_issue (struct ready_list *ready, int privileged_n, state_t state,
 	   int *index)
 {
-  int n, i, all, n_ready, best, delay, tries_num, max_points;
+  int n, i, all, n_ready, best, delay, tries_num;
   int more_issue;
   struct choice_entry *top;
   rtx insn;
@@ -2477,18 +2472,8 @@ max_issue (struct ready_list *ready, int privileged_n, state_t state,
     }
 
   /* Init max_points.  */
-  max_points = 0;
   more_issue = issue_rate - cycle_issued_insns;
   gcc_assert (more_issue >= 0);
-
-  for (i = 0; i < n_ready; i++)
-    if (!ready_try [i])
-      {
-	if (more_issue-- > 0)
-	  max_points += ISSUE_POINTS (ready_element (ready, i));
-	else
-	  break;
-      }
 
   /* The number of the issued insns in the best solution.  */
   best = 0;
@@ -2513,11 +2498,16 @@ max_issue (struct ready_list *ready, int privileged_n, state_t state,
       if (/* If we've reached a dead end or searched enough of what we have
 	     been asked...  */
 	  top->rest == 0
-	  /* Or have nothing else to try.  */
-	  || i >= n_ready)
+	  /* or have nothing else to try...  */
+	  || i >= n_ready
+	  /* or should not issue more.  */
+	  || top->n >= more_issue)
 	{
 	  /* ??? (... || i == n_ready).  */
 	  gcc_assert (i <= n_ready);
+
+	  /* We should not issue more than issue_rate instructions.  */
+	  gcc_assert (top->n <= more_issue);
 
 	  if (top == choice_stack)
 	    break;
@@ -2541,7 +2531,7 @@ max_issue (struct ready_list *ready, int privileged_n, state_t state,
 		  /* This is the index of the insn issued first in this
 		     solution.  */
 		  *index = choice_stack [1].index;
-		  if (top->n == max_points || best == all)
+		  if (top->n == more_issue || best == all)
 		    break;
 		}
 	    }
@@ -2574,7 +2564,7 @@ max_issue (struct ready_list *ready, int privileged_n, state_t state,
 
 	      n = top->n;
 	      if (memcmp (top->state, state, dfa_state_size) != 0)
-		n += ISSUE_POINTS (insn);
+		n++;
 
 	      /* Advance to the next choice_entry.  */
 	      top++;
