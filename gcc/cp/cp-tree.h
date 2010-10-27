@@ -1324,6 +1324,7 @@ struct GTY(()) lang_type_class {
   unsigned lazy_move_assign : 1;
   unsigned has_complex_move_ctor : 1;
   unsigned has_complex_move_assign : 1;
+  unsigned has_constexpr_ctor : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1332,7 +1333,7 @@ struct GTY(()) lang_type_class {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 4;
+  unsigned dummy : 3;
 
   tree primary_base;
   VEC(tree_pair_s,gc) *vcall_indices;
@@ -1456,6 +1457,12 @@ struct GTY((variable_size)) lang_type {
 /* Nonzero if this class has an X(initializer_list<T>) constructor.  */
 #define TYPE_HAS_LIST_CTOR(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->has_list_ctor)
+
+/* Nonzero if this class has a constexpr constructor other than a copy/move
+   constructor.  Note that a class can have constexpr constructors for
+   static initialization even if it isn't a literal class.  */
+#define TYPE_HAS_CONSTEXPR_CTOR(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_constexpr_ctor)
 
 /* Nonzero if this class defines an overloaded operator new.  (An
    operator new [] doesn't count.)  */
@@ -2334,7 +2341,7 @@ struct GTY((variable_size)) lang_decl {
 
 /* True if DECL is declared 'constexpr'.  */
 #define DECL_DECLARED_CONSTEXPR_P(DECL) \
-  DECL_LANG_FLAG_8 (VAR_OR_FUNCTION_DECL_CHECK (DECL))
+  DECL_LANG_FLAG_8 (VAR_OR_FUNCTION_DECL_CHECK (STRIP_TEMPLATE (DECL)))
 
 /* Nonzero if this DECL is the __PRETTY_FUNCTION__ variable in a
    template function.  */

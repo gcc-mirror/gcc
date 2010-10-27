@@ -1,3 +1,16 @@
+2010-10-27  Gabriel Dos Reis  <gdr@cse.tamu.edu>
+	    Jason Merrill  <jason@redhat.com>
+
+	* class.c (check_bases): Propagate non-literality.
+	(check_field_decls): Likewise.
+	(finalize_literal_type_property): New.
+	(check_bases_and_members): Call it.
+	* cp-tree.h (TYPE_HAS_CONSTEXPR_CTOR): New.
+	(lang_type_class): Add has_constexpr_ctor field.
+	(DECL_DECLARED_CONSTEXPR_P): Strip template.
+	* decl.c (grok_special_member_properties): Set
+	TYPE_HAS_CONSTEXPR_CTOR.
+
 2010-10-27  Jason Merrill  <jason@redhat.com>
 
 	* call.c (build_integral_nontype_arg_conv): New.
