@@ -1178,28 +1178,6 @@
   return true;
 })
 
-;; Return true if OP is a vzeroupper operation, known to be a PARALLEL.
-(define_predicate "vzeroupper_operation"
-  (match_code "parallel")
-{
-  unsigned i, nregs = TARGET_64BIT ? 16 : 8;
- 
-  if ((unsigned) XVECLEN (op, 0) != 1 + nregs)
-    return false;
-
-  for (i = 0; i < nregs; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i+1);
-
-      if (GET_CODE (elt) != CLOBBER
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != V8SImode
-	  || REGNO (SET_DEST (elt)) != SSE_REGNO (i))
-	return false;
-    }
-  return true;
-})
-
 ;; Return true if OP is a parallel for a vpermilp[ds] permute.
 ;; ??? It would be much easier if the PARALLEL for a VEC_SELECT
 ;; had a mode, but it doesn't.  So we have 4 copies and install

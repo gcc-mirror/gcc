@@ -56,6 +56,293 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "dwarf2out.h"
 #include "sched-int.h"
+
+typedef struct block_info_def
+{
+  /* TRUE if the upper 128bits of any AVX registers are live at exit.  */
+  bool upper_128bits_set;
+  /* TRUE if block has been processed.  */
+  bool done;
+} *block_info;
+
+#define BLOCK_INFO(B)   ((block_info) (B)->aux)
+
+enum call_avx256_state
+{
+  /* Callee returns 256bit AVX register.  */
+  callee_return_avx256 = -1,
+  /* Callee returns and passes 256bit AVX register.  */
+  callee_return_pass_avx256,
+  /* Callee passes 256bit AVX register.  */
+  callee_pass_avx256,
+  /* Callee doesn't return nor passe 256bit AVX register, or no
+     256bit AVX register in function return.  */
+  call_no_avx256,
+  /* vzeroupper intrinsic.  */
+  vzeroupper_intrinsic
+};
+
+/* Check if a 256bit AVX register is referenced in stores.   */
+
+static void
+check_avx256_stores (rtx dest, const_rtx set, void *data)
+{
+  if ((REG_P (dest)
+       && VALID_AVX256_REG_MODE (GET_MODE (dest)))
+      || (GET_CODE (set) == SET
+	  && REG_P (SET_SRC (set))
+	  && VALID_AVX256_REG_MODE (GET_MODE (SET_SRC (set)))))
+    {
+      bool *upper_128bits_set = (bool *) data;
+      *upper_128bits_set = true;
+    }
+}
+
+/* Helper function for move_or_delete_vzeroupper_1.  Look for vzeroupper
+   in basic block BB.  Delete it if upper 128bit AVX registers are
+   unused.  If it isn't deleted, move it to just before a jump insn.
+   
+   UPPER_128BITS_LIVE is TRUE if the upper 128bits of any AVX registers
+   are live at entry.  */
+
+static void
+move_or_delete_vzeroupper_2 (basic_block bb, bool upper_128bits_set)
+{
+  rtx curr_insn, next_insn, prev_insn, insn;
+
+  if (dump_file)
+    fprintf (dump_file, " BB [%i] entry: upper 128bits: %d\n",
+	     bb->index, upper_128bits_set);
+
+  for (curr_insn = BB_HEAD (bb);
+       curr_insn && curr_insn != NEXT_INSN (BB_END (bb));
+       curr_insn = next_insn)
+    {
+      int avx256;
+
+      next_insn = NEXT_INSN (curr_insn);
+
+      if (!NONDEBUG_INSN_P (curr_insn))
+	continue;
+
+      /* Search for vzeroupper.  */
+      insn = PATTERN (curr_insn);
+      if (GET_CODE (insn) == UNSPEC_VOLATILE
+	  && XINT (insn, 1) == UNSPECV_VZEROUPPER)
+	{
+	  /* Found vzeroupper.  */
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Found vzeroupper:\n");
+	      print_rtl_single (dump_file, curr_insn);
+	    }
+	}
+      else
+	{
+	  /* Check vzeroall intrinsic.  */
+	  if (GET_CODE (insn) == PARALLEL
+	      && GET_CODE (XVECEXP (insn, 0, 0)) == UNSPEC_VOLATILE
+	      && XINT (XVECEXP (insn, 0, 0), 1) == UNSPECV_VZEROALL)
+	    upper_128bits_set = false;
+	  else if (!upper_128bits_set)
+	    {
+	      /* Check if upper 128bits of AVX registers are used.  */
+	      note_stores (insn, check_avx256_stores,
+			   &upper_128bits_set);
+	    }
+	  continue;
+	}
+
+      avx256 = INTVAL (XVECEXP (insn, 0, 0));
+
+      if (!upper_128bits_set)
+	{
+	  /* Since the upper 128bits are cleared, callee must not pass
+	     256bit AVX register.  We only need to check if callee
+	     returns 256bit AVX register.  */
+	  upper_128bits_set = avx256 == callee_return_avx256;
+
+	  /* Remove unnecessary vzeroupper since upper 128bits are
+	     cleared.  */
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Delete redundant vzeroupper:\n");
+	      print_rtl_single (dump_file, curr_insn);
+	    }
+	  delete_insn (curr_insn);
+	  continue;
+	}
+      else if (avx256 == callee_return_pass_avx256
+	       || avx256 == callee_pass_avx256)
+	{
+	  /* Callee passes 256bit AVX register.  Check if callee
+	     returns 256bit AVX register.  */
+	  upper_128bits_set = avx256 == callee_return_pass_avx256;
+
+	  /* Must remove vzeroupper since callee passes 256bit AVX
+	     register.  */
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Delete callee pass vzeroupper:\n");
+	      print_rtl_single (dump_file, curr_insn);
+	    }
+	  delete_insn (curr_insn);
+	  continue;
+	}
+
+      /* Find the jump after vzeroupper.  */
+      prev_insn = curr_insn;
+      if (avx256 == vzeroupper_intrinsic)
+	{
+	  /* For vzeroupper intrinsic, check if there is another
+	     vzeroupper.  */
+	  insn = NEXT_INSN (curr_insn);
+	  while (insn)
+	    {
+	      if (NONJUMP_INSN_P (insn)
+		  && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+		  && XINT (PATTERN (insn), 1) == UNSPECV_VZEROUPPER)
+		{
+		  if (dump_file)
+		    {
+		      fprintf (dump_file,
+			       "Delete redundant vzeroupper intrinsic:\n");
+		      print_rtl_single (dump_file, curr_insn);
+		    }
+		  delete_insn (curr_insn);
+		  insn = NULL;
+		  continue;
+		}
+
+	      if (JUMP_P (insn) || CALL_P (insn))
+		break;
+	      prev_insn = insn;
+	      insn = NEXT_INSN (insn);
+	      if (insn == NEXT_INSN (BB_END (bb)))
+		break;
+	    }
+
+	  /* Continue if redundant vzeroupper intrinsic is deleted.  */
+	  if (!insn)
+	    continue;
+	}
+      else
+	{
+	  /* Find the next jump/call.  */
+	  insn = NEXT_INSN (curr_insn);
+	  while (insn)
+	    {
+	      if (JUMP_P (insn) || CALL_P (insn))
+		break;
+	      prev_insn = insn;
+	      insn = NEXT_INSN (insn);
+	      if (insn == NEXT_INSN (BB_END (bb)))
+		break;
+	    }
+
+	  if (!insn)
+	    gcc_unreachable();
+	}
+
+      /* Keep vzeroupper.  */
+      upper_128bits_set = false;
+
+      /* Also allow label as the next instruction.  */
+      if (insn == NEXT_INSN (BB_END (bb)) && !LABEL_P (insn))
+	gcc_unreachable();
+
+      /* Move vzeroupper before jump/call if neeeded.  */
+      if (curr_insn != prev_insn)
+	{
+	  reorder_insns_nobb (curr_insn, curr_insn, prev_insn);
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Move vzeroupper after:\n");
+	      print_rtl_single (dump_file, prev_insn);
+	      fprintf (dump_file, "before:\n");
+	      print_rtl_single (dump_file, insn);
+	    }
+	}
+
+      next_insn = NEXT_INSN (insn);
+    }
+
+  BLOCK_INFO (bb)->upper_128bits_set = upper_128bits_set;
+
+  if (dump_file)
+    fprintf (dump_file, " BB [%i] exit: upper 128bits: %d\n",
+	     bb->index, upper_128bits_set);
+}
+
+/* Helper function for move_or_delete_vzeroupper.  Process vzeroupper
+   in BLOCK and its predecessor blocks recursively.  */
+
+static void
+move_or_delete_vzeroupper_1 (basic_block block)
+{
+  edge e;
+  edge_iterator ei;
+  bool upper_128bits_set;
+
+  if (dump_file)
+    fprintf (dump_file, " Process BB [%i]: status: %d\n",
+	     block->index, BLOCK_INFO (block)->done);
+
+  if (BLOCK_INFO (block)->done)
+    return;
+
+  BLOCK_INFO (block)->done = true;
+
+  upper_128bits_set = false;
+
+  /* Process all predecessor edges of this block.  */
+  FOR_EACH_EDGE (e, ei, block->preds)
+    {
+      if (e->src == block)
+	continue;
+      move_or_delete_vzeroupper_1 (e->src);
+      if (BLOCK_INFO (e->src)->upper_128bits_set)
+	upper_128bits_set = true;
+    }
+
+  /* Process this block.  */
+  move_or_delete_vzeroupper_2 (block, upper_128bits_set);
+}
+
+/* Go through the instruction stream looking for vzeroupper.  Delete
+   it if upper 128bit AVX registers are unused.  If it isn't deleted,
+   move it to just before a jump insn.  */
+
+static void
+move_or_delete_vzeroupper (void)
+{
+  edge e;
+  edge_iterator ei;
+
+  /* Set up block info for each basic block.  */
+  alloc_aux_for_blocks (sizeof (struct block_info_def));
+
+  /* Process successor blocks of all entry points.  */
+  if (dump_file)
+    fprintf (dump_file, "Process all entry points\n");
+
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
+    {
+      move_or_delete_vzeroupper_2 (e->dest,
+				   cfun->machine->caller_pass_avx256_p);
+      BLOCK_INFO (e->dest)->done = true;
+    }
+
+  /* Process predecessor blocks of all exit points.  */
+  if (dump_file)
+    fprintf (dump_file, "Process all exit points\n");
+
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+    move_or_delete_vzeroupper_1 (e->src);
+
+  free_aux_for_blocks ();
+}
+
 static rtx legitimize_dllimport_symbol (rtx, bool);
 
 #ifndef CHECK_STACK_LIMIT
@@ -2633,6 +2920,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
     { "-mtls-direct-seg-refs",		MASK_TLS_DIRECT_SEG_REFS },
     { "-mvect8-ret-in-mem",		MASK_VECT8_RETURNS },
     { "-m8bit-idiv",			MASK_USE_8BIT_IDIV },
+    { "-mvzeroupper",			MASK_VZEROUPPER },
   };
 
   const char *opts[ARRAY_SIZE (isa_opts) + ARRAY_SIZE (flag_opts) + 6][2];
@@ -3712,6 +4000,60 @@ ix86_option_override_internal (bool main_args_p)
   if (main_args_p)
     target_option_default_node = target_option_current_node
       = build_target_option_node ();
+
+  if (TARGET_AVX)
+    {
+      /* Enable vzeroupper pass by default for TARGET_AVX.  */
+      if (!(target_flags_explicit & MASK_VZEROUPPER))
+	target_flags |= MASK_VZEROUPPER;
+    }
+  else 
+    {
+      /* Disable vzeroupper pass if TARGET_AVX is disabled.  */
+      target_flags &= ~MASK_VZEROUPPER;
+    }
+}
+
+/* Return TRUE if type TYPE and mode MODE use 256bit AVX modes.  */
+
+static bool
+use_avx256_p (enum machine_mode mode, const_tree type)
+{
+  return (VALID_AVX256_REG_MODE (mode)
+	  || (type
+	      && TREE_CODE (type) == VECTOR_TYPE
+	      && int_size_in_bytes (type) == 32));
+}
+
+/* Return TRUE if VAL is passed in register with 256bit AVX modes.  */
+
+static bool
+function_pass_avx256_p (const_rtx val)
+{
+  if (!val)
+    return false;
+
+  if (REG_P (val) && VALID_AVX256_REG_MODE (GET_MODE (val)))
+    return true;
+
+  if (GET_CODE (val) == PARALLEL)
+    {
+      int i;
+      rtx r;
+
+      for (i = XVECLEN (val, 0) - 1; i >= 0; i--)
+	{
+	  r = XVECEXP (val, 0, i);
+	  if (GET_CODE (r) == EXPR_LIST
+	      && XEXP (r, 0)
+	      && REG_P (XEXP (r, 0))
+	      && (GET_MODE (XEXP (r, 0)) == OImode
+		  || VALID_AVX256_REG_MODE (GET_MODE (XEXP (r, 0)))))
+	    return true;
+	}
+    }
+
+  return false;
 }
 
 /* Implement the TARGET_OPTION_OVERRIDE hook.  */
@@ -4626,7 +4968,14 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 	return false;
     }
   else if (VOID_TYPE_P (TREE_TYPE (DECL_RESULT (cfun->decl))))
-    ;
+    {
+      /* Disable sibcall if we need to generate vzeroupper after
+	 callee returns.  */
+      if (TARGET_VZEROUPPER
+	  && cfun->machine->callee_return_avx256_p
+	  && !cfun->machine->caller_return_avx256_p)
+	return false;
+    }
   else if (!rtx_equal_p (a, b))
     return false;
 
@@ -5243,15 +5592,54 @@ void
 init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 		      tree fntype,	/* tree ptr for function decl */
 		      rtx libname,	/* SYMBOL_REF of library name or 0 */
-		      tree fndecl)
+		      tree fndecl,
+		      int caller)
 {
-  struct cgraph_local_info *i = fndecl ? cgraph_local_info (fndecl) : NULL;
+  struct cgraph_local_info *i;
+  tree fnret_type;
+
   memset (cum, 0, sizeof (*cum));
 
+  /* Initialize for the current callee.  */
+  if (caller)
+    {
+      cfun->machine->callee_pass_avx256_p = false;
+      cfun->machine->callee_return_avx256_p = false;
+    }
+
   if (fndecl)
-   cum->call_abi = ix86_function_abi (fndecl);
+    {
+      i = cgraph_local_info (fndecl);
+      cum->call_abi = ix86_function_abi (fndecl);
+      fnret_type = TREE_TYPE (TREE_TYPE (fndecl));
+    }
   else
-   cum->call_abi = ix86_function_type_abi (fntype);
+    {
+      i = NULL;
+      cum->call_abi = ix86_function_type_abi (fntype);
+      if (fntype)
+	fnret_type = TREE_TYPE (fntype);
+      else
+	fnret_type = NULL;
+    }
+
+  if (TARGET_VZEROUPPER && fnret_type)
+    {
+      rtx fnret_value = ix86_function_value (fnret_type, fntype,
+					     false);
+      if (function_pass_avx256_p (fnret_value))
+	{
+	  /* The return value of this function uses 256bit AVX modes.  */
+	  cfun->machine->use_avx256_p = true;
+	  if (caller)
+	    cfun->machine->callee_return_avx256_p = true;
+	  else
+	    cfun->machine->caller_return_avx256_p = true;
+	}
+    }
+
+  cum->caller = caller;
+
   /* Set up the number of registers to use for passing arguments.  */
 
   if (cum->call_abi == MS_ABI && !ACCUMULATE_OUTGOING_ARGS)
@@ -6488,6 +6876,7 @@ ix86_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode omode,
 {
   enum machine_mode mode = omode;
   HOST_WIDE_INT bytes, words;
+  rtx arg;
 
   if (mode == BLKmode)
     bytes = int_size_in_bytes (type);
@@ -6501,11 +6890,23 @@ ix86_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode omode,
     mode = type_natural_mode (type, cum);
 
   if (TARGET_64BIT && (cum ? cum->call_abi : ix86_abi) == MS_ABI)
-    return function_arg_ms_64 (cum, mode, omode, named, bytes);
+    arg = function_arg_ms_64 (cum, mode, omode, named, bytes);
   else if (TARGET_64BIT)
-    return function_arg_64 (cum, mode, omode, type, named);
+    arg = function_arg_64 (cum, mode, omode, type, named);
   else
-    return function_arg_32 (cum, mode, omode, type, bytes, words);
+    arg = function_arg_32 (cum, mode, omode, type, bytes, words);
+
+  if (TARGET_VZEROUPPER && function_pass_avx256_p (arg))
+    {
+      /* This argument uses 256bit AVX modes.  */
+      cfun->machine->use_avx256_p = true;
+      if (cum->caller)
+	cfun->machine->callee_pass_avx256_p = true;
+      else
+	cfun->machine->caller_pass_avx256_p = true;
+    }
+
+  return arg;
 }
 
 /* A C expression that indicates when an argument must be passed by
@@ -10351,6 +10752,15 @@ ix86_expand_epilogue (int style)
     {
       m->fs = frame_state_save;
       return;
+    }
+
+  /* Emit vzeroupper if needed.  */
+  if (TARGET_VZEROUPPER
+      && cfun->machine->use_avx256_p
+      && !cfun->machine->caller_return_avx256_p)
+    {
+      cfun->machine->use_vzeroupper_p = 1;
+      emit_insn (gen_avx_vzeroupper (GEN_INT (call_no_avx256))); 
     }
 
   if (crtl->args.pops_args && crtl->args.size)
@@ -20910,6 +21320,25 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 			       + 2, vec));
     }
 
+  /* Emit vzeroupper if needed.  */
+  if (TARGET_VZEROUPPER && cfun->machine->use_avx256_p)
+    {
+      int avx256;
+      cfun->machine->use_vzeroupper_p = 1;
+      if (cfun->machine->callee_pass_avx256_p)
+	{
+	  if (cfun->machine->callee_return_avx256_p)
+	    avx256 = callee_return_pass_avx256;
+	  else
+	    avx256 = callee_pass_avx256;
+	}
+      else if (cfun->machine->callee_return_avx256_p)
+	avx256 = callee_return_avx256;
+      else
+	avx256 = call_no_avx256;
+      emit_insn (gen_avx_vzeroupper (GEN_INT (avx256))); 
+    }
+
   call = emit_call_insn (call);
   if (use)
     CALL_INSN_FUNCTION_USAGE (call) = use;
@@ -21653,6 +22082,9 @@ ix86_local_alignment (tree exp, enum machine_mode mode,
       decl = NULL;
     }
 
+  if (use_avx256_p (mode, type))
+    cfun->machine->use_avx256_p = true;
+
   /* Don't do dynamic stack realignment for long long objects with
      -mpreferred-stack-boundary=2.  */
   if (!TARGET_64BIT
@@ -21748,9 +22180,6 @@ ix86_minimum_alignment (tree exp, enum machine_mode mode,
 {
   tree type, decl;
 
-  if (TARGET_64BIT || align != 64 || ix86_preferred_stack_boundary >= 64)
-    return align;
-
   if (exp && DECL_P (exp))
     {
       type = TREE_TYPE (exp);
@@ -21761,6 +22190,12 @@ ix86_minimum_alignment (tree exp, enum machine_mode mode,
       type = exp;
       decl = NULL;
     }
+
+  if (use_avx256_p (mode, type))
+    cfun->machine->use_avx256_p = true;
+
+  if (TARGET_64BIT || align != 64 || ix86_preferred_stack_boundary >= 64)
+    return align;
 
   /* Don't do dynamic stack realignment for long long objects with
      -mpreferred-stack-boundary=2.  */
@@ -25505,6 +25940,8 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
   switch ((enum ix86_builtin_func_type) d->flag)
     {
     case VOID_FTYPE_VOID:
+      if (icode == CODE_FOR_avx_vzeroupper)
+	target = GEN_INT (vzeroupper_intrinsic);
       emit_insn (GEN_FCN (icode) (target));
       return 0;
     case VOID_FTYPE_UINT64:
@@ -28542,6 +28979,10 @@ ix86_reorg (void)
 	ix86_avoid_jump_mispredicts ();
 #endif
     }
+
+  /* Run the vzeroupper optimization if needed.  */
+  if (cfun->machine->use_vzeroupper_p)
+    move_or_delete_vzeroupper ();
 }
 
 /* Return nonzero when QImode register that must be represented via REX prefix

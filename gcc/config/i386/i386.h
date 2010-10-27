@@ -1507,6 +1507,7 @@ typedef struct ix86_args {
   int mmx_nregs;		/* # mmx registers available for passing */
   int mmx_regno;		/* next available mmx register number */
   int maybe_vaarg;		/* true for calls to possibly vardic fncts.  */
+  int caller;			/* true if it is caller.  */
   int float_in_sse;		/* Set to 1 or 2 for 32bit targets if
 				   SFmode/DFmode arguments should be passed
 				   in SSE registers.  Otherwise 0.  */
@@ -1519,7 +1520,8 @@ typedef struct ix86_args {
    For a library call, FNTYPE is 0.  */
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
-  init_cumulative_args (&(CUM), (FNTYPE), (LIBNAME), (FNDECL))
+  init_cumulative_args (&(CUM), (FNTYPE), (LIBNAME), (FNDECL), \
+			(N_NAMED_ARGS) != -1)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
@@ -2288,6 +2290,24 @@ struct GTY(()) machine_function {
   /* If true, the current function has a STATIC_CHAIN is placed on the
      stack below the return address.  */
   BOOL_BITFIELD static_chain_on_stack : 1;
+
+  /* Nonzero if the current function uses vzeroupper.  */
+  BOOL_BITFIELD use_vzeroupper_p : 1;
+
+  /* Nonzero if the current function uses 256bit AVX regisers.  */
+  BOOL_BITFIELD use_avx256_p : 1;
+
+  /* Nonzero if caller passes 256bit AVX modes.  */
+  BOOL_BITFIELD caller_pass_avx256_p : 1;
+
+  /* Nonzero if caller returns 256bit AVX modes.  */
+  BOOL_BITFIELD caller_return_avx256_p : 1;
+
+  /* Nonzero if the current callee passes 256bit AVX modes.  */
+  BOOL_BITFIELD callee_pass_avx256_p : 1;
+
+  /* Nonzero if the current callee returns 256bit AVX modes.  */
+  BOOL_BITFIELD callee_return_avx256_p : 1;
 
   /* During prologue/epilogue generation, the current frame state.
      Otherwise, the frame state at the end of the prologue.  */
