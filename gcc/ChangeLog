@@ -1,3 +1,9 @@
+2010-10-27  Jie Zhang  <jie@codesourcery.com>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* haifa-sched.c (ISSUE_POINTS): Remove.
+	(max_issue): Don't issue more than issue_rate instructions.
+
 2010-10-27  Ian Lance Taylor  <iant@google.com>
 
 	PR target/46197
