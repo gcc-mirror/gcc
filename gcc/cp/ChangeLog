@@ -1,5 +1,7 @@
 2010-10-27  Jason Merrill  <jason@redhat.com>
 
+	* error.c (dump_simple_decl): Print constexpr.
+
 	* cvt.c (build_up_reference): Use target_type for the temporary var.
 
 	* except.c (build_throw): Set EXPR_LOCATION.
