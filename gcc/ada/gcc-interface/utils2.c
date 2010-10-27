@@ -1590,8 +1590,8 @@ build_call_raise_range (int msg, Node_Id gnat_node,
 					   build_index_type (size_int (len)));
 
   call = build_call_nary (TREE_TYPE (TREE_TYPE (fndecl)),
-                          build_unary_op (ADDR_EXPR, NULL_TREE, fndecl),
-                          6,
+			  build_unary_op (ADDR_EXPR, NULL_TREE, fndecl),
+			  6,
 			  build1 (ADDR_EXPR,
 				  build_pointer_type (unsigned_char_type_node),
 				  filename),
@@ -1644,8 +1644,8 @@ build_call_raise_column (int msg, Node_Id gnat_node)
 					   build_index_type (size_int (len)));
 
   call = build_call_nary (TREE_TYPE (TREE_TYPE (fndecl)),
-                          build_unary_op (ADDR_EXPR, NULL_TREE, fndecl),
-                          3,
+			  build_unary_op (ADDR_EXPR, NULL_TREE, fndecl),
+			  3,
 			  build1 (ADDR_EXPR,
 				  build_pointer_type (unsigned_char_type_node),
 				  filename),
