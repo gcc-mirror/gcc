@@ -1,3 +1,10 @@
+2010-10-27  Ian Lance Taylor  <iant@google.com>
+
+	PR target/46197
+	* config/i386/i386.md (UNSPECV_SPLIT_STACK_RETURN): New.
+	(split_stack_return): Replace UNSPEC_STACK_CHECK with
+	UNSPECV_SPLIT_STACK_RETURN.
+
 2010-10-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386-protos.h (init_cumulative_args): Add an int.
