@@ -1,3 +1,24 @@
+2010-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* combine.c (set_nonzero_bits_and_sign_copies): Use unsigned
+	arithmetics in masking operations.
+	(contains_muldiv): Likewise.
+	(try_combine): Likewise.
+	(find_split_point): Likewise.
+	(combine_simplify_rtx): Likewise.
+	(simplify_if_then_else): Likewise.
+	(simplify_set): Likewise.
+	(expand_compound_operation): Likewise.
+	(expand_field_assignment): Likewise.
+	(make_extraction): Likewise.
+	(extract_left_shift): Likewise.
+	(make_compound_operation): Likewise.
+	(force_to_mode): Likewise.
+	(make_field_assignment): Likewise.
+	(reg_nonzero_bits_for_combine): Likewise.
+	(simplify_shift_const_1): Likewise.
+	(simplify_comparison): Likewise.
+
 2010-10-27  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/ia64/ia64-protos.h (ia64_function_arg): Delete.
