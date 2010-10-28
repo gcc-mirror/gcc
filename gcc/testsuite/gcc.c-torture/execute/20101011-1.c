@@ -35,7 +35,7 @@ int k;
 int
 main ()
 {
-#ifdef DO_TEST
+#if DO_TEST
   signal (SIGFPE, sigfpe);
   k = i / j;
   abort ();

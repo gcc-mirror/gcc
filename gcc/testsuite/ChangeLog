@@ -1,3 +1,6 @@
+2010-10-29  Pat Haugen  <pthaugen@us.ibm.com>
+	* gcc.c-torture/execute/20101011-1.c: Fix #ifdef.
+
 2010-10-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46153
