@@ -453,54 +453,34 @@ AC_SUBST(addtests)
 #
 # Check for AViiON Machines running DGUX
 #
-AC_MSG_CHECKING(if host is AViiON running DGUX)
 ac_is_dgux=no
-AC_CHECK_HEADER(sys/dg_sys_info.h,
-[ac_is_dgux=yes;])
+AC_CHECK_HEADER(sys/dg_sys_info.h, [ac_is_dgux=yes])
 
+AC_MSG_CHECKING(if host is AViiON running DGUX)
 AC_MSG_RESULT($ac_is_dgux)
     ## :GOTCHA: we do not check anything but sys/dg_sys_info.h
 if test $ac_is_dgux = yes; then
     if test "$enable_full_debug" = "yes"; then
-      CFLAGS="-g -mstandard -DDGUX -D_DGUX_SOURCE -Di386 -mno-legend -O2"
-      CXXFLAGS="-g -mstandard -DDGUX -D_DGUX_SOURCE -Di386 -mno-legend -O2"
-    else
-      CFLAGS="-DDGUX -D_DGUX_SOURCE -Di386 -mno-legend -O2"
-      CXXFLAGS="-DDGUX -D_DGUX_SOURCE -Di386 -mno-legend -O2"
+        GC_CFLAGS="$GC_CFLAGS -mstandard"
     fi
-    AC_SUBST(CFLAGS)
-    AC_SUBST(CXXFLAGS)
+    GC_CFLAGS="$GC_CFLAGS -DDGUX -D_DGUX_SOURCE -Di386 -mno-legend"
 fi
 
 dnl As of 4.13a2, the collector will not properly work on Solaris when
 dnl built with gcc and -O.  So we remove -O in the appropriate case.
 dnl Not needed anymore on Solaris.
-AC_MSG_CHECKING(whether Solaris gcc optimization fix is necessary)
+AC_MSG_CHECKING([whether GCC optimization should be disabled])
+O0_CFLAGS=
 case "$host" in
- *aix*)
-    if test "$GCC" = yes; then
-       AC_MSG_RESULT(yes)
-       new_CFLAGS=
-       for i in $CFLAGS; do
-	  case "$i" in
-	   -O*)
-	      ;;
-	   *)
-	      new_CFLAGS="$new_CFLAGS $i"
-	      ;;
-	  esac
-       done
-       CFLAGS="$new_CFLAGS"
-    else
-       AC_MSG_RESULT(no)
-    fi
-    ;;
- *) AC_MSG_RESULT(no) ;;
+ *aix*) test "$GCC" = yes && O0_CFLAGS=-O0 ;;
+ *) ;;
 esac
-
-dnl We need to override the top-level CFLAGS.  This is how we do it.
-MY_CFLAGS="$CFLAGS"
-AC_SUBST(MY_CFLAGS)
+if test x"$O0_CFLAGS" != x; then
+   AC_MSG_RESULT(yes)
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST([O0_CFLAGS])
 
 dnl Include defines that have become de facto standard.
 dnl ALL_INTERIOR_POINTERS can be overridden in startup code.
