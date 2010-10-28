@@ -1247,11 +1247,10 @@ xstormy16_function_profiler (void)
   sorry ("function_profiler support");
 }
 
-/* Return an updated summarizer variable CUM to advance past an
-   argument in the argument list.  The values MODE, TYPE and NAMED
-   describe that argument.  Once this is done, the variable CUM is
-   suitable for analyzing the *following* argument with
-   `FUNCTION_ARG', etc.
+/* Update CUM to advance past an argument in the argument list.  The
+   values MODE, TYPE and NAMED describe that argument.  Once this is
+   done, the variable CUM is suitable for analyzing the *following*
+   argument with `TARGET_FUNCTION_ARG', etc.
 
    This function need not do anything if the argument in question was
    passed on the stack.  The compiler knows how to track the amount of
@@ -1259,25 +1258,23 @@ xstormy16_function_profiler (void)
    it makes life easier for xstormy16_build_va_list if it does update
    the word count.  */
 
-CUMULATIVE_ARGS
-xstormy16_function_arg_advance (CUMULATIVE_ARGS cum, enum machine_mode mode,
-				tree type, int named ATTRIBUTE_UNUSED)
+static void
+xstormy16_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+				const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   /* If an argument would otherwise be passed partially in registers,
      and partially on the stack, the whole of it is passed on the
      stack.  */
-  if (cum < NUM_ARGUMENT_REGISTERS
-      && cum + XSTORMY16_WORD_SIZE (type, mode) > NUM_ARGUMENT_REGISTERS)
-    cum = NUM_ARGUMENT_REGISTERS;
+  if (*cum < NUM_ARGUMENT_REGISTERS
+      && *cum + XSTORMY16_WORD_SIZE (type, mode) > NUM_ARGUMENT_REGISTERS)
+    *cum = NUM_ARGUMENT_REGISTERS;
 
-  cum += XSTORMY16_WORD_SIZE (type, mode);
-
-  return cum;
+  *cum += XSTORMY16_WORD_SIZE (type, mode);
 }
 
-rtx
-xstormy16_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
-			tree type, int named ATTRIBUTE_UNUSED)
+static rtx
+xstormy16_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   if (mode == VOIDmode)
     return const0_rtx;
@@ -2662,6 +2659,11 @@ static const struct default_options xstorym16_option_optimization_table[] =
 #define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
 #undef  TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
+
+#undef  TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG xstormy16_function_arg
+#undef  TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE xstormy16_function_arg_advance
 
 #undef  TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY xstormy16_return_in_memory
