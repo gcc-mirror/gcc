@@ -130,6 +130,10 @@ static bool crx_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_U
 static int crx_address_cost (rtx, bool);
 static bool crx_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool crx_can_eliminate (const int, const int);
+static rtx crx_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			     const_tree, bool);
+static void crx_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				      const_tree, bool);
 
 /*****************************************************************************/
 /* RTL VALIDITY								     */
@@ -153,6 +157,16 @@ static bool crx_can_eliminate (const int, const int);
 
 #undef	TARGET_RETURN_IN_MEMORY
 #define	TARGET_RETURN_IN_MEMORY		crx_return_in_memory
+
+/*****************************************************************************/
+/* PASSING FUNCTION ARGUMENTS						     */
+/*****************************************************************************/
+
+#undef  TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG		crx_function_arg
+
+#undef  TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE	crx_function_arg_advance
 
 /*****************************************************************************/
 /* RELATIVE COSTS OF OPERATIONS						     */
@@ -429,7 +443,7 @@ crx_hard_regno_mode_ok (int regno, enum machine_mode mode)
  * the number of registers needed else 0.  */
 
 static int
-enough_regs_for_param (CUMULATIVE_ARGS * cum, tree type,
+enough_regs_for_param (CUMULATIVE_ARGS * cum, const_tree type,
 		       enum machine_mode mode)
 {
   int type_size;
@@ -452,11 +466,11 @@ enough_regs_for_param (CUMULATIVE_ARGS * cum, tree type,
   return 0;
 }
 
-/* Implements the macro FUNCTION_ARG defined in crx.h.  */
+/* Implements TARGET_FUNCTION_ARG.  */
 
-rtx
-crx_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode, tree type,
-	      int named ATTRIBUTE_UNUSED)
+static rtx
+crx_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+		  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   last_parm_in_reg = 0;
 
@@ -520,11 +534,11 @@ crx_init_cumulative_args (CUMULATIVE_ARGS * cum, tree fntype,
     }
 }
 
-/* Implements the macro FUNCTION_ARG_ADVANCE defined in crx.h.  */
+/* Implements TARGET_FUNCTION_ARG_ADVANCE.  */
 
-void
+static void
 crx_function_arg_advance (CUMULATIVE_ARGS * cum, enum machine_mode mode,
-		      tree type, int named ATTRIBUTE_UNUSED)
+			  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   /* l holds the number of registers required */
   int l = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
