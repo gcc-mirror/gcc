@@ -1,5 +1,16 @@
 2010-10-28  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/mn10300/mn10300-protos.h (function_arg): Delete.
+	* config/mn10300/mn10300.h (FUNCTION_ARG): Delete.
+	(FUNCTION_ARG_ADVANCE): Delete.
+	* config/mn10300/mn10300.c (function_arg): Rename to...
+	(mn10300_function_arg): ...this.  Make static.  Take a const_tree
+	and a bool.
+	(mn10300_function_arg_advance): New function.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-10-28  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/iq2000/iq2000-protos.h (function_arg): Delete.
 	(function_arg_advance): Delete.
 	* config/iq2000/iq2000.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.

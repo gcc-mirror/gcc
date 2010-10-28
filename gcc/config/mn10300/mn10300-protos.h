@@ -43,10 +43,6 @@ extern int   mn10300_symbolic_operand (rtx, Mmode);
 extern bool  mn10300_wide_const_load_uses_clr (rtx operands[2]);
 #endif /* RTX_CODE */
 
-#ifdef TREE_CODE
-extern struct rtx_def * mn10300_function_arg (CUMULATIVE_ARGS *, Mmode, tree, int);
-#endif /* TREE_CODE */
-
 extern int   mn10300_can_use_return_insn (void);
 extern void  mn10300_expand_prologue (void);
 extern void  mn10300_expand_epilogue (void);
