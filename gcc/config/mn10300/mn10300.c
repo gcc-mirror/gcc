@@ -1417,9 +1417,9 @@ mn10300_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 /* Return an RTX to represent where a value with mode MODE will be returned
    from a function.  If the result is NULL_RTX, the argument is pushed.  */
 
-rtx
+static rtx
 mn10300_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-		      tree type, int named ATTRIBUTE_UNUSED)
+		      const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   rtx result = NULL_RTX;
   int size, align;
@@ -1462,6 +1462,19 @@ mn10300_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     }
 
   return result;
+}
+
+/* Update the data in CUM to advance over an argument
+   of mode MODE and data type TYPE.
+   (TYPE is null for libcalls where that information may not be available.)  */
+
+static void
+mn10300_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			      const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  cum->nbytes += (mode != BLKmode
+		  ? (GET_MODE_SIZE (mode) + 3) & ~3
+		  : (int_size_in_bytes (type) + 3) & ~3);
 }
 
 /* Return the number of bytes of registers to use for an argument passed
@@ -2303,6 +2316,10 @@ mn10300_select_cc_mode (rtx x)
 #define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
 #undef  TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES mn10300_arg_partial_bytes
+#undef  TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG mn10300_function_arg
+#undef  TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE mn10300_function_arg_advance
 
 #undef  TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS mn10300_builtin_saveregs
