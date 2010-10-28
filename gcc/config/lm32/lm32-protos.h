@@ -26,8 +26,6 @@ extern void lm32_expand_prologue (void);
 extern void lm32_expand_epilogue (void);
 extern void lm32_print_operand (FILE *file, rtx op, int letter);
 extern void lm32_print_operand_address (FILE *file, rtx addr);
-extern rtx lm32_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
-                              tree type, int named);
 extern HOST_WIDE_INT lm32_compute_initial_elimination_offset (int from, 
                                                              int to);
 extern int lm32_can_use_return (void);
