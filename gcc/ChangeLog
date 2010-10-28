@@ -1,5 +1,15 @@
 2010-10-28  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/fr30/fr30-protos.h (fr30_num_arg_regs): Delete.
+	* config/fr30/fr30.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	* config/fr30/fr30.c (fr30_num_arg_regs): Make static.  Take a
+	const_tree.
+	(fr30_function_arg): New function.
+	(fr30_function_arg_advance): New function.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-10-28  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/frv/frv-protos.h (frv_function_arg): Delete.
 	(frv_function_arg_advance): Delete.
 	* config/frv/frv.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
