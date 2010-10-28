@@ -231,11 +231,6 @@ enum reg_class
 
 /* Passing Arguments in Registers */
 
-/* A C expression that controls whether a function argument is passed
-   in a register, and which register.  */
-#define FUNCTION_ARG(CUM,MODE,TYPE,NAMED) \
-  moxie_function_arg(CUM,MODE,TYPE,NAMED)
-
 /* A C type for declaring a variable that is used as the first
    argument of `FUNCTION_ARG' and other related values.  */
 #define CUMULATIVE_ARGS unsigned int
@@ -252,14 +247,6 @@ enum reg_class
    For moxie, the first arg is passed in register 2 (aka $r0).  */
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,FNDECL,N_NAMED_ARGS) \
   (CUM = MOXIE_R0)
-
-#define MOXIE_FUNCTION_ARG_SIZE(MODE, TYPE)	\
-  ((MODE) != BLKmode ? GET_MODE_SIZE (MODE)	\
-   : (unsigned) int_size_in_bytes (TYPE))
-
-#define FUNCTION_ARG_ADVANCE(CUM,MODE,TYPE,NAMED) \
-  (CUM = (CUM < MOXIE_R6 ?                        \
-          CUM + ((3 + MOXIE_FUNCTION_ARG_SIZE(MODE,TYPE))/4) : CUM ))
 
 /* How Scalar Function Values Are Returned */
 

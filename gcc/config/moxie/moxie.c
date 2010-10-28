@@ -409,14 +409,28 @@ moxie_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
 /* Return the next register to be used to hold a function argument or
    NULL_RTX if there's no more space.  */
 
-rtx
-moxie_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
-		    tree type ATTRIBUTE_UNUSED, int named ATTRIBUTE_UNUSED)
+static rtx
+moxie_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		    const_tree type ATTRIBUTE_UNUSED,
+		    bool named ATTRIBUTE_UNUSED)
 {
-  if (cum < 8)
-    return gen_rtx_REG (mode, cum);
+  if (*cum < 8)
+    return gen_rtx_REG (mode, *cum);
   else 
     return NULL_RTX;
+}
+
+#define MOXIE_FUNCTION_ARG_SIZE(MODE, TYPE)	\
+  ((MODE) != BLKmode ? GET_MODE_SIZE (MODE)	\
+   : (unsigned) int_size_in_bytes (TYPE))
+
+static void
+moxie_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			    const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  *cum = (*cum < MOXIE_R6
+	  ? *cum + ((3 + MOXIE_FUNCTION_ARG_SIZE (mode, type)) / 4)
+	  : *cum);
 }
 
 /* Return non-zero if the function argument described by TYPE is to be
@@ -539,6 +553,10 @@ moxie_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 #define TARGET_PASS_BY_REFERENCE        moxie_pass_by_reference
 #undef  TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES        moxie_arg_partial_bytes
+#undef  TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG		moxie_function_arg
+#undef  TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE	moxie_function_arg_advance
 
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
