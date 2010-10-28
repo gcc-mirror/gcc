@@ -155,16 +155,6 @@
 	(sse_loadlps_exp): Ditto.
 	(sse2_loadhpd_exp): Ditto.
 	(sse2_loadlpd_exp): Ditto.
-	(*avx_movhlps): Use ix86_binary_operator_ok in insn predicate.
-	(sse_movhlps): Ditto.
-	(*avx_movlhps): Ditto.
-	(sse_movlhps): Ditto.
-	(*avx_loadhps): Ditto.
-	(sse_loadhps): Ditto.
-	(*avx_loadhpd): Ditto.
-	(sse_loadhpd): Ditto.
-	(*avx_storelps): Prevent both operands in memory.
-	(sse_storelps): Ditto.
 
 2010-10-28  Andrew Stubbs  <ams@codesourcery.com>
 

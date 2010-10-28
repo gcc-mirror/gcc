@@ -3266,7 +3266,7 @@
 		     (const_int 7)
 		     (const_int 2)
 		     (const_int 3)])))]
-  "TARGET_AVX && ix86_binary_operator_ok (UNKNOWN, V4SFmode, operands)"
+  "TARGET_AVX && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    vmovhlps\t{%2, %1, %0|%0, %1, %2}
    vmovlps\t{%H2, %1, %0|%0, %1, %H2}
@@ -3285,7 +3285,7 @@
 		     (const_int 7)
 		     (const_int 2)
 		     (const_int 3)])))]
-  "TARGET_SSE && ix86_binary_operator_ok (UNKNOWN, V4SFmode, operands)"
+  "TARGET_SSE && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    movhlps\t{%2, %0|%0, %2}
    movlps\t{%H2, %0|%0, %H2}
@@ -3740,7 +3740,7 @@
 	    (match_operand:V4SF 1 "nonimmediate_operand" "x,x,0")
 	    (parallel [(const_int 0) (const_int 1)]))
 	  (match_operand:V2SF 2 "nonimmediate_operand" "m,x,x")))]
-  "TARGET_AVX && ix86_binary_operator_ok (UNKNOWN, V4SFmode, operands)"
+  "TARGET_AVX"
   "@
    vmovhps\t{%2, %1, %0|%0, %1, %2}
    vmovlhps\t{%2, %1, %0|%0, %1, %2}
@@ -3756,7 +3756,7 @@
 	    (match_operand:V4SF 1 "nonimmediate_operand" "0,0,0")
 	    (parallel [(const_int 0) (const_int 1)]))
 	  (match_operand:V2SF 2 "nonimmediate_operand" "m,x,x")))]
-  "TARGET_SSE && ix86_binary_operator_ok (UNKNOWN, V4SFmode, operands)"
+  "TARGET_SSE"
   "@
    movhps\t{%2, %0|%0, %2}
    movlhps\t{%2, %0|%0, %2}
@@ -3769,7 +3769,7 @@
 	(vec_select:V2SF
 	  (match_operand:V4SF 1 "nonimmediate_operand" "x,x,m")
 	  (parallel [(const_int 0) (const_int 1)])))]
-  "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "TARGET_AVX"
   "@
    vmovlps\t{%1, %0|%0, %1}
    vmovaps\t{%1, %0|%0, %1}
@@ -3783,7 +3783,7 @@
 	(vec_select:V2SF
 	  (match_operand:V4SF 1 "nonimmediate_operand" "x,x,m")
 	  (parallel [(const_int 0) (const_int 1)])))]
-  "TARGET_SSE && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "TARGET_SSE"
   "@
    movlps\t{%1, %0|%0, %1}
    movaps\t{%1, %0|%0, %1}
@@ -3818,7 +3818,7 @@
 	  (vec_select:V2SF
 	    (match_operand:V4SF 1 "nonimmediate_operand" "x,x,0")
 	    (parallel [(const_int 2) (const_int 3)]))))]
-  "TARGET_AVX && ix86_binary_operator_ok (UNKNOWN, V4SFmode, operands)"
+  "TARGET_AVX"
   "@
    shufps\t{$0xe4, %1, %2, %0|%0, %2, %1, 0xe4}
    vmovlps\t{%2, %1, %0|%0, %1, %2}
@@ -3835,7 +3835,7 @@
 	  (vec_select:V2SF
 	    (match_operand:V4SF 1 "nonimmediate_operand" "x,0,0")
 	    (parallel [(const_int 2) (const_int 3)]))))]
-  "TARGET_SSE && ix86_binary_operator_ok (UNKNOWN, V4SFmode, operands)"
+  "TARGET_SSE"
   "@
    shufps\t{$0xe4, %1, %0|%0, %1, 0xe4}
    movlps\t{%2, %0|%0, %2}
@@ -4959,7 +4959,7 @@
 	    (match_operand:V2DF 1 "nonimmediate_operand" " x,x,0,0,0")
 	    (parallel [(const_int 0)]))
 	  (match_operand:DF 2 "nonimmediate_operand"     " m,x,x,*f,r")))]
-  "TARGET_AVX && ix86_binary_operator_ok (UNKNOWN, V2DFmode, operands)"
+  "TARGET_AVX && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    vmovhpd\t{%2, %1, %0|%0, %1, %2}
    vunpcklpd\t{%2, %1, %0|%0, %1, %2}
@@ -4977,7 +4977,7 @@
 	    (match_operand:V2DF 1 "nonimmediate_operand" " 0,0,x,0,0,0")
 	    (parallel [(const_int 0)]))
 	  (match_operand:DF 2 "nonimmediate_operand"     " m,x,0,x,*f,r")))]
-  "TARGET_SSE2 && ix86_binary_operator_ok (UNKNOWN, V2DFmode, operands)"
+  "TARGET_SSE2 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    movhpd\t{%2, %0|%0, %2}
    unpcklpd\t{%2, %0|%0, %2}
