@@ -1,5 +1,13 @@
 2010-10-28  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/arc/arc.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Move code
+	to...
+	* config/arc/arc.c (arc_function_arg): ...here and...
+	(arc_function_arg_advance): ...here.  New functions.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-10-28  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/crx/crx-protos.h (crx_function_arg): Delete.
 	(crx_function_arg_advance): Delete.
 	* config/crx/crx.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
