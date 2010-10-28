@@ -2868,15 +2868,8 @@ split_all_insns (void)
 		}
 	      else
 		{
-		  rtx last = split_insn (insn);
-		  if (last)
+		  if (split_insn (insn))
 		    {
-		      /* The split sequence may include barrier, but the
-			 BB boundary we are interested in will be set to
-			 previous one.  */
-
-		      while (BARRIER_P (last))
-			last = PREV_INSN (last);
 		      SET_BIT (blocks, bb->index);
 		      changed = true;
 		    }
