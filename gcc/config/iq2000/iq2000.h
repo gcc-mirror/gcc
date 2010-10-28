@@ -359,9 +359,6 @@ enum reg_class
 
 /* Function Arguments in Registers.  */
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  function_arg (& CUM, MODE, TYPE, NAMED)
-
 #define MAX_ARGS_IN_REGISTERS 8
 
 typedef struct iq2000_args
@@ -382,9 +379,6 @@ typedef struct iq2000_args
    For a library call, FNTYPE is 0.  */
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   init_cumulative_args (& CUM, FNTYPE, LIBNAME)				\
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-  function_arg_advance (& CUM, MODE, TYPE, NAMED)
 
 #define FUNCTION_ARG_PADDING(MODE, TYPE)				\
   (! BYTES_BIG_ENDIAN							\
