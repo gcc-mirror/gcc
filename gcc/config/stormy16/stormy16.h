@@ -337,18 +337,12 @@ enum reg_class
     + 1) 							\
    / 2)
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-	xstormy16_function_arg (CUM, MODE, TYPE, NAMED)
-
 /* For this platform, the value of CUMULATIVE_ARGS is the number of words
    of arguments that have been passed in registers so far.  */
 #define CUMULATIVE_ARGS int
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   (CUM) = 0
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-  ((CUM) = xstormy16_function_arg_advance (CUM, MODE, TYPE, NAMED))
 
 #define FUNCTION_ARG_REGNO_P(REGNO)					\
   ((REGNO) >= FIRST_ARGUMENT_REGISTER 					\

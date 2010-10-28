@@ -1,5 +1,17 @@
 2010-10-28  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/stormy16/stormy16-protos.h (xstormy16_function_arg): Delete.
+	(xstormy16_function_arg_advance): Delete.
+	* config/stormy16/stormy16.h (FUNCTION_ARG): Delete.
+	(FUNCTION_ARG_ADVANCE): Delete.
+	* config/stormy16/stormy16.c (xstormy16_function_arg): Make static.
+	Take a const_tree and a bool.
+	(xstormy16_function_arg_advance): Likewise.  Return void, updating
+	the CUM parameter instead.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-10-28  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/moxie/moxie-protos.h (moxie_function_arg): Delete.
 	* config/moxie/moxie.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
 	(MOXIE_FUNCTION_ARG_SIZE): Move to...
