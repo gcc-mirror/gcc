@@ -1,3 +1,7 @@
+2010-10-29  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure: Regenerate.
+
 2010-10-28  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: Rewrite DGUX check to use GC_CFLAGS, and -O0 check
