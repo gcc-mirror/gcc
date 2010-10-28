@@ -94,6 +94,10 @@ static void arc_external_libcall (rtx);
 static bool arc_return_in_memory (const_tree, const_tree);
 static bool arc_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				   const_tree, bool);
+static rtx arc_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			     const_tree, bool);
+static void arc_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				      const_tree, bool);
 static void arc_trampoline_init (rtx, tree, rtx);
 static void arc_option_override (void);
 
@@ -148,6 +152,10 @@ static const struct attribute_spec arc_attribute_table[] =
 #define TARGET_RETURN_IN_MEMORY arc_return_in_memory
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE arc_pass_by_reference
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG arc_function_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE arc_function_arg_advance
 #undef TARGET_CALLEE_COPIES
 #define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
 
@@ -2352,6 +2360,67 @@ arc_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
     size = GET_MODE_SIZE (mode);
 
   return size > 8;
+}
+
+/* Round SIZE up to a word boundary.  */
+#define ROUND_ADVANCE(SIZE) \
+(((SIZE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+
+/* Round arg MODE/TYPE up to the next word boundary.  */
+#define ROUND_ADVANCE_ARG(MODE, TYPE) \
+((MODE) == BLKmode				\
+ ? ROUND_ADVANCE (int_size_in_bytes (TYPE))	\
+ : ROUND_ADVANCE (GET_MODE_SIZE (MODE)))
+
+/* Round CUM up to the necessary point for argument MODE/TYPE.  */
+#define ROUND_ADVANCE_CUM(CUM, MODE, TYPE) \
+((((MODE) == BLKmode ? TYPE_ALIGN (TYPE) : GET_MODE_BITSIZE (MODE)) \
+  > BITS_PER_WORD)	\
+ ? (((CUM) + 1) & ~1)	\
+ : (CUM))
+
+/* Return boolean indicating arg of type TYPE and mode MODE will be passed in
+   a reg.  This includes arguments that have to be passed by reference as the
+   pointer to them is passed in a reg if one is available (and that is what
+   we're given).  */
+#define PASS_IN_REG_P(CUM, MODE, TYPE) \
+((CUM) < MAX_ARC_PARM_REGS						\
+ && ((ROUND_ADVANCE_CUM ((CUM), (MODE), (TYPE))				\
+      + ROUND_ADVANCE_ARG ((MODE), (TYPE))				\
+      <= MAX_ARC_PARM_REGS)))
+
+/* Determine where to put an argument to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
+
+   MODE is the argument's machine mode.
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).  */
+/* On the ARC the first MAX_ARC_PARM_REGS args are normally in registers
+   and the rest are pushed.  */
+
+static rtx
+arc_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		  const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  return (PASS_IN_REG_P (*cum, mode, type)
+	  ? gen_rtx_REG (mode, ROUND_ADVANCE_CUM (*cum, mode, type))
+	  : NULL_RTX);
+}
+
+/* Worker function for TARGET_FUNCTION_ARG_ADVANCE.  */
+
+static void
+arc_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			  const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  *cum = (ROUND_ADVANCE_CUM (*cum, mode, type)
+	  + ROUND_ADVANCE_ARG (mode, type));
 }
 
 /* Trampolines.  */
