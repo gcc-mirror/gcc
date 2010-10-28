@@ -1,3 +1,24 @@
+2010-10-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46153
+	* config/i386/sse.md (sse_movhlps_exp): Use destination
+	returned from ix86_fixup_binary_operands to expand insn.
+	(sse_movlhps_exp): Ditto.
+	(sse_loadhps_exp): Ditto.
+	(sse_loadlps_exp): Ditto.
+	(sse2_loadhpd_exp): Ditto.
+	(sse2_loadlpd_exp): Ditto.
+	(*avx_movhlps): Use ix86_binary_operator_ok in insn predicate.
+	(sse_movhlps): Ditto.
+	(*avx_movlhps): Ditto.
+	(sse_movlhps): Ditto.
+	(*avx_loadhps): Ditto.
+	(sse_loadhps): Ditto.
+	(*avx_loadhpd): Ditto.
+	(sse_loadhpd): Ditto.
+	(*avx_storelps): Prevent both operands in memory.
+	(sse_storelps): Ditto.
+
 2010-10-28  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/arm/arm.c (const_ok_for_arm): Support 0xXY00XY00 pattern
@@ -104,8 +125,7 @@
 	caller_pass_avx256_p based on argument type.
 	(ix86_expand_epilogue): Emit vzeroupper if 256bit AVX register
 	is used, but not returned by caller.
-	(ix86_expand_call): Emit vzeroupper if 256bit AVX register is
-	used.
+	(ix86_expand_call): Emit vzeroupper if 256bit AVX register is used.
 	(ix86_local_alignment): Set use_avx256_p if 256bit AVX register
 	is used.
 	(ix86_minimum_alignment): Likewise.
@@ -136,7 +156,7 @@
 	* config/i386/t-mingw-w64 (SHLIB_LC): Likewise.
 
 2010-10-27  Eric Botcazou  <ebotcazou@adacore.com>
-            Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
 
 	* config/i386/w32-unwind.h (i386_w32_fallback_frame_state): Fix regnum
 	of EBP.  Do not restore reg #9.  Remove +1 adjustment to EIP and set
@@ -165,11 +185,10 @@
 	c_parser_objc_at_property, now
 	c_parser_objc_at_property_declaration.
 	(c_parser_objc_methodprotolist): Same change.
-	
+
 2010-10-26  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/i386.md (split_stack_return): Put back
-	unspec_volatile.
+	* config/i386/i386.md (split_stack_return): Put back unspec_volatile.
 
 2010-10-26  Jan Hubicka  <jh@suse.cz>
 
@@ -180,7 +199,8 @@
 
 2010-10-26  Jan Hubicka  <jh@suse.cz>
 
-	* cgraphbuild.c (build_cgraph_edges): Use ipa-reference to represent OMP.
+	* cgraphbuild.c (build_cgraph_edges): Use ipa-reference
+	to represent OMP.
 
 2010-10-26  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -213,31 +233,33 @@
 	(cgraph_can_remove_if_no_direct_calls_and_refs): Do not try
 	to optimize away static ctors/dtors; it does not work on inline clones;
 	external functions can always be rmeoved.
-	(cgraph_will_be_removed_from_program_if_no_direct_calls): Assert on inline
-	clones; in LTO external functions always can go.
+	(cgraph_will_be_removed_from_program_if_no_direct_calls): Assert on
+	inline clones; in LTO external functions always can go.
 	(cgraph_used_from_object_file_p): Handle EXTERNAL functions correctly.
-	(cgraph_mark_address_taken_node): Assert that we are not taking address of
-	inline clone.
+	(cgraph_mark_address_taken_node): Assert that we are not taking
+	address of inline clone.
 	(cgraph_can_remove_if_no_direct_calls_p): We always eventually remove
 	external functions.
-	* ipa-cp.c (ipcp_cloning_candidate_p): Do not clone functions with address taken.
-	(ipcp_initialize_node_lattices): Only local functions can be handled without cloning.
+	* ipa-cp.c (ipcp_cloning_candidate_p): Do not clone functions with
+	address taken.
+	(ipcp_initialize_node_lattices): Only local functions can be
+	handled without cloning.
 	* cgraph.h (cgraph_set_readonly_flag,
 	cgraph_set_looping_const_or_pure_flag): Remove.
 	(cgraph_set_const_flag): Declare.
 	(cgraph_set_pure_flag): Update.
 	* ipa-pure-const (propagate_pure_const, local_pure_const): Update
 	flags setting code.
-	* ipa.c (cgraph_remove_unreachable_nodes): Fix formating; do not look at inline
-	clones; fix handling of external definitions.
+	* ipa.c (cgraph_remove_unreachable_nodes): Fix formating; do not
+	look at inline clones; fix handling of external definitions.
 	(cgraph_postorder): Do not look at inline clones in the first pass.
 	(function_and_variable_visibility): Drop constructors/destructor
 	flags at pure and const functions.
 	* tree-profile.c (tree_profiling): Update.
 	* ipa-inline.c (cgraph_clone_inlined_nodes): Always clone functions with
 	address taken; external functions do not account to whole program size.
-	(cgraph_decide_inlining): Likewise; do not try to inline functions already
-	inlined.
+	(cgraph_decide_inlining): Likewise; do not try to inline
+	functions already inlined.
 
 2010-10-26  Jie Zhang  <jie@codesourcery.com>
 
@@ -260,7 +282,7 @@
 	PR target/44948
 	* config/i386/i386.c (ix86_old_function_arg_boundary): New.
 	(ix86_function_arg_boundary): Always align parameters on stack
-	in 64bit and align parameters with alignment >= 16byte on stack 
+	in 64bit and align parameters with alignment >= 16byte on stack
 	in 32bit.  Warn alignment change.
 
 2010-10-26  Ian Lance Taylor  <iant@google.com>
@@ -269,7 +291,7 @@
 	* ipa-prop.c (ipa_modify_call_arguments): Correct type of MEM_REF
 	offset.
 
-2010-10-25  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+2010-10-25  Rodrigo Rivas Costa  <rodrigorivascosta@gmail.com>
 
 	Implement opaque-enum-specifiesr for C++0x
 	* tree.h (ENUM_IS_OPAQUE): New.
@@ -278,8 +300,7 @@
 2010-10-26  Jie Zhang  <jie@codesourcery.com>
 
 	* stor-layout.c (layout_decl): Use the field's type to
-	determine the mode and keep DECL_BIT_FIELD for a volatile
-	bit-field.
+	determine the mode and keep DECL_BIT_FIELD for a volatile bit-field.
 	* config/arm/arm.c (arm_override_options): Default to
 	-fstrict-volatile-bitfields.
 
@@ -289,10 +310,6 @@
 	numbers, branch offset limits.
 	* config/pdp11/pdp11.c: Use named constants instead of numbers.
 	* config/pdp11.pdp11.h: Ditto.
-
-2010-10-25  Changpeng Fang  <changpeng.fang@amd.com>
-
-	* Changelog (2010-10-22  Changpeng Fang): Correct the Changelog entries.
 
 2010-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -323,8 +340,7 @@
 
 2010-10-24  Ian Lance Taylor  <iant@google.com>
 
-	* config/i386/i386.c (ix86_va_start): Remove extraneous blank
-	line.
+	* config/i386/i386.c (ix86_va_start): Remove extraneous blank line.
 
 2010-10-24  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -338,8 +354,7 @@
 	* gcc.c (n_switches_alloc_debug_check): New.
 	(set_option_handlers): New.
 	(process_command): Use set_option_handlers.
-	(do_self_spec): Pass spec-generated options through option
-	handlers.
+	(do_self_spec): Pass spec-generated options through option handlers.
 	(main): Also save and restore n_switches_alloc when swapping
 	switch arrays.
 
@@ -399,7 +414,7 @@
 	(TARGET_SCHED_REORDER2): Define to mips_sched_reorder2
 	instead of mips_sched_reorder.
 
-	Revert
+	Revert:
 	2008-09-09  Andrey Belevantsev  <abel@ispras.ru>
 	PR rtl-optimization/37360
 	* haifa-sched.c (max_issue): Do not assert that we never issue more
@@ -432,8 +447,7 @@
 	(m32c_addr_space_subset_p): New.
 	(m32c_addr_space_convert): New.
 	(conversions): Add __far operand patterns.
-	(m32c_prepare_move): Force constants into registers for __far
-	moves.
+	(m32c_prepare_move): Force constants into registers for __far moves.
 	(m32c_split_move): __far moves are always split.
 	* config/m32c/addsub.md (addsi3_1): Support SImode symbols.
 	* config/m32c/mov.md (mov<mode>_far_op1): New.
@@ -442,8 +456,8 @@
 	(movhi_op): Likewise.
 	(movsi_splittable): Split A1A0 also.
 
-2010-10-22  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
-	    Andrew Pinski <pinskia@gmail.com>
+2010-10-22  Artjoms Sinkarovs  <artyom.shinakroff@gmail.com>
+	    Andrew Pinski  <pinskia@gmail.com>
 
 	* c-typeck.c (build_array_ref): Handle subscripting of vectors.
 	* doc/extend.texi: New paragraph
@@ -476,8 +490,7 @@
 
 	* gcc.c (DEFAULT_SWITCH_CURTAILS_COMPILATION,
 	SWITCH_CURTAILS_COMPILATION): Remove.
-	* doc/tm.texi.in (SWITCH_CURTAILS_COMPILATION): Remove
-	documentation.
+	* doc/tm.texi.in (SWITCH_CURTAILS_COMPILATION): Remove documentation.
 	* doc/tm.texi: Regenerate.
 	* system.h (SWITCH_CURTAILS_COMPILATION): Poison.
 

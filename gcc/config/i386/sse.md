@@ -3244,7 +3244,17 @@
 		     (const_int 2)
 		     (const_int 3)])))]
   "TARGET_SSE"
-  "ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);")
+{
+  rtx dst = ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);
+  
+  emit_insn (gen_sse_movhlps (dst, operands[1], operands[2]));
+
+  /* Fix up the destination if needed.  */
+  if (dst != operands[0])
+    emit_move_insn (operands[0], dst);
+
+  DONE;
+})
 
 (define_insn "*avx_movhlps"
   [(set (match_operand:V4SF 0 "nonimmediate_operand"     "=x,x,m")
@@ -3256,7 +3266,7 @@
 		     (const_int 7)
 		     (const_int 2)
 		     (const_int 3)])))]
-  "TARGET_AVX && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
+  "TARGET_AVX && ix86_binary_operator_ok (UNKNOWN, V4SFmode, operands)"
   "@
    vmovhlps\t{%2, %1, %0|%0, %1, %2}
    vmovlps\t{%H2, %1, %0|%0, %1, %H2}
@@ -3275,7 +3285,7 @@
 		     (const_int 7)
 		     (const_int 2)
 		     (const_int 3)])))]
-  "TARGET_SSE && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
+  "TARGET_SSE && ix86_binary_operator_ok (UNKNOWN, V4SFmode, operands)"
   "@
    movhlps\t{%2, %0|%0, %2}
    movlps\t{%H2, %0|%0, %H2}
@@ -3294,7 +3304,17 @@
 		     (const_int 4)
 		     (const_int 5)])))]
   "TARGET_SSE"
-  "ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);")
+{
+  rtx dst = ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);
+  
+  emit_insn (gen_sse_movlhps (dst, operands[1], operands[2]));
+
+  /* Fix up the destination if needed.  */
+  if (dst != operands[0])
+    emit_move_insn (operands[0], dst);
+
+  DONE;
+})
 
 (define_insn "*avx_movlhps"
   [(set (match_operand:V4SF 0 "nonimmediate_operand"     "=x,x,o")
@@ -3701,7 +3721,17 @@
 	    (parallel [(const_int 0) (const_int 1)]))
 	  (match_operand:V2SF 2 "nonimmediate_operand" "")))]
   "TARGET_SSE"
-  "ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);")
+{
+  rtx dst = ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);
+  
+  emit_insn (gen_sse_loadhps (dst, operands[1], operands[2]));
+
+  /* Fix up the destination if needed.  */
+  if (dst != operands[0])
+    emit_move_insn (operands[0], dst);
+
+  DONE;
+})
 
 (define_insn "*avx_loadhps"
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "=x,x,o")
@@ -3710,7 +3740,7 @@
 	    (match_operand:V4SF 1 "nonimmediate_operand" "x,x,0")
 	    (parallel [(const_int 0) (const_int 1)]))
 	  (match_operand:V2SF 2 "nonimmediate_operand" "m,x,x")))]
-  "TARGET_AVX"
+  "TARGET_AVX && ix86_binary_operator_ok (UNKNOWN, V4SFmode, operands)"
   "@
    vmovhps\t{%2, %1, %0|%0, %1, %2}
    vmovlhps\t{%2, %1, %0|%0, %1, %2}
@@ -3726,7 +3756,7 @@
 	    (match_operand:V4SF 1 "nonimmediate_operand" "0,0,0")
 	    (parallel [(const_int 0) (const_int 1)]))
 	  (match_operand:V2SF 2 "nonimmediate_operand" "m,x,x")))]
-  "TARGET_SSE"
+  "TARGET_SSE && ix86_binary_operator_ok (UNKNOWN, V4SFmode, operands)"
   "@
    movhps\t{%2, %0|%0, %2}
    movlhps\t{%2, %0|%0, %2}
@@ -3739,7 +3769,7 @@
 	(vec_select:V2SF
 	  (match_operand:V4SF 1 "nonimmediate_operand" "x,x,m")
 	  (parallel [(const_int 0) (const_int 1)])))]
-  "TARGET_AVX"
+  "TARGET_AVX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
    vmovlps\t{%1, %0|%0, %1}
    vmovaps\t{%1, %0|%0, %1}
@@ -3753,7 +3783,7 @@
 	(vec_select:V2SF
 	  (match_operand:V4SF 1 "nonimmediate_operand" "x,x,m")
 	  (parallel [(const_int 0) (const_int 1)])))]
-  "TARGET_SSE"
+  "TARGET_SSE && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
    movlps\t{%1, %0|%0, %1}
    movaps\t{%1, %0|%0, %1}
@@ -3769,7 +3799,17 @@
 	    (match_operand:V4SF 1 "nonimmediate_operand" "")
 	    (parallel [(const_int 2) (const_int 3)]))))]
   "TARGET_SSE"
-  "ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);")
+{
+  rtx dst = ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);
+  
+  emit_insn (gen_sse_loadlps (dst, operands[1], operands[2]));
+
+  /* Fix up the destination if needed.  */
+  if (dst != operands[0])
+    emit_move_insn (operands[0], dst);
+
+  DONE;
+})
 
 (define_insn "*avx_loadlps"
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "=x,x,m")
@@ -3778,7 +3818,7 @@
 	  (vec_select:V2SF
 	    (match_operand:V4SF 1 "nonimmediate_operand" "x,x,0")
 	    (parallel [(const_int 2) (const_int 3)]))))]
-  "TARGET_AVX"
+  "TARGET_AVX && ix86_binary_operator_ok (UNKNOWN, V4SFmode, operands)"
   "@
    shufps\t{$0xe4, %1, %2, %0|%0, %2, %1, 0xe4}
    vmovlps\t{%2, %1, %0|%0, %1, %2}
@@ -3795,7 +3835,7 @@
 	  (vec_select:V2SF
 	    (match_operand:V4SF 1 "nonimmediate_operand" "x,0,0")
 	    (parallel [(const_int 2) (const_int 3)]))))]
-  "TARGET_SSE"
+  "TARGET_SSE && ix86_binary_operator_ok (UNKNOWN, V4SFmode, operands)"
   "@
    shufps\t{$0xe4, %1, %0|%0, %1, 0xe4}
    movlps\t{%2, %0|%0, %2}
@@ -4898,7 +4938,17 @@
 	    (parallel [(const_int 0)]))
 	  (match_operand:DF 2 "nonimmediate_operand" "")))]
   "TARGET_SSE2"
-  "ix86_fixup_binary_operands (UNKNOWN, V2DFmode, operands);")
+{
+  rtx dst = ix86_fixup_binary_operands (UNKNOWN, V2DFmode, operands);
+  
+  emit_insn (gen_sse2_loadhpd (dst, operands[1], operands[2]));
+
+  /* Fix up the destination if needed.  */
+  if (dst != operands[0])
+    emit_move_insn (operands[0], dst);
+
+  DONE;
+})
 
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.c
@@ -4909,7 +4959,7 @@
 	    (match_operand:V2DF 1 "nonimmediate_operand" " x,x,0,0,0")
 	    (parallel [(const_int 0)]))
 	  (match_operand:DF 2 "nonimmediate_operand"     " m,x,x,*f,r")))]
-  "TARGET_AVX && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
+  "TARGET_AVX && ix86_binary_operator_ok (UNKNOWN, V2DFmode, operands)"
   "@
    vmovhpd\t{%2, %1, %0|%0, %1, %2}
    vunpcklpd\t{%2, %1, %0|%0, %1, %2}
@@ -4927,7 +4977,7 @@
 	    (match_operand:V2DF 1 "nonimmediate_operand" " 0,0,x,0,0,0")
 	    (parallel [(const_int 0)]))
 	  (match_operand:DF 2 "nonimmediate_operand"     " m,x,0,x,*f,r")))]
-  "TARGET_SSE2 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
+  "TARGET_SSE2 && ix86_binary_operator_ok (UNKNOWN, V2DFmode, operands)"
   "@
    movhpd\t{%2, %0|%0, %2}
    unpcklpd\t{%2, %0|%0, %2}
@@ -4957,7 +5007,17 @@
 	    (match_operand:V2DF 1 "nonimmediate_operand" "")
 	    (parallel [(const_int 1)]))))]
   "TARGET_SSE2"
-  "ix86_fixup_binary_operands (UNKNOWN, V2DFmode, operands);")
+{
+  rtx dst = ix86_fixup_binary_operands (UNKNOWN, V2DFmode, operands);
+  
+  emit_insn (gen_sse2_loadlpd (dst, operands[1], operands[2]));
+
+  /* Fix up the destination if needed.  */
+  if (dst != operands[0])
+    emit_move_insn (operands[0], dst);
+
+  DONE;
+})
 
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.c
