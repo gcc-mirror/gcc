@@ -1,3 +1,7 @@
+2010-10-28  Paolo Bonzini  <bonzini@gnu.org>
+
+	* recog.c (split_all_insns): Remove dead code.
+
 2010-10-28  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* score.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
