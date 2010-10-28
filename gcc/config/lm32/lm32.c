@@ -76,6 +76,12 @@ static bool
 lm32_legitimate_address_p (enum machine_mode mode, rtx x, bool strict);
 static HOST_WIDE_INT lm32_compute_frame_size (int size);
 static void lm32_option_override (void);
+static rtx lm32_function_arg (CUMULATIVE_ARGS * cum,
+			      enum machine_mode mode, const_tree type,
+			      bool named);
+static void lm32_function_arg_advance (CUMULATIVE_ARGS * cum,
+				       enum machine_mode mode,
+				       const_tree type, bool named);
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options lm32_option_optimization_table[] =
@@ -98,6 +104,10 @@ static const struct default_options lm32_option_optimization_table[] =
 #define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS lm32_setup_incoming_varargs
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG lm32_function_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE lm32_function_arg_advance
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 #undef TARGET_MIN_ANCHOR_OFFSET
@@ -613,9 +623,9 @@ lm32_print_operand_address (FILE * file, rtx addr)
    NAMED is nonzero if this argument is a named parameter
     (otherwise it is an extra parameter matching an ellipsis).  */
 
-rtx
-lm32_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
-		   tree type, int named)
+static rtx
+lm32_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		   const_tree type, bool named)
 {
   if (mode == VOIDmode)
     /* Compute operand 2 of the call insn.  */
@@ -624,10 +634,17 @@ lm32_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
   if (targetm.calls.must_pass_in_stack (mode, type))
     return NULL_RTX;
 
-  if (!named || (cum + LM32_NUM_REGS2 (mode, type) > LM32_NUM_ARG_REGS))
+  if (!named || (*cum + LM32_NUM_REGS2 (mode, type) > LM32_NUM_ARG_REGS))
     return NULL_RTX;
 
-  return gen_rtx_REG (mode, cum + LM32_FIRST_ARG_REG);
+  return gen_rtx_REG (mode, *cum + LM32_FIRST_ARG_REG);
+}
+
+static void
+lm32_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			   const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  *cum += LM32_NUM_REGS2 (mode, type);
 }
 
 HOST_WIDE_INT
