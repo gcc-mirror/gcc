@@ -98,6 +98,11 @@ static bool m68hc11_return_in_memory (const_tree, const_tree);
 static bool m68hc11_can_eliminate (const int, const int);
 static void m68hc11_trampoline_init (rtx, tree, rtx);
 
+static rtx m68hc11_function_arg (CUMULATIVE_ARGS*, enum machine_mode,
+				 const_tree, bool);
+static void m68hc11_function_arg_advance (CUMULATIVE_ARGS*, enum machine_mode,
+					  const_tree, bool);
+
 /* Must be set to 1 to produce debug messages.  */
 int debug_m6811 = 0;
 
@@ -275,6 +280,11 @@ static const struct attribute_spec m68hc11_attribute_table[] =
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS m68hc11_init_libfuncs
+
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG m68hc11_function_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE m68hc11_function_arg_advance
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX m68hc11_struct_value_rtx
@@ -1477,9 +1487,9 @@ m68hc11_init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx libname)
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
 
-void
+static void
 m68hc11_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-                              tree type, int named ATTRIBUTE_UNUSED)
+                              const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   if (mode != BLKmode)
     {
@@ -1515,9 +1525,10 @@ m68hc11_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    NAMED is nonzero if this argument is a named parameter
     (otherwise it is an extra parameter matching an ellipsis).  */
 
-struct rtx_def *
-m68hc11_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
-                      tree type ATTRIBUTE_UNUSED, int named ATTRIBUTE_UNUSED)
+static rtx
+m68hc11_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+                      const_tree type ATTRIBUTE_UNUSED,
+		      bool named ATTRIBUTE_UNUSED)
 {
   if (cum->words != 0)
     {

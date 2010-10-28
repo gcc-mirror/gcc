@@ -31,13 +31,6 @@ extern int m68hc11_initial_elimination_offset (int, int);
 extern void expand_prologue (void);
 extern void expand_epilogue (void);
 
-#ifdef TREE_CODE
-extern void m68hc11_function_arg_advance (CUMULATIVE_ARGS*,
-                                          enum machine_mode,
-                                          tree,
-                                          int);
-#endif
-
 #ifdef RTX_CODE
 extern int m68hc11_auto_inc_p (rtx);
 
@@ -98,9 +91,6 @@ extern int soft_reg_operand (rtx, enum machine_mode);
 
 extern void m68hc11_init_cumulative_args (CUMULATIVE_ARGS*, tree, rtx);
 
-extern rtx m68hc11_function_arg (const CUMULATIVE_ARGS* ,
-                                 enum machine_mode,
-                                 tree, int);
 #ifdef ARGS_SIZE_RTX
 extern enum direction m68hc11_function_arg_padding (enum machine_mode,
 						    const_tree);
