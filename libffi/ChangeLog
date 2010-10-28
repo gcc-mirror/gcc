@@ -1,3 +1,41 @@
+2010-10-28  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* src/arm/ffi.c (ffi_prep_args): Add VFP register argument handling
+	code, new parameter, and return value. Update comments.
+	(ffi_prep_cif_machdep): Add case for VFP struct return values. Add
+	call to layout_vfp_args().
+	(ffi_call_SYSV): Update declaration.
+	(ffi_call_VFP): New declaration.
+	(ffi_call): Add VFP struct return conditions. Call ffi_call_VFP()
+	when ABI is FFI_VFP.
+	(ffi_closure_VFP): New declaration.
+	(ffi_closure_SYSV_inner): Add new vfp_args parameter, update call to
+	ffi_prep_incoming_args_SYSV().
+	(ffi_prep_incoming_args_SYSV): Update parameters. Add VFP argument
+	case handling.
+	(ffi_prep_closure_loc): Pass ffi_closure_VFP to trampoline
+	construction under VFP hard-float.
+	(rec_vfp_type_p): New function.
+	(vfp_type_p): Same.
+	(place_vfp_arg): Same.
+	(layout_vfp_args): Same.
+	* src/arm/ffitarget.h (ffi_abi): Add FFI_VFP. Define FFI_DEFAULT_ABI
+	based on __ARM_PCS_VFP.
+	(FFI_EXTRA_CIF_FIELDS): Define for adding VFP hard-float specific
+	fields.
+	(FFI_TYPE_STRUCT_VFP_FLOAT): Define internally used type code.
+	(FFI_TYPE_STRUCT_VFP_DOUBLE): Same.
+	* src/arm/sysv.S (ffi_call_SYSV): Change call of ffi_prep_args() to
+	direct call. Move function pointer load upwards.
+	(ffi_call_VFP): New function.
+	(ffi_closure_VFP): Same.
+
+	* testsuite/lib/libffi-dg.exp (check-flags): New function.
+	(dg-skip-if): New function.
+	* testsuite/libffi.call/cls_double_va.c: Skip if target is arm*-*-*
+	and compiler options include -mfloat-abi=hard.
+	* testsuite/libffi.call/cls_longdouble_va.c: Same.
+
 2010-10-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libffi/45677
