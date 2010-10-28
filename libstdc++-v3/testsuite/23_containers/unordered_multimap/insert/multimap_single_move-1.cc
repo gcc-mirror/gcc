@@ -1,5 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 
+// 2010-10-27  Paolo Carlini  <paolo.carlini@oracle.com> 
+//
 // Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -17,40 +19,62 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// Array version of insert
+// Single-element insert
 
-#include <string>
 #include <iterator>
 #include <unordered_map>
 #include <testsuite_hooks.h>
+#include <testsuite_rvalref.h>
 
 void test01()
 {
   bool test __attribute__((unused)) = true;
+  using __gnu_test::rvalstruct;
 
-  typedef std::unordered_map<std::string, int> Map;
+  typedef std::unordered_multimap<int, rvalstruct> Map;
+  typedef std::pair<const int, rvalstruct> Pair;
 
   Map m;
   VERIFY( m.empty() );
 
-  m["red"] = 17;
+  Map::iterator i = m.insert(Pair(1, rvalstruct(3)));
   VERIFY( m.size() == 1 );
-  VERIFY( m.begin()->first == "red" );
-  VERIFY( m.begin()->second == 17 );
-  VERIFY( m["red"] == 17 );
+  VERIFY( std::distance(m.begin(), m.end()) == 1 );
+  VERIFY( i == m.begin() );
+  VERIFY( i->first == 1 );
+  VERIFY( (i->second).val == 3 );
+}
 
-  m["blue"] = 9;
-  VERIFY( m.size() == 2 );
-  VERIFY( m["blue"] == 9 );
+void test02()
+{
+  bool test __attribute__((unused)) = true;
+  using __gnu_test::rvalstruct;
 
-  m["red"] = 5;
+  typedef std::unordered_multimap<int, rvalstruct> Map;
+  typedef std::pair<const int, rvalstruct> Pair;
+
+  Map m;
+  VERIFY( m.empty() );
+
+  m.insert(Pair(2, rvalstruct(3)));
+  m.insert(Pair(2, rvalstruct(7)));
+
   VERIFY( m.size() == 2 );
-  VERIFY( m["red"] == 5 );
-  VERIFY( m["blue"] == 9 );
+  VERIFY( std::distance(m.begin(), m.end()) == 2 );
+
+  Map::iterator i1 = m.begin();
+  Map::iterator i2 = i1;
+  ++i2;
+
+  VERIFY( i1->first == 2 );
+  VERIFY( i2->first == 2 );
+  VERIFY( ((i1->second).val == 3 && (i2->second).val == 7)
+	  || ((i1->second).val == 7 && (i2->second).val == 3) );
 }
 
 int main()
 {
   test01();
+  test02();
   return 0;
 }

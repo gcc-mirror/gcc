@@ -1,5 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 
+// 2010-10-27  Paolo Carlini  <paolo.carlini@oracle.com> 
+//
 // Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -19,34 +21,35 @@
 
 // Array version of insert
 
-#include <string>
 #include <iterator>
 #include <unordered_map>
 #include <testsuite_hooks.h>
+#include <testsuite_rvalref.h>
 
 void test01()
 {
   bool test __attribute__((unused)) = true;
+  using __gnu_test::rvalstruct;
 
-  typedef std::unordered_map<std::string, int> Map;
+  typedef std::unordered_map<rvalstruct, rvalstruct> Map;
 
   Map m;
   VERIFY( m.empty() );
 
-  m["red"] = 17;
+  m[rvalstruct(1)] = rvalstruct(17);
   VERIFY( m.size() == 1 );
-  VERIFY( m.begin()->first == "red" );
-  VERIFY( m.begin()->second == 17 );
-  VERIFY( m["red"] == 17 );
+  VERIFY( (m.begin()->first).val == 1 );
+  VERIFY( (m.begin()->second).val == 17 );
+  VERIFY( m[rvalstruct(1)].val == 17 );
 
-  m["blue"] = 9;
+  m[rvalstruct(2)] = rvalstruct(9);
   VERIFY( m.size() == 2 );
-  VERIFY( m["blue"] == 9 );
+  VERIFY( m[rvalstruct(2)].val == 9 );
 
-  m["red"] = 5;
+  m[rvalstruct(1)] = rvalstruct(5);
   VERIFY( m.size() == 2 );
-  VERIFY( m["red"] == 5 );
-  VERIFY( m["blue"] == 9 );
+  VERIFY( m[rvalstruct(1)].val == 5 );
+  VERIFY( m[rvalstruct(2)].val == 9 );
 }
 
 int main()
