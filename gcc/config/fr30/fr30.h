@@ -555,12 +555,6 @@ enum reg_class
      
 #define FR30_NUM_ARG_REGS	 4
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)			\
-  (  (NAMED) == 0                    ? NULL_RTX			\
-   : targetm.calls.must_pass_in_stack (MODE, TYPE) ? NULL_RTX	\
-   : (CUM) >= FR30_NUM_ARG_REGS      ? NULL_RTX			\
-   : gen_rtx_REG (MODE, CUM + FIRST_ARG_REGNUM))
-
 /* A C type for declaring a variable that is used as the first argument of
    `FUNCTION_ARG' and other related values.  For some target machines, the type
    `int' suffices and can hold the number of bytes of argument so far.
@@ -593,17 +587,6 @@ enum reg_class
    FNTYPE is nonzero, but never both of them at once.  */
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   (CUM) = 0
-
-/* A C statement (sans semicolon) to update the summarizer variable CUM to
-   advance past an argument in the argument list.  The values MODE, TYPE and
-   NAMED describe that argument.  Once this is done, the variable CUM is
-   suitable for analyzing the *following* argument with `FUNCTION_ARG', etc.
-
-   This macro need not do anything if the argument in question was passed on
-   the stack.  The compiler knows how to track the amount of stack space used
-   for arguments without any special help.  */
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-  (CUM) += (NAMED) * fr30_num_arg_regs (MODE, TYPE)
 
 /* A C expression that is nonzero if REGNO is the number of a hard register in
    which function arguments are sometimes passed.  This does *not* include
