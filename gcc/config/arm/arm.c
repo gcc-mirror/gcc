@@ -2363,10 +2363,16 @@ const_ok_for_arm (HOST_WIDE_INT i)
     {
       HOST_WIDE_INT v;
 
-      /* Allow repeated pattern.  */
+      /* Allow repeated patterns 0x00XY00XY or 0xXYXYXYXY.  */
       v = i & 0xff;
       v |= v << 16;
       if (i == v || i == (v | (v << 8)))
+	return TRUE;
+
+      /* Allow repeated pattern 0xXY00XY00.  */
+      v = i & 0xff00;
+      v |= v << 16;
+      if (i == v)
 	return TRUE;
     }
 

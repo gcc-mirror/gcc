@@ -1,3 +1,8 @@
+2010-10-28  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm.c (const_ok_for_arm): Support 0xXY00XY00 pattern
+	constants in thumb2.
+
 2010-10-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* combine.c (set_nonzero_bits_and_sign_copies): Use unsigned
