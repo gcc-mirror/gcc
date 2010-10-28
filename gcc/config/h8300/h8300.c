@@ -1095,11 +1095,14 @@ h8300_pr_saveall (struct cpp_reader *pfile ATTRIBUTE_UNUSED)
 /* If the next function argument with MODE and TYPE is to be passed in
    a register, return a reg RTX for the hard register in which to pass
    the argument.  CUM represents the state after the last argument.
-   If the argument is to be pushed, NULL_RTX is returned.  */
+   If the argument is to be pushed, NULL_RTX is returned.
 
-rtx
-function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-	      tree type, int named)
+   On the H8/300 all normal args are pushed, unless -mquickcall in which
+   case the first 3 arguments are passed in registers.  */
+
+static rtx
+h8300_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		    const_tree type, bool named)
 {
   static const char *const hand_list[] = {
     "__main",
@@ -1163,6 +1166,20 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   return result;
 }
+
+/* Update the data in CUM to advance over an argument
+   of mode MODE and data type TYPE.
+   (TYPE is null for libcalls where that information may not be available.)  */
+
+static void
+h8300_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			    const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  cum->nbytes += (mode != BLKmode
+		  ? (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD
+		  : (int_size_in_bytes (type) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD);
+}
+
 
 /* Compute the cost of an and insn.  */
 
@@ -5914,6 +5931,12 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY h8300_return_in_memory
+
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG h8300_function_arg
+
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE h8300_function_arg_advance
 
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG h8300_reorg
