@@ -300,9 +300,6 @@ enum reg_class
 
 #define PUSH_ROUNDING(BYTES) (((BYTES) + 3) & ~3)
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  ((rtx) crx_function_arg(&(CUM), (MODE), (TYPE), (NAMED)))
-
 #ifndef CUMULATIVE_ARGS
 struct cumulative_args
 {
@@ -317,9 +314,6 @@ struct cumulative_args
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
   crx_init_cumulative_args(&(CUM), (FNTYPE), (LIBNAME))
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED) \
-  crx_function_arg_advance(&(CUM), (MODE), (TYPE), (NAMED))
 
 #define FUNCTION_ARG_REGNO_P(REGNO)  crx_function_arg_regno_p(REGNO)
 
