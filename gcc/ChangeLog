@@ -1,5 +1,14 @@
 2010-10-28  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/mcore/mcore-protos.h (mcore_function_arg): Delete.
+	* config/mcore/mcore.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	* config/mcore/mcore.c (mcore_function_arg): Declare.  Make static.
+	Take a const_tree and a bool.
+	(mcore_function_arg_advance): New function.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-10-28  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/h8300/h8300-protos.h (function_arg): Delete.
 	* config/h8300/h8300.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
 	* config/h8300/h8300.c (function_arg): Rename to...
