@@ -559,18 +559,6 @@ extern const enum reg_class reg_class_from_letter[];
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   ((CUM) = 0)
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be
-   available.)  */
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	   \
- ((CUM) = (ROUND_REG ((CUM), (MODE))			   \
-	   + ((NAMED) * mcore_num_arg_regs (MODE, TYPE)))) \
-
-/* Define where to put the arguments to a function.  */
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  mcore_function_arg (CUM, MODE, TYPE, NAMED)
-
 /* Call the function profiler with a given profile label.  */
 #define FUNCTION_PROFILER(STREAM,LABELNO)		\
 {							\

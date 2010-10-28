@@ -65,8 +65,5 @@ extern int          mcore_arith_S_operand         	(rtx);
 extern const char * mcore_output_move          		(rtx, rtx *, enum machine_mode);
 extern const char * mcore_output_movedouble    		(rtx *, enum machine_mode);
 extern int          const_ok_for_mcore                  (HOST_WIDE_INT);
-#ifdef TREE_CODE
-extern rtx          mcore_function_arg           	(CUMULATIVE_ARGS, enum machine_mode, tree, int);
-#endif /* TREE_CODE */
 #endif /* HAVE_MACHINE_MODES */
 #endif /* RTX_CODE */

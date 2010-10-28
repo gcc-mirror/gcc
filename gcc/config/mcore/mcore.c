@@ -142,6 +142,12 @@ static bool       mcore_return_in_memory	(const_tree, const_tree);
 static int        mcore_arg_partial_bytes       (CUMULATIVE_ARGS *,
 						 enum machine_mode,
 						 tree, bool);
+static rtx        mcore_function_arg            (CUMULATIVE_ARGS *,
+						 enum machine_mode,
+						 const_tree, bool);
+static void       mcore_function_arg_advance    (CUMULATIVE_ARGS *,
+						 enum machine_mode,
+						 const_tree, bool);
 static void       mcore_asm_trampoline_template (FILE *);
 static void       mcore_trampoline_init		(rtx, tree, rtx);
 static void       mcore_option_override		(void);
@@ -229,6 +235,10 @@ static const struct default_options mcore_option_optimization_table[] =
 #define TARGET_PASS_BY_REFERENCE  hook_pass_by_reference_must_pass_in_stack
 #undef  TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES	mcore_arg_partial_bytes
+#undef  TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG		mcore_function_arg
+#undef  TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE	mcore_function_arg_advance
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS	mcore_setup_incoming_varargs
@@ -2804,9 +2814,9 @@ mcore_function_value (const_tree valtype, const_tree func)
    NPARM_REGS words is at least partially passed in a register unless
    its data type forbids.  */
 
-rtx
-mcore_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
-		    tree type, int named)
+static rtx
+mcore_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		    const_tree type, bool named)
 {
   int arg_reg;
   
@@ -2816,12 +2826,20 @@ mcore_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
   if (targetm.calls.must_pass_in_stack (mode, type))
     return 0;
 
-  arg_reg = ROUND_REG (cum, mode);
+  arg_reg = ROUND_REG (*cum, mode);
   
   if (arg_reg < NPARM_REGS)
     return handle_structs_in_regs (mode, type, FIRST_PARM_REG + arg_reg);
 
   return 0;
+}
+
+static void
+mcore_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			    const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  *cum = (ROUND_REG (*cum, mode)
+	  + (int)named * mcore_num_arg_regs (mode, type));
 }
 
 /* Returns the number of bytes of argument registers required to hold *part*
