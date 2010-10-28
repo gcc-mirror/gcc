@@ -15352,9 +15352,9 @@ if test $ac_is_dgux = yes; then
     GC_CFLAGS="$GC_CFLAGS -DDGUX -D_DGUX_SOURCE -Di386 -mno-legend"
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether GCC optimization fix should be disabled" >&5
-$as_echo_n "checking whether GCC optimization fix should be disabled... " >&6; }
-O0_CFLAGS=-mtune=generic
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether GCC optimization should be disabled" >&5
+$as_echo_n "checking whether GCC optimization should be disabled... " >&6; }
+O0_CFLAGS=
 case "$host" in
  *aix*) test "$GCC" = yes && O0_CFLAGS=-O0 ;;
  *) ;;
