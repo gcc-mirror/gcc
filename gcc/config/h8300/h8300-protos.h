@@ -89,8 +89,6 @@ extern int h8300_ldm_stm_parallel (rtvec, int, int);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern struct rtx_def *function_arg (CUMULATIVE_ARGS *,
-				     enum machine_mode, tree, int);
 extern int h8300_funcvec_function_p (tree);
 extern int h8300_eightbit_data_p (tree);
 extern int h8300_tiny_data_p (tree);
