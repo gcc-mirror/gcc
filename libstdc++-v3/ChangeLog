@@ -1,3 +1,38 @@
+2010-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/44436 (partial)
+	* include/bits/hashtable.h (_Hashtable<>::insert(value_type&&),
+	insert(_Pair&&), insert(const_iterator, value_type&&),
+	insert(const_iterator, _Pair&&)): Add.
+	(_M_allocate_node, _M_insert, _M_insert_bucket): Templatize.
+	* include/bits/hashtable_policy.h (__detail::_Select1st): Add; use
+	it throughout.
+	(_Map_base<>::operator[](_Key&&)): Add.
+	* include/bits/unordered_map.h: Use __detail::_Select1st throughout.
+	* include/debug/unordered_map: Update.
+	* include/debug/unordered_set: Likewise.
+	* include/profile/unordered_map: Likewise.
+	* include/profile/unordered_set: Likewise.
+	* testsuite/util/testsuite_rvalref.h (struct hash<rvalstruct>): Add;
+	minor tweaks throughout, use deleted special members.
+	* testsuite/23_containers/unordered_map/insert/map_single_move-1.cc:
+	New.
+	* testsuite/23_containers/unordered_map/insert/map_single_move-2.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/insert/array_syntax_move.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/insert/
+	multimap_single_move-1.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/insert/
+	multimap_single_move-2.cc: Likewise.
+	* testsuite/23_containers/unordered_set/insert/set_single_move.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/insert/
+	multiset_single_move.cc: Likewise.
+
+	* testsuite/23_containers/unordered_map/insert/array_syntax.cc:
+	Minor cosmetic changes.
+
 2010-10-27  Jason Merrill  <jason@redhat.com>
 
 	* include/std/type_traits (is_literal_type): New.

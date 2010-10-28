@@ -1,5 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 
+// 2010-10-27  Paolo Carlini  <paolo.carlini@oracle.com> 
+//
 // Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -17,40 +19,53 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// Array version of insert
+// Single-element insert
 
-#include <string>
 #include <iterator>
-#include <unordered_map>
+#include <unordered_set>
 #include <testsuite_hooks.h>
+#include <testsuite_rvalref.h>
 
 void test01()
 {
   bool test __attribute__((unused)) = true;
+  using __gnu_test::rvalstruct;
 
-  typedef std::unordered_map<std::string, int> Map;
+  typedef std::unordered_multiset<rvalstruct> Set;
+  Set s;
+  VERIFY( s.empty() );
 
-  Map m;
-  VERIFY( m.empty() );
+  Set::iterator i = s.insert(rvalstruct(1));
+  VERIFY( s.size() == 1 );
+  VERIFY( std::distance(s.begin(), s.end()) == 1 );
+  VERIFY( i == s.begin() );
+  VERIFY( (*i).val == 1 );
+}
 
-  m["red"] = 17;
-  VERIFY( m.size() == 1 );
-  VERIFY( m.begin()->first == "red" );
-  VERIFY( m.begin()->second == 17 );
-  VERIFY( m["red"] == 17 );
+void test02()
+{
+  bool test __attribute__((unused)) = true;
+  using __gnu_test::rvalstruct;
 
-  m["blue"] = 9;
-  VERIFY( m.size() == 2 );
-  VERIFY( m["blue"] == 9 );
+  typedef std::unordered_multiset<rvalstruct> Set;
+  Set s;
+  VERIFY( s.empty() );
 
-  m["red"] = 5;
-  VERIFY( m.size() == 2 );
-  VERIFY( m["red"] == 5 );
-  VERIFY( m["blue"] == 9 );
+  s.insert(rvalstruct(2));
+  Set::iterator i = s.insert(rvalstruct(2));
+  VERIFY( s.size() == 2 );
+  VERIFY( std::distance(s.begin(), s.end()) == 2 );
+  VERIFY( (*i).val == 2 );
+  
+  Set::iterator i2 = s.begin();
+  ++i2;
+  VERIFY( i == s.begin() || i == i2 );
+  VERIFY( (*(s.begin())).val == 2 && (*i2).val == 2 );
 }
 
 int main()
 {
   test01();
+  test02();
   return 0;
 }

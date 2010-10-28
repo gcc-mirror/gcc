@@ -174,7 +174,7 @@ namespace __profile
       std::pair<iterator, bool>
       insert(const value_type& __obj)
       {
-        size_type __old_size =  _Base::bucket_count();
+        size_type __old_size = _Base::bucket_count();
         std::pair<iterator, bool> __res = _Base::insert(__obj);
         _M_profile_resize(__old_size,  _Base::bucket_count()); 
         return __res;
@@ -185,6 +185,24 @@ namespace __profile
       { 
         size_type __old_size = _Base::bucket_count(); 
         iterator __res = _Base::insert(__iter, __v);
+        _M_profile_resize(__old_size, _Base::bucket_count()); 
+        return __res;
+      }
+
+      std::pair<iterator, bool>
+      insert(value_type&& __obj)
+      {
+        size_type __old_size = _Base::bucket_count();
+        std::pair<iterator, bool> __res = _Base::insert(std::move(__obj));
+        _M_profile_resize(__old_size,  _Base::bucket_count()); 
+        return __res;
+      }
+
+      iterator
+      insert(const_iterator __iter, value_type&& __v)
+      { 
+        size_type __old_size = _Base::bucket_count();
+        iterator __res = _Base::insert(__iter, std::move(__v));
         _M_profile_resize(__old_size, _Base::bucket_count()); 
         return __res;
       }
@@ -406,9 +424,27 @@ namespace __profile
 
       iterator
       insert(const_iterator __iter, const value_type& __v)
-      { 
+      {
         size_type __old_size = _Base::bucket_count(); 
         iterator __res = _Base::insert(__iter, __v);
+        _M_profile_resize(__old_size, _Base::bucket_count()); 
+        return __res;
+      }
+
+      iterator
+      insert(value_type&& __obj)
+      {
+	size_type __old_size =  _Base::bucket_count();
+        iterator __res = _Base::insert(std::move(__obj));
+        _M_profile_resize(__old_size,  _Base::bucket_count()); 
+        return __res;
+      }
+
+      iterator
+      insert(const_iterator __iter, value_type&& __v)
+      {
+        size_type __old_size = _Base::bucket_count(); 
+        iterator __res = _Base::insert(__iter, std::move(__v));
         _M_profile_resize(__old_size, _Base::bucket_count()); 
         return __res;
       }
