@@ -1546,23 +1546,6 @@ typedef struct frv_stack {
 
 #define FRV_NUM_ARG_REGS        6
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)                    \
-  frv_function_arg (&CUM, MODE, TYPE, NAMED, FALSE)
-
-/* Define this macro if the target machine has "register windows", so that the
-   register in which a function sees an arguments is not necessarily the same
-   as the one in which the caller passed the argument.
-
-   For such machines, `FUNCTION_ARG' computes the register in which the caller
-   passes the value, and `FUNCTION_INCOMING_ARG' should be defined in a similar
-   fashion to tell the function being called where the arguments will arrive.
-
-   If `FUNCTION_INCOMING_ARG' is not defined, `FUNCTION_ARG' serves both
-   purposes.  */
-
-#define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED)			\
-  frv_function_arg (&CUM, MODE, TYPE, NAMED, TRUE)
-
 /* A C type for declaring a variable that is used as the first argument of
    `FUNCTION_ARG' and other related values.  For some target machines, the type
    `int' suffices and can hold the number of bytes of argument so far.
@@ -1604,17 +1587,6 @@ typedef struct frv_stack {
 
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM, FNTYPE, LIBNAME) \
   frv_init_cumulative_args (&CUM, FNTYPE, LIBNAME, NULL, TRUE)
-
-/* A C statement (sans semicolon) to update the summarizer variable CUM to
-   advance past an argument in the argument list.  The values MODE, TYPE and
-   NAMED describe that argument.  Once this is done, the variable CUM is
-   suitable for analyzing the *following* argument with `FUNCTION_ARG', etc.
-
-   This macro need not do anything if the argument in question was passed on
-   the stack.  The compiler knows how to track the amount of stack space used
-   for arguments without any special help.  */
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-  frv_function_arg_advance (&CUM, MODE, TYPE, NAMED)
 
 /* If defined, a C expression that gives the alignment boundary, in bits, of an
    argument with the specified mode and type.  If it is not defined,
