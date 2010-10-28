@@ -1,3 +1,17 @@
+2010-10-28  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/frv/frv-protos.h (frv_function_arg): Delete.
+	(frv_function_arg_advance): Delete.
+	* config/frv/frv.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	* config/frv/frv.c (frv_function_arg): Rename to...
+	(frv_function_arg_1): Make static.  Take const_tree and bool
+	arguments.
+	(frv_function_arg, frv_function_incoming_arg): New functions.
+	(frv_function_arg_advance): Make static.  Take a const_tree and
+	a bool.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_INCOMING_ARG): Define.
+	(TARGET_FUNCTION_ARG_ADVANCE): Define.
+
 2010-10-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46153

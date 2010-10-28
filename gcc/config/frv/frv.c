@@ -388,6 +388,12 @@ static rtx frv_struct_value_rtx			(tree, int);
 static bool frv_must_pass_in_stack (enum machine_mode mode, const_tree type);
 static int frv_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				  tree, bool);
+static rtx frv_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			     const_tree, bool);
+static rtx frv_function_incoming_arg (CUMULATIVE_ARGS *, enum machine_mode,
+				      const_tree, bool);
+static void frv_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				       const_tree, bool);
 static void frv_output_dwarf_dtprel		(FILE *, int, rtx)
   ATTRIBUTE_UNUSED;
 static reg_class_t frv_secondary_reload		(bool, rtx, reg_class_t,
@@ -486,6 +492,12 @@ static const struct default_options frv_option_optimization_table[] =
 #define TARGET_PASS_BY_REFERENCE hook_pass_by_reference_must_pass_in_stack
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES frv_arg_partial_bytes
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG frv_function_arg
+#undef TARGET_FUNCTION_INCOMING_ARG
+#define TARGET_FUNCTION_INCOMING_ARG frv_function_incoming_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE frv_function_arg_advance
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS frv_expand_builtin_saveregs
@@ -3190,12 +3202,10 @@ frv_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
   return BITS_PER_WORD;
 }
 
-rtx
-frv_function_arg (CUMULATIVE_ARGS *cum,
-                  enum machine_mode mode,
-                  tree type ATTRIBUTE_UNUSED,
-                  int named,
-                  int incoming ATTRIBUTE_UNUSED)
+static rtx
+frv_function_arg_1 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		    const_tree type ATTRIBUTE_UNUSED, bool named,
+		    bool incoming ATTRIBUTE_UNUSED)
 {
   enum machine_mode xmode = (mode == BLKmode) ? SImode : mode;
   int arg_num = *cum;
@@ -3229,6 +3239,20 @@ frv_function_arg (CUMULATIVE_ARGS *cum,
   return ret;
 }
 
+static rtx
+frv_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		  const_tree type, bool named)
+{
+  return frv_function_arg_1 (cum, mode, type, named, false);
+}
+
+static rtx
+frv_function_incoming_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			   const_tree type, bool named)
+{
+  return frv_function_arg_1 (cum, mode, type, named, true);
+}
+
 
 /* A C statement (sans semicolon) to update the summarizer variable CUM to
    advance past an argument in the argument list.  The values MODE, TYPE and
@@ -3239,11 +3263,11 @@ frv_function_arg (CUMULATIVE_ARGS *cum,
    the stack.  The compiler knows how to track the amount of stack space used
    for arguments without any special help.  */
 
-void
+static void
 frv_function_arg_advance (CUMULATIVE_ARGS *cum,
                           enum machine_mode mode,
-                          tree type ATTRIBUTE_UNUSED,
-                          int named)
+                          const_tree type ATTRIBUTE_UNUSED,
+                          bool named)
 {
   enum machine_mode xmode = (mode == BLKmode) ? SImode : mode;
   int bytes = GET_MODE_SIZE (xmode);

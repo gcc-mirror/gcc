@@ -53,13 +53,6 @@ extern void frv_init_cumulative_args		(CUMULATIVE_ARGS *, tree,
 						 rtx, tree, int);
 
 extern int frv_function_arg_boundary		(enum machine_mode, tree);
-extern rtx frv_function_arg			(CUMULATIVE_ARGS *,
-						 enum machine_mode,
-						 tree, int, int);
-
-extern void frv_function_arg_advance		(CUMULATIVE_ARGS *,
-						 enum machine_mode,
-						 tree, int);
 extern bool frv_function_value_regno_p		(const unsigned int);
 #endif /* TREE_CODE */
 
