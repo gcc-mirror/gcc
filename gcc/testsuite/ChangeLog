@@ -1,3 +1,8 @@
+2010-10-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46153
+	* gcc.target/i386/pr46153.c: New test.
+
 2010-10-27  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-is_literal.C: New.
@@ -33,16 +38,16 @@
 	updates in warning.
 	* obj-c++.dg/property/property-neg-5.mm: Updated testcase for
 	updates in warning.
-	
+
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	* objc.dg/property/at-property-1.m: New.	
+	* objc.dg/property/at-property-1.m: New.
 	* objc.dg/property/at-property-2.m: New.
 	* objc.dg/property/at-property-3.m: New.
 	* objc.dg/ivar-invalid-type-1.m: New.
 	* obj-c++.dg/property/at-property-1.mm: New.
 	* obj-c++.dg/property/at-property-2.mm: New.
-	* obj-c++.dg/property/at-property-3.mm: New.	
+	* obj-c++.dg/property/at-property-3.mm: New.
 	* obj-c++.dg/ivar-invalid-type-1.mm: New.
 	* objc.dg/property/property-neg-6.m: Updated testcase for updates
 	in error reporting.
@@ -172,8 +177,8 @@
 
 2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	PR objc/45735	
-	* obj-c.dg/pr45735.mm: New.	
+	PR objc/45735
+	* obj-c.dg/pr45735.mm: New.
 	* obj-c++.dg/pr45735.mm: New.
 
 2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
@@ -194,10 +199,10 @@
 	parameter attributes are now supported.
 	* obj-c++.dg/attributes/method-attribute-2.m: Same change.
 	* objc.dg/attributes/parameter-attribute-1.m: New test.
-	* objc.dg/attributes/parameter-attribute-2.m: New test.	
+	* objc.dg/attributes/parameter-attribute-2.m: New test.
 	* obj-c++.dg/attributes/parameter-attribute-1.m: New test.
-	* obj-c++.dg/attributes/parameter-attribute-2.m: New test.	
-	
+	* obj-c++.dg/attributes/parameter-attribute-2.m: New test.
+
 2010-10-23  Iain Sandoe  <iains@gcc.gnu.org>
 
 	Based on the CFString implementation in FSF apple/trunk branch.
@@ -213,7 +218,7 @@
 	* objc.dg/demangle-1.m: New test.
 	* obj-c++.dg/demangle-1.mm: New test.
 	* obj-c++.dg/demangle-2.mm: New test.
-	* obj-c++.dg/demangle-3.mm: New test.	
+	* obj-c++.dg/demangle-3.mm: New test.
 
 2010-10-23  Ian Lance Taylor  <iant@google.com>
 
