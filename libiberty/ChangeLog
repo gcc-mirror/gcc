@@ -1,3 +1,9 @@
+2010-10-29  Ian Lance Taylor  <iant@google.com>
+
+	* setproctitle.c: Add space after function name in @deftypefn
+	comment.
+	* functions.texi: Rebuild.
+
 2010-10-26  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* aclocal.m4 (AC_LANG_FUNC_LINK_TRY(C)): Delete.
