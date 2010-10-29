@@ -2299,8 +2299,7 @@ picochip_is_short_branch (rtx insn)
   int isRealShortBranch = (get_attr_length(insn) == SHORT_BRANCH_LENGTH);
 
   return (isRealShortBranch ||
-	  (!isRealShortBranch &&
-	   picochip_current_vliw_state.num_insns_in_packet > 1));
+	  picochip_current_vliw_state.num_insns_in_packet > 1);
 }
 
 /* Output a compare-and-branch instruction (matching the cbranch
