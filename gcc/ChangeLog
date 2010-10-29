@@ -1,5 +1,12 @@
 2010-10-29  Paul Koning  <ni1d@arrl.net>
 
+	* doc/tm.texi.in (REGNO_OK_FOR_BASE_P, REGNO_MODE_OK_FOR_BASE_P,
+	REGNO_MODE_OK_FOR_REG_BASE, REGNO_MODE_CODE_OK_FOR_BASE_P,
+	REGNO_OK_FOR_INDEX_P): Delete non-strict variant.
+	(REG_OK_STRICT): Move description.
+
+2010-10-29  Paul Koning  <ni1d@arrl.net>
+
 	* config/pdp11/pdp11.md (*and<mode>): Rename to *bic<mode>.
 
 2010-10-29  Paul Koning  <ni1d@arrl.net>
