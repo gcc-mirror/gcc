@@ -1147,7 +1147,7 @@ environment.  This implementation is not safe for multithreaded code.
 @end deftypefn
 
 @c setproctitle.c:30
-@deftypefn Supplemental void setproctitle(const char *@var{fmt} ...)
+@deftypefn Supplemental void setproctitle (const char *@var{fmt} ...)
 
 Set the title of a process to @var{fmt}. va args not supported for now,
 but defined for compatibility with BSD. 
