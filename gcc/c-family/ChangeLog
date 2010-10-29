@@ -1,3 +1,11 @@
+2010-10-29  Arnaud Charlet  <charlet@adacore.com>
+	    Matthew Gingell  <gingell@adacore.com>
+
+	* c-ada-spec.c (separate_class_package): New function.
+	(pp_ada_tree_identifier): Prefix references to C++ classes with the
+	name of their enclosing package.
+	(print_ada_declaration): Use separate_class_package.
+
 2010-10-27  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (c_common_reswords): Add __is_literal_type.
