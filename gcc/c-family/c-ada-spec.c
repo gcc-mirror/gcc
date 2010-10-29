@@ -51,6 +51,7 @@ static void dump_ada_withs (FILE *);
 static void dump_ads (const char *, void (*)(const char *),
 		      int (*)(tree, cpp_operation));
 static char *to_ada_name (const char *, int *);
+static bool separate_class_package (tree);
 
 #define LOCATION_COL(LOC) ((expand_location (LOC)).column)
 
@@ -1152,6 +1153,23 @@ to_ada_name (const char *name, int *space_found)
   return s;
 }
 
+/* Return true if DECL refers to a C++ class type for which a
+   separate enclosing package has been or should be generated.  */
+
+static bool
+separate_class_package (tree decl)
+{
+  if (decl) 
+    {
+      tree type = TREE_TYPE (decl);
+      return type
+	&& TREE_CODE (type) == RECORD_TYPE
+	&& (TYPE_METHODS (type) || has_static_fields (type));
+    }
+  else
+    return false;
+}
+
 static bool package_prefix = true;
 
 /* Dump in BUFFER the name of an identifier NODE of type TYPE, following Ada
@@ -1209,7 +1227,15 @@ pp_ada_tree_identifier (pretty_printer *buffer, tree node, tree type,
 		  default:
 		    break;
 		}
-	    }
+              
+              if (separate_class_package (decl))
+                {
+                  pp_string (buffer, "Class_");
+                  pp_string (buffer, s);
+                  pp_string (buffer, ".");
+                }
+
+            }
 	}
     }
 
@@ -2607,8 +2633,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type,
 	      {
 		dump_nested_types (buffer, t, t, false, cpp_check, spc);
 
-		if (TYPE_METHODS (TREE_TYPE (t))
-		    || has_static_fields (TREE_TYPE (t)))
+                if (separate_class_package (t))
 		  {
 		    is_class = true;
 		    pp_string (buffer, "package Class_");
