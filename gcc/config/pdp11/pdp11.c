@@ -1908,8 +1908,8 @@ pdp11_function_value_regno_p (const unsigned int regno)
 
    the following should work for shared I/D:
 
-   MV	#STATIC, $4	0x940Y	0x0000 <- STATIC; Y = STATIC_CHAIN_REGNUM
-   JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
+   MOV	#STATIC, $4	01270Y	0x0000 <- STATIC; Y = STATIC_CHAIN_REGNUM
+   JMP	@#FUNCTION	000137  0x0000 <- FUNCTION
 */
 
 static void
@@ -1921,11 +1921,11 @@ pdp11_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   gcc_assert (!TARGET_SPLIT);
 
   mem = adjust_address (m_tramp, HImode, 0);
-  emit_move_insn (mem, GEN_INT (0x9400+STATIC_CHAIN_REGNUM));
+  emit_move_insn (mem, GEN_INT (012700+STATIC_CHAIN_REGNUM));
   mem = adjust_address (m_tramp, HImode, 2);
   emit_move_insn (mem, chain_value);
   mem = adjust_address (m_tramp, HImode, 4);
-  emit_move_insn (mem, GEN_INT (0x0058));
+  emit_move_insn (mem, GEN_INT (000137));
   emit_move_insn (mem, fnaddr);
 }
 
