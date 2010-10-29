@@ -1,3 +1,11 @@
+2010-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_function.h (_Select1st<>::operator()): Add
+	templatized overloads.
+	* include/bits/hashtable_policy.h (_Select1st): Remove; revert
+	everything to std::_Select1st.
+	* include/bits/unordered_map.h: Likewise.
+
 2010-10-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/44436 (partial)

@@ -41,14 +41,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	   bool __cache_hash_code = false>
     class __unordered_map
     : public _Hashtable<_Key, std::pair<const _Key, _Tp>, _Alloc,
-			__detail::_Select1st, _Pred, 
+			std::_Select1st<std::pair<const _Key, _Tp> >, _Pred, 
 			_Hash, __detail::_Mod_range_hashing,
 			__detail::_Default_ranged_hash,
 			__detail::_Prime_rehash_policy,
 			__cache_hash_code, false, true>
     {
       typedef _Hashtable<_Key, std::pair<const _Key, _Tp>, _Alloc,
-			 __detail::_Select1st, _Pred,
+			 std::_Select1st<std::pair<const _Key, _Tp> >, _Pred,
 			 _Hash, __detail::_Mod_range_hashing,
 			 __detail::_Default_ranged_hash,
 			 __detail::_Prime_rehash_policy,
@@ -69,7 +69,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 		      const allocator_type& __a = allocator_type())
       : _Base(__n, __hf, __detail::_Mod_range_hashing(),
 	      __detail::_Default_ranged_hash(),
-	      __eql, __detail::_Select1st(), __a)
+	      __eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
       { }
 
       template<typename _InputIterator>
@@ -80,7 +80,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 			const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __detail::_Mod_range_hashing(),
 		__detail::_Default_ranged_hash(),
-		__eql, __detail::_Select1st(), __a)
+		__eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
 	{ }
 
       __unordered_map(initializer_list<value_type> __l,
@@ -91,7 +91,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       : _Base(__l.begin(), __l.end(), __n, __hf,
 	      __detail::_Mod_range_hashing(),
 	      __detail::_Default_ranged_hash(),
-	      __eql, __detail::_Select1st(), __a)
+	      __eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
       { }
 
       __unordered_map&
@@ -111,7 +111,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     class __unordered_multimap
     : public _Hashtable<_Key, std::pair<const _Key, _Tp>,
 			_Alloc,
-			__detail::_Select1st, _Pred,
+			std::_Select1st<std::pair<const _Key, _Tp> >, _Pred,
 			_Hash, __detail::_Mod_range_hashing,
 			__detail::_Default_ranged_hash,
 			__detail::_Prime_rehash_policy,
@@ -119,7 +119,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     {
       typedef _Hashtable<_Key, std::pair<const _Key, _Tp>,
 			 _Alloc,
-			 __detail::_Select1st, _Pred,
+			 std::_Select1st<std::pair<const _Key, _Tp> >, _Pred,
 			 _Hash, __detail::_Mod_range_hashing,
 			 __detail::_Default_ranged_hash,
 			 __detail::_Prime_rehash_policy,
@@ -140,7 +140,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 			   const allocator_type& __a = allocator_type())
       : _Base(__n, __hf, __detail::_Mod_range_hashing(),
 	      __detail::_Default_ranged_hash(),
-	      __eql, __detail::_Select1st(), __a)
+	      __eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
       { }
 
 
@@ -152,7 +152,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 			     const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __detail::_Mod_range_hashing(),
 		__detail::_Default_ranged_hash(),
-		__eql, __detail::_Select1st(), __a)
+		__eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
         { }
 
       __unordered_multimap(initializer_list<value_type> __l,
@@ -163,7 +163,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       : _Base(__l.begin(), __l.end(), __n, __hf,
 	      __detail::_Mod_range_hashing(),
 	      __detail::_Default_ranged_hash(),
-	      __eql, __detail::_Select1st(), __a)
+	      __eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
       { }
 
       __unordered_multimap&

@@ -56,14 +56,6 @@ namespace __detail
       return __distance_fw(__first, __last, _Tag());
     }
 
-  struct _Select1st
-  {
-    template<typename _Pair>
-      const typename _Pair::first_type&
-      operator()(const _Pair& __pair) const
-      { return __pair.first; }
-  };
-
   // Auxiliary types used for all instantiations of _Hashtable: nodes
   // and iterators.
   
@@ -511,13 +503,13 @@ namespace __detail
     struct _Map_base { };
 
   template<typename _Key, typename _Pair, typename _Hashtable>
-    struct _Map_base<_Key, _Pair, _Select1st, false, _Hashtable>
+    struct _Map_base<_Key, _Pair, std::_Select1st<_Pair>, false, _Hashtable>
     {
       typedef typename _Pair::second_type mapped_type;
     };
 
   template<typename _Key, typename _Pair, typename _Hashtable>
-    struct _Map_base<_Key, _Pair, _Select1st, true, _Hashtable>
+    struct _Map_base<_Key, _Pair, std::_Select1st<_Pair>, true, _Hashtable>
     {
       typedef typename _Pair::second_type mapped_type;
 
@@ -537,9 +529,9 @@ namespace __detail
     };
 
   template<typename _Key, typename _Pair, typename _Hashtable>
-    typename _Map_base<_Key, _Pair, _Select1st,
+    typename _Map_base<_Key, _Pair, std::_Select1st<_Pair>,
 		       true, _Hashtable>::mapped_type&
-    _Map_base<_Key, _Pair, _Select1st, true, _Hashtable>::
+    _Map_base<_Key, _Pair, std::_Select1st<_Pair>, true, _Hashtable>::
     operator[](const _Key& __k)
     {
       _Hashtable* __h = static_cast<_Hashtable*>(this);
@@ -556,9 +548,9 @@ namespace __detail
     }
 
   template<typename _Key, typename _Pair, typename _Hashtable>
-    typename _Map_base<_Key, _Pair, _Select1st,
+    typename _Map_base<_Key, _Pair, std::_Select1st<_Pair>,
 		       true, _Hashtable>::mapped_type&
-    _Map_base<_Key, _Pair, _Select1st, true, _Hashtable>::
+    _Map_base<_Key, _Pair, std::_Select1st<_Pair>, true, _Hashtable>::
     operator[](_Key&& __k)
     {
       _Hashtable* __h = static_cast<_Hashtable*>(this);
@@ -576,10 +568,10 @@ namespace __detail
     }
 
   template<typename _Key, typename _Pair, typename _Hashtable>
-    typename _Map_base<_Key, _Pair, _Select1st,
+    typename _Map_base<_Key, _Pair, std::_Select1st<_Pair>,
 		       true, _Hashtable>::mapped_type&
-    _Map_base<_Key, _Pair, _Select1st, true, _Hashtable>::
-     at(const _Key& __k)
+    _Map_base<_Key, _Pair, std::_Select1st<_Pair>, true, _Hashtable>::
+    at(const _Key& __k)
     {
       _Hashtable* __h = static_cast<_Hashtable*>(this);
       typename _Hashtable::_Hash_code_type __code = __h->_M_hash_code(__k);
@@ -594,10 +586,10 @@ namespace __detail
     }
 
   template<typename _Key, typename _Pair, typename _Hashtable>
-    const typename _Map_base<_Key, _Pair, _Select1st,
+    const typename _Map_base<_Key, _Pair, std::_Select1st<_Pair>,
 			     true, _Hashtable>::mapped_type&
-    _Map_base<_Key, _Pair, _Select1st, true, _Hashtable>::
-     at(const _Key& __k) const
+    _Map_base<_Key, _Pair, std::_Select1st<_Pair>, true, _Hashtable>::
+    at(const _Key& __k) const
     {
       const _Hashtable* __h = static_cast<const _Hashtable*>(this);
       typename _Hashtable::_Hash_code_type __code = __h->_M_hash_code(__k);
