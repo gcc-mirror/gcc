@@ -1,3 +1,27 @@
+2010-10-29  Paul Koning  <pkoning@equallogic.com>
+
+	* config/pdp11/pdp11-protos.h (pdp11_cannot_change_mode_class,
+	pdp11_secondary_memory_needed): Declare.
+	* config/pdp11/predicates.md (float_operand): New predicate.
+	* config/pdp11/pdp11.md (RETVAL_REGNUM): New constant.
+	(cbranchdf4, movdf): Change predicate.
+	(movsf): Handle FPU register case.
+	(truncdfsf2, extendsfdf2): Add FPU register case.
+	* config/pdp11/pdp11.c (TARGET_SECONDARY_RELOAD,
+	TARGET_REGISTER_MOVE_COST, TARGET_PREFERRED_RELOAD_CLASS,
+	TARGET_PREFERRED_OUTPUT_RELOAD_CLASS): Define.
+	(pdp11_register_move_cost): Update cost matrix.
+	(pdp11_cannot_change_mode_class, pdp11_preferred_reload_class,
+	pdp11_preferred_output_reload_class, pdp11_secondary_reload,
+	pdp11_secondary_memory_needed): New function.
+	(pdp11_return_in_memory): Add other float types.
+	* config/pdp11/pdp11.h (HARD_REGNO_MODE_OK): Add other float
+	types. 
+	(SECONDARY_MEMORY_NEEDED, CANNOT_CHANGE_MODE_CLASS): Define.
+	(PREFERRED_RELOAD_CLASS, SECONDARY_RELOAD_CLASS,
+	REGISTER_MOVE_COST): Delete.
+	(BASE_RETURN_VALUE_REG): Add other float types.
+
 2010-10-29  Nick Clifton<nickc@redhat.com>
 
 	* doc/invoke.texi: Document -mam34 and -mtune options.
