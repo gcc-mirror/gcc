@@ -1,5 +1,9 @@
 2010-10-29  Paul Koning  <ni1d@arrl.net>
 
+	* config/pdp11/pdp11.md (*and<mode>): Rename to *bic<mode>.
+
+2010-10-29  Paul Koning  <ni1d@arrl.net>
+
 	* config/pdp11/pdp11.md (divhi3, modhi3, divmodhi3): Fix ICE.
 
 2010-10-29  Paul Koning  <ni1d@arrl.net>

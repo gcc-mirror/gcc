@@ -840,7 +840,7 @@
     operands[1] = expand_unop (<MODE>mode, one_cmpl_optab, op1, 0, 1);
 }")
 
-(define_insn "*and<mode>"
+(define_insn "*bic<mode>"
   [(set (match_operand:PDPint 0 "general_operand" "=rR,rR,Q,Q")
 	(and:PDPint
 	     (not: PDPint (match_operand:PDPint 1 "general_operand" "rR,Qi,rR,Qi"))
