@@ -1,5 +1,10 @@
 2010-10-29  Paul Koning  <ni1d@arrl.net>
 
+	* config/pdp11/pdp11.c (output_move_quad): Fix ICE for CPU
+	register to register move.
+
+2010-10-29  Paul Koning  <ni1d@arrl.net>
+
 	* config/pdp11/pdp11.c (print_operand_address): Correct handling
 	of integer constant addresses, delete vax-only logic.
 

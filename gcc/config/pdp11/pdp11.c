@@ -695,12 +695,6 @@ output_move_quad (rtx *operands)
 
   gcc_assert (optype0 != RNDOP && optype1 != RNDOP);
   
-  /* check if we move a CPU reg to an FPU reg, or vice versa! */
-  if (optype0 == REGOP && optype1 == REGOP)
-      /* bogus - 64 bit cannot reside in CPU! */
-      gcc_assert (!CPU_REG_P(REGNO(operands[0]))
-		  && !CPU_REG_P (REGNO(operands[1])));
-  
   if (optype0 == REGOP || optype1 == REGOP)
   {
       /* check for use of clrd???? 
