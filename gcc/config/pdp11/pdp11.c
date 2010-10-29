@@ -905,14 +905,13 @@ output_ascii (FILE *file, const char *p, int size)
 }
 
 
-/* --- stole from out-vax, needs changes */
-
 void
 print_operand_address (FILE *file, register rtx addr)
 {
-  register rtx reg1, reg2, breg, ireg;
+  register rtx breg;
   rtx offset;
-
+  int again = 0;
+  
  retry:
 
   switch (GET_CODE (addr))
@@ -923,6 +922,7 @@ print_operand_address (FILE *file, register rtx addr)
       else
 	fprintf (file, "@");
       addr = XEXP (addr, 0);
+      again = 1;
       goto retry;
 
     case REG:
@@ -940,8 +940,7 @@ print_operand_address (FILE *file, register rtx addr)
       break;
 
     case PLUS:
-      reg1 = 0;	reg2 = 0;
-      ireg = 0;	breg = 0;
+      breg = 0;
       offset = 0;
       if (CONSTANT_ADDRESS_P (XEXP (addr, 0))
 	  || GET_CODE (XEXP (addr, 0)) == MEM)
@@ -957,32 +956,20 @@ print_operand_address (FILE *file, register rtx addr)
 	}
       if (GET_CODE (addr) != PLUS)
 	;
-      else if (GET_CODE (XEXP (addr, 0)) == MULT)
-	{
-	  reg1 = XEXP (addr, 0);
-	  addr = XEXP (addr, 1);
-	}
-      else if (GET_CODE (XEXP (addr, 1)) == MULT)
-	{
-	  reg1 = XEXP (addr, 1);
-	  addr = XEXP (addr, 0);
-	}
       else if (GET_CODE (XEXP (addr, 0)) == REG)
 	{
-	  reg1 = XEXP (addr, 0);
+	  breg = XEXP (addr, 0);
 	  addr = XEXP (addr, 1);
 	}
       else if (GET_CODE (XEXP (addr, 1)) == REG)
 	{
-	  reg1 = XEXP (addr, 1);
+	  breg = XEXP (addr, 1);
 	  addr = XEXP (addr, 0);
 	}
-      if (GET_CODE (addr) == REG || GET_CODE (addr) == MULT)
+      if (GET_CODE (addr) == REG)
 	{
-	  if (reg1 == 0)
-	    reg1 = addr;
-	  else
-	    reg2 = addr;
+	  gcc_assert (breg == 0);
+	  breg = addr;
 	  addr = 0;
 	}
       if (offset != 0)
@@ -990,44 +977,22 @@ print_operand_address (FILE *file, register rtx addr)
 	  gcc_assert (addr == 0);
 	  addr = offset;
 	}
-      if (reg1 != 0 && GET_CODE (reg1) == MULT)
-	{
-	  breg = reg2;
-	  ireg = reg1;
-	}
-      else if (reg2 != 0 && GET_CODE (reg2) == MULT)
-	{
-	  breg = reg1;
-	  ireg = reg2;
-	}
-      else if (reg2 != 0 || GET_CODE (addr) == MEM)
-	{
-	  breg = reg2;
-	  ireg = reg1;
-	}
-      else
-	{
-	  breg = reg1;
-	  ireg = reg2;
-	}
       if (addr != 0)
-	output_address (addr);
+	output_addr_const_pdp11 (file, addr);
       if (breg != 0)
 	{
 	  gcc_assert (GET_CODE (breg) == REG);
 	  fprintf (file, "(%s)", reg_names[REGNO (breg)]);
 	}
-      if (ireg != 0)
-	{
-	  if (GET_CODE (ireg) == MULT)
-	    ireg = XEXP (ireg, 0);
-	  gcc_assert (GET_CODE (ireg) == REG);
-	  gcc_unreachable(); /* ??? */
-	  fprintf (file, "[%s]", reg_names[REGNO (ireg)]);
-	}
       break;
 
     default:
+      if (!again && GET_CODE (addr) == CONST_INT)
+	{
+	  /* Absolute (integer number) address.  */
+	  if (!TARGET_UNIX_ASM)
+	    fprintf (file, "@$");
+	}
       output_addr_const_pdp11 (file, addr);
     }
 }
