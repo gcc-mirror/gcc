@@ -1,3 +1,15 @@
+2010-10-29  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
+	Andrew Pinski <pinskia@gmail.com>
+
+	* gcc.c-torture/execute/vector-shift.c: New testcase.
+	* gcc.c-torture/execute/vector-shift1.c: Likewise.
+	* gcc.c-torture/execute/vector-shift2.c: Likewise.
+	* gcc.dg/vector-shift.c: Likewise.
+	* gcc.dg/vector-shift1.c: Likewise.
+	* gcc.dg/torture/vector-shift2.c: Likewise.
+	* gcc.dg/vector-shift3.c: Likewise.
+	* gcc.dg/simd-1b.c: Adjust.
+
 2010-10-29  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc.c-torture/execute/20101011-1.c: Skip on SH.

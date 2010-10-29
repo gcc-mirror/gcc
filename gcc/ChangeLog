@@ -1,3 +1,11 @@
+2010-10-29  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
+	Andrew Pinski <pinskia@gmail.com>
+
+	* tree.h (build_vector_from_val): Declare.
+	* tree.c (build_vector_from_val): New function.
+	* c-typeck.c (build_binary_op): Handle vector shifting.
+	* doc/extend.texi: Description of the vector shifting operation.
+
 2010-10-29  Paul Koning  <pkoning@equallogic.com>
 
 	* config/pdp11/pdp11-protos.h (pdp11_cannot_change_mode_class,
