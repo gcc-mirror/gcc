@@ -1,3 +1,8 @@
+2010-10-29  Paul Koning  <ni1d@arrl.net>
+
+	PR/41822
+	* config/pdp11/pdp11.md (andhi3, andqi3): Fix wrong code error.
+
 2010-10-29  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/46226

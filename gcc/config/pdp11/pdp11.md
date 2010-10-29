@@ -43,6 +43,11 @@
 ;; HI is 16 bit
 ;; QI is 8 bit 
 
+;; Integer modes supported on the PDP11, with a mapping from machine mode
+;; to mnemonic suffix.  SImode and DImode always are special cases.
+(define_mode_iterator PDPint [QI HI])
+(define_mode_attr  isfx [(QI "b") (HI "")])
+
 ;;- See file "rtl.def" for documentation on define_insn, match_*, et. al.
 
 ;;- cpp macro #define NOTICE_UPDATE_CC in file tm.h handles condition code
@@ -809,69 +814,39 @@
 ;;;;- and instructions
 ;; Bit-and on the pdp (like on the VAX) is done with a clear-bits insn.
 
-(define_insn "andsi3"
-  [(set (match_operand:SI 0 "general_operand" "=r,r,o,o,r,r,r,o,o,o")
-        (and:SI (match_operand:SI 1 "general_operand" "%0,0,0,0,0,0,0,0,0,0")
-                (not:SI (match_operand:SI 2 "general_operand" "r,o,r,o,I,J,K,I,J,K"))))]
+(define_expand "and<mode>3"
+  [(set (match_operand:PDPint 0 "general_operand" "")
+	(and:PDPint (not:PDPint (match_operand:PDPint 1 "general_operand" ""))
+		   (match_operand:PDPint 2 "general_operand" "")))]
   ""
-  "*
-{ /* Here we trust that operands don't overlap 
+  "
+{
+  rtx op1 = operands[1];
 
-     or is lateoperands the low word?? - looks like it! */
+  /* If there is a constant argument, complement that one.
+     Similarly, if one of the inputs is the same as the output,
+     complement the other input.  */
+  if ((CONST_INT_P (operands[2]) && ! CONST_INT_P (op1)) ||
+      rtx_equal_p (operands[0], operands[1]))
+    {
+      operands[1] = operands[2];
+      operands[2] = op1;
+      op1 = operands[1];
+    }
 
-  rtx lateoperands[3];
-  
-  lateoperands[0] = operands[0];
-
-  if (REG_P (operands[0]))
-    operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
+  if (CONST_INT_P (op1))
+    operands[1] = GEN_INT (~INTVAL (op1));
   else
-    operands[0] = adjust_address (operands[0], HImode, 2);
-  
-  if (! CONSTANT_P(operands[2]))
-  {
-    lateoperands[2] = operands[2];
+    operands[1] = expand_unop (<MODE>mode, one_cmpl_optab, op1, 0, 1);
+}")
 
-    if (REG_P (operands[2]))
-      operands[2] = gen_rtx_REG (HImode, REGNO (operands[2]) + 1);
-    else
-      operands[2] = adjust_address (operands[2], HImode, 2);
-
-    output_asm_insn (\"bic %2, %0\", operands);
-    output_asm_insn (\"bic %2, %0\", lateoperands);
-    return \"\";
-  }
-
-  lateoperands[2] = GEN_INT ((INTVAL (operands[2]) >> 16) & 0xffff);
-  operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffff);
-  
-  /* these have different lengths, so we should have 
-     different constraints! */
-  if (INTVAL(operands[2]))
-    output_asm_insn (\"bic %2, %0\", operands);
-
-  if (INTVAL(lateoperands[2]))
-    output_asm_insn (\"bic %2, %0\", lateoperands);
-
-  return \"\";
-}"
-  [(set_attr "length" "4,8,8,12,4,4,8,6,6,12")])
-
-;; FIXME This definition is wrong, PR/41822
-(define_insn "andhi3"
-  [(set (match_operand:HI 0 "general_operand" "=rR,rR,Q,Q")
-	(and:HI (match_operand:HI 1 "general_operand" "0,0,0,0")
-		(not:HI (match_operand:HI 2 "general_operand" "rR,Qi,rR,Qi"))))]
+(define_insn "*and<mode>"
+  [(set (match_operand:PDPint 0 "general_operand" "=rR,rR,Q,Q")
+	(and:PDPint
+	     (not: PDPint (match_operand:PDPint 1 "general_operand" "rR,Qi,rR,Qi"))
+	     (match_operand:PDPint 2 "general_operand" "0,0,0,0")))]
   ""
-  "bic %2, %0"
-  [(set_attr "length" "2,4,4,6")])
-
-(define_insn "andqi3"
-  [(set (match_operand:QI 0 "general_operand" "=rR,rR,Q,Q")
-	(and:QI (match_operand:QI 1 "general_operand" "0,0,0,0")
-		(not:QI (match_operand:QI 2 "general_operand" "rR,Qi,rR,Qi"))))]
-  ""
-  "bicb %2, %0"
+  "bic<PDPint:isfx> %1, %0"
   [(set_attr "length" "2,4,4,6")])
 
 ;;- Bit set (inclusive or) instructions
