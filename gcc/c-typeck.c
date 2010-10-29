@@ -9727,7 +9727,21 @@ build_binary_op (location_t location, enum tree_code code,
 	 Also set SHORT_SHIFT if shifting rightward.  */
 
     case RSHIFT_EXPR:
-      if ((code0 == INTEGER_TYPE || code0 == FIXED_POINT_TYPE)
+      if (code0 == VECTOR_TYPE && code1 == INTEGER_TYPE
+          && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE)
+        {
+          result_type = type0;
+          converted = 1;
+        }
+      else if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
+          && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
+          && TYPE_VECTOR_SUBPARTS (type0) == TYPE_VECTOR_SUBPARTS (type1))
+	{
+	  result_type = type0;
+	  converted = 1;
+	}
+      else if ((code0 == INTEGER_TYPE || code0 == FIXED_POINT_TYPE)
 	  && code1 == INTEGER_TYPE)
 	{
 	  if (TREE_CODE (op1) == INTEGER_CST)
@@ -9754,9 +9768,10 @@ build_binary_op (location_t location, enum tree_code code,
 
 	  /* Use the type of the value to be shifted.  */
 	  result_type = type0;
-	  /* Convert the shift-count to an integer, regardless of size
-	     of value being shifted.  */
-	  if (TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
+	  /* Convert the non vector shift-count to an integer, regardless
+	     of size of value being shifted.  */
+	  if (TREE_CODE (TREE_TYPE (op1)) != VECTOR_TYPE
+	      && TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
 	    op1 = convert (integer_type_node, op1);
 	  /* Avoid converting op1 to result_type later.  */
 	  converted = 1;
@@ -9764,7 +9779,21 @@ build_binary_op (location_t location, enum tree_code code,
       break;
 
     case LSHIFT_EXPR:
-      if ((code0 == INTEGER_TYPE || code0 == FIXED_POINT_TYPE)
+      if (code0 == VECTOR_TYPE && code1 == INTEGER_TYPE
+          && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE)
+        {
+          result_type = type0;
+          converted = 1;
+        }
+      else if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
+          && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
+          && TYPE_VECTOR_SUBPARTS (type0) == TYPE_VECTOR_SUBPARTS (type1))
+	{
+	  result_type = type0;
+	  converted = 1;
+	}
+      else if ((code0 == INTEGER_TYPE || code0 == FIXED_POINT_TYPE)
 	  && code1 == INTEGER_TYPE)
 	{
 	  if (TREE_CODE (op1) == INTEGER_CST)
@@ -9786,9 +9815,10 @@ build_binary_op (location_t location, enum tree_code code,
 
 	  /* Use the type of the value to be shifted.  */
 	  result_type = type0;
-	  /* Convert the shift-count to an integer, regardless of size
-	     of value being shifted.  */
-	  if (TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
+	  /* Convert the non vector shift-count to an integer, regardless
+	     of size of value being shifted.  */
+	  if (TREE_CODE (TREE_TYPE (op1)) != VECTOR_TYPE
+	      && TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
 	    op1 = convert (integer_type_node, op1);
 	  /* Avoid converting op1 to result_type later.  */
 	  converted = 1;

@@ -4037,6 +4037,7 @@ extern tree build_int_cst_type (tree, HOST_WIDE_INT);
 extern tree build_int_cst_wide (tree, unsigned HOST_WIDE_INT, HOST_WIDE_INT);
 extern tree build_vector (tree, tree);
 extern tree build_vector_from_ctor (tree, VEC(constructor_elt,gc) *);
+extern tree build_vector_from_val (tree, tree);
 extern tree build_constructor (tree, VEC(constructor_elt,gc) *);
 extern tree build_constructor_single (tree, tree, tree);
 extern tree build_constructor_from_list (tree, tree);

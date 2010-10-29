@@ -6315,6 +6315,24 @@ minus or complement operators on a vector type is a vector whose
 elements are the negative or complemented values of the corresponding
 elements in the operand.
 
+In C it is possible to use shifting operators @code{<<}, @code{>>} on
+integer-type vectors. The operation is defined as following: @code{@{a0,
+a1, @dots{}, an@} >> @{b0, b1, @dots{}, bn@} == @{a0 >> b0, a1 >> b1,
+@dots{}, an >> bn@}}@. Vector operands must have the same number of
+elements.  Additionally second operands can be a scalar integer in which
+case the scalar is converted to the type used by the vector operand (with
+possible truncation) and each element of this new vector is the scalar's
+value.
+Consider the following code.
+
+@smallexample
+typedef int v4si __attribute__ ((vector_size (16)));
+
+v4si a, b;
+
+b = a >> 1;     /* b = a >> @{1,1,1,1@}; */
+@end smallexample
+
 In C vectors can be subscripted as if the vector were an array with
 the same number of elements and base type.  Out of bound accesses
 invoke undefined behavior at runtime.  Warnings for out of bound

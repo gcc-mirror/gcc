@@ -18,8 +18,8 @@ hanneke ()
   c &= d;
   a |= b;
   c ^= d;
-  a >>= b; /* { dg-error "invalid operands to binary >>" } */
-  c <<= d; /* { dg-error "invalid operands to binary <<" } */
+  a >>= b;
+  c <<= d;
   a = +b;
   c = ~d;
 
