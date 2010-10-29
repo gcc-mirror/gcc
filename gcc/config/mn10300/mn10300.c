@@ -58,6 +58,12 @@ int mn10300_protect_label;
 /* The selected processor.  */
 enum processor_type mn10300_processor = PROCESSOR_DEFAULT;
 
+/* Processor type to select for tuning.  */
+static const char * mn10300_tune_string = NULL;
+
+/* Selected processor type for tuning.  */
+enum processor_type mn10300_tune_cpu = PROCESSOR_DEFAULT;
+
 /* The size of the callee register save area.  Right now we save everything
    on entry since it costs us nothing in code size.  It does cost us from a
    speed standpoint, so we want to optimize this sooner or later.  */
@@ -91,11 +97,21 @@ mn10300_handle_option (size_t code,
     case OPT_mam33:
       mn10300_processor = value ? PROCESSOR_AM33 : PROCESSOR_MN10300;
       return true;
+
     case OPT_mam33_2:
       mn10300_processor = (value
 			   ? PROCESSOR_AM33_2
 			   : MIN (PROCESSOR_AM33, PROCESSOR_DEFAULT));
       return true;
+
+    case OPT_mam34:
+      mn10300_processor = (value ? PROCESSOR_AM34 : PROCESSOR_DEFAULT);
+      return true;
+
+    case OPT_mtune_:
+      mn10300_tune_string = arg;
+      return true;
+
     default:
       return true;
     }
@@ -108,6 +124,27 @@ mn10300_option_override (void)
 {
   if (TARGET_AM33)
     target_flags &= ~MASK_MULT_BUG;
+  else
+    {
+      /* Disable scheduling for the MN10300 as we do
+	 not have timing information available for it.  */
+      flag_schedule_insns = 0;
+      flag_schedule_insns_after_reload = 0;
+    }
+  
+  if (mn10300_tune_string)
+    {
+      if (strcasecmp (mn10300_tune_string, "mn10300") == 0)
+	mn10300_tune_cpu = PROCESSOR_MN10300;
+      else if (strcasecmp (mn10300_tune_string, "am33") == 0)
+	mn10300_tune_cpu = PROCESSOR_AM33;
+      else if (strcasecmp (mn10300_tune_string, "am33-2") == 0)
+	mn10300_tune_cpu = PROCESSOR_AM33_2;
+      else if (strcasecmp (mn10300_tune_string, "am34") == 0)
+	mn10300_tune_cpu = PROCESSOR_AM34;
+      else
+	error ("-mtune= expects mn10300, am33, am33-2, or am34");
+    }
 }
 
 static void
@@ -370,7 +407,7 @@ mn10300_print_operand (FILE *file, rtx x, int code)
 
       case 'A':
 	fputc ('(', file);
-	if (REG_P ((XEXP (x, 0))))
+	if (REG_P (XEXP (x, 0)))
 	  output_address (gen_rtx_PLUS (SImode, XEXP (x, 0), const0_rtx));
 	else
 	  output_address (XEXP (x, 0));
@@ -392,7 +429,7 @@ mn10300_print_operand (FILE *file, rtx x, int code)
 	 shift count as an error.  So we mask off the high bits
 	 of the immediate here.  */
       case 'S':
-	if (CONST_INT_P ((x)))
+	if (CONST_INT_P (x))
 	  {
 	    fprintf (file, "%d", (int)(INTVAL (x) & 0x1f));
 	    break;
@@ -1250,8 +1287,8 @@ mn10300_secondary_reload_class (enum reg_class rclass, enum machine_mode mode,
   /* Memory loads less than a full word wide can't have an
      address or stack pointer destination.  They must use
      a data register as an intermediate register.  */
-  if ((MEM_P ((in))
-       || (REG_P ((inner))
+  if ((MEM_P (in)
+       || (REG_P (inner)
 	   && REGNO (inner) >= FIRST_PSEUDO_REGISTER))
       && (mode == QImode || mode == HImode)
       && (rclass == ADDRESS_REGS || rclass == SP_REGS
@@ -1281,13 +1318,13 @@ mn10300_secondary_reload_class (enum reg_class rclass, enum machine_mode mode,
     {
       /* We can't load directly into an FP register from a	
 	 constant address.  */
-      if (MEM_P ((in))
+      if (MEM_P (in)
 	  && CONSTANT_ADDRESS_P (XEXP (in, 0)))
 	return DATA_OR_EXTENDED_REGS;
 
       /* Handle case were a pseudo may not get a hard register
 	 but has an equivalent memory location defined.  */
-      if (REG_P ((inner))
+      if (REG_P (inner)
 	  && REGNO (inner) >= FIRST_PSEUDO_REGISTER
 	  && reg_equiv_mem [REGNO (inner)]
 	  && CONSTANT_ADDRESS_P (XEXP (reg_equiv_mem [REGNO (inner)], 0)))
@@ -1696,7 +1733,7 @@ mn10300_symbolic_operand (rtx op,
       op = XEXP (op, 0);
       return ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
                || GET_CODE (XEXP (op, 0)) == LABEL_REF)
-              && CONST_INT_P ((XEXP (op, 1))));
+              && CONST_INT_P (XEXP (op, 1)));
     default:
       return 0;
     }
@@ -1870,7 +1907,7 @@ mn10300_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 
       if (base != 0 && index != 0)
 	{
-	  if (CONST_INT_P ((index)))
+	  if (CONST_INT_P (index))
 	    return TRUE;
 	  if (GET_CODE (index) == CONST
 	      && GET_CODE (XEXP (index, 0)) != PLUS
@@ -1907,7 +1944,6 @@ mn10300_legitimate_constant_p (rtx x)
       /* Only some unspecs are valid as "constants".  */
       if (GET_CODE (x) == UNSPEC)
 	{
-	  rtx sym = XVECEXP (x, 0, 0);
 	  switch (XINT (x, 1))
 	    {
 	    case UNSPEC_INT_LABEL:
@@ -2070,7 +2106,7 @@ mn10300_wide_const_load_uses_clr (rtx operands[2])
 {
   long val[2] = {0, 0};
 
-  if (! REG_P (operands[0])
+  if ((! REG_P (operands[0]))
       || REGNO_REG_CLASS (REGNO (operands[0])) != DATA_REGS)
     return false;
 
@@ -2272,6 +2308,101 @@ mn10300_select_cc_mode (rtx x)
 {
   return (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT) ? CC_FLOATmode : CCmode;
 }
+
+static inline bool
+is_load_insn (rtx insn)
+{
+  if (GET_CODE (PATTERN (insn)) != SET)
+    return false;
+
+  return MEM_P (SET_SRC (PATTERN (insn)));
+}
+
+static inline bool
+is_store_insn (rtx insn)
+{
+  if (GET_CODE (PATTERN (insn)) != SET)
+    return false;
+
+  return MEM_P (SET_DEST (PATTERN (insn)));
+}
+
+/* Update scheduling costs for situations that cannot be
+   described using the attributes and DFA machinery.
+   DEP is the insn being scheduled.
+   INSN is the previous insn.
+   COST is the current cycle cost for DEP.  */
+
+static int
+mn10300_adjust_sched_cost (rtx insn, rtx link, rtx dep, int cost)
+{
+  int timings = get_attr_timings (insn);
+
+  if (!TARGET_AM33)
+    return 1;
+
+  if (GET_CODE (insn) == PARALLEL)
+    insn = XVECEXP (insn, 0, 0);
+
+  if (GET_CODE (dep) == PARALLEL)
+    dep = XVECEXP (dep, 0, 0);
+
+  /* For the AM34 a load instruction that follows a
+     store instruction incurs an extra cycle of delay.  */
+  if (mn10300_tune_cpu == PROCESSOR_AM34
+      && is_load_insn (dep)
+      && is_store_insn (insn))
+    cost += 1;
+
+  /* For the AM34 a non-store, non-branch FPU insn that follows
+     another FPU insn incurs a one cycle throughput increase.  */
+  else if (mn10300_tune_cpu == PROCESSOR_AM34
+      && ! is_store_insn (insn)
+      && ! JUMP_P (insn)
+      && GET_CODE (PATTERN (dep)) == SET
+      && GET_CODE (PATTERN (insn)) == SET
+      && GET_MODE_CLASS (GET_MODE (SET_SRC (PATTERN (dep)))) == MODE_FLOAT
+      && GET_MODE_CLASS (GET_MODE (SET_SRC (PATTERN (insn)))) == MODE_FLOAT)
+    cost += 1;
+
+  /*  Resolve the conflict described in section 1-7-4 of
+      Chapter 3 of the MN103E Series Instruction Manual
+      where it says:
+
+        "When the preceeding instruction is a CPU load or
+	 store instruction, a following FPU instruction
+	 cannot be executed until the CPU completes the
+	 latency period even though there are no register
+	 or flag dependencies between them."  */
+
+  /* Only the AM33-2 (and later) CPUs have FPU instructions.  */
+  if (! TARGET_AM33_2)
+    return cost;
+
+  /* If a data dependence already exists then the cost is correct.  */
+  if (REG_NOTE_KIND (link) == 0)
+    return cost;
+
+  /* Check that the instruction about to scheduled is an FPU instruction.  */
+  if (GET_CODE (PATTERN (dep)) != SET)
+    return cost;
+
+  if (GET_MODE_CLASS (GET_MODE (SET_SRC (PATTERN (dep)))) != MODE_FLOAT)
+    return cost;
+
+  /* Now check to see if the previous instruction is a load or store.  */
+  if (! is_load_insn (insn) && ! is_store_insn (insn))
+    return cost;
+
+  /* XXX: Verify: The text of 1-7-4 implies that the restriction
+     only applies when an INTEGER load/store preceeds an FPU
+     instruction, but is this true ?  For now we assume that it is.  */
+  if (GET_MODE_CLASS (GET_MODE (SET_SRC (PATTERN (insn)))) != MODE_INT)
+    return cost;
+
+  /* Extract the latency value from the timings attribute.  */
+  return timings < 100 ? (timings % 10) : (timings % 100);
+}
 
 /* Initialize the GCC target structure.  */
 
@@ -2346,5 +2477,8 @@ mn10300_select_cc_mode (rtx x)
 #define TARGET_ASM_OUTPUT_MI_THUNK      mn10300_asm_output_mi_thunk
 #undef  TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK  mn10300_can_output_mi_thunk
+
+#undef  TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST mn10300_adjust_sched_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
