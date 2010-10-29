@@ -216,7 +216,17 @@ static const struct default_options pdp11_option_optimization_table[] =
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT pdp11_trampoline_init
 
-struct gcc_target targetm = TARGET_INITIALIZER;
+#undef  TARGET_SECONDARY_RELOAD
+#define TARGET_SECONDARY_RELOAD pdp11_secondary_reload
+
+#undef  TARGET_REGISTER_MOVE_COST 
+#define TARGET_REGISTER_MOVE_COST pdp11_register_move_cost
+
+#undef  TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS pdp11_preferred_reload_class
+
+#undef  TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
+#define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS pdp11_preferred_output_reload_class
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -417,7 +427,7 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 	
 	/* get ACs */
 	for (i = AC5_REGNUM; i >= AC0_REGNUM; i--)
-	  if (df_regs_ever_live_p (i) && call_used_regs[i])
+	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])
 		via_ac = i;
 	
 	for (i = AC5_REGNUM; i >= AC0_REGNUM; i--)
@@ -1054,22 +1064,23 @@ static const int move_costs[N_REG_CLASSES][N_REG_CLASSES] =
              /* NO  MUL  GEN  LFPU  NLFPU FPU ALL */
 
 /* NO */     {  0,   0,   0,    0,    0,    0,   0},
-/* MUL */    {  0,   2,   2,   10,   22,   22,  22},
-/* GEN */    {  0,   2,   2,   10,   22,   22,  22},
-/* LFPU */   {  0,  10,  10,    2,    2,    2,  10},
-/* NLFPU */  {  0,  22,  22,    2,    2,    2,  22},
-/* FPU */    {  0,  22,  22,    2,    2,    2,  22},
-/* ALL */    {  0,  22,  22,   10,   22,   22,  22}
+/* MUL */    {  0,   2,   2,   22,   22,   22,  22},
+/* GEN */    {  0,   2,   2,   22,   22,   22,  22},
+/* LFPU */   {  0,  22,  22,    2,    2,    2,  22},
+/* NLFPU */  {  0,  22,  22,    2,   10,   10,  22},
+/* FPU */    {  0,  22,  22,    2,   10,   10,  22},
+/* ALL */    {  0,  22,  22,   22,   22,   22,  22}
 }  ;
 
 
 /* -- note that some moves are tremendously expensive, 
    because they require lots of tricks! do we have to 
    charge the costs incurred by secondary reload class 
-   -- as we do here with 22 -- or not ? */
+   -- as we do here with 10 -- or not ? */
 
-int 
-pdp11_register_move_cost (enum reg_class c1, enum reg_class c2)
+static int 
+pdp11_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+			  reg_class_t c1, reg_class_t c2)
 {
     return move_costs[(int)c1][(int)c2];
 }
@@ -1634,6 +1645,108 @@ legitimate_const_double_p (rtx address)
   return 0;
 }
 
+/* Implement CANNOT_CHANGE_MODE_CLASS.  */
+bool
+pdp11_cannot_change_mode_class (enum machine_mode from,
+				enum machine_mode to,
+				enum reg_class rclass)
+{
+  /* Also, FPU registers contain a whole float value and the parts of
+     it are not separately accessible.
+
+     So we disallow all mode changes involving FPRs.  */
+  if (FLOAT_MODE_P (from) != FLOAT_MODE_P (to))
+    return true;
+  
+  return reg_classes_intersect_p (FPU_REGS, rclass);
+}
+
+/* TARGET_PREFERRED_RELOAD_CLASS
+
+   Given an rtx X being reloaded into a reg required to be
+   in class CLASS, return the class of reg to actually use.
+   In general this is just CLASS; but on some machines
+   in some cases it is preferable to use a more restrictive class.  
+
+loading is easier into LOAD_FPU_REGS than FPU_REGS! */
+
+static reg_class_t
+pdp11_preferred_reload_class (rtx x, reg_class_t class)
+{
+  if (class == FPU_REGS)
+    return LOAD_FPU_REGS;
+  if (class == ALL_REGS)
+    {
+      if (FLOAT_MODE_P (GET_MODE (x)))
+	return LOAD_FPU_REGS;
+      else
+	return GENERAL_REGS;
+    }
+  return class;
+}
+
+/* TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
+
+   Given an rtx X being reloaded into a reg required to be
+   in class CLASS, return the class of reg to actually use.
+   In general this is just CLASS; but on some machines
+   in some cases it is preferable to use a more restrictive class.  
+
+loading is easier into LOAD_FPU_REGS than FPU_REGS! */
+
+static reg_class_t
+pdp11_preferred_output_reload_class (rtx x, reg_class_t class)
+{
+  if (class == FPU_REGS)
+    return LOAD_FPU_REGS;
+  if (class == ALL_REGS)
+    {
+      if (FLOAT_MODE_P (GET_MODE (x)))
+	return LOAD_FPU_REGS;
+      else
+	return GENERAL_REGS;
+    }
+  return class;
+}
+
+
+/* TARGET_SECONDARY_RELOAD.
+
+   FPU registers AC4 and AC5 (class NO_LOAD_FPU_REGS) require an 
+   intermediate register (AC0-AC3: LOAD_FPU_REGS).  Everything else
+   can be loade/stored directly.  */
+reg_class_t 
+pdp11_secondary_reload (bool in_p ATTRIBUTE_UNUSED,
+			rtx x,
+			reg_class_t reload_class,
+			enum machine_mode reload_mode ATTRIBUTE_UNUSED,
+			secondary_reload_info *sri ATTRIBUTE_UNUSED)
+{
+  if (reload_class != NO_LOAD_FPU_REGS || GET_CODE (x) != REG ||
+      REGNO_REG_CLASS (REGNO (x)) == LOAD_FPU_REGS)
+    return NO_REGS;
+  
+  return LOAD_FPU_REGS;
+}
+
+/* Target routine to check if register to register move requires memory.
+
+   The answer is yes if we're going between general register and FPU 
+   registers.  The mode doesn't matter in making this check.
+*/
+bool 
+pdp11_secondary_memory_needed (reg_class_t c1, reg_class_t c2, 
+			       enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  int fromfloat = (c1 == LOAD_FPU_REGS || c1 == NO_LOAD_FPU_REGS || 
+		   c1 == FPU_REGS);
+  int tofloat = (c2 == LOAD_FPU_REGS || c2 == NO_LOAD_FPU_REGS || 
+		 c2 == FPU_REGS);
+  
+  return (fromfloat != tofloat);
+}
+
+
 /* A copy of output_addr_const modified for pdp11 expression syntax.
    output_addr_const also gets called for %cDIGIT and %nDIGIT, which we don't
    use, and for debugging output, which we don't support with this port either.
@@ -1751,7 +1864,7 @@ pdp11_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
      ac0 if DFmode and FPU present - compatibility problem with
      libraries for non-floating point....  */
   return (TYPE_MODE (type) == DImode
-	  || (TYPE_MODE (type) == DFmode && ! TARGET_AC0));
+	  || (FLOAT_MODE_P (TYPE_MODE (type)) && ! TARGET_AC0));
 }
 
 /* Worker function for TARGET_FUNCTION_VALUE.
@@ -1854,3 +1967,5 @@ pdp11_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	   ? GET_MODE_SIZE (mode)
 	   : int_size_in_bytes (type));
 }
+
+struct gcc_target targetm = TARGET_INITIALIZER;

@@ -25,6 +25,7 @@
 (define_constants
   [
    ;; Register numbers
+   (RETVAL_REGNUM     	  0)
    (FRAME_POINTER_REGNUM  5)
    (STACK_POINTER_REGNUM  6)
    (PC_REGNUM             7)
@@ -196,7 +197,7 @@
 (define_expand "cbranchdf4"
   [(set (cc0)
         (compare (match_operand:DF 1 "general_operand")
-		 (match_operand:DF 2 "general_operand")))
+		 (match_operand:DF 2 "register_or_const0_operand")))
    (set (pc)
 	(if_then_else (match_operator 0 "ordered_comparison_operator"
 		       [(cc0) (const_int 0)])
@@ -318,11 +319,9 @@
 }"
   [(set_attr "length" "2,4,4,6")])
 
-;; do we have to supply all these moves? e.g. to 
-;; NO_LOAD_FPU_REGs ? 
 (define_insn "movdf"
-  [(set (match_operand:DF 0 "general_operand" "=a,fR,a,Q,g")
-        (match_operand:DF 1 "general_operand" "fFR,a,Q,a,g"))]
+  [(set (match_operand:DF 0 "float_operand" "=a,fR,a,Q,g")
+        (match_operand:DF 1 "float_operand" "fFR,a,Q,a,g"))]
   "TARGET_FPU"
   "* if (which_alternative ==0 || which_alternative == 2)
        return \"ldd %1, %0\";
@@ -334,11 +333,17 @@
   [(set_attr "length" "2,2,10,10,32")])
 
 (define_insn "movsf"
-  [(set (match_operand:SF 0 "general_operand" "=g,r,g")
-        (match_operand:SF 1 "general_operand" "r,rmF,g"))]
+  [(set (match_operand:SF 0 "float_operand" "=a,fR,a,Q,g")
+        (match_operand:SF 1 "float_operand" "fFR,a,Q,a,g"))]
   "TARGET_FPU"
-  "* return output_move_double (operands);"
-  [(set_attr "length" "16,16,16")])
+  "* if (which_alternative ==0 || which_alternative == 2)
+       return \"{ldcfd|movof} %1, %0\";
+     else if (which_alternative == 1 || which_alternative == 3)
+       return \"{stcdf|movfo} %1, %0\";
+     else 
+       return output_move_double (operands); "
+;; just a guess..
+  [(set_attr "length" "2,2,10,10,16")])
 
 ;; maybe fiddle a bit with move_ratio, then 
 ;; let constraints only accept a register ...
@@ -386,15 +391,11 @@
 ;;- truncation instructions
 
 (define_insn  "truncdfsf2"
-  [(set (match_operand:SF 0 "general_operand" "=r,R,Q")
-	(float_truncate:SF (match_operand:DF 1 "register_operand" "a,a,a")))]
+  [(set (match_operand:SF 0 "general_operand" "=f,R,Q")
+	(float_truncate:SF (match_operand:DF 1 "register_operand" "f,a,a")))]
   "TARGET_FPU"
   "* if (which_alternative ==0)
      {
-       output_asm_insn(\"{stcdf|movfo} %1, -(sp)\", operands);
-       output_asm_insn(\"mov (sp)+, %0\", operands);
-       operands[0] = gen_rtx_REG (HImode, REGNO (operands[0])+1);
-       output_asm_insn(\"mov (sp)+, %0\", operands);
        return \"\";
      }
      else if (which_alternative == 1)
@@ -402,7 +403,7 @@
      else 
        return \"{stcdf|movfo} %1, %0\";
   "
-  [(set_attr "length" "6,2,4")])
+  [(set_attr "length" "0,2,4")])
 
 
 (define_expand "truncsihi2"
@@ -439,14 +440,14 @@
 ;;- sign extension instructions
 
 (define_insn "extendsfdf2"
-  [(set (match_operand:DF 0 "register_operand" "=a,a,a")
-	(float_extend:DF (match_operand:SF 1 "general_operand" "r,R,Q")))]
+  [(set (match_operand:DF 0 "register_operand" "=f,a,a")
+	(float_extend:DF (match_operand:SF 1 "general_operand" "f,R,Q")))]
   "TARGET_FPU"
   "@
-   mov %1, -(sp)\;{ldcfd|movof} (sp)+,%0
+   /* nothing */
    {ldcfd|movof} %1, %0
    {ldcfd|movof} %1, %0"
-  [(set_attr "length" "4,2,4")])
+  [(set_attr "length" "0,2,4")])
 
 ;; does movb sign extend in register-to-register move?
 (define_insn "extendqihi2"
@@ -856,6 +857,7 @@
 }"
   [(set_attr "length" "4,8,8,12,4,4,8,6,6,12")])
 
+;; FIXME This definition is wrong, PR/41822
 (define_insn "andhi3"
   [(set (match_operand:HI 0 "general_operand" "=rR,rR,Q,Q")
 	(and:HI (match_operand:HI 1 "general_operand" "0,0,0,0")

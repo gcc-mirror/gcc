@@ -215,15 +215,19 @@ extern const struct real_format pdp11_d_format;
     
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   On the pdp, the cpu registers can hold any mode - check alignment
+   On the pdp, the cpu registers can hold any mode other than float
+   (because otherwise we may end up being asked to move from CPU to FPU
+   register, which isn't a valid operation on the PDP11).
+   For CPU registers, check alignment.
 
-   FPU can only hold DF - simplifies life!
+   FPU accepts SF and DF but actually holds a DF - simplifies life!
 */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
 (((REGNO) <= PC_REGNUM)?				\
   ((GET_MODE_BITSIZE(MODE) <= 16) 			\
-   || (GET_MODE_BITSIZE(MODE) >= 32 && !((REGNO) & 1)))	\
-  :(MODE) == DFmode)
+   || (GET_MODE_BITSIZE(MODE) >= 32 &&      		\
+       !((REGNO) & 1) && !FLOAT_MODE_P (MODE)))		\
+  :FLOAT_MODE_P (MODE))
     
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
@@ -322,18 +326,9 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
 
 #define IRA_COVER_CLASSES { GENERAL_REGS, FPU_REGS, LIM_REG_CLASSES }
 
-/* Given an rtx X being reloaded into a reg required to be
-   in class CLASS, return the class of reg to actually use.
-   In general this is just CLASS; but on some machines
-   in some cases it is preferable to use a more restrictive class.  
-
-loading is easier into LOAD_FPU_REGS than FPU_REGS! */
-
-#define PREFERRED_RELOAD_CLASS(X,CLASS) 	\
-(((CLASS) != FPU_REGS)?(CLASS):LOAD_FPU_REGS)
-
-#define SECONDARY_RELOAD_CLASS(CLASS,MODE,x)	\
-(((CLASS) == NO_LOAD_FPU_REGS && !(REG_P(x) && LOAD_FPU_REG_P(REGNO(x))))?LOAD_FPU_REGS:NO_REGS)
+/* Hook for testing if memory is needed for moving between registers.  */
+#define SECONDARY_MEMORY_NEEDED(class1, class2, m) \
+  pdp11_secondary_memory_needed (class1, class2, m)
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
@@ -343,6 +338,8 @@ loading is easier into LOAD_FPU_REGS than FPU_REGS! */
   1									\
 )
 
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
+  pdp11_cannot_change_mode_class (FROM, TO, CLASS)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -386,7 +383,7 @@ extern int current_first_parm_offset;
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
 #define BASE_RETURN_VALUE_REG(MODE) \
- ((MODE) == DFmode ? 8 : 0) 
+ (FLOAT_MODE_P (MODE) ? AC0_REGNUM : RETVAL_REGNUM) 
 
 /* 1 if N is a possible register number for function argument passing.
    - not used on pdp */
@@ -674,10 +671,6 @@ extern int may_call_alloca;
 /* #define NO_FUNCTION_CSE */
 
 
-/* cost of moving one register class to another */
-#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) \
-  pdp11_register_move_cost (CLASS1, CLASS2)
-
 /* Tell emit-rtl.c how to initialize special values on a per-function base.  */
 extern struct rtx_def *cc0_reg_rtx;
 
