@@ -1,3 +1,7 @@
+2010-10-29  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.c-torture/execute/20101011-1.c: Skip on SH.
+
 2010-10-29  Pat Haugen  <pthaugen@us.ibm.com>
 	* gcc.c-torture/execute/20101011-1.c: Fix #ifdef.
 
