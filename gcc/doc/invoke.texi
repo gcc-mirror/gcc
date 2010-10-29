@@ -734,8 +734,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{MN10300 Options}
 @gccoptlist{-mmult-bug  -mno-mult-bug @gol
--mam33  -mno-am33 @gol
--mam33-2  -mno-am33-2 @gol
+-mno-am33 -mam33 -mam33-2 -mam34 @gol
+-mtune=@var{cpu-type} @gol
 -mreturn-pointer-on-d0 @gol
 -mno-crt0  -mrelax}
 
@@ -14914,6 +14914,21 @@ Generate code which uses features specific to the AM33 processor.
 @opindex mno-am33
 Do not generate code which uses features specific to the AM33 processor.  This
 is the default.
+
+@item -mam33-2
+@opindex mam33-2
+Generate code which uses features specific to the AM33/2.0 processor.
+
+@item -mam34
+@opindex mam34
+Generate code which uses features specific to the AM34 processor.
+
+@item -mtune=@var{cpu-type}
+@opindex mtune
+Use the timing characteristics of the indicated CPU type when
+scheduling instructions.  This does not change the targeted processor
+type.  The CPU type must be one of @samp{mn10300}, @samp{am33},
+@samp{am33-2} or @samp{am34}.
 
 @item -mreturn-pointer-on-d0
 @opindex mreturn-pointer-on-d0

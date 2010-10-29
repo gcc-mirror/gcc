@@ -1,3 +1,52 @@
+2010-10-29  Nick Clifton<nickc@redhat.com>
+
+	* doc/invoke.texi: Document -mam34 and -mtune options.
+	* config/mn10300/mn10300.c (mn10300_tune_string): New variable.
+	(mn10300_tune_cpu): New variable.
+	(mn10300_handle_option): Handle -mam34 and -mtune options.
+	(mn10300_option_override): Convert tune string into tune cpu
+	variable.
+	(mn10300_legitimate_constant_p): Delete unused local variable.
+	(is_load_insn): New function.
+	(is_store_insn): New function.
+	(mn10300_adjust_schedule_cost): New function.
+	(TARGET_SCHED_ADJUST_COST): Define.
+	* config/mn10300/mn10300.opt (mam34): New option.
+	(mtune): New option.
+	* config/mn10300/mn10300.h (TARGET_CPU_CPP_BUILTINS): Add AM34
+	support.
+	(enum processor_type): Add AM34.
+	(TARGET_AM34): Define.
+	* config/mn10300/mn10300.md (attr cpu): Add am34.
+	Add pipeline description.
+	(movqi, movhi, movsi, movsf, movdf, movdi): Fix predicates. Remove unneeded
+	alternatives.  Add timing attribute.
+	(pop_pic_reg, am33_addsi3, mn10300_addsi3, am33_subsi3,
+	mn10300_subsi3, mulsidi3, umulsidi3, am33_mulsi3,
+	mn10300_mulsi3, udivmodsi4_am33, divmodsi4, am33_andsi3,
+	mn10300_andsi3, am33_iorsi3, mn10300_iorsi3, am33_xorsi3,
+	mn10300_xorsi3, byte_clear, byte_set, bit_clear1, bit_clear2,
+	bit_set, am33_iorqi3, mn10300_iorqi3, test_byte_bitfield,
+	bit_test, subreg_bit_test, cmpsi, am33_cmpsf, am33_subsi3,
+	float_conditional_branch, jump, indirect_jump, tablejump,
+	call_internal, call_value_internal, zero_extendqisi2_am33,
+	zero_extendqisi2_mn10300, zero_extendhisi2_am33,
+	zero_extendhisi2_mn10300, extendqisi2_am33, extendqisi2_mn10300,
+	extendhisi2_am33, extendhisi2_mn10300, am33_ashlsi3,
+	mn10300_ashlsi3, am33_lshrsi3, mn10300_lshrsi3, am33_ashrisi3,
+	mn10300_ashrsi3, abssf2_am33_2, negsf2_am33_2, rsqrtsf2,
+	addsf3_internal, subsf3_internal, mulsf3_internal, divsf3,
+	fmaddsf4, fmsubsf4, fnmaddsf4, fnmsubsf4, return_internal,
+	return_internal_regs, store_movm, return, call_next_insn):
+	Add timing attribute.
+	(am33_subsi3): Add missing clobber of CC_REG.
+	(am33_andsi3, mn10300_andsi3): Fix compile time warnings.
+	(udivmodsi4, udivmodsi4_insn, divmodsi4, test_byte_bitfield,
+	subreg_bit_test, zero_extendqisi2, zero_extendhisi2,
+	extendqisi2): Fix predicates.
+	(call_internal, call_internal_value): Separate alternatives.
+	* config/mn10300/t-mn10300: Add AM34 multilib.
+
 2010-10-29  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/sh/sh.c (sh_promote_function_mode): Use

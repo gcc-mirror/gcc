@@ -1,6 +1,6 @@
 ; Options for the Matsushita MN10300 port of the compiler.
 
-; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2010 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -25,6 +25,14 @@ Target the AM33 processor
 mam33-2
 Target
 Target the AM33/2.0 processor
+
+mam34
+Target Report
+Target the AM34 processor
+
+mtune=
+Target RejectNegative Joined
+Tune code for the given processor
 
 mmult-bug
 Target Report Mask(MULT_BUG)
