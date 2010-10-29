@@ -1,3 +1,9 @@
+2010-10-29  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/46226
+	* stmt.c (expand_asm_operands): Call do_pending_stack_adjust
+	for asm goto.
+
 2010-10-29  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.c (output_move_quad): Fix ICE for CPU
