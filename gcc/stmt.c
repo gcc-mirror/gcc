@@ -773,6 +773,10 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 
   /* Second pass evaluates arguments.  */
 
+  /* Make sure stack is consistent for asm goto.  */
+  if (nlabels > 0)
+    do_pending_stack_adjust ();
+
   ninout = 0;
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
     {
