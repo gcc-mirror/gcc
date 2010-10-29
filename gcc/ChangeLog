@@ -1,3 +1,8 @@
+2010-10-29  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.c (pdp11_trampoline_init): Correct
+	instruction encoding.
+
 2010-10-29  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
 	Andrew Pinski <pinskia@gmail.com>
 
