@@ -1,3 +1,14 @@
+2010-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46153
+	* config/i386/sse.md (sse_movhlps_exp): Use destination
+	returned from ix86_fixup_binary_operands to expand insn.
+	(sse_movlhps_exp): Ditto.
+	(sse_loadhps_exp): Ditto.
+	(sse_loadlps_exp): Ditto.
+	(sse2_loadhpd_exp): Ditto.
+	(sse2_loadlpd_exp): Ditto.
+
 2010-10-29  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/46226
