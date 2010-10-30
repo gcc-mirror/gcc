@@ -1858,8 +1858,7 @@ layout_vtable_decl (tree binfo, int n)
   tree atype;
   tree vtable;
 
-  atype = build_cplus_array_type (vtable_entry_type,
-				  build_index_type (size_int (n - 1)));
+  atype = build_array_of_n_type (vtable_entry_type, n);
   layout_type (atype);
 
   /* We may have to grow the vtable.  */
@@ -7295,8 +7294,8 @@ build_vtt (tree t)
     return;
 
   /* Figure out the type of the VTT.  */
-  type = build_index_type (size_int (VEC_length (constructor_elt, inits) - 1));
-  type = build_cplus_array_type (const_ptr_type_node, type);
+  type = build_array_of_n_type (const_ptr_type_node,
+				VEC_length (constructor_elt, inits));
 
   /* Now, build the VTT object itself.  */
   vtt = build_vtable (t, mangle_vtt_for_type (t), type);
@@ -7551,8 +7550,8 @@ build_ctor_vtbl_group (tree binfo, tree t)
     }
 
   /* Figure out the type of the construction vtable.  */
-  type = build_index_type (size_int (VEC_length (constructor_elt, v) - 1));
-  type = build_cplus_array_type (vtable_entry_type, type);
+  type = build_array_of_n_type (vtable_entry_type,
+				VEC_length (constructor_elt, v));
   layout_type (type);
   TREE_TYPE (vtbl) = type;
   DECL_SIZE (vtbl) = DECL_SIZE_UNIT (vtbl) = NULL_TREE;
