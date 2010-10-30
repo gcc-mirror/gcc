@@ -1,3 +1,11 @@
+2010-10-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44917
+	PR fortran/44926
+	PR fortran/46196
+	* interface.c (count_types_test): Symmetrize type check.
+	(generic_correspondence): Ditto.
+
 2010-10-27  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46161

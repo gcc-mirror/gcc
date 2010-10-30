@@ -1,3 +1,10 @@
+2010-10-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44917
+	PR fortran/44926
+	PR fortran/46196
+	* gfortran.dg/typebound_generic_10.f03: New.
+
 2010-10-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented Objective-C 2.0 @property, @synthesize and @dynamic.
