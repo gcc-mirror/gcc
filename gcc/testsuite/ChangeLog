@@ -67,7 +67,7 @@
 	* obj-c++.dg/property/dynamic-2.mm: New.
 	
 2010-10-29  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
-	Andrew Pinski <pinskia@gmail.com>
+	    Andrew Pinski <pinskia@gmail.com>
 
 	* gcc.c-torture/execute/vector-shift.c: New testcase.
 	* gcc.c-torture/execute/vector-shift1.c: Likewise.
@@ -83,6 +83,7 @@
 	* gcc.c-torture/execute/20101011-1.c: Skip on SH.
 
 2010-10-29  Pat Haugen  <pthaugen@us.ibm.com>
+
 	* gcc.c-torture/execute/20101011-1.c: Fix #ifdef.
 
 2010-10-28  Uros Bizjak  <ubizjak@gmail.com>

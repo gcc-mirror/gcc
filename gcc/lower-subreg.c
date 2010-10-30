@@ -396,7 +396,7 @@ simplify_subreg_concatn (enum machine_mode outermode, rtx op,
 			 unsigned int byte)
 {
   unsigned int inner_size;
-  enum machine_mode innermode;
+  enum machine_mode innermode, partmode;
   rtx part;
   unsigned int final_offset;
 
@@ -409,11 +409,19 @@ simplify_subreg_concatn (enum machine_mode outermode, rtx op,
 
   inner_size = GET_MODE_SIZE (innermode) / XVECLEN (op, 0);
   part = XVECEXP (op, 0, byte / inner_size);
+  partmode = GET_MODE (part);
+
+  if (partmode == VOIDmode)
+    {
+      gcc_assert (VECTOR_MODE_P (innermode));
+      partmode = GET_MODE_INNER (innermode);
+    }
+
   final_offset = byte % inner_size;
   if (final_offset + GET_MODE_SIZE (outermode) > inner_size)
     return NULL_RTX;
 
-  return simplify_gen_subreg (outermode, part, GET_MODE (part), final_offset);
+  return simplify_gen_subreg (outermode, part, partmode, final_offset);
 }
 
 /* Wrapper around simplify_gen_subreg which handles CONCATN.  */
