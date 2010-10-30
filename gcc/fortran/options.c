@@ -90,7 +90,8 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.flag_max_array_constructor = 65535;
   gfc_option.convert = GFC_CONVERT_NATIVE;
   gfc_option.record_marker = 0;
-  gfc_option.dump_parse_tree = 0;
+  gfc_option.dump_fortran_original = 0;
+  gfc_option.dump_fortran_optimized = 0;
 
   gfc_option.warn_aliasing = 0;
   gfc_option.warn_ampersand = 0;
@@ -270,7 +271,7 @@ gfc_post_options (const char **pfilename)
     gfc_option.rtcheck |= GFC_RTCHECK_BOUNDS;
 
   if (flag_compare_debug)
-    gfc_option.dump_parse_tree = 0;
+    gfc_option.dump_fortran_original = 0;
 
   /* Verify the input file name.  */
   if (!filename || strcmp (filename, "-") == 0)
@@ -686,8 +687,13 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       gfc_option.flag_d_lines = 0;
       break;
 
+    case OPT_fdump_fortran_original:
     case OPT_fdump_parse_tree:
-      gfc_option.dump_parse_tree = value;
+      gfc_option.dump_fortran_original = value;
+      break;
+
+    case OPT_fdump_fortran_optimized:
+      gfc_option.dump_fortran_optimized = value;
       break;
 
     case OPT_ffixed_form:

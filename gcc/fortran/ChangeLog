@@ -1,3 +1,27 @@
+2010-10-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.h (gfc_option_t):  Replace dump_parse_tree by
+	dump_fortran_original and add dump_fortran_optimized.
+	* lang.opt: Add fdump-fortran-original and
+	fdump-fortran-optimized.  Document that fdump-parse-tree is
+	deprecated.
+	* gfortran.texi: Add -fdump-fortran-original and
+	-fdump-fortran-optimized.  -fdump-parse-tree is deprecated.
+	* frontend-passes.c (gfc_run_passes):  If optimizing and
+	if gfc_option.dump_fortran_optimized is set, dump the parse tree
+	after optimization.
+	* parse.c:  Rename gfc_option.dump_parse_tree to
+	gfc_option.dump_fortran_original.
+	* options.c (gfc_init_options):  Rename gfc_option.dump_parse_tree
+	to gfc_option.dump_fortran_original and handle
+	gfc_option.dump_fortran_optimize.
+	(gfc_post_options): Rename gfc_option.dump_parse_tree
+	to gfc_option.dump_fortran_original.
+	(gfc_handle_option):  Rename OPT_fdump_parse_tree to
+	OPT_fdump_fortran_original and gfc_option.dump_parse_tree
+	to gfc_option.dump_fortran_original.  Handle
+	OPT_fdump_fortran_optimized.
+
 2010-10-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44917
