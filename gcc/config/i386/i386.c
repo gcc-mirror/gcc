@@ -6952,10 +6952,12 @@ ix86_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
   return 0;
 }
 
-/* Return true when TYPE should be 128bit aligned for 32bit argument passing
-   ABI.  */
+/* Return true when TYPE should be 128bit aligned for 32bit argument
+   passing ABI.  XXX: This function is obsolete and is only used for
+   checking psABI compatibility with previous versions of GCC.  */
+
 static bool
-contains_aligned_value_p (const_tree type)
+ix86_compat_aligned_value_p (const_tree type)
 {
   enum machine_mode mode = TYPE_MODE (type);
   if (((TARGET_SSE && SSE_REG_MODE_P (mode))
@@ -6982,7 +6984,7 @@ contains_aligned_value_p (const_tree type)
 	    for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	      {
 		if (TREE_CODE (field) == FIELD_DECL
-		    && contains_aligned_value_p (TREE_TYPE (field)))
+		    && ix86_compat_aligned_value_p (TREE_TYPE (field)))
 		  return true;
 	      }
 	    break;
@@ -6990,7 +6992,7 @@ contains_aligned_value_p (const_tree type)
 
 	case ARRAY_TYPE:
 	  /* Just for use if some languages passes arrays by value.  */
-	  if (contains_aligned_value_p (TREE_TYPE (type)))
+	  if (ix86_compat_aligned_value_p (TREE_TYPE (type)))
 	    return true;
 	  break;
 
@@ -7001,9 +7003,13 @@ contains_aligned_value_p (const_tree type)
   return false;
 }
 
+/* Return the alignment boundary for MODE and TYPE with alignment ALIGN.
+   XXX: This function is obsolete and is only used for checking psABI
+   compatibility with previous versions of GCC.  */
+
 static int
-ix86_old_function_arg_boundary (enum machine_mode mode, const_tree type,
-				int align)
+ix86_compat_function_arg_boundary (enum machine_mode mode,
+				   const_tree type, int align)
 {
   /* In 32bit, only _Decimal128 and __float128 are aligned to their
      natural boundaries.  */
@@ -7023,13 +7029,66 @@ ix86_old_function_arg_boundary (enum machine_mode mode, const_tree type,
 	}
       else
 	{
-	  if (!contains_aligned_value_p (type))
+	  if (!ix86_compat_aligned_value_p (type))
 	    align = PARM_BOUNDARY;
 	}
     }
   if (align > BIGGEST_ALIGNMENT)
     align = BIGGEST_ALIGNMENT;
   return align;
+}
+
+/* Return true when TYPE should be 128bit aligned for 32bit argument
+   passing ABI.  */
+
+static bool
+ix86_contains_aligned_value_p (const_tree type)
+{
+  enum machine_mode mode = TYPE_MODE (type);
+
+  if (mode == XFmode || mode == XCmode)
+    return false;
+
+  if (TYPE_ALIGN (type) < 128)
+    return false;
+
+  if (AGGREGATE_TYPE_P (type))
+    {
+      /* Walk the aggregates recursively.  */
+      switch (TREE_CODE (type))
+	{
+	case RECORD_TYPE:
+	case UNION_TYPE:
+	case QUAL_UNION_TYPE:
+	  {
+	    tree field;
+
+	    /* Walk all the structure fields.  */
+	    for (field = TYPE_FIELDS (type);
+		 field;
+		 field = DECL_CHAIN (field))
+	      {
+		if (TREE_CODE (field) == FIELD_DECL
+		    && ix86_contains_aligned_value_p (TREE_TYPE (field)))
+		  return true;
+	      }
+	    break;
+	  }
+
+	case ARRAY_TYPE:
+	  /* Just for use if some languages passes arrays by value.  */
+	  if (ix86_contains_aligned_value_p (TREE_TYPE (type)))
+	    return true;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  else
+    return TYPE_ALIGN (type) >= 128;
+
+  return false;
 }
 
 /* Gives the alignment boundary, in bits, of an argument with the
@@ -7055,13 +7114,25 @@ ix86_function_arg_boundary (enum machine_mode mode, const_tree type)
       static bool warned;
       int saved_align = align;
 
-      if (!TARGET_64BIT && align < 128)
-	align = PARM_BOUNDARY;
+      if (!TARGET_64BIT)
+	{
+	  /* i386 ABI defines XFmode arguments to be 4 byte aligned.  */
+	  if (!type)
+	    {
+	      if (mode == XFmode || mode == XCmode)
+		align = PARM_BOUNDARY;
+	    }
+	  else if (!ix86_contains_aligned_value_p (type))
+	    align = PARM_BOUNDARY;
+
+	  if (align < 128)
+	    align = PARM_BOUNDARY;
+	}
 
       if (warn_psabi
 	  && !warned
-	  && align != ix86_old_function_arg_boundary (mode, type,
-						      saved_align))
+	  && align != ix86_compat_function_arg_boundary (mode, type,
+							 saved_align))
 	{
 	  warned = true;
 	  inform (input_location,
