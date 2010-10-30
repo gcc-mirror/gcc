@@ -2178,7 +2178,8 @@ typedef struct
   int max_continue_fixed;
   int max_continue_free;
   int max_identifier_length;
-  int dump_parse_tree;
+  int dump_fortran_original;
+  int dump_fortran_optimized;
 
   int warn_aliasing;
   int warn_ampersand;

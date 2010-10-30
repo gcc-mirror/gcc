@@ -143,8 +143,8 @@ and warnings}.
 
 @item Debugging Options
 @xref{Debugging Options,,Options for debugging your program or GNU Fortran}.
-@gccoptlist{-fdump-parse-tree  -ffpe-trap=@var{list} @gol
--fdump-core -fbacktrace}
+@gccoptlist{-fdump-fortran-original  -fdump-fortran-optimized @gol
+-ffpe-trap=@var{list}  -fdump-core -fbacktrace -fdump-parse-tree}
 
 @item Directory Options
 @xref{Directory Options,,Options for directory search}.
@@ -879,10 +879,22 @@ GNU Fortran has various special options that are used for debugging
 either your program or the GNU Fortran compiler.
 
 @table @gcctabopt
-@item -fdump-parse-tree
+@item -fdump-fortran-original
+@opindex @code{fdump-fortran-original}
+Output the internal parse tree after translating the source program
+into internal representation.  Only really useful for debugging the
+GNU Fortran compiler itself.
+
+@item -fdump-optimized-tree
+@opindex @code{fdump-fortran-optimized}
+Output the parse tree after front-end optimization.  Only really
+useful for debugging the GNU Fortran compiler itself.
+
 @opindex @code{fdump-parse-tree}
-Output the internal parse tree before starting code generation.  Only
-really useful for debugging the GNU Fortran compiler itself.
+Output the internal parse tree after translating the source program
+into internal representation.  Only really useful for debugging the
+GNU Fortran compiler itself.  This option is deprecated; use
+@code{-fdump-fortran-original} instead.
 
 @item -ffpe-trap=@var{list}
 @opindex @code{ffpe-trap=}@var{list}

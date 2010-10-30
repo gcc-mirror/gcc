@@ -358,9 +358,17 @@ fdump-core
 Fortran
 Dump a core file when a runtime error occurs
 
-fdump-parse-tree
+fdump-fortran-original
 Fortran
 Display the code tree after parsing
+
+fdump-fortran-optimized
+Fortran
+Display the code tree after front end optimization
+
+fdump-parse-tree
+Fortran
+Display the code tree after parsing; deprecated option
 
 fexternal-blas
 Fortran

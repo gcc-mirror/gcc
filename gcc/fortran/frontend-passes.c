@@ -42,7 +42,11 @@ void
 gfc_run_passes (gfc_namespace *ns)
 {
   if (optimize)
-    optimize_namespace (ns);
+    {
+      optimize_namespace (ns);
+      if (gfc_option.dump_fortran_optimized)
+	gfc_dump_parse_tree (ns, stdout);
+    }
 }
 
 /* Callback for each gfc_code node invoked through gfc_code_walker
