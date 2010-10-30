@@ -1,3 +1,14 @@
+2010-10-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/46195
+	* config/i386/i386.c (contains_aligned_value_p): Renamed to ...
+	(ix86_compat_aligned_value_p): This.
+	(ix86_old_function_arg_boundary): Renamed to ...
+	(ix86_compat_function_arg_boundary): This.  Updated.
+	(ix86_contains_aligned_value_p): New.
+	(ix86_function_arg_boundary): Align long double parameters on
+	stack to 4byte in 32bit.
+
 2010-10-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented Objective-C 2.0 @property, @synthesize and @dynamic.
