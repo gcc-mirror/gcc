@@ -1,14 +1,16 @@
-/* Property name cannot match the ivar name. */
 /* { dg-do compile } */
-/* Suppress warnings for incomplete class definition etc. */
-/* { dg-options "-w" } */
 
 @interface Person 
 {
   char *firstName;
 }
-@property char *firstName; /* { dg-error "property 'firstName' may not have the same name as an ivar in the class" } */
+@property char *firstName;
 @end	
 
 @implementation  Person
-@end 
+@dynamic firstName;
+/* FIXME - there is a problem with the testuite in running the following test.  The compiler
+   generates the messages, but the testsuite still complains.  */
+/*@synthesize firstName;*/ /*  dg-error "property .firstName. already specified in .@dynamic."  */
+                       /*  dg-message "originally specified here" "" { target *-*-* } 11  */
+@end

@@ -1,3 +1,14 @@
+2010-10-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented Objective-C 2.0 @property, @synthesize and @dynamic.
+	* parser.c (cp_parser_objc_at_property_declaration): Removed
+	parsing of RID_COPIES and RID_IVAR.  Updated call to
+	objc_add_property_declaration.
+	* typecheck.c (finish_class_member_access_expr): Call
+	objc_maybe_build_component_ref instead of objc_build_setter_call.
+	(cp_build_modify_expr): Call objc_maybe_build_modify_expr instead
+	of objc_build_getter_call.
+	
 2010-10-27  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (cp_trait_kind): Add CPTK_IS_LITERAL_TYPE.

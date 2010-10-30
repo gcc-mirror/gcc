@@ -333,20 +333,24 @@ objc_add_property_declaration (location_t ARG_UNUSED (location),
 			       bool ARG_UNUSED (parsed_property_copy),
 			       bool ARG_UNUSED (parsed_property_nonatomic),
 			       tree ARG_UNUSED (parsed_property_getter_ident),
-			       tree ARG_UNUSED (parsed_property_setter_ident),
-			       bool ARG_UNUSED (parsed_property_copies),
-			       tree ARG_UNUSED (parsed_property_ivar_ident))
+			       tree ARG_UNUSED (parsed_property_setter_ident))
 {
 }
 
-tree
-objc_build_getter_call (tree ARG_UNUSED (datum), tree ARG_UNUSED (component))
+bool
+objc_is_property_ref (tree ARG_UNUSED (node))
 {
   return 0;
 }
 
 tree
-objc_build_setter_call (tree ARG_UNUSED (lhs), tree ARG_UNUSED (rhs))
+objc_maybe_build_component_ref (tree ARG_UNUSED (datum), tree ARG_UNUSED (component))
+{
+  return 0;
+}
+
+tree
+objc_maybe_build_modify_expr (tree ARG_UNUSED (lhs), tree ARG_UNUSED (rhs))
 {
   return 0;
 }

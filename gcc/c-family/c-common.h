@@ -85,9 +85,6 @@ enum rid
   RID_GETTER, RID_SETTER,
   RID_READONLY, RID_READWRITE,
   RID_ASSIGN, RID_RETAIN, RID_COPY,
-  /* RID_IVAR and RID_COPIES will be removed once @synthesize is
-     completed.  */
-  RID_COPIES, RID_IVAR,
   RID_NONATOMIC,
 
   /* C (reserved and imaginary types not implemented, so any use is a
@@ -1038,13 +1035,13 @@ extern void objc_set_method_opt (bool);
 extern void objc_finish_foreach_loop (location_t, tree, tree, tree, tree, tree);
 extern bool  objc_method_decl (enum tree_code);
 extern void objc_add_property_declaration (location_t, tree, bool, bool, bool, 
-					   bool, bool, bool, tree, tree,
-					   bool, tree);
-extern tree objc_build_getter_call (tree, tree);
-extern tree objc_build_setter_call (tree, tree);
+					   bool, bool, bool, tree, tree);
+extern tree objc_maybe_build_component_ref (tree, tree);
+extern tree objc_maybe_build_modify_expr (tree, tree);
 extern void objc_add_synthesize_declaration (location_t, tree);
 extern void objc_add_dynamic_declaration (location_t, tree);
 extern const char * objc_maybe_printable_name (tree, int);
+extern bool objc_is_property_ref (tree);
 
 /* The following are provided by the C and C++ front-ends, and called by
    ObjC/ObjC++.  */

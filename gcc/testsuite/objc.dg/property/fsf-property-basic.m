@@ -1,47 +1,34 @@
 /* Basic test, auto-generated getter/setter based on property name.  */
 /* { dg-do run } */
-/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 extern int printf (char *fmt,...) ;
 extern void abort (void);
 
-typedef struct objc_class *Class;
-
-#ifdef __NEXT_RUNTIME__
-
-extern id class_createInstance(Class, long);
-#define class_create_instance(C) class_createInstance(C, 0)
-
-#else
-
-extern id class_create_instance(Class);
-
-#endif
+#include <objc/objc.h>
+#include <objc/runtime.h>
 
 @interface Bar
 {
 @public
-#ifdef __NEXT_RUNTIME__
   Class isa;
-#else
-  Class class_pointer;
-#endif
+  int FooBar;
 }
 + (id) initialize;
 + (id) alloc ;
 - (id) init;
-
+- (int) whatIsFooBar;
 @property int FooBar;
 @end
 
 @implementation Bar
 
 +initialize { return self;}
-+ (id) alloc { return class_create_instance(self);}
++ (id) alloc { return class_createInstance (self, 0); }
 
 - (id) init {return self;}
 
-@property int FooBar ;
+- (int) whatIsFooBar { return self->FooBar; }
+@synthesize FooBar;
 @end
 
 int main(int argc, char *argv[]) {
@@ -52,15 +39,15 @@ int main(int argc, char *argv[]) {
      and operate correctly.  */
   [f setFooBar:1];
 
-  if (f->_FooBar != 1)
-    { printf ("setFooBar did not set _FooBar\n"); abort ();}
+  if ([f whatIsFooBar] != 1)
+    { printf ("setFooBar did not set FooBar\n"); abort ();}
       
   res = [f FooBar];
     
   if (res != 1 )
     { printf ("[f FooBar] = %d\n",  res); abort ();}
   
-  /* Now check the short-cut CLASS.property syntax.  */
+  /* Now check the short-cut object.property syntax.  */
   /* Read... */
   res = f.FooBar;
   if (res != 1 )

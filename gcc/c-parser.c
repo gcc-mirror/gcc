@@ -7623,10 +7623,6 @@ c_parser_objc_at_property_declaration (c_parser *parser)
   bool property_readwrite = false;
   bool property_retain = false;
   tree property_setter_ident = NULL_TREE;
-  /* The following two will be removed once @synthesize is
-     implemented.  */
-  bool property_copies = false;
-  tree property_ivar_ident = NULL_TREE;
 
   /* 'properties' is the list of properties that we read.  Usually a
      single one, but maybe more (eg, in "@property int a, b, c;" there
@@ -7670,7 +7666,6 @@ c_parser_objc_at_property_declaration (c_parser *parser)
 	  switch (keyword)
 	    {
 	    case RID_ASSIGN:    property_assign = true;    break;
-	    case RID_COPIES:    property_copies = true;    break;
 	    case RID_COPY:      property_copy = true;      break;
 	    case RID_NONATOMIC: property_nonatomic = true; break;
 	    case RID_READONLY:  property_readonly = true;  break;
@@ -7679,11 +7674,10 @@ c_parser_objc_at_property_declaration (c_parser *parser)
 
 	    case RID_GETTER:
 	    case RID_SETTER:
-	    case RID_IVAR:
 	      if (c_parser_next_token_is_not (parser, CPP_EQ))
 		{
 		  c_parser_error (parser,
-				  "getter/setter/ivar attribute must be followed by %<=%>");
+				  "getter/setter attribute must be followed by %<=%>");
 		  syntax_error = true;
 		  break;
 		}
@@ -7706,20 +7700,12 @@ c_parser_objc_at_property_declaration (c_parser *parser)
 		  else
 		    c_parser_consume_token (parser);
 		}
-	      else if (keyword == RID_GETTER)
+	      else
 		{
 		  if (property_getter_ident != NULL_TREE)
 		    c_parser_error (parser, "the %<getter%> attribute may only be specified once");
 		  else
 		    property_getter_ident = c_parser_peek_token (parser)->value;
-		  c_parser_consume_token (parser);
-		}
-	      else /* RID_IVAR, this case will go away.  */
-		{
-		  if (property_ivar_ident != NULL_TREE)
-		    c_parser_error (parser, "the %<ivar%> attribute may only be specified once");
-		  else
-		    property_ivar_ident = c_parser_peek_token (parser)->value;
 		  c_parser_consume_token (parser);
 		}
 	      break;
@@ -7763,9 +7749,7 @@ c_parser_objc_at_property_declaration (c_parser *parser)
 				       property_readonly, property_readwrite,
 				       property_assign, property_retain,
 				       property_copy, property_nonatomic,
-				       property_getter_ident, property_setter_ident,
-				       /* The following two will be removed.  */
-				       property_copies, property_ivar_ident);
+				       property_getter_ident, property_setter_ident);
     }
 
   c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
