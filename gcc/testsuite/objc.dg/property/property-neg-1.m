@@ -1,14 +1,13 @@
-/* This program checks for proper use of 'readonly' attribute. */
 /* { dg-do compile } */
 
 @interface Bar
 {
   int iVar;
 }
-@property (readonly) int FooBar;
+@property int fooBar;
 @end
 
 @implementation Bar
-@property int FooBar; /* { dg-error "property 'FooBar' 'readonly' attribute conflicts with its interface version" } */
-
-@end
+@end /* { dg-warning "incomplete implementation of class .Bar." } */
+     /* { dg-warning "method definition for .-setFooBar:. not found" "" { target *-*-* } 11 } */
+     /* { dg-warning "method definition for .-fooBar. not found" "" { target *-*-* } 11 } */

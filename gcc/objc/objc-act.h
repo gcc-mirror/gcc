@@ -54,18 +54,64 @@ tree objc_eh_personality (void);
 #define METHOD_TYPE_ATTRIBUTES(DECL) ((DECL)->decl_common.abstract_origin)
 #define METHOD_PROPERTY_CONTEXT(DECL) ((DECL)->decl_common.size_unit)
 
-#define PROPERTY_NAME(DECL) ((DECL)->decl_minimal.name)
-#define PROPERTY_GETTER_NAME(DECL) ((DECL)->decl_non_common.arguments)
-#define PROPERTY_SETTER_NAME(DECL) ((DECL)->decl_non_common.result)
-#define PROPERTY_IVAR_NAME(DECL) ((DECL)->decl_common.initial)
-#define PROPERTY_READONLY(DECL) ((DECL)->decl_minimal.context)
-#define PROPERTY_COPIES(DECL) ((DECL)->decl_common.size_unit)
 
-enum objc_property_assign_semantics {
+/* PROPERTY_DECL.  A PROPERTY_DECL repesents a @property declaration
+   (when attached to the list of properties of an interface) or a
+   @synthesize or @dynamic declaration (when attached to the list of
+   properties of an implementation).  */
+
+/* TREE_TYPE is the type (int, float, etc) of the property.  */
+
+/* PROPERTY_NAME is the name of the property.  */
+#define PROPERTY_NAME(DECL) DECL_NAME(DECL)
+
+/* PROPERTY_GETTER_NAME is the identifier of the getter method.  */
+#define PROPERTY_GETTER_NAME(DECL) ((DECL)->decl_non_common.arguments)
+
+/* PROPERTY_SETTER_NAME is the identifier of the setter method.  */
+#define PROPERTY_SETTER_NAME(DECL) ((DECL)->decl_non_common.result)
+
+/* PROPERTY_READONLY can be 0 or 1.  */
+#define PROPERTY_READONLY(DECL) DECL_LANG_FLAG_0 (DECL)
+
+/* PROPERTY_NONATOMIC can be 0 or 1.  */
+#define PROPERTY_NONATOMIC(DECL) DECL_LANG_FLAG_1 (DECL)
+
+typedef enum objc_property_assign_semantics {
   OBJC_PROPERTY_ASSIGN = 1,
   OBJC_PROPERTY_RETAIN = 2,
   OBJC_PROPERTY_COPY = 3
-};
+} objc_property_assign_semantics;
+
+/* PROPERTY_ASSIGN_SEMANTICS can be OBJC_PROPERTY_ASSIGN,
+   OBJC_PROPERTY_RETAIN or OBJC_PROPERTY_COPY.  We need an integer to
+   store it, so we hijack the alignment, that properties don't
+   have.  */
+#define PROPERTY_ASSIGN_SEMANTICS(DECL) ((DECL)->decl_common.align)
+
+/* PROPERTY_IVAR_NAME is the identifier of the instance variable.
+   This is set only if the PROPERTY_DECL represents a @synthesize;
+   otherwise, it is set to TREE_NULL.  */
+#define PROPERTY_IVAR_NAME(DECL) ((DECL)->decl_common.initial)
+
+/* PROPERTY_DYNAMIC can be 0 or 1.  This is 1 if the PROPERTY_DECL
+   represents a @dynamic (or if it is a @property for which a @dynamic
+   declaration has been parsed); otherwise, it is set to 0.  */
+#define PROPERTY_DYNAMIC(DECL) DECL_LANG_FLAG_2 (DECL)
+
+
+/* PROPERTY_REF.  A PROPERTY_REF represents an 'object.property'
+   expression.  */
+
+/* PROPERTY_REF_OBJECT is the object whose property we are
+   accessing.  */
+#define PROPERTY_REF_OBJECT(NODE) TREE_OPERAND (PROPERTY_REF_CHECK (NODE), 0)
+
+/* PROPERTY_REF_PROPERTY_DECL is the PROPERTY_DECL for the property
+   used in the expression.  From it, you can get the property type,
+   and the getter/setter names.  */
+#define PROPERTY_REF_PROPERTY_DECL(NODE) TREE_OPERAND (PROPERTY_REF_CHECK (NODE), 1)
+
 
 /* CLASS_INTERFACE_TYPE, CLASS_IMPLEMENTATION_TYPE,
    CATEGORY_INTERFACE_TYPE, CATEGORY_IMPLEMENTATION_TYPE,

@@ -565,9 +565,6 @@ const struct c_common_resword c_common_reswords[] =
   { "readwrite",	RID_READWRITE,		D_OBJC }, 
   { "retain",	        RID_RETAIN,		D_OBJC }, 
   { "setter",		RID_SETTER,		D_OBJC }, 
-  /* The following two will be removed once @synthesize is fully implemented.  */
-  { "copies",		RID_COPIES,		D_OBJC },
-  { "ivar",		RID_IVAR,		D_OBJC }, 
 };
 
 const unsigned int num_c_common_reswords =

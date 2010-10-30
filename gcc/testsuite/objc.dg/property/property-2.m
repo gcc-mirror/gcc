@@ -7,6 +7,8 @@
 /* Force ABI = 0 in the NeXT headers, also suppress deprecation warnings.  */
 /* { dg-options "-framework Foundation -fobjc-exceptions -mmacosx-version-min=10.4 -Wno-deprecated-declarations" } */
 
+/* FIXME: There is no reason to use NSString in this file.  */
+
 #include <objc/objc-api.h>
 #include <Foundation/Foundation.h>
 

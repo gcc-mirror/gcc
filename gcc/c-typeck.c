@@ -2130,8 +2130,9 @@ build_component_ref (location_t loc, tree datum, tree component)
   if (!objc_is_public (datum, component))
     return error_mark_node;
 
+  /* Detect Objective-C property syntax object.property.  */
   if (c_dialect_objc ()
-      && (ref = objc_build_getter_call (datum, component)))
+      && (ref = objc_maybe_build_component_ref (datum, component)))
     return ref;
 
   /* See if there is a field or component with name COMPONENT.  */
@@ -4869,8 +4870,8 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
   if (TREE_CODE (lhs) == ERROR_MARK || TREE_CODE (rhs) == ERROR_MARK)
     return error_mark_node;
 
-  /* For ObjC, defer this check until we have assessed CLASS.property.   */
-  if (!c_dialect_objc () && !lvalue_or_else (lhs, lv_assign))
+  /* For ObjC properties, defer this check.  */
+  if (!objc_is_property_ref (lhs) && !lvalue_or_else (lhs, lv_assign))
     return error_mark_node;
 
   if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
@@ -4913,9 +4914,13 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 
   if (c_dialect_objc ())
     {
-      result = objc_build_setter_call (lhs, newrhs);
+      /* Check if we are modifying an Objective-C property reference;
+	 if so, we need to generate setter calls.  */
+      result = objc_maybe_build_modify_expr (lhs, newrhs);
       if (result)
 	return result;
+
+      /* Else, do the check that we postponed for Objective-C.  */
       if (!lvalue_or_else (lhs, lv_assign))
 	return error_mark_node;
     }

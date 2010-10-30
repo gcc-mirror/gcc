@@ -1,3 +1,15 @@
+2010-10-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented Objective-C 2.0 @property, @synthesize and @dynamic.
+	* c-parser.c (c_parser_objc_at_property_declaration): Removed
+	parsing of RID_COPIES and RID_IVAR.  Updated call to
+	objc_add_property_declaration.
+	* c-typecheck.c (build_component_ref): Call
+	objc_maybe_build_component_ref instead of objc_build_setter_call.
+	Use objc_is_property_ref to improve Objective-C checks.
+	(cp_build_modify_expr): Call objc_maybe_build_modify_expr instead
+	of objc_build_getter_call.
+
 2010-10-29  Paul Koning  <ni1d@arrl.net>
 
 	* doc/tm.texi.in (REGNO_OK_FOR_BASE_P, REGNO_MODE_OK_FOR_BASE_P,
@@ -434,6 +446,11 @@
 	* config/i386/w32-unwind.h (i386_w32_fallback_frame_state): Fix regnum
 	of EBP.  Do not restore reg #9.  Remove +1 adjustment to EIP and set
 	fs->signal_frame instead.
+
+2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (cp_parser_objc_at_property_declaration): Removed
+	parsing of RID_COPIES and RID_IVAR.
 
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 

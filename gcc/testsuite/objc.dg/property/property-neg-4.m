@@ -1,17 +1,17 @@
-/* Property cannot be accessed in class method. */
 /* { dg-do compile } */
 
 @interface Person 
 {
+  char *fullName;
 }
 @property char *fullName;
 + (void) testClass;
 @end	
 
+
 @implementation  Person
-@property char *fullName;
+@synthesize fullName;
 + (void) testClass {
-	fullName = "MyName"; /* { dg-error "property 'fullName' accessed in class method" } */
+  self.fullName = "MyName"; /* { dg-error "request for member .fullName." } */
 }
 @end
-

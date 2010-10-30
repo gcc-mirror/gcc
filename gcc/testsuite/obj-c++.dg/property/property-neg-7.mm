@@ -1,13 +1,14 @@
-/* Cannot write into a read-only property. */
 /* { dg-do compile } */
-/* Suppress warnings for incomplete class definition etc. */
-/* { dg-options "-w" } */
 
 @interface NSArray 
+{
+  int count;
+}
 @property(readonly) int count;
 @end
 
 @implementation NSArray
+@synthesize count;
 @end
 
 void foo (NSArray *ans[], id pid, id apid[], int i) {

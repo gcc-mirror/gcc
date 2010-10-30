@@ -1,3 +1,21 @@
+2010-10-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented Objective-C 2.0 @property, @synthesize and @dynamic.
+	* c-common.h (enum rid): Removed RID_COPIES and RID_IVAR.
+	(objc_add_property_declaration): Removed arguments for copies and
+	ivar.
+	(objc_build_getter_call): Renamed to
+	objc_maybe_build_component_ref.
+	(objc_build_setter_call): Renamed to objc_maybe_build_modify_expr.
+	(objc_is_property_ref): New.
+	* c-common.c (c_common_reswords): Removed copies and ivar.
+	* stub-objc.c (objc_add_property_declaration): Removed arguments
+	for copies and ivar.
+	(objc_build_getter_call): Renamed to
+	objc_maybe_build_component_ref.
+	(objc_build_setter_call): Renamed to objc_maybe_build_modify_expr.
+	(objc_is_property_ref): New.
+	
 2010-10-29  Arnaud Charlet  <charlet@adacore.com>
 	    Matthew Gingell  <gingell@adacore.com>
 

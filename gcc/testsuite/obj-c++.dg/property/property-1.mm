@@ -1,6 +1,5 @@
 /* This program tests use of property provided setter/getter functions. */
 /* { dg-do run } */
-/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 /* { dg-additional-sources "../../objc-obj-c++-shared/Object1.mm" } */
 
 #import "../../objc-obj-c++-shared/Object1.h"
@@ -9,11 +8,11 @@
 {
   int iVar;
 }
-@property int FooBar;
+@property (setter=MySetter:) int FooBar;
 @end
 
 @implementation Bar
-@property (ivar = iVar, setter = MySetter:) int FooBar;
+@synthesize FooBar=iVar;
 
 - (void) MySetter : (int) value { iVar = value; }
 

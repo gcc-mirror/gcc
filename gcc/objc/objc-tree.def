@@ -40,6 +40,24 @@ DEFTREECODE (PROPERTY_DECL, "property_decl", tcc_declaration, 0)
 DEFTREECODE (MESSAGE_SEND_EXPR, "message_send_expr", tcc_expression, 3)
 DEFTREECODE (CLASS_REFERENCE_EXPR, "class_reference_expr", tcc_expression, 1)
 
+/* This tree is used to represent the expression 'object.property',
+   where 'object' is an Objective-C object and 'property' is an
+   Objective-C property.  Operand 0 is the object (the tree
+   representing the expression), and Operand 1 is the property (the
+   PROPERTY_DECL).  A PROPERTY_REF tree needs to be transformed into
+   'setter' and 'getter' calls at some point; at the moment this
+   happens in two places:
+
+     * if we detect that a modify expression is being applied to a
+       PROPERTY_REF, then we transform that into a 'getter' call (this
+       happens in build_modify_expr() or cp_build_modify_expr()).
+
+    * else, it will remain as a PROPERTY_REF until we get to
+      gimplification; at that point, we convert each PROPERTY_REF into
+      a 'getter' call during ObjC/ObjC++ gimplify.
+*/
+DEFTREECODE (PROPERTY_REF, "property_ref", tcc_expression, 2)
+
 /*
 Local variables:
 mode:c

@@ -1,3 +1,94 @@
+2010-10-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented Objective-C 2.0 @property, @synthesize and @dynamic.
+	* objc-tree.def (PROPERTY_REF): New.
+	* objc-act.h: Added comments for all the PROPERTY_ macros.
+	(PROPERTY_NAME): Use DECL_NAME.
+	(PROPERTY_COPIES): Removed.
+	(PROPERTY_READONLY): Use DECL_LANG_FLAG_0 for it.
+	(PROPERTY_NONATOMIC): New.
+	(objc_property_assign_semantics): Make it a typedef.
+	(PROPERTY_ASSIGN_SEMANTICS): New.
+	(PROPERTY_DYNAMIC): New.
+	(PROPERTY_REF_OBJECT): New.
+	(PROPERTY_REF_PROPERTY_DECL): New.
+	* objc-act.c (CALL_EXPR_OBJC_PROPERTY_GETTER): Removed.
+	(in_objc_property_setter_name_context): Removed.
+	(objc_add_property_declaration): Removed copies and ivar arguments
+	and code supporting them.  Fixed recovering when readonly and
+	setter attributes are specified.  Removed support for @property in
+	@implementation context.  Updated error message.  Double-check
+	that a property does not have a DECL_INITIAL.  Validate the
+	property assign semantics and emit appropriate errors and
+	warnings.  Check for duplicate property declarations.  Set
+	DECL_SOURCE_LOCATION, TREE_DEPRECATED, PROPERTY_NONATOMIC,
+	PROPERTY_ASSIGN_SEMANTICS and PROPERTY_DYNAMIC of the new
+	PROPERTY_DECL.  Do not set PROPERTY_COPIES.  Set
+	PROPERTY_IVAR_NAME to NULL_TREE.
+	(objc_build_getter_call): Renamed to
+	objc_maybe_build_component_ref.  If the property is not found in
+	the interface, search in the protocol list.  Do not generate the
+	getter call; instead, build and return a PROPERTY_REF.
+	(objc_is_property_ref): New.
+	(objc_setter_func_call): Removed.
+	(get_selector_from_reference): Removed.
+	(is_property): Removed.
+	(objc_build_setter_call): Renamed to objc_maybe_build_modify_expr.
+	Updated to work on a PROPERTY_REF and use the PROPERTY_DECL from
+	the PROPERTY_REF.  Generate an error if the property is read-only.
+	(build_property_reference): Removed.
+	(objc_finish_message_expr): Removed check to produce "readonly
+	property can not be set" error when
+	in_objc_property_setter_name_context.  We now generate the error
+	earlier, in objc_maybe_build_modify_expr, which will only generate
+	the setter call if the property is readwrite.
+	(check_methods): Recognize dynamic properties.
+	(check_methods_accessible): Same change.
+	(objc_build_property_ivar_name): Removed.
+	(objc_build_property_setter_name): Dropped bool argument.  Always
+	add the ':' at the end.
+	(objc_gen_one_property_datum): Removed.
+	(objc_process_getter_setter): Removed.
+	(objc_synthesize_getter): Mark 'klass' argument as unused.  Use
+	PROPERTY_GETTER_NAME instead of PROPERTY_NAME.  Set the
+	DECL_SOURCE_LOCATION of the new method to be the same as the one
+	for the @synthesize.  Always use PROPERTY_IVAR_NAME as it is
+	instead of trying to guess what it should be.  Removed use of
+	CLASS_IVARS.  Use the location of @synthesize for c_finish_return
+	and c_end_compound_statement.
+	(objc_synthesize_setter): Mark 'klass' argument as unused.  Use
+	PROPERTY_SETTER_NAME instead of trying to guess what it should be.
+	Set the DECL_SOURCE_LOCATION of the new method to be the same as
+	the one for the @synthesize.  Always use PROPERTY_IVAR_NAME as it
+	is instead of trying to guess what it should be.  Removed use of
+	CLASS_IVARS.  Use the location of @synthesize for c_finish_return
+	and c_end_compound_statement.  Emit an error and keep going,
+	instead of aborting, if the setter prototype does not have the
+	expected argument.
+	(objc_add_synthesize_declaration_for_property): New.
+	(objc_add_synthesize_declaration): Removed ATTRIBUTE_UNUSED from
+	all arguments.  Improved error message.  Filled in the rest of the
+	function, which used to be a placeholder, with an actual
+	implementation.
+	(objc_add_dynamic_declaration_for_property): New.
+	(objc_add_dynamic_declaration): Removed ATTRIBUTE_UNUSED from all
+	arguments.  Improved error message.  Filled in the rest of the
+	function, which used to be a placeholder, with an actual
+	implementation.
+	(objc_gen_property_data): Rewritten.
+	(finish_class): Added explicit switch cases for
+	CLASS_INTERFACE_TYPE, CATEGORY_INTERFACE_TYPE and
+	PROTOCOL_INTERFACE_TYPE.  Added a default switch case which is
+	gcc_unreachable.  Rewritten the processing of properties, in
+	particular to not synthesize prototypes for getters and setters if
+	they already exist and to install the getter and setter names into
+	PROPERTY_GETTER_NAME and PROPERTY_SETTER_NAME.  Do not generate
+	warnings about setter, getter and ivar property attributes.
+	(objc_lookup_ivar): Removed support for properties.
+	(objc_gimplify_property_ref): New.
+	(objc_gimplify_expr): Use a switch.  In case of a PROPERTY_REF, call
+	objc_gimplify_property_ref.
+	
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_add_property_declaration): Added arguments to
