@@ -910,19 +910,7 @@ rewrite_reciprocal (gimple_stmt_iterator *bsi)
   add_referenced_var (var);
   DECL_GIMPLE_REG_P (var) = 1;
 
-  /* For vectors, create a VECTOR_CST full of 1's.  */
-  if (TREE_CODE (type) == VECTOR_TYPE)
-    {
-      int i, len;
-      tree list = NULL_TREE;
-      real_one = build_real (TREE_TYPE (type), dconst1);
-      len = TYPE_VECTOR_SUBPARTS (type);
-      for (i = 0; i < len; i++)
-	list = tree_cons (NULL, real_one, list);
-      real_one = build_vector (type, list);
-    }
-  else
-    real_one = build_real (type, dconst1);
+  real_one = build_one_cst (type);
 
   stmt1 = gimple_build_assign_with_ops (RDIV_EXPR,
 		var, real_one, gimple_assign_rhs2 (stmt));
