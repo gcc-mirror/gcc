@@ -24,7 +24,12 @@
 #elif defined (__ia64__)
 #  define SIZE 272
 #elif defined(__mips__)
-#  define SIZE 240
+#  if defined (__mips_abicalls) \
+      || (defined _MIPS_SIM && (_MIPS_SIM ==_ABIN32 || _MIPS_SIM==_ABI64))
+#    define SIZE 240
+#  else
+#    define SIZE 248
+#  endif
 #elif defined (__powerpc__) || defined (__PPC__) || defined (__ppc__) \
       || defined (__POWERPC__) || defined (PPC) || defined (_IBMR2)
 #  define SIZE 240

@@ -1,5 +1,9 @@
 2010-10-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.dg/stack-usage-1.c (SIZE): Increase to 248 for some MIPS targets.
+
+2010-10-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.dg/tls/thr-init-1.c: Fix order of dg-do.
 	* gcc.dg/tls/thr-init-2.c: Likewise.  Require tls_runtime rather
 	than tls.
