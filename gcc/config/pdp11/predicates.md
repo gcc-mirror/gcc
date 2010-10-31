@@ -36,7 +36,7 @@
   return (abs (sh) > 1 && abs (sh) <= 4);
 })
 
-;; Accept anything general-operand accepts, except that registers must
+;; Accept anything general_operand accepts, except that registers must
 ;; be FPU registers.
 (define_predicate "float_operand"
   (if_then_else (match_code "reg")
@@ -44,3 +44,12 @@
 		 (match_test "REGNO_REG_CLASS (REGNO (op)) == LOAD_FPU_REGS")
 		 (match_test "REGNO_REG_CLASS (REGNO (op)) == NO_LOAD_FPU_REGS"))
 		(match_test "general_operand (op, mode)")))
+
+;; Accept anything nonimmediate_operand accepts, except that registers must
+;; be FPU registers.
+(define_predicate "float_nonimm_operand"
+  (if_then_else (match_code "reg")
+		(ior 
+		 (match_test "REGNO_REG_CLASS (REGNO (op)) == LOAD_FPU_REGS")
+		 (match_test "REGNO_REG_CLASS (REGNO (op)) == NO_LOAD_FPU_REGS"))
+		(match_test "nonimmediate_operand (op, mode)")))
