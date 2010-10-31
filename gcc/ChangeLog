@@ -1,5 +1,15 @@
 2010-10-30  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* fold-const.c (build_zero_vector): Use build_vector_from_val.
+	* tree-vect-loop.c (get_initial_def_for_induction): Likewise.
+	(get_initial_def_for_reduction): Likewise.
+	* tree-vect-slp.c (vect_get_constant_vectors): Likewise.
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Likewise.
+	* tree.c (build_one_cst): Likewise.
+	(build_vector_from_val): Use types_compatible_p for assert.
+
+2010-10-30  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* emit-rtl.c (mark_used_flags): New function.
 	(set_used_flags, reset_used_flags): Call it.
 

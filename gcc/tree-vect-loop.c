@@ -2725,13 +2725,11 @@ get_initial_def_for_induction (gimple iv_phi)
 			      expr, step_expr);
     }
 
-  t = NULL_TREE;
-  for (i = 0; i < nunits; i++)
-    t = tree_cons (NULL_TREE, unshare_expr (new_name), t);
+  t = unshare_expr (new_name);
   gcc_assert (CONSTANT_CLASS_P (new_name));
   stepvectype = get_vectype_for_scalar_type (TREE_TYPE (new_name));
   gcc_assert (stepvectype);
-  vec = build_vector (stepvectype, t);
+  vec = build_vector_from_val (stepvectype, t);
   vec_step = vect_init_vector (iv_phi, vec, stepvectype, NULL);
 
 
@@ -2785,11 +2783,9 @@ get_initial_def_for_induction (gimple iv_phi)
       expr = build_int_cst (TREE_TYPE (step_expr), nunits);
       new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
 			      expr, step_expr);
-      t = NULL_TREE;
-      for (i = 0; i < nunits; i++)
-	t = tree_cons (NULL_TREE, unshare_expr (new_name), t);
+      t = unshare_expr (new_name);
       gcc_assert (CONSTANT_CLASS_P (new_name));
-      vec = build_vector (stepvectype, t);
+      vec = build_vector_from_val (stepvectype, t);
       vec_step = vect_init_vector (iv_phi, vec, stepvectype, NULL);
 
       vec_def = induc_def;
@@ -3021,14 +3017,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
             break;
           }
 
-        for (i = nunits - 1; i >= 0; --i)
-          t = tree_cons (NULL_TREE, init_value, t);
-
-        if (TREE_CONSTANT (init_val))
-          init_def = build_vector (vectype, t);
-        else
-          init_def = build_constructor_from_list (vectype, t);
-
+	init_def = build_vector_from_val (vectype, init_value);
         break;
 
       default:
