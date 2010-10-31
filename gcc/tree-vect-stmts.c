@@ -1308,7 +1308,8 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   tree fndecl, new_temp, def, rhs_type;
   gimple def_stmt;
-  enum vect_def_type dt[2] = {vect_unknown_def_type, vect_unknown_def_type};
+  enum vect_def_type dt[3]
+    = {vect_unknown_def_type, vect_unknown_def_type, vect_unknown_def_type};
   gimple new_stmt = NULL;
   int ncopies, j;
   VEC(tree, heap) *vargs = NULL;

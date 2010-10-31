@@ -1,3 +1,9 @@
+2010-10-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/46142
+	* tree-vect-stmts.c (vectorizable_call): Enlarge dt array to
+	accommodate third function argument.
+
 2010-10-30  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree-ssa-loop-im.c (rewrite_reciprocal): Use build_one_cst.
