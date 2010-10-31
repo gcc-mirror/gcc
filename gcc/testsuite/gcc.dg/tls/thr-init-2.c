@@ -1,5 +1,5 @@
-/* { dg-require-effective-target tls } */
 /* { dg-do run } */
+/* { dg-require-effective-target tls_runtime } */
 /* { dg-add-options tls } */
 
 extern void abort() ;

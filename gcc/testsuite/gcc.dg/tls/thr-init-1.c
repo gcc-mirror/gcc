@@ -1,5 +1,5 @@
-/* { dg-require-effective-target tls } */
 /* { dg-do compile } */
+/* { dg-require-effective-target tls } */
 
 static __thread int fstat ;
 static __thread int fstat = 1 ;
