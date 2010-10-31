@@ -1796,16 +1796,10 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
 static tree
 build_zero_vector (tree type)
 {
-  tree elem, list;
-  int i, units;
+  tree t;
 
-  elem = fold_convert_const (NOP_EXPR, TREE_TYPE (type), integer_zero_node);
-  units = TYPE_VECTOR_SUBPARTS (type);
-
-  list = NULL_TREE;
-  for (i = 0; i < units; i++)
-    list = tree_cons (NULL_TREE, elem, list);
-  return build_vector (type, list);
+  t = fold_convert_const (NOP_EXPR, TREE_TYPE (type), integer_zero_node);
+  return build_vector_from_val (type, t);
 }
 
 /* Returns true, if ARG is convertible to TYPE using a NOP_EXPR.  */

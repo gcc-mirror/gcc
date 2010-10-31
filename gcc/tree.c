@@ -1376,7 +1376,8 @@ build_vector_from_val (tree vectype, tree sc)
   if (sc == error_mark_node)
     return sc;
 
-  gcc_assert (TREE_TYPE (sc) == TREE_TYPE (vectype));
+  gcc_assert (lang_hooks.types_compatible_p (TREE_TYPE (sc),
+					     TREE_TYPE (vectype)));
 
   v = VEC_alloc (constructor_elt, gc, nunits);
   for (i = 0; i < nunits; ++i)
@@ -1590,17 +1591,9 @@ build_one_cst (tree type)
 
     case VECTOR_TYPE:
       {
-	tree scalar, cst;
-	int i;
+	tree scalar = build_one_cst (TREE_TYPE (type));
 
-	scalar = build_one_cst (TREE_TYPE (type));
-
-	/* Create 'vect_cst_ = {cst,cst,...,cst}'  */
-	cst = NULL_TREE;
-	for (i = TYPE_VECTOR_SUBPARTS (type); --i >= 0; )
-	  cst = tree_cons (NULL_TREE, scalar, cst);
-
-	return build_vector (type, cst);
+	return build_vector_from_val (type, scalar);
       }
 
     case COMPLEX_TYPE:

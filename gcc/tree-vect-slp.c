@@ -1986,12 +1986,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
       if (neutral_op)
         {
           if (!neutral_vec)
-            {
-              t = NULL;
-              for (i = 0; i < (unsigned) nunits; i++)
-                 t = tree_cons (NULL_TREE, neutral_op, t);
-              neutral_vec = build_vector (vector_type, t);
-            }
+	    neutral_vec = build_vector_from_val (vector_type, neutral_op);
 
           VEC_quick_push (tree, *vec_oprnds, neutral_vec);
         }
