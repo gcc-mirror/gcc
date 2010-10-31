@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mfma4" } */
+/* { dg-options "-O3 -mfma4 -mtune=generic" } */
 
 #ifndef SIZE
 #define SIZE 1024
