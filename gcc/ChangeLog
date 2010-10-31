@@ -1,5 +1,9 @@
 2010-10-30  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* tree-ssa-loop-im.c (rewrite_reciprocal): Use build_one_cst.
+
+2010-10-30  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* fold-const.c (build_zero_vector): Use build_vector_from_val.
 	* tree-vect-loop.c (get_initial_def_for_induction): Likewise.
 	(get_initial_def_for_reduction): Likewise.
