@@ -1,5 +1,6 @@
 /* Base configuration file for all OpenBSD targets.
-   Copyright (C) 1999, 2000, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2004, 2005, 2007, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -117,13 +118,6 @@ while (0)
 #define LIB_SPEC OBSD_LIB_SPEC
 
 #ifndef OBSD_HAS_CORRECT_SPECS
-
-#ifndef OBSD_NO_DYNAMIC_LIBRARIES
-#undef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR) \
-  (DEFAULT_SWITCH_TAKES_ARG (CHAR) \
-   || (CHAR) == 'R')
-#endif
 
 #undef CPP_SPEC
 #define CPP_SPEC OBSD_CPP_SPEC

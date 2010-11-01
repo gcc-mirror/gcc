@@ -1,5 +1,5 @@
 /* Common configuration file for NetBSD a.out targets.
-   Copyright (C) 2002, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2007, 2010 Free Software Foundation, Inc.
    Contributed by Wasabi Systems, Inc.
 
 This file is part of GCC.
@@ -25,13 +25,6 @@ along with GCC; see the file COPYING3.  If not see
       NETBSD_OS_CPP_BUILTINS_COMMON();		\
     }						\
   while (0)
-
-/* This defines which switch letters take arguments.  */
-
-#undef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR)		\
-  (DEFAULT_SWITCH_TAKES_ARG(CHAR)	\
-   || (CHAR) == 'R')
 
 
 /* Provide an ASM_SPEC appropriate for NetBSD.  Currently we only deal

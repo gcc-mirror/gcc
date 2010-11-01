@@ -57,10 +57,6 @@ extern enum pipeline_type microblaze_pipe;
 /* Macros to decide whether certain features are available or not,
    depending on the instruction set architecture level.  */
 
-#undef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR)						\
-  (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
-
 #define DRIVER_SELF_SPECS    				\
 	"%{mxl-soft-mul:%<mno-xl-soft-mul}", 		\
 	"%{mno-xl-barrel-shift:%<mxl-barrel-shift}", 	\

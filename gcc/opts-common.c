@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "flags.h"
 #include "diagnostic.h"
-#include "tm.h" /* For SWITCH_TAKES_ARG, WORD_SWITCH_TAKES_ARG and
+#include "tm.h" /* For WORD_SWITCH_TAKES_ARG and
 		   TARGET_OPTION_TRANSLATE_TABLE.  */
 
 static void prune_options (struct cl_decoded_option **, unsigned int *);
@@ -507,13 +507,10 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
     {
       /* Skip the correct number of arguments for options handled
 	 through specs.  */
-      const char *popt = argv[0] + 1;
-      int c = *popt;
+      const char *popt ATTRIBUTE_UNUSED = argv[0] + 1;
 
       gcc_assert (result == 1);
-      if (SWITCH_TAKES_ARG (c) > (popt[1] != 0))
-	result += SWITCH_TAKES_ARG (c) - (popt[1] != 0);
-      else if (WORD_SWITCH_TAKES_ARG (popt))
+      if (WORD_SWITCH_TAKES_ARG (popt))
 	result += WORD_SWITCH_TAKES_ARG (popt);
       if (result > 1)
 	for (i = 1; i < result; i++)

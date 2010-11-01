@@ -99,24 +99,12 @@ from being defined in the @file{.h} file to being part of the
 @c prevent bad page break with this line
 You can control the compilation driver.
 
-@defmac SWITCH_TAKES_ARG (@var{char})
-A C expression which determines whether the option @option{-@var{char}}
-takes arguments.  The value should be the number of arguments that
-option takes--zero, for many options.
-
-By default, this macro is defined as
-@code{DEFAULT_SWITCH_TAKES_ARG}, which handles the standard options
-properly.  You need not define @code{SWITCH_TAKES_ARG} unless you
-wish to add additional options which take arguments.  Any redefinition
-should call @code{DEFAULT_SWITCH_TAKES_ARG} and then check for
-additional options.
-@end defmac
-
 @defmac WORD_SWITCH_TAKES_ARG (@var{name})
 A C expression which determines whether the option @option{-@var{name}}
 takes arguments.  The value should be the number of arguments that
-option takes--zero, for many options.  This macro rather than
-@code{SWITCH_TAKES_ARG} is used for multi-character option names.
+option takes--zero, for many options.
+This macro does not need to handle options defined in @file{.opt}
+files, only those that are handled purely through specs.
 
 By default, this macro is defined as
 @code{DEFAULT_WORD_SWITCH_TAKES_ARG}, which handles the standard options

@@ -290,8 +290,23 @@ Ofast
 Common Optimization
 Optimize for speed disregarding exact standards compliance
 
+R
+Driver Joined Separate
+
 S
 Driver
+
+T
+Driver Joined Separate
+
+Tbss
+Driver Separate
+
+Tdata
+Driver Separate
+
+Ttext
+Driver Separate
 
 W
 Common RejectNegative Warning Alias(Wextra)
@@ -1885,6 +1900,9 @@ gxcoff+
 Common JoinedOrMissing Negative(gcoff)
 Generate debug information in extended XCOFF format
 
+h
+Driver Joined Separate
+
 iplugindir=
 Common Joined Var(plugindir_string) Init(0)
 -iplugindir=<dir>	Set <dir> to be the default plugin directory
@@ -2025,5 +2043,8 @@ Driver
 pie
 Common RejectNegative Negative(shared)
 Create a position independent executable
+
+z
+Driver Joined Separate
 
 ; This comment is to ensure we retain the blank line above.
