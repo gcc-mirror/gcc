@@ -1,3 +1,12 @@
+2010-10-31  Richard Henderson  <rth@redhat.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_automatic_stack_alignment): True for
+	x86 but not windows.
+	* g++.dg/torture/stackalign/stackalign.exp: Use it to protect
+	use of the preferred-stack-boundary arguments.
+	* gcc.dg/torture/stackalign/stackalign.exp: Likewise.
+
 2010-10-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/46142
