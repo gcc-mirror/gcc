@@ -1,7 +1,7 @@
 2010-11-01  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.md: Use iterators.
-	* config/pdp11/pdp11.md (addqi3, subqi3, iorsi3, xorsi3): Delete. 
+	(addqi3, subqi3, iorsi3, xorsi3): Delete. 
 	
 2010-11-01  Steve Ellcey  <sje@cup.hp.com>
 
