@@ -1,3 +1,8 @@
+2010-11-01  Jie Zhang  <jie@codesourcery.com>
+
+	* config/abi/pre/gnu.ver: Export __emutls_v._ZSt11__once_call
+	and __emutls_v._ZSt15__once_callable.
+
 2010-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/23_containers/bitset/cons/dr1325-2.cc: Fix typo.
