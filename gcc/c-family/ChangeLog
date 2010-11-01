@@ -1,3 +1,9 @@
+2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented format and noreturn attributes for Objective-C methods.
+	* c-common.c (handle_noreturn_attribute): Recognize 'noreturn'
+	attribute for Objective-C methods.
+
 2010-10-31  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (conversion_warning, warn_for_collisions_1): Use
