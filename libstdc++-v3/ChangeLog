@@ -1,3 +1,9 @@
+2010-11-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/45999
+	* python/libstdcxx/v6/printers.py (StdVectorPrinter): Replace
+	conditional expression with backward-compatible if-else.
+
 2010-11-01  Jie Zhang  <jie@codesourcery.com>
 
 	* config/abi/pre/gnu.ver: Export __emutls_v._ZSt11__once_call
