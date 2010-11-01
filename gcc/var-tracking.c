@@ -408,7 +408,6 @@ static void stack_adjust_offset_pre_post (rtx, HOST_WIDE_INT *,
 static void insn_stack_adjust_offset_pre_post (rtx, HOST_WIDE_INT *,
 					       HOST_WIDE_INT *);
 static bool vt_stack_adjustments (void);
-static rtx compute_cfa_pointer (HOST_WIDE_INT);
 static hashval_t variable_htab_hash (const void *);
 static int variable_htab_eq (const void *, const void *);
 static void variable_htab_free (void *);
@@ -695,22 +694,17 @@ vt_stack_adjustments (void)
   return true;
 }
 
+/* arg_pointer_rtx resp. frame_pointer_rtx if stack_pointer_rtx or
+   hard_frame_pointer_rtx is being mapped to it and offset for it.  */
+static rtx cfa_base_rtx;
+static HOST_WIDE_INT cfa_base_offset;
+
 /* Compute a CFA-based value for the stack pointer.  */
 
-static rtx
+static inline rtx
 compute_cfa_pointer (HOST_WIDE_INT adjustment)
 {
-  rtx cfa;
-
-#ifdef FRAME_POINTER_CFA_OFFSET
-  adjustment -= FRAME_POINTER_CFA_OFFSET (current_function_decl);
-  cfa = plus_constant (frame_pointer_rtx, adjustment);
-#else
-  adjustment -= ARG_POINTER_CFA_OFFSET (current_function_decl);
-  cfa = plus_constant (arg_pointer_rtx, adjustment);
-#endif
-
-  return cfa;
+  return plus_constant (cfa_base_rtx, adjustment + cfa_base_offset);
 }
 
 /* Adjustment for hard_frame_pointer_rtx to cfa base reg,
@@ -803,11 +797,13 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
       if (amd->mem_mode == VOIDmode && amd->store)
 	return loc;
       if (loc == stack_pointer_rtx
-	  && !frame_pointer_needed)
+	  && !frame_pointer_needed
+	  && cfa_base_rtx)
 	return compute_cfa_pointer (amd->stack_adjust);
       else if (loc == hard_frame_pointer_rtx
 	       && frame_pointer_needed
-	       && hard_frame_pointer_adjustment != -1)
+	       && hard_frame_pointer_adjustment != -1
+	       && cfa_base_rtx)
 	return compute_cfa_pointer (hard_frame_pointer_adjustment);
       return loc;
     case MEM:
@@ -4757,10 +4753,6 @@ var_lowpart (enum machine_mode mode, rtx loc)
   return gen_rtx_REG_offset (loc, mode, regno, offset);
 }
 
-/* arg_pointer_rtx resp. frame_pointer_rtx if stack_pointer_rtx or
-   hard_frame_pointer_rtx is being mapped to it.  */
-static rtx cfa_base_rtx;
-
 /* Carry information about uses and stores while walking rtx.  */
 
 struct count_use_info
@@ -8213,8 +8205,10 @@ vt_init_cfa_base (void)
 
 #ifdef FRAME_POINTER_CFA_OFFSET
   cfa_base_rtx = frame_pointer_rtx;
+  cfa_base_offset = -FRAME_POINTER_CFA_OFFSET (current_function_decl);
 #else
   cfa_base_rtx = arg_pointer_rtx;
+  cfa_base_offset = -ARG_POINTER_CFA_OFFSET (current_function_decl);
 #endif
   if (cfa_base_rtx == hard_frame_pointer_rtx
       || !fixed_regs[REGNO (cfa_base_rtx)])

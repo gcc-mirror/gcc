@@ -1,3 +1,13 @@
+2010-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/45250
+	* var-tracking.c (cfa_base_rtx): Move definition earlier in the file.
+	(cfa_base_offset): New variable.
+	(compute_cfa_pointer): Use cfa_base_rtx and cfa_base_offset.
+	(adjust_mems): Don't do any sp or hfp replacements if cfa_base_rtx
+	is NULL.
+	(vt_init_cfa_base): Initialize cfa_base_offset.
+
 2010-11-01  Alan Modra  <amodra@gmail.com>
 
 	PR target/46030
