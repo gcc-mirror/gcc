@@ -798,6 +798,24 @@ __gcov_one_value_profiler (gcov_type *counters, gcov_type value)
 #endif
 
 #ifdef L_gcov_indirect_call_profiler
+
+/* By default, the C++ compiler will use function addresses in the
+   vtable entries.  Setting TARGET_VTABLE_USES_DESCRIPTORS to nonzero
+   tells the compiler to use function descriptors instead.  The value
+   of this macro says how many words wide the descriptor is (normally 2),
+   but it may be dependent on target flags.  Since we do not have access
+   to the target flags here we just check to see if it is set and use
+   that to set VTABLE_USES_DESCRIPTORS to 0 or 1.
+
+   It is assumed that the address of a function descriptor may be treated
+   as a pointer to a function.  */
+
+#ifdef TARGET_VTABLE_USES_DESCRIPTORS
+#define VTABLE_USES_DESCRIPTORS 1
+#else
+#define VTABLE_USES_DESCRIPTORS 0
+#endif
+
 /* Tries to determine the most common value among its inputs. */
 void
 __gcov_indirect_call_profiler (gcov_type* counter, gcov_type value,
@@ -807,7 +825,7 @@ __gcov_indirect_call_profiler (gcov_type* counter, gcov_type value,
      function may have multiple descriptors and we need to dereference
      the descriptors to see if they point to the same function.  */
   if (cur_func == callee_func
-      || (TARGET_VTABLE_USES_DESCRIPTORS && callee_func
+      || (VTABLE_USES_DESCRIPTORS && callee_func
 	  && *(void **) cur_func == *(void **) callee_func))
     __gcov_one_value_profiler_body (counter, value);
 }
