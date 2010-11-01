@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "ggc.h"
 #include "target.h"
+#include "except.h"
 #include "lto-streamer.h"
 
 /* i386/PE specific attribute support.
@@ -729,5 +730,385 @@ i386_pe_file_end (void)
 	}
     }
 }
+
+
+/* x64 Structured Exception Handling unwind info.  */
+
+struct seh_frame_state
+{
+  /* SEH records saves relative to the "current" stack pointer, whether
+     or not there's a frame pointer in place.  This tracks the current
+     stack pointer offset from the CFA.  */
+  HOST_WIDE_INT sp_offset;
+
+  /* The CFA is located at CFA_REG + CFA_OFFSET.  */
+  HOST_WIDE_INT cfa_offset;
+  rtx cfa_reg;
+};
+
+/* Set up data structures beginning output for SEH.  */
+
+void
+i386_pe_seh_init (FILE *f)
+{
+  struct seh_frame_state *seh;
+
+  if (!TARGET_SEH)
+    return;
+  if (cfun->is_thunk)
+    return;
+
+  /* We cannot support DRAP with SEH.  We turned off support for it by
+     re-defining MAX_STACK_ALIGNMENT when SEH is enabled.  */
+  gcc_assert (!stack_realign_drap);
+
+  seh = XCNEW (struct seh_frame_state);
+  cfun->machine->seh = seh;
+
+  seh->sp_offset = INCOMING_FRAME_SP_OFFSET;
+  seh->cfa_offset = INCOMING_FRAME_SP_OFFSET;
+  seh->cfa_reg = stack_pointer_rtx;
+
+  fputs ("\t.seh_proc\t", f);
+  assemble_name (f, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (cfun->decl)));
+  fputc ('\n', f);
+}
+
+void
+i386_pe_seh_end_prologue (FILE *f)
+{
+  struct seh_frame_state *seh;
+
+  if (!TARGET_SEH)
+    return;
+  if (cfun->is_thunk)
+    return;
+  seh = cfun->machine->seh;
+
+  /* Emit an assembler directive to set up the frame pointer.  Always do
+     this last.  The documentation talks about doing this "before" any
+     other code that uses offsets, but (experimentally) that's after we
+     emit the codes in reverse order (handled by the assembler).  */
+  if (seh->cfa_reg != stack_pointer_rtx)
+    {
+      HOST_WIDE_INT offset = seh->sp_offset - seh->cfa_offset;
+
+      gcc_assert ((offset & 15) == 0);
+      gcc_assert (IN_RANGE (offset, 0, 240));
+
+      fputs ("\t.seh_setframe\t", f);
+      print_reg (seh->cfa_reg, 0, f);
+      fprintf (f, ", " HOST_WIDE_INT_PRINT_DEC "\n", offset);
+    }
+
+  XDELETE (seh);
+  cfun->machine->seh = NULL;
+
+  fputs ("\t.seh_endprologue\n", f);
+}
+
+static void
+i386_pe_seh_fini (FILE *f)
+{
+  if (!TARGET_SEH)
+    return;
+  if (cfun->is_thunk)
+    return;
+  fputs ("\t.seh_endproc\n", f);
+}
+
+/* Emit an assembler directive to save REG via a PUSH.  */
+
+static void
+seh_emit_push (FILE *f, struct seh_frame_state *seh, rtx reg)
+{
+  unsigned int regno = REGNO (reg);
+
+  gcc_checking_assert (GENERAL_REGNO_P (regno));
+
+  seh->sp_offset += UNITS_PER_WORD;
+  if (seh->cfa_reg == stack_pointer_rtx)
+    seh->cfa_offset += UNITS_PER_WORD;
+
+  fputs ("\t.seh_pushreg\t", f);
+  print_reg (reg, 0, f);
+  fputc ('\n', f);
+}
+
+/* Emit an assembler directive to save REG at CFA - CFA_OFFSET.  */
+
+static void
+seh_emit_save (FILE *f, struct seh_frame_state *seh,
+	       rtx reg, HOST_WIDE_INT cfa_offset)
+{
+  unsigned int regno = REGNO (reg);
+  HOST_WIDE_INT offset;
+
+  /* Negative save offsets are of course not supported, since that
+     would be a store below the stack pointer and thus clobberable.  */
+  gcc_assert (seh->sp_offset >= cfa_offset);
+  offset = seh->sp_offset - cfa_offset;
+
+  fputs ((SSE_REGNO_P (regno) ? "\t.seh_savexmm\t"
+	 : GENERAL_REGNO_P (regno) ?  "\t.seh_savereg\t"
+	 : (gcc_unreachable (), "")), f);
+  print_reg (reg, 0, f);
+  fprintf (f, ", " HOST_WIDE_INT_PRINT_DEC "\n", offset);
+}
+
+/* Emit an assembler directive to adjust RSP by OFFSET.  */
+
+static void
+seh_emit_stackalloc (FILE *f, struct seh_frame_state *seh,
+		     HOST_WIDE_INT offset)
+{
+  /* We're only concerned with prologue stack allocations, which all
+     are subtractions from the stack pointer.  */
+  gcc_assert (offset < 0);
+  offset = -offset;
+
+  if (seh->cfa_reg == stack_pointer_rtx)
+    seh->cfa_offset += offset;
+  seh->sp_offset += offset;
+
+  fprintf (f, "\t.seh_stackalloc\t" HOST_WIDE_INT_PRINT_DEC "\n", offset);
+}
+
+/* Process REG_CFA_ADJUST_CFA for SEH.  */
+
+static void
+seh_cfa_adjust_cfa (FILE *f, struct seh_frame_state *seh, rtx pat)
+{
+  rtx dest, src;
+  HOST_WIDE_INT reg_offset = 0;
+  unsigned int dest_regno;
+
+  dest = SET_DEST (pat);
+  src = SET_SRC (pat);
+
+  if (GET_CODE (src) == PLUS)
+    {
+      reg_offset = INTVAL (XEXP (src, 1));
+      src = XEXP (src, 0);
+    }
+  else if (GET_CODE (src) == MINUS)
+    {
+      reg_offset = -INTVAL (XEXP (src, 1));
+      src = XEXP (src, 0);
+    }
+  gcc_assert (src == stack_pointer_rtx);
+  gcc_assert (seh->cfa_reg == stack_pointer_rtx);
+  dest_regno = REGNO (dest);
+
+  if (dest_regno == STACK_POINTER_REGNUM)
+    seh_emit_stackalloc (f, seh, reg_offset);
+  else if (dest_regno == HARD_FRAME_POINTER_REGNUM)
+    {
+      seh->cfa_reg = dest;
+      seh->cfa_offset -= reg_offset;
+    }
+  else
+    gcc_unreachable ();
+}
+
+/* Process REG_CFA_OFFSET for SEH.  */
+
+static void
+seh_cfa_offset (FILE *f, struct seh_frame_state *seh, rtx pat)
+{
+  rtx dest, src;
+  HOST_WIDE_INT reg_offset;
+
+  dest = SET_DEST (pat);
+  src = SET_SRC (pat);
+
+  gcc_assert (MEM_P (dest));
+  dest = XEXP (dest, 0);
+  if (REG_P (dest))
+    reg_offset = 0;
+  else
+    {
+      gcc_assert (GET_CODE (dest) == PLUS);
+      reg_offset = INTVAL (XEXP (dest, 1));
+      dest = XEXP (dest, 0);
+    }
+  gcc_assert (dest == seh->cfa_reg);
+
+  seh_emit_save (f, seh, src, seh->cfa_offset - reg_offset);
+}
+
+/* Process a FRAME_RELATED_EXPR for SEH.  */
+
+static void
+seh_frame_related_expr (FILE *f, struct seh_frame_state *seh, rtx pat)
+{
+  rtx dest, src;
+  HOST_WIDE_INT addend;
+
+  /* See the full loop in dwarf2out_frame_debug_expr.  */
+  if (GET_CODE (pat) == PARALLEL || GET_CODE (pat) == SEQUENCE)
+    {
+      int i, n = XVECLEN (pat, 0), pass, npass;
+
+      npass = (GET_CODE (pat) == PARALLEL ? 2 : 1);
+      for (pass = 0; pass < npass; ++pass)
+	for (i = 0; i < n; ++i)
+	  {
+	    rtx ele = XVECEXP (pat, 0, i);
+
+	    if (GET_CODE (ele) != SET)
+	      continue;
+	    dest = SET_DEST (ele);
+
+	    /* Process each member of the PARALLEL independently.  The first
+	       member is always processed; others only if they are marked.  */
+	    if (i == 0 || RTX_FRAME_RELATED_P (ele))
+	      {
+		/* Evaluate all register saves in the first pass and all
+		   register updates in the second pass.  */
+		if ((MEM_P (dest) ^ pass) || npass == 1)
+		  seh_frame_related_expr (f, seh, ele);
+	      }
+	  }
+      return;
+    }
+
+  dest = SET_DEST (pat);
+  src = SET_SRC (pat);
+
+  switch (GET_CODE (dest))
+    {
+    case REG:
+      switch (GET_CODE (src))
+	{
+	case REG:
+	  /* REG = REG: This should be establishing a frame pointer.  */
+	  gcc_assert (src == stack_pointer_rtx);
+	  gcc_assert (dest == hard_frame_pointer_rtx);
+	  seh_cfa_adjust_cfa (f, seh, pat);
+	  break;
+
+	case PLUS:
+	  addend = INTVAL (XEXP (src, 1));
+	  src = XEXP (src, 0);
+	  if (dest == hard_frame_pointer_rtx)
+	    seh_cfa_adjust_cfa (f, seh, pat);
+	  else if (dest == stack_pointer_rtx)
+	    {
+	      gcc_assert (src == stack_pointer_rtx);
+	      seh_emit_stackalloc (f, seh, addend);
+	    }
+	  else
+	    gcc_unreachable ();
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+      break;
+
+    case MEM:
+      /* A save of some kind.  */
+      dest = XEXP (dest, 0);
+      if (GET_CODE (dest) == PRE_DEC)
+	{
+	  gcc_checking_assert (GET_MODE (src) == Pmode);
+	  gcc_checking_assert (REG_P (src));
+	  seh_emit_push (f, seh, src);
+	}
+      else
+	seh_cfa_offset (f, seh, pat);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* This function looks at a single insn and emits any SEH directives
+   required for unwind of this insn.  */
+
+void
+i386_pe_seh_unwind_emit (FILE *asm_out_file, rtx insn)
+{
+  rtx note, pat;
+  bool handled_one = false;
+  struct seh_frame_state *seh;
+
+  if (!TARGET_SEH)
+    return;
+
+  /* We free the SEH data once done with the prologue.  Ignore those
+     RTX_FRAME_RELATED_P insns that are associated with the epilogue.  */
+  seh = cfun->machine->seh;
+  if (seh == NULL)
+    return;
+
+  if (NOTE_P (insn) || !RTX_FRAME_RELATED_P (insn))
+    return;
+
+  for (note = REG_NOTES (insn); note ; note = XEXP (note, 1))
+    {
+      pat = XEXP (note, 0);
+      switch (REG_NOTE_KIND (note))
+	{
+	case REG_FRAME_RELATED_EXPR:
+	  goto found;
+
+	case REG_CFA_DEF_CFA:
+	case REG_CFA_EXPRESSION:
+	  /* Only emitted with DRAP, which we disable.  */
+	  gcc_unreachable ();
+	  break;
+
+	case REG_CFA_REGISTER:
+	  /* Only emitted in epilogues, which we skip.  */
+	  gcc_unreachable ();
+
+	case REG_CFA_ADJUST_CFA:
+	  if (pat == NULL)
+	    {
+	      pat = PATTERN (insn);
+	      if (GET_CODE (pat) == PARALLEL)
+		pat = XVECEXP (pat, 0, 0);
+	    }
+	  seh_cfa_adjust_cfa (asm_out_file, seh, pat);
+	  handled_one = true;
+	  break;
+
+	case REG_CFA_OFFSET:
+	  if (pat == NULL)
+	    pat = single_set (insn);
+	  seh_cfa_offset (asm_out_file, seh, pat);
+	  handled_one = true;
+	  break;
+
+	default:
+	  break;
+	}
+    }
+  if (handled_one)
+    return;
+  pat = PATTERN (insn);
+ found:
+  seh_frame_related_expr (asm_out_file, seh, pat);
+}
+
+void
+i386_pe_start_function (FILE *f, const char *name, tree decl)
+{
+  i386_pe_maybe_record_exported_symbol (decl, name, 0);
+  if (write_symbols != SDB_DEBUG)
+    i386_pe_declare_function_type (f, name, TREE_PUBLIC (decl));
+  ASM_OUTPUT_FUNCTION_LABEL (f, name, decl);
+}
+
+void
+i386_pe_end_function (FILE *f, const char *name ATTRIBUTE_UNUSED,
+		      tree decl ATTRIBUTE_UNUSED)
+{
+  i386_pe_seh_fini (f);
+}
+
 
 #include "gt-winnt.h"

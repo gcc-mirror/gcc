@@ -490,6 +490,9 @@ extern tree x86_mfence;
 /* For the Windows 64-bit ABI.  */
 #define TARGET_64BIT_MS_ABI (TARGET_64BIT && ix86_cfun_abi () == MS_ABI)
 
+/* This is re-defined by cygming.h.  */
+#define TARGET_SEH 0
+
 /* Available call abi.  */
 enum calling_abi
 {
@@ -2244,6 +2247,9 @@ struct GTY(()) machine_frame_state
   BOOL_BITFIELD realigned : 1;
 };
 
+/* Private to winnt.c.  */
+struct seh_frame_state;
+
 struct GTY(()) machine_function {
   struct stack_local_entry *stack_locals;
   const char *some_ld_name;
@@ -2312,6 +2318,9 @@ struct GTY(()) machine_function {
   /* During prologue/epilogue generation, the current frame state.
      Otherwise, the frame state at the end of the prologue.  */
   struct machine_frame_state fs;
+
+  /* During SEH output, this is non-null.  */
+  struct seh_frame_state * GTY((skip(""))) seh;
 };
 #endif
 

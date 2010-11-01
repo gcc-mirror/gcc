@@ -2151,6 +2151,7 @@ struct ix86_frame
   HOST_WIDE_INT frame_pointer_offset;
   HOST_WIDE_INT hard_frame_pointer_offset;
   HOST_WIDE_INT stack_pointer_offset;
+  HOST_WIDE_INT hfp_save_offset;
   HOST_WIDE_INT reg_save_offset;
   HOST_WIDE_INT sse_reg_save_offset;
 
@@ -3573,7 +3574,7 @@ ix86_option_override_internal (bool main_args_p)
       if (optimize >= 1 && !global_options_set.x_flag_omit_frame_pointer)
 	flag_omit_frame_pointer = !USE_X86_64_FRAME_POINTER;
       if (flag_asynchronous_unwind_tables == 2)
-	flag_asynchronous_unwind_tables = 1;
+	flag_unwind_tables = flag_asynchronous_unwind_tables = 1;
       if (flag_pcc_struct_return == 2)
 	flag_pcc_struct_return = 0;
     }
@@ -3777,10 +3778,19 @@ ix86_option_override_internal (bool main_args_p)
   ix86_preferred_stack_boundary = PREFERRED_STACK_BOUNDARY_DEFAULT;
   if (ix86_preferred_stack_boundary_string)
     {
+      int min = (TARGET_64BIT ? 4 : 2);
+      int max = (TARGET_SEH ? 4 : 12);
+
       i = atoi (ix86_preferred_stack_boundary_string);
-      if (i < (TARGET_64BIT ? 4 : 2) || i > 12)
-	error ("%spreferred-stack-boundary=%d%s is not between %d and 12",
-	       prefix, i, suffix, TARGET_64BIT ? 4 : 2);
+      if (i < min || i > max)
+	{
+	  if (min == max)
+	    error ("%spreferred-stack-boundary%s is not supported "
+		   "for this target", prefix, suffix);
+	  else
+	    error ("%spreferred-stack-boundary=%d%s is not between %d and %d",
+		   prefix, i, suffix, min, max);
+	}
       else
 	ix86_preferred_stack_boundary = (1 << i) * BITS_PER_UNIT;
     }
@@ -3987,7 +3997,13 @@ ix86_option_override_internal (bool main_args_p)
         sorry ("-mfentry isn't supported for 32-bit in combination with -fpic");
       flag_fentry = 0;
     }
-  if (flag_fentry < 0)
+  else if (TARGET_SEH)
+    {
+      if (flag_fentry == 0)
+	sorry ("-mno-fentry isn't compatible with SEH");
+      flag_fentry = 1;
+    }
+  else if (flag_fentry < 0)
    {
 #if defined(PROFILE_BEFORE_PROLOGUE)
      flag_fentry = 1;
@@ -5535,6 +5551,10 @@ ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
       for (i = 0; i < filler_count; i += 4)
         fprintf (asm_out_file, ASM_LONG " %#x\n", filler_cc);
     }
+
+#ifdef SUBTARGET_ASM_UNWIND_INIT
+  SUBTARGET_ASM_UNWIND_INIT (asm_out_file);
+#endif
 
   ASM_OUTPUT_LABEL (asm_out_file, fname);
 
@@ -8934,17 +8954,25 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   gcc_assert (preferred_alignment >= STACK_BOUNDARY / BITS_PER_UNIT);
   gcc_assert (preferred_alignment <= stack_alignment_needed);
 
+  /* For SEH we have to limit the amount of code movement into the prologue.
+     At present we do this via a BLOCKAGE, at which point there's very little
+     scheduling that can be done, which means that there's very little point
+     in doing anything except PUSHs.  */
+  if (TARGET_SEH)
+    cfun->machine->use_fast_prologue_epilogue = false;
+
   /* During reload iteration the amount of registers saved can change.
      Recompute the value as needed.  Do not recompute when amount of registers
      didn't change as reload does multiple calls to the function and does not
      expect the decision to change within single iteration.  */
-  if (!optimize_function_for_size_p (cfun)
-      && cfun->machine->use_fast_prologue_epilogue_nregs != frame->nregs)
+  else if (!optimize_function_for_size_p (cfun)
+           && cfun->machine->use_fast_prologue_epilogue_nregs != frame->nregs)
     {
       int count = frame->nregs;
       struct cgraph_node *node = cgraph_node (current_function_decl);
 
       cfun->machine->use_fast_prologue_epilogue_nregs = count;
+
       /* The fast prologue uses move instead of push to save registers.  This
          is significantly longer, but also executes faster as modern hardware
          can execute the moves in parallel, but can't do that for push/pop.
@@ -8986,7 +9014,9 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   /* Skip saved base pointer.  */
   if (frame_pointer_needed)
     offset += UNITS_PER_WORD;
+  frame->hfp_save_offset = offset;
 
+  /* The traditional frame pointer location is at the top of the frame.  */
   frame->hard_frame_pointer_offset = offset;
 
   /* Register save area */
@@ -9069,6 +9099,27 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   else
     frame->red_zone_size = 0;
   frame->stack_pointer_offset -= frame->red_zone_size;
+
+  /* The SEH frame pointer location is near the bottom of the frame.
+     This is enforced by the fact that the difference between the
+     stack pointer and the frame pointer is limited to 240 bytes in
+     the unwind data structure.  */
+  if (TARGET_SEH)
+    {
+      HOST_WIDE_INT diff;
+
+      /* If we can leave the frame pointer where it is, do so.  */
+      diff = frame->stack_pointer_offset - frame->hard_frame_pointer_offset;
+      if (diff > 240 || (diff & 15) != 0)
+	{
+	  /* Ideally we'd determine what portion of the local stack frame
+	     (within the constraint of the lowest 240) is most heavily used.
+	     But without that complication, simply bias the frame pointer
+	     by 128 bytes so as to maximize the amount of the local stack
+	     frame that is addressable with 8-bit offsets.  */
+	  frame->hard_frame_pointer_offset = frame->stack_pointer_offset - 128;
+	}
+    }
 }
 
 /* This is semi-inlined memory_address_length, but simplified
@@ -10001,7 +10052,8 @@ ix86_expand_prologue (void)
       /* Check if profiling is active and we shall use profiling before
          prologue variant. If so sorry.  */
       if (crtl->profile && flag_fentry != 0)
-        sorry ("ms_hook_prologue attribute isn't compatible with -mfentry for 32-bit");
+        sorry ("ms_hook_prologue attribute isn't compatible "
+	       "with -mfentry for 32-bit");
 
       /* In ix86_asm_output_function_label we emitted:
 	 8b ff     movl.s %edi,%edi
@@ -10130,14 +10182,16 @@ ix86_expand_prologue (void)
       insn = emit_insn (gen_push (hard_frame_pointer_rtx));
       RTX_FRAME_RELATED_P (insn) = 1;
 
-      insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
-      RTX_FRAME_RELATED_P (insn) = 1;
+      if (m->fs.sp_offset == frame.hard_frame_pointer_offset)
+	{
+	  insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+	  RTX_FRAME_RELATED_P (insn) = 1;
 
-      if (m->fs.cfa_reg == stack_pointer_rtx)
-        m->fs.cfa_reg = hard_frame_pointer_rtx;
-      gcc_assert (m->fs.sp_offset == frame.hard_frame_pointer_offset);
-      m->fs.fp_offset = m->fs.sp_offset;
-      m->fs.fp_valid = true;
+	  if (m->fs.cfa_reg == stack_pointer_rtx)
+	    m->fs.cfa_reg = hard_frame_pointer_rtx;
+	  m->fs.fp_offset = m->fs.sp_offset;
+	  m->fs.fp_valid = true;
+	}
     }
 
   int_registers_saved = (frame.nregs == 0);
@@ -10290,12 +10344,15 @@ ix86_expand_prologue (void)
       insn = emit_insn (adjust_stack_insn (stack_pointer_rtx,
 					   stack_pointer_rtx, eax));
 
-      if (m->fs.cfa_reg == stack_pointer_rtx)
+      /* Note that SEH directives need to continue tracking the stack
+	 pointer even after the frame pointer has been set up.  */
+      if (m->fs.cfa_reg == stack_pointer_rtx || TARGET_SEH)
 	{
-	  m->fs.cfa_offset += allocate;
+	  if (m->fs.cfa_reg == stack_pointer_rtx)
+	    m->fs.cfa_offset += allocate;
 
 	  RTX_FRAME_RELATED_P (insn) = 1;
-	  add_reg_note (insn, REG_CFA_ADJUST_CFA,
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
 			gen_rtx_SET (VOIDmode, stack_pointer_rtx,
 				     plus_constant (stack_pointer_rtx,
 						    -allocate)));
@@ -10316,6 +10373,22 @@ ix86_expand_prologue (void)
 	}
     }
   gcc_assert (m->fs.sp_offset == frame.stack_pointer_offset);
+
+  /* If we havn't already set up the frame pointer, do so now.  */
+  if (frame_pointer_needed && !m->fs.fp_valid)
+    {
+      insn = ix86_gen_add3 (hard_frame_pointer_rtx, stack_pointer_rtx,
+			    GEN_INT (frame.stack_pointer_offset
+				     - frame.hard_frame_pointer_offset));
+      insn = emit_insn (insn);
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_CFA_ADJUST_CFA, NULL);
+
+      if (m->fs.cfa_reg == stack_pointer_rtx)
+	m->fs.cfa_reg = hard_frame_pointer_rtx;
+      m->fs.fp_offset = frame.hard_frame_pointer_offset;
+      m->fs.fp_valid = true;
+    }
 
   if (!int_registers_saved)
     ix86_emit_save_regs_using_mov (frame.reg_save_offset);
@@ -10386,6 +10459,11 @@ ix86_expand_prologue (void)
   /* Emit cld instruction if stringops are used in the function.  */
   if (TARGET_CLD && ix86_current_function_needs_cld)
     emit_insn (gen_cld ());
+
+  /* SEH requires that the prologue end within 256 bytes of the start of
+     the function.  Prevent instruction schedules that would extend that.  */
+  if (TARGET_SEH)
+    emit_insn (gen_blockage ());
 }
 
 /* Emit code to restore REG using a POP insn.  */
@@ -10610,13 +10688,16 @@ ix86_expand_epilogue (int style)
   if (crtl->calls_eh_return && style != 2)
     frame.reg_save_offset -= 2 * UNITS_PER_WORD;
 
+  /* EH_RETURN requires the use of moves to function properly.  */
+  if (crtl->calls_eh_return)
+    restore_regs_via_mov = true;
+  /* SEH requires the use of pops to identify the epilogue.  */
+  else if (TARGET_SEH)
+    restore_regs_via_mov = false;
   /* If we're only restoring one register and sp is not valid then
      using a move instruction to restore the register since it's
      less work than reloading sp and popping the register.  */
-  if (!m->fs.sp_valid && frame.nregs <= 1)
-    restore_regs_via_mov = true;
-  /* EH_RETURN requires the use of moves to function properly.  */
-  else if (crtl->calls_eh_return)
+  else if (!m->fs.sp_valid && frame.nregs <= 1)
     restore_regs_via_mov = true;
   else if (TARGET_EPILOGUE_USING_MOVE
 	   && cfun->machine->use_fast_prologue_epilogue
@@ -10728,6 +10809,22 @@ ix86_expand_epilogue (int style)
     }
   else
     {
+      /* SEH requires that the function end with (1) a stack adjustment
+	 if necessary, (2) a sequence of pops, and (3) a return or
+	 jump instruction.  Prevent insns from the function body from
+	 being scheduled into this sequence.  */
+      if (TARGET_SEH)
+	{
+	  /* Prevent a catch region from being adjacent to the standard
+	     epilogue sequence.  Unfortuantely crtl->uses_eh_lsda nor
+	     several other flags that would be interesting to test are
+	     not yet set up.  */
+	  if (flag_non_call_exceptions)
+	    emit_insn (gen_nops (const1_rtx));
+	  else
+	    emit_insn (gen_blockage ());
+	}
+
       /* First step is to deallocate the stack frame so that we can
 	 pop the registers.  */
       if (!m->fs.sp_valid)
@@ -10755,7 +10852,7 @@ ix86_expand_epilogue (int style)
     {
       /* If the stack pointer is valid and pointing at the frame
 	 pointer store address, then we only need a pop.  */
-      if (m->fs.sp_valid && m->fs.sp_offset == frame.hard_frame_pointer_offset)
+      if (m->fs.sp_valid && m->fs.sp_offset == frame.hfp_save_offset)
 	ix86_emit_restore_reg_using_pop (hard_frame_pointer_rtx);
       /* Leave results in shorter dependency chains on CPUs that are
 	 able to grok it fast.  */
@@ -15492,6 +15589,13 @@ ix86_expand_binary_operator (enum rtx_code code, enum machine_mode mode,
       /* Reload doesn't know about the flags register, and doesn't know that
          it doesn't want to clobber it.  We can only do this with PLUS.  */
       gcc_assert (code == PLUS);
+      emit_insn (op);
+    }
+  else if (reload_completed
+	   && code == PLUS
+	   && !rtx_equal_p (dst, src1))
+    {
+      /* This is going to be an LEA; avoid splitting it later.  */
       emit_insn (op);
     }
   else
@@ -21417,6 +21521,73 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
   return call;
 }
 
+/* Output the assembly for a call instruction.  */
+
+const char *
+ix86_output_call_insn (rtx insn, rtx call_op, int addr_op)
+{
+  bool direct_p = constant_call_address_operand (call_op, Pmode);
+  bool seh_nop_p = false;
+
+  gcc_assert (addr_op == 0 || addr_op == 1);
+
+  if (SIBLING_CALL_P (insn))
+    {
+      if (direct_p)
+	return addr_op ? "jmp\t%P1" : "jmp\t%P0";
+      /* SEH epilogue detection requires the indirect branch case
+	 to include REX.W.  */
+      else if (TARGET_SEH)
+	return addr_op ? "rex.W jmp %A1" : "rex.W jmp %A0";
+      else
+	return addr_op ? "jmp\t%A1" : "jmp\t%A0";
+    }
+
+  /* SEH unwinding can require an extra nop to be emitted in several
+     circumstances.  Determine if we have one of those.  */
+  if (TARGET_SEH)
+    {
+      rtx i;
+
+      for (i = NEXT_INSN (insn); i ; i = NEXT_INSN (i))
+	{
+	  /* If we get to another real insn, we don't need the nop.  */
+	  if (INSN_P (i))
+	    break;
+
+	  /* If we get to the epilogue note, prevent a catch region from
+	     being adjacent to the standard epilogue sequence.  If non-
+	     call-exceptions, we'll have done this during epilogue emission. */
+	  if (NOTE_P (i) && NOTE_KIND (i) == NOTE_INSN_EPILOGUE_BEG
+	      && !flag_non_call_exceptions
+	      && !can_throw_internal (insn))
+	    {
+	      seh_nop_p = true;
+	      break;
+	    }
+	}
+
+      /* If we didn't find a real insn following the call, prevent the
+	 unwinder from looking into the next function.  */
+      if (i == NULL)
+	seh_nop_p = true;
+    }
+
+  if (direct_p)
+    {
+      if (seh_nop_p)
+	return addr_op ? "call\t%P1\n\tnop" : "call\t%P0\n\tnop";
+      else
+	return addr_op ? "call\t%P1" : "call\t%P0";
+    }
+  else
+    {
+      if (seh_nop_p)
+	return addr_op ? "call\t%A1\n\tnop" : "call\t%A0\n\tnop";
+      else
+	return addr_op ? "call\t%A1" : "call\t%A0";
+    }
+}
 
 /* Clear stack slot assignments remembered from previous functions.
    This is called from INIT_EXPANDERS once before RTL is emitted for each

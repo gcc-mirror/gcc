@@ -225,7 +225,13 @@ extern void i386_pe_asm_output_aligned_decl_common (FILE *, tree,
 						    HOST_WIDE_INT,
 						    HOST_WIDE_INT);
 extern void i386_pe_file_end (void);
+extern void i386_pe_start_function (FILE *, const char *, tree);
+extern void i386_pe_end_function (FILE *, const char *, tree);
 extern tree i386_pe_mangle_decl_assembler_name (tree, tree);
+
+extern void i386_pe_seh_init (FILE *);
+extern void i386_pe_seh_end_prologue (FILE *);
+extern void i386_pe_seh_unwind_emit (FILE *, rtx);
 
 /* In winnt-cxx.c and winnt-stubs.c  */
 extern void i386_pe_adjust_class_at_definition (tree);
@@ -263,3 +269,5 @@ extern int asm_preferred_eh_data_format (int, int);
 #ifdef HAVE_ATTR_cpu
 extern enum attr_cpu ix86_schedule;
 #endif
+
+extern const char * ix86_output_call_insn (rtx insn, rtx call_op, int addr_op);

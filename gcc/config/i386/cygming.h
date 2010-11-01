@@ -33,6 +33,23 @@ along with GCC; see the file COPYING3.  If not see
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 #endif
 
+#undef TARGET_SEH
+#define TARGET_SEH  (TARGET_64BIT_MS_ABI && flag_unwind_tables)
+
+/* Win64 with SEH cannot represent DRAP stack frames.  Disable its use.
+   Force the use of different mechanisms to allocate aligned local data.  */
+#undef MAX_STACK_ALIGNMENT
+#define MAX_STACK_ALIGNMENT  (TARGET_SEH ? 128 : MAX_OFILE_ALIGNMENT)
+
+/* Support hooks for SEH.  */
+#undef  TARGET_ASM_UNWIND_EMIT
+#define TARGET_ASM_UNWIND_EMIT  i386_pe_seh_unwind_emit
+#undef  TARGET_ASM_UNWIND_EMIT_BEFORE_INSN
+#define TARGET_ASM_UNWIND_EMIT_BEFORE_INSN  false
+#undef  TARGET_ASM_FUNCTION_END_PROLOGUE
+#define TARGET_ASM_FUNCTION_END_PROLOGUE  i386_pe_seh_end_prologue
+#define SUBTARGET_ASM_UNWIND_INIT  i386_pe_seh_init
+
 #undef DEFAULT_ABI
 #define DEFAULT_ABI (TARGET_64BIT ? MS_ABI : SYSV_ABI)
 
@@ -104,6 +121,8 @@ along with GCC; see the file COPYING3.  If not see
     {									\
 	if (!TARGET_64BIT)						\
 	  builtin_define ("_X86_=1");					\
+	if (TARGET_SEH)							\
+	  builtin_define ("__SEH__");				\
 	builtin_assert ("system=winnt");				\
 	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
 	builtin_define ("__fastcall=__attribute__((__fastcall__))");	\
@@ -281,15 +300,12 @@ do {						\
    properly.  If we are generating SDB debugging information, this
    will happen automatically, so we only need to handle other cases.  */
 #undef ASM_DECLARE_FUNCTION_NAME
-#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
-  do									\
-    {									\
-      i386_pe_maybe_record_exported_symbol (DECL, NAME, 0);		\
-      if (write_symbols != SDB_DEBUG)					\
-	i386_pe_declare_function_type (FILE, NAME, TREE_PUBLIC (DECL));	\
-      ASM_OUTPUT_FUNCTION_LABEL (FILE, NAME, DECL);			\
-    }									\
-  while (0)
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
+  i386_pe_start_function (FILE, NAME, DECL)
+
+#undef ASM_DECLARE_FUNCTION_SIZE
+#define ASM_DECLARE_FUNCTION_SIZE(FILE,NAME,DECL) \
+  i386_pe_end_function (FILE, NAME, DECL)
 
 /* Add an external function to the list of functions to be declared at
    the end of the file.  */
