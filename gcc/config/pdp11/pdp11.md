@@ -122,34 +122,19 @@
 }"
   [(set_attr "length" "4,4,6,6,12")]) 
 
-(define_insn "*cmphi"
+(define_insn "*cmp<mode>"
   [(set (cc0)
-	(compare (match_operand:HI 0 "general_operand" "rR,rR,rR,Q,Qi,Qi")
-		 (match_operand:HI 1 "general_operand" "N,rR,Qi,N,rR,Qi")))]
+	(compare (match_operand:PDPint 0 "general_operand" "rR,rR,rR,Q,Qi,Qi")
+		 (match_operand:PDPint 1 "general_operand" "N,rR,Qi,N,rR,Qi")))]
   ""
   "@
-   tst %0
-   cmp %0,%1
-   cmp %0,%1
-   tst %0
-   cmp %0,%1
-   cmp %0,%1"
+   tst<PDPint:isfx> %0
+   cmp<PDPint:isfx> %0,%1
+   cmp<PDPint:isfx> %0,%1
+   tst<PDPint:isfx> %0
+   cmp<PDPint:isfx> %0,%1
+   cmp<PDPint:isfx> %0,%1"
   [(set_attr "length" "2,2,4,4,4,6")])
-
-(define_insn "*cmpqi"
-  [(set (cc0)
-	(compare (match_operand:QI 0 "general_operand" "rR,rR,rR,Q,Qi,Qi")
-		 (match_operand:QI 1 "general_operand" "N,rR,Qi,N,rR,Qi")))]
-  ""
-  "@
-   tstb %0
-   cmpb %0,%1
-   cmpb %0,%1
-   tstb %0
-   cmpb %0,%1
-   cmpb %0,%1"
-  [(set_attr "length" "2,2,4,4,4,6")])
-			   
 
 ;; sob instruction - we need an assembler which can make this instruction
 ;; valid under _all_ circumstances!
@@ -211,22 +196,10 @@
   "TARGET_FPU"
   "")
 
-(define_expand "cbranchhi4"
+(define_expand "cbranch<mode>4"
   [(set (cc0)
-        (compare (match_operand:HI 1 "general_operand")
-		 (match_operand:HI 2 "general_operand")))
-   (set (pc)
-	(if_then_else (match_operator 0 "ordered_comparison_operator"
-		       [(cc0) (const_int 0)])
-		      (label_ref (match_operand 3 "" ""))
-		      (pc)))]
-  ""
-  "")
-
-(define_expand "cbranchqi4"
-  [(set (cc0)
-        (compare (match_operand:QI 1 "general_operand")
-		 (match_operand:QI 2 "general_operand")))
+        (compare (match_operand:PDPint 1 "general_operand")
+		 (match_operand:PDPint 2 "general_operand")))
    (set (pc)
 	(if_then_else (match_operator 0 "ordered_comparison_operator"
 		       [(cc0) (const_int 0)])
@@ -298,29 +271,16 @@
 ;; we could split it up and make several sub-cases...
   [(set_attr "length" "4,6,8,16,16")])
 
-(define_insn "movhi"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,rR,Q,Q")
-	(match_operand:HI 1 "general_operand" "rRN,Qi,rRN,Qi"))]
+(define_insn "mov<mode>"
+  [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,rR,Q,Q")
+	(match_operand:PDPint 1 "general_operand" "rRN,Qi,rRN,Qi"))]
   ""
   "*
 {
   if (operands[1] == const0_rtx)
-    return \"clr %0\";
+    return \"clr<PDPint:isfx> %0\";
 
-  return \"mov %1, %0\";
-}"
-  [(set_attr "length" "2,4,4,6")])
-
-(define_insn "movqi"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=rR,rR,Q,Q")
-	(match_operand:QI 1 "general_operand" "rRN,Qi,rRN,Qi"))]
-  ""
-  "*
-{
-  if (operands[1] == const0_rtx)
-    return \"clrb %0\";
-
-  return \"movb %1, %0\";
+  return \"mov<PDPint:isfx> %1, %0\";
 }"
   [(set_attr "length" "2,4,4,6")])
 
@@ -718,25 +678,6 @@
 }"
   [(set_attr "length" "2,4,4,6")])
 
-(define_insn "addqi3"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=rR,rR,Q,Q")
-	(plus:QI (match_operand:QI 1 "general_operand" "%0,0,0,0")
-		 (match_operand:QI 2 "general_operand" "rRLM,Qi,rRLM,Qi")))]
-  ""
-  "*
-{
-  if (GET_CODE (operands[2]) == CONST_INT)
-    {
-      if (INTVAL(operands[2]) == 1)
-	return \"incb %0\";
-      else if (INTVAL(operands[2]) == -1)
-	return \"decb %0\";
-    }
-
-  return \"add %2, %0\";
-}"
-  [(set_attr "length" "2,4,4,6")])
-
 
 ;;- subtract instructions
 ;; we don't have to care for constant second 
@@ -798,19 +739,6 @@
 }"
   [(set_attr "length" "2,4,4,6")])
 
-(define_insn "subqi3"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=rR,rR,Q,Q")
-	(minus:QI (match_operand:QI 1 "general_operand" "0,0,0,0")
-		  (match_operand:QI 2 "general_operand" "rR,Qi,rR,Qi")))]
-  ""
-  "*
-{
-  gcc_assert (GET_CODE (operands[2]) != CONST_INT);
-
-  return \"sub %2, %0\";
-}"
-  [(set_attr "length" "2,4,4,6")])
-
 ;;;;- and instructions
 ;; Bit-and on the pdp (like on the VAX) is done with a clear-bits insn.
 
@@ -850,95 +778,15 @@
   [(set_attr "length" "2,4,4,6")])
 
 ;;- Bit set (inclusive or) instructions
-(define_insn "iorsi3"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,o,o,r,r,r,o,o,o")
-        (ior:SI (match_operand:SI 1 "general_operand" "%0,0,0,0,0,0,0,0,0,0")
-                  (match_operand:SI 2 "general_operand" "r,o,r,o,I,J,K,I,J,K")))]
+(define_insn "ior<mode>3"
+  [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,rR,Q,Q")
+	(ior:PDPint (match_operand:PDPint 1 "general_operand" "%0,0,0,0")
+		(match_operand:PDPint 2 "general_operand" "rR,Qi,rR,Qi")))]
   ""
-  "*
-{ /* Here we trust that operands don't overlap 
-
-     or is lateoperands the low word?? - looks like it! */
-
-  rtx lateoperands[3];
-  
-  lateoperands[0] = operands[0];
-
-  if (REG_P (operands[0]))
-    operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
-  else
-    operands[0] = adjust_address (operands[0], HImode, 2);
-  
-  if (! CONSTANT_P(operands[2]))
-    {
-      lateoperands[2] = operands[2];
-
-      if (REG_P (operands[2]))
-	operands[2] = gen_rtx_REG (HImode, REGNO (operands[2]) + 1);
-      else
-	operands[2] = adjust_address (operands[2], HImode, 2);
-
-      output_asm_insn (\"bis %2, %0\", operands);
-      output_asm_insn (\"bis %2, %0\", lateoperands);
-      return \"\";
-    }
-
-  lateoperands[2] = GEN_INT ((INTVAL (operands[2]) >> 16) & 0xffff);
-  operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffff);
-  
-  /* these have different lengths, so we should have 
-     different constraints! */
-  if (INTVAL(operands[2]))
-    output_asm_insn (\"bis %2, %0\", operands);
-
-  if (INTVAL(lateoperands[2]))
-    output_asm_insn (\"bis %2, %0\", lateoperands);
-
-  return \"\";
-}"
-  [(set_attr "length" "4,8,8,12,4,4,8,6,6,12")])
-
-(define_insn "iorhi3"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,rR,Q,Q")
-	(ior:HI (match_operand:HI 1 "general_operand" "%0,0,0,0")
-		(match_operand:HI 2 "general_operand" "rR,Qi,rR,Qi")))]
-  ""
-  "bis %2, %0"
+  "bis<PDPint:isfx> %2, %0"
   [(set_attr "length" "2,4,4,6")])
 
-(define_insn "iorqi3"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=rR,rR,Q,Q")
-	(ior:QI (match_operand:QI 1 "general_operand" "%0,0,0,0")
-		(match_operand:QI 2 "general_operand" "rR,Qi,rR,Qi")))]
-  ""
-  "bisb %2, %0")
-
 ;;- xor instructions
-(define_insn "xorsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (xor:SI (match_operand:SI 1 "register_operand" "%0")
-                (match_operand:SI 2 "register_operand" "r")))]
-  "TARGET_40_PLUS"
-  "*
-{ /* Here we trust that operands don't overlap */
-
-  rtx lateoperands[3];
-
-  lateoperands[0] = operands[0];
-  operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
-
-  if (REG_P(operands[2]))
-    {
-      lateoperands[2] = operands[2];
-      operands[2] = gen_rtx_REG (HImode, REGNO (operands[2]) + 1);
-
-      output_asm_insn (\"xor %2, %0\", operands);
-      output_asm_insn (\"xor %2, %0\", lateoperands);
-    }
-  return \"\";
-}"
-  [(set_attr "length" "4")])
-
 (define_insn "xorhi3"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
 	(xor:HI (match_operand:HI 1 "general_operand" "%0,0")
@@ -949,20 +797,11 @@
 
 ;;- one complement instructions
 
-(define_insn "one_cmplhi2"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
-        (not:HI (match_operand:HI 1 "general_operand" "0,0")))]
+(define_insn "one_cmpl<mode>2"
+  [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,Q")
+        (not:PDPint (match_operand:PDPint 1 "general_operand" "0,0")))]
   ""
-  "com %0"
-  [(set_attr "length" "2,4")])
-
-(define_insn "one_cmplqi2"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=rR,rR")
-        (not:QI (match_operand:QI 1 "general_operand" "0,g")))]
-  ""
-  "@
-  comb %0
-  movb %1, %0\; comb %0"
+  "com<PDPint:isfx> %0"
   [(set_attr "length" "2,4")])
 
 ;;- arithmetic shift instructions
