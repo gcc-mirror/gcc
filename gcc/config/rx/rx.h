@@ -25,7 +25,10 @@
       builtin_define ("__RX__"); 		\
       builtin_assert ("cpu=RX"); 		\
       if (rx_cpu_type == RX610)			\
-        builtin_assert ("machine=RX610");	\
+	{					\
+          builtin_define ("__RX610__");		\
+          builtin_assert ("machine=RX610");	\
+	}					\
      else					\
         builtin_assert ("machine=RX600");	\
       						\
