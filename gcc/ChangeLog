@@ -1,3 +1,38 @@
+2010-10-31  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/cygming.h (TARGET_SEH): New.
+	(MAX_STACK_ALIGNMENT): New.  Disable alignment for SEH.
+	(TARGET_ASM_UNWIND_EMIT, TARGET_ASM_UNWIND_EMIT_BEFORE_INSN,
+	TARGET_ASM_FUNCTION_END_PROLOGUE, SUBTARGET_ASM_UNWIND_INIT): New.
+	(TARGET_OS_CPP_BUILTINS): Define __SEH__ as needed.
+	(ASM_DECLARE_FUNCTION_NAME): Use i386_pe_start_function.
+	(ASM_DECLARE_FUNCTION_SIZE): New.
+	* config/i386/i386-protos.h: Update.
+	* config/i386/i386.c (ix86_option_override_internal): Enable
+	flag_unwind_tables with flag_asynchronous_unwind_tables immediately;
+	restrict -mpreferred-stack-boundary for SEH; enable flag_fentry.
+	(ix86_asm_output_function_label): Use SUBTARGET_ASM_UNWIND_INIT.
+	(ix86_compute_frame_layout): For SEH, disable
+	use_fast_prologue_epilogue, move frame pointer to the end of
+	the frame.  Initialize hfp_save_offset.
+	(ix86_expand_prologue): Honor hfp_save_offset.  Emit blockage
+	at end of prologue for SEH.
+	(ix86_expand_epilogue): For SEH, use pops, emit a nop if needed,
+	emit blockage at beginning of epilogue.
+	(ix86_expand_binary_operator): After reload, emit LEA if needed.
+	(ix86_output_call_insn): New.
+	* config/i386/i386.h (TARGET_SEH): New.
+	(struct machine_function): Add member seh.
+	* config/i386/i386.md (all call patterns): Use ix86_output_call_insn.
+	* config/i386/winnt.c (struct seh_frame_state): New.
+	(i386_pe_seh_init, i386_pe_seh_end_prologue, i386_pe_seh_fini,
+	seh_emit_push, seh_emit_save, seh_emit_stackalloc, seh_cfa_adjust_cfa,
+	seh_cfa_offset, seh_frame_related_expr, i386_pe_seh_unwind_emit,
+	i386_pe_start_function, i386_pe_end_function): New.
+
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Accept CFA as well
+	as CFA_STORE in rules 12 and 13.
+
 2010-10-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/46142

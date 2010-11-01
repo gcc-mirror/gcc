@@ -2552,7 +2552,9 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 
 	    regno = REGNO (XEXP (XEXP (dest, 0), 0));
 
-	    if (cfa_store.reg == (unsigned) regno)
+	    if (cfa.reg == (unsigned) regno)
+	      offset -= cfa.offset;
+	    else if (cfa_store.reg == (unsigned) regno)
 	      offset -= cfa_store.offset;
 	    else
 	      {
@@ -2568,7 +2570,9 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	  {
 	    int regno = REGNO (XEXP (dest, 0));
 
-	    if (cfa_store.reg == (unsigned) regno)
+	    if (cfa.reg == (unsigned) regno)
+	      offset = -cfa.offset;
+	    else if (cfa_store.reg == (unsigned) regno)
 	      offset = -cfa_store.offset;
 	    else
 	      {
