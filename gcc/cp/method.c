@@ -1157,7 +1157,11 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
      methods in C++0x.  */
   if (expected_trivial
       && (!copy_arg_p || cxx_dialect < cxx0x))
-    return;
+    {
+      if (constexpr_p && sfk == sfk_constructor)
+	*constexpr_p = synthesized_default_constructor_is_constexpr (ctype);
+      return;
+    }
 #endif
 
   ++cp_unevaluated_operand;
