@@ -19,15 +19,12 @@
 
 load_lib gcc-dg.exp
 
-# Only run on targets which support automatic stack alignment.
-if { ![check_effective_target_automatic_stack_alignment] } then {
-    return
-}
-
 set additional_flags ""
-if { [istarget i?86*-*-*] || [istarget x86_64-*-*] } then {
+if { [check_effective_target_automatic_stack_alignment] } then {
     lappend additional_flags "-mstackrealign"
     lappend additional_flags "-mpreferred-stack-boundary=5"
+}
+if { [istarget i?86*-*-*] || [istarget x86_64-*-*] } then {
     lappend additional_flags "-mno-mmx"
 }
 
@@ -40,7 +37,7 @@ if { [check_effective_target_fpic] } then {
     gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] $pic_additional_flags
 }
 
-if { [istarget i?86*-*-*] || [istarget x86_64-*-*] } then {
+if { [check_effective_target_automatic_stack_alignment] } then {
     lappend additional_flags "-mforce-drap"
     gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] $additional_flags
     if { [check_effective_target_fpic] } then {
