@@ -2671,20 +2671,10 @@ add_implicitly_declared_members (tree t,
   if (! TYPE_HAS_USER_CONSTRUCTOR (t))
     {
       TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 1;
-      if (TYPE_HAS_TRIVIAL_DFLT (t))
-	{
-	  /* A trivial default constructor is constexpr
-	     if there is nothing to initialize.  */
-	  if (cxx_dialect >= cxx0x && is_really_empty_class (t))
-	    TYPE_HAS_CONSTEXPR_CTOR (t) = 1;
-	  CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
-	}
-      else if (cxx_dialect >= cxx0x)
-	/* We need to go ahead and declare this to set
-	   TYPE_HAS_CONSTEXPR_CTOR.  */
-	lazily_declare_fn (sfk_constructor, t);
-      else
-	CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
+      CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
+      if (cxx_dialect >= cxx0x)
+	TYPE_HAS_CONSTEXPR_CTOR (t)
+	  = synthesized_default_constructor_is_constexpr (t);
     }
 
   /* [class.ctor]
@@ -4337,6 +4327,18 @@ type_has_user_provided_default_constructor (tree t)
   return false;
 }
 
+/* Returns true iff for class T, a synthesized default constructor
+   would be constexpr.  */
+
+bool
+synthesized_default_constructor_is_constexpr (tree t)
+{
+  /* A defaulted default constructor is constexpr
+     if there is nothing to initialize.  */
+  /* FIXME adjust for non-static data member initializers.  */
+  return is_really_empty_class (t);
+}
+
 /* Returns true iff class T has a constexpr default constructor.  */
 
 bool
@@ -4346,6 +4348,8 @@ type_has_constexpr_default_constructor (tree t)
 
   if (!CLASS_TYPE_P (t))
     return false;
+  if (CLASSTYPE_LAZY_DEFAULT_CTOR (t))
+    return synthesized_default_constructor_is_constexpr (t);
   fns = get_default_ctor (t);
   return (fns && DECL_DECLARED_CONSTEXPR_P (fns));
 }
@@ -6824,19 +6828,22 @@ contains_empty_class_p (tree type)
 }
 
 /* Returns true if TYPE contains no actual data, just various
-   possible combinations of empty classes.  */
+   possible combinations of empty classes and possibly a vptr.  */
 
 bool
 is_really_empty_class (tree type)
 {
-  if (is_empty_class (type))
-    return true;
   if (CLASS_TYPE_P (type))
     {
       tree field;
       tree binfo;
       tree base_binfo;
       int i;
+
+      /* CLASSTYPE_EMPTY_P isn't set properly until the class is actually laid
+	 out, but we'd like to be able to check this before then.  */
+      if (COMPLETE_TYPE_P (type) && is_empty_class (type))
+	return true;
 
       for (binfo = TYPE_BINFO (type), i = 0;
 	   BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)

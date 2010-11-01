@@ -1,5 +1,12 @@
 2010-10-31  Jason Merrill  <jason@redhat.com>
 
+	* class.c (is_really_empty_class): Work when type is not complete.
+	(synthesized_default_constructor_is_constexpr): New.
+	(add_implicitly_declared_members): Use it.
+	(type_has_constexpr_default_constructor): Likewise.
+	* cp-tree.h: Declare it.
+	* method.c (synthesized_method_walk): Use it.
+
 	* decl.c (pop_switch): Use EXPR_LOC_OR_HERE.
 	* typeck.c (convert_for_assignment): Likewise.
 
