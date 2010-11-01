@@ -177,7 +177,10 @@ class StdVectorPrinter:
                 if self.item == self.finish and self.so >= self.fo:
                     raise StopIteration
                 elt = self.item.dereference()
-                obit = 1 if elt & (1 << self.so) else 0
+                if elt & (1 << self.so):
+                    obit = 1
+                else:
+                    obit = 0
                 self.so = self.so + 1
                 if self.so >= self.isize:
                     self.item = self.item + 1
