@@ -1,5 +1,23 @@
 2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	Implemented format and noreturn attributes for Objective-C methods.
+	* objc.dg/attributes/method-attribute-2.m: Updated warnings.
+	* objc.dg/attributes/method-deprecated-1.m: New.
+	* objc.dg/attributes/method-deprecated-2.m: New.
+	* objc.dg/attributes/method-deprecated-3.m: New.
+	* objc.dg/attributes/method-noreturn-1.m: New.
+	* objc.dg/attributes/method-sentinel-1.m: New.
+	* objc.dg/attributes/method-format-1.m: New.
+	* obj-c++.dg/attributes/method-attribute-2.mm: Updated warnings.
+	* obj-c++.dg/attributes/method-deprecated-1.mm: New.
+	* obj-c++.dg/attributes/method-deprecated-2.mm: New.
+	* obj-c++.dg/attributes/method-deprecated-3.mm: New.
+	* obj-c++.dg/attributes/method-noreturn-1.mm: New.
+	* obj-c++.dg/attributes/method-sentinel-1.mm: New.
+	* obj-c++.dg/attributes/method-format-1.mm: New.	
+	
+2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/property/at-property-deprecated-1.m: New.
 	* obj-c++.dg/property/at-property-deprecated-1.mm: New.	
 

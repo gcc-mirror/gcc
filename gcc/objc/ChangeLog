@@ -1,5 +1,21 @@
 2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	Implemented format and noreturn attributes for Objective-C methods.
+	* objc-act.c (objc_start_method_definition): If method attributes
+	are specified emit a warning and ignore them.
+	(build_objc_method_call): Moved deprecation warnings from here ...
+	(objc_finish_message_expr): to here.  Do not emit deprecation
+	warnings if the receiver is of type 'id'.
+	(really_start_method): Install 'deprecation' and 'noreturn'
+	attributes.
+	(objc_decl_method_attributes): Carefully filter out the list of
+	attributes, allowing only "noreturn", "format", "sentinel" and
+	"deprecated".  In the case of "format", adjust the arguments.
+	Always process the attributes in the same way no matter if
+	"sentinel" is in the list or not.
+	
+2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (objc_maybe_build_component_ref): Warn about using
 	deprecated properties.
 	(objc_maybe_printable_name): Support PROPERTY_DECL.

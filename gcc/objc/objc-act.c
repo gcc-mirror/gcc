@@ -1261,7 +1261,11 @@ objc_start_method_definition (bool is_class_method, tree decl, tree attributes)
   c_break_label = c_cont_label = size_zero_node;
 #endif
 
-  objc_decl_method_attributes (&decl, attributes, 0);
+  if (attributes)
+    warning_at (input_location, 0, "method attributes can not be specified in @implementation context");
+  else
+    objc_decl_method_attributes (&decl, attributes, 0);
+
   objc_add_method (objc_implementation_context,
 		   decl,
 		   is_class_method,
@@ -6598,6 +6602,11 @@ build_method_decl (enum tree_code code, tree ret_type, tree selector,
   /* If no type is specified, default to "id".  */
   ret_type = adjust_type_for_id_default (ret_type);
 
+  /* Note how a method_decl has a TREE_TYPE which is not the function
+     type of the function implementing the method, but only the return
+     type of the method.  We may want to change this, and store the
+     entire function type in there (eg, it may be used to simplify
+     dealing with attributes below).  */
   method_decl = make_node (code);
   TREE_TYPE (method_decl) = ret_type;
 
@@ -6628,19 +6637,119 @@ build_method_decl (enum tree_code code, tree ret_type, tree selector,
 static void
 objc_decl_method_attributes (tree *node, tree attributes, int flags)
 {
-  tree sentinel_attr = lookup_attribute ("sentinel", attributes);
-  if (sentinel_attr)
+  /* TODO: Replace the hackery below.  An idea would be to store the
+     full function type in the method declaration (for example in
+     TREE_TYPE) and then expose ObjC method declarations to c-family
+     and they could deal with them by simply treating them as
+     functions.  */
+
+  /* Because of the dangers in the hackery below, we filter out any
+     attribute that we do not know about.  For the ones we know about,
+     we know that they work with the hackery.  For the other ones,
+     there is no guarantee, so we have to filter them out.  */
+  tree filtered_attributes = NULL_TREE;
+
+  if (attributes)
     {
-      /* hackery to make an obj method look like a function type. */
-      tree rettype = TREE_TYPE (*node);
-      TREE_TYPE (*node) = build_function_type (TREE_VALUE (rettype), 
-		       	    get_arg_type_list (*node, METHOD_REF, 0));
-      decl_attributes (node, attributes, flags);
-      METHOD_TYPE_ATTRIBUTES (*node) = TYPE_ATTRIBUTES (TREE_TYPE (*node));
-      TREE_TYPE (*node) = rettype;
+      tree attribute;
+      for (attribute = attributes; attribute; attribute = TREE_CHAIN (attribute))
+	{
+	  tree name = TREE_PURPOSE (attribute);
+	  
+	  if (is_attribute_p  ("deprecated", name)
+	      || is_attribute_p ("sentinel", name)
+	      || is_attribute_p ("noreturn", name))
+	    {
+	      /* An attribute that we support; add it to the filtered
+		 attributes.  */
+	      filtered_attributes = chainon (filtered_attributes, 
+					     copy_node (attribute));
+	    }
+	  else if (is_attribute_p ("format", name))
+	    {
+	      /* "format" is special because before adding it to the
+		 filtered attributes we need to adjust the specified
+		 format by adding the hidden function parameters for
+		 an Objective-C method (self, _cmd).  */
+	      tree new_attribute = copy_node (attribute);
+
+	      /* Check the arguments specified with the attribute, and
+		 modify them adding 2 for the two hidden arguments.
+		 Note how this differs from C++; according to the
+		 specs, C++ does not do it so you have to add the +1
+		 yourself.  For Objective-C, instead, the compiler
+		 adds the +2 for you.  */
+
+	      /* The attribute arguments have not been checked yet, so
+		 we need to be careful as they could be missing or
+		 invalid.  If anything looks wrong, we skip the
+		 process and the compiler will complain about it later
+		 when it validates the attribute.  */
+	      /* Check that we have at least three arguments.  */
+	      if (TREE_VALUE (new_attribute)
+		  && TREE_CHAIN (TREE_VALUE (new_attribute))
+		  && TREE_CHAIN (TREE_CHAIN (TREE_VALUE (new_attribute))))
+		{
+		  tree second_argument = TREE_CHAIN (TREE_VALUE (new_attribute));
+		  tree third_argument = TREE_CHAIN (second_argument);
+		  tree number;
+
+		  /* This is the second argument, the "string-index",
+		     which specifies the index of the format string
+		     argument.  Add 2.  */
+		  number = TREE_VALUE (second_argument);
+		  if (number
+		      && TREE_CODE (number) == INTEGER_CST
+		      && TREE_INT_CST_HIGH (number) == 0)
+		    {
+		      TREE_VALUE (second_argument) 
+			= build_int_cst (integer_type_node,
+					 TREE_INT_CST_LOW (number) + 2);
+		    }
+		  
+		  /* This is the third argument, the "first-to-check",
+		     which specifies the index of the first argument to
+		     check.  This could be 0, meaning it is not available,
+		     in which case we don't need to add 2.  Add 2 if not
+		     0.  */
+		  number = TREE_VALUE (third_argument);
+		  if (number
+		      && TREE_CODE (number) == INTEGER_CST
+		      && TREE_INT_CST_HIGH (number) == 0
+		      && TREE_INT_CST_LOW (number) != 0)
+		    {
+		      TREE_VALUE (third_argument) 
+			= build_int_cst (integer_type_node,
+					 TREE_INT_CST_LOW (number) + 2);
+		    }
+		}
+	      filtered_attributes = chainon (filtered_attributes,
+					     new_attribute);
+	    }
+	  else
+	    warning (OPT_Wattributes, "%qE attribute directive ignored", name);
+	}
     }
-  else
-    decl_attributes (node, attributes, flags);
+
+  if (filtered_attributes)
+    {
+      /* This hackery changes the TREE_TYPE of the ObjC method
+	 declaration to be a function type, so that decl_attributes
+	 will treat the ObjC method as if it was a function.  Some
+	 attributes (sentinel, format) will be applied to the function
+	 type, changing it in place; so after calling decl_attributes,
+	 we extract the function type attributes and store them in
+	 METHOD_TYPE_ATTRIBUTES.  Some other attributes (noreturn,
+	 deprecated) are applied directly to the method declaration
+	 (by setting TREE_DEPRECATED and TREE_THIS_VOLATILE) so there
+	 is nothing to do.  */
+      tree saved_type = TREE_TYPE (*node);
+      TREE_TYPE (*node) = build_function_type 
+	(TREE_VALUE (saved_type), get_arg_type_list (*node, METHOD_REF, 0));
+      decl_attributes (node, filtered_attributes, flags);
+      METHOD_TYPE_ATTRIBUTES (*node) = TYPE_ATTRIBUTES (TREE_TYPE (*node));
+      TREE_TYPE (*node) = saved_type;
+    }
 }
 
 bool 
@@ -7149,6 +7258,26 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
 	  warn_missing_methods = true;
 	}
     }
+  else
+    {
+      /* Warn if the method is deprecated, but not if the receiver is
+	 a generic 'id'.  'id' is used to cast an object to a generic
+	 object of an unspecified class; in that case, we'll use
+	 whatever method prototype we can find to get the method
+	 argument and return types, but it is not appropriate to
+	 produce deprecation warnings since we don't know the class
+	 that the object will be of at runtime.  The @interface(s) for
+	 that class may not even be available to the compiler right
+	 now, and it is perfectly possible that the method is marked
+	 as non-deprecated in such @interface(s).
+
+	 In practice this makes sense since casting an object to 'id'
+	 is often used precisely to turn off warnings associated with
+	 the object being of a particular class.  */
+      if (TREE_DEPRECATED (method_prototype)  &&  rtype != NULL_TREE)
+	warn_deprecated_use (method_prototype, NULL_TREE);
+    }
+
 
   /* Save the selector name for printing error messages.  */
   current_objc_message_selector = sel_name;
@@ -7209,13 +7338,11 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
   tree method, t;
 
   if (method_prototype && METHOD_TYPE_ATTRIBUTES (method_prototype))
-    ftype = build_type_attribute_variant (
-	      ftype, METHOD_TYPE_ATTRIBUTES (method_prototype));
+    ftype = build_type_attribute_variant (ftype, 
+					  METHOD_TYPE_ATTRIBUTES 
+					  (method_prototype));
 
   sender_cast = build_pointer_type (ftype);
-
-  if (method_prototype && TREE_DEPRECATED (method_prototype))
-    warn_deprecated_use (method_prototype, NULL_TREE);
 
   lookup_object = build_c_cast (loc, rcv_p, lookup_object);
 
@@ -10635,6 +10762,20 @@ really_start_method (tree method,
 		      "previous declaration of %<%c%s%>",
 		      (type ? '-' : '+'),
 		      identifier_to_locale (gen_method_decl (proto)));
+	    }
+	  else
+	    {
+	      /* If the method in the @interface was deprecated, mark
+		 the implemented method as deprecated too.  It should
+		 never be used for messaging (when the deprecation
+		 warnings are produced), but just in case.  */
+	      if (TREE_DEPRECATED (proto))
+		TREE_DEPRECATED (method) = 1;
+
+	      /* If the method in the @interface was marked as
+		 'noreturn', mark the function implementing the method
+		 as 'noreturn' too.  */
+	      TREE_THIS_VOLATILE (current_function_decl) = TREE_THIS_VOLATILE (proto);
 	    }
 	}
       else
