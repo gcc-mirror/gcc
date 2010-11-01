@@ -45,7 +45,7 @@ void test01()
   VERIFY( bitset<4>(s1, 4) == test01_ref<4>(s1, 4) );
 
   const char s2[3] = { '1', '1', '0' };
-  VERIFY( bitset<6>(s1, 3) == test01_ref<6>(s1, 3) );
+  VERIFY( bitset<6>(s2, 3) == test01_ref<6>(s2, 3) );
 
   const char* s3 = "1110110";
   VERIFY( bitset<7>(s3) == test01_ref<7>(s3) );

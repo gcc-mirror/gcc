@@ -91,10 +91,8 @@ test_uniform_random()
   while (set.size() < N)
     {
       s.clear();
-      for (int i = 0; i < len; ++i)
-        {
-          s.push_back(rand() % 128);
-        }
+      for (unsigned int i = 0; i < len; ++i)
+	s.push_back(rand() % 128);
       set.insert(s);
     }
 
@@ -122,7 +120,7 @@ test_bit_flip_set()
   while (set.size() < N)
     {
       std::string s(base, base+len);
-      for (int i = 0; i < bits_to_flip; ++i)
+      for (unsigned int i = 0; i < bits_to_flip; ++i)
         {
           int bit = rand() % bitlen;
           s[bit/8] ^= (1 << (bit%8));
@@ -168,7 +166,7 @@ test_bit_string_set()
   for (unsigned long i = 0; i < N; ++i)
     {
       s.clear();
-      for (int j = 0; j < sizeof(unsigned long) * 8; ++j)
+      for (unsigned int j = 0; j < sizeof(unsigned long) * 8; ++j)
         {
           const bool bit = (1UL << j) & i;
           s.push_back(bit ? '1' : '0');

@@ -1,3 +1,9 @@
+2010-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/bitset/cons/dr1325-2.cc: Fix typo.
+	* testsuite/20_util/hash/quality.cc: Avoid -Wall warnings.
+	* testsuite/20_util/hash/chi2_quality.cc: Likewise.
+
 2010-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_function.h (_Select1st<>::operator()): Add
