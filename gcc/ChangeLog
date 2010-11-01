@@ -1,3 +1,26 @@
+2010-11-01  Alan Modra  <amodra@gmail.com>
+
+	PR target/46030
+	* config/rs6000/rs6000.c (struct rs6000_stack): Add reload_completed
+	and savres_strategy.
+	(stack_info): New file scope var.
+	(rs6000_init_machine_status): Init stack_info.
+	(SAVRES_INLINE_FPRS, SAVRES_INLINE_GPRS,
+	SAVRES_NOINLINE_GPRS_SAVES_LR, SAVRES_NOINLINE_FPRS_SAVES_LR,
+	SAVRES_NOINLINE_FPRS_DOESNT_RESTORE_LR): Replace with..
+	(SAVE_INLINE_FPRS, SAVE_INLINE_GPRS, REST_INLINE_FPRS, REST_INLINE_GPRS,
+	SAVE_NOINLINE_GPRS_SAVES_LR, SAVE_NOINLINE_FPRS_SAVES_LR
+	REST_NOINLINE_FPRS_DOESNT_RESTORE_LR): ..this.  Update all refs.
+	(rs6000_savres_strategy): Rewrite.
+	(rs6000_stack_info): Use "stack_info" in place of local "info".
+	Return cached stack info when reload_completed unless ENABLE_CHECKING
+	in which case confirm newly calculated stack info matches old info.
+	Delay calculation of lr_save_p, set it for out of line gp save/restore
+	as well as fp.  Call rs6000_savres_strategy from here..
+	(rs6000_emit_prologue, rs6000_emit_epilogue): ..rather than here.
+	(rs6000_output_function_prologue): Use info->savres_strategy to
+	determine whether fp save/restore externs need to be emitted.
+
 2010-10-31  Jason Merrill  <jason@redhat.com>
 
 	* tree.h (EXPR_LOC_OR_HERE): New macro.
