@@ -1,3 +1,14 @@
+2010-11-01  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR tree-optimization/46259
+
+	Revert:
+
+	2010-10-30  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Use
+	build_vector_from_val.
+
 2010-11-01  DJ Delorie  <dj@redhat.com>
 
 	* config/rx/rx.h (TARGET_CPU_CPP_BUILTINS): Add define for RX610

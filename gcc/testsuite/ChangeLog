@@ -1,3 +1,9 @@
+2010-11-01  H.J. Lu  <hongjiu.lu@intel.com>
+	    Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR tree-optimization/46259
+	* gfortran.dg/pr46259.f: New testcase.
+
 2010-11-01  Paul Koning  <ni1d@arrl.net>
 
 	* gcc.c-torture/compile/20080625-1.c: Skip if pdp11.
