@@ -1,3 +1,11 @@
+2010-11-01  Steve Ellcey  <sje@cup.hp.com>
+
+	* defaults.h (TARGET_VTABLE_USES_DESCRIPTORS): Move under ifdef
+	GCC_INSN_FLAGS_H.
+	* libgcov.c (__gcov_indirect_call_profiler): Set
+	VTABLE_USES_DESCRIPTORS if TARGET_VTABLE_USES_DESCRIPTORS is
+	defined and use in place of TARGET_VTABLE_USES_DESCRIPTORS.
+
 2010-11-01  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR tree-optimization/46259
