@@ -1,3 +1,8 @@
+2010-10-31  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (conversion_warning, warn_for_collisions_1): Use
+	EXPR_LOC_OR_HERE.
+
 2010-10-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented Objective-C 2.0 @property, @synthesize and @dynamic.

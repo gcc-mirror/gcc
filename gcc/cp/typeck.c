@@ -7529,8 +7529,7 @@ convert_for_assignment (tree type, tree rhs,
       && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE
       && (complain & tf_warning))
     {
-      location_t loc = EXPR_HAS_LOCATION (rhs) 
-	? EXPR_LOCATION (rhs) : input_location;
+      location_t loc = EXPR_LOC_OR_HERE (rhs);
 
       warning_at (loc, OPT_Wparentheses,
 		  "suggest parentheses around assignment used as truth value");

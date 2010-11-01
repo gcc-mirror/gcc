@@ -1,5 +1,8 @@
 2010-10-31  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (pop_switch): Use EXPR_LOC_OR_HERE.
+	* typeck.c (convert_for_assignment): Likewise.
+
 	* parser.c (cp_parser_diagnose_invalid_type_name): Give helpful
 	message about constexpr without -std=c++0x.
 

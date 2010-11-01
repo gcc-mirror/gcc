@@ -506,10 +506,7 @@ c_strlen (tree src, int only_value)
       && (only_value || !TREE_SIDE_EFFECTS (TREE_OPERAND (src, 0))))
     return c_strlen (TREE_OPERAND (src, 1), only_value);
 
-  if (EXPR_HAS_LOCATION (src))
-    loc = EXPR_LOCATION (src);
-  else
-    loc = input_location;
+  loc = EXPR_LOC_OR_HERE (src);
 
   src = string_constant (src, &offset_node);
   if (src == 0)
