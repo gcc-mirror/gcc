@@ -1863,8 +1863,7 @@ conversion_warning (tree type, tree expr)
   int i;
   const int expr_num_operands = TREE_OPERAND_LENGTH (expr);
   tree expr_type = TREE_TYPE (expr);
-  location_t loc = EXPR_HAS_LOCATION (expr)
-    ? EXPR_LOCATION (expr) : input_location;
+  location_t loc = EXPR_LOC_OR_HERE (expr);
 
   if (!warn_conversion && !warn_sign_conversion)
     return;
@@ -2297,8 +2296,7 @@ warn_for_collisions_1 (tree written, tree writer, struct tlist *list,
 	  && (!only_writes || list->writer))
 	{
 	  warned_ids = new_tlist (warned_ids, written, NULL_TREE);
-	  warning_at (EXPR_HAS_LOCATION (writer)
-		      ? EXPR_LOCATION (writer) : input_location,
+	  warning_at (EXPR_LOC_OR_HERE (writer),
 		      OPT_Wsequence_point, "operation on %qE may be undefined",
 		      list->expr);
 	}

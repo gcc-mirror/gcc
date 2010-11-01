@@ -1,3 +1,12 @@
+2010-10-31  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (EXPR_LOC_OR_HERE): New macro.
+	* builtins.c (c_strlen): Use it.
+	* c-decl.c (build_enumerator): Likewise.
+	* gimplify.c (internal_get_tmp_var): Likewise.
+	(shortcut_cond_expr): Likewise.
+	(gimplify_one_sizepos): Likewise.
+
 2010-10-31  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/cygming.h (TARGET_SEH): New.

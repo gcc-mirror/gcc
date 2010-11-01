@@ -587,10 +587,7 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
 
   mod = build2 (INIT_EXPR, TREE_TYPE (t), t, unshare_expr (val));
 
-  if (EXPR_HAS_LOCATION (val))
-    SET_EXPR_LOCATION (mod, EXPR_LOCATION (val));
-  else
-    SET_EXPR_LOCATION (mod, input_location);
+  SET_EXPR_LOCATION (mod, EXPR_LOC_OR_HERE (val));
 
   /* gimplify_modify_expr might want to reduce this further.  */
   gimplify_and_add (mod, pre_p);
@@ -2620,8 +2617,7 @@ shortcut_cond_expr (tree expr)
       while (TREE_CODE (pred) == TRUTH_ANDIF_EXPR)
 	{
 	  /* Keep the original source location on the first 'if'.  */
-	  location_t locus = EXPR_HAS_LOCATION (expr)
-			     ? EXPR_LOCATION (expr) : input_location;
+	  location_t locus = EXPR_LOC_OR_HERE (expr);
 	  TREE_OPERAND (expr, 0) = TREE_OPERAND (pred, 1);
 	  /* Set the source location of the && on the second 'if'.  */
 	  if (EXPR_HAS_LOCATION (pred))
@@ -2643,8 +2639,7 @@ shortcut_cond_expr (tree expr)
       while (TREE_CODE (pred) == TRUTH_ORIF_EXPR)
 	{
 	  /* Keep the original source location on the first 'if'.  */
-	  location_t locus = EXPR_HAS_LOCATION (expr)
-			     ? EXPR_LOCATION (expr) : input_location;
+	  location_t locus = EXPR_LOC_OR_HERE (expr);
 	  TREE_OPERAND (expr, 0) = TREE_OPERAND (pred, 1);
 	  /* Set the source location of the || on the second 'if'.  */
 	  if (EXPR_HAS_LOCATION (pred))
@@ -2708,8 +2703,7 @@ shortcut_cond_expr (tree expr)
   /* If there was nothing else in our arms, just forward the label(s).  */
   if (!then_se && !else_se)
     return shortcut_cond_r (pred, true_label_p, false_label_p,
-			    EXPR_HAS_LOCATION (expr)
-			    ? EXPR_LOCATION (expr) : input_location);
+			    EXPR_LOC_OR_HERE (expr));
 
   /* If our last subexpression already has a terminal label, reuse it.  */
   if (else_se)
@@ -2741,8 +2735,7 @@ shortcut_cond_expr (tree expr)
   jump_over_else = block_may_fallthru (then_);
 
   pred = shortcut_cond_r (pred, true_label_p, false_label_p,
-			  EXPR_HAS_LOCATION (expr)
-			  ? EXPR_LOCATION (expr) : input_location);
+			  EXPR_LOC_OR_HERE (expr));
 
   expr = NULL;
   append_to_statement_list (pred, &expr);
@@ -7638,10 +7631,7 @@ gimplify_one_sizepos (tree *expr_p, gimple_seq *stmt_p)
       *expr_p = create_tmp_var (type, NULL);
       tmp = build1 (NOP_EXPR, type, expr);
       stmt = gimplify_assign (*expr_p, tmp, stmt_p);
-      if (EXPR_HAS_LOCATION (expr))
-	gimple_set_location (stmt, EXPR_LOCATION (expr));
-      else
-	gimple_set_location (stmt, input_location);
+      gimple_set_location (stmt, EXPR_LOC_OR_HERE (expr));
     }
 }
 
