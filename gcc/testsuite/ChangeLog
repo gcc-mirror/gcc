@@ -1,3 +1,25 @@
+2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented Objective-C 2.0 property accessors.
+	* objc.dg/property/at-property-6.m: Use nonatomic properties to
+	avoid testing more complex accessors in this testcase which is not
+	about them.
+	* objc.dg/property/at-property-7.m: Same change.
+	* objc.dg/property/at-property-8.m: Same change.
+	* objc.dg/property/at-property-9.m: Same change.
+	* objc.dg/property/at-property-10.m: Same change.
+	* objc.dg/property/at-property-11.m: Same change.
+	* obj-c++.dg/property/at-property-6.mm: Same change.
+	* obj-c++.dg/property/at-property-7.mm: Same change.
+	* obj-c++.dg/property/at-property-8.mm: Same change.
+	* obj-c++.dg/property/at-property-9.mm: Same change.
+	* obj-c++.dg/property/at-property-10.mm: Same change.
+	* obj-c++.dg/property/at-property-11.mm: Same change.
+	* objc.dg/property/at-property-12.m: New.
+	* objc.dg/property/at-property-13.m: New.
+	* obj-c++.dg/property/at-property-12.mm: New.
+	* obj-c++.dg/property/at-property-13.mm: New.	
+	
 2010-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/46152
