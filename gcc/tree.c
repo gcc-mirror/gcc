@@ -1376,8 +1376,8 @@ build_vector_from_val (tree vectype, tree sc)
   if (sc == error_mark_node)
     return sc;
 
-  gcc_assert (lang_hooks.types_compatible_p (TREE_TYPE (sc),
-					     TREE_TYPE (vectype)));
+  gcc_assert (useless_type_conversion_p (TREE_TYPE (sc),
+					 TREE_TYPE (vectype)));
 
   v = VEC_alloc (constructor_elt, gc, nunits);
   for (i = 0; i < nunits; ++i)
