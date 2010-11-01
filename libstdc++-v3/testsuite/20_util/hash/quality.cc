@@ -37,12 +37,12 @@ using namespace std;
 #define STRSIZE 42
 #endif
 
-const int num_quality_tests = NTESTS;
-const int num_strings_for_quality_tests = NSTRINGS;
-const int string_size = STRSIZE;
+const unsigned int num_quality_tests = NTESTS;
+const unsigned int num_strings_for_quality_tests = NSTRINGS;
+const unsigned int string_size = STRSIZE;
 
 vector<string>
-random_strings(int n, int len)
+random_strings(unsigned int n, unsigned int len)
 {
   string s(len, '\0');
   unordered_set<string> result_set;
@@ -57,10 +57,10 @@ random_strings(int n, int len)
 }
 
 double
-score_from_varying_position(string s, int index)
+score_from_varying_position(string s, unsigned int index)
 {
   bool test __attribute__((unused)) = true;
-  int bits_in_hash_code = sizeof(size_t) * 8;
+  unsigned int bits_in_hash_code = sizeof(size_t) * 8;
 
   // We'll iterate through all 256 vals for s[index], leaving the rest
   // of s fixed.  Then, for example, out of the 128 times that
@@ -71,9 +71,9 @@ score_from_varying_position(string s, int index)
   // count the number of times each output position (of which there are
   // bits_in_hash_code) is 1 for each bit position within s[index] (of 
   // which there are 8) and value of that bit (of which there are 2).
-  const int jj = 2;
-  const int kk = jj * bits_in_hash_code;
-  const int array_size = 8 * kk;
+  const unsigned int jj = 2;
+  const unsigned int kk = jj * bits_in_hash_code;
+  const unsigned int array_size = 8 * kk;
   vector<int> ones(array_size, 0);
 
   for (int i = 0; i < 256; i++)
@@ -99,7 +99,7 @@ score_from_varying_position(string s, int index)
   int good = 0, bad = 0;
   for (int bit = 0; bit <= 1; bit++)
     {
-      for (int j = 0; j < bits_in_hash_code; j++)
+      for (unsigned int j = 0; j < bits_in_hash_code; j++)
         {
           for (int bitpos = 0; bitpos < 8; bitpos++)
             {
@@ -121,21 +121,21 @@ score_from_varying_position(string s, int index)
 }
 
 double
-score_from_varying_position(const vector<string>& v, int index)
+score_from_varying_position(const vector<string>& v, unsigned int index)
 {
   double score = 0;
-  for (int i = 0; i < v.size(); i++)
+  for (unsigned int i = 0; i < v.size(); i++)
     score += score_from_varying_position(v[i], index);
   return score / v.size();
 }
 
 double
-quality_test(int num_strings, int string_size)
+quality_test(unsigned int num_strings, unsigned int string_size)
 {
   // Construct random strings.
   vector<string> v = random_strings(num_strings, string_size);
   double sum_of_scores = 0;
-  for (int i = 0; i < string_size; i++)
+  for (unsigned int i = 0; i < string_size; i++)
     sum_of_scores += score_from_varying_position(v, i);
 
   // A good hash function should have a score very close to 1, and a bad
@@ -149,7 +149,7 @@ quality_test()
   bool test __attribute__((unused)) = true;
   srand(137);
   double sum_of_scores = 0;
-  for (int i = 0; i < num_quality_tests; i++)
+  for (unsigned int i = 0; i < num_quality_tests; i++)
     {
       double score = quality_test(num_strings_for_quality_tests,
 				  string_size);
