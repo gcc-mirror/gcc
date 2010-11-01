@@ -502,13 +502,6 @@ do {									\
 		 reg_names[1]);						\
 } while (0)
 
-/* Switch  Recognition by gcc.c.  Add -G xx support.  */
-
-/* Override svr4.h definition.  */
-#undef	SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR)						\
-  (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
-
 extern int fixuplabelno;
 
 /* Handle constructors specially for -mrelocatable.  */

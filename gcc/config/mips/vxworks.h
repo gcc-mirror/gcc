@@ -1,4 +1,5 @@
-/* Copyright (C) 1999, 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
+/* Copyright (C) 1999, 2003, 2004, 2007, 2008, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,15 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (MIPS, VxWorks syntax)");
-
-/* Combination of mips.h and svr4.h.  */
-#undef  SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR)          \
-  (DEFAULT_SWITCH_TAKES_ARG (CHAR)      \
-   || (CHAR) == 'G'                     \
-   || (CHAR) == 'h'                     \
-   || (CHAR) == 'x'                     \
-   || (CHAR) == 'z')
 
 #undef  ASM_SPEC
 #define ASM_SPEC "\

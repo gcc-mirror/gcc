@@ -1,3 +1,48 @@
+2010-11-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (R, T, Tbss, Tdata, Ttext, h, z): New.
+	* defaults.h (DEFAULT_SWITCH_TAKES_ARG, SWITCH_TAKES_ARG): Remove.
+	(DEFAULT_WORD_SWITCH_TAKES_ARG): Define to 0.
+	* doc/tm.texi.in (SWITCH_TAKES_ARG): Remove.
+	(WORD_SWITCH_TAKES_ARG): Don't refer to SWITCH_TAKES_ARG.
+	Document that options in .opt files do not need to be included.
+	* doc/tm.texi: Regenerate.
+	* gcc.c (LINK_COMMAND_SPEC): Don't include %{x}.
+	* opts-common.c: Update comment on tm.h include.
+	(decode_cmdline_option): Don't use SWITCH_TAKES_ARG.
+	* system.h (SWITCH_TAKES_ARG): Poison.
+	* config/alpha/alpha.h (SWITCH_TAKES_ARG): Remove.
+	* config/darwin.h (WORD_SWITCH_TAKES_ARG): Remove options included
+	in darwin.opt.
+	(LINK_COMMAND_SPEC_A): Don't include %{x}.
+	* config/fr30/fr30.h (SWITCH_TAKES_ARG, WORD_SWITCH_TAKES_ARG):
+	Remove.
+	* config/freebsd-spec.h (FBSD_SWITCH_TAKES_ARG): Remove.
+	* config/freebsd.h (SWITCH_TAKES_ARG): Remove.
+	* config/frv/frv.h (SWITCH_TAKES_ARG, WORD_SWITCH_TAKES_ARG):
+	Remove.
+	* config/i386/djgpp.h (LINK_COMMAND_SPEC): Don't include %{x}.
+	* config/ia64/ia64.h (SWITCH_TAKES_ARG): Remove.
+	* config/interix.h (WORD_SWITCH_TAKES_ARG): Don't handle -T
+	options.
+	* config/lm32/lm32.h (SWITCH_TAKES_ARG): Remove.
+	* config/m32r/m32r.h (SWITCH_TAKES_ARG, WORD_SWITCH_TAKES_ARG):
+	Remove.
+	* config/microblaze/microblaze.h (SWITCH_TAKES_ARG): Remove.
+	* config/mips/mips.h (SWITCH_TAKES_ARG): Remove.
+	* config/mips/netbsd.h (SWITCH_TAKES_ARG): Remove.
+	* config/mips/vxworks.h (SWITCH_TAKES_ARG): Remove.
+	* config/netbsd-aout.h (SWITCH_TAKES_ARG): Remove.
+	* config/netbsd-elf.h (SWITCH_TAKES_ARG): Remove.
+	* config/openbsd.h (SWITCH_TAKES_ARG): Remove.
+	* config/rs6000/sysv4.h (SWITCH_TAKES_ARG): Remove.
+	* config/score/score.h (SWITCH_TAKES_ARG): Remove.
+	* config/sol2.h (SWITCH_TAKES_ARG): Remove.
+	* config/sparc/sp-elf.h (SWITCH_TAKES_ARG): Remove.
+	* config/sparc/sp64-elf.h (SWITCH_TAKES_ARG): Remove.
+	* config/sparc/sparc.h (ASM_SPEC): Don't include %{R}.
+	* config/svr4.h (SWITCH_TAKES_ARG, WORD_SWITCH_TAKES_ARG): Remove.
+
 2010-11-01  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.md: Use iterators.

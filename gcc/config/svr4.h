@@ -1,7 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for some
    generic System V Release 4 system.
    Copyright (C) 1991, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2000, 2001, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GCC.
@@ -40,26 +40,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define USING_SVR4_H
 
 /* Cpp, assembler, linker, library, and startfile spec's.  */
-
-/* This defines which switch letters take arguments.  On svr4, most of
-   the normal cases (defined in gcc.c) apply, and we also have -h* and
-   -z* options (for the linker).  Note however that there is no such
-   thing as a -T option for svr4.  */
-
-#undef  SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR)		\
-  (DEFAULT_SWITCH_TAKES_ARG (CHAR)	\
-   || (CHAR) == 'h'			\
-   || (CHAR) == 'x'			\
-   || (CHAR) == 'z')
-
-/* This defines which multi-letter switches take arguments.  On svr4,
-   there are no such switches except those implemented by GCC itself.  */
-
-#define WORD_SWITCH_TAKES_ARG(STR)			\
- (DEFAULT_WORD_SWITCH_TAKES_ARG (STR)			\
-  && strcmp (STR, "Tdata") && strcmp (STR, "Ttext")	\
-  && strcmp (STR, "Tbss"))
 
 /* Provide an ASM_SPEC appropriate for svr4.
    If we're not using GAS, we try to support as

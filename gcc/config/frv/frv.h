@@ -35,33 +35,6 @@
 
 /* Driver configuration.  */
 
-/* A C expression which determines whether the option `-CHAR' takes arguments.
-   The value should be the number of arguments that option takes-zero, for many
-   options.
-
-   By default, this macro is defined to handle the standard options properly.
-   You need not define it unless you wish to add additional options which take
-   arguments.
-
-   Defined in svr4.h.  */
-#undef  SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR)                                          \
-  (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
-
-/* A C expression which determines whether the option `-NAME' takes arguments.
-   The value should be the number of arguments that option takes-zero, for many
-   options.  This macro rather than `SWITCH_TAKES_ARG' is used for
-   multi-character option names.
-
-   By default, this macro is defined as `DEFAULT_WORD_SWITCH_TAKES_ARG', which
-   handles the standard options properly.  You need not define
-   `WORD_SWITCH_TAKES_ARG' unless you wish to add additional options which take
-   arguments.  Any redefinition should call `DEFAULT_WORD_SWITCH_TAKES_ARG' and
-   then check for additional options.
-
-   Defined in svr4.h.  */
-#undef WORD_SWITCH_TAKES_ARG
-
 /* -fpic and -fPIC used to imply the -mlibrary-pic multilib, but with
     FDPIC which multilib to use depends on whether FDPIC is in use or
     not.  The trick we use is to introduce -multilib-library-pic as a

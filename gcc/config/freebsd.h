@@ -30,13 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 /* In case we need to know.  */
 #define USING_CONFIG_FREEBSD 1
 
-/* This defines which switch letters take arguments.  On FreeBSD, most of
-   the normal cases (defined in gcc.c) apply, and we also have -h* and
-   -z* options (for the linker) (coming from SVR4).
-   We also have -R (alias --rpath), no -z, --soname (-h), --assert etc.  */
-
-#undef  SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR) (FBSD_SWITCH_TAKES_ARG(CHAR))
+/* This defines which switch words take arguments.
+   We have --assert etc.  */
 
 #undef  WORD_SWITCH_TAKES_ARG
 #define WORD_SWITCH_TAKES_ARG(STR) (FBSD_WORD_SWITCH_TAKES_ARG(STR))

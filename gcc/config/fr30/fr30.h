@@ -22,15 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /*}}}*/ 
-/*{{{  Driver configuration.  */ 
-
-/* Defined in svr4.h.  */
-#undef SWITCH_TAKES_ARG
-
-/* Defined in svr4.h.  */
-#undef WORD_SWITCH_TAKES_ARG
-
-/*}}}*/ 
 /*{{{  Run-time target specifications.  */ 
 
 #undef  ASM_SPEC

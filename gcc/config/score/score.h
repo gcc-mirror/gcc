@@ -20,11 +20,6 @@
 
 #include "score-conv.h"
 
-/* Controlling the Compilation Driver.  */
-#undef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR) \
-  (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
-
 #undef CPP_SPEC
 #define CPP_SPEC                 "%{mscore3:-D__score3__} %{G*}"
 

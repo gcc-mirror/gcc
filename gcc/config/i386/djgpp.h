@@ -102,7 +102,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LINK_COMMAND_SPEC \
 "%{!fsyntax-only: \
 %{!c:%{!M:%{!MM:%{!E:%{!S:%(linker) %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
-\t%{r} %{s} %{t} %{u*} %{x} %{z} %{Z}\
+\t%{r} %{s} %{t} %{u*} %{z} %{Z}\
 \t%{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
 \t%{static:} %{L*} %D %o\
 \t%{!nostdlib:%{!nodefaultlibs:%G %L %G}}\

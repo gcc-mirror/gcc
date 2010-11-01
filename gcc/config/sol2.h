@@ -192,15 +192,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY 0
 
-/* This defines which switch letters take arguments.
-   It is as in svr4.h but with -R added.  */
-#undef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR) \
-  (DEFAULT_SWITCH_TAKES_ARG(CHAR) \
-   || (CHAR) == 'R' \
-   || (CHAR) == 'h' \
-   || (CHAR) == 'z')
-
 #define STDC_0_IN_SYSTEM_HEADERS 1
 
 /*

@@ -22,8 +22,6 @@
 - longlong.h?
 */
 
-#undef SWITCH_TAKES_ARG
-#undef WORD_SWITCH_TAKES_ARG
 #undef HANDLE_SYSV_PRAGMA
 #undef SIZE_TYPE
 #undef PTRDIFF_TYPE
@@ -93,12 +91,6 @@
 #ifndef	TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (m32r)")
 #endif
-
-/* Switch  Recognition by gcc.c.  Add -G xx support.  */
-
-#undef  SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR) \
-(DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
 
 /* Names to predefine in the preprocessor for this target machine.  */
 /* __M32R__ is defined by the existing compiler so we use that.  */
