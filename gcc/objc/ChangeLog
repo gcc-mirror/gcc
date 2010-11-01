@@ -1,5 +1,11 @@
 2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_maybe_build_component_ref): Warn about using
+	deprecated properties.
+	(objc_maybe_printable_name): Support PROPERTY_DECL.
+	
+2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	Implemented Objective-C 2.0 property accessors.	
 	* objc-act.h (enum objc_tree_index): Added OCTI_GET_PROPERTY_DECL,
 	OCTI_SET_PROPERTY_DECL, OCTI_COPY_STRUCT_DECL,

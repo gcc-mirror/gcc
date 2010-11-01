@@ -1122,6 +1122,9 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
     {
       tree expression;
 
+      if (TREE_DEPRECATED (x))
+	warn_deprecated_use (x, NULL_TREE);
+
       expression = build2 (PROPERTY_REF, TREE_TYPE(x), object, x);
       SET_EXPR_LOCATION (expression, input_location);
       TREE_SIDE_EFFECTS (expression) = 1;
@@ -11223,6 +11226,13 @@ objc_maybe_printable_name (tree decl, int v ATTRIBUTE_UNUSED)
     case INSTANCE_METHOD_DECL:
     case CLASS_METHOD_DECL:
       return IDENTIFIER_POINTER (DECL_NAME (decl));
+      break;
+      /* This happens when printing a deprecation warning for a
+	 property.  We may want to consider some sort of pretty
+	 printing (eg, include the class name where it was declared
+	 ?).  */
+    case PROPERTY_DECL:
+      return IDENTIFIER_POINTER (PROPERTY_NAME (decl));
       break;
     default:
       return NULL;
