@@ -1,3 +1,13 @@
+2010-11-01  Paul Koning  <ni1d@arrl.net>
+
+	* gcc.c-torture/compile/20080625-1.c: Skip if pdp11.
+	* gcc.c-torture/compile/20020604-1.c: Ditto.
+	* gcc.c-torture/compile/20001226-1.c: Ditto.
+	* gcc.c-torture/compile/20010327-1.c: Ditto.
+	* gcc.c-torture/compile/limits-stringlit.c: Ditto.
+	* gcc.c-torture/compile/pr43191.c: Ditto.
+	* gcc.c-torture/compile/pr41181.c: Ditto.
+
 2010-10-31  Richard Henderson  <rth@redhat.com>
 
 	* lib/target-supports.exp
