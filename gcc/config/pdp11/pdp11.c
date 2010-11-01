@@ -1816,14 +1816,12 @@ output_addr_const_pdp11 (FILE *file, rtx x)
 static bool
 pdp11_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
-  /* Should probably return DImode and DFmode in memory, lest
-     we fill up all regs!
-
-     have to, else we crash - exception: maybe return result in 
-     ac0 if DFmode and FPU present - compatibility problem with
-     libraries for non-floating point....  */
+  /* Integers 32 bits and under, and scalar floats (if FPU), are returned
+     in registers.  The rest go into memory.  */
   return (TYPE_MODE (type) == DImode
-	  || (FLOAT_MODE_P (TYPE_MODE (type)) && ! TARGET_AC0));
+	  || (FLOAT_MODE_P (TYPE_MODE (type)) && ! TARGET_AC0)
+	  || TREE_CODE (type) == VECTOR_TYPE
+	  || COMPLEX_MODE_P (TYPE_MODE (type)));
 }
 
 /* Worker function for TARGET_FUNCTION_VALUE.
