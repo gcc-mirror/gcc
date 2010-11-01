@@ -34,14 +34,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* In case we need to know.  */
 #define USING_CONFIG_FREEBSD_SPEC 1
 
-/* This defines which multi-letter switches take arguments.  */
-
-#define FBSD_WORD_SWITCH_TAKES_ARG(STR)					\
-  (DEFAULT_WORD_SWITCH_TAKES_ARG (STR)					\
-   || !strcmp ((STR), "rpath") || !strcmp ((STR), "rpath-link")		\
-   || !strcmp ((STR), "soname") || !strcmp ((STR), "defsym") 		\
-   || !strcmp ((STR), "assert") || !strcmp ((STR), "dynamic-linker"))
-
 #define FBSD_TARGET_OS_CPP_BUILTINS()					\
   do									\
     {									\

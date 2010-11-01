@@ -1,6 +1,6 @@
 ; Processor-independent options for Darwin.
 
-; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2010 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -53,6 +53,87 @@ Generate code for the kernel or loadable kernel extensions
 iframework
 Target RejectNegative C ObjC C++ ObjC++ Joined Separate 
 -iframework <dir>	Add <dir> to the end of the system framework include path
+
+Zallowable_client
+Driver Separate
+
+Zbundle_loader
+Driver Separate
+
+Zdylib_file
+Driver Separate
+
+Zexported_symbols_list
+Driver Separate
+
+Zfn_seg_addr_table_filename
+Driver Separate
+
+Zimage_base
+Driver Separate
+
+Zinit
+Driver Separate
+
+Zinstall_name
+Driver Separate
+
+Zmultiply_defined
+Driver Separate
+
+Zmultiplydefinedunused
+Driver Separate
+
+Zseg_addr_table
+Driver Separate
+
+Zsegs_read_only_addr
+Driver Separate
+
+Zsegs_read_write_addr
+Driver Separate
+
+Zumbrella
+Driver Separate
+
+Zunexported_symbols_list
+Driver Separate
+
+Zweak_reference_mismatches
+Driver Separate
+
+client_name
+Driver Separate
+
+compatibility_version
+Driver Separate
+
+current_version
+Driver Separate
+
+dylinker_install_name
+Driver Separate
+
+pagezero_size
+Driver Separate
+
+read_only_relocs
+Driver Separate
+
+seg1addr
+Driver Separate
+
+segs_read_only_addr
+Driver Separate
+
+segs_read_write_addr
+Driver Separate
+
+sub_library
+Driver Separate
+
+sub_umbrella
+Driver Separate
 
 undefined
 Driver Separate

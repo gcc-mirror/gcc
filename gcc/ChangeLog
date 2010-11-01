@@ -1,5 +1,31 @@
 2010-11-01  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/alpha/alpha.h (WORD_SWITCH_TAKES_ARG): Remove.
+	* config/cris/cris.h (WORD_SWITCH_TAKES_ARG): Remove.
+	(CC1_SPEC): Don't handle -target.
+	* config/darwin.h (WORD_SWITCH_TAKES_ARG): Remove single-argument
+	options.
+	* config/darwin.opt (Zallowable_client, Zbundle_loader,
+	Zdylib_file, Zexported_symbols_list, Zfn_seg_addr_table_filename,
+	Zimage_base, Zinit, Zinstall_name, Zmultiply_defined,
+	Zmultiplydefinedunused, Zseg_addr_table, Zsegs_read_only_addr,
+	Zsegs_read_write_addr, Zumbrella, Zunexported_symbols_list,
+	Zweak_reference_mismatches, client_name, compatibility_version,
+	current_version, dylinker_install_name, pagezero_size,
+	read_only_relocs, seg1addr, segs_read_only_addr,
+	segs_read_write_addr, sub_library, sub_umbrella): New.
+	* config/freebsd-spec.h (BSD_WORD_SWITCH_TAKES_ARG): Remove.
+	* config/freebsd.h (WORD_SWITCH_TAKES_ARG): Remove.
+	* config/freebsd.opt: New.
+	* config/interix.h (WORD_SWITCH_TAKES_ARG): Remove.
+	* config/mips/iris6.h (WORD_SWITCH_TAKES_ARG): Remove.
+	* config/rpath.opt: New.
+	* config.gcc (*-*-freebsd*): Use rpath.opt and freebsd.opt.
+	(alpha*-dec-osf5.1*, i[34567]86-*-interix3*, mips-sgi-irix6.5*):
+	Use rpath.opt.
+
+2010-11-01  Joseph Myers  <joseph@codesourcery.com>
+
 	* common.opt (R, T, Tbss, Tdata, Ttext, h, z): New.
 	* defaults.h (DEFAULT_SWITCH_TAKES_ARG, SWITCH_TAKES_ARG): Remove.
 	(DEFAULT_WORD_SWITCH_TAKES_ARG): Define to 0.
