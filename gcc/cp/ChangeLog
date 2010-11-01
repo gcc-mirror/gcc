@@ -1,3 +1,11 @@
+2010-10-31  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_diagnose_invalid_type_name): Give helpful
+	message about constexpr without -std=c++0x.
+
+	* decl.c (grokdeclarator): Don't ICE on constexpr non-static data
+	member.
+
 2010-10-30  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* class.c (layout_vtable_decl): Call build_array_of_n_type.

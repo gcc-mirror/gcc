@@ -9652,8 +9652,11 @@ grokdeclarator (const cp_declarator *declarator,
 	    else
 	      {
                 if (constexpr_p)
-                  error ("non-static data member %qE declared %<constexpr%>",
-                         unqualified_id);
+		  {
+		    error ("non-static data member %qE declared %<constexpr%>",
+			   unqualified_id);
+		    constexpr_p = false;
+		  }
 		decl = build_decl (input_location,
 				   FIELD_DECL, unqualified_id, type);
 		DECL_NONADDRESSABLE_P (decl) = bitfield;
