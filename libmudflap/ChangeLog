@@ -1,3 +1,8 @@
+2010-10-31  Jason Merrill  <jason@redhat.com>
+
+	PR testsuite/20003
+	* testsuite/libmudflap.cth/pass40-frag.c: Increase timeout to 30.
+
 2010-08-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/libmudflap.c++/pass41-frag.cxx (dg-prune-output):
