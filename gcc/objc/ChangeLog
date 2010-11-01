@@ -1,3 +1,23 @@
+2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented Objective-C 2.0 property accessors.	
+	* objc-act.h (enum objc_tree_index): Added OCTI_GET_PROPERTY_DECL,
+	OCTI_SET_PROPERTY_DECL, OCTI_COPY_STRUCT_DECL,
+	OCTI_GET_PROPERTY_STRUCT_DECL and OCTI_SET_PROPERTY_STRUCT_DECL.
+	(objc_getProperty_decl): New.
+	(objc_setProperty_decl): New.
+	(objc_copyStruct_decl): New.
+	(objc_getPropertyStruct_decl): New.
+	(objc_setPropertyStruct_decl): New.
+	* objc-act.c (build_objc_property_accessor_helpers): New.
+	(synth_module_prologue): Call
+	build_objc_property_accessor_helpers.
+	(lookup_ivar): New.
+	(objc_synthesize_getter): Implemented synthesizing getters that
+	work with properties that are not nonatomic, assign properties.
+	(objc_synthesize_setter): Implemented synthesizing setters that
+	work with properties that are not nonatomic, assign properties.
+	
 2010-10-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented Objective-C 2.0 @property, @synthesize and @dynamic.

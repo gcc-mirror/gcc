@@ -13,7 +13,7 @@
   Class isa;
   int a;
 }
-@property int a;
+@property (nonatomic) int a;
 + (id) initialize;
 + (id) alloc;
 - (id) init;

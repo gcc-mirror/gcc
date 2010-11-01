@@ -13,7 +13,7 @@
   Class isa;
   int a;
 }
-@property (getter = giveMeA, setter = writeA:) int a;
+@property (getter = giveMeA, setter = writeA:, nonatomic) int a;
 + (id) initialize;
 + (id) alloc;
 - (id) init;

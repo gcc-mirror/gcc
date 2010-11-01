@@ -13,7 +13,10 @@
   Class isa;
   int a;
 }
-@property (getter = giveMeA, setter = writeA:) int a;
+/* Use the simplest synthesized accessor (assign, nonatomic) as we are
+   not testing the synthesized accessors in this test, just the
+   property syntax.  */
+@property (getter = giveMeA, setter = writeA:, nonatomic) int a;
 + (id) initialize;
 + (id) alloc;
 - (id) init;

@@ -178,6 +178,7 @@ static int match_proto_with_proto (tree, tree, int);
 static tree lookup_property (tree, tree);
 static tree lookup_property_in_list (tree, tree);
 static tree lookup_property_in_protocol_list (tree, tree);
+static void build_objc_property_accessor_helpers (void);
 
 static void objc_xref_basetypes (tree, tree);
 
@@ -2347,6 +2348,10 @@ synth_module_prologue (void)
   build_protocol_template ();
   build_category_template ();
   build_objc_exception_stuff ();
+
+  /* Declare objc_getProperty, object_setProperty and other property
+     accessor helpers.  */
+  build_objc_property_accessor_helpers ();
 
   if (flag_next_runtime)
     build_next_objc_exception_stuff ();
@@ -7938,6 +7943,7 @@ add_instance_variable (tree klass, objc_ivar_visibility_kind visibility,
   return klass;
 }
 
+
 static tree
 is_ivar (tree decl_chain, tree ident)
 {
@@ -8516,11 +8522,120 @@ objc_build_property_setter_name (tree ident)
   return string;
 }
 
+/* This routine prepares the declarations of the property accessor
+   helper functions (objc_getProperty(), etc) that are used when
+   @synthesize is used.  */
+static void 
+build_objc_property_accessor_helpers (void)
+{
+  tree type;
+
+  /* Declare the following function:
+     id
+     objc_getProperty (id self, SEL _cmd, 
+                       ptrdiff_t offset, BOOL is_atomic);  */
+  type = build_function_type_list (objc_object_type,
+				   objc_object_type,
+				   objc_selector_type,
+				   ptrdiff_type_node,
+				   boolean_type_node,
+				   NULL_TREE);
+  objc_getProperty_decl = add_builtin_function ("objc_getProperty",
+						type, 0, NOT_BUILT_IN,
+						NULL, NULL_TREE);
+  TREE_NOTHROW (objc_getProperty_decl) = 0;
+  
+  /* Declare the following function:
+     void
+     objc_setProperty (id self, SEL _cmd, 
+                       ptrdiff_t offset, id new_value, 
+                       BOOL is_atomic, BOOL should_copy);  */
+  type = build_function_type_list (void_type_node,
+				   objc_object_type,
+				   objc_selector_type,
+				   ptrdiff_type_node,
+				   objc_object_type,
+				   boolean_type_node,
+				   boolean_type_node,
+				   NULL_TREE);
+  objc_setProperty_decl = add_builtin_function ("objc_setProperty",
+						type, 0, NOT_BUILT_IN,
+						NULL, NULL_TREE);
+  TREE_NOTHROW (objc_setProperty_decl) = 0;
+
+  /* This is the type of all of the following functions
+     (objc_copyStruct(), objc_getPropertyStruct() and
+     objc_setPropertyStruct()).  */
+  type = build_function_type_list (void_type_node,
+				   ptr_type_node,
+				   const_ptr_type_node,
+				   ptrdiff_type_node,       
+				   boolean_type_node,
+				   boolean_type_node,
+				   NULL_TREE);
+
+  if (flag_next_runtime)
+    {
+      /* Declare the following function:
+	 void
+         objc_copyStruct (void *destination, const void *source, 
+	                  ptrdiff_t size, BOOL is_atomic, BOOL has_strong);  */
+      objc_copyStruct_decl = add_builtin_function ("objc_copyStruct",
+						   type, 0, NOT_BUILT_IN,
+						   NULL, NULL_TREE);
+      TREE_NOTHROW (objc_copyStruct_decl) = 0;
+      objc_getPropertyStruct_decl = NULL_TREE;
+      objc_setPropertyStruct_decl = NULL_TREE;
+    }
+  else
+    {
+      objc_copyStruct_decl = NULL_TREE;
+
+      /* Declare the following function:
+	 void
+	 objc_getPropertyStruct (void *destination, const void *source, 
+                                 ptrdiff_t size, BOOL is_atomic, BOOL has_strong);  */
+      objc_getPropertyStruct_decl = add_builtin_function ("objc_getPropertyStruct",
+							  type, 0, NOT_BUILT_IN,
+							  NULL, NULL_TREE);
+      TREE_NOTHROW (objc_getPropertyStruct_decl) = 0;
+      /* Declare the following function:
+	 void
+	 objc_setPropertyStruct (void *destination, const void *source, 
+	                         ptrdiff_t size, BOOL is_atomic, BOOL has_strong);  */
+      objc_setPropertyStruct_decl = add_builtin_function ("objc_setPropertyStruct",
+							  type, 0, NOT_BUILT_IN,
+							  NULL, NULL_TREE);
+      TREE_NOTHROW (objc_setPropertyStruct_decl) = 0;
+    }
+}
+
+/* This looks up an ivar in a class (including superclasses).  */
+static tree
+lookup_ivar (tree interface, tree instance_variable_name)
+{
+  while (interface)
+    {
+      tree decl_chain;
+      
+      for (decl_chain = CLASS_IVARS (interface); decl_chain; decl_chain = DECL_CHAIN (decl_chain))
+	if (DECL_NAME (decl_chain) == instance_variable_name)
+	  return decl_chain;
+      
+      /* Not found.  Search superclass if any.  */
+      if (CLASS_SUPER_NAME (interface))
+	interface = lookup_interface (CLASS_SUPER_NAME (interface));
+    }
+  
+  return NULL_TREE;
+}
+
 /* This routine synthesizes a 'getter' method.  This is only called
    for @synthesize properties.  */
 static void
-objc_synthesize_getter (tree klass ATTRIBUTE_UNUSED, tree class_method, tree property)
+objc_synthesize_getter (tree klass, tree class_method, tree property)
 {
+  location_t location = DECL_SOURCE_LOCATION (property);
   tree fn, decl;
   tree body;
   tree ret_val;
@@ -8543,29 +8658,150 @@ objc_synthesize_getter (tree klass ATTRIBUTE_UNUSED, tree class_method, tree pro
   /* Adapt the 'decl'.  Use the source location of the @synthesize
      statement for error messages.  */
   decl = copy_node (decl);
-  DECL_SOURCE_LOCATION (decl) = DECL_SOURCE_LOCATION (property);
+  DECL_SOURCE_LOCATION (decl) = location;
 
   objc_start_method_definition (false /* is_class_method */, decl, NULL_TREE);
   body = c_begin_compound_stmt (true);
 
-  /* TODO: Implement PROPERTY_NONATOMIC, use objc_getProperty etc as
-     appropriate.  The following code just always does direct ivar
-     access.  */
+  /* Now we need to decide how we build the getter.  There are three
+     cases:
 
-  /* return self->_property_name; */
+     for 'copy' or 'retain' properties we need to use the
+     objc_getProperty() accessor helper which knows about retain and
+     copy.  It supports both 'nonatomic' and 'atomic' access.
 
-  /* PROPERTY_IVAR_NAME is always defined if we got here, and should
-     be a valid instance variable.  */
-  ret_val = objc_lookup_ivar (NULL_TREE, PROPERTY_IVAR_NAME (property));
+     for 'nonatomic, assign' properties we can access the instance
+     variable directly.  'nonatomic' means we don't have to use locks,
+     and 'assign' means we don't have to worry about retain or copy.
+     If you combine the two, it means we can just access the instance
+     variable directly.
+
+     for 'atomic, assign' properties we use objc_copyStruct() (for the
+     next runtime) or objc_getPropertyStruct() (for the GNU runtime).  */
+  switch (PROPERTY_ASSIGN_SEMANTICS (property))
+    {
+    case OBJC_PROPERTY_RETAIN:
+    case OBJC_PROPERTY_COPY:
+      {
+	/* We build "return objc_getProperty (self, _cmd, offset, is_atomic);"  */
+	tree cmd, ivar, offset, is_atomic;
+	cmd = TREE_CHAIN (DECL_ARGUMENTS (current_function_decl));
+
+	/* Find the ivar to compute the offset.  */
+	ivar = lookup_ivar (klass, PROPERTY_IVAR_NAME (property));
+	if (!ivar || is_private (ivar))
+	  {
+	    /* This should never happen.  */
+	    error_at (location,
+		      "can not find instance variable associated with property");
+	    ret_val = error_mark_node;
+	    break;
+	  }
+	offset = byte_position (ivar);
+
+	if (PROPERTY_NONATOMIC (property))
+	  is_atomic = boolean_false_node;
+	else
+	  is_atomic = boolean_true_node;
+
+	ret_val = build_function_call
+	  (location,
+	   /* Function prototype.  */
+	   objc_getProperty_decl,
+	   /* Parameters.  */
+	   tree_cons    /* self */
+	   (NULL_TREE, self_decl,
+	    tree_cons   /* _cmd */
+	    (NULL_TREE, cmd,
+	     tree_cons  /* offset */
+	     (NULL_TREE, offset,
+	      tree_cons /* is_atomic */
+	      (NULL_TREE, is_atomic, NULL_TREE)))));
+      }
+      break;
+    case OBJC_PROPERTY_ASSIGN:    
+      if (PROPERTY_NONATOMIC (property))
+	{
+	  /* We build "return self->PROPERTY_IVAR_NAME;"  */
+	  ret_val = objc_lookup_ivar (NULL_TREE, PROPERTY_IVAR_NAME (property));
+	  break;
+	}
+      else
+	{
+	  /* We build
+	       <property type> __objc_property_temp;
+	       objc_getPropertyStruct (&__objc_property_temp,
+	                               &(self->PROPERTY_IVAR_NAME),
+	                               sizeof (type of self->PROPERTY_IVAR_NAME),
+				       is_atomic,
+				       false)
+	       return __objc_property_temp;
+
+	     For the NeXT runtime, we need to use objc_copyStruct
+	     instead of objc_getPropertyStruct.  */
+	  tree objc_property_temp_decl, function_decl, function_call;
+	  tree size_of, is_atomic;
+
+	  objc_property_temp_decl = objc_create_temporary_var (TREE_TYPE (property), "__objc_property_temp");
+	  DECL_SOURCE_LOCATION (objc_property_temp_decl) = location;
+	  objc_property_temp_decl = lang_hooks.decls.pushdecl (objc_property_temp_decl);
+
+	  /* sizeof (ivar type).  Since the ivar and the property have
+	     the same type, there is no need to lookup the ivar.  */
+	  size_of = c_sizeof_or_alignof_type (location, TREE_TYPE (property),
+					      true /* is_sizeof */,
+					      false /* complain */);
+	  
+	  if (PROPERTY_NONATOMIC (property))
+	    is_atomic = boolean_false_node;
+	  else
+	    is_atomic = boolean_true_node;
+	  
+	  if (flag_next_runtime)
+	    function_decl = objc_copyStruct_decl;
+	  else
+	    function_decl = objc_getPropertyStruct_decl;
+
+	  function_call = build_function_call
+	    (location,
+	     /* Function prototype.  */
+	     function_decl,
+	     /* Parameters.  */
+	     tree_cons /* &__objc_property_temp_decl */
+	     /* Warning: note that using build_fold_addr_expr_loc()
+		here causes invalid code to be generated.  */
+	     (NULL_TREE, build_unary_op (location, ADDR_EXPR, objc_property_temp_decl, 0),
+	      tree_cons /* &(self->PROPERTY_IVAR_NAME); */
+	      (NULL_TREE, build_fold_addr_expr_loc (location, 
+						    objc_lookup_ivar 
+						    (NULL_TREE, PROPERTY_IVAR_NAME (property))),
+	       tree_cons /* sizeof (PROPERTY_IVAR) */
+	       (NULL_TREE, size_of,
+		tree_cons /* is_atomic */
+		(NULL_TREE, is_atomic,
+		 /* TODO: This is currently ignored by the GNU
+		    runtime, but what about the next one ? */
+		 tree_cons /* has_strong */
+		 (NULL_TREE, boolean_true_node, NULL_TREE))))));
+
+	  add_stmt (function_call);
+
+	  ret_val = objc_property_temp_decl;
+	}
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
   gcc_assert (ret_val);
 
 #ifdef OBJCPLUS
   finish_return_stmt (ret_val);
 #else
-  (void)c_finish_return (DECL_SOURCE_LOCATION (property), ret_val, NULL);
+  c_finish_return (location, ret_val, NULL_TREE);
 #endif
 
-  add_stmt (c_end_compound_stmt (DECL_SOURCE_LOCATION (property), body, true));
+  add_stmt (c_end_compound_stmt (location, body, true));
   fn = current_function_decl;
 #ifdef OBJCPLUS
   finish_function ();
@@ -8578,8 +8814,10 @@ objc_synthesize_getter (tree klass ATTRIBUTE_UNUSED, tree class_method, tree pro
 static void
 objc_synthesize_setter (tree klass ATTRIBUTE_UNUSED, tree class_method, tree property)
 {
-  tree fn, decl, lhs, rhs;
+  location_t location = DECL_SOURCE_LOCATION (property);
+  tree fn, decl;
   tree body;
+  tree new_value, statement;
 
   /* If user has implemented a setter with same name then do nothing.  */
   if (lookup_method (CLASS_NST_METHODS (objc_implementation_context),
@@ -8605,40 +8843,153 @@ objc_synthesize_setter (tree klass ATTRIBUTE_UNUSED, tree class_method, tree pro
 
   body = c_begin_compound_stmt (true);
 
-  /* TODO: Implement PROPERTY_NONATOMIC, use objc_getProperty etc as
-     appropriate.  The following code just always does direct ivar
-     access.  */
-
-  /* _property_name = _value; */
-
-  /* PROPERTY_IVAR_NAME is always defined if we got here, and should
-     be a valid instance variable.  */
-  lhs = objc_lookup_ivar (NULL_TREE, PROPERTY_IVAR_NAME (property));
-  gcc_assert (lhs);
-  
-  /* TODO: Lookup the argument in a more robust way so that it works
-     even if the method prototype does not call it '_value'.  */
-  rhs = lookup_name (get_identifier ("_value"));
+  /* The 'new_value' is the only argument to the method, which is the
+     3rd argument of the function, after self and _cmd.  We use twice
+     TREE_CHAIN to move forward two arguments.  */
+  new_value = TREE_CHAIN (TREE_CHAIN (DECL_ARGUMENTS (current_function_decl)));
 
   /* This would presumably happen if the user has specified a
-     prototype for the setter that is not the correct one.  */
-  if (rhs == NULL_TREE)
+     prototype for the setter that does not have an argument!  */
+  if (new_value == NULL_TREE)
     {
       /* TODO: This should be caught much earlier than this.  */
-      /* We couldn't find the '_value' identifier in the current
-	 context; presumably the user didn't have a '_value'
-	 argument.  */
-      error_at (DECL_SOURCE_LOCATION (decl), "invalid setter, missing _value argument");
-      /* Just recover somehow.  */
-      rhs = lhs;
+      error_at (DECL_SOURCE_LOCATION (decl), "invalid setter, it must have one argument");
+      /* Try to recover somehow.  */
+      new_value = error_mark_node;
     }
 
-  /* FIXME: NULL types to get compile.  */
-  add_stmt (build_modify_expr (DECL_SOURCE_LOCATION (decl), 
-			       lhs, NULL_TREE, NOP_EXPR, 
-			       DECL_SOURCE_LOCATION (decl), rhs, NULL_TREE));
-  
-  add_stmt (c_end_compound_stmt (DECL_SOURCE_LOCATION (decl), body, true));
+  /* Now we need to decide how we build the setter.  There are three
+     cases:
+
+     for 'copy' or 'retain' properties we need to use the
+     objc_setProperty() accessor helper which knows about retain and
+     copy.  It supports both 'nonatomic' and 'atomic' access.
+
+     for 'nonatomic, assign' properties we can access the instance
+     variable directly.  'nonatomic' means we don't have to use locks,
+     and 'assign' means we don't have to worry about retain or copy.
+     If you combine the two, it means we can just access the instance
+     variable directly.
+
+     for 'atomic, assign' properties we use objc_copyStruct() (for the
+     next runtime) or objc_setPropertyStruct() (for the GNU runtime).  */
+  switch (PROPERTY_ASSIGN_SEMANTICS (property))
+    {
+    case OBJC_PROPERTY_RETAIN:
+    case OBJC_PROPERTY_COPY:
+      {
+	/* We build "objc_setProperty (self, _cmd, new_value, offset, is_atomic, should_copy);"  */
+	tree cmd, ivar, offset, is_atomic, should_copy;
+	cmd = TREE_CHAIN (DECL_ARGUMENTS (current_function_decl));
+
+	/* Find the ivar to compute the offset.  */
+	ivar = lookup_ivar (klass, PROPERTY_IVAR_NAME (property));
+	if (!ivar || is_private (ivar))
+	  {
+	    error_at (location,
+		      "can not find instance variable associated with property");
+	    statement = error_mark_node;
+	    break;
+	  }
+	offset = byte_position (ivar);
+
+	if (PROPERTY_NONATOMIC (property))
+	  is_atomic = boolean_false_node;
+	else
+	  is_atomic = boolean_true_node;
+	
+	if (PROPERTY_ASSIGN_SEMANTICS (property) == OBJC_PROPERTY_COPY)
+	  should_copy = boolean_true_node;
+	else
+	  should_copy = boolean_false_node;
+
+	statement = build_function_call
+	  (location,
+	   /* Function prototype.  */
+	   objc_setProperty_decl,
+	   /* Parameters.  */
+	   tree_cons    /* self */
+	   (NULL_TREE, self_decl,
+	    tree_cons   /* _cmd */
+	    (NULL_TREE, cmd,
+	     tree_cons  /* offset */
+	     (NULL_TREE, offset,
+	      tree_cons /* new_value */
+	      (NULL_TREE, new_value,
+	       tree_cons /* is_atomic */
+	       (NULL_TREE, is_atomic, 
+		tree_cons /* should_copy */
+		(NULL_TREE, should_copy, NULL_TREE)))))));
+      }
+      break;
+    case OBJC_PROPERTY_ASSIGN:    
+      if (PROPERTY_NONATOMIC (property))
+	{
+	  /* We build "self->PROPERTY_IVAR_NAME = new_value;"  */
+	  statement = build_modify_expr
+	    (location,
+	     objc_lookup_ivar (NULL_TREE, PROPERTY_IVAR_NAME (property)),
+	     NULL_TREE, NOP_EXPR, 
+	     location, new_value, NULL_TREE);
+	  break;
+	}
+      else
+	{
+	  /* We build
+	       objc_setPropertyStruct (&(self->PROPERTY_IVAR_NAME),
+	                               &new_value,
+	                               sizeof (type of self->PROPERTY_IVAR_NAME),
+				       is_atomic,
+				       false)
+
+	     For the NeXT runtime, we need to use objc_copyStruct
+	     instead of objc_getPropertyStruct.  */
+	  tree function_decl, size_of, is_atomic;
+
+	  /* sizeof (ivar type).  Since the ivar and the property have
+	     the same type, there is no need to lookup the ivar.  */
+	  size_of = c_sizeof_or_alignof_type (location, TREE_TYPE (property),
+					      true /* is_sizeof */,
+					      false /* complain */);
+	  
+	  if (PROPERTY_NONATOMIC (property))
+	    is_atomic = boolean_false_node;
+	  else
+	    is_atomic = boolean_true_node;
+	  
+	  if (flag_next_runtime)
+	    function_decl = objc_copyStruct_decl;
+	  else
+	    function_decl = objc_setPropertyStruct_decl;
+
+	  statement = build_function_call 
+	    (location,
+	     /* Function prototype.  */
+	     function_decl,
+	     /* Parameters.  */
+	     tree_cons /* &(self->PROPERTY_IVAR_NAME); */
+	     (NULL_TREE, build_fold_addr_expr_loc (location, 
+						   objc_lookup_ivar 
+						   (NULL_TREE, PROPERTY_IVAR_NAME (property))),
+	      tree_cons /* &new_value */
+	      (NULL_TREE, build_fold_addr_expr_loc (location, new_value),
+	       tree_cons /* sizeof (PROPERTY_IVAR) */
+	       (NULL_TREE, size_of,
+		tree_cons /* is_atomic */
+		(NULL_TREE, is_atomic,
+		 /* TODO: This is currently ignored by the GNU
+		    runtime, but what about the next one ? */
+		 tree_cons /* has_strong */
+		 (NULL_TREE, boolean_true_node, NULL_TREE))))));
+	}
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  gcc_assert (statement);
+
+  add_stmt (statement);  
+  add_stmt (c_end_compound_stmt (location, body, true));
   fn = current_function_decl;
 #ifdef OBJCPLUS
   finish_function ();

@@ -339,6 +339,12 @@ enum objc_tree_index
     OCTI_FAST_ENUM_STATE_TEMP,
     OCTI_ENUM_MUTATION_DECL,
 
+    OCTI_GET_PROPERTY_DECL,
+    OCTI_SET_PROPERTY_DECL,
+    OCTI_COPY_STRUCT_DECL,
+    OCTI_GET_PROPERTY_STRUCT_DECL,
+    OCTI_SET_PROPERTY_STRUCT_DECL,
+
     OCTI_MAX
 };
 
@@ -505,5 +511,14 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
                                 objc_global_trees[OCTI_FAST_ENUM_STATE_TEMP]
 #define objc_enumeration_mutation_decl		\
                                 objc_global_trees[OCTI_ENUM_MUTATION_DECL]
+
+/* Declarations of functions used when synthesizing property
+   accessors.  */
+#define objc_getProperty_decl       objc_global_trees[OCTI_GET_PROPERTY_DECL]
+#define objc_setProperty_decl       objc_global_trees[OCTI_SET_PROPERTY_DECL]
+#define objc_copyStruct_decl        objc_global_trees[OCTI_COPY_STRUCT_DECL]
+#define objc_getPropertyStruct_decl objc_global_trees[OCTI_GET_PROPERTY_STRUCT_DECL]
+#define objc_setPropertyStruct_decl objc_global_trees[OCTI_SET_PROPERTY_STRUCT_DECL]
+
 
 #endif /* GCC_OBJC_ACT_H */
