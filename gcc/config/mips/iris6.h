@@ -146,10 +146,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef DEFAULT_SIGNED_CHAR
 #define DEFAULT_SIGNED_CHAR 0
 
-#define WORD_SWITCH_TAKES_ARG(STR)			\
-  (DEFAULT_WORD_SWITCH_TAKES_ARG (STR)			\
-   || strcmp (STR, "rpath") == 0)
-
 #define TARGET_OS_CPP_BUILTINS()				\
   do								\
     {								\

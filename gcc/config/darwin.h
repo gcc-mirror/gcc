@@ -198,43 +198,13 @@ extern GTY(()) int darwin_ms_struct;
 #undef  WORD_SWITCH_TAKES_ARG
 #define WORD_SWITCH_TAKES_ARG(STR)              \
   (DEFAULT_WORD_SWITCH_TAKES_ARG (STR) ? 1 :    \
-   !strcmp (STR, "Zallowable_client") ? 1 :     \
-   !strcmp (STR, "arch") ? 1 :                  \
-   !strcmp (STR, "arch_only") ? 1 :             \
-   !strcmp (STR, "Zbundle_loader") ? 1 :        \
-   !strcmp (STR, "client_name") ? 1 :           \
-   !strcmp (STR, "compatibility_version") ? 1 : \
-   !strcmp (STR, "current_version") ? 1 :       \
-   !strcmp (STR, "Zdylib_file") ? 1 :           \
-   !strcmp (STR, "Zexported_symbols_list") ? 1 : \
-   !strcmp (STR, "Zimage_base") ? 1 :           \
-   !strcmp (STR, "Zinit") ? 1 :                 \
-   !strcmp (STR, "Zinstall_name") ? 1 :         \
-   !strcmp (STR, "Zmultiplydefinedunused") ? 1 : \
-   !strcmp (STR, "Zmultiply_defined") ? 1 :     \
-   !strcmp (STR, "precomp-trustfile") ? 1 :     \
-   !strcmp (STR, "read_only_relocs") ? 1 :      \
    !strcmp (STR, "sectcreate") ? 3 :            \
    !strcmp (STR, "sectorder") ? 3 :             \
    !strcmp (STR, "Zsegaddr") ? 2 :              \
-   !strcmp (STR, "Zsegs_read_only_addr") ? 1 :  \
-   !strcmp (STR, "Zsegs_read_write_addr") ? 1 : \
-   !strcmp (STR, "Zseg_addr_table") ? 1 :       \
-   !strcmp (STR, "Zfn_seg_addr_table_filename") ? 1 :\
-   !strcmp (STR, "seg1addr") ? 1 :              \
    !strcmp (STR, "segprot") ? 3 :               \
-   !strcmp (STR, "sub_library") ? 1 :           \
-   !strcmp (STR, "sub_umbrella") ? 1 :          \
-   !strcmp (STR, "Zumbrella") ? 1 :             \
-   !strcmp (STR, "Zunexported_symbols_list") ? 1 : \
-   !strcmp (STR, "Zweak_reference_mismatches") ? 1 : \
-   !strcmp (STR, "pagezero_size") ? 1 :         \
-   !strcmp (STR, "segs_read_only_addr") ? 1 :   \
-   !strcmp (STR, "segs_read_write_addr") ? 1 :  \
    !strcmp (STR, "sectalign") ? 3 :             \
    !strcmp (STR, "sectobjectsymbols") ? 2 :     \
    !strcmp (STR, "segcreate") ? 3 :             \
-   !strcmp (STR, "dylinker_install_name") ? 1 : \
    0)
 
 #define SUBTARGET_C_COMMON_OVERRIDE_OPTIONS do {                        \

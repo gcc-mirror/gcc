@@ -528,6 +528,7 @@ case ${target} in
       ;;
   esac
   fbsd_tm_file="${fbsd_tm_file} freebsd-spec.h freebsd.h freebsd-stdint.h"
+  extra_options="$extra_options rpath.opt freebsd.opt"
   case ${target} in
     *-*-freebsd[345].*)
       :;;
@@ -727,6 +728,7 @@ alpha*-dec-osf5.1*)
 	tmake_file="alpha/t-alpha alpha/t-ieee alpha/t-crtfm alpha/t-osf5"
 	tm_file="${tm_file} alpha/osf5.h"
 	tm_defines="${tm_defines} TARGET_SUPPORT_ARCH=1"
+	extra_options="${extra_options} rpath.opt"
 	extra_headers=va_list.h
 	use_gcc_stdint=provide
 	case ${enable_threads} in
@@ -1518,6 +1520,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 i[34567]86-*-interix3*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/i386-interix.h i386/i386-interix3.h interix.h interix3.h"
 	tmake_file="${tmake_file} i386/t-interix"
+	extra_options="${extra_options} rpath.opt"
 	extra_objs=winnt.o
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	if test x$enable_threads = xyes ; then
@@ -1784,6 +1787,7 @@ microblaze*-*-*)
 mips-sgi-irix6.5*)
 	tm_file="elfos.h ${tm_file} mips/iris6.h"
 	tmake_file="mips/t-iris mips/t-iris6 mips/t-slibgcc-irix"
+	extra_options="${extra_options} rpath.opt"
 	target_cpu_default="MASK_ABICALLS"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
 	# Only IRIX Development Foundation 1.3 for IRIX 6.5 provides stdint.h.

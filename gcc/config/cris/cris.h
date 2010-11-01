@@ -96,14 +96,6 @@ extern int cris_cpu_version;
 
 /* Node: Driver */
 
-/* When using make with defaults.mak for Sun this will handily remove
-   any "-target sun*" switches.  */
-/* We need to override any previous definitions (linux.h) */
-#undef WORD_SWITCH_TAKES_ARG
-#define WORD_SWITCH_TAKES_ARG(STR)		\
- (DEFAULT_WORD_SWITCH_TAKES_ARG (STR)		\
-  || !strcmp (STR, "target"))
-
 /* Also provide canonical vN definitions when user specifies an alias.
    Note that -melf overrides -maout.  */
 
@@ -168,12 +160,10 @@ extern int cris_cpu_version;
     " -D__CRIS_arch_tune=" CRIS_DEFAULT_TUNE "}}}}}"\
  CRIS_ARCH_CPP_DEFAULT
 
-/* Remove those Sun-make "target" switches.  */
 /* Override previous definitions (linux.h).  */
 #undef CC1_SPEC
 #define CC1_SPEC \
- "%{target*:}\
-  %{metrax4:-march=v3}\
+ "%{metrax4:-march=v3}\
   %{metrax100:-march=v8}\
   %(cc1_subtarget)"
 

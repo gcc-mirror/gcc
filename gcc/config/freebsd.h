@@ -30,12 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 /* In case we need to know.  */
 #define USING_CONFIG_FREEBSD 1
 
-/* This defines which switch words take arguments.
-   We have --assert etc.  */
-
-#undef  WORD_SWITCH_TAKES_ARG
-#define WORD_SWITCH_TAKES_ARG(STR) (FBSD_WORD_SWITCH_TAKES_ARG(STR))
-
 #undef  TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS() FBSD_TARGET_OS_CPP_BUILTINS()
 
