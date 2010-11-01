@@ -1,3 +1,8 @@
+2010-11-01  DJ Delorie  <dj@redhat.com>
+
+	* config/rx/rx.h (TARGET_CPU_CPP_BUILTINS): Add define for RX610
+	as well as an assertion.
+
 2010-11-01  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.c (pdp11_return_in_memory): Return vector and
