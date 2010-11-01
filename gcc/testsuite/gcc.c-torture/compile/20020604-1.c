@@ -1,6 +1,6 @@
 /* { dg-do assemble } */
 /* { dg-xfail-if "The array is too big" { "m6811-*-* m6812-*-*" } { "*" } { "" } } */
-/* { dg-skip-if "The array is too big" { "avr-*-*" } { "*" } { "" } } */ 
+/* { dg-skip-if "The array is too big" { "avr-*-*" "pdp11-*-*" } { "*" } { "" } } */ 
 /* { dg-xfail-if "The array too big" { "h8300-*-*" } { "-mno-h" "-mn" } { "" } } */
 /* { dg-skip-if "" { m32c-*-* } { } { } } */
 
