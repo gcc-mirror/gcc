@@ -1,3 +1,13 @@
+2010-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/46152
+	* fortran/match.c (match_derived_type_spec): Reoplace gfc_match_symbol
+	with a gfc_find_symbol to prevent namespace pollution.  Remove dead
+	code.
+	(match_type_spec): Remove parsing of '::'.  Collapse character
+	kind checking to one location.
+	(gfc_match_allocate): Use correct locus in error message.
+
 2010-10-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.h (gfc_option_t):  Replace dump_parse_tree by

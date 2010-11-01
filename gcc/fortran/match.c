@@ -2711,26 +2711,25 @@ gfc_free_alloc_list (gfc_alloc *p)
 static match
 match_derived_type_spec (gfc_typespec *ts)
 {
+  char name[GFC_MAX_SYMBOL_LEN + 1];
   locus old_locus; 
   gfc_symbol *derived;
 
-  old_locus = gfc_current_locus; 
+  old_locus = gfc_current_locus;
 
-  if (gfc_match_symbol (&derived, 1) == MATCH_YES)
+  if (gfc_match ("%n", name) != MATCH_YES)
     {
-      if (derived->attr.flavor == FL_DERIVED)
-	{
-	  ts->type = BT_DERIVED;
-	  ts->u.derived = derived;
-	  return MATCH_YES;
-	}
-      else
-	{
-	  /* Enforce F03:C476.  */
-	  gfc_error ("'%s' at %L is not an accessible derived type",
-		     derived->name, &gfc_current_locus);
-	  return MATCH_ERROR;
-	}
+       gfc_current_locus = old_locus;
+       return MATCH_NO;
+    }
+
+  gfc_find_symbol (name, NULL, 1, &derived);
+
+  if (derived && derived->attr.flavor == FL_DERIVED)
+    {
+      ts->type = BT_DERIVED;
+      ts->u.derived = derived;
+      return MATCH_YES;
     }
 
   gfc_current_locus = old_locus; 
@@ -2752,17 +2751,12 @@ match_type_spec (gfc_typespec *ts)
   locus old_locus;
 
   gfc_clear_ts (ts);
-  gfc_gobble_whitespace();
+  gfc_gobble_whitespace ();
   old_locus = gfc_current_locus;
 
-  m = match_derived_type_spec (ts);
-  if (m == MATCH_YES)
+  if (match_derived_type_spec (ts) == MATCH_YES)
     {
-      old_locus = gfc_current_locus;
-      if (gfc_match (" :: ") != MATCH_YES)
-	return MATCH_ERROR;
-      gfc_current_locus = old_locus;
-      /* Enfore F03:C401.  */
+      /* Enforce F03:C401.  */
       if (ts->u.derived->attr.abstract)
 	{
 	  gfc_error ("Derived type '%s' at %L may not be ABSTRACT",
@@ -2771,10 +2765,6 @@ match_type_spec (gfc_typespec *ts)
 	}
       return MATCH_YES;
     }
-  else if (m == MATCH_ERROR && gfc_match (" :: ") == MATCH_YES)
-    return MATCH_ERROR;
-
-  gfc_current_locus = old_locus;
 
   if (gfc_match ("integer") == MATCH_YES)
     {
@@ -2807,7 +2797,13 @@ match_type_spec (gfc_typespec *ts)
   if (gfc_match ("character") == MATCH_YES)
     {
       ts->type = BT_CHARACTER;
-      goto char_selector;
+
+      m = gfc_match_char_spec (ts);
+
+      if (m == MATCH_NO)
+	m = MATCH_YES;
+
+      return m;
     }
 
   if (gfc_match ("logical") == MATCH_YES)
@@ -2831,15 +2827,6 @@ kind_selector:
     }
 
   m = gfc_match_kind_spec (ts, false);
-
-  if (m == MATCH_NO)
-    m = MATCH_YES;		/* No kind specifier found.  */
-
-  return m;
-
-char_selector:
-
-  m = gfc_match_char_spec (ts);
 
   if (m == MATCH_NO)
     m = MATCH_YES;		/* No kind specifier found.  */
@@ -2874,7 +2861,17 @@ gfc_match_allocate (void)
   if (m == MATCH_ERROR)
     goto cleanup;
   else if (m == MATCH_NO)
-    ts.type = BT_UNKNOWN;
+    {
+      char name[GFC_MAX_SYMBOL_LEN + 3];
+
+      if (gfc_match ("%n :: ", name) == MATCH_YES)
+	{
+	  gfc_error ("Error in type-spec at %L", &old_locus);
+	  goto cleanup;
+	}
+
+      ts.type = BT_UNKNOWN;
+    }
   else
     {
       if (gfc_match (" :: ") == MATCH_YES)
@@ -2957,8 +2954,8 @@ gfc_match_allocate (void)
 		|| sym->ns->proc_name->attr.proc_pointer);
       if (b1 && b2 && !b3)
 	{
-	  gfc_error ("Allocate-object at %C is not a nonprocedure pointer "
-		     "or an allocatable variable");
+	  gfc_error ("Allocate-object at %L is not a nonprocedure pointer "
+		     "or an allocatable variable", &tail->expr->where);
 	  goto cleanup;
 	}
 

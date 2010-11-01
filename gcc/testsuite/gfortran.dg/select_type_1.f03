@@ -45,7 +45,7 @@
     print *,"a is TYPE(ts)"
   type is (t3)   ! { dg-error "must be an extension of" }
     print *,"a is TYPE(t3)"
-  type is (t4)   ! { dg-error "is not an accessible derived type" }
+  type is (t4)   ! { dg-error "error in TYPE IS specification" }
     print *,"a is TYPE(t3)"
   class is (t1)
     print *,"a is CLASS(t1)"
