@@ -329,6 +329,7 @@ enum stmt_vec_info_type {
   undef_vec_info_type = 0,
   load_vec_info_type,
   store_vec_info_type,
+  shift_vec_info_type,
   op_vec_info_type,
   call_vec_info_type,
   assignment_vec_info_type,
@@ -854,7 +855,7 @@ extern void vect_update_slp_costs_according_to_vf (loop_vec_info);
 extern bool vect_analyze_slp (loop_vec_info, bb_vec_info);
 extern void vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
-extern void vect_get_slp_defs (slp_tree, VEC (tree,heap) **,
+extern void vect_get_slp_defs (tree, tree, slp_tree, VEC (tree,heap) **,
                                VEC (tree,heap) **);
 extern LOC find_bb_location (basic_block);
 extern bb_vec_info vect_slp_analyze_bb (basic_block);

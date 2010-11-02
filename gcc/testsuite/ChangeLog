@@ -1,3 +1,8 @@
+2010-11-02  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/45902
+	* gcc.dg/vect/pr45902.c: New.
+
 2010-10-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46153
