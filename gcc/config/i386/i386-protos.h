@@ -120,7 +120,6 @@ extern void ix86_expand_sse4_unpack (rtx[], bool, bool);
 extern bool ix86_expand_int_addcc (rtx[]);
 extern rtx ix86_expand_call (rtx, rtx, rtx, rtx, rtx, int);
 extern void ix86_split_call_vzeroupper (rtx, rtx);
-extern void ix86_split_call_pop_vzeroupper (rtx, rtx);
 extern void x86_initialize_trampoline (rtx, rtx, rtx);
 extern rtx ix86_zero_extend_to_Pmode (rtx);
 extern void ix86_split_long_move (rtx[]);
