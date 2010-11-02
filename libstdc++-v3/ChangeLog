@@ -1,3 +1,7 @@
+2010-11-02  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/atomic_0.h (_ATOMIC_CMPEXCHNG_): Use C-style cast.
+
 2010-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/45693
