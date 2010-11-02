@@ -1,3 +1,9 @@
+2010-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/46131
+	* lib/target-supports.exp (add_options_for_tls): Pass -pthread for
+	*-*-osf*.
+
 2010-11-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46184
