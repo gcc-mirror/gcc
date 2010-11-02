@@ -1,3 +1,12 @@
+2010-11-02  Bernd Schmidt  <bernds@codesourcery.com>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	Basic support for Intel Core i7
+
+	* i386.c (ix86_option_override_internal): Add entry for corei7, use
+	generic tuning.  Use generic32 when compiling for 32-bit ABI.
+
 2010-11-02  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin.c (darwin_asm_named_section): Check for __DWARF
