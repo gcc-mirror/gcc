@@ -1,3 +1,7 @@
+2010-11-02  Ian Lance Taylor  <iant@google.com>
+
+	* simple-object.h: New file.
+
 2010-10-15  Dave Korn  <dave.korn.cygwin@gmail.com> 
 
 	Sync LD plugin patch series (part 1/6) with src/include/.

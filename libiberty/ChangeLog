@@ -1,3 +1,22 @@
+2010-11-02  Ian Lance Taylor  <iant@google.com>
+	    Dave Korn  <dave.korn.cygwin@gmail.com>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	* simple-object.c: New file.
+	* simple-object-common.h: New file.
+	* simple-object-elf.c: New file.
+	* simple-object-mach-o.c: New file.
+	* simple-object-coff.c: New file.
+	* simple-object.txh: New file.
+	* configure.ac: Add AC_TYPE_SSIZE_T.
+	* Makefile.in: Rebuild dependencies.
+	(CFILES): Add simple-object.c, simple-object-coff,
+	simple-object-elf.c, and simple-object-mach-o.c.
+	(REQUIRED_OFILES): Add corresponding object files.
+	* configure: Rebuild.
+	* config.in: Rebuild.
+	* functions.texi: Rebuild.
+
 2010-10-29  Ian Lance Taylor  <iant@google.com>
 
 	* setproctitle.c: Add space after function name in @deftypefn

@@ -467,6 +467,9 @@
 /* Define to `int' if <sys/types.h> does not define. */
 #undef pid_t
 
+/* Define to `int' if <sys/types.h> does not define. */
+#undef ssize_t
+
 /* Define to the type of an unsigned integer type wide enough to hold a
    pointer, if such a type exists, and if the system does not define it. */
 #undef uintptr_t
