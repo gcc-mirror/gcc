@@ -1,3 +1,62 @@
+2010-11-02  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/45606
+	* cp-tree.h (TEMPLATE_TYPE_PARM_SIBLING_PARMS): Remove.
+	(struct template_parm_index_s)<num_siblings>: New field.
+	(TEMPLATE_PARM_NUM_SIBLINGS): New accessor.
+	(process_template_parm): Extend the API to accept the number of
+	template parms in argument.
+	(cp_set_underlying_type): Remove this.
+	* class.c (build_self_reference): Require canonical type equality
+	back on the self reference of class.
+	* decl2.c (grokfield): Require canonical type equality back on
+	typedef class fields.
+	* name-lookup.c (pushdecl_maybe_friend): Require canonical type
+	equality back on typedefs.
+	* parser.c (cp_parser_template_parameter_list): Do not require
+	canonical type equality on dependent types created during template
+	parameters parsing.
+	* pt.c (fixup_template_type_parm_type, fixup_template_parm_index)
+	(fixup_template_parm, fixup_template_parms): New private
+	functions.
+	(current_template_args): Declare this.
+	(process_template_parm): Pass the total number of template parms
+	to canonical_type_parameter.
+	(build_template_parm_index): Add a new argument to carry the total
+	number of template parms.
+	(reduce_template_parm_level, process_template_parm, make_auto):
+	Adjust.
+	(current_template_args): Fix this for template template
+	parameters.
+	(tsubst_template_parm): Split out of ...
+	(tsubst_template_parms): ... this.
+	(reduce_template_parm_level): Don't loose
+	TEMPLATE_PARM_NUM_SIBLINGS when cloning a TEMPLATE_PARM_INDEX.
+	(template_parm_to_arg): Extracted this function from
+	current_template_args. Make it represent invalid template parms
+	with an error_mark_node instead of a LIST_TREE containing an
+	error_mark_node.
+	(current_template_args): Use template_parm_to_arg.
+	(dependent_template_arg_p): Consider an invalid template argument
+	as dependent.
+	(end_template_parm_list): Do not update template sibling parms
+	here anymore. Use fixup_template_parms instead.
+	(process_template_parm): Pass the number of template parms to
+	canonical_type_parameter.
+	(make_auto): Require structural equality on auto
+	TEMPLATE_TYPE_PARM for now.
+	(unify)<BOUND_TEMPLATE_TEMPLATE_PARM>: Coerce template parameters
+	using all the arguments deduced so far.
+	(tsubst)<TEMPLATE_TYPE_PARM>: Pass the number of sibling parms to
+	canonical_type_parameter.
+	* tree.c (cp_set_underlying_type): Remove.
+	* typeck.c (get_template_parms_of_dependent_type)
+	(incompatible_dependent_types_p): Remove.
+	(structural_comptypes): Do not call incompatible_dependent_types_p
+	anymore.
+	(comp_template_parms_position): Re-organized. Take the length of
+	template parms list in account.
+
 2010-11-01  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (call_stack, call_stack_tick, cx_error_context): New.

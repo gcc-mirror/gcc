@@ -1,3 +1,13 @@
+2010-11-02  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/45606
+	* g++.dg/template/typedef36.C: New test.
+	* gcc/testsuite/g++.dg/template/canon-type-9.C: Likewise.
+	* g++.dg/template/canon-type-10.C: Likewise.
+	* g++.dg/template/canon-type-11.C: Likewise.
+	* g++.dg/template/canon-type-12.C: Likewise.
+	* g++.dg/template/canon-type-13.C: Likewise.
+
 2010-11-02  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* g++.dg/debug/dwarf2/pubnames-1.C: Amend to check for only one instance

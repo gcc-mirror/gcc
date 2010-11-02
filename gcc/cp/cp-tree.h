@@ -236,6 +236,7 @@ struct GTY(()) template_parm_index_s {
   int index;
   int level;
   int orig_level;
+  int num_siblings;
   tree decl;
 };
 typedef struct template_parm_index_s template_parm_index;
@@ -4310,6 +4311,9 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 	((template_parm_index*)TEMPLATE_PARM_INDEX_CHECK (NODE))
 #define TEMPLATE_PARM_IDX(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->index)
 #define TEMPLATE_PARM_LEVEL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->level)
+/* The Number of sibling parms this template parm has.  */
+#define TEMPLATE_PARM_NUM_SIBLINGS(NODE) \
+  (TEMPLATE_PARM_INDEX_CAST (NODE)->num_siblings)
 #define TEMPLATE_PARM_DESCENDANTS(NODE) (TREE_CHAIN (NODE))
 #define TEMPLATE_PARM_ORIG_LEVEL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->orig_level)
 #define TEMPLATE_PARM_DECL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->decl)
@@ -4331,10 +4335,6 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
   (TEMPLATE_PARM_DECL (TEMPLATE_TYPE_PARM_INDEX (NODE)))
 #define TEMPLATE_TYPE_PARAMETER_PACK(NODE) \
   (TEMPLATE_PARM_PARAMETER_PACK (TEMPLATE_TYPE_PARM_INDEX (NODE)))
-/* The list of template parms that a given template parameter of type
-   TEMPLATE_TYPE_PARM belongs to.*/
-#define TEMPLATE_TYPE_PARM_SIBLING_PARMS(NODE) \
-  (TREE_CHECK ((NODE), TEMPLATE_TYPE_PARM))->type.maxval
 
 /* These constants can used as bit flags in the process of tree formatting.
 
@@ -5022,7 +5022,7 @@ extern void append_type_to_template_for_access_check (tree, tree, tree,
 extern tree splice_late_return_type		(tree, tree);
 extern bool is_auto				(const_tree);
 extern tree process_template_parm		(tree, location_t, tree, 
-						 bool, bool);
+						 bool, bool, unsigned);
 extern tree end_template_parm_list		(tree);
 extern void end_template_decl			(void);
 extern tree maybe_update_decl_type		(tree, tree);
@@ -5366,7 +5366,6 @@ extern bool type_has_nontrivial_copy_init	(const_tree);
 extern bool class_tmpl_impl_spec_p		(const_tree);
 extern int zero_init_p				(const_tree);
 extern tree strip_typedefs			(tree);
-extern void cp_set_underlying_type		(tree);
 extern tree copy_binfo				(tree, tree, tree,
 						 tree *, int);
 extern int member_p				(const_tree);
