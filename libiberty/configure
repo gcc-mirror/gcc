@@ -5203,6 +5203,17 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
 
+ac_fn_c_check_type "$LINENO" "ssize_t" "ac_cv_type_ssize_t" "$ac_includes_default"
+if test "x$ac_cv_type_ssize_t" = x""yes; then :
+
+else
+
+cat >>confdefs.h <<_ACEOF
+#define ssize_t int
+_ACEOF
+
+fi
+
 
 # Given the above check, we always have uintptr_t or a fallback
 # definition.  So define HAVE_UINTPTR_T in case any imported code

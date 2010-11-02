@@ -290,6 +290,7 @@ fi
 
 AC_TYPE_INTPTR_T
 AC_TYPE_UINTPTR_T
+AC_TYPE_SSIZE_T
 
 # Given the above check, we always have uintptr_t or a fallback
 # definition.  So define HAVE_UINTPTR_T in case any imported code

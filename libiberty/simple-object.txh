@@ -1,0 +1,168 @@
+@c -*- mode: texinfo -*-
+@deftypefn Extension {simple_object_read *} simple_object_open_read (int @var{descriptor}, off_t @var{offset}, const char *{segment_name}, const char **@var{errmsg}, int *@var{err})
+
+Opens an object file for reading.  Creates and returns an
+@code{simple_object_read} pointer which may be passed to other
+functions to extract data from the object file.
+
+@var{descriptor} holds a file descriptor which permits reading.
+
+@var{offset} is the offset into the file; this will be @code{0} in the
+normal case, but may be a different value when reading an object file
+in an archive file.
+
+@var{segment_name} is only used with the Mach-O file format used on
+Darwin aka Mac OS X.  It is required on that platform, and means to
+only look at sections within the segment with that name.  The
+parameter is ignored on other systems.
+
+If an error occurs, this functions returns @code{NULL} and sets
+@code{*@var{errmsg}} to an error string and sets @code{*@var{err}} to
+an errno value or @code{0} if there is no relevant errno.
+
+@end deftypefn
+
+@deftypefn Extension {const char *} simple_object_find_sections (simple_object_read *@var{simple_object}, int (*@var{pfn}) (void *@var{data}, const char *@var{name}, off_t @var{offset}, off_t @var{length}), void *@var{data}, int *@var{err})
+
+This function calls @var{pfn} for each section in @var{simple_object}.
+It calls @var{pfn} with the section name, the offset within the file
+of the section contents, and the length of the section contents.  The
+offset within the file is relative to the offset passed to
+@code{simple_object_open_read}.  The @var{data} argument to this
+function is passed along to @var{pfn}.
+
+If @var{pfn} returns @code{0}, the loop over the sections stops and
+@code{simple_object_find_sections} returns.  If @var{pfn} returns some
+other value, the loop continues.
+
+On success @code{simple_object_find_sections} returns.  On error it
+returns an error string, and sets @code{*@var{err}} to an errno value
+or @code{0} if there is no relevant errno.
+
+@end deftypefn
+
+@deftypefn Extension {int} simple_object_find_section (simple_object_read *@var{simple_object} off_t *@var{offset}, off_t *@var{length}, const char **@var{errmsg}, int *@var{err})           
+
+Look for the section @var{name} in @var{simple_object}.  This returns
+information for the first section with that name.
+
+If found, return 1 and set @code{*@var{offset}} to the offset in the
+file of the section contents and set @code{*@var{length}} to the
+length of the section contents.  The value in @code{*@var{offset}}
+will be relative to the offset passed to
+@code{simple_object_open_read}.
+
+If the section is not found, and no error occurs,
+@code{simple_object_find_section} returns @code{0} and set
+@code{*@var{errmsg}} to @code{NULL}.
+
+If an error occurs, @code{simple_object_find_section} returns
+@code{0}, sets @code{*@var{errmsg}} to an error message, and sets
+@code{*@var{err}} to an errno value or @code{0} if there is no
+relevant errno.
+
+@end deftypefn
+
+@deftypefn Extension {void} simple_object_release_read (simple_object_read *@var{simple_object})
+
+Release all resources associated with @var{simple_object}.  This does
+not close the file descriptor.
+
+@end deftypefn
+
+@deftypefn Extension {simple_object_attributes *} simple_object_fetch_attributes (simple_object_read *@var{simple_object}, const char **@var{errmsg}, int *@var{err})
+
+Fetch the attributes of @var{simple_object}.  The attributes are
+internal information such as the format of the object file, or the
+architecture it was compiled for.  This information will persist until
+@code{simple_object_attributes_release} is called, even if
+@var{simple_object} itself is released.
+
+On error this returns @code{NULL}, sets @code{*@var{errmsg}} to an
+error message, and sets @code{*@var{err}} to an errno value or
+@code{0} if there is no relevant errno.
+
+@end deftypefn
+
+@deftypefn Extension {const char *} simple_object_attributes_compare (simple_object_attributes *@var{attrs1}, simple_object_attributes *@var{attrs2}, int *@var{err})
+
+Compare @var{attrs1} and @var{attrs2}.  If they could be linked
+together without error, return @code{NULL}.  Otherwise, return an
+error message and set @code{*@var{err}} to an errno value or @code{0}
+if there is no relevant errno.
+
+@end deftypefn
+
+@deftypefn Extension {void} simple_object_release_attributes (simple_object_attributes *@var{attrs})
+
+Release all resources associated with @var{attrs}.
+
+@end deftypefn
+
+@deftypefn Extension {simple_object_write *} simple_object_start_write (simple_object_attributes @var{attrs}, const char *@var{segment_name}, const char **@var{errmsg}, int *@var{err})
+
+Start creating a new object file using the object file format
+described in @var{attrs}.  You must fetch attribute information from
+an existing object file before you can create a new one.  There is
+currently no support for creating an object file de novo.
+
+@var{segment_name} is only used with Mach-O as found on Darwin aka Mac
+OS X.  The parameter is required on that target.  It means that all
+sections are created within the named segment.  It is ignored for
+other object file formats.
+
+On error @code{simple_object_start_write} returns @code{NULL}, sets
+@code{*@var{ERRMSG}} to an error message, and sets @code{*@var{err}}
+to an errno value or @code{0} if there is no relevant errno.
+
+@end deftypefn
+
+@deftypefn Extension {simple_object_write_section *} simple_object_write_create_section (simple_object_write *@var{simple_object}, const char *@var{name}, unsigned int @var{align}, const char **@var{errmsg}, int *@var{err})
+
+Add a section to @var{simple_object}.  @var{name} is the name of the
+new section.  @var{align} is the required alignment expressed as the
+number of required low-order 0 bits (e.g., 2 for alignment to a 32-bit
+boundary).
+
+The section is created as containing data, readable, not writable, not
+executable, not loaded at runtime.  The section is not written to the
+file until @code{simple_object_write_to_file} is called.
+
+On error this returns @code{NULL}, sets @code{*@var{errmsg}} to an
+error message, and sets @code{*@var{err}} to an errno value or
+@code{0} if there is no relevant errno.
+
+@end deftypefn
+
+@deftypefn Extension {const char *} simple_object_write_add_data (simple_object_write *@var{simple_object}, simple_object_write_section *@var{section}, const void *@var{buffer}, size_t @var{size}, int @var{copy}, int *@var{err})
+
+Add data @var{buffer}/@var{size} to @var{section} in
+@var{simple_object}.  If @var{copy} is non-zero, the data will be
+copied into memory if necessary.  If @var{copy} is zero, @var{buffer}
+must persist until @code{simple_object_write_to_file} is called.  is
+released.
+
+On success this returns @code{NULL}.  On error this returns an error
+message, and sets @code{*@var{err}} to an errno value or 0 if there is
+no relevant erro.
+
+@end deftypefn
+
+@deftypefn Extension {const char *} simple_object_write_to_file (simple_object_write *@var{simple_object}, int @var{descriptor}, int *@var{err})
+
+Write the complete object file to @var{descriptor}, an open file
+descriptor.  This writes out all the data accumulated by calls to
+@code{simple_object_write_create_section} and
+@var{simple_object_write_add_data}.
+
+This returns @code{NULL} on success.  On error this returns an error
+message and sets @code{*@var{err}} to an errno value or @code{0} if
+there is no relevant errno.
+
+@end deftypefn
+
+@deftypefn Extension {void} simple_object_release_write (simple_object_write *@var{simple_object})
+
+Release all resources associated with @var{simple_object}.
+
+@end deftypefn
