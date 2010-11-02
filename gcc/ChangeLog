@@ -1,5 +1,20 @@
 2010-11-02  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386-protos.h (ix86_split_call_pop_vzeroupper):
+	Removed.
+	* config/i386/i386.c (ix86_split_call_pop_vzeroupper): Likewise.
+
+	* config/i386/i386.md (*call_pop_0_vzeroupper): Use parallel
+	and call ix86_split_call_vzeroupper instead of
+	ix86_split_call_pop_vzeroupper.
+	(*call_pop_1_vzeroupper): Likewise.
+	(*sibcall_pop_1_vzeroupper): Likewise.
+	(*call_value_pop_0_vzeroupper): Likewise.
+	(*call_value_pop_1_vzeroupper): Likewise.
+	(*sibcall_value_pop_1_vzeroupper): Likewise.
+
+2010-11-02  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.md (*sibcall_1_rex64_vzeroupper): Fix a
 	typo.
 

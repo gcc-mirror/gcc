@@ -21561,16 +21561,6 @@ ix86_split_call_vzeroupper (rtx insn, rtx vzeroupper)
   emit_call_insn (call);
 }
 
-void
-ix86_split_call_pop_vzeroupper (rtx insn, rtx vzeroupper)
-{
-  rtx call = XVECEXP (PATTERN (insn), 0, 0);
-  rtx pop = XVECEXP (PATTERN (insn), 0, 1);
-  emit_insn (gen_avx_vzeroupper (vzeroupper));
-  emit_call_insn (gen_rtx_PARALLEL (VOIDmode,
-				    gen_rtvec (2, call, pop)));
-}
-
 /* Output the assembly for a call instruction.  */
 
 const char *
