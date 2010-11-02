@@ -23,6 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_MACHO
 #define TARGET_MACHO 1
 
+#undef DARWIN_X86
+#define DARWIN_X86 1
+
 #define TARGET_VERSION fprintf (stderr, " (i686 Darwin)");
 
 #undef  TARGET_64BIT
@@ -66,6 +69,11 @@ extern int darwin_emit_branch_islands;
 #undef TARGET_MACHO_BRANCH_ISLANDS
 #define TARGET_MACHO_BRANCH_ISLANDS darwin_emit_branch_islands
 
+/* For compatibility with OSX system tools, use the new style of pic stub
+   if this is set.  */
+#undef  MACHOPIC_ATT_STUB
+#define MACHOPIC_ATT_STUB (darwin_macho_att_stub)
+
 #undef MAX_BITS_PER_WORD
 #define MAX_BITS_PER_WORD 64
 
@@ -100,7 +108,6 @@ extern int darwin_emit_branch_islands;
 
 #undef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) \
-  %<mdynamic-no-pic " /* For now, we just ignore this flag */ " \
   %{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}} \
   %{!mmacosx-version-min=*:-mmacosx-version-min=%(darwin_minversion)} \
   %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }}"
@@ -182,22 +189,12 @@ extern int darwin_emit_branch_islands;
 #undef TARGET_SUBTARGET64_ISA_DEFAULT
 #define TARGET_SUBTARGET64_ISA_DEFAULT TARGET_SUBTARGET32_ISA_DEFAULT
 
-/* For now, disable dynamic-no-pic.  We'll need to go through i386.c
-   with a fine-tooth comb looking for refs to flag_pic!  */
-#define MASK_MACHO_DYNAMIC_NO_PIC 0
-#define TARGET_DYNAMIC_NO_PIC	  (target_flags & MASK_MACHO_DYNAMIC_NO_PIC)
-
 #undef GOT_SYMBOL_NAME
 #define GOT_SYMBOL_NAME MACHOPIC_FUNCTION_BASE_NAME
 
 /* Define the syntax of pseudo-ops, labels and comments.  */
 
 #define LPREFIX "L"
-
-/* These are used by -fbranch-probabilities */
-#define HOT_TEXT_SECTION_NAME "__TEXT,__text,regular,pure_instructions"
-#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME \
-                              "__TEXT,__unlikely,regular,pure_instructions"
 
 /* Assembler pseudos to introduce constants of various size.  */
 
@@ -239,7 +236,8 @@ extern int darwin_emit_branch_islands;
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\
     do {								\
-      if (TARGET_MACHO_BRANCH_ISLANDS && MACHOPIC_INDIRECT && !TARGET_64BIT)		\
+      if (TARGET_MACHO_BRANCH_ISLANDS 					\
+	   && MACHOPIC_INDIRECT && !TARGET_64BIT)			\
 	{								\
 	  const char *name = machopic_mcount_stub_name ();		\
 	  fprintf (FILE, "\tcall %s\n", name+1);  /*  skip '&'  */	\
@@ -252,6 +250,13 @@ extern int darwin_emit_branch_islands;
   do {									\
     SUBTARGET_C_COMMON_OVERRIDE_OPTIONS;				\
   } while (0)
+
+#undef SUBTARGET_OVERRIDE_OPTIONS
+#define SUBTARGET_OVERRIDE_OPTIONS \
+do {									\
+  if (TARGET_64BIT && MACHO_DYNAMIC_NO_PIC_P)				\
+    target_flags &= ~MASK_MACHO_DYNAMIC_NO_PIC;				\
+} while (0)
 
 /* Darwin on x86_64 uses dwarf-2 by default.  Pre-darwin9 32-bit
    compiles default to stabs+.  darwin9+ defaults to dwarf-2.  */
@@ -312,6 +317,10 @@ extern int darwin_emit_branch_islands;
    used in Mach-O.  */
 #undef MACHO_SYMBOL_FLAG_VARIABLE
 #define MACHO_SYMBOL_FLAG_VARIABLE ((SYMBOL_FLAG_MACH_DEP) << 3)
+
+#undef MACHOPIC_NL_SYMBOL_PTR_SECTION
+#define MACHOPIC_NL_SYMBOL_PTR_SECTION \
+		".section __IMPORT,__pointers,non_lazy_symbol_pointers"
 
 #define SUBTARGET32_DEFAULT_CPU "i686"
 

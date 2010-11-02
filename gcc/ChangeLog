@@ -1,3 +1,59 @@
+2010-11-02  Iain Sandoe  <iains@gcc.gnu.org>
+
+	Merge from FSF "apple/trunk" branch.
+
+	* config/rs6000/darwin.opt (mdynamic-no-pic): move from here ...
+	* config/darwin.opt: .. to here.
+	(matt-stubs): New option.
+	* config/i386/darwin.opt: Delete.
+	* config/i386/i386.h (MACHOPIC_ATT_STUB): New.
+	(MACHO_DYNAMIC_NO_PIC_P): New.
+	(MACHOPIC_INDIRECT): New.
+	(MACHOPIC_PURE): New.
+	* config/i386/darwin.h (DARWIN_X86) Define to 1.
+	(MACHOPIC_ATT_STUB): New.
+	(CC1_SPEC): Do not remove mdynamic-no-pic.
+	Move HOT_TEXT_SECTION_NAME: move to config/darwin.h
+	UNLIKELY_EXECUTED_TEXT_SECTION_NAME: Likewise.
+	(FUNCTION_PROFILER): Correct over-length line.
+	(SUBTARGET_OVERRIDE_OPTIONS): New.
+	(MACHOPIC_NL_SYMBOL_PTR_SECTION): New.
+	* config/i386/i386.c (config/i386/i386.c): Darwin has no PLT.
+	(legitimate_constant_p): Handle mdynamic-no-pic.
+	(ix86_legitimate_address_p): Likewise.
+	(ix86_legitimize_address): Likewise.
+	(ix86_expand_move): Likewise.
+	(machopic_output_stub): Update for ATT-style stubs and
+	mdynamic-no-pic.
+	* config/darwin-protos.h (machopic_symbol_defined_p): New.
+	* config/rs6000/darwin.h (DARWIN_PPC): Define to 1.
+	TARGET_DYNAMIC_NO_PIC: Remove.
+	Move HOT_TEXT_SECTION_NAME: move to config/darwin.h
+	UNLIKELY_EXECUTED_TEXT_SECTION_NAME: Likewise.
+	* config/rs6000/rs6000.c (darwin_rs6000_override_options):
+	Remove handling of mdynamic-no-pic.
+	* config/darwin.c (HAVE_lo_sum, gen_macho_high, gen_macho_low):
+	Define if required.
+	(machopic_symbol_defined_p): Do not try to use current_function_decl
+	when generating _get_pc thunks within stubs.
+	(machopic_indirect_data_reference): Rework for direct conditionals 
+	rather than #ifdefs, add x86 mdynamic-no-pic
+	(machopic_legitimize_pic_address): Update to use HAVE_lo_sum with a
+	defined value.
+	(darwin_override_options): Handle mdynamic-no-pic here.
+	* config/darwin-sections.def (machopic_lazy_symbol_ptr2_section): New.
+	(machopic_lazy_symbol_ptr3_section): New.
+	(machopic_picsymbol_stub2_section): New.
+	(machopic_picsymbol_stub3_section): New.
+	* config/darwin.h (DARWIN_X86, DARWIN_PPC): Define to 0.
+	(MACHOPIC_NL_SYMBOL_PTR_SECTION): New.
+	(HOT_TEXT_SECTION_NAME, UNLIKELY_EXECUTED_TEXT_SECTION_NAME):
+	Moved common definition from x86 and rs6000.
+	(MACHO_DYNAMIC_NO_PIC_P): Override value.
+	(MACHOPIC_INDIRECT): Likewise.
+	(MACHOPIC_PURE): Likewise.
+	* config.gcc (x86-darwin-*): Remove darwin.opt.
+
 2010-11-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46255

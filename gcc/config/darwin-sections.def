@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2006, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -66,17 +66,30 @@ DEF_SECTION (objc_class_names_section, 0, ".objc_class_names", 1)
 DEF_SECTION (objc_meth_var_names_section, 0, ".objc_meth_var_names", 1)
 DEF_SECTION (objc_meth_var_types_section, 0, ".objc_meth_var_types", 1)
 DEF_SECTION (objc_cls_refs_section, SECTION_MERGE, ".objc_cls_refs", 1)
-
+/* lazy symbol pointers.  */
 DEF_SECTION (machopic_lazy_symbol_ptr_section, 0, ".lazy_symbol_pointer", 0)
-DEF_SECTION (machopic_nl_symbol_ptr_section, 0, ".non_lazy_symbol_pointer", 0)
+DEF_SECTION (machopic_lazy_symbol_ptr2_section,	0,
+	     ".section __DATA, __la_sym_ptr2,lazy_symbol_pointers", 0)
+DEF_SECTION (machopic_lazy_symbol_ptr3_section, 0,
+	     ".section __DATA, __la_sym_ptr3,lazy_symbol_pointers", 0)
+/* non-lazy symbol pointers.  */
+DEF_SECTION (machopic_nl_symbol_ptr_section, 0,
+	     MACHOPIC_NL_SYMBOL_PTR_SECTION, 0)
+/* Symbol stubs.  */
 DEF_SECTION (machopic_symbol_stub_section, 0, ".symbol_stub", 0)
 DEF_SECTION (machopic_symbol_stub1_section, 0,
 	     ".section __TEXT,__symbol_stub1,symbol_stubs,"
 	     "pure_instructions,16", 0)
+/* PIC symbol stubs.  */
 DEF_SECTION (machopic_picsymbol_stub_section, 0, ".picsymbol_stub", 0)
 DEF_SECTION (machopic_picsymbol_stub1_section, 0,
 	     ".section __TEXT,__picsymbolstub1,symbol_stubs,"
 	     "pure_instructions,32", 0)
+DEF_SECTION (machopic_picsymbol_stub2_section, 0,
+	     ".section __TEXT,__picsymbolstub2,symbol_stubs,pure_instructions,25", 0)
+DEF_SECTION (machopic_picsymbol_stub3_section, 0,
+	     ".section __IMPORT,__jump_table,symbol_stubs,self_modifying_code+pure_instructions,5", 0)
+/* Exception-related.  */
 DEF_SECTION (darwin_exception_section, 0,
 	     ".section __DATA,__gcc_except_tab", 0)
 DEF_SECTION (darwin_eh_frame_section, 0,

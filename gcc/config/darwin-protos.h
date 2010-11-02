@@ -1,5 +1,5 @@
 /* Prototypes.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -31,6 +31,7 @@ extern const char *machopic_mcount_stub_name (void);
 
 extern rtx machopic_gen_offset (rtx);
 extern int machopic_operand_p (rtx);
+extern int machopic_symbol_defined_p (rtx sym_ref);
 extern enum machopic_addr_class machopic_classify_symbol (rtx);
 
 extern rtx machopic_indirect_data_reference (rtx, rtx);

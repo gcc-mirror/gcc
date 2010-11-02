@@ -26,6 +26,15 @@ Wnonportable-cfstrings
 Target Report Var(darwin_warn_nonportable_cfstrings) Init(1) Warning
 Warn if constant CFString objects contain non-portable characters
 
+; Use new-style pic stubs if this is true, x86 only so far.
+matt-stubs
+Target Report Var(darwin_macho_att_stub) Init(1)
+Generate AT&T-style stubs for Mach-O
+
+mdynamic-no-pic
+Target Common Report Mask(MACHO_DYNAMIC_NO_PIC)
+Generate code suitable for executables (NOT shared libs)
+
 mfix-and-continue
 Target Report Var(darwin_fix_and_continue)
 Generate code suitable for fast turn around debugging
