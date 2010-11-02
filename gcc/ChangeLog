@@ -1,3 +1,10 @@
+2010-11-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/45875
+	* gimple-fold.c (get_first_base_binfo_with_virtuals): Removed.
+	(gimple_get_relevant_ref_binfo): Detect primary bases according to
+	their field offset.
+
 2010-11-02  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Remove elf_getshdrstrndx test.  Don't substitute
