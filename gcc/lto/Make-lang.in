@@ -23,7 +23,7 @@
 # The name of the LTO compiler.
 LTO_EXE = lto1$(exeext)
 # The LTO-specific object files inclued in $(LTO_EXE).
-LTO_OBJS = lto/lto-lang.o lto/lto.o lto/$(LTO_BINARY_READER).o attribs.o
+LTO_OBJS = lto/lto-lang.o lto/lto.o lto/lto-object.o attribs.o
 LTO_H = lto/lto.h $(HASHTAB_H)
 LINKER_PLUGIN_API_H = $(srcdir)/../include/plugin-api.h
 LTO_TREE_H = lto/lto-tree.h $(LINKER_PLUGIN_API_H)
@@ -73,7 +73,7 @@ lto-warn = $(STRICT_WARN)
 
 $(LTO_EXE): $(LTO_OBJS) $(BACKEND) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-		$(LTO_OBJS) $(BACKEND) $(BACKENDLIBS) $(LIBS) $(LTO_USE_LIBELF)
+		$(LTO_OBJS) $(BACKEND) $(BACKENDLIBS) $(LIBS)
 
 # Dependencies
 lto/lto-lang.o: lto/lto-lang.c $(CONFIG_H) coretypes.h debug.h \
@@ -81,19 +81,14 @@ lto/lto-lang.o: lto/lto-lang.c $(CONFIG_H) coretypes.h debug.h \
 	$(TARGET_H) $(LTO_H) $(GIMPLE_H) gtype-lto.h gt-lto-lto-lang.h \
 	$(EXPR_H)
 lto/lto.o: lto/lto.c $(CONFIG_H) $(SYSTEM_H) coretypes.h opts.h \
-	toplev.h $(TREE_H) $(DIAGNOSTIC_CORE_H) $(TM_H) $(LIBIBERTY_H) \
+	toplev.h $(TREE_H) $(DIAGNOSTIC_CORE_H) $(TM_H) \
 	$(CGRAPH_H) $(GGC_H) tree-ssa-operands.h $(TREE_PASS_H) \
 	langhooks.h $(VEC_H) $(BITMAP_H) pointer-set.h $(IPA_PROP_H) \
 	$(COMMON_H) debug.h $(TIMEVAR_H) $(GIMPLE_H) $(LTO_H) $(LTO_TREE_H) \
 	$(LTO_TAGS_H) $(LTO_STREAMER_H) $(SPLAY_TREE_H) gt-lto-lto.h $(PARAMS_H)
-lto/lto-elf.o: lto/lto-elf.c $(CONFIG_H) coretypes.h $(SYSTEM_H) \
-	toplev.h $(LTO_H) $(TM_H) $(LIBIBERTY_H) $(GGC_H) $(LTO_STREAMER_H)
-lto/lto-coff.o: lto/lto-coff.c $(CONFIG_H) coretypes.h $(SYSTEM_H) \
-	toplev.h $(LTO_H) $(TM_H) $(LIBIBERTY_H) $(GGC_H) $(LTO_STREAMER_H) \
-	lto/lto-coff.h
-lto/lto-macho.o: lto/lto-macho.c $(CONFIG_H) coretypes.h $(SYSTEM_H) \
-	toplev.h $(LTO_H) $(TM_H) $(LIBIBERTY_H) $(GGC_H) $(LTO_STREAMER_H) \
-	lto/lto-macho.h lto/lto-endian.h
+lto/lto-object.o: lto/lto-object.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+	$(DIAGNOSTIC_CORE_H) $(TOPLEV_H) $(LTO_H) $(TM_H) $(LTO_STREAMER_H) \
+	../include/simple-object.h
 
 # LTO testing is done as part of C/C++/Fortran etc. testing.
 check-lto:

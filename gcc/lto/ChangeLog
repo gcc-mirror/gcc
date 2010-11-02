@@ -1,3 +1,18 @@
+2010-11-02  Ian Lance Taylor  <iant@google.com>
+
+	* lto-object.c: New file.
+	* lto-elf.c: Remove file.
+	* lto-macho.c: Remove file.
+	* lto-macho.h: Remove file.
+	* lto-coff.c: Remove file.
+	* lto-coff.h: Remove file.
+	* Make-lang.in (LTO_OBJS): Change lto/$(LTO_BINARY_READER).o to
+	lto/lto-object.o.
+	($(LTO_EXE)): Remove $(LTO_USE_LIBELF)
+	(lto/lto-objfile.o): New target.
+	(lto/lto-elf.o, lto/lto-coff.o, lto/lto-macho.o): Remove targets.
+	(lto/lto.o): Remove $(LIBIBERTY_H).
+
 2010-10-22  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (add_cgraph_node_to_partition,
