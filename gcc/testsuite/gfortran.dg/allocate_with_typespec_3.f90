@@ -23,7 +23,7 @@ subroutine implicit_none_test1
    allocate(real(8) :: x4(1))      ! { dg-error "differs from the kind type parameter" }
    allocate(real(4) :: x8(1))      ! { dg-error "differs from the kind type parameter" }
    allocate(double :: d1(1))       ! { dg-error "Error in type-spec at" }
-   allocate(character(:) :: c1(1)) ! { dg-error "Syntax error in CHARACTER declaration" }
+   allocate(character(:) :: c1(1)) ! { dg-error "cannot contain a deferred type parameter" }
    allocate(real :: b(1))          ! { dg-error "is type incompatible" }
 
 end subroutine implicit_none_test1
@@ -50,7 +50,7 @@ subroutine implicit_none_test2
    allocate(real(8) :: x4)      ! { dg-error "differs from the kind type parameter" }
    allocate(real(4) :: x8)      ! { dg-error "differs from the kind type parameter" }
    allocate(double :: d1)       ! { dg-error "Error in type-spec at" }
-   allocate(character(:) :: c1) ! { dg-error "Syntax error in CHARACTER declaration" }
+   allocate(character(:) :: c1) ! { dg-error "cannot contain a deferred type parameter" }
    allocate(real :: b)          ! { dg-error "is type incompatible" }
 
 end subroutine implicit_none_test2
@@ -76,7 +76,7 @@ subroutine implicit_test3
    allocate(real(8) :: x4(1))      ! { dg-error "differs from the kind type parameter" }
    allocate(real(4) :: x8(1))      ! { dg-error "differs from the kind type parameter" }
    allocate(double :: d1(1))       ! { dg-error "Error in type-spec" }
-   allocate(character(:) :: c1(1)) ! { dg-error "Syntax error in CHARACTER declaration" }
+   allocate(character(:) :: c1(1)) ! { dg-error "cannot contain a deferred type parameter" }
    allocate(real :: b(1))          ! { dg-error "is type incompatible" }
 
 end subroutine implicit_test3
@@ -101,7 +101,7 @@ subroutine implicit_test4
    allocate(real(8) :: x4)      ! { dg-error "differs from the kind type parameter" }
    allocate(real(4) :: x8)      ! { dg-error "differs from the kind type parameter" }
    allocate(double :: d1)       ! { dg-error "Error in type-spec at" }
-   allocate(character(:) :: c1) ! { dg-error "Syntax error in CHARACTER declaration" }
+   allocate(character(:) :: c1) ! { dg-error "cannot contain a deferred type parameter" }
    allocate(real :: b)          ! { dg-error "is type incompatible" }
 
 end subroutine implicit_test4

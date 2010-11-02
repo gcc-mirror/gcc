@@ -647,16 +647,27 @@ match_intent_spec (void)
 
 
 /* Matches a character length specification, which is either a
-   specification expression or a '*'.  */
+   specification expression, '*', or ':'.  */
 
 static match
-char_len_param_value (gfc_expr **expr)
+char_len_param_value (gfc_expr **expr, bool *deferred)
 {
   match m;
 
+  *expr = NULL;
+  *deferred = false;
+
   if (gfc_match_char ('*') == MATCH_YES)
+    return MATCH_YES;
+
+  if (gfc_match_char (':') == MATCH_YES)
     {
-      *expr = NULL;
+      if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: deferred type "
+			  "parameter at %C") == FAILURE)
+	return MATCH_ERROR;
+
+      *deferred = true;
+
       return MATCH_YES;
     }
 
@@ -697,11 +708,12 @@ syntax:
    char_len_param_value in parenthesis.  */
 
 static match
-match_char_length (gfc_expr **expr)
+match_char_length (gfc_expr **expr, bool *deferred)
 {
   int length;
   match m;
 
+  *deferred = false; 
   m = gfc_match_char ('*');
   if (m != MATCH_YES)
     return m;
@@ -722,7 +734,7 @@ match_char_length (gfc_expr **expr)
   if (gfc_match_char ('(') == MATCH_NO)
     goto syntax;
 
-  m = char_len_param_value (expr);
+  m = char_len_param_value (expr, deferred);
   if (m != MATCH_YES && gfc_matching_function)
     {
       gfc_undo_symbols ();
@@ -1086,7 +1098,7 @@ verify_c_interop_param (gfc_symbol *sym)
 /* Function called by variable_decl() that adds a name to the symbol table.  */
 
 static gfc_try
-build_sym (const char *name, gfc_charlen *cl,
+build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
 	   gfc_array_spec **as, locus *var_locus)
 {
   symbol_attribute attr;
@@ -1103,7 +1115,10 @@ build_sym (const char *name, gfc_charlen *cl,
     return FAILURE;
 
   if (sym->ts.type == BT_CHARACTER)
-    sym->ts.u.cl = cl;
+    {
+      sym->ts.u.cl = cl;
+      sym->ts.deferred = cl_deferred;
+    }
 
   /* Add dimension attribute if present.  */
   if (gfc_set_array_spec (sym, *as, var_locus) == FAILURE)
@@ -1710,6 +1725,7 @@ variable_decl (int elem)
   gfc_array_spec *as;
   gfc_array_spec *cp_as; /* Extra copy for Cray Pointees.  */
   gfc_charlen *cl;
+  bool cl_deferred;
   locus var_locus;
   match m;
   gfc_try t;
@@ -1770,10 +1786,11 @@ variable_decl (int elem)
 
   char_len = NULL;
   cl = NULL;
+  cl_deferred = false;
 
   if (current_ts.type == BT_CHARACTER)
     {
-      switch (match_char_length (&char_len))
+      switch (match_char_length (&char_len, &cl_deferred))
 	{
 	case MATCH_YES:
 	  cl = gfc_new_charlen (gfc_current_ns, NULL);
@@ -1793,6 +1810,8 @@ variable_decl (int elem)
 	    }
 	  else
 	    cl = current_ts.u.cl;
+
+	  cl_deferred = current_ts.deferred;
 
 	  break;
 
@@ -1869,7 +1888,7 @@ variable_decl (int elem)
      create a symbol for those yet.  If we fail to create the symbol,
      bail out.  */
   if (gfc_current_state () != COMP_DERIVED
-      && build_sym (name, cl, &as, &var_locus) == FAILURE)
+      && build_sym (name, cl, cl_deferred, &as, &var_locus) == FAILURE)
     {
       m = MATCH_ERROR;
       goto cleanup;
@@ -2277,16 +2296,18 @@ gfc_match_char_spec (gfc_typespec *ts)
   gfc_charlen *cl;
   gfc_expr *len;
   match m;
+  bool deferred;
 
   len = NULL;
   seen_length = 0;
   kind = 0;
   is_iso_c = 0;
+  deferred = false;
 
   /* Try the old-style specification first.  */
   old_char_selector = 0;
 
-  m = match_char_length (&len);
+  m = match_char_length (&len, &deferred);
   if (m != MATCH_NO)
     {
       if (m == MATCH_YES)
@@ -2315,7 +2336,7 @@ gfc_match_char_spec (gfc_typespec *ts)
       if (gfc_match (" , len =") == MATCH_NO)
 	goto rparen;
 
-      m = char_len_param_value (&len);
+      m = char_len_param_value (&len, &deferred);
       if (m == MATCH_NO)
 	goto syntax;
       if (m == MATCH_ERROR)
@@ -2328,7 +2349,7 @@ gfc_match_char_spec (gfc_typespec *ts)
   /* Try to match "LEN = <len-param>" or "LEN = <len-param>, KIND = <int>".  */
   if (gfc_match (" len =") == MATCH_YES)
     {
-      m = char_len_param_value (&len);
+      m = char_len_param_value (&len, &deferred);
       if (m == MATCH_NO)
 	goto syntax;
       if (m == MATCH_ERROR)
@@ -2348,7 +2369,7 @@ gfc_match_char_spec (gfc_typespec *ts)
     }
 
   /* Try to match ( <len-param> ) or ( <len-param> , [ KIND = ] <int> ).  */
-  m = char_len_param_value (&len);
+  m = char_len_param_value (&len, &deferred);
   if (m == MATCH_NO)
     goto syntax;
   if (m == MATCH_ERROR)
@@ -2407,6 +2428,7 @@ done:
 
   ts->u.cl = cl;
   ts->kind = kind == 0 ? gfc_default_character_kind : kind;
+  ts->deferred = deferred;
 
   /* We have to know if it was a c interoperable kind so we can
      do accurate type checking of bind(c) procs, etc.  */
@@ -7449,7 +7471,7 @@ enumerator_decl (void)
   /* OK, we've successfully matched the declaration.  Now put the
      symbol in the current namespace. If we fail to create the symbol,
      bail out.  */
-  if (build_sym (name, NULL, &as, &var_locus) == FAILURE)
+  if (build_sym (name, NULL, false, &as, &var_locus) == FAILURE)
     {
       m = MATCH_ERROR;
       goto cleanup;

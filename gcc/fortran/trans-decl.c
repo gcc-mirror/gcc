@@ -3416,6 +3416,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
 	    }
 	}
+      else if (sym->ts.deferred)
+	gfc_fatal_error ("Deferred type parameter not yet supported");
       else if (sym_has_alloc_comp)
 	gfc_trans_deferred_array (sym, block);
       else if (sym->ts.type == BT_CHARACTER)

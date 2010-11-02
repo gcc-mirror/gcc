@@ -6856,6 +6856,12 @@ check_symbols:
     }
 
 success:
+  if (e->ts.deferred)
+    {
+      gfc_error ("Support for entity at %L with deferred type parameter "
+		 "not yet implemented", &e->where);
+      return FAILURE;
+    }
   return SUCCESS;
 
 failure:
@@ -9371,6 +9377,7 @@ resolve_index_expr (gfc_expr *e)
   return SUCCESS;
 }
 
+
 /* Resolve a charlen structure.  */
 
 static gfc_try
@@ -9684,6 +9691,7 @@ apply_default_init_local (gfc_symbol *sym)
   build_init_assign (sym, init);
 }
 
+
 /* Resolution of common features of flavors variable and procedure.  */
 
 static gfc_try
@@ -9847,12 +9855,22 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
       return FAILURE;
     }
 
+  /* Constraints on deferred type parameter.  */
+  if (sym->ts.deferred && !(sym->attr.pointer || sym->attr.allocatable))
+    {
+      gfc_error ("Entity '%s' at %L has a deferred type parameter and "
+		 "requires either the pointer or allocatable attribute",
+		     sym->name, &sym->declared_at);
+      return FAILURE;
+    }
+
   if (sym->ts.type == BT_CHARACTER)
     {
       /* Make sure that character string variables with assumed length are
 	 dummy arguments.  */
       e = sym->ts.u.cl->length;
-      if (e == NULL && !sym->attr.dummy && !sym->attr.result)
+      if (e == NULL && !sym->attr.dummy && !sym->attr.result
+	  && !sym->ts.deferred)
 	{
 	  gfc_error ("Entity with assumed character length at %L must be a "
 		     "dummy argument or a PARAMETER", &sym->declared_at);

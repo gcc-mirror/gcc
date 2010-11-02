@@ -1,3 +1,21 @@
+2010-11-02  Steven G. Kargl  < kargl@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45170
+	* array.c (gfc_match_array_constructor): Reject deferred type
+	parameter (DTP) in type-spec.
+	* decl.c (char_len_param_value, match_char_length,
+	gfc_match_char_spec, build_sym, variable_decl,
+	enumerator_decl): Support DTP.
+	* expr.c (check_inquiry): Fix check due to support for DTP.
+	* gfortran.h (gfc_typespec): Add Boolean 'deferred'.
+	* misc.c (gfc_clear_ts): Set it to false.
+	* match.c (gfc_match_allocate): Support DTP.
+	* resolve.c (resolve_allocate_expr): Not-implemented error for DTP.
+	(resolve_fl_variable): Add DTP constraint check.
+	* trans-decl.c (gfc_trans_deferred_vars): Add not-implemented
+	error for DTP.
+
 2010-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/46152

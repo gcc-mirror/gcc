@@ -2845,12 +2845,12 @@ gfc_match_allocate (void)
   gfc_typespec ts;
   gfc_symbol *sym;
   match m;
-  locus old_locus;
-  bool saw_stat, saw_errmsg, saw_source, saw_mold, b1, b2, b3;
+  locus old_locus, deferred_locus;
+  bool saw_stat, saw_errmsg, saw_source, saw_mold, saw_deferred, b1, b2, b3;
 
   head = tail = NULL;
   stat = errmsg = source = mold = tmp = NULL;
-  saw_stat = saw_errmsg = saw_source = saw_mold = false;
+  saw_stat = saw_errmsg = saw_source = saw_mold = saw_deferred = false;
 
   if (gfc_match_char ('(') != MATCH_YES)
     goto syntax;
@@ -2879,6 +2879,13 @@ gfc_match_allocate (void)
 	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: typespec in "
 			      "ALLOCATE at %L", &old_locus) == FAILURE)
 	    goto cleanup;
+
+	  if (ts.deferred)
+	    {
+	      gfc_error ("Type-spec at %L cannot contain a deferred "
+			 "type parameter", &old_locus);
+	      goto cleanup;
+	    }
 	}
       else
 	{
@@ -2910,6 +2917,12 @@ gfc_match_allocate (void)
 	{
 	  gfc_error ("Bad allocate-object at %C for a PURE procedure");
 	  goto cleanup;
+	}
+
+      if (tail->expr->ts.deferred)
+	{
+	  saw_deferred = true;
+	  deferred_locus = tail->expr->where;
 	}
 
       /* The ALLOCATE statement had an optional typespec.  Check the
@@ -3095,7 +3108,6 @@ alloc_opt_list:
 	  break;
     }
 
-
   if (gfc_match (" )%t") != MATCH_YES)
     goto syntax;
 
@@ -3104,6 +3116,14 @@ alloc_opt_list:
     {
       gfc_error ("MOLD tag at %L conflicts with SOURCE tag at %L",
 		  &mold->where, &source->where);
+      goto cleanup;
+    }
+
+  /* Check F03:C623,  */
+  if (saw_deferred && ts.type == BT_UNKNOWN && !source)
+    {
+      gfc_error ("Allocate-object at %L with a deferred type parameter "
+		 "requires either a type-spec or SOURCE tag", &deferred_locus);
       goto cleanup;
     }
   
