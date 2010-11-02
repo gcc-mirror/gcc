@@ -2826,7 +2826,7 @@ finish_id_expression (tree id_expression,
 	     the complexity of the problem"
 
 	     FIXME update for final resolution of core issue 696.  */
-	  if (DECL_INTEGRAL_CONSTANT_VAR_P (decl))
+	  if (decl_constant_var_p (decl))
 	    return integral_constant_value (decl);
 
 	  if (TYPE_P (context))
@@ -3077,21 +3077,6 @@ finish_id_expression (tree id_expression,
 	  return id_expression;
 	}
 
-      /* Only certain kinds of names are allowed in constant
-	 expression.  Enumerators and template parameters have already
-	 been handled above.  */
-      if (integral_constant_expression_p
-	  && ! DECL_INTEGRAL_CONSTANT_VAR_P (decl)
-	  && ! builtin_valid_in_constant_expr_p (decl))
-	{
-	  if (!allow_non_integral_constant_expression_p)
-	    {
-	      error ("%qD cannot appear in a constant-expression", decl);
-	      return error_mark_node;
-	    }
-	  *non_integral_constant_expression_p = true;
-	}
-
       if (TREE_CODE (decl) == NAMESPACE_DECL)
 	{
 	  error ("use of namespace %qD as expression", decl);
@@ -3117,6 +3102,21 @@ finish_id_expression (tree id_expression,
 	  || TREE_CODE (decl) == PARM_DECL
 	  || TREE_CODE (decl) == RESULT_DECL)
 	mark_used (decl);
+
+      /* Only certain kinds of names are allowed in constant
+	 expression.  Enumerators and template parameters have already
+	 been handled above.  */
+      if (integral_constant_expression_p
+	  && ! decl_constant_var_p (decl)
+	  && ! builtin_valid_in_constant_expr_p (decl))
+	{
+	  if (!allow_non_integral_constant_expression_p)
+	    {
+	      error ("%qD cannot appear in a constant-expression", decl);
+	      return error_mark_node;
+	    }
+	  *non_integral_constant_expression_p = true;
+	}
 
       if (scope)
 	{
