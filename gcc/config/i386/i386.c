@@ -2489,6 +2489,7 @@ static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
   "prescott",
   "nocona",
   "core2",
+  "corei7",
   "atom",
   "geode",
   "k6",
