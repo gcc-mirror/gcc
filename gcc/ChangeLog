@@ -1,3 +1,39 @@
+2010-11-02  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386-protos.h (ix86_split_call_vzeroupper): New.
+	(ix86_split_call_pop_vzeroupper): Likewise.
+
+	* config/i386/i386.c (move_or_delete_vzeroupper_2): Rewrite
+	the loop.
+	(ix86_expand_call): Use UNSPEC_CALL_NEEDS_VZEROUPPER.
+	(ix86_split_call_vzeroupper): New.
+	(ix86_split_call_pop_vzeroupper): Likewise.
+
+	* config/i386/i386.md (UNSPEC_CALL_NEEDS_VZEROUPPER): New.
+	(*call_pop_0_vzeroupper): Likewise.
+	(*call_pop_1_vzeroupper): Likewise.
+	(*sibcall_pop_1_vzeroupper): Likewise.
+	(*call_0_vzeroupper): Likewise.
+	(*call_1_vzeroupper): Likewise.
+	(*sibcall_1_vzeroupper): Likewise.
+	(*call_1_rex64_vzeroupper): Likewise.
+	(*call_1_rex64_ms_sysv_vzeroupper): New.
+	(*call_1_rex64_large_vzeroupper): Likewise.
+	(*sibcall_1_rex64_vzeroupper): Likewise.
+	(*call_value_pop_0_vzeroupper): New.
+	(*call_value_pop_1_vzeroupper): Likewise.
+	(*sibcall_value_pop_1_vzeroupper): Likewise.
+	(*call_value_0_vzeroupper): New.
+	(*call_value_0_rex64_vzeroupper): Use
+	(*call_value_0_rex64_ms_sysv_vzeroupper): Likewise.
+	(*call_value_1_vzeroupper): Likewise.
+	(*sibcall_value_1_vzeroupper): Likewise.
+	(*call_value_1_rex64_vzeroupper): Likewise.
+	(*call_value_1_rex64_ms_sysv_vzeroupper): Likewise.
+	(*call_value_1_rex64_large_vzeroupper): Likewise.
+	(*sibcall_value_1_rex64_vzeroupper): Likewise.
+
 2010-11-02  Ian Lance Taylor  <iant@google.com>
 
 	PR lto/46273

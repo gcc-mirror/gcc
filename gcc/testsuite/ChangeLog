@@ -1,3 +1,13 @@
+2010-11-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/avx-vzeroupper-15.c: New.
+	* gcc.target/i386/avx-vzeroupper-16.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-17.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-18.c: Likewise.
+
+	PR target/46253
+	* gcc.target/i386/pr46253.c: New.
+
 2010-11-02  Steven G. Kargl  < kargl@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
