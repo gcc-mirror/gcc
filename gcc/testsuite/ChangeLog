@@ -1,3 +1,8 @@
+2010-11-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46216
+	* gcc.dg/torture/pr46216.c: New testcase.
+
 2010-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/46131
