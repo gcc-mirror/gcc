@@ -1,6 +1,9 @@
 2010-11-01  Jason Merrill  <jason@redhat.com>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 
+	* g++.dg/cpp0x/constexpr-initlist2.C: New.
+	* g++.dg/cpp0x/constexpr-initlist3.C: New.
+
 	* g++.dg/cpp0x/constexpr-array-ptr.C: New.
 	* g++.dg/cpp0x/constexpr-array-ptr2.C: New.
 	* g++.dg/cpp0x/constexpr-array-ptr3.C: New.
