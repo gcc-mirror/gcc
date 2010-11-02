@@ -613,6 +613,11 @@ proc check_effective_target_pcc_bitfield_type_matters { } {
 # Add to FLAGS all the target-specific flags needed to use thread-local storage.
 
 proc add_options_for_tls { flags } {
+    # Tru64 UNIX uses emutls, which relies on a couple of pthread functions
+    # which only live in libpthread, so always pass -pthread for TLS.
+    if { [istarget *-*-osf*] } {
+	return "$flags -pthread"
+    }
     # On Solaris 8 and 9, __tls_get_addr/___tls_get_addr only lives in
     # libthread, so always pass -pthread for native TLS.
     # Need to duplicate native TLS check from
