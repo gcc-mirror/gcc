@@ -2802,7 +2802,7 @@ check_bitfield_decl (tree field)
       STRIP_NOPS (w);
 
       /* detect invalid field size.  */
-      w = integral_constant_value (w);
+      w = cxx_constant_value (w);
 
       if (TREE_CODE (w) != INTEGER_CST)
 	{

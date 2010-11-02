@@ -23,5 +23,5 @@ int k {}; // initialize to 0
 // PR c++/36963
 double d = 1.1;
 float fa[] = { d, 1.1 };      // { dg-error "narrowing conversion of 'd'" }
-const double d2 = 1.1;
+constexpr double d2 = 1.1;
 float fa2[] = { d2, 1.1 };

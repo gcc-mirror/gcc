@@ -18,7 +18,7 @@ void Foo ()
   
   static const unsigned J = X<T>::J;
   
-  Y<J> j; // { dg-error "non-constant" "" }
+  Y<J> j; // { dg-error "constant" "" }
 }
 
 struct A 

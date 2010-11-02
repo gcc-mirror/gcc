@@ -328,6 +328,8 @@ build_typeid (tree exp)
   if (processing_template_decl)
     return build_min (TYPEID_EXPR, const_type_info_type_node, exp);
 
+  /* FIXME when integrating with c_fully_fold, mark
+     resolves_to_fixed_type_p case as a non-constant expression.  */
   if (TREE_CODE (exp) == INDIRECT_REF
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
       && TYPE_POLYMORPHIC_P (TREE_TYPE (exp))

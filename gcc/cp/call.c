@@ -466,15 +466,24 @@ null_ptr_cst_p (tree t)
      A null pointer constant is an integral constant expression
      (_expr.const_) rvalue of integer type that evaluates to zero or
      an rvalue of type std::nullptr_t. */
-  t = integral_constant_value (t);
-  if (t == null_node
-      || NULLPTR_TYPE_P (TREE_TYPE (t)))
+  if (NULLPTR_TYPE_P (TREE_TYPE (t)))
     return true;
-  if (CP_INTEGRAL_TYPE_P (TREE_TYPE (t)) && integer_zerop (t))
+  if (CP_INTEGRAL_TYPE_P (TREE_TYPE (t)))
     {
-      STRIP_NOPS (t);
-      if (!TREE_OVERFLOW (t))
-	return true;
+      if (cxx_dialect >= cxx0x)
+	{
+	  t = fold_non_dependent_expr (t);
+	  t = maybe_constant_value (t);
+	  if (TREE_CONSTANT (t) && integer_zerop (t))
+	    return true;
+	}
+      else
+	{
+	  t = integral_constant_value (t);
+	  STRIP_NOPS (t);
+	  if (integer_zerop (t) && !TREE_OVERFLOW (t))
+	    return true;
+	}
     }
   return false;
 }
@@ -7907,9 +7916,32 @@ set_up_extended_ref_temp (tree decl, tree expr, tree *cleanup, tree *initp)
      VAR.  */
   if (TREE_CODE (expr) != TARGET_EXPR)
     expr = get_target_expr (expr);
-  /* Create the INIT_EXPR that will initialize the temporary
-     variable.  */
-  init = build2 (INIT_EXPR, type, var, expr);
+
+  /* If the initializer is constant, put it in DECL_INITIAL so we get
+     static initialization and use in constant expressions.  */
+  init = maybe_constant_init (expr);
+  if (TREE_CONSTANT (init))
+    {
+      if (literal_type_p (type) && CP_TYPE_CONST_NON_VOLATILE_P (type))
+	{
+	  /* 5.19 says that a constant expression can include an
+	     lvalue-rvalue conversion applied to "a glvalue of literal type
+	     that refers to a non-volatile temporary object initialized
+	     with a constant expression".  Rather than try to communicate
+	     that this VAR_DECL is a temporary, just mark it constexpr.
+
+	     Currently this is only useful for initializer_list temporaries,
+	     since reference vars can't appear in constant expressions.  */
+	  DECL_DECLARED_CONSTEXPR_P (var) = true;
+	  TREE_CONSTANT (var) = true;
+	}
+      DECL_INITIAL (var) = init;
+      init = NULL_TREE;
+    }
+  else
+    /* Create the INIT_EXPR that will initialize the temporary
+       variable.  */
+    init = build2 (INIT_EXPR, type, var, expr);
   if (at_function_scope_p ())
     {
       add_decl_expr (var);
@@ -8067,7 +8099,8 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
 					build_pointer_type (base_conv_type),
 					/*check_access=*/true,
 					/*nonnull=*/true, complain);
-	      expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr), init, expr);
+	      if (init)
+		expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr), init, expr);
 	    }
 	  else
 	    /* Take the address of EXPR.  */
