@@ -1,3 +1,9 @@
+2010-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/45693
+	* configure.host (osf*): Set os_include_dir to os/generic.
+	Add -lpthread to OPT_LDFLAGS.
+
 2010-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/bitset (_Base_bitset<>_Base_bitset(unsigned long long)):
