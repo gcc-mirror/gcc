@@ -399,10 +399,10 @@ namespace __gnu_test
     {
       constexpr _Tp a = _Tp();
       constexpr _Tp b = _Tp();
-      constexpr _Tp c1 = a | b;
-      constexpr _Tp c2 = a & b;
-      constexpr _Tp c3 = a ^ b;
-      constexpr _Tp c4 = ~b;
+      constexpr _Tp c1 __attribute__((unused)) = a | b;
+      constexpr _Tp c2 __attribute__((unused)) = a & b;
+      constexpr _Tp c3 __attribute__((unused)) = a ^ b;
+      constexpr _Tp c4 __attribute__((unused)) = ~b;
     }
 #endif
 
@@ -562,7 +562,7 @@ namespace __gnu_test
 	struct _Concept
 	{
 	  void __constraint()
-	  { _Tp __v; }
+	  { _Tp __v __attribute__((unused)); }
 	};
 
 	void (_Concept::*__x)() __attribute__((unused))

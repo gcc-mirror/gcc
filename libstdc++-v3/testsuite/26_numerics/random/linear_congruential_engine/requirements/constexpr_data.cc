@@ -33,10 +33,14 @@ namespace __gnu_test
 	{
 	  void __constraint()
 	  {
-	    constexpr auto v1(_Ttesttype::multiplier);
-	    constexpr auto v2(_Ttesttype::increment);
-	    constexpr auto v3(_Ttesttype::modulus);
-	    constexpr auto v4(_Ttesttype::default_seed);
+	    constexpr auto v1 __attribute__((unused))
+	      = _Ttesttype::multiplier;
+	    constexpr auto v2 __attribute__((unused))
+	      = _Ttesttype::increment;
+	    constexpr auto v3 __attribute__((unused))
+	      = _Ttesttype::modulus;
+	    constexpr auto v4 __attribute__((unused))
+	      = _Ttesttype::default_seed;
 	  }
 	};
 

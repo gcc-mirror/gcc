@@ -33,7 +33,8 @@ namespace __gnu_test
 	{
 	  void __constraint()
 	  {
-	    constexpr auto v1(_Ttesttype::table_size);
+	    constexpr auto v1 __attribute__((unused))
+	      = _Ttesttype::table_size;
 	  }
 	};
 

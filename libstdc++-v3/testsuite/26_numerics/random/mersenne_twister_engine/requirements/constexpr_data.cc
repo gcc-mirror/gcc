@@ -33,20 +33,34 @@ namespace __gnu_test
 	{
 	  void __constraint()
 	  {
-	    constexpr auto v1(_Ttesttype::word_size);
-	    constexpr auto v2(_Ttesttype::state_size);
-	    constexpr auto v3(_Ttesttype::shift_size);
-	    constexpr auto v4(_Ttesttype::mask_bits);
-	    constexpr auto v5(_Ttesttype::xor_mask);
-	    constexpr auto v6(_Ttesttype::tempering_u);
-	    constexpr auto v7(_Ttesttype::tempering_d);
-	    constexpr auto v8(_Ttesttype::tempering_s);
-	    constexpr auto v9(_Ttesttype::tempering_b);
-	    constexpr auto v10(_Ttesttype::tempering_t);
-	    constexpr auto v11(_Ttesttype::tempering_c);
-	    constexpr auto v12(_Ttesttype::tempering_l);
-	    constexpr auto v13(_Ttesttype::initialization_multiplier);
-	    constexpr auto v14(_Ttesttype::default_seed);
+	    constexpr auto v1 __attribute__((unused))
+	      = _Ttesttype::word_size;
+	    constexpr auto v2 __attribute__((unused))
+	      = _Ttesttype::state_size;
+	    constexpr auto v3 __attribute__((unused))
+	      = _Ttesttype::shift_size;
+	    constexpr auto v4 __attribute__((unused))
+	      = _Ttesttype::mask_bits;
+	    constexpr auto v5 __attribute__((unused))
+	      = _Ttesttype::xor_mask;
+	    constexpr auto v6 __attribute__((unused))
+	      = _Ttesttype::tempering_u;
+	    constexpr auto v7 __attribute__((unused))
+	      = _Ttesttype::tempering_d;
+	    constexpr auto v8 __attribute__((unused))
+	      = _Ttesttype::tempering_s;
+	    constexpr auto v9 __attribute__((unused))
+	      = _Ttesttype::tempering_b;
+	    constexpr auto v10 __attribute__((unused))
+	      = _Ttesttype::tempering_t;
+	    constexpr auto v11 __attribute__((unused))
+	      = _Ttesttype::tempering_c;
+	    constexpr auto v12 __attribute__((unused))
+	      = _Ttesttype::tempering_l;
+	    constexpr auto v13 __attribute__((unused))
+	      = _Ttesttype::initialization_multiplier;
+	    constexpr auto v14 __attribute__((unused))
+	      = _Ttesttype::default_seed;
 	  }
 	};
 

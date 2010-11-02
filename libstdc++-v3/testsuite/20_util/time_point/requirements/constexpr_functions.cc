@@ -33,11 +33,14 @@ namespace __gnu_test
 	{
 	  void __constraint()
 	  {
-	    constexpr auto v1(_Ttesttype::min());
-	    constexpr auto v2(_Ttesttype::max());
+	    constexpr auto v1 __attribute__((unused))
+	      = _Ttesttype::min();
+	    constexpr auto v2 __attribute__((unused))
+	      = _Ttesttype::max();
 
 	    constexpr _Ttesttype obj;
-	    constexpr auto v3 = obj.time_since_epoch();
+	    constexpr auto v3 __attribute__((unused))
+	      = obj.time_since_epoch();
 	  }
 	};
 

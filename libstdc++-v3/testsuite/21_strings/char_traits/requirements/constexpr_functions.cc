@@ -38,13 +38,20 @@ namespace __gnu_test
 	    const char_type c1(0);
 	    const char_type c2 = c1;
 	    const int_type i(0);
-	    constexpr auto v1(_Ttesttype::eq(c1, c2));
-	    constexpr auto v2(_Ttesttype::lt(c1, c2));
-	    constexpr auto v3(_Ttesttype::to_char_type(i));
-	    constexpr auto v4(_Ttesttype::to_int_type(c1));
-	    constexpr auto v5(_Ttesttype::eq_int_type(i, i));
-	    constexpr auto v6(_Ttesttype::eof());
-	    constexpr auto v7(_Ttesttype::not_eof(i));
+	    constexpr auto v1 __attribute__((unused))
+	      = _Ttesttype::eq(c1, c2);
+	    constexpr auto v2 __attribute__((unused))
+	      = _Ttesttype::lt(c1, c2);
+	    constexpr auto v3 __attribute__((unused))
+	      = _Ttesttype::to_char_type(i);
+	    constexpr auto v4 __attribute__((unused))
+	      = _Ttesttype::to_int_type(c1);
+	    constexpr auto v5 __attribute__((unused))
+	      = _Ttesttype::eq_int_type(i, i);
+	    constexpr auto v6 __attribute__((unused))
+	      = _Ttesttype::eof();
+	    constexpr auto v7 __attribute__((unused))
+	      = _Ttesttype::not_eof(i);
 	  }
 	};
 

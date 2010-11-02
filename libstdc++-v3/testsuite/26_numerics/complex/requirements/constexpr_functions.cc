@@ -36,8 +36,8 @@ namespace __gnu_test
 	    typedef typename _Ttesttype::_ComplexT _ComplexT;
 	    const _ComplexT cc = { 1.1 };
 	    constexpr _Ttesttype a(cc);
-	    constexpr auto v1 = a.real();
-	    constexpr auto v2 = a.imag();
+	    constexpr auto v1 __attribute__((unused)) = a.real();
+	    constexpr auto v2 __attribute__((unused)) = a.imag();
 	  }
 	};
 

@@ -34,9 +34,9 @@ namespace __gnu_test
 	  void __constraint()
 	  { 
 	    constexpr _Ttesttype a = { };
-	    constexpr auto v1 = a.size();
-	    constexpr auto v2 = a.max_size();
-	    constexpr auto v3 = a.empty();
+	    constexpr auto v1 __attribute__((unused)) = a.size();
+	    constexpr auto v2 __attribute__((unused)) = a.max_size();
+	    constexpr auto v3 __attribute__((unused)) = a.empty();
 	  }
 	};
 

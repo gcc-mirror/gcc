@@ -27,11 +27,11 @@ int main()
 
   // non-constexpr
   minutes mn1(6000);
-  hours hr1 = duration_cast<hours>(mn1);
+  hours hr1 __attribute__((unused)) = duration_cast<hours>(mn1);
 
   // constexpr
   constexpr minutes mn2(6000);
-  constexpr hours hr2 = duration_cast<hours>(mn2);
+  constexpr hours hr2 __attribute__((unused)) = duration_cast<hours>(mn2);
 
   return 0;
 }

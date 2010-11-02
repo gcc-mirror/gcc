@@ -33,15 +33,24 @@ namespace __gnu_test
 	{
 	  void __constraint()
 	  { 
-	    constexpr _Tbasetype v1(_Ttesttype::min());
-	    constexpr _Tbasetype v2(_Ttesttype::max());
-	    constexpr _Tbasetype v3(_Ttesttype::lowest());
-	    constexpr _Tbasetype v4(_Ttesttype::epsilon());
-	    constexpr _Tbasetype v5(_Ttesttype::round_error());
-	    constexpr _Tbasetype v6(_Ttesttype::infinity());
-	    constexpr _Tbasetype v7(_Ttesttype::quiet_NaN());
-	    constexpr _Tbasetype v8(_Ttesttype::signaling_NaN());
-	    constexpr _Tbasetype v9(_Ttesttype::denorm_min());
+	    constexpr _Tbasetype v1 __attribute__((unused))
+	      = _Ttesttype::min();
+	    constexpr _Tbasetype v2 __attribute__((unused))
+	      = _Ttesttype::max();
+	    constexpr _Tbasetype v3 __attribute__((unused))
+	      = _Ttesttype::lowest();
+	    constexpr _Tbasetype v4 __attribute__((unused))
+	      = _Ttesttype::epsilon();
+	    constexpr _Tbasetype v5 __attribute__((unused))
+	      = _Ttesttype::round_error();
+	    constexpr _Tbasetype v6 __attribute__((unused))
+	      = _Ttesttype::infinity();
+	    constexpr _Tbasetype v7 __attribute__((unused))
+	      = _Ttesttype::quiet_NaN();
+	    constexpr _Tbasetype v8 __attribute__((unused))
+	      = _Ttesttype::signaling_NaN();
+	    constexpr _Tbasetype v9 __attribute__((unused))
+	      = _Ttesttype::denorm_min();
 	  }
 	};
 
