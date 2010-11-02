@@ -33,8 +33,8 @@
 #include <sys/time.h>
 #endif
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   namespace chrono
   {
     const bool system_clock::is_monotonic;
@@ -74,6 +74,7 @@ namespace std
     }
 #endif
   }
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif // _GLIBCXX_USE_C99_STDINT_TR1

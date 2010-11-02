@@ -27,8 +27,8 @@
  */
 #include <regex>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
 namespace __regex
 {
 #ifdef _GLIBCXX_DEBUG
@@ -166,5 +166,5 @@ _M_clone()
 { return 0; }
 
 } // namespace __regex
-} // namespace std
 
+_GLIBCXX_END_NAMESPACE

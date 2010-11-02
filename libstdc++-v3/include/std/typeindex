@@ -37,8 +37,8 @@
 
 #include <typeinfo>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
      @brief The class type_index provides a simple wrapper for type_info
      which can be used as an index type in associative containers (23.6)
@@ -98,7 +98,8 @@ namespace std
       operator()(const type_index& __ti) const
       { return __ti.hash_code(); }
     };
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif  // __GXX_EXPERIMENTAL_CXX0X__
 

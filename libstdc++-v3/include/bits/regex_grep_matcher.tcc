@@ -25,10 +25,10 @@
 /**
  * @file bits/regex_grep_matcher.tcc
  */
+
 #include <regex>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
 
 namespace
 {
@@ -172,6 +172,5 @@ namespace __regex
   }
 
 } // namespace __regex
-} // namespace std
 
-/* vim: set ts=8 sw=2 sts=2: */
+_GLIBCXX_END_NAMESPACE

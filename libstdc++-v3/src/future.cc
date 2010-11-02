@@ -64,8 +64,8 @@ namespace
   }
 }
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   const error_category& future_category()
   { return __future_category_instance(); }
 
@@ -73,4 +73,5 @@ namespace std
 
   const char* 
   future_error::what() const throw() { return _M_code.message().c_str(); }
-}
+
+_GLIBCXX_END_NAMESPACE

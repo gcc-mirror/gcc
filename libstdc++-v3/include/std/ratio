@@ -40,8 +40,8 @@
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    * @defgroup ratio Rational Arithmetic
    * @ingroup utilities
@@ -339,7 +339,7 @@ namespace std
   typedef ratio<      1000000000000000000, 1> exa;
 
   // @} group ratio
-}
+_GLIBCXX_END_NAMESPACE
 
 #endif //_GLIBCXX_USE_C99_STDINT_TR1
 

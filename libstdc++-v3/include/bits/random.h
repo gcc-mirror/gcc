@@ -33,8 +33,8 @@
 
 #include <vector>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // [26.4] Random number generation
 
   /**
@@ -5376,6 +5376,6 @@ namespace std
   /* @} */ // group random_utilities
 
   /* @} */ // group random
-}
+_GLIBCXX_END_NAMESPACE
 
 #endif

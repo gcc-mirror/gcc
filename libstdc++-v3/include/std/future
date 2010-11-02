@@ -45,8 +45,8 @@
 #include <atomic>
 #include <bits/functexcept.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    * @defgroup futures Futures
    * @ingroup concurrency
@@ -1364,7 +1364,7 @@ namespace std
        // && _GLIBCXX_ATOMIC_BUILTINS_4
 
   // @} group futures
-}
+_GLIBCXX_END_NAMESPACE
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
