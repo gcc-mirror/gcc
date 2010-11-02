@@ -1,6 +1,7 @@
-// { dg-options "-x c -shared-libgcc -lstdc++" }
+// { dg-do compile { xfail *-*-* } }
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,18 +18,18 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <cassert>
-#include <stdatomic.h>
+#include <memory>
+#include <testsuite_common_types.h>
 
-// libstdc++/40826
-// libstdc++/40654
+struct derived : public std::enable_shared_from_this<int>
+{
+  constexpr derived() { }
+};
+
 int main()
 {
-  atomic_flag f = ATOMIC_FLAG_INIT;
-
-  atomic_flag_clear(&f); // set to false
-  assert( false == atomic_flag_test_and_set(&f) ); // return previous false, set to true
-  assert( true == atomic_flag_test_and_set(&f) ); // return true
-
+  __gnu_test::constexpr_default_constructible test;
+  test.operator()<derived>();  // { dg-excess-errors "" }
+  derived d;
   return 0;
 }

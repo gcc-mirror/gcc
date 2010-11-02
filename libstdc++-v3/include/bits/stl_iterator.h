@@ -709,7 +709,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       typedef typename __traits_type::reference 	reference;
       typedef typename __traits_type::pointer   	pointer;
 
-      __normal_iterator() : _M_current(_Iterator()) { }
+      _GLIBCXX_CONSTEXPR __normal_iterator() : _M_current(_Iterator()) { }
 
       explicit
       __normal_iterator(const _Iterator& __i) : _M_current(__i) { }

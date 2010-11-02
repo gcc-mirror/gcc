@@ -92,11 +92,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       assign(char_type& __c1, const char_type& __c2)
       { __c1 = __c2; }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       eq(const char_type& __c1, const char_type& __c2)
       { return __c1 == __c2; }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       lt(const char_type& __c1, const char_type& __c2)
       { return __c1 < __c2; }
 
@@ -118,23 +118,23 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       static char_type*
       assign(char_type* __s, std::size_t __n, char_type __a);
 
-      static char_type
+      static _GLIBCXX_CONSTEXPR char_type
       to_char_type(const int_type& __c)
       { return static_cast<char_type>(__c); }
 
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       to_int_type(const char_type& __c)
       { return static_cast<int_type>(__c); }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       eof()
       { return static_cast<int_type>(_GLIBCXX_STDIO_EOF); }
 
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       not_eof(const int_type& __c)
       { return !eq_int_type(__c, eof()) ? __c : to_int_type(char_type()); }
     };
@@ -239,11 +239,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       assign(char_type& __c1, const char_type& __c2)
       { __c1 = __c2; }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       eq(const char_type& __c1, const char_type& __c2)
       { return __c1 == __c2; }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       lt(const char_type& __c1, const char_type& __c2)
       { return __c1 < __c2; }
 
@@ -271,25 +271,25 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       assign(char_type* __s, size_t __n, char_type __a)
       { return static_cast<char_type*>(__builtin_memset(__s, __a, __n)); }
 
-      static char_type
+      static _GLIBCXX_CONSTEXPR char_type
       to_char_type(const int_type& __c)
       { return static_cast<char_type>(__c); }
 
       // To keep both the byte 0xff and the eof symbol 0xffffffff
       // from ending up as 0xffffffff.
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       to_int_type(const char_type& __c)
       { return static_cast<int_type>(static_cast<unsigned char>(__c)); }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       eof()
       { return static_cast<int_type>(_GLIBCXX_STDIO_EOF); }
 
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       not_eof(const int_type& __c)
       { return (__c == eof()) ? 0 : __c; }
   };
@@ -310,11 +310,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       assign(char_type& __c1, const char_type& __c2)
       { __c1 = __c2; }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       eq(const char_type& __c1, const char_type& __c2)
       { return __c1 == __c2; }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       lt(const char_type& __c1, const char_type& __c2)
       { return __c1 < __c2; }
 
@@ -342,23 +342,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       assign(char_type* __s, size_t __n, char_type __a)
       { return wmemset(__s, __a, __n); }
 
-      static char_type
+      static _GLIBCXX_CONSTEXPR char_type
       to_char_type(const int_type& __c)
       { return char_type(__c); }
 
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       to_int_type(const char_type& __c)
       { return int_type(__c); }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       eof()
       { return static_cast<int_type>(WEOF); }
 
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       not_eof(const int_type& __c)
       { return eq_int_type(__c, eof()) ? 0 : __c; }
   };
@@ -386,11 +386,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       assign(char_type& __c1, const char_type& __c2)
       { __c1 = __c2; }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       eq(const char_type& __c1, const char_type& __c2)
       { return __c1 == __c2; }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       lt(const char_type& __c1, const char_type& __c2)
       { return __c1 < __c2; }
 
@@ -445,23 +445,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	return __s;
       }
 
-      static char_type
+      static _GLIBCXX_CONSTEXPR char_type
       to_char_type(const int_type& __c)
       { return char_type(__c); }
 
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       to_int_type(const char_type& __c)
       { return int_type(__c); }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       eof()
       { return static_cast<int_type>(-1); }
 
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       not_eof(const int_type& __c)
       { return eq_int_type(__c, eof()) ? 0 : __c; }
     };
@@ -479,11 +479,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       assign(char_type& __c1, const char_type& __c2)
       { __c1 = __c2; }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       eq(const char_type& __c1, const char_type& __c2)
       { return __c1 == __c2; }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       lt(const char_type& __c1, const char_type& __c2)
       { return __c1 < __c2; }
 
@@ -538,23 +538,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	return __s;
       }
 
-      static char_type
+      static _GLIBCXX_CONSTEXPR char_type
       to_char_type(const int_type& __c)
       { return char_type(__c); }
 
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       to_int_type(const char_type& __c)
       { return int_type(__c); }
 
-      static bool
+      static _GLIBCXX_CONSTEXPR bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       eof()
       { return static_cast<int_type>(-1); }
 
-      static int_type
+      static _GLIBCXX_CONSTEXPR int_type
       not_eof(const int_type& __c)
       { return eq_int_type(__c, eof()) ? 0 : __c; }
     };

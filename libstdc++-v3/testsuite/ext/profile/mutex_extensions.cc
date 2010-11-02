@@ -22,4 +22,4 @@
 
 #include <vector>
 
-// { dg-error "Cannot use -D_GLIBCXX_PROFILE with " "" { target *-*-* } 196 }
+// { dg-error "Cannot use -D_GLIBCXX_PROFILE with " "" { target *-*-* } 223 }

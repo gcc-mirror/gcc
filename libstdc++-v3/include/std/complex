@@ -126,49 +126,49 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       
       ///  Default constructor.  First parameter is x, second parameter is y.
       ///  Unspecified parameters default to 0.
-      complex(const _Tp& __r = _Tp(), const _Tp& __i = _Tp())
+      _GLIBCXX_CONSTEXPR complex(const _Tp& __r = _Tp(), const _Tp& __i = _Tp())
       : _M_real(__r), _M_imag(__i) { }
 
       // Lets the compiler synthesize the copy constructor   
       // complex (const complex<_Tp>&);
       ///  Copy constructor.
       template<typename _Up>
-        complex(const complex<_Up>& __z)
+        _GLIBCXX_CONSTEXPR complex(const complex<_Up>& __z)
 	: _M_real(__z.real()), _M_imag(__z.imag()) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      _Tp real() const
-      { return _M_real; }
+      constexpr _Tp 
+      real() const { return _M_real; }
 
-      _Tp imag() const
-      { return _M_imag; }
+      constexpr _Tp 
+      imag() const { return _M_imag; }
 #else
       ///  Return real part of complex number.
-      _Tp& real()
-      { return _M_real; }
+      _Tp& 
+      real() { return _M_real; }
 
       ///  Return real part of complex number.
-      const _Tp& real() const
-      { return _M_real; }
+      const _Tp& 
+      real() const { return _M_real; }
 
       ///  Return imaginary part of complex number.
-      _Tp& imag()
-      { return _M_imag; }
+      _Tp& 
+      imag() { return _M_imag; }
 
       ///  Return imaginary part of complex number.
-      const _Tp& imag() const
-      { return _M_imag; }
+      const _Tp& 
+      imag() const { return _M_imag; }
 #endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      void real(_Tp __val)
-      { _M_real = __val; }
+      void 
+      real(_Tp __val) { _M_real = __val; }
 
-      void imag(_Tp __val)
-      { _M_imag = __val; }
+      void 
+      imag(_Tp __val) { _M_imag = __val; }
 
       /// Assign this complex number to scalar @a t.
       complex<_Tp>& operator=(const _Tp&);
@@ -215,7 +215,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename _Up>
         complex<_Tp>& operator/=(const complex<_Up>&);
 
-      const complex& __rep() const
+      _GLIBCXX_USE_CONSTEXPR complex __rep() const
       { return *this; }
 
     private:
@@ -1041,46 +1041,43 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef float value_type;
       typedef __complex__ float _ComplexT;
 
-      complex(_ComplexT __z) : _M_value(__z) { }
+      _GLIBCXX_CONSTEXPR complex(_ComplexT __z) : _M_value(__z) { }
 
-      complex(float __r = 0.0f, float __i = 0.0f)
-      {
-	__real__ _M_value = __r;
-	__imag__ _M_value = __i;
-      }
+      _GLIBCXX_CONSTEXPR complex(float __r = 0.0f, float __i = 0.0f)
+      : _M_value(__r + __i * 1.0fi) { }
 
-      explicit complex(const complex<double>&);
-      explicit complex(const complex<long double>&);	
+      explicit _GLIBCXX_CONSTEXPR complex(const complex<double>&);
+      explicit _GLIBCXX_CONSTEXPR complex(const complex<long double>&);	
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      float real() const
-      { return __real__ _M_value; }
+      constexpr float 
+      real() const { return __real__ _M_value; }
 
-      float imag() const
-      { return __imag__ _M_value; }
+      constexpr float 
+      imag() const { return __imag__ _M_value; }
 #else
-      float& real()
-      { return __real__ _M_value; }
+      float& 
+      real() { return __real__ _M_value; }
 
-      const float& real() const
-      { return __real__ _M_value; }      
+      const float& 
+      real() const { return __real__ _M_value; }      
 
-      float& imag()
-      { return __imag__ _M_value; }
+      float& 
+      imag() { return __imag__ _M_value; }
 
-      const float& imag() const
-      { return __imag__ _M_value; }
+      const float& 
+      imag() const { return __imag__ _M_value; }
 #endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      void real(float __val)
-      { __real__ _M_value = __val; }
+      void 
+      real(float __val) { __real__ _M_value = __val; }
 
-      void imag(float __val)
-      { __imag__ _M_value = __val; }
+      void 
+      imag(float __val) { __imag__ _M_value = __val; }
 
       complex&
       operator=(float __f)
@@ -1170,7 +1167,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  return *this;
 	}
 
-      const _ComplexT& __rep() const { return _M_value; }
+      _GLIBCXX_USE_CONSTEXPR _ComplexT __rep() const { return _M_value; }
 
     private:
       _ComplexT _M_value;
@@ -1184,48 +1181,45 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef double value_type;
       typedef __complex__ double _ComplexT;
 
-      complex(_ComplexT __z) : _M_value(__z) { }
+      _GLIBCXX_CONSTEXPR complex(_ComplexT __z) : _M_value(__z) { }
 
-      complex(double __r = 0.0, double __i = 0.0)
-      {
-	__real__ _M_value = __r;
-	__imag__ _M_value = __i;
-      }
+      _GLIBCXX_CONSTEXPR complex(double __r = 0.0, double __i = 0.0)
+      : _M_value(__r + __i * 1.0i) { }
 
-      complex(const complex<float>& __z)
+      _GLIBCXX_CONSTEXPR complex(const complex<float>& __z)
       : _M_value(__z.__rep()) { }
 
-      explicit complex(const complex<long double>&);	
+      explicit _GLIBCXX_CONSTEXPR complex(const complex<long double>&);	
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      double real() const
-      { return __real__ _M_value; }
+      constexpr double 
+      real() const { return __real__ _M_value; }
 
-      double imag() const
-      { return __imag__ _M_value; }
+      constexpr double 
+      imag() const { return __imag__ _M_value; }
 #else
-      double& real()
-      { return __real__ _M_value; }
+      double& 
+      real() { return __real__ _M_value; }
 
-      const double& real() const
-      { return __real__ _M_value; }
+      const double& 
+      real() const { return __real__ _M_value; }
 
-      double& imag()
-      { return __imag__ _M_value; }
+      double& 
+      imag() { return __imag__ _M_value; }
 
-      const double& imag() const
-      { return __imag__ _M_value; }
+      const double& 
+      imag() const { return __imag__ _M_value; }
 #endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      void real(double __val)
-      { __real__ _M_value = __val; }
+      void 
+      real(double __val) { __real__ _M_value = __val; }
 
-      void imag(double __val)
-      { __imag__ _M_value = __val; }
+      void 
+      imag(double __val) { __imag__ _M_value = __val; }
 
       complex&
       operator=(double __d)
@@ -1314,7 +1308,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  return *this;
 	}
 
-      const _ComplexT& __rep() const { return _M_value; }
+      _GLIBCXX_USE_CONSTEXPR _ComplexT __rep() const { return _M_value; }
 
     private:
       _ComplexT _M_value;
@@ -1328,49 +1322,47 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef long double value_type;
       typedef __complex__ long double _ComplexT;
 
-      complex(_ComplexT __z) : _M_value(__z) { }
+      _GLIBCXX_CONSTEXPR complex(_ComplexT __z) : _M_value(__z) { }
 
-      complex(long double __r = 0.0L, long double __i = 0.0L)
-      {
-	__real__ _M_value = __r;
-	__imag__ _M_value = __i;
-      }
+      _GLIBCXX_CONSTEXPR complex(long double __r = 0.0L, 
+				 long double __i = 0.0L)
+      : _M_value(__r + __i * 1.0Li) { }
 
-      complex(const complex<float>& __z)
+      _GLIBCXX_CONSTEXPR complex(const complex<float>& __z)
       : _M_value(__z.__rep()) { }
 
-      complex(const complex<double>& __z)
+      _GLIBCXX_CONSTEXPR complex(const complex<double>& __z)
       : _M_value(__z.__rep()) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      long double real() const
-      { return __real__ _M_value; }
+      constexpr long double 
+      real() const { return __real__ _M_value; }
 
-      long double imag() const
-      { return __imag__ _M_value; }
+      constexpr long double 
+      imag() const { return __imag__ _M_value; }
 #else
-      long double& real()
-      { return __real__ _M_value; }
+      long double& 
+      real() { return __real__ _M_value; }
 
-      const long double& real() const
-      { return __real__ _M_value; }
+      const long double& 
+      real() const { return __real__ _M_value; }
 
-      long double& imag()
-      { return __imag__ _M_value; }
+      long double& 
+      imag() { return __imag__ _M_value; }
 
-      const long double& imag() const
-      { return __imag__ _M_value; }
+      const long double& 
+      imag() const { return __imag__ _M_value; }
 #endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      void real(long double __val)
-      { __real__ _M_value = __val; }
+      void 
+      real(long double __val) { __real__ _M_value = __val; }
 
-      void imag(long double __val)
-      { __imag__ _M_value = __val; }
+      void 
+      imag(long double __val) { __imag__ _M_value = __val; }
 
       complex&
       operator=(long double __r)
@@ -1459,7 +1451,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  return *this;
 	}
 
-      const _ComplexT& __rep() const { return _M_value; }
+      _GLIBCXX_USE_CONSTEXPR _ComplexT __rep() const { return _M_value; }
 
     private:
       _ComplexT _M_value;
@@ -1467,15 +1459,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // These bits have to be at the end of this file, so that the
   // specializations have all been defined.
-  inline
+  inline _GLIBCXX_CONSTEXPR
   complex<float>::complex(const complex<double>& __z)
   : _M_value(__z.__rep()) { }
 
-  inline
+  inline _GLIBCXX_CONSTEXPR
   complex<float>::complex(const complex<long double>& __z)
   : _M_value(__z.__rep()) { }
 
-  inline
+  inline _GLIBCXX_CONSTEXPR
   complex<double>::complex(const complex<long double>& __z)
   : _M_value(__z.__rep()) { }
 

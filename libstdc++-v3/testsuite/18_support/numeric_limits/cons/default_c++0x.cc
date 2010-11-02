@@ -1,7 +1,6 @@
-// { dg-options "-x c" }
-// { dg-do compile }
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,19 +17,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <stdatomic.h>
+#include <limits>
+#include <testsuite_common_types.h>
 
 int main()
 {
-  atomic_flag f;
-  atomic_flag* p = &f;
-  memory_order m = memory_order_relaxed;
-
-  // For position only.
-  atomic_flag_test_and_set(p);
-  atomic_flag_test_and_set_explicit(p, m);
-  atomic_flag_clear(p);
-  atomic_flag_clear_explicit(p, m);
-
+  __gnu_test::default_constructible test;
+  __gnu_cxx::typelist::apply_generator(test, __gnu_test::limits_tl());
   return 0;
 }

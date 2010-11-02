@@ -28,6 +28,6 @@ int main()
   return 0;
 }
 
-// { dg-error "operator" "" { target *-*-* } 376 }
-// { dg-error "operator" "" { target *-*-* } 377 }
-// { dg-error "operator" "" { target *-*-* } 378 }
+// { dg-error "operator" "" { target *-*-* } 384 }
+// { dg-error "operator" "" { target *-*-* } 385 }
+// { dg-error "operator" "" { target *-*-* } 386 }

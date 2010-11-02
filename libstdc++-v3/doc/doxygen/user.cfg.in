@@ -599,6 +599,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/complex \
                          include/condition_variable \
                          include/deque \
+                         include/forward_list \
                          include/fstream \
                          include/functional \
                          include/future \
@@ -1539,6 +1540,8 @@ PREDEFINED             = __cplusplus \
                          _GLIBCXX_END_NESTED_NAMESPACE=} \
                          "_GLIBCXX_TEMPLATE_ARGS=...  " \
                          _GLIBCXX_DEPRECATED \
+                         _GLIBCXX_CONSTEXPR=constexpr \
+                         _GLIBCXX_USE_CONSTEXPR=constexpr \
                          _GLIBCXX_USE_WCHAR_T \
                          _GLIBCXX_USE_LONG_LONG \
                          _GLIBCXX_USE_C99_STDINT_TR1 \

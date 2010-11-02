@@ -1,3 +1,229 @@
+2010-11-01  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/chrono: Extend constexpr application.
+	* testsuite/util/testsuite_common_types.h
+	(constexpr_default_constructible, constexpr_single_value_constructible)
+	: Add comments about implied constraints.
+	* testsuite/20_util/duration/cons/constexpr.cc: Activate all tests.
+	* testsuite/20_util/time_point/cons/constexpr.cc: Same.
+	* testsuite/20_util/time_point/requirements/constexpr_functions.cc:
+	Same.
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Adjust line
+	numbers.
+	* testsuite/20_util/time_point_cast/constexpr.cc: New.
+
+	* include/std/bitset: Use __SIZEOF_* macros to re-create original
+	logic instead of slipshod application of
+	std::numeric_limits<T>::max() macros.
+	* testsuite/util/testsuite_common_types.h
+	(constexpr_default_constructible): Modify.
+
+	* include/std/chrono: Tested constexpr.
+	* testsuite/20_util/duration_cast/constexpr.cc: New.
+	* testsuite/20_util/time_point/cons/constexpr.cc: New.
+
+	* testsuite/20_util/duration/cons/constexpr.cc: Add single_value tests.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Adjust
+	line numbers.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Same.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Same.
+	* testsuite/20_util/time_point/cons/constexpr.cc: Add single_value
+	tests.
+	* testsuite/20_util/time_point/requirements/constexpr_functions.cc: Add.
+
+	* testsuite/util/testsuite_common_types.h: Adjust init.
+
+	* include/std/chrono (duration): Remove defaulted constructor,
+	replace with mem-init list.
+	* testsuite/20_util/duration/cons/constexpr.cc: Add single value.
+	* testsuite/20_util/duration/requirements/constexpr_functions.cc:
+	Add non-static member functions.
+
+	* testsuite/20_util/default_delete/cons/constexpr.cc: New, xfail.
+	* testsuite/20_util/enable_shared_from_this/cons/constexpr.cc: Same.
+	* testsuite/20_util/shared_ptr/cons/constexpr.cc: Same.
+	* testsuite/20_util/time_point/requirements/constexpr_functions.cc:
+	Same.
+	* testsuite/20_util/unique_ptr/cons/constexpr.cc: Same.
+	* testsuite/20_util/weak_ptr/cons/constexpr.cc: Same.
+
+	* include/std/bitset: Add constexpr as per N3126 draft.
+	* testsuite/23_containers/bitset/cons/constexpr.cc: New.
+	* testsuite/23_containers/bitset/requirements/constexpr_functions.cc:
+	New.
+
+	* testsuite/util/testsuite_common_types.h: Reset condition.
+
+	* include/bits/random.h: Remove misleading comments.
+	* include/bits/regex.h: Add constexpr.
+	* testsuite/28_regex/05_constants/syntax_option_type.cc: Add tests.
+	* testsuite/28_regex/08_basic_regex/requirements/constexpr_data.cc: New.
+
+	PR libstdc++/46134
+	* include/std/chrono: Use default constructor.
+	* testsuite/util/testsuite_common_types.h
+	(constexpr_default_constructible): Adjust condition.
+
+	PR libstdc++/46133
+	* include/std/complex: Adjust complex specialization default
+	constructors for constexpr.
+	* testsuite/26_numerics/complex/cons/constexpr.cc: Enable tests.
+
+	* include/bits/random.h: Adjust for constexpr as per N3126 draft.
+	* testsuite/26_numerics/random/discard_block_engine/requirements/
+	constexpr_data.cc: New.
+	* testsuite/26_numerics/random/discard_block_engine/requirements/
+	constexpr_functions.cc: New.
+	* testsuite/26_numerics/random/independent_bits_engine/requirements/
+	constexpr_functions.cc: New.
+	* testsuite/26_numerics/random/linear_congruential_engine/requirements/
+	constexpr_data.cc: New.
+	* testsuite/26_numerics/random/linear_congruential_engine/requirements/
+	constexpr_functions.cc: New.
+	* testsuite/26_numerics/random/mersenne_twister_engine/requirements/
+	constexpr_data.cc: New.
+	* testsuite/26_numerics/random/mersenne_twister_engine/requirements/
+	constexpr_functions.cc: New.
+	* testsuite/26_numerics/random/shuffle_order_engine/requirements/
+	constexpr_data.cc: New.
+	* testsuite/26_numerics/random/shuffle_order_engine/requirements/
+	constexpr_functions.cc: New.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/requirements/
+	constexpr_data.cc: New.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/requirements/
+	constexpr_functions.cc: New.
+
+	* include/bits/stream_iterator.h: Add constexpr as per N3126 draft.
+	* include/bits/streambuf_iterator.h: Same.
+	* include/std/complex: Same.
+	* testsuite/24_iterators/istream_iterator/cons/constexpr.cc: New.
+	* testsuite/24_iterators/istreambuf_iterator/cons/constexpr.cc: New.
+	* testsuite/26_numerics/complex/cons/constexpr.cc: New.
+	* testsuite/26_numerics/complex/requirements/constexpr_functions.cc:
+	New.
+
+	* include/bits/char_traits.h: Add constexpr as per N3126 draft.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions.cc:
+	New.
+
+	* include/tr1_impl/array: Add constexpr as per N3126 draft.
+	* testsuite/23_containers/array/requirements/
+	constexpr_functions.cc: New.
+
+	* include/bits/shared_ptr.h: Revert changes.
+	* include/bits/unique_ptr.h: Same.
+
+	* include/std/chrono: Adjust.
+	* include/tr1_impl/type_traits: Same.
+
+	* testsuite/util/testsuite_common_types.h: Add test functors.
+	* testsuite/20_util/duration/cons/constexpr.cc: New.
+	* testsuite/20_util/duration/requirements/constexpr_functions.cc: Same.
+	* testsuite/20_util/pair/cons/constexpr.cc: Same.
+	* testsuite/20_util/ratio/requirements/constexpr_data.cc: Same.
+	* testsuite/27_io/ios_base/types/fmtflags/constexpr_operators.cc: Same.
+	* testsuite/27_io/ios_base/types/iostate/constexpr_operators.cc: Same.
+	* testsuite/27_io/ios_base/types/openmode/constexpr_operators.cc: Same.
+	* testsuite/30_threads/call_once/constexpr.cc: Same.
+	* testsuite/30_threads/mutex/cons/constexpr.cc: Same.
+	* testsuite/30_threads/once_flag/cons/constexpr.cc: Same.
+	* testsuite/tr1/4_metaprogramming/integral_constant/requirements/
+	constexpr_data.cc: Same.
+
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Adjust line numbers.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc: Same.
+
+	* include/bits/allocator.h: Add constexpr as per N3126 draft.
+	* include/bits/ios_base.h: Same.
+	* include/bits/shared_ptr.h: Same.
+	* include/bits/unique_ptr.h: Same.
+	* include/bits/stl_iterator.h: Same.
+	* include/bits/stl_pair.h: Same.
+	* include/std/tuple: Same.
+	* include/tr1_impl/type_traits: Same.
+	* include/std/chrono: Same.
+	* include/std/ratio: Same.
+	* include/std/mutex: Same.
+	* src/mutex.cc: Same.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Same.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Same.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Same.
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Same.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Same.
+
+	* doc/doxygen/user.cfg.in: Replace _GLIBCXX_USE_CONSTEXPR,
+	_GLIBCXX_CONSTEXPR for doxygen generation.
+
+	* src/limits.cc: Undef.
+	* testsuite/29_atomics/atomic/cons/constexpr.cc: Adjust.
+	* testsuite/29_atomics/atomic_address/cons/constexpr.cc: Same.
+	* testsuite/29_atomics/atomic_integral/cons/constexpr.cc: Same.
+	* testsuite/29_atomics/atomic_integral/operators/bitwise_neg.c: Same.
+	* testsuite/18_support/numeric_limits/constexpr.cc: To...
+	* testsuite/18_support/numeric_limits/requirements/
+	constexpr_data.cc, constexpr_functions.cc: ...this
+
+	* testsuite/util/testsuite_common_types.h
+	(constexpr_single_value_constructible): Add.
+	* testsuite/29_atomics/atomic/cons/constexpr.cc: Adjust name.
+	* testsuite/29_atomics/atomic_integral/cons/constexpr.cc: Same.
+	* testsuite/29_atomics/atomic_address/cons/constexpr.cc: New.
+	* testsuite/18_support/numeric_limits/constexpr.cc: New.
+
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Adjust line numbers.
+	* testsuite/29_atomics/atomic/cons/constexpr.cc: Same.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/atomic_integral/cons/constexpr.cc: Same.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc: Same.
+	* testsuite/29_atomics/atomic_integral/operators/decrement_neg.cc: Same.
+	* testsuite/29_atomics/atomic_integral/operators/increment_neg.cc: Same.
+
+	* include/bits/c++config (_GLIBCXX_CONSTEXPR): Add.
+	(_GLIBCXX_USE_CONSTEXPR): Add.
+	* include/std/limits: Use it.
+	* src/limits.cc: Adjust.
+	* testsuite/ext/profile/mutex_extensions.cc: Change line number.
+
+	* include/bits/atomic_0.h: Rework for N3126 draft, add constexpr.
+	* include/bits/atomic_2.h: Same.
+	* include/bits/atomic_base.h: Same.
+	* include/std/atomic: Same.
+	* src/atomic.cc: Same.
+	* include/bits/atomicfwd_c.h: Remove.
+	* include/bits/atomicfwd_cxx.h: Remove.
+	* include/c_compatibility/stdatomic.h: Remove.
+	* include/Makefile.am: Remove atomicfwd_c.h, atomicfwd_cxx.h,
+	stdatomic.h.
+	* include/Makefile.in: Regenerate.
+	* doc/xml/manual/using.xml: Update list of header files for changes.
+	* testsuite/util/testsuite_common_types.h
+	(constexpr_constructible): Add.
+	* testsuite/29_atomics/atomic/cons/constexpr.cc: New.
+	* testsuite/29_atomics/atomic_integral/cons/constexpr.cc: New.
+	* testsuite/17_intro/headers/c++200x/stdc++.cc: Modify.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/atomic_address/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/atomic_flag/cons/1.cc: Same.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/headers/atomic/macros.cc: Same.
+	* testsuite/29_atomics/headers/atomic/types_std_c++0x.cc: Same.
+	* testsuite/29_atomics/headers/atomic/types_std_c++0x_neg.cc: Same.
+	* testsuite/29_atomics/atomic_flag/test_and_set/implicit.c: Remove.
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit.c: Same.
+	* testsuite/29_atomics/atomic_flag/clear/1.c: Same.
+	* testsuite/29_atomics/headers/stdatomic.h/debug_mode.c: Same.
+	* testsuite/29_atomics/headers/stdatomic.h/functions.c: Same.
+	* testsuite/29_atomics/headers/stdatomic.h/macros.c: Same.
+	* testsuite/29_atomics/headers/stdatomic.h/types.c: Same.
+
+	* testsuite/util/testsuite_abi.cc: Add GLIBCXX_3.4.16.
+
 2010-11-01  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/initializer_list: Decorate with constexpr.

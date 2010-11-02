@@ -64,19 +64,23 @@ namespace std
     no_state
   };
 
+  /// Specialization.
   template<>
     struct is_error_code_enum<future_errc> : public true_type { };
 
   /// Points to a statically-allocated object derived from error_category.
-  extern const error_category* const future_category;
+  const error_category&
+  future_category();
 
-  // TODO: requires constexpr
-  inline error_code make_error_code(future_errc __errc)
-  { return error_code(static_cast<int>(__errc), *future_category); }
+  /// Overload for make_error_code.
+  inline error_code 
+  make_error_code(future_errc __errc)
+  { return error_code(static_cast<int>(__errc), future_category()); }
 
-  // TODO: requires constexpr
-  inline error_condition make_error_condition(future_errc __errc)
-  { return error_condition(static_cast<int>(__errc), *future_category); }
+  /// Overload for make_error_condition.
+  inline error_condition 
+  make_error_condition(future_errc __errc)
+  { return error_condition(static_cast<int>(__errc), future_category()); }
 
   /**
    *  @brief Exception type thrown by futures.
@@ -116,7 +120,21 @@ namespace std
   template<typename _Res>
     class promise;
 
-  enum class launch { any, async, sync };
+  /// Launch code for futures
+  enum class launch 
+  { 
+    any, 
+    async, 
+    sync 
+  };
+
+  /// Status code for futures
+  enum class future_status 
+  {
+    ready,
+    timeout,
+    deferred
+  };
 
   template<typename _Fn, typename... _Args>
     future<typename result_of<_Fn(_Args...)>::type>
@@ -1242,6 +1260,7 @@ namespace std
       }
     };
 
+  /// swap
   template<typename _Res, typename... _ArgTypes>
     inline void
     swap(packaged_task<_Res(_ArgTypes...)>& __x,
@@ -1307,6 +1326,7 @@ namespace std
       thread _M_thread;
     };
 
+  /// async 
   template<typename _Fn, typename... _Args>
     future<typename result_of<_Fn(_Args...)>::type>
     async(launch __policy, _Fn&& __fn, _Args&&... __args)
@@ -1328,6 +1348,7 @@ namespace std
       return future<result_type>(__state);
     }
 
+  /// async, potential overload
   template<typename _Fn, typename... _Args>
     inline typename
     enable_if<!is_same<typename decay<_Fn>::type, launch>::value,

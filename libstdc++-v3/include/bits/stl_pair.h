@@ -66,10 +66,11 @@
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+  /// piecewise_construct_t
   struct piecewise_construct_t { };
 
-  static const piecewise_construct_t piecewise_construct
-    = piecewise_construct_t();
+  /// piecewise_construct
+  constexpr piecewise_construct_t piecewise_construct = piecewise_construct_t();
 
   // forward declarations
   template<typename...>
@@ -93,7 +94,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // 265.  std::pair::pair() effects overly restrictive
       /** The default constructor creates @c first and @c second using their
        *  respective default constructors.  */
-      pair()
+      _GLIBCXX_CONSTEXPR pair()
       : first(), second() { }
 
       /** Two objects may be passed to a @c pair constructor to be copied.  */

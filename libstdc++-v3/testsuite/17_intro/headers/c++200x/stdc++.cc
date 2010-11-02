@@ -3,7 +3,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,7 +44,6 @@
 #include <math.h>
 #include <setjmp.h>
 #include <signal.h>
-#include <stdatomic.h>
 #include <stdarg.h>
 #ifdef _GLIBCXX_HAVE_STDBOOL_H
 #include <stdbool.h>

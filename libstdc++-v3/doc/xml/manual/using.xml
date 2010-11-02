@@ -354,10 +354,6 @@ mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
 <entry><filename class="headerfile">cwchar</filename></entry>
 <entry><filename class="headerfile">cwctype</filename></entry>
 </row>
-<row>
-<entry><filename class="headerfile">stdatomic.h</filename></entry>
-</row>
-
 </tbody>
 </tgroup>
 </table>
