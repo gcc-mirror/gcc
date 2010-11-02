@@ -1,6 +1,12 @@
 2010-11-02  Bernd Schmidt  <bernds@codesourcery.com>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 
+	* config/i386/i386.c (cpu_names): Add "corei7".
+	* config/i386/i386.h (enum target_cpu_default): Add entry for Core i7.
+
+2010-11-02  Bernd Schmidt  <bernds@codesourcery.com>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+
 	Tune alignment for Intel Core i7
 
 	* config/i386.h (TARGET_COREI7{_32,_64,}): New macros.

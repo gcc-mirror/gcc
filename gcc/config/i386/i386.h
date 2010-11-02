@@ -585,6 +585,7 @@ enum target_cpu_default
   TARGET_CPU_DEFAULT_prescott,
   TARGET_CPU_DEFAULT_nocona,
   TARGET_CPU_DEFAULT_core2,
+  TARGET_CPU_DEFAULT_corei7,
   TARGET_CPU_DEFAULT_atom,
 
   TARGET_CPU_DEFAULT_geode,
