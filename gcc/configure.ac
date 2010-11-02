@@ -975,22 +975,6 @@ AC_CHECK_FUNCS(times clock kill getrlimit setrlimit atoll atoq \
 	gettimeofday mbstowcs wcswidth mmap mincore setlocale \
 	gcc_UNLOCKED_FUNCS)
 
-save_CPPFLAGS="$CPPFLAGS"
-save_LIBS="$LIBS"
-LIBS="$LIBS $LIBELFLIBS"
-AC_CHECK_FUNCS(elf_getshdrstrndx,,
-  [AC_CHECK_FUNCS(elf_getshstrndx,
-    [AC_RUN_IFELSE([AC_LANG_SOURCE([[#include <stdlib.h>
-#include <libelf.h>
-int main()
-{
-  return elf_getshstrndx (NULL, 0) == 0;
-}]])], AC_DEFINE(HAVE_ELF_GETSHSTRNDX_GABI, 1,
-        [Define if elf_getshstrndx has gABI conformant return values.]))])]
-  )
-LIBS="$save_LIBS"
-CPPFLAGS="$save_CPPFLAGS"
-
 if test x$ac_cv_func_mbstowcs = xyes; then
   AC_CACHE_CHECK(whether mbstowcs works, gcc_cv_func_mbstowcs_works,
 [    AC_RUN_IFELSE([AC_LANG_SOURCE([[#include <stdlib.h>
@@ -4461,17 +4445,6 @@ changequote([,])dnl
 		    AC_DEFINE(ENABLE_LTO, 1, [Define to enable LTO support.])
 		    enable_lto=yes
 		    AC_SUBST(enable_lto)
-		    # LTO needs to speak the platform's object file format, and has a
-		    # number of implementations of the required binary file access APIs.
-		    # ELF is the most common, and default.  We only link libelf if ELF
-		    # is indeed the selected format.
-		    LTO_BINARY_READER=${lto_binary_reader}
-		    LTO_USE_LIBELF=-lelf
-		    if test "x$lto_binary_reader" != "xlto-elf" ; then
-		      LTO_USE_LIBELF=
-		    fi
-		    AC_SUBST(LTO_BINARY_READER)
-		    AC_SUBST(LTO_USE_LIBELF)
 		    ;;
 		*) ;;
 	esac
@@ -4642,12 +4615,6 @@ AC_ARG_VAR(CLOOGLIBS,[How to link CLOOG])
 AC_ARG_VAR(CLOOGINC,[How to find CLOOG include files])
 if test "x${CLOOGLIBS}" != "x" ; then 
    AC_DEFINE(HAVE_cloog, 1, [Define if cloog is in use.])
-fi
-
-AC_ARG_VAR(LIBELFLIBS,[How to link libelf])
-AC_ARG_VAR(LIBELFINC,[How to find libelf include files])
-if test "x${LIBELFLIBS}" != "x" ; then 
-   AC_DEFINE(HAVE_libelf, 1, [Define if libelf is in use.])
 fi
 
 # Check for plugin support

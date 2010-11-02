@@ -1,3 +1,16 @@
+2010-11-02  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Remove elf_getshdrstrndx test.  Don't substitute
+	LTO_BINARY_READER or LTO_USE_LIBELF.  Remove LIBELFLIBS and
+	LIBELFINC.  Remove HAVE_libelf.
+	* config.gcc: Don't set lto_binary_reader.
+	* Makefile.in (LIBELFLIBS, LIBELFINC): Remove variables.
+	(LTO_BINARY_READER, LTO_USE_LIBELF): Remove variables.
+	(LIBS): Remove $(LIBELFLIBS).
+	(INCLUDES): Remove $(LIBELFINC).
+	* configure: Rebuild.
+	* config.in: Rebuild.
+
 2010-11-02  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/microblaze/microblaze-protos.h (function_arg): Delete.
