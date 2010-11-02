@@ -6654,6 +6654,33 @@ be issued.
 The default is that any ready insns can be chosen to be issued.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_BEGIN (void *@var{data}, char *@var{ready_try}, int @var{n_ready}, bool @var{first_cycle_insn_p})
+This hook prepares the target backend for a new round of multipass
+scheduling.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_ISSUE (void *@var{data}, char *@var{ready_try}, int @var{n_ready}, rtx @var{insn}, const void *@var{prev_data})
+This hook is called when multipass scheduling evaluates instruction INSN.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_BACKTRACK (const void *@var{data}, char *@var{ready_try}, int @var{n_ready})
+This is called when multipass scheduling backtracks from evaluation of
+an instruction.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_END (const void *@var{data})
+This hook notifies the target about the result of the concluded current
+round of multipass scheduling.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_INIT (void *@var{data})
+This hook initilizes target-specific data used in multipass scheduling.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_FINI (void *@var{data})
+This hook finilizes target-specific data used in multipass scheduling.
+@end deftypefn
+
 @deftypefn {Target Hook} int TARGET_SCHED_DFA_NEW_CYCLE (FILE *@var{dump}, int @var{verbose}, rtx @var{insn}, int @var{last_clock}, int @var{clock}, int *@var{sort_p})
 This hook is called by the insn scheduler before issuing @var{insn}
 on cycle @var{clock}.  If the hook returns nonzero,

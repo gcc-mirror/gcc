@@ -1,3 +1,43 @@
+2010-11-02  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	Model decoder of Core 2/i7 for multipass scheduling.
+
+	* config/i386/i386-protos.h (struct ix86_first_cycle_multipass_data_):
+	New type to hold target-specific data for multipass scheduling.
+	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DATA_T): Define.
+	* config/i386/i386.c (ia32_multipass_dfa_lookahead): Update for
+	Core 2/i7.
+	(core2i7_secondary_decoder_max_insn_size,)
+	(core2i7_secondary_ifetch_block_size, core2i7_ifetch_block_max_insns):
+	New static variables.
+	([const_]ix86_first_cycle_multipass_data_t): New typedefs.
+	([_]ix86_first_cycle_multipass_data): New static variable.
+	(core2i7_first_cycle_multipass_init, core2i7_dfa_poast_advance_cycle):
+	Implement targetm.sched hooks.
+	(core2i7_first_cycle_multipass_filter_ready_try): New static subroutine
+	of ...
+	(core2i7_first_cycle_multipass_{begin, issue, backtrack, end, fini}):
+	Implement new targetm.sched hooks.
+	(ix86_sched_init_global, TARGET_SCHED_INIT_GLOBAL): Define
+	targetm.sched hook to install multipass scheduling hooks on demand.
+
+	* doc/tm.texi.in: Document new targetm.sched hooks.
+	* doc/tm.texi: Regenerate.
+
+	* haifa-sched.c (TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DATA_T): Define.
+	(first_cycle_multipass_data_t): New typedef.
+	(struct choice_entry: target_data): New field.
+	(max_issue): Add first_cycle_insn_p parameter.  Call new target hooks
+	to allow target model restrictions not represented in DFA.
+	(choose_ready, schedule_block): Update.
+	(sched_extend_ready_list, sched_finish_ready_list): Call new target
+	hooks to initialize target-specific data for multipass scheduling.
+	* sched-int.h (max_issue): Update declaration.
+	* sel-sched.c (choose_best_insn): Update.
+	* target.def (first_cycle_multipass_{begin, issue, backtrack},)
+	(first_cycle_multipass_{init, fini}): Define and document new
+	targetm.sched hooks.
+
 2010-11-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46184

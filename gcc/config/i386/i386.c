@@ -22273,8 +22273,261 @@ ia32_multipass_dfa_lookahead (void)
     case PROCESSOR_K6:
       return 1;
 
+    case PROCESSOR_CORE2:
+    case PROCESSOR_COREI7_32:
+    case PROCESSOR_COREI7_64:
+      /* Generally, we want haifa-sched:max_issue() to look ahead as far
+	 as many instructions can be executed on a cycle, i.e.,
+	 issue_rate.  I wonder why tuning for many CPUs does not do this.  */
+      return ix86_issue_rate ();
+
     default:
       return 0;
+    }
+}
+
+
+
+/* Model decoder of Core 2/i7.
+   Below hooks for multipass scheduling (see haifa-sched.c:max_issue)
+   track the instruction fetch block boundaries and make sure that long
+   (9+ bytes) instructions are assigned to D0.  */
+
+/* Maximum length of an insn that can be handled by
+   a secondary decoder unit.  '8' for Core 2/i7.  */
+static int core2i7_secondary_decoder_max_insn_size;
+
+/* Ifetch block size, i.e., number of bytes decoder reads per cycle.
+   '16' for Core 2/i7.  */
+static int core2i7_ifetch_block_size;
+
+/* Maximum number of instructions decoder can handle per cycle.
+   '6' for Core 2/i7.  */
+static int core2i7_ifetch_block_max_insns;
+
+typedef struct ix86_first_cycle_multipass_data_ *
+  ix86_first_cycle_multipass_data_t;
+typedef const struct ix86_first_cycle_multipass_data_ *
+  const_ix86_first_cycle_multipass_data_t;
+
+/* A variable to store target state across calls to max_issue within
+   one cycle.  */
+static struct ix86_first_cycle_multipass_data_ _ix86_first_cycle_multipass_data,
+  *ix86_first_cycle_multipass_data = &_ix86_first_cycle_multipass_data;
+
+/* Initialize DATA.  */
+static void
+core2i7_first_cycle_multipass_init (void *_data)
+{
+  ix86_first_cycle_multipass_data_t data
+    = (ix86_first_cycle_multipass_data_t) _data;
+
+  data->ifetch_block_len = 0;
+  data->ifetch_block_n_insns = 0;
+  data->ready_try_change = NULL;
+  data->ready_try_change_size = 0;
+}
+
+/* Advancing the cycle; reset ifetch block counts.  */
+static void
+core2i7_dfa_post_advance_cycle (void)
+{
+  ix86_first_cycle_multipass_data_t data = ix86_first_cycle_multipass_data;
+
+  gcc_assert (data->ifetch_block_n_insns <= core2i7_ifetch_block_max_insns);
+
+  data->ifetch_block_len = 0;
+  data->ifetch_block_n_insns = 0;
+}
+
+static int min_insn_size (rtx);
+
+/* Filter out insns from ready_try that the core will not be able to issue
+   on current cycle due to decoder.  */
+static void
+core2i7_first_cycle_multipass_filter_ready_try
+(const_ix86_first_cycle_multipass_data_t data,
+ char *ready_try, int n_ready, bool first_cycle_insn_p)
+{
+  while (n_ready--)
+    {
+      rtx insn;
+      int insn_size;
+
+      if (ready_try[n_ready])
+	continue;
+
+      insn = get_ready_element (n_ready);
+      insn_size = min_insn_size (insn);
+
+      if (/* If this is a too long an insn for a secondary decoder ...  */
+	  (!first_cycle_insn_p
+	   && insn_size > core2i7_secondary_decoder_max_insn_size)
+	  /* ... or it would not fit into the ifetch block ...  */
+	  || data->ifetch_block_len + insn_size > core2i7_ifetch_block_size
+	  /* ... or the decoder is full already ...  */
+	  || data->ifetch_block_n_insns + 1 > core2i7_ifetch_block_max_insns)
+	/* ... mask the insn out.  */
+	{
+	  ready_try[n_ready] = 1;
+
+	  if (data->ready_try_change)
+	    SET_BIT (data->ready_try_change, n_ready);
+	}
+    }
+}
+
+/* Prepare for a new round of multipass lookahead scheduling.  */
+static void
+core2i7_first_cycle_multipass_begin (void *_data, char *ready_try, int n_ready,
+				     bool first_cycle_insn_p)
+{
+  ix86_first_cycle_multipass_data_t data
+    = (ix86_first_cycle_multipass_data_t) _data;
+  const_ix86_first_cycle_multipass_data_t prev_data
+    = ix86_first_cycle_multipass_data;
+
+  /* Restore the state from the end of the previous round.  */
+  data->ifetch_block_len = prev_data->ifetch_block_len;
+  data->ifetch_block_n_insns = prev_data->ifetch_block_n_insns;
+
+  /* Filter instructions that cannot be issued on current cycle due to
+     decoder restrictions.  */
+  core2i7_first_cycle_multipass_filter_ready_try (data, ready_try, n_ready,
+						  first_cycle_insn_p);
+}
+
+/* INSN is being issued in current solution.  Account for its impact on
+   the decoder model.  */
+static void
+core2i7_first_cycle_multipass_issue (void *_data, char *ready_try, int n_ready,
+				     rtx insn, const void *_prev_data)
+{
+  ix86_first_cycle_multipass_data_t data
+    = (ix86_first_cycle_multipass_data_t) _data;
+  const_ix86_first_cycle_multipass_data_t prev_data
+    = (const_ix86_first_cycle_multipass_data_t) _prev_data;
+
+  int insn_size = min_insn_size (insn);
+
+  data->ifetch_block_len = prev_data->ifetch_block_len + insn_size;
+  data->ifetch_block_n_insns = prev_data->ifetch_block_n_insns + 1;
+  gcc_assert (data->ifetch_block_len <= core2i7_ifetch_block_size
+	      && data->ifetch_block_n_insns <= core2i7_ifetch_block_max_insns);
+
+  /* Allocate or resize the bitmap for storing INSN's effect on ready_try.  */
+  if (!data->ready_try_change)
+    {
+      data->ready_try_change = sbitmap_alloc (n_ready);
+      data->ready_try_change_size = n_ready;
+    }
+  else if (data->ready_try_change_size < n_ready)
+    {
+      data->ready_try_change = sbitmap_resize (data->ready_try_change,
+					       n_ready, 0);
+      data->ready_try_change_size = n_ready;
+    }
+  sbitmap_zero (data->ready_try_change);
+
+  /* Filter out insns from ready_try that the core will not be able to issue
+     on current cycle due to decoder.  */
+  core2i7_first_cycle_multipass_filter_ready_try (data, ready_try, n_ready,
+						  false);
+}
+
+/* Revert the effect on ready_try.  */
+static void
+core2i7_first_cycle_multipass_backtrack (const void *_data,
+					 char *ready_try,
+					 int n_ready ATTRIBUTE_UNUSED)
+{
+  const_ix86_first_cycle_multipass_data_t data
+    = (const_ix86_first_cycle_multipass_data_t) _data;
+  unsigned int i = 0;
+  sbitmap_iterator sbi;
+
+  gcc_assert (sbitmap_last_set_bit (data->ready_try_change) < n_ready);
+  EXECUTE_IF_SET_IN_SBITMAP (data->ready_try_change, 0, i, sbi)
+    {
+      ready_try[i] = 0;
+    }
+}
+
+/* Save the result of multipass lookahead scheduling for the next round.  */
+static void
+core2i7_first_cycle_multipass_end (const void *_data)
+{
+  const_ix86_first_cycle_multipass_data_t data
+    = (const_ix86_first_cycle_multipass_data_t) _data;
+  ix86_first_cycle_multipass_data_t next_data
+    = ix86_first_cycle_multipass_data;
+
+  if (data != NULL)
+    {
+      next_data->ifetch_block_len = data->ifetch_block_len;
+      next_data->ifetch_block_n_insns = data->ifetch_block_n_insns;
+    }
+}
+
+/* Deallocate target data.  */
+static void
+core2i7_first_cycle_multipass_fini (void *_data)
+{
+  ix86_first_cycle_multipass_data_t data
+    = (ix86_first_cycle_multipass_data_t) _data;
+
+  if (data->ready_try_change)
+    {
+      sbitmap_free (data->ready_try_change);
+      data->ready_try_change = NULL;
+      data->ready_try_change_size = 0;
+    }
+}
+
+/* Prepare for scheduling pass.  */
+static void
+ix86_sched_init_global (FILE *dump ATTRIBUTE_UNUSED,
+			int verbose ATTRIBUTE_UNUSED,
+			int max_uid ATTRIBUTE_UNUSED)
+{
+  /* Install scheduling hooks for current CPU.  Some of these hooks are used
+     in time-critical parts of the scheduler, so we only set them up when
+     they are actually used.  */
+  switch (ix86_tune)
+    {
+    case PROCESSOR_CORE2:
+    case PROCESSOR_COREI7_32:
+    case PROCESSOR_COREI7_64:
+      targetm.sched.dfa_post_advance_cycle
+	= core2i7_dfa_post_advance_cycle;
+      targetm.sched.first_cycle_multipass_init
+	= core2i7_first_cycle_multipass_init;
+      targetm.sched.first_cycle_multipass_begin
+	= core2i7_first_cycle_multipass_begin;
+      targetm.sched.first_cycle_multipass_issue
+	= core2i7_first_cycle_multipass_issue;
+      targetm.sched.first_cycle_multipass_backtrack
+	= core2i7_first_cycle_multipass_backtrack;
+      targetm.sched.first_cycle_multipass_end
+	= core2i7_first_cycle_multipass_end;
+      targetm.sched.first_cycle_multipass_fini
+	= core2i7_first_cycle_multipass_fini;
+
+      /* Set decoder parameters.  */
+      core2i7_secondary_decoder_max_insn_size = 8;
+      core2i7_ifetch_block_size = 16;
+      core2i7_ifetch_block_max_insns = 6;
+      break;
+
+    default:
+      targetm.sched.dfa_post_advance_cycle = NULL;
+      targetm.sched.first_cycle_multipass_init = NULL;
+      targetm.sched.first_cycle_multipass_begin = NULL;
+      targetm.sched.first_cycle_multipass_issue = NULL;
+      targetm.sched.first_cycle_multipass_backtrack = NULL;
+      targetm.sched.first_cycle_multipass_end = NULL;
+      targetm.sched.first_cycle_multipass_fini = NULL;
+      break;
     }
 }
 
@@ -34030,6 +34283,8 @@ ix86_autovectorize_vector_sizes (void)
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA i386_asm_output_addr_const_extra 
 
+#undef TARGET_SCHED_INIT_GLOBAL
+#define TARGET_SCHED_INIT_GLOBAL ix86_sched_init_global
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST ix86_adjust_cost
 #undef TARGET_SCHED_ISSUE_RATE

@@ -4320,8 +4320,9 @@ choose_best_insn (fence_t fence, int privileged_n, int *index)
   if (dfa_lookahead > 0)
     {
       cycle_issued_insns = FENCE_ISSUED_INSNS (fence);
+      /* TODO: pass equivalent of first_cycle_insn_p to max_issue ().  */
       can_issue = max_issue (&ready, privileged_n,
-                             FENCE_STATE (fence), index);
+                             FENCE_STATE (fence), true, index);
       if (sched_verbose >= 2)
         sel_print ("max_issue: we can issue %d insns, already did %d insns\n",
                    can_issue, FENCE_ISSUED_INSNS (fence));
