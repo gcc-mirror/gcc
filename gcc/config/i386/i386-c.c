@@ -122,6 +122,11 @@ ix86_target_macros_internal (int isa_flag,
       def_or_undef (parse_in, "__core2");
       def_or_undef (parse_in, "__core2__");
       break;
+    case PROCESSOR_COREI7_32:
+    case PROCESSOR_COREI7_64:
+      def_or_undef (parse_in, "__corei7");
+      def_or_undef (parse_in, "__corei7__");
+      break;
     case PROCESSOR_ATOM:
       def_or_undef (parse_in, "__atom");
       def_or_undef (parse_in, "__atom__");
@@ -196,6 +201,10 @@ ix86_target_macros_internal (int isa_flag,
       break;
     case PROCESSOR_CORE2:
       def_or_undef (parse_in, "__tune_core2__");
+      break;
+    case PROCESSOR_COREI7_32:
+    case PROCESSOR_COREI7_64:
+      def_or_undef (parse_in, "__tune_corei7__");
       break;
     case PROCESSOR_ATOM:
       def_or_undef (parse_in, "__tune_atom__");

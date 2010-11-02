@@ -1,5 +1,20 @@
 2010-11-02  Bernd Schmidt  <bernds@codesourcery.com>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	Tune alignment for Intel Core i7
+
+	* config/i386.h (TARGET_COREI7{_32,_64,}): New macros.
+	(enum processor_type): Update comment.  Add entries for Core i7.
+	* config/i386-c.c (ix86_target_macros_internal): Update.
+	* config/i386.c (m_COREI7{_32,_64}): New macros.
+	(m_GENERIC32, m_GENERIC64): Use generic tuning for Core i7.
+	(processor_target_table): Tune alignment for Core i7.
+	(ix86_option_override_internal): Use PROCESSOR_COREI7_*.
+
+	* doc/invoke.texi: Document "corei7" option value.
+
+2010-11-02  Bernd Schmidt  <bernds@codesourcery.com>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 	    H.J. Lu  <hjl.tools@gmail.com>
 
 	Basic support for Intel Core i7

@@ -239,6 +239,9 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_ATHLON_K8 (TARGET_K8 || TARGET_ATHLON)
 #define TARGET_NOCONA (ix86_tune == PROCESSOR_NOCONA)
 #define TARGET_CORE2 (ix86_tune == PROCESSOR_CORE2)
+#define TARGET_COREI7_32 (ix86_tune == PROCESSOR_COREI7_32)
+#define TARGET_COREI7_64 (ix86_tune == PROCESSOR_COREI7_64)
+#define TARGET_COREI7 (TARGET_COREI7_32 || TARGET_COREI7_64)
 #define TARGET_GENERIC32 (ix86_tune == PROCESSOR_GENERIC32)
 #define TARGET_GENERIC64 (ix86_tune == PROCESSOR_GENERIC64)
 #define TARGET_GENERIC (TARGET_GENERIC32 || TARGET_GENERIC64)
@@ -2040,8 +2043,7 @@ do {									\
 	"call " CRT_MKSTR(__USER_LABEL_PREFIX__) #FUNC "\n"	\
 	TEXT_SECTION_ASM_OP);
 
-/* Which processor to schedule for. The cpu attribute defines a list that
-   mirrors this list, so changes to i386.md must be made at the same time.  */
+/* Which processor to tune code generation for.  */
 
 enum processor_type
 {
@@ -2056,6 +2058,8 @@ enum processor_type
   PROCESSOR_K8,
   PROCESSOR_NOCONA,
   PROCESSOR_CORE2,
+  PROCESSOR_COREI7_32,
+  PROCESSOR_COREI7_64,
   PROCESSOR_GENERIC32,
   PROCESSOR_GENERIC64,
   PROCESSOR_AMDFAM10,
