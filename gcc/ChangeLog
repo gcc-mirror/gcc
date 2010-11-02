@@ -1,3 +1,10 @@
+2010-11-02  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin.c (darwin_asm_named_section): Check for __DWARF
+	sections and call darwin_asm_dwarf_section() to handle them.
+	(darwin_asm_dwarf_section): New.
+	(darwin_file_start): Remove code emitting dwarf section symbols.
+
 2010-11-02  Chung-Lin Tang <cltang@codesourcery.com>
 
 	* Makefile.in (LIBGCC2_CFLAGS): Add -fno-stack-protector, to

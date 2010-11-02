@@ -4,12 +4,7 @@
 // { dg-options "-g -dA -fno-merge-debug-strings" }
 //
 // There should be one debug_pubnames section generated.
-// On Darwin though, there is also a label pointing at the begining of the
-// debug_pubnames section. The assembly code of that label adds an occurence
-// of section declaration assembly. So on Darwin, we need to check for two
-// occurences of the debug_pubnames section declaration.
-// { dg-final { scan-assembler-times "\.section\[\t \]\[^\n\]*debug_pubnames" 1 { target { ! *-*-darwin* } } } }
-// { dg-final { scan-assembler-times "\.section\[\t \]\[^\n\]*debug_pubnames" 2 { target { *-*-darwin* } } } }
+// { dg-final { scan-assembler-times "\.section\[\t \]\[^\n\]*debug_pubnames" 1 } }
 //
 // Then check of the presence of the names we are interested in.
 // { dg-final { scan-assembler-times "\"main.0\"\[^\n\]*external name" 1 } }
