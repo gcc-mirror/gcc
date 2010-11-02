@@ -2982,6 +2982,16 @@ else
   [set_have_as_tls=yes])
 fi
 case "$target" in
+  *-*-irix6*)
+    # IRIX 6.5 rld and libc.so lack TLS support, so even if gas and gld
+    # with TLS support are in use, native TLS cannot work.
+    set_have_as_tls=no
+    ;;
+  *-*-osf*)
+    # Tru64 UNIX loader and libc.so lack TLS support, so even if gas and
+    # gld with TLS support are in use, native TLS cannot work.
+    set_have_as_tls=no
+    ;;
   # TLS was introduced in the Solaris 9 FCS release and backported to
   # Solaris 8 patches.  Support for GNU-style TLS on x86 was only
   # introduced in Solaris 9 4/04, replacing the earlier Sun style that Sun
