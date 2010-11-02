@@ -1,3 +1,8 @@
+2010-11-01  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (cxx_eval_constant_expression): Explain
+	unacceptable use of variable better.
+
 2010-11-01  Gabriel Dos Reis  <gdr@cse.tamu.edu>
 	    Jason Merrill  <jason@redhat.com>
 

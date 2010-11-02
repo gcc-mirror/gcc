@@ -7,7 +7,7 @@ struct B {
   int i;
 };
 
-int global; // not constant
+int global;			// { dg-message "not const" }
 
 struct D : B {
   constexpr D() : B(global) { }   // { dg-error "global|argument" }

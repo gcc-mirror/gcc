@@ -17,7 +17,7 @@ inline constexpr double
 squared(double x) { return x * x; }
 
 constexpr int squarei(int x) { return x * x; }
-extern const int side;
+extern const int side; // { dg-message "not initialized with a constant expression" }
 constexpr int area = squarei(side); // { dg-error "side|argument" }
 // error: squarei(side) is not a constant expression
 

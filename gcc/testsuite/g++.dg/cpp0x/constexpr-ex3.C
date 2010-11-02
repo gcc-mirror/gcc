@@ -15,7 +15,7 @@ struct B
   constexpr B(T _t): t(_t) { }
 };
 
-B<int> b(1);
+B<int> b(1);		       // { dg-message "not declared .constexpr" }
 SA(b.t==1);			// { dg-error "non-constant condition|'b'" }
 constexpr B<int> b2(1);
 SA(b2.t==1);
