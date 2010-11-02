@@ -1,5 +1,12 @@
 2010-11-02  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/46170
+    	PR c++/46162
+	* g++.dg/template/sfinae26.C: New test.
+	* g++.dg/template/sfinae27.C: Likewise.
+
+2010-11-02  Dodji Seketeli  <dodji@redhat.com>
+
 	PR c++/45606
 	* g++.dg/template/typedef36.C: New test.
 	* gcc/testsuite/g++.dg/template/canon-type-9.C: Likewise.
