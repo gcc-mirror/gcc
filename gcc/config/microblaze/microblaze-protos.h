@@ -52,12 +52,6 @@ extern void microblaze_declare_object (FILE *, const char *, const char *,
 extern void microblaze_asm_output_ident (FILE *, const char *);
 #endif  /* RTX_CODE */
 
-#ifdef TREE_CODE
-extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
-				  tree, int);
-extern rtx function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
-#endif /* TREE_CODE */
-
 /* Declare functions in microblaze-c.c.  */
 extern void microblaze_cpp_define (struct cpp_reader *); 
 

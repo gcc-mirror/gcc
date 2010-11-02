@@ -1088,9 +1088,9 @@ init_cumulative_args (CUMULATIVE_ARGS * cum, tree fntype,
 
 /* Advance the argument to the next argument position.  */
 
-void
-function_arg_advance (CUMULATIVE_ARGS * cum, enum machine_mode mode,
-		      tree type, int named ATTRIBUTE_UNUSED)
+static void
+microblaze_function_arg_advance (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+				 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   cum->arg_number++;
   switch (mode)
@@ -1143,9 +1143,10 @@ function_arg_advance (CUMULATIVE_ARGS * cum, enum machine_mode mode,
 /* Return an RTL expression containing the register for the given mode,
    or 0 if the argument is to be passed on the stack.  */
 
-rtx
-function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode, 
-	      tree type ATTRIBUTE_UNUSED, int named ATTRIBUTE_UNUSED)
+static rtx
+microblaze_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode, 
+			 const_tree type ATTRIBUTE_UNUSED,
+			 bool named ATTRIBUTE_UNUSED)
 {
   rtx ret;
   int regbase = -1;
@@ -2268,7 +2269,8 @@ microblaze_expand_prologue (void)
 	  passed_mode = Pmode;
 	}
 
-      entry_parm = FUNCTION_ARG (args_so_far, passed_mode, passed_type, 1);
+      entry_parm = targetm.calls.function_arg (&args_so_far, passed_mode,
+					       passed_type, true);
 
       if (entry_parm)
 	{
@@ -2288,7 +2290,8 @@ microblaze_expand_prologue (void)
 	  break;
 	}
 
-      FUNCTION_ARG_ADVANCE (args_so_far, passed_mode, passed_type, 1);
+      targetm.calls.function_arg_advance (&args_so_far, passed_mode,
+					  passed_type, true);
 
       next_arg = TREE_CHAIN (cur_arg);
       if (next_arg == 0)
@@ -2302,7 +2305,8 @@ microblaze_expand_prologue (void)
 
   /* Split parallel insn into a sequence of insns.  */
 
-  next_arg_reg = FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1);
+  next_arg_reg = targetm.calls.function_arg (&args_so_far, VOIDmode,
+					     void_type_node, true);
   if (next_arg_reg != 0 && GET_CODE (next_arg_reg) == PARALLEL)
     {
       rtvec adjust = XVEC (next_arg_reg, 0);
@@ -2998,6 +3002,12 @@ microblaze_adjust_cost (rtx insn ATTRIBUTE_UNUSED, rtx link,
 
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES	function_arg_partial_bytes
+
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG		microblaze_function_arg
+
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE	microblaze_function_arg_advance
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE 		microblaze_can_eliminate
