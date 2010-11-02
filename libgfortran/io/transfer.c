@@ -2666,7 +2666,10 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
       else
 	{
 	  if ((cf & IOPARM_DT_LIST_FORMAT) != 0)
-	    dtp->u.p.transfer = list_formatted_read;
+	    {
+	        dtp->u.p.last_char = EOF - 1;
+		dtp->u.p.transfer = list_formatted_read;
+	    }
 	  else
 	    dtp->u.p.transfer = formatted_transfer;
 	}
@@ -3362,7 +3365,6 @@ next_record (st_parameter_dt *dtp, int done)
 static void
 finalize_transfer (st_parameter_dt *dtp)
 {
-  jmp_buf eof_jump;
   GFC_INTEGER_4 cf = dtp->common.flags;
 
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
@@ -3393,13 +3395,6 @@ finalize_transfer (st_parameter_dt *dtp)
   dtp->u.p.transfer = NULL;
   if (dtp->u.p.current_unit == NULL)
     return;
-
-  dtp->u.p.eof_jump = &eof_jump;
-  if (setjmp (eof_jump))
-    {
-      generate_error (&dtp->common, LIBERROR_END, NULL);
-      return;
-    }
 
   if ((cf & IOPARM_DT_LIST_FORMAT) != 0 && dtp->u.p.mode == READING)
     {
