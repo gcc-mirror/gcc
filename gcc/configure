@@ -602,8 +602,6 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 enable_plugin
 pluginlibs
-LIBELFINC
-LIBELFLIBS
 CLOOGINC
 CLOOGLIBS
 PPLINC
@@ -672,8 +670,6 @@ subdirs
 slibdir
 dollar
 gcc_tooldir
-LTO_USE_LIBELF
-LTO_BINARY_READER
 enable_lto
 MAINT
 zlibinc
@@ -933,9 +929,7 @@ GMPINC
 PPLLIBS
 PPLINC
 CLOOGLIBS
-CLOOGINC
-LIBELFLIBS
-LIBELFINC'
+CLOOGINC'
 
 
 # Initialize some variables set by options.
@@ -1681,8 +1675,6 @@ Some influential environment variables:
   PPLINC      How to find PPL include files
   CLOOGLIBS   How to link CLOOG
   CLOOGINC    How to find CLOOG include files
-  LIBELFLIBS  How to link libelf
-  LIBELFINC   How to find libelf include files
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -8430,59 +8422,6 @@ _ACEOF
 fi
 done
 
-
-save_CPPFLAGS="$CPPFLAGS"
-save_LIBS="$LIBS"
-LIBS="$LIBS $LIBELFLIBS"
-for ac_func in elf_getshdrstrndx
-do :
-  ac_fn_c_check_func "$LINENO" "elf_getshdrstrndx" "ac_cv_func_elf_getshdrstrndx"
-if test "x$ac_cv_func_elf_getshdrstrndx" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_ELF_GETSHDRSTRNDX 1
-_ACEOF
-
-else
-  for ac_func in elf_getshstrndx
-do :
-  ac_fn_c_check_func "$LINENO" "elf_getshstrndx" "ac_cv_func_elf_getshstrndx"
-if test "x$ac_cv_func_elf_getshstrndx" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_ELF_GETSHSTRNDX 1
-_ACEOF
- if test "$cross_compiling" = yes; then :
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error "cannot run test program while cross compiling
-See \`config.log' for more details." "$LINENO" 5; }
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <libelf.h>
-int main()
-{
-  return elf_getshstrndx (NULL, 0) == 0;
-}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-
-$as_echo "#define HAVE_ELF_GETSHSTRNDX_GABI 1" >>confdefs.h
-
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-fi
-done
-
-
-fi
-done
-
-LIBS="$save_LIBS"
-CPPFLAGS="$save_CPPFLAGS"
 
 if test x$ac_cv_func_mbstowcs = xyes; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether mbstowcs works" >&5
@@ -17143,7 +17082,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17146 "configure"
+#line 17085 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17249,7 +17188,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17252 "configure"
+#line 17191 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -25498,17 +25437,6 @@ $as_echo "#define ENABLE_LTO 1" >>confdefs.h
 
 		    enable_lto=yes
 
-		    # LTO needs to speak the platform's object file format, and has a
-		    # number of implementations of the required binary file access APIs.
-		    # ELF is the most common, and default.  We only link libelf if ELF
-		    # is indeed the selected format.
-		    LTO_BINARY_READER=${lto_binary_reader}
-		    LTO_USE_LIBELF=-lelf
-		    if test "x$lto_binary_reader" != "xlto-elf" ; then
-		      LTO_USE_LIBELF=
-		    fi
-
-
 		    ;;
 		*) ;;
 	esac
@@ -25685,14 +25613,6 @@ fi
 if test "x${CLOOGLIBS}" != "x" ; then
 
 $as_echo "#define HAVE_cloog 1" >>confdefs.h
-
-fi
-
-
-
-if test "x${LIBELFLIBS}" != "x" ; then
-
-$as_echo "#define HAVE_libelf 1" >>confdefs.h
 
 fi
 
