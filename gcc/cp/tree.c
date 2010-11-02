@@ -1096,22 +1096,6 @@ strip_typedefs (tree t)
   return cp_build_qualified_type (result, cp_type_quals (t));
 }
 
-/* Setup a TYPE_DECL node as a typedef representation.
-   See comments of set_underlying_type in c-common.c.  */
-
-void
-cp_set_underlying_type (tree t)
-{
-  set_underlying_type (t);
-  /* If T is a template type parm, make it require structural equality.
-     This is useful when comparing two template type parms,
-     because it forces the comparison of the template parameters of their
-     decls.  */
-  if (TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TYPE_PARM)
-    SET_TYPE_STRUCTURAL_EQUALITY (TREE_TYPE (t));
-}
-
-
 /* Makes a copy of BINFO and TYPE, which is to be inherited into a
    graph dominated by T.  If BINFO is NULL, TYPE is a dependent base,
    and we do a shallow copy.  If BINFO is non-NULL, we do a deep copy.

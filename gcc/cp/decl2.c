@@ -864,7 +864,7 @@ grokfield (const cp_declarator *declarator,
       if (declspecs->specs[(int)ds_typedef]
           && TREE_TYPE (value) != error_mark_node
           && TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (value))) != value)
-	cp_set_underlying_type (value);
+	set_underlying_type (value);
 
       return value;
     }

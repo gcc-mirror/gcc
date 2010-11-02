@@ -1143,120 +1143,30 @@ comp_array_types (const_tree t1, const_tree t2, bool allow_redeclaration)
 static bool
 comp_template_parms_position (tree t1, tree t2)
 {
+  tree index1, index2;
   gcc_assert (t1 && t2
 	      && TREE_CODE (t1) == TREE_CODE (t2)
 	      && (TREE_CODE (t1) == BOUND_TEMPLATE_TEMPLATE_PARM
 		  || TREE_CODE (t1) == TEMPLATE_TEMPLATE_PARM
 		  || TREE_CODE (t1) == TEMPLATE_TYPE_PARM));
 
-      if (TEMPLATE_TYPE_IDX (t1) != TEMPLATE_TYPE_IDX (t2)
-	  || TEMPLATE_TYPE_LEVEL (t1) != TEMPLATE_TYPE_LEVEL (t2)
-          || (TEMPLATE_TYPE_PARAMETER_PACK (t1) 
-              != TEMPLATE_TYPE_PARAMETER_PACK (t2)))
-	return false;
+  index1 = TEMPLATE_TYPE_PARM_INDEX (TYPE_MAIN_VARIANT (t1));
+  index2 = TEMPLATE_TYPE_PARM_INDEX (TYPE_MAIN_VARIANT (t2));
 
-      return true;
-}
-
-/* Subroutine of incompatible_dependent_types_p.
-   Return the template parameter of the dependent type T.
-   If T is a typedef, return the template parameters of
-   the _decl_ of the typedef. T must be a dependent type.  */
-
-static tree
-get_template_parms_of_dependent_type (tree t)
-{
-  tree tinfo = NULL_TREE, tparms = NULL_TREE;
-
-  /* First, try the obvious case of getting the
-     template info from T itself.  */
-  if ((tinfo = get_template_info (t)))
-    ;
-  else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
-    return TEMPLATE_TYPE_PARM_SIBLING_PARMS (t);
-  else if (typedef_variant_p (t)
-	   && !NAMESPACE_SCOPE_P (TYPE_NAME (t)))
-    tinfo = get_template_info (DECL_CONTEXT (TYPE_NAME (t)));
-  /* If T is a TYPENAME_TYPE which context is a template type
-     parameter, get the template parameters from that context.  */
-  else if (TYPE_CONTEXT (t)
-	   && TREE_CODE (TYPE_CONTEXT (t)) == TEMPLATE_TYPE_PARM)
-   return TEMPLATE_TYPE_PARM_SIBLING_PARMS (TYPE_CONTEXT (t));
-  else if (TYPE_CONTEXT (t)
-	   && !NAMESPACE_SCOPE_P (t))
-    tinfo = get_template_info (TYPE_CONTEXT (t));
-
-  if (tinfo)
-    tparms = DECL_TEMPLATE_PARMS (TI_TEMPLATE (tinfo));
-
-  return tparms;
-}
-
-/* Subroutine of structural_comptypes.
-   Compare the dependent types T1 and T2.
-   Return TRUE if we are sure they can't be equal, FALSE otherwise.
-   The whole point of this function is to support cases where either T1 or
-   T2 is a typedef. In those cases, we need to compare the template parameters
-   of the _decl_ of the typedef. If those don't match then we know T1
-   and T2 cannot be equal.  */
-
-static bool
-incompatible_dependent_types_p (tree t1, tree t2)
-{
-  tree tparms1 = NULL_TREE, tparms2 = NULL_TREE;
-  bool t1_typedef_variant_p, t2_typedef_variant_p;
-
-  if (!uses_template_parms (t1) || !uses_template_parms (t2))
+  /* If T1 and T2 belong to template parm lists of different size,
+     let's assume they are different.  */
+  if (TEMPLATE_PARM_NUM_SIBLINGS (index1)
+      != TEMPLATE_PARM_NUM_SIBLINGS (index2))
     return false;
 
-  if (TREE_CODE (t1) == TEMPLATE_TYPE_PARM)
-    {
-      /* If T1 and T2 don't have the same relative position in their
-	 template parameters set, they can't be equal.  */
-      if (!comp_template_parms_position (t1, t2))
-	return true;
-    }
-
-  t1_typedef_variant_p = typedef_variant_p (t1);
-  t2_typedef_variant_p = typedef_variant_p (t2);
-
-  /* Either T1 or T2 must be a typedef.  */
-  if (!t1_typedef_variant_p && !t2_typedef_variant_p)
+  /* Then compare their relative position.  */
+  if (TEMPLATE_PARM_IDX (index1) != TEMPLATE_PARM_IDX (index2)
+      || TEMPLATE_PARM_LEVEL (index1) != TEMPLATE_PARM_LEVEL (index2)
+      || (TEMPLATE_PARM_PARAMETER_PACK (index1)
+	  != TEMPLATE_PARM_PARAMETER_PACK (index2)))
     return false;
 
-  if (!t1_typedef_variant_p || !t2_typedef_variant_p)
-    /* Either T1 or T2 is not a typedef so we cannot compare the
-       template parms of the typedefs of T1 and T2.
-       At this point, if the main variant type of T1 and T2 are equal
-       it means the two types can't be incompatible, from the perspective
-       of this function.  */
-    if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
-      return false;
-
-  /* So if we reach this point, it means either T1 or T2 is a typedef variant.
-     Let's compare their template parameters.  */
-
-  tparms1 = get_template_parms_of_dependent_type (t1);
-  tparms2 = get_template_parms_of_dependent_type (t2);
-
-  /* If T2 is a template type parm and if we could not get the template
-     parms it belongs to, that means we have not finished parsing the
-     full set of template parameters of the template declaration it
-     belongs to yet. If we could get the template parms T1 belongs to,
-     that mostly means T1 and T2 belongs to templates that are
-     different and incompatible.  */
-  if (TREE_CODE (t1) == TEMPLATE_TYPE_PARM
-      && (tparms1 == NULL_TREE || tparms2 == NULL_TREE)
-      && tparms1 != tparms2)
-    return true;
-
-  if (tparms1 == NULL_TREE
-      || tparms2 == NULL_TREE
-      || tparms1 == tparms2)
-    return false;
-
-  /* And now compare the mighty template parms!  */
-  return !comp_template_parms (tparms1, tparms2);
+  return true;
 }
 
 /* Subroutine in comptypes.  */
@@ -1299,12 +1209,6 @@ structural_comptypes (tree t1, tree t2, int strict)
       && type_memfn_quals (t1) != type_memfn_quals (t2))
     return false;
   if (TYPE_FOR_JAVA (t1) != TYPE_FOR_JAVA (t2))
-    return false;
-
-  /* If T1 and T2 are dependent typedefs then check upfront that
-     the template parameters of their typedef DECLs match before
-     going down checking their subtypes.  */
-  if (incompatible_dependent_types_p (t1, t2))
     return false;
 
   /* Allow for two different type nodes which have essentially the same
@@ -1407,8 +1311,10 @@ structural_comptypes (tree t1, tree t2, int strict)
       break;
 
     case TEMPLATE_TYPE_PARM:
-      /* If incompatible_dependent_types_p called earlier didn't decide
-         T1 and T2 were different, they might be equal.  */
+      /* If T1 and T2 don't have the same relative position in their
+	 template parameters set, they can't be equal.  */
+      if (!comp_template_parms_position (t1, t2))
+	return false;
       break;
 
     case TYPENAME_TYPE:

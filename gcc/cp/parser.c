@@ -11045,6 +11045,13 @@ cp_parser_template_parameter_list (cp_parser* parser)
   tree parameter_list = NULL_TREE;
 
   begin_template_parm_list ();
+
+  /* The loop below parses the template parms.  We first need to know
+     the total number of template parms to be able to compute proper
+     canonical types of each dependent type. So after the loop, when
+     we know the total number of template parms,
+     end_template_parm_list computes the proper canonical types and
+     fixes up the dependent types accordingly.  */
   while (true)
     {
       tree parameter;
@@ -11063,11 +11070,11 @@ cp_parser_template_parameter_list (cp_parser* parser)
 						parm_loc,
 						parameter,
 						is_non_type,
-                                                is_parameter_pack);
+						is_parameter_pack,
+						0);
       else
        {
          tree err_parm = build_tree_list (parameter, parameter);
-         TREE_VALUE (err_parm) = error_mark_node;
          parameter_list = chainon (parameter_list, err_parm);
        }
 

@@ -137,7 +137,7 @@ static tree convert_template_argument (tree, tree, tree,
 static int for_each_template_parm (tree, tree_fn_t, void*,
 				   struct pointer_set_t*, bool);
 static tree expand_template_argument_pack (tree);
-static tree build_template_parm_index (int, int, int, tree, tree);
+static tree build_template_parm_index (int, int, int, int, tree, tree);
 static bool inline_needs_template_parms (tree);
 static void push_inline_template_parms_recursive (tree, int);
 static tree retrieve_local_specialization (tree);
@@ -189,6 +189,12 @@ static void append_type_to_template_for_access_check_1 (tree, tree, tree,
 							location_t);
 static tree listify (tree);
 static tree listify_autos (tree, tree);
+static tree template_parm_to_arg (tree t);
+static tree current_template_args (void);
+static tree fixup_template_type_parm_type (tree, int);
+static tree fixup_template_parm_index (tree, tree, int);
+static void fixup_template_parms (void);
+static tree tsubst_template_parm (tree, tree, tsubst_flags_t);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -3353,12 +3359,14 @@ check_template_shadow (tree decl)
 }
 
 /* Return a new TEMPLATE_PARM_INDEX with the indicated INDEX, LEVEL,
-   ORIG_LEVEL, DECL, and TYPE.  */
+   ORIG_LEVEL, DECL, and TYPE.  NUM_SIBLINGS is the total number of
+   template parameters.  */
 
 static tree
 build_template_parm_index (int index,
 			   int level,
 			   int orig_level,
+			   int num_siblings,
 			   tree decl,
 			   tree type)
 {
@@ -3366,6 +3374,7 @@ build_template_parm_index (int index,
   TEMPLATE_PARM_IDX (t) = index;
   TEMPLATE_PARM_LEVEL (t) = level;
   TEMPLATE_PARM_ORIG_LEVEL (t) = orig_level;
+  TEMPLATE_PARM_NUM_SIBLINGS (t) = num_siblings;
   TEMPLATE_PARM_DECL (t) = decl;
   TREE_TYPE (t) = type;
   TREE_CONSTANT (t) = TREE_CONSTANT (decl);
@@ -3377,6 +3386,7 @@ build_template_parm_index (int index,
 /* Find the canonical type parameter for the given template type
    parameter.  Returns the canonical type parameter, which may be TYPE
    if no such parameter existed.  */
+
 static tree
 canonical_type_parameter (tree type)
 {
@@ -3430,6 +3440,7 @@ reduce_template_parm_level (tree index, tree type, int levels, tree args,
       t = build_template_parm_index (TEMPLATE_PARM_IDX (index),
 				     TEMPLATE_PARM_LEVEL (index) - levels,
 				     TEMPLATE_PARM_ORIG_LEVEL (index),
+				     TEMPLATE_PARM_NUM_SIBLINGS (index),
 				     decl, type);
       TEMPLATE_PARM_DESCENDANTS (index) = t;
       TEMPLATE_PARM_PARAMETER_PACK (t) 
@@ -3445,15 +3456,20 @@ reduce_template_parm_level (tree index, tree type, int levels, tree args,
   return TEMPLATE_PARM_DESCENDANTS (index);
 }
 
-/* Process information from new template parameter PARM and append it to the
-   LIST being built.  This new parameter is a non-type parameter iff
-   IS_NON_TYPE is true. This new parameter is a parameter
-   pack iff IS_PARAMETER_PACK is true.  The location of PARM is in 
-   PARM_LOC.  */
+/* Process information from new template parameter PARM and append it
+   to the LIST being built.  This new parameter is a non-type
+   parameter iff IS_NON_TYPE is true. This new parameter is a
+   parameter pack iff IS_PARAMETER_PACK is true.  The location of PARM
+   is in PARM_LOC. NUM_TEMPLATE_PARMS is the size of the template
+   parameter list PARM belongs to. This is used used to create a
+   proper canonical type for the type of PARM that is to be created,
+   iff PARM is a type.  If the size is not known, this parameter shall
+   be set to 0.  */
 
 tree
-process_template_parm (tree list, location_t parm_loc, tree parm, bool is_non_type, 
-                       bool is_parameter_pack)
+process_template_parm (tree list, location_t parm_loc, tree parm,
+		       bool is_non_type, bool is_parameter_pack,
+		       unsigned num_template_parms)
 {
   tree decl = 0;
   tree defval;
@@ -3528,6 +3544,7 @@ process_template_parm (tree list, location_t parm_loc, tree parm, bool is_non_ty
       DECL_INITIAL (parm) = DECL_INITIAL (decl)
 	= build_template_parm_index (idx, processing_template_decl,
 				     processing_template_decl,
+				     num_template_parms,
 				     decl, TREE_TYPE (parm));
 
       TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)) 
@@ -3561,6 +3578,7 @@ process_template_parm (tree list, location_t parm_loc, tree parm, bool is_non_ty
       TEMPLATE_TYPE_PARM_INDEX (t)
 	= build_template_parm_index (idx, processing_template_decl,
 				     processing_template_decl,
+				     num_template_parms,
 				     decl, TREE_TYPE (parm));
       TEMPLATE_TYPE_PARAMETER_PACK (t) = is_parameter_pack;
       TYPE_CANONICAL (t) = canonical_type_parameter (t);
@@ -3593,14 +3611,311 @@ end_template_parm_list (tree parms)
       next = TREE_CHAIN (parm);
       TREE_VEC_ELT (saved_parmlist, nparms) = parm;
       TREE_CHAIN (parm) = NULL_TREE;
-      if (TREE_CODE (TREE_VALUE (parm)) == TYPE_DECL)
-	TEMPLATE_TYPE_PARM_SIBLING_PARMS (TREE_TYPE (TREE_VALUE (parm))) =
-	      current_template_parms;
     }
+
+  fixup_template_parms ();
 
   --processing_template_parmlist;
 
   return saved_parmlist;
+}
+
+/* Create a new type almost identical to TYPE but which has the
+   following differences:
+
+     1/ T has a new TEMPLATE_PARM_INDEX that carries the new number of
+     template sibling parameters of T.
+
+     2/ T has a new canonical type that matches the new number
+     of sibling parms.
+
+     3/ From now on, T is going to be what lookups referring to the
+     name of TYPE will return. No lookup should return TYPE anymore.
+
+   NUM_PARMS is the new number of sibling parms TYPE belongs to.
+
+   This is a subroutine of fixup_template_parms.  */
+
+static tree
+fixup_template_type_parm_type (tree type, int num_parms)
+{
+  tree orig_idx = TEMPLATE_TYPE_PARM_INDEX (type), idx;
+  tree t;
+  /* This is the decl which name is inserted into the symbol table for
+     the template parm type. So whenever we lookup the type name, this
+     is the DECL we get.  */
+  tree decl;
+
+  /* Do not fix up the type twice.  */
+  if (orig_idx && TEMPLATE_PARM_NUM_SIBLINGS (orig_idx) != 0)
+    return type;
+
+  t = copy_type (type);
+  decl = TYPE_NAME (t);
+
+  TYPE_MAIN_VARIANT (t) = t;
+  TYPE_NEXT_VARIANT (t)= NULL_TREE;
+  TYPE_POINTER_TO (t) = 0;
+  TYPE_REFERENCE_TO (t) = 0;
+
+  idx = build_template_parm_index (TEMPLATE_PARM_IDX (orig_idx),
+				   TEMPLATE_PARM_LEVEL (orig_idx),
+				   TEMPLATE_PARM_ORIG_LEVEL (orig_idx),
+				   num_parms,
+				   decl, t);
+  TEMPLATE_PARM_DESCENDANTS (idx) = TEMPLATE_PARM_DESCENDANTS (orig_idx);
+  TEMPLATE_PARM_PARAMETER_PACK (idx) = TEMPLATE_PARM_PARAMETER_PACK (orig_idx);
+  TEMPLATE_TYPE_PARM_INDEX (t) = idx;
+
+  TYPE_STUB_DECL (t) = decl;
+  TEMPLATE_TYPE_DECL (t) = decl;
+  if (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
+    TREE_TYPE (DECL_TEMPLATE_RESULT  (decl)) = t;
+
+  /* Update the type associated to the type name stored in the symbol
+     table. Now, whenever the type name is looked up, the resulting
+     type is properly fixed up.  */
+  TREE_TYPE (decl) = t;
+
+  TYPE_CANONICAL (t) = canonical_type_parameter (t);
+
+  return t;
+}
+
+/* Create and return a new TEMPLATE_PARM_INDEX that is almost
+   identical to I, but that is fixed up as to:
+
+   1/ carry the number of sibling parms (NUM_PARMS) of the template
+   parm represented by I.
+
+   2/ replace all references to template parm types declared before I
+   (in the same template parm list as I) by references to template
+   parm types contained in ARGS. ARGS should contain the list of
+   template parms that have been fixed up so far, in a form suitable
+   to be passed to tsubst.
+
+   This is a subroutine of fixup_template_parms.  */
+
+static tree
+fixup_template_parm_index (tree i, tree args, int num_parms)
+{
+  tree index, decl, type;
+
+  if (i == NULL_TREE
+      || TREE_CODE (i) != TEMPLATE_PARM_INDEX
+      /* Do not fix up the index twice.  */
+      || (TEMPLATE_PARM_NUM_SIBLINGS (i) != 0))
+    return i;
+
+  decl = TEMPLATE_PARM_DECL (i);
+  type = TREE_TYPE (decl);
+
+  index = build_template_parm_index (TEMPLATE_PARM_IDX (i),
+				     TEMPLATE_PARM_LEVEL (i),
+				     TEMPLATE_PARM_ORIG_LEVEL (i),
+				     num_parms,
+				     decl, type);
+
+  TEMPLATE_PARM_DESCENDANTS (index) = TEMPLATE_PARM_DESCENDANTS (i);
+  TEMPLATE_PARM_PARAMETER_PACK (index) = TEMPLATE_PARM_PARAMETER_PACK (i);
+
+  type = tsubst (type, args, tf_none, NULL_TREE);
+  
+  TREE_TYPE (decl) = type;
+  TREE_TYPE (index) = type;
+
+  return index;
+}
+
+/* 
+   This is a subroutine of fixup_template_parms.
+
+   It computes the canonical type of the type of the template
+   parameter PARM_DESC and update all references to that type so that
+   they use the newly computed canonical type. No access check is
+   performed during the fixup. PARM_DESC is a TREE_LIST which
+   TREE_VALUE is the template parameter and its TREE_PURPOSE is the
+   default argument of the template parm if any. IDX is the index of
+   the template parameter, starting at 0. NUM_PARMS is the number of
+   template parameters in the set PARM_DESC belongs to. ARGLIST is a
+   TREE_VEC containing the full set of template parameters in a form
+   suitable to be passed to substs functions as their ARGS
+   argument. This is what current_template_args returns for a given
+   template. The innermost vector of args in ARGLIST is the set of
+   template parms that have been fixed up so far. This function adds
+   the fixed up parameter into that vector.  */
+
+static void
+fixup_template_parm (tree parm_desc,
+		     int idx,
+		     int num_parms,
+		     tree arglist)
+{
+  tree parm = TREE_VALUE (parm_desc);
+  tree fixedup_args = INNERMOST_TEMPLATE_ARGS (arglist);
+
+  push_deferring_access_checks (dk_no_check);
+
+  if (TREE_CODE (parm) == TYPE_DECL)
+    {
+      /* PARM is a template type parameter. Fix up its type, add
+	 the fixed-up template parm to the vector of fixed-up
+	 template parms so far, and substitute the fixed-up
+	 template parms into the default argument of this
+	 parameter.  */
+      tree t =
+	fixup_template_type_parm_type (TREE_TYPE (parm), num_parms);
+      TREE_TYPE (parm) = t;
+
+      TREE_VEC_ELT (fixedup_args, idx) = template_parm_to_arg (parm_desc);
+    }
+  else if (TREE_CODE (parm) == TEMPLATE_DECL)
+    {
+      /* PARM is a template template parameter. This is going to
+	 be interesting.  */
+      tree tparms, targs, innermost_args;
+      int j;
+
+      /* First, fix up the type of the parm.  */
+
+      tree t =
+	fixup_template_type_parm_type (TREE_TYPE (parm), num_parms);
+      TREE_TYPE (parm) = t;
+
+      TREE_VEC_ELT (fixedup_args, idx) =
+	template_parm_to_arg (parm_desc);
+
+      /* Now we need to substitute the template parm types that
+	 have been fixed up so far into the non-type template
+	 parms of this template template parm. E.g, consider this:
+
+	 template<class T, template<T u> class TT> class S;
+
+	 In this case we want to substitute T into the
+	 template parameters of TT.
+
+	 So let's walk the template parms of PARM here, and
+	 tsubst ARGLIST into into each of the template
+	 parms.   */
+
+      /* For this substitution we need to build the full set of
+	 template parameters and use that as arguments for the
+	 tsubsting function.  */
+      tparms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (parm));
+
+      /* This will contain the innermost parms of PARM into which
+	 we have substituted so far.  */
+      innermost_args = make_tree_vec (TREE_VEC_LENGTH (tparms));
+      targs = add_to_template_args (arglist, innermost_args);
+      for (j = 0; j < TREE_VEC_LENGTH (tparms); ++j)
+	{
+	  tree parameter;
+
+	  parameter = TREE_VEC_ELT (tparms, j);
+
+	  /* INNERMOST_ARGS needs to have at least the same number
+	     of elements as the index PARAMETER, ortherwise
+	     tsubsting into PARAMETER will result in partially
+	     instantiating it, reducing its tempate parm
+	     level. Let's tactically fill INNERMOST_ARGS for that
+	     purpose.  */
+	  TREE_VEC_ELT (innermost_args, j) =
+	    template_parm_to_arg (parameter);
+
+	  fixup_template_parm (parameter, j,
+			       TREE_VEC_LENGTH (tparms),
+			       targs);
+	}
+    }
+  else if (TREE_CODE (parm) == PARM_DECL)
+    {
+      /* PARM is a non-type template parameter. We need to:
+
+       * Fix up its TEMPLATE_PARM_INDEX to make it carry the
+       proper number of sibling parameters.
+
+       * Make lookups of the template parameter return a reference
+       to the fixed-up index. No lookup should return references
+       to the former index anymore.
+
+       * Substitute the template parms that got fixed up so far
+
+       * into the type of PARM.  */
+
+      tree index = DECL_INITIAL (parm);
+
+      /* PUSHED_DECL is the decl added to the symbol table with
+	 the name of the parameter. E,g:
+	     
+	 template<class T, T u> //#0
+	 auto my_function(T t) -> decltype(u); //#1
+
+	 Here, when looking up u at //#1, we get the decl of u
+	 resulting from the declaration in #0. This is what
+	 PUSHED_DECL is. We need to replace the reference to the
+	 old TEMPLATE_PARM_INDEX carried by PUSHED_DECL by the
+	 fixed-up TEMPLATE_PARM_INDEX.  */
+      tree pushed_decl = TEMPLATE_PARM_DECL (index);
+
+      /* Let's fix up the TEMPLATE_PARM_INDEX then. Note that we must
+	 fixup the type of PUSHED_DECL as well and luckily
+	 fixup_template_parm_index does it for us too.  */
+      tree fixed_up_index =
+	fixup_template_parm_index (index, arglist, num_parms);
+
+      DECL_INITIAL (pushed_decl) = DECL_INITIAL (parm) = fixed_up_index;
+
+      /* Add this fixed up PARM to the template parms we've fixed
+	 up so far and use that to substitute the fixed-up
+	 template parms into the type of PARM.  */
+      TREE_VEC_ELT (fixedup_args, idx) =
+	template_parm_to_arg (parm_desc);
+      TREE_TYPE (parm) = tsubst (TREE_TYPE (parm), arglist,
+				 tf_none, NULL_TREE);
+    }
+
+  TREE_PURPOSE (parm_desc) =
+    tsubst_template_arg (TREE_PURPOSE (parm_desc),
+			 arglist, tf_none, parm);
+
+  pop_deferring_access_checks ();
+}
+
+/* Walk current the template parms and properly compute the canonical
+   types of the dependent types created during
+   cp_parser_template_parameter_list.  */
+
+static void
+fixup_template_parms (void)
+{
+  tree arglist;
+  tree parameter_vec;
+  tree fixedup_args;
+  int i, num_parms;
+
+  parameter_vec = INNERMOST_TEMPLATE_PARMS (current_template_parms);
+  if (parameter_vec == NULL_TREE)
+    return;
+
+  num_parms = TREE_VEC_LENGTH (parameter_vec);
+
+  /* This vector contains the current innermost template parms that
+     have been fixed up so far.  The form of FIXEDUP_ARGS is suitable
+     to be passed to tsubst* functions as their ARGS argument.  */
+  fixedup_args = make_tree_vec (num_parms);
+
+  /* This vector contains the full set of template parms in a form
+     suitable to be passed to substs functions as their ARGS
+     argument.  */
+  arglist = current_template_args ();
+  arglist = add_outermost_template_args (arglist, fixedup_args);
+
+  fixedup_args = INNERMOST_TEMPLATE_ARGS (arglist);
+
+  /* Let's do the proper fixup now.  */
+  for (i = 0; i < num_parms; ++i)
+    fixup_template_parm (TREE_VEC_ELT (parameter_vec, i),
+			 i, num_parms, arglist);
 }
 
 /* end_template_decl is called after a template declaration is seen.  */
@@ -3618,6 +3933,68 @@ end_template_decl (void)
 
   --processing_template_decl;
   current_template_parms = TREE_CHAIN (current_template_parms);
+}
+
+/* Takes a TREE_LIST representing a template parameter and convert it
+   into an argument suitable to be passed to the type substitution
+   functions.  Note that If the TREE_LIST contains an error_mark
+   node, the returned argument is error_mark_node.  */
+
+static tree
+template_parm_to_arg (tree t)
+{
+
+  if (t == NULL_TREE
+      || TREE_CODE (t) != TREE_LIST)
+    return t;
+
+  if (error_operand_p (TREE_VALUE (t)))
+    return error_mark_node;
+
+  t = TREE_VALUE (t);
+
+  if (TREE_CODE (t) == TYPE_DECL
+      || TREE_CODE (t) == TEMPLATE_DECL)
+    {
+      t = TREE_TYPE (t);
+
+      if (TEMPLATE_TYPE_PARAMETER_PACK (t))
+	{
+	  /* Turn this argument into a TYPE_ARGUMENT_PACK
+	     with a single element, which expands T.  */
+	  tree vec = make_tree_vec (1);
+#ifdef ENABLE_CHECKING
+	  SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT
+	    (vec, TREE_VEC_LENGTH (vec));
+#endif
+	  TREE_VEC_ELT (vec, 0) = make_pack_expansion (t);
+
+	  t = cxx_make_type (TYPE_ARGUMENT_PACK);
+	  SET_ARGUMENT_PACK_ARGS (t, vec);
+	}
+    }
+  else
+    {
+      t = DECL_INITIAL (t);
+
+      if (TEMPLATE_PARM_PARAMETER_PACK (t))
+	{
+	  /* Turn this argument into a NONTYPE_ARGUMENT_PACK
+	     with a single element, which expands T.  */
+	  tree vec = make_tree_vec (1);
+	  tree type = TREE_TYPE (TEMPLATE_PARM_DECL (t));
+#ifdef ENABLE_CHECKING
+	  SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT
+	    (vec, TREE_VEC_LENGTH (vec));
+#endif
+	  TREE_VEC_ELT (vec, 0) = make_pack_expansion (t);
+
+	  t  = make_node (NONTYPE_ARGUMENT_PACK);
+	  SET_ARGUMENT_PACK_ARGS (t, vec);
+	  TREE_TYPE (t) = type;
+	}
+    }
+  return t;
 }
 
 /* Within the declaration of a template, return all levels of template
@@ -3646,63 +4023,7 @@ current_template_args (void)
 
       TREE_TYPE (a) = NULL_TREE;
       for (i = TREE_VEC_LENGTH (a) - 1; i >= 0; --i)
-	{
-	  tree t = TREE_VEC_ELT (a, i);
-
-	  /* T will be a list if we are called from within a
-	     begin/end_template_parm_list pair, but a vector directly
-	     if within a begin/end_member_template_processing pair.  */
-	  if (TREE_CODE (t) == TREE_LIST)
-	    {
-	      t = TREE_VALUE (t);
-
-	      if (!error_operand_p (t))
-		{
-		  if (TREE_CODE (t) == TYPE_DECL
-		      || TREE_CODE (t) == TEMPLATE_DECL)
-                    {
-                      t = TREE_TYPE (t);
-                      
-                      if (TEMPLATE_TYPE_PARAMETER_PACK (t))
-                        {
-                          /* Turn this argument into a TYPE_ARGUMENT_PACK
-                             with a single element, which expands T.  */
-                          tree vec = make_tree_vec (1);
-#ifdef ENABLE_CHECKING
-			  SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT
-				(vec, TREE_VEC_LENGTH (vec));
-#endif
-                          TREE_VEC_ELT (vec, 0) = make_pack_expansion (t);
-                          
-                          t = cxx_make_type (TYPE_ARGUMENT_PACK);
-                          SET_ARGUMENT_PACK_ARGS (t, vec);
-                        }
-                    }
-                  else
-                    {
-                      t = DECL_INITIAL (t);
-                      
-                      if (TEMPLATE_PARM_PARAMETER_PACK (t))
-                        {
-                          /* Turn this argument into a NONTYPE_ARGUMENT_PACK
-                             with a single element, which expands T.  */
-                          tree vec = make_tree_vec (1);
-                          tree type = TREE_TYPE (TEMPLATE_PARM_DECL (t));
-#ifdef ENABLE_CHECKING
-			  SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT
-				(vec, TREE_VEC_LENGTH (vec));
-#endif
-                          TREE_VEC_ELT (vec, 0) = make_pack_expansion (t);
-                          
-                          t  = make_node (NONTYPE_ARGUMENT_PACK);
-                          SET_ARGUMENT_PACK_ARGS (t, vec);
-                          TREE_TYPE (t) = type;
-                        }
-                    }
-		  TREE_VEC_ELT (a, i) = t;
-                }
-	    }
-	}
+	TREE_VEC_ELT (a, i) = template_parm_to_arg (TREE_VEC_ELT (a, i));
 
 #ifdef ENABLE_CHECKING
       SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (a, TREE_VEC_LENGTH (a));
@@ -3714,6 +4035,21 @@ current_template_args (void)
 	args = a;
     }
 
+    if (length > 1 && TREE_VEC_ELT (args, 0) == NULL_TREE)
+      /* This can happen for template parms of a template template
+	 parameter, e.g:
+
+	 template<template<class T, class U> class TT> struct S;
+
+	 Consider the level of the parms of TT; T and U both have
+	 level 2; TT has no template parm of level 1. So in this case
+	 the first element of full_template_args is NULL_TREE. If we
+	 leave it like this TMPL_ARG_DEPTH on args returns 1 instead
+	 of 2. This will make tsubst wrongly consider that T and U
+	 have level 1. Instead, let's create a dummy vector as the
+	 first element of full_template_args so that TMPL_ARG_DEPTH
+	 returns the correct depth for args.  */
+      TREE_VEC_ELT (args, 0) = make_tree_vec (1);
   return args;
 }
 
@@ -8721,8 +9057,6 @@ tsubst_template_parms (tree parms, tree args, tsubst_flags_t complain)
       for (i = 0; i < TREE_VEC_LENGTH (new_vec); ++i)
 	{
           tree tuple;
-          tree default_value;
-          tree parm_decl;
 
           if (parms == error_mark_node)
             continue;
@@ -8732,18 +9066,8 @@ tsubst_template_parms (tree parms, tree args, tsubst_flags_t complain)
           if (tuple == error_mark_node)
             continue;
 
-          default_value = TREE_PURPOSE (tuple);
-          parm_decl = TREE_VALUE (tuple);
-
-	  parm_decl = tsubst (parm_decl, args, complain, NULL_TREE);
-	  if (TREE_CODE (parm_decl) == PARM_DECL
-	      && invalid_nontype_parm_type_p (TREE_TYPE (parm_decl), complain))
-	    parm_decl = error_mark_node;
-	  default_value = tsubst_template_arg (default_value, args,
-					       complain, NULL_TREE);
-
-	  tuple = build_tree_list (default_value, parm_decl);
-	  TREE_VEC_ELT (new_vec, i) = tuple;
+	  TREE_VEC_ELT (new_vec, i) =
+	    tsubst_template_parm (tuple, args, complain);
 	}
 
       *new_parms =
@@ -8755,6 +9079,36 @@ tsubst_template_parms (tree parms, tree args, tsubst_flags_t complain)
   --processing_template_decl;
 
   return r;
+}
+
+/* Return the result of substituting ARGS into one template parameter
+   given by T. T Must be a TREE_LIST which TREE_VALUE is the template
+   parameter and which TREE_PURPOSE is the default argument of the
+   template parameter.  */
+
+static tree
+tsubst_template_parm (tree t, tree args, tsubst_flags_t complain)
+{
+  tree default_value, parm_decl;
+
+  if (args == NULL_TREE
+      || t == NULL_TREE
+      || t == error_mark_node)
+    return t;
+
+  gcc_assert (TREE_CODE (t) == TREE_LIST);
+
+  default_value = TREE_PURPOSE (t);
+  parm_decl = TREE_VALUE (t);
+
+  parm_decl = tsubst (parm_decl, args, complain, NULL_TREE);
+  if (TREE_CODE (parm_decl) == PARM_DECL
+      && invalid_nontype_parm_type_p (TREE_TYPE (parm_decl), complain))
+    parm_decl = error_mark_node;
+  default_value = tsubst_template_arg (default_value, args,
+				       complain, NULL_TREE);
+
+  return build_tree_list (default_value, parm_decl);
 }
 
 /* Substitute the ARGS into the indicated aggregate (or enumeration)
@@ -14668,6 +15022,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	  {
 	    tree parmvec = TYPE_TI_ARGS (parm);
 	    tree argvec = INNERMOST_TEMPLATE_ARGS (TYPE_TI_ARGS (arg));
+	    tree full_argvec = add_to_template_args (targs, argvec);
 	    tree parm_parms 
               = DECL_INNERMOST_TEMPLATE_PARMS
 	          (TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (parm));
@@ -14702,7 +15057,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	      the global operator+ will be used; if they are not, the
 	      Lvalue_proxy will be converted to float.  */
 	    if (coerce_template_parms (parm_parms,
-                                       argvec,
+                                       full_argvec,
 				       TYPE_TI_TEMPLATE (parm),
 				       tf_none,
 				       /*require_all_args=*/true,
@@ -18007,6 +18362,13 @@ dependent_template_arg_p (tree arg)
   if (!processing_template_decl)
     return false;
 
+  /* Assume a template argument that was wrongly written by the user
+     is dependent. This is consistent with what
+     any_dependent_template_arguments_p [that calls this function]
+     does.  */
+  if (arg == error_mark_node)
+    return true;
+
   if (TREE_CODE (arg) == TEMPLATE_DECL
       || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
     return dependent_template_p (arg);
@@ -18434,7 +18796,7 @@ make_auto (void)
   TYPE_STUB_DECL (au) = TYPE_NAME (au);
   TEMPLATE_TYPE_PARM_INDEX (au) = build_template_parm_index
     (0, processing_template_decl + 1, processing_template_decl + 1,
-     TYPE_NAME (au), NULL_TREE);
+     0, TYPE_NAME (au), NULL_TREE);
   TYPE_CANONICAL (au) = canonical_type_parameter (au);
   DECL_ARTIFICIAL (TYPE_NAME (au)) = 1;
   SET_DECL_TEMPLATE_PARM_P (TYPE_NAME (au));
