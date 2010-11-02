@@ -108,163 +108,119 @@ check_avx256_stores (rtx dest, const_rtx set, void *data)
 static void
 move_or_delete_vzeroupper_2 (basic_block bb, bool upper_128bits_set)
 {
-  rtx curr_insn, next_insn, prev_insn, insn;
+  rtx insn;
+  rtx vzeroupper_insn = NULL_RTX;
+  rtx pat;
+  int avx256;
 
   if (dump_file)
     fprintf (dump_file, " BB [%i] entry: upper 128bits: %d\n",
 	     bb->index, upper_128bits_set);
 
-  for (curr_insn = BB_HEAD (bb);
-       curr_insn && curr_insn != NEXT_INSN (BB_END (bb));
-       curr_insn = next_insn)
+  insn = BB_HEAD (bb);
+  while (insn != BB_END (bb))
     {
-      int avx256;
+      insn = NEXT_INSN (insn);
 
-      next_insn = NEXT_INSN (curr_insn);
-
-      if (!NONDEBUG_INSN_P (curr_insn))
+      if (!NONDEBUG_INSN_P (insn))
 	continue;
 
-      /* Search for vzeroupper.  */
-      insn = PATTERN (curr_insn);
-      if (GET_CODE (insn) == UNSPEC_VOLATILE
-	  && XINT (insn, 1) == UNSPECV_VZEROUPPER)
+      /* Move vzeroupper before jump/call.  */
+      if (JUMP_P (insn) || CALL_P (insn))
 	{
-	  /* Found vzeroupper.  */
+	  if (!vzeroupper_insn)
+	    continue;
+
+	  if (PREV_INSN (insn) != vzeroupper_insn)
+	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "Move vzeroupper after:\n");
+		  print_rtl_single (dump_file, PREV_INSN (insn));
+		  fprintf (dump_file, "before:\n");
+		  print_rtl_single (dump_file, insn);
+		}
+	      reorder_insns_nobb (vzeroupper_insn, vzeroupper_insn,
+				  PREV_INSN (insn));
+	    }
+	  vzeroupper_insn = NULL_RTX;
+	  continue;
+	}
+
+      pat = PATTERN (insn);
+
+      /* Check insn for vzeroupper intrinsic.  */
+      if (GET_CODE (pat) == UNSPEC_VOLATILE
+	  && XINT (pat, 1) == UNSPECV_VZEROUPPER)
+	{
 	  if (dump_file)
 	    {
+	      /* Found vzeroupper intrinsic.  */
 	      fprintf (dump_file, "Found vzeroupper:\n");
-	      print_rtl_single (dump_file, curr_insn);
+	      print_rtl_single (dump_file, insn);
 	    }
 	}
       else
 	{
-	  /* Check vzeroall intrinsic.  */
-	  if (GET_CODE (insn) == PARALLEL
-	      && GET_CODE (XVECEXP (insn, 0, 0)) == UNSPEC_VOLATILE
-	      && XINT (XVECEXP (insn, 0, 0), 1) == UNSPECV_VZEROALL)
-	    upper_128bits_set = false;
-	  else if (!upper_128bits_set)
+	  /* Check insn for vzeroall intrinsic.  */
+	  if (GET_CODE (pat) == PARALLEL
+	      && GET_CODE (XVECEXP (pat, 0, 0)) == UNSPEC_VOLATILE
+	      && XINT (XVECEXP (pat, 0, 0), 1) == UNSPECV_VZEROALL)
 	    {
-	      /* Check if upper 128bits of AVX registers are used.  */
-	      note_stores (insn, check_avx256_stores,
-			   &upper_128bits_set);
+	      upper_128bits_set = false;
+
+	      /* Delete pending vzeroupper insertion.  */
+	      if (vzeroupper_insn)
+		{
+		  delete_insn (vzeroupper_insn);
+		  vzeroupper_insn = NULL_RTX;
+		}
 	    }
+	  else if (!upper_128bits_set)
+	    note_stores (pat, check_avx256_stores, &upper_128bits_set);
 	  continue;
 	}
 
-      avx256 = INTVAL (XVECEXP (insn, 0, 0));
+      /* Process vzeroupper intrinsic.  */
+      avx256 = INTVAL (XVECEXP (pat, 0, 0));
 
       if (!upper_128bits_set)
 	{
 	  /* Since the upper 128bits are cleared, callee must not pass
 	     256bit AVX register.  We only need to check if callee
 	     returns 256bit AVX register.  */
-	  upper_128bits_set = avx256 == callee_return_avx256;
+	  upper_128bits_set = (avx256 == callee_return_avx256);
 
-	  /* Remove unnecessary vzeroupper since upper 128bits are
-	     cleared.  */
+	  /* Remove unnecessary vzeroupper since
+	     upper 128bits are cleared.  */
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "Delete redundant vzeroupper:\n");
-	      print_rtl_single (dump_file, curr_insn);
+	      print_rtl_single (dump_file, insn);
 	    }
-	  delete_insn (curr_insn);
-	  continue;
+	  delete_insn (insn);
 	}
       else if (avx256 == callee_return_pass_avx256
 	       || avx256 == callee_pass_avx256)
 	{
 	  /* Callee passes 256bit AVX register.  Check if callee
 	     returns 256bit AVX register.  */
-	  upper_128bits_set = avx256 == callee_return_pass_avx256;
+	  upper_128bits_set = (avx256 == callee_return_pass_avx256);
 
-	  /* Must remove vzeroupper since callee passes 256bit AVX
-	     register.  */
+	  /* Must remove vzeroupper since
+	     callee passes in 256bit AVX register.  */
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "Delete callee pass vzeroupper:\n");
-	      print_rtl_single (dump_file, curr_insn);
+	      print_rtl_single (dump_file, insn);
 	    }
-	  delete_insn (curr_insn);
-	  continue;
-	}
-
-      /* Find the jump after vzeroupper.  */
-      prev_insn = curr_insn;
-      if (avx256 == vzeroupper_intrinsic)
-	{
-	  /* For vzeroupper intrinsic, check if there is another
-	     vzeroupper.  */
-	  insn = NEXT_INSN (curr_insn);
-	  while (insn)
-	    {
-	      if (NONJUMP_INSN_P (insn)
-		  && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
-		  && XINT (PATTERN (insn), 1) == UNSPECV_VZEROUPPER)
-		{
-		  if (dump_file)
-		    {
-		      fprintf (dump_file,
-			       "Delete redundant vzeroupper intrinsic:\n");
-		      print_rtl_single (dump_file, curr_insn);
-		    }
-		  delete_insn (curr_insn);
-		  insn = NULL;
-		  continue;
-		}
-
-	      if (JUMP_P (insn) || CALL_P (insn))
-		break;
-	      prev_insn = insn;
-	      insn = NEXT_INSN (insn);
-	      if (insn == NEXT_INSN (BB_END (bb)))
-		break;
-	    }
-
-	  /* Continue if redundant vzeroupper intrinsic is deleted.  */
-	  if (!insn)
-	    continue;
+	  delete_insn (insn);
 	}
       else
 	{
-	  /* Find the next jump/call.  */
-	  insn = NEXT_INSN (curr_insn);
-	  while (insn)
-	    {
-	      if (JUMP_P (insn) || CALL_P (insn))
-		break;
-	      prev_insn = insn;
-	      insn = NEXT_INSN (insn);
-	      if (insn == NEXT_INSN (BB_END (bb)))
-		break;
-	    }
-
-	  if (!insn)
-	    gcc_unreachable();
+	  upper_128bits_set = false;
+	  vzeroupper_insn = insn;
 	}
-
-      /* Keep vzeroupper.  */
-      upper_128bits_set = false;
-
-      /* Also allow label as the next instruction.  */
-      if (insn == NEXT_INSN (BB_END (bb)) && !LABEL_P (insn))
-	gcc_unreachable();
-
-      /* Move vzeroupper before jump/call if neeeded.  */
-      if (curr_insn != prev_insn)
-	{
-	  reorder_insns_nobb (curr_insn, curr_insn, prev_insn);
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "Move vzeroupper after:\n");
-	      print_rtl_single (dump_file, prev_insn);
-	      fprintf (dump_file, "before:\n");
-	      print_rtl_single (dump_file, insn);
-	    }
-	}
-
-      next_insn = NEXT_INSN (insn);
     }
 
   BLOCK_INFO (bb)->upper_128bits_set = upper_128bits_set;
@@ -21565,10 +21521,12 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 			       + 2, vec));
     }
 
-  /* Emit vzeroupper if needed.  */
+  /* Add UNSPEC_CALL_NEEDS_VZEROUPPER decoration.  */
   if (TARGET_VZEROUPPER && cfun->machine->use_avx256_p)
     {
+      rtx unspec;
       int avx256;
+
       cfun->machine->use_vzeroupper_p = 1;
       if (cfun->machine->callee_pass_avx256_p)
 	{
@@ -21581,7 +21539,11 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	avx256 = callee_return_avx256;
       else
 	avx256 = call_no_avx256;
-      emit_insn (gen_avx_vzeroupper (GEN_INT (avx256))); 
+
+      unspec = gen_rtx_UNSPEC (VOIDmode,
+			       gen_rtvec (1, GEN_INT (avx256)),
+			       UNSPEC_CALL_NEEDS_VZEROUPPER);
+      call = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, call, unspec));
     }
 
   call = emit_call_insn (call);
@@ -21589,6 +21551,24 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
     CALL_INSN_FUNCTION_USAGE (call) = use;
 
   return call;
+}
+
+void
+ix86_split_call_vzeroupper (rtx insn, rtx vzeroupper)
+{
+  rtx call = XVECEXP (PATTERN (insn), 0, 0);
+  emit_insn (gen_avx_vzeroupper (vzeroupper));
+  emit_call_insn (call);
+}
+
+void
+ix86_split_call_pop_vzeroupper (rtx insn, rtx vzeroupper)
+{
+  rtx call = XVECEXP (PATTERN (insn), 0, 0);
+  rtx pop = XVECEXP (PATTERN (insn), 0, 1);
+  emit_insn (gen_avx_vzeroupper (vzeroupper));
+  emit_call_insn (gen_rtx_PARALLEL (VOIDmode,
+				    gen_rtvec (2, call, pop)));
 }
 
 /* Output the assembly for a call instruction.  */
