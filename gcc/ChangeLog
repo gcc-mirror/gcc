@@ -1,3 +1,8 @@
+2010-11-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (*sibcall_1_rex64_vzeroupper): Fix a
+	typo.
+
 2010-11-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* basic-block.h (insert_insn_end_bb_new): Delete.
