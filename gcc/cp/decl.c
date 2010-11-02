@@ -12667,6 +12667,19 @@ record_key_method_defined (tree fndecl)
     }
 }
 
+/* Subroutine of finish_function.
+   Save the body of constexpr functions for possible
+   future compile time evaluation.  */
+
+static void
+maybe_save_function_definition (tree fun)
+{
+  if (!processing_template_decl
+      && DECL_DECLARED_CONSTEXPR_P (fun)
+      && !DECL_CLONED_FUNCTION_P (fun))
+    register_constexpr_fundef (fun, DECL_SAVED_TREE (fun));
+}
+
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  The free the storage
    for the function definition.
@@ -12777,6 +12790,10 @@ finish_function (int flags)
   /* Statements should always be full-expressions at the outermost set
      of curly braces for a function.  */
   gcc_assert (stmts_are_full_exprs_p ());
+
+  /* Save constexpr function body before it gets munged by
+     the NRV transformation.   */
+  maybe_save_function_definition (fndecl);
 
   /* Set up the named return value optimization, if we can.  Candidate
      variables are selected in check_return_expr.  */
