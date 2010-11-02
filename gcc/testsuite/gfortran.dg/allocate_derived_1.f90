@@ -32,7 +32,7 @@
  allocate(t1 :: x(2))
  allocate(t2 :: x(3))
  allocate(t3 :: x(4))
- allocate(tx :: x(5))  ! { dg-error "is not an accessible derived type" }
+ allocate(tx :: x(5))  ! { dg-error "Error in type-spec at" }
  allocate(u0 :: x(6))  ! { dg-error "may not be ABSTRACT" }
  allocate(v1 :: x(7))  ! { dg-error "is type incompatible with typespec" }
 
