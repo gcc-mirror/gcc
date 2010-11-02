@@ -1360,22 +1360,6 @@ gimple_fold_builtin (gimple stmt)
   return result;
 }
 
-/* Return the first of the base binfos of BINFO that has virtual functions.  */
-
-static tree
-get_first_base_binfo_with_virtuals (tree binfo)
-{
-  int i;
-  tree base_binfo;
-
-  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
-    if (BINFO_VIRTUALS (base_binfo))
-      return base_binfo;
-
-  return NULL_TREE;
-}
-
-
 /* Search for a base binfo of BINFO that corresponds to TYPE and return it if
    it is found or NULL_TREE if it is not.  */
 
@@ -1413,7 +1397,7 @@ gimple_get_relevant_ref_binfo (tree ref, tree known_binfo)
       if (TREE_CODE (ref) == COMPONENT_REF)
 	{
 	  tree par_type;
-	  tree binfo, base_binfo;
+	  tree binfo;
 	  tree field = TREE_OPERAND (ref, 1);
 
 	  if (!DECL_ARTIFICIAL (field))
@@ -1431,14 +1415,15 @@ gimple_get_relevant_ref_binfo (tree ref, tree known_binfo)
 	      || BINFO_N_BASE_BINFOS (binfo) == 0)
 	    return NULL_TREE;
 
-	  base_binfo = get_first_base_binfo_with_virtuals (binfo);
-	  if (base_binfo && BINFO_TYPE (base_binfo) != TREE_TYPE (field))
+	  /* Offset 0 indicates the primary base, whose vtable contents are
+	     represented in the binfo for the derived class.  */
+	  if (int_bit_position (field) != 0)
 	    {
 	      tree d_binfo;
 
+	      /* Get descendant binfo. */
 	      d_binfo = gimple_get_relevant_ref_binfo (TREE_OPERAND (ref, 0),
 						       known_binfo);
-	      /* Get descendant binfo. */
 	      if (!d_binfo)
 		return NULL_TREE;
 	      return get_base_binfo_for_type (d_binfo, TREE_TYPE (field));
