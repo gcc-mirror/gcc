@@ -41,7 +41,7 @@ test2 (int a)
   if (a & 0xff)
     link_error ();
   a = a - 1;
-  if (a & 0xff != 0xff)
+  if ((a & 0xff) != 0xff)
     link_error ();
   return a;
 }
