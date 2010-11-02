@@ -86,6 +86,7 @@ static void dump_scope (tree, int);
 static void dump_template_parms (tree, int, int);
 static int get_non_default_template_args_count (tree, int);
 static const char *function_category (tree);
+static void maybe_print_constexpr_context (diagnostic_context *);
 static void maybe_print_instantiation_context (diagnostic_context *);
 static void print_instantiation_full_context (diagnostic_context *);
 static void print_instantiation_partial_context (diagnostic_context *,
@@ -2635,6 +2636,7 @@ cp_diagnostic_starter (diagnostic_context *context,
   diagnostic_report_current_module (context);
   cp_print_error_function (context, diagnostic);
   maybe_print_instantiation_context (context);
+  maybe_print_constexpr_context (context);
   pp_base_set_prefix (context->printer, diagnostic_build_prefix (context,
 								 diagnostic));
 }
@@ -2953,6 +2955,31 @@ print_instantiation_context (void)
   print_instantiation_partial_context
     (global_dc, current_instantiation (), input_location);
   diagnostic_flush_buffer (global_dc);
+}
+
+/* Report what constexpr call(s) we're trying to expand, if any.  */
+
+void
+maybe_print_constexpr_context (diagnostic_context *context)
+{
+  VEC(tree,heap) *call_stack = cx_error_context ();
+  unsigned ix;
+  tree t;
+
+  FOR_EACH_VEC_ELT (tree, call_stack, ix, t)
+    {
+      expanded_location xloc = expand_location (EXPR_LOCATION (t));
+      const char *s = expr_as_string (t, 0);
+      if (context->show_column)
+	pp_verbatim (context->printer,
+		     _("%s:%d:%d:   in constexpr expansion of %qs"),
+		     xloc.file, xloc.line, xloc.column, s);
+      else
+	pp_verbatim (context->printer,
+		     _("%s:%d:   in constexpr expansion of %qs"),
+		     xloc.file, xloc.line, s);
+      pp_base_newline (context->printer);
+    }
 }
 
 /* Called from output_format -- during diagnostic message processing --

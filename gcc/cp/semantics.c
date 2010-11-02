@@ -5805,6 +5805,40 @@ cxx_bind_parameters_in_call (const constexpr_call *old_call, tree t,
     }
 }
 
+/* Variables and functions to manage constexpr call expansion context.
+   These do not need to be marked for PCH or GC.  */
+
+static VEC(tree,heap) *call_stack = NULL;
+static int call_stack_tick;
+static int last_cx_error_tick;
+
+static void
+push_cx_call_context (tree call)
+{
+  ++call_stack_tick;
+  if (!EXPR_HAS_LOCATION (call))
+    SET_EXPR_LOCATION (call, input_location);
+  VEC_safe_push (tree, heap, call_stack, call);
+}
+
+static void
+pop_cx_call_context (void)
+{
+  ++call_stack_tick;
+  VEC_pop (tree, call_stack);
+}
+
+VEC(tree,heap) *
+cx_error_context (void)
+{
+  VEC(tree,heap) *r = NULL;
+  if (call_stack_tick != last_cx_error_tick
+      && !VEC_empty (tree, call_stack))
+    r = call_stack;
+  last_cx_error_tick = call_stack_tick;
+  return r;
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Evaluate the call expression tree T in the context of OLD_CALL expression
    evaluation.  */
@@ -5814,13 +5848,11 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
 			  bool allow_non_constant, bool addr,
 			  bool *non_constant_p)
 {
-  location_t loc = EXPR_LOCATION (t);
+  location_t loc = EXPR_LOC_OR_HERE (t);
   tree fun = get_function_named_in_call (t);
   tree result;
   constexpr_call new_call = { NULL, NULL, NULL, 0 };
   constexpr_call **slot;
-  if (loc == UNKNOWN_LOCATION)
-    loc = input_location;
   if (TREE_CODE (fun) != FUNCTION_DECL)
     {
       /* Might be a constexpr function pointer.  */
@@ -5874,6 +5906,8 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
 			       allow_non_constant, non_constant_p);
   if (*non_constant_p)
     return t;
+
+  push_cx_call_context (t);
 
   new_call.hash
     = iterative_hash_template_arg (new_call.bindings,
@@ -5933,13 +5967,7 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
 	}
     }
 
-  if (result == error_mark_node)
-    {
-      if (!allow_non_constant)
-	error_at (loc, "in expansion of %qE", t);
-      *non_constant_p = true;
-      result = t;
-    }
+  pop_cx_call_context ();
   return result;
 }
 
