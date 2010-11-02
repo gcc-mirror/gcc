@@ -2292,10 +2292,13 @@ check_inquiry (gfc_expr *e, int not_restricted)
 	   with LEN, as required by the standard.  */
 	if (i == 5 && not_restricted
 	    && ap->expr->symtree->n.sym->ts.type == BT_CHARACTER
-	    && ap->expr->symtree->n.sym->ts.u.cl->length == NULL)
+	    && (ap->expr->symtree->n.sym->ts.u.cl->length == NULL
+		|| ap->expr->symtree->n.sym->ts.deferred))
 	  {
-	    gfc_error ("Assumed character length variable '%s' in constant "
-		       "expression at %L", e->symtree->n.sym->name, &e->where);
+	    gfc_error ("Assumed or deferred character length variable '%s' "
+			" in constant expression at %L",
+			ap->expr->symtree->n.sym->name,
+			&ap->expr->where);
 	      return MATCH_ERROR;
 	  }
 	else if (not_restricted && check_init_expr (ap->expr) == FAILURE)

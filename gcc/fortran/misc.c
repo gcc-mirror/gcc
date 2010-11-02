@@ -77,6 +77,7 @@ gfc_clear_ts (gfc_typespec *ts)
   ts->f90_type = BT_UNKNOWN;
   /* flag that says whether it's from iso_c_binding or not */
   ts->is_iso_c = 0;
+  ts->deferred = false;
 }
 
 
