@@ -5224,14 +5224,18 @@ convert_nontype_argument_function (tree type, tree expr)
    Emit an error otherwise.  */
 
 static bool
-check_valid_ptrmem_cst_expr (tree type, tree expr)
+check_valid_ptrmem_cst_expr (tree type, tree expr,
+			     tsubst_flags_t complain)
 {
   STRIP_NOPS (expr);
   if (expr && (null_ptr_cst_p (expr) || TREE_CODE (expr) == PTRMEM_CST))
     return true;
-  error ("%qE is not a valid template argument for type %qT",
-	 expr, type);
-  error ("it must be a pointer-to-member of the form `&X::Y'");
+  if (complain & tf_error)
+    {
+      error ("%qE is not a valid template argument for type %qT",
+	     expr, type);
+      error ("it must be a pointer-to-member of the form `&X::Y'");
+    }
   return false;
 }
 
@@ -5600,7 +5604,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 
       /* [temp.arg.nontype] bullet 1 says the pointer to member
          expression must be a pointer-to-member constant.  */
-      if (!check_valid_ptrmem_cst_expr (type, expr))
+      if (!check_valid_ptrmem_cst_expr (type, expr, complain))
 	return error_mark_node;
 
       /* There is no way to disable standard conversions in
@@ -5632,7 +5636,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
     {
       /* [temp.arg.nontype] bullet 1 says the pointer to member
          expression must be a pointer-to-member constant.  */
-      if (!check_valid_ptrmem_cst_expr (type, expr))
+      if (!check_valid_ptrmem_cst_expr (type, expr, complain))
 	return error_mark_node;
 
       expr = perform_qualification_conversions (type, expr);
