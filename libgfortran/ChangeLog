@@ -1,3 +1,32 @@
+2010-11-02  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/45629
+	* io/io.h: Remove setjmp.h include.
+	(st_parameter_dt): Change last_char to int, remove eof_jump.
+	* io/list_read.c (next_char): Return EOF instead of jumping.
+	(unget_char): Use int to be able to handle EOF.
+	(eat_spaces): Handle EOF return from next_char.
+	(eat_line): Likewise.
+	(eat_separator): Handle EOF return from next_char, eat_spaces,
+	eat_line.
+	(finish_separator): Likewise.
+	(convert_integer): Likewise.
+	(read_logical): Likewise.
+	(read_integer): Likewise.
+	(read_character): Likewise.
+	(parse_real): Likewise.
+	(read_complex): Likewise.
+	(read_real): Likewise.
+	(list_formatted_read_scalar): Likewise.
+	(list_formatted_read): Likewise.
+	(finish_list_read): Likewise.
+	(nml_parse_qualifier): Likewise.
+	(nml_match_name): Likewise.
+	(nml_get_obj_data): Likewise.
+	(namelist_read): Likewise.
+	* io/transfer.c (data_transfer_init): Initialize last_char.
+	(finalize_transfer): Remove jmp_buf setup.
+
 2010-10-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/46010
