@@ -1,5 +1,11 @@
 2010-11-02  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/46149
+	* tree-ssa-structalias.c (get_constraint_for_1): Properly handle
+	non-indirect MEM_REF variants.
+
+2010-11-02  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/46216
 	* tree-ssa-forwprop.c (tree_ssa_forward_propagate_single_use_vars):
 	Check if we can propagate from a POINTER_PLUS_EXPR before doing so.

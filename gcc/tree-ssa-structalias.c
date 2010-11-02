@@ -3339,9 +3339,41 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p,
 	  {
 	  case MEM_REF:
 	    {
+	      struct constraint_expr *c;
+	      varinfo_t vi, curr;
 	      tree off = double_int_to_tree (sizetype, mem_ref_offset (t));
 	      get_constraint_for_ptr_offset (TREE_OPERAND (t, 0), off, results);
 	      do_deref (results);
+
+	      /* If we are not taking the address then make sure to process
+		 all subvariables we might access.  */
+	      c = VEC_last (ce_s, *results);
+	      if (address_p
+		  || c->type != SCALAR)
+		return;
+
+	      vi = get_varinfo (c->var);
+	      curr = vi->next;
+	      if (!vi->is_full_var
+		  && curr)
+		{
+		  unsigned HOST_WIDE_INT size;
+		  if (host_integerp (TYPE_SIZE (TREE_TYPE (t)), 1))
+		    size = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (t)));
+		  else
+		    size = -1;
+		  for (; curr; curr = curr->next)
+		    {
+		      if (curr->offset - vi->offset < size)
+			{
+			  struct constraint_expr cs = *c;
+			  cs.var = curr->id;
+			  VEC_safe_push (ce_s, heap, *results, &cs);
+			}
+		      else
+			break;
+		    }
+		}
 	      return;
 	    }
 	  case ARRAY_REF:
