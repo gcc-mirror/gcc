@@ -1,3 +1,9 @@
+2010-11-02  Alan Modra  <amodra@gmail.com>
+
+	PR binutils/12110
+	* configure.ac: Error when source path contains spaces.
+	* configure: Regenerate.
+
 2010-10-23  James E. Wilson  <wilson@codesourcery.com>
 
 	* MAINTAINERS: Update my email address.
