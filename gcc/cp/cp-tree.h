@@ -5252,6 +5252,7 @@ extern void finish_handler			(tree);
 extern void finish_cleanup			(tree, tree);
 extern bool literal_type_p (tree);
 extern tree validate_constexpr_fundecl (tree);
+extern tree register_constexpr_fundef (tree, tree);
 extern tree ensure_literal_type_for_constexpr_object (tree);
 
 enum {
