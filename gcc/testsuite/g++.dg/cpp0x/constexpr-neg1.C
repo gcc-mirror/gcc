@@ -18,7 +18,7 @@ constexpr pixel::pixel(int a)
 
 // error: square not defined, so small(2) not constant (5.19), so constexpr
 // not satisfied
-constexpr pixel small(2);	// { dg-error "" }
+constexpr pixel small(2);	// { dg-message "in constexpr expansion" }
 
 // error: not for parameters
 int next(constexpr int x) {	// { dg-error "parameter" }

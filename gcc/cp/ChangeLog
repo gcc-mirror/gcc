@@ -1,5 +1,13 @@
 2010-11-01  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (call_stack, call_stack_tick, cx_error_context): New.
+	(last_cx_error_tick, push_cx_call_context, pop_cx_call_context): New.
+	(cxx_eval_call_expression): Call push/pop_cx_call_context instead
+	of giving follow-on errors.
+	* error.c (maybe_print_constexpr_context): New.
+	(cp_diagnostic_starter): Call it.
+	* cp-tree.h: Declare cx_error_context.
+
 	* semantics.c (cxx_eval_constant_expression): Explain
 	unacceptable use of variable better.
 
