@@ -1459,6 +1459,11 @@ darwin_asm_lto_end (void)
   saved_asm_out_file = NULL;
 }
 
+static void
+darwin_asm_dwarf_section (const char *name, unsigned int flags, tree decl);
+
+/*  Called for the TARGET_ASM_NAMED_SECTION hook.  */
+
 void
 darwin_asm_named_section (const char *name,
 			  unsigned int flags,
@@ -1495,6 +1500,8 @@ darwin_asm_named_section (const char *name,
       gcc_assert (lto_section_names_offset > 0
 		  && lto_section_names_offset < ((unsigned) 1 << 31));
     }
+  else if (strncmp (name, "__DWARF,", 8) == 0)
+    darwin_asm_dwarf_section (name, flags, decl);
   else
     fprintf (asm_out_file, "\t.section %s\n", name);
 }
@@ -1675,6 +1682,73 @@ darwin_assemble_visibility (tree decl, int vis)
 	     "not supported in this configuration; ignored");
 }
 
+/* VEC Used by darwin_asm_dwarf_section.
+   Maybe a hash tab would be better here - but the intention is that this is
+   a very short list (fewer than 16 items) and each entry should (ideally, 
+   eventually) only be presented once.
+
+   A structure to hold a dwarf debug section used entry.  */
+
+typedef struct GTY(()) dwarf_sect_used_entry {
+  const char *name;
+  unsigned count;
+}
+dwarf_sect_used_entry;
+
+DEF_VEC_O(dwarf_sect_used_entry);
+DEF_VEC_ALLOC_O(dwarf_sect_used_entry, gc);
+
+/* A list of used __DWARF sections.  */
+static GTY (()) VEC (dwarf_sect_used_entry, gc) * dwarf_sect_names_table;
+
+/* This is called when we are asked to assemble a named section and the 
+   name begins with __DWARF,.  We keep a list of the section names (without
+   the __DWARF, prefix) and use this to emit our required start label on the
+   first switch to each section.  */
+
+static void
+darwin_asm_dwarf_section (const char *name, unsigned int flags,
+			  tree ARG_UNUSED (decl))
+{
+  unsigned i;
+  int namelen;
+  const char * sname;
+  dwarf_sect_used_entry *ref;
+  bool found = false;
+  gcc_assert ((flags & (SECTION_DEBUG | SECTION_NAMED))
+		    == (SECTION_DEBUG | SECTION_NAMED));
+  /* We know that the name starts with __DWARF,  */
+  sname = name + 8;
+  namelen = strchr (sname, ',') - sname;
+  gcc_assert (namelen);
+  if (dwarf_sect_names_table == NULL)
+    dwarf_sect_names_table = VEC_alloc (dwarf_sect_used_entry, gc, 16);
+  else
+    for (i = 0; 
+	 VEC_iterate (dwarf_sect_used_entry, dwarf_sect_names_table, i, ref);
+	 i++)
+      {
+	if (!ref)
+	  break;
+	if (!strcmp (ref->name, sname))
+	  {
+	    found = true;
+	    ref->count++;
+	    break;
+	  }
+      }
+
+  fprintf (asm_out_file, "\t.section %s\n", name);
+  if (!found)
+    {
+      dwarf_sect_used_entry e;
+      fprintf (asm_out_file, "Lsection%.*s:\n", namelen, sname);
+      e.count = 1;
+      e.name = xstrdup (sname);
+      VEC_safe_push (dwarf_sect_used_entry, gc, dwarf_sect_names_table, &e);
+    }
+}
+
 /* Output a difference of two labels that will be an assembly time
    constant if the two labels are local.  (.long lab1-lab2 will be
    very different if lab1 is at the boundary between two sections; it
@@ -1703,49 +1777,6 @@ darwin_asm_output_dwarf_delta (FILE *file, int size,
     fprintf (file, "\n\t%s L$set$%d", directive, darwin_dwarf_label_counter++);
 }
 
-/* Output labels for the start of the DWARF sections if necessary.
-   Initialize the stuff we need for LTO long section names support.  */
-void
-darwin_file_start (void)
-{
-  if (write_symbols == DWARF2_DEBUG)
-    {
-      static const char * const debugnames[] =
-	{
-	  DEBUG_FRAME_SECTION,
-	  DEBUG_INFO_SECTION,
-	  DEBUG_ABBREV_SECTION,
-	  DEBUG_ARANGES_SECTION,
-	  DEBUG_MACINFO_SECTION,
-	  DEBUG_LINE_SECTION,
-	  DEBUG_LOC_SECTION,
-	  DEBUG_PUBNAMES_SECTION,
-	  DEBUG_PUBTYPES_SECTION,
-	  DEBUG_STR_SECTION,
-	  DEBUG_RANGES_SECTION
-	};
-      size_t i;
-
-      for (i = 0; i < ARRAY_SIZE (debugnames); i++)
-	{
-	  int namelen;
-
-	  switch_to_section (get_section (debugnames[i], SECTION_DEBUG, NULL));
-
-	  gcc_assert (strncmp (debugnames[i], "__DWARF,", 8) == 0);
-	  gcc_assert (strchr (debugnames[i] + 8, ','));
-
-	  namelen = strchr (debugnames[i] + 8, ',') - (debugnames[i] + 8);
-	  fprintf (asm_out_file, "Lsection%.*s:\n", namelen, debugnames[i] + 8);
-	}
-    }
-
-  /* We fill this obstack with the complete section text for the lto section
-     names to write in darwin_file_end.  */
-  obstack_init (&lto_section_names_obstack);
-  lto_section_names_offset = 0;
-}
-
 /* Output an offset in a DWARF section on Darwin.  On Darwin, DWARF section
    offsets are not represented using relocs in .o files; either the
    section never leaves the .o file, or the linker or other tool is
@@ -1766,6 +1797,23 @@ darwin_asm_output_dwarf_offset (FILE *file, int size, const char * lab,
   sprintf (sname, "*Lsection%.*s", namelen, base->named.name + 8);
   darwin_asm_output_dwarf_delta (file, size, lab, sname);
 }
+
+/* Called from the within the TARGET_ASM_FILE_START for each target. 
+  Initialize the stuff we need for LTO long section names support.  */
+
+void
+darwin_file_start (void)
+{
+  /* We fill this obstack with the complete section text for the lto section
+     names to write in darwin_file_end.  */
+  obstack_init (&lto_section_names_obstack);
+  lto_section_names_offset = 0;
+}
+
+/* Called for the TARGET_ASM_FILE_END hook.
+   Emit the mach-o pic indirection data, the lto data and, finally a flag
+   to tell the linker that it can break the file object into sections and
+   move those around for efficiency.  */
 
 void
 darwin_file_end (void)
