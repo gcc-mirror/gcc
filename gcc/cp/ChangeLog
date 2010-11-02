@@ -8,6 +8,7 @@
 	complain parameter down to check_valid_ptrmem_cst_expr.
 
 2010-11-02  Dodji Seketeli  <dodji@redhat.com>
+
 	PR c++/45606
 	* cp-tree.h (TEMPLATE_TYPE_PARM_SIBLING_PARMS): Remove.
 	(struct template_parm_index_s)<num_siblings>: New field.
