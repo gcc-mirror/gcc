@@ -221,7 +221,14 @@ target_configdirs=`echo ${target_libraries} ${target_tools}`
 build_configdirs=`echo ${build_libs} ${build_tools}`
 
 m4_divert_text([PARSE_ARGS],
-[ac_subdirs_all=`cd $srcdir && echo */configure | sed 's,/configure,,g'`
+[case $srcdir in
+  *" "*)
+m4_pushdef([AS_MESSAGE_LOG_FD], [])dnl
+    AC_MSG_ERROR([path to source, $srcdir, contains spaces])
+m4_popdef([AS_MESSAGE_LOG_FD])dnl
+    ;;
+esac
+ac_subdirs_all=`cd $srcdir && echo */configure | sed 's,/configure,,g'`
 ])
 
 ################################################################################

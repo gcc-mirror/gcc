@@ -1393,6 +1393,11 @@ fi
 case $srcdir in
 */) srcdir=`expr "X$srcdir" : 'X\(.*[^/]\)' \| "X$srcdir" : 'X\(.*\)'`;;
 esac
+case $srcdir in
+  *" "*)
+    as_fn_error "path to source, $srcdir, contains spaces"
+    ;;
+esac
 ac_subdirs_all=`cd $srcdir && echo */configure | sed 's,/configure,,g'`
 
 for ac_var in $ac_precious_vars; do
