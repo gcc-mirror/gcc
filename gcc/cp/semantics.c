@@ -6513,7 +6513,36 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
       if (DECL_P (r))
 	{
 	  if (!allow_non_constant)
-	    error ("%qD cannot appear in a constant expression", r);
+	    {
+	      tree type = TREE_TYPE (r);
+	      error ("the value of %qD is not usable in a constant "
+		     "expression", r);
+	      if (INTEGRAL_OR_ENUMERATION_TYPE_P (type))
+		{
+		  if (!CP_TYPE_CONST_P (type))
+		    inform (DECL_SOURCE_LOCATION (r),
+			    "%q#D is not const", r);
+		  else if (CP_TYPE_VOLATILE_P (type))
+		    inform (DECL_SOURCE_LOCATION (r),
+			    "%q#D is volatile", r);
+		  else if (!DECL_INITIAL (r))
+		    inform (DECL_SOURCE_LOCATION (r),
+			    "%qD was not initialized with a constant "
+			    "expression", r);
+		  else
+		    gcc_unreachable ();
+		}
+	      else
+		{
+		  if (cxx_dialect >= cxx0x && !DECL_DECLARED_CONSTEXPR_P (r))
+		    inform (DECL_SOURCE_LOCATION (r),
+			    "%qD was not declared %<constexpr%>", r);
+		  else
+		    inform (DECL_SOURCE_LOCATION (r),
+			    "%qD does not have integral or enumeration type",
+			    r);
+		}
+	    }
 	  *non_constant_p = true;
 	}
       break;
