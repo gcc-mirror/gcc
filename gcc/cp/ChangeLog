@@ -1,3 +1,17 @@
+2010-11-01  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (decl_constant_var_p): New fn.
+	(decl_maybe_constant_var_p): New fn.
+	(mark_used): Rework instantiation of things needed for constant
+	expressions.
+	* cp-tree.h: Declare new fns.
+	* pt.c (instantiate_decl): Handle cp_unevaluated_operand.
+	(always_instantiate_p): Use decl_maybe_constant_var_p.
+	(instantiate_decl): Don't defer constexpr functions.
+	* repo.c (repo_emit_p): Use decl_maybe_constant_var_p.
+	* semantics.c (finish_id_expression): Use decl_constant_var_p.
+	Check for valid name in constant expr after mark_used.
+
 2010-10-31  Jason Merrill  <jason@redhat.com>
 
 	* class.c (is_really_empty_class): Work when type is not complete.
