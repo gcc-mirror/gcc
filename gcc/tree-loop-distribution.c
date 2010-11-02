@@ -317,27 +317,20 @@ static void
 prop_phis (basic_block b)
 {
   gimple_stmt_iterator psi;
-  gimple_seq phis = phi_nodes (b);
 
-  for (psi = gsi_start (phis); !gsi_end_p (psi); )
+  for (psi = gsi_start_phis (b); !gsi_end_p (psi); )
     {
       gimple phi = gsi_stmt (psi);
-      tree def = gimple_phi_result (phi), use = gimple_phi_arg_def (phi, 0);
-
-      gcc_assert (gimple_phi_num_args (phi) == 1);
+      tree def = gimple_phi_result (phi);
 
       if (!is_gimple_reg (def))
-	{
-	  imm_use_iterator iter;
-	  use_operand_p use_p;
-	  gimple stmt;
-
-	  FOR_EACH_IMM_USE_STMT (stmt, iter, def)
-	    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-	      SET_USE (use_p, use);
-	}
+	mark_virtual_phi_result_for_renaming (phi);
       else
-	replace_uses_by (def, use);
+	{
+	  tree use = gimple_phi_arg_def (phi, 0);
+	  gcc_assert (gimple_phi_num_args (phi) == 1);
+	  replace_uses_by (def, use);
+	}
 
       remove_phi_node (&psi, true);
     }

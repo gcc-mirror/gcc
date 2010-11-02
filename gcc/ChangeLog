@@ -1,3 +1,9 @@
+2010-11-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46177
+	* tree-loop-distribution.c (prop_phis): Use
+	mark_virtual_phi_result_for_renaming.
+
 2010-11-02  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/46120
