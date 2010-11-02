@@ -554,21 +554,21 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	case 0x1e:
 	case 0x1f:
 	case 0x2e:
-	  /* FIXME: Optimize for Nehalem.  */
-	  cpu = "core2";
+	  /* Nehalem.  */
+	  cpu = "corei7";
 	  break;
 	case 0x25:
 	case 0x2f:
-	  /* FIXME: Optimize for Westmere.  */
-	  cpu = "core2";
+	  /* Westmere.  */
+	  cpu = "corei7";
 	  break;
 	case 0x17:
 	case 0x1d:
-	  /* Penryn.  FIXME: -mtune=core2 is slower than -mtune=generic  */
+	  /* Penryn.  */
 	  cpu = "core2";
 	  break;
 	case 0x0f:
-	  /* Merom.  FIXME: -mtune=core2 is slower than -mtune=generic  */
+	  /* Merom.  */
 	  cpu = "core2";
 	  break;
 	default:

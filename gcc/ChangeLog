@@ -1,3 +1,8 @@
+2010-11-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Updated
+	for Intel Core 2 and Core i7.
+
 2010-11-02  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	Model decoder of Core 2/i7 for multipass scheduling.
