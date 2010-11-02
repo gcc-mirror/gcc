@@ -1,6 +1,36 @@
 2010-11-01  Gabriel Dos Reis  <gdr@cse.tamu.edu>
 	    Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (constexpr_call): New datatype.
+	(constexpr_call_table): New global table.
+	(constexpr_call_hash): New.
+	(constexpr_call_equal): Likewise.
+	(maybe_initialize_constexpr_call_table): Likewise.
+	(lookup_parameter_binding): Likewise.
+	(cxx_eval_builtin_function_call): Likewise.
+	(cxx_bind_parameters_in_call): Likewise.
+	(cxx_eval_call_expression): Likewise.
+	(cxx_eval_unary_expression): Likewise.
+	(cxx_eval_binary_expression): Likewise.
+	(cxx_eval_conditional_expression): Likewise.
+	(cxx_eval_array_reference): Likewise.
+	(cxx_eval_component_reference): Likewise.
+	(cxx_eval_logical_expression): Likewise.
+	(cxx_eval_object_construction): Likewise.
+	(cxx_eval_constant_expression): Likewise.
+	(cxx_eval_indirect_ref): Likewise.
+	(cxx_constant_value): Likewise.
+	(cxx_eval_bare_aggregate): Likewise.
+	(adjust_temp_type): New.
+	(reduced_constant_expression_p): New.
+	(verify_constant): New.
+	(cxx_eval_vec_init, cxx_eval_vec_init_1): New.
+	(cxx_eval_outermost_constant_expr): New.
+	(maybe_constant_value, maybe_constant_init): New.
+	(cxx_eval_constant_expression): Use them.
+	* pt.c (iterative_hash_template_arg): No longer static.
+	* cp-tree.h: Declare fns.
+
 	* cp-tree.h (register_constexpr_fundef): Declare.
 	* decl.c (maybe_save_function_definition): New.
 	(finish_function): Use it.
