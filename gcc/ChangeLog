@@ -1,3 +1,8 @@
+2010-11-01  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (TARGET_DELEGITIMIZE_ADDRESS): Redefine.
+	(sh_delegitimize_address): New function.
+
 2010-11-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/alpha/alpha.h (WORD_SWITCH_TAKES_ARG): Remove.
