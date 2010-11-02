@@ -2936,9 +2936,9 @@ finish_case_label (location_t loc, tree low_value, tree high_value)
     return error_mark_node;
 
   if (low_value)
-    low_value = decl_constant_value (low_value);
+    low_value = cxx_constant_value (low_value);
   if (high_value)
-    high_value = decl_constant_value (high_value);
+    high_value = cxx_constant_value (high_value);
 
   r = c_add_case_label (loc, switch_stack->cases, cond,
 			SWITCH_STMT_TYPE (switch_stack->switch_stmt),
@@ -4530,7 +4530,8 @@ grok_reference_init (tree decl, tree type, tree init, tree *cleanup)
    grok_reference_init.  */
 
 static tree
-build_init_list_var_init (tree decl, tree type, tree init, tree *cleanup)
+build_init_list_var_init (tree decl, tree type, tree init, tree *array_init,
+			  tree *cleanup)
 {
   tree aggr_init, array, arrtype;
   init = perform_implicit_conversion (type, init, tf_warning_or_error);
@@ -4538,8 +4539,6 @@ build_init_list_var_init (tree decl, tree type, tree init, tree *cleanup)
     return error_mark_node;
 
   aggr_init = TARGET_EXPR_INITIAL (init);
-  init = build2 (INIT_EXPR, type, decl, init);
-
   array = AGGR_INIT_EXPR_ARG (aggr_init, 1);
   arrtype = TREE_TYPE (array);
   STRIP_NOPS (array);
@@ -4549,12 +4548,10 @@ build_init_list_var_init (tree decl, tree type, tree init, tree *cleanup)
      static variable and we don't need to do anything here.  */
   if (decl && TREE_CODE (array) == TARGET_EXPR)
     {
-      tree subinit;
-      tree var = set_up_extended_ref_temp (decl, array, cleanup, &subinit);
+      tree var = set_up_extended_ref_temp (decl, array, cleanup, array_init);
       var = build_address (var);
       var = convert (arrtype, var);
       AGGR_INIT_EXPR_ARG (aggr_init, 1) = var;
-      init = build2 (COMPOUND_EXPR, TREE_TYPE (init), subinit, init);
     }
   return init;
 }
@@ -5250,6 +5247,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 {
   tree type = TREE_TYPE (decl);
   tree init_code = NULL;
+  tree extra_init = NULL_TREE;
   tree core_type;
 
   /* Things that are going to be initialized need to have complete
@@ -5304,16 +5302,21 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
       gcc_assert (init != NULL_TREE);
       init = NULL_TREE;
     }
-  else if (!DECL_EXTERNAL (decl) && TREE_CODE (type) == REFERENCE_TYPE)
+  else if (!init && DECL_REALLY_EXTERN (decl))
+    ;
+  else if (TREE_CODE (type) == REFERENCE_TYPE)
     init = grok_reference_init (decl, type, init, cleanup);
-  else if (init)
+  else if (init || TYPE_NEEDS_CONSTRUCTING (type))
     {
+      if (!init)
+	check_for_uninitialized_const_var (decl);
       /* Do not reshape constructors of vectors (they don't need to be
 	 reshaped.  */
-      if (BRACE_ENCLOSED_INITIALIZER_P (init))
+      else if (BRACE_ENCLOSED_INITIALIZER_P (init))
 	{
 	  if (is_std_init_list (type))
-	    return build_init_list_var_init (decl, type, init, cleanup);
+	    init = build_init_list_var_init (decl, type, init,
+					     &extra_init, cleanup);
 	  else if (TYPE_NON_AGGREGATE_CLASS (type))
 	    {
 	      /* Don't reshape if the class has constructors.  */
@@ -5340,9 +5343,46 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 
       if (TYPE_NEEDS_CONSTRUCTING (type)
 	  || (CLASS_TYPE_P (type)
-	      && !BRACE_ENCLOSED_INITIALIZER_P (init)))
-	return build_aggr_init_full_exprs (decl, init, flags);
-      else if (TREE_CODE (init) != TREE_VEC)
+	      && !(init && BRACE_ENCLOSED_INITIALIZER_P (init))))
+	{
+	  init_code = build_aggr_init_full_exprs (decl, init, flags);
+
+	  /* If this is a constexpr initializer, expand_default_init will
+	     have returned an INIT_EXPR rather than a CALL_EXPR.  In that
+	     case, pull the initializer back out and pass it down into
+	     store_init_value.  */
+	  while (TREE_CODE (init_code) == EXPR_STMT
+		 || TREE_CODE (init_code) == CONVERT_EXPR)
+	    init_code = TREE_OPERAND (init_code, 0);
+	  if (TREE_CODE (init_code) == INIT_EXPR)
+	    {
+	      init = TREE_OPERAND (init_code, 1);
+	      init_code = NULL_TREE;
+	      /* Don't call digest_init; it's unnecessary and will complain
+		 about aggregate initialization of non-aggregate classes.  */
+	      flags |= LOOKUP_ALREADY_DIGESTED;
+	    }
+	  else if (DECL_DECLARED_CONSTEXPR_P (decl))
+	    {
+	      /* Declared constexpr, but no suitable initializer; massage
+		 init appropriately so we can pass it into store_init_value
+		 for the error.  */
+	      if (init && BRACE_ENCLOSED_INITIALIZER_P (init))
+		init = finish_compound_literal (type, init);
+	      else if (CLASS_TYPE_P (type)
+		       && (!init || TREE_CODE (init) == TREE_LIST))
+		{
+		  init = build_functional_cast (type, init, tf_none);
+		  if (init != error_mark_node)
+		    TARGET_EXPR_DIRECT_INIT_P (init) = true;
+		}
+	      init_code = NULL_TREE;
+	    }
+	  else
+	    init = NULL_TREE;
+	}
+
+      if (init && TREE_CODE (init) != TREE_VEC)
 	{
 	  init_code = store_init_value (decl, init, flags);
 	  if (pedantic && TREE_CODE (type) == ARRAY_TYPE
@@ -5354,27 +5394,38 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 	  init = NULL;
 	}
     }
-  else if (DECL_EXTERNAL (decl))
-    ;
-  else if (TYPE_P (type) && TYPE_NEEDS_CONSTRUCTING (type))
+  else
     {
-      check_for_uninitialized_const_var (decl);
-      return build_aggr_init_full_exprs (decl, init, flags);
-    }
-  else if (MAYBE_CLASS_TYPE_P (core_type = strip_array_types (type)))
-    {
-      if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type)
-	  || CLASSTYPE_REF_FIELDS_NEED_INIT (core_type))
+      if (CLASS_TYPE_P (core_type = strip_array_types (type))
+	  && (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type)
+	      || CLASSTYPE_REF_FIELDS_NEED_INIT (core_type)))
 	diagnose_uninitialized_cst_or_ref_member (core_type, /*using_new=*/false,
 						  /*complain=*/true);
 
       check_for_uninitialized_const_var (decl);
     }
-  else
-    check_for_uninitialized_const_var (decl);
 
   if (init && init != error_mark_node)
     init_code = build2 (INIT_EXPR, type, decl, init);
+
+  if (extra_init)
+    init_code = add_stmt_to_compound (extra_init, init_code);
+
+  if (init_code && DECL_IN_AGGR_P (decl))
+    {
+      static int explained = 0;
+
+      if (cxx_dialect < cxx0x)
+	error ("initializer invalid for static member with constructor");
+      else
+	error ("non-constant in-class initialization invalid for static "
+	       "member %qD", decl);
+      if (!explained)
+	{
+	  error ("(an out of class initialization is required)");
+	  explained = 1;
+	}
+    }
 
   return init_code;
 }
@@ -5746,7 +5797,22 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	    DECL_INITIAL (decl) = NULL_TREE;
 	}
     }
-    
+
+  if (init && TREE_CODE (decl) == VAR_DECL)
+    {
+      DECL_NONTRIVIALLY_INITIALIZED_P (decl) = 1;
+      /* FIXME we rely on TREE_CONSTANT below; basing that on
+	 init_const_expr_p is probably wrong for C++0x.  */
+      if (init_const_expr_p)
+	{
+	  /* Set these flags now for C++98 templates.  We'll update the
+	     flags in store_init_value for instantiations and C++0x.  */
+	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = 1;
+	  if (decl_maybe_constant_var_p (decl))
+	    TREE_CONSTANT (decl) = 1;
+	}
+    }
+
   if (processing_template_decl)
     {
       bool type_dependent_p;
@@ -5763,22 +5829,16 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  DECL_INITIAL (decl) = NULL_TREE;
 	}
 
-      if (init && init_const_expr_p && TREE_CODE (decl) == VAR_DECL)
-	{
-	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = 1;
-	  if (DECL_INTEGRAL_CONSTANT_VAR_P (decl))
-	    TREE_CONSTANT (decl) = 1;
-	}
-
       /* Generally, initializers in templates are expanded when the
-	 template is instantiated.  But, if DECL is an integral
-	 constant static data member, then it can be used in future
-	 integral constant expressions, and its value must be
-	 available. */
+	 template is instantiated.  But, if DECL is a variable constant
+	 then it can be used in future constant expressions, so its value
+	 must be available. */
       if (!(init
 	    && DECL_CLASS_SCOPE_P (decl)
-	    && DECL_INTEGRAL_CONSTANT_VAR_P (decl)
+	    /* We just set TREE_CONSTANT appropriately; see above.  */
+	    && TREE_CONSTANT (decl)
 	    && !type_dependent_p
+	    /* FIXME non-value-dependent constant expression  */
 	    && !value_dependent_init_p (init)))
 	{
 	  if (init)
@@ -5891,16 +5951,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 					(type, TREE_TYPE (TREE_TYPE (jclass))))
 		error ("Java object %qD not allocated with %<new%>", decl);
 	      init = NULL_TREE;
-	    }
-	  if (init)
-	    {
-	      DECL_NONTRIVIALLY_INITIALIZED_P (decl) = 1;
-	      if (init_const_expr_p)
-		{
-		  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = 1;
-		  if (DECL_INTEGRAL_CONSTANT_VAR_P (decl))
-		    TREE_CONSTANT (decl) = 1;
-		}
 	    }
 	  init = check_initializer (decl, init, flags, &cleanup);
 	  /* Thread-local storage cannot be dynamically initialized.  */
@@ -6407,9 +6457,8 @@ expand_static_init (tree decl, tree init)
   gcc_assert (TREE_CODE (decl) == VAR_DECL);
   gcc_assert (TREE_STATIC (decl));
 
-  /* Some variables require no initialization.  */
+  /* Some variables require no dynamic initialization.  */
   if (!init
-      && !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))
       && TYPE_HAS_TRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
     return;
 
@@ -7417,36 +7466,67 @@ check_static_variable_definition (tree decl, tree type)
    name of the thing being declared.  */
 
 tree
-compute_array_index_type (tree name, tree size)
+compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 {
   tree type;
   tree itype;
+  tree osize = size;
   tree abi_1_itype = NULL_TREE;
 
   if (error_operand_p (size))
     return error_mark_node;
 
   type = TREE_TYPE (size);
-  /* The array bound must be an integer type.  */
-  if (!dependent_type_p (type) && !INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
+  /* type_dependent_expression_p? */
+  if (!dependent_type_p (type))
     {
-      if (name)
-	error ("size of array %qD has non-integral type %qT", name, type);
+      mark_rvalue_use (size);
+
+      if (cxx_dialect < cxx0x && TREE_CODE (size) == NOP_EXPR
+	  && TREE_SIDE_EFFECTS (size))
+	/* In C++98, we mark a non-constant array bound with a magic
+	   NOP_EXPR with TREE_SIDE_EFFECTS; don't fold in that case.  */;
       else
-	error ("size of array has non-integral type %qT", type);
-      size = integer_one_node;
-      type = TREE_TYPE (size);
+	{
+	  size = fold_non_dependent_expr (size);
+
+	  if (CLASS_TYPE_P (type)
+	      && CLASSTYPE_LITERAL_P (type))
+	    {
+	      size = build_expr_type_conversion (WANT_INT, size, true);
+	      if (size == error_mark_node)
+		return error_mark_node;
+	      type = TREE_TYPE (size);
+	    }
+
+	  size = maybe_constant_value (size);
+	}
+
+      if (error_operand_p (size))
+	return error_mark_node;
+
+      /* The array bound must be an integer type.  */
+      if (!INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
+	{
+	  if (!(complain & tf_error))
+	    return error_mark_node;
+	  if (name)
+	    error ("size of array %qD has non-integral type %qT", name, type);
+	  else
+	    error ("size of array has non-integral type %qT", type);
+	  size = integer_one_node;
+	  type = TREE_TYPE (size);
+	}
     }
 
   /* A type is dependent if it is...an array type constructed from any
      dependent type or whose size is specified by a constant expression
      that is value-dependent.  */
   /* We can only call value_dependent_expression_p on integral constant
-     expressions; the parser adds a dummy NOP_EXPR with TREE_SIDE_EFFECTS
-     set if this isn't one.  */
+     expressions; treat non-constant expressions as dependent, too.  */
   if (processing_template_decl
       && (dependent_type_p (type)
-	  || TREE_SIDE_EFFECTS (size) || value_dependent_expression_p (size)))
+	  || !TREE_CONSTANT (size) || value_dependent_expression_p (size)))
     {
       /* We cannot do any checking for a SIZE that isn't known to be
 	 constant. Just build the index type and mark that it requires
@@ -7467,17 +7547,7 @@ compute_array_index_type (tree name, tree size)
        would have, but with TYPE_CANONICAL set to the "right"
        value that the current ABI would provide. */
     abi_1_itype = build_index_type (build_min (MINUS_EXPR, sizetype,
-					       size, integer_one_node));
-
-  /* The size might be the result of a cast.  */
-  STRIP_TYPE_NOPS (size);
-
-  size = mark_rvalue_use (size);
-
-  /* It might be a const variable or enumeration constant.  */
-  size = integral_constant_value (size);
-  if (error_operand_p (size))
-    return error_mark_node;
+					       osize, integer_one_node));
 
   /* Normally, the array-bound will be a constant.  */
   if (TREE_CODE (size) == INTEGER_CST)
@@ -7489,24 +7559,37 @@ compute_array_index_type (tree name, tree size)
       /* An array must have a positive number of elements.  */
       if (INT_CST_LT (size, integer_zero_node))
 	{
+	  if (!(complain & tf_error))
+	    return error_mark_node;
 	  if (name)
 	    error ("size of array %qD is negative", name);
 	  else
 	    error ("size of array is negative");
 	  size = integer_one_node;
 	}
-      /* As an extension we allow zero-sized arrays.  We always allow
-	 them in system headers because glibc uses them.  */
-      else if (integer_zerop (size) && !in_system_header)
+      /* As an extension we allow zero-sized arrays.  */
+      else if (integer_zerop (size))
 	{
-	  if (name)
+	  if (!(complain & tf_error))
+	    /* We must fail if performing argument deduction (as
+	       indicated by the state of complain), so that
+	       another substitution can be found.  */
+	    return error_mark_node;
+	  else if (in_system_header)
+	    /* Allow them in system headers because glibc uses them.  */;
+	  else if (name)
 	    pedwarn (input_location, OPT_pedantic, "ISO C++ forbids zero-size array %qD", name);
 	  else
 	    pedwarn (input_location, OPT_pedantic, "ISO C++ forbids zero-size array");
 	}
     }
-  else if (TREE_CONSTANT (size))
+  else if (TREE_CONSTANT (size)
+	   /* We don't allow VLAs at non-function scopes, or during
+	      tentative template substitution.  */
+	   || !at_function_scope_p () || !(complain & tf_error))
     {
+      if (!(complain & tf_error))
+	return error_mark_node;
       /* `(int) &fn' is not a valid array bound.  */
       if (name)
 	error ("size of array %qD is not an integral constant-expression",
@@ -7562,6 +7645,8 @@ compute_array_index_type (tree name, tree size)
       else if (TREE_CODE (itype) == INTEGER_CST
 	       && TREE_OVERFLOW (itype))
 	{
+	  if (!(complain & tf_error))
+	    return error_mark_node;
 	  error ("overflow in array dimension");
 	  TREE_OVERFLOW (itype) = 0;
 	}
@@ -7673,7 +7758,7 @@ create_array_type_for_decl (tree name, tree type, tree size)
 
   /* Figure out the index type for the array.  */
   if (size)
-    itype = compute_array_index_type (name, size);
+    itype = compute_array_index_type (name, size, tf_warning_or_error);
 
   /* [dcl.array]
      T is called the array element type; this type shall not be [...] an
@@ -9411,7 +9496,8 @@ grokdeclarator (const cp_declarator *declarator,
 	if (!staticp && TREE_CODE (type) == ARRAY_TYPE
 	    && TYPE_DOMAIN (type) == NULL_TREE)
 	  {
-	    tree itype = compute_array_index_type (dname, integer_zero_node);
+	    tree itype = compute_array_index_type (dname, integer_zero_node,
+						   tf_warning_or_error);
 	    type = build_cplus_array_type (TREE_TYPE (type), itype);
 	  }
 
@@ -11732,7 +11818,7 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
       /* Validate and default VALUE.  */
       if (value != NULL_TREE)
 	{
-	  value = integral_constant_value (value);
+	  value = cxx_constant_value (value);
 
 	  if (TREE_CODE (value) == INTEGER_CST)
 	    {

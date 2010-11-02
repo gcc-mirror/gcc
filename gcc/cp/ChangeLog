@@ -1,6 +1,53 @@
 2010-11-01  Gabriel Dos Reis  <gdr@cse.tamu.edu>
 	    Jason Merrill  <jason@redhat.com>
 
+	* call.c (null_ptr_cst_p): Use maybe_constant_value.
+	(set_up_extended_ref_temp): Support constant initialization.
+	(initialize_reference): Adjust.
+	* class.c (check_bitfield_decl): Use cxx_constant_value.
+	* cvt.c (ocp_convert): Don't use integral_constant_value when
+	converting to class type.
+	* decl.c (finish_case_label): Use maybe_constant_value.
+	(build_init_list_var_init): Support constant initialization.
+	(check_initializer): Likewise.  Reorganize.
+	(cp_finish_decl): Likewise.
+	(expand_static_init): Likewise.
+	(compute_array_index_type): Use maybe_constant_value.
+	Add complain parm.
+	(create_array_type_for_decl, grokdeclarator): Pass it.
+	(build_enumerator): Use cxx_constant_value.
+	* decl2.c (grokfield): Use maybe_constant_init.
+	* except.c (check_noexcept_r): Handle constexpr.
+	(build_noexcept_spec): Use maybe_constant_value.
+	* init.c (expand_default_init): Support constant initialization.
+	(build_vec_init): Likewise.
+	(constant_value_1): Adjust.
+	(build_new_1): Adjust.
+	* parser.c (cp_parser_constant_expression): Allow non-integral
+	in C++0x mode.
+	(cp_parser_direct_declarator): Don't fold yet in C++0x mode.
+	(cp_parser_initializer_clause): Toss folded result if non-constant.
+	* pt.c (fold_decl_constant_value): Remove.
+	(convert_nontype_argument): Use maybe_constant_value.  Give clearer
+	error about overflow.
+	(tsubst): Move array bounds handling into compute_array_index_type.
+	(value_dependent_expression_p): Handle constant CALL_EXPR.
+	(tsubst_decl): Don't set
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P yet.
+	(tsubst_expr) [DECL_EXPR]: Pass it into cp_finish_decl.
+	(instantiate_decl): Here too.
+	* semantics.c (finish_static_assert): Use maybe_constant_value.
+	(ensure_literal_type_for_constexpr_object): Make sure type is complete.
+	(potential_constant_expression): Use maybe_constant_value.
+	* tree.c (cast_valid_in_integral_constant_expression_p): Any cast
+	is potentially valid in C++0x.
+	* typeck2.c (store_init_value): Handle constant init.
+	(check_narrowing): Use maybe_constant_value.
+	(build_functional_cast): Set TREE_CONSTANT on literal T().
+	* cp-tree.h (DECL_INTEGRAL_CONSTANT_VAR_P): Remove.
+	(LOOKUP_ALREADY_DIGESTED): New.
+	(compute_array_index_type): Adjust prototype.
+
 	* semantics.c (constexpr_call): New datatype.
 	(constexpr_call_table): New global table.
 	(constexpr_call_hash): New.

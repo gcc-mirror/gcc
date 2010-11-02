@@ -1440,8 +1440,20 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
   if (parms != NULL)
     release_tree_vector (parms);
 
+  if (exp == true_exp && TREE_CODE (rval) == CALL_EXPR)
+    {
+      tree fn = get_callee_fndecl (rval);
+      if (DECL_DECLARED_CONSTEXPR_P (fn))
+	{
+	  tree e = maybe_constant_value (rval);
+	  if (TREE_CONSTANT (e))
+	    rval = build2 (INIT_EXPR, type, exp, e);
+	}
+    }
+
+  /* FIXME put back convert_to_void?  */
   if (TREE_SIDE_EFFECTS (rval))
-    finish_expr_stmt (convert_to_void (rval, ICV_CAST, complain));
+    finish_expr_stmt (rval);
 }
 
 /* This function is responsible for initializing EXP with INIT
@@ -1708,36 +1720,18 @@ constant_value_1 (tree decl, bool integral_p)
 {
   while (TREE_CODE (decl) == CONST_DECL
 	 || (integral_p
-	     ? DECL_INTEGRAL_CONSTANT_VAR_P (decl)
+	     ? decl_constant_var_p (decl)
 	     : (TREE_CODE (decl) == VAR_DECL
 		&& CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl)))))
     {
       tree init;
-      /* Static data members in template classes may have
-	 non-dependent initializers.  References to such non-static
-	 data members are not value-dependent, so we must retrieve the
-	 initializer here.  The DECL_INITIAL will have the right type,
-	 but will not have been folded because that would prevent us
-	 from performing all appropriate semantic checks at
-	 instantiation time.  */
-      if (DECL_CLASS_SCOPE_P (decl)
-	  && CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (decl))
-	  && uses_template_parms (CLASSTYPE_TI_ARGS
-				  (DECL_CONTEXT (decl))))
-	{
-	  ++processing_template_decl;
-	  init = fold_non_dependent_expr (DECL_INITIAL (decl));
-	  --processing_template_decl;
-	}
-      else
-	{
-	  /* If DECL is a static data member in a template
-	     specialization, we must instantiate it here.  The
-	     initializer for the static data member is not processed
-	     until needed; we need it now.  */
-	  mark_used (decl);
-	  init = DECL_INITIAL (decl);
-	}
+      /* If DECL is a static data member in a template
+	 specialization, we must instantiate it here.  The
+	 initializer for the static data member is not processed
+	 until needed; we need it now.  */
+      mark_used (decl);
+      mark_rvalue_use (decl);
+      init = DECL_INITIAL (decl);
       if (init == error_mark_node)
 	{
 	  if (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
@@ -1758,8 +1752,9 @@ constant_value_1 (tree decl, bool integral_p)
 	init = TREE_VALUE (init);
       if (!init
 	  || !TREE_TYPE (init)
+	  || uses_template_parms (init)
 	  || (integral_p
-	      ? !INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (init))
+	      ? false
 	      : (!TREE_CONSTANT (init)
 		 /* Do not return an aggregate constant (of which
 		    string literals are a special case), as we do not
@@ -2302,7 +2297,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	      tree arraytype, domain;
 	      vecinit = VEC_index (tree, *init, 0);
 	      if (TREE_CONSTANT (nelts))
-		domain = compute_array_index_type (NULL_TREE, nelts);
+		domain = compute_array_index_type (NULL_TREE, nelts, complain);
 	      else
 		{
 		  domain = NULL_TREE;
@@ -2878,6 +2873,8 @@ build_vec_init (tree base, tree maxindex, tree init,
   tree try_block = NULL_TREE;
   int num_initialized_elts = 0;
   bool is_global;
+  tree const_init = NULL_TREE;
+  tree obase = base;
   bool xvalue = false;
 
   if (TREE_CODE (atype) == ARRAY_TYPE && TYPE_DOMAIN (atype))
@@ -2986,32 +2983,91 @@ build_vec_init (tree base, tree maxindex, tree init,
       try_block = begin_try_block ();
     }
 
+  /* Maybe pull out constant value when from_array? */
+
   if (init != NULL_TREE && TREE_CODE (init) == CONSTRUCTOR)
     {
       /* Do non-default initialization of non-trivial arrays resulting from
 	 brace-enclosed initializers.  */
       unsigned HOST_WIDE_INT idx;
-      tree elt;
+      tree field, elt;
+      /* Should we try to create a constant initializer?  */
+      bool try_const = (literal_type_p (inner_elt_type)
+			|| TYPE_HAS_CONSTEXPR_CTOR (inner_elt_type));
+      bool saw_non_const = false;
+      bool saw_const = false;
+      /* If we're initializing a static array, we want to do static
+	 initialization of any elements with constant initializers even if
+	 some are non-constant.  */
+      bool do_static_init = (DECL_P (obase) && TREE_STATIC (obase));
+      VEC(constructor_elt,gc) *new_vec;
       from_array = 0;
 
-      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), idx, elt)
+      if (try_const)
+	new_vec = VEC_alloc (constructor_elt, gc, CONSTRUCTOR_NELTS (init));
+      else
+	new_vec = NULL;
+
+      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), idx, field, elt)
 	{
 	  tree baseref = build1 (INDIRECT_REF, type, base);
+	  tree one_init;
 
 	  num_initialized_elts++;
 
 	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
 	  if (MAYBE_CLASS_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
-	    finish_expr_stmt (build_aggr_init (baseref, elt, 0, complain));
+	    one_init = build_aggr_init (baseref, elt, 0, complain);
 	  else
-	    finish_expr_stmt (cp_build_modify_expr (baseref, NOP_EXPR,
-                                                    elt, complain));
+	    one_init = cp_build_modify_expr (baseref, NOP_EXPR,
+					     elt, complain);
+
+	  if (try_const)
+	    {
+	      tree e = one_init;
+	      if (TREE_CODE (e) == EXPR_STMT)
+		e = TREE_OPERAND (e, 0);
+	      if (TREE_CODE (e) == CONVERT_EXPR
+		  && VOID_TYPE_P (TREE_TYPE (e)))
+		e = TREE_OPERAND (e, 0);
+	      e = maybe_constant_init (e);
+	      if (reduced_constant_expression_p (e))
+		{
+		  CONSTRUCTOR_APPEND_ELT (new_vec, field, e);
+		  if (do_static_init)
+		    one_init = NULL_TREE;
+		  else
+		    one_init = build2 (INIT_EXPR, type, baseref, e);
+		  saw_const = true;
+		}
+	      else
+		{
+		  if (do_static_init)
+		    CONSTRUCTOR_APPEND_ELT (new_vec, field,
+					    build_zero_init (TREE_TYPE (e),
+							     NULL_TREE, true));
+		  saw_non_const = true;
+		}
+	    }
+
+	  if (one_init)
+	    finish_expr_stmt (one_init);
 	  current_stmt_tree ()->stmts_are_full_exprs_p = 0;
 
 	  finish_expr_stmt (cp_build_unary_op (PREINCREMENT_EXPR, base, 0,
                                                complain));
 	  finish_expr_stmt (cp_build_unary_op (PREDECREMENT_EXPR, iterator, 0,
                                                complain));
+	}
+
+      if (try_const)
+	{
+	  if (!saw_non_const)
+	    const_init = build_constructor (atype, new_vec);
+	  else if (do_static_init && saw_const)
+	    DECL_INITIAL (obase) = build_constructor (atype, new_vec);
+	  else
+	    VEC_free (constructor_elt, gc, new_vec);
 	}
 
       /* Clear out INIT so that we don't get confused below.  */
@@ -3161,6 +3217,9 @@ build_vec_init (tree base, tree maxindex, tree init,
     }
 
   current_stmt_tree ()->stmts_are_full_exprs_p = destroy_temps;
+
+  if (const_init)
+    return build2 (INIT_EXPR, atype, obase, const_init);
   return stmt_expr;
 }
 

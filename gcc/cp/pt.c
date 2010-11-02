@@ -4845,29 +4845,6 @@ fold_non_dependent_expr (tree expr)
   return fold_non_dependent_expr_sfinae (expr, tf_error);
 }
 
-/* EXPR is an expression which is used in a constant-expression context.
-   For instance, it could be a VAR_DECL with a constant initializer.
-   Extract the innermost constant expression.
-
-   This is basically a more powerful version of
-   integral_constant_value, which can be used also in templates where
-   initializers can maintain a syntactic rather than semantic form
-   (even if they are non-dependent, for access-checking purposes).  */
-
-static tree
-fold_decl_constant_value (tree expr)
-{
-  tree const_expr = expr;
-  do
-    {
-      expr = fold_non_dependent_expr (const_expr);
-      const_expr = integral_constant_value (expr);
-    }
-  while (expr != const_expr);
-
-  return expr;
-}
-
 /* Subroutine of convert_nontype_argument. Converts EXPR to TYPE, which
    must be a function or a pointer-to-function type, as specified
    in [temp.arg.nontype]: disambiguate EXPR if it is an overload set,
@@ -5069,23 +5046,23 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
   if (INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     {
       tree t = build_integral_nontype_arg_conv (type, expr, complain);
-      t = fold_decl_constant_value (t);
+      t = maybe_constant_value (t);
       if (t != error_mark_node)
 	expr = t;
 
       if (!same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (expr)))
 	return error_mark_node;
 
-      /* Conversion was allowed: fold it to a bare integer constant.  */
-      expr = fold (expr);
-
       /* Notice that there are constant expressions like '4 % 0' which
 	 do not fold into integer constants.  */
       if (TREE_CODE (expr) != INTEGER_CST)
 	{
 	  if (complain & tf_error)
-	    error ("%qE is not a valid template argument for type %qT "
-		   "because it is a non-constant expression", expr, type);
+	    {
+	      error ("%qE is not a valid template argument for type %qT "
+		     "because it is a non-constant expression", expr, type);
+	      cxx_constant_value (expr);
+	    }
 	  return NULL_TREE;
 	}
     }
@@ -9637,8 +9614,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		RETURN (error_mark_node);
 	      }
 	    type = complete_type (type);
-	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (r)
-	      = DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (t);
+	    /* Wait until cp_finish_decl to set this again, to handle
+	       circular dependency (template/instantiate6.C). */
+	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (r) = 0;
 	    type = check_var_type (DECL_NAME (r), type);
 
 	    if (DECL_HAS_VALUE_EXPR_P (t))
@@ -10125,9 +10103,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    && !TREE_TYPE (max))
 	  TREE_TYPE (max) = TREE_TYPE (TREE_OPERAND (max, 0));
 
-	max = mark_rvalue_use (max);
-	max = fold_decl_constant_value (max);
-
 	/* If we're in a partial instantiation, preserve the magic NOP_EXPR
 	   with TREE_SIDE_EFFECTS that indicates this is not an integral
 	   constant expression.  */
@@ -10138,38 +10113,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    TREE_SIDE_EFFECTS (max) = 1;
 	  }
 
-	if (TREE_CODE (max) != INTEGER_CST
-	    && !at_function_scope_p ()
-	    && !TREE_SIDE_EFFECTS (max)
-	    && !value_dependent_expression_p (max))
-	  {
-	    if (complain & tf_error)
-	      error ("array bound is not an integer constant");
-	    return error_mark_node;
-	  }
-
-	/* [temp.deduct]
-
-	   Type deduction may fail for any of the following
-	   reasons:
-
-	     Attempting to create an array with a size that is
-	     zero or negative.  */
-	if (integer_zerop (max) && !(complain & tf_error))
-	  /* We must fail if performing argument deduction (as
-	     indicated by the state of complain), so that
-	     another substitution can be found.  */
-	  return error_mark_node;
-	else if (TREE_CODE (max) == INTEGER_CST
-		 && INT_CST_LT (max, integer_zero_node))
-	  {
-	    if (complain & tf_error)
-	      error ("creating array with negative size (%qE)", max);
-
-	    return error_mark_node;
-	  }
-
-	return compute_array_index_type (NULL_TREE, max);
+	return compute_array_index_type (NULL_TREE, max, complain);
       }
 
     case TEMPLATE_TYPE_PARM:
@@ -11658,10 +11602,10 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
     case DECL_EXPR:
       {
-	tree decl;
+	tree decl, pattern_decl;
 	tree init;
 
-	decl = DECL_EXPR_DECL (t);
+	pattern_decl = decl = DECL_EXPR_DECL (t);
 	if (TREE_CODE (decl) == LABEL_DECL)
 	  finish_label_decl (DECL_NAME (decl));
 	else if (TREE_CODE (decl) == USING_DECL)
@@ -11698,6 +11642,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		  finish_anon_union (decl);
 		else
 		  {
+		    int const_init = false;
 		    maybe_push_decl (decl);
 		    if (TREE_CODE (decl) == VAR_DECL
 			&& DECL_PRETTY_FUNCTION_P (decl))
@@ -11730,7 +11675,10 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 			  init = t;
 		      }
 
-		    cp_finish_decl (decl, init, false, NULL_TREE, 0);
+		    if (TREE_CODE (decl) == VAR_DECL)
+		      const_init = (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P
+				    (pattern_decl));
+		    cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
 		  }
 	      }
 	  }
@@ -16894,6 +16842,7 @@ instantiate_decl (tree d, int defer_ok,
 	{
 	  tree ns;
 	  tree init;
+	  bool const_init = false;
 
 	  ns = decl_namespace_context (d);
 	  push_nested_namespace (ns);
@@ -16902,7 +16851,11 @@ instantiate_decl (tree d, int defer_ok,
 			      args,
 			      tf_warning_or_error, NULL_TREE,
 			      /*integral_constant_expression_p=*/false);
-	  cp_finish_decl (d, init, /*init_const_expr_p=*/false,
+	  /* Make sure the initializer is still constant, in case of
+	     circular dependency (template/instantiate6.C). */
+	  const_init
+	    = DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (code_pattern);
+	  cp_finish_decl (d, init, /*init_const_expr_p=*/const_init,
 			  /*asmspec_tree=*/NULL_TREE,
 			  LOOKUP_ONLYCONVERTING);
 	  pop_nested_class ();
@@ -16973,6 +16926,7 @@ instantiate_decl (tree d, int defer_ok,
   if (TREE_CODE (d) == VAR_DECL)
     {
       tree init;
+      bool const_init = false;
 
       /* Clear out DECL_RTL; whatever was there before may not be right
 	 since we've reset the type of the declaration.  */
@@ -16980,7 +16934,8 @@ instantiate_decl (tree d, int defer_ok,
       DECL_IN_AGGR_P (d) = 0;
 
       /* The initializer is placed in DECL_INITIAL by
-	 regenerate_decl_from_template.  Pull it out so that
+	 regenerate_decl_from_template so we don't need to
+	 push/pop_access_scope again here.  Pull it out so that
 	 cp_finish_decl can process it.  */
       init = DECL_INITIAL (d);
       DECL_INITIAL (d) = NULL_TREE;
@@ -16993,7 +16948,8 @@ instantiate_decl (tree d, int defer_ok,
 
       /* Enter the scope of D so that access-checking works correctly.  */
       push_nested_class (DECL_CONTEXT (d));
-      cp_finish_decl (d, init, false, NULL_TREE, 0);
+      const_init = DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (code_pattern);
+      cp_finish_decl (d, init, const_init, NULL_TREE, 0);
       pop_nested_class ();
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
@@ -17633,6 +17589,23 @@ dependent_scope_p (tree scope)
    [temp.dep.constexpr].  EXPRESSION is already known to be a constant
    expression.  */
 
+/* FIXME this predicate is not appropriate for general expressions; the
+   predicates we want instead are "valid constant expression, value
+   dependent or not?", "really constant expression, not value dependent?"
+   and "instantiation-dependent?".  Try to integrate with
+   potential_constant_expression?
+
+   fold_non_dependent_expr: fold if constant and not type-dependent and not value-dependent.
+     (what about instantiation-dependent constant-expressions?)
+   is_late_template_attribute: defer if instantiation-dependent.
+   compute_array_index_type: proceed if constant and not t- or v-dependent
+     if instantiation-dependent, need to remember full expression
+   uses_template_parms: FIXME - need to audit callers
+   tsubst_decl [function_decl]: Why is this using value_dependent_expression_p?
+   dependent_type_p [array_type]: dependent if index type is dependent
+     (or non-constant?)
+   static_assert - instantiation-dependent */
+
 bool
 value_dependent_expression_p (tree expression)
 {
@@ -17689,7 +17662,8 @@ value_dependent_expression_p (tree expression)
 	    /* If there are no operands, it must be an expression such
 	       as "int()". This should not happen for aggregate types
 	       because it would form non-constant expressions.  */
-	    gcc_assert (INTEGRAL_OR_ENUMERATION_TYPE_P (type));
+	    gcc_assert (cxx_dialect >= cxx0x
+			|| INTEGRAL_OR_ENUMERATION_TYPE_P (type));
 
 	    return false;
 	  }
@@ -17733,12 +17707,6 @@ value_dependent_expression_p (tree expression)
       return (value_dependent_expression_p (TREE_OPERAND (expression, 0))
 	      || value_dependent_expression_p (TREE_OPERAND (expression, 1)));
 
-    case CALL_EXPR:
-      /* A CALL_EXPR may appear in a constant expression if it is a
-	 call to a builtin function, e.g., __builtin_constant_p.  All
-	 such calls are value-dependent.  */
-      return true;
-
     case NONTYPE_ARGUMENT_PACK:
       /* A NONTYPE_ARGUMENT_PACK is value-dependent if any packed argument
          is value-dependent.  */
@@ -17769,6 +17737,30 @@ value_dependent_expression_p (tree expression)
 	tree op = TREE_OPERAND (expression, 0);
 	return (value_dependent_expression_p (op)
 		|| has_value_dependent_address (op));
+      }
+
+    case CALL_EXPR:
+      {
+	tree fn = get_callee_fndecl (expression);
+	int i, nargs;
+	if (!fn && value_dependent_expression_p (CALL_EXPR_FN (expression)))
+	  return true;
+	nargs = call_expr_nargs (expression);
+	for (i = 0; i < nargs; ++i)
+	  {
+	    tree op = CALL_EXPR_ARG (expression, i);
+	    /* In a call to a constexpr member function, look through the
+	       implicit ADDR_EXPR on the object argument so that it doesn't
+	       cause the call to be considered value-dependent.  We also
+	       look through it in potential_constant_expression.  */
+	    if (i == 0 && fn && DECL_DECLARED_CONSTEXPR_P (fn)
+		&& DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+		&& TREE_CODE (op) == ADDR_EXPR)
+	      op = TREE_OPERAND (op, 0);
+	    if (value_dependent_expression_p (op))
+	      return true;
+	  }
+	return false;
       }
 
     default:

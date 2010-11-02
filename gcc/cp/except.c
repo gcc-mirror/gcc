@@ -1054,15 +1054,20 @@ check_noexcept_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 
       STRIP_NOPS (fn);
       if (TREE_CODE (fn) == ADDR_EXPR)
+	fn = TREE_OPERAND (fn, 0);
+      if (TREE_CODE (fn) == FUNCTION_DECL)
 	{
 	  /* We do use TREE_NOTHROW for ABI internals like __dynamic_cast,
 	     and for C library functions known not to throw.  */
-	  fn = TREE_OPERAND (fn, 0);
-	  if (TREE_CODE (fn) == FUNCTION_DECL
-	      && DECL_EXTERN_C_P (fn)
+	  if (DECL_EXTERN_C_P (fn)
 	      && (DECL_ARTIFICIAL (fn)
 		  || nothrow_libfn_p (fn)))
 	    return TREE_NOTHROW (fn) ? NULL_TREE : fn;
+	  /* A call to a constexpr function is noexcept if the call
+	     is a constant expression.  */
+	  if (DECL_DECLARED_CONSTEXPR_P (fn)
+	      && is_sub_constant_expr (t))
+	    return NULL_TREE;
 	}
       if (!TYPE_NOTHROW_P (type))
 	return fn;
@@ -1195,9 +1200,15 @@ type_throw_all_p (const_tree type)
 tree
 build_noexcept_spec (tree expr, int complain)
 {
-  expr = perform_implicit_conversion_flags (boolean_type_node, expr,
-					    complain,
-					    LOOKUP_NORMAL);
+  /* This isn't part of the signature, so don't bother trying to evaluate
+     it until instantiation.  */
+  if (!processing_template_decl)
+    {
+      expr = cxx_constant_value (expr);
+      expr = perform_implicit_conversion_flags (boolean_type_node, expr,
+						complain,
+						LOOKUP_NORMAL);
+    }
   if (expr == boolean_true_node)
     return noexcept_true_spec;
   else if (expr == boolean_false_node)

@@ -1,0 +1,13 @@
+// FIXME this is currently invalid, but seems like it should be OK
+// { dg-options -std=c++0x }
+
+struct A { A() { } };
+
+template<class T>
+constexpr bool ignore(T&&) { return true; }
+
+static_assert(ignore(10), "Error"); // OK
+
+A s;
+
+static_assert(ignore(s), "Error"); // Currently an error

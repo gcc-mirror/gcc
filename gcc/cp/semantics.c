@@ -4618,6 +4618,7 @@ finish_static_assert (tree condition, tree message, location_t location,
   /* Fold the expression and convert it to a boolean value. */
   condition = fold_non_dependent_expr (condition);
   condition = cp_convert (boolean_type_node, condition);
+  condition = maybe_constant_value (condition);
 
   if (TREE_CODE (condition) == INTEGER_CST && !integer_zerop (condition))
     /* Do nothing; the condition is satisfied. */
@@ -4632,7 +4633,10 @@ finish_static_assert (tree condition, tree message, location_t location,
         /* Report the error. */
         error ("static assertion failed: %E", message);
       else if (condition && condition != error_mark_node)
-        error ("non-constant condition for static assertion");
+	{
+	  error ("non-constant condition for static assertion");
+	  cxx_constant_value (condition);
+	}
       input_location = saved_loc;
     }
 }
@@ -5273,7 +5277,9 @@ ensure_literal_type_for_constexpr_object (tree decl)
 {
   tree type = TREE_TYPE (decl);
   if (TREE_CODE (decl) == VAR_DECL && DECL_DECLARED_CONSTEXPR_P (decl)
-      && !processing_template_decl && !literal_type_p (type))
+      && !processing_template_decl
+      /* The call to complete_type is just for initializer_list.  */
+      && !literal_type_p (complete_type (type)))
     {
       error ("the type %qT of constexpr variable %qD is not literal",
              type, decl);
@@ -6837,6 +6843,17 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant)
     return r;
 }
 
+/* Returns true if T is a valid subexpression of a constant expression,
+   even if it isn't itself a constant expression.  */
+
+bool
+is_sub_constant_expr (tree t)
+{
+  bool non_constant_p = false;
+  cxx_eval_constant_expression (NULL, t, true, false, &non_constant_p);
+  return !non_constant_p;
+}
+
 /* If T represents a constant expression returns its reduced value.
    Otherwise return error_mark_node.  If T is dependent, then
    return NULL.  */
@@ -7257,7 +7274,7 @@ potential_constant_expression (tree t, tsubst_flags_t flags)
     case TRUNC_MOD_EXPR:
     case CEIL_MOD_EXPR:
     case ROUND_MOD_EXPR:
-      if (integer_zerop (decl_constant_value (TREE_OPERAND (t, 1))))
+      if (integer_zerop (maybe_constant_value (TREE_OPERAND (t, 1))))
 	return false;
       else
 	goto binary;

@@ -1,0 +1,23 @@
+// { dg-do "compile" }
+// { dg-options "-std=gnu++0x" }
+
+// From N2235
+
+// 4.5.3 constant expressions
+
+// p 4
+struct A {
+  constexpr A(int i) : val(i) { }
+  constexpr operator int() { return val; }
+  constexpr operator long() { return -1; }
+private:
+  int val;
+};
+
+template<int I> struct X { static const int i = I; };
+constexpr A a = 42;
+
+X<a> x;	    // OK: unique conversion to int
+int ar[X<a>::i]; // also OK
+int ary[a]; // { dg-error "ambiguous|conversion|array" } ambiguous conversion
+

@@ -5,5 +5,5 @@ template<bool> struct A;
 
 template<int> void foo()
 {
-  A<__builtin_constant_p(.)> a;  // { dg-error "template argument" }
+  A<__builtin_constant_p(.)> a;  // { dg-error "template argument|invalid" }
 }

@@ -18,5 +18,5 @@ struct X
 template <class T>
 struct Foo
 {
-  X<&S::f> x;	// { dg-error "convert|no type" }
+  X<&S::f> x;	// { dg-error "convert|no matches" }
 };

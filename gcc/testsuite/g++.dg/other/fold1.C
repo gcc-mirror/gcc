@@ -4,5 +4,5 @@
 struct A
 {
     static const int i = i;  // { dg-error "not declared" }
-    int x[i];
+    int x[i];		     // { dg-error "constant-expression" }
 };
