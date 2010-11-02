@@ -1,3 +1,96 @@
+2010-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1_impl/cinttypes: Remove, move contents to C++0x
+	and TR1 headers.
+	* include/tr1_impl/cstdlib: Likewise.
+	* include/tr1_impl/cstdio: Likewise.
+	* include/tr1_impl/cctype: Likewise.
+	* include/tr1_impl/boost_sp_counted_base.h: Likewise.
+	* include/tr1_impl/cmath: Likewise.
+	* include/tr1_impl/cfenv: Likewise.
+	* include/tr1_impl/utility: Likewise.
+	* include/tr1_impl/complex: Likewise.
+	* include/tr1_impl/cwchar: Likewise.
+	* include/tr1_impl/type_traits: Likewise.
+	* include/tr1_impl/cstdint: Likewise.
+	* include/tr1_impl/regex: Likewise.
+	* include/tr1_impl/array: Likewise.
+	* include/tr1_impl/cwctype: Likewise.
+	* include/Makefile.am: Adjust.
+	* include/Makefile.in: Regenerate.
+	* src/condition_variable.cc: Adjust; consistently use
+	_GLIBCXX_BEGIN_NAMESPACE and _GLIBCXX_END_NAMESPACE.
+	* src/mutex.cc: Likewise.
+	* src/future.cc: Likewise.
+	* src/atomic.cc: Likewise.
+	* src/chrono.cc: Likewise.
+	* src/thread.cc: Likewise.
+	* include/std/tuple: Likewise.
+	* include/std/utility: Likewise.
+	* include/std/thread: Likewise.: Likewise.
+	* include/std/type_traits: Likewise.
+	* include/std/memory: Likewise.
+	* include/std/future: Likewise.
+	* include/std/ratio: Likewise.
+	* include/std/chrono: Likewise.
+	* include/std/condition_variable: Likewise.
+	* include/std/mutex: Likewise.
+	* include/std/functional: Likewise.
+	* include/std/complex: Likewise.
+	* include/std/typeindex: Likewise.
+	* include/std/array: Likewise.
+	* include/bits/regex_compiler.h: Likewise.
+	* include/bits/regex_grep_matcher.tcc: Likewise.
+	* include/bits/regex_grep_matcher.h: Likewise.
+	* include/bits/regex_constants.h: Likewise.
+	* include/bits/regex_cursor.h: Likewise.
+	* include/bits/regex_nfa.tcc: Likewise.
+	* include/bits/shared_ptr_base.h: Likewise.
+	* include/bits/regex_nfa.h: Likewise.
+	* include/bits/random.tcc: Likewise.
+	* include/bits/regex.h: Likewise.
+	* include/bits/random.h: Likewise.
+	* include/bits/regex_error.h: Likewise.
+	* include/c_global/cinttypes: Likewise.
+	* include/c_global/cstdlib: Likewise.
+	* include/c_global/cstdio: Likewise.
+	* include/c_global/cctype: Likewise.
+	* include/c_global/cmath: Likewise.
+	* include/c_global/cfenv: Likewise.
+	* include/c_global/cwchar: Likewise.
+	* include/c_global/cstdint: Likewise.
+	* include/c_global/cwctype: Likewise.
+	* include/tr1/shared_ptr.h: Likewise.
+	* include/tr1/cinttypes: Likewise.
+	* include/tr1/cstdio: Likewise.
+	* include/tr1/cfenv: Likewise.
+	* include/tr1/utility: Likewise.
+	* include/tr1/cwchar: Likewise.
+	* include/tr1/type_traits: Likewise.
+	* include/tr1/memory: Likewise.
+	* include/tr1/cstdint: Likewise.
+	* include/tr1/regex: Likewise.
+	* include/tr1/cwctype: Likewise.
+	* include/tr1/cstdlib: Likewise.
+	* include/tr1/cctype: Likewise.
+	* include/tr1/cmath: Likewise.
+	* include/tr1/complex: Likewise.
+	* include/tr1/array: Likewise.
+	* include/c_compatibility/fenv.h: Likewise.
+	* include/c_compatibility/stdint.h: Likewise.
+	* include/c_compatibility/inttypes.h: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820.cc: Adjust
+	dg-error line numbers.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/
+	typedefs_neg.cc: Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820.cc: Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Likewise.
+
 2010-11-02  Paolo Carlini  <paolo.carlini@oracle.com
 
 	* testsuite/28_regex/05_constants/syntax_option_type.cc: Avoid

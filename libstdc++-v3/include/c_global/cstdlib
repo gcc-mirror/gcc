@@ -215,26 +215,37 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-#endif // _GLIBCXX_USE_C99
-
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-#  if defined(_GLIBCXX_INCLUDE_AS_TR1)
-#    error C++0x header cannot be included from TR1 header
-#  endif
-#  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#    include <tr1_impl/cstdlib>
-#  else
-#    define _GLIBCXX_INCLUDE_AS_CXX0X
-#    define _GLIBCXX_BEGIN_NAMESPACE_TR1
-#    define _GLIBCXX_END_NAMESPACE_TR1
-#    define _GLIBCXX_TR1
-#    include <tr1_impl/cstdlib>
-#    undef _GLIBCXX_TR1
-#    undef _GLIBCXX_END_NAMESPACE_TR1
-#    undef _GLIBCXX_BEGIN_NAMESPACE_TR1
-#    undef _GLIBCXX_INCLUDE_AS_CXX0X
-#  endif
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+#if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
+  // types
+  using std::lldiv_t;
+
+  // functions
+  using std::llabs;
+  using std::lldiv;
 #endif
+
+  using std::atoll;
+  using std::strtoll;
+  using std::strtoull;
+
+  using std::strtof;
+  using std::strtold;
+
+  // overloads
+  using std::abs;
+#if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
+  using std::div;
+#endif
+
+_GLIBCXX_END_NAMESPACE
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
+#endif // _GLIBCXX_USE_C99
 
 #endif // !_GLIBCXX_HOSTED
 

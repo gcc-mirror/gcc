@@ -35,10 +35,6 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#ifdef _GLIBCXX_INCLUDE_AS_TR1
-#  error C++0x header cannot be included from TR1 header
-#endif
-
 #include <ratio>
 #include <type_traits>
 #include <limits>
@@ -46,8 +42,8 @@
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    * @defgroup chrono Time
    * @ingroup utilities
@@ -689,7 +685,7 @@ namespace std
   } // namespace chrono
 
   // @} group chrono
-} // namespace std
+_GLIBCXX_END_NAMESPACE
 
 #endif //_GLIBCXX_USE_C99_STDINT_TR1
 

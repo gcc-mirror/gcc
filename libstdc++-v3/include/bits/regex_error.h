@@ -30,8 +30,7 @@
  *  You should not attempt to use it directly.
  */
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
 
 namespace regex_constants
 {
@@ -156,5 +155,4 @@ namespace regex_constants
   __throw_regex_error(regex_constants::error_type __ecode)
   { throw regex_error(__ecode); }
 
-} // namespace std
-
+_GLIBCXX_END_NAMESPACE

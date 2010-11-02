@@ -49,8 +49,8 @@ namespace
     };
 } // anonymous namespace
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   namespace __atomic0
   {
     bool
@@ -115,7 +115,8 @@ namespace std
   _GLIBCXX_END_EXTERN_C
 
   } // namespace __atomic0
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 
 // XXX GLIBCXX_ABI Deprecated

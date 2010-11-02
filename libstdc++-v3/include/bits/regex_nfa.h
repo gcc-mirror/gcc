@@ -28,8 +28,8 @@
  * You should not attempt to use it directly.
  */
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
 namespace __regex
 {
 
@@ -397,7 +397,8 @@ namespace __regex
   };
 
 } // namespace __regex
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #include <bits/regex_nfa.tcc>
 

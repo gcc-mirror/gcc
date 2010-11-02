@@ -37,8 +37,8 @@ namespace
 }
 #endif
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
 #ifdef _GLIBCXX_HAVE_TLS
   __thread void* __once_callable;
   __thread void (*__once_call)();
@@ -88,7 +88,8 @@ namespace std
       __once_call();
     }
   }
-}
+
+_GLIBCXX_END_NAMESPACE
 
 // XXX GLIBCXX_ABI Deprecated
 // gcc-4.6.0

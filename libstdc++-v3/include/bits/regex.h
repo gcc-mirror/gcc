@@ -28,8 +28,7 @@
  *  You should not attempt to use it directly.
  */
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
 
 /**
  * @defgroup regex Regular Expressions
@@ -2422,6 +2421,5 @@ namespace std
 #endif
   
   //@} // group regex
-  
-}
+_GLIBCXX_END_NAMESPACE
 

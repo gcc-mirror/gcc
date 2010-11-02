@@ -42,8 +42,8 @@ main()
 }
 
 // { dg-warning "note" "" { target *-*-* } 347 }
+// { dg-warning "note" "" { target *-*-* } 1079 }
 // { dg-warning "note" "" { target *-*-* } 465 }
-// { dg-warning "note" "" { target *-*-* } 883 }
 // { dg-warning "note" "" { target *-*-* } 580 }
 // { dg-warning "note" "" { target *-*-* } 1027 }
 // { dg-warning "note" "" { target *-*-* } 340 }

@@ -1,6 +1,6 @@
 // <utility> -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -71,24 +71,73 @@
 #include <bits/stl_pair.h>
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-#  if defined(_GLIBCXX_INCLUDE_AS_TR1)
-#    error C++0x header cannot be included from TR1 header
-#  endif
-#  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#    include <tr1_impl/utility>
-#  else
-#    define _GLIBCXX_INCLUDE_AS_CXX0X
-#    define _GLIBCXX_BEGIN_NAMESPACE_TR1
-#    define _GLIBCXX_END_NAMESPACE_TR1
-#    define _GLIBCXX_TR1
-#    include <tr1_impl/utility>
-#    undef _GLIBCXX_TR1
-#    undef _GLIBCXX_END_NAMESPACE_TR1
-#    undef _GLIBCXX_BEGIN_NAMESPACE_TR1
-#    undef _GLIBCXX_INCLUDE_AS_CXX0X
-#  endif
-#  include <bits/move.h>
-#  include <initializer_list>
+#include <bits/move.h>
+#include <initializer_list>
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  template<class _Tp>
+    class tuple_size;
+
+  template<std::size_t _Int, class _Tp>
+    class tuple_element;
+
+   // Various functions which give std::pair a tuple-like interface.
+  template<class _Tp1, class _Tp2>
+    struct tuple_size<std::pair<_Tp1, _Tp2> >
+    { static const std::size_t value = 2; };
+
+  template<class _Tp1, class _Tp2>
+    const std::size_t
+    tuple_size<std::pair<_Tp1, _Tp2> >::value;
+
+  template<class _Tp1, class _Tp2>
+    struct tuple_element<0, std::pair<_Tp1, _Tp2> >
+    { typedef _Tp1 type; };
+ 
+  template<class _Tp1, class _Tp2>
+    struct tuple_element<1, std::pair<_Tp1, _Tp2> >
+    { typedef _Tp2 type; };
+
+  template<std::size_t _Int>
+    struct __pair_get;
+
+  template<>
+    struct __pair_get<0>
+    {
+      template<typename _Tp1, typename _Tp2>
+      static _Tp1& __get(std::pair<_Tp1, _Tp2>& __pair)
+      { return __pair.first; }
+
+      template<typename _Tp1, typename _Tp2>
+      static const _Tp1& __const_get(const std::pair<_Tp1, _Tp2>& __pair)
+      { return __pair.first; }
+    };
+
+  template<>
+    struct __pair_get<1>
+    {
+      template<typename _Tp1, typename _Tp2>
+      static _Tp2& __get(std::pair<_Tp1, _Tp2>& __pair)
+      { return __pair.second; }
+
+      template<typename _Tp1, typename _Tp2>
+      static const _Tp2& __const_get(const std::pair<_Tp1, _Tp2>& __pair)
+      { return __pair.second; }
+    };
+
+  template<std::size_t _Int, class _Tp1, class _Tp2>
+    inline typename tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&
+    get(std::pair<_Tp1, _Tp2>& __in)
+    { return __pair_get<_Int>::__get(__in); }
+
+  template<std::size_t _Int, class _Tp1, class _Tp2>
+    inline const typename tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&
+    get(const std::pair<_Tp1, _Tp2>& __in)
+    { return __pair_get<_Int>::__const_get(__in); }
+
+_GLIBCXX_END_NAMESPACE
+
 #endif
 
 #endif /* _GLIBCXX_UTILITY */

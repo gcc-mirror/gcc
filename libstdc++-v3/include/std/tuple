@@ -37,8 +37,8 @@
 
 #include <utility>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Adds a const reference to a non-reference type.
   template<typename _Tp>
     struct __add_c_ref
@@ -791,7 +791,8 @@ namespace std
       __do_cons(tuple<_Args...>&& __tuple,
 		const _Index_tuple<_Indexes...>&)
       { return _Tp(std::forward<_Args>(get<_Indexes>(__tuple))...); }
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

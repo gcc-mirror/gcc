@@ -69,9 +69,6 @@
 #include <bits/stl_raw_storage_iter.h>
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-#  if defined(_GLIBCXX_INCLUDE_AS_TR1)
-#    error C++0x header cannot be included from TR1 header
-#  endif
 #  include <exception>        	  // std::exception
 #  include <typeinfo>         	  // std::type_info in get_deleter
 #  include <iosfwd>           	  // std::basic_ostream
@@ -86,19 +83,6 @@
 #    include <backward/auto_ptr.h>
 #  endif
 #  include <bits/unique_ptr.h>
-#  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#    include <tr1_impl/boost_sp_counted_base.h>
-#  else
-#    define _GLIBCXX_INCLUDE_AS_CXX0X
-#    define _GLIBCXX_BEGIN_NAMESPACE_TR1
-#    define _GLIBCXX_END_NAMESPACE_TR1
-#    define _GLIBCXX_TR1
-#    include <tr1_impl/boost_sp_counted_base.h>
-#    undef _GLIBCXX_TR1
-#    undef _GLIBCXX_END_NAMESPACE_TR1
-#    undef _GLIBCXX_BEGIN_NAMESPACE_TR1
-#    undef _GLIBCXX_INCLUDE_AS_CXX0X
-#  endif
 #  include <bits/shared_ptr.h>
 #else
 #  include <backward/auto_ptr.h>

@@ -32,8 +32,8 @@
 
 #include <numeric> // std::accumulate and std::partial_sum
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /*
    * (Further) implementation-space details.
    */
@@ -2818,6 +2818,6 @@ namespace std
 	}
       return __sum / __tmp;
     }
-}
+_GLIBCXX_END_NAMESPACE
 
 #endif
