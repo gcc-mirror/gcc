@@ -3908,7 +3908,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   VEC (tree, heap) *vec_oprnds0 = NULL, *vec_oprnds1 = NULL, *vect_defs = NULL;
   VEC (gimple, heap) *phis = NULL;
   int vec_num;
-  tree def0, def1;
+  tree def0, def1, tem;
 
   if (nested_in_vect_loop_p (loop, stmt))
     {
@@ -3999,8 +3999,6 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
      reduction variable.  */
   for (i = 0; i < op_type-1; i++)
     {
-      tree tem;
-
       /* The condition of COND_EXPR is checked in vectorizable_condition().  */
       if (i == 0 && code == COND_EXPR)
         continue;
@@ -4025,8 +4023,10 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
         }
     }
 
-  is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, NULL, &def_stmt,
-				      &def, &dt);
+  is_simple_use = vect_is_simple_use_1 (ops[i], loop_vinfo, NULL, &def_stmt,
+					&def, &dt, &tem);
+  if (!vectype_in)
+    vectype_in = tem;
   gcc_assert (is_simple_use);
   gcc_assert (dt == vect_reduction_def
               || dt == vect_nested_cycle
