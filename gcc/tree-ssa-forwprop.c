@@ -1983,7 +1983,8 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		  else
 		    gsi_next (&gsi);
 		}
-	      else if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
+	      else if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
+		       && can_propagate_from (stmt))
 		{
 		  if (TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST
 		      /* ???  Better adjust the interface to that function
