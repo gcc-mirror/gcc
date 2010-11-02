@@ -1642,6 +1642,8 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_PENT4  (1<<PROCESSOR_PENTIUM4)
 #define m_NOCONA  (1<<PROCESSOR_NOCONA)
 #define m_CORE2  (1<<PROCESSOR_CORE2)
+#define m_COREI7_32  (1<<PROCESSOR_COREI7_32)
+#define m_COREI7_64  (1<<PROCESSOR_COREI7_64)
 #define m_ATOM  (1<<PROCESSOR_ATOM)
 
 #define m_GEODE  (1<<PROCESSOR_GEODE)
@@ -1654,8 +1656,8 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_BDVER1  (1<<PROCESSOR_BDVER1)
 #define m_AMD_MULTIPLE  (m_K8 | m_ATHLON | m_AMDFAM10 | m_BDVER1)
 
-#define m_GENERIC32 (1<<PROCESSOR_GENERIC32)
-#define m_GENERIC64 (1<<PROCESSOR_GENERIC64)
+#define m_GENERIC32 (1<<PROCESSOR_GENERIC32 | m_COREI7_32)
+#define m_GENERIC64 (1<<PROCESSOR_GENERIC64 | m_COREI7_64)
 
 /* Generic instruction choice should be common subset of supported CPUs
    (PPro/PENT4/NOCONA/CORE2/Athlon/K8).  */
@@ -2461,6 +2463,10 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&k8_cost, 16, 7, 16, 7, 16},
   {&nocona_cost, 0, 0, 0, 0, 0},
   {&core2_cost, 16, 10, 16, 10, 16},
+  /* Core i7 32-bit.  */
+  {&generic32_cost, 16, 10, 16, 10, 16},
+  /* Core i7 64-bit.  */
+  {&generic64_cost, 16, 10, 16, 10, 16},
   {&generic32_cost, 16, 7, 16, 7, 16},
   {&generic64_cost, 16, 10, 16, 10, 16},
   {&amdfam10_cost, 32, 24, 32, 7, 32},
@@ -3183,7 +3189,7 @@ ix86_option_override_internal (bool main_args_p)
       {"core2", PROCESSOR_CORE2, CPU_CORE2,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_CX16},
-      {"corei7", PROCESSOR_GENERIC64, CPU_GENERIC64,
+      {"corei7", PROCESSOR_COREI7_64, CPU_GENERIC64,
        PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
        | PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_CX16},
       {"atom", PROCESSOR_ATOM, CPU_ATOM,
@@ -3551,6 +3557,11 @@ ix86_option_override_internal (bool main_args_p)
 	      {
 	      case PROCESSOR_GENERIC64:
 		ix86_tune = PROCESSOR_GENERIC32;
+		ix86_schedule = CPU_PENTIUMPRO;
+		break;
+
+	      case PROCESSOR_COREI7_64:
+		ix86_tune = PROCESSOR_COREI7_32;
 		ix86_schedule = CPU_PENTIUMPRO;
 		break;
 
