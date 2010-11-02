@@ -3183,6 +3183,9 @@ ix86_option_override_internal (bool main_args_p)
       {"core2", PROCESSOR_CORE2, CPU_CORE2,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_CX16},
+      {"corei7", PROCESSOR_GENERIC64, CPU_GENERIC64,
+       PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+       | PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_CX16},
       {"atom", PROCESSOR_ATOM, CPU_ATOM,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_CX16 | PTA_MOVBE},
@@ -3522,23 +3525,40 @@ ix86_option_override_internal (bool main_args_p)
       {
 	ix86_schedule = processor_alias_table[i].schedule;
 	ix86_tune = processor_alias_table[i].processor;
-	if (TARGET_64BIT && !(processor_alias_table[i].flags & PTA_64BIT))
+	if (TARGET_64BIT)
 	  {
-	    if (ix86_tune_defaulted)
+	    if (!(processor_alias_table[i].flags & PTA_64BIT))
 	      {
-		ix86_tune_string = "x86-64";
-		for (i = 0; i < pta_size; i++)
-		  if (! strcmp (ix86_tune_string,
-				processor_alias_table[i].name))
-		    break;
-		ix86_schedule = processor_alias_table[i].schedule;
-		ix86_tune = processor_alias_table[i].processor;
+		if (ix86_tune_defaulted)
+		  {
+		    ix86_tune_string = "x86-64";
+		    for (i = 0; i < pta_size; i++)
+		      if (! strcmp (ix86_tune_string,
+				    processor_alias_table[i].name))
+			break;
+		    ix86_schedule = processor_alias_table[i].schedule;
+		    ix86_tune = processor_alias_table[i].processor;
+		  }
+		else
+		  error ("CPU you selected does not support x86-64 "
+			 "instruction set");
 	      }
-	    else
-	      error ("CPU you selected does not support x86-64 "
-		     "instruction set");
 	  }
-        /* Intel CPUs have always interpreted SSE prefetch instructions as
+	else
+	  {
+	    /* Adjust tuning when compiling for 32-bit ABI.  */
+	    switch (ix86_tune)
+	      {
+	      case PROCESSOR_GENERIC64:
+		ix86_tune = PROCESSOR_GENERIC32;
+		ix86_schedule = CPU_PENTIUMPRO;
+		break;
+
+	      default:
+		break;
+	      }
+	  }
+	/* Intel CPUs have always interpreted SSE prefetch instructions as
 	   NOPs; so, we can enable SSE prefetch instructions even when
 	   -mtune (rather than -march) points us to a processor that has them.
 	   However, the VIA C3 gives a SIGILL, so we only do that for i686 and
