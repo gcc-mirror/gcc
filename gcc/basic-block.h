@@ -881,9 +881,6 @@ extern basic_block get_bb_copy (basic_block);
 void set_loop_copy (struct loop *, struct loop *);
 struct loop *get_loop_copy (struct loop *);
 
-
-extern rtx insert_insn_end_bb_new (rtx, basic_block);
-
 #include "cfghooks.h"
 
 /* Return true when one of the predecessor edges of BB is marked with EDGE_EH.  */
