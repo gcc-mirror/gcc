@@ -195,7 +195,7 @@ struct ready_list
 extern char *ready_try;
 extern struct ready_list ready;
 
-extern int max_issue (struct ready_list *, int, state_t, int *);
+extern int max_issue (struct ready_list *, int, state_t, bool, int *);
 
 extern void ebb_compute_jump_reg_dependencies (rtx, regset, regset, regset);
 

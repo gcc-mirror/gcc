@@ -650,6 +650,84 @@ DEFHOOK
  "",
  int, (rtx insn), NULL)
 
+/* This hook prepares the target for a new round of multipass
+   scheduling.
+   DATA is a pointer to target-specific data used for multipass scheduling.
+   READY_TRY and N_READY represent the current state of search in the
+   optimization space.  The target can filter out instructions that
+   should not be tried during current round by setting corresponding
+   elements in READY_TRY to non-zero.
+   FIRST_CYCLE_INSN_P is true if this is the first round of multipass
+   scheduling on current cycle.  */
+DEFHOOK
+(first_cycle_multipass_begin,
+ "",
+ void, (void *data, char *ready_try, int n_ready, bool first_cycle_insn_p),
+ NULL)
+
+/* This hook is called when multipass scheduling evaluates instruction INSN.
+   DATA is a pointer to target-specific data that can be used to record effects
+   of INSN on CPU that are not described in DFA.
+   READY_TRY and N_READY represent the current state of search in the
+   optimization space.  The target can filter out instructions that
+   should not be tried after issueing INSN by setting corresponding
+   elements in READY_TRY to non-zero.
+   INSN is the instruction being evaluated.
+   PREV_DATA is a pointer to target-specific data corresponding
+   to a state before issueing INSN.  */
+DEFHOOK
+(first_cycle_multipass_issue,
+ "",
+ void, (void *data, char *ready_try, int n_ready, rtx insn,
+	const void *prev_data), NULL)
+
+/* This hook is called when multipass scheduling backtracks from evaluation of
+   instruction corresponding to DATA.
+   DATA is a pointer to target-specific data that stores the effects
+   of instruction from which the algorithm backtracks on CPU that are not
+   described in DFA.
+   READY_TRY and N_READY represent the current state of search in the
+   optimization space.  The target can filter out instructions that
+   should not be tried after issueing INSN by setting corresponding
+   elements in READY_TRY to non-zero.  */
+DEFHOOK
+(first_cycle_multipass_backtrack,
+ "",
+ void, (const void *data, char *ready_try, int n_ready), NULL)
+
+/* This hook notifies the target about the result of the concluded current
+   round of multipass scheduling.
+   DATA is a pointer.
+   If DATA is non-NULL it points to target-specific data used for multipass
+   scheduling which corresponds to instruction at the start of the chain of
+   the winning solution.  DATA is NULL when multipass scheduling cannot find
+   a good enough solution on current cycle and decides to retry later,
+   usually after advancing the cycle count.  */
+DEFHOOK
+(first_cycle_multipass_end,
+ "",
+ void, (const void *data), NULL)
+
+/* This hook is called to initialize target-specific data for multipass
+   scheduling after it has been allocated.
+   DATA is a pointer to target-specific data that stores the effects
+   of instruction from which the algorithm backtracks on CPU that are not
+   described in DFA.  */
+DEFHOOK
+(first_cycle_multipass_init,
+ "",
+ void, (void *data), NULL)
+
+/* This hook is called to finalize target-specific data for multipass
+   scheduling before it is deallocated.
+   DATA is a pointer to target-specific data that stores the effects
+   of instruction from which the algorithm backtracks on CPU that are not
+   described in DFA.  */
+DEFHOOK
+(first_cycle_multipass_fini,
+ "",
+ void, (void *data), NULL)
+
 /* The following member value is pointer to a function called by
    the insn scheduler before issuing insn passed as the third
    parameter on given cycle.  If the hook returns nonzero, the

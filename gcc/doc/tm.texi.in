@@ -6642,6 +6642,33 @@ be issued.
 The default is that any ready insns can be chosen to be issued.
 @end deftypefn
 
+@hook TARGET_SCHED_FIRST_CYCLE_MULTIPASS_BEGIN
+This hook prepares the target backend for a new round of multipass
+scheduling.
+@end deftypefn
+
+@hook TARGET_SCHED_FIRST_CYCLE_MULTIPASS_ISSUE
+This hook is called when multipass scheduling evaluates instruction INSN.
+@end deftypefn
+
+@hook TARGET_SCHED_FIRST_CYCLE_MULTIPASS_BACKTRACK
+This is called when multipass scheduling backtracks from evaluation of
+an instruction.
+@end deftypefn
+
+@hook TARGET_SCHED_FIRST_CYCLE_MULTIPASS_END
+This hook notifies the target about the result of the concluded current
+round of multipass scheduling.
+@end deftypefn
+
+@hook TARGET_SCHED_FIRST_CYCLE_MULTIPASS_INIT
+This hook initilizes target-specific data used in multipass scheduling.
+@end deftypefn
+
+@hook TARGET_SCHED_FIRST_CYCLE_MULTIPASS_FINI
+This hook finilizes target-specific data used in multipass scheduling.
+@end deftypefn
+
 @hook TARGET_SCHED_DFA_NEW_CYCLE
 This hook is called by the insn scheduler before issuing @var{insn}
 on cycle @var{clock}.  If the hook returns nonzero,
