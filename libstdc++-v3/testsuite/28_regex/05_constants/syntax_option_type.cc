@@ -70,15 +70,16 @@ test03()
   option = ~std::regex_constants::awk;
   option = ~std::regex_constants::grep;
   option = ~std::regex_constants::egrep;
+  option = option;
 }
 
 void
 test04_constexpr()
 {
   using namespace std::regex_constants;
-  constexpr auto a1 = icase | awk;
-  constexpr auto a2 = icase & awk;
-  constexpr auto a3 = ~grep;
+  constexpr auto a1 __attribute__((unused)) = icase | awk;
+  constexpr auto a2 __attribute__((unused)) = icase & awk;
+  constexpr auto a3 __attribute__((unused)) = ~grep;
 }
 
 int main()

@@ -33,16 +33,26 @@ namespace __gnu_test
 	{
 	  void __constraint()
 	  {
-	    constexpr auto v1(_Ttesttype::icase);
-	    constexpr auto v2(_Ttesttype::nosubs);
-	    constexpr auto v3(_Ttesttype::optimize);
-	    constexpr auto v4(_Ttesttype::collate);
-	    constexpr auto v5(_Ttesttype::ECMAScript);
-	    constexpr auto v6(_Ttesttype::basic);
-	    constexpr auto v7(_Ttesttype::extended);
-	    constexpr auto v8(_Ttesttype::awk);
-	    constexpr auto v9(_Ttesttype::grep);
-	    constexpr auto v10(_Ttesttype::egrep);
+	    constexpr auto v1 __attribute__((unused))
+	      = _Ttesttype::icase;
+	    constexpr auto v2 __attribute__((unused))
+	      = _Ttesttype::nosubs;
+	    constexpr auto v3 __attribute__((unused))
+	      = _Ttesttype::optimize;
+	    constexpr auto v4 __attribute__((unused))
+	      = _Ttesttype::collate;
+	    constexpr auto v5 __attribute__((unused))
+	      = _Ttesttype::ECMAScript;
+	    constexpr auto v6 __attribute__((unused))
+	      = _Ttesttype::basic;
+	    constexpr auto v7 __attribute__((unused))
+	      = _Ttesttype::extended;
+	    constexpr auto v8 __attribute__((unused))
+	      = _Ttesttype::awk;
+	    constexpr auto v9 __attribute__((unused))
+	      = _Ttesttype::grep;
+	    constexpr auto v10 __attribute__((unused))
+	      = _Ttesttype::egrep;
 	  }
 	};
 

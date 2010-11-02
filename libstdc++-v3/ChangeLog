@@ -1,3 +1,54 @@
+2010-11-02  Paolo Carlini  <paolo.carlini@oracle.com
+
+	* testsuite/28_regex/05_constants/syntax_option_type.cc: Avoid
+	-Wall warnings.
+	* testsuite/28_regex/08_basic_regex/requirements/constexpr_data.cc:
+	Likewise.
+	* testsuite/18_support/numeric_limits/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/18_support/numeric_limits/requirements/
+	constexpr_data.cc: Likewise.
+	* testsuite/21_strings/char_traits/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/
+	requirements/constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/
+	requirements/constexpr_data.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/requirements/
+	constexpr_data.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/
+	requirements/constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/
+	requirements/constexpr_data.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/
+	requirements/constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/
+	requirements/constexpr_data.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/
+	requirements/constexpr_functions.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/
+	requirements/constexpr_data.cc: Likewise.
+	* testsuite/26_numerics/complex/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/23_containers/bitset/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/23_containers/array/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/util/testsuite_common_types.h: Likewise.
+	* testsuite/20_util/duration/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/20_util/duration_cast/constexpr.cc: Likewise.
+	* testsuite/20_util/time_point/requirements/
+	constexpr_functions.cc: Likewise.
+	* testsuite/20_util/ratio/requirements/constexpr_data.cc: Likewise.
+
+	* testsuite/tr1/4_metaprogramming/integral_constant/
+	requirements/constexpr_data.cc: Remove.
+
 2010-11-02  Jason Merrill  <jason@redhat.com>
 
 	* include/bits/atomic_0.h (_ATOMIC_CMPEXCHNG_): Use C-style cast.

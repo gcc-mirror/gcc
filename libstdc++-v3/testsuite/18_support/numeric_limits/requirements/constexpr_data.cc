@@ -35,29 +35,52 @@ namespace __gnu_test
 	  { 
 	    using std::float_denorm_style;
 	    using std::float_round_style;
-	    constexpr bool v1(_Ttesttype::is_specialized);
-	    constexpr int v2(_Ttesttype::digits);
-	    constexpr int v3(_Ttesttype::digits10);
-	    constexpr int v4(_Ttesttype::max_digits10);
-	    constexpr bool v5(_Ttesttype::is_signed);
-	    constexpr bool v6(_Ttesttype::is_integer);
-	    constexpr bool v7(_Ttesttype::is_exact);
-	    constexpr int v8(_Ttesttype::radix);
-	    constexpr int v9(_Ttesttype::min_exponent);
-	    constexpr int v10(_Ttesttype::min_exponent10);
-	    constexpr int v11(_Ttesttype::max_exponent);
-	    constexpr int v12(_Ttesttype::max_exponent10);
-	    constexpr bool v13(_Ttesttype::has_infinity);
-	    constexpr bool v14(_Ttesttype::has_quiet_NaN);
-	    constexpr bool v15(_Ttesttype::has_signaling_NaN);
-	    constexpr float_denorm_style v16(_Ttesttype::has_denorm);
-	    constexpr bool v17(_Ttesttype::has_denorm_loss);
-	    constexpr bool v18(_Ttesttype::is_iec559);
-	    constexpr bool v19(_Ttesttype::is_bounded);
-	    constexpr bool v20(_Ttesttype::is_modulo);
-	    constexpr bool v21(_Ttesttype::traps);
-	    constexpr bool v22(_Ttesttype::tinyness_before);
-	    constexpr float_round_style v23(_Ttesttype::round_style);
+	    constexpr bool v1 __attribute__((unused))
+	      = _Ttesttype::is_specialized;
+	    constexpr int v2 __attribute__((unused))
+	      = _Ttesttype::digits;
+	    constexpr int v3 __attribute__((unused))
+	      = _Ttesttype::digits10;
+	    constexpr int v4 __attribute__((unused))
+	      = _Ttesttype::max_digits10;
+	    constexpr bool v5 __attribute__((unused))
+	      = _Ttesttype::is_signed;
+	    constexpr bool v6 __attribute__((unused))
+	      = _Ttesttype::is_integer;
+	    constexpr bool v7 __attribute__((unused))
+	      = _Ttesttype::is_exact;
+	    constexpr int v8 __attribute__((unused))
+	      = _Ttesttype::radix;
+	    constexpr int v9 __attribute__((unused))
+	      = _Ttesttype::min_exponent;
+	    constexpr int v10 __attribute__((unused))
+	      = _Ttesttype::min_exponent10;
+	    constexpr int v11 __attribute__((unused))
+	      = _Ttesttype::max_exponent;
+	    constexpr int v12 __attribute__((unused))
+	      = _Ttesttype::max_exponent10;
+	    constexpr bool v13 __attribute__((unused))
+	      = _Ttesttype::has_infinity;
+	    constexpr bool v14 __attribute__((unused))
+	      = _Ttesttype::has_quiet_NaN;
+	    constexpr bool v15 __attribute__((unused))
+	      = _Ttesttype::has_signaling_NaN;
+	    constexpr float_denorm_style v16 __attribute__((unused))
+	      = _Ttesttype::has_denorm;
+	    constexpr bool v17 __attribute__((unused))
+	      = _Ttesttype::has_denorm_loss;
+	    constexpr bool v18 __attribute__((unused))
+	      = _Ttesttype::is_iec559;
+	    constexpr bool v19 __attribute__((unused))
+	      = _Ttesttype::is_bounded;
+	    constexpr bool v20 __attribute__((unused))
+	      = _Ttesttype::is_modulo;
+	    constexpr bool v21 __attribute__((unused))
+	      = _Ttesttype::traps;
+	    constexpr bool v22 __attribute__((unused))
+	      = _Ttesttype::tinyness_before;
+	    constexpr float_round_style v23 __attribute__((unused))
+	      = _Ttesttype::round_style;
 	  }
 	};
 

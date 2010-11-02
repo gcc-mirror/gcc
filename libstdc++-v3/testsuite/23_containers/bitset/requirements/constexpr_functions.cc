@@ -34,7 +34,7 @@ namespace __gnu_test
 	  void __constraint()
 	  { 
             constexpr _Ttesttype obj;
-            constexpr auto v1 = obj.size();
+            constexpr auto v1 __attribute__((unused)) = obj.size();
 	    //	    constexpr auto v2 = obj[4];
 	  }
 	};

@@ -33,8 +33,10 @@ namespace __gnu_test
 	{
 	  void __constraint()
 	  { 
-	    constexpr auto v1(_Ttesttype::min());
-	    constexpr auto v2(_Ttesttype::max());
+	    constexpr auto v1 __attribute__((unused))
+	      = _Ttesttype::min();
+	    constexpr auto v2 __attribute__((unused))
+	      = _Ttesttype::max();
 	  }
 	};
 

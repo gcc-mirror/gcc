@@ -33,8 +33,10 @@ namespace __gnu_test
 	{
 	  void __constraint()
 	  {
-	    constexpr auto v1(_Ttesttype::block_size);
-	    constexpr auto v2(_Ttesttype::used_block);
+	    constexpr auto v1 __attribute__((unused))
+	      = _Ttesttype::block_size;
+	    constexpr auto v2 __attribute__((unused))
+	      = _Ttesttype::used_block;
 	  }
 	};
 

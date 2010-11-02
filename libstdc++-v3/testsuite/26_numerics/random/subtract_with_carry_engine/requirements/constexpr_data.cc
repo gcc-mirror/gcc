@@ -33,10 +33,14 @@ namespace __gnu_test
 	{
 	  void __constraint()
 	  {
-	    constexpr auto v1(_Ttesttype::word_size);
-	    constexpr auto v2(_Ttesttype::short_lag);
-	    constexpr auto v3(_Ttesttype::long_lag);
-	    constexpr auto v4(_Ttesttype::default_seed);
+	    constexpr auto v1 __attribute__((unused))
+	      = _Ttesttype::word_size;
+	    constexpr auto v2 __attribute__((unused))
+	      = _Ttesttype::short_lag;
+	    constexpr auto v3 __attribute__((unused))
+	      = _Ttesttype::long_lag;
+	    constexpr auto v4 __attribute__((unused))
+	      = _Ttesttype::default_seed;
 	  }
 	};
 
