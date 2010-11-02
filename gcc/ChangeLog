@@ -1,3 +1,9 @@
+2010-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46255
+	* tree-cfg.c (gimple_flow_call_edges_add): Use gsi_last_nondebug_bb
+	instead of gsi_last_bb.
+
 2010-11-02  Bernd Schmidt  <bernds@codesourcery.com>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 

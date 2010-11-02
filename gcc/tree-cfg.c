@@ -6749,7 +6749,7 @@ gimple_flow_call_edges_add (sbitmap blocks)
   if (check_last_block)
     {
       basic_block bb = EXIT_BLOCK_PTR->prev_bb;
-      gimple_stmt_iterator gsi = gsi_last_bb (bb);
+      gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
       gimple t = NULL;
 
       if (!gsi_end_p (gsi))
@@ -6783,7 +6783,7 @@ gimple_flow_call_edges_add (sbitmap blocks)
       if (blocks && !TEST_BIT (blocks, i))
 	continue;
 
-      gsi = gsi_last_bb (bb);
+      gsi = gsi_last_nondebug_bb (bb);
       if (!gsi_end_p (gsi))
 	{
 	  last_stmt = gsi_stmt (gsi);
