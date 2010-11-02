@@ -71,33 +71,33 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _S_ios_fmtflags_end = 1L << 16 
     };
 
-  inline _Ios_Fmtflags
+  inline _GLIBCXX_CONSTEXPR _Ios_Fmtflags
   operator&(_Ios_Fmtflags __a, _Ios_Fmtflags __b)
   { return _Ios_Fmtflags(static_cast<int>(__a) & static_cast<int>(__b)); }
 
-  inline _Ios_Fmtflags
+  inline _GLIBCXX_CONSTEXPR _Ios_Fmtflags
   operator|(_Ios_Fmtflags __a, _Ios_Fmtflags __b)
   { return _Ios_Fmtflags(static_cast<int>(__a) | static_cast<int>(__b)); }
 
-  inline _Ios_Fmtflags
+  inline _GLIBCXX_CONSTEXPR _Ios_Fmtflags
   operator^(_Ios_Fmtflags __a, _Ios_Fmtflags __b)
   { return _Ios_Fmtflags(static_cast<int>(__a) ^ static_cast<int>(__b)); }
 
-  inline _Ios_Fmtflags&
+  inline _GLIBCXX_CONSTEXPR _Ios_Fmtflags
+  operator~(_Ios_Fmtflags __a)
+  { return _Ios_Fmtflags(~static_cast<int>(__a)); }
+
+  inline const _Ios_Fmtflags&
   operator|=(_Ios_Fmtflags& __a, _Ios_Fmtflags __b)
   { return __a = __a | __b; }
 
-  inline _Ios_Fmtflags&
+  inline const _Ios_Fmtflags&
   operator&=(_Ios_Fmtflags& __a, _Ios_Fmtflags __b)
   { return __a = __a & __b; }
 
-  inline _Ios_Fmtflags&
+  inline const _Ios_Fmtflags&
   operator^=(_Ios_Fmtflags& __a, _Ios_Fmtflags __b)
   { return __a = __a ^ __b; }
-
-  inline _Ios_Fmtflags
-  operator~(_Ios_Fmtflags __a)
-  { return _Ios_Fmtflags(~static_cast<int>(__a)); }
 
 
   enum _Ios_Openmode 
@@ -111,33 +111,33 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _S_ios_openmode_end = 1L << 16 
     };
 
-  inline _Ios_Openmode
+  inline _GLIBCXX_CONSTEXPR _Ios_Openmode
   operator&(_Ios_Openmode __a, _Ios_Openmode __b)
   { return _Ios_Openmode(static_cast<int>(__a) & static_cast<int>(__b)); }
 
-  inline _Ios_Openmode
+  inline _GLIBCXX_CONSTEXPR _Ios_Openmode
   operator|(_Ios_Openmode __a, _Ios_Openmode __b)
   { return _Ios_Openmode(static_cast<int>(__a) | static_cast<int>(__b)); }
 
-  inline _Ios_Openmode
+  inline _GLIBCXX_CONSTEXPR _Ios_Openmode
   operator^(_Ios_Openmode __a, _Ios_Openmode __b)
   { return _Ios_Openmode(static_cast<int>(__a) ^ static_cast<int>(__b)); }
 
-  inline _Ios_Openmode&
+  inline _GLIBCXX_CONSTEXPR _Ios_Openmode
+  operator~(_Ios_Openmode __a)
+  { return _Ios_Openmode(~static_cast<int>(__a)); }
+
+  inline const _Ios_Openmode&
   operator|=(_Ios_Openmode& __a, _Ios_Openmode __b)
   { return __a = __a | __b; }
 
-  inline _Ios_Openmode&
+  inline const _Ios_Openmode&
   operator&=(_Ios_Openmode& __a, _Ios_Openmode __b)
   { return __a = __a & __b; }
 
-  inline _Ios_Openmode&
+  inline const _Ios_Openmode&
   operator^=(_Ios_Openmode& __a, _Ios_Openmode __b)
   { return __a = __a ^ __b; }
-
-  inline _Ios_Openmode
-  operator~(_Ios_Openmode __a)
-  { return _Ios_Openmode(~static_cast<int>(__a)); }
 
 
   enum _Ios_Iostate
@@ -149,33 +149,34 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _S_ios_iostate_end = 1L << 16 
     };
 
-  inline _Ios_Iostate
+  inline _GLIBCXX_CONSTEXPR _Ios_Iostate
   operator&(_Ios_Iostate __a, _Ios_Iostate __b)
   { return _Ios_Iostate(static_cast<int>(__a) & static_cast<int>(__b)); }
 
-  inline _Ios_Iostate
+  inline _GLIBCXX_CONSTEXPR _Ios_Iostate
   operator|(_Ios_Iostate __a, _Ios_Iostate __b)
   { return _Ios_Iostate(static_cast<int>(__a) | static_cast<int>(__b)); }
 
-  inline _Ios_Iostate
+  inline _GLIBCXX_CONSTEXPR _Ios_Iostate
   operator^(_Ios_Iostate __a, _Ios_Iostate __b)
   { return _Ios_Iostate(static_cast<int>(__a) ^ static_cast<int>(__b)); }
 
-  inline _Ios_Iostate&
+  inline _GLIBCXX_CONSTEXPR _Ios_Iostate
+  operator~(_Ios_Iostate __a)
+  { return _Ios_Iostate(~static_cast<int>(__a)); }
+
+  inline const _Ios_Iostate&
   operator|=(_Ios_Iostate& __a, _Ios_Iostate __b)
   { return __a = __a | __b; }
 
-  inline _Ios_Iostate&
+  inline const _Ios_Iostate&
   operator&=(_Ios_Iostate& __a, _Ios_Iostate __b)
   { return __a = __a & __b; }
 
-  inline _Ios_Iostate&
+  inline const  _Ios_Iostate&
   operator^=(_Ios_Iostate& __a, _Ios_Iostate __b)
   { return __a = __a ^ __b; }
 
-  inline _Ios_Iostate
-  operator~(_Ios_Iostate __a)
-  { return _Ios_Iostate(~static_cast<int>(__a)); }
 
   enum _Ios_Seekdir 
     { 

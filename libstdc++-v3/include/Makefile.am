@@ -1,4 +1,4 @@
-#o# Makefile for the include subdirectory of the GNU C++ Standard library.
+## Makefile for the include subdirectory of the GNU C++ Standard library.
 ##
 ## Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 ## Free Software Foundation, Inc.
@@ -80,8 +80,6 @@ bits_headers = \
         ${bits_srcdir}/algorithmfwd.h \
 	${bits_srcdir}/allocator.h \
 	${bits_srcdir}/atomic_base.h \
-	${bits_srcdir}/atomicfwd_c.h \
-	${bits_srcdir}/atomicfwd_cxx.h \
 	${bits_srcdir}/atomic_0.h \
 	${bits_srcdir}/atomic_2.h \
 	${bits_srcdir}/basic_ios.h \
@@ -679,8 +677,7 @@ if GLIBCXX_C_HEADERS_C_GLOBAL
 c_compatibility_headers = \
 	${c_compatibility_srcdir}/complex.h \
 	${c_compatibility_srcdir}/fenv.h \
-	${c_compatibility_srcdir}/tgmath.h \
-	${c_compatibility_srcdir}/stdatomic.h
+	${c_compatibility_srcdir}/tgmath.h
 endif
 
 if GLIBCXX_C_HEADERS_C

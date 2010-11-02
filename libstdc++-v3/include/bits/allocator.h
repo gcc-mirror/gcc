@@ -208,7 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// [allocator.tag]
   struct allocator_arg_t { };
 
-  static const allocator_arg_t allocator_arg = allocator_arg_t();
+  constexpr allocator_arg_t allocator_arg = allocator_arg_t();
 
 _GLIBCXX_HAS_NESTED_TYPE(allocator_type)
 

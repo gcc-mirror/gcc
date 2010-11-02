@@ -72,36 +72,39 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       /// 0 is the least significant word.
       _WordT 		_M_w[_Nw];
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      constexpr _Base_bitset() : _M_w({ }) { }
+
+      constexpr _Base_bitset(unsigned long long __val)
+      : _M_w({ __val
+#if __SIZEOF_LONG_LONG__ > __SIZEOF_LONG__
+	       , __val >> _GLIBCXX_BITSET_BITS_PER_WORD
+#endif
+       }) { }
+#else
       _Base_bitset()
       { _M_do_reset(); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      _Base_bitset(unsigned long long __val)
-#else
       _Base_bitset(unsigned long __val)
-#endif
       {
 	_M_do_reset();
 	_M_w[0] = __val;
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	if (sizeof(unsigned long long) > sizeof(unsigned long))
-	  _M_w[1] = __val >> _GLIBCXX_BITSET_BITS_PER_WORD;
-#endif
       }
+#endif
 
-      static size_t
+      static _GLIBCXX_CONSTEXPR size_t
       _S_whichword(size_t __pos )
       { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
-      static size_t
+      static _GLIBCXX_CONSTEXPR size_t
       _S_whichbyte(size_t __pos )
       { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
-      static size_t
+      static _GLIBCXX_CONSTEXPR size_t
       _S_whichbit(size_t __pos )
       { return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
-      static _WordT
+      static _GLIBCXX_CONSTEXPR _WordT
       _S_maskbit(size_t __pos )
       { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
@@ -123,7 +126,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _M_hiword()
       { return _M_w[_Nw - 1]; }
 
-      _WordT
+      _GLIBCXX_CONSTEXPR _WordT
       _M_hiword() const
       { return _M_w[_Nw - 1]; }
 
@@ -368,31 +371,31 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       typedef unsigned long _WordT;
       _WordT _M_w;
 
-      _Base_bitset(void)
+      _GLIBCXX_CONSTEXPR _Base_bitset()
       : _M_w(0)
       { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      _Base_bitset(unsigned long long __val)
+      constexpr _Base_bitset(unsigned long long __val)
 #else
       _Base_bitset(unsigned long __val)
 #endif
       : _M_w(__val)
       { }
 
-      static size_t
+      static _GLIBCXX_CONSTEXPR size_t
       _S_whichword(size_t __pos )
       { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
-      static size_t
+      static _GLIBCXX_CONSTEXPR size_t
       _S_whichbyte(size_t __pos )
       { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
-      static size_t
+      static _GLIBCXX_CONSTEXPR size_t
       _S_whichbit(size_t __pos )
       {  return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
-      static _WordT
+      static _GLIBCXX_CONSTEXPR _WordT
       _S_maskbit(size_t __pos )
       { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
@@ -414,7 +417,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _M_hiword()
       { return _M_w; }
 
-      _WordT
+      _GLIBCXX_CONSTEXPR _WordT
       _M_hiword() const
       { return _M_w; }
 
@@ -511,29 +514,29 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     {
       typedef unsigned long _WordT;
 
-      _Base_bitset()
+      _GLIBCXX_CONSTEXPR _Base_bitset()
       { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      _Base_bitset(unsigned long long)
+      constexpr _Base_bitset(unsigned long long)
 #else
       _Base_bitset(unsigned long)
 #endif
       { }
 
-      static size_t
+      static _GLIBCXX_CONSTEXPR size_t
       _S_whichword(size_t __pos )
       { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
-      static size_t
+      static _GLIBCXX_CONSTEXPR size_t
       _S_whichbyte(size_t __pos )
       { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
-      static size_t
+      static _GLIBCXX_CONSTEXPR size_t
       _S_whichbit(size_t __pos )
       {  return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
-      static _WordT
+      static _GLIBCXX_CONSTEXPR _WordT
       _S_maskbit(size_t __pos )
       { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
@@ -545,13 +548,17 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       // make an unchecked call; all the memory ugliness is therefore
       // localized to this single should-never-get-this-far function.
       _WordT&
-      _M_getword(size_t) const
+      _M_getword(size_t)
       { 
 	__throw_out_of_range(__N("_Base_bitset::_M_getword")); 
 	return *new _WordT; 
       }
 
       _WordT
+      _M_getword(size_t __pos) const
+      { return 0; }
+
+      _GLIBCXX_CONSTEXPR _WordT
       _M_hiword() const
       { return 0; }
 
@@ -632,13 +639,21 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
   template<size_t _Extrabits>
     struct _Sanitize
     {
-      static void _S_do_sanitize(unsigned long& __val)
-      { __val &= ~((~static_cast<unsigned long>(0)) << _Extrabits); }
+      typedef unsigned long _WordT;
+
+      static void 
+      _S_do_sanitize(_WordT& __val)
+      { __val &= ~((~static_cast<_WordT>(0)) << _Extrabits); }
     };
 
   template<>
     struct _Sanitize<0>
-    { static void _S_do_sanitize(unsigned long) {} };
+    { 
+      typedef unsigned long _WordT;
+
+      static void 
+      _S_do_sanitize(_WordT) { } 
+    };
 
   /**
    *  @brief  The %bitset class represents a @e fixed-size sequence of bits.
@@ -713,11 +728,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       typedef unsigned long _WordT;
 
       void
-	_M_do_sanitize()
-	{
-	  _Sanitize<_Nb % _GLIBCXX_BITSET_BITS_PER_WORD>::
-	    _S_do_sanitize(this->_M_hiword());
-	}
+      _M_do_sanitize()
+      { 
+	typedef _Sanitize<_Nb % _GLIBCXX_BITSET_BITS_PER_WORD> __sanitize_type;
+	__sanitize_type::_S_do_sanitize(this->_M_hiword());
+      }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       template<typename> friend class hash;
@@ -740,8 +755,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       {
 	friend class bitset;
 
-	_WordT *_M_wp;
-	size_t _M_bpos;
+	_WordT*	_M_wp;
+	size_t 	_M_bpos;
 	
 	// left undefined
 	reference();
@@ -799,17 +814,18 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
       // 23.3.5.1 constructors:
       /// All bits set to zero.
-      bitset()
+      _GLIBCXX_CONSTEXPR bitset()
       { }
 
       /// Initial bits bitwise-copied from a single word (others set to zero).
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      bitset(unsigned long long __val)
+      constexpr bitset(unsigned long long __val)
+      : _Base(__val) { }
 #else
       bitset(unsigned long __val)
-#endif
       : _Base(__val)
       { _M_do_sanitize(); }
+#endif
 
       /**
        *  @brief  Use a subset of a string.
@@ -1088,8 +1104,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       /**
        *  @brief  Array-indexing support.
        *  @param  position  Index into the %bitset.
-       *  @return  A bool for a <em>const %bitset</em>.  For non-const bitsets, an
-       *           instance of the reference proxy class.
+       *  @return A bool for a <em>const %bitset</em>.  For non-const
+       *           bitsets, an instance of the reference proxy class.
        *  @note  These operators do no range checking and throw no exceptions,
        *         as required by DR 11 to the standard.
        *
@@ -1101,7 +1117,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        */
       reference
       operator[](size_t __position)
-      { return reference(*this,__position); }
+      { return reference(*this, __position); }
 
       bool
       operator[](size_t __position) const
@@ -1236,7 +1252,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       { return this->_M_do_count(); }
 
       /// Returns the total number of bits.
-      size_t
+      _GLIBCXX_CONSTEXPR size_t
       size() const
       { return _Nb; }
 

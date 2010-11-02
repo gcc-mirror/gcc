@@ -72,47 +72,49 @@ namespace std
 #endif
       _M_i = false;
     }
+
+  _GLIBCXX_BEGIN_EXTERN_C
+
+  bool
+  atomic_flag_test_and_set_explicit(__atomic_flag_base* __a,
+				    memory_order __m) _GLIBCXX_NOTHROW
+  {
+    atomic_flag* d = static_cast<atomic_flag*>(__a);
+    return d->test_and_set(__m);
   }
 
-  extern "C"
+  void
+  atomic_flag_clear_explicit(__atomic_flag_base* __a,
+			     memory_order __m) _GLIBCXX_NOTHROW
   {
-    bool
-    atomic_flag_test_and_set_explicit(__atomic_flag_base* __a,
-				      memory_order __m) throw()
-    {
-      atomic_flag* d = static_cast<volatile atomic_flag*>(__a);
-      return d->test_and_set(__m);
-    }
+    atomic_flag* d = static_cast<atomic_flag*>(__a);
+    return d->clear(__m);
+  }
 
-    void
-    atomic_flag_clear_explicit(__atomic_flag_base* __a, 
-			       memory_order __m) throw()
-    {
-      atomic_flag* d = static_cast<volatile atomic_flag*>(__a);
-      return d->clear(__m);
-    }
+  void
+  __atomic_flag_wait_explicit(__atomic_flag_base* __a,
+			      memory_order __x) _GLIBCXX_NOTHROW
+  {
+    while (atomic_flag_test_and_set_explicit(__a, __x))
+      { };
+  }
 
-    void
-    __atomic_flag_wait_explicit(__atomic_flag_base* __a,
-				memory_order __x) throw()
-    {
-      while (atomic_flag_test_and_set_explicit(__a, __x))
-	{ };
-    }
+  _GLIBCXX_CONST __atomic_flag_base*
+  __atomic_flag_for_address(const volatile void* __z) _GLIBCXX_NOTHROW
+  {
+    uintptr_t __u = reinterpret_cast<uintptr_t>(__z);
+    __u += (__u >> 2) + (__u << 4);
+    __u += (__u >> 7) + (__u << 5);
+    __u += (__u >> 17) + (__u << 13);
+    if (sizeof(uintptr_t) > 4)
+      __u += (__u >> 31);
+    __u &= ~((~uintptr_t(0)) << LOGSIZE);
+    return flag_table + __u;
+  }
 
-    __atomic_flag_base*
-    __atomic_flag_for_address(const void* __z) throw()
-    {
-      uintptr_t __u = reinterpret_cast<uintptr_t>(__z);
-      __u += (__u >> 2) + (__u << 4);
-      __u += (__u >> 7) + (__u << 5);
-      __u += (__u >> 17) + (__u << 13);
-      if (sizeof(uintptr_t) > 4)
-	__u += (__u >> 31);
-      __u &= ~((~uintptr_t(0)) << LOGSIZE);
-      return flag_table + __u;
-    }
-  } // extern "C"
+  _GLIBCXX_END_EXTERN_C
+
+  } // namespace __atomic0
 } // namespace std
 
 

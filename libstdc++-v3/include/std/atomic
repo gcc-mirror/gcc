@@ -38,8 +38,9 @@
 # include <bits/c++0x_warning.h>
 #endif
 
-#include <bits/c++config.h>
 #include <bits/atomic_base.h>
+#include <bits/atomic_0.h>
+#include <bits/atomic_2.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -48,37 +49,103 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    * @{
    */
 
-  /// kill_dependency
-  template<typename _Tp>
-    inline _Tp
-    kill_dependency(_Tp __y)
-    {
-      _Tp ret(__y);
-      return ret;
-    }
-
-  inline memory_order
-  __calculate_memory_order(memory_order __m)
+  /// atomic_bool
+  // NB: No operators or fetch-operations for this type.
+  struct atomic_bool
   {
-    const bool __cond1 = __m == memory_order_release;
-    const bool __cond2 = __m == memory_order_acq_rel;
-    memory_order __mo1(__cond1 ? memory_order_relaxed : __m);
-    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
-    return __mo2;
-  }
+  private:
+    __atomic_base<bool>	_M_base;
 
-  //
-  // Three nested namespaces for atomic implementation details.
-  //
-  // The nested namespace inlined into std:: is determined by the value
-  // of the _GLIBCXX_ATOMIC_PROPERTY macro and the resulting
-  // ATOMIC_*_LOCK_FREE macros. See file atomic_base.h.
-  //
-  // 0 == __atomic0 == Never lock-free
-  // 1 == __atomic1 == Best available, sometimes lock-free
-  // 2 == __atomic2 == Always lock-free
-#include <bits/atomic_0.h>
-#include <bits/atomic_2.h>
+  public:
+    atomic_bool() = default;
+    ~atomic_bool() = default;
+    atomic_bool(const atomic_bool&) = delete;
+    atomic_bool& operator=(const atomic_bool&) = delete;
+    atomic_bool& operator=(const atomic_bool&) volatile = delete;
+
+    constexpr atomic_bool(bool __i) : _M_base(__i) { }
+
+    bool
+    operator=(bool __i)
+    { return _M_base.operator=(__i); }
+
+    operator bool() const
+    { return _M_base.load(); }
+
+    operator bool() const volatile
+    { return _M_base.load(); }
+
+    bool
+    is_lock_free() const { return _M_base.is_lock_free(); }
+
+    bool
+    is_lock_free() const volatile { return _M_base.is_lock_free(); }
+
+    void
+    store(bool __i, memory_order __m = memory_order_seq_cst)
+    { _M_base.store(__i, __m); }
+
+    void
+    store(bool __i, memory_order __m = memory_order_seq_cst) volatile
+    { _M_base.store(__i, __m); }
+
+    bool
+    load(memory_order __m = memory_order_seq_cst) const
+    { return _M_base.load(__m); }
+
+    bool
+    load(memory_order __m = memory_order_seq_cst) const volatile
+    { return _M_base.load(__m); }
+
+    bool
+    exchange(bool __i, memory_order __m = memory_order_seq_cst)
+    { return _M_base.exchange(__i, __m); }
+
+    bool
+    exchange(bool __i, memory_order __m = memory_order_seq_cst) volatile
+    { return _M_base.exchange(__i, __m); }
+
+    bool
+    compare_exchange_weak(bool& __i1, bool __i2, memory_order __m1,
+			  memory_order __m2)
+    { return _M_base.compare_exchange_weak(__i1, __i2, __m1, __m2); }
+
+    bool
+    compare_exchange_weak(bool& __i1, bool __i2, memory_order __m1,
+			  memory_order __m2) volatile
+    { return _M_base.compare_exchange_weak(__i1, __i2, __m1, __m2); }
+
+    bool
+    compare_exchange_weak(bool& __i1, bool __i2,
+			  memory_order __m = memory_order_seq_cst)
+    { return _M_base.compare_exchange_weak(__i1, __i2, __m); }
+
+    bool
+    compare_exchange_weak(bool& __i1, bool __i2,
+			  memory_order __m = memory_order_seq_cst) volatile
+    { return _M_base.compare_exchange_weak(__i1, __i2, __m); }
+
+    bool
+    compare_exchange_strong(bool& __i1, bool __i2, memory_order __m1,
+			    memory_order __m2)
+    { return _M_base.compare_exchange_strong(__i1, __i2, __m1, __m2); }
+
+    bool
+    compare_exchange_strong(bool& __i1, bool __i2, memory_order __m1,
+			    memory_order __m2) volatile
+    { return _M_base.compare_exchange_strong(__i1, __i2, __m1, __m2); }
+
+    bool
+    compare_exchange_strong(bool& __i1, bool __i2,
+			    memory_order __m = memory_order_seq_cst)
+    { return _M_base.compare_exchange_strong(__i1, __i2, __m); }
+
+    bool
+    compare_exchange_strong(bool& __i1, bool __i2,
+			    memory_order __m = memory_order_seq_cst) volatile
+    { return _M_base.compare_exchange_strong(__i1, __i2, __m); }
+  };
+
 
   /// atomic
   /// 29.4.3, Generic atomic type, primary class template.
@@ -92,36 +159,66 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(_Tp __i) : _M_i(__i) { }
+      constexpr atomic(_Tp __i) : _M_i(__i) { }
 
       operator _Tp() const;
 
+      operator _Tp() const volatile;
+
       _Tp
       operator=(_Tp __i) { store(__i); return __i; }
+
+      _Tp
+      operator=(_Tp __i) volatile { store(__i); return __i; }
+
+      bool
+      is_lock_free() const;
 
       bool
       is_lock_free() const volatile;
 
       void
+      store(_Tp, memory_order = memory_order_seq_cst);
+
+      void
       store(_Tp, memory_order = memory_order_seq_cst) volatile;
+
+      _Tp
+      load(memory_order = memory_order_seq_cst) const;
 
       _Tp
       load(memory_order = memory_order_seq_cst) const volatile;
 
       _Tp
+      exchange(_Tp __i, memory_order = memory_order_seq_cst);
+
+      _Tp
       exchange(_Tp __i, memory_order = memory_order_seq_cst) volatile;
+
+      bool
+      compare_exchange_weak(_Tp&, _Tp, memory_order, memory_order);
 
       bool
       compare_exchange_weak(_Tp&, _Tp, memory_order, memory_order) volatile;
 
       bool
-      compare_exchange_strong(_Tp&, _Tp, memory_order, memory_order) volatile;
+      compare_exchange_weak(_Tp&, _Tp, memory_order = memory_order_seq_cst);
 
       bool
       compare_exchange_weak(_Tp&, _Tp,
 			    memory_order = memory_order_seq_cst) volatile;
+
+      bool
+      compare_exchange_strong(_Tp&, _Tp, memory_order, memory_order);
+
+      bool
+      compare_exchange_strong(_Tp&, _Tp, memory_order, memory_order) volatile;
+
+      bool
+      compare_exchange_strong(_Tp&, _Tp, memory_order = memory_order_seq_cst);
 
       bool
       compare_exchange_strong(_Tp&, _Tp,
@@ -138,39 +235,68 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(_Tp* __v) : atomic_address(__v) { }
+      constexpr atomic(_Tp* __v) : atomic_address(__v) { }
 
       void
-      store(_Tp* __v, memory_order __m = memory_order_seq_cst)
-      { atomic_address::store(__v, __m); }
+      store(_Tp*, memory_order = memory_order_seq_cst);
+
+      void
+      store(_Tp*, memory_order = memory_order_seq_cst) volatile;
 
       _Tp*
-      load(memory_order __m = memory_order_seq_cst) const
-      { return static_cast<_Tp*>(atomic_address::load(__m)); }
+      load(memory_order = memory_order_seq_cst) const;
 
       _Tp*
-      exchange(_Tp* __v, memory_order __m = memory_order_seq_cst)
-      { return static_cast<_Tp*>(atomic_address::exchange(__v, __m)); }
+      load(memory_order = memory_order_seq_cst) const volatile;
+
+      _Tp*
+      exchange(_Tp*, memory_order = memory_order_seq_cst);
+
+      _Tp*
+      exchange(_Tp*, memory_order = memory_order_seq_cst) volatile;
 
       bool
       compare_exchange_weak(_Tp*&, _Tp*, memory_order, memory_order);
 
       bool
-      compare_exchange_strong(_Tp*&, _Tp*, memory_order, memory_order);
+      compare_exchange_weak(_Tp*&, _Tp*, memory_order, memory_order) volatile;
 
       bool
       compare_exchange_weak(_Tp*&, _Tp*, memory_order = memory_order_seq_cst);
 
       bool
+      compare_exchange_weak(_Tp*&, _Tp*,
+			    memory_order = memory_order_seq_cst) volatile;
+
+      bool
+      compare_exchange_strong(_Tp*&, _Tp*, memory_order, memory_order);
+
+      bool
+      compare_exchange_strong(_Tp*&, _Tp*, memory_order, memory_order) volatile;
+
+      bool
       compare_exchange_strong(_Tp*&, _Tp*, memory_order = memory_order_seq_cst);
+
+      bool
+      compare_exchange_strong(_Tp*&, _Tp*,
+			      memory_order = memory_order_seq_cst) volatile;
 
       _Tp*
       fetch_add(ptrdiff_t, memory_order = memory_order_seq_cst);
 
       _Tp*
+      fetch_add(ptrdiff_t, memory_order = memory_order_seq_cst) volatile;
+
+      _Tp*
       fetch_sub(ptrdiff_t, memory_order = memory_order_seq_cst);
 
+      _Tp*
+      fetch_sub(ptrdiff_t, memory_order = memory_order_seq_cst) volatile;
+
       operator _Tp*() const
+      { return load(); }
+
+      operator _Tp*() const volatile
       { return load(); }
 
       _Tp*
@@ -181,43 +307,51 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
 
       _Tp*
+      operator=(_Tp* __v) volatile
+      {
+	store(__v);
+	return __v;
+      }
+
+      _Tp*
       operator++(int) { return fetch_add(1); }
+
+      _Tp*
+      operator++(int) volatile { return fetch_add(1); }
 
       _Tp*
       operator--(int) { return fetch_sub(1); }
 
       _Tp*
+      operator--(int) volatile { return fetch_sub(1); }
+
+      _Tp*
       operator++() { return fetch_add(1) + 1; }
 
       _Tp*
+      operator++() volatile { return fetch_add(1) + 1; }
+
+      _Tp*
       operator--() { return fetch_sub(1) - 1; }
+
+      _Tp*
+      operator--() volatile { return fetch_sub(1) - 1; }
 
       _Tp*
       operator+=(ptrdiff_t __d)
       { return fetch_add(__d) + __d; }
 
       _Tp*
+      operator+=(ptrdiff_t __d) volatile
+      { return fetch_add(__d) + __d; }
+
+      _Tp*
       operator-=(ptrdiff_t __d)
       { return fetch_sub(__d) - __d; }
-    };
 
-
-  /// Explicit specialization for void*
-  template<>
-    struct atomic<void*> : public atomic_address
-    {
-      typedef void* 			__integral_type;
-      typedef atomic_address 		__base_type;
-
-      atomic() = default;
-      ~atomic() = default;
-      atomic(const atomic&) = delete;
-      atomic& operator=(const atomic&) volatile = delete;
-
-      atomic(__integral_type __i) : __base_type(__i) { }
-
-      using __base_type::operator __integral_type;
-      using __base_type::operator=;
+      _Tp*
+      operator-=(ptrdiff_t __d) volatile
+      { return fetch_sub(__d) - __d; }
     };
 
   /// Explicit specialization for bool.
@@ -230,9 +364,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
@@ -248,9 +383,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
@@ -266,9 +402,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
@@ -284,9 +421,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
@@ -302,9 +440,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
@@ -320,9 +459,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
@@ -338,9 +478,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
@@ -356,9 +497,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
@@ -374,9 +516,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
@@ -392,9 +535,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
@@ -410,9 +554,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
@@ -428,9 +573,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
@@ -446,9 +592,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
@@ -464,9 +611,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
@@ -482,13 +630,35 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic() = default;
       ~atomic() = default;
       atomic(const atomic&) = delete;
+      atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
-      atomic(__integral_type __i) : __base_type(__i) { }
+      constexpr atomic(__integral_type __i) : __base_type(__i) { }
 
       using __base_type::operator __integral_type;
       using __base_type::operator=;
     };
+
+
+  template<typename _Tp>
+    _Tp*
+    atomic<_Tp*>::load(memory_order __m) const
+    { return static_cast<_Tp*>(atomic_address::load(__m)); }
+
+  template<typename _Tp>
+    _Tp*
+    atomic<_Tp*>::load(memory_order __m) const volatile
+    { return static_cast<_Tp*>(atomic_address::load(__m)); }
+
+  template<typename _Tp>
+    _Tp*
+    atomic<_Tp*>::exchange(_Tp* __v, memory_order __m)
+    { return static_cast<_Tp*>(atomic_address::exchange(__v, __m)); }
+
+  template<typename _Tp>
+    _Tp*
+    atomic<_Tp*>::exchange(_Tp* __v, memory_order __m) volatile
+    { return static_cast<_Tp*>(atomic_address::exchange(__v, __m)); }
 
   template<typename _Tp>
     bool
@@ -498,6 +668,33 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       void** __vr = reinterpret_cast<void**>(&__r);
       void* __vv = static_cast<void*>(__v);
       return atomic_address::compare_exchange_weak(*__vr, __vv, __m1, __m2);
+    }
+
+  template<typename _Tp>
+    bool
+    atomic<_Tp*>::compare_exchange_weak(_Tp*& __r, _Tp* __v, memory_order __m1,
+					memory_order __m2) volatile
+    {
+      void** __vr = reinterpret_cast<void**>(&__r);
+      void* __vv = static_cast<void*>(__v);
+      return atomic_address::compare_exchange_weak(*__vr, __vv, __m1, __m2);
+    }
+
+  template<typename _Tp>
+    bool
+    atomic<_Tp*>::compare_exchange_weak(_Tp*& __r, _Tp* __v, memory_order __m)
+    {
+      return compare_exchange_weak(__r, __v, __m,
+				   __calculate_memory_order(__m));
+    }
+
+  template<typename _Tp>
+    bool
+    atomic<_Tp*>::compare_exchange_weak(_Tp*& __r, _Tp* __v,
+					memory_order __m) volatile
+    {
+      return compare_exchange_weak(__r, __v, __m,
+				   __calculate_memory_order(__m));
     }
 
   template<typename _Tp>
@@ -513,17 +710,28 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Tp>
     bool
-    atomic<_Tp*>::compare_exchange_weak(_Tp*& __r, _Tp* __v,
-					memory_order __m)
+    atomic<_Tp*>::compare_exchange_strong(_Tp*& __r, _Tp* __v,
+					  memory_order __m1,
+					  memory_order __m2) volatile
     {
-      return compare_exchange_weak(__r, __v, __m,
-				   __calculate_memory_order(__m));
+      void** __vr = reinterpret_cast<void**>(&__r);
+      void* __vv = static_cast<void*>(__v);
+      return atomic_address::compare_exchange_strong(*__vr, __vv, __m1, __m2);
     }
 
   template<typename _Tp>
     bool
     atomic<_Tp*>::compare_exchange_strong(_Tp*& __r, _Tp* __v,
-					memory_order __m)
+					  memory_order __m)
+    {
+      return compare_exchange_strong(__r, __v, __m,
+				     __calculate_memory_order(__m));
+    }
+
+  template<typename _Tp>
+    bool
+    atomic<_Tp*>::compare_exchange_strong(_Tp*& __r, _Tp* __v,
+					  memory_order __m) volatile
     {
       return compare_exchange_strong(__r, __v, __m,
 				     __calculate_memory_order(__m));
@@ -539,50 +747,141 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Tp>
     _Tp*
+    atomic<_Tp*>::fetch_add(ptrdiff_t __d, memory_order __m) volatile
+    {
+      void* __p = atomic_fetch_add_explicit(this, sizeof(_Tp) * __d, __m);
+      return static_cast<_Tp*>(__p);
+    }
+
+  template<typename _Tp>
+    _Tp*
     atomic<_Tp*>::fetch_sub(ptrdiff_t __d, memory_order __m)
     {
       void* __p = atomic_fetch_sub_explicit(this, sizeof(_Tp) * __d, __m);
       return static_cast<_Tp*>(__p);
     }
 
-  // Convenience function definitions, atomic_flag.
+  template<typename _Tp>
+    _Tp*
+    atomic<_Tp*>::fetch_sub(ptrdiff_t __d, memory_order __m) volatile
+    {
+      void* __p = atomic_fetch_sub_explicit(this, sizeof(_Tp) * __d, __m);
+      return static_cast<_Tp*>(__p);
+    }
+
+
+  // Function definitions, atomic_flag operations.
   inline bool
   atomic_flag_test_and_set_explicit(atomic_flag* __a, memory_order __m)
   { return __a->test_and_set(__m); }
 
+  inline bool
+  atomic_flag_test_and_set_explicit(volatile atomic_flag* __a, 
+				    memory_order __m)
+  { return __a->test_and_set(__m); }
+
   inline void
   atomic_flag_clear_explicit(atomic_flag* __a, memory_order __m)
-  { return __a->clear(__m); }
+  { __a->clear(__m); }
 
+  inline void
+  atomic_flag_clear_explicit(volatile atomic_flag* __a, memory_order __m)
+  { __a->clear(__m); }
 
-  // Convenience function definitions, atomic_address.
+  inline bool
+  atomic_flag_test_and_set(atomic_flag* __a)
+  { return atomic_flag_test_and_set_explicit(__a, memory_order_seq_cst); }
+
+  inline bool
+  atomic_flag_test_and_set(volatile atomic_flag* __a)
+  { return atomic_flag_test_and_set_explicit(__a, memory_order_seq_cst); }
+
+  inline void
+  atomic_flag_clear(atomic_flag* __a)
+  { atomic_flag_clear_explicit(__a, memory_order_seq_cst); }
+
+  inline void
+  atomic_flag_clear(volatile atomic_flag* __a)
+  { atomic_flag_clear_explicit(__a, memory_order_seq_cst); }
+ 
+
+  // Function definitions, atomic_address operations.
   inline bool
   atomic_is_lock_free(const atomic_address* __a)
   { return __a->is_lock_free(); }
+
+  inline bool
+  atomic_is_lock_free(const volatile atomic_address* __a)
+  { return __a->is_lock_free(); }
+
+  inline void 
+  atomic_init(atomic_address* __a, void* __v);
+
+  inline void 
+  atomic_init(volatile atomic_address* __a, void* __v);
+
+  inline void
+  atomic_store_explicit(atomic_address* __a, void* __v, memory_order __m)
+  { __a->store(__v, __m); }
+
+  inline void
+  atomic_store_explicit(volatile atomic_address* __a, void* __v, 
+			memory_order __m)
+  { __a->store(__v, __m); }
 
   inline void
   atomic_store(atomic_address* __a, void* __v)
   { __a->store(__v); }
 
   inline void
-  atomic_store_explicit(atomic_address* __a, void* __v, memory_order __m)
-  { __a->store(__v, __m); }
-
-  inline void*
-  atomic_load(const atomic_address* __a)
-  { return __a->load(); }
+  atomic_store(volatile atomic_address* __a, void* __v)
+  { __a->store(__v); }
 
   inline void*
   atomic_load_explicit(const atomic_address* __a, memory_order __m)
   { return __a->load(__m); }
 
   inline void*
-  atomic_exchange(atomic_address* __a, void* __v)
-  { return __a->exchange(__v); }
+  atomic_load_explicit(const volatile atomic_address* __a, memory_order __m)
+  { return __a->load(__m); }
+
+  inline void*
+  atomic_load(const atomic_address* __a)
+  { return __a->load(); }
+
+  inline void*
+  atomic_load(const volatile atomic_address* __a)
+  { return __a->load(); }
 
   inline void*
   atomic_exchange_explicit(atomic_address* __a, void* __v, memory_order __m)
   { return __a->exchange(__v, __m); }
+
+  inline void*
+  atomic_exchange_explicit(volatile atomic_address* __a, void* __v, 
+			   memory_order __m)
+  { return __a->exchange(__v, __m); }
+
+  inline void*
+  atomic_exchange(atomic_address* __a, void* __v)
+  { return __a->exchange(__v); }
+
+  inline void*
+  atomic_exchange(volatile atomic_address* __a, void* __v)
+  { return __a->exchange(__v); }
+
+
+  inline bool
+  atomic_compare_exchange_weak_explicit(atomic_address* __a,
+					void** __v1, void* __v2,
+					memory_order __m1, memory_order __m2)
+  { return __a->compare_exchange_weak(*__v1, __v2, __m1, __m2); }
+
+  inline bool
+  atomic_compare_exchange_weak_explicit(volatile atomic_address* __a,
+					void** __v1, void* __v2,
+					memory_order __m1, memory_order __m2)
+  { return __a->compare_exchange_weak(*__v1, __v2, __m1, __m2); }
 
   inline bool
   atomic_compare_exchange_weak(atomic_address* __a, void** __v1, void* __v2)
@@ -592,18 +891,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
 
   inline bool
-  atomic_compare_exchange_strong(atomic_address* __a,
-			       void** __v1, void* __v2)
+  atomic_compare_exchange_weak(volatile atomic_address* __a, void** __v1, 
+			       void* __v2)
   {
-    return __a->compare_exchange_strong(*__v1, __v2, memory_order_seq_cst,
+    return __a->compare_exchange_weak(*__v1, __v2, memory_order_seq_cst,
 				      memory_order_seq_cst);
   }
-
-  inline bool
-  atomic_compare_exchange_weak_explicit(atomic_address* __a,
-					void** __v1, void* __v2,
-					memory_order __m1, memory_order __m2)
-  { return __a->compare_exchange_weak(*__v1, __v2, __m1, __m2); }
 
   inline bool
   atomic_compare_exchange_strong_explicit(atomic_address* __a,
@@ -611,8 +904,34 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 					  memory_order __m1, memory_order __m2)
   { return __a->compare_exchange_strong(*__v1, __v2, __m1, __m2); }
 
+  inline bool
+  atomic_compare_exchange_strong_explicit(volatile atomic_address* __a,
+					  void** __v1, void* __v2,
+					  memory_order __m1, memory_order __m2)
+  { return __a->compare_exchange_strong(*__v1, __v2, __m1, __m2); }
+
+  inline bool
+  atomic_compare_exchange_strong(atomic_address* __a, void** __v1, void* __v2)
+  {
+    return __a->compare_exchange_strong(*__v1, __v2, memory_order_seq_cst,
+					memory_order_seq_cst);
+  }
+
+  inline bool
+  atomic_compare_exchange_strong(volatile atomic_address* __a,
+				 void** __v1, void* __v2)
+  {
+    return __a->compare_exchange_strong(*__v1, __v2, memory_order_seq_cst,
+					memory_order_seq_cst);
+  }
+
   inline void*
   atomic_fetch_add_explicit(atomic_address* __a, ptrdiff_t __d,
+			    memory_order __m)
+  { return __a->fetch_add(__d, __m); }
+
+  inline void*
+  atomic_fetch_add_explicit(volatile atomic_address* __a, ptrdiff_t __d,
 			    memory_order __m)
   { return __a->fetch_add(__d, __m); }
 
@@ -621,7 +940,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __a->fetch_add(__d); }
 
   inline void*
+  atomic_fetch_add(volatile atomic_address* __a, ptrdiff_t __d)
+  { return __a->fetch_add(__d); }
+
+  inline void*
   atomic_fetch_sub_explicit(atomic_address* __a, ptrdiff_t __d,
+			    memory_order __m)
+  { return __a->fetch_sub(__d, __m); }
+
+  inline void*
+  atomic_fetch_sub_explicit(volatile atomic_address* __a, ptrdiff_t __d,
 			    memory_order __m)
   { return __a->fetch_sub(__d, __m); }
 
@@ -629,35 +957,86 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   atomic_fetch_sub(atomic_address* __a, ptrdiff_t __d)
   { return __a->fetch_sub(__d); }
 
+  inline void*
+  atomic_fetch_sub(volatile atomic_address* __a, ptrdiff_t __d)
+  { return __a->fetch_sub(__d); }
 
-  // Convenience function definitions, atomic_bool.
+
+  // Function definitions, atomic_bool operations.
   inline bool
   atomic_is_lock_free(const atomic_bool* __a)
   { return __a->is_lock_free(); }
+
+  inline bool
+  atomic_is_lock_free(const volatile atomic_bool* __a)
+  { return __a->is_lock_free(); }
+
+  inline void 
+  atomic_init(atomic_bool* __a, bool __b);
+
+  inline void 
+  atomic_init(volatile atomic_bool* __a, bool __b);
+
+  inline void
+  atomic_store_explicit(atomic_bool* __a, bool __i, memory_order __m)
+  { __a->store(__i, __m); }
+
+  inline void
+  atomic_store_explicit(volatile atomic_bool* __a, bool __i, memory_order __m)
+  { __a->store(__i, __m); }
 
   inline void
   atomic_store(atomic_bool* __a, bool __i)
   { __a->store(__i); }
 
   inline void
-  atomic_store_explicit(atomic_bool* __a, bool __i, memory_order __m)
-  { __a->store(__i, __m); }
-
-  inline bool
-  atomic_load(const atomic_bool* __a)
-  { return __a->load(); }
+  atomic_store(volatile atomic_bool* __a, bool __i)
+  { __a->store(__i); }
 
   inline bool
   atomic_load_explicit(const atomic_bool* __a, memory_order __m)
   { return __a->load(__m); }
 
   inline bool
-  atomic_exchange(atomic_bool* __a, bool __i)
-  { return __a->exchange(__i); }
+  atomic_load_explicit(const volatile atomic_bool* __a, memory_order __m)
+  { return __a->load(__m); }
+
+  inline bool
+  atomic_load(const atomic_bool* __a)
+  { return __a->load(); }
+
+  inline bool
+  atomic_load(const volatile atomic_bool* __a)
+  { return __a->load(); }
 
   inline bool
   atomic_exchange_explicit(atomic_bool* __a, bool __i, memory_order __m)
   { return __a->exchange(__i, __m); }
+
+  inline bool
+  atomic_exchange_explicit(volatile atomic_bool* __a, bool __i, 
+			   memory_order __m)
+  { return __a->exchange(__i, __m); }
+
+  inline bool
+  atomic_exchange(atomic_bool* __a, bool __i)
+  { return __a->exchange(__i); }
+
+  inline bool
+  atomic_exchange(volatile atomic_bool* __a, bool __i)
+  { return __a->exchange(__i); }
+
+  inline bool
+  atomic_compare_exchange_weak_explicit(atomic_bool* __a, bool* __i1,
+					bool __i2, memory_order __m1,
+					memory_order __m2)
+  { return __a->compare_exchange_weak(*__i1, __i2, __m1, __m2); }
+
+  inline bool
+  atomic_compare_exchange_weak_explicit(volatile atomic_bool* __a, bool* __i1,
+					bool __i2, memory_order __m1,
+					memory_order __m2)
+  { return __a->compare_exchange_weak(*__i1, __i2, __m1, __m2); }
 
   inline bool
   atomic_compare_exchange_weak(atomic_bool* __a, bool* __i1, bool __i2)
@@ -667,17 +1046,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
 
   inline bool
-  atomic_compare_exchange_strong(atomic_bool* __a, bool* __i1, bool __i2)
+  atomic_compare_exchange_weak(volatile atomic_bool* __a, bool* __i1, bool __i2)
   {
-    return __a->compare_exchange_strong(*__i1, __i2, memory_order_seq_cst,
-					memory_order_seq_cst);
+    return __a->compare_exchange_weak(*__i1, __i2, memory_order_seq_cst,
+				      memory_order_seq_cst);
   }
-
-  inline bool
-  atomic_compare_exchange_weak_explicit(atomic_bool* __a, bool* __i1,
-					bool __i2, memory_order __m1,
-					memory_order __m2)
-  { return __a->compare_exchange_weak(*__i1, __i2, __m1, __m2); }
 
   inline bool
   atomic_compare_exchange_strong_explicit(atomic_bool* __a,
@@ -685,13 +1058,58 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 					  memory_order __m1, memory_order __m2)
   { return __a->compare_exchange_strong(*__i1, __i2, __m1, __m2); }
 
+  inline bool
+  atomic_compare_exchange_strong_explicit(volatile atomic_bool* __a,
+					  bool* __i1, bool __i2,
+					  memory_order __m1, memory_order __m2)
+  { return __a->compare_exchange_strong(*__i1, __i2, __m1, __m2); }
+
+  inline bool
+  atomic_compare_exchange_strong(atomic_bool* __a, bool* __i1, bool __i2)
+  {
+    return __a->compare_exchange_strong(*__i1, __i2, memory_order_seq_cst,
+					memory_order_seq_cst);
+  }
+
+  inline bool
+  atomic_compare_exchange_strong(volatile atomic_bool* __a, 
+				 bool* __i1, bool __i2)
+  {
+    return __a->compare_exchange_strong(*__i1, __i2, memory_order_seq_cst,
+					memory_order_seq_cst);
+  }
 
 
-  // Free standing functions. Template argument should be constricted
-  // to intergral types as specified in the standard.
+  // Function templates for atomic_integral operations, using
+  // __atomic_base . Template argument should be constricted to
+  // intergral types as specified in the standard.
+  template<typename _ITp>
+    inline bool
+    atomic_is_lock_free(const __atomic_base<_ITp>* __a)
+    { return __a->is_lock_free(); }
+
+  template<typename _ITp>
+    inline bool
+    atomic_is_lock_free(const volatile __atomic_base<_ITp>* __a)
+    { return __a->is_lock_free(); }
+
+  template<typename _ITp>
+    inline void 
+    atomic_init(__atomic_base<_ITp>* __a, _ITp __i);
+
+  template<typename _ITp>
+    inline void 
+    atomic_init(volatile __atomic_base<_ITp>* __a, _ITp __i);
+
   template<typename _ITp>
     inline void
     atomic_store_explicit(__atomic_base<_ITp>* __a, _ITp __i, memory_order __m)
+    { __a->store(__i, __m); }
+
+  template<typename _ITp>
+    inline void
+    atomic_store_explicit(volatile __atomic_base<_ITp>* __a, _ITp __i, 
+			  memory_order __m)
     { __a->store(__i, __m); }
 
   template<typename _ITp>
@@ -701,13 +1119,32 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _ITp>
     inline _ITp
+    atomic_load_explicit(const volatile __atomic_base<_ITp>* __a, 
+			 memory_order __m)
+    { return __a->load(__m); }
+
+  template<typename _ITp>
+    inline _ITp
     atomic_exchange_explicit(__atomic_base<_ITp>* __a, _ITp __i,
+			     memory_order __m)
+    { return __a->exchange(__i, __m); }
+
+  template<typename _ITp>
+    inline _ITp
+    atomic_exchange_explicit(volatile __atomic_base<_ITp>* __a, _ITp __i,
 			     memory_order __m)
     { return __a->exchange(__i, __m); }
 
   template<typename _ITp>
     inline bool
     atomic_compare_exchange_weak_explicit(__atomic_base<_ITp>* __a,
+					  _ITp* __i1, _ITp __i2,
+					  memory_order __m1, memory_order __m2)
+    { return __a->compare_exchange_weak(*__i1, __i2, __m1, __m2); }
+
+  template<typename _ITp>
+    inline bool
+    atomic_compare_exchange_weak_explicit(volatile __atomic_base<_ITp>* __a,
 					  _ITp* __i1, _ITp __i2,
 					  memory_order __m1, memory_order __m2)
     { return __a->compare_exchange_weak(*__i1, __i2, __m1, __m2); }
@@ -721,8 +1158,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { return __a->compare_exchange_strong(*__i1, __i2, __m1, __m2); }
 
   template<typename _ITp>
+    inline bool
+    atomic_compare_exchange_strong_explicit(volatile __atomic_base<_ITp>* __a,
+					    _ITp* __i1, _ITp __i2,
+					    memory_order __m1,
+					    memory_order __m2)
+    { return __a->compare_exchange_strong(*__i1, __i2, __m1, __m2); }
+
+  template<typename _ITp>
     inline _ITp
     atomic_fetch_add_explicit(__atomic_base<_ITp>* __a, _ITp __i,
+			      memory_order __m)
+    { return __a->fetch_add(__i, __m); }
+
+  template<typename _ITp>
+    inline _ITp
+    atomic_fetch_add_explicit(volatile __atomic_base<_ITp>* __a, _ITp __i,
 			      memory_order __m)
     { return __a->fetch_add(__i, __m); }
 
@@ -734,7 +1185,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _ITp>
     inline _ITp
+    atomic_fetch_sub_explicit(volatile __atomic_base<_ITp>* __a, _ITp __i,
+			      memory_order __m)
+    { return __a->fetch_sub(__i, __m); }
+
+  template<typename _ITp>
+    inline _ITp
     atomic_fetch_and_explicit(__atomic_base<_ITp>* __a, _ITp __i,
+			      memory_order __m)
+    { return __a->fetch_and(__i, __m); }
+
+  template<typename _ITp>
+    inline _ITp
+    atomic_fetch_and_explicit(volatile __atomic_base<_ITp>* __a, _ITp __i,
 			      memory_order __m)
     { return __a->fetch_and(__i, __m); }
 
@@ -746,18 +1209,30 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _ITp>
     inline _ITp
+    atomic_fetch_or_explicit(volatile __atomic_base<_ITp>* __a, _ITp __i,
+			     memory_order __m)
+    { return __a->fetch_or(__i, __m); }
+
+  template<typename _ITp>
+    inline _ITp
     atomic_fetch_xor_explicit(__atomic_base<_ITp>* __a, _ITp __i,
 			      memory_order __m)
     { return __a->fetch_xor(__i, __m); }
 
   template<typename _ITp>
-    inline bool
-    atomic_is_lock_free(const __atomic_base<_ITp>* __a)
-    { return __a->is_lock_free(); }
+    inline _ITp
+    atomic_fetch_xor_explicit(volatile __atomic_base<_ITp>* __a, _ITp __i,
+			      memory_order __m)
+    { return __a->fetch_xor(__i, __m); }
 
   template<typename _ITp>
     inline void
     atomic_store(__atomic_base<_ITp>* __a, _ITp __i)
+    { atomic_store_explicit(__a, __i, memory_order_seq_cst); }
+
+  template<typename _ITp>
+    inline void
+    atomic_store(volatile __atomic_base<_ITp>* __a, _ITp __i)
     { atomic_store_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
@@ -767,12 +1242,32 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _ITp>
     inline _ITp
+    atomic_load(const volatile __atomic_base<_ITp>* __a)
+    { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+  template<typename _ITp>
+    inline _ITp
     atomic_exchange(__atomic_base<_ITp>* __a, _ITp __i)
+    { return atomic_exchange_explicit(__a, __i, memory_order_seq_cst); }
+
+  template<typename _ITp>
+    inline _ITp
+    atomic_exchange(volatile __atomic_base<_ITp>* __a, _ITp __i)
     { return atomic_exchange_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
     inline bool
     atomic_compare_exchange_weak(__atomic_base<_ITp>* __a,
+				 _ITp* __i1, _ITp __i2)
+    {
+      return atomic_compare_exchange_weak_explicit(__a, __i1, __i2,
+						   memory_order_seq_cst,
+						   memory_order_seq_cst);
+    }
+
+  template<typename _ITp>
+    inline bool
+    atomic_compare_exchange_weak(volatile __atomic_base<_ITp>* __a,
 				 _ITp* __i1, _ITp __i2)
     {
       return atomic_compare_exchange_weak_explicit(__a, __i1, __i2,
@@ -791,8 +1286,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   template<typename _ITp>
+    inline bool
+    atomic_compare_exchange_strong(volatile __atomic_base<_ITp>* __a,
+				   _ITp* __i1, _ITp __i2)
+    {
+      return atomic_compare_exchange_strong_explicit(__a, __i1, __i2,
+						     memory_order_seq_cst,
+						     memory_order_seq_cst);
+    }
+
+  template<typename _ITp>
     inline _ITp
     atomic_fetch_add(__atomic_base<_ITp>* __a, _ITp __i)
+    { return atomic_fetch_add_explicit(__a, __i, memory_order_seq_cst); }
+
+  template<typename _ITp>
+    inline _ITp
+    atomic_fetch_add(volatile __atomic_base<_ITp>* __a, _ITp __i)
     { return atomic_fetch_add_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
@@ -802,7 +1312,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _ITp>
     inline _ITp
+    atomic_fetch_sub(volatile __atomic_base<_ITp>* __a, _ITp __i)
+    { return atomic_fetch_sub_explicit(__a, __i, memory_order_seq_cst); }
+
+  template<typename _ITp>
+    inline _ITp
     atomic_fetch_and(__atomic_base<_ITp>* __a, _ITp __i)
+    { return atomic_fetch_and_explicit(__a, __i, memory_order_seq_cst); }
+
+  template<typename _ITp>
+    inline _ITp
+    atomic_fetch_and(volatile __atomic_base<_ITp>* __a, _ITp __i)
     { return atomic_fetch_and_explicit(__a, __i, memory_order_seq_cst); }
 
   template<typename _ITp>
@@ -812,7 +1332,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _ITp>
     inline _ITp
+    atomic_fetch_or(volatile __atomic_base<_ITp>* __a, _ITp __i)
+    { return atomic_fetch_or_explicit(__a, __i, memory_order_seq_cst); }
+
+  template<typename _ITp>
+    inline _ITp
     atomic_fetch_xor(__atomic_base<_ITp>* __a, _ITp __i)
+    { return atomic_fetch_xor_explicit(__a, __i, memory_order_seq_cst); }
+
+  template<typename _ITp>
+    inline _ITp
+    atomic_fetch_xor(volatile __atomic_base<_ITp>* __a, _ITp __i)
     { return atomic_fetch_xor_explicit(__a, __i, memory_order_seq_cst); }
 
   // @} group atomics

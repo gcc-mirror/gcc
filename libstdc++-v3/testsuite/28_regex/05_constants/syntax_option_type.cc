@@ -23,29 +23,68 @@
 // 28.5.1 
 
 #include <regex>
-#include <testsuite_hooks.h>
 
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
+  std::regex_constants::syntax_option_type option { };
+  option = option | std::regex_constants::icase;
+  option = option | std::regex_constants::nosubs;
+  option = option | std::regex_constants::optimize;
+  option = option | std::regex_constants::collate;
+  option = option | std::regex_constants::ECMAScript;
+  option = option | std::regex_constants::basic;
+  option = option | std::regex_constants::extended;
+  option = option | std::regex_constants::awk;
+  option = option | std::regex_constants::grep;
+  option = option | std::regex_constants::egrep;
+}
 
-	std::regex_constants::syntax_option_type option = 0;
+void
+test02()
+{
+  std::regex_constants::syntax_option_type option { };
+  option = option & std::regex_constants::icase;
+  option = option & std::regex_constants::nosubs;
+  option = option & std::regex_constants::optimize;
+  option = option & std::regex_constants::collate;
+  option = option & std::regex_constants::ECMAScript;
+  option = option & std::regex_constants::basic;
+  option = option & std::regex_constants::extended;
+  option = option & std::regex_constants::awk;
+  option = option & std::regex_constants::grep;
+  option = option & std::regex_constants::egrep;
+}
 
-	option |= std::regex_constants::icase;
-	option |= std::regex_constants::nosubs;
-	option |= std::regex_constants::optimize;
-	option |= std::regex_constants::collate;
-	option |= std::regex_constants::ECMAScript;
-	option |= std::regex_constants::basic;
-	option |= std::regex_constants::extended;
-	option |= std::regex_constants::awk;
-	option |= std::regex_constants::grep;
-	option |= std::regex_constants::egrep;
+void
+test03()
+{
+  std::regex_constants::syntax_option_type option { };
+  option = ~std::regex_constants::icase;
+  option = ~std::regex_constants::nosubs;
+  option = ~std::regex_constants::optimize;
+  option = ~std::regex_constants::collate;
+  option = ~std::regex_constants::ECMAScript;
+  option = ~std::regex_constants::basic;
+  option = ~std::regex_constants::extended;
+  option = ~std::regex_constants::awk;
+  option = ~std::regex_constants::grep;
+  option = ~std::regex_constants::egrep;
+}
+
+void
+test04_constexpr()
+{
+  using namespace std::regex_constants;
+  constexpr auto a1 = icase | awk;
+  constexpr auto a2 = icase & awk;
+  constexpr auto a3 = ~grep;
 }
 
 int main()
 {
   test01();
+  test02();
+  test03();
   return 0;
 }

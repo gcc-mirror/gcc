@@ -26,6 +26,6 @@ void test01()
   typedef std::atomic_address test_type;
   test_type t1;
   test_type t2;
-  t1 = t2;			// { dg-error "ambiguous" }
+  t1 = t2;			// { dg-error "deleted" }
 }
 // { dg-prune-output "include" }

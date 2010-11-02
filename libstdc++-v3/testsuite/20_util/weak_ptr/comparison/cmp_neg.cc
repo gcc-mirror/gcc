@@ -42,10 +42,10 @@ main()
 }
 
 // { dg-warning "note" "" { target *-*-* } 347 }
-// { dg-warning "note" "" { target *-*-* } 466 }
+// { dg-warning "note" "" { target *-*-* } 465 }
 // { dg-warning "note" "" { target *-*-* } 883 }
 // { dg-warning "note" "" { target *-*-* } 580 }
 // { dg-warning "note" "" { target *-*-* } 1027 }
 // { dg-warning "note" "" { target *-*-* } 340 }
 // { dg-warning "note" "" { target *-*-* } 290 }
-// { dg-warning "note" "" { target *-*-* } 200 }
+// { dg-warning "note" "" { target *-*-* } 201 }

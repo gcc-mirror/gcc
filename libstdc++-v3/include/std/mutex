@@ -67,16 +67,15 @@ namespace std
   public:
     typedef __native_type* 			native_handle_type;
 
+#ifdef __GTHREAD_MUTEX_INIT
+    constexpr mutex() : _M_mutex(__GTHREAD_MUTEX_INIT) { }
+#else
     mutex()
     {
       // XXX EAGAIN, ENOMEM, EPERM, EBUSY(may), EINVAL(may)
-#ifdef __GTHREAD_MUTEX_INIT
-      __native_type __tmp = __GTHREAD_MUTEX_INIT;
-      _M_mutex = __tmp;
-#else
       __GTHREAD_MUTEX_INIT_FUNCTION(&_M_mutex);
-#endif
     }
+#endif
 
     mutex(const mutex&) = delete;
     mutex& operator=(const mutex&) = delete;
@@ -381,9 +380,9 @@ namespace std
   /// and manage it.
   struct adopt_lock_t { };
 
-  extern const defer_lock_t	defer_lock;
-  extern const try_to_lock_t	try_to_lock;
-  extern const adopt_lock_t	adopt_lock;
+  constexpr defer_lock_t	defer_lock { };
+  constexpr try_to_lock_t	try_to_lock { };
+  constexpr adopt_lock_t	adopt_lock { };
 
   /// @brief  Scoped lock idiom.
   // Acquire the mutex here with a constructor call, then release with
@@ -679,11 +678,7 @@ namespace std
     __native_type  _M_once;
 
   public:
-    once_flag()
-    {
-      __native_type __tmp = __GTHREAD_ONCE_INIT;
-      _M_once = __tmp;
-    }
+    constexpr once_flag() : _M_once(__GTHREAD_ONCE_INIT) { }
 
     once_flag(const once_flag&) = delete;
     once_flag& operator=(const once_flag&) = delete;

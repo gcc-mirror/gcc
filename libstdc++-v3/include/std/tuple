@@ -225,7 +225,7 @@ namespace std
       typedef _Tuple_impl<0, _Elements...> _Inherited;
 
     public:
-      tuple()
+      _GLIBCXX_CONSTEXPR tuple()
       : _Inherited() { }
 
       explicit

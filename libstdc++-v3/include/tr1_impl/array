@@ -132,13 +132,13 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 #endif
 
       // Capacity.
-      size_type 
+      _GLIBCXX_CONSTEXPR size_type 
       size() const { return _Nm; }
 
-      size_type 
+      _GLIBCXX_CONSTEXPR size_type 
       max_size() const { return _Nm; }
 
-      bool 
+      _GLIBCXX_CONSTEXPR bool 
       empty() const { return size() == 0; }
 
       // Element access.

@@ -34,6 +34,27 @@
 // The current version of the C++ library in compressed ISO date format.
 #define __GLIBCXX__ 
 
+// Macros for various attributes.
+#ifndef _GLIBCXX_PURE
+# define _GLIBCXX_PURE __attribute__ ((__pure__))
+#endif
+
+#ifndef _GLIBCXX_CONST
+# define _GLIBCXX_CONST __attribute__ ((__const__))
+#endif
+
+#ifndef _GLIBCXX_NORETURN
+# define _GLIBCXX_NORETURN __attribute__ ((__noreturn__))
+#endif
+
+#ifndef _GLIBCXX_NOTHROW
+# ifdef __cplusplus
+#  define _GLIBCXX_NOTHROW throw() 
+# else
+#  define _GLIBCXX_NOTHROW __attribute__((__nothrow__))
+# endif
+#endif
+
 // Macros for visibility.
 // _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
 // _GLIBCXX_VISIBILITY_ATTR
@@ -60,33 +81,39 @@
 # define _GLIBCXX_DEPRECATED_ATTR
 #endif
 
-// Macros for race detectors.
-// _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(A) and
-// _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(A) should be used to explain
-// atomic (lock-free) synchronization to race detectors:
-// the race detector will infer a happens-before arc from the former to the
-// latter when they share the same argument pointer.
-//
-// The most frequent use case for these macros (and the only case in the
-// current implementation of the library) is atomic reference counting:
-//   void _M_remove_reference()
-//   {
-//     _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&this->_M_refcount);
-//     if (__gnu_cxx::__exchange_and_add_dispatch(&this->_M_refcount, -1) <= 0)
-//       {
-//         _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&this->_M_refcount);
-//         _M_destroy(__a);
-//       }
-//   }
-// The annotations in this example tell the race detector that all memory
-// accesses occurred when the refcount was positive do not race with
-// memory accesses which occurred after the refcount became zero.
+#if __cplusplus
 
-#ifndef _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE
-# define  _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(A)
+namespace std
+{
+  typedef __SIZE_TYPE__ 	size_t;
+  typedef __PTRDIFF_TYPE__	ptrdiff_t;
+  
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  typedef decltype(nullptr)	nullptr_t;
 #endif
-#ifndef _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER
-# define  _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(A)
+}
+
+// Macros for C compatibility. In particular, define extern "C"
+// linkage only when using C++.
+# define _GLIBCXX_BEGIN_EXTERN_C extern "C" {
+# define _GLIBCXX_END_EXTERN_C }
+
+
+// Macro for constexpr, to support in mixed 03/0x mode.
+#ifndef _GLIBCXX_CONSTEXPR
+# ifdef __GXX_EXPERIMENTAL_CXX0X__
+#  define _GLIBCXX_CONSTEXPR constexpr
+# else
+#  define _GLIBCXX_CONSTEXPR 
+# endif
+#endif
+
+#ifndef _GLIBCXX_USE_CONSTEXPR
+# ifdef __GXX_EXPERIMENTAL_CXX0X__
+#  define _GLIBCXX_USE_CONSTEXPR constexpr
+# else
+#  define _GLIBCXX_USE_CONSTEXPR const
+# endif
 #endif
 
 // Macros for activating various namespace association modes.
@@ -106,7 +133,6 @@
     namespace tr1 { }
   }
 */
-#if __cplusplus
 
 #ifdef _GLIBCXX_DEBUG
 # define _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG 1
@@ -136,6 +162,7 @@
 // _GLIBCXX_STD
 // _GLIBCXX_STD_D
 // _GLIBCXX_STD_P
+// _GLIBCXX_STD_PR
 //
 // Macros for enclosing namespaces and possibly nested namespaces.
 // _GLIBCXX_BEGIN_NAMESPACE
@@ -283,19 +310,42 @@ namespace std
 # define _GLIBCXX_END_LDBL_NAMESPACE
 #endif
 
+// Macros for race detectors.
+// _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(A) and
+// _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(A) should be used to explain
+// atomic (lock-free) synchronization to race detectors:
+// the race detector will infer a happens-before arc from the former to the
+// latter when they share the same argument pointer.
+//
+// The most frequent use case for these macros (and the only case in the
+// current implementation of the library) is atomic reference counting:
+//   void _M_remove_reference()
+//   {
+//     _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&this->_M_refcount);
+//     if (__gnu_cxx::__exchange_and_add_dispatch(&this->_M_refcount, -1) <= 0)
+//       {
+//         _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&this->_M_refcount);
+//         _M_destroy(__a);
+//       }
+//   }
+// The annotations in this example tell the race detector that all memory
+// accesses occurred when the refcount was positive do not race with
+// memory accesses which occurred after the refcount became zero.
 
-// Defines for C compatibility. In particular, define extern "C"
-// linkage only when using C++.
-# define _GLIBCXX_BEGIN_EXTERN_C extern "C" {
-# define _GLIBCXX_END_EXTERN_C }
+#ifndef _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE
+# define  _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(A)
+#endif
+#ifndef _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER
+# define  _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(A)
+#endif
 
 #else // !__cplusplus
+# define _GLIBCXX_BEGIN_EXTERN_C
+# define _GLIBCXX_END_EXTERN_C 
 # undef _GLIBCXX_BEGIN_NAMESPACE
 # undef _GLIBCXX_END_NAMESPACE
 # define _GLIBCXX_BEGIN_NAMESPACE(X) 
 # define _GLIBCXX_END_NAMESPACE 
-# define _GLIBCXX_BEGIN_EXTERN_C
-# define _GLIBCXX_END_EXTERN_C 
 #endif
 
 // First includes.
@@ -384,40 +434,5 @@ _GLIBCXX_END_NAMESPACE
 // For example, <windows.h> is known to #define min and max as macros...
 #undef min
 #undef max
-
-#ifndef _GLIBCXX_PURE
-# define _GLIBCXX_PURE __attribute__ ((__pure__))
-#endif
-
-#ifndef _GLIBCXX_CONST
-# define _GLIBCXX_CONST __attribute__ ((__const__))
-#endif
-
-#ifndef _GLIBCXX_NORETURN
-# define _GLIBCXX_NORETURN __attribute__ ((__noreturn__))
-#endif
-
-#ifndef _GLIBCXX_NOTHROW
-# ifdef __cplusplus
-#  define _GLIBCXX_NOTHROW throw() 
-# else
-#  define _GLIBCXX_NOTHROW __attribute__((__nothrow__))
-# endif
-#endif
-
-#ifdef __cplusplus
-
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
-  typedef __SIZE_TYPE__         size_t;
-  typedef __PTRDIFF_TYPE__   ptrdiff_t;
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-  typedef decltype(nullptr)  nullptr_t;
-#endif
-
-_GLIBCXX_END_NAMESPACE
-
-#endif // __cplusplus
 
 // End of prewritten config; the discovered settings follow.

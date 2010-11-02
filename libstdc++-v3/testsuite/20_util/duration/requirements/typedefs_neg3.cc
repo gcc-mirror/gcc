@@ -33,5 +33,5 @@ void test01()
   test_type d;
 }
 
-// { dg-error "period must be positive" "" { target *-*-* } 206 }
+// { dg-error "period must be positive" "" { target *-*-* } 213 }
 // { dg-error "instantiated from here" "" { target *-*-* } 33 }

@@ -1,6 +1,6 @@
 // TR1 type_traits -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,9 +66,13 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Tp, _Tp __v>
     struct integral_constant
     {
-      static const _Tp                      value = __v;
+      static _GLIBCXX_USE_CONSTEXPR  _Tp    value = __v;
       typedef _Tp                           value_type;
       typedef integral_constant<_Tp, __v>   type;
+
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+      constexpr operator value_type() { return value; }
+#endif
     };
   
   /// typedef for true_type
@@ -78,7 +82,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   typedef integral_constant<bool, false>    false_type;
 
   template<typename _Tp, _Tp __v>
-    const _Tp integral_constant<_Tp, __v>::value;
+    _GLIBCXX_USE_CONSTEXPR _Tp integral_constant<_Tp, __v>::value;
 
   /// remove_cv
   template<typename>

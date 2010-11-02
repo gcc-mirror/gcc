@@ -14,8 +14,6 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
-
-#o# Makefile for the include subdirectory of the GNU C++ Standard library.
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -322,8 +320,6 @@ bits_headers = \
         ${bits_srcdir}/algorithmfwd.h \
 	${bits_srcdir}/allocator.h \
 	${bits_srcdir}/atomic_base.h \
-	${bits_srcdir}/atomicfwd_c.h \
-	${bits_srcdir}/atomicfwd_cxx.h \
 	${bits_srcdir}/atomic_0.h \
 	${bits_srcdir}/atomic_2.h \
 	${bits_srcdir}/basic_ios.h \
@@ -914,8 +910,7 @@ c_compatibility_builddir = .
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@c_compatibility_headers = \
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/complex.h \
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/fenv.h \
-@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/tgmath.h \
-@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/stdatomic.h
+@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/tgmath.h
 
 @GLIBCXX_C_HEADERS_C_STD_TRUE@c_compatibility_headers = 
 @GLIBCXX_C_HEADERS_C_TRUE@c_compatibility_headers = \

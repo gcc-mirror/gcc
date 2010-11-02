@@ -66,7 +66,8 @@ namespace
 
 namespace std
 {
-  const error_category* const future_category = &__future_category_instance();
+  const error_category& future_category()
+  { return __future_category_instance(); }
 
   future_error::~future_error() throw() { }
 

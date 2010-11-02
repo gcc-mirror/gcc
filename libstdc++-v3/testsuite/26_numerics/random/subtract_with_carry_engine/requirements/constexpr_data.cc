@@ -1,6 +1,7 @@
-// { dg-options "-x c -shared-libgcc -lstdc++" }
+// { dg-do compile }
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,14 +18,38 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <stdatomic.h>
+#include <random>
+#include <testsuite_common_types.h>
+
+namespace __gnu_test
+{
+  struct constexpr_member_data
+  {
+    template<typename _Ttesttype>
+      void
+      operator()()
+      {
+	struct _Concept
+	{
+	  void __constraint()
+	  {
+	    constexpr auto v1(_Ttesttype::word_size);
+	    constexpr auto v2(_Ttesttype::short_lag);
+	    constexpr auto v3(_Ttesttype::long_lag);
+	    constexpr auto v4(_Ttesttype::default_seed);
+	  }
+	};
+
+	_Concept c;
+	c.__constraint();
+      }
+  };
+}
 
 int main()
 {
-  atomic_flag af = ATOMIC_FLAG_INIT;
-
-  if (!atomic_flag_test_and_set(&af))
-    atomic_flag_clear(&af);
-
+  __gnu_test::constexpr_member_data test;
+  typedef std::ranlux24_base type;
+  test.operator()<type>();
   return 0;
 }
