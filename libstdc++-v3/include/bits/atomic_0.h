@@ -98,7 +98,7 @@ namespace __atomic0
     __i_type __t = *__p;		       				   \
     if (*__q == __t) 							   \
     {                                                                      \
-      *__p = const_cast<__i_type>(__v);	 				   \
+      *__p = (__i_type)__v;						\
       __r = true;                                                          \
     }									   \
     else { *__q = __t; __r = false; }		       			   \
