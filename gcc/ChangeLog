@@ -1,5 +1,11 @@
 2010-11-02  Martin Jambor  <mjambor@suse.cz>
 
+	PR middle-end/46120
+	* tree.c (get_binfo_at_offset): Bail out on artificial
+	fields.  Identify primary bases according to their offsets.
+
+2010-11-02  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/45875
 	* gimple-fold.c (get_first_base_binfo_with_virtuals): Removed.
 	(gimple_get_relevant_ref_binfo): Detect primary bases according to

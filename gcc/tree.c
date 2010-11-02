@@ -10906,16 +10906,17 @@ lhd_gcc_personality (void)
 tree
 get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
 {
-  tree type;
+  tree type = TREE_TYPE (binfo);
 
-  type = TREE_TYPE (binfo);
-  while (offset > 0)
+  while (true)
     {
-      tree base_binfo, found_binfo;
       HOST_WIDE_INT pos, size;
       tree fld;
       int i;
 
+      gcc_checking_assert (offset >= 0);
+      if (type == expected_type)
+	  return binfo;
       if (TREE_CODE (type) != RECORD_TYPE)
 	return NULL_TREE;
 
@@ -10929,27 +10930,28 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
 	  if (pos <= offset && (pos + size) > offset)
 	    break;
 	}
-      if (!fld)
+      if (!fld || !DECL_ARTIFICIAL (fld))
 	return NULL_TREE;
 
-      found_binfo = NULL_TREE;
-      for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
-	if (TREE_TYPE (base_binfo) == TREE_TYPE (fld))
-	  {
-	    found_binfo = base_binfo;
-	    break;
-	  }
-
-      if (!found_binfo)
-	return NULL_TREE;
+      /* Offset 0 indicates the primary base, whose vtable contents are
+	 represented in the binfo for the derived class.  */
+      if (offset != 0)
+	{
+	  tree base_binfo, found_binfo = NULL_TREE;
+	  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+	    if (TREE_TYPE (base_binfo) == TREE_TYPE (fld))
+	      {
+		found_binfo = base_binfo;
+		break;
+	      }
+	  if (!found_binfo)
+	    return NULL_TREE;
+	  binfo = found_binfo;
+	}
 
       type = TREE_TYPE (fld);
-      binfo = found_binfo;
       offset -= pos;
     }
-  if (type != expected_type)
-    return NULL_TREE;
-  return binfo;
 }
 
 /* Returns true if X is a typedef decl.  */

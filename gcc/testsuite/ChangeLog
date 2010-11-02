@@ -1,5 +1,10 @@
 2010-11-02  Martin Jambor  <mjambor@suse.cz>
 
+	PR middle-end/46120
+	* g++.dg/ipa/ivinline-9.C: New test.
+
+2010-11-02  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/45875
 	* g++.dg/torture/pr45875.C: New test.
 
