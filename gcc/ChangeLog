@@ -1,3 +1,8 @@
+2010-11-01  Jason Merrill  <jason@redhat.com>
+
+	* fold-const.c (fold_indirect_ref_1): Handle folding
+	POINTER_PLUS_EXPR to ARRAY_REF.
+
 2010-11-01  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (TARGET_DELEGITIMIZE_ADDRESS): Redefine.
