@@ -1,3 +1,8 @@
+2010-11-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/46285
+	* gcc.target/i386/pr46285.c.
+
 2010-11-03  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46217
