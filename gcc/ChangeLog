@@ -1,3 +1,9 @@
+2010-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46165
+	* tree-ssa-pre.c (eliminate): Return TODO_cleanup_cfg if changing
+	a normal call into noreturn call.
+
 2010-11-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/46251
