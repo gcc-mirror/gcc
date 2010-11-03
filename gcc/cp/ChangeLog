@@ -1,3 +1,9 @@
+2010-11-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46277
+	* init.c (expand_default_init): Avoid ICE if we can't figure out
+	which function is being called.
+
 2010-11-02  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* class.c (build_base_path, add_vcall_offset): Use build_zero_cst

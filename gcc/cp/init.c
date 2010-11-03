@@ -1443,7 +1443,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
   if (exp == true_exp && TREE_CODE (rval) == CALL_EXPR)
     {
       tree fn = get_callee_fndecl (rval);
-      if (DECL_DECLARED_CONSTEXPR_P (fn))
+      if (fn && DECL_DECLARED_CONSTEXPR_P (fn))
 	{
 	  tree e = maybe_constant_value (rval);
 	  if (TREE_CONSTANT (e))
