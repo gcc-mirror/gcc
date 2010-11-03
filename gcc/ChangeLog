@@ -1,3 +1,9 @@
+2010-11-03  Xinliang David Li  <davidxl@google.com>
+
+       PR target/46200
+       * tree-ssa-loop-ivopts.c (get_computation_cost_at):
+       Adjust cbase if the use stmt is after iv update.
+
 2010-11-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config.gcc (sh64*) <tm_file>: Add newlib-stdint.h for
