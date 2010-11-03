@@ -1239,8 +1239,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set)
     {
       if (flag_lto_partition_balanced && flag_lto_partition_1to1)
 	error ("Only one -flto-partitoin value can be specified");
-      if (!flag_whopr)
-	error ("-flto-partitoin has effect only with -fwhopr");
+      if (!flag_whopr && !flag_wpa && !flag_ltrans)
+	error ("-flto-partition has no effect without -fwhopr");
     }
 
   /* Reconcile -flto and -fwhopr.  Set additional flags as appropriate and

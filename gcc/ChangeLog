@@ -1,3 +1,8 @@
+2010-11-03  Richard Guenther  <rguenther@suse.de>
+
+	* opts.c (finish_options): Properly check for all WHOPR
+	flags before complaining about -flto-partition.
+
 2010-11-04  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_pic_labelno): Make static.
