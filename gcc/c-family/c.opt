@@ -557,6 +557,10 @@ Wpragmas
 C ObjC C++ ObjC++ Var(warn_pragmas) Init(1) Warning
 Warn about misuses of pragmas
 
+Wproperty-assign-default
+ObjC ObjC++ Var(warn_property_assign_default) Init(1) Warning
+Warn if a property for an Objective-C object has no assign semantics specified
+
 Wprotocol
 ObjC ObjC++ Var(warn_protocol) Init(1) Warning
 Warn if inherited methods are unimplemented

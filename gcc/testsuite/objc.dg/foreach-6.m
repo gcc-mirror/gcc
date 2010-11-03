@@ -18,12 +18,14 @@ struct __objcFastEnumerationState
                                      objects:(id *)stackbuf 
                                        count:(unsigned int)len;
 - (id) enumerator;
+- (Class) classEnumerator;
 @end
 
 int main (void)
 {
   id array = nil;
   id object = nil;
+  id *invalid = 0;
 
   for (object in array) /* Ok */
     ;
@@ -40,11 +42,20 @@ int main (void)
   for (object in [object enumerator]) /* Ok */
     ;
 
+  for (object in [object classEnumerator]) /* Ok */
+    ;
+
   for (12 in array) /* { dg-error "invalid iterating variable in fast enumeration" } */
     ; /* { dg-error "iterating variable in fast enumeration is not an object" } */
 
   for (object in 12)
     ; /* { dg-error "collection in fast enumeration is not an object" } */
+
+  for (object in invalid)
+    ; /* { dg-error "collection in fast enumeration is not an object" } */
+
+  for (invalid in [object enumerator])
+    ; /* { dg-error "iterating variable in fast enumeration is not an object" } */
 
   return 0;
 }

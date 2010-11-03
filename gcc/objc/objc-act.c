@@ -278,7 +278,7 @@ static void generate_struct_by_value_array (void)
      ATTRIBUTE_NORETURN;
 static void mark_referenced_methods (void);
 static void generate_objc_image_info (void);
-static bool objc_type_valid_for_messaging (tree typ);
+static bool objc_type_valid_for_messaging (tree type, bool allow_classes);
 
 /*** Private Interface (data) ***/
 
@@ -937,40 +937,44 @@ objc_add_property_declaration (location_t location, tree decl,
 
   /* TODO: Check that the property type is an Objective-C object or a "POD".  */
 
-  if (property_assign_semantics == OBJC_PROPERTY_ASSIGN)
-    {
+  /* Implement -Wproperty-assign-default (which is enabled by default).  */
+  if (warn_property_assign_default
       /* If garbage collection is not being used, then 'assign' is
 	 valid for objects (and typically used for delegates) but it
 	 is wrong in most cases (since most objects need to be
 	 retained or copied in setters).  Warn users when 'assign' is
 	 used implicitly.  */
+      && property_assign_semantics == OBJC_PROPERTY_ASSIGN
+      /* Read-only properties are never assigned, so the assignment
+	 semantics do not matter in that case.  */
+      && !property_readonly
+      && !flag_objc_gc)
+    {
       /* Please note that it would make sense to default to 'assign'
 	 for non-{Objective-C objects}, and to 'retain' for
 	 Objective-C objects.  But that would break compatibility with
 	 other compilers.  */
-      if (!flag_objc_gc)
+      if (!parsed_property_assign && !parsed_property_retain && !parsed_property_copy)
 	{
-	  if (!parsed_property_assign && !parsed_property_retain && !parsed_property_copy)
+	  /* Use 'false' so we do not warn for Class objects.  */
+	  if (objc_type_valid_for_messaging (TREE_TYPE (decl), false))
 	    {
-	      if (objc_type_valid_for_messaging (TREE_TYPE (decl)))
-		{
-		  warning_at (location, 
-			      0,
-			      "object property %qD has no %<assign%>, %<retain%> or %<copy%> attribute; assuming %<assign%>", 
-			      decl);
-		  inform (location, 
-			  "%<assign%> can be unsafe for Objective-C objects; please state explicitly if you need it");
-		}
+	      warning_at (location, 
+			  0,
+			  "object property %qD has no %<assign%>, %<retain%> or %<copy%> attribute; assuming %<assign%>", 
+			  decl);
+	      inform (location, 
+		      "%<assign%> can be unsafe for Objective-C objects; please state explicitly if you need it");
 	    }
 	}
     }
   
   if (property_assign_semantics == OBJC_PROPERTY_RETAIN
-      && !objc_type_valid_for_messaging (TREE_TYPE (decl)))
+      && !objc_type_valid_for_messaging (TREE_TYPE (decl), true))
     error_at (location, "%<retain%> attribute is only valid for Objective-C objects");
   
   if (property_assign_semantics == OBJC_PROPERTY_COPY
-      && !objc_type_valid_for_messaging (TREE_TYPE (decl)))
+      && !objc_type_valid_for_messaging (TREE_TYPE (decl), true))
     error_at (location, "%<copy%> attribute is only valid for Objective-C objects");
 
   /* Check for duplicate property declarations.  We first check the
@@ -9394,7 +9398,6 @@ objc_add_synthesize_declaration (location_t location, tree property_and_ivar_lis
 
   if (TREE_CODE (objc_implementation_context) == CATEGORY_IMPLEMENTATION_TYPE)
     {
-      /* TODO: Maybe we should allow @synthesize in categories ?  */
       error_at (location, "%<@synthesize%> can not be used in categories");
       return;
     }
@@ -9445,9 +9448,8 @@ objc_add_dynamic_declaration_for_property (location_t location, tree interface,
 	return;
       }
 
-  /* Check that the property is declared in the interface.  */
-  /* TODO: This only check the immediate class; we need to check the
-     superclass (and categories ?) as well.  */
+  /* Check that the property is declared in the corresponding
+     interface.  */
   for (property = CLASS_PROPERTY_DECL (interface); property; property = TREE_CHAIN (property))
     if (PROPERTY_NAME (property) == property_name)
       break;
@@ -9515,18 +9517,24 @@ objc_add_dynamic_declaration (location_t location, tree property_list)
       return;
     }
 
-  if (TREE_CODE (objc_implementation_context) == CATEGORY_IMPLEMENTATION_TYPE)
+  /* @dynamic is allowed in categories.  */
+  switch (TREE_CODE (objc_implementation_context))
     {
-      /* TODO: Maybe we should allow @dynamic in categories ?  */
-      error_at (location, "%<@dynamic%> can not be used in categories");
-      return;
+    case CLASS_IMPLEMENTATION_TYPE:
+      interface = lookup_interface (CLASS_NAME (objc_implementation_context));
+      break;
+    case CATEGORY_IMPLEMENTATION_TYPE:
+      interface = lookup_category (implementation_template, 
+				   CLASS_SUPER_NAME (objc_implementation_context));
+      break;
+    default:
+      gcc_unreachable ();
     }
-  
-  interface = lookup_interface (CLASS_NAME (objc_implementation_context));
+
   if (!interface)
     {
       /* I can't see how this could happen, but it is good as a safety check.  */
-      error_at (location, 
+      error_at (location,
 		"%<@dynamic%> requires the @interface of the class to be available");
       return;
     }
@@ -12030,24 +12038,37 @@ objc_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 #endif
 }
 
-/* This routine returns true if TYP is a valid objc object type, 
-   suitable for messaging; false otherwise.
-*/
+/* This routine returns true if TYPE is a valid objc object type,
+   suitable for messaging; false otherwise.  If 'accept_class' is
+   'true', then a Class object is considered valid for messaging and
+   'true' is returned if 'type' refers to a Class.  If 'accept_class'
+   is 'false', then a Class object is not considered valid for
+   messaging and 'false' is returned in that case.  */
 
 static bool
-objc_type_valid_for_messaging (tree typ)
+objc_type_valid_for_messaging (tree type, bool accept_classes)
 {
-  if (!POINTER_TYPE_P (typ))
+  if (!POINTER_TYPE_P (type))
     return false;
 
-  do
-    typ = TREE_TYPE (typ);  /* Remove indirections.  */
-  while (POINTER_TYPE_P (typ));
+  /* Remove the pointer indirection; don't remove more than one
+     otherwise we'd consider "NSObject **" a valid type for messaging,
+     which it isn't.  */
+  type = TREE_TYPE (type);
 
-  if (TREE_CODE (typ) != RECORD_TYPE)
+  if (TREE_CODE (type) != RECORD_TYPE)
     return false;
 
-  return objc_is_object_id (typ) || TYPE_HAS_OBJC_INFO (typ);
+  if (objc_is_object_id (type))
+    return true;
+
+  if (accept_classes && objc_is_class_id (type))
+    return true;
+
+  if (TYPE_HAS_OBJC_INFO (type))
+    return true;
+
+  return false;
 }
 
 /* Begin code generation for fast enumeration (foreach) ... */
@@ -12215,13 +12236,13 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
   if (collection_expression == error_mark_node)
     return;
 
-  if (!objc_type_valid_for_messaging (TREE_TYPE (object_expression)))
+  if (!objc_type_valid_for_messaging (TREE_TYPE (object_expression), true))
     {
       error ("iterating variable in fast enumeration is not an object");
       return;
     }
 
-  if (!objc_type_valid_for_messaging (TREE_TYPE (collection_expression)))
+  if (!objc_type_valid_for_messaging (TREE_TYPE (collection_expression), true))
     {
       error ("collection in fast enumeration is not an object");
       return;

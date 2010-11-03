@@ -1,3 +1,18 @@
+2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/property/dynamic-2.m: Updated for the fact that @dynamic
+	is now allowed in categories.
+	* obj-c++.dg/property/dynamic-2.mm: Same change.
+	* objc.dg/property/dynamic-3.m: New.
+	* obj-c++.dg/property/dynamic-3.mm: New.
+	* objc.dg/property/at-property-14.m: New.
+	* objc.dg/property/at-property-15.m: New.
+	* obj-c++.dg/property/at-property-14.mm: New.
+	* obj-c++.dg/property/at-property-15.mm: New.	
+
+	* objc.dg/foreach-6.m: Added a few more tests for valid and
+	invalid iterating variables and collections.
+	
 2010-11-03  Xinliang David Li  <davidxl@google.com>
 
        PR target/46200

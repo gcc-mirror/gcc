@@ -1,5 +1,18 @@
 2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_add_dynamic_declaration): Allow @dynamic in a
+	category.
+	(objc_type_valid_for_messaging): Added 'accept_classes' argument;
+	if set to 'true', return 'true' for Class objects.  Do not remove
+	more than on pointer indirection.
+	(objc_add_property_declaration): Only warn about 'assign'
+	semantics for Objective-C objects if warn_property_assign_default;
+	and do not warn if the property is readonly or if the type is a Class.
+	(objc_finish_foreach_loop): Updated calls to
+	objc_type_valid_for_messaging.
+	
+2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	Implemented -fobjc-std=objc1 flag.
 	* objc-act.c (objc_start_class_interface): If attributes are
 	specified when flag_objc1_only is set, print an error.
