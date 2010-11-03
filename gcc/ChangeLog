@@ -1,5 +1,10 @@
 2010-11-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/46252
+	* reload1.c (delete_dead_insn): Use prev_active_insn instead of
+	prev_real_insn.
+	* gcse.c (insert_insn_end_basic_block): Likewise.
+
 	PR rtl-optimization/46034
 	PR rtl-optimization/46212
 	PR rtl-optimization/46248
