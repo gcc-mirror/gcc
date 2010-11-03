@@ -30,7 +30,7 @@ int main ()
   /* check results:  */
   for (i = 0; i < N; i++)
     {
-      if (ia[i] != ib[i] & ic[i])
+      if (ia[i] != (ib[i] & ic[i]))
         abort ();
     }
 
