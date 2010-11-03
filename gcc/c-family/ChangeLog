@@ -1,5 +1,9 @@
 2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* c.opt (Wproperty-assign-default): New option.
+
+2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	Implemented -fobjc-std=objc1 flag.
 	* c.opt (fobjc-std=objc1): New option.
 

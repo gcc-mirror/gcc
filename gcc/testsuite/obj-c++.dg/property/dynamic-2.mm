@@ -24,9 +24,10 @@
 
 
 @interface Test (Category)
+@property int v1;
 @end
 @implementation Test (Category)
-@dynamic v1;  /* { dg-error ".@dynamic. can not be used in categories" } */
+@dynamic v1;
 @end
 
 
