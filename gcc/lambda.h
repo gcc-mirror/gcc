@@ -486,7 +486,7 @@ build_linear_expr (tree type, lambda_vector coefs, VEC (tree, heap) *ivs)
 {
   unsigned i;
   tree iv;
-  tree expr = fold_convert (type, integer_zero_node);
+  tree expr = build_zero_cst (type);
 
   for (i = 0; VEC_iterate (tree, ivs, i, iv); i++)
     {

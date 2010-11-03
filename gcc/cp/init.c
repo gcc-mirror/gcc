@@ -254,7 +254,7 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
       init = build_constructor (type, v);
     }
   else if (TREE_CODE (type) == VECTOR_TYPE)
-    init = fold_convert (type, integer_zero_node);
+    init = build_zero_cst (type);
   else
     gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
 

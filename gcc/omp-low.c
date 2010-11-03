@@ -2167,7 +2167,7 @@ omp_reduction_init (tree clause, tree type)
     case TRUTH_ORIF_EXPR:
     case TRUTH_XOR_EXPR:
     case NE_EXPR:
-      return fold_convert_loc (loc, type, integer_zero_node);
+      return build_zero_cst (type);
 
     case MULT_EXPR:
     case TRUTH_AND_EXPR:

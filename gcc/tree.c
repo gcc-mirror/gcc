@@ -1362,7 +1362,7 @@ build_vector_from_ctor (tree type, VEC(constructor_elt,gc) *v)
     list = tree_cons (NULL_TREE, value, list);
   for (; idx < TYPE_VECTOR_SUBPARTS (type); ++idx)
     list = tree_cons (NULL_TREE,
-		      fold_convert (TREE_TYPE (type), integer_zero_node), list);
+		      build_zero_cst (TREE_TYPE (type)), list);
   return build_vector (type, nreverse (list));
 }
 
@@ -1599,22 +1599,52 @@ build_one_cst (tree type)
     case COMPLEX_TYPE:
       return build_complex (type,
 			    build_one_cst (TREE_TYPE (type)),
-			    fold_convert (TREE_TYPE (type), integer_zero_node));
+			    build_zero_cst (TREE_TYPE (type)));
 
     default:
       gcc_unreachable ();
     }
 }
 
-/* Build 0 constant of type TYPE.  This is used by constructor folding and thus
-   the constant should correspond zero in memory representation.  */
+/* Build 0 constant of type TYPE.  This is used by constructor folding
+   and thus the constant should be represented in memory by
+   zero(es).  */
 
 tree
 build_zero_cst (tree type)
 {
-  if (!AGGREGATE_TYPE_P (type))
-    return fold_convert (type, integer_zero_node);
-  return build_constructor (type, NULL);
+  switch (TREE_CODE (type))
+    {
+    case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
+    case POINTER_TYPE: case REFERENCE_TYPE:
+    case OFFSET_TYPE:
+      return build_int_cst (type, 0);
+
+    case REAL_TYPE:
+      return build_real (type, dconst0);
+
+    case FIXED_POINT_TYPE:
+      return build_fixed (type, FCONST0 (TYPE_MODE (type)));
+
+    case VECTOR_TYPE:
+      {
+	tree scalar = build_zero_cst (TREE_TYPE (type));
+
+	return build_vector_from_val (type, scalar);
+      }
+
+    case COMPLEX_TYPE:
+      {
+	tree zero = build_zero_cst (TREE_TYPE (type));
+
+	return build_complex (type, zero, zero);
+      }
+
+    default:
+      if (!AGGREGATE_TYPE_P (type))
+	return fold_convert (type, integer_zero_node);
+      return build_constructor (type, NULL);
+    }
 }
 
 

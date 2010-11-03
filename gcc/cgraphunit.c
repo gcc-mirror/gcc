@@ -1411,8 +1411,7 @@ assemble_thunk (struct cgraph_node *node)
 	      remove_edge (single_succ_edge (bb));
 	      true_label = gimple_block_label (then_bb);
 	      stmt = gimple_build_cond (NE_EXPR, restmp,
-	      				fold_convert (TREE_TYPE (restmp),
-						      integer_zero_node),
+	      				build_zero_cst (TREE_TYPE (restmp)),
 	      			        NULL_TREE, NULL_TREE);
 	      gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
 	      make_edge (bb, then_bb, EDGE_TRUE_VALUE);
@@ -1429,8 +1428,8 @@ assemble_thunk (struct cgraph_node *node)
 	    {
 	      gimple stmt;
 	      bsi = gsi_last_bb (else_bb);
-	      stmt = gimple_build_assign (restmp, fold_convert (TREE_TYPE (restmp),
-								integer_zero_node));
+	      stmt = gimple_build_assign (restmp,
+					  build_zero_cst (TREE_TYPE (restmp)));
 	      gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
 	      bsi = gsi_last_bb (return_bb);
 	    }

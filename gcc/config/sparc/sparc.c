@@ -8748,7 +8748,7 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
   if (ignore
       && icode != CODE_FOR_alignaddrsi_vis
       && icode != CODE_FOR_alignaddrdi_vis)
-    return fold_convert (rtype, integer_zero_node);
+    return build_zero_cst (rtype);
 
   switch (icode)
     {

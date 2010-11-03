@@ -2821,7 +2821,7 @@ build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
 					  build_constructor (return_type, 0),
 					  false);
 	  else
-	    rhs = fold_convert_loc (loc, return_type, integer_zero_node);
+	    rhs = build_zero_cst (return_type);
 
 	  return require_complete_type (build2 (COMPOUND_EXPR, return_type,
 						trap, rhs));

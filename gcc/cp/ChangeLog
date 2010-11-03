@@ -1,3 +1,10 @@
+2010-11-02  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* class.c (build_base_path, add_vcall_offset): Use build_zero_cst
+	instead of fold_convert.
+	* init.c (build_zero_init): Likewise.
+	* typeck.c (cp_build_binary_op): Likewise.
+
 2010-11-02  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/46170

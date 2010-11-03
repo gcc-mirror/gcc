@@ -4047,8 +4047,7 @@ cp_build_binary_op (location_t location,
 	      tree e1 = cp_build_binary_op (location,
 					    EQ_EXPR,
 	  			            pfn0,	
-				      	    fold_convert (TREE_TYPE (pfn0),
-							  integer_zero_node),
+				      	    build_zero_cst (TREE_TYPE (pfn0)),
 					    complain);
 	      tree e2 = cp_build_binary_op (location,
 					    BIT_AND_EXPR, 
@@ -4138,8 +4137,7 @@ cp_build_binary_op (location_t location,
 				       complain);
 	      e2 = cp_build_binary_op (location, EQ_EXPR,
 				       pfn0,
-				       fold_convert (TREE_TYPE (pfn0),
-						     integer_zero_node),
+				       build_zero_cst (TREE_TYPE (pfn0)),
 				       complain);
 	      e2 = cp_build_binary_op (location,
 				       TRUTH_ANDIF_EXPR, e2, e1, complain);
@@ -4164,8 +4162,7 @@ cp_build_binary_op (location_t location,
 	      e2 = cp_build_binary_op (location,
 				       EQ_EXPR,
 		      		       pfn0,
-			   	       fold_convert (TREE_TYPE (pfn0),
-						     integer_zero_node),
+			   	       build_zero_cst (TREE_TYPE (pfn0)),
 				       complain);
 	      e1 = cp_build_binary_op (location,
 				       TRUTH_ORIF_EXPR, e1, e2, complain);

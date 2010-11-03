@@ -8228,7 +8228,7 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 
     case IMAGPART_EXPR:
       if (TREE_CODE (TREE_TYPE (arg0)) != COMPLEX_TYPE)
-	return fold_convert_loc (loc, type, integer_zero_node);
+	return build_zero_cst (type);
       if (TREE_CODE (arg0) == COMPLEX_EXPR)
 	return omit_one_operand_loc (loc, type, TREE_OPERAND (arg0, 1),
 				 TREE_OPERAND (arg0, 0));
@@ -9283,7 +9283,7 @@ fold_mult_zconjz (location_t loc, tree type, tree expr)
 		     fold_build2_loc (loc, MULT_EXPR, itype, rpart, rpart),
 		     fold_build2_loc (loc, MULT_EXPR, itype, ipart, ipart));
   return fold_build2_loc (loc, COMPLEX_EXPR, type, tem,
-		      fold_convert_loc (loc, itype, integer_zero_node));
+			  build_zero_cst (itype));
 }
 
 
@@ -10275,7 +10275,7 @@ fold_binary_loc (location_t loc,
 
       if ((!FLOAT_TYPE_P (type) || !HONOR_NANS (TYPE_MODE (type)))
 	  && operand_equal_p (arg0, arg1, 0))
-	return fold_convert_loc (loc, type, integer_zero_node);
+	return build_zero_cst (type);
 
       /* A - B -> A + (-B) if B is easily negatable.  */
       if (negate_expr_p (arg1)
@@ -10662,7 +10662,7 @@ fold_binary_loc (location_t loc,
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
 	{
-	  t1 = fold_convert_loc (loc, type, integer_zero_node);
+	  t1 = build_zero_cst (type);
 	  t1 = fold_unary_loc (loc, BIT_NOT_EXPR, type, t1);
 	  return omit_one_operand_loc (loc, type, t1, arg1);
 	}
@@ -10671,7 +10671,7 @@ fold_binary_loc (location_t loc,
       if (TREE_CODE (arg1) == BIT_NOT_EXPR
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
 	{
-	  t1 = fold_convert_loc (loc, type, integer_zero_node);
+	  t1 = build_zero_cst (type);
 	  t1 = fold_unary_loc (loc, BIT_NOT_EXPR, type, t1);
 	  return omit_one_operand_loc (loc, type, t1, arg0);
 	}
@@ -10801,7 +10801,7 @@ fold_binary_loc (location_t loc,
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
 	{
-	  t1 = fold_convert_loc (loc, type, integer_zero_node);
+	  t1 = build_zero_cst (type);
 	  t1 = fold_unary_loc (loc, BIT_NOT_EXPR, type, t1);
 	  return omit_one_operand_loc (loc, type, t1, arg1);
 	}
@@ -10810,7 +10810,7 @@ fold_binary_loc (location_t loc,
       if (TREE_CODE (arg1) == BIT_NOT_EXPR
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
 	{
-	  t1 = fold_convert_loc (loc, type, integer_zero_node);
+	  t1 = build_zero_cst (type);
 	  t1 = fold_unary_loc (loc, BIT_NOT_EXPR, type, t1);
 	  return omit_one_operand_loc (loc, type, t1, arg0);
 	}
@@ -13598,7 +13598,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	      if (elements)
 		return TREE_VALUE (elements);
 	      else
-		return fold_convert_loc (loc, type, integer_zero_node);
+		return build_zero_cst (type);
 	    }
 	}
 

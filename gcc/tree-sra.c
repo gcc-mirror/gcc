@@ -2324,8 +2324,7 @@ init_subtree_with_zero (struct access *access, gimple_stmt_iterator *gsi,
       gimple stmt;
 
       stmt = gimple_build_assign (get_access_replacement (access),
-				  fold_convert (access->type,
-						integer_zero_node));
+				  build_zero_cst (access->type));
       if (insert_after)
 	gsi_insert_after (gsi, stmt, GSI_NEW_STMT);
       else
@@ -4098,7 +4097,7 @@ sra_ipa_modify_assign (gimple *stmt_ptr, gimple_stmt_iterator *gsi,
 	    {
 	      /* V_C_Es of constructors can cause trouble (PR 42714).  */
 	      if (is_gimple_reg_type (TREE_TYPE (*lhs_p)))
-		*rhs_p = fold_convert (TREE_TYPE (*lhs_p), integer_zero_node);
+		*rhs_p = build_zero_cst (TREE_TYPE (*lhs_p));
 	      else
 		*rhs_p = build_constructor (TREE_TYPE (*lhs_p), 0);
 	    }
