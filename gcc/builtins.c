@@ -2474,6 +2474,7 @@ expand_builtin_sincos (tree exp)
   tree arg, sinp, cosp;
   int result;
   location_t loc = EXPR_LOCATION (exp);
+  tree alias_type, alias_off;
 
   if (!validate_arglist (exp, REAL_TYPE,
  			 POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
@@ -2494,8 +2495,12 @@ expand_builtin_sincos (tree exp)
   target2 = gen_reg_rtx (mode);
 
   op0 = expand_normal (arg);
-  op1 = expand_normal (build_fold_indirect_ref_loc (loc, sinp));
-  op2 = expand_normal (build_fold_indirect_ref_loc (loc, cosp));
+  alias_type = build_pointer_type_for_mode (TREE_TYPE (arg), ptr_mode, true);
+  alias_off = build_int_cst (alias_type, 0);
+  op1 = expand_normal (fold_build2_loc (loc, MEM_REF, TREE_TYPE (arg),
+					sinp, alias_off));
+  op2 = expand_normal (fold_build2_loc (loc, MEM_REF, TREE_TYPE (arg),
+					cosp, alias_off));
 
   /* Compute into target1 and target2.
      Set TARGET to wherever the result comes back.  */
