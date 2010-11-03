@@ -1,6 +1,6 @@
 /* Loop manipulation code for GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009 Free Software
-   Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1538,7 +1538,10 @@ loop_version (struct loop *loop,
   /* Duplicate loop.  */
   if (!cfg_hook_duplicate_loop_to_header_edge (loop, entry, 1,
 					       NULL, NULL, NULL, 0))
-    return NULL;
+    {
+      entry->flags |= irred_flag;
+      return NULL;
+    }
 
   /* After duplication entry edge now points to new loop head block.
      Note down new head as second_head.  */
