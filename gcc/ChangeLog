@@ -1,5 +1,10 @@
 2010-11-03  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/46241
+	* dwarf2out.c (scope_die_for): Properly detect global scope.
+
+2010-11-03  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/46190
 	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
 	Properly compute peel iterations.
