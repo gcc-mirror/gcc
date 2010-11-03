@@ -1,3 +1,9 @@
+2010-11-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46289
+	* semantics.c (build_constexpr_constructor_member_initializers):
+	Avoid ICE on error.
+
 2010-11-02  Dodji Seketeli  <dodji@redhat.com>
 
 	* cp-tree.h (enum tsubst_flags)<tf_no_class_instantiations>:
