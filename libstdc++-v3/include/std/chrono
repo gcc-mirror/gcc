@@ -60,7 +60,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     template<typename _Rep, typename _Period = ratio<1>>
       struct duration;
 
-    template<typename _Clock, typename _Duration = typename _Clock::duration>
+    template<typename _Clock, typename _Dur = typename _Clock::duration>
       struct time_point;
   }
 
@@ -69,71 +69,81 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     struct common_type<chrono::duration<_Rep1, _Period1>,
 		       chrono::duration<_Rep2, _Period2>>
     {
-      typedef chrono::duration<typename common_type<_Rep1, _Rep2>::type,
-	ratio<__static_gcd<_Period1::num, _Period2::num>::value,
-	(_Period1::den / __static_gcd<_Period1::den, _Period2::den>::value)
-	* _Period2::den>> type;
+    private:
+      typedef __static_gcd<_Period1::num, _Period2::num> 	__gcd_num;
+      typedef __static_gcd<_Period1::den, _Period2::den> 	__gcd_den;
+      typedef typename common_type<_Rep1, _Rep2>::type		__cr;
+      typedef ratio<__gcd_num::value,
+		    (_Period1::den / __gcd_den::value) * _Period2::den> __r;
+
+    public:
+      typedef chrono::duration<__cr, __r> 			type;
     };
 
   // 20.8.2.3 specialization of common_type (for time_point)
-  template<typename _Clock, typename _Duration1, typename _Duration2>
-    struct common_type<chrono::time_point<_Clock, _Duration1>,
-		       chrono::time_point<_Clock, _Duration2>>
+  template<typename _Clock, typename _Dur1, typename _Dur2>
+    struct common_type<chrono::time_point<_Clock, _Dur1>,
+		       chrono::time_point<_Clock, _Dur2>>
     {
-      typedef chrono::time_point<_Clock,
-	typename common_type<_Duration1, _Duration2>::type> type;
+    private:
+      typedef typename common_type<_Dur1, _Dur2>::type 		__ct;
+
+    public:
+      typedef chrono::time_point<_Clock, __ct> 			type;
     };
 
   namespace chrono
   {
     // Primary template for duration_cast impl.
-    template<typename _ToDuration, typename _CF, typename _CR,
+    template<typename _ToDur, typename _CF, typename _CR,
 	     bool _NumIsOne = false, bool _DenIsOne = false>
       struct __duration_cast_impl
       {
 	template<typename _Rep, typename _Period>
-	  static constexpr _ToDuration 
+	  static constexpr _ToDur
 	  __cast(const duration<_Rep, _Period>& __d)
 	  {
-	    return _ToDuration(static_cast<
-	      typename _ToDuration::rep>(static_cast<_CR>(__d.count())
+	    typedef typename _ToDur::rep			__to_rep;
+	    return _ToDur(static_cast<__to_rep>(static_cast<_CR>(__d.count())
 	      * static_cast<_CR>(_CF::num)
 	      / static_cast<_CR>(_CF::den)));
 	  }
       };
 
-    template<typename _ToDuration, typename _CF, typename _CR>
-      struct __duration_cast_impl<_ToDuration, _CF, _CR, true, true>
+    template<typename _ToDur, typename _CF, typename _CR>
+      struct __duration_cast_impl<_ToDur, _CF, _CR, true, true>
       {
 	template<typename _Rep, typename _Period>
-	  static constexpr _ToDuration 
+	  static constexpr _ToDur
 	  __cast(const duration<_Rep, _Period>& __d)
 	  {
-	    return _ToDuration(
-	      static_cast<typename _ToDuration::rep>(__d.count()));
+	    typedef typename _ToDur::rep			__to_rep;
+	    return _ToDur(static_cast<__to_rep>(__d.count()));
 	  }
       };
 
-    template<typename _ToDuration, typename _CF, typename _CR>
-      struct __duration_cast_impl<_ToDuration, _CF, _CR, true, false>
+    template<typename _ToDur, typename _CF, typename _CR>
+      struct __duration_cast_impl<_ToDur, _CF, _CR, true, false>
       {
 	template<typename _Rep, typename _Period>
-	  static constexpr _ToDuration 
+	  static constexpr _ToDur
 	  __cast(const duration<_Rep, _Period>& __d)
 	  {
-	    return _ToDuration(static_cast<typename _ToDuration::rep>(
+	    typedef typename _ToDur::rep			__to_rep;
+	    return _ToDur(static_cast<__to_rep>(
 	      static_cast<_CR>(__d.count()) / static_cast<_CR>(_CF::den)));
 	  }
       };
 
-    template<typename _ToDuration, typename _CF, typename _CR>
-      struct __duration_cast_impl<_ToDuration, _CF, _CR, false, true>
+    template<typename _ToDur, typename _CF, typename _CR>
+      struct __duration_cast_impl<_ToDur, _CF, _CR, false, true>
       {
 	template<typename _Rep, typename _Period>
-	  static constexpr _ToDuration 
+	  static constexpr _ToDur
 	  __cast(const duration<_Rep, _Period>& __d)
 	  {
-	    return _ToDuration(static_cast<typename _ToDuration::rep>(
+	    typedef typename _ToDur::rep			__to_rep;
+	    return _ToDur(static_cast<__to_rep>(
 	      static_cast<_CR>(__d.count()) * static_cast<_CR>(_CF::num)));
 	  }
       };
@@ -149,18 +159,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { };
 
     /// duration_cast
-    template<typename _ToDuration, typename _Rep, typename _Period>
-      inline constexpr typename enable_if<__is_duration<_ToDuration>::value,
-				_ToDuration>::type
+    template<typename _ToDur, typename _Rep, typename _Period>
+      inline constexpr typename enable_if<__is_duration<_ToDur>::value,
+				_ToDur>::type
       duration_cast(const duration<_Rep, _Period>& __d)
       {
-	typedef typename
-	  ratio_divide<_Period, typename _ToDuration::period>::type __cf;
-	typedef typename
-	  common_type<typename _ToDuration::rep, _Rep, intmax_t>::type __cr;
-
-	return __duration_cast_impl<_ToDuration, __cf, __cr,
-	  __cf::num == 1, __cf::den == 1>::__cast(__d);
+	typedef typename _ToDur::period				__to_period;
+	typedef typename _ToDur::rep				__to_rep;
+	typedef ratio_divide<_Period, __to_period> 		__r_div;
+	typedef typename __r_div::type 				__cf;
+	typedef typename common_type<__to_rep, _Rep, intmax_t>::type
+	  							__cr;
+	typedef  __duration_cast_impl<_ToDur, __cf, __cr,
+				      __cf::num == 1, __cf::den == 1> __dc;
+	return __dc::__cast(__d);
       }
 
     /// treat_as_floating_point
@@ -200,8 +212,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     template<typename _Rep, typename _Period>
       struct duration
       {
-	typedef _Rep    rep;
-	typedef _Period period;
+	typedef _Rep    					rep;
+	typedef _Period 					period;
 
 	static_assert(!__is_duration<_Rep>::value, "rep cannot be a duration");
 	static_assert(__is_ratio<_Period>::value,
@@ -336,8 +348,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator+(const duration<_Rep1, _Period1>& __lhs,
 		const duration<_Rep2, _Period2>& __rhs)
       {
-	typedef typename common_type<duration<_Rep1, _Period1>,
-				     duration<_Rep2, _Period2>>::type __ct;
+	typedef duration<_Rep1, _Period1>			__dur1;
+	typedef duration<_Rep2, _Period2>			__dur2;
+	typedef typename common_type<__dur1,__dur2>::type	__ct;
 	return __ct(__lhs) += __rhs;
       }
 
@@ -348,8 +361,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator-(const duration<_Rep1, _Period1>& __lhs,
 		const duration<_Rep2, _Period2>& __rhs)
       {
-	typedef typename common_type<duration<_Rep1, _Period1>,
-				     duration<_Rep2, _Period2>>::type __ct;
+	typedef duration<_Rep1, _Period1>			__dur1;
+	typedef duration<_Rep2, _Period2>			__dur2;
+	typedef typename common_type<__dur1,__dur2>::type	__ct;
 	return __ct(__lhs) -= __rhs;
       }
 
@@ -366,7 +380,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       inline duration<typename __common_rep_type<_Rep1, _Rep2>::type, _Period>
       operator*(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
       {
-	typedef typename common_type<_Rep1, _Rep2>::type __cr;
+	typedef typename common_type<_Rep1, _Rep2>::type 	__cr;
 	return duration<__cr, _Period>(__d) *= __s;
       }
 
@@ -380,7 +394,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	enable_if<!__is_duration<_Rep2>::value, _Rep2>::type>::type, _Period>
       operator/(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
       {
-	typedef typename common_type<_Rep1, _Rep2>::type __cr;
+	typedef typename common_type<_Rep1, _Rep2>::type 	__cr;
 	return duration<__cr, _Period>(__d) /= __s;
       }
 
@@ -390,8 +404,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator/(const duration<_Rep1, _Period1>& __lhs,
 		const duration<_Rep2, _Period2>& __rhs)
       {
-	typedef typename common_type<duration<_Rep1, _Period1>,
-				     duration<_Rep2, _Period2>>::type __ct;
+	typedef duration<_Rep1, _Period1>			__dur1;
+	typedef duration<_Rep2, _Period2>			__dur2;
+	typedef typename common_type<__dur1,__dur2>::type	__ct;
 	return __ct(__lhs).count() / __ct(__rhs).count();
       }
 
@@ -401,7 +416,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	enable_if<!__is_duration<_Rep2>::value, _Rep2>::type>::type, _Period>
       operator%(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
       {
-	typedef typename common_type<_Rep1, _Rep2>::type __cr;
+	typedef typename common_type<_Rep1, _Rep2>::type 	__cr;
 	return duration<__cr, _Period>(__d) %= __s;
       }
 
@@ -412,8 +427,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator%(const duration<_Rep1, _Period1>& __lhs,
 		const duration<_Rep2, _Period2>& __rhs)
       {
-	typedef typename common_type<duration<_Rep1, _Period1>,
-				     duration<_Rep2, _Period2>>::type __ct;
+	typedef duration<_Rep1, _Period1>			__dur1;
+	typedef duration<_Rep2, _Period2>			__dur2;
+	typedef typename common_type<__dur1,__dur2>::type	__ct;
 	return __ct(__lhs) %= __rhs;
       }
 
@@ -424,8 +440,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator==(const duration<_Rep1, _Period1>& __lhs,
 		 const duration<_Rep2, _Period2>& __rhs)
       {
-	typedef typename common_type<duration<_Rep1, _Period1>,
-				     duration<_Rep2, _Period2>>::type __ct;
+	typedef duration<_Rep1, _Period1>			__dur1;
+	typedef duration<_Rep2, _Period2>			__dur2;
+	typedef typename common_type<__dur1,__dur2>::type	__ct;
 	return __ct(__lhs).count() == __ct(__rhs).count();
       }
 
@@ -435,8 +452,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator<(const duration<_Rep1, _Period1>& __lhs,
 		const duration<_Rep2, _Period2>& __rhs)
       {
-	typedef typename common_type<duration<_Rep1, _Period1>,
-				     duration<_Rep2, _Period2>>::type __ct;
+	typedef duration<_Rep1, _Period1>			__dur1;
+	typedef duration<_Rep2, _Period2>			__dur2;
+	typedef typename common_type<__dur1,__dur2>::type	__ct;
 	return __ct(__lhs).count() < __ct(__rhs).count();
       }
 
@@ -487,13 +505,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     typedef duration<int, ratio<3600>> 	hours;
 
     /// time_point
-    template<typename _Clock, typename _Duration>
+    template<typename _Clock, typename _Dur>
       struct time_point
       {
-	typedef _Clock			  	clock;
-	typedef _Duration		  	duration;
-	typedef typename duration::rep	  	rep;
-	typedef typename duration::period	period;
+	typedef _Clock			  			clock;
+	typedef _Dur		  				duration;
+	typedef typename duration::rep	  			rep;
+	typedef typename duration::period			period;
 
 	constexpr time_point() : __d(duration::zero())
 	{ }
@@ -503,8 +521,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{ }
 
 	// conversions
-	template<typename _Duration2>
-	  constexpr time_point(const time_point<clock, _Duration2>& __t)
+	template<typename _Dur2>
+	  constexpr time_point(const time_point<clock, _Dur2>& __t)
 	  : __d(__t.time_since_epoch())
 	  { }
 
@@ -542,84 +560,84 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       };
 
     /// time_point_cast
-    template<typename _ToDuration, typename _Clock, typename _Duration>
-      inline constexpr typename enable_if<__is_duration<_ToDuration>::value,
-				time_point<_Clock, _ToDuration>>::type
-      time_point_cast(const time_point<_Clock, _Duration>& __t)
+    template<typename _ToDur, typename _Clock, typename _Dur>
+      inline constexpr typename enable_if<__is_duration<_ToDur>::value,
+				time_point<_Clock, _ToDur>>::type
+      time_point_cast(const time_point<_Clock, _Dur>& __t)
       {
-	return time_point<_Clock, _ToDuration>(
-	  duration_cast<_ToDuration>(__t.time_since_epoch()));
+	typedef time_point<_Clock, _ToDur> 			__time_point;
+	return __time_point(duration_cast<_ToDur>(__t.time_since_epoch()));
       }
 
-    template<typename _Clock, typename _Duration1,
+    template<typename _Clock, typename _Dur1,
 	     typename _Rep2, typename _Period2>
       inline time_point<_Clock,
-	typename common_type<_Duration1, duration<_Rep2, _Period2>>::type>
-      operator+(const time_point<_Clock, _Duration1>& __lhs,
+	typename common_type<_Dur1, duration<_Rep2, _Period2>>::type>
+      operator+(const time_point<_Clock, _Dur1>& __lhs,
 		const duration<_Rep2, _Period2>& __rhs)
       {
-	typedef time_point<_Clock,
-	  typename common_type<_Duration1,
-			       duration<_Rep2, _Period2>>::type> __ct;
-	return __ct(__lhs) += __rhs;
+	typedef duration<_Rep2, _Period2>			__dur2;
+	typedef typename common_type<_Dur1,__dur2>::type	__ct;
+	typedef time_point<_Clock, __ct> 			__time_point;
+	return __time_point(__lhs) += __rhs;
       }
 
     template<typename _Rep1, typename _Period1,
-	     typename _Clock, typename _Duration2>
+	     typename _Clock, typename _Dur2>
       inline time_point<_Clock,
-	typename common_type<duration<_Rep1, _Period1>, _Duration2>::type>
+	typename common_type<duration<_Rep1, _Period1>, _Dur2>::type>
       operator+(const duration<_Rep1, _Period1>& __lhs,
-		const time_point<_Clock, _Duration2>& __rhs)
+		const time_point<_Clock, _Dur2>& __rhs)
       { return __rhs + __lhs; }
 
-    template<typename _Clock, typename _Duration1,
+    template<typename _Clock, typename _Dur1,
 	     typename _Rep2, typename _Period2>
       inline time_point<_Clock,
-	typename common_type<_Duration1, duration<_Rep2, _Period2>>::type>
-      operator-(const time_point<_Clock, _Duration1>& __lhs,
+	typename common_type<_Dur1, duration<_Rep2, _Period2>>::type>
+      operator-(const time_point<_Clock, _Dur1>& __lhs,
 		const duration<_Rep2, _Period2>& __rhs)
       { return __lhs + (-__rhs); }
 
-    template<typename _Clock, typename _Duration1, typename _Duration2>
-      inline typename common_type<_Duration1, _Duration2>::type
-      operator-(const time_point<_Clock, _Duration1>& __lhs,
-		const time_point<_Clock, _Duration2>& __rhs)
+    template<typename _Clock, typename _Dur1, typename _Dur2>
+      inline typename common_type<_Dur1, _Dur2>::type
+      operator-(const time_point<_Clock, _Dur1>& __lhs,
+		const time_point<_Clock, _Dur2>& __rhs)
       { return __lhs.time_since_epoch() - __rhs.time_since_epoch(); }
 
-    template<typename _Clock, typename _Duration1, typename _Duration2>
+    template<typename _Clock, typename _Dur1, typename _Dur2>
       inline constexpr bool
-      operator==(const time_point<_Clock, _Duration1>& __lhs,
-		 const time_point<_Clock, _Duration2>& __rhs)
+      operator==(const time_point<_Clock, _Dur1>& __lhs,
+		 const time_point<_Clock, _Dur2>& __rhs)
       { return __lhs.time_since_epoch() == __rhs.time_since_epoch(); }
 
-    template<typename _Clock, typename _Duration1, typename _Duration2>
+    template<typename _Clock, typename _Dur1, typename _Dur2>
       inline constexpr bool
-      operator!=(const time_point<_Clock, _Duration1>& __lhs,
-		 const time_point<_Clock, _Duration2>& __rhs)
+      operator!=(const time_point<_Clock, _Dur1>& __lhs,
+		 const time_point<_Clock, _Dur2>& __rhs)
       { return !(__lhs == __rhs); }
 
-    template<typename _Clock, typename _Duration1, typename _Duration2>
+    template<typename _Clock, typename _Dur1, typename _Dur2>
       inline constexpr bool
-      operator<(const time_point<_Clock, _Duration1>& __lhs,
-		const time_point<_Clock, _Duration2>& __rhs)
+      operator<(const time_point<_Clock, _Dur1>& __lhs,
+		const time_point<_Clock, _Dur2>& __rhs)
       { return  __lhs.time_since_epoch() < __rhs.time_since_epoch(); }
 
-    template<typename _Clock, typename _Duration1, typename _Duration2>
+    template<typename _Clock, typename _Dur1, typename _Dur2>
       inline constexpr bool
-      operator<=(const time_point<_Clock, _Duration1>& __lhs,
-		 const time_point<_Clock, _Duration2>& __rhs)
+      operator<=(const time_point<_Clock, _Dur1>& __lhs,
+		 const time_point<_Clock, _Dur2>& __rhs)
       { return !(__rhs < __lhs); }
 
-    template<typename _Clock, typename _Duration1, typename _Duration2>
+    template<typename _Clock, typename _Dur1, typename _Dur2>
       inline constexpr bool
-      operator>(const time_point<_Clock, _Duration1>& __lhs,
-		const time_point<_Clock, _Duration2>& __rhs)
+      operator>(const time_point<_Clock, _Dur1>& __lhs,
+		const time_point<_Clock, _Dur2>& __rhs)
       { return __rhs < __lhs; }
 
-    template<typename _Clock, typename _Duration1, typename _Duration2>
+    template<typename _Clock, typename _Dur1, typename _Dur2>
       inline constexpr bool
-      operator>=(const time_point<_Clock, _Duration1>& __lhs,
-		 const time_point<_Clock, _Duration2>& __rhs)
+      operator>=(const time_point<_Clock, _Dur1>& __lhs,
+		 const time_point<_Clock, _Dur2>& __rhs)
       { return !(__lhs < __rhs); }
 
     /// system_clock
@@ -650,16 +668,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       static std::time_t
       to_time_t(const time_point& __t)
       {
-	return std::time_t(
-	  duration_cast<chrono::seconds>(__t.time_since_epoch()).count());
+	return std::time_t(duration_cast<chrono::seconds>
+			   (__t.time_since_epoch()).count());
       }
 
       static time_point
       from_time_t(std::time_t __t)
       {
-	return time_point_cast<system_clock::duration>(
-	  chrono::time_point<system_clock, chrono::seconds>(
-	    chrono::seconds(__t)));
+	typedef chrono::time_point<system_clock, seconds>	__from;
+	return time_point_cast<system_clock::duration>
+	       (__from(chrono::seconds(__t)));
       }
     };
 
