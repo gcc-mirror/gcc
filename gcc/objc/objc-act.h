@@ -62,6 +62,11 @@ tree objc_eh_personality (void);
 
 /* TREE_TYPE is the type (int, float, etc) of the property.  */
 
+/* DECL_ARTIFICIAL is set to 1 if the PROPERTY_DECL is an artificial
+   property declaration created when the dot-syntax object.component
+   is used with no actual @property matching the component, but a
+   valid getter/setter.  */
+
 /* PROPERTY_NAME is the name of the property.  */
 #define PROPERTY_NAME(DECL) DECL_NAME(DECL)
 
@@ -99,9 +104,21 @@ typedef enum objc_property_assign_semantics {
    declaration has been parsed); otherwise, it is set to 0.  */
 #define PROPERTY_DYNAMIC(DECL) DECL_LANG_FLAG_2 (DECL)
 
+/* PROPERTY_HAS_NO_GETTER can be 0 or 1.  Normally it is 0, but if
+   this is an artificial PROPERTY_DECL that we generate even without a
+   getter, it is set to 1.  */
+#define PROPERTY_HAS_NO_GETTER(DECL) DECL_LANG_FLAG_3 (DECL)
+
+/* PROPERTY_HAS_NO_SETTER can be 0 or 1.  Normally it is 0, but if
+   this is an artificial PROPERTY_DECL that we generate even without a
+   setter, it is set to 1.  */
+#define PROPERTY_HAS_NO_SETTER(DECL) DECL_LANG_FLAG_4 (DECL)
 
 /* PROPERTY_REF.  A PROPERTY_REF represents an 'object.property'
-   expression.  */
+   expression.  It is normally used for property access, but when
+   the Objective-C 2.0 "dot-syntax" (object.component) is used
+   with no matching property, a PROPERTY_REF is still created to
+   represent it, with an artificial PROPERTY_DECL.  */
 
 /* PROPERTY_REF_OBJECT is the object whose property we are
    accessing.  */
@@ -109,7 +126,9 @@ typedef enum objc_property_assign_semantics {
 
 /* PROPERTY_REF_PROPERTY_DECL is the PROPERTY_DECL for the property
    used in the expression.  From it, you can get the property type,
-   and the getter/setter names.  */
+   and the getter/setter names.  This PROPERTY_DECL could be artificial
+   if we are processing an 'object.component' syntax with no matching 
+   declared property.  */
 #define PROPERTY_REF_PROPERTY_DECL(NODE) TREE_OPERAND (PROPERTY_REF_CHECK (NODE), 1)
 
 
