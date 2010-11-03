@@ -1,3 +1,8 @@
+2010-11-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vsx-sfminmax.c: New test for using double
+	precision min/max for single precision on VSX.
+
 2010-11-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46289

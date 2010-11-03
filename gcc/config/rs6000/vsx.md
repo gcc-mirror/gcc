@@ -437,6 +437,28 @@
   [(set_attr "type" "<VStype_simple>")
    (set_attr "fp_type" "<VSfptype_simple>")])
 
+;; Special VSX version of smin/smax for single precision floating point.  Since
+;; both numbers are rounded to single precision, we can just use the DP version
+;; of the instruction.
+
+(define_insn "*vsx_smaxsf3"
+  [(set (match_operand:SF 0 "vsx_register_operand" "=f")
+        (smax:SF (match_operand:SF 1 "vsx_register_operand" "f")
+		 (match_operand:SF 2 "vsx_register_operand" "f")))]
+  "VECTOR_UNIT_VSX_P (DFmode)"
+  "xsmaxdp %x0,%x1,%x2"
+  [(set_attr "type" "fp")
+   (set_attr "fp_type" "fp_addsub_d")])
+
+(define_insn "*vsx_sminsf3"
+  [(set (match_operand:SF 0 "vsx_register_operand" "=f")
+        (smin:SF (match_operand:SF 1 "vsx_register_operand" "f")
+		 (match_operand:SF 2 "vsx_register_operand" "f")))]
+  "VECTOR_UNIT_VSX_P (DFmode)"
+  "xsmindp %x0,%x1,%x2"
+  [(set_attr "type" "fp")
+   (set_attr "fp_type" "fp_addsub_d")])
+
 (define_insn "*vsx_sqrt<mode>2"
   [(set (match_operand:VSX_B 0 "vsx_register_operand" "=<VSr>,?wa")
         (sqrt:VSX_B (match_operand:VSX_B 1 "vsx_register_operand" "<VSr>,wa")))]
