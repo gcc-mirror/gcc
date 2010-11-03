@@ -1,5 +1,14 @@
 2010-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/c_global/cmath (fpclassify, isfinite, isinf, isnan,
+	isnormal, signbit, isgreater, isgreaterequal, isless, islessequal,
+	islessgreater, isunordered): Remove spurious duplicate definition
+	added in the last commit.
+
+	* include/tr1/cmath: Remove tr1_impl leftover macro.
+
+2010-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/tr1_impl/cinttypes: Remove, move contents to C++0x
 	and TR1 headers.
 	* include/tr1_impl/cstdlib: Likewise.
