@@ -1,3 +1,13 @@
+2010-11-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/43899
+	* runtime/error.c (generate_warning): New function to generate a run
+	time warning message. Fix some whitespace.
+	* libgfortran.h: Add prototype for new function.
+	* io/list_read.c (nml_read_obj): Use new function to warn when a
+	character namelist object is truncated.  Only warn if compiled
+	with -fbounds-check.
+
 2010-11-02  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/45629
