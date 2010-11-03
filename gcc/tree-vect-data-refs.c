@@ -1518,7 +1518,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
               mis = DR_MISALIGNMENT (dr) / GET_MODE_SIZE (TYPE_MODE (
                                                 TREE_TYPE (DR_REF (dr))));
               npeel_tmp = (negative
-			   ? (mis - nelements) : (nelements - mis)) & (vf - 1);
+			   ? (mis - nelements) : (nelements - mis))
+		  & (nelements - 1);
 
               /* For multiple types, it is possible that the bigger type access
                  will have more than one peeling option.  E.g., a loop with two
@@ -1722,7 +1723,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                  count.  */
               mis = DR_MISALIGNMENT (dr0);
               mis /= GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr0))));
-              npeel = (negative ? mis - nelements : nelements - mis) & (vf - 1);
+              npeel = ((negative ? mis - nelements : nelements - mis)
+		       & (nelements - 1));
             }
 
 	  /* For interleaved data access every iteration accesses all the
