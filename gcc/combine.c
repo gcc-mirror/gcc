@@ -2502,6 +2502,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
   rtx i3dest_killed = 0;
   /* SET_DEST and SET_SRC of I2, I1 and I0.  */
   rtx i2dest = 0, i2src = 0, i1dest = 0, i1src = 0, i0dest = 0, i0src = 0;
+  /* Copy of SET_SRC of I1, if needed.  */
   rtx i1src_copy = 0;
   /* Set if I2DEST was reused as a scratch register.  */
   bool i2scratch = false;
@@ -3072,23 +3073,23 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 	}
 
       n_occurrences = 0;		/* `subst' counts here */
-
-      /* If I1 feeds into I2 and I1DEST is in I1SRC, we need to make a
-	 unique copy of I2SRC each time we substitute it to avoid
-	 self-referential rtl.  */
-
       subst_low_luid = DF_INSN_LUID (i2);
+
+      /* If I1 feeds into I2 and I1DEST is in I1SRC, we need to make a unique
+	 copy of I2SRC each time we substitute it, in order to avoid creating
+	 self-referential RTL when we will be substituting I1SRC for I1DEST
+	 later.  Likewise if I0 feeds into I2 and I0DEST is in I0SRC.  */
       newpat = subst (PATTERN (i3), i2dest, i2src, 0,
-		      ((i1_feeds_i2_n && i1dest_in_i1src)
-		       || (i0_feeds_i2_n && i0dest_in_i0src)));
+		      (i1_feeds_i2_n && i1dest_in_i1src)
+		      || (i0_feeds_i2_n && i0dest_in_i0src));
       substed_i2 = 1;
 
-      /* Record whether i2's body now appears within i3's body.  */
+      /* Record whether I2's body now appears within I3's body.  */
       i2_is_used = n_occurrences;
     }
 
-  /* If we already got a failure, don't try to do more.  Otherwise,
-     try to substitute in I1 if we have it.  */
+  /* If we already got a failure, don't try to do more.  Otherwise, try to
+     substitute I1 if we have it.  */
 
   if (i1 && GET_CODE (newpat) != CLOBBER)
     {
@@ -3099,10 +3100,10 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 	   && i1_feeds_i2_n
 	   && dead_or_set_p (i2, i1dest)
 	   && !reg_overlap_mentioned_p (i1dest, newpat))
-	  /* Before we can do this substitution, we must redo the test done
-	     above (see detailed comments there) that ensures  that I1DEST
-	     isn't mentioned in any SETs in NEWPAT that are field assignments.  */
-          || !combinable_i3pat (NULL_RTX, &newpat, i1dest, NULL_RTX, NULL_RTX,
+	   /* Before we can do this substitution, we must redo the test done
+	      above (see detailed comments there) that ensures I1DEST isn't
+	      mentioned in any SETs in NEWPAT that are field assignments.  */
+	  || !combinable_i3pat (NULL_RTX, &newpat, i1dest, NULL_RTX, NULL_RTX,
 				0, 0, 0))
 	{
 	  undo_all ();
@@ -3111,33 +3112,42 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 
       n_occurrences = 0;
       subst_low_luid = DF_INSN_LUID (i1);
+
+      /* If I0 feeds into I1 and I0DEST is in I0SRC, we need to make a unique
+	 copy of I1SRC each time we substitute it, in order to avoid creating
+	 self-referential RTL when we will be substituting I0SRC for I0DEST
+	 later.  */
       newpat = subst (newpat, i1dest, i1src, 0,
 		      i0_feeds_i1_n && i0dest_in_i0src);
       substed_i1 = 1;
+
+      /* Record whether I1's body now appears within I3's body.  */
       i1_is_used = n_occurrences;
     }
+
+  /* Likewise for I0 if we have it.  */
+
   if (i0 && GET_CODE (newpat) != CLOBBER)
     {
       if ((FIND_REG_INC_NOTE (i0, NULL_RTX) != 0
 	   && ((i0_feeds_i2_n && dead_or_set_p (i2, i0dest))
 	       || (i0_feeds_i1_n && dead_or_set_p (i1, i0dest)))
 	   && !reg_overlap_mentioned_p (i0dest, newpat))
-          || !combinable_i3pat (NULL_RTX, &newpat, i0dest, NULL_RTX, NULL_RTX,
+	  || !combinable_i3pat (NULL_RTX, &newpat, i0dest, NULL_RTX, NULL_RTX,
 				0, 0, 0))
 	{
 	  undo_all ();
 	  return 0;
 	}
 
-      /* Following subst may modify i1src, make a copy of it
-	 before it is for added_sets_2 handling if needed.  */
+      /* If the following substitution will modify I1SRC, make a copy of it
+	 for the case where it is substituted for I1DEST in I2PAT later.  */
       if (i0_feeds_i1_n && added_sets_2 && i1_feeds_i2_n)
 	i1src_copy = copy_rtx (i1src);
 
       n_occurrences = 0;
       subst_low_luid = DF_INSN_LUID (i0);
-      newpat = subst (newpat, i0dest, i0src, 0,
-		      i0_feeds_i1_n && i0dest_in_i0src);
+      newpat = subst (newpat, i0dest, i0src, 0, 0);
       substed_i0 = 1;
     }
 

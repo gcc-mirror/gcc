@@ -1,5 +1,10 @@
 2010-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* combine.c (try_combine): Fix formatting issues, improve comments and
+	fix a pasto.
+
+2010-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* tree-tailcall.c (find_tail_calls): Convert the operands to the type
 	of the result before building binary expressions.
 
