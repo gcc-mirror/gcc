@@ -355,17 +355,6 @@ not installed in your default library search path.
 
 Necessary to build libgcj, the GCJ runtime.
 
-@item libelf version 0.8.12 (or later)
-
-Necessary to build link-time optimization (LTO) support.  It can be
-downloaded from @uref{http://www.mr511.de/software/libelf-0.8.12.tar.gz},
-though it is commonly available in several systems.  The version in
-IRIX 6.5 doesn't work since it lacks @file{gelf.h}.  The version in
-Solaris 2 does work.
-
-The @option{--with-libelf} configure option should be used if libelf is
-not installed in your default library search patch.
-
 @end table
 
 @heading Tools/packages necessary for modifying GCC
@@ -1650,20 +1639,9 @@ default for a native toolchain with an assembler that accepts it and
 GLIBC 2.11 or above, otherwise disabled.
 
 @item --enable-lto
+@itemx --disable-lto
 Enable support for link-time optimization (LTO).  This is enabled by
-default if a working libelf implementation is found (see
-@option{--with-libelf}).
-
-@item --with-libelf=@var{pathname}
-@itemx --with-libelf-include=@var{pathname}
-@itemx --with-libelf-lib=@var{pathname}
-If you do not have libelf installed in a standard location and you
-want to enable support for link-time optimization (LTO), you can
-explicitly specify the directory where libelf is installed
-(@samp{--with-libelf=@var{libelfinstalldir}}).  The
-@option{--with-libelf=@var{libelfinstalldir}} option is shorthand for
-@option{--with-libelf-include=@var{libelfinstalldir}/include}
-@option{--with-libelf-lib=@var{libelfinstalldir}/lib}.
+default, and may be disabled using @option{--disable-lto}.
 
 @item --enable-gold
 Enable support for using @command{gold} as the linker.  If gold support is

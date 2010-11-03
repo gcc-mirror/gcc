@@ -1,3 +1,11 @@
+2010-11-03  Ian Lance Taylor  <iant@google.com>
+
+	PR lto/46273
+	* gcc/config.gcc: Don't set lto_binary_reader.
+	* doc/install.texi (Prerequisites): Remove libelf paragraphs.
+	(Configuration): Mention --disable-lto.  Remove --with-libelf
+	paragraph.
+
 2010-11-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46252

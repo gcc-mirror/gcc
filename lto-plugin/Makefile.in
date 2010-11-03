@@ -36,10 +36,11 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+target_triplet = @target@
 subdir = .
 DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/../mkinstalldirs
+	$(srcdir)/config.h.in $(srcdir)/../mkinstalldirs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
@@ -53,6 +54,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
+CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -78,11 +80,9 @@ am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
 am__installdirs = "$(DESTDIR)$(libexecsubdir)"
 LTLIBRARIES = $(libexecsub_LTLIBRARIES)
-am__DEPENDENCIES_1 =
-liblto_plugin_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(if $(wildcard \
+liblto_plugin_la_DEPENDENCIES = $(if $(wildcard \
 	../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
-am_liblto_plugin_la_OBJECTS = lto-plugin.lo \
-	lto-plugin-$(LTO_FORMAT).lo
+am_liblto_plugin_la_OBJECTS = lto-plugin.lo
 liblto_plugin_la_OBJECTS = $(am_liblto_plugin_la_OBJECTS)
 liblto_plugin_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -133,19 +133,12 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBELFINC = @LIBELFINC@
-
-# How to find libelf
-LIBELFLIBS = @LIBELFLIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
-
-# Which object format to parse.
-LTO_FORMAT = @LTO_FORMAT@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
@@ -219,9 +212,13 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
+target = @target@
 target_alias = @target_alias@
+target_cpu = @target_cpu@
 target_noncanonical := @target_noncanonical@
+target_os = @target_os@
 target_subdir = @target_subdir@
+target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
@@ -229,17 +226,18 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 AUTOMAKE_OPTIONS = no-dependencies
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 libexecsubdir := $(libexecdir)/gcc/$(target_noncanonical)/$(gcc_version)
-AM_CPPFLAGS = -I$(top_srcdir)/../include $(LIBELFINC)
+AM_CPPFLAGS = -I$(top_srcdir)/../include $(DEFS)
 AM_CFLAGS = -Wall -Werror
 libexecsub_LTLIBRARIES = liblto_plugin.la
-liblto_plugin_la_SOURCES = lto-plugin.c lto-plugin-$(LTO_FORMAT).c
-liblto_plugin_la_LIBADD = $(LIBELFLIBS) \
+liblto_plugin_la_SOURCES = lto-plugin.c
+liblto_plugin_la_LIBADD = \
 	$(if $(wildcard ../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
 
 liblto_plugin_la_LDFLAGS = -no-undefined -bindir $(libexecsubdir) \
 	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a)
 
-all: all-am
+all: config.h
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
@@ -277,6 +275,23 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	$(am__cd) $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 $(am__aclocal_m4_deps):
+
+config.h: stamp-h1
+	@if test ! -f $@; then \
+	  rm -f stamp-h1; \
+	  $(MAKE) $(AM_MAKEFLAGS) stamp-h1; \
+	else :; fi
+
+stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
+	@rm -f stamp-h1
+	cd $(top_builddir) && $(SHELL) ./config.status config.h
+$(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps) 
+	($(am__cd) $(top_srcdir) && $(AUTOHEADER))
+	rm -f stamp-h1
+	touch $@
+
+distclean-hdr:
+	-rm -f config.h stamp-h1
 install-libexecsubLTLIBRARIES: $(libexecsub_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(libexecsubdir)" || $(MKDIR_P) "$(DESTDIR)$(libexecsubdir)"
@@ -345,11 +360,11 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	mkid -fID $$unique
 tags: TAGS
 
-TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+TAGS:  $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	set x; \
 	here=`pwd`; \
-	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	list='$(SOURCES) $(HEADERS) config.h.in $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
@@ -367,9 +382,9 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 	  fi; \
 	fi
 ctags: CTAGS
-CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+CTAGS:  $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
-	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	list='$(SOURCES) $(HEADERS) config.h.in $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
@@ -388,7 +403,7 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) config.h
 installdirs:
 	for dir in "$(DESTDIR)$(libexecsubdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -427,7 +442,7 @@ distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
-	distclean-libtool distclean-tags
+	distclean-hdr distclean-libtool distclean-tags
 
 dvi: dvi-am
 
@@ -490,11 +505,11 @@ ps-am:
 
 uninstall-am: uninstall-libexecsubLTLIBRARIES
 
-.MAKE: install-am install-strip
+.MAKE: all install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am am--refresh check check-am clean \
 	clean-generic clean-libexecsubLTLIBRARIES clean-libtool ctags \
-	distclean distclean-compile distclean-generic \
+	distclean distclean-compile distclean-generic distclean-hdr \
 	distclean-libtool distclean-tags dvi dvi-am html html-am info \
 	info-am install install-am install-data install-data-am \
 	install-dvi install-dvi-am install-exec install-exec-am \
