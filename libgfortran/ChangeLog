@@ -1,3 +1,8 @@
+2010-11-03  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unix.h: Remove empty_internal_buffer prototype.
+	* io/unix.c (empty_internal_buffer): Remove unused function.
+
 2010-11-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/43899
