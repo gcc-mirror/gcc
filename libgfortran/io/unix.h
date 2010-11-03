@@ -56,7 +56,6 @@ typedef struct
 
   int active;			/* Length of valid bytes in the buffer */
 
-  int prot;
   int ndirty;			/* Dirty bytes starting at buffer_offset */
 
   int special_file;		/* =1 if the fd refers to a special file */
