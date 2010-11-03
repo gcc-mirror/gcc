@@ -140,10 +140,10 @@
 
 // The fraction 643/2136 approximates log10(2) to 7 significant digits.
 #define __glibcxx_digits10(T) \
-  (__glibcxx_digits (T) * 643 / 2136)
+  (__glibcxx_digits (T) * 643L / 2136)
 
 #define __glibcxx_max_digits10(T) \
-  (2 + (T) * 643 / 2136)
+  (2 + (T) * 643L / 2136)
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 

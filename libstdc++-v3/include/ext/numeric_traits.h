@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -85,7 +85,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 #define __glibcxx_max_digits10(_Tp) \
   (2 + __glibcxx_floating(_Tp, __FLT_MANT_DIG__, __DBL_MANT_DIG__, \
-			  __LDBL_MANT_DIG__) * 3010 / 10000)
+			  __LDBL_MANT_DIG__) * 643L / 2136)
 
 #define __glibcxx_digits10(_Tp) \
   __glibcxx_floating(_Tp, __FLT_DIG__, __DBL_DIG__, __LDBL_DIG__)
