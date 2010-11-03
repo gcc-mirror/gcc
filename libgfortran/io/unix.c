@@ -849,15 +849,6 @@ mem_close (unix_stream * s)
   define functional equivalents of the following.
 *********************************************************************/
 
-/* empty_internal_buffer()-- Zero the buffer of Internal file */
-
-void
-empty_internal_buffer(stream *strm)
-{
-  unix_stream * s = (unix_stream *) strm;
-  memset(s->buffer, ' ', s->file_length);
-}
-
 /* open_internal()-- Returns a stream structure from a character(kind=1)
    internal file */
 
