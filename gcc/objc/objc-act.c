@@ -1053,16 +1053,102 @@ lookup_property (tree interface_type, tree property)
   return inter;
 }
 
+/* This is a subroutine of objc_maybe_build_component_ref.  Search the
+   list of methods in the interface (and, failing that, protocol list)
+   provided for a 'setter' or 'getter' for 'component' with default
+   names (ie, if 'component' is "name", then search for "name" and
+   "setName:").  If any is found, then create an artificial property
+   that uses them.  Return NULL_TREE if 'getter' or 'setter' could not
+   be found.  */
+static tree
+maybe_make_artificial_property_decl (tree interface, tree protocol_list, tree component, bool is_class)
+{
+  tree getter_name = component;
+  tree setter_name = get_identifier (objc_build_property_setter_name (component));
+  tree getter = NULL_TREE;
+  tree setter = NULL_TREE;
+
+  if (interface)
+    {
+      int flags = 0;
+
+      if (is_class)
+	flags = OBJC_LOOKUP_CLASS;
+      
+      getter = lookup_method_static (interface, getter_name, flags);
+      setter = lookup_method_static (interface, setter_name, flags);
+    }
+
+  /* Try the protocol_list if we didn't find anything in the interface.  */
+  if (!getter && !setter)
+    {
+      getter = lookup_method_in_protocol_list (protocol_list, getter_name, is_class);
+      setter = lookup_method_in_protocol_list (protocol_list, setter_name, is_class);
+    }
+
+  /* There needs to be at least a getter or setter for this to be a
+     valid 'object.component' syntax.  */
+  if (getter || setter)
+    {
+      /* Yes ... determine the type of the expression.  */
+      tree property_decl;
+      tree type;
+      
+      if (getter)
+	type = TREE_VALUE (TREE_TYPE (getter));
+      else
+	type = TREE_VALUE (TREE_TYPE (METHOD_SEL_ARGS (setter)));
+      
+      /* Create an artificial property declaration with the
+	 information we collected on the type and getter/setter
+	 names.  */
+      property_decl = make_node (PROPERTY_DECL);
+      
+      TREE_TYPE (property_decl) = type;
+      DECL_SOURCE_LOCATION (property_decl) = input_location;
+      TREE_DEPRECATED (property_decl) = 0;
+      DECL_ARTIFICIAL (property_decl) = 1;
+	      
+      /* Add property-specific information.  Note that one of
+	 PROPERTY_GETTER_NAME or PROPERTY_SETTER_NAME may refer to a
+	 non-existing method; this will generate an error when the
+	 expression is later compiled.  At this stage we don't know if
+	 the getter or setter will be used, so we can't generate an
+	 error.  */
+      PROPERTY_NAME (property_decl) = component;
+      PROPERTY_GETTER_NAME (property_decl) = getter_name;
+      PROPERTY_SETTER_NAME (property_decl) = setter_name;
+      PROPERTY_READONLY (property_decl) = 0;
+      PROPERTY_NONATOMIC (property_decl) = 0;
+      PROPERTY_ASSIGN_SEMANTICS (property_decl) = 0;
+      PROPERTY_IVAR_NAME (property_decl) = NULL_TREE;
+      PROPERTY_DYNAMIC (property_decl) = 0;
+
+      if (!getter)
+	PROPERTY_HAS_NO_GETTER (property_decl) = 1;
+
+      /* The following is currently unused, but it's nice to have
+	 there.  We may use it if we need in the future.  */
+      if (!setter)
+	PROPERTY_HAS_NO_SETTER (property_decl) = 1;
+
+      return property_decl;
+    }
+
+  return NULL_TREE;
+}
 
 /* This hook routine is invoked by the parser when an expression such
    as 'xxx.yyy' is parsed.  We get a chance to process these
    expressions in a way that is specified to Objective-C (to implement
-   properties, or non-fragile ivars).  If the expression is not an
-   Objective-C specified expression, we should return NULL_TREE; else
-   we return the expression.
+   the Objective-C 2.0 dot-syntax, properties, or non-fragile ivars).
+   If the expression is not an Objective-C specified expression, we
+   should return NULL_TREE; else we return the expression.
 
-   At the moment this only implements properties (not non-fragile
-   ivars yet), ie 'object.property'.  */
+   At the moment this only implements dot-syntax and properties (not
+   non-fragile ivars yet), ie 'object.property' or 'object.component'
+   where 'component' is not a declared property, but a valid getter or
+   setter for it could be found.  */
 tree
 objc_maybe_build_component_ref (tree object, tree property_ident)
 {
@@ -1089,6 +1175,17 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
 		      : NULL_TREE);
       if (rprotos)
 	x = lookup_property_in_protocol_list (rprotos, property_ident);
+
+      if (x == NULL_TREE)
+	{
+	  /* Ok, no property.  Maybe it was an object.component
+	     dot-syntax without a declared property.  Look for
+	     getter/setter methods and internally declare an artifical
+	     property based on them if found.  */
+	  x = maybe_make_artificial_property_decl (NULL_TREE, rprotos, 
+						   property_ident,
+						   false);
+	}
     }
   else
     {
@@ -1115,6 +1212,14 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
 
 	  if (x == NULL_TREE)
 	    x = lookup_property_in_protocol_list (protocol_list, property_ident);
+
+	  if (x == NULL_TREE)
+	    {
+	      /* Ok, no property.  Try the dot-syntax without a
+		 declared property.  */
+	      x = maybe_make_artificial_property_decl (interface_type, protocol_list, 
+						       property_ident, false);
+	    }
 	}
     }
 
@@ -1144,10 +1249,16 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
 
 	 TODO: This can be made more efficient; in particular we don't
 	 need to build the whole message call, we could just work on
-	 the selector.  */
-      objc_finish_message_expr (object,
-				PROPERTY_GETTER_NAME (x),
-				NULL_TREE);
+	 the selector.
+
+	 If the PROPERTY_HAS_NO_GETTER() (ie, it is an artificial
+	 property decl created to deal with a dotsyntax not really
+	 referring to an existing property) then do not try to build a
+	 call to the getter as there is no getter.  */
+      if (!PROPERTY_HAS_NO_GETTER (x))
+	objc_finish_message_expr (object,
+				  PROPERTY_GETTER_NAME (x),
+				  NULL_TREE);
       
       return expression;
     }
@@ -1197,6 +1308,9 @@ objc_maybe_build_modify_expr (tree lhs, tree rhs)
 	{
 	  tree setter_argument = build_tree_list (NULL_TREE, rhs);
 	  tree setter;
+
+	  /* TODO: Check that the setter return type is 'void'.  */
+
 	  /* TODO: Decay argument in C.  */
 	  setter = objc_finish_message_expr (object_expr, 
 					     PROPERTY_SETTER_NAME (property_decl),

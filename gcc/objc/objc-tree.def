@@ -55,7 +55,11 @@ DEFTREECODE (CLASS_REFERENCE_EXPR, "class_reference_expr", tcc_expression, 1)
     * else, it will remain as a PROPERTY_REF until we get to
       gimplification; at that point, we convert each PROPERTY_REF into
       a 'getter' call during ObjC/ObjC++ gimplify.
-*/
+
+  Please note that when the Objective-C 2.0 "dot-syntax" 'object.component' 
+  is encountered, where 'component' is not a property but there are valid
+  setter/getter methods for it, an artificial PROPERTY_DECL is generated
+  and used in the PROPERTY_REF.  */
 DEFTREECODE (PROPERTY_REF, "property_ref", tcc_expression, 2)
 
 /*

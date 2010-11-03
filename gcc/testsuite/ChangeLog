@@ -1,3 +1,10 @@
+2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/property/dotsyntax-1.m: New.
+	* objc.dg/property/dotsyntax-2.m: New.	
+	* obj-c++.dg/property/dotsyntax-1.mm: New.
+	* obj-c++.dg/property/dotsyntax-2.mm: New.	
+
 2010-11-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46165

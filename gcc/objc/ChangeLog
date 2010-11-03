@@ -1,3 +1,15 @@
+2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (maybe_make_artificial_property_decl): New.
+	(objc_maybe_build_component_ref): Call
+	maybe_make_artificial_property_decl if a property can not be
+	found.  Do not call objc_finish_message_expr if
+	PROPERTY_HAS_NO_GETTER.
+	* objc-act.h Updated comments.
+	(PROPERTY_HAS_NO_GETTER): New.
+	(PROPERTY_HAS_NO_SETTER): New.
+	* objc-tree.def: Updated comment.
+	
 2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented format and noreturn attributes for Objective-C methods.
