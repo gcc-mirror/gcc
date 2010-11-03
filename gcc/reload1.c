@@ -2112,7 +2112,7 @@ spill_failure (rtx insn, enum reg_class rclass)
 static void
 delete_dead_insn (rtx insn)
 {
-  rtx prev = prev_real_insn (insn);
+  rtx prev = prev_active_insn (insn);
   rtx prev_dest;
 
   /* If the previous insn sets a register that dies in our insn, delete it

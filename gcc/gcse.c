@@ -3574,7 +3574,7 @@ insert_insn_end_basic_block (struct expr *expr, basic_block bb)
 	 the new instruction just before the tablejump.  */
       if (GET_CODE (PATTERN (insn)) == ADDR_VEC
 	  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
-	insn = prev_real_insn (insn);
+	insn = prev_active_insn (insn);
 
 #ifdef HAVE_cc0
       /* FIXME: 'twould be nice to call prev_cc0_setter here but it aborts
