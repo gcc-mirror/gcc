@@ -1,3 +1,21 @@
+2010-11-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	* dump-parse-tree.c (code_indent):  Take label into acount
+	when calculating indent.
+	(show_typespec):  Also display class.
+	(show_attr):  Add module name to argument.
+	Don't show UNKNOWN for flavor, access and save. Don't show
+	SAVE_NONE.  Don't show INTENT_UNKNOWN.  Show module for use
+	association.  Show intent only for dummy arguments.
+	Set length of shown symbol names to minimum of 12.
+	Show attributes header.
+	(show_symbol):  Adjust show_level.
+	(show_symtree):  Clear up display for ambiguous.  Show if symbol
+	was imported from namespace.
+	(show_code_node):  Clear up indenting.  Traverse symtree and
+	show code directly instead of calling show_namespace.
+
 2010-11-02  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* trans-decl.c (add_argument_checking): Use build_zero_cst instead of
