@@ -1,5 +1,11 @@
 2010-11-03  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/46190
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Properly compute peel iterations.
+
+2010-11-03  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/46286
 	* tree-ssa-structalias.c (get_constraint_for_1): Avoid referencing
 	re-allocated vector data.
