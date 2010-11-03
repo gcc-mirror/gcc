@@ -1,3 +1,12 @@
+2010-11-03  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR bootstrap/44335
+	* targhooks.c (targhook_words_big_endian): New function.
+	(targhook_float_words_big_endian): Likewise.
+	* targhooks.h (targhook_words_big_endian): Declare.
+	(targhook_float_words_big_endian): Likewise.
+	* target.def (words_big_endian, float_words_big_endian): New hooks.
+
 2010-11-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46165

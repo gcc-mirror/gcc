@@ -1141,6 +1141,22 @@ DEFHOOK
  bool, (const_tree record_type),
  hook_bool_const_tree_false)
 
+/* For now this is only an interface to WORDS_BIG_ENDIAN for
+   target-independent code like the front ends, need performance testing
+   before switching completely to the target hook.  */
+DEFHOOK_UNDOC
+(words_big_endian,
+ "",
+ bool, (void),
+ targhook_words_big_endian)
+
+/* Likewise for FLOAT_WORDS_BIG_ENDIAN.  */
+DEFHOOK_UNDOC
+(float_words_big_endian,
+ "",
+ bool, (void),
+ targhook_float_words_big_endian)
+
 /* True if the target supports decimal floating point.  */
 DEFHOOK
 (decimal_float_supported_p,

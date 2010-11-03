@@ -43,6 +43,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "cgraph.h"
 #include "vecprim.h"
 #include "bitmap.h"
+#include "target.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -555,12 +556,12 @@ handle_constant (JCF *jcf, int index, enum cpool_tag purpose)
 
     case CONSTANT_Long:
       index = handle_long_constant (jcf, cpool, CONSTANT_Long, index,
-				    WORDS_BIG_ENDIAN);
+				    targetm.words_big_endian ());
       break;
       
     case CONSTANT_Double:
       index = handle_long_constant (jcf, cpool, CONSTANT_Double, index,
-				    FLOAT_WORDS_BIG_ENDIAN);
+				    targetm.float_words_big_endian ());
       break;
 
     case CONSTANT_Float:
@@ -1071,7 +1072,7 @@ get_constant (JCF *jcf, int index)
 	hi = JPOOL_UINT (jcf, index);
 	lo = JPOOL_UINT (jcf, index+1);
 
-	if (FLOAT_WORDS_BIG_ENDIAN)
+	if (targetm.float_words_big_endian ())
 	  buf[0] = hi, buf[1] = lo;
 	else
 	  buf[0] = lo, buf[1] = hi;

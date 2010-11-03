@@ -425,6 +425,19 @@ default_scalar_mode_supported_p (enum machine_mode mode)
     }
 }
 
+/* Make some target macros useable by target-independent code.  */
+bool
+targhook_words_big_endian (void)
+{
+  return !!WORDS_BIG_ENDIAN;
+}
+
+bool
+targhook_float_words_big_endian (void)
+{
+  return !!FLOAT_WORDS_BIG_ENDIAN;
+}
+
 /* True if the target supports decimal floating point.  */
 
 bool
