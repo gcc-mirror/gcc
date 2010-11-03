@@ -21540,10 +21540,16 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       else
 	avx256 = call_no_avx256;
 
-      unspec = gen_rtx_UNSPEC (VOIDmode,
-			       gen_rtvec (1, GEN_INT (avx256)),
-			       UNSPEC_CALL_NEEDS_VZEROUPPER);
-      call = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, call, unspec));
+      if (reload_completed)
+	emit_insn (gen_avx_vzeroupper (GEN_INT (avx256)));
+      else
+	{
+	  unspec = gen_rtx_UNSPEC (VOIDmode,
+				   gen_rtvec (1, GEN_INT (avx256)),
+				   UNSPEC_CALL_NEEDS_VZEROUPPER);
+	  call = gen_rtx_PARALLEL (VOIDmode,
+				   gen_rtvec (2, call, unspec));
+	}
     }
 
   call = emit_call_insn (call);
