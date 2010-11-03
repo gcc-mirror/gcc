@@ -1,3 +1,8 @@
+2010-11-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/43899
+	* gfortran.dg/namelist_67.f90: New test.
+
 2010-11-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46009
