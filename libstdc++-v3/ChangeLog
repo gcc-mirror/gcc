@@ -1,3 +1,9 @@
+2010-11-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/limits (__glibcxx_digits10, __glibcxx_max_digits10):
+	Use 643L instead of 643 to avoid overflows on 16-bit machines.
+	* include/ext/numeric_traits.h (__glibcxx_max_digits10): Likewise.
+
 2010-11-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/chrono: Use typedefs.
