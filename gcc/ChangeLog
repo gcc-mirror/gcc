@@ -1,3 +1,10 @@
+2010-11-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46217
+	* tree-ssa.c (non_rewritable_mem_ref_base): Check if volatile
+	flag matches.
+	(execute_update_addresses_taken): Likewise.
+
 2010-11-03  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR bootstrap/44335
