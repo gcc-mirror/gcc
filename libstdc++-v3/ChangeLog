@@ -1,3 +1,12 @@
+2010-11-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/chrono: Use typedefs.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Adjust
+	line numbers.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Same.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Same.
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Same.
+
 2010-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/c_global/cmath (fpclassify, isfinite, isinf, isnan,

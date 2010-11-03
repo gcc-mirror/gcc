@@ -51,6 +51,7 @@ test04()
 // { dg-error "instantiated from here" "" { target *-*-* } 46 }
 // { dg-error "denominator cannot be zero" "" { target *-*-* } 153 }
 // { dg-error "out of range" "" { target *-*-* } 154 }
-// { dg-error "constant expression" "" { target *-*-* } 59 }
+// { dg-error "non-constant expression" "" { target *-*-* } 59 }
+// { dg-error "is not a constant expression" "" { target *-*-* } 59 }
 // { dg-error "not a member" "" { target *-*-* } 162 }
 // { dg-error "not a valid template argument" "" { target *-*-* } 164 }
