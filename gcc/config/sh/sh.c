@@ -6881,10 +6881,10 @@ sh_expand_prologue (void)
       && (NPARM_REGS(SImode)
 	  > crtl->args.info.arg_count[(int) SH_ARG_INT]))
     pretend_args = 0;
-  /* Dwarf2 module doesn't expect frame related insns here.  */
+
   output_stack_adjust (-pretend_args
 		       - crtl->args.info.stack_regs * 8,
-		       stack_pointer_rtx, 0, NULL, false);
+		       stack_pointer_rtx, 0, NULL, true);
   stack_usage = pretend_args + crtl->args.info.stack_regs * 8;
 
   if (TARGET_SHCOMPACT && flag_pic && crtl->args.info.call_cookie)

@@ -1,3 +1,8 @@
+2010-11-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_expand_prologue): Remove unnecessary
+	comment.  Pass true to the last argument of output_stack_adjust.
+
 2010-11-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/46295
