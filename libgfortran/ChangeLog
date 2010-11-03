@@ -1,3 +1,13 @@
+2010-11-04  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unix.h (struct unix_stream): Remove prot member.
+	* io/unix.c: Remove PROT_READ and PROT_WRITE constants.
+	(fd_to_stream): Remove prot from argument list, don't set prot.
+	(open_external): Don't set prot flag.
+	(input_stream): Remove prot from argument list.
+	(output_stream): Likewise.
+	(error_stream): Likewise.
+
 2010-11-03  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/unix.h: Remove empty_internal_buffer prototype.

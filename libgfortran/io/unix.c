@@ -104,14 +104,6 @@ typedef struct stat gfstat_t;
 #define PATH_MAX 1024
 #endif
 
-#ifndef PROT_READ
-#define PROT_READ 1
-#endif
-
-#ifndef PROT_WRITE
-#define PROT_WRITE 2
-#endif
-
 /* These flags aren't defined on all targets (mingw32), so provide them
    here.  */
 #ifndef S_IRGRP
@@ -910,7 +902,7 @@ open_internal4 (char *base, int length, gfc_offset offset)
  * around it. */
 
 static stream *
-fd_to_stream (int fd, int prot)
+fd_to_stream (int fd)
 {
   gfstat_t statbuf;
   unix_stream *s;
@@ -922,7 +914,6 @@ fd_to_stream (int fd, int prot)
   s->buffer_offset = 0;
   s->physical_offset = 0;
   s->logical_offset = 0;
-  s->prot = prot;
 
   /* Get the current length of the file. */
 
@@ -1222,7 +1213,7 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
 stream *
 open_external (st_parameter_open *opp, unit_flags *flags)
 {
-  int fd, prot;
+  int fd;
 
   if (flags->status == STATUS_SCRATCH)
     {
@@ -1247,25 +1238,7 @@ open_external (st_parameter_open *opp, unit_flags *flags)
     return NULL;
   fd = fix_fd (fd);
 
-  switch (flags->action)
-    {
-    case ACTION_READ:
-      prot = PROT_READ;
-      break;
-
-    case ACTION_WRITE:
-      prot = PROT_WRITE;
-      break;
-
-    case ACTION_READWRITE:
-      prot = PROT_READ | PROT_WRITE;
-      break;
-
-    default:
-      internal_error (&opp->common, "open_external(): Bad action");
-    }
-
-  return fd_to_stream (fd, prot);
+  return fd_to_stream (fd);
 }
 
 
@@ -1275,7 +1248,7 @@ open_external (st_parameter_open *opp, unit_flags *flags)
 stream *
 input_stream (void)
 {
-  return fd_to_stream (STDIN_FILENO, PROT_READ);
+  return fd_to_stream (STDIN_FILENO);
 }
 
 
@@ -1291,7 +1264,7 @@ output_stream (void)
   setmode (STDOUT_FILENO, O_BINARY);
 #endif
 
-  s = fd_to_stream (STDOUT_FILENO, PROT_WRITE);
+  s = fd_to_stream (STDOUT_FILENO);
   return s;
 }
 
@@ -1308,7 +1281,7 @@ error_stream (void)
   setmode (STDERR_FILENO, O_BINARY);
 #endif
 
-  s = fd_to_stream (STDERR_FILENO, PROT_WRITE);
+  s = fd_to_stream (STDERR_FILENO);
   return s;
 }
 
