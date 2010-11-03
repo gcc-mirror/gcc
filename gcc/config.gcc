@@ -2322,6 +2322,9 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	sh64*)
 		tmake_file="${tmake_file} sh/t-sh64"
 		tm_file="${tm_file} sh/sh64.h"
+		if test x$with_newlib = xyes; then
+			tm_file="${tm_file} newlib-stdint.h"
+		fi
 		extra_headers="shmedia.h ushmedia.h sshmedia.h"
 		;;
 	*-*-symbianelf*)

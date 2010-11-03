@@ -1,5 +1,10 @@
 2010-11-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* config.gcc (sh64*) <tm_file>: Add newlib-stdint.h for
+	newlib targets.
+
+2010-11-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	* config/sh/sh.c (sh_expand_prologue): Remove unnecessary
 	comment.  Pass true to the last argument of output_stack_adjust.
 
