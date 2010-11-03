@@ -246,7 +246,7 @@ propagate_tree_value_into_stmt (gimple_stmt_iterator *gsi, tree val)
   else if (gimple_code (stmt) == GIMPLE_COND)
     {
       tree lhs = NULL_TREE;
-      tree rhs = fold_convert (TREE_TYPE (val), integer_zero_node);
+      tree rhs = build_zero_cst (TREE_TYPE (val));
       propagate_tree_value (&lhs, val);
       gimple_cond_set_code (stmt, NE_EXPR);
       gimple_cond_set_lhs (stmt, lhs);

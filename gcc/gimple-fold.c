@@ -159,7 +159,7 @@ get_symbol_constant_value (tree sym)
       if (!val
           && (INTEGRAL_TYPE_P (TREE_TYPE (sym))
 	       || SCALAR_FLOAT_TYPE_P (TREE_TYPE (sym))))
-	return fold_convert (TREE_TYPE (sym), integer_zero_node);
+	return build_zero_cst (TREE_TYPE (sym));
     }
 
   return NULL_TREE;

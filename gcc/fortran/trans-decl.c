@@ -4216,8 +4216,7 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 	    not_0length = fold_build2_loc (input_location, NE_EXPR,
 					   boolean_type_node,
 					   cl->passed_length,
-					   fold_convert (gfc_charlen_type_node,
-							 integer_zero_node));
+					   build_zero_cst (gfc_charlen_type_node));
 	    /* The symbol needs to be referenced for gfc_get_symbol_decl.  */
 	    fsym->attr.referenced = 1;
 	    not_absent = gfc_conv_expr_present (fsym);

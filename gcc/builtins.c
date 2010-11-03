@@ -9101,8 +9101,6 @@ fold_builtin_strncmp (location_t loc, tree arg1, tree arg2, tree len)
 static tree
 fold_builtin_signbit (location_t loc, tree arg, tree type)
 {
-  tree temp;
-
   if (!validate_arg (arg, REAL_TYPE))
     return NULL_TREE;
 
@@ -9113,8 +9111,9 @@ fold_builtin_signbit (location_t loc, tree arg, tree type)
       REAL_VALUE_TYPE c;
 
       c = TREE_REAL_CST (arg);
-      temp = REAL_VALUE_NEGATIVE (c) ? integer_one_node : integer_zero_node;
-      return fold_convert_loc (loc, type, temp);
+      return (REAL_VALUE_NEGATIVE (c)
+	      ? build_one_cst (type)
+	      : build_zero_cst (type));
     }
 
   /* If ARG is non-negative, the result is always zero.  */

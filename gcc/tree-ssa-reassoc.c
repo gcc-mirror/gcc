@@ -467,8 +467,7 @@ eliminate_duplicate_pair (enum tree_code opcode,
 	    {
 	      VEC_free (operand_entry_t, heap, *ops);
 	      *ops = NULL;
-	      add_to_ops_vec (ops, fold_convert (TREE_TYPE (last->op),
-						 integer_zero_node));
+	      add_to_ops_vec (ops, build_zero_cst (TREE_TYPE (last->op)));
 	      *all_done = true;
 	    }
 	  else
@@ -535,8 +534,7 @@ eliminate_plus_minus_pair (enum tree_code opcode,
 	    }
 
 	  VEC_ordered_remove (operand_entry_t, *ops, i);
-	  add_to_ops_vec (ops, fold_convert(TREE_TYPE (oe->op),
-					    integer_zero_node));
+	  add_to_ops_vec (ops, build_zero_cst (TREE_TYPE (oe->op)));
 	  VEC_ordered_remove (operand_entry_t, *ops, currindex);
 	  reassociate_stats.ops_eliminated ++;
 
@@ -623,7 +621,7 @@ eliminate_not_pairs (enum tree_code opcode,
 	    }
 
 	  if (opcode == BIT_AND_EXPR)
-	    oe->op = fold_convert (TREE_TYPE (oe->op), integer_zero_node);
+	    oe->op = build_zero_cst (TREE_TYPE (oe->op));
 	  else if (opcode == BIT_IOR_EXPR)
 	    oe->op = build_low_bits_mask (TREE_TYPE (oe->op),
 					  TYPE_PRECISION (TREE_TYPE (oe->op)));
@@ -1177,7 +1175,7 @@ undistribute_ops_list (enum tree_code opcode,
 		}
 	      zero_one_operation (&oe2->op, c->oecode, c->op);
 	      sum = build_and_add_sum (tmpvar, oe1->op, oe2->op, opcode);
-	      oe2->op = fold_convert (TREE_TYPE (oe2->op), integer_zero_node);
+	      oe2->op = build_zero_cst (TREE_TYPE (oe2->op));
 	      oe2->rank = 0;
 	      oe1->op = gimple_get_lhs (sum);
 	    }

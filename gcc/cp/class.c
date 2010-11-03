@@ -431,8 +431,7 @@ build_base_path (enum tree_code code,
  out:
   if (null_test)
     expr = fold_build3_loc (input_location, COND_EXPR, target_type, null_test, expr,
-			fold_build1_loc (input_location, NOP_EXPR, target_type,
-				     integer_zero_node));
+			    build_zero_cst (target_type));
 
   return expr;
 }
@@ -8267,8 +8266,7 @@ add_vcall_offset (tree orig_fn, tree binfo, vtbl_init_data *vid)
       /* Find the overriding function.  */
       fn = find_final_overrider (vid->rtti_binfo, binfo, orig_fn);
       if (fn == error_mark_node)
-	vcall_offset = build1 (NOP_EXPR, vtable_entry_type,
-			       integer_zero_node);
+	vcall_offset = build_zero_cst (vtable_entry_type);
       else
 	{
 	  base = TREE_VALUE (fn);

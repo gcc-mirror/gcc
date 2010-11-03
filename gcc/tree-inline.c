@@ -242,10 +242,9 @@ remap_ssa_name (tree name, copy_body_data *id)
 	    {
 	      gimple_stmt_iterator gsi = gsi_last_bb (id->entry_bb);
 	      gimple init_stmt;
+	      tree zero = build_zero_cst (TREE_TYPE (new_tree));
 
-	      init_stmt = gimple_build_assign (new_tree,
-		                               fold_convert (TREE_TYPE (new_tree),
-					       		    integer_zero_node));
+	      init_stmt = gimple_build_assign (new_tree, zero);
 	      gsi_insert_after (&gsi, init_stmt, GSI_NEW_STMT);
 	      SSA_NAME_IS_DEFAULT_DEF (new_tree) = 0;
 	    }

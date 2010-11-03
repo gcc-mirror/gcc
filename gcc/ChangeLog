@@ -1,3 +1,32 @@
+2010-11-02  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* builtins.c (fold_builtin_signbit): Use build_zero_cst instead of
+	fold_convert.
+	* c-typeck.c (build_function_call_vec): Likewise.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* cgraphunit.c (assemble_thunk): Likewise.
+	* config/sparc/sparc.c (sparc_fold_builtin): Likewise.
+	* fold-const.c (fold_unary_loc, fold_mult_zconjz): Likewise.
+	(fold_binary_loc, fold_ternary_loc): Likewise.
+	* gimple-fold.c (get_symbol_constant_value): Likewise.
+	* gimple-low.c (lower_builtin_setjmp): Likewise.
+	* gimple.c (gimple_cond_get_ops_from_tree): Likewise.
+	* gimplify.c (gimplify_init_constructor): Likewise.
+	* lambda.h (build_linear_expr): Likewise.
+	* omp-low.c (omp_reduction_init): Likewise.
+	* tree-inline.c (remap_ssa_name): Likewise.
+	* tree-object-size.c (compute_object_sizes): Likewise.
+	* tree-sra.c (init_subtree_with_zero): Likewise.
+	(sra_ipa_modify_assign): Likewise.
+	* tree-ssa-copy.c (propagate_tree_value_into_stmt): Likewise.
+	* tree-ssa-reassoc.c (eliminate_duplicate_pair): Likewise.
+	(eliminate_plus_minus_pair, eliminate_not_pairs): Likewise.
+	(undistribute_ops_list): Likewise.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Likewise.
+	* tree-vect-stmts.c (vectorizable_call): Likewise.
+	* tree.c (build_vector_from_ctor, build_one_cst): Likewise.
+	(build_zero_cst): Handle more cases directly.  Update comment.
+
 2010-11-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386-protos.h (ix86_split_call_pop_vzeroupper):

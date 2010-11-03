@@ -1338,7 +1338,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  && offset2 <= offset
 	  && offset2 + size2 >= offset + maxsize)
 	{
-	  tree val = fold_convert (vr->type, integer_zero_node);
+	  tree val = build_zero_cst (vr->type);
 	  unsigned int value_id = get_or_alloc_constant_value_id (val);
 	  return vn_reference_insert_pieces (vuse, vr->set, vr->type,
 					     VEC_copy (vn_reference_op_s,
@@ -1361,7 +1361,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  && offset2 <= offset
 	  && offset2 + size2 >= offset + maxsize)
 	{
-	  tree val = fold_convert (vr->type, integer_zero_node);
+	  tree val = build_zero_cst (vr->type);
 	  unsigned int value_id = get_or_alloc_constant_value_id (val);
 	  return vn_reference_insert_pieces (vuse, vr->set, vr->type,
 					     VEC_copy (vn_reference_op_s,

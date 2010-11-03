@@ -3073,7 +3073,7 @@ expand_debug_expr (tree exp)
 	  if (i < TYPE_VECTOR_SUBPARTS (TREE_TYPE (exp)))
 	    {
 	      op1 = expand_debug_expr
-		(fold_convert (TREE_TYPE (TREE_TYPE (exp)), integer_zero_node));
+		(build_zero_cst (TREE_TYPE (TREE_TYPE (exp))));
 
 	      if (!op1)
 		return NULL;

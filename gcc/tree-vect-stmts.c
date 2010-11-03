@@ -1580,7 +1580,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
 
   type = TREE_TYPE (scalar_dest);
   new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
-				  fold_convert (type, integer_zero_node));
+				  build_zero_cst (type));
   set_vinfo_for_stmt (new_stmt, stmt_info);
   set_vinfo_for_stmt (stmt, NULL);
   STMT_VINFO_STMT (stmt_info) = new_stmt;

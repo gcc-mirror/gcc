@@ -1126,7 +1126,7 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
   if (gfc_option.rtcheck & GFC_RTCHECK_DO)
     {
       tmp = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node, step,
-			     fold_convert (type, integer_zero_node));
+			     build_zero_cst (type));
       gfc_trans_runtime_check (true, false, tmp, &block, &code->loc,
 			       "DO step value is zero");
     }
@@ -1138,7 +1138,7 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
     return gfc_trans_simple_do (code, &block, dovar, from, to, step, exit_cond);
 
   pos_step = fold_build2_loc (loc, GT_EXPR, boolean_type_node, step,
-			      fold_convert (type, integer_zero_node));
+			      build_zero_cst (type));
 
   if (TREE_CODE (type) == INTEGER_TYPE)
     utype = unsigned_type_for (type);

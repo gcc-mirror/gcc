@@ -3885,7 +3885,7 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	i = VEC_index (constructor_elt, elts, 1)->value;
 	if (r == NULL || i == NULL)
 	  {
-	    tree zero = fold_convert (TREE_TYPE (type), integer_zero_node);
+	    tree zero = build_zero_cst (TREE_TYPE (type));
 	    if (r == NULL)
 	      r = zero;
 	    if (i == NULL)
