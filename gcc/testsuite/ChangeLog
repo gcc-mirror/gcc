@@ -1,3 +1,10 @@
+2010-11-03  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/46274
+	* gcc.dg/tree-ssa/gen-vect-11a.c: Fix operator precedence.
+	* gcc.dg/vect/vect-19.c: Likewise.
+	* gcc.dg/vect/vect-17.c: Likewise.
+
 2010-11-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/46285
