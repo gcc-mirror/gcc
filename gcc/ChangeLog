@@ -1,3 +1,9 @@
+2010-11-02  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Use AC_SYS_LARGEFILE.
+	* configure: Rebuild.
+	* config.in: Rebuild.
+
 2010-11-02  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* builtins.c (fold_builtin_signbit): Use build_zero_cst instead of

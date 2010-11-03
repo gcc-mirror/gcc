@@ -1,4 +1,11 @@
+2010-11-02  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Use AC_SYS_LARGEFILE.
+	* configure: Rebuild.
+	* config.in: Rebuild.
+
 2010-10-19  Basile Starynkevitch  <basile@starynkevitch.net>
+
 	* line-map.h (source_location): Remove obsolete comment
 	mentioning location_s.
 
