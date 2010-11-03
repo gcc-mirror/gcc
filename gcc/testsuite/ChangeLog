@@ -1,3 +1,9 @@
+2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented -fobjc-std=objc1 flag.
+	* objc.dg/fobjc-std-1.m: New.	
+	* obj-c++.dg/fobjc-std-1.mm: New.
+
 2010-11-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/46241
