@@ -1,3 +1,8 @@
+2010-11-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/46295
+	* gcc.target/i386/pr46295.c: New.
+
 2010-11-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/vsx-sfminmax.c: New test for using double

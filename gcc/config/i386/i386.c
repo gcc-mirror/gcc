@@ -15144,6 +15144,9 @@ ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
   rtx op0 = operands[0], op1 = operands[1];
   unsigned int align = GET_MODE_ALIGNMENT (mode);
 
+  if (use_avx256_p (mode, NULL_TREE))
+    cfun->machine->use_avx256_p = true;
+
   /* Force constants other than zero into memory.  We do not know how
      the instructions used to build constants modify the upper 64 bits
      of the register, once we have that information we may be able
