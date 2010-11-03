@@ -1,3 +1,51 @@
+2010-11-03  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR lto/46273
+	* lto-plugin.h: Delete.
+	* lto-plugin-elf.c: Likewise.
+	* lto-plugin-coff.c: Likewise.
+	* configure.ac: Don't use libelf, don't source config.gcc.
+	(LIBELFLIBS): Delete.
+	(LIBELFINC): Delete.
+	(LTO_FORMAT): Delete.
+	(SYM_STYLE): Add AC_DEFINE var, set based on $target.
+	(config.h): Add AC_CONFIG_HEADERS directive.
+	* Makefile.am (LIBELFLIBS): Delete.
+	(LIBELFINC): Delete.
+	(LTO_FORMAT): Delete.
+	(DEFS): Import.
+	(AM_CPPFLAGS): Use it.  Don't use LIBELFINC.
+	(liblto_plugin_la_SOURCES): Don't use LTO_FORMAT, don't include
+	any object-format-specific source file in the link.
+	(liblto_plugin_la_LIBADD): Don't use LIBELFLIBS.
+	* config.h.in: Generate.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+	* lto-plugin.c (O_BINARY): Definition moved here from lto-plugin.h.
+	(LTO_SEGMENT_NAME): New definition.
+	(LTO_SECTION_PREFIX): Definition moved here from lto-plugin.h.
+	(LTO_SECTION_PREFIX_LEN): New definition.
+	(struct sym_aux): Struct definition moved here from lto-plugin.h.
+	(struct plugin_symtab): Likewise.
+	(struct plugin_objfile): Likewise.
+	(struct plugin_objfile): New struct def.
+	(enum symbol_style): New enum type.
+	(add_symbols): Make static.
+	(claimed_files): Likewise.
+	(num_claimed_files): Likewise.
+	(sym_style): New global.
+	(check): Make static.
+	(parse_table_entry): Likewise.  Respect sym_style when extracting
+	symbol from symtab entry.
+	(translate): Make static.
+	(resolve_conflicts): Likewise.
+	(process_symtab): New function, per-section callback version of
+	old object-format-specific handling from deleted lto-plugin-elf.c.
+	(claim_file_handler): Convert ELF-specific version from deleted
+	lto-plugin-elf.c to simple_object interface and move here.
+	(process_options): Allow new '-sym-style=' option.
+	(onload): Don't call deleted onload_format_checks hook.
+
 2010-10-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	* lto-plugin.c (dump_symtab): Correct printf argument type.

@@ -32,6 +32,9 @@ along with this program; see the file COPYING3.  If not see
    -nop: Instead of running lto-wrapper, pass the original to the plugin. This
    only works if the input files are hybrid.  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -46,9 +49,72 @@ along with this program; see the file COPYING3.  If not see
 #include <libiberty.h>
 #include <hashtab.h>
 #include "../gcc/lto/common.h"
+#include "simple-object.h"
+#include "plugin-api.h"
 
-/* Common definitions for/from the object format dependent code.  */
-#include "lto-plugin.h"
+/* Handle opening elf files on hosts, such as Windows, that may use
+   text file handling that will break binary access.  */
+#ifndef O_BINARY
+# define O_BINARY 0
+#endif
+
+/* Segment name for LTO sections.  This is only used for Mach-O.
+   FIXME: This needs to be kept in sync with darwin.c.  */
+
+#define LTO_SEGMENT_NAME "__GNU_LTO"
+
+/* LTO magic section name.  */
+
+#define LTO_SECTION_PREFIX	".gnu.lto_.symtab"
+#define LTO_SECTION_PREFIX_LEN	(sizeof (LTO_SECTION_PREFIX) - 1)
+
+/* The part of the symbol table the plugin has to keep track of. Note that we
+   must keep SYMS until all_symbols_read is called to give the linker time to
+   copy the symbol information. */
+
+struct sym_aux
+{
+  uint32_t slot;
+  unsigned id;
+  unsigned next_conflict;
+};
+
+struct plugin_symtab
+{
+  int nsyms;
+  struct sym_aux *aux;
+  struct ld_plugin_symbol *syms;
+  unsigned id;
+};
+
+/* Encapsulates object file data during symbol scan.  */
+struct plugin_objfile
+{
+  int found;
+  simple_object_read *objfile;
+  struct plugin_symtab *out;
+  const struct ld_plugin_input_file *file;
+};
+
+/* All that we have to remember about a file. */
+
+struct plugin_file_info
+{
+  char *name;
+  void *handle;
+  struct plugin_symtab symtab;
+  struct plugin_symtab conflicts;
+};
+
+/* Until ASM_OUTPUT_LABELREF can be hookized and decoupled from
+   stdio file streams, we do simple label translation here.  */
+
+enum symbol_style
+{
+  ss_none,	/* No underscore prefix. */
+  ss_win32,	/* Underscore prefix any symbol not beginning with '@'.  */
+  ss_uscore,	/* Underscore prefix all symbols.  */
+};
 
 static char *arguments_file_name;
 static ld_plugin_register_claim_file register_claim_file;
@@ -58,13 +124,10 @@ static ld_plugin_register_cleanup register_cleanup;
 static ld_plugin_add_input_file add_input_file;
 static ld_plugin_add_input_library add_input_library;
 static ld_plugin_message message;
+static ld_plugin_add_symbols add_symbols;
 
-/* These are not static because the object format dependent
-   claim_file hooks in lto-plugin-{coff,elf}.c need them.  */
-ld_plugin_add_symbols add_symbols;
-
-struct plugin_file_info *claimed_files = NULL;
-unsigned int num_claimed_files = 0;
+static struct plugin_file_info *claimed_files = NULL;
+static unsigned int num_claimed_files = 0;
 
 static char **output_files = NULL;
 static unsigned int num_output_files = 0;
@@ -79,7 +142,12 @@ static bool debug;
 static bool nop;
 static char *resolution_file = NULL;
 
-void
+/* Set by default from configure.ac, but can be overridden at runtime
+   by using -plugin-opt=-sym-style={none,win32,underscore|uscore}
+   (in fact, only first letter of style arg is checked.)  */
+static enum symbol_style sym_style = SYM_STYLE;
+
+static void
 check (bool gate, enum ld_plugin_level level, const char *text)
 {
   if (gate)
@@ -100,7 +168,7 @@ check (bool gate, enum ld_plugin_level level, const char *text)
    by P and the result is written in ENTRY. The slot number is stored in SLOT.
    Returns the address of the next entry. */
 
-char *
+static char *
 parse_table_entry (char *p, struct ld_plugin_symbol *entry, 
 		   struct sym_aux *aux)
 {
@@ -122,7 +190,24 @@ parse_table_entry (char *p, struct ld_plugin_symbol *entry,
       LDPV_HIDDEN
     };
 
-  entry->name = xstrdup (p);
+  switch (sym_style)
+    {
+    case ss_win32:
+      if (p[0] == '@')
+	{
+    /* cf. Duff's device.  */
+    case ss_none:
+	  entry->name = xstrdup (p);
+	  break;
+	}
+    /* FALL-THROUGH.  */
+    case ss_uscore:
+      entry->name = concat ("_", p, NULL);
+      break;
+    default:
+      check (false, LDPL_FATAL, "invalid symbol style requested");
+      break;
+    }
   while (*p)
     p++;
   p++;
@@ -165,7 +250,7 @@ parse_table_entry (char *p, struct ld_plugin_symbol *entry,
 /* Translate the IL symbol table located between DATA and END. Append the
    slots and symbols to OUT. */
 
-void
+static void
 translate (char *data, char *end, struct plugin_symtab *out)
 {
   struct sym_aux *aux;
@@ -621,7 +706,7 @@ static int symbol_strength (struct ld_plugin_symbol *s)
    
    XXX how to handle common? */
 
-void
+static void
 resolve_conflicts (struct plugin_symtab *t, struct plugin_symtab *conflicts)
 {
   htab_t symtab = htab_create (t->nsyms, hash_sym, eq_sym, NULL);
@@ -689,6 +774,124 @@ resolve_conflicts (struct plugin_symtab *t, struct plugin_symtab *conflicts)
   htab_delete (symtab);
 }
 
+/* Process one section of an object file.  */
+
+static int 
+process_symtab (void *data, const char *name, off_t offset, off_t length)
+{
+  struct plugin_objfile *obj = (struct plugin_objfile *)data;
+  char *s;
+  char *secdata;
+
+  if (strncmp (name, LTO_SECTION_PREFIX, LTO_SECTION_PREFIX_LEN) != 0)
+    return 1;
+
+  s = strrchr (name, '.');
+  if (s)
+    sscanf (s, ".%x", &obj->out->id);
+  secdata = xmalloc (length);
+  offset += obj->file->offset;
+  if (offset != lseek (obj->file->fd, offset, SEEK_SET)
+	|| length != read (obj->file->fd, secdata, length))
+    {
+      if (message)
+	message (LDPL_FATAL, "%s: corrupt object file", obj->file->name);
+      /* Force claim_file_handler to abandon this file.  */
+      obj->found = 0;
+      free (secdata);
+      return 0;
+    }
+
+  translate (secdata, secdata + length, obj->out);
+  obj->found++;
+  free (secdata);
+  return 1;
+}
+
+/* Callback used by gold to check if the plugin will claim FILE. Writes
+   the result in CLAIMED. */
+
+static enum ld_plugin_status
+claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
+{
+  enum ld_plugin_status status;
+  struct plugin_objfile obj;
+  struct plugin_file_info lto_file;
+  int err;
+  const char *errmsg;
+
+  memset (&lto_file, 0, sizeof (struct plugin_file_info));
+
+  if (file->offset != 0)
+    {
+      char *objname;
+      /* We pass the offset of the actual file, not the archive header. */
+      int t = asprintf (&objname, "%s@0x%" PRIx64, file->name,
+                        (int64_t) file->offset);
+      check (t >= 0, LDPL_FATAL, "asprintf failed");
+      lto_file.name = objname;
+    }
+  else
+    {
+      lto_file.name = xstrdup (file->name);
+    }
+  lto_file.handle = file->handle;
+
+  *claimed = 0;
+  obj.file = file;
+  obj.found = 0;
+  obj.out = &lto_file.symtab;
+  errmsg = NULL;
+  obj.objfile = simple_object_start_read (file->fd, file->offset, LTO_SEGMENT_NAME,
+			&errmsg, &err);
+  /* No file, but also no error code means unrecognized format; just skip it.  */
+  if (!obj.objfile && !err)
+    goto err;
+
+  if (obj.objfile)
+    errmsg = simple_object_find_sections (obj.objfile, process_symtab, &obj, &err);
+
+  if (!obj.objfile || errmsg)
+    {
+      if (err && message)
+	message (LDPL_FATAL, "%s: %s: %s", file->name, errmsg,
+		xstrerror (err));
+      else if (message)
+	message (LDPL_FATAL, "%s: %s", file->name, errmsg);
+      goto err;
+    }
+
+  if (obj.found == 0)
+    goto err;
+
+  if (obj.found > 1)
+    resolve_conflicts (&lto_file.symtab, &lto_file.conflicts);
+
+  status = add_symbols (file->handle, lto_file.symtab.nsyms,
+			lto_file.symtab.syms);
+  check (status == LDPS_OK, LDPL_FATAL, "could not add symbols");
+
+  *claimed = 1;
+  num_claimed_files++;
+  claimed_files =
+    xrealloc (claimed_files,
+	      num_claimed_files * sizeof (struct plugin_file_info));
+  claimed_files[num_claimed_files - 1] = lto_file;
+
+  goto cleanup;
+
+ err:
+  free (lto_file.name);
+
+ cleanup:
+  if (obj.objfile)
+    simple_object_release_read (obj.objfile);
+  if (file->fd >= 0)
+    close (file->fd);
+
+  return LDPS_OK;
+}
+
 /* Parse the plugin options. */
 
 static void
@@ -705,6 +908,21 @@ process_option (const char *option)
 				     num_pass_through_items * sizeof (char *));
       pass_through_items[num_pass_through_items - 1] =
           xstrdup (option + strlen ("-pass-through="));
+    }
+  else if (!strncmp (option, "-sym-style=", sizeof ("-sym-style=") - 1))
+    {
+      switch (option[sizeof ("-sym-style=") - 1])
+	{
+	case 'w':
+	  sym_style = ss_win32;
+	  break;
+	case 'u':
+	  sym_style = ss_uscore;
+	  break;
+	default:
+	  sym_style = ss_none;
+	  break;
+	}
     }
   else
     {
@@ -726,10 +944,6 @@ onload (struct ld_plugin_tv *tv)
 {
   struct ld_plugin_tv *p;
   enum ld_plugin_status status;
-
-  status = onload_format_checks (tv);
-  if (status != LDPS_OK)
-    return status;
 
   p = tv;
   while (p->tv_tag)
