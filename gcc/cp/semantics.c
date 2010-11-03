@@ -5507,10 +5507,9 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
     body = BIND_EXPR_BODY (body);
   if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
     ok = build_data_member_initialization (body, &vec);
-  else
+  else if (TREE_CODE (body) == STATEMENT_LIST)
     {
       tree_stmt_iterator i;
-      gcc_assert (TREE_CODE (body) == STATEMENT_LIST);
       for (i = tsi_start (body); !tsi_end_p (i); tsi_next (&i))
 	{
 	  ok = build_data_member_initialization (tsi_stmt (i), &vec);
@@ -5518,6 +5517,8 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
 	    break;
 	}
     }
+  else
+    gcc_assert (errorcount > 0);
   if (ok)
     return build_constructor (type, vec);
   else
