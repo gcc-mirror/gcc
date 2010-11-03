@@ -1,3 +1,9 @@
+2010-11-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/46288
+	* predict.c (strip_predict_hints): Simply DCE builtin expect if
+	the result is unused.
+
 2010-11-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46009

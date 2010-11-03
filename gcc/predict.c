@@ -1329,9 +1329,17 @@ strip_predict_hints (void)
 		  && gimple_call_num_args (stmt) == 2)
 		{
 		  var = gimple_call_lhs (stmt);
-		  ass_stmt = gimple_build_assign (var, gimple_call_arg (stmt, 0));
-
-		  gsi_replace (&bi, ass_stmt, true);
+		  if (var)
+		    {
+		      ass_stmt
+			= gimple_build_assign (var, gimple_call_arg (stmt, 0));
+		      gsi_replace (&bi, ass_stmt, true);
+		    }
+		  else
+		    {
+		      gsi_remove (&bi, true);
+		      continue;
+		    }
 		}
 	    }
 	  gsi_next (&bi);
