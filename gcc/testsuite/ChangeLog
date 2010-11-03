@@ -1,3 +1,8 @@
+2010-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46009
+	* gcc.dg/vect/pr46009.c: New function.
+
 2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented -fobjc-std=objc1 flag.
