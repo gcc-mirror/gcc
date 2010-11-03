@@ -2586,7 +2586,19 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	  break;
 
 	case BT_CHARACTER:
-	  m = (dlen < dtp->u.p.saved_used) ? dlen : dtp->u.p.saved_used;
+	  if (dlen < dtp->u.p.saved_used)
+	    {
+	      if (compile_options.bounds_check)
+		{
+		  snprintf (nml_err_msg, nml_err_msg_size,
+			    "Namelist object '%s' truncated on read.",
+			    nl->var_name);
+		  generate_warning (&dtp->common, nml_err_msg);
+		}
+	      m = dlen;
+	    }
+	  else
+	    m = dtp->u.p.saved_used;
 	  pdata = (void*)( pdata + clow - 1 );
 	  memcpy (pdata, dtp->u.p.saved_string, m);
 	  if (m < dlen)

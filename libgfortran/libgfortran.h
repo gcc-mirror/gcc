@@ -733,6 +733,9 @@ internal_proto(translate_error);
 extern void generate_error (st_parameter_common *, int, const char *);
 iexport_proto(generate_error);
 
+extern void generate_warning (st_parameter_common *, const char *);
+internal_proto(generate_warning);
+
 extern try notify_std (st_parameter_common *, int, const char *);
 internal_proto(notify_std);
 
