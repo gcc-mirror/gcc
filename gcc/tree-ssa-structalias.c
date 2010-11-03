@@ -3339,7 +3339,7 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p,
 	  {
 	  case MEM_REF:
 	    {
-	      struct constraint_expr *c;
+	      struct constraint_expr cs;
 	      varinfo_t vi, curr;
 	      tree off = double_int_to_tree (sizetype, mem_ref_offset (t));
 	      get_constraint_for_ptr_offset (TREE_OPERAND (t, 0), off, results);
@@ -3347,12 +3347,12 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p,
 
 	      /* If we are not taking the address then make sure to process
 		 all subvariables we might access.  */
-	      c = VEC_last (ce_s, *results);
+	      cs = *VEC_last (ce_s, *results);
 	      if (address_p
-		  || c->type != SCALAR)
+		  || cs.type != SCALAR)
 		return;
 
-	      vi = get_varinfo (c->var);
+	      vi = get_varinfo (cs.var);
 	      curr = vi->next;
 	      if (!vi->is_full_var
 		  && curr)
@@ -3366,7 +3366,6 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p,
 		    {
 		      if (curr->offset - vi->offset < size)
 			{
-			  struct constraint_expr cs = *c;
 			  cs.var = curr->id;
 			  VEC_safe_push (ce_s, heap, *results, &cs);
 			}
