@@ -1,3 +1,10 @@
+2010-11-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_minmax): Add support to use
+	xsmindp/xsmaxdp on VSX for single precision min/max.
+	* config/rs6000/vsx.md (vsx_smaxsf3): Ditto.
+	(vsx_sminsf3): Ditto.
+
 2010-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* combine.c (try_combine): Fix formatting issues, improve comments and

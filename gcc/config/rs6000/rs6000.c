@@ -17205,7 +17205,9 @@ rs6000_emit_minmax (rtx dest, enum rtx_code code, rtx op0, rtx op1)
   rtx target;
 
   /* VSX/altivec have direct min/max insns.  */
-  if ((code == SMAX || code == SMIN) && VECTOR_UNIT_ALTIVEC_OR_VSX_P (mode))
+  if ((code == SMAX || code == SMIN)
+      && (VECTOR_UNIT_ALTIVEC_OR_VSX_P (mode)
+	  || (mode == SFmode && VECTOR_UNIT_VSX_P (DFmode))))
     {
       emit_insn (gen_rtx_SET (VOIDmode,
 			      dest,
