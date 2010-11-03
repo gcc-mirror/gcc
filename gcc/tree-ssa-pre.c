@@ -4364,6 +4364,7 @@ eliminate (void)
 		{
 		  bool can_make_abnormal_goto
 		    = stmt_can_make_abnormal_goto (stmt);
+		  bool was_noreturn = gimple_call_noreturn_p (stmt);
 
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
@@ -4375,6 +4376,11 @@ eliminate (void)
 
 		  gimple_call_set_fn (stmt, fn);
 		  update_stmt (stmt);
+
+		  /* When changing a call into a noreturn call, cfg cleanup
+		     is needed to fix up the noreturn call.  */
+		  if (!was_noreturn && gimple_call_noreturn_p (stmt))
+		    todo |= TODO_cleanup_cfg;
 
 		  /* If we removed EH side-effects from the statement, clean
 		     its EH information.  */

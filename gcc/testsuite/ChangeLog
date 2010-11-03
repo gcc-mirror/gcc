@@ -1,3 +1,8 @@
+2010-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46165
+	* gcc.dg/pr46165.c: New test.
+
 2010-11-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/46251
