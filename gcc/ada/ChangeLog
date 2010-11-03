@@ -1,3 +1,14 @@
+2010-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (add_stmt_force): Declare.
+	(add_stmt_with_node_force): Likewise.
+	* gcc-interface/trans.c (Attribute_to_gnu): Don't set TREE_SIDE_EFFECTS
+	on the SAVE_EXPR built for cached expressions of parameter attributes.
+	(Subprogram_Body_to_gnu): Force evaluation of the SAVE_EXPR built for
+	cached expressions of parameter attributes.
+	(add_stmt_force): New function.
+	(add_stmt_with_node_force): Likewise.
+
 2010-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gigi): Fix formatting issues.
