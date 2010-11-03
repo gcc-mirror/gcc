@@ -1,3 +1,13 @@
+2010-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/46034
+	PR rtl-optimization/46212
+	PR rtl-optimization/46248
+	* combine.c (try_combine): If added_sets_2 where i0dest_in_i0src
+	and i0 feeds i1 and i1 feeds i2 or i0 feeds i2, make a copy of i1src
+	before i0dest -> i0src substitution and pass 1 instead of 0 as last
+	argument to subst on i2pat.
+
 2010-11-02  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Use AC_SYS_LARGEFILE.

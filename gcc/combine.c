@@ -2502,6 +2502,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
   rtx i3dest_killed = 0;
   /* SET_DEST and SET_SRC of I2, I1 and I0.  */
   rtx i2dest = 0, i2src = 0, i1dest = 0, i1src = 0, i0dest = 0, i0src = 0;
+  rtx i1src_copy = 0;
   /* Set if I2DEST was reused as a scratch register.  */
   bool i2scratch = false;
   /* The PATTERNs of I0, I1, and I2, or a copy of them in certain cases.  */
@@ -3128,6 +3129,11 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 	  return 0;
 	}
 
+      /* Following subst may modify i1src, make a copy of it
+	 before it is for added_sets_2 handling if needed.  */
+      if (i0_feeds_i1_n && added_sets_2 && i1_feeds_i2_n)
+	i1src_copy = copy_rtx (i1src);
+
       n_occurrences = 0;
       subst_low_luid = DF_INSN_LUID (i0);
       newpat = subst (newpat, i0dest, i0src, 0,
@@ -3200,11 +3206,10 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
       if (added_sets_2)
 	{
 	  rtx t = i2pat;
-	  if (i0_feeds_i2_n)
-	    t = subst (t, i0dest, i0src, 0, 0);
 	  if (i1_feeds_i2_n)
-	    t = subst (t, i1dest, i1src, 0, 0);
-	  if (i0_feeds_i1_n && i1_feeds_i2_n)
+	    t = subst (t, i1dest, i1src_copy ? i1src_copy : i1src, 0,
+		       i0_feeds_i1_n && i0dest_in_i0src);
+	  if ((i0_feeds_i1_n && i1_feeds_i2_n) || i0_feeds_i2_n)
 	    t = subst (t, i0dest, i0src, 0, 0);
 
 	  XVECEXP (newpat, 0, --total_sets) = t;
