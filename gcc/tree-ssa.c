@@ -1877,7 +1877,8 @@ non_rewritable_mem_ref_base (tree ref)
       if (DECL_P (decl)
 	  && (!integer_zerop (TREE_OPERAND (base, 1))
 	      || (DECL_SIZE (decl)
-		  != TYPE_SIZE (TREE_TYPE (base)))))
+		  != TYPE_SIZE (TREE_TYPE (base)))
+	      || TREE_THIS_VOLATILE (decl) != TREE_THIS_VOLATILE (base)))
 	return decl;
     }
 
@@ -1993,7 +1994,9 @@ execute_update_addresses_taken (void)
 		      if (DECL_P (decl)
 			  && (!integer_zerop (TREE_OPERAND (lhs, 1))
 			      || (DECL_SIZE (decl)
-				  != TYPE_SIZE (TREE_TYPE (orig_lhs)))))
+				  != TYPE_SIZE (TREE_TYPE (orig_lhs)))
+			      || (TREE_THIS_VOLATILE (lhs)
+				  != TREE_THIS_VOLATILE (decl))))
 			bitmap_set_bit (not_reg_needs, DECL_UID (decl));
 		    }
                 }
@@ -2040,7 +2043,9 @@ execute_update_addresses_taken (void)
 			  if (DECL_P (decl)
 			      && (!integer_zerop (TREE_OPERAND (lhs, 1))
 				  || (TYPE_MAIN_VARIANT (TREE_TYPE (decl))
-				      != TYPE_MAIN_VARIANT (TREE_TYPE (orig_lhs)))))
+				      != TYPE_MAIN_VARIANT (TREE_TYPE (orig_lhs)))
+				  || (TREE_THIS_VOLATILE (lhs)
+				      != TREE_THIS_VOLATILE (decl))))
 			    bitmap_set_bit (not_reg_needs, DECL_UID (decl));
 			}
 		    }
