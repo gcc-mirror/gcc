@@ -14,6 +14,8 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
 
+AC_SYS_LARGEFILE
+
 # See if we are building gcc with C++.
 # Do this early so setting lang to C++ affects following tests
 AC_ARG_ENABLE(build-with-cxx,
