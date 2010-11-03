@@ -1,3 +1,9 @@
+2010-11-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/46295
+	* config/i386/i386.c (ix86_expand_vector_move): Set use_avx256_p
+	if 256bit AVX register is used.
+
 2010-11-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_minmax): Add support to use
