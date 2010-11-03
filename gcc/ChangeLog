@@ -1,3 +1,9 @@
+2010-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46107
+	* cfgloopmanip.c (loop_version): Set irred_flag back into entry->flags
+	if cfg_hook_duplicate_loop_to_header_edge failed.
+
 2010-11-03  Ian Lance Taylor  <iant@google.com>
 
 	PR lto/46273
