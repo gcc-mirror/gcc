@@ -1,3 +1,8 @@
+2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented -fobjc-std=objc1 flag.
+	* c.opt (fobjc-std=objc1): New option.
+
 2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented format and noreturn attributes for Objective-C methods.

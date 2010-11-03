@@ -1,3 +1,12 @@
+2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented -fobjc-std=objc1 flag.
+	* doc/invoke.texi (Option Summary): Document -fobjc-std=objc1
+	option.
+	* doc/standards.texi (Standards): Updated the section on
+	Objective-C; mention support for Objective-C 2.0 features and the
+	new -fstd-objc=objc1 flag to disable them.
+
 2010-11-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/46241

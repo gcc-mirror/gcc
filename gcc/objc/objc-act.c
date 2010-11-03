@@ -686,9 +686,14 @@ objc_start_class_interface (tree klass, tree super_class,
 			    tree protos, tree attributes)
 {
   if (attributes)
-    warning_at (input_location, OPT_Wattributes, 
-		"class attributes are not available in this version"
-		" of the compiler, (ignored)");
+    {
+      if (flag_objc1_only)
+	error_at (input_location, "class attributes are not available in Objective-C 1.0");
+      else
+	warning_at (input_location, OPT_Wattributes, 
+		    "class attributes are not available in this version"
+		    " of the compiler, (ignored)");
+    }
   objc_interface_context
     = objc_ivar_context
     = start_class (CLASS_INTERFACE_TYPE, klass, super_class, protos);
@@ -700,9 +705,14 @@ objc_start_category_interface (tree klass, tree categ,
 			       tree protos, tree attributes)
 {
   if (attributes)
-    warning_at (input_location, OPT_Wattributes, 
-		"category attributes are not available in this version"
-		" of the compiler, (ignored)");
+    {
+      if (flag_objc1_only)
+	error_at (input_location, "category attributes are not available in Objective-C 1.0");
+      else
+	warning_at (input_location, OPT_Wattributes, 
+		    "category attributes are not available in this version"
+		    " of the compiler, (ignored)");
+    }
   objc_interface_context
     = start_class (CATEGORY_INTERFACE_TYPE, klass, categ, protos);
   objc_ivar_chain
@@ -713,9 +723,14 @@ void
 objc_start_protocol (tree name, tree protos, tree attributes)
 {
   if (attributes)
-    warning_at (input_location, OPT_Wattributes, 
-		"protocol attributes are not available in this version"
-		" of the compiler, (ignored)");
+    {
+      if (flag_objc1_only)
+	error_at (input_location, "protocol attributes are not available in Objective-C 1.0");	
+      else
+	warning_at (input_location, OPT_Wattributes, 
+		    "protocol attributes are not available in this version"
+		    " of the compiler, (ignored)");
+    }
   objc_interface_context
     = start_protocol (PROTOCOL_INTERFACE_TYPE, name, protos);
   objc_method_optional_flag = false;
@@ -783,13 +798,21 @@ void
 objc_set_visibility (objc_ivar_visibility_kind visibility)
 {
   if (visibility == OBJC_IVAR_VIS_PACKAGE)
-    warning (0, "%<@package%> presently has the same effect as %<@public%>");
+    {
+      if (flag_objc1_only)
+	error ("%<@package%> is not available in Objective-C 1.0");
+      else
+	warning (0, "%<@package%> presently has the same effect as %<@public%>");
+    }
   objc_ivar_visibility = visibility;
 }
 
 void
 objc_set_method_opt (bool optional)
 {
+  if (flag_objc1_only)
+    error_at (input_location, "@optional/@required are not available in Objective-C 1.0");	
+
   objc_method_optional_flag = optional;
   if (!objc_interface_context 
       || TREE_CODE (objc_interface_context) != PROTOCOL_INTERFACE_TYPE)
@@ -826,6 +849,9 @@ objc_add_property_declaration (location_t location, tree decl,
      is readwrite).  */
   bool property_readonly = false;
   objc_property_assign_semantics property_assign_semantics = OBJC_PROPERTY_ASSIGN;
+
+  if (flag_objc1_only)
+    error_at (input_location, "%<@property%> is not available in Objective-C 1.0");
 
   if (parsed_property_readonly && parsed_property_readwrite)
     {
@@ -1155,6 +1181,11 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
   tree x = NULL_TREE;
   tree rtype;
 
+  /* If we are in Objective-C 1.0 mode, properties are not
+     available.  */
+  if (flag_objc1_only)
+    return NULL_TREE;
+
   /* Try to determine quickly if 'object' is an Objective-C object or
      not.  If not, return.  */
   if (object == NULL_TREE || object == error_mark_node 
@@ -1345,6 +1376,9 @@ objc_add_method_declaration (bool is_class_method, tree decl, tree attributes)
       */
       fatal_error ("method declaration not in @interface context");
     }
+
+  if (flag_objc1_only && attributes)
+    error_at (input_location, "method attributes are not available in Objective-C 1.0");
 
   objc_decl_method_attributes (&decl, attributes, 0);
   objc_add_method (objc_interface_context,
@@ -6632,6 +6666,9 @@ objc_build_keyword_decl (tree key_name, tree arg_type,
 {
   tree keyword_decl;
 
+  if (flag_objc1_only && attributes)
+    error_at (input_location, "method argument attributes are not available in Objective-C 1.0");
+
   /* If no type is specified, default to "id".  */
   arg_type = adjust_type_for_id_default (arg_type);
 
@@ -9339,6 +9376,9 @@ objc_add_synthesize_declaration (location_t location, tree property_and_ivar_lis
 {
   tree interface, chain;
 
+  if (flag_objc1_only)
+    error_at (input_location, "%<@synthesize%> is not available in Objective-C 1.0");
+
   if (property_and_ivar_list == error_mark_node)
     return;
 
@@ -9458,6 +9498,9 @@ void
 objc_add_dynamic_declaration (location_t location, tree property_list)
 {
   tree interface, chain;
+
+  if (flag_objc1_only)
+    error_at (input_location, "%<@dynamic%> is not available in Objective-C 1.0");
 
   if (property_list == error_mark_node)
     return;
@@ -12162,6 +12205,9 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
   /* Temporary variables.  */
   tree t;
   int i;
+
+  if (flag_objc1_only)
+    error_at (location, "fast enumeration is not available in Objective-C 1.0");
 
   if (object_expression == error_mark_node)
     return;

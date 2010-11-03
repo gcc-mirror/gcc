@@ -212,6 +212,7 @@ Objective-C and Objective-C++ Dialects}.
 -fobjc-direct-dispatch @gol
 -fobjc-exceptions @gol
 -fobjc-gc @gol
+-fobjc-std=objc1 @gol
 -freplace-objc-classes @gol
 -fzero-link @gol
 -gen-decls @gol
@@ -2590,6 +2591,17 @@ Enable garbage collection (GC) in Objective-C and Objective-C++
 programs.  This option is only available with the NeXT runtime; the
 GNU runtime has a different garbage collection implementation that
 does not require special compiler flags.
+
+@item -fobjc-std=objc1
+@opindex fobjc-std
+Conform to the language syntax of Objective-C 1.0, the language
+recognized by GCC 4.0.  This only affects the Objective-C additions to
+the C/C++ language; it does not affect conformance to C/C++ standards,
+which is controlled by the separate C/C++ dialect option flags.  When
+this option is used with the Objective-C or Objective-C++ compiler,
+any Objective-C syntax that is not recognized by GCC 4.0 is rejected.
+This is useful if you need to make sure that your Objective-C code can
+be compiled with older versions of GCC.
 
 @item -freplace-objc-classes
 @opindex freplace-objc-classes
