@@ -68,6 +68,8 @@ extern bool default_print_operand_punct_valid_p (unsigned char);
 extern bool default_asm_output_addr_const_extra (FILE *, rtx);
 
 extern bool default_scalar_mode_supported_p (enum machine_mode);
+extern bool targhook_words_big_endian (void);
+extern bool targhook_float_words_big_endian (void);
 extern bool default_decimal_float_supported_p (void);
 extern bool default_fixed_point_supported_p (void);
 

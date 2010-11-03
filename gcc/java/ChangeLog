@@ -1,3 +1,11 @@
+2010-11-03  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR bootstrap/44335
+	* jfc-parse.c (target.h): Include.
+	(handle_constant): Use targetm.words_big_endian and
+	targetm.float_words_big_endian.
+	(get_constant): Use targetm.float_words_big_endian.
+
 2010-10-13  Richard Henderson  <rth@redhat.com>
 
 	* lang.c (java_eh_personality): Update call to
