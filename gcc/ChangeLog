@@ -1,9 +1,3 @@
-2010-10-30  Uros Bizjak  <ubizjak@gmail.com>
-
-	PR middle-end/44569
-	* lower-suberg.c (simplify_subreg_concatn): For VOIDmode elements,
-	determine the mode of a subreg by GET_MODE_INNER of CONCATN RTX.
-
 2010-10-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/45946
