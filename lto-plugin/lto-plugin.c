@@ -886,8 +886,6 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
  cleanup:
   if (obj.objfile)
     simple_object_release_read (obj.objfile);
-  if (file->fd >= 0)
-    close (file->fd);
 
   return LDPS_OK;
 }

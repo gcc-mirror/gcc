@@ -1,5 +1,10 @@
 2010-11-03  Dave Korn  <dave.korn.cygwin@gmail.com>
 
+	PR lto/46291
+	* lto-plugin.c (claim_file_handler): Don't close file descriptor.
+
+2010-11-03  Dave Korn  <dave.korn.cygwin@gmail.com>
+
 	PR lto/46273
 	* lto-plugin.h: Delete.
 	* lto-plugin-elf.c: Likewise.
