@@ -1,3 +1,24 @@
+2010-11-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/45865
+	* Makefile.in (df-problems.o): Revert revision 164552.
+	* basic-block.h (enum bb_flags): Likewise.
+	* cfgcleanup.c (block_was_dirty): Likewise.
+	(try_forward_edges): Likewise.
+	(try_crossjump_bb): Likewise.
+	(try_head_merge_bb): Likewise.
+	(try_optimize_cfg): Likewise.
+	(cleanup_cfg): Likewise.
+	* df-core.c (df_set_bb_dirty): Likewise.
+	* df-problems.c: Likewise.
+	(df_simulate_find_uses): Likewise.
+	(MEMREF_NORMAL, MEMREF_VOLATILE): Likewise.
+	(find_memory, find_memory_store): Likewise.
+	(can_move_insns_across): Likewise.
+	* df.h (can_move_insns_across): Likewise.
+	* ifcvt.c (find_memory): Likewise.
+	(dead_or_predicable): Likewise.
+
 2010-11-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/46288
