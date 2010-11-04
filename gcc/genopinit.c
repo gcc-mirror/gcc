@@ -524,8 +524,9 @@ from the machine description file `md'.  */\n\n");
   for (i = 0; i < NUM_MACHINE_MODES; i++)\n\
     for (j = 0; j < NUM_MACHINE_MODES; j++)\n\
       set_convert_optab_handler\n\
- 	(ufixtrunc_optab, i, j,\n\
-	 convert_optab_handler (sfixtrunc_optab, i, j));\n\
+ 	(ufixtrunc_optab, (enum machine_mode) i, (enum machine_mode) j,\n\
+	 convert_optab_handler (sfixtrunc_optab, (enum machine_mode) i,\n\
+						 (enum machine_mode) j));\n\
 #endif\n\
 }");
 

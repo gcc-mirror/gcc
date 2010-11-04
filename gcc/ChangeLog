@@ -96,6 +96,10 @@
 	ALL_COMPILERFLAGS .
 	(java/constants.o): Add -Wno-error to ALL_COMPILERFLAGS.
 
+	PR bootstrap/44756
+	* genopinit.c (main) [FIXUNS_TRUNC_LIKE_FIX_TRUNC]: Cast
+	iteration variables to enum machine_mode.
+
 2010-11-04  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/46213
