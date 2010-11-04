@@ -639,6 +639,29 @@ build_list_conv (tree type, tree ctor, int flags)
   return t;
 }
 
+/* Subroutine of build_aggr_conv: check whether CTOR, a braced-init-list,
+   is a valid aggregate initializer for array type ATYPE.  */
+
+static bool
+can_convert_array (tree atype, tree ctor, int flags)
+{
+  unsigned i;
+  tree elttype = TREE_TYPE (atype);
+  for (i = 0; i < CONSTRUCTOR_NELTS (ctor); ++i)
+    {
+      tree val = CONSTRUCTOR_ELT (ctor, i)->value;
+      bool ok;
+      if (TREE_CODE (elttype) == ARRAY_TYPE
+	  && TREE_CODE (val) == CONSTRUCTOR)
+	ok = can_convert_array (elttype, val, flags);
+      else
+	ok = can_convert_arg (elttype, TREE_TYPE (val), val, flags);
+      if (!ok)
+	return false;
+    }
+  return true;
+}
+
 /* Represent a conversion from CTOR, a braced-init-list, to TYPE, an
    aggregate class, if such a conversion is possible.  */
 
@@ -652,24 +675,31 @@ build_aggr_conv (tree type, tree ctor, int flags)
 
   for (; field; field = next_initializable_field (DECL_CHAIN (field)))
     {
+      tree ftype = TREE_TYPE (field);
+      tree val;
+      bool ok;
+
       if (i < CONSTRUCTOR_NELTS (ctor))
-	{
-	  constructor_elt *ce = CONSTRUCTOR_ELT (ctor, i);
-	  if (!can_convert_arg (TREE_TYPE (field), TREE_TYPE (ce->value),
-				ce->value, flags))
-	    return NULL;
-	  ++i;
-	  if (TREE_CODE (type) == UNION_TYPE)
-	    break;
-	}
+	val = CONSTRUCTOR_ELT (ctor, i)->value;
       else
 	{
 	  if (empty_ctor == NULL_TREE)
 	    empty_ctor = build_constructor (init_list_type_node, NULL);
-	  if (!can_convert_arg (TREE_TYPE (field), TREE_TYPE (empty_ctor),
-				empty_ctor, flags))
-	    return NULL;
+	  val = empty_ctor;
 	}
+      ++i;
+
+      if (TREE_CODE (ftype) == ARRAY_TYPE
+	  && TREE_CODE (val) == CONSTRUCTOR)
+	ok = can_convert_array (ftype, val, flags);
+      else
+	ok = can_convert_arg (ftype, TREE_TYPE (val), val, flags);
+
+      if (!ok)
+	return NULL;
+
+      if (TREE_CODE (type) == UNION_TYPE)
+	break;
     }
 
   if (i < CONSTRUCTOR_NELTS (ctor))

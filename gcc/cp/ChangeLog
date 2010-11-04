@@ -1,6 +1,10 @@
 2010-11-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46289
+	* call.c (can_convert_array): New fn.
+	(build_aggr_conv): Use it.
+
+	PR c++/46289
 	* semantics.c (build_constexpr_constructor_member_initializers):
 	Avoid ICE on error.
 
