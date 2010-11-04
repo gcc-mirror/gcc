@@ -1800,7 +1800,11 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
      simply rewriting this into "res += -x[i]".  Avoid changing
      gimple instruction for the first simple tests and only do this
      if we're allowed to change code at all.  */
-  if (code == MINUS_EXPR && modify)
+  if (code == MINUS_EXPR
+      && modify
+      && (op1 = gimple_assign_rhs1 (def_stmt))
+      && TREE_CODE (op1) == SSA_NAME
+      && SSA_NAME_DEF_STMT (op1) == phi)
     code = PLUS_EXPR;
 
   if (check_reduction
