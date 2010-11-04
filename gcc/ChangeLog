@@ -1,3 +1,9 @@
+2010-11-04  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc/configure.ac: Filter -mdynamic-no-pic from CFLAGS when testing for
+	plugin capabilities.
+	* gcc/configure: Regenerate.
+
 2010-11-03  Xinliang David Li  <davidxl@google.com>
 
        PR target/46200
