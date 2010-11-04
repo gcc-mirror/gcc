@@ -1,3 +1,10 @@
+2010-11-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline:
+	PR libgfortran/46010
+	* gfortran.dg/namelist_66.f90: New test.
+	* gfortran.dg/fmt_t_6.f: Whitespace.
+
 2010-11-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/46152
