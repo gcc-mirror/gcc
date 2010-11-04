@@ -91,6 +91,9 @@
    don't. */
 #undef HAVE_DECL_VSNPRINTF
 
+/* Define to 1 if you have the `dup3' function. */
+#undef HAVE_DUP3
+
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
@@ -169,6 +172,9 @@
 /* Define if you have prctl PR_SET_NAME */
 #undef HAVE_PRCTL_SET_NAME
 
+/* Define to 1 if you have the <process.h> header file. */
+#undef HAVE_PROCESS_H
+
 /* Define to 1 if you have the `psignal' function. */
 #undef HAVE_PSIGNAL
 
@@ -207,6 +213,12 @@
 
 /* Define to 1 if you have the `snprintf' function. */
 #undef HAVE_SNPRINTF
+
+/* Define to 1 if you have the `spawnve' function. */
+#undef HAVE_SPAWNVE
+
+/* Define to 1 if you have the `spawnvpe' function. */
+#undef HAVE_SPAWNVPE
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
