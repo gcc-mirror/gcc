@@ -5535,8 +5535,9 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
   if (TREE_CODE (body) == MUST_NOT_THROW_EXPR
       || TREE_CODE (body) == EH_SPEC_BLOCK)
     body = TREE_OPERAND (body, 0);
-  if (TREE_CODE (body) == BIND_EXPR)
-    body = BIND_EXPR_BODY (body);
+  if (TREE_CODE (body) == STATEMENT_LIST)
+    body = STATEMENT_LIST_HEAD (body)->stmt;
+  body = BIND_EXPR_BODY (body);
   if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
     ok = build_data_member_initialization (body, &vec);
   else if (TREE_CODE (body) == STATEMENT_LIST)
