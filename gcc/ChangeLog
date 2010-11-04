@@ -1,3 +1,11 @@
+2010-11-04  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	* passes.c (init_optimization_passes): Move veclower after SSA.
+	* tree-vect-generic.c (uniform_vector_p): New function.
+	(expand_vector_operations_1): Handle conversion.
+	(pass_lower_vector): Update SSA form.
+
 2010-11-04  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* gcc/configure.ac: Filter -mdynamic-no-pic from CFLAGS when testing for

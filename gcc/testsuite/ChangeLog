@@ -1,7 +1,14 @@
+2010-11-04  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/vec-scal-opt.c: New testcase.
+	* gcc.dg/vec-scal-opt1.c: New testcase.
+	* gcc.dg/vec-scal-opt2.c: New testcase.
+
 2010-11-04  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* lib/plugin-support.exp (plugin-test-execute): Filter -mdynamic-no-pic from
-	plugin build flags on Darwin targets.
+	* lib/plugin-support.exp (plugin-test-execute): Filter -mdynamic-no-pic
+	from plugin build flags on Darwin targets.
 
 2010-11-03  H.J. Lu  <hongjiu.lu@intel.com>
 
