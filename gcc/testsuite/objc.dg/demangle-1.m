@@ -1,5 +1,6 @@
 /* Test demangling an Objective-C method.  */
 /* { dg-do run } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 #include <string.h>
 #include <stdlib.h>
@@ -14,6 +15,9 @@
 + (int) testFunction1;
 + (int) test_function2;
 + (int) __testFunction3: (int)unused  andArgument: (char)unused2;
+#ifdef __NEXT_RUNTIME__
++ (id) initialize ;
+#endif
 @end
 
 @implementation DemangleTest
@@ -37,6 +41,9 @@
   printf ("%s\n", __PRETTY_FUNCTION__);
   return strcmp (__PRETTY_FUNCTION__, "+[DemangleTest __testFunction3:andArgument:]");
 }
+#ifdef __NEXT_RUNTIME__
++ (id) initialize { return self; }
+#endif
 @end
 
 int main ()

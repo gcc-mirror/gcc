@@ -1,3 +1,33 @@
+2010-11-04  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc-obj-c++-shared/next-mapping.h: Ensure a GNU-compatible nil is
+	defined.
+	* objc.dg/property/fsf-property-basic.m: XFAIL m64 NeXT run.
+	* objc.dg/property/fsf-property-named-ivar.m: Likewise.
+	* objc.dg/property/property-1.m: Likewise.
+	* objc.dg/property/at-property-6.m: Likewise.
+	* objc.dg/property/at-property-7.m: Likewise.
+	* objc.dg/property/dotsyntax-1.m: Likewise.
+	* objc.dg/property/at-property-8.m: Likewise.
+	* objc.dg/property/dotsyntax-2.m: Likewise.
+	* objc.dg/property/at-property-9.m: Likewise.
+	* objc.dg/property/synthesize-2.m: Likewise.
+	* objc.dg/property/at-property-10.m: Likewise.
+	* objc.dg/property/at-property-11.m: Likewise.
+	* objc.dg/property/at-property-12.m: Likewise.
+	* objc.dg/property/at-property-13.m: Likewise.
+	* objc.dg/property/fsf-property-method-access.m: Likewise.
+	* objc.dg/torture/strings/const-cfstring-1.m: Cater for bogus Darwin10
+	linker warning.
+	* objc.dg/encode-7-next.m: Use next-mapping.h, ignore deprecation 
+	warnings.
+	* objc.dg/encode-7-next-64bit.m: Use next-mapping.h, ignore 
+	deprecation warnings.  Use Object1 implemenation.
+	* objc.dg/demangle-1.m: Provide +initialize.  XFAIL m64 NeXT run.
+	* objc/execute/forward-1.m: Move to objc.dg/torture and reduce scope
+	to m32 NeXT.
+	* objc/execute/forward-1.x: Remove.
+	
 2010-11-04  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-access.C: New.
