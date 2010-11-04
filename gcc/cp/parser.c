@@ -3908,6 +3908,22 @@ cp_parser_primary_expression (cp_parser *parser,
 	    if (ambiguous_decls)
 	      return error_mark_node;
 
+	    /* In Objective-C++, we may have an Objective-C 2.0
+	       dot-syntax for classes here.  */
+	    if (c_dialect_objc ()
+		&& cp_lexer_peek_token (parser->lexer)->type == CPP_DOT
+		&& TREE_CODE (decl) == TYPE_DECL
+		&& objc_is_class_name (decl))
+	      {
+		tree component;
+		cp_lexer_consume_token (parser->lexer);
+		component = cp_parser_identifier (parser);
+		if (component == error_mark_node)
+		  return error_mark_node;
+
+		return objc_build_class_component_ref (id_expression, component);
+	      }
+
 	    /* In Objective-C++, an instance variable (ivar) may be preferred
 	       to whatever cp_parser_lookup_name() found.  */
 	    decl = objc_lookup_ivar (decl, id_expression);
@@ -12786,14 +12802,14 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       return error_mark_node;
     }
 
-  /* There is no valid C++ program where a non-template type is
-     followed by a "<".  That usually indicates that the user thought
-     that the type was a template.  */
   if (type && type != error_mark_node)
     {
-      /* As a last-ditch effort, see if TYPE is an Objective-C type.
-	 If it is, then the '<'...'>' enclose protocol names rather than
-	 template arguments, and so everything is fine.  */
+      /* See if TYPE is an Objective-C type, and if so, parse and
+	 accept any protocol references following it.  Do this before
+	 the cp_parser_check_for_invalid_template_id() call, because
+	 Objective-C types can be followed by '<...>' which would
+	 enclose protocol names rather than template arguments, and so
+	 everything is fine.  */
       if (c_dialect_objc () && !parser->scope
 	  && (objc_is_id (type) || objc_is_class_name (type)))
 	{
@@ -12808,6 +12824,9 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	  return qual_type;
 	}
 
+      /* There is no valid C++ program where a non-template type is
+	 followed by a "<".  That usually indicates that the user
+	 thought that the type was a template.  */
       cp_parser_check_for_invalid_template_id (parser, TREE_TYPE (type),
 					       token->location);
     }
@@ -12888,9 +12907,17 @@ cp_parser_nonclass_name (cp_parser* parser)
       if (type)
 	type_decl = TYPE_NAME (type);
     }
-  
+
   /* Issue an error if we did not find a type-name.  */
-  if (TREE_CODE (type_decl) != TYPE_DECL)
+  if (TREE_CODE (type_decl) != TYPE_DECL
+      /* In Objective-C, we have the complication that class names are
+	 normally type names and start declarations (eg, the
+	 "NSObject" in "NSObject *object;"), but can be used in an
+	 Objective-C 2.0 dot-syntax (as in "NSObject.version") which
+	 is an expression.  So, a classname followed by a dot is not a
+	 valid type-name.  */
+      || (objc_is_class_name (TREE_TYPE (type_decl))
+	  && cp_lexer_peek_token (parser->lexer)->type == CPP_DOT))
     {
       if (!cp_parser_simulate_error (parser))
 	cp_parser_name_lookup_error (parser, identifier, type_decl,
@@ -16714,7 +16741,12 @@ cp_parser_class_name (cp_parser *parser,
     }
   else if (TREE_CODE (decl) != TYPE_DECL
 	   || TREE_TYPE (decl) == error_mark_node
-	   || !MAYBE_CLASS_TYPE_P (TREE_TYPE (decl)))
+	   || !MAYBE_CLASS_TYPE_P (TREE_TYPE (decl))
+	   /* In Objective-C 2.0, a classname followed by '.' starts a
+	      dot-syntax expression, and it's not a type-name.  */
+	   || (c_dialect_objc ()
+	       && cp_lexer_peek_token (parser->lexer)->type == CPP_DOT 
+	       && objc_is_class_name (decl)))
     decl = error_mark_node;
 
   if (decl == error_mark_node)

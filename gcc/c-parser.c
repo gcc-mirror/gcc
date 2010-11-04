@@ -598,6 +598,19 @@ static inline bool
 c_parser_next_token_starts_declspecs (c_parser *parser)
 {
   c_token *token = c_parser_peek_token (parser);
+
+  /* In Objective-C, a classname normally starts a declspecs unless it
+     is immediately followed by a dot.  In that case, it is the
+     Objective-C 2.0 "dot-syntax" for class objects, ie, calls the
+     setter/getter on the class.  c_token_starts_declspecs() can't
+     differentiate between the two cases because it only checks the
+     current token, so we have a special check here.  */
+  if (c_dialect_objc () 
+      && token->type == CPP_NAME
+      && token->id_kind == C_ID_CLASSNAME 
+      && c_parser_peek_2nd_token (parser)->type == CPP_DOT)
+    return false;
+
   return c_token_starts_declspecs (token);
 }
 
@@ -607,6 +620,14 @@ static inline bool
 c_parser_next_token_starts_declaration (c_parser *parser)
 {
   c_token *token = c_parser_peek_token (parser);
+
+  /* Same as above.  */
+  if (c_dialect_objc () 
+      && token->type == CPP_NAME
+      && token->id_kind == C_ID_CLASSNAME 
+      && c_parser_peek_2nd_token (parser)->type == CPP_DOT)
+    return false;
+
   return c_token_starts_declaration (token);
 }
 
@@ -5821,6 +5842,7 @@ c_parser_alignof_expression (c_parser *parser)
      @protocol ( identifier )
      @encode ( type-name )
      objc-string-literal
+     Classname . identifier
 */
 
 static struct c_expr
@@ -5867,20 +5889,48 @@ c_parser_postfix_expression (c_parser *parser)
       c_parser_consume_token (parser);
       break;
     case CPP_NAME:
-      if (c_parser_peek_token (parser)->id_kind != C_ID_ID)
+      switch (c_parser_peek_token (parser)->id_kind)
 	{
+	case C_ID_ID:
+	  {
+	    tree id = c_parser_peek_token (parser)->value;
+	    c_parser_consume_token (parser);
+	    expr.value = build_external_ref (loc, id,
+					     (c_parser_peek_token (parser)->type
+					      == CPP_OPEN_PAREN),
+					     &expr.original_type);
+	    break;
+	  }
+	case C_ID_CLASSNAME:
+	  {
+	    /* Here we parse the Objective-C 2.0 Class.name dot
+	       syntax.  */
+	    tree class_name = c_parser_peek_token (parser)->value;
+	    tree component;
+	    c_parser_consume_token (parser);
+	    gcc_assert (c_dialect_objc ());
+	    if (!c_parser_require (parser, CPP_DOT, "expected %<.%>"))
+	      {
+		expr.value = error_mark_node;
+		break;
+	      }
+	    if (c_parser_next_token_is_not (parser, CPP_NAME))
+	      {
+		c_parser_error (parser, "expected identifier");
+		expr.value = error_mark_node;
+		break;
+	      }
+	    component = c_parser_peek_token (parser)->value;
+	    c_parser_consume_token (parser);
+	    expr.value = objc_build_class_component_ref (class_name, 
+							 component);
+	    break;
+	  }
+	default:
 	  c_parser_error (parser, "expected expression");
 	  expr.value = error_mark_node;
 	  break;
 	}
-      {
-	tree id = c_parser_peek_token (parser)->value;
-	c_parser_consume_token (parser);
-	expr.value = build_external_ref (loc, id,
-					 (c_parser_peek_token (parser)->type
-					  == CPP_OPEN_PAREN),
-					 &expr.original_type);
-      }
       break;
     case CPP_OPEN_PAREN:
       /* A parenthesized expression, statement expression or compound

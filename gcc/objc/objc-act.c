@@ -1301,6 +1301,79 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
   return NULL_TREE;
 }
 
+/* This hook routine is invoked by the parser when an expression such
+   as 'xxx.yyy' is parsed, and 'xxx' is a class name.  This is the
+   Objective-C 2.0 dot-syntax applied to classes, so we need to
+   convert it into a setter/getter call on the class.  */
+tree
+objc_build_class_component_ref (tree class_name, tree property_ident)
+{
+  tree x = NULL_TREE;
+  tree object, rtype;
+  
+  if (flag_objc1_only)
+    error_at (input_location, "the dot syntax is not available in Objective-C 1.0");
+  
+  if (class_name == NULL_TREE || class_name == error_mark_node
+      || TREE_CODE (class_name) != IDENTIFIER_NODE)
+    return error_mark_node;
+  
+  if (property_ident == NULL_TREE || property_ident == error_mark_node
+      || TREE_CODE (property_ident) != IDENTIFIER_NODE)
+    return NULL_TREE;
+  
+  object = objc_get_class_reference (class_name);
+  if (!object)
+    {
+      /* We know that 'class_name' is an Objective-C class name as the
+	 parser won't call this function if it is not.  This is only a
+	 double-check for safety.  */
+      error_at (input_location, "could not find class %qE", class_name); 
+      return error_mark_node;
+    }
+
+  rtype = lookup_interface (class_name);
+  if (!rtype)
+    {
+      /* Again, this should never happen, but we do check.  */
+      error_at (input_location, "could not find interface for class %qE", class_name); 
+      return error_mark_node;
+    }
+
+  x = maybe_make_artificial_property_decl (rtype, NULL_TREE,
+					   property_ident,
+					   true);
+  
+  if (x)
+    {
+      tree expression;
+
+      if (TREE_DEPRECATED (x))
+	warn_deprecated_use (x, NULL_TREE);
+
+      expression = build2 (PROPERTY_REF, TREE_TYPE(x), object, x);
+      SET_EXPR_LOCATION (expression, input_location);
+      TREE_SIDE_EFFECTS (expression) = 1;
+      /* See above for why we do this.  */
+      if (!PROPERTY_HAS_NO_GETTER (x))
+	objc_finish_message_expr (object,
+				  PROPERTY_GETTER_NAME (x),
+				  NULL_TREE);
+      
+      return expression;
+    }
+  else
+    {
+      error_at (input_location, "could not find setter/getter for %qE in class %qE", 
+		property_ident,	class_name); 
+      return error_mark_node;
+    }
+
+  return NULL_TREE;
+}
+
+
+
 /* This is used because we don't want to expose PROPERTY_REF to the
    C/C++ frontends.  Maybe we should!  */
 bool

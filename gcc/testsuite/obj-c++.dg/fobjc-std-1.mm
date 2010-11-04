@@ -13,6 +13,7 @@ __attribute__ ((deprecated))
   int b;
 }
 + (id) alloc __attribute__ ((deprecated)); /* { dg-error "not available in Objective.C 1.0" } */
++ (id) name;
 - (id) init;
 - (id) testMe: (id) __attribute__((unused)) argument; /* { dg-error "not available in Objective.C 1.0" } */
 @property (nonatomic) int a; /* { dg-error "not available in Objective.C 1.0" } */
@@ -21,6 +22,7 @@ __attribute__ ((deprecated))
 
 @implementation MyRootClass
 + (id) alloc { return self; }
++ (id) name { return self; }
 - (id) init  { return self; }
 - (id) testMe: (id) __attribute__((unused)) argument { return self; } /* { dg-error "not available in Objective.C 1.0" } */
 @synthesize a; /* { dg-error "not available in Objective.C 1.0" } */
@@ -53,3 +55,8 @@ int array_length (NSArray *array)
   return i;
 }
 #endif
+
+id test (void)
+{
+  return MyRootClass.name; /* { dg-error "not available in Objective.C 1.0" } */
+}
