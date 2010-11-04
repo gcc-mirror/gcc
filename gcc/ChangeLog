@@ -1,3 +1,9 @@
+2010-11-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45991
+	* gimplify.c (force_gimple_operand_1): Use the provded test
+	function in the initial test.
+
 2010-11-04  Jeff Law  <law@redhat.com>
 
 	* ira.c (validate_equiv_mem): Remove code to avoid invalidation
