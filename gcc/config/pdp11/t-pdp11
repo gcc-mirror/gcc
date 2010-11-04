@@ -34,3 +34,13 @@ dp-bit.c: $(srcdir)/config/fp-bit.c
 	cat $(srcdir)/config/fp-bit.c > dp-bit.c
 
 MULTILIB_OPTIONS = msoft-float
+
+# Because the pdp11 POINTER_SIZE is only 16, in dwarf2out.c,
+# DWARF_ARANGES_PAD_SIZE is 0, thus a loop in output_aranges that checks
+# (i < (unsigned) DWARF_ARANGES_PAD_SIZE) elicits a warning that the
+# comparison is always false.
+dwarf2out.o: ALL_COMPILERFLAGS += -Wno-error=type-limits
+
+# Likewise, java/constants.c:build_constants_constructor has a negative shift
+# count (in never-executed code) due to the small POINTER_SIZE.
+java/constants.o: ALL_COMPILERFLAGS += -Wno-error

@@ -88,6 +88,14 @@
 	PR bootstrap/44756
 	* varasm.c (asm_output_bss): Add ATTRIBUTE_UNUSED to function.
 
+	PR target/44750
+	* config/pdp11/pdp11.c: (pdp11_secondary_reload): Now static.
+	(pdp11_preferred_reload_class): Rename class to rclass.
+	(pdp11_preferred_output_reload_class): Likewise.
+	* config/pdp11/t-pdp11 (dwarf2out.o): Add -Wno-error=type-limits to
+	ALL_COMPILERFLAGS .
+	(java/constants.o): Add -Wno-error to ALL_COMPILERFLAGS.
+
 2010-11-04  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/46213
