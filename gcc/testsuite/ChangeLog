@@ -1,3 +1,8 @@
+2010-11-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46289
+	* g++.dg/cpp0x/initlist45.C: New.
+
 2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/property/dynamic-2.m: Updated for the fact that @dynamic
