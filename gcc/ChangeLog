@@ -1,5 +1,12 @@
 2010-11-04  Richard Guenther  <rguenther@suse.de>
 
+	PR rtl-optimization/46183
+	* gcse.c (execute_rtl_cprop): Cleanup the CFG if something changed.
+	(execute_rtl_pre): Likewise.
+	(execute_rtl_hoist): Likewise.
+
+2010-11-04  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/46068
 	* ipa-split.c (consider_split): Remove gcc_unreachable.
 
