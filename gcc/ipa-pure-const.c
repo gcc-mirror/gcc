@@ -1571,7 +1571,9 @@ local_pure_const (void)
       && skip)
     return 0;
 
-  /* First do NORETURN discovery.  */
+  l = analyze_function (node, false);
+
+  /* Do NORETURN discovery.  */
   if (!skip && !TREE_THIS_VOLATILE (current_function_decl)
       && EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 0)
     {
@@ -1587,7 +1589,6 @@ local_pure_const (void)
 
       changed = true;
     }
-  l = analyze_function (node, false);
 
   switch (l->pure_const_state)
     {

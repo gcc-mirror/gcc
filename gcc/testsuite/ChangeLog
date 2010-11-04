@@ -1,3 +1,8 @@
+2010-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46233
+	* gcc.dg/pr46233.c: New test.
+
 2010-11-04  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/property/property-2.m: Deleted.
