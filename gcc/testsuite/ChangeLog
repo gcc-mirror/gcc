@@ -1,5 +1,10 @@
 2010-11-04  Iain Sandoe  <iains@gcc.gnu.org>
 
+	* objc.dg/property/property-2.m: Deleted.
+	* objc.dg/property/property-3.m: Deleted.
+	
+2010-11-04  Iain Sandoe  <iains@gcc.gnu.org>
+
 	* objc-obj-c++-shared/next-mapping.h: Ensure a GNU-compatible nil is
 	defined.
 	* objc.dg/property/fsf-property-basic.m: XFAIL m64 NeXT run.
