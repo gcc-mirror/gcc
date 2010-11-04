@@ -49,6 +49,10 @@
 	unsignedp.
 	* reload1.c (set_reload_reg): Add ATTRIBUTE_UNUSED to regno.
 
+	PR bootstrap/44756
+	* function.c (thread_prologue_and_epilogue_insns): Add
+	ATTRIBUTE_UNUSED to seq, epilogue_end and entry_edge.
+
 2010-11-04  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/46213

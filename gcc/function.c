@@ -5216,8 +5216,8 @@ static void
 thread_prologue_and_epilogue_insns (void)
 {
   bool inserted;
-  rtx seq, epilogue_end;
-  edge entry_edge;
+  rtx seq ATTRIBUTE_UNUSED, epilogue_end ATTRIBUTE_UNUSED;
+  edge entry_edge ATTRIBUTE_UNUSED;
   edge e;
   edge_iterator ei;
 
