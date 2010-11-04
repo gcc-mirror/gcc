@@ -64,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     struct _Head_base<_Idx, _Head, true>
     : public _Head
     {
-      _Head_base()
+      constexpr _Head_base()
       : _Head() { }
 
       _Head_base(const _Head& __h)
@@ -83,7 +83,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<std::size_t _Idx, typename _Head>
     struct _Head_base<_Idx, _Head, false>
     {
-      _Head_base()
+      constexpr _Head_base()
       : _M_head_impl() { }
 
       _Head_base(const _Head& __h)
@@ -147,7 +147,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _Inherited&       _M_tail()       { return *this; }
       const _Inherited& _M_tail() const { return *this; }
 
-      _Tuple_impl()
+      constexpr _Tuple_impl()
       : _Inherited(), _Base() { }
 
       explicit 
@@ -225,7 +225,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef _Tuple_impl<0, _Elements...> _Inherited;
 
     public:
-      _GLIBCXX_CONSTEXPR tuple()
+      constexpr tuple()
       : _Inherited() { }
 
       explicit
@@ -310,7 +310,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef _Tuple_impl<0, _T1, _T2> _Inherited;
 
     public:
-      tuple()
+      constexpr tuple()
       : _Inherited() { }
 
       explicit
@@ -408,7 +408,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef _Tuple_impl<0, _T1> _Inherited;
 
     public:
-      tuple()
+      constexpr tuple()
       : _Inherited() { }
 
       explicit
