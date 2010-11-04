@@ -89,15 +89,15 @@
 	* objc.dg/property/at-property-14.m: New.
 	* objc.dg/property/at-property-15.m: New.
 	* obj-c++.dg/property/at-property-14.mm: New.
-	* obj-c++.dg/property/at-property-15.mm: New.	
+	* obj-c++.dg/property/at-property-15.mm: New.
 
 	* objc.dg/foreach-6.m: Added a few more tests for valid and
 	invalid iterating variables and collections.
-	
+
 2010-11-03  Xinliang David Li  <davidxl@google.com>
 
-       PR target/46200
-       * g++.dg/tree-ssa/ivopts-2.C: New test.
+	PR target/46200
+	* g++.dg/tree-ssa/ivopts-2.C: New test.
 
 2010-11-03  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -153,7 +153,7 @@
 2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented -fobjc-std=objc1 flag.
-	* objc.dg/fobjc-std-1.m: New.	
+	* objc.dg/fobjc-std-1.m: New.
 	* obj-c++.dg/fobjc-std-1.mm: New.
 
 2010-11-03  Richard Guenther  <rguenther@suse.de>
@@ -186,9 +186,9 @@
 2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/property/dotsyntax-1.m: New.
-	* objc.dg/property/dotsyntax-2.m: New.	
+	* objc.dg/property/dotsyntax-2.m: New.
 	* obj-c++.dg/property/dotsyntax-1.mm: New.
-	* obj-c++.dg/property/dotsyntax-2.mm: New.	
+	* obj-c++.dg/property/dotsyntax-2.mm: New.
 
 2010-11-03  Jakub Jelinek  <jakub@redhat.com>
 
@@ -407,12 +407,12 @@
 	* obj-c++.dg/attributes/method-deprecated-3.mm: New.
 	* obj-c++.dg/attributes/method-noreturn-1.mm: New.
 	* obj-c++.dg/attributes/method-sentinel-1.mm: New.
-	* obj-c++.dg/attributes/method-format-1.mm: New.	
-	
+	* obj-c++.dg/attributes/method-format-1.mm: New.
+
 2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/property/at-property-deprecated-1.m: New.
-	* obj-c++.dg/property/at-property-deprecated-1.mm: New.	
+	* obj-c++.dg/property/at-property-deprecated-1.mm: New.
 
 2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
@@ -434,8 +434,8 @@
 	* objc.dg/property/at-property-12.m: New.
 	* objc.dg/property/at-property-13.m: New.
 	* obj-c++.dg/property/at-property-12.mm: New.
-	* obj-c++.dg/property/at-property-13.mm: New.	
-	
+	* obj-c++.dg/property/at-property-13.mm: New.
+
 2010-11-01  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/46152
@@ -516,7 +516,7 @@
 	* objc.dg/property/property-neg-4.m: Same change.
 	* objc.dg/property/property-neg-5.m: Same change.
 	* objc.dg/property/property-neg-7.m: Same change.
-	* objc.dg/property/property-1.m: Same change.	
+	* objc.dg/property/property-1.m: Same change.
 	* objc.dg/property/synthesize-1.m: Same change.
 	* objc.dg/property/at-property-2.m: Same change.
 	* objc.dg/property/at-property-4.m: Same change.
@@ -526,7 +526,7 @@
 	@synthesize/@dynamic.  Use the same code for GNU and NeXT runtime.
 	* objc.dg/property/fsf-property-basic.m: Same change.
 	* objc.dg/property/fsf-property-named-ivar.m: Same change.
-	
+
 	* objc.dg/property/at-property-5.m: New.
 	* objc.dg/property/at-property-6.m: New.
 	* objc.dg/property/at-property-7.m: New.
@@ -545,7 +545,7 @@
 	* obj-c++.dg/property/property-neg-4.mm: Same change.
 	* obj-c++.dg/property/property-neg-5.mm: Same change.
 	* obj-c++.dg/property/property-neg-7.mm: Same change.
-	* obj-c++.dg/property/property-1.mm: Same change.	
+	* obj-c++.dg/property/property-1.mm: Same change.
 	* obj-c++.dg/property/synthesize-1.mm: Same change.
 	* obj-c++.dg/property/at-property-2.mm: Same change.
 	* obj-c++.dg/property/at-property-4.mm: Same change.
@@ -555,9 +555,9 @@
 	@synthesize/@dynamic.  Use the same code for GNU and NeXT runtime.
 	* obj-c++.dg/property/fsf-property-basic.mm: Same change.
 	* obj-c++.dg/property/fsf-property-named-ivar.mm: Same change.
-	
+
 	* obj-c++.dg/property/at-property-5.mm: New.
-	* obj-c++.dg/property/at-property-6.mm: New.	
+	* obj-c++.dg/property/at-property-6.mm: New.
 	* obj-c++.dg/property/at-property-7.mm: New.
 	* obj-c++.dg/property/at-property-8.mm: New.
 	* obj-c++.dg/property/at-property-9.mm: New.
@@ -565,7 +565,7 @@
 	* obj-c++.dg/property/at-property-11.mm: New.
 	* obj-c++.dg/property/synthesize-2.mm: New.
 	* obj-c++.dg/property/dynamic-2.mm: New.
-	
+
 2010-10-29  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
 	    Andrew Pinski <pinskia@gmail.com>
 

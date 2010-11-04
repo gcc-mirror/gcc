@@ -1,3 +1,10 @@
+2010-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/46292
+	* lower-suberg.c (simplify_subreg_concatn): For VOIDmode elements,
+	if the innermode is not vector mode, determine the mode of a subreg
+	by using mode_for_size of inner_size.
+
 2010-11-04  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/46183
@@ -100,9 +107,9 @@
 
 2010-11-03  Xinliang David Li  <davidxl@google.com>
 
-       PR target/46200
-       * tree-ssa-loop-ivopts.c (get_computation_cost_at):
-       Adjust cbase if the use stmt is after iv update.
+	PR target/46200
+	* tree-ssa-loop-ivopts.c (get_computation_cost_at):
+	Adjust cbase if the use stmt is after iv update.
 
 2010-11-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
