@@ -1,3 +1,10 @@
+2010-11-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR driver/45703
+	* collect2.c (main): Print --help output to stdout.  Do not
+	exit right away, so ld --help is appended.  Add empty lines
+	to separate output suitably.
+
 2010-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46233

@@ -1698,16 +1698,16 @@ main (int argc, char **argv)
 
   if (helpflag)
     {
-      fprintf (stderr, "Usage: collect2 [options]\n");
-      fprintf (stderr, " Wrap linker and generate constructor code if needed.\n");
-      fprintf (stderr, " Options:\n");
-      fprintf (stderr, "  -debug          Enable debug output\n");
-      fprintf (stderr, "  --help          Display this information\n");
-      fprintf (stderr, "  -v, --version   Display this program's version number\n");
-      fprintf (stderr, "Overview: http://gcc.gnu.org/onlinedocs/gccint/Collect2.html\n");
-      fprintf (stderr, "Report bugs: %s\n", bug_report_url);
-
-      collect_exit (0);
+      printf ("Usage: collect2 [options]\n");
+      printf (" Wrap linker and generate constructor code if needed.\n");
+      printf (" Options:\n");
+      printf ("  -debug          Enable debug output\n");
+      printf ("  --help          Display this information\n");
+      printf ("  -v, --version   Display this program's version number\n");
+      printf ("\n");
+      printf ("Overview: http://gcc.gnu.org/onlinedocs/gccint/Collect2.html\n");
+      printf ("Report bugs: %s\n", bug_report_url);
+      printf ("\n");
     }
 
   if (debug)
