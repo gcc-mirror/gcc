@@ -1859,13 +1859,40 @@
 
 ;; Intrinsic FMA operations.
 
-;; The standard name for fma is only available with SSE math enabled.
+;; The standard names for fma is only available with SSE math enabled.
 (define_expand "fma<mode>4"
   [(set (match_operand:FMAMODE 0 "register_operand")
 	(fma:FMAMODE
 	  (match_operand:FMAMODE 1 "nonimmediate_operand")
 	  (match_operand:FMAMODE 2 "nonimmediate_operand")
 	  (match_operand:FMAMODE 3 "nonimmediate_operand")))]
+  "(TARGET_FMA || TARGET_FMA4) && TARGET_SSE_MATH"
+  "")
+
+(define_expand "fms<mode>4"
+  [(set (match_operand:FMAMODE 0 "register_operand")
+	(fma:FMAMODE
+	  (match_operand:FMAMODE 1 "nonimmediate_operand")
+	  (match_operand:FMAMODE 2 "nonimmediate_operand")
+	  (neg:FMAMODE (match_operand:FMAMODE 3 "nonimmediate_operand"))))]
+  "(TARGET_FMA || TARGET_FMA4) && TARGET_SSE_MATH"
+  "")
+
+(define_expand "fnma<mode>4"
+  [(set (match_operand:FMAMODE 0 "register_operand")
+	(fma:FMAMODE
+	  (neg:FMAMODE (match_operand:FMAMODE 1 "nonimmediate_operand"))
+	  (match_operand:FMAMODE 2 "nonimmediate_operand")
+	  (match_operand:FMAMODE 3 "nonimmediate_operand")))]
+  "(TARGET_FMA || TARGET_FMA4) && TARGET_SSE_MATH"
+  "")
+
+(define_expand "fnms<mode>4"
+  [(set (match_operand:FMAMODE 0 "register_operand")
+	(fma:FMAMODE
+	  (neg:FMAMODE (match_operand:FMAMODE 1 "nonimmediate_operand"))
+	  (match_operand:FMAMODE 2 "nonimmediate_operand")
+	  (neg:FMAMODE (match_operand:FMAMODE 3 "nonimmediate_operand"))))]
   "(TARGET_FMA || TARGET_FMA4) && TARGET_SSE_MATH"
   "")
 

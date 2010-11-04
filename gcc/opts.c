@@ -1901,6 +1901,18 @@ common_handle_option (struct gcc_options *opts,
 	return false;
       break;
 
+    case OPT_ffp_contract_:
+      if (!strcmp (arg, "on"))
+	/* Not implemented, fall back to conservative FP_CONTRACT_OFF.  */
+	flag_fp_contract_mode = FP_CONTRACT_OFF;
+      else if (!strcmp (arg, "off"))
+	flag_fp_contract_mode = FP_CONTRACT_OFF;
+      else if (!strcmp (arg, "fast"))
+	flag_fp_contract_mode = FP_CONTRACT_FAST;
+      else
+	error ("unknown floating point contraction style \"%s\"", arg);
+      break;
+
     case OPT_fexcess_precision_:
       if (!strcmp (arg, "fast"))
 	flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;

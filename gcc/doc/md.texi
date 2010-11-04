@@ -3958,6 +3958,36 @@ pattern is used to implement the @code{fma}, @code{fmaf}, and
 multiply followed by the add if the machine does not perform a
 rounding step between the operations.
 
+@cindex @code{fms@var{m}4} instruction pattern
+@item @samp{fms@var{m}4}
+Like @code{fma@var{m}4}, except operand 3 subtracted from the
+product instead of added to the product.  This is represented
+in the rtl as
+
+@smallexample
+(fma:@var{m} @var{op1} @var{op2} (neg:@var{m} @var{op3}))
+@end smallexample
+
+@cindex @code{fnma@var{m}4} instruction pattern
+@item @samp{fnma@var{m}4}
+Like @code{fma@var{m}4} except that the intermediate product
+is negated before being added to operand 3.  This is represented
+in the rtl as
+
+@smallexample
+(fma:@var{m} (neg:@var{m} @var{op1}) @var{op2} @var{op3})
+@end smallexample
+
+@cindex @code{fnms@var{m}4} instruction pattern
+@item @samp{fnms@var{m}4}
+Like @code{fms@var{m}4} except that the intermediate product
+is negated before subtracting operand 3.  This is represented
+in the rtl as
+
+@smallexample
+(fma:@var{m} (neg:@var{m} @var{op1}) @var{op2} (neg:@var{m} @var{op3}))
+@end smallexample
+
 @cindex @code{min@var{m}3} instruction pattern
 @cindex @code{max@var{m}3} instruction pattern
 @item @samp{smin@var{m}3}, @samp{smax@var{m}3}

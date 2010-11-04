@@ -13281,10 +13281,10 @@ contains_label_p (tree st)
 
 tree
 fold_ternary_loc (location_t loc, enum tree_code code, tree type,
-	      tree op0, tree op1, tree op2)
+		  tree op0, tree op1, tree op2)
 {
   tree tem;
-  tree arg0 = NULL_TREE, arg1 = NULL_TREE;
+  tree arg0 = NULL_TREE, arg1 = NULL_TREE, arg2 = NULL_TREE;
   enum tree_code_class kind = TREE_CODE_CLASS (code);
 
   gcc_assert (IS_EXPR_CODE_CLASS (kind)
@@ -13310,6 +13310,12 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
     {
       arg1 = op1;
       STRIP_NOPS (arg1);
+    }
+
+  if (op2)
+    {
+      arg2 = op2;
+      STRIP_NOPS (arg2);
     }
 
   switch (code)
@@ -13609,6 +13615,17 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	return fold_convert_loc (loc, type, arg0);
 
       return NULL_TREE;
+
+    case FMA_EXPR:
+      /* For integers we can decompose the FMA if possible.  */
+      if (TREE_CODE (arg0) == INTEGER_CST
+	  && TREE_CODE (arg1) == INTEGER_CST)
+	return fold_build2_loc (loc, PLUS_EXPR, type,
+				const_binop (MULT_EXPR, arg0, arg1), arg2);
+      if (integer_zerop (arg2))
+	return fold_build2_loc (loc, MULT_EXPR, type, arg0, arg1);
+
+      return fold_fma (loc, type, arg0, arg1, arg2);
 
     default:
       return NULL_TREE;

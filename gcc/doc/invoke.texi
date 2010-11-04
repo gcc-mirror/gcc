@@ -343,7 +343,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdelayed-branch -fdelete-null-pointer-checks -fdse -fdse @gol
 -fearly-inlining -fipa-sra -fexpensive-optimizations -ffast-math @gol
 -ffinite-math-only -ffloat-store -fexcess-precision=@var{style} @gol
--fforward-propagate -ffunction-sections @gol
+-fforward-propagate -ffp-contract=@var{style} -ffunction-sections @gol
 -fgcse -fgcse-after-reload -fgcse-las -fgcse-lm -fgraphite-identity @gol
 -fgcse-sm -fif-conversion -fif-conversion2 -findirect-inlining @gol
 -finline-functions -finline-functions-called-once -finline-limit=@var{n} @gol
@@ -5991,6 +5991,18 @@ loop unrolling.
 
 This option is enabled by default at optimization levels @option{-O},
 @option{-O2}, @option{-O3}, @option{-Os}.
+
+@item -ffp-contract=@var{style}
+@opindex ffp-contract
+@option{-ffp-contract=off} disables floating-point expression contraction.
+@option{-ffp-contract=fast} enables floating-point expression contraction
+such as forming of fused multiply-add operations if the target has
+native support for them.
+@option{-ffp-contract=on} enables floating-point expression contraction
+if allowed by the language standard.  This is currently not implemented
+and treated equal to @option{-ffp-contract=off}.
+
+The default is @option{-ffp-contract=fast}.
 
 @item -fomit-frame-pointer
 @opindex fomit-frame-pointer

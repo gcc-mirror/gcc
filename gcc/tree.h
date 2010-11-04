@@ -4954,6 +4954,7 @@ extern void fold_defer_overflow_warnings (void);
 extern void fold_undefer_overflow_warnings (bool, const_gimple, int);
 extern void fold_undefer_and_ignore_overflow_warnings (void);
 extern bool fold_deferring_overflow_warnings_p (void);
+extern tree fold_fma (location_t, tree, tree, tree, tree);
 
 enum operand_equal_flag
 {

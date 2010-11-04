@@ -9266,6 +9266,40 @@ fold_builtin_abs (location_t loc, tree arg, tree type)
   return fold_build1_loc (loc, ABS_EXPR, type, arg);
 }
 
+/* Fold a fma operation with arguments ARG[012].  */
+
+tree
+fold_fma (location_t loc ATTRIBUTE_UNUSED,
+	  tree type, tree arg0, tree arg1, tree arg2)
+{
+  if (TREE_CODE (arg0) == REAL_CST
+      && TREE_CODE (arg1) == REAL_CST
+      && TREE_CODE (arg2) == REAL_CST)
+    return do_mpfr_arg3 (arg0, arg1, arg2, type, mpfr_fma);
+
+  return NULL_TREE;
+}
+
+/* Fold a call to fma, fmaf, or fmal with arguments ARG[012].  */
+
+static tree
+fold_builtin_fma (location_t loc, tree arg0, tree arg1, tree arg2, tree type)
+{
+  if (validate_arg (arg0, REAL_TYPE)
+      && validate_arg(arg1, REAL_TYPE)
+      && validate_arg(arg2, REAL_TYPE))
+    {
+      tree tem = fold_fma (loc, type, arg0, arg1, arg2);
+      if (tem)
+	return tem;
+
+      /* ??? Only expand to FMA_EXPR if it's directly supported.  */
+      if (optab_handler (fma_optab, TYPE_MODE (type)) != CODE_FOR_nothing)
+        return fold_build3_loc (loc, FMA_EXPR, type, arg0, arg1, arg2);
+    }
+  return NULL_TREE;
+}
+
 /* Fold a call to builtin fmin or fmax.  */
 
 static tree
@@ -10540,10 +10574,7 @@ fold_builtin_3 (location_t loc, tree fndecl,
       return fold_builtin_sincos (loc, arg0, arg1, arg2);
 
     CASE_FLT_FN (BUILT_IN_FMA):
-      if (validate_arg (arg0, REAL_TYPE)
-	  && validate_arg(arg1, REAL_TYPE)
-	  && validate_arg(arg2, REAL_TYPE))
-	return do_mpfr_arg3 (arg0, arg1, arg2, type, mpfr_fma);
+      return fold_builtin_fma (loc, arg0, arg1, arg2, type);
     break;
 
     CASE_FLT_FN (BUILT_IN_REMQUO):

@@ -1092,6 +1092,12 @@ DEFTREECODE (WIDEN_MULT_PLUS_EXPR, "widen_mult_plus_expr", tcc_expression, 3)
    is subtracted from t3.  */
 DEFTREECODE (WIDEN_MULT_MINUS_EXPR, "widen_mult_plus_expr", tcc_expression, 3)
 
+/* Fused multiply-add.
+   All operands and the result are of the same type.  No intermediate
+   rounding is performed after multiplying operand one with operand two
+   before adding operand three.  */
+DEFTREECODE (FMA_EXPR, "fma_expr", tcc_expression, 3)
+
 /* Whole vector left/right shift in bits.
    Operand 0 is a vector to be shifted.
    Operand 1 is an integer shift amount in bits.  */
