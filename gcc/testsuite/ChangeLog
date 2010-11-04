@@ -1,3 +1,9 @@
+2010-11-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline:
+	PR libgfortran/46010
+	* gfortran.dg/namelist_66.f90: New test.
+
 2010-10-22  Uros Bizjak  <ubizjak@gmail.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
