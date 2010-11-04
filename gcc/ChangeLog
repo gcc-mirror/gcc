@@ -1,3 +1,9 @@
+2010-11-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45733
+	* tree-vect-stmts.c (reverse_vec_elements): Honor the
+	permute builtins function return type.
+
 2010-10-04  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR middle-end/44765

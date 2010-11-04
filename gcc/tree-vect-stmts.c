@@ -3742,8 +3742,19 @@ reverse_vec_elements (tree x, gimple stmt, gimple_stmt_iterator *gsi)
 
   /* Generate the permute statement.  */
   perm_stmt = gimple_build_call (builtin_decl, 3, x, x, mask_vec);
+  if (!useless_type_conversion_p (vectype,
+				  TREE_TYPE (TREE_TYPE (builtin_decl))))
+    {
+      tree tem = create_tmp_reg (TREE_TYPE (TREE_TYPE (builtin_decl)), NULL);
+      tem = make_ssa_name (tem, perm_stmt);
+      gimple_call_set_lhs (perm_stmt, tem);
+      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+      perm_stmt = gimple_build_assign (NULL_TREE,
+				       build1 (VIEW_CONVERT_EXPR,
+					       vectype, tem));
+    }
   data_ref = make_ssa_name (perm_dest, perm_stmt);
-  gimple_call_set_lhs (perm_stmt, data_ref);
+  gimple_set_lhs (perm_stmt, data_ref);
   vect_finish_stmt_generation (stmt, perm_stmt, gsi);
 
   return data_ref;
