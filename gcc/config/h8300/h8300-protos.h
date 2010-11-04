@@ -29,10 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 extern unsigned int compute_mov_length (rtx *);
 extern const char *output_plussi (rtx *);
 extern unsigned int compute_plussi_length (rtx *);
-extern int compute_plussi_cc (rtx *);
 extern const char *output_a_shift (rtx *);
 extern unsigned int compute_a_shift_length (rtx, rtx *);
-extern int compute_a_shift_cc (rtx, rtx *);
 extern const char *output_a_rotate (enum rtx_code, rtx *);
 extern unsigned int compute_a_rotate_length (rtx *);
 extern const char *output_simode_bld (int, rtx[]);
@@ -44,10 +42,14 @@ extern void notice_update_cc (rtx, rtx);
 extern const char *output_logical_op (enum machine_mode, rtx *);
 extern unsigned int compute_logical_op_length (enum machine_mode,
 					       rtx *);
-extern int compute_logical_op_cc (enum machine_mode, rtx *);
+#ifdef HAVE_ATTR_cc
+extern enum attr_cc compute_plussi_cc (rtx *);
+extern enum attr_cc compute_a_shift_cc (rtx, rtx *);
+extern enum attr_cc compute_logical_op_cc (enum machine_mode, rtx *);
+#endif
 extern void h8300_expand_branch (rtx[]);
 extern void h8300_expand_store (rtx[]);
-extern bool expand_a_shift (enum machine_mode, int, rtx[]);
+extern bool expand_a_shift (enum machine_mode, enum rtx_code, rtx[]);
 extern int h8300_shift_needs_scratch_p (int, enum machine_mode);
 extern int expand_a_rotate (rtx[]);
 extern int fix_bit_operand (rtx *, enum rtx_code);

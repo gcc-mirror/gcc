@@ -117,6 +117,18 @@
 	* genopinit.c (main) [FIXUNS_TRUNC_LIKE_FIX_TRUNC]: Cast
 	iteration variables to enum machine_mode.
 
+	PR target/44751
+	* config/h8300/h8300.c: Include df.h.
+	(push, pop): Use add_reg_note.
+	(compute_plussi_cc, compute_logical_op_cc): Return enum attr_c.
+	(compute_a_shift_cc): Likewise.
+	(expand_a_shift): Argument code has type enum rtx_code.
+	(struct shift_insn): Member cc_valid has type enum attr_cc.
+	(struct shift_info) <cc_inline, cc_special>: Likewise.
+	enum attr_cc.
+	* config/h8300/h8300-protos.h (compute_plussi_cc): Update prototype.
+	(compute_a_shift_cc, compute_logical_op_cc, expand_a_shift): Likewise.
+
 2010-11-04  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/46213
