@@ -1333,8 +1333,8 @@ static rtx
 noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
 		 rtx cmp_a, rtx cmp_b, rtx vfalse, rtx vtrue)
 {
-  rtx target;
-  int unsignedp;
+  rtx target ATTRIBUTE_UNUSED;
+  int unsignedp ATTRIBUTE_UNUSED;
 
   /* If earliest == jump, try to build the cmove insn directly.
      This is helpful when combine has created some complex condition
