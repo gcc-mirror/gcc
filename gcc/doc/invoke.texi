@@ -746,7 +746,7 @@ Objective-C and Objective-C++ Dialects}.
 -mint16  -mno-int32  -mfloat32  -mno-float64 @gol
 -mfloat64  -mno-float32  -mabshi  -mno-abshi @gol
 -mbranch-expensive  -mbranch-cheap @gol
--msplit  -mno-split  -munix-asm  -mdec-asm}
+-munix-asm  -mdec-asm}
 
 @emph{picoChip Options}
 @gccoptlist{-mae=@var{ae_type} -mvliw-lookahead=@var{N} @gol
@@ -15063,14 +15063,6 @@ code generation only.
 @item -mbranch-cheap
 @opindex mbranch-cheap
 Do not pretend that branches are expensive.  This is the default.
-
-@item -msplit
-@opindex msplit
-Generate code for a system with split I&D@.
-
-@item -mno-split
-@opindex mno-split
-Generate code for a system without split I&D@.  This is the default.
 
 @item -munix-asm
 @opindex munix-asm
