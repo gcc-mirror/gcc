@@ -55,7 +55,9 @@ extern int errno;
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
-
+#ifdef HAVE_PROCESS_H
+#include <process.h>
+#endif
 
 #ifdef vfork /* Autoconf may define this to fork for us. */
 # define VFORK_STRING "fork"
@@ -387,6 +389,202 @@ pex_child_error (struct pex_obj *obj, const char *executable,
 
 extern char **environ;
 
+#if defined(HAVE_SPAWNVE) && defined(HAVE_SPAWNVPE)
+/* Implementation of pex->exec_child using the Cygwin spawn operation.  */
+
+/* Subroutine of pex_unix_exec_child.  Move OLD_FD to a new file descriptor
+   to be stored in *PNEW_FD, save the flags in *PFLAGS, and arrange for the
+   saved copy to be close-on-exec.  Move CHILD_FD into OLD_FD.  If CHILD_FD
+   is -1, OLD_FD is to be closed.  Return -1 on error.  */
+
+static int
+save_and_install_fd(int *pnew_fd, int *pflags, int old_fd, int child_fd)
+{
+  int new_fd, flags;
+
+  flags = fcntl (old_fd, F_GETFD);
+
+  /* If we could not retrieve the flags, then OLD_FD was not open.  */
+  if (flags < 0)
+    {
+      new_fd = -1, flags = 0;
+      if (child_fd >= 0 && dup2 (child_fd, old_fd) < 0)
+	return -1;
+    }
+  /* If we wish to close OLD_FD, just mark it CLOEXEC.  */
+  else if (child_fd == -1)
+    {
+      new_fd = old_fd;
+      if ((flags & FD_CLOEXEC) == 0 && fcntl (old_fd, F_SETFD, FD_CLOEXEC) < 0)
+	return -1;
+    }
+  /* Otherwise we need to save a copy of OLD_FD before installing CHILD_FD.  */
+  else
+    {
+#ifdef F_DUPFD_CLOEXEC
+      new_fd = fcntl (old_fd, F_DUPFD_CLOEXEC, 3);
+      if (new_fd < 0)
+	return -1;
+#else
+      /* Prefer F_DUPFD over dup in order to avoid getting a new fd
+	 in the range 0-2, right where a new stderr fd might get put.  */
+      new_fd = fcntl (old_fd, F_DUPFD, 3);
+      if (new_fd < 0)
+	return -1;
+      if (fcntl (new_fd, F_SETFD, FD_CLOEXEC) < 0)
+	return -1;
+#endif
+      if (dup2 (child_fd, old_fd) < 0)
+	return -1;
+    }
+
+  *pflags = flags;
+  if (pnew_fd)
+    *pnew_fd = new_fd;
+  else if (new_fd != old_fd)
+    abort ();
+
+  return 0;
+}
+
+/* Subroutine of pex_unix_exec_child.  Move SAVE_FD back to OLD_FD
+   restoring FLAGS.  If SAVE_FD < 0, OLD_FD is to be closed.  */
+
+static int
+restore_fd(int old_fd, int save_fd, int flags)
+{
+  /* For SAVE_FD < 0, all we have to do is restore the
+     "closed-ness" of the original.  */
+  if (save_fd < 0)
+    return close (old_fd);
+
+  /* For SAVE_FD == OLD_FD, all we have to do is restore the
+     original setting of the CLOEXEC flag.  */
+  if (save_fd == old_fd)
+    {
+      if (flags & FD_CLOEXEC)
+	return 0;
+      return fcntl (old_fd, F_SETFD, flags);
+    }
+
+  /* Otherwise we have to move the descriptor back, restore the flags,
+     and close the saved copy.  */
+#ifdef HAVE_DUP3
+  if (flags == FD_CLOEXEC)
+    {
+      if (dup3 (save_fd, old_fd, O_CLOEXEC) < 0)
+	return -1;
+    }
+  else
+#endif
+    {
+      if (dup2 (save_fd, old_fd) < 0)
+	return -1;
+      if (flags != 0 && fcntl (old_fd, F_SETFD, flags) < 0)
+	return -1;
+    }
+  return close (save_fd);
+}
+
+static pid_t
+pex_unix_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED,
+		     int flags, const char *executable,
+		     char * const * argv, char * const * env,
+                     int in, int out, int errdes, int toclose,
+		     const char **errmsg, int *err)
+{
+  int fl_in = 0, fl_out = 0, fl_err = 0, fl_tc = 0;
+  int save_in = -1, save_out = -1, save_err = -1;
+  int max, retries;
+  pid_t pid;
+
+  if (flags & PEX_STDERR_TO_STDOUT)
+    errdes = out;
+
+  /* We need the three standard file descriptors to be set up as for
+     the child before we perform the spawn.  The file descriptors for
+     the parent need to be moved and marked for close-on-exec.  */
+  if (in != STDIN_FILE_NO
+      && save_and_install_fd (&save_in, &fl_in, STDIN_FILE_NO, in) < 0)
+    goto error_dup2;
+  if (out != STDOUT_FILE_NO
+      && save_and_install_fd (&save_out, &fl_out, STDOUT_FILE_NO, out) < 0)
+    goto error_dup2;
+  if (errdes != STDERR_FILE_NO
+      && save_and_install_fd (&save_err, &fl_err, STDERR_FILE_NO, errdes) < 0)
+    goto error_dup2;
+  if (toclose >= 0
+      && save_and_install_fd (NULL, &fl_tc, toclose, -1) < 0)
+    goto error_dup2;
+
+  /* Now that we've moved the file descriptors for the child into place,
+     close the originals.  Be careful not to close any of the standard
+     file descriptors that we just set up.  */
+  max = -1;
+  if (errdes >= 0)
+    max = STDERR_FILE_NO;
+  else if (out >= 0)
+    max = STDOUT_FILE_NO;
+  else if (in >= 0)
+    max = STDIN_FILE_NO;
+  if (in > max)
+    close (in);
+  if (out > max)
+    close (out);
+  if (errdes > max && errdes != out)
+    close (errdes);
+
+  /* If we were not given an environment, use the global environment.  */
+  if (env == NULL)
+    env = environ;
+
+  /* Launch the program.  If we get EAGAIN (normally out of pid's), try
+     again a few times with increasing backoff times.  */
+  retries = 0;
+  while (1)
+    {
+      typedef const char * const *cc_cp;
+
+      if (flags & PEX_SEARCH)
+	pid = spawnvpe (_P_NOWAITO, executable, (cc_cp)argv, (cc_cp)env);
+      else
+	pid = spawnve (_P_NOWAITO, executable, (cc_cp)argv, (cc_cp)env);
+
+      if (pid > 0)
+	break;
+
+      *err = errno;
+      *errmsg = "spawn";
+      if (errno != EAGAIN || ++retries == 4)
+	return (pid_t) -1;
+      sleep (1 << retries);
+    }
+
+  /* Success.  Restore the parent's file descriptors that we saved above.  */
+  if (toclose >= 0
+      && restore_fd (toclose, toclose, fl_tc) < 0)
+    goto error_dup2;
+  if (in != STDIN_FILE_NO
+      && restore_fd (STDIN_FILE_NO, save_in, fl_in) < 0)
+    goto error_dup2;
+  if (out != STDOUT_FILE_NO
+      && restore_fd (STDOUT_FILE_NO, save_out, fl_out) < 0)
+    goto error_dup2;
+  if (errdes != STDERR_FILE_NO
+      && restore_fd (STDERR_FILE_NO, save_err, fl_err) < 0)
+    goto error_dup2;
+
+  return pid;
+
+ error_dup2:
+  *err = errno;
+  *errmsg = "dup2";
+  return (pid_t) -1;
+}
+
+#else
+/* Implementation of pex->exec_child using standard vfork + exec.  */
+
 static pid_t
 pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 		     char * const * argv, char * const * env,
@@ -521,6 +719,7 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
       return pid;
     }
 }
+#endif /* SPAWN */
 
 /* Wait for a child process to complete.  */
 
