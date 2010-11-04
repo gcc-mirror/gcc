@@ -73,7 +73,7 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	  || u->unit_number == options.stdout_unit
 	  || u->unit_number == options.stderr_unit)
 	{
-	  char * tmp = ttyname (((unix_stream *) u->s)->fd);
+	  char * tmp = stream_ttyname (u->s);
 	  if (tmp != NULL)
 	    {
 	      int tmplen = strlen (tmp);

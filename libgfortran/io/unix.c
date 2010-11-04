@@ -167,6 +167,27 @@ fallback_access (const char *path, int mode)
 
 static const int BUFFER_SIZE = 8192;
 
+typedef struct
+{
+  stream st;
+
+  gfc_offset buffer_offset;	/* File offset of the start of the buffer */
+  gfc_offset physical_offset;	/* Current physical file offset */
+  gfc_offset logical_offset;	/* Current logical file offset */
+  gfc_offset file_length;	/* Length of the file, -1 if not seekable. */
+
+  char *buffer;                 /* Pointer to the buffer.  */
+  int fd;                       /* The POSIX file descriptor.  */
+
+  int active;			/* Length of valid bytes in the buffer */
+
+  int ndirty;			/* Dirty bytes starting at buffer_offset */
+
+  int special_file;		/* =1 if the fd refers to a special file */
+}
+unix_stream;
+
+
 /* fix_fd()-- Given a file descriptor, make sure it is not one of the
  * standard descriptors, returning a non-standard descriptor.  If the
  * user specifies that system errors should go to standard output,
@@ -1786,14 +1807,18 @@ stream_isatty (stream *s)
 }
 
 char *
+#ifdef HAVE_TTYNAME
+stream_ttyname (stream *s)
+{
+  return ttyname (((unix_stream *) s)->fd);
+}
+#else
 stream_ttyname (stream *s __attribute__ ((unused)))
 {
-#ifdef HAVE_TTYNAME
-  return ttyname (((unix_stream *) s)->fd);
-#else
   return NULL;
-#endif
 }
+#endif
+
 
 
 /* How files are stored:  This is an operating-system specific issue,
