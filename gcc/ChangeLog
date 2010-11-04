@@ -1,7 +1,15 @@
+2010-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/46234
+	* config/rs6000/rs6000.c (rs6000_va_start): Use build_simple_mem_ref
+	instead of build_va_arg_indirect_ref.
+	* config/spu/spu.c (spu_va_start): Likewise.
+	* config/s390/s390.c (s390_va_start): Likewise.
+
 2010-11-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/46292
-	* lower-suberg.c (simplify_subreg_concatn): For VOIDmode elements,
+	* lower-subreg.c (simplify_subreg_concatn): For VOIDmode elements,
 	if the innermode is not vector mode, determine the mode of a subreg
 	by using mode_for_size of inner_size.
 
