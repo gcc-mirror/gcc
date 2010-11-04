@@ -72,6 +72,9 @@
 	* function.c (thread_prologue_and_epilogue_insns): Add
 	ATTRIBUTE_UNUSED to seq, epilogue_end and entry_edge.
 
+	PR bootstrap/44756
+	* varasm.c (asm_output_bss): Add ATTRIBUTE_UNUSED to function.
+
 2010-11-04  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/46213

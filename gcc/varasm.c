@@ -473,7 +473,7 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
    ??? It is believed that this function will work in most cases so such
    support is localized here.  */
 
-static void
+static void ATTRIBUTE_UNUSED
 asm_output_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
 		const char *name,
 		unsigned HOST_WIDE_INT size ATTRIBUTE_UNUSED,
