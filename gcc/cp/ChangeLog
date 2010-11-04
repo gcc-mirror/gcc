@@ -1,5 +1,9 @@
 2010-11-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46298
+	* semantics.c (build_constexpr_constructor_member_initializers):
+	Handle an enclosing STATEMENT_LIST.
+
 	* semantics.c (speculative_access_check): New.
 	* cp-tree.h: Declare it.
 	* call.c (build_over_call): Use it.
