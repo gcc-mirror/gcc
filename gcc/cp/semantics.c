@@ -337,6 +337,30 @@ perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl)
   new_access->diag_decl = diag_decl;
 }
 
+/* Used by build_over_call in LOOKUP_SPECULATIVE mode: return whether DECL
+   is accessible in BINFO, and possibly complain if not.  If we're not
+   checking access, everything is accessible.  */
+
+bool
+speculative_access_check (tree binfo, tree decl, tree diag_decl,
+			  bool complain)
+{
+  if (deferred_access_no_check)
+    return true;
+
+  /* If we're checking for implicit delete, we don't want access
+     control errors.  */
+  if (!accessible_p (binfo, decl, true))
+    {
+      /* Unless we're under maybe_explain_implicit_delete.  */
+      if (complain)
+	enforce_access (binfo, decl, diag_decl);
+      return false;
+    }
+
+  return true;
+}
+
 /* Returns nonzero if the current statement is a full expression,
    i.e. temporaries created during that statement should be destroyed
    at the end of the statement.  */
