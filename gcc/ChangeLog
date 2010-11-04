@@ -9,7 +9,7 @@
 	* tree-vect-stmts.c (reverse_vec_elements): Honor the
 	permute builtins function return type.
 
-2010-10-04  Joern Rennecke  <amylaar@spamcop.net>
+2010-11-04  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR middle-end/44765
 	* emit-rtl.c (gen_rtx_REG): Before using PIC_OFFSET_TABLE_REGNUM
