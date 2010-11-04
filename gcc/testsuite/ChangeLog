@@ -1,3 +1,7 @@
+2010-11-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr46285.c: Require split_stack target.
+
 2010-11-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46293
