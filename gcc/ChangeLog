@@ -21,6 +21,11 @@
 	* emit-rtl.c (gen_rtx_REG): Before using PIC_OFFSET_TABLE_REGNUM
 	as an index, check it is not INVALID_REGNUM.
 
+	PR bootstrap/44756
+	* ifcvt.c (noce_emit_cmove): Add ATTRIBUTE_UNUSED to target and
+	unsignedp.
+	* reload1.c (set_reload_reg): Add ATTRIBUTE_UNUSED to regno.
+
 2010-11-04  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/46213
