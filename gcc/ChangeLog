@@ -1,3 +1,16 @@
+2010-11-04  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* final.c (compute_alignments): Compute/free loop info all the time.
+	* config/rs6000/rs6000.h (LOOP_ALIGN): Define.
+	* config/rs6000/rs6000-protos.h (rs6000_loop_align): Declare.
+	* config/rs6000/t-rs6000 (rs6000.o): Add cfgloop.h.
+	* config/rs6000/rs6000.c (cfgloop.h): Include.
+	(can_override_loop_align): New.
+	(rs6000_option_override_internal): Set it.
+	(TARGET_ASM_LOOP_ALIGN_MAX_SKIP): Define target hook.
+	(rs6000_loop_align): New function.
+	(rs6000_loop_align_max_skip): Likewise.
+
 2010-11-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR driver/45703

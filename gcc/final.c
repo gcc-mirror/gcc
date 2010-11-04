@@ -715,8 +715,8 @@ compute_alignments (void)
     {
       dump_flow_info (dump_file, TDF_DETAILS);
       flow_loops_dump (dump_file, NULL, 1);
-      loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
     }
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   FOR_EACH_BB (bb)
     if (bb->frequency > freq_max)
       freq_max = bb->frequency;
@@ -808,11 +808,8 @@ compute_alignments (void)
       LABEL_TO_MAX_SKIP (label) = max_skip;
     }
 
-  if (dump_file)
-    {
-      loop_optimizer_finalize ();
-      free_dominance_info (CDI_DOMINATORS);
-    }
+  loop_optimizer_finalize ();
+  free_dominance_info (CDI_DOMINATORS);
   return 0;
 }
 

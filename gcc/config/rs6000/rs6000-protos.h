@@ -131,6 +131,7 @@ extern rtx rs6000_machopic_legitimize_pic_address (rtx, enum machine_mode,
 extern rtx rs6000_address_for_fpconvert (rtx);
 extern rtx rs6000_allocate_stack_temp (enum machine_mode, bool, bool);
 extern void rs6000_expand_convert_si_to_sfdf (rtx, rtx, bool);
+extern int rs6000_loop_align (rtx);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
