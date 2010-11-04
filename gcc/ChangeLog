@@ -1,3 +1,9 @@
+2010-11-04  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/46213
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Handle
+	MINUS_EXPR only if the first operand is reduction operand.
+
 2010-11-04  Richard Guenther  <rguenther@suse.de>
 	Richard Henderson  <rth@redhat.com>
 
