@@ -3,9 +3,11 @@
 
 /* { dg-do run { target *-*-darwin* } } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-options "-Wno-deprecated-declarations" } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 
 #include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/next-mapping.h"
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
