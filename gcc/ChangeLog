@@ -1,5 +1,9 @@
 2010-11-04  Richard Guenther  <rguenther@suse.de>
 
+	* tree-nested.c (build_addr): Use build_fold_addr_expr.
+
+2010-11-04  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/45991
 	* gimplify.c (force_gimple_operand_1): Use the provded test
 	function in the initial test.
