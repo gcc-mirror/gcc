@@ -1,5 +1,8 @@
 2010-11-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46293
+	* g++.dg/cpp0x/constexpr-base2.C: New.
+
 	PR c++/46289
 	* g++.dg/cpp0x/initlist45.C: New.
 

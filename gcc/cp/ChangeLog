@@ -1,5 +1,9 @@
 2010-11-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46293
+	* semantics.c (build_data_member_initialization): Handle
+	value-init of aggregate empty base.
+
 	PR c++/46289
 	* call.c (can_convert_array): New fn.
 	(build_aggr_conv): Use it.
