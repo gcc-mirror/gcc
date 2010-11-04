@@ -2077,8 +2077,10 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 
 		  /*  If -std=f95/2003 or an array section is specified,
 		      do not allow excess data to be processed.  */
-                  if (is_array_section == 1
-		      || compile_options.allow_std < GFC_STD_GNU)
+		  if (is_array_section == 1
+		      || !(compile_options.allow_std & GFC_STD_GNU)
+		      || !dtp->u.p.ionml->touched
+		      || dtp->u.p.ionml->type == GFC_DTYPE_DERIVED)
 		    ls[dim].end = ls[dim].start;
 		  else
 		    dtp->u.p.expanded_read = 1;
@@ -2093,12 +2095,12 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	}
 
       if (is_array_section == 1 && dtp->u.p.expanded_read == 1)
-     	{
+	{
 	  int i;
 	  dtp->u.p.expanded_read = 0;
 	  for (i = 0; i < dim; i++)
 	    ls[i].end = ls[i].start;
-      	}
+	}
 
       /* Check the values of the triplet indices.  */
       if ((ls[dim].start > (ssize_t)ad[dim].ubound)
