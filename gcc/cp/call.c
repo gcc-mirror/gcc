@@ -5823,15 +5823,9 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	access_fn = fn;
       if (flags & LOOKUP_SPECULATIVE)
 	{
-	  /* If we're checking for implicit delete, we don't want access
-	     control errors.  */
-	  if (!accessible_p (cand->access_path, access_fn, true))
-	    {
-	      /* Unless we're under maybe_explain_implicit_delete.  */
-	      if (flags & LOOKUP_COMPLAIN)
-		enforce_access (cand->access_path, access_fn, fn);
-	      return error_mark_node;
-	    }
+	  if (!speculative_access_check (cand->access_path, access_fn, fn,
+					 !!(flags & LOOKUP_COMPLAIN)))
+	    return error_mark_node;
 	}
       else
 	perform_or_defer_access_check (cand->access_path, access_fn, fn);

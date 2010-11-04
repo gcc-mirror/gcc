@@ -1,3 +1,11 @@
+2010-11-04  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (speculative_access_check): New.
+	* cp-tree.h: Declare it.
+	* call.c (build_over_call): Use it.
+	* class.c (type_has_constexpr_default_constructor): Use locate_ctor.
+	* method.c (locate_ctor): Use push/pop_deferring_access_checks.
+
 2010-11-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46293

@@ -4349,7 +4349,7 @@ type_has_constexpr_default_constructor (tree t)
     return false;
   if (CLASSTYPE_LAZY_DEFAULT_CTOR (t))
     return synthesized_default_constructor_is_constexpr (t);
-  fns = get_default_ctor (t);
+  fns = locate_ctor (t);
   return (fns && DECL_DECLARED_CONSTEXPR_P (fns));
 }
 
