@@ -1915,8 +1915,12 @@ validate_equiv_mem (rtx start, rtx reg, rtx memref)
       if (find_reg_note (insn, REG_DEAD, reg))
 	return 1;
 
-      if (CALL_P (insn) && ! MEM_READONLY_P (memref)
-	  && ! RTL_CONST_OR_PURE_CALL_P (insn))
+      /* This used to ignore readonly memory and const/pure calls.  The problem
+	 is the equivalent form may reference a pseudo which gets assigned a
+	 call clobbered hard reg.  When we later replace REG with its
+	 equivalent form, the value in the call-clobbered reg has been
+	 changed and all hell breaks loose.  */
+      if (CALL_P (insn))
 	return 0;
 
       note_stores (PATTERN (insn), validate_equiv_mem_from_store, NULL);
