@@ -185,15 +185,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
           __safe_multiply<_R2::num, (_R1::den / __gcd)>::value>::value,
         __safe_multiply<_R1::den, (_R2::den / __gcd)>::value> type;
 
-      static const intmax_t num = type::num;
-      static const intmax_t den = type::den;
+      static constexpr intmax_t num = type::num;
+      static constexpr intmax_t den = type::den;
     };
 
   template<typename _R1, typename _R2>
-    const intmax_t ratio_add<_R1, _R2>::num;
+    constexpr intmax_t ratio_add<_R1, _R2>::num;
 
   template<typename _R1, typename _R2>
-    const intmax_t ratio_add<_R1, _R2>::den;
+    constexpr intmax_t ratio_add<_R1, _R2>::den;
 
   /// ratio_subtract
   template<typename _R1, typename _R2>
@@ -203,15 +203,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         _R1,
         ratio<-_R2::num, _R2::den>>::type type;
 
-      static const intmax_t num = type::num;
-      static const intmax_t den = type::den;
+      static constexpr intmax_t num = type::num;
+      static constexpr intmax_t den = type::den;
     };
 
   template<typename _R1, typename _R2>
-    const intmax_t ratio_subtract<_R1, _R2>::num;
+    constexpr intmax_t ratio_subtract<_R1, _R2>::num;
 
   template<typename _R1, typename _R2>
-    const intmax_t ratio_subtract<_R1, _R2>::den;
+    constexpr intmax_t ratio_subtract<_R1, _R2>::den;
 
   /// ratio_multiply
   template<typename _R1, typename _R2>
@@ -230,15 +230,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         __safe_multiply<(_R1::den / __gcd2),
                         (_R2::den / __gcd1)>::value> type;
 
-      static const intmax_t num = type::num;
-      static const intmax_t den = type::den;
+      static constexpr intmax_t num = type::num;
+      static constexpr intmax_t den = type::den;
     };
 
   template<typename _R1, typename _R2>
-    const intmax_t ratio_multiply<_R1, _R2>::num;
+    constexpr intmax_t ratio_multiply<_R1, _R2>::num;
 
   template<typename _R1, typename _R2>
-    const intmax_t ratio_multiply<_R1, _R2>::den;
+    constexpr intmax_t ratio_multiply<_R1, _R2>::den;
 
   /// ratio_divide
   template<typename _R1, typename _R2>
@@ -250,15 +250,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         _R1,
         ratio<_R2::den, _R2::num>>::type type;
 
-      static const intmax_t num = type::num;
-      static const intmax_t den = type::den;
+      static constexpr intmax_t num = type::num;
+      static constexpr intmax_t den = type::den;
     };
 
   template<typename _R1, typename _R2>
-    const intmax_t ratio_divide<_R1, _R2>::num;
+    constexpr intmax_t ratio_divide<_R1, _R2>::num;
 
   template<typename _R1, typename _R2>
-    const intmax_t ratio_divide<_R1, _R2>::den;
+    constexpr intmax_t ratio_divide<_R1, _R2>::den;
 
   /// ratio_equal
   template<typename _R1, typename _R2>
