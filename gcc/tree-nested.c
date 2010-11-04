@@ -184,7 +184,7 @@ build_addr (tree exp, tree context)
      way the properties are for the ADDR_EXPR are computed properly.  */
   save_context = current_function_decl;
   current_function_decl = context;
-  retval = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (exp)), exp);
+  retval = build_fold_addr_expr (exp);
   current_function_decl = save_context;
   return retval;
 }
