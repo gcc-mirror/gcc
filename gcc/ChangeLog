@@ -1,5 +1,9 @@
 2010-11-04  Paul Koning  <ni1d@arrl.net>
 
+	* doc/md.texi (Machine Constraints): Add PDP-11 constraints.
+	
+2010-11-04  Paul Koning  <ni1d@arrl.net>
+
 	* doc/invoke.texi (PDP-11 Options): Delete -msplit, -mno-split.
 
 2010-11-04  Nicola Pero  <nicola.pero@meta-innovation.com>

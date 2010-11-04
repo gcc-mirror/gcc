@@ -2921,6 +2921,55 @@ A constant in the range of 0 to @minus{}255.
 
 @end table
 
+@item PDP-11---@file{config/pdp11/constraints.md}
+@table @code
+@item a
+Floating point registers AC0 through AC3.  These can be loaded from/to
+memory with a single instruction.
+
+@item d
+Odd numbered general registers (R1, R3, R5).  These are used for 16
+bit multiply operations.
+
+@item f
+Any of the floating point registers (AC0 through AC5).
+
+@item G
+Floating point constant 0.
+
+@item I
+An integer constant that fits in 16 bits.
+
+@item J
+An integer constant whose low order 16 bits are zero.
+
+@item K
+An integer constant that does not meet the constraints for codes
+@samp{I} or @samp{J}.
+
+@item L
+The integer constant 1.
+
+@item M
+The integer constant -1.
+
+@item N
+The integer constant 0.
+
+@item O
+Integer constants -4 through -1 and 1 through 4; shifts by these
+amounts are handled as multiple single-bit shifts rather than a single
+variable-length shift.
+
+@item Q
+A memory reference which requires an additional word (address or
+offset) after the opcode.
+
+@item R
+A memory reference that is encoded within the opcode.
+
+@end table
+
 @item RX---@file{config/rx/constraints.md}
 @table @code
 @item Q
