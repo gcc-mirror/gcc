@@ -49,6 +49,12 @@ namespace __gnu_test
 int main()
 {
   __gnu_test::constexpr_member_data test;
-  test.operator()<std::ratio<600, 900>>();
+  typedef std::ratio<600, 900> R1;
+  typedef std::ratio<700, 200> R2;
+  test.operator()<R1>();
+  test.operator()<std::ratio_add<R1, R2>>();
+  test.operator()<std::ratio_subtract<R1, R2>>();
+  test.operator()<std::ratio_multiply<R1, R2>>();
+  test.operator()<std::ratio_divide<R1, R2>>();
   return 0;
 }
