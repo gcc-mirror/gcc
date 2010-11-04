@@ -8047,7 +8047,11 @@ force_gimple_operand_1 (tree expr, gimple_seq *stmts,
 
   *stmts = NULL;
 
-  if (is_gimple_val (expr))
+  /* gimple_test_f might be more strict than is_gimple_val, make
+     sure we pass both.  Just checking gimple_test_f doesn't work
+     because most gimple predicates do not work recursively.  */
+  if (is_gimple_val (expr)
+      && (*gimple_test_f) (expr))
     return expr;
 
   push_gimplify_context (&gctx);
