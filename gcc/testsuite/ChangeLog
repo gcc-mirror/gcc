@@ -1,3 +1,8 @@
+2010-11-04  Richard Guenther  <rguenther@suse.de>
+	Richard Henderson  <rth@redhat.com>
+
+	* gcc.target/i386/fma4-vector-2.c: New testcase.
+
 2010-11-04  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
 	Richard Guenther  <rguenther@suse.de>
 

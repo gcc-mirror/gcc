@@ -192,6 +192,9 @@ enum optab_index
   OTI_atan2,
   /* Floating multiply/add */
   OTI_fma,
+  OTI_fms,
+  OTI_fnma,
+  OTI_fnms,
 
   /* Move instruction.  */
   OTI_mov,
@@ -435,6 +438,9 @@ enum optab_index
 #define pow_optab (&optab_table[OTI_pow])
 #define atan2_optab (&optab_table[OTI_atan2])
 #define fma_optab (&optab_table[OTI_fma])
+#define fms_optab (&optab_table[OTI_fms])
+#define fnma_optab (&optab_table[OTI_fnma])
+#define fnms_optab (&optab_table[OTI_fnms])
 
 #define mov_optab (&optab_table[OTI_mov])
 #define movstrict_optab (&optab_table[OTI_movstrict])

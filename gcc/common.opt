@@ -58,6 +58,10 @@ bool flag_warn_unused_result = false
 Variable
 int *param_values
 
+; Floating-point contraction mode, fast by default.
+Variable
+enum fp_contract_mode flag_fp_contract_mode = FP_CONTRACT_FAST
+
 ###
 Driver
 
@@ -856,6 +860,10 @@ Does nothing.  Preserved for backward compatibility.
 fforward-propagate
 Common Report Var(flag_forward_propagate) Optimization
 Perform a forward propagation pass on RTL
+
+ffp-contract=
+Common Joined RejectNegative
+-ffp-contract=[off|on|fast] Perform floating-point expression contraction.
 
 ; Nonzero means don't put addresses of constant functions in registers.
 ; Used for compiling the Unix kernel, where strange substitutions are

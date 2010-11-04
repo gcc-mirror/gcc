@@ -1,3 +1,39 @@
+2010-11-04  Richard Guenther  <rguenther@suse.de>
+	Richard Henderson  <rth@redhat.com>
+
+	* tree.def (FMA_EXPR): New tree code.
+	* expr.c (expand_expr_real_2): Add FMA_EXPR expansion code.
+	* gimple.c (gimple_rhs_class_table): FMA_EXPR is a GIMPLE_TERNARY_RHS.
+	* tree-cfg.c (verify_gimple_assign_ternary): Verify FMA_EXPR types.
+	* tree-inline.c (estimate_operator_cost): Handle FMA_EXPR.
+	* gimple-pretty-print.c (dump_ternary_rhs): Likewise.
+	* tree-ssa-math-opts.c (convert_mult_to_fma): New function.
+	(execute_optimize_widening_mul): Call it.  Reorganize to allow
+	dead stmt removal.  Move TODO flags ...
+	(pass_optimize_widening_mul): ... here.
+	* flag-types.h (enum fp_contract_mode): New enum.
+	* common.opt (flag_fp_contract_mode): New variable.
+	(-ffp-contract): New option.
+	* opts.c (common_handle_option): Handle it.
+	* doc/invoke.texi (-ffp-contract): Document.
+	* tree.h (fold_fma): Declare.
+	* builtins.c (fold_fma): New function.
+	(fold_builtin_fma): Likewise.
+	(fold_builtin_3): Call it for fma.
+	* fold-const.c (fold_ternary_loc): Fold FMA_EXPR.
+	* optabs.c (optab_for_tree_code): Handle FMA_EXPR.
+	* config/i386/sse.md (fms<mode>4, fnma<mode>, fnms<mode>4):
+	New expanders.
+	* doc/md.texi (fms<mode>4, fnma<mode>, fnms<mode>4): Document new
+	named patterns.
+	* genopinit.c (optabs): Initialize fms_optab, fnma_optab and fnms_optab.
+	* optabs.h (enum optab_index): Add OTI_fms, OTI_fnma and OTI_fnms.
+	(fms_optab, fnma_optab, fnms_optab): New defines.
+	* gimplify.c (gimplify_expr): Handle binary truth expressions
+	explicitly.  Handle FMA_EXPR.
+	* tree-vect-stmts.c (vectorizable_operation): Handle ternary
+	operations.
+
 2010-11-04  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
 	Richard Guenther  <rguenther@suse.de>
 

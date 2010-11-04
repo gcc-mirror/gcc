@@ -152,4 +152,11 @@ enum warn_strict_overflow_code
   WARN_STRICT_OVERFLOW_MAGNITUDE = 5
 };
 
+/* Floating-point contraction mode.  */
+enum fp_contract_mode {
+  FP_CONTRACT_OFF = 0,
+  FP_CONTRACT_ON = 1,
+  FP_CONTRACT_FAST = 2
+};
+
 #endif /* ! GCC_FLAG_TYPES_H */

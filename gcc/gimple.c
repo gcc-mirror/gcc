@@ -2529,7 +2529,8 @@ get_gimple_rhs_num_ops (enum tree_code code)
       || (SYM) == TRUTH_XOR_EXPR) ? GIMPLE_BINARY_RHS			    \
    : (SYM) == TRUTH_NOT_EXPR ? GIMPLE_UNARY_RHS				    \
    : ((SYM) == WIDEN_MULT_PLUS_EXPR					    \
-      || (SYM) == WIDEN_MULT_MINUS_EXPR) ? GIMPLE_TERNARY_RHS		    \
+      || (SYM) == WIDEN_MULT_MINUS_EXPR					    \
+      || (SYM) == FMA_EXPR) ? GIMPLE_TERNARY_RHS			    \
    : ((SYM) == COND_EXPR						    \
       || (SYM) == CONSTRUCTOR						    \
       || (SYM) == OBJ_TYPE_REF						    \
