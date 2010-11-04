@@ -1,5 +1,14 @@
 2010-11-04  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR libfortran/44931
+	* io/inquire.c (inquire_via_unit): Use stream_ttyname() instead of
+	calling ttyname() directly.
+	* io/unix.h (unix_stream): Move struct to unix.c.
+	* io/unix.c: Move struct unix_stream here.
+	(stream_ttyname): Don't mark the argument as unused if it is used.
+
+2010-11-04  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	* io/unix.h (struct unix_stream): Remove prot member.
 	* io/unix.c: Remove PROT_READ and PROT_WRITE constants.
 	(fd_to_stream): Remove prot from argument list, don't set prot.
