@@ -1,3 +1,13 @@
+2010-11-04  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Fixed using the Objective-C 2.0 dot-syntax with class names.	
+	* parser.c (cp_parser_primary_expression): Recognize Objective-C
+	2.0 dot-syntax with class names and process it.
+	(cp_parser_nonclass_name): Recognize Objective-C 2.0 dot-syntax
+	with class names.
+	(cp_parser_class_name): Same change.
+	(cp_parser_simple_type_specifier): Tidied comments.
+	
 2010-11-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46298

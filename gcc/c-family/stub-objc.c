@@ -350,6 +350,12 @@ objc_maybe_build_component_ref (tree ARG_UNUSED (datum), tree ARG_UNUSED (compon
 }
 
 tree
+objc_build_class_component_ref (tree ARG_UNUSED (datum), tree ARG_UNUSED (component))
+{
+  return 0;
+}
+
+tree
 objc_maybe_build_modify_expr (tree ARG_UNUSED (lhs), tree ARG_UNUSED (rhs))
 {
   return 0;
