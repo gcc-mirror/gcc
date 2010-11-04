@@ -51,6 +51,7 @@
 #include "langhooks.h"
 #include "reload.h"
 #include "cfglayout.h"
+#include "cfgloop.h"
 #include "sched-int.h"
 #include "gimple.h"
 #include "tree-flow.h"
@@ -155,6 +156,9 @@ static GTY(()) bool rs6000_sched_groups;
 
 /* Align branch targets.  */
 static GTY(()) bool rs6000_align_branch_targets;
+
+/* Non-zero to allow overriding loop alignment. */
+static int can_override_loop_align = 0;
 
 /* Support for -msched-costly-dep option.  */
 const char *rs6000_sched_costly_dep_str;
@@ -1140,6 +1144,7 @@ static void rs6000_option_override (void);
 static void rs6000_option_init_struct (struct gcc_options *);
 static void rs6000_option_default_params (void);
 static bool rs6000_handle_option (size_t, const char *, int);
+static int rs6000_loop_align_max_skip (rtx);
 static void rs6000_parse_tls_size_option (void);
 static void rs6000_parse_yes_no_option (const char *, const char *, int *);
 static int first_altivec_reg_to_save (void);
@@ -1606,6 +1611,9 @@ static const struct default_options rs6000_option_optimization_table[] =
 
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION rs6000_handle_option
+
+#undef TARGET_ASM_LOOP_ALIGN_MAX_SKIP
+#define TARGET_ASM_LOOP_ALIGN_MAX_SKIP rs6000_loop_align_max_skip
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE rs6000_option_override
@@ -3026,7 +3034,10 @@ rs6000_option_override_internal (const char *default_cpu)
 	  if (align_jumps <= 0)
 	    align_jumps = 16;
 	  if (align_loops <= 0)
-	    align_loops = 16;
+	    {
+	      can_override_loop_align = 1;
+	      align_loops = 16;
+	    }
 	}
       if (align_jumps_max_skip <= 0)
 	align_jumps_max_skip = 15;
@@ -3269,6 +3280,38 @@ rs6000_builtin_mask_for_load (void)
     return altivec_builtin_mask_for_load;
   else
     return 0;
+}
+
+/* Implement LOOP_ALIGN. */
+int
+rs6000_loop_align (rtx label)
+{
+  basic_block bb;
+  int ninsns;
+
+  /* Don't override loop alignment if -falign-loops was specified. */
+  if (!can_override_loop_align)
+    return align_loops_log;
+
+  bb = BLOCK_FOR_INSN (label);
+  ninsns = num_loop_insns(bb->loop_father);
+
+  /* Align small loops to 32 bytes to fit in an icache sector, otherwise return default. */
+  if (ninsns > 4 && ninsns <= 8
+      && (rs6000_cpu == PROCESSOR_POWER4
+	  || rs6000_cpu == PROCESSOR_POWER5
+	  || rs6000_cpu == PROCESSOR_POWER6
+	  || rs6000_cpu == PROCESSOR_POWER7))
+    return 5;
+  else
+    return align_loops_log;
+}
+
+/* Implement TARGET_LOOP_ALIGN_MAX_SKIP. */
+static int
+rs6000_loop_align_max_skip (rtx label)
+{
+  return (1 << rs6000_loop_align (label)) - 1;
 }
 
 /* Implement targetm.vectorize.builtin_conversion.

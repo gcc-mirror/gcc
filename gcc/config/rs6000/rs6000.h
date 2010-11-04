@@ -2385,6 +2385,9 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (LOG))
 
+/* How to align the given loop. */
+#define LOOP_ALIGN(LABEL)  rs6000_loop_align(LABEL)
+
 /* Pick up the return address upon entry to a procedure. Used for
    dwarf2 unwind information.  This also enables the table driven
    mechanism.  */
