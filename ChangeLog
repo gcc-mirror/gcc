@@ -1,3 +1,9 @@
+2010-11-04  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* configure.ac (*-*-darwin*): Use mh-darwin for all Darwin variants.
+	* configure: Regenerate.
+	* config/mh-ppc-darwin: Rename to mh-darwin.
+
 2010-11-03  Ian Lance Taylor  <iant@google.com>
 	    Dave Korn  <dave.korn.cygwin@gmail.com>
 

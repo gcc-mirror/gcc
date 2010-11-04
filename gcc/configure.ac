@@ -4694,11 +4694,15 @@ if test x"$enable_plugin" = x"yes"; then
 
   # Check that we can build shared objects with -fPIC -shared
   saved_LDFLAGS="$LDFLAGS"
+  saved_CFLAGS="$CFLAGS"
   case "${host}" in
     *-*-darwin*)
-      LDFLAGS="$LDFLAGS -fPIC -shared -undefined dynamic_lookup"
+      CFLAGS=`echo $CFLAGS | sed s/-mdynamic-no-pic//g`
+      CFLAGS="$CFLAGS -fPIC"
+      LDFLAGS="$LDFLAGS -shared -undefined dynamic_lookup"
     ;;
     *)
+      CFLAGS="$CFLAGS -fPIC"
       LDFLAGS="$LDFLAGS -fPIC -shared"
     ;;
   esac
@@ -4712,6 +4716,7 @@ if test x"$enable_plugin" = x"yes"; then
     enable_plugin=no
   fi
   LDFLAGS="$saved_LDFLAGS"
+  CFLAGS="$saved_CFLAGS"
 
   # If plugin support had been requested but not available, fail.
   if test x"$enable_plugin" = x"no" ; then

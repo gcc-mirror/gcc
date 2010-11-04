@@ -3698,8 +3698,8 @@ fi
     tentative_cc="/usr/cygnus/progressive/bin/gcc"
     host_makefile_frag="config/mh-lynxrs6k"
     ;;
-  powerpc-*-darwin*)
-    host_makefile_frag="config/mh-ppc-darwin"
+  *-*-darwin*)
+    host_makefile_frag="config/mh-darwin"
     ;;
   powerpc-*-aix*)
     host_makefile_frag="config/mh-ppc-aix"

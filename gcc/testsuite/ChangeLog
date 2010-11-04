@@ -1,3 +1,8 @@
+2010-11-04  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* lib/plugin-support.exp (plugin-test-execute): Filter -mdynamic-no-pic from
+	plugin build flags on Darwin targets.
+
 2010-11-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pr46285.c: Require split_stack target.
