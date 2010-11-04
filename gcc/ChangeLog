@@ -1,5 +1,10 @@
 2010-11-04  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/46068
+	* ipa-split.c (consider_split): Remove gcc_unreachable.
+
+2010-11-04  Richard Guenther  <rguenther@suse.de>
+
 	* tree-nested.c (build_addr): Use build_fold_addr_expr.
 
 2010-11-04  Richard Guenther  <rguenther@suse.de>

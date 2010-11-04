@@ -310,7 +310,6 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "  Refused: header empty\n");
-      gcc_unreachable ();
       return;
     }
 
