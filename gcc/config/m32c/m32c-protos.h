@@ -37,7 +37,7 @@ int  m32c_initial_elimination_offset (int, int);
 void m32c_output_reg_pop (FILE *, int);
 void m32c_output_reg_push (FILE *, int);
 int  m32c_print_operand_punct_valid_p (int);
-int  m32c_push_rounding (int);
+unsigned int  m32c_push_rounding (int);
 int  m32c_reg_class_from_constraint (char, const char *);
 void m32c_register_pragmas (void);
 void m32c_note_pragma_address (const char *, unsigned);
@@ -78,12 +78,13 @@ int  m32c_prepare_shift (rtx *, int, int);
 void m32c_print_operand (FILE *, rtx, int);
 void m32c_print_operand_address (FILE *, rtx);
 int  m32c_reg_ok_for_base_p (rtx, int);
-MM   m32c_regno_reg_class (int);
+enum reg_class m32c_regno_reg_class (int);
 rtx  m32c_return_addr_rtx (int);
 const char *m32c_scc_pattern (rtx *, RTX_CODE);
 int  m32c_secondary_reload_class (int, MM, rtx);
 int  m32c_split_move (rtx *, MM, int);
 int  m32c_split_psi_p (rtx *);
+int current_function_special_page_vector (rtx);
 
 #endif
 

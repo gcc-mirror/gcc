@@ -408,16 +408,18 @@ enum reg_class
 	 : (CHAR) == 'A' ? 2 \
 	 : DEFAULT_CONSTRAINT_LEN(CHAR,STR))
 #define REG_CLASS_FROM_CONSTRAINT(CHAR,STR) \
-	m32c_reg_class_from_constraint (CHAR, STR)
+	(enum reg_class) m32c_reg_class_from_constraint (CHAR, STR)
 
 #define REGNO_OK_FOR_BASE_P(NUM) m32c_regno_ok_for_base_p (NUM)
 #define REGNO_OK_FOR_INDEX_P(NUM) 0
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS) m32c_preferred_reload_class (X, CLASS)
 #define PREFERRED_OUTPUT_RELOAD_CLASS(X,CLASS) m32c_preferred_output_reload_class (X, CLASS)
-#define LIMIT_RELOAD_CLASS(MODE,CLASS) m32c_limit_reload_class (MODE, CLASS)
+#define LIMIT_RELOAD_CLASS(MODE,CLASS) \
+  (enum reg_class) m32c_limit_reload_class (MODE, CLASS)
 
-#define SECONDARY_RELOAD_CLASS(CLASS,MODE,X) m32c_secondary_reload_class (CLASS, MODE, X)
+#define SECONDARY_RELOAD_CLASS(CLASS,MODE,X) \
+  (enum reg_class) m32c_secondary_reload_class (CLASS, MODE, X)
 
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 

@@ -82,6 +82,7 @@ switch (which_alternative) {
     }
   case 1: return TARGET_A16 ? \"push.w %a0 | jsr.a\tm32c_jsri16\" : \"jsri.a\t%a0\";
   case 2: return \"jsri.a\t%a0\";
+  default: gcc_unreachable ();
 }"
   [(set_attr "flags" "x")]
   )
@@ -108,6 +109,7 @@ switch (which_alternative) {
     }
   case 1: return TARGET_A16 ? \"push.w %a1 | jsr.a\tm32c_jsri16\" : \"jsri.a\t%a1\";
   case 2: return \"jsri.a\t%a1\";
+  default: gcc_unreachable ();
 }"
   [(set_attr "flags" "x,x,x")]
   )

@@ -74,13 +74,12 @@ static struct machine_function *m32c_init_machine_status (void);
 static void m32c_insert_attributes (tree, tree *);
 static bool m32c_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool m32c_addr_space_legitimate_address_p (enum machine_mode, rtx, bool, addr_space_t);
-static rtx m32_function_arg (CUMULATIVE_ARGS *, enum machine_mode
-			     const_tree, bool);
+static rtx m32c_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			      const_tree, bool);
 static bool m32c_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    const_tree, bool);
 static void m32c_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				       const_tree, bool);
-static bool m32c_promote_prototypes (const_tree);
 static int m32c_pushm_popm (Push_Pop_Type);
 static bool m32c_strict_argument_naming (CUMULATIVE_ARGS *);
 static rtx m32c_struct_value_rtx (tree, int);
@@ -91,8 +90,6 @@ static rtx m32c_libcall_value (enum machine_mode, const_rtx);
 
 /* Returns true if an address is specified, else false.  */
 static bool m32c_get_pragma_address (const char *varname, unsigned *addr);
-
-int current_function_special_page_vector (rtx);
 
 #define SYMBOL_FLAG_FUNCVEC_FUNCTION    (SYMBOL_FLAG_MACH_DEP << 0)
 
@@ -623,7 +620,7 @@ m32c_modes_tieable_p (enum machine_mode m1, enum machine_mode m2)
 /* Register Classes */
 
 /* Implements REGNO_REG_CLASS.  */
-enum machine_mode
+enum reg_class
 m32c_regno_reg_class (int regno)
 {
   switch (regno)
@@ -1451,8 +1448,7 @@ m32c_pushm_popm (Push_Pop_Type ppt)
 
 	  pushm = F (emit_insn (gen_pushm (GEN_INT (reg_mask))));
 
-	  REG_NOTES (pushm) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, note,
-						 REG_NOTES (pushm));
+	  add_reg_note (pushm, REG_FRAME_RELATED_EXPR, note);
 	}
 
       if (cfun->machine->is_interrupt)
@@ -1519,7 +1515,7 @@ m32c_initial_elimination_offset (int from, int to)
 
 /* Implements PUSH_ROUNDING.  The R8C and M16C have byte stacks, the
    M32C has word stacks.  */
-int
+unsigned int
 m32c_push_rounding (int n)
 {
   if (TARGET_R8C || TARGET_M16C)
@@ -2128,7 +2124,7 @@ m32c_legitimize_reload_address (rtx * x,
 	type = RELOAD_FOR_OTHER_ADDRESS;
       push_reload (sum, NULL_RTX, &XEXP (*x, 0), NULL,
 		   A_REGS, Pmode, VOIDmode, 0, 0, opnum,
-		   type);
+		   (enum reload_type) type);
       return 1;
     }
 
@@ -2144,7 +2140,7 @@ m32c_legitimize_reload_address (rtx * x,
 	type = RELOAD_FOR_OTHER_ADDRESS;
       push_reload (XEXP (*x, 0), NULL_RTX, &XEXP (*x, 0), NULL,
 		   A_REGS, Pmode, VOIDmode, 0, 0, opnum,
-		   type);
+		   (enum reload_type) type);
       return 1;
     }
 
@@ -3246,7 +3242,7 @@ m32c_insert_attributes (tree node ATTRIBUTE_UNUSED,
 
   if (TREE_CODE (node) == VAR_DECL)
     {
-      char *name = IDENTIFIER_POINTER (DECL_NAME (node));
+      const char *name = IDENTIFIER_POINTER (DECL_NAME (node));
       if (m32c_get_pragma_address  (name, &addr))
 	{
 	  TREE_THIS_VOLATILE (node) = true;
@@ -3321,7 +3317,8 @@ m32c_get_pragma_address (const char *varname, unsigned *address)
 }
 
 void
-m32c_output_aligned_common (FILE *stream, tree decl, const char *name,
+m32c_output_aligned_common (FILE *stream, tree decl ATTRIBUTE_UNUSED,
+			    const char *name,
 			    int size, int align, int global)
 {
   unsigned address;
@@ -4122,13 +4119,12 @@ m32c_prepare_shift (rtx * operands, int scale, int shift_code)
 	 undefined to skip one of the comparisons.  */
 
       rtx count;
-      rtx label, lref, insn, tempvar;
+      rtx label, insn, tempvar;
 
       emit_move_insn (operands[0], operands[1]);
 
       count = temp;
       label = gen_label_rtx ();
-      lref = gen_rtx_LABEL_REF (VOIDmode, label);
       LABEL_NUSES (label) ++;
 
       tempvar = gen_reg_rtx (mode);
@@ -4195,7 +4191,6 @@ int
 m32c_expand_movcc (rtx *operands)
 {
   rtx rel = operands[1];
-  rtx cmp;
 
   if (GET_CODE (rel) != EQ && GET_CODE (rel) != NE)
     return 1;
@@ -4258,7 +4253,7 @@ m32c_expand_insv (rtx *operands)
 
   if (GET_MODE (op0) == HImode
       && INTVAL (operands[2]) >= 8
-      && GET_MODE (op0) == MEM)
+      && GET_CODE (op0) == MEM)
     {
       /* We are little endian.  */
       rtx new_mem = gen_rtx_MEM (QImode, plus_constant (XEXP (op0, 0), 1));
@@ -4600,14 +4595,13 @@ m32c_compare_redundant (rtx cmp, rtx *operands)
   int flags_needed;
   int pflags;
   rtx prev, pp, next;
-  rtx op0, op1, op2;
+  rtx op0, op1;
 #if DEBUG_CMP
   int prev_icode, i;
 #endif
 
   op0 = operands[0];
   op1 = operands[1];
-  op2 = operands[2];
 
 #if DEBUG_CMP
   fprintf(stderr, "\n\033[32mm32c_compare_redundant\033[0m\n");

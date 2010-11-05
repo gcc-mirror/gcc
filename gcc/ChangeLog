@@ -52,6 +52,36 @@
 	* haifa-sched.c (initiate_bb_reg_pressure_info): Add ATTRIBUTE_UNUSED
 	to i.
 
+	PR target/44754
+	* config/m32c/m32c.c (m32_function_arg): Rename declaration to...
+	(m32c_function_arg).  Add comma between arguments two and three.
+	(m32c_promote_prototypes): Remove declaration.
+	(current_function_special_page_vector): Likewise.
+	(m32c_regno_reg_class): Change return type to enum reg_class.
+	(m32c_pushm_popm): Use add_reg_note.
+	(m32c_push_rounding): Change return type to unsigned int.
+	(m32c_legitimize_reload_address): Cast argument 11 to push_reload to
+	enum reload_type.
+	(m32c_insert_attributes): Constify variable name.
+	(m32c_output_aligned_common): Add ATTRIBUTE_UNUSED to argument decl.
+	(m32c_prepare_shift): Remove variable lref.
+	(m32c_expand_movcc): Remove variable cmp.
+	(m32c_expand_insv): Fix check of op0 rtx_code to use GET_CODE.
+	(m32c_compare_redundant): Remove variable op2.
+	* config/m32c/m32c-pragma.c ("c-family/c-common.h"): Include.
+	(m32c_pragma_memregs): Assign the number to target_memregs.
+	(m32c_pragma_address): Remove variable var_str.
+	* config/m32c/m32c.h (REG_CLASS_FROM_CONSTRAINT): Case value to
+	enum reg_class.
+	(LIMIT_RELOAD_CLASS, SECONDARY_RELOAD_CLASS): Likewise.
+	* config/m32c/bitops.md (andsi3): Add default case to switch.
+	(iorsi3, xorsi3): Likewise.
+	* config/m32c/addsub.md (addsi3_1, subsi3_1): Likewise.
+	* config/m32c/jump.md (call, call_value): Likewise.
+	* config/m32c/m32c-protos.h (m32c_push_rounding): Update prototype.
+	(m32c_regno_reg_class): Likewise.
+	(current_function_special_page_vector): Declare.
+
 2010-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* cfgexpand.c (expand_debug_expr): Handle MEM_REF
