@@ -1,3 +1,9 @@
+2010-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/45670
+	* expr.c (expand_expr_real_1) <case MEM_REF>: Use EXPAND_SUM
+	instead of EXPAND_NORMAL for base expansion.
+
 2010-11-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config.gcc: Support --with-fpmath=avx for x86.
