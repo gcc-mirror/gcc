@@ -136,6 +136,8 @@
       return \"and.w %h2,%h0\;and.w %H2,%H0\";
     case 5:
       return \"and.w %h2,%h0\;and.w %H2,%H0\";
+    default:
+      gcc_unreachable ();
     }"
   [(set_attr "flags" "x,x,x,x,x,x")]
 )
@@ -314,6 +316,8 @@
       return \"or.w %h2,%h0\;or.w %H2,%H0\";
     case 5:
       return \"or.w %h2,%h0\;or.w %H2,%H0\";
+    default:
+      gcc_unreachable ();
     }"
   [(set_attr "flags" "x,x,x,x,x,x")]
 )
@@ -360,6 +364,8 @@
       return \"xor.w %h2,%h0\;xor.w %H2,%H0\";
     case 5:
       return \"xor.w %h2,%h0\;xor.w %H2,%H0\";
+    default:
+      gcc_unreachable ();
     }"
   [(set_attr "flags" "x,x,x,x,x,x")]
 )

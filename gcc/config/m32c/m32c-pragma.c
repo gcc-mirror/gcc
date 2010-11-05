@@ -24,9 +24,10 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "c-family/c-pragma.h"
+#include "c-family/c-common.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
-#include "c-family/c-pragma.h"
 #include "cpplib.h"
 #include "hard-reg-set.h"
 #include "output.h"
@@ -49,7 +50,6 @@ m32c_pragma_memregs (cpp_reader * reader ATTRIBUTE_UNUSED)
   tree val;
   enum cpp_ttype type;
   HOST_WIDE_INT i;
-  static char new_number[3];
 
   type = pragma_lex (&val);
   if (type == CPP_NUMBER)
@@ -70,10 +70,7 @@ m32c_pragma_memregs (cpp_reader * reader ATTRIBUTE_UNUSED)
 			   "#pragma GCC memregs must precede any function decls");
 		  return;
 		}
-	      new_number[0] = (i / 10) + '0';
-	      new_number[1] = (i % 10) + '0';
-	      new_number[2] = 0;
-	      target_memregs = new_number;
+	      target_memregs = i;
 	      m32c_conditional_register_usage ();
 	    }
 	  else
@@ -97,13 +94,10 @@ m32c_pragma_address (cpp_reader * reader ATTRIBUTE_UNUSED)
   /* on off */
   tree var, addr;
   enum cpp_ttype type;
-  const char *var_str;
 
   type = pragma_lex (&var);
   if (type == CPP_NAME)
     {
-      var_str = IDENTIFIER_POINTER (var);
-
       type = pragma_lex (&addr);
       if (type == CPP_NUMBER)
 	{

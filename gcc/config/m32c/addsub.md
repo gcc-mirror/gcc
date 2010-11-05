@@ -116,6 +116,8 @@
       return \"add.w %h2,%h0\;adc.w %H2,%H0\";
     case 7:
       return \"add.w %h2,%h0\;adc.w %H2,%H0\";
+    default:
+      gcc_unreachable ();
     }"
   [(set_attr "flags" "x,x,x,x,x,x,x,x")]
 )
@@ -200,6 +202,8 @@
       return \"sub.w %h2,%h0\;sbb.w %H2,%H0\";
     case 5:
       return \"sub.w %h2,%h0\;sbb.w %H2,%H0\";
+    default:
+      gcc_unreachable ();
     }"
   [(set_attr "flags" "x,x,x,x,x,x")]
 )
