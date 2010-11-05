@@ -1,3 +1,9 @@
+2010-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/46160
+	* cp-gimplify.c (cp_gimplify_expr): Drop volatile MEM_REFs
+	on the RHS to avoid infinite recursion with gimplify_expr.
+
 2010-11-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46304

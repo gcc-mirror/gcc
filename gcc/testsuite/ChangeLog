@@ -1,5 +1,8 @@
 2010-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/46160
+	* g++.dg/opt/empty2.C: New test.
+
 	PR target/45670
 	* gcc.target/i386/pr45670.c: New test.
 
