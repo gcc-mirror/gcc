@@ -3,18 +3,21 @@
 /* Author: Fariborz Jahanian <fjahanian@apple.com> */
 /* Adapted by Nicola Pero <nicola.pero@meta-innovation.com> */
 /* { dg-do run } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 #include <objc/objc.h>
 #include <objc/runtime.h>
 
 @interface MyRootClass
 { Class isa; }
++ (id) initialize;
 + alloc;
 - init;
 - doSomething;
 @end
 
 @implementation MyRootClass
++ (id) initialize { return self; }
 + alloc { return class_createInstance (self, 0); }
 - init  { return self; }
 - doSomething { return self; }

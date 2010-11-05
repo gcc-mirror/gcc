@@ -12,15 +12,14 @@
 {
   Class isa;
 }
++ (id) initialize;
 + (int) testFunction1;
 + (int) test_function2;
 + (int) __testFunction3: (int)unused  andArgument: (char)unused2;
-#ifdef __NEXT_RUNTIME__
-+ (id) initialize ;
-#endif
 @end
 
 @implementation DemangleTest
++ (id) initialize { return self; }
 + (int) testFunction1
 {
   printf ("%s\n", __PRETTY_FUNCTION__);
@@ -41,9 +40,6 @@
   printf ("%s\n", __PRETTY_FUNCTION__);
   return strcmp (__PRETTY_FUNCTION__, "+[DemangleTest __testFunction3:andArgument:]");
 }
-#ifdef __NEXT_RUNTIME__
-+ (id) initialize { return self; }
-#endif
 @end
 
 int main ()
