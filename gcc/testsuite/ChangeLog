@@ -20,7 +20,7 @@
 2010-11-05  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/torture/forward-1.m: Restore for m32 NeXT.
-	* objc.dg/demangle-1.m: Remove NeXT ifdef around +initialize 
+	* objc.dg/demangle-1.m: Remove NeXT ifdef around +initialize
 	declaration and implementation.
 	* objc.dg/property/dotsyntax-3.m: XFAIL NeXT m64 run.
 	* obj-c++.dg/property/at-property-13.mm: Likewise.
@@ -59,7 +59,7 @@
 
 2010-11-04  Bud Davis	<jimmied@smu.edu>
 
-	* gfortran.dg/intrinsic_numeric_arg.f: Add test to check 
+	* gfortran.dg/intrinsic_numeric_arg.f: Add test to check
 	error message.
 
 2010-11-04  Chao-ying Fu  <fu@mips.com>
@@ -74,12 +74,12 @@
 	* objc.dg/property/dotsyntax-3.m: New.
 	* objc.dg/property/dotsyntax-4.m: New.
 	* obj-c++.dg/property/dotsyntax-3.mm: New.
-	* obj-c++.dg/property/dotsyntax-4.mm: New.	
+	* obj-c++.dg/property/dotsyntax-4.mm: New.
 
 	* objc.dg/fobjc-std-1.m: Added test for warnings when the
 	Objective-C 2.0 dot-syntax is used with class names.
 	* obj-c++.dg/fobjc-std-1.mm: Same change.
-	
+
 2010-11-04  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* gcc.target/powerpc/loop_align.c: New.
@@ -100,7 +100,7 @@
 
 	* objc.dg/property/property-2.m: Deleted.
 	* objc.dg/property/property-3.m: Deleted.
-	
+
 2010-11-04  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc-obj-c++-shared/next-mapping.h: Ensure a GNU-compatible nil is
@@ -122,14 +122,14 @@
 	* objc.dg/property/fsf-property-method-access.m: Likewise.
 	* objc.dg/torture/strings/const-cfstring-1.m: Cater for bogus Darwin10
 	linker warning.
-	* objc.dg/encode-7-next.m: Use next-mapping.h, ignore deprecation 
+	* objc.dg/encode-7-next.m: Use next-mapping.h, ignore deprecation
 	warnings.
-	* objc.dg/encode-7-next-64bit.m: Use next-mapping.h, ignore 
+	* objc.dg/encode-7-next-64bit.m: Use next-mapping.h, ignore
 	deprecation warnings.  Use Object1 implementation.
 	* objc.dg/demangle-1.m: Provide +initialize.  XFAIL m64 NeXT run.
 	* objc/execute/forward-1.m: Remove.
 	* objc/execute/forward-1.x: Remove.
-	
+
 2010-11-04  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-access.C: New.
@@ -183,12 +183,12 @@
 	* gcc.dg/lto/pr28706_1.c: ... split.
 
 2010-11-04  Richard Guenther  <rguenther@suse.de>
-	Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/i386/fma4-vector-2.c: New testcase.
 
 2010-11-04  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
-	Richard Guenther  <rguenther@suse.de>
+	    Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/vec-scal-opt.c: New testcase.
 	* gcc.dg/vec-scal-opt1.c: New testcase.
@@ -1111,7 +1111,7 @@
 	* gfortran.dg/proc_ptr_comp_25.f90: New.
 
 2010-10-21  Richard Guenther  <rguenther@suse.de>
-	Michael Matz  <matz@suse.de>
+	    Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/45764
 	* gcc.dg/torture/pr45764.c: New testcase.

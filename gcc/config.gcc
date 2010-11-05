@@ -2994,6 +2994,9 @@ if test x$with_fpmath != x; then
   case ${target} in
     i[34567]86-*-* | x86_64-*-*)
       case ${with_fpmath} in
+      avx)
+	tm_file="${tm_file} i386/avxmath.h"
+	;;
       sse)
 	tm_file="${tm_file} i386/ssemath.h"
 	;;

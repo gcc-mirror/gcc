@@ -1,7 +1,12 @@
+2010-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config.gcc: Support --with-fpmath=avx for x86.
+	* config/i386/avxmath.h: New.
+	* doc/install.texi (--with-fpmath=): Document --with-fpmath=avx.
+
 2010-11-05  Ian Lance Taylor  <iant@google.com>
 
-	* tree.h (struct tree_type): Don't use descbits in GTY
-	annotation.
+	* tree.h (struct tree_type): Don't use descbits in GTY annotation.
 	* gengtype.c (walk_type): Don't recognize descbits option.
 
 2010-11-05  Joseph Myers  <joseph@codesourcery.com>
@@ -15,8 +20,7 @@
 	* opts-common.c: Update comment on tm.h include.
 	(decode_cmdline_option): Handle options with multiple arguments.
 	Don't check WORD_SWITCH_TAKES_ARG for unknown options.
-	* opts.h (CL_SEPARATE_NARGS_SHIFT, CL_SEPARATE_NARGS_MASK):
-	Define.
+	* opts.h (CL_SEPARATE_NARGS_SHIFT, CL_SEPARATE_NARGS_MASK): Define.
 	(CL_PARAMS, CL_WARNING, CL_OPTIMIZATION, CL_DRIVER, CL_TARGET,
 	CL_COMMON): Update values.
 	* system.h (WORD_SWITCH_TAKES_ARG): Poison.
@@ -79,8 +83,8 @@
 2010-11-04  Paul Koning  <ni1d@arrl.net>
 
 	* doc/md.texi (Machine Constraints): Correct formatting in PDP-11
-	constraints. 
-	
+	constraints.
+
 2010-11-04  Chao-ying Fu  <fu@mips.com>
 
 	* configure.ac: Test assembler support for DSP Rev1 mult.
@@ -104,8 +108,7 @@
 	Use (!TARGET_FIX_R4000 || ISA_HAS_DSP), instead of
 	(!TARGET_FIX_R4000 && !ISA_HAS_DSPR2).
 	Emit the accumulator destination when ISA_HAS_DSP_MULT.
-	(<u>msubsidi4): Add comments.
-	Test ISA_HAS_DSP.
+	(<u>msubsidi4): Add comments.  Test ISA_HAS_DSP.
 	Emit the accumulator destination when ISA_HAS_DSP_MULT.
 	(<u>maddsidi4): Likewise.
 	* doc/extend.texi (MIPS DSP Built-in Functions): Move madd, maddu,
@@ -114,7 +117,7 @@
 2010-11-04  Paul Koning  <ni1d@arrl.net>
 
 	* doc/md.texi (Machine Constraints): Add PDP-11 constraints.
-	
+
 2010-11-04  Paul Koning  <ni1d@arrl.net>
 
 	* doc/invoke.texi (PDP-11 Options): Delete -msplit, -mno-split.
@@ -249,7 +252,7 @@
 	MINUS_EXPR only if the first operand is reduction operand.
 
 2010-11-04  Richard Guenther  <rguenther@suse.de>
-	Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	* tree.def (FMA_EXPR): New tree code.
 	* expr.c (expand_expr_real_2): Add FMA_EXPR expansion code.
@@ -285,7 +288,7 @@
 	operations.
 
 2010-11-04  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
-	Richard Guenther  <rguenther@suse.de>
+	    Richard Guenther  <rguenther@suse.de>
 
 	* passes.c (init_optimization_passes): Move veclower after SSA.
 	* tree-vect-generic.c (uniform_vector_p): New function.
@@ -306,8 +309,7 @@
 
 2010-11-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
-	* config.gcc (sh64*) <tm_file>: Add newlib-stdint.h for
-	newlib targets.
+	* config.gcc (sh64*) <tm_file>: Add newlib-stdint.h for newlib targets.
 
 2010-11-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
@@ -516,8 +518,7 @@
 
 2010-11-02  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/i386-protos.h (ix86_split_call_pop_vzeroupper):
-	Removed.
+	* config/i386/i386-protos.h (ix86_split_call_pop_vzeroupper): Removed.
 	* config/i386/i386.c (ix86_split_call_pop_vzeroupper): Likewise.
 
 	* config/i386/i386.md (*call_pop_0_vzeroupper): Use parallel
@@ -531,8 +532,7 @@
 
 2010-11-02  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/i386.md (*sibcall_1_rex64_vzeroupper): Fix a
-	typo.
+	* config/i386/i386.md (*sibcall_1_rex64_vzeroupper): Fix a typo.
 
 2010-11-02  Eric Botcazou  <ebotcazou@adacore.com>
 
