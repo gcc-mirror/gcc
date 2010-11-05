@@ -1,3 +1,33 @@
+2010-11-05  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc.dg/torture/forward-1.m: Restore for m32 NeXT.
+	* objc.dg/demangle-1.m: Remove NeXT ifdef around +initialize 
+	declaration and implementation.
+	* objc.dg/property/dotsyntax-3.m: XFAIL NeXT m64 run.
+	* obj-c++.dg/property/at-property-13.mm: Likewise.
+	* obj-c++.dg/property/fsf-property-method-access.mm: Likewise.
+	* obj-c++.dg/property/property-1.mm: Likewise.
+	* obj-c++.dg/property/at-property-7.mm: Likewise.
+	* obj-c++.dg/property/at-property-9.mm: Likewise.
+	* obj-c++.dg/property/dotsyntax-2.mm: Likewise.
+	* obj-c++.dg/property/at-property-10.mm: Likewise.
+	* obj-c++.dg/property/synthesize-2.mm: Likewise.
+	* obj-c++.dg/property/at-property-12.mm: Likewise.
+	* obj-c++.dg/property/fsf-property-basic.mm: Likewise.
+	* obj-c++.dg/property/fsf-property-named-ivar.mm: Likewise.
+	* obj-c++.dg/property/at-property-6.mm: Likewise.
+	* obj-c++.dg/property/at-property-8.mm: Likewise.
+	* obj-c++.dg/property/dotsyntax-1.mm: Likewise.
+	* obj-c++.dg/property/dotsyntax-3.mm: Likewise.
+	* obj-c++.dg/property/at-property-11.mm: Likewise.
+	* obj-c++.dg/template-8.mm: Likewise.
+	* obj-c++.dg/encode-3.mm: Use abort (), cast char types.
+	* obj-c++.dg/demangle-2.mm: Add +initialize:, XFAIL NeXT m64.
+	* obj-c++.dg/property/at-property-2.mm: Comment out a case that ICEs and
+	put a FIXME for this.
+	* obj-c++.dg/property/property-2.mm: Remove.
+	* obj-c++.dg/property/property-3.mm: Remove.
+
 2010-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46307
@@ -76,10 +106,9 @@
 	* objc.dg/encode-7-next.m: Use next-mapping.h, ignore deprecation 
 	warnings.
 	* objc.dg/encode-7-next-64bit.m: Use next-mapping.h, ignore 
-	deprecation warnings.  Use Object1 implemenation.
+	deprecation warnings.  Use Object1 implementation.
 	* objc.dg/demangle-1.m: Provide +initialize.  XFAIL m64 NeXT run.
-	* objc/execute/forward-1.m: Move to objc.dg/torture and reduce scope
-	to m32 NeXT.
+	* objc/execute/forward-1.m: Remove.
 	* objc/execute/forward-1.x: Remove.
 	
 2010-11-04  Jason Merrill  <jason@redhat.com>

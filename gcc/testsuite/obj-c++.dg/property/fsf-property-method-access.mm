@@ -1,5 +1,6 @@
 /* test access in methods, auto-generated getter/setter based on property name.  */
 /* { dg-do run } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 #ifdef __cplusplus
 extern "C" {

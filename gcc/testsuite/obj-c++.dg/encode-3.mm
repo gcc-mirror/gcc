@@ -1,8 +1,8 @@
 /* { dg-do run } */
 
 extern "C" {
-extern void _exit(int);
-extern int strcmp(const char *, const char *);
+extern void abort (void);
+extern int strcmp (const char *, const char *);
 }
 
 template <class T>
@@ -36,16 +36,16 @@ int main(void) {
   const char *encode = @encode(long);
 
   if (strcmp (encode, L))
-    _exit(-(__LINE__));
+    abort ();
 
-  if (strcmp (enc, "{Vec<float>=ff" L "q}"))
-    _exit(-(__LINE__));
+  if (strcmp (enc, (const char *)"{Vec<float>=ff" L "q}"))
+    abort ();
 
-  if (strcmp (enc2, "{Vec<double>=dd" L "q}"))
-    _exit(-(__LINE__));
+  if (strcmp (enc2, (const char *)"{Vec<double>=dd" L "q}"))
+    abort ();
 
-  if (strcmp (enc3, "{?=f[10d]i" L "q{Vec<const signed char>=rcrc" L "q}}"))
-    _exit(-(__LINE__));
+  if (strcmp (enc3, (const char *)"{?=f[10d]i" L "q{Vec<const signed char>=rcrc" L "q}}"))
+    abort ();
 
   return 0;
 }
