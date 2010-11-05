@@ -48,7 +48,7 @@
 	(mips_builtins): Move madd, maddu, msub, msubu, mult, multu from
 	dspr2_32 to dsp_32.
 	(mips_mulsidi3_gen_fn): Test (TARGET_FIX_R4000 && !ISA_HAS_DSP).
-	Delete returns when ISA_HAS_DSPR2, because the old patterns are deleted.
+	Delete returns when ISA_HAS_DSPR2 because the old patterns are deleted.
 	* config/mips/mips-dsp.md (mips_madd<u>, mips_msub<u>):
 	New define_expand patterns.
 	* config/mips/constraints.md (ka): Update the constraint to test
@@ -250,9 +250,9 @@
 
 2010-11-04  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* gcc/configure.ac: Filter -mdynamic-no-pic from CFLAGS when testing for
+	* configure.ac: Filter -mdynamic-no-pic from CFLAGS when testing for
 	plugin capabilities.
-	* gcc/configure: Regenerate.
+	* configure: Regenerate.
 
 2010-11-03  Xinliang David Li  <davidxl@google.com>
 
@@ -415,7 +415,7 @@
 2010-11-03  Ian Lance Taylor  <iant@google.com>
 
 	PR lto/46273
-	* gcc/config.gcc: Don't set lto_binary_reader.
+	* config.gcc: Don't set lto_binary_reader.
 	* doc/install.texi (Prerequisites): Remove libelf paragraphs.
 	(Configuration): Mention --disable-lto.  Remove --with-libelf
 	paragraph.
@@ -4673,7 +4673,7 @@
 2010-10-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 	    Christian Borntraeger  <Christian.Borntraeger@de.ibm.com>
 
-	* gcc/config/s390/s390.c (z196_cost): New.
+	* config/s390/s390.c (z196_cost): New.
 	(s390_handle_arch_option): Add -march=z196.
 	(s390_option_override): Use the new cost function and use the z10
 	defaults also for z196.
@@ -4687,15 +4687,15 @@
 	(s390_fix_long_loop_prediction): ... this.
 	(s390_reorg): Apply the z10 adjustments also for z196.
 	(s390_loop_unroll_adjust): Do this also for z196.
-	* gcc/config/s390/s390.h (enum processor_type): Add PROCESSOR_2817_Z196.
+	* config/s390/s390.h (enum processor_type): Add PROCESSOR_2817_Z196.
 	(enum processor_flags): Add PF_Z196.
 	(TARGET_AVOID_CMP_AND_BRANCH): New macro.
 	(TARGET_CPU_Z196, TARGET_Z196): New macros.
-	* gcc/config.gcc: Enable z196 for --with-arch.
-	* gcc/config/s390/2817.md: New file.
-	* gcc/config/s390/2084.md: New type for multiply and add.
-	* gcc/config/s390/2097.md: Likewise.
-	* gcc/config/s390/s390.md (UNSPEC_POPCNT, UNSPEC_COPYSIGN)
+	* config.gcc: Enable z196 for --with-arch.
+	* config/s390/2817.md: New file.
+	* config/s390/2084.md: New type for multiply and add.
+	* config/s390/2097.md: Likewise.
+	* config/s390/s390.md (UNSPEC_POPCNT, UNSPEC_COPYSIGN)
 	(UNSPECV_ATOMIC_OP): New constants.
 	(fmadddf, fmaddsf): New values for type attribute.
 	(z196prop): New insn attribute.
@@ -6076,7 +6076,7 @@
 	use gen_pro_epilogue_adjust_stack_*_3 and annotate it.
 	(__chkstk_ms): New function.
 	* config/i386/t-cygming (LIB1ASMFUNCS): Add _chkstk_ms.
-	* gcc/config/i386/t-interix: Likewise.
+	* config/i386/t-interix: Likewise.
 	* configure.ac (HAVE_GAS_CFI_DIRECTIVE): Export for target.
 	(HAVE_GAS_CFI_PERSONALITY_DIRECTIVE): Likewise.
 	(HAVE_GAS_CFI_SECTIONS_DIRECTIVE): Likewise.
@@ -6255,7 +6255,7 @@
 	    Dominique Dhumieres  <dominiq@lps.ens.fr>
 
 	PR bootstrap/45751
-	* gcc/config/darwin-driver.c (darwin_default_min_version):
+	* config/darwin-driver.c (darwin_default_min_version):
 	Adjust size passed to memcpy in two places.
 
 2010-09-24  Richard Guenther  <rguenther@suse.de>
@@ -32983,7 +32983,7 @@
 
 2010-01-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
-	PR gcc/42525
+	PR other/42525
 	* Makefile.in (write_entries_to_file, install-plugin):
 	Use \012 instead of \n with tr.
 
