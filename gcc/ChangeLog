@@ -1,3 +1,12 @@
+2010-11-05  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_move): Set use_avx256_p if
+	256bit AVX register is used.
+	(ix86_expand_vector_move_misalign): Likewise.
+	(ix86_expand_vector_move): Replace use_avx256_p with
+	VALID_AVX256_REG_MODE.
+
 2010-11-05  Joern Rennecke  <amylaar@spamcop.net>
 
 	 PR target/44750
