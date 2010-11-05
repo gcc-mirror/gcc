@@ -1,3 +1,9 @@
+2010-11-04  Chao-ying Fu  <fu@mips.com>
+
+	* gcc.target/mips/mips32-dsp.c: Add tests for madd, maddu, msub,
+	msubu, mult, multu.
+	* gcc.target/mips/mips32-dsp-run.c: Likewise.
+
 2010-11-04  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Fixed using the Objective-C 2.0 dot-syntax with class names.
