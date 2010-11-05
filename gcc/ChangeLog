@@ -1,3 +1,33 @@
+2010-11-04  Chao-ying Fu  <fu@mips.com>
+
+	* configure.ac: Test assembler support for DSP Rev1 mult.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/mips/mips.h (ISA_HAS_DSP_MULT): New define.
+	* config/mips/mips.c (CODE_FOR_mips_mult): New define.
+	(CODE_FOR_mips_multu): New define.
+	(mips_builtins): Move madd, maddu, msub, msubu, mult, multu from
+	dspr2_32 to dsp_32.
+	(mips_mulsidi3_gen_fn): Test (TARGET_FIX_R4000 && !ISA_HAS_DSP).
+	Delete returns when ISA_HAS_DSPR2, because the old patterns are deleted.
+	* config/mips/mips-dsp.md (mips_madd<u>, mips_msub<u>):
+	New define_expand patterns.
+	* config/mips/constraints.md (ka): Update the constraint to test
+	ISA_HAS_DSP_MULT instead of ISA_HAS_DSPR2.
+	* config/mips/mips-dspr2.md (mips_madd<u>, mips_msub<u>, mips_mult,
+	mips_multu): Delete.
+	* config/mips/mips.md (<u>mulsidi3_32bit): Add comments.
+	Change target constraint to "ka".
+	Use (!TARGET_FIX_R4000 || ISA_HAS_DSP), instead of
+	(!TARGET_FIX_R4000 && !ISA_HAS_DSPR2).
+	Emit the accumulator destination when ISA_HAS_DSP_MULT.
+	(<u>msubsidi4): Add comments.
+	Test ISA_HAS_DSP.
+	Emit the accumulator destination when ISA_HAS_DSP_MULT.
+	(<u>maddsidi4): Likewise.
+	* doc/extend.texi (MIPS DSP Built-in Functions): Move madd, maddu,
+	msub, msubu, mult, multu built-in functions from DSP r2 to DSP r1.
+
 2010-11-04  Paul Koning  <ni1d@arrl.net>
 
 	* doc/md.texi (Machine Constraints): Add PDP-11 constraints.

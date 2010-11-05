@@ -9646,6 +9646,12 @@ i32 __builtin_mips_lbux (void *, i32)
 i32 __builtin_mips_lhx (void *, i32)
 i32 __builtin_mips_lwx (void *, i32)
 i32 __builtin_mips_bposge32 (void)
+a64 __builtin_mips_madd (a64, i32, i32);
+a64 __builtin_mips_maddu (a64, ui32, ui32);
+a64 __builtin_mips_msub (a64, i32, i32);
+a64 __builtin_mips_msubu (a64, ui32, ui32);
+a64 __builtin_mips_mult (i32, i32);
+a64 __builtin_mips_multu (ui32, ui32);
 @end smallexample
 
 The following built-in functions map directly to a particular MIPS DSP REV 2
@@ -9665,18 +9671,12 @@ i32 __builtin_mips_cmpgdu_lt_qb (v4i8, v4i8);
 i32 __builtin_mips_cmpgdu_le_qb (v4i8, v4i8);
 a64 __builtin_mips_dpa_w_ph (a64, v2i16, v2i16);
 a64 __builtin_mips_dps_w_ph (a64, v2i16, v2i16);
-a64 __builtin_mips_madd (a64, i32, i32);
-a64 __builtin_mips_maddu (a64, ui32, ui32);
-a64 __builtin_mips_msub (a64, i32, i32);
-a64 __builtin_mips_msubu (a64, ui32, ui32);
 v2i16 __builtin_mips_mul_ph (v2i16, v2i16);
 v2i16 __builtin_mips_mul_s_ph (v2i16, v2i16);
 q31 __builtin_mips_mulq_rs_w (q31, q31);
 v2q15 __builtin_mips_mulq_s_ph (v2q15, v2q15);
 q31 __builtin_mips_mulq_s_w (q31, q31);
 a64 __builtin_mips_mulsa_w_ph (a64, v2i16, v2i16);
-a64 __builtin_mips_mult (i32, i32);
-a64 __builtin_mips_multu (ui32, ui32);
 v4i8 __builtin_mips_precr_qb_ph (v2i16, v2i16);
 v2i16 __builtin_mips_precr_sra_ph_w (i32, i32, imm0_31);
 v2i16 __builtin_mips_precr_sra_r_ph_w (i32, i32, imm0_31);
