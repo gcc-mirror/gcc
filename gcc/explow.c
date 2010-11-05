@@ -1340,7 +1340,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
      least it doesn't cause a stack overflow.  */
   if (flag_split_stack)
     {
-      rtx available_label, space, func;
+      rtx available_label, ask, space, func;
 
       available_label = NULL_RTX;
 
@@ -1355,10 +1355,19 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	}
 #endif
 
+      /* The __morestack_allocate_stack_space function will allocate
+	 memory using malloc.  We don't know that the alignment of the
+	 memory returned by malloc will meet REQUIRED_ALIGN.  Increase
+	 SIZE to make sure we allocate enough space.  */
+      ask = expand_binop (Pmode, add_optab, size,
+			  GEN_INT (required_align / BITS_PER_UNIT - 1),
+			  NULL_RTX, 1, OPTAB_LIB_WIDEN);
+      must_align = true;
+
       func = init_one_libfunc ("__morestack_allocate_stack_space");
 
       space = emit_library_call_value (func, target, LCT_NORMAL, Pmode,
-				       1, size, Pmode);
+				       1, ask, Pmode);
 
       if (available_label == NULL_RTX)
 	return space;
