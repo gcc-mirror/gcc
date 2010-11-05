@@ -39,8 +39,10 @@ MULTILIB_OPTIONS = msoft-float
 # DWARF_ARANGES_PAD_SIZE is 0, thus a loop in output_aranges that checks
 # (i < (unsigned) DWARF_ARANGES_PAD_SIZE) elicits a warning that the
 # comparison is always false.
-dwarf2out.o: ALL_COMPILERFLAGS += -Wno-error=type-limits
+# We could say "-Werror -Wno-error=type-limits", alas, not all supported
+# gcc bootstrap compilers support the latter option.
+dwarf2out.o-warn = -Wno-error
 
 # Likewise, java/constants.c:build_constants_constructor has a negative shift
 # count (in never-executed code) due to the small POINTER_SIZE.
-java/constants.o: ALL_COMPILERFLAGS += -Wno-error
+java/constants.o-warn = -Wno-error
