@@ -1,3 +1,8 @@
+2010-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46307
+	* gcc.dg/pr46307.c: New test.
+
 2010-11-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46304
