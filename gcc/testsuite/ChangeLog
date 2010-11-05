@@ -1,3 +1,7 @@
+2010-11-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/avx-vzeroupper-19.c: New.
+
 2010-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46099

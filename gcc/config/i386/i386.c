@@ -15000,6 +15000,9 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
   rtx op0, op1;
   enum tls_model model;
 
+  if (VALID_AVX256_REG_MODE (mode))
+    cfun->machine->use_avx256_p = true;
+
   op0 = operands[0];
   op1 = operands[1];
 
@@ -15144,7 +15147,7 @@ ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
   rtx op0 = operands[0], op1 = operands[1];
   unsigned int align = GET_MODE_ALIGNMENT (mode);
 
-  if (use_avx256_p (mode, NULL_TREE))
+  if (VALID_AVX256_REG_MODE (mode))
     cfun->machine->use_avx256_p = true;
 
   /* Force constants other than zero into memory.  We do not know how
@@ -15252,6 +15255,9 @@ void
 ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 {
   rtx op0, op1, m;
+
+  if (VALID_AVX256_REG_MODE (mode))
+    cfun->machine->use_avx256_p = true;
 
   op0 = operands[0];
   op1 = operands[1];
