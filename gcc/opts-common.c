@@ -24,8 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "flags.h"
 #include "diagnostic.h"
-#include "tm.h" /* For WORD_SWITCH_TAKES_ARG and
-		   TARGET_OPTION_TRANSLATE_TABLE.  */
+#include "tm.h" /* For TARGET_OPTION_TRANSLATE_TABLE.  */
 
 static void prune_options (struct cl_decoded_option **, unsigned int *);
 
@@ -288,7 +287,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   size_t opt_index;
   const char *arg = 0;
   int value = 1;
-  unsigned int result = 1, i, extra_args;
+  unsigned int result = 1, i, extra_args, separate_args;
   int adjust_len = 0;
   size_t total_len;
   char *p;
@@ -366,10 +365,15 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
     errors |= CL_ERR_DISABLED;
 
   /* Determine whether there may be a separate argument based on
-     whether this option is being processed for the driver.  */
+     whether this option is being processed for the driver, and, if
+     so, how many such arguments.  */
   separate_arg_flag = ((option->flags & CL_SEPARATE)
 		       && !((option->flags & CL_NO_DRIVER_ARG)
 			    && (lang_mask & CL_DRIVER)));
+  separate_args = (separate_arg_flag
+		   ? ((option->flags & CL_SEPARATE_NARGS_MASK)
+		      >> CL_SEPARATE_NARGS_SHIFT) + 1
+		   : 0);
   joined_arg_flag = (option->flags & CL_JOINED) != 0;
 
   /* Sort out any argument the switch takes.  */
@@ -399,10 +403,14 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   else if (separate_arg_flag)
     {
       arg = argv[extra_args + 1];
-      result = extra_args + 2;
-      if (arg == NULL)
-	result = extra_args + 1;
-      else
+      for (i = 0; i < separate_args; i++)
+	if (argv[extra_args + 1 + i] == NULL)
+	  {
+	    errors |= CL_ERR_MISSING_ARG;
+	    break;
+	  }
+      result = extra_args + 1 + i;
+      if (arg != NULL)
 	have_separate_arg = true;
     }
 
@@ -461,6 +469,11 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 				    && (lang_mask & CL_DRIVER)));
 	  joined_arg_flag = (option->flags & CL_JOINED) != 0;
 
+	  if (separate_args > 1 || (option->flags & CL_SEPARATE_NARGS_MASK))
+	    gcc_assert (separate_args
+			== ((option->flags & CL_SEPARATE_NARGS_MASK)
+			    >> CL_SEPARATE_NARGS_SHIFT) + 1);
+
 	  if (!(errors & CL_ERR_MISSING_ARG))
 	    {
 	      if (separate_arg_flag || joined_arg_flag)
@@ -504,22 +517,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   decoded->warn_message = warn_message;
 
   if (opt_index == OPT_SPECIAL_unknown)
-    {
-      /* Skip the correct number of arguments for options handled
-	 through specs.  */
-      const char *popt ATTRIBUTE_UNUSED = argv[0] + 1;
-
-      gcc_assert (result == 1);
-      if (WORD_SWITCH_TAKES_ARG (popt))
-	result += WORD_SWITCH_TAKES_ARG (popt);
-      if (result > 1)
-	for (i = 1; i < result; i++)
-	  if (argv[i] == NULL)
-	    {
-	      result = i;
-	      break;
-	    }
-    }
+    gcc_assert (result == 1);
 
   gcc_assert (result >= 1 && result <= ARRAY_SIZE (decoded->canonical_option));
   decoded->canonical_option_num_elements = result;
@@ -538,7 +536,21 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 	decoded->canonical_option[i] = NULL;
     }
   if (opt_index != OPT_SPECIAL_unknown && opt_index != OPT_SPECIAL_ignore)
-    generate_canonical_option (opt_index, arg, value, decoded);
+    {
+      generate_canonical_option (opt_index, arg, value, decoded);
+      if (separate_args > 1)
+	{
+	  for (i = 0; i < separate_args; i++)
+	    {
+	      if (argv[extra_args + 1 + i] == NULL)
+		  break;
+	      else
+		decoded->canonical_option[1 + i] = argv[extra_args + 1 + i];
+	    }
+	  gcc_assert (result == 1 + i);
+	  decoded->canonical_option_num_elements = result;
+	}
+    }
   decoded->orig_option_with_args_text = p = XNEWVEC (char, total_len);
   for (i = 0; i < result; i++)
     {

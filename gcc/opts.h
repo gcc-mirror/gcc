@@ -71,12 +71,12 @@ extern const unsigned int cl_options_count;
 extern const char *const lang_names[];
 extern const unsigned int cl_lang_count;
 
-#define CL_PARAMS               (1 << 13) /* Fake entry.  Used to display --param info with --help.  */
-#define CL_WARNING		(1 << 14) /* Enables an (optional) warning message.  */
-#define CL_OPTIMIZATION		(1 << 15) /* Enables an (optional) optimization.  */
-#define CL_DRIVER		(1 << 16) /* Driver option.  */
-#define CL_TARGET		(1 << 17) /* Target-specific option.  */
-#define CL_COMMON		(1 << 18) /* Language-independent.  */
+#define CL_PARAMS               (1 << 11) /* Fake entry.  Used to display --param info with --help.  */
+#define CL_WARNING		(1 << 12) /* Enables an (optional) warning message.  */
+#define CL_OPTIMIZATION		(1 << 13) /* Enables an (optional) optimization.  */
+#define CL_DRIVER		(1 << 14) /* Driver option.  */
+#define CL_TARGET		(1 << 15) /* Target-specific option.  */
+#define CL_COMMON		(1 << 16) /* Language-independent.  */
 
 #define CL_MIN_OPTION_CLASS	CL_PARAMS
 #define CL_MAX_OPTION_CLASS	CL_COMMON
@@ -85,6 +85,11 @@ extern const unsigned int cl_lang_count;
    Before this point the bits have described the class of the option.
    This distinction is important because --help will not list options
    which only have these higher bits set.  */
+
+/* Options marked with CL_SEPARATE take a number of separate arguments
+   (1 to 4) that is one more than the number in this bit-field.  */
+#define CL_SEPARATE_NARGS_SHIFT	17
+#define CL_SEPARATE_NARGS_MASK	(3 << CL_SEPARATE_NARGS_SHIFT)
 
 #define CL_SEPARATE_ALIAS	(1 << 19) /* Option is an alias when used with separate argument.  */
 #define CL_NO_DRIVER_ARG	(1 << 20) /* Option takes no argument in the driver.  */

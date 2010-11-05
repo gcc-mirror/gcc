@@ -32,14 +32,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define GET_ENVIRONMENT(VALUE, NAME) do { (VALUE) = getenv (NAME); } while (0)
 #endif
 
-/* This defines which multi-letter switches take arguments.  */
-
-#define DEFAULT_WORD_SWITCH_TAKES_ARG(STR)		0
-
-#ifndef WORD_SWITCH_TAKES_ARG
-#define WORD_SWITCH_TAKES_ARG(STR) DEFAULT_WORD_SWITCH_TAKES_ARG (STR)
-#endif
-
 /* Store in OUTPUT a string (made with alloca) containing an
    assembler-name for a local static variable or function named NAME.
    LABELNO is an integer which is different for each call.  */
