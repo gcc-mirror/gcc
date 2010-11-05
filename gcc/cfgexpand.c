@@ -2360,6 +2360,7 @@ expand_debug_expr (tree exp)
 	case DOT_PROD_EXPR:
 	case WIDEN_MULT_PLUS_EXPR:
 	case WIDEN_MULT_MINUS_EXPR:
+	case FMA_EXPR:
 	  goto ternary;
 
 	case TRUTH_ANDIF_EXPR:
@@ -3200,6 +3201,9 @@ expand_debug_expr (tree exp)
 	  return gen_rtx_PLUS (mode, op0, op1);
 	}
       return NULL;
+
+    case FMA_EXPR:
+      return gen_rtx_FMA (mode, op0, op1, op2);
 
     default:
     flag_unsupported:
