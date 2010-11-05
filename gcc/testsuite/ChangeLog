@@ -1,3 +1,8 @@
+2010-11-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46304
+	* g++.dg/ext/complex6.C: New.
+
 2010-11-04  Bud Davis	<jimmied@smu.edu>
 
 	* gfortran.dg/intrinsic_numeric_arg.f: Add test to check 

@@ -11658,6 +11658,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case INTEGER_CST:
     case REAL_CST:
     case STRING_CST:
+    case COMPLEX_CST:
       {
 	/* Instantiate any typedefs in the type.  */
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
