@@ -1,3 +1,16 @@
+2010-11-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Remove tr1_impl headers.
+
+	* testsuite/tr1/4_metaprogramming/integral_constant/requirements/
+	constexpr_data.cc: New.
+
+	* testsuite/util/testsuite_tr1.h (LType, LTypeDerived, NLType): New.
+	* testsuite/20_util/is_literal_type/value.cc: New.
+	* testsuite/20_util/is_literal_type/requirements/typedefs.cc: Name.
+	* testsuite/20_util/is_literal_type/requirements/
+	explicit_instantiation.cc: New.
+
 2010-11-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/46303

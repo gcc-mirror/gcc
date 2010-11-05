@@ -57,7 +57,7 @@ namespace __gnu_test
   // For testing tr1/type_traits/extent, which has a second template
   // parameter.
   template<template<typename, unsigned> class Property,
-           typename Type, unsigned Uint>
+	   typename Type, unsigned Uint>
     bool
     test_property(typename Property<Type, Uint>::value_type value)
     {
@@ -80,7 +80,7 @@ namespace __gnu_test
 #endif
 
   template<template<typename, typename> class Relationship,
-           typename Type1, typename Type2>
+	   typename Type1, typename Type2>
     bool
     test_relationship(bool value)
     {
@@ -188,6 +188,33 @@ namespace __gnu_test
     int j;
   };
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  struct LType // literal type
+  {
+    int _M_i;
+
+    constexpr LType(int __i) : _M_i(__i) { }
+  };
+
+  struct LTypeDerived : public LType
+  {
+    constexpr LTypeDerived(int __i) : LType(__i) { }
+  };
+
+  struct NLType // not literal type
+  {
+    int _M_i;
+
+    NLType() : _M_i(0) { }
+
+    constexpr NLType(int __i) : _M_i(__i) { }
+
+    NLType(const NLType& __other) : _M_i(__other._M_i) { }
+
+    ~NLType() { _M_i = 0; }
+  };
+#endif
+
   int truncate_float(float x) { return (int)x; }
   long truncate_double(double x) { return (long)x; }
 
@@ -251,7 +278,7 @@ namespace __gnu_test
 
   // For use in 8_c_compatibility.
   template<typename R, typename T>
-    typename __gnu_cxx::__enable_if<std::__are_same<R, T>::__value, 
+    typename __gnu_cxx::__enable_if<std::__are_same<R, T>::__value,
 				    bool>::__type
     check_ret_type(T)
     { return true; }
