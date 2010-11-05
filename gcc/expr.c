@@ -2261,7 +2261,8 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
   enum machine_mode mode, tmode;
   enum insn_code icode;
   int reverse;
-  rtx cst;
+  /* cst is set but not used if LEGITIMATE_CONSTANT doesn't use it.  */
+  rtx cst ATTRIBUTE_UNUSED;
 
   if (len == 0)
     return 1;
