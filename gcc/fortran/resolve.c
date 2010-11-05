@@ -13331,6 +13331,9 @@ resolve_codes (gfc_namespace *ns)
   gfc_namespace *n;
   bitmap_obstack old_obstack;
 
+  if (ns->resolved == 1)
+    return;
+
   for (n = ns->contained; n; n = n->sibling)
     resolve_codes (n);
 

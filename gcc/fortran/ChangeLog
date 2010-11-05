@@ -1,3 +1,16 @@
+2010-11-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45451
+	PR fortran/46174
+	* class.c (gfc_find_derived_vtab): Improved search for existing vtab.
+	Add component '$copy' to vtype symbol for polymorphic deep copying.
+	* expr.c (gfc_check_pointer_assign): Make sure the vtab is generated
+	during resolution stage.
+	* resolve.c (resolve_codes): Don't resolve code if namespace is already
+	resolved.
+	* trans-stmt.c (gfc_trans_allocate): Call '$copy' procedure for
+	polymorphic ALLOCATE statements with SOURCE.
+
 2010-11-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 

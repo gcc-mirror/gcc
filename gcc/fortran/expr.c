@@ -3457,6 +3457,10 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       return FAILURE;
     }
 
+  if (lvalue->ts.type == BT_CLASS && rvalue->ts.type == BT_DERIVED)
+    /* Make sure the vtab is present.  */
+    gfc_find_derived_vtab (rvalue->ts.u.derived);
+
   /* Check rank remapping.  */
   if (rank_remap)
     {
