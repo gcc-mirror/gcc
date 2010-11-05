@@ -2928,8 +2928,8 @@ Floating point registers AC0 through AC3.  These can be loaded from/to
 memory with a single instruction.
 
 @item d
-Odd numbered general registers (R1, R3, R5).  These are used for 16
-bit multiply operations.
+Odd numbered general registers (R1, R3, R5).  These are used for
+16-bit multiply operations.
 
 @item f
 Any of the floating point registers (AC0 through AC5).
@@ -2951,13 +2951,13 @@ An integer constant that does not meet the constraints for codes
 The integer constant 1.
 
 @item M
-The integer constant -1.
+The integer constant @minus{}1.
 
 @item N
 The integer constant 0.
 
 @item O
-Integer constants -4 through -1 and 1 through 4; shifts by these
+Integer constants @minus{}4 through @minus{}1 and 1 through 4; shifts by these
 amounts are handled as multiple single-bit shifts rather than a single
 variable-length shift.
 
