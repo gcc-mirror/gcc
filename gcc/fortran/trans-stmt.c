@@ -4487,21 +4487,33 @@ gfc_trans_allocate (gfc_code * code)
 	  /* Initialization via SOURCE block
 	     (or static default initializer).  */
 	  gfc_expr *rhs = gfc_copy_expr (code->expr3);
-	  if (al->expr->ts.type == BT_CLASS && rhs->expr_type == EXPR_VARIABLE
-	      && rhs->ts.type != BT_CLASS)
-	    tmp = gfc_trans_assignment (expr, rhs, false, false);
-	  else if (al->expr->ts.type == BT_CLASS)
+	  if (al->expr->ts.type == BT_CLASS)
 	    {
-	      /* TODO: One needs to do a deep-copy for BT_CLASS; cf. PR 46174.  */
-	      gfc_se dst,src;
+	      gfc_se call;
+	      gfc_actual_arglist *actual;
+	      gfc_expr *ppc;
+	      gfc_init_se (&call, NULL);
+	      /* Do a polymorphic deep copy.  */
+	      actual = gfc_get_actual_arglist ();
+	      actual->expr = gfc_copy_expr (rhs);
 	      if (rhs->ts.type == BT_CLASS)
-		gfc_add_component_ref (rhs, "$data");
-	      gfc_init_se (&dst, NULL);
-	      gfc_init_se (&src, NULL);
-	      gfc_conv_expr (&dst, expr);
-	      gfc_conv_expr (&src, rhs);
-	      gfc_add_block_to_block (&block, &src.pre);
-	      tmp = gfc_build_memcpy_call (dst.expr, src.expr, memsz);
+		gfc_add_component_ref (actual->expr, "$data");
+	      actual->next = gfc_get_actual_arglist ();
+	      actual->next->expr = gfc_copy_expr (al->expr);
+	      gfc_add_component_ref (actual->next->expr, "$data");
+	      if (rhs->ts.type == BT_CLASS)
+		{
+		  ppc = gfc_copy_expr (rhs);
+		  gfc_add_component_ref (ppc, "$vptr");
+		}
+	      else
+		ppc = gfc_lval_expr_from_sym (gfc_find_derived_vtab (rhs->ts.u.derived));
+	      gfc_add_component_ref (ppc, "$copy");
+	      gfc_conv_procedure_call (&call, ppc->symtree->n.sym, actual,
+					ppc, NULL);
+	      gfc_add_expr_to_block (&call.pre, call.expr);
+	      gfc_add_block_to_block (&call.pre, &call.post);
+	      tmp = gfc_finish_block (&call.pre);
 	    }
 	  else
 	    tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr),

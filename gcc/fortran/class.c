@@ -39,9 +39,10 @@ along with GCC; see the file COPYING3.  If not see
     * $hash: A hash value serving as a unique identifier for this type.
     * $size: The size in bytes of the derived type.
     * $extends: A pointer to the vtable entry of the parent derived type.
-   In addition to these fields, each vtable entry contains additional procedure
-   pointer components, which contain pointers to the procedures which are bound
-   to the type's "methods" (type-bound procedures).  */
+    * $def_init: A pointer to a default initialized variable of this type.
+    * $copy: A procedure pointer to a copying procedure.
+   After these follow procedure pointer components for the specific
+   type-bound procedures.  */
 
 
 #include "config.h"
@@ -307,19 +308,14 @@ add_procs_to_declared_vtab (gfc_symbol *derived, gfc_symbol *vtype)
 }
 
 
-/* Find the symbol for a derived type's vtab.
-   A vtab has the following fields:
-    * $hash	a hash value used to identify the derived type
-    * $size	the size in bytes of the derived type
-    * $extends	a pointer to the vtable of the parent derived type
-   After these follow procedure pointer components for the
-   specific type-bound procedures.  */
+/* Find (or generate) the symbol for a derived type's vtab.  */
 
 gfc_symbol *
 gfc_find_derived_vtab (gfc_symbol *derived)
 {
   gfc_namespace *ns;
   gfc_symbol *vtab = NULL, *vtype = NULL, *found_sym = NULL, *def_init = NULL;
+  gfc_symbol *copy = NULL, *src = NULL, *dst = NULL;
   char name[2 * GFC_MAX_SYMBOL_LEN + 8];
   
   /* Find the top-level namespace (MODULE or PROGRAM).  */
@@ -334,7 +330,13 @@ gfc_find_derived_vtab (gfc_symbol *derived)
   if (ns)
     {
       sprintf (name, "vtab$%s", derived->name);
-      gfc_find_symbol (name, ns, 0, &vtab);
+
+      /* Look for the vtab symbol in various namespaces.  */
+      gfc_find_symbol (name, gfc_current_ns, 0, &vtab);
+      if (vtab == NULL)
+	gfc_find_symbol (name, ns, 0, &vtab);
+      if (vtab == NULL)
+	gfc_find_symbol (name, derived->ns, 0, &vtab);
 
       if (vtab == NULL)
 	{
@@ -361,6 +363,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 				  NULL, &gfc_current_locus) == FAILURE)
 		goto cleanup;
 	      vtype->attr.access = ACCESS_PUBLIC;
+	      vtype->attr.vtype = 1;
 	      gfc_set_sym_referenced (vtype);
 
 	      /* Add component '$hash'.  */
@@ -408,6 +411,14 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  c->initializer = gfc_get_null_expr (NULL);
 		}
 
+	      if (derived->components == NULL && !derived->attr.zero_comp)
+		{
+		  /* At this point an error must have occurred.
+		     Prevent further errors on the vtype components.  */
+		  found_sym = vtab;
+		  goto have_vtype;
+		}
+
 	      /* Add component $def_init.  */
 	      if (gfc_add_component (vtype, "$def_init", &c) == FAILURE)
 		goto cleanup;
@@ -416,7 +427,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      c->ts.type = BT_DERIVED;
 	      c->ts.u.derived = derived;
 	      if (derived->attr.abstract)
-		c->initializer = NULL;
+		c->initializer = gfc_get_null_expr (NULL);
 	      else
 		{
 		  /* Construct default initialization variable.  */
@@ -434,11 +445,61 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  c->initializer = gfc_lval_expr_from_sym (def_init);
 		}
 
+	      /* Add component $copy.  */
+	      if (gfc_add_component (vtype, "$copy", &c) == FAILURE)
+		goto cleanup;
+	      c->attr.proc_pointer = 1;
+	      c->attr.access = ACCESS_PRIVATE;
+	      c->tb = XCNEW (gfc_typebound_proc);
+	      c->tb->ppc = 1;
+	      if (derived->attr.abstract)
+		c->initializer = gfc_get_null_expr (NULL);
+	      else
+		{
+		  /* Set up namespace.  */
+		  gfc_namespace *sub_ns = gfc_get_namespace (ns, 0);
+		  sub_ns->sibling = ns->contained;
+		  ns->contained = sub_ns;
+		  sub_ns->resolved = 1;
+		  /* Set up procedure symbol.  */
+		  sprintf (name, "copy$%s", derived->name);
+		  gfc_get_symbol (name, sub_ns, &copy);
+		  sub_ns->proc_name = copy;
+		  copy->attr.flavor = FL_PROCEDURE;
+		  copy->attr.if_source = IFSRC_DECL;
+		  gfc_set_sym_referenced (copy);
+		  /* Set up formal arguments.  */
+		  gfc_get_symbol ("src", sub_ns, &src);
+		  src->ts.type = BT_DERIVED;
+		  src->ts.u.derived = derived;
+		  src->attr.flavor = FL_VARIABLE;
+		  src->attr.dummy = 1;
+		  gfc_set_sym_referenced (src);
+		  copy->formal = gfc_get_formal_arglist ();
+		  copy->formal->sym = src;
+		  gfc_get_symbol ("dst", sub_ns, &dst);
+		  dst->ts.type = BT_DERIVED;
+		  dst->ts.u.derived = derived;
+		  dst->attr.flavor = FL_VARIABLE;
+		  dst->attr.dummy = 1;
+		  gfc_set_sym_referenced (dst);
+		  copy->formal->next = gfc_get_formal_arglist ();
+		  copy->formal->next->sym = dst;
+		  /* Set up code.  */
+		  sub_ns->code = gfc_get_code ();
+		  sub_ns->code->op = EXEC_ASSIGN;
+		  sub_ns->code->expr1 = gfc_lval_expr_from_sym (dst);
+		  sub_ns->code->expr2 = gfc_lval_expr_from_sym (src);
+		  /* Set initializer.  */
+		  c->initializer = gfc_lval_expr_from_sym (copy);
+		  c->ts.interface = copy;
+		}
+
 	      /* Add procedure pointers for type-bound procedures.  */
 	      add_procs_to_declared_vtab (derived, vtype);
-	      vtype->attr.vtype = 1;
 	    }
 
+have_vtype:
 	  vtab->ts.u.derived = vtype;
 	  vtab->value = gfc_default_initializer (&vtab->ts);
 	}
@@ -456,6 +517,12 @@ cleanup:
 	gfc_commit_symbol (vtype);
       if (def_init)
 	gfc_commit_symbol (def_init);
+      if (copy)
+	gfc_commit_symbol (copy);
+      if (src)
+	gfc_commit_symbol (src);
+      if (dst)
+	gfc_commit_symbol (dst);
     }
   else
     gfc_undo_symbols ();
