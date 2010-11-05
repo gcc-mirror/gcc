@@ -3,6 +3,10 @@
 	* cfgexpand.c (expand_debug_expr): Handle MEM_REF
 	with non-zero offset.
 
+	PR middle-end/43690
+	* gimplify.c (gimplify_asm_expr): If a "m" input is a
+	{pre,post}{in,de}crement, fail.
+
 	PR debug/46307
 	* tree-ssa-operands.c (get_expr_operands): Handle FMA_EXPR.
 	* tree-pretty-print.c (dump_generic_node): Likewise.
