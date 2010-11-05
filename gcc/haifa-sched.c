@@ -709,7 +709,7 @@ setup_ref_regs (rtx x)
 static void
 initiate_bb_reg_pressure_info (basic_block bb)
 {
-  unsigned int i;
+  unsigned int i ATTRIBUTE_UNUSED;
   rtx insn;
 
   if (current_nr_blocks > 1)
