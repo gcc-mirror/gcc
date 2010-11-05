@@ -1,3 +1,19 @@
+2010-11-05  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/i386.c (legitimate_pic_address_disp_p):
+	Handle UNSPEC_PCREL.
+	(ix86_legitimate_address_p): Likewise.
+	(legitimize_pic_address): Likewise.
+	(output_pic_addr_const): Likewise.
+	(ix86_delegitimize_address): Likewise.
+	(ix86_find_base_term): Likewise.
+	(memory_address_length): Likewise.
+	(x86_output_mi_thunk): Handle special case x64
+	for non local binding.
+	* config/i386/i386.md (UNSPEC_PCREL): New.
+	* config/i386/winnt.c (i386_pe_binds_local_p):
+	Allow weak symbol for x64 windows with non-local binding.
+
 2010-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/45670

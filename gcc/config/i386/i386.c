@@ -11718,6 +11718,7 @@ legitimate_pic_address_disp_p (rtx disp)
       if (GET_CODE (disp) != UNSPEC
 	  || (XINT (disp, 1) != UNSPEC_GOTPCREL
 	      && XINT (disp, 1) != UNSPEC_GOTOFF
+	      && XINT (disp, 1) != UNSPEC_PCREL
 	      && XINT (disp, 1) != UNSPEC_PLTOFF))
 	return false;
 
@@ -11900,6 +11901,7 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 	    return false;
 
 	  case UNSPEC_GOTPCREL:
+	  case UNSPEC_PCREL:
 	    gcc_assert (flag_pic);
 	    goto is_legitimate_pic;
 
@@ -12127,7 +12129,19 @@ legitimize_pic_address (rtx orig, rtx reg)
             }
         }
 
-      if (TARGET_64BIT && ix86_cmodel != CM_LARGE_PIC)
+      /* For x64 PE-COFF there is no GOT table.  So we use address
+         directly.  */
+      if (TARGET_64BIT && DEFAULT_ABI == MS_ABI)
+      {
+	  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_PCREL);
+	  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
+
+	  if (reg == 0)
+	    reg = gen_reg_rtx (Pmode);
+  	  emit_move_insn (reg, new_rtx);
+	  new_rtx = reg;
+      }
+      else if (TARGET_64BIT && ix86_cmodel != CM_LARGE_PIC)
 	{
 	  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTPCREL);
 	  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
@@ -12836,6 +12850,10 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 	case UNSPEC_PLTOFF:
 	  fputs ("@PLTOFF", file);
 	  break;
+	case UNSPEC_PCREL:
+	  fputs (ASSEMBLER_DIALECT == ASM_ATT ?
+		 "(%rip)" : "[rip]", file);
+	  break;
 	case UNSPEC_GOTPCREL:
 	  fputs (ASSEMBLER_DIALECT == ASM_ATT ?
 		 "@GOTPCREL(%rip)" : "@GOTPCREL[rip]", file);
@@ -12995,6 +13013,7 @@ ix86_delegitimize_address (rtx x)
       if (GET_CODE (x) != CONST
 	  || GET_CODE (XEXP (x, 0)) != UNSPEC
 	  || XINT (XEXP (x, 0), 1) != UNSPEC_GOTPCREL
+	  || XINT (XEXP (x, 0), 1) != UNSPEC_PCREL
 	  || !MEM_P (orig_x))
 	return ix86_delegitimize_tls_address (orig_x);
       x = XVECEXP (XEXP (x, 0), 0, 0);
@@ -13091,7 +13110,8 @@ ix86_find_base_term (rtx x)
 	      || GET_CODE (XEXP (term, 1)) == CONST_DOUBLE))
 	term = XEXP (term, 0);
       if (GET_CODE (term) != UNSPEC
-	  || XINT (term, 1) != UNSPEC_GOTPCREL)
+	  || (XINT (term, 1) != UNSPEC_GOTPCREL
+	      && XINT (term, 1) != UNSPEC_PCREL))
 	return x;
 
       return XVECEXP (term, 0, 0);
@@ -21803,6 +21823,7 @@ memory_address_length (rtx addr)
 		  || SYMBOL_REF_TLS_MODEL (symbol) != 0)
 	      && (GET_CODE (symbol) != UNSPEC
 		  || (XINT (symbol, 1) != UNSPEC_GOTPCREL
+		      && XINT (symbol, 1) != UNSPEC_PCREL
 		      && XINT (symbol, 1) != UNSPEC_GOTNTPOFF)))
 	    len += 1;
 	}
@@ -29112,7 +29133,8 @@ x86_output_mi_thunk (FILE *file,
   xops[0] = XEXP (DECL_RTL (function), 0);
   if (TARGET_64BIT)
     {
-      if (!flag_pic || targetm.binds_local_p (function))
+      if (!flag_pic || targetm.binds_local_p (function)
+	  || DEFAULT_ABI == MS_ABI)
 	output_asm_insn ("jmp\t%P0", xops);
       /* All thunks should be in the same object as their target,
 	 and thus binds_local_p should be true.  */
