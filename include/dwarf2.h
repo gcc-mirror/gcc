@@ -894,6 +894,8 @@ enum dwarf_source_language
     DW_LANG_D = 0x0013,
     /* DWARF 4.  */
     DW_LANG_Python = 0x0014,
+    /* DWARF 5.  */
+    DW_LANG_Go = 0x0016,
 
     DW_LANG_lo_user = 0x8000,	/* Implementation-defined range start.  */
     DW_LANG_hi_user = 0xffff,	/* Implementation-defined range start.  */
