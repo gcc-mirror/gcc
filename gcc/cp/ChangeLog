@@ -1,3 +1,8 @@
+2010-11-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46304
+	* pt.c (tsubst_copy): Handle COMPLEX_CST.
+
 2010-11-04  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Fixed using the Objective-C 2.0 dot-syntax with class names.	
