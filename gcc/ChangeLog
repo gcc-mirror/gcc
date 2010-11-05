@@ -1,5 +1,8 @@
 2010-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* cfgexpand.c (expand_debug_expr): Handle MEM_REF
+	with non-zero offset.
+
 	PR debug/46307
 	* tree-ssa-operands.c (get_expr_operands): Handle FMA_EXPR.
 	* tree-pretty-print.c (dump_generic_node): Likewise.

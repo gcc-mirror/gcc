@@ -2552,14 +2552,19 @@ expand_debug_expr (tree exp)
       }
 
     case MEM_REF:
-      /* ??? FIXME.  */
-      if (!integer_zerop (TREE_OPERAND (exp, 1)))
-	return NULL;
-      /* Fallthru.  */
     case INDIRECT_REF:
       op0 = expand_debug_expr (TREE_OPERAND (exp, 0));
       if (!op0)
 	return NULL;
+
+      if (TREE_CODE (exp) == MEM_REF)
+	{
+	  op1 = expand_debug_expr (TREE_OPERAND (exp, 1));
+	  if (!op1 || !CONST_INT_P (op1))
+	    return NULL;
+
+	  op0 = plus_constant (op0, INTVAL (op1));
+	}
 
       if (POINTER_TYPE_P (TREE_TYPE (exp)))
 	as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)));
