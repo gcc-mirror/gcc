@@ -2164,8 +2164,6 @@ walk_type (type_p t, struct walk_type_data *d)
       ;
     else if (strcmp (oo->name, "default") == 0)
       ;
-    else if (strcmp (oo->name, "descbits") == 0)
-      ;
     else if (strcmp (oo->name, "param_is") == 0)
       ;
     else if (strncmp (oo->name, "param", 5) == 0
