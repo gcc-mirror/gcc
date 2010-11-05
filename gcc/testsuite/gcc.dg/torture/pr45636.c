@@ -1,3 +1,5 @@
+/* { dg-do run } */
+/* { dg-require-effective-target mempcpy } */
 /* PR fortran/45636 */
 
 typedef __SIZE_TYPE__ size_t;
