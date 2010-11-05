@@ -1,5 +1,8 @@
 2010-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/46099
+	* gcc.dg/autopar/pr46099.c: New test.
+
 	PR middle-end/43690
 	* c-c++-common/pr43690.c: New test.
 

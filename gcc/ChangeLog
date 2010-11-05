@@ -3,6 +3,19 @@
 	* cfgexpand.c (expand_debug_expr): Handle MEM_REF
 	with non-zero offset.
 
+	PR tree-optimization/46099
+	* tree-parloops.c (take_address_of): Add GSI argument.  Return NULL
+	if it is NULL and uid wasn't found in the hash table.  Just fold the
+	result if it is NULL otherwise.  Insert other potentially needed
+	stmts right before current stmt instead of on the entry edge.
+	(struct elv_data): Add gsi and reset fields.
+	(eliminate_local_variables_1): Adjust caller.  If take_address_of
+	failed for debug stmt, set dta->reset and return.
+	(eliminate_local_variables_stmt): Change STMT argument for GSI,
+	pass GSI through to the callback, handle resetting of debug stmts.
+	(eliminate_local_variables): Adjust caller.  Process debug stmts
+	in second phase.
+
 	PR middle-end/43690
 	* gimplify.c (gimplify_asm_expr): If a "m" input is a
 	{pre,post}{in,de}crement, fail.
