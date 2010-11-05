@@ -1,3 +1,10 @@
+2010-11-05  Ian Lance Taylor  <iant@google.com>
+
+	PR target/46084
+	* explow.c (allocate_dynamic_stack_space): If flag_split_stack,
+	request enough additional space for alignment, and force
+	alignment.
+
 2010-11-05  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386.c (legitimate_pic_address_disp_p):
