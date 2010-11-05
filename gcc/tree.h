@@ -2336,8 +2336,7 @@ struct GTY(()) tree_type {
     int GTY ((tag ("0"))) address;
     const char * GTY ((tag ("1"))) pointer;
     struct die_struct * GTY ((tag ("2"))) die;
-  } GTY ((desc ("debug_hooks == &sdb_debug_hooks ? 1 : debug_hooks == &dwarf2_debug_hooks ? 2 : 0"),
-	  descbits ("2"))) symtab;
+  } GTY ((desc ("debug_hooks == &sdb_debug_hooks ? 1 : debug_hooks == &dwarf2_debug_hooks ? 2 : 0"))) symtab;
   tree name;
   tree minval;
   tree maxval;

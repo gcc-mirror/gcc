@@ -1,3 +1,9 @@
+2010-11-05  Ian Lance Taylor  <iant@google.com>
+
+	* tree.h (struct tree_type): Don't use descbits in GTY
+	annotation.
+	* gengtype.c (walk_type): Don't recognize descbits option.
+
 2010-11-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* defaults.h (DEFAULT_WORD_SWITCH_TAKES_ARG,
