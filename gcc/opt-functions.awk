@@ -100,6 +100,12 @@ function switch_flags (flags)
 	  test_flag("Warning", flags,  " | CL_WARNING") \
 	  test_flag("Optimization", flags,  " | CL_OPTIMIZATION") \
 	  test_flag("Report", flags, " | CL_REPORT")
+	sep_args = opt_args("Args", flags)
+	if (sep_args != "") {
+		sep_args--
+		result = result " | (" sep_args \
+		    " << CL_SEPARATE_NARGS_SHIFT)"
+	}
 	sub( "^0 \\| ", "", result )
 	return result
 }

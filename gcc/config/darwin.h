@@ -194,20 +194,6 @@ extern GTY(()) int darwin_ms_struct;
     darwin_override_options ();						\
   } while (0)
 
-/* These compiler options take n arguments.  */
-
-#undef  WORD_SWITCH_TAKES_ARG
-#define WORD_SWITCH_TAKES_ARG(STR)              \
-  (DEFAULT_WORD_SWITCH_TAKES_ARG (STR) ? 1 :    \
-   !strcmp (STR, "sectcreate") ? 3 :            \
-   !strcmp (STR, "sectorder") ? 3 :             \
-   !strcmp (STR, "Zsegaddr") ? 2 :              \
-   !strcmp (STR, "segprot") ? 3 :               \
-   !strcmp (STR, "sectalign") ? 3 :             \
-   !strcmp (STR, "sectobjectsymbols") ? 2 :     \
-   !strcmp (STR, "segcreate") ? 3 :             \
-   0)
-
 #define SUBTARGET_C_COMMON_OVERRIDE_OPTIONS do {                        \
     if (flag_mkernel || flag_apple_kext)				\
       {									\

@@ -162,6 +162,10 @@ generic error message is used.  @var{message} should contain a single
 @samp{%qs} format, which will be used to format the name of the option
 passed.
 
+@item Args(@var{n})
+For an option marked @code{Separate}, indicate that it takes @var{n}
+arguments.  The default is 1.
+
 @item UInteger
 The option's argument is a non-negative integer.  The option parser
 will check and convert the argument before passing it to the relevant

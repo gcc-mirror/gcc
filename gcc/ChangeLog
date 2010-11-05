@@ -1,3 +1,23 @@
+2010-11-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* defaults.h (DEFAULT_WORD_SWITCH_TAKES_ARG,
+	WORD_SWITCH_TAKES_ARG): Remove.
+	* doc/options.texi (Args): Document.
+	* doc/tm.texi.in (WORD_SWITCH_TAKES_ARG): Remove.
+	* doc/tm.texi: Regenerate.
+	* opt-functions.awk (switch_flags): Handle Args.
+	* opts-common.c: Update comment on tm.h include.
+	(decode_cmdline_option): Handle options with multiple arguments.
+	Don't check WORD_SWITCH_TAKES_ARG for unknown options.
+	* opts.h (CL_SEPARATE_NARGS_SHIFT, CL_SEPARATE_NARGS_MASK):
+	Define.
+	(CL_PARAMS, CL_WARNING, CL_OPTIMIZATION, CL_DRIVER, CL_TARGET,
+	CL_COMMON): Update values.
+	* system.h (WORD_SWITCH_TAKES_ARG): Poison.
+	* config/darwin.h (WORD_SWITCH_TAKES_ARG): Remove.
+	* config/darwin.opt (Zsegaddr, sectalign, sectcreate,
+	sectobjectsymbols, sectorder, segcreate, segprot): New.
+
 2010-11-05  H.J. Lu  <hongjiu.lu@intel.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 

@@ -96,6 +96,9 @@ Driver Separate
 Zseg_addr_table
 Driver Separate
 
+Zsegaddr
+Driver Separate Args(2)
+
 Zsegs_read_only_addr
 Driver Separate
 
@@ -129,8 +132,26 @@ Driver Separate
 read_only_relocs
 Driver Separate
 
+sectalign
+Driver Separate Args(3)
+
+sectcreate
+Driver Separate Args(3)
+
+sectobjectsymbols
+Driver Separate Args(2)
+
+sectorder
+Driver Separate Args(3)
+
 seg1addr
 Driver Separate
+
+segcreate
+Driver Separate Args(3)
+
+segprot
+Driver Separate Args(3)
 
 segs_read_only_addr
 Driver Separate
