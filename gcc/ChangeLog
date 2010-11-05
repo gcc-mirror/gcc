@@ -1,3 +1,9 @@
+2010-11-05  Joern Rennecke  <amylaar@spamcop.net>
+
+	 PR target/44750
+	* config/pdp11/t-pdp11 (dwarf2out.o, java/constants.o): Undo last
+	change.  Set $@-warn.o to -Wno-error.
+
 2010-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* cfgexpand.c (expand_debug_expr): Handle MEM_REF
