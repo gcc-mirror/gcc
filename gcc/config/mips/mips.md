@@ -1731,12 +1731,20 @@
   DONE;
 })
 
+;; As well as being named patterns, these instructions are used by the
+;; __builtin_mips_mult<u>() functions.  We must always make those functions
+;; available if !TARGET_64BIT && ISA_HAS_DSP.
 (define_insn "<u>mulsidi3_32bit"
-  [(set (match_operand:DI 0 "register_operand" "=x")
+  [(set (match_operand:DI 0 "register_operand" "=ka")
 	(mult:DI (any_extend:DI (match_operand:SI 1 "register_operand" "d"))
 		 (any_extend:DI (match_operand:SI 2 "register_operand" "d"))))]
-  "!TARGET_64BIT && !TARGET_FIX_R4000 && !ISA_HAS_DSPR2"
-  "mult<u>\t%1,%2"
+  "!TARGET_64BIT && (!TARGET_FIX_R4000 || ISA_HAS_DSP)"
+{
+  if (ISA_HAS_DSP_MULT)
+    return "mult<u>\t%q0,%1,%2";
+  else
+    return "mult<u>\t%1,%2";
+}
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")])
 
@@ -1856,6 +1864,13 @@
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")])
 
+;; As well as being named patterns, these instructions are used by the
+;; __builtin_mips_msub<u>() functions.  We must always make those functions
+;; available if !TARGET_64BIT && ISA_HAS_DSP.
+;;
+;; This leads to a slight inconsistency.  We honor any tuning overrides
+;; in GENERATE_MADD_MSUB for -mno-dsp, but always ignore them for -mdsp,
+;; even if !ISA_HAS_DSP_MULT.
 (define_insn "<u>msubsidi4"
   [(set (match_operand:DI 0 "register_operand" "=ka")
         (minus:DI
@@ -1863,9 +1878,9 @@
 	   (mult:DI
 	      (any_extend:DI (match_operand:SI 1 "register_operand" "d"))
 	      (any_extend:DI (match_operand:SI 2 "register_operand" "d")))))]
-  "!TARGET_64BIT && (ISA_HAS_MSAC || GENERATE_MADD_MSUB || ISA_HAS_DSPR2)"
+  "!TARGET_64BIT && (ISA_HAS_MSAC || GENERATE_MADD_MSUB || ISA_HAS_DSP)"
 {
-  if (ISA_HAS_DSPR2)
+  if (ISA_HAS_DSP_MULT)
     return "msub<u>\t%q0,%1,%2";
   else if (TARGET_MIPS5500 || GENERATE_MADD_MSUB)
     return "msub<u>\t%1,%2";
@@ -2036,18 +2051,20 @@
   [(set_attr "type"	"imadd")
    (set_attr "mode"	"SI")])
 
+;; See the comment above <u>msubsidi4 for the relationship between
+;; ISA_HAS_DSP and ISA_HAS_DSP_MULT.
 (define_insn "<u>maddsidi4"
   [(set (match_operand:DI 0 "register_operand" "=ka")
 	(plus:DI
 	 (mult:DI (any_extend:DI (match_operand:SI 1 "register_operand" "d"))
 		  (any_extend:DI (match_operand:SI 2 "register_operand" "d")))
 	 (match_operand:DI 3 "register_operand" "0")))]
-  "(TARGET_MAD || ISA_HAS_MACC || GENERATE_MADD_MSUB || ISA_HAS_DSPR2)
+  "(TARGET_MAD || ISA_HAS_MACC || GENERATE_MADD_MSUB || ISA_HAS_DSP)
    && !TARGET_64BIT"
 {
   if (TARGET_MAD)
     return "mad<u>\t%1,%2";
-  else if (ISA_HAS_DSPR2)
+  else if (ISA_HAS_DSP_MULT)
     return "madd<u>\t%q0,%1,%2";
   else if (GENERATE_MADD_MSUB || TARGET_MIPS5500)
     return "madd<u>\t%1,%2";

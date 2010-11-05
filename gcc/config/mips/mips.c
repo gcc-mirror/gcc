@@ -12730,6 +12730,8 @@ AVAIL_NON_MIPS16 (cache, TARGET_CACHE_BUILTIN)
 #define CODE_FOR_mips_subq_ph CODE_FOR_subv2hi3
 #define CODE_FOR_mips_subu_qb CODE_FOR_subv4qi3
 #define CODE_FOR_mips_mul_ph CODE_FOR_mulv2hi3
+#define CODE_FOR_mips_mult CODE_FOR_mulsidi3_32bit
+#define CODE_FOR_mips_multu CODE_FOR_umulsidi3_32bit
 
 #define CODE_FOR_loongson_packsswh CODE_FOR_vec_pack_ssat_v2si
 #define CODE_FOR_loongson_packsshb CODE_FOR_vec_pack_ssat_v4hi
@@ -12928,17 +12930,17 @@ static const struct mips_builtin_description mips_builtins[] = {
   DIRECT_BUILTIN (extpdp, MIPS_SI_FTYPE_DI_SI, dsp_32),
   DIRECT_BUILTIN (shilo, MIPS_DI_FTYPE_DI_SI, dsp_32),
   DIRECT_BUILTIN (mthlip, MIPS_DI_FTYPE_DI_SI, dsp_32),
+  DIRECT_BUILTIN (madd, MIPS_DI_FTYPE_DI_SI_SI, dsp_32),
+  DIRECT_BUILTIN (maddu, MIPS_DI_FTYPE_DI_USI_USI, dsp_32),
+  DIRECT_BUILTIN (msub, MIPS_DI_FTYPE_DI_SI_SI, dsp_32),
+  DIRECT_BUILTIN (msubu, MIPS_DI_FTYPE_DI_USI_USI, dsp_32),
+  DIRECT_BUILTIN (mult, MIPS_DI_FTYPE_SI_SI, dsp_32),
+  DIRECT_BUILTIN (multu, MIPS_DI_FTYPE_USI_USI, dsp_32),
 
   /* The following are for the MIPS DSP ASE REV 2 (32-bit only).  */
   DIRECT_BUILTIN (dpa_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, dspr2_32),
   DIRECT_BUILTIN (dps_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, dspr2_32),
-  DIRECT_BUILTIN (madd, MIPS_DI_FTYPE_DI_SI_SI, dspr2_32),
-  DIRECT_BUILTIN (maddu, MIPS_DI_FTYPE_DI_USI_USI, dspr2_32),
-  DIRECT_BUILTIN (msub, MIPS_DI_FTYPE_DI_SI_SI, dspr2_32),
-  DIRECT_BUILTIN (msubu, MIPS_DI_FTYPE_DI_USI_USI, dspr2_32),
   DIRECT_BUILTIN (mulsa_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, dspr2_32),
-  DIRECT_BUILTIN (mult, MIPS_DI_FTYPE_SI_SI, dspr2_32),
-  DIRECT_BUILTIN (multu, MIPS_DI_FTYPE_USI_USI, dspr2_32),
   DIRECT_BUILTIN (dpax_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, dspr2_32),
   DIRECT_BUILTIN (dpsx_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, dspr2_32),
   DIRECT_BUILTIN (dpaqx_s_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, dspr2_32),
@@ -16173,10 +16175,8 @@ mips_mulsidi3_gen_fn (enum rtx_code ext_code)
     }
   else
     {
-      if (TARGET_FIX_R4000)
+      if (TARGET_FIX_R4000 && !ISA_HAS_DSP)
 	return signed_p ? gen_mulsidi3_32bit_r4000 : gen_umulsidi3_32bit_r4000;
-      if (ISA_HAS_DSPR2)
-	return signed_p ? gen_mips_mult : gen_mips_multu;
       return signed_p ? gen_mulsidi3_32bit : gen_umulsidi3_32bit;
     }
 }

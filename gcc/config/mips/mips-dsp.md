@@ -1181,3 +1181,18 @@
   "%*bposge%1\t%0%/"
   [(set_attr "type"	"branch")])
 
+(define_expand "mips_madd<u>"
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI
+	 (mult:DI (any_extend:DI (match_operand:SI 2 "register_operand"))
+		  (any_extend:DI (match_operand:SI 3 "register_operand")))
+	 (match_operand:DI 1 "register_operand")))]
+  "ISA_HAS_DSP && !TARGET_64BIT")
+
+(define_expand "mips_msub<u>"
+  [(set (match_operand:DI 0 "register_operand")
+	(minus:DI
+	 (match_operand:DI 1 "register_operand")
+	 (mult:DI (any_extend:DI (match_operand:SI 2 "register_operand"))
+		  (any_extend:DI (match_operand:SI 3 "register_operand")))))]
+  "ISA_HAS_DSP && !TARGET_64BIT")
