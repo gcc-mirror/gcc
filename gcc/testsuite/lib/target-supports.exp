@@ -1366,7 +1366,7 @@ proc check_function_available { function } {
 	#endif
 	char $function ();
 	int main () { $function (); }
-    }]]
+    }] "-fno-builtin" ]
 }
 
 # Returns true iff "fork" is available on the target system.
@@ -3740,4 +3740,10 @@ proc check_effective_target_run_expensive_tests { } {
         return 1
     }
     return 0
+}
+
+# Returns 1 if "mempcpy" is available on the target system.
+
+proc check_effective_target_mempcpy {} {
+    return [check_function_available "mempcpy"]
 }

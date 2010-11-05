@@ -1,3 +1,10 @@
+2010-11-05  Steve Ellcey  <sje@cup.hp.com>
+
+	* lib/target-supports.exp (check_function_available): Use -fno-builtin.
+	* (check_effective_target_mempcpy): New.
+	* gcc.c-torture/execute/pr45636.c: Move this...
+	* gcc.dg/torture/pr45636.c: to here.  Add add dg- directives.
+
 2010-11-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/i386.exp (FLAGS): Remove.
