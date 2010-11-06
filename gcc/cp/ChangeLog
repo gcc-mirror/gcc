@@ -1,3 +1,11 @@
+2010-11-06  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/45332
+	* parser.c (cp_lexer_previous_token): New function.
+	(cp_parser_member_declaration): Use previous token for error
+	messages.  Assume semicolon presence rather than grovelling for
+	the next one.
+
 2010-11-06  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR middle-end/46314

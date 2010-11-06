@@ -502,6 +502,19 @@ cp_lexer_token_at (cp_lexer *lexer ATTRIBUTE_UNUSED, cp_token_position pos)
   return pos;
 }
 
+static inline cp_token *
+cp_lexer_previous_token (cp_lexer *lexer)
+{
+  cp_token_position tp;
+
+  if (lexer->next_token == &eof_token)
+    tp = lexer->last_token - 1;
+  else
+    tp = cp_lexer_token_position (lexer, true);
+
+  return cp_lexer_token_at (lexer, tp);
+}
+
 /* nonzero if we are presently saving tokens.  */
 
 static inline int
@@ -17627,6 +17640,8 @@ cp_parser_member_declaration (cp_parser* parser)
     }
   else
     {
+      bool assume_semicolon = false;
+
       /* See if these declarations will be friends.  */
       friend_p = cp_parser_friend_p (&decl_specifiers);
 
@@ -17820,11 +17835,18 @@ cp_parser_member_declaration (cp_parser* parser)
 	  else if (cp_lexer_next_token_is_not (parser->lexer,
 					       CPP_SEMICOLON))
 	    {
-	      cp_parser_error (parser, "expected %<;%>");
-	      /* Skip tokens until we find a `;'.  */
-	      cp_parser_skip_to_end_of_statement (parser);
+	      /* The next token might be a ways away from where the
+		 actual semicolon is missing.  Find the previous token
+		 and use that for our error position.  */
+	      cp_token *token = cp_lexer_previous_token (parser->lexer);
+	      error_at (token->location,
+			"expected %<;%> at end of member declaration");
 
-	      break;
+	      /* Assume that the user meant to provide a semicolon.  If
+		 we were to cp_parser_skip_to_end_of_statement, we might
+		 skip to a semicolon inside a member function definition
+		 and issue nonsensical error messages.  */
+	      assume_semicolon = true;
 	    }
 
 	  if (decl)
@@ -17836,6 +17858,9 @@ cp_parser_member_declaration (cp_parser* parser)
 	      if (TREE_CODE (decl) == FUNCTION_DECL)
 		cp_parser_save_default_args (parser, decl);
 	    }
+
+	  if (assume_semicolon)
+	    return;
 	}
     }
 

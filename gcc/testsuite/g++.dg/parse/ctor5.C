@@ -2,9 +2,9 @@
 
 struct A
 {
-  int i;
-  A() i() {}  // { dg-error "expected" }
-}; // { dg-error "expected" }
+  int i; // { dg-error "conflicts" }
+  A() i() {}  // { dg-error "declaration" }
+};
 
 struct B
 {
