@@ -1,3 +1,9 @@
+2010-11-06  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR middle-end/46314
+	* method.c (make_alias_for_thunk):
+	Use targetm.asm_out.generate_internal_label.
+
 2010-11-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/45473

@@ -6611,6 +6611,16 @@ default_emit_except_table_label (FILE * stream ATTRIBUTE_UNUSED)
    the class of label and LABELNO is the number within the class.  */
 
 void
+default_generate_internal_label (char *buf, const char *prefix,
+				 unsigned long labelno)
+{
+  ASM_GENERATE_INTERNAL_LABEL (buf, prefix, labelno);
+}
+
+/* This is how to output an internal numbered label where PREFIX is
+   the class of label and LABELNO is the number within the class.  */
+
+void
 default_internal_label (FILE *stream, const char *prefix,
 			unsigned long labelno)
 {
