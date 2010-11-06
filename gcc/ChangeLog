@@ -1,3 +1,9 @@
+2010-11-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR debug/45939
+	* var-tracking.c (emit_note_insn_var_location): Make sure that
+	call related var location notes come before the normal ones.
+
 2010-11-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/46326
