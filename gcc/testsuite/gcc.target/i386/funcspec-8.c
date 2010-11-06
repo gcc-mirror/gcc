@@ -2,7 +2,7 @@
    functions in functions with the appropriate function specific options.  */
 /* { dg-do compile } */
 /* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=k8" } } */
-/* { dg-options "-O2 -march=k8 -mfpmath=sse" } */
+/* { dg-options "-O2 -march=k8 -mno-sse3 -mfpmath=sse" } */
 
 typedef float     __m128  __attribute__ ((__vector_size__ (16), __may_alias__));
 typedef double    __m128d __attribute__ ((__vector_size__ (16), __may_alias__));

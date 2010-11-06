@@ -1,3 +1,18 @@
+2010-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/387-2.c: Skip if -march= is specified.
+	* gcc.target/i386/387-6.c: Ditto.
+	* gcc.target/i386/387-2.c: Add -mfancy-math-387 to dg-options.
+	* gcc.target/i386/387-4.c: Ditto.
+	* gcc.target/i386/387-7.c: Ditto.
+	* gcc.target/i386/387-8.c: Ditto.
+	* gcc.target/i386/387-9.c: Ditto.
+	* gcc.target/i386/387-10.c: Ditto.
+	* gcc.target/i386/387-11.c: Ditto.
+	* gcc.target/i386/387-12.c: Ditto.
+
+	* gcc.target/i386/387-2.c: Add -mno-sse3 to dg-options.
+
 2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/44981
