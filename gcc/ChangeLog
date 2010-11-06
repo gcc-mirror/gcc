@@ -1,3 +1,10 @@
+2010-11-06  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c/43384
+	* c-decl.c (lookup_label): Labels can only be referenced in a
+	function's scope. 
+	(store_parm_decls_oldstyle): Skip erroneous parameters.
+
 2010-11-06  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/fr30/fr30.h (FUNCTION_VALUE_REGNO_P, FUNCTION_VALUE,
