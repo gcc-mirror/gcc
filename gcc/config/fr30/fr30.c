@@ -124,6 +124,9 @@ static rtx fr30_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 static void fr30_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				       const_tree, bool);
 static bool fr30_frame_pointer_required (void);
+static rtx fr30_function_value (const_tree, const_tree, bool);
+static rtx fr30_libcall_value (enum machine_mode, const_rtx);
+static bool fr30_function_value_regno_p (const unsigned int);
 static bool fr30_can_eliminate (const int, const int);
 static void fr30_asm_trampoline_template (FILE *);
 static void fr30_trampoline_init (rtx, tree, rtx);
@@ -171,6 +174,13 @@ static const struct default_options fr30_option_optimization_table[] =
 #define TARGET_FUNCTION_ARG fr30_function_arg
 #undef  TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE fr30_function_arg_advance
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE fr30_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE fr30_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P fr30_function_value_regno_p
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS fr30_setup_incoming_varargs
@@ -703,6 +713,34 @@ fr30_print_operand (FILE *file, rtx x, int code)
 }
 
 /*}}}*/
+
+/* Implements TARGET_FUNCTION_VALUE.  */
+
+static rtx
+fr30_function_value (const_tree valtype,
+		     const_tree fntype_or_decli ATTRIBUTE_UNUSED,
+		     bool outgoing ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (TYPE_MODE (valtype), RETURN_VALUE_REGNUM);
+}
+
+/* Implements TARGET_LIBCALL_VALUE.  */
+
+static rtx
+fr30_libcall_value (enum machine_mode mode,
+		    const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (mode, RETURN_VALUE_REGNUM);
+}
+
+/* Implements TARGET_FUNCTION_VALUE_REGNO_P.  */
+
+static bool
+fr30_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == RETURN_VALUE_REGNUM);
+}
+
 /*{{{  Function arguments */ 
 
 /* Return true if we should pass an argument on the stack rather than
