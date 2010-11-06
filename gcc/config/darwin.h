@@ -1023,8 +1023,17 @@ __enable_execute_stack (void *addr)                                     \
 /* We have target-specific builtins.  */
 #define TARGET_FOLD_BUILTIN darwin_fold_builtin
 
-#define TARGET_OBJC_CONSTRUCT_STRING \
+#define TARGET_OBJC_CONSTRUCT_STRING_OBJECT \
   darwin_objc_construct_string
+
+#define TARGET_STRING_OBJECT_REF_TYPE_P \
+  darwin_cfstring_ref_p
+
+#define TARGET_N_FORMAT_TYPES 1
+#define TARGET_FORMAT_TYPES darwin_additional_format_types
+
+#define TARGET_CHECK_STRING_OBJECT_FORMAT_ARG \
+  darwin_check_cfstring_format_arg
 
 #define TARGET_HAS_TARGETCM 1
 

@@ -1,3 +1,13 @@
+2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/44981
+	* gcc.dg/darwin-cfstring-format-1.c: New.
+	* gcc.dg/warn-nsstring.c: New.
+	* objc.dg/fsf-nsstring-format-1.m: New.
+	* obj-c++.dg/fsf-nsstring-format-1.mm: New.
+	* obj-c++.dg/torture/strings/const-cfstring-1.mm: Update for darwin10
+	linker warning.
+
 2010-11-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/45473

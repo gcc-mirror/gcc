@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
+#include "c-family/c-format.h"
 #include "flags.h"
 #include "langhooks.h"
 #include "objc-act.h"
@@ -2755,9 +2756,9 @@ objc_build_string_object (tree string)
      literal.  On Darwin (Mac OS X), for example, we may wish to obtain a 
      constant CFString reference instead.
      At present, this is only supported for the NeXT runtime.  */
-  if (flag_next_runtime && targetcm.objc_construct_string)
+  if (flag_next_runtime && targetcm.objc_construct_string_object)
     {
-      tree constructor = (*targetcm.objc_construct_string) (string);
+      tree constructor = (*targetcm.objc_construct_string_object) (string);
       if (constructor)
 	return build1 (NOP_EXPR, objc_object_type, constructor);
     }
@@ -12671,6 +12672,30 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
 
   /* } */
   /* Done by c-parser.c  */
+}
+
+/* Return true if we have an NxString object pointer.  */
+
+bool
+objc_string_ref_type_p (tree strp)
+{
+  tree tmv;
+  if (!strp || TREE_CODE (strp) != POINTER_TYPE)
+    return false;
+
+  tmv = TYPE_MAIN_VARIANT (TREE_TYPE (strp));
+  tmv = OBJC_TYPE_NAME (tmv);
+  return (tmv
+  	  && TREE_CODE (tmv) == IDENTIFIER_NODE
+  	  && IDENTIFIER_POINTER (tmv)
+	  && !strncmp (IDENTIFIER_POINTER (tmv), "NSString", 8));
+}
+
+/* At present the behavior of this is undefined and it does nothing.  */
+void
+objc_check_format_arg (tree ARG_UNUSED (format_arg), 
+		       tree ARG_UNUSED (args_list))
+{
 }
 
 #include "gt-objc-objc-act.h"

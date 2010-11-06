@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "c-format.h"
 #include "alloc-pool.h"
+#include "target.h"
 
 /* Set format warning options according to a -Wformat=n option.  */
 
@@ -63,6 +64,7 @@ enum format_type { printf_format_type, asm_fprintf_format_type,
 		   gcc_diag_format_type, gcc_tdiag_format_type,
 		   gcc_cdiag_format_type,
 		   gcc_cxxdiag_format_type, gcc_gfc_format_type,
+		   gcc_objc_string_format_type,
 		   format_type_error = -1};
 
 typedef struct function_format_info
@@ -77,11 +79,37 @@ static int decode_format_type (const char *);
 
 static bool check_format_string (tree argument,
 				 unsigned HOST_WIDE_INT format_num,
-				 int flags, bool *no_add_attrs);
+				 int flags, bool *no_add_attrs,
+				 int expected_format_type);
 static bool get_constant (tree expr, unsigned HOST_WIDE_INT *value,
 			  int validated_p);
 static const char *convert_format_name_to_system_name (const char *attr_name);
 static bool cmp_attribs (const char *tattr_name, const char *attr_name);
+
+static int first_target_format_type;
+static const char *format_name (int format_num);
+static int format_flags (int format_num);
+
+/* Check that we have a pointer to a string suitable for use as a format.
+   The default is to check for a char type.
+   For objective-c dialects, this is extended to include references to string
+   objects validated by objc_string_ref_type_p ().  
+   Targets may also provide a string object type that can be used within c and 
+   c++ and shared with their respective objective-c dialects. In this case the
+   reference to a format string is checked for validity via a hook.
+   
+   The function returns true if strref points to any string type valid for the 
+   language dialect and target.  */
+
+static bool
+valid_stringptr_type_p (tree strref)
+{
+  return (strref != NULL
+	  && TREE_CODE (strref) == POINTER_TYPE
+	  && (TYPE_MAIN_VARIANT (TREE_TYPE (strref)) == char_type_node
+	      || objc_string_ref_type_p (strref)
+	      || (*targetcm.string_object_ref_type_p) ((const_tree) strref)));
+}
 
 /* Handle a "format_arg" attribute; arguments as in
    struct attribute_spec.handler.  */
@@ -104,13 +132,13 @@ handle_format_arg_attribute (tree *node, tree ARG_UNUSED (name),
   argument = TYPE_ARG_TYPES (type);
   if (argument)
     {
-      if (!check_format_string (argument, format_num, flags, no_add_attrs))
+      /* The format arg can be any string reference valid for the language and
+         target.  We cannot be more specific in this case.  */
+      if (!check_format_string (argument, format_num, flags, no_add_attrs, -1))
 	return NULL_TREE;
     }
 
-  if (TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
-      || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
-	  != char_type_node))
+  if (!valid_stringptr_type_p (TREE_TYPE (type)))
     {
       if (!(flags & (int) ATTR_FLAG_BUILT_IN))
 	error ("function does not return string type");
@@ -121,13 +149,18 @@ handle_format_arg_attribute (tree *node, tree ARG_UNUSED (name),
   return NULL_TREE;
 }
 
-/* Verify that the format_num argument is actually a string, in case
-   the format attribute is in error.  */
+/* Verify that the format_num argument is actually a string reference suitable,
+   for the language dialect and target (in case the format attribute is in 
+   error).  When we know the specific reference type expected, this is also 
+   checked.  */
 static bool
 check_format_string (tree argument, unsigned HOST_WIDE_INT format_num,
-		     int flags, bool *no_add_attrs)
+		     int flags, bool *no_add_attrs, int expected_format_type)
 {
   unsigned HOST_WIDE_INT i;
+  bool is_objc_sref, is_target_sref, is_char_ref;
+  tree ref;
+  int fmt_flags;
 
   for (i = 1; i != format_num; i++)
     {
@@ -137,17 +170,78 @@ check_format_string (tree argument, unsigned HOST_WIDE_INT format_num,
     }
 
   if (!argument
-      || TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
-      || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
-	  != char_type_node))
+      || !(ref = TREE_VALUE (argument))
+      || !valid_stringptr_type_p (ref))
     {
       if (!(flags & (int) ATTR_FLAG_BUILT_IN))
-	error ("format string argument not a string type");
+	error ("format string argument is not a string type");
       *no_add_attrs = true;
       return false;
     }
 
-  return true;
+  /* We only know that we want a suitable string reference.  */
+  if (expected_format_type < 0)
+    return true;
+
+  /* Now check that the arg matches the expected type.  */
+  is_char_ref = 
+    (TYPE_MAIN_VARIANT (TREE_TYPE (ref)) == char_type_node);
+
+  fmt_flags = format_flags (expected_format_type);
+  is_objc_sref = is_target_sref = false;
+  if (!is_char_ref)
+    is_objc_sref = objc_string_ref_type_p (ref);
+
+  if (!(fmt_flags & FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL))
+    {
+      if (is_char_ref)
+	return true; /* OK, we expected a char and found one.  */
+      else
+	{
+	  /* We expected a char but found an extended string type.  */
+	  if (is_objc_sref)
+	    error ("found a %<%s%> reference but the format argument should"
+		   " be a string", format_name (gcc_objc_string_format_type));
+	  else
+	    error ("found a %qT but the format argument should be a string",
+		   ref);
+	  *no_add_attrs = true;
+	  return false;
+	}
+    }
+
+  /* We expect a string object type as the format arg.  */
+  if (is_char_ref)
+    {
+      error ("format argument should be a %<%s%> reference but"
+	     " a string was found", format_name (expected_format_type));
+      *no_add_attrs = true;
+      return false;
+    }
+  
+  /* We will assert that objective-c will support either its own string type
+     or the target-supplied variant.  */
+  if (!is_objc_sref)
+    is_target_sref = (*targetcm.string_object_ref_type_p) ((const_tree) ref);
+
+  if (expected_format_type == (int) gcc_objc_string_format_type 
+      && (is_objc_sref || is_target_sref))
+    return true;
+
+  /* We will allow a target string ref to match only itself.  */
+  if (first_target_format_type 
+      && expected_format_type >= first_target_format_type
+      && is_target_sref)
+    return true;
+  else
+    {
+      error ("format argument should be a %<%s%> reference", 
+	      format_name (expected_format_type));
+      *no_add_attrs = true;
+      return false;
+    }
+
+  gcc_unreachable ();
 }
 
 /* Verify EXPR is a constant, and store its value.
@@ -195,6 +289,16 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
       p = convert_format_name_to_system_name (p);
 
       info->format_type = decode_format_type (p);
+      
+      if (!c_dialect_objc ()
+	   && info->format_type == gcc_objc_string_format_type)
+	{
+	  gcc_assert (!validated_p);
+	  warning (OPT_Wformat, "%qE is only allowed in Objective-C dialects",
+		   format_type_id);
+	  info->format_type = format_type_error;
+	  return false;
+	}
 
       if (info->format_type == format_type_error)
 	{
@@ -750,6 +854,11 @@ static const format_kind_info format_types_orig[] =
     0, 0, 0, 0, 0, 0,
     NULL, NULL
   },
+  { "NSString",   NULL,  NULL, NULL, NULL,
+    NULL, NULL,
+    FMT_FLAG_ARG_CONVERT|FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL, 0, 0, 0, 0, 0, 0,
+    NULL, NULL
+  },
   { "gnu_scanf",    scanf_length_specs,   scan_char_table,  "*'I", NULL,
     scanf_flag_specs, scanf_flag_pairs,
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_SCANF_A_KLUDGE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_ZERO_WIDTH_BAD|FMT_FLAG_DOLLAR_GAP_POINTER_OK,
@@ -811,6 +920,26 @@ typedef struct
   function_format_info *info;
   tree params;
 } format_check_context;
+
+/* Return the format name (as specified in the original table) for the format
+   type indicated by format_num.  */
+static const char *
+format_name (int format_num)
+{
+  if (format_num >= 0 && format_num < n_format_types)
+    return format_types[format_num].name;
+  gcc_unreachable ();
+}
+
+/* Return the format flags (as specified in the original table) for the format
+   type indicated by format_num.  */
+static int
+format_flags (int format_num)
+{
+  if (format_num >= 0 && format_num < n_format_types)
+    return format_types[format_num].flags;
+  gcc_unreachable ();
+}
 
 static void check_format_info (function_format_info *, tree);
 static void check_format_arg (void *, tree, unsigned HOST_WIDE_INT);
@@ -1349,6 +1478,39 @@ check_format_arg (void *ctx, tree format_tree,
       return;
     }
   format_tree = TREE_OPERAND (format_tree, 0);
+  if (format_types[info->format_type].flags 
+      & (int) FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL)
+    {
+      bool objc_str = (info->format_type == gcc_objc_string_format_type);
+      /* We cannot examine this string here - but we can check that it is
+         a valid type.  */
+      if (TREE_CODE (format_tree) != CONST_DECL
+	  || !((objc_str && objc_string_ref_type_p (TREE_TYPE (format_tree)))
+		|| (*targetcm.string_object_ref_type_p) 
+				     ((const_tree) TREE_TYPE (format_tree))))
+	{
+	  res->number_non_literal++;
+	  return;
+	}
+      /* Skip to first argument to check.  */
+      while (arg_num + 1 < info->first_arg_num)
+	{
+	  if (params == 0)
+	    return;
+	  params = TREE_CHAIN (params);
+	  ++arg_num;
+	}
+      /* So, we have a valid literal string object and one or more params.
+         We need to use an external helper to parse the string into format
+         info.  For Objective-C variants we provide the resource within the
+         objc tree, for target variants, via a hook.  */
+      if (objc_str)
+	objc_check_format_arg (format_tree, params);
+      else if (targetcm.check_string_object_format_arg)
+	(*targetcm.check_string_object_format_arg) (format_tree, params);
+      /* Else we can't handle it and retire quietly.  */
+      return;
+    }
   if (TREE_CODE (format_tree) == ARRAY_REF
       && host_integerp (TREE_OPERAND (format_tree, 1), 0)
       && (offset += tree_low_cst (TREE_OPERAND (format_tree, 1), 0)) >= 0)
@@ -2785,6 +2947,8 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	      TARGET_N_FORMAT_TYPES * sizeof (dynamic_format_types[0]));
 
       format_types = dynamic_format_types;
+      /* Provide a reference for the first potential external type.  */
+      first_target_format_type = n_format_types;
       n_format_types += TARGET_N_FORMAT_TYPES;
     }
 #endif
@@ -2799,7 +2963,7 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   if (argument)
     {
       if (!check_format_string (argument, info.format_num, flags,
-				no_add_attrs))
+				no_add_attrs, info.format_type))
 	return NULL_TREE;
 
       if (info.first_arg_num != 0)

@@ -1,3 +1,24 @@
+2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/44981
+	* c-format.c (format_type): New type gcc_objc_string_format_type.
+	(valid_stringptr_type_p): New.
+	(handle_format_arg_attribute): Use valid_stringptr_type_p ().
+	(check_format_string): Pass expected type, use 
+	valid_stringptr_type_p (), check that the format string types are
+	consistent with the format specification.
+	(decode_format_attr): Warn if NSString is used outside objective-c.
+	(format_types_orig): Add NSString.
+	(format_name): New.
+	(format_flags): New.
+	(check_format_arg): Handle format strings requiring an external parser.
+	first_target_format_type: New variable.
+	(handle_format_attribute): Set up first_target_format_type, pass the
+	expected format arg string type to check_format_string().
+	* c-common.h (FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL):  New flag.
+	* stub-objc.c (objc_string_ref_type_p): New.
+	(objc_check_format_arg): New.
+
 2010-11-04  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Fixed using the Objective-C 2.0 dot-syntax with class names.	

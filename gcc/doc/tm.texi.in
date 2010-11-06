@@ -715,7 +715,11 @@ only available in the C (and related language) front ends, then you
 should use @code{TARGET_HANDLE_C_OPTION} instead.
 @end deftypefn
 
-@hook TARGET_OBJC_CONSTRUCT_STRING
+@hook TARGET_OBJC_CONSTRUCT_STRING_OBJECT
+
+@hook TARGET_STRING_OBJECT_REF_TYPE_P
+
+@hook TARGET_CHECK_STRING_OBJECT_FORMAT_ARG
 
 @defmac TARGET_VERSION
 This macro is a C statement to print on @code{stderr} a string

@@ -1043,6 +1043,8 @@ extern void objc_add_synthesize_declaration (location_t, tree);
 extern void objc_add_dynamic_declaration (location_t, tree);
 extern const char * objc_maybe_printable_name (tree, int);
 extern bool objc_is_property_ref (tree);
+extern bool objc_string_ref_type_p (tree);
+extern void objc_check_format_arg (tree, tree);
 
 /* The following are provided by the C and C++ front-ends, and called by
    ObjC/ObjC++.  */
