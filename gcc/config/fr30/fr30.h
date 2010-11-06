@@ -588,31 +588,6 @@ enum reg_class
   ((REGNO) >= FIRST_ARG_REGNUM && ((REGNO) < FIRST_ARG_REGNUM + FR30_NUM_ARG_REGS))
 
 /*}}}*/ 
-/*{{{  How Scalar Function Values are Returned.  */ 
-
-#define FUNCTION_VALUE(VALTYPE, FUNC) \
-     gen_rtx_REG (TYPE_MODE (VALTYPE), RETURN_VALUE_REGNUM)
-
-/* A C expression to create an RTX representing the place where a library
-   function returns a value of mode MODE.  If the precise function being called
-   is known, FUNC is a tree node (`FUNCTION_DECL') for it; otherwise, FUNC is a
-   null pointer.  This makes it possible to use a different value-returning
-   convention for specific functions when all their calls are known.
-
-   Note that "library function" in this context means a compiler support
-   routine, used to perform arithmetic, whose name is known specially by the
-   compiler and was not mentioned in the C code being compiled.
-
-   The definition of `LIBRARY_VALUE' need not be concerned aggregate data
-   types, because none of the library functions returns such types.  */
-#define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, RETURN_VALUE_REGNUM)
-
-/* A C expression that is nonzero if REGNO is the number of a hard register in
-   which the values of called function may come back.  */
-
-#define FUNCTION_VALUE_REGNO_P(REGNO) ((REGNO) == RETURN_VALUE_REGNUM)
-
-/*}}}*/ 
 /*{{{  How Large Values are Returned.  */ 
 
 /* Define this macro to be 1 if all structure and union return values must be

@@ -1,3 +1,12 @@
+2010-11-06  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/fr30/fr30.h (FUNCTION_VALUE_REGNO_P, FUNCTION_VALUE,
+	LIBCALL_VALUE): Remove macros.
+	* config/fr30/fr30.c (TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE,
+	TARGET_FUNCTION_VALUE_REGNO_P): Define.
+	(fr30_function_value_regno_p, fr30_function_value,
+	fr30_libcall_value): New functions.
+
 2010-11-06  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR middle-end/46314
