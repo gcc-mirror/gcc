@@ -1,3 +1,26 @@
+2010-11-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/shared_ptr.h (shared_ptr<>::__shared_ptr(),
+	shared_ptr<>::shared_ptr(nullptr_t), weak_ptr<>::weak_ptr(),
+	enable_shared_from_this::enable_shared_from_this()): Add constexpr
+	specifier.
+	* include/bits/shared_ptr_base.h (__shared_count::__shared_count(),
+	__shared_count::__shared_count(), __shared_ptr<>::__shared_ptr(),
+	__shared_ptr<>::__shared_ptr(nullptr_t), __weak_ptr<>::__weak_ptr(),
+	__enable_shared_from_this::__enable_shared_from_this()): Likewise.
+	* include/bits/unique_ptr.h (default_delete,
+	unique_ptr<>::unique_ptr(), unique_ptr<>::unique_ptr(nullptr_t)):
+	Likewise.
+	* testsuite/20_util/default_delete/cons/constexpr.cc: Do not xfail.
+	* testsuite/20_util/shared_ptr/cons/constexpr.cc: Remove, the test
+	cannot work for a non-literal type like std::shared_ptr.
+	* testsuite/20_util/weak_ptr/cons/constexpr.cc: Likewise.
+	* testsuite/util/testsuite_common_types.h: Add comments.
+	* testsuite/20_util/unique_ptr/cons/constexpr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820.cc: Adjust dg-error line
+	numbers.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Likewise.
+
 2010-11-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/doxygen/user.cfg.in: Remove tr1_impl headers.

@@ -1,4 +1,4 @@
-// { dg-do compile { xfail *-*-* } }
+// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
 // Copyright (C) 2010 Free Software Foundation, Inc.
@@ -24,6 +24,6 @@
 int main()
 {
   __gnu_test::constexpr_default_constructible test;
-  test.operator()<std::default_delete<int>>(); // { dg-excess-errors "" }
+  test.operator()<std::default_delete<int>>();
   return 0;
 }

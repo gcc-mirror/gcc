@@ -443,7 +443,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     class __shared_count
     {
     public:
-      __shared_count() : _M_pi(0) // nothrow
+      constexpr __shared_count() : _M_pi(0) // nothrow
       { }
 
       template<typename _Ptr>
@@ -635,7 +635,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     class __weak_count
     {
     public:
-      __weak_count() : _M_pi(0) // nothrow
+      constexpr __weak_count() : _M_pi(0) // nothrow
       { }
 
       __weak_count(const __shared_count<_Lp>& __r) : _M_pi(__r._M_pi) // nothrow
@@ -751,11 +751,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     public:
       typedef _Tp   element_type;
 
-      __shared_ptr() : _M_ptr(0), _M_refcount() // never throws
+      constexpr __shared_ptr()
+      : _M_ptr(0), _M_refcount() // never throws
       { }
 
       template<typename _Tp1>
-	explicit __shared_ptr(_Tp1* __p) : _M_ptr(__p), _M_refcount(__p)
+	explicit __shared_ptr(_Tp1* __p)
+        : _M_ptr(__p), _M_refcount(__p)
 	{
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
 	  static_assert( sizeof(_Tp1) > 0, "incomplete type" );
@@ -856,7 +858,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #endif
 
       /* TODO: use delegating constructor */
-      __shared_ptr(nullptr_t) : _M_ptr(0), _M_refcount() // never throws
+      constexpr __shared_ptr(nullptr_t)
+      : _M_ptr(0), _M_refcount() // never throws
       { }
 
       template<typename _Tp1>
@@ -1163,7 +1166,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     public:
       typedef _Tp element_type;
 
-      __weak_ptr() : _M_ptr(0), _M_refcount() // never throws
+      constexpr __weak_ptr()
+      : _M_ptr(0), _M_refcount() // never throws
       { }
 
       // Generated copy constructor, assignment, destructor are fine.
@@ -1324,7 +1328,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     class __enable_shared_from_this
     {
     protected:
-      __enable_shared_from_this() { }
+      constexpr __enable_shared_from_this() { }
 
       __enable_shared_from_this(const __enable_shared_from_this&) { }
 

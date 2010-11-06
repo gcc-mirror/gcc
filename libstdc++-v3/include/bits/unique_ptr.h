@@ -46,20 +46,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// Primary template, default_delete.
   template<typename _Tp>
     struct default_delete
+    {
+      constexpr default_delete() { }
+
+      template<typename _Up, typename = typename
+	       std::enable_if<std::is_convertible<_Up*, _Tp*>::value>::type>
+        default_delete(const default_delete<_Up>&) { }
+
+      void
+      operator()(_Tp* __ptr) const
       {
-	default_delete() { }
-
-	template<typename _Up, typename = typename
-		 std::enable_if<std::is_convertible<_Up*, _Tp*>::value>::type>
-	  default_delete(const default_delete<_Up>&) { }
-
-	void
-	operator()(_Tp* __ptr) const
-	{
-	  static_assert(sizeof(_Tp)>0,
-			"can't delete pointer to incomplete type");
-	  delete __ptr;
-	}
+	static_assert(sizeof(_Tp)>0,
+		      "can't delete pointer to incomplete type");
+	delete __ptr;
+      }
     };
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -68,6 +68,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp>
     struct default_delete<_Tp[]>
     {
+      constexpr default_delete() { }
+
       void
       operator()(_Tp* __ptr) const
       {
@@ -108,8 +110,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		    "constructed with null function pointer deleter");
 
       // Constructors.
-      unique_ptr()
-      : _M_t(pointer(), deleter_type())
+      constexpr unique_ptr()
+      : _M_t()
       { }
 
       explicit
@@ -129,7 +131,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { static_assert(!std::is_reference<deleter_type>::value,
 		      "rvalue deleter bound to reference"); }
 
-      unique_ptr(nullptr_t)
+      constexpr unique_ptr(nullptr_t)
       : _M_t(pointer(), deleter_type())
       { }
 
@@ -271,7 +273,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		    "constructed with null function pointer deleter");
 
       // Constructors.
-      unique_ptr()
+      constexpr unique_ptr()
       : _M_t(pointer(), deleter_type())
       { }
 
@@ -292,7 +294,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		      "rvalue deleter bound to reference"); }
 
       /* TODO: use delegating constructor */
-      unique_ptr(nullptr_t)
+      constexpr unique_ptr(nullptr_t)
       : _M_t(pointer(), deleter_type())
       { }
 
