@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,16 +18,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <atomic>
+#include <chrono>
 #include <testsuite_common_types.h>
 
 int main()
 {
-  __gnu_test::assignable test;
-  __gnu_cxx::typelist::apply_generator(test,
-				       __gnu_test::atomic_integrals::type());
+  __gnu_test::constexpr_comparison_operators test;
+  test.operator()<std::chrono::nanoseconds>();
   return 0;
 }
-
-// { dg-error "deleted" "" { target *-*-* } 571 }
-// { dg-prune-output "include" }

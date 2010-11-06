@@ -462,8 +462,35 @@ namespace __gnu_test
       }
   };
 
-  // Generator to test standard layout
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+
+  struct constexpr_comparison_eq_ne
+  {
+    template<typename _Tp1, typename _Tp2 = _Tp1>
+      void 
+      operator()()
+      {
+	static_assert(_Tp1() == _Tp2(), "eq");
+	static_assert(!(_Tp1() != _Tp2()), "ne");
+      }
+  };
+
+  struct constexpr_comparison_operators
+  {
+    template<typename _Tp>
+      void 
+      operator()()
+      {
+	static_assert(!(_Tp() < _Tp()), "less");
+	static_assert(_Tp() <= _Tp(), "leq");
+	static_assert(!(_Tp() > _Tp()), "more");
+	static_assert(_Tp() >= _Tp(), "meq");
+	static_assert(_Tp() == _Tp(), "eq");
+	static_assert(!(_Tp() != _Tp()), "ne");
+      }
+  };
+
+  // Generator to test standard layout
   struct has_trivial_cons_dtor
   {
     template<typename _Tp>
