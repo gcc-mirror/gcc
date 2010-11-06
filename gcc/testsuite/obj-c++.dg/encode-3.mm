@@ -32,6 +32,15 @@ const char *enc3 = @encode(anonymous);
 #define L "l"
 #endif
 
+/* Darwin (at least, as of XCode 3.2.3/Darwin10) does not encode the read-only
+   attribute  on the type.  Arguably, this is a bug, but we are compatible
+   with this when -fnext-runtime is selected.  */
+#ifdef __NEXT_RUNTIME__
+#define E3 "{?=f[10d]i" L "q{Vec<const signed char>=cc" L "q}}"
+#else
+#define E3 "{?=f[10d]i" L "q{Vec<const signed char>=rcrc" L "q}}"
+#endif
+
 int main(void) {
   const char *encode = @encode(long);
 
@@ -44,7 +53,7 @@ int main(void) {
   if (strcmp (enc2, (const char *)"{Vec<double>=dd" L "q}"))
     abort ();
 
-  if (strcmp (enc3, (const char *)"{?=f[10d]i" L "q{Vec<const signed char>=rcrc" L "q}}"))
+  if (strcmp (enc3, (const char *) E3))
     abort ();
 
   return 0;
