@@ -1,3 +1,8 @@
+2010-11-05  Ian Lance Taylor  <iant@google.com>
+
+	* explow.c (allocate_dynamic_stack_space): Check
+	MALLOC_ABI_ALIGNMENT.
+
 2010-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/44772
