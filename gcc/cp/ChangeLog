@@ -1,3 +1,8 @@
+2010-11-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45473
+	* search.c (look_for_overrides): A constructor is never virtual.
+
 2010-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/46160
