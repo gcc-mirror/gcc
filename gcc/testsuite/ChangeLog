@@ -1,3 +1,21 @@
+2010-11-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Fixed using the Objective-C 2.0 dot-syntax with self and super.
+	* objc.dg/property/dotsyntax-5.m: New.
+	* objc.dg/property/dotsyntax-6.m: New.
+	* objc.dg/property/dotsyntax-7.m: New.
+	* objc.dg/property/dotsyntax-8.m: New.
+	* objc.dg/property/dotsyntax-9.m: New.
+	* objc.dg/property/dotsyntax-10.m: New.
+	* objc.dg/property/dotsyntax-11.m: New.
+	* obj-c++.dg/property/dotsyntax-5.mm: New.
+	* obj-c++.dg/property/dotsyntax-6.mm: New.
+	* obj-c++.dg/property/dotsyntax-7.mm: New.
+	* obj-c++.dg/property/dotsyntax-8.mm: New.
+	* obj-c++.dg/property/dotsyntax-9.mm: New.
+	* obj-c++.dg/property/dotsyntax-10.mm: New.
+	* obj-c++.dg/property/dotsyntax-11.mm: New.
+
 2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* obj-c++.dg/encode-3.mm: Provide a different string check for the

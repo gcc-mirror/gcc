@@ -377,8 +377,14 @@ static const char *default_constant_string_class_name;
 #define TAG_GNUINIT			"__objc_gnu_init"
 
 /* Flags for lookup_method_static().  */
-#define OBJC_LOOKUP_CLASS	1	/* Look for class methods.  */
-#define OBJC_LOOKUP_NO_SUPER	2	/* Do not examine superclasses.  */
+
+/* Look for class methods.  */
+#define OBJC_LOOKUP_CLASS	1
+/* Do not examine superclasses.  */
+#define OBJC_LOOKUP_NO_SUPER	2
+/* Disable returning an instance method of a root class when a class
+   method can't be found.  */
+#define OBJC_LOOKUP_NO_INSTANCE_METHODS_OF_ROOT_CLASS 4 
 
 /* The OCTI_... enumeration itself is in objc/objc-act.h.  */
 tree objc_global_trees[OCTI_MAX];
@@ -1085,32 +1091,58 @@ lookup_property (tree interface_type, tree property)
 }
 
 /* This is a subroutine of objc_maybe_build_component_ref.  Search the
-   list of methods in the interface (and, failing that, protocol list)
+   list of methods in the interface (and, failing that, the local list
+   in the implementation, and failing that, the protocol list)
    provided for a 'setter' or 'getter' for 'component' with default
    names (ie, if 'component' is "name", then search for "name" and
    "setName:").  If any is found, then create an artificial property
    that uses them.  Return NULL_TREE if 'getter' or 'setter' could not
    be found.  */
 static tree
-maybe_make_artificial_property_decl (tree interface, tree protocol_list, tree component, bool is_class)
+maybe_make_artificial_property_decl (tree interface, tree implementation, 
+				     tree protocol_list, tree component, bool is_class)
 {
   tree getter_name = component;
   tree setter_name = get_identifier (objc_build_property_setter_name (component));
   tree getter = NULL_TREE;
   tree setter = NULL_TREE;
 
+  /* First, check the @interface and all superclasses.  */
   if (interface)
     {
       int flags = 0;
 
+      /* Using instance methods of the root class as accessors is most
+	 likely unwanted and can be extremely confusing (and, most
+	 importantly, other Objective-C 2.0 compilers do not do it).
+	 Turn it off.  */
       if (is_class)
-	flags = OBJC_LOOKUP_CLASS;
+	flags = OBJC_LOOKUP_CLASS | OBJC_LOOKUP_NO_INSTANCE_METHODS_OF_ROOT_CLASS;
       
       getter = lookup_method_static (interface, getter_name, flags);
       setter = lookup_method_static (interface, setter_name, flags);
     }
 
-  /* Try the protocol_list if we didn't find anything in the interface.  */
+  /* Second, check the local @implementation context.  */
+  if (!getter && !setter)
+    {
+      if (implementation)
+	{
+	  if (is_class)
+	    {
+	      getter = lookup_method (CLASS_CLS_METHODS (implementation), getter_name);
+	      setter = lookup_method (CLASS_CLS_METHODS (implementation), setter_name);
+	    }
+	  else
+	    {
+	      getter = lookup_method (CLASS_NST_METHODS (implementation), getter_name);
+	      setter = lookup_method (CLASS_NST_METHODS (implementation), setter_name);	      
+	    }
+	}
+    }
+
+  /* Try the protocol_list if we didn't find anything in the
+     @interface and in the @implementation.  */
   if (!getter && !setter)
     {
       getter = lookup_method_in_protocol_list (protocol_list, getter_name, is_class);
@@ -1186,13 +1218,13 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
   tree x = NULL_TREE;
   tree rtype;
 
-  /* If we are in Objective-C 1.0 mode, properties are not
-     available.  */
+  /* If we are in Objective-C 1.0 mode, dot-syntax and properties are
+     not available.  */
   if (flag_objc1_only)
     return NULL_TREE;
 
-  /* Try to determine quickly if 'object' is an Objective-C object or
-     not.  If not, return.  */
+  /* Try to determine if 'object' is an Objective-C object or not.  If
+     not, return.  */
   if (object == NULL_TREE || object == error_mark_node 
       || (rtype = TREE_TYPE (object)) == NULL_TREE)
     return NULL_TREE;
@@ -1201,37 +1233,118 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
       || TREE_CODE (property_ident) != IDENTIFIER_NODE)
     return NULL_TREE;
 
-  /* TODO: Implement super.property.  */
-  
-  /* TODO: Carefully review the following code.  */
+  /* The following analysis of 'object' is similar to the one used for
+     the 'receiver' of a method invocation.  We need to determine what
+     'object' is and find the appropriate property (either declared,
+     or artificial) for it (in the same way as we need to find the
+     appropriate method prototype for a method invocation).  There are
+     some simplifications here though: "object.property" is invalid if
+     "object" has a type of "id" or "Class"; it must at least have a
+     protocol attached to it, and "object" is never a class name as
+     that is done by objc_build_class_component_ref.  Finally, we
+     don't know if this really is a dot-syntax expression, so we want
+     to make a quick exit if it is not; for this reason, we try to
+     postpone checks after determining that 'object' looks like an
+     Objective-C object.  */
+
   if (objc_is_id (rtype))
     {
-      tree rprotos = (TYPE_HAS_OBJC_INFO (TREE_TYPE (rtype))
-		      ? TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (rtype))
-		      : NULL_TREE);
-      if (rprotos)
-	x = lookup_property_in_protocol_list (rprotos, property_ident);
+      /* This is the case that the 'object' is of type 'id' or
+	 'Class'.  */
 
-      if (x == NULL_TREE)
+      /* Check if at least it is of type 'id <Protocol>' or 'Class
+	 <Protocol>'; if so, look the property up in the
+	 protocols.  */
+      if (TYPE_HAS_OBJC_INFO (TREE_TYPE (rtype)))
 	{
-	  /* Ok, no property.  Maybe it was an object.component
-	     dot-syntax without a declared property.  Look for
-	     getter/setter methods and internally declare an artifical
-	     property based on them if found.  */
-	  x = maybe_make_artificial_property_decl (NULL_TREE, rprotos, 
-						   property_ident,
-						   false);
+	  tree rprotos = TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (rtype));
+	  
+	  if (rprotos)
+	    {
+	      /* No point looking up declared @properties if we are
+		 dealing with a class.  Classes have no declared
+		 properties.  */
+	      if (!IS_CLASS (rtype))
+		x = lookup_property_in_protocol_list (rprotos, property_ident);
+	      
+	      if (x == NULL_TREE)
+		{
+		  /* Ok, no property.  Maybe it was an
+		     object.component dot-syntax without a declared
+		     property (this is valid for classes too).  Look
+		     for getter/setter methods and internally declare
+		     an artifical property based on them if found.  */
+		  x = maybe_make_artificial_property_decl (NULL_TREE,
+							   NULL_TREE,
+							   rprotos, 
+							   property_ident,
+							   IS_CLASS (rtype));
+		}
+	    }
+	}
+      else if (objc_method_context)
+	{
+	  /* Else, if we are inside a method it could be the case of
+	     'super' or 'self'.  */
+	  tree interface_type = NULL_TREE;
+	  tree t = object;
+	  while (TREE_CODE (t) == COMPOUND_EXPR
+		 || TREE_CODE (t) == MODIFY_EXPR
+		 || CONVERT_EXPR_P (t)
+		 || TREE_CODE (t) == COMPONENT_REF)
+	    t = TREE_OPERAND (t, 0);
+	  
+	  if (t == UOBJC_SUPER_decl)
+	    interface_type = lookup_interface (CLASS_SUPER_NAME (implementation_template));
+	  else if (t == self_decl)
+	    interface_type = lookup_interface (CLASS_NAME (implementation_template));
+
+	  /* TODO: Protocols.  */
+
+	  if (interface_type)
+	    {
+	      if (TREE_CODE (objc_method_context) != CLASS_METHOD_DECL)
+		{
+		  x = lookup_property (interface_type, property_ident);
+		  /* TODO: Protocols.  */
+		}
+	
+	      if (x == NULL_TREE)
+		{
+		  /* Try the dot-syntax without a declared property.
+		     If this is an access to 'self', it is possible
+		     that they may refer to a setter/getter that is
+		     not declared in the interface, but exists locally
+		     in the implementation.  In that case, get the
+		     implementation context and use it.  */
+		  tree implementation = NULL_TREE;
+
+		  if (t == self_decl)
+		    implementation = objc_implementation_context;
+		  
+		  /* TODO: Protocols.  */
+
+		  x = maybe_make_artificial_property_decl 
+		    (interface_type, implementation, NULL_TREE,
+		     property_ident,
+		     (TREE_CODE (objc_method_context) == CLASS_METHOD_DECL));
+		}
+	    }
 	}
     }
   else
     {
+      /* This is the case where we have more information on 'rtype'.  */
       tree basetype = TYPE_MAIN_VARIANT (rtype);
 
+      /* Skip the pointer - if none, it's not an Objective-C object or
+	 class.  */
       if (basetype != NULL_TREE && TREE_CODE (basetype) == POINTER_TYPE)
 	basetype = TREE_TYPE (basetype);
       else
 	return NULL_TREE;
 
+      /* Traverse typedefs.  */
       while (basetype != NULL_TREE
 	     && TREE_CODE (basetype) == RECORD_TYPE 
 	     && OBJC_TYPE_NAME (basetype)
@@ -1243,58 +1356,91 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
 	{
 	  tree interface_type = TYPE_OBJC_INTERFACE (basetype);
 	  tree protocol_list = TYPE_OBJC_PROTOCOL_LIST (basetype);
-	  
-	  x = lookup_property (interface_type, property_ident);
 
-	  if (x == NULL_TREE)
-	    x = lookup_property_in_protocol_list (protocol_list, property_ident);
-
-	  if (x == NULL_TREE)
+	  if (interface_type 
+	      && (TREE_CODE (interface_type) == CLASS_INTERFACE_TYPE
+		  || TREE_CODE (interface_type) == CATEGORY_INTERFACE_TYPE
+		  || TREE_CODE (interface_type) == PROTOCOL_INTERFACE_TYPE))
 	    {
-	      /* Ok, no property.  Try the dot-syntax without a
-		 declared property.  */
-	      x = maybe_make_artificial_property_decl (interface_type, protocol_list, 
-						       property_ident, false);
+	      /* Not sure 'rtype' could ever be a class here!  Just
+		 for safety we keep the checks.  */
+	      if (!IS_CLASS (rtype))
+		{
+		  x = lookup_property (interface_type, property_ident);
+		  
+		  if (x == NULL_TREE)
+		    x = lookup_property_in_protocol_list (protocol_list, 
+							  property_ident);
+		}
+	      
+	      if (x == NULL_TREE)
+		{
+		  /* Try the dot-syntax without a declared property.
+		     If we are inside a method implementation, it is
+		     possible that they may refer to a setter/getter
+		     that is not declared in the interface, but exists
+		     locally in the implementation.  In that case, get
+		     the implementation context and use it.  */
+		  tree implementation = NULL_TREE;
+
+		  if (objc_implementation_context
+		      && CLASS_NAME (objc_implementation_context) 
+		      == OBJC_TYPE_NAME (interface_type))
+		    implementation = objc_implementation_context;
+		  
+		  x = maybe_make_artificial_property_decl (interface_type,
+							   implementation,
+							   protocol_list, 
+							   property_ident,
+							   IS_CLASS (rtype));
+		}
 	    }
 	}
     }
 
+  /* TODO: Fix compiling super.accessor.  */
+
   if (x)
     {
       tree expression;
-
-      if (TREE_DEPRECATED (x))
-	warn_deprecated_use (x, NULL_TREE);
-
-      expression = build2 (PROPERTY_REF, TREE_TYPE(x), object, x);
-      SET_EXPR_LOCATION (expression, input_location);
-      TREE_SIDE_EFFECTS (expression) = 1;
+      tree getter_call;
 
       /* We have an additional nasty problem here; if this
 	 PROPERTY_REF needs to become a 'getter', then the conversion
 	 from PROPERTY_REF into a getter call happens in gimplify,
-	 after the selector table has already been generated and it is
-	 too late to add another selector to it.  To work around the
-	 problem, we always put the selector in the table at this
-	 stage, as if we were building the method call here.  And the
-	 easiest way to do this is precisely to build the method call,
-	 then discard it.  Note that if the PROPERTY_REF becomes a
-	 'setter' instead of a 'getter', then we have added a selector
-	 too many to the selector table.  This is a little
-	 inefficient.
+	 after the selector table has already been generated and when
+	 it is too late to add another selector to it.  To work around
+	 the problem, we always create the getter call at this stage,
+	 which puts the selector in the table.  Note that if the
+	 PROPERTY_REF becomes a 'setter' instead of a 'getter', then
+	 we have added a selector too many to the selector table.
+	 This is a little inefficient.
 
-	 TODO: This can be made more efficient; in particular we don't
-	 need to build the whole message call, we could just work on
-	 the selector.
+	 Also note that method calls to 'self' and 'super' require the
+	 context (self_decl, UOBJS_SUPER_decl,
+	 objc_implementation_context etc) to be built correctly; this
+	 is yet another reason why building the call at the gimplify
+	 stage (when this context has been lost) is not very
+	 practical.  If we build it at this stage, we know it will
+	 always be built correctly.
 
 	 If the PROPERTY_HAS_NO_GETTER() (ie, it is an artificial
 	 property decl created to deal with a dotsyntax not really
 	 referring to an existing property) then do not try to build a
 	 call to the getter as there is no getter.  */
-      if (!PROPERTY_HAS_NO_GETTER (x))
-	objc_finish_message_expr (object,
-				  PROPERTY_GETTER_NAME (x),
-				  NULL_TREE);
+      if (PROPERTY_HAS_NO_GETTER (x))
+	getter_call = NULL_TREE;
+      else
+	getter_call = objc_finish_message_expr (object,
+						PROPERTY_GETTER_NAME (x),
+						NULL_TREE);
+
+      if (TREE_DEPRECATED (x))
+	warn_deprecated_use (x, NULL_TREE);
+
+      expression = build3 (PROPERTY_REF, TREE_TYPE(x), object, x, getter_call);
+      SET_EXPR_LOCATION (expression, input_location);
+      TREE_SIDE_EFFECTS (expression) = 1;
       
       return expression;
     }
@@ -1341,26 +1487,28 @@ objc_build_class_component_ref (tree class_name, tree property_ident)
       return error_mark_node;
     }
 
-  x = maybe_make_artificial_property_decl (rtype, NULL_TREE,
+  x = maybe_make_artificial_property_decl (rtype, NULL_TREE, NULL_TREE,
 					   property_ident,
 					   true);
   
   if (x)
     {
       tree expression;
+      tree getter_call;
 
+      if (PROPERTY_HAS_NO_GETTER (x))
+	getter_call = NULL_TREE;
+      else
+	getter_call = objc_finish_message_expr (object,
+						PROPERTY_GETTER_NAME (x),
+						NULL_TREE);
       if (TREE_DEPRECATED (x))
 	warn_deprecated_use (x, NULL_TREE);
 
-      expression = build2 (PROPERTY_REF, TREE_TYPE(x), object, x);
+      expression = build3 (PROPERTY_REF, TREE_TYPE(x), object, x, getter_call);
       SET_EXPR_LOCATION (expression, input_location);
       TREE_SIDE_EFFECTS (expression) = 1;
-      /* See above for why we do this.  */
-      if (!PROPERTY_HAS_NO_GETTER (x))
-	objc_finish_message_expr (object,
-				  PROPERTY_GETTER_NAME (x),
-				  NULL_TREE);
-      
+
       return expression;
     }
   else
@@ -7957,13 +8105,16 @@ lookup_method (tree mchain, tree method)
   return NULL_TREE;
 }
 
-/* Look up a class (if OBJC_LOOKUP_CLASS is set in FLAGS) or instance method
-   in INTERFACE, along with any categories and protocols attached thereto.
-   If method is not found, and the OBJC_LOOKUP_NO_SUPER is _not_ set in FLAGS,
-   recursively examine the INTERFACE's superclass.  If OBJC_LOOKUP_CLASS is
-   set, OBJC_LOOKUP_NO_SUPER is cleared, and no suitable class method could
-   be found in INTERFACE or any of its superclasses, look for an _instance_
-   method of the same name in the root class as a last resort.
+/* Look up a class (if OBJC_LOOKUP_CLASS is set in FLAGS) or instance
+   method in INTERFACE, along with any categories and protocols
+   attached thereto.  If method is not found, and the
+   OBJC_LOOKUP_NO_SUPER is _not_ set in FLAGS, recursively examine the
+   INTERFACE's superclass.  If OBJC_LOOKUP_CLASS is set,
+   OBJC_LOOKUP_NO_SUPER is clear, and no suitable class method could
+   be found in INTERFACE or any of its superclasses, look for an
+   _instance_ method of the same name in the root class as a last
+   resort.  This behaviour can be turned off by using
+   OBJC_LOOKUP_NO_INSTANCE_METHODS_OF_ROOT_CLASS.
 
    If a suitable method cannot be found, return NULL_TREE.  */
 
@@ -7974,6 +8125,7 @@ lookup_method_static (tree interface, tree ident, int flags)
   tree inter = interface;
   int is_class = (flags & OBJC_LOOKUP_CLASS);
   int no_superclasses = (flags & OBJC_LOOKUP_NO_SUPER);
+  int no_instance_methods_of_root_class = (flags & OBJC_LOOKUP_NO_INSTANCE_METHODS_OF_ROOT_CLASS);
 
   while (inter)
     {
@@ -8020,11 +8172,18 @@ lookup_method_static (tree interface, tree ident, int flags)
     }
   while (inter);
 
-  /* If no class (factory) method was found, check if an _instance_
-     method of the same name exists in the root class.  This is what
-     the Objective-C runtime will do.  If an instance method was not
-     found, return 0.  */
-  return is_class ? lookup_method_static (root_inter, ident, 0): NULL_TREE;
+  if (is_class && !no_instance_methods_of_root_class)
+    {
+      /* If no class (factory) method was found, check if an _instance_
+	 method of the same name exists in the root class.  This is what
+	 the Objective-C runtime will do.  */
+      return lookup_method_static (root_inter, ident, 0);
+    }
+  else
+    {
+      /* If an instance method was not found, return 0.  */      
+      return NULL_TREE;
+    }
 }
 
 /* Add the method to the hash list if it doesn't contain an identical
@@ -12038,15 +12197,24 @@ objc_rewrite_function_call (tree function, tree first_param)
 static void
 objc_gimplify_property_ref (tree *expr_p)
 {
-  tree object_expression = PROPERTY_REF_OBJECT (*expr_p);
-  tree property_decl = PROPERTY_REF_PROPERTY_DECL (*expr_p);
-  tree call_exp, getter;
+  tree getter = PROPERTY_REF_GETTER_CALL (*expr_p);
+  tree call_exp;
 
-  /* TODO: Implement super.property.  */
+  if (getter == NULL_TREE)
+    {
+      tree property_decl = PROPERTY_REF_PROPERTY_DECL (*expr_p);
+      /* This can happen if DECL_ARTIFICIAL (*expr_p), but
+	 should be impossible for real properties, which always
+	 have a getter.  */
+      error_at (EXPR_LOCATION (*expr_p), "no %qs getter found",
+		IDENTIFIER_POINTER (PROPERTY_NAME (property_decl)));
+      /* Try to recover from the error to prevent an ICE.  We take
+	 zero and cast it to the type of the property.  */
+      *expr_p = convert (TREE_TYPE (property_decl),
+			 integer_zero_node);
+      return;
+    }
 
-  getter = objc_finish_message_expr (object_expression, 
-				     PROPERTY_GETTER_NAME (property_decl),
-				     NULL_TREE);
   call_exp = getter;
 #ifdef OBJCPLUS
   /* In C++, a getter which returns an aggregate value results in a

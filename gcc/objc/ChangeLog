@@ -1,3 +1,28 @@
+2010-11-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Fixed using the Objective-C 2.0 syntax with self and super.
+	* objc-act.c (OBJC_LOOKUP_NO_INSTANCE_METHODS_OF_ROOT_CLASS): New.
+	(maybe_make_artificial_property_decl): Added 'implementation'
+	argument.  Use OBJC_LOOKUP_NO_INSTANCE_METHODS_OF_ROOT_CLASS when
+	looking up getters or setters for a class.  If an implementation
+	is specified, search it as well for a getter or setter.
+	(objc_maybe_build_component_ref): Updated calls to
+	maybe_make_artificial_property_decl; added code to deal with
+	'self' and 'super' and with methods declared locally in the
+	implementation.  Store the getter call expression in the
+	PROPERTY_REF instead of throwing it away.
+	(objc_build_class_component_ref): Updated calls to
+	maybe_make_artificial_property_decl, and store the getter call
+	expression in PROPERTY_REF instead of throwing it away.
+	(lookup_method_static): Implemented
+	OBJC_LOOKUP_NO_INSTANCE_METHODS_OF_ROOT_CLASS option.
+	(objc_gimplify_property_ref): Do not build the getter method call
+	here; instead use the one stored in the PROPERTY_REF.  If it's not
+	there, produce helpful error messages.
+	* objc-tree.def (PROPERTY_REF): Increased the number of operands
+	from 2 to 3.  Updated comments.
+	* objc-act.h (PROPERTY_REF_GETTER_CALL): New.
+	
 2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/44981

@@ -131,6 +131,15 @@ typedef enum objc_property_assign_semantics {
    declared property.  */
 #define PROPERTY_REF_PROPERTY_DECL(NODE) TREE_OPERAND (PROPERTY_REF_CHECK (NODE), 1)
 
+/* PROPERTY_REF_GETTER_CALL is the getter call expression, ready to
+   use at gimplify time if needed.  Generating the getter call
+   requires modifying the selector table, and, in the case of
+   self/super, requires the context to be generated correctly.  The
+   gimplify stage is too late to do these things, so we generate the
+   getter call earlier instead, and keep it here in case we need to
+   use it.  */
+#define PROPERTY_REF_GETTER_CALL(NODE) TREE_OPERAND (PROPERTY_REF_CHECK (NODE), 2)
+
 
 /* CLASS_INTERFACE_TYPE, CLASS_IMPLEMENTATION_TYPE,
    CATEGORY_INTERFACE_TYPE, CATEGORY_IMPLEMENTATION_TYPE,
