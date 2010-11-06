@@ -97,7 +97,9 @@ extern void darwin_init_cfstring_builtins (unsigned);
 extern tree darwin_fold_builtin (tree, int, tree *, bool);
 extern tree darwin_objc_construct_string (tree);
 extern bool darwin_cfstring_p (tree);
-extern tree darwin_build_constant_cfstring (tree str);
+extern bool darwin_cfstring_ref_p (const_tree);
+extern void darwin_check_cfstring_format_arg (tree, tree);
+extern tree darwin_build_constant_cfstring (tree);
 extern void darwin_enter_string_into_cfstring_table (tree);
 
 extern void darwin_asm_output_anchor (rtx symbol);

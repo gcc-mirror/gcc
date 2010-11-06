@@ -2418,7 +2418,13 @@ standard modes, the X/Open function @code{strfmon} is also checked as
 are @code{printf_unlocked} and @code{fprintf_unlocked}.
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 
-The target may provide additional types of format checks.
+For Objective-C dialects, @code{NSString} (or @code{__NSString__}) is 
+recognized in the same context.  Declarations including these format attributes
+will be parsed for correct syntax, however the result of checking of such format
+strings is not yet defined, and will not be carried out by this version of the 
+compiler.
+
+The target may also provide additional types of format checks.
 @xref{Target Format Checks,,Format Checks Specific to Particular
 Target Machines}.
 
@@ -2466,6 +2472,14 @@ requested by @option{-ansi} or an appropriate @option{-std} option, or
 @option{-ffreestanding} or @option{-fno-builtin}
 is used.  @xref{C Dialect Options,,Options
 Controlling C Dialect}.
+
+For Objective-C dialects, the @code{format-arg} attribute may refer to an
+@code{NSString} reference for compatibility with the @code{format} attribute
+above.
+
+The target may also allow additional types in @code{format-arg} attributes.
+@xref{Target Format Checks,,Format Checks Specific to Particular
+Target Machines}.
 
 @item function_vector
 @cindex calling functions through the function vector on H8/300, M16C, M32C and SH2A processors
@@ -12426,6 +12440,7 @@ format attribute
 
 @menu
 * Solaris Format Checks::
+* Darwin Format Checks::
 @end menu
 
 @node Solaris Format Checks
@@ -12435,6 +12450,20 @@ Solaris targets support the @code{cmn_err} (or @code{__cmn_err__}) format
 check.  @code{cmn_err} accepts a subset of the standard @code{printf}
 conversions, and the two-argument @code{%b} conversion for displaying
 bit-fields.  See the Solaris man page for @code{cmn_err} for more information.
+
+@node Darwin Format Checks
+@subsection Darwin Format Checks
+
+Darwin targets support the @code{CFString} (or @code{__CFString__}) in the format 
+attribute context.  Declarations made with such attribution will be parsed for correct syntax
+and format argument types.  However, parsing of the format string itself is currently undefined
+and will not be carried out by this version of the compiler.  
+
+Additionally, @code{CFStringRefs} (defined by the @code{CoreFoundation} headers) may
+also be used as format arguments.  Note that the relevant headers are only likely to be
+available on Darwin (OSX) installations.  On such installations, the XCode and system
+documentation provide descriptions of @code{CFString}, @code{CFStringRefs} and
+associated functions.
 
 @node Pragmas
 @section Pragmas Accepted by GCC

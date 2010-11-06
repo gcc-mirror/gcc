@@ -715,8 +715,16 @@ only available in the C (and related language) front ends, then you
 should use @code{TARGET_HANDLE_C_OPTION} instead.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_OBJC_CONSTRUCT_STRING (tree @var{string})
-Construct a constant string representation for @var{string}
+@deftypefn {Target Hook} tree TARGET_OBJC_CONSTRUCT_STRING_OBJECT (tree @var{string})
+Targets may provide a string object type that can be used within and between C, C++ and their respective Objective-C dialects. A string object might, for example, embed encoding and length information. These objects are considered opaque to the compiler and handled as references. An ideal implementation makes the composition of the string object match that of the Objective-C @code{NSString} (@code{NXString} for GNUStep), allowing efficient interworking between C-only and Objective-C code. If a target implements string objects then this hook should return a reference to such an object constructed from the normal `C' string representation provided in @var{string}. At present, the hook is used by Objective-C only, to obtain a common-format string object when the target provides one.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_STRING_OBJECT_REF_TYPE_P (const_tree @var{stringref})
+If a target implements string objects then this hook should return @code{true} if @var{stringref} is a valid reference to such an object.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_CHECK_STRING_OBJECT_FORMAT_ARG (tree @var{format_arg}, tree @var{args_list})
+If a target implements string objects then this hook should should  provide a facility to check the function arguments in @var{args_list}  against the format specifiers in @var{format_arg} where the type of  @var{format_arg} is one recognized as a valid string reference type.
 @end deftypefn
 
 @defmac TARGET_VERSION

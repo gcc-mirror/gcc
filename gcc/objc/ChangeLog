@@ -1,3 +1,10 @@
+2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/44981
+	* objc-act.c (objc_build_string_object): Amend for renamed hook.
+	(objc_string_ref_type_p): New.
+	(objc_check_format_arg): New.
+
 2010-11-04  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Fixed using the Objective-C 2.0 dot-syntax with class names.	

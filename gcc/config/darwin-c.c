@@ -1,5 +1,5 @@
 /* Darwin support needed only by C/C++ frontends.
-   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "incpath.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
+#include "c-family/c-format.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
 #include "flags.h"
@@ -678,3 +679,37 @@ darwin_objc_construct_string (tree str)
 
   return darwin_build_constant_cfstring (str);
 }
+
+/* The string ref type is created as CFStringRef by <CFBase.h> therefore, we
+   must match for it explicitly, since it's outside the gcc code.  */
+
+bool
+darwin_cfstring_ref_p (const_tree strp)
+{
+  tree tn;
+  if (!strp || TREE_CODE (strp) != POINTER_TYPE)
+    return false;
+
+  tn = TYPE_NAME (strp);
+  if (tn) 
+    tn = DECL_NAME (tn);
+  return (tn 
+	  && IDENTIFIER_POINTER (tn)
+	  && !strncmp (IDENTIFIER_POINTER (tn), "CFStringRef", 8));
+}
+
+/* At present the behavior of this is undefined and it does nothing.  */
+void
+darwin_check_cfstring_format_arg (tree ARG_UNUSED (format_arg), 
+				  tree ARG_UNUSED (args_list))
+{
+}
+
+/* The extra format types we recognize.  */
+const format_kind_info darwin_additional_format_types[] = {
+  { "CFString",   NULL,  NULL, NULL, NULL, 
+    NULL, NULL, 
+    FMT_FLAG_ARG_CONVERT|FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL, 0, 0, 0, 0, 0, 0,
+    NULL, NULL
+  }
+};

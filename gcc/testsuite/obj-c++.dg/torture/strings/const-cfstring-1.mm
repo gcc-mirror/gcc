@@ -9,6 +9,9 @@
 /* { dg-skip-if "NeXT only" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 /* { dg-options "-mconstant-cfstrings -framework Cocoa" } */
+/* Darwin10's linker emits a warning that the constant strings are incompatible with writable ones.
+   well, we don't implement writable ones at this juncture.  */
+/* { dg-options "-mconstant-cfstrings -framework Cocoa -Wl,-w" { target *-*-darwin[123]* } } */
 
 #import <Foundation/NSString.h>
 #import <CoreFoundation/CFString.h>

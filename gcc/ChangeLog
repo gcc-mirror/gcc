@@ -1,3 +1,29 @@
+2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/44981
+	* doc/extend.tex (format): Document NSString extension.
+	(format_arg): Likewise.
+	(Darwin Format Checks): New section.
+	* doc/tm.texi: Document string object hooks (generated).
+	* doc/tm.texi.in (TARGET_OBJC_CONSTRUCT_STRING_OBJECT) Rename.
+	(TARGET_STRING_OBJECT_REF_TYPE_P): New.
+	(TARGET_CHECK_STRING_OBJECT_FORMAT_ARG): New.
+	* target.def (objc_construct_string_object): Rename, amend 
+	documentation.
+	(string_object_ref_type_p): New hook.
+	(check_string_object_format_arg): New hook.
+	* c-parser.c (c_parser_attributes): Allow objective-c class names as
+	attribute identifiers.
+	* config/darwin-c.c (darwin_cfstring_ref_p): New.
+	(darwin_check_cfstring_format_arg): New.
+	(darwin_additional_format_types): New.
+	* config/darwin-protos.h (darwin_cfstring_ref_p) New.
+	(darwin_check_cfstring_format_arg): New.
+	* config/darwin.h (TARGET_OBJC_CONSTRUCT_STRING_OBJECT) Renamed.
+	(TARGET_STRING_OBJECT_REF_TYPE_P): New.
+	(TARGET_N_FORMAT_TYPES): New.
+	(TARGET_CHECK_STRING_OBJECT_FORMAT_ARG): New.
+
 2010-11-06  Eric Botcazou  <ebotcazou@adacore.com>
             Pascal Obry  <obry@adacore.com>
 

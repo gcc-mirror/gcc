@@ -3278,9 +3278,12 @@ c_parser_attributes (c_parser *parser)
 	  /* Parse the attribute contents.  If they start with an
 	     identifier which is followed by a comma or close
 	     parenthesis, then the arguments start with that
-	     identifier; otherwise they are an expression list.  */
+	     identifier; otherwise they are an expression list.  
+	     In objective-c the identifier may be a classname.  */
 	  if (c_parser_next_token_is (parser, CPP_NAME)
-	      && c_parser_peek_token (parser)->id_kind == C_ID_ID
+	      && (c_parser_peek_token (parser)->id_kind == C_ID_ID
+		  || (c_dialect_objc () 
+		      && c_parser_peek_token (parser)->id_kind == C_ID_CLASSNAME))
 	      && ((c_parser_peek_2nd_token (parser)->type == CPP_COMMA)
 		  || (c_parser_peek_2nd_token (parser)->type
 		      == CPP_CLOSE_PAREN)))
