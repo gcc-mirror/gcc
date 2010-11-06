@@ -1,3 +1,9 @@
+2010-11-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46330
+	* trans-expr.c (gfc_trans_class_assign): Find 'vtab' symbol in correct
+	namespace.
+
 2010-11-05  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45451

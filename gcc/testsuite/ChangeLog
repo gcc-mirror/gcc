@@ -1,3 +1,8 @@
+2010-11-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46330
+	* gfortran.dg/class_27.f03: New.
+
 2010-11-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Fixed using the Objective-C 2.0 dot-syntax with self and super.
