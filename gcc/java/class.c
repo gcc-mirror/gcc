@@ -43,6 +43,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree-iterator.h"
 #include "vecprim.h"
 #include "tm.h"         /* FIXME: For gcc_obstack_init from defaults.h.  */
+#include "target.h"
 
 /* DOS brain-damage */
 #ifndef O_BINARY
@@ -1399,7 +1400,7 @@ make_local_function_alias (tree method)
   *name = 'L';
   strcpy (name + 1, method_name);
 
-  ASM_GENERATE_INTERNAL_LABEL (buf, name, alias_labelno++);  
+  targetm.asm_out.generate_internal_label (buf, name, alias_labelno++);  
   alias = build_decl (input_location,
 		      FUNCTION_DECL, get_identifier (buf),
 		      TREE_TYPE (method));

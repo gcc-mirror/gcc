@@ -252,7 +252,7 @@ make_alias_for_thunk (tree function)
   tree alias;
   char buf[256];
 
-  ASM_GENERATE_INTERNAL_LABEL (buf, "LTHUNK", thunk_labelno);
+  targetm.asm_out.generate_internal_label (buf, "LTHUNK", thunk_labelno);
   thunk_labelno++;
 
   alias = make_alias_for (function, get_identifier (buf));

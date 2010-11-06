@@ -1,3 +1,10 @@
+2010-11-06  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR middle-end/46314
+	* target.def (generate_internal_label): New asm_out hook.
+	* output.h (default_generate_internal_label): Declare.
+	* varasm.c (default_generate_internal_label): Define.
+
 2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/44981

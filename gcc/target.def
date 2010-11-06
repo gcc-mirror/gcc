@@ -200,6 +200,14 @@ DEFHOOKPOD
  be called afterward.",
  bool, true)
 
+/* Generate an internal label.
+   For now this is just a wrapper for ASM_GENERATE_INTERNAL_LABEL.  */
+DEFHOOK_UNDOC
+(generate_internal_label,
+ "",
+ void, (char *buf, const char *prefix, unsigned long labelno),
+ default_generate_internal_label)
+
 /* Output an internal label.  */
 DEFHOOK
 (internal_label,

@@ -1,3 +1,11 @@
+2010-11-06  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR middle-end/46314
+	* class.c: Include target.h.
+	(make_local_function_alias):
+	Use targetm.asm_out.generate_internal_label.
+	* expr.c (lookup_label, generate_name): Likewise.
+
 2010-11-03  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR bootstrap/44335
