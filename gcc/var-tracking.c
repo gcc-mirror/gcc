@@ -7322,7 +7322,17 @@ emit_note_insn_var_location (void **varp, void *data)
 	NOTE_DURING_CALL_P (note) = true;
     }
   else
-    note = emit_note_before (NOTE_INSN_VAR_LOCATION, insn);
+    {
+      /* Make sure that the call related notes come first.  */
+      while (NEXT_INSN (insn)
+	     && NOTE_P (insn)
+	     && NOTE_DURING_CALL_P (insn))
+	insn = NEXT_INSN (insn);
+      if (NOTE_P (insn) && NOTE_DURING_CALL_P (insn))
+	note = emit_note_after (NOTE_INSN_VAR_LOCATION, insn);
+      else
+	note = emit_note_before (NOTE_INSN_VAR_LOCATION, insn);
+    }
   NOTE_VAR_LOCATION (note) = note_vl;
 
  clear:
