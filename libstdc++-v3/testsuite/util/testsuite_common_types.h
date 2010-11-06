@@ -615,6 +615,7 @@ namespace __gnu_test
   // Generator to test default constructor.
   struct constexpr_default_constructible
   {
+    // NB: _Tp must be a literal type. 
     template<typename _Tp>
       void 
       operator()()
@@ -633,6 +634,7 @@ namespace __gnu_test
 
   struct constexpr_single_value_constructible
   {
+    // NB: _Tbasetype and _Ttesttype must be literal types. 
     template<typename _Ttesttype, typename _Tbasetype>
       void
       operator()()
