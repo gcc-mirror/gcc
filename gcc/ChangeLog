@@ -1,3 +1,9 @@
+2010-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+            Pascal Obry  <obry@adacore.com>
+
+	* config/i386/cygming.h (DWARF_FRAME_REGISTERS): Redefine.  Use 33
+	in 64-bit mode and 17 otherwise.
+
 2010-11-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR debug/45939
