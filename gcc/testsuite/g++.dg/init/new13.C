@@ -5,7 +5,7 @@
 
 struct A
 {
-  void* operator new(__SIZE_TYPE__) throw(X);  // { dg-error "" }
+  void* operator new(__SIZE_TYPE__) throw(X);  // { dg-error "expected|type" }
 };
 
-A* p = new A;                                  // { dg-error "no suitable" }
+A* p = new A;

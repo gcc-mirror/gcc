@@ -1,3 +1,11 @@
+2010-11-06  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/45332
+	* g++.dg/parse/semicolon2.C: New testcase.
+	* g++.dg/ext/asmspec1.C: Adjust.
+	* g++.dg/init/new13.C: Adjust.
+	* g++.dg/parse/ctor5.C: Adjust.
+
 2010-11-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46330
