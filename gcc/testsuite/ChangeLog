@@ -1,3 +1,8 @@
+2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* obj-c++.dg/encode-3.mm: Provide a different string check for the
+	NeXT runtime when the type is READONLY.
+
 2010-11-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/387-2.c: Skip if -march= is specified.
