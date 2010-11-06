@@ -1,3 +1,8 @@
+2010-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/44772
+	* gcc.dg/Wcxx-compat-21.c: New test.
+
 2010-11-05  Ian Lance Taylor  <iant@google.com>
 
 	PR target/46084
