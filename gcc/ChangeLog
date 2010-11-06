@@ -1,3 +1,9 @@
+2010-11-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/46326
+	* config/i386/i386.c (ix86_delegitimize_address): Fix a typo
+	in the last change.
+
 2010-11-05  Ian Lance Taylor  <iant@google.com>
 
 	* explow.c (allocate_dynamic_stack_space): Check
