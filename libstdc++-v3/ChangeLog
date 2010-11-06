@@ -1,3 +1,20 @@
+2010-11-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Add typeindex.
+
+	* testsuite/util/testsuite_common_types.h (constexpr_comparison_eq_ne,
+	constexpr_comparison_operators): New.
+	* testsuite/20_util/duration/comparisons: Move...
+	* testsuite/20_util/duration/comparison_operators: ...here.
+	* testsuite/20_util/duration/comparison_operators/constexpr.cc: New.
+	* testsuite/20_util/time_point/comparison_operators/constexpr.cc: Add.
+
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc: Adjust line
+	numbers.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Same.
+
 2010-11-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/shared_ptr.h (shared_ptr<>::__shared_ptr(),

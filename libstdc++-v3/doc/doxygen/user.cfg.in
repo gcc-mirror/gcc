@@ -631,6 +631,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/system_error \
                          include/thread \
                          include/tuple \
+                         include/typeindex \
                          include/type_traits \
                          include/unordered_map \
                          include/unordered_set \
