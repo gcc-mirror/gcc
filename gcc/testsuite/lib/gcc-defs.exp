@@ -223,14 +223,8 @@ proc dg-additional-files-options { options source } {
 	set additional_sources ""
     }
     if { $additional_files != "" } then { 
-	regsub -all "^| " $additional_files " [file dirname $source]/" additional_files
+	regsub -all " " $additional_files " [file dirname $source]/" additional_files
 	set to_download [concat $to_download $additional_files]
-	send_log "add files: $to_download\n"
-	if ![is_remote host] {
-	    foreach file $to_download {
-		remote_download host $file
-	    }
-	}
 	set additional_files ""
     }
     if [is_remote host] {
