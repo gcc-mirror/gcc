@@ -95,10 +95,10 @@ namespace __profile
       };
 
       // 23.3.5.1 constructors:
-      bitset() : _Base() { }
+      _GLIBCXX_CONSTEXPR bitset() : _Base() { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      bitset(unsigned long long __val)
+      constexpr bitset(unsigned long long __val)
 #else
       bitset(unsigned long __val)
 #endif

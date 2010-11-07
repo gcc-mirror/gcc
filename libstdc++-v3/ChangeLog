@@ -1,5 +1,10 @@
 2010-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/profile/bitset (bitset<>::bitset(), bitset<>::
+	bitset(unsigned long long)): Add constexpr specifier.
+
+2010-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/debug/bitset: Do not derive from _Safe_sequence_base in
 	C++0x mode, otherwise std::bitset isn't a literal type anymore;
 	adjust everywhere.
