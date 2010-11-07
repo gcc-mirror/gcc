@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* See if -forward::/-performv:: is able to work. */
-/* { dg-skip-if "PR36610" { *-*-* } { "-fgnu-runtime" } { "" } } */
+/* { dg-xfail-run-if "PR36610" { ! { { i?86-*-* x86_64-*-* } && ilp32 } } { "-fgnu-runtime" } { "" } } */
 /* { dg-skip-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 #include <stdio.h>
