@@ -100,7 +100,7 @@
 
 	* gcc.target/i386/387-2.c: Skip if -march= is specified.
 	* gcc.target/i386/387-6.c: Ditto.
-	* gcc.target/i386/387-2.c: Add -mfancy-math-387 to dg-options.
+	* gcc.target/i386/387-3.c: Add -mfancy-math-387 to dg-options.
 	* gcc.target/i386/387-4.c: Ditto.
 	* gcc.target/i386/387-7.c: Ditto.
 	* gcc.target/i386/387-8.c: Ditto.
@@ -109,7 +109,7 @@
 	* gcc.target/i386/387-11.c: Ditto.
 	* gcc.target/i386/387-12.c: Ditto.
 
-	* gcc.target/i386/387-2.c: Add -mno-sse3 to dg-options.
+	* gcc.target/i386/funcspec-8.c: Add -mno-sse3 to dg-options.
 
 2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
 
@@ -217,8 +217,7 @@
 
 2010-11-04  Bud Davis	<jimmied@smu.edu>
 
-	* gfortran.dg/intrinsic_numeric_arg.f: Add test to check
-	error message.
+	* gfortran.dg/intrinsic_numeric_arg.f: Add test to check error message.
 
 2010-11-04  Chao-ying Fu  <fu@mips.com>
 
