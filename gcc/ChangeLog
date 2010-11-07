@@ -1,3 +1,16 @@
+2010-11-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_rtx_costs): Handle FMA.
+	* config/mips/mips.md (*madd4<mode>, *madd3<mode>, *msub4<mode>)
+	(*msub3<mode>, *nmadd4<mode>_fastmath, *nmadd3<mode>_fastmath)
+	(*nmsub4<mode>_fastmath, *nmsub3<mode>_fastmath): Delete.
+	(*nmadd4<mode>, *nmadd3<mode>. *nmsub4<mode>, *nmsub3<mode>): Redefine
+	to use FMA.
+	(fma<mode>4, *fma<mode>4_madd3, *fma<mode>4_madd4): New patterns.
+	(fms<mode>4, *fms<mode>4_msub3, *fms<mode>4_msub4): Likewise.
+	(fnms<mode>4, *fnms<mode>4_nmadd3, *fnms<mode>4_nmadd4): Likewise.
+	(fnma<mode>4, *fnma<mode>4_nmsub3, *fnma<mode>4_nmsub4): Likewise.
+
 2010-11-06  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c/43384
