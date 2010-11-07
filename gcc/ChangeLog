@@ -1,3 +1,8 @@
+2010-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/46346
+	* tree-ssa-forwprop.c (rhs_to_tree): Handle GIMPLE_TERNARY_RHS.
+
 2010-11-07  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c: Revert previous patch.
@@ -20,7 +25,7 @@
 
 	PR c/43384
 	* c-decl.c (lookup_label): Labels can only be referenced in a
-	function's scope. 
+	function's scope.
 	(store_parm_decls_oldstyle): Skip erroneous parameters.
 
 2010-11-06  Anatoly Sokolov  <aesok@post.ru>
@@ -49,7 +54,7 @@
 	* doc/tm.texi.in (TARGET_OBJC_CONSTRUCT_STRING_OBJECT) Rename.
 	(TARGET_STRING_OBJECT_REF_TYPE_P): New.
 	(TARGET_CHECK_STRING_OBJECT_FORMAT_ARG): New.
-	* target.def (objc_construct_string_object): Rename, amend 
+	* target.def (objc_construct_string_object): Rename, amend
 	documentation.
 	(string_object_ref_type_p): New hook.
 	(check_string_object_format_arg): New hook.
@@ -66,7 +71,7 @@
 	(TARGET_CHECK_STRING_OBJECT_FORMAT_ARG): New.
 
 2010-11-06  Eric Botcazou  <ebotcazou@adacore.com>
-            Pascal Obry  <obry@adacore.com>
+	    Pascal Obry  <obry@adacore.com>
 
 	* config/i386/cygming.h (DWARF_FRAME_REGISTERS): Redefine.  Use 33
 	in 64-bit mode and 17 otherwise.
@@ -85,8 +90,7 @@
 
 2010-11-05  Ian Lance Taylor  <iant@google.com>
 
-	* explow.c (allocate_dynamic_stack_space): Check
-	MALLOC_ABI_ALIGNMENT.
+	* explow.c (allocate_dynamic_stack_space): Check MALLOC_ABI_ALIGNMENT.
 
 2010-11-05  Jakub Jelinek  <jakub@redhat.com>
 
@@ -98,8 +102,7 @@
 
 	PR target/46084
 	* explow.c (allocate_dynamic_stack_space): If flag_split_stack,
-	request enough additional space for alignment, and force
-	alignment.
+	request enough additional space for alignment, and force alignment.
 
 2010-11-05  Kai Tietz  <kai.tietz@onevision.com>
 
@@ -209,8 +212,7 @@
 
 2010-11-05  Jakub Jelinek  <jakub@redhat.com>
 
-	* cfgexpand.c (expand_debug_expr): Handle MEM_REF
-	with non-zero offset.
+	* cfgexpand.c (expand_debug_expr): Handle MEM_REF with non-zero offset.
 
 	PR tree-optimization/46099
 	* tree-parloops.c (take_address_of): Add GSI argument.  Return NULL
