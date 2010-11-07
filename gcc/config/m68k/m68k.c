@@ -4659,49 +4659,46 @@ m68k_output_dwarf_dtprel (FILE *file, int size, rtx x)
 static rtx
 m68k_delegitimize_address (rtx orig_x)
 {
-  rtx x, y;
-  rtx addend = NULL_RTX;
-  rtx result;
+  rtx x;
+  struct m68k_address addr;
+  rtx unspec;
 
   orig_x = delegitimize_mem_from_attrs (orig_x);
-  if (! MEM_P (orig_x))
+  x = orig_x;
+  if (MEM_P (x))
+    x = XEXP (x, 0);
+
+  if (GET_CODE (x) != PLUS || GET_MODE (x) != Pmode)
     return orig_x;
 
-  x = XEXP (orig_x, 0);
+  if (!m68k_decompose_address (GET_MODE (x), x, false, &addr)
+      || addr.offset == NULL_RTX
+      || GET_CODE (addr.offset) != CONST)
+    return orig_x;
 
-  if (GET_CODE (x) == PLUS
-      && GET_CODE (XEXP (x, 1)) == CONST
-      && REG_P (XEXP (x, 0))
-      && REGNO (XEXP (x, 0)) == PIC_REG)
+  unspec = XEXP (addr.offset, 0);
+  if (GET_CODE (unspec) == PLUS && CONST_INT_P (XEXP (unspec, 1)))
+    unspec = XEXP (unspec, 0);
+  if (GET_CODE (unspec) != UNSPEC 
+      || (XINT (unspec, 1) != UNSPEC_RELOC16
+	  && XINT (unspec, 1) != UNSPEC_RELOC32))
+    return orig_x;
+  x = XVECEXP (unspec, 0, 0);
+  gcc_assert (GET_CODE (x) == SYMBOL_REF);
+  if (unspec != XEXP (addr.offset, 0))
+    x = gen_rtx_PLUS (Pmode, x, XEXP (XEXP (addr.offset, 0), 1));
+  if (addr.index)
     {
-      y = x = XEXP (XEXP (x, 1), 0);
-
-      /* Handle an addend.  */
-      if ((GET_CODE (x) == PLUS || GET_CODE (x) == MINUS)
-	  && CONST_INT_P (XEXP (x, 1)))
-	{
-	  addend = XEXP (x, 1);
-	  x = XEXP (x, 0);
-	}
-
-      if (GET_CODE (x) == UNSPEC
-	  && (XINT (x, 1) == UNSPEC_RELOC16
-	      || XINT (x, 1) == UNSPEC_RELOC32))
-	{
-	  result = XVECEXP (x, 0, 0);
-	  if (addend)
-	    {
-	      if (GET_CODE (y) == PLUS)
-		result = gen_rtx_PLUS (Pmode, result, addend);
-	      else
-		result = gen_rtx_MINUS (Pmode, result, addend);
-	      result = gen_rtx_CONST (Pmode, result);
-	    }
-	  return result;
-	}
+      rtx idx = addr.index;
+      if (addr.scale != 1)
+	idx = gen_rtx_MULT (Pmode, idx, GEN_INT (addr.scale));
+      x = gen_rtx_PLUS (Pmode, idx, x);
     }
-
-  return orig_x;
+  if (addr.base)
+    x = gen_rtx_PLUS (Pmode, addr.base, x);
+  if (MEM_P (orig_x))
+    x = replace_equiv_address_nv (orig_x, x);
+  return x;
 }
   
 

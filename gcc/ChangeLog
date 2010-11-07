@@ -1,3 +1,8 @@
+2010-11-07  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k.c (m68k_delegitimize_address): Update to handle
+	all possible addressing modes.
+
 2010-11-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/46346
