@@ -292,13 +292,6 @@ foreach option {
     lappend mips_option_groups $option "-f(no-|)$option"
 }
 
-# Add -ffoo= options to mips_option_groups.
-foreach option {
-    fp-contract
-} {
-    lappend mips_option_groups $option "-f$option=.*"
-}
-
 # A list of option groups that have an impact on the ABI.
 set mips_abi_groups {
     abi

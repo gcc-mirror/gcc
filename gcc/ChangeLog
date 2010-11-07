@@ -1,5 +1,10 @@
 2010-11-07  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.c: Revert previous patch.
+	* config/mips/mips.md: Likewise.
+
+2010-11-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips.c (mips_rtx_costs): Handle FMA.
 	* config/mips/mips.md (*madd4<mode>, *madd3<mode>, *msub4<mode>)
 	(*msub3<mode>, *nmadd4<mode>_fastmath, *nmadd3<mode>_fastmath)

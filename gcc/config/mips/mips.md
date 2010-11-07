@@ -2077,173 +2077,155 @@
 
 ;; Floating point multiply accumulate instructions.
 
-(define_expand "fma<mode>4"
-  [(set (match_operand:ANYF 0 "register_operand")
-	(fma:ANYF (match_operand:ANYF 1 "register_operand")
-		  (match_operand:ANYF 2 "register_operand")
-		  (match_operand:ANYF 3 "register_operand")))]
-  "ISA_HAS_FP_MADD3_MSUB3 || ISA_HAS_FP_MADD4_MSUB4")
-
-(define_insn "*fma<mode>4_madd3"
+(define_insn "*madd4<mode>"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
-		  (match_operand:ANYF 2 "register_operand" "f")
-		  (match_operand:ANYF 3 "register_operand" "0")))]
-  "ISA_HAS_FP_MADD3_MSUB3"
-  "madd.<fmt>\t%0,%1,%2"
-  [(set_attr "type" "fmadd")
-   (set_attr "mode" "<UNITMODE>")])
-
-(define_insn "*fma<mode>4_madd4"
-  [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
-		  (match_operand:ANYF 2 "register_operand" "f")
-		  (match_operand:ANYF 3 "register_operand" "f")))]
-  "ISA_HAS_FP_MADD4_MSUB4"
+	(plus:ANYF (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
+			      (match_operand:ANYF 2 "register_operand" "f"))
+		   (match_operand:ANYF 3 "register_operand" "f")))]
+  "ISA_HAS_FP_MADD4_MSUB4 && TARGET_FUSED_MADD"
   "madd.<fmt>\t%0,%3,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 
-(define_expand "fms<mode>4"
-  [(set (match_operand:ANYF 0 "register_operand")
-	(fma:ANYF (match_operand:ANYF 1 "register_operand")
-		  (match_operand:ANYF 2 "register_operand")
-		  (neg:ANYF (match_operand:ANYF 3 "register_operand"))))]
-  "ISA_HAS_FP_MADD3_MSUB3 || ISA_HAS_FP_MADD4_MSUB4")
-
-(define_insn "*fms<mode>4_msub3"
+(define_insn "*madd3<mode>"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
-		  (match_operand:ANYF 2 "register_operand" "f")
-		  (neg:ANYF (match_operand:ANYF 3 "register_operand" "0"))))]
-  "ISA_HAS_FP_MADD3_MSUB3"
-  "msub.<fmt>\t%0,%1,%2"
+	(plus:ANYF (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
+			      (match_operand:ANYF 2 "register_operand" "f"))
+		   (match_operand:ANYF 3 "register_operand" "0")))]
+  "ISA_HAS_FP_MADD3_MSUB3 && TARGET_FUSED_MADD"
+  "madd.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 
-(define_insn "*fms<mode>4_msub4"
+(define_insn "*msub4<mode>"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
-		  (match_operand:ANYF 2 "register_operand" "f")
-		  (neg:ANYF (match_operand:ANYF 3 "register_operand" "f"))))]
-  "ISA_HAS_FP_MADD4_MSUB4"
+	(minus:ANYF (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
+			       (match_operand:ANYF 2 "register_operand" "f"))
+		    (match_operand:ANYF 3 "register_operand" "f")))]
+  "ISA_HAS_FP_MADD4_MSUB4 && TARGET_FUSED_MADD"
   "msub.<fmt>\t%0,%3,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 
-;; If we're ignoring signed zeros, we can use NMADD (-(a * b + c)) to
-;; implement fnms (-a * b - c, which is unconditionally equivalent to
-;; -(a * b) - c).
-(define_expand "fnms<mode>4"
-  [(set (match_operand:ANYF 0 "register_operand")
-	(fma:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand"))
-		  (match_operand:ANYF 2 "register_operand")
-		  (neg:ANYF (match_operand:ANYF 3 "register_operand"))))]
-  "(ISA_HAS_NMADD3_NMSUB3 (<MODE>mode) || ISA_HAS_NMADD4_NMSUB4 (<MODE>mode))
-   && !HONOR_SIGNED_ZEROS (<MODE>mode)
-   && !HONOR_NANS (<MODE>mode)")
-
-(define_insn "*fnms<mode>4_nmadd3"
+(define_insn "*msub3<mode>"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(fma:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
-		  (match_operand:ANYF 2 "register_operand" "f")
-		  (neg:ANYF (match_operand:ANYF 3 "register_operand" "0"))))]
-  "ISA_HAS_NMADD3_NMSUB3 (<MODE>mode)
-   && !HONOR_SIGNED_ZEROS (<MODE>mode)
-   && !HONOR_NANS (<MODE>mode)"
-  "nmadd.<fmt>\t%0,%1,%2"
+	(minus:ANYF (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
+			       (match_operand:ANYF 2 "register_operand" "f"))
+		    (match_operand:ANYF 3 "register_operand" "0")))]
+  "ISA_HAS_FP_MADD3_MSUB3 && TARGET_FUSED_MADD"
+  "msub.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 
-(define_insn "*fnms<mode>4_nmadd4"
+(define_insn "*nmadd4<mode>"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(fma:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
-		  (match_operand:ANYF 2 "register_operand" "f")
-		  (neg:ANYF (match_operand:ANYF 3 "register_operand" "f"))))]
-  "ISA_HAS_NMADD4_NMSUB4 (<MODE>mode)
-   && !HONOR_SIGNED_ZEROS (<MODE>mode)
-   && !HONOR_NANS (<MODE>mode)"
-  "nmadd.<fmt>\t%0,%3,%1,%2"
-  [(set_attr "type" "fmadd")
-   (set_attr "mode" "<UNITMODE>")])
-
-(define_insn "*nmadd3"
-  [(set (match_operand:ANYF 0 "register_operand" "=f")
-  	(neg:ANYF
-	 (fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
-		   (match_operand:ANYF 2 "register_operand" "f")
-		   (match_operand:ANYF 3 "register_operand" "0"))))]
-  "ISA_HAS_NMADD3_NMSUB3 (<MODE>mode) && !HONOR_NANS (<MODE>mode)"
-  "nmadd.<fmt>\t%0,%1,%2"
-  [(set_attr "type" "fmadd")
-   (set_attr "mode" "<UNITMODE>")])
-
-(define_insn "*nmadd4"
-  [(set (match_operand:ANYF 0 "register_operand" "=f")
-  	(neg:ANYF
-	 (fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
-		   (match_operand:ANYF 2 "register_operand" "f")
+	(neg:ANYF (plus:ANYF
+		   (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
+			      (match_operand:ANYF 2 "register_operand" "f"))
 		   (match_operand:ANYF 3 "register_operand" "f"))))]
-  "ISA_HAS_NMADD4_NMSUB4 (<MODE>mode) && !HONOR_NANS (<MODE>mode)"
+  "ISA_HAS_NMADD4_NMSUB4 (<MODE>mode)
+   && TARGET_FUSED_MADD
+   && HONOR_SIGNED_ZEROS (<MODE>mode)
+   && !HONOR_NANS (<MODE>mode)"
   "nmadd.<fmt>\t%0,%3,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 
-;; If we're ignoring signed zeros, we can use NMSUB (-(a * b - c)) to
-;; implement fnma (-a * b + c, which is unconditionally equivalent to
-;; -(a * b) + c).
-(define_expand "fnma<mode>4"
-  [(set (match_operand:ANYF 0 "register_operand")
-	(fma:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand"))
-	 	  (match_operand:ANYF 2 "register_operand")
-		  (match_operand:ANYF 3 "register_operand")))]
-  "(ISA_HAS_NMADD3_NMSUB3 (<MODE>mode) || ISA_HAS_NMADD4_NMSUB4 (<MODE>mode))
-   && !HONOR_SIGNED_ZEROS (<MODE>mode)
-   && !HONOR_NANS (<MODE>mode)")
-
-(define_insn "*fnma<mode>4_nmsub3"
+(define_insn "*nmadd3<mode>"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(fma:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
-	 	  (match_operand:ANYF 2 "register_operand" "f")
-		  (match_operand:ANYF 3 "register_operand" "0")))]
+	(neg:ANYF (plus:ANYF
+		   (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
+			      (match_operand:ANYF 2 "register_operand" "f"))
+		   (match_operand:ANYF 3 "register_operand" "0"))))]
   "ISA_HAS_NMADD3_NMSUB3 (<MODE>mode)
-   && !HONOR_SIGNED_ZEROS (<MODE>mode)
+   && TARGET_FUSED_MADD
+   && HONOR_SIGNED_ZEROS (<MODE>mode)
    && !HONOR_NANS (<MODE>mode)"
-  "nmsub.<fmt>\t%0,%1,%2"
+  "nmadd.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 
-(define_insn "*fnma<mode>4_nmsub4"
+(define_insn "*nmadd4<mode>_fastmath"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(fma:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
-	 	  (match_operand:ANYF 2 "register_operand" "f")
-		  (match_operand:ANYF 3 "register_operand" "f")))]
+	(minus:ANYF
+	 (mult:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
+		    (match_operand:ANYF 2 "register_operand" "f"))
+	 (match_operand:ANYF 3 "register_operand" "f")))]
   "ISA_HAS_NMADD4_NMSUB4 (<MODE>mode)
+   && TARGET_FUSED_MADD
    && !HONOR_SIGNED_ZEROS (<MODE>mode)
    && !HONOR_NANS (<MODE>mode)"
-  "nmsub.<fmt>\t%0,%3,%1,%2"
+  "nmadd.<fmt>\t%0,%3,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 
-(define_insn "*nmsub3"
+(define_insn "*nmadd3<mode>_fastmath"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-  	(neg:ANYF
-	 (fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
-	 	   (match_operand:ANYF 2 "register_operand" "f")
-		   (neg:ANYF (match_operand:ANYF 3 "register_operand" "0")))))]
-  "ISA_HAS_NMADD3_NMSUB3 (<MODE>mode) && !HONOR_NANS (<MODE>mode)"
+	(minus:ANYF
+	 (mult:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
+		    (match_operand:ANYF 2 "register_operand" "f"))
+	 (match_operand:ANYF 3 "register_operand" "0")))]
+  "ISA_HAS_NMADD3_NMSUB3 (<MODE>mode)
+   && TARGET_FUSED_MADD
+   && !HONOR_SIGNED_ZEROS (<MODE>mode)
+   && !HONOR_NANS (<MODE>mode)"
+  "nmadd.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "*nmsub4<mode>"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(neg:ANYF (minus:ANYF
+		   (mult:ANYF (match_operand:ANYF 2 "register_operand" "f")
+			      (match_operand:ANYF 3 "register_operand" "f"))
+		   (match_operand:ANYF 1 "register_operand" "f"))))]
+  "ISA_HAS_NMADD4_NMSUB4 (<MODE>mode)
+   && TARGET_FUSED_MADD
+   && HONOR_SIGNED_ZEROS (<MODE>mode)
+   && !HONOR_NANS (<MODE>mode)"
+  "nmsub.<fmt>\t%0,%1,%2,%3"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "*nmsub3<mode>"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(neg:ANYF (minus:ANYF
+		   (mult:ANYF (match_operand:ANYF 2 "register_operand" "f")
+			      (match_operand:ANYF 3 "register_operand" "f"))
+		   (match_operand:ANYF 1 "register_operand" "0"))))]
+  "ISA_HAS_NMADD3_NMSUB3 (<MODE>mode)
+   && TARGET_FUSED_MADD
+   && HONOR_SIGNED_ZEROS (<MODE>mode)
+   && !HONOR_NANS (<MODE>mode)"
   "nmsub.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 
-(define_insn "*nmsub4"
+(define_insn "*nmsub4<mode>_fastmath"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
-  	(neg:ANYF
-	 (fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
-	 	   (match_operand:ANYF 2 "register_operand" "f")
-		   (neg:ANYF (match_operand:ANYF 3 "register_operand" "f")))))]
-  "ISA_HAS_NMADD4_NMSUB4 (<MODE>mode) && !HONOR_NANS (<MODE>mode)"
-  "nmsub.<fmt>\t%0,%3,%1,%2"
+	(minus:ANYF
+	 (match_operand:ANYF 1 "register_operand" "f")
+	 (mult:ANYF (match_operand:ANYF 2 "register_operand" "f")
+		    (match_operand:ANYF 3 "register_operand" "f"))))]
+  "ISA_HAS_NMADD4_NMSUB4 (<MODE>mode)
+   && TARGET_FUSED_MADD
+   && !HONOR_SIGNED_ZEROS (<MODE>mode)
+   && !HONOR_NANS (<MODE>mode)"
+  "nmsub.<fmt>\t%0,%1,%2,%3"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "*nmsub3<mode>_fastmath"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(minus:ANYF
+	 (match_operand:ANYF 1 "register_operand" "f")
+	 (mult:ANYF (match_operand:ANYF 2 "register_operand" "f")
+		    (match_operand:ANYF 3 "register_operand" "0"))))]
+  "ISA_HAS_NMADD3_NMSUB3 (<MODE>mode)
+   && TARGET_FUSED_MADD
+   && !HONOR_SIGNED_ZEROS (<MODE>mode)
+   && !HONOR_NANS (<MODE>mode)"
+  "nmsub.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 

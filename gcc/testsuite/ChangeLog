@@ -1,5 +1,29 @@
 2010-11-07  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.target/mips/mips.exp: Revert previous patch.
+	* gcc.target/mips/fma-1.c: Delete.
+	* gcc.target/mips/fma-2.c: Likewise.
+	* gcc.target/mips/fma-3.c: Likewise.
+	* gcc.target/mips/fma-4.c: Likewise.
+	* gcc.target/mips/fma-5.c: Likewise.
+	* gcc.target/mips/fma-6.c: Likewise.
+	* gcc.target/mips/fma-7.c: Likewise.
+	* gcc.target/mips/fma-8.c: Likewise.
+	* gcc.target/mips/fma-9.c: Likewise.
+	* gcc.target/mips/fma-10.c: Likewise.
+	* gcc.target/mips/fma-11.c: Likewise.
+	* gcc.target/mips/fma-12.c: Likewise.
+	* gcc.target/mips/fma-13.c: Likewise.
+	* gcc.target/mips/fma-14.c: Likewise.
+	* gcc.target/mips/fma-15.c: Likewise.
+	* gcc.target/mips/fma-16.c: Likewise.
+	* gcc.target/mips/fma-17.c: Likewise.
+	* gcc.target/mips/fma-18.c: Likewise.
+	* gcc.target/mips/fma-19.c: Likewise.
+	* gcc.target/mips/fma-20.c: Likewise.
+
+2010-11-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.target/mips/mips.exp: Add support for -ffp-contract.
 	* gcc.target/mips/fma-1.c: New test.
 	* gcc.target/mips/fma-2.c: Likewise.
