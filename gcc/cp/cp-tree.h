@@ -72,6 +72,7 @@ c-common.h, not after.
       CONSTRUCTOR_IS_DIRECT_INIT (in CONSTRUCTOR)
       LAMBDA_EXPR_CAPTURES_THIS_P (in LAMBDA_EXPR)
       DECLTYPE_FOR_LAMBDA_CAPTURE (in DECLTYPE_TYPE)
+      VEC_INIT_EXPR_IS_CONSTEXPR (in VEC_INIT_EXPR)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -2898,6 +2899,15 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define VEC_INIT_EXPR_SLOT(NODE) TREE_OPERAND (NODE, 0)
 #define VEC_INIT_EXPR_INIT(NODE) TREE_OPERAND (NODE, 1)
 
+/* Indicates that a VEC_INIT_EXPR is a potential constant expression.
+   Only set when the current function is constexpr.  */
+#define VEC_INIT_EXPR_IS_CONSTEXPR(NODE) \
+  TREE_LANG_FLAG_0 (VEC_INIT_EXPR_CHECK (NODE))
+
+/* Indicates that a VEC_INIT_EXPR is expressing value-initialization.  */
+#define VEC_INIT_EXPR_VALUE_INIT(NODE) \
+  TREE_LANG_FLAG_1 (VEC_INIT_EXPR_CHECK (NODE))
+
 /* The TYPE_MAIN_DECL for a class template type is a TYPE_DECL, not a
    TEMPLATE_DECL.  This macro determines whether or not a given class
    type is really a template type, as opposed to an instantiation or
@@ -5240,6 +5250,7 @@ extern bool literal_type_p (tree);
 extern tree validate_constexpr_fundecl (tree);
 extern tree register_constexpr_fundef (tree, tree);
 extern tree ensure_literal_type_for_constexpr_object (tree);
+extern bool potential_constant_expression (tree, tsubst_flags_t);
 extern tree cxx_constant_value (tree);
 extern tree maybe_constant_value (tree);
 extern tree maybe_constant_init (tree);

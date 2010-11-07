@@ -1,3 +1,7 @@
+2010-11-06  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-ctor3.C: New.
+
 2010-11-06  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c/43384

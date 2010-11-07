@@ -535,7 +535,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	gcc_assert (EXPR_HAS_LOCATION (*expr_p));
 	input_location = EXPR_LOCATION (*expr_p);
 	*expr_p = build_vec_init (VEC_INIT_EXPR_SLOT (*expr_p), NULL_TREE,
-				  init, /*explicit_value_init_p*/false,
+				  init, VEC_INIT_EXPR_VALUE_INIT (*expr_p),
 				  from_array,
 				  tf_warning_or_error);
 	ret = GS_OK;

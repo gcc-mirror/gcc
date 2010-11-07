@@ -5324,8 +5324,6 @@ typedef struct GTY(()) constexpr_fundef {
 
 static GTY ((param_is (constexpr_fundef))) htab_t constexpr_fundef_table;
 
-static bool potential_constant_expression (tree, tsubst_flags_t);
-
 /* Utility function used for managing the constexpr function table.
    Return true if the entries pointed to by P and Q are for the
    same constexpr function.  */
@@ -7066,7 +7064,7 @@ morally_constexpr_builtin_function_p (tree decl)
       logical OR (5.15), and conditional (5.16) operations that are
       not evaluated are not considered.   */
 
-static bool
+bool
 potential_constant_expression (tree t, tsubst_flags_t flags)
 {
   int i;
@@ -7451,11 +7449,7 @@ potential_constant_expression (tree t, tsubst_flags_t flags)
       return false;
 
     case VEC_INIT_EXPR:
-      /* We should only see this in a defaulted constructor for a class
-	 with a non-static data member of array type; if we get here we
-	 know this is a potential constant expression.  */
-      gcc_assert (DECL_DEFAULTED_FN (current_function_decl));
-      return true;
+      return VEC_INIT_EXPR_IS_CONSTEXPR (t);
 
     default:
       sorry ("unexpected ast of kind %s", tree_code_name[TREE_CODE (t)]);
