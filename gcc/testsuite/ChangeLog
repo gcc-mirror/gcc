@@ -1,3 +1,9 @@
+2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR libobjc/36610
+	* objc.dg/torture/forward-1.m: Re-enable for gnu-runtime, XFAIL the run for
+	all but m32 x86.
+	
 2010-11-07  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* g++.dg/debug/dwarf2/nested-2.C: Adjust pattern to also match "|"
