@@ -232,17 +232,27 @@ namespace __profile
         _Base::insert(__first, __last);
         _M_profile_resize(__old_size, _Base::bucket_count()); 
       }
-     
-      // operator []
+
+      // operator[]
       mapped_type&
-      operator[](const _Key& _k)
+      operator[](const _Key& __k)
       {
         size_type __old_size =  _Base::bucket_count();
-        mapped_type& __res = _M_base()[_k];
+        mapped_type& __res = _M_base()[__k];
         size_type __new_size =  _Base::bucket_count();
         _M_profile_resize(__old_size, _Base::bucket_count()); 
         return __res;
-      }   
+      }
+
+      mapped_type&
+      operator[](_Key&& __k)
+      {
+        size_type __old_size =  _Base::bucket_count();
+        mapped_type& __res = _M_base()[std::move(__k)];
+        size_type __new_size =  _Base::bucket_count();
+        _M_profile_resize(__old_size, _Base::bucket_count()); 
+        return __res;
+      }
 
       void
       swap(unordered_map& __x)

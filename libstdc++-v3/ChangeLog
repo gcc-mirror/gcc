@@ -1,5 +1,10 @@
 2010-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/profile/unordered_map (unordered_map<>::operator[](_Key&&)):
+	Add.
+
+2010-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/profile/bitset (bitset<>::bitset(), bitset<>::
 	bitset(unsigned long long)): Add constexpr specifier.
 
