@@ -3827,10 +3827,6 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
 	*total = mips_cost->int_mult_si;
       return false;
 
-    case FMA:
-      *total = mips_fp_mult_cost (mode);
-      return false;
-
     case DIV:
       /* Check for a reciprocal.  */
       if (float_mode_p
