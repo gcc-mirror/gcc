@@ -1,3 +1,12 @@
+2010-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/bitset: Do not derive from _Safe_sequence_base in
+	C++0x mode, otherwise std::bitset isn't a literal type anymore;
+	adjust everywhere.
+
+	* include/debug/bitset (bitset<>::bitset(), bitset<>::
+	bitset(unsigned long long)):  Add missing constexpr specifier.
+
 2010-11-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/doxygen/user.cfg.in: Add typeindex.
