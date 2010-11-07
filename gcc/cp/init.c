@@ -453,10 +453,8 @@ perform_member_init (tree member, tree init)
       /* mem() means value-initialization.  */
       if (TREE_CODE (type) == ARRAY_TYPE)
 	{
-	  init = build_vec_init (decl, NULL_TREE, NULL_TREE,
-				 /*explicit_value_init_p=*/true,
-				 /* from_array=*/0,
-				 tf_warning_or_error);
+	  init = build_vec_init_expr (type, init);
+	  init = build2 (INIT_EXPR, type, decl, init);
 	  finish_expr_stmt (init);
 	}
       else
