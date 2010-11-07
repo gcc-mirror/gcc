@@ -41,37 +41,50 @@ namespace __debug
   /// Class std::bitset with additional safety/checking/debug instrumentation.
   template<size_t _Nb>
     class bitset
-    : public _GLIBCXX_STD_D::bitset<_Nb>, 
-      public __gnu_debug::_Safe_sequence_base
+    : public _GLIBCXX_STD_D::bitset<_Nb>
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+    , public __gnu_debug::_Safe_sequence_base
+#endif
     {
       typedef _GLIBCXX_STD_D::bitset<_Nb> _Base;
-      typedef __gnu_debug::_Safe_sequence_base  _Safe_base;
 
     public:
       // bit reference:
       class reference
-      : private _Base::reference, public __gnu_debug::_Safe_iterator_base
+      : private _Base::reference
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+        , public __gnu_debug::_Safe_iterator_base
+#endif
       {
 	typedef typename _Base::reference _Base_ref;
 
 	friend class bitset;
 	reference();
 
-	reference(const _Base_ref& __base, bitset* __seq)
-	: _Base_ref(__base), _Safe_iterator_base(__seq, false)
+	reference(const _Base_ref& __base,
+		  bitset* __seq __attribute__((__unused__)))
+	: _Base_ref(__base)
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+	, _Safe_iterator_base(__seq, false)
+#endif
 	{ }
 
       public:
 	reference(const reference& __x)
-	: _Base_ref(__x), _Safe_iterator_base(__x, false)
+	: _Base_ref(__x)
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+	, _Safe_iterator_base(__x, false)
+#endif
 	{ }
 
 	reference&
 	operator=(bool __x)
 	{
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
 			      _M_message(__gnu_debug::__msg_bad_bitset_write)
 				._M_iterator(*this));
+#endif
 	  *static_cast<_Base_ref*>(this) = __x;
 	  return *this;
 	}
@@ -79,12 +92,14 @@ namespace __debug
 	reference&
 	operator=(const reference& __x)
 	{
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 	  _GLIBCXX_DEBUG_VERIFY(! __x._M_singular(),
 			       _M_message(__gnu_debug::__msg_bad_bitset_read)
 				._M_iterator(__x));
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
 			      _M_message(__gnu_debug::__msg_bad_bitset_write)
 				._M_iterator(*this));
+#endif
 	  *static_cast<_Base_ref*>(this) = __x;
 	  return *this;
 	}
@@ -92,36 +107,42 @@ namespace __debug
 	bool
 	operator~() const
 	{
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
 			       _M_message(__gnu_debug::__msg_bad_bitset_read)
 				._M_iterator(*this));
+#endif
 	  return ~(*static_cast<const _Base_ref*>(this));
 	}
 
 	operator bool() const
 	{
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
 			      _M_message(__gnu_debug::__msg_bad_bitset_read)
 				._M_iterator(*this));
+#endif
 	  return *static_cast<const _Base_ref*>(this);
 	}
 
 	reference&
 	flip()
 	{
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
 			      _M_message(__gnu_debug::__msg_bad_bitset_flip)
 				._M_iterator(*this));
+#endif
 	  _Base_ref::flip();
 	  return *this;
 	}
       };
 
       // 23.3.5.1 constructors:
-      bitset() : _Base() { }
+      _GLIBCXX_CONSTEXPR bitset() : _Base() { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      bitset(unsigned long long __val)
+      constexpr bitset(unsigned long long __val)
 #else
       bitset(unsigned long __val)
 #endif
@@ -147,7 +168,7 @@ namespace __debug
 	       _CharT __zero, _CharT __one = _CharT('1'))
 	: _Base(__str, __pos, __n, __zero, __one) { }
 
-      bitset(const _Base& __x) : _Base(__x), _Safe_base() { }
+      bitset(const _Base& __x) : _Base(__x) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       template<typename _CharT>
