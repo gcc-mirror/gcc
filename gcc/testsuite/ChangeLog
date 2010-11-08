@@ -1,3 +1,10 @@
+2010-11-08  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/45352
+	gcc.dg/pr45352.c, gcc.dg/pr45352-1.c, gcc.dg/pr45352-2.c: New tests.
+	gcc.target/i386/pr45352.c, gcc.target/i386/pr45352-1.c,
+	gcc.target/i386/pr45352-2.c: New tests. 
+
 2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR libobjc/36610

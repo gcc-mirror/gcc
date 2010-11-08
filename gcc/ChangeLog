@@ -1,3 +1,16 @@
+2010-11-08  Andrey Belevantsev  <abel@ispras.ru>
+
+	 PR rtl-optimization/45352
+	* sel-sched.c (find_best_expr): Do not set pneed_stall when
+	the variable_issue hook is not implemented.
+	(fill_insns): Remove dead variable stall_iterations.
+	(init_seqno_1): Force EBB start for resetting sched cycles on any
+	successor blocks of the rescheduled region.
+	(sel_sched_region_1): Use bitmap_bit_p instead of bitmap_clear_bit.
+	(reset_sched_cycles_in_current_ebb): Add debug printing.
+	New variable issued_insns.  Advance state when we have issued
+	issue_rate insns.
+
 2010-11-08  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* gengtype (main): Get here's position using POS_HERE macro for
