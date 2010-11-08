@@ -22,6 +22,10 @@
 	* caller-save.c (reg_save_code): After HARD_REGNO_MODE_OK check fails,
 	assert that REG is a hard register number before using it as an index.
 
+	PR bootstrap/46358
+	* config/i386/i386.c (ix86_expand_split_stack_prologue):
+	Avoid warnings when HOST_WIDE_INT is 32 bit.
+
 2010-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/46208
