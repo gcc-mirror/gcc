@@ -1,3 +1,8 @@
+2010-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* make_sunver.pl: Ignore entries without symbol name first.  Then do
+	not ignore symbols marked as 'R'.
+
 2010-10-18  Andi Kleen  <ak@linux.intel.com>
 
 	* gccbug.el: Remove.
