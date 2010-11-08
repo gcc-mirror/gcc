@@ -11171,9 +11171,9 @@ ix86_expand_split_stack_prologue (void)
 	     different function: __morestack_large.  We pass the
 	     argument size in the upper 32 bits of r10 and pass the
 	     frame size in the lower 32 bits.  */
-	  gcc_assert ((allocate & 0xffffffff) == allocate);
-	  gcc_assert (((HOST_WIDE_INT) args_size & 0xffffffff)
-		      == (HOST_WIDE_INT) args_size);
+	  gcc_assert ((allocate & (HOST_WIDE_INT) 0xffffffff) == allocate);
+	  gcc_assert (((unsigned HOST_WIDE_INT) args_size & 0xffffffff)
+		      == (unsigned HOST_WIDE_INT) args_size);
 
 	  if (split_stack_fn_large == NULL_RTX)
 	    split_stack_fn_large =
@@ -11202,7 +11202,7 @@ ix86_expand_split_stack_prologue (void)
 
 	  fn = reg11;
 
-	  argval = ((HOST_WIDE_INT) args_size << 32) + allocate;
+	  argval = (((HOST_WIDE_INT) args_size << 16) << 16) + allocate;
 	  emit_move_insn (reg10, GEN_INT (argval));
 	}
       else
