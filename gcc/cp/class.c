@@ -2797,11 +2797,14 @@ check_bitfield_decl (tree field)
     }
   else
     {
+      location_t loc = input_location;
       /* Avoid the non_lvalue wrapper added by fold for PLUS_EXPRs.  */
       STRIP_NOPS (w);
 
       /* detect invalid field size.  */
+      input_location = DECL_SOURCE_LOCATION (field);
       w = cxx_constant_value (w);
+      input_location = loc;
 
       if (TREE_CODE (w) != INTEGER_CST)
 	{

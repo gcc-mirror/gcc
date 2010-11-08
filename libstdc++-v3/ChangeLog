@@ -1,3 +1,8 @@
+2010-11-08  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Adjust
+	expected error.
+
 2010-11-08  Benjamin Kosnik  <bkoz@redhat.com>
 
         * include/std/complex (operator==, !=): Mark constexpr.
