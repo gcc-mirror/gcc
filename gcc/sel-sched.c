@@ -4403,7 +4403,8 @@ find_best_expr (av_set_t *av_vliw_ptr, blist_t bnds, fence_t fence,
     {
       can_issue_more = invoke_aftermath_hooks (fence, EXPR_INSN_RTX (best),
                                                can_issue_more);
-      if (can_issue_more == 0)
+      if (targetm.sched.variable_issue
+	  && can_issue_more == 0)
         *pneed_stall = 1;
     }
 
@@ -5511,7 +5512,7 @@ fill_insns (fence_t fence, int seqno, ilist_t **scheduled_insns_tailpp)
       blist_t *bnds_tailp1, *bndsp;
       expr_t expr_vliw;
       int need_stall;
-      int was_stall = 0, scheduled_insns = 0, stall_iterations = 0;
+      int was_stall = 0, scheduled_insns = 0;
       int max_insns = pipelining_p ? issue_rate : 2 * issue_rate;
       int max_stall = pipelining_p ? 1 : 3;
       bool last_insn_was_debug = false;
@@ -5530,16 +5531,15 @@ fill_insns (fence_t fence, int seqno, ilist_t **scheduled_insns_tailpp)
       do
         {
           expr_vliw = find_best_expr (&av_vliw, bnds, fence, &need_stall);
-          if (!expr_vliw && need_stall)
+          if (! expr_vliw && need_stall)
             {
               /* All expressions required a stall.  Do not recompute av sets
                  as we'll get the same answer (modulo the insns between
                  the fence and its boundary, which will not be available for
-                 pipelining).  */
-              gcc_assert (! expr_vliw && stall_iterations < 2);
-              was_stall++;
-	      /* If we are going to stall for too long, break to recompute av
+                 pipelining).
+		 If we are going to stall for too long, break to recompute av
 		 sets and bring more insns for pipelining.  */
+              was_stall++;
 	      if (need_stall <= 3)
 		stall_for_cycles (fence, need_stall);
 	      else
@@ -6712,6 +6712,8 @@ init_seqno_1 (basic_block bb, sbitmap visited_bbs, bitmap blocks_to_reschedule)
 
 	  init_seqno_1 (succ, visited_bbs, blocks_to_reschedule);
 	}
+      else if (blocks_to_reschedule)
+        bitmap_set_bit (forced_ebb_heads, succ->index);
     }
 
   for (insn = BB_END (bb); insn != note; insn = PREV_INSN (insn))
@@ -6966,6 +6968,7 @@ reset_sched_cycles_in_current_ebb (void)
   int last_clock = 0;
   int haifa_last_clock = -1;
   int haifa_clock = 0;
+  int issued_insns = 0;
   insn_t insn;
 
   if (targetm.sched.init)
@@ -7020,7 +7023,9 @@ reset_sched_cycles_in_current_ebb (void)
           haifa_cost = cost;
           after_stall = 1;
         }
-
+      if (haifa_cost == 0
+	  && issued_insns == issue_rate)
+	haifa_cost = 1;
       if (haifa_cost > 0)
 	{
 	  int i = 0;
@@ -7028,6 +7033,7 @@ reset_sched_cycles_in_current_ebb (void)
 	  while (haifa_cost--)
 	    {
 	      advance_state (curr_state);
+	      issued_insns = 0;
               i++;
 
 	      if (sched_verbose >= 2)
@@ -7047,6 +7053,8 @@ reset_sched_cycles_in_current_ebb (void)
 	    }
 
 	  haifa_clock += i;
+          if (sched_verbose >= 2)
+            sel_print ("haifa clock: %d\n", haifa_clock);
 	}
       else
 	gcc_assert (haifa_cost == 0);
@@ -7060,21 +7068,27 @@ reset_sched_cycles_in_current_ebb (void)
 					    &sort_p))
 	  {
 	    advance_state (curr_state);
+	    issued_insns = 0;
 	    haifa_clock++;
 	    if (sched_verbose >= 2)
               {
                 sel_print ("advance_state (dfa_new_cycle)\n");
                 debug_state (curr_state);
+		sel_print ("haifa clock: %d\n", haifa_clock + 1);
               }
           }
 
       if (real_insn)
 	{
 	  cost = state_transition (curr_state, insn);
+	  issued_insns++;
 
           if (sched_verbose >= 2)
-            debug_state (curr_state);
-
+	    {
+	      sel_print ("scheduled insn %d, clock %d\n", INSN_UID (insn),
+			 haifa_clock + 1);
+              debug_state (curr_state);
+	    }
 	  gcc_assert (cost < 0);
 	}
 
@@ -7518,7 +7532,7 @@ sel_sched_region_1 (void)
                   continue;
                 }
 
-              if (bitmap_clear_bit (blocks_to_reschedule, bb->index))
+              if (bitmap_bit_p (blocks_to_reschedule, bb->index))
                 {
                   flist_tail_init (new_fences);
 
