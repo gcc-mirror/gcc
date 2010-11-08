@@ -1,3 +1,22 @@
+2010-11-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/property/at-property-5.m: Updated test.	
+	* objc.dg/property/at-property-16.m: New.
+	* objc.dg/property/at-property-17.m: New.
+	* objc.dg/property/at-property-18.m: New.
+	* objc.dg/property/at-property-19.m: New.	
+	* objc.dg/property/dotsyntax-12.m: New.
+	* objc.dg/protocol-inheritance-1.m: New.
+	* objc.dg/protocol-inheritance-2.m: New.
+	* obj-c++.dg/property/at-property-5.mm: Updated test.
+	* obj-c++.dg/property/at-property-16.mm: New.
+	* obj-c++.dg/property/at-property-17.mm: New.
+	* obj-c++.dg/property/at-property-18.mm: New.
+	* obj-c++.dg/property/at-property-19.mm: New.	
+	* obj-c++.dg/protocol-inheritance-1.mm: New.
+	* obj-c++.dg/protocol-inheritance-2.mm: New.
+	* obj-c++.dg/property/dotsyntax-12.mm: New.
+	
 2010-11-08  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/expr/overflow1.C: New.

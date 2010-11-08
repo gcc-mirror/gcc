@@ -829,6 +829,78 @@ objc_set_method_opt (bool optional)
     }
 }
 
+/* This routine looks for a given PROPERTY in a list of CLASS, CATEGORY, or
+   PROTOCOL.  */
+static tree
+lookup_property_in_list (tree chain, tree property)
+{
+  tree x;
+  for (x = CLASS_PROPERTY_DECL (chain); x; x = TREE_CHAIN (x))
+    if (PROPERTY_NAME (x) == property)
+      return x;
+  return NULL_TREE;
+}
+
+/* This routine looks for a given PROPERTY in the tree chain of RPROTO_LIST. */
+static tree lookup_property_in_protocol_list (tree rproto_list, tree property)
+{
+  tree rproto, x;
+  for (rproto = rproto_list; rproto; rproto = TREE_CHAIN (rproto))
+    {
+      tree p = TREE_VALUE (rproto);
+      if (TREE_CODE (p) == PROTOCOL_INTERFACE_TYPE)
+	{
+	  if ((x = lookup_property_in_list (p, property)))
+	    return x;
+	  if (PROTOCOL_LIST (p))
+	    return lookup_property_in_protocol_list (PROTOCOL_LIST (p), property);
+	}
+      else
+	{
+	  ; /* An identifier...if we could not find a protocol.  */
+	}
+    }
+  return NULL_TREE;
+}
+
+/* This routine looks up the PROPERTY in current INTERFACE, its categories and up the
+   chain of interface hierarchy.  */
+static tree
+lookup_property (tree interface_type, tree property)
+{
+  tree inter = interface_type;
+  while (inter)
+    {
+      tree x, category;
+      if ((x = lookup_property_in_list (inter, property)))
+	return x;
+      /* Failing that, look for the property in each category of the class.  */
+      category = inter;
+      while ((category = CLASS_CATEGORY_LIST (category)))
+	{
+	  if ((x = lookup_property_in_list (category, property)))
+	    return x;
+
+	  /* When checking a category, also check the protocols
+	     attached with the category itself.  */
+	  if (CLASS_PROTOCOL_LIST (category)
+	      && (x = lookup_property_in_protocol_list
+		  (CLASS_PROTOCOL_LIST (category), property)))
+	    return x;
+	}
+
+      /*  Failing to find in categories, look for property in protocol list. */
+      if (CLASS_PROTOCOL_LIST (inter) 
+	  && (x = lookup_property_in_protocol_list
+	      (CLASS_PROTOCOL_LIST (inter), property)))
+	return x;
+      
+      /* Failing that, climb up the inheritance hierarchy.  */
+      inter = lookup_interface (CLASS_SUPER_NAME (inter));
+    }
+  return inter;
+}
+
 /* This routine is called by the parser when a
    @property... declaration is found.  'decl' is the declaration of
    the property (type/identifier), and the other arguments represent
@@ -920,19 +992,6 @@ objc_add_property_declaration (location_t location, tree decl,
   /* At this point we know that we are either in an interface, a
      category, or a protocol.  */
 
-  if (parsed_property_setter_ident)
-    {
-      /* The setter should be terminated by ':', but the parser only
-	 gives us an identifier without ':'.  So, we need to add ':'
-	 at the end.  */
-      const char *parsed_setter = IDENTIFIER_POINTER (parsed_property_setter_ident);
-      size_t length = strlen (parsed_setter);
-      char *final_setter = (char *)alloca (length + 2);
-
-      sprintf (final_setter, "%s:", parsed_setter);
-      parsed_property_setter_ident = get_identifier (final_setter);
-    }
-
   /* Check that the property does not have an initial value specified.
      This should never happen as the parser doesn't allow this, but
      it's just in case.  */
@@ -984,8 +1043,39 @@ objc_add_property_declaration (location_t location, tree decl,
       && !objc_type_valid_for_messaging (TREE_TYPE (decl), true))
     error_at (location, "%<copy%> attribute is only valid for Objective-C objects");
 
+  /* Now determine the final property getter and setter names.  They
+     will be stored in the PROPERTY_DECL, from which they'll always be
+     extracted and used.  */
+
+  /* Adjust, or fill in, setter and getter names.  We overwrite the
+     parsed_property_setter_ident and parsed_property_getter_ident
+     with the final setter and getter identifiers that will be
+     used.  */
+  if (parsed_property_setter_ident)
+    {
+      /* The setter should be terminated by ':', but the parser only
+	 gives us an identifier without ':'.  So, we need to add ':'
+	 at the end.  */
+      const char *parsed_setter = IDENTIFIER_POINTER (parsed_property_setter_ident);
+      size_t length = strlen (parsed_setter);
+      char *final_setter = (char *)alloca (length + 2);
+
+      sprintf (final_setter, "%s:", parsed_setter);
+      parsed_property_setter_ident = get_identifier (final_setter);
+    }
+  else
+    {
+      if (!property_readonly)
+	parsed_property_setter_ident = get_identifier (objc_build_property_setter_name 
+						       (DECL_NAME (decl)));
+    }
+
+  if (!parsed_property_getter_ident)
+    parsed_property_getter_ident = DECL_NAME (decl);
+
   /* Check for duplicate property declarations.  We first check the
-     immediate context for a property with the same name.  */
+     immediate context for a property with the same name.  Any such
+     declarations are an error.  */
   for (x = CLASS_PROPERTY_DECL (objc_interface_context); x; x = TREE_CHAIN (x))
     {
       if (PROPERTY_NAME (x) == DECL_NAME (decl))
@@ -995,14 +1085,126 @@ objc_add_property_declaration (location_t location, tree decl,
 	  error_at (location, "redeclaration of property %qD", decl);
 
 	  if (original_location != UNKNOWN_LOCATION)
-	    inform (original_location, "originally declared here");
+	    inform (original_location, "originally specified here");
 	  return;
       }
     }
 
-  /* TODO: Shall we check here for other property declaractions (in
-     the superclass, other categories or protocols) with the same name
-     and conflicting types ?  */
+  /* We now need to check for existing property declarations (in the
+     superclass, other categories or protocols) and check that the new
+     declaration is not in conflict with existing ones.  */
+
+  /* Search for a previous, existing declaration of a property with
+     the same name in superclasses, protocols etc.  If one is found,
+     it will be in the 'x' variable.  */
+  x = NULL_TREE;
+
+  /* Note that, for simplicity, the following may search again the
+     local context.  That's Ok as nothing will be found (else we'd
+     have thrown an error above); it's only a little inefficient, but
+     the code is simpler.  */
+  switch (TREE_CODE (objc_interface_context))
+    {
+    case CLASS_INTERFACE_TYPE:
+      /* Look up the property in the current @interface (which will
+	 find nothing), then its protocols and categories and
+	 superclasses.  */
+      x = lookup_property (objc_interface_context, DECL_NAME (decl));
+      break;
+    case CATEGORY_INTERFACE_TYPE:
+      /* Look up the property in the main @interface, then protocols
+	 and categories (one of them is ours, and will find nothing)
+	 and superclasses.  */
+      x = lookup_property (lookup_interface (CLASS_NAME (objc_interface_context)),
+			   DECL_NAME (decl));
+      break;
+    case PROTOCOL_INTERFACE_TYPE:
+      /* Looks up the property in any protocols attached to the
+	 current protocol.  */
+      if (PROTOCOL_LIST (objc_interface_context))
+	{
+	  x = lookup_property_in_protocol_list (PROTOCOL_LIST (objc_interface_context),
+						DECL_NAME (decl));
+	}
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (x != NULL_TREE)
+    {
+      /* An existing property was found; check that it has the same
+	 types, or it is compatible.  */
+      location_t original_location = DECL_SOURCE_LOCATION (x);
+	  
+      if (PROPERTY_NONATOMIC (x) != parsed_property_nonatomic)
+	{
+	  error_at (location, "'nonatomic' attribute of property %qD conflicts with previous declaration", decl);
+      
+	  if (original_location != UNKNOWN_LOCATION)
+	    inform (original_location, "originally specified here");
+	  return;
+	}
+
+      if (PROPERTY_GETTER_NAME (x) != parsed_property_getter_ident)
+	{
+	  error_at (location, "'getter' attribute of property %qD conflicts with previous declaration", decl);
+      
+	  if (original_location != UNKNOWN_LOCATION)
+	    inform (original_location, "originally specified here");
+	  return;
+	}
+
+      /* We can only compare the setter names if both the old and new property have a setter.  */
+      if (!property_readonly  &&  !PROPERTY_READONLY(x))
+	{
+	  if (PROPERTY_SETTER_NAME (x) != parsed_property_setter_ident)
+	    {
+	      error_at (location, "'setter' attribute of property %qD conflicts with previous declaration", decl);
+	      
+	      if (original_location != UNKNOWN_LOCATION)
+		inform (original_location, "originally specified here");
+	      return;
+	    }
+	}
+
+      if (PROPERTY_ASSIGN_SEMANTICS (x) != property_assign_semantics)
+	{
+	  error_at (location, "assign semantics attributes of property %qD conflict with previous declaration", decl);
+      
+	  if (original_location != UNKNOWN_LOCATION)
+	    inform (original_location, "originally specified here");
+	  return;
+	}
+
+      /* It's ok to have a readonly property that becomes a readwrite, but not vice versa.  */
+      if (PROPERTY_READONLY (x) == 0  &&  property_readonly == 1)
+	{
+	  error_at (location, "'readonly' attribute of property %qD conflicts with previous declaration", decl);
+      
+	  if (original_location != UNKNOWN_LOCATION)
+	    inform (original_location, "originally specified here");
+	  return;
+	}
+
+      if (property_readonly)
+	{
+	  /* If the property is readonly, it is Ok if the property
+	     type is a specialization of the previously declared one.
+	     Eg, the superclass returns 'NSArray' while the subclass
+	     returns 'NSMutableArray'.  */
+	  
+	  /* TODO: Check that the types are the same, or more specialized.  */
+	  ;
+	}
+      else
+	{
+	  /* Else, the types must match exactly.  */
+
+	  /* TODO: Check that property types are identical.  */
+	  ;
+	}
+    }
 
   /* Create a PROPERTY_DECL node.  */
   property_decl = make_node (PROPERTY_DECL);
@@ -1022,72 +1224,16 @@ objc_add_property_declaration (location_t location, tree decl,
   PROPERTY_IVAR_NAME (property_decl) = NULL_TREE;
   PROPERTY_DYNAMIC (property_decl) = 0;
 
+  /* Note that PROPERTY_GETTER_NAME is always set for all
+     PROPERTY_DECLs, and PROPERTY_SETTER_NAME is always set for all
+     PROPERTY_DECLs where PROPERTY_READONLY == 0.  Any time we deal
+     with a getter or setter, we should get the PROPERTY_DECL and use
+     PROPERTY_GETTER_NAME and PROPERTY_SETTER_NAME to know the correct
+     names.  */
+
   /* Add the PROPERTY_DECL to the list of properties for the class.  */
   TREE_CHAIN (property_decl) = CLASS_PROPERTY_DECL (objc_interface_context);
   CLASS_PROPERTY_DECL (objc_interface_context) = property_decl;
-}
-
-/* This routine looks for a given PROPERTY in a list of CLASS, CATEGORY, or
-   PROTOCOL.  */
-static tree
-lookup_property_in_list (tree chain, tree property)
-{
-  tree x;
-  for (x = CLASS_PROPERTY_DECL (chain); x; x = TREE_CHAIN (x))
-    if (PROPERTY_NAME (x) == property)
-      return x;
-  return NULL_TREE;
-}
-
-/* This routine looks for a given PROPERTY in the tree chain of RPROTO_LIST. */
-static tree lookup_property_in_protocol_list (tree rproto_list, tree property)
-{
-  tree rproto, x;
-  for (rproto = rproto_list; rproto; rproto = TREE_CHAIN (rproto))
-    {
-      tree p = TREE_VALUE (rproto);
-      if (TREE_CODE (p) == PROTOCOL_INTERFACE_TYPE)
-	{
-	  if ((x = lookup_property_in_list (p, property)))
-	    return x;
-	  if (PROTOCOL_LIST (p))
-	    return lookup_property_in_protocol_list (PROTOCOL_LIST (p), property);
-	}
-      else
-	{
-	  ; /* An identifier...if we could not find a protocol.  */
-	}
-    }
-  return NULL_TREE;
-}
-
-/* This routine looks up the PROPERTY in current INTERFACE, its categories and up the
-   chain of interface hierarchy.  */
-static tree
-lookup_property (tree interface_type, tree property)
-{
-  tree inter = interface_type;
-  while (inter)
-    {
-      tree x, category;
-      if ((x = lookup_property_in_list (inter, property)))
-	return x;
-      /* Failing that, look for the property in each category of the class.  */
-      category = inter;
-      while ((category = CLASS_CATEGORY_LIST (category)))
-	if ((x = lookup_property_in_list (category, property)))
-	  return x;
-
-      /*  Failing to find in categories, look for property in protocol list. */
-      if (CLASS_PROTOCOL_LIST (inter) 
-	  && (x = lookup_property_in_protocol_list (
-		    CLASS_PROTOCOL_LIST (inter), property)))
-	return x;
-      
-      /* Failing that, climb up the inheritance hierarchy.  */
-      inter = lookup_interface (CLASS_SUPER_NAME (inter));
-    }
-  return inter;
 }
 
 /* This is a subroutine of objc_maybe_build_component_ref.  Search the
@@ -1295,7 +1441,10 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
 	    t = TREE_OPERAND (t, 0);
 	  
 	  if (t == UOBJC_SUPER_decl)
-	    interface_type = lookup_interface (CLASS_SUPER_NAME (implementation_template));
+	    {
+	      /* TODO: Check if this is correct also for 'super' in categories.  */
+	      interface_type = lookup_interface (CLASS_SUPER_NAME (implementation_template));
+	    }
 	  else if (t == self_decl)
 	    interface_type = lookup_interface (CLASS_NAME (implementation_template));
 
@@ -8564,12 +8713,26 @@ objc_is_public (tree expr, tree identifier)
   return 1;
 }
 
-/* Make sure all entries in CHAIN are also in LIST.  */
+/* Make sure all methods in CHAIN (a list of method declarations from
+   an @interface or a @protocol) are in IMPLEMENTATION (the
+   implementation context).  This is used to check for example that
+   all methods declared in an @interface were implemented in an
+   @implementation.
+
+   Some special methods (property setters/getters) are special and if
+   they are not found in IMPLEMENTATION, we look them up in its
+   superclasses.  */
 
 static int
-check_methods (tree chain, tree list, int mtype)
+check_methods (tree chain, tree implementation, int mtype)
 {
   int first = 1;
+  tree list;
+
+  if (mtype == (int)'+')
+    list = CLASS_CLS_METHODS (implementation);
+  else
+    list = CLASS_NST_METHODS (implementation);
 
   while (chain)
     {
@@ -8577,7 +8740,7 @@ check_methods (tree chain, tree list, int mtype)
 	 is Ok not to have the method implementation, as it will be
 	 generated dynamically at runtime.  */
       tree property = METHOD_PROPERTY_CONTEXT (chain);
-      if (property != NULL_TREE  &&  PROPERTY_DYNAMIC (property))
+      if (property != NULL_TREE && PROPERTY_DYNAMIC (property))
 	{
 	  chain = TREE_CHAIN (chain); /* next method...  */
 	  continue;
@@ -8585,17 +8748,66 @@ check_methods (tree chain, tree list, int mtype)
 
       if (!lookup_method (list, chain))
 	{
+	  /* If the method is a property setter/getter, we'll still
+	     allow it to be missing if it is implemented by
+	     'interface' or any of its superclasses.  */
+	  if (property)
+	    {
+	      /* Note that since this is a property getter/setter, it
+		 is obviously an instance method.  */
+	      tree interface = NULL_TREE;
+
+	      /* For a category, first check the main class
+		 @interface.  */
+	      if (TREE_CODE (implementation) == CATEGORY_IMPLEMENTATION_TYPE)
+		{
+		  interface = lookup_interface (CLASS_NAME (implementation));
+
+		  /* If the method is found in the main class, it's Ok.  */
+		  if (lookup_method (CLASS_NST_METHODS (interface), chain))
+		    {
+		      chain = DECL_CHAIN (chain);
+		      continue;		      
+		    }
+
+		  /* Else, get the superclass.  */
+		  if (CLASS_SUPER_NAME (interface))
+		    interface = lookup_interface (CLASS_SUPER_NAME (interface));
+		  else
+		    interface = NULL_TREE;
+		}
+
+	      /* Get the superclass for classes.  */
+	      if (TREE_CODE (implementation) == CLASS_IMPLEMENTATION_TYPE)
+		{
+		  if (CLASS_SUPER_NAME (implementation))
+		    interface = lookup_interface (CLASS_SUPER_NAME (implementation));
+		  else
+		    interface = NULL_TREE;
+		}
+
+	      /* Now, interface is the superclass, if any; go check it.  */
+	      if (interface)
+		{
+		  if (lookup_method_static (interface, chain, 0))
+		    {
+		      chain = DECL_CHAIN (chain);
+		      continue;
+		    }
+		}
+	      /* Else, fall through - warn.  */
+	    }
 	  if (first)
 	    {
-	      switch (TREE_CODE (objc_implementation_context))
+	      switch (TREE_CODE (implementation))
 		{
 		case CLASS_IMPLEMENTATION_TYPE:
 		  warning (0, "incomplete implementation of class %qE",
-			   CLASS_NAME (objc_implementation_context));
+			   CLASS_NAME (implementation));
 		  break;
 		case CATEGORY_IMPLEMENTATION_TYPE:
 		  warning (0, "incomplete implementation of category %qE",
-			   CLASS_SUPER_NAME (objc_implementation_context));
+			   CLASS_SUPER_NAME (implementation));
 		  break;
 		default:
 		  gcc_unreachable ();
@@ -8733,10 +8945,10 @@ check_protocol (tree p, const char *type, tree name)
       if (warn_protocol)
 	{
 	  f1 = check_methods (PROTOCOL_CLS_METHODS (p),
-			      CLASS_CLS_METHODS (objc_implementation_context),
+			      objc_implementation_context,
 			      '+');
 	  f2 = check_methods (PROTOCOL_NST_METHODS (p),
-			      CLASS_NST_METHODS (objc_implementation_context),
+			      objc_implementation_context,
 			      '-');
 	}
       else
@@ -9829,9 +10041,9 @@ finish_class (tree klass)
 	  {
 	    /* Ensure that all method listed in the interface contain bodies.  */
 	    check_methods (CLASS_CLS_METHODS (implementation_template),
-			   CLASS_CLS_METHODS (objc_implementation_context), '+');
+			   objc_implementation_context, '+');
 	    check_methods (CLASS_NST_METHODS (implementation_template),
-			   CLASS_NST_METHODS (objc_implementation_context), '-');
+			   objc_implementation_context, '-');
 
 	    if (CLASS_PROTOCOL_LIST (implementation_template))
 	      check_protocols (CLASS_PROTOCOL_LIST (implementation_template),
@@ -9848,12 +10060,12 @@ finish_class (tree klass)
 	  {
 	    /* Generate what needed for property; setters, getters, etc. */
 	    objc_gen_property_data (implementation_template, category);
-	    
+
 	    /* Ensure all method listed in the interface contain bodies.  */
 	    check_methods (CLASS_CLS_METHODS (category),
-			   CLASS_CLS_METHODS (objc_implementation_context), '+');
+			   objc_implementation_context, '+');
 	    check_methods (CLASS_NST_METHODS (category),
-			   CLASS_NST_METHODS (objc_implementation_context), '-');
+			   objc_implementation_context, '-');
 	    
 	    if (CLASS_PROTOCOL_LIST (category))
 	      check_protocols (CLASS_PROTOCOL_LIST (category),
@@ -9870,104 +10082,69 @@ finish_class (tree klass)
 	tree x;
 	for (x = CLASS_PROPERTY_DECL (objc_interface_context); x; x = TREE_CHAIN (x))
 	  {
-	    /* Store the getter name that we used into the property.
-	       It is used to generate the right getter calls;
-	       moreover, when a @synthesize is processed, it copies
-	       everything from the property, including the
-	       PROPERTY_GETTER_NAME.  We want to be sure that
-	       @synthesize will get exactly the right
-	       PROPERTY_GETTER_NAME.  */
-	    if (PROPERTY_GETTER_NAME (x) == NULL_TREE)
-	      PROPERTY_GETTER_NAME (x) = PROPERTY_NAME (x);
-
 	    /* Now we check that the appropriate getter is declared,
 	       and if not, we declare one ourselves.  */
-	    {
-	      tree getter_decl = lookup_method (CLASS_NST_METHODS (klass),
-						PROPERTY_GETTER_NAME (x));
-	      
-	      if (getter_decl)
-		{
-		  /* TODO: Check that the declaration is consistent with the property.  */
-		  ;
-		}
-	      else
-		{
-		  /* Generate an instance method declaration for the
-		     getter; for example "- (id) name;".  In general
-		     it will be of the form
-		     -(type)property_getter_name;  */
-		  tree rettype = build_tree_list (NULL_TREE, TREE_TYPE (x));
-		  getter_decl = build_method_decl (INSTANCE_METHOD_DECL, 
-						   rettype, PROPERTY_GETTER_NAME (x), 
-						   NULL_TREE, false);
-		  objc_add_method (objc_interface_context, getter_decl, false, false);
-		  METHOD_PROPERTY_CONTEXT (getter_decl) = x;
-		}
-	    }
+	    tree getter_decl = lookup_method (CLASS_NST_METHODS (klass),
+					      PROPERTY_GETTER_NAME (x));
+	    
+	    if (getter_decl)
+	      {
+		/* TODO: Check that the declaration is consistent with the property.  */
+		;
+	      }
+	    else
+	      {
+		/* Generate an instance method declaration for the
+		   getter; for example "- (id) name;".  In general it
+		   will be of the form
+		   -(type)property_getter_name;  */
+		tree rettype = build_tree_list (NULL_TREE, TREE_TYPE (x));
+		getter_decl = build_method_decl (INSTANCE_METHOD_DECL, 
+						 rettype, PROPERTY_GETTER_NAME (x), 
+						 NULL_TREE, false);
+		objc_add_method (objc_interface_context, getter_decl, false, false);
+		METHOD_PROPERTY_CONTEXT (getter_decl) = x;
+	      }
 
 	    if (PROPERTY_READONLY (x) == 0)
 	      {
-		/* Store the setter name that we used into the
-		   property.  It is used when generating setter calls;
-		   moreover, when a @synthesize is processed, it
-		   copies everything from the property, including the
-		   PROPERTY_SETTER_NAME.  We want to be sure that
-		   @synthesize will get exactly the right
-		   PROPERTY_SETTER_NAME.  */
-		if (PROPERTY_SETTER_NAME (x) == NULL_TREE)
-		  PROPERTY_SETTER_NAME (x) = get_identifier (objc_build_property_setter_name 
-							     (PROPERTY_NAME (x)));
-
 		/* Now we check that the appropriate setter is declared,
 		   and if not, we declare on ourselves.  */
-		{
-		  tree setter_decl = lookup_method (CLASS_NST_METHODS (klass), 
-						    PROPERTY_SETTER_NAME (x));
-		  
-		  if (setter_decl)
-		    {
-		      /* TODO: Check that the declaration is consistent with the property.  */
-		      ;
-		    }
-		  else
-		    {
-		      /* The setter name is something like 'setName:'.
-			 We need the substring 'setName' to build the
-			 method declaration due to how the declaration
-			 works.  TODO: build_method_decl() will then
-			 generate back 'setName:' from 'setName'; it
-			 would be more efficient to hook into
-			 there.  */
-		      const char *full_setter_name = IDENTIFIER_POINTER (PROPERTY_SETTER_NAME (x));
-		      size_t length = strlen (full_setter_name);
-		      char *setter_name = (char *) alloca (length);
-		      tree ret_type, selector, arg_type, arg_name;
-
-		      strcpy (setter_name, full_setter_name);
-		      setter_name[length - 1] = '\0';
-		      ret_type = build_tree_list (NULL_TREE, void_type_node);
-		      arg_type = build_tree_list (NULL_TREE, TREE_TYPE (x));
-		      arg_name = get_identifier ("_value");
-		      selector = objc_build_keyword_decl (get_identifier (setter_name),
-							  arg_type, arg_name, NULL);
-		      setter_decl = build_method_decl (INSTANCE_METHOD_DECL, 
-						       ret_type, selector,
-						       build_tree_list (NULL_TREE, NULL_TREE),
-						       false);
-		      objc_add_method (objc_interface_context, setter_decl, false, false);
-		      METHOD_PROPERTY_CONTEXT (setter_decl) = x;
-		    }
-		}
-
-	    /* Note how at this point (once an @interface or @protocol
-	       have been processed), PROPERTY_GETTER_NAME is always
-	       set for all PROPERTY_DECLs, and PROPERTY_SETTER_NAME is
-	       always set for all PROPERTY_DECLs where
-	       PROPERTY_READONLY == 0.  Any time we deal with a getter
-	       or setter, we should get the PROPERTY_DECL and use
-	       PROPERTY_GETTER_NAME and PROPERTY_SETTER_NAME to know
-	       the correct names.  */
+		tree setter_decl = lookup_method (CLASS_NST_METHODS (klass), 
+						  PROPERTY_SETTER_NAME (x));
+		
+		if (setter_decl)
+		  {
+		    /* TODO: Check that the declaration is consistent with the property.  */
+		    ;
+		  }
+		else
+		  {
+		    /* The setter name is something like 'setName:'.
+		       We need the substring 'setName' to build the
+		       method declaration due to how the declaration
+		       works.  TODO: build_method_decl() will then
+		       generate back 'setName:' from 'setName'; it
+		       would be more efficient to hook into there.  */
+		    const char *full_setter_name = IDENTIFIER_POINTER (PROPERTY_SETTER_NAME (x));
+		    size_t length = strlen (full_setter_name);
+		    char *setter_name = (char *) alloca (length);
+		    tree ret_type, selector, arg_type, arg_name;
+		    
+		    strcpy (setter_name, full_setter_name);
+		    setter_name[length - 1] = '\0';
+		    ret_type = build_tree_list (NULL_TREE, void_type_node);
+		    arg_type = build_tree_list (NULL_TREE, TREE_TYPE (x));
+		    arg_name = get_identifier ("_value");
+		    selector = objc_build_keyword_decl (get_identifier (setter_name),
+							arg_type, arg_name, NULL);
+		    setter_decl = build_method_decl (INSTANCE_METHOD_DECL, 
+						     ret_type, selector,
+						     build_tree_list (NULL_TREE, NULL_TREE),
+						     false);
+		    objc_add_method (objc_interface_context, setter_decl, false, false);
+		    METHOD_PROPERTY_CONTEXT (setter_decl) = x;
+		  }	       
 	      }
 	  }
 	break;

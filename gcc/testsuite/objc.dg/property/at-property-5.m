@@ -28,7 +28,7 @@
 @property (retain) id property_g;
 @property (retain) id property_h;
 @property (retain) id property_e; /* { dg-error "redeclaration of property .property_e." } */
-   			          /* { dg-message "originally declared here" "" { target *-*-* } 26 } */
+   			          /* { dg-message "originally specified here" "" { target *-*-* } 26 } */
 @end
 
 @property id test; /* { dg-error "property declaration not in .interface or .protocol context" } */
