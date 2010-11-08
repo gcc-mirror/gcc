@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-optimized -w" } */
-/* Check that SRA replaces strucutres containing vectors. */
+/* { dg-options "-O1 -fdump-tree-optimized -w -msse" { target { i?86-*-* x86_64-*-* } } } */
+/* Check that SRA replaces structures containing vectors. */
 
 #define vector __attribute__((vector_size(16)))
 

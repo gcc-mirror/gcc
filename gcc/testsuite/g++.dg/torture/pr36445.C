@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-msse" { target { i?86-*-* x86_64-*-* } } } */
 // This used to fail as we would try to expand a VCE where one side had
 // a mode of BLKmode and the other side was a vector mode.
 #define vector __attribute__((vector_size(16) ))

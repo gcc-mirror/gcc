@@ -1,3 +1,7 @@
+2010-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/i386.c (ix86_function_arg_boundary): Fix warning
+	message.
 
 2010-11-08  Basile Starynkevitch  <basile@starynkevitch.net>
 

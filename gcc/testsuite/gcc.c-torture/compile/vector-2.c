@@ -1,3 +1,4 @@
+/* { dg-options "-msse" { target { i?86-*-* x86_64-*-* } } } */
 #define vector __attribute__((vector_size(16) ))
 struct ss
 {

@@ -7147,7 +7147,7 @@ ix86_function_arg_boundary (enum machine_mode mode, const_tree type)
 	{
 	  warned = true;
 	  inform (input_location,
-		  "The ABI of passing parameter with %dbyte"
+		  "The ABI for passing parameters with %d-byte"
 		  " alignment has changed in GCC 4.6",
 		  align / BITS_PER_UNIT);
 	}
