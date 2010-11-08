@@ -1,5 +1,23 @@
 2010-11-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_add_synthesize_declaration_for_property):
+	Iterate over IMPL_PROPERTY_DECL, not CLASS_PROPERTY_DECL, when
+	checking for an existing @synthesize or @dynamic declaration.
+	Search for an inherited @property declaration if none is found in
+	the local interface.  If the required instance variable does not
+	exist, return instead of trying to continue to prevent a compiler
+	crash later.  Check that the instance variable is not already
+	being used by another @synthesize.
+	(objc_add_dynamic_declaration_for_property): Iterate over
+	IMPL_PROPERTY_DECL, not CLASS_PROPERTY_DECL, when checking for an
+	existing @synthesize or @dynamic declaration.
+	(objc_synthesize_getter): Search for the getter declaration in
+	protocols and superclasses as well.
+	(objc_synthesize_setter): Search for the setter declaration in
+	protocols and superclasses as well.
+	
+2010-11-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (lookup_property): When checking categories, also
 	check the protocols attached to each.
 	(objc_add_property_declaration): Determine the

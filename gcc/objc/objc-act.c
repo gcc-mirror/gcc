@@ -9363,7 +9363,7 @@ lookup_ivar (tree interface, tree instance_variable_name)
 /* This routine synthesizes a 'getter' method.  This is only called
    for @synthesize properties.  */
 static void
-objc_synthesize_getter (tree klass, tree class_method, tree property)
+objc_synthesize_getter (tree klass, tree class_methods ATTRIBUTE_UNUSED, tree property)
 {
   location_t location = DECL_SOURCE_LOCATION (property);
   tree fn, decl;
@@ -9375,9 +9375,9 @@ objc_synthesize_getter (tree klass, tree class_method, tree property)
 		     PROPERTY_GETTER_NAME (property)))
     return;
 
-  /* Find declaration of the property getter in the interface. There
-     must be one.  TODO: Search superclasses as well.  */
-  decl = lookup_method (CLASS_NST_METHODS (class_method), PROPERTY_GETTER_NAME (property));
+  /* Find declaration of the property getter in the interface (or
+     superclass, or protocol). There must be one.  */
+  decl = lookup_method_static (klass, PROPERTY_GETTER_NAME (property), 0);
 
   /* If one not declared in the interface, this condition has already
      been reported as user error (because property was not declared in
@@ -9542,7 +9542,7 @@ objc_synthesize_getter (tree klass, tree class_method, tree property)
 /* This routine synthesizes a 'setter' method.  */
 
 static void
-objc_synthesize_setter (tree klass ATTRIBUTE_UNUSED, tree class_method, tree property)
+objc_synthesize_setter (tree klass, tree class_methods ATTRIBUTE_UNUSED, tree property)
 {
   location_t location = DECL_SOURCE_LOCATION (property);
   tree fn, decl;
@@ -9554,9 +9554,9 @@ objc_synthesize_setter (tree klass ATTRIBUTE_UNUSED, tree class_method, tree pro
 		     PROPERTY_SETTER_NAME (property)))
     return;
 
-  /* Find declaration of the property setter in the interface. There
-     must be one.  TODO: Search superclasses as well.  */
-  decl = lookup_method (CLASS_NST_METHODS (class_method), PROPERTY_SETTER_NAME (property));
+  /* Find declaration of the property setter in the interface (or
+     superclass, or protocol). There must be one.  */
+  decl = lookup_method_static (klass, PROPERTY_SETTER_NAME (property), 0);
 
   /* If one not declared in the interface, this condition has already
      been reported as user error (because property was not declared in
@@ -9736,10 +9736,11 @@ objc_add_synthesize_declaration_for_property (location_t location, tree interfac
 {
   /* Find the @property declaration.  */
   tree property;
+  tree x;
 
   /* Check that synthesize or dynamic has not already been used for
      the same property.  */
-  for (property = CLASS_PROPERTY_DECL (objc_implementation_context); property; property = TREE_CHAIN (property))
+  for (property = IMPL_PROPERTY_DECL (objc_implementation_context); property; property = TREE_CHAIN (property))
     if (PROPERTY_NAME (property) == property_name)
       {
 	location_t original_location = DECL_SOURCE_LOCATION (property);
@@ -9756,12 +9757,9 @@ objc_add_synthesize_declaration_for_property (location_t location, tree interfac
 	return;
       }
 
-  /* Check that the property is declared in the interface.  */
-  /* TODO: This only check the immediate class; we need to check the
-     superclass (and categories ?) as well.  */
-  for (property = CLASS_PROPERTY_DECL (interface); property; property = TREE_CHAIN (property))
-    if (PROPERTY_NAME (property) == property_name)
-      break;
+  /* Check that the property is declared in the interface.  It could
+     also be declared in a superclass or protocol.  */
+  property = lookup_property (interface, property_name);
 
   if (!property)
     {
@@ -9783,18 +9781,37 @@ objc_add_synthesize_declaration_for_property (location_t location, tree interfac
   if (ivar_name == NULL_TREE)
     ivar_name = property_name;
 
-  /* Check that the instance variable exists.  You can only use an
-     instance variable from the same class, not one from the
-     superclass.  */
+  /* Check that the instance variable exists.  You can only use a
+     non-private instance variable from the same class, not one from
+     the superclass (this makes sense as it allows us to check that an
+     instance variable is only used in one synthesized property).  */
   if (!is_ivar (CLASS_IVARS (interface), ivar_name))
-    error_at (location, "ivar %qs used by %<@synthesize%> declaration must be an existing ivar", 
-	      IDENTIFIER_POINTER (property_name));
+    {
+      error_at (location, "ivar %qs used by %<@synthesize%> declaration must be an existing ivar", 
+		IDENTIFIER_POINTER (property_name));
+      return;
+    }
 
   /* TODO: Check that the types of the instance variable and of the
      property match.  */
 
-  /* TODO: Check that no other property is using the same instance
+  /* Check that no other property is using the same instance
      variable.  */
+  for (x = IMPL_PROPERTY_DECL (objc_implementation_context); x; x = TREE_CHAIN (x))
+    if (PROPERTY_IVAR_NAME (x) == ivar_name)
+      {
+	location_t original_location = DECL_SOURCE_LOCATION (x);
+	
+	error_at (location, "property %qs is using the same instance variable as property %qs",
+		  IDENTIFIER_POINTER (property_name),
+		  IDENTIFIER_POINTER (PROPERTY_NAME (x)));
+	
+	if (original_location != UNKNOWN_LOCATION)
+	  inform (original_location, "originally specified here");
+	
+	/* We keep going on.  This won't cause the compiler to fail;
+	   the failure would most likely be at runtime.  */
+      }
 
   /* Note that a @synthesize (and only a @synthesize) always sets
      PROPERTY_IVAR_NAME to a non-NULL_TREE.  You can recognize a
@@ -9876,7 +9893,7 @@ objc_add_dynamic_declaration_for_property (location_t location, tree interface,
 
   /* Check that synthesize or dynamic has not already been used for
      the same property.  */
-  for (property = CLASS_PROPERTY_DECL (objc_implementation_context); property; property = TREE_CHAIN (property))
+  for (property = IMPL_PROPERTY_DECL (objc_implementation_context); property; property = TREE_CHAIN (property))
     if (PROPERTY_NAME (property) == property_name)
       {
 	location_t original_location = DECL_SOURCE_LOCATION (property);
@@ -9912,9 +9929,10 @@ objc_add_dynamic_declaration_for_property (location_t location, tree interface,
 	 METHOD_PROPERTY_CONTEXT that points to the original
 	 PROPERTY_DECL; when we check that these methods have been
 	 implemented, we need to easily find that they are associated
-	 with a dynamic property.  TODO: Clean this up; maybe the
-	 @property PROPERTY_DECL should contain a reference to the
-	 @dynamic PROPERTY_DECL ? */
+	 with a dynamic property.  TODO: Remove this hack; it will not
+	 work with properties in a protocol that may be implemented by
+	 different classes and be @dynamic in some, and non-@dynamic
+	 in other ones.  */
       PROPERTY_DYNAMIC (property) = 1;
 
       /* We have to copy the property, because we want to chain it to
