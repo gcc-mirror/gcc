@@ -11050,6 +11050,11 @@ split_stack_prologue_scratch_regno (void)
 
 static GTY(()) rtx split_stack_fn;
 
+/* A SYMBOL_REF for the more stack function when using the large
+   model.  */
+
+static GTY(()) rtx split_stack_fn_large;
+
 /* Handle -fsplit-stack.  These are the first instructions in the
    function, even before the regular prologue.  */
 
@@ -11062,6 +11067,7 @@ ix86_expand_split_stack_prologue (void)
   rtx label, limit, current, jump_insn, allocate_rtx, call_insn, call_fusage;
   rtx scratch_reg = NULL_RTX;
   rtx varargs_label = NULL_RTX;
+  rtx fn;
 
   gcc_assert (flag_split_stack && reload_completed);
 
@@ -11125,6 +11131,10 @@ ix86_expand_split_stack_prologue (void)
   add_reg_note (jump_insn, REG_BR_PROB,
 		GEN_INT (REG_BR_PROB_BASE - REG_BR_PROB_BASE / 100));
 
+  if (split_stack_fn == NULL_RTX)
+    split_stack_fn = gen_rtx_SYMBOL_REF (Pmode, "__morestack");
+  fn = split_stack_fn;
+
   /* Get more stack space.  We pass in the desired stack space and the
      size of the arguments to copy to the new stack.  In 32-bit mode
      we push the parameters; __morestack will return on a new stack
@@ -11135,9 +11145,10 @@ ix86_expand_split_stack_prologue (void)
   call_fusage = NULL_RTX;
   if (TARGET_64BIT)
     {
-      rtx reg;
+      rtx reg10, reg11;
 
-      reg = gen_rtx_REG (Pmode, R10_REG);
+      reg10 = gen_rtx_REG (Pmode, R10_REG);
+      reg11 = gen_rtx_REG (Pmode, R11_REG);
 
       /* If this function uses a static chain, it will be in %r10.
 	 Preserve it across the call to __morestack.  */
@@ -11146,24 +11157,69 @@ ix86_expand_split_stack_prologue (void)
 	  rtx rax;
 
 	  rax = gen_rtx_REG (Pmode, AX_REG);
-	  emit_move_insn (rax, reg);
+	  emit_move_insn (rax, reg10);
 	  use_reg (&call_fusage, rax);
 	}
 
-      emit_move_insn (reg, allocate_rtx);
-      use_reg (&call_fusage, reg);
-      reg = gen_rtx_REG (Pmode, R11_REG);
-      emit_move_insn (reg, GEN_INT (args_size));
-      use_reg (&call_fusage, reg);
+      if (ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC)
+	{
+	  HOST_WIDE_INT argval;
+
+	  /* When using the large model we need to load the address
+	     into a register, and we've run out of registers.  So we
+	     switch to a different calling convention, and we call a
+	     different function: __morestack_large.  We pass the
+	     argument size in the upper 32 bits of r10 and pass the
+	     frame size in the lower 32 bits.  */
+	  gcc_assert ((allocate & 0xffffffff) == allocate);
+	  gcc_assert (((HOST_WIDE_INT) args_size & 0xffffffff)
+		      == (HOST_WIDE_INT) args_size);
+
+	  if (split_stack_fn_large == NULL_RTX)
+	    split_stack_fn_large =
+	      gen_rtx_SYMBOL_REF (Pmode, "__morestack_large_model");
+
+	  if (ix86_cmodel == CM_LARGE_PIC)
+	    {
+	      rtx label, x;
+
+	      label = gen_label_rtx ();
+	      emit_label (label);
+	      LABEL_PRESERVE_P (label) = 1;
+	      emit_insn (gen_set_rip_rex64 (reg10, label));
+	      emit_insn (gen_set_got_offset_rex64 (reg11, label));
+	      emit_insn (gen_adddi3 (reg10, reg10, reg11));
+	      x = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, split_stack_fn_large),
+				  UNSPEC_GOT);
+	      x = gen_rtx_CONST (Pmode, x);
+	      emit_move_insn (reg11, x);
+	      x = gen_rtx_PLUS (Pmode, reg10, reg11);
+	      x = gen_const_mem (Pmode, x);
+	      emit_move_insn (reg11, x);
+	    }
+	  else
+	    emit_move_insn (reg11, split_stack_fn_large);
+
+	  fn = reg11;
+
+	  argval = ((HOST_WIDE_INT) args_size << 32) + allocate;
+	  emit_move_insn (reg10, GEN_INT (argval));
+	}
+      else
+	{
+	  emit_move_insn (reg10, allocate_rtx);
+	  emit_move_insn (reg11, GEN_INT (args_size));
+	  use_reg (&call_fusage, reg11);
+	}
+
+      use_reg (&call_fusage, reg10);
     }
   else
     {
       emit_insn (gen_push (GEN_INT (args_size)));
       emit_insn (gen_push (allocate_rtx));
     }
-  if (split_stack_fn == NULL_RTX)
-    split_stack_fn = gen_rtx_SYMBOL_REF (Pmode, "__morestack");
-  call_insn = ix86_expand_call (NULL_RTX, gen_rtx_MEM (QImode, split_stack_fn),
+  call_insn = ix86_expand_call (NULL_RTX, gen_rtx_MEM (QImode, fn),
 				GEN_INT (UNITS_PER_WORD), constm1_rtx,
 				NULL_RTX, 0);
   add_function_usage_to (call_insn, call_fusage);

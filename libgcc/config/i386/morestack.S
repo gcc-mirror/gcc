@@ -488,6 +488,40 @@ DW.ref.__gcc_personality_v0:
 #endif
 #endif
 
+#ifdef __x86_64__
+
+# This entry point is used for the large model.  With this entry point
+# the upper 32 bits of %r10 hold the argument size and the lower 32
+# bits hold the new stack frame size.  There doesn't seem to be a way
+# to know in the assembler code that we are assembling for the large
+# model, and there doesn't seem to be a large model multilib anyhow.
+# If one is developed, then the non-PIC code is probably OK since we
+# will probably be close to the morestack code, but the PIC code
+# almost certainly needs to be changed.  FIXME.
+
+	.text
+	.global	__morestack_large_model
+	.hidden	__morestack_large_model
+
+#ifdef __ELF__
+	.type	__morestack_large_model,@function
+#endif
+
+__morestack_large_model:
+
+	.cfi_startproc
+
+	movq	%r10, %r11
+	andl	$0xffffffff, %r10d
+	sarq	$32, %r11
+	jmp	__morestack
+
+	.cfi_endproc
+#ifdef __ELF__
+       .size	__morestack_large_model, . - __morestack_large_model
+#endif
+
+#endif /* __x86_64__ */
 
 # Initialize the stack test value when the program starts or when a
 # new thread starts.  We don't know how large the main stack is, so we

@@ -1,3 +1,9 @@
+2010-11-07  Ian Lance Taylor  <iant@google.com>
+
+	PR target/46089
+	* config/i386/morestack.S (__morestack_large_model): New
+	function.
+
 2010-10-23  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/libbid/bid_gcc_intrinsics.h (LIBGCC2_WORDS_BIG_ENDIAN):
