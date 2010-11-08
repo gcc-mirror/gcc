@@ -17,6 +17,21 @@ module m
 
 end module m
 
+
+module m2
+
+  type t1
+  end type
+
+  type  t2
+    class(t1), allocatable :: c
+  end type
+
+  type(t1) :: w
+
+end module m2
+
+
 program p
   use m
   implicit none
@@ -27,4 +42,4 @@ program p
 
 end program p
 
-! { dg-final { cleanup-modules "m" } }
+! { dg-final { cleanup-modules "m m2" } }

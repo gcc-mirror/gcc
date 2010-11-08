@@ -1,6 +1,12 @@
 2010-11-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46344
+	* decl.c (build_struct): Build vtab immediately if derived type
+	has already been declared.
+
+2010-11-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46344
 	* trans-types.c (gfc_copy_dt_decls_ifequal): Handle CLASS components.
 
 2010-11-06  Janus Weil  <janus@gcc.gnu.org>

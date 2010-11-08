@@ -1629,7 +1629,13 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 
 scalar:
   if (c->ts.type == BT_CLASS)
-    gfc_build_class_symbol (&c->ts, &c->attr, &c->as, true);
+    {
+      bool delayed = (gfc_state_stack->sym == c->ts.u.derived)
+		     || (!c->ts.u.derived->components
+			 && !c->ts.u.derived->attr.zero_comp);
+      gfc_build_class_symbol (&c->ts, &c->attr, &c->as, delayed);
+    }
+
 
   return t;
 }
