@@ -543,12 +543,35 @@ force_rvalue (tree expr)
 }
 
 
-/* Fold away simple conversions, but make sure the result is an rvalue.  */
+/* If EXPR and ORIG are INTEGER_CSTs, return a version of EXPR that has
+   TREE_OVERFLOW set only if it is set in ORIG.  Otherwise, return EXPR
+   unchanged.  */
+
+static tree
+ignore_overflows (tree expr, tree orig)
+{
+  if (TREE_CODE (expr) == INTEGER_CST
+      && TREE_CODE (orig) == INTEGER_CST
+      && TREE_OVERFLOW (expr) != TREE_OVERFLOW (orig))
+    {
+      gcc_assert (!TREE_OVERFLOW (orig));
+      /* Ensure constant sharing.  */
+      expr = build_int_cst_wide (TREE_TYPE (expr),
+				 TREE_INT_CST_LOW (expr),
+				 TREE_INT_CST_HIGH (expr));
+    }
+  return expr;
+}
+
+/* Fold away simple conversions, but make sure TREE_OVERFLOW is set
+   properly.  */
 
 tree
 cp_fold_convert (tree type, tree expr)
 {
-  return rvalue (fold_convert (type, expr));
+  tree conv = fold_convert (type, expr);
+  conv = ignore_overflows (conv, expr);
+  return conv;
 }
 
 /* C++ conversions, preference to static cast conversions.  */
@@ -661,6 +684,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
   if (INTEGRAL_CODE_P (code))
     {
       tree intype = TREE_TYPE (e);
+      tree converted;
 
       if (TREE_CODE (type) == ENUMERAL_TYPE)
 	{
@@ -705,7 +729,10 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
       if (code == BOOLEAN_TYPE)
 	return cp_truthvalue_conversion (e);
 
-      return fold_if_not_in_template (convert_to_integer (type, e));
+      converted = fold_if_not_in_template (convert_to_integer (type, e));
+
+      /* Ignore any integer overflow caused by the conversion.  */
+      return ignore_overflows (converted, e);
     }
   if (NULLPTR_TYPE_P (type) && e && null_ptr_cst_p (e))
     return nullptr_node;

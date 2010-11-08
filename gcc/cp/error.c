@@ -2469,7 +2469,9 @@ location_of (tree t)
   else if (TREE_CODE (t) == OVERLOAD)
     t = OVL_FUNCTION (t);
 
-  return DECL_SOURCE_LOCATION (t);
+  if (DECL_P (t))
+    return DECL_SOURCE_LOCATION (t);
+  return EXPR_LOC_OR_HERE (t);
 }
 
 /* Now the interfaces from error et al to dump_type et al. Each takes an

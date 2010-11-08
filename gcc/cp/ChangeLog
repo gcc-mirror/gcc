@@ -1,3 +1,23 @@
+2010-11-08  Jason Merrill  <jason@redhat.com>
+
+	Correct conversion/overflow behavior.
+	* cvt.c (ignore_overflows): Move here from typeck.c.
+	(ocp_convert): Use it.
+	(cp_fold_convert): Use it.  Don't call rvalue.
+	* typeck.c (build_static_cast_1): Don't use it.  Do call rvalue.
+	* error.c (location_of): Handle expressions, too.
+	* class.c (check_bitfield_decl): Set input_location around call to
+	cxx_constant_value.
+	* semantics.c (cxx_eval_outermost_constant_expr): Don't
+	print the expression if it already had TREE_OVERFLOW set.
+	(reduced_constant_expression_p): Check TREE_OVERFLOW_P for C++98, too.
+	(verify_constant): Allow overflow with a permerror if we're
+	enforcing.
+	(cxx_eval_outermost_constant_expr): Use verify_constant.
+	(adjust_temp_type): Use cp_fold_convert.
+	* decl.c (build_enumerator): Don't call constant_expression_warning.
+	* decl2.c (grokbitfield): Likewise.
+
 2010-11-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46348

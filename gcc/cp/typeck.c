@@ -5717,33 +5717,6 @@ convert_ptrmem (tree type, tree expr, bool allow_inverse_p,
 			     allow_inverse_p, c_cast_p, complain);
 }
 
-/* If EXPR is an INTEGER_CST and ORIG is an arithmetic constant, return
-   a version of EXPR that has TREE_OVERFLOW set if it is set in ORIG.
-   Otherwise, return EXPR unchanged.  */
-
-static tree
-ignore_overflows (tree expr, tree orig)
-{
-  if (TREE_CODE (expr) == INTEGER_CST
-      && CONSTANT_CLASS_P (orig)
-      && TREE_CODE (orig) != STRING_CST
-      && TREE_OVERFLOW (expr) != TREE_OVERFLOW (orig))
-    {
-      if (!TREE_OVERFLOW (orig))
-	/* Ensure constant sharing.  */
-	expr = build_int_cst_wide (TREE_TYPE (expr),
-				   TREE_INT_CST_LOW (expr),
-				   TREE_INT_CST_HIGH (expr));
-      else
-	{
-	  /* Avoid clobbering a shared constant.  */
-	  expr = copy_node (expr);
-	  TREE_OVERFLOW (expr) = TREE_OVERFLOW (orig);
-	}
-    }
-  return expr;
-}
-
 /* Perform a static_cast from EXPR to TYPE.  When C_CAST_P is true,
    this static_cast is being attempted as one of the possible casts
    allowed by a C-style cast.  (In that case, accessibility of base
@@ -5757,7 +5730,6 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 {
   tree intype;
   tree result;
-  tree orig;
 
   /* Assume the cast is valid.  */
   *valid_p = true;
@@ -5814,8 +5786,14 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       expr = build_base_path (MINUS_EXPR, build_address (expr),
 			      base, /*nonnull=*/false);
       /* Convert the pointer to a reference -- but then remember that
-	 there are no expressions with reference type in C++.  */
-      return convert_from_reference (cp_fold_convert (type, expr));
+	 there are no expressions with reference type in C++.
+
+         We call rvalue so that there's an actual tree code
+         (NON_LVALUE_EXPR) for the static_cast; otherwise, if the operand
+         is a variable with the same type, the conversion would get folded
+         away, leaving just the variable and causing lvalue_kind to give
+         the wrong answer.  */
+      return convert_from_reference (rvalue (cp_fold_convert (type, expr)));
     }
 
   /* "An lvalue of type cv1 T1 can be cast to type rvalue reference to
@@ -5829,8 +5807,6 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       expr = build_typed_address (expr, type);
       return convert_from_reference (expr);
     }
-
-  orig = expr;
 
   /* Resolve overloaded address here rather than once in
      implicit_conversion and again in the inverse code below.  */
@@ -5851,9 +5827,6 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
   if (result)
     {
       result = convert_from_reference (result);
-
-      /* Ignore any integer overflow caused by the cast.  */
-      result = ignore_overflows (result, orig);
 
       /* [expr.static.cast]
 
@@ -5894,13 +5867,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
        || SCALAR_FLOAT_TYPE_P (type))
       && (INTEGRAL_OR_ENUMERATION_TYPE_P (intype)
 	  || SCALAR_FLOAT_TYPE_P (intype)))
-    {
-      expr = ocp_convert (type, expr, CONV_C_CAST, LOOKUP_NORMAL);
-
-      /* Ignore any integer overflow caused by the cast.  */
-      expr = ignore_overflows (expr, orig);
-      return expr;
-    }
+    return ocp_convert (type, expr, CONV_C_CAST, LOOKUP_NORMAL);
 
   if (TYPE_PTR_P (type) && TYPE_PTR_P (intype)
       && CLASS_TYPE_P (TREE_TYPE (type))

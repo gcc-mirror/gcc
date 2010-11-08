@@ -1,3 +1,11 @@
+2010-11-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/expr/overflow1.C: New.
+	* g++.dg/warn/overflow-warn-1.C: Add expected diagnostics.
+	* g++.dg/warn/overflow-warn-3.C: Remove unnecessary line number.
+	* g++.dg/warn/overflow-warn-4.C: Add expected diagnostics.
+	* g++.dg/warn/overflow-warn-5.C: Don't expect wrong warning.
+
 2010-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/pr35442.c: Adapt warning.

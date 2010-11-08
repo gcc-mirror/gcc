@@ -11823,7 +11823,6 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 	  if (TREE_CODE (value) == INTEGER_CST)
 	    {
 	      value = perform_integral_promotions (value);
-	      constant_expression_warning (value);
 	    }
 	  else
 	    {

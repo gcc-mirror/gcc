@@ -5789,7 +5789,7 @@ adjust_temp_type (tree type, tree temp)
   if (TREE_CODE (temp) == CONSTRUCTOR)
     return build_constructor (type, CONSTRUCTOR_ELTS (temp));
   gcc_assert (SCALAR_TYPE_P (type));
-  return fold_convert (type, temp);
+  return cp_fold_convert (type, temp);
 }
 
 /* Subroutine of cxx_eval_call_expression.
@@ -6003,13 +6003,13 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
   return result;
 }
 
+/* FIXME speed this up, it's taking 16% of compile time on sieve testcase.  */
+
 bool
 reduced_constant_expression_p (tree t)
 {
-  /* FIXME speed this up, it's taking 16% of compile time on sieve testcase.  */
-  if (cxx_dialect >= cxx0x && TREE_OVERFLOW_P (t))
-    /* In C++0x, integer overflow makes this not a constant expression.
-       FIXME arithmetic overflow is different from conversion truncation */
+  if (TREE_OVERFLOW_P (t))
+    /* Integer overflow makes this not a constant expression.  */
     return false;
   /* FIXME are we calling this too much?  */
   return initializer_constant_valid_p (t, TREE_TYPE (t)) != NULL_TREE;
@@ -6030,7 +6030,20 @@ verify_constant (tree t, bool allow_non_constant, bool *non_constant_p)
   if (!*non_constant_p && !reduced_constant_expression_p (t))
     {
       if (!allow_non_constant)
-	error ("%qE is not a constant expression", t);
+	{
+	  /* If T was already folded to a _CST with TREE_OVERFLOW set,
+	     printing the folded constant isn't helpful.  */
+	  if (TREE_OVERFLOW_P (t))
+	    {
+	      permerror (input_location, "overflow in constant expression");
+	      /* If we're being permissive (and are in an enforcing
+		 context), consider this constant.  */
+	      if (flag_permissive)
+		return false;
+	    }
+	  else
+	    error ("%q+E is not a constant expression", t);
+	}
       *non_constant_p = true;
     }
   return *non_constant_p;
@@ -6895,12 +6908,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant)
   tree r = cxx_eval_constant_expression (NULL, t, allow_non_constant,
 					 false, &non_constant_p);
 
-  if (!non_constant_p && !reduced_constant_expression_p (r))
-    {
-      if (!allow_non_constant)
-	error ("%qE is not a constant expression", t);
-      non_constant_p = true;
-    }
+  verify_constant (r, allow_non_constant, &non_constant_p);
 
   if (non_constant_p && !allow_non_constant)
     return error_mark_node;
