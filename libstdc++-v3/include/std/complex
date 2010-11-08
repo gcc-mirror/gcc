@@ -447,17 +447,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   //@{
   ///  Return true if @a x is equal to @a y.
   template<typename _Tp>
-    inline bool
+    inline _GLIBCXX_CONSTEXPR bool
     operator==(const complex<_Tp>& __x, const complex<_Tp>& __y)
     { return __x.real() == __y.real() && __x.imag() == __y.imag(); }
 
   template<typename _Tp>
-    inline bool
+    inline _GLIBCXX_CONSTEXPR bool
     operator==(const complex<_Tp>& __x, const _Tp& __y)
     { return __x.real() == __y && __x.imag() == _Tp(); }
 
   template<typename _Tp>
-    inline bool
+    inline _GLIBCXX_CONSTEXPR bool
     operator==(const _Tp& __x, const complex<_Tp>& __y)
     { return __x == __y.real() && _Tp() == __y.imag(); }
   //@}
@@ -465,17 +465,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   //@{
   ///  Return false if @a x is equal to @a y.
   template<typename _Tp>
-    inline bool
+    inline _GLIBCXX_CONSTEXPR bool
     operator!=(const complex<_Tp>& __x, const complex<_Tp>& __y)
     { return __x.real() != __y.real() || __x.imag() != __y.imag(); }
 
   template<typename _Tp>
-    inline bool
+    inline _GLIBCXX_CONSTEXPR bool
     operator!=(const complex<_Tp>& __x, const _Tp& __y)
     { return __x.real() != __y || __x.imag() != _Tp(); }
 
   template<typename _Tp>
-    inline bool
+    inline _GLIBCXX_CONSTEXPR bool
     operator!=(const _Tp& __x, const complex<_Tp>& __y)
     { return __x != __y.real() || _Tp() != __y.imag(); }
   //@}
