@@ -1,3 +1,13 @@
+2010-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/46208
+	* config/sparc/sparc.c (TARGET_PROMOTE_PROTOTYPES): Delete.
+	(sparc_promote_prototypes): Likewise.
+	(sparc_promote_function_mode): Promote in 32-bit mode as well.
+	(sparc_return_in_memory): Remove superfluous parentheses.
+	(sparc_struct_value_rtx): Fix long lines.
+	(sparc_function_value_1): Promote in 32-bit mode as well.
+
 2010-11-08  Andrey Belevantsev  <abel@ispras.ru>
 
 	 PR rtl-optimization/45352

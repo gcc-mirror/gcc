@@ -405,7 +405,6 @@ static rtx sparc_tls_got (void);
 static const char *get_some_local_dynamic_name (void);
 static int get_some_local_dynamic_name_1 (rtx *, void *);
 static bool sparc_rtx_costs (rtx, int, int, int *, bool);
-static bool sparc_promote_prototypes (const_tree);
 static rtx sparc_function_value (const_tree, const_tree, bool);
 static rtx sparc_libcall_value (enum machine_mode, const_rtx);
 static bool sparc_function_value_regno_p (const unsigned int);
@@ -553,9 +552,6 @@ static const struct default_options sparc_option_optimization_table[] =
 
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE sparc_promote_function_mode
-
-#undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES sparc_promote_prototypes
 
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE sparc_function_value
@@ -4909,15 +4905,6 @@ init_cumulative_args (struct sparc_args *cum, tree fntype,
   cum->libcall_p = fntype == 0;
 }
 
-/* Handle the TARGET_PROMOTE_PROTOTYPES target hook.
-   When a prototype says `char' or `short', really pass an `int'.  */
-
-static bool
-sparc_promote_prototypes (const_tree fntype ATTRIBUTE_UNUSED)
-{
-  return TARGET_ARCH32 ? true : false;
-}
-
 /* Handle promotion of pointer and integer arguments.  */
 
 static enum machine_mode
@@ -4933,12 +4920,8 @@ sparc_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
       return Pmode;
     }
 
-  /* For TARGET_ARCH64 we need this, as we don't have instructions
-     for arithmetic operations which do zero/sign extension at the same time,
-     so without this we end up with a srl/sra after every assignment to an
-     user variable,  which means very very bad code.  */
-  if (TARGET_ARCH64
-      && GET_MODE_CLASS (mode) == MODE_INT
+  /* Integral arguments are passed as full words, as per the ABI.  */
+  if (GET_MODE_CLASS (mode) == MODE_INT
       && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
     return word_mode;
 
@@ -5959,8 +5942,8 @@ sparc_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
        integers are returned like floats of the same size, that is in
        registers.  Return all vector floats like structure and unions;
        note that they always have BLKmode like the latter.  */
-    return ((TYPE_MODE (type) == BLKmode
-	     && (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 32));
+    return (TYPE_MODE (type) == BLKmode
+	    && (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 32);
 }
 
 /* Handle the TARGET_STRUCT_VALUE target hook.
@@ -6001,22 +5984,22 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
 	  tree size = TYPE_SIZE_UNIT (TREE_TYPE (fndecl));
 	  rtx size_rtx = GEN_INT (TREE_INT_CST_LOW (size) & 0xfff);
 	  /* Construct a temporary return value */
-	  rtx temp_val = assign_stack_local (Pmode, TREE_INT_CST_LOW (size), 0);
+	  rtx temp_val
+	    = assign_stack_local (Pmode, TREE_INT_CST_LOW (size), 0);
 
-	  /* Implement SPARC 32-bit psABI callee returns struck checking
-	     requirements:
+	  /* Implement SPARC 32-bit psABI callee return struct checking:
 
-	      Fetch the instruction where we will return to and see if
+	     Fetch the instruction where we will return to and see if
 	     it's an unimp instruction (the most significant 10 bits
 	     will be zero).  */
 	  emit_move_insn (scratch, gen_rtx_MEM (SImode,
 						plus_constant (ret_rtx, 8)));
 	  /* Assume the size is valid and pre-adjust */
 	  emit_insn (gen_add3_insn (ret_rtx, ret_rtx, GEN_INT (4)));
-	  emit_cmp_and_jump_insns (scratch, size_rtx, EQ, const0_rtx, SImode, 0, endlab);
+	  emit_cmp_and_jump_insns (scratch, size_rtx, EQ, const0_rtx, SImode,
+				   0, endlab);
 	  emit_insn (gen_sub3_insn (ret_rtx, ret_rtx, GEN_INT (4)));
-	  /* Assign stack temp:
-	     Write the address of the memory pointed to by temp_val into
+	  /* Write the address of the memory pointed to by temp_val into
 	     the memory pointed to by mem */
 	  emit_move_insn (mem, XEXP (temp_val, 0));
 	  emit_label (endlab);
@@ -6107,11 +6090,18 @@ sparc_function_value_1 (const_tree type, enum machine_mode mode,
 	    mclass = MODE_INT;
 	}
 
-      /* This must match sparc_promote_function_mode.
-	 ??? Maybe 32-bit pointers should actually remain in Pmode?  */
+      /* We should only have pointer and integer types at this point.  This
+	 must match sparc_promote_function_mode.  */
       else if (mclass == MODE_INT && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
 	mode = word_mode;
     }
+
+  /* We should only have pointer and integer types at this point.  This must
+     match sparc_promote_function_mode.  */
+  else if (TARGET_ARCH32
+	   && mclass == MODE_INT
+	   && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+    mode = word_mode;
 
   if ((mclass == MODE_FLOAT || mclass == MODE_COMPLEX_FLOAT) && TARGET_FPU)
     regno = SPARC_FP_ARG_FIRST;
@@ -6122,9 +6112,8 @@ sparc_function_value_1 (const_tree type, enum machine_mode mode,
 }
 
 /* Handle TARGET_FUNCTION_VALUE.
-
-   On SPARC the value is found in the first "output" register, but the called
-   function leaves it in the first "input" register.  */
+   On the SPARC, the value is found in the first "output" register, but the
+   called function leaves it in the first "input" register.  */
 
 static rtx
 sparc_function_value (const_tree valtype,
@@ -6143,9 +6132,9 @@ sparc_libcall_value (enum machine_mode mode,
   return sparc_function_value_1 (NULL_TREE, mode, false);
 }
 
-/* Handle FUNCTION_VALUE_REGNO_P.  
-   On SPARC, the first "output" reg is used for integer values, and
-   the first floating point register is used for floating point values.  */
+/* Handle FUNCTION_VALUE_REGNO_P.
+   On the SPARC, the first "output" reg is used for integer values, and the
+   first floating point register is used for floating point values.  */
 
 static bool
 sparc_function_value_regno_p (const unsigned int regno)
