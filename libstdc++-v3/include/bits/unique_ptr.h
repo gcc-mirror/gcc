@@ -106,9 +106,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef _Tp                       element_type;
       typedef _Dp                       deleter_type;
 
-      static_assert(!std::is_pointer<deleter_type>::value,
-		    "constructed with null function pointer deleter");
-
       // Constructors.
       constexpr unique_ptr()
       : _M_t()
@@ -132,7 +129,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		      "rvalue deleter bound to reference"); }
 
       constexpr unique_ptr(nullptr_t)
-      : _M_t(pointer(), deleter_type())
+      : _M_t()
       { }
 
       // Move constructors.
@@ -269,18 +266,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef _Tp		 	element_type;
       typedef _Dp                       deleter_type;
 
-      static_assert(!std::is_pointer<deleter_type>::value,
-		    "constructed with null function pointer deleter");
-
       // Constructors.
       constexpr unique_ptr()
-      : _M_t(pointer(), deleter_type())
+      : _M_t()
       { }
 
       explicit
       unique_ptr(pointer __p)
       : _M_t(__p, deleter_type())
-      { }
+      { static_assert(!std::is_pointer<deleter_type>::value,
+		     "constructed with null function pointer deleter"); }
 
       unique_ptr(pointer __p,
 	  typename std::conditional<std::is_reference<deleter_type>::value,
@@ -295,7 +290,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       /* TODO: use delegating constructor */
       constexpr unique_ptr(nullptr_t)
-      : _M_t(pointer(), deleter_type())
+      : _M_t()
       { }
 
       // Move constructors.
