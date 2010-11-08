@@ -4531,28 +4531,21 @@ main (int argc, char **argv)
       /* These types are set up with #define or else outside of where
          we can see them.  We should initialize them before calling
          read_input_list.  */
-      pos.file = this_file;
-      pos.line = __LINE__ + 1;
-      do_scalar_typedef ("CUMULATIVE_ARGS", &pos);
-      pos.line++;
-      do_scalar_typedef ("REAL_VALUE_TYPE", &pos);
-      pos.line++;
-      do_scalar_typedef ("FIXED_VALUE_TYPE", &pos);
-      pos.line++;
-      do_scalar_typedef ("double_int", &pos);
-      pos.line++;
-      do_scalar_typedef ("uint64_t", &pos);
-      pos.line++;
-      do_scalar_typedef ("uint8", &pos);
-      pos.line++;
-      do_scalar_typedef ("jword", &pos);
-      pos.line++;
-      do_scalar_typedef ("JCF_u2", &pos);
-      pos.line++;
-      do_scalar_typedef ("void", &pos);
-      pos.line++;
-      do_typedef ("PTR", create_pointer (resolve_typedef ("void", &pos)),
-		  &pos);
+#define POS_HERE(Call) do { pos.file = this_file; pos.line = __LINE__; \
+	Call;} while(0)
+      POS_HERE (do_scalar_typedef ("CUMULATIVE_ARGS", &pos));
+      POS_HERE (do_scalar_typedef ("REAL_VALUE_TYPE", &pos));
+      POS_HERE (do_scalar_typedef ("FIXED_VALUE_TYPE", &pos));
+      POS_HERE (do_scalar_typedef ("double_int", &pos));
+      POS_HERE (do_scalar_typedef ("uint64_t", &pos));
+      POS_HERE (do_scalar_typedef ("uint8", &pos));
+      POS_HERE (do_scalar_typedef ("jword", &pos));
+      POS_HERE (do_scalar_typedef ("JCF_u2", &pos));
+      POS_HERE (do_scalar_typedef ("void", &pos));
+      POS_HERE (do_typedef ("PTR", 
+			    create_pointer (resolve_typedef ("void", &pos)),
+			    &pos));
+#undef POS_HERE
       read_input_list (inputlist);
       for (i = 0; i < num_gt_files; i++)
 	{

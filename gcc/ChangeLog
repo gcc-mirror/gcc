@@ -1,3 +1,8 @@
+2010-11-08  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* gengtype (main): Get here's position using POS_HERE macro for
+	do*typedef calls.
+
 2010-11-07  Ian Lance Taylor  <iant@google.com>
 
 	PR target/46089
