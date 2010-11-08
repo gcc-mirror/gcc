@@ -1,3 +1,21 @@
+2010-11-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (lookup_property): When checking categories, also
+	check the protocols attached to each.
+	(objc_add_property_declaration): Determine the
+	PROPERTY_SETTER_NAME and PROPERTY_GETTER_NAME here.  Tidied up
+	error message.  Search for an existing property declaration with
+	the same name which would be inherited from the class hiearchy,
+	and produce an error if it has incompatible attributes.
+	(check_methods): Changed second parameter.  If the method is a
+	getter or setter for a property, do not warn if it is inherited as
+	opposed to implemented directly in the class.
+	(check_protocol): Updated calls to check_methods.
+	(finish_class): Do not determine the PROPERTY_SETTER_NAME and
+	PROPERTY_GETTER_NAME here; this is now done earlier, in
+	objc_add_property_declaration.
+	* objc-act.h (CLASS_NAME, CLASS_SUPER_NAME): Added comments.
+	
 2010-11-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Fixed using the Objective-C 2.0 syntax with self and super.

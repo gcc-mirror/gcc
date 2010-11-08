@@ -32,7 +32,7 @@
 /* FIXME - there is a problem with the testuite in running the following test.  The compiler
    generates the messages, but the testsuite still complains.  */
 /*@property (retain) id property_e;*/ /*  dg-error "redeclaration of property .property_e."  */
-   			          /*  dg-message "originally declared here" "" { target *-*-* } 26  */
+   			          /*  dg-message "originally specified here" "" { target *-*-* } 26  */
 @end
 
 @property id test; /* { dg-error "misplaced .@property. Objective-C.. construct" } */

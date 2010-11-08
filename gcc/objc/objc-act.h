@@ -144,7 +144,10 @@ typedef enum objc_property_assign_semantics {
 /* CLASS_INTERFACE_TYPE, CLASS_IMPLEMENTATION_TYPE,
    CATEGORY_INTERFACE_TYPE, CATEGORY_IMPLEMENTATION_TYPE,
    PROTOCOL_INTERFACE_TYPE */
+/* CLASS_NAME is the name of the class.  */
 #define CLASS_NAME(CLASS) ((CLASS)->type.name)
+/* CLASS_SUPER_NAME is the name of the superclass, or, in the case of
+   categories, it is the name of the category itself.  */
 #define CLASS_SUPER_NAME(CLASS) (TYPE_CHECK (CLASS)->type.context)
 #define CLASS_IVARS(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 0)
 #define CLASS_RAW_IVARS(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 1)
