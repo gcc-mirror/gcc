@@ -58,9 +58,11 @@ while (<NM>) {
     # nm prints out stuff at the start, ignore it.
     next if (/^$/);
     next if (/:$/);
-    # Ignore register (SPARC only), undefined and local symbols.  The
-    # symbol name is optional; Sun nm emits none for local or .bss symbols.
-    next if (/^([^ ]+)?[ \t]+[RUa-z][ \t]+/);
+    # Ignore entries without symbol name.  Sun nm emits those for local, .bss
+    # or scratch register (SPARC only) symbols for example.
+    next if (/^ /);
+    # Ignore undefined and local symbols.
+    next if (/^[^ ]+[ \t]+[Ua-z][ \t]+/);
     # Ignore objects without symbol table.  Message goes to stdout with Sun
     # nm, while GNU nm emits the corresponding message to stderr.
     next if (/.* - No symbol table data/);
