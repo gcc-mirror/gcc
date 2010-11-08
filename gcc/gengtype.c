@@ -2637,8 +2637,11 @@ output_type_enum (outf_p of, type_p s)
 static outf_p
 get_output_file_for_structure (const_type_p s, type_p *param)
 {
-  const char *fn = s->u.s.line.file;
+  const char *fn;
   int i;
+
+  gcc_assert (UNION_OR_STRUCT_P (s));
+  fn = s->u.s.line.file;
 
   /* This is a hack, and not the good kind either.  */
   for (i = NUM_PARAM - 1; i >= 0; i--)
@@ -4062,7 +4065,7 @@ output_typename (outf_p of, const_type_p t)
 static void
 write_splay_tree_allocator_def (const_type_p s)
 {
-  outf_p of = get_output_file_for_structure (s, NULL);
+  outf_p of = get_output_file_with_visibility (NULL);
   oprintf (of, "void * ggc_alloc_splay_tree_");
   output_typename (of, s);
   oprintf (of, " (int sz, void * nl)\n");
