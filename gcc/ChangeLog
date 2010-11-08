@@ -1,3 +1,10 @@
+2010-11-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_handle_arch_option): Set type and flags
+	to defined values in case of an error.
+	(s390_option_override): Skip further processing if the -march
+	parameter wasn't recognized.
+
 2010-11-08  Joern Rennecke  <amylaar@spamcop.net>
 
 	* caller-save.c (reg_save_code): After HARD_REGNO_MODE_OK check fails,
