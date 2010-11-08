@@ -1,3 +1,11 @@
+2010-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-11-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/i386.exp (FLAGS): Remove.
+	Wrap gcc_target_compile with $clearcap_ldflags added to options.
+
 2010-11-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from mainline:
