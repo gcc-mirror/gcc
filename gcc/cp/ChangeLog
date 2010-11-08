@@ -1,5 +1,6 @@
 2010-11-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46348
 	* init.c (perform_member_init): Use build_vec_init_expr for
 	value-init of arrays, too.
 	* cp-gimplify.c (cp_gimplify_expr): Use VEC_INIT_EXPR_VALUE_INIT.

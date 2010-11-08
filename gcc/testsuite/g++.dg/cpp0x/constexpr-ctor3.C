@@ -1,3 +1,4 @@
+// PR c++/46348
 // { dg-options -std=c++0x }
 
 struct A
