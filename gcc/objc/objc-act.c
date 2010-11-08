@@ -8738,9 +8738,19 @@ check_methods (tree chain, tree implementation, int mtype)
     {
       /* If the method is associated with a dynamic property, then it
 	 is Ok not to have the method implementation, as it will be
-	 generated dynamically at runtime.  */
-      tree property = METHOD_PROPERTY_CONTEXT (chain);
-      if (property != NULL_TREE && PROPERTY_DYNAMIC (property))
+	 generated dynamically at runtime.  To decide if the method is
+	 associated with a @dynamic property, we search the list of
+	 @synthesize and @dynamic for this implementation, and look
+	 for any @dynamic property with the same setter or getter name
+	 as this method.  */
+      tree x;
+      for (x = IMPL_PROPERTY_DECL (implementation); x; x = TREE_CHAIN (x))
+	if (PROPERTY_DYNAMIC (x)
+	    && (PROPERTY_GETTER_NAME (x) == METHOD_SEL_NAME (chain)
+		|| PROPERTY_SETTER_NAME (x) == METHOD_SEL_NAME (chain)))
+	  break;
+      
+      if (x != NULL_TREE)
 	{
 	  chain = TREE_CHAIN (chain); /* next method...  */
 	  continue;
@@ -8751,6 +8761,7 @@ check_methods (tree chain, tree implementation, int mtype)
 	  /* If the method is a property setter/getter, we'll still
 	     allow it to be missing if it is implemented by
 	     'interface' or any of its superclasses.  */
+	  tree property = METHOD_PROPERTY_CONTEXT (chain);
 	  if (property)
 	    {
 	      /* Note that since this is a property getter/setter, it
@@ -8864,13 +8875,21 @@ check_methods_accessible (tree chain, tree context, int mtype)
     {
       /* If the method is associated with a dynamic property, then it
 	 is Ok not to have the method implementation, as it will be
-	 generated dynamically at runtime.  */
-      tree property = METHOD_PROPERTY_CONTEXT (chain);
-      if (property != NULL_TREE  &&  PROPERTY_DYNAMIC (property))
+	 generated dynamically at runtime.  Search for any @dynamic
+	 property with the same setter or getter name as this
+	 method.  TODO: Use a hashtable lookup.  */
+      tree x;
+      for (x = IMPL_PROPERTY_DECL (base_context); x; x = TREE_CHAIN (x))
+	if (PROPERTY_DYNAMIC (x)
+	    && (PROPERTY_GETTER_NAME (x) == METHOD_SEL_NAME (chain)
+		|| PROPERTY_SETTER_NAME (x) == METHOD_SEL_NAME (chain)))
+	  break;
+      
+      if (x != NULL_TREE)
 	{
 	  chain = TREE_CHAIN (chain); /* next method...  */
 	  continue;
-	}
+	}	
 
       context = base_context;
       while (context)
@@ -9910,11 +9929,9 @@ objc_add_dynamic_declaration_for_property (location_t location, tree interface,
 	return;
       }
 
-  /* Check that the property is declared in the corresponding
-     interface.  */
-  for (property = CLASS_PROPERTY_DECL (interface); property; property = TREE_CHAIN (property))
-    if (PROPERTY_NAME (property) == property_name)
-      break;
+  /* Check that the property is declared in the interface.  It could
+     also be declared in a superclass or protocol.  */
+  property = lookup_property (interface, property_name);
 
   if (!property)
     {
@@ -9924,17 +9941,6 @@ objc_add_dynamic_declaration_for_property (location_t location, tree interface,
     }
   else
     {
-      /* Mark the original PROPERTY_DECL as dynamic.  The reason is
-	 that the setter and getter methods in the interface have a
-	 METHOD_PROPERTY_CONTEXT that points to the original
-	 PROPERTY_DECL; when we check that these methods have been
-	 implemented, we need to easily find that they are associated
-	 with a dynamic property.  TODO: Remove this hack; it will not
-	 work with properties in a protocol that may be implemented by
-	 different classes and be @dynamic in some, and non-@dynamic
-	 in other ones.  */
-      PROPERTY_DYNAMIC (property) = 1;
-
       /* We have to copy the property, because we want to chain it to
 	 the implementation context, and we want to store the source
 	 location of the @synthesize, not of the original

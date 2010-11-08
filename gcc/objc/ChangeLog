@@ -1,5 +1,17 @@
 2010-11-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_add_dynamic_declaration_for_property): Do not
+	search for the @property declation only in the current context,
+	but also in inherited properties.  Do not mark the original
+	PROPERTY_DECL in the @interface or @protocol with
+	PROPERTY_DYNAMIC.
+	(check_methods): To check if a method is associated with a
+	@dynamic property, search for the property in IMPL_PROPERTY_DECL.
+	(check_accessible_methods): Same change.
+	* objc-act.h: Updated comment.
+
+2010-11-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (objc_add_synthesize_declaration_for_property):
 	Iterate over IMPL_PROPERTY_DECL, not CLASS_PROPERTY_DECL, when
 	checking for an existing @synthesize or @dynamic declaration.

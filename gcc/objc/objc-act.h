@@ -100,8 +100,7 @@ typedef enum objc_property_assign_semantics {
 #define PROPERTY_IVAR_NAME(DECL) ((DECL)->decl_common.initial)
 
 /* PROPERTY_DYNAMIC can be 0 or 1.  This is 1 if the PROPERTY_DECL
-   represents a @dynamic (or if it is a @property for which a @dynamic
-   declaration has been parsed); otherwise, it is set to 0.  */
+   represents a @dynamic; otherwise, it is set to 0.  */
 #define PROPERTY_DYNAMIC(DECL) DECL_LANG_FLAG_2 (DECL)
 
 /* PROPERTY_HAS_NO_GETTER can be 0 or 1.  Normally it is 0, but if

@@ -1,5 +1,25 @@
 2010-11-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/property/dotsyntax-13.m: New.
+	* objc.dg/property/dotsyntax-14.m: New.
+	* objc.dg/property/dotsyntax-15.m: New.	
+	* objc.dg/property/synthesize-7.m: New.
+	* obj-c++.dg/property/dotsyntax-13.mm: New.
+	* obj-c++.dg/property/dotsyntax-14.mm: New.
+	* obj-c++.dg/property/dotsyntax-15.mm: New.	
+	* obj-c++.dg/property/synthesize-7.mm: New.
+
+2010-11-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/property/dynamic-4.m: New.
+	* objc.dg/property/dynamic-5.m: New.
+	* objc.dg/property/dynamic-6.m: New.	
+	* obj-c++.dg/property/dynamic-4.mm: New.
+	* obj-c++.dg/property/dynamic-5.mm: New.
+	* obj-c++.dg/property/dynamic-6.mm: New.
+
+2010-11-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/property/synthesize-3.m: New.
 	* objc.dg/property/synthesize-4.m: New.
 	* objc.dg/property/synthesize-5.m: New.
