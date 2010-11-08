@@ -251,17 +251,22 @@ namespace __profile
         size_type size_before = size();
         _Base::insert(__list); 
         __profcxx_map_to_unordered_map_insert(this, size_before, 
-                                                size() - size_before);
+					      size() - size_before);
       }
 #endif
 
       iterator
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      insert(const_iterator __position, const value_type& __x)
+#else
       insert(iterator __position, const value_type& __x)
+#endif
       {
         size_type size_before = size();
-	return iterator(_Base::insert(__position, __x));
+	iterator __i = iterator(_Base::insert(__position, __x));
         __profcxx_map_to_unordered_map_insert(this, size_before, 
-                                                size() - size_before);
+					      size() - size_before);
+	return __i;
       }
 
       template<typename _InputIterator>
@@ -276,7 +281,7 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
-      erase(iterator __position)
+      erase(const_iterator __position)
       {
 	iterator __i = _Base::erase(__position);
         __profcxx_map_to_unordered_map_erase(this, size(), 1);
@@ -306,31 +311,18 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
-      erase(iterator __first, iterator __last)
-      {
-	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 151. can't currently clear() empty container
-	while (__first != __last)
-	  this->erase(__first++);
-	return __last;
-      }
+      erase(const_iterator __first, const_iterator __last)
+      { return iterator(_Base::erase(__first, __last)); }
 #else
       void
       erase(iterator __first, iterator __last)
-      {
-	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 151. can't currently clear() empty container
-	while (__first != __last)
-	  this->erase(__first++);
-      }
+      { _Base::erase(__first, __last); }
 #endif
 
       void
 
       swap(map& __x)
-      {
-	_Base::swap(__x);
-      }
+      { _Base::swap(__x); }
 
       void
       clear()

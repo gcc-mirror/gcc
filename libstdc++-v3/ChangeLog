@@ -1,3 +1,24 @@
+2010-11-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_tree.h (_Rb_tree<>::_M_erase_aux): Add.
+	(_Rb_tree<>::erase(iterator)): Fix in C++0x mode to take
+	const_iterator; remove redundant overload in C++03 mode.
+	(_Rb_tree<>::erase(iterator, iterator)): Likewise.
+	* include/bits/stl_map.h (map<>::erase): Adjust.
+	(map<>::insert): Fix signature in C++0x mode.
+	* include/bits/stl_set.h (set<>::erase): Likewise.
+	(set<>::insert): Likewise.
+	* include/bits/stl_multimap.h (multimap<>::erase): Likewise.
+	(multimap<>::insert): Likewise.
+	* include/bits/stl_multiset.h (multiset<>::erase): Likewise.
+	(multiset<>::insert): Fix signature in C++0x mode.
+	* include/profile/set.h: Adjust.
+	* include/profile/multiset.h: Likewise.
+	* include/profile/map.h: Likewise.
+	* include/profile/multimap.h: Likewise.
+	* testsuite/util/exception/safety.h (erase_base, insert_base):
+	Update.
+
 2010-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/profile/unordered_map (unordered_map<>::operator[](_Key&&)):
