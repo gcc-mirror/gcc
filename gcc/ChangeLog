@@ -1,3 +1,17 @@
+2010-11-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/46378
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Don't
+	turn on ISA 2.04 rounding instructions for power5.
+
+	* config/rs6000/rs6000.md (friz): Friz is an ISA 2.04 instruciton,
+	not ISA 2.02.
+
+	PR target/45585
+	* config/rs6000/darwin.md (movdi_low): Allow DImode values to be
+	in FPR registers.
+	(movdi_low_st): Ditto.
+
 2010-11-08  Joern Rennecke  <amylaar@spamcop.net>
 	    Richard Henderson <rth@redhat.com>
 
