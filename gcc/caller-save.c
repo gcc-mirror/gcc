@@ -116,11 +116,15 @@ reg_save_code (int reg, enum machine_mode mode)
   if (cached_reg_save_code[reg][mode])
      return cached_reg_save_code[reg][mode];
   if (!HARD_REGNO_MODE_OK (reg, mode))
-     {
-       cached_reg_save_code[reg][mode] = -1;
-       cached_reg_restore_code[reg][mode] = -1;
-       return -1;
-     }
+    {
+      /* Depending on how HARD_REGNO_MODE_OK is defined, range propagation
+	 might deduce here that reg >= FIRST_PSEUDO_REGISTER.  So the assert
+	 below silences a warning.  */
+      gcc_assert (reg < FIRST_PSEUDO_REGISTER);
+      cached_reg_save_code[reg][mode] = -1;
+      cached_reg_restore_code[reg][mode] = -1;
+      return -1;
+    }
 
   /* Update the register number and modes of the register
      and memory operand.  */
