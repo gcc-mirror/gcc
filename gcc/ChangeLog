@@ -1,3 +1,9 @@
+2010-11-07  Ian Lance Taylor  <iant@google.com>
+
+	PR target/46089
+	* config/i386/i386.c (split_stack_fn_large): New static variable.
+	(ix86_expand_split_stack_prologue): Handle large model.
+
 2010-11-07  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/m68k.c (m68k_delegitimize_address): Update to handle
