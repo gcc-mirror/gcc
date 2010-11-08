@@ -2577,7 +2577,8 @@ rs6000_option_override_internal (const char *default_cpu)
   /* Masks for instructions set at various powerpc ISAs.  */
   enum {
     ISA_2_1_MASKS = MASK_MFCRF,
-    ISA_2_2_MASKS = (ISA_2_1_MASKS | MASK_POPCNTB | MASK_FPRND),
+    ISA_2_2_MASKS = (ISA_2_1_MASKS | MASK_POPCNTB),
+    ISA_2_4_MASKS = (ISA_2_2_MASKS | MASK_FPRND),
 
     /* For ISA 2.05, do not add MFPGPR, since it isn't in ISA 2.06, and don't
        add ALTIVEC, since in general it isn't a win on power6.  In ISA 2.04,
@@ -2746,7 +2747,9 @@ rs6000_option_override_internal (const char *default_cpu)
     target_flags |= (ISA_2_5_MASKS_SERVER & ~target_flags_explicit);
   else if (TARGET_CMPB)
     target_flags |= (ISA_2_5_MASKS_EMBEDDED & ~target_flags_explicit);
-  else if (TARGET_POPCNTB || TARGET_FPRND)
+  else if (TARGET_FPRND)
+    target_flags |= (ISA_2_4_MASKS & ~target_flags_explicit);
+  else if (TARGET_POPCNTB)
     target_flags |= (ISA_2_2_MASKS & ~target_flags_explicit);
   else if (TARGET_ALTIVEC)
     target_flags |= (MASK_PPC_GFXOPT & ~target_flags_explicit);
