@@ -1,5 +1,10 @@
 2010-11-08  Steve Ellcey  <sje@cup.hp.com>
 
+	* gcc.dg/torture/pr45982.c: Add -std=c99
+	* gcc.dg/torture/pr45623.c: Ditto.
+	
+2010-11-08  Steve Ellcey  <sje@cup.hp.com>
+
 	* gcc/testsuite/g++.dg/abi/covariant1.C: Fix scan-assembler.
 	* gcc/testsuite/g++.dg/abi/covariant6.C: Ditto.
 
