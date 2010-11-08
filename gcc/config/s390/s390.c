@@ -1554,6 +1554,9 @@ s390_handle_arch_option (const char *arg,
 	*flags = processor_alias_table[i].flags;
 	return true;
       }
+
+  *type = PROCESSOR_max;
+  *flags = 0;
   return false;
 }
 
@@ -1613,6 +1616,12 @@ s390_option_override (void)
       s390_arch_string = TARGET_ZARCH? "z900" : "g5";
       s390_handle_arch_option (s390_arch_string, &s390_arch, &s390_arch_flags);
     }
+
+  /* This check is triggered when the user specified a wrong -march=
+     string and prevents subsequent error messages from being
+     issued.  */
+  if (s390_arch == PROCESSOR_max)
+    return;
 
   /* Determine processor to tune for.  */
   if (s390_tune == PROCESSOR_max)
