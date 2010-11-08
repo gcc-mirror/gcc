@@ -39,6 +39,14 @@
 	(bdesc_void3arg, bdesc_voidacc, bdesc_loads, bdesc_stores): Likewise.
 	(frv_read_argument): Use expand_normal.
 
+	PR target/44757 
+	* config/lm32/lm32.h (LEGITIMATE_CONSTANT_P): Call
+	lm32_legitimate_constant_p.
+	* config/lm32/lm32.md (ashlsi3): Remove unused variable.
+	* config/lm32/lm32.c (gen_int_relational): Make new block for
+	LE / LT / LEU / LTU case.  Declare variables at start of block.
+	(lm32_block_move_inline): Use XALLOCAVEC.
+
 2010-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/i386.c (ix86_function_arg_boundary): Fix warning
