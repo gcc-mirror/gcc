@@ -1,5 +1,16 @@
 2010-11-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/property/synthesize-3.m: New.
+	* objc.dg/property/synthesize-4.m: New.
+	* objc.dg/property/synthesize-5.m: New.
+	* objc.dg/property/synthesize-6.m: New.
+	* obj-c++.dg/property/synthesize-3.mm: New.
+	* obj-c++.dg/property/synthesize-4.mm: New.
+	* obj-c++.dg/property/synthesize-5.mm: New.
+	* obj-c++.dg/property/synthesize-6.mm: New.	
+	
+2010-11-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/property/at-property-5.m: Updated test.	
 	* objc.dg/property/at-property-16.m: New.
 	* objc.dg/property/at-property-17.m: New.
