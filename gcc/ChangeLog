@@ -1,3 +1,11 @@
+
+2010-11-08  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* gengtype (get_output_file_for_structure): Ensure type is union
+	or struct.
+	(write_splay_tree_allocator_def): Use
+	get_output_file_with_visibility.
+
 2010-11-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_handle_arch_option): Set type and flags
