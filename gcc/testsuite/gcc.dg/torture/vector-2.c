@@ -1,5 +1,9 @@
 /* Check that vector insertion works correctly. */
 
+/* { dg-do run } */
+/* { dg-options "-msse" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-require-effective-target sse_runtime { target { i?86-*-* x86_64-*-* } } } */
+
 #define vector __attribute__((vector_size(16) ))
 
 vector int f0(vector int t, int a)

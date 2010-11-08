@@ -1,4 +1,5 @@
 /* { dg-options "-O2 -fdump-tree-fre -w" } */
+/* { dg-options "-O2 -fdump-tree-fre -w -msse" { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-do compile } */
 #define vector __attribute__((vector_size(sizeof(int)*4) ))
 struct s { vector int i; };

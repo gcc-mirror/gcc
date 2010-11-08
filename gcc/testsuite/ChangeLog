@@ -1,3 +1,33 @@
+2010-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/pr35442.c: Adapt warning.
+
+	PR target/46280
+	* g++.dg/eh/simd-2.C: Add -msse to dg-options, add
+	dg-require-effective-target sse_runtime for for i?86-*-*, x86_64-*-*.
+	* g++.dg/torture/pr36444.C: Add dg-options -msse for
+	i?86-*-* x86_64-*-*.
+	* g++.dg/torture/pr36445.C: Likewise.
+	* gcc.c-torture/compile/pr34856.c: Likewise.
+	* gcc.c-torture/compile/pr39928-1.c: Likewise.
+	* gcc.c-torture/compile/vector-1.c: Likewise.
+	* gcc.c-torture/compile/vector-2.c: Likewise.
+	* gcc.dg/pr32912-1.c: Likewise.
+	* gcc.c-torture/execute/va-arg-25.c: Move ...
+	* gcc.dg/torture/va-arg-25.c: ... here.
+	Add dg-do run.
+	Add dg-options -msse, dg-require-effective-target sse_runtime for
+	for i?86-*-*, x86_64-*-*.
+	* gcc.c-torture/execute/vector-1.c: Likewise.
+	* gcc.c-torture/execute/vector-2.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-5.c: Add -msse to dg-options for
+	i?86-*-*, x86_64-*-*.
+	* gcc.dg/tree-ssa/fre-vce-1.c: Likewise.
+	* gcc.dg/tree-ssa/sra-4.c: Likewise.
+	* gcc.dg/tree-ssa/vector-1.c: Likewise.
+	* gcc.dg/tree-ssa/vector-2.c: Likewise.
+	* gcc.target/i386/vect-args.c: Add -Wno-psabi to dg-options.
+
 2010-11-08  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/torture/pr45982.c: Add -std=c99

@@ -1,6 +1,11 @@
 /* Varargs and vectors!  */
 
+/* { dg-do run } */
+/* { dg-options "-msse" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-require-effective-target sse_runtime { target { i?86-*-* x86_64-*-* } } } */
+
 #include <stdarg.h>
+#include <stdlib.h>
 #include <limits.h>
 
 #define vector __attribute__((vector_size(16)))
