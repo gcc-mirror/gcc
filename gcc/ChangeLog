@@ -1,3 +1,30 @@
+2010-11-08  Joern Rennecke  <amylaar@spamcop.net>
+	    Richard Henderson <rth@redhat.com>
+
+	PR target/44758
+	* config/frv/frv.md (attribute cpu): Cast value to enum attr_cpu.
+	(attribute acc_group): Cast value to enum attr_acc_group.
+	(*movdi_nodouble+6): Use gen_int_mode.
+	* config/frv/frv-protos.h (frv_trampoline_size): Declare no matter
+	if RTX_CODE is defined or not.
+	* config/frv/frv.c (enum frv_io_type): New enum, broken out of
+	struct frv_io.
+	(frv_handle_option): Mark parameter value with ATTRIBUTE_UNUSED.
+	(frv_frame_access, frv_expand_prologue): Remove unused variables.
+	(frv_expand_block_clear): Likewise.
+	(frv_trampoline_init): Use LCT_NORMAL.
+	(struct frv_packet_group): New struct, broken out of type of
+	frv_packet.
+	(frv_start_packet, frv_reorder_packet): Initialize group to GROUP_I,
+	use cast in loop counter increment.
+	(frv_extract_membar): Cast HOST_WIDE_INT to enum frv_io_type before
+	assigning to io->type.
+	(bdesc_set): Use rtx_code UNKNOWN in initializer.
+	(bdesc_1arg, bdesc_2arg, bdesc_int_void2arg): Likewise.
+	(bdesc_prefetches, bdesc_cut, bdesc_2argimm, bdesc_void2arg): Likewise.
+	(bdesc_void3arg, bdesc_voidacc, bdesc_loads, bdesc_stores): Likewise.
+	(frv_read_argument): Use expand_normal.
+
 2010-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/i386.c (ix86_function_arg_boundary): Fix warning
