@@ -20,7 +20,7 @@ struct c14 :
 
 void c14::f() { }
 
-// { dg-final { scan-assembler "_ZTcv0_n12_v0_n16_N3c143f17Ev" { target ilp32 } } }
+// { dg-final { scan-assembler "_ZTcv0_n12_v0_n16_N3c143f17Ev" { target { ilp32  && { ! { ia64-*-hpux* } } } } } }
 // { dg-final { scan-assembler-not "_ZTch0_v0_n16_N3c143f17Ev" } }
-// { dg-final { scan-assembler "_ZTcv0_n24_v0_n32_N3c143f17Ev" { target lp64 } } }
+// { dg-final { scan-assembler "_ZTcv0_n24_v0_n32_N3c143f17Ev" { target { lp64  || { ia64-*-hpux* } } } } }
 // { dg-final { scan-assembler-not "_ZTch0_v0_n32_N3c143f17Ev" } }
