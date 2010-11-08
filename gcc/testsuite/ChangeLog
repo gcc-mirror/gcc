@@ -1,3 +1,8 @@
+2010-11-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46344
+	* gfortran.dg/class_28.f03: Extended.
+
 2010-11-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/property/dotsyntax-13.m: New.
