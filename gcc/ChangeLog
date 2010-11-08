@@ -1,3 +1,8 @@
+2010-11-08  Joern Rennecke  <amylaar@spamcop.net>
+
+	* caller-save.c (reg_save_code): After HARD_REGNO_MODE_OK check fails,
+	assert that REG is a hard register number before using it as an index.
+
 2010-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/46208
