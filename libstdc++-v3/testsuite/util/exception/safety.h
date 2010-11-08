@@ -251,12 +251,86 @@ namespace __gnu_test
       struct erase_base
       {
 	typedef typename _Tp::iterator 			iterator;
+	typedef typename _Tp::const_iterator		const_iterator;
 
-	iterator (_Tp::* _F_erase_point)(iterator);
-	iterator (_Tp::* _F_erase_range)(iterator, iterator);
+	iterator (_Tp::* _F_erase_point)(const_iterator);
+	iterator (_Tp::* _F_erase_range)(const_iterator, const_iterator);
 
 	erase_base()
 	: _F_erase_point(&_Tp::erase), _F_erase_range(&_Tp::erase) { }
+      };
+
+    // Specializations, old C++03 signatures.
+    template<typename _Tp1, typename _Tp2, typename _Tp3>
+      struct erase_base<std::basic_string<_Tp1, _Tp2, _Tp3>>
+      {
+	typedef std::basic_string<_Tp1, _Tp2, _Tp3>     container_type;
+	typedef typename container_type::iterator 	iterator;
+
+	iterator (container_type::* _F_erase_point)(iterator);
+	iterator (container_type::* _F_erase_range)(iterator, iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
+      };
+
+    template<typename _Tp1, typename _Tp2, typename _Tp3,
+	     template <typename, typename, typename> class _Tp4>
+      struct erase_base<__gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3, _Tp4>>
+      {
+	typedef __gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3, _Tp4>
+	                                                container_type;
+	typedef typename container_type::iterator 	iterator;
+
+	iterator (container_type::* _F_erase_point)(iterator);
+	iterator (container_type::* _F_erase_range)(iterator, iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
+      };
+
+    template<typename _Tp1, typename _Tp2>
+      struct erase_base<std::deque<_Tp1, _Tp2>>
+      {
+	typedef std::deque<_Tp1, _Tp2> 		        container_type;
+	typedef typename container_type::iterator 	iterator;
+
+	iterator (container_type::* _F_erase_point)(iterator);
+	iterator (container_type::* _F_erase_range)(iterator, iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
+      };
+
+    template<typename _Tp1, typename _Tp2>
+      struct erase_base<std::list<_Tp1, _Tp2>>
+      {
+	typedef std::list<_Tp1, _Tp2> 		        container_type;
+	typedef typename container_type::iterator 	iterator;
+
+	iterator (container_type::* _F_erase_point)(iterator);
+	iterator (container_type::* _F_erase_range)(iterator, iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
+      };
+
+    template<typename _Tp1, typename _Tp2>
+      struct erase_base<std::vector<_Tp1, _Tp2>>
+      {
+	typedef std::vector<_Tp1, _Tp2>		        container_type;
+	typedef typename container_type::iterator 	iterator;
+
+	iterator (container_type::* _F_erase_point)(iterator);
+	iterator (container_type::* _F_erase_range)(iterator, iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
       };
 
     // Specialization, as forward_list has erase_after.
@@ -274,78 +348,6 @@ namespace __gnu_test
 	erase_base()
 	: _F_erase_point(&container_type::erase_after),
 	  _F_erase_range(&container_type::erase_after) { }
-      };
-
-    // Specializations for the unordered containers.
-    template<typename _Tp1, typename _Tp2, typename _Tp3,
-	     typename _Tp4, typename _Tp5>
-      struct erase_base<std::unordered_map<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>>
-      {
-	typedef std::unordered_map<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-
-	iterator (container_type::* _F_erase_point)(const_iterator);
-	iterator (container_type::* _F_erase_range)(const_iterator,
-						    const_iterator);
-
-	erase_base()
-	: _F_erase_point(&container_type::erase),
-	  _F_erase_range(&container_type::erase) { }
-      };
-
-    template<typename _Tp1, typename _Tp2, typename _Tp3,
-	     typename _Tp4, typename _Tp5>
-      struct erase_base<std::unordered_multimap<_Tp1, _Tp2, _Tp3,
-						_Tp4, _Tp5>>
-      {
-	typedef std::unordered_multimap<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-
-	iterator (container_type::* _F_erase_point)(const_iterator);
-	iterator (container_type::* _F_erase_range)(const_iterator,
-						    const_iterator);
-
-	erase_base()
-	: _F_erase_point(&container_type::erase),
-	  _F_erase_range(&container_type::erase) { }
-      };
-
-    template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
-      struct erase_base<std::unordered_set<_Tp1, _Tp2, _Tp3, _Tp4>>
-      {
-	typedef std::unordered_set<_Tp1, _Tp2, _Tp3, _Tp4>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-
-	iterator (container_type::* _F_erase_point)(const_iterator);
-	iterator (container_type::* _F_erase_range)(const_iterator,
-						    const_iterator);
-
-	erase_base()
-	: _F_erase_point(&container_type::erase),
-	  _F_erase_range(&container_type::erase) { }
-      };
-
-    template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
-      struct erase_base<std::unordered_multiset<_Tp1, _Tp2, _Tp3, _Tp4>>
-      {
-	typedef std::unordered_multiset<_Tp1, _Tp2, _Tp3, _Tp4>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-
-	iterator (container_type::* _F_erase_point)(const_iterator);
-	iterator (container_type::* _F_erase_range)(const_iterator,
-						    const_iterator);
-
-	erase_base()
-	: _F_erase_point(&container_type::erase),
-	  _F_erase_range(&container_type::erase) { }
       };
 
     template<typename _Tp,
@@ -633,11 +635,52 @@ namespace __gnu_test
       struct insert_base
       {
 	typedef typename _Tp::iterator 			iterator;
+	typedef typename _Tp::const_iterator    	const_iterator;
 	typedef typename _Tp::value_type 		value_type;
 
-	iterator (_Tp::* _F_insert_point)(iterator, const value_type&);
+	iterator (_Tp::* _F_insert_point)(const_iterator, const value_type&);
 
 	insert_base() : _F_insert_point(&_Tp::insert) { }
+      };
+
+    // Specializations, old C++03 signatures.
+    template<typename _Tp1, typename _Tp2>
+      struct insert_base<std::deque<_Tp1, _Tp2>>
+      {
+	typedef std::deque<_Tp1, _Tp2> 	                container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::value_type 	value_type;
+
+	iterator (container_type::* _F_insert_point)(iterator,
+						     const value_type&);
+
+	insert_base() : _F_insert_point(&container_type::insert) { }
+      };
+
+    template<typename _Tp1, typename _Tp2>
+      struct insert_base<std::list<_Tp1, _Tp2>>
+      {
+	typedef std::list<_Tp1, _Tp2>    	        container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::value_type 	value_type;
+
+	iterator (container_type::* _F_insert_point)(iterator,
+						     const value_type&);
+
+	insert_base() : _F_insert_point(&container_type::insert) { }
+      };
+
+    template<typename _Tp1, typename _Tp2>
+      struct insert_base<std::vector<_Tp1, _Tp2>>
+      {
+	typedef std::vector<_Tp1, _Tp2> 	        container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::value_type 	value_type;
+
+	iterator (container_type::* _F_insert_point)(iterator,
+						     const value_type&);
+
+	insert_base() : _F_insert_point(&container_type::insert) { }
       };
 
     // Specialization, as string insertion has a different signature.
@@ -653,6 +696,7 @@ namespace __gnu_test
 	insert_base() : _F_insert_point(&container_type::insert) { }
       };
 
+    // Likewise for __versa_string.
     template<typename _Tp1, typename _Tp2, typename _Tp3,
 	     template <typename, typename, typename> class _Tp4>
       struct insert_base<__gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3, _Tp4>>
@@ -667,7 +711,7 @@ namespace __gnu_test
 	insert_base() : _F_insert_point(&container_type::insert) { }
       };
 
-    // Specialization, as forward_list insertion has a different signature.
+    // Specialization, as forward_list has insert_after.
     template<typename _Tp1, typename _Tp2>
       struct insert_base<std::forward_list<_Tp1, _Tp2>>
       {
@@ -680,70 +724,6 @@ namespace __gnu_test
 						     const value_type&);
 
 	insert_base() : _F_insert_point(&container_type::insert_after) { }
-      };
-
-    // Likewise for the unordered containers.
-    template<typename _Tp1, typename _Tp2, typename _Tp3,
-	     typename _Tp4, typename _Tp5>
-      struct insert_base<std::unordered_map<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>>
-      {
-	typedef std::unordered_map<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-	typedef typename container_type::value_type 	value_type;
-
-	iterator (container_type::* _F_insert_point)(const_iterator,
-						     const value_type&);
-
-	insert_base() : _F_insert_point(&container_type::insert) { }
-      };
-
-    template<typename _Tp1, typename _Tp2, typename _Tp3,
-	     typename _Tp4, typename _Tp5>
-      struct insert_base<std::unordered_multimap<_Tp1, _Tp2, _Tp3,
-						 _Tp4, _Tp5>>
-      {
-	typedef std::unordered_multimap<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-	typedef typename container_type::value_type 	value_type;
-
-	iterator (container_type::* _F_insert_point)(const_iterator,
-						     const value_type&);
-
-	insert_base() : _F_insert_point(&container_type::insert) { }
-      };
-
-    template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
-      struct insert_base<std::unordered_set<_Tp1, _Tp2, _Tp3, _Tp4>>
-      {
-	typedef std::unordered_set<_Tp1, _Tp2, _Tp3, _Tp4>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-	typedef typename container_type::value_type 	value_type;
-
-	iterator (container_type::* _F_insert_point)(const_iterator,
-						     const value_type&);
-
-	insert_base() : _F_insert_point(&container_type::insert) { }
-      };
-
-    template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
-      struct insert_base<std::unordered_multiset<_Tp1, _Tp2, _Tp3, _Tp4>>
-      {
-	typedef std::unordered_multiset<_Tp1, _Tp2, _Tp3, _Tp4>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-	typedef typename container_type::value_type 	value_type;
-
-	iterator (container_type::* _F_insert_point)(const_iterator,
-						     const value_type&);
-
-	insert_base() : _F_insert_point(&container_type::insert) { }
       };
 
     template<typename _Tp,

@@ -459,7 +459,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  Insertion requires logarithmic time (if the hint is not taken).
        */
       iterator
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      insert(const_iterator __position, const value_type& __x)
+#else
       insert(iterator __position, const value_type& __x)
+#endif
       { return _M_t._M_insert_equal_(__position, __x); }
 
       /**
@@ -506,7 +510,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  responsibility.
        */
       iterator
-      erase(iterator __position)
+      erase(const_iterator __position)
       { return _M_t.erase(__position); }
 #else
       /**
@@ -552,10 +556,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  This function erases a sequence of elements from a %multimap.
        *  Note that this function only erases the elements, and that if
        *  the elements themselves are pointers, the pointed-to memory is not
-       *  touched in any way.  Managing the pointer is the user's responsibility.
+       *  touched in any way.  Managing the pointer is the user's
+       *  responsibility.
        */
       iterator
-      erase(iterator __first, iterator __last)
+      erase(const_iterator __first, const_iterator __last)
       { return _M_t.erase(__first, __last); }
 #else
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -569,7 +574,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  This function erases a sequence of elements from a %multimap.
        *  Note that this function only erases the elements, and that if
        *  the elements themselves are pointers, the pointed-to memory is not
-       *  touched in any way.  Managing the pointer is the user's responsibility.
+       *  touched in any way.  Managing the pointer is the user's
+       *  responsibility.
        */
       void
       erase(iterator __first, iterator __last)
