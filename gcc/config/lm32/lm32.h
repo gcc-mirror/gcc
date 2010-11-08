@@ -350,7 +350,7 @@ enum reg_class
 #define REG_OK_FOR_BASE_P(X) NONSTRICT_REG_OK_FOR_BASE_P(X)
 #endif
 
-#define LEGITIMATE_CONSTANT_P(X) lm32_legitimate_constant_p
+#define LEGITIMATE_CONSTANT_P(X) lm32_legitimate_constant_p (X)
 
 /*-------------------------*/
 /* Condition Code Status.  */

@@ -191,18 +191,22 @@ gen_int_relational (enum rtx_code code,
     case LT:
     case LEU:
     case LTU:
-      code = swap_condition (code);
-      rtx temp = cmp0;
-      cmp0 = cmp1;
-      cmp1 = temp;
-      break;
+      {
+	rtx temp;
+
+	code = swap_condition (code);
+	temp = cmp0;
+	cmp0 = cmp1;
+	cmp1 = temp;
+	break;
+      }
     default:
       break;
     }
 
   if (branch_p)
     {
-      rtx insn;
+      rtx insn, cond, label;
 
       /* Operands must be in registers.  */
       if (!register_operand (cmp0, mode))
@@ -211,8 +215,8 @@ gen_int_relational (enum rtx_code code,
 	cmp1 = force_reg (mode, cmp1);
 
       /* Generate conditional branch instruction.  */
-      rtx cond = gen_rtx_fmt_ee (code, mode, cmp0, cmp1);
-      rtx label = gen_rtx_LABEL_REF (VOIDmode, destination);
+      cond = gen_rtx_fmt_ee (code, mode, cmp0, cmp1);
+      label = gen_rtx_LABEL_REF (VOIDmode, destination);
       insn = gen_rtx_SET (VOIDmode, pc_rtx,
 			  gen_rtx_IF_THEN_ELSE (VOIDmode,
 						cond, label, pc_rtx));
@@ -841,7 +845,7 @@ lm32_block_move_inline (rtx dest, rtx src, HOST_WIDE_INT length,
   delta = bits / BITS_PER_UNIT;
 
   /* Allocate a buffer for the temporary registers.  */
-  regs = alloca (sizeof (rtx) * length / delta);
+  regs = XALLOCAVEC (rtx, length / delta);
 
   /* Load as many BITS-sized chunks as possible.  */
   for (offset = 0, i = 0; offset + delta <= length; offset += delta, i++)
