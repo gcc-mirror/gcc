@@ -1,5 +1,10 @@
 2010-11-09  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/46355
+	* gcc.dg/pr46355.c: New testcase.
+
+2010-11-09  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/46177
 	* gcc.dg/pr46177-2.c: New testcase.
 

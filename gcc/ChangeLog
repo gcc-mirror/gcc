@@ -1,3 +1,9 @@
+2010-11-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46355
+	* tree-loop-distribution.c (tree_loop_distribution): Do not
+	distribute loops without a single exit.
+
 2010-11-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR rtl-optimization/46237
