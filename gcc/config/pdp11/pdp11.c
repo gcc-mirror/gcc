@@ -1002,9 +1002,7 @@ pdp11_assemble_integer (rtx x, unsigned int size, int aligned_p)
       {
       case 1:
 	fprintf (asm_out_file, "\t.byte\t");
-	output_addr_const_pdp11 (asm_out_file, 
-				 GEN_INT (trunc_int_for_mode (INTVAL (x),
-							      QImode) & 0xff));
+	output_addr_const_pdp11 (asm_out_file, GEN_INT (INTVAL (x) & 0xff));
 ;
 	fprintf (asm_out_file, " /* char */\n");
 	return true;
@@ -1742,7 +1740,7 @@ output_addr_const_pdp11 (FILE *file, rtx x)
       break;
 
     case CONST_INT:
-      fprintf (file, "%#o", (int) trunc_int_for_mode (INTVAL (x), HImode) & 0xffff);
+      fprintf (file, "%#o", (int) INTVAL (x) & 0xffff);
       break;
 
     case CONST:

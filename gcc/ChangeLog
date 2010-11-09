@@ -1,3 +1,8 @@
+2010-11-09  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.c (pdp11_assemble_integer): Clean up fix for
+	output of byte values.
+
 2010-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46360
