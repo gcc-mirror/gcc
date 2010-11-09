@@ -1,3 +1,38 @@
+
+2010-11-09  Basile Starynkevitch  <basile@starynkevitch.net>
+	    Jeremie Salvucci  <jeremie.salvucci@free.fr>
+
+	* gengtype.c (get_output_file_name): Declaration moved to
+	gengtype.h.
+	(plugin_files, get_file_basename, get_file_realbasename)
+	(get_file_langdir, error_at_line, gt_files, this_file)
+	(system_h_file, read_input_list, create_field_all)
+	(get_file_srcdir_relative_path, get_file_basename)
+	(get_file_langdir, get_file_gtfilename)
+	(get_output_file_with_visibility, get_output_file_name)
+	(struct flist, put_mangled_filename, walk_type)
+	(put_mangled_filename, finish_root_table, write_roots): Use
+	input_file-s.
+	(lang_dir_names, num_lang_dirs): Remove static.
+	(get_lang_bitmap, set_lang_bitmap): Moved to gengtype.h.
+	(main): Use input_file-s.
+
+	* gengtype.h:
+	(struct input_file_st, input_file): New type.
+	(struct fileloc): Use it.
+	(gt_files, num_gt_files, this_file, system_h_file)
+	(input_file_by_name, get_file_srcdir_relative_path): Use
+	input_file.
+	(get_input_file_name): New function.
+	(get_lang_bitmap, set_lang_bitmap): Moved from gengtype.c and
+        use input_file.
+	(lang_dir_names, num_lang_dirs, get_output_file_with_visibility)
+	(get_output_file_name): Ditto.
+
+	* gengtype-lex.l (yybegin): Use input_file.
+
+	* gengtype-parse.c (parse_error): Use input_file.
+
 2010-11-08  Xinliang David Li  <davidxl@google.com>
 
 	PR tree-optimization/46316
