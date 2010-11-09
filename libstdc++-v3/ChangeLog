@@ -1,5 +1,10 @@
 2010-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/stl_tree.h (_Rb_tree<>::_M_const_cast_iter): Add
+	and use it throughout.
+
+2010-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/46385
 	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-error
 	line number.
