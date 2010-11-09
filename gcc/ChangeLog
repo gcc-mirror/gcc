@@ -1,3 +1,11 @@
+2010-11-08  Xinliang David Li  <davidxl@google.com>
+
+	PR/46316
+	* tree-vrp.c (adjust_range_with_scev): Check double_int
+	overflow.
+	* double-int.h (double_int_mul_with_sign): New function.
+	* double-int.c (double_int_mul_with_sign): New function.
+
 2010-11-08  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.md (lshrsi3, lshrhi3): Fix wrong code.
