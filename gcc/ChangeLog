@@ -1,3 +1,43 @@
+2010-11-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.md (floatsi<mode>2_lfiwax): Rewrite so
+	split occurs before reload, and we allocate memory at the time of
+	the split, not during expansion.  Add attributes.
+	(floatsi<mode>2_lfiwax_mem): Ditto.
+	(floatunssi<mode>2_lfiwzx): Ditto.
+	(floatunssi<mode>2_lfiwzx_mem): Ditto.
+	(floatsidf2): Ditto.
+	(floatunssisf2): Ditto.
+	(floatunssidf2): Ditto.
+	(fix_trunc<mode>si2): Ditto.
+	(fix_trunc<mode>si2_stfiwx): Ditto.
+	(fix_trunc<mode>si2_internal): Ditto.
+	(fix_trunc<mode>si2): Ditto.
+	(fix_trunc<mode>di2): Ditto.
+	(fixuns_trunc<mode>si2_stfiwx): Ditto.
+	(floatsisf2): Ditto.
+	(floatdidf2_mem): Ditto.
+	(floatunsdidf2_mem): Ditto.
+	(floatunsdidf2): Ditto.
+	(floatdisf2_internal1): Ditto.
+	(floatdisf2_mem): Ditto.
+	(floatunsdisf2_mem): Ditto.
+	(floatsi<mode>2_lfiwax_mem2): Delete.
+	(floatunssi<mode>2_lfiwzx_mem2): Ditto.
+	(fix_trunc<mode>si2_mem): Ditto.
+	(fixuns_trunc<mode>si2_mem): Ditto.
+	(round32<mode>2_fprs): New combiner insn to combine (double)(int)
+	type operations to reduce copying the values to multiple memory
+	slots.
+	(roundu32<mode>2_fprs): Ditto.
+
+	* config/rs6000/rs6000.c (rs6000_address_for_fpconvert): Handle
+	PRE_INC, PRE_DEC, PRE_MODIFY.
+	(rs6000_expand_convert_si_to_sfdf): Delete, no longer used.
+
+	* config/rs6000/rs6000-protos.h (rs6000_expand_convert_si_to_sfdf):
+	Delete prototype.
+
 2010-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/43808

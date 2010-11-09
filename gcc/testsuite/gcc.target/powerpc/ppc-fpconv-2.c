@@ -2,7 +2,7 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mcpu=power6 -ffast-math" } */
-/* { dg-final { scan-assembler-times "lfiwax" 1 } } */
+/* { dg-final { scan-assembler-times "lfiwax" 2 } } */
 /* { dg-final { scan-assembler-not "lfiwzx" } } */
 /* { dg-final { scan-assembler-times "fcfid " 10 } } */
 /* { dg-final { scan-assembler-not "fcfids" } } */
