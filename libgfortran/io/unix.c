@@ -183,7 +183,11 @@ typedef struct
 
   int ndirty;			/* Dirty bytes starting at buffer_offset */
 
-  int special_file;		/* =1 if the fd refers to a special file */
+  int special_file;             /* =1 if the fd refers to a special file */
+
+  /* Cached stat(2) values.  */
+  dev_t st_dev;
+  ino_t st_ino;
 }
 unix_stream;
 
@@ -940,18 +944,29 @@ fd_to_stream (int fd)
 
   fstat (fd, &statbuf);
 
-  if (lseek (fd, 0, SEEK_CUR) == (gfc_offset) -1)
-    s->file_length = -1;
-  else
-    s->file_length = S_ISREG (statbuf.st_mode) ? statbuf.st_size : -1;
-
+  s->st_dev = statbuf.st_dev;
+  s->st_ino = statbuf.st_ino;
   s->special_file = !S_ISREG (statbuf.st_mode);
 
-  if (isatty (s->fd) || options.all_unbuffered
+  if (S_ISREG (statbuf.st_mode))
+    s->file_length = statbuf.st_size;
+  else if (S_ISBLK (statbuf.st_mode))
+    {
+      /* Hopefully more portable than ioctl(fd, BLKGETSIZE64, &size)?  */
+      gfc_offset cur = lseek (fd, 0, SEEK_CUR);
+      s->file_length = lseek (fd, 0, SEEK_END);
+      lseek (fd, cur, SEEK_SET);
+    }
+  else
+    s->file_length = -1;
+
+  if (!(S_ISREG (statbuf.st_mode) || S_ISBLK (statbuf.st_mode))
+      || options.all_unbuffered
       ||(options.unbuffered_preconnected && 
          (s->fd == STDIN_FILENO 
           || s->fd == STDOUT_FILENO 
-          || s->fd == STDERR_FILENO)))
+          || s->fd == STDERR_FILENO))
+      || isatty (s->fd))
     raw_init (s);
   else
     buf_init (s);
@@ -1370,9 +1385,9 @@ int
 compare_file_filename (gfc_unit *u, const char *name, int len)
 {
   char path[PATH_MAX + 1];
-  gfstat_t st1;
+  gfstat_t st;
 #ifdef HAVE_WORKING_STAT
-  gfstat_t st2;
+  unix_stream *s;
 #else
 # ifdef __MINGW32__
   uint64_t id1, id2;
@@ -1385,12 +1400,12 @@ compare_file_filename (gfc_unit *u, const char *name, int len)
   /* If the filename doesn't exist, then there is no match with the
    * existing file. */
 
-  if (stat (path, &st1) < 0)
+  if (stat (path, &st) < 0)
     return 0;
 
 #ifdef HAVE_WORKING_STAT
-  fstat (((unix_stream *) (u->s))->fd, &st2);
-  return (st1.st_dev == st2.st_dev) && (st1.st_ino == st2.st_ino);
+  s = (unix_stream *) (u->s);
+  return (st.st_dev == s->st_dev) && (st.st_ino == s->st_ino);
 #else
 
 # ifdef __MINGW32__
@@ -1432,10 +1447,12 @@ find_file0 (gfc_unit *u, FIND_FILE0_DECL)
     return NULL;
 
 #ifdef HAVE_WORKING_STAT
-  if (u->s != NULL
-      && fstat (((unix_stream *) u->s)->fd, &st[1]) >= 0 &&
-      st[0].st_dev == st[1].st_dev && st[0].st_ino == st[1].st_ino)
-    return u;
+  if (u->s != NULL)
+    {
+      unix_stream *s = (unix_stream *) (u->s);
+      if (st[0].st_dev == s->st_dev && st[0].st_ino == s->st_ino)
+	return u;
+    }
 #else
 # ifdef __MINGW32__ 
   if (u->s && ((id1 = id_from_fd (((unix_stream *) u->s)->fd)) || id1))
@@ -1468,7 +1485,7 @@ gfc_unit *
 find_file (const char *file, gfc_charlen_type file_len)
 {
   char path[PATH_MAX + 1];
-  gfstat_t st[2];
+  gfstat_t st[1];
   gfc_unit *u;
 #if defined(__MINGW32__) && !HAVE_WORKING_STAT
   uint64_t id = 0ULL;
