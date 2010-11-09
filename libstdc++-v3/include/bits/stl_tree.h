@@ -557,6 +557,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
     private:
       iterator
+      _M_const_cast_iter(const_iterator __cit)
+      { return iterator(static_cast<_Link_type>
+			(const_cast<_Base_ptr>(__cit._M_node))); }
+
+      iterator
       _M_insert_(_Const_Base_ptr __x, _Const_Base_ptr __y,
 		 const value_type& __v);
 
@@ -719,8 +724,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	const_iterator __result = __position;
 	++__result;
 	_M_erase_aux(__position);
-	return iterator(static_cast<_Link_type>
-			(const_cast<_Base_ptr>(__result._M_node)));
+	return _M_const_cast_iter(__result);
       }
 #else
       void
@@ -737,8 +741,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       erase(const_iterator __first, const_iterator __last)
       {
 	_M_erase_aux(__first, __last);
-	return iterator(static_cast<_Link_type>
-			(const_cast<_Base_ptr>(__last._M_node)));
+	return _M_const_cast_iter(__last);
       }
 #else
       void
@@ -1279,8 +1282,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
       else
 	// Equivalent keys.
-	return iterator(static_cast<_Link_type>
-			(const_cast<_Base_ptr>(__position._M_node)));
+	return _M_const_cast_iter(__position);
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
