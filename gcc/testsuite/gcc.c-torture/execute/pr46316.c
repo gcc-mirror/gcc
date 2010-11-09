@@ -1,6 +1,3 @@
-/* { dg-do run } */
-/* { dg-options "-O2" } */
-
 extern void abort (void);
 
 long long __attribute__((noinline,noclone))
