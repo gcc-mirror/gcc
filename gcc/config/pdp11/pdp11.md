@@ -1091,9 +1091,8 @@
   lateoperands[1] = operands[1];
   operands[1] = gen_rtx_REG (HImode, REGNO (operands[1]) + 1);
 
-  output_asm_insn (\"com %0\", operands);
   output_asm_insn (\"com %0\", lateoperands);
-  output_asm_insn (\"inc %0\", operands);
+  output_asm_insn (\"neg %0\", operands);
   output_asm_insn (\"adc %0\", lateoperands);
 
   return \"\";
