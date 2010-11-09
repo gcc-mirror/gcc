@@ -1,3 +1,8 @@
+2010-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/static_initializer5.ads: New test.
+	* gnat.dg/specs/static_initializer5_pkg.ads: New helper.
+
 2010-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46360

@@ -2795,8 +2795,8 @@ process_call_operands (tree t)
   TREE_READONLY (t) = read_only;
 }
 
-/* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
-   or offset that depends on a field within a record.  */
+/* Return true if EXP contains a PLACEHOLDER_EXPR, i.e. if it represents a
+   size or offset that depends on a field within a record.  */
 
 bool
 contains_placeholder_p (const_tree exp)
@@ -2882,9 +2882,9 @@ contains_placeholder_p (const_tree exp)
   return 0;
 }
 
-/* Return true if any part of the computation of TYPE involves a
-   PLACEHOLDER_EXPR.  This includes size, bounds, qualifiers
-   (for QUAL_UNION_TYPE) and field positions.  */
+/* Return true if any part of the structure of TYPE involves a PLACEHOLDER_EXPR
+   directly.  This includes size, bounds, qualifiers (for QUAL_UNION_TYPE) and
+   field positions.  */
 
 static bool
 type_contains_placeholder_1 (const_tree type)
@@ -2893,7 +2893,8 @@ type_contains_placeholder_1 (const_tree type)
      the case of arrays) type involves a placeholder, this type does.  */
   if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (type))
       || CONTAINS_PLACEHOLDER_P (TYPE_SIZE_UNIT (type))
-      || (TREE_TYPE (type) != 0
+      || (!POINTER_TYPE_P (type)
+	  && TREE_TYPE (type)
 	  && type_contains_placeholder_p (TREE_TYPE (type))))
     return true;
 
@@ -2921,8 +2922,8 @@ type_contains_placeholder_1 (const_tree type)
 	      || CONTAINS_PLACEHOLDER_P (TYPE_MAX_VALUE (type)));
 
     case ARRAY_TYPE:
-      /* We're already checked the component type (TREE_TYPE), so just check
-	 the index type.  */
+      /* We have already checked the component type above, so just check the
+	 domain type.  */
       return type_contains_placeholder_p (TYPE_DOMAIN (type));
 
     case RECORD_TYPE:
@@ -2946,6 +2947,8 @@ type_contains_placeholder_1 (const_tree type)
       gcc_unreachable ();
     }
 }
+
+/* Wrapper around above function used to cache its result.  */
 
 bool
 type_contains_placeholder_p (tree type)
