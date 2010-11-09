@@ -1,3 +1,9 @@
+2010-11-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43899
+	* trans-decl.c (generate_local_decl): Do not generate unused warning
+	for variables in namelists.
+
 2010-11-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46344

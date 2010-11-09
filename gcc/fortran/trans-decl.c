@@ -4017,9 +4017,10 @@ generate_local_decl (gfc_symbol * sym)
 	}
 
       /* Warn for unused variables, but not if they're inside a common
-	 block or are use-associated.  */
+	 block, a namelist, or are use-associated.  */
       else if (warn_unused_variable
-	       && !(sym->attr.in_common || sym->attr.use_assoc || sym->mark))
+	       && !(sym->attr.in_common || sym->attr.use_assoc || sym->mark
+		    || sym->attr.in_namelist))
 	gfc_warning ("Unused variable '%s' declared at %L", sym->name,
 		     &sym->declared_at);
 
