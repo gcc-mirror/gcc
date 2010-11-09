@@ -685,12 +685,10 @@ picochip_emit_stack_allocate (int adjustment)
      so that the correct Dwarf information is generated (see documention
      for RTX_FRAME_RELATED_P for more details). */
   RTX_FRAME_RELATED_P (insn) = 1;
-  REG_NOTES (insn) =
-    gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-		       gen_rtx_SET (VOIDmode, stack_pointer_reg,
-				    gen_rtx_PLUS (Pmode, stack_pointer_reg,
-						  GEN_INT (-adjustment))),
-		       REG_NOTES (insn));
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+		gen_rtx_SET (VOIDmode, stack_pointer_reg,
+			     gen_rtx_PLUS (Pmode, stack_pointer_reg,
+					   GEN_INT (-adjustment))));
 
 }
 
@@ -743,10 +741,8 @@ picochip_emit_save_register (rtx reg, int offset)
 		       gen_rtx_REG (HImode, REGNO (reg) + 1));
 	RTX_FRAME_RELATED_P (RTVEC_ELT (p, 1)) = 1;
 
-	REG_NOTES (insn) =
-	  gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-			     gen_rtx_PARALLEL (VOIDmode, p),
-			     REG_NOTES (insn));
+	add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+		      gen_rtx_PARALLEL (VOIDmode, p));
 
       }
       break;
@@ -765,7 +761,7 @@ picochip_emit_save_register (rtx reg, int offset)
 static void
 picochip_emit_restore_register (rtx reg, int offset)
 {
-  rtx stack_pointer, address, mem, insn;
+  rtx stack_pointer, address, mem;
 
   stack_pointer = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
 
@@ -773,7 +769,7 @@ picochip_emit_restore_register (rtx reg, int offset)
 
   mem = gen_rtx_MEM (GET_MODE (reg), address);
 
-  insn = emit_move_insn (reg, mem);
+  emit_move_insn (reg, mem);
 
 }
 
@@ -1477,7 +1473,7 @@ picochip_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
     {
       int high_val, low_val, offset;
       offset = INTVAL (XEXP (x, 1));
-      // Ignore cases with negative offsets.
+      /* Ignore cases with negative offsets.  */
       if (offset < 0)
         return x;
       high_val = offset & mask_val;
@@ -1534,7 +1530,7 @@ picochip_legitimize_reload_address (rtx *x,
       return 1;
     }
 
-  // Depending on mode, the offsets allowed are either 16/32/64.
+  /* Depending on mode, the offsets allowed are either 16/32/64.  */
   switch (mode)
     {
       case QImode:
@@ -1556,7 +1552,7 @@ picochip_legitimize_reload_address (rtx *x,
     {
       int high_val, low_val, offset;
       offset = INTVAL (XEXP (*x, 1));
-      // Ignore cases with negative offsets.
+      /* Ignore cases with negative offsets.  */
       if (offset < 0)
         return 0;
       high_val = offset & mask_val;
@@ -3196,7 +3192,6 @@ reorder_var_tracking_notes (void)
   FOR_EACH_BB (bb)
     {
       rtx insn, next, last_insn = NULL_RTX;
-      rtx vliw_start = NULL_RTX;
       rtx queue = NULL_RTX;
 
       /* Iterate through the bb and find the last non-debug insn */
@@ -3362,7 +3357,9 @@ picochip_reorg (void)
 
       if (last_insn_in_packet != NULL)
 	{
-          rtx tmp_note = emit_note_after (NOTE_KIND(prologue_end_note), last_insn_in_packet);
+          rtx tmp_note
+	    = emit_note_after ((enum insn_note) NOTE_KIND (prologue_end_note),
+			       last_insn_in_packet);
           memcpy(&NOTE_DATA (tmp_note), &NOTE_DATA(prologue_end_note), sizeof(NOTE_DATA(prologue_end_note)));
 	  delete_insn (prologue_end_note);
 	}
@@ -3937,7 +3934,7 @@ picochip_expand_builtin_2op (enum insn_code icode, tree call, rtx target)
 
   /* Grab the incoming argument and emit its RTL. */
   arg0 = CALL_EXPR_ARG (call, 0);
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
   /* Determine the modes of the instruction operands. */
   tmode = insn_data[icode].operand[0].mode;
@@ -3978,8 +3975,8 @@ picochip_expand_builtin_3op (enum insn_code icode, tree call, rtx target)
   arg1 = CALL_EXPR_ARG (call, 1);
 
   /* Emit rtl sequences for the function arguments. */
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
   /* Get the mode's of each of the instruction operands. */
   tmode = insn_data[icode].operand[0].mode;
@@ -4022,8 +4019,8 @@ picochip_expand_builtin_2opvoid (enum insn_code icode, tree call)
   arg1 = CALL_EXPR_ARG (call, 1);
 
   /* Emit rtl sequences for the function arguments. */
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
   /* Get the mode's of each of the instruction operands. */
   mode0 = insn_data[icode].operand[0].mode;
@@ -4059,9 +4056,9 @@ picochip_expand_array_get (tree call, rtx target)
   arg2 = CALL_EXPR_ARG (call, 2) ;
 
   /* Emit rtl sequences for the function arguments. */
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
   /* The second and third operands must be constant.  Nothing else will
      do. */
@@ -4104,10 +4101,10 @@ picochip_expand_array_put (tree call, rtx target)
   arg3 = CALL_EXPR_ARG (call, 3);
 
   /* Emit rtl sequences for the function arguments. */
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
-  op3 = expand_expr (arg3, NULL_RTX, VOIDmode, 0);
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op3 = expand_expr (arg3, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
   /* The first operand must be an SImode register. */
   if (GET_MODE (op0) != SImode || REG != GET_CODE (op0))
@@ -4147,9 +4144,9 @@ picochip_expand_array_testport (tree call, rtx target)
   arg2 = CALL_EXPR_ARG (call, 2);
 
   /* Emit rtl sequences for the function arguments. */
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
   /* The first operand must be a HImode register, or a constant.  If it
      isn't, force it into a HImode register. */
@@ -4224,29 +4221,17 @@ picochip_init_builtins (void)
     tree_cons (NULL_TREE, integer_type_node, int_int_endlink);
   tree int_long_endlink =
     tree_cons (NULL_TREE, integer_type_node, long_endlink);
-  tree pchar_type_node = build_pointer_type (char_type_node);
   tree long_int_int_int_endlink =
     tree_cons (NULL_TREE, long_integer_type_node, int_int_int_endlink);
 
-  tree int_ftype_void, int_ftype_int, int_ftype_int_int, void_ftype_pchar;
-  tree long_ftype_int, long_ftype_int_int, long_ftype_int_int_int;
+  tree int_ftype_int, int_ftype_int_int;
+  tree long_ftype_int, long_ftype_int_int_int;
   tree void_ftype_int_long, int_ftype_int_int_int,
     void_ftype_long_int_int_int;
-  tree void_ftype_void, void_ftype_int, unsigned_ftype_unsigned;
+  tree void_ftype_void, unsigned_ftype_unsigned;
 
   /* void func (void) */
   void_ftype_void = build_function_type (void_type_node, endlink);
-
-  /* void func (void *) */
-  void_ftype_pchar
-    = build_function_type (void_type_node,
-			   tree_cons (NULL_TREE, pchar_type_node, endlink));
-
-  /* int func (void) */
-  int_ftype_void = build_function_type (integer_type_node, endlink);
-
-  /* void func (int) */
-  void_ftype_int = build_function_type (void_type_node, int_endlink);
 
   /* int func (int) */
   int_ftype_int = build_function_type (integer_type_node, int_endlink);
@@ -4260,10 +4245,6 @@ picochip_init_builtins (void)
 
   /* long func(int) */
   long_ftype_int = build_function_type (long_integer_type_node, int_endlink);
-
-  /* long func(int, int) */
-  long_ftype_int_int
-    = build_function_type (long_integer_type_node, int_int_endlink);
 
   /* long func(int, int, int) */
   long_ftype_int_int_int

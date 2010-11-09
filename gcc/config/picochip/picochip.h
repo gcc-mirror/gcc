@@ -550,7 +550,7 @@ do {                                                                         \
 
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)  \
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 15),    \
-  sprintf ((OUTPUT), "%s___%d", (NAME), (LABELNO)))
+  sprintf ((OUTPUT), "%s___%lu", (NAME), (unsigned long)(LABELNO)))
 
 /* Macros Controlling Initialization Routines  */
 
@@ -622,7 +622,7 @@ do {                                                                         \
 /* Assembler Commands for Alignment  */
 
 #define ASM_OUTPUT_SKIP(STREAM,BYTES) \
-  fprintf(STREAM, ".skip %u\n", BYTES);
+  fprintf(STREAM, ".skip "HOST_WIDE_INT_PRINT_UNSIGNED"\n", BYTES);
 #define ASM_OUTPUT_ALIGN(STREAM,POWER) \
   fprintf(STREAM, ".align %u\n", 1 << POWER);
 
