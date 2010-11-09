@@ -1,6 +1,6 @@
 2010-11-09  Sebastian Pop  <sebastian.pop@amd.com>
 
-	PR tree-optimization/45902
+	PR tree-optimization/45314
 	Backport of revision 163132.
 	* graphite-sese-to-poly.c (rewrite_phi_out_of_ssa): Always insert out
 	of SSA copies on edges except for loop->latch.
