@@ -1,3 +1,32 @@
+2010-11-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46313
+	* gfortran.h (gfc_add_data_component,gfc_add_vptr_component,
+	gfc_add_hash_component,gfc_add_size_component,
+	gfc_add_def_init_component): New macros.
+	* class.c (gfc_add_component_ref): Renamed data component.
+	(get_unique_type_string): New function.
+	(gfc_build_class_symbol): Use 'get_unique_type_string' to construct
+	uniques names for the class containers. Rename components.
+	(gfc_find_derived_vtab): Use 'get_unique_type_string' to construct
+	uniques names for the vtab symbols. Rename components.
+	* decl.c (attr_decl1): Renamed class container components.
+	* iresolve.c (gfc_resolve_extends_type_of): Ditto.
+	* match.c (select_type_set_tmp): Renamed temporaries.
+	* module.c (read_module): Renamed vtab and vtype symbols.
+	* resolve.c (resolve_structure_cons,resolve_typebound_function,
+	resolve_typebound_subroutine,resolve_deallocate_expr,
+	resolve_select_type,resolve_fl_derived): Renamed class container and
+	vtab components.
+	* trans-array.c (structure_alloc_comps): Ditto.
+	* trans-decl.c (gfc_trans_deferred_vars): Ditto.
+	* trans-expr.c (gfc_conv_derived_to_class,gfc_conv_structure,
+	gfc_trans_class_init_assign,gfc_trans_class_assign): Ditto.
+	* trans-intrinsic.c (gfc_conv_intrinsic_sizeof,
+	gfc_conv_intrinsic_storage_size,gfc_conv_allocated,gfc_conv_associated,
+	gfc_conv_same_type_as): Ditto.
+	* trans-stmt.c (gfc_trans_allocate): Ditto.
+
 2010-11-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/43899

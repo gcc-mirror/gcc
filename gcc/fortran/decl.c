@@ -6020,10 +6020,10 @@ attr_decl1 (void)
 
   /* Update symbol table.  DIMENSION attribute is set in
      gfc_set_array_spec().  For CLASS variables, this must be applied
-     to the first component, or '$data' field.  */
+     to the first component, or '_data' field.  */
   if (sym->ts.type == BT_CLASS && sym->ts.u.derived->attr.is_class)
     {
-      if (gfc_copy_attr (&CLASS_DATA (sym)->attr, &current_attr,&var_locus)
+      if (gfc_copy_attr (&CLASS_DATA (sym)->attr, &current_attr, &var_locus)
 	  == FAILURE)
 	{
 	  m = MATCH_ERROR;

@@ -4516,9 +4516,9 @@ select_type_set_tmp (gfc_typespec *ts)
     return;
 
   if (ts->type == BT_CLASS)
-    sprintf (name, "tmp$class$%s", ts->u.derived->name);
+    sprintf (name, "__tmp_class_%s", ts->u.derived->name);
   else
-    sprintf (name, "tmp$type$%s", ts->u.derived->name);
+    sprintf (name, "__tmp_type_%s", ts->u.derived->name);
   gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
   gfc_add_type (tmp->n.sym, ts, NULL);
   gfc_set_sym_referenced (tmp->n.sym);

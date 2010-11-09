@@ -3393,7 +3393,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 
 	      e = gfc_lval_expr_from_sym (sym);
 	      if (sym->ts.type == BT_CLASS)
-		gfc_add_component_ref (e, "$data");
+		gfc_add_data_component (e);
 
 	      gfc_init_se (&se, NULL);
 	      se.want_pointer = 1;
