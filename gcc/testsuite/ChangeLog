@@ -1,3 +1,13 @@
+2010-11-09  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/46312
+	* gcc.dg/vec-scal-opt.c: Move ...
+	* gcc.dg/vect/vect-scal-opt.c: ... here.
+	* gcc.dg/vec-scal-opt1.c: Move ...
+	* gcc.dg/vect/vect-scal-opt1.c: ... here.
+	* gcc.dg/vec-scal-opt2.c: Move ...
+	* gcc.dg/vect/vect-scal-opt2.c: ... here.
+
 2010-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/static_initializer5.ads: New test.
