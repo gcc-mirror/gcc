@@ -1,3 +1,9 @@
+2010-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/46360
+	* tree-ssa-propagate.c (update_call_from_tree): Fix for use
+	not in SSA mode.
+
 2010-11-09  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/46221
