@@ -311,31 +311,6 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
   return res;
 }
 
-/* Propagate phis in BB b to their uses and remove them.  */
-
-static void
-prop_phis (basic_block b)
-{
-  gimple_stmt_iterator psi;
-
-  for (psi = gsi_start_phis (b); !gsi_end_p (psi); )
-    {
-      gimple phi = gsi_stmt (psi);
-      tree def = gimple_phi_result (phi);
-
-      if (!is_gimple_reg (def))
-	mark_virtual_phi_result_for_renaming (phi);
-      else
-	{
-	  tree use = gimple_phi_arg_def (phi, 0);
-	  gcc_assert (gimple_phi_num_args (phi) == 1);
-	  replace_uses_by (def, use);
-	}
-
-      remove_phi_node (&psi, true);
-    }
-}
-
 /* Tries to generate a builtin function for the instructions of LOOP
    pointed to by the bits set in PARTITION.  Returns true when the
    operation succeeded.  */
@@ -405,11 +380,13 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
   if (res && !copy_p)
     {
       unsigned nbbs = loop->num_nodes;
-      basic_block src = loop_preheader_edge (loop)->src;
-      basic_block dest = single_exit (loop)->dest;
-      prop_phis (dest);
-      make_edge (src, dest, EDGE_FALLTHRU);
+      edge exit = single_exit (loop);
+      basic_block src = loop_preheader_edge (loop)->src, dest = exit->dest;
+      redirect_edge_pred (exit, src);
+      exit->flags &= ~(EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
+      exit->flags |= EDGE_FALLTHRU;
       cancel_loop_tree (loop);
+      rescan_loop_exit (exit, false, true);
 
       for (i = 0; i < nbbs; i++)
 	delete_basic_block (bbs[i]);
