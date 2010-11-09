@@ -1,3 +1,8 @@
+2010-11-09  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.md (lshrsi3, lshrhi3): Use add for
+	decrement. 
+
 2010-11-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46177
