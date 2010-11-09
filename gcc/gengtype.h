@@ -25,13 +25,86 @@
    represented by a bitmap.  */
 typedef unsigned lang_bitmap;
 
+/* Variable length structure representing an input file.  A hash table
+   ensure uniqueness for a given input file name.  The only function
+   allocating input_file-s is input_file_by_name.  */
+struct input_file_st 
+{
+  struct outf* inpoutf;  /* Cached corresponding output file, computed
+                            in get_output_file_with_visibility.  */
+  lang_bitmap inpbitmap; /* The set of languages using this file.  */
+  char inpname[1];       /* A variable-length array, ended by a null
+                            char.  */
+};
+typedef struct input_file_st input_file;
+
 /* A file position, mostly for error messages.
    The FILE element may be compared using pointer equality.  */
 struct fileloc
 {
-  const char *file;
+  const input_file *file;
   int line;
 };
+
+
+/* Table of all input files and its size.  */
+extern const input_file** gt_files;
+extern size_t num_gt_files;
+
+/* A number of places use the name of this "gengtype.c" file for a
+   location for things that we can't rely on the source to define.  We
+   also need to refer to the "system.h" file specifically.  These two
+   pointers are initialized early in main.  */
+extern input_file* this_file;
+extern input_file* system_h_file;
+
+/* Retrieve or create the input_file for a given name, which is a file
+   path.  This is the only function allocating input_file-s and it is
+   hash-consing them.  */
+input_file* input_file_by_name (const char* name);
+
+/* For F an input_file, return the relative path to F from $(srcdir)
+   if the latter is a prefix in F, NULL otherwise.  */
+const char *get_file_srcdir_relative_path (const input_file *inpf);
+
+/* Get the name of an input file.  */
+static inline const char*
+get_input_file_name (const input_file *inpf)
+{
+  if (inpf)
+      return inpf->inpname;
+  return NULL;
+}
+
+/* Return a bitmap which has bit `1 << BASE_FILE_<lang>' set iff
+   INPUT_FILE is used by <lang>.
+
+   This function should be written to assume that a file _is_ used
+   if the situation is unclear.  If it wrongly assumes a file _is_ used,
+   a linker error will result.  If it wrongly assumes a file _is not_ used,
+   some GC roots may be missed, which is a much harder-to-debug problem.
+  */
+
+static inline lang_bitmap
+get_lang_bitmap (const input_file* inpf)
+{
+  if (inpf == NULL)
+    return 0;
+  return inpf->inpbitmap;
+}
+
+/* Set the bitmap returned by get_lang_bitmap.  The only legitimate
+   callers of this function are read_input_list & read_state_*.  */
+static inline void
+set_lang_bitmap (input_file* inpf, lang_bitmap n)
+{
+  gcc_assert (inpf);
+  inpf->inpbitmap = n;
+}
+
+/* Vector of per-language directories.  */
+extern const char **lang_dir_names;
+extern size_t num_lang_dirs;
 
 /* Data types handed around within, but opaque to, the lexer and parser.  */
 typedef struct pair *pair_p;
@@ -67,9 +140,17 @@ oprintf (outf_p o, const char *S, ...)
   ATTRIBUTE_PRINTF_2;
 
 /* An output file, suitable for definitions, that can see declarations
-   made in INPUT_FILE and is linked into every language that uses
-   INPUT_FILE.  May return NULL in plugin mode.  */
-extern outf_p get_output_file_with_visibility (const char *input_file);
+   made in INPF and is linked into every language that uses INPF.  May
+   return NULL in plugin mode.  The INPF argument is almost const, but
+   since the result is cached in its inpoutf field it cannot be
+   declared const.  */
+outf_p get_output_file_with_visibility (input_file* inpf);
+
+/* The name of an output file, suitable for definitions, that can see
+   declarations made in INPF and is linked into every language that
+   uses INPF.  May return NULL.  */
+const char *get_output_file_name (input_file *inpf);
+
 
 /* Source directory.  */
 extern const char *srcdir;	/* (-S) program argument. */

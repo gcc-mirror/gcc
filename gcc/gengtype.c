@@ -128,7 +128,6 @@ struct type
 
 
 
-const char *get_output_file_name (const char *);
 
 
 /* The list of output files.  */
@@ -144,7 +143,7 @@ static char *inputlist;
 
 /* The plugin input files and their number; in that case only
    a single file is produced.  */
-static char **plugin_files;
+static input_file **plugin_files;
 static size_t nb_plugin_files;
 
 /* The generated plugin output file and name.  */
@@ -174,12 +173,11 @@ static const char* backup_dir;	/* (-B) program option.  */
 
 static outf_p create_file (const char *, const char *);
 
-static const char *get_file_basename (const char *);
-static const char *get_file_realbasename (const char *);
-static const char *get_file_srcdir_relative_path (const char *);
+static const char *get_file_basename (const input_file *);
+static const char *get_file_realbasename (const input_file *);
 
 static int get_prefix_langdir_index (const char *);
-static const char *get_file_langdir (const char *);
+static const char *get_file_langdir (const input_file *);
 
 
 /* Nonzero iff an error has occurred.  */
@@ -197,9 +195,10 @@ error_at_line (const struct fileloc *pos, const char *msg, ...)
 {
   va_list ap;
 
+  gcc_assert (pos != NULL && pos->file != NULL);
   va_start (ap, msg);
 
-  fprintf (stderr, "%s:%d: ", pos->file, pos->line);
+  fprintf (stderr, "%s:%d: ", get_input_file_name (pos->file), pos->line);
   vfprintf (stderr, msg, ap);
   fputc ('\n', stderr);
   hit_error = true;
@@ -227,69 +226,24 @@ xasprintf (const char *format, ...)
 /* Input file handling. */
 
 /* Table of all input files.  */
-static const char **gt_files;
-static size_t num_gt_files;
+const input_file **gt_files;
+size_t num_gt_files;
 
-/* A number of places use the name of this "gengtype.h" file for a
+/* A number of places use the name of this "gengtype.c" file for a
    location for things that we can't rely on the source to define.
    Make sure we can still use pointer comparison on filenames.  */
-const char this_file[] = __FILE__;
+input_file* this_file;
 /* The "system.h" file is likewise specially useful.  */
-const char system_h_file[] = "system.h";
+input_file* system_h_file;
 
 /* Vector of per-language directories.  */
-static const char **lang_dir_names;
-static size_t num_lang_dirs;
+const char **lang_dir_names;
+size_t num_lang_dirs;
 
 /* An array of output files suitable for definitions.  There is one
    BASE_FILES entry for each language.  */
 static outf_p *base_files;
 
-/* Return a bitmap which has bit `1 << BASE_FILE_<lang>' set iff
-   INPUT_FILE is used by <lang>.
-
-   This function should be written to assume that a file _is_ used
-   if the situation is unclear.  If it wrongly assumes a file _is_ used,
-   a linker error will result.  If it wrongly assumes a file _is not_ used,
-   some GC roots may be missed, which is a much harder-to-debug problem.
-
-   The relevant bitmap is stored immediately before the file's name in the
-   buffer set up by read_input_list.  It may be unaligned, so we have to
-   read it byte-by-byte.  */
-
-static lang_bitmap
-get_lang_bitmap (const char *gtfile)
-{
-
-  if (gtfile == this_file || gtfile == system_h_file)
-    {
-      /* Things defined in this "gengtype.c" file or in "system.h" are
-	 universal (and there is no space for their lang_bitmap before
-	 their file names).  */
-      return (((lang_bitmap) 1) << num_lang_dirs) - 1;
-    }
-  else
-    {
-      lang_bitmap n = 0;
-      int i;
-      for (i = -(int) sizeof (lang_bitmap); i < 0; i++)
-	n = (n << CHAR_BIT) + (unsigned char) gtfile[i];
-      return n;
-    }
-}
-
-/* Set the bitmap returned by get_lang_bitmap.  The only legitimate
-   caller of this function is read_input_list.  */
-static void
-set_lang_bitmap (char *gtfile, lang_bitmap n)
-{
-  int i;
-  for (i = -1; i >= -(int) sizeof (lang_bitmap); i--)
-    {
-      gtfile[i] = n & ((1U << CHAR_BIT) - 1);
-      n >>= CHAR_BIT;
-    }
-}
 
 
 #if ENABLE_CHECKING
@@ -482,11 +436,11 @@ read_input_list (const char *listname)
       size_t nfiles = 0;
       lang_bitmap curlangs = (1 << num_lang_dirs) - 1;
 
-      epos.file = listname;
+      epos.file = input_file_by_name (listname);
       epos.line = 0;
 
       lang_dir_names = XNEWVEC (const char *, num_lang_dirs);
-      gt_files = XNEWVEC (const char *, num_gt_files);
+      gt_files = XNEWVEC (const input_file *, num_gt_files);
 
       for (;;)
 	{
@@ -517,13 +471,16 @@ read_input_list (const char *listname)
 	  else
 	    {
 	      size_t i;
+	      input_file *inpf = input_file_by_name (line);
 	      gcc_assert (nfiles <= num_gt_files);
 	      for (i = 0; i < nfiles; i++)
-		if (strcmp (gt_files[i], line) == 0)
+		/* Since the input_file-s are uniquely hash-consed, we
+		   can just compare pointers! */
+		if (gt_files[i] == inpf)
 		  {
 		    /* Throw away the string we just read, and add the
 		       current language to the existing string's bitmap.  */
-		    lang_bitmap bmap = get_lang_bitmap (gt_files[i]);
+		    lang_bitmap bmap = get_lang_bitmap (inpf);
 		    if (bmap & curlangs)
 		      error_at_line (&epos,
 				     "file %s specified more than once "
@@ -533,13 +490,13 @@ read_input_list (const char *listname)
 								  1]);
 
 		    bmap |= curlangs;
-		    set_lang_bitmap (CONST_CAST (char *, gt_files[i]), bmap);
+		    set_lang_bitmap (inpf, bmap);
 		    here = committed;
 		    goto next_line;
 		  }
 
-	      set_lang_bitmap (line, curlangs);
-	      gt_files[nfiles++] = line;
+	      set_lang_bitmap (inpf, curlangs);
+	      gt_files[nfiles++] = inpf;
 	    }
 	}
       /* Update the global counts now that we know accurately how many
@@ -886,7 +843,7 @@ note_variable (const char *s, type_p t, options_p o, struct fileloc *pos)
 /* Most-general structure field creator.  */
 static pair_p
 create_field_all (pair_p next, type_p type, const char *name, options_p opt,
-		  const char *file, int line)
+		  const input_file *inpf, int line)
 {
   pair_p field;
 
@@ -895,7 +852,7 @@ create_field_all (pair_p next, type_p type, const char *name, options_p opt,
   field->type = type;
   field->name = name;
   field->opt = opt;
-  field->line.file = file;
+  field->line.file = inpf;
   field->line.line = line;
   return field;
 }
@@ -1649,40 +1606,43 @@ open_base_files (void)
   }
 }
 
-/* For F a filename, return the real basename of F, with all the directory
-   components skipped.  */
+/* For INPF an input file, return the real basename of INPF, with all
+   the directory components skipped.  */
 
 static const char *
-get_file_realbasename (const char *f)
+get_file_realbasename (const input_file *inpf)
 {
+  const char *f = get_input_file_name (inpf);
   const char *lastslash = strrchr (f, '/');
 
   return (lastslash != NULL) ? lastslash + 1 : f;
 }
 
-/* For F a filename, return the relative path to F from $(srcdir) if the
-   latter is a prefix in F, NULL otherwise.  */
+/* For INPF a filename, return the relative path to INPF from
+   $(srcdir) if the latter is a prefix in INPF, NULL otherwise.  */
 
-static const char *
-get_file_srcdir_relative_path (const char *f)
+const char *
+get_file_srcdir_relative_path (const input_file *inpf)
 {
+  const char *f = get_input_file_name (inpf);
   if (strlen (f) > srcdir_len
       && IS_DIR_SEPARATOR (f[srcdir_len])
-      && memcmp (f, srcdir, srcdir_len) == 0)
+      && strncmp (f, srcdir, srcdir_len) == 0)
     return f + srcdir_len + 1;
   else
     return NULL;
 }
 
-/* For F a filename, return the relative path to F from $(srcdir) if the
-   latter is a prefix in F, or the real basename of F otherwise.  */
+/*  For INPF an input_file, return the relative path to INPF from
+    $(srcdir) if the latter is a prefix in INPF, or the real basename
+    of INPF otherwise. */
 
 static const char *
-get_file_basename (const char *f)
+get_file_basename (const input_file *inpf)
 {
-  const char *srcdir_path = get_file_srcdir_relative_path (f);
+  const char *srcdir_path = get_file_srcdir_relative_path (inpf);
 
-  return (srcdir_path != NULL) ? srcdir_path : get_file_realbasename (f);
+  return (srcdir_path != NULL) ? srcdir_path : get_file_realbasename (inpf);
 }
 
 /* For F a filename, return the lang_dir_names relative index of the language
@@ -1708,18 +1668,19 @@ get_prefix_langdir_index (const char *f)
   return -1;
 }
 
-/* For F a filename, return the name of language directory where F is located,
-   if any, NULL otherwise.  */
+/* For INPF an input file, return the name of language directory where
+   F is located, if any, NULL otherwise.  */
 
 static const char *
-get_file_langdir (const char *f)
+get_file_langdir (const input_file *inpf)
 {
-  /* Get the relative path to F from $(srcdir) and find the language by
-     comparing the prefix with language directory names.  If F is not even
-     srcdir relative, no point in looking further.  */
+  /* Get the relative path to INPF from $(srcdir) and find the
+     language by comparing the prefix with language directory names.
+     If INPF is not even srcdir relative, no point in looking
+     further.  */
 
   int lang_index;
-  const char *srcdir_relative_path = get_file_srcdir_relative_path (f);
+  const char *srcdir_relative_path = get_file_srcdir_relative_path (inpf);
   const char *r;
 
   if (!srcdir_relative_path)
@@ -1736,16 +1697,16 @@ get_file_langdir (const char *f)
   return r;
 }
 
-/* The gt- output file name for F.  */
+/* The gt- output file name for INPF.  */
 
 static const char *
-get_file_gtfilename (const char *f)
+get_file_gtfilename (const input_file *inpf)
 {
   /* Cook up an initial version of the gt- file name from the file real
      basename and the language name, if any.  */
 
-  const char *basename = get_file_realbasename (f);
-  const char *langdir = get_file_langdir (f);
+  const char *basename = get_file_realbasename (inpf);
+  const char *langdir = get_file_langdir (inpf);
 
   char *result =
     (langdir ? xasprintf ("gt-%s-%s", langdir, basename)
@@ -1767,11 +1728,12 @@ get_file_gtfilename (const char *f)
 }
 
 /* An output file, suitable for definitions, that can see declarations
-   made in INPUT_FILE and is linked into every language that uses
-   INPUT_FILE.  */
+   made in INPF and is linked into every language that uses INPF.
+   Since the the result is cached inside INPF, that argument cannot be
+   declared constant, but is "almost" constant. */
 
 outf_p
-get_output_file_with_visibility (const char *input_file)
+get_output_file_with_visibility (input_file *inpf)
 {
   outf_p r;
   size_t len;
@@ -1782,8 +1744,8 @@ get_output_file_with_visibility (const char *input_file)
   /* This can happen when we need a file with visibility on a
      structure that we've never seen.  We have to just hope that it's
      globally visible.  */
-  if (input_file == NULL)
-    input_file = "system.h";
+  if (inpf == NULL)
+    inpf = system_h_file;
 
   /* In plugin mode, return NULL unless the input_file is one of the
      plugin_files.  */
@@ -1791,21 +1753,21 @@ get_output_file_with_visibility (const char *input_file)
     {
       size_t i;
       for (i = 0; i < nb_plugin_files; i++)
-	if (strcmp (input_file, plugin_files[i]) == 0)
+	if (inpf == plugin_files[i])
 	  return plugin_output;
 
       return NULL;
     }
 
   /* Determine the output file name.  */
-  basename = get_file_basename (input_file);
+  basename = get_file_basename (inpf);
 
   len = strlen (basename);
   if ((len > 2 && memcmp (basename + len - 2, ".c", 2) == 0)
       || (len > 2 && memcmp (basename + len - 2, ".y", 2) == 0)
       || (len > 3 && memcmp (basename + len - 3, ".in", 3) == 0))
     {
-      output_name = get_file_gtfilename (input_file);
+      output_name = get_file_gtfilename (inpf);
       for_name = basename;
     }
   /* Some headers get used by more than one front-end; hence, it
@@ -1858,13 +1820,13 @@ get_output_file_with_visibility (const char *input_file)
 }
 
 /* The name of an output file, suitable for definitions, that can see
-   declarations made in INPUT_FILE and is linked into every language
-   that uses INPUT_FILE.  */
+   declarations made in INPF and is linked into every language that
+   uses INPF.  */
 
 const char *
-get_output_file_name (const char *input_file)
+get_output_file_name (input_file* inpf)
 {
-  outf_p o = get_output_file_with_visibility (input_file);
+  outf_p o = get_output_file_with_visibility (inpf);
   if (o)
     return o->name;
   return NULL;
@@ -1956,7 +1918,7 @@ struct flist
 {
   struct flist *next;
   int started_p;
-  const char *name;
+  const input_file* file;
   outf_p f;
 };
 
@@ -2002,7 +1964,7 @@ static void write_local (outf_p output_header,
 			 type_p structures, type_p param_structs);
 static void write_enum_defn (type_p structures, type_p param_structs);
 static int contains_scalar_p (type_p t);
-static void put_mangled_filename (outf_p, const char *);
+static void put_mangled_filename (outf_p, const input_file *);
 static void finish_root_table (struct flist *flp, const char *pfx,
 			       const char *tname, const char *lastname,
 			       const char *name);
@@ -2470,7 +2432,8 @@ walk_type (type_p t, struct walk_type_data *d)
 	      {
 		fprintf (stderr,
 			 "%s:%d: warning: field `%s' is missing `tag' or `default' option\n",
-			 d->line->file, d->line->line, f->name);
+			 get_input_file_name (d->line->file), d->line->line, 
+			 f->name);
 		continue;
 	      }
 	    else if (union_p && !(default_p || tagid))
@@ -2637,7 +2600,7 @@ output_type_enum (outf_p of, type_p s)
 static outf_p
 get_output_file_for_structure (const_type_p s, type_p *param)
 {
-  const char *fn;
+  const input_file *fn;
   int i;
 
   gcc_assert (UNION_OR_STRUCT_P (s));
@@ -2649,7 +2612,9 @@ get_output_file_for_structure (const_type_p s, type_p *param)
 	&& UNION_OR_STRUCT_P (param[i]->u.p))
       fn = param[i]->u.p->u.s.line.file;
 
-  return get_output_file_with_visibility (fn);
+  /* The call to get_output_file_with_visibility may update fn by
+     caching its result inside, so we need the CONST_CAST.  */
+  return get_output_file_with_visibility (CONST_CAST (input_file*, fn));
 }
 
 /* For S, a structure that's part of ORIG_S, and using parameters
@@ -3220,12 +3185,15 @@ contains_scalar_p (type_p t)
     }
 }
 
-/* Mangle FN and print it to F.  */
+/* Mangle INPF and print it to F.  */
 
 static void
-put_mangled_filename (outf_p f, const char *fn)
+put_mangled_filename (outf_p f, const input_file *inpf)
 {
-  const char *name = get_output_file_name (fn);
+  /* The call to get_output_file_name may indirectly update fn since
+     get_output_file_with_visibility caches its result inside, so we
+     need the CONST_CAST.  */
+  const char *name = get_output_file_name (CONST_CAST (input_file*, inpf));
   if (!f || !name)
     return;
   for (; *name != 0; name++)
@@ -3255,7 +3223,7 @@ finish_root_table (struct flist *flp, const char *pfx, const char *lastname,
   for (fli2 = flp; fli2 && base_files; fli2 = fli2->next)
     if (fli2->started_p)
       {
-	lang_bitmap bitmap = get_lang_bitmap (fli2->name);
+	lang_bitmap bitmap = get_lang_bitmap (fli2->file);
 	int fnum;
 
 	for (fnum = 0; bitmap != 0; fnum++, bitmap >>= 1)
@@ -3263,7 +3231,7 @@ finish_root_table (struct flist *flp, const char *pfx, const char *lastname,
 	    {
 	      oprintf (base_files[fnum],
 		       "extern const struct %s gt_%s_", tname, pfx);
-	      put_mangled_filename (base_files[fnum], fli2->name);
+	      put_mangled_filename (base_files[fnum], fli2->file);
 	      oprintf (base_files[fnum], "[];\n");
 	    }
       }
@@ -3279,7 +3247,7 @@ finish_root_table (struct flist *flp, const char *pfx, const char *lastname,
   for (fli2 = flp; fli2; fli2 = fli2->next)
     if (fli2->started_p)
       {
-	lang_bitmap bitmap = get_lang_bitmap (fli2->name);
+	lang_bitmap bitmap = get_lang_bitmap (fli2->file);
 	int fnum;
 
 	fli2->started_p = 0;
@@ -3288,7 +3256,7 @@ finish_root_table (struct flist *flp, const char *pfx, const char *lastname,
 	  if (bitmap & 1)
 	    {
 	      oprintf (base_files[fnum], "  gt_%s_", pfx);
-	      put_mangled_filename (base_files[fnum], fli2->name);
+	      put_mangled_filename (base_files[fnum], fli2->file);
 	      oprintf (base_files[fnum], ",\n");
 	    }
       }
@@ -3586,7 +3554,9 @@ write_roots (pair_p variables, bool emit_pch)
 
   for (v = variables; v; v = v->next)
     {
-      outf_p f = get_output_file_with_visibility (v->line.file);
+      outf_p f = 
+	get_output_file_with_visibility (CONST_CAST (input_file*,
+						     v->line.file));
       struct flist *fli;
       const char *length = NULL;
       int deletable_p = 0;
@@ -3618,8 +3588,8 @@ write_roots (pair_p variables, bool emit_pch)
 	  fli->f = f;
 	  fli->next = flp;
 	  fli->started_p = 0;
-	  fli->name = v->line.file;
-	  gcc_assert (fli->name);
+	  fli->file = v->line.file;
+	  gcc_assert (fli->file);
 	  flp = fli;
 
 	  oprintf (f, "\n/* GC roots.  */\n\n");
@@ -3638,7 +3608,8 @@ write_roots (pair_p variables, bool emit_pch)
 
   for (v = variables; v; v = v->next)
     {
-      outf_p f = get_output_file_with_visibility (v->line.file);
+      outf_p f = get_output_file_with_visibility (CONST_CAST (input_file*,
+							      v->line.file));
       struct flist *fli;
       int skip_p = 0;
       int length_p = 0;
@@ -3674,7 +3645,8 @@ write_roots (pair_p variables, bool emit_pch)
 
   for (v = variables; v; v = v->next)
     {
-      outf_p f = get_output_file_with_visibility (v->line.file);
+      outf_p f = get_output_file_with_visibility (CONST_CAST (input_file*,
+							      v->line.file));
       struct flist *fli;
       int skip_p = 1;
       options_p o;
@@ -3709,7 +3681,8 @@ write_roots (pair_p variables, bool emit_pch)
 
   for (v = variables; v; v = v->next)
     {
-      outf_p f = get_output_file_with_visibility (v->line.file);
+      outf_p f = get_output_file_with_visibility (CONST_CAST (input_file*,
+							      v->line.file));
       struct flist *fli;
       const char *if_marked = NULL;
       int length_p = 0;
@@ -3757,7 +3730,8 @@ write_roots (pair_p variables, bool emit_pch)
 
   for (v = variables; v; v = v->next)
     {
-      outf_p f = get_output_file_with_visibility (v->line.file);
+      outf_p f = get_output_file_with_visibility (CONST_CAST (input_file*,
+							      v->line.file));
       struct flist *fli;
       int length_p = 0;
       int if_marked_p = 0;
@@ -3792,7 +3766,8 @@ write_roots (pair_p variables, bool emit_pch)
 
   for (v = variables; v; v = v->next)
     {
-      outf_p f = get_output_file_with_visibility (v->line.file);
+      outf_p f = get_output_file_with_visibility (CONST_CAST (input_file*,
+							      v->line.file));
       struct flist *fli;
       int skip_p = 0;
       options_p o;
@@ -4187,7 +4162,8 @@ dump_options (int indent, options_p opt)
 static void
 dump_fileloc (int indent, struct fileloc line)
 {
-  printf ("%*cfileloc: file = %s, line = %d\n", indent, ' ', line.file,
+  printf ("%*cfileloc: file = %s, line = %d\n", indent, ' ', 
+	  get_input_file_name (line.file),
 	  line.line);
 }
 
@@ -4487,13 +4463,65 @@ parse_program_options (int argc, char **argv)
       if (optind >= argc)
 	fatal ("no source files given in plugin mode");
       nb_plugin_files = argc - optind;
-      plugin_files = XNEWVEC (char*, nb_plugin_files);
+      plugin_files = XNEWVEC (input_file*, nb_plugin_files);
       for (i = 0; i < (int) nb_plugin_files; i++)
 	{
 	  char *name = argv[i + optind];
-	  plugin_files[i] = name;
+	  plugin_files[i] = input_file_by_name (name);
 	}
     }
+}
+
+
+
+/******* Manage input files.  ******/
+
+/* Hash table of unique input file names.  */
+static htab_t input_file_htab;
+
+/* Find or allocate a new input_file by hash-consing it.  */
+input_file*
+input_file_by_name (const char* name)
+{
+  PTR* slot;
+  input_file* f = NULL;
+  int namlen = 0;
+  if (!name)
+    return NULL;
+  namlen = strlen (name);
+  f = XCNEWVAR (input_file, sizeof (input_file)+namlen+2);
+  f->inpbitmap = 0;
+  f->inpoutf = NULL;
+  strcpy (f->inpname, name);
+  slot = htab_find_slot (input_file_htab, f, INSERT);
+  gcc_assert (slot != NULL);
+  if (*slot)
+    {
+      /* Already known input file.  */
+      free (f);
+      return (input_file*)(*slot);
+    }
+  /* New input file.  */
+  *slot = f;
+  return f;
+    }
+
+/* Hash table support routines for input_file-s.  */
+static hashval_t
+htab_hash_inputfile (const void *p)
+{
+  const input_file *inpf = (const input_file *) p;
+  gcc_assert (inpf);
+  return htab_hash_string (get_input_file_name (inpf));
+}
+
+static int
+htab_eq_inputfile (const void *x, const void *y)
+{
+  const input_file *inpfx = (const input_file *) x;
+  const input_file *inpfy = (const input_file *) y;
+  gcc_assert (inpfx != NULL && inpfy != NULL);
+  return !strcmp (get_input_file_name (inpfx), get_input_file_name (inpfy));
 }
 
 
@@ -4506,6 +4534,12 @@ main (int argc, char **argv)
 
   /* Mandatory common initializations.  */
   progname = "gengtype";	/* For fatal and messages.  */
+  /* Create the hash-table used to hash-cons input files.  */
+  input_file_htab =
+    htab_create (800, htab_hash_inputfile, htab_eq_inputfile, NULL);
+  /* Initialize our special input files.  */
+  this_file = input_file_by_name (__FILE__);
+  system_h_file = input_file_by_name ("system.h");
   /* Set the scalar_is_char union number for predefined scalar types.  */
   scalar_nonchar.u.scalar_is_char = FALSE;
   scalar_char.u.scalar_is_char = TRUE;
@@ -4552,8 +4586,9 @@ main (int argc, char **argv)
       read_input_list (inputlist);
       for (i = 0; i < num_gt_files; i++)
 	{
-	  parse_file (gt_files[i]);
-	  DBGPRINTF ("parsed file #%d %s", (int) i, gt_files[i]);
+	  parse_file (get_input_file_name (gt_files[i]));
+	  DBGPRINTF ("parsed file #%d %s", 
+		     (int) i, get_input_file_name (gt_files[i]));
 	}
       if (verbosity_level >= 1)
 	printf ("%s parsed %d files\n", progname, (int) num_gt_files);
@@ -4572,7 +4607,7 @@ main (int argc, char **argv)
     {
       size_t ix = 0;
       /* In plugin mode, we should have read a state file, and have
-         given at least one plugin file.  */
+	 given at least one plugin file.  */
       if (!read_state_filename)
 	fatal ("No read state given in plugin mode for %s",
 	       plugin_output_filename);
@@ -4583,7 +4618,7 @@ main (int argc, char **argv)
 
       /* Parse our plugin files.  */
       for (ix = 0; ix < nb_plugin_files; ix++)
-	parse_file (plugin_files[ix]);
+	parse_file (get_input_file_name (plugin_files[ix]));
 
       if (hit_error)
 	return 1;
