@@ -1,4 +1,3 @@
-
 2010-11-09  Basile Starynkevitch  <basile@starynkevitch.net>
 	    Jeremie Salvucci  <jeremie.salvucci@free.fr>
 
@@ -17,8 +16,7 @@
 	(get_lang_bitmap, set_lang_bitmap): Moved to gengtype.h.
 	(main): Use input_file-s.
 
-	* gengtype.h:
-	(struct input_file_st, input_file): New type.
+	* gengtype.h: (struct input_file_st, input_file): New type.
 	(struct fileloc): Use it.
 	(gt_files, num_gt_files, this_file, system_h_file)
 	(input_file_by_name, get_file_srcdir_relative_path): Use
@@ -36,8 +34,7 @@
 2010-11-08  Xinliang David Li  <davidxl@google.com>
 
 	PR tree-optimization/46316
-	* tree-vrp.c (adjust_range_with_scev): Check double_int
-	overflow.
+	* tree-vrp.c (adjust_range_with_scev): Check double_int overflow.
 	* double-int.h (double_int_mul_with_sign): New function.
 	* double-int.c (double_int_mul_with_sign): New function.
 
@@ -69,7 +66,7 @@
 	(movdi_low_st): Ditto.
 
 2010-11-08  Joern Rennecke  <amylaar@spamcop.net>
-	    Richard Henderson <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	PR target/44758
 	* config/frv/frv.md (attribute cpu): Cast value to enum attr_cpu.
@@ -143,7 +140,7 @@
 
 2010-11-08  Andrey Belevantsev  <abel@ispras.ru>
 
-	 PR rtl-optimization/45352
+	PR rtl-optimization/45352
 	* sel-sched.c (find_best_expr): Do not set pneed_stall when
 	the variable_issue hook is not implemented.
 	(fill_insns): Remove dead variable stall_iterations.
@@ -616,7 +613,7 @@
 	* tree-vect-stmts.c (vectorizable_operation): Handle ternary
 	operations.
 
-2010-11-04  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
+2010-11-04  Artjoms Sinkarovs  <artyom.shinakroff@gmail.com>
 	    Richard Guenther  <rguenther@suse.de>
 
 	* passes.c (init_optimization_passes): Move veclower after SSA.
@@ -1136,7 +1133,7 @@
 	(darwin_asm_dwarf_section): New.
 	(darwin_file_start): Remove code emitting dwarf section symbols.
 
-2010-11-02  Chung-Lin Tang <cltang@codesourcery.com>
+2010-11-02  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* Makefile.in (LIBGCC2_CFLAGS): Add -fno-stack-protector, to
 	explicitly disable stack protection when building libgcc.
@@ -1238,7 +1235,6 @@
 
 	Revert:
 	2010-10-30  Nathan Froyd  <froydnj@codesourcery.com>
-
 	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Use
 	build_vector_from_val.
 
@@ -1433,8 +1429,8 @@
 	* config/pdp11/pdp11.c (pdp11_trampoline_init): Correct
 	instruction encoding.
 
-2010-10-29  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
-	    Andrew Pinski <pinskia@gmail.com>
+2010-10-29  Artjoms Sinkarovs  <artyom.shinakroff@gmail.com>
+	    Andrew Pinski  <pinskia@gmail.com>
 
 	* tree.h (build_vector_from_val): Declare.
 	* tree.c (build_vector_from_val): New function.
@@ -1464,7 +1460,7 @@
 	REGISTER_MOVE_COST): Delete.
 	(BASE_RETURN_VALUE_REG): Add other float types.
 
-2010-10-29  Nick Clifton<nickc@redhat.com>
+2010-10-29  Nick Clifton  <nickc@redhat.com>
 
 	* doc/invoke.texi: Document -mam34 and -mtune options.
 	* config/mn10300/mn10300.c (mn10300_tune_string): New variable.
@@ -3031,7 +3027,7 @@
 	* c-parser.c (c_parser_objc_type_name): Adapted to new parser the
 	following Objective-C change:
 
-	2005-10-10  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-10  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4301047
 	* c-parse.in (objc_quals): Build objc qualifier list same way
@@ -3048,7 +3044,7 @@
 	* c-parser.c (c_parser_typeof_specifier): Adapted to new parser
 	the following Objective-C change:
 
-	2005-10-07  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-07  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4204796
 	* c-parse.in (typespec_nonreserved_nonattr): Remove volatile from
@@ -3145,7 +3141,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-03-27 Fariborz Jahanian <fjahanian@apple.com>
+	2006-03-27 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4133425
 	* c-decl.c (undeclared_variable): Issue diagnostic on
@@ -3486,7 +3482,7 @@
 2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
 	Merge from FSF apple 'trunk' branch.
-	2006 Fariborz Jahanian <fjahanian@apple.com>
+	2006 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radars 4436866, 4505126, 4506903, 4517826
 	* c-parser.c (c_parser, objc_property_attr_context) New flag.
@@ -4409,7 +4405,7 @@
 	* tree-ssa-sccvn.c (init_vn_nary_op_from_pieces): Consult length
 	before initializing vno->op.
 
-2010-10-09  Ralf Corsépius <ralf.corsepius@rtems.org>
+2010-10-09  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (bfin*-rtems*): Add newlib-stdint.h.
 	* config.gcc (lm32*-rtems*): Add newlib-stdint.h.
@@ -5227,7 +5223,7 @@
 	* config/mips/mips.h (target_flags_explicit): Declare for
 	GENERATOR_FILE.
 
-2010-10-04  Andi Kleen <ak@linux.intel.com>
+2010-10-04  Andi Kleen  <ak@linux.intel.com>
 
 	* Makefile.in (xgcc, cpp, cc1, collect2, lto-wrapper, gcov,
 	gcov-dump, cc1-dummy, genprog, build/gcov-iov): Add + to build rule.
@@ -5359,7 +5355,7 @@
 	* cppbuiltin.h: New file.
 	* Makefile.in: Take into account cppbuiltin.{h,c}.
 
-2010-10-03  Andi Kleen <ak@linux.intel.com>
+2010-10-03  Andi Kleen  <ak@linux.intel.com>
 
 	* lto-cgraph.c (input_cgraph): Check for missing sections.
 
@@ -5628,7 +5624,7 @@
 	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps): Do not
 	handle GIMPLE_CALLs with no LHS.
 
-2010-09-30  Riyadh Baghdadi <baghdadi.mr@gmail.com>
+2010-09-30  Riyadh Baghdadi  <baghdadi.mr@gmail.com>
 
 	* graphite-poly.c (init_graphite_out_file): New.
 	(init_graphite_in_file): New.
@@ -5645,7 +5641,7 @@
 	* graphite-clast-to-gimple.c (precision_for_value): Adjust
 	computation of precision by 1.
 
-2010-09-30  Riyadh Baghdadi <baghdadi.mr@gmail.com>
+2010-09-30  Riyadh Baghdadi  <baghdadi.mr@gmail.com>
 
 	* graphite-cloog-util.c (openscop_read_cloog_matrix): New.
 	(openscop_read_polyhedron_matrix): New.
@@ -5670,7 +5666,7 @@
 	* graphite-cloog-compat.h (cloog_matrix_ncolumns): New.
 	(cloog_matrix_nrows): New.
 
-2010-09-30  Riyadh Baghdadi <baghdadi.mr@gmail.com>
+2010-09-30  Riyadh Baghdadi  <baghdadi.mr@gmail.com>
 
 	* graphite-cloog-util.c (openscop_print_cloog_matrix): Remove spaces
 	from matrix lines.
@@ -5680,7 +5676,7 @@
 	(openscop_print_scop_context): Same.
 	(print_scop_context): Same.
 
-2010-09-30  Riyadh Baghdadi <baghdadi.mr@gmail.com>
+2010-09-30  Riyadh Baghdad  <baghdadi.mr@gmail.com>
 
 	* graphite-poly.c (openscop_print_pdr_polyhedron): Fix indentation.
 	(openscop_print_pdr_polyhedron): Print pph.
@@ -5696,7 +5692,7 @@
 	the call to lang_hooks.types.type_for_size.  Call
 	build_nonstandard_integer_type.
 
-2010-09-30  Riyadh Baghdadi <baghdadi.mr@gmail.com>
+2010-09-30  Riyadh Baghdadi  <baghdadi.mr@gmail.com>
 
 	* graphite-cloog-util.c (openscop_print_cloog_matrix): New.
 	(openscop_print_polyhedron_matrix): New.
@@ -5908,7 +5904,7 @@
 	(c_parser_statement_after_labels): Use RID_AT_TRY instead of
 	RID_TRY and RID_AT_CATCH instead of RID_CATCH.
 
-2010-09-30  Tom G. Christensen <tgc@jupiterrise.com>
+2010-09-30  Tom G. Christensen  <tgc@jupiterrise.com>
 
 	* doc/install.texi (Binaries): Update link to HP-UX porting centre.
 	Add links to current providers of packages for Solaris and IRIX.
@@ -5918,7 +5914,7 @@
 	Merge from 'apple/trunk' branch on FSF servers.
 	* c-parser.c: Applied change originally in c-parse.in.
 
-	2005-10-04  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-04  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4281748
 	* c-decl.c (start_decl): Check for redeclaration of class name.
@@ -5953,7 +5949,7 @@
 	* config/i386/mingw32.h (TARGET_64BIT): replaced by
 	TARGET_64BIT_DEFAULT in #if check.
 
-2010-09-29  Jack Howarth <howarth@bromo.med.uc.edu>
+2010-09-29  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* varasm.c (assemble_alias): Add error message for unsupported ifunc.
 
@@ -5963,7 +5959,7 @@
 	(flag_apple_kext): Likewise.
 
 2010-09-29  Joseph Myers  <joseph@codesourcery.com>
-	    Jack Howarth <howarth@bromo.med.uc.edu>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* config/darwin.opt (undefined): Add.
 
@@ -6380,7 +6376,7 @@
 	change in build_conditional_expr that had been added when fixing
 	PR objc/27377 and which did the same check in a less complete way.
 
-	2005-12-15  Fariborz Jahanian <fjahanian@apple.com>
+	2005-12-15  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4229905
 	* c-typeck.c (build_conditional_expr): Call objc_have_common_type when
