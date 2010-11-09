@@ -1,3 +1,12 @@
+2010-11-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unix.c (struct unix_stream): Add st_dev and st_ino members.
+	(fd_to_stream): Avoid unnecessary lseek() call, test isatty()
+	last. Make a token effort to support block devices.
+	(compare_file_filename): Use cached stat values.
+	(find_file0): Likewise.
+	(find_file): Likewise.
+
 2010-11-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/46373
