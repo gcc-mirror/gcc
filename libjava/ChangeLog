@@ -1,3 +1,10 @@
+2010-11-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libjava.jvmti/jvmti.exp (gcj_jvmti_compile_cxx_to_o):
+	Add -pthread on alpha*-dec-osf*.
+	* testsuite/libjava.jvmti/jvmti-interp.exp
+	(gcj_jni_compile_c_to_so): Likewise.
+
 2010-10-12  Andrew John Hughes  <ahughes@redhat.com>
 
 	Import GNU Classpath (libgcj-snapshot-20100921).
