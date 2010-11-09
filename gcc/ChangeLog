@@ -1,3 +1,9 @@
+2010-11-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR rtl-optimization/46237
+	* ira-conflicts.c (ira_build_conflicts): Record conflicts for call
+	saved hard regs if they might get partially clobbered.
+
 2010-11-09  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.md (lshrsi3, lshrhi3): Use add for
