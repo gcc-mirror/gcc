@@ -897,7 +897,7 @@
   if (GET_CODE (operands[2]) != CONST_INT)
     {
       r = gen_reg_rtx (HImode);
-      emit_insn (gen_subhi3 (r, operands [2], GEN_INT (1)));
+      emit_insn (gen_addhi3 (r, operands [2], GEN_INT (-1)));
       emit_insn (gen_ashrsi3 (operands[0], operands[0], r));
     }
   else if ((unsigned) INTVAL (operands[2]) != 1)
@@ -1043,7 +1043,7 @@
   if (GET_CODE (operands[2]) != CONST_INT)
     {
       r = gen_reg_rtx (HImode);
-      emit_insn (gen_subhi3 (r, operands [2], GEN_INT (1)));
+      emit_insn (gen_addhi3 (r, operands [2], GEN_INT (-1)));
       emit_insn (gen_ashrhi3 (operands[0], operands[0], r));
     }
   else if ((unsigned) INTVAL (operands[2]) != 1)
