@@ -215,17 +215,17 @@ init_gnat_to_gnu (void)
   associate_gnat_to_gnu = ggc_alloc_cleared_vec_tree (max_gnat_nodes);
 }
 
-/* GNAT_ENTITY is a GNAT tree node for an entity.   GNU_DECL is the GCC tree
-   which is to be associated with GNAT_ENTITY. Such GCC tree node is always
-   a ..._DECL node.  If NO_CHECK is true, the latter check is suppressed.
+/* GNAT_ENTITY is a GNAT tree node for an entity.  Associate GNU_DECL, a GCC
+   tree node, with GNAT_ENTITY.  If GNU_DECL is not a ..._DECL node, abort.
+   If NO_CHECK is true, the latter check is suppressed.
 
-   If GNU_DECL is zero, a previous association is to be reset.  */
+   If GNU_DECL is zero, reset a previous association.  */
 
 void
 save_gnu_tree (Entity_Id gnat_entity, tree gnu_decl, bool no_check)
 {
   /* Check that GNAT_ENTITY is not already defined and that it is being set
-     to something which is a decl.  Raise gigi 401 if not.  Usually, this
+     to something which is a decl.  If that is not the case, this usually
      means GNAT_ENTITY is defined twice, but occasionally is due to some
      Gigi problem.  */
   gcc_assert (!(gnu_decl
@@ -235,9 +235,8 @@ save_gnu_tree (Entity_Id gnat_entity, tree gnu_decl, bool no_check)
   SET_GNU_TREE (gnat_entity, gnu_decl);
 }
 
-/* GNAT_ENTITY is a GNAT tree node for a defining identifier.
-   Return the ..._DECL node that was associated with it.  If there is no tree
-   node associated with GNAT_ENTITY, abort.
+/* GNAT_ENTITY is a GNAT tree node for an entity.  Return the GCC tree node
+   that was associated with it.  If there is no such tree node, abort.
 
    In some cases, such as delayed elaboration or expressions that need to
    be elaborated only once, GNAT_ENTITY is really not an entity.  */
