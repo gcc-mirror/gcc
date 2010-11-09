@@ -1,5 +1,9 @@
 2010-11-08  Paul Koning  <ni1d@arrl.net>
 
+	* config/pdp11/pdp11.md (lshrsi3, lshrhi3): Fix wrong code.
+	
+2010-11-08  Paul Koning  <ni1d@arrl.net>
+
 	* config/pdp11/pdp11.md (negsi2): Fix wrong code.
 	
 2010-11-08  Paul Koning  <ni1d@arrl.net>
