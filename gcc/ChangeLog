@@ -1,3 +1,12 @@
+2010-11-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/46221
+	* varasm.c (compute_visible_aliases): New function.
+	(remove_unreachable_alias_pairs): Aliases make a target available
+	even though we reclaimed the cgraph node.
+	(finish_aliases_1): Likewise.
+	* Makefile.in (varasm.o): Add pointer-set.h dependency.
+
 2010-11-09  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300-modes.def: New file.
