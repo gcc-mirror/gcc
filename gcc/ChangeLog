@@ -27,6 +27,31 @@
 	* ix86_expand_split_stack_prologue (args_size): Change type to
 	unsigned HOST_WIDE_INT.
 
+	PR target/44755
+	* config.gcc (picochip-*): Add t-pnt16-warn to tmake_file.
+	* config/t-pnt16-warn: New file.
+	* config/picochip/picochip.c (picochip_emit_stack_allocate):
+	Use add_reg_note.
+	(picochip_emit_save_register): Likewise.
+	(picochip_emit_restore_register): Remove variable insn.
+	(picochip_legitimize_address): Don't use C++ style comments.
+	(picochip_legitimize_reload_address): Likewise.
+	(reorder_var_tracking_notes): Remove variable vliw_start.
+	(picochip_reorg): Cast first arguemnt to emit_note_after to
+	enum insn_note.
+	(picochip_expand_builtin_2op): Use EXPAND_NORMAL.
+	(picochip_expand_builtin_3op): Likewise.
+	(picochip_expand_builtin_2opvoid): Likewise.
+	(picochip_expand_array_get, picochip_expand_array_put): Likewise.
+	(picochip_expand_array_testport): Likewise.
+	(picochip_init_builtins): Remove unused variables.
+	* config/picochip/picochip.h (ASM_FORMAT_PRIVATE_NAME): Cast LABELNO
+	to unsigned long, and output it as such.
+	(ASM_OUTPUT_SKIP): Use HOST_WIDE_INT_PRINT_UNSIGNED.
+	* config/picochip/picochip.md (movhicc): Remove nonsense statement.
+	(schedType): Cast result of picochip_schedule_type to
+	enum attr_schedType.
+
 2010-11-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/46392
