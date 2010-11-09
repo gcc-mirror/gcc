@@ -2837,6 +2837,26 @@ df_whole_mw_reg_unused_p (struct df_mw_hardreg *mws,
   return true;
 }
 
+
+/* Node of a linked list of uses of dead REGs in debug insns.  */
+struct dead_debug_use
+{
+  df_ref use;
+  struct dead_debug_use *next;
+};
+
+/* Linked list of the above, with a bitmap of the REGs in the
+   list.  */
+struct dead_debug
+{
+  struct dead_debug_use *head;
+  bitmap used;
+  bitmap to_rescan;
+};
+
+static void dead_debug_reset (struct dead_debug *, unsigned int);
+
+
 /* Set the REG_UNUSED notes for the multiword hardreg defs in INSN
    based on the bits in LIVE.  Do not generate notes for registers in
    artificial uses.  DO_NOT_GEN is updated so that REG_DEAD notes are
@@ -2847,7 +2867,8 @@ df_whole_mw_reg_unused_p (struct df_mw_hardreg *mws,
 static void
 df_set_unused_notes_for_mw (rtx insn, struct df_mw_hardreg *mws,
 			    bitmap live, bitmap do_not_gen,
-			    bitmap artificial_uses)
+			    bitmap artificial_uses,
+			    struct dead_debug *debug)
 {
   unsigned int r;
 
@@ -2861,6 +2882,7 @@ df_set_unused_notes_for_mw (rtx insn, struct df_mw_hardreg *mws,
     {
       unsigned int regno = mws->start_regno;
       df_set_note (REG_UNUSED, insn, mws->mw_reg);
+      dead_debug_reset (debug, regno);
 
 #ifdef REG_DEAD_DEBUGGING
       df_print_note ("adding 1: ", insn, REG_NOTES (insn));
@@ -2875,6 +2897,7 @@ df_set_unused_notes_for_mw (rtx insn, struct df_mw_hardreg *mws,
 	    && !bitmap_bit_p (artificial_uses, r))
 	  {
 	    df_set_note (REG_UNUSED, insn, regno_reg_rtx[r]);
+	    dead_debug_reset (debug, r);
 #ifdef REG_DEAD_DEBUGGING
 	    df_print_note ("adding 2: ", insn, REG_NOTES (insn));
 #endif
@@ -2980,7 +3003,8 @@ df_set_dead_notes_for_mw (rtx insn, struct df_mw_hardreg *mws,
 
 static void
 df_create_unused_note (rtx insn, df_ref def,
-		       bitmap live, bitmap artificial_uses)
+		       bitmap live, bitmap artificial_uses,
+		       struct dead_debug *debug)
 {
   unsigned int dregno = DF_REF_REGNO (def);
 
@@ -3000,6 +3024,7 @@ df_create_unused_note (rtx insn, df_ref def,
       rtx reg = (DF_REF_LOC (def))
                 ? *DF_REF_REAL_LOC (def): DF_REF_REG (def);
       df_set_note (REG_UNUSED, insn, reg);
+      dead_debug_reset (debug, dregno);
 #ifdef REG_DEAD_DEBUGGING
       df_print_note ("adding 3: ", insn, REG_NOTES (insn));
 #endif
@@ -3008,21 +3033,6 @@ df_create_unused_note (rtx insn, df_ref def,
   return;
 }
 
-/* Node of a linked list of uses of dead REGs in debug insns.  */
-struct dead_debug_use
-{
-  df_ref use;
-  struct dead_debug_use *next;
-};
-
-/* Linked list of the above, with a bitmap of the REGs in the
-   list.  */
-struct dead_debug
-{
-  struct dead_debug_use *head;
-  bitmap used;
-  bitmap to_rescan;
-};
 
 /* Initialize DEBUG to an empty list, and clear USED, if given.  */
 static inline void
@@ -3073,6 +3083,34 @@ dead_debug_finish (struct dead_debug *debug, bitmap used)
 	    df_insn_rescan (insn_info->insn);
 	}
       BITMAP_FREE (debug->to_rescan);
+    }
+}
+
+/* Reset DEBUG_INSNs with pending uses of DREGNO.  */
+static void
+dead_debug_reset (struct dead_debug *debug, unsigned int dregno)
+{
+  struct dead_debug_use **tailp = &debug->head;
+  struct dead_debug_use *cur;
+  rtx insn;
+
+  if (!debug->used || !bitmap_clear_bit (debug->used, dregno))
+    return;
+
+  while ((cur = *tailp))
+    {
+      if (DF_REF_REGNO (cur->use) == dregno)
+	{
+	  *tailp = cur->next;
+	  insn = DF_REF_INSN (cur->use);
+	  INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
+	  if (debug->to_rescan == NULL)
+	    debug->to_rescan = BITMAP_ALLOC (NULL);
+	  bitmap_set_bit (debug->to_rescan, INSN_UID (insn));
+	  XDELETE (cur);
+	}
+      else
+	tailp = &(*tailp)->next;
     }
 }
 
@@ -3258,7 +3296,7 @@ df_note_bb_compute (unsigned int bb_index,
 		  && !df_ignore_stack_reg (mws->start_regno))
 	      df_set_unused_notes_for_mw (insn,
 					  mws, live, do_not_gen,
-					  artificial_uses);
+					  artificial_uses, &debug);
 	      mws_rec++;
 	    }
 
@@ -3271,7 +3309,7 @@ df_note_bb_compute (unsigned int bb_index,
 	      if (!DF_REF_FLAGS_IS_SET (def, DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER))
 		{
 		  df_create_unused_note (insn,
-					 def, live, artificial_uses);
+					 def, live, artificial_uses, &debug);
 		  bitmap_set_bit (do_not_gen, dregno);
 		}
 
@@ -3289,7 +3327,7 @@ df_note_bb_compute (unsigned int bb_index,
 	      if (DF_MWS_REG_DEF_P (mws))
 		df_set_unused_notes_for_mw (insn,
 					    mws, live, do_not_gen,
-					    artificial_uses);
+					    artificial_uses, &debug);
 	      mws_rec++;
 	    }
 
@@ -3298,7 +3336,7 @@ df_note_bb_compute (unsigned int bb_index,
 	      df_ref def = *def_rec;
 	      unsigned int dregno = DF_REF_REGNO (def);
 	      df_create_unused_note (insn,
-				     def, live, artificial_uses);
+				     def, live, artificial_uses, &debug);
 
 	      if (!DF_REF_FLAGS_IS_SET (def, DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER))
 		bitmap_set_bit (do_not_gen, dregno);

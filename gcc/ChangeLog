@@ -1,3 +1,14 @@
+2010-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46171
+	* df-problems.c (struct dead_debug_use, struct dead_debug): Move
+	earlier.
+	(df_set_unused_notes_for_mw, df_create_unused_note): Add DEBUG
+	argument, call dead_debug_reset when adding REG_UNUSED note.
+	(dead_debug_reset): New function.
+	(df_note_bb_compute): Adjust df_set_unused_notes_for_mw and
+	df_create_unused_note callers.
+
 2010-11-09  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/fr30/fr30.c: Include "df.h".
