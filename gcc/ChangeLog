@@ -1,3 +1,7 @@
+2010-11-09  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300-modes.def: New file.
+
 2010-11-09  Basile Starynkevitch  <basile@starynkevitch.net>
 	    Jeremie Salvucci  <jeremie.salvucci@free.fr>
 
@@ -41,11 +45,11 @@
 2010-11-08  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.md (lshrsi3, lshrhi3): Fix wrong code.
-	
+
 2010-11-08  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.md (negsi2): Fix wrong code.
-	
+
 2010-11-08  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.c (pdp11_assemble_integer): Mask byte values
@@ -92,7 +96,7 @@
 	(bdesc_void3arg, bdesc_voidacc, bdesc_loads, bdesc_stores): Likewise.
 	(frv_read_argument): Use expand_normal.
 
-	PR target/44757 
+	PR target/44757
 	* config/lm32/lm32.h (LEGITIMATE_CONSTANT_P): Call
 	lm32_legitimate_constant_p.
 	* config/lm32/lm32.md (ashlsi3): Remove unused variable.
