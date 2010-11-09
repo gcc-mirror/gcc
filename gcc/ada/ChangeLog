@@ -1,3 +1,10 @@
+2010-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (finish_fat_pointer_type): New function.
+	(gnat_to_gnu_entity) <E_Array_Type>: Use it to build the fat pointer
+	type.
+	<E_Access_Type>: Likewise.
+
 2010-11-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (add_stmt_force): Declare.
