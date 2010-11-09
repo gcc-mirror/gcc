@@ -11063,7 +11063,7 @@ ix86_expand_split_stack_prologue (void)
 {
   struct ix86_frame frame;
   HOST_WIDE_INT allocate;
-  int args_size;
+  unsigned HOST_WIDE_INT args_size;
   rtx label, limit, current, jump_insn, allocate_rtx, call_insn, call_fusage;
   rtx scratch_reg = NULL_RTX;
   rtx varargs_label = NULL_RTX;
@@ -11172,8 +11172,7 @@ ix86_expand_split_stack_prologue (void)
 	     argument size in the upper 32 bits of r10 and pass the
 	     frame size in the lower 32 bits.  */
 	  gcc_assert ((allocate & (HOST_WIDE_INT) 0xffffffff) == allocate);
-	  gcc_assert (((unsigned HOST_WIDE_INT) args_size & 0xffffffff)
-		      == (unsigned HOST_WIDE_INT) args_size);
+	  gcc_assert ((args_size & 0xffffffff) == args_size);
 
 	  if (split_stack_fn_large == NULL_RTX)
 	    split_stack_fn_large =
@@ -11202,7 +11201,7 @@ ix86_expand_split_stack_prologue (void)
 
 	  fn = reg11;
 
-	  argval = (((HOST_WIDE_INT) args_size << 16) << 16) + allocate;
+	  argval = ((args_size << 16) << 16) + allocate;
 	  emit_move_insn (reg10, GEN_INT (argval));
 	}
       else
