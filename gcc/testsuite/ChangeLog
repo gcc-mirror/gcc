@@ -1,3 +1,8 @@
+2010-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/45894
+	* g++.dg/warn/Wsequence-point-2.C: New test.
+
 2010-11-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46313
