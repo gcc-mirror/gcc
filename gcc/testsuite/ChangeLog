@@ -8,8 +8,8 @@
 
 2010-11-08  Xinliang David Li  <davidxl@google.com>
 
-	PR/46316
-	* gcc.dg/tree-ssa/pr46316.c: New test.
+	PR tree-optimization/46316
+	* gcc.c-torture/execute/pr46316.c: New test.
 	
 2010-11-08  Janus Weil  <janus@gcc.gnu.org>
 

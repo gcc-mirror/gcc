@@ -1,6 +1,6 @@
 2010-11-08  Xinliang David Li  <davidxl@google.com>
 
-	PR/46316
+	PR tree-optimization/46316
 	* tree-vrp.c (adjust_range_with_scev): Check double_int
 	overflow.
 	* double-int.h (double_int_mul_with_sign): New function.
