@@ -516,9 +516,11 @@ update_alias_info_with_stack_vars (void)
 	  unsigned int uid = DECL_PT_UID (decl);
 	  /* We should never end up partitioning SSA names (though they
 	     may end up on the stack).  Neither should we allocate stack
-	     space to something that is unused and thus unreferenced.  */
+	     space to something that is unused and thus unreferenced, except
+	     for -O0 where we are preserving even unreferenced variables.  */
 	  gcc_assert (DECL_P (decl)
-		      && referenced_var_lookup (DECL_UID (decl)));
+		      && (!optimize
+			  || referenced_var_lookup (DECL_UID (decl))));
 	  bitmap_set_bit (part, uid);
 	  *((bitmap *) pointer_map_insert (decls_to_partitions,
 					   (void *)(size_t) uid)) = part;
@@ -684,8 +686,7 @@ partition_stack_vars (void)
 	}
     }
 
-  if (optimize)
-    update_alias_info_with_stack_vars ();
+  update_alias_info_with_stack_vars ();
 }
 
 /* A debugging aid for expand_used_vars.  Dump the generated partitions.  */
