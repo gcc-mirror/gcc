@@ -1,3 +1,9 @@
+2010-11-09  François Dumont  <francois.cppdevs@free.fr>
+            Johannes Singler  <singler@kit.edu>
+
+        * include/parallel/algobase.h (equal):  Call parallel variant
+        for applicable overloads.
+
 2010-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_tree.h (_Rb_tree<>::_M_const_cast_iter): Add
