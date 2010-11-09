@@ -5522,6 +5522,48 @@ build_data_member_initialization (tree t, VEC(constructor_elt,gc) **vec)
   return true;
 }
 
+/* Make sure that there are no statements after LAST in the constructor
+   body represented by LIST.  */
+
+bool
+check_constexpr_ctor_body (tree last, tree list)
+{
+  bool ok = true;
+  if (TREE_CODE (list) == STATEMENT_LIST)
+    {
+      tree_stmt_iterator i = tsi_last (list);
+      for (; !tsi_end_p (i); tsi_prev (&i))
+	{
+	  tree t = tsi_stmt (i);
+	  if (t == last)
+	    break;
+	  if (TREE_CODE (t) == BIND_EXPR)
+	    {
+	      if (!check_constexpr_ctor_body (last, BIND_EXPR_BODY (t)))
+		return false;
+	      else
+		continue;
+	    }
+	  /* We currently allow typedefs and static_assert.
+	     FIXME allow them in the standard, too.  */
+	  if (TREE_CODE (t) != STATIC_ASSERT)
+	    {
+	      ok = false;
+	      break;
+	    }
+	}
+    }
+  else if (list != last
+	   && TREE_CODE (list) != STATIC_ASSERT)
+    ok = false;
+  if (!ok)
+    {
+      error ("constexpr constructor does not have empty body");
+      DECL_DECLARED_CONSTEXPR_P (current_function_decl) = false;
+    }
+  return ok;
+}
+
 /* Build compile-time evalable representations of member-initializer list
    for a constexpr constructor.  */
 
