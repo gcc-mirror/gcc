@@ -20,6 +20,10 @@ proc gcj_jvmti_compile_cxx_to_o {file {options {}}} {
   if { [istarget "arm*"] } {
       lappend options "additional_flags=-Wno-abi"
   }
+  # Tru64 UNIX requires <pthread.h> to be compiled with -pthread.
+  if { [istarget "alpha*-dec-osf*"] } {
+      lappend options "additional_flags=-pthread"
+  }
 
   set x [libjava_prune_warnings \
 	   [target_compile $file $oname object $options]]
