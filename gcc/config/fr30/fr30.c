@@ -39,6 +39,7 @@
 #include "obstack.h"
 #include "except.h"
 #include "function.h"
+#include "df.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
 #include "tm_p.h"
