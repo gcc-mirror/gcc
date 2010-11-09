@@ -1,3 +1,11 @@
+2010-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/43808
+	* cfgexpand.c (partition_stack_vars): Call
+	update_alias_info_with_stack_vars unconditionally.
+	(update_alias_info_with_stack_vars): Allow unused
+	unreferenced vars when not optimizing.
+
 2010-11-09  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/46036
