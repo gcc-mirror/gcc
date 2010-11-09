@@ -1145,7 +1145,12 @@ tree_loop_distribution (void)
 
   FOR_EACH_LOOP (li, loop, 0)
     {
-      VEC (gimple, heap) *work_list = VEC_alloc (gimple, heap, 3);
+      VEC (gimple, heap) *work_list = NULL;
+
+      /* If the loop doesn't have a single exit we will fail anyway,
+	 so do that early.  */
+      if (!single_exit (loop))
+	continue;
 
       /* If both flag_tree_loop_distribute_patterns and
 	 flag_tree_loop_distribution are set, then only
