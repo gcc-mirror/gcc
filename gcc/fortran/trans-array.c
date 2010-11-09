@@ -6317,7 +6317,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
 				      decl, cdecl, NULL_TREE);
 	      
-	      /* Add reference to '$data' component.  */
+	      /* Add reference to '_data' component.  */
 	      tmp = CLASS_DATA (c)->backend_decl;
 	      comp = fold_build3_loc (input_location, COMPONENT_REF,
 				      TREE_TYPE (tmp), comp, tmp, NULL_TREE);
@@ -6357,7 +6357,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      /* Allocatable scalar CLASS components.  */
 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
 				      decl, cdecl, NULL_TREE);
-	      /* Add reference to '$data' component.  */
+	      /* Add reference to '_data' component.  */
 	      tmp = CLASS_DATA (c)->backend_decl;
 	      comp = fold_build3_loc (input_location, COMPONENT_REF,
 				      TREE_TYPE (tmp), comp, tmp, NULL_TREE);

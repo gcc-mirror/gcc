@@ -988,9 +988,9 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	  !gfc_compare_types (&cons->expr->ts, &comp->ts))
 	{
 	  t = FAILURE;
-	  if (strcmp (comp->name, "$extends") == 0)
+	  if (strcmp (comp->name, "_extends") == 0)
 	    {
-	      /* Can afford to be brutal with the $extends initializer.
+	      /* Can afford to be brutal with the _extends initializer.
 		 The derived type can get lost because it is PRIVATE
 		 but it is not usage constrained by the standard.  */
 	      cons->expr->ts = comp->ts;
@@ -5726,7 +5726,7 @@ resolve_typebound_function (gfc_expr* e)
 	 is present.  */
       ts = expr->ts;
       declared = ts.u.derived;
-      c = gfc_find_component (declared, "$vptr", true, true);
+      c = gfc_find_component (declared, "_vptr", true, true);
       if (c->ts.u.derived == NULL)
 	c->ts.u.derived = gfc_find_derived_vtab (declared);
 
@@ -5737,7 +5737,7 @@ resolve_typebound_function (gfc_expr* e)
       name = name ? name : e->value.function.esym->name;
       e->symtree = expr->symtree;
       e->ref = gfc_copy_ref (expr->ref);
-      gfc_add_component_ref (e, "$vptr");
+      gfc_add_vptr_component (e);
       gfc_add_component_ref (e, name);
       e->value.function.esym = NULL;
       return SUCCESS;
@@ -5760,7 +5760,7 @@ resolve_typebound_function (gfc_expr* e)
       return resolve_compcall (e, NULL);
     }
 
-  c = gfc_find_component (declared, "$data", true, true);
+  c = gfc_find_component (declared, "_data", true, true);
   declared = c->ts.u.derived;
 
   /* Treat the call as if it is a typebound procedure, in order to roll
@@ -5776,8 +5776,8 @@ resolve_typebound_function (gfc_expr* e)
   if (new_ref)  
     e->ref = new_ref;
 
-  /* '$vptr' points to the vtab, which contains the procedure pointers.  */
-  gfc_add_component_ref (e, "$vptr");
+  /* '_vptr' points to the vtab, which contains the procedure pointers.  */
+  gfc_add_vptr_component (e);
   gfc_add_component_ref (e, name);
 
   /* Recover the typespec for the expression.  This is really only
@@ -5816,7 +5816,7 @@ resolve_typebound_subroutine (gfc_code *code)
 	 is present.  */
       ts = expr->symtree->n.sym->ts;
       declared = ts.u.derived;
-      c = gfc_find_component (declared, "$vptr", true, true);
+      c = gfc_find_component (declared, "_vptr", true, true);
       if (c->ts.u.derived == NULL)
 	c->ts.u.derived = gfc_find_derived_vtab (declared);
 
@@ -5827,7 +5827,7 @@ resolve_typebound_subroutine (gfc_code *code)
       name = name ? name : code->expr1->value.function.esym->name;
       code->expr1->symtree = expr->symtree;
       expr->symtree->n.sym->ts.u.derived = declared;
-      gfc_add_component_ref (code->expr1, "$vptr");
+      gfc_add_vptr_component (code->expr1);
       gfc_add_component_ref (code->expr1, name);
       code->expr1->value.function.esym = NULL;
       return SUCCESS;
@@ -5861,8 +5861,8 @@ resolve_typebound_subroutine (gfc_code *code)
   if (new_ref)
     code->expr1->ref = new_ref;
 
-  /* '$vptr' points to the vtab, which contains the procedure pointers.  */
-  gfc_add_component_ref (code->expr1, "$vptr");
+  /* '_vptr' points to the vtab, which contains the procedure pointers.  */
+  gfc_add_vptr_component (code->expr1);
   gfc_add_component_ref (code->expr1, name);
 
   /* Recover the typespec for the expression.  This is really only
@@ -6404,7 +6404,7 @@ resolve_deallocate_expr (gfc_expr *e)
   if (e->ts.type == BT_CLASS)
     {
       /* Only deallocate the DATA component.  */
-      gfc_add_component_ref (e, "$data");
+      gfc_add_data_component (e);
     }
 
   return SUCCESS;
@@ -7735,8 +7735,8 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
     ns->code->next = new_st;
   code = new_st;
   code->op = EXEC_SELECT;
-  gfc_add_component_ref (code->expr1, "$vptr");
-  gfc_add_component_ref (code->expr1, "$hash");
+  gfc_add_vptr_component (code->expr1);
+  gfc_add_hash_component (code->expr1);
 
   /* Loop over TYPE IS / CLASS IS cases.  */
   for (body = code->block; body; body = body->block)
@@ -7756,14 +7756,14 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	 'global' one).  */
 
       if (c->ts.type == BT_CLASS)
-	sprintf (name, "tmp$class$%s", c->ts.u.derived->name);
+	sprintf (name, "__tmp_class_%s", c->ts.u.derived->name);
       else
-	sprintf (name, "tmp$type$%s", c->ts.u.derived->name);
+	sprintf (name, "__tmp_type_%s", c->ts.u.derived->name);
       st = gfc_find_symtree (ns->sym_root, name);
       gcc_assert (st->n.sym->assoc);
       st->n.sym->assoc->target = gfc_get_variable_expr (code->expr1->symtree);
       if (c->ts.type == BT_DERIVED)
-	gfc_add_component_ref (st->n.sym->assoc->target, "$data");
+	gfc_add_data_component (st->n.sym->assoc->target);
 
       new_st = gfc_get_code ();
       new_st->op = EXEC_BLOCK;
@@ -7880,7 +7880,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	  /* Set up arguments.  */
 	  new_st->expr1->value.function.actual = gfc_get_actual_arglist ();
 	  new_st->expr1->value.function.actual->expr = gfc_get_variable_expr (code->expr1->symtree);
-	  gfc_add_component_ref (new_st->expr1->value.function.actual->expr, "$vptr");
+	  gfc_add_vptr_component (new_st->expr1->value.function.actual->expr);
 	  vtab = gfc_find_derived_vtab (body->ext.case_list->ts.u.derived);
 	  st = gfc_find_symtree (vtab->ns->sym_root, vtab->name);
 	  new_st->expr1->value.function.actual->next = gfc_get_actual_arglist ();
@@ -11193,8 +11193,8 @@ resolve_fl_derived (gfc_symbol *sym)
   if (sym->attr.is_class && sym->ts.u.derived == NULL)
     {
       /* Fix up incomplete CLASS symbols.  */
-      gfc_component *data = gfc_find_component (sym, "$data", true, true);
-      gfc_component *vptr = gfc_find_component (sym, "$vptr", true, true);
+      gfc_component *data = gfc_find_component (sym, "_data", true, true);
+      gfc_component *vptr = gfc_find_component (sym, "_vptr", true, true);
       if (vptr->ts.u.derived == NULL)
 	{
 	  gfc_symbol *vtab = gfc_find_derived_vtab (data->ts.u.derived);

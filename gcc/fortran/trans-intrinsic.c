@@ -4547,7 +4547,7 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
   if (ss == gfc_ss_terminator)
     {
       if (arg->ts.type == BT_CLASS)
-	gfc_add_component_ref (arg, "$data");
+	gfc_add_data_component (arg);
 
       gfc_conv_expr_reference (&argse, arg);
 
@@ -4618,8 +4618,8 @@ gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
     {
       if (arg->ts.type == BT_CLASS)
       {
-	gfc_add_component_ref (arg, "$vptr");
-	gfc_add_component_ref (arg, "$size");
+	gfc_add_vptr_component (arg);
+	gfc_add_size_component (arg);
 	gfc_conv_expr (&argse, arg);
 	tmp = fold_convert (result_type, argse.expr);
 	goto done;
@@ -5070,7 +5070,7 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
       /* Allocatable scalar.  */
       arg1se.want_pointer = 1;
       if (arg1->expr->ts.type == BT_CLASS)
-	gfc_add_component_ref (arg1->expr, "$data");
+	gfc_add_data_component (arg1->expr);
       gfc_conv_expr (&arg1se, arg1->expr);
       tmp = arg1se.expr;
     }
@@ -5111,7 +5111,7 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   gfc_init_se (&arg2se, NULL);
   arg1 = expr->value.function.actual;
   if (arg1->expr->ts.type == BT_CLASS)
-    gfc_add_component_ref (arg1->expr, "$data");
+    gfc_add_data_component (arg1->expr);
   arg2 = arg1->next;
   ss1 = gfc_walk_expr (arg1->expr);
 
@@ -5141,7 +5141,7 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
     {
       /* An optional target.  */
       if (arg2->expr->ts.type == BT_CLASS)
-	gfc_add_component_ref (arg2->expr, "$data");
+	gfc_add_data_component (arg2->expr);
       ss2 = gfc_walk_expr (arg2->expr);
 
       nonzero_charlen = NULL_TREE;
@@ -5228,8 +5228,8 @@ gfc_conv_same_type_as (gfc_se *se, gfc_expr *expr)
 
   if (a->ts.type == BT_CLASS)
     {
-      gfc_add_component_ref (a, "$vptr");
-      gfc_add_component_ref (a, "$hash");
+      gfc_add_vptr_component (a);
+      gfc_add_hash_component (a);
     }
   else if (a->ts.type == BT_DERIVED)
     a = gfc_get_int_expr (gfc_default_integer_kind, NULL,
@@ -5237,8 +5237,8 @@ gfc_conv_same_type_as (gfc_se *se, gfc_expr *expr)
 
   if (b->ts.type == BT_CLASS)
     {
-      gfc_add_component_ref (b, "$vptr");
-      gfc_add_component_ref (b, "$hash");
+      gfc_add_vptr_component (b);
+      gfc_add_hash_component (b);
     }
   else if (b->ts.type == BT_DERIVED)
     b = gfc_get_int_expr (gfc_default_integer_kind, NULL,

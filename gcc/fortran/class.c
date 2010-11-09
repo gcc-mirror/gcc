@@ -29,18 +29,18 @@ along with GCC; see the file COPYING3.  If not see
 
    Each CLASS variable is encapsulated by a class container, which is a
    structure with two fields:
-    * $data: A pointer to the actual data of the variable. This field has the
+    * _data: A pointer to the actual data of the variable. This field has the
              declared type of the class variable and its attributes
              (pointer/allocatable/dimension/...).
-    * $vptr: A pointer to the vtable entry (see below) of the dynamic type.
+    * _vptr: A pointer to the vtable entry (see below) of the dynamic type.
     
    For each derived type we set up a "vtable" entry, i.e. a structure with the
    following fields:
-    * $hash: A hash value serving as a unique identifier for this type.
-    * $size: The size in bytes of the derived type.
-    * $extends: A pointer to the vtable entry of the parent derived type.
-    * $def_init: A pointer to a default initialized variable of this type.
-    * $copy: A procedure pointer to a copying procedure.
+    * _hash:     A hash value serving as a unique identifier for this type.
+    * _size:     The size in bytes of the derived type.
+    * _extends:  A pointer to the vtable entry of the parent derived type.
+    * _def_init: A pointer to a default initialized variable of this type.
+    * _copy:     A procedure pointer to a copying procedure.
    After these follow procedure pointer components for the specific
    type-bound procedures.  */
 
@@ -52,7 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Insert a reference to the component of the given name.
-   Only to be used with CLASS containers.  */
+   Only to be used with CLASS containers and vtables.  */
 
 void
 gfc_add_component_ref (gfc_expr *e, const char *name)
@@ -68,7 +68,7 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
 	break;
       tail = &((*tail)->next);
     }
-  if (*tail != NULL && strcmp (name, "$data") == 0)
+  if (*tail != NULL && strcmp (name, "_data") == 0)
     next = *tail;
   (*tail) = gfc_get_ref();
   (*tail)->next = next;
@@ -82,7 +82,7 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
 
 
 /* Build a NULL initializer for CLASS pointers,
-   initializing the $data and $vptr components to zero.  */
+   initializing the _data and _vptr components to zero.  */
 
 gfc_expr *
 gfc_class_null_initializer (gfc_typespec *ts)
@@ -107,31 +107,46 @@ gfc_class_null_initializer (gfc_typespec *ts)
 }
 
 
+/* Create a unique string identifier for a derived type, composed of its name
+   and module name. This is used to construct unique names for the class
+   containers and vtab symbols.  */
+
+static void
+get_unique_type_string (char *string, gfc_symbol *derived)
+{  
+  if (derived->module)
+    sprintf (string, "%s_%s", derived->module, derived->name);
+  else
+    sprintf (string, "%s_%s", derived->ns->proc_name->name, derived->name);
+}
+
+
 /* Build a polymorphic CLASS entity, using the symbol that comes from
    build_sym. A CLASS entity is represented by an encapsulating type,
-   which contains the declared type as '$data' component, plus a pointer
-   component '$vptr' which determines the dynamic type.  */
+   which contains the declared type as '_data' component, plus a pointer
+   component '_vptr' which determines the dynamic type.  */
 
 gfc_try
 gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 			gfc_array_spec **as, bool delayed_vtab)
 {
-  char name[GFC_MAX_SYMBOL_LEN + 5];
+  char name[GFC_MAX_SYMBOL_LEN], tname[GFC_MAX_SYMBOL_LEN];
   gfc_symbol *fclass;
   gfc_symbol *vtab;
   gfc_component *c;
 
   /* Determine the name of the encapsulating type.  */
+  get_unique_type_string (tname, ts->u.derived);
   if ((*as) && (*as)->rank && attr->allocatable)
-    sprintf (name, "class$%s_%d_a", ts->u.derived->name, (*as)->rank);
+    sprintf (name, "__class_%s_%d_a", tname, (*as)->rank);
   else if ((*as) && (*as)->rank)
-    sprintf (name, "class$%s_%d", ts->u.derived->name, (*as)->rank);
+    sprintf (name, "__class_%s_%d", tname, (*as)->rank);
   else if (attr->pointer)
-    sprintf (name, "class$%s_p", ts->u.derived->name);
+    sprintf (name, "__class_%s_p", tname);
   else if (attr->allocatable)
-    sprintf (name, "class$%s_a", ts->u.derived->name);
+    sprintf (name, "__class_%s_a", tname);
   else
-    sprintf (name, "class$%s", ts->u.derived->name);
+    sprintf (name, "__class_%s", tname);
 
   gfc_find_symbol (name, ts->u.derived->ns, 0, &fclass);
   if (fclass == NULL)
@@ -151,8 +166,8 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 	  NULL, &gfc_current_locus) == FAILURE)
 	return FAILURE;
 
-      /* Add component '$data'.  */
-      if (gfc_add_component (fclass, "$data", &c) == FAILURE)
+      /* Add component '_data'.  */
+      if (gfc_add_component (fclass, "_data", &c) == FAILURE)
 	return FAILURE;
       c->ts = *ts;
       c->ts.type = BT_DERIVED;
@@ -167,8 +182,8 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       c->as = (*as);
       c->initializer = NULL;
 
-      /* Add component '$vptr'.  */
-      if (gfc_add_component (fclass, "$vptr", &c) == FAILURE)
+      /* Add component '_vptr'.  */
+      if (gfc_add_component (fclass, "_vptr", &c) == FAILURE)
 	return FAILURE;
       c->ts.type = BT_DERIVED;
       if (delayed_vtab)
@@ -316,7 +331,6 @@ gfc_find_derived_vtab (gfc_symbol *derived)
   gfc_namespace *ns;
   gfc_symbol *vtab = NULL, *vtype = NULL, *found_sym = NULL, *def_init = NULL;
   gfc_symbol *copy = NULL, *src = NULL, *dst = NULL;
-  char name[2 * GFC_MAX_SYMBOL_LEN + 8];
   
   /* Find the top-level namespace (MODULE or PROGRAM).  */
   for (ns = gfc_current_ns; ns; ns = ns->parent)
@@ -329,7 +343,10 @@ gfc_find_derived_vtab (gfc_symbol *derived)
     
   if (ns)
     {
-      sprintf (name, "vtab$%s", derived->name);
+      char name[GFC_MAX_SYMBOL_LEN], tname[GFC_MAX_SYMBOL_LEN];
+      
+      get_unique_type_string (tname, derived);
+      sprintf (name, "__vtab_%s", tname);
 
       /* Look for the vtab symbol in various namespaces.  */
       gfc_find_symbol (name, gfc_current_ns, 0, &vtab);
@@ -350,7 +367,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	  vtab->attr.vtab = 1;
 	  vtab->attr.access = ACCESS_PUBLIC;
 	  gfc_set_sym_referenced (vtab);
-	  sprintf (name, "vtype$%s", derived->name);
+	  sprintf (name, "__vtype_%s", tname);
 	  
 	  gfc_find_symbol (name, ns, 0, &vtype);
 	  if (vtype == NULL)
@@ -366,8 +383,8 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      vtype->attr.vtype = 1;
 	      gfc_set_sym_referenced (vtype);
 
-	      /* Add component '$hash'.  */
-	      if (gfc_add_component (vtype, "$hash", &c) == FAILURE)
+	      /* Add component '_hash'.  */
+	      if (gfc_add_component (vtype, "_hash", &c) == FAILURE)
 		goto cleanup;
 	      c->ts.type = BT_INTEGER;
 	      c->ts.kind = 4;
@@ -375,8 +392,8 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      c->initializer = gfc_get_int_expr (gfc_default_integer_kind,
 						 NULL, derived->hash_value);
 
-	      /* Add component '$size'.  */
-	      if (gfc_add_component (vtype, "$size", &c) == FAILURE)
+	      /* Add component '_size'.  */
+	      if (gfc_add_component (vtype, "_size", &c) == FAILURE)
 		goto cleanup;
 	      c->ts.type = BT_INTEGER;
 	      c->ts.kind = 4;
@@ -388,8 +405,8 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      c->initializer = gfc_get_int_expr (gfc_default_integer_kind,
 						 NULL, 0);
 
-	      /* Add component $extends.  */
-	      if (gfc_add_component (vtype, "$extends", &c) == FAILURE)
+	      /* Add component _extends.  */
+	      if (gfc_add_component (vtype, "_extends", &c) == FAILURE)
 		goto cleanup;
 	      c->attr.pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
@@ -419,8 +436,8 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  goto have_vtype;
 		}
 
-	      /* Add component $def_init.  */
-	      if (gfc_add_component (vtype, "$def_init", &c) == FAILURE)
+	      /* Add component _def_init.  */
+	      if (gfc_add_component (vtype, "_def_init", &c) == FAILURE)
 		goto cleanup;
 	      c->attr.pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
@@ -431,7 +448,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      else
 		{
 		  /* Construct default initialization variable.  */
-		  sprintf (name, "def_init$%s", derived->name);
+		  sprintf (name, "__def_init_%s", tname);
 		  gfc_get_symbol (name, ns, &def_init);
 		  def_init->attr.target = 1;
 		  def_init->attr.save = SAVE_EXPLICIT;
@@ -445,8 +462,8 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  c->initializer = gfc_lval_expr_from_sym (def_init);
 		}
 
-	      /* Add component $copy.  */
-	      if (gfc_add_component (vtype, "$copy", &c) == FAILURE)
+	      /* Add component _copy.  */
+	      if (gfc_add_component (vtype, "_copy", &c) == FAILURE)
 		goto cleanup;
 	      c->attr.proc_pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
@@ -462,7 +479,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  ns->contained = sub_ns;
 		  sub_ns->resolved = 1;
 		  /* Set up procedure symbol.  */
-		  sprintf (name, "copy$%s", derived->name);
+		  sprintf (name, "__copy_%s", tname);
 		  gfc_get_symbol (name, sub_ns, &copy);
 		  sub_ns->proc_name = copy;
 		  copy->attr.flavor = FL_PROCEDURE;

@@ -2877,6 +2877,11 @@ gfc_try gfc_check_same_strlen (const gfc_expr*, const gfc_expr*, const char*);
 
 /* class.c */
 void gfc_add_component_ref (gfc_expr *, const char *);
+#define gfc_add_data_component(e)     gfc_add_component_ref(e,"_data")
+#define gfc_add_vptr_component(e)     gfc_add_component_ref(e,"_vptr")
+#define gfc_add_hash_component(e)     gfc_add_component_ref(e,"_hash")
+#define gfc_add_size_component(e)     gfc_add_component_ref(e,"_size")
+#define gfc_add_def_init_component(e) gfc_add_component_ref(e,"_def_init")
 gfc_expr *gfc_class_null_initializer (gfc_typespec *);
 gfc_try gfc_build_class_symbol (gfc_typespec *, symbol_attribute *,
 				gfc_array_spec **, bool);
