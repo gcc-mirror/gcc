@@ -16347,14 +16347,8 @@ cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser)
     }
   /* Parse the function-body.  */
   cp_parser_function_body (parser);
-  if (check_body_p
-      && (TREE_CODE (list) != STATEMENT_LIST
-	  || (last == NULL && STATEMENT_LIST_TAIL (list) != NULL)
-	  || (last != NULL && last != STATEMENT_LIST_TAIL (list)->stmt)))
-    {
-      error ("constexpr constructor does not have empty body");
-      DECL_DECLARED_CONSTEXPR_P (current_function_decl) = false;
-    }
+  if (check_body_p)
+    check_constexpr_ctor_body (last, list);
   /* Finish the function body.  */
   finish_function_body (body);
 

@@ -1,5 +1,10 @@
 2010-11-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46382
+	* semantics.c (check_constexpr_ctor_body): New fn.
+	* parser.c (cp_parser_ctor_initializer_opt_and_function_body): Call it.
+	* cp-tree.h: Declare it.
+
 	PR c++/46335
 	* tree.c (bot_manip): Check TREE_SIDE_EFFECTS as well.
 
