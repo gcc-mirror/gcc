@@ -825,6 +825,21 @@ ira_build_conflicts (void)
 	  IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a),
 			    temp_hard_reg_set);
 	}
+
+      if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
+	{
+	  int regno;
+
+	  /* Allocnos bigger than the saved part of call saved
+	     regs must conflict with them.  */
+	  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	    if (!TEST_HARD_REG_BIT (call_used_reg_set, regno)
+		&& HARD_REGNO_CALL_PART_CLOBBERED (regno, a->mode))
+	      {
+		SET_HARD_REG_BIT (ALLOCNO_CONFLICT_HARD_REGS (a), regno);
+		SET_HARD_REG_BIT (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a), regno);
+	      }
+	}
     }
   if (optimize && ira_conflicts_p
       && internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
