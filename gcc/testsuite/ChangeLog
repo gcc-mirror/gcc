@@ -1,3 +1,7 @@
+2010-11-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-defarg.C: New.
+
 2010-11-08  Xinliang David Li  <davidxl@google.com>
 
 	PR/46316

@@ -1,5 +1,8 @@
 2010-11-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46335
+	* tree.c (bot_manip): Check TREE_SIDE_EFFECTS as well.
+
 	Correct conversion/overflow behavior.
 	* cvt.c (ignore_overflows): Move here from typeck.c.
 	(ocp_convert): Use it.
