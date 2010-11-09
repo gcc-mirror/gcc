@@ -52,6 +52,14 @@
 	(schedType): Cast result of picochip_schedule_type to
 	enum attr_schedType.
 
+	PR target/44759
+	* config/mn10300/mn10300.c (SIZE_FMOV_LIMIT): Promote all arms of
+	conditional to type of S.
+	(mn10300_function_arg): Remove unused variable align.
+	(mn10300_arg_partial_bytes): Likewise.
+	* config/mn10300/mn10300.md (attribute cpu): Cast value to
+	enum attr_cpu.
+
 2010-11-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/46392
