@@ -1,5 +1,8 @@
 2010-11-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/46360
+	* gcc.c-torture/compile/pr46360.c: New test.
+
 	PR c++/45894
 	* g++.dg/warn/Wsequence-point-2.C: New test.
 
