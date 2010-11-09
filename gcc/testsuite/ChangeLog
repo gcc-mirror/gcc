@@ -1,3 +1,8 @@
+2010-11-08  Xinliang David Li  <davidxl@google.com>
+
+	PR/46316
+	* gcc.dg/tree-ssa/pr46316.c: New test.
+	
 2010-11-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46344

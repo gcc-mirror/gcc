@@ -3403,13 +3403,18 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
     {
       value_range_t maxvr = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
       double_int dtmp;
-      dtmp = double_int_mul (tree_to_double_int (step),
-			     double_int_sub (loop->nb_iterations_upper_bound,
-					     double_int_one));
+      bool unsigned_p = TYPE_UNSIGNED (TREE_TYPE (step));
+      int overflow = 0;
+
+      dtmp = double_int_mul_with_sign (tree_to_double_int (step),
+                                       double_int_sub (
+                                           loop->nb_iterations_upper_bound,
+                                           double_int_one),
+                                       unsigned_p, &overflow);
       tem = double_int_to_tree (TREE_TYPE (init), dtmp);
       /* If the multiplication overflowed we can't do a meaningful
 	 adjustment.  */
-      if (double_int_equal_p (dtmp, tree_to_double_int (tem)))
+      if (!overflow && double_int_equal_p (dtmp, tree_to_double_int (tem)))
 	{
 	  extract_range_from_binary_expr (&maxvr, PLUS_EXPR,
 					  TREE_TYPE (init), init, tem);

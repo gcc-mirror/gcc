@@ -718,6 +718,19 @@ double_int_mul (double_int a, double_int b)
   return ret;
 }
 
+/* Returns A * B. If the operation overflows according to UNSIGNED_P,
+   *OVERFLOW is set to nonzero.  */
+
+double_int
+double_int_mul_with_sign (double_int a, double_int b,
+                          bool unsigned_p, int *overflow)
+{
+  double_int ret;
+  *overflow = mul_double_with_sign (a.low, a.high, b.low, b.high,
+                                    &ret.low, &ret.high, unsigned_p);
+  return ret;
+}
+
 /* Returns A + B.  */
 
 double_int
