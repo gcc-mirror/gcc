@@ -1,3 +1,9 @@
+2010-11-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/46392
+	* gengtype-parse.c (type): Call get_input_file_name to get
+	file name.
+
 2010-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.h (contains_placeholder_p): Fix comment.
