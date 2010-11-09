@@ -1,3 +1,9 @@
+2010-11-09  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46036
+	* tree-if-conv.c (predicate_bbs): Call unshare_expr before
+	add_to_dst_predicate_list.
+
 2010-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46171
