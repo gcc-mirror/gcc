@@ -1,4 +1,8 @@
-2010-11-09  Jakub Jelinek  <jakub@redhat.com>
+2010-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45663
+	* gcc.dg/guality/sra-1.c: Move all gdb-test lines to the second bar invocation
+	instead of first.
 
 	PR debug/46171
 	* gcc.dg/pr46171.c: New test.
