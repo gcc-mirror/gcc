@@ -1,3 +1,10 @@
+2010-11-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46177
+	* tree-loop-distribution.c (prop_phis): Remove.
+	(generate_builtin): Re-use the old loop exit edge to avoid
+	needing to update PHI nodes.
+
 2010-11-09  Joern Rennecke  <amylaar@spamcop.net>
 
 	* ix86_expand_split_stack_prologue (args_size): Change type to
