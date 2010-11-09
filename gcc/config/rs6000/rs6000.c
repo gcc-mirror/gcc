@@ -27230,82 +27230,30 @@ rs6000_address_for_fpconvert (rtx x)
   addr = XEXP (x, 0);
   if (! legitimate_indirect_address_p (addr, strict_p)
       && ! legitimate_indexed_address_p (addr, strict_p))
-    x = replace_equiv_address (x, copy_addr_to_reg (addr));
+    {
+      if (GET_CODE (addr) == PRE_INC || GET_CODE (addr) == PRE_DEC)
+	{
+	  rtx reg = XEXP (addr, 0);
+	  HOST_WIDE_INT size = GET_MODE_SIZE (GET_MODE (x));
+	  rtx size_rtx = GEN_INT ((GET_CODE (addr) == PRE_DEC) ? -size : size);
+	  gcc_assert (REG_P (reg));
+	  emit_insn (gen_add3_insn (reg, reg, size_rtx));
+	  addr = reg;
+	}
+      else if (GET_CODE (addr) == PRE_MODIFY)
+	{
+	  rtx reg = XEXP (addr, 0);
+	  rtx expr = XEXP (addr, 1);
+	  gcc_assert (REG_P (reg));
+	  gcc_assert (GET_CODE (expr) == PLUS);
+	  emit_insn (gen_add3_insn (reg, XEXP (expr, 0), XEXP (expr, 1)));
+	  addr = reg;
+	}
+
+      x = replace_equiv_address (x, copy_addr_to_reg (addr));
+    }
 
   return x;
-}
-
-/* Expand 32-bit int -> floating point conversions.  Return true if
-   successful.  */
-
-void
-rs6000_expand_convert_si_to_sfdf (rtx dest, rtx src, bool unsigned_p)
-{
-  enum machine_mode dmode = GET_MODE (dest);
-  rtx (*func_si) (rtx, rtx, rtx, rtx);
-  rtx (*func_si_mem) (rtx, rtx);
-  rtx (*func_di) (rtx, rtx);
-  rtx reg, stack;
-
-  gcc_assert (GET_MODE (src) == SImode);
-
-  if (dmode == SFmode)
-    {
-      if (unsigned_p)
-	{
-	  gcc_assert (TARGET_FCFIDUS && TARGET_LFIWZX);
-	  func_si = gen_floatunssisf2_lfiwzx;
-	  func_si_mem = gen_floatunssisf2_lfiwzx_mem;
-	  func_di = gen_floatunsdisf2;
-	}
-      else
-	{
-	  gcc_assert (TARGET_FCFIDS && TARGET_LFIWAX);
-	  func_si = gen_floatsisf2_lfiwax;
-	  func_si_mem = gen_floatsisf2_lfiwax_mem;
-	  func_di = gen_floatdisf2;
-	}
-    }
-
-  else if (dmode == DFmode)
-    {
-      if (unsigned_p)
-	{
-	  gcc_assert (TARGET_FCFIDU && TARGET_LFIWZX);
-	  func_si = gen_floatunssidf2_lfiwzx;
-	  func_si_mem = gen_floatunssidf2_lfiwzx_mem;
-	  func_di = gen_floatunsdidf2;
-	}
-      else
-	{
-	  gcc_assert (TARGET_FCFID && TARGET_LFIWAX);
-	  func_si = gen_floatsidf2_lfiwax;
-	  func_si_mem = gen_floatsidf2_lfiwax_mem;
-	  func_di = gen_floatdidf2;
-	}
-    }
-
-  else
-    gcc_unreachable ();
-
-  if (MEM_P (src))
-    {
-      src = rs6000_address_for_fpconvert (src);
-      emit_insn (func_si_mem (dest, src));
-    }
-  else if (!TARGET_MFPGPR)
-    {
-      reg = gen_reg_rtx (DImode);
-      stack = rs6000_allocate_stack_temp (SImode, false, true);
-      emit_insn (func_si (dest, src, stack, reg));
-    }
-  else
-    {
-      if (!REG_P (src))
-	src = force_reg (SImode, src);
-      reg = convert_to_mode (DImode, src, unsigned_p);
-      emit_insn (func_di (dest, reg));
-    }
 }
 
 #include "gt-rs6000.h"
