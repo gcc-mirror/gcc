@@ -2395,7 +2395,8 @@ c_parser_struct_declaration (c_parser *parser)
       return NULL_TREE;
     }
   finish_declspecs (specs);
-  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
+  if (c_parser_next_token_is (parser, CPP_SEMICOLON)
+      || c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
     {
       tree ret;
       if (!specs->type_seen_p)

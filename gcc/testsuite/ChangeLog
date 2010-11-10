@@ -1,3 +1,7 @@
+2010-11-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/struct-semi-4.c: New test.
+
 2010-11-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/ppc-fpconv-11.c: Use -mcpu=power5+, not
