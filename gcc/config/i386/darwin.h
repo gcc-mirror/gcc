@@ -110,10 +110,12 @@ extern int darwin_emit_branch_islands;
 #define CC1_SPEC "%(cc1_cpu) \
   %{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}} \
   %{!mmacosx-version-min=*:-mmacosx-version-min=%(darwin_minversion)} \
-  %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }}"
+  %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }} " \
+  DARWIN_CC1_SPEC
 
 #undef ASM_SPEC
-#define ASM_SPEC "-arch %(darwin_arch) -force_cpusubtype_ALL"
+#define ASM_SPEC "-arch %(darwin_arch) -force_cpusubtype_ALL \
+  %{static}"
 
 #define DARWIN_ARCH_SPEC "%{m64:x86_64;:i386}"
 #define DARWIN_SUBARCH_SPEC DARWIN_ARCH_SPEC
@@ -140,11 +142,6 @@ extern int darwin_emit_branch_islands;
   { "darwin_arch", DARWIN_ARCH_SPEC },                          \
   { "darwin_crt2", "" },                                        \
   { "darwin_subarch", DARWIN_SUBARCH_SPEC },
-
-/* Use the following macro for any Darwin/x86-specific command-line option
-   translation.  */
-#define SUBTARGET_OPTION_TRANSLATE_TABLE \
-  { "", "" }
 
 /* The Darwin assembler mostly follows AT&T syntax.  */
 #undef ASSEMBLER_DIALECT

@@ -30,11 +30,11 @@ Target RejectNegative InverseMask(64BIT_DOUBLES) Report
 Stores doubles in 32 bits.  This is the default.
 
 nofpu
-Target RejectNegative Mask(NO_USE_FPU) Report
+Target RejectNegative Alias(mnofpu)
 Disable the use of RX FPU instructions.  
 
 mnofpu
-Target RejectNegative Mask(NO_USE_FPU) MaskExists Undocumented
+Target RejectNegative Mask(NO_USE_FPU) Report Undocumented
 
 fpu
 Target RejectNegative InverseMask(NO_USE_FPU) Report

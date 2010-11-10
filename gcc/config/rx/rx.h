@@ -619,10 +619,6 @@ extern int rx_float_compare_mode;
 #define ARG_POINTER_CFA_OFFSET(FNDECL)		4
 #define FRAME_POINTER_CFA_OFFSET(FNDECL)	4
 
-/* Translate -nofpu into -mnofpu so that it gets passed from gcc to cc1.  */
-#define TARGET_OPTION_TRANSLATE_TABLE \
-  {"-nofpu", "-mnofpu" }
-
 #define TARGET_USE_FPU		(! TARGET_NO_USE_FPU)
 
 /* This macro is used to decide when RX FPU instructions can be used.  */

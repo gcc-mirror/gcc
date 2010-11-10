@@ -99,26 +99,6 @@ from being defined in the @file{.h} file to being part of the
 @c prevent bad page break with this line
 You can control the compilation driver.
 
-@defmac TARGET_OPTION_TRANSLATE_TABLE
-If defined, a list of pairs of strings, the first of which is a
-potential command line target to the @file{gcc} driver program, and the
-second of which is a space-separated (tabs and other whitespace are not
-supported) list of options with which to replace the first option.  The
-target defining this list is responsible for assuring that the results
-are valid.  Replacement options may not be the @code{--opt} style, they
-must be the @code{-opt} style.  It is the intention of this macro to
-provide a mechanism for substitution that affects the multilibs chosen,
-such as one option that enables many options, some of which select
-multilibs.  Example nonsensical definition, where @option{-malt-abi},
-@option{-EB}, and @option{-mspoo} cause different multilibs to be chosen:
-
-@smallexample
-#define TARGET_OPTION_TRANSLATE_TABLE \
-@{ "-fast",   "-march=fast-foo -malt-abi -I/usr/fast-foo" @}, \
-@{ "-compat", "-EB -malign=4 -mspoo" @}
-@end smallexample
-@end defmac
-
 @defmac DRIVER_SELF_SPECS
 A list of specs for the driver itself.  It should be a suitable
 initializer for an array of strings, with no surrounding braces.

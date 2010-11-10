@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "flags.h"
 #include "diagnostic.h"
-#include "tm.h" /* For TARGET_OPTION_TRANSLATE_TABLE.  */
 
 static void prune_options (struct cl_decoded_option **, unsigned int *);
 
@@ -567,17 +566,6 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   return result;
 }
 
-#ifdef TARGET_OPTION_TRANSLATE_TABLE
-static const struct {
-  const char *const option_found;
-  const char *const replacements;
-} target_option_translations[] =
-{
-  TARGET_OPTION_TRANSLATE_TABLE,
-  { 0, 0 }
-};
-#endif
-
 /* Decode command-line options (ARGC and ARGV being the arguments of
    main) into an array, setting *DECODED_OPTIONS to a pointer to that
    array and *DECODED_OPTIONS_COUNT to the number of entries in the
@@ -593,7 +581,7 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 				 struct cl_decoded_option **decoded_options,
 				 unsigned int *decoded_options_count)
 {
-  unsigned int n, i, target_translate_from;
+  unsigned int n, i;
   struct cl_decoded_option *opt_array;
   unsigned int num_decoded_options;
   bool argv_copied = false;
@@ -613,7 +601,6 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
   opt_array[0].errors = 0;
   num_decoded_options = 1;
 
-  target_translate_from = 1;
   for (i = 1; i < argc; i += n)
     {
       const char *opt = argv[i];
@@ -625,81 +612,6 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 	  num_decoded_options++;
 	  n = 1;
 	  continue;
-	}
-
-      if (i >= target_translate_from && (lang_mask & CL_DRIVER))
-	{
-#ifdef TARGET_OPTION_TRANSLATE_TABLE
-	  int tott_idx;
-
-	  for (tott_idx = 0;
-	       target_option_translations[tott_idx].option_found;
-	       tott_idx++)
-	    {
-	      if (strcmp (target_option_translations[tott_idx].option_found,
-			  argv[i]) == 0)
-		{
-		  unsigned int spaces = 0;
-		  unsigned int m = 0;
-		  const char *sp;
-		  char *np;
-
-		  for (sp = target_option_translations[tott_idx].replacements;
-		       *sp; sp++)
-		    {
-		      if (*sp == ' ')
-			{
-			  spaces++;
-			  while (*sp == ' ')
-			    sp++;
-			  sp--;
-			}
-		    }
-
-		  if (spaces)
-		    {
-		      int new_argc = argc + spaces;
-		      if (argv_copied)
-			argv = XRESIZEVEC (const char *, argv, new_argc + 1);
-		      else
-			{
-			  const char **new_argv = XNEWVEC (const char *,
-							   new_argc + 1);
-			  memcpy (new_argv, argv,
-				  (argc + 1) * sizeof (const char *));
-			  argv = new_argv;
-			  argv_copied = true;
-			}
-		      memmove (&argv[i] + spaces, &argv[i],
-			       (argc + 1 - i) * sizeof (const char *));
-		      argc = new_argc;
-		      opt_array = XRESIZEVEC (struct cl_decoded_option,
-					      opt_array, argc);
-		    }
-
-		  sp = target_option_translations[tott_idx].replacements;
-		  np = xstrdup (sp);
-
-		  while (1)
-		    {
-		      while (*np == ' ')
-			np++;
-		      if (*np == 0)
-			break;
-		      argv[i + m++] = np;
-		      while (*np != ' ' && *np)
-			np++;
-		      if (*np == 0)
-			break;
-		      *np++ = 0;
-		    }
-
-		  target_translate_from = i + m;
-		  gcc_assert (m == spaces + 1);
-		  break;
-		}
-	    }
-#endif
 	}
 
       n = decode_cmdline_option (argv + i, lang_mask,

@@ -123,71 +123,16 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* True if pragma ms_struct is in effect.  */
 extern GTY(()) int darwin_ms_struct;
 
-/* This table intercepts weirdo options whose names would interfere
-   with normal driver conventions, and either translates them into
-   standardly-named options, or adds a 'Z' so that they can get to
-   specs processing without interference.
+#define DRIVER_SELF_SPECS					\
+  "%{gfull:-g -fno-eliminate-unused-debug-symbols} %<gfull",	\
+  "%{gused:-g -feliminate-unused-debug-symbols} %<gused",	\
+  "%{fapple-kext|mkernel:-static}",				\
+  "%{shared:-Zdynamiclib} %<shared"
 
-   Do not expand a linker option to "-Xlinker -<option>", since that
-   forfeits the ability to control via spec strings later.  However,
-   as a special exception, do this translation with -filelist, because
-   otherwise the driver will think there are no input files and quit.
-   (The alternative would be to hack the driver to recognize -filelist
-   specially, but it's simpler to use the translation table.)
-
-   Note that an option name with a prefix that matches another option
-   name, that also takes an argument, needs to be modified so the
-   prefix is different, otherwise a '*' after the shorter option will
-   match with the longer one.
-
-   The SUBTARGET_OPTION_TRANSLATE_TABLE macro, which _must_ be defined
-   in gcc/config/{i386,rs6000}/darwin.h, should contain any additional
-   command-line option translations specific to the particular target
-   architecture.  */
-
-#define TARGET_OPTION_TRANSLATE_TABLE \
-  { "-all_load", "-Zall_load" },  \
-  { "-allowable_client", "-Zallowable_client" },  \
-  { "-arch_errors_fatal", "-Zarch_errors_fatal" },  \
-  { "-bind_at_load", "-Zbind_at_load" },  \
-  { "-bundle", "-Zbundle" },  \
-  { "-bundle_loader", "-Zbundle_loader" },  \
-  { "-weak_reference_mismatches", "-Zweak_reference_mismatches" },  \
-  { "-dead_strip", "-Zdead_strip" }, \
-  { "-no_dead_strip_inits_and_terms", "-Zno_dead_strip_inits_and_terms" }, \
-  { "-dependency-file", "-MF" }, \
-  { "-dylib_file", "-Zdylib_file" }, \
-  { "-dynamic", "-Zdynamic" },  \
-  { "-dynamiclib", "-Zdynamiclib" },  \
-  { "-exported_symbols_list", "-Zexported_symbols_list" },  \
-  { "-gfull", "-g -fno-eliminate-unused-debug-symbols" }, \
-  { "-gused", "-g -feliminate-unused-debug-symbols" }, \
-  { "-segaddr", "-Zsegaddr" }, \
-  { "-segs_read_only_addr", "-Zsegs_read_only_addr" }, \
-  { "-segs_read_write_addr", "-Zsegs_read_write_addr" }, \
-  { "-seg_addr_table", "-Zseg_addr_table" }, \
-  { "-seg_addr_table_filename", "-Zfn_seg_addr_table_filename" }, \
-  { "-umbrella", "-Zumbrella" }, \
-  { "-fapple-kext", "-fapple-kext -static -Wa,-static" }, \
-  { "-filelist", "-Xlinker -filelist -Xlinker" },  \
-  { "-findirect-virtual-calls", "-fapple-kext" }, \
-  { "-flat_namespace", "-Zflat_namespace" },  \
-  { "-force_cpusubtype_ALL", "-Zforce_cpusubtype_ALL" },  \
-  { "-force_flat_namespace", "-Zforce_flat_namespace" },  \
-  { "-framework", "-Xlinker -framework -Xlinker" },  \
-  { "-fterminated-vtables", "-fapple-kext" }, \
-  { "-image_base", "-Zimage_base" },  \
-  { "-init", "-Zinit" },  \
-  { "-install_name", "-Zinstall_name" },  \
-  { "-mkernel", "-mkernel -static -Wa,-static" }, \
-  { "-multiply_defined_unused", "-Zmultiplydefinedunused" },  \
-  { "-multiply_defined", "-Zmultiply_defined" },  \
-  { "-multi_module", "-Zmulti_module" },  \
-  { "-static", "-static -Wa,-static" },  \
-  { "-shared", "-Zdynamiclib" }, \
-  { "-single_module", "-Zsingle_module" },  \
-  { "-unexported_symbols_list", "-Zunexported_symbols_list" }, \
-  SUBTARGET_OPTION_TRANSLATE_TABLE
+#define DARWIN_CC1_SPEC							\
+  "%{findirect-virtual-calls: -fapple-kext} %<findirect-virtual-calls " \
+  "%{fterminated-vtables: -fapple-kext} %<fterminated-vtables "		\
+  "%<filelist* %<framework*"
 
 #define SUBSUBTARGET_OVERRIDE_OPTIONS					\
   do {									\
@@ -416,7 +361,8 @@ extern GTY(()) int darwin_ms_struct;
 
 /* Default Darwin ASM_SPEC, very simple.  */
 #define ASM_SPEC "-arch %(darwin_arch) \
-  %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL}"
+  %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
+  %{static}"
 
 /* We still allow output of STABS.  */
 
@@ -1037,12 +983,10 @@ __enable_execute_stack (void *addr)                                     \
 
 #define TARGET_HAS_TARGETCM 1
 
-#ifndef CROSS_DIRECTORY_STRUCTURE
-extern void darwin_default_min_version (unsigned int *decoded_options_count,
-					struct cl_decoded_option **decoded_options);
+extern void darwin_driver_init (unsigned int *decoded_options_count,
+				struct cl_decoded_option **decoded_options);
 #define GCC_DRIVER_HOST_INITIALIZATION \
-  darwin_default_min_version (&decoded_options_count, &decoded_options)
-#endif /* CROSS_DIRECTORY_STRUCTURE */
+  darwin_driver_init (&decoded_options_count, &decoded_options)
 
 /* The Apple assembler and linker do not support constructor priorities.  */
 #undef SUPPORTS_INIT_PRIORITY
