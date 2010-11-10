@@ -1,3 +1,8 @@
+2010-11-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/46065
+	* g++.dg/pr46065.C: New test.
+
 2010-11-10  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimize/33172
