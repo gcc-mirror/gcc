@@ -749,9 +749,9 @@ spu_expand_insv (rtx ops[])
   HOST_WIDE_INT width = INTVAL (ops[1]);
   HOST_WIDE_INT start = INTVAL (ops[2]);
   HOST_WIDE_INT maskbits;
-  enum machine_mode dst_mode, src_mode;
+  enum machine_mode dst_mode;
   rtx dst = ops[0], src = ops[3];
-  int dst_size, src_size;
+  int dst_size;
   rtx mask;
   rtx shift_reg;
   int shift;
@@ -771,8 +771,6 @@ spu_expand_insv (rtx ops[])
       src = force_reg (m, convert_to_mode (m, src, 0));
     }
   src = adjust_operand (src, 0);
-  src_mode = GET_MODE (src);
-  src_size = GET_MODE_BITSIZE (GET_MODE (src));
 
   mask = gen_reg_rtx (dst_mode);
   shift_reg = gen_reg_rtx (dst_mode);
@@ -4974,6 +4972,7 @@ spu_split_store (rtx * ops)
 	}
     }
 
+  gcc_assert (aform == 0 || aform == 1);
   reg = gen_reg_rtx (TImode);
 
   scalar = store_with_one_insn_p (ops[0]);
@@ -7111,7 +7110,7 @@ spu_split_convert (rtx ops[])
 }
 
 void
-spu_function_profiler (FILE * file, int labelno)
+spu_function_profiler (FILE * file, int labelno ATTRIBUTE_UNUSED)
 {
   fprintf (file, "# profile\n");
   fprintf (file, "brsl $75,  _mcount\n");

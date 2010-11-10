@@ -141,6 +141,11 @@
 	unsigned.
 	(mmix_expand_prologue): Use add_reg_note.
 
+	PR target/46417
+	* config/spu/spu.c (spu_expand_insv): Remove unused variables.
+	(spu_split_store): Use aform.
+	(spu_function_profiler): Mark parameter labelno with ATTRIBUTE_UNUSED.
+
 2010-11-10  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	PR/46268
