@@ -1224,7 +1224,7 @@ predicate_scalar_phi (gimple phi, tree cond,
 {
   gimple new_stmt;
   basic_block bb;
-  tree rhs, res, arg;
+  tree rhs, res, arg, scev;
 
   gcc_assert (gimple_code (phi) == GIMPLE_PHI
 	      && gimple_phi_num_args (phi) == 2);
@@ -1236,8 +1236,12 @@ predicate_scalar_phi (gimple phi, tree cond,
 
   bb = gimple_bb (phi);
 
-  arg = degenerate_phi_result (phi);
-  if (arg)
+  if ((arg = degenerate_phi_result (phi))
+      || ((scev = analyze_scalar_evolution (gimple_bb (phi)->loop_father,
+					    res))
+	  && !chrec_contains_undetermined (scev)
+	  && scev != res
+	  && (arg = gimple_phi_arg_def (phi, 0))))
     rhs = arg;
   else
     {
