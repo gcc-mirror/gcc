@@ -170,7 +170,7 @@ namespace __profile
       { 
         size_type __old_size = _Base::bucket_count(); 
         _Base::insert(__l);
-        _M_profile_resize(__old_size, _Base::bucket_count()); 
+        _M_profile_resize(__old_size); 
       }
 
       std::pair<iterator, bool>
@@ -178,7 +178,7 @@ namespace __profile
       {
         size_type __old_size =  _Base::bucket_count();
         std::pair<iterator, bool> __res = _Base::insert(__obj);
-        _M_profile_resize(__old_size, _Base::bucket_count()); 
+        _M_profile_resize(__old_size); 
         return __res;
       }
 
@@ -187,7 +187,7 @@ namespace __profile
       { 
         size_type __old_size = _Base::bucket_count(); 
         iterator __res = _Base::insert(__iter, __v);
-        _M_profile_resize(__old_size, _Base::bucket_count()); 
+        _M_profile_resize(__old_size); 
         return __res;
       }
 
@@ -200,7 +200,7 @@ namespace __profile
 	  size_type __old_size =  _Base::bucket_count();
 	  std::pair<iterator, bool> __res
 	    = _Base::insert(std::forward<_Pair>(__obj));
-	  _M_profile_resize(__old_size, _Base::bucket_count()); 
+	  _M_profile_resize(__old_size); 
 	  return __res;
 	}
 
@@ -212,7 +212,7 @@ namespace __profile
         { 
 	  size_type __old_size = _Base::bucket_count(); 
 	  iterator __res = _Base::insert(__iter, std::forward<_Pair>(__v));
-	  _M_profile_resize(__old_size, _Base::bucket_count()); 
+	  _M_profile_resize(__old_size); 
 	  return __res;
 	}
 
@@ -222,7 +222,7 @@ namespace __profile
         {
 	  size_type __old_size = _Base::bucket_count(); 
 	  _Base::insert(__first, __last);
-	  _M_profile_resize(__old_size, _Base::bucket_count()); 
+	  _M_profile_resize(__old_size); 
 	}
 
       void
@@ -230,7 +230,7 @@ namespace __profile
       {
         size_type __old_size = _Base::bucket_count(); 
         _Base::insert(__first, __last);
-        _M_profile_resize(__old_size, _Base::bucket_count()); 
+        _M_profile_resize(__old_size); 
       }
 
       // operator[]
@@ -239,8 +239,7 @@ namespace __profile
       {
         size_type __old_size =  _Base::bucket_count();
         mapped_type& __res = _M_base()[__k];
-        size_type __new_size =  _Base::bucket_count();
-        _M_profile_resize(__old_size, _Base::bucket_count()); 
+        _M_profile_resize(__old_size); 
         return __res;
       }
 
@@ -249,8 +248,7 @@ namespace __profile
       {
         size_type __old_size =  _Base::bucket_count();
         mapped_type& __res = _M_base()[std::move(__k)];
-        size_type __new_size =  _Base::bucket_count();
-        _M_profile_resize(__old_size, _Base::bucket_count()); 
+        _M_profile_resize(__old_size); 
         return __res;
       }
 
@@ -262,13 +260,14 @@ namespace __profile
       {
         size_type __old_size =  _Base::bucket_count();
         _Base::rehash(__n);
-        _M_profile_resize(__old_size, _Base::bucket_count()); 
+        _M_profile_resize(__old_size); 
       }
 
     private:
       void
-      _M_profile_resize(size_type __old_size, size_type __new_size)
+      _M_profile_resize(size_type __old_size)
       {
+	size_type __new_size = _Base::bucket_count();
         if (__old_size != __new_size)
 	  __profcxx_hashtable_resize(this, __old_size, __new_size);
       }
