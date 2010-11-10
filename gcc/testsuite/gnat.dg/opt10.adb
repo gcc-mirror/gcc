@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-O2 }
+-- { dg-options "-O2" }
 
 with Opt10_Pkg; use Opt10_Pkg;
 
