@@ -22,6 +22,9 @@
 	(expand_one_builtin): Use expand_normal.
 	(iq2000_print_operand): Don't print VALUE if calculating it failed.
 
+	PR rtl-optimization/44764
+	* addresses.h (ok_for_base_p_1): Mark regno with ATTRIBUTE_UNUSED.
+
 2010-11-10  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	PR/46268
