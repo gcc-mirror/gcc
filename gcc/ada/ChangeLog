@@ -1,5 +1,12 @@
 2010-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gigi): Don't set 'pure' flag on SJLJ routines.
+	* gcc-interface/utils2.c (compare_arrays): Add LOC parameter.  Set it
+	directly on all the comparison expressions.
+	(build_binary_op): Pass input_location to compare_arrays.
+
+2010-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (lvalue_required_p) <N_Type_Conversion>): Look
 	through it for elementary types as well.
 	<N_Unchecked_Type_Conversion>: Adjust to above change.
