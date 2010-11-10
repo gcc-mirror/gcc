@@ -1,3 +1,9 @@
+2010-11-10  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/45971
+	* tree-if-conv.c (predicate_scalar_phi): Do not generate a COND_EXPR
+	for phi nodes analyzable by scev.
+
 2010-11-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44964

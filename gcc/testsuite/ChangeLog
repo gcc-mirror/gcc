@@ -1,3 +1,8 @@
+2010-11-10  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/45971
+	* gcc.dg/vect/O3-pr45971.c: New.
+
 2010-11-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44964
