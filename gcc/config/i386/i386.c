@@ -2326,7 +2326,7 @@ static int ix86_isa_flags_explicit;
   (OPTION_MASK_ISA_ABM | OPTION_MASK_ISA_POPCNT)
 
 #define OPTION_MASK_ISA_BMI_SET OPTION_MASK_ISA_BMI
-
+#define OPTION_MASK_ISA_TBM_SET OPTION_MASK_ISA_TBM
 #define OPTION_MASK_ISA_POPCNT_SET OPTION_MASK_ISA_POPCNT
 #define OPTION_MASK_ISA_CX16_SET OPTION_MASK_ISA_CX16
 #define OPTION_MASK_ISA_SAHF_SET OPTION_MASK_ISA_SAHF
@@ -2382,6 +2382,7 @@ static int ix86_isa_flags_explicit;
 #define OPTION_MASK_ISA_PCLMUL_UNSET OPTION_MASK_ISA_PCLMUL
 #define OPTION_MASK_ISA_ABM_UNSET OPTION_MASK_ISA_ABM
 #define OPTION_MASK_ISA_BMI_UNSET OPTION_MASK_ISA_BMI
+#define OPTION_MASK_ISA_TBM_UNSET OPTION_MASK_ISA_TBM
 #define OPTION_MASK_ISA_POPCNT_UNSET OPTION_MASK_ISA_POPCNT
 #define OPTION_MASK_ISA_CX16_UNSET OPTION_MASK_ISA_CX16
 #define OPTION_MASK_ISA_SAHF_UNSET OPTION_MASK_ISA_SAHF
@@ -2697,6 +2698,19 @@ ix86_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
 	}
       return true;
 
+    case OPT_mtbm:
+      if (value)
+	{
+	  ix86_isa_flags |= OPTION_MASK_ISA_TBM_SET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_TBM_SET;
+	}
+      else
+	{
+	  ix86_isa_flags &= ~OPTION_MASK_ISA_TBM_UNSET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_TBM_UNSET;
+	}
+      return true;
+
     case OPT_mpopcnt:
       if (value)
 	{
@@ -2866,6 +2880,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
     { "-mmmx",		OPTION_MASK_ISA_MMX },
     { "-mabm",		OPTION_MASK_ISA_ABM },
     { "-mbmi",		OPTION_MASK_ISA_BMI },
+    { "-mtbm",		OPTION_MASK_ISA_TBM },
     { "-mpopcnt",	OPTION_MASK_ISA_POPCNT },
     { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
     { "-mcrc32",	OPTION_MASK_ISA_CRC32 },
@@ -3122,7 +3137,8 @@ ix86_option_override_internal (bool main_args_p)
       PTA_FSGSBASE = 1 << 24,
       PTA_RDRND = 1 << 25,
       PTA_F16C = 1 << 26,
-      PTA_BMI = 1 << 27
+      PTA_BMI = 1 << 27,
+      PTA_TBM = 1 << 28
       /* if this reaches 32, need to widen struct pta flags below */
     };
 
@@ -3461,6 +3477,9 @@ ix86_option_override_internal (bool main_args_p)
 	if (processor_alias_table[i].flags & PTA_BMI
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_BMI))
 	  ix86_isa_flags |= OPTION_MASK_ISA_BMI;
+	if (processor_alias_table[i].flags & PTA_TBM
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_TBM))
+	  ix86_isa_flags |= OPTION_MASK_ISA_TBM;
 	if (processor_alias_table[i].flags & PTA_CX16
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_CX16))
 	  ix86_isa_flags |= OPTION_MASK_ISA_CX16;
@@ -4299,6 +4318,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[])
     IX86_ATTR_ISA ("3dnow",	OPT_m3dnow),
     IX86_ATTR_ISA ("abm",	OPT_mabm),
     IX86_ATTR_ISA ("bmi",	OPT_mbmi),
+    IX86_ATTR_ISA ("tbm",	OPT_mtbm),
     IX86_ATTR_ISA ("aes",	OPT_maes),
     IX86_ATTR_ISA ("avx",	OPT_mavx),
     IX86_ATTR_ISA ("mmx",	OPT_mmmx),
@@ -24044,6 +24064,11 @@ enum ix86_builtins
   IX86_BUILTIN_BEXTR64,
   IX86_BUILTIN_CTZS,
 
+  /* TBM instructions.  */
+  IX86_BUILTIN_BEXTRI32,
+  IX86_BUILTIN_BEXTRI64,
+
+
   /* FSGSBASE instructions.  */
   IX86_BUILTIN_RDFSBASE32,
   IX86_BUILTIN_RDFSBASE64,
@@ -24987,6 +25012,10 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_BMI, CODE_FOR_bmi_bextr_si, "__builtin_ia32_bextr_u32", IX86_BUILTIN_BEXTR32, UNKNOWN, (int) UINT_FTYPE_UINT_UINT },
   { OPTION_MASK_ISA_BMI, CODE_FOR_bmi_bextr_di, "__builtin_ia32_bextr_u64", IX86_BUILTIN_BEXTR64, UNKNOWN, (int) UINT64_FTYPE_UINT64_UINT64 },
   { OPTION_MASK_ISA_BMI, CODE_FOR_ctzhi2,       "__builtin_ctzs",           IX86_BUILTIN_CTZS,    UNKNOWN, (int) UINT16_FTYPE_UINT16 },
+
+  /* TBM */
+  { OPTION_MASK_ISA_TBM, CODE_FOR_tbm_bextri_si, "__builtin_ia32_bextri_u32", IX86_BUILTIN_BEXTRI32, UNKNOWN, (int) UINT_FTYPE_UINT_UINT },
+  { OPTION_MASK_ISA_TBM, CODE_FOR_tbm_bextri_di, "__builtin_ia32_bextri_u64", IX86_BUILTIN_BEXTRI64, UNKNOWN, (int) UINT64_FTYPE_UINT64_UINT64 },
 
   /* F16C */
   { OPTION_MASK_ISA_F16C, CODE_FOR_vcvtph2ps, "__builtin_ia32_vcvtph2ps", IX86_BUILTIN_CVTPH2PS, UNKNOWN, (int) V4SF_FTYPE_V8HI },
@@ -27097,6 +27126,32 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	target = gen_reg_rtx (Pmode);
       emit_insn (gen_lwp_slwpcb (target));
       return target;
+
+    case IX86_BUILTIN_BEXTRI32:
+    case IX86_BUILTIN_BEXTRI64:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      icode = (fcode == IX86_BUILTIN_BEXTRI32
+	  ? CODE_FOR_tbm_bextri_si
+	  : CODE_FOR_tbm_bextri_di);
+      if (!CONST_INT_P (op1))
+        {
+          error ("last argument must be an immediate");
+          return const0_rtx;
+        }
+      else
+        {
+          unsigned char length = (INTVAL (op1) >> 8) & 0xFF;
+          unsigned char lsb_index = INTVAL (op1) & 0xFF;
+          op1 = GEN_INT (length);
+          op2 = GEN_INT (lsb_index);
+          pat = GEN_FCN (icode) (target, op0, op1, op2);
+          if (pat)
+            emit_insn (pat);
+          return target;
+        }
 
     default:
       break;

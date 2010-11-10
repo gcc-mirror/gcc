@@ -1,5 +1,20 @@
 2010-11-10  Quentin Neill  <quentin.neill.gnu@gmail.com>
 
+	* g++.dg/other/i386-2.C: Add -mtbm.
+	* g++.dg/other/i386-3.C: Likewise.
+	* gcc.target/i386/funcspec-5.c: Add tbm and no-tbm targets.
+	* gcc.target/i386/funcspec-6.c: Likewise.
+	* gcc.target/i386/sse-12.c: Add -mtbm.
+	* gcc.target/i386/sse-13.c: Add -mtbm and test immediate
+	operand intrinsics.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-22.c: Likewise.
+	* gcc.target/i386/sse-23.c: Likewise.
+	* gcc.target/i386/tbm-1.c: New file.
+	* gcc.target/i386/tbm-2.c: Likewise.
+
+2010-11-10  Quentin Neill  <quentin.neill.gnu@gmail.com>
+
 	* g++.dg/other/i386-2.C: Add -mbmi.
 	* g++.dg/other/i386-3.C: Likewise.
 	* gcc.target/i386/funcspec-5.c: Add bmi and no-bmi targets.

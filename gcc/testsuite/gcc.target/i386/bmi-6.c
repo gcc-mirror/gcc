@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-options "-O0 -mbmi" } */
+/* { dg-options "-O2 -mbmi" } */
 
 #include <x86intrin.h>
 

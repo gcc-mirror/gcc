@@ -1,5 +1,62 @@
 2010-11-10  Quentin Neill  <quentin.neill.gnu@gmail.com>
 
+	* config.gcc (i[34567]86-*-*): Include tbmintrin.h.
+	(x86_64-*-*): Likewise.
+	* config/i386/cpuid.h: Define TBM bit.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Define
+	and set has_tbm.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Check
+	isa_flag for TBM.
+	* config/i386/i386.c (OPTION_MASK_ISA_TBM_SET): New.
+	(OPTION_MASK_ISA_TBM_UNSET): New.
+	(ix86_handle_option): Handle -mtbm.
+	(isa_opts): Add -mtbm.
+	(enum pta_flags): Add PTA_TBM.
+	(ix86_option_override_internal): Add TBM support.
+	(ix86_valid_target_attribute_inner_p): Handle -mtbm.
+	(IX86_BUILTIN_BEXTRI32): New for TBM intrinsic.
+	(IX86_BUILTIN_BEXTRI64): Likewise.
+	(bdesc_args): Add TBM intrinsics.
+	(ix86_expand_builtin): Add TBM specific case.
+	* config/i386/i386.h (TARGET_TBM): New for TBM.
+	* config/i386/i386.md (UNSPEC_BEXTRI): New for TBM.
+	(tbm_bextri_<mode>): Likewise.
+	(*tbm_blcfill_<mode>): Likewise.
+	(*tbm_blci_<mode>): Likewise.
+	(*tbm_blcic_<mode>): Likewise.
+	(*tbm_blcmsk_<mode>): Likewise.
+	(*tbm_blcs_<mode>): Likewise.
+	(*tbm_blsfill_<mode>): Likewise.
+	(*tbm_blsic_<mode>): Likewise.
+	(*tbm_t1mskc_<mode>): Likewise.
+	(*tbm_tzmsk_<mode>): Likewise.
+	* config/i386/i386.opt: Add -mtbm.
+	* config/i386/tbmintrin.h (__bextri_u32): New.
+	(__blcfill_u32): Likewise.
+	(__blci_u32): Likewise.
+	(__blcic_u32): Likewise.
+	(__blcmsk_u32): Likewise.
+	(__blcs_u32): Likewise.
+	(__blsfill_u32): Likewise.
+	(__blsic_u32): Likewise.
+	(__t1mskc_u32): Likewise.
+	(__tzmsk_u32): Likewise.
+	(__bextri_u64): Likewise.
+	(__blcfill_u64): Likewise.
+	(__blci_u64): Likewise.
+	(__blcic_u64): Likewise.
+	(__blcmsk_u64): Likewise.
+	(__blcs_u64): Likewise.
+	(__blsfill_u64): Likewise.
+	(__blsic_u64): Likewise.
+	(__t1mskc_u64): Likewise.
+	(__tzmsk_u64): Likewise.
+	* config/i386/x86intrin.h: Add TBM check and tbmintrin.h.
+	* doc/invoke.texi: Document -mtbm.
+	* doc/extend.texi: Document TBM built-in functions.
+
+2010-11-10  Quentin Neill  <quentin.neill.gnu@gmail.com>
+
 	* config.gcc (i[34567]86-*-*): Include bmiintrin.h.
 	(x86_64-*-*): Likewise.
 	* config/i386/cpuid.h: Define BMI bit.

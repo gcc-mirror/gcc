@@ -85,6 +85,10 @@
 #include <bmiintrin.h>
 #endif
 
+#ifdef __TBM__
+#include <tbmintrin.h>
+#endif
+
 #ifdef __POPCNT__
 #include <popcntintrin.h>
 #endif

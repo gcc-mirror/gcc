@@ -19,6 +19,7 @@ extern void test_sse4_2 (void)			__attribute__((__target__("sse4.2")));
 extern void test_sse4a (void)			__attribute__((__target__("sse4a")));
 extern void test_fma4 (void)			__attribute__((__target__("fma4")));
 extern void test_ssse3 (void)			__attribute__((__target__("ssse3")));
+extern void test_tbm (void)			__attribute__((__target__("tbm")));
 
 extern void test_no_abm (void)			__attribute__((__target__("no-abm")));
 extern void test_no_aes (void)			__attribute__((__target__("no-aes")));
@@ -36,6 +37,7 @@ extern void test_no_sse4_2 (void)		__attribute__((__target__("no-sse4.2")));
 extern void test_no_sse4a (void)		__attribute__((__target__("no-sse4a")));
 extern void test_no_fma4 (void)			__attribute__((__target__("no-fma4")));
 extern void test_no_ssse3 (void)		__attribute__((__target__("no-ssse3")));
+extern void test_no_tbm (void)			__attribute__((__target__("no-tbm")));
 
 extern void test_arch_nocona (void)		__attribute__((__target__("arch=nocona")));
 extern void test_arch_core2 (void)		__attribute__((__target__("arch=core2")));
