@@ -1,3 +1,8 @@
+2010-11-10  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/profile/unordered_map (unordered_map<>::_M_profile_size):
+	Simplify, don't take a __new_size argument; adjust all callers.
+
 2010-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/44436 (partial)
@@ -1524,13 +1529,13 @@
 
 2010-09-03  François Dumont <francois.cppdevs@free.fr>
 
-        * testsuite/lib/libstdc++.exp ([check_v3_target_debug_mode]): Fix so
-        that it really detects when debug mode is activated.
-        * testsuite/util/debug/construct_neg.h, insert_neg.h, assign_neg.h:
-        Remove, content moved...
-        * testsuite/util/debug/checks.h: ... here. Modify checks to take the
+	* testsuite/lib/libstdc++.exp ([check_v3_target_debug_mode]): Fix so
+	that it really detects when debug mode is activated.
+	* testsuite/util/debug/construct_neg.h, insert_neg.h, assign_neg.h:
+	Remove, content moved...
+	* testsuite/util/debug/checks.h: ... here. Modify checks to take the
 	type of the container to test rather than an intermediate container
-        type traits helper.
+	type traits helper.
 	* testsuite/23_containers/unordered_map/debug/insert1_neg.cc: Update to
 	use dg-require-debug-mode when necessary and use new check functions.
 	* testsuite/23_containers/unordered_map/debug/construct1_neg.cc:
