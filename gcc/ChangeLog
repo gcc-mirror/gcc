@@ -567,8 +567,9 @@
 	* expr.c (emit_push_insn): Cast value of PUSH_ROUNDING before
 	comparing it to a signed value.
 
-	PR bootstrap/44756
+	PR middle-end/44766
 	* expr.c (can_store_by_pieces): Add ATTRIBUTE_UNUSED to cst.
+	PR bootstrap/44756
 	* haifa-sched.c (initiate_bb_reg_pressure_info): Add ATTRIBUTE_UNUSED
 	to i.
 
