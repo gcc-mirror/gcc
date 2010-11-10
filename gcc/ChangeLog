@@ -1,3 +1,9 @@
+2010-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/46419
+	* config/i386/xmmintrin.h (_mm_cvtpi16_ps): Swap __hisi and __losi.
+	(_mm_cvtpu16_ps): Ditto.
+
 2010-11-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (flag_excess_precision_cmdline, flag_generate_lto,
@@ -34,8 +40,7 @@
 	OPT_dumpdir, OPT_falign_functions_, OPT_falign_jumps_,
 	OPT_falign_labels_, OPT_falign_loops_, OPT_fira_verbose_, OPT_o or
 	OPT_fwhopr_.  Do not explicitly set .opt file variables for
-	OPT_aux_info or OPT_pedantic_errors.  Use dc for diagnostic
-	context.
+	OPT_aux_info or OPT_pedantic_errors.  Use dc for diagnostic context.
 	(set_Wstrict_aliasing): Add gcc_options parameter.
 	* opts.h (struct cl_option_handler_func): Add diagnostic_context
 	parameter to handler.
@@ -210,8 +215,7 @@
 	* doc/tm.texi: Regenerate.
 	* opts-common.c (tm.h): Don't include.
 	(target_option_translations): Remove.
-	(decode_cmdline_options_to_array): Don't handle translating
-	options.
+	(decode_cmdline_options_to_array): Don't handle translating options.
 	* system.h (TARGET_OPTION_TRANSLATE_TABLE): Poison.
 	* config/darwin-driver.c: Don't condition includes on
 	CROSS_DIRECTORY_STRUCTURE.
@@ -247,12 +251,10 @@
 	(DRIVER_SELF_SPECS): Handle options formerly in
 	TARGET_OPTION_TRANSLATE_TABLE.
 	* config/mep/mep.opt (mfar): New.
-	* config/picochip/picochip.h (TARGET_OPTION_TRANSLATE_TABLE):
-	Remove.
+	* config/picochip/picochip.h (TARGET_OPTION_TRANSLATE_TABLE): Remove.
 	(DRIVER_SELF_SPECS): Define.  Handle options formerly in
 	TARGET_OPTION_TRANSLATE_TABLE.
-	* config/rs6000/darwin.h (CC1_SPEC): Handle -faltivec and
-	-fno-altivec.
+	* config/rs6000/darwin.h (CC1_SPEC): Handle -faltivec and -fno-altivec.
 	(SUBTARGET_OPTION_TRANSLATE_TABLE): Remove.
 	* config/rs6000/darwin.opt (Waltivec-long-deprecated, faltivec,
 	ffix-and-continue, findirect-data): New.
@@ -330,7 +332,7 @@
 	initialized at ggc_collect call.
 	(Troubleshooting): New section.
 
-2010-11-09   Jan Hubicka  <jh@suse.cz>
+2010-11-09  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/40436
 	* ipa-inline.c (leaf_node_p): Implement using is_inexpensive_builtin.
@@ -374,8 +376,7 @@
 	(fix_trunc<mode>si2_mem): Ditto.
 	(fixuns_trunc<mode>si2_mem): Ditto.
 	(round32<mode>2_fprs): New combiner insn to combine (double)(int)
-	type operations to reduce copying the values to multiple memory
-	slots.
+	type operations to reduce copying the values to multiple memory slots.
 	(roundu32<mode>2_fprs): Ditto.
 
 	* config/rs6000/rs6000.c (rs6000_address_for_fpconvert): Handle
@@ -428,8 +429,7 @@
 
 2010-11-09  Paul Koning  <ni1d@arrl.net>
 
-	* config/pdp11/pdp11.md (lshrsi3, lshrhi3): Use add for
-	decrement. 
+	* config/pdp11/pdp11.md (lshrsi3, lshrhi3): Use add for decrement.
 
 2010-11-09  Richard Guenther  <rguenther@suse.de>
 
@@ -479,8 +479,7 @@
 2010-11-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/46392
-	* gengtype-parse.c (type): Call get_input_file_name to get
-	file name.
+	* gengtype-parse.c (type): Call get_input_file_name to get file name.
 
 2010-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -518,8 +517,7 @@
 2010-11-09  Basile Starynkevitch  <basile@starynkevitch.net>
 	    Jeremie Salvucci  <jeremie.salvucci@free.fr>
 
-	* gengtype.c (get_output_file_name): Declaration moved to
-	gengtype.h.
+	* gengtype.c (get_output_file_name): Declaration moved to gengtype.h.
 	(plugin_files, get_file_basename, get_file_realbasename)
 	(get_file_langdir, error_at_line, gt_files, this_file)
 	(system_h_file, read_input_list, create_field_all)
@@ -536,11 +534,10 @@
 	* gengtype.h: (struct input_file_st, input_file): New type.
 	(struct fileloc): Use it.
 	(gt_files, num_gt_files, this_file, system_h_file)
-	(input_file_by_name, get_file_srcdir_relative_path): Use
-	input_file.
+	(input_file_by_name, get_file_srcdir_relative_path): Use input_file.
 	(get_input_file_name): New function.
 	(get_lang_bitmap, set_lang_bitmap): Moved from gengtype.c and
-        use input_file.
+	use input_file.
 	(lang_dir_names, num_lang_dirs, get_output_file_with_visibility)
 	(get_output_file_name): Ditto.
 
@@ -619,8 +616,7 @@
 
 2010-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* config/i386/i386.c (ix86_function_arg_boundary): Fix warning
-	message.
+	* config/i386/i386.c (ix86_function_arg_boundary): Fix warning message.
 
 2010-11-08  Basile Starynkevitch  <basile@starynkevitch.net>
 
