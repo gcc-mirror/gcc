@@ -829,29 +829,25 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 	      || (Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
 		  && Is_Atomic (Entity (Name (gnat_parent)))));
 
-    case N_Type_Conversion:
-    case N_Qualified_Expression:
-      /* We must look through all conversions for composite types because we
-	 may need to bypass an intermediate conversion to a narrower record
-	 type that is generated for a formal conversion, e.g. the conversion
-	 to the root type of a hierarchy of tagged types generated for the
-	 formal conversion to the class-wide type.  */
-      if (!Is_Composite_Type (Underlying_Type (Etype (gnat_node))))
-	return 0;
+    case N_Unchecked_Type_Conversion:
+	if (!constant)
+	  return 1;
 
       /* ... fall through ... */
 
-    case N_Unchecked_Type_Conversion:
-      return (!constant
-	      || lvalue_required_p (gnat_parent,
-				    get_unpadded_type (Etype (gnat_parent)),
-				    constant, address_of_constant, aliased));
+    case N_Type_Conversion:
+    case N_Qualified_Expression:
+      /* We must look through all conversions because we may need to bypass
+	 an intermediate conversion that is meant to be purely formal.  */
+     return lvalue_required_p (gnat_parent,
+			       get_unpadded_type (Etype (gnat_parent)),
+			       constant, address_of_constant, aliased);
 
     case N_Allocator:
-      /* We should only reach here through the N_Qualified_Expression case
-	 and, therefore, only for composite types.  Force an lvalue since
-	 a block-copy to the newly allocated area of memory is made.  */
-      return 1;
+      /* We should only reach here through the N_Qualified_Expression case.
+	 Force an lvalue for composite types since a block-copy to the newly
+	 allocated area of memory is made.  */
+      return Is_Composite_Type (Underlying_Type (Etype (gnat_node)));
 
    case N_Explicit_Dereference:
       /* We look through dereferences for address of constant because we need
@@ -5781,6 +5777,7 @@ gnat_to_gnu (Node_Id gnat_node)
      so that the code just below can put the location information of the
      reference to B on the inequality operator for better debug info.  */
   if (!optimize
+      && TREE_CODE (gnu_result) != INTEGER_CST
       && (kind == N_Identifier
 	  || kind == N_Expanded_Name
 	  || kind == N_Explicit_Dereference

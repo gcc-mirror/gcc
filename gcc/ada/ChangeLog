@@ -1,5 +1,13 @@
 2010-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (lvalue_required_p) <N_Type_Conversion>): Look
+	through it for elementary types as well.
+	<N_Unchecked_Type_Conversion>: Adjust to above change.
+	<N_Allocator>: Likewise.
+	(gnat_to_gnu): Do not attempt to rewrite boolean literals.
+
+2010-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not set DECL_ARTIFICIAL
 	on the reused DECL node coming from a renamed object.
 	Set DECL_IGNORED_P on the DECL node built for renaming entities if they
