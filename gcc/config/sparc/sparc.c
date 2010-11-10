@@ -420,6 +420,7 @@ static bool sparc_tls_referenced_p (rtx);
 static rtx sparc_legitimize_tls_address (rtx);
 static rtx sparc_legitimize_pic_address (rtx, rtx);
 static rtx sparc_legitimize_address (rtx, rtx, enum machine_mode);
+static rtx sparc_delegitimize_address (rtx);
 static bool sparc_mode_dependent_address_p (const_rtx);
 static bool sparc_pass_by_reference (CUMULATIVE_ARGS *,
 				     enum machine_mode, const_tree, bool);
@@ -524,6 +525,8 @@ static const struct default_options sparc_option_optimization_table[] =
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS sparc_legitimize_address
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS sparc_delegitimize_address
 #undef TARGET_MODE_DEPENDENT_ADDRESS_P
 #define TARGET_MODE_DEPENDENT_ADDRESS_P sparc_mode_dependent_address_p
 
@@ -3564,6 +3567,24 @@ sparc_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	   || GET_CODE (x) == CONST
 	   || GET_CODE (x) == LABEL_REF)
     x = copy_to_suggested_reg (x, NULL_RTX, Pmode);
+
+  return x;
+}
+
+/* Delegitimize an address that was legitimized by the above function.  */
+
+static rtx
+sparc_delegitimize_address (rtx x)
+{
+  x = delegitimize_mem_from_attrs (x);
+
+  if (GET_CODE (x) == LO_SUM
+      && GET_CODE (XEXP (x, 1)) == UNSPEC
+      && XINT (XEXP (x, 1), 1) == UNSPEC_TLSLE)
+    {
+      x = XVECEXP (XEXP (x, 1), 0, 0);
+      gcc_assert (GET_CODE (x) == SYMBOL_REF);
+    }
 
   return x;
 }
