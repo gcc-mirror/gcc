@@ -1,3 +1,9 @@
+2010-11-10  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/46244
+	* resolve.c (resolve_fl_derived): Don't allow CLASS in
+	sequence/BIND(C) types.
+
 2010-11-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Mikael Morin   <mikael@gcc.gnu.org>
 

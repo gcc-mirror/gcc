@@ -11491,6 +11491,13 @@ resolve_fl_derived (gfc_symbol *sym)
 			     sym->name, &sym->declared_at) == FAILURE)
 	return FAILURE;
 
+      if ((sym->attr.sequence || sym->attr.is_bind_c) && c->ts.type == BT_CLASS)
+	{
+	  gfc_error ("Polymorphic component %s at %L in SEQUENCE or BIND(C) "
+		     "type %s", c->name, &c->loc, sym->name);
+	  return FAILURE;
+	}
+
       if (sym->attr.sequence)
 	{
 	  if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.sequence == 0)
