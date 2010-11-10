@@ -1,3 +1,27 @@
+2010-11-10  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR target/44760
+	* config/iq2000/iq2000.h (REGISTER_NAMES): Remove trailing semicolon.
+	(REGNO_MODE_OK_FOR_BASE_P): Cast REGNO to int before passing it to
+	GP_REG_OR_PSEUDO_STRICT_P.
+	* config/iq2000/iq2000.md (andsi3+1): Add gcc_unreachable for
+	unexpected alternative.
+	(*movsf_internal): Likewise.
+	(indirect_jump): Replace call to non-existant function with call to
+	internal_error.
+	(tablejump): Likewise.
+	* config/iq2000/iq2000.c: Include df.h .
+	(iq2000_function_arg_advance): Use CONST_CAST2.
+	(compute_frame_size, iq2000_expand_prologue): Remove unused variables.
+	(iq2000_can_eliminate): Call leaf_function_p instead of testing for
+	a non-zero function address.
+	(iq2000_initial_elimination_offset): Add gcc_unreachable for
+	unexpected value of FROM.
+	(symbolic_expression_p): Delete.
+	(iq2000_function_value): Constify func.
+	(expand_one_builtin): Use expand_normal.
+	(iq2000_print_operand): Don't print VALUE if calculating it failed.
+
 2010-11-10  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	PR/46268
