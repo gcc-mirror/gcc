@@ -1,3 +1,12 @@
+2010-11-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/46351
+	PR tree-optimization/46377
+	* gnat.dg/opt10.adb: New file.
+	* gnat.dg/opt10_pkg.ads: Likewise.
+	* gnat.dg/opt11.adb: Likewise.
+	* gnat.dg/opt11.ads: Likewise.
+
 2010-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/boolean_conv.adb: New test.
