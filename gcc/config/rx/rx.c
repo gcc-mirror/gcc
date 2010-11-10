@@ -846,7 +846,7 @@ rx_function_value (const_tree ret_type,
 static enum machine_mode
 rx_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 			  enum machine_mode mode,
-			  int * punsignedp,
+			  int * punsignedp ATTRIBUTE_UNUSED,
 			  const_tree funtype ATTRIBUTE_UNUSED,
 			  int for_return)
 {
@@ -2000,7 +2000,7 @@ rx_expand_builtin_round (rtx arg, rtx target)
 }
 
 static int
-valid_psw_flag (rtx op, char *which)
+valid_psw_flag (rtx op, const char *which)
 {
   static int mvtc_inform_done = 0;
 
@@ -2744,7 +2744,7 @@ rx_compare_redundant (rtx cmp)
 }
 
 static int
-rx_memory_move_cost (enum machine_mode mode, enum reg_class regclass, bool in)
+rx_memory_move_cost (enum machine_mode mode, reg_class_t regclass, bool in)
 {
   return 2 + memory_move_secondary_cost (mode, regclass, in);
 }

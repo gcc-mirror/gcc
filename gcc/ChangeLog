@@ -30,6 +30,13 @@
 	PR rtl-optimization/44764
 	* addresses.h (ok_for_base_p_1): Mark regno with ATTRIBUTE_UNUSED.
 
+	PR target/46407
+	* config/rx/rx.h (REGISTER_NAMES): Remove trailing semicolon.
+	* config/rx/rx.c (rx_promote_function_mode): Mark punsignedp
+	with ATTRIBUTE_UNUSED.
+	(valid_psw_flag): Constify parameter which.
+	(rx_memory_move_cost): Change type of parameter regclass to reg_class_t.
+
 2010-11-10  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	PR/46268
