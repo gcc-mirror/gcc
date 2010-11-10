@@ -83,6 +83,9 @@ mel
 Target Mask(LITTLE_ENDIAN) RejectNegative
 Use little-endian byte order
 
+mfar
+Driver RejectNegative
+
 mio-volatile
 Target Mask(IO_VOLATILE) 
 __io vars are volatile by default

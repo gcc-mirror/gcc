@@ -132,17 +132,6 @@ crtbegin.o%s"
 
 #define TARGET_VERSION fprintf (stderr, " (Toshiba Media Processor (MeP))");
 
-/* The MeP config tool will add TARGET_OPTION_TRANSLATE_TABLE here.  */
-#define TARGET_OPTION_TRANSLATE_TABLE \
-  {"-mall-opts", "-maverage -mmult -mdiv -mbitops -mleadz \
-                  -mabsdiff -mminmax -mclip -msatur -mdebug" }, \
-  {"-mno-opts", "-mno-average -mno-mult -mno-div -mno-bitops -mno-leadz \
-                  -mno-absdiff -mno-minmax -mno-clip -mno-satur -mno-debug" }, \
-  {"-mfar", "-ml -mtf -mc=far" } \
-/* start-target-option-table */ \
-, {"-mconfig=default", "-mconfig=default -mmult -mdiv -D__MEP_CONFIG_ISA=1" } \
-/* end-target-option-table */
-
 /* The MeP config tool will replace this as appropriate.  */
 #define DEFAULT_ENDIAN_SPEC "%{!meb: -mel}"
 
@@ -152,7 +141,13 @@ crtbegin.o%s"
 /* Don't add an endian option when building the libraries.  */
 #define DRIVER_SELF_SPECS \
   "%{!mlibrary:" DEFAULT_ENDIAN_SPEC "}", \
-  "%{mlibrary: " LIBRARY_CONFIG_SPEC " %{!mel:-meb}}"
+  "%{mlibrary: " LIBRARY_CONFIG_SPEC " %{!mel:-meb}}", \
+  "%{mall-opts:-maverage -mmult -mdiv -mbitops -mleadz \
+     -mabsdiff -mminmax -mclip -msatur -mdebug} %<mall-opts", \
+  "%{mno-opts:-mno-average -mno-mult -mno-div -mno-bitops -mno-leadz \
+     -mno-absdiff -mno-minmax -mno-clip -mno-satur -mno-debug} %<mno-opts", \
+  "%{mfar:-ml -mtf -mc=far} %<mfar", \
+  "%{mconfig=default:-mmult -mdiv -D__MEP_CONFIG_ISA=1}"
 
 /* The MeP config tool will add COPROC_SELECTION_TABLE here.  */
 /* start-coproc-selection-table */

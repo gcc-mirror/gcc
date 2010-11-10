@@ -1,3 +1,59 @@
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/tm.texi.in (TARGET_OPTION_TRANSLATE_TABLE): Remove.
+	* doc/tm.texi: Regenerate.
+	* opts-common.c (tm.h): Don't include.
+	(target_option_translations): Remove.
+	(decode_cmdline_options_to_array): Don't handle translating
+	options.
+	* system.h (TARGET_OPTION_TRANSLATE_TABLE): Poison.
+	* config/darwin-driver.c: Don't condition includes on
+	CROSS_DIRECTORY_STRUCTURE.
+	(darwin_default_min_version): Make static.
+	(darwin_driver_init): New.  Call darwin_default_min_version if not
+	CROSS_DIRECTORY_STRUCTURE.
+	* config/darwin.h (TARGET_OPTION_TRANSLATE_TABLE): Remove.
+	(DRIVER_SELF_SPECS, DARWIN_CC1_SPEC): Define.
+	(ASM_SPEC): Add %{static}.
+	(darwin_default_min_version): Don't declare.
+	(darwin_driver_init): Declare.
+	(GCC_DRIVER_HOST_INITIALIZATION): Define to call
+	darwin_driver_init, independent of CROSS_DIRECTORY_STRUCTURE.
+	* config/darwin.opt (all_load, allowable_client,
+	arch_errors_fatal, bind_at_load, bundle, bundle_loader,
+	dead_strip, dependency-file, dylib_file, dynamic, dynamiclib,
+	exported_symbols_list, filelist, findirect-virtual-calls,
+	flat_namespace, force_cpusubtype_ALL, force_flat_namespace,
+	framework, fterminated-vtables, gfull, gused, image_base, init,
+	install_name, multi_module, multiply_defined,
+	multiply_defined_unused, no_dead_strip_inits_and_terms,
+	seg_addr_table, seg_addr_table_filename, segaddr,
+	segs_read_only_addr, segs_read_write_addr, single_module,
+	umbrella, unexported_symbols_list, weak_reference_mismatches,
+	Zall_load, Zarch_errors_fatal, Zbind_at_load, Zbundle,
+	Zdead_strip, Zdynamic, Zdynamiclib, Zflat_namespace,
+	Zforce_cpusubtype_ALL, Zforce_flat_namespace, Zmulti_module,
+	Zno_dead_strip_inits_and_terms, Zsingle_module): New.
+	* config/i386/darwin.h (CC1_SPEC): Add DARWIN_CC1_SPEC.
+	(ASM_SPEC): Add %{static}.
+	(SUBTARGET_OPTION_TRANSLATE_TABLE): Remove.
+	* config/mep/mep.h (TARGET_OPTION_TRANSLATE_TABLE): Remove.
+	(DRIVER_SELF_SPECS): Handle options formerly in
+	TARGET_OPTION_TRANSLATE_TABLE.
+	* config/mep/mep.opt (mfar): New.
+	* config/picochip/picochip.h (TARGET_OPTION_TRANSLATE_TABLE):
+	Remove.
+	(DRIVER_SELF_SPECS): Define.  Handle options formerly in
+	TARGET_OPTION_TRANSLATE_TABLE.
+	* config/rs6000/darwin.h (CC1_SPEC): Handle -faltivec and
+	-fno-altivec.
+	(SUBTARGET_OPTION_TRANSLATE_TABLE): Remove.
+	* config/rs6000/darwin.opt (Waltivec-long-deprecated, faltivec,
+	ffix-and-continue, findirect-data): New.
+	* config/rx/rx.h (TARGET_OPTION_TRANSLATE_TABLE): Remove.
+	* config/rx/rx.opt (nofpu): Make into alias of mnofpu.
+	(mnofpu): Define mask and use Report here.
+
 2010-11-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc/config/s390/s390.c (s390_emit_prologue): Report the stack

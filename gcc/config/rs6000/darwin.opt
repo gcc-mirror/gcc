@@ -19,6 +19,20 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+Waltivec-long-deprecated
+Driver Alias(mwarn-altivec-long)
+
+faltivec
+Driver
+
+; -ffix-and-continue and -findirect-data are for compatibility for old
+; compilers.
+ffix-and-continue
+Driver RejectNegative Alias(mfix-and-continue)
+
+findirect-data
+Driver RejectNegative Alias(mfix-and-continue)
+
 m64
 Target RejectNegative Negative(m32) Mask(64BIT)
 Generate 64-bit code

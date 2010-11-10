@@ -18,13 +18,14 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef CROSS_DIRECTORY_STRUCTURE
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
 #include "gcc.h"
 #include "opts.h"
+
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #include <sys/sysctl.h>
 #include "xregex.h"
 
@@ -32,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
    libraries, default the -mmacosx-version-min flag to be the version
    of the system on which the compiler is running.  */
 
-void
+static void
 darwin_default_min_version (unsigned int *decoded_options_count,
 			    struct cl_decoded_option **decoded_options)
 {
@@ -138,3 +139,51 @@ darwin_default_min_version (unsigned int *decoded_options_count,
 }
 
 #endif /* CROSS_DIRECTORY_STRUCTURE */
+
+/* Translate -filelist and -framework options in *DECODED_OPTIONS
+   (size *DECODED_OPTIONS_COUNT) to use -Xlinker so that they are
+   considered to be linker inputs in the case that no other inputs are
+   specified.  Handling these options in DRIVER_SELF_SPECS does not
+   suffice because specs are too late to add linker inputs, and
+   handling them in LINK_SPEC does not suffice because the linker will
+   not be called if there are no other inputs.  When native, also
+   default the -mmacosx-version-min flag.  */
+
+void
+darwin_driver_init (unsigned int *decoded_options_count,
+		    struct cl_decoded_option **decoded_options)
+{
+  unsigned int i;
+
+  for (i = 1; i < *decoded_options_count; i++)
+    {
+      if ((*decoded_options)[i].errors & CL_ERR_MISSING_ARG)
+	continue;
+      switch ((*decoded_options)[i].opt_index)
+	{
+	case OPT_filelist:
+	case OPT_framework:
+	  ++*decoded_options_count;
+	  *decoded_options = XRESIZEVEC (struct cl_decoded_option,
+					 *decoded_options,
+					 *decoded_options_count);
+	  memmove (*decoded_options + i + 2,
+		   *decoded_options + i + 1,
+		   ((*decoded_options_count - i - 2)
+		    * sizeof (struct cl_decoded_option)));
+	  generate_option (OPT_Xlinker, (*decoded_options)[i].arg, 1,
+			   CL_DRIVER, &(*decoded_options)[i + 1]);
+	  generate_option (OPT_Xlinker,
+			   (*decoded_options)[i].canonical_option[0], 1,
+			   CL_DRIVER, &(*decoded_options)[i]);
+	  break;
+
+	default:
+	  break;
+	}
+    }
+
+#ifndef CROSS_DIRECTORY_STRUCTURE
+  darwin_default_min_version (decoded_options_count, decoded_options);
+#endif
+}

@@ -90,14 +90,18 @@ extern int darwin_emit_branch_islands;
 
 
 /* We want -fPIC by default, unless we're using -static to compile for
-   the kernel or some such.  */
+   the kernel or some such.  The "-faltivec" option should have been
+   called "-maltivec" all along.  */
 
 #define CC1_SPEC "\
   %(cc1_cpu) \
   %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }} \
   %{static: %{Zdynamic: %e conflicting code gen style switches are used}}\
   %{!mmacosx-version-min=*:-mmacosx-version-min=%(darwin_minversion)} \
-  %{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}}"
+  %{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}} \
+  %{faltivec:-maltivec -include altivec.h} %{fno-altivec:-mno-altivec} \
+  %<faltivec %<fno-altivec " \
+  DARWIN_CC1_SPEC
 
 #define DARWIN_ARCH_SPEC "%{m64:ppc64;:ppc}"
 
@@ -145,18 +149,6 @@ extern int darwin_emit_branch_islands;
 /* Output a .machine directive.  */
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START rs6000_darwin_file_start
-
-/* The "-faltivec" option should have been called "-maltivec" all
-   along.  -ffix-and-continue and -findirect-data is for compatibility
-   for old compilers.  */
-
-#define SUBTARGET_OPTION_TRANSLATE_TABLE				\
-  { "-ffix-and-continue", "-mfix-and-continue" },			\
-  { "-findirect-data", "-mfix-and-continue" },				\
-  { "-faltivec", "-maltivec -include altivec.h" },			\
-  { "-fno-altivec", "-mno-altivec" },					\
-  { "-Waltivec-long-deprecated",	"-mwarn-altivec-long" },	\
-  { "-Wno-altivec-long-deprecated", "-mno-warn-altivec-long" }
 
 /* Make both r2 and r13 available for allocation.  */
 #define FIXED_R2 0
