@@ -1,3 +1,8 @@
+2010-11-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc/config/s390/s390.c (s390_emit_prologue): Report the stack
+	size if -fstack-usage is used.
+
 2010-11-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46398
