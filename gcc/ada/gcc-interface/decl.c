@@ -4894,13 +4894,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	Set_RM_Size (gnat_entity, annotate_value (rm_size (gnu_type)));
     }
 
-  if (!Comes_From_Source (gnat_entity) && DECL_P (gnu_decl))
-    DECL_ARTIFICIAL (gnu_decl) = 1;
+  /* If we really have a ..._DECL node, set a couple of flags on it.  But we
+     cannot do that if we are reusing the ..._DECL node made for a renamed
+     object, since the predicates don't apply to it but to GNAT_ENTITY.  */
+  if (DECL_P (gnu_decl) && !(Present (Renamed_Object (gnat_entity)) && saved))
+    {
+      if (!Comes_From_Source (gnat_entity))
+	DECL_ARTIFICIAL (gnu_decl) = 1;
 
-  if (!debug_info_p && DECL_P (gnu_decl)
-      && TREE_CODE (gnu_decl) != FUNCTION_DECL
-      && No (Renamed_Object (gnat_entity)))
-    DECL_IGNORED_P (gnu_decl) = 1;
+      if (!debug_info_p && TREE_CODE (gnu_decl) != FUNCTION_DECL)
+	DECL_IGNORED_P (gnu_decl) = 1;
+    }
 
   /* If we haven't already, associate the ..._DECL node that we just made with
      the input GNAT entity node.  */
