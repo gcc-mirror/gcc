@@ -1,3 +1,8 @@
+2010-11-10  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/46228
+	* g++.dg/tree-ssa/pr46228.C: New testcase.
+
 2010-11-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR tree-optimization/46414

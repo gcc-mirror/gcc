@@ -8343,6 +8343,11 @@ Limit of iterations of early inliner.  This basically bounds number of nested
 indirect calls early inliner can resolve.  Deeper chains are still handled by
 late inlining.
 
+@item comdat-sharing-probability
+@itemx comdat-sharing-probability
+Probability (in percent) that C++ inline function with comdat visibility
+will be shared acroess multiple compilation units.  The default value is 20.
+
 @item min-vect-loop-bound
 The minimum number of iterations under which a loop will not get vectorized
 when @option{-ftree-vectorize} is used.  The number of iterations after
