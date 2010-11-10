@@ -1407,6 +1407,14 @@ cgraph_flatten (struct cgraph_node *node)
 	  continue;
 	}
 
+      if (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (node->decl))
+	  != gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->callee->decl)))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Not inlining: SSA form does not match.\n");
+	  continue;
+	}
+
       /* Inline the edge and flatten the inline clone.  Avoid
          recursing through the original node if the node was cloned.  */
       if (dump_file)
