@@ -3484,10 +3484,16 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	if (POINTER_TYPE_P (funtype))
 	  funtype = TREE_TYPE (funtype);
 
-	if (is_simple_builtin (decl))
+	/* Do not special case builtins where we see the body.
+	   This just confuse inliner.  */
+	if (!decl || cgraph_node (decl)->analyzed)
+	  cost = weights->call_cost;
+	/* For buitins that are likely expanded to nothing or
+	   inlined do not account operand costs.  */
+	else if (is_simple_builtin (decl))
 	  return 0;
 	else if (is_inexpensive_builtin (decl))
-	  cost = weights->target_builtin_call_cost;
+	  return weights->target_builtin_call_cost;
 	else
 	  cost = weights->call_cost;
 
@@ -3536,11 +3542,13 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	break;
       }
 
+    case GIMPLE_RETURN:
+      return weights->return_cost;
+
     case GIMPLE_GOTO:
     case GIMPLE_LABEL:
     case GIMPLE_NOP:
     case GIMPLE_PHI:
-    case GIMPLE_RETURN:
     case GIMPLE_PREDICT:
     case GIMPLE_DEBUG:
       return 0;
@@ -3640,16 +3648,18 @@ init_inline_once (void)
   eni_size_weights.div_mod_cost = 1;
   eni_size_weights.omp_cost = 40;
   eni_size_weights.time_based = false;
+  eni_size_weights.return_cost = 1;
 
   /* Estimating time for call is difficult, since we have no idea what the
      called function does.  In the current uses of eni_time_weights,
      underestimating the cost does less harm than overestimating it, so
      we choose a rather small value here.  */
   eni_time_weights.call_cost = 10;
-  eni_time_weights.target_builtin_call_cost = 10;
+  eni_time_weights.target_builtin_call_cost = 1;
   eni_time_weights.div_mod_cost = 10;
   eni_time_weights.omp_cost = 40;
   eni_time_weights.time_based = true;
+  eni_time_weights.return_cost = 2;
 }
 
 /* Estimate the number of instructions in a gimple_seq. */

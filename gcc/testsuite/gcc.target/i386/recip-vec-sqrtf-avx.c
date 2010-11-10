@@ -31,4 +31,5 @@ void t3(void)
    r[i] = sqrtf (a[i]);
 }
 
-/* { dg-final { scan-assembler-times "vrsqrtps\[ \\t\]+\[^\n\]*%ymm" 3 } } */
+/* Last loop is small enough to be fully unrolled.  */
+/* { dg-final { scan-assembler-times "vrsqrtps\[ \\t\]+\[^\n\]*%ymm" 4 } } */

@@ -1578,16 +1578,15 @@ cgraph_decide_inlining (void)
   return 0;
 }
 
-/* Return true when N is leaf function.  Accept cheap (pure&const) builtins
+/* Return true when N is leaf function.  Accept cheap builtins
    in leaf functions.  */
+
 static bool
 leaf_node_p (struct cgraph_node *n)
 {
   struct cgraph_edge *e;
   for (e = n->callees; e; e = e->next_callee)
-    if (!DECL_BUILT_IN (e->callee->decl)
-	|| (!TREE_READONLY (e->callee->decl)
-	    || DECL_PURE_P (e->callee->decl)))
+    if (!is_inexpensive_builtin (e->callee->decl))
       return false;
   return true;
 }
