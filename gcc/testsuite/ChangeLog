@@ -1,3 +1,11 @@
+2010-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46409
+	* gcc.dg/debug/pr46409.c: New test.
+
+	PR c++/46368
+	* g++.dg/cpp0x/constexpr-defarg2.C: New test.
+
 2010-11-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46419
