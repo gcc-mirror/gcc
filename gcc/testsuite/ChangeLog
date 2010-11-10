@@ -1,10 +1,16 @@
+2010-11-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46398
+	* gcc.dg/torture/pr46398.c: New testcase.
+
 2010-11-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/open_dev_null.f90: New test.
 
 2010-11-09   Jan Hubicka  <jh@suse.cz>
 
-	* testsuite/gcc.target/i386/recip-vec-sqrtf-avx.c: Update for loop unrolling.
+	* testsuite/gcc.target/i386/recip-vec-sqrtf-avx.c: Update for loop
+	unrolling.
 
 2010-11-09  Joseph Myers  <joseph@codesourcery.com>
 
