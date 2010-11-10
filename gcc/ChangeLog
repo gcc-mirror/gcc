@@ -1,3 +1,54 @@
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (flag_excess_precision_cmdline, flag_generate_lto,
+	warn_larger_than, larger_than_size, warn_frame_larger_than,
+	frame_larger_than_size, flag_gen_aux_info, flag_shlib,
+	default_visibility, flag_tls_default): New Variable declarations.
+	(aux-info, auxbase, dumpbase, dumpdir, falign-functions=,
+	falign-jumps=, falign-labels=, falign-loops=, o, v): Use Var.
+	(v): Declare as Common and document here.
+	* flags.h (default_visibility, flag_generate_lto,
+	warn_larger_than, larger_than_size, warn_frame_larger_than,
+	frame_larger_than_size, flag_gen_aux_info, flag_pedantic_errors,
+	flag_shlib, flag_excess_precision_cmdline): Remove.
+	(set_Wstrict_aliasing): Update prototype.
+	* gcc.c (verbose_flag): Remove.
+	(driver_handle_option): Add diagnostic_context parameter.  Don't
+	handle OPT_v explicitly here.  Set verbose_flag to 1 rather than
+	incrementing it.
+	* opts-common.c (handle_option): Pass dc to handler.
+	* opts.c (warn_larger_than, larger_than_size,
+	warn_frame_larger_than, frame_larger_than_size,
+	default_visibility): Remove.
+	(common_handle_option): Add diagnostic_context parameter.
+	(set_fast_math_flags, set_unsafe_math_optimizations_flags): Add
+	gcc_options parameters.
+	(lang_handle_option, target_handle_option, read_cmdline_options,
+	decode_options): Add diagnostic_context parameters.
+	(finish_options): Access option state through opts pointer where
+	possible.
+	(common_handle_option): Access option state through opts pointer
+	where possible.  Do not set local static variable verbose.  Do not
+	explicitly handle OPT_v, OPT_Wstrict_aliasing_,
+	OPT_Wstrict_overflow_, OPT_Wunused, OPT_auxbase, OPT_dumpbase,
+	OPT_dumpdir, OPT_falign_functions_, OPT_falign_jumps_,
+	OPT_falign_labels_, OPT_falign_loops_, OPT_fira_verbose_, OPT_o or
+	OPT_fwhopr_.  Do not explicitly set .opt file variables for
+	OPT_aux_info or OPT_pedantic_errors.  Use dc for diagnostic
+	context.
+	(set_Wstrict_aliasing): Add gcc_options parameter.
+	* opts.h (struct cl_option_handler_func): Add diagnostic_context
+	parameter to handler.
+	(decode_options): Add diagnostic_context parameter.
+	* toplev.c (dump_base_name, dump_dir_name, aux_base_name,
+	asm_file_name, flag_generate_lto, flag_gen_aux_info,
+	aux_info_file_name, flag_shlib, flag_tls_default,
+	flag_excess_precision_cmdline, flag_pedantic_errors): Remove.
+	(toplev_main): Pass global_dc to decode_options.
+	* toplev.h (dump_base_name, dump_dir_name, aux_base_name,
+	aux_info_file_name, asm_file_name): Remove.
+	* tree.h (flag_tls_default): Remove.
+
 2010-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (sparc_delegitimize_address): New function.

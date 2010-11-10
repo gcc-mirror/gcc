@@ -49,9 +49,6 @@ extern bool use_gnu_debug_info_extensions;
    an actual variable not a macro.  */
 extern int flag_compare_debug;
 
-/* The default visibility for all symbols (unless overridden).  */
-extern enum symbol_visibility default_visibility;
-
 /* Global visibility options.  */
 extern struct visibility_flags visibility_options;
 
@@ -62,31 +59,14 @@ extern struct visibility_flags visibility_options;
 
 extern bool in_lto_p;
 
-/* Nonzero if we should write GIMPLE bytecode for link-time optimization.  */
-
-extern int flag_generate_lto;
-
-/* Used to set the level of -Wstrict-aliasing, when no level is specified.
-   The external way to set the default level is to use
+/* Used to set the level of -Wstrict-aliasing in OPTS, when no level
+   is specified.  The external way to set the default level is to use
    -Wstrict-aliasing=level.
    ONOFF is assumed to take value 1 when -Wstrict-aliasing is specified,
    and 0 otherwise.  After calling this function, wstrict_aliasing will be
    set to the default value of -Wstrict_aliasing=level.  */
 
-extern void set_Wstrict_aliasing (int onoff);
-
-/* Nonzero means warn about any objects definitions whose size is larger
-   than N bytes.  Also want about function definitions whose returned
-   values are larger than N bytes. The value N is in `larger_than_size'.  */
-
-extern bool warn_larger_than;
-extern HOST_WIDE_INT larger_than_size;
-
-/* Nonzero means warn about any function whose frame size is larger
-   than N bytes. */
-
-extern bool warn_frame_larger_than;
-extern HOST_WIDE_INT frame_larger_than_size;
+extern void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
 /* Nonzero for -dp: annotate the assembly with a comment describing the
    pattern and alternative used.  */
@@ -99,27 +79,13 @@ extern int flag_print_asm_name;
 
 extern int rtl_dump_and_exit;
 
-/* Nonzero means we should save auxiliary info into a .X file.  */
-
-extern int flag_gen_aux_info;
-
 /* True if printing into -fdump-final-insns= dump.  */
 
 extern bool final_insns_dump_p;
 
-/* Nonzero means change certain warnings into errors.
-   Usually these are warnings about failure to conform to some standard.  */
-
-extern int flag_pedantic_errors;
-
 /* Nonzero means make permerror produce warnings instead of errors.  */
 
 extern int flag_permissive;
-
-/* Nonzero if we are compiling code for a shared library, zero for
-   executable.  */
-
-extern int flag_shlib;
 
 /* -dA causes debug information to be produced in
    the generated assembly code (to make it more readable).  This option
@@ -135,10 +101,6 @@ extern int flag_debug_asm;
 extern int flag_next_runtime;
 
 extern int flag_dump_rtl_in_asm;
-
-/* The excess precision specified on the command line, or defaulted by
-   the front end.  */
-extern enum excess_precision flag_excess_precision_cmdline;
 
 /* Other basic status info about current function.  */
 

@@ -115,12 +115,6 @@ gfc_cpp_option;
 static cpp_options *cpp_option = NULL;
 static cpp_reader *cpp_in = NULL;
 
-/* Defined in toplev.c.  */
-extern const char *asm_file_name;
-
-
-
-
 /* Encapsulates state used to convert a stream of cpp-tokens into
    a text file.  */
 static struct

@@ -751,7 +751,7 @@ handle_option (struct gcc_options *opts,
     if (option->flags & handlers->handlers[i].mask)
       {
 	if (!handlers->handlers[i].handler (opts, opts_set, decoded,
-					    lang_mask, kind, handlers))
+					    lang_mask, kind, handlers, dc))
 	  return false;
 	else
 	  handlers->post_handling_callback (decoded,

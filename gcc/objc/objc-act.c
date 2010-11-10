@@ -414,9 +414,6 @@ static char *errbuf;	/* Buffer for error diagnostics */
 
 extern enum debug_info_type write_symbols;
 
-/* Data imported from toplev.c.  */
-
-extern const char *dump_base_name;
 
 static int flag_typed_selectors;
 

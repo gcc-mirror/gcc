@@ -114,10 +114,6 @@ static int print_help_list;
 
 static int print_version;
 
-/* Flag indicating whether we should print the command and arguments */
-
-static int verbose_flag;
-
 /* Flag indicating whether we should ONLY print the command and
    arguments (like verbose_flag) without executing the command.
    Displayed arguments are quoted so that the generated command
@@ -3145,7 +3141,8 @@ driver_handle_option (struct gcc_options *opts,
 		      struct gcc_options *opts_set,
 		      const struct cl_decoded_option *decoded,
 		      unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
-		      const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
+		      const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED,
+		      diagnostic_context *dc)
 {
   size_t opt_index = decoded->opt_index;
   const char *arg = decoded->arg;
@@ -3157,6 +3154,7 @@ driver_handle_option (struct gcc_options *opts,
   gcc_assert (opts == &global_options);
   gcc_assert (opts_set == &global_options_set);
   gcc_assert (kind == DK_UNSPECIFIED);
+  gcc_assert (dc == global_dc);
 
   switch (opt_index)
     {
@@ -3421,7 +3419,7 @@ driver_handle_option (struct gcc_options *opts,
 	 is intended for use in shell scripts to capture the
 	 driver-generated command line.  */
       verbose_only_flag++;
-      verbose_flag++;
+      verbose_flag = 1;
       do_save = false;
       break;
 
@@ -3454,10 +3452,6 @@ driver_handle_option (struct gcc_options *opts,
 		    PREFIX_PRIORITY_B_OPT, 0, 0);
       }
       validated = true;
-      break;
-
-    case OPT_v:	/* Print our subcommands and print versions.  */
-      verbose_flag++;
       break;
 
     case OPT_x:
