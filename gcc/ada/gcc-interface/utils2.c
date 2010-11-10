@@ -235,7 +235,7 @@ find_common_type (tree t1, tree t2)
    tests in as efficient a manner as possible.  */
 
 static tree
-compare_arrays (tree result_type, tree a1, tree a2)
+compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 {
   tree result = convert (result_type, boolean_true_node);
   tree a1_is_null = convert (result_type, boolean_false_node);
@@ -296,10 +296,10 @@ compare_arrays (tree result_type, tree a1, tree a2)
 	  ub1 = TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
 	  lb1 = TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
 
-	  comparison = build_binary_op (LT_EXPR, result_type, ub1, lb1);
+	  comparison = fold_build2_loc (loc, LT_EXPR, result_type, ub1, lb1);
 	  comparison = SUBSTITUTE_PLACEHOLDER_IN_EXPR (comparison, a1);
 	  if (EXPR_P (comparison))
-	    SET_EXPR_LOCATION (comparison, input_location);
+	    SET_EXPR_LOCATION (comparison, loc);
 
 	  this_a1_is_null = comparison;
 	  this_a2_is_null = convert (result_type, boolean_true_node);
@@ -321,16 +321,15 @@ compare_arrays (tree result_type, tree a1, tree a2)
 	  bt = get_base_type (TREE_TYPE (ub1));
 
 	  comparison
-	    = build_binary_op (EQ_EXPR, result_type,
+	    = fold_build2_loc (loc, EQ_EXPR, result_type,
 			       build_binary_op (MINUS_EXPR, bt, ub1, lb1),
 			       build_binary_op (MINUS_EXPR, bt, ub2, lb2));
 	  comparison = SUBSTITUTE_PLACEHOLDER_IN_EXPR (comparison, a1);
 	  if (EXPR_P (comparison))
-	    SET_EXPR_LOCATION (comparison, input_location);
+	    SET_EXPR_LOCATION (comparison, loc);
 
-	  this_a1_is_null = build_binary_op (LT_EXPR, result_type, ub1, lb1);
-	  if (EXPR_P (this_a1_is_null))
-	    SET_EXPR_LOCATION (this_a1_is_null, input_location);
+	  this_a1_is_null
+	    = fold_build2_loc (loc, LT_EXPR, result_type, ub1, lb1);
 
 	  this_a2_is_null = convert (result_type, boolean_false_node);
 	}
@@ -342,31 +341,27 @@ compare_arrays (tree result_type, tree a1, tree a2)
 	  length2 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (length2, a2);
 
 	  comparison
-	    = build_binary_op (EQ_EXPR, result_type, length1, length2);
-	  if (EXPR_P (comparison))
-	    SET_EXPR_LOCATION (comparison, input_location);
+	    = fold_build2_loc (loc, EQ_EXPR, result_type, length1, length2);
 
 	  /* If the length expression is of the form (cond ? val : 0), assume
 	     that cond is equivalent to (length != 0).  That's guaranteed by
 	     construction of the array types in gnat_to_gnu_entity.  */
 	  if (TREE_CODE (length1) == COND_EXPR
 	      && integer_zerop (TREE_OPERAND (length1, 2)))
-	    this_a1_is_null = invert_truthvalue (TREE_OPERAND (length1, 0));
+	    this_a1_is_null
+	      = invert_truthvalue_loc (loc, TREE_OPERAND (length1, 0));
 	  else
-	    this_a1_is_null = build_binary_op (EQ_EXPR, result_type, length1,
-					       size_zero_node);
-          if (EXPR_P (this_a1_is_null))
-	    SET_EXPR_LOCATION (this_a1_is_null, input_location);
+	    this_a1_is_null = fold_build2_loc (loc, EQ_EXPR, result_type,
+					       length1, size_zero_node);
 
 	  /* Likewise for the second array.  */
 	  if (TREE_CODE (length2) == COND_EXPR
 	      && integer_zerop (TREE_OPERAND (length2, 2)))
-	    this_a2_is_null = invert_truthvalue (TREE_OPERAND (length2, 0));
+	    this_a2_is_null
+	      = invert_truthvalue_loc (loc, TREE_OPERAND (length2, 0));
 	  else
-	    this_a2_is_null = build_binary_op (EQ_EXPR, result_type, length2,
-					       size_zero_node);
-          if (EXPR_P (this_a2_is_null))
-	    SET_EXPR_LOCATION (this_a2_is_null, input_location);
+	    this_a2_is_null = fold_build2_loc (loc, EQ_EXPR, result_type,
+					       length2, size_zero_node);
 	}
 
       /* Append expressions for this dimension to the final expressions.  */
@@ -396,9 +391,7 @@ compare_arrays (tree result_type, tree a1, tree a2)
 	  a2 = convert (type, a2);
 	}
 
-      comparison = fold_build2 (EQ_EXPR, result_type, a1, a2);
-      if (EXPR_P (comparison))
-	SET_EXPR_LOCATION (comparison, input_location);
+      comparison = fold_build2_loc (loc, EQ_EXPR, result_type, a1, a2);
 
       result
 	= build_binary_op (TRUTH_ANDIF_EXPR, result_type, result, comparison);
@@ -784,8 +777,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	      || (TREE_CODE (right_type) == INTEGER_TYPE
 		  && TYPE_HAS_ACTUAL_BOUNDS_P (right_type))))
 	{
-	  result = compare_arrays (result_type, left_operand, right_operand);
-
+	  result = compare_arrays (input_location,
+				   result_type, left_operand, right_operand);
 	  if (op_code == NE_EXPR)
 	    result = invert_truthvalue_loc (EXPR_LOCATION (result), result);
 	  else
