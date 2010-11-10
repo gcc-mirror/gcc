@@ -7948,6 +7948,9 @@ s390_emit_prologue (void)
   if (!TARGET_PACKED_STACK)
     next_fpr = cfun_save_high_fprs_p ? 31 : 0;
 
+  if (flag_stack_usage)
+    current_function_static_stack_size = cfun_frame_layout.frame_size;
+
   /* Decrement stack pointer.  */
 
   if (cfun_frame_layout.frame_size > 0)

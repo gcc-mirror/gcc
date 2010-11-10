@@ -35,6 +35,10 @@
 #  define SIZE 240
 #elif defined (__AVR__)
 #  define SIZE 254
+#elif defined (__s390x__)
+#  define SIZE 96  /* 256 - 160 bytes for register save area */
+#elif defined (__s390__)
+#  define SIZE 160 /* 256 -  96 bytes for register save area */
 #else
 #  define SIZE 256
 #endif
