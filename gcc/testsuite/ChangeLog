@@ -1,3 +1,8 @@
+2010-11-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44964
+	* gcc.dg/pr44964.c: New testcase.
+
 2010-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt10.adb: Fix typo.
