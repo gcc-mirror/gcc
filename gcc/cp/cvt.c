@@ -88,7 +88,7 @@ cp_convert_to_pointer (tree type, tree expr)
       intype = complete_type (intype);
       if (!COMPLETE_TYPE_P (intype))
 	{
-	  error ("can't convert from incomplete type %qT to %qT",
+	  error ("can%'t convert from incomplete type %qT to %qT",
 		 intype, type);
 	  return error_mark_node;
 	}

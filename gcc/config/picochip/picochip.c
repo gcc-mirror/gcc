@@ -431,7 +431,7 @@ picochip_option_override (void)
      unit ISA options. Any unrecognised AE types will end up being
      passed to the compiler, which should reject them as invalid. */
   if (picochip_ae_type_string != NULL)
-    error ("invalid AE type specified (%s)\n", picochip_ae_type_string);
+    error ("invalid AE type specified (%s)", picochip_ae_type_string);
 
   /* Override any specific capabilities of the instruction set. These
      take precedence over any capabilities inferred from the AE type,
@@ -454,7 +454,7 @@ picochip_option_override (void)
       else if (strcmp (picochip_mul_type_string, "none") == 0)
 	{ /* Do nothing. Unit types already set to false. */ }
       else
-	error ("Invalid mul type specified (%s) - expected mac, mul or none",
+	error ("invalid mul type specified (%s) - expected mac, mul or none",
 	       picochip_mul_type_string);
     }
 
@@ -749,7 +749,7 @@ picochip_emit_save_register (rtx reg, int offset)
 
     default:
       internal_error
-	("unexpected mode %s encountered in picochip_emit_save_register\n",
+	("unexpected mode %s encountered in picochip_emit_save_register",
 	 GET_MODE_NAME (GET_MODE (reg)));
     }
 
@@ -916,7 +916,7 @@ picochip_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
     default:
       warning
-	(0, "Defaulting to stack for %s register creation\n",
+	(0, "defaulting to stack for %s register creation",
 	 GET_MODE_NAME (mode));
       break;
     }
@@ -1599,7 +1599,7 @@ picochip_output_label (FILE * stream, const char name[])
     {
       if (picochip_current_vliw_state.num_cfi_labels_deferred == 2)
       {
-        internal_error ("LCFI labels have already been deferred.");
+        internal_error ("LCFI labels have already been deferred");
       }
       strcpy (picochip_current_vliw_state.cfi_label_name[
                 picochip_current_vliw_state.num_cfi_labels_deferred], name);
@@ -1662,7 +1662,7 @@ picochip_output_internal_label (FILE * stream, const char *prefix,
 	  (strcmp (prefix, "LM")) == 0 && picochip_vliw_continuation)
 	{
 	  if (strlen (picochip_current_vliw_state.lm_label_name) != 0)
-	    internal_error ("LM label has already been deferred.");
+	    internal_error ("LM label has already been deferred");
 
 	  sprintf (picochip_current_vliw_state.lm_label_name,
 		   "picoMark_%s%ld", prefix, num);
@@ -1954,7 +1954,7 @@ picochip_asm_output_opcode (FILE * f, const char *ptr)
      made to pack it into a VLIW. */
   if (strchr (ptr, '\n') != NULL && picochip_vliw_continuation)
     internal_error
-      ("picochip_asm_output_opcode - Found multiple lines in VLIW packet %s\n",
+      ("picochip_asm_output_opcode - Found multiple lines in VLIW packet %s",
        ptr);
 
 
@@ -2057,7 +2057,7 @@ picochip_asm_output_opcode (FILE * f, const char *ptr)
 	}
       else if (c == '%')
 	internal_error
-	  ("picochip_asm_output_opcode - can't output unknown operator %c\n",
+	  ("picochip_asm_output_opcode - can%'t output unknown operator %c",
 	   *ptr);
       else
 	fputc (c, f);
@@ -2308,7 +2308,7 @@ picochip_output_cbranch (rtx operands[])
       (HImode != GET_MODE (operands[2]) &&
        GET_CODE (operands[2]) != CONST_INT))
     {
-      internal_error ("%s: At least one operand can't be handled",
+      internal_error ("%s: at least one operand can%'t be handled",
 		      __FUNCTION__);
     }
 
@@ -2368,7 +2368,7 @@ picochip_output_compare (rtx operands[])
       (HImode != GET_MODE (operands[2]) &&
        GET_CODE (operands[2]) != CONST_INT))
     {
-      internal_error ("%s: At least one operand can't be handled",
+      internal_error ("%s: at least one operand can%'t be handled",
 		      __FUNCTION__);
     }
 
@@ -2449,7 +2449,7 @@ picochip_output_branch (rtx operands[], rtx insn)
 	case GTU:
 	  return ("BLO %l0 %>");
 	default:
-	  internal_error ("Unknown short branch in %s (type %d)\n",
+	  internal_error ("unknown short branch in %s (type %d)",
 			  __FUNCTION__, (int) INTVAL (operands[1]));
 	  return "UNKNOWN_BRANCH";
 	}
@@ -2486,7 +2486,7 @@ picochip_output_branch (rtx operands[], rtx insn)
 	  return ("JMPLO %l0 %>");
 
 	default:
-	  internal_error ("Unknown long branch in %s (type %d)\n",
+	  internal_error ("unknown long branch in %s (type %d)",
 			  __FUNCTION__, (int) INTVAL (operands[1]));
 	  return "UNKNOWN_BRANCH";
 	}
@@ -3431,7 +3431,7 @@ picochip_get_vliw_alu_id (void)
 	  return '1';
 
 	default:
-	  internal_error ("Too many ALU instructions emitted (%d)\n",
+	  internal_error ("too many ALU instructions emitted (%d)",
 			  picochip_current_vliw_state.num_alu_insns_so_far);
 	  return 'X';
 	}

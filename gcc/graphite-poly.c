@@ -606,7 +606,7 @@ graphite_read_scop_file (FILE *file, scop_p scop)
 
   if (strcmp (tmp, "SCoP 1"))
     {
-      error ("The file is not in OpenScop format.\n");
+      error ("the file is not in OpenScop format");
       return false;
     }
 
@@ -617,7 +617,7 @@ graphite_read_scop_file (FILE *file, scop_p scop)
 
   if (strcmp (language, "Gimple"))
     {
-      error ("The language is not recognized\n");
+      error ("the language is not recognized");
       return false;
     }
 
@@ -628,8 +628,8 @@ graphite_read_scop_file (FILE *file, scop_p scop)
 
   if ((size_t) params != scop->nb_params)
     {
-      error ("Parameters number in the scop file is different from the"
-	     " internal scop parameter number.");
+      error ("parameters number in the scop file is different from the"
+	     " internal scop parameter number");
       return false;
     }
 
@@ -641,8 +641,8 @@ graphite_read_scop_file (FILE *file, scop_p scop)
 
   if (nb_statements != VEC_length (poly_bb_p, SCOP_BBS (scop)))
     {
-      error ("Number of statements in the OpenScop file does not match"
-	     " the graphite internal statements number.");
+      error ("number of statements in the OpenScop file does not match"
+	     " the graphite internal statements number");
       return false;
     }
 

@@ -598,7 +598,7 @@ position_pass (struct register_pass_info *new_pass_info,
                 pass = new_pass;
                 break;
               default:
-                error ("Invalid pass positioning operation");
+                error ("invalid pass positioning operation");
                 return false;
             }
 

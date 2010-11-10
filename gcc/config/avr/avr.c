@@ -1166,7 +1166,7 @@ print_operand_address (FILE *file, rtx addr)
 	      output_addr_const (file, XEXP (x,0));
 	      fprintf (file,"+" HOST_WIDE_INT_PRINT_DEC ")", 2 * INTVAL (XEXP (x,1)));
 	      if (AVR_3_BYTE_PC)
-	        if (warning ( 0, "Pointer offset from symbol maybe incorrect."))
+	        if (warning (0, "pointer offset from symbol maybe incorrect"))
 		  {
 		    output_addr_const (stderr, addr);
 		    fprintf(stderr,"\n");

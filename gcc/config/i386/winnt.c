@@ -144,7 +144,7 @@ i386_pe_determine_dllimport_p (tree decl)
 	 an error as long as we don't try to import it too.  */
       && !DECL_VIRTUAL_P (decl))
 	error ("definition of static data member %q+D of "
-	       "dllimport'd class", decl);
+	       "dllimport%'d class", decl);
 
   return false;
 }

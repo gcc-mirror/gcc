@@ -1,3 +1,9 @@
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto.c (lto_resolution_read): Start diagnostics with lowercase
+	letters and remove trailing '.'.
+	(lto_file_finalize): Start diagnostic with a lowercase letter.
+
 2010-11-02  Ian Lance Taylor  <iant@google.com>
 
 	* lto-object.c: New file.

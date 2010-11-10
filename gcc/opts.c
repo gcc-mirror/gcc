@@ -1092,12 +1092,12 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set)
   if (!opts->x_flag_unit_at_a_time)
     {
       if (opts->x_flag_section_anchors && opts_set->x_flag_section_anchors)
-	error ("Section anchors must be disabled when unit-at-a-time "
-	       "is disabled.");
+	error ("section anchors must be disabled when unit-at-a-time "
+	       "is disabled");
       opts->x_flag_section_anchors = 0;
       if (opts->x_flag_toplevel_reorder == 1)
-	error ("Toplevel reorder must be disabled when unit-at-a-time "
-	       "is disabled.");
+	error ("toplevel reorder must be disabled when unit-at-a-time "
+	       "is disabled");
       opts->x_flag_toplevel_reorder = 0;
     }
 
@@ -1235,7 +1235,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set)
     {
       if (opts->x_flag_lto_partition_balanced
 	  && opts->x_flag_lto_partition_1to1)
-	error ("Only one -flto-partitoin value can be specified");
+	error ("only one -flto-partition value can be specified");
       if (!opts->x_flag_whopr && !opts->x_flag_wpa && !opts->x_flag_ltrans)
 	error ("-flto-partition has no effect without -fwhopr");
     }
@@ -1924,7 +1924,7 @@ common_handle_option (struct gcc_options *opts,
 #ifdef ENABLE_PLUGIN
       add_new_plugin (arg);
 #else
-      error ("Plugin support is disabled.  Configure with --enable-plugin.");
+      error ("plugin support is disabled; configure with --enable-plugin");
 #endif
       break;
 
@@ -1932,7 +1932,7 @@ common_handle_option (struct gcc_options *opts,
 #ifdef ENABLE_PLUGIN
       parse_plugin_arg_opt (arg);
 #else
-      error ("Plugin support is disabled.  Configure with --enable-plugin.");
+      error ("plugin support is disabled; configure with --enable-plugin");
 #endif
       break;
 

@@ -2611,13 +2611,13 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       if (!POINTER_TYPE_P (TREE_TYPE (x))
 	  || !is_gimple_mem_ref_addr (x))
 	{
-	  error ("Invalid first operand of MEM_REF.");
+	  error ("invalid first operand of MEM_REF");
 	  return x;
 	}
       if (TREE_CODE (TREE_OPERAND (t, 1)) != INTEGER_CST
 	  || !POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 1))))
 	{
-	  error ("Invalid offset operand of MEM_REF.");
+	  error ("invalid offset operand of MEM_REF");
 	  return TREE_OPERAND (t, 1);
 	}
       if (TREE_CODE (x) == ADDR_EXPR
@@ -2636,7 +2636,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       break;
 
     case MODIFY_EXPR:
-      error ("MODIFY_EXPR not expected while having tuples.");
+      error ("MODIFY_EXPR not expected while having tuples");
       return *tp;
 
     case ADDR_EXPR:
@@ -2783,7 +2783,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 				     TREE_TYPE (TREE_OPERAND (t, 1))))
 	{
 	  error ("invalid operand to pointer plus, second operand is not an "
-		 "integer with type of sizetype.");
+		 "integer with type of sizetype");
 	  return t;
 	}
       /* FALLTHROUGH */
@@ -2951,14 +2951,14 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 	      && (TREE_CODE (op) == SSA_NAME
 		  || is_gimple_min_invariant (op)))
 	    {
-	      error ("Conversion of an SSA_NAME on the left hand side.");
+	      error ("conversion of an SSA_NAME on the left hand side");
 	      debug_generic_stmt (expr);
 	      return true;
 	    }
 	  else if (TREE_CODE (op) == SSA_NAME
 		   && TYPE_SIZE (TREE_TYPE (expr)) != TYPE_SIZE (TREE_TYPE (op)))
 	    {
-	      error ("Conversion of register to a different size.");
+	      error ("conversion of register to a different size");
 	      debug_generic_stmt (expr);
 	      return true;
 	    }
@@ -2973,14 +2973,14 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
     {
       if (!is_gimple_mem_ref_addr (TREE_OPERAND (expr, 0)))
 	{
-	  error ("Invalid address operand in MEM_REF.");
+	  error ("invalid address operand in MEM_REF");
 	  debug_generic_stmt (expr);
 	  return true;
 	}
       if (TREE_CODE (TREE_OPERAND (expr, 1)) != INTEGER_CST
 	  || !POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 1))))
 	{
-	  error ("Invalid offset operand in MEM_REF.");
+	  error ("invalid offset operand in MEM_REF");
 	  debug_generic_stmt (expr);
 	  return true;
 	}
@@ -2990,14 +2990,14 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
       if (!TMR_BASE (expr)
 	  || !is_gimple_mem_ref_addr (TMR_BASE (expr)))
 	{
-	  error ("Invalid address operand in in TARGET_MEM_REF.");
+	  error ("invalid address operand in in TARGET_MEM_REF");
 	  return true;
 	}
       if (!TMR_OFFSET (expr)
 	  || TREE_CODE (TMR_OFFSET (expr)) != INTEGER_CST
 	  || !POINTER_TYPE_P (TREE_TYPE (TMR_OFFSET (expr))))
 	{
-	  error ("Invalid offset operand in TARGET_MEM_REF.");
+	  error ("invalid offset operand in TARGET_MEM_REF");
 	  debug_generic_stmt (expr);
 	  return true;
 	}
@@ -3116,7 +3116,7 @@ verify_gimple_call (gimple stmt)
 
       if (!DECL_STATIC_CHAIN (fn))
 	{
-	  error ("static chain with function that doesn't use one");
+	  error ("static chain with function that doesn%'t use one");
 	  return true;
 	}
     }
@@ -3927,7 +3927,7 @@ verify_gimple_phi (gimple stmt)
 
   if (TREE_CODE (gimple_phi_result (stmt)) != SSA_NAME)
     {
-      error ("Invalid PHI result");
+      error ("invalid PHI result");
       return true;
     }
 
@@ -3939,13 +3939,13 @@ verify_gimple_phi (gimple stmt)
 	  || (!is_gimple_reg (gimple_phi_result (stmt))
 	      && !is_gimple_addressable (arg)))
 	{
-	  error ("Invalid PHI argument");
+	  error ("invalid PHI argument");
 	  debug_generic_stmt (arg);
 	  return true;
 	}
       if (!useless_type_conversion_p (type, TREE_TYPE (arg)))
 	{
-	  error ("Incompatible types in PHI argument %u", i);
+	  error ("incompatible types in PHI argument %u", i);
 	  debug_generic_stmt (type);
 	  debug_generic_stmt (TREE_TYPE (arg));
 	  return true;
@@ -4250,7 +4250,7 @@ verify_eh_throw_stmt_node (void **slot, void *data)
 
   if (!pointer_set_contains (visited, node->stmt))
     {
-      error ("Dead STMT in EH table");
+      error ("dead STMT in EH table");
       debug_gimple_stmt (node->stmt);
       eh_error_found = true;
     }

@@ -1563,7 +1563,7 @@ open_auxiliary_file (const char *ext)
   filename = concat (aux_base_name, ".", ext, NULL);
   file = fopen (filename, "w");
   if (!file)
-    fatal_error ("can't open %s for writing: %m", filename);
+    fatal_error ("can%'t open %s for writing: %m", filename);
   free (filename);
   return file;
 }

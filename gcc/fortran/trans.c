@@ -780,7 +780,7 @@ gfc_allocate_array_with_status (stmtblock_t * block, tree mem, tree size,
   else
     error = gfc_trans_runtime_error (true, NULL,
 				     "Attempting to allocate already allocated"
-				     "variable");
+				     " variable");
 
   if (status != NULL_TREE && !integer_zerop (status))
     {

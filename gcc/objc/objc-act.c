@@ -559,7 +559,7 @@ objc_init (void)
       register char * const dumpname = concat (dump_base_name, ".decl", NULL);
       gen_declaration_file = fopen (dumpname, "w");
       if (gen_declaration_file == 0)
-	fatal_error ("can't open %s: %m", dumpname);
+	fatal_error ("can%'t open %s: %m", dumpname);
       free (dumpname);
     }
 
@@ -821,7 +821,7 @@ objc_set_method_opt (bool optional)
   if (!objc_interface_context 
       || TREE_CODE (objc_interface_context) != PROTOCOL_INTERFACE_TYPE)
     {
-      error ("@optional/@required is allowed in @protocol context only.");
+      error ("@optional/@required is allowed in @protocol context only");
       objc_method_optional_flag = false;
     }
 }

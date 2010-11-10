@@ -1136,18 +1136,18 @@ c_common_parse_file (int set_yydebug)
     switch (c_language)
       {
       case clk_c:
-	warning(0, "The C parser does not support -dy, option ignored");
+	warning(0, "the C parser does not support -dy, option ignored");
 	break;
       case clk_objc:
 	warning(0,
-		"The Objective-C parser does not support -dy, option ignored");
+		"the Objective-C parser does not support -dy, option ignored");
 	break;
       case clk_cxx:
-	warning(0, "The C++ parser does not support -dy, option ignored");
+	warning(0, "the C++ parser does not support -dy, option ignored");
 	break;
       case clk_objcxx:
 	warning(0,
-	    "The Objective-C++ parser does not support -dy, option ignored");
+	    "the Objective-C++ parser does not support -dy, option ignored");
 	break;
       default:
 	gcc_unreachable ();

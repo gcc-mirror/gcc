@@ -992,7 +992,7 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 		/* OK */;
 	      else
 		{
-		  warning (0, "extern declaration of %q#D doesn't match", x);
+		  warning (0, "extern declaration of %q#D doesn%'t match", x);
 		  warning (0, "global declaration %q+#D", oldglobal);
 		}
 	    }

@@ -1,3 +1,145 @@
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* cfgloop.c (verify_loop_structure): Use %' in diagnostics.  Start
+	diagnostics with lowercase letters.
+	* cgraphunit.c (verify_cgraph_node): Start diagnostics with
+	lowercase letters.
+	* collect2.c (maybe_run_lto_and_relink): Remove trailing '.' from
+	diagnostic.
+	* config/alpha/freebsd.h (LINK_SPEC): Avoid '`' in diagnostic.
+	* config/arm/arm.c (arm_get_pcs_model): Start diagnostics with
+	lowercase letters.
+	* config/arm/freebsd.h (LINK_SPEC): Avoid '`' in diagnostic.
+	Remove trailing ' ' from diagnostic.
+	* config/avr/avr.c (print_operand_address): Start diagnostic with
+	a lowercase letter and remove trailing '.'.
+	* config/avr/avr.opt (mpmem-wrap-around): Fix typo in help text.
+	* config/bfin/bfin.c (bfin_option_override): Start diagnostics
+	with lowercase letters.  Use %' in diagnostics.  Remove trailing
+	'.' from diagnostics.
+	(bfin_handle_longcall_attribute): Use %' in diagnostic.
+	* config/cris/cris.c (cris_split_movdx,
+	cris_expand_pic_call_address): Start diagnostics with lowercase
+	letters.
+	(cris_asm_output_label_ref): Use %' in diagnostic.
+	* config/cris/cris.h (ASM_SPEC): Start diagnostic with a lowercase
+	letter.
+	* config/crx/crx.h (FUNCTION_PROFILER): Start diagnostic with a
+	lowercase letter.
+	* config/darwin-c.c (version_as_macro): Start diagnostic with a
+	lowercase letter.
+	* config/darwin-driver.c (darwin_default_min_version): Use %' in
+	diagnostic.
+	* config/host-darwin.c (darwin_gt_pch_use_address): Use %' in
+	diagnostic.
+	* config/i386/freebsd.h (LINK_SPEC): Avoid '`' in diagnostic.
+	* config/i386/host-cygwin.c (cygwin_gt_pch_get_address): Use %' in
+	diagnostics.
+	* config/i386/i386.c (ix86_option_override_internal): Write
+	diagnostic as a single sentence without trailing '.'.  Use %' in
+	diagnostics.
+	(ix86_function_sseregparm, classify_argument): Start diagnostics
+	with lowercase letters.
+	(ix86_expand_prologue): Use %' in diagnostic.
+	* config/i386/i386.h (CC1_CPU_SPEC_1): Remove trailing '.' from
+	diagnostic.
+	* config/i386/nwld.h (LINK_SPEC): Start diagnostic with a
+	lowercase letter.
+	* config/i386/winnt.c (i386_pe_determine_dllimport_p): Use %' in
+	diagnostic.
+	* config/ia64/freebsd.h (LINK_SPEC): Avoid '`' in diagnostic.
+	* config/ia64/ia64.opt (msched-max-memory-insns-hard-limit): Avoid
+	'`' in help text.
+	* config/lm32/lm32.c (lm32_print_operand): Start diagnostic with a
+	lowercase letter.
+	* config/mep/mep.c (mep_validate_vliw): Start diagnostics with
+	lowercase letters.
+	* config/microblaze/microblaze.c (microblaze_handle_option):
+	Remove trailing '.' from diagnostic.
+	(print_operand): Start diagnostic with a lowercase letter.
+	* config/pa/pa-hpux10.h (LINK_SPEC): Start diagnostics with
+	lowercase letters.  Avoid '`' in diagnostics.
+	* config/pa/pa-hpux11.h (LINK_SPEC): Start diagnostics with
+	lowercase letters.  Avoid '`' in diagnostics.
+	* config/pa/pa64-hpux.h (LINK_SPEC): Start diagnostics with
+	lowercase letters.  Avoid '`' in diagnostics.
+	* config/picochip/picochip.c (picochip_option_override,
+	picochip_emit_save_register, picochip_function_arg,
+	picochip_output_label, picochip_output_internal_label,
+	picochip_asm_output_opcode, picochip_output_cbranch,
+	picochip_output_compare, picochip_output_branch,
+	picochip_get_vliw_alu_id): Remove trailing '.' and '\n' from
+	diagnostics. Start diagnostics with lowercase letters.  Use %' in
+	diagnostics.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Use
+	"SPE" capitalization.  Start diagnostic with a lowercase letter.
+	(rs6000_handle_option): Start diagnostics with lowercase letters.
+	(def_builtin): Remove trailing '.' from diagnostic.
+	(rs6000_savres_routine_name): Start diagnostic with a lowercase
+	letter.
+	* config/rs6000/sysv4.h (LINK_OS_FREEBSD_SPEC): Avoid '`' in
+	diagnostic.
+	* config/rx/rx.c (rx_handle_option): Start diagnostic with a
+	lowercase letter.
+	* config/s390/s390.c (s390_option_override) Start diagnostics with
+	lowercase letters.  Use %' in diagnostic.
+	* config/sh/sh.c (sh_output_mi_thunk): Start diagnostics with
+	lowercase letters.
+	* config/sh/symbian-base.c (sh_symbian_mark_dllimport): Use %' in
+	diagnostic.
+	* config/sh/symbian-c.c (sh_symbian_is_dllimported): Use %' in
+	diagnostic.
+	* config/sh/symbian-cxx.c (sh_symbian_is_dllimported): Use %' in
+	diagnostic.
+	* config/sparc/freebsd.h (LINK_SPEC): Avoid '`' in diagnostic.
+	* config/spu/spu.c (spu_option_override): Start diagnostics with
+	lowercase letters.  Use %qs for quoting in diagnostics.
+	(spu_check_builtin_parm): Remove trailing '.' from diagnostics.
+	Use %wd instead of HOST_WIDE_INT_PRINT_DEC in diagnostic .
+	* config/v850/v850.c (construct_save_jarl): Remove trailing '\n'
+	from diagnostic.
+	* convert.c (convert_to_integer, convert_to_vector): Use %' in
+	diagnostics.
+	* dbgcnt.c (dbg_cnt_process_opt): Start diagnostic with lowercase
+	letter and use "cannot" spelling.
+	* expmed.c (extract_fixed_bit_field): Start diagnostic with
+	lowercase letter and format as a single sentence without '.'.
+	* ggc-common.c (write_pch_globals, gt_pch_save, gt_pch_restore):
+	Use %' in diagnostics.
+	* ggc-page.c (ggc_pch_write_object, ggc_pch_finish, ggc_pch_read):
+	Use %' in diagnostics.
+	* ggc-zone.c (ggc_pch_write_object, ggc_pch_finish, ggc_pch_read):
+	Use %' in diagnostics.
+	* graph.c (clean_graph_dump_file): Use %' in diagnostic.
+	* graphite-poly.c (graphite_read_scop_file): Start diagnostics
+	with lowercase letters and remove tailing '.' and '\n'.
+	* lto-cgraph.c (input_profile_summary): Start diagnostic with
+	lowercase letter and remove trailing '.'.
+	(input_cgraph): Start diagnostics with lowercase letters and
+	remove trailing '\n'.
+	* opts.c (finish_options, common_handle_option): Start diagnostics
+	with lowercase letters and remove trailing '.'.  Fix typo in
+	diagnostic.
+	* passes.c (position_pass): Start diagnostic with lowercase
+	letter.	
+	* plugin.c (add_new_plugin, parse_plugin_arg_opt,
+	register_callback, try_init_one_plugin): Start diagnostics with
+	lowercase letters.
+	* reload1.c (spill_failure): Use %' in diagnostic.
+	(gen_reload): Start diagnostic with a lowercase letter.
+	* stor-layout.c (place_field): Start diagnostic with a lowercase
+	letter.
+	* toplev.c (open_auxiliary_file): Use %' in diagnostic.
+	* tree-cfg.c (verify_expr, verify_types_in_gimple_reference,
+	verify_gimple_call, verify_gimple_phi, verify_eh_throw_stmt_node):
+	Start diagnostics with lowercase letters, remove trailing '.' and
+	use %' in diagnostics.
+	* tree-ssa.c (verify_def): Remove trailing '.' from diagnostic.
+	(verify_ssa): Don't split diagnostic across two error calls.
+	Spell out "number" and use %' in diagnostic.
+	* value-prof.c (visit_hist, check_counter): Start diagnostics with
+	lowercase letters.
+
 2010-11-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/46419

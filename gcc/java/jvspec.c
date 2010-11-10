@@ -393,7 +393,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     }
 
   if (saw_D && ! main_class_name)
-    fatal_error ("can't specify %<-D%> without %<--main%>");
+    fatal_error ("can%'t specify %<-D%> without %<--main%>");
 
   if (main_class_name && ! verify_class_name (main_class_name))
     fatal_error ("%qs is not a valid class name", main_class_name);

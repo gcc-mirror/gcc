@@ -816,7 +816,7 @@ handle_pragma_target(cpp_reader *ARG_UNUSED(dummy))
 	    token = pragma_lex (&x);
 	  else
 	    GCC_BAD ("%<#pragma GCC target (string [,string]...)%> does "
-		     "not have a final %<)%>.");
+		     "not have a final %<)%>");
 	}
 
       if (token != CPP_EOF)
@@ -884,7 +884,7 @@ handle_pragma_optimize (cpp_reader *ARG_UNUSED(dummy))
 	    token = pragma_lex (&x);
 	  else
 	    GCC_BAD ("%<#pragma GCC optimize (string [,string]...)%> does "
-		     "not have a final %<)%>.");
+		     "not have a final %<)%>");
 	}
 
       if (token != CPP_EOF)

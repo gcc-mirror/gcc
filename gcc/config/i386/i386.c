@@ -3296,8 +3296,8 @@ ix86_option_override_internal (bool main_args_p)
         error ("bad value (%s) for %stune=%s %s",
 	       ix86_tune_string, prefix, suffix, sw);
       else if (!strcmp (ix86_tune_string, "x86-64"))
-        warning (OPT_Wdeprecated, "%stune=x86-64%s is deprecated.  Use "
-                 "%stune=k8%s or %stune=generic%s instead as appropriate.",
+        warning (OPT_Wdeprecated, "%stune=x86-64%s is deprecated; use "
+                 "%stune=k8%s or %stune=generic%s instead as appropriate",
                  prefix, suffix, prefix, suffix, prefix, suffix);
     }
   else
@@ -4023,13 +4023,14 @@ ix86_option_override_internal (bool main_args_p)
   if (!TARGET_64BIT && flag_pic)
     {
       if (flag_fentry > 0)
-        sorry ("-mfentry isn't supported for 32-bit in combination with -fpic");
+        sorry ("-mfentry isn%'t supported for 32-bit in combination "
+	       "with -fpic");
       flag_fentry = 0;
     }
   else if (TARGET_SEH)
     {
       if (flag_fentry == 0)
-	sorry ("-mno-fentry isn't compatible with SEH");
+	sorry ("-mno-fentry isn%'t compatible with SEH");
       flag_fentry = 1;
     }
   else if (flag_fentry < 0)
@@ -5337,10 +5338,10 @@ ix86_function_sseregparm (const_tree type, const_tree decl, bool warn)
 	  if (warn)
 	    {
 	      if (decl)
-		error ("Calling %qD with attribute sseregparm without "
+		error ("calling %qD with attribute sseregparm without "
 		       "SSE/SSE2 enabled", decl);
 	      else
-		error ("Calling %qT with attribute sseregparm without "
+		error ("calling %qT with attribute sseregparm without "
 		       "SSE/SSE2 enabled", type);
 	    }
 	  return 0;
@@ -6002,7 +6003,7 @@ classify_argument (enum machine_mode mode, const_tree type,
 			    {
 			      warned = true;
 			      inform (input_location,
-				      "The ABI of passing struct with"
+				      "the ABI of passing struct with"
 				      " a flexible array member has"
 				      " changed in GCC 4.4");
 			    }
@@ -6118,7 +6119,7 @@ classify_argument (enum machine_mode mode, const_tree type,
 		{
 		  warned = true;
 		  inform (input_location,
-			  "The ABI of passing union with long double"
+			  "the ABI of passing union with long double"
 			  " has changed in GCC 4.4");
 		}
 	      return 0;
@@ -6233,7 +6234,7 @@ classify_argument (enum machine_mode mode, const_tree type,
 	    {
 	      warned = true;
 	      inform (input_location,
-		      "The ABI of passing structure with complex float"
+		      "the ABI of passing structure with complex float"
 		      " member has changed in GCC 4.4");
 	    }
 	  classes[1] = X86_64_SSESF_CLASS;
@@ -10086,7 +10087,7 @@ ix86_expand_prologue (void)
       /* Check if profiling is active and we shall use profiling before
          prologue variant. If so sorry.  */
       if (crtl->profile && flag_fentry != 0)
-        sorry ("ms_hook_prologue attribute isn't compatible "
+        sorry ("ms_hook_prologue attribute isn%'t compatible "
 	       "with -mfentry for 32-bit");
 
       /* In ix86_asm_output_function_label we emitted:

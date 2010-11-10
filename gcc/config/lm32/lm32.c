@@ -523,7 +523,7 @@ lm32_print_operand (FILE * file, rtx op, int letter)
   else if (GET_CODE (op) == CONST_DOUBLE)
     {
       if ((CONST_DOUBLE_LOW (op) != 0) || (CONST_DOUBLE_HIGH (op) != 0))
-	output_operand_lossage ("Only 0.0 can be loaded as an immediate");
+	output_operand_lossage ("only 0.0 can be loaded as an immediate");
       else
 	fprintf (file, "0");
     }

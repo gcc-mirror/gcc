@@ -552,7 +552,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #ifndef CC1_CPU_SPEC
 #define CC1_CPU_SPEC_1 "\
 %{msse5:-mavx \
-%n'-msse5' was removed.\n}"
+%n'-msse5' was removed\n}"
 
 #ifndef HAVE_LOCAL_CPU_DETECT
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1

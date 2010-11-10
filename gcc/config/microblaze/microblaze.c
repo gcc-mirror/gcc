@@ -1285,7 +1285,7 @@ microblaze_handle_option (size_t code,
       warning (0, "-mno-clearbss is deprecated; use -fno-zero-initialized-in-bss");
       break;
     case OPT_mxl_stack_check:
-      warning (0, "-mxl_stack_check is deprecated; use -fstack-check.");
+      warning (0, "-mxl_stack_check is deprecated; use -fstack-check");
       break;
     }
   return true;
@@ -1845,7 +1845,7 @@ print_operand (FILE * file, rtx op, int letter)
 	      break;
 	    case ADDRESS_INVALID:
 	    case ADDRESS_PLT:
-	      fatal_insn ("Invalid address", op);
+	      fatal_insn ("invalid address", op);
 	    }
 	}
     }

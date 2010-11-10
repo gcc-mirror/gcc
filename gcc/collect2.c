@@ -954,7 +954,7 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
       size_t num_files;
 
       if (!lto_wrapper)
-	fatal ("COLLECT_LTO_WRAPPER must be set.");
+	fatal ("COLLECT_LTO_WRAPPER must be set");
 
       num_lto_c_args++;
 

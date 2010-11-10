@@ -1,5 +1,5 @@
 /* Output routines for graphical representation.
-   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2007, 2008
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1998.
 
@@ -408,7 +408,7 @@ clean_graph_dump_file (const char *base)
   fp = fopen (buf, "w");
 
   if (fp == NULL)
-    fatal_error ("can't open %s: %m", buf);
+    fatal_error ("can%'t open %s: %m", buf);
 
   gcc_assert (graph_dump_format == vcg);
   fputs ("graph: {\nport_sharing: no\n", fp);

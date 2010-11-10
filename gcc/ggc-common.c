@@ -481,7 +481,7 @@ write_pch_globals (const struct ggc_root_tab * const *tab,
 	    {
 	      if (fwrite (&ptr, sizeof (void *), 1, state->f)
 		  != 1)
-		fatal_error ("can't write PCH file: %m");
+		fatal_error ("can%'t write PCH file: %m");
 	    }
 	  else
 	    {
@@ -489,7 +489,7 @@ write_pch_globals (const struct ggc_root_tab * const *tab,
 		htab_find_with_hash (saving_htab, ptr, POINTER_HASH (ptr));
 	      if (fwrite (&new_ptr->new_addr, sizeof (void *), 1, state->f)
 		  != 1)
-		fatal_error ("can't write PCH file: %m");
+		fatal_error ("can%'t write PCH file: %m");
 	    }
 	}
 }
@@ -563,7 +563,7 @@ gt_pch_save (FILE *f)
   for (rt = gt_pch_scalar_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
       if (fwrite (rti->base, rti->stride, 1, f) != 1)
-	fatal_error ("can't write PCH file: %m");
+	fatal_error ("can%'t write PCH file: %m");
 
   /* Write out all the global pointers, after translation.  */
   write_pch_globals (gt_ggc_rtab, &state);
@@ -575,17 +575,17 @@ gt_pch_save (FILE *f)
     long o;
     o = ftell (state.f) + sizeof (mmi);
     if (o == -1)
-      fatal_error ("can't get position in PCH file: %m");
+      fatal_error ("can%'t get position in PCH file: %m");
     mmi.offset = mmap_offset_alignment - o % mmap_offset_alignment;
     if (mmi.offset == mmap_offset_alignment)
       mmi.offset = 0;
     mmi.offset += o;
   }
   if (fwrite (&mmi, sizeof (mmi), 1, state.f) != 1)
-    fatal_error ("can't write PCH file: %m");
+    fatal_error ("can%'t write PCH file: %m");
   if (mmi.offset != 0
       && fseek (state.f, mmi.offset, SEEK_SET) != 0)
-    fatal_error ("can't write padding to PCH file: %m");
+    fatal_error ("can%'t write padding to PCH file: %m");
 
   ggc_pch_prepare_write (state.d, state.f);
 
@@ -640,7 +640,7 @@ gt_pch_restore (FILE *f)
   for (rt = gt_pch_scalar_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
       if (fread (rti->base, rti->stride, 1, f) != 1)
-	fatal_error ("can't read PCH file: %m");
+	fatal_error ("can%'t read PCH file: %m");
 
   /* Read in all the global pointers, in 6 easy loops.  */
   for (rt = gt_ggc_rtab; *rt; rt++)
@@ -648,17 +648,17 @@ gt_pch_restore (FILE *f)
       for (i = 0; i < rti->nelt; i++)
 	if (fread ((char *)rti->base + rti->stride * i,
 		   sizeof (void *), 1, f) != 1)
-	  fatal_error ("can't read PCH file: %m");
+	  fatal_error ("can%'t read PCH file: %m");
 
   for (rt = gt_pch_cache_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
       for (i = 0; i < rti->nelt; i++)
 	if (fread ((char *)rti->base + rti->stride * i,
 		   sizeof (void *), 1, f) != 1)
-	  fatal_error ("can't read PCH file: %m");
+	  fatal_error ("can%'t read PCH file: %m");
 
   if (fread (&mmi, sizeof (mmi), 1, f) != 1)
-    fatal_error ("can't read PCH file: %m");
+    fatal_error ("can%'t read PCH file: %m");
 
   result = host_hooks.gt_pch_use_address (mmi.preferred_base, mmi.size,
 					  fileno (f), mmi.offset);
@@ -668,10 +668,10 @@ gt_pch_restore (FILE *f)
     {
       if (fseek (f, mmi.offset, SEEK_SET) != 0
 	  || fread (mmi.preferred_base, mmi.size, 1, f) != 1)
-	fatal_error ("can't read PCH file: %m");
+	fatal_error ("can%'t read PCH file: %m");
     }
   else if (fseek (f, mmi.offset + mmi.size, SEEK_SET) != 0)
-    fatal_error ("can't read PCH file: %m");
+    fatal_error ("can%'t read PCH file: %m");
 
   ggc_pch_read (f, mmi.preferred_base);
 
