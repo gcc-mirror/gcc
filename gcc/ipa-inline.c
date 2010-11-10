@@ -404,6 +404,12 @@ cgraph_estimate_growth (struct cgraph_node *node)
   if (cgraph_will_be_removed_from_program_if_no_direct_calls (node)
       && !DECL_EXTERNAL (node->decl) && !self_recursive)
     growth -= node->global.size;
+  /* COMDAT functions are very often not shared across multiple units since they
+     come from various template instantiations.  Take this into account.  */
+  else  if (DECL_COMDAT (node->decl) && !self_recursive
+	    && cgraph_can_remove_if_no_direct_calls_p (node))
+    growth -= (node->global.size
+	       * (100 - PARAM_VALUE (PARAM_COMDAT_SHARING_PROBABILITY)) + 50) / 100;
 
   node->global.estimated_growth = growth;
   return growth;
