@@ -63,7 +63,7 @@
 
 2010-11-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* gcc/config/s390/s390.c (s390_emit_prologue): Report the stack
+	* config/s390/s390.c (s390_emit_prologue): Report the stack
 	size if -fstack-usage is used.
 
 2010-11-10  Richard Guenther  <rguenther@suse.de>
@@ -226,8 +226,8 @@
 
 2010-11-09  Joern Rennecke  <amylaar@spamcop.net>
 
-	* ix86_expand_split_stack_prologue (args_size): Change type to
-	unsigned HOST_WIDE_INT.
+	* config/i386/i386.c (ix86_expand_split_stack_prologue): Change
+	type of args_size to unsigned HOST_WIDE_INT.
 
 	PR target/44755
 	* config.gcc (picochip-*): Add t-pnt16-warn to tmake_file.
