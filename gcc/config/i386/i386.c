@@ -2325,6 +2325,8 @@ static int ix86_isa_flags_explicit;
 #define OPTION_MASK_ISA_ABM_SET \
   (OPTION_MASK_ISA_ABM | OPTION_MASK_ISA_POPCNT)
 
+#define OPTION_MASK_ISA_BMI_SET OPTION_MASK_ISA_BMI
+
 #define OPTION_MASK_ISA_POPCNT_SET OPTION_MASK_ISA_POPCNT
 #define OPTION_MASK_ISA_CX16_SET OPTION_MASK_ISA_CX16
 #define OPTION_MASK_ISA_SAHF_SET OPTION_MASK_ISA_SAHF
@@ -2379,6 +2381,7 @@ static int ix86_isa_flags_explicit;
 #define OPTION_MASK_ISA_AES_UNSET OPTION_MASK_ISA_AES
 #define OPTION_MASK_ISA_PCLMUL_UNSET OPTION_MASK_ISA_PCLMUL
 #define OPTION_MASK_ISA_ABM_UNSET OPTION_MASK_ISA_ABM
+#define OPTION_MASK_ISA_BMI_UNSET OPTION_MASK_ISA_BMI
 #define OPTION_MASK_ISA_POPCNT_UNSET OPTION_MASK_ISA_POPCNT
 #define OPTION_MASK_ISA_CX16_UNSET OPTION_MASK_ISA_CX16
 #define OPTION_MASK_ISA_SAHF_UNSET OPTION_MASK_ISA_SAHF
@@ -2681,6 +2684,19 @@ ix86_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
 	}
       return true;
 
+    case OPT_mbmi:
+      if (value)
+	{
+	  ix86_isa_flags |= OPTION_MASK_ISA_BMI_SET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_BMI_SET;
+	}
+      else
+	{
+	  ix86_isa_flags &= ~OPTION_MASK_ISA_BMI_UNSET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_BMI_UNSET;
+	}
+      return true;
+
     case OPT_mpopcnt:
       if (value)
 	{
@@ -2849,6 +2865,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
     { "-m3dnowa",	OPTION_MASK_ISA_3DNOW_A },
     { "-mmmx",		OPTION_MASK_ISA_MMX },
     { "-mabm",		OPTION_MASK_ISA_ABM },
+    { "-mbmi",		OPTION_MASK_ISA_BMI },
     { "-mpopcnt",	OPTION_MASK_ISA_POPCNT },
     { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
     { "-mcrc32",	OPTION_MASK_ISA_CRC32 },
@@ -3104,7 +3121,9 @@ ix86_option_override_internal (bool main_args_p)
       PTA_LWP = 1 << 23,
       PTA_FSGSBASE = 1 << 24,
       PTA_RDRND = 1 << 25,
-      PTA_F16C = 1 << 26
+      PTA_F16C = 1 << 26,
+      PTA_BMI = 1 << 27
+      /* if this reaches 32, need to widen struct pta flags below */
     };
 
   static struct pta
@@ -3439,6 +3458,9 @@ ix86_option_override_internal (bool main_args_p)
 	if (processor_alias_table[i].flags & PTA_ABM
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_ABM))
 	  ix86_isa_flags |= OPTION_MASK_ISA_ABM;
+	if (processor_alias_table[i].flags & PTA_BMI
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_BMI))
+	  ix86_isa_flags |= OPTION_MASK_ISA_BMI;
 	if (processor_alias_table[i].flags & PTA_CX16
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_CX16))
 	  ix86_isa_flags |= OPTION_MASK_ISA_CX16;
@@ -4276,6 +4298,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[])
     /* isa options */
     IX86_ATTR_ISA ("3dnow",	OPT_m3dnow),
     IX86_ATTR_ISA ("abm",	OPT_mabm),
+    IX86_ATTR_ISA ("bmi",	OPT_mbmi),
     IX86_ATTR_ISA ("aes",	OPT_maes),
     IX86_ATTR_ISA ("avx",	OPT_mavx),
     IX86_ATTR_ISA ("mmx",	OPT_mmmx),
@@ -24016,6 +24039,11 @@ enum ix86_builtins
 
   IX86_BUILTIN_CLZS,
 
+  /* BMI instructions.  */
+  IX86_BUILTIN_BEXTR32,
+  IX86_BUILTIN_BEXTR64,
+  IX86_BUILTIN_CTZS,
+
   /* FSGSBASE instructions.  */
   IX86_BUILTIN_RDFSBASE32,
   IX86_BUILTIN_RDFSBASE64,
@@ -24954,6 +24982,11 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_AVX, CODE_FOR_copysignv4df3,  "__builtin_ia32_copysignpd256", IX86_BUILTIN_CPYSGNPD256, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF },
 
   { OPTION_MASK_ISA_ABM, CODE_FOR_clzhi2_abm,   "__builtin_clzs",   IX86_BUILTIN_CLZS,    UNKNOWN,     (int) UINT16_FTYPE_UINT16 },
+
+  /* BMI */
+  { OPTION_MASK_ISA_BMI, CODE_FOR_bmi_bextr_si, "__builtin_ia32_bextr_u32", IX86_BUILTIN_BEXTR32, UNKNOWN, (int) UINT_FTYPE_UINT_UINT },
+  { OPTION_MASK_ISA_BMI, CODE_FOR_bmi_bextr_di, "__builtin_ia32_bextr_u64", IX86_BUILTIN_BEXTR64, UNKNOWN, (int) UINT64_FTYPE_UINT64_UINT64 },
+  { OPTION_MASK_ISA_BMI, CODE_FOR_ctzhi2,       "__builtin_ctzs",           IX86_BUILTIN_CTZS,    UNKNOWN, (int) UINT16_FTYPE_UINT16 },
 
   /* F16C */
   { OPTION_MASK_ISA_F16C, CODE_FOR_vcvtph2ps, "__builtin_ia32_vcvtph2ps", IX86_BUILTIN_CVTPH2PS, UNKNOWN, (int) V4SF_FTYPE_V8HI },

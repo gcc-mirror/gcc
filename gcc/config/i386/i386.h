@@ -59,6 +59,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_LWP	OPTION_ISA_LWP
 #define TARGET_ROUND	OPTION_ISA_ROUND
 #define TARGET_ABM	OPTION_ISA_ABM
+#define TARGET_BMI	OPTION_ISA_BMI
 #define TARGET_POPCNT	OPTION_ISA_POPCNT
 #define TARGET_SAHF	OPTION_ISA_SAHF
 #define TARGET_MOVBE	OPTION_ISA_MOVBE
@@ -2365,6 +2366,14 @@ struct GTY(()) machine_function {
 
 extern void debug_ready_dispatch (void);
 extern void debug_dispatch_window (int);
+
+/* The value at zero is only defined for the BMI instructions
+   LZCNT and TZCNT, not the BSR/BSF insns in the original isa.  */
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI)
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI)
+
 
 /*
 Local variables:

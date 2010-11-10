@@ -1,3 +1,17 @@
+2010-11-10  Quentin Neill  <quentin.neill.gnu@gmail.com>
+
+	* g++.dg/other/i386-2.C: Add -mbmi.
+	* g++.dg/other/i386-3.C: Likewise.
+	* gcc.target/i386/funcspec-5.c: Add bmi and no-bmi targets.
+	* gcc.target/i386/funcspec-6.c: Likewise.
+	* gcc.target/i386/sse-12.c: Add -mbmi.
+	* gcc.target/i386/bmi-1.c: New file.
+	* gcc.target/i386/bmi-2.c: Likewise.
+	* gcc.target/i386/bmi-3.c: Likewise.
+	* gcc.target/i386/bmi-4.c: Likewise.
+	* gcc.target/i386/bmi-5.c: Likewise.
+	* gcc.target/i386/bmi-6.c: Likewise.
+
 2010-11-10  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/46065
