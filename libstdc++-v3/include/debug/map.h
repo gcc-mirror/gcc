@@ -211,6 +211,21 @@ namespace __debug
       }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        std::pair<iterator, bool>
+        insert(_Pair&& __x)
+        {
+	  typedef typename _Base::iterator _Base_iterator;
+	  std::pair<_Base_iterator, bool> __res
+	    = _Base::insert(std::forward<_Pair>(__x));
+	  return std::pair<iterator, bool>(iterator(__res.first, this),
+					   __res.second);
+	}
+#endif
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
       void
       insert(std::initializer_list<value_type> __list)
       { _Base::insert(__list); }
@@ -222,6 +237,19 @@ namespace __debug
 	__glibcxx_check_insert(__position);
 	return iterator(_Base::insert(__position.base(), __x), this);
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        iterator
+        insert(const_iterator __position, _Pair&& __x)
+        {
+	  __glibcxx_check_insert(__position);
+	  return iterator(_Base::insert(__position.base(),
+					std::forward<_Pair>(__x)), this);
+	}
+#endif
 
       template<typename _InputIterator>
         void

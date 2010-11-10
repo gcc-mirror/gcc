@@ -186,6 +186,15 @@ namespace __profile
       { return iterator(_Base::insert(__x)); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        iterator
+        insert(_Pair&& __x)
+        { return iterator(_Base::insert(std::forward<_Pair>(__x))); }
+#endif
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
       void
       insert(std::initializer_list<value_type> __list)
       { _Base::insert(__list); }
@@ -198,6 +207,16 @@ namespace __profile
       insert(iterator __position, const value_type& __x)
 #endif
       { return iterator(_Base::insert(__position, __x)); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        iterator
+        insert(const_iterator __position, _Pair&& __x)
+        { return iterator(_Base::insert(__position,
+					std::forward<_Pair>(__x))); }
+#endif
 
       template<typename _InputIterator>
         void

@@ -183,6 +183,12 @@ namespace __profile
       insert(const value_type& __x)
       { return iterator(_Base::insert(__x)); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      iterator
+      insert(value_type&& __x)
+      { return iterator(_Base::insert(std::move(__x))); }
+#endif
+
       iterator
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       insert(const_iterator __position, const value_type& __x)
@@ -190,6 +196,12 @@ namespace __profile
       insert(iterator __position, const value_type& __x)
 #endif
       { return iterator(_Base::insert(__position, __x)); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      iterator
+      insert(const_iterator __position, value_type&& __x)
+      { return iterator(_Base::insert(__position, std::move(__x))); }
+#endif
 
       template<typename _InputIterator>
         void
