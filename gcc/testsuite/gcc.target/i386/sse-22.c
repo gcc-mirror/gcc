@@ -6,10 +6,10 @@
 
 /* Test that the intrinsics compile without optimization.  All of them
    are defined as inline functions in {,x,e,p,t,s,w,a}mmintrin.h,
-   xopintrin.h, lwpintrin.h, popcntintrin.h and mm3dnow.h that
-   reference the proper builtin functions.  Defining away "extern" and
-   "__inline" results in all of them being compiled as proper
-   functions.  */
+   xopintrin.h, tbmintrin.h, lwpintrin.h, popcntintrin.h and
+   mm3dnow.h that reference the proper builtin functions.  Defining
+   away "extern" and "__inline" results in all of them being compiled as
+   proper functions.  */
 
 #define extern
 #define __inline
@@ -39,7 +39,7 @@
 
 
 #ifndef DIFFERENT_PRAGMAS
-#pragma GCC target ("mmx,3dnow,sse,sse2,sse3,ssse3,sse4.1,sse4.2,sse4a,aes,pclmul,xop,popcnt,abm,lwp,fsgsbase,rdrnd,f16c")
+#pragma GCC target ("mmx,3dnow,sse,sse2,sse3,ssse3,sse4.1,sse4.2,sse4a,aes,pclmul,xop,popcnt,abm,lwp,fsgsbase,rdrnd,f16c,tbm")
 #endif
 
 /* Following intrinsics require immediate arguments.  They
@@ -188,3 +188,13 @@ test_2 ( __lwpins64, unsigned char, unsigned long long, unsigned int, 1)
 test_1 (_cvtss_sh, unsigned short, float, 1)
 test_1 (_mm_cvtps_ph, __m128i, __m128, 1)
 test_1 (_mm256_cvtps_ph, __m128i, __m256, 1)
+
+/* tbmintrin.h (TBM). */
+#ifdef DIFFERENT_PRAGMAS
+#pragma GCC target ("tbm")
+#endif
+#include <x86intrin.h>
+test_1 ( __bextri_u32, unsigned int, unsigned int, 1)
+#ifdef __x86_64__
+test_1 ( __bextri_u64, unsigned long long, unsigned long long, 1)
+#endif

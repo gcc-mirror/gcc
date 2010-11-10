@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mxop -msse4a -maes -mpclmul -mpopcnt -mabm -mlwp -mfsgsbase -mrdrnd -mf16c" } */
+/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mxop -msse4a -maes -mpclmul -mpopcnt -mabm -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c" } */
 
 #include <mm_malloc.h>
 
@@ -176,4 +176,10 @@ test_2 ( __lwpins32, unsigned char, unsigned int, unsigned int, 1)
 #ifdef __x86_64__
 test_2 ( __lwpval64, void, unsigned long long, unsigned int, 1)
 test_2 ( __lwpins64, unsigned char, unsigned long long, unsigned int, 1)
+#endif
+
+/* tbmintrin.h */
+test_1 ( __bextri_u32, unsigned int, unsigned int, 1)
+#ifdef __x86_64__
+test_1 ( __bextri_u64, unsigned long long, unsigned long long, 1)
 #endif

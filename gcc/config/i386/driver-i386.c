@@ -397,7 +397,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_popcnt = 0, has_aes = 0, has_avx = 0;
   unsigned int has_pclmul = 0, has_abm = 0, has_lwp = 0;
   unsigned int has_fma4 = 0, has_xop = 0;
-  unsigned int has_bmi = 0;
+  unsigned int has_bmi = 0, has_tbm = 0;
 
   bool arch;
 
@@ -464,6 +464,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_lwp = ecx & bit_LWP;
       has_fma4 = ecx & bit_FMA4;
       has_xop = ecx & bit_XOP;
+      has_tbm = ecx & bit_TBM;
 
       has_longmode = edx & bit_LM;
       has_3dnowp = edx & bit_3DNOWP;
@@ -693,6 +694,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	options = concat (options, " -mxop", NULL);
       if (has_bmi)
 	options = concat (options, " -mbmi", NULL);
+      if (has_tbm)
+	options = concat (options, " -mtbm", NULL);
 
       if (has_avx)
 	options = concat (options, " -mavx", NULL);

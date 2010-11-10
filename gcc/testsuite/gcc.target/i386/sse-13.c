@@ -5,9 +5,9 @@
 
 /* Test that the intrinsics compile with optimization.  All of them
    are defined as inline functions in {,x,e,p,t,s,w,a,b,i}mmintrin.h,
-   xopintrin.h, abmintrin.h, lwpintrin.h, popcntintrin.h and mm3dnow.h
-   that reference the proper builtin functions.  Defining away
-   "extern" and "__inline" results in all of them being compiled as
+   xopintrin.h, abmintrin.h, tbmintrin.h, lwpintrin.h, popcntintrin.h
+   and mm3dnow.h that reference the proper builtin functions.  Defining
+   away "extern" and "__inline" results in all of them being compiled as
    proper functions.  */
 
 #define extern
@@ -140,5 +140,10 @@
 #define __builtin_ia32_lwpval64(D2, D1, F) __builtin_ia32_lwpval64 (D2, D1, 1)
 #define __builtin_ia32_lwpins32(D2, D1, F) __builtin_ia32_lwpins32 (D2, D1, 1)
 #define __builtin_ia32_lwpins64(D2, D1, F) __builtin_ia32_lwpins64 (D2, D1, 1)
+
+/* tbmintrin.h */
+#define __builtin_ia32_bextri_u32(X, Y) __builtin_ia32_bextri_u32 (X, 1)
+#define __builtin_ia32_bextri_u64(X, Y) __builtin_ia32_bextri_u64 (X, 1)
+
 
 #include <x86intrin.h>
