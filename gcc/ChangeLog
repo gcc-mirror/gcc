@@ -1,3 +1,56 @@
+2010-11-10  Quentin Neill  <quentin.neill.gnu@gmail.com>
+
+	* config.gcc (i[34567]86-*-*): Include bmiintrin.h.
+	(x86_64-*-*): Likewise.
+	* config/i386/cpuid.h: Define BMI bit.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Define
+	and set has_bmi.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Check
+	isa_flag for BMI.
+	* config/i386/i386.c (OPTION_MASK_ISA_BMI_SET): New.
+	(OPTION_MASK_ISA_BMI_UNSET): New.
+	(ix86_handle_option): Handle -mbmi.
+	(isa_opts): Add -mbmi.
+	(enum pta_flags): Add PTA_BMI.
+	(ix86_option_override_internal): Add BMI support.
+	(ix86_valid_target_attribute_inner_p): Handle -mbmi.
+	(IX86_BUILTIN_BEXTR32): New for BMI intrinsic.
+	(IX86_BUILTIN_BEXTR64): Likewise.
+	(IX86_BUILTIN_CTZS): Likewise.
+	(bdesc_args): Add BMI intrinsics.
+	(ix86_expand_args_builtin): Add BMI specific cases.
+	* config/i386/i386.h (TARGET_BMI): New for BMI.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Likewise.
+	(CLZ_DEFINED_VALUE_AT_ZERO): Likewise.
+	* config/i386/i386.md (UNSPEC_BEXTR): New for BMI.
+	(UNSPEC_TZCNT): Likewise.
+	(ctz<mode>2): Add tzcnt, and handle 16 bit operands.
+	(bmi_andn_<mode>): New for BMI.
+	(bmi_bextr_<mode>): Likewise.
+	(bmi_blsi_<mode>): Likewise.
+	(bmi_blsmsk_<mode>): Likewise.
+	(bmi_blsr_<mode>): Likewise.
+	* config/i386/i386.opt: Add -mbmi.
+	* config/i386/x86intrin.h: Add BMI check and bmiintrin.h.
+	* config/i386/bmiintrin.h (__lzcnt_u16): New.
+	(__tzcnt_u16): Likewise.
+	(__andn_u32): Likewise.
+	(__bextr_u32): Likewise.
+	(__blsi_u32): Likewise.
+	(__blsmsk_u32): Likewise.
+	(__blsr_u32): Likewise.
+	(__lzcnt_u32): Likewise.
+	(__tzcnt_u32): Likewise.
+	(__andn_u64): Likewise.
+	(__bextr_u64): Likewise.
+	(__blsi_u64): Likewise.
+	(__blsmsk_u64): Likewise.
+	(__blsr_u64): Likewise.
+	(__lzcnt_u64): Likewise.
+	(__tzcnt_u64): Likewise.
+	* doc/invoke.texi: Document -mbmi and -mno-bmi.
+	* doc/extend.texi: Document BMI built-in functions.
+
 2010-11-10  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimize/46228

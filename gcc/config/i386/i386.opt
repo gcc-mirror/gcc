@@ -358,6 +358,10 @@ mpopcnt
 Target Report Mask(ISA_POPCNT) Var(ix86_isa_flags) Save
 Support code generation of popcnt instruction.
 
+mbmi
+Target Report Mask(ISA_BMI) Var(ix86_isa_flags) Save
+Support BMI built-in functions and code generation
+
 mcx16
 Target Report Mask(ISA_CX16) Var(ix86_isa_flags) Save
 Support code generation of cmpxchg16b instruction.

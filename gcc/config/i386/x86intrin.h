@@ -81,6 +81,10 @@
 #include <abmintrin.h>
 #endif
 
+#ifdef __BMI__
+#include <bmiintrin.h>
+#endif
+
 #ifdef __POPCNT__
 #include <popcntintrin.h>
 #endif
