@@ -1,3 +1,10 @@
+2010-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not set DECL_ARTIFICIAL
+	on the reused DECL node coming from a renamed object.
+	Set DECL_IGNORED_P on the DECL node built for renaming entities if they
+	don't need debug info.
+
 2010-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (save_gnu_tree): Improve comments.
