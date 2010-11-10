@@ -1,3 +1,8 @@
+2010-11-10  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/46228
+	* cgraph.c (cgraph_propagate_frequency): Fix typo.
+
 2010-11-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR tree-optimization/46414

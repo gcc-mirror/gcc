@@ -2728,7 +2728,7 @@ cgraph_propagate_frequency (struct cgraph_node *node)
 		 cgraph_node_name (node));
       changed = true;
     }
-  if (maybe_executed_once && node->frequency != NODE_FREQUENCY_EXECUTED_ONCE)
+  else if (maybe_executed_once && node->frequency != NODE_FREQUENCY_EXECUTED_ONCE)
     {
       node->frequency = NODE_FREQUENCY_EXECUTED_ONCE;
       if (dump_file)
