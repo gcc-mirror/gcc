@@ -1,5 +1,12 @@
 2010-11-10  Jan Hubicka  <jh@suse.cz>
 
+	PR tree-optimize/33172
+	PR tree-optimize/43411
+	* gcc.dg/tree-ssa/pr33172.c: New testcase.
+	* g++.dg/tree-ssa/pr43411.C: New testcase.
+
+2010-11-10  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimize/46228
 	* g++.dg/tree-ssa/pr46228.C: New testcase.
 
