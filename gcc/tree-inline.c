@@ -3249,6 +3249,16 @@ estimate_move_cost (tree type)
 
   gcc_assert (!VOID_TYPE_P (type));
 
+  if (TREE_CODE (type) == VECTOR_TYPE)
+    {
+      enum machine_mode inner = TYPE_MODE (TREE_TYPE (type));
+      enum machine_mode simd
+	= targetm.vectorize.preferred_simd_mode (inner);
+      int simd_mode_size = GET_MODE_SIZE (simd);
+      return ((GET_MODE_SIZE (TYPE_MODE (type)) + simd_mode_size - 1)
+	      / simd_mode_size);
+    }
+
   size = int_size_in_bytes (type);
 
   if (size < 0 || size > MOVE_MAX_PIECES * MOVE_RATIO (!optimize_size))

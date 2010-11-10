@@ -1,3 +1,9 @@
+2010-11-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/46414
+	* tree-inline.c (estimate_move_cost): Check preferred vector
+	mode for vector type.
+
 2010-11-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/alpha/osf5.h (ASM_SPEC): Remove -nocpp.

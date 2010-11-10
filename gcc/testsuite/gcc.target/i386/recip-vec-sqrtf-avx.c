@@ -32,4 +32,4 @@ void t3(void)
 }
 
 /* Last loop is small enough to be fully unrolled.  */
-/* { dg-final { scan-assembler-times "vrsqrtps\[ \\t\]+\[^\n\]*%ymm" 4 } } */
+/* { dg-final { scan-assembler-times "vrsqrtps\[ \\t\]+\[^\n\]*%ymm" 6 } } */
