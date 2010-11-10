@@ -1,3 +1,9 @@
+2010-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/46419
+	* config/i386/xmmintrin.h (_mm_cvtpi16_ps): Swap __hisi and __losi.
+	(_mm_cvtpu16_ps): Ditto.
+
 2010-11-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	Revert:
