@@ -362,7 +362,7 @@ namespace std
       equal_range(const key_type& __k) const;
 
     private:
-      // Find, insert and erase helper functions
+      // Find and insert helper functions and types
       _Node*
       _M_find_node(_Node*, const key_type&,
 		   typename _Hashtable::_Hash_code_type) const;
@@ -380,8 +380,6 @@ namespace std
         iterator
         _M_insert(_Pair&&, std::false_type);
 
-    public:
-      // Insert and erase
       typedef typename std::conditional<__unique_keys,
 					std::pair<iterator, bool>,
 					iterator>::type
@@ -393,6 +391,8 @@ namespace std
                                    >::type
         _Insert_Conv_Type;
 
+    public:
+      // Insert and erase
       _Insert_Return_Type
       insert(const value_type& __v)
       { return _M_insert(__v, std::integral_constant<bool, __unique_keys>()); }

@@ -1,3 +1,8 @@
+2010-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/hashtable.h (_Hashtable<>::_Insert_Conv_Type,
+	_Hashtable<>::_Insert_Return_Type): Change to private.
+
 2010-11-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/unique_ptr.h: Use static_assert in constexpr
