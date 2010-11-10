@@ -1,6 +1,13 @@
 2010-11-10  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimize/46228
+	* doc/invoke.texi (comdat-sharing-probability): Document.
+	* ipa-inline.c (cgraph_estimate_growth): Handle COMDATs
+	* params.def (PARAM_COMDAT_SHARING_PROBABILITY): New param.
+
+2010-11-10  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/46228
 	* cgraph.c (cgraph_propagate_frequency): Fix typo.
 
 2010-11-10  H.J. Lu  <hongjiu.lu@intel.com>
