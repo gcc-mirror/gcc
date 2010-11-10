@@ -1,3 +1,9 @@
+2010-11-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46223
+	* gfortran.dg/bessel_7.f90: Bump allowed precision to avoid
+	failure on s390.
+
 2010-11-10  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/45971
