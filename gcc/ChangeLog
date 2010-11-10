@@ -1,3 +1,9 @@
+2010-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/46419
+	* config/i386/xmmintrin.h (_mm_cvtpi16_ps): Swap __hisi and __losi.
+	(_mm_cvtpu16_ps): Ditto.
+
 2010-11-09  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/45314
@@ -38,8 +44,7 @@
 2010-11-02  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/45902
-	* tree-vectorizer.h (enum stmt_vec_info_type): Add new value for
-	shift.
+	* tree-vectorizer.h (enum stmt_vec_info_type): Add new value for shift.
 	(vect_get_slp_defs): Add arguments.
 	* tree-vect-stmts.c (cost_for_stmt): Handle shifts.
 	(vect_get_vec_def_for_operand): Use operand's
