@@ -475,7 +475,11 @@ poplevel_named_label_1 (void **slot, void *data)
     {
       tree decl;
 
-      for (decl = ent->names_in_scope; decl; decl = DECL_CHAIN (decl))
+      /* ENT->NAMES_IN_SCOPE may contain a mixture of DECLs and
+	 TREE_LISTs representing OVERLOADs, so be careful.  */
+      for (decl = ent->names_in_scope; decl; decl = (DECL_P (decl)
+						     ? DECL_CHAIN (decl)
+						     : TREE_CHAIN (decl)))
 	if (decl_jump_unsafe (decl))
 	  VEC_safe_push (tree, gc, ent->bad_decls, decl);
 
