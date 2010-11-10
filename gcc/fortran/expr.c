@@ -868,31 +868,6 @@ done:
 }
 
 
-static match
-check_specification_function (gfc_expr *e)
-{
-  gfc_symbol *sym;
-
-  if (!e->symtree)
-    return MATCH_NO;
-
-  sym = e->symtree->n.sym;
-
-  /* F95, 7.1.6.2; F2003, 7.1.7  */
-  if (sym
-      && sym->attr.function
-      && sym->attr.pure
-      && !sym->attr.intrinsic
-      && !sym->attr.recursive
-      && sym->attr.proc != PROC_INTERNAL
-      && sym->attr.proc != PROC_ST_FUNCTION
-      && sym->attr.proc != PROC_UNKNOWN
-      && sym->formal == NULL)
-    return MATCH_YES;
-
-  return MATCH_NO;
-}
-
 /* Function to determine if an expression is constant or not.  This
    function expects that the expression has already been simplified.  */
 
@@ -901,6 +876,7 @@ gfc_is_constant_expr (gfc_expr *e)
 {
   gfc_constructor *c;
   gfc_actual_arglist *arg;
+  gfc_symbol *sym;
 
   if (e == NULL)
     return 1;
@@ -918,21 +894,40 @@ gfc_is_constant_expr (gfc_expr *e)
     case EXPR_FUNCTION:
     case EXPR_PPC:
     case EXPR_COMPCALL:
-      /* Specification functions are constant.  */
-      if (check_specification_function (e) == MATCH_YES)
-	return 1;
-
       /* Call to intrinsic with at least one argument.  */
       if (e->value.function.isym && e->value.function.actual)
 	{
 	  for (arg = e->value.function.actual; arg; arg = arg->next)
 	    if (!gfc_is_constant_expr (arg->expr))
 	      return 0;
-
-	  return 1;
 	}
-      else
-	return 0;
+
+      /* Make sure we have a symbol.  */
+      gcc_assert (e->symtree);
+
+      sym = e->symtree->n.sym;
+    
+      /* Specification functions are constant.  */
+      /* F95, 7.1.6.2; F2003, 7.1.7  */
+      if (sym
+	  && sym->attr.function
+	  && sym->attr.pure
+	  && !sym->attr.intrinsic
+	  && !sym->attr.recursive
+	  && sym->attr.proc != PROC_INTERNAL
+	  && sym->attr.proc != PROC_ST_FUNCTION
+	  && sym->attr.proc != PROC_UNKNOWN
+	  && sym->formal == NULL)
+	return 1;
+
+      if (e->value.function.isym
+	  && (e->value.function.isym->elemental
+	      || e->value.function.isym->pure
+	      || e->value.function.isym->inquiry
+	      || e->value.function.isym->transformational))
+	return 1;
+
+      return 0;
 
     case EXPR_CONSTANT:
     case EXPR_NULL:

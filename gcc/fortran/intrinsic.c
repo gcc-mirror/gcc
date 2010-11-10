@@ -274,10 +274,7 @@ add_sym (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type
       strcat (buf, name);
       next_sym->lib_name = gfc_get_string (buf);
 
-      /* There are no IMPURE ELEMENTAL intrinsics, thus the ELEMENTAL class
-	 also implies PURE.  Additionally, there's the PURE class itself.  */
-      next_sym->pure = (cl == CLASS_ELEMENTAL || cl == CLASS_PURE);
-
+      next_sym->pure = (cl != CLASS_IMPURE);
       next_sym->elemental = (cl == CLASS_ELEMENTAL);
       next_sym->inquiry = (cl == CLASS_INQUIRY);
       next_sym->transformational = (cl == CLASS_TRANSFORMATIONAL);
@@ -3370,8 +3367,6 @@ add_char_conversions (void)
 void
 gfc_intrinsic_init_1 (void)
 {
-  int i;
-
   nargs = nfunc = nsub = nconv = 0;
 
   /* Create a namespace to hold the resolved intrinsic symbols.  */
@@ -3404,15 +3399,6 @@ gfc_intrinsic_init_1 (void)
 
   /* Character conversion intrinsics need to be treated separately.  */
   add_char_conversions ();
-
-  /* Set the pure flag.  All intrinsic functions are pure, and
-     intrinsic subroutines are pure if they are elemental.  */
-
-  for (i = 0; i < nfunc; i++)
-    functions[i].pure = 1;
-
-  for (i = 0; i < nsub; i++)
-    subroutines[i].pure = subroutines[i].elemental;
 }
 
 
