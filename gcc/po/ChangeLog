@@ -1,3 +1,9 @@
+2010-11-09  Ian Lance Taylor  <iant@google.com>
+
+	* exgettext: Look for .cc files.  Look in subdirectories of
+	language subdirectories.
+	* EXCLUDES: Update comment.
+
 2010-10-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.pot: Regenerate.

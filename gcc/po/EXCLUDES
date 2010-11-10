@@ -18,8 +18,8 @@
 
 # This file lists all the sources which should *not* be scanned for
 # strings to translate.  Only the first word on each line is used; the
-# rest is ignored.  Only files with an extension of .c or .h or .def are
-# examined to begin with.
+# rest is ignored.  Only files with an extension of .c, .cc, .h, or
+# .def are examined to begin with.
 
 #   These files are part of libgcc, or target headers provided by gcc.
 config/darwin-crt2.c
