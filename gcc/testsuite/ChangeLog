@@ -1,3 +1,8 @@
+2010-11-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46411
+	* gfortran.dg/intrinsic_7.f90: New.
+
 2010-11-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/abi/rtti3.C: Scan for .weakext on alpha*-dec-osf*.
