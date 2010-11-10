@@ -30,9 +30,9 @@ using std::unique_ptr;
 void
 test01()
 {
-  unique_ptr<int, void(*)(int*)> p1; // { dg-error "here" "" { xfail *-*-* } }
+  unique_ptr<int, void(*)(int*)> p1; // { dg-error "here" }
 
-  unique_ptr<int, void(*)(int*)> p2(nullptr); // { dg-error "here" "" { xfail *-*-* } }
+  unique_ptr<int, void(*)(int*)> p2(nullptr); // { dg-error "here" }
 
   unique_ptr<int, void(*)(int*)> p3(new int); // { dg-error "here" }
 }
@@ -40,9 +40,9 @@ test01()
 void
 test02()
 {
-  unique_ptr<int[], void(*)(int*)> p1; // { dg-error "here" "" { xfail *-*-* } }
+  unique_ptr<int[], void(*)(int*)> p1; // { dg-error "here" }
 
-  unique_ptr<int[], void(*)(int*)> p2(nullptr); // { dg-error "here" "" { xfail *-*-* } }
+  unique_ptr<int[], void(*)(int*)> p2(nullptr); // { dg-error "here" }
 
   unique_ptr<int[], void(*)(int*)> p3(new int[1]); // { dg-error "here" }
 }

@@ -1,3 +1,11 @@
+2010-11-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/unique_ptr.h: Use static_assert in constexpr
+	constructors.
+	* testsuite/20_util/unique_ptr/cons/ptr_deleter_neg.cc: Remove xfails.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-error
+	line number.
+
 2010-11-09  François Dumont  <francois.cppdevs@free.fr>
             Johannes Singler  <singler@kit.edu>
 
@@ -14,6 +22,13 @@
 	PR libstdc++/46385
 	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-error
 	line number.
+
+2010-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/unique_ptr.h: Move misplaced static_assert and use
+	tuple's constexpr constructor in constexpr constructors.
+	* testsuite/20_util/unique_ptr/cons/ptr_deleter.cc: New.
+	* testsuite/20_util/unique_ptr/cons/ptr_deleter_neg.cc: New.
 
 2010-11-08  Benjamin Kosnik  <bkoz@redhat.com>
 
