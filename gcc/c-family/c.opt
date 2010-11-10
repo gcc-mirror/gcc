@@ -1213,8 +1213,8 @@ C ObjC C++ ObjC++ Var(flag_undef)
 Do not predefine system-specific and GCC-specific macros
 
 v
-Common C ObjC C++ ObjC++
-Enable verbose output
+C ObjC C++ ObjC++
+; Documented in common.opt
 
 w
 C ObjC C++ ObjC++

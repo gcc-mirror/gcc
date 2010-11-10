@@ -1,3 +1,11 @@
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (parse_optimize_options): Pass global_dc to
+	decode_options.
+	* c-opts.c (c_common_handle_option): Pass &global_options to
+	set_Wstrict_aliasing.
+	* c.opt (v): Don't mark Common or document here.
+
 2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/44981

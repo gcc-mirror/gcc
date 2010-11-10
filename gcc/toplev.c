@@ -140,18 +140,6 @@ const char *main_input_filename;
    to optimize in process_options ().  */
 #define AUTODETECT_VALUE 2
 
-/* Name to use as base of names for dump output files.  */
-
-const char *dump_base_name;
-
-/* Directory used for dump output files.  */
-
-const char *dump_dir_name;
-
-/* Name to use as a base for auxiliary output files.  */
-
-const char *aux_base_name;
-
 /* Prefix for profile data files */
 const char *profile_data_prefix;
 
@@ -165,20 +153,12 @@ int rtl_dump_and_exit;
 int flag_print_asm_name;
 enum graph_dump_types graph_dump_format;
 
-/* Name for output file of assembly code, specified with -o.  */
-
-const char *asm_file_name;
-
 /* True if this is the lto front end.  This is used to disable
    gimple generation and lowering passes that are normally run on the
    output of a front end.  These passes must be bypassed for lto since
    they have already been done before the gimple was written.  */
 
 bool in_lto_p = false;
-
-/* Nonzero if we should write GIMPLE bytecode for link-time optimization.  */
-
-int flag_generate_lto;
 
 /* The FUNCTION_DECL for the function currently being compiled,
    or 0 if between functions.  */
@@ -198,19 +178,6 @@ unsigned local_tick;
 
 /* -f flags.  */
 
-/* Nonzero means we should be saving declaration info into a .X file.  */
-
-int flag_gen_aux_info = 0;
-
-/* Specified name of aux-info file.  */
-
-const char *aux_info_file_name;
-
-/* Nonzero if we are compiling code for a shared library, zero for
-   executable.  */
-
-int flag_shlib;
-
 /* Generate code for GNU or NeXT Objective-C runtime environment.  */
 
 #ifdef NEXT_OBJC_RUNTIME
@@ -218,19 +185,6 @@ int flag_next_runtime = 1;
 #else
 int flag_next_runtime = 0;
 #endif
-
-/* Set to the default thread-local storage (tls) model to use.  */
-
-enum tls_model flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC;
-
-/* Set the default for excess precision.  */
-
-enum excess_precision flag_excess_precision_cmdline = EXCESS_PRECISION_DEFAULT;
-
-/* Nonzero means change certain warnings into errors.
-   Usually these are warnings about failure to conform to some standard.  */
-
-int flag_pedantic_errors = 0;
 
 /* Nonzero means make permerror produce warnings instead of errors.  */
 
@@ -2402,7 +2356,8 @@ toplev_main (int argc, char **argv)
   /* Parse the options and do minimal processing; basically just
      enough to default flags appropriately.  */
   decode_options (&global_options, &global_options_set,
-		  save_decoded_options, save_decoded_options_count);
+		  save_decoded_options, save_decoded_options_count,
+		  global_dc);
 
   init_local_tick ();
 

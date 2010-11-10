@@ -451,7 +451,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       warn_sequence_point = value;	/* Was C only.  */
       warn_switch = value;
       if (warn_strict_aliasing == -1)
-	set_Wstrict_aliasing (value);
+	set_Wstrict_aliasing (&global_options, value);
       warn_address = value;
       if (warn_strict_overflow == -1)
 	warn_strict_overflow = value;

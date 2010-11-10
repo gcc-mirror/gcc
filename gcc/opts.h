@@ -165,7 +165,8 @@ struct cl_option_handler_func
 		   struct gcc_options *opts_set,
 		   const struct cl_decoded_option *decoded,
 		   unsigned int lang_mask, int kind,
-		   const struct cl_option_handlers *handlers);
+		   const struct cl_option_handlers *handlers,
+		   diagnostic_context *dc);
 
   /* The mask that must have some bit in common with the flags for the
      option for this particular handler to be used.  */
@@ -223,7 +224,8 @@ extern void decode_cmdline_options_to_array_default_mask (unsigned int argc,
 extern void decode_options (struct gcc_options *opts,
 			    struct gcc_options *opts_set,
 			    struct cl_decoded_option *decoded_options,
-			    unsigned int decoded_options_count);
+			    unsigned int decoded_options_count,
+			    diagnostic_context *dc);
 extern int option_enabled (int opt_idx, void *opts);
 extern bool get_option_state (struct gcc_options *, int,
 			      struct cl_option_state *);

@@ -3887,11 +3887,6 @@ extern GTY(()) tree integer_types[itk_none];
 #define int128_integer_type_node	integer_types[itk_int128]
 #define int128_unsigned_type_node	integer_types[itk_unsigned_int128]
 
-/* Set to the default thread-local storage (tls) model to use.  */
-
-extern enum tls_model flag_tls_default;
-
-
 /* A pointer-to-function member type looks like:
 
      struct {

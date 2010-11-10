@@ -74,12 +74,7 @@ extern unsigned local_tick;
 /* Top-level source file.  */
 extern const char *main_input_filename;
 
-extern const char *dump_base_name;
-extern const char *dump_dir_name;
-extern const char *aux_base_name;
-extern const char *aux_info_file_name;
 extern const char *profile_data_prefix;
-extern const char *asm_file_name;
 extern bool exit_after_options;
 
 /* True if the user has tagged the function with the 'section'

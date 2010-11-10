@@ -62,6 +62,49 @@ int *param_values
 Variable
 enum fp_contract_mode flag_fp_contract_mode = FP_CONTRACT_FAST
 
+; The excess precision specified on the command line, or defaulted by
+; the front end.
+Variable
+enum excess_precision flag_excess_precision_cmdline = EXCESS_PRECISION_DEFAULT
+
+; Nonzero if we should write GIMPLE bytecode for link-time optimization.
+Variable
+int flag_generate_lto
+
+; True to warn about any objects definitions whose size is larger
+; than N bytes.  Also want about function definitions whose returned
+; values are larger than N bytes, where N is 'larger_than_size'.
+Variable
+bool warn_larger_than
+
+Variable
+HOST_WIDE_INT larger_than_size
+
+; True to warn about any function whose frame size is larger
+; than N bytes.
+Variable
+bool warn_frame_larger_than
+
+Variable
+HOST_WIDE_INT frame_larger_than_size
+
+; Nonzero means we should be saving declaration info into a .X file.
+Variable
+int flag_gen_aux_info = 0
+
+; Nonzero if we are compiling code for a shared library, zero for
+; executable.
+Variable
+int flag_shlib
+
+; The default visibility for all symbols (unless overridden).
+Variable
+enum symbol_visibility default_visibility = VISIBILITY_DEFAULT
+
+; Set to the default thread-local storage (tls) model to use.
+Variable
+enum tls_model flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC
+
 ###
 Driver
 
@@ -522,14 +565,14 @@ Xpreprocessor
 Driver Separate
 
 aux-info
-Common Separate
+Common Separate Var(aux_info_file_name)
 -aux-info <file>	Emit declaration information into <file>
 
 aux-info=
 Common Joined Alias(aux-info)
 
 auxbase
-Common Separate RejectDriver
+Common Separate RejectDriver Var(aux_base_name)
 
 auxbase-strip
 Common Separate RejectDriver
@@ -545,11 +588,11 @@ Common Joined
 -d<letters>	Enable dumps from specific passes of the compiler
 
 dumpbase
-Common Separate
+Common Separate Var(dump_base_name)
 -dumpbase <file>	Set the file basename to be used for dumps
 
 dumpdir
-Common Separate
+Common Separate Var(dump_dir_name)
 -dumpdir <dir>	Set the directory name to be used for dumps
 
 dumpmachine
@@ -591,28 +634,28 @@ Common Report Var(align_functions,0) Optimization UInteger
 Align the start of functions
 
 falign-functions=
-Common RejectNegative Joined UInteger
+Common RejectNegative Joined UInteger Var(align_functions)
 
 falign-jumps
 Common Report Var(align_jumps,0) Optimization UInteger
 Align labels which are only reached by jumping
 
 falign-jumps=
-Common RejectNegative Joined UInteger
+Common RejectNegative Joined UInteger Var(align_jumps)
 
 falign-labels
 Common Report Var(align_labels,0) Optimization UInteger
 Align all labels
 
 falign-labels=
-Common RejectNegative Joined UInteger
+Common RejectNegative Joined UInteger Var(align_labels)
 
 falign-loops
 Common Report Var(align_loops,0) Optimization UInteger
 Align the start of loops
 
 falign-loops=
-Common RejectNegative Joined UInteger
+Common RejectNegative Joined UInteger Var(align_loops)
 
 fargument-alias
 Common Ignore
@@ -1928,7 +1971,7 @@ nostdlib
 Driver
 
 o
-Common Driver Joined Separate MissingArgError(missing filename after %qs)
+Common Driver Joined Separate Var(asm_file_name) MissingArgError(missing filename after %qs)
 -o <file>	Place output into <file>
 
 p
@@ -1943,7 +1986,7 @@ Common Var(pedantic)
 Issue warnings needed for strict compliance to the standard
 
 pedantic-errors
-Common
+Common Var(flag_pedantic_errors)
 Like -pedantic but issue them as errors
 
 pg
@@ -2003,7 +2046,8 @@ Driver
 ; C option, but driver must not handle as "-u ndef".
 
 v
-Driver
+Common Driver Var(verbose_flag)
+Enable verbose output
 
 version
 Common Var(version_flag) RejectDriver
