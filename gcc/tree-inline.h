@@ -144,6 +144,9 @@ typedef struct eni_weights_d
   /* Cost for omp construct.  */
   unsigned omp_cost;
 
+  /* Cost of return.  */
+  unsigned return_cost;
+
   /* True when time of statemnt should be estimated.  Thus i.e
      cost of switch statement is logarithmic rather than linear in number
      of cases.  */

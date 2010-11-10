@@ -1,3 +1,13 @@
+2010-11-09   Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/40436
+	* ipa-inline.c (leaf_node_p): Implement using is_inexpensive_builtin.
+	* tree-inline.c (estimate_num_insns): Inexpensive builtins are like
+	normal instructions; be sure bultin is not implemented in this file;
+	compute non-zero return cost.
+	(init_inline_once): Reduce builtin_call_cost to 1; set return cost.
+	* tree-inline.h (eni_weights_d): Add return cost.
+
 2010-11-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.c (c_parser_struct_declaration): Handle declaration
