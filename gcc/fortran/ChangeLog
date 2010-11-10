@@ -1,3 +1,10 @@
+2010-11-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46411
+	* intrinsic.c (gfc_intrinsic_sub_interface): Check for attr.pure
+	and not for attr.elemental.
+	* intrinsic.texi (move_alloc): Document as being pure.
+
 2010-11-10  Tobias Burnus <burnus@net-b.de>
 
 	PR fortran/46244

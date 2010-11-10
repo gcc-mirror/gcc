@@ -8977,7 +8977,7 @@ end program
 Fortran 2003 and later
 
 @item @emph{Class}:
-Subroutine
+Pure subroutine
 
 @item @emph{Syntax}:
 @code{CALL MOVE_ALLOC(FROM, TO)}

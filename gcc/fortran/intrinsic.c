@@ -4193,7 +4193,7 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
       c->resolved_sym->attr.elemental = isym->elemental;
     }
 
-  if (gfc_pure (NULL) && !isym->elemental)
+  if (gfc_pure (NULL) && !isym->pure)
     {
       gfc_error ("Subroutine call to intrinsic '%s' at %L is not PURE", name,
 		 &c->loc);
