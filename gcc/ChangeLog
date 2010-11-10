@@ -1,3 +1,7 @@
+2010-11-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/alpha/osf5.h (ASM_SPEC): Remove -nocpp.
+
 2010-11-10  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/45971
