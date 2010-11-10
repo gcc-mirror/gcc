@@ -116,6 +116,16 @@
 	(valid_psw_flag): Constify parameter which.
 	(rx_memory_move_cost): Change type of parameter regclass to reg_class_t.
 
+	PR target/46415
+	* config/mmix/mmix-protos.h (mmix_local_alignment): Update prototype.
+	(mmix_dbx_register_number): Likewise.
+	* config/mmix/mmix.c: Include df.h .
+	(mmix_local_alignment): Change argument basic_align and return type
+	to unsigned.
+	(mmix_dbx_register_number): Change argument and return type to
+	unsigned.
+	(mmix_expand_prologue): Use add_reg_note.
+
 2010-11-10  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	PR/46268
