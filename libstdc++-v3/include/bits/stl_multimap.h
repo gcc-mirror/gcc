@@ -438,6 +438,15 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       insert(const value_type& __x)
       { return _M_t._M_insert_equal(__x); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        iterator
+        insert(_Pair&& __x)
+        { return _M_t._M_insert_equal(std::forward<_Pair>(__x)); }
+#endif
+
       /**
        *  @brief Inserts a std::pair into the %multimap.
        *  @param  position  An iterator that serves as a hint as to where the
@@ -465,6 +474,16 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       insert(iterator __position, const value_type& __x)
 #endif
       { return _M_t._M_insert_equal_(__position, __x); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        iterator
+        insert(const_iterator __position, _Pair&& __x)
+        { return _M_t._M_insert_equal_(__position,
+				       std::forward<_Pair>(__x)); }
+#endif
 
       /**
        *  @brief A template function that attempts to insert a range

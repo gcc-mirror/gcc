@@ -118,7 +118,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       typedef typename _Rep_type::const_iterator            iterator;
       typedef typename _Rep_type::const_iterator            const_iterator;
       typedef typename _Rep_type::const_reverse_iterator    reverse_iterator;
-      typedef typename _Rep_type::const_reverse_iterator    const_reverse_iterator;
+      typedef typename _Rep_type::const_reverse_iterator const_reverse_iterator;
       typedef typename _Rep_type::size_type                 size_type;
       typedef typename _Rep_type::difference_type           difference_type;
 
@@ -396,6 +396,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       insert(const value_type& __x)
       { return _M_t._M_insert_equal(__x); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      iterator
+      insert(value_type&& __x)
+      { return _M_t._M_insert_equal(std::move(__x)); }
+#endif
+
       /**
        *  @brief Inserts an element into the %multiset.
        *  @param  position  An iterator that serves as a hint as to where the
@@ -423,6 +429,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       insert(iterator __position, const value_type& __x)
 #endif
       { return _M_t._M_insert_equal_(__position, __x); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      iterator
+      insert(const_iterator __position, value_type&& __x)
+      { return _M_t._M_insert_equal_(__position, std::move(__x)); }
+#endif
 
       /**
        *  @brief A template function that tries to insert a range of elements.

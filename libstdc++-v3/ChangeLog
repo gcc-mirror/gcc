@@ -1,5 +1,46 @@
 2010-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/44436 (partial)
+	PR libstdc++/46148
+        * include/bits/stl_tree.h (_Rb_tree<>::_M_insert_, _M_insert_lower,
+	_M_insert_equal_lower, _M_insert_unique, _M_insert_equal,
+	_M_insert_unique_, _M_insert_equal_): Templatize in C++0x mode,
+	use _GLIBCXX_FORWARD throughout.
+        * include/bits/stl_map.h (map<>::insert(_Pair&&),
+	insert(const_iterator, _Pair&&), operator[](key_type&&): Add.
+        * include/bits/stl_set.h (set<>::insert(value_type&&),
+	insert(const_iterator, value_type&&)): Likewise.
+        * include/bits/stl_multimap.h (multimap<>::insert(_Pair&&),
+	insert(const_iterator, _Pair&&)): Likewise.
+        * include/bits/stl_multiset.h (multiset<>::insert(value_type&&),
+	insert(const_iterator, value_type&&)): Likewise.
+	* include/debug/set.h: Adjust.
+        * include/debug/multiset.h: Likewise.
+        * include/debug/map.h: Likewise.
+        * include/debug/multimap.h: Likewise.
+        * include/profile/set.h: Likewise.
+        * include/profile/multiset.h: Likewise.
+        * include/profile/map.h: Likewise.
+        * include/profile/multimap.h: Likewise.
+        * testsuite/23_containers/multimap/modifiers/insert/1.cc: New.
+        * testsuite/23_containers/multimap/modifiers/insert/2.cc: Likewise.
+        * testsuite/23_containers/multimap/modifiers/insert/3.cc: Likewise.
+        * testsuite/23_containers/multimap/modifiers/insert/4.cc: Likewise.
+        * testsuite/23_containers/set/modifiers/insert/2.cc: Likewise.
+        * testsuite/23_containers/set/modifiers/insert/3.cc: Likewise.
+        * testsuite/23_containers/multiset/modifiers/insert/3.cc: Likewise.
+        * testsuite/23_containers/multiset/modifiers/insert/4.cc: Likewise.
+        * testsuite/23_containers/map/modifiers/insert/2.cc: Likewise.
+        * testsuite/23_containers/map/modifiers/insert/3.cc: Likewise.
+        * testsuite/23_containers/map/modifiers/insert/4.cc: Likewise.
+        * testsuite/23_containers/map/modifiers/insert/5.cc: Likewise.
+        * testsuite/23_containers/map/element_access/2.cc: Likewise.
+        * testsuite/23_containers/map/element_access/46148.cc: Likewise.
+
+        * include/bits/hashtable.h: Trivial naming changes.
+
+2010-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/hashtable.h (_Hashtable<>::_Insert_Conv_Type,
 	_Hashtable<>::_Insert_Return_Type): Change to private.
 

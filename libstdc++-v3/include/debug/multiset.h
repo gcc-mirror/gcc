@@ -194,12 +194,28 @@ namespace __debug
       insert(const value_type& __x)
       { return iterator(_Base::insert(__x), this); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      iterator
+      insert(value_type&& __x)
+      { return iterator(_Base::insert(std::move(__x)), this); }
+#endif
+
       iterator
       insert(iterator __position, const value_type& __x)
       {
 	__glibcxx_check_insert(__position);
 	return iterator(_Base::insert(__position.base(), __x), this);
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      iterator
+      insert(const_iterator __position, value_type&& __x)
+      {
+	__glibcxx_check_insert(__position);
+	return iterator(_Base::insert(__position.base(), std::move(__x)),
+			this);
+      }
+#endif
 
       template<typename _InputIterator>
 	void
