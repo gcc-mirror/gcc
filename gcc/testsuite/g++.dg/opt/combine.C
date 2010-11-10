@@ -1,5 +1,6 @@
 // { dg-do assemble { target fpic } }
 // { dg-options "-O2 -fweb -fPIC -fvisibility=hidden" }
+// { dg-require-visibility "" }
 
 class QBasicAtomicInt
 {
