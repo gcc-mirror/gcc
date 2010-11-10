@@ -653,7 +653,8 @@ type_internals_preclude_sra_p (tree type)
 	    if (TREE_THIS_VOLATILE (fld)
 		|| !DECL_FIELD_OFFSET (fld) || !DECL_SIZE (fld)
 		|| !host_integerp (DECL_FIELD_OFFSET (fld), 1)
-		|| !host_integerp (DECL_SIZE (fld), 1))
+		|| !host_integerp (DECL_SIZE (fld), 1)
+		|| (DECL_BIT_FIELD (fld) && AGGREGATE_TYPE_P (ft)))
 	      return true;
 
 	    if (AGGREGATE_TYPE_P (ft)

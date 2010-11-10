@@ -1,3 +1,10 @@
+2010-11-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/46351
+	PR tree-optimization/46377
+	* tree-sra.c (type_internals_preclude_sra_p): Disqualify types with
+	aggregate bit-fields.
+
 2010-11-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/tm.texi.in (TARGET_OPTION_TRANSLATE_TABLE): Remove.
