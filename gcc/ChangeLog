@@ -1,3 +1,14 @@
+2010-11-10  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	PR/46268
+	* doc/gty.texi (GTY Options): Clarify that variable_size produces
+	allocators taking size in bytes, compare with length option.  Add
+	size calculation example.
+	(Invoking the garbage collector): Ensure that sentences are
+	followed by two spaces.  Describe that pointer fields must be
+	initialized at ggc_collect call.
+	(Troubleshooting): New section.
+
 2010-11-09   Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/40436
