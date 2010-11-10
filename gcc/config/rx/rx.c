@@ -2206,7 +2206,7 @@ rx_handle_option (size_t code, const char *  arg ATTRIBUTE_UNUSED, int value)
       
     case OPT_fpu:
       if (rx_cpu_type == RX200)
-	error ("The RX200 cpu does not have FPU hardware");
+	error ("the RX200 cpu does not have FPU hardware");
       break;
 
     default:

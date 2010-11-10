@@ -599,7 +599,7 @@ java_post_options (const char **pfilename)
       filename = "stdin";
 
       if (dependency_tracking)
-	error ("can't do dependency tracking with input from stdin");
+	error ("can%'t do dependency tracking with input from stdin");
     }
   else
     {
@@ -615,7 +615,7 @@ java_post_options (const char **pfilename)
 	    {
 	      dot = strrchr (filename, '.');
 	      if (dot == NULL)
-		error ("couldn't determine target name for dependency tracking");
+		error ("couldn%'t determine target name for dependency tracking");
 	      else
 		{
 		  char *buf = XNEWVEC (char, dot - filename +

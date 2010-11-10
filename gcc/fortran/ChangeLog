@@ -1,5 +1,12 @@
 2010-11-10  Joseph Myers  <joseph@codesourcery.com>
 
+	* trans-array.c (gfc_trans_deferred_array): Use "front-end"
+	spelling in diagnostic.
+	* trans.c (gfc_allocate_array_with_status): Add missing space in
+	diagnostic.
+
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
 	* cpp.c (asm_file_name): Don't declare here.
 
 2010-11-10  Tobias Burnus  <burnus@net-b.de>

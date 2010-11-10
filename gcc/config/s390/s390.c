@@ -1641,10 +1641,10 @@ s390_option_override (void)
       if (target_flags_explicit & MASK_HARD_DFP)
 	{
 	  if (!TARGET_CPU_DFP)
-	    error ("Hardware decimal floating point instructions"
+	    error ("hardware decimal floating point instructions"
 		   " not available on %s", s390_arch_string);
 	  if (!TARGET_ZARCH)
-	    error ("Hardware decimal floating point instructions"
+	    error ("hardware decimal floating point instructions"
 		   " not available in ESA/390 mode");
 	}
       else
@@ -1654,7 +1654,7 @@ s390_option_override (void)
   if ((target_flags_explicit & MASK_SOFT_FLOAT) && TARGET_SOFT_FLOAT)
     {
       if ((target_flags_explicit & MASK_HARD_DFP) && TARGET_HARD_DFP)
-	error ("-mhard-dfp can't be used in conjunction with -msoft-float");
+	error ("-mhard-dfp can%'t be used in conjunction with -msoft-float");
 
       target_flags &= ~MASK_HARD_DFP;
     }

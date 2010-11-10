@@ -1,5 +1,6 @@
 /* Definitions for DEC Alpha/AXP running FreeBSD using the ELF format
-   Copyright (C) 2000, 2002, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2004, 2005, 2007, 2010
+   Free Software Foundation, Inc.
    Contributed by David E. O'Brien <obrien@FreeBSD.org> and BSDi.
 
 This file is part of GCC.
@@ -30,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
 
 #define LINK_SPEC "%{G*} %{relax:-relax}				\
-  %{p:%nconsider using `-pg' instead of `-p' with gprof(1)}		\
+  %{p:%nconsider using '-pg' instead of '-p' with gprof(1)}		\
   %{Wl,*:%*}								\
   %{assert*} %{R*} %{rpath*} %{defsym*}					\
   %{shared:-Bshareable %{h*} %{soname*}}				\

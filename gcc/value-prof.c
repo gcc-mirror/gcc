@@ -375,7 +375,7 @@ visit_hist (void **slot, void *data)
   histogram_value hist = *(histogram_value *) slot;
   if (!pointer_set_contains (visited, hist))
     {
-      error ("Dead histogram");
+      error ("dead histogram");
       dump_histogram_value (stderr, hist);
       debug_gimple_stmt (hist->hvalue.stmt);
       error_found = true;
@@ -466,7 +466,7 @@ check_counter (gimple stmt, const char * name,
               : DECL_SOURCE_LOCATION (current_function_decl);
       if (flag_profile_correction)
         {
-	  inform (locus, "Correcting inconsistent value profile: "
+	  inform (locus, "correcting inconsistent value profile: "
 		  "%s profiler overall count (%d) does not match BB count "
                   "(%d)", name, (int)*all, (int)bb_count);
 	  *all = bb_count;
@@ -476,7 +476,7 @@ check_counter (gimple stmt, const char * name,
 	}
       else
 	{
-	  error_at (locus, "Corrupted value profile: %s "
+	  error_at (locus, "corrupted value profile: %s "
 		    "profiler overall count (%d) does not match BB count (%d)",
 		    name, (int)*all, (int)bb_count);
 	  return true;

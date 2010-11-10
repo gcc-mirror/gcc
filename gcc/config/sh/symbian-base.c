@@ -1,6 +1,6 @@
 /* Routines for GCC for a Symbian OS targeted SH backend, shared by
    both the C and C++ compilers.
-   Copyright (C) 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
    Contributed by RedHat.
    Most of this code is stolen from i386/winnt.c.
 
@@ -117,7 +117,7 @@ sh_symbian_mark_dllimport (tree decl)
     {
       /* Already done, but do a sanity check to prevent assembler errors.  */
       if (!DECL_EXTERNAL (decl) || !TREE_PUBLIC (decl))
-	error ("failure in redeclaration of %q+D: dllimport'd symbol lacks external linkage",
+	error ("failure in redeclaration of %q+D: dllimport%'d symbol lacks external linkage",
 	       decl);
     }
   else

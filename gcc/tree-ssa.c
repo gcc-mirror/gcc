@@ -641,7 +641,7 @@ verify_def (basic_block bb, basic_block *definition_block, tree ssa_name,
   if (TREE_CODE (SSA_NAME_VAR (ssa_name)) == RESULT_DECL
       && DECL_BY_REFERENCE (SSA_NAME_VAR (ssa_name)))
     {
-      error ("RESULT_DECL should be read only when DECL_BY_REFERENCE is set.");
+      error ("RESULT_DECL should be read only when DECL_BY_REFERENCE is set");
       goto err;
     }
 
@@ -1026,8 +1026,8 @@ verify_ssa (bool check_modified_stmt)
 	      op = gimple_op (stmt, i);
 	      if (op && TREE_CODE (op) == SSA_NAME && --count < 0)
 		{
-		  error ("nr of operands and imm-links don't agree");
-		  error ("in statement");
+		  error ("number of operands and imm-links don%'t agree"
+			 " in statement");
 		  print_gimple_stmt (stderr, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
 		  goto err;
 		}

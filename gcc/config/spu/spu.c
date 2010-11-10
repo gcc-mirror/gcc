@@ -539,7 +539,7 @@ spu_option_override (void)
       else if (strcmp (&spu_arch_string[0], "celledp") == 0)
         spu_arch = PROCESSOR_CELLEDP;
       else
-        error ("Unknown architecture '%s'", &spu_arch_string[0]);
+        error ("unknown architecture %qs", &spu_arch_string[0]);
     }
 
   /* Determine processor to tune for.  */
@@ -550,7 +550,7 @@ spu_option_override (void)
       else if (strcmp (&spu_tune_string[0], "celledp") == 0)
         spu_tune = PROCESSOR_CELLEDP;
       else
-        error ("Unknown architecture '%s'", &spu_tune_string[0]);
+        error ("unknown architecture %qs", &spu_tune_string[0]);
     }
 
   /* Change defaults according to the processor architecture.  */
@@ -6423,7 +6423,7 @@ spu_check_builtin_parm (struct spu_builtin_description *d, rtx op, int p)
       int range = p - SPU_BTI_7;
 
       if (!CONSTANT_P (op))
-	error ("%s expects an integer literal in the range [%d, %d].",
+	error ("%s expects an integer literal in the range [%d, %d]",
 	       d->name,
 	       spu_builtin_range[range].low, spu_builtin_range[range].high);
 
@@ -6443,8 +6443,7 @@ spu_check_builtin_parm (struct spu_builtin_description *d, rtx op, int p)
       /* The default for v is 0 which is valid in every range. */
       if (v < spu_builtin_range[range].low
 	  || v > spu_builtin_range[range].high)
-	error ("%s expects an integer literal in the range [%d, %d]. ("
-	       HOST_WIDE_INT_PRINT_DEC ")",
+	error ("%s expects an integer literal in the range [%d, %d]. (%wd)",
 	       d->name,
 	       spu_builtin_range[range].low, spu_builtin_range[range].high,
 	       v);
@@ -6473,7 +6472,7 @@ spu_check_builtin_parm (struct spu_builtin_description *d, rtx op, int p)
 	  || (GET_CODE (op) == SYMBOL_REF
 	      && SYMBOL_REF_FUNCTION_P (op))
 	  || (v & ((1 << lsbits) - 1)) != 0)
-	warning (0, "%d least significant bits of %s are ignored.", lsbits,
+	warning (0, "%d least significant bits of %s are ignored", lsbits,
 		 d->name);
     }
 }

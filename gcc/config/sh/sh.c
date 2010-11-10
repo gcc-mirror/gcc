@@ -11605,7 +11605,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	    break;
 	  }
       if (scratch1 == scratch0)
-	error ("Need a second call-clobbered general purpose register");
+	error ("need a second call-clobbered general purpose register");
       for (i = FIRST_TARGET_REG; i <= LAST_TARGET_REG; i++)
 	if (call_used_regs[i] && ! fixed_regs[i])
 	  {
@@ -11613,7 +11613,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	    break;
 	  }
       if (scratch2 == scratch0)
-	error ("Need a call-clobbered target register");
+	error ("need a call-clobbered target register");
     }
 
   this_value = plus_constant (this_rtx, delta);

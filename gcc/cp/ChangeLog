@@ -1,3 +1,22 @@
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* cvt.c (cp_convert_to_pointer): Use %' in diagnostic.
+	* decl.c (layout_var_decl, maybe_commonize_var, grokdeclarator):
+	Use %' in diagnostics.
+	* decl2.c (check_classfn): Use %' in diagnostic.
+	* init.c (build_java_class_ref): Use %' in diagnostic.
+	(build_delete): Remove trailing '.' from diagnostic.
+	* method.c (do_build_copy_assign, walk_field_subobs): Use %' in
+	diagnostics.
+	* name-lookup.c (pushdecl_maybe_friend): Use %' in diagnostic.
+	* parser.c (cp_parser_exception_specification_opt): Remove
+	trailing '.' from diagnostic.
+	(cp_parser_objc_interstitial_code): Use %qs for quoting in
+	diagnostic.
+	* pt.c (check_valid_ptrmem_cst_expr): Use %< and %> for quoting in
+	diagnostic.
+	* repo.c (reopen_repo_file_for_write): Use %' in diagnostic.
+
 2010-11-10  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/46065

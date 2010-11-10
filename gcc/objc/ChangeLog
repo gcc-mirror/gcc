@@ -1,5 +1,10 @@
 2010-11-10  Joseph Myers  <joseph@codesourcery.com>
 
+	* objc-act.c (objc_init): Use %' in diagnostic.
+	(objc_set_method_opt): Remove trailing '.' from diagnostic.
+
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
 	* objc-act.c (dump_base_name): Don't declare here.
 
 2010-11-08  Nicola Pero  <nicola.pero@meta-innovation.com>

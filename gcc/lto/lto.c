@@ -392,7 +392,7 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
 
       t = fscanf (resolution, "%u %x %26s %*[^\n]\n", &index, &id, r_str);
       if (t != 3)
-        internal_error ("Invalid line in the resolution file.");
+        internal_error ("invalid line in the resolution file");
       if (index > max_index)
 	max_index = index;
 
@@ -405,13 +405,13 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
 	    }
 	}
       if (j == lto_resolution_str_len)
-	internal_error ("Invalid resolution in the resolution file.");
+	internal_error ("invalid resolution in the resolution file");
 
       if (!(nd && nd->key == id))
 	{
 	  nd = splay_tree_lookup (file_ids, id);
 	  if (nd == NULL)
-	    internal_error ("Resolution sub id %x not in object file", id);
+	    internal_error ("resolution sub id %x not in object file", id);
 	}
 
       file_data = (struct lto_file_decl_data *)nd->value;
@@ -496,7 +496,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
   data = lto_get_section_data (file_data, LTO_section_decls, NULL, &len);
   if (data == NULL)
     {
-      internal_error ("Cannot read LTO decls from %s", file_data->file_name);
+      internal_error ("cannot read LTO decls from %s", file_data->file_name);
       return;
     }
   lto_read_decls (file_data, data, file_data->resolutions);

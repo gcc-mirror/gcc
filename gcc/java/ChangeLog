@@ -1,3 +1,10 @@
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* expr.c (expand_java_field_op): Use %' in diagnostic.
+	* jcf-parse.c (java_parse_file): Use %' in diagnostics.
+	* jvspec.c (lang_specific_driver): Use %' in diagnostic.
+	* lang.c (java_post_options): Use %' in diagnostics.
+
 2010-11-06  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR middle-end/46314

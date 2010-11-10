@@ -1,5 +1,15 @@
 2010-11-10  Joseph Myers  <joseph@codesourcery.com>
 
+	* c-common.c (handle_mode_attribute): Use %' and word "signedness"
+	in diagnostic.
+	* c-opts.c (c_common_parse_file): Start diagnostics with lowercase
+	letter.
+	* c-pragma.c (handle_pragma_target, handle_pragma_optimize):
+	Remove trailing '.' from diagnostics.
+	* c.opt (Wwrite-strings_: Avoid '`' in help text.
+
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
 	* c-common.c (parse_optimize_options): Pass global_dc to
 	decode_options.
 	* c-opts.c (c_common_handle_option): Pass &global_options to

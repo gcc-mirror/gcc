@@ -105,10 +105,10 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_SPEC
 #define LINK_SPEC \
   "%{!shared:%{p:-L/lib/libp -L/usr/lib/libp %{!static:\
-     %nWarning: consider linking with `-static' as system libraries with\n\
+     %nwarning: consider linking with '-static' as system libraries with\n\
      %n  profiling support are only provided in archive format}}}\
    %{!shared:%{pg:-L/lib/libp -L/usr/lib/libp %{!static:\
-     %nWarning: consider linking with `-static' as system libraries with\n\
+     %nwarning: consider linking with '-static' as system libraries with\n\
      %n  profiling support are only provided in archive format}}}\
    %{!shared:%{!static:%{rdynamic:-E}}}\
    -z %{mlinker-opt:-O} %{!shared:-u main -u __gcc_plt_call}\

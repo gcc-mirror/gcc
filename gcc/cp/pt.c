@@ -5234,7 +5234,7 @@ check_valid_ptrmem_cst_expr (tree type, tree expr,
     {
       error ("%qE is not a valid template argument for type %qT",
 	     expr, type);
-      error ("it must be a pointer-to-member of the form `&X::Y'");
+      error ("it must be a pointer-to-member of the form %<&X::Y%>");
     }
   return false;
 }

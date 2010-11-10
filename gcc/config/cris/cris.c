@@ -2779,7 +2779,7 @@ cris_split_movdx (rtx *operands)
 	    }
 	}
       else
-	internal_error ("Unknown src");
+	internal_error ("unknown src");
     }
   /* Reg-to-mem copy or clear mem.  */
   else if (MEM_P (dest)
@@ -2840,7 +2840,7 @@ cris_split_movdx (rtx *operands)
     }
 
   else
-    internal_error ("Unknown dest");
+    internal_error ("unknown dest");
 
   val = get_insns ();
   end_sequence ();
@@ -3660,7 +3660,7 @@ cris_expand_pic_call_address (rtx *opp)
       else
 	/* Can't possibly get a GOT-needing-fixup for a function-call,
 	   right?  */
-	fatal_insn ("Unidentifiable call op", op);
+	fatal_insn ("unidentifiable call op", op);
 
       *opp = replace_equiv_address (*opp, op);
     }
@@ -3729,7 +3729,8 @@ cris_asm_output_label_ref (FILE *file, char *buf)
 
       /* Sanity check.  */
       if (!TARGET_V32 && !crtl->uses_pic_offset_table)
-	internal_error ("emitting PIC operand, but PIC register isn't set up");
+	internal_error ("emitting PIC operand, but PIC register "
+			"isn%'t set up");
     }
   else
     assemble_name (file, buf);

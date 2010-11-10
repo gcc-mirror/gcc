@@ -590,7 +590,7 @@ version_as_macro (void)
   return result;
 
  fail:
-  error ("Unknown value %qs of -mmacosx-version-min",
+  error ("unknown value %qs of -mmacosx-version-min",
 	 darwin_macosx_version_min);
   return "1000";
 }

@@ -468,22 +468,22 @@ verify_cgraph_node (struct cgraph_node *node)
       }
   if (node->count < 0)
     {
-      error ("Execution count is negative");
+      error ("execution count is negative");
       error_found = true;
     }
   if (node->global.inlined_to && node->local.externally_visible)
     {
-      error ("Externally visible inline clone");
+      error ("externally visible inline clone");
       error_found = true;
     }
   if (node->global.inlined_to && node->address_taken)
     {
-      error ("Inline clone with address taken");
+      error ("inline clone with address taken");
       error_found = true;
     }
   if (node->global.inlined_to && node->needed)
     {
-      error ("Inline clone is needed");
+      error ("inline clone is needed");
       error_found = true;
     }
   for (e = node->indirect_calls; e; e = e->next_callee)

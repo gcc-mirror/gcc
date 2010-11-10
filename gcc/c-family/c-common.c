@@ -6408,7 +6408,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	  if (ALL_FIXED_POINT_MODE_P (mode)
 	      && TYPE_UNSIGNED (type) != UNSIGNED_FIXED_POINT_MODE_P (mode))
 	    {
-	      error ("signness of type and machine mode %qs don't match", p);
+	      error ("signedness of type and machine mode %qs don%'t match", p);
 	      return NULL_TREE;
 	    }
 	  /* For fixed-point modes, we need to pass saturating info.  */

@@ -2416,7 +2416,7 @@ construct_save_jarl (rtx op)
   
   if (count <= (TARGET_LONG_CALLS ? 3 : 2)) 
     {
-      error ("bogus JARL construction: %d\n", count);
+      error ("bogus JARL construction: %d", count);
       return NULL;
     }
 

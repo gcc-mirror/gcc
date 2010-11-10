@@ -6478,7 +6478,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
 
   /* Make sure the frontend gets these right.  */
   if (!(sym->attr.pointer || sym->attr.allocatable || sym_has_alloc_comp))
-    fatal_error ("Possible frontend bug: Deferred array size without pointer, "
+    fatal_error ("Possible front-end bug: Deferred array size without pointer, "
 		 "allocatable attribute or derived type without allocatable "
 		 "components.");
 

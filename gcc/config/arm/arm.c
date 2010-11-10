@@ -3797,9 +3797,9 @@ arm_get_pcs_model (const_tree type, const_tree decl)
       if (user_convention)
 	{
 	  if (user_pcs > ARM_PCS_AAPCS_LOCAL)
-	    sorry ("Non-AAPCS derived PCS variant");
+	    sorry ("non-AAPCS derived PCS variant");
 	  else if (base_rules && user_pcs != ARM_PCS_AAPCS)
-	    error ("Variadic functions must use the base AAPCS variant");
+	    error ("variadic functions must use the base AAPCS variant");
 	}
 
       if (base_rules)

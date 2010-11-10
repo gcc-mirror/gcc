@@ -1360,36 +1360,36 @@ verify_loop_structure (void)
       if (loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS)
 	  && EDGE_COUNT (loop->header->preds) != 2)
 	{
-	  error ("loop %d's header does not have exactly 2 entries", i);
+	  error ("loop %d%'s header does not have exactly 2 entries", i);
 	  err = 1;
 	}
       if (loops_state_satisfies_p (LOOPS_HAVE_SIMPLE_LATCHES))
 	{
 	  if (!single_succ_p (loop->latch))
 	    {
-	      error ("loop %d's latch does not have exactly 1 successor", i);
+	      error ("loop %d%'s latch does not have exactly 1 successor", i);
 	      err = 1;
 	    }
 	  if (single_succ (loop->latch) != loop->header)
 	    {
-	      error ("loop %d's latch does not have header as successor", i);
+	      error ("loop %d%'s latch does not have header as successor", i);
 	      err = 1;
 	    }
 	  if (loop->latch->loop_father != loop)
 	    {
-	      error ("loop %d's latch does not belong directly to it", i);
+	      error ("loop %d%'s latch does not belong directly to it", i);
 	      err = 1;
 	    }
 	}
       if (loop->header->loop_father != loop)
 	{
-	  error ("loop %d's header does not belong directly to it", i);
+	  error ("loop %d%'s header does not belong directly to it", i);
 	  err = 1;
 	}
       if (loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
 	  && (loop_latch_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP))
 	{
-	  error ("loop %d's latch is marked as part of irreducible region", i);
+	  error ("loop %d%'s latch is marked as part of irreducible region", i);
 	  err = 1;
 	}
     }
@@ -1511,7 +1511,7 @@ verify_loop_structure (void)
 	      exit = get_exit_descriptions (e);
 	      if (!exit)
 		{
-		  error ("Exit %d->%d not recorded",
+		  error ("exit %d->%d not recorded",
 			 e->src->index, e->dest->index);
 		  err = 1;
 		}
@@ -1529,7 +1529,7 @@ verify_loop_structure (void)
 
 	      if (eloops != 0)
 		{
-		  error ("Wrong list of exited loops for edge  %d->%d",
+		  error ("wrong list of exited loops for edge  %d->%d",
 			 e->src->index, e->dest->index);
 		  err = 1;
 		}
@@ -1538,7 +1538,7 @@ verify_loop_structure (void)
 
       if (n_exits != htab_elements (current_loops->exits))
 	{
-	  error ("Too many loop exits recorded");
+	  error ("too many loop exits recorded");
 	  err = 1;
 	}
 

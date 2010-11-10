@@ -2696,10 +2696,10 @@ bfin_option_override (void)
     error ("-mshared-library-id= specified without -mid-shared-library");
 
   if (stack_limit_rtx && TARGET_STACK_CHECK_L1)
-    error ("Can't use multiple stack checking methods together.");
+    error ("can%'t use multiple stack checking methods together");
 
   if (TARGET_ID_SHARED_LIBRARY && TARGET_FDPIC)
-    error ("ID shared libraries and FD-PIC mode can't be used together.");
+    error ("ID shared libraries and FD-PIC mode can%'t be used together");
 
   /* Don't allow the user to specify -mid-shared-library and -msep-data
      together, as it makes little sense from a user's point of view...  */
@@ -2733,7 +2733,7 @@ bfin_option_override (void)
     error ("-mcoreb should be used with -mmulticore");
 
   if (TARGET_COREA && TARGET_COREB)
-    error ("-mcorea and -mcoreb can't be used together");
+    error ("-mcorea and -mcoreb can%'t be used together");
 
   flag_schedule_insns = 0;
 
@@ -5639,7 +5639,7 @@ bfin_handle_longcall_attribute (tree *node, tree name,
 	  && lookup_attribute ("longcall", TYPE_ATTRIBUTES (*node))))
     {
       warning (OPT_Wattributes,
-	       "can't apply both longcall and shortcall attributes to the same function");
+	       "can%'t apply both longcall and shortcall attributes to the same function");
       *no_add_attrs = true;
     }
 

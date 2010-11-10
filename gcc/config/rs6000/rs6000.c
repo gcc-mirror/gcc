@@ -2662,7 +2662,7 @@ rs6000_option_override_internal (const char *default_cpu)
       if (TARGET_ALTIVEC)
 	error ("AltiVec not supported in this target");
       if (TARGET_SPE)
-	error ("Spe not supported in this target");
+	error ("SPE not supported in this target");
     }
 
   /* Disable Cell microcode if we are optimizing for the Cell
@@ -3250,7 +3250,7 @@ rs6000_option_override_internal (const char *default_cpu)
 
 	      if (i == ARRAY_SIZE (recip_options))
 		{
-		  error ("Unknown option for -mrecip=%s", q);
+		  error ("unknown option for -mrecip=%s", q);
 		  invert = false;
 		  mask = 0;
 		}
@@ -4317,25 +4317,25 @@ rs6000_handle_option (size_t code, const char *arg, int value)
       else if (! strcmp (arg, "d64"))
 	{
 	  rs6000_darwin64_abi = 1;
-	  warning (0, "Using darwin64 ABI");
+	  warning (0, "using darwin64 ABI");
 	}
       else if (! strcmp (arg, "d32"))
 	{
 	  rs6000_darwin64_abi = 0;
-	  warning (0, "Using old darwin ABI");
+	  warning (0, "using old darwin ABI");
 	}
 
       else if (! strcmp (arg, "ibmlongdouble"))
 	{
 	  rs6000_explicit_options.ieee = true;
 	  rs6000_ieeequad = 0;
-	  warning (0, "Using IBM extended precision long double");
+	  warning (0, "using IBM extended precision long double");
 	}
       else if (! strcmp (arg, "ieeelongdouble"))
 	{
 	  rs6000_explicit_options.ieee = true;
 	  rs6000_ieeequad = 1;
-	  warning (0, "Using IEEE extended precision long double");
+	  warning (0, "using IEEE extended precision long double");
 	}
 
       else
@@ -4377,7 +4377,7 @@ rs6000_handle_option (size_t code, const char *arg, int value)
       rs6000_long_double_type_size = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
       if (value != 64 && value != 128)
 	{
-	  error ("Unknown switch -mlong-double-%s", arg);
+	  error ("unknown switch -mlong-double-%s", arg);
 	  rs6000_long_double_type_size = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
 	  return false;
 	}
@@ -9631,7 +9631,7 @@ def_builtin (int mask, const char *name, tree type, int code)
     {
       tree t;
       if (rs6000_builtin_decls[code])
-	fatal_error ("internal error: builtin function to %s already processed.",
+	fatal_error ("internal error: builtin function to %s already processed",
 		     name);
 
       rs6000_builtin_decls[code] = t =
@@ -19708,7 +19708,7 @@ rs6000_savres_routine_name (rs6000_stack_t *info, int regno,
 	}
     }
   else if (DEFAULT_ABI == ABI_DARWIN)
-    sorry ("Out-of-line save/restore routines not supported on Darwin");
+    sorry ("out-of-line save/restore routines not supported on Darwin");
 
   sprintf (savres_routine_name, "%s%d%s", prefix, regno, suffix);
 

@@ -4691,7 +4691,7 @@ layout_var_decl (tree decl)
       /* An automatic variable with an incomplete type: that is an error.
 	 Don't talk about array types here, since we took care of that
 	 message in grokdeclarator.  */
-      error ("storage size of %qD isn't known", decl);
+      error ("storage size of %qD isn%'t known", decl);
       TREE_TYPE (decl) = error_mark_node;
     }
 #if 0
@@ -4714,7 +4714,7 @@ layout_var_decl (tree decl)
 	constant_expression_warning (DECL_SIZE (decl));
       else
 	{
-	  error ("storage size of %qD isn't constant", decl);
+	  error ("storage size of %qD isn%'t constant", decl);
 	  TREE_TYPE (decl) = error_mark_node;
 	}
     }
@@ -4761,7 +4761,7 @@ maybe_commonize_var (tree decl)
 	      DECL_COMMON (decl) = 0;
 	      warning_at (input_location, 0,
 			  "sorry: semantics of inline function static "
-			  "data %q+#D are wrong (you'll wind up "
+			  "data %q+#D are wrong (you%'ll wind up "
 			  "with multiple copies)", decl);
 	      warning_at (DECL_SOURCE_LOCATION (decl), 0, 
 			  "  you can work around this by removing "
@@ -8790,7 +8790,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    else if (friendp)
 	      {
 		if (initialized)
-		  error ("can't initialize friend function %qs", name);
+		  error ("can%'t initialize friend function %qs", name);
 		if (virtualp)
 		  {
 		    /* Cannot be both friend and virtual.  */
@@ -8800,7 +8800,7 @@ grokdeclarator (const cp_declarator *declarator,
 		if (decl_context == NORMAL)
 		  error ("friend declaration not in class definition");
 		if (current_function_decl && funcdef_flag)
-		  error ("can't define friend function %qs in a local "
+		  error ("can%'t define friend function %qs in a local "
 			 "class definition",
 			 name);
 	      }

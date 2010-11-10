@@ -194,7 +194,7 @@ extern int cris_cpu_version;
  MAYBE_AS_NO_MUL_BUG_ABORT \
  "%{v:-v}\
  %(asm_subtarget)\
- %{march=*:%{cpu=*:%eDo not specify both -march=... and -mcpu=...}}\
+ %{march=*:%{cpu=*:%edo not specify both -march=... and -mcpu=...}}\
  %{march=v32:--march=v32} %{mcpu=v32:--march=v32}"
 
 /* For the cris-*-elf subtarget.  */

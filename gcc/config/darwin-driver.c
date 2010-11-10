@@ -133,7 +133,7 @@ darwin_default_min_version (unsigned int *decoded_options_count,
   return;
   
  parse_failed:
-  warning (0, "couldn't understand kern.osversion %q.*s",
+  warning (0, "couldn%'t understand kern.osversion %q.*s",
 	   (int) osversion_len, osversion);
   return;
 }

@@ -2629,7 +2629,7 @@ build_java_class_ref (tree type)
 	}
     if (!field)
       {
-	error ("can't find %<class$%> in %qT", type);
+	error ("can%'t find %<class$%> in %qT", type);
 	return error_mark_node;
       }
   }
@@ -3307,7 +3307,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 		  cxx_incomplete_type_diagnostic (addr, type, DK_WARNING);
 		  inform (input_location, "neither the destructor nor the class-specific "
 			  "operator delete will be called, even if they are "
-			  "declared when the class is defined.");
+			  "declared when the class is defined");
 		}
 	      complete_p = false;
 	    }
