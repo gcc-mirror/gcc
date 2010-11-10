@@ -1,3 +1,8 @@
+2010-11-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46398
+	* tree-ssa-sccvn.c (process_scc): Iterate for all PHIs.
+
 2010-11-10  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR target/44760
