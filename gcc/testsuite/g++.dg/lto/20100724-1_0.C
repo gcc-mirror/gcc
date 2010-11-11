@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-lto-options {{-ftoplevel-reorder -flto} {-ftoplevel-reorder -fwhopr}} } */
+/* { dg-lto-options {{-ftoplevel-reorder -flto -flto-partition=none} {-ftoplevel-reorder -flto -flto-partition=1to1}} } */
 /* { dg-extra-ld-options {-r -nostdlib} } */
 
 struct Foo { virtual ~Foo(); };

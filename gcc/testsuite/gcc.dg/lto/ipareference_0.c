@@ -1,4 +1,4 @@
-/* { dg-lto-options {{ -O1 -fwhopr }} } */
+/* { dg-lto-options {{ -O1 -flto -flto-partition=1to1 }} } */
 /* { dg-lto-do run } */
 
 /* Test that ipa-reference notice that get_val will not change since do_nothing does not

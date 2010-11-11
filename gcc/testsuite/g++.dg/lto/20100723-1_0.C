@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-lto-options {{-fcompare-debug -flto} {-fcompare-debug -fwhopr}} } */
+/* { dg-lto-options {{-fcompare-debug -flto -flto-partition=none} {-fcompare-debug -flto -flto-partition=1to1}} } */
 
 struct S {
     virtual void f() { }

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target lto } */
-/* { dg-options "-fwhopr -Wuninitialized -O1" }  */
+/* { dg-options "-flto -Wuninitialized -O1" }  */
 
 template <typename T> struct Q1 { typedef int x; };
 template <typename T> struct Q2 {

@@ -645,7 +645,7 @@ proper position among the other output files.  */
 /* We want %{T*} after %{L*} and %D so that it can be used to specify linker
    scripts which exist in user specified directories, or in standard
    directories.  */
-/* We pass any -flto and -fwhopr flags on to the linker, which is expected
+/* We pass any -flto flags on to the linker, which is expected
    to understand them.  In practice, this means it had better be collect2.  */
 #ifndef LINK_COMMAND_SPEC
 #define LINK_COMMAND_SPEC "\
@@ -658,8 +658,8 @@ proper position among the other output files.  */
     %{static|static-libgcc:-plugin-opt=-pass-through=%(lto_libgcc)}	\
     %{static:-plugin-opt=-pass-through=-lc}	\
     } \
-    %{flto:%<fcompare-debug*} %{fwhopr*:%<fcompare-debug*} \
-    %{flto} %{fwhopr*} %l " LINK_PIE_SPEC \
+    %{flto*:%<fcompare-debug*} \
+    %{flto*} %l " LINK_PIE_SPEC \
    "%X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
     %{static:} %{L*} %(mfwrap) %(link_libgcc) %o\

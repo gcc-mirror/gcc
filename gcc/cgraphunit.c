@@ -197,8 +197,7 @@ cgraph_decide_is_function_needed (struct cgraph_node *node, tree decl)
 	    && !(DECL_CONTEXT (decl)
 		 && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)))
        && !flag_whole_program
-       && !flag_lto
-       && !flag_whopr)
+       && !flag_lto)
       && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
     return true;
 

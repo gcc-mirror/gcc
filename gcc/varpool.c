@@ -343,7 +343,6 @@ decide_is_variable_needed (struct varpool_node *node, tree decl)
   if (TREE_PUBLIC (decl)
       && !flag_whole_program
       && !flag_lto
-      && !flag_whopr
       && !DECL_COMDAT (decl)
       && !DECL_EXTERNAL (decl))
     return true;

@@ -1251,7 +1251,7 @@ execute_split_functions (void)
      then inlining would still benefit.  */
   if ((!node->callers || !node->callers->next_caller)
       && !node->address_taken
-      && ((!flag_lto && !flag_whopr) || !node->local.externally_visible))
+      && (!flag_lto || !node->local.externally_visible))
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: not called directly "

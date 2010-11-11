@@ -41,10 +41,10 @@ if { ![check_effective_target_lto] } {
 global LTO_OPTIONS
 
 set LTO_OPTIONS [list	\
-  {-O0 -fwhopr -fgnu-runtime}	\
-  {-O2 -fwhopr -fgnu-runtime}	\
-  {-O0 -flto -fgnu-runtime} 	\
+  {-O0 -flto -fgnu-runtime}	\
   {-O2 -flto -fgnu-runtime}	\
+  {-O0 -flto -flto-partition=none -fgnu-runtime} 	\
+  {-O2 -flto -flto-partition=none -fgnu-runtime}	\
 ]
 
 obj-c++_init
@@ -67,10 +67,10 @@ foreach src $tests {
 # darwin targets can also run code with the NeXT runtime.
 if [istarget "*-*-darwin*" ] {
 set LTO_OPTIONS [list	\
-  {-O0 -fwhopr -fnext-runtime}	\
-  {-O2 -fwhopr -fnext-runtime}	\
-  {-O0 -flto -fnext-runtime} 	\
+  {-O0 -flto -fnext-runtime}	\
   {-O2 -flto -fnext-runtime}	\
+  {-O0 -flto -flto-partition=none -fnext-runtime} 	\
+  {-O2 -flto -flto-partition=none -fnext-runtime}	\
 ]
   foreach src $tests {
     # If we're only testing specific files and this isn't one of them, skip it.

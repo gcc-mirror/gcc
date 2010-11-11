@@ -1,4 +1,4 @@
-/* { dg-lto-options {{ -O3 -fwhopr}} } */
+/* { dg-lto-options {{ -O3 -flto -flto-partition=1to1}} } */
 /* { dg-lto-do run } */
 extern void clone_me (int, int);
 int a=15;

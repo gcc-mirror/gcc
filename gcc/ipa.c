@@ -938,7 +938,7 @@ function_and_variable_visibility (bool whole_program)
 static unsigned int
 local_function_and_variable_visibility (void)
 {
-  return function_and_variable_visibility (flag_whole_program && !flag_lto && !flag_whopr);
+  return function_and_variable_visibility (flag_whole_program && !flag_lto);
 }
 
 struct simple_ipa_opt_pass pass_ipa_function_and_variable_visibility =

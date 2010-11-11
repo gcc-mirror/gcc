@@ -1,4 +1,4 @@
-/* { dg-lto-options {{ -O1 -fwhopr -fwhole-program}} } */
+/* { dg-lto-options {{ -O1 -flto -flto-partition=1to1 -fwhole-program}} } */
 /* { dg-lto-do run } */
 
 /* Verify that ipa-reference marks A as constant and we fold references

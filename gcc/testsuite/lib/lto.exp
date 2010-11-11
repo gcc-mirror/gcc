@@ -64,8 +64,10 @@ proc lto_init { args } {
     # add it to site.exp directly.
     if ![info exists LTO_OPTIONS] {
 	set LTO_OPTIONS [list	\
-	    {-O0 -fwhopr}	\
-	    {-O2 -fwhopr}	\
+	    {-O0 -flto -flto-partition=none } \
+	    {-O2 -flto -flto-partition=none } \
+	    {-O0 -flto -flto-partition=1to1 } \
+	    {-O2 -flto -flto-partition=1to1 } \
 	    {-O0 -flto}		\
 	    {-O2 -flto}		\
 	]
