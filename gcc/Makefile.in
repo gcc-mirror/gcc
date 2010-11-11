@@ -3943,7 +3943,11 @@ $(genprog:%=build/gen%$(build_exeext)): build/gen%$(build_exeext): build/gen%.o 
 
 # Generated source files for gengtype.
 gengtype-lex.c : gengtype-lex.l
-	-$(FLEX) $(FLEXFLAGS) -o$@ $<
+	-$(FLEX) $(FLEXFLAGS) -o$@ $< && { \
+	  echo '#include "bconfig.h"' > $@.tmp; \
+	  cat $@ >> $@.tmp; \
+	  mv $@.tmp $@; \
+	}
 
 #
 # Remake internationalization support.
