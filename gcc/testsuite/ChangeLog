@@ -1,3 +1,7 @@
+2010-11-11  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.dg/proc_decl_24.f90: New.
+
 2010-11-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/property/at-property-20.m: New.

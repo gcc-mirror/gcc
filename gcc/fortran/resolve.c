@@ -176,6 +176,7 @@ resolve_procedure_interface (gfc_symbol *sym)
       sym->attr.recursive = ifc->attr.recursive;
       sym->attr.always_explicit = ifc->attr.always_explicit;
       sym->attr.ext_attr |= ifc->attr.ext_attr;
+      sym->attr.is_bind_c = ifc->attr.is_bind_c;
       /* Copy array spec.  */
       sym->as = gfc_copy_array_spec (ifc->as);
       if (sym->as)
