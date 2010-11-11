@@ -1,3 +1,11 @@
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.dg/ext/bitfield2.C, g++.dg/ext/bitfield4.C,
+	gcc.dg/bitfld-15.c, gcc.dg/bitfld-17.c,
+	gcc.target/i386/pr39082-1.c, gcc.target/i386/pr39545-1.c,
+	gcc.target/i386/pr39545-2.c, gcc.target/i386/pr39678.c: Update
+	expected messages.
+
 2010-11-10  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimize/38669
