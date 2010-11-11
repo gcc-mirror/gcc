@@ -1,3 +1,12 @@
+2010-11-11  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/40436
+	* ipa-inline.c (likely_eliminated_by_inlining_p): Rename to ...
+	(eliminated_by_inlining_prob): ... this one; return 50% probability for
+	SRA.
+	(estimate_function_body_sizes): Update use of eliminated_by_inlining_prob;
+	estimate static function size for 2 instructions.
+
 2010-11-11  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR target/44749
