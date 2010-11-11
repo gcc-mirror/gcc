@@ -2435,8 +2435,12 @@ write_symbol (struct lto_streamer_cache_d *cache,
   if (kind == GCCPK_COMMON
       && DECL_SIZE (t)
       && TREE_CODE (DECL_SIZE (t)) == INTEGER_CST)
-    size = (((uint64_t) TREE_INT_CST_HIGH (DECL_SIZE (t))) << 32)
-      | TREE_INT_CST_LOW (DECL_SIZE (t));
+    {
+      size = (HOST_BITS_PER_WIDE_INT >= 64)
+	? (uint64_t) int_size_in_bytes (TREE_TYPE (t))
+	: (((uint64_t) TREE_INT_CST_HIGH (DECL_SIZE_UNIT (t))) << 32)
+		| TREE_INT_CST_LOW (DECL_SIZE_UNIT (t));
+    }
   else
     size = 0;
 
