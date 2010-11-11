@@ -1,6 +1,11 @@
 2010-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2010-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/45894
+	* g++.dg/warn/Wsequence-point-2.C: New test.
+
 	2010-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/44772
