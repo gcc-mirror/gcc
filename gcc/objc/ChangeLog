@@ -681,7 +681,7 @@
 	(objc_push_parm): Rebuild the PARM_DECL if its type has
 	been decayed.	
 
-2010-09-28  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
+2010-09-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (encode_type): Fixed encoding enums with the next
 	runtime.

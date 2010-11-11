@@ -770,7 +770,7 @@
 	(type_dependent_expression_p): Added case for AT_ENCODE_EXPR.
 	* parser.c (cp_parser_objc_encode_expression): Updated comment.
 
-2010-10-07  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
+2010-10-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from apple/trunk branch on FSF servers.
 
