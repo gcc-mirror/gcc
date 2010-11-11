@@ -1531,7 +1531,6 @@ convert_mult_to_fma (gimple mul_stmt)
       enum tree_code use_code;
       tree result = mul_result;
       bool negate_p = false;
-      optab opt;
 
       use_stmt = USE_STMT (use_p);
 
@@ -1574,32 +1573,31 @@ convert_mult_to_fma (gimple mul_stmt)
 	  negate_p = true;
 	}
 
-      /* Determine if the target supports the exact form we found.  */
       switch (use_code)
 	{
 	case MINUS_EXPR:
-	  if (gimple_assign_rhs1 (use_stmt) == result)
-	    {
-	      opt = negate_p ? fnms_optab : fms_optab;
-	      break;
-	    }
-	  negate_p = !negate_p;
-	  /* FALLTHRU */
-
-	case PLUS_EXPR:
-	  opt = negate_p ? fnma_optab : fma_optab;
+	  if (gimple_assign_rhs2 (use_stmt) == result)
+	    negate_p = !negate_p;
 	  break;
-
+	case PLUS_EXPR:
+	  break;
 	default:
 	  /* FMA can only be formed from PLUS and MINUS.  */
 	  return false;
 	}
-      if (optab_handler (opt, TYPE_MODE (type)) == CODE_FOR_nothing)
-	return false;
 
       /* We can't handle a * b + a * b.  */
       if (gimple_assign_rhs1 (use_stmt) == gimple_assign_rhs2 (use_stmt))
 	return false;
+
+      /* While it is possible to validate whether or not the exact form
+	 that we've recognized is available in the backend, the assumption
+	 is that the transformation is never a loss.  For instance, suppose
+	 the target only has the plain FMA pattern available.  Consider
+	 a*b-c -> fma(a,b,-c): we've exchanged MUL+SUB for FMA+NEG, which
+	 is still two operations.  Consider -(a*b)-c -> fma(-a,b,-c): we
+	 still have 3 operations, but in the FMA form the two NEGs are
+	 independant and could be run in parallel.  */
     }
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, mul_result)
