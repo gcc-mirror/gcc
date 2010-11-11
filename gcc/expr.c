@@ -4260,11 +4260,16 @@ expand_assignment (tree to, tree from, bool nontemporal)
       to_rtx = expand_normal (tem);
 
       /* If the bitfield is volatile, we want to access it in the
-	 field's mode, not the computed mode.  */
-      if (volatilep
-	  && GET_CODE (to_rtx) == MEM
-	  && flag_strict_volatile_bitfields > 0)
-	to_rtx = adjust_address (to_rtx, mode1, 0);
+	 field's mode, not the computed mode.
+	 If a MEM has VOIDmode (external with incomplete type),
+	 use BLKmode for it instead.  */
+      if (MEM_P (to_rtx))
+	{
+	  if (volatilep && flag_strict_volatile_bitfields > 0)
+	    to_rtx = adjust_address (to_rtx, mode1, 0);
+	  else if (GET_MODE (to_rtx) == VOIDmode)
+	    to_rtx = adjust_address (to_rtx, BLKmode, 0);
+	}
  
       if (offset != 0)
 	{
@@ -9013,11 +9018,16 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 
 	/* If the bitfield is volatile, we want to access it in the
-	   field's mode, not the computed mode.  */
-	if (volatilep
-	    && GET_CODE (op0) == MEM
-	    && flag_strict_volatile_bitfields > 0)
-	  op0 = adjust_address (op0, mode1, 0);
+	   field's mode, not the computed mode.
+	   If a MEM has VOIDmode (external with incomplete type),
+	   use BLKmode for it instead.  */
+	if (MEM_P (op0))
+	  {
+	    if (volatilep && flag_strict_volatile_bitfields > 0)
+	      op0 = adjust_address (op0, mode1, 0);
+	    else if (GET_MODE (op0) == VOIDmode)
+	      op0 = adjust_address (op0, BLKmode, 0);
+	  }
 
 	mode2
 	  = CONSTANT_P (op0) ? TYPE_MODE (TREE_TYPE (tem)) : GET_MODE (op0);
