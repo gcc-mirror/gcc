@@ -1,4 +1,4 @@
-/* { dg-lto-options {{ -O1 -fwhopr -fipa-cp -fipa-cp-clone}} } */
+/* { dg-lto-options {{ -O1 -flto -flto-partition=1to1 -fipa-cp -fipa-cp-clone}} } */
 /* { dg-lto-do run } */
 
 /* Test that clonning happens and we unify declarations of a from both units.  */

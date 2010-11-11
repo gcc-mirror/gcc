@@ -1138,8 +1138,12 @@ Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 flto
-Common Var(flag_lto)
+Common
 Enable link-time optimization.
+
+flto=
+Common RejectNegative Joined Var(flag_lto)
+Link-time optimization with number of parallel jobs or jobserver.
 
 flto-partition=1to1
 Common Var(flag_lto_partition_1to1)
@@ -1148,6 +1152,10 @@ Partition functions and vars at linktime based on object files they originate fr
 flto-partition=balanced
 Common Var(flag_lto_partition_balanced)
 Partition functions and vars at linktime into approximately same sized buckets
+
+flto-partition=none
+Common Var(flag_lto_partition_none)
+Disable partioning and streaming
 
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
 flto-compression-level=
@@ -1878,14 +1886,6 @@ Use expression value profiles in optimizations
 fweb
 Common Report Var(flag_web) Init(2) Optimization
 Construct webs and split unrelated uses of single variable
-
-fwhopr
-Common
-Enable partitioned link-time optimization
-
-fwhopr=
-Common RejectNegative Joined Var(flag_whopr)
-Partitioned link-time optimization with number of parallel jobs or jobserver.
 
 ftree-builtin-call-dce
 Common Report Var(flag_tree_builtin_call_dce) Init(0) Optimization

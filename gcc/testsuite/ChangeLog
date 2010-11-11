@@ -1,5 +1,55 @@
 2010-11-11  Jan Hubicka  <jh@suse.cz>
 
+	* gcc.dg/20081223-1.c: Update LTO options.
+	* gcc.dg/lto/20090206-1_0.c: Update LTO options.
+	* gcc.dg/lto/20081118_0.c: Update LTO options.
+	* gcc.dg/lto/ipareference_0.c: Update LTO options.
+	* gcc.dg/lto/20100423-2_0.c: Update LTO options.
+	* gcc.dg/lto/20081201-1_0.c: Update LTO options.
+	* gcc.dg/lto/ipacp_0.c: Update LTO options.
+	* gcc.dg/lto/20090116_0.c: Update LTO options.
+	* gcc.dg/lto/20091015-1_0.c: Update LTO options.
+	* gcc.dg/lto/20090126-2_0.c: Update LTO options.
+	* gcc.dg/lto/20081202-2_0.c: Update LTO options.
+	* gcc.dg/lto/20081204-1_0.c: Update LTO options.
+	* gcc.dg/lto/const-uniq_0.c: Update LTO options.
+	* gcc.dg/lto/20081224_0.c: Update LTO options.
+	* gcc.dg/lto/20090219_0.c: Update LTO options.
+	* gcc.dg/lto/ipareference2_0.c: Update LTO options.
+	* gcc.dg/lto/20090206-2_0.c: Update LTO options.
+	* gcc.dg/lto/20081115_0.c: Update LTO options.
+	* gcc.dg/lto/20081201-2_0.c: Update LTO options.
+	* gcc.dg/lto/20081120-2_0.c: Update LTO options.
+	* gcc.dg/lto/materialize-1_0.c: Update LTO options.
+	* gcc.dg/lto/20090126-1_0.c: Update LTO options.
+	* gcc.dg/lto/20081202-1_0.c: Update LTO options.
+	* gcc.dg/lto/noreturn-1_0.c: Update LTO options.
+	* g++.dg/20090107-1.C: Update LTO options.
+	* g++.dg/lto/pr45679-2_0.C: Update LTO options.
+	* g++.dg/lto/20081123_0.C: Update LTO options.
+	* g++.dg/lto/20090313_0.C: Update LTO options.
+	* g++.dg/lto/20081125_0.C: Update LTO options.
+	* g++.dg/lto/20081109-1_0.C: Update LTO options.
+	* g++.dg/lto/20081219_0.C: Update LTO options.
+	* g++.dg/lto/20100724-1_0.C: Update LTO options.
+	* g++.dg/lto/20081204-1_0.C: Update LTO options.
+	* g++.dg/lto/20090303_0.C: Update LTO options.
+	* g++.dg/lto/20100723-1_0.C: Update LTO options.
+	* g++.dg/lto/pr45679-1_0.C: Update LTO options.
+	* g++.dg/lto/20090128_0.C: Update LTO options.
+	* g++.dg/lto/20081204-2_0.C: Update LTO options.
+	* g++.dg/lto/20090302_0.C: Update LTO options.
+	* g++.dg/lto/20081119-1_0.C: Update LTO options.
+	* g++.dg/lto/20081118_0.C: Update LTO options.
+	* g++.dg/20090121-1.C: Update LTO options.
+	* objc.dg/lto/lto.exp: Update LTO options.
+	* lib/lto.exp: Update LTO options.
+	* lib/gcc-dg.exp: Update LTO options.
+	* lib/c-torture.exp: Update LTO options.
+	* obj-c++.dg/lto/lto.exp: Update LTO options.
+
+2010-11-11  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimize/40436
 	* gcc.dg/tree-ssa/inline-5.c: New testcase.
 	* gcc.dg/tree-ssa/inline-6.c: New testcase.

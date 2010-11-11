@@ -1218,7 +1218,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set)
       opts->x_flag_ipa_struct_reorg = 0;
     }
 
-  if (opts->x_flag_lto || opts->x_flag_whopr)
+  if (opts->x_flag_lto)
     {
 #ifdef ENABLE_LTO
       opts->x_flag_generate_lto = 1;
@@ -1231,19 +1231,16 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set)
       error ("LTO support has not been enabled in this configuration");
 #endif
     }
-  if (opts->x_flag_lto_partition_balanced || opts->x_flag_lto_partition_1to1)
+  if ((opts->x_flag_lto_partition_balanced != 0) + (opts->x_flag_lto_partition_1to1 != 0)
+       + (opts->x_flag_lto_partition_none != 0) >= 1)
     {
-      if (opts->x_flag_lto_partition_balanced
-	  && opts->x_flag_lto_partition_1to1)
+      if ((opts->x_flag_lto_partition_balanced != 0)
+	   + (opts->x_flag_lto_partition_1to1 != 0)
+	   + (opts->x_flag_lto_partition_none != 0) > 1)
 	error ("only one -flto-partition value can be specified");
-      if (!opts->x_flag_whopr && !opts->x_flag_wpa && !opts->x_flag_ltrans)
-	error ("-flto-partition has no effect without -fwhopr");
+      if (!opts->x_flag_lto && !opts->x_flag_wpa && !opts->x_flag_ltrans)
+	error ("-flto-partition has no effect without -flto");
     }
-
-  /* Reconcile -flto and -fwhopr.  Set additional flags as appropriate and
-     check option consistency.  */
-  if (opts->x_flag_lto && opts->x_flag_whopr)
-    error ("-flto and -fwhopr are mutually exclusive");
 
   /* We initialize opts->x_flag_split_stack to -1 so that targets can set a
      default value if they choose based on other options.  */
@@ -2152,8 +2149,8 @@ common_handle_option (struct gcc_options *opts,
       dc->pedantic_errors = 1;
       break;
 
-    case OPT_fwhopr:
-      opts->x_flag_whopr = "";
+    case OPT_flto:
+      opts->x_flag_lto = "";
       break;
 
     case OPT_w:

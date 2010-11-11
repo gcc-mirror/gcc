@@ -1,6 +1,6 @@
 /* { dg-lto-do link } */
 /* { dg-skip-if "" { ! { i?86-*-linux* x86_64-*-linux* } } { "*" } { "" } } */
-/* { dg-lto-options {{-fPIC -r -nostdlib -fwhopr -msse2}} } */
+/* { dg-lto-options {{-fPIC -r -nostdlib -flto -flto-partition=1to1 -msse2}} } */
 /* { dg-require-effective-target sse2 } */
 /* { dg-suppress-ld-options {-fPIC -msse2} } */
 

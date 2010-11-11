@@ -890,7 +890,7 @@ ipa_compute_jump_functions (struct cgraph_node *node,
     {
       /* We do not need to bother analyzing calls to unknown
 	 functions unless they may become known during lto/whopr.  */
-      if (!cs->callee->analyzed && !flag_lto && !flag_whopr)
+      if (!cs->callee->analyzed && !flag_lto)
 	continue;
       ipa_count_arguments (cs);
       /* If the descriptor of the callee is not initialized yet, we have to do

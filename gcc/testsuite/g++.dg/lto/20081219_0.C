@@ -1,6 +1,6 @@
 // { dg-lto-do link }
-// { dg-lto-options {{-fPIC -fwhopr -O2}} }
-// { dg-extra-ld-options "-O2 -fPIC -fwhopr -r -nostdlib" }
+// { dg-lto-options {{-fPIC -flto -flto-partition=1to1 -O2}} }
+// { dg-extra-ld-options "-O2 -fPIC -flto -flto-partition=1to1 -r -nostdlib" }
 
 typedef long int ptrdiff_t;
 extern "C"

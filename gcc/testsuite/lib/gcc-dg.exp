@@ -70,8 +70,8 @@ if [info exists ADDITIONAL_TORTURE_OPTIONS] {
 set LTO_TORTURE_OPTIONS ""
 if [check_effective_target_lto] {
     set LTO_TORTURE_OPTIONS [list \
-	{ -O2 -flto } \
-	{ -O2 -fwhopr }
+	{ -O2 -flto -flto-partition=none } \
+	{ -O2 -flto }
     ]
 }
 

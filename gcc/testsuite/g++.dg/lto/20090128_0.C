@@ -1,5 +1,5 @@
 // { dg-lto-do assemble }
-// { dg-lto-options {{-fpreprocessed -O2 -fwhopr -funsigned-char}} }
+// { dg-lto-options {{-fpreprocessed -O2 -flto -flto-partition=1to1 -funsigned-char}} }
 typedef unsigned char uint8;
 extern const uint8 array[256];
 static inline bool

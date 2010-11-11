@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-lto-options {{-fPIC -fwhopr -r -nostdlib}} } */
+/* { dg-lto-options {{-fPIC -flto -flto-partition=1to1 -r -nostdlib}} } */
 
 /* We used to ICE because of dangling pointers.  */
 

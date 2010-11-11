@@ -7429,14 +7429,14 @@ and those merged by attribute @code{externally_visible} become static functions
 and in effect are optimized more aggressively by interprocedural optimizers. If @command{gold} is used as the linker plugin, @code{externally_visible} attributes are automatically added to functions (not variable yet due to a current @command{gold} issue) that are accessed outside of LTO objects according to resolution file produced by @command{gold}.  For other linkers that cannot generate resolution file, explicit @code{externally_visible} attributes are still necessary.
 While this option is equivalent to proper use of the @code{static} keyword for
 programs consisting of a single file, in combination with option
-@option{-flto} or @option{-fwhopr} this flag can be used to
+@option{-flto} this flag can be used to
 compile many smaller scale programs since the functions and variables become
 local for the whole combined compilation unit, not for the single source file
 itself.
 
 This option implies @option{-fwhole-file} for Fortran programs.
 
-@item -flto
+@item -flto[=@var{n}]
 @opindex flto
 This option runs the standard link-time optimizer.  When invoked
 with source code, it generates GIMPLE (one of GCC's internal
@@ -7575,12 +7575,13 @@ If you are not using @command{gold} and/or do not specify
 will be extracted and linked as usual, but they will not participate
 in the LTO optimization process.
 
-Link time optimizations do not require the presence of the whole
-program to operate.  If the program does not require any symbols to
-be exported, it is possible to combine @option{-flto} and
-@option{-fwhopr} with @option{-fwhole-program} to allow the
-interprocedural optimizers to use more aggressive assumptions which
-may lead to improved optimization opportunities.
+Link time optimizations do not require the presence of the whole program to
+operate.  If the program does not require any symbols to be exported, it is
+possible to combine @option{-flto} and with @option{-fwhole-program} to allow
+the interprocedural optimizers to use more aggressive assumptions which may
+lead to improved optimization opportunities. 
+Use of @option{-fwhole-program} is not needed when linker plugin is
+active (see @option{-fuse-linker-plugin}).
 
 Regarding portability: the current implementation of LTO makes no
 attempt at generating bytecode that can be ported between different
@@ -7589,22 +7590,8 @@ strict version check, so bytecode files generated in one version of
 GCC will not work with an older/newer version of GCC.
 
 Link time optimization does not play well with generating debugging
-information.  Combining @option{-flto} or @option{-fwhopr} with
+information.  Combining @option{-flto} with
 @option{-g} is experimental.
-
-This option is disabled by default.
-
-@item -fwhopr[=@var{n}]
-@opindex fwhopr
-This option is identical in functionality to @option{-flto} but it
-differs in how the final link stage is executed.  Instead of loading
-all the function bodies in memory, the callgraph is analyzed and
-optimization decisions are made (whole program analysis or WPA). Once
-optimization decisions are made, the callgraph is partitioned and the
-different sections are compiled separately (local transformations or
-LTRANS)@.  This process allows optimizations on very large programs
-that otherwise would not fit in memory.  This option enables
-@option{-fwpa} and @option{-fltrans} automatically.
 
 If you specify the optional @var{n} the link stage is executed in
 parallel using @var{n} parallel jobs by utilizing an installed
@@ -7618,14 +7605,16 @@ The parent Makefile will need a @samp{+} prepended to the command recipe
 for this to work. This will likely only work if @env{MAKE} is 
 GNU make.
 
-Disabled by default.
+This option is disabled by default.
 
 @item -flto-partition=@var{alg}
 @opindex flto-partition
 Specify partitioning algorithm used by @option{-fwhopr} mode.  The value is
 either @code{1to1} to specify partitioning corresponding to source files
 or @code{balanced} to specify partitioning into, if possible, equally sized
-chunks.  The default value is @code{balanced}.
+chunks.  Specifying @code{none} as an algorithm disables partitioning
+and streaming completely.
+The default value is @code{balanced}.
 
 @item -fwpa
 @opindex fwpa

@@ -1,5 +1,22 @@
 2010-11-11  Jan Hubicka  <jh@suse.cz>
 
+	* doc/invoke.texi (-fwhopr): Merge into -flto section.
+	(-flto-partition): Document none.
+	* gcc.c (LINK_COMMAND_SPEC): Remove -fwhopr.
+	* lto-wrapper.c: Update comment.
+	(run_gcc): Update LTO option parsing.
+	* opts.c (finish_options): add support -flto-partition=none
+	(common_handle_option): Remove fwhopr.
+	* common.opt: Turn fwhopr into flto.
+	* collect2.c (main): Update option handling.
+	* cgraphunit.c (cgraph_decide_is_function_needed): Remove flag_whopr.
+	* ipa-split.c (execute_split_functions): Remove flag_whopr.
+	* ipa.c (function_and_variable_visibility): Remove flag_whopr.
+	* ipa-prop.c (ipa_compute_jump_functions): Remove flag_whopr.
+	* varpool.c (decide_is_variable_needed): Remove flag_whopr.
+
+2010-11-11  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimize/40436
 	* ipa-inline.c (likely_eliminated_by_inlining_p): Rename to ...
 	(eliminated_by_inlining_prob): ... this one; return 50% probability for
