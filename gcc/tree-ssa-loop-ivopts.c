@@ -834,7 +834,8 @@ htab_inv_expr_eq (const void *ent1, const void *ent2)
   const struct iv_inv_expr_ent *expr2 =
       (const struct iv_inv_expr_ent *)ent2;
 
-  return operand_equal_p (expr1->expr, expr2->expr, 0);
+  return expr1->hash == expr2->hash
+	 && operand_equal_p (expr1->expr, expr2->expr, 0);
 }
 
 /* Hash function for loop invariant expressions.  */
