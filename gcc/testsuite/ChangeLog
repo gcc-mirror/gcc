@@ -3,6 +3,9 @@
 	Backport from mainline
 	2010-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/44772
+	* gcc.dg/Wcxx-compat-21.c: New test.
+
 	PR c++/46160
 	* g++.dg/opt/empty2.C: New test.
 

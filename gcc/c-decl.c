@@ -6709,7 +6709,8 @@ warn_cxx_compat_finish_struct (tree fieldlist)
 
       for (x = fieldlist; x != NULL_TREE; x = TREE_CHAIN (x))
 	{
-	  if (pointer_set_contains (tset, DECL_NAME (x)))
+	  if (DECL_NAME (x) != NULL_TREE
+	      && pointer_set_contains (tset, DECL_NAME (x)))
 	    {
 	      warning_at (DECL_SOURCE_LOCATION (x), OPT_Wc___compat,
 			  ("using %qD as both field and typedef name is "
