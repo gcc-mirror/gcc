@@ -24,6 +24,7 @@ contains
   function pfoo(ch2)
      character*5, dimension(:), target  :: ch2
      character*5, dimension(:), pointer :: pfoo
-     pfoo => ch2
+     allocate(pfoo(size(ch2)))
+     pfoo = ch2
   end function pfoo
 end program
