@@ -1,3 +1,8 @@
+2010-11-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/lto.exp (lto-get-options-main): Support optional target
+	selector for dg-suppress-ld-options.
+
 2010-11-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/46383

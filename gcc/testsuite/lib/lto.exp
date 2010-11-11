@@ -309,9 +309,17 @@ proc lto-get-options-main { src } {
 		}
 	    }
 	} elseif { ![string compare "dg-suppress-ld-options" $cmd] } {
-	    set dg-suppress-ld-options [lindex $op 2]
-	    verbose \
-	      "dg-suppress-ld-options for main is ${dg-suppress-ld-options}"
+	    if { [llength $op] > 4 } {
+		error "[lindex $op 0]: too many arguments"
+	    } else {
+		if { [llength $op] == 3
+		     || ([llength $op] > 3
+			 && [dg-process-target [lindex $op 3]] == "S") } {
+		    set dg-suppress-ld-options [lindex $op 2]
+		    verbose \
+			"dg-suppress-ld-options for main is ${dg-suppress-ld-options}"
+		}
+	    }
 	} elseif { ![string compare "dg-final" $cmd] } {
 	    if { [llength $op] > 3 } {
 		error "[lindex $op 0]: too many arguments"
