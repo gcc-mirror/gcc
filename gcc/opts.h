@@ -257,7 +257,6 @@ extern void read_cmdline_option (struct gcc_options *opts,
 				 unsigned int lang_mask,
 				 const struct cl_option_handlers *handlers,
 				 diagnostic_context *dc);
-extern void register_warning_as_error_callback (void (*callback) (int));
 extern void enable_warning_as_error (const char *arg, int value,
 				     unsigned int lang_mask,
 				     const struct cl_option_handlers *handlers,

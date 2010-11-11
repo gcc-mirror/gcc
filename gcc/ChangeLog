@@ -1,3 +1,10 @@
+2010-11-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* opts.c (warning_as_error_callback,
+	register_warning_as_error_callback): Remove.
+	(enable_warning_as_error): Don't use warning_as_error_callback.
+	* opts.h (register_warning_as_error_callback): Remove.
+
 2010-11-11  Richard Henderson  <rth@redhat.com>
 
 	* tree-ssa-math-opts.c (convert_mult_to_fma): Handle a NEGATE_EXPR

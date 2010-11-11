@@ -1,3 +1,7 @@
+2010-11-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/cpp/warn-normalized-3.c: Update expected note text.
+
 2010-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46388

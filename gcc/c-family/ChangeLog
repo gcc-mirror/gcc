@@ -1,3 +1,10 @@
+2010-11-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (warning_as_error_callback): Remove.
+	(c_common_initialize_diagnostics): Don't call
+	register_warning_as_error_callback.
+	(c_common_handle_option): Handle -Werror=normalized= here.
+
 2010-11-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (handle_mode_attribute): Use %' and word "signedness"

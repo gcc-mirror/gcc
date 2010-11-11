@@ -2393,19 +2393,6 @@ get_option_state (struct gcc_options *opts, int option,
   return true;
 }
 
-/* Callback function, called when -Werror= enables a warning.  */
-
-static void (*warning_as_error_callback) (int) = NULL;
-
-/* Register a callback for enable_warning_as_error calls.  */
-
-void
-register_warning_as_error_callback (void (*callback) (int))
-{
-  gcc_assert (warning_as_error_callback == NULL || callback == NULL);
-  warning_as_error_callback = callback;
-}
-
 /* Enable (or disable if VALUE is 0) a warning option ARG (language
    mask LANG_MASK, option handlers HANDLERS) as an error for
    diagnostic context DC (possibly NULL).  This is used by
@@ -2449,9 +2436,6 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
 				     option_index, NULL, value, lang_mask,
 				     (int)kind, handlers,
 				     dc);
-
-	  if (warning_as_error_callback)
-	    warning_as_error_callback (option_index);
 	}
     }
   free (new_option);
