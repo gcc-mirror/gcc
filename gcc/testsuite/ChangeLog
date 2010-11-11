@@ -1,5 +1,10 @@
 2010-11-10  Jan Hubicka  <jh@suse.cz>
 
+	PR tree-optimize/38669
+	* gcc.dg/tree-ssa/pr38699.c
+
+2010-11-10  Jan Hubicka  <jh@suse.cz>
+
 	* gcc.dg/tree-prof/inliner-1.c: Fix testcase.
 
 2010-11-10  Jason Merrill  <jason@redhat.com>
