@@ -3592,13 +3592,24 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
   
   curr_comp = derived_sym->components;
 
-  /* TODO: is this really an error?  */
+  /* Fortran 2003 allows an empty derived type.  C99 appears to disallow an
+     empty struct.  Section 15.2 in Fortran 2003 states:  "The following
+     subclauses define the conditions under which a Fortran entity is
+     interoperable.  If a Fortran entity is interoperable, an equivalent
+     entity may be defined by means of C and the Fortran entity is said
+     to be interoperable with the C entity.  There does not have to be such
+     an interoperating C entity."
+  */
   if (curr_comp == NULL)
     {
-      gfc_error ("Derived type '%s' at %L is empty",
-		 derived_sym->name, &(derived_sym->declared_at));
-      return FAILURE;
+      gfc_warning ("Derived type '%s' with BIND(C) attribute at %L is empty, "
+		   "and may be inaccessible by the C companion processor",
+		   derived_sym->name, &(derived_sym->declared_at));
+      derived_sym->ts.is_c_interop = 1;
+      derived_sym->attr.is_bind_c = 1;
+      return SUCCESS;
     }
+
 
   /* Initialize the derived type as being C interoperable.
      If we find an error in the components, this will be set false.  */
