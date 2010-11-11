@@ -1,3 +1,9 @@
+2010-11-11  Jakub Jelinek <jakub@redhat.com>
+	    Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/46325
+	* gfortran.dg/char_initialiser_actual.f90: Make test case valid. 
+
 2010-11-11  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/20081223-1.c: Update LTO options.
