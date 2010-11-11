@@ -1,3 +1,7 @@
+2010-11-10  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-bitfield.C: New.
+
 2010-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46409
