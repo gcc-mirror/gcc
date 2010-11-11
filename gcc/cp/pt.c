@@ -13197,6 +13197,7 @@ tsubst_copy_and_build (tree t,
 	if (TREE_HAS_CONSTRUCTOR (t))
 	  return finish_compound_literal (type, r);
 
+	TREE_TYPE (r) = type;
 	return r;
       }
 
@@ -13315,6 +13316,12 @@ tsubst_copy_and_build (tree t,
 
 	return build_lambda_object (r);
       }
+
+    case TARGET_EXPR:
+      /* We can get here for a constant initializer of non-dependent type.
+         FIXME stop folding in cp_parser_initializer_clause.  */
+      gcc_assert (TREE_CONSTANT (t));
+      return get_target_expr (RECUR (TARGET_EXPR_INITIAL (t)));
 
     default:
       /* Handle Objective-C++ constructs, if appropriate.  */

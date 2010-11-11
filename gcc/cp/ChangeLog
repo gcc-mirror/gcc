@@ -1,5 +1,9 @@
 2010-11-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46420
+	* pt.c (tsubst_copy_and_build) [TARGET_EXPR]: New case.
+	[CONSTRUCTOR]: Use the tsubsted type.
+
 	PR c++/46369
 	* semantics.c (cxx_eval_bit_field_ref): New.
 	(cxx_eval_constant_expression): Call it.
