@@ -258,7 +258,7 @@ gfc_post_options (const char **pfilename)
     gfc_option.flag_whole_file = 1;
 
   /* Enable whole-file mode if LTO is in effect.  */
-  if (flag_lto || flag_whopr)
+  if (flag_lto)
     gfc_option.flag_whole_file = 1;
 
   /* Fortran allows associative math - but we cannot reassociate if
