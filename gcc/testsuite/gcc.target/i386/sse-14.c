@@ -1,11 +1,13 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mxop -msse4a -maes -mpclmul -mpopcnt -mabm -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c" } */
+/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mbmi -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c" } */
 
 #include <mm_malloc.h>
 
 /* Test that the intrinsics compile without optimization.  All of them are
-   defined as inline functions in {,x,e,p,t,s,w,a}mmintrin.h, xopintrin.h,
-   lwpintrin.h and mm3dnow.h that reference the proper builtin functions.
+   defined as inline functions in {,x,e,p,t,s,w,a,b,i}mmintrin.h, mm3dnow.h,
+   fma4intrin.h, xopintrin.h, abmintrin.h, bmiintrin.h, tbmintrin.h,
+   lwpintrin.h and mm_malloc.h that reference the proper builtin functions.
+
    Defining away "extern" and "__inline" results in all of them being compiled
    as proper functions.  */
 

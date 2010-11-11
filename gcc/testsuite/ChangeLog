@@ -1,3 +1,12 @@
+2010-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc-target/i386/sse-12.c: Add -msse4a to dg-options.
+	* gcc-target/i386/sse-13.c: Add -msse4a, -mfma4, -mbmi and -mtbm
+	to dg-options.
+	* gcc-target/i386/sse-14.c: Add -mfma4a and -mbmi to dg-options.
+	* g++.dg/other/i386-2.C: Add -msse4a and -mfma4 to dg-options.
+	* g++.dg/other/i386-3.C: Ditto.
+
 2010-11-10  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-46420.C: New.
@@ -13,7 +22,7 @@
 2010-11-10  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimize/38669
-	* gcc.dg/tree-ssa/pr38699.c
+	* gcc.dg/tree-ssa/pr38699.c: New testcase.
 
 2010-11-10  Jan Hubicka  <jh@suse.cz>
 
