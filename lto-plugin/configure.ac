@@ -20,6 +20,7 @@ case $target in
     AC_DEFINE([SYM_STYLE], [ss_none], [Default symbol style])
     ;;
 esac
+AC_TYPE_INT64_T
 AC_TYPE_UINT64_T
 AC_CONFIG_FILES(Makefile)
 AC_CONFIG_HEADERS(config.h)

@@ -1,3 +1,19 @@
+2010-11-11  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR bootstrap/46397
+	PR bootstrap/46362
+	* configure.ac: Add AC_TYPE_INT64_T test.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* lto-plugin.c (debug): Use char not bool.
+	(nop): Likewise.
+	(check_1): Rename from check, and use int not bool for gate argument.
+	(check): Macro wrapper for the above to coerce gate argument into
+	boolean-valued integer in case it has pointer type.
+	(parse_table_entry): Use 0 not false.
+	(claim_file_handler): Avoid use of PRIx64 by splitting 64-bit size
+	into two 32-bit parts and printing as hex ints.
+
 2010-11-03  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR lto/46291
