@@ -1,3 +1,7 @@
+2010-11-11  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	* gfortran.dg/empty_derived_type.f90: New test.
+
 2010-11-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46413
