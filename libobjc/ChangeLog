@@ -797,7 +797,7 @@
 	-Wno-deprecated-declarations when compiling.
 	(OBJC_H): Added objc-exception.h
 
-2010-09-08  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
+2010-09-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/typedstream.h: Deprecate all functions in the file.  This
 	file is obsolete.
