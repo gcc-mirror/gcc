@@ -1,9 +1,14 @@
+2010-11-11  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/40436
+	* gcc.dg/tree-ssa/inline-5.c: New testcase.
+	* gcc.dg/tree-ssa/inline-6.c: New testcase.
+
 2010-11-11  Janus Weil  <janus@gcc.gnu.org>
 
 	* gfortran.dg/proc_decl_24.f90: New.
 
 2010-11-11  Nicola Pero  <nicola.pero@meta-innovation.com>
-
 	* objc.dg/property/at-property-20.m: New.
 	* objc.dg/property/synthesize-8.m: New.	
 	* obj-c++.dg/property/at-property-20.m: New.
