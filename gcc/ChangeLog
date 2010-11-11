@@ -1,3 +1,9 @@
+2010-11-11  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* lto-streamer-out.c (write_symbol): Use int_size_in_bytes rather than
+	assembling high and low parts of size if not using 32-bit HWINT; else
+	use DECL_SIZE_UNITS, not DECL_SIZE.
+
 2010-11-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/46383
