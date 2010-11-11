@@ -7949,6 +7949,15 @@ resolve_transfer (gfc_code *code)
     if (ref->type == REF_COMPONENT)
       ts = &ref->u.c.component->ts;
 
+  if (ts->type == BT_CLASS)
+    {
+      /* FIXME: Test for defined input/output.  */
+      gfc_error ("Data transfer element at %L cannot be polymorphic unless "
+                "it is processed by a defined input/output procedure",
+                &code->loc);
+      return;
+    }
+
   if (ts->type == BT_DERIVED)
     {
       /* Check that transferred derived type doesn't contain POINTER
@@ -9099,8 +9108,9 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	case EXEC_FORALL:
 	  resolve_forall_iterators (code->ext.forall_iterator);
 
-	  if (code->expr1 != NULL && code->expr1->ts.type != BT_LOGICAL)
-	    gfc_error ("FORALL mask clause at %L requires a LOGICAL "
+	  if (code->expr1 != NULL
+	      && (code->expr1->ts.type != BT_LOGICAL || code->expr1->rank))
+	    gfc_error ("FORALL mask clause at %L requires a scalar LOGICAL "
 		       "expression", &code->expr1->where);
 	  break;
 
