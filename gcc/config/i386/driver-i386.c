@@ -564,6 +564,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  cpu = "corei7";
 	  break;
 	case 0x25:
+	case 0x2c:
 	case 0x2f:
 	  /* Westmere.  */
 	  cpu = "corei7";

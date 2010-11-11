@@ -1,3 +1,8 @@
+2010-11-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Support
+	Intel processor family 6, model 0x2c.
+
 2010-11-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* opts.c (warning_as_error_callback,
