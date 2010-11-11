@@ -1,3 +1,14 @@
+2010-11-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_add_property_declaration): Check that the type
+	of a property and of an inherited property match.
+	(objc_maybe_build_component_ref): Tidied up indentation and
+	comments.
+	(objc_common_type): Added new type of check (-5).
+	(objc_add_synthesize_declaration_for_property): Check that the
+	property to synthesize and the instance variable to use have the
+	same type.
+	
 2010-11-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* objc-act.c (objc_init): Use %' in diagnostic.
