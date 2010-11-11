@@ -1,3 +1,8 @@
+2010-11-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/sourcebuild.texi (LTO Testing, dg-suppress-ld-options):
+	Document optional target selector.
+
 2010-11-11  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* lto-streamer-out.c (write_symbol): Use int_size_in_bytes rather than
