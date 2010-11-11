@@ -1,3 +1,7 @@
+2010-11-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in (gengtype-lex.c): Include bconfig.h first.
+
 2010-11-11  Jan Hubicka  <jh@suse.cz>
 
 	* opts.c (finish_options): Do not error on -flto-partition alone.
