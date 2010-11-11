@@ -1,3 +1,11 @@
+2010-11-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/46383
+	* ipa-prop.c (compute_complex_assign_jump_func): Ignore negative
+	offsets.
+	(compute_complex_ancestor_jump_func): Likewise.
+	* tree.c (get_binfo_at_offset): Return NULL_TREE if offset is negative.
+
 2010-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46150

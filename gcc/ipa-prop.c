@@ -413,7 +413,8 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
   offset += mem_ref_offset (op1).low * BITS_PER_UNIT;
   op1 = TREE_OPERAND (op1, 0);
   if (TREE_CODE (op1) != SSA_NAME
-      || !SSA_NAME_IS_DEFAULT_DEF (op1))
+      || !SSA_NAME_IS_DEFAULT_DEF (op1)
+      || offset < 0)
     return;
 
   index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op1));
@@ -490,7 +491,8 @@ compute_complex_ancestor_jump_func (struct ipa_node_params *info,
   offset += mem_ref_offset (expr).low * BITS_PER_UNIT;
   parm = TREE_OPERAND (expr, 0);
   if (TREE_CODE (parm) != SSA_NAME
-      || !SSA_NAME_IS_DEFAULT_DEF (parm))
+      || !SSA_NAME_IS_DEFAULT_DEF (parm)
+      || offset < 0)
     return;
 
   index = ipa_get_param_decl_index (info, SSA_NAME_VAR (parm));

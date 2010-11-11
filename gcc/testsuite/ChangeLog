@@ -1,3 +1,8 @@
+2010-11-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/46383
+	* g++.dg/torture/pr46383.C: New test.
+
 2010-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc-target/i386/sse-12.c: Add -msse4a to dg-options.
