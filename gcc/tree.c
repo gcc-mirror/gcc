@@ -10947,10 +10947,10 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
       tree fld;
       int i;
 
-      gcc_checking_assert (offset >= 0);
       if (type == expected_type)
 	  return binfo;
-      if (TREE_CODE (type) != RECORD_TYPE)
+      if (TREE_CODE (type) != RECORD_TYPE
+	  || offset < 0)
 	return NULL_TREE;
 
       for (fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
