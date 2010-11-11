@@ -1,3 +1,8 @@
+2010-11-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* reginfo.c (fix_register): Avoid inserting English word in
+	diagnostic sentence.  Use %qs for quoting and %'.
+
 2010-11-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Support

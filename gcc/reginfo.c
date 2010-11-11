@@ -770,12 +770,40 @@ fix_register (const char *name, int fixed, int call_used)
 	   )
 	  && (fixed == 0 || call_used == 0))
 	{
-	  static const char * const what_option[2][2] = {
-	    { "call-saved", "call-used" },
-	    { "no-such-option", "fixed" }};
+	  switch (fixed)
+	    {
+	    case 0:
+	      switch (call_used)
+		{
+		case 0:
+		  error ("can%'t use %qs as a call-saved register", name);
+		  break;
 
-	  error ("can't use '%s' as a %s register", name,
-		 what_option[fixed][call_used]);
+		case 1:
+		  error ("can%'t use %qs as a call-used register", name);
+		  break;
+
+		default:
+		  gcc_unreachable ();
+		}
+	      break;
+
+	    case 1:
+	      switch (call_used)
+		{
+		case 1:
+		  error ("can%'t use %qs as a fixed register", name);
+		  break;
+
+		case 0:
+		default:
+		  gcc_unreachable ();
+		}
+	      break;
+
+	    default:
+	      gcc_unreachable ();
+	    }
 	}
       else
 	{
