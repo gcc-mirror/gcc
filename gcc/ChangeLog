@@ -1,3 +1,9 @@
+2010-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46150
+	* tree-ssa-loop-ivopts.c (htab_inv_expr_eq): Don't return
+	true if expr1->hash != expr2->hash.
+
 2010-11-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* cfgloop.c (verify_loop_structure): Use %' in diagnostics.  Start
