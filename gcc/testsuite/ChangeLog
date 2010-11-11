@@ -3,6 +3,9 @@
 	Backport from mainline
 	2010-11-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/46165
+	* gcc.dg/pr46165.c: New test.
+
 	PR tree-optimization/46107
 	* gcc.c-torture/compile/pr46107.c: New test.
 

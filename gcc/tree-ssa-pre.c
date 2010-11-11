@@ -4311,6 +4311,8 @@ eliminate (void)
 	      && TREE_CODE (gimple_call_fn (stmt)) == SSA_NAME)
 	    {
 	      tree fn = VN_INFO (gimple_call_fn (stmt))->valnum;
+	      bool was_noreturn = gimple_call_noreturn_p (stmt);
+ 
 	      if (TREE_CODE (fn) == ADDR_EXPR
 		  && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL)
 		{
@@ -4324,6 +4326,12 @@ eliminate (void)
 
 		  gimple_call_set_fn (stmt, fn);
 		  update_stmt (stmt);
+
+		  /* When changing a call into a noreturn call, cfg cleanup
+		     is needed to fix up the noreturn call.  */
+		  if (!was_noreturn && gimple_call_noreturn_p (stmt))
+		    todo |= TODO_cleanup_cfg;
+
 		  if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
 		    {
 		      bitmap_set_bit (need_eh_cleanup,
