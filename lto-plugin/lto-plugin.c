@@ -35,6 +35,9 @@ along with this program; see the file COPYING3.  If not see
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#if HAVE_STDINT_H
+#include <stdint.h>
+#endif
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -45,7 +48,6 @@ along with this program; see the file COPYING3.  If not see
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <stdbool.h>
 #include <libiberty.h>
 #include <hashtab.h>
 #include "../gcc/lto/common.h"
@@ -138,8 +140,8 @@ static int lto_wrapper_num_args;
 static char **pass_through_items = NULL;
 static unsigned int num_pass_through_items;
 
-static bool debug;
-static bool nop;
+static char debug;
+static char nop;
 static char *resolution_file = NULL;
 
 /* Set by default from configure.ac, but can be overridden at runtime
@@ -148,7 +150,7 @@ static char *resolution_file = NULL;
 static enum symbol_style sym_style = SYM_STYLE;
 
 static void
-check (bool gate, enum ld_plugin_level level, const char *text)
+check_1 (int gate, enum ld_plugin_level level, const char *text)
 {
   if (gate)
     return;
@@ -163,6 +165,11 @@ check (bool gate, enum ld_plugin_level level, const char *text)
 	abort ();
     }
 }
+
+/* This little wrapper allows check to be called with a non-integer
+   first argument, such as a pointer that must be non-NULL.  We can't
+   use c99 bool type to coerce it into range, so we explicitly test.  */
+#define check(GATE, LEVEL, TEXT) check_1 (((GATE) != 0), (LEVEL), (TEXT))
 
 /* Parse an entry of the IL symbol table. The data to be parsed is pointed
    by P and the result is written in ENTRY. The slot number is stored in SLOT.
@@ -205,7 +212,7 @@ parse_table_entry (char *p, struct ld_plugin_symbol *entry,
       entry->name = concat ("_", p, NULL);
       break;
     default:
-      check (false, LDPL_FATAL, "invalid symbol style requested");
+      check (0, LDPL_FATAL, "invalid symbol style requested");
       break;
     }
   while (*p)
@@ -825,9 +832,14 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
   if (file->offset != 0)
     {
       char *objname;
-      /* We pass the offset of the actual file, not the archive header. */
-      int t = asprintf (&objname, "%s@0x%" PRIx64, file->name,
-                        (int64_t) file->offset);
+      /* We pass the offset of the actual file, not the archive header.
+         Can't use PRIx64, because that's C99, so we have to print the
+	 64-bit hex int as two 32-bit ones. */
+      int lo, hi;
+      lo = file->offset & 0xffffffff;
+      hi = ((int64_t)file->offset >> 32) & 0xffffffff;
+      int t = hi ? asprintf (&objname, "%s@0x%x%08x", file->name, lo, hi)
+		: asprintf (&objname, "%s@0x%x", file->name, lo);
       check (t >= 0, LDPL_FATAL, "asprintf failed");
       lto_file.name = objname;
     }
