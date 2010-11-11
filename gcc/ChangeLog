@@ -1,5 +1,7 @@
 2010-11-11  Jan Hubicka  <jh@suse.cz>
 
+	* opts.c (finish_options): Do not error on -flto-partition alone.
+
 	* doc/invoke.texi (-fwhopr): Merge into -flto section.
 	(-flto-partition): Document none.
 	* gcc.c (LINK_COMMAND_SPEC): Remove -fwhopr.

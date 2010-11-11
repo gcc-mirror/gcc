@@ -1238,8 +1238,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set)
 	   + (opts->x_flag_lto_partition_1to1 != 0)
 	   + (opts->x_flag_lto_partition_none != 0) > 1)
 	error ("only one -flto-partition value can be specified");
-      if (!opts->x_flag_lto && !opts->x_flag_wpa && !opts->x_flag_ltrans)
-	error ("-flto-partition has no effect without -flto");
     }
 
   /* We initialize opts->x_flag_split_stack to -1 so that targets can set a

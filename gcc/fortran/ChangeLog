@@ -1,3 +1,7 @@
+2010-11-11  Jan Hubicka  <jh@suse.cz>
+
+	* options.c (gfc_post_options): Remove flag_whopr.
+
 2010-11-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46413
