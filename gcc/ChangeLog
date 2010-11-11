@@ -1,3 +1,10 @@
+2010-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/46388
+	* expr.c (expand_assignment): If to_rtx is a VOIDmode MEM, use
+	BLKmode mode for it.
+	(expand_expr_real_1): Similarly for op0.
+
 2010-11-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/sourcebuild.texi (LTO Testing, dg-suppress-ld-options):
