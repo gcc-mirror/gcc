@@ -1,4 +1,9 @@
-2010-11-11  Steven G. Kargl <kargl@gcc.gnu.org>
+2010-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/46088
+	* gcc.dg/pr46088.c: New test.
+
+2010-11-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/empty_derived_type.f90: New test.
 
@@ -10,8 +15,8 @@
 	PR fortran/46205
 	* gfortran.dg/forall_14.f90: New.
 
-2010-11-11  Jakub Jelinek <jakub@redhat.com>
-	    Tobias Burnus <burnus@net-b.de>
+2010-11-11  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46325
 	* gfortran.dg/char_initialiser_actual.f90: Make test case valid. 
@@ -220,7 +225,7 @@
 	* gcc.dg/attr-weakref-1.c: Skip on alpha*-dec-osf*.
 	* gcc.dg/intmax_t-1.c: Likewise.
 
-2010-11-10  Tobias Burnus <burnus@net-b.de>
+2010-11-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46244
 	* gfortran.dg/class_30.f90: New.
@@ -842,7 +847,7 @@
 
 	* gcc.target/i386/fma4-vector-2.c: New testcase.
 
-2010-11-04  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
+2010-11-04  Artjoms Sinkarovs  <artyom.shinakroff@gmail.com>
 	    Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/vec-scal-opt.c: New testcase.
@@ -1016,7 +1021,7 @@
 	PR target/46253
 	* gcc.target/i386/pr46253.c: New.
 
-2010-11-02  Steven G. Kargl  < kargl@gcc.gnu.org>
+2010-11-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45170
@@ -1353,8 +1358,8 @@
 	* obj-c++.dg/property/synthesize-2.mm: New.
 	* obj-c++.dg/property/dynamic-2.mm: New.
 
-2010-10-29  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
-	    Andrew Pinski <pinskia@gmail.com>
+2010-10-29  Artjoms Sinkarovs  <artyom.shinakroff@gmail.com>
+	    Andrew Pinski  <pinskia@gmail.com>
 
 	* gcc.c-torture/execute/vector-shift.c: New testcase.
 	* gcc.c-torture/execute/vector-shift1.c: Likewise.
@@ -1500,7 +1505,7 @@
 	PR fortran/45451
 	* gfortran.dg/class_allocate_5.f90: New.
 
-2010-10-25  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+2010-10-25  Rodrigo Rivas Costa  <rodrigorivascosta@gmail.com>
 
 	Implement opaque-enum-specifiers for C++0x
 	* g++.dg/cpp0x/forw_enum1.C: New.
@@ -1624,8 +1629,8 @@
 
 	* gcc.target/powerpc/ehreturn.c: Fix regexp in dg-final.
 
-2010-10-22  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
-	Andrew Pinski <pinskia@gmail.com>
+2010-10-22  Artjoms Sinkarovs  <artyom.shinakroff@gmail.com>
+	    Andrew Pinski  <pinskia@gmail.com>
 
 	* gcc.c-torture/execute/vector-subscript-1.c: Likewise.
 	* gcc.c-torture/execute/vector-subscript-2.c: Likewise.
@@ -1842,7 +1847,7 @@
 	Merge from 'apple/trunk' branch on FSF servers.  Test adapted to
 	not require Foundation and run with the GNU runtime as well.
 
-	2006-03-13  Fariborz Jahanian <fjahanian@apple.com>
+	2006-03-13  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4439126
 	* obj-c++.dg/template-8.mm: New.
@@ -1873,7 +1878,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-03-16 Fariborz Jahanian <fjahanian@apple.com>
+	2006-03-16 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4293709
 	* objc.dg/proto-init-mimatch-1.m: New.
@@ -1901,7 +1906,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-01-17  Fariborz Jahanian <fjahanian@apple.com>
+	2006-01-17  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4407151
 	* obj-c++.dg/template-7.mm: New.
@@ -1915,18 +1920,18 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2005-03-01 Fariborz Jahanian <fjahanian@apple.com>
+	2005-03-01 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4451818
 	* obj-c++.dg/try-catch-16.mm: New.
 	* obj-c++.dg/try-catch-17.mm: New.
 
-	2005-11-08  Fariborz Jahanian <fjahanian@apple.com>
+	2005-11-08  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4330422
 	* obj-c++.dg/try-catch-15.mm: New
 
-	2005-10-07  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-07  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4204796
 	* obj-c++.dg/try-catch-12.mm: New
@@ -1978,7 +1983,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-04-19 Fariborz Jahanian <fjahanian@apple.com>
+	2006-04-19 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4516785
 	* obj-c++.dg/method-namespace-2.mm: New.
@@ -1987,7 +1992,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-03-27 Fariborz Jahanian <fjahanian@apple.com>
+	2006-03-27 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4133425
 	* objc.dg/private-1.m: Test modified.
@@ -2128,7 +2133,7 @@
 	* obj-c++.dg/property/fsf-property-named-ivar.mm: New.
 
 	merge from FSF apple 'trunk' branch.
-	2006 Fariborz Jahanian <fjahanian@apple.com>
+	2006 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radars 4436866, 4505126, 4506903, 4517826
 	* objc.dg/property/property-1.m: New.
@@ -2461,7 +2466,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-04-26  Fariborz Jahanian <fjahanian@apple.com>
+	2006-04-26  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4508851
 	* obj-c++.dg/method-namespace-1.mm: New.
@@ -2526,7 +2531,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2005-12-14  Fariborz Jahanian <fjahanian@apple.com>
+	2005-12-14  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4278774
 	* obj-c++.dg/encode-9.mm: New.
@@ -2551,27 +2556,27 @@
 	* objc.dg/foreach-7.m: New.
 
 	Merge from 'apple/trunk' branch on FSF servers:
-	2006-04-13 Fariborz Jahanian <fjahanian@apple.com>
+	2006-04-13 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4502236
 	* objc.dg/objc-foreach-5.m: New.
 
-	2006-04-12 Fariborz Jahanian <fjahanian@apple.com>
+	2006-04-12 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4507230
 	* objc.dg/objc-foreach-4.m: New.
 
-	2006-03-13  Fariborz Jahanian <fjahanian@apple.com>
+	2006-03-13  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4472881
 	* objc.dg/objc-foreach-3.m: New.
 
-	2005-03-07 Fariborz Jahanian <fjahanian@apple.com>
+	2005-03-07 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4468498
 	* objc.dg/objc-foreach-2.m: New.
 
-	2006-02-15   Fariborz Jahanian <fjahanian@apple.com>
+	2006-02-15   Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4294910
 	* objc.dg/objc-foreach-1.m: New
@@ -2600,17 +2605,17 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2005-10-17  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-17  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4290840
 	* obj-c++.dg/syntax-error-7.mm: New
 
-	2005-10-14  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-14  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4294425
 	* obj-c++.dg/syntax-error-6.mm: New
 
-	2005-10-13  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-13  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4261146
 	* obj-c++.dg/syntax-error-5.mm: New
@@ -2830,7 +2835,7 @@
 2010-09-30  Iain Sandoe  <iains@gcc.gnu.org>
 
 	merge from FSF 'apple/trunk' branch.
-	2006-01-30  Fariborz Jahanian <fjahanian@apple.com>
+	2006-01-30  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4386773
 	* objc.dg/enhanced-proto-1.m: New.
@@ -2874,7 +2879,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2005-10-04  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-04  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4278236
 	* obj-c++.dg/bad-forward-decl.mm: New
@@ -2887,7 +2892,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2005-10-04  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-04  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4281748
 	* objc.dg/naming-2.m: Update
@@ -3041,13 +3046,13 @@
 	* obj-c++.dg/threedotthree-abi-1.mm: New file (from the branch).
 	Run the test only with the NeXT runtime.
 
-	2006-03-30 Fariborz Jahanian <fjahanian@apple.com>
+	2006-03-30 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4492973
 	* objc.dg/encode-7-64bit.m: New.
 	* objc.dg/encode-7.m: Skip if -m64.
 
-	2005-10-19  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-19  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4301047
 	* objc.dg/proto-qual-1.m: Fix test to match 3.3 ABI
@@ -3066,7 +3071,7 @@
 	Merge from 'apple/trunk' branch on FSF servers.  Renamed
 	const-str-12.m to constr-str-12b.m to avoid conflicts.
 
-	2005-12-15  Fariborz Jahanian <fjahanian@apple.com>
+	2005-12-15  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4229905
 	* obj-c++.dg/warn5.mm: New
@@ -3107,7 +3112,7 @@
 	* gfortran.dg/io_constraints_7.f03: New test.
 	* gfortran.dg/newunit_2.f90: New test.
 
-2010-09-24  Steven G. Kargl  < kargl@gcc.gnu.org>
+2010-09-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/operator_c1202.f90: New test.
 
@@ -3163,7 +3168,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-03-27 Fariborz Jahanian <fjahanian@apple.com>
+	2006-03-27 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4491608
 	* objc.dg/too-many-args.m: New
@@ -3311,7 +3316,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2005-10-11  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-11  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4291785
 	* objc.dg/naming-4.m: New
@@ -3604,7 +3609,7 @@
 	* objc.dg/msg-in-protocol.m: New.
 	* obj-c++.dg/msg-in-protocol.mm: New.
 
-	2006-02-07  Fariborz Jahanian <fjahanian@apple.com>
+	2006-02-07  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4219590
 	* objc.dg/break-in-ifstmt.m: New.
@@ -3642,7 +3647,7 @@
 	* g++.dg/vect/pr45470-a.cc: New test.
 	* g++.dg/vect/pr45470-a.cc: New test.
 
-2010-09-10  Jack Howarth <howarth@bromo.med.uc.edu>
+2010-09-10  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/42070
 	* lib/profopt.exp: Prune warnings on execname2 compile.
@@ -3865,7 +3870,7 @@
 	PR fortran/45576
 	* gfortran.dg/char_length_18.f90:  New test.
 
-2010-09-07  Jack Howarth <howarth@bromo.med.uc.edu>
+2010-09-07  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/36502
 	* gcc.target/i386/pr36502.c: New test.
@@ -4107,7 +4112,7 @@
 	PR debug/45500
 	* gcc.target/i386/pr45500.c: New test.
 
-2010-09-03  Mingjie Xing <mingjie.xing@gmail.com>
+2010-09-03  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* gcc.target/mips/loongson-shift-count-truncated-1.c: New.
 
@@ -4466,7 +4471,7 @@
 	* gfortran.dg/proc_ptr_29.f90: New.
 
 2010-08-22  Tobias Burnus  <burnus@net-b.de>
-	    Dominique d'Humieres <dominiq@lps.ens.fr>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/45367
 	* gfortran.dg/bessel_6.f90: Further reduce required accuracy.
@@ -4482,7 +4487,7 @@
 	* gfortran.dg/bessel_7.f90: Disable accidently enabled debug output.
 
 2010-08-22  Tobias Burnus  <burnus@net-b.de>
-	    Dominique d'Humieres <dominiq@lps.ens.fr>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/45367
 	PR fortran/36158
@@ -4893,7 +4898,7 @@
 	* gcc.dg/graphite/id-20.c: New.
 
 2010-08-11  Janus Weil  <janus@gcc.gnu.org>
-	    Steve Kargl <kargl@gcc.gnu.org>
+	    Steve Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/44595
 	* gfortran.dg/move_alloc_3.f90: New.
@@ -4993,7 +4998,7 @@
 	PR libfortran/45143
 	* gfortran.dg/fmt_error_11.f03: New test.
 
-2010-08-07  Marcus Shawcroft <marcus.shawcroft@arm.com>
+2010-08-07  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_sync_int_long):
 	Add arm*-*-linux-gnueabi.
@@ -7575,7 +7580,7 @@
 	PR c++/44366
 	* g++.dg/cpp0x/decltype23.C: New.
 
-2010-06-08  Andrew Pinski <pinskia@gmail.com>
+2010-06-08  Andrew Pinski  <pinskia@gmail.com>
 	    Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR c/37724
@@ -8068,7 +8073,7 @@
 	* gfortran.dg/whole_file_17.f90: New.
 	* gfortran.dg/whole_file_18.f90: New.
 
-2010-05-25  Jack Howarth <howarth@bromo.med.uc.edu>
+2010-05-25  Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Iain Sandoe  <iains@gcc.gnu.org>
 
 	* g++.dg/abi/mangle40.C: Adjust dg-require-alias syntax.
@@ -8271,7 +8276,7 @@
 	PR target/44202
 	* gcc.c-torture/execute/pr44202-1.c: New test.
 
-2010-05-19 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+2010-05-19 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/43851
 	* gfortran.dg/label_1.f90: Update test.
@@ -9328,7 +9333,7 @@
 	* gcc.dg/tree-ssa/pta-escape-3.c: Likewise.
 	* gcc.dg/ipa/ipa-pta-11.c: Likewise.
 
-2010-04-22  Jakub Jelinek <jakub@redhat.com>
+2010-04-22  Jakub Jelinek  <jakub@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 
 	PR c/18624
@@ -9394,7 +9399,7 @@
 	PR fortran/43696
 	* gfortran.dg/class_17.f03: New.
 
-2010-05-04  Neil Vachharajani <nvachhar@google.com>
+2010-05-04  Neil Vachharajani  <nvachhar@google.com>
 
 	* gcc.dg/tree-prof/wcoverage-mismatch.c: Adjusted.
 
@@ -9524,7 +9529,7 @@
 	PR c++/43951
 	* g++.dg/init/new28.C: New.
 
-2010-04-30  Iain Sandoe <iains@gcc.gnu.org>
+2010-04-30  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR objc++/32052
 	* obj-c++.dg/encode-2.mm: Remove XFAIL. Add test for anonymous
@@ -9721,7 +9726,7 @@
 	* g++.dg/cpp0x/lambda/lambda-deduce2.C: New.
 
 2010-04-27  Manuel López-Ibáñez  <manu@gcc.gnu.org>
-	    Jan Hubicka <hubicka@ucw.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/pure-2.c: New testcase.
 	* gcc.dg/const-1.c: New testcase.
@@ -9820,7 +9825,7 @@
 	* objc.dg/pch/pch.exp: Apply tests to both Gnu and NeXT
 	runtimes on Darwin.
 
-2010-04-26  Jack Howarth <howarth@bromo.med.uc.edu>
+2010-04-26  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR 43715
 	* lib/plugin-support.exp: Use "-undefined
@@ -10395,7 +10400,7 @@
 	PR fortran/43591
 	* gfortran.dg/spec_expr_6.f90: New test.
 
-2010-04-09  Manuel López-Ibáñez <manu@gcc.gnu.org>
+2010-04-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR cpp/43195
 	* gcc.dg/cpp/pr43195.c: New.
@@ -10505,7 +10510,7 @@
 	* gcc.dg/vla-9.c: Likewise.
 	* gcc.dg/dfp/composite-type.c: Likewise.
 
-2010-04-07  Iain Sandoe <iains@gcc.gnu.org>
+2010-04-07  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR objc/35996
 	* objc.dg/objc-gc-4.m: Run for all targets, prune new warning.
@@ -10553,7 +10558,7 @@
 	* gfortran.dg/warning-directive-2.F90: New.
 	* gfortran.dg/warning-directive-4.F90: New.
 
-2010-04-07  Iain Sandoe <iains@gcc.gnu.org>
+2010-04-07  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR objc++/23716
 	* obj-c++.dg/comp-types-10.mm: Remove XFAIL.
@@ -11430,8 +11435,8 @@
 	* gnat.dg/case_optimization2.adb: New test.
 	* gnat.dg/case_optimization_pkg2.ad[sb]: New helper.
 
-2010-03-18  Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
-	    Jack Howarth <howarth@bromo.med.uc.edu>
+2010-03-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/36399
 	* gcc.target/i386/push-1.c: Don't xfail
@@ -11737,7 +11742,7 @@
 	* gfortran.dg/finalize_9.f90: New.
 
 2010-03-04  Tobias Burnus  <burnus@net-b.de>
-	    Ken Werner <ken@linux.vnet.ibm.com>
+	    Ken Werner  <ken@linux.vnet.ibm.com>
 
 	* gfortran.dg/reassoc_4.f: Add --param max-completely-peel-times
 	to dg-options for spu.
@@ -12389,7 +12394,7 @@
 	PR tree-optimization/43017
 	* gcc.dg/torture/pr43017.c: New testcase.
 
-2010-02-10  Tobias Burnus <burnus@net-b.de>
+2010-02-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40823
 	* gfortran.dg/private_type_1.f90: Update error location.
@@ -13013,7 +13018,7 @@
 	* g++.dg/template/error45.C: Revert as part of reverting changes
 	or PR c++/42634.
 
-2010-01-14 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+2010-01-14 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/42684
 	* gfortran.dg/interface_31.f90: New test.
@@ -13067,25 +13072,25 @@
 	PR rtl-optimization/42388
 	* gcc.dg/pr42388.c: New.
 
-2010-01-14  Alexander Monakov <amonakov@ispras.ru>
+2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/42294
 	* gfortran.dg/pr42294.f: New.
 
-2010-01-14  Alexander Monakov <amonakov@ispras.ru>
+2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/39453
 	PR rtl-optimization/42246
 	* gcc.dg/pr39453.c: New.
 	* gcc.dg/pr42246.c: New.
 
-2010-01-14  Alexander Monakov <amonakov@ispras.ru>
+2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR middle-end/42245
 	* gcc.dg/pr42245.c: New.
 	* gcc.dg/pr42245-2.c: New.
 
-2010-01-14  Alexander Monakov <amonakov@ispras.ru>
+2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/42249
 	* gcc.dg/pr42249.c: New.
@@ -13197,12 +13202,12 @@
 	PR middle-end/42667
 	* gcc.dg/torture/pr42667.c: New testcase.
 
-2010-01-09 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+2010-01-09 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/32489
 	* gfortran.dg/array_constructor_34.f90: New test.
 
-2010-01-09 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+2010-01-09 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/20923
 	* gfortran.dg/array_constructor_33.f90: New test.

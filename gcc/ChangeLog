@@ -1,3 +1,10 @@
+2010-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/46088
+	* config/i386/i386.md (*ashl<mode>3_cconly,
+	*<shiftrt_insn><mode>3_cconly): Don't use ix86_binary_operator_ok,
+	change nonimmediate_operand predicate to register_operand.
+
 2010-11-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in (gengtype-lex.c): Include bconfig.h first.
