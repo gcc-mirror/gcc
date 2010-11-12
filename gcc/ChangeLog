@@ -1,3 +1,8 @@
+2010-11-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/mips/iris6.h [!IRIX_USING_GNU_LD]
+	(SUPPORTS_INIT_PRIORITY): Define.
+
 2010-11-12  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR target/46430

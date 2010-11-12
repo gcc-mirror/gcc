@@ -1,3 +1,12 @@
+2010-11-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/prune.exp (prune_gcc_output): Ignore IRIX 6 linker multiline
+	warning.
+	* g++.dg/abi/packed1.C (struct INNER): Ignore warning on
+	mips-sgi-irix*.
+	* g++.dg/cpp/_Pragma1.C: Skip on mips-sgi-irix*.
+	* gcc.target/mips/call-3.c: Add dg-require-visibility.
+
 2010-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr46375.c: New test.
