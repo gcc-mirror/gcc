@@ -26,6 +26,7 @@
 
 /* Linux64.h wants to redefine TARGET_AIX based on -m64, but it can't be used
    in the #if conditional in options-default.h, so provide another macro.  */
+#undef  TARGET_AIX_OS
 #define TARGET_AIX_OS 1
 
 /* AIX always has a TOC.  */

@@ -1,3 +1,7 @@
+2010-11-12  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/aix.h: #undef TARGET_AIX_OS before #define.
+
 2010-11-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/mips/iris6.h [!IRIX_USING_GNU_LD]
