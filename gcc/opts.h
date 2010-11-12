@@ -223,6 +223,7 @@ extern void decode_cmdline_options_to_array_default_mask (unsigned int argc,
 							  const char **argv, 
 							  struct cl_decoded_option **decoded_options,
 							  unsigned int *decoded_options_count);
+extern void set_default_handlers (struct cl_option_handlers *handlers);
 extern void decode_options (struct gcc_options *opts,
 			    struct gcc_options *opts_set,
 			    struct cl_decoded_option *decoded_options,
@@ -255,5 +256,12 @@ extern void read_cmdline_option (struct gcc_options *opts,
 				 unsigned int lang_mask,
 				 const struct cl_option_handlers *handlers,
 				 diagnostic_context *dc);
+extern void control_warning_option (unsigned int opt_index, int kind,
+				    bool imply, location_t loc,
+				    unsigned int lang_mask,
+				    const struct cl_option_handlers *handlers,
+				    struct gcc_options *opts,
+				    struct gcc_options *opts_set,
+				    diagnostic_context *dc);
 extern void print_ignored_options (void);
 #endif

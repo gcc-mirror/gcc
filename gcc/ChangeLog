@@ -1,5 +1,16 @@
 2010-11-12  Joseph Myers  <joseph@codesourcery.com>
 
+	* opts-common.c (control_warning_option): New.
+	* opts.c (set_default_handlers): New.
+	(decode_options): Use set_default_handlers and
+	control_warning_option.
+	(common_handle_option): Update call to enable_warning_as_error.
+	(enable_warning_as_error): Take gcc_options parameters.  Use
+	control_warning_option.
+	* opts.h (set_default_handlers, control_warning_option): Declare.
+
+2010-11-12  Joseph Myers  <joseph@codesourcery.com>
+
 	* Makefile.in (OPTS_H): Define.
 	(c-decl.o, c-family/c-common.o, c-family/c-opts.o,
 	c-family/c-pch.o, c-family/c-pragma.o, gcc.o, gccspec.o,

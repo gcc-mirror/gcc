@@ -132,7 +132,7 @@ static struct deferred_opt
 } *deferred_opts;
 
 
-static const unsigned int 
+extern const unsigned int 
 c_family_lang_mask = (CL_C | CL_CXX | CL_ObjC | CL_ObjCXX);
 
 /* Defer option CODE with argument ARG.  */
@@ -465,6 +465,10 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_Winvalid_pch:
       cpp_opts->warn_invalid_pch = value;
+      break;
+
+    case OPT_Wlong_long:
+      cpp_opts->cpp_warn_long_long = value;
       break;
 
     case OPT_Wmissing_include_dirs:

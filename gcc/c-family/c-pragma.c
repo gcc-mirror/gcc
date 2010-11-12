@@ -720,6 +720,7 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
   enum cpp_ttype token;
   diagnostic_t kind;
   tree x;
+  struct cl_option_handlers handlers;
 
   token = pragma_lex (&x);
   if (token != CPP_NAME)
@@ -748,18 +749,14 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
   if (token != CPP_STRING)
     GCC_BAD ("missing option after %<#pragma GCC diagnostic%> kind");
   option_string = TREE_STRING_POINTER (x);
+  set_default_handlers (&handlers);
   for (option_index = 0; option_index < cl_options_count; option_index++)
     if (strcmp (cl_options[option_index].opt_text, option_string) == 0)
       {
-	void *flag_var = option_flag_var (option_index, &global_options);
-
-	/* This overrides -Werror, for example.  */
-	diagnostic_classify_diagnostic (global_dc, option_index, kind, input_location);
-	/* This makes sure the option is enabled, like -Wfoo would do.  */
-	if (cl_options[option_index].var_type == CLVC_BOOLEAN
-	    && flag_var
-	    && kind != DK_IGNORED)
-	    *(int *) flag_var = 1;
+	control_warning_option (option_index, (int) kind, kind != DK_IGNORED,
+				input_location, c_family_lang_mask, &handlers,
+				&global_options, &global_options_set,
+				global_dc);
 	return;
       }
   GCC_BAD ("unknown option after %<#pragma GCC diagnostic%> kind");

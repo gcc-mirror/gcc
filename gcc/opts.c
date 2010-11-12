@@ -363,6 +363,8 @@ static void set_unsafe_math_optimizations_flags (struct gcc_options *opts,
 static void enable_warning_as_error (const char *arg, int value,
 				     unsigned int lang_mask,
 				     const struct cl_option_handlers *handlers,
+				     struct gcc_options *opts,
+				     struct gcc_options *opts_set,
 				     location_t loc,
 				     diagnostic_context *dc);
 
@@ -1014,6 +1016,23 @@ default_options_optimization (struct gcc_options *opts,
 
 static void finish_options (struct gcc_options *, struct gcc_options *);
 
+/* Set *HANDLERS to the default set of option handlers for use in the
+   compilers proper (not the driver).  */
+void
+set_default_handlers (struct cl_option_handlers *handlers)
+{
+  handlers->unknown_option_callback = unknown_option_callback;
+  handlers->wrong_lang_callback = complain_wrong_lang;
+  handlers->post_handling_callback = post_handling_callback;
+  handlers->num_handlers = 3;
+  handlers->handlers[0].handler = lang_handle_option;
+  handlers->handlers[0].mask = initial_lang_mask;
+  handlers->handlers[1].handler = common_handle_option;
+  handlers->handlers[1].mask = CL_COMMON;
+  handlers->handlers[2].handler = target_handle_option;
+  handlers->handlers[2].mask = CL_TARGET;
+}
+
 /* Parse command line options and set default flag values.  Do minimal
    options processing.  The decoded options are in *DECODED_OPTIONS
    and *DECODED_OPTIONS_COUNT; settings go in OPTS, OPTS_SET and DC;
@@ -1030,20 +1049,12 @@ decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   lang_mask = initial_lang_mask;
 
-  handlers.unknown_option_callback = unknown_option_callback;
-  handlers.wrong_lang_callback = complain_wrong_lang;
-  handlers.post_handling_callback = post_handling_callback;
-  handlers.num_handlers = 3;
-  handlers.handlers[0].handler = lang_handle_option;
-  handlers.handlers[0].mask = lang_mask;
-  handlers.handlers[1].handler = common_handle_option;
-  handlers.handlers[1].mask = CL_COMMON;
-  handlers.handlers[2].handler = target_handle_option;
-  handlers.handlers[2].mask = CL_TARGET;
+  set_default_handlers (&handlers);
 
-  /* Enable -Werror=coverage-mismatch by default */
-  enable_warning_as_error ("coverage-mismatch", 1, lang_mask, &handlers,
-			   loc, dc);
+  /* Enable -Werror=coverage-mismatch by default.  */
+  control_warning_option (OPT_Wcoverage_mismatch, (int) DK_ERROR, true,
+			  loc, lang_mask,
+			  &handlers, opts, opts_set, dc);
 
   default_options_optimization (opts, opts_set,
 				decoded_options, decoded_options_count,
@@ -1778,7 +1789,8 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_Werror_:
-      enable_warning_as_error (arg, value, lang_mask, handlers, loc, dc);
+      enable_warning_as_error (arg, value, lang_mask, handlers,
+			       opts, opts_set, loc, dc);
       break;
 
     case OPT_Wlarger_than_:
@@ -2411,13 +2423,15 @@ get_option_state (struct gcc_options *opts, int option,
 }
 
 /* Enable (or disable if VALUE is 0) a warning option ARG (language
-   mask LANG_MASK, option handlers HANDLERS) as an error for
-   diagnostic context DC (possibly NULL), location LOC.  This is used
-   by -Werror=.  */
+   mask LANG_MASK, option handlers HANDLERS) as an error for option
+   structures OPTS and OPTS_SET, diagnostic context DC (possibly
+   NULL), location LOC.  This is used by -Werror=.  */
 
 static void
 enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
 			 const struct cl_option_handlers *handlers,
+			 struct gcc_options *opts,
+			 struct gcc_options *opts_set,
 			 location_t loc, diagnostic_context *dc)
 {
   char *new_option;
@@ -2429,29 +2443,15 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
   option_index = find_opt (new_option, lang_mask);
   if (option_index == OPT_SPECIAL_unknown)
     {
-      error ("-Werror=%s: No option -%s", arg, new_option);
+      error ("-Werror=%s: no option -%s", arg, new_option);
     }
   else
     {
-      const struct cl_option *option = &cl_options[option_index];
       const diagnostic_t kind = value ? DK_ERROR : DK_WARNING;
 
-      if (option->alias_target != N_OPTS)
-	option_index = option->alias_target;
-      if (option_index == OPT_SPECIAL_ignore)
-	return;
-      if (dc)
-	diagnostic_classify_diagnostic (dc, option_index, kind, loc);
-      if (kind == DK_ERROR)
-	{
-	  const struct cl_option * const option = cl_options + option_index;
-
-	  /* -Werror=foo implies -Wfoo.  */
-	  if (option->var_type == CLVC_BOOLEAN)
-	    handle_generated_option (&global_options, &global_options_set,
-				     option_index, NULL, value, lang_mask,
-				     (int)kind, loc, handlers, dc);
-	}
+      control_warning_option (option_index, (int) kind, value,
+			      loc, lang_mask,
+			      handlers, opts, opts_set, dc);
     }
   free (new_option);
 }
