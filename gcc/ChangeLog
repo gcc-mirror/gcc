@@ -1,3 +1,7 @@
+2010-11-12  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* opts-common.c (decode_cmdline_option): Initialize separate_args.
+
 2010-11-12  Jan Hubicka  <jh@suse.cz>
 
 	* doc/invoke.texi (early-inlining-insns): Update default.
