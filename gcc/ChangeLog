@@ -43,6 +43,30 @@
 	(STACK_SLOT_ALIGNMENT, LOCAL_DECL_ALIGNMENT, PUSH_ROUNDING): Likewise.
 	* doc/tm.texi: Regenerate.
 
+	PR target/46412
+	* config/bfin/bfin-protos.h (bfin_local_alignment): Update prototype.
+	* config/bfin/bfin.c: Include sel-sched.h .
+	(bfin_cpus): Use BFIN_CPU_UNKNOWN for last initializer element.
+	(expand_interrupt_handler_prologue): Remove unused variable insn.
+	(bfin_load_pic_reg): Likewise.
+	(bfin_rtx_costs): Make code / outer_code variables of type
+	enum rtx_code, copied from re-named parameters.
+	(bfin_local_alignment): Change align argument and return type
+	to unsigned.
+	(bfin_adjust_cost): Remove unused variable insn_type.
+	Declare variables at start of block.
+	(struct loop_info): Rename to...
+	(struct loop_info_d).
+	(workaround_rts_anomaly): Change type of icode to int.
+	(harmless_null_pointer_p): Cast REGNO (..) to int before comparison
+	with int-typed variable.
+	(note_np_check_stores): Likewise.
+	(trapping_loads_p): Remove unused variable pat.
+	(bfin_expand_binop_builtin): Use expand_normal.
+	(bfin_expand_unop_builtin): Likewise.
+	(bfin_expand_builtin): Likewise.
+	Set tmode before use.
+
 2010-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/46375
