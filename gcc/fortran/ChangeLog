@@ -1,3 +1,9 @@
+2010-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (gfortranspec.o): Use $(OPTS_H).
+	* gfortran.h (gfc_handle_option): Take location_t parameter.
+	* options.c (gfc_handle_option): Take location_t parameter.
+
 2010-11-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/45794

@@ -347,6 +347,7 @@ static bool common_handle_option (struct gcc_options *opts,
 				  struct gcc_options *opts_set,
 				  const struct cl_decoded_option *decoded,
 				  unsigned int lang_mask, int kind,
+				  location_t loc,
 				  const struct cl_option_handlers *handlers,
 				  diagnostic_context *dc);
 static void handle_param (struct gcc_options *opts,
@@ -359,6 +360,11 @@ static void set_debug_level (enum debug_info_type type, int extended,
 static void set_fast_math_flags (struct gcc_options *opts, int set);
 static void set_unsafe_math_optimizations_flags (struct gcc_options *opts,
 						 int set);
+static void enable_warning_as_error (const char *arg, int value,
+				     unsigned int lang_mask,
+				     const struct cl_option_handlers *handlers,
+				     location_t loc,
+				     diagnostic_context *dc);
 
 /* Return a malloced slash-separated list of languages in MASK.  */
 static char *
@@ -493,6 +499,7 @@ lang_handle_option (struct gcc_options *opts,
 		    struct gcc_options *opts_set,
 		    const struct cl_decoded_option *decoded,
 		    unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
+		    location_t loc,
 		    const struct cl_option_handlers *handlers,
 		    diagnostic_context *dc)
 {
@@ -501,7 +508,7 @@ lang_handle_option (struct gcc_options *opts,
   gcc_assert (dc == global_dc);
   gcc_assert (decoded->canonical_option_num_elements <= 2);
   return lang_hooks.handle_option (decoded->opt_index, decoded->arg,
-				   decoded->value, kind, handlers);
+				   decoded->value, kind, loc, handlers);
 }
 
 /* Handle a back-end option; arguments and return value as for
@@ -512,6 +519,7 @@ target_handle_option (struct gcc_options *opts,
 		      struct gcc_options *opts_set,
 		      const struct cl_decoded_option *decoded,
 		      unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
+		      location_t loc,
 		      const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED,
 		      diagnostic_context *dc)
 {
@@ -520,6 +528,7 @@ target_handle_option (struct gcc_options *opts,
   gcc_assert (dc == global_dc);
   gcc_assert (decoded->canonical_option_num_elements <= 2);
   gcc_assert (kind == DK_UNSPECIFIED);
+  gcc_assert (loc == UNKNOWN_LOCATION);
   return targetm.handle_option (decoded->opt_index, decoded->arg,
 				decoded->value);
 }
@@ -605,15 +614,16 @@ flag_instrument_functions_exclude_p (tree fndecl)
 }
 
 
-/* Handle the vector of command line options, storing the results of
-   processing DECODED_OPTIONS and DECODED_OPTIONS_COUNT in OPTS and
-   OPTS_SET and using DC for diagnostic state.  LANG_MASK contains has
-   a single bit set representing the current language.  HANDLERS
-   describes what functions to call for the options.  */
+/* Handle the vector of command line options (located at LOC), storing
+   the results of processing DECODED_OPTIONS and DECODED_OPTIONS_COUNT
+   in OPTS and OPTS_SET and using DC for diagnostic state.  LANG_MASK
+   contains has a single bit set representing the current language.
+   HANDLERS describes what functions to call for the options.  */
 static void
 read_cmdline_options (struct gcc_options *opts, struct gcc_options *opts_set,
 		      struct cl_decoded_option *decoded_options,
 		      unsigned int decoded_options_count,
+		      location_t loc,
 		      unsigned int lang_mask,
 		      const struct cl_option_handlers *handlers,
 		      diagnostic_context *dc)
@@ -640,7 +650,7 @@ read_cmdline_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	}
 
       read_cmdline_option (opts, opts_set,
-			   decoded_options + i, lang_mask, handlers,
+			   decoded_options + i, loc, lang_mask, handlers,
 			   dc);
     }
 }
@@ -712,8 +722,8 @@ decode_cmdline_options_to_array_default_mask (unsigned int argc,
 
 /* If indicated by the optimization level LEVEL (-Os if SIZE is set,
    -Ofast if FAST is set), apply the option DEFAULT_OPT to OPTS and
-   OPTS_SET, diagnostic context DC, with language mask LANG_MASK and
-   option handlers HANDLERS.  */
+   OPTS_SET, diagnostic context DC, location LOC, with language mask
+   LANG_MASK and option handlers HANDLERS.  */
 
 static void
 maybe_default_option (struct gcc_options *opts,
@@ -722,6 +732,7 @@ maybe_default_option (struct gcc_options *opts,
 		      int level, bool size, bool fast,
 		      unsigned int lang_mask,
 		      const struct cl_option_handlers *handlers,
+		      location_t loc,
 		      diagnostic_context *dc)
 {
   const struct cl_option *option = &cl_options[default_opt->opt_index];
@@ -782,18 +793,20 @@ maybe_default_option (struct gcc_options *opts,
   if (enabled)
     handle_generated_option (opts, opts_set, default_opt->opt_index,
 			     default_opt->arg, default_opt->value,
-			     lang_mask, DK_UNSPECIFIED, handlers, dc);
+			     lang_mask, DK_UNSPECIFIED, loc,
+			     handlers, dc);
   else if (default_opt->arg == NULL
 	   && !(option->flags & CL_REJECT_NEGATIVE))
     handle_generated_option (opts, opts_set, default_opt->opt_index,
 			     default_opt->arg, !default_opt->value,
-			     lang_mask, DK_UNSPECIFIED, handlers, dc);
+			     lang_mask, DK_UNSPECIFIED, loc,
+			     handlers, dc);
 }
 
 /* As indicated by the optimization level LEVEL (-Os if SIZE is set,
    -Ofast if FAST is set), apply the options in array DEFAULT_OPTS to
-   OPTS and OPTS_SET, diagnostic context DC, with language mask
-   LANG_MASK and option handlers HANDLERS.  */
+   OPTS and OPTS_SET, diagnostic context DC, location LOC, with
+   language mask LANG_MASK and option handlers HANDLERS.  */
 
 static void
 maybe_default_options (struct gcc_options *opts,
@@ -802,13 +815,14 @@ maybe_default_options (struct gcc_options *opts,
 		       int level, bool size, bool fast,
 		       unsigned int lang_mask,
 		       const struct cl_option_handlers *handlers,
+		       location_t loc,
 		       diagnostic_context *dc)
 {
   size_t i;
 
   for (i = 0; default_opts[i].levels != OPT_LEVELS_NONE; i++)
     maybe_default_option (opts, opts_set, &default_opts[i],
-			  level, size, fast, lang_mask, handlers, dc);
+			  level, size, fast, lang_mask, handlers, loc, dc);
 }
 
 /* Table of options enabled by default at different levels.  */
@@ -902,6 +916,7 @@ default_options_optimization (struct gcc_options *opts,
 			      struct gcc_options *opts_set,
 			      struct cl_decoded_option *decoded_options,
 			      unsigned int decoded_options_count,
+			      location_t loc,
 			      unsigned int lang_mask,
 			      const struct cl_option_handlers *handlers,
 			      diagnostic_context *dc)
@@ -964,7 +979,7 @@ default_options_optimization (struct gcc_options *opts,
 
   maybe_default_options (opts, opts_set, default_options_table,
 			 opts->x_optimize, opts->x_optimize_size,
-			 ofast, lang_mask, handlers, dc);
+			 ofast, lang_mask, handlers, loc, dc);
 
   /* -O2 param settings.  */
   opt2 = (opts->x_optimize >= 2);
@@ -994,19 +1009,20 @@ default_options_optimization (struct gcc_options *opts,
   maybe_default_options (opts, opts_set,
 			 targetm.target_option.optimization_table,
 			 opts->x_optimize, opts->x_optimize_size,
-			 ofast, lang_mask, handlers, dc);
+			 ofast, lang_mask, handlers, loc, dc);
 }
 
 static void finish_options (struct gcc_options *, struct gcc_options *);
 
 /* Parse command line options and set default flag values.  Do minimal
    options processing.  The decoded options are in *DECODED_OPTIONS
-   and *DECODED_OPTIONS_COUNT; settings go in OPTS, OPTS_SET and DC.  */
+   and *DECODED_OPTIONS_COUNT; settings go in OPTS, OPTS_SET and DC;
+   the options are located at LOC.  */
 void
 decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
 		struct cl_decoded_option *decoded_options,
 		unsigned int decoded_options_count,
-		diagnostic_context *dc)
+		location_t loc, diagnostic_context *dc)
 {
   struct cl_option_handlers handlers;
 
@@ -1027,11 +1043,11 @@ decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   /* Enable -Werror=coverage-mismatch by default */
   enable_warning_as_error ("coverage-mismatch", 1, lang_mask, &handlers,
-			   dc);
+			   loc, dc);
 
   default_options_optimization (opts, opts_set,
 				decoded_options, decoded_options_count,
-				lang_mask, &handlers, dc);
+				loc, lang_mask, &handlers, dc);
 
 #ifdef ENABLE_LTO
   /* Clear any options currently held for LTO.  */
@@ -1039,7 +1055,8 @@ decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
 #endif
 
   read_cmdline_options (opts, opts_set,
-			decoded_options, decoded_options_count, lang_mask,
+			decoded_options, decoded_options_count,
+			loc, lang_mask,
 			&handlers, dc);
 
   finish_options (opts, opts_set);
@@ -1580,6 +1597,7 @@ common_handle_option (struct gcc_options *opts,
 		      struct gcc_options *opts_set,
 		      const struct cl_decoded_option *decoded,
 		      unsigned int lang_mask, int kind ATTRIBUTE_UNUSED,
+		      location_t loc,
 		      const struct cl_option_handlers *handlers,
 		      diagnostic_context *dc)
 {
@@ -1760,7 +1778,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_Werror_:
-      enable_warning_as_error (arg, value, lang_mask, handlers, dc);
+      enable_warning_as_error (arg, value, lang_mask, handlers, loc, dc);
       break;
 
     case OPT_Wlarger_than_:
@@ -2394,13 +2412,13 @@ get_option_state (struct gcc_options *opts, int option,
 
 /* Enable (or disable if VALUE is 0) a warning option ARG (language
    mask LANG_MASK, option handlers HANDLERS) as an error for
-   diagnostic context DC (possibly NULL).  This is used by
-   -Werror=.  */
+   diagnostic context DC (possibly NULL), location LOC.  This is used
+   by -Werror=.  */
 
-void
+static void
 enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
 			 const struct cl_option_handlers *handlers,
-			 diagnostic_context *dc)
+			 location_t loc, diagnostic_context *dc)
 {
   char *new_option;
   int option_index;
@@ -2423,8 +2441,7 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
       if (option_index == OPT_SPECIAL_ignore)
 	return;
       if (dc)
-	diagnostic_classify_diagnostic (dc, option_index, kind,
-					UNKNOWN_LOCATION);
+	diagnostic_classify_diagnostic (dc, option_index, kind, loc);
       if (kind == DK_ERROR)
 	{
 	  const struct cl_option * const option = cl_options + option_index;
@@ -2433,8 +2450,7 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
 	  if (option->var_type == CLVC_BOOLEAN)
 	    handle_generated_option (&global_options, &global_options_set,
 				     option_index, NULL, value, lang_mask,
-				     (int)kind, handlers,
-				     dc);
+				     (int)kind, loc, handlers, dc);
 	}
     }
   free (new_option);

@@ -657,6 +657,7 @@ const char *resolution_file_name;
 static bool
 lto_handle_option (size_t scode, const char *arg,
 		   int value ATTRIBUTE_UNUSED, int kind ATTRIBUTE_UNUSED,
+		   location_t loc ATTRIBUTE_UNUSED,
 		   const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {
   enum opt_code code = (enum opt_code) scode;

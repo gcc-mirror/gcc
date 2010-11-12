@@ -57,7 +57,7 @@ JAVA_TARGET_INDEPENDENT_BIN_TOOLS = jcf-dump
 .PHONY: java
 
 jvspec.o: $(srcdir)/java/jvspec.c $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(GCC_H) $(CONFIG_H) java/jcf.h java/javaop.h opts.h
+  $(GCC_H) $(CONFIG_H) java/jcf.h java/javaop.h $(OPTS_H)
 	(SHLIB_LINK='$(SHLIB_LINK)'; \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/java/jvspec.c $(OUTPUT_OPTION))
@@ -302,7 +302,7 @@ java/jvgenmain.o: java/jvgenmain.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) intl.h
 java/lang.o: java/lang.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h input.h \
   toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(DIAGNOSTIC_H) \
-  langhooks.h $(LANGHOOKS_DEF_H) gt-java-lang.h opts.h $(OPTIONS_H) \
+  langhooks.h $(LANGHOOKS_DEF_H) gt-java-lang.h $(OPTS_H) $(OPTIONS_H) \
   $(TARGET_H)
 java/mangle.o: java/mangle.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h $(GGC_H) gt-java-mangle.h $(LANGHOOKS_DEF_H)
