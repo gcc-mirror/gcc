@@ -105,6 +105,10 @@
 	Change type of omode to enum machine_mode.
 	(combine_bnp): Rename and to and_insn.
 
+	PR target/46437
+	* config/mcore/mcore.c (layout_mcore_frame): Remove unused variable
+	localreg.
+
 2010-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/46375
