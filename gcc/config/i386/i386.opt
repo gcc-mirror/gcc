@@ -261,12 +261,6 @@ Target Report Mask(VZEROUPPER) Save
 Generate vzeroupper instruction before a transfer of control flow out of
 the function.
 
-mfused-madd
-Target Report Mask(FUSED_MADD) Save
-Enable automatic generation of fused floating point multiply-add instructions
-if the ISA supports such instructions.  The -mfused-madd option is on by
-default.
-
 mdispatch-scheduler
 Target RejectNegative Var(flag_dispatch_scheduler)
 Do dispatch scheduling if processor is bdver1 and Haifa scheduling

@@ -1,3 +1,7 @@
+2010-11-11  Richard Henderson  <rth@redhat.com>
+
+	* gcc.target/i386/sse-24.c: Use -ffp-contract.
+
 2010-11-11  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/inline-5.c: Fix testcase.
