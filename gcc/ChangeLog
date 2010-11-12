@@ -83,6 +83,14 @@
 	* config/fr30/fr30.md (*movsf_constant_store): Remove duplicated
 	assignment.
 
+	PR target/46450
+	* config/stormy16/stormy16.c (xstormy16_expand_prologue):
+	Use add_reg_note.
+	(xstormy16_function_arg): Dereference cum.
+	(xstormy16_expand_builtin): Use expand_normal.
+	Change type of omode to enum machine_mode.
+	(combine_bnp): Rename and to and_insn.
+
 2010-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/46375
