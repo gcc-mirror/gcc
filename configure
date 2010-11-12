@@ -5730,7 +5730,7 @@ if test "x$with_cloog" != "xno"; then
 
     CFLAGS="${CFLAGS} ${clooginc} ${pplinc} ${gmpinc}"
   CPPFLAGS="${CPPFLAGS} ${_clooglegacyinc} ${_cloogorginc}"
-  LDFLAGS="${LDFLAGS} ${clooglibs}"
+  LDFLAGS="${LDFLAGS} ${clooglibs} ${ppllibs}"
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for installed CLooG" >&5
 $as_echo_n "checking for installed CLooG... " >&6; }
@@ -5833,7 +5833,7 @@ $as_echo "$gcc_cv_cloog_type" >&6; }
     _cloog_saved_LDFLAGS=$LDFLAGS
 
     CFLAGS="${_cloog_saved_CFLAGS} ${clooginc} ${pplinc} ${gmpinc}"
-    LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs}"
+    LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs} ${ppllibs}"
 
     if test "${cloog_org}" = yes ; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for verison 0.14.0 of CLooG" >&5
