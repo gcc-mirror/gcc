@@ -1,3 +1,8 @@
+2010-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/46375
+	* emit-rtl.c (remove_insn): Do not mark BBs upon debug insns.
+
 2010-11-11  Rodrigo Rivas Costa  <rodrigorivascosta@gmail.com>
 
 	PR lto/46376
