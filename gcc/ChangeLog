@@ -1,3 +1,13 @@
+2010-11-11  Richard Henderson  <rth@redhat.com>
+
+	* config/fused-madd.opt: New file.
+	* config.gcc [i386-*, x86_64-*] (extra_options): Use it.
+	* config/i386/i386.c (ix86_extra_costs): Handle FMA.
+	(TARGET_DEFAULT_TARGET_FLAGS): Remove MASK_FUSED_MADD.
+	* config/i386/i386.opt (mfused-madd): Remove.
+	* config/i386/sse.md (split_fma): Remove.
+	(split_fms, split_fnma, split_fnms): Remove.
+
 2010-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/46088
