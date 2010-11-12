@@ -20,6 +20,9 @@
 	Don't use variable length array.
 	Put nested if/else into block.
 
+	PR rtl-optimization/46433
+	* var-tracking.c: Include tm_p.h .
+
 2010-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/46375
