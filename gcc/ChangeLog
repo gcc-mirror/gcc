@@ -67,6 +67,10 @@
 	(bfin_expand_builtin): Likewise.
 	Set tmode before use.
 
+	PR middle-end/44769
+	* final.c (split_double): Don't use BITS_PER_WORD directly in
+	shift count.
+
 2010-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/46375
