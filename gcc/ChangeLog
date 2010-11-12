@@ -36,6 +36,13 @@
 	PR rtl-optimization/46433
 	* var-tracking.c: Include tm_p.h .
 
+	PR bootstrap/44756
+	PR build/44767
+	* doc/tm.texi.in (LOCAL_ALIGNMENT): State that the type, if any,
+	should be unsigned.
+	(STACK_SLOT_ALIGNMENT, LOCAL_DECL_ALIGNMENT, PUSH_ROUNDING): Likewise.
+	* doc/tm.texi: Regenerate.
+
 2010-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/46375
