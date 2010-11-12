@@ -92,6 +92,7 @@
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "tm_p.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "flags.h"
