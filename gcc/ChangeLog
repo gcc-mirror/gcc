@@ -13,6 +13,9 @@
 	(cris_rtx_costs): Cast argument 2 to rtx_cost to enum rtx_code.
 	(cris_emit_movem_store): Use add_reg_note.
 
+	PR bootstrap/46456
+	* cppbuiltin.c (define_builtin_macros_for_type_sizes): Split assert.
+
 2010-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* function.c (expand_function_end): Set the locator of the prologue on
