@@ -273,6 +273,10 @@ gfc_post_options (const char **pfilename)
   if (flag_compare_debug)
     gfc_option.dump_fortran_original = 0;
 
+  /* Make -fmax-errors visible to gfortran's diagnostic machinery.  */
+  if (global_options_set.x_flag_max_errors)
+    gfc_option.max_errors = flag_max_errors;
+
   /* Verify the input file name.  */
   if (!filename || strcmp (filename, "-") == 0)
     {
@@ -758,10 +762,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fmax_array_constructor_:
       gfc_option.flag_max_array_constructor = value > 65535 ? value : 65535;
-      break;
-
-    case OPT_fmax_errors_:
-      gfc_option.max_errors = value;
       break;
 
     case OPT_fmax_stack_var_size_:

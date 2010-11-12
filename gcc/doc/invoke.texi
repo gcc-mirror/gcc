@@ -229,7 +229,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
-@gccoptlist{-fsyntax-only  -pedantic  -pedantic-errors @gol
+@gccoptlist{-fsyntax-only  fmax-errors=@var{n}  -pedantic @gol
+-pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  -Warray-bounds @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
 -Wc++-compat -Wc++0x-compat -Wcast-align  -Wcast-qual  @gol
@@ -2774,6 +2775,15 @@ warnings but control the kinds of diagnostics produced by GCC.
 @item -fsyntax-only
 @opindex fsyntax-only
 Check the code for syntax errors, but don't do anything beyond that.
+
+@item -fmax-errors=@var{n}
+@opindex fmax-errors
+Limits the maximum number of error messages to @var{n}, at which point
+GCC bails out rather than attempting to continue processing the source
+code.  If @var{n} is 0 (the default), there is no limit on the number
+of error messages produced.  If @option{-Wfatal-errors} is also
+specified, then @option{-Wfatal-errors} takes precedence over this
+option.
 
 @item -w
 @opindex w

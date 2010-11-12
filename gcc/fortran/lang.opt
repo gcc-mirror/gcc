@@ -438,10 +438,6 @@ fmax-array-constructor=
 Fortran RejectNegative Joined UInteger
 -fmax-array-constructor=<n>	Maximum number of objects in an array constructor
 
-fmax-errors=
-Fortran RejectNegative Joined UInteger
--fmax-errors=<n>	Maximum number of errors to report
-
 fmax-identifier-length=
 Fortran RejectNegative Joined UInteger
 -fmax-identifier-length=<n>	Maximum identifier length
