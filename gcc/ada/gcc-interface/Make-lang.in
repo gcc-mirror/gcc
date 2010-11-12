@@ -1231,7 +1231,7 @@ ada/decl.o : ada/gcc-interface/decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 ada/misc.o : ada/gcc-interface/misc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(DIAGNOSTIC_H) $(TARGET_H) $(FUNCTION_H) \
    $(FLAGS_H) debug.h toplev.h langhooks.h \
-   $(LANGHOOKS_DEF_H) opts.h $(OPTIONS_H) $(TREE_INLINE_H) $(PLUGIN_H) \
+   $(LANGHOOKS_DEF_H) $(OPTS_H) $(OPTIONS_H) $(TREE_INLINE_H) $(PLUGIN_H) \
    ada/gcc-interface/ada.h ada/adadecode.h ada/types.h ada/atree.h \
    ada/elists.h ada/namet.h ada/nlists.h ada/stringt.h ada/uintp.h ada/fe.h \
    ada/sinfo.h ada/einfo.h $(ADA_TREE_H) ada/gcc-interface/gigi.h \

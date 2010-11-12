@@ -3141,6 +3141,7 @@ driver_handle_option (struct gcc_options *opts,
 		      struct gcc_options *opts_set,
 		      const struct cl_decoded_option *decoded,
 		      unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
+		      location_t loc,
 		      const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED,
 		      diagnostic_context *dc)
 {
@@ -3154,6 +3155,7 @@ driver_handle_option (struct gcc_options *opts,
   gcc_assert (opts == &global_options);
   gcc_assert (opts_set == &global_options_set);
   gcc_assert (kind == DK_UNSPECIFIED);
+  gcc_assert (loc == UNKNOWN_LOCATION);
   gcc_assert (dc == global_dc);
 
   switch (opt_index)
@@ -3799,8 +3801,8 @@ process_command (unsigned int decoded_options_count,
 	}
 
       read_cmdline_option (&global_options, &global_options_set,
-			   decoded_options + j, CL_DRIVER, &handlers,
-			   global_dc);
+			   decoded_options + j, UNKNOWN_LOCATION,
+			   CL_DRIVER, &handlers, global_dc);
     }
 
   /* If -save-temps=obj and -o name, create the prefix to use for %b.
@@ -4300,8 +4302,8 @@ do_self_spec (const char *spec)
 
 	    default:
 	      read_cmdline_option (&global_options, &global_options_set,
-				   decoded_options + j, CL_DRIVER, &handlers,
-				   global_dc);
+				   decoded_options + j, UNKNOWN_LOCATION,
+				   CL_DRIVER, &handlers, global_dc);
 	      break;
 	    }
 	}

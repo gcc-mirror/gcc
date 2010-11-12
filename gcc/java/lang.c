@@ -52,7 +52,7 @@ static void java_init_options_struct (struct gcc_options *);
 static void java_init_options (unsigned int, struct cl_decoded_option *);
 static bool java_post_options (const char **);
 
-static bool java_handle_option (size_t, const char *, int, int,
+static bool java_handle_option (size_t, const char *, int, int, location_t,
 				const struct cl_option_handlers *);
 static void put_decl_string (const char *, int);
 static void put_decl_node (tree, int);
@@ -183,7 +183,7 @@ struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
  */
 static bool
 java_handle_option (size_t scode, const char *arg, int value,
-		    int kind ATTRIBUTE_UNUSED,
+		    int kind ATTRIBUTE_UNUSED, location_t loc ATTRIBUTE_UNUSED,
 		    const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {
   enum opt_code code = (enum opt_code) scode;

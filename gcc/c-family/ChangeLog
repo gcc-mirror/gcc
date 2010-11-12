@@ -1,3 +1,11 @@
+2010-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (parse_optimize_options): Update call to
+	decode_options.
+	* c-common.h (c_common_handle_option): Update prototype.
+	* c-opts.c (c_common_handle_option): Take location_t parameter and
+	pass it to other functions.
+
 2010-11-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-opts.c (warning_as_error_callback): Remove.

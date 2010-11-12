@@ -2357,7 +2357,7 @@ toplev_main (int argc, char **argv)
      enough to default flags appropriately.  */
   decode_options (&global_options, &global_options_set,
 		  save_decoded_options, save_decoded_options_count,
-		  global_dc);
+		  UNKNOWN_LOCATION, global_dc);
 
   init_local_tick ();
 

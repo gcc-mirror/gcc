@@ -291,10 +291,12 @@ struct lang_hooks
      checking whether ARG is NULL, which indicates that no argument
      was in fact supplied.  For -f and -W switches, VALUE is 1 or 0
      for the positive and negative forms respectively.  HANDLERS should
-     be passed to any recursive handle_option calls.
+     be passed to any recursive handle_option calls.  LOC is the
+     location of the option.
 
      Return true if the switch is valid, false if invalid.  */
   bool (*handle_option) (size_t code, const char *arg, int value, int kind,
+			 location_t loc,
 			 const struct cl_option_handlers *handlers);
 
   /* Called when all command line options have been parsed to allow

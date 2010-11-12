@@ -404,7 +404,7 @@ lto_reissue_options (void)
       if (flag_var)
 	set_option (&global_options, &global_options_set,
 		    o->code, o->value, o->arg,
-		    DK_UNSPECIFIED, global_dc);
+		    DK_UNSPECIFIED, UNKNOWN_LOCATION, global_dc);
 
       if (o->type == CL_TARGET)
 	targetm.handle_option (o->code, o->arg, o->value);

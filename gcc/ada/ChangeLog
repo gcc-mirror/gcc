@@ -1,3 +1,9 @@
+2010-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/Make-lang.in (ada/misc.o): Use $(OPTS_H).
+	* gcc-interface/misc.c (gnat_handle_option): Take location_t
+	parameter.
+
 2010-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gigi): Don't set 'pure' flag on SJLJ routines.

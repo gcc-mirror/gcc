@@ -1,3 +1,44 @@
+2010-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (OPTS_H): Define.
+	(c-decl.o, c-family/c-common.o, c-family/c-opts.o,
+	c-family/c-pch.o, c-family/c-pragma.o, gcc.o, gccspec.o,
+	cppspec.o, options.o, gcc-options.o, lto-opts.o, opts.o,
+	opts-common.o, toplev.o, passes.o, matrix-reorg.o,
+	ipa-struct-reorg.o, PLUGIN_HEADERS): Use $(OPTS_H).
+	* gcc.c (driver_handle_option): Take location_t parameter.
+	(process_command, do_self_spec): Update calls to
+	read_cmdline_option.
+	* langhooks-def.h (lhd_handle_option): Take location_t parameter.
+	* langhooks.c (lhd_handle_option): Take location_t parameter.
+	* langhooks.h (handle_option): Take location_t parameter.
+	* lto-opts.c (lto_reissue_options): Update call to set_option.
+	* opts-common.c (handle_option): Make static.  Take location_t
+	parameter and pass it to other functions.
+	(handle_generated_option): Take location_t parameter and pass it
+	to other functions.
+	(read_cmdline_option): Take location_t parameter and pass it to
+	other functions.  Use warning_at and error_at.
+	(set_option): Take location_t parameter and pass it to other
+	functions.
+	* opts.c (common_handle_option): Take location_t parameter and
+	pass it to other functions.
+	(enable_warning_as_error): Make static.  Take location_t parameter
+	and pass it to other functions.
+	(lang_handle_option): Take location_t parameter and pass it to
+	other functions.
+	(target_handle_option): Take location_t parameter.
+	(read_cmdline_options, maybe_default_option,
+	maybe_default_options, default_options_optimization,
+	decode_options): Take location_t parameter and pass it to other
+	functions.
+	* opts.h: Include input.h.
+	(struct cl_option_handler_func, decode_options, set_option,
+	handle_generated_option, read_cmdline_option): Take location_t
+	parameters.
+	(handle_option, enable_warning_as_error): Remove.
+	* toplev.c (toplev_main): Update call to decode_options.
+
 2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* graphite-cloog-util.c (oppose_constraint,

@@ -1,3 +1,7 @@
+2010-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (g++spec.o): Use $(OPTS_H).
+
 2010-11-13  Ville Voutilainen <ville.voutilainen@gmail.com> <ville.voutilainen@symbio.com>
 
 	Core 1135, 1136, 1145, 1149

@@ -1,3 +1,8 @@
+2010-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (lto/lto.o): Use $(OPTS_H).
+	* lto-lang.c (lto_handle_option): Take location_t parameter.
+
 2010-11-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* lto.c (lto_resolution_read): Start diagnostics with lowercase

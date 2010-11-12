@@ -68,7 +68,7 @@ extern void lhd_initialize_diagnostics (diagnostic_context *);
 extern void lhd_init_options (unsigned int,
 			      struct cl_decoded_option *);
 extern bool lhd_complain_wrong_lang_p (const struct cl_option *);
-extern bool lhd_handle_option (size_t, const char *, int, int,
+extern bool lhd_handle_option (size_t, const char *, int, int, location_t,
 			       const struct cl_option_handlers *);
 extern tree lhd_callgraph_analyze_expr (tree *, int *);
 
