@@ -1,3 +1,8 @@
+2010-11-11  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/inline-5.c: Fix testcase.
+	* gcc.dg/tree-ssa/inline-6.c: Remove bogus testcase.
+
 2010-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/46088
