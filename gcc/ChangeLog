@@ -1,3 +1,11 @@
+2010-11-12  Joern Rennecke  <amylaar@spamcop.net>
+	    Richard Henderson  <rth@redhat.com>
+
+	PR target/46428
+	* config/moxie/moxie.c (moxie_expand_prologue): Remove unused variables.
+	* config/moxie/moxie.h (HARD_REGNO_OK_FOR_BASE_P): Use unsigned
+	comparison.
+
 2010-11-12  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* opts-common.c (decode_cmdline_option): Initialize separate_args.

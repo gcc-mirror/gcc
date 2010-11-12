@@ -405,7 +405,7 @@ enum reg_class
 #define INDEX_REG_CLASS NO_REGS
 
 #define HARD_REGNO_OK_FOR_BASE_P(NUM) \
-  ((NUM) >= 0 && (NUM) < FIRST_PSEUDO_REGISTER \
+  ((unsigned) (NUM) < FIRST_PSEUDO_REGISTER \
    && (REGNO_REG_CLASS(NUM) == GENERAL_REGS \
        || (NUM) == HARD_FRAME_POINTER_REGNUM))
 
