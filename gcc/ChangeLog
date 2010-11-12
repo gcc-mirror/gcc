@@ -1,3 +1,8 @@
+2010-11-12  Jan Hubicka  <jh@suse.cz>
+
+	* doc/invoke.texi (early-inlining-insns): Update default.
+	* params.def (early-inlining-insns): Default to 10.
+
 2010-11-12  Olivier Hainque  <hainque@adacore.com>
 
 	* config/rs6000/aix.h: #undef TARGET_AIX_OS before #define.
