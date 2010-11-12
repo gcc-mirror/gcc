@@ -207,7 +207,7 @@ AC_DEFUN([CLOOG_CHECK_VERSION],
     LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs} ${ppllibs}"
 
     if test "${cloog_org}" = yes ; then
-      AC_CACHE_CHECK([for verison $1.$2.$3 of CLooG],
+      AC_CACHE_CHECK([for version $1.$2.$3 of CLooG],
         [gcc_cv_cloog_ct_0_14_0],
         [AC_COMPILE_IFELSE([_CLOOG_CHECK_CT_PROG($1,$2,$3)],
           [gcc_cv_cloog_ct_0_14_0=yes],

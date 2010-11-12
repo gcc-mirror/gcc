@@ -1,5 +1,10 @@
 2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
 
+	* config/cloog.m4: Fix typo.  verison -> version.
+	* configure: Regenerate.
+
+2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
+
 	* config/cloog.m4: Pass ppl libraries to the CLooG version check.
 	* configure: Regenerate.
 
