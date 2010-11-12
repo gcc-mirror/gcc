@@ -6,6 +6,13 @@
 	(xtensa_function_arg_1): De-constify cum.
 	(xtensa_expand_prologue): Use add_reg_note.
 
+	PR target/46435
+	* config/cris/cris.c (saved_regs_mentioned): Delete.
+	(cris_reload_address_legitimized): Cast itype to enum reload_type.
+	Remove unused variable op0p.
+	(cris_rtx_costs): Cast argument 2 to rtx_cost to enum rtx_code.
+	(cris_emit_movem_store): Use add_reg_note.
+
 2010-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* function.c (expand_function_end): Set the locator of the prologue on
