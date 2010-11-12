@@ -1,3 +1,8 @@
+2010-11-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/45794
+	trans-expr.c (gfc_conv_procedure_call): Avoid NULL array spec.
+	
 2010-11-11  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c/44782
