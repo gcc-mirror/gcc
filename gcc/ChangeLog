@@ -1,3 +1,8 @@
+2010-11-12  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_ternop_builtin): Rewrite
+	switch on insn codes as sequence of ifs.
+
 2010-11-12  Alexander Monakov  <amonakov@ispras.ru>
 
 	Backport from mainline:
