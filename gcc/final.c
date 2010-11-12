@@ -3807,10 +3807,11 @@ split_double (rtx value, rtx *first, rtx *second)
 	     Sign extend each half to HOST_WIDE_INT.  */
 	  unsigned HOST_WIDE_INT low, high;
 	  unsigned HOST_WIDE_INT mask, sign_bit, sign_extend;
+	  unsigned bits_per_word = BITS_PER_WORD;
 
 	  /* Set sign_bit to the most significant bit of a word.  */
 	  sign_bit = 1;
-	  sign_bit <<= BITS_PER_WORD - 1;
+	  sign_bit <<= bits_per_word - 1;
 
 	  /* Set mask so that all bits of the word are set.  We could
 	     have used 1 << BITS_PER_WORD instead of basing the
@@ -3833,7 +3834,7 @@ split_double (rtx value, rtx *first, rtx *second)
 	  /* Pick the higher word, shifted to the least significant
 	     bits, and sign-extend it.  */
 	  high = INTVAL (value);
-	  high >>= BITS_PER_WORD - 1;
+	  high >>= bits_per_word - 1;
 	  high >>= 1;
 	  high &= mask;
 	  if (high & sign_bit)
