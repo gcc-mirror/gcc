@@ -5884,7 +5884,8 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       base = lookup_base (TREE_TYPE (type), TREE_TYPE (intype),
 			  c_cast_p ? ba_unique : ba_check,
 			  NULL);
-      return build_base_path (MINUS_EXPR, expr, base, /*nonnull=*/false);
+      expr = build_base_path (MINUS_EXPR, expr, base, /*nonnull=*/false);
+      return cp_fold_convert(type, expr);
     }
 
   if ((TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))

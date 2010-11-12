@@ -1,3 +1,8 @@
+2010-11-12  James Dennett <jdennett@google.com>
+
+	PR c++/39415
+	* g++.dg/expr/static_cast7.C: New.
+
 2010-11-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/prune.exp (prune_gcc_output): Ignore IRIX 6 linker multiline
