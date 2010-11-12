@@ -3867,7 +3867,7 @@ remove_insn (rtx insn)
   if (!BARRIER_P (insn)
       && (bb = BLOCK_FOR_INSN (insn)))
     {
-      if (INSN_P (insn))
+      if (NONDEBUG_INSN_P (insn))
 	df_set_bb_dirty (bb);
       if (BB_HEAD (bb) == insn)
 	{
