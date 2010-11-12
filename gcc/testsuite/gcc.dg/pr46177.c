@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-copy-prop -ftree-loop-distribution t.c" } */
+/* { dg-options "-O -fno-tree-copy-prop -ftree-loop-distribution" } */
 
 extern int A[];
 extern int B[];
