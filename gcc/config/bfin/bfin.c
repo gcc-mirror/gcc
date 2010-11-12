@@ -56,6 +56,7 @@
 #include "cfglayout.h"
 #include "timevar.h"
 #include "df.h"
+#include "sel-sched.h"
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
@@ -336,7 +337,7 @@ struct bfin_cpu bfin_cpus[] =
    | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
    | WA_05000074},
 
-  {NULL, 0, 0, 0}
+  {NULL, BFIN_CPU_UNKNOWN, 0, 0}
 };
 
 int splitting_for_sched, splitting_loops;
@@ -1255,14 +1256,13 @@ expand_interrupt_handler_prologue (rtx spreg, e_funkind fkind, bool all)
       rtx r0reg = gen_rtx_REG (SImode, REG_R0);
       rtx r1reg = gen_rtx_REG (SImode, REG_R1);
       rtx r2reg = gen_rtx_REG (SImode, REG_R2);
-      rtx insn;
 
-      insn = emit_move_insn (r0reg, gen_rtx_REG (SImode, REG_SEQSTAT));
-      insn = emit_insn (gen_ashrsi3 (r0reg, r0reg, GEN_INT (26)));
-      insn = emit_insn (gen_ashlsi3 (r0reg, r0reg, GEN_INT (26)));
-      insn = emit_move_insn (r1reg, spreg);
-      insn = emit_move_insn (r2reg, gen_rtx_REG (Pmode, REG_FP));
-      insn = emit_insn (gen_addsi3 (r2reg, r2reg, GEN_INT (8)));
+      emit_move_insn (r0reg, gen_rtx_REG (SImode, REG_SEQSTAT));
+      emit_insn (gen_ashrsi3 (r0reg, r0reg, GEN_INT (26)));
+      emit_insn (gen_ashlsi3 (r0reg, r0reg, GEN_INT (26)));
+      emit_move_insn (r1reg, spreg);
+      emit_move_insn (r2reg, gen_rtx_REG (Pmode, REG_FP));
+      emit_insn (gen_addsi3 (r2reg, r2reg, GEN_INT (8)));
     }
 }
 
@@ -1311,7 +1311,7 @@ static rtx
 bfin_load_pic_reg (rtx dest)
 {
   struct cgraph_local_info *i = NULL;
-  rtx addr, insn;
+  rtx addr;
  
   i = cgraph_local_info (current_function_decl);
  
@@ -1326,7 +1326,7 @@ bfin_load_pic_reg (rtx dest)
     addr = gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
 			 gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
 					 UNSPEC_LIBRARY_OFFSET));
-  insn = emit_insn (gen_movsi (dest, gen_rtx_MEM (Pmode, addr)));
+  emit_insn (gen_movsi (dest, gen_rtx_MEM (Pmode, addr)));
   return dest;
 }
 
@@ -3117,8 +3117,10 @@ bfin_legitimate_constant_p (rtx x)
 }
 
 static bool
-bfin_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
+bfin_rtx_costs (rtx x, int code_i, int outer_code_i, int *total, bool speed)
 {
+  enum rtx_code code = (enum rtx_code) code_i;
+  enum rtx_code outer_code = (enum rtx_code) outer_code_i;
   int cost2 = COSTS_N_INSNS (1);
   rtx op0, op1;
 
@@ -3613,8 +3615,8 @@ bfin_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
    the object would ordinarily have.  The value of this macro is used
    instead of that alignment to align the object.  */
 
-int
-bfin_local_alignment (tree type, int align)
+unsigned
+bfin_local_alignment (tree type, unsigned align)
 {
   /* Increasing alignment for (relatively) big types allows the builtin
      memcpy can use 32 bit loads/stores.  */
@@ -3637,7 +3639,7 @@ bfin_issue_rate (void)
 static int
 bfin_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 {
-  enum attr_type insn_type, dep_insn_type;
+  enum attr_type dep_insn_type;
   int dep_insn_code_number;
 
   /* Anti and output dependencies have zero cost.  */
@@ -3650,16 +3652,17 @@ bfin_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
   if (dep_insn_code_number < 0 || recog_memoized (insn) < 0)
     return cost;
 
-  insn_type = get_attr_type (insn);
   dep_insn_type = get_attr_type (dep_insn);
 
   if (dep_insn_type == TYPE_MOVE || dep_insn_type == TYPE_MCLD)
     {
       rtx pat = PATTERN (dep_insn);
+      rtx dest, src;
+
       if (GET_CODE (pat) == PARALLEL)
 	pat = XVECEXP (pat, 0, 0);
-      rtx dest = SET_DEST (pat);
-      rtx src = SET_SRC (pat);
+      dest = SET_DEST (pat);
+      src = SET_SRC (pat);
       if (! ADDRESS_REGNO_P (REGNO (dest))
 	  || ! (MEM_P (src) || D_REGNO_P (REGNO (src))))
 	return cost;
@@ -3718,13 +3721,13 @@ bfin_hardware_loop (void)
 #define MAX_LSETUP_DISTANCE 30
 
 /* We need to keep a vector of loops */
-typedef struct loop_info *loop_info;
+typedef struct loop_info_d *loop_info;
 DEF_VEC_P (loop_info);
 DEF_VEC_ALLOC_P (loop_info,heap);
 
 /* Information about a loop we have found (or are in the process of
    finding).  */
-struct GTY (()) loop_info
+struct GTY (()) loop_info_d
 {
   /* loop number, for dumps */
   int loop_no;
@@ -3785,10 +3788,10 @@ struct GTY (()) loop_info
   int clobber_loop1;
 
   /* Next loop in the graph. */
-  struct loop_info *next;
+  struct loop_info_d *next;
 
   /* Immediate outer loop of this loop.  */
-  struct loop_info *outer;
+  struct loop_info_d *outer;
 
   /* Vector of blocks only within the loop, including those within
      inner loops.  */
@@ -4596,7 +4599,7 @@ bfin_discover_loops (bitmap_obstack *stack, FILE *dump_file)
 	      continue;
 	    }
 
-	  loop = XNEW (struct loop_info);
+	  loop = XNEW (struct loop_info_d);
 	  loop->next = loops;
 	  loops = loop;
 	  loop->loop_no = nloops++;
@@ -5057,7 +5060,8 @@ workaround_rts_anomaly (void)
 	    }
 	  else
 	    {
-	      enum insn_code icode = recog_memoized (insn);
+	      int icode = recog_memoized (insn);
+
 	      if (icode == CODE_FOR_link)
 		this_cycles = 4;
 	      else if (icode == CODE_FOR_unlink)
@@ -5109,10 +5113,10 @@ harmless_null_pointer_p (rtx mem, int np_reg)
   mem = XEXP (mem, 0);
   if (GET_CODE (mem) == POST_INC || GET_CODE (mem) == POST_DEC)
     mem = XEXP (mem, 0);
-  if (REG_P (mem) && REGNO (mem) == np_reg)
+  if (REG_P (mem) && (int) REGNO (mem) == np_reg)
     return true;
   if (GET_CODE (mem) == PLUS
-      && REG_P (XEXP (mem, 0)) && REGNO (XEXP (mem, 0)) == np_reg)
+      && REG_P (XEXP (mem, 0)) && (int) REGNO (XEXP (mem, 0)) == np_reg)
     {
       mem = XEXP (mem, 1);
       if (GET_CODE (mem) == CONST_INT && INTVAL (mem) > 0)
@@ -5126,7 +5130,6 @@ harmless_null_pointer_p (rtx mem, int np_reg)
 static bool
 trapping_loads_p (rtx insn, int np_reg, bool after_np_branch)
 {
-  rtx pat = PATTERN (insn);
   rtx mem = SET_SRC (single_set (insn));
 
   if (!after_np_branch)
@@ -5184,9 +5187,10 @@ bool np_after_branch = false;
 
 /* Subroutine of workaround_speculation, called through note_stores.  */
 static void
-note_np_check_stores (rtx x, const_rtx pat, void *data ATTRIBUTE_UNUSED)
+note_np_check_stores (rtx x, const_rtx pat ATTRIBUTE_UNUSED,
+		      void *data ATTRIBUTE_UNUSED)
 {
-  if (REG_P (x) && (REGNO (x) == REG_CC || REGNO (x) == np_check_regno))
+  if (REG_P (x) && (REGNO (x) == REG_CC || (int) REGNO (x) == np_check_regno))
     np_check_regno = -1;
 }
 
@@ -6244,8 +6248,8 @@ bfin_expand_binop_builtin (enum insn_code icode, tree exp, rtx target,
   rtx pat;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
   tree arg1 = CALL_EXPR_ARG (exp, 1);
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
   enum machine_mode op0mode = GET_MODE (op0);
   enum machine_mode op1mode = GET_MODE (op1);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
@@ -6301,7 +6305,7 @@ bfin_expand_unop_builtin (enum insn_code icode, tree exp,
 {
   rtx pat;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  rtx op0 = expand_normal (arg0);
   enum machine_mode op0mode = GET_MODE (op0);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
@@ -6365,7 +6369,7 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
     case BFIN_BUILTIN_DIFFLH_2X16:
     case BFIN_BUILTIN_SUM_2X16:
       arg0 = CALL_EXPR_ARG (exp, 0);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
       icode = (fcode == BFIN_BUILTIN_DIFFHL_2X16 ? CODE_FOR_subhilov2hi3
 	       : fcode == BFIN_BUILTIN_DIFFLH_2X16 ? CODE_FOR_sublohiv2hi3
 	       : CODE_FOR_ssaddhilov2hi3);
@@ -6393,8 +6397,8 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
     case BFIN_BUILTIN_MULT_1X32X32NS:
       arg0 = CALL_EXPR_ARG (exp, 0);
       arg1 = CALL_EXPR_ARG (exp, 1);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
       if (! target
 	  || !register_operand (target, SImode))
 	target = gen_reg_rtx (SImode);
@@ -6452,10 +6456,11 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
     case BFIN_BUILTIN_CPLX_MUL_16_S40:
       arg0 = CALL_EXPR_ARG (exp, 0);
       arg1 = CALL_EXPR_ARG (exp, 1);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
       accvec = gen_reg_rtx (V2PDImode);
       icode = CODE_FOR_flag_macv2hi_parts;
+      tmode = insn_data[icode].operand[0].mode;
 
       if (! target
 	  || GET_MODE (target) != V2HImode
@@ -6488,11 +6493,12 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
       arg0 = CALL_EXPR_ARG (exp, 0);
       arg1 = CALL_EXPR_ARG (exp, 1);
       arg2 = CALL_EXPR_ARG (exp, 2);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
       accvec = gen_reg_rtx (V2PDImode);
       icode = CODE_FOR_flag_macv2hi_parts;
+      tmode = insn_data[icode].operand[0].mode;
 
       if (! target
 	  || GET_MODE (target) != V2HImode
@@ -6542,7 +6548,7 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
     case BFIN_BUILTIN_CPLX_SQU:
       arg0 = CALL_EXPR_ARG (exp, 0);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
       accvec = gen_reg_rtx (V2PDImode);
       icode = CODE_FOR_flag_mulv2hi;
       tmp1 = gen_reg_rtx (V2HImode);
