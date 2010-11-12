@@ -60,7 +60,10 @@ oppose_constraint (CloogMatrix *m, int row)
   int k;
 
   /* Do not oppose the first column: it is the eq/ineq one.  */
-  for (k = 1; k < m->NbColumns; k++)
+  /* Cast needed to remove warning that is generated as CLooG isl
+     is using an unsigned int for NbColumns and CLooG PPL is
+     using a signed int for NBColumns.  */
+  for (k = 1; k < (int)m->NbColumns; k++)
     mpz_neg (m->p[row][k], m->p[row][k]);
 }
 
@@ -177,7 +180,10 @@ cloog_matrix_to_ppl_constraint (CloogMatrix *matrix, int row)
   ppl_new_Coefficient (&coef);
   ppl_new_Linear_Expression_with_dimension (&expr, dim);
 
-  for (j = 1; j < matrix->NbColumns - 1; j++)
+  /* Cast needed to remove warning that is generated as CLooG isl
+     is using an unsigned int for NbColumns and CLooG PPL is
+     using a signed int for NBColumns.  */
+  for (j = 1; j < (int)matrix->NbColumns - 1; j++)
     {
       ppl_assign_Coefficient_from_mpz_t (coef, matrix->p[row][j]);
       ppl_Linear_Expression_add_to_coefficient (expr, j - 1, coef);
@@ -207,7 +213,10 @@ new_Constraint_System_from_Cloog_Matrix (ppl_Constraint_System_t *pcs,
 
   ppl_new_Constraint_System (pcs);
 
-  for (i = 0; i < matrix->NbRows; i++)
+  /* Cast needed to remove warning that is generated as CLooG isl
+     is using an unsigned int for NbColumns and CLooG PPL is
+     using a signed int for NBColumns.  */
+  for (i = 0; i < (int)matrix->NbRows; i++)
     {
       ppl_Constraint_t c = cloog_matrix_to_ppl_constraint (matrix, i);
       ppl_Constraint_System_insert_Constraint (*pcs, c);
