@@ -977,3 +977,34 @@ option_flag_var (int opt_index, struct gcc_options *opts)
     return NULL;
   return (void *)(((char *) opts) + option->flag_var_offset);
 }
+
+/* Set a warning option OPT_INDEX (language mask LANG_MASK, option
+   handlers HANDLERS) to have diagnostic kind KIND for option
+   structures OPTS and OPTS_SET and diagnostic context DC (possibly
+   NULL), at location LOC (UNKNOWN_LOCATION for -Werror=).  If IMPLY,
+   the warning option in question is implied at this point.  This is
+   used by -Werror= and #pragma GCC diagnostic.  */
+
+void
+control_warning_option (unsigned int opt_index, int kind, bool imply,
+			location_t loc, unsigned int lang_mask,
+			const struct cl_option_handlers *handlers,
+			struct gcc_options *opts,
+			struct gcc_options *opts_set,
+			diagnostic_context *dc)
+{
+  if (cl_options[opt_index].alias_target != N_OPTS)
+    opt_index = cl_options[opt_index].alias_target;
+  if (opt_index == OPT_SPECIAL_ignore)
+    return;
+  if (dc)
+    diagnostic_classify_diagnostic (dc, opt_index, (diagnostic_t) kind, loc);
+  if (imply)
+    {
+      /* -Werror=foo implies -Wfoo.  */
+      if (cl_options[opt_index].var_type == CLVC_BOOLEAN)
+	handle_generated_option (opts, opts_set,
+				 opt_index, NULL, 1, lang_mask,
+				 kind, loc, handlers, dc);
+    }
+}
