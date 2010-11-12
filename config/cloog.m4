@@ -120,7 +120,7 @@ AC_DEFUN([CLOOG_FIND_FLAGS],
   dnl clooglibs & clooginc may have been initialized by CLOOG_INIT_FLAGS.
   CFLAGS="${CFLAGS} ${clooginc} ${pplinc} ${gmpinc}"
   CPPFLAGS="${CPPFLAGS} ${_clooglegacyinc} ${_cloogorginc}"
-  LDFLAGS="${LDFLAGS} ${clooglibs}"
+  LDFLAGS="${LDFLAGS} ${clooglibs} ${ppllibs}"
 
   AC_CACHE_CHECK([for installed CLooG],
                  [gcc_cv_cloog_type],
@@ -204,7 +204,7 @@ AC_DEFUN([CLOOG_CHECK_VERSION],
     _cloog_saved_LDFLAGS=$LDFLAGS
 
     CFLAGS="${_cloog_saved_CFLAGS} ${clooginc} ${pplinc} ${gmpinc}"
-    LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs}"
+    LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs} ${ppllibs}"
 
     if test "${cloog_org}" = yes ; then
       AC_CACHE_CHECK([for verison $1.$2.$3 of CLooG],
