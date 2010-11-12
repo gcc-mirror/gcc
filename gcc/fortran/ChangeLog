@@ -1,3 +1,10 @@
+2010-11-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c/44782
+	* options.c (gfc_post_options): Initialize gfc_option.max_errors.
+	(gfc_handle_option) [OPT_fmax_errors_]: Remove.
+	* lang.opt (fmax-errors=): Remove.
+
 2010-11-11  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	* symbol.c (verify_bind_c_derived_type):  Accept BIND(C) on an empty

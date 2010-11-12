@@ -1,3 +1,8 @@
+2010-11-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c/44782
+	* c-c++-common/fmax-errors.c: New test.
+
 2010-11-11  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/i386/sse-24.c: Use -ffp-contract.

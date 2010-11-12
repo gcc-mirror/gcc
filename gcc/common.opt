@@ -1170,6 +1170,10 @@ fmath-errno
 Common Report Var(flag_errno_math) Init(1) Optimization
 Set errno after built-in math functions
 
+fmax-errors=
+Common Joined RejectNegative UInteger Var(flag_max_errors)
+-fmax-errors=<number>	Maximum number of errors to report
+
 fmem-report
 Common Report Var(mem_report)
 Report on permanent memory allocation

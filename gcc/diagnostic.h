@@ -128,6 +128,9 @@ struct diagnostic_context
   /* True if warnings should be given in system headers.  */
   bool dc_warn_system_headers;
 
+  /* Maximum number of errors to report.  */
+  unsigned int max_errors;
+
   /* This function is called before any message is printed out.  It is
      responsible for preparing message prefix and such.  For example, it
      might say:

@@ -1,3 +1,15 @@
+2010-11-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c/44782
+	* common.opt (fmax-errors=): New option.
+	* opts.c (common_handle_option) [OPT_fmax_errors_]: Handle it.
+	* diagnostic.h (struct diagnostic_context): Add max_errors field.
+	* diagnostic.c (diagnostic_initialize): Initialize it.
+	(diagnostic_action_after_output): Exit if more than max_errors
+	have been output.
+	* doc/invoke.texi (Warning Options): Add -fmax-errors.
+	(-fmax-errors): Document.
+
 2010-11-11  Richard Henderson  <rth@redhat.com>
 
         * optabs.c (init_optabs): Init {fma,fms,fnma,fnms}_optab properly.
