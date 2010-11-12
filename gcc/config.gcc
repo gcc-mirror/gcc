@@ -399,6 +399,9 @@ sh[123456789lbe]*-*-* | sh-*-*)
 	cpu_type=sh
 	need_64bit_hwint=yes
 	;;
+xtensa*-*-*)
+	extra_options="${extra_options} fused-madd.opt"
+	;;
 esac
 
 tm_file=${cpu_type}/${cpu_type}.h

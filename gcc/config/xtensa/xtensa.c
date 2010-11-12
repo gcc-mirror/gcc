@@ -193,7 +193,7 @@ static const struct default_options xtensa_option_optimization_table[] =
 #define TARGET_ASM_SELECT_RTX_SECTION  xtensa_select_rtx_section
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | MASK_FUSED_MADD)
+#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT)
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS xtensa_legitimize_address
