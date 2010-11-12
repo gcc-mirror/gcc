@@ -1,3 +1,11 @@
+2010-11-12  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR target/46438
+	* config/xtensa/xtensa.c (xtensa_expand_nonlocal_goto): Use LCT_NORMAL.
+	(xtensa_setup_frame_addresses, xtensa_trampoline_init): Likewise.
+	(xtensa_function_arg_1): De-constify cum.
+	(xtensa_expand_prologue): Use add_reg_note.
+
 2010-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* function.c (expand_function_end): Set the locator of the prologue on

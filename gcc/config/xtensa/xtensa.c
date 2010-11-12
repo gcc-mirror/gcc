@@ -1305,7 +1305,7 @@ xtensa_expand_nonlocal_goto (rtx *operands)
     containing_fp = force_reg (Pmode, containing_fp);
 
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_nonlocal_goto"),
-		     0, VOIDmode, 2,
+		     LCT_NORMAL, VOIDmode, 2,
 		     containing_fp, Pmode,
 		     goto_handler, Pmode);
 }
@@ -1583,7 +1583,7 @@ xtensa_setup_frame_addresses (void)
 
   emit_library_call
     (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_libgcc_window_spill"),
-     0, VOIDmode, 0);
+     LCT_NORMAL, VOIDmode, 0);
 }
 
 
@@ -2043,7 +2043,7 @@ xtensa_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    if this is an incoming argument to the current function.  */
 
 static rtx
-xtensa_function_arg_1 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+xtensa_function_arg_1 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 		       const_tree type, bool incoming_p)
 {
   int regbase, words, max;
@@ -2637,8 +2637,7 @@ xtensa_expand_prologue (void)
 				     : stack_pointer_rtx),
 			  plus_constant (stack_pointer_rtx, -total_size));
   RTX_FRAME_RELATED_P (insn) = 1;
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-					note_rtx, REG_NOTES (insn));
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, note_rtx);
 }
 
 
@@ -3590,7 +3589,7 @@ xtensa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain)
   emit_move_insn (adjust_address (m_tramp, SImode, chain_off), chain);
   emit_move_insn (adjust_address (m_tramp, SImode, func_off), func);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_sync_caches"),
-		     0, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
 }
 
 
