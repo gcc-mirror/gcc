@@ -6180,6 +6180,10 @@ init_optabs (void)
   init_optab (umax_optab, UMAX);
   init_optab (pow_optab, UNKNOWN);
   init_optab (atan2_optab, UNKNOWN);
+  init_optab (fma_optab, FMA);
+  init_optab (fms_optab, UNKNOWN);
+  init_optab (fnma_optab, UNKNOWN);
+  init_optab (fnms_optab, UNKNOWN);
 
   /* These three have codes assigned exclusively for the sake of
      have_insn_for.  */

@@ -1,5 +1,9 @@
 2010-11-11  Richard Henderson  <rth@redhat.com>
 
+        * optabs.c (init_optabs): Init {fma,fms,fnma,fnms}_optab properly.
+
+2010-11-11  Richard Henderson  <rth@redhat.com>
+
 	* config/fused-madd.opt: New file.
 	* config.gcc [i386-*, x86_64-*] (extra_options): Use it.
 	* config/i386/i386.c (ix86_extra_costs): Handle FMA.
