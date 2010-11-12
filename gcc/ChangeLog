@@ -1,3 +1,8 @@
+2010-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* function.c (expand_function_end): Set the locator of the prologue on
+	the stack checking insns.
+
 2010-11-12  Richard Henderson  <rth@redhat.com>
 
 	* config.gcc [xtensa] (extra_options): Add fused-madd.opt.
