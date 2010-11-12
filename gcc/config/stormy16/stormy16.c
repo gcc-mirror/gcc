@@ -1109,9 +1109,7 @@ xstormy16_expand_prologue (void)
 	XVECEXP (dwarf, 0, 1) = gen_rtx_SET (Pmode, stack_pointer_rtx,
 					     plus_constant (stack_pointer_rtx,
 							    GET_MODE_SIZE (Pmode)));
-	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-					      dwarf,
-					      REG_NOTES (insn));
+	add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
 	RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 0)) = 1;
 	RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 1)) = 1;
       }
@@ -1134,9 +1132,7 @@ xstormy16_expand_prologue (void)
 	XVECEXP (dwarf, 0, 1) = gen_rtx_SET (Pmode, stack_pointer_rtx,
 					     plus_constant (stack_pointer_rtx,
 							    GET_MODE_SIZE (Pmode)));
-	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-					      dwarf,
-					      REG_NOTES (insn));
+	add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
 	RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 0)) = 1;
 	RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 1)) = 1;
       }
@@ -1279,9 +1275,9 @@ xstormy16_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   if (mode == VOIDmode)
     return const0_rtx;
   if (targetm.calls.must_pass_in_stack (mode, type)
-      || cum + XSTORMY16_WORD_SIZE (type, mode) > NUM_ARGUMENT_REGISTERS)
+      || *cum + XSTORMY16_WORD_SIZE (type, mode) > NUM_ARGUMENT_REGISTERS)
     return NULL_RTX;
-  return gen_rtx_REG (mode, cum + FIRST_ARGUMENT_REGISTER);
+  return gen_rtx_REG (mode, *cum + FIRST_ARGUMENT_REGISTER);
 }
 
 /* Build the va_list type.
@@ -2332,7 +2328,7 @@ xstormy16_expand_builtin (tree exp, rtx target,
 
   for (a = 0; a < 10 && argtree; a++)
     {
-      args[a] = expand_expr (TREE_VALUE (argtree), NULL_RTX, VOIDmode, 0);
+      args[a] = expand_normal (TREE_VALUE (argtree));
       argtree = TREE_CHAIN (argtree);
     }
 
@@ -2340,11 +2336,11 @@ xstormy16_expand_builtin (tree exp, rtx target,
     {
       char ao = s16builtins[i].arg_ops[o];
       char c = insn_data[code].operand[o].constraint[0];
-      int omode;
+      enum machine_mode omode;
 
       copyto[o] = 0;
 
-      omode = insn_data[code].operand[o].mode;
+      omode = (enum machine_mode) insn_data[code].operand[o].mode;
       if (ao == 'r')
 	op[o] = target ? target : gen_reg_rtx (omode);
       else if (ao == 't')
@@ -2391,7 +2387,7 @@ combine_bnp (rtx insn)
 {
   int insn_code, regno, need_extend;
   unsigned int mask;
-  rtx cond, reg, and, load, qireg, mem;
+  rtx cond, reg, and_insn, load, qireg, mem;
   enum machine_mode load_mode = QImode;
   enum machine_mode and_mode = QImode;
   rtx shift = NULL_RTX;
@@ -2432,50 +2428,52 @@ combine_bnp (rtx insn)
     {
       /* LT and GE conditionals should have a sign extend before
 	 them.  */
-      for (and = prev_real_insn (insn); and; and = prev_real_insn (and))
+      for (and_insn = prev_real_insn (insn); and_insn;
+	   and_insn = prev_real_insn (and_insn))
 	{
-	  int and_code = recog_memoized (and);
+	  int and_code = recog_memoized (and_insn);
 
 	  if (and_code == CODE_FOR_extendqihi2
-	      && rtx_equal_p (SET_DEST (PATTERN (and)), reg)
-	      && rtx_equal_p (XEXP (SET_SRC (PATTERN (and)), 0), qireg))
+	      && rtx_equal_p (SET_DEST (PATTERN (and_insn)), reg)
+	      && rtx_equal_p (XEXP (SET_SRC (PATTERN (and_insn)), 0), qireg))
 	    break;
 
 	  if (and_code == CODE_FOR_movhi_internal
-	      && rtx_equal_p (SET_DEST (PATTERN (and)), reg))
+	      && rtx_equal_p (SET_DEST (PATTERN (and_insn)), reg))
 	    {
 	      /* This is for testing bit 15.  */
-	      and = insn;
+	      and_insn = insn;
 	      break;
 	    }
 
-	  if (reg_mentioned_p (reg, and))
+	  if (reg_mentioned_p (reg, and_insn))
 	    return;
 
-	  if (GET_CODE (and) != NOTE
-	      && GET_CODE (and) != INSN)
+	  if (GET_CODE (and_insn) != NOTE
+	      && GET_CODE (and_insn) != INSN)
 	    return;
 	}
     }
   else
     {
       /* EQ and NE conditionals have an AND before them.  */
-      for (and = prev_real_insn (insn); and; and = prev_real_insn (and))
+      for (and_insn = prev_real_insn (insn); and_insn;
+	   and_insn = prev_real_insn (and_insn))
 	{
-	  if (recog_memoized (and) == CODE_FOR_andhi3
-	      && rtx_equal_p (SET_DEST (PATTERN (and)), reg)
-	      && rtx_equal_p (XEXP (SET_SRC (PATTERN (and)), 0), reg))
+	  if (recog_memoized (and_insn) == CODE_FOR_andhi3
+	      && rtx_equal_p (SET_DEST (PATTERN (and_insn)), reg)
+	      && rtx_equal_p (XEXP (SET_SRC (PATTERN (and_insn)), 0), reg))
 	    break;
 
-	  if (reg_mentioned_p (reg, and))
+	  if (reg_mentioned_p (reg, and_insn))
 	    return;
 
-	  if (GET_CODE (and) != NOTE
-	      && GET_CODE (and) != INSN)
+	  if (GET_CODE (and_insn) != NOTE
+	      && GET_CODE (and_insn) != INSN)
 	    return;
 	}
 
-      if (and)
+      if (and_insn)
 	{
 	  /* Some mis-optimizations by GCC can generate a RIGHT-SHIFT
 	     followed by an AND like this:
@@ -2486,7 +2484,8 @@ combine_bnp (rtx insn)
                (set (reg:HI r7) (and:HI (reg:HI r7) (const_int 1)))
 
 	     Attempt to detect this here.  */
-	  for (shift = prev_real_insn (and); shift; shift = prev_real_insn (shift))
+	  for (shift = prev_real_insn (and_insn); shift;
+	       shift = prev_real_insn (shift))
 	    {
 	      if (recog_memoized (shift) == CODE_FOR_lshrhi3
 		  && rtx_equal_p (SET_DEST (XVECEXP (PATTERN (shift), 0, 0)), reg)
@@ -2503,10 +2502,10 @@ combine_bnp (rtx insn)
 	    }
 	}
     }
-  if (!and)
+  if (!and_insn)
     return;
 
-  for (load = shift ? prev_real_insn (shift) : prev_real_insn (and);
+  for (load = shift ? prev_real_insn (shift) : prev_real_insn (and_insn);
        load;
        load = prev_real_insn (load))
     {
@@ -2562,10 +2561,11 @@ combine_bnp (rtx insn)
     }
   else
     {
-      if (!xstormy16_onebit_set_operand (XEXP (SET_SRC (PATTERN (and)), 1), load_mode))
+      if (!xstormy16_onebit_set_operand (XEXP (SET_SRC (PATTERN (and_insn)), 1),
+					 load_mode))
 	return;
 
-      mask = (int) INTVAL (XEXP (SET_SRC (PATTERN (and)), 1));
+      mask = (int) INTVAL (XEXP (SET_SRC (PATTERN (and_insn)), 1));
 
       if (shift)
 	mask <<= INTVAL (XEXP (SET_SRC (XVECEXP (PATTERN (shift), 0, 0)), 1));
@@ -2591,8 +2591,8 @@ combine_bnp (rtx insn)
   INSN_CODE (insn) = -1;
   delete_insn (load);
 
-  if (and != insn)
-    delete_insn (and);
+  if (and_insn != insn)
+    delete_insn (and_insn);
 
   if (shift != NULL_RTX)
     delete_insn (shift);
