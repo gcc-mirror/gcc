@@ -71,6 +71,10 @@
 	* final.c (split_double): Don't use BITS_PER_WORD directly in
 	shift count.
 
+	PR target/46431
+	* config/fr30/fr30.md (*movsf_constant_store): Remove duplicated
+	assignment.
+
 2010-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/46375
