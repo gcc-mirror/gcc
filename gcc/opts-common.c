@@ -286,7 +286,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   size_t opt_index;
   const char *arg = 0;
   int value = 1;
-  unsigned int result = 1, i, extra_args, separate_args;
+  unsigned int result = 1, i, extra_args, separate_args = 0;
   int adjust_len = 0;
   size_t total_len;
   char *p;
