@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Os -fdump-tree-optimize" } */
+/* { dg-options "-Os -fdump-tree-optimized" } */
 struct a {int a,b,c,d,e,f;};
 
 do_inc (struct a *a)
@@ -31,5 +31,5 @@ test(struct a *a)
   do_inc (a);
   do_something (a);
 }
-/* { dg-final { scan-tree-dump-times "do_inc.*;" 10 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "do_inc" 12 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
