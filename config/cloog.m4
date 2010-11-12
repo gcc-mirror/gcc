@@ -91,15 +91,17 @@ AC_DEFUN([CLOOG_REQUESTED],
 # ------------------
 # Helper for detecting CLooG.org's backend.
 m4_define([_CLOOG_ORG_PROG],[AC_LANG_PROGRAM(
-  [#include <cloog/cloog.h>],
+  [#include "cloog/cloog.h"],
   [cloog_version ()])])
 
 # _CLOOG_PPL_LEGACY_PROG ()
 # -------------------------
 # Helper for detecting CLooG-Legacy (CLooG-PPL).
 m4_define([_CLOOG_PPL_LEGACY_PROG], [AC_LANG_PROGRAM(
-  [#include <cloog/cloog.h>],
-  [ppl_version_major ()])])
+  [#include "cloog/cloog.h"],
+  [#ifndef CLOOG_PPL_BACKEND
+    choke me
+   #endif ])])
 
 # CLOOG_FIND_FLAGS ()
 # ------------------
@@ -114,12 +116,11 @@ AC_DEFUN([CLOOG_FIND_FLAGS],
   _cloog_saved_LDFLAGS=$LDFLAGS
   _cloog_saved_LIBS=$LIBS
 
-  _clooglegacyinc="-DCLOOG_PPL_BACKEND"
   _cloogorginc="-DCLOOG_INT_GMP -DCLOOG_ORG"
  
   dnl clooglibs & clooginc may have been initialized by CLOOG_INIT_FLAGS.
   CFLAGS="${CFLAGS} ${clooginc} ${pplinc} ${gmpinc}"
-  CPPFLAGS="${CPPFLAGS} ${_clooglegacyinc} ${_cloogorginc}"
+  CPPFLAGS="${CPPFLAGS} ${_cloogorginc}"
   LDFLAGS="${LDFLAGS} ${clooglibs} ${ppllibs}"
 
   AC_CACHE_CHECK([for installed CLooG],
@@ -137,7 +138,7 @@ AC_DEFUN([CLOOG_FIND_FLAGS],
 
   case $gcc_cv_cloog_type in
     "PPL Legacy")
-      clooginc="${clooginc} ${_clooglegacyinc}"
+      clooginc="${clooginc}"
       clooglibs="${clooglibs} -lcloog"
       cloog_org=no
       ;;

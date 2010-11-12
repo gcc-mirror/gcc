@@ -5725,11 +5725,10 @@ if test "x$with_cloog" != "xno"; then
   _cloog_saved_LDFLAGS=$LDFLAGS
   _cloog_saved_LIBS=$LIBS
 
-  _clooglegacyinc="-DCLOOG_PPL_BACKEND"
   _cloogorginc="-DCLOOG_INT_GMP -DCLOOG_ORG"
 
     CFLAGS="${CFLAGS} ${clooginc} ${pplinc} ${gmpinc}"
-  CPPFLAGS="${CPPFLAGS} ${_clooglegacyinc} ${_cloogorginc}"
+  CPPFLAGS="${CPPFLAGS} ${_cloogorginc}"
   LDFLAGS="${LDFLAGS} ${clooglibs} ${ppllibs}"
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for installed CLooG" >&5
@@ -5740,11 +5739,13 @@ else
   LIBS="-lcloog ${_cloog_saved_LIBS}"
      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <cloog/cloog.h>
+#include "cloog/cloog.h"
 int
 main ()
 {
-ppl_version_major ()
+#ifndef CLOOG_PPL_BACKEND
+    choke me
+   #endif
   ;
   return 0;
 }
@@ -5755,7 +5756,7 @@ else
   LIBS="-lcloog-isl -lisl ${_cloog_saved_LIBS}"
        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <cloog/cloog.h>
+#include "cloog/cloog.h"
 int
 main ()
 {
@@ -5770,7 +5771,7 @@ else
   LIBS="-lcloog-ppl ${_cloog_saved_LIBS}"
          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <cloog/cloog.h>
+#include "cloog/cloog.h"
 int
 main ()
 {
@@ -5798,7 +5799,7 @@ $as_echo "$gcc_cv_cloog_type" >&6; }
 
   case $gcc_cv_cloog_type in
     "PPL Legacy")
-      clooginc="${clooginc} ${_clooglegacyinc}"
+      clooginc="${clooginc}"
       clooglibs="${clooglibs} -lcloog"
       cloog_org=no
       ;;
