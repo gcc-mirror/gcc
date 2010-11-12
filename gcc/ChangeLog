@@ -1,3 +1,25 @@
+2010-11-12  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2010-11-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46355
+	* tree-loop-distribution.c (tree_loop_distribution): Do not
+	distribute loops without a single exit.
+
+	2010-11-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46177
+	* tree-loop-distribution.c (prop_phis): Use
+	mark_virtual_phi_result_for_renaming.
+
+	2010-11-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46177
+	* tree-loop-distribution.c (prop_phis): Remove.
+	(generate_builtin): Re-use the old loop exit edge to avoid
+	needing to update PHI nodes.
+
 2010-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline

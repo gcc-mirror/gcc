@@ -321,38 +321,6 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
   return res;
 }
 
-/* Propagate phis in BB b to their uses and remove them.  */
-
-static void
-prop_phis (basic_block b)
-{
-  gimple_stmt_iterator psi;
-  gimple_seq phis = phi_nodes (b);
-
-  for (psi = gsi_start (phis); !gsi_end_p (psi); )
-    {
-      gimple phi = gsi_stmt (psi);
-      tree def = gimple_phi_result (phi), use = gimple_phi_arg_def (phi, 0);
-
-      gcc_assert (gimple_phi_num_args (phi) == 1);
-
-      if (!is_gimple_reg (def))
-	{
-	  imm_use_iterator iter;
-	  use_operand_p use_p;
-	  gimple stmt;
-
-	  FOR_EACH_IMM_USE_STMT (stmt, iter, def)
-	    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-	      SET_USE (use_p, use);
-	}
-      else
-	replace_uses_by (def, use);
-
-      remove_phi_node (&psi, true);
-    }
-}
-
 /* Tries to generate a builtin function for the instructions of LOOP
    pointed to by the bits set in PARTITION.  Returns true when the
    operation succeeded.  */
@@ -422,11 +390,13 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
   if (res && !copy_p)
     {
       unsigned nbbs = loop->num_nodes;
-      basic_block src = loop_preheader_edge (loop)->src;
-      basic_block dest = single_exit (loop)->dest;
-      prop_phis (dest);
-      make_edge (src, dest, EDGE_FALLTHRU);
+      edge exit = single_exit (loop);
+      basic_block src = loop_preheader_edge (loop)->src, dest = exit->dest;
+      redirect_edge_pred (exit, src);
+      exit->flags &= ~(EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
+      exit->flags |= EDGE_FALLTHRU;
       cancel_loop_tree (loop);
+      rescan_loop_exit (exit, false, true);
 
       for (i = 0; i < nbbs; i++)
 	delete_basic_block (bbs[i]);
@@ -1192,7 +1162,12 @@ tree_loop_distribution (void)
 
   FOR_EACH_LOOP (li, loop, 0)
     {
-      VEC (gimple, heap) *work_list = VEC_alloc (gimple, heap, 3);
+      VEC (gimple, heap) *work_list = NULL;
+
+      /* If the loop doesn't have a single exit we will fail anyway,
+	 so do that early.  */
+      if (!single_exit (loop))
+	continue;
 
       /* With the following working list, we're asking distribute_loop
 	 to separate the stores of the loop: when dependences allow,
