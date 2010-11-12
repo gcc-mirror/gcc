@@ -1,3 +1,20 @@
+2010-11-12  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR target/46430
+	* config/avr/avr-protos.h (avr_return_addr_rtx): Update prototype.
+	* config/avr/driver-avr.c (avr_device_to_arch): Always return value.
+	(avr_device_to_data_start, avr_device_to_startfiles): Likewise.
+	(avr_device_to_devicelib): Likewise.
+	* config/avr/avr.md (zero_extendqihi2): Put variable declarations
+	into block.
+	(zero_extendqisi2, zero_extendhisi2, zero_extendqidi2): Likewise.
+	(zero_extendhidi2, zero_extendsidi2): Likewise.
+	* config/avr/avr.c (avr_num_arg_regs): Constify type.
+	(avr_return_addr_rtx): De-constify tem.
+	(avr_rotate_bytes): Move declarations to start of block.
+	Don't use variable length array.
+	Put nested if/else into block.
+
 2010-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/46375

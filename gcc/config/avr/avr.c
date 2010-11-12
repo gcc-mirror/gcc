@@ -60,7 +60,7 @@ static int get_sequence_length (rtx insns);
 static int sequent_regs_live (void);
 static const char *ptrreg_to_str (int);
 static const char *cond_string (enum rtx_code);
-static int avr_num_arg_regs (enum machine_mode, tree);
+static int avr_num_arg_regs (enum machine_mode, const_tree);
 
 static RTX_CODE compare_condition (rtx insn);
 static rtx avr_legitimize_address (rtx, rtx, enum machine_mode);
@@ -436,7 +436,7 @@ rtx avr_builtin_setjmp_frame_value (void)
 /* Return contents of MEM at frame pointer + stack size + 1 (+2 if 3 byte PC).
    This is return address of function.  */
 rtx 
-avr_return_addr_rtx (int count, const_rtx tem)
+avr_return_addr_rtx (int count, rtx tem)
 {
   rtx r;
     
@@ -1566,7 +1566,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx libname,
 /* Returns the number of registers to allocate for a function argument.  */
 
 static int
-avr_num_arg_regs (enum machine_mode mode, tree type)
+avr_num_arg_regs (enum machine_mode mode, const_tree type)
 {
   int size;
 
@@ -4256,6 +4256,8 @@ avr_rotate_bytes (rtx operands[])
     /* Work out if byte or word move is needed.  Odd byte rotates need QImode.
        Word move if no scratch is needed, otherwise use size of scratch.  */
     enum machine_mode move_mode = QImode;
+    int move_size, offset, size;
+
     if (num & 0xf)
       move_mode = QImode;
     else if ((mode == SImode && !same_reg) || !overlapped)
@@ -4271,11 +4273,11 @@ avr_rotate_bytes (rtx operands[])
     if (GET_MODE (scratch) == HImode && move_mode == QImode)
       scratch = simplify_gen_subreg (move_mode, scratch, HImode, 0); 
 
-    int move_size = GET_MODE_SIZE (move_mode);
+    move_size = GET_MODE_SIZE (move_mode);
     /* Number of bytes/words to rotate.  */
-    int offset = (num  >> 3) / move_size;
+    offset = (num  >> 3) / move_size;
     /* Number of moves needed.  */
-    int size = GET_MODE_SIZE (mode) / move_size;
+    size = GET_MODE_SIZE (mode) / move_size;
     /* Himode byte swap is special case to avoid a scratch register.  */
     if (mode == HImode && same_reg)
       {
@@ -4292,12 +4294,15 @@ avr_rotate_bytes (rtx operands[])
       }    
     else  
       {
+#define MAX_SIZE 8 /* GET_MODE_SIZE (DImode) / GET_MODE_SIZE (QImode)  */
 	/* Create linked list of moves to determine move order.  */
 	struct {
 	  rtx src, dst;
 	  int links;
-	} move[size + 8];
+	} move[MAX_SIZE + 8];
+	int blocked, moves;
 
+	gcc_assert (size <= MAX_SIZE);
 	/* Generate list of subreg moves.  */
 	for (i = 0; i < size; i++)
 	  {
@@ -4323,8 +4328,8 @@ avr_rotate_bytes (rtx operands[])
 		    break;
 		  }
 
-	int blocked = -1;
-	int moves = 0;
+	blocked = -1;
+	moves = 0;
 	/* Go through move list and perform non-conflicting moves.  As each
 	   non-overlapping move is made, it may remove other conflicts
 	   so the process is repeated until no conflicts remain.  */
@@ -4336,18 +4341,21 @@ avr_rotate_bytes (rtx operands[])
 	       src already.  */
 	    for (i = 0; i < size; i++)
 	      if (move[i].src != NULL_RTX)
-		if  (move[i].links == -1 || move[move[i].links].src == NULL_RTX)
-		  {
-		    moves++;
-		    /* Ignore NOP moves to self.  */
-		    if (!rtx_equal_p (move[i].dst, move[i].src))
-		      emit_move_insn (move[i].dst, move[i].src);
+		{
+		  if (move[i].links == -1
+		      || move[move[i].links].src == NULL_RTX)
+		    {
+		      moves++;
+		      /* Ignore NOP moves to self.  */
+		      if (!rtx_equal_p (move[i].dst, move[i].src))
+			emit_move_insn (move[i].dst, move[i].src);
 
-		    /* Remove  conflict from list.  */
-		    move[i].src = NULL_RTX;
-		  }
-		else
-		  blocked = i;
+		      /* Remove  conflict from list.  */
+		      move[i].src = NULL_RTX;
+		    }
+		  else
+		    blocked = i;
+		}
 
 	    /* Check for deadlock. This is when no moves occurred and we have
 	       at least one blocked move.  */
