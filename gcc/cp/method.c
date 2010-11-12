@@ -1628,12 +1628,6 @@ defaultable_fn_check (tree fn)
 	  }
       if (TYPE_BEING_DEFINED (DECL_CONTEXT (fn)))
 	{
-	  if (DECL_NONCONVERTING_P (fn))
-	    error ("%qD declared explicit cannot be defaulted in the class "
-		   "body", fn);
-	  if (current_access_specifier != access_public_node)
-	    error ("%qD declared with non-public access cannot be defaulted "
-		   "in the class body", fn);
 	  if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)))
 	    error ("function %q+D defaulted on its first declaration "
 		   "must not have an exception-specification", fn);

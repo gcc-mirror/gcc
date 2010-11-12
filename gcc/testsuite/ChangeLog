@@ -1,3 +1,7 @@
+2010-11-13  Ville Voutilainen <ville.voutilainen@gmail.com> <ville.voutilainen@symbio.com>
+
+	* g++.dg/cpp0x/defaulted15.C: Adjust.
+
 2010-11-12  James Dennett <jdennett@google.com>
 
 	PR c++/39415
