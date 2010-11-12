@@ -1704,7 +1704,6 @@ layout_mcore_frame (struct mcore_frame * infp)
   int nbytes;
   int regarg;
   int localregarg;
-  int localreg;
   int outbounds;
   unsigned int growths;
   int step;
@@ -1749,7 +1748,6 @@ layout_mcore_frame (struct mcore_frame * infp)
 
   regarg      = infp->reg_size + infp->arg_size;
   localregarg = infp->local_size + regarg;
-  localreg    = infp->local_size + infp->reg_size;
   outbounds   = infp->outbound_size + infp->pad_outbound;
   growths     = 0;
 
