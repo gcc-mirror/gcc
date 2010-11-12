@@ -36,7 +36,19 @@ AC_DEFUN([CLOOG_INIT_FLAGS],
     [AS_HELP_STRING(
       [--with-cloog-lib=PATH],
       [Specify the directory for the installed CLooG library])])
-  
+
+  AC_ARG_ENABLE(cloog-backend,
+    [  --enable-cloog-backend[=backend]
+				isl: The cloog.org isl backend
+				ppl-legacy: The legacy ppl backend - default
+				ppl: The cloog.org ppl backend],
+    [ if   test "x${enableval}" = "xisl"; then
+	cloog_backend=isl
+      elif test "x${enableval}" = "xppl"; then
+	cloog_backend=ppl
+      else
+	cloog_backend=ppl-legacy
+      fi], cloog_backend=ppl-legacy)
   AC_ARG_ENABLE(cloog-version-check,
     [AS_HELP_STRING(
       [--disable-cloog-version-check],
@@ -87,11 +99,19 @@ AC_DEFUN([CLOOG_REQUESTED],
 ]
 )
 
-# _CLOOG_ORG_PROG ()
+# _CLOOG_ORG_PROG_ISL ()
 # ------------------
-# Helper for detecting CLooG.org's backend.
-m4_define([_CLOOG_ORG_PROG],[AC_LANG_PROGRAM(
-  [#include "cloog/cloog.h"],
+# Helper for detecting CLooG.org's ISL backend.
+m4_define([_CLOOG_ORG_PROG_ISL],[AC_LANG_PROGRAM(
+  [#include "cloog/cloog.h" ],
+  [cloog_version ()])])
+
+# _CLOOG_ORG_PROG_PPL ()
+# ------------------
+# Helper for detecting CLooG.org's PPL backend.
+m4_define([_CLOOG_ORG_PROG_PPL],[AC_LANG_PROGRAM(
+  [#include "cloog/cloog.h"
+   #include "cloog/ppl/cloog.h"],
   [cloog_version ()])])
 
 # _CLOOG_PPL_LEGACY_PROG ()
@@ -106,7 +126,7 @@ m4_define([_CLOOG_PPL_LEGACY_PROG], [AC_LANG_PROGRAM(
 # CLOOG_FIND_FLAGS ()
 # ------------------
 # Detect the used CLooG-backend and set clooginc/clooglibs/cloog_org.
-# Preference: CLooG-PPL (Legacy) > CLooG-ISL > CLooG-PPL
+# Only look for the CLooG backend type specified in --enable-cloog-backend
 AC_DEFUN([CLOOG_FIND_FLAGS],
 [
   AC_REQUIRE([CLOOG_INIT_FLAGS])
@@ -119,22 +139,36 @@ AC_DEFUN([CLOOG_FIND_FLAGS],
   _cloogorginc="-DCLOOG_INT_GMP -DCLOOG_ORG"
  
   dnl clooglibs & clooginc may have been initialized by CLOOG_INIT_FLAGS.
-  CFLAGS="${CFLAGS} ${clooginc} ${pplinc} ${gmpinc}"
+  CFLAGS="${CFLAGS} ${clooginc} ${gmpinc}"
   CPPFLAGS="${CPPFLAGS} ${_cloogorginc}"
-  LDFLAGS="${LDFLAGS} ${clooglibs} ${ppllibs}"
+  LDFLAGS="${LDFLAGS} ${clooglibs}"
 
-  AC_CACHE_CHECK([for installed CLooG],
-                 [gcc_cv_cloog_type],
-    [LIBS="-lcloog ${_cloog_saved_LIBS}"
-     AC_LINK_IFELSE([_CLOOG_PPL_LEGACY_PROG],
-      [gcc_cv_cloog_type="PPL Legacy"],
-      [LIBS="-lcloog-isl -lisl ${_cloog_saved_LIBS}"
-       AC_LINK_IFELSE([_CLOOG_ORG_PROG],
-        [gcc_cv_cloog_type=ISL],
-        [LIBS="-lcloog-ppl ${_cloog_saved_LIBS}"
-         AC_LINK_IFELSE([_CLOOG_ORG_PROG],
-          [gcc_cv_cloog_type=PPL],
-          [gcc_cv_cloog_type=no])])])])
+  case $cloog_backend in
+    "ppl-legacy")
+    CFLAGS="${CFLAGS} ${pplinc}"
+    LDFLAGS="${LDFLAGS} ${ppllibs}"
+    AC_CACHE_CHECK([for installed CLooG PPL Legacy], [gcc_cv_cloog_type],
+      [LIBS="-lcloog ${_cloog_saved_LIBS}"
+      AC_LINK_IFELSE([_CLOOG_PPL_LEGACY_PROG], [gcc_cv_cloog_type="PPL Legacy"],
+		     [gcc_cv_cloog_type=no])])
+    ;;
+    "isl")
+    AC_CACHE_CHECK([for installed CLooG ISL], [gcc_cv_cloog_type],
+      [LIBS="-lcloog-isl ${_cloog_saved_LIBS}"
+      AC_LINK_IFELSE([_CLOOG_ORG_PROG_ISL], [gcc_cv_cloog_type="ISL"],
+		     [gcc_cv_cloog_type=no])])
+    ;;
+    "ppl")
+    CFLAGS="${CFLAGS} ${pplinc}"
+    LDFLAGS="${LDFLAGS} ${ppllibs}"
+    AC_CACHE_CHECK([for installed CLooG PPL], [gcc_cv_cloog_type],
+      [LIBS="-lcloog-ppl ${_cloog_saved_LIBS}"
+      AC_LINK_IFELSE([_CLOOG_ORG_PROG_PPL], [gcc_cv_cloog_type="PPL"],
+		     [gcc_cv_cloog_type=no])])
+    ;;
+    *)
+      gcc_cv_cloog_type=""
+  esac
 
   case $gcc_cv_cloog_type in
     "PPL Legacy")
