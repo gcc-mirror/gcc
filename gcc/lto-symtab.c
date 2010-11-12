@@ -444,6 +444,7 @@ lto_symtab_resolve_replaceable_p (lto_symtab_entry_t e)
 {
   if (DECL_EXTERNAL (e->decl)
       || DECL_COMDAT (e->decl)
+      || DECL_ONE_ONLY (e->decl)
       || DECL_WEAK (e->decl))
     return true;
 

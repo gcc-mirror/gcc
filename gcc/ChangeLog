@@ -1,3 +1,8 @@
+2010-11-11  Rodrigo Rivas Costa  <rodrigorivascosta@gmail.com>
+
+	PR lto/46376
+	* lto-symtab.c (lto_symtab_resolve_replaceable_p): Use DECL_ONE_ONLY.
+
 2010-11-11  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c/44782
