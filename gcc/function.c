@@ -4867,6 +4867,7 @@ expand_function_end (void)
 	      probe_stack_range (STACK_OLD_CHECK_PROTECT, max_frame_size);
 	    seq = get_insns ();
 	    end_sequence ();
+	    set_insn_locators (seq, prologue_locator);
 	    emit_insn_before (seq, stack_check_probe_note);
 	    break;
 	  }
