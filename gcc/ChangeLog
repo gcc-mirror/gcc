@@ -1,3 +1,12 @@
+2010-11-12  Richard Henderson  <rth@redhat.com>
+
+	* config.gcc [xtensa] (extra_options): Add fused-madd.opt.
+	* config/xtensa/xtensa.opt (mfused-madd): Remove.
+	* config/xtensa/xtensa.c (TARGET_DEFAULT_TARGET_FLAGS): Remove
+	MASK_FUSED_MADD.
+	* config/xtensa/xtensa.md (fmasf4): Rename from muladdsf3; use fma.
+	(fnmasf4): Rename from mulsubsf3; use fma.
+
 2010-11-12  Joern Rennecke  <amylaar@spamcop.net>
 	    Richard Henderson  <rth@redhat.com>
 
