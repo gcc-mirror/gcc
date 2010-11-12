@@ -103,8 +103,6 @@ static void cris_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 
 static int cris_initial_frame_pointer_offset (void);
 
-static int saved_regs_mentioned (rtx);
-
 static void cris_operand_lossage (const char *, rtx);
 
 static int cris_reg_saved_in_regsave_area  (unsigned int, bool);
@@ -678,57 +676,6 @@ cris_reg_saved_in_regsave_area (unsigned int regno, bool got_really_used)
 	    || regno == EH_RETURN_DATA_REGNO (1)
 	    || regno == EH_RETURN_DATA_REGNO (2)
 	    || regno == EH_RETURN_DATA_REGNO (3)));
-}
-
-/* Return nonzero if there are regs mentioned in the insn that are not all
-   in the call_used regs.  This is part of the decision whether an insn
-   can be put in the epilogue.  */
-
-static int
-saved_regs_mentioned (rtx x)
-{
-  int i;
-  const char *fmt;
-  RTX_CODE code;
-
-  /* Mainly stolen from refers_to_regno_p in rtlanal.c.  */
-
-  code = GET_CODE (x);
-
-  switch (code)
-    {
-    case REG:
-      i = REGNO (x);
-      return !call_used_regs[i];
-
-    case SUBREG:
-      /* If this is a SUBREG of a hard reg, we can see exactly which
-	 registers are being modified.  Otherwise, handle normally.  */
-      i = REGNO (SUBREG_REG (x));
-      return !call_used_regs[i];
-
-    default:
-      ;
-    }
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  if (saved_regs_mentioned (XEXP (x, i)))
-	    return 1;
-	}
-      else if (fmt[i] == 'E')
-	{
-	  int j;
-	  for (j = XVECLEN (x, i) - 1; j >=0; j--)
-	    if (saved_regs_mentioned (XEXP (x, i)))
-	      return 1;
-	}
-    }
-
-  return 0;
 }
 
 /* The PRINT_OPERAND worker.  */
@@ -1335,9 +1282,8 @@ cris_reload_address_legitimized (rtx x,
 				 int itype,
 				 int ind_levels ATTRIBUTE_UNUSED)
 {
-  enum reload_type type = itype;
+  enum reload_type type = (enum reload_type) itype;
   rtx op0, op1;
-  rtx *op0p;
   rtx *op1p;
 
   if (GET_CODE (x) != PLUS)
@@ -1347,7 +1293,6 @@ cris_reload_address_legitimized (rtx x,
     return false;
 
   op0 = XEXP (x, 0);
-  op0p = &XEXP (x, 0);
   op1 = XEXP (x, 1);
   op1p = &XEXP (x, 1);
 
@@ -1946,8 +1891,9 @@ cris_rtx_costs (rtx x, int code, int outer_code, int *total,
           && !CONST_INT_P (XEXP (x, 0))
           && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (XEXP (x, 1)), 'I'))
 	{
-	  *total = (rtx_cost (XEXP (x, 0), outer_code, speed) + 2
-		    + 2 * GET_MODE_NUNITS (GET_MODE (XEXP (x, 0))));
+	  *total
+	    = (rtx_cost (XEXP (x, 0), (enum rtx_code) outer_code, speed) + 2
+	       + 2 * GET_MODE_NUNITS (GET_MODE (XEXP (x, 0))));
 	  return true;
 	}
       return false;
@@ -1958,7 +1904,7 @@ cris_rtx_costs (rtx x, int code, int outer_code, int *total,
       /* fall through */
 
     case ZERO_EXTEND: case SIGN_EXTEND:
-      *total = rtx_cost (XEXP (x, 0), outer_code, speed);
+      *total = rtx_cost (XEXP (x, 0), (enum rtx_code) outer_code, speed);
       return true;
 
     default:
@@ -3539,9 +3485,7 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
 	    XVECEXP (seq, 0, i)
 	      = copy_rtx (XVECEXP (PATTERN (insn), 0, i + 1));
 	  XVECEXP (seq, 0, nregs) = copy_rtx (XVECEXP (PATTERN (insn), 0, 1));
-	  REG_NOTES (insn)
-	    = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, seq,
-				 REG_NOTES (insn));
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, seq);
 	}
 
       RTX_FRAME_RELATED_P (insn) = 1;
