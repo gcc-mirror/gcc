@@ -4546,20 +4546,17 @@ d_print_function_type (struct d_print_info *dpi,
                        struct d_print_mod *mods)
 {
   int need_paren;
-  int saw_mod;
   int need_space;
   struct d_print_mod *p;
   struct d_print_mod *hold_modifiers;
 
   need_paren = 0;
-  saw_mod = 0;
   need_space = 0;
   for (p = mods; p != NULL; p = p->next)
     {
       if (p->printed)
 	break;
 
-      saw_mod = 1;
       switch (p->mod->type)
 	{
 	case DEMANGLE_COMPONENT_POINTER:
@@ -4587,9 +4584,6 @@ d_print_function_type (struct d_print_info *dpi,
       if (need_paren)
 	break;
     }
-
-  if (d_left (dc) != NULL && ! saw_mod)
-    need_paren = 1;
 
   if (need_paren)
     {
