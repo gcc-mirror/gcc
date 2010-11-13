@@ -1,3 +1,10 @@
+2010-11-12  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/46204
+	* sel-sched-ir.c (maybe_tidy_empty_bb): Remove second argument.
+	Update all callers.  Do not recompute topological order.  Adjust
+	fallthrough edges following a degenerate conditional jump.
+
 2010-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* opts-common.c (control_warning_option): New.

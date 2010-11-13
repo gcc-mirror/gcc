@@ -3562,7 +3562,7 @@ sel_recompute_toporder (void)
 
 /* Tidy the possibly empty block BB.  */
 static bool
-maybe_tidy_empty_bb (basic_block bb, bool recompute_toporder_p)
+maybe_tidy_empty_bb (basic_block bb)
 {
   basic_block succ_bb, pred_bb;
   edge e;
@@ -3612,10 +3612,29 @@ maybe_tidy_empty_bb (basic_block bb, bool recompute_toporder_p)
 
           if (!(e->flags & EDGE_FALLTHRU))
             {
-              recompute_toporder_p |= sel_redirect_edge_and_branch (e, succ_bb);
+	      /* We can not invalidate computed topological order by moving
+	         the edge destination block (E->SUCC) along a fallthru edge.  */
+              sel_redirect_edge_and_branch (e, succ_bb);
               rescan_p = true;
               break;
             }
+	  /* If the edge is fallthru, but PRED_BB ends in a conditional jump
+	     to BB (so there is no non-fallthru edge from PRED_BB to BB), we
+	     still have to adjust it.  */
+	  else if (single_succ_p (pred_bb) && any_condjump_p (BB_END (pred_bb)))
+	    {
+	      /* If possible, try to remove the unneeded conditional jump.  */
+	      if (INSN_SCHED_TIMES (BB_END (pred_bb)) == 0
+		  && !IN_CURRENT_FENCE_P (BB_END (pred_bb)))
+		{
+		  if (!sel_remove_insn (BB_END (pred_bb), false, false))
+		    tidy_fallthru_edge (e);
+		}
+	      else
+		sel_redirect_edge_and_branch (e, succ_bb);
+	      rescan_p = true;
+	      break;
+	    }
         }
     }
 
@@ -3630,9 +3649,6 @@ maybe_tidy_empty_bb (basic_block bb, bool recompute_toporder_p)
 	move_bb_info (pred_bb, bb);
       remove_empty_bb (bb, true);
     }
-
-  if (recompute_toporder_p)
-    sel_recompute_toporder ();
 
 #ifdef ENABLE_CHECKING
   verify_backedges ();
@@ -3651,7 +3667,7 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
   insn_t first, last;
 
   /* First check whether XBB is empty.  */
-  changed = maybe_tidy_empty_bb (xbb, false);
+  changed = maybe_tidy_empty_bb (xbb);
   if (changed || !full_tidying)
     return changed;
 
@@ -3715,8 +3731,8 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
          that contained that jump, becomes empty too.  In such case
          remove it too.  */
       if (sel_bb_empty_p (xbb->prev_bb))
-        changed = maybe_tidy_empty_bb (xbb->prev_bb, recompute_toporder_p);
-      else if (recompute_toporder_p)
+        changed = maybe_tidy_empty_bb (xbb->prev_bb);
+      if (recompute_toporder_p)
 	sel_recompute_toporder ();
     }
   return changed;
@@ -3733,7 +3749,7 @@ purge_empty_blocks (void)
     {
       basic_block b = BASIC_BLOCK (BB_TO_BLOCK (i));
 
-      if (maybe_tidy_empty_bb (b, false))
+      if (maybe_tidy_empty_bb (b))
 	continue;
 
       i++;
