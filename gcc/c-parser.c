@@ -614,10 +614,10 @@ c_parser_next_token_starts_declspecs (c_parser *parser)
   return c_token_starts_declspecs (token);
 }
 
-/* Return true if the next token from PARSER can start declaration
+/* Return true if the next tokens from PARSER can start declaration
    specifiers or a static assertion, false otherwise.  */
 static inline bool
-c_parser_next_token_starts_declaration (c_parser *parser)
+c_parser_next_tokens_start_declaration (c_parser *parser)
 {
   c_token *token = c_parser_peek_token (parser);
 
@@ -628,7 +628,23 @@ c_parser_next_token_starts_declaration (c_parser *parser)
       && c_parser_peek_2nd_token (parser)->type == CPP_DOT)
     return false;
 
-  return c_token_starts_declaration (token);
+  /* Labels do not start declarations.  */
+  if (token->type == CPP_NAME
+      && c_parser_peek_2nd_token (parser)->type == CPP_COLON)
+    return false;
+
+  if (c_token_starts_declaration (token))
+    return true;
+
+  /* Try a bit harder to detect an unknown typename.  */
+  if (token->type == CPP_NAME
+      && token->id_kind == C_ID_ID
+      && (c_parser_peek_2nd_token (parser)->type == CPP_NAME
+          || c_parser_peek_2nd_token (parser)->type == CPP_MULT)
+      && !lookup_name (token->value))
+    return true;
+
+  return false;
 }
 
 /* Return a pointer to the next-but-one token from PARSER, reading it
@@ -1345,6 +1361,24 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       return;
     }
   specs = build_null_declspecs ();
+
+  /* Try to detect an unknown type name when we have "A B" or "A *B".  */
+  if (c_parser_peek_token (parser)->type == CPP_NAME
+      && c_parser_peek_token (parser)->id_kind == C_ID_ID
+      && (c_parser_peek_2nd_token (parser)->type == CPP_NAME
+          || c_parser_peek_2nd_token (parser)->type == CPP_MULT)
+      && (!nested || !lookup_name (c_parser_peek_token (parser)->value)))
+    {
+      error_at (here, "unknown type name %qE",
+                c_parser_peek_token (parser)->value);
+
+      /* Parse declspecs normally to get a correct pointer type, but avoid
+         a further "fails to be a type name" error.  */
+      c_parser_peek_token (parser)->type = CPP_KEYWORD;
+      c_parser_peek_token (parser)->keyword = RID_VOID;
+      c_parser_peek_token (parser)->value = error_mark_node;
+    }
+
   c_parser_declspecs (parser, specs, true, true, start_attr_ok);
   if (parser->error)
     {
@@ -3868,7 +3902,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	  c_parser_label (parser);
 	}
       else if (!last_label
-	       && c_parser_next_token_starts_declaration (parser))
+	       && c_parser_next_tokens_start_declaration (parser))
 	{
 	  last_label = false;
 	  mark_valid_location_for_stdc_pragma (false);
@@ -4030,9 +4064,7 @@ c_parser_label (c_parser *parser)
     }
   if (label)
     {
-      if (c_parser_next_token_starts_declaration (parser)
-	  && !(c_parser_next_token_is (parser, CPP_NAME)
-	       && c_parser_peek_2nd_token (parser)->type == CPP_COLON))
+      if (c_parser_next_tokens_start_declaration (parser))
 	{
 	  error_at (c_parser_peek_token (parser)->location,
 		    "a label can only be part of a statement and "
@@ -4626,7 +4658,7 @@ c_parser_for_statement (c_parser *parser)
 	  c_parser_consume_token (parser);
 	  c_finish_expr_stmt (loc, NULL_TREE);
 	}
-      else if (c_parser_next_token_starts_declaration (parser))
+      else if (c_parser_next_tokens_start_declaration (parser))
 	{
 	  parser->objc_could_be_foreach_context = true;
 	  c_parser_declaration_or_fndef (parser, true, true, true, true, true, 
@@ -9010,7 +9042,7 @@ c_parser_omp_for_loop (location_t loc,
 	goto pop_scopes;
 
       /* Parse the initialization declaration or expression.  */
-      if (c_parser_next_token_starts_declaration (parser))
+      if (c_parser_next_tokens_start_declaration (parser))
 	{
 	  if (i > 0)
 	    VEC_safe_push (tree, gc, for_block, c_begin_compound_stmt (true));

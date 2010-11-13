@@ -1,3 +1,14 @@
+2010-10-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/20385
+	* c-parser.c (c_parser_next_token_starts_declaration): Rename to...
+	(c_parser_next_tokens_start_declaration): ... this.  Handle 2nd
+	token lookahead.
+	(c_parser_compound_statement_nostart, c_parser_label,
+	c_parser_for_statement, c_parser_omp_for_loop): Adjust calls.
+	(c_parser_declaration_or_fndef): Detect the case now matched by
+	c_parser_next_tokens_start_declaration, give error and correct it.
+
 2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c-tree.h (enum c_typespec_kind): Add ctsk_none.

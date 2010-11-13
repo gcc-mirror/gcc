@@ -1,5 +1,10 @@
 2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR c/20385
+	* gcc.dg/decl-9.c: New.
+
+2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
+
 	* gcc.dg/Wcxx-compat-8.c: Add testcases involving incomplete types.
 
 2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
