@@ -322,6 +322,7 @@ build_field (segment_info *h, tree union_type, record_layout_info rli)
     {
       tree new_type;
       TREE_THIS_VOLATILE (field) = 1;
+      TREE_SIDE_EFFECTS (field) = 1;
       new_type = build_qualified_type (TREE_TYPE (field), TYPE_QUAL_VOLATILE);
       TREE_TYPE (field) = new_type;
     }
