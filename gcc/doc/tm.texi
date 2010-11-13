@@ -8479,6 +8479,22 @@ registers, thus allowing the @code{asm} option in declarations to refer
 to registers using alternate names.
 @end defmac
 
+@defmac OVERLAPPING_REGISTER_NAMES
+If defined, a C initializer for an array of structures containing a
+name, a register number and a count of the number of consecutive
+machine registers the name overlaps.  This macro defines additional
+names for hard registers, thus allowing the @code{asm} option in
+declarations to refer to registers using alternate names.  Unlike
+@code{ADDITIONAL_REGISTER_NAMES}, this macro should be used when the
+register name implies multiple underlying registers.
+
+This macro should be used when it is important that a clobber in an
+@code{asm} statement clobbers all the underlying values implied by the
+register name.  For example, on ARM, clobbering the double-precision
+VFP register ``d0'' implies clobbering both single-precision registers
+``s0'' and ``s1''.
+@end defmac
+
 @defmac ASM_OUTPUT_OPCODE (@var{stream}, @var{ptr})
 Define this macro if you are using an unusual assembler that
 requires different names for the machine instructions.

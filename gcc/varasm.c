@@ -764,8 +764,11 @@ set_user_assembler_name (tree decl, const char *name)
    Prefixes such as % are optional.  */
 
 int
-decode_reg_name (const char *asmspec)
+decode_reg_name_and_count (const char *asmspec, int *pnregs)
 {
+  /* Presume just one register is clobbered.  */
+  *pnregs = 1;
+
   if (asmspec != 0)
     {
       int i;
@@ -791,6 +794,25 @@ decode_reg_name (const char *asmspec)
 	    && ! strcmp (asmspec, strip_reg_name (reg_names[i])))
 	  return i;
 
+#ifdef OVERLAPPING_REGISTER_NAMES
+      {
+	static const struct
+	{
+	  const char *const name;
+	  const int number;
+	  const int nregs;
+	} table[] = OVERLAPPING_REGISTER_NAMES;
+
+	for (i = 0; i < (int) ARRAY_SIZE (table); i++)
+	  if (table[i].name[0]
+	      && ! strcmp (asmspec, table[i].name))
+	    {
+	      *pnregs = table[i].nregs;
+	      return table[i].number;
+	    }
+      }
+#endif /* OVERLAPPING_REGISTER_NAMES */
+
 #ifdef ADDITIONAL_REGISTER_NAMES
       {
 	static const struct { const char *const name; const int number; } table[]
@@ -814,6 +836,14 @@ decode_reg_name (const char *asmspec)
 
   return -1;
 }
+
+int
+decode_reg_name (const char *name)
+{
+  int count;
+  return decode_reg_name_and_count (name, &count);
+}
+
 
 /* Return true if DECL's initializer is suitable for a BSS section.  */
 

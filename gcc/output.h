@@ -177,6 +177,11 @@ extern enum tls_model decl_default_tls_model (const_tree);
    Prefixes such as % are optional.  */
 extern int decode_reg_name (const char *);
 
+/* Similar to decode_reg_name, but takes an extra parameter that is a
+   pointer to the number of (internal) registers described by the
+   external name.  */
+extern int decode_reg_name_and_count (const char *, int *);
+
 extern void assemble_alias (tree, tree);
 
 extern void default_assemble_visibility (tree, int);
