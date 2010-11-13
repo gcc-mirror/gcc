@@ -1,3 +1,8 @@
+2010-11-13  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc.dg/fsf-nsstring-format-1.m: Adjust format messages.
+	* obj-c++.dg/fsf-nsstring-format-1.mm: Likewise.
+
 2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c/46462
