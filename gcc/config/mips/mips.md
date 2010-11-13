@@ -39,6 +39,7 @@
   74kf3_2
   loongson_2e
   loongson_2f
+  loongson_3a
   m4k
   octeon
   r3900
@@ -6247,8 +6248,8 @@
 	     (match_operand 2 "const_int_operand" "n"))]
   "ISA_HAS_PREFETCH && TARGET_EXPLICIT_RELOCS"
 {
-  if (TARGET_LOONGSON_2EF)
-    /* Loongson 2[ef] use load to $0 to perform prefetching.  */
+  if (TARGET_LOONGSON_2EF || TARGET_LOONGSON_3A)
+    /* Loongson 2[ef] and Loongson 3a use load to $0 to perform prefetching.  */
     return "ld\t$0,%a0";
   operands[1] = mips_prefetch_cookie (operands[1], operands[2]);
   return "pref\t%1,%a0";
