@@ -1,3 +1,7 @@
+2010-11-13  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc.dg/darwin-segaddr.c: New test for multiple argument c/l switch.
+
 2010-11-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45742
