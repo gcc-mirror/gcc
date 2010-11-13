@@ -1,3 +1,17 @@
+2010-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* tm.texi.in (OVERLAPPING_REGISTER_NAMES): Document new macro.
+	* tm.texi: Regenerated.
+	* output.h (decode_reg_name_and_count): Declare.
+	* varasm.c (decode_reg_name_and_count): New function.
+	(decode_reg_name): Reimplement using decode_reg_name_and_count.
+	* reginfo.c (fix_register): Use decode_reg_name_and_count and 
+	iterate over all regs used.
+	* stmt.c (expand_asm_operands): Likewise.
+	* arm/aout.h (OVERLAPPING_REGISTER_NAMES): Define.
+	(ADDITIONAL_REGISTER_NAMES): Remove aliases that overlap
+	multiple machine registers.
+
 2010-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (place_union_field): Do not put location information

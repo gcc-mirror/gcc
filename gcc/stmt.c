@@ -687,13 +687,14 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
   for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
     {
       const char *regname;
+      int nregs;
 
       if (TREE_VALUE (tail) == error_mark_node)
 	return;
       regname = TREE_STRING_POINTER (TREE_VALUE (tail));
 
-      i = decode_reg_name (regname);
-      if (i >= 0 || i == -4)
+      i = decode_reg_name_and_count (regname, &nregs);
+      if (i == -4)
 	++nclobbers;
       else if (i == -2)
 	error ("unknown register name %qs in %<asm%>", regname);
@@ -701,14 +702,21 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
       /* Mark clobbered registers.  */
       if (i >= 0)
         {
-	  /* Clobbering the PIC register is an error.  */
-	  if (i == (int) PIC_OFFSET_TABLE_REGNUM)
-	    {
-	      error ("PIC register %qs clobbered in %<asm%>", regname);
-	      return;
-	    }
+	  int reg;
 
-	  SET_HARD_REG_BIT (clobbered_regs, i);
+	  for (reg = i; reg < i + nregs; reg++)
+	    {
+	      ++nclobbers;
+
+	      /* Clobbering the PIC register is an error.  */
+	      if (reg == (int) PIC_OFFSET_TABLE_REGNUM)
+		{
+		  error ("PIC register clobbered by %qs in %<asm%>", regname);
+		  return;
+		}
+
+	      SET_HARD_REG_BIT (clobbered_regs, reg);
+	    }
 	}
     }
 
@@ -1033,7 +1041,8 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
       for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
 	{
 	  const char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
-	  int j = decode_reg_name (regname);
+	  int reg, nregs;
+	  int j = decode_reg_name_and_count (regname, &nregs);
 	  rtx clobbered_reg;
 
 	  if (j < 0)
@@ -1055,30 +1064,39 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	      continue;
 	    }
 
-	  /* Use QImode since that's guaranteed to clobber just one reg.  */
-	  clobbered_reg = gen_rtx_REG (QImode, j);
-
-	  /* Do sanity check for overlap between clobbers and respectively
-	     input and outputs that hasn't been handled.  Such overlap
-	     should have been detected and reported above.  */
-	  if (!clobber_conflict_found)
+	  for (reg = j; reg < j + nregs; reg++)
 	    {
-	      int opno;
+	      /* Use QImode since that's guaranteed to clobber just
+	       * one reg.  */
+	      clobbered_reg = gen_rtx_REG (QImode, reg);
 
-	      /* We test the old body (obody) contents to avoid tripping
-		 over the under-construction body.  */
-	      for (opno = 0; opno < noutputs; opno++)
-		if (reg_overlap_mentioned_p (clobbered_reg, output_rtx[opno]))
-		  internal_error ("asm clobber conflict with output operand");
+	      /* Do sanity check for overlap between clobbers and
+		 respectively input and outputs that hasn't been
+		 handled.  Such overlap should have been detected and
+		 reported above.  */
+	      if (!clobber_conflict_found)
+		{
+		  int opno;
 
-	      for (opno = 0; opno < ninputs - ninout; opno++)
-		if (reg_overlap_mentioned_p (clobbered_reg,
-					     ASM_OPERANDS_INPUT (obody, opno)))
-		  internal_error ("asm clobber conflict with input operand");
+		  /* We test the old body (obody) contents to avoid
+		     tripping over the under-construction body.  */
+		  for (opno = 0; opno < noutputs; opno++)
+		    if (reg_overlap_mentioned_p (clobbered_reg,
+						 output_rtx[opno]))
+		      internal_error
+			("asm clobber conflict with output operand");
+
+		  for (opno = 0; opno < ninputs - ninout; opno++)
+		    if (reg_overlap_mentioned_p (clobbered_reg,
+						 ASM_OPERANDS_INPUT (obody,
+								     opno)))
+		      internal_error
+			("asm clobber conflict with input operand");
+		}
+
+	      XVECEXP (body, 0, i++)
+		= gen_rtx_CLOBBER (VOIDmode, clobbered_reg);
 	    }
-
-	  XVECEXP (body, 0, i++)
-	    = gen_rtx_CLOBBER (VOIDmode, clobbered_reg);
 	}
 
       if (nlabels > 0)

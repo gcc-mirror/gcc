@@ -755,64 +755,69 @@ void
 fix_register (const char *name, int fixed, int call_used)
 {
   int i;
+  int reg, nregs;
 
   /* Decode the name and update the primary form of
      the register info.  */
 
-  if ((i = decode_reg_name (name)) >= 0)
+  if ((reg = decode_reg_name_and_count (name, &nregs)) >= 0)
     {
-      if ((i == STACK_POINTER_REGNUM
+      gcc_assert (nregs >= 1);
+      for (i = reg; i < reg + nregs; i++)
+	{
+	  if ((i == STACK_POINTER_REGNUM
 #ifdef HARD_FRAME_POINTER_REGNUM
-	   || i == HARD_FRAME_POINTER_REGNUM
+	       || i == HARD_FRAME_POINTER_REGNUM
 #else
-	   || i == FRAME_POINTER_REGNUM
+	       || i == FRAME_POINTER_REGNUM
 #endif
-	   )
-	  && (fixed == 0 || call_used == 0))
-	{
-	  switch (fixed)
+	       )
+	      && (fixed == 0 || call_used == 0))
 	    {
-	    case 0:
-	      switch (call_used)
+	      switch (fixed)
 		{
 		case 0:
-		  error ("can%'t use %qs as a call-saved register", name);
+		  switch (call_used)
+		    {
+		    case 0:
+		      error ("can%'t use %qs as a call-saved register", name);
+		      break;
+
+		    case 1:
+		      error ("can%'t use %qs as a call-used register", name);
+		      break;
+
+		    default:
+		      gcc_unreachable ();
+		    }
 		  break;
 
 		case 1:
-		  error ("can%'t use %qs as a call-used register", name);
+		  switch (call_used)
+		    {
+		    case 1:
+		      error ("can%'t use %qs as a fixed register", name);
+		      break;
+
+		    case 0:
+		    default:
+		      gcc_unreachable ();
+		    }
 		  break;
 
 		default:
 		  gcc_unreachable ();
 		}
-	      break;
-
-	    case 1:
-	      switch (call_used)
-		{
-		case 1:
-		  error ("can%'t use %qs as a fixed register", name);
-		  break;
-
-		case 0:
-		default:
-		  gcc_unreachable ();
-		}
-	      break;
-
-	    default:
-	      gcc_unreachable ();
 	    }
-	}
-      else
-	{
-	  fixed_regs[i] = fixed;
-	  call_used_regs[i] = call_used;
+	  else
+	    {
+	      fixed_regs[i] = fixed;
+	      call_used_regs[i] = call_used;
 #ifdef CALL_REALLY_USED_REGISTERS
-	  if (fixed == 0)
-	    call_really_used_regs[i] = call_used;
+	      if (fixed == 0)
+		call_really_used_regs[i] = call_used;
 #endif
+	    }
 	}
     }
   else
