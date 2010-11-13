@@ -1,3 +1,9 @@
+2010-11-13  Georg-Johann Lay  <georgjohann@web.de>
+
+	PR bootstrap/39622
+	* configure.ac (FLAGS_FOR_TARGET): Add include-fixed path.
+	* configure: Regenerated.
+
 2010-11-13  Kaveh R. Ghazi  <ghazi@gcc.gnu.org>
 
 	* MAINTAINERS: Update my email address.
