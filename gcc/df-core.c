@@ -1427,29 +1427,6 @@ df_set_bb_dirty (basic_block bb)
 }
 
 
-/* Mark BB as needing it's transfer functions as being out of
-   date, except for LR problem.  Used when analyzing DEBUG_INSNs,
-   as LR problem can trigger DCE, and DEBUG_INSNs shouldn't ever
-   shorten or enlarge lifetime of regs.  */
-
-void
-df_set_bb_dirty_nonlr (basic_block bb)
-{
-  if (df)
-    {
-      int p;
-      for (p = 1; p < df->num_problems_defined; p++)
-	{
-	  struct dataflow *dflow = df->problems_in_order[p];
-	  if (dflow == df_lr)
-	    continue;
-	  if (dflow->out_of_date_transfer_functions)
-	    bitmap_set_bit (dflow->out_of_date_transfer_functions, bb->index);
-	  dflow->solutions_dirty = true;
-	}
-    }
-}
-
 /* Grow the bb_info array.  */
 
 void
