@@ -6051,18 +6051,16 @@
 ;;     But once we generate the separate insns, it becomes obvious that
 ;;     $gp is not live on entry to the call.
 ;;
-;; ??? The operands[2] = insn check is a hack to make the original insn
-;; available to the splitter.
 (define_insn_and_split "call_internal"
   [(call (mem:SI (match_operand 0 "call_insn_operand" "c,S"))
 	 (match_operand 1 "" ""))
    (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
   { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 0, 1); }
-  "reload_completed && TARGET_SPLIT_CALLS && (operands[2] = insn)"
+  "reload_completed && TARGET_SPLIT_CALLS"
   [(const_int 0)]
 {
-  mips_split_call (operands[2], gen_call_split (operands[0], operands[1]));
+  mips_split_call (curr_insn, gen_call_split (operands[0], operands[1]));
   DONE;
 }
   [(set_attr "jal" "indirect,direct")])
@@ -6087,10 +6085,10 @@
    (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
   { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 0, -1); }
-  "reload_completed && TARGET_SPLIT_CALLS && (operands[2] = insn)"
+  "reload_completed && TARGET_SPLIT_CALLS"
   [(const_int 0)]
 {
-  mips_split_call (operands[2],
+  mips_split_call (curr_insn,
 		   gen_call_direct_split (operands[0], operands[1]));
   DONE;
 }
@@ -6126,10 +6124,10 @@
    (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
   { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1, 2); }
-  "reload_completed && TARGET_SPLIT_CALLS && (operands[3] = insn)"
+  "reload_completed && TARGET_SPLIT_CALLS"
   [(const_int 0)]
 {
-  mips_split_call (operands[3],
+  mips_split_call (curr_insn,
 		   gen_call_value_split (operands[0], operands[1],
 					 operands[2]));
   DONE;
@@ -6155,10 +6153,10 @@
    (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
   { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1, -1); }
-  "reload_completed && TARGET_SPLIT_CALLS && (operands[3] = insn)"
+  "reload_completed && TARGET_SPLIT_CALLS"
   [(const_int 0)]
 {
-  mips_split_call (operands[3],
+  mips_split_call (curr_insn,
 		   gen_call_value_direct_split (operands[0], operands[1],
 						operands[2]));
   DONE;
@@ -6187,10 +6185,10 @@
    (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
   { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1, 2); }
-  "reload_completed && TARGET_SPLIT_CALLS && (operands[4] = insn)"
+  "reload_completed && TARGET_SPLIT_CALLS"
   [(const_int 0)]
 {
-  mips_split_call (operands[4],
+  mips_split_call (curr_insn,
 		   gen_call_value_multiple_split (operands[0], operands[1],
 						  operands[2], operands[3]));
   DONE;

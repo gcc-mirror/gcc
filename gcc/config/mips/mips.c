@@ -6520,11 +6520,7 @@ mips_expand_call (enum mips_call_type type, rtx result, rtx addr,
 void
 mips_split_call (rtx insn, rtx call_pattern)
 {
-  rtx new_insn;
-
-  new_insn = emit_call_insn (call_pattern);
-  CALL_INSN_FUNCTION_USAGE (new_insn)
-    = copy_rtx (CALL_INSN_FUNCTION_USAGE (insn));
+  emit_call_insn (call_pattern);
   if (!find_reg_note (insn, REG_NORETURN, 0))
     /* Pick a temporary register that is suitable for both MIPS16 and
        non-MIPS16 code.  $4 and $5 are used for returning complex double
