@@ -1261,9 +1261,7 @@ df_insn_rescan (rtx insn)
     }
 
   df_refs_add_to_chains (&collection_rec, bb, insn);
-  if (DEBUG_INSN_P (insn))
-    df_set_bb_dirty_nonlr (bb);
-  else
+  if (!DEBUG_INSN_P (insn))
     df_set_bb_dirty (bb);
 
   VEC_free (df_ref, stack, collection_rec.def_vec);

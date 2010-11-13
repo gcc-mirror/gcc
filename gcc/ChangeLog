@@ -1,3 +1,10 @@
+2010-11-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/42889
+	* df-scan.c (df_insn_rescan): Don't mark BBs upon debug insns.
+	* df-core.c (df_set_bb_dirty_nonrl): Remove.
+	* df.h (df_set_bb_dirty_nonlr): Likewise.
+
 2010-11-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/mips/mips.md (call_internal): Pass curr_insn to
