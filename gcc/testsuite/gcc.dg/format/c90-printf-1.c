@@ -220,7 +220,7 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   */
   printf ("%*.*d", u1, u2, i);
   /* Wrong number of arguments.  */
-  printf ("%d%d", i); /* { dg-warning "arguments" "wrong number of args" } */
+  printf ("%d%d", i); /* { dg-warning "matching" "wrong number of args" } */
   printf ("%d", i, i); /* { dg-warning "arguments" "wrong number of args" } */
   /* Miscellaneous bogus constructions.  */
   printf (""); /* { dg-warning "zero-length" "warning for empty format" } */

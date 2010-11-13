@@ -1,3 +1,22 @@
+2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
+
+	* c-format.c (enum format_specifier_kind, kind_descriptions): New.
+	(struct format_wanted_type): Replace field "name" with "kind", add
+	"format_start" and "format_length".
+	(check_format_info_main): Fill in new fields.  Fill in
+	FORMAT_WANTED_TYPES even for missing arguments.  Move checks
+	after the final NUL outside the while loop.  Do not include
+	width and precision modifiers in the format_start/format_length
+	of the main format.
+	(check_format_types): Remove FORMAT_START and FORMAT_LENGTH
+	arguments.  Compute WANTED_TYPE first so that format_type_warning
+	can be called for missing arguments.  Adjust calls to
+	format_type_warning.
+	(format_type_warning): Fetch as much information as possible
+	from format_wanted_type.  Adjust printing now that every
+	warning has a "descr", as well as for missing argument warnings
+	and to include % sign for format specifiers.
+
 2010-11-12  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/46204

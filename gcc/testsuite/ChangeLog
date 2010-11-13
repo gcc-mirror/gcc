@@ -1,3 +1,19 @@
+2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.dg/format/few-1.c: New test.
+	* gcc.dg/format/asm_fprintf-1.c: Adjust.
+	* gcc.dg/format/c90-scanf-1.c: Adjust.
+	* gcc.dg/format/cmn-err-1.c: Adjust.
+	* gcc.dg/format/dfp-printf-1.c: Adjust.
+	* gcc.dg/format/dfp-scanf-1.c: Adjust.
+	* gcc.dg/format/gcc_diag-1.c: Adjust.
+	* gcc.dg/format/ms_unnamed-1.c: Adjust.
+	* gcc.dg/format/strfmon-1.c: Adjust.
+	* gcc.dg/format/unnamed-1.c: Adjust.
+	* gcc.dg/format/xopen-2.c: Adjust.
+	* g++.dg/ext/builtin4.C: Adjust.
+	* g++.dg/ext/builtin5.C: Adjust.
+
 2010-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/pragma-diag-2.c: New test.

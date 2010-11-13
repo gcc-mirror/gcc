@@ -19,7 +19,7 @@
 void
 f (TItype x)
 {
-  printf("%d", x); /* { dg-warning "expects type" } */
-  printf("%d", 141592653589793238462643383279502884197169399375105820974944); /* { dg-warning "expects type" } */
+  printf("%d", x); /* { dg-warning "expects argument" } */
+  printf("%d", 141592653589793238462643383279502884197169399375105820974944); /* { dg-warning "expects argument" } */
   /* { dg-warning "unsigned only|too large" "constant" { target *-*-* } 23 } */
 }
