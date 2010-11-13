@@ -38,7 +38,7 @@ NSString *s10 (int dum, NSString *fmt1, ... ) __attribute__((format_arg(2))) ; /
 void foo (void)
 {
   s1 (@"format not checked %d %s", 3, 4);
-  printf("this one is checked %d %s", 3, 4, 5); /* { dg-warning "format .%s. expects type .char .., but argument 3 has type .int." } */
+  printf("this one is checked %d %s", 3, 4, 5); /* { dg-warning "format '%s' expects argument of type 'char .', but argument 3 has type 'int'" } */
 			/* { dg-warning "too many arguments for format" "" { target *-*-* } 41 } */
-  printf(s9 (1, "and so is this %d %d %s", 3, 4), 5, 6, 12); /* { dg-warning "format .%s. expects type .char .., but argument 4 has type .int." } */
+  printf(s9 (1, "and so is this %d %d %s", 3, 4), 5, 6, 12); /* { dg-warning "format '%s' expects argument of type 'char .', but argument 4 has type 'int'" } */
 }
