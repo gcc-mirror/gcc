@@ -1,5 +1,9 @@
 2010-11-13  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* obj-c++.dg/attributes/method-format-1.mm: Adjust.
+
+2010-11-13  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc/compile/20060406-1.m: Fixed testcase not to try to qualify
 	a pointer to an arbitrary C struct with an Objective-C protocol.
 	Test various valid uses of typedef with Objective-C objects and
