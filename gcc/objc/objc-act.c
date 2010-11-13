@@ -2530,7 +2530,22 @@ objc_get_protocol_qualified_type (tree interface, tree protocols)
 		  : xref_tag (RECORD_TYPE, type));
 	}
       else
-        return interface;
+	{
+	  /* This case happens when we are given an 'interface' which
+	     is not a valid class name.  For example if a typedef was
+	     used, and 'interface' really is the identifier of the
+	     typedef, but when you resolve it you don't get an
+	     Objective-C class, but something else, such as 'int'.
+	     This is an error; protocols make no sense unless you use
+	     them with Objective-C objects.  */
+	  error_at (input_location, "only Objective-C object types can be qualified with a protocol");
+
+	  /* Try to recover.  Ignore the invalid class name, and treat
+	     the object as an 'id' to silence further warnings about
+	     the class.  */
+	  type = objc_object_type;
+	  is_ptr = true;
+	}
     }
 
   if (protocols)

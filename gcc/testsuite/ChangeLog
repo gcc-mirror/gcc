@@ -1,3 +1,12 @@
+2010-11-13  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc/compile/20060406-1.m: Fixed testcase not to try to qualify
+	a pointer to an arbitrary C struct with an Objective-C protocol.
+	Test various valid uses of typedef with Objective-C objects and
+	protocols instead.
+	* objc.dg/invalid-type-1.m: New.
+	* obj-c++.dg/invalid-type-1.m: New.	
+	
 2010-11-13  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* gcc.dg/darwin-segaddr.c: New test for multiple argument c/l switch.
@@ -170,6 +179,7 @@
 	* gfortran.dg/proc_decl_24.f90: New.
 
 2010-11-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/property/at-property-20.m: New.
 	* objc.dg/property/synthesize-8.m: New.	
 	* obj-c++.dg/property/at-property-20.m: New.

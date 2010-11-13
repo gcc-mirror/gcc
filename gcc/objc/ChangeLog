@@ -1,3 +1,9 @@
+2010-11-13  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_get_protocol_qualified_type): detect cases
+	where we are asked to attach a protocol to something which is not
+	an Objective-C object type, and produce an error.
+
 2010-11-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_add_property_declaration): Check that the type
