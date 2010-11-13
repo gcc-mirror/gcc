@@ -1,3 +1,7 @@
+2010-11-13  Kai Tietz  <kai.tietz@onevision.com>
+
+	* lto-plugin.c (add_output_files): Fix memory leak.
+
 2010-11-11  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR bootstrap/46397
