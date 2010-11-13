@@ -1,3 +1,14 @@
+2010-11-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/mips/mips.md (call_internal): Pass curr_insn to
+	mips_split_call.
+	(call_internal_direct): Ditto.
+	(call_value_internal): Ditto.
+	(call_value_internal_direct): Ditto.
+	(call_value_multiple_internal): Ditto.
+	* config/mips/mips.c (mips_split_call): Do not copy
+	CALL_INSN_FUNCTION_USAGE here.
+
 2010-11-13  Mingming Sun  <mingm.sun@gmail.com>
 
 	* doc/invoke.texi (MIPS Options): Add loongson3a processor.
