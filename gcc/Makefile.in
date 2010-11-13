@@ -3689,7 +3689,7 @@ s-constrs-h: $(MD_DEPS) build/genpreds$(build_exeext)
 	$(STAMP) s-constrs-h
 
 target-hooks-def.h: s-target-hooks-def-h; @true
-tm.texi: s-tm-texi; @true
+tm.texi: s-tm-texi
 
 s-target-hooks-def-h: build/genhooks$(build_exeext)
 	$(RUN_GEN) build/genhooks$(build_exeext) > tmp-target-hooks-def.h
@@ -3942,7 +3942,9 @@ $(genprog:%=build/gen%$(build_exeext)): build/gen%$(build_exeext): build/gen%.o 
 	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
 	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
 
-# Generated source files for gengtype.
+# Generated source files for gengtype.  Prepend inclusion of
+# bconfig.h because AIX requires _LARGE_FILES to be defined before
+# any system header is included.
 gengtype-lex.c : gengtype-lex.l
 	-$(FLEX) $(FLEXFLAGS) -o$@ $< && { \
 	  echo '#include "bconfig.h"' > $@.tmp; \

@@ -54,7 +54,7 @@ foo (char *s, size_t m, double d, long double ld)
   strfmon (s, m, "%.5%\n"); /* { dg-warning "format" "bogus %%" } */
   strfmon (s, m, "%#5%\n"); /* { dg-warning "format" "bogus %%" } */
   /* Miscellaneous bogus formats.  */
-  strfmon (s, m, "%n%n", d); /* { dg-warning "arguments" "too few args" } */
+  strfmon (s, m, "%n%n", d); /* { dg-warning "matching" "too few args" } */
   strfmon (s, m, ""); /* { dg-warning "zero-length" "empty" } */
   strfmon (s, m, NULL); /* { dg-warning "null" "null format string" } */
   strfmon (s, m, "%"); /* { dg-warning "trailing" "tailing %" } */

@@ -8,5 +8,5 @@ namespace std {
 }
 
 void foo() {
-  std::printf("%d"); 		// { dg-warning "too few arguments" }
+  std::printf("%d"); 		// { dg-warning "expects a matching" }
 }

@@ -356,6 +356,20 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
 				       ? (warn_long_long ? STD_C99 : STD_C89) \
 				       : (VER)))
 
+/* Enum describing the kind of specifiers present in the format and
+   requiring an argument.  */
+enum format_specifier_kind {
+  CF_KIND_FORMAT,
+  CF_KIND_FIELD_WIDTH,
+  CF_KIND_FIELD_PRECISION
+};
+
+static const char *kind_descriptions[] = {
+  N_("format"),
+  N_("field width specifier"),
+  N_("field precision specifier")
+};
+
 /* Structure describing details of a type expected in format checking,
    and the type to check against it.  */
 typedef struct format_wanted_type
@@ -377,11 +391,13 @@ typedef struct format_wanted_type
   /* Whether the argument, dereferenced once, is read from and so
      must not be a NULL pointer.  */
   int reading_from_flag;
-  /* If warnings should be of the form "field precision should have
-     type 'int'", the name to use (in this case "field precision"),
-     otherwise NULL, for "format expects type 'long'" type
-     messages.  */
-  const char *name;
+  /* The kind of specifier that this type is used for.  */
+  enum format_specifier_kind kind;
+  /* The starting character of the specifier.  This never includes the
+     initial percent sign.  */
+  const char *format_start;
+  /* The length of the specifier.  */
+  int format_length;
   /* The actual parameter to check against the wanted type.  */
   tree param;
   /* The argument number of that parameter.  */
@@ -957,9 +973,8 @@ static void finish_dollar_format_checking (format_check_results *, int);
 static const format_flag_spec *get_flag_spec (const format_flag_spec *,
 					      int, const char *);
 
-static void check_format_types (format_wanted_type *, const char *, int);
-static void format_type_warning (const char *, const char *, int, tree,
-				 int, const char *, tree, int);
+static void check_format_types (format_wanted_type *);
+static void format_type_warning (format_wanted_type *, tree, tree);
 
 /* Decode a format type from a string, returning the type, or
    format_type_error if not valid, in which case the caller should print an
@@ -1619,7 +1634,7 @@ check_format_info_main (format_check_results *res,
 
   init_dollar_format_checking (info->first_arg_num, first_fillin_param);
 
-  while (1)
+  while (*format_chars != 0)
     {
       int i;
       int suppressed = FALSE;
@@ -1643,21 +1658,8 @@ check_format_info_main (format_check_results *res,
       char flag_chars[256];
       int alloc_flag = 0;
       int scalar_identity_flag = 0;
-      const char *format_start = format_chars;
-      if (*format_chars == 0)
-	{
-	  if (format_chars - orig_format_chars != format_length)
-	    warning (OPT_Wformat_contains_nul, "embedded %<\\0%> in format");
-	  if (info->first_arg_num != 0 && params != 0
-	      && has_operand_number <= 0)
-	    {
-	      res->number_other--;
-	      res->number_extra_args++;
-	    }
-	  if (has_operand_number > 0)
-	    finish_dollar_format_checking (res, fki->flags & (int) FMT_FLAG_DOLLAR_GAP_POINTER_OK);
-	  return;
-	}
+      const char *format_start;
+
       if (*format_chars++ != '%')
 	continue;
       if (*format_chars == 0)
@@ -1762,16 +1764,16 @@ check_format_info_main (format_check_results *res,
 	      if (info->first_arg_num != 0)
 		{
 		  if (params == 0)
-		    {
-		      warning (OPT_Wformat, "too few arguments for format");
-		      return;
-		    }
-		  cur_param = TREE_VALUE (params);
-		  if (has_operand_number <= 0)
-		    {
-		      params = TREE_CHAIN (params);
-		      ++arg_num;
-		    }
+                    cur_param = NULL;
+                  else
+                    {
+                      cur_param = TREE_VALUE (params);
+                      if (has_operand_number <= 0)
+                        {
+                          params = TREE_CHAIN (params);
+                          ++arg_num;
+                        }
+                    }
 		  width_wanted_type.wanted_type = *fki->width_type;
 		  width_wanted_type.wanted_type_name = NULL;
 		  width_wanted_type.pointer_count = 0;
@@ -1779,7 +1781,9 @@ check_format_info_main (format_check_results *res,
 		  width_wanted_type.scalar_identity_flag = 0;
 		  width_wanted_type.writing_in_flag = 0;
 		  width_wanted_type.reading_from_flag = 0;
-		  width_wanted_type.name = _("field width");
+                  width_wanted_type.kind = CF_KIND_FIELD_WIDTH;
+		  width_wanted_type.format_start = format_chars - 1;
+		  width_wanted_type.format_length = 1;
 		  width_wanted_type.param = cur_param;
 		  width_wanted_type.arg_num = arg_num;
 		  width_wanted_type.next = NULL;
@@ -1865,16 +1869,16 @@ check_format_info_main (format_check_results *res,
 	      if (info->first_arg_num != 0)
 		{
 		  if (params == 0)
-		    {
-		      warning (OPT_Wformat, "too few arguments for format");
-		      return;
-		    }
-		  cur_param = TREE_VALUE (params);
-		  if (has_operand_number <= 0)
-		    {
-		      params = TREE_CHAIN (params);
-		      ++arg_num;
-		    }
+                    cur_param = NULL;
+                  else
+                    {
+                      cur_param = TREE_VALUE (params);
+                      if (has_operand_number <= 0)
+                        {
+                          params = TREE_CHAIN (params);
+                          ++arg_num;
+                        }
+                    }
 		  precision_wanted_type.wanted_type = *fki->precision_type;
 		  precision_wanted_type.wanted_type_name = NULL;
 		  precision_wanted_type.pointer_count = 0;
@@ -1882,8 +1886,10 @@ check_format_info_main (format_check_results *res,
 		  precision_wanted_type.scalar_identity_flag = 0;
 		  precision_wanted_type.writing_in_flag = 0;
 		  precision_wanted_type.reading_from_flag = 0;
-		  precision_wanted_type.name = _("field precision");
+                  precision_wanted_type.kind = CF_KIND_FIELD_PRECISION;
 		  precision_wanted_type.param = cur_param;
+		  precision_wanted_type.format_start = format_chars - 2;
+		  precision_wanted_type.format_length = 2;
 		  precision_wanted_type.arg_num = arg_num;
 		  precision_wanted_type.next = NULL;
 		  if (last_wanted_type != 0)
@@ -1903,6 +1909,7 @@ check_format_info_main (format_check_results *res,
 	    }
 	}
 
+      format_start = format_chars;
       if (fki->alloc_char && fki->alloc_char == *format_chars)
 	{
 	  i = strlen (flag_chars);
@@ -2163,12 +2170,8 @@ check_format_info_main (format_check_results *res,
 	      /* Heuristic: skip one argument when an invalid length/type
 		 combination is encountered.  */
 	      arg_num++;
-	      if (params == 0)
-		{
-		  warning (OPT_Wformat, "too few arguments for format");
-		  return;
-		}
-	      params = TREE_CHAIN (params);
+	      if (params != 0)
+                params = TREE_CHAIN (params);
 	      continue;
 	    }
 	  else if (pedantic
@@ -2229,13 +2232,12 @@ check_format_info_main (format_check_results *res,
 	  while (fci)
 	    {
 	      if (params == 0)
-		{
-		  warning (OPT_Wformat, "too few arguments for format");
-		  return;
-		}
-
-	      cur_param = TREE_VALUE (params);
-	      params = TREE_CHAIN (params);
+                cur_param = NULL;
+              else
+                {
+                  cur_param = TREE_VALUE (params);
+                  params = TREE_CHAIN (params);
+                }
 
 	      wanted_type_ptr->wanted_type = wanted_type;
 	      wanted_type_ptr->wanted_type_name = wanted_type_name;
@@ -2257,9 +2259,11 @@ check_format_info_main (format_check_results *res,
 		  if (strchr (fci->flags2, 'R') != 0)
 		    wanted_type_ptr->reading_from_flag = 1;
 		}
-	      wanted_type_ptr->name = NULL;
+              wanted_type_ptr->kind = CF_KIND_FORMAT;
 	      wanted_type_ptr->param = cur_param;
 	      wanted_type_ptr->arg_num = arg_num;
+	      wanted_type_ptr->format_start = format_start;
+	      wanted_type_ptr->format_length = format_chars - format_start;
 	      wanted_type_ptr->next = NULL;
 	      if (last_wanted_type != 0)
 		last_wanted_type->next = wanted_type_ptr;
@@ -2280,17 +2284,26 @@ check_format_info_main (format_check_results *res,
 	}
 
       if (first_wanted_type != 0)
-	check_format_types (first_wanted_type, format_start,
-			    format_chars - format_start);
+        check_format_types (first_wanted_type);
     }
+
+  if (format_chars - orig_format_chars != format_length)
+    warning (OPT_Wformat_contains_nul, "embedded %<\\0%> in format");
+  if (info->first_arg_num != 0 && params != 0
+      && has_operand_number <= 0)
+    {
+      res->number_other--;
+      res->number_extra_args++;
+    }
+  if (has_operand_number > 0)
+    finish_dollar_format_checking (res, fki->flags & (int) FMT_FLAG_DOLLAR_GAP_POINTER_OK);
 }
 
 
 /* Check the argument types from a single format conversion (possibly
    including width and precision arguments).  */
 static void
-check_format_types (format_wanted_type *types, const char *format_start,
-		    int format_length)
+check_format_types (format_wanted_type *types)
 {
   for (; types != 0; types = types->next)
     {
@@ -2301,12 +2314,7 @@ check_format_types (format_wanted_type *types, const char *format_start,
       int arg_num;
       int i;
       int char_type_flag;
-      cur_param = types->param;
-      cur_type = TREE_TYPE (cur_param);
-      if (cur_type == error_mark_node)
-	continue;
-      orig_cur_type = cur_type;
-      char_type_flag = 0;
+
       wanted_type = types->wanted_type;
       arg_num = types->arg_num;
 
@@ -2318,6 +2326,19 @@ check_format_types (format_wanted_type *types, const char *format_start,
 	wanted_type = lang_hooks.types.type_promotes_to (wanted_type);
 
       wanted_type = TYPE_MAIN_VARIANT (wanted_type);
+
+      cur_param = types->param;
+      if (!cur_param)
+        {
+          format_type_warning (types, wanted_type, NULL);
+          continue;
+        }
+
+      cur_type = TREE_TYPE (cur_param);
+      if (cur_type == error_mark_node)
+	continue;
+      orig_cur_type = cur_type;
+      char_type_flag = 0;
 
       STRIP_NOPS (cur_param);
 
@@ -2382,10 +2403,7 @@ check_format_types (format_wanted_type *types, const char *format_start,
 	    }
 	  else
 	    {
-	      format_type_warning (types->name, format_start, format_length,
-				   wanted_type, types->pointer_count,
-				   types->wanted_type_name, orig_cur_type,
-				   arg_num);
+              format_type_warning (types, wanted_type, orig_cur_type);
 	      break;
 	    }
 	}
@@ -2437,33 +2455,34 @@ check_format_types (format_wanted_type *types, const char *format_start,
 	  && TYPE_PRECISION (cur_type) == TYPE_PRECISION (wanted_type))
 	continue;
       /* Now we have a type mismatch.  */
-      format_type_warning (types->name, format_start, format_length,
-			   wanted_type, types->pointer_count,
-			   types->wanted_type_name, orig_cur_type, arg_num);
+      format_type_warning (types, wanted_type, orig_cur_type);
     }
 }
 
 
 /* Give a warning about a format argument of different type from that
-   expected.  DESCR is a description such as "field precision", or
-   NULL for an ordinary format.  For an ordinary format, FORMAT_START
-   points to where the format starts in the format string and
-   FORMAT_LENGTH is its length.  WANTED_TYPE is the type the argument
-   should have after POINTER_COUNT pointer dereferences.
-   WANTED_NAME_NAME is a possibly more friendly name of WANTED_TYPE,
-   or NULL if the ordinary name of the type should be used.  ARG_TYPE
-   is the type of the actual argument.  ARG_NUM is the number of that
-   argument.  */
+   expected.  WANTED_TYPE is the type the argument should have, possibly
+   stripped of pointer dereferences.  The description (such as "field
+   precision"), the placement in the format string, a possibly more
+   friendly name of WANTED_TYPE, and the number of pointer dereferences
+   are taken from TYPE.  ARG_TYPE is the type of the actual argument,
+   or NULL if it is missing.  */
 static void
-format_type_warning (const char *descr, const char *format_start,
-		     int format_length, tree wanted_type, int pointer_count,
-		     const char *wanted_type_name, tree arg_type, int arg_num)
+format_type_warning (format_wanted_type *type, tree wanted_type, tree arg_type)
 {
+  int kind = type->kind;
+  const char *wanted_type_name = type->wanted_type_name;
+  const char *format_start = type->format_start;
+  int format_length = type->format_length;
+  int pointer_count = type->pointer_count;
+  int arg_num = type->arg_num;
+
   char *p;
   /* If ARG_TYPE is a typedef with a misleading name (for example,
      size_t but not the standard size_t expected by printf %zu), avoid
      printing the typedef name.  */
   if (wanted_type_name
+      && arg_type
       && TYPE_NAME (arg_type)
       && TREE_CODE (TYPE_NAME (arg_type)) == TYPE_DECL
       && DECL_NAME (TYPE_NAME (arg_type))
@@ -2489,28 +2508,36 @@ format_type_warning (const char *descr, const char *format_start,
       memset (p + 1, '*', pointer_count);
       p[pointer_count + 1] = 0;
     }
+
   if (wanted_type_name)
     {
-      if (descr)
-	warning (OPT_Wformat, "%s should have type %<%s%s%>, "
-		 "but argument %d has type %qT",
-		 descr, wanted_type_name, p, arg_num, arg_type);
+      if (arg_type)
+        warning (OPT_Wformat, "%s %<%s%.*s%> expects argument of type %<%s%s%>, "
+                 "but argument %d has type %qT",
+                 gettext (kind_descriptions[kind]),
+                 (kind == CF_KIND_FORMAT ? "%" : ""),
+                 format_length, format_start, 
+                 wanted_type_name, p, arg_num, arg_type);
       else
-	warning (OPT_Wformat, "format %q.*s expects type %<%s%s%>, "
-		 "but argument %d has type %qT",
-		 format_length, format_start, wanted_type_name, p,
-		 arg_num, arg_type);
+        warning (OPT_Wformat, "%s %<%s%.*s%> expects a matching %<%s%s%> argument",
+                 gettext (kind_descriptions[kind]),
+                 (kind == CF_KIND_FORMAT ? "%" : ""),
+                 format_length, format_start, wanted_type_name, p);
     }
   else
     {
-      if (descr)
-	warning (OPT_Wformat, "%s should have type %<%T%s%>, "
-		 "but argument %d has type %qT",
-		 descr, wanted_type, p, arg_num, arg_type);
+      if (arg_type)
+        warning (OPT_Wformat, "%s %<%s%.*s%> expects argument of type %<%T%s%>, "
+                 "but argument %d has type %qT",
+                 gettext (kind_descriptions[kind]),
+                 (kind == CF_KIND_FORMAT ? "%" : ""),
+                 format_length, format_start, 
+                 wanted_type, p, arg_num, arg_type);
       else
-	warning (OPT_Wformat, "format %q.*s expects type %<%T%s%>, "
-		 "but argument %d has type %qT",
-		 format_length, format_start, wanted_type, p, arg_num, arg_type);
+        warning (OPT_Wformat, "%s %<%s%.*s%> expects a matching %<%T%s%> argument",
+                 gettext (kind_descriptions[kind]),
+                 (kind == CF_KIND_FORMAT ? "%" : ""),
+                 format_length, format_start, wanted_type, p);
     }
 }
 

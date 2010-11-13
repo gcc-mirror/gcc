@@ -106,7 +106,7 @@ foo (int *ip, unsigned int *uip, short int *hp, unsigned short int *uhp,
   scanf ("%s", cs); /* { dg-warning "constant" "%s writing into const" } */
   scanf ("%p", pcp); /* { dg-warning "constant" "%p writing into const" } */
   /* Wrong number of arguments.  */
-  scanf ("%d%d", ip); /* { dg-warning "arguments" "wrong number of args" } */
+  scanf ("%d%d", ip); /* { dg-warning "matching" "wrong number of args" } */
   scanf ("%d", ip, ip); /* { dg-warning "arguments" "wrong number of args" } */
   /* Miscellaneous bogus constructions.  */
   scanf (""); /* { dg-warning "zero-length" "warning for empty format" } */

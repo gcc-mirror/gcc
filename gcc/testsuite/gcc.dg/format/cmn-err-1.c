@@ -28,11 +28,12 @@ int main()
   cmn_err_func (0, "%16b", i, "\01Foo");
 
   cmn_err_func (0, "%i", i);		/* { dg-warning "unknown|too many" } */
-  cmn_err_func (0, "%d", l);		/* { dg-warning "expects type" } */
-  cmn_err_func (0, "%b");		/* { dg-warning "too few" } */
-  cmn_err_func (0, "%b", i);		/* { dg-warning "too few" } */
-  cmn_err_func (0, "%b", i, i);		/* { dg-warning "expects type" } */
-  cmn_err_func (0, "%b", string, i);	/* { dg-warning "expects type" } */
-  cmn_err_func (0, "%p", 3);		/* { dg-warning "expects type" } */
+  cmn_err_func (0, "%d", l);		/* { dg-warning "expects argument" } */
+  cmn_err_func (0, "%b");		/* { dg-warning "'int'" } */
+/* { dg-warning "'char \\*'" "" { target *-*-solaris2.* } 32 } */
+  cmn_err_func (0, "%b", i);		/* { dg-warning "matching" } */
+  cmn_err_func (0, "%b", i, i);		/* { dg-warning "expects argument" } */
+  cmn_err_func (0, "%b", string, i);	/* { dg-warning "expects argument" } */
+  cmn_err_func (0, "%p", 3);		/* { dg-warning "expects argument" } */
   return 0;
 }
