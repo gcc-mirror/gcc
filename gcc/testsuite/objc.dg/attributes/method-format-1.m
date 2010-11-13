@@ -27,17 +27,17 @@ void test (LogObject *object)
 {
   [object log: 2  message: "attribute only applies to variadic functions"];
   [object log: 2  message: "attribute %s only applies to variadic functions", "'format'"];
-  [object log: 2  message: "attribute %s only applies to variadic functions"]; /* { dg-warning "too few arguments for format" } */
+  [object log: 2  message: "attribute %s only applies to variadic functions"]; /* { dg-warning "expects a matching" } */
 
   [object debug: "attribute only applies to variadic functions"];
   [object debug: "attribute %s only applies to variadic functions", "'format'"];
-  [object debug: "attribute %s only applies to variadic functions"]; /* { dg-warning "too few arguments for format" } */
+  [object debug: "attribute %s only applies to variadic functions"]; /* { dg-warning "expects a matching" } */
 
   [LogObject log: 2  message: "attribute only applies to variadic functions"];
   [LogObject log: 2  message: "attribute %s only applies to variadic functions", "'format'"];
-  [LogObject log: 2  message: "attribute %s only applies to variadic functions"]; /* { dg-warning "too few arguments for format" } */
+  [LogObject log: 2  message: "attribute %s only applies to variadic functions"]; /* { dg-warning "expects a matching" } */
 
   [LogObject debug: "attribute only applies to variadic functions"];
   [LogObject debug: "attribute %s only applies to variadic functions", "'format'"];
-  [LogObject debug: "attribute %s only applies to variadic functions"]; /* { dg-warning "too few arguments for format" } */
+  [LogObject debug: "attribute %s only applies to variadic functions"]; /* { dg-warning "expects a matching" } */
 }
