@@ -1,5 +1,10 @@
 2010-11-13  Iain Sandoe  <iains@gcc.gnu.org>
 
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Update for changes to lto
+	switches.
+
+2010-11-13  Iain Sandoe  <iains@gcc.gnu.org>
+
 	* dwarf2out.c (macinfo_entry): New struct.
 	(output_comp_unit): Emit the section start label here and flag that we
 	will emit an info section.
