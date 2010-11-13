@@ -134,6 +134,8 @@ struct c_expr
    only used to distinguish tag definitions, tag references and typeof
    uses.  */
 enum c_typespec_kind {
+  /* No typespec.  This appears only in struct c_declspec.  */
+  ctsk_none,
   /* A reserved keyword type specifier.  */
   ctsk_resword,
   /* A reference to a tag, previously declared, such as "struct foo".
@@ -225,13 +227,14 @@ struct c_declspecs {
   /* Any type specifier keyword used such as "int", not reflecting
      modifiers such as "short", or cts_none if none.  */
   ENUM_BITFIELD (c_typespec_keyword) typespec_word : 8;
+  /* The kind of type specifier if one has been seen, ctsk_none
+     otherwise.  */
+  ENUM_BITFIELD (c_typespec_kind) typespec_kind : 3;
   /* Whether any expressions in typeof specifiers may appear in
      constant expressions.  */
   BOOL_BITFIELD expr_const_operands : 1;
   /* Whether any declaration specifiers have been seen at all.  */
   BOOL_BITFIELD declspecs_seen_p : 1;
-  /* Whether a type specifier has been seen.  */
-  BOOL_BITFIELD type_seen_p : 1;
   /* Whether something other than a storage class specifier or
      attribute has been seen.  This is used to warn for the
      obsolescent usage of storage class specifiers other than at the
@@ -241,10 +244,6 @@ struct c_declspecs {
   BOOL_BITFIELD non_sc_seen_p : 1;
   /* Whether the type is specified by a typedef or typeof name.  */
   BOOL_BITFIELD typedef_p : 1;
-  /* Whether a struct, union or enum type either had its content
-     defined by a type specifier in the list or was the first visible
-     declaration of its tag.  */
-  BOOL_BITFIELD tag_defined_p : 1;
   /* Whether the type is explicitly "signed" or specified by a typedef
      whose type is explicitly "signed".  */
   BOOL_BITFIELD explicit_signed_p : 1;

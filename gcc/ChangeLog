@@ -1,5 +1,22 @@
 2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
 
+	* c-tree.h (enum c_typespec_kind): Add ctsk_none.
+	(struct c_declspecs): Replace tagdef_seen_p and type_seen_p
+	with typespec_kind.
+	* c-decl.c (build_null_declspecs): Initialize typespec_kind.
+	(shadow_tag_warned, check_compound_literal_type): Adjust
+	uses of tag_defined_p.
+	(declspecs_add_type): Set typespec_kind.
+	* c-parser.c (c_parser_declaration_or_fndef,
+	c_parser_declspecs, c_parser_struct_declaration,
+	c_parser_parameter_declaration, c_parser_type_name,
+	c_parser_objc_diagnose_bad_element_prefix): Adjust uses
+	of type_seen_p.
+	* c-typeck.c (c_cast_expr): Use typespec_kind instead of
+	tag_defined_p, pass ctsk_firstref through.
+
+2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
+
 	* c-format.c (enum format_specifier_kind, kind_descriptions): New.
 	(struct format_wanted_type): Replace field "name" with "kind", add
 	"format_start" and "format_length".
