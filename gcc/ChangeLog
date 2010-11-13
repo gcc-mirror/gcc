@@ -1,3 +1,21 @@
+2010-11-13  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* dwarf2out.c (macinfo_entry): New struct.
+	(output_comp_unit): Emit the section start label here and flag that we
+	will emit an info section.
+	(dwarf2out_start_source_file): Save data in a macinfo entry rather than
+	emitting directly.
+	(dwarf2out_end_source_file): Likewise.
+	(dwarf2out_define): Likewise.
+	(dwarf2out_undef): Likewise.
+	(output_macinfo): New.
+	(dwarf2out_init): Do not emit debug section switches here, allocate a
+	vec for macinfo, when required.
+	(dwarf2out_finish): First switch to debug_abbrev_section here.
+	debug_line_section,  debug_macinfo_section, Likewise.  
+	Check that the pubtypes table has at least one unpruned entry before
+	trying to emit it.
+
 2010-10-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c/20385
