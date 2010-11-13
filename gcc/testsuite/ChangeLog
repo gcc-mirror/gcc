@@ -1,3 +1,13 @@
+2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/46462
+	* gcc.dg/gomp/pr34607.c: Adjust errors for unknown typenames.
+	* gcc.dg/pr35746.c: Likewise.
+	* gcc.dg/cpp/direct2.c: Likewise.
+	* gcc.dg/cpp/direct2s.c: Likewise.
+	* gcc.dg/noncompile/920923-1.c: Likewise.
+	* gcc.dg/dfp/constants-c99.c: Add -Wno-overflow.
+
 2010-11-13  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* obj-c++.dg/attributes/method-format-1.mm: Adjust.
