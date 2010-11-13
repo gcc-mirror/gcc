@@ -1,3 +1,16 @@
+2010-11-13  Mingming Sun  <mingm.sun@gmail.com>
+
+	* doc/invoke.texi (MIPS Options): Add loongson3a processor.
+	* config/mips/mips.md (define_attr "cpu"): Add loongson_3a.
+	(define_insn "prefetch"): Add TARGET_LOONGSON_3A.
+	* config/mips/mips.h (TARGET_LOONGSON_3A): Define.
+	(TUNE_LOONGSON_3A): Define.
+	(TARGET_LOONGSON_VECTORS): Add TARGET_LOONGSON_3A.
+	(MIPS_ISA_LEVEL_SPEC): Add loongson3a.
+	* config/mips/mips.c (mips_cpu_info_table): Add loongson3a.
+	(mips_issue_rate): Add PROCESSOR_LOONGSON_3A.
+	(mips_rtx_cost_data): Add Loongson-3A.
+
 2010-11-13  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin.h (LINK_COMMAND_SPEC_A): Update for changes to lto

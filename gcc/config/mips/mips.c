@@ -779,6 +779,7 @@ static const struct mips_cpu_info mips_cpu_info_table[] = {
   { "sb1a", PROCESSOR_SB1A, 64, PTF_AVOID_BRANCHLIKELY },
   { "sr71000", PROCESSOR_SR71000, 64, PTF_AVOID_BRANCHLIKELY },
   { "xlr", PROCESSOR_XLR, 64, 0 },
+  { "loongson3a", PROCESSOR_LOONGSON_3A, 64, PTF_AVOID_BRANCHLIKELY },
 
   /* MIPS64 Release 2 processors.  */
   { "octeon", PROCESSOR_OCTEON, 65, PTF_AVOID_BRANCHLIKELY }
@@ -977,6 +978,9 @@ static const struct mips_rtx_cost_data
     DEFAULT_COSTS
   },
   { /* Loongson-2F */
+    DEFAULT_COSTS
+  },
+  { /* Loongson-3A */
     DEFAULT_COSTS
   },
   { /* M4k */
@@ -12040,6 +12044,7 @@ mips_issue_rate (void)
 
     case PROCESSOR_LOONGSON_2E:
     case PROCESSOR_LOONGSON_2F:
+    case PROCESSOR_LOONGSON_3A:
       return 4;
 
     default:
