@@ -1462,7 +1462,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	 should diagnose if there were no declaration specifiers) or a
 	 function definition (in which case the diagnostic for
 	 implicit int suffices).  */
-      declarator = c_parser_declarator (parser, specs->type_seen_p,
+      declarator = c_parser_declarator (parser, 
+					specs->typespec_kind != ctsk_none,
 					C_DTR_NORMAL, &dummy);
       if (declarator == NULL)
 	{
@@ -1831,7 +1832,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 		    bool scspec_ok, bool typespec_ok, bool start_attr_ok)
 {
   bool attrs_ok = start_attr_ok;
-  bool seen_type = specs->type_seen_p;
+  bool seen_type = specs->typespec_kind != ctsk_none;
   while (c_parser_next_token_is (parser, CPP_NAME)
 	 || c_parser_next_token_is (parser, CPP_KEYWORD)
 	 || (c_dialect_objc () && c_parser_next_token_is (parser, CPP_LESS)))
@@ -2399,7 +2400,7 @@ c_parser_struct_declaration (c_parser *parser)
       || c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
     {
       tree ret;
-      if (!specs->type_seen_p)
+      if (specs->typespec_kind == ctsk_none)
 	{
 	  pedwarn (decl_loc, OPT_pedantic,
 		   "ISO C forbids member declarations with no members");
@@ -2434,7 +2435,8 @@ c_parser_struct_declaration (c_parser *parser)
       if (c_parser_next_token_is (parser, CPP_COLON))
 	declarator = build_id_declarator (NULL_TREE);
       else
-	declarator = c_parser_declarator (parser, specs->type_seen_p,
+	declarator = c_parser_declarator (parser,
+					  specs->typespec_kind != ctsk_none,
 					  C_DTR_NORMAL, &dummy);
       if (declarator == NULL)
 	{
@@ -3078,7 +3080,8 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
   pending_xref_error ();
   prefix_attrs = specs->attrs;
   specs->attrs = NULL_TREE;
-  declarator = c_parser_declarator (parser, specs->type_seen_p,
+  declarator = c_parser_declarator (parser,
+				    specs->typespec_kind != ctsk_none,
 				    C_DTR_PARM, &dummy);
   if (declarator == NULL)
     {
@@ -3370,7 +3373,8 @@ c_parser_type_name (c_parser *parser)
     }
   pending_xref_error ();
   finish_declspecs (specs);
-  declarator = c_parser_declarator (parser, specs->type_seen_p,
+  declarator = c_parser_declarator (parser,
+				    specs->typespec_kind != ctsk_none,
 				    C_DTR_ABSTRACT, &dummy);
   if (declarator == NULL)
     return NULL;
@@ -7618,7 +7622,8 @@ static bool
 c_parser_objc_diagnose_bad_element_prefix (c_parser *parser, 
 					   struct c_declspecs *specs)
 {
-  if (!specs->declspecs_seen_p || specs->type_seen_p || specs->non_sc_seen_p)
+  if (!specs->declspecs_seen_p || specs->non_sc_seen_p
+      || specs->typespec_kind != ctsk_none)
     {
       c_parser_error (parser, 
       		      "no type or storage class may be specified here,");

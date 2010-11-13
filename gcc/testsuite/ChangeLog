@@ -1,5 +1,9 @@
 2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
 
+	* gcc.dg/Wcxx-compat-8.c: Add testcases involving incomplete types.
+
+2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
+
 	* gcc.dg/format/few-1.c: New test.
 	* gcc.dg/format/asm_fprintf-1.c: Adjust.
 	* gcc.dg/format/c90-scanf-1.c: Adjust.
