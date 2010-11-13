@@ -1,3 +1,8 @@
+2010-11-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45742
+	* gfortran.dg/volatile12.f90: New.
+
 2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c/20385
