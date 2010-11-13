@@ -1,8 +1,7 @@
 2010-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/Make-lang.in (ada/misc.o): Use $(OPTS_H).
-	* gcc-interface/misc.c (gnat_handle_option): Take location_t
-	parameter.
+	* gcc-interface/misc.c (gnat_handle_option): Take location_t parameter.
 
 2010-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -209,8 +208,7 @@
 
 2010-10-26  Robert Dewar  <dewar@adacore.com>
 
-	* opt.ads: Minor code reorganization
-	Alphabetize Warning switches.
+	* opt.ads: Minor code reorganization.  Alphabetize Warning switches.
 
 2010-10-26  Robert Dewar  <dewar@adacore.com>
 
