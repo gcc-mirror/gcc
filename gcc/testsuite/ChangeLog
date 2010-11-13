@@ -14,6 +14,10 @@
 
 2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
 
+	* objc.dg/attributes/method-format-1.m: Adjust.
+
+2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
+
 	PR c/20385
 	* gcc.dg/decl-9.c: New.
 
