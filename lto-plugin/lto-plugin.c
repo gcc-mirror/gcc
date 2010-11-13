@@ -461,7 +461,10 @@ add_output_files (FILE *f)
       buf = s;
 cont:
       if (!fgets (buf, piece, f))
-	break;
+	{
+	  free (s);
+	  break;
+	}
       len = strlen (s);
       if (s[len - 1] != '\n')
 	{
