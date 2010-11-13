@@ -1,5 +1,6 @@
 2010-11-13  Richard Earnshaw  <rearnsha@arm.com>
 
+	PR target/43440
 	* tm.texi.in (OVERLAPPING_REGISTER_NAMES): Document new macro.
 	* tm.texi: Regenerated.
 	* output.h (decode_reg_name_and_count): Declare.
