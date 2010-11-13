@@ -1,3 +1,9 @@
+2010-11-12  Ian Lance Taylor  <iant@google.com>
+
+	PR other/46332
+	* testsuite/abi/demangle/abi_examples/14.cc (main): Change
+	expected demangling.
+
 2010-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/move.h (forward): Implement N3143, resolving US 90.

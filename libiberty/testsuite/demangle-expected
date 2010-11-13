@@ -3325,8 +3325,13 @@ first<Duo>
 #
 --format=gnu-v3 --no-params
 _Z3fooIiFvdEiEvv
-void foo<int, void ()(double), int>()
-foo<int, void ()(double), int>
+void foo<int, void (double), int>()
+foo<int, void (double), int>
+#
+--format=gnu-v3 --no-params
+_Z1fIFvvEEvv
+void f<void ()>()
+f<void ()>
 #
 --format=gnu-v3 --no-params
 _ZN1N1fE
