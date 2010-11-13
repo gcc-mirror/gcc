@@ -1,3 +1,12 @@
+2010-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (place_union_field): Do not put location information
+	on offset expressions.
+	(place_field): Likewise.
+	(finalize_record_size): Likewise on size expressions.
+	(finalize_type_size): Likewise.
+	(layout_type): Likewise.
+
 2010-11-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/42889
