@@ -374,10 +374,6 @@ struct GTY(())  machine_function {
      split_insns pass; see mips_must_initialize_gp_p () for details.  */
   bool must_restore_gp_when_clobbered_p;
 
-  /* True if we have emitted an instruction to initialize
-     mips16_gp_pseudo_rtx.  */
-  bool initialized_mips16_gp_pseudo_p;
-
   /* True if this is an interrupt handler.  */
   bool interrupt_handler_p;
 
@@ -2654,15 +2650,10 @@ static rtx
 mips16_gp_pseudo_reg (void)
 {
   if (cfun->machine->mips16_gp_pseudo_rtx == NULL_RTX)
-    cfun->machine->mips16_gp_pseudo_rtx = gen_reg_rtx (Pmode);
-
-  /* Don't emit an instruction to initialize the pseudo register if
-     we are being called from the tree optimizers' cost-calculation
-     routines.  */
-  if (!cfun->machine->initialized_mips16_gp_pseudo_p
-      && (current_ir_type () != IR_GIMPLE || currently_expanding_to_rtl))
     {
       rtx insn, scan;
+
+      cfun->machine->mips16_gp_pseudo_rtx = gen_reg_rtx (Pmode);
 
       push_topmost_sequence ();
 
@@ -2674,8 +2665,6 @@ mips16_gp_pseudo_reg (void)
       emit_insn_after (insn, scan);
 
       pop_topmost_sequence ();
-
-      cfun->machine->initialized_mips16_gp_pseudo_p = true;
     }
 
   return cfun->machine->mips16_gp_pseudo_rtx;
@@ -2690,8 +2679,11 @@ mips_pic_base_register (rtx temp)
   if (!TARGET_MIPS16)
     return pic_offset_table_rtx;
 
-  if (can_create_pseudo_p ())
+  if (currently_expanding_to_rtl)
     return mips16_gp_pseudo_reg ();
+
+  if (can_create_pseudo_p ())
+    temp = gen_reg_rtx (Pmode);
 
   if (TARGET_USE_GOT)
     /* The first post-reload split exposes all references to $gp
