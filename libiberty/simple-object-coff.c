@@ -308,7 +308,8 @@ simple_object_coff_read_strtab (simple_object_read *sobj, size_t *strtab_size,
   size_t strsize;
   char *strtab;
 
-  strtab_offset = ocr->symptr + ocr->nsyms * sizeof (struct external_syment);
+  strtab_offset = sobj->offset + ocr->symptr
+		  + ocr->nsyms * sizeof (struct external_syment);
   if (!simple_object_internal_read (sobj->descriptor, strtab_offset,
 				    strsizebuf, 4, errmsg, err))
     return NULL;

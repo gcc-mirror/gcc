@@ -1,3 +1,8 @@
+2010-11-14  Kai Tietz  <kai.tietz@onevision.com>
+
+	* simple-object-coff.c (simple_object_coff_read_strtab): Fix reading
+	offset.
+
 2010-11-12  Ian Lance Taylor  <iant@google.com>
 
 	PR other/46332
