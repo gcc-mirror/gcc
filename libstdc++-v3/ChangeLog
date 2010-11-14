@@ -1,3 +1,18 @@
+2010-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_tree.h (_Rb_tree<>::_M_const_cast_iter): Remove.
+	(_Rb_tree_const_iterator<>::_M_const_cast): Add.
+	(_Rb_tree<>::erase, _M_insert_unique_): Adjust.
+	* include/debug/map.h (map<>::erase, insert): Fix C++0x signatures.
+	* include/debug/multimap.h (multimap<>::erase, insert): Likewise.
+	* include/debug/set.h (set<>::erase, insert): Fix, only cosmetic
+	changes in this case.
+	* include/debug/multiset.h (multiset<>::erase, insert): Likewise.
+	* include/profile/set.h (set<>::insert): Remove redundant macro.
+	* include/profile/multiset.h (multiset<>::insert): Likewise.
+	* include/bits/stl_set.h (set<>::insert): Likewise.
+	* include/bits/stl_multiset.h (multiset<>::insert): Likewise.
+
 2010-11-12  Ian Lance Taylor  <iant@google.com>
 
 	PR other/46332

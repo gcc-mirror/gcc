@@ -423,11 +423,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  Insertion requires logarithmic time (if the hint is not taken).
        */
       iterator
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
       insert(const_iterator __position, const value_type& __x)
-#else
-      insert(iterator __position, const value_type& __x)
-#endif
       { return _M_t._M_insert_equal_(__position, __x); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__

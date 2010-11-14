@@ -232,7 +232,11 @@ namespace __debug
 #endif
 
       iterator
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      insert(const_iterator __position, const value_type& __x)
+#else
       insert(iterator __position, const value_type& __x)
+#endif
       {
 	__glibcxx_check_insert(__position);
 	return iterator(_Base::insert(__position.base(), __x), this);
@@ -262,7 +266,7 @@ namespace __debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
-      erase(iterator __position)
+      erase(const_iterator __position)
       {
 	__glibcxx_check_erase(__position);
 	__position._M_invalidate();
@@ -294,14 +298,14 @@ namespace __debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
-      erase(iterator __first, iterator __last)
+      erase(const_iterator __first, const_iterator __last)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
 	while (__first != __last)
 	  this->erase(__first++);
-	return __last;
+	return iterator(__last.base()._M_const_cast(), this);
       }
 #else
       void
