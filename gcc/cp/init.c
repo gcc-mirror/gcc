@@ -2516,8 +2516,13 @@ build_new (VEC(tree,gc) **placement, tree type, tree nelts,
   if (nelts == NULL_TREE && VEC_length (tree, *init) == 1)
     {
       tree auto_node = type_uses_auto (type);
-      if (auto_node && describable_type (VEC_index (tree, *init, 0)))
-	type = do_auto_deduction (type, VEC_index (tree, *init, 0), auto_node);
+      if (auto_node)
+	{
+	  tree d_init = VEC_index (tree, *init, 0);
+	  d_init = resolve_nondeduced_context (d_init);
+	  if (describable_type (d_init))
+	    type = do_auto_deduction (type, d_init, auto_node);
+	}
     }
 
   if (processing_template_decl)

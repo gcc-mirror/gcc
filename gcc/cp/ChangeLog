@@ -1,3 +1,12 @@
+2010-11-13  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (cp_finish_decl): Use resolve_nondeduced_context for auto.
+	* init.c (build_new): Likewise.
+	* pt.c (tsubst_decl): Likewise.
+	(do_auto_deduction): Likewise.
+	(resolve_nondeduced_context): Use build_offset_ref and
+	cp_build_addr_expr.
+
 2010-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* Make-lang.in (g++spec.o): Use $(OPTS_H).
