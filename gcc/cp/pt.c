@@ -10035,10 +10035,14 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	      = tsubst_expr (DECL_INITIAL (t), args, complain, in_decl,
 			     /*constant_expression_p=*/false);
 
-	    if (auto_node && init && describable_type (init))
+	    if (auto_node && init)
 	      {
-		type = do_auto_deduction (type, init, auto_node);
-		TREE_TYPE (r) = type;
+		init = resolve_nondeduced_context (init);
+		if (describable_type (init))
+		  {
+		    type = do_auto_deduction (type, init, auto_node);
+		    TREE_TYPE (r) = type;
+		  }
 	      }
 	  }
 	else
@@ -14338,10 +14342,13 @@ resolve_nondeduced_context (tree orig_expr)
 				   BASELINK_ACCESS_BINFO (baselink),
 				   expr, BASELINK_OPTYPE (baselink));
 	  if (offset)
-	    expr = build2 (OFFSET_REF, TREE_TYPE (expr),
-			   TREE_OPERAND (offset, 0), expr);
+	    {
+	      tree base
+		= TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (offset, 0)));
+	      expr = build_offset_ref (base, expr, addr);
+	    }
 	  if (addr)
-	    expr = build_address (expr);
+	    expr = cp_build_addr_expr (expr, tf_warning_or_error);
 	  return expr;
 	}
       else if (good == 0 && badargs)
@@ -18889,6 +18896,8 @@ do_auto_deduction (tree type, tree init, tree auto_node)
      std::initializer_list<U>.  */
   if (BRACE_ENCLOSED_INITIALIZER_P (init))
     type = listify_autos (type, auto_node);
+
+  init = resolve_nondeduced_context (init);
 
   parms = build_tree_list (NULL_TREE, type);
   args[0] = init;

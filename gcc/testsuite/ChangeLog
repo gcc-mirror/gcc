@@ -1,3 +1,7 @@
+2010-11-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/auto20.C: New.
+
 2010-11-13  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/fsf-nsstring-format-1.m: Adjust format messages.
