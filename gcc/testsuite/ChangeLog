@@ -1,3 +1,8 @@
+2010-11-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/46475
+	* gcc.dg/nofixed-point-2.c: Change dg-warning to dg-bogus.
+
 2010-11-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/property/at-property-21.m: New.
