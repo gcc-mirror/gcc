@@ -9324,6 +9324,11 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	}
       specs->type = type;
     }
+  else
+    {
+      /* Set a dummy type here to avoid warning about implicit 'int'.  */
+      specs->type = integer_type_node;
+    }
 
   return specs;
 }

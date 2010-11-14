@@ -1,3 +1,16 @@
+2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/46462
+	* c-decl.c (declspecs_add_type): Make variables with error types
+	integers.
+	* c-parser.c (c_parser_next_tokens_start_declaration): Two IDs
+	do not start a declaration before an Objective-C foreach.
+	(c_parser_declaration_or_fndef): Improve recovery after unknown
+	type name.
+	(c_parser_for_statement): Hoist entrance of "foreach context"
+	before ifs, add corresponding reset where it was missing.  Do
+	not set objc_could_be_foreach_context for C.
+
 2010-11-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/45722
@@ -94,7 +107,7 @@
 	Check that the pubtypes table has at least one unpruned entry before
 	trying to emit it.
 
-2010-10-30  Paolo Bonzini  <bonzini@gnu.org>
+2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c/20385
 	* c-parser.c (c_parser_next_token_starts_declaration): Rename to...

@@ -641,7 +641,10 @@ c_parser_next_tokens_start_declaration (c_parser *parser)
       && token->id_kind == C_ID_ID
       && (c_parser_peek_2nd_token (parser)->type == CPP_NAME
           || c_parser_peek_2nd_token (parser)->type == CPP_MULT)
-      && !lookup_name (token->value))
+      && !lookup_name (token->value)
+
+      /* Do not try too hard when we could have "object in array".  */
+      && !parser->objc_could_be_foreach_context)
     return true;
 
   return false;
@@ -1373,10 +1376,12 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
                 c_parser_peek_token (parser)->value);
 
       /* Parse declspecs normally to get a correct pointer type, but avoid
-         a further "fails to be a type name" error.  */
+         a further "fails to be a type name" error.  Refuse nested functions
+         since it is not how the user likely wants us to recover.  */
       c_parser_peek_token (parser)->type = CPP_KEYWORD;
       c_parser_peek_token (parser)->keyword = RID_VOID;
       c_parser_peek_token (parser)->value = error_mark_node;
+      fndef_ok = !nested;
     }
 
   c_parser_declspecs (parser, specs, true, true, start_attr_ok);
@@ -4653,14 +4658,15 @@ c_parser_for_statement (c_parser *parser)
     {
       /* Parse the initialization declaration or expression.  */
       object_expression = error_mark_node;
+      parser->objc_could_be_foreach_context = c_dialect_objc ();
       if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	{
+	  parser->objc_could_be_foreach_context = false;
 	  c_parser_consume_token (parser);
 	  c_finish_expr_stmt (loc, NULL_TREE);
 	}
       else if (c_parser_next_tokens_start_declaration (parser))
 	{
-	  parser->objc_could_be_foreach_context = true;
 	  c_parser_declaration_or_fndef (parser, true, true, true, true, true, 
 					 &object_expression);
 	  parser->objc_could_be_foreach_context = false;
@@ -4690,7 +4696,6 @@ c_parser_for_statement (c_parser *parser)
 	      int ext;
 	      ext = disable_extension_diagnostics ();
 	      c_parser_consume_token (parser);
-	      parser->objc_could_be_foreach_context = true;
 	      c_parser_declaration_or_fndef (parser, true, true, true, true,
 					     true, &object_expression);
 	      parser->objc_could_be_foreach_context = false;
@@ -4714,7 +4719,6 @@ c_parser_for_statement (c_parser *parser)
 	init_expr:
 	  {
 	    tree init_expression;
-	    parser->objc_could_be_foreach_context = true;
 	    init_expression = c_parser_expression (parser).value;
 	    parser->objc_could_be_foreach_context = false;
 	    if (c_parser_next_token_is_keyword (parser, RID_IN))
@@ -4735,6 +4739,7 @@ c_parser_for_statement (c_parser *parser)
 	}
       /* Parse the loop condition.  In the case of a foreach
 	 statement, there is no loop condition.  */
+      gcc_assert (!parser->objc_could_be_foreach_context);
       if (!is_foreach_statement)
 	{
 	  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
