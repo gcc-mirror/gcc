@@ -1,3 +1,9 @@
+2010-11-14  Matthias Klose  <doko@ubuntu.com>
+
+	* testsuite/28_regex/13_ecmascript: Remove, empty directory.
+	* testsuite/28_regex/02_definitions: Likewise.
+	* testsuite/29_atomics/headers/stdatomic.h: Likewise.
+
 2010-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_tree.h (_Rb_tree<>::_M_const_cast_iter): Remove.
