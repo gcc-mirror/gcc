@@ -247,6 +247,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _Rb_tree_const_iterator(const iterator& __it)
       : _M_node(__it._M_node) { }
 
+      iterator
+      _M_const_cast() const
+      { return iterator(static_cast<typename iterator::_Link_type>
+			(const_cast<typename iterator::_Base_ptr>(_M_node))); }
+
       reference
       operator*() const
       { return static_cast<_Link_type>(_M_node)->_M_value_field; }
@@ -556,11 +561,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
     private:
-      iterator
-      _M_const_cast_iter(const_iterator __cit)
-      { return iterator(static_cast<_Link_type>
-			(const_cast<_Base_ptr>(__cit._M_node))); }
-
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       template<typename _Arg>
         iterator
@@ -756,7 +756,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	const_iterator __result = __position;
 	++__result;
 	_M_erase_aux(__position);
-	return _M_const_cast_iter(__result);
+	return __result._M_const_cast();
       }
 #else
       void
@@ -773,7 +773,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       erase(const_iterator __first, const_iterator __last)
       {
 	_M_erase_aux(__first, __last);
-	return _M_const_cast_iter(__last);
+	return __last._M_const_cast();
       }
 #else
       void
@@ -1364,7 +1364,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
       else
 	// Equivalent keys.
-	return _M_const_cast_iter(__position);
+	return __position._M_const_cast();
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
