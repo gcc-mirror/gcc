@@ -28,7 +28,7 @@
 /* Now test various problems.  */
 
 @property (readonly, readwrite) int a;    /* { dg-error ".readonly. attribute conflicts with .readwrite. attribute" } */
-@property (readonly, setter=mySetterB:) int b; /* { dg-warning ".readonly. attribute conflicts with .setter. attribute" } */
+@property (readonly, setter=mySetterB:) int b; /* { dg-error ".readonly. attribute conflicts with .setter. attribute" } */
 
 @property (assign, retain) id c;          /* { dg-error ".assign. attribute conflicts with .retain. attribute" } */
 @property (assign, copy) id d;            /* { dg-error ".assign. attribute conflicts with .copy. attribute" } */
