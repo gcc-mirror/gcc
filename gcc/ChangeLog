@@ -1,3 +1,11 @@
+2010-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/45722
+	* tree-sra.c (build_ref_for_model): Always build a COMPONENT_REF if
+	this is a reference to a component.
+	* ipa-prop.c (ipa_get_member_ptr_load_param): Accept COMPONENT_REF.
+	(ipa_note_param_call): Adjust comment.
+
 2010-11-14  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (machine_function): Remove
