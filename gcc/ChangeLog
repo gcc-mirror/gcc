@@ -1,3 +1,13 @@
+2010-11-14  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (machine_function): Remove
+	initialized_mips16_gp_pseudo_p.
+	(mips16_gp_pseudo_reg): Use cfun->machine->mips16_gp_pseudo_rtx to
+	detect whether a pseudo has already been created.  Unconditionally
+	create a new one if not.
+	(mips_pic_base_register): Only call mips16_gp_pseudo_reg when
+	expanding to rtl.  Create a new pseudo otherwise, if allowed.
+
 2010-11-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/43440
