@@ -1,3 +1,39 @@
+2010-11-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/property/at-property-21.m: New.
+	* objc.dg/property/at-property-22.m: New.
+	* objc.dg/property/at-property-23.m: New.	
+	* objc.dg/property/synthesize-9.m: New.
+	* objc.dg/property/synthesize-10.m: New.
+	* objc.dg/property/synthesize-11.m: New.	
+	* obj-c++.dg/property/at-property-21.mm: New.
+	* obj-c++.dg/property/at-property-22.mm: New.
+	* obj-c++.dg/property/at-property-23.mm: New.	
+	* obj-c++.dg/property/synthesize-9.mm: New.
+	* obj-c++.dg/property/synthesize-10.mm: New.
+	* obj-c++.dg/property/synthesize-11.mm: New.	
+
+	* objc.dg/property/at-property-4.m: Updated to match new compiler
+	where some errors have been converted into warnings and vice versa.
+	* objc.dg/property/at-property-16.m: Same change.
+	* objc.dg/property/at-property-18.m: Same change.
+	* objc.dg/property/property-neg-5.m: Same change.
+	* obj-c++.dg/property/at-property-4.mm: Same change.
+	* obj-c++.dg/property/at-property-16.mm: Same change.
+	* obj-c++.dg/property/at-property-18.mm: Same change.
+	* obj-c++.dg/property/property-neg-5.mm: Same change.
+	
+	* obj-c++.dg/property/dynamic-2.mm: Enable tests that were
+	commented out because of testsuite problems; I found out that
+	using dg-warning instead of dg-message gets them to work.
+	* obj-c++.dg/property/property-neg-3.mm: Same change.
+	* obj-c++.dg/property/synthesize-6.mm: Same change.
+	* obj-c++.dg/property/at-property-5.mm: Same change.	
+	* obj-c++.dg/property/at-property-14.mm: Same change.	
+	* obj-c++.dg/property/at-property-18.mm: Same change.
+	* obj-c++.dg/property/at-property-16.mm: Same change (in this file,
+	some tests still do not work due to some other testsuite issue).
+
 2010-11-13  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/auto20.C: New.

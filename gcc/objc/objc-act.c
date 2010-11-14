@@ -948,8 +948,7 @@ objc_add_property_declaration (location_t location, tree decl,
 
   if (parsed_property_readonly && parsed_property_setter_ident)
     {
-      /* Maybe this should be an error ?  The Apple documentation says it is a warning.  */
-      warning_at (location, 0, "%<readonly%> attribute conflicts with %<setter%> attribute");
+      error_at (location, "%<readonly%> attribute conflicts with %<setter%> attribute");
       property_readonly = false;
     }
 
@@ -989,16 +988,43 @@ objc_add_property_declaration (location_t location, tree decl,
   /* At this point we know that we are either in an interface, a
      category, or a protocol.  */
 
-  /* Check that the property does not have an initial value specified.
-     This should never happen as the parser doesn't allow this, but
-     it's just in case.  */
-  if (DECL_INITIAL (decl))
+  /* We expect a FIELD_DECL from the parser.  Make sure we didn't get
+     something else, as that would confuse the checks below.  */
+  if (TREE_CODE (decl) != FIELD_DECL)
     {
-      error_at (location, "property can not have an initial value");
+      error_at (location, "invalid property declaration");
+      return;      
+    }
+
+  /* Do some spot-checks for the most obvious invalid types.  */
+
+  if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+    {
+      error_at (location, "property can not be an array");
       return;
     }
 
-  /* TODO: Check that the property type is an Objective-C object or a "POD".  */
+  /* The C++/ObjC++ parser seems to reject the ':' for a bitfield when
+     parsing, while the C/ObjC parser accepts it and gives us a
+     FIELD_DECL with a DECL_INITIAL set.  So we use the DECL_INITIAL
+     to check for a bitfield when doing ObjC.  */
+#ifndef OBJCPLUS
+  if (DECL_INITIAL (decl))
+    {
+      /* A @property is not an actual variable, but it is a way to
+	 describe a pair of accessor methods, so its type (which is
+	 the type of the return value of the getter and the first
+	 argument of the setter) can't be a bitfield (as return values
+	 and arguments of functions can not be bitfields).  The
+	 underlying instance variable could be a bitfield, but that is
+	 a different matter.  */
+      error_at (location, "property can not be a bit-field");
+      return;      
+    }
+#endif
+
+  /* TODO: Check that the property type is an Objective-C object or a
+     "POD".  */
 
   /* Implement -Wproperty-assign-default (which is enabled by default).  */
   if (warn_property_assign_default
@@ -1136,7 +1162,8 @@ objc_add_property_declaration (location_t location, tree decl,
 	  
       if (PROPERTY_NONATOMIC (x) != parsed_property_nonatomic)
 	{
-	  error_at (location, "'nonatomic' attribute of property %qD conflicts with previous declaration", decl);
+	  warning_at (location, 0,
+		      "'nonatomic' attribute of property %qD conflicts with previous declaration", decl);
       
 	  if (original_location != UNKNOWN_LOCATION)
 	    inform (original_location, "originally specified here");
@@ -1145,7 +1172,8 @@ objc_add_property_declaration (location_t location, tree decl,
 
       if (PROPERTY_GETTER_NAME (x) != parsed_property_getter_ident)
 	{
-	  error_at (location, "'getter' attribute of property %qD conflicts with previous declaration", decl);
+	  warning_at (location, 0,
+		      "'getter' attribute of property %qD conflicts with previous declaration", decl);
       
 	  if (original_location != UNKNOWN_LOCATION)
 	    inform (original_location, "originally specified here");
@@ -1157,7 +1185,8 @@ objc_add_property_declaration (location_t location, tree decl,
 	{
 	  if (PROPERTY_SETTER_NAME (x) != parsed_property_setter_ident)
 	    {
-	      error_at (location, "'setter' attribute of property %qD conflicts with previous declaration", decl);
+	      warning_at (location, 0,
+			  "'setter' attribute of property %qD conflicts with previous declaration", decl);
 	      
 	      if (original_location != UNKNOWN_LOCATION)
 		inform (original_location, "originally specified here");
@@ -1167,7 +1196,8 @@ objc_add_property_declaration (location_t location, tree decl,
 
       if (PROPERTY_ASSIGN_SEMANTICS (x) != property_assign_semantics)
 	{
-	  error_at (location, "assign semantics attributes of property %qD conflict with previous declaration", decl);
+	  warning_at (location, 0,
+		      "assign semantics attributes of property %qD conflict with previous declaration", decl);
       
 	  if (original_location != UNKNOWN_LOCATION)
 	    inform (original_location, "originally specified here");
@@ -1177,7 +1207,8 @@ objc_add_property_declaration (location_t location, tree decl,
       /* It's ok to have a readonly property that becomes a readwrite, but not vice versa.  */
       if (PROPERTY_READONLY (x) == 0  &&  property_readonly == 1)
 	{
-	  error_at (location, "'readonly' attribute of property %qD conflicts with previous declaration", decl);
+	  warning_at (location, 0,
+		      "'readonly' attribute of property %qD conflicts with previous declaration", decl);
       
 	  if (original_location != UNKNOWN_LOCATION)
 	    inform (original_location, "originally specified here");
@@ -9854,6 +9885,7 @@ objc_add_synthesize_declaration_for_property (location_t location, tree interfac
      instance variable is only used in one synthesized property).  */
   {
     tree ivar = is_ivar (CLASS_IVARS (interface), ivar_name);
+    tree type_of_ivar;
     if (!ivar)
       {
 	error_at (location, "ivar %qs used by %<@synthesize%> declaration must be an existing ivar", 
@@ -9861,8 +9893,19 @@ objc_add_synthesize_declaration_for_property (location_t location, tree interfac
 	return;
       }
 
-    /* If the instance variable has a different C type, we warn.  */
-    if (!comptypes (TREE_TYPE (property), TREE_TYPE (ivar)))
+    if (DECL_BIT_FIELD_TYPE (ivar))
+      type_of_ivar = DECL_BIT_FIELD_TYPE (ivar);
+    else
+      type_of_ivar = TREE_TYPE (ivar);
+    
+    /* If the instance variable has a different C type, we throw an error ...  */
+    if (!comptypes (TREE_TYPE (property), type_of_ivar)
+	/* ... unless the property is readonly, in which case we allow
+	   the instance variable to be more specialized (this means we
+	   can generate the getter all right and it works).  */
+	&& (!PROPERTY_READONLY (property)
+	    || !objc_compare_types (TREE_TYPE (property),
+				    type_of_ivar, -5, NULL_TREE)))
       {
 	location_t original_location = DECL_SOURCE_LOCATION (ivar);
 	
@@ -9872,6 +9915,43 @@ objc_add_synthesize_declaration_for_property (location_t location, tree interfac
 	
 	if (original_location != UNKNOWN_LOCATION)
 	  inform (original_location, "originally specified here");
+      }
+
+    /* If the instance variable is a bitfield, the property must be
+       'assign', 'nonatomic' because the runtime getter/setter helper
+       do not work with bitfield instance variables.  */
+    if (DECL_BIT_FIELD_TYPE (ivar))
+      {
+	/* If there is an error, we return and not generate any
+	   getter/setter because trying to set up the runtime
+	   getter/setter helper calls with bitfields is at high risk
+	   of ICE.  */
+
+	if (PROPERTY_ASSIGN_SEMANTICS (property) != OBJC_PROPERTY_ASSIGN)
+	  {
+	    location_t original_location = DECL_SOURCE_LOCATION (ivar);
+	    
+	    error_at (location, "'assign' property %qs is using bit-field instance variable %qs",
+		      IDENTIFIER_POINTER (property_name),
+		      IDENTIFIER_POINTER (ivar_name));
+	
+	    if (original_location != UNKNOWN_LOCATION)
+	      inform (original_location, "originally specified here");
+	    return;
+	  }
+
+	if (!PROPERTY_NONATOMIC (property))
+	  {
+	    location_t original_location = DECL_SOURCE_LOCATION (ivar);
+	    
+	    error_at (location, "'atomic' property %qs is using bit-field instance variable %qs",
+		      IDENTIFIER_POINTER (property_name),
+		      IDENTIFIER_POINTER (ivar_name));
+	    
+	    if (original_location != UNKNOWN_LOCATION)
+	      inform (original_location, "originally specified here");
+	    return;
+	  }
       }
   }
 
@@ -12566,8 +12646,8 @@ objc_type_valid_for_messaging (tree type, bool accept_classes)
   if (objc_is_object_id (type))
     return true;
 
-  if (accept_classes && objc_is_class_id (type))
-    return true;
+  if (objc_is_class_id (type))
+    return accept_classes;
 
   if (TYPE_HAS_OBJC_INFO (type))
     return true;

@@ -14,12 +14,10 @@
 @property int v1;
 @property int v2;
 @end
-#if 0 /* This is a problem in the testsuite; the compiler is fine, but the testsuite still barfs on the following.  */
 @implementation Test
-@synthesize v1 = v;  /* dg-message "originally specified here" */
-@synthesize v2 = v;  /* dg-error "property .v2. is using the same instance variable as property .v1." */
+@synthesize v1 = v;  /* { dg-warning "originally specified here" } */
+@synthesize v2 = v;  /* { dg-error "property .v2. is using the same instance variable as property .v1." } */
 @end
-#endif
 @interface Test2 : Test
 @property int w1;
 @end
@@ -27,6 +25,6 @@
 @implementation Test2
 @synthesize w1;      /* { dg-error "ivar .w1. used by .@synthesize. declaration must be an existing ivar" } */
 @end
-/* { dg-warning "incomplete implementation" "" { target *-*-* } 29 } */
-/* { dg-warning "method definition for .-setW1:. not found" "" { target *-*-* } 29 } */
-/* { dg-warning "method definition for .-w1. not found" "" { target *-*-* } 29 } */
+/* { dg-warning "incomplete implementation" "" { target *-*-* } 27 } */
+/* { dg-warning "method definition for .-setW1:. not found" "" { target *-*-* } 27 } */
+/* { dg-warning "method definition for .-w1. not found" "" { target *-*-* } 27 } */

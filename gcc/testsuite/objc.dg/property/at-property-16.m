@@ -34,22 +34,22 @@
 @end
 
 @interface MyClass2 : MyRootClass
-@property (retain) id a;         /* { dg-error "assign semantics attributes of property .a. conflict with previous declaration" } */
+@property (retain) id a;         /* { dg-warning "assign semantics attributes of property .a. conflict with previous declaration" } */
                                  /* { dg-message "originally specified here" "" { target *-*-* } 13 } */
-@property (assign) id b;         /* { dg-error "assign semantics attributes of property .b. conflict with previous declaration" } */
+@property (assign) id b;         /* { dg-warning "assign semantics attributes of property .b. conflict with previous declaration" } */
                                  /* { dg-message "originally specified here" "" { target *-*-* } 14 } */
-@property (nonatomic) int c;     /* { dg-error ".nonatomic. attribute of property .c. conflicts with previous declaration" } */
+@property (nonatomic) int c;     /* { dg-warning ".nonatomic. attribute of property .c. conflicts with previous declaration" } */
                                  /* { dg-message "originally specified here" "" { target *-*-* } 15 } */
-@property int d;                 /* { dg-error ".nonatomic. attribute of property .d. conflicts with previous declaration" } */
+@property int d;                 /* { dg-warning ".nonatomic. attribute of property .d. conflicts with previous declaration" } */
                                  /* { dg-message "originally specified here" "" { target *-*-* } 16 } */
-@property (setter=setX:) int e;  /* { dg-error ".setter. attribute of property .e. conflicts with previous declaration" } */
+@property (setter=setX:) int e;  /* { dg-warning ".setter. attribute of property .e. conflicts with previous declaration" } */
                                  /* { dg-message "originally specified here" "" { target *-*-* } 17 } */
-@property (getter=x) int f;      /* { dg-error ".getter. attribute of property .f. conflicts with previous declaration" } */
+@property (getter=x) int f;      /* { dg-warning ".getter. attribute of property .f. conflicts with previous declaration" } */
                                  /* { dg-message "originally specified here" "" { target *-*-* } 18 } */
-@property (readonly) int g;      /* { dg-error ".readonly. attribute of property .g. conflicts with previous declaration" } */
+@property (readonly) int g;      /* { dg-warning ".readonly. attribute of property .g. conflicts with previous declaration" } */
                                  /* { dg-message "originally specified here" "" { target *-*-* } 19 } */
 @property (readwrite) int h;     /* Ok */
-@property (readonly) int i;      /* { dg-error ".getter. attribute of property .i. conflicts with previous declaration" } */
+@property (readonly) int i;      /* { dg-warning ".getter. attribute of property .i. conflicts with previous declaration" } */
                                  /* { dg-message "originally specified here" "" { target *-*-* } 21 } */
 @end
 

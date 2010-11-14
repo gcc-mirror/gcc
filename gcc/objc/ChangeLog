@@ -1,3 +1,22 @@
+2010-11-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_add_property_declaration): Check that the decl
+	we received from the parser is a FIELD_DECL; reject array and
+	bitfield properties.  Convert the warning when a property is
+	readonly and a setter is specified into an error.  Convert errors
+	when a property declaration does not match a property declaration
+	in a superclass into warnings.
+	(objc_add_synthesize_declaration_for_property): Use
+	DECL_BIT_FIELD_TYPE to determine the type of an instance variable
+	if it is a bitfield.  Throw an error if we are asked to synthesize
+	setters/getters for a bitfield instance variable but the property
+	is not appropriate - it must be assign and nonatomic.  If the
+	property is readonly, allow the instance variable type to be a
+	specialization of the property type.
+	(objc_type_valid_for_messaging): Fixed returning 'false' for a
+	Class qualified with a protocol when the 'accept_classes' argument
+	is 'false'.
+
 2010-11-13  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_get_protocol_qualified_type): detect cases
