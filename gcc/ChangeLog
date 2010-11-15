@@ -1,5 +1,12 @@
 2010-11-15  Richard Henderson  <rth@redhat.com>
 
+	* loop-unroll.c (analyze_insn_to_expand_var): Accept accumulation
+	via FMA if unsafe math.
+	(insert_var_expansion_initialization): Handle FMA.
+	(combine_var_copies_in_loop_exit): Likewise.
+
+2010-11-15  Richard Henderson  <rth@redhat.com>
+
 	* config.gcc [ia64-*] (extra_options): Add fused-madd.opt.
 	* config/ia64/ia64.opt: Remove mfused-madd.
 	* config/ia64/ia64.c (ia64_rtx_costs): Handle FP MULT, PLUS, FMA.
