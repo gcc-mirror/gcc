@@ -335,7 +335,7 @@ x86_64-*-*)
 ia64-*-*)
 	extra_headers=ia64intrin.h
 	need_64bit_hwint=yes
-	extra_options="${extra_options} g.opt"
+	extra_options="${extra_options} g.opt fused-madd.opt"
 	;;
 hppa*-*-*)
 	cpu_type=pa

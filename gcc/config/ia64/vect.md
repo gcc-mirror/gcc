@@ -903,105 +903,28 @@
   "fpnegabs %0 = %1"
   [(set_attr "itanium_class" "fmisc")])
 
-;; In order to convince combine to merge plus and mult to a useful fpma,
-;; we need a couple of extra patterns.
 (define_expand "addv2sf3"
-  [(parallel
-    [(set (match_operand:V2SF 0 "fr_register_operand" "")
-	  (plus:V2SF (match_operand:V2SF 1 "fr_register_operand" "")
-		     (match_operand:V2SF 2 "fr_register_operand" "")))
-     (use (match_dup 3))])]
+  [(set (match_operand:V2SF 0 "fr_register_operand" "")
+	(fma:V2SF (match_operand:V2SF 1 "fr_register_operand" "")
+		  (match_dup 3)
+		  (match_operand:V2SF 2 "fr_register_operand" "")))]
   ""
 {
   rtvec v = gen_rtvec (2, CONST1_RTX (SFmode), CONST1_RTX (SFmode));
   operands[3] = force_reg (V2SFmode, gen_rtx_CONST_VECTOR (V2SFmode, v));
-  if (!TARGET_FUSED_MADD)
-    {
-      emit_insn (gen_fpma (operands[0], operands[1], operands[3], operands[2]));
-      DONE;
-    }
 })
 
-;; The split condition here could be combine_completed, if we had such.
-(define_insn_and_split "*addv2sf3_1"
-  [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
-	(plus:V2SF (match_operand:V2SF 1 "fr_register_operand" "f")
-		   (match_operand:V2SF 2 "fr_register_operand" "f")))
-   (use (match_operand:V2SF 3 "fr_register_operand" "f"))]
-  ""
-  "#"
-  "reload_completed"
-  [(set (match_dup 0)
-	(plus:V2SF
-	  (mult:V2SF (match_dup 1) (match_dup 3))
-	  (match_dup 2)))]
-  "")
-
-(define_insn_and_split "*addv2sf3_2"
-  [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
-	(plus:V2SF
-	  (mult:V2SF (match_operand:V2SF 1 "fr_register_operand" "f")
-		     (match_operand:V2SF 2 "fr_register_operand" "f"))
-	  (match_operand:V2SF 3 "fr_register_operand" "f")))
-    (use (match_operand:V2SF 4 "" "X"))]
-  ""
-  "#"
-  ""
-  [(set (match_dup 0)
-	(plus:V2SF
-	  (mult:V2SF (match_dup 1) (match_dup 2))
-	  (match_dup 3)))]
-  "")
-
-;; In order to convince combine to merge minus and mult to a useful fpms,
-;; we need a couple of extra patterns.
 (define_expand "subv2sf3"
-  [(parallel
-    [(set (match_operand:V2SF 0 "fr_register_operand" "")
-	  (minus:V2SF (match_operand:V2SF 1 "fr_register_operand" "")
-		      (match_operand:V2SF 2 "fr_register_operand" "")))
-     (use (match_dup 3))])]
+  [(set (match_operand:V2SF 0 "fr_register_operand" "")
+	(fma:V2SF
+	  (match_operand:V2SF 1 "fr_register_operand" "")
+	  (match_dup 3)
+	  (neg:V2SF (match_operand:V2SF 2 "fr_register_operand" ""))))]
   ""
 {
   rtvec v = gen_rtvec (2, CONST1_RTX (SFmode), CONST1_RTX (SFmode));
   operands[3] = force_reg (V2SFmode, gen_rtx_CONST_VECTOR (V2SFmode, v));
-  if (!TARGET_FUSED_MADD)
-    {
-      emit_insn (gen_fpms (operands[0], operands[1], operands[3], operands[2]));
-      DONE;
-    }
 })
-
-;; The split condition here could be combine_completed, if we had such.
-(define_insn_and_split "*subv2sf3_1"
-  [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
-	(minus:V2SF (match_operand:V2SF 1 "fr_register_operand" "f")
-		    (match_operand:V2SF 2 "fr_register_operand" "f")))
-   (use (match_operand:V2SF 3 "fr_register_operand" "f"))]
-  ""
-  "#"
-  "reload_completed"
-  [(set (match_dup 0)
-	(minus:V2SF
-	  (mult:V2SF (match_dup 1) (match_dup 3))
-	  (match_dup 2)))]
-  "")
-
-(define_insn_and_split "*subv2sf3_2"
-  [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
-	(minus:V2SF
-	  (mult:V2SF (match_operand:V2SF 1 "fr_register_operand" "f")
-		     (match_operand:V2SF 2 "fr_register_operand" "f"))
-	  (match_operand:V2SF 3 "fr_register_operand" "f")))
-    (use (match_operand:V2SF 4 "" "X"))]
-  ""
-  "#"
-  ""
-  [(set (match_dup 0)
-	(minus:V2SF
-	  (mult:V2SF (match_dup 1) (match_dup 2))
-	  (match_dup 3)))]
-  "")
 
 (define_insn "mulv2sf3"
   [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
@@ -1011,22 +934,22 @@
   "fpmpy %0 = %1, %2"
   [(set_attr "itanium_class" "fmac")])
 
-(define_insn "fpma"
+(define_insn "fmav2sf4"
   [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
-	(plus:V2SF
-	  (mult:V2SF (match_operand:V2SF 1 "fr_register_operand" "f")
-		     (match_operand:V2SF 2 "fr_register_operand" "f"))
+	(fma:V2SF
+	  (match_operand:V2SF 1 "fr_register_operand" "f")
+	  (match_operand:V2SF 2 "fr_register_operand" "f")
 	  (match_operand:V2SF 3 "fr_register_operand" "f")))]
   ""
   "fpma %0 = %1, %2, %3"
   [(set_attr "itanium_class" "fmac")])
 
-(define_insn "fpms"
+(define_insn "fmsv2sf4"
   [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
-	(minus:V2SF
-	  (mult:V2SF (match_operand:V2SF 1 "fr_register_operand" "f")
-		     (match_operand:V2SF 2 "fr_register_operand" "f"))
-	  (match_operand:V2SF 3 "fr_register_operand" "f")))]
+	(fma:V2SF
+	  (match_operand:V2SF 1 "fr_register_operand" "f")
+	  (match_operand:V2SF 2 "fr_register_operand" "f")
+	  (neg:V2SF (match_operand:V2SF 3 "fr_register_operand" "f"))))]
   ""
   "fpms %0 = %1, %2, %3"
   [(set_attr "itanium_class" "fmac")])
@@ -1040,12 +963,11 @@
   "fpnmpy %0 = %1, %2"
   [(set_attr "itanium_class" "fmac")])
 
-(define_insn "*fpnma"
+(define_insn "fnmav2sf4"
   [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
-	(plus:V2SF
-	  (neg:V2SF
-	    (mult:V2SF (match_operand:V2SF 1 "fr_register_operand" "f")
-		       (match_operand:V2SF 2 "fr_register_operand" "f")))
+	(fma:V2SF
+	  (neg:V2SF (match_operand:V2SF 1 "fr_register_operand" "f"))
+	  (match_operand:V2SF 2 "fr_register_operand" "f")
 	  (match_operand:V2SF 3 "fr_register_operand" "f")))]
   ""
   "fpnma %0 = %1, %2, %3"

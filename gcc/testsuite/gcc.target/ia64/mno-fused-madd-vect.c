@@ -1,5 +1,5 @@
 /* { dg-do compile */
-/* { dg-options "-O2 -mno-fused-madd -ftree-vectorize" } */
+/* { dg-options "-O2 -ffp-contract=off -ftree-vectorize" } */
 /* { dg-final { scan-assembler "fpmpy" } } */
 
 /* fpma and fpms will show in either way because there are no

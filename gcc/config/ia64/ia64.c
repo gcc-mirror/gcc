@@ -5273,13 +5273,18 @@ ia64_rtx_costs (rtx x, int code, int outer_code, int *total,
       *total = COSTS_N_INSNS (3);
       return true;
 
+    case FMA:
+      *total = COSTS_N_INSNS (4);
+      return true;
+
     case MULT:
       /* For multiplies wider than HImode, we have to go to the FPU,
          which normally involves copies.  Plus there's the latency
          of the multiply itself, and the latency of the instructions to
          transfer integer regs to FP regs.  */
-      /* ??? Check for FP mode.  */
-      if (GET_MODE_SIZE (GET_MODE (x)) > 2)
+      if (FLOAT_MODE_P (GET_MODE (x)))
+	*total = COSTS_N_INSNS (4);
+      else if (GET_MODE_SIZE (GET_MODE (x)) > 2)
         *total = COSTS_N_INSNS (10);
       else
 	*total = COSTS_N_INSNS (2);
@@ -5287,6 +5292,13 @@ ia64_rtx_costs (rtx x, int code, int outer_code, int *total,
 
     case PLUS:
     case MINUS:
+      if (FLOAT_MODE_P (GET_MODE (x)))
+	{
+	  *total = COSTS_N_INSNS (4);
+	  return true;
+	}
+      /* FALLTHRU */
+
     case ASHIFT:
     case ASHIFTRT:
     case LSHIFTRT:
