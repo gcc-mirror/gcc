@@ -96,7 +96,7 @@ enum ia64_inline_type
 /* Default target_flags if no switches are specified  */
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_FUSED_MADD)
+#define TARGET_DEFAULT (MASK_DWARF2_ASM)
 #endif
 
 #ifndef TARGET_CPU_DEFAULT

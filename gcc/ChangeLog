@@ -1,3 +1,35 @@
+2010-11-15  Richard Henderson  <rth@redhat.com>
+
+	* config.gcc [ia64-*] (extra_options): Add fused-madd.opt.
+	* config/ia64/ia64.opt: Remove mfused-madd.
+	* config/ia64/ia64.c (ia64_rtx_costs): Handle FP MULT, PLUS, FMA.
+	* config/ia64/vms.h (TARGET_DEFAULT): Remove MASK_FUSED_MADD.
+	* config/ia64/vms64.h (TARGET_DEFAULT): Likewise.
+	* config/ia64/ia64.h (TARGET_DEFAULT): Likewise.
+	* config/ia64/hpux.h (TARGET_DEFAULT): Likewise.
+	* config/ia64/vect.md (addv2sf3, subv2sf3): Generate FMA.
+	(*addv2sf3_1, *addv2sf3_2, *subv2sf3_1, *subv2sf3_2): Remove.
+	(fmav2sf4): Rename from fpma; use FMA code.
+	(fmsv2sf4): Rename from fpms; use FMA code.
+	(fnmav2sf4): Rename from *fpnma; use FMA code.
+	* config/ia64/ia64.md (MODE_SDF): New iterator.
+	(suffix): New mode attribute.
+	(*maddsf4, *msubsf4, *nmaddsf4): Remove.
+	(fmssf4): Rename from *fmssf4.
+	(fnmasf4): Rename from *nfmasf4.
+	(*madddf4, *madddf4_trunc, *msubdf4, *msubdf4_trunc): Remove.
+	(*nmadddf4, *nmadddf4_truncsf): Remove.
+	(fmsdf4): Rename from *fmsdf4.
+	(fnmadf4): Rename from *nfmadf4.
+	(*fmadf_trunc_sf, *fmsdf_trunc_sf, *fnmadf_trunc_sf): New.
+	(*maddxf4, *maddxf4_truncsf, *maddxf4_truncdf): Remove.
+	(*msubxf4, *msubxf4_truncsf, *msubxf4_truncdf): Remove.
+	(*nmaddxf4, *nmaddxf4_truncsf, *nmaddxf4_truncdf): Remove.
+	(fmsxf4): Rename from *fmsxf4.
+	(fnmaxf4): Rename from *nfmaxf4.
+	(*fmaxf_trunc_<MODE_SDF>, *fmsxf_trunc_<MODE_SDF>): New.
+	(*fnmaxf_trunc_<MODE_SDF>): New.
+
 2010-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46461

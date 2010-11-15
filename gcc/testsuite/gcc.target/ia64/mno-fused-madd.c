@@ -1,5 +1,5 @@
 /* { dg-do compile */
-/* { dg-options "-O2 -mno-fused-madd" } */
+/* { dg-options "-O2 -ffp-contract=off" } */
 /* { dg-final { scan-assembler-not "fma" } } */
 /* { dg-final { scan-assembler-not "fms" } } */
 /* { dg-final { scan-assembler-not "fnma" } } */
