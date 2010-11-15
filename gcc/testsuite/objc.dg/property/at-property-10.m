@@ -47,9 +47,7 @@ int main (void)
     abort ();
 
   object.a = 99;
-  /* TODO: The following one does not work yet.  */
-  /* object.a++; */
-  object.a = object.a + 1;
+  object.a++;
 
   if (object.a != 100)
     abort ();
@@ -86,9 +84,7 @@ int main (void)
   if (object.a != -198)
     abort ();
 
-  /* TODO: The following one does not work yet.  */
-  /* for (object.a = 0; object.a < 99; object.a++) */
-  for (object.a = 0; object.a < 99; object.a = object.a + 1)
+  for (object.a = 0; object.a < 99; object.a++)
     object2.a = object.a;
 
   if (object2.a != object.a - 1)

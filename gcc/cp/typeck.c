@@ -5233,6 +5233,13 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 
 	inc = cp_convert (argtype, inc);
 
+	/* If 'arg' is an Objective-C PROPERTY_REF expression, then we
+	   need to ask Objective-C to build the increment or decrement
+	   expression for it.  */
+	if (objc_is_property_ref (arg))
+	  return objc_build_incr_expr_for_property_ref (input_location, code, 
+							arg, inc);	
+
 	/* Complain about anything else that is not a true lvalue.  */
 	if (!lvalue_or_else (arg, ((code == PREINCREMENT_EXPR
 				    || code == POSTINCREMENT_EXPR)

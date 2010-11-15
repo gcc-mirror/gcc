@@ -1,3 +1,9 @@
+2010-11-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* typeck.c (cp_build_unary_op): Use
+	objc_build_incr_expr_for_property_ref to build the pre/post
+	increment/decrement of an Objective-C property ref.
+
 2010-11-13  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (cp_finish_decl): Use resolve_nondeduced_context for auto.

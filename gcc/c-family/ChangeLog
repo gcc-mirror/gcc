@@ -1,3 +1,8 @@
+2010-11-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-common.h (objc_build_incr_expr_for_property_ref): New.
+	* stub-objc.c (objc_build_incr_expr_for_property_ref): New.
+
 2010-11-15  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR preprocessor/45038

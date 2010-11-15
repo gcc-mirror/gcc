@@ -1,3 +1,10 @@
+2010-11-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-typeck.c (build_unary_op): Use
+	objc_build_incr_expr_for_property_ref to build the pre/post
+	increment/decrement of an Objective-C property ref, and skip the
+	lvalue_or_else check in that case.
+
 2010-11-15  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/46349
