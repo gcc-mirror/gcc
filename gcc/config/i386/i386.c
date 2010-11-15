@@ -9418,6 +9418,7 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
 {
   struct machine_function *m = cfun->machine;
   rtx insn;
+  bool add_frame_related_expr = false;
 
   if (! TARGET_64BIT)
     insn = gen_pro_epilogue_adjust_stack_si_add (dest, src, offset);
@@ -9438,7 +9439,7 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
 	}
       insn = emit_insn (gen_rtx_SET (DImode, tmp, offset));
       if (style < 0)
-	RTX_FRAME_RELATED_P (insn) = 1;
+	add_frame_related_expr = true;
 
       insn = gen_pro_epilogue_adjust_stack_di_add (dest, src, tmp);
     }
@@ -9461,7 +9462,15 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else if (style < 0)
-    RTX_FRAME_RELATED_P (insn) = 1;
+    {
+      RTX_FRAME_RELATED_P (insn) = 1;
+      if (add_frame_related_expr)
+	{
+	  rtx r = gen_rtx_PLUS (Pmode, src, offset);
+	  r = gen_rtx_SET (VOIDmode, dest, r);
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, r);
+	}
+    }
 
   if (dest == stack_pointer_rtx)
     {

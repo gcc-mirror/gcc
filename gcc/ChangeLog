@@ -1,5 +1,10 @@
 2010-11-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/46095
+	* config/i386/i386.c (pro_epilogue_adjust_stack): Instead of
+	marking r11 set RTX_FRAME_RELATED_P if offset is too large for
+	style < 0, add REG_FRAME_RELATED_EXPR.
+
 	PR debug/46387
 	* rtl.h (vt_equate_reg_base_value): New prototype.
 	* alias.c (vt_equate_reg_base_value): New function.
