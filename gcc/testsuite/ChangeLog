@@ -1,3 +1,9 @@
+2010-11-15  Tobias Burnus  <burnus@net.b.de>
+
+	PR fortran/46484
+	* gfortran.dg/allocatable_scalar_11.f90: New.
+	* gfortran.dg/allocatable_scalar_5.f90: Make test case standard conform.
+
 2010-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46095
