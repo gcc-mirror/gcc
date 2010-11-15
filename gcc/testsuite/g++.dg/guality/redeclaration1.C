@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-options "-g" }
+// { dg-skip-if "" { *-*-* } { "-flto" } { "" } }
 
 volatile int l;
 
@@ -10,10 +11,10 @@ namespace S
   f()
   {
     int i = 42;
-    l = i;		// { dg-final { gdb-test 13 "i" "42" } }
+    l = i;		// { dg-final { gdb-test 14 "i" "42" } }
     {
       extern int i;
-      l = i;		// { dg-final { gdb-test 16 "i" "24" } }
+      l = i;		// { dg-final { gdb-test 17 "i" "24" } }
     }
   }
 }

@@ -1,3 +1,8 @@
+2010-11-15  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44989
+	* g++.dg/guality/redeclaration1.C: Do not execute for LTO.
+
 2010-11-15  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR preprocessor/45038
