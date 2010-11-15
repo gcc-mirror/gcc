@@ -37,7 +37,6 @@
 int main (void)
 {
   MyRootClass *object = [[MyRootClass alloc] init];
-  int i;
 
   object.count = 10;
   if (object.count != 10)

@@ -34,7 +34,6 @@
 int main (void)
 {
   MyRootClass *object = [[MyRootClass alloc] init];
-  int i;
 
   object.count = 10; /* { dg-error "readonly property can not be set" } */
   if (object.count != 10) /* Ok */

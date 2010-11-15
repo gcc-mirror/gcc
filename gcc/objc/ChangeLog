@@ -1,5 +1,17 @@
 2010-11-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_build_setter_call): New.
+	(objc_maybe_build_modify_expr): Rewritten to build a compound
+	statement.
+	(objc_build_incr_expr_for_property_ref): Updated calls to
+	objc_maybe_build_modify_expr to call objc_build_setter_call
+	instead.  Use build_modify_expr () instead of build2 (MODIFY_EXPR,
+	...).  Use convert () instead of build1 (NOP_EXPR, ...).  Use
+	TREE_NO_WARNING on the final compound statement to silence C++
+	warnings.
+
+2010-11-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (objc_build_incr_expr_for_property_ref): New.
 	(objc_create_temporary_var): Moved it towards the beginning of the
 	file so that objc_build_incr_expr_for_property_ref can use it.
