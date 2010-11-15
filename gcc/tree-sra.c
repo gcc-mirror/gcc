@@ -2626,6 +2626,41 @@ get_repl_default_def_ssa_name (struct access *racc)
   return repl;
 }
 
+/* Return true if REF has a COMPONENT_REF with a bit-field field declaration
+   somewhere in it.  */
+
+static inline bool
+contains_bitfld_comp_ref_p (const_tree ref)
+{
+  while (handled_component_p (ref))
+    {
+      if (TREE_CODE (ref) == COMPONENT_REF
+          && DECL_BIT_FIELD (TREE_OPERAND (ref, 1)))
+        return true;
+      ref = TREE_OPERAND (ref, 0);
+    }
+
+  return false;
+}
+
+/* Return true if REF has an VIEW_CONVERT_EXPR or a COMPONENT_REF with a
+   bit-field field declaration somewhere in it.  */
+
+static inline bool
+contains_vce_or_bfcref_p (const_tree ref)
+{
+  while (handled_component_p (ref))
+    {
+      if (TREE_CODE (ref) == VIEW_CONVERT_EXPR
+	  || (TREE_CODE (ref) == COMPONENT_REF
+	      && DECL_BIT_FIELD (TREE_OPERAND (ref, 1))))
+	return true;
+      ref = TREE_OPERAND (ref, 0);
+    }
+
+  return false;
+}
+
 /* Examine both sides of the assignment statement pointed to by STMT, replace
    them with a scalare replacement if there is one and generate copying of
    replacements if scalarized aggregates have been used in the assignment.  GSI
@@ -2694,6 +2729,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	     ???  This should move to fold_stmt which we simply should
 	     call after building a VIEW_CONVERT_EXPR here.  */
 	  if (AGGREGATE_TYPE_P (TREE_TYPE (lhs))
+	      && !contains_bitfld_comp_ref_p (lhs)
 	      && !access_has_children_p (lacc))
 	    {
 	      lhs = build_ref_for_offset (loc, lhs, 0, TREE_TYPE (rhs),
@@ -2701,7 +2737,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	      gimple_assign_set_lhs (*stmt, lhs);
 	    }
 	  else if (AGGREGATE_TYPE_P (TREE_TYPE (rhs))
-		   && !contains_view_convert_expr_p (rhs)
+		   && !contains_vce_or_bfcref_p (rhs)
 		   && !access_has_children_p (racc))
 	    rhs = build_ref_for_offset (loc, rhs, 0, TREE_TYPE (lhs),
 					gsi, false);
@@ -2751,8 +2787,8 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
      This is what the first branch does.  */
 
   if (gimple_has_volatile_ops (*stmt)
-      || contains_view_convert_expr_p (rhs)
-      || contains_view_convert_expr_p (lhs))
+      || contains_vce_or_bfcref_p (rhs)
+      || contains_vce_or_bfcref_p (lhs))
     {
       if (access_has_children_p (racc))
 	generate_subtree_copies (racc->first_child, racc->base, 0, 0, 0,

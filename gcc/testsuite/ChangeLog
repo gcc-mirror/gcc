@@ -1,3 +1,9 @@
+2010-11-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/46349
+	* gnat.dg/opt9.adb: New file.
+	* gnat.dg/opt9_pkg.ads: Likewise
+
 2010-11-15  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44989
