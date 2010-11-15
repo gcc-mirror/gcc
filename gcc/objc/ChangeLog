@@ -1,3 +1,9 @@
+2010-11-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_build_incr_expr_for_property_ref): New.
+	(objc_create_temporary_var): Moved it towards the beginning of the
+	file so that objc_build_incr_expr_for_property_ref can use it.
+
 2010-11-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_add_property_declaration): Check that the decl

@@ -1,3 +1,13 @@
+2010-11-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/property/dotsyntax-16.m: New.
+	* objc.dg/property/dotsyntax-17.m: New.	
+	* obj-c++.dg/property/dotsyntax-16.mm: New.
+	* obj-c++.dg/property/dotsyntax-17.mm: New.	
+	* objc.dg/property/at-property-10.m: Uncommented using 'x++'
+	syntax with properties, which now works.
+	* obj-c++.dg/property/at-property-10.mm: Same change.
+	
 2010-11-15  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/46349

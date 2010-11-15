@@ -361,6 +361,15 @@ objc_maybe_build_modify_expr (tree ARG_UNUSED (lhs), tree ARG_UNUSED (rhs))
   return 0;
 }
 
+tree
+objc_build_incr_expr_for_property_ref (location_t ARG_UNUSED (location),
+				       enum tree_code ARG_UNUSED (code),
+				       tree ARG_UNUSED (argument),
+				       tree ARG_UNUSED (increment))
+{
+  return 0;
+}
+
 void
 objc_add_synthesize_declaration (location_t ARG_UNUSED (start_locus), 
 				 tree ARG_UNUSED (property_and_ivar_list))
