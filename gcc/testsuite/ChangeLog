@@ -1,5 +1,10 @@
 2010-11-15  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/46467
+	* gcc.dg/ipa/ipa-pta-16.c: New testcase.
+
+2010-11-15  Richard Guenther  <rguenther@suse.de>
+
 	PR testsuite/46423
 	* g++.dg/torture/pr34850.C: Adjust.
 

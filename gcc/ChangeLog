@@ -1,3 +1,9 @@
+2010-11-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46467
+	* tree-ssa-structalias.c (do_structure_copy): Properly treat
+	variables without subvars.
+
 2010-11-15  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (file header): Picochip name change.
