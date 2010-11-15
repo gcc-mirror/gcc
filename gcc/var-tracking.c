@@ -8230,6 +8230,11 @@ vt_init_cfa_base (void)
   if (!MAY_HAVE_DEBUG_INSNS)
     return;
 
+  /* Tell alias analysis that cfa_base_rtx should share
+     find_base_term value with stack pointer or hard frame pointer.  */
+  vt_equate_reg_base_value (cfa_base_rtx,
+			    frame_pointer_needed
+			    ? hard_frame_pointer_rtx : stack_pointer_rtx);
   val = cselib_lookup_from_insn (cfa_base_rtx, GET_MODE (cfa_base_rtx), 1,
 				 get_insns ());
   preserve_value (val);

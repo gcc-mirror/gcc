@@ -2906,6 +2906,15 @@ init_alias_analysis (void)
   timevar_pop (TV_ALIAS_ANALYSIS);
 }
 
+/* Equate REG_BASE_VALUE (reg1) to REG_BASE_VALUE (reg2).
+   Special API for var-tracking pass purposes.  */
+
+void
+vt_equate_reg_base_value (const_rtx reg1, const_rtx reg2)
+{
+  VEC_replace (rtx, reg_base_value, REGNO (reg1), REG_BASE_VALUE (reg2));
+}
+
 void
 end_alias_analysis (void)
 {

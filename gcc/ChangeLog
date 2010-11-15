@@ -1,3 +1,10 @@
+2010-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46387
+	* rtl.h (vt_equate_reg_base_value): New prototype.
+	* alias.c (vt_equate_reg_base_value): New function.
+	* var-tracking.c (vt_init_cfa_base): Use it.
+
 2010-11-15  Jan Hubicka  <jh@suse.cz>
 	    Diego Novillo  <dnovillo@google.com>
 
