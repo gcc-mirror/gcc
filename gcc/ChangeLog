@@ -1,3 +1,12 @@
+2010-11-15  Joern Rennecke  <amylaar@spamcop.net>
+
+	* Makefile.in (tm.texi): Replace with rule for:
+	($(srcdir)/doc/tm.texi).
+	(s-tm-texi): Depend on $(srcdir)/doc/../doc/tm.texi instead of on
+	$(srcdir)/doc/tm.texi .
+	(TEXI_GCCINT_FILES): Depend on $(srcdir)/doc/tm.texi instead of on
+	tm.texi .
+
 2010-11-15  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44150
