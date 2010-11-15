@@ -45,6 +45,10 @@
 	PR target/46427
 	* config/m32r/m32r.c: Remove unused variables frame_size and insn.
 
+	PR bootstrap/45444
+	* config/arm/arm.c (locate_neon_builtin_icode): Initialize key.
+	(arm_output_asm_insn) Add ATTRIBUTE_PRINTF_4.
+
 2010-11-15  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44150

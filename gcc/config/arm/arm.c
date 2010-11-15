@@ -19045,7 +19045,9 @@ neon_builtin_compare (const void *a, const void *b)
 static enum insn_code
 locate_neon_builtin_icode (int fcode, neon_itype *itype)
 {
-  neon_builtin_datum key, *found;
+  neon_builtin_datum key
+    = { NULL, (neon_itype) 0, 0, { CODE_FOR_nothing }, 0, 0 };
+  neon_builtin_datum *found;
   int idx;
 
   key.base_fcode = fcode;
@@ -22900,7 +22902,7 @@ arm_count (int label,
    it to output_asm_insn.  Provides a mechanism to construct the
    output pattern on the fly.  Note the hard limit on the pattern
    buffer size.  */
-static void
+static void ATTRIBUTE_PRINTF_4
 arm_output_asm_insn (emit_f emit, int label, rtx *operands,
 		     const char *pattern, ...)
 {
