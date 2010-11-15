@@ -299,6 +299,13 @@ lto_write_options (void)
   struct lto_simple_header header;
   struct lto_output_stream *header_stream;
 
+  /* Targets and languages can provide defaults for -fexceptions but
+     we only process user options from the command-line.  Until we
+     serialize out a white list of options from the new global state
+     explicitly append important options as user options here.  */
+  if (flag_exceptions)
+    lto_register_user_option (OPT_fexceptions, NULL, 1, CL_COMMON);
+
   lto_begin_section (section_name, !flag_wpa);
   free (section_name);
 
