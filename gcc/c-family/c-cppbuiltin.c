@@ -657,9 +657,13 @@ c_cpp_builtins (cpp_reader *pfile)
   /* Cast the double precision constants.  This is needed when single
      precision constants are specified or when pragma FLOAT_CONST_DECIMAL64
      is used.  The correct result is computed by the compiler when using
-     macros that include a cast.  */
-  builtin_define_float_constants ("DBL", "L", "((double)%s)", "",
-				  double_type_node);
+     macros that include a cast.  We use a different cast for C++ to avoid
+     problems with -Wold-style-cast.  */
+  builtin_define_float_constants ("DBL", "L",
+				  (c_dialect_cxx ()
+				   ? "double(%s)"
+				   : "((double)%s)"),
+				  "", double_type_node);
   builtin_define_float_constants ("LDBL", "L", "%s", "L",
 				  long_double_type_node);
 
