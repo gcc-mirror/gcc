@@ -888,9 +888,6 @@ typedef enum
   { "r30",     30 },                           \
   { "lp",      LP_REGNUM} }
 
-#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)
-#define ASM_OUTPUT_REG_POP(FILE,REGNO)
-
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) \
