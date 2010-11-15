@@ -1,3 +1,7 @@
+2010-11-15  Jie Zhang  <jie@codesourcery.com>
+
+	* testsuite/ext/profile/mh.cc: Add xfail for uclibc.
+
 2010-11-14  Matthias Klose  <doko@ubuntu.com>
 
 	* testsuite/28_regex/13_ecmascript: Remove, empty directory.
