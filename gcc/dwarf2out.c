@@ -5648,7 +5648,8 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   dwarf2out_copy_call_info,
   dwarf2out_virtual_call,
   dwarf2out_set_name,
-  1                             /* start_end_main_source_file */
+  1,                            /* start_end_main_source_file */
+  TYPE_SYMTAB_IS_DIE            /* tree_type_symtab_field */
 };
 
 /* NOTE: In the comments in this file, many references are made to

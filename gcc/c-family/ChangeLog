@@ -1,3 +1,8 @@
+2010-11-15  Ian Lance Taylor  <iant@google.com>
+
+	* c-lex.c (init_c_lex): Set macro debug callbacks if
+	flag_dump_go_spec is set.
+
 2010-11-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-common.h (objc_build_incr_expr_for_property_ref): New.

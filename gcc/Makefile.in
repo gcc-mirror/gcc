@@ -1234,6 +1234,7 @@ OBJS-common = \
 	gimple-low.o \
 	gimple-pretty-print.o \
 	gimplify.o \
+	godump.o \
 	graph.o \
 	graphds.o \
 	graphite.o \
@@ -2945,7 +2946,7 @@ dbxout.o : dbxout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) $(FLAGS_H) $(REGS_H) debug.h $(TM_P_H) $(TARGET_H) $(FUNCTION_H) \
    langhooks.h insn-config.h reload.h $(GSTAB_H) xcoffout.h output.h dbxout.h \
    $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) $(GGC_H) $(OBSTACK_H) $(EXPR_H) gt-dbxout.h
-debug.o : debug.c debug.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
+debug.o : debug.c debug.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H)
 sdbout.o : sdbout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) debug.h \
    $(TREE_H) $(GGC_H) $(RTL_H) $(REGS_H) $(FLAGS_H) insn-config.h \
    output.h $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) $(TM_P_H) gsyms.h langhooks.h $(TARGET_H) sdbout.h \
@@ -2965,6 +2966,8 @@ vmsdbgout.o : vmsdbgout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) 
 xcoffout.o : xcoffout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(RTL_H) xcoffout.h $(FLAGS_H) $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) output.h dbxout.h \
    $(GGC_H) $(TARGET_H) debug.h $(GSTAB_H) xcoff.h
+godump.o : godump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(DIAGNOSTIC_CORE_H) \
+   $(TREE_H) $(GGC_H) pointer-set.h $(OBSTACK_H) debug.h
 emit-rtl.o : emit-rtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(FLAGS_H) $(FUNCTION_H) $(REGS_H) insn-config.h $(RECOG_H) \
    $(GGC_H) $(EXPR_H) hard-reg-set.h $(BITMAP_H) $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) \
@@ -3739,7 +3742,8 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/emit-rtl.c $(srcdir)/except.h $(srcdir)/explow.c $(srcdir)/expr.c \
   $(srcdir)/expr.h \
   $(srcdir)/function.c $(srcdir)/except.c \
-  $(srcdir)/gcse.c $(srcdir)/integrate.c $(srcdir)/lists.c $(srcdir)/optabs.c \
+  $(srcdir)/gcse.c $(srcdir)/godump.c \
+  $(srcdir)/integrate.c $(srcdir)/lists.c $(srcdir)/optabs.c \
   $(srcdir)/profile.c $(srcdir)/mcf.c \
   $(srcdir)/reg-stack.c $(srcdir)/cfglayout.c $(srcdir)/cfglayout.h \
   $(srcdir)/sdbout.c $(srcdir)/stor-layout.c \
