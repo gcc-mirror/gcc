@@ -7,6 +7,8 @@
 	(TEXI_GCCINT_FILES): Depend on $(srcdir)/doc/tm.texi instead of on
 	tm.texi .
 
+	* config/m32r/m32r.c: Remove unused variables frame_size and insn.
+
 2010-11-15  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44150
