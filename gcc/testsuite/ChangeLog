@@ -1,5 +1,8 @@
 2010-11-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/46095
+	* gcc.target/i386/pr46095.c: New test.
+
 	PR debug/46387
 	* gcc.dg/pr46387.c: New test.
 
