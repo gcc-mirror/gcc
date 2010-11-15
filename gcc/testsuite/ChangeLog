@@ -1,3 +1,8 @@
+2010-11-15  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/46423
+	* g++.dg/torture/pr34850.C: Adjust.
+
 2010-11-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c/46475
