@@ -49,6 +49,9 @@
 	* config/arm/arm.c (locate_neon_builtin_icode): Initialize key.
 	(arm_output_asm_insn) Add ATTRIBUTE_PRINTF_4.
 
+	PR target/46432
+	* config/v850/v850.h (ASM_OUTPUT_REG_PUSH, ASM_OUTPUT_REG_POP): Delete.
+
 2010-11-15  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44150
