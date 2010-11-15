@@ -123,6 +123,7 @@ Additional tutorial information is linked to from
 * Header Dirs::     Understanding the standard header file directories.
 * Type Information:: GCC's memory management; generating type information.
 * Plugins::         Extending the compiler with plugins.
+* LTO::             Using Link-Time Optimization.
 
 * Funding::         How to help assure funding for free software.
 * GNU Project::     The GNU Project and GNU/Linux.
@@ -158,6 +159,7 @@ Additional tutorial information is linked to from
 @include headerdirs.texi
 @include gty.texi
 @include plugins.texi
+@include lto.texi
 
 @include funding.texi
 @include gnu.texi

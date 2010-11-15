@@ -1,3 +1,12 @@
+2010-11-15  Jan Hubicka  <jh@suse.cz>
+	    Diego Novillo  <dnovillo@google.com>
+
+	PR lto/41528
+	* doc/lto.texi: Add.
+	* doc/gccint.texi: Add reference to lto.texi.
+	* doc/invoke.texi: Update user documentation for LTO.
+	Move internal flags to lto.texi
+
 2010-11-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-typeck.c (build_unary_op): Use

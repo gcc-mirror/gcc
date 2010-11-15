@@ -356,8 +356,8 @@ Objective-C and Objective-C++ Dialects}.
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
 -floop-block -floop-flatten -floop-interchange -floop-strip-mine @gol
--floop-parallelize-all -flto -flto-compression-level -flto-partition=@var{alg} @gol
--flto-report -fltrans -fltrans-output-list -fmerge-all-constants @gol
+-floop-parallelize-all -flto -flto-compression-level
+-flto-partition=@var{alg} -flto-report -fmerge-all-constants @gol
 -fmerge-constants -fmodulo-sched -fmodulo-sched-allow-regmoves @gol
 -fmove-loop-invariants fmudflap -fmudflapir -fmudflapth -fno-branch-count-reg @gol
 -fno-default-inline @gol
@@ -399,7 +399,7 @@ Objective-C and Objective-C++ Dialects}.
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
 -fvariable-expansion-in-unroller -fvect-cost-model -fvpt -fweb @gol
--fwhole-program -fwhopr[=@var{n}] -fwpa -fuse-linker-plugin @gol
+-fwhole-program -fwpa -fuse-linker-plugin @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os -Ofast}
 
@@ -7489,6 +7489,16 @@ The only important thing to keep in mind is that to enable link-time
 optimizations the @option{-flto} flag needs to be passed to both the
 compile and the link commands.
 
+To make whole program optimization effective, it is necesary to make
+certain whole program assumptions.  The compiler needs to know
+what functions and variables can be accessed by libraries and runtime
+outside of the link time optimized unit.  When supported by the linker,
+the linker plugin (see @option{-fuse-linker-plugin}) passes to the
+compiler information about used and externally visible symbols.  When
+the linker plugin is not available, @option{-fwhole-program} should be
+used to allow the compiler to make these assumptions, which will lead
+to more aggressive optimization decisions.
+
 Note that when a file is compiled with @option{-flto}, the generated
 object file will be larger than a regular object file because it will
 contain GIMPLE bytecodes and the usual final code.  This means that
@@ -7601,16 +7611,18 @@ GCC will not work with an older/newer version of GCC.
 
 Link time optimization does not play well with generating debugging
 information.  Combining @option{-flto} with
-@option{-g} is experimental.
+@option{-g} is currently experimental and expected to produce wrong
+results.
 
-If you specify the optional @var{n} the link stage is executed in
-parallel using @var{n} parallel jobs by utilizing an installed
-@command{make} program.  The environment variable @env{MAKE} may be
-used to override the program used.
+If you specify the optional @var{n}, the optimization and code
+generation done at link time is executed in parallel using @var{n}
+parallel jobs by utilizing an installed @command{make} program.  The
+environment variable @env{MAKE} may be used to override the program
+used.  The default value for @var{n} is 1.
 
-You can also specify @option{-fwhopr=jobserver} to use GNU make's 
+You can also specify @option{-flto=jobserver} to use GNU make's 
 job server mode to determine the number of parallel jobs. This 
-is useful when the Makefile calling GCC is already parallel.
+is useful when the Makefile calling GCC is already executing in parallel.
 The parent Makefile will need a @samp{+} prepended to the command recipe
 for this to work. This will likely only work if @env{MAKE} is 
 GNU make.
@@ -7619,53 +7631,17 @@ This option is disabled by default.
 
 @item -flto-partition=@var{alg}
 @opindex flto-partition
-Specify partitioning algorithm used by @option{-fwhopr} mode.  The value is
-either @code{1to1} to specify partitioning corresponding to source files
-or @code{balanced} to specify partitioning into, if possible, equally sized
-chunks.  Specifying @code{none} as an algorithm disables partitioning
-and streaming completely.
-The default value is @code{balanced}.
-
-@item -fwpa
-@opindex fwpa
-This is an internal option used by GCC when compiling with
-@option{-fwhopr}.  You should never need to use it.
-
-This option runs the link-time optimizer in the whole-program-analysis
-(WPA) mode, which reads in summary information from all inputs and
-performs a whole-program analysis based on summary information only.
-It generates object files for subsequent runs of the link-time
-optimizer where individual object files are optimized using both
-summary information from the WPA mode and the actual function bodies.
-It then drives the LTRANS phase.
-
-Disabled by default.
-
-@item -fltrans
-@opindex fltrans
-This is an internal option used by GCC when compiling with
-@option{-fwhopr}.  You should never need to use it.
-
-This option runs the link-time optimizer in the local-transformation (LTRANS)
-mode, which reads in output from a previous run of the LTO in WPA mode.
-In the LTRANS mode, LTO optimizes an object and produces the final assembly.
-
-Disabled by default.
-
-@item -fltrans-output-list=@var{file}
-@opindex fltrans-output-list
-This is an internal option used by GCC when compiling with
-@option{-fwhopr}.  You should never need to use it.
-
-This option specifies a file to which the names of LTRANS output files are
-written.  This option is only meaningful in conjunction with @option{-fwpa}.
-
-Disabled by default.
+Specify the partitioning algorithm used by the link time optimizer.
+The value is either @code{1to1} to specify a partitioning mirroring
+the original source files or @code{balanced} to specify partitioning
+into equally sized chunks (whenever possible).  Specifying @code{none}
+as an algorithm disables partitioning and streaming completely. The
+default value is @code{balanced}.
 
 @item -flto-compression-level=@var{n}
 This option specifies the level of compression used for intermediate
 language written to LTO object files, and is only meaningful in
-conjunction with LTO mode (@option{-fwhopr}, @option{-flto}).  Valid
+conjunction with LTO mode (@option{-flto}).  Valid
 values are 0 (no compression) to 9 (maximum compression).  Values
 outside this range are clamped to either 0 or 9.  If the option is not
 given, a default balanced compression setting is used.
@@ -7674,7 +7650,7 @@ given, a default balanced compression setting is used.
 Prints a report with internal details on the workings of the link-time
 optimizer.  The contents of this report vary from version to version,
 it is meant to be useful to GCC developers when processing object
-files in LTO mode (via @option{-fwhopr} or @option{-flto}).
+files in LTO mode (via @option{-flto}).
 
 Disabled by default.
 
