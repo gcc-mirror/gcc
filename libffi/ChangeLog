@@ -1,3 +1,10 @@
+2010-11-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/lib/libffi-dg.exp: Rename ...
+	* testsuite/lib/libffi.exp: ... to this.
+	* libffi/testsuite/libffi.call/call.exp: Don't load libffi-dg.exp.
+	* libffi/testsuite/libffi.special/special.exp: Likewise.
+
 2010-10-28  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* src/arm/ffi.c (ffi_prep_args): Add VFP register argument handling
