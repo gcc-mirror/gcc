@@ -1,3 +1,9 @@
+2010-11-15  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44150
+	* lto-opts.c (lto_write_options): Write -fexceptions even if
+	not set by the user.
+
 2010-11-13  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c/46462
