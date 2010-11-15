@@ -1,3 +1,8 @@
+2010-11-15  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/46474
+	* tree-ssa-math-opts.c (convert_mult_to_fma): Disregard debug stmts.
+
 2010-11-15  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16.c (direct_return): Do not generate a
