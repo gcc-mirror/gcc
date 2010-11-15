@@ -3541,11 +3541,15 @@ do_structure_copy (tree lhsop, tree rhsop)
 	  lhsv = get_varinfo (lhsp->var);
 	  rhsv = get_varinfo (rhsp->var);
 	  if (lhsv->may_have_pointers
-	      && ranges_overlap_p (lhsv->offset + rhsoffset, lhsv->size,
-				   rhsv->offset + lhsoffset, rhsv->size))
+	      && (lhsv->is_full_var
+		  || rhsv->is_full_var
+		  || ranges_overlap_p (lhsv->offset + rhsoffset, lhsv->size,
+				       rhsv->offset + lhsoffset, rhsv->size)))
 	    process_constraint (new_constraint (*lhsp, *rhsp));
-	  if (lhsv->offset + rhsoffset + lhsv->size
-	      > rhsv->offset + lhsoffset + rhsv->size)
+	  if (!rhsv->is_full_var
+	      && (lhsv->is_full_var
+		  || (lhsv->offset + rhsoffset + lhsv->size
+		      > rhsv->offset + lhsoffset + rhsv->size)))
 	    {
 	      ++k;
 	      if (k >= VEC_length (ce_s, rhsc))
