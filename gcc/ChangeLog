@@ -1,3 +1,10 @@
+2010-11-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/46349
+	* tree-sra.c (contains_bitfld_comp_ref_p): New function.
+	(contains_vce_or_bfcref_p): Likewise.
+	(sra_modify_assign): Use them.
+
 2010-11-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46467
