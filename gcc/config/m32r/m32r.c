@@ -1584,7 +1584,7 @@ m32r_compute_frame_size (int size)	/* # of var. bytes allocated.  */
 {
   unsigned int regno;
   unsigned int total_size, var_size, args_size, pretend_size, extra_size;
-  unsigned int reg_size, frame_size;
+  unsigned int reg_size;
   unsigned int gmask;
   enum m32r_function_type fn_type;
   int interrupt_p;
@@ -1626,7 +1626,7 @@ m32r_compute_frame_size (int size)	/* # of var. bytes allocated.  */
      handler will do the right thing if this changes total_size.  */
   total_size = M32R_STACK_ALIGN (total_size);
 
-  frame_size = total_size - (pretend_size + reg_size);
+  /* frame_size = total_size - (pretend_size + reg_size); */
 
   /* Save computed information.  */
   current_frame_info.total_size   = total_size;
@@ -1974,7 +1974,6 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
   if (GET_CODE (orig) == SYMBOL_REF || GET_CODE (orig) == LABEL_REF)
     {
       rtx pic_ref, address;
-      rtx insn;
       int subregs = 0;
 
       if (reg == 0)
@@ -2004,12 +2003,7 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
 
       emit_insn (gen_addsi3 (address, address, pic_offset_table_rtx));
       pic_ref = gen_const_mem (Pmode, address);
-      insn = emit_move_insn (reg, pic_ref);
-#if 0
-      /* Put a REG_EQUAL note on this insn, so that it can be optimized
-         by loop.  */
-      set_unique_reg_note (insn, REG_EQUAL, orig);
-#endif
+      emit_move_insn (reg, pic_ref);
       return reg;
     }
   else if (GET_CODE (orig) == CONST)
