@@ -1748,6 +1748,42 @@ objc_is_property_ref (tree node)
     return false;
 }
 
+/* This function builds a setter call for a PROPERTY_REF (real, for a
+   declared property, or artificial, for a dot-syntax accessor which
+   is not corresponding to a property).  'lhs' must be a PROPERTY_REF
+   (the caller must check this beforehand).  'rhs' is the value to
+   assign to the property.  A plain setter call is returned, or
+   error_mark_node if the property is readonly.  */
+
+static tree
+objc_build_setter_call (tree lhs, tree rhs)
+{
+  tree object_expr = PROPERTY_REF_OBJECT (lhs);
+  tree property_decl = PROPERTY_REF_PROPERTY_DECL (lhs);
+  
+  if (PROPERTY_READONLY (property_decl))
+    {
+      error ("readonly property can not be set");	  
+      return error_mark_node;
+    }
+  else
+    {
+      tree setter_argument = build_tree_list (NULL_TREE, rhs);
+      tree setter;
+      
+      /* TODO: Check that the setter return type is 'void'.  */
+
+      /* TODO: Decay arguments in C.  */
+      setter = objc_finish_message_expr (object_expr, 
+					 PROPERTY_SETTER_NAME (property_decl),
+					 setter_argument);
+      return setter;
+    }
+
+  /* Unreachable, but the compiler may not realize.  */
+  return error_mark_node;
+}
+
 /* This hook routine is called when a MODIFY_EXPR is being built.  We
    check what is being modified; if it is a PROPERTY_REF, we need to
    generate a 'setter' function call for the property.  If this is not
@@ -1767,27 +1803,69 @@ objc_maybe_build_modify_expr (tree lhs, tree rhs)
 {
   if (lhs && TREE_CODE (lhs) == PROPERTY_REF)
     {
-      tree object_expr = PROPERTY_REF_OBJECT (lhs);
-      tree property_decl = PROPERTY_REF_PROPERTY_DECL (lhs);
+      /* Building a simple call to the setter method would work for cases such as
 
-      if (PROPERTY_READONLY (property_decl))
-	{
-	  error ("readonly property can not be set");	  
-	  return error_mark_node;
-	}
-      else
-	{
-	  tree setter_argument = build_tree_list (NULL_TREE, rhs);
-	  tree setter;
+      object.count = 1;
 
-	  /* TODO: Check that the setter return type is 'void'.  */
+      but wouldn't work for cases such as
 
-	  /* TODO: Decay argument in C.  */
-	  setter = objc_finish_message_expr (object_expr, 
-					     PROPERTY_SETTER_NAME (property_decl),
-					     setter_argument);
-	  return setter;
-	}
+      count = object2.count = 1;
+
+      to get these to work with very little effort, we build a
+      compound statement which does the setter call (to set the
+      property to 'rhs'), but which can also be evaluated returning
+      the 'rhs'.  So, we want to create the following:
+
+      (temp = rhs; [object setProperty: temp]; temp)
+      */
+      tree temp_variable_decl, bind;
+      /* s1, s2 and s3 are the tree statements that we need in the
+	 compound expression.  */
+      tree s1, s2, s3, compound_expr;
+      
+      /* TODO: If 'rhs' is a constant, we could maybe do without the
+	 'temp' variable ? */
+
+      /* Declare __objc_property_temp in a local bind.  */
+      temp_variable_decl = objc_create_temporary_var (TREE_TYPE (rhs), "__objc_property_temp");
+      DECL_SOURCE_LOCATION (temp_variable_decl) = input_location;
+      bind = build3 (BIND_EXPR, void_type_node, temp_variable_decl, NULL, NULL);
+      SET_EXPR_LOCATION (bind, input_location);
+      TREE_SIDE_EFFECTS (bind) = 1;
+      add_stmt (bind);
+      
+      /* Now build the compound statement.  */
+      
+      /* s1: __objc_property_temp = rhs */
+      s1 = build_modify_expr (input_location, temp_variable_decl, NULL_TREE,
+			      NOP_EXPR,
+			      input_location, rhs, NULL_TREE);
+      SET_EXPR_LOCATION (s1, input_location);
+  
+      /* s2: [object setProperty: __objc_property_temp] */
+      s2 = objc_build_setter_call (lhs, temp_variable_decl);
+
+      /* This happens if building the setter failed because the property
+	 is readonly.  */
+      if (s2 == error_mark_node)
+	return error_mark_node;
+
+      SET_EXPR_LOCATION (s2, input_location);
+  
+      /* s3: __objc_property_temp */
+      s3 = convert (TREE_TYPE (lhs), temp_variable_decl);
+
+      /* Now build the compound statement (s1, s2, s3) */
+      compound_expr = build_compound_expr (input_location, build_compound_expr (input_location, s1, s2), s3);
+
+      /* Without this, with -Wall you get a 'valued computed is not
+	 used' every time there is a "object.property = x" where the
+	 value of the resulting MODIFY_EXPR is not used.  That is
+	 correct (maybe a more sophisticated implementation could
+	 avoid generating the compound expression if not needed), but
+	 we need to turn it off.  */
+      TREE_NO_WARNING (compound_expr) = 1;
+      return compound_expr;
     }
   else
     return NULL_TREE;
@@ -1821,7 +1899,7 @@ objc_build_incr_expr_for_property_ref (location_t location,
   tree temp_variable_decl, bind;
   /* s1, s2 and s3 are the tree statements that we need in the
      compound expression.  */
-  tree s1, s2, s3;
+  tree s1, s2, s3, compound_expr;
   
   /* Safety check.  */
   if (!argument || TREE_CODE (argument) != PROPERTY_REF)
@@ -1846,23 +1924,28 @@ objc_build_incr_expr_for_property_ref (location_t location,
     {
     case PREINCREMENT_EXPR:	 
       /* __objc_property_temp = [object property] + increment */
-      s1 = build2 (MODIFY_EXPR, void_type_node, temp_variable_decl,
-		   build2 (PLUS_EXPR, TREE_TYPE (argument), argument, increment));
+      s1 = build_modify_expr (location, temp_variable_decl, NULL_TREE,
+			      NOP_EXPR,
+			      location, build2 (PLUS_EXPR, TREE_TYPE (argument), 
+						argument, increment), NULL_TREE);
       break;
     case PREDECREMENT_EXPR:
       /* __objc_property_temp = [object property] - increment */
-      s1 = build2 (MODIFY_EXPR, void_type_node, temp_variable_decl,
-		   build2 (MINUS_EXPR, TREE_TYPE (argument), argument, increment));
+      s1 = build_modify_expr (location, temp_variable_decl, NULL_TREE,
+			      NOP_EXPR,
+			      location, build2 (MINUS_EXPR, TREE_TYPE (argument), 
+						argument, increment), NULL_TREE);
       break;
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
       /* __objc_property_temp = [object property] */
-      s1 = build2 (MODIFY_EXPR, void_type_node, temp_variable_decl, argument);
+      s1 = build_modify_expr (location, temp_variable_decl, NULL_TREE,
+			      NOP_EXPR,
+			      location, argument, NULL_TREE);
       break;
     default:
       gcc_unreachable ();
     }
-  SET_EXPR_LOCATION (s1, location);
   
   /* s2: [object setProperty: __objc_property_temp <+/- increment>] */
   switch (code)
@@ -1870,19 +1953,19 @@ objc_build_incr_expr_for_property_ref (location_t location,
     case PREINCREMENT_EXPR:	 
     case PREDECREMENT_EXPR:
       /* [object setProperty: __objc_property_temp] */
-      s2 = objc_maybe_build_modify_expr (argument, temp_variable_decl);
+      s2 = objc_build_setter_call (argument, temp_variable_decl);
       break;
     case POSTINCREMENT_EXPR:
       /* [object setProperty: __objc_property_temp + increment] */
-      s2 = objc_maybe_build_modify_expr (argument,
-					 build2 (PLUS_EXPR, TREE_TYPE (argument), 
-						 temp_variable_decl, increment));
+      s2 = objc_build_setter_call (argument,
+				   build2 (PLUS_EXPR, TREE_TYPE (argument), 
+					   temp_variable_decl, increment));
       break;
     case POSTDECREMENT_EXPR:
       /* [object setProperty: __objc_property_temp - increment] */
-      s2 = objc_maybe_build_modify_expr (argument,
-					 build2 (MINUS_EXPR, TREE_TYPE (argument), 
-						 temp_variable_decl, increment));
+      s2 = objc_build_setter_call (argument,
+				   build2 (MINUS_EXPR, TREE_TYPE (argument), 
+					   temp_variable_decl, increment));
       break;
     default:
       gcc_unreachable ();
@@ -1896,11 +1979,15 @@ objc_build_incr_expr_for_property_ref (location_t location,
   SET_EXPR_LOCATION (s2, location); 
   
   /* s3: __objc_property_temp */
-  s3 = build1 (NOP_EXPR, TREE_TYPE (argument), temp_variable_decl);
-  SET_EXPR_LOCATION (s3, location); 
+  s3 = convert (TREE_TYPE (argument), temp_variable_decl);
   
   /* Now build the compound statement (s1, s2, s3) */
-  return build_compound_expr (location, build_compound_expr (location, s1, s2), s3);
+  compound_expr = build_compound_expr (location, build_compound_expr (location, s1, s2), s3);
+
+  /* Prevent C++ from warning with -Wall that "right operand of comma
+     operator has no effect".  */
+  TREE_NO_WARNING (compound_expr) = 1;
+  return compound_expr;
 }
 
 tree

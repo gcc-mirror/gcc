@@ -128,31 +128,31 @@ int main (void)
   if (object.penum != Black)
     abort ();
 
-  object.pcharp = 0;
+  object.pcharp = (char *)0;
   if (object.pcharp != 0)
     abort ();
   
-  object.pshortp = 0;
+  object.pshortp = (short *)0;
   if (object.pshortp != 0)
     abort ();
 
-  object.pintp = 0;
+  object.pintp = (int *)0;
   if (object.pintp != 0)
     abort ();
     
-  object.plongp = 0;
+  object.plongp = (long *)0;
   if (object.plongp != 0)
     abort ();
     
-  object.pfloatp = 0;
+  object.pfloatp = (float *)0;
   if (object.pfloatp != 0)
     abort ();
     
-  object.pdoublep = 0;
+  object.pdoublep = (double *)0;
   if (object.pdoublep != 0)
     abort ();
     
-  object.penump = 0;
+  object.penump = (enum colour *)0;
   if (object.penump != 0)
     abort ();
 

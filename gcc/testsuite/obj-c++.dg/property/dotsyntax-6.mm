@@ -10,7 +10,6 @@
 
 @class MyRootClass;
 
-static int c;
 static MyRootClass *shared_root = nil;
 
 @interface MyRootClass
