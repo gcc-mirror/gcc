@@ -3,7 +3,7 @@
 //   Support for 64-bit subtraction.
 //
 //   Copyright (C) 2003, 2004, 2005, 2008, 2009  Free Software Foundation, Inc.
-//   Contributed by picoChip Designs Ltd.
+//   Contributed by Picochip Ltd.
 //   Maintained by Hariharan Sandanagobalane (hariharan@picochip.com)
 //
 //   This file is free software; you can redistribute it and/or modify it

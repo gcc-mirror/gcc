@@ -1,3 +1,28 @@
+2010-11-15  Hariharan Sandanagobalane  <hariharan@picochip.com>
+
+	* config/picochip/picochip.c (file header): Picochip name change.
+	* config/picochip/picochip.md (file header): Likewise.
+	* config/picochip/predicates.md (file header): Likewise.
+	* config/picochip/dfa_space.md (file header): Likewise.
+	* config/picochip/dfa_speed.md (file header): Likewise.
+	* config/picochip/picochip.h(file header): Likewise.
+	* config/picochip/constraints.md (file header): Likewise.
+	* config/picochip/picochip-protos.h (file header): Likewise.
+	* config/picochip/libgccExtras/setjmp.asm (file header): Likewise.
+	* config/picochip/libgccExtras/divmodsi4.asm (file header): Likewise.
+	* config/picochip/libgccExtras/ashlsi3.asm (file header): Likewise.
+	* config/picochip/libgccExtras/longjmp.asm (file header): Likewise.
+	* config/picochip/libgccExtras/ashlsi3.c (file header): Likewise.
+	* config/picochip/libgccExtras/popcounthi2.asm (file header): Likewise.
+	* config/picochip/libgccExtras/parityhi2.asm (file header): Likewise.
+	* config/picochip/libgccExtras/udivmodhi4.asm (file header): Likewise.
+	* config/picochip/libgccExtras/ashrsi3.asm (file header): Likewise.
+	* config/picochip/libgccExtras/ashrsi3.c (file header): Likewise.
+	* config/picochip/libgccExtras/ucmpsi2.asm (file header): Likewise.
+	* config/picochip/libgccExtras/divmodhi4.asm (file header): Likewise.
+	* config/picochip/libgccExtras/lshrsi3.asm (file header): Likewise.
+	* config/picochip/libgccExtras/subdi3.asm (file header): Likewise.
+
 2010-11-15  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/46474

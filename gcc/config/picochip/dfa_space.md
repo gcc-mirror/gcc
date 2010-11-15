@@ -1,6 +1,6 @@
 ;; GCC machine description for picochip
 ;; Copyright (C) 2008 Free Software Foundation, Inc.
-;; Contributed by picoChip Designs Ltd (http://www.picochip.com)
+;; Contributed by Picochip Ltd (http://www.picochip.com)
 ;; Maintained by Daniel Towner (dant@picochip.com) and Hariharan
 ;; Sandanagobalane (hariharan@picochip.com)
 ;;

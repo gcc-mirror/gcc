@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler for picoChip
    Copyright (C) 2001, 2008, 2009, 2010 Free Software Foundation, Inc.
 
-   Contributed by picoChip Designs Ltd. (http://www.picochip.com)
+   Contributed by Picochip Ltd. (http://www.picochip.com)
    Maintained by Daniel Towner (daniel.towner@picochip.com) and
    Hariharan Sandanagobalane (hariharan@picochip.com).
 
