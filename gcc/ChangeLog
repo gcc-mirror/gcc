@@ -1,3 +1,11 @@
+2010-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46491
+	Backport from mainline
+
+	2010-05-14  Jan Hubicka  <jh@suse.cz>
+	* ipa-pure-const.c (check_stmt): Do not use memory_identifier_string.
+
 2010-11-12  Olivier Hainque  <hainque@adacore.com>
 
 	* config/rs6000/rs6000.c (rs6000_expand_ternop_builtin): Rewrite
