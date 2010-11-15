@@ -1,3 +1,9 @@
+2010-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46461
+	* tree-ssa-forwprop.c (simplify_builtin_call): Ensure ptr1 is
+	a gimple val.
+
 2010-11-15  Ian Lance Taylor  <iant@google.com>
 
 	* godump.c: New file.
