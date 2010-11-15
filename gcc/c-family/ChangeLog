@@ -1,3 +1,9 @@
+2010-11-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR preprocessor/45038
+	* c-cppbuiltin.c (c_cpp_builtins): Use different format for C++
+	dialects.
+
 2010-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.h (c_family_lang_mask): Declare.

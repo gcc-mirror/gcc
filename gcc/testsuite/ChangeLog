@@ -1,3 +1,8 @@
+2010-11-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR preprocessor/45038
+	* g++.dg/pr45038.C: New test.
+
 2010-11-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46467
