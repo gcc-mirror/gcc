@@ -1,3 +1,31 @@
+2010-11-15  Ian Lance Taylor  <iant@google.com>
+
+	* godump.c: New file.
+	* common.opt (fdump-go-spec=): New option.
+	* tree.h: Add comments for TYPE_SYMTAB_ADDRESS and friends.
+	(TYPE_SYMTAB_IS_ADDRESS, TYPE_SYMTAB_IS_POINTER): Define.
+	(TYPE_SYMTAB_IS_DIE): Define.
+	(struct tree_type): Change GTY for symtab field to use
+	TYPE_SYMTAB_IS_ADDRESS and friends and to use a debug_hooks field
+	to pick the union field.
+	* debug.h (struct gcc_debug_hooks): Add tree_type_symtab_field.
+	(dump_go_spec_init): Declare.
+	* toplev.c (process_options): Handle flag_dump_go_spec.
+	* debug.c: Include "tree.h".
+	(do_nothing_debug_hooks): Set tree_type_symtab_field.
+	* dwarf2out.c (dwarf2_debug_hooks): Likewise.
+	* dbxout.c (dbx_debug_hooks): Likewise.
+	(xcoff_debug_hooks): Likewise.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
+	* sdbout.c (sdb_debug_hooks): Likewise.  Do not define if
+	SDB_DEBUGGING_INFO is not defined.
+	* doc/invoke.texi (Option Summary): Mention -fdump-go-spec.
+	(Overall Options): Document -fdump-go-spec.
+	* Makefile.in (OBJS-common): Add godump.o.
+	(debug.o): Add dependency on $(TREE_H).
+	(godump.o): New target.
+	(GTFILES): Add $(srcdir)/godump.c.
+
 2010-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46095
