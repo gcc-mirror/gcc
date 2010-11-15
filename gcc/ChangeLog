@@ -1,3 +1,8 @@
+2010-11-15  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16.c (direct_return): Do not generate a
+	direct return for interrupt handlers.
+
 2010-11-15  Joern Rennecke  <amylaar@spamcop.net>
 
 	* Makefile.in (tm.texi): Replace with rule for:
@@ -55,7 +60,7 @@
 	* output.h (decode_reg_name_and_count): Declare.
 	* varasm.c (decode_reg_name_and_count): New function.
 	(decode_reg_name): Reimplement using decode_reg_name_and_count.
-	* reginfo.c (fix_register): Use decode_reg_name_and_count and 
+	* reginfo.c (fix_register): Use decode_reg_name_and_count and
 	iterate over all regs used.
 	* stmt.c (expand_asm_operands): Likewise.
 	* arm/aout.h (OVERLAPPING_REGISTER_NAMES): Define.

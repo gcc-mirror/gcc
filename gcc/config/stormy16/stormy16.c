@@ -1175,7 +1175,8 @@ int
 direct_return (void)
 {
   return (reload_completed
-	  && xstormy16_compute_stack_layout ().frame_size == 0);
+	  && xstormy16_compute_stack_layout ().frame_size == 0
+	  && ! xstormy16_interrupt_function_p ());
 }
 
 /* Called after register allocation to add any instructions needed for
