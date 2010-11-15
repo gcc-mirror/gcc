@@ -1534,6 +1534,9 @@ convert_mult_to_fma (gimple mul_stmt)
 
       use_stmt = USE_STMT (use_p);
 
+      if (is_gimple_debug (use_stmt))
+	continue;
+
       /* For now restrict this operations to single basic blocks.  In theory
 	 we would want to support sinking the multiplication in
 	 m = a*b;
@@ -1603,10 +1606,14 @@ convert_mult_to_fma (gimple mul_stmt)
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, mul_result)
     {
       gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
-      enum tree_code use_code = gimple_assign_rhs_code (use_stmt);
+      enum tree_code use_code;
       tree addop, mulop1, result = mul_result;
       bool negate_p = false;
 
+      if (is_gimple_debug (use_stmt))
+	continue;
+
+      use_code = gimple_assign_rhs_code (use_stmt);
       if (use_code == NEGATE_EXPR)
 	{
 	  result = gimple_assign_lhs (use_stmt);
