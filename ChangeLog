@@ -1,3 +1,8 @@
+2010-11-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* MAINTAINERS (Various Maintainers): Add self for build machinery.
+	(Write After Approval): Remove self.
+
 2010-11-15  Andreas Schwab  <schwab@redhat.com>
 
 	* configure.ac: Fix spelling in option names.
