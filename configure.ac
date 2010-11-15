@@ -1273,9 +1273,9 @@ have_gmp=no
 AC_ARG_WITH(mpc, [  --with-mpc=PATH        specify prefix directory for installed MPC package.
                           Equivalent to --with-mpc-include=PATH/include
                           plus --with-mpc-lib=PATH/lib])
-AC_ARG_WITH(mpc_include, [  --with-mpc-include=PATH
+AC_ARG_WITH(mpc-include, [  --with-mpc-include=PATH
                           specify directory for installed MPC include files])
-AC_ARG_WITH(mpc_lib, [  --with-mpc-lib=PATH    specify directory for the installed MPC library])
+AC_ARG_WITH(mpc-lib, [  --with-mpc-lib=PATH    specify directory for the installed MPC library])
 
 if test "x$with_mpc" != x; then
   gmplibs="-L$with_mpc/lib $gmplibs"
@@ -1306,9 +1306,9 @@ Use --with-mpfr=PATH or --with-mpfr-include=PATH plus --with-mpfr-lib=PATH]))
 AC_ARG_WITH(mpfr, [  --with-mpfr=PATH        specify prefix directory for installed MPFR package.
                           Equivalent to --with-mpfr-include=PATH/include
                           plus --with-mpfr-lib=PATH/lib])
-AC_ARG_WITH(mpfr_include, [  --with-mpfr-include=PATH
+AC_ARG_WITH(mpfr-include, [  --with-mpfr-include=PATH
                           specify directory for installed MPFR include files])
-AC_ARG_WITH(mpfr_lib, [  --with-mpfr-lib=PATH    specify directory for the installed MPFR library])
+AC_ARG_WITH(mpfr-lib, [  --with-mpfr-lib=PATH    specify directory for the installed MPFR library])
 
 if test "x$with_mpfr" != x; then
   gmplibs="-L$with_mpfr/lib $gmplibs"
@@ -1339,8 +1339,8 @@ Use --with-gmp=PATH or --with-gmp-include=PATH plus --with-gmp-lib=PATH]))
 AC_ARG_WITH(gmp, [  --with-gmp=PATH         specify prefix directory for the installed GMP package.
                           Equivalent to --with-gmp-include=PATH/include
                           plus --with-gmp-lib=PATH/lib])
-AC_ARG_WITH(gmp_include, [  --with-gmp-include=PATH specify directory for installed GMP include files])
-AC_ARG_WITH(gmp_lib, [  --with-gmp-lib=PATH     specify directory for the installed GMP library])
+AC_ARG_WITH(gmp-include, [  --with-gmp-include=PATH specify directory for installed GMP include files])
+AC_ARG_WITH(gmp-lib, [  --with-gmp-lib=PATH     specify directory for the installed GMP library])
 
 
 if test "x$with_gmp" != x; then
@@ -1539,8 +1539,8 @@ pplinc=
 AC_ARG_WITH(ppl, [  --with-ppl=PATH         Specify prefix directory for the installed PPL package
                           Equivalent to --with-ppl-include=PATH/include
                           plus --with-ppl-lib=PATH/lib])
-AC_ARG_WITH(ppl_include, [  --with-ppl-include=PATH Specify directory for installed PPL include files])
-AC_ARG_WITH(ppl_lib, [  --with-ppl-lib=PATH     Specify the directory for the installed PPL library])
+AC_ARG_WITH(ppl-include, [  --with-ppl-include=PATH Specify directory for installed PPL include files])
+AC_ARG_WITH(ppl-lib, [  --with-ppl-lib=PATH     Specify the directory for the installed PPL library])
 
 case $with_ppl in 
   no)

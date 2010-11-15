@@ -28,11 +28,11 @@ AC_DEFUN([CLOOG_INIT_FLAGS],
       [Specify prefix directory for the installed CLooG-PPL package.
        Equivalent to --with-cloog-include=PATH/include
        plus --with-cloog-lib=PATH/lib])])
-  AC_ARG_WITH(cloog_include,
+  AC_ARG_WITH([cloog-include],
     [AS_HELP_STRING(
       [--with-cloog-include=PATH],
       [Specify directory for installed CLooG include files])])
-  AC_ARG_WITH(cloog_lib,
+  AC_ARG_WITH([cloog-lib],
     [AS_HELP_STRING(
       [--with-cloog-lib=PATH],
       [Specify the directory for the installed CLooG library])])

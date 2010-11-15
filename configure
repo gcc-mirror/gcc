@@ -5123,13 +5123,13 @@ if test "${with_mpc+set}" = set; then :
 fi
 
 
-# Check whether --with-mpc_include was given.
+# Check whether --with-mpc-include was given.
 if test "${with_mpc_include+set}" = set; then :
   withval=$with_mpc_include;
 fi
 
 
-# Check whether --with-mpc_lib was given.
+# Check whether --with-mpc-lib was given.
 if test "${with_mpc_lib+set}" = set; then :
   withval=$with_mpc_lib;
 fi
@@ -5172,13 +5172,13 @@ if test "${with_mpfr+set}" = set; then :
 fi
 
 
-# Check whether --with-mpfr_include was given.
+# Check whether --with-mpfr-include was given.
 if test "${with_mpfr_include+set}" = set; then :
   withval=$with_mpfr_include;
 fi
 
 
-# Check whether --with-mpfr_lib was given.
+# Check whether --with-mpfr-lib was given.
 if test "${with_mpfr_lib+set}" = set; then :
   withval=$with_mpfr_lib;
 fi
@@ -5221,13 +5221,13 @@ if test "${with_gmp+set}" = set; then :
 fi
 
 
-# Check whether --with-gmp_include was given.
+# Check whether --with-gmp-include was given.
 if test "${with_gmp_include+set}" = set; then :
   withval=$with_gmp_include;
 fi
 
 
-# Check whether --with-gmp_lib was given.
+# Check whether --with-gmp-lib was given.
 if test "${with_gmp_lib+set}" = set; then :
   withval=$with_gmp_lib;
 fi
@@ -5580,13 +5580,13 @@ if test "${with_ppl+set}" = set; then :
 fi
 
 
-# Check whether --with-ppl_include was given.
+# Check whether --with-ppl-include was given.
 if test "${with_ppl_include+set}" = set; then :
   withval=$with_ppl_include;
 fi
 
 
-# Check whether --with-ppl_lib was given.
+# Check whether --with-ppl-lib was given.
 if test "${with_ppl_lib+set}" = set; then :
   withval=$with_ppl_lib;
 fi
@@ -5669,13 +5669,13 @@ if test "${with_cloog+set}" = set; then :
 fi
 
 
-# Check whether --with-cloog_include was given.
+# Check whether --with-cloog-include was given.
 if test "${with_cloog_include+set}" = set; then :
   withval=$with_cloog_include;
 fi
 
 
-# Check whether --with-cloog_lib was given.
+# Check whether --with-cloog-lib was given.
 if test "${with_cloog_lib+set}" = set; then :
   withval=$with_cloog_lib;
 fi

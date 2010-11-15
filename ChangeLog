@@ -1,3 +1,8 @@
+2010-11-15  Andreas Schwab  <schwab@redhat.com>
+
+	* configure.ac: Fix spelling in option names.
+	* configure: Regenerated.
+
 2010-11-13  Georg-Johann Lay  <georgjohann@web.de>
 
 	PR bootstrap/39622
