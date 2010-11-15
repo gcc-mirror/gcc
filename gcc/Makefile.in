@@ -3689,7 +3689,8 @@ s-constrs-h: $(MD_DEPS) build/genpreds$(build_exeext)
 	$(STAMP) s-constrs-h
 
 target-hooks-def.h: s-target-hooks-def-h; @true
-tm.texi: s-tm-texi
+# make sure that when we build info files, the used tm.texi is up to date.
+$(srcdir)/doc/tm.texi: s-tm-texi; @true
 
 s-target-hooks-def-h: build/genhooks$(build_exeext)
 	$(RUN_GEN) build/genhooks$(build_exeext) > tmp-target-hooks-def.h
@@ -3698,7 +3699,8 @@ s-target-hooks-def-h: build/genhooks$(build_exeext)
 	$(STAMP) s-target-hooks-def-h
 
 # check if someone mistakenly only changed tm.texi.
-s-tm-texi: $(srcdir)/doc/tm.texi
+# We use a different pathname here to avoid a circular dependency.
+s-tm-texi: $(srcdir)/doc/../doc/tm.texi
 
 s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 	$(RUN_GEN) build/genhooks$(build_exeext) \
@@ -4205,10 +4207,14 @@ TEXI_GCC_FILES = gcc.texi gcc-common.texi gcc-vers.texi frontends.texi	\
 	 fdl.texi contrib.texi cppenv.texi cppopts.texi			\
 	 implement-c.texi implement-cxx.texi arm-neon-intrinsics.texi
 
+# we explicitly use $(srcdir)/doc/tm.texi here to avoid confusion with
+# the generated tm.texi; the latter might have a more recent timestamp,
+# but we don't want to rebuild the info files unless the contents of
+# the *.texi files have changed.
 TEXI_GCCINT_FILES = gccint.texi gcc-common.texi gcc-vers.texi		\
 	 contribute.texi makefile.texi configterms.texi options.texi	\
-	 portability.texi interface.texi passes.texi	\
-	 rtl.texi md.texi tm.texi hostconfig.texi fragments.texi	\
+	 portability.texi interface.texi passes.texi rtl.texi md.texi	\
+	 $(srcdir)/doc/tm.texi hostconfig.texi fragments.texi	\
 	 configfiles.texi collect2.texi headerdirs.texi funding.texi	\
 	 gnu.texi gpl_v3.texi fdl.texi contrib.texi languages.texi	\
 	 sourcebuild.texi gty.texi libgcc.texi cfg.texi tree-ssa.texi	\
