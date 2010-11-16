@@ -1354,8 +1354,8 @@ reload_combine (void)
 	     }
 
 	}
-      else if (JUMP_P (insn)
-	       && GET_CODE (PATTERN (insn)) != RETURN)
+
+      if (control_flow_insn_p (insn) && GET_CODE (PATTERN (insn)) != RETURN)
 	{
 	  /* Non-spill registers might be used at the call destination in
 	     some unknown fashion, so we have to mark the unknown use.  */
