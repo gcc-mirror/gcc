@@ -2464,21 +2464,6 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total,
 
     case PLUS:
     case MINUS:
-      /* Check for multiply and add.  */
-      if ((GET_MODE (x) == DFmode || GET_MODE (x) == SFmode)
-	  && GET_CODE (XEXP (x, 0)) == MULT
-	  && TARGET_HARD_FLOAT && TARGET_FUSED_MADD)
-	{
-	  /* This is the multiply and add case.  */
-	  if (GET_MODE (x) == DFmode)
-	    *total = s390_cost->madbr;
-	  else
-	    *total = s390_cost->maebr;
-	  *total += (rtx_cost (XEXP (XEXP (x, 0), 0), MULT, speed)
-		     + rtx_cost (XEXP (XEXP (x, 0), 1), MULT, speed)
-		     + rtx_cost (XEXP (x, 1), (enum rtx_code) code, speed));
-	  return true;  /* Do not do an additional recursive descent.  */
-	}
       *total = COSTS_N_INSNS (1);
       return false;
 
@@ -2538,6 +2523,28 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total,
 	  break;
 	default:
 	  return false;
+	}
+      return false;
+
+    case FMA:
+      switch (GET_MODE (x))
+	{
+	case DFmode:
+	  *total = s390_cost->madbr;
+	  break;
+	case SFmode:
+	  *total = s390_cost->maebr;
+	  break;
+	default:
+	  return false;
+	}
+      /* Negate in the third argument is free: FMSUB.  */
+      if (GET_CODE (XEXP (x, 2)) == NEG)
+	{
+	  *total += (rtx_cost (XEXP (x, 0), FMA, speed)
+		     + rtx_cost (XEXP (x, 1), FMA, speed)
+		     + rtx_cost (XEXP (XEXP (x, 2), 0), FMA, speed));
+	  return true;
 	}
       return false;
 
@@ -10511,7 +10518,7 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 #define TARGET_ASM_CLOSE_PAREN ""
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | MASK_FUSED_MADD)
+#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT)
 
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION s390_handle_option
