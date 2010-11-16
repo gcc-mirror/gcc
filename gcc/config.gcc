@@ -372,11 +372,11 @@ powerpc*-*-*)
 		cpu_is_64bit=yes
 		;;
 	esac
-	extra_options="${extra_options} g.opt"
+	extra_options="${extra_options} g.opt fused-madd.opt"
 	;;
 rs6000*-*-*)
 	need_64bit_hwint=yes
-	extra_options="${extra_options} g.opt"
+	extra_options="${extra_options} g.opt fused-madd.opt"
 	;;
 score*-*-*)
 	cpu_type=score

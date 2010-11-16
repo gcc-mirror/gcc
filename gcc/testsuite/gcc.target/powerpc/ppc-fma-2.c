@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-O3 -ftree-vectorize -mcpu=power7 -ffast-math -mno-fused-madd" } */
+/* { dg-options "-O3 -ftree-vectorize -mcpu=power7 -ffast-math -ffp-contract=off" } */
 /* { dg-final { scan-assembler-times "xvmadd" 2 } } */
 /* { dg-final { scan-assembler-times "xsmadd" 1 } } */
 /* { dg-final { scan-assembler-times "fmadds" 1 } } */

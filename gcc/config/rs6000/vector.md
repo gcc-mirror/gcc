@@ -202,16 +202,14 @@
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
 	(mult:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")
 		    (match_operand:VEC_F 2 "vfloat_operand" "")))]
-  "(VECTOR_UNIT_VSX_P (<MODE>mode)
-    || (VECTOR_UNIT_ALTIVEC_P (<MODE>mode) && TARGET_FUSED_MADD))"
-  "
+  "VECTOR_UNIT_VSX_P (<MODE>mode) || VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
 {
   if (<MODE>mode == V4SFmode && VECTOR_UNIT_ALTIVEC_P (<MODE>mode))
     {
       emit_insn (gen_altivec_mulv4sf3 (operands[0], operands[1], operands[2]));
       DONE;
     }
-}")
+})
 
 (define_expand "div<mode>3"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
