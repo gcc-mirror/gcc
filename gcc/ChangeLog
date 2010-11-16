@@ -1,5 +1,12 @@
 2010-11-16  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.c (visit_unary_op): Rename to ...
+	(visit_nary_op): ... this.
+	(visit_binary_op): Remove.
+	(visit_use): Adjust and handle GIMPLE_TERNARY_RHS.
+
+2010-11-16  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/45172
 	* tree-eh.c (cleanup_empty_eh_unsplit): Avoid creating duplicate
 	edges.

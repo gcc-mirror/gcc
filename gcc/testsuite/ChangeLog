@@ -1,5 +1,9 @@
 2010-11-16  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/ssa-fre-30.c: New testcase.
+
+2010-11-16  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/45172
 	* gfortran.dg/gomp/pr45172.f90: New testcase.
 
