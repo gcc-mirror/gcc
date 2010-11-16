@@ -1,5 +1,18 @@
 2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* gcc.c (char_p): Define.  Define a VEC of it.
+	(n_linker_options, n_assembler_options, n_preprocessor_options):
+	Delete.
+	(linker_options, assembler_options, preprocessor_options): Convert
+	to a VEC.
+	(add_preprocessor_option): Adjust.
+	(add_assembler_option): Adjust.
+	(add_linker_option): Adjust.
+	(do_specs_vec): New function.
+	(do_spec_1): Call it.  Adjust for new types.
+
+2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* Makefile.in (bitmap.o, ebitmap.o, et-forest.o): Update
 	dependencies.
 	(sreal.o, statistics.o, stringpool.o): Likewise.
