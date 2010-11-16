@@ -1,3 +1,13 @@
+2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* bitmap.c: Delete unnecessary includes.
+	* ebitmap.c: Likewise.
+	* et-forest.c: Likewise.
+	* sreal.c: Likewise.
+	* statistics.c: Likewise.
+	* stringpool.c: Likewise.
+	* double-int.c: Add comment for inclusion of tm.h.
+
 2010-11-16  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (visit_unary_op): Rename to ...
