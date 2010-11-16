@@ -125,10 +125,13 @@ df_chain_dump (struct df_link *link, FILE *file)
   for (; link; link = link->next)
     {
       fprintf (file, "%c%d(bb %d insn %d) ",
-	       DF_REF_REG_DEF_P (link->ref) ? 'd' : 'u',
+	       DF_REF_REG_DEF_P (link->ref)
+	       ? 'd'
+	       : (DF_REF_FLAGS (link->ref) & DF_REF_IN_NOTE) ? 'e' : 'u',
 	       DF_REF_ID (link->ref),
 	       DF_REF_BBNO (link->ref),
-	       DF_REF_IS_ARTIFICIAL (link->ref) ? -1 : DF_REF_INSN_UID (link->ref));
+	       DF_REF_IS_ARTIFICIAL (link->ref)
+	       ? -1 : DF_REF_INSN_UID (link->ref));
     }
   fprintf (file, "}");
 }

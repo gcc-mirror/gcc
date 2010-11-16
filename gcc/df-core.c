@@ -2010,6 +2010,17 @@ df_dump_bottom (basic_block bb, FILE *file)
 }
 
 
+static void
+df_ref_dump (df_ref ref, FILE *file)
+{
+  fprintf (file, "%c%d(%d)",
+	   DF_REF_REG_DEF_P (ref)
+	   ? 'd'
+	   : (DF_REF_FLAGS (ref) & DF_REF_IN_NOTE) ? 'e' : 'u',
+	   DF_REF_ID (ref),
+	   DF_REF_REGNO (ref));
+}
+
 void
 df_refs_chain_dump (df_ref *ref_rec, bool follow_chain, FILE *file)
 {
@@ -2017,10 +2028,7 @@ df_refs_chain_dump (df_ref *ref_rec, bool follow_chain, FILE *file)
   while (*ref_rec)
     {
       df_ref ref = *ref_rec;
-      fprintf (file, "%c%d(%d)",
-	       DF_REF_REG_DEF_P (ref) ? 'd' : (DF_REF_FLAGS (ref) & DF_REF_IN_NOTE) ? 'e' : 'u',
-	       DF_REF_ID (ref),
-	       DF_REF_REGNO (ref));
+      df_ref_dump (ref, file);
       if (follow_chain)
 	df_chain_dump (DF_REF_CHAIN (ref), file);
       ref_rec++;
@@ -2037,10 +2045,7 @@ df_regs_chain_dump (df_ref ref,  FILE *file)
   fprintf (file, "{ ");
   while (ref)
     {
-      fprintf (file, "%c%d(%d) ",
-	       DF_REF_REG_DEF_P (ref) ? 'd' : 'u',
-	       DF_REF_ID (ref),
-	       DF_REF_REGNO (ref));
+      df_ref_dump (ref, file);
       ref = DF_REF_NEXT_REG (ref);
     }
   fprintf (file, "}");

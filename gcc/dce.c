@@ -465,36 +465,16 @@ find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
 }
 
 
-/* Delete all REG_EQUAL notes of the registers INSN writes, to prevent
-   bad dangling REG_EQUAL notes. */
+/* Remove all REG_EQUAL and REG_EQUIV notes referring to the registers INSN
+   writes to.  */
 
 static void
-delete_corresponding_reg_eq_notes (rtx insn)
+remove_reg_equal_equiv_notes_for_defs (rtx insn)
 {
   df_ref *def_rec;
-  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-    {
-      df_ref def = *def_rec;
-      unsigned int regno = DF_REF_REGNO (def);
-      /* This loop is a little tricky.  We cannot just go down the
-	 chain because it is being modified by the actions in the
-	 loop.  So we just get the head.  We plan to drain the list
-	 anyway.  */
-      while (DF_REG_EQ_USE_CHAIN (regno))
-	{
-	  df_ref eq_use = DF_REG_EQ_USE_CHAIN (regno);
-	  rtx noted_insn = DF_REF_INSN (eq_use);
-	  rtx note = find_reg_note (noted_insn, REG_EQUAL, NULL_RTX);
-	  if (!note)
-	    note = find_reg_note (noted_insn, REG_EQUIV, NULL_RTX);
 
-	  /* This assert is generally triggered when someone deletes a
-	     REG_EQUAL or REG_EQUIV note by hacking the list manually
-	     rather than calling remove_note.  */
-	  gcc_assert (note);
-	  remove_note (noted_insn, note);
-	}
-    }
+  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+    remove_reg_equal_equiv_notes_for_regno (DF_REF_REGNO (*def_rec));
 }
 
 
@@ -543,9 +523,9 @@ delete_unmarked_insns (void)
 	  if (dump_file)
 	    fprintf (dump_file, "DCE: Deleting insn %d\n", INSN_UID (insn));
 
-	  /* Before we delete the insn we have to delete REG_EQUAL notes
+	  /* Before we delete the insn we have to remove the REG_EQUAL notes
 	     for the destination regs in order to avoid dangling notes.  */
-	  delete_corresponding_reg_eq_notes (insn);
+	  remove_reg_equal_equiv_notes_for_defs (insn);
 
 	  /* If a pure or const call is deleted, this may make the cfg
 	     have unreachable blocks.  We rememeber this and call

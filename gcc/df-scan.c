@@ -471,7 +471,7 @@ df_scan_start_dump (FILE *file ATTRIBUTE_UNUSED)
 	  }
 	if (DF_REG_EQ_USE_COUNT (i))
 	  {
-	    fprintf (file, "%s%dd", sep, DF_REG_EQ_USE_COUNT (i));
+	    fprintf (file, "%s%de", sep, DF_REG_EQ_USE_COUNT (i));
 	    ecount += DF_REG_EQ_USE_COUNT (i);
 	  }
 	fprintf (file, "} ");
@@ -487,8 +487,10 @@ df_scan_start_dump (FILE *file ATTRIBUTE_UNUSED)
 	    icount++;
 	}
 
-  fprintf (file, "\n;;    total ref usage %d{%dd,%du,%de} in %d{%d regular + %d call} insns.\n",
-	   dcount + ucount + ecount, dcount, ucount, ecount, icount + ccount, icount, ccount);
+  fprintf (file, "\n;;    total ref usage %d{%dd,%du,%de}"
+		 " in %d{%d regular + %d call} insns.\n",
+		 dcount + ucount + ecount, dcount, ucount, ecount,
+		 icount + ccount, icount, ccount);
 }
 
 /* Dump the bb_info for a given basic block. */

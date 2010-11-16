@@ -3818,6 +3818,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 		    basic_block other_bb, basic_block new_dest, int reversep)
 {
   rtx head, end, jump, earliest = NULL_RTX, old_dest, new_label = NULL_RTX;
+  bitmap merge_set = NULL;
   /* Number of pending changes.  */
   int n_validated_changes = 0;
 
@@ -3906,6 +3907,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       earliest = jump;
     }
 #endif
+
   /* Try the NCE path if the CE path did not result in any changes.  */
   if (n_validated_changes == 0)
     {
@@ -3914,9 +3916,8 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	 that any registers modified are dead at the branch site.  */
 
       rtx insn, cond, prev;
-      bitmap merge_set, test_live, test_set;
-      unsigned i, fail = 0;
-      bitmap_iterator bi;
+      bitmap test_live, test_set;
+      bool intersect = false;
 
       /* Check for no calls or trapping operations.  */
       for (insn = head; ; insn = NEXT_INSN (insn))
@@ -3955,12 +3956,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 		       end of the block.  */
 
       merge_set = BITMAP_ALLOC (&reg_obstack);
-      test_live = BITMAP_ALLOC (&reg_obstack);
-      test_set = BITMAP_ALLOC (&reg_obstack);
 
-      /* ??? bb->local_set is only valid during calculate_global_regs_live,
-	 so we must recompute usage for MERGE_BB.  Not so bad, I suppose,
-         since we've already asserted that MERGE_BB is small.  */
       /* If we allocated new pseudos (e.g. in the conditional move
 	 expander called from noce_emit_cmove), we must resize the
 	 array first.  */
@@ -3985,17 +3981,22 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	 hard registers before reload.  */
       if (SMALL_REGISTER_CLASSES && ! reload_completed)
 	{
+	  unsigned i;
+	  bitmap_iterator bi;
+
           EXECUTE_IF_SET_IN_BITMAP (merge_set, 0, i, bi)
 	    {
 	      if (i < FIRST_PSEUDO_REGISTER
 		  && ! fixed_regs[i]
 		  && ! global_regs[i])
-		fail = 1;
+		goto fail;
 	    }
 	}
 
       /* For TEST, we're interested in a range of insns, not a whole block.
 	 Moreover, we're interested in the insns live from OTHER_BB.  */
+      test_live = BITMAP_ALLOC (&reg_obstack);
+      test_set = BITMAP_ALLOC (&reg_obstack);
 
       /* The loop below takes the set of live registers
          after JUMP, and calculates the live set before EARLIEST. */
@@ -4019,17 +4020,16 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	   TEST_SET & DF_LIVE_IN (merge_bb)
 	 are empty.  */
 
-      if (bitmap_intersect_p (test_set, merge_set)
-	  || bitmap_intersect_p (test_live, merge_set)
+      if (bitmap_intersect_p (merge_set, test_set)
+	  || bitmap_intersect_p (merge_set, test_live)
 	  || bitmap_intersect_p (test_set, df_get_live_in (merge_bb)))
-	fail = 1;
+	intersect = true;
 
-      BITMAP_FREE (merge_set);
       BITMAP_FREE (test_live);
       BITMAP_FREE (test_set);
 
-      if (fail)
-	return FALSE;
+      if (intersect)
+	goto fail;
     }
 
  no_body:
@@ -4079,8 +4079,8 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       if (end == BB_END (merge_bb))
 	BB_END (merge_bb) = PREV_INSN (head);
 
-      /* PR 21767: When moving insns above a conditional branch, REG_EQUAL
-	 notes might become invalid.  */
+      /* PR 21767: when moving insns above a conditional branch, the REG_EQUAL
+	 notes being moved might become invalid.  */
       insn = head;
       do
 	{
@@ -4096,6 +4096,19 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	      || !function_invariant_p (XEXP (note, 0)))
 	    remove_note (insn, note);
 	} while (insn != end && (insn = NEXT_INSN (insn)));
+
+      /* PR46315: when moving insns above a conditional branch, the REG_EQUAL
+	 notes referring to the registers being set might become invalid.  */
+      if (merge_set)
+	{
+	  unsigned i;
+	  bitmap_iterator bi;
+
+	  EXECUTE_IF_SET_IN_BITMAP (merge_set, 0, i, bi)
+	    remove_reg_equal_equiv_notes_for_regno (i);
+
+	  BITMAP_FREE (merge_set);
+	}
 
       reorder_insns (head, end, PREV_INSN (earliest));
     }
@@ -4113,6 +4126,9 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
  cancel:
   cancel_changes (0);
+ fail:
+  if (merge_set)
+    BITMAP_FREE (merge_set);
   return FALSE;
 }
 

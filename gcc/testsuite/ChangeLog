@@ -1,3 +1,7 @@
+2010-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/rx/pack.c: New test.
+
 2010-11-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44545
