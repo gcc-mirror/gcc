@@ -1,3 +1,9 @@
+2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* Makefile.in (bitmap.o, ebitmap.o, et-forest.o): Update
+	dependencies.
+	(sreal.o, statistics.o, stringpool.o): Likewise.
+
 2010-11-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44545
