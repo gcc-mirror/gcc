@@ -71,8 +71,8 @@ struct score7_address_info
 
 extern int score7_symbolic_constant_p (rtx x,
                                        enum score_symbol_type *symbol_type);
-extern bool score7_return_in_memory (tree type,
-                                     tree fndecl ATTRIBUTE_UNUSED);
+extern bool score7_return_in_memory (const_tree type,
+                                     const_tree fndecl ATTRIBUTE_UNUSED);
 extern void score7_output_mi_thunk (FILE *file,
                                     tree thunk_fndecl ATTRIBUTE_UNUSED,
                                     HOST_WIDE_INT delta,
@@ -87,7 +87,7 @@ score7_function_epilogue (FILE *file,
                           HOST_WIDE_INT size ATTRIBUTE_UNUSED);
 extern section *score7_select_rtx_section (enum machine_mode mode, rtx x,
                                            unsigned HOST_WIDE_INT align);
-extern bool score7_in_small_data_p (tree decl);
+extern bool score7_in_small_data_p (const_tree decl);
 extern void score7_asm_file_start (void);
 extern void score7_asm_file_end (void);
 extern void score7_option_override (void);
@@ -117,8 +117,8 @@ extern rtx score7_function_arg (const CUMULATIVE_ARGS *cum,
                                 enum machine_mode mode,
                                 const_tree type,
                                 bool named);
-extern rtx score7_function_value (tree valtype,
-                                  tree func ATTRIBUTE_UNUSED,
+extern rtx score7_function_value (const_tree valtype,
+                                  const_tree func ATTRIBUTE_UNUSED,
                                   enum machine_mode mode);
 extern void score7_asm_trampoline_template (FILE *);
 extern void score7_trampoline_init (rtx, tree, rtx);

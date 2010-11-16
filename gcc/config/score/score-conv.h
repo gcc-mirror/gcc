@@ -52,11 +52,14 @@
 #define CE_REG_CLASS_P(C) \
   ((C) == HI_REG || (C) == LO_REG || (C) == CE_REGS)
 
-#define UIMM_IN_RANGE(V, W)    ((V) >= 0 && (V) < ((HOST_WIDE_INT) 1 << (W)))
+#define UIMM_IN_RANGE(V, W) \
+  ((V) >= 0 \
+   && ((unsigned HOST_WIDE_INT) (V) \
+       <= (((unsigned HOST_WIDE_INT) 2 << ((W) - 1)) - 1)))
 
 #define SIMM_IN_RANGE(V, W)                            \
-  ((V) >= (-1 * ((HOST_WIDE_INT) 1 << ((W) - 1)))      \
-   && (V) < (1 * ((HOST_WIDE_INT) 1 << ((W) - 1))))
+  ((V) >= ((HOST_WIDE_INT) -1 << ((W) - 1))      \
+   && (V) <= (((HOST_WIDE_INT) 1 << ((W) - 1)) - 1))
 
 #define IMM_IN_RANGE(V, W, S)  \
   ((S) ? SIMM_IN_RANGE (V, W) : UIMM_IN_RANGE (V, W))

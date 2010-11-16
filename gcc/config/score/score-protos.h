@@ -56,7 +56,7 @@ extern int score_output_external (FILE *file, tree decl, const char *name);
 extern enum reg_class score_secondary_reload_class (enum reg_class rclass,
                                                     enum machine_mode mode,
                                                     rtx x);
-extern rtx score_function_value (tree valtype, tree func,
+extern rtx score_function_value (const_tree valtype, const_tree func,
                                  enum machine_mode mode);
 extern enum reg_class score_preferred_reload_class (rtx x,
                                                     enum reg_class rclass);

@@ -291,7 +291,7 @@ score3_classify_address (struct score3_address_info *info,
 }
 
 bool
-score3_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
+score3_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 {
     return ((TYPE_MODE (type) == BLKmode)
             || (int_size_in_bytes (type) > 2 * UNITS_PER_WORD)
@@ -576,7 +576,7 @@ score3_select_rtx_section (enum machine_mode mode, rtx x,
 
 /* Implement TARGET_IN_SMALL_DATA_P.  */
 bool
-score3_in_small_data_p (tree decl)
+score3_in_small_data_p (const_tree decl)
 {
   HOST_WIDE_INT size;
 
@@ -860,7 +860,8 @@ score3_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
    VALTYPE is the return type and MODE is VOIDmode.  For libcalls,
    VALTYPE is null and MODE is the mode of the return value.  */
 rtx
-score3_function_value (tree valtype, tree func, enum machine_mode mode)
+score3_function_value (const_tree valtype, const_tree func,
+		       enum machine_mode mode)
 {
   if (valtype)
     {
@@ -912,7 +913,7 @@ score3_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   emit_move_insn (mem, chain_value);
 
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, FFCACHE),
-                     0, VOIDmode, 2,
+                     LCT_NORMAL, VOIDmode, 2,
                      addr, Pmode,
                      GEN_INT (TRAMPOLINE_SIZE), SImode);
 #undef FFCACHE
@@ -1224,7 +1225,7 @@ score3_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
 void
 score3_print_operand (FILE *file, rtx op, int c)
 {
-  enum rtx_code code = -1;
+  enum rtx_code code = UNKNOWN;
   if (!PRINT_OPERAND_PUNCT_VALID_P (c))
     code = GET_CODE (op);
 
