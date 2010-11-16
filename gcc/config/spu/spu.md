@@ -748,7 +748,7 @@
 
     emit_move_insn (operands[4],
 		    CONST_DOUBLE_FROM_REAL_VALUE (scale, SFmode));
-    emit_insn (gen_fma_sf (operands[0],
+    emit_insn (gen_fmasf4 (operands[0],
 			   operands[2], operands[4], operands[3]));
     DONE;
   })
@@ -1533,69 +1533,98 @@
   "<d>fm\t%0,%1,%2"
   [(set_attr "type" "fp<d6>")])
 
-(define_insn "fma_<mode>"
+(define_insn "fma<mode>4"
   [(set (match_operand:VSF 0 "spu_reg_operand" "=r")
-	(plus:VSF (mult:VSF (match_operand:VSF 1 "spu_reg_operand" "r")
-			      (match_operand:VSF 2 "spu_reg_operand" "r"))
-		   (match_operand:VSF 3 "spu_reg_operand" "r")))]
+	(fma:VSF (match_operand:VSF 1 "spu_reg_operand" "r")
+		 (match_operand:VSF 2 "spu_reg_operand" "r")
+		 (match_operand:VSF 3 "spu_reg_operand" "r")))]
   ""
   "fma\t%0,%1,%2,%3"
   [(set_attr "type"	"fp6")])
 
-(define_insn "fnms_<mode>"
+;; ??? The official description is (c - a*b), which is exactly (-a*b + c).
+;; Note that this doesn't match the dfnms description.  Incorrect?
+(define_insn "fnma<mode>4"
   [(set (match_operand:VSF 0 "spu_reg_operand" "=r")
-	(minus:VSF (match_operand:VSF 3 "spu_reg_operand" "r")
-		    (mult:VSF (match_operand:VSF 1 "spu_reg_operand" "r")
-			       (match_operand:VSF 2 "spu_reg_operand" "r"))))]
+	(fma:VSF
+	  (neg:VSF (match_operand:VSF 1 "spu_reg_operand" "r"))
+	  (match_operand:VSF 2 "spu_reg_operand" "r")
+	  (match_operand:VSF 3 "spu_reg_operand" "r")))]
   ""
   "fnms\t%0,%1,%2,%3"
   [(set_attr "type" "fp6")])
 
-(define_insn "fms_<mode>"
+(define_insn "fms<mode>4"
   [(set (match_operand:VSF 0 "spu_reg_operand" "=r")
-	(minus:VSF (mult:VSF (match_operand:VSF 1 "spu_reg_operand" "r")
-			       (match_operand:VSF 2 "spu_reg_operand" "r"))
-		    (match_operand:VSF 3 "spu_reg_operand" "r")))]
+	(fma:VSF
+	  (match_operand:VSF 1 "spu_reg_operand" "r")
+	  (match_operand:VSF 2 "spu_reg_operand" "r")
+	  (neg:VSF (match_operand:VSF 3 "spu_reg_operand" "r"))))]
   ""
   "fms\t%0,%1,%2,%3"
   [(set_attr "type" "fp6")])
 
-(define_insn "fma_<mode>"
+(define_insn "fma<mode>4"
   [(set (match_operand:VDF 0 "spu_reg_operand" "=r")
-	(plus:VDF (mult:VDF (match_operand:VDF 1 "spu_reg_operand" "r")
-			    (match_operand:VDF 2 "spu_reg_operand" "r"))
-		  (match_operand:VDF 3 "spu_reg_operand" "0")))]
+	(fma:VDF (match_operand:VDF 1 "spu_reg_operand" "r")
+		 (match_operand:VDF 2 "spu_reg_operand" "r")
+		 (match_operand:VDF 3 "spu_reg_operand" "0")))]
   ""
   "dfma\t%0,%1,%2"
   [(set_attr "type"	"fpd")])
 
-(define_insn "fnma_<mode>"
+(define_insn "fms<mode>4"
   [(set (match_operand:VDF 0 "spu_reg_operand" "=r")
-	(neg:VDF (plus:VDF (mult:VDF (match_operand:VDF 1 "spu_reg_operand" "r")
-				     (match_operand:VDF 2 "spu_reg_operand" "r"))
-			   (match_operand:VDF 3 "spu_reg_operand" "0"))))]
-  ""
-  "dfnma\t%0,%1,%2"
-  [(set_attr "type"	"fpd")])
-
-(define_insn "fnms_<mode>"
-  [(set (match_operand:VDF 0 "spu_reg_operand" "=r")
-	(minus:VDF (match_operand:VDF 3 "spu_reg_operand" "0")
-		   (mult:VDF (match_operand:VDF 1 "spu_reg_operand" "r")
-			     (match_operand:VDF 2 "spu_reg_operand" "r"))))]
-  ""
-  "dfnms\t%0,%1,%2"
-  [(set_attr "type" "fpd")])
-
-(define_insn "fms_<mode>"
-  [(set (match_operand:VDF 0 "spu_reg_operand" "=r")
-	(minus:VDF (mult:VDF (match_operand:VDF 1 "spu_reg_operand" "r")
-			     (match_operand:VDF 2 "spu_reg_operand" "r"))
-		   (match_operand:VDF 3 "spu_reg_operand" "0")))]
+	(fma:VDF
+	  (match_operand:VDF 1 "spu_reg_operand" "r")
+	  (match_operand:VDF 2 "spu_reg_operand" "r")
+	  (neg:VDF (match_operand:VDF 3 "spu_reg_operand" "0"))))]
   ""
   "dfms\t%0,%1,%2"
   [(set_attr "type" "fpd")])
 
+(define_insn "nfma<mode>4"
+  [(set (match_operand:VDF 0 "spu_reg_operand" "=r")
+	(neg:VDF
+	  (fma:VDF (match_operand:VDF 1 "spu_reg_operand" "r")
+		   (match_operand:VDF 2 "spu_reg_operand" "r")
+		   (match_operand:VDF 3 "spu_reg_operand" "0"))))]
+  ""
+  "dfnma\t%0,%1,%2"
+  [(set_attr "type"	"fpd")])
+
+(define_insn "nfms<mode>4"
+  [(set (match_operand:VDF 0 "spu_reg_operand" "=r")
+	(neg:VDF
+	  (fma:VDF
+	    (match_operand:VDF 1 "spu_reg_operand" "r")
+	    (match_operand:VDF 2 "spu_reg_operand" "r")
+	    (neg:VDF (match_operand:VDF 3 "spu_reg_operand" "0")))))]
+  ""
+  "dfnms\t%0,%1,%2"
+  [(set_attr "type" "fpd")])
+
+;; If signed zeros are ignored, -(a * b - c) = -a * b + c.
+(define_expand "fnma<mode>4"
+  [(set (match_operand:VDF 0 "spu_reg_operand" "")
+	(neg:VDF
+	  (fma:VDF
+	    (match_operand:VDF 1 "spu_reg_operand" "")
+	    (match_operand:VDF 2 "spu_reg_operand" "")
+	    (neg:VDF (match_operand:VDF 3 "spu_reg_operand" "")))))]
+  "!HONOR_SIGNED_ZEROS (<MODE>mode)"
+  "")
+
+;; If signed zeros are ignored, -(a * b + c) = -a * b - c.
+(define_expand "fnms<mode>4"
+  [(set (match_operand:VDF 0 "register_operand" "")
+	(neg:VDF
+	  (fma:VDF
+	    (match_operand:VDF 1 "register_operand" "")
+	    (match_operand:VDF 2 "register_operand" "")
+	    (match_operand:VDF 3 "register_operand" ""))))]
+  "!HONOR_SIGNED_ZEROS (<MODE>mode)"
+  "")
 
 ;; mul highpart, used for divide by constant optimizations.
 
@@ -1845,8 +1874,8 @@
     emit_insn (gen_frest_<mode>(operands[3], operands[2]));
     emit_insn (gen_fi_<mode>(operands[3], operands[2], operands[3]));
     emit_insn (gen_mul<mode>3(operands[4], operands[1], operands[3]));
-    emit_insn (gen_fnms_<mode>(operands[0], operands[4], operands[2], operands[1]));
-    emit_insn (gen_fma_<mode>(operands[0], operands[0], operands[3], operands[4]));
+    emit_insn (gen_fnma<mode>4(operands[0], operands[4], operands[2], operands[1]));
+    emit_insn (gen_fma<mode>4(operands[0], operands[0], operands[3], operands[4]));
     DONE;
   })
 
@@ -1870,8 +1899,8 @@
     emit_insn (gen_frest_<mode> (operands[3], operands[2]));
     emit_insn (gen_fi_<mode> (operands[3], operands[2], operands[3]));
     emit_insn (gen_mul<mode>3 (operands[4], operands[1], operands[3]));
-    emit_insn (gen_fnms_<mode> (operands[5], operands[4], operands[2], operands[1]));
-    emit_insn (gen_fma_<mode> (operands[3], operands[5], operands[3], operands[4]));
+    emit_insn (gen_fnma<mode>4 (operands[5], operands[4], operands[2], operands[1]));
+    emit_insn (gen_fma<mode>4 (operands[3], operands[5], operands[3], operands[4]));
 
    /* Due to truncation error, the quotient result may be low by 1 ulp.
       Conditionally add one if the estimate is too small in magnitude.  */
@@ -1885,7 +1914,7 @@
     emit_insn (gen_add<f2i>3 (gen_lowpart (<F2I>mode, operands[4]),
 			      gen_lowpart (<F2I>mode, operands[3]),
 			      spu_const (<F2I>mode, 1)));
-    emit_insn (gen_fnms_<mode> (operands[0], operands[2], operands[4], operands[1]));
+    emit_insn (gen_fnma<mode>4 (operands[0], operands[2], operands[4], operands[1]));
     emit_insn (gen_mul<mode>3 (operands[0], operands[0], operands[5]));
     emit_insn (gen_cgt_<f2i> (gen_lowpart (<F2I>mode, operands[0]),
 			      gen_lowpart (<F2I>mode, operands[0]),
@@ -1920,8 +1949,8 @@
     emit_insn (gen_fi_sf(operands[2],operands[1],operands[2]));
     emit_insn (gen_mulsf3(operands[5],operands[2],operands[1]));
     emit_insn (gen_mulsf3(operands[3],operands[5],operands[3]));
-    emit_insn (gen_fnms_sf(operands[4],operands[2],operands[5],operands[4]));
-    emit_insn (gen_fma_sf(operands[0],operands[4],operands[3],operands[5]));
+    emit_insn (gen_fnmasf4(operands[4],operands[2],operands[5],operands[4]));
+    emit_insn (gen_fmasf4(operands[0],operands[4],operands[3],operands[5]));
     DONE;
   })
 
