@@ -2045,8 +2045,7 @@ graph.o: graph.c $(SYSTEM_H) coretypes.h $(TM_H) $(TOPLEV_H) $(DIAGNOSTIC_CORE_H
     $(CONFIG_H) $(EMIT_RTL_H)
 
 sbitmap.o: sbitmap.c sbitmap.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(BASIC_BLOCK_H)
-ebitmap.o: ebitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(EBITMAP_H) $(RTL_H) $(FLAGS_H) $(OBSTACK_H)
+ebitmap.o: ebitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(EBITMAP_H)
 sparseset.o: sparseset.c $(SYSTEM_H) sparseset.h $(CONFIG_H)
 
 COLLECT2_OBJS = collect2.o collect2-aix.o tlink.o intl.o version.o
@@ -2273,7 +2272,7 @@ ggc-zone.o: ggc-zone.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
 ggc-none.o: ggc-none.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H) \
 	$(BCONFIG_H)
 
-stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TREE_H) $(GGC_H) $(GGC_INTERNAL_H) gt-stringpool.h $(CPPLIB_H) $(SYMTAB_H)
 
 convert.o: convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
@@ -2894,7 +2893,7 @@ function.o : function.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_ERROR_
    gt-function.h $(TARGET_H) $(BASIC_BLOCK_H) $(INTEGRATE_H) $(PREDICT_H) \
    $(TREE_PASS_H) $(DF_H) $(TIMEVAR_H) vecprim.h
 statistics.o : statistics.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TREE_PASS_H) $(TREE_DUMP_H) $(HASHTAB_H) statistics.h $(TM_H) $(FUNCTION_H)
+   $(TREE_PASS_H) $(TREE_DUMP_H) $(HASHTAB_H) statistics.h $(FUNCTION_H)
 stmt.o : stmt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(FLAGS_H) $(FUNCTION_H) insn-config.h hard-reg-set.h $(EXPR_H) \
    $(LIBFUNCS_H) $(EXCEPT_H) $(RECOG_H) $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) \
@@ -3273,7 +3272,7 @@ loop-unroll.o: loop-unroll.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_H) \
 dominance.o : dominance.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    hard-reg-set.h $(BASIC_BLOCK_H) et-forest.h $(OBSTACK_H) $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) \
    $(TIMEVAR_H) graphds.h vecprim.h pointer-set.h $(BITMAP_H)
-et-forest.o : et-forest.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+et-forest.o : et-forest.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    et-forest.h alloc-pool.h $(BASIC_BLOCK_H)
 combine.o : combine.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(FLAGS_H) $(FUNCTION_H) insn-config.h $(INSN_ATTR_H) $(REGS_H) $(EXPR_H) \
@@ -3285,8 +3284,8 @@ reginfo.o : reginfo.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    insn-config.h $(RECOG_H) reload.h $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) \
    $(FUNCTION_H) output.h $(TM_P_H) $(EXPR_H) $(TIMEVAR_H) $(HASHTAB_H) \
    $(TARGET_H) $(TREE_PASS_H) $(DF_H) ira.h
-bitmap.o : bitmap.c $(CONFIG_H) $(SYSTEM_H)  coretypes.h $(TM_H) $(RTL_H) \
-   $(FLAGS_H) $(GGC_H) gt-bitmap.h $(BITMAP_H) $(OBSTACK_H) $(HASHTAB_H)
+bitmap.o : bitmap.c $(CONFIG_H) $(SYSTEM_H)  coretypes.h \
+   $(GGC_H) gt-bitmap.h $(BITMAP_H) $(OBSTACK_H) $(HASHTAB_H)
 vec.o : vec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(VEC_H) $(GGC_H) \
    $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) $(HASHTAB_H)
 reload.o : reload.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_ERROR_H) \
@@ -3439,7 +3438,7 @@ reg-stack.o : reg-stack.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    insn-config.h reload.h $(FUNCTION_H) $(TM_P_H) $(GGC_H) \
    $(BASIC_BLOCK_H) $(CFGLAYOUT_H) output.h $(TIMEVAR_H) \
    $(TREE_PASS_H) $(TARGET_H) vecprim.h $(DF_H) $(EMIT_RTL_H)
-sreal.o: sreal.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) sreal.h
+sreal.o: sreal.c $(CONFIG_H) $(SYSTEM_H) coretypes.h sreal.h
 predict.o: predict.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(FLAGS_H) insn-config.h $(BASIC_BLOCK_H) $(REGS_H) \
    hard-reg-set.h output.h $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) $(RECOG_H) $(FUNCTION_H) $(EXCEPT_H) \
