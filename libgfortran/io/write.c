@@ -1459,6 +1459,7 @@ set_fnode_default (st_parameter_dt *dtp, fnode *f, int length)
 /* Output a real number with default format.
    This is 1PG14.7E2 for REAL(4), 1PG23.15E3 for REAL(8),
    1PG28.19E4 for REAL(10) and 1PG43.34E4 for REAL(16).  */
+// FX -- FIXME: should we change the default format for __float128-real(16)?
 
 void
 write_real (st_parameter_dt *dtp, const char *source, int length)

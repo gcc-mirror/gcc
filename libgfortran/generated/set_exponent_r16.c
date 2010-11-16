@@ -33,7 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MATHFUNC(funcname) funcname ## l
 #endif
 
-#if defined (HAVE_GFC_REAL_16) && (defined(GFC_WITH_QUAD_LIB) || defined(HAVE_SCALBNL)) && (defined(GFC_WITH_QUAD_LIB) || defined(HAVE_FREXPL))
+#if defined (HAVE_GFC_REAL_16) && (defined(GFC_REAL_16_IS_FLOAT128) || defined(HAVE_SCALBNL)) && (defined(GFC_REAL_16_IS_FLOAT128) || defined(HAVE_FREXPL))
 
 extern GFC_REAL_16 set_exponent_r16 (GFC_REAL_16 s, GFC_INTEGER_4 i);
 export_proto(set_exponent_r16);

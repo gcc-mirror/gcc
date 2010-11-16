@@ -34,9 +34,10 @@ LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 	    -no-undefined -bindir "$(bindir)"
 
 toolexeclib_LTLIBRARIES = libgfortran.la
+toolexeclib_DATA = libgfortran.spec
 libgfortran_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
-libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LTLDFLAGS) -lm $(extra_ldflags_libgfortran) $(version_arg)
-libgfortran_la_DEPENDENCIES = $(version_dep)
+libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LTLDFLAGS) $(LIBQUADLIB) -lm $(extra_ldflags_libgfortran) $(version_arg)
+libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
 
 myexeclib_LTLIBRARIES = libgfortranbegin.la
 myexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
@@ -47,7 +48,7 @@ libgfortranbegin_la_LINK = $(LINK) $(libgfortranbegin_la_LDFLAGS)
 ## io.h conflicts with a system header on some platforms, so
 ## use -iquote
 AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
-	      -I$(srcdir)/$(MULTISRCTOP)../gcc/config \
+	      -I$(srcdir)/$(MULTISRCTOP)../gcc/config $(LIBQUADINCLUDE) \
 	      -I$(MULTIBUILDTOP)../../$(host_subdir)/gcc -D_GNU_SOURCE
 
 # Fortran rules for complex multiplication and division
@@ -71,6 +72,7 @@ io/open.c \
 io/read.c \
 io/size_from_kind.c \
 io/transfer.c \
+io/transfer128.c \
 io/unit.c \
 io/unix.c \
 io/write.c \
@@ -543,6 +545,7 @@ i_pow_c = \
 $(srcdir)/generated/pow_i4_i4.c \
 $(srcdir)/generated/pow_i8_i4.c \
 $(srcdir)/generated/pow_i16_i4.c \
+$(srcdir)/generated/pow_r16_i4.c \
 $(srcdir)/generated/pow_c4_i4.c \
 $(srcdir)/generated/pow_c8_i4.c \
 $(srcdir)/generated/pow_c10_i4.c \

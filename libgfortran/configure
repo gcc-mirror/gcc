@@ -597,12 +597,19 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
+ac_c_werror_flag=
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 IEEE_FLAGS
 FPU_HOST_HEADER
+LIBGFOR_BUILD_QUAD_FALSE
+LIBGFOR_BUILD_QUAD_TRUE
+LIBQUADINCLUDE
+LIBQUADLIB_DEP
+LIBQUADLIB
+LIBQUADSPEC
 extra_ldflags_libgfortran
 ac_ct_FC
 FCFLAGS
@@ -3407,6 +3414,9 @@ case ${version_specific_libs} in
 esac
 
 
+
+# Create a spec file, so that compile/link tests don't fail
+test -f libgfortran.spec || touch libgfortran.spec
 
 # Check the compiler.
 # The same as in boehm-gc and libstdc++. Have to borrow it from there.
@@ -11362,7 +11372,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11365 "configure"
+#line 11375 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11468,7 +11478,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11471 "configure"
+#line 11481 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -24286,6 +24296,131 @@ $as_echo "#define HAVE_BROKEN_POWF 1" >>confdefs.h
   fi
 
 
+# Check whether we have a __float128 type
+
+  LIBQUADSPEC=
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we have a usable __float128 type" >&5
+$as_echo_n "checking whether we have a usable __float128 type... " >&6; }
+if test "${libgfor_cv_have_float128+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* no header */
+
+int
+main ()
+{
+
+  typedef _Complex float __attribute__((mode(TC))) __complex128;
+
+  __float128 x;
+  x = __builtin_huge_valq() - 2.e1000Q;
+
+  __complex128 z1, z2;
+  z1 = x;
+  z2 = 2.Q;
+
+  z1 /= z2;
+  z1 /= 7.Q;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libgfor_cv_have_float128=yes
+else
+  libgfor_cv_have_float128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_have_float128" >&5
+$as_echo "$libgfor_cv_have_float128" >&6; }
+
+  if test "x$libgfor_cv_have_float128" = xyes; then
+
+$as_echo "#define HAVE_FLOAT128 1" >>confdefs.h
+
+
+                                ac_xsave_c_werror_flag=$ac_c_werror_flag
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether --as-needed works" >&5
+$as_echo_n "checking whether --as-needed works... " >&6; }
+if test "${libgfor_cv_have_as_needed+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+      save_LDFLAGS="$LDFLAGS"
+      LDFLAGS="$LDFLAGS -Wl,--as-needed -lm -Wl,--no-as-needed"
+      libgfor_cv_have_as_needed=no
+
+ac_c_werror_flag=yes
+      if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libgfor_cv_have_as_needed=yes
+else
+  libgfor_cv_have_as_needed=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+      LDFLAGS="$save_LDFLAGS"
+      ac_c_werror_flag=$ac_xsave_c_werror_flag
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_have_as_needed" >&5
+$as_echo "$libgfor_cv_have_as_needed" >&6; }
+
+        if test "x$libgfor_cv_have_as_needed" = xyes; then
+      LIBQUADSPEC="%{static-libgfortran:--as-needed} -lquadmath %{static-libgfortran:--no-as-needed}"
+    else
+      LIBQUADSPEC="-lquadmath"
+    fi
+    if test -f ../libquadmath/libquadmath.la; then
+      LIBQUADLIB=../libquadmath/libquadmath.la
+      LIBQUADLIB_DEP=../libquadmath/libquadmath.la
+      LIBQUADINCLUDE='-I$(srcdir)/../libquadmath'
+    else
+      LIBQUADLIB="-lquadmath"
+      LIBQUADLIB_DEP=
+      LIBQUADINCLUDE=
+    fi
+  fi
+
+
+
+
+
+
+     if test "x$libgfor_cv_have_float128" = xyes; then
+  LIBGFOR_BUILD_QUAD_TRUE=
+  LIBGFOR_BUILD_QUAD_FALSE='#'
+else
+  LIBGFOR_BUILD_QUAD_TRUE='#'
+  LIBGFOR_BUILD_QUAD_FALSE=
+fi
+
+
+
 # Check for GNU libc feenableexcept
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for feenableexcept in -lm" >&5
 $as_echo_n "checking for feenableexcept in -lm... " >&6; }
@@ -24832,8 +24967,8 @@ else
   multilib_arg=
 fi
 
-# Write our Makefile.
-ac_config_files="$ac_config_files Makefile"
+# Write our Makefile and spec file.
+ac_config_files="$ac_config_files Makefile libgfortran.spec"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -24966,6 +25101,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGFOR_USE_SYMVER_SUN_TRUE}" && test -z "${LIBGFOR_USE_SYMVER_SUN_FALSE}"; then
   as_fn_error "conditional \"LIBGFOR_USE_SYMVER_SUN\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGFOR_BUILD_QUAD_TRUE}" && test -z "${LIBGFOR_BUILD_QUAD_FALSE}"; then
+  as_fn_error "conditional \"LIBGFOR_BUILD_QUAD\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -25961,6 +26100,7 @@ do
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "gstdint.h") CONFIG_COMMANDS="$CONFIG_COMMANDS gstdint.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "libgfortran.spec") CONFIG_FILES="$CONFIG_FILES libgfortran.spec" ;;
 
   *) as_fn_error "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

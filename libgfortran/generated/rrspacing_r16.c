@@ -33,7 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MATHFUNC(funcname) funcname ## l
 #endif
 
-#if defined (HAVE_GFC_REAL_16) && (defined(GFC_WITH_QUAD_LIB) || defined(HAVE_FABSL)) && (defined(GFC_WITH_QUAD_LIB) || defined(HAVE_FREXPL))
+#if defined (HAVE_GFC_REAL_16) && (defined(GFC_REAL_16_IS_FLOAT128) || defined(HAVE_FABSL)) && (defined(GFC_REAL_16_IS_FLOAT128) || defined(HAVE_FREXPL))
 
 extern GFC_REAL_16 rrspacing_r16 (GFC_REAL_16 s, int p);
 export_proto(rrspacing_r16);
@@ -47,7 +47,7 @@ rrspacing_r16 (GFC_REAL_16 s, int p)
   if (x == 0.)
     return 0.;
   MATHFUNC(frexp) (s, &e);
-#if (defined(GFC_WITH_QUAD_LIB) || defined(HAVE_LDEXPL))
+#if (defined(GFC_REAL_16_IS_FLOAT128) || defined(HAVE_LDEXPL))
   return MATHFUNC(ldexp) (x, p - e);
 #else
   return MATHFUNC(scalbn) (x, p - e);

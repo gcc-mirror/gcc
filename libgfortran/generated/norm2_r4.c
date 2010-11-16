@@ -33,6 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined (HAVE_GFC_REAL_4) && defined (HAVE_GFC_REAL_4) && defined (HAVE_SQRTF) && defined (HAVE_FABSF)
 
 #define MATHFUNC(funcname) funcname ## f
+#define BUILTINMATHFUNC(funcname) MATHFUNC(funcname)
 
 
 extern void norm2_r4 (gfc_array_r4 * const restrict, 

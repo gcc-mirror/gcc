@@ -2696,6 +2696,7 @@ target_libraries="target-libgcc \
 		target-libstdc++-v3 \
 		target-libmudflap \
 		target-libssp \
+		target-libquadmath \
 		target-libgfortran \
 		target-boehm-gc \
 		${libgcj} \

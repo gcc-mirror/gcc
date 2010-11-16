@@ -134,18 +134,26 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
       cshift0_r8 ((gfc_array_r8 *)ret, (gfc_array_r8 *) array, shift, which);
       return;
 
-#ifdef HAVE_GFC_REAL_10
+/* FIXME: This here is a hack, which will have to be removed when
+   the array descriptor is reworked.  Currently, we don't store the
+   kind value for the type, but only the size.  Because on targets with
+   __float128, we have sizeof(logn double) == sizeof(__float128),
+   we cannot discriminate here and have to fall back to the generic
+   handling (which is suboptimal).  */
+#if !defined(GFC_REAL_16_IS_FLOAT128)
+# ifdef HAVE_GFC_REAL_10
     case GFC_DTYPE_REAL_10:
       cshift0_r10 ((gfc_array_r10 *)ret, (gfc_array_r10 *) array, shift,
 		   which);
       return;
-#endif
+# endif
 
-#ifdef HAVE_GFC_REAL_16
+# ifdef HAVE_GFC_REAL_16
     case GFC_DTYPE_REAL_16:
       cshift0_r16 ((gfc_array_r16 *)ret, (gfc_array_r16 *) array, shift,
 		   which);
       return;
+# endif
 #endif
 
     case GFC_DTYPE_COMPLEX_4:
@@ -156,18 +164,26 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
       cshift0_c8 ((gfc_array_c8 *)ret, (gfc_array_c8 *) array, shift, which);
       return;
 
-#ifdef HAVE_GFC_COMPLEX_10
+/* FIXME: This here is a hack, which will have to be removed when
+   the array descriptor is reworked.  Currently, we don't store the
+   kind value for the type, but only the size.  Because on targets with
+   __float128, we have sizeof(logn double) == sizeof(__float128),
+   we cannot discriminate here and have to fall back to the generic
+   handling (which is suboptimal).  */
+#if !defined(GFC_REAL_16_IS_FLOAT128)
+# ifdef HAVE_GFC_COMPLEX_10
     case GFC_DTYPE_COMPLEX_10:
       cshift0_c10 ((gfc_array_c10 *)ret, (gfc_array_c10 *) array, shift,
 		   which);
       return;
-#endif
+# endif
 
-#ifdef HAVE_GFC_COMPLEX_16
+# ifdef HAVE_GFC_COMPLEX_16
     case GFC_DTYPE_COMPLEX_16:
       cshift0_c16 ((gfc_array_c16 *)ret, (gfc_array_c16 *) array, shift,
 		   which);
       return;
+# endif
 #endif
 
     default:

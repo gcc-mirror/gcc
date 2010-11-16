@@ -126,6 +126,10 @@ enum iocall
   IOCALL_X_REAL_WRITE,
   IOCALL_X_COMPLEX,
   IOCALL_X_COMPLEX_WRITE,
+  IOCALL_X_REAL128,
+  IOCALL_X_REAL128_WRITE,
+  IOCALL_X_COMPLEX128,
+  IOCALL_X_COMPLEX128_WRITE,
   IOCALL_X_ARRAY,
   IOCALL_X_ARRAY_WRITE,
   IOCALL_OPEN,
@@ -363,6 +367,23 @@ gfc_build_io_library_fndecls (void)
 
   iocall[IOCALL_X_COMPLEX_WRITE] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_complex_write")), ".wR",
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+
+  /* Version for __float128.  */
+  iocall[IOCALL_X_REAL128] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_real128")), ".wW",
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+
+  iocall[IOCALL_X_REAL128_WRITE] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_real128_write")), ".wR",
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+
+  iocall[IOCALL_X_COMPLEX128] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_complex128")), ".wW",
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+
+  iocall[IOCALL_X_COMPLEX128_WRITE] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_complex128_write")), ".wR",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_ARRAY] = gfc_build_library_function_decl_with_spec (
@@ -2057,18 +2078,38 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
     case BT_REAL:
       arg2 = build_int_cst (NULL_TREE, kind);
       if (last_dt == READ)
-	function = iocall[IOCALL_X_REAL];
+	{
+	  if (gfc_real16_is_float128 && ts->kind == 16)
+	    function = iocall[IOCALL_X_REAL128];
+	  else
+	    function = iocall[IOCALL_X_REAL];
+	}
       else
-	function = iocall[IOCALL_X_REAL_WRITE];
+	{
+	  if (gfc_real16_is_float128 && ts->kind == 16)
+	    function = iocall[IOCALL_X_REAL128_WRITE];
+	  else
+	    function = iocall[IOCALL_X_REAL_WRITE];
+	}
 
       break;
 
     case BT_COMPLEX:
       arg2 = build_int_cst (NULL_TREE, kind);
       if (last_dt == READ)
-	function = iocall[IOCALL_X_COMPLEX];
+	{
+	  if (gfc_real16_is_float128 && ts->kind == 16)
+	    function = iocall[IOCALL_X_COMPLEX128];
+	  else
+	    function = iocall[IOCALL_X_COMPLEX];
+	}
       else
-	function = iocall[IOCALL_X_COMPLEX_WRITE];
+	{
+	  if (gfc_real16_is_float128 && ts->kind == 16)
+	    function = iocall[IOCALL_X_COMPLEX128_WRITE];
+	  else
+	    function = iocall[IOCALL_X_COMPLEX_WRITE];
+	}
 
       break;
 

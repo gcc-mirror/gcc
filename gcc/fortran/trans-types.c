@@ -418,8 +418,12 @@ gfc_init_kinds (void)
 	 useless.  TODO: TFmode support should be enabled once libgfortran
 	 support is done.  */
 	if (mode != TYPE_MODE (float_type_node)
-	  && (mode != TYPE_MODE (double_type_node))
-          && (mode != TYPE_MODE (long_double_type_node)))
+	    && (mode != TYPE_MODE (double_type_node))
+	    && (mode != TYPE_MODE (long_double_type_node))
+#ifdef LIBGCC2_HAS_TF_MODE
+	    && (mode != TFmode)
+#endif
+	   )
 	continue;
 
       /* Let the kind equal the precision divided by 8, rounding up.  Again,

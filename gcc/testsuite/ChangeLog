@@ -1,3 +1,15 @@
+2010-11-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32049
+	* gfortran.dg/quad_1.f90: New.
+	* lib/gcc-defs.exp (gcc-set-multilib-library-path): Use also
+	compiler arguments.
+	* lib/gfortran.exp (gfortran_link_flags): Add libquadmath to
+	library search path; call gcc-set-multilib-library-path with
+	arguments such that libgfortran.spec is found.
+	(gfortran_init): Add path for libgfortran.spec to GFORTRAN_UNDER_TEST.
+
 2010-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/46401

@@ -81,6 +81,7 @@ internal_unpack (gfc_array_char * d, const void * s)
       internal_unpack_16 ((gfc_array_i16 *) d, (const GFC_INTEGER_16 *) s);
       return;
 #endif
+
     case GFC_DTYPE_REAL_4:
       internal_unpack_r4 ((gfc_array_r4 *) d, (const GFC_REAL_4 *) s);
       return;
@@ -89,17 +90,26 @@ internal_unpack (gfc_array_char * d, const void * s)
       internal_unpack_r8 ((gfc_array_r8 *) d, (const GFC_REAL_8 *) s);
       return;
 
-#if defined(HAVE_GFC_REAL_10)
+/* FIXME: This here is a hack, which will have to be removed when
+   the array descriptor is reworked.  Currently, we don't store the
+   kind value for the type, but only the size.  Because on targets with
+   __float128, we have sizeof(logn double) == sizeof(__float128),
+   we cannot discriminate here and have to fall back to the generic
+   handling (which is suboptimal).  */
+#if !defined(GFC_REAL_16_IS_FLOAT128)
+# if defined(HAVE_GFC_REAL_10)
     case GFC_DTYPE_REAL_10:
       internal_unpack_r10 ((gfc_array_r10 *) d, (const GFC_REAL_10 *) s);
       return;
-#endif
+# endif
 
-#if defined(HAVE_GFC_REAL_16)
+# if defined(HAVE_GFC_REAL_16)
     case GFC_DTYPE_REAL_16:
       internal_unpack_r16 ((gfc_array_r16 *) d, (const GFC_REAL_16 *) s);
       return;
+# endif
 #endif
+
     case GFC_DTYPE_COMPLEX_4:
       internal_unpack_c4 ((gfc_array_c4 *)d, (const GFC_COMPLEX_4 *)s);
       return;
@@ -108,17 +118,26 @@ internal_unpack (gfc_array_char * d, const void * s)
       internal_unpack_c8 ((gfc_array_c8 *)d, (const GFC_COMPLEX_8 *)s);
       return;
 
-#if defined(HAVE_GFC_COMPLEX_10)
+/* FIXME: This here is a hack, which will have to be removed when
+   the array descriptor is reworked.  Currently, we don't store the
+   kind value for the type, but only the size.  Because on targets with
+   __float128, we have sizeof(logn double) == sizeof(__float128),
+   we cannot discriminate here and have to fall back to the generic
+   handling (which is suboptimal).  */
+#if !defined(GFC_REAL_16_IS_FLOAT128)
+# if defined(HAVE_GFC_COMPLEX_10)
     case GFC_DTYPE_COMPLEX_10:
       internal_unpack_c10 ((gfc_array_c10 *) d, (const GFC_COMPLEX_10 *) s);
       return;
-#endif
+# endif
 
-#if defined(HAVE_GFC_COMPLEX_16)
+# if defined(HAVE_GFC_COMPLEX_16)
     case GFC_DTYPE_COMPLEX_16:
       internal_unpack_c16 ((gfc_array_c16 *) d, (const GFC_COMPLEX_16 *) s);
       return;
+# endif
 #endif
+
     case GFC_DTYPE_DERIVED_2:
       if (GFC_UNALIGNED_2(d->data) || GFC_UNALIGNED_2(s))
 	break;
