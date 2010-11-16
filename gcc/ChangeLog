@@ -1,3 +1,39 @@
+2010-11-16  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR target/44762
+	* config/score/score3.c (score3_return_in_memory): Constify arguments.
+	(score3_in_small_data_p, score3_function_value): Likewise.
+	(score3_trampoline_init): Use LCT_NORMAL.
+	(score3_print_operand): Initialize code as UNKNOWN.
+	* config/score/predicates.md (score_load_multiple_operation):
+	Remove unused variable.
+	(score_store_multiple_operation): Likewise.
+	* config/score/score7.c (score7_return_in_memory): Constify arguments.
+        (score7_in_small_data_p, score7_function_value): Likewise.
+	(score7_trampoline_init): Use LCT_NORMAL.
+	(score7_print_operand): Initialize code as UNKNOWN.
+	* config/score/score3.h (score3_return_in_memory): Update prototype.
+	(score3_in_small_data_p, score3_function_value): Likewise.
+	* config/score/score-protos.h (score_function_value): Likewise.
+	* config/score/score7.h (score7_return_in_memory): Update prototype.
+	(score7_in_small_data_p, score7_function_value): Likewise.
+	* config/score/score.c (TARGET_PROMOTE_PROTOTYPES): Constify.
+	(score_return_in_memory, score_pass_by_reference): Constify arguments.
+	(score_output_mi_thunk, score_function_prologue): Don't return a value.
+	(score_function_epilogue, score_in_small_data_p): Likewise.
+	(score_option_override, score_asm_trampoline_template): Likewise.
+	(score_trampoline_init, score_print_operand): Likewise.
+	(score_print_operand_address, score_prologue): Likewise.
+	(score_epilogue, score_call, score_call_value): Likewise.
+	(score_movsicc, score_movdi, score_zero_extract_andi): Likewise.
+	(score_function_arg_advance): Likewise. Make static.
+	(score_asm_file_end): Mark parameter value with ATTRIBUTE_UNUSED.
+	(score_function_arg, score_legitimate_address_p): Make static.
+	(score_function_value): Mark parameter func with ATTRIBUTE_UNUSED.
+	* config/score/score.h (REGNO_REG_CLASS): Cast value to enum reg_class.
+	* config/score/score-conv.h (UIMM_IN_RANGE, SIMM_IN_RANGE):
+	Allow (W) == HOST_BITS_PER_WIDE_INT.
+
 2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/arc/arc.c: Delete pasto.

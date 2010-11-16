@@ -420,7 +420,7 @@ enum reg_class
    register REGNO.  In general there is more that one such class;
    choose a class which is "minimal", meaning that no smaller class
    also contains the register.  */
-#define REGNO_REG_CLASS(REGNO)         score_reg_class (REGNO)
+#define REGNO_REG_CLASS(REGNO) (enum reg_class) score_reg_class (REGNO)
 
 /* The following macro defines cover classes for Integrated Register
    Allocator.  Cover classes is a set of non-intersected register
