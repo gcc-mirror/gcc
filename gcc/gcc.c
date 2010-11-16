@@ -983,23 +983,24 @@ static const struct compiler default_compilers[] =
 
 static const int n_default_compilers = ARRAY_SIZE (default_compilers) - 1;
 
+typedef char *char_p; /* For DEF_VEC_P.  */
+DEF_VEC_P(char_p);
+DEF_VEC_ALLOC_P(char_p,heap);
+
 /* A vector of options to give to the linker.
    These options are accumulated by %x,
    and substituted into the linker command with %X.  */
-static int n_linker_options;
-static char **linker_options;
+static VEC(char_p,heap) *linker_options;
 
 /* A vector of options to give to the assembler.
    These options are accumulated by -Wa,
    and substituted into the assembler command with %Y.  */
-static int n_assembler_options;
-static char **assembler_options;
+static VEC(char_p,heap) *assembler_options;
 
 /* A vector of options to give to the preprocessor.
    These options are accumulated by -Wp,
    and substituted into the preprocessor command with %Z.  */
-static int n_preprocessor_options;
-static char **preprocessor_options;
+static VEC(char_p,heap) *preprocessor_options;
 
 static char *
 skip_whitespace (char *p)
@@ -2975,43 +2976,20 @@ display_help (void)
 static void
 add_preprocessor_option (const char *option, int len)
 {
-  n_preprocessor_options++;
-
-  if (! preprocessor_options)
-    preprocessor_options = XNEWVEC (char *, n_preprocessor_options);
-  else
-    preprocessor_options = XRESIZEVEC (char *, preprocessor_options,
-				       n_preprocessor_options);
-
-  preprocessor_options [n_preprocessor_options - 1] =
-    save_string (option, len);
+  VEC_safe_push (char_p, heap, preprocessor_options,
+		 save_string (option, len));
 }
 
 static void
 add_assembler_option (const char *option, int len)
 {
-  n_assembler_options++;
-
-  if (! assembler_options)
-    assembler_options = XNEWVEC (char *, n_assembler_options);
-  else
-    assembler_options = XRESIZEVEC (char *, assembler_options,
-				    n_assembler_options);
-
-  assembler_options [n_assembler_options - 1] = save_string (option, len);
+  VEC_safe_push (char_p, heap, assembler_options, save_string (option, len));
 }
 
 static void
 add_linker_option (const char *option, int len)
 {
-  n_linker_options++;
-
-  if (! linker_options)
-    linker_options = XNEWVEC (char *, n_linker_options);
-  else
-    linker_options = XRESIZEVEC (char *, linker_options, n_linker_options);
-
-  linker_options [n_linker_options - 1] = save_string (option, len);
+  VEC_safe_push (char_p, heap, linker_options, save_string (option, len));
 }
 
 /* Allocate space for an input file in infiles.  */
@@ -4404,6 +4382,22 @@ compile_input_file_p (struct infile *infile)
   return false;
 }
 
+/* Process each member of VEC as a spec.  */
+
+static void
+do_specs_vec (VEC(char_p,heap) *vec)
+{
+  unsigned ix;
+  char *opt;
+
+  FOR_EACH_VEC_ELT (char_p, vec, ix, opt)
+    {
+      do_spec_1 (opt, 1, NULL);
+      /* Make each accumulated option a separate argument.  */
+      do_spec_1 (" ", 0, NULL);
+    }
+}
+
 /* Process the sub-spec SPEC as a portion of a larger spec.
    This is like processing a whole spec except that we do
    not initialize at the beginning and we do not supply a
@@ -4965,6 +4959,8 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	    {
 	      const char *p1 = p;
 	      char *string;
+	      char *opt;
+	      unsigned ix;
 
 	      /* Skip past the option value and make a copy.  */
 	      if (*p != '{')
@@ -4974,8 +4970,8 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      string = save_string (p1 + 1, p - p1 - 2);
 
 	      /* See if we already recorded this option.  */
-	      for (i = 0; i < n_linker_options; i++)
-		if (! strcmp (string, linker_options[i]))
+	      FOR_EACH_VEC_ELT (char_p, linker_options, ix, opt)
+		if (! strcmp (string, opt))
 		  {
 		    free (string);
 		    return 0;
@@ -4988,32 +4984,17 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
 	  /* Dump out the options accumulated previously using %x.  */
 	  case 'X':
-	    for (i = 0; i < n_linker_options; i++)
-	      {
-		do_spec_1 (linker_options[i], 1, NULL);
-		/* Make each accumulated option a separate argument.  */
-		do_spec_1 (" ", 0, NULL);
-	      }
+	    do_specs_vec (linker_options);
 	    break;
 
 	  /* Dump out the options accumulated previously using -Wa,.  */
 	  case 'Y':
-	    for (i = 0; i < n_assembler_options; i++)
-	      {
-		do_spec_1 (assembler_options[i], 1, NULL);
-		/* Make each accumulated option a separate argument.  */
-		do_spec_1 (" ", 0, NULL);
-	      }
+	    do_specs_vec (assembler_options);
 	    break;
 
 	  /* Dump out the options accumulated previously using -Wp,.  */
 	  case 'Z':
-	    for (i = 0; i < n_preprocessor_options; i++)
-	      {
-		do_spec_1 (preprocessor_options[i], 1, NULL);
-		/* Make each accumulated option a separate argument.  */
-		do_spec_1 (" ", 0, NULL);
-	      }
+	    do_specs_vec (preprocessor_options);
 	    break;
 
 	    /* Here are digits and numbers that just process
