@@ -1270,6 +1270,35 @@ mn10300_store_multiple_operation (rtx op,
   return mask;
 }
 
+/* Implement TARGET_PREFERRED_RELOAD_CLASS.  */
+
+static reg_class_t
+mn10300_preferred_reload_class (rtx x, reg_class_t rclass)
+{
+  if (x == stack_pointer_rtx && rclass != SP_REGS)
+     return ADDRESS_OR_EXTENDED_REGS;
+  else if (MEM_P (x)
+	   || (REG_P (x) 
+	       && !HARD_REGISTER_P (x))
+	   || (GET_CODE (x) == SUBREG
+	       && REG_P (SUBREG_REG (x))
+	       && !HARD_REGISTER_P (SUBREG_REG (x))))
+    return LIMIT_RELOAD_CLASS (GET_MODE (x), rclass);
+  else
+    return rclass;
+}
+
+/* Implement TARGET_PREFERRED_OUTPUT_RELOAD_CLASS.  */
+
+static reg_class_t
+mn10300_preferred_output_reload_class (rtx x, reg_class_t rclass)
+{
+  if (x == stack_pointer_rtx && rclass != SP_REGS)
+    return ADDRESS_OR_EXTENDED_REGS;
+
+  return rclass;
+}
+
 /* What (if any) secondary registers are needed to move IN with mode
    MODE into a register in register class RCLASS.
 
@@ -2459,6 +2488,11 @@ mn10300_adjust_sched_cost (rtx insn, rtx link, rtx dep, int cost)
 
 #undef  TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	mn10300_legitimate_address_p
+
+#undef  TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS mn10300_preferred_reload_class
+#undef  TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
+#define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS mn10300_preferred_output_reload_class
 
 #undef  TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE mn10300_asm_trampoline_template

@@ -1,3 +1,12 @@
+2010-11-16  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mn10300/mn10300.h (PREFERRED_RELOAD_CLASS,
+	PREFERRED_OUTPUT_RELOAD_CLASS): Remove.
+	* config/mn10300/mn10300.c (TARGET_PREFERRED_RELOAD_CLASS,
+	TARGET_PREFERRED_OUTPUT_RELOAD_CLASS): Define.
+	(mn10300_preferred_reload_class,
+	mn10300_preferred_output_reload_class): New functions.
+
 2010-11-16  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gensupport.c (MNEMONIC_ATTR_NAME, MNEMONIC_HTAB_SIZE): New
