@@ -26,7 +26,6 @@ License along with libiberty; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "et-forest.h"
 #include "alloc-pool.h"
 
