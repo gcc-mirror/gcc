@@ -3134,14 +3134,92 @@ peep2_reinit_state (regset live)
 
 /* While scanning basic block BB, we found a match of length MATCH_LEN,
    starting at INSN.  Perform the replacement, removing the old insns and
-   replacing them with ATTEMPT.  Returns the last insn emitted.  */
+   replacing them with ATTEMPT.  Returns the last insn emitted, or NULL
+   if the replacement is rejected.  */
 
 static rtx
 peep2_attempt (basic_block bb, rtx insn, int match_len, rtx attempt)
 {
   int i;
   rtx last, note, before_try, x;
+  rtx old_insn, new_insn;
   bool was_call = false;
+
+  /* If we are splittind an RTX_FRAME_RELATED_P insn, do not allow it to
+     match more than one insn, or to be split into more than one insn.  */
+  old_insn = peep2_insn_data[peep2_current].insn;
+  if (RTX_FRAME_RELATED_P (old_insn))
+    {
+      bool any_note = false;
+
+      if (match_len != 0)
+	return NULL;
+
+      /* Look for one "active" insn.  I.e. ignore any "clobber" insns that
+	 may be in the stream for the purpose of register allocation.  */
+      if (active_insn_p (attempt))
+	new_insn = attempt;
+      else
+	new_insn = next_active_insn (attempt);
+      if (next_active_insn (new_insn))
+	return NULL;
+
+      /* We have a 1-1 replacement.  Copy over any frame-related info.  */
+      RTX_FRAME_RELATED_P (new_insn) = 1;
+
+      /* Allow the backend to fill in a note during the split.  */
+      for (note = REG_NOTES (new_insn); note ; note = XEXP (note, 1))
+	switch (REG_NOTE_KIND (note))
+	  {
+	  case REG_FRAME_RELATED_EXPR:
+	  case REG_CFA_DEF_CFA:
+	  case REG_CFA_ADJUST_CFA:
+	  case REG_CFA_OFFSET:
+	  case REG_CFA_REGISTER:
+	  case REG_CFA_EXPRESSION:
+	  case REG_CFA_RESTORE:
+	  case REG_CFA_SET_VDRAP:
+	    any_note = true;
+	    break;
+	  default:
+	    break;
+	  }
+
+      /* If the backend didn't supply a note, copy one over.  */
+      if (!any_note)
+        for (note = REG_NOTES (old_insn); note ; note = XEXP (note, 1))
+	  switch (REG_NOTE_KIND (note))
+	    {
+	    case REG_FRAME_RELATED_EXPR:
+	    case REG_CFA_DEF_CFA:
+	    case REG_CFA_ADJUST_CFA:
+	    case REG_CFA_OFFSET:
+	    case REG_CFA_REGISTER:
+	    case REG_CFA_EXPRESSION:
+	    case REG_CFA_RESTORE:
+	    case REG_CFA_SET_VDRAP:
+	      add_reg_note (new_insn, REG_NOTE_KIND (note), XEXP (note, 0));
+	      any_note = true;
+	      break;
+	    default:
+	      break;
+	    }
+
+      /* If there still isn't a note, make sure the unwind info sees the
+	 same expression as before the split.  */
+      if (!any_note)
+	{
+	  rtx old_set, new_set;
+
+	  /* The old insn had better have been simple, or annotated.  */
+	  old_set = single_set (old_insn);
+	  gcc_assert (old_set != NULL);
+
+	  new_set = single_set (new_insn);
+	  if (!new_set || !rtx_equal_p (new_set, old_set))
+	    add_reg_note (new_insn, REG_FRAME_RELATED_EXPR, old_set);
+	}
+    }
 
   /* If we are splitting a CALL_INSN, look for the CALL_INSN
      in SEQ and copy our CALL_INSN_FUNCTION_USAGE and other
@@ -3149,7 +3227,6 @@ peep2_attempt (basic_block bb, rtx insn, int match_len, rtx attempt)
   for (i = 0; i <= match_len; ++i)
     {
       int j;
-      rtx old_insn, new_insn, note;
 
       j = peep2_buf_position (peep2_current + i);
       old_insn = peep2_insn_data[j].insn;
@@ -3322,18 +3399,14 @@ peep2_fill_buffer (basic_block bb, rtx insn, regset live)
   if (peep2_current_count == MAX_INSNS_PER_PEEP2)
     return false;
 
-  /* If an insn has RTX_FRAME_RELATED_P set, peephole substitution would lose
-     the REG_FRAME_RELATED_EXPR that is attached.  */
+  /* If an insn has RTX_FRAME_RELATED_P set, do not allow it to be matched with
+     any other pattern, lest it change the semantics of the frame info.  */
   if (RTX_FRAME_RELATED_P (insn))
     {
       /* Let the buffer drain first.  */
       if (peep2_current_count > 0)
 	return false;
-      /* Step over the insn then return true without adding the insn
-	 to the buffer; this will cause us to process the next
-	 insn.  */
-      df_simulate_one_insn_forwards (bb, insn, live);
-      return true;
+      /* Now the insn will be the only thing in the buffer.  */
     }
 
   pos = peep2_buf_position (peep2_current + peep2_current_count);
@@ -3412,16 +3485,17 @@ peephole2_optimize (void)
 	  attempt = peephole2_insns (PATTERN (head), head, &match_len);
 	  if (attempt != NULL)
 	    {
-	      rtx last;
-	      last = peep2_attempt (bb, head, match_len, attempt);
-	      peep2_update_life (bb, match_len, last, PREV_INSN (attempt));
+	      rtx last = peep2_attempt (bb, head, match_len, attempt);
+	      if (last)
+		{
+		  peep2_update_life (bb, match_len, last, PREV_INSN (attempt));
+		  continue;
+		}
 	    }
-	  else
-	    {
-	      /* If no match, advance the buffer by one insn.  */
-	      peep2_current = peep2_buf_position (peep2_current + 1);
-	      peep2_current_count--;
-	    }
+
+	  /* No match: advance the buffer by one insn.  */
+	  peep2_current = peep2_buf_position (peep2_current + 1);
+	  peep2_current_count--;
 	}
     }
 
