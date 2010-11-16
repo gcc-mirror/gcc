@@ -1,5 +1,9 @@
 2010-11-16  Andreas Schwab  <schwab@linux-m68k.org>
 
+	PR rtl-optimization/46395
+	* postreload.c (reload_combine): Invalidate register use
+	information on all control flow insns.
+
 	* config/m68k/m68k.c (m68k_delegitimize_address): Also expect
 	LABEL_REF in UNSPEC operand.
 
