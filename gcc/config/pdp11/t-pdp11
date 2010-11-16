@@ -42,7 +42,3 @@ MULTILIB_OPTIONS = msoft-float
 # We could say "-Werror -Wno-error=type-limits", alas, not all supported
 # gcc bootstrap compilers support the latter option.
 dwarf2out.o-warn = -Wno-error
-
-# Likewise, java/constants.c:build_constants_constructor has a negative shift
-# count (in never-executed code) due to the small POINTER_SIZE.
-java/constants.o-warn = -Wno-error
