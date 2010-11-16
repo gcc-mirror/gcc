@@ -1,3 +1,8 @@
+2010-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/46490
+	* combine.c (expand_compound_operation): Fix thinko.
+
 2010-11-16  Richard Henderson  <rth@redhat.com>
 
 	PR target/46470
