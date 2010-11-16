@@ -1,3 +1,9 @@
+2010-11-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h (NM_FLAGS): Define.
+	* doc/tm.texi.in (Macros for Initialization, NM_FLAGS): Document.
+	* doc/tm.texi: Update.
+
 2010-11-16  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.md (maddsf4): Rename to fmasf4 and use fma

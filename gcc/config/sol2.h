@@ -192,6 +192,10 @@ along with GCC; see the file COPYING3.  If not see
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY 0
 
+/* collect2.c can only parse GNU nm -n output.  Solaris nm needs -png to
+   produce the same format.  */
+#define NM_FLAGS "-png"
+
 #define STDC_0_IN_SYSTEM_HEADERS 1
 
 /*
