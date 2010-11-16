@@ -1,3 +1,8 @@
+2010-11-16  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR preprocessor/17349
+	* gcc.dg/cpp/cmdlne-C3.c: New.
+
 2010-11-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44545

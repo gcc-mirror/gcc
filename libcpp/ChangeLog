@@ -1,3 +1,9 @@
+2010-11-16  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR preprocessor/17349
+	* lex.c (save_comment): Handle in argument passing c++
+	comments special.
+
 2010-11-02  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Use AC_SYS_LARGEFILE.
