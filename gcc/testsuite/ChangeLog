@@ -1,3 +1,7 @@
+2010-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/rx/pack.c: New test.
+
 2010-11-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 

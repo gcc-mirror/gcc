@@ -1,3 +1,21 @@
+2010-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/46315
+	* rtl.h (remove_reg_equal_equiv_notes_for_regno): Declare.
+	* rtlanal.c (remove_reg_equal_equiv_notes_for_regno): New function
+	extracted from...
+	* dce.c (delete_corresponding_reg_eq_notes): ...here.  Rename into...
+	(remove_reg_equal_equiv_notes_for_defs): ...this.
+	(delete_unmarked_insns): Adjust to above renaming.
+	* ifcvt.c (dead_or_predicable): Remove REG_EQUAL and REG_EQUIV notes
+	referring to registers set in the insns being moved, if any.
+
+	* df-core.c (df_ref_dump): New function extracted from...
+	(df_refs_chain_dump): ...here.  Call it.
+	(df_regs_chain_dump): Likewise.
+	* df-problems.c (df_chain_dump): Print 'e' for uses in notes.
+	* df-scan.c (df_scan_start_dump): Likewise.  Fix long line.
+
 2010-11-16  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR rtl-optimization/46395
