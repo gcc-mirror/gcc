@@ -2306,7 +2306,8 @@ rx_file_start (void)
 static bool
 rx_is_ms_bitfield_layout (const_tree record_type ATTRIBUTE_UNUSED)
 {
-  return TRUE;
+  /* The packed attribute overrides the MS behaviour.  */
+  return ! TYPE_PACKED (record_type);
 }
 
 /* Try to generate code for the "isnv" pattern which inserts bits
