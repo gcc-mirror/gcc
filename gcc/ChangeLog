@@ -1,3 +1,11 @@
+2010-11-16  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gensupport.c (MNEMONIC_ATTR_NAME, MNEMONIC_HTAB_SIZE): New
+	macros.
+	(htab_eq_string, add_mnemonic_string, gen_mnemonic_setattr)
+	(mnemonic_htab_callback, gen_mnemonic_attr): New functions.
+	(init_rtx_reader_args_cb): Invoke gen_mnemonic_attr.
+
 2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* builtins.c (std_gimplify_va_arg_expr): Use

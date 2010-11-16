@@ -60,6 +60,9 @@ struct queue_elem
   struct queue_elem *split;
 };
 
+#define MNEMONIC_ATTR_NAME "mnemonic"
+#define MNEMONIC_HTAB_SIZE 1024
+
 static struct queue_elem *define_attr_queue;
 static struct queue_elem **define_attr_tail = &define_attr_queue;
 static struct queue_elem *define_pred_queue;
@@ -782,6 +785,218 @@ rtx_handle_directive (int lineno, const char *rtx_name)
       process_rtx (XEXP (x, 0), lineno);
 }
 
+/* Comparison function for the mnemonic hash table.  */
+
+static int
+htab_eq_string (const void *s1, const void *s2)
+{
+  return strcmp ((const char*)s1, (const char*)s2) == 0;
+}
+
+/* Add mnemonic STR with length LEN to the mnemonic hash table
+   MNEMONIC_HTAB.  A trailing zero end character is appendend to STR
+   and a permanent heap copy of STR is created.  */
+
+static void
+add_mnemonic_string (htab_t mnemonic_htab, const char *str, int len)
+{
+  char *new_str;
+  void **slot;
+  char *str_zero = (char*)alloca (len + 1);
+
+  memcpy (str_zero, str, len);
+  str_zero[len] = '\0';
+
+  slot = htab_find_slot (mnemonic_htab, str_zero, INSERT);
+
+  if (*slot)
+    return;
+
+  /* Not found; create a permanent copy and add it to the hash table.  */
+  new_str = XNEWVAR (char, len + 1);
+  memcpy (new_str, str_zero, len + 1);
+  *slot = new_str;
+}
+
+/* Scan INSN for mnemonic strings and add them to the mnemonic hash
+   table in MNEMONIC_HTAB.
+
+   The mnemonics cannot be found if they are emitted using C code.
+
+   If a mnemonic string contains ';' or a newline the string assumed
+   to consist of more than a single instruction.  The attribute value
+   will then be set to the user defined default value.  */
+
+static void
+gen_mnemonic_setattr (htab_t mnemonic_htab, rtx insn)
+{
+  const char *template_code, *cp;
+  int i;
+  int vec_len;
+  rtx set_attr;
+  char *attr_name;
+  rtvec new_vec;
+
+  template_code = XTMPL (insn, 3);
+
+  /* Skip patterns which use C code to emit the template.  */
+  if (template_code[0] == '*')
+    return;
+
+  if (template_code[0] == '@')
+    cp = &template_code[1];
+  else
+    cp = &template_code[0];
+
+  for (i = 0; *cp; )
+    {
+      const char *ep, *sp;
+      int size = 0;
+
+      while (ISSPACE (*cp))
+	cp++;
+
+      for (ep = sp = cp; !IS_VSPACE (*ep) && *ep != '\0'; ++ep)
+	if (!ISSPACE (*ep))
+	  sp = ep + 1;
+
+      if (i > 0)
+	obstack_1grow (&string_obstack, ',');
+
+      while (cp < sp && ((*cp >= '0' && *cp <= '9')
+			 || (*cp >= 'a' && *cp <= 'z')))
+
+	{
+	  obstack_1grow (&string_obstack, *cp);
+	  cp++;
+	  size++;
+	}
+
+      while (cp < sp)
+	{
+	  if (*cp == ';' || (*cp == '\\' && cp[1] == 'n'))
+	    {
+	      /* Don't set a value if there are more than one
+		 instruction in the string.  */
+	      obstack_next_free (&string_obstack) =
+		obstack_next_free (&string_obstack) - size;
+	      size = 0;
+
+	      cp = sp;
+	      break;
+	    }
+	  cp++;
+	}
+      if (size == 0)
+	obstack_1grow (&string_obstack, '*');
+      else
+	add_mnemonic_string (mnemonic_htab,
+			     obstack_next_free (&string_obstack) - size,
+			     size);
+      i++;
+    }
+
+  /* An insn definition might emit an empty string.  */
+  if (obstack_object_size (&string_obstack) == 0)
+    return;
+
+  obstack_1grow (&string_obstack, '\0');
+
+  set_attr = rtx_alloc (SET_ATTR);
+  XSTR (set_attr, 1) = XOBFINISH (&string_obstack, char *);
+  attr_name = XNEWVAR (char, strlen (MNEMONIC_ATTR_NAME) + 1);
+  strcpy (attr_name, MNEMONIC_ATTR_NAME);
+  XSTR (set_attr, 0) = attr_name;
+
+  if (!XVEC (insn, 4))
+    vec_len = 0;
+  else
+    vec_len = XVECLEN (insn, 4);
+
+  new_vec = rtvec_alloc (vec_len + 1);
+  for (i = 0; i < vec_len; i++)
+    RTVEC_ELT (new_vec, i) = XVECEXP (insn, 4, i);
+  RTVEC_ELT (new_vec, vec_len) = set_attr;
+  XVEC (insn, 4) = new_vec;
+}
+
+/* This function is called for the elements in the mnemonic hashtable
+   and generates a comma separated list of the mnemonics.  */
+
+static int
+mnemonic_htab_callback (void **slot, void *info ATTRIBUTE_UNUSED)
+{
+  obstack_grow (&string_obstack, (char*)*slot, strlen ((char*)*slot));
+  obstack_1grow (&string_obstack, ',');
+  return 1;
+}
+
+/* Generate (set_attr "mnemonic" "..") RTXs and append them to every
+   insn definition in case the back end requests it by defining the
+   mnemonic attribute.  The values for the attribute will be extracted
+   from the output patterns of the insn definitions as far as
+   possible.  */
+
+static void
+gen_mnemonic_attr (void)
+{
+  struct queue_elem *elem;
+  rtx mnemonic_attr = NULL;
+  htab_t mnemonic_htab;
+  const char *str, *p;
+  int i;
+
+  if (have_error)
+    return;
+
+  /* Look for the DEFINE_ATTR for `mnemonic'.  */
+  for (elem = define_attr_queue; elem != *define_attr_tail; elem = elem->next)
+    if (GET_CODE (elem->data) == DEFINE_ATTR
+	&& strcmp (XSTR (elem->data, 0), MNEMONIC_ATTR_NAME) == 0)
+      {
+	mnemonic_attr = elem->data;
+	break;
+      }
+
+  /* A (define_attr "mnemonic" "...") indicates that the back-end
+     wants a mnemonic attribute to be generated.  */
+  if (!mnemonic_attr)
+    return;
+
+  mnemonic_htab = htab_create_alloc (MNEMONIC_HTAB_SIZE, htab_hash_string,
+				     htab_eq_string, 0, xcalloc, free);
+
+  for (elem = define_insn_queue; elem; elem = elem->next)
+    {
+      rtx insn = elem->data;
+      bool found = false;
+
+      /* Check if the insn definition already has
+	 (set_attr "mnemonic" ...).  */
+      if (XVEC (insn, 4))
+ 	for (i = 0; i < XVECLEN (insn, 4); i++)
+	  if (strcmp (XSTR (XVECEXP (insn, 4, i), 0), MNEMONIC_ATTR_NAME) == 0)
+	    {
+	      found = true;
+	      break;
+	    }
+
+      if (!found)
+	gen_mnemonic_setattr (mnemonic_htab, insn);
+    }
+
+  /* Add the user defined values to the hash table.  */
+  str = XSTR (mnemonic_attr, 1);
+  while ((p = scan_comma_elt (&str)) != NULL)
+    add_mnemonic_string (mnemonic_htab, p, str - p);
+
+  htab_traverse (mnemonic_htab, mnemonic_htab_callback, NULL);
+
+  /* Replace the last ',' with the zero end character.  */
+  *((char *)obstack_next_free (&string_obstack) - 1) = '\0';
+  XSTR (mnemonic_attr, 1) = XOBFINISH (&string_obstack, char *);
+}
+
 /* The entry point for initializing the reader.  */
 
 bool
@@ -799,6 +1014,9 @@ init_rtx_reader_args_cb (int argc, char **argv,
   /* Process define_cond_exec patterns.  */
   if (define_cond_exec_queue != NULL)
     process_define_cond_exec ();
+
+  if (define_attr_queue != NULL)
+    gen_mnemonic_attr ();
 
   return !have_error;
 }
