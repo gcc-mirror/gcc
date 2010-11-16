@@ -3274,21 +3274,21 @@
    (set_attr "type" "fsmul")])
 
 ;; Multiplication with addition/subtraction
-(define_insn "*muladdsf4"
+(define_insn "fmasf4"
   [(set (match_operand:SF 0 "fpr_operand" "=f")
-	(plus:SF (mult:SF (match_operand:SF 1 "fpr_operand" "%f")
-			  (match_operand:SF 2 "fpr_operand" "f"))
-		 (match_operand:SF 3 "fpr_operand" "0")))]
+	(fma:SF (match_operand:SF 1 "fpr_operand" "f")
+		(match_operand:SF 2 "fpr_operand" "f")
+		(match_operand:SF 3 "fpr_operand" "0")))]
   "TARGET_HARD_FLOAT && TARGET_MULADD"
   "fmadds %1,%2,%0"
   [(set_attr "length" "4")
    (set_attr "type" "fsmadd")])
 
-(define_insn "*mulsubsf4"
+(define_insn "fmssf4"
   [(set (match_operand:SF 0 "fpr_operand" "=f")
-	(minus:SF (mult:SF (match_operand:SF 1 "fpr_operand" "%f")
-			   (match_operand:SF 2 "fpr_operand" "f"))
-		  (match_operand:SF 3 "fpr_operand" "0")))]
+	(fma:SF (match_operand:SF 1 "fpr_operand" "f")
+		(match_operand:SF 2 "fpr_operand" "f")
+		(neg:SF (match_operand:SF 3 "fpr_operand" "0"))))]
   "TARGET_HARD_FLOAT && TARGET_MULADD"
   "fmsubs %1,%2,%0"
   [(set_attr "length" "4")

@@ -1,3 +1,8 @@
+2010-11-15  Richard Henderson  <rth@redhat.com>
+
+	* config/frv/frv.md (fmasf4, fmssf4): Rename from *muladdsf4
+	and *mulsubsf4 respectively.  Use fma rtx_code.
+
 2010-11-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c: Include "vec.h".
