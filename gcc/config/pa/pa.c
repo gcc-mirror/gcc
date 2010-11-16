@@ -9613,7 +9613,7 @@ pa_function_arg_boundary (enum machine_mode mode, const_tree type)
 		     ? (integer_zerop (size)
 			|| !TREE_CONSTANT (size)
 			|| int_size_in_bytes (type) <= UNITS_PER_WORD)
-		     : GET_MODE_SIZE (mode));
+		     : GET_MODE_SIZE (mode) <= UNITS_PER_WORD);
 
   return singleword ? PARM_BOUNDARY : MAX_PARM_BOUNDARY;
 }
