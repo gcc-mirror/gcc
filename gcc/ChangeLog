@@ -1,3 +1,9 @@
+2010-11-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/45172
+	* tree-eh.c (cleanup_empty_eh_unsplit): Avoid creating duplicate
+	edges.
+
 2010-11-16  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.c (rx_is_ms_bitfield_layout): Return false if the
