@@ -422,27 +422,6 @@ enum reg_class
 #define REG_OK_FOR_INDEX_P(X) \
   (REGNO_OK_FOR_INDEX_P (REGNO (X)))
 
-/* Given an rtx X being reloaded into a reg required to be
-   in class CLASS, return the class of reg to actually use.
-   In general this is just CLASS; but on some machines
-   in some cases it is preferable to use a more restrictive class.  */
-
-#define PREFERRED_RELOAD_CLASS(X,CLASS)				\
-  ((X) == stack_pointer_rtx && (CLASS) != SP_REGS		\
-   ? ADDRESS_OR_EXTENDED_REGS					\
-   : (MEM_P (X)							\
-      || (REG_P (X)						\
-	  && REGNO (X) >= FIRST_PSEUDO_REGISTER)		\
-      || (GET_CODE (X) == SUBREG				\
-	  && REG_P (SUBREG_REG (X))				\
-	  && REGNO (SUBREG_REG (X)) >= FIRST_PSEUDO_REGISTER)	\
-      ? LIMIT_RELOAD_CLASS (GET_MODE (X), CLASS)		\
-      : (CLASS)))
-
-#define PREFERRED_OUTPUT_RELOAD_CLASS(X,CLASS) \
-  (X == stack_pointer_rtx && CLASS != SP_REGS \
-   ? ADDRESS_OR_EXTENDED_REGS : CLASS)
-
 #define LIMIT_RELOAD_CLASS(MODE, CLASS) \
   (!TARGET_AM33 && (MODE == QImode || MODE == HImode) ? DATA_REGS : CLASS)
 
