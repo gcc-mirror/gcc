@@ -1,5 +1,11 @@
 2010-11-16  Richard Henderson  <rth@redhat.com>
 
+	* config/pa/pa.md (fmadf4): Rename from unnamed; use FMA.
+	(fmasf4, fnmadf4, fnmasf4): Likewise.
+	(unnamed plus+mult insns and splitters): Delete.
+
+2010-11-16  Richard Henderson  <rth@redhat.com>
+
 	* config/spu/spu.md (fma<VSF>4): Rename from fma_<VSF>.
 	(fnma<VSF>4): Rename from fnms_<VSF>.
 	(fms<VSF>4): Rename from fms_<VSF>.
