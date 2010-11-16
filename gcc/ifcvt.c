@@ -4285,7 +4285,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	  unsigned i;
 	  bitmap_iterator bi;
 
-	  EXECUTE_IF_SET_IN_BITMAP (merge_set_noclobber, 0, i, bi)
+	  EXECUTE_IF_SET_IN_BITMAP (merge_set, 0, i, bi)
 	    remove_reg_equal_equiv_notes_for_regno (i);
 
 	  BITMAP_FREE (merge_set);
