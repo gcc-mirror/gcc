@@ -2225,6 +2225,8 @@ static bool ext_80387_constants_init = 0;
 static struct machine_function * ix86_init_machine_status (void);
 static rtx ix86_function_value (const_tree, const_tree, bool);
 static bool ix86_function_value_regno_p (const unsigned int);
+static unsigned int ix86_function_arg_boundary (enum machine_mode,
+						const_tree);
 static rtx ix86_static_chain (const_tree, bool);
 static int ix86_function_regparm (const_tree, const_tree);
 static void ix86_compute_frame_layout (struct ix86_frame *);
@@ -7062,9 +7064,9 @@ ix86_compat_aligned_value_p (const_tree type)
    XXX: This function is obsolete and is only used for checking psABI
    compatibility with previous versions of GCC.  */
 
-static int
+static unsigned int
 ix86_compat_function_arg_boundary (enum machine_mode mode,
-				   const_tree type, int align)
+				   const_tree type, unsigned int align)
 {
   /* In 32bit, only _Decimal128 and __float128 are aligned to their
      natural boundaries.  */
@@ -7149,10 +7151,10 @@ ix86_contains_aligned_value_p (const_tree type)
 /* Gives the alignment boundary, in bits, of an argument with the
    specified mode and type.  */
 
-int
+static unsigned int
 ix86_function_arg_boundary (enum machine_mode mode, const_tree type)
 {
-  int align;
+  unsigned int align;
   if (type)
     {
       /* Since the main variant type is used for call, we convert it to
@@ -7167,7 +7169,7 @@ ix86_function_arg_boundary (enum machine_mode mode, const_tree type)
   else
     {
       static bool warned;
-      int saved_align = align;
+      unsigned int saved_align = align;
 
       if (!TARGET_64BIT)
 	{
@@ -8157,7 +8159,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
      alignment is beyond MAX_SUPPORTED_STACK_ALIGNMENT, it will be
      aligned at MAX_SUPPORTED_STACK_ALIGNMENT.  We will match callee
      here with caller.  */
-  arg_boundary = FUNCTION_ARG_BOUNDARY (VOIDmode, type);
+  arg_boundary = ix86_function_arg_boundary (VOIDmode, type);
   if ((unsigned int) arg_boundary > MAX_SUPPORTED_STACK_ALIGNMENT)
     arg_boundary = MAX_SUPPORTED_STACK_ALIGNMENT;
 
@@ -34579,6 +34581,8 @@ ix86_autovectorize_vector_sizes (void)
 #define TARGET_FUNCTION_ARG_ADVANCE ix86_function_arg_advance
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG ix86_function_arg
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY ix86_function_arg_boundary
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE ix86_pass_by_reference
 #undef TARGET_INTERNAL_ARG_POINTER

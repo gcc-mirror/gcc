@@ -687,20 +687,6 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
   function_arg_padding ((MODE), (TYPE))
 
-/* If defined, a C expression that gives the alignment boundary, in
-   bits, of an argument with the specified mode and type.  If it is
-   not defined,  `PARM_BOUNDARY' is used for all arguments.  */
-
-/* Arguments larger than one word are double word aligned.  */
-
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE)				\
-  (((TYPE)								\
-    ? (integer_zerop (TYPE_SIZE (TYPE))					\
-       || !TREE_CONSTANT (TYPE_SIZE (TYPE))				\
-       || int_size_in_bytes (TYPE) <= UNITS_PER_WORD)			\
-    : GET_MODE_SIZE(MODE) <= UNITS_PER_WORD)				\
-   ? PARM_BOUNDARY : MAX_PARM_BOUNDARY)
-
 
 /* On HPPA, we emit profiling code as rtl via PROFILE_HOOK rather than
    as assembly via FUNCTION_PROFILER.  Just output a local label.

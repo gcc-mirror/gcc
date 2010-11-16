@@ -217,6 +217,8 @@ static rtx ia64_function_incoming_arg (CUMULATIVE_ARGS *,
 				       enum machine_mode, const_tree, bool);
 static void ia64_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				       const_tree, bool);
+static unsigned int ia64_function_arg_boundary (enum machine_mode,
+						const_tree);
 static bool ia64_function_ok_for_sibcall (tree, tree);
 static bool ia64_return_in_memory (const_tree, const_tree);
 static rtx ia64_function_value (const_tree, const_tree, bool);
@@ -496,6 +498,8 @@ static const struct default_options ia64_option_optimization_table[] =
 #define TARGET_FUNCTION_INCOMING_ARG ia64_function_incoming_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE ia64_function_arg_advance
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY ia64_function_arg_boundary
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK ia64_output_mi_thunk
@@ -4666,10 +4670,9 @@ ia64_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    boundary.  On ILP32 HPUX, TFmode arguments start on next even boundary
    even though their normal alignment is 8 bytes.  See ia64_function_arg.  */
 
-int
-ia64_function_arg_boundary (enum machine_mode mode, tree type)
+static unsigned int
+ia64_function_arg_boundary (enum machine_mode mode, const_tree type)
 {
-
   if (mode == TFmode && TARGET_HPUX && TARGET_ILP32)
     return PARM_BOUNDARY * 2;
 

@@ -390,15 +390,6 @@ typedef struct iq2000_args
 	  && (GET_MODE_CLASS (MODE) == MODE_INT)))			\
       ? downward : upward))
 
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE)				\
-  (((TYPE) != 0)							\
-	? ((TYPE_ALIGN(TYPE) <= PARM_BOUNDARY)				\
-		? PARM_BOUNDARY						\
-		: TYPE_ALIGN(TYPE))					\
-	: ((GET_MODE_ALIGNMENT(MODE) <= PARM_BOUNDARY)			\
-		? PARM_BOUNDARY						\
-		: GET_MODE_ALIGNMENT(MODE)))
-
 #define FUNCTION_ARG_REGNO_P(N)						\
   (((N) >= GP_ARG_FIRST && (N) <= GP_ARG_LAST))			
 

@@ -4190,8 +4190,8 @@ to pad out an argument with extra space.  The value should be of type
 @code{downward} to pad below, or @code{none} to inhibit padding.
 
 The @emph{amount} of padding is always just enough to reach the next
-multiple of @code{FUNCTION_ARG_BOUNDARY}; this macro does not control
-it.
+multiple of @code{TARGET_FUNCTION_ARG_BOUNDARY}; this macro does not
+control it.
 
 This macro has a default definition which is right for most systems.
 For little-endian machines, the default is to pad upward.  For
@@ -4218,11 +4218,11 @@ a three byte aggregate may be passed in the high part of a register if so
 required.
 @end defmac
 
-@defmac FUNCTION_ARG_BOUNDARY (@var{mode}, @var{type})
-If defined, a C expression that gives the alignment boundary, in bits,
-of an argument with the specified mode and type.  If it is not defined,
-@code{PARM_BOUNDARY} is used for all arguments.
-@end defmac
+@deftypefn {Target Hook} {unsigned int} TARGET_FUNCTION_ARG_BOUNDARY (enum machine_mode @var{mode}, const_tree @var{type})
+This hook returns the the alignment boundary, in bits, of an argument
+with the specified mode and type.  The default hook returns
+@code{PARM_BOUNDARY} for all arguments.
+@end deftypefn
 
 @defmac FUNCTION_ARG_REGNO_P (@var{regno})
 A C expression that is nonzero if @var{regno} is the number of a hard

@@ -148,6 +148,8 @@ static rtx xtensa_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 static rtx xtensa_function_incoming_arg (CUMULATIVE_ARGS *,
 					 enum machine_mode, const_tree, bool);
 static rtx xtensa_function_value (const_tree, const_tree, bool);
+static unsigned int xtensa_function_arg_boundary (enum machine_mode,
+						  const_tree);
 static void xtensa_init_builtins (void);
 static tree xtensa_fold_builtin (tree, int, tree *, bool);
 static rtx xtensa_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
@@ -228,6 +230,8 @@ static const struct default_options xtensa_option_optimization_table[] =
 #define TARGET_FUNCTION_ARG xtensa_function_arg
 #undef TARGET_FUNCTION_INCOMING_ARG
 #define TARGET_FUNCTION_INCOMING_ARG xtensa_function_incoming_arg
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY xtensa_function_arg_boundary
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS xtensa_builtin_saveregs
@@ -2093,8 +2097,8 @@ xtensa_function_incoming_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   return xtensa_function_arg_1 (cum, mode, type, true);
 }
 
-int
-function_arg_boundary (enum machine_mode mode, tree type)
+static unsigned int
+function_arg_boundary (enum machine_mode mode, const_tree type)
 {
   unsigned int alignment;
 

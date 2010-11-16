@@ -4698,7 +4698,7 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
     type = build_pointer_type (type);
 
   align = PARM_BOUNDARY / BITS_PER_UNIT;
-  boundary = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type);
+  boundary = targetm.calls.function_arg_boundary (TYPE_MODE (type), type);
 
   /* When we align parameter on stack for caller, if the parameter
      alignment is beyond MAX_SUPPORTED_STACK_ALIGNMENT, it will be

@@ -52,7 +52,6 @@ extern rtx frv_find_base_term			(rtx);
 extern void frv_init_cumulative_args		(CUMULATIVE_ARGS *, tree,
 						 rtx, tree, int);
 
-extern int frv_function_arg_boundary		(enum machine_mode, tree);
 extern bool frv_function_value_regno_p		(const unsigned int);
 #endif /* TREE_CODE */
 

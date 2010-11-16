@@ -169,6 +169,8 @@ static rtx iq2000_function_arg	      (CUMULATIVE_ARGS *,
 				       enum machine_mode, const_tree, bool);
 static void iq2000_function_arg_advance (CUMULATIVE_ARGS *,
 					 enum machine_mode, const_tree, bool);
+static unsigned int iq2000_function_arg_boundary (enum machine_mode,
+						  const_tree);
 static void iq2000_va_start	      (tree, rtx);
 static bool iq2000_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool iq2000_can_eliminate      (const int, const int);
@@ -242,6 +244,8 @@ static const struct default_options iq2000_option_optimization_table[] =
 #define TARGET_FUNCTION_ARG		iq2000_function_arg
 #undef  TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE	iq2000_function_arg_advance
+#undef  TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY	iq2000_function_arg_boundary
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS	iq2000_setup_incoming_varargs
@@ -1372,6 +1376,18 @@ iq2000_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     }
 
   return ret;
+}
+
+static unsigned int
+iq2000_function_arg_boundary (enum machine_mode mode, const_tree type)
+{
+  return (type != NULL_TREE
+	  ? (TYPE_ALIGN (type) <= PARM_BOUNDARY
+	     ? PARM_BOUNDARY
+	     : TYPE_ALIGN (type))
+	  : (GET_MODE_ALIGNMENT (mode) <= PARM_BOUNDARY
+	     ? PARM_BOUNDARY
+	     : GET_MODE_ALIGNMENT (mode)));
 }
 
 static int

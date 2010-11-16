@@ -520,13 +520,6 @@ extern enum reg_class arc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define FUNCTION_ARG_REGNO_P(N) \
 ((unsigned) (N) < MAX_ARC_PARM_REGS)
 
-/* If defined, a C expression that gives the alignment boundary, in bits,
-   of an argument with the specified mode and type.  If it is not defined, 
-   PARM_BOUNDARY is used for all arguments.  */
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
-(((TYPE) ? TYPE_ALIGN (TYPE) : GET_MODE_BITSIZE (MODE)) <= PARM_BOUNDARY \
- ? PARM_BOUNDARY \
- : 2 * PARM_BOUNDARY)
 
 /* Function results.  */
 

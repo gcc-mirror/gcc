@@ -89,6 +89,8 @@ rtx picochip_incoming_function_arg (CUMULATIVE_ARGS * p_cum,
 				    const_tree type, bool named);
 void picochip_arg_advance (CUMULATIVE_ARGS * p_cum, enum machine_mode mode,
 			   const_tree type, bool named);
+unsigned int picochip_function_boundary (enum machine_mode mode,
+					 const_tree type);
 
 int picochip_sched_lookahead (void);
 int picochip_sched_issue_rate (void);
@@ -285,6 +287,9 @@ static const struct default_options picochip_option_optimization_table[] =
 
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE picochip_arg_advance
+
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY picochip_function_arg_boundary
 
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
@@ -851,7 +856,7 @@ picochip_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   /* Compute the alignment and size of the parameter. */
   type_align_in_units =
-    picochip_get_function_arg_boundary (mode) / BITS_PER_UNIT;
+    picochip_function_arg_boundary (mode) / BITS_PER_UNIT;
   type_size_in_units = picochip_compute_arg_size (type, mode);
 
   /* Compute the correct offset (i.e., ensure that the offset meets
@@ -947,8 +952,9 @@ picochip_incoming_function_arg (CUMULATIVE_ARGS *cum,
 
 /* Gives the alignment boundary, in bits, of an argument with the
    specified mode.  */
-int
-picochip_get_function_arg_boundary (enum machine_mode mode)
+unsigned int
+picochip_function_arg_boundary (enum machine_mode mode,
+				const_tree type ATTRIBUTE_UNUSED)
 {
   int align;
 
@@ -983,7 +989,7 @@ picochip_arg_partial_bytes (CUMULATIVE_ARGS * p_cum, enum machine_mode mode,
 
   /* Compute the alignment and size of the parameter. */
   type_align_in_units =
-    picochip_get_function_arg_boundary (mode) / BITS_PER_UNIT;
+    picochip_function_arg_boundary (mode) / BITS_PER_UNIT;
   type_size_in_units = picochip_compute_arg_size (type, mode);
 
   /* Compute the correct offset (i.e., ensure that the offset meets
@@ -1037,7 +1043,7 @@ picochip_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   /* Compute the alignment and size of the parameter. */
   type_align_in_units =
-    picochip_get_function_arg_boundary (mode) / BITS_PER_UNIT;
+    picochip_function_arg_boundary (mode) / BITS_PER_UNIT;
   type_size_in_units = picochip_compute_arg_size (type, mode);
 
   /* Compute the correct offset (i.e., ensure that the offset meets

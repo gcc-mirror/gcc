@@ -844,13 +844,6 @@ enum target_cpu_default
   ix86_minimum_alignment (EXP, MODE, ALIGN)
 
 
-/* If defined, a C expression that gives the alignment boundary, in
-   bits, of an argument with the specified mode and type.  If it is
-   not defined, `PARM_BOUNDARY' is used for all arguments.  */
-
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
-  ix86_function_arg_boundary ((MODE), (TYPE))
-
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 0

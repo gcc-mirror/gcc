@@ -66,8 +66,6 @@ extern int picochip_absolute_memory_operand (rtx op, enum machine_mode mode);
 extern rtx picochip_function_value (const_tree valtype, const_tree func, bool outgoing);
 extern int picochip_symbol_offset (rtx operand);
 
-extern int picochip_get_function_arg_boundary (enum machine_mode mode);
-
 extern reg_class_t picochip_secondary_reload(bool in_p,
                                  rtx x,
                                  reg_class_t cla,

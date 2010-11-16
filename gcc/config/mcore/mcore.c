@@ -148,6 +148,8 @@ static rtx        mcore_function_arg            (CUMULATIVE_ARGS *,
 static void       mcore_function_arg_advance    (CUMULATIVE_ARGS *,
 						 enum machine_mode,
 						 const_tree, bool);
+static unsigned int mcore_function_arg_boundary (enum machine_mode,
+						 const_tree);
 static void       mcore_asm_trampoline_template (FILE *);
 static void       mcore_trampoline_init		(rtx, tree, rtx);
 static void       mcore_option_override		(void);
@@ -239,6 +241,8 @@ static const struct default_options mcore_option_optimization_table[] =
 #define TARGET_FUNCTION_ARG		mcore_function_arg
 #undef  TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE	mcore_function_arg_advance
+#undef  TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY	mcore_function_arg_boundary
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS	mcore_setup_incoming_varargs
@@ -2838,6 +2842,16 @@ mcore_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 {
   *cum = (ROUND_REG (*cum, mode)
 	  + (int)named * mcore_num_arg_regs (mode, type));
+}
+
+static unsigned int
+mcore_function_arg_boundary (enum machine_mode mode,
+			     const_tree type ATTRIBUTE_UNUSED)
+{
+  /* Doubles must be aligned to an 8 byte boundary.  */
+  return (mode != BLKmode && GET_MODE_SIZE (mode) == 8
+	  ? BIGGEST_ALIGNMENT
+	  : PARM_BOUNDARY);
 }
 
 /* Returns the number of bytes of argument registers required to hold *part*

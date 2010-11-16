@@ -125,8 +125,6 @@ extern enum rx_cpu_types  rx_cpu_type;
 #define STACK_BOUNDARY 			32
 #define PARM_BOUNDARY 			8
 
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE) 32
-
 #define STACK_GROWS_DOWNWARD		1
 #define FRAME_GROWS_DOWNWARD		0
 #define FIRST_PARM_OFFSET(FNDECL) 	0

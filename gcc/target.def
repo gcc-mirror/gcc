@@ -1991,6 +1991,12 @@ DEFHOOK_UNDOC
        bool named),
  default_function_incoming_arg)
 
+DEFHOOK
+(function_arg_boundary,
+ "",
+ unsigned int, (enum machine_mode mode, const_tree type),
+ default_function_arg_boundary)
+
 /* Return the diagnostic message string if function without a prototype
    is not allowed for this 'val' argument; NULL otherwise. */
 DEFHOOK

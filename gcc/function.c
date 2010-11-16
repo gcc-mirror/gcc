@@ -2565,7 +2565,7 @@ assign_parm_find_stack_rtl (tree parm, struct assign_parm_data_one *data)
   align = BITS_PER_UNIT;
 
   /* If we're padding upward, we know that the alignment of the slot
-     is FUNCTION_ARG_BOUNDARY.  If we're using slot_offset, we're
+     is TARGET_FUNCTION_ARG_BOUNDARY.  If we're using slot_offset, we're
      intentionally forcing upward padding.  Otherwise we have to come
      up with a guess at the alignment based on OFFSET_RTX.  */
   if (data->locate.where_pad != downward || data->entry_parm)
@@ -3330,8 +3330,9 @@ assign_parms (tree fndecl)
       /* Estimate stack alignment from parameter alignment.  */
       if (SUPPORTS_STACK_ALIGNMENT)
         {
-          unsigned int align = FUNCTION_ARG_BOUNDARY (data.promoted_mode,
-						      data.passed_type);
+          unsigned int align
+	    = targetm.calls.function_arg_boundary (data.promoted_mode,
+						   data.passed_type);
 	  align = MINIMUM_ALIGNMENT (data.passed_type, data.promoted_mode,
 				     align);
 	  if (TYPE_ALIGN (data.nominal_type) > align)
@@ -3641,9 +3642,10 @@ gimplify_parameters (void)
    FNDECL is the function in which the argument was defined.
 
    There are two types of rounding that are done.  The first, controlled by
-   FUNCTION_ARG_BOUNDARY, forces the offset from the start of the argument
-   list to be aligned to the specific boundary (in bits).  This rounding
-   affects the initial and starting offsets, but not the argument size.
+   TARGET_FUNCTION_ARG_BOUNDARY, forces the offset from the start of the
+   argument list to be aligned to the specific boundary (in bits).  This
+   rounding affects the initial and starting offsets, but not the argument
+   size.
 
    The second, controlled by FUNCTION_ARG_PADDING and PARM_BOUNDARY,
    optionally rounds the size of the parm to PARM_BOUNDARY.  The
@@ -3694,7 +3696,7 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
   sizetree
     = type ? size_in_bytes (type) : size_int (GET_MODE_SIZE (passed_mode));
   where_pad = FUNCTION_ARG_PADDING (passed_mode, type);
-  boundary = FUNCTION_ARG_BOUNDARY (passed_mode, type);
+  boundary = targetm.calls.function_arg_boundary (passed_mode, type);
   locate->where_pad = where_pad;
 
   /* Alignment can't exceed MAX_SUPPORTED_STACK_ALIGNMENT.  */

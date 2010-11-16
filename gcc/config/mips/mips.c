@@ -1190,6 +1190,7 @@ static const struct mips_rtx_cost_data
 static rtx mips_find_pic_call_symbol (rtx, rtx);
 static int mips_register_move_cost (enum machine_mode, reg_class_t,
 				    reg_class_t);
+static unsigned int mips_function_arg_boundary (enum machine_mode, const_tree);
 
 /* This hash table keeps track of implicit "mips16" and "nomips16" attributes
    for -mflip_mips16.  It maps decl names onto a boolean mode setting.  */
@@ -4783,7 +4784,8 @@ mips_get_arg_info (struct mips_arg_info *info, const CUMULATIVE_ARGS *cum,
     }
 
   /* See whether the argument has doubleword alignment.  */
-  doubleword_aligned_p = FUNCTION_ARG_BOUNDARY (mode, type) > BITS_PER_WORD;
+  doubleword_aligned_p = (mips_function_arg_boundary (mode, type)
+			  > BITS_PER_WORD);
 
   /* Set REG_OFFSET to the register count we're interested in.
      The EABI allocates the floating-point registers separately,
@@ -5008,11 +5010,11 @@ mips_arg_partial_bytes (CUMULATIVE_ARGS *cum,
   return info.stack_words > 0 ? info.reg_words * UNITS_PER_WORD : 0;
 }
 
-/* Implement FUNCTION_ARG_BOUNDARY.  Every parameter gets at least
-   PARM_BOUNDARY bits of alignment, but will be given anything up
+/* Implement TARGET_FUNCTION_ARG_BOUNDARY.  Every parameter gets at
+   least PARM_BOUNDARY bits of alignment, but will be given anything up
    to STACK_BOUNDARY bits if the type requires it.  */
 
-int
+static unsigned int
 mips_function_arg_boundary (enum machine_mode mode, const_tree type)
 {
   unsigned int alignment;
@@ -16542,6 +16544,8 @@ mips_shift_truncation_mask (enum machine_mode mode)
 #define TARGET_FUNCTION_ARG mips_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE mips_function_arg_advance
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY mips_function_arg_boundary
 
 #undef TARGET_MODE_REP_EXTENDED
 #define TARGET_MODE_REP_EXTENDED mips_mode_rep_extended
