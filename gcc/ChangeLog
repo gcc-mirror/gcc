@@ -1,5 +1,14 @@
 2010-11-16  Richard Henderson  <rth@redhat.com>
 
+	* config.gcc [s390*-*] (extra_options): Add fused-madd.opt.
+	* config/s390/s390.opt (mfused-madd): Remove.
+	* config/s390/s390.c (s390_rtx_costs): Handle FMA.
+	(TARGET_DEFAULT_TARGET_FLAGS): Remove MASK_FUSED_MADD.
+	* config/s390/s390.md (fma<DSF>4): Rename from *fmadd<DSF>; use FMA.
+	(fms<DSF>4): Rename from *fmsub<DSF>; use FMA.
+
+2010-11-16  Richard Henderson  <rth@redhat.com>
+
 	* config.gcc [powerpc*, rs6000*] (extra_options): Add fused-madd.opt.
 	* config/rs6000/rs6000.opt (mfused-madd): Remove.
 	* config/rs6000/altivec.md (altivec_vmaddfp): Remove.
