@@ -1,5 +1,10 @@
 2010-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/opt12.adb: New test.
+	* gnat.dg/opt12_pkg.ad[sb]: New helper.
+
+2010-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.target/rx/pack.c: New test.
 
 2010-11-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
