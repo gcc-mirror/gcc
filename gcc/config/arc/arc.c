@@ -2426,10 +2426,6 @@ arc_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  + ROUND_ADVANCE_ARG (mode, type));
 }
 
-/* If defined, a C expression that gives the alignment boundary, in bits,
-   of an argument with the specified mode and type.  If it is not defined, 
-   PARM_BOUNDARY is used for all arguments.  */
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
 /* Worker function for TARGET_FUNCTION_ARG_BOUNDARY.  */
 
 static unsigned int
