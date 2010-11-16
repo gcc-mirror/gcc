@@ -1,3 +1,9 @@
+2010-11-16  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/46366
+	* gcc.target/i386/pr45352-2.c: Silence warnings by using appropriate
+	casts.
+
 2010-11-16  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-fre-30.c: New testcase.
