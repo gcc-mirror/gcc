@@ -70,6 +70,10 @@
 	* config/score/score-conv.h (UIMM_IN_RANGE, SIMM_IN_RANGE):
 	Allow (W) == HOST_BITS_PER_WIDE_INT.
 
+	PR java/46386
+	* config/pdp11/t-pdp11 (java/constants.o-warn): Remove.
+	* config/t-pnt16-warn (java/constants.o-warn): Likewise.
+
 2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/arc/arc.c: Delete pasto.
