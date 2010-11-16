@@ -1,3 +1,17 @@
+2010-11-16  Richard Henderson  <rth@redhat.com>
+
+	* config/spu/spu.md (fma<VSF>4): Rename from fma_<VSF>.
+	(fnma<VSF>4): Rename from fnms_<VSF>.
+	(fms<VSF>4): Rename from fms_<VSF>.
+	(fma<VDF>4): Rename from fma_<VDF>.
+	(fms<VDF>4): Rename from fms_<VDF>.
+	(nfma<VDF>4): Rename from fnma_<VDF>.
+	(nfms<VDF>4): Rename from fnms_<VDF>.
+	(fnma<VDF>4, fnms<VDF>4): New expanders.
+	(floatunsdisf2): Update for the renames.
+	(*div<VSF>3_fast, *div<VSF>3_adjusted): Likewise.
+	* config/spu/spu-builtins.def: Update CODE_FOR_* for the renames.
+
 2010-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/46490
