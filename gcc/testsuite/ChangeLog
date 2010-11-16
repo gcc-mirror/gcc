@@ -1,3 +1,9 @@
+2010-11-15  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/torture/builtin-math-2.c: Split out fma tests...
+	* gcc.dg/torture/builtin-math-8.c: ... here.  New file.
+	Use builtin_constant_p rather than scanning for builtin name.
+
 2010-11-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/property/dotsyntax-18.m: New.
