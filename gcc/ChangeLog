@@ -1,3 +1,16 @@
+2010-11-16  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (+varpool_can_remove_if_no_refs): Move here from ...;
+	when !flag_toplevel_reorder do not remove unless variable is
+	COMDAT or ARTIFICIAL.
+	* ipa.c (varpool_can_remove_if_no_refs): ... here.
+	(cgraph_remove_unreachable_nodes): Only analyzed nodes needs to stay.
+	* cgraphunit.c (cgraph_analyze_functions): Dump varpool, too.
+	* varpool.c (decide_is_variable_needed): Do not handle visibility issues.
+	(varpool_finalize_decl): Likewise.
+	(varpool_remove_unreferenced_decls): Use varpool_mark_needed_node; update
+	outdated comment on DECL_RTL_SET_P check.
+
 2010-11-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sol2.h (NM_FLAGS): Define.

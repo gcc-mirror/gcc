@@ -928,6 +928,18 @@ cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node)
   return !node->address_taken && cgraph_can_remove_if_no_direct_calls_and_refs_p (node);
 }
 
+/* Return true when function NODE can be removed from callgraph
+   if all direct calls are eliminated.  */
+
+static inline bool
+varpool_can_remove_if_no_refs (struct varpool_node *node)
+{
+  return (!node->force_output && !node->used_from_other_partition
+	  && (flag_toplevel_reorder || DECL_COMDAT (node->decl)
+	      || DECL_ARTIFICIAL (node->decl))
+  	  && (DECL_COMDAT (node->decl) || !node->externally_visible));
+}
+
 /* Return true when all references to VNODE must be visible in ipa_ref_list.
    i.e. if the variable is not externally visible or not used in some magic
    way (asm statement or such).

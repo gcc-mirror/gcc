@@ -331,31 +331,24 @@ varpool_reset_queue (void)
 bool
 decide_is_variable_needed (struct varpool_node *node, tree decl)
 {
-  if (node->used_from_other_partition)
-    return true;
   /* If the user told us it is used, then it must be so.  */
-  if ((node->externally_visible && !DECL_COMDAT (decl))
-      || node->force_output)
+  if (node->force_output)
     return true;
+
+  gcc_assert (!DECL_EXTERNAL (decl));
 
   /* Externally visible variables must be output.  The exception is
      COMDAT variables that must be output only when they are needed.  */
   if (TREE_PUBLIC (decl)
-      && !flag_whole_program
-      && !flag_lto
       && !DECL_COMDAT (decl)
       && !DECL_EXTERNAL (decl))
     return true;
 
   /* When not reordering top level variables, we have to assume that
      we are going to keep everything.  */
-  if (flag_toplevel_reorder)
-    return false;
-
-  /* We want to emit COMDAT variables only when absolutely necessary.  */
-  if (DECL_COMDAT (decl))
-    return false;
-  return true;
+  if (!flag_toplevel_reorder)
+    return true;
+  return false;
 }
 
 /* Return if DECL is constant and its initial value is known (so we can do
@@ -426,11 +419,6 @@ varpool_finalize_decl (tree decl)
     node->force_output = true;
 
   if (decide_is_variable_needed (node, decl))
-    varpool_mark_needed_node (node);
-  /* Since we reclaim unreachable nodes at the end of every language
-     level unit, we need to be conservative about possible entry points
-     there.  */
-  else if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
     varpool_mark_needed_node (node);
   if (cgraph_global_info_ready)
     varpool_assemble_pending_decls ();
@@ -557,18 +545,14 @@ varpool_remove_unreferenced_decls (void)
 
   while (node)
     {
-      tree decl = node->decl;
       next = node->next_needed;
       node->needed = 0;
 
-      if (node->finalized
-	  && (decide_is_variable_needed (node, decl)
-	      /* ??? Cgraph does not yet rule the world with an iron hand,
-		 and does not control the emission of debug information.
-		 After a variable has its DECL_RTL set, we must assume that
-		 it may be referenced by the debug information, and we can
-		 no longer elide it.  */
-	      || DECL_RTL_SET_P (decl)))
+      if (node->analyzed
+	  && (!varpool_can_remove_if_no_refs (node)
+	      /* We just expanded all function bodies.  See if any of
+		 them needed the variable.  */
+	      || DECL_RTL_SET_P (node->decl)))
 	varpool_mark_needed_node (node);
 
       node = next;
