@@ -1,3 +1,15 @@
+2010-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c: Include "vec.h".
+	(argbuf): Make into a VEC.
+	(argbuf_length, argbuf_index): Remove.
+	(alloc_args, clear_args, store_arg, execute, insert_wrapper,
+	do_spec, do_self_spec, do_spec_1, eval_spec_function, main,
+	compare_debug_dump_opt_spec_function: Use VEC interfaces on
+	argbuf.
+	* Makefile.in (GCC_OBJS): Add vec.o and ggc-none.o.
+	(gcc.o): Depend on $(VEC_H).
+
 2010-11-15  Richard Henderson  <rth@redhat.com>
 
 	* loop-unroll.c (analyze_insn_to_expand_var): Accept accumulation
