@@ -1641,7 +1641,7 @@ save_comment (cpp_reader *pfile, cpp_token *token, const unsigned char *from,
 	      cppchar_t type)
 {
   unsigned char *buffer;
-  unsigned int len, clen;
+  unsigned int len, clen, i;
 
   len = pfile->buffer->cur - from + 1; /* + 1 for the initial '/'.  */
 
@@ -1650,13 +1650,14 @@ save_comment (cpp_reader *pfile, cpp_token *token, const unsigned char *from,
   if (is_vspace (pfile->buffer->cur[-1]))
     len--;
 
-  /* If we are currently in a directive, then we need to store all
-     C++ comments as C comments internally, and so we need to
-     allocate a little extra space in that case.
+  /* If we are currently in a directive or in argument parsing, then
+     we need to store all C++ comments as C comments internally, and
+     so we need to allocate a little extra space in that case.
 
      Note that the only time we encounter a directive here is
      when we are saving comments in a "#define".  */
-  clen = (pfile->state.in_directive && type == '/') ? len + 2 : len;
+  clen = ((pfile->state.in_directive || pfile->state.parsing_args)
+	  && type == '/') ? len + 2 : len;
 
   buffer = _cpp_unaligned_alloc (pfile, clen);
 
@@ -1668,11 +1669,16 @@ save_comment (cpp_reader *pfile, cpp_token *token, const unsigned char *from,
   memcpy (buffer + 1, from, len - 1);
 
   /* Finish conversion to a C comment, if necessary.  */
-  if (pfile->state.in_directive && type == '/')
+  if ((pfile->state.in_directive || pfile->state.parsing_args) && type == '/')
     {
       buffer[1] = '*';
       buffer[clen - 2] = '*';
       buffer[clen - 1] = '/';
+      /* As there can be in a C++ comments illegal sequences for C comments
+         we need to filter them out.  */
+      for (i = 2; i < (clen - 2); i++)
+        if (buffer[i] == '/' && (buffer[i - 1] == '*' || buffer[i + 1] == '*'))
+          buffer[i] = '|';
     }
 
   /* Finally store this comment for use by clients of libcpp. */
