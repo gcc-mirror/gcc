@@ -4684,7 +4684,7 @@ m68k_delegitimize_address (rtx orig_x)
 	  && XINT (unspec, 1) != UNSPEC_RELOC32))
     return orig_x;
   x = XVECEXP (unspec, 0, 0);
-  gcc_assert (GET_CODE (x) == SYMBOL_REF);
+  gcc_assert (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF);
   if (unspec != XEXP (addr.offset, 0))
     x = gen_rtx_PLUS (Pmode, x, XEXP (XEXP (addr.offset, 0), 1));
   if (addr.index)
