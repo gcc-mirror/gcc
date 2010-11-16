@@ -72,10 +72,6 @@ extern reg_class_t xtensa_secondary_reload (bool, rtx, reg_class_t,
 					    struct secondary_reload_info *);
 #endif /* RTX_CODE */
 
-#ifdef TREE_CODE
-extern int function_arg_boundary (enum machine_mode, tree);
-#endif /* TREE_CODE */
-
 extern void xtensa_setup_frame_addresses (void);
 extern int xtensa_dbx_register_number (int);
 extern long compute_frame_size (int);

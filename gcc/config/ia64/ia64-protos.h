@@ -67,7 +67,6 @@ extern rtx ia64_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 extern rtx ia64_va_arg (tree, tree);
 #endif /* RTX_CODE */
 
-extern int ia64_function_arg_boundary (enum machine_mode, tree);
 extern void ia64_asm_output_external (FILE *, tree, const char *);
 extern void ia64_vms_output_aligned_decl_common (FILE *, tree, const char *,
 						 unsigned HOST_WIDE_INT,

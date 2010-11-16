@@ -591,8 +591,6 @@ typedef struct xtensa_args
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM, FNTYPE, LIBNAME)		\
   init_cumulative_args (&CUM, 1)
 
-#define FUNCTION_ARG_BOUNDARY function_arg_boundary
-
 /* Profiling Xtensa code is typically done with the built-in profiling
    feature of Tensilica's instruction set simulator, which does not
    require any compiler support.  Profiling code on a real (i.e.,

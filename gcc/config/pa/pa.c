@@ -164,6 +164,7 @@ static void pa_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				     const_tree, bool);
 static rtx pa_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 			    const_tree, bool);
+static unsigned int pa_function_arg_boundary (enum machine_mode, const_tree);
 static struct machine_function * pa_init_machine_status (void);
 static reg_class_t pa_secondary_reload (bool, rtx, reg_class_t,
 					enum machine_mode,
@@ -351,6 +352,8 @@ static const struct default_options pa_option_optimization_table[] =
 #define TARGET_FUNCTION_ARG pa_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE pa_function_arg_advance
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY pa_function_arg_boundary
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS hppa_builtin_saveregs
@@ -9600,6 +9603,20 @@ pa_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   return retval;
 }
 
+/* Arguments larger than one word are double word aligned.  */
+
+static unsigned int
+pa_function_arg_boundary (enum machine_mode mode, const_tree type)
+{
+  tree size = TYPE_SIZE (type);
+  bool singleword = (type
+		     ? (integer_zerop (size)
+			|| !TREE_CONSTANT (size)
+			|| int_size_in_bytes (type) <= UNITS_PER_WORD)
+		     : GET_MODE_SIZE (mode));
+
+  return singleword ? PARM_BOUNDARY : MAX_PARM_BOUNDARY;
+}
 
 /* If this arg would be passed totally in registers or totally on the stack,
    then this routine should return zero.  */

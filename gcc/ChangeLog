@@ -1,5 +1,83 @@
 2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* builtins.c (std_gimplify_va_arg_expr): Use
+	targetm.calls.function_arg_boundary.
+	* function.c (assign_parms, locate_and_pad_parm): Likewise.
+	* calls.c (struct arg_data): Update comment.
+	* defaults.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* target.def (function_arg_boundary): Define.
+	* targhooks.h (default_function_arg_boundary): Declare.
+	* targhooks.c (default_function_arg_boundary): Define.
+	* doc/tm.texi.in (FUNCTION_ARG_PADDING): Use
+	TARGET_FUNCTION_ARG_BOUNDARY.
+	(FUNCTION_ARG_BOUNDARY): Delete.
+	(TARGET_FUNCTION_ARG_BOUNDARY): New.
+	* doc/tm.texi: Regenerate.
+	* system.h (FUNCTION_ARG_BOUNDARY): Poison.
+	* config/arc/arc.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/arc/arc.c (arc_function_arg_boundary): Define.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Define.
+	* config/arm/arm.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/arm/arm-protos.h (arm_needs_doubleword_align): Delete.
+	* config/arm/arm.c (arm_needs_doubleword_align): Make static.
+	(arm_function_arg_boundary): Define.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Define.
+	* config/frv/frv.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/frv/frv-protos.h (frv_function_arg_boundary): Delete.
+	* config/frv/frv.c (frv_function_arg_boundary): Make static.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Define.
+	* config/i386/i386.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/i386/i386-protos.h (ix86_function_arg_boundary): Delete.
+	* config/i386/i386.c (ix86_function_arg_boundary): Make static.
+	(ix86_compat_function_arg_boundary): Take and return unsigned int.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Define.
+	* config/ia64/ia64.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/ia64/ia64-protos.h (ia64_function_arg_boundary): Delete.
+	* config/ia64/ia64.c (ia64_function_arg_boundary): Make static.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Define.
+	* config/m32c/m32c.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/m32c/m32c.c (m32c_function_arg_boundary): Define.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Define.
+	* config/m32r/m32r.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/mcore/mcore.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/mcore/mcore.c (mcore_function_arg_boundary): Define.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Define.
+	* config/mips/mips.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/mips/mips-protos.h (mips_function_arg_boundary): Delete.
+	* config/mips/mips.c (mips_function_arg_boundary): Make static.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Define.
+	* config/pa/pa.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/pa/pa.c (pa_function_arg_boundary): Define.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Define.
+	* config/picochip/picochip.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/picochip/picochip-protos.h
+	(picochip_get_function_arg_boundary): Delete.
+	* config/picochip/picochip.c (picochip_get_function_arg_boundary):
+	Rename to...
+	(picochip_function_arg_boundary): ...this.  Make static.
+	(picochip_function_arg, picochip_arg_partial_bytes): Adjust.
+	(picochip_arg_advance): Adjust.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Define.
+	* config/rs6000/rs6000.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/rs6000/rs6000-protos.h (function_arg_boundary): Delete.
+	* config/rs6000/rs6000.c (function_arg_boundary): Rename to...
+	(rs6000_function_arg_boundary): ...this.  Make static.
+	(rs6000_parm_start, rs6000_gimplify_va_arg): Adjust.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Define.
+	* config/rx/rx.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/rx/rx.c (rx_function_arg_boundary): Define.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Define.
+	* config/sparc/sparc.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/sparc/sparc.c (sparc_function_arg_boundary): Define.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Define.
+	* config/xtensa/xtensa.h (FUNCTION_ARG_BOUNDARY): Delete.
+	* config/xtensa/xtensa-protos.h (function_arg_boundary): Delete.
+	* config/xtensa/xtensa.c (function_arg_boundary): Rename to...
+	(xtensa_function_arg_boundary): ...this.  Make static.
+	(TARGET_FUNCTION_ARG_BOUNDARY): Define.
+
+2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* expr.c (alignment_for_piecewise_move): New function.
 	(widest_int_mode_for_size): New function.
 	(move_by_pieces, move_by_pieces_ninsns): Call them.

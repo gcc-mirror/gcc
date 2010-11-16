@@ -1185,6 +1185,8 @@ static void rs6000_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 					 const_tree, bool);
 static rtx rs6000_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 				const_tree, bool);
+static unsigned int rs6000_function_arg_boundary (enum machine_mode,
+						  const_tree);
 static void rs6000_move_block_from_reg (int regno, rtx x, int nregs);
 static void setup_incoming_varargs (CUMULATIVE_ARGS *,
 				    enum machine_mode, tree,
@@ -1587,6 +1589,8 @@ static const struct default_options rs6000_option_optimization_table[] =
 #define TARGET_FUNCTION_ARG_ADVANCE rs6000_function_arg_advance
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG rs6000_function_arg
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY rs6000_function_arg_boundary
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST rs6000_build_builtin_va_list
@@ -7850,8 +7854,8 @@ function_arg_padding (enum machine_mode mode, const_tree type)
    Quadword align Altivec vectors.
    Quadword align large synthetic vector types.   */
 
-int
-function_arg_boundary (enum machine_mode mode, const_tree type)
+static unsigned int
+rs6000_function_arg_boundary (enum machine_mode mode, const_tree type)
 {
   if (DEFAULT_ABI == ABI_V4
       && (GET_MODE_SIZE (mode) == 8
@@ -7887,7 +7891,7 @@ rs6000_parm_start (enum machine_mode mode, const_tree type,
   unsigned int align;
   unsigned int parm_offset;
 
-  align = function_arg_boundary (mode, type) / PARM_BOUNDARY - 1;
+  align = rs6000_function_arg_boundary (mode, type) / PARM_BOUNDARY - 1;
   parm_offset = DEFAULT_ABI == ABI_V4 ? 2 : 6;
   return nwords + (-(parm_offset + nwords) & align);
 }
@@ -9399,7 +9403,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       unsigned HOST_WIDE_INT align, boundary;
       tree valist_tmp = get_initialized_tmp_var (valist, pre_p, NULL);
       align = PARM_BOUNDARY / BITS_PER_UNIT;
-      boundary = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type);
+      boundary = rs6000_function_arg_boundary (TYPE_MODE (type), type);
       if (boundary > MAX_SUPPORTED_STACK_ALIGNMENT)
 	boundary = MAX_SUPPORTED_STACK_ALIGNMENT;
       boundary /= BITS_PER_UNIT;

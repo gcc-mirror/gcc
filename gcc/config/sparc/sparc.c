@@ -432,6 +432,8 @@ static rtx sparc_function_arg (CUMULATIVE_ARGS *,
 			       enum machine_mode, const_tree, bool);
 static rtx sparc_function_incoming_arg (CUMULATIVE_ARGS *,
 					enum machine_mode, const_tree, bool);
+static unsigned int sparc_function_arg_boundary (enum machine_mode,
+						 const_tree);
 static int sparc_arg_partial_bytes (CUMULATIVE_ARGS *,
 				    enum machine_mode, tree, bool);
 static void sparc_dwarf_handle_frame_unspec (const char *, rtx, int);
@@ -579,6 +581,8 @@ static const struct default_options sparc_option_optimization_table[] =
 #define TARGET_FUNCTION_ARG sparc_function_arg
 #undef TARGET_FUNCTION_INCOMING_ARG
 #define TARGET_FUNCTION_INCOMING_ARG sparc_function_incoming_arg
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY sparc_function_arg_boundary
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS sparc_builtin_saveregs
@@ -5747,6 +5751,18 @@ sparc_function_incoming_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 			     const_tree type, bool named)
 {
   return sparc_function_arg_1 (cum, mode, type, named, true);
+}
+
+/* For sparc64, objects requiring 16 byte alignment are passed that way.  */
+
+static unsigned int
+sparc_function_arg_boundary (enum machine_mode mode, const_tree type)
+{
+  return ((TARGET_ARCH64
+	   && (GET_MODE_ALIGNMENT (mode) == 128
+	       || (type && TYPE_ALIGN (type) == 128)))
+	  ? 128
+	  : PARM_BOUNDARY);
 }
 
 /* For an arg passed partly in registers and partly in memory,

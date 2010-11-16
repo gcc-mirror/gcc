@@ -607,6 +607,13 @@ default_function_incoming_arg (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 #endif
 }
 
+unsigned int
+default_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
+			       const_tree type ATTRIBUTE_UNUSED)
+{
+  return PARM_BOUNDARY;
+}
+
 void
 hook_void_bitmap (bitmap regs ATTRIBUTE_UNUSED)
 {

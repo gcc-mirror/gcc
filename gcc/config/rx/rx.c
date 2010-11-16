@@ -822,6 +822,13 @@ rx_function_arg_advance (Fargs * cum, Mmode mode, const_tree type,
   *cum += rx_function_arg_size (mode, type);
 }
 
+static unsigned int
+rx_function_arg_boundary (Mmode mode ATTRIBUTE_UNUSED,
+			  const_tree type ATTRIBUTE_UNUSED)
+{
+  return 32;
+}
+
 /* Return an RTL describing where a function return value of type RET_TYPE
    is held.  */
 
@@ -2815,6 +2822,9 @@ rx_memory_move_cost (enum machine_mode mode, reg_class_t regclass, bool in)
 
 #undef  TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE     	rx_function_arg_advance
+
+#undef	TARGET_FUNCTION_ARG_BOUNDARY
+#define	TARGET_FUNCTION_ARG_BOUNDARY		rx_function_arg_boundary
 
 #undef  TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION		rx_set_current_function

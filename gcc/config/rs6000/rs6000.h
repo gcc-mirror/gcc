@@ -1706,13 +1706,6 @@ typedef struct rs6000_args
 
 #define FUNCTION_ARG_PADDING(MODE, TYPE) function_arg_padding (MODE, TYPE)
 
-/* If defined, a C expression that gives the alignment boundary, in bits,
-   of an argument with the specified mode and type.  If it is not defined,
-   PARM_BOUNDARY is used for all arguments.  */
-
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
-  function_arg_boundary (MODE, TYPE)
-
 #define PAD_VARARGS_DOWN \
    (FUNCTION_ARG_PADDING (TYPE_MODE (type), type) == downward)
 

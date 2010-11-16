@@ -1561,13 +1561,6 @@ typedef struct frv_stack {
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM, FNTYPE, LIBNAME) \
   frv_init_cumulative_args (&CUM, FNTYPE, LIBNAME, NULL, TRUE)
 
-/* If defined, a C expression that gives the alignment boundary, in bits, of an
-   argument with the specified mode and type.  If it is not defined,
-   `PARM_BOUNDARY' is used for all arguments.  */
-
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
-  frv_function_arg_boundary (MODE, TYPE)
-
 /* A C expression that is nonzero if REGNO is the number of a hard register in
    which function arguments are sometimes passed.  This does *not* include
    implicit arguments such as the static chain and the structure-value address.

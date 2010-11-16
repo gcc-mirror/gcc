@@ -98,6 +98,7 @@ static rtx arc_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 			     const_tree, bool);
 static void arc_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				      const_tree, bool);
+static unsigned int arc_function_arg_boundary (enum machine_mode, const_tree);
 static void arc_trampoline_init (rtx, tree, rtx);
 static void arc_option_override (void);
 
@@ -156,6 +157,8 @@ static const struct attribute_spec arc_attribute_table[] =
 #define TARGET_FUNCTION_ARG arc_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE arc_function_arg_advance
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY arc_function_arg_boundary
 #undef TARGET_CALLEE_COPIES
 #define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
 
@@ -2421,6 +2424,22 @@ arc_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 {
   *cum = (ROUND_ADVANCE_CUM (*cum, mode, type)
 	  + ROUND_ADVANCE_ARG (mode, type));
+}
+
+/* If defined, a C expression that gives the alignment boundary, in bits,
+   of an argument with the specified mode and type.  If it is not defined, 
+   PARM_BOUNDARY is used for all arguments.  */
+#define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
+/* Worker function for TARGET_FUNCTION_ARG_BOUNDARY.  */
+
+static unsigned int
+arc_function_arg_boundary (enum machine_mode mode, const_tree type)
+{
+  return (type != NULL_TREE
+	  ? TYPE_ALIGN (type)
+	  : (GET_MODE_BITSIZE (mode) <= PARM_BOUNDARY
+	     ? PARM_BOUNDARY
+	     : 2 * PARM_BOUNDARY));
 }
 
 /* Trampolines.  */

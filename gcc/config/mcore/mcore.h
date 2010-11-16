@@ -119,11 +119,6 @@ extern char * mcore_current_function_name;
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY  	32
 
-/* Doubles must be aligned to an 8 byte boundary.  */
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
-  ((MODE != BLKmode && (GET_MODE_SIZE (MODE) == 8)) \
-   ? BIGGEST_ALIGNMENT : PARM_BOUNDARY)
-     
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
 #define STACK_BOUNDARY  (TARGET_8ALIGN ? 64 : 32)
 

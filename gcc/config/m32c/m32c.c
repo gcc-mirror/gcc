@@ -80,6 +80,7 @@ static bool m32c_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    const_tree, bool);
 static void m32c_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				       const_tree, bool);
+static unsigned int m32c_function_arg_boundary (enum machine_mode, const_tree);
 static int m32c_pushm_popm (Push_Pop_Type);
 static bool m32c_strict_argument_naming (CUMULATIVE_ARGS *);
 static rtx m32c_struct_value_rtx (tree, int);
@@ -1635,6 +1636,16 @@ m32c_function_arg_advance (CUMULATIVE_ARGS * ca,
     ca->force_mem = 0;
   else
     ca->parm_num++;
+}
+
+/* Implements TARGET_FUNCTION_ARG_BOUNDARY.  */
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY m32c_function_arg_boundary
+static unsigned int
+m32c_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
+			    const_tree type ATTRIBUTE_UNUSED)
+{
+  return (TARGET_A16 ? 8 : 16);
 }
 
 /* Implements FUNCTION_ARG_REGNO_P.  */

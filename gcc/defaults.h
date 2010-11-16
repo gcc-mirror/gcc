@@ -1256,14 +1256,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   DEFAULT_FUNCTION_ARG_PADDING ((MODE), (TYPE))
 #endif
 
-/* Supply a default definition for FUNCTION_ARG_BOUNDARY.  Normally, we let
-   FUNCTION_ARG_PADDING, which also pads the length, handle any needed
-   alignment.  */
-
-#ifndef FUNCTION_ARG_BOUNDARY
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE)	PARM_BOUNDARY
-#endif
-
 /* Supply a default definition of STACK_SAVEAREA_MODE for emit_stack_save.
    Normally move_insn, so Pmode stack pointer.  */
 
