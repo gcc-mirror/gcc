@@ -1,3 +1,7 @@
+2010-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ifcvt.c (dead_or_predicable): Fix typo.
+
 2010-11-16  Richard Henderson  <rth@redhat.com>
 
 	* config.gcc [s390*-*] (extra_options): Add fused-madd.opt.
