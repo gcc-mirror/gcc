@@ -188,16 +188,6 @@ process_references (struct ipa_ref_list *list,
     }
 }
 
-/* Return true when function NODE can be removed from callgraph
-   if all direct calls are eliminated.  */
-
-static inline bool
-varpool_can_remove_if_no_refs (struct varpool_node *node)
-{
-  return (!node->force_output && !node->used_from_other_partition
-  	  && (DECL_COMDAT (node->decl) || !node->externally_visible));
-}
-
 /* Return true when function can be marked local.  */
 
 static bool
@@ -269,7 +259,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
     {
       vnode->next_needed = NULL;
       vnode->prev_needed = NULL;
-      if (!varpool_can_remove_if_no_refs (vnode))
+      if (vnode->analyzed
+	  && !varpool_can_remove_if_no_refs (vnode))
 	{
 	  vnode->needed = false;
 	  varpool_mark_needed_node (vnode);
