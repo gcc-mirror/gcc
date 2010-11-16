@@ -1,5 +1,11 @@
 2010-11-15  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/mn10300.md (fmasf4, fmssf4, fnmasf4, fnmssf4): Rename
+	from fmaddsf4, fmsubsf4, fnmaddsf4, fnmsubsf4 respectively.  Use
+	fma rtx_code.
+
+2010-11-15  Richard Henderson  <rth@redhat.com>
+
 	* config/frv/frv.md (fmasf4, fmssf4): Rename from *muladdsf4
 	and *mulsubsf4 respectively.  Use fma rtx_code.
 
