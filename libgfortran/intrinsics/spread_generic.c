@@ -322,18 +322,26 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
 		 *along, *pncopies);
       return;
 
-#ifdef GFC_HAVE_REAL_10
+/* FIXME: This here is a hack, which will have to be removed when
+   the array descriptor is reworked.  Currently, we don't store the
+   kind value for the type, but only the size.  Because on targets with
+   __float128, we have sizeof(logn double) == sizeof(__float128),
+   we cannot discriminate here and have to fall back to the generic
+   handling (which is suboptimal).  */
+#if !defined(GFC_REAL_16_IS_FLOAT128)
+# ifdef GFC_HAVE_REAL_10
     case GFC_DTYPE_REAL_10:
       spread_r10 ((gfc_array_r10 *) ret, (gfc_array_r10 *) source,
 		 *along, *pncopies);
       return;
-#endif
+# endif
 
-#ifdef GFC_HAVE_REAL_16
+# ifdef GFC_HAVE_REAL_16
     case GFC_DTYPE_REAL_16:
       spread_r16 ((gfc_array_r16 *) ret, (gfc_array_r16 *) source,
 		 *along, *pncopies);
       return;
+# endif
 #endif
 
     case GFC_DTYPE_COMPLEX_4:
@@ -346,18 +354,26 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
 		 *along, *pncopies);
       return;
 
-#ifdef GFC_HAVE_COMPLEX_10
+/* FIXME: This here is a hack, which will have to be removed when
+   the array descriptor is reworked.  Currently, we don't store the
+   kind value for the type, but only the size.  Because on targets with
+   __float128, we have sizeof(logn double) == sizeof(__float128),
+   we cannot discriminate here and have to fall back to the generic
+   handling (which is suboptimal).  */
+#if !defined(GFC_REAL_16_IS_FLOAT128)
+# ifdef GFC_HAVE_COMPLEX_10
     case GFC_DTYPE_COMPLEX_10:
       spread_c10 ((gfc_array_c10 *) ret, (gfc_array_c10 *) source,
 		 *along, *pncopies);
       return;
-#endif
+# endif
 
-#ifdef GFC_HAVE_COMPLEX_16
+# ifdef GFC_HAVE_COMPLEX_16
     case GFC_DTYPE_COMPLEX_16:
       spread_c16 ((gfc_array_c16 *) ret, (gfc_array_c16 *) source,
 		 *along, *pncopies);
       return;
+# endif
 #endif
 
     case GFC_DTYPE_DERIVED_2:
@@ -501,18 +517,26 @@ spread_scalar (gfc_array_char *ret, const char *source,
 			*along, *pncopies);
       return;
 
-#ifdef HAVE_GFC_REAL_10
+/* FIXME: This here is a hack, which will have to be removed when
+   the array descriptor is reworked.  Currently, we don't store the
+   kind value for the type, but only the size.  Because on targets with
+   __float128, we have sizeof(logn double) == sizeof(__float128),
+   we cannot discriminate here and have to fall back to the generic
+   handling (which is suboptimal).  */
+#if !defined(GFC_REAL_16_IS_FLOAT128)
+# ifdef HAVE_GFC_REAL_10
     case GFC_DTYPE_REAL_10:
       spread_scalar_r10 ((gfc_array_r10 *) ret, (GFC_REAL_10 *) source,
 			*along, *pncopies);
       return;
-#endif
+# endif
 
-#ifdef HAVE_GFC_REAL_16
+# ifdef HAVE_GFC_REAL_16
     case GFC_DTYPE_REAL_16:
       spread_scalar_r16 ((gfc_array_r16 *) ret, (GFC_REAL_16 *) source,
 			*along, *pncopies);
       return;
+# endif
 #endif
 
     case GFC_DTYPE_COMPLEX_4:
@@ -525,18 +549,26 @@ spread_scalar (gfc_array_char *ret, const char *source,
 			*along, *pncopies);
       return;
 
-#ifdef HAVE_GFC_COMPLEX_10
+/* FIXME: This here is a hack, which will have to be removed when
+   the array descriptor is reworked.  Currently, we don't store the
+   kind value for the type, but only the size.  Because on targets with
+   __float128, we have sizeof(logn double) == sizeof(__float128),
+   we cannot discriminate here and have to fall back to the generic
+   handling (which is suboptimal).  */
+#if !defined(GFC_REAL_16_IS_FLOAT128)
+# ifdef HAVE_GFC_COMPLEX_10
     case GFC_DTYPE_COMPLEX_10:
       spread_scalar_c10 ((gfc_array_c10 *) ret, (GFC_COMPLEX_10 *) source,
 			*along, *pncopies);
       return;
-#endif
+# endif
 
-#ifdef HAVE_GFC_COMPLEX_16
+# ifdef HAVE_GFC_COMPLEX_16
     case GFC_DTYPE_COMPLEX_16:
       spread_scalar_c16 ((gfc_array_c16 *) ret, (GFC_COMPLEX_16 *) source,
 			*along, *pncopies);
       return;
+# endif
 #endif
 
     case GFC_DTYPE_DERIVED_2:

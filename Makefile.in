@@ -926,6 +926,7 @@ configure-target:  \
     maybe-configure-target-libssp \
     maybe-configure-target-newlib \
     maybe-configure-target-libgcc \
+    maybe-configure-target-libquadmath \
     maybe-configure-target-libgfortran \
     maybe-configure-target-libobjc \
     maybe-configure-target-libtermcap \
@@ -1108,6 +1109,7 @@ all-target: maybe-all-target-newlib
 @if target-libgcc-no-bootstrap
 all-target: maybe-all-target-libgcc
 @endif target-libgcc-no-bootstrap
+all-target: maybe-all-target-libquadmath
 all-target: maybe-all-target-libgfortran
 all-target: maybe-all-target-libobjc
 all-target: maybe-all-target-libtermcap
@@ -1229,6 +1231,7 @@ info-target: maybe-info-target-libmudflap
 info-target: maybe-info-target-libssp
 info-target: maybe-info-target-newlib
 info-target: maybe-info-target-libgcc
+info-target: maybe-info-target-libquadmath
 info-target: maybe-info-target-libgfortran
 info-target: maybe-info-target-libobjc
 info-target: maybe-info-target-libtermcap
@@ -1343,6 +1346,7 @@ dvi-target: maybe-dvi-target-libmudflap
 dvi-target: maybe-dvi-target-libssp
 dvi-target: maybe-dvi-target-newlib
 dvi-target: maybe-dvi-target-libgcc
+dvi-target: maybe-dvi-target-libquadmath
 dvi-target: maybe-dvi-target-libgfortran
 dvi-target: maybe-dvi-target-libobjc
 dvi-target: maybe-dvi-target-libtermcap
@@ -1457,6 +1461,7 @@ pdf-target: maybe-pdf-target-libmudflap
 pdf-target: maybe-pdf-target-libssp
 pdf-target: maybe-pdf-target-newlib
 pdf-target: maybe-pdf-target-libgcc
+pdf-target: maybe-pdf-target-libquadmath
 pdf-target: maybe-pdf-target-libgfortran
 pdf-target: maybe-pdf-target-libobjc
 pdf-target: maybe-pdf-target-libtermcap
@@ -1571,6 +1576,7 @@ html-target: maybe-html-target-libmudflap
 html-target: maybe-html-target-libssp
 html-target: maybe-html-target-newlib
 html-target: maybe-html-target-libgcc
+html-target: maybe-html-target-libquadmath
 html-target: maybe-html-target-libgfortran
 html-target: maybe-html-target-libobjc
 html-target: maybe-html-target-libtermcap
@@ -1685,6 +1691,7 @@ TAGS-target: maybe-TAGS-target-libmudflap
 TAGS-target: maybe-TAGS-target-libssp
 TAGS-target: maybe-TAGS-target-newlib
 TAGS-target: maybe-TAGS-target-libgcc
+TAGS-target: maybe-TAGS-target-libquadmath
 TAGS-target: maybe-TAGS-target-libgfortran
 TAGS-target: maybe-TAGS-target-libobjc
 TAGS-target: maybe-TAGS-target-libtermcap
@@ -1799,6 +1806,7 @@ install-info-target: maybe-install-info-target-libmudflap
 install-info-target: maybe-install-info-target-libssp
 install-info-target: maybe-install-info-target-newlib
 install-info-target: maybe-install-info-target-libgcc
+install-info-target: maybe-install-info-target-libquadmath
 install-info-target: maybe-install-info-target-libgfortran
 install-info-target: maybe-install-info-target-libobjc
 install-info-target: maybe-install-info-target-libtermcap
@@ -1913,6 +1921,7 @@ install-pdf-target: maybe-install-pdf-target-libmudflap
 install-pdf-target: maybe-install-pdf-target-libssp
 install-pdf-target: maybe-install-pdf-target-newlib
 install-pdf-target: maybe-install-pdf-target-libgcc
+install-pdf-target: maybe-install-pdf-target-libquadmath
 install-pdf-target: maybe-install-pdf-target-libgfortran
 install-pdf-target: maybe-install-pdf-target-libobjc
 install-pdf-target: maybe-install-pdf-target-libtermcap
@@ -2027,6 +2036,7 @@ install-html-target: maybe-install-html-target-libmudflap
 install-html-target: maybe-install-html-target-libssp
 install-html-target: maybe-install-html-target-newlib
 install-html-target: maybe-install-html-target-libgcc
+install-html-target: maybe-install-html-target-libquadmath
 install-html-target: maybe-install-html-target-libgfortran
 install-html-target: maybe-install-html-target-libobjc
 install-html-target: maybe-install-html-target-libtermcap
@@ -2141,6 +2151,7 @@ installcheck-target: maybe-installcheck-target-libmudflap
 installcheck-target: maybe-installcheck-target-libssp
 installcheck-target: maybe-installcheck-target-newlib
 installcheck-target: maybe-installcheck-target-libgcc
+installcheck-target: maybe-installcheck-target-libquadmath
 installcheck-target: maybe-installcheck-target-libgfortran
 installcheck-target: maybe-installcheck-target-libobjc
 installcheck-target: maybe-installcheck-target-libtermcap
@@ -2255,6 +2266,7 @@ mostlyclean-target: maybe-mostlyclean-target-libmudflap
 mostlyclean-target: maybe-mostlyclean-target-libssp
 mostlyclean-target: maybe-mostlyclean-target-newlib
 mostlyclean-target: maybe-mostlyclean-target-libgcc
+mostlyclean-target: maybe-mostlyclean-target-libquadmath
 mostlyclean-target: maybe-mostlyclean-target-libgfortran
 mostlyclean-target: maybe-mostlyclean-target-libobjc
 mostlyclean-target: maybe-mostlyclean-target-libtermcap
@@ -2369,6 +2381,7 @@ clean-target: maybe-clean-target-libmudflap
 clean-target: maybe-clean-target-libssp
 clean-target: maybe-clean-target-newlib
 clean-target: maybe-clean-target-libgcc
+clean-target: maybe-clean-target-libquadmath
 clean-target: maybe-clean-target-libgfortran
 clean-target: maybe-clean-target-libobjc
 clean-target: maybe-clean-target-libtermcap
@@ -2483,6 +2496,7 @@ distclean-target: maybe-distclean-target-libmudflap
 distclean-target: maybe-distclean-target-libssp
 distclean-target: maybe-distclean-target-newlib
 distclean-target: maybe-distclean-target-libgcc
+distclean-target: maybe-distclean-target-libquadmath
 distclean-target: maybe-distclean-target-libgfortran
 distclean-target: maybe-distclean-target-libobjc
 distclean-target: maybe-distclean-target-libtermcap
@@ -2597,6 +2611,7 @@ maintainer-clean-target: maybe-maintainer-clean-target-libmudflap
 maintainer-clean-target: maybe-maintainer-clean-target-libssp
 maintainer-clean-target: maybe-maintainer-clean-target-newlib
 maintainer-clean-target: maybe-maintainer-clean-target-libgcc
+maintainer-clean-target: maybe-maintainer-clean-target-libquadmath
 maintainer-clean-target: maybe-maintainer-clean-target-libgfortran
 maintainer-clean-target: maybe-maintainer-clean-target-libobjc
 maintainer-clean-target: maybe-maintainer-clean-target-libtermcap
@@ -2766,6 +2781,7 @@ check-target:  \
     maybe-check-target-libssp \
     maybe-check-target-newlib \
     maybe-check-target-libgcc \
+    maybe-check-target-libquadmath \
     maybe-check-target-libgfortran \
     maybe-check-target-libobjc \
     maybe-check-target-libtermcap \
@@ -2987,6 +3003,7 @@ install-target:  \
     maybe-install-target-libssp \
     maybe-install-target-newlib \
     maybe-install-target-libgcc \
+    maybe-install-target-libquadmath \
     maybe-install-target-libgfortran \
     maybe-install-target-libobjc \
     maybe-install-target-libtermcap \
@@ -48077,6 +48094,448 @@ maintainer-clean-target-libgcc:
 
 
 
+.PHONY: configure-target-libquadmath maybe-configure-target-libquadmath
+maybe-configure-target-libquadmath:
+@if gcc-bootstrap
+configure-target-libquadmath: stage_current
+@endif gcc-bootstrap
+@if target-libquadmath
+maybe-configure-target-libquadmath: configure-target-libquadmath
+configure-target-libquadmath: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for libquadmath..."; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libquadmath ; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libquadmath/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libquadmath/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libquadmath/multilib.tmp $(TARGET_SUBDIR)/libquadmath/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libquadmath/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libquadmath/Makefile; \
+	    mv $(TARGET_SUBDIR)/libquadmath/multilib.tmp $(TARGET_SUBDIR)/libquadmath/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libquadmath/multilib.tmp $(TARGET_SUBDIR)/libquadmath/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libquadmath/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libquadmath ; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	echo Configuring in $(TARGET_SUBDIR)/libquadmath; \
+	cd "$(TARGET_SUBDIR)/libquadmath" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libquadmath/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libquadmath"; \
+	libsrcdir="$$s/libquadmath"; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
+	  || exit 1
+@endif target-libquadmath
+
+
+
+
+
+.PHONY: all-target-libquadmath maybe-all-target-libquadmath
+maybe-all-target-libquadmath:
+@if gcc-bootstrap
+all-target-libquadmath: stage_current
+@endif gcc-bootstrap
+@if target-libquadmath
+TARGET-target-libquadmath=all
+maybe-all-target-libquadmath: all-target-libquadmath
+all-target-libquadmath: configure-target-libquadmath
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+		$(TARGET-target-libquadmath))
+@endif target-libquadmath
+
+
+
+
+
+.PHONY: check-target-libquadmath maybe-check-target-libquadmath
+maybe-check-target-libquadmath:
+@if target-libquadmath
+maybe-check-target-libquadmath: check-target-libquadmath
+
+check-target-libquadmath:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
+
+@endif target-libquadmath
+
+.PHONY: install-target-libquadmath maybe-install-target-libquadmath
+maybe-install-target-libquadmath:
+@if target-libquadmath
+maybe-install-target-libquadmath: install-target-libquadmath
+
+install-target-libquadmath: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libquadmath
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-target-libquadmath info-target-libquadmath
+maybe-info-target-libquadmath:
+@if target-libquadmath
+maybe-info-target-libquadmath: info-target-libquadmath
+
+info-target-libquadmath: \
+    configure-target-libquadmath 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libquadmath/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing info in $(TARGET_SUBDIR)/libquadmath" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           info) \
+	  || exit 1
+
+@endif target-libquadmath
+
+.PHONY: maybe-dvi-target-libquadmath dvi-target-libquadmath
+maybe-dvi-target-libquadmath:
+@if target-libquadmath
+maybe-dvi-target-libquadmath: dvi-target-libquadmath
+
+dvi-target-libquadmath: \
+    configure-target-libquadmath 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libquadmath/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libquadmath" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           dvi) \
+	  || exit 1
+
+@endif target-libquadmath
+
+.PHONY: maybe-pdf-target-libquadmath pdf-target-libquadmath
+maybe-pdf-target-libquadmath:
+@if target-libquadmath
+maybe-pdf-target-libquadmath: pdf-target-libquadmath
+
+pdf-target-libquadmath: \
+    configure-target-libquadmath 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libquadmath/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing pdf in $(TARGET_SUBDIR)/libquadmath" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           pdf) \
+	  || exit 1
+
+@endif target-libquadmath
+
+.PHONY: maybe-html-target-libquadmath html-target-libquadmath
+maybe-html-target-libquadmath:
+@if target-libquadmath
+maybe-html-target-libquadmath: html-target-libquadmath
+
+html-target-libquadmath: \
+    configure-target-libquadmath 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libquadmath/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing html in $(TARGET_SUBDIR)/libquadmath" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           html) \
+	  || exit 1
+
+@endif target-libquadmath
+
+.PHONY: maybe-TAGS-target-libquadmath TAGS-target-libquadmath
+maybe-TAGS-target-libquadmath:
+@if target-libquadmath
+maybe-TAGS-target-libquadmath: TAGS-target-libquadmath
+
+TAGS-target-libquadmath: \
+    configure-target-libquadmath 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libquadmath/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libquadmath" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           TAGS) \
+	  || exit 1
+
+@endif target-libquadmath
+
+.PHONY: maybe-install-info-target-libquadmath install-info-target-libquadmath
+maybe-install-info-target-libquadmath:
+@if target-libquadmath
+maybe-install-info-target-libquadmath: install-info-target-libquadmath
+
+install-info-target-libquadmath: \
+    configure-target-libquadmath \
+    info-target-libquadmath 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libquadmath/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libquadmath" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-info) \
+	  || exit 1
+
+@endif target-libquadmath
+
+.PHONY: maybe-install-pdf-target-libquadmath install-pdf-target-libquadmath
+maybe-install-pdf-target-libquadmath:
+@if target-libquadmath
+maybe-install-pdf-target-libquadmath: install-pdf-target-libquadmath
+
+install-pdf-target-libquadmath: \
+    configure-target-libquadmath \
+    pdf-target-libquadmath 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libquadmath/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libquadmath" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libquadmath
+
+.PHONY: maybe-install-html-target-libquadmath install-html-target-libquadmath
+maybe-install-html-target-libquadmath:
+@if target-libquadmath
+maybe-install-html-target-libquadmath: install-html-target-libquadmath
+
+install-html-target-libquadmath: \
+    configure-target-libquadmath \
+    html-target-libquadmath 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libquadmath/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-html in $(TARGET_SUBDIR)/libquadmath" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-html) \
+	  || exit 1
+
+@endif target-libquadmath
+
+.PHONY: maybe-installcheck-target-libquadmath installcheck-target-libquadmath
+maybe-installcheck-target-libquadmath:
+@if target-libquadmath
+maybe-installcheck-target-libquadmath: installcheck-target-libquadmath
+
+installcheck-target-libquadmath: \
+    configure-target-libquadmath 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libquadmath/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libquadmath" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           installcheck) \
+	  || exit 1
+
+@endif target-libquadmath
+
+.PHONY: maybe-mostlyclean-target-libquadmath mostlyclean-target-libquadmath
+maybe-mostlyclean-target-libquadmath:
+@if target-libquadmath
+maybe-mostlyclean-target-libquadmath: mostlyclean-target-libquadmath
+
+mostlyclean-target-libquadmath: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libquadmath/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libquadmath" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           mostlyclean) \
+	  || exit 1
+
+@endif target-libquadmath
+
+.PHONY: maybe-clean-target-libquadmath clean-target-libquadmath
+maybe-clean-target-libquadmath:
+@if target-libquadmath
+maybe-clean-target-libquadmath: clean-target-libquadmath
+
+clean-target-libquadmath: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libquadmath/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing clean in $(TARGET_SUBDIR)/libquadmath" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           clean) \
+	  || exit 1
+
+@endif target-libquadmath
+
+.PHONY: maybe-distclean-target-libquadmath distclean-target-libquadmath
+maybe-distclean-target-libquadmath:
+@if target-libquadmath
+maybe-distclean-target-libquadmath: distclean-target-libquadmath
+
+distclean-target-libquadmath: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libquadmath/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libquadmath" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           distclean) \
+	  || exit 1
+
+@endif target-libquadmath
+
+.PHONY: maybe-maintainer-clean-target-libquadmath maintainer-clean-target-libquadmath
+maybe-maintainer-clean-target-libquadmath:
+@if target-libquadmath
+maybe-maintainer-clean-target-libquadmath: maintainer-clean-target-libquadmath
+
+maintainer-clean-target-libquadmath: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libquadmath/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libquadmath" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           maintainer-clean) \
+	  || exit 1
+
+@endif target-libquadmath
+
+
+
+
+
 .PHONY: configure-target-libgfortran maybe-configure-target-libgfortran
 maybe-configure-target-libgfortran:
 @if gcc-bootstrap
@@ -55635,7 +56094,7 @@ check-gcc-fortran:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-fortran);
-check-fortran: check-gcc-fortran check-target-libgfortran
+check-fortran: check-gcc-fortran check-target-libquadmath check-target-libgfortran
 
 .PHONY: check-gcc-java check-java
 check-gcc-java:
@@ -57650,6 +58109,7 @@ configure-stage3-target-libgcc: maybe-all-stage3-gcc
 configure-stage4-target-libgcc: maybe-all-stage4-gcc
 configure-stageprofile-target-libgcc: maybe-all-stageprofile-gcc
 configure-stagefeedback-target-libgcc: maybe-all-stagefeedback-gcc
+configure-target-libquadmath: stage_last
 configure-target-libgfortran: stage_last
 configure-target-libobjc: stage_last
 configure-target-libtermcap: stage_last
@@ -57679,6 +58139,7 @@ configure-target-libmudflap: maybe-all-gcc
 configure-target-libssp: maybe-all-gcc
 configure-target-newlib: maybe-all-gcc
 configure-target-libgcc: maybe-all-gcc
+configure-target-libquadmath: maybe-all-gcc
 configure-target-libgfortran: maybe-all-gcc
 configure-target-libobjc: maybe-all-gcc
 configure-target-libtermcap: maybe-all-gcc
@@ -58466,6 +58927,7 @@ configure-target-libiberty: maybe-all-binutils
 configure-target-libiberty: maybe-all-ld
 configure-target-newlib: maybe-all-binutils
 configure-target-newlib: maybe-all-ld
+configure-target-libgfortran: maybe-all-target-libquadmath
 
 
 # Dependencies for target modules on other target modules are
@@ -58493,6 +58955,7 @@ configure-target-libstdc++-v3: maybe-all-target-libgcc
 configure-target-libmudflap: maybe-all-target-libgcc
 configure-target-libssp: maybe-all-target-libgcc
 configure-target-newlib: maybe-all-target-libgcc
+configure-target-libquadmath: maybe-all-target-libgcc
 configure-target-libgfortran: maybe-all-target-libgcc
 configure-target-libobjc: maybe-all-target-libgcc
 configure-target-libtermcap: maybe-all-target-libgcc
@@ -58519,6 +58982,8 @@ configure-target-libmudflap: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libssp: maybe-all-target-newlib maybe-all-target-libgloss
 
 
+
+configure-target-libquadmath: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libgfortran: maybe-all-target-newlib maybe-all-target-libgloss
 

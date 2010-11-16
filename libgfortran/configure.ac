@@ -111,6 +111,9 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
+# Create a spec file, so that compile/link tests don't fail
+test -f libgfortran.spec || touch libgfortran.spec
+
 # Check the compiler.
 # The same as in boehm-gc and libstdc++. Have to borrow it from there.
 # We must force CC to /not/ be precious variables; otherwise
@@ -459,6 +462,9 @@ LIBGFOR_CHECK_MINGW_SNPRINTF
 # Check for a broken powf implementation
 LIBGFOR_CHECK_FOR_BROKEN_POWF
 
+# Check whether we have a __float128 type
+LIBGFOR_CHECK_FLOAT128
+
 # Check for GNU libc feenableexcept
 AC_CHECK_LIB([m],[feenableexcept],[have_feenableexcept=yes AC_DEFINE([HAVE_FEENABLEEXCEPT],[1],[libm includes feenableexcept])])
 
@@ -509,6 +515,9 @@ else
   multilib_arg=
 fi
 
-# Write our Makefile.
-AC_CONFIG_FILES(Makefile)
+# Write our Makefile and spec file.
+AC_CONFIG_FILES([
+Makefile
+libgfortran.spec
+])
 AC_OUTPUT

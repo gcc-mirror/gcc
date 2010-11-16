@@ -1340,7 +1340,7 @@ check-gcc-[+language+]:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) [+gcc-check-target+]);
-check-[+language+]: check-gcc-[+language+][+ IF lib-check-target +] [+ lib-check-target +][+ ENDIF lib-check-target +]
+check-[+language+]: check-gcc-[+language+][+ FOR lib-check-target +] [+ lib-check-target +][+ ENDFOR lib-check-target +]
 [+ ENDFOR languages +]
 
 # Install the gcc headers files, but not the fixed include files,

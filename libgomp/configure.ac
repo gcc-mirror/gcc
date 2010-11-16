@@ -140,6 +140,10 @@ AC_SUBST(enable_static)
 
 AM_MAINTAINER_MODE
 
+# Create a spec file, so that compile/link tests don't fail
+test -f libgfortran.spec || touch libgfortran.spec
+FCFLAGS="$FCFLAGS -L."
+
 # We need gfortran to compile parts of the library
 # We can't use AC_PROG_FC because it expects a fully working gfortran.
 #AC_PROG_FC(gfortran)
@@ -155,7 +159,7 @@ case `echo $GFORTRAN` in
     fi ;;
 esac
 AC_PROG_FC(gfortran)
-FCFLAGS="$FCFLAGS -Wall"
+FCFLAGS="$FCFLAGS -Wall -L../libgfortran"
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
 libtool_VERSION=1:0:0

@@ -35,12 +35,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #else
 #define MATHFUNC(funcname) funcname ## l
 #endif
+#if defined(GFC_REAL_16_IS_FLOAT128)
+#define BUILTINMATHFUNC(funcname) funcname ## q
+#else
+#define BUILTINMATHFUNC(funcname) funcname ## l
+#endif
 
 #if defined (HAVE_GFC_REAL_16)
 
 
 
-#if (defined(GFC_WITH_QUAD_LIB) || defined(HAVE_JNL))
+#if (defined(GFC_REAL_16_IS_FLOAT128) || defined(HAVE_JNL))
 extern void bessel_jn_r16 (gfc_array_r16 * const restrict ret, int n1,
 				     int n2, GFC_REAL_16 x);
 export_proto(bessel_jn_r16);
@@ -107,7 +112,7 @@ bessel_jn_r16 (gfc_array_r16 * const restrict ret, int n1, int n2, GFC_REAL_16 x
 
 #endif
 
-#if (defined(GFC_WITH_QUAD_LIB) || defined(HAVE_YNL))
+#if (defined(GFC_REAL_16_IS_FLOAT128) || defined(HAVE_YNL))
 extern void bessel_yn_r16 (gfc_array_r16 * const restrict ret,
 				     int n1, int n2, GFC_REAL_16 x);
 export_proto(bessel_yn_r16);

@@ -46,6 +46,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <float.h>
 #include <stdarg.h>
 
+/* If we're support quad-precision floating-point type, include the
+   header to our support library.  */
+#ifdef HAVE_FLOAT128
+#  include "quadmath_weak.h"
+#endif
+
 #ifdef __MINGW32__
 extern float __strtof (const char *, char **);
 #define gfc_strtof __strtof
@@ -309,7 +315,11 @@ internal_proto(big_endian);
 #  define GFC_REAL_10_INFINITY __builtin_infl ()
 # endif
 # ifdef HAVE_GFC_REAL_16
-#  define GFC_REAL_16_INFINITY __builtin_infl ()
+#  ifdef GFC_REAL_16_IS_LONG_DOUBLE
+#   define GFC_REAL_16_INFINITY __builtin_infl ()
+#  else
+#   define GFC_REAL_16_INFINITY __builtin_infq ()
+#  endif
 # endif
 #endif
 #ifdef __FLT_HAS_QUIET_NAN__
@@ -323,7 +333,11 @@ internal_proto(big_endian);
 #  define GFC_REAL_10_QUIET_NAN __builtin_nanl ("")
 # endif
 # ifdef HAVE_GFC_REAL_16
-#  define GFC_REAL_16_QUIET_NAN __builtin_nanl ("")
+#  ifdef GFC_REAL_16_IS_LONG_DOUBLE
+#   define GFC_REAL_16_QUIET_NAN __builtin_nanl ("")
+#  else
+#   define GFC_REAL_16_QUIET_NAN nanq ("")
+#  endif
 # endif
 #endif
 

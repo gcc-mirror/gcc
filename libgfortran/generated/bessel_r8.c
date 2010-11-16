@@ -31,6 +31,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 #define MATHFUNC(funcname) funcname
+#define BUILTINMATHFUNC(funcname) MATHFUNC(funcname)
 
 #if defined (HAVE_GFC_REAL_8)
 

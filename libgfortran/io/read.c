@@ -162,10 +162,16 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
       break;
 #endif
 
-#if defined(HAVE_GFC_REAL_16) && defined (HAVE_STRTOLD)
+#if defined(HAVE_GFC_REAL_16)
+# if defined(GFC_REAL_16_IS_FLOAT128)
+    case 16:
+      __qmath_(quadmath_strtopQ) (buffer, NULL, dest);
+      break;
+# elif defined(HAVE_STRTOLD)
     case 16:
       *((GFC_REAL_16*) dest) = gfc_strtold (buffer, NULL);
       break;
+# endif
 #endif
 
     default:

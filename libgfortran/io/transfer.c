@@ -48,7 +48,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
    For other sorts of data transfer, there are zero or more data
    transfer statement that depend on the format of the data transfer
-   statement.
+   statement. For READ (and for backwards compatibily: for WRITE), one has
 
       transfer_integer
       transfer_logical
@@ -56,8 +56,22 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       transfer_character_wide
       transfer_real
       transfer_complex
+      transfer_real128
+      transfer_complex128
+   
+    and for WRITE
 
-    These subroutines do not return status.
+      transfer_integer_write
+      transfer_logical_write
+      transfer_character_write
+      transfer_character_wide_write
+      transfer_real_write
+      transfer_complex_write
+      transfer_real128_write
+      transfer_complex128_write
+
+    These subroutines do not return status. The *128 functions
+    are in the file transfer128.c.
 
     The last call is a call to st_[read|write]_done().  While
     something can easily go wrong with the initial st_read() or

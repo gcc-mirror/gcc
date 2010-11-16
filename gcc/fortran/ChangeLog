@@ -1,3 +1,15 @@
+2010-11-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32049
+	* gfortranspec.c (find_spec_file): New function.
+	(lang_specific_driver): Try to find .spec file and use it.
+	* trans-io.c (iocall): Define IOCALL_X_REAL128/COMPLEX128(,write).
+	(gfc_build_io_library_fndecls): Build decl for __float128 I/O.
+	(transfer_expr): Call __float128 I/O functions.
+	* trans-types.c (gfc_init_kinds): Allow kind-16 belonging
+	to __float128.
+
 2010-11-15  Tobias Burnus  <burnus@net.b.de>
 
 	PR fortran/46484

@@ -528,6 +528,7 @@ GFORTRAN_1.0 {
     _gfortran_pow_r10_i16;
     _gfortran_pow_r10_i8;
     _gfortran_pow_r16_i16;
+    _gfortran_pow_r16_i4;
     _gfortran_pow_r16_i8;
     _gfortran_pow_r4_i16;
     _gfortran_pow_r4_i8;
@@ -1146,9 +1147,13 @@ GFORTRAN_1.4 {
     _gfortran_transfer_character_write;
     _gfortran_transfer_character_wide_write;
     _gfortran_transfer_complex_write;
+    _gfortran_transfer_complex128;
+    _gfortran_transfer_complex128_write;
     _gfortran_transfer_integer_write;
     _gfortran_transfer_logical_write;
     _gfortran_transfer_real_write;
+    _gfortran_transfer_real128;
+    _gfortran_transfer_real128_write;
 } GFORTRAN_1.3; 
 
 F2C_1.0 {

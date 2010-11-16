@@ -973,6 +973,11 @@ sprintf (buffer, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
 
 #endif
 
+#if defined(GFC_REAL_16_IS_FLOAT128)
+#define DTOAQ \
+__qmath_(quadmath_dtoaq) (buffer, size, ndigits - 1, tmp);
+#endif
+
 #define WRITE_FLOAT(x,y)\
 {\
 	GFC_REAL_ ## x tmp;\
@@ -1002,7 +1007,7 @@ static void
 write_float (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
 {
 
-#if defined(HAVE_GFC_REAL_16) && __LDBL_DIG__ > 18
+#if defined(HAVE_GFC_REAL_16) || __LDBL_DIG__ > 18
 # define MIN_FIELD_WIDTH 46
 #else
 # define MIN_FIELD_WIDTH 31
@@ -1057,7 +1062,11 @@ write_float (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
 #endif
 #ifdef HAVE_GFC_REAL_16
     case 16:
+# ifdef GFC_REAL_16_IS_FLOAT128
+      WRITE_FLOAT(16,Q)
+# else
       WRITE_FLOAT(16,L)
+# endif
       break;
 #endif
     default:

@@ -301,18 +301,26 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
 	       (gfc_array_l1 *) mask, (gfc_array_r8 *) vector);
       return;
 
-#ifdef HAVE_GFC_REAL_10
+/* FIXME: This here is a hack, which will have to be removed when
+   the array descriptor is reworked.  Currently, we don't store the
+   kind value for the type, but only the size.  Because on targets with
+   __float128, we have sizeof(logn double) == sizeof(__float128),
+   we cannot discriminate here and have to fall back to the generic
+   handling (which is suboptimal).  */
+#if !defined(GFC_REAL_16_IS_FLOAT128)
+# ifdef HAVE_GFC_REAL_10
     case GFC_DTYPE_REAL_10:
       pack_r10 ((gfc_array_r10 *) ret, (gfc_array_r10 *) array,
 		(gfc_array_l1 *) mask, (gfc_array_r10 *) vector);
       return;
-#endif
+# endif
 
-#ifdef HAVE_GFC_REAL_16
+# ifdef HAVE_GFC_REAL_16
     case GFC_DTYPE_REAL_16:
       pack_r16 ((gfc_array_r16 *) ret, (gfc_array_r16 *) array,
 		(gfc_array_l1 *) mask, (gfc_array_r16 *) vector);
       return;
+# endif
 #endif
 
     case GFC_DTYPE_COMPLEX_4:
@@ -325,18 +333,26 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
 	       (gfc_array_l1 *) mask, (gfc_array_c8 *) vector);
       return;
 
-#ifdef HAVE_GFC_COMPLEX_10
+/* FIXME: This here is a hack, which will have to be removed when
+   the array descriptor is reworked.  Currently, we don't store the
+   kind value for the type, but only the size.  Because on targets with
+   __float128, we have sizeof(logn double) == sizeof(__float128),
+   we cannot discriminate here and have to fall back to the generic
+   handling (which is suboptimal).  */
+#if !defined(GFC_REAL_16_IS_FLOAT128)
+# ifdef HAVE_GFC_COMPLEX_10
     case GFC_DTYPE_COMPLEX_10:
       pack_c10 ((gfc_array_c10 *) ret, (gfc_array_c10 *) array,
 		(gfc_array_l1 *) mask, (gfc_array_c10 *) vector);
       return;
-#endif
+# endif
 
-#ifdef HAVE_GFC_COMPLEX_16
+# ifdef HAVE_GFC_COMPLEX_16
     case GFC_DTYPE_COMPLEX_16:
       pack_c16 ((gfc_array_c16 *) ret, (gfc_array_c16 *) array,
 		(gfc_array_l1 *) mask, (gfc_array_c16 *) vector);
       return;
+# endif
 #endif
 
       /* For derived types, let's check the actual alignment of the

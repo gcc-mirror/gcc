@@ -63,6 +63,9 @@ along with GCC; see the file COPYING3.  If not see
 #define FORTRAN_LIBRARY "gfortran"
 #endif
 
+/* Name of the spec file.  */
+#define SPEC_FILE "libgfortran.spec"
+
 /* The original argument list and related info is copied here.  */
 static unsigned int g77_xargc;
 static const struct cl_decoded_option *g77_x_decoded_options;
@@ -71,6 +74,27 @@ static void append_arg (const struct cl_decoded_option *);
 /* The new argument list will be built here.  */
 static unsigned int g77_newargc;
 static struct cl_decoded_option *g77_new_decoded_options;
+
+
+/* Return full path name of spec file if it is in DIR, or NULL if
+   not.  */
+static char *
+find_spec_file (const char *dir)
+{
+  const char dirsep_string[] = { DIR_SEPARATOR, '\0' };
+  char *spec;
+  struct stat sb;
+
+  spec = XNEWVEC (char, strlen (dir) + sizeof (SPEC_FILE) + 4);
+  strcpy (spec, dir);
+  strcat (spec, dirsep_string);
+  strcat (spec, SPEC_FILE);
+  if (!stat (spec, &sb))
+    return spec;
+  free (spec);
+  return NULL;
+}
+
 
 /* Return whether strings S1 and S2 are both NULL or both the same
    string.  */
@@ -199,6 +223,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* Whether we should link a static libgfortran. */
   int static_lib = 0; 
 
+  /* The path to the spec file.  */
+  char *spec_file = NULL;
+
   /* Whether we need to link statically.  */
   int static_linking = 0;
 
@@ -282,6 +309,12 @@ For more information about these matters, see the file named COPYING\n\n"));
 	  /* Let gcc.c handle this, as it has a really
 	     cool facility for handling --help and --verbose --help.  */
 	  return;
+
+	case OPT_L:
+	  if (!spec_file)
+	    spec_file = find_spec_file (decoded_options[i].arg);
+	  break;
+
 
 	default:
 	  break;
@@ -412,6 +445,11 @@ For more information about these matters, see the file named COPYING\n\n"));
     }
 
 #endif
+
+  /* Read the specs file corresponding to libgfortran.
+     If we didn't find the spec file on the -L path, then we hope it
+     is somewhere in the standard install areas.  */
+  append_option (OPT_specs_, spec_file == NULL ? SPEC_FILE : spec_file, 1);
 
   if (verbose && g77_new_decoded_options != g77_x_decoded_options)
     {
