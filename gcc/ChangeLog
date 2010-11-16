@@ -1,3 +1,10 @@
+2010-11-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44545
+	* tree-ssa-reassoc.c (linearize_expr_tree): Possibly throwing
+	statements are not reassociatable.
+	(reassociate_bb): Likewise.
+
 2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* bitmap.c: Delete unnecessary includes.
