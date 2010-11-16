@@ -1,5 +1,12 @@
 2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* expr.c (alignment_for_piecewise_move): New function.
+	(widest_int_mode_for_size): New function.
+	(move_by_pieces, move_by_pieces_ninsns): Call them.
+	(can_store_by_pieces, store_by_pieces_1): Likewise.
+
+2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* gcc.c (char_p): Define.  Define a VEC of it.
 	(n_linker_options, n_assembler_options, n_preprocessor_options):
 	Delete.
