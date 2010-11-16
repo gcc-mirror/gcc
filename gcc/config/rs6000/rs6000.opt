@@ -176,10 +176,6 @@ mavoid-indexed-addresses
 Target Report Var(TARGET_AVOID_XFORM) Init(-1)
 Avoid generation of indexed load/store instructions when possible
 
-mfused-madd
-Target Report Var(TARGET_FUSED_MADD) Init(1)
-Generate fused multiply/add instructions
-
 mtls-markers
 Target Report Var(tls_markers) Init(1)
 Mark __tls_get_addr calls with argument info

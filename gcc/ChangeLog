@@ -1,5 +1,54 @@
 2010-11-16  Richard Henderson  <rth@redhat.com>
 
+	* config.gcc [powerpc*, rs6000*] (extra_options): Add fused-madd.opt.
+	* config/rs6000/rs6000.opt (mfused-madd): Remove.
+	* config/rs6000/altivec.md (altivec_vmaddfp): Remove.
+	(*altivec_vmaddfp_1): Remove.
+	(*altivec_fmav4sf4): Rename from altivec_vmaddfp_2; use FMA.
+	(altivec_mulv4sf3): Expand to FMA directly.
+	(*altivec_vnmsubfp): Rename from altivec_vnmsubfp.
+	(*altivec_vnmsubfp_1, *altivec_vnmsubfp_2): Remove.
+	* config/rs6000/paired.md (paired_madds0): Use FMA.
+	(paired_madds1): Likewise.
+	(*paired_madd): Rename from paired_madd; use FMA.
+	(*paired_msub, *paired_nmadd, *paired_nmsub): Similarly.
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Do not
+	consider TARGET_FUSED_MADD wrt rs6000_recip_control.
+	(bdesc_3arg): Update CODE_FOR_* for pattern renames.
+	(rs6000_emit_madd): Use fma_optab.
+	(rs6000_emit_msub): Use fms_optab.
+	(rs6000_emit_nmsub): Expand the FMA pattern directly.
+	* config/rs6000/rs6000.md (FMA_F): New mode iterator.
+	(*fmasf4_fpr): Rename from fmasf4_fpr.
+	(*nfmasf4_fpr): Rename from *fnmasf4_fpr.
+	(*nfmssf4_fpr): Rename from *fnmssf4_fpr.
+	(*fmaddsf4_powerpc, *fmaddsf4_power, *fmsubsf4_powerpc): Remove.
+	(*fmsubsf4_power, *fnmaddsf4_powerpc_1, *fnmaddsf4_powerpc_2): Remove.
+	(*fnmaddsf4_power_1, *fnmaddsf4_power_2, *fnmsubsf4_powerpc_1): Remove.
+	(*fnmsubsf4_powerpc_2, *fnmsubsf4_power_1, *fnmsubsf4_power_2): Remove.
+	(*fmadf4_fpr): Rename from fmadf4_fpr.
+	(*nfmadf4_fpr): Rename from *fnmadf4_fpr.
+	(*nfmsdf4_fpr): Rename from *fnmsdf4_fpr.
+	(*fmadddf4_fpr, *fmsubdf4_fpr, *fnmadddf4_fpr_1): Remove.
+	(*fnmadddf4_fpr_2, *fnmsubdf4_fpr_1, *fnmsubdf4_fpr_2): Remove.
+	(fmasf4, fmadf4): Macroize into...
+	(fma<FMA_F>4): ... here.
+	(fms<FMA_F>4, fnma<FMA_F>4, fnms<FMA_F>4): New.
+	(nfma<FMA_F>4, nfms<FMA_F>4): New.
+	* config/rs6000/vector.md (mul<VEC_F>3): Do not depend on
+	TARGET_FUSED_MADD.
+	* config/rs6000/vsx.md (vsx_fmadd<VSX_B>4): Remove.
+	(*vsx_fmadd<mode>4_1): Remove.
+	(vsx_fmsub<mode>4, *vsx_fmsub<mode>4_1): Remove.
+	(vsx_fnmadd<mode>4_1, vsx_fnmadd<mode>4_2): Remove.
+	(vsx_fnmsub<mode>4_1, vsx_fnmsub<mode>4_2): Remove.
+	(*vsx_fma<mode>4): Rename from vsx_fmadd<mode>4_2.
+	(*vsx_fms<mode>4): Rename from vsx_fmsub<mode>4_2.
+	(*vsx_nfma<mode>4): Rename from vsx_fnmadd<mode>4.
+	(*vsx_nfms<mode>4): Rename from vsx_fnmsub<mode>4.
+
+2010-11-16  Richard Henderson  <rth@redhat.com>
+
 	* config/pa/pa.md (fmadf4): Rename from unnamed; use FMA.
 	(fmasf4, fnmadf4, fnmasf4): Likewise.
 	(unnamed plus+mult insns and splitters): Delete.
