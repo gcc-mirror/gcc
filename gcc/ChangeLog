@@ -1,3 +1,10 @@
+2010-11-16  Richard Henderson  <rth@redhat.com>
+
+	PR target/46470
+	* recog.c (peep2_attempt): Convert frame-related info when possible.
+	(peep2_fill_buffer): Allow frame-related insns into the buffer.
+	(peephole2_optimize): Allow peep2_attempt to fail.
+
 2010-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/46315
