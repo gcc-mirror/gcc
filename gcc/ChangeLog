@@ -1,3 +1,8 @@
+2010-11-16  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k.c (m68k_delegitimize_address): Also expect
+	LABEL_REF in UNSPEC operand.
+
 2010-11-16  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (+varpool_can_remove_if_no_refs): Move here from ...;
@@ -36,7 +41,7 @@
 	Remove unused variable.
 	(score_store_multiple_operation): Likewise.
 	* config/score/score7.c (score7_return_in_memory): Constify arguments.
-        (score7_in_small_data_p, score7_function_value): Likewise.
+	(score7_in_small_data_p, score7_function_value): Likewise.
 	(score7_trampoline_init): Use LCT_NORMAL.
 	(score7_print_operand): Initialize code as UNKNOWN.
 	* config/score/score3.h (score3_return_in_memory): Update prototype.
@@ -530,7 +535,7 @@
 	(dwarf2out_init): Do not emit debug section switches here, allocate a
 	vec for macinfo, when required.
 	(dwarf2out_finish): First switch to debug_abbrev_section here.
-	debug_line_section,  debug_macinfo_section, Likewise.  
+	debug_line_section,  debug_macinfo_section, Likewise.
 	Check that the pubtypes table has at least one unpruned entry before
 	trying to emit it.
 
@@ -800,7 +805,7 @@
 
 2010-11-11  Richard Henderson  <rth@redhat.com>
 
-        * optabs.c (init_optabs): Init {fma,fms,fnma,fnms}_optab properly.
+	* optabs.c (init_optabs): Init {fma,fms,fnma,fnms}_optab properly.
 
 2010-11-11  Richard Henderson  <rth@redhat.com>
 
@@ -1049,7 +1054,7 @@
 	with lowercase letters and remove trailing '.'.  Fix typo in
 	diagnostic.
 	* passes.c (position_pass): Start diagnostic with lowercase
-	letter.	
+	letter.
 	* plugin.c (add_new_plugin, parse_plugin_arg_opt,
 	register_callback, try_init_one_plugin): Start diagnostics with
 	lowercase letters.
