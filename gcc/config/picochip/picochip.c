@@ -89,8 +89,8 @@ rtx picochip_incoming_function_arg (CUMULATIVE_ARGS * p_cum,
 				    const_tree type, bool named);
 void picochip_arg_advance (CUMULATIVE_ARGS * p_cum, enum machine_mode mode,
 			   const_tree type, bool named);
-unsigned int picochip_function_boundary (enum machine_mode mode,
-					 const_tree type);
+unsigned int picochip_function_arg_boundary (enum machine_mode mode,
+					     const_tree type);
 
 int picochip_sched_lookahead (void);
 int picochip_sched_issue_rate (void);
@@ -856,7 +856,7 @@ picochip_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   /* Compute the alignment and size of the parameter. */
   type_align_in_units =
-    picochip_function_arg_boundary (mode) / BITS_PER_UNIT;
+    picochip_function_arg_boundary (mode, type) / BITS_PER_UNIT;
   type_size_in_units = picochip_compute_arg_size (type, mode);
 
   /* Compute the correct offset (i.e., ensure that the offset meets
@@ -989,7 +989,7 @@ picochip_arg_partial_bytes (CUMULATIVE_ARGS * p_cum, enum machine_mode mode,
 
   /* Compute the alignment and size of the parameter. */
   type_align_in_units =
-    picochip_function_arg_boundary (mode) / BITS_PER_UNIT;
+    picochip_function_arg_boundary (mode, type) / BITS_PER_UNIT;
   type_size_in_units = picochip_compute_arg_size (type, mode);
 
   /* Compute the correct offset (i.e., ensure that the offset meets
@@ -1043,7 +1043,7 @@ picochip_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   /* Compute the alignment and size of the parameter. */
   type_align_in_units =
-    picochip_function_arg_boundary (mode) / BITS_PER_UNIT;
+    picochip_function_arg_boundary (mode, type) / BITS_PER_UNIT;
   type_size_in_units = picochip_compute_arg_size (type, mode);
 
   /* Compute the correct offset (i.e., ensure that the offset meets

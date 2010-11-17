@@ -2098,7 +2098,7 @@ xtensa_function_incoming_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static unsigned int
-function_arg_boundary (enum machine_mode mode, const_tree type)
+xtensa_function_arg_boundary (enum machine_mode mode, const_tree type)
 {
   unsigned int alignment;
 
