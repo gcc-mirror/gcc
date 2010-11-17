@@ -1,3 +1,8 @@
+2010-11-17  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.c (expand_builtin_mathfn_2, expand_builtin_mathfn): Do not
+	expand errno setting variant when optimizing for size.
+
 2010-11-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* postreload.c (reload_combine): Call control_flow_insn_p only once.
