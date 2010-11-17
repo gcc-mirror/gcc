@@ -324,7 +324,7 @@ struct rtl_opt_pass pass_postreload =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
+  TV_POSTRELOAD,                        /* tv_id */
   PROP_rtl,                             /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -1269,6 +1269,8 @@ execute_todo (unsigned int flags)
     gcc_assert (flags & TODO_update_ssa_any);
 #endif
 
+  timevar_push (TV_TODO);
+
   /* Inform the pass whether it is the first time it is run.  */
   first_pass_instance = (flags & TODO_mark_first_instance) != 0;
 
@@ -1302,6 +1304,8 @@ execute_todo (unsigned int flags)
      df problems.  */
   if (flags & TODO_df_finish)
     df_finish_pass ((flags & TODO_df_verify) != 0);
+
+  timevar_pop (TV_TODO);
 }
 
 /* Verify invariants that should hold between passes.  This is a place

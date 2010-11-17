@@ -2339,8 +2339,6 @@ rewrite_into_ssa (void)
   bitmap_head *dfs;
   basic_block bb;
 
-  timevar_push (TV_TREE_SSA_OTHER);
-
   /* Initialize operand data structures.  */
   init_ssa_operands ();
 
@@ -2380,7 +2378,6 @@ rewrite_into_ssa (void)
 
   fini_ssa_renamer ();
 
-  timevar_pop (TV_TREE_SSA_OTHER);
   return 0;
 }
 
@@ -2395,7 +2392,7 @@ struct gimple_opt_pass pass_build_ssa =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
+  TV_TREE_SSA_OTHER,			/* tv_id */
   PROP_cfg | PROP_referenced_vars,	/* properties_required */
   PROP_ssa,				/* properties_provided */
   0,					/* properties_destroyed */

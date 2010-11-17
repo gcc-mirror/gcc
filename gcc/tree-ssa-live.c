@@ -695,6 +695,8 @@ remove_unused_locals (void)
   if (!optimize)
     return;
 
+  timevar_push (TV_REMOVE_UNUSED);
+
   mark_scope_block_unused (DECL_INITIAL (current_function_decl));
 
   /* Assume all locals are unused.  */
@@ -827,6 +829,8 @@ remove_unused_locals (void)
       fprintf (dump_file, "Scope blocks after cleanups:\n");
       dump_scope_blocks (dump_file, dump_flags);
     }
+
+  timevar_pop (TV_REMOVE_UNUSED);
 }
 
 

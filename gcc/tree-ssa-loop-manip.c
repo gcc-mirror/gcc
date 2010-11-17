@@ -455,6 +455,8 @@ verify_loop_closed_ssa (bool verify_ssa_p)
   if (verify_ssa_p)
     verify_ssa (false);
 
+  timevar_push (TV_VERIFY_LOOP_CLOSED);
+
   FOR_EACH_BB (bb)
     {
       for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
@@ -468,6 +470,8 @@ verify_loop_closed_ssa (bool verify_ssa_p)
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	check_loop_closed_ssa_stmt (bb, gsi_stmt (bsi));
     }
+
+  timevar_pop (TV_VERIFY_LOOP_CLOSED);
 }
 
 /* Split loop exit edge EXIT.  The things are a bit complicated by a need to

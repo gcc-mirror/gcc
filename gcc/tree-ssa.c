@@ -1816,7 +1816,7 @@ struct gimple_opt_pass pass_early_warn_uninitialized =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
+  TV_TREE_UNINIT,			/* tv_id */
   PROP_ssa,				/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
@@ -1957,6 +1957,8 @@ execute_update_addresses_taken (void)
   bool update_vops = false;
   tree var;
   unsigned i;
+
+  timevar_push (TV_ADDRESS_TAKEN);
 
   /* Collect into ADDRESSES_TAKEN all variables whose address is taken within
      the function body.  */
@@ -2173,6 +2175,7 @@ execute_update_addresses_taken (void)
 
   BITMAP_FREE (not_reg_needs);
   BITMAP_FREE (addresses_taken);
+  timevar_pop (TV_ADDRESS_TAKEN);
 }
 
 struct gimple_opt_pass pass_update_address_taken =
@@ -2185,7 +2188,7 @@ struct gimple_opt_pass pass_update_address_taken =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
+  TV_ADDRESS_TAKEN,			/* tv_id */
   PROP_ssa,				/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */

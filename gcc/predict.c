@@ -2329,6 +2329,7 @@ struct gimple_opt_pass pass_strip_predict_hints =
 void
 rebuild_frequencies (void)
 {
+  timevar_push (TV_REBUILD_FREQUENCIES);
   if (profile_status == PROFILE_GUESSED)
     {
       loop_optimizer_init (0);
@@ -2343,4 +2344,5 @@ rebuild_frequencies (void)
     counts_to_freqs ();
   else
     gcc_unreachable ();
+  timevar_pop (TV_REBUILD_FREQUENCIES);
 }

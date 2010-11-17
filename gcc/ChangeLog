@@ -1,3 +1,29 @@
+2010-11-17  Michael Matz  <matz@suse.de>
+
+	* timevar.def (TV_IPA_OPT, TV_EARLY_LOCAL, TV_OPTIMIZE,
+	TV_POSTRELOAD, TV_REMOVE_UNUSED, TV_ADDRESS_TAKEN, TV_TODO,
+	TV_VERIFY_LOOP_CLOSED, TV_VERIFY_RTL_SHARING,
+	TV_REBUILD_FREQUENCIES, TV_REPAIR_LOOPS): New.
+	* tree-into-ssa.c (rewrite_into_ssa): Don't push/pop timevar here ...
+	(pass_build_ssa): ... but here.
+	* cgraphbuild.c (pass_rebuild_cgraph): Use timevar.
+	* tree-ssa-loop-manip.c (verify_loop_closed_ssa): Use timevar.
+	* tree-emutls.c (pass_ipa_lower_emutls): Ditto.
+	* df-core.c (pass_df_initialize_opt,
+	pass_df_initialize_no_opt): Ditto.
+	* predict.c (rebuild_frequencies): Ditto.
+	* tree-vectorizer.c (pass_ipa_increase_alignment): Ditto.
+	* emit-rtl.c (verify_rtl_sharing): Ditto.
+	* tree-cfgcleanup.c (repair_loop_structures): Ditto.
+	* tree-ssa-live.c (remove_unused_locals): Ditto.
+	* cfglayout.c (pass_into_cfg_layout, pass_outof_cfg_layout): Ditto.
+	* tree-ssa.c (pass_early_warn_uninitialized,
+	execute_update_addresses_taken, pass_update_address_taken): Ditto.
+	* tree-optimize.c (pass_all_optimizations, pass_early_local_passes,
+	pass_cleanup_cfg_post_optimizing, tree_rest_of_compilation): Ditto.
+	* passes.c (pass_postreload, execute_todo): Ditto.
+	* tree-ssanames.c (pass_release_ssa_names): Ditto.
+
 2010-11-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/invoke.texi (-dy): Remove.
