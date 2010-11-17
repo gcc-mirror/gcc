@@ -934,6 +934,7 @@ proc check_v3_target_debug_mode { } {
 
 	if [string match "" $lines] {
 	    # No error message, compilation succeeded.
+	    file delete $exe
 	    set et_debug_mode 1
 	}
     }
