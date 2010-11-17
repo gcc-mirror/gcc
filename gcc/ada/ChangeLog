@@ -1,3 +1,8 @@
+2010-11-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (addressable_p): Rewrite obsolete paragraph in
+	head comment.
+
 2010-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/Make-lang.in (ada/misc.o): Use $(OPTS_H).
