@@ -1,3 +1,17 @@
+2010-11-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.dg/two-types-1.c: New test.
+	* gcc.dg/two-types-2.c: New test.
+	* gcc.dg/two-types-3.c: New test.
+	* gcc.dg/two-types-4.c: New test.
+	* gcc.dg/two-types-5.c: New test.
+	* gcc.dg/two-types-6.c: New test.
+	* gcc.dg/two-types-7.c: New test.
+	* gcc.dg/two-types-8.c: New test.
+	* gcc.dg/two-types-9.c: New test.
+	* gcc.dg/two-types-10.c: New test.
+	* objc.dg/two-types-1.m: New test.
+
 2010-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/46440
