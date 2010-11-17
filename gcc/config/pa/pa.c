@@ -9608,10 +9608,9 @@ pa_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 static unsigned int
 pa_function_arg_boundary (enum machine_mode mode, const_tree type)
 {
-  tree size = TYPE_SIZE (type);
   bool singleword = (type
-		     ? (integer_zerop (size)
-			|| !TREE_CONSTANT (size)
+		     ? (integer_zerop (TYPE_SIZE (type))
+			|| !TREE_CONSTANT (TYPE_SIZE (type))
 			|| int_size_in_bytes (type) <= UNITS_PER_WORD)
 		     : GET_MODE_SIZE (mode) <= UNITS_PER_WORD);
 
