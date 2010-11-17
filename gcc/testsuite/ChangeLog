@@ -1,3 +1,8 @@
+2010-11-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/protocol-optional-1.m: New.
+	* obj-c++.dg/protocol-optional-1.mm: New.
+
 2010-11-16  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/powerpc/ppc-fma-2.c: Use -ffp-contract=off.
