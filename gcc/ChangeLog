@@ -1,3 +1,11 @@
+2010-11-17  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/45838
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1,
+	call_may_clobber_ref_p_1): Return true for __sync_* and some
+	OpenMP builtins that act as threading barriers.
+
 2010-11-17  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46498
