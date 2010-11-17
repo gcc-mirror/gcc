@@ -1,10 +1,8 @@
 /* { dg-lto-do run } */
 
-#ifdef __ia64
-asm (".globl start_\nstart_: nop 0");
-#else
-asm (".globl start_\nstart_: nop");
-#endif
+#include "../nop.h"
+
+asm (".globl start_\nstart_: " NOP);
 
 int
 main ()

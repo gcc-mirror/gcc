@@ -12,8 +12,7 @@
 
 2010-11-17  Richard Guenther  <rguenther@suse.de>
 
-	* value-prof.c (gimple_divmod_fixed_value_transform): Update
-	the stmt.
+	* value-prof.c (gimple_divmod_fixed_value_transform): Update the stmt.
 	(gimple_mod_pow2_value_transform): Likewise.
 	(gimple_mod_subtract_transform): Likewise.
 
@@ -34,8 +33,7 @@
 	* cgraphbuild.c (pass_rebuild_cgraph): Use timevar.
 	* tree-ssa-loop-manip.c (verify_loop_closed_ssa): Use timevar.
 	* tree-emutls.c (pass_ipa_lower_emutls): Ditto.
-	* df-core.c (pass_df_initialize_opt,
-	pass_df_initialize_no_opt): Ditto.
+	* df-core.c (pass_df_initialize_opt, pass_df_initialize_no_opt): Ditto.
 	* predict.c (rebuild_frequencies): Ditto.
 	* tree-vectorizer.c (pass_ipa_increase_alignment): Ditto.
 	* emit-rtl.c (verify_rtl_sharing): Ditto.
@@ -230,10 +228,11 @@
 	* ipa.c (varpool_can_remove_if_no_refs): ... here.
 	(cgraph_remove_unreachable_nodes): Only analyzed nodes needs to stay.
 	* cgraphunit.c (cgraph_analyze_functions): Dump varpool, too.
-	* varpool.c (decide_is_variable_needed): Do not handle visibility issues.
+	* varpool.c (decide_is_variable_needed): Do not handle visibility
+	issues.
 	(varpool_finalize_decl): Likewise.
-	(varpool_remove_unreferenced_decls): Use varpool_mark_needed_node; update
-	outdated comment on DECL_RTL_SET_P check.
+	(varpool_remove_unreferenced_decls): Use varpool_mark_needed_node;
+	update outdated comment on DECL_RTL_SET_P check.
 
 2010-11-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
@@ -243,8 +242,7 @@
 
 2010-11-16  Nick Clifton  <nickc@redhat.com>
 
-	* config/v850/v850.md (maddsf4): Rename to fmasf4 and use fma
-	rtx_code.
+	* config/v850/v850.md (maddsf4): Rename to fmasf4 and use fma rtx_code.
 	(msubsf4): Rename to fmssf4, and use fma.
 	(nmaddsf4): Rename to fnmasf4 and use fma.
 	(nmsubsf4): Rename to fnmssf4 and use fma.
@@ -305,8 +303,7 @@
 
 2010-11-16  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* gensupport.c (MNEMONIC_ATTR_NAME, MNEMONIC_HTAB_SIZE): New
-	macros.
+	* gensupport.c (MNEMONIC_ATTR_NAME, MNEMONIC_HTAB_SIZE): New macros.
 	(htab_eq_string, add_mnemonic_string, gen_mnemonic_setattr)
 	(mnemonic_htab_callback, gen_mnemonic_attr): New functions.
 	(init_rtx_reader_args_cb): Invoke gen_mnemonic_attr.
@@ -411,8 +408,7 @@
 
 2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
 
-	* Makefile.in (bitmap.o, ebitmap.o, et-forest.o): Update
-	dependencies.
+	* Makefile.in (bitmap.o, ebitmap.o, et-forest.o): Update dependencies.
 	(sreal.o, statistics.o, stringpool.o): Likewise.
 
 2010-11-16  Richard Guenther  <rguenther@suse.de>
@@ -442,8 +438,7 @@
 2010-11-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/45172
-	* tree-eh.c (cleanup_empty_eh_unsplit): Avoid creating duplicate
-	edges.
+	* tree-eh.c (cleanup_empty_eh_unsplit): Avoid creating duplicate edges.
 
 2010-11-16  Nick Clifton  <nickc@redhat.com>
 
@@ -453,7 +448,7 @@
 2010-11-15  Richard Henderson  <rth@redhat.com>
 
 	* fold-const.c (operand_equal_for_comparison_p): Handle FMA_EXPR,
-	WIDEN_MULT_PLUS_EXPR, WIDEN_MULT_MINUS_EXPR, VEC_COND_EXPR,
+	WIDEN_MULT_PLUS_EXPR, WIDEN_MULT_MINUS_EXPR, VEC_COND_EXPR and
 	DOT_PROD_EXPR.
 
 2010-11-15  Richard Henderson  <rth@redhat.com>
@@ -474,8 +469,7 @@
 	(argbuf_length, argbuf_index): Remove.
 	(alloc_args, clear_args, store_arg, execute, insert_wrapper,
 	do_spec, do_self_spec, do_spec_1, eval_spec_function, main,
-	compare_debug_dump_opt_spec_function: Use VEC interfaces on
-	argbuf.
+	compare_debug_dump_opt_spec_function: Use VEC interfaces on argbuf.
 	* Makefile.in (GCC_OBJS): Add vec.o and ggc-none.o.
 	(gcc.o): Depend on $(VEC_H).
 
@@ -947,8 +941,7 @@
 	* config/avr/avr.c (avr_num_arg_regs): Constify type.
 	(avr_return_addr_rtx): De-constify tem.
 	(avr_rotate_bytes): Move declarations to start of block.
-	Don't use variable length array.
-	Put nested if/else into block.
+	Don't use variable length array.  Put nested if/else into block.
 
 	PR rtl-optimization/46433
 	* var-tracking.c: Include tm_p.h .
@@ -981,8 +974,7 @@
 	(trapping_loads_p): Remove unused variable pat.
 	(bfin_expand_binop_builtin): Use expand_normal.
 	(bfin_expand_unop_builtin): Likewise.
-	(bfin_expand_builtin): Likewise.
-	Set tmode before use.
+	(bfin_expand_builtin): Likewise.  Set tmode before use.
 
 	PR middle-end/44769
 	* final.c (split_double): Don't use BITS_PER_WORD directly in
@@ -1074,10 +1066,11 @@
 
 	PR tree-optimize/40436
 	* ipa-inline.c (likely_eliminated_by_inlining_p): Rename to ...
-	(eliminated_by_inlining_prob): ... this one; return 50% probability for
-	SRA.
-	(estimate_function_body_sizes): Update use of eliminated_by_inlining_prob;
-	estimate static function size for 2 instructions.
+	(eliminated_by_inlining_prob): ... this one; return 50% probability
+	for SRA.
+	(estimate_function_body_sizes): Update use of
+	eliminated_by_inlining_prob; estimate static function size
+	for 2 instructions.
 
 2010-11-11  Joern Rennecke  <amylaar@spamcop.net>
 
@@ -1276,8 +1269,7 @@
 	* opts.c (finish_options, common_handle_option): Start diagnostics
 	with lowercase letters and remove trailing '.'.  Fix typo in
 	diagnostic.
-	* passes.c (position_pass): Start diagnostic with lowercase
-	letter.
+	* passes.c (position_pass): Start diagnostic with lowercase letter.
 	* plugin.c (add_new_plugin, parse_plugin_arg_opt,
 	register_callback, try_init_one_plugin): Start diagnostics with
 	lowercase letters.
