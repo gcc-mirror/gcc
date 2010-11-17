@@ -1,3 +1,9 @@
+2010-11-16  Jason Merrill  <jason@redhat.com>
+
+	DR 1004
+	* decl.c (make_unbound_class_template): Handle using
+	injected-type-name as template.
+
 2010-11-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* typeck.c (cp_build_unary_op): Use

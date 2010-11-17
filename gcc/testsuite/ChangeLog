@@ -1,3 +1,7 @@
+2010-11-16  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/injected2.C: New.
+
 2010-11-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/protocol-optional-1.m: New.
