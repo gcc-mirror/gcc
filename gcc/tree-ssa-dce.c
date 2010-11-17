@@ -1317,6 +1317,8 @@ perform_tree_ssa_dce (bool aggressive)
   struct edge_list *el = NULL;
   bool something_changed = 0;
 
+  calculate_dominance_info (CDI_DOMINATORS);
+
   /* Preheaders are needed for SCEV to work.
      Simple lateches and recorded exits improve chances that loop will
      proved to be finite in testcases such as in loop-15.c and loop-24.c  */
