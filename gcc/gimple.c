@@ -4398,6 +4398,10 @@ gimple_register_canonical_type (tree t)
   if (TYPE_CANONICAL (t))
     return TYPE_CANONICAL (t);
 
+  /* Always register the type itself first so that if it turns out
+     to be the canonical type it will be the one we merge to as well.  */
+  t = gimple_register_type (t);
+
   /* Always register the main variant first.  This is important so we
      pick up the non-typedef variants as canonical, otherwise we'll end
      up taking typedef ids for structure tags during comparison.  */
