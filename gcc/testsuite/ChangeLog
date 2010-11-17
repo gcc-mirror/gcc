@@ -1,3 +1,8 @@
+2010-11-17  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/31490
+	* gcc.dg/pr31490.c: New test.
+
 2010-11-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/nop.h: Move from ...
