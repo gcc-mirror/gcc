@@ -2,7 +2,7 @@
 /* { dg-do run } */
 /* { dg-options "-g" } */
 
-#include "nop.h"
+#include "../nop.h"
 
 static inline void
 foo (int argx)

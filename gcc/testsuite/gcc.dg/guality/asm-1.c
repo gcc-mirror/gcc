@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-g" } */
 
-#include "nop.h"
+#include "../nop.h"
 
 struct A { int x; unsigned short y; char z[64]; };
 

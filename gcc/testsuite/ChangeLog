@@ -1,3 +1,11 @@
+2010-11-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/nop.h: Move from ...
+	* gcc.dg/guality/nop.h: ... here.
+	* gcc.dg/lto/20091216-1_0.c: Include nop.h and use NOP macro.
+	* gcc.dg/guality/asm-1.c: Update nop.h include.
+	* gcc.dg/guality/pr43329-1.c: Ditto.
+
 2010-11-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.dg/two-types-1.c: New test.
@@ -129,19 +137,20 @@
 	* objc.dg/property/dotsyntax-19.m: New.
 	* objc.dg/property/dotsyntax-20.m: New.
 	* obj-c++.dg/property/dotsyntax-18.mm: New.
-	* obj-c++.dg/property/dotsyntax-19.mm: New.	
+	* obj-c++.dg/property/dotsyntax-19.mm: New.
 	* obj-c++.dg/property/dotsyntax-20.mm: New.
-	* objc.dg/property/dotsyntax-4.m: Removed some unused variables and code.
+	* objc.dg/property/dotsyntax-4.m: Removed some unused
+	variables and code.
 	* objc.dg/property/dotsyntax-6.m: Same change.
-	* objc.dg/property/dotsyntax-16.m: Same change. 
+	* objc.dg/property/dotsyntax-16.m: Same change.
 	* objc.dg/property/dotsyntax-17.m: Same change.
 	* obj-c++.dg/property/dotsyntax-4.mm: Same change.
 	* obj-c++.dg/property/dotsyntax-6.mm: Same change.
-	* obj-c++.dg/property/dotsyntax-16.mm: Same change. 
+	* obj-c++.dg/property/dotsyntax-16.mm: Same change.
 	* obj-c++.dg/property/dotsyntax-17.mm: Same change.
 	* objc.dg/property/at-property-22.m: Added missing casts.
 	* obj-c++.dg/property/at-property-22.mm: Same change.
-	
+
 2010-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46491
@@ -154,7 +163,8 @@
 
 	PR fortran/46484
 	* gfortran.dg/allocatable_scalar_11.f90: New.
-	* gfortran.dg/allocatable_scalar_5.f90: Make test case standard conform.
+	* gfortran.dg/allocatable_scalar_5.f90: Make test case
+	standard conform.
 
 2010-11-15  Jakub Jelinek  <jakub@redhat.com>
 
@@ -167,13 +177,13 @@
 2010-11-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/property/dotsyntax-16.m: New.
-	* objc.dg/property/dotsyntax-17.m: New.	
+	* objc.dg/property/dotsyntax-17.m: New.
 	* obj-c++.dg/property/dotsyntax-16.mm: New.
-	* obj-c++.dg/property/dotsyntax-17.mm: New.	
+	* obj-c++.dg/property/dotsyntax-17.mm: New.
 	* objc.dg/property/at-property-10.m: Uncommented using 'x++'
 	syntax with properties, which now works.
 	* obj-c++.dg/property/at-property-10.mm: Same change.
-	
+
 2010-11-15  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/46349
@@ -325,7 +335,7 @@
 	PR fortran/45794
 	* gfortran.dg/optional_mask.f90: New test.
 
-2010-11-13  Ville Voutilainen <ville.voutilainen@gmail.com> <ville.voutilainen@symbio.com>
+2010-11-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	* g++.dg/cpp0x/defaulted15.C: Adjust.
 
@@ -566,8 +576,7 @@
 2010-11-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR tree-optimization/46414
-	* gcc.target/i386/recip-vec-sqrtf-avx.c: Updated for loop
-	unrolling.
+	* gcc.target/i386/recip-vec-sqrtf-avx.c: Updated for loop unrolling.
 
 2010-11-10  Tobias Burnus  <burnus@net-b.de>
 
@@ -677,8 +686,8 @@
 2010-10-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/45663
-	* gcc.dg/guality/sra-1.c: Move all gdb-test lines to the second bar invocation
-	instead of first.
+	* gcc.dg/guality/sra-1.c: Move all gdb-test lines to the second
+	bar invocation instead of first.
 
 	PR debug/46171
 	* gcc.dg/pr46171.c: New test.
