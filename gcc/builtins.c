@@ -2039,7 +2039,8 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
     errno_set = false;
 
   /* Before working hard, check whether the instruction is available.  */
-  if (optab_handler (builtin_optab, mode) != CODE_FOR_nothing)
+  if (optab_handler (builtin_optab, mode) != CODE_FOR_nothing
+      && (!errno_set || !optimize_insn_for_size_p ()))
     {
       target = gen_reg_rtx (mode);
 
@@ -2148,6 +2149,9 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
 
   if (! flag_errno_math || ! HONOR_NANS (mode))
     errno_set = false;
+
+  if (errno_set && optimize_insn_for_size_p ())
+    return 0;
 
   /* Always stabilize the argument list.  */
   CALL_EXPR_ARG (exp, 0) = arg0 = builtin_save_expr (arg0);
