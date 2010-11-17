@@ -1,5 +1,12 @@
 2010-11-17  Richard Guenther  <rguenther@suse.de>
 
+	* value-prof.c (gimple_divmod_fixed_value_transform): Update
+	the stmt.
+	(gimple_mod_pow2_value_transform): Likewise.
+	(gimple_mod_subtract_transform): Likewise.
+
+2010-11-17  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/46504
 	* gimple.c (gimple_register_canonical_type): Make sure to only
 	make type leaders canonical types.
