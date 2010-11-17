@@ -1,3 +1,8 @@
+2010-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/45429
+	* gcc.dg/vect/no-section-anchors-vect-64.c: New test.
+
 2010-11-17  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/46312
