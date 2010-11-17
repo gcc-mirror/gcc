@@ -1,5 +1,7 @@
 2010-11-16  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/defaulted20.C: New.
+
 	* g++.dg/template/injected2.C: New.
 
 2010-11-17  Nicola Pero  <nicola.pero@meta-innovation.com>
