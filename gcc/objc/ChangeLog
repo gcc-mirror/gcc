@@ -1,3 +1,9 @@
+2010-11-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (lookup_method_in_protocol_list): Search methods in
+	PROTOCOL_OPTIONAL_CLS_METHODS / PROTOCOL_OPTIONAL_NST_METHODS if
+	they are not found in PROTOCOL_CLS_METHODS / PROTOCOL_NST_METHODS.
+
 2010-11-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_build_setter_call): New.

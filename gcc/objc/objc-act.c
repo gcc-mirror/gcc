@@ -649,30 +649,44 @@ static tree
 lookup_method_in_protocol_list (tree rproto_list, tree sel_name,
 				int is_class)
 {
-   tree rproto, p;
-   tree fnd = 0;
+  tree rproto, p, m;
 
    for (rproto = rproto_list; rproto; rproto = TREE_CHAIN (rproto))
      {
-        p = TREE_VALUE (rproto);
+       p = TREE_VALUE (rproto);
+       m = NULL_TREE;
 
 	if (TREE_CODE (p) == PROTOCOL_INTERFACE_TYPE)
 	  {
-	    if ((fnd = lookup_method (is_class
-				      ? PROTOCOL_CLS_METHODS (p)
-				      : PROTOCOL_NST_METHODS (p), sel_name)))
-	      ;
-	    else if (PROTOCOL_LIST (p))
-	      fnd = lookup_method_in_protocol_list (PROTOCOL_LIST (p),
-						    sel_name, is_class);
+	    /* First, search the @required protocol methods.  */
+	    if (is_class)
+	      m = lookup_method (PROTOCOL_CLS_METHODS (p),  sel_name);
+	    else
+	      m = lookup_method (PROTOCOL_NST_METHODS (p), sel_name);
+
+	    if (m)
+	      return m;
+
+	    /* If still not found, search the @optional protocol methods.  */
+	    if (is_class)
+	      m = lookup_method (PROTOCOL_OPTIONAL_CLS_METHODS (p), sel_name);
+	    else
+	      m = lookup_method (PROTOCOL_OPTIONAL_NST_METHODS (p), sel_name);
+
+	    if (m)
+	      return m;
+
+	    /* If still not found, search the attached protocols.  */
+	    if (PROTOCOL_LIST (p))
+	      m = lookup_method_in_protocol_list (PROTOCOL_LIST (p),
+						  sel_name, is_class);
+	    if (m)
+	      return m;
 	  }
 	else
           {
 	    ; /* An identifier...if we could not find a protocol.  */
           }
-
-	if (fnd)
-	  return fnd;
      }
 
    return 0;
@@ -8642,7 +8656,10 @@ objc_add_method (tree klass, tree method, int is_class, bool is_optional)
 {
   tree mth;
 
-  /* @optional methods are added to protocol's OPTIONAL list */
+  /* @optional methods are added to protocol's OPTIONAL list.  Note
+     that this disables checking that the methods are implemented by
+     classes implementing the protocol, since these checks only use
+     the CLASS_CLS_METHODS and CLASS_NST_METHODS.  */
   if (is_optional)
     {
       gcc_assert (TREE_CODE (klass) == PROTOCOL_INTERFACE_TYPE);
