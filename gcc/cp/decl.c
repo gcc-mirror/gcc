@@ -3227,6 +3227,9 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
       if (MAYBE_CLASS_TYPE_P (context))
 	tmpl = lookup_field (context, name, 0, false);
 
+      if (tmpl && TREE_CODE (tmpl) == TYPE_DECL)
+	tmpl = maybe_get_template_decl_from_type_decl (tmpl);
+
       if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
 	{
 	  if (complain & tf_error)
