@@ -123,10 +123,10 @@ struct simple_object_functions
   /* Release the private data for an simple_object_read.  */
   void (*release_read) (void *);
 
-  /* Compare the private data for the attributes of two files.  If
-     they are the same, in the sense that they could be linked
-     together, return NULL.  Otherwise return an error message.  */
-  const char *(*attributes_compare) (void *, void *, int *err);
+  /* Merge the private data for the attributes of two files.  If they
+     could be linked together, return NULL.  Otherwise return an error
+     message.  */
+  const char *(*attributes_merge) (void *, void *, int *err);
 
   /* Release the private data for an simple_object_attributes.  */
   void (*release_attributes) (void *);

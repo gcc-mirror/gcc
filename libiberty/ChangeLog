@@ -1,3 +1,22 @@
+2010-11-16  Ian Lance Taylor  <iant@google.com>
+
+	* simple-object.c (simple_object_attributes_merge): Rename from
+	simple_object_attributes_compare.  Call merge field.
+	* simple-object-common.h (struct simple_object_functions): Rename
+	attributes_compare field to attribute_merge.
+	* simple-object-elf.c (EM_SPARC): Define.
+	(EM_SPARC32PLUS): Define.
+	(simple_object_elf_attributes_merge): Renamed from
+	simple_object_elf_attributes_compare.  Permit EM_SPARC and
+	EM_SPARC32PLUS objects to be merged.
+	(simple_object_elf_functions): Update function name.
+	* simple-object-coff.c (simple_object_coff_attributes_merge):
+	Rename from simple_object_coff_attributes_compare.
+	(simple_object_coff_functions): Update function name.
+	* simple-object-mach-o.c (simple_object_mach_o_attributes_merge):
+	Renamed from simple_object_mach_o_attributes_compare.
+	(simple_object_mach_o_functions): Update function name.
+
 2010-11-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR other/42670
