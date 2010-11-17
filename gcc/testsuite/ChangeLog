@@ -1,3 +1,10 @@
+2010-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/guality/nop.h: New file.
+	* gcc.dg/guality/asm-1.c: Include it and use NOP macro instead of
+	"nop".  Adjust line numbers in gdb-test.
+	* gcc.dg/guality/pr43329-1.c: Likewise.
+
 2010-11-16  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/defaulted20.C: New.
