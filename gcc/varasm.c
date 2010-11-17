@@ -6102,13 +6102,17 @@ categorize_decl_for_section (const_tree decl, int reloc)
 	  /* Here the reloc_rw_mask is not testing whether the section should
 	     be read-only or not, but whether the dynamic link will have to
 	     do something.  If so, we wish to segregate the data in order to
-	     minimize cache misses inside the dynamic linker.  */
-	  if (reloc & targetm.asm_out.reloc_rw_mask ())
+	     minimize cache misses inside the dynamic linker.  If the data
+	     has a section attribute, ignore reloc_rw_mask() so that all data
+             in a given named section is catagorized in the same way.  */
+	  if (reloc & targetm.asm_out.reloc_rw_mask ()
+	      && !lookup_attribute ("section", DECL_ATTRIBUTES (decl)))
 	    ret = reloc == 1 ? SECCAT_DATA_REL_LOCAL : SECCAT_DATA_REL;
 	  else
 	    ret = SECCAT_DATA;
 	}
-      else if (reloc & targetm.asm_out.reloc_rw_mask ())
+      else if (reloc & targetm.asm_out.reloc_rw_mask ()
+	       && !lookup_attribute ("section", DECL_ATTRIBUTES (decl)))
 	ret = reloc == 1 ? SECCAT_DATA_REL_RO_LOCAL : SECCAT_DATA_REL_RO;
       else if (reloc || flag_merge_constants < 2)
 	/* C and C++ don't allow different variables to share the same

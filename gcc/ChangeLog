@@ -1,3 +1,10 @@
+2010-11-17  Dinar Temirbulatov <dtemirbulatov@gmail.com>
+	    Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/31490
+	* varasm.c (categorize_decl_for_section): Ignore reloc_rw_mask
+	if section attribute used.
+
 2010-11-17  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c (expand_builtin_mathfn_2, expand_builtin_mathfn): Do not
