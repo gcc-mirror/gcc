@@ -1,3 +1,22 @@
+2010-11-17  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/46312
+	* gcc.dg/vect/vect-scal-opt2.c: Rename to...
+	* gcc.dg/vect/vec-scal-opt2.c: ... this. Expect to pass only
+	on targets that support vector shifts with scalar shift argument.
+	Remove dg-options.
+	* gcc.dg/vect/vect-scal-opt.c: Rename to...
+	* gcc.dg/vect/vec-scal-opt.c: ... this, and change likewise.
+	* gcc.dg/vect/vect-scal-opt1.c: Rename to...
+	* gcc.dg/vect/vec-scal-opt1.c: ... this, and change likewise.
+	* gcc.dg/vect/vect.exp: Run vec-scal-* tests with relevant flags.
+	* gcc.dg/vect/vect-114.c: Expect to pass only on targets that
+	support misaligned data accesses.
+	* gcc.dg/vect/pr43432.c, gcc.dg/vect/vect-15.c: Likewise.
+	* gcc.dg/vect/pr43430-2.c: Remove dg-options.
+	* lib/target-supports.exp
+	(check_effective_target_vect_shift_scalar): New.
+
 2010-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/guality/nop.h: New file.

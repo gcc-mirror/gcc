@@ -2258,6 +2258,27 @@ proc check_effective_target_vect_shift { } {
     return $et_vect_shift_saved
 }
 
+# Return 1 if the target supports hardware vector shift operation with
+# scalar shift argument.
+
+proc check_effective_target_vect_shift_scalar { } {
+    global et_vect_shift_scalar_saved
+
+    if [info exists et_vect_shift_scalar_saved] {
+        verbose "check_effective_target_vect_shift_scalar: using cached result" 2
+    } else {
+        set et_vect_shift_scalar_saved 0
+        if { [istarget x86_64-*-*]
+             || [istarget i?86-*-*] } {
+           set et_vect_shift_scalar_saved 1
+        }
+    }
+
+    verbose "check_effective_target_vect_shift_scalar: returning $et_vect_shift_scalar_saved" 2
+    return $et_vect_shift_scalar_saved
+}
+
+
 # Return 1 if the target supports hardware vectors of long, 0 otherwise.
 #
 # This can change for different subtargets so do not cache the result.

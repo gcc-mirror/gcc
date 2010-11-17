@@ -23,9 +23,6 @@ load_lib gcc-dg.exp
 # Set up flags used for tests that don't specify options.
 set DEFAULT_VECTCFLAGS ""
 
-# These flags are used for all targets.
-lappend DEFAULT_VECTCFLAGS "-ftree-vectorize" "-fno-vect-cost-model"
-
 # If the target system supports vector instructions, the default action
 # for a test is 'run', otherwise it's 'compile'.  Save current default.
 # Executing vector instructions on a system without hardware vector support
@@ -118,6 +115,12 @@ if  [istarget "powerpc-*paired*"]  {
     return
 }
 
+global VEC_FLAGS
+set VEC_FLAGS $DEFAULT_VECTCFLAGS
+
+# These flags are used for all targets.
+lappend DEFAULT_VECTCFLAGS "-ftree-vectorize" "-fno-vect-cost-model"
+
 # Initialize `dg'.
 dg-init
 
@@ -136,6 +139,11 @@ lappend DEFAULT_VECTCFLAGS "-O2"
 # Tests that should be run without generating dump info
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/nodump-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
+
+# "-O -fdump-tree-veclower"
+lappend VEC_FLAGS "-O" "-fdump-tree-veclower"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vec-scal-*.\[cS\]]]  \
+        "" $VEC_FLAGS
 
 set VECT_SLP_CFLAGS $DEFAULT_VECTCFLAGS
 
