@@ -1,3 +1,8 @@
+2010-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* opts.c (target_handle_option): Do not assert that loc ==
+	UNKNOWN_LOCATION.
+
 2010-11-17  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Guenther  <rguenther@suse.de>
 

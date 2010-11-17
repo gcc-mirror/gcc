@@ -521,7 +521,7 @@ target_handle_option (struct gcc_options *opts,
 		      struct gcc_options *opts_set,
 		      const struct cl_decoded_option *decoded,
 		      unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
-		      location_t loc,
+		      location_t loc ATTRIBUTE_UNUSED,
 		      const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED,
 		      diagnostic_context *dc)
 {
@@ -530,7 +530,10 @@ target_handle_option (struct gcc_options *opts,
   gcc_assert (dc == global_dc);
   gcc_assert (decoded->canonical_option_num_elements <= 2);
   gcc_assert (kind == DK_UNSPECIFIED);
-  gcc_assert (loc == UNKNOWN_LOCATION);
+  /* Although the location is not passed down to
+     targetm.handle_option, do not make assertions about its value;
+     options may come from optimize attributes and having the correct
+     location in the handler is not generally important.  */
   return targetm.handle_option (decoded->opt_index, decoded->arg,
 				decoded->value);
 }
