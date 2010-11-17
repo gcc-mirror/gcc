@@ -1,14 +1,16 @@
 /* { dg-do run } */
 /* { dg-options "-g" } */
 
+#include "nop.h"
+
 struct A { int x; unsigned short y; char z[64]; };
 
 void __attribute__((noinline))
 foo (struct A *p, char *q)
 {
   int f = &p->z[p->y] - q;
-  asm volatile ("nop");
-  asm volatile ("nop" : : "g" (f));		/* { dg-final { gdb-test 12 "f" "14" } } */
+  asm volatile (NOP);
+  asm volatile (NOP : : "g" (f));		/* { dg-final { gdb-test 14 "f" "14" } } */
   asm volatile ("" : : "g" (p), "g" (q));
 }
 
