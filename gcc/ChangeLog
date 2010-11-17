@@ -1,3 +1,9 @@
+2010-11-17  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/46504
+	* gimple.c (gimple_register_canonical_type): Make sure to only
+	make type leaders canonical types.
+
 2010-11-17  Michael Matz  <matz@suse.de>
 
 	* timevar.def (TV_IPA_OPT, TV_EARLY_LOCAL, TV_OPTIMIZE,
