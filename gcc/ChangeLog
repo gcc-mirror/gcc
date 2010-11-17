@@ -1,3 +1,10 @@
+2010-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/46440
+	* combine.c (update_cfg_for_uncondjump): When changing
+	an indirect jump into unconditional jump, remove BARRIERs
+	from bb's footer.
+
 2010-11-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* opts.c (target_handle_option): Do not assert that loc ==
