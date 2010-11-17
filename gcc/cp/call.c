@@ -5290,6 +5290,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	   conversion (i.e. the second step of copy-initialization), so
 	   don't allow any more.  */
 	flags |= LOOKUP_NO_CONVERSION;
+      if (TREE_CODE (expr) == TARGET_EXPR
+	  && TARGET_EXPR_LIST_INIT_P (expr))
+	/* Copy-list-initialization doesn't actually involve a copy.  */
+	return expr;
       expr = build_temp (expr, totype, flags, &diag_kind, complain);
       if (diag_kind && fn)
 	{
@@ -6049,15 +6053,9 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       else
 	arg = cp_build_indirect_ref (arg, RO_NULL, complain);
 
-      if (TREE_CODE (arg) == TARGET_EXPR
-	  && TARGET_EXPR_LIST_INIT_P (arg))
-	{
-	  /* Copy-list-initialization doesn't require the constructor
-	     to be defined.  */
-	}
       /* [class.copy]: the copy constructor is implicitly defined even if
 	 the implementation elided its use.  */
-      else if (!trivial || DECL_DELETED_FN (fn))
+      if (!trivial || DECL_DELETED_FN (fn))
 	{
 	  mark_used (fn);
 	  already_used = true;
@@ -6641,7 +6639,7 @@ build_new_method_call (tree instance, tree fns, VEC(tree,gc) **args,
     {
       if (complain & tf_error)
 	{
-	  if (!COMPLETE_TYPE_P (basetype))
+	  if (!COMPLETE_OR_OPEN_TYPE_P (basetype))
 	    cxx_incomplete_type_error (instance_ptr, basetype);
 	  else if (optype)
 	    error ("no matching function for call to %<%T::operator %T(%A)%#V%>",
