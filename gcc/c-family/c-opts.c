@@ -1057,30 +1057,9 @@ c_common_init (void)
 /* Initialize the integrated preprocessor after debug output has been
    initialized; loop over each input file.  */
 void
-c_common_parse_file (int set_yydebug)
+c_common_parse_file (void)
 {
   unsigned int i;
-
-  if (set_yydebug)
-    switch (c_language)
-      {
-      case clk_c:
-	warning(0, "the C parser does not support -dy, option ignored");
-	break;
-      case clk_objc:
-	warning(0,
-		"the Objective-C parser does not support -dy, option ignored");
-	break;
-      case clk_cxx:
-	warning(0, "the C++ parser does not support -dy, option ignored");
-	break;
-      case clk_objcxx:
-	warning(0,
-	    "the Objective-C++ parser does not support -dy, option ignored");
-	break;
-      default:
-	gcc_unreachable ();
-    }
 
   i = 0;
   for (;;)

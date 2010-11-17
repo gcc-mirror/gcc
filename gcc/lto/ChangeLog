@@ -1,3 +1,8 @@
+2010-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto.c (lto_main): Take no arguments.
+	* lto.h (lto_main): Update prototype.
+
 2010-11-16  Ian Lance Taylor  <iant@google.com>
 
 	* lto-object.c (lto_obj_file_open): Call

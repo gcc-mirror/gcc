@@ -2437,7 +2437,7 @@ lto_process_name (void)
      simply applies them.  */
 
 void
-lto_main (int debug_p ATTRIBUTE_UNUSED)
+lto_main (void)
 {
   lto_process_name ();
 

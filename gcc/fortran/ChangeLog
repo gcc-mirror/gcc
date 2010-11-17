@@ -1,3 +1,7 @@
+2010-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* f95-lang.c (gfc_be_parse_file): Take no arguments.
+
 2010-11-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 

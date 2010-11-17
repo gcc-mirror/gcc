@@ -317,9 +317,8 @@ struct lang_hooks
   /* Called at the end of compilation, as a finalizer.  */
   void (*finish) (void);
 
-  /* Parses the entire file.  The argument is nonzero to cause bison
-     parsers to dump debugging information during parsing.  */
-  void (*parse_file) (int);
+  /* Parses the entire file.  */
+  void (*parse_file) (void);
 
   /* Determines if it's ok for a function to have no noreturn attribute.  */
   bool (*missing_noreturn_ok_p) (tree);

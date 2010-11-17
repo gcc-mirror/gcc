@@ -1,3 +1,8 @@
+2010-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* jcf-parse.c (java_parse_file): Take no arguments.
+	* java-tree.h (java_parse_file): Update prototype.
+
 2010-11-09  Joern Rennecke  <amylaar@spamcop.net>
 	    Andrew Haley  <aph@redhat.com>
 

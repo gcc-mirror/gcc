@@ -77,7 +77,7 @@ extern void _ada_gnat1drv (void);
 /* The parser for the language.  For us, we process the GNAT tree.  */
 
 static void
-gnat_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
+gnat_parse_file (void)
 {
   int seh[2];
 

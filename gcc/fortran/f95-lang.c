@@ -93,7 +93,7 @@ static void gfc_print_identifier (FILE *, tree, int);
 void do_function_end (void);
 int global_bindings_p (void);
 static void clear_binding_stack (void);
-static void gfc_be_parse_file (int);
+static void gfc_be_parse_file (void);
 static alias_set_type gfc_get_alias_set (tree);
 static void gfc_init_ts (void);
 
@@ -241,7 +241,7 @@ gfc_create_decls (void)
 
 
 static void
-gfc_be_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
+gfc_be_parse_file (void)
 {
   int errors;
   int warnings;

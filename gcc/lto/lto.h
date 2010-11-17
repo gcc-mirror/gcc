@@ -37,7 +37,7 @@ extern const char *resolution_file_name;
 
 /* In lto.c  */
 extern tree lto_eh_personality (void);
-extern void lto_main (int);
+extern void lto_main (void);
 extern void lto_read_all_file_options (void);
 
 /* In lto-elf.c or lto-coff.c  */

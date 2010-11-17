@@ -37,7 +37,6 @@ struct diagnostic_info;
 
 extern void lhd_do_nothing (void);
 extern void lhd_do_nothing_t (tree);
-extern void lhd_do_nothing_i (int);
 extern void lhd_do_nothing_f (struct function *);
 extern tree lhd_pass_through_t (tree);
 extern bool lhd_post_options (const char **);
@@ -85,7 +84,7 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
 #define LANG_HOOKS_INIT			hook_bool_void_false
 #define LANG_HOOKS_FINISH		lhd_do_nothing
-#define LANG_HOOKS_PARSE_FILE		lhd_do_nothing_i
+#define LANG_HOOKS_PARSE_FILE		lhd_do_nothing
 #define LANG_HOOKS_OPTION_LANG_MASK	hook_uint_void_0
 #define LANG_HOOKS_INIT_OPTIONS_STRUCT	hook_void_gcc_optionsp
 #define LANG_HOOKS_INIT_OPTIONS		lhd_init_options
