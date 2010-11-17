@@ -702,6 +702,7 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
     }
 
   gimple_assign_set_rhs_from_tree (si, result);
+  update_stmt (gsi_stmt (*si));
 
   return true;
 }
@@ -851,6 +852,7 @@ gimple_mod_pow2_value_transform (gimple_stmt_iterator *si)
   result = gimple_mod_pow2 (stmt, prob, count, all);
 
   gimple_assign_set_rhs_from_tree (si, result);
+  update_stmt (gsi_stmt (*si));
 
   return true;
 }
@@ -1051,6 +1053,7 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   result = gimple_mod_subtract (stmt, prob1, prob2, i, count1, count2, all);
 
   gimple_assign_set_rhs_from_tree (si, result);
+  update_stmt (gsi_stmt (*si));
 
   return true;
 }
