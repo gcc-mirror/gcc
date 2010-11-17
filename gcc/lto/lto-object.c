@@ -138,8 +138,8 @@ lto_obj_file_open (const char *filename, bool writable)
 	saved_attributes = attrs;
       else
 	{
-	  errmsg = simple_object_attributes_compare (saved_attributes, attrs,
-						     &err);
+	  errmsg = simple_object_attributes_merge (saved_attributes, attrs,
+						   &err);
 	  if (errmsg != NULL)
 	    goto fail_errmsg;
 	}

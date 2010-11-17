@@ -1,3 +1,8 @@
+2010-11-16  Ian Lance Taylor  <iant@google.com>
+
+	* simple-object.h (simple_object_attributes_merge): Declare,
+	replacing simple_object_attributes_compare.
+
 2010-11-04  Ian Lance Taylor  <iant@google.com>
 
 	* dwarf2.h (enum dwarf_source_language): Add DW_LANG_Go.

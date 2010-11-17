@@ -624,16 +624,16 @@ simple_object_mach_o_release_read (void *data)
 /* Compare two attributes structures.  */
 
 static const char *
-simple_object_mach_o_attributes_compare (void *data1, void *data2, int *err)
+simple_object_mach_o_attributes_merge (void *todata, void *fromdata, int *err)
 {
-  struct simple_object_mach_o_attributes *attrs1 =
-    (struct simple_object_mach_o_attributes *) data1;
-  struct simple_object_mach_o_attributes *attrs2 =
-    (struct simple_object_mach_o_attributes *) data2;
+  struct simple_object_mach_o_attributes *to =
+    (struct simple_object_mach_o_attributes *) todata;
+  struct simple_object_mach_o_attributes *from =
+    (struct simple_object_mach_o_attributes *) fromdata;
 
-  if (attrs1->magic != attrs2->magic
-      || attrs1->is_big_endian != attrs2->is_big_endian
-      || attrs1->cputype != attrs2->cputype)
+  if (to->magic != from->magic
+      || to->is_big_endian != from->is_big_endian
+      || to->cputype != from->cputype)
     {
       *err = 0;
       return "Mach-O object format mismatch";
@@ -1014,7 +1014,7 @@ const struct simple_object_functions simple_object_mach_o_functions =
   simple_object_mach_o_find_sections,
   simple_object_mach_o_fetch_attributes,
   simple_object_mach_o_release_read,
-  simple_object_mach_o_attributes_compare,
+  simple_object_mach_o_attributes_merge,
   simple_object_mach_o_release_attributes,
   simple_object_mach_o_start_write,
   simple_object_mach_o_write_to_file,

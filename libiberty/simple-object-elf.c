@@ -115,6 +115,11 @@ typedef struct {
 
 #define ET_REL		1	/* Relocatable file */
 
+/* Values for e_machine field of Ehdr.  */
+
+#define EM_SPARC	  2	/* SUN SPARC */
+#define EM_SPARC32PLUS	 18	/* Sun's "v8plus" */
+
 /* Special section index values.  */
 
 #define SHN_LORESERVE	0xFF00		/* Begin range of reserved indices */
@@ -604,20 +609,52 @@ simple_object_elf_release_read (void *data)
 /* Compare two attributes structures.  */
 
 static const char *
-simple_object_elf_attributes_compare (void *data1, void *data2, int *err)
+simple_object_elf_attributes_merge (void *todata, void *fromdata, int *err)
 {
-  struct simple_object_elf_attributes *attrs1 =
-    (struct simple_object_elf_attributes *) data1;
-  struct simple_object_elf_attributes *attrs2 =
-    (struct simple_object_elf_attributes *) data2;
+  struct simple_object_elf_attributes *to =
+    (struct simple_object_elf_attributes *) todata;
+  struct simple_object_elf_attributes *from =
+    (struct simple_object_elf_attributes *) fromdata;
 
-  if (attrs1->ei_data != attrs2->ei_data
-      || attrs1->ei_class != attrs2->ei_class
-      || attrs1->machine != attrs2->machine)
+  if (to->ei_data != from->ei_data || to->ei_class != from->ei_class)
     {
       *err = 0;
       return "ELF object format mismatch";
     }
+
+  if (to->machine != from->machine)
+    {
+      int ok;
+
+      /* EM_SPARC and EM_SPARC32PLUS are compatible and force an
+	 output of EM_SPARC32PLUS.  */
+      ok = 0;
+      switch (to->machine)
+	{
+	case EM_SPARC:
+	  if (from->machine == EM_SPARC32PLUS)
+	    {
+	      to->machine = from->machine;
+	      ok = 1;
+	    }
+	  break;
+
+	case EM_SPARC32PLUS:
+	  if (from->machine == EM_SPARC)
+	    ok = 1;
+	  break;
+
+	default:
+	  break;
+	}
+
+      if (!ok)
+	{
+	  *err = 0;
+	  return "ELF machine number mismatch";
+	}
+    }
+
   return NULL;
 }
 
@@ -908,7 +945,7 @@ const struct simple_object_functions simple_object_elf_functions =
   simple_object_elf_find_sections,
   simple_object_elf_fetch_attributes,
   simple_object_elf_release_read,
-  simple_object_elf_attributes_compare,
+  simple_object_elf_attributes_merge,
   simple_object_elf_release_attributes,
   simple_object_elf_start_write,
   simple_object_elf_write_to_file,

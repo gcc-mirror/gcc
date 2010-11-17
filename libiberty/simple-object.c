@@ -257,20 +257,19 @@ simple_object_release_read (simple_object_read *sobj)
   XDELETE (sobj);
 }
 
-/* Compare attributes.  */
+/* Merge attributes.  */
 
 const char *
-simple_object_attributes_compare (simple_object_attributes *attrs1,
-				  simple_object_attributes *attrs2,
-				  int *err)
+simple_object_attributes_merge (simple_object_attributes *to,
+				simple_object_attributes *from,
+				int *err)
 {
-  if (attrs1->functions != attrs2->functions)
+  if (to->functions != from->functions)
     {
       *err = 0;
       return "different object file format";
     }
-  return attrs1->functions->attributes_compare (attrs1->data, attrs2->data,
-						err);
+  return to->functions->attributes_merge (to->data, from->data, err);
 }
 
 /* Release an attributes structure.  */

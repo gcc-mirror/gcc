@@ -457,15 +457,14 @@ simple_object_coff_release_read (void *data)
 /* Compare two attributes structures.  */
 
 static const char *
-simple_object_coff_attributes_compare (void *data1, void *data2, int *err)
+simple_object_coff_attributes_merge (void *todata, void *fromdata, int *err)
 {
-  struct simple_object_coff_attributes *attrs1 =
-    (struct simple_object_coff_attributes *) data1;
-  struct simple_object_coff_attributes *attrs2 =
-    (struct simple_object_coff_attributes *) data2;
+  struct simple_object_coff_attributes *to =
+    (struct simple_object_coff_attributes *) todata;
+  struct simple_object_coff_attributes *from =
+    (struct simple_object_coff_attributes *) fromdata;
 
-  if (attrs1->magic != attrs2->magic
-      || attrs1->is_big_endian != attrs2->is_big_endian)
+  if (to->magic != from->magic || to->is_big_endian != from->is_big_endian)
     {
       *err = 0;
       return "COFF object format mismatch";
@@ -797,7 +796,7 @@ const struct simple_object_functions simple_object_coff_functions =
   simple_object_coff_find_sections,
   simple_object_coff_fetch_attributes,
   simple_object_coff_release_read,
-  simple_object_coff_attributes_compare,
+  simple_object_coff_attributes_merge,
   simple_object_coff_release_attributes,
   simple_object_coff_start_write,
   simple_object_coff_write_to_file,

@@ -117,14 +117,15 @@ extern simple_object_attributes *
 simple_object_fetch_attributes (simple_object_read *simple_object,
 				const char **errmsg, int *err);
 
-/* Compare ATTRS1 and ATTRS2.  If they could be linked together
-   without error, return NULL.  Otherwise, return an error message,
-   set *ERR to an errno value or 0 if there isn't one.  */
+/* Merge the FROM attributes into TO.  If two objects with these
+   attributes could be linked together without error, returns NULL.
+   Otherwise, returns an error message, and sets *ERR to an errno
+   value or 0 if there isn't one.  */
 
 extern const char *
-simple_object_attributes_compare (simple_object_attributes *attrs1,
-			    simple_object_attributes *attrs2,
-			    int *err);
+simple_object_attributes_merge (simple_object_attributes *to,
+				simple_object_attributes *from,
+				int *err);
 
 /* Release all resources associated with ATTRS.  */
 
