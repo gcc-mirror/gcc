@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
-/* { dg-options "-O3 -fno-vect-cost-model -fdump-tree-vect-details" } */
 typedef unsigned char uint8_t;
 vsad16_c (void *c, uint8_t * s1, uint8_t * s2, int stride, int h)
 {
