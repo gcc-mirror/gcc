@@ -1,3 +1,9 @@
+2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR target/46512
+	* config/pa/pa.c (pa_function_arg_boundary): Move TYPE_SIZE accesses
+	under check for type.
+
 2010-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ifcvt.c (dead_or_predicable): Fix typo.
