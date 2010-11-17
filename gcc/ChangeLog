@@ -1,3 +1,8 @@
+2010-11-17  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46498
+	* tree-ssa-dce.c (perform_tree_ssa_dce): Compute dominator info.
+
 2010-11-16  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/xtensa/xtensa.c (function_arg_boundary): Really rename to...
