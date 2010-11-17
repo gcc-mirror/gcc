@@ -6057,7 +6057,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       /* [class.copy]: the copy constructor is implicitly defined even if
 	 the implementation elided its use.  */
-      else if (!trivial)
+      else if (!trivial || DECL_DELETED_FN (fn))
 	{
 	  mark_used (fn);
 	  already_used = true;
@@ -6086,7 +6086,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
     }
   else if (DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR
-	   && trivial_fn_p (fn))
+	   && trivial_fn_p (fn)
+	   && !DECL_DELETED_FN (fn))
     {
       tree to = stabilize_reference
 	(cp_build_indirect_ref (argarray[0], RO_NULL, complain));

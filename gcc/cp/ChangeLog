@@ -1,5 +1,8 @@
 2010-11-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46497
+	* call.c (build_over_call): Check for =delete even when trivial.
+
 	DR 1004
 	* decl.c (make_unbound_class_template): Handle using
 	injected-type-name as template.
