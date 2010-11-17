@@ -758,7 +758,7 @@ struct rtl_opt_pass pass_df_initialize_opt =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
+  TV_DF_SCAN,                           /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -785,7 +785,7 @@ struct rtl_opt_pass pass_df_initialize_no_opt =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
+  TV_DF_SCAN,                           /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */

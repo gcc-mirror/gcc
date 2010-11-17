@@ -383,7 +383,7 @@ struct simple_ipa_opt_pass pass_ipa_increase_alignment =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
+  TV_IPA_OPT,                           /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */

@@ -777,7 +777,10 @@ cleanup_tree_cfg_noloop (void)
 static void
 repair_loop_structures (void)
 {
-  bitmap changed_bbs = BITMAP_ALLOC (NULL);
+  bitmap changed_bbs;
+
+  timevar_push (TV_REPAIR_LOOPS);
+  changed_bbs = BITMAP_ALLOC (NULL);
   fix_loop_structure (changed_bbs);
 
   /* This usually does nothing.  But sometimes parts of cfg that originally
@@ -794,6 +797,7 @@ repair_loop_structures (void)
   scev_reset ();
 
   loops_state_clear (LOOPS_NEED_FIXUP);
+  timevar_pop (TV_REPAIR_LOOPS);
 }
 
 /* Cleanup cfg and repair loop structures.  */
