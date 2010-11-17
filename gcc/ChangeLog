@@ -1,3 +1,15 @@
+2010-11-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	* c-parser.c (c_token_is_qualifier,
+	c_parser_next_token_is_qualifier): New.
+	(c_parser_declaration_or_fndef, c_parser_struct_declaration):
+	Improve error message on specs->tagdef_seen_p.
+	(c_parser_struct_or_union_specifier): Improve error recovery.
+	(c_parser_declspecs): Move exit condition on C_ID_ID early.
+	Reorganize exit condition for C_ID_TYPENAME/C_ID_CLASSNAME
+	using c_parser_next_token_is_qualifier; extend it to cover
+	a ctsk_tagdef typespec and !typespec_ok in general.
+
 2010-11-17  Richard Guenther  <rguenther@suse.de>
 
 	* value-prof.c (gimple_divmod_fixed_value_transform): Update

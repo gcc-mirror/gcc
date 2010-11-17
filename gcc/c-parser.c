@@ -506,6 +506,47 @@ c_parser_next_token_starts_typename (c_parser *parser)
   return c_token_starts_typename (token);
 }
 
+/* Return true if TOKEN is a type qualifier, false otherwise.  */
+static bool
+c_token_is_qualifier (c_token *token)
+{
+  switch (token->type)
+    {
+    case CPP_NAME:
+      switch (token->id_kind)
+	{
+	case C_ID_ADDRSPACE:
+	  return true;
+	default:
+	  return false;
+	}
+    case CPP_KEYWORD:
+      switch (token->keyword)
+	{
+	case RID_CONST:
+	case RID_VOLATILE:
+	case RID_RESTRICT:
+	case RID_ATTRIBUTE:
+	  return true;
+	default:
+	  return false;
+	}
+    case CPP_LESS:
+      return false;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Return true if the next token from PARSER is a type qualifier,
+   false otherwise.  */
+static inline bool
+c_parser_next_token_is_qualifier (c_parser *parser)
+{
+  c_token *token = c_parser_peek_token (parser);
+  return c_token_is_qualifier (token);
+}
+
 /* Return true if TOKEN can start declaration specifiers, false
    otherwise.  */
 static bool
@@ -1409,6 +1450,19 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       c_parser_consume_token (parser);
       return;
     }
+
+  /* Provide better error recovery.  Note that a type name here is usually
+     better diagnosed as a redeclaration.  */
+  if (empty_ok
+      && specs->typespec_kind == ctsk_tagdef
+      && c_parser_next_token_starts_declspecs (parser)
+      && !c_parser_next_token_is (parser, CPP_NAME))
+    {
+      c_parser_error (parser, "expected %<;%>, identifier or %<(%>");
+      parser->error = false;
+      shadow_tag_warned (specs, 1);
+      return;
+    }
   else if (c_dialect_objc ())
     {
       /* Prefix attributes are an error on method decls.  */
@@ -1872,13 +1926,31 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 {
   bool attrs_ok = start_attr_ok;
   bool seen_type = specs->typespec_kind != ctsk_none;
-  while (c_parser_next_token_is (parser, CPP_NAME)
+  while ((c_parser_next_token_is (parser, CPP_NAME)
+	  && c_parser_peek_token (parser)->id_kind != C_ID_ID)
 	 || c_parser_next_token_is (parser, CPP_KEYWORD)
 	 || (c_dialect_objc () && c_parser_next_token_is (parser, CPP_LESS)))
     {
       struct c_typespec t;
       tree attrs;
       location_t loc = c_parser_peek_token (parser)->location;
+
+      if (!c_parser_next_token_is_qualifier (parser))
+        {
+	  /* Exit for TYPENAMEs after any type because they can appear as a
+	     field name.  */
+          if (seen_type && c_parser_next_token_is (parser, CPP_NAME))
+            break;
+
+          /* If we cannot accept a type, and the next token must start one,
+	     exit.  Do the same if we already have seen a tagged definition,
+	     since it would be an error anyway and likely the user has simply
+	     forgotten a semicolon.  */
+          if ((!typespec_ok || specs->typespec_kind == ctsk_tagdef)
+	      && c_parser_next_token_starts_typename (parser))
+            break;
+        }
+
       if (c_parser_next_token_is (parser, CPP_NAME))
 	{
 	  tree value = c_parser_peek_token (parser)->value;
@@ -1894,12 +1966,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	      continue;
 	    }
 
-	  /* This finishes the specifiers unless a type name is OK, it
-	     is declared as a type name and a type name hasn't yet
-	     been seen.  */
-	  if (!typespec_ok || seen_type
-	      || (kind != C_ID_TYPENAME && kind != C_ID_CLASSNAME))
-	    break;
+	  /* Now at a C_ID_TYPENAME or C_ID_CLASSNAME.  */
 	  c_parser_consume_token (parser);
 	  seen_type = true;
 	  attrs_ok = true;
@@ -2340,12 +2407,17 @@ c_parser_struct_or_union_specifier (c_parser *parser)
 	      if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
 		pedwarn (c_parser_peek_token (parser)->location, 0,
 			 "no semicolon at end of struct or union");
-	      else
+	      else if (parser->error
+		       || !c_parser_next_token_starts_declspecs (parser))
 		{
 		  c_parser_error (parser, "expected %<;%>");
 		  c_parser_skip_until_found (parser, CPP_CLOSE_BRACE, NULL);
 		  break;
 		}
+
+	      /* If we come here, we have already emitted an error
+		 for an expected `;', identifier or `(', and we also
+	         recovered already.  Go on with the next field. */
 	    }
 	}
       postfix_attrs = c_parser_attributes (parser);
@@ -2461,6 +2533,19 @@ c_parser_struct_declaration (c_parser *parser)
 	}
       return ret;
     }
+
+  /* Provide better error recovery.  Note that a type name here is valid,
+     and will be treated as a field name.  */
+  if (specs->typespec_kind == ctsk_tagdef
+      && TREE_CODE (specs->type) != ENUMERAL_TYPE
+      && c_parser_next_token_starts_declspecs (parser)
+      && !c_parser_next_token_is (parser, CPP_NAME))
+    {
+      c_parser_error (parser, "expected %<;%>, identifier or %<(%>");
+      parser->error = false;
+      return NULL_TREE;
+    }
+
   pending_xref_error ();
   prefix_attrs = specs->attrs;
   all_prefix_attrs = prefix_attrs;
