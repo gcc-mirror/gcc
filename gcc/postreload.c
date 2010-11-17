@@ -1224,7 +1224,6 @@ static void
 reload_combine (void)
 {
   rtx insn, prev;
-  int i;
   basic_block bb;
   unsigned int r;
   int min_labelno, n_labels;
@@ -1292,6 +1291,7 @@ reload_combine (void)
 
   for (insn = get_last_insn (); insn; insn = prev)
     {
+      bool control_flow_insn;
       rtx note;
 
       prev = PREV_INSN (insn);
@@ -1311,7 +1311,8 @@ reload_combine (void)
 
       reload_combine_ruid++;
 
-      if (control_flow_insn_p (insn))
+      control_flow_insn = control_flow_insn_p (insn);
+      if (control_flow_insn)
 	last_jump_ruid = reload_combine_ruid;
 
       if (reload_combine_recognize_const_pattern (insn)
@@ -1339,9 +1340,9 @@ reload_combine (void)
 	        {
 		  unsigned int i;
 		  unsigned int start_reg = REGNO (usage_rtx);
-		  unsigned int num_regs =
-			hard_regno_nregs[start_reg][GET_MODE (usage_rtx)];
-		  unsigned int end_reg  = start_reg + num_regs - 1;
+		  unsigned int num_regs
+		    = hard_regno_nregs[start_reg][GET_MODE (usage_rtx)];
+		  unsigned int end_reg = start_reg + num_regs - 1;
 		  for (i = start_reg; i <= end_reg; i++)
 		    if (GET_CODE (XEXP (link, 0)) == CLOBBER)
 		      {
@@ -1352,10 +1353,9 @@ reload_combine (void)
 		      reg_state[i].use_index = -1;
 	         }
 	     }
-
 	}
 
-      if (control_flow_insn_p (insn) && GET_CODE (PATTERN (insn)) != RETURN)
+      if (control_flow_insn && GET_CODE (PATTERN (insn)) != RETURN)
 	{
 	  /* Non-spill registers might be used at the call destination in
 	     some unknown fashion, so we have to mark the unknown use.  */
@@ -1367,20 +1367,19 @@ reload_combine (void)
 	  else
 	    live = &ever_live_at_start;
 
-	  for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; --i)
-	    if (TEST_HARD_REG_BIT (*live, i))
-	      reg_state[i].use_index = -1;
+	  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
+	    if (TEST_HARD_REG_BIT (*live, r))
+	      reg_state[r].use_index = -1;
 	}
 
-      reload_combine_note_use (&PATTERN (insn), insn,
-			       reload_combine_ruid, NULL_RTX);
+      reload_combine_note_use (&PATTERN (insn), insn, reload_combine_ruid,
+			       NULL_RTX);
+
       for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	{
-	  if (REG_NOTE_KIND (note) == REG_INC
-	      && REG_P (XEXP (note, 0)))
+	  if (REG_NOTE_KIND (note) == REG_INC && REG_P (XEXP (note, 0)))
 	    {
 	      int regno = REGNO (XEXP (note, 0));
-
 	      reg_state[regno].store_ruid = reload_combine_ruid;
 	      reg_state[regno].real_store_ruid = reload_combine_ruid;
 	      reg_state[regno].use_index = -1;

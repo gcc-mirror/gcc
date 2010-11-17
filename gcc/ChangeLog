@@ -1,3 +1,8 @@
+2010-11-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* postreload.c (reload_combine): Call control_flow_insn_p only once.
+	Reverse backward loop.  Fix formatting issues.
+
 2010-11-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c-parser.c (c_token_is_qualifier,
