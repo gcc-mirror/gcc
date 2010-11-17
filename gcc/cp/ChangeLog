@@ -1,5 +1,9 @@
 2010-11-16  Jason Merrill  <jason@redhat.com>
 
+	* call.c (convert_like_real): Don't make a temp for copy-list-init.
+	(build_over_call): Don't handle that here.
+	(build_new_method_call): Use COMPLETE_OR_OPEN_TYPE_P for error.
+
 	PR c++/46497
 	* call.c (build_over_call): Check for =delete even when trivial.
 
