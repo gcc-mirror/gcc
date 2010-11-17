@@ -7287,10 +7287,11 @@ smaller_form_type_p (tree type, tree orig_type)
    that Gigi must make sure that such operations cannot be applied to
    non-BLKmode bit-fields.
 
-   The second goal is achieved by means of the addressable_p predicate
-   and by inserting SAVE_EXPRs around trees deemed non-addressable.
-   They will be turned during gimplification into proper temporaries
-   whose address will be used in lieu of that of the original tree.  */
+   The second goal is achieved by means of the addressable_p predicate,
+   which computes whether a temporary must be inserted by Gigi when the
+   address of a tree is requested; if so, the address of the temporary
+   will be used in lieu of that of the original tree and some glue code
+   generated to connect everything together.  */
 
 static bool
 addressable_p (tree gnu_expr, tree gnu_type)
