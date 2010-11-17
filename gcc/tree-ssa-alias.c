@@ -1209,6 +1209,28 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	case BUILT_IN_SINCOSF:
 	case BUILT_IN_SINCOSL:
 	  return false;
+	/* __sync_* builtins and some OpenMP builtins act as threading
+	   barriers.  */
+#undef DEF_SYNC_BUILTIN
+#define DEF_SYNC_BUILTIN(ENUM, NAME, TYPE, ATTRS) case ENUM:
+#include "sync-builtins.def"
+#undef DEF_SYNC_BUILTIN
+	case BUILT_IN_GOMP_ATOMIC_START:
+	case BUILT_IN_GOMP_ATOMIC_END:
+	case BUILT_IN_GOMP_BARRIER:
+	case BUILT_IN_GOMP_TASKWAIT:
+	case BUILT_IN_GOMP_CRITICAL_START:
+	case BUILT_IN_GOMP_CRITICAL_END:
+	case BUILT_IN_GOMP_CRITICAL_NAME_START:
+	case BUILT_IN_GOMP_CRITICAL_NAME_END:
+	case BUILT_IN_GOMP_LOOP_END:
+	case BUILT_IN_GOMP_ORDERED_START:
+	case BUILT_IN_GOMP_ORDERED_END:
+	case BUILT_IN_GOMP_PARALLEL_END:
+	case BUILT_IN_GOMP_SECTIONS_END:
+	case BUILT_IN_GOMP_SINGLE_COPY_START:
+	case BUILT_IN_GOMP_SINGLE_COPY_END:
+	  return true;
 
 	default:
 	  /* Fallthru to general call handling.  */;
@@ -1465,6 +1487,28 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	    return (ptr_deref_may_alias_ref_p_1 (sin, ref)
 		    || ptr_deref_may_alias_ref_p_1 (cos, ref));
 	  }
+	/* __sync_* builtins and some OpenMP builtins act as threading
+	   barriers.  */
+#undef DEF_SYNC_BUILTIN
+#define DEF_SYNC_BUILTIN(ENUM, NAME, TYPE, ATTRS) case ENUM:
+#include "sync-builtins.def"
+#undef DEF_SYNC_BUILTIN
+	case BUILT_IN_GOMP_ATOMIC_START:
+	case BUILT_IN_GOMP_ATOMIC_END:
+	case BUILT_IN_GOMP_BARRIER:
+	case BUILT_IN_GOMP_TASKWAIT:
+	case BUILT_IN_GOMP_CRITICAL_START:
+	case BUILT_IN_GOMP_CRITICAL_END:
+	case BUILT_IN_GOMP_CRITICAL_NAME_START:
+	case BUILT_IN_GOMP_CRITICAL_NAME_END:
+	case BUILT_IN_GOMP_LOOP_END:
+	case BUILT_IN_GOMP_ORDERED_START:
+	case BUILT_IN_GOMP_ORDERED_END:
+	case BUILT_IN_GOMP_PARALLEL_END:
+	case BUILT_IN_GOMP_SECTIONS_END:
+	case BUILT_IN_GOMP_SINGLE_COPY_START:
+	case BUILT_IN_GOMP_SINGLE_COPY_END:
+	  return true;
 	default:
 	  /* Fallthru to general call handling.  */;
       }
