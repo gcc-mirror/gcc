@@ -5275,10 +5275,6 @@ to @file{@var{file}.@var{pass}.vcg}.
 @opindex dx
 Just generate RTL for a function instead of compiling it.  Usually used
 with @option{-fdump-rtl-expand}.
-
-@item -dy
-@opindex dy
-Dump debugging information during parsing, to standard error.
 @end table
 
 @item -fdump-noaddr

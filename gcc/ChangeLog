@@ -1,3 +1,14 @@
+2010-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi (-dy): Remove.
+	* langhooks-def.h (lhd_do_nothing_i): Don't declare.
+	(LANG_HOOKS_PARSE_FILE): Define to lhd_do_nothing.
+	* langhooks.c (lhd_do_nothing_i): Remove.
+	* langhooks.h (lang_hooks.parse_file): Take no arguments.
+	* toplev.c (set_yydebug): Remove.
+	(compile_file): Update call to lang_hooks.parse_file.
+	(decode_d_option): Don't handle -dy.
+
 2010-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/46440

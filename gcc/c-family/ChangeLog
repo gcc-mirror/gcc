@@ -1,3 +1,8 @@
+2010-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (c_common_parse_file): Take no arguments.
+	* c-common.h (c_common_parse_file): Update prototype.
+
 2010-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/46401

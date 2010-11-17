@@ -1,3 +1,7 @@
+2010-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/misc.c (gnat_parse_file): Take no arguments.
+
 2010-11-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (addressable_p): Rewrite obsolete paragraph in

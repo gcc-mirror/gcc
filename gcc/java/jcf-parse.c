@@ -1732,7 +1732,7 @@ java_emit_static_constructor (void)
 
 
 void
-java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
+java_parse_file (void)
 {
   int filename_count = 0;
   location_t save_location = input_location;

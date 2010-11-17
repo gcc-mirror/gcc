@@ -62,13 +62,6 @@ lhd_pass_through_t (tree t)
   return t;
 }
 
-/* Do nothing (int).  */
-
-void
-lhd_do_nothing_i (int ARG_UNUSED (i))
-{
-}
-
 /* Do nothing (int, int, int).  Return NULL_TREE.  */
 
 tree
