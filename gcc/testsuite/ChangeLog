@@ -1,5 +1,8 @@
 2010-11-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/46440
+	* gcc.dg/pr46440.c: New test.
+
 	PR testsuite/45429
 	* gcc.dg/vect/no-section-anchors-vect-64.c: New test.
 
