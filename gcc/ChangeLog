@@ -1,5 +1,16 @@
 2010-11-17  Alan Modra  <amodra@gmail.com>
 
+	PR target/45807
+	* config/rs6000/aix.h (SETUP_FRAME_ADDRESSES): Delete.
+	* config/rs6000/linux64.h (SETUP_FRAME_ADDRESSES): Delete.
+	* config/rs6000/rs6000-protos.h (rs6000_aix_emit_builtin_unwind_init):
+	Delete.
+	* config/rs6000/rs6000.c (rs6000_aix_emit_builtin_unwind_init): Delete.
+	(rs6000_emit_prologue): Don't just create frame save info for r2,
+	actually save r2.
+
+2010-11-17  Alan Modra  <amodra@gmail.com>
+
 	PR target/44266
 	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Use
 	emit_library_call machinery to set up __tls_get_addr calls.
