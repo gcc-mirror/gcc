@@ -27,7 +27,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/module-abi-8.h" /* For runtime structures  */
 #include "objc/thr.h"
 #include "objc-private/runtime.h"      /* the kitchen sink */
-#include <string.h>                    /* For strcmp */
+#include <string.h>                    /* For strcmp.  */
+#include <stdlib.h>                    /* For malloc.  */
 
 struct objc_ivar *
 class_getInstanceVariable (Class class_, const char *name)
