@@ -4283,6 +4283,7 @@ gimple_register_type (tree t)
 {
   void **slot;
   gimple_type_leader_entry *leader;
+  tree mv_leader = NULL_TREE;
 
   gcc_assert (TYPE_P (t));
 
@@ -4298,7 +4299,7 @@ gimple_register_type (tree t)
      pick up the non-typedef variants as canonical, otherwise we'll end
      up taking typedef ids for structure tags during comparison.  */
   if (TYPE_MAIN_VARIANT (t) != t)
-    gimple_register_type (TYPE_MAIN_VARIANT (t));
+    mv_leader = gimple_register_type (TYPE_MAIN_VARIANT (t));
 
   if (gimple_types == NULL)
     gimple_types = htab_create_ggc (16381, gimple_type_hash, gimple_type_eq, 0);
@@ -4365,6 +4366,22 @@ gimple_register_type (tree t)
     {
       leader->type = t;
       leader->leader = t;
+      /* We're the type leader.  Make our TYPE_MAIN_VARIANT valid.  */
+      if (TYPE_MAIN_VARIANT (t) != t
+	  && TYPE_MAIN_VARIANT (t) != mv_leader)
+	{
+	  /* Remove us from our main variant list as we are not the variant
+	     leader and the variant leader will change.  */
+	  tree tem = TYPE_MAIN_VARIANT (t);
+	  while (tem && TYPE_NEXT_VARIANT (tem) != t)
+	    tem = TYPE_NEXT_VARIANT (tem);
+	  if (tem)
+	    TYPE_NEXT_VARIANT (tem) = TYPE_NEXT_VARIANT (t);
+	  TYPE_NEXT_VARIANT (t) = NULL_TREE;
+	  /* Adjust our main variant.  Linking us into its variant list
+	     will happen at fixup time.  */
+	  TYPE_MAIN_VARIANT (t) = mv_leader;
+	}
       *slot = (void *) t;
     }
 
@@ -4392,6 +4409,7 @@ tree
 gimple_register_canonical_type (tree t)
 {
   void **slot;
+  tree orig_t = t;
 
   gcc_assert (TYPE_P (t));
 
@@ -4426,6 +4444,9 @@ gimple_register_canonical_type (tree t)
       TYPE_CANONICAL (t) = t;
       *slot = (void *) t;
     }
+
+  /* Also cache the canonical type in the non-leaders.  */
+  TYPE_CANONICAL (orig_t) = t;
 
   return t;
 }
