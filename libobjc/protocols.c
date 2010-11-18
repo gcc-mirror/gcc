@@ -28,7 +28,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc/thr.h"
 #include "objc-private/runtime.h"      /* the kitchen sink */
 #include "objc-private/hash.h"         /* For the hash table of protocols.  */
-#include "objc-private/protocols.h"    /* For __objc_protocols_init() and __objc_protocols_add_protocol() */
+#include "objc-private/protocols.h"    /* For __objc_protocols_init() and
+                                          __objc_protocols_add_protocol().  */
+#include <stdlib.h>                    /* For malloc.  */
 
 /* This is a table that maps a name to a Protocol instance with that
    name.  Because there may be multiple Protocol instances with the
