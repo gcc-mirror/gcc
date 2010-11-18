@@ -223,7 +223,8 @@ do {									\
     }									\
 									\
   else if (TARGET_RELOCATABLE)						\
-    flag_pic = 2;							\
+    if (!flag_pic)							\
+      flag_pic = 2;							\
 } while (0)
 
 #ifndef RS6000_BI_ARCH
