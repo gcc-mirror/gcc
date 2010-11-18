@@ -1,3 +1,7 @@
+2010-11-18  Richard Henderson  <rth@redhat.com>
+
+	* gcc.target/i386/pr46470.c: Skip for 32-bit PIC.
+
 2010-11-18  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c/33193
