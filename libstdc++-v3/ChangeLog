@@ -1,3 +1,12 @@
+2010-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/formatter.h (__truth): Remove, unused.
+	(__is_same): Remove, include cpp_type_traits.h instead.
+	(_Parameter::_Parameter(const _Safe_iterator<>&, const char*,
+	_Is_iterator)): Adjust.
+	* include/debug/safe_iterator.h (_Safe_iterator<>::_M_constant):
+	Likewise.
+
 2010-11-17  François Dumont  <francois.cppdevs@free.fr>
 
 	* testsuite/lib/libstdc++.exp (check_v3_target_debug_mode): Clean

@@ -31,6 +31,7 @@
 #define _GLIBCXX_DEBUG_FORMATTER_H 1
 
 #include <bits/c++config.h>
+#include <bits/cpp_type_traits.h>
 #include <typeinfo>
 
 namespace __gnu_debug
@@ -39,21 +40,6 @@ namespace __gnu_debug
 
   template<typename _Iterator>
     bool __check_singular(_Iterator&);
-
-  /** Determine if the two types are the same. */
-  template<typename _Type1, typename _Type2>
-    struct __is_same
-    {
-      static const bool value = false;
-    };
-
-  template<typename _Type>
-    struct __is_same<_Type, _Type>
-    {
-      static const bool value = true;
-    };
-
-  template<bool> struct __truth { };
 
   class _Safe_sequence_base;
 
@@ -225,9 +211,9 @@ namespace __gnu_debug
 	  _M_variant._M_iterator._M_type = 0;
 #endif
 	  _M_variant._M_iterator._M_constness =
-	    __is_same<_Safe_iterator<_Iterator, _Sequence>,
-	                         typename _Sequence::iterator>::
-	      value? __mutable_iterator : __const_iterator;
+	    std::__are_same<_Safe_iterator<_Iterator, _Sequence>,
+	                    typename _Sequence::iterator>::
+	      __value ? __mutable_iterator : __const_iterator;
 	  _M_variant._M_iterator._M_sequence = __it._M_get_sequence();
 #ifdef __GXX_RTTI
 	  _M_variant._M_iterator._M_seq_type = &typeid(_Sequence);
