@@ -1595,7 +1595,7 @@ static void
 init_expr (expr_t expr, vinsn_t vi, int spec, int use, int priority,
 	   int sched_times, int orig_bb_index, ds_t spec_done_ds,
 	   ds_t spec_to_check_ds, int orig_sched_cycle,
-	   VEC(expr_history_def, heap) *history, bool target_available,
+	   VEC(expr_history_def, heap) *history, signed char target_available,
            bool was_substituted, bool was_renamed, bool needs_spec_check_p,
            bool cant_move)
 {

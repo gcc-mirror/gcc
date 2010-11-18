@@ -1,3 +1,10 @@
+2010-11-18  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR middle-end/46518
+	* sel-sched-ir.c (init_expr): Use the correct type for
+	target_available.
+	* sel-sched.c (fill_vec_av_set): Use explicitly signed char type.
+
 2010-11-17  Joakim Tjernlund  <Joakim.Tjernlund@transmode.se>
 
 	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Support -fpic
