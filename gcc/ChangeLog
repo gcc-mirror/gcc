@@ -1,3 +1,10 @@
+2010-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/46534
+	* builtins.c (fold_builtin_printf): Don't copy and modify string
+	before build_string_literal, instead modify what
+	build_string_literal returned.
+
 2010-11-18  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c/33193

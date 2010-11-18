@@ -12892,15 +12892,28 @@ fold_builtin_printf (location_t loc, tree fndecl, tree fmt,
 	{
 	  /* If the string was "string\n", call puts("string").  */
 	  size_t len = strlen (str);
-	  if ((unsigned char)str[len - 1] == target_newline)
+	  if ((unsigned char)str[len - 1] == target_newline
+	      && (size_t) (int) len == len
+	      && (int) len > 0)
 	    {
+	      char *newstr;
+	      tree offset_node, string_cst;
+
 	      /* Create a NUL-terminated string that's one char shorter
 		 than the original, stripping off the trailing '\n'.  */
-	      char *newstr = XALLOCAVEC (char, len);
-	      memcpy (newstr, str, len - 1);
-	      newstr[len - 1] = 0;
-
-	      newarg = build_string_literal (len, newstr);
+	      newarg = build_string_literal (len, str);
+	      string_cst = string_constant (newarg, &offset_node);
+	      gcc_checking_assert (string_cst
+				   && (TREE_STRING_LENGTH (string_cst)
+				       == (int) len)
+				   && integer_zerop (offset_node)
+				   && (unsigned char)
+				      TREE_STRING_POINTER (string_cst)[len - 1]
+				      == target_newline);
+	      /* build_string_literal creates a new STRING_CST,
+		 modify it in place to avoid double copying.  */
+	      newstr = CONST_CAST (char *, TREE_STRING_POINTER (string_cst));
+	      newstr[len - 1] = '\0';
 	      if (fn_puts)
 		call = build_call_expr_loc (loc, fn_puts, 1, newarg);
 	    }
