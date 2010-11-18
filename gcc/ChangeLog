@@ -1,5 +1,11 @@
 2010-11-18  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/45089
+	* dwarf2out.c (add_AT_die_ref): Work around LTO losing types
+	when checking is not enabled.
+
+2010-11-18  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/46525
 	* gimple.c (gimple_register_type): Update TYPE_MAIN_VARIANT of
 	type leaders.

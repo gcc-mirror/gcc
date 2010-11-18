@@ -7362,6 +7362,15 @@ add_AT_die_ref (dw_die_ref die, enum dwarf_attribute attr_kind, dw_die_ref targ_
 {
   dw_attr_node attr;
 
+#ifdef ENABLE_CHECKING
+  gcc_assert (targ_die != NULL);
+#else
+  /* With LTO we can end up trying to reference something we didn't create
+     a DIE for.  Avoid crashing later on a NULL referenced DIE.  */
+  if (targ_die == NULL)
+    return;
+#endif
+
   attr.dw_attr = attr_kind;
   attr.dw_attr_val.val_class = dw_val_class_die_ref;
   attr.dw_attr_val.v.val_die_ref.die = targ_die;
