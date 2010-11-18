@@ -1,3 +1,9 @@
+2010-11-18  Jeff Law  <law@redhat.com>
+
+	PR middle-end-optimization/46297
+	* postreload.c (reload_combine_note_store): Deal with embedded
+	side effects in MEM expressions.
+
 2010-11-18  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/45089
