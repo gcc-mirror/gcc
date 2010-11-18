@@ -1,3 +1,9 @@
+2010-11-17  Quentin Neill  <quentin.neill.gnu@gmail.com>
+
+	PR target/46422
+	* config/i386/bmiintrin.h (__lzcnt_u16, __lzcnt_u32, __lzcnt_u64):
+	Call the clz builtin.
+
 2010-11-17  Dinar Temirbulatov <dtemirbulatov@gmail.com>
 	    Steve Ellcey  <sje@cup.hp.com>
 
