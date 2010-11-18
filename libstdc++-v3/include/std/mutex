@@ -75,6 +75,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // XXX EAGAIN, ENOMEM, EPERM, EBUSY(may), EINVAL(may)
       __GTHREAD_MUTEX_INIT_FUNCTION(&_M_mutex);
     }
+
+    ~mutex() { __gthread_mutex_destroy(&_M_mutex); }
 #endif
 
     mutex(const mutex&) = delete;
@@ -109,6 +111,45 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { return &_M_mutex; }
   };
 
+#ifndef __GTHREAD_RECURSIVE_MUTEX_INIT
+  // FIXME: gthreads doesn't define __gthread_recursive_mutex_destroy
+  // so we need to obtain a __gthread_mutex_t to destroy
+  class __destroy_recursive_mutex
+  {
+    template<typename _Mx, typename _Rm>
+      static void
+      _S_destroy_win32(_Mx* __mx, _Rm const* __rmx)
+      {
+        __mx->counter = __rmx->counter;
+        __mx->sema = __rmx->sema;
+        __gthread_mutex_destroy(__mx);
+      }
+
+  public:
+    // matches a gthr-win32.h recursive mutex
+    template<typename _Rm>
+      static typename enable_if<sizeof(&_Rm::sema), void>::type
+      _S_destroy(_Rm* __mx)
+      {
+        __gthread_mutex_t __tmp;
+        _S_destroy_win32(&__tmp, __mx);
+      }
+
+    // matches a recursive mutex with a member 'actual'
+    template<typename _Rm>
+      static typename enable_if<sizeof(&_Rm::actual), void>::type
+      _S_destroy(_Rm* __mx)
+      { __gthread_mutex_destroy(&__mx->actual); }
+
+    // matches when there's only one mutex type
+    template<typename _Rm>
+      static
+      typename enable_if<is_same<_Rm, __gthread_mutex_t>::value, void>::type
+      _S_destroy(_Rm* __mx)
+      { __gthread_mutex_destroy(__mx); }
+  };
+#endif
+
   /// recursive_mutex
   class recursive_mutex
   {
@@ -118,16 +159,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   public:
     typedef __native_type* 			native_handle_type;
 
+#ifdef __GTHREAD_RECURSIVE_MUTEX_INIT
+    recursive_mutex() : _M_mutex(__GTHREAD_RECURSIVE_MUTEX_INIT) { }
+#else
     recursive_mutex()
     {
       // XXX EAGAIN, ENOMEM, EPERM, EBUSY(may), EINVAL(may)
-#ifdef __GTHREAD_RECURSIVE_MUTEX_INIT
-      __native_type __tmp = __GTHREAD_RECURSIVE_MUTEX_INIT;
-      _M_mutex = __tmp;
-#else
       __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION(&_M_mutex);
-#endif
     }
+
+    ~recursive_mutex()
+    { __destroy_recursive_mutex::_S_destroy(&_M_mutex); }
+#endif
 
     recursive_mutex(const recursive_mutex&) = delete;
     recursive_mutex& operator=(const recursive_mutex&) = delete;
@@ -177,15 +220,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   public:
     typedef __native_type* 		  	native_handle_type;
 
+#ifdef __GTHREAD_MUTEX_INIT
+    timed_mutex() : _M_mutex(__GTHREAD_MUTEX_INIT) { }
+#else
     timed_mutex()
     {
-#ifdef __GTHREAD_MUTEX_INIT
-      __native_type __tmp = __GTHREAD_MUTEX_INIT;
-      _M_mutex = __tmp;
-#else
       __GTHREAD_MUTEX_INIT_FUNCTION(&_M_mutex);
-#endif
     }
+
+    ~timed_mutex() { __gthread_mutex_destroy(&_M_mutex); }
+#endif
 
     timed_mutex(const timed_mutex&) = delete;
     timed_mutex& operator=(const timed_mutex&) = delete;
@@ -281,16 +325,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   public:
     typedef __native_type* 			native_handle_type;
 
+#ifdef __GTHREAD_RECURSIVE_MUTEX_INIT
+    recursive_timed_mutex() : _M_mutex(__GTHREAD_RECURSIVE_MUTEX_INIT) { }
+#else
     recursive_timed_mutex()
     {
       // XXX EAGAIN, ENOMEM, EPERM, EBUSY(may), EINVAL(may)
-#ifdef __GTHREAD_RECURSIVE_MUTEX_INIT
-      __native_type __tmp = __GTHREAD_RECURSIVE_MUTEX_INIT;
-      _M_mutex = __tmp;
-#else
       __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION(&_M_mutex);
-#endif
     }
+
+    ~recursive_timed_mutex()
+    { __destroy_recursive_mutex::_S_destroy(&_M_mutex); }
+#endif
 
     recursive_timed_mutex(const recursive_timed_mutex&) = delete;
     recursive_timed_mutex& operator=(const recursive_timed_mutex&) = delete;

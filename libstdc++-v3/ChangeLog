@@ -1,3 +1,10 @@
+2010-11-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/46455
+	* include/std/mutex: Define destructors for mutex types which use an
+	init function.
+	* include/ext/concurrence.h: Likewise.
+
 2010-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/26211 + N3168
