@@ -1,3 +1,9 @@
+2010-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Subprogram_Type>: Also
+	use return-by-invisible-reference if the return type is By_Reference.
+	Tidy up and skip the processing of the return type if it is void.
+
 2010-11-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/misc.c (gnat_parse_file): Take no arguments.
