@@ -1,3 +1,8 @@
+2010-11-18  Jeff Law  <law@redhat.com>
+
+	PR middle-end-optimization/46297
+	* gfortran.dg/pr46297.f: New test.
+
 2010-11-17  Steve Ellcey  <sje@cup.hp.com>
 
 	PR middle-end/31490

@@ -1409,6 +1409,31 @@ reload_combine_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
 				   GET_MODE (dst));
       dst = SUBREG_REG (dst);
     }
+
+  /* Some targets do argument pushes without adding REG_INC notes.  */
+
+  if (MEM_P (dst))
+    {
+      dst = XEXP (dst, 0);
+      if (GET_CODE (dst) == PRE_INC || GET_CODE (dst) == POST_INC
+	  || GET_CODE (dst) == PRE_DEC || GET_CODE (dst) == POST_DEC)
+	{
+	  regno = REGNO (XEXP (dst, 0));
+	  mode = GET_MODE (XEXP (dst, 0));
+	  for (i = hard_regno_nregs[regno][mode] - 1 + regno; i >= regno; i--)
+	    {
+	      /* We could probably do better, but for now mark the register
+		 as used in an unknown fashion and set/clobbered at this
+		 insn.  */
+	      reg_state[i].use_index = -1;
+	      reg_state[i].store_ruid = reload_combine_ruid;
+	      reg_state[i].real_store_ruid = reload_combine_ruid;
+	    }
+	}
+      else
+        return;
+    }
+
   if (!REG_P (dst))
     return;
   regno += REGNO (dst);
