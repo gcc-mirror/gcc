@@ -14,6 +14,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
 
+AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE
 
 # See if we are building gcc with C++.
@@ -58,18 +59,8 @@ fi
 AC_HEADER_TIME
 ACX_HEADER_STRING
 
-# AC_CHECK_HEADERS is repeated to work around apparent autoconf 2.59 bug.  If
-# AC_CHECK_HEADERS comes after the if clause, the last AC_LANG call gets used,
-# no matter which branch is taken.
-if test "$ENABLE_BUILD_WITH_CXX" = "no"; then
-   AC_LANG(C)
-   AC_CHECK_HEADERS(locale.h fcntl.h limits.h stddef.h \
+AC_CHECK_HEADERS(locale.h fcntl.h limits.h stddef.h \
 	stdlib.h strings.h string.h sys/file.h unistd.h)
-else
-   AC_LANG(C++)
-   AC_CHECK_HEADERS(locale.h fcntl.h limits.h stddef.h \
-	stdlib.h strings.h string.h sys/stat.h sys/file.h unistd.h)
-fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_BIGENDIAN
