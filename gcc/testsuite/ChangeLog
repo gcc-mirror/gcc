@@ -1,3 +1,8 @@
+2010-11-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46172
+	* gcc.dg/torture/pr46172.c: New testcase.
+
 2010-11-18  Jeff Law  <law@redhat.com>
 
 	PR middle-end-optimization/46297

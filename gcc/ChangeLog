@@ -1,3 +1,10 @@
+2010-11-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46172
+	* tree-vect-loop-manip.c (remove_dead_stmts_from_loop): New
+	function.
+	(slpeel_tree_peel_loop_to_edge): Call it.
+
 2010-11-18  Jeff Law  <law@redhat.com>
 
 	PR middle-end-optimization/46297
