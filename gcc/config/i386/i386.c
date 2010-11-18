@@ -29633,8 +29633,8 @@ ix86_pad_returns (void)
 	      && ((JUMP_P (prev) && any_condjump_p (prev))
 		  || CALL_P (prev)))
 	    replace = true;
-	  /* Empty functions get branch mispredict even when the jump destination
-	     is not visible to us.  */
+	  /* Empty functions get branch mispredict even when
+	     the jump destination is not visible to us.  */
 	  if (!prev && !optimize_function_for_size_p (cfun))
 	    replace = true;
 	}
@@ -29752,8 +29752,8 @@ ix86_pad_short_function (void)
 	      if (!insn)
 		insn = ret;
 
-	      /* Two NOPs are counted as one instruction.  */
-	      insn_count = 2 * (4  - insn_count);
+	      /* Two NOPs count as one instruction.  */
+	      insn_count = 2 * (4 - insn_count);
 	      emit_insn_before (gen_nops (GEN_INT (insn_count)), insn);
 	    }
 	}
@@ -29765,6 +29765,10 @@ ix86_pad_short_function (void)
 static void
 ix86_reorg (void)
 {
+  /* We are freeing block_for_insn in the toplev to keep compatibility
+     with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
+  compute_bb_for_insn ();
+
   if (optimize && optimize_function_for_speed_p (cfun))
     {
       if (TARGET_PAD_SHORT_FUNCTION)

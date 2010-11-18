@@ -1,3 +1,8 @@
+2010-11-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46546
+	* config/i386/i386.c (ix86_reorg): Call compute_bb_for_insn.
+
 2010-11-18  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/46515
