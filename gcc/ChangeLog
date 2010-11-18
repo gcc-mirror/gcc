@@ -1,3 +1,12 @@
+2010-11-18  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/46515
+	* function.c (maybe_copy_prologue_epilogue_insn): Rename from
+	maybe_copy_epilogue_insn; handle prologue insns as well.
+	* rtl.h, cfglayout.c: Update for rename.
+	* recog.c (peep2_attempt): Copy prologue/epilogue data for
+	RTX_FRAME_RELATED_P insns.
+
 2010-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46534
