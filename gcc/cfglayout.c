@@ -1179,7 +1179,7 @@ duplicate_insn_chain (rtx from, rtx to)
 	      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
 	    break;
 	  copy = emit_copy_of_insn_after (insn, get_last_insn ());
-          maybe_copy_epilogue_insn (insn, copy);
+          maybe_copy_prologue_epilogue_insn (insn, copy);
 	  break;
 
 	case CODE_LABEL:

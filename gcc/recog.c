@@ -3219,6 +3219,10 @@ peep2_attempt (basic_block bb, rtx insn, int match_len, rtx attempt)
 	  if (!new_set || !rtx_equal_p (new_set, old_set))
 	    add_reg_note (new_insn, REG_FRAME_RELATED_EXPR, old_set);
 	}
+
+      /* Copy prologue/epilogue status.  This is required in order to keep
+	 proper placement of EPILOGUE_BEG and the DW_CFA_remember_state.  */
+      maybe_copy_prologue_epilogue_insn (old_insn, new_insn);
     }
 
   /* If we are splitting a CALL_INSN, look for the CALL_INSN
