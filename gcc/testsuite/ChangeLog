@@ -1,3 +1,8 @@
+2010-11-18  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/vect/slp-reduc-3.c: Make check dependent on vect_unpack.
+	* gcc.dg/vect/slp-reduc-6.c: Ditto, plus add alignment.
+
 2010-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46534
