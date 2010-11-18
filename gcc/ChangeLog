@@ -1,5 +1,13 @@
 2010-11-18  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/46525
+	* gimple.c (gimple_register_type): Update TYPE_MAIN_VARIANT of
+	type leaders.
+	(gimple_register_canonical_type): Also cache the canoncial type
+	for non type leaders.
+
+2010-11-18  Richard Guenther  <rguenther@suse.de>
+
 	* lto-wrapper.c (run_gcc): Fix -flto=N parsing.
 
 2010-11-18  Alexander Monakov  <amonakov@ispras.ru>
