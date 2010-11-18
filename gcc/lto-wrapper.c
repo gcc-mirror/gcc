@@ -383,7 +383,7 @@ run_gcc (unsigned argc, char *argv[])
 		  }
 		else
 		  {
-		    parallel = atoi (option+8);
+		    parallel = atoi (option + 6);
 		    if (parallel <= 1)
 		      parallel = 0;
 		  }
