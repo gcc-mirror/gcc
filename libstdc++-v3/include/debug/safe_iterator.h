@@ -95,7 +95,7 @@ namespace __gnu_debug
       _M_constant() const
       {
 	typedef typename _Sequence::const_iterator const_iterator;
-	return __is_same<const_iterator, _Safe_iterator>::value;
+	return std::__are_same<const_iterator, _Safe_iterator>::__value;
       }
 
       typedef std::iterator_traits<_Iterator> _Traits;
