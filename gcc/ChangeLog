@@ -1,3 +1,8 @@
+2010-11-17  Joakim Tjernlund  <Joakim.Tjernlund@transmode.se>
+
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Support -fpic
+	as well as -mrelocatable at the same time.
+
 2010-11-17  Quentin Neill  <quentin.neill.gnu@gmail.com>
 
 	PR target/46422
