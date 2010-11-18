@@ -5098,26 +5098,12 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
       break;
 
     case REALPART_EXPR:
-      if (TREE_CODE (arg) == COMPLEX_CST)
-	return TREE_REALPART (arg);
-      else if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
-	{
-	  arg = build1 (REALPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg);
-	  return fold_if_not_in_template (arg);
-	}
-      else
-	return arg;
-
     case IMAGPART_EXPR:
-      if (TREE_CODE (arg) == COMPLEX_CST)
-	return TREE_IMAGPART (arg);
-      else if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
-	{
-	  arg = build1 (IMAGPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg);
-	  return fold_if_not_in_template (arg);
-	}
+      arg = build_real_imag_expr (input_location, code, arg);
+      if (arg == error_mark_node)
+	return arg;
       else
-	return cp_convert (TREE_TYPE (arg), integer_zero_node);
+	return fold_if_not_in_template (arg);
 
     case PREINCREMENT_EXPR:
     case POSTINCREMENT_EXPR:

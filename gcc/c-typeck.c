@@ -3561,26 +3561,10 @@ build_unary_op (location_t location,
       goto return_build_unary_op;
 
     case REALPART_EXPR:
-      if (TREE_CODE (arg) == COMPLEX_CST)
-	ret = TREE_REALPART (arg);
-      else if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
-	ret = fold_build1_loc (location,
-			       REALPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg);
-      else
-	ret = arg;
-      if (eptype && TREE_CODE (eptype) == COMPLEX_TYPE)
-	eptype = TREE_TYPE (eptype);
-      goto return_build_unary_op;
-
     case IMAGPART_EXPR:
-      if (TREE_CODE (arg) == COMPLEX_CST)
-	ret = TREE_IMAGPART (arg);
-      else if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
-	ret = fold_build1_loc (location,
-			       IMAGPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg);
-      else
-	ret = omit_one_operand_loc (location, TREE_TYPE (arg),
-				integer_zero_node, arg);
+      ret = build_real_imag_expr (location, code, arg);
+      if (ret == error_mark_node)
+	return error_mark_node;
       if (eptype && TREE_CODE (eptype) == COMPLEX_TYPE)
 	eptype = TREE_TYPE (eptype);
       goto return_build_unary_op;
