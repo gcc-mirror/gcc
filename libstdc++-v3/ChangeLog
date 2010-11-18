@@ -1,3 +1,8 @@
+2010-11-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/42670
+	* testsuite/abi/demangle/regression/cw-13.cc: Updated.
+
 2010-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/debug/formatter.h (__truth): Remove, unused.
