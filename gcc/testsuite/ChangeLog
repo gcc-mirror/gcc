@@ -1,3 +1,8 @@
+2010-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/atomic4.ad[sb]: New test.
+	* gnat.dg/volatile4.adb: Likewise.
+
 2010-11-18  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/i386/pr46470.c: Skip for 32-bit PIC.
