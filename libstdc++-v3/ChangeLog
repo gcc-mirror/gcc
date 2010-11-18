@@ -1,3 +1,17 @@
+2010-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/26211 + N3168
+	* include/bits/istream.tcc (basic_istream<>::tellg, seekg(pos_type),
+	seekg(off_type, ios_base::seekdir)): Construct a sentry.
+	(basic_istream<>::tellg, seekg(pos_type), seekg(off_type,
+	ios_base::seekdir, putback, unget)): Clear eofbit first, per N3168.
+	* testsuite/27_io/basic_istream/seekg/char/26211.cc: New.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/26211.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/26211.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/26211.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/8348.cc: Tweak.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/8348.cc: Likewise.
+
 2010-11-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR other/42670

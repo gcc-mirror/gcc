@@ -37,6 +37,7 @@ void test06(void)
     iss >> asNum;
     VERIFY( test = iss.eof() );
     VERIFY( test = !iss.fail() );
+    iss.clear();
     iss.tellg();
     VERIFY( test = !iss.fail() );
   }
