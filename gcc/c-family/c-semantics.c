@@ -140,3 +140,35 @@ build_case_label (location_t loc,
 {
   return build_stmt (loc, CASE_LABEL_EXPR, low_value, high_value, label_decl);
 }
+
+/* Build a REALPART_EXPR or IMAGPART_EXPR, according to CODE, from ARG.  */
+
+tree
+build_real_imag_expr (location_t location, enum tree_code code, tree arg)
+{
+  tree ret;
+  tree arg_type = TREE_TYPE (arg);
+
+  gcc_assert (code == REALPART_EXPR || code == IMAGPART_EXPR);
+
+  if (TREE_CODE (arg_type) == COMPLEX_TYPE)
+    {
+      ret = build1 (code, TREE_TYPE (TREE_TYPE (arg)), arg);
+      SET_EXPR_LOCATION (ret, location);
+    }
+  else if (INTEGRAL_TYPE_P (arg_type) || SCALAR_FLOAT_TYPE_P (arg_type))
+    {
+      ret = (code == REALPART_EXPR
+	     ? arg
+	     : omit_one_operand_loc (location, arg_type,
+				     integer_zero_node, arg));
+    }
+  else
+    {
+      error_at (location, "wrong type argument to %s",
+		code == REALPART_EXPR ? "__real" : "__imag");
+      ret = error_mark_node;
+    }
+
+  return ret;
+}

@@ -1,3 +1,9 @@
+2010-11-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c/33193
+	* c-typeck.c (build_unary_op): Call build_real_imag_expr for
+	REALPART_EXPR and IMAGPART_EXPR.
+
 2010-11-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46172
