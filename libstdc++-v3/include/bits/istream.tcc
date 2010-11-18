@@ -1,7 +1,7 @@
 // istream classes -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
+// 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -713,6 +713,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 60. What is a formatted input function?
       _M_gcount = 0;
+      // Clear eofbit per N3168.
+      this->clear(this->rdstate() & ~ios_base::eofbit);
       sentry __cerb(*this, true);
       if (__cerb)
 	{
@@ -746,6 +748,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 60. What is a formatted input function?
       _M_gcount = 0;
+      // Clear eofbit per N3168.
+      this->clear(this->rdstate() & ~ios_base::eofbit);
       sentry __cerb(*this, true);
       if (__cerb)
 	{
@@ -815,19 +819,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR60.  Do not change _M_gcount.
       pos_type __ret = pos_type(-1);
-      __try
+      sentry __cerb(*this, true);
+      if (__cerb)
 	{
-	  if (!this->fail())
-	    __ret = this->rdbuf()->pubseekoff(0, ios_base::cur,
-					      ios_base::in);
+	  __try
+	    {
+	      if (!this->fail())
+		__ret = this->rdbuf()->pubseekoff(0, ios_base::cur,
+						  ios_base::in);
+	    }
+	  __catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
+	  __catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
 	}
-      __catch(__cxxabiv1::__forced_unwind&)
-	{
-	  this->_M_setstate(ios_base::badbit);
-	  __throw_exception_again;
-	}
-      __catch(...)
-	{ this->_M_setstate(ios_base::badbit); }
       return __ret;
     }
 
@@ -838,29 +846,35 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR60.  Do not change _M_gcount.
-      ios_base::iostate __err = ios_base::goodbit;
-      __try
+      // Clear eofbit per N3168.
+      this->clear(this->rdstate() & ~ios_base::eofbit);
+      sentry __cerb(*this, true);
+      if (__cerb)
 	{
-	  if (!this->fail())
+	  ios_base::iostate __err = ios_base::goodbit;
+	  __try
 	    {
-	      // 136.  seekp, seekg setting wrong streams?
-	      const pos_type __p = this->rdbuf()->pubseekpos(__pos,
-							     ios_base::in);
-	      
-	      // 129.  Need error indication from seekp() and seekg()
-	      if (__p == pos_type(off_type(-1)))
-		__err |= ios_base::failbit;
+	      if (!this->fail())
+		{
+		  // 136.  seekp, seekg setting wrong streams?
+		  const pos_type __p = this->rdbuf()->pubseekpos(__pos,
+								 ios_base::in);
+		  
+		  // 129.  Need error indication from seekp() and seekg()
+		  if (__p == pos_type(off_type(-1)))
+		    __err |= ios_base::failbit;
+		}
 	    }
+	  __catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
+	  __catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
+	  if (__err)
+	    this->setstate(__err);
 	}
-      __catch(__cxxabiv1::__forced_unwind&)
-	{
-	  this->_M_setstate(ios_base::badbit);
-	  __throw_exception_again;
-	}
-      __catch(...)
-	{ this->_M_setstate(ios_base::badbit); }
-      if (__err)
-	this->setstate(__err);
       return *this;
     }
 
@@ -871,29 +885,35 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR60.  Do not change _M_gcount.
-      ios_base::iostate __err = ios_base::goodbit;
-      __try
+      // Clear eofbit per N3168.
+      this->clear(this->rdstate() & ~ios_base::eofbit);
+      sentry __cerb(*this, true);
+      if (__cerb)
 	{
-	  if (!this->fail())
+	  ios_base::iostate __err = ios_base::goodbit;
+	  __try
 	    {
-	      // 136.  seekp, seekg setting wrong streams?
-	      const pos_type __p = this->rdbuf()->pubseekoff(__off, __dir,
-							     ios_base::in);
+	      if (!this->fail())
+		{
+		  // 136.  seekp, seekg setting wrong streams?
+		  const pos_type __p = this->rdbuf()->pubseekoff(__off, __dir,
+								 ios_base::in);
 	      
-	      // 129.  Need error indication from seekp() and seekg()
-	      if (__p == pos_type(off_type(-1)))
-		__err |= ios_base::failbit;
+		  // 129.  Need error indication from seekp() and seekg()
+		  if (__p == pos_type(off_type(-1)))
+		    __err |= ios_base::failbit;
+		}
 	    }
+	  __catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      __throw_exception_again;
+	    }
+	  __catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
+	  if (__err)
+	    this->setstate(__err);
 	}
-      __catch(__cxxabiv1::__forced_unwind&)
-	{
-	  this->_M_setstate(ios_base::badbit);
-	  __throw_exception_again;
-	}
-      __catch(...)
-	{ this->_M_setstate(ios_base::badbit); }
-      if (__err)
-	this->setstate(__err);
       return *this;
     }
 
