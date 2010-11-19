@@ -6042,7 +6042,7 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
     }
 
   pop_cx_call_context ();
-  return result;
+  return unshare_expr (result);
 }
 
 /* FIXME speed this up, it's taking 16% of compile time on sieve testcase.  */

@@ -1,3 +1,8 @@
+2010-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/46526
+	* semantics.c (cxx_eval_call_expression): Unshare the result.
+
 2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* parser.c (cp_parser_objc_protocol_declaration): Pass attributes
