@@ -1,3 +1,13 @@
+2010-11-19  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/46547
+	* c-common.c (in_late_binary_op): Define.
+	(c_common_truthvalue_conversion): Check in_late_binary_op before
+	calling c_save_expr.
+	* c-common.h (in_late_binary_op): Declare.
+	* c-tree.h (in_late_binary_op): Move to c-common.h.
+	* c-typeck.c (in_late_binary_op): Move to c-common.c.
+
 2010-11-17  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46498
