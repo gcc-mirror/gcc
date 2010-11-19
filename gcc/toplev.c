@@ -133,6 +133,12 @@ unsigned int save_decoded_options_count;
 
 const char *main_input_filename;
 
+/* Pointer to base name in main_input_filename, with directories and a
+   single final extension removed, and the length of this base
+   name.  */
+const char *main_input_basename;
+int main_input_baselength;
+
 /* Used to enable -fvar-tracking, -fweb and -frename-registers according
    to optimize in process_options ().  */
 #define AUTODETECT_VALUE 2

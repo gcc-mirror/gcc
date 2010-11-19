@@ -1,5 +1,28 @@
 2010-11-19  Joseph Myers  <joseph@codesourcery.com>
 
+	* common.opt (debug_struct_ordinary, debug_struct_generic): New
+	Variable entries.
+	* dwarf2out.c (matches_main_base, dump_struct_debug, DUMP_GSTRUCT,
+	should_emit_struct_debug): Move from opts.c.
+	* flag-types.h (enum debug_struct_file): Move from opts.c.
+	* flags.h (should_emit_struct_debug): Remove.
+	(base_of_path): Declare.
+	(set_struct_debug_option): Add gcc_options parameter.
+	* optc-gen.awk, opth-gen.awk: Handle array variables.
+	* opts.c (enum debug_struct_file, debug_struct_ordinary,
+	debug_struct_generic): Remove.
+	(set_struct_debug_option): Add gcc_options parameter.
+	(base_of_path): Remove static.
+	(main_input_basename, main_input_baselength, matches_main_base,
+	dump_struct_debug, DUMP_GSTRUCT, should_emit_struct_debug):
+	Remove.
+	* toplev.c (main_input_basename, main_input_baselength): Define
+	here.
+	* toplev.h (main_input_basename, main_input_baselength): Declare
+	here.
+
+2010-11-19  Joseph Myers  <joseph@codesourcery.com>
+
 	* common.opt (flag_instrument_functions_exclude_functions,
 	flag_instrument_functions_exclude_files): New Variable
 	definitions.

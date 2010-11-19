@@ -37,8 +37,9 @@ extern const char *const debug_type_names[];
 /* Specify how much debugging info to generate.  */
 extern enum debug_info_level debug_info_level;
 
-extern bool should_emit_struct_debug (tree type_decl, enum debug_info_usage);
-extern void set_struct_debug_option (const char *value);
+extern int base_of_path (const char *path, const char **base_out);
+extern void set_struct_debug_option (struct gcc_options *opts,
+				     const char *value);
 
 /* Nonzero means use GNU-only extensions in the generated symbolic
    debugging information.  */
