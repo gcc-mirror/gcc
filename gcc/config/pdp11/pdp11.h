@@ -372,11 +372,10 @@ extern int current_first_parm_offset;
 /* Offset of first parameter from the argument pointer register value.  
    For the pdp11, this is nonzero to account for the return address.
 	1 - return address
-	2 - frame pointer (always saved, even when not used!!!!)
-		-- change some day !!!:q!
+	2 - frame pointer, if needed
 
 */
-#define FIRST_PARM_OFFSET(FNDECL) 4
+#define FIRST_PARM_OFFSET(FNDECL) ((frame_pointer_needed) ? 4 : 2)
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
