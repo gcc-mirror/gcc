@@ -7046,7 +7046,7 @@ c_parser_objc_protocol_definition (c_parser *parser, tree attributes)
 	    break;
 	}
       c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
-      objc_declare_protocols (list);
+      objc_declare_protocols (list, attributes);
     }
   else
     {
