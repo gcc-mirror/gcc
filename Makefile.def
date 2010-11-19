@@ -158,6 +158,7 @@ target_modules = { module= libgcc; bootstrap=true; no_check=true; };
 target_modules = { module= libquadmath; };
 target_modules = { module= libgfortran; };
 target_modules = { module= libobjc; };
+target_modules = { module= libgo; };
 target_modules = { module= libtermcap; no_check=true;
                    missing=mostlyclean;
                    missing=clean;
@@ -287,6 +288,8 @@ flags_to_pass = { flag= DLLTOOL_FOR_TARGET ; };
 flags_to_pass = { flag= FLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= GCJ_FOR_TARGET ; };
 flags_to_pass = { flag= GFORTRAN_FOR_TARGET ; };
+flags_to_pass = { flag= GOC_FOR_TARGET ; };
+flags_to_pass = { flag= GOCFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= LD_FOR_TARGET ; };
 flags_to_pass = { flag= LIPO_FOR_TARGET ; };
 flags_to_pass = { flag= LDFLAGS_FOR_TARGET ; };
@@ -539,6 +542,9 @@ dependencies = { module=configure-target-boehm-gc; on=all-target-libstdc++-v3; }
 dependencies = { module=configure-target-fastjar; on=configure-target-zlib; };
 dependencies = { module=all-target-fastjar; on=all-target-zlib; };
 dependencies = { module=all-target-fastjar; on=all-target-libiberty; };
+dependencies = { module=configure-target-libgo; on=configure-target-libffi; };
+dependencies = { module=configure-target-libgo; on=all-target-libstdc++-v3; };
+dependencies = { module=all-target-libgo; on=all-target-libffi; };
 dependencies = { module=configure-target-libjava; on=configure-target-zlib; };
 dependencies = { module=configure-target-libjava; on=configure-target-boehm-gc; };
 dependencies = { module=configure-target-libjava; on=configure-target-qthreads; };
@@ -587,6 +593,8 @@ languages = { language=ada;	gcc-check-target=check-ada;
 languages = { language=objc;	gcc-check-target=check-objc;
 				lib-check-target=check-target-libobjc; };
 languages = { language=obj-c++;	gcc-check-target=check-obj-c++; };
+languages = { language=go;	gcc-check-target=check-go;
+				lib-check-target=check-target-libgo; };
 
 // Toplevel bootstrap
 bootstrap_stage = { id=1 ; };

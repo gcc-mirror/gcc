@@ -1,4 +1,25 @@
 2010-11-19  Ian Lance Taylor  <iant@google.com>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Add target-libgo to target_libraries.  Set
+	and substitute GOC_FOR_BUILD and GOC_FOR_TARGET.
+	* Makefile.tpl (BUILD_EXPORTS): Add GOC and GOCFLAGS.
+	(HOST_EXPORTS): Add GOC.
+	(BASE_TARGET_EXPORTS): Add GOC.
+	(GOC_FOR_BUILD, GOCFLAGS, GOC_FOR_TARGET): New variables.
+	(GOCFLAGS_FOR_TARGET): New variable.
+	(EXTRA_HOST_FLAGS): Add GOC.
+	(EXTRA_TARGET_FLAGS): Add GOC and GOCFLAGS.
+	* Makefile.def (target_modules): Add libgo.
+	(flags_to_pass): Add GOC_FOR_TARGET and GOCFLAGS_FOR_TARGET.
+	(dependencies): Add dependency from configure-target-libgo to
+	configure-target-libffi and all-target-libstdc++-v3.  Add
+	dependencies from all-target-libgo to all-target-libffi.
+	(languages): Add go.
+	* configure: Rebuild.
+	* Makefile.in: Rebuild.
+
+2010-11-19  Ian Lance Taylor  <iant@google.com>
 
 	* config-ml.in: Add Go support: treat GOC and GOCFLAGS like other
 	compiler/flag environment variables.
