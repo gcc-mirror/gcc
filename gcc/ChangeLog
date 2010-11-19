@@ -13,6 +13,9 @@
 	(m68hc11_check_z_replacement) <CLOBBER>: Set this_insn_uses_ix and
 	this_insn_uses_iy before use.
 
+	PR target/46434
+	* config/crx/crx.c (crx_expand_epilogue): Remove unused variable.
+
 2010-11-19  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/46547
