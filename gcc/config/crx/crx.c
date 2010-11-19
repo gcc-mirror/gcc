@@ -1439,16 +1439,11 @@ crx_expand_prologue (void)
 void
 crx_expand_epilogue (void)
 {
-  rtx return_reg;
-
   /* Nonzero if we need to return and pop only RA. This will generate a
    * different insn. This differentiate is for the peepholes for call as last
    * statement in function. */
   int only_popret_RA = (save_regs[RETURN_ADDRESS_REGNUM]
 			&& (sum_regs == UNITS_PER_WORD));
-
-  /* Return register.  */
-  return_reg = gen_rtx_REG (Pmode, RETURN_ADDRESS_REGNUM);
 
   if (frame_pointer_needed)
     /* Restore the stack pointer with the frame pointers value */
