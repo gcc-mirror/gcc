@@ -1,3 +1,11 @@
+2010-11-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/gcc-defs.exp (gcc-set-multilib-library-path): Use eval to
+	exec $compiler.
+	* lib/gfortran.exp (gfortran_link_flags): Remove braces around
+	$GFORTRAN_UNDER_TEST.
+	(gfortran_init): Use -B to specify specpath, add trailing /.
+
 2010-11-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/ppc-target-1.c: New file to test target
