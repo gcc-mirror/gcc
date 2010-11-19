@@ -1,3 +1,8 @@
+2010-11-18  Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Ian Lance Taylor  <iant@google.com>
+
+	* config/darwin-c.c (darwin_additional_format_types): Export.
+
 2010-11-18  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.h (FIRST_PARM_OFFSET): Fix case of no frame

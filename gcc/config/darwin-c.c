@@ -706,7 +706,7 @@ darwin_check_cfstring_format_arg (tree ARG_UNUSED (format_arg),
 }
 
 /* The extra format types we recognize.  */
-const format_kind_info darwin_additional_format_types[] = {
+EXPORTED_CONST format_kind_info darwin_additional_format_types[] = {
   { "CFString",   NULL,  NULL, NULL, NULL, 
     NULL, NULL, 
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL, 0, 0, 0, 0, 0, 0,
