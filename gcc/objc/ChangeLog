@@ -1,5 +1,21 @@
 2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_start_class_interface): Do not warn that class
+	attributes are unimplemented.  Pass the attributes to start_class.
+	(objc_start_category_interface): Updated call to start_class.
+	(objc_start_class_implementation): Same change.
+	(objc_start_category_implementation): Same change.
+	(objc_build_class_component_ref): Warn if the class is deprecated.
+	(build_private_template): Mark the template as deprecated if the
+	class is deprecated.
+	(start_class): Added 'attributes' argument.  Emit a warning if
+	using a deprecated class as superclass of a class, or original
+	class of a category.  Recognize the 'deprecated' attribute when
+	starting and interface, and mark the interface with
+	TREE_DEPRECATED if present.  Store attributes in the interface.
+	
+2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>	
+
 	* objc-act.c (lookup_protocol): Added 'warn_if_deprecated'
 	argument.  If it is 'true' and the protocol is deprecated, emit a
 	deprecation warning.

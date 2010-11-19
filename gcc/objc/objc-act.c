@@ -144,7 +144,7 @@ static tree get_proto_encoding (tree);
 static tree lookup_interface (tree);
 static tree objc_add_static_instance (tree, tree);
 
-static tree start_class (enum tree_code, tree, tree, tree);
+static tree start_class (enum tree_code, tree, tree, tree, tree);
 static tree continue_class (tree);
 static void finish_class (tree);
 static void start_method_def (tree);
@@ -730,18 +730,12 @@ void
 objc_start_class_interface (tree klass, tree super_class,
 			    tree protos, tree attributes)
 {
-  if (attributes)
-    {
-      if (flag_objc1_only)
-	error_at (input_location, "class attributes are not available in Objective-C 1.0");
-      else
-	warning_at (input_location, OPT_Wattributes, 
-		    "class attributes are not available in this version"
-		    " of the compiler, (ignored)");
-    }
+  if (flag_objc1_only && attributes)
+    error_at (input_location, "class attributes are not available in Objective-C 1.0");	
+
   objc_interface_context
     = objc_ivar_context
-    = start_class (CLASS_INTERFACE_TYPE, klass, super_class, protos);
+    = start_class (CLASS_INTERFACE_TYPE, klass, super_class, protos, attributes);
   objc_ivar_visibility = OBJC_IVAR_VIS_PROTECTED;
 }
 
@@ -759,7 +753,7 @@ objc_start_category_interface (tree klass, tree categ,
 		    " of the compiler, (ignored)");
     }
   objc_interface_context
-    = start_class (CATEGORY_INTERFACE_TYPE, klass, categ, protos);
+    = start_class (CATEGORY_INTERFACE_TYPE, klass, categ, protos, NULL_TREE);
   objc_ivar_chain
     = continue_class (objc_interface_context);
 }
@@ -795,7 +789,8 @@ objc_start_class_implementation (tree klass, tree super_class)
 {
   objc_implementation_context
     = objc_ivar_context
-    = start_class (CLASS_IMPLEMENTATION_TYPE, klass, super_class, NULL_TREE);
+    = start_class (CLASS_IMPLEMENTATION_TYPE, klass, super_class, NULL_TREE,
+		   NULL_TREE);
   objc_ivar_visibility = OBJC_IVAR_VIS_PROTECTED;
 }
 
@@ -803,7 +798,8 @@ void
 objc_start_category_implementation (tree klass, tree categ)
 {
   objc_implementation_context
-    = start_class (CATEGORY_IMPLEMENTATION_TYPE, klass, categ, NULL_TREE);
+    = start_class (CATEGORY_IMPLEMENTATION_TYPE, klass, categ, NULL_TREE,
+		   NULL_TREE);
   objc_ivar_chain
     = continue_class (objc_implementation_context);
 }
@@ -1707,6 +1703,11 @@ objc_build_class_component_ref (tree class_name, tree property_ident)
       /* Again, this should never happen, but we do check.  */
       error_at (input_location, "could not find interface for class %qE", class_name); 
       return error_mark_node;
+    }
+  else
+    {
+      if (TREE_DEPRECATED (rtype))
+	warning (OPT_Wdeprecated_declarations, "class %qE is deprecated", class_name);    
     }
 
   x = maybe_make_artificial_property_decl (rtype, NULL_TREE, NULL_TREE,
@@ -4227,7 +4228,6 @@ add_class_reference (tree ident)
 
 /* Get a class reference, creating it if necessary.  Also create the
    reference variable.  */
-
 tree
 objc_get_class_reference (tree ident)
 {
@@ -5623,6 +5623,10 @@ build_private_template (tree klass)
 	 can emit stabs for this struct type.  */
       if (flag_debug_only_used_symbols && TYPE_STUB_DECL (record))
 	TREE_USED (TYPE_STUB_DECL (record)) = 1;
+
+      /* Copy the attributes from the class to the type.  */
+      if (TREE_DEPRECATED (klass))
+	TREE_DEPRECATED (record) = 1;
     }
 }
 
@@ -9316,7 +9320,7 @@ check_protocols (tree proto_list, const char *type, tree name)
 
 static tree
 start_class (enum tree_code code, tree class_name, tree super_name,
-	     tree protocol_list)
+	     tree protocol_list, tree attributes)
 {
   tree klass, decl;
 
@@ -9344,8 +9348,12 @@ start_class (enum tree_code code, tree class_name, tree super_name,
       && super_name)
     {
       tree super = objc_is_class_name (super_name);
+      tree super_interface = NULL_TREE;
 
-      if (!super || !lookup_interface (super))
+      if (super)
+	super_interface = lookup_interface (super);
+      
+      if (!super_interface)
 	{
 	  error ("cannot find interface declaration for %qE, superclass of %qE",
 		 super ? super : super_name,
@@ -9353,7 +9361,12 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	  super_name = NULL_TREE;
 	}
       else
-	super_name = super;
+	{
+	  if (TREE_DEPRECATED (super_interface))
+	    warning (OPT_Wdeprecated_declarations, "class %qE is deprecated", 
+		     super);
+	  super_name = super;
+	}
     }
 
   CLASS_NAME (klass) = class_name;
@@ -9436,6 +9449,22 @@ start_class (enum tree_code code, tree class_name, tree super_name,
       if (protocol_list)
 	CLASS_PROTOCOL_LIST (klass)
 	  = lookup_and_install_protocols (protocol_list);
+
+      /* Determine if 'deprecated', the only attribute we recognize
+	 for classes, was used.  Ignore all other attributes for now,
+	 but store them in the klass.  */
+      if (attributes)
+	{
+	  tree attribute;
+	  for (attribute = attributes; attribute; attribute = TREE_CHAIN (attribute))
+	    {
+	      tree name = TREE_PURPOSE (attribute);
+	      
+	      if (is_attribute_p  ("deprecated", name))
+		TREE_DEPRECATED (klass) = 1;
+	    }
+	  TYPE_ATTRIBUTES (klass) = attributes;
+	}
       break;     
 
     case CATEGORY_INTERFACE_TYPE:
@@ -9452,8 +9481,13 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	    exit (FATAL_EXIT_CODE);
 	  }
 	else
-	  add_category (class_category_is_assoc_with, klass);
-	
+	  {
+	    if (TREE_DEPRECATED (class_category_is_assoc_with))
+	      warning (OPT_Wdeprecated_declarations, "class %qE is deprecated", 
+		       class_name);
+	    add_category (class_category_is_assoc_with, klass);
+	  }
+
 	if (protocol_list)
 	  CLASS_PROTOCOL_LIST (klass)
 	    = lookup_and_install_protocols (protocol_list);

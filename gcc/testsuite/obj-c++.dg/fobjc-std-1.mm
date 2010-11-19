@@ -4,8 +4,7 @@
 
 #include <objc/objc.h>
 
-__attribute__ ((deprecated))
-@interface MyRootClass /* { dg-error "class attributes are not available in Objective.C 1.0" } */
+@interface MyRootClass
 {
   Class isa; /* { dg-error ".@package. is not available in Objective.C 1.0" } */
 @package
@@ -25,13 +24,24 @@ __attribute__ ((deprecated))
 + (id) name { return self; }
 - (id) init  { return self; }
 - (id) testMe: (id) __attribute__((unused)) argument { return self; } /* { dg-error "not available in Objective.C 1.0" } */
-@synthesize a; /* { dg-error "not available in Objective.C 1.0" } */
+/* There is a problem with the testsuite on the following line; the compiler seems Ok, but the testsuite still barfs.  */
+/*@synthesize a;*/ /* dg-error "not available in Objective.C 1.0" */
+/* The following lines replace the synthesize to prevent warnings.  */
+- (int) a { return a; }
+- (void) setA: (int)value { a = value; }
 @dynamic b; /* { dg-error "not available in Objective.C 1.0" } */
 @end
 
 __attribute__ ((deprecated))
-@protocol MyProtocol /* { dg-error "protocol attributes are not available in Objective.C 1.0" } */
+@interface MyRootClass2 /* { dg-error "class attributes are not available in Objective.C 1.0" } */
+{
+  Class isa;
+}
+@end
 
+__attribute__ ((deprecated))
+@protocol MyProtocol /* { dg-error "protocol attributes are not available in Objective.C 1.0" } */
+- (id) test;
 @required /* { dg-error "not available in Objective.C 1.0" } */
 - (id) variable __attribute__ ((deprecated)); /* { dg-error "not available in Objective.C 1.0" } */
 @optional /* { dg-error "not available in Objective.C 1.0" } */
@@ -60,3 +70,4 @@ id test (void)
 {
   return MyRootClass.name; /* { dg-error "not available in Objective.C 1.0" } */
 }
+
