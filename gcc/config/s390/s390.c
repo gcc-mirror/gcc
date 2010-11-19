@@ -8433,6 +8433,7 @@ s390_function_arg_integer (enum machine_mode mode, const_tree type)
   /* We accept small integral (and similar) types.  */
   if (INTEGRAL_TYPE_P (type)
       || POINTER_TYPE_P (type)
+      || TREE_CODE (type) == NULLPTR_TYPE
       || TREE_CODE (type) == OFFSET_TYPE
       || (TARGET_SOFT_FLOAT && TREE_CODE (type) == REAL_TYPE))
     return true;
