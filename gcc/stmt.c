@@ -2250,6 +2250,25 @@ emit_case_bit_tests (tree index_type, tree index_expr, tree minval,
 #define HAVE_tablejump 0
 #endif
 
+/* Return true if a switch should be expanded as a bit test.
+   INDEX_EXPR is the index expression, RANGE is the difference between
+   highest and lowest case, UNIQ is number of unique case node targets
+   not counting the default case and COUNT is the number of comparisons
+   needed, not counting the default case.  */
+bool
+expand_switch_using_bit_tests_p (tree index_expr, tree range,
+				 unsigned int uniq, unsigned int count)
+{
+  return (CASE_USE_BIT_TESTS
+	  && ! TREE_CONSTANT (index_expr)
+	  && compare_tree_int (range, GET_MODE_BITSIZE (word_mode)) < 0
+	  && compare_tree_int (range, 0) > 0
+	  && lshift_cheap_p ()
+	  && ((uniq == 1 && count >= 3)
+	      || (uniq == 2 && count >= 5)
+	      || (uniq == 3 && count >= 6)));
+}
+
 /* Terminate a case (Pascal/Ada) or switch (C) statement
    in which ORIG_INDEX is the expression to be tested.
    If ORIG_TYPE is not NULL, it is the original ORIG_INDEX
@@ -2384,14 +2403,7 @@ expand_case (gimple stmt)
       /* Try implementing this switch statement by a short sequence of
 	 bit-wise comparisons.  However, we let the binary-tree case
 	 below handle constant index expressions.  */
-      if (CASE_USE_BIT_TESTS
-	  && ! TREE_CONSTANT (index_expr)
-	  && compare_tree_int (range, GET_MODE_BITSIZE (word_mode)) < 0
-	  && compare_tree_int (range, 0) > 0
-	  && lshift_cheap_p ()
-	  && ((uniq == 1 && count >= 3)
-	      || (uniq == 2 && count >= 5)
-	      || (uniq == 3 && count >= 6)))
+      if (expand_switch_using_bit_tests_p (index_expr, range, uniq, count))
 	{
 	  /* Optimize the case where all the case values fit in a
 	     word without having to subtract MINVAL.  In this case,
