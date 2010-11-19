@@ -153,7 +153,7 @@ static void objc_start_function (tree, tree, tree, tree);
 #else
 static void objc_start_function (tree, tree, tree, struct c_arg_info *);
 #endif
-static tree start_protocol (enum tree_code, tree, tree);
+static tree start_protocol (enum tree_code, tree, tree, tree);
 static tree build_method_decl (enum tree_code, tree, tree, tree, bool);
 static tree objc_add_method (tree, tree, int, bool);
 static tree add_instance_variable (tree, objc_ivar_visibility_kind, tree);
@@ -234,9 +234,9 @@ enum string_section
 static tree add_objc_string (tree, enum string_section);
 static void build_selector_table_decl (void);
 
-/* Protocol additions.  */
+/* Protocols.  */
 
-static tree lookup_protocol (tree);
+static tree lookup_protocol (tree, bool);
 static tree lookup_and_install_protocols (tree);
 
 /* Type encoding.  */
@@ -767,17 +767,11 @@ objc_start_category_interface (tree klass, tree categ,
 void
 objc_start_protocol (tree name, tree protos, tree attributes)
 {
-  if (attributes)
-    {
-      if (flag_objc1_only)
-	error_at (input_location, "protocol attributes are not available in Objective-C 1.0");	
-      else
-	warning_at (input_location, OPT_Wattributes, 
-		    "protocol attributes are not available in this version"
-		    " of the compiler, (ignored)");
-    }
+  if (flag_objc1_only && attributes)
+    error_at (input_location, "protocol attributes are not available in Objective-C 1.0");	
+
   objc_interface_context
-    = start_protocol (PROTOCOL_INTERFACE_TYPE, name, protos);
+    = start_protocol (PROTOCOL_INTERFACE_TYPE, name, protos, attributes);
   objc_method_optional_flag = false;
 }
 
@@ -2866,7 +2860,7 @@ check_protocol_recursively (tree proto, tree list)
       tree pp = TREE_VALUE (p);
 
       if (TREE_CODE (pp) == IDENTIFIER_NODE)
-	pp = lookup_protocol (pp);
+	pp = lookup_protocol (pp, /* warn if deprecated */ false);
 
       if (pp == proto)
 	fatal_error ("protocol %qE has circular dependency",
@@ -2876,8 +2870,9 @@ check_protocol_recursively (tree proto, tree list)
     }
 }
 
-/* Look up PROTOCOLS, and return a list of those that are found.
-   If none are found, return NULL.  */
+/* Look up PROTOCOLS, and return a list of those that are found.  If
+   none are found, return NULL.  Note that this function will emit a
+   warning if a protocol is found and is deprecated.  */
 
 static tree
 lookup_and_install_protocols (tree protocols)
@@ -2891,7 +2886,7 @@ lookup_and_install_protocols (tree protocols)
   for (proto = protocols; proto; proto = TREE_CHAIN (proto))
     {
       tree ident = TREE_VALUE (proto);
-      tree p = lookup_protocol (ident);
+      tree p = lookup_protocol (ident, /* warn_if_deprecated */ true);
 
       if (p)
 	return_value = chainon (return_value,
@@ -8237,7 +8232,7 @@ tree
 objc_build_protocol_expr (tree protoname)
 {
   tree expr;
-  tree p = lookup_protocol (protoname);
+  tree p = lookup_protocol (protoname, /* warn if deprecated */ true);
 
   if (!p)
     {
@@ -10544,14 +10539,28 @@ add_protocol (tree protocol)
   return protocol_chain;
 }
 
+/* Looks up a protocol.  If 'warn_if_deprecated' is true, a warning is
+   emitted if the protocol is deprecated.  */
+
 static tree
-lookup_protocol (tree ident)
+lookup_protocol (tree ident, bool warn_if_deprecated)
 {
   tree chain;
 
   for (chain = protocol_chain; chain; chain = TREE_CHAIN (chain))
     if (ident == PROTOCOL_NAME (chain))
-      return chain;
+      {
+	if (warn_if_deprecated && TREE_DEPRECATED (chain))
+	  {
+	    /* It would be nice to use warn_deprecated_use() here, but
+	       we are using TREE_CHAIN (which is supposed to be the
+	       TYPE_STUB_DECL for a TYPE) for something different.  */
+	    warning (OPT_Wdeprecated_declarations, "protocol %qE is deprecated", 
+		     PROTOCOL_NAME (chain));
+	  }
+
+	return chain;
+      }
 
   return NULL_TREE;
 }
@@ -10560,9 +10569,10 @@ lookup_protocol (tree ident)
    they are already declared or defined, the function has no effect.  */
 
 void
-objc_declare_protocols (tree names)
+objc_declare_protocols (tree names, tree attributes)
 {
   tree list;
+  bool deprecated = false;
 
 #ifdef OBJCPLUS
   if (current_namespace != global_namespace) {
@@ -10570,11 +10580,25 @@ objc_declare_protocols (tree names)
   }
 #endif /* OBJCPLUS */
 
+  /* Determine if 'deprecated', the only attribute we recognize for
+     protocols, was used.  Ignore all other attributes.  */
+  if (attributes)
+    {
+      tree attribute;
+      for (attribute = attributes; attribute; attribute = TREE_CHAIN (attribute))
+	{
+	  tree name = TREE_PURPOSE (attribute);
+	  
+	  if (is_attribute_p  ("deprecated", name))
+	    deprecated = true;
+	}
+    }
+
   for (list = names; list; list = TREE_CHAIN (list))
     {
       tree name = TREE_VALUE (list);
 
-      if (lookup_protocol (name) == NULL_TREE)
+      if (lookup_protocol (name, /* warn if deprecated */ false) == NULL_TREE)
 	{
 	  tree protocol = make_node (PROTOCOL_INTERFACE_TYPE);
 
@@ -10585,14 +10609,22 @@ objc_declare_protocols (tree names)
 	  add_protocol (protocol);
 	  PROTOCOL_DEFINED (protocol) = 0;
 	  PROTOCOL_FORWARD_DECL (protocol) = NULL_TREE;
+	  
+	  if (attributes)
+	    {
+	      TYPE_ATTRIBUTES (protocol) = attributes;
+	      if (deprecated)
+		TREE_DEPRECATED (protocol) = 1;
+	    }
 	}
     }
 }
 
 static tree
-start_protocol (enum tree_code code, tree name, tree list)
+start_protocol (enum tree_code code, tree name, tree list, tree attributes)
 {
   tree protocol;
+  bool deprecated = false;
 
 #ifdef OBJCPLUS
   if (current_namespace != global_namespace) {
@@ -10600,7 +10632,21 @@ start_protocol (enum tree_code code, tree name, tree list)
   }
 #endif /* OBJCPLUS */
 
-  protocol = lookup_protocol (name);
+  /* Determine if 'deprecated', the only attribute we recognize for
+     protocols, was used.  Ignore all other attributes.  */
+  if (attributes)
+    {
+      tree attribute;
+      for (attribute = attributes; attribute; attribute = TREE_CHAIN (attribute))
+	{
+	  tree name = TREE_PURPOSE (attribute);
+	  
+	  if (is_attribute_p  ("deprecated", name))
+	    deprecated = true;
+	}
+    }
+
+  protocol = lookup_protocol (name, /* warn_if_deprecated */ false);
 
   if (!protocol)
     {
@@ -10627,6 +10673,14 @@ start_protocol (enum tree_code code, tree name, tree list)
       warning (0, "duplicate declaration for protocol %qE",
 	       name);
     }
+
+  if (attributes)
+    {
+      TYPE_ATTRIBUTES (protocol) = attributes;
+      if (deprecated)
+	TREE_DEPRECATED (protocol) = 1;
+    }
+
   return protocol;
 }
 

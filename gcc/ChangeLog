@@ -1,3 +1,8 @@
+2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_parser_objc_protocol_definition): Pass attributes
+	to objc_declare_protocols.
+
 2010-11-19  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/45789

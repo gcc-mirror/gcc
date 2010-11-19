@@ -1,3 +1,22 @@
+2010-11-19  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
+
+	* objc-act.c (lookup_protocol): Added 'warn_if_deprecated'
+	argument.  If it is 'true' and the protocol is deprecated, emit a
+	deprecation warning.
+	(objc_start_protocol): Do not warn that protocol attributes are
+	unimplemented.  Pass the attributes to start_protocol.
+	(start_protocol): Added attributes argument.  Recognize the
+	'deprecated' attribute and mark the protocols with TREE_DEPRECATED
+	if present.  Store attributes in the protocol.
+	(objc_declare_protocols): Added 'attributes' argument.  Recognize
+	the 'deprecated' attribute and mark the protocols with
+	TREE_DEPRECATED if present.  Store attributes in the protocol.
+	Updated call to lookup_protocol.
+	(objc_build_protocol_expr): Updated call to lookup_protocol.
+	(check_protocol_recursively): Same change.
+	(lookup_and_install_protocols): Same change.
+	* objc-act.h: Updated comments.
+	
 2010-11-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (lookup_method_in_protocol_list): Search methods in

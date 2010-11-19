@@ -1,14 +1,13 @@
 /* { dg-do compile } */
 
 #include <objc/objc.h>
-#include "../../objc-obj-c++-shared/Object1.h"
 
 __attribute ((deprecated)) 
 @protocol dep_proto 
-- (int) depprotomth; /* { dg-warning "protocol attributes are not available in this version" } */
+- (int) depprotomth;
 @end
 
-@interface obj : Object <dep_proto>
+@interface obj <dep_proto> /* { dg-warning "is deprecated" } */
 { 
 @public 
   int var; 
@@ -20,10 +19,3 @@ __attribute ((deprecated))
 - (int) mth {  return var; } 
 - (int) depprotomth { return var + 1; }
 @end
-
-int foo (void)
-{
-    obj *p = [obj new];	 
-    int q = [p depprotomth];
-    return [p mth];    
-}

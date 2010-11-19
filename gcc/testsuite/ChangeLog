@@ -1,3 +1,12 @@
+2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/attributes/proto-attribute-1.m: Updated.
+	* objc.dg/attributes/proto-attribute-2.m: New.
+	* objc.dg/attributes/proto-attribute-3.m: New.
+	* obj-c++.dg/attributes/proto-attribute-1.mm: Updated.
+	* obj-c++.dg/attributes/proto-attribute-2.mm: New.
+	* obj-c++.dg/attributes/proto-attribute-3.mm: New.	
+
 2010-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/lto/20090210_1.c: Do not pass -fPIC on the SPARC.

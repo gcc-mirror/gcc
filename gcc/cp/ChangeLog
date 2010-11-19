@@ -1,3 +1,8 @@
+2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (cp_parser_objc_protocol_declaration): Pass attributes
+	to objc_declare_protocols.
+
 2010-11-18  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c/33193
