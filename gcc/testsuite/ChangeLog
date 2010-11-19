@@ -1,5 +1,8 @@
 2010-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/46526
+	* g++.dg/cpp0x/constexpr-base3.C: New test.
+
 	PR tree-optimization/45830
 	* gcc.target/i386/pr45830.c: New test.
 	* gcc.c-torture/execute/pr45830.c: New test.
