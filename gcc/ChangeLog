@@ -1,3 +1,7 @@
+2010-11-19  Christian Borntraeger  <borntraeger@de.ibm.com>
+
+	* config/s390/s390.c (s390_function_arg_integer): Handle NULLPTR_TYPE.
+
 2010-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/45870
