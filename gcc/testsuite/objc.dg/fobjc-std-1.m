@@ -4,9 +4,8 @@
 
 #include <objc/objc.h>
 
-__attribute__ ((deprecated))
 @interface MyRootClass
-{  /* { dg-error "class attributes are not available in Objective.C 1.0" } */
+{
   Class isa;
 @package /* { dg-error "not available in Objective.C 1.0" } */
   int a;
@@ -27,6 +26,13 @@ __attribute__ ((deprecated))
 - (id) testMe: (id) __attribute__((unused)) argument { return self; } /* { dg-error "not available in Objective.C 1.0" } */
 @synthesize a; /* { dg-error "not available in Objective.C 1.0" } */
 @dynamic b; /* { dg-error "not available in Objective.C 1.0" } */
+@end
+
+__attribute__ ((deprecated))
+@interface MyRootClass2
+{  /* { dg-error "class attributes are not available in Objective.C 1.0" } */
+  Class isa;
+}
 @end
 
 __attribute__ ((deprecated))

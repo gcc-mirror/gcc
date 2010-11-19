@@ -1,3 +1,12 @@
+2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/attributes/class-attribute-1.m: Rewritten.
+	* objc.dg/attributes/class-attribute-2.m: Same change.
+	* obj-c++.dg/attributes/class-attribute-1.mm: Same change.
+	* obj-c++.dg/attributes/class-attribute-2.mm: Same change.
+	* objc.dg/fobjc-std-1.m: Updated.
+	* obj-c++.dg/fobjc-std-1.mm: Updated.
+	
 2010-11-19  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/46077
