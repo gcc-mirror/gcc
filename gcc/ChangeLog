@@ -1,3 +1,9 @@
+2010-11-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* mode-switching.c (optimize_mode_switching): Use
+	FOR_BB_INSNS instead of open-coded for loop.
+	* cfgrtl.c (redirect_branch_edge): Ditto.
+
 2010-11-19  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR target/46436
@@ -32,9 +38,8 @@
 	before shorts.
 	* opth-gen.awk: Ditto.
 
-	* configure.ac: Add support for HeaderInclude and SourceInclude
-	option directives to add the appropriate files to the dependency
-	lists.
+	* configure.ac: Add support for HeaderInclude and SourceInclude option
+	directives to add the appropriate files to the dependency lists.
 	* configure: Regenerate.
 	* Makefile.in (OPTIONS_H_EXTRA): New variable for HeaderInclude.
 	(OPTIONS_C_EXTRA): New variable for SourceInclude.
@@ -197,8 +202,7 @@
 	(rs6000_option_override): Ditto.
 	(rs6000_handle_option): Ditto.
 	(rs6000_conditional_register_usage): Add debug trace message.
-	(struct rs6000_opt_mask): New for target attribute/pragma
-	support.
+	(struct rs6000_opt_mask): New for target attribute/pragma support.
 	(rs6000_opt_masks): Ditto.
 	(struct rs6000_opt_var): Ditto.
 	(rs6000_opt_vars): Ditto.
@@ -230,8 +234,7 @@
 	(TARGET_DEBUG*): Ditto.
 
 	* config/rs6000/rs6000-opts.h: New header file to define the enums
-	that are used in target variables that are now defined in
-	rs6000.opt.
+	that are used in target variables that are now defined in rs6000.opt.
 
 	* config/rs6000/sysv4.h (enum rs6000_sdata_type): Move to
 	rs6000-opts.h.
@@ -266,12 +269,10 @@
 2010-11-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (flag_instrument_functions_exclude_functions,
-	flag_instrument_functions_exclude_files): New Variable
-	definitions.
+	flag_instrument_functions_exclude_files): New Variable definitions.
 	* flags.h (flag_instrument_functions_exclude_p): Don't declare.
 	* gimplify.c (char_p): Declare type and vectors.
-	(flag_instrument_functions_exclude_p): Moved from opts.c.  Make
-	static.
+	(flag_instrument_functions_exclude_p): Moved from opts.c.  Make static.
 	* opts.c (flag_instrument_functions_exclude_functions,
 	flag_instrument_functions_exclude_files): Remove.
 	(add_comma_separated_to_vector): Take void **.

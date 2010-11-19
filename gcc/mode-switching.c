@@ -518,9 +518,7 @@ optimize_mode_switching (void)
 	      }
 	  }
 
-	  for (insn = BB_HEAD (bb);
-	       insn != NULL && insn != NEXT_INSN (BB_END (bb));
-	       insn = NEXT_INSN (insn))
+	  FOR_BB_INSNS (bb, insn)
 	    {
 	      if (INSN_P (insn))
 		{
