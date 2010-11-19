@@ -65,10 +65,9 @@ extern int dot_symbols;
 
 #define TARGET_USES_LINUX64_OPT 1
 #ifdef HAVE_LD_LARGE_TOC
-extern enum rs6000_cmodel cmodel;
 #undef TARGET_CMODEL
-#define TARGET_CMODEL cmodel
-#define SET_CMODEL(opt) cmodel = opt
+#define TARGET_CMODEL rs6000_current_cmodel
+#define SET_CMODEL(opt) rs6000_current_cmodel = opt
 #else
 #define SET_CMODEL(opt) do {} while (0)
 #endif
@@ -127,7 +126,7 @@ extern enum rs6000_cmodel cmodel;
 	  if ((target_flags_explicit & MASK_MINIMAL_TOC) != 0)	\
 	    {							\
 	      if (rs6000_explicit_options.cmodel		\
-		  && cmodel != CMODEL_SMALL)			\
+		  && rs6000_current_cmodel != CMODEL_SMALL)	\
 		error ("-mcmodel incompatible with other toc options"); \
 	      SET_CMODEL (CMODEL_SMALL);			\
 	    }							\
@@ -135,7 +134,7 @@ extern enum rs6000_cmodel cmodel;
 	    {							\
 	      if (!rs6000_explicit_options.cmodel)		\
 		SET_CMODEL (CMODEL_MEDIUM);			\
-	      if (cmodel != CMODEL_SMALL)			\
+	      if (rs6000_current_cmodel != CMODEL_SMALL)	\
 		{						\
 		  TARGET_NO_FP_IN_TOC = 0;			\
 		  TARGET_NO_SUM_IN_TOC = 0;			\

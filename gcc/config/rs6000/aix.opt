@@ -20,5 +20,5 @@
 ; <http://www.gnu.org/licenses/>.
 
 mxl-compat
-Target Var(has_xl_compat_option)
+Target Var(has_xl_compat_option) Save
 Conform more closely to IBM XLC semantics

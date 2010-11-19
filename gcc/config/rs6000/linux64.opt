@@ -20,7 +20,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 mprofile-kernel
-Target Report Var(profile_kernel)
+Target Report Var(profile_kernel) Save
 Call mcount for profiling before a function prologue
 
 mcmodel=
