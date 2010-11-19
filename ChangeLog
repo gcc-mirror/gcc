@@ -90,10 +90,6 @@
 	* config/cloog.m4: Pass ppl libraries to the CLooG version check.
 	* configure: Regenerate.
 
-2010-11-11  Jan Hubicka  <jh@suse.cz>
-
-	* config/bootstrap-lto: Use -flto.
-
 2010-11-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* configure.ac: Support official CLooG.org versions.

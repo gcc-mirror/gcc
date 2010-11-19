@@ -2,6 +2,10 @@
 
 	* cloog.m4 (CLOOG_INIT_FLAGS): Fix spelling in option names.
 
+2010-11-11  Jan Hubicka  <jh@suse.cz>
+
+	* bootstrap-lto: Use -flto.
+
 2010-06-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* po.m4 (AM_PO_SUBDIRS): Fix unportable shell quoting.
