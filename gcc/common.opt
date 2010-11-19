@@ -105,6 +105,14 @@ enum symbol_visibility default_visibility = VISIBILITY_DEFAULT
 Variable
 enum tls_model flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC
 
+; These two are really VEC(char_p,heap) *.
+
+Variable
+void *flag_instrument_functions_exclude_functions
+
+Variable
+void *flag_instrument_functions_exclude_files
+
 ###
 Driver
 

@@ -7762,6 +7762,46 @@ gimplify_body (tree *body_p, tree fndecl, bool do_parms)
   return outer_bind;
 }
 
+typedef char *char_p; /* For DEF_VEC_P.  */
+DEF_VEC_P(char_p);
+DEF_VEC_ALLOC_P(char_p,heap);
+
+/* Return whether we should exclude FNDECL from instrumentation.  */
+
+static bool
+flag_instrument_functions_exclude_p (tree fndecl)
+{
+  VEC(char_p,heap) *vec;
+
+  vec = (VEC(char_p,heap) *) flag_instrument_functions_exclude_functions;
+  if (VEC_length (char_p, vec) > 0)
+    {
+      const char *name;
+      int i;
+      char *s;
+
+      name = lang_hooks.decl_printable_name (fndecl, 0);
+      FOR_EACH_VEC_ELT (char_p, vec, i, s)
+	if (strstr (name, s) != NULL)
+	  return true;
+    }
+
+  vec = (VEC(char_p,heap) *) flag_instrument_functions_exclude_files;
+  if (VEC_length (char_p, vec) > 0)
+    {
+      const char *name;
+      int i;
+      char *s;
+
+      name = DECL_SOURCE_FILE (fndecl);
+      FOR_EACH_VEC_ELT (char_p, vec, i, s)
+	if (strstr (name, s) != NULL)
+	  return true;
+    }
+
+  return false;
+}
+
 /* Entry point to the gimplification pass.  FNDECL is the FUNCTION_DECL
    node for the function we want to gimplify.
 

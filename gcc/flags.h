@@ -159,10 +159,6 @@ extern enum stack_check_type flag_stack_check;
 #define abi_version_at_least(N) \
   (flag_abi_version == 0 || flag_abi_version >= (N))
 
-/* Return whether the function should be excluded from
-   instrumentation.  */
-extern bool flag_instrument_functions_exclude_p (tree fndecl);
-
 /* True if overflow wraps around for the given integral type.  That
    is, TYPE_MAX + 1 == TYPE_MIN.  */
 #define TYPE_OVERFLOW_WRAPS(TYPE) \
