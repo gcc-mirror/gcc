@@ -1062,8 +1062,7 @@ redirect_branch_edge (edge e, basic_block target)
     /* When expanding this BB might actually contain multiple
        jumps (i.e. not yet split by find_many_sub_basic_blocks).
        Redirect all of those that match our label.  */
-    for (insn = BB_HEAD (src); insn != NEXT_INSN (BB_END (src));
-	 insn = NEXT_INSN (insn))
+    FOR_BB_INSNS (src, insn)
       if (JUMP_P (insn) && !patch_jump_insn (insn, old_label, target))
 	return NULL;
 

@@ -25,7 +25,7 @@
 	* objc.dg/attributes/proto-attribute-3.m: New.
 	* obj-c++.dg/attributes/proto-attribute-1.mm: Updated.
 	* obj-c++.dg/attributes/proto-attribute-2.mm: New.
-	* obj-c++.dg/attributes/proto-attribute-3.mm: New.	
+	* obj-c++.dg/attributes/proto-attribute-3.mm: New.
 
 2010-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
