@@ -25,10 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "expr.h"
-#include "ggc.h"
-#include "output.h"
 #include "langhooks.h"
 #include "opts.h"
 #include "options.h"
@@ -39,10 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts-diagnostic.h"
 #include "insn-attr.h"		/* For INSN_SCHEDULING.  */
 #include "target.h"
-#include "tree-pass.h"
 #include "dbgcnt.h"
 #include "debug.h"
-#include "plugin.h"
 #include "except.h"
 #include "lto-streamer.h"
 
@@ -1443,7 +1438,8 @@ print_filtered_help (unsigned int include_flags,
 	  else
 	    strcpy (new_help, "\t");
 
-	  if (flag_var != NULL)
+	  if (flag_var != NULL
+	      && option->var_type != CLVC_DEFER)
 	    {
 	      if (option->flags & CL_JOINED)
 		{
@@ -1842,11 +1838,8 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fcall_used_:
-      fix_register (arg, 0, 1);
-      break;
-
     case OPT_fcall_saved_:
-      fix_register (arg, 0, 0);
+      /* Deferred.  */
       break;
 
     case OPT_fcompare_debug_second:
@@ -1880,8 +1873,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdump_:
-      if (!dump_switch_p (arg))
-	return false;
+      /* Deferred.  */
       break;
 
     case OPT_ffp_contract_:
@@ -1914,7 +1906,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_ffixed_:
-      fix_register (arg, 1, 1);
+      /* Deferred.  */
       break;
 
     case OPT_finline_limit_:
@@ -1949,19 +1941,8 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fplugin_:
-#ifdef ENABLE_PLUGIN
-      add_new_plugin (arg);
-#else
-      error ("plugin support is disabled; configure with --enable-plugin");
-#endif
-      break;
-
     case OPT_fplugin_arg_:
-#ifdef ENABLE_PLUGIN
-      parse_plugin_arg_opt (arg);
-#else
-      error ("plugin support is disabled; configure with --enable-plugin");
-#endif
+      /* Deferred.  */
       break;
 
     case OPT_fprofile_dir_:
@@ -2087,21 +2068,12 @@ common_handle_option (struct gcc_options *opts,
       /* The real switch is -fno-stack-limit.  */
       if (value)
 	return false;
-      stack_limit_rtx = NULL_RTX;
+      /* Deferred.  */
       break;
 
     case OPT_fstack_limit_register_:
-      {
-	int reg = decode_reg_name (arg);
-	if (reg < 0)
-	  error ("unrecognized register name \"%s\"", arg);
-	else
-	  stack_limit_rtx = gen_rtx_REG (Pmode, reg);
-      }
-      break;
-
     case OPT_fstack_limit_symbol_:
-      stack_limit_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (arg));
+      /* Deferred.  */
       break;
 
     case OPT_ftree_vectorizer_verbose_:
@@ -2383,6 +2355,7 @@ option_enabled (int opt_idx, void *opts)
 	return (*(int *) flag_var & option->var_value) != 0;
 
       case CLVC_STRING:
+      case CLVC_DEFER:
 	break;
       }
   return -1;
@@ -2421,6 +2394,9 @@ get_option_state (struct gcc_options *opts, int option,
 	state->data = "";
       state->size = strlen ((const char *) state->data) + 1;
       break;
+
+    case CLVC_DEFER:
+      return false;
     }
   return true;
 }

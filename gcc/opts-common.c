@@ -958,6 +958,22 @@ set_option (struct gcc_options *opts, struct gcc_options *opts_set,
 	if (set_flag_var)
 	  *(const char **) set_flag_var = "";
 	break;
+
+    case CLVC_DEFER:
+	{
+	  VEC(cl_deferred_option,heap) *vec
+	    = (VEC(cl_deferred_option,heap) *) *(void **) flag_var;
+	  cl_deferred_option *p;
+
+	  p = VEC_safe_push (cl_deferred_option, heap, vec, NULL);
+	  p->opt_index = opt_index;
+	  p->arg = arg;
+	  p->value = value;
+	  *(void **) flag_var = vec;
+	  if (set_flag_var)
+	    *(void **) set_flag_var = vec;
+	}
+	break;
     }
 
   if ((diagnostic_t) kind != DK_UNSPECIFIED

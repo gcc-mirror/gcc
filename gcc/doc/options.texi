@@ -201,6 +201,12 @@ If the option takes an argument and has the @code{UInteger} property,
 @var{var} is an integer variable that stores the value of the argument.
 
 @item
+If the option has the @code{Defer} property, @var{var} is a pointer to
+a @code{VEC(cl_deferred_option,heap)} that stores the option for later
+processing.  (@var{var} is declared with type @code{void *} and needs
+to be cast to @code{VEC(cl_deferred_option,heap)} before use.)
+
+@item
 Otherwise, if the option takes an argument, @var{var} is a pointer to
 the argument string.  The pointer will be null if the argument is optional
 and wasn't given.
@@ -254,6 +260,10 @@ No @code{MASK} or @code{TARGET} definitions should be added to
 The main purpose of this property is to support synonymous options.
 The first option should use @samp{Mask(@var{name})} and the others
 should use @samp{Mask(@var{name}) MaskExists}.
+
+@item Defer
+The option should be stored in a vector, specified with @code{Var},
+for later processing.
 
 @item Alias(@var{opt})
 @itemx Alias(@var{opt}, @var{arg})

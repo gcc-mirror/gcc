@@ -1,3 +1,31 @@
+2010-11-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/options.texi (Var): Document effects of Defer.
+	(Defer): Document.
+	* opt-functions.awk (var_type, var_set): Handle deferred options.
+	* opts-common.c (set_option): Handle CLVC_DEFER.
+	* common.opt (fcall-saved-, fcall-used-, fdump-, ffixed-,
+	fplugin=, fplugin-arg-, fstack-limit, fstack-limit-register=,
+	fstack-limit-symbol=): Mark as deferred.
+	* opts.c: Don't include rtl.h, ggc.h, output.h, tree-pass.h or
+	plugin.h.
+	(print_filtered_help): Don't report state of CLVC_DEFER options.
+	(common_handle_option): Move code for OPT_fcall_used_,
+	OPT_fcall_saved_, OPT_fdump_, OPT_ffixed_, OPT_fplugin_,
+	OPT_fplugin_arg_, OPT_fstack_limit, OPT_fstack_limit_register_ and
+	OPT_fstack_limit_symbol_ to opts-global.c.
+	(option_enabled, get_option_state): Handle CLVC_DEFER.
+	* opts.h: Include vec.h.
+	(enum cl_var_type): Add CLVC_DEFER.
+	(cl_deferred_option): Define type and vectors.
+	(handle_common_deferred_options): Declare.
+	* opts-global.c: New.
+	* toplev.c (toplev_main): Call handle_common_deferred_options
+	* Makefile.in (OPTS_H): Include $(VEC_H).
+	(OBJS-common): Include opts-global.o.
+	(opts.o): Update dependencies.
+	(opts-global.o): Add dependencies.
+
 2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-parser.c (c_parser_objc_protocol_definition): Pass attributes

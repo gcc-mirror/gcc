@@ -148,7 +148,9 @@ function static_var(name, flags)
 # Return the type of variable that should be associated with the given flags.
 function var_type(flags)
 {
-	if (!flag_set_p("Joined.*", flags) && !flag_set_p("Separate", flags))
+	if (flag_set_p("Defer", flags))
+		return "void *"
+	else if (!flag_set_p("Joined.*", flags) && !flag_set_p("Separate", flags))
 		return "int "
 	else if (flag_set_p("UInteger", flags))
 		return "int "
@@ -177,6 +179,8 @@ function var_type_struct(flags)
 # "var_cond" and "var_value" fields of its cl_options[] entry.
 function var_set(flags)
 {
+	if (flag_set_p("Defer", flags))
+		return "CLVC_DEFER, 0"
 	s = nth_arg(1, opt_args("Var", flags))
 	if (s != "")
 		return "CLVC_EQUAL, " s
