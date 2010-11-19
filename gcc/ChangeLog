@@ -1,3 +1,7 @@
+2010-11-19  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* resource.h (struct resources): Fix typo in the comment.
+
 2010-11-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46546
