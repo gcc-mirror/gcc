@@ -1,3 +1,12 @@
+2010-11-19  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR target/46436
+	* config/m68hc11/m68hc11.c (m68hc11_gen_highpart): Split shift count
+	to accomodate 32 bit HOST_WIDE_INT.
+	(m68hc11_emit_logical): Remove unused variable insn.
+	(m68hc11_check_z_replacement) <CLOBBER>: Set this_insn_uses_ix and
+	this_insn_uses_iy before use.
+
 2010-11-19  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/46547
