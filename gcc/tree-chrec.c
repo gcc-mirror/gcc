@@ -1433,6 +1433,16 @@ eq_evolutions_p (const_tree chrec0, const_tree chrec1)
       return (CHREC_VARIABLE (chrec0) == CHREC_VARIABLE (chrec1)
 	      && eq_evolutions_p (CHREC_LEFT (chrec0), CHREC_LEFT (chrec1))
 	      && eq_evolutions_p (CHREC_RIGHT (chrec0), CHREC_RIGHT (chrec1)));
+
+    case PLUS_EXPR:
+    case MULT_EXPR:
+    case MINUS_EXPR:
+    case POINTER_PLUS_EXPR:
+      return eq_evolutions_p (TREE_OPERAND (chrec0, 0),
+			      TREE_OPERAND (chrec1, 0))
+	  && eq_evolutions_p (TREE_OPERAND (chrec0, 1),
+			      TREE_OPERAND (chrec1, 1));
+
     default:
       return false;
     }

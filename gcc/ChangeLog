@@ -1,3 +1,8 @@
+2010-11-19  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/46077
+	* tree-chrec.c (eq_evolutions_p): Accept some expressions.
+
 2010-11-19  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/mn10300/mn10300.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
