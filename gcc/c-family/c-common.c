@@ -271,6 +271,14 @@ tree (*make_fname_decl) (location_t, tree, int);
    executed.  */
 int c_inhibit_evaluation_warnings;
 
+/* Whether we are building a boolean conversion inside
+   convert_for_assignment, or some other late binary operation.  If
+   build_binary_op is called for C (from code shared by C and C++) in
+   this case, then the operands have already been folded and the
+   result will not be folded again, so C_MAYBE_CONST_EXPR should not
+   be generated.  */
+bool in_late_binary_op;
+
 /* Whether lexing has been completed, so subsequent preprocessor
    errors should use the compiler's input_location.  */
 bool done_lexing = false;
@@ -3939,7 +3947,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 
   if (TREE_CODE (TREE_TYPE (expr)) == COMPLEX_TYPE)
     {
-      tree t = c_save_expr (expr);
+      tree t = (in_late_binary_op ? save_expr (expr) : c_save_expr (expr));
       expr = (build_binary_op
 	      (EXPR_LOCATION (expr),
 	       (TREE_SIDE_EFFECTS (expr)

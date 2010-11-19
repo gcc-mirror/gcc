@@ -675,6 +675,7 @@ extern tree (*make_fname_decl) (location_t, tree, int);
 extern void c_register_addr_space (const char *str, addr_space_t as);
 
 /* In c-common.c.  */
+extern bool in_late_binary_op;
 extern const char *c_addr_space_name (addr_space_t as);
 extern tree identifier_global_value (tree);
 extern void record_builtin_type (enum rid, const char *, tree);

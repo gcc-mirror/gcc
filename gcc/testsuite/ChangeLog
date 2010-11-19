@@ -1,3 +1,8 @@
+2010-11-19  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/46547
+	* gcc.c-torture/compile/pr46547-1.c: New test.
+
 2010-11-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/gcc-defs.exp (gcc-set-multilib-library-path): Use eval to

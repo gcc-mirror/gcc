@@ -501,7 +501,6 @@ extern void c_initialize_diagnostics (diagnostic_context *);
 extern bool c_vla_unspec_p (tree x, tree fn);
 
 /* in c-typeck.c */
-extern bool in_late_binary_op;
 extern int in_alignof;
 extern int in_sizeof;
 extern int in_typeof;
