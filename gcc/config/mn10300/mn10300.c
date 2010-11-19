@@ -523,6 +523,52 @@ mn10300_print_operand_address (FILE *file, rtx addr)
     }
 }
 
+/* Implement TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA.
+
+   Used for PIC-specific UNSPECs.  */
+
+static bool
+mn10300_asm_output_addr_const_extra (FILE *file, rtx x)
+{
+  if (GET_CODE (x) == UNSPEC)
+    {
+      switch (XINT (x, 1))
+	{
+	case UNSPEC_INT_LABEL:
+	  asm_fprintf (file, ".%LLIL" HOST_WIDE_INT_PRINT_DEC,
+		       INTVAL (XVECEXP (x, 0, 0)));
+	  break;
+	case UNSPEC_PIC:
+	  /* GLOBAL_OFFSET_TABLE or local symbols, no suffix.  */
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  break;
+	case UNSPEC_GOT:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@GOT", file);
+	  break;
+	case UNSPEC_GOTOFF:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@GOTOFF", file);
+	  break;
+	case UNSPEC_PLT:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@PLT", file);
+	  break;
+	case UNSPEC_GOTSYM_OFF:
+	  assemble_name (file, GOT_SYMBOL_NAME);
+	  fputs ("-(", file);
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("-.)", file);
+	  break;
+	default:
+	  return false;
+	}
+      return true;
+    }
+  else
+    return false;
+}
+
 /* Count the number of FP registers that have to be saved.  */
 static int
 fp_regs_to_save (void)
@@ -2450,6 +2496,9 @@ mn10300_adjust_sched_cost (rtx insn, rtx link, rtx dep, int cost)
 #define TARGET_ASM_FILE_START mn10300_file_start
 #undef  TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
+
+#undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
+#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA mn10300_asm_output_addr_const_extra
 
 #undef  TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS MASK_MULT_BUG | MASK_PTR_A0D0
