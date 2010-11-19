@@ -41,16 +41,6 @@
 #undef	ASM_DEFAULT_SPEC
 #define	ASM_DEFAULT_SPEC "-mppc"
 
-/* Small data support types.  */
-enum rs6000_sdata_type {
-  SDATA_NONE,			/* No small data support.  */
-  SDATA_DATA,			/* Just put data in .sbss/.sdata, don't use relocs.  */
-  SDATA_SYSV,			/* Use r13 to point to .sdata/.sbss.  */
-  SDATA_EABI			/* Use r13 like above, r2 points to .sdata2/.sbss2.  */
-};
-
-extern enum rs6000_sdata_type rs6000_sdata;
-
 #define	TARGET_TOC		((target_flags & MASK_64BIT)		\
 				 || ((target_flags & (MASK_RELOCATABLE	\
 						      | MASK_MINIMAL_TOC)) \
@@ -69,10 +59,6 @@ extern enum rs6000_sdata_type rs6000_sdata;
 #undef TARGET_SECURE_PLT
 #define TARGET_SECURE_PLT	secure_plt
 #endif
-
-extern const char *rs6000_abi_name;
-extern const char *rs6000_sdata_name;
-extern const char *rs6000_tls_size_string; /* For -mtls-size= */
 
 #define SDATA_DEFAULT_SIZE 8
 

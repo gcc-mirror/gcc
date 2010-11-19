@@ -1,3 +1,230 @@
+2010-11-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* doc/extend.texi (Function attributes): Document PowerPC target
+	attributes that are supported.
+	(Pragmas): Document that PowerPC now supports target pragmas.
+
+	* doc/options.texi (TargetVariable): Document TargetVariable,
+	HeaderInclude, and SourceInclude.
+
+	* doc/invoke.texi (-mfused-madd): Document that -mfused-madd is
+	mapped to -ffp-contract=fast, and -mno-fused-madd is mapped to
+	-ffp-contract=off.
+
+	* optc-gen.awk: Add support for TargetVariable, HeaderInclude, and
+	SourceInclude directives.  Fix a cut+paste error with target save
+	enum variables.  Sort enums in the structures after ints and
+	before shorts.
+	* opth-gen.awk: Ditto.
+
+	* configure.ac: Add support for HeaderInclude and SourceInclude
+	option directives to add the appropriate files to the dependency
+	lists.
+	* configure: Regenerate.
+	* Makefile.in (OPTIONS_H_EXTRA): New variable for HeaderInclude.
+	(OPTIONS_C_EXTRA): New variable for SourceInclude.
+	(OPTIONS_H): Add $(OPTIONS_H_EXTRA).
+	(options.o): Add $(OPTIONS_C_EXTRA) dependency.
+	(gcc-options.o): Ditto.
+	* opt-include.awk: New awk script to handle HeaderInclude and
+	TargetInclude.
+
+	* config/rs6000/aix.opt (-mxl-compat): Mark option as Save so it
+	gets saved in the target options.
+	* config/rs6000/linux64.opt (-mprofile-kernel): Ditto.
+	* config/rs6000/sysv4.opt (-mbit-align): Ditto.
+	(-mprototype): Ditto.
+	(-mbit-word): ditto.
+	(-mregnames): Ditto.
+	(-msecure-plt): Ditto.
+	(-mbss-plt): Ditto.
+	* config/rs6000/rs6000.opt (-mpowerpc-gpopt): Ditto.
+	(-mpowerpc-gfxopt): Ditto.
+	(-mmfcrf): Ditto.
+	(-mpopcntb): Ditto.
+	(-mfprnd): Ditto.
+	(-mcmpb): Ditto.
+	(-mmmfpgpr): Ditto.
+	(-maltivec): Ditto.
+	(-mhard-dfp): Ditto.
+	(-mmulhw): Ditto.
+	(-mdlmzb): Ditto.
+	(-mmultiple): Ditto.
+	(-mstring): Ditto.
+	(-mpopcntd): Ditto.
+	(-mfriz): Ditto.
+	(-mvsx): Ditto.
+	(-mno-update): Ditto.
+	(-mavoid-indexed-addresses): Ditto.
+	(-mtls-markers): Ditto.
+	(-msched-epilog): Ditto.
+	(-msched-prolog): Ditto.
+	(-maix-struct-return): Ditto.
+	(-msvr4-struct-return): Ditto.
+	(-mxl-compat): Ditto.
+	(-mrecip-precision): Ditto.
+	(-mfp-in-toc): Ditto.
+	(-msum-in-toc): Ditto.
+	(-mvrsave): Ditto.
+	(-mblock-move-inline-limit=): Ditto.
+	(-misel): Ditto.
+	(-mpaired): Ditto.
+	(-mlongcall): Ditto.
+	(-mgen-cell-microcode): Ditto.
+	(-mwarn-cell-microcode): Ditto.
+	(-mwarn-altivec-long): Ditto.
+	(-mprioritize-restricted-insns=): Ditto.
+	(-msingle-float): Ditto.
+	(-mdouble-float): Ditto.
+	(-msimple-fpu): Ditto.
+	(-mxilinx-fpu): Ditto.
+	* config/rs6000/aix64.opt (-mpe): Ditto.
+
+	* config/rs6000/rs6000.opt (HeaderInclude): Include rs6000-opts.h.
+	(rs6000_cpu): Move variable to be a target variable.  Rename
+	cmodel to rs6000_current_cmodel because of macro conflict.  Merge
+	-mdebug=<xxx> variables into a single int.
+	(rs6000_always_hint): Ditto.
+	(rs6000_sched_groups): Ditto.
+	(rs6000_align_branch_targets): Ditto.
+	(rs6000_sched_costly_dep): Ditto.
+	(rs6000_sched_insert_nops): Ditto.
+	(rs6000_long_double_type_size): Ditto.
+	(rs6000_ieeequad): Ditto.
+	(rs6000_altivec_abi): Ditto.
+	(rs6000_spe): Ditto.
+	(rs6000_spe_abi): Ditto.
+	(rs6000_float_gprs): Ditto.
+	(rs6000_darwin64_abi): Ditto.
+	(can_override_loop_align): Ditto.
+	(rs6000_sdata): Ditto.
+	(rs6000_tls_size): Ditto.
+	(rs6000_current_abi): Ditto.
+	(rs6000_traceback): Ditto.
+	(rs6000_alignment_flags): Ditto.
+	(rs6000_current_cmodel): Ditto.
+	(rs6000_recip_control): Ditto.
+	(rs6000_cpu_index): Ditto.
+	(rs6000_tune_index): Ditto.
+	(rs6000_debug): Ditto.
+	(rs6000_target_flags_explict): Ditto.
+
+	* config/rs6000/rs6000-protos.h (rs6000_pragma_target_parse): Add
+	declaration.
+
+	* config/rs6000/linux64.h (rs6000_current_cmode): Rename from
+	cmodel.  Change all uses.
+
+	* config/rs6000/rs6000.c (rs6000_always_hint): Move to
+	rs6000.opt.  Combine -mdebug=<xxx> variables into a single int.
+	Rename cmodel to rs6000_current_cmodel.
+	(rs6000_sched_groups): Ditto.
+	(rs6000_align_branch_targets): Ditto.
+	(rs6000_sched_costly_dep): Ditto.
+	(rs6000_sched_insert_nops): Ditto.
+	(rs6000_long_double_type_size): Ditto.
+	(rs6000_ieeequad): Ditto.
+	(rs6000_altivec_abi): Ditto.
+	(rs6000_spe): Ditto.
+	(rs6000_spe_abi): Ditto.
+	(rs6000_float_gprs): Ditto.
+	(rs6000_darwin64_abi): Ditto.
+	(can_override_loop_align): Ditto.
+	(rs6000_sdata): Ditto.
+	(rs6000_tls_size): Ditto.
+	(rs6000_current_abi): Ditto.
+	(rs6000_traceback): Ditto.
+	(rs6000_alignment_flags): Ditto.
+	(rs6000_current_cmodel): Ditto.
+	(rs6000_recip_control): Ditto.
+	(rs6000_cpu_index): Ditto.
+	(rs6000_tune_index): Ditto.
+	(rs6000_debug): Ditto.
+	(rs6000_target_flags_explict): Ditto.
+	(rs6000_sched_insert_nops_str): Make static.
+	(rs6000_sched_costly_dep_str): Ditto.
+	(rs6000_recip_name): Ditto.
+	(rs6000_abi_name): Ditto.
+	(rs6000_sdata_name): Ditto.
+	(enum rs6000_traceback_name): Move to rs6000-opts.h.
+	(rs6000_parse_tls_size_option): Delete.
+	(rs6000_valid_attribute_p): New function for target attributes and
+	pragmas.
+	(rs6000_function_specific_save): Ditto.
+	(rs6000_function_specific_restore): Ditto.
+	(rs6000_function_specific_print): Ditto.
+	(rs6000_can_inline_p): Ditto.
+	(rs6000_set_current_function): Ditto.
+	(rs6000_inner_target_options): Ditto.
+	(rs6000_debug_target_options): Ditto.
+	(rs6000_pragma_target_parse): Ditto.
+	(TARGET_OPTION_VALID_ATTRIBUTE_P): Define target hooks for target
+	attributes and pragmas.
+	(TARGET_OPTION_SAVE): Ditto.
+	(TARGET_OPTION_RESTORE): Ditto.
+	(TARGET_OPTION_PRINT): Ditto.
+	(TARGET_CAN_INLINE_P): Ditto.
+	(TARGET_SET_CURRENT_FUNCTION): Ditto.
+	(POWER_MASKS): Move to file level scope from the
+	rs6000_option_override_internal function.
+	(POWERPC_MASKS): Ditto.
+	(ISA_*_MASKS): Ditto.
+	(struct rs6000_ptt): Ditto.
+	(processor_target_table): Ditto.
+	(rs6000_cpu_name_lookup): Map cpu name to an index in
+	processor_target_table.
+	(rs6000_debug_reg_global): Print more information on processor
+	options for -mdebug=reg.
+	(rs6000_init_hard_regno_mode_ok): Add support for target
+	attributes and pragmas.  Merge all -mdebug=<xxx> fields into one.
+	Allow -mdebug=val1,val2.  Rename cmodel variable.
+	(rs6000_option_override_internal): Ditto.
+	(rs6000_option_override): Ditto.
+	(rs6000_handle_option): Ditto.
+	(rs6000_conditional_register_usage): Add debug trace message.
+	(struct rs6000_opt_mask): New for target attribute/pragma
+	support.
+	(rs6000_opt_masks): Ditto.
+	(struct rs6000_opt_var): Ditto.
+	(rs6000_opt_vars): Ditto.
+	(rs6000_previous_function): Ditto.
+
+	* config/rs6000/rs6000.h (top level): Include rs6000-opts.h if it
+	wasn't already included.
+	(enum rs6000_cmodel): Move to rs6000-opts.h or rs6000.opt.
+	(enum processor_type): Ditto.
+	(rs6000_cpu): Ditto.
+	(enum fpu_type_t): Ditto.
+	(fpu_type): Ditto.
+	(enum rs6000_dependence_cost): Ditto.
+	(enum rs6000_nop_insertion): Ditto.
+	(enum group_termination): Ditto.
+	(rs6000_long_double_type_size): Ditto.
+	(rs6000_ieeequad): Ditto.
+	(rs6000_altivec_abi): Ditto.
+	(rs6000_spe_abi): Ditto.
+	(rs6000_spe): Ditto.
+	(rs6000_float_gprs): Ditto.
+	(rs6000_alignment_flags): Ditto.
+	(rs6000_sched_insert_nops): Ditto.
+	(enum rs6000_vector): Ditto.
+	(enum rs6000_abi): Ditto.
+	(rs6000_current_opt): Ditto.
+	(rs6000_debug_*): Delete.
+	(MASK_DEBUG*): Combine -mdebug=xxxx into one int.
+	(TARGET_DEBUG*): Ditto.
+
+	* config/rs6000/rs6000-opts.h: New header file to define the enums
+	that are used in target variables that are now defined in
+	rs6000.opt.
+
+	* config/rs6000/sysv4.h (enum rs6000_sdata_type): Move to
+	rs6000-opts.h.
+	(rs6000_sdata): Ditto.
+	(rs6000_abi_name): Delete.
+	(rs6000_sdata_name): Ditto.
+	(rs6000_tls_size_string): Ditto.
+
 2010-11-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (debug_struct_ordinary, debug_struct_generic): New

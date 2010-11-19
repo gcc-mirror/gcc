@@ -20,6 +20,109 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+HeaderInclude
+config/rs6000/rs6000-opts.h
+
+;; Current processor
+TargetVariable
+enum processor_type rs6000_cpu = PROCESSOR_RIOS1
+
+;; Always emit branch hint bits.
+TargetVariable
+unsigned char rs6000_always_hint
+
+;; Schedule instructions for group formation.
+TargetVariable
+unsigned char rs6000_sched_groups
+
+;; Align branch targets.
+TargetVariable
+unsigned char rs6000_align_branch_targets
+
+;; Support for -msched-costly-dep option.
+TargetVariable
+enum rs6000_dependence_cost rs6000_sched_costly_dep = no_dep_costly
+
+;; Support for -minsert-sched-nops option.
+TargetVariable
+enum rs6000_nop_insertion rs6000_sched_insert_nops = sched_finish_none
+
+;; Size of long double.
+TargetVariable
+unsigned char rs6000_long_double_type_size
+
+;; IEEE quad extended precision long double.
+TargetVariable
+unsigned char rs6000_ieeequad
+
+;; Nonzero to use AltiVec ABI.
+TargetVariable
+unsigned char rs6000_altivec_abi
+
+;; Nonzero if we want SPE SIMD instructions.
+TargetVariable
+int rs6000_spe
+
+;; Nonzero if we want SPE ABI extensions.
+TargetVariable
+unsigned char rs6000_spe_abi
+
+;; Nonzero if floating point operations are done in the GPRs.
+TargetVariable
+unsigned char rs6000_float_gprs
+
+;; Nonzero if we want Darwin's struct-by-value-in-regs ABI.
+TargetVariable
+unsigned char rs6000_darwin64_abi
+
+;; Non-zero to allow overriding loop alignment.
+TargetVariable
+unsigned char can_override_loop_align
+
+;; Which small data model to use (for System V targets only)
+TargetVariable
+enum rs6000_sdata_type rs6000_sdata = SDATA_DATA
+
+;; Bit size of immediate TLS offsets and string from which it is decoded.
+TargetVariable
+int rs6000_tls_size = 32
+
+;; ABI enumeration available for subtarget to use.
+TargetVariable
+enum rs6000_abi rs6000_current_abi = ABI_NONE
+
+;; Type of traceback to use.
+TargetVariable
+enum rs6000_traceback_type rs6000_traceback = traceback_default
+
+;; Control alignment for fields within structures.
+TargetVariable
+unsigned char rs6000_alignment_flags
+
+;; Code model for 64-bit linux.
+TargetVariable
+enum rs6000_cmodel rs6000_current_cmodel = CMODEL_SMALL
+
+;; What type of reciprocal estimation instructions to generate
+TargetVariable
+unsigned int rs6000_recip_control
+
+;; -mcpu=<xxx> as an index into the processor_target_table or -1
+TargetVariable
+int rs6000_cpu_index = -1
+
+;; -mtune=<xxx> as an index into the processor_target_table or -1
+TargetVariable
+int rs6000_tune_index = -1
+
+;; Debug flags
+TargetVariable
+unsigned int rs6000_debug
+
+;; Save for target_flags_explicit
+TargetSave
+int rs6000_target_flags_explicit
+
 mpower
 Target Report RejectNegative Mask(POWER)
 Use POWER instruction set
@@ -45,55 +148,55 @@ Target Report Mask(POWERPC64)
 Use PowerPC-64 instruction set
 
 mpowerpc-gpopt
-Target Report Mask(PPC_GPOPT)
+Target Report Mask(PPC_GPOPT) Save
 Use PowerPC General Purpose group optional instructions
 
 mpowerpc-gfxopt
-Target Report Mask(PPC_GFXOPT)
+Target Report Mask(PPC_GFXOPT) Save
 Use PowerPC Graphics group optional instructions
 
 mmfcrf
-Target Report Mask(MFCRF)
+Target Report Mask(MFCRF) Save
 Use PowerPC V2.01 single field mfcr instruction
 
 mpopcntb
-Target Report Mask(POPCNTB)
+Target Report Mask(POPCNTB) Save
 Use PowerPC V2.02 popcntb instruction
 
 mfprnd
-Target Report Mask(FPRND)
+Target Report Mask(FPRND) Save
 Use PowerPC V2.02 floating point rounding instructions
 
 mcmpb
-Target Report Mask(CMPB)
+Target Report Mask(CMPB) Save
 Use PowerPC V2.05 compare bytes instruction
 
 mmfpgpr
-Target Report Mask(MFPGPR)
+Target Report Mask(MFPGPR) Save
 Use extended PowerPC V2.05 move floating point to/from GPR instructions
 
 maltivec
-Target Report Mask(ALTIVEC)
+Target Report Mask(ALTIVEC) Save
 Use AltiVec instructions
 
 mhard-dfp
-Target Report Mask(DFP)
+Target Report Mask(DFP) Save
 Use decimal floating point instructions
 
 mmulhw
-Target Report Mask(MULHW)
+Target Report Mask(MULHW) Save
 Use 4xx half-word multiply instructions
 
 mdlmzb
-Target Report Mask(DLMZB)
+Target Report Mask(DLMZB) Save
 Use 4xx string-search dlmzb instruction
 
 mmultiple
-Target Report Mask(MULTIPLE)
+Target Report Mask(MULTIPLE) Save
 Generate load/store multiple instructions
 
 mstring
-Target Report Mask(STRING)
+Target Report Mask(STRING) Save
 Generate string instructions for block moves
 
 mnew-mnemonics
@@ -113,11 +216,11 @@ Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
 Use hardware floating point
 
 mpopcntd
-Target Report Mask(POPCNTD)
+Target Report Mask(POPCNTD) Save
 Use PowerPC V2.06 popcntd instruction
 
 mfriz
-Target Report Var(TARGET_FRIZ) Init(-1)
+Target Report Var(TARGET_FRIZ) Init(-1) Save
 Under -ffast-math, generate a FRIZ instruction for (double)(long long) conversions
 
 mveclibabi=
@@ -125,7 +228,7 @@ Target RejectNegative Joined Var(rs6000_veclibabi_name)
 Vector library ABI to use
 
 mvsx
-Target Report Mask(VSX)
+Target Report Mask(VSX) Save
 Use vector/scalar (VSX) instructions
 
 mvsx-scalar-double
@@ -165,7 +268,7 @@ Target Undocumented Report Var(TARGET_VECTORIZE_BUILTINS) Init(-1)
 ; Explicitly control whether we vectorize the builtins or not.
 
 mno-update
-Target Report RejectNegative Mask(NO_UPDATE)
+Target Report RejectNegative Mask(NO_UPDATE) Save
 Do not generate load/store with update instructions
 
 mupdate
@@ -173,30 +276,30 @@ Target Report RejectNegative InverseMask(NO_UPDATE, UPDATE)
 Generate load/store with update instructions
 
 mavoid-indexed-addresses
-Target Report Var(TARGET_AVOID_XFORM) Init(-1)
+Target Report Var(TARGET_AVOID_XFORM) Init(-1) Save
 Avoid generation of indexed load/store instructions when possible
 
 mtls-markers
-Target Report Var(tls_markers) Init(1)
+Target Report Var(tls_markers) Init(1) Save
 Mark __tls_get_addr calls with argument info
 
 msched-epilog
-Target Undocumented Var(TARGET_SCHED_PROLOG) Init(1)
+Target Undocumented Var(TARGET_SCHED_PROLOG) Init(1) Save
 
 msched-prolog
-Target Report Var(TARGET_SCHED_PROLOG)
+Target Report Var(TARGET_SCHED_PROLOG) Save
 Schedule the start and end of the procedure
 
 maix-struct-return
-Target Report RejectNegative Var(aix_struct_return)
+Target Report RejectNegative Var(aix_struct_return) Save
 Return all structures in memory (AIX default)
 
 msvr4-struct-return
-Target Report RejectNegative Var(aix_struct_return,0)
+Target Report RejectNegative Var(aix_struct_return,0) Save
 Return small structures in registers (SVR4 default)
 
 mxl-compat
-Target Report Var(TARGET_XL_COMPAT)
+Target Report Var(TARGET_XL_COMPAT) Save
 Conform more closely to IBM XLC semantics
 
 mrecip
@@ -208,23 +311,23 @@ Target Report RejectNegative Joined
 Generate software reciprocal divide and square root for better throughput.
 
 mrecip-precision
-Target Report Mask(RECIP_PRECISION)
+Target Report Mask(RECIP_PRECISION) Save
 Assume that the reciprocal estimate instructions provide more accuracy.
 
 mno-fp-in-toc
-Target Report RejectNegative Var(TARGET_NO_FP_IN_TOC)
+Target Report RejectNegative Var(TARGET_NO_FP_IN_TOC) Save
 Do not place floating point constants in TOC
 
 mfp-in-toc
-Target Report RejectNegative Var(TARGET_NO_FP_IN_TOC,0)
+Target Report RejectNegative Var(TARGET_NO_FP_IN_TOC,0) Save
 Place floating point constants in TOC
 
 mno-sum-in-toc
-Target RejectNegative Var(TARGET_NO_SUM_IN_TOC)
+Target RejectNegative Var(TARGET_NO_SUM_IN_TOC) Save
 Do not place symbol+offset constants in TOC
 
 msum-in-toc
-Target RejectNegative Var(TARGET_NO_SUM_IN_TOC,0)
+Target RejectNegative Var(TARGET_NO_SUM_IN_TOC,0) Save
 Place symbol+offset constants in TOC
 
 ;  Output only one TOC entry per module.  Normally linking fails if
@@ -243,7 +346,7 @@ Target Report
 Put everything in the regular TOC
 
 mvrsave
-Target Report Var(TARGET_ALTIVEC_VRSAVE)
+Target Report Var(TARGET_ALTIVEC_VRSAVE) Save
 Generate VRSAVE instructions when generating AltiVec code
 
 mvrsave=
@@ -251,11 +354,11 @@ Target RejectNegative Joined
 -mvrsave=yes/no	Deprecated option.  Use -mvrsave/-mno-vrsave instead
 
 mblock-move-inline-limit=
-Target Report Var(rs6000_block_move_inline_limit) Init(0) RejectNegative Joined UInteger
+Target Report Var(rs6000_block_move_inline_limit) Init(0) RejectNegative Joined UInteger Save
 Specify how many bytes should be moved inline before calling out to memcpy/memmove
 
 misel
-Target Report Mask(ISEL)
+Target Report Mask(ISEL) Save
 Generate isel instructions
 
 misel=
@@ -267,7 +370,7 @@ Target
 Generate SPE SIMD instructions on E500
 
 mpaired
-Target Var(rs6000_paired_float)
+Target Var(rs6000_paired_float) Save
 Generate PPC750CL paired-single instructions
 
 mspe=
@@ -295,19 +398,19 @@ Target RejectNegative Joined
 -mtraceback=	Select full, part, or no traceback table
 
 mlongcall
-Target Report Var(rs6000_default_long_calls)
+Target Report Var(rs6000_default_long_calls) Save
 Avoid all range limits on call instructions
 
 mgen-cell-microcode
-Target Report Var(rs6000_gen_cell_microcode) Init(-1)
+Target Report Var(rs6000_gen_cell_microcode) Init(-1) Save
 Generate Cell microcode
 
 mwarn-cell-microcode
-Target Var(rs6000_warn_cell_microcode) Init(0) Warning
+Target Var(rs6000_warn_cell_microcode) Init(0) Warning Save
 Warn when a Cell microcoded instruction is emitted
 
 mwarn-altivec-long
-Target Var(rs6000_warn_altivec_long) Init(1)
+Target Var(rs6000_warn_altivec_long) Init(1) Save
 Warn about deprecated 'vector long ...' AltiVec type usage
 
 mfloat-gprs=
@@ -331,19 +434,19 @@ Target RejectNegative Joined
 Specify alignment of structure fields default/natural
 
 mprioritize-restricted-insns=
-Target RejectNegative Joined UInteger Var(rs6000_sched_restricted_insns_priority)
+Target RejectNegative Joined UInteger Var(rs6000_sched_restricted_insns_priority) Save
 Specify scheduling priority for dispatch slot restricted insns
 
 msingle-float
-Target RejectNegative Var(rs6000_single_float)
+Target RejectNegative Var(rs6000_single_float) Save
 Single-precision floating point unit
 
 mdouble-float
-Target RejectNegative Var(rs6000_double_float)
+Target RejectNegative Var(rs6000_double_float) Save
 Double-precision floating point unit
 
 msimple-fpu
-Target RejectNegative Var(rs6000_simple_fpu)
+Target RejectNegative Var(rs6000_simple_fpu) Save
 Floating point unit does not support divide & sqrt
 
 mfpu=
@@ -351,7 +454,7 @@ Target RejectNegative Joined
 -mfpu=	Specify FP (sp, dp, sp-lite, dp-lite) (implies -mxilinx-fpu)
 
 mxilinx-fpu
-Target Var(rs6000_xilinx_fpu)
+Target Var(rs6000_xilinx_fpu) Save
 Specify Xilinx FPU.
 
 

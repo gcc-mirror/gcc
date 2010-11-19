@@ -175,6 +175,9 @@ extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
 
 extern void rs6000_pragma_longcall (struct cpp_reader *);
 extern void rs6000_cpu_cpp_builtins (struct cpp_reader *);
+#ifdef TREE_CODE
+extern bool rs6000_pragma_target_parse (tree, tree);
+#endif
 
 #if TARGET_MACHO
 char *output_call (rtx, rtx *, int, int);

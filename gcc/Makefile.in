@@ -806,6 +806,16 @@ T_TARGET : $(T_TARGET)
 # at build time.
 SPECS = specs
 
+# Extra include files that are defined by HeaderInclude directives in
+# the .opt files
+OPTIONS_H_EXTRA =
+
+# Extra include files that are defined by SourceInclude directives in
+# the .opt files
+OPTIONS_C_EXTRA =
+
+@option_includes@
+
 # End of variables for you to override.
 
 # GTM_H lists the config files that the generator files depend on,
@@ -893,7 +903,7 @@ RECOG_H = recog.h
 ALIAS_H = alias.h coretypes.h
 EMIT_RTL_H = emit-rtl.h
 FLAGS_H = flags.h coretypes.h flag-types.h $(OPTIONS_H)
-OPTIONS_H = options.h flag-types.h
+OPTIONS_H = options.h flag-types.h $(OPTIONS_H_EXTRA)
 FUNCTION_H = function.h $(TREE_H) $(HASHTAB_H) vecprim.h $(TM_H)
 EXPR_H = expr.h insn-config.h $(FUNCTION_H) $(RTL_H) $(FLAGS_H) $(TREE_H) $(MACHMODE_H) $(EMIT_RTL_H)
 OPTABS_H = optabs.h insn-codes.h
@@ -2234,9 +2244,10 @@ s-options-h: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opth-gen.awk
 	$(STAMP) $@
 
 options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) $(FLAGS_H) \
-	$(TM_H) $(OPTS_H) intl.h
+	$(TM_H) $(OPTS_H) intl.h $(OPTIONS_C_EXTRA)
 
-gcc-options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(OPTS_H) intl.h
+gcc-options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(OPTS_H) intl.h \
+	$(OPTIONS_C_EXTRA)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(OUTPUT_OPTION) \
 		-DGCC_DRIVER options.c
 

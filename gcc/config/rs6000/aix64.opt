@@ -28,5 +28,5 @@ Target Report RejectNegative Negative(maix64) InverseMask(64BIT)
 Compile for 32-bit pointers
 
 mpe
-Target Report RejectNegative Var(internal_nothing_1)
+Target Report RejectNegative Var(internal_nothing_1) Save
 Support message passing with the Parallel Environment
