@@ -1,4 +1,4 @@
-2010-11-19  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
+2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (lookup_protocol): Added 'warn_if_deprecated'
 	argument.  If it is 'true' and the protocol is deprecated, emit a
