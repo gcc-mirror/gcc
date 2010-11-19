@@ -20,14 +20,13 @@ if LIBQUAD_USE_SYMVER_SUN
 version_arg = -Wl,-M,quadmath.map-sun
 version_dep = quadmath.map-sun
 quadmath.map-sun : $(srcdir)/quadmath.map \
-                $(top_srcdir)/../contrib/make_sunver.pl \
-                $(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD)
-        perl $(top_srcdir)/../contrib/make_sunver.pl \
-          $(srcdir)/quadmath.map \
-          $(libquadmath_la_OBJECTS:%.lo=.libs/%.o) \
-         `echo $(libquadmath_la_LIBADD) | \
-            sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
-         > $@ || (rm -f $@ ; exit 1)
+		$(top_srcdir)/../contrib/make_sunver.pl \
+		$(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD)
+	perl $(top_srcdir)/../contrib/make_sunver.pl \
+	  $(srcdir)/quadmath.map \
+	 `echo $(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD) | \
+	   sed 's,\([^/ 	]*\)\.l\([ao]\),.libs/\1.\2,g'` \
+	 > $@ || (rm -f $@ ; exit 1)
 endif
 else
 version_arg =
@@ -39,8 +38,8 @@ LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 
 
 toolexeclib_LTLIBRARIES = libquadmath.la
-libquadmath_la_LIBADD = -lm
-libquadmath_la_LDFLAGS = $(LTLDFLAGS) -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(version_arg)
+libquadmath_la_LIBADD = 
+libquadmath_la_LDFLAGS = $(LTLDFLAGS) -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(version_arg) -lm
 libquadmath_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
 libquadmath_la_DEPENDENCIES = $(version_dep)
 
