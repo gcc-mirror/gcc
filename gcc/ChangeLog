@@ -1,3 +1,9 @@
+2010-11-18  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.md (abshi2): Delete TARGET_ABSHI_BUILTIN.
+	* config/pdp11/pdp11.c (TARGET_DEFAULT_TARGET_FLAGS): Ditto.
+	* config/pdp11/pdp11.opt (-mabshi): Delete.
+
 2010-11-19  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* resource.h (struct resources): Fix typo in the comment.
