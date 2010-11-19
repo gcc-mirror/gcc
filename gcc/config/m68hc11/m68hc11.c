@@ -1999,7 +1999,7 @@ m68hc11_gen_highpart (enum machine_mode mode, rtx x)
 	}
       else if (mode == SImode)
        {
-         return gen_int_mode (val >> 32, SImode);
+         return gen_int_mode ((val >> 16) >> 16, SImode);
        }
     }
   if (mode == QImode && D_REG_P (x))
@@ -2967,8 +2967,6 @@ m68hc11_emit_logical (enum machine_mode mode, enum rtx_code code, rtx *operands)
     }
   else if (operands[1] != 0 && operands[2] != 0)
     {
-      rtx insn;
-
       if (!H_REG_P (operands[0]) && operands[3])
 	{
 	  emit_move_insn (operands[3], operands[1]);
@@ -2976,15 +2974,13 @@ m68hc11_emit_logical (enum machine_mode mode, enum rtx_code code, rtx *operands)
 				  operands[3],
 				  gen_rtx_fmt_ee (code, mode,
 						  operands[3], operands[2])));
-	  insn = emit_move_insn (operands[0], operands[3]);
+	  emit_move_insn (operands[0], operands[3]);
 	}
       else
 	{
-	  insn = emit_insn (gen_rtx_SET (mode,
-					 operands[0],
-					 gen_rtx_fmt_ee (code, mode,
-							 operands[0],
-							 operands[2])));
+	  emit_insn (gen_rtx_SET (mode, operands[0],
+				  gen_rtx_fmt_ee (code, mode,
+						  operands[0], operands[2])));
 	}
     }
 
@@ -4657,6 +4653,10 @@ m68hc11_check_z_replacement (rtx insn, struct replace_info *info)
     }
   if (GET_CODE (body) == CLOBBER)
     {
+      rtx dst = XEXP (body, 0);
+
+      this_insn_uses_ix = reg_mentioned_p (ix_reg, dst);
+      this_insn_uses_iy = reg_mentioned_p (iy_reg, dst);
 
       /* IX and IY are used at the same time, we have to restore
          the value of the scratch register before this insn.  */
