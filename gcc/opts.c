@@ -319,14 +319,9 @@ struct visibility_flags visibility_options;
 /* What to print when a switch has no documentation.  */
 static const char undocumented_msg[] = N_("This switch lacks documentation");
 
-/* Functions excluded from profiling.  */
-
 typedef char *char_p; /* For DEF_VEC_P.  */
 DEF_VEC_P(char_p);
 DEF_VEC_ALLOC_P(char_p,heap);
-
-static VEC(char_p,heap) *flag_instrument_functions_exclude_functions;
-static VEC(char_p,heap) *flag_instrument_functions_exclude_files;
 
 typedef const char *const_char_p; /* For DEF_VEC_P.  */
 DEF_VEC_P(const_char_p);
@@ -545,12 +540,13 @@ add_input_filename (const char *filename)
 /* Add comma-separated strings to a char_p vector.  */
 
 static void
-add_comma_separated_to_vector (VEC(char_p,heap) **pvec, const char* arg)
+add_comma_separated_to_vector (void **pvec, const char *arg)
 {
   char *tmp;
   char *r;
   char *w;
   char *token_start;
+  VEC(char_p,heap) *vec = (VEC(char_p,heap) *) *pvec;
 
   /* We never free this string.  */
   tmp = xstrdup (arg);
@@ -565,7 +561,7 @@ add_comma_separated_to_vector (VEC(char_p,heap) **pvec, const char* arg)
 	{
 	  *w++ = '\0';
 	  ++r;
-	  VEC_safe_push (char_p, heap, *pvec, token_start);
+	  VEC_safe_push (char_p, heap, vec, token_start);
 	  token_start = w;
 	}
       if (*r == '\\' && r[1] == ',')
@@ -577,42 +573,10 @@ add_comma_separated_to_vector (VEC(char_p,heap) **pvec, const char* arg)
 	*w++ = *r++;
     }
   if (*token_start != '\0')
-    VEC_safe_push (char_p, heap, *pvec, token_start);
+    VEC_safe_push (char_p, heap, vec, token_start);
+
+  *pvec = vec;
 }
-
-/* Return whether we should exclude FNDECL from instrumentation.  */
-
-bool
-flag_instrument_functions_exclude_p (tree fndecl)
-{
-  if (VEC_length (char_p, flag_instrument_functions_exclude_functions) > 0)
-    {
-      const char *name;
-      int i;
-      char *s;
-
-      name = lang_hooks.decl_printable_name (fndecl, 0);
-      FOR_EACH_VEC_ELT (char_p, flag_instrument_functions_exclude_functions,
-			i, s)
-	if (strstr (name, s) != NULL)
-	  return true;
-    }
-
-  if (VEC_length (char_p, flag_instrument_functions_exclude_files) > 0)
-    {
-      const char *name;
-      int i;
-      char *s;
-
-      name = DECL_SOURCE_FILE (fndecl);
-      FOR_EACH_VEC_ELT (char_p, flag_instrument_functions_exclude_files, i, s)
-	if (strstr (name, s) != NULL)
-	  return true;
-    }
-
-  return false;
-}
-
 
 /* Handle the vector of command line options (located at LOC), storing
    the results of processing DECODED_OPTIONS and DECODED_OPTIONS_COUNT
@@ -1918,12 +1882,12 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_finstrument_functions_exclude_function_list_:
       add_comma_separated_to_vector
-	(&flag_instrument_functions_exclude_functions, arg);
+	(&opts->x_flag_instrument_functions_exclude_functions, arg);
       break;
 
     case OPT_finstrument_functions_exclude_file_list_:
       add_comma_separated_to_vector
-	(&flag_instrument_functions_exclude_files, arg);
+	(&opts->x_flag_instrument_functions_exclude_files, arg);
       break;
 
     case OPT_fmessage_length_:
