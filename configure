@@ -1455,10 +1455,9 @@ Optional Features:
   --enable-libssp         build libssp directory
   --enable-build-with-cxx build with C++ compiler instead of C compiler
   --disable-ppl-version-check    disable check for PPL version
-  --enable-cloog-backend=backend
-				isl: The cloog.org isl backend
-				ppl-legacy: The legacy ppl backend - default
-				ppl: The cloog.org ppl backend
+  --enable-cloog-backend[=BACKEND]
+                          set the CLooG BACKEND used to either isl, ppl or
+                          ppl-legacy (default)
   --disable-cloog-version-check
                           disable check for CLooG version
   --enable-lto            enable link time optimization support
