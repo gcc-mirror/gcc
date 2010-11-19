@@ -6,6 +6,10 @@
 
 	* bootstrap-lto: Use -flto.
 
+2010-11-04  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* mh-darwin: Renamed from mh-ppc-darwin.
+
 2010-06-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* po.m4 (AM_PO_SUBDIRS): Fix unportable shell quoting.
