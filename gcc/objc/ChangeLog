@@ -1,3 +1,8 @@
+2010-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/46547
+	* objc-act.c (in_late_binary_op): Remove.
+
 2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_start_class_interface): Do not warn that class
