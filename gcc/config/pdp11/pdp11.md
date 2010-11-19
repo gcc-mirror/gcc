@@ -1068,7 +1068,7 @@
 (define_insn "abshi2"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,o")
 	(abs:HI (match_operand:HI 1 "general_operand" "0,0")))]
-  "TARGET_ABSHI_BUILTIN"
+  ""
   "*
 {
   static int count = 0;
