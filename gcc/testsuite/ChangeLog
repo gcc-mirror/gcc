@@ -1,5 +1,9 @@
 2010-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.dg/lto/20090210_1.c: Do not pass -fPIC on the SPARC.
+
+2010-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.dg/tree-ssa/20040204-1.c: Do not XFAIL on the SPARC.
 
 2010-11-18  Steve Ellcey  <sje@cup.hp.com>
