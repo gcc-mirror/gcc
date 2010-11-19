@@ -1,5 +1,13 @@
 2010-11-19  Joseph Myers  <joseph@codesourcery.com>
 
+	PR c/46547
+	* c-common.c (in_late_binary_op): Define.
+	(c_common_truthvalue_conversion): Check in_late_binary_op before
+	calling c_save_expr.
+	* c-common.h (in_late_binary_op): Declare.
+
+2010-11-19  Joseph Myers  <joseph@codesourcery.com>
+
 	* c-opts.c (c_common_handle_option): Update calls to
 	set_struct_debug_option.
 

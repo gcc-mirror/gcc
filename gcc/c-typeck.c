@@ -51,13 +51,6 @@ enum impl_conv {
   ic_return
 };
 
-/* Whether we are building a boolean conversion inside
-   convert_for_assignment, or some other late binary operation.  If
-   build_binary_op is called (from code shared with C++) in this case,
-   then the operands have already been folded and the result will not
-   be folded again, so C_MAYBE_CONST_EXPR should not be generated.  */
-bool in_late_binary_op;
-
 /* The level of nesting inside "__alignof__".  */
 int in_alignof;
 
