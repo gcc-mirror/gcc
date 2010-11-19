@@ -793,7 +793,8 @@ static void
 lto_output_ts_common_tree_pointers (struct output_block *ob, tree expr,
 				    bool ref_p)
 {
-  lto_output_tree_or_ref (ob, TREE_TYPE (expr), ref_p);
+  if (TREE_CODE (expr) != IDENTIFIER_NODE)
+    lto_output_tree_or_ref (ob, TREE_TYPE (expr), ref_p);
 }
 
 

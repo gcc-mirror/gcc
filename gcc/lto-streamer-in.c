@@ -1874,7 +1874,8 @@ static void
 lto_input_ts_common_tree_pointers (struct lto_input_block *ib,
 				   struct data_in *data_in, tree expr)
 {
-  TREE_TYPE (expr) = lto_input_tree (ib, data_in);
+  if (TREE_CODE (expr) != IDENTIFIER_NODE)
+    TREE_TYPE (expr) = lto_input_tree (ib, data_in);
 }
 
 
