@@ -1,3 +1,25 @@
+2010-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/45830
+	* stmt.c (expand_switch_using_bit_tests_p): New function.
+	(expand_case): Use it.
+	* tree.h (expand_switch_using_bit_tests_p): New prototype.
+	* tree-switch-conversion.c (struct switch_conv_info): Add
+	bit_test_uniq, bit_test_count and bit_test_bb fields.
+	(check_range): Fix a comment.
+	(check_process_case): Compute bit_test_uniq and bit_test_count.
+	(create_temp_arrays): Use XCNEWVEC, merge 3 arrays into one
+	allocation.
+	(free_temp_arrays): Use XDELETEVEC, adjust for the 3 arrays merging.
+	(constructor_contains_same_values_p): Use FOR_EACH_VEC_ELT.
+	(array_value_type): New function.
+	(build_one_array): Use it, if it returned different type,
+	fold_convert all constructor fields and convert back to the
+	wider type in the generated code.
+	(process_switch): Initialize bit_test_uniq, bit_test_count and
+	bit_test_bb fields.  Don't optimize if expand_switch_using_bit_tests_p
+	returned true.
+
 2010-11-19  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/46077

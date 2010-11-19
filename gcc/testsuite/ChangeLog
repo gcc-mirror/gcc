@@ -1,3 +1,9 @@
+2010-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/45830
+	* gcc.target/i386/pr45830.c: New test.
+	* gcc.c-torture/execute/pr45830.c: New test.
+
 2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/attributes/class-attribute-1.m: Rewritten.
