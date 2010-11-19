@@ -113,6 +113,19 @@ void *flag_instrument_functions_exclude_functions
 Variable
 void *flag_instrument_functions_exclude_files
 
+; Generic structs (e.g. templates not explicitly specialized)
+; may not have a compilation unit associated with them, and so
+; may need to be treated differently from ordinary structs.
+;
+; Structs only handled by reference (indirectly), will also usually
+; not need as much debugging information.
+
+Variable
+enum debug_struct_file debug_struct_ordinary[DINFO_USAGE_NUM_ENUMS] = { DINFO_STRUCT_FILE_ANY, DINFO_STRUCT_FILE_ANY, DINFO_STRUCT_FILE_ANY }
+
+Variable
+enum debug_struct_file debug_struct_generic[DINFO_USAGE_NUM_ENUMS] = { DINFO_STRUCT_FILE_ANY, DINFO_STRUCT_FILE_ANY, DINFO_STRUCT_FILE_ANY }
+
 ###
 Driver
 

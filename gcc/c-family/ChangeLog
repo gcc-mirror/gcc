@@ -1,3 +1,8 @@
+2010-11-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (c_common_handle_option): Update calls to
+	set_struct_debug_option.
+
 2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-common.h (objc_declare_protocols): Added additional argument.

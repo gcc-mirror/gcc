@@ -91,6 +91,7 @@ for (i = 0; i < n_extra_vars; i++) {
 		sub(".*= *", "", init)
 		sub(" *=.*", "", var)
 		sub("^.*[ *]", "", var)
+		sub("\\[.*\\]$", "", var)
 	} else {
 		init = "0"
 	}

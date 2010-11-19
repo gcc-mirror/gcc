@@ -86,13 +86,17 @@ for (i = 0; i < n_extra_vars; i++) {
 	orig_var = var
 	name = var
 	type = var
+	type_after = var
 	sub("^.*[ *]", "", name)
+	sub("\\[.*\\]$", "", name)
+	sub("\\[.*\\]$", "", type)
 	sub(" *" name "$", "", type)
+	sub("^.*" name, "", type_after)
 	var_seen[name] = 1
 	print "#ifdef GENERATOR_FILE"
 	print "extern " orig_var ";"
 	print "#else"
-	print "  " type " x_" name ";"
+	print "  " type " x_" name type_after ";"
 	print "#define " name " global_options.x_" name
 	print "#endif"
 }
