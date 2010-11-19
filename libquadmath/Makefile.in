@@ -38,7 +38,7 @@ host_triplet = @host@
 target_triplet = @target@
 @BUILD_LIBQUADMATH_FALSE@libquadmath_la_DEPENDENCIES =
 subdir = .
-DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
+DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(srcdir)/config.h.in $(srcdir)/../mkinstalldirs \
 	$(srcdir)/../depcomp $(am__include_HEADERS_DIST)
@@ -281,8 +281,8 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 @BUILD_LIBQUADMATH_TRUE@            -no-undefined
 
 @BUILD_LIBQUADMATH_TRUE@toolexeclib_LTLIBRARIES = libquadmath.la
-@BUILD_LIBQUADMATH_TRUE@libquadmath_la_LIBADD = -lm
-@BUILD_LIBQUADMATH_TRUE@libquadmath_la_LDFLAGS = $(LTLDFLAGS) -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(version_arg)
+@BUILD_LIBQUADMATH_TRUE@libquadmath_la_LIBADD = 
+@BUILD_LIBQUADMATH_TRUE@libquadmath_la_LDFLAGS = $(LTLDFLAGS) -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(version_arg) -lm
 @BUILD_LIBQUADMATH_TRUE@libquadmath_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
 @BUILD_LIBQUADMATH_TRUE@libquadmath_la_DEPENDENCIES = $(version_dep)
 @BUILD_LIBQUADMATH_TRUE@include_HEADERS = quadmath.h quadmath_weak.h
@@ -967,14 +967,13 @@ uninstall-am: uninstall-includeHEADERS \
 	uninstall-toolexeclibLTLIBRARIES
 
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@quadmath.map-sun : $(srcdir)/quadmath.map \
-@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@                $(top_srcdir)/../contrib/make_sunver.pl \
-@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@                $(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD)
-@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@        perl $(top_srcdir)/../contrib/make_sunver.pl \
-@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@          $(srcdir)/quadmath.map \
-@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@          $(libquadmath_la_OBJECTS:%.lo=.libs/%.o) \
-@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@         `echo $(libquadmath_la_LIBADD) | \
-@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@            sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
-@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@         > $@ || (rm -f $@ ; exit 1)
+@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@		$(top_srcdir)/../contrib/make_sunver.pl \
+@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@		$(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD)
+@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl \
+@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	  $(srcdir)/quadmath.map \
+@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	 `echo $(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD) | \
+@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	   sed 's,\([^/ 	]*\)\.l\([ao]\),.libs/\1.\2,g'` \
+@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
