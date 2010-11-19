@@ -13503,11 +13503,18 @@ const_ok_for_output_1 (rtx *rtlp, void *data ATTRIBUTE_UNUSED)
       /* If delegitimize_address couldn't do anything with the UNSPEC, assume
 	 we can't express it in the debug info.  */
 #ifdef ENABLE_CHECKING
-      inform (current_function_decl
-	      ? DECL_SOURCE_LOCATION (current_function_decl)
-	      : UNKNOWN_LOCATION,
-	      "non-delegitimized UNSPEC %d found in variable location",
-	      XINT (rtl, 1));
+      /* Don't complain about TLS UNSPECs, those are just too hard to
+	 delegitimize.  */
+      if (XVECLEN (rtl, 0) != 1
+	  || GET_CODE (XVECEXP (rtl, 0, 0)) != SYMBOL_REF
+	  || SYMBOL_REF_DECL (XVECEXP (rtl, 0, 0)) == NULL
+	  || TREE_CODE (SYMBOL_REF_DECL (XVECEXP (rtl, 0, 0))) != VAR_DECL
+	  || !DECL_THREAD_LOCAL_P (SYMBOL_REF_DECL (XVECEXP (rtl, 0, 0))))
+	inform (current_function_decl
+		? DECL_SOURCE_LOCATION (current_function_decl)
+		: UNKNOWN_LOCATION,
+		"non-delegitimized UNSPEC %d found in variable location",
+		XINT (rtl, 1));
 #endif
       expansion_failed (NULL_TREE, rtl,
 			"UNSPEC hasn't been delegitimized.\n");

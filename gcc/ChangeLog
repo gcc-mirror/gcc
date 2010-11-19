@@ -1,3 +1,9 @@
+2010-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/45870
+	* dwarf2out.c (const_ok_for_output_1): Don't complain about
+	non-delegitimized TLS UNSPECs.
+
 2010-11-18  Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Ian Lance Taylor  <iant@google.com>
 
