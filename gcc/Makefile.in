@@ -932,7 +932,7 @@ PREDICT_H = predict.h predict.def
 CPPLIB_H = $(srcdir)/../libcpp/include/line-map.h \
 	$(srcdir)/../libcpp/include/cpplib.h
 INPUT_H = $(srcdir)/../libcpp/include/line-map.h input.h
-OPTS_H = $(INPUT_H) opts.h
+OPTS_H = $(INPUT_H) $(VEC_H) opts.h
 DECNUM_H = $(DECNUM)/decContext.h $(DECNUM)/decDPD.h $(DECNUM)/decNumber.h \
 	$(DECNUMFMT)/decimal32.h $(DECNUMFMT)/decimal64.h \
 	$(DECNUMFMT)/decimal128.h $(DECNUMFMT)/decimal128Local.h
@@ -1295,6 +1295,7 @@ OBJS-common = \
 	optabs.o \
 	options.o \
 	opts-common.o \
+	opts-global.o \
 	opts.o \
 	params.o \
 	passes.o \
@@ -2809,10 +2810,13 @@ fold-const.o : fold-const.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 diagnostic.o : diagnostic.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    version.h $(INPUT_H) intl.h $(DIAGNOSTIC_H) diagnostic.def
 opts.o : opts.c $(OPTS_H) $(OPTIONS_H) $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) $(CONFIG_H) $(SYSTEM_H) \
-   coretypes.h $(TREE_H) $(TM_H) langhooks.h $(GGC_H) $(EXPR_H) $(RTL_H) \
-   output.h $(DIAGNOSTIC_H) $(TM_P_H) $(INSN_ATTR_H) intl.h $(TARGET_H) \
-   $(FLAGS_H) $(PARAMS_H) $(TREE_PASS_H) $(DBGCNT_H) debug.h \
-   $(PLUGIN_H) $(EXCEPT_H) $(LTO_STREAMER_H) opts-diagnostic.h
+   coretypes.h $(TREE_H) $(TM_H) langhooks.h $(EXPR_H) \
+   $(DIAGNOSTIC_H) $(TM_P_H) $(INSN_ATTR_H) intl.h $(TARGET_H) \
+   $(FLAGS_H) $(PARAMS_H) $(DBGCNT_H) debug.h \
+   $(EXCEPT_H) $(LTO_STREAMER_H) opts-diagnostic.h
+opts-global.o : opts-global.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(DIAGNOSTIC_CORE_H) $(OPTS_H) $(FLAGS_H) $(GGC_H) $(TM_H) $(RTL_H) \
+   output.h $(PLUGIN_H) $(TREE_PASS_H)
 opts-common.o : opts-common.c $(OPTS_H) $(FLAGS_H) $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h intl.h $(DIAGNOSTIC_H) $(TM_H)
 targhooks.o : targhooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \

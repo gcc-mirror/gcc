@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_OPTS_H
 
 #include "input.h"
+#include "vec.h"
 
 /* Specifies how a switch's VAR_VALUE relates to its FLAG_VAR.  */
 enum cl_var_type {
@@ -39,7 +40,11 @@ enum cl_var_type {
 
   /* The switch takes a string argument and FLAG_VAR points to that
      argument.  */
-  CLVC_STRING
+  CLVC_STRING,
+
+  /* The switch should be stored in the VEC pointed to by FLAG_VAR for
+     later processing.  */
+  CLVC_DEFER
 };
 
 struct cl_option
@@ -158,6 +163,20 @@ struct cl_decoded_option
   int errors;
 };
 
+/* Structure describing an option deferred for handling after the main
+   option handlers.  */
+
+typedef struct
+{
+  /* Elements from struct cl_decoded_option used for deferred
+     options.  */
+  size_t opt_index;
+  const char *arg;
+  int value;
+} cl_deferred_option;
+DEF_VEC_O(cl_deferred_option);
+DEF_VEC_ALLOC_O(cl_deferred_option,heap);
+
 /* Structure describing a single option-handling callback.  */
 
 struct cl_option_handler_func
@@ -264,4 +283,5 @@ extern void control_warning_option (unsigned int opt_index, int kind,
 				    struct gcc_options *opts_set,
 				    diagnostic_context *dc);
 extern void print_ignored_options (void);
+extern void handle_common_deferred_options (void);
 #endif

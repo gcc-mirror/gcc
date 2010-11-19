@@ -2359,6 +2359,8 @@ toplev_main (int argc, char **argv)
 		  save_decoded_options, save_decoded_options_count,
 		  UNKNOWN_LOCATION, global_dc);
 
+  handle_common_deferred_options ();
+
   init_local_tick ();
 
   initialize_plugins ();
