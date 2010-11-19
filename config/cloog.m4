@@ -38,10 +38,9 @@ AC_DEFUN([CLOOG_INIT_FLAGS],
       [Specify the directory for the installed CLooG library])])
 
   AC_ARG_ENABLE(cloog-backend,
-    [  --enable-cloog-backend[=backend]
-				isl: The cloog.org isl backend
-				ppl-legacy: The legacy ppl backend - default
-				ppl: The cloog.org ppl backend],
+    [AS_HELP_STRING(
+      [--enable-cloog-backend[[=BACKEND]]],
+      [set the CLooG BACKEND used to either isl, ppl or ppl-legacy (default)])],
     [ if   test "x${enableval}" = "xisl"; then
 	cloog_backend=isl
       elif test "x${enableval}" = "xppl"; then

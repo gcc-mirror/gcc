@@ -1,3 +1,7 @@
+2010-11-19  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* config/cloog.m4: Use AS_HELP_STRING and fix help formatting.
+
 2010-11-19  Ian Lance Taylor  <iant@google.com>
 	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
