@@ -1,3 +1,16 @@
+2010-11-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/46202
+	* Makefile.in (install_sh, INSTALL_STRIP_PROGRAM): New
+	variables.
+	(AR_FOR_TARGET, RANLIB_FOR_TARGET, STRIP_FOR_TARGET): Fix
+	shell quoting.
+	(STRIP_FOR_TARGET): Look for in-tree strip under name strip-new.
+	(install-strip): New target.
+	(STRIPPROG): New variable, exported if STRIP is set.
+	* doc/install.texi (Final install): Minor markup and code style
+	fixes.  Document install-strip target.
+
 2010-11-20  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11-protos.h (pdp11_initial_elimination_offset,

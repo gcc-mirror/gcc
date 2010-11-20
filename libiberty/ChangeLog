@@ -1,3 +1,9 @@
+2010-11-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/46202
+	* Makefile.in (install-strip): New phony target.
+	(install): Also mark as phony.
+
 2010-11-16  Ian Lance Taylor  <iant@google.com>
 
 	* simple-object.c (simple_object_attributes_merge): Rename from

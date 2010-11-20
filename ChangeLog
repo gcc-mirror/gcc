@@ -1,3 +1,19 @@
+2010-11-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/46202
+	* configure.ac: Fix just-built in-tree STRIP name to be
+	binutils/strip-new.
+	* configure: Regenerate.
+	* Makefile.def (install-strip-gcc, install-strip-binutils)
+	(install-strip-opcodes, install-strip-ld, install-strip-itcl)
+	(install-strip-sid): Mirror dependencies on non-strip variants
+	of these targets on the respective -strip prerequisites.
+	* Makefile.tpl (install-strip, install-strip-host)
+	(install-strip-target): New targets.
+	(install-strip-[+module+], install-strip-target-[+module+]):
+	New targets.
+	* Makefile.in: Regenerate.
+
 2010-11-19  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* config/cloog.m4: Use AS_HELP_STRING and fix help formatting.

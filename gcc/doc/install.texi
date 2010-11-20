@@ -2617,7 +2617,7 @@ messages may be automatically processed.
 
 Now that GCC has been built (and optionally tested), you can install it with
 @smallexample
-cd @var{objdir}; make install
+cd @var{objdir} && make install
 @end smallexample
 
 We strongly recommend to install into a target directory where there is
@@ -2653,7 +2653,8 @@ jail can be achieved with the command
 make DESTDIR=@var{path-to-rootdir} install
 @end smallexample
 
-@noindent where @var{path-to-rootdir} is the absolute path of
+@noindent
+where @var{path-to-rootdir} is the absolute path of
 a directory relative to which all installation paths will be
 interpreted.  Note that the directory specified by @code{DESTDIR}
 need not exist yet; it will be created if necessary.
@@ -2666,6 +2667,12 @@ be filled with duplicated GCC executables only if it already exists,
 it will not be created otherwise.  This is regarded as a feature,
 not as a bug, because it gives slightly more control to the packagers
 using the @code{DESTDIR} feature.
+
+You can install stripped programs and libraries with
+
+@smallexample
+make install-strip
+@end smallexample
 
 If you are bootstrapping a released version of GCC then please
 quickly review the build status page for your release, available from

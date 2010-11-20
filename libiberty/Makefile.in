@@ -341,6 +341,9 @@ libiberty.html : $(srcdir)/libiberty.texi $(TEXISRC)
 
 INSTALL_DEST = @INSTALL_DEST@
 install: install_to_$(INSTALL_DEST) install-subdir
+install-strip: install
+
+.PHONY: install install-strip
 
 # This is tricky.  Even though CC in the Makefile contains
 # multilib-specific flags, it's overridden by FLAGS_TO_PASS from the

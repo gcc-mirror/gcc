@@ -1,6 +1,6 @@
 # Makefile.in
 
-# Copyright (C) 2005, 2006, 2009 Free Software Foundation
+# Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation
 #
 # This file is part of GCC.
 #
@@ -975,7 +975,9 @@ install-leaf: $(install-shared) $(install-libunwind)
 install: install-leaf
 	@: $(MAKE) ; $(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
-.PHONY: install install-shared install-libunwind
+install-strip: install
+
+.PHONY: install install-shared install-libunwind install-strip
 
 # Don't export variables to the environment, in order to not confuse
 # configure.
