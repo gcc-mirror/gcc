@@ -25,15 +25,20 @@
 (define_constants
   [
    ;; Register numbers
+   (R0_REGNUM     	  0)
    (RETVAL_REGNUM     	  0)
-   (FRAME_POINTER_REGNUM  5)
+   (HARD_FRAME_POINTER_REGNUM  5)
    (STACK_POINTER_REGNUM  6)
    (PC_REGNUM             7)
    (AC0_REGNUM            8)
    (AC3_REGNUM            11)
    (AC4_REGNUM            12)
    (AC5_REGNUM            13)
-   (FIRST_PSEUDO_REGISTER 14)
+   ;; The next two are not physical registers but are used for addressing
+   ;; arguments.
+   (FRAME_POINTER_REGNUM  14)
+   (ARG_POINTER_REGNUM    15)
+   (FIRST_PSEUDO_REGISTER 16)
    ;; Branch offset limits, as byte offsets from instruction address
    (MIN_BRANCH            -254)
    (MAX_BRANCH            256)
