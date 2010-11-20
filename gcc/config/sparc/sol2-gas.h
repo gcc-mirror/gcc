@@ -23,6 +23,9 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+/* Undefine this as the filler pattern doesn't work with GNU as.  */
+#undef ASM_OUTPUT_ALIGN_WITH_NOP
+
 /* Undefine this so that BNSYM/ENSYM pairs are emitted by STABS+.  */
 #undef NO_DBX_BNSYM_ENSYM
 
