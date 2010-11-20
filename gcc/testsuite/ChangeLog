@@ -1,5 +1,8 @@
 2010-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/46538
+	* g++.dg/other/error34.C: New test.
+
 	PR c++/46526
 	* g++.dg/cpp0x/constexpr-base3.C: New test.
 

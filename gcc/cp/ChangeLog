@@ -1,5 +1,9 @@
 2010-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/46538
+	* decl.c (cp_make_fname_decl): Return error_mark_node if
+	current_binding_level has already sk_function_parms kind.
+
 	PR c++/46526
 	* semantics.c (cxx_eval_call_expression): Unshare the result.
 
