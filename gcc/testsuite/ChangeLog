@@ -1,5 +1,8 @@
 2010-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/46561
+	* gcc.dg/autopar/pr46561.c: New test.
+
 	PR c++/46538
 	* g++.dg/other/error34.C: New test.
 

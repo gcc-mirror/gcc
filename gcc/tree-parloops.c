@@ -1870,7 +1870,8 @@ try_create_reduction_list (loop_p loop, htab_t reduction_list)
 	  reduc_phi = NULL;
 	  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, val)
 	    {
-	      if (flow_bb_inside_loop_p (loop, gimple_bb (USE_STMT (use_p))))
+	      if (!gimple_debug_bind_p (USE_STMT (use_p))
+		  && flow_bb_inside_loop_p (loop, gimple_bb (USE_STMT (use_p))))
 		{
 		  reduc_phi = USE_STMT (use_p);
 		  break;
