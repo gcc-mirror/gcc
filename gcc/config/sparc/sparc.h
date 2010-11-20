@@ -2156,13 +2156,6 @@ do {									\
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (1<<(LOG)))
 
-/* This is how to output an assembler line that says to advance
-   the location counter to a multiple of 2**LOG bytes using the
-   "nop" instruction as padding.  */
-#define ASM_OUTPUT_ALIGN_WITH_NOP(FILE,LOG)   \
-  if ((LOG) != 0)                             \
-    fprintf (FILE, "\t.align %d,0x1000000\n", (1<<(LOG)))
-
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.skip "HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE))
 
