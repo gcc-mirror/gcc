@@ -3069,6 +3069,120 @@ install.all: install-no-fixedincludes
 install-no-fixedincludes: installdirs install-host-nogcc \
 	install-target gcc-no-fixedincludes
 
+.PHONY: install-strip
+install-strip:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) installdirs install-strip-host install-strip-target
+
+.PHONY: install-strip-host
+install-strip-host:  \
+    maybe-install-strip-ash \
+    maybe-install-strip-autoconf \
+    maybe-install-strip-automake \
+    maybe-install-strip-bash \
+    maybe-install-strip-bfd \
+    maybe-install-strip-opcodes \
+    maybe-install-strip-binutils \
+    maybe-install-strip-bison \
+    maybe-install-strip-byacc \
+    maybe-install-strip-bzip2 \
+    maybe-install-strip-cgen \
+    maybe-install-strip-dejagnu \
+    maybe-install-strip-diff \
+    maybe-install-strip-dosutils \
+    maybe-install-strip-etc \
+    maybe-install-strip-fastjar \
+    maybe-install-strip-fileutils \
+    maybe-install-strip-findutils \
+    maybe-install-strip-find \
+    maybe-install-strip-fixincludes \
+    maybe-install-strip-flex \
+    maybe-install-strip-gas \
+    maybe-install-strip-gcc \
+    maybe-install-strip-gawk \
+    maybe-install-strip-gettext \
+    maybe-install-strip-gmp \
+    maybe-install-strip-mpfr \
+    maybe-install-strip-mpc \
+    maybe-install-strip-ppl \
+    maybe-install-strip-cloog \
+    maybe-install-strip-libelf \
+    maybe-install-strip-gnuserv \
+    maybe-install-strip-gold \
+    maybe-install-strip-gprof \
+    maybe-install-strip-gzip \
+    maybe-install-strip-hello \
+    maybe-install-strip-indent \
+    maybe-install-strip-intl \
+    maybe-install-strip-tcl \
+    maybe-install-strip-itcl \
+    maybe-install-strip-ld \
+    maybe-install-strip-libcpp \
+    maybe-install-strip-libdecnumber \
+    maybe-install-strip-libgui \
+    maybe-install-strip-libiberty \
+    maybe-install-strip-libiconv \
+    maybe-install-strip-libtool \
+    maybe-install-strip-m4 \
+    maybe-install-strip-make \
+    maybe-install-strip-mmalloc \
+    maybe-install-strip-patch \
+    maybe-install-strip-perl \
+    maybe-install-strip-prms \
+    maybe-install-strip-rcs \
+    maybe-install-strip-readline \
+    maybe-install-strip-release \
+    maybe-install-strip-recode \
+    maybe-install-strip-sed \
+    maybe-install-strip-send-pr \
+    maybe-install-strip-shellutils \
+    maybe-install-strip-sid \
+    maybe-install-strip-sim \
+    maybe-install-strip-tar \
+    maybe-install-strip-texinfo \
+    maybe-install-strip-textutils \
+    maybe-install-strip-time \
+    maybe-install-strip-uudecode \
+    maybe-install-strip-wdiff \
+    maybe-install-strip-zip \
+    maybe-install-strip-zlib \
+    maybe-install-strip-gdb \
+    maybe-install-strip-expect \
+    maybe-install-strip-guile \
+    maybe-install-strip-tk \
+    maybe-install-strip-libtermcap \
+    maybe-install-strip-utils \
+    maybe-install-strip-gnattools \
+    maybe-install-strip-lto-plugin
+
+.PHONY: install-strip-target
+install-strip-target:  \
+    maybe-install-strip-target-libstdc++-v3 \
+    maybe-install-strip-target-libmudflap \
+    maybe-install-strip-target-libssp \
+    maybe-install-strip-target-newlib \
+    maybe-install-strip-target-libgcc \
+    maybe-install-strip-target-libquadmath \
+    maybe-install-strip-target-libgfortran \
+    maybe-install-strip-target-libobjc \
+    maybe-install-strip-target-libtermcap \
+    maybe-install-strip-target-winsup \
+    maybe-install-strip-target-libgloss \
+    maybe-install-strip-target-libiberty \
+    maybe-install-strip-target-gperf \
+    maybe-install-strip-target-examples \
+    maybe-install-strip-target-libffi \
+    maybe-install-strip-target-libjava \
+    maybe-install-strip-target-zlib \
+    maybe-install-strip-target-boehm-gc \
+    maybe-install-strip-target-qthreads \
+    maybe-install-strip-target-rda \
+    maybe-install-strip-target-libada \
+    maybe-install-strip-target-libgomp
+
+
 ### other supporting targets
 
 MAKEDIRS= \
@@ -3593,6 +3707,21 @@ install-ash: installdirs
 
 @endif ash
 
+.PHONY: install-strip-ash maybe-install-strip-ash
+maybe-install-strip-ash:
+@if ash
+maybe-install-strip-ash: install-strip-ash
+
+install-strip-ash: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/ash && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif ash
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-ash info-ash
@@ -4015,6 +4144,21 @@ install-autoconf: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/autoconf && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif autoconf
+
+.PHONY: install-strip-autoconf maybe-install-strip-autoconf
+maybe-install-strip-autoconf:
+@if autoconf
+maybe-install-strip-autoconf: install-strip-autoconf
+
+install-strip-autoconf: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/autoconf && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif autoconf
 
@@ -4443,6 +4587,21 @@ install-automake: installdirs
 
 @endif automake
 
+.PHONY: install-strip-automake maybe-install-strip-automake
+maybe-install-strip-automake:
+@if automake
+maybe-install-strip-automake: install-strip-automake
+
+install-strip-automake: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/automake && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif automake
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-automake info-automake
@@ -4865,6 +5024,21 @@ install-bash: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/bash && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif bash
+
+.PHONY: install-strip-bash maybe-install-strip-bash
+maybe-install-strip-bash:
+@if bash
+maybe-install-strip-bash: install-strip-bash
+
+install-strip-bash: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/bash && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif bash
 
@@ -5747,6 +5921,21 @@ install-bfd: installdirs
 
 @endif bfd
 
+.PHONY: install-strip-bfd maybe-install-strip-bfd
+maybe-install-strip-bfd:
+@if bfd
+maybe-install-strip-bfd: install-strip-bfd
+
+install-strip-bfd: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/bfd && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif bfd
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-bfd info-bfd
@@ -6610,6 +6799,21 @@ install-opcodes: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/opcodes && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif opcodes
+
+.PHONY: install-strip-opcodes maybe-install-strip-opcodes
+maybe-install-strip-opcodes:
+@if opcodes
+maybe-install-strip-opcodes: install-strip-opcodes
+
+install-strip-opcodes: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif opcodes
 
@@ -7479,6 +7683,21 @@ install-binutils: installdirs
 
 @endif binutils
 
+.PHONY: install-strip-binutils maybe-install-strip-binutils
+maybe-install-strip-binutils:
+@if binutils
+maybe-install-strip-binutils: install-strip-binutils
+
+install-strip-binutils: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif binutils
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-binutils info-binutils
@@ -7891,6 +8110,21 @@ install-bison: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/bison && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif bison
+
+.PHONY: install-strip-bison maybe-install-strip-bison
+maybe-install-strip-bison:
+@if bison
+maybe-install-strip-bison: install-strip-bison
+
+install-strip-bison: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/bison && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif bison
 
@@ -8322,6 +8556,21 @@ install-byacc: installdirs
 
 @endif byacc
 
+.PHONY: install-strip-byacc maybe-install-strip-byacc
+maybe-install-strip-byacc:
+@if byacc
+maybe-install-strip-byacc: install-strip-byacc
+
+install-strip-byacc: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/byacc && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif byacc
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-byacc info-byacc
@@ -8744,6 +8993,21 @@ install-bzip2: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/bzip2 && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif bzip2
+
+.PHONY: install-strip-bzip2 maybe-install-strip-bzip2
+maybe-install-strip-bzip2:
+@if bzip2
+maybe-install-strip-bzip2: install-strip-bzip2
+
+install-strip-bzip2: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/bzip2 && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif bzip2
 
@@ -9172,6 +9436,21 @@ install-cgen: installdirs
 
 @endif cgen
 
+.PHONY: install-strip-cgen maybe-install-strip-cgen
+maybe-install-strip-cgen:
+@if cgen
+maybe-install-strip-cgen: install-strip-cgen
+
+install-strip-cgen: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif cgen
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-cgen info-cgen
@@ -9594,6 +9873,21 @@ install-dejagnu: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/dejagnu && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif dejagnu
+
+.PHONY: install-strip-dejagnu maybe-install-strip-dejagnu
+maybe-install-strip-dejagnu:
+@if dejagnu
+maybe-install-strip-dejagnu: install-strip-dejagnu
+
+install-strip-dejagnu: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/dejagnu && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif dejagnu
 
@@ -10022,6 +10316,21 @@ install-diff: installdirs
 
 @endif diff
 
+.PHONY: install-strip-diff maybe-install-strip-diff
+maybe-install-strip-diff:
+@if diff
+maybe-install-strip-diff: install-strip-diff
+
+install-strip-diff: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/diff && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif diff
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-diff info-diff
@@ -10438,6 +10747,21 @@ install-dosutils: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/dosutils && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif dosutils
+
+.PHONY: install-strip-dosutils maybe-install-strip-dosutils
+maybe-install-strip-dosutils:
+@if dosutils
+maybe-install-strip-dosutils: install-strip-dosutils
+
+install-strip-dosutils: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/dosutils && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif dosutils
 
@@ -10863,6 +11187,21 @@ install-etc: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/etc && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif etc
+
+.PHONY: install-strip-etc maybe-install-strip-etc
+maybe-install-strip-etc:
+@if etc
+maybe-install-strip-etc: install-strip-etc
+
+install-strip-etc: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/etc && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif etc
 
@@ -11294,6 +11633,21 @@ install-fastjar: installdirs
 
 @endif fastjar
 
+.PHONY: install-strip-fastjar maybe-install-strip-fastjar
+maybe-install-strip-fastjar:
+@if fastjar
+maybe-install-strip-fastjar: install-strip-fastjar
+
+install-strip-fastjar: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/fastjar && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif fastjar
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-fastjar info-fastjar
@@ -11716,6 +12070,21 @@ install-fileutils: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/fileutils && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif fileutils
+
+.PHONY: install-strip-fileutils maybe-install-strip-fileutils
+maybe-install-strip-fileutils:
+@if fileutils
+maybe-install-strip-fileutils: install-strip-fileutils
+
+install-strip-fileutils: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/fileutils && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif fileutils
 
@@ -12144,6 +12513,21 @@ install-findutils: installdirs
 
 @endif findutils
 
+.PHONY: install-strip-findutils maybe-install-strip-findutils
+maybe-install-strip-findutils:
+@if findutils
+maybe-install-strip-findutils: install-strip-findutils
+
+install-strip-findutils: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/findutils && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif findutils
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-findutils info-findutils
@@ -12566,6 +12950,21 @@ install-find: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/find && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif find
+
+.PHONY: install-strip-find maybe-install-strip-find
+maybe-install-strip-find:
+@if find
+maybe-install-strip-find: install-strip-find
+
+install-strip-find: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/find && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif find
 
@@ -12994,6 +13393,21 @@ install-fixincludes: installdirs
 
 @endif fixincludes
 
+.PHONY: install-strip-fixincludes maybe-install-strip-fixincludes
+maybe-install-strip-fixincludes:
+@if fixincludes
+maybe-install-strip-fixincludes: install-strip-fixincludes
+
+install-strip-fixincludes: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/fixincludes && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif fixincludes
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-fixincludes info-fixincludes
@@ -13403,6 +13817,21 @@ install-flex: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/flex && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif flex
+
+.PHONY: install-strip-flex maybe-install-strip-flex
+maybe-install-strip-flex:
+@if flex
+maybe-install-strip-flex: install-strip-flex
+
+install-strip-flex: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/flex && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif flex
 
@@ -14285,6 +14714,21 @@ install-gas: installdirs
 
 @endif gas
 
+.PHONY: install-strip-gas maybe-install-strip-gas
+maybe-install-strip-gas:
+@if gas
+maybe-install-strip-gas: install-strip-gas
+
+install-strip-gas: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif gas
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-gas info-gas
@@ -15151,6 +15595,21 @@ install-gcc: installdirs
 
 @endif gcc
 
+.PHONY: install-strip-gcc maybe-install-strip-gcc
+maybe-install-strip-gcc:
+@if gcc
+maybe-install-strip-gcc: install-strip-gcc
+
+install-strip-gcc: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gcc && \
+	  $(MAKE) $(FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) install-strip)
+
+@endif gcc
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-gcc info-gcc
@@ -15560,6 +16019,21 @@ install-gawk: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/gawk && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif gawk
+
+.PHONY: install-strip-gawk maybe-install-strip-gawk
+maybe-install-strip-gawk:
+@if gawk
+maybe-install-strip-gawk: install-strip-gawk
+
+install-strip-gawk: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gawk && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif gawk
 
@@ -15985,6 +16459,21 @@ install-gettext: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif gettext
+
+.PHONY: install-strip-gettext maybe-install-strip-gettext
+maybe-install-strip-gettext:
+@if gettext
+maybe-install-strip-gettext: install-strip-gettext
+
+install-strip-gettext: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gettext && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif gettext
 
@@ -16867,6 +17356,15 @@ install-gmp:
 
 @endif gmp
 
+.PHONY: install-strip-gmp maybe-install-strip-gmp
+maybe-install-strip-gmp:
+@if gmp
+maybe-install-strip-gmp: install-strip-gmp
+
+install-strip-gmp:
+
+@endif gmp
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-gmp info-gmp
@@ -17730,6 +18228,15 @@ maybe-install-mpfr:
 maybe-install-mpfr: install-mpfr
 
 install-mpfr:
+
+@endif mpfr
+
+.PHONY: install-strip-mpfr maybe-install-strip-mpfr
+maybe-install-strip-mpfr:
+@if mpfr
+maybe-install-strip-mpfr: install-strip-mpfr
+
+install-strip-mpfr:
 
 @endif mpfr
 
@@ -18599,6 +19106,15 @@ install-mpc:
 
 @endif mpc
 
+.PHONY: install-strip-mpc maybe-install-strip-mpc
+maybe-install-strip-mpc:
+@if mpc
+maybe-install-strip-mpc: install-strip-mpc
+
+install-strip-mpc:
+
+@endif mpc
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-mpc info-mpc
@@ -19462,6 +19978,15 @@ maybe-install-ppl:
 maybe-install-ppl: install-ppl
 
 install-ppl:
+
+@endif ppl
+
+.PHONY: install-strip-ppl maybe-install-strip-ppl
+maybe-install-strip-ppl:
+@if ppl
+maybe-install-strip-ppl: install-strip-ppl
+
+install-strip-ppl:
 
 @endif ppl
 
@@ -20331,6 +20856,15 @@ install-cloog:
 
 @endif cloog
 
+.PHONY: install-strip-cloog maybe-install-strip-cloog
+maybe-install-strip-cloog:
+@if cloog
+maybe-install-strip-cloog: install-strip-cloog
+
+install-strip-cloog:
+
+@endif cloog
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-cloog info-cloog
@@ -21197,6 +21731,15 @@ install-libelf:
 
 @endif libelf
 
+.PHONY: install-strip-libelf maybe-install-strip-libelf
+maybe-install-strip-libelf:
+@if libelf
+maybe-install-strip-libelf: install-strip-libelf
+
+install-strip-libelf:
+
+@endif libelf
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-libelf info-libelf
@@ -21606,6 +22149,21 @@ install-gnuserv: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/gnuserv && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif gnuserv
+
+.PHONY: install-strip-gnuserv maybe-install-strip-gnuserv
+maybe-install-strip-gnuserv:
+@if gnuserv
+maybe-install-strip-gnuserv: install-strip-gnuserv
+
+install-strip-gnuserv: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gnuserv && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif gnuserv
 
@@ -22488,6 +23046,21 @@ install-gold: installdirs
 
 @endif gold
 
+.PHONY: install-strip-gold maybe-install-strip-gold
+maybe-install-strip-gold:
+@if gold
+maybe-install-strip-gold: install-strip-gold
+
+install-strip-gold: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif gold
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-gold info-gold
@@ -22897,6 +23470,21 @@ install-gprof: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/gprof && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif gprof
+
+.PHONY: install-strip-gprof maybe-install-strip-gprof
+maybe-install-strip-gprof:
+@if gprof
+maybe-install-strip-gprof: install-strip-gprof
+
+install-strip-gprof: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif gprof
 
@@ -23325,6 +23913,21 @@ install-gzip: installdirs
 
 @endif gzip
 
+.PHONY: install-strip-gzip maybe-install-strip-gzip
+maybe-install-strip-gzip:
+@if gzip
+maybe-install-strip-gzip: install-strip-gzip
+
+install-strip-gzip: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gzip && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif gzip
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-gzip info-gzip
@@ -23750,6 +24353,21 @@ install-hello: installdirs
 
 @endif hello
 
+.PHONY: install-strip-hello maybe-install-strip-hello
+maybe-install-strip-hello:
+@if hello
+maybe-install-strip-hello: install-strip-hello
+
+install-strip-hello: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/hello && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif hello
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-hello info-hello
@@ -24172,6 +24790,21 @@ install-indent: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/indent && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif indent
+
+.PHONY: install-strip-indent maybe-install-strip-indent
+maybe-install-strip-indent:
+@if indent
+maybe-install-strip-indent: install-strip-indent
+
+install-strip-indent: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/indent && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif indent
 
@@ -25054,6 +25687,21 @@ install-intl: installdirs
 
 @endif intl
 
+.PHONY: install-strip-intl maybe-install-strip-intl
+maybe-install-strip-intl:
+@if intl
+maybe-install-strip-intl: install-strip-intl
+
+install-strip-intl: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/intl && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif intl
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-intl info-intl
@@ -25466,6 +26114,21 @@ install-tcl: installdirs
 
 @endif tcl
 
+.PHONY: install-strip-tcl maybe-install-strip-tcl
+maybe-install-strip-tcl:
+@if tcl
+maybe-install-strip-tcl: install-strip-tcl
+
+install-strip-tcl: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/tcl && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif tcl
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-tcl info-tcl
@@ -25873,6 +26536,21 @@ install-itcl: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/itcl && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif itcl
+
+.PHONY: install-strip-itcl maybe-install-strip-itcl
+maybe-install-strip-itcl:
+@if itcl
+maybe-install-strip-itcl: install-strip-itcl
+
+install-strip-itcl: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/itcl && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif itcl
 
@@ -26755,6 +27433,21 @@ install-ld: installdirs
 
 @endif ld
 
+.PHONY: install-strip-ld maybe-install-strip-ld
+maybe-install-strip-ld:
+@if ld
+maybe-install-strip-ld: install-strip-ld
+
+install-strip-ld: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif ld
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-ld info-ld
@@ -27618,6 +28311,21 @@ install-libcpp: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/libcpp && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif libcpp
+
+.PHONY: install-strip-libcpp maybe-install-strip-libcpp
+maybe-install-strip-libcpp:
+@if libcpp
+maybe-install-strip-libcpp: install-strip-libcpp
+
+install-strip-libcpp: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libcpp && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif libcpp
 
@@ -28487,6 +29195,21 @@ install-libdecnumber: installdirs
 
 @endif libdecnumber
 
+.PHONY: install-strip-libdecnumber maybe-install-strip-libdecnumber
+maybe-install-strip-libdecnumber:
+@if libdecnumber
+maybe-install-strip-libdecnumber: install-strip-libdecnumber
+
+install-strip-libdecnumber: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif libdecnumber
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-libdecnumber info-libdecnumber
@@ -28896,6 +29619,21 @@ install-libgui: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/libgui && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif libgui
+
+.PHONY: install-strip-libgui maybe-install-strip-libgui
+maybe-install-strip-libgui:
+@if libgui
+maybe-install-strip-libgui: install-strip-libgui
+
+install-strip-libgui: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libgui && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif libgui
 
@@ -29784,6 +30522,21 @@ install-libiberty: installdirs
 
 @endif libiberty
 
+.PHONY: install-strip-libiberty maybe-install-strip-libiberty
+maybe-install-strip-libiberty:
+@if libiberty
+maybe-install-strip-libiberty: install-strip-libiberty
+
+install-strip-libiberty: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libiberty && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif libiberty
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-libiberty info-libiberty
@@ -30190,6 +30943,15 @@ install-libiconv:
 
 @endif libiconv
 
+.PHONY: install-strip-libiconv maybe-install-strip-libiconv
+maybe-install-strip-libiconv:
+@if libiconv
+maybe-install-strip-libiconv: install-strip-libiconv
+
+install-strip-libiconv:
+
+@endif libiconv
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-libiconv info-libiconv
@@ -30561,6 +31323,21 @@ install-libtool: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/libtool && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif libtool
+
+.PHONY: install-strip-libtool maybe-install-strip-libtool
+maybe-install-strip-libtool:
+@if libtool
+maybe-install-strip-libtool: install-strip-libtool
+
+install-strip-libtool: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libtool && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif libtool
 
@@ -30989,6 +31766,21 @@ install-m4: installdirs
 
 @endif m4
 
+.PHONY: install-strip-m4 maybe-install-strip-m4
+maybe-install-strip-m4:
+@if m4
+maybe-install-strip-m4: install-strip-m4
+
+install-strip-m4: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/m4 && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif m4
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-m4 info-m4
@@ -31414,6 +32206,21 @@ install-make: installdirs
 
 @endif make
 
+.PHONY: install-strip-make maybe-install-strip-make
+maybe-install-strip-make:
+@if make
+maybe-install-strip-make: install-strip-make
+
+install-strip-make: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/make && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif make
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-make info-make
@@ -31830,6 +32637,21 @@ install-mmalloc: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/mmalloc && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif mmalloc
+
+.PHONY: install-strip-mmalloc maybe-install-strip-mmalloc
+maybe-install-strip-mmalloc:
+@if mmalloc
+maybe-install-strip-mmalloc: install-strip-mmalloc
+
+install-strip-mmalloc: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/mmalloc && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif mmalloc
 
@@ -32258,6 +33080,21 @@ install-patch: installdirs
 
 @endif patch
 
+.PHONY: install-strip-patch maybe-install-strip-patch
+maybe-install-strip-patch:
+@if patch
+maybe-install-strip-patch: install-strip-patch
+
+install-strip-patch: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/patch && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif patch
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-patch info-patch
@@ -32680,6 +33517,21 @@ install-perl: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/perl && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif perl
+
+.PHONY: install-strip-perl maybe-install-strip-perl
+maybe-install-strip-perl:
+@if perl
+maybe-install-strip-perl: install-strip-perl
+
+install-strip-perl: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/perl && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif perl
 
@@ -33108,6 +33960,21 @@ install-prms: installdirs
 
 @endif prms
 
+.PHONY: install-strip-prms maybe-install-strip-prms
+maybe-install-strip-prms:
+@if prms
+maybe-install-strip-prms: install-strip-prms
+
+install-strip-prms: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/prms && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif prms
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-prms info-prms
@@ -33530,6 +34397,21 @@ install-rcs: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/rcs && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif rcs
+
+.PHONY: install-strip-rcs maybe-install-strip-rcs
+maybe-install-strip-rcs:
+@if rcs
+maybe-install-strip-rcs: install-strip-rcs
+
+install-strip-rcs: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/rcs && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif rcs
 
@@ -33958,6 +34840,21 @@ install-readline: installdirs
 
 @endif readline
 
+.PHONY: install-strip-readline maybe-install-strip-readline
+maybe-install-strip-readline:
+@if readline
+maybe-install-strip-readline: install-strip-readline
+
+install-strip-readline: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/readline && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif readline
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-readline info-readline
@@ -34368,6 +35265,15 @@ maybe-install-release:
 maybe-install-release: install-release
 
 install-release:
+
+@endif release
+
+.PHONY: install-strip-release maybe-install-strip-release
+maybe-install-strip-release:
+@if release
+maybe-install-strip-release: install-strip-release
+
+install-strip-release:
 
 @endif release
 
@@ -34796,6 +35702,21 @@ install-recode: installdirs
 
 @endif recode
 
+.PHONY: install-strip-recode maybe-install-strip-recode
+maybe-install-strip-recode:
+@if recode
+maybe-install-strip-recode: install-strip-recode
+
+install-strip-recode: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/recode && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif recode
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-recode info-recode
@@ -35218,6 +36139,21 @@ install-sed: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/sed && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif sed
+
+.PHONY: install-strip-sed maybe-install-strip-sed
+maybe-install-strip-sed:
+@if sed
+maybe-install-strip-sed: install-strip-sed
+
+install-strip-sed: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/sed && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif sed
 
@@ -35646,6 +36582,21 @@ install-send-pr: installdirs
 
 @endif send-pr
 
+.PHONY: install-strip-send-pr maybe-install-strip-send-pr
+maybe-install-strip-send-pr:
+@if send-pr
+maybe-install-strip-send-pr: install-strip-send-pr
+
+install-strip-send-pr: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/send-pr && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif send-pr
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-send-pr info-send-pr
@@ -36068,6 +37019,21 @@ install-shellutils: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/shellutils && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif shellutils
+
+.PHONY: install-strip-shellutils maybe-install-strip-shellutils
+maybe-install-strip-shellutils:
+@if shellutils
+maybe-install-strip-shellutils: install-strip-shellutils
+
+install-strip-shellutils: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/shellutils && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif shellutils
 
@@ -36496,6 +37462,21 @@ install-sid: installdirs
 
 @endif sid
 
+.PHONY: install-strip-sid maybe-install-strip-sid
+maybe-install-strip-sid:
+@if sid
+maybe-install-strip-sid: install-strip-sid
+
+install-strip-sid: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/sid && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif sid
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-sid info-sid
@@ -36918,6 +37899,21 @@ install-sim: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/sim && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif sim
+
+.PHONY: install-strip-sim maybe-install-strip-sim
+maybe-install-strip-sim:
+@if sim
+maybe-install-strip-sim: install-strip-sim
+
+install-strip-sim: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif sim
 
@@ -37346,6 +38342,21 @@ install-tar: installdirs
 
 @endif tar
 
+.PHONY: install-strip-tar maybe-install-strip-tar
+maybe-install-strip-tar:
+@if tar
+maybe-install-strip-tar: install-strip-tar
+
+install-strip-tar: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/tar && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif tar
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-tar info-tar
@@ -37762,6 +38773,15 @@ maybe-install-texinfo:
 maybe-install-texinfo: install-texinfo
 
 install-texinfo:
+
+@endif texinfo
+
+.PHONY: install-strip-texinfo maybe-install-strip-texinfo
+maybe-install-strip-texinfo:
+@if texinfo
+maybe-install-strip-texinfo: install-strip-texinfo
+
+install-strip-texinfo:
 
 @endif texinfo
 
@@ -38190,6 +39210,21 @@ install-textutils: installdirs
 
 @endif textutils
 
+.PHONY: install-strip-textutils maybe-install-strip-textutils
+maybe-install-strip-textutils:
+@if textutils
+maybe-install-strip-textutils: install-strip-textutils
+
+install-strip-textutils: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/textutils && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif textutils
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-textutils info-textutils
@@ -38612,6 +39647,21 @@ install-time: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/time && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif time
+
+.PHONY: install-strip-time maybe-install-strip-time
+maybe-install-strip-time:
+@if time
+maybe-install-strip-time: install-strip-time
+
+install-strip-time: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/time && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif time
 
@@ -39040,6 +40090,21 @@ install-uudecode: installdirs
 
 @endif uudecode
 
+.PHONY: install-strip-uudecode maybe-install-strip-uudecode
+maybe-install-strip-uudecode:
+@if uudecode
+maybe-install-strip-uudecode: install-strip-uudecode
+
+install-strip-uudecode: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/uudecode && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif uudecode
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-uudecode info-uudecode
@@ -39462,6 +40527,21 @@ install-wdiff: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/wdiff && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif wdiff
+
+.PHONY: install-strip-wdiff maybe-install-strip-wdiff
+maybe-install-strip-wdiff:
+@if wdiff
+maybe-install-strip-wdiff: install-strip-wdiff
+
+install-strip-wdiff: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/wdiff && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif wdiff
 
@@ -39890,6 +40970,21 @@ install-zip: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/zip && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif zip
+
+.PHONY: install-strip-zip maybe-install-strip-zip
+maybe-install-strip-zip:
+@if zip
+maybe-install-strip-zip: install-strip-zip
+
+install-strip-zip: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/zip && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif zip
 
@@ -40760,6 +41855,15 @@ install-zlib:
 
 @endif zlib
 
+.PHONY: install-strip-zlib maybe-install-strip-zlib
+maybe-install-strip-zlib:
+@if zlib
+maybe-install-strip-zlib: install-strip-zlib
+
+install-strip-zlib:
+
+@endif zlib
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-zlib info-zlib
@@ -41169,6 +42273,21 @@ install-gdb: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/gdb && \
 	  $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) install)
+
+@endif gdb
+
+.PHONY: install-strip-gdb maybe-install-strip-gdb
+maybe-install-strip-gdb:
+@if gdb
+maybe-install-strip-gdb: install-strip-gdb
+
+install-strip-gdb: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) install-strip)
 
 @endif gdb
 
@@ -41597,6 +42716,21 @@ install-expect: installdirs
 
 @endif expect
 
+.PHONY: install-strip-expect maybe-install-strip-expect
+maybe-install-strip-expect:
+@if expect
+maybe-install-strip-expect: install-strip-expect
+
+install-strip-expect: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/expect && \
+	  $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) install-strip)
+
+@endif expect
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-expect info-expect
@@ -42019,6 +43153,21 @@ install-guile: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/guile && \
 	  $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) install)
+
+@endif guile
+
+.PHONY: install-strip-guile maybe-install-strip-guile
+maybe-install-strip-guile:
+@if guile
+maybe-install-strip-guile: install-strip-guile
+
+install-strip-guile: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/guile && \
+	  $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) install-strip)
 
 @endif guile
 
@@ -42447,6 +43596,21 @@ install-tk: installdirs
 
 @endif tk
 
+.PHONY: install-strip-tk maybe-install-strip-tk
+maybe-install-strip-tk:
+@if tk
+maybe-install-strip-tk: install-strip-tk
+
+install-strip-tk: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/tk && \
+	  $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) install-strip)
+
+@endif tk
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-tk info-tk
@@ -42866,6 +44030,21 @@ install-libtermcap: installdirs
 
 @endif libtermcap
 
+.PHONY: install-strip-libtermcap maybe-install-strip-libtermcap
+maybe-install-strip-libtermcap:
+@if libtermcap
+maybe-install-strip-libtermcap: install-strip-libtermcap
+
+install-strip-libtermcap: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libtermcap && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif libtermcap
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-libtermcap info-libtermcap
@@ -43222,6 +44401,21 @@ install-utils: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/utils && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif utils
+
+.PHONY: install-strip-utils maybe-install-strip-utils
+maybe-install-strip-utils:
+@if utils
+maybe-install-strip-utils: install-strip-utils
+
+install-strip-utils: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/utils && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif utils
 
@@ -43647,6 +44841,21 @@ install-gnattools: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/gnattools && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif gnattools
+
+.PHONY: install-strip-gnattools maybe-install-strip-gnattools
+maybe-install-strip-gnattools:
+@if gnattools
+maybe-install-strip-gnattools: install-strip-gnattools
+
+install-strip-gnattools: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gnattools && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif gnattools
 
@@ -44526,6 +45735,21 @@ install-lto-plugin: installdirs
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/lto-plugin && \
 	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif lto-plugin
+
+.PHONY: install-strip-lto-plugin maybe-install-strip-lto-plugin
+maybe-install-strip-lto-plugin:
+@if lto-plugin
+maybe-install-strip-lto-plugin: install-strip-lto-plugin
+
+install-strip-lto-plugin: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif lto-plugin
 
@@ -45489,6 +46713,21 @@ install-target-libstdc++-v3: installdirs
 
 @endif target-libstdc++-v3
 
+.PHONY: install-strip-target-libstdc++-v3 maybe-install-strip-target-libstdc++-v3
+maybe-install-strip-target-libstdc++-v3:
+@if target-libstdc++-v3
+maybe-install-strip-target-libstdc++-v3: install-strip-target-libstdc++-v3
+
+install-strip-target-libstdc++-v3: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(RAW_CXX_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libstdc++-v3 && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-libstdc++-v3
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-target-libstdc++-v3 info-target-libstdc++-v3
@@ -45928,6 +47167,21 @@ install-target-libmudflap: installdirs
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libmudflap && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libmudflap
+
+.PHONY: install-strip-target-libmudflap maybe-install-strip-target-libmudflap
+maybe-install-strip-target-libmudflap:
+@if target-libmudflap
+maybe-install-strip-target-libmudflap: install-strip-target-libmudflap
+
+install-strip-target-libmudflap: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libmudflap && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
 
 @endif target-libmudflap
 
@@ -46373,6 +47627,21 @@ install-target-libssp: installdirs
 
 @endif target-libssp
 
+.PHONY: install-strip-target-libssp maybe-install-strip-target-libssp
+maybe-install-strip-target-libssp:
+@if target-libssp
+maybe-install-strip-target-libssp: install-strip-target-libssp
+
+install-strip-target-libssp: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-libssp
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-target-libssp info-target-libssp
@@ -46812,6 +48081,21 @@ install-target-newlib: installdirs
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/newlib && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-newlib
+
+.PHONY: install-strip-target-newlib maybe-install-strip-target-newlib
+maybe-install-strip-target-newlib:
+@if target-newlib
+maybe-install-strip-target-newlib: install-strip-target-newlib
+
+install-strip-target-newlib: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/newlib && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
 
 @endif target-newlib
 
@@ -47778,6 +49062,21 @@ install-target-libgcc: installdirs
 
 @endif target-libgcc
 
+.PHONY: install-strip-target-libgcc maybe-install-strip-target-libgcc
+maybe-install-strip-target-libgcc:
+@if target-libgcc
+maybe-install-strip-target-libgcc: install-strip-target-libgcc
+
+install-strip-target-libgcc: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libgcc && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-libgcc
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-target-libgcc info-target-libgcc
@@ -48217,6 +49516,21 @@ install-target-libquadmath: installdirs
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libquadmath && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libquadmath
+
+.PHONY: install-strip-target-libquadmath maybe-install-strip-target-libquadmath
+maybe-install-strip-target-libquadmath:
+@if target-libquadmath
+maybe-install-strip-target-libquadmath: install-strip-target-libquadmath
+
+install-strip-target-libquadmath: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
 
 @endif target-libquadmath
 
@@ -48662,6 +49976,21 @@ install-target-libgfortran: installdirs
 
 @endif target-libgfortran
 
+.PHONY: install-strip-target-libgfortran maybe-install-strip-target-libgfortran
+maybe-install-strip-target-libgfortran:
+@if target-libgfortran
+maybe-install-strip-target-libgfortran: install-strip-target-libgfortran
+
+install-strip-target-libgfortran: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-libgfortran
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-target-libgfortran info-target-libgfortran
@@ -49101,6 +50430,21 @@ install-target-libobjc: installdirs
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libobjc && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libobjc
+
+.PHONY: install-strip-target-libobjc maybe-install-strip-target-libobjc
+maybe-install-strip-target-libobjc:
+@if target-libobjc
+maybe-install-strip-target-libobjc: install-strip-target-libobjc
+
+install-strip-target-libobjc: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libobjc && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
 
 @endif target-libobjc
 
@@ -49983,6 +51327,21 @@ install-target-libtermcap: installdirs
 
 @endif target-libtermcap
 
+.PHONY: install-strip-target-libtermcap maybe-install-strip-target-libtermcap
+maybe-install-strip-target-libtermcap:
+@if target-libtermcap
+maybe-install-strip-target-libtermcap: install-strip-target-libtermcap
+
+install-strip-target-libtermcap: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libtermcap && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-libtermcap
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-target-libtermcap info-target-libtermcap
@@ -50362,6 +51721,21 @@ install-target-winsup: installdirs
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/winsup && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-winsup
+
+.PHONY: install-strip-target-winsup maybe-install-strip-target-winsup
+maybe-install-strip-target-winsup:
+@if target-winsup
+maybe-install-strip-target-winsup: install-strip-target-winsup
+
+install-strip-target-winsup: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/winsup && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
 
 @endif target-winsup
 
@@ -50799,6 +52173,21 @@ install-target-libgloss: installdirs
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libgloss && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libgloss
+
+.PHONY: install-strip-target-libgloss maybe-install-strip-target-libgloss
+maybe-install-strip-target-libgloss:
+@if target-libgloss
+maybe-install-strip-target-libgloss: install-strip-target-libgloss
+
+install-strip-target-libgloss: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libgloss && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
 
 @endif target-libgloss
 
@@ -51244,6 +52633,21 @@ install-target-libiberty: installdirs
 
 @endif target-libiberty
 
+.PHONY: install-strip-target-libiberty maybe-install-strip-target-libiberty
+maybe-install-strip-target-libiberty:
+@if target-libiberty
+maybe-install-strip-target-libiberty: install-strip-target-libiberty
+
+install-strip-target-libiberty: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libiberty && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-libiberty
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-target-libiberty info-target-libiberty
@@ -51686,6 +53090,21 @@ install-target-gperf: installdirs
 
 @endif target-gperf
 
+.PHONY: install-strip-target-gperf maybe-install-strip-target-gperf
+maybe-install-strip-target-gperf:
+@if target-gperf
+maybe-install-strip-target-gperf: install-strip-target-gperf
+
+install-strip-target-gperf: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/gperf && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-gperf
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-target-gperf info-target-gperf
@@ -52115,6 +53534,16 @@ maybe-install-target-examples: install-target-examples
 
 # Dummy target for uninstallable.
 install-target-examples:
+
+@endif target-examples
+
+.PHONY: install-strip-target-examples maybe-install-strip-target-examples
+maybe-install-strip-target-examples:
+@if target-examples
+maybe-install-strip-target-examples: install-strip-target-examples
+
+# Dummy target for uninstallable.
+install-strip-target-examples:
 
 @endif target-examples
 
@@ -52560,6 +53989,21 @@ install-target-libffi: installdirs
 
 @endif target-libffi
 
+.PHONY: install-strip-target-libffi maybe-install-strip-target-libffi
+maybe-install-strip-target-libffi:
+@if target-libffi
+maybe-install-strip-target-libffi: install-strip-target-libffi
+
+install-strip-target-libffi: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libffi && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-libffi
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-target-libffi info-target-libffi
@@ -52999,6 +54443,21 @@ install-target-libjava: installdirs
 	$(RAW_CXX_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libjava && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libjava
+
+.PHONY: install-strip-target-libjava maybe-install-strip-target-libjava
+maybe-install-strip-target-libjava:
+@if target-libjava
+maybe-install-strip-target-libjava: install-strip-target-libjava
+
+install-strip-target-libjava: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(RAW_CXX_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libjava && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
 
 @endif target-libjava
 
@@ -53444,6 +54903,21 @@ install-target-zlib: installdirs
 
 @endif target-zlib
 
+.PHONY: install-strip-target-zlib maybe-install-strip-target-zlib
+maybe-install-strip-target-zlib:
+@if target-zlib
+maybe-install-strip-target-zlib: install-strip-target-zlib
+
+install-strip-target-zlib: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/zlib && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-zlib
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-target-zlib info-target-zlib
@@ -53883,6 +55357,21 @@ install-target-boehm-gc: installdirs
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/boehm-gc && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-boehm-gc
+
+.PHONY: install-strip-target-boehm-gc maybe-install-strip-target-boehm-gc
+maybe-install-strip-target-boehm-gc:
+@if target-boehm-gc
+maybe-install-strip-target-boehm-gc: install-strip-target-boehm-gc
+
+install-strip-target-boehm-gc: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/boehm-gc && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
 
 @endif target-boehm-gc
 
@@ -54328,6 +55817,21 @@ install-target-qthreads: installdirs
 
 @endif target-qthreads
 
+.PHONY: install-strip-target-qthreads maybe-install-strip-target-qthreads
+maybe-install-strip-target-qthreads:
+@if target-qthreads
+maybe-install-strip-target-qthreads: install-strip-target-qthreads
+
+install-strip-target-qthreads: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/qthreads && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-qthreads
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-target-qthreads info-target-qthreads
@@ -54770,6 +56274,21 @@ install-target-rda: installdirs
 
 @endif target-rda
 
+.PHONY: install-strip-target-rda maybe-install-strip-target-rda
+maybe-install-strip-target-rda:
+@if target-rda
+maybe-install-strip-target-rda: install-strip-target-rda
+
+install-strip-target-rda: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/rda && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-rda
+
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-target-rda info-target-rda
@@ -55209,6 +56728,21 @@ install-target-libada: installdirs
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libada && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libada
+
+.PHONY: install-strip-target-libada maybe-install-strip-target-libada
+maybe-install-strip-target-libada:
+@if target-libada
+maybe-install-strip-target-libada: install-strip-target-libada
+
+install-strip-target-libada: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
 
 @endif target-libada
 
@@ -56177,6 +57711,21 @@ install-target-libgomp: installdirs
 	$(NORMAL_TARGET_EXPORTS) \
 	(cd $(TARGET_SUBDIR)/libgomp && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libgomp
+
+.PHONY: install-strip-target-libgomp maybe-install-strip-target-libgomp
+maybe-install-strip-target-libgomp:
+@if target-libgomp
+maybe-install-strip-target-libgomp: install-strip-target-libgomp
+
+install-strip-target-libgomp: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
 
 @endif target-libgomp
 
@@ -58882,6 +60431,7 @@ html-stage4-gcc: maybe-all-build-libiberty
 html-stageprofile-gcc: maybe-all-build-libiberty
 html-stagefeedback-gcc: maybe-all-build-libiberty
 install-gcc: maybe-install-fixincludes
+install-strip-gcc: maybe-install-strip-fixincludes
 configure-libcpp: configure-libiberty
 
 configure-stage1-libcpp: configure-stage1-libiberty
@@ -59094,7 +60644,9 @@ all-stage4-binutils: maybe-all-stage4-intl
 all-stageprofile-binutils: maybe-all-stageprofile-intl
 all-stagefeedback-binutils: maybe-all-stagefeedback-intl
 install-binutils: maybe-install-opcodes
+install-strip-binutils: maybe-install-strip-opcodes
 install-opcodes: maybe-install-bfd
+install-strip-opcodes: maybe-install-strip-bfd
 configure-gas: maybe-configure-intl
 
 configure-stage1-gas: maybe-configure-stage1-intl
@@ -59205,6 +60757,7 @@ all-stage4-ld: maybe-all-stage4-intl
 all-stageprofile-ld: maybe-all-stageprofile-intl
 all-stagefeedback-ld: maybe-all-stagefeedback-intl
 install-ld: maybe-install-gold
+install-strip-ld: maybe-install-strip-gold
 configure-gold: maybe-configure-intl
 
 configure-stage1-gold: maybe-configure-stage1-intl
@@ -59313,6 +60866,7 @@ configure-itcl: maybe-configure-tk
 all-itcl: maybe-all-tcl
 all-itcl: maybe-all-tk
 install-itcl: maybe-install-tcl
+install-strip-itcl: maybe-install-strip-tcl
 configure-tk: maybe-configure-tcl
 all-tk: maybe-all-tcl
 all-sid: maybe-all-libiberty
@@ -59321,7 +60875,9 @@ all-sid: maybe-all-opcodes
 all-sid: maybe-all-tcl
 all-sid: maybe-all-tk
 install-sid: maybe-install-tcl
+install-strip-sid: maybe-install-strip-tcl
 install-sid: maybe-install-tk
+install-strip-sid: maybe-install-strip-tk
 configure-sim: maybe-configure-intl
 all-sim: maybe-all-intl
 all-sim: maybe-all-libiberty

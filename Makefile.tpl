@@ -889,6 +889,26 @@ install.all: install-no-fixedincludes
 install-no-fixedincludes: installdirs install-host-nogcc \
 	install-target gcc-no-fixedincludes
 
+.PHONY: install-strip
+install-strip:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) installdirs install-strip-host install-strip-target
+
+.PHONY: install-strip-host
+install-strip-host: [+
+  FOR host_modules +] \
+    maybe-install-strip-[+module+][+
+  ENDFOR host_modules +]
+
+.PHONY: install-strip-target
+install-strip-target: [+
+  FOR target_modules +] \
+    maybe-install-strip-target-[+module+][+
+  ENDFOR target_modules +]
+
+
 ### other supporting targets
 
 MAKEDIRS= \
@@ -1174,6 +1194,23 @@ install-[+module+]: installdirs
 [+ ENDIF no_install +]
 @endif [+module+]
 
+.PHONY: install-strip-[+module+] maybe-install-strip-[+module+]
+maybe-install-strip-[+module+]:
+@if [+module+]
+maybe-install-strip-[+module+]: install-strip-[+module+]
+[+ IF no_install +]
+install-strip-[+module+]:
+[+ ELSE install +]
+install-strip-[+module+]: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/[+module+] && \
+	  $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] install-strip)
+[+ ENDIF no_install +]
+@endif [+module+]
+
 # Other targets (info, dvi, pdf, etc.)
 [+ FOR recursive_targets +]
 .PHONY: maybe-[+make_target+]-[+module+] [+make_target+]-[+module+]
@@ -1283,6 +1320,28 @@ ELSE normal_cxx +]
 ENDIF raw_cxx +]
 	(cd $(TARGET_SUBDIR)/[+module+] && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS) [+extra_make_flags+] install)
+[+ ENDIF no_install +]
+@endif target-[+module+]
+
+.PHONY: install-strip-target-[+module+] maybe-install-strip-target-[+module+]
+maybe-install-strip-target-[+module+]:
+@if target-[+module+]
+maybe-install-strip-target-[+module+]: install-strip-target-[+module+]
+[+ IF no_install +]
+# Dummy target for uninstallable.
+install-strip-target-[+module+]:
+[+ ELSE install +]
+install-strip-target-[+module+]: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \[+
+IF raw_cxx +]
+	$(RAW_CXX_TARGET_EXPORTS) \[+
+ELSE normal_cxx +]
+	$(NORMAL_TARGET_EXPORTS) \[+
+ENDIF raw_cxx +]
+	(cd $(TARGET_SUBDIR)/[+module+] && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS) [+extra_make_flags+] install-strip)
 [+ ENDIF no_install +]
 @endif target-[+module+]
 

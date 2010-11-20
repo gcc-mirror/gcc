@@ -92,7 +92,7 @@ SHLIB_LINK = $(LN_S) -f $(SHLIB_MAP) $(SHLIB_MAP).def && \
 # libgcc.mk.  We want this delayed until actual install time.
 SHLIB_INSTALL = \
 	$$(mkinstalldirs) $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL); \
-	$(INSTALL_PROGRAM) $(SHLIB_DIR)/$(SHLIB_SONAME) \
+	$(INSTALL) $(SHLIB_DIR)/$(SHLIB_SONAME) \
 	  $$(DESTDIR)$$(bindir)/$(SHLIB_SONAME); \
 	$(INSTALL_DATA) $(SHLIB_DIR)/$(SHLIB_IMPLIB) \
 	  $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_IMPLIB)

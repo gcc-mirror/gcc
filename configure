@@ -13812,7 +13812,7 @@ else
 
   if test $ok = yes; then
     # An in-tree tool is available and we can use it
-    STRIP_FOR_TARGET='$$r/$(HOST_SUBDIR)/binutils/strip'
+    STRIP_FOR_TARGET='$$r/$(HOST_SUBDIR)/binutils/strip-new'
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: just compiled" >&5
 $as_echo "just compiled" >&6; }
   elif expr "x$STRIP_FOR_TARGET" : "x/" > /dev/null; then
