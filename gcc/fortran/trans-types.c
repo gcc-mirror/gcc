@@ -919,8 +919,6 @@ gfc_init_types (void)
   gfc_max_array_element_size
     = build_int_cst_wide (long_unsigned_type_node, lo, hi);
 
-  size_type_node = gfc_array_index_type;
-
   boolean_type_node = gfc_get_logical_type (gfc_default_logical_kind);
   boolean_true_node = build_int_cst (boolean_type_node, 1);
   boolean_false_node = build_int_cst (boolean_type_node, 0);
