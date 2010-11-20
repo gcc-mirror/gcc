@@ -1,3 +1,7 @@
+2010-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/sparc-align-1.c: New test.
+
 2010-11-20  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/16189

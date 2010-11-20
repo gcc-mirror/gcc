@@ -1,3 +1,10 @@
+2010-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/31100
+	* config/sparc/sparc.h (ASM_OUTPUT_ALIGN_WITH_NOP): Move to...
+	* config/sparc/sol2.h (ASM_OUTPUT_ALIGN_WITH_NOP): ...here.
+	* config/sparc/sol2-gas.h (ASM_OUTPUT_ALIGN_WITH_NOP): Undefine.
+
 2010-11-20  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (ld_plugin_symbol_resolution_names): New.

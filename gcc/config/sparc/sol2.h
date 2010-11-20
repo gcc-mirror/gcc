@@ -177,6 +177,13 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
+/* This is how to output an assembler line that says to advance
+   the location counter to a multiple of 2**LOG bytes using the
+   NOP instruction as padding.  */
+#define ASM_OUTPUT_ALIGN_WITH_NOP(FILE,LOG)   \
+  if ((LOG) != 0)                             \
+    fprintf (FILE, "\t.align %d,0x1000000\n", (1<<(LOG)))
+
 /* Use Solaris ELF section syntax.  */
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION sparc_solaris_elf_asm_named_section
