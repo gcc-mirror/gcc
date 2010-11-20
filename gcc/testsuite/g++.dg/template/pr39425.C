@@ -15,4 +15,4 @@ class a {
 
   static const unsigned int value = _rec < 1 >::size;
 
-}		// { dg-error "unqualified-id" }
+} // { dg-error "after class definition" }
