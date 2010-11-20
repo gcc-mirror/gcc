@@ -582,15 +582,10 @@ gfc_init_decl_processing (void)
      only use it for actual characters, not for INTEGER(1). Also, we
      want double_type_node to actually have double precision.  */
   build_common_tree_nodes (false);
-  /* x86_64 mingw32 has a sizetype of "unsigned long long", most other hosts
-     have a sizetype of "unsigned long". Therefore choose the correct size
-     in mostly target independent way.  */
-  if (TYPE_MODE (long_unsigned_type_node) == ptr_mode)
-    set_sizetype (long_unsigned_type_node);
-  else if (TYPE_MODE (long_long_unsigned_type_node) == ptr_mode)
-    set_sizetype (long_long_unsigned_type_node);
-  else
-    set_sizetype (long_unsigned_type_node);
+
+  size_type_node = gfc_build_uint_type (POINTER_SIZE);
+  set_sizetype (size_type_node);
+
   build_common_tree_nodes_2 (0);
   void_list_node = build_tree_list (NULL_TREE, void_type_node);
 

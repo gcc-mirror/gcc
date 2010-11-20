@@ -1,3 +1,10 @@
+2010-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* f95-lang.c (gfc_init_decl_processing): Set size_type_node as
+	unsigned int of pointer size and set sizetype based on that.
+	* trans-types.c (gfc_init_types): Don't set size_type_node to an
+	unsigned type.
+
 2010-11-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* f95-lang.c (gfc_be_parse_file): Take no arguments.
