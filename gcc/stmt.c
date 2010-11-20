@@ -2122,19 +2122,21 @@ struct case_bit_test
 static
 bool lshift_cheap_p (void)
 {
-  static bool init = false;
-  static bool cheap = true;
+  static bool init[2] = {false, false};
+  static bool cheap[2] = {true, true};
 
-  if (!init)
+  bool speed_p = optimize_insn_for_speed_p ();
+
+  if (!init[speed_p])
     {
       rtx reg = gen_rtx_REG (word_mode, 10000);
       int cost = rtx_cost (gen_rtx_ASHIFT (word_mode, const1_rtx, reg), SET,
-      			   optimize_insn_for_speed_p ());
-      cheap = cost < COSTS_N_INSNS (3);
-      init = true;
+      			   speed_p);
+      cheap[speed_p] = cost < COSTS_N_INSNS (3);
+      init[speed_p] = true;
     }
 
-  return cheap;
+  return cheap[speed_p];
 }
 
 /* Comparison function for qsort to order bit tests by decreasing
