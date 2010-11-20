@@ -157,7 +157,7 @@
 	
 2010-11-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	Fixed using the Objective-C 2.0 syntax with self and super.
+	Fixed using the Objective-C 2.0 dot-syntax with self and super.
 	* objc-act.c (OBJC_LOOKUP_NO_INSTANCE_METHODS_OF_ROOT_CLASS): New.
 	(maybe_make_artificial_property_decl): Added 'implementation'
 	argument.  Use OBJC_LOOKUP_NO_INSTANCE_METHODS_OF_ROOT_CLASS when
