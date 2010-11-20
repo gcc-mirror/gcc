@@ -241,6 +241,9 @@ dump_varpool_node (FILE *f, struct varpool_node *node)
     fprintf (f, " output");
   if (node->externally_visible)
     fprintf (f, " externally_visible");
+  if (node->resolution != LDPR_UNKNOWN)
+    fprintf (f, " %s",
+ 	     ld_plugin_symbol_resolution_names[(int)node->resolution]);
   if (node->in_other_partition)
     fprintf (f, " in_other_partition");
   else if (node->used_from_other_partition)
