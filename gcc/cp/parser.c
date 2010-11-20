@@ -502,15 +502,25 @@ cp_lexer_token_at (cp_lexer *lexer ATTRIBUTE_UNUSED, cp_token_position pos)
   return pos;
 }
 
+static inline void
+cp_lexer_set_token_position (cp_lexer *lexer, cp_token_position pos)
+{
+  lexer->next_token = cp_lexer_token_at (lexer, pos);
+}
+
+static inline cp_token_position
+cp_lexer_previous_token_position (cp_lexer *lexer)
+{
+  if (lexer->next_token == &eof_token)
+    return lexer->last_token - 1;
+  else
+    return cp_lexer_token_position (lexer, true);
+}
+
 static inline cp_token *
 cp_lexer_previous_token (cp_lexer *lexer)
 {
-  cp_token_position tp;
-
-  if (lexer->next_token == &eof_token)
-    tp = lexer->last_token - 1;
-  else
-    tp = cp_lexer_token_position (lexer, true);
+  cp_token_position tp = cp_lexer_previous_token_position (lexer);
 
   return cp_lexer_token_at (lexer, tp);
 }
@@ -16860,6 +16870,100 @@ cp_parser_class_specifier (cp_parser* parser)
     type = finish_struct (type, attributes);
   if (nested_name_specifier_p)
     pop_inner_scope (old_scope, scope);
+
+  /* We've finished a type definition.  Check for the common syntax
+     error of forgetting a semicolon after the definition.  We need to
+     be careful, as we can't just check for not-a-semicolon and be done
+     with it; the user might have typed:
+
+     class X { } c = ...;
+     class X { } *p = ...;
+
+     and so forth.  Instead, enumerate all the possible tokens that
+     might follow this production; if we don't see one of them, then
+     complain and silently insert the semicolon.  */
+  {
+    cp_token *token = cp_lexer_peek_token (parser->lexer);
+    bool want_semicolon = true;
+
+    switch (token->type)
+      {
+      case CPP_NAME:
+      case CPP_SEMICOLON:
+      case CPP_MULT:
+      case CPP_AND:
+      case CPP_OPEN_PAREN:
+      case CPP_CLOSE_PAREN:
+      case CPP_COMMA:
+        want_semicolon = false;
+        break;
+
+        /* While it's legal for type qualifiers and storage class
+           specifiers to follow type definitions in the grammar, only
+           compiler testsuites contain code like that.  Assume that if
+           we see such code, then what we're really seeing is a case
+           like:
+
+           class X { }
+           const <type> var = ...;
+
+           or
+
+           class Y { }
+           static <type> func (...) ...
+
+           i.e. the qualifier or specifier applies to the next
+           declaration.  To do so, however, we need to look ahead one
+           more token to see if *that* token is a type specifier.
+
+	   This code could be improved to handle:
+
+	   class Z { }
+	   static const <type> var = ...;  */
+      case CPP_KEYWORD:
+	if (keyword_is_storage_class_specifier (token->keyword)
+	    || keyword_is_type_qualifier (token->keyword))
+	  {
+	    cp_token *lookahead = cp_lexer_peek_nth_token (parser->lexer, 2);
+
+	    if (lookahead->type == CPP_KEYWORD
+		&& !keyword_begins_type_specifier (lookahead->keyword))
+	      want_semicolon = false;
+	    else if (lookahead->type == CPP_NAME)
+	      /* Handling user-defined types here would be nice, but
+		 very tricky.  */
+	      want_semicolon = false;
+	  }
+	break;
+      default:
+	break;
+      }
+
+    if (want_semicolon)
+      {
+	cp_token_position prev
+	  = cp_lexer_previous_token_position (parser->lexer);
+	cp_token *prev_token = cp_lexer_token_at (parser->lexer, prev);
+	location_t loc = prev_token->location;
+
+	if (CLASSTYPE_DECLARED_CLASS (type))
+	  error_at (loc, "expected %<;%> after class definition");
+	else if (TREE_CODE (type) == RECORD_TYPE)
+	  error_at (loc, "expected %<;%> after struct definition");
+	else if (TREE_CODE (type) == UNION_TYPE)
+	  error_at (loc, "expected %<;%> after union definition");
+	else
+	  gcc_unreachable ();
+
+	/* Unget one token and smash it to look as though we encountered
+	   a semicolon in the input stream.  */
+	cp_lexer_set_token_position (parser->lexer, prev);
+	token = cp_lexer_peek_token (parser->lexer);
+	token->type = CPP_SEMICOLON;
+	token->keyword = RID_MAX;
+      }
+  }
+
   /* If this class is not itself within the scope of another class,
      then we need to parse the bodies of all of the queued function
      definitions.  Note that the queued functions defined in a class

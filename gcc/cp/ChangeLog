@@ -1,3 +1,14 @@
+2010-11-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/16189
+	PR c++/36888
+	PR c++/45331
+	* parser.c (cp_lexer_set_token_position): New function.
+	(cp_lexer_previous_token_position): New function.
+	(cp_lexer_previous_token): Call it.
+	(cp_parser_class_specifier): Try to gracefully handle a missing
+	semicolon.
+
 2010-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/46538

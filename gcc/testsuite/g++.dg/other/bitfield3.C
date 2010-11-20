@@ -3,13 +3,15 @@
 
 template<int> struct A
 {
-  struct {} : 2;	// { dg-error "with non-integral type" }
+  // multiple errors below: missing semicolon, no anonymous structs, etc.
+  struct {} : 2;	// { dg-error "" }
 };
 
 template<int> struct B
 {
   int a;
-  struct {} : 2;	// { dg-error "with non-integral type" }
+  // multiple errors below: missing semicolon, no anonymous structs, etc.
+  struct {} : 2;	// { dg-error "" }
   int b;
 };
 

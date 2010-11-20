@@ -6,13 +6,13 @@ struct Factorial
   enum { nValue = nFactor * Factorial<nFactor - 1>::nValue }; // { dg-error "depth exceeds maximum" } 
   // { dg-message "recursively instantiated" "" { target *-*-* } 6 } 
   // { dg-error "incomplete type" "" { target *-*-* } 6 } 
-} 
+} // { dg-error "expected ';' after" }
 
-  template<> // { dg-error "expected" } 
+  template<>
   struct Factorial<0>
   {
     enum { nValue = 1 };
-  }
+  };
 
     static const unsigned int FACTOR = 20;
 
