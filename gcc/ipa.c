@@ -588,6 +588,56 @@ ipa_discover_readonly_nonaddressable_vars (void)
     fprintf (dump_file, "\n");
 }
 
+/* Return true when there is a reference to node and it is not vtable.  */
+static bool
+cgraph_address_taken_from_non_vtable_p (struct cgraph_node *node)
+{
+  int i;
+  struct ipa_ref *ref;
+  for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list, i, ref); i++)
+    {
+      struct varpool_node *node;
+      if (ref->refered_type == IPA_REF_CGRAPH)
+	return true;
+      node = ipa_ref_varpool_node (ref);
+      if (!DECL_VIRTUAL_P (node->decl))
+	return true;
+    }
+  return false;
+}
+
+/* COMDAT functions must be shared only if they have address taken,
+   otherwise we can produce our own private implementation with
+   -fwhole-program.  
+   Return true when turning COMDAT functoin static can not lead to wrong
+   code when the resulting object links with a library defining same COMDAT.
+
+   Virtual functions do have their addresses taken from the vtables,
+   but in C++ there is no way to compare their addresses for equality.  */
+
+bool
+cgraph_comdat_can_be_unshared_p (struct cgraph_node *node)
+{
+  if ((cgraph_address_taken_from_non_vtable_p (node)
+       && !DECL_VIRTUAL_P (node->decl))
+      || !node->analyzed)
+    return false;
+  if (node->same_comdat_group)
+    {
+      struct cgraph_node *next;
+
+      /* If more than one function is in the same COMDAT group, it must
+         be shared even if just one function in the comdat group has
+         address taken.  */
+      for (next = node->same_comdat_group;
+	   next != node; next = next->same_comdat_group)
+	if (cgraph_address_taken_from_non_vtable_p (node)
+	    && !DECL_VIRTUAL_P (next->decl))
+	  return false;
+    }
+  return true;
+}
+
 /* Return true when function NODE should be considered externally visible.  */
 
 static bool
@@ -613,6 +663,15 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool 
   if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (node->decl)))
     return true;
 
+  /* When doing LTO or whole program, we can bring COMDAT functoins static.
+     This improves code quality and we know we will duplicate them at most twice
+     (in the case that we are not using plugin and link with object file
+      implementing same COMDAT)  */
+  if ((in_lto_p || whole_program)
+      && DECL_COMDAT (node->decl)
+      && cgraph_comdat_can_be_unshared_p (node))
+    return false;
+
   /* See if we have linker information about symbol not being used or
      if we need to make guess based on the declaration.
 
@@ -635,27 +694,6 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool 
     ;
   else if (!whole_program)
     return true;
-  /* COMDAT functions must be shared only if they have address taken,
-     otherwise we can produce our own private implementation with
-     -fwhole-program.  */
-  else if (DECL_COMDAT (node->decl))
-    {
-      if (node->address_taken || !node->analyzed)
-	return true;
-      if (node->same_comdat_group)
-	{
-	  struct cgraph_node *next;
-
-	  /* If more than one function is in the same COMDAT group, it must
-	     be shared even if just one function in the comdat group has
-	     address taken.  */
-	  for (next = node->same_comdat_group;
-	       next != node;
-	       next = next->same_comdat_group)
-	    if (next->address_taken || !next->analyzed)
-	      return true;
-	}
-    }
 
   if (MAIN_NAME_P (DECL_NAME (node->decl)))
     return true;
@@ -699,6 +737,16 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
     if (alias->resolution != LDPR_PREVAILING_DEF_IRONLY)
       break;
   if (!alias && vnode->resolution == LDPR_PREVAILING_DEF_IRONLY)
+    return false;
+
+  /* As a special case, the COMDAT virutal tables can be unshared.
+     In LTO mode turn vtables into static variables.  The variable is readonly,
+     so this does not enable more optimization, but referring static var
+     is faster for dynamic linking.  Also this match logic hidding vtables
+     from LTO symbol tables.  */
+  if ((in_lto_p || flag_whole_program)
+      && !vnode->force_output
+      && DECL_COMDAT (vnode->decl) && DECL_VIRTUAL_P (vnode->decl))
     return false;
 
   /* When doing link time optimizations, hidden symbols become local.  */

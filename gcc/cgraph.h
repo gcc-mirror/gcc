@@ -56,6 +56,7 @@ enum availability
 struct lto_file_decl_data;
 
 extern const char * const cgraph_availability_names[];
+extern const char * const ld_plugin_symbol_resolution_names[];
 
 /* Function inlining information.  */
 
@@ -695,6 +696,7 @@ void varpool_node_set_remove (varpool_node_set, struct varpool_node *);
 void dump_varpool_node_set (FILE *, varpool_node_set);
 void debug_varpool_node_set (varpool_node_set);
 void ipa_discover_readonly_nonaddressable_vars (void);
+bool cgraph_comdat_can_be_unshared_p (struct cgraph_node *);
 
 /* In predict.c  */
 bool cgraph_maybe_hot_edge_p (struct cgraph_edge *e);

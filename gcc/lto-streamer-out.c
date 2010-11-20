@@ -2492,7 +2492,7 @@ produce_symtab (struct output_block *ob,
       if (DECL_EXTERNAL (node->decl))
 	continue;
       if (DECL_COMDAT (node->decl)
-	  && cgraph_can_remove_if_no_direct_calls_p (node))
+	  && cgraph_comdat_can_be_unshared_p (node))
 	continue;
       if (node->alias || node->global.inlined_to)
 	continue;
@@ -2506,7 +2506,7 @@ produce_symtab (struct output_block *ob,
       if (!DECL_EXTERNAL (node->decl))
 	continue;
       if (DECL_COMDAT (node->decl)
-	  && cgraph_can_remove_if_no_direct_calls_p (node))
+	  && cgraph_comdat_can_be_unshared_p (node))
 	continue;
       if (node->alias || node->global.inlined_to)
 	continue;
@@ -2521,6 +2521,14 @@ produce_symtab (struct output_block *ob,
       vnode = lto_varpool_encoder_deref (varpool_encoder, i);
       if (DECL_EXTERNAL (vnode->decl))
 	continue;
+      /* COMDAT virtual tables can be unshared.  Do not declare them
+	 in the LTO symbol table to prevent linker from forcing them
+	 into the output. */
+      if (DECL_COMDAT (vnode->decl)
+	  && !vnode->force_output
+	  && vnode->finalized 
+	  && DECL_VIRTUAL_P (vnode->decl))
+	continue;
       if (vnode->alias)
 	continue;
       write_symbol (cache, &stream, vnode->decl, seen, false);
@@ -2531,6 +2539,11 @@ produce_symtab (struct output_block *ob,
     {
       vnode = lto_varpool_encoder_deref (varpool_encoder, i);
       if (!DECL_EXTERNAL (vnode->decl))
+	continue;
+      if (DECL_COMDAT (vnode->decl)
+	  && !vnode->force_output
+	  && vnode->finalized 
+	  && DECL_VIRTUAL_P (vnode->decl))
 	continue;
       if (vnode->alias)
 	continue;
