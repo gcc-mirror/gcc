@@ -149,11 +149,9 @@ extern const struct real_format pdp11_d_format;
    reg 5	= fp;  not necessarily! 
 */
 
-/* don't let them touch fp regs for the time being !*/
-
 #define FIXED_REGISTERS  \
 {0, 0, 0, 0, 0, 0, 1, 1, \
- 0, 0, 0, 0, 0, 0     }
+ 0, 0, 0, 0, 0, 0, 1, 1 }
 
 
 
@@ -167,7 +165,7 @@ extern const struct real_format pdp11_d_format;
 /* don't know about fp */
 #define CALL_USED_REGISTERS  \
 {1, 1, 0, 0, 0, 0, 1, 1, \
- 0, 0, 0, 0, 0, 0 }
+ 0, 0, 0, 0, 0, 0, 1, 1 }
 
 
 /* Make sure everything's fine if we *don't* have an FPU.
@@ -183,7 +181,7 @@ extern const struct real_format pdp11_d_format;
   if (!TARGET_FPU)				\
     { 						\
       COPY_HARD_REG_SET (x, reg_class_contents[(int)FPU_REGS]); \
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ ) \
+      for (i = R0_REGNUM; i < FIRST_PSEUDO_REGISTER; i++ ) \
        if (TEST_HARD_REG_BIT (x, i)) 		\
 	fixed_regs[i] = call_used_regs[i] = 1; 	\
     } 						\
@@ -238,9 +236,6 @@ extern const struct real_format pdp11_d_format;
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
-
-/* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM FRAME_POINTER_REGNUM
 
 /* Register in which static-chain is passed to a function.  */
 /* ??? - i don't want to give up a reg for this! */
@@ -298,19 +293,14 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS {{0}, {0x00aa}, {0x00ff}, {0x0f00}, {0x3000}, {0x3f00}, {0x3fff}}
+#define REG_CLASS_CONTENTS {{0}, {0x00aa}, {0xc0ff}, {0x0f00}, {0x3000}, {0x3f00}, {0xffff}}
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO) 		\
-((REGNO) >= AC0_REGNUM ? \
- ((REGNO) <= AC3_REGNUM ? LOAD_FPU_REGS : \
-  NO_LOAD_FPU_REGS) :                     \
- (((REGNO) & 1) ? MUL_REGS : GENERAL_REGS))
-
+#define REGNO_REG_CLASS(REGNO) pdp11_regno_reg_class (REGNO)
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS GENERAL_REGS
@@ -369,13 +359,8 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
    stack */
 extern int current_first_parm_offset;
 
-/* Offset of first parameter from the argument pointer register value.  
-   For the pdp11, this is nonzero to account for the return address.
-	1 - return address
-	2 - frame pointer, if needed
-
-*/
-#define FIRST_PARM_OFFSET(FNDECL) ((frame_pointer_needed) ? 4 : 2)
+/* Offset of first parameter from the argument pointer register value.  */
+#define FIRST_PARM_OFFSET(FNDECL) 0
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
@@ -425,20 +410,28 @@ extern int may_call_alloca;
 
 #define EXIT_IGNORE_STACK	1
 
-#define INITIAL_FRAME_POINTER_OFFSET(DEPTH_VAR)	\
-{								\
-  int offset, regno;		      				\
-  offset = get_frame_size();					\
-  for (regno = 0; regno <= PC_REGNUM; regno++)			\
-    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])	\
-      offset += 2;						\
-  for (regno = AC0_REGNUM; regno <= AC5_REGNUM; regno++)	\
-    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])	\
-      offset += 8;						\
-  /* offset -= 2;   no fp on stack frame */			\
-  (DEPTH_VAR) = offset;						\
-}   
-    
+/* Definitions for register eliminations.
+
+   This is an array of structures.  Each structure initializes one pair
+   of eliminable registers.  The "from" register number is given first,
+   followed by "to".  Eliminations of the same "from" register are listed
+   in order of preference.
+
+   There are two registers that can always be eliminated on the pdp11.
+   The frame pointer and the arg pointer can be replaced by either the
+   hard frame pointer or to the stack pointer, depending upon the
+   circumstances.  The hard frame pointer is not used before reload and
+   so it is not eligible for elimination.  */
+
+#define ELIMINABLE_REGS					\
+{{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
+ { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},	\
+ { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
+ { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}	\
+
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
+  ((OFFSET) = pdp11_initial_elimination_offset ((FROM), (TO)))
+
 
 /* Addressing modes, and classification of registers for them.  */
 
@@ -454,10 +447,11 @@ extern int may_call_alloca;
    Since they use reg_renumber, they are safe only once reg_renumber
    has been allocated, which happens in local-alloc.c.  */
 
-#define REGNO_OK_FOR_INDEX_P(REGNO) \
-  ((REGNO) <= PC_REGNUM || (unsigned) reg_renumber[REGNO] <= PC_REGNUM)
 #define REGNO_OK_FOR_BASE_P(REGNO)  \
-  ((REGNO) <= PC_REGNUM || (unsigned) reg_renumber[REGNO] <= PC_REGNUM)
+  ((REGNO) <= PC_REGNUM || (unsigned) reg_renumber[REGNO] <= PC_REGNUM || \
+   (REGNO) == ARG_POINTER_REGNUM || (REGNO) == FRAME_POINTER_REGNUM)
+
+#define REGNO_OK_FOR_INDEX_P(REGNO) REGNO_OK_FOR_BASE_P (REGNO)
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.
@@ -743,7 +737,7 @@ extern struct rtx_def *cc0_reg_rtx;
 
 #define REGISTER_NAMES \
 {"r0", "r1", "r2", "r3", "r4", "r5", "sp", "pc",     \
- "ac0", "ac1", "ac2", "ac3", "ac4", "ac5" }
+ "ac0", "ac1", "ac2", "ac3", "ac4", "ac5", "fp", "ap" }
 
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl "

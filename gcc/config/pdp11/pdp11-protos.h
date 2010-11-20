@@ -35,6 +35,8 @@ extern bool pdp11_cannot_change_mode_class (enum machine_mode,
                                             enum machine_mode, enum reg_class);
 extern bool pdp11_secondary_memory_needed (reg_class_t, reg_class_t, 
 					   enum machine_mode);
+extern int pdp11_initial_elimination_offset (int, int);
+extern enum reg_class pdp11_regno_reg_class (int);
 
 #endif /* RTX_CODE */
 
