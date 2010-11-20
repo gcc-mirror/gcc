@@ -1,5 +1,20 @@
 2010-11-20  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (ld_plugin_symbol_resolution_names): New.
+	(dump_cgraph_node): Dump resolution.
+	* cgraph.h (ld_plugin_symbol_resolution_names): Declare.
+	(cgraph_comdat_can_be_unshared_p): Dclare.
+	* lto-streamer-out.c (produce_symtab): Use
+	cgraph_comdat_can_be_unshared_p.
+	* ipa.c (cgraph_address_taken_from_non_vtable_p): New function.
+	(cgraph_comdat_can_be_unshared_p): New function based on logic
+	in cgraph_externally_visible_p.
+	(cgraph_externally_visible_p): Use it.
+	(varpool_externally_visible_p): Virtual tables can be unshared.
+	* varpool.c (dump_varpool_node): Dump resolution.
+
+2010-11-20  Jan Hubicka  <jh@suse.cz>
+
 	* stmt.c (lshift_cheap_p): Support properly optimize_insn_for_speed_p.
 
 2010-11-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
