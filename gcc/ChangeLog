@@ -1,5 +1,9 @@
 2010-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/46561
+	* tree-parloops.c (try_create_redunction_list): Ignore debug stmts
+	when looking for immediate uses.
+
 	PR tree-optimization/45830
 	* stmt.c (expand_switch_using_bit_tests_p): New function.
 	(expand_case): Use it.
