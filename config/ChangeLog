@@ -2,6 +2,24 @@
 
 	* cloog.m4 (CLOOG_INIT_FLAGS): Fix spelling in option names.
 
+2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* cloog.m4: Add -enable-cloog-backend=(isl|ppl|ppl-legacy) to
+	define the cloog backend to use. Furthermore, only pass the ppllibs to
+	the configure checks, if necessary.
+
+2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* cloog.m4: Use CLooG predefined macro to check for CLooG PPL.
+
+2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* cloog.m4: Fix typo.  verison -> version.
+
+2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* cloog.m4: Pass ppl libraries to the CLooG version check.
+
 2010-11-11  Jan Hubicka  <jh@suse.cz>
 
 	* bootstrap-lto: Use -flto.

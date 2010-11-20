@@ -92,24 +92,18 @@
 
 2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
 
-	* config/cloog.m4: Add -enable-cloog-backend=(isl|ppl|ppl-legacy) to
-	define the cloog backend to use. Furthermore, only pass the ppllibs to
-	the configure checks, if necessary.
 	* configure: Regenerate.
 
 2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
 
-	* config/cloog.m4: Use CLooG predefined macro to check for CLooG PPL.
-	* configure: regenerate
-
-2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
-
-	* config/cloog.m4: Fix typo.  verison -> version.
 	* configure: Regenerate.
 
 2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
 
-	* config/cloog.m4: Pass ppl libraries to the CLooG version check.
+	* configure: Regenerate.
+
+2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
+
 	* configure: Regenerate.
 
 2010-11-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
