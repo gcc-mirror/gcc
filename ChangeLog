@@ -1,5 +1,7 @@
 2010-11-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* Makefile.in: Regenerate.
+
 	PR other/46202
 	* configure.ac: Fix just-built in-tree STRIP name to be
 	binutils/strip-new.
