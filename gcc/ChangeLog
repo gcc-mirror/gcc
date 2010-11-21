@@ -1,3 +1,10 @@
+2010-11-21  Jan Hubicka  <jh@suse.cz>
+	    Dominique d'Humieres <dominiq@lps.ens.ft>
+
+	PR target/46510
+	* tree-emutls.c (get_emutls_init_templ_addr, new_emutls_decl): Do not
+	finalize external decls.
+
 2010-11-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/9468
