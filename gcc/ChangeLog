@@ -1,5 +1,10 @@
 2010-11-21  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (ia64_expand_builtin): Use the correct mode
+	for infq/huge_valq.
+
+2010-11-21  Richard Henderson  <rth@redhat.com>
+
 	PR rtl-optimization/46571
 	* gcse.c (hash_scan_set): Use next_nonnote_nondebug_insn.
 	(compute_hash_table_work): Use NONDEBUG_INSN_P.

@@ -10236,16 +10236,17 @@ ia64_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case IA64_BUILTIN_INFQ:
     case IA64_BUILTIN_HUGE_VALQ:
       {
+        enum machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
 	REAL_VALUE_TYPE inf;
 	rtx tmp;
 
 	real_inf (&inf);
-	tmp = CONST_DOUBLE_FROM_REAL_VALUE (inf, mode);
+	tmp = CONST_DOUBLE_FROM_REAL_VALUE (inf, target_mode);
 
-	tmp = validize_mem (force_const_mem (mode, tmp));
+	tmp = validize_mem (force_const_mem (target_mode, tmp));
 
 	if (target == 0)
-	  target = gen_reg_rtx (mode);
+	  target = gen_reg_rtx (target_mode);
 
 	emit_move_insn (target, tmp);
 	return target;
