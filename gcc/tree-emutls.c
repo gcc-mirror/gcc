@@ -257,7 +257,12 @@ get_emutls_init_templ_addr (tree decl)
 			targetm.emutls.tmpl_section);
     }
 
-  varpool_finalize_decl (to);
+  /* Create varpool node for the new variable and finalize it if it is
+     not external one.  */
+  if (DECL_EXTERNAL (to))
+    varpool_node (to);
+  else
+    varpool_finalize_decl (to);
   return build_fold_addr_expr (to);
 }
 
@@ -324,7 +329,12 @@ new_emutls_decl (tree decl)
       record_references_in_initializer (to, false);
     }
 
-  varpool_finalize_decl (to);
+  /* Create varpool node for the new variable and finalize it if it is
+     not external one.  */
+  if (DECL_EXTERNAL (to))
+    varpool_node (to);
+  else
+    varpool_finalize_decl (to);
   return to;
 }
 
