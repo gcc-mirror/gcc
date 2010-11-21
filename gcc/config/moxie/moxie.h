@@ -285,6 +285,21 @@ enum reg_class
    pointer registers are already assumed to be used as needed.  */
 #define EPILOGUE_USES(R) (R == MOXIE_R5)
 
+/* A C expression whose value is RTL representing the location of the
+   incoming return address at the beginning of any function, before
+   the prologue.  */
+#define INCOMING_RETURN_ADDR_RTX					\
+  gen_frame_mem (Pmode,							\
+		 plus_constant (stack_pointer_rtx, UNITS_PER_WORD))
+
+/* Describe how we implement __builtin_eh_return.  */
+#define EH_RETURN_DATA_REGNO(N)	((N) < 4 ? (N+2) : INVALID_REGNUM)
+
+/* Store the return handler into the call frame.  */
+#define EH_RETURN_HANDLER_RTX						\
+  gen_frame_mem (Pmode,							\
+		 plus_constant (frame_pointer_rtx, UNITS_PER_WORD))
+
 /* Storage Layout */
 
 #define BITS_BIG_ENDIAN 0
