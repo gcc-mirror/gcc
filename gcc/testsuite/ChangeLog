@@ -1,3 +1,8 @@
+2010-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46533
+	* gcc.dg/inline-2.c: Do not scan for "jsr" on alpha*-*-*  targets.
+
 2010-11-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* g++.dg/cpp/_Pragma1.C: Test for all non-Solaris targets.
@@ -52,7 +57,7 @@
 	* obj-c++.dg/attributes/class-attribute-2.mm: Same change.
 	* objc.dg/fobjc-std-1.m: Updated.
 	* obj-c++.dg/fobjc-std-1.mm: Updated.
-	
+
 2010-11-19  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/46077
