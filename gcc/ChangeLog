@@ -1,3 +1,9 @@
+2010-11-21  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-optimization/46571
+	* gcse.c (hash_scan_set): Use next_nonnote_nondebug_insn.
+	(compute_hash_table_work): Use NONDEBUG_INSN_P.
+
 2010-11-21  Paul Koning  <ni1d@arrl.net>
 
 	* config/mips/pdp11.md (negsi2): Fix wrong code.
