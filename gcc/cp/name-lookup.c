@@ -3239,7 +3239,6 @@ handle_namespace_attrs (tree ns, tree attributes)
       tree name = TREE_PURPOSE (d);
       tree args = TREE_VALUE (d);
 
-#ifdef HANDLE_PRAGMA_VISIBILITY
       if (is_attribute_p ("visibility", name))
 	{
 	  tree x = args ? TREE_VALUE (args) : NULL_TREE;
@@ -3260,7 +3259,6 @@ handle_namespace_attrs (tree ns, tree attributes)
 	  saw_vis = true;
 	}
       else
-#endif
 	{
 	  warning (OPT_Wattributes, "%qD attribute directive ignored",
 		   name);

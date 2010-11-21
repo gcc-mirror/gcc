@@ -1,5 +1,5 @@
 /* NetBSD/arm a.out version.
-   Copyright (C) 1993, 1994, 1997, 1998, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 1993, 1994, 1997, 1998, 2003, 2004, 2005, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Mark Brinicombe (amb@physig.ph.kcl.ac.uk)
 
@@ -70,8 +70,6 @@
 
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
-
-#define HANDLE_SYSV_PRAGMA 1
 
 /* We don't have any limit on the length as out debugger is GDB.  */
 #undef DBX_CONTIN_LENGTH

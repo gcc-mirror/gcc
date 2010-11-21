@@ -1,3 +1,59 @@
+2010-11-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/tm.texi.in (HANDLE_SYSV_PRAGMA,
+	HANDLE_PRAGMA_PACK_PUSH_POP): Remove.
+	(HANDLE_PRAGMA_PACK_WITH_EXPANSION): Don't refer to
+	HANDLE_SYSV_PRAGMA.
+	* doc/tm.texi: Regenerate.
+	* system.h (HANDLE_PRAGMA_PACK_PUSH_POP, HANDLE_SYSV_PRAGMA,
+	HANDLE_PRAGMA_WEAK): Poison.
+	* config/alpha/elf.h (HANDLE_SYSV_PRAGMA): Don't define.
+	* config/alpha/linux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't
+	define.
+	* config/alpha/osf5.h (HANDLE_SYSV_PRAGMA): Don't define.
+	* config/alpha/vms.h (HANDLE_SYSV_PRAGMA): Don't define.
+	* config/arm/arm.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+	* config/arm/netbsd.h (HANDLE_SYSV_PRAGMA): Don't define.
+	* config/cris/cris.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+	* config/darwin.h (HANDLE_SYSV_PRAGMA): Don't define.
+	(HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+	* config/elfos.h (HANDLE_SYSV_PRAGMA): Don't define.
+	* config/freebsd.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+	* config/frv/frv.h (HANDLE_SYSV_PRAGMA): Don't define.
+	* config/i386/cygming.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't
+	define.
+	* config/i386/djgpp.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+	* config/i386/i386-interix.h (HANDLE_SYSV_PRAGMA): Don't define.
+	(HANDLE_PRAGMA_WEAK): Don't undefine.
+	* config/i386/netware.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't
+	define.
+	* config/i386/vxworks.h (HANDLE_SYSV_PRAGMA): Don't define.
+	* config/ia64/hpux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+	* config/ia64/ia64.h (HANDLE_SYSV_PRAGMA): Don't define.
+	* config/interix.h (HANDLE_SYSV_PRAGMA): Don't define.
+	(HANDLE_PRAGMA_WEAK): Don't undefine.
+	* config/linux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+	* config/m32r/linux.h (HANDLE_SYSV_PRAGMA): Don't define.
+	(HANDLE_PRAGMA_PACK): Don't undefine.
+	* config/m32r/m32r.h (HANDLE_SYSV_PRAGMA): Don't undefine.
+	* config/mep/mep.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+	* config/mips/elf.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+	* config/mips/sde.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+	* config/mmix/mmix.h (HANDLE_SYSV_PRAGMA): Don't define.
+	* config/netbsd.h (HANDLE_SYSV_PRAGMA): Don't define.
+	(HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+	* config/openbsd.h (HANDLE_SYSV_PRAGMA): Don't define.
+	* config/pa/pa-hpux.h (HANDLE_SYSV_PRAGMA): Don't define.
+	(HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+	* config/rs6000/aix.h (HANDLE_SYSV_PRAGMA): Don't define.
+	* config/rs6000/sysv4.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't
+	define.
+	* config/rx/rx.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+	* config/score/elf.h (HANDLE_SYSV_PRAGMA): Don't define.
+	* config/spu/spu.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+	* config/stormy16/stormy16.h (HANDLE_SYSV_PRAGMA): Don't define.
+	* config/xtensa/elf.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
+
 2010-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/31100

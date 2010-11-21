@@ -69,8 +69,6 @@ along with GCC; see the file COPYING3.  If not see
 #define POINTER_SIZE 32
 #define POINTERS_EXTEND_UNSIGNED 0
 
-#define HANDLE_SYSV_PRAGMA 1
-
 #define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Ada Test CD40VRA */
 
 /* The maximum alignment 'malloc' honors.  */

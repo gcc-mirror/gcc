@@ -65,10 +65,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define PCC_BITFIELD_TYPE_MATTERS 1
 #endif
 
-/* Handle #pragma weak and #pragma pack.  */
-
-#define HANDLE_SYSV_PRAGMA 1
-
 /* All ELF targets can support DWARF-2.  */
 
 #define DWARF2_DEBUGGING_INFO 1

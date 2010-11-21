@@ -22,7 +22,6 @@
 - longlong.h?
 */
 
-#undef HANDLE_SYSV_PRAGMA
 #undef SIZE_TYPE
 #undef PTRDIFF_TYPE
 #undef WCHAR_TYPE

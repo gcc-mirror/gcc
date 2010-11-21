@@ -1,6 +1,6 @@
 /* Target definitions for GCC for Intel 80386 running Interix
-   Parts Copyright (C) 1991, 1999, 2000, 2002, 2003, 2004, 2007, 2008
-   Free Software Foundation, Inc.
+   Parts Copyright (C) 1991, 1999, 2000, 2002, 2003, 2004, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
 
    Parts:
      by Douglas B. Rupp (drupp@cs.washington.edu).
@@ -29,9 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #define DBX_DEBUGGING_INFO 1
 #define SDB_DEBUGGING_INFO 1
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-#define HANDLE_SYSV_PRAGMA 1
-#undef HANDLE_PRAGMA_WEAK  /* until the link format can handle it */
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
    and returns float values in the 387 and needs stack probes

@@ -512,8 +512,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define NO_IMPLICIT_EXTERN_C 1
 
-#define HANDLE_PRAGMA_PACK_PUSH_POP 1
-
 /* Canonicalize a comparison from one we don't have to one we do have.  */
 #define CANONICALIZE_COMPARISON(CODE,OP0,OP1) \
   do {                                                                    \

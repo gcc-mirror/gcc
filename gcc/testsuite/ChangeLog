@@ -1,3 +1,13 @@
+2010-11-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.dg/cpp/_Pragma1.C: Test for all non-Solaris targets.
+	* gcc.dg/cpp/_Pragma6.c: Test for all non-Solaris targets.
+	* gcc.dg/pack-test-1.c: Test for all non-default_packed targets.
+	* gcc.dg/pack-test-2.c: Test for all targets.
+	* gcc.dg/pragma-align.c: Test for all targets.
+	* gcc.dg/pragma-pack-4.c: Do not skip for AVR.
+	* gcc.dg/ucnid-10.c: Test for all targets.
+
 2010-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/sparc-align-1.c: New test.

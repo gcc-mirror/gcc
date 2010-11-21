@@ -1,6 +1,6 @@
 /* Verify diagnostics for extended identifiers refer to UCNs (in the C
    locale).  Test #pragma pack diagnostics.  */
-/* { dg-do compile { target *-*-linux* *-*-cygwin* powerpc*-*-eabi* } } */
+/* { dg-do compile } */
 /* { dg-options "-std=gnu99 -fextended-identifiers" } */
 
 #pragma pack(push)

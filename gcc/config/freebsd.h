@@ -45,9 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef  LIB_SPEC
 #define LIB_SPEC FBSD_LIB_SPEC
 
-/* Define this so we can compile MS code for use with WINE.  */
-#define HANDLE_PRAGMA_PACK_PUSH_POP 1
-
 /************************[  Target stuff  ]***********************************/
 
 /* All FreeBSD Architectures support the ELF object file format.  */

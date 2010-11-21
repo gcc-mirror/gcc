@@ -1,3 +1,10 @@
+2010-11-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* name-lookup.c (handle_namespace_attrs): Don't check
+	HANDLE_PRAGMA_VISIBILITY.
+	* parser.c (cp_parser_namespace_definition): Don't check
+	HANDLE_PRAGMA_VISIBILITY.
+
 2010-11-20  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/16189

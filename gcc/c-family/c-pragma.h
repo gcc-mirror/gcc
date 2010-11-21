@@ -1,6 +1,6 @@
 /* Pragma related interfaces.
    Copyright (C) 1995, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007, 2008  Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -75,26 +75,9 @@ typedef enum pragma_omp_clause {
 
 extern struct cpp_reader* parse_in;
 
-#define HANDLE_PRAGMA_WEAK SUPPORTS_WEAK
-
-#ifdef HANDLE_SYSV_PRAGMA
-/* We always support #pragma pack for SYSV pragmas.  */
-#ifndef HANDLE_PRAGMA_PACK
-#define HANDLE_PRAGMA_PACK 1
-#endif
-#endif /* HANDLE_SYSV_PRAGMA */
-
-
-#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
-/* If we are supporting #pragma pack(push... then we automatically
-   support #pragma pack(<n>)  */
-#define HANDLE_PRAGMA_PACK 1
-#endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
-
 /* It's safe to always leave visibility pragma enabled as if
    visibility is not supported on the host OS platform the
    statements are ignored.  */
-#define HANDLE_PRAGMA_VISIBILITY 1
 extern void push_visibility (const char *, int);
 extern bool pop_visibility (int);
 

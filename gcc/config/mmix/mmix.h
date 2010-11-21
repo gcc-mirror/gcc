@@ -887,8 +887,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 #define NO_IMPLICIT_EXTERN_C
 
-#define HANDLE_SYSV_PRAGMA 1
-
 /* These are checked.  */
 #define DOLLARS_IN_IDENTIFIERS 0
 #define NO_DOLLAR_IN_LABEL
