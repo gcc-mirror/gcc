@@ -1,3 +1,7 @@
+2010-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/lto/20090303_0.C: Do not pass -fPIC on the SPARC.
+
 2010-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46533
