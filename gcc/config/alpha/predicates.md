@@ -266,8 +266,6 @@
 (define_predicate "direct_call_operand"
   (match_operand 0 "samegp_function_operand")
 {
-  tree op_decl, cfun_sec, op_sec;
-
   /* If profiling is implemented via linker tricks, we can't jump
      to the nogp alternate entry point.  Note that crtl->profile
      would not be correct, since that doesn't indicate if the target
@@ -291,21 +289,7 @@
   if (TARGET_SMALL_TEXT)
     return true;
 
-  /* Otherwise, a decl is "near" if it is defined in the same section.  */
-  if (flag_function_sections)
-    return false;
-
-  op_decl = SYMBOL_REF_DECL (op);
-  if (DECL_ONE_ONLY (current_function_decl)
-      || (op_decl && DECL_ONE_ONLY (op_decl)))
-    return false;
-
-  cfun_sec = DECL_SECTION_NAME (current_function_decl);
-  op_sec = op_decl ? DECL_SECTION_NAME (op_decl) : NULL;
-  return ((!cfun_sec && !op_sec)
-	  || (cfun_sec && op_sec
-	      && strcmp (TREE_STRING_POINTER (cfun_sec),
-		         TREE_STRING_POINTER (op_sec)) == 0));
+  return false;
 })
 
 ;; Return 1 if OP is a valid operand for the MEM of a CALL insn.

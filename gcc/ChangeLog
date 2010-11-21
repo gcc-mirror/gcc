@@ -1,3 +1,9 @@
+2010-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46533
+	* config/alpha/predicates.md (direct_call_operand): Return false
+	for !TARGET_SMALL_TEXT targets.
+
 2010-11-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/tm.texi.in (HANDLE_SYSV_PRAGMA,
@@ -8,8 +14,7 @@
 	* system.h (HANDLE_PRAGMA_PACK_PUSH_POP, HANDLE_SYSV_PRAGMA,
 	HANDLE_PRAGMA_WEAK): Poison.
 	* config/alpha/elf.h (HANDLE_SYSV_PRAGMA): Don't define.
-	* config/alpha/linux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't
-	define.
+	* config/alpha/linux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
 	* config/alpha/osf5.h (HANDLE_SYSV_PRAGMA): Don't define.
 	* config/alpha/vms.h (HANDLE_SYSV_PRAGMA): Don't define.
 	* config/arm/arm.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
@@ -20,13 +25,11 @@
 	* config/elfos.h (HANDLE_SYSV_PRAGMA): Don't define.
 	* config/freebsd.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
 	* config/frv/frv.h (HANDLE_SYSV_PRAGMA): Don't define.
-	* config/i386/cygming.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't
-	define.
+	* config/i386/cygming.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
 	* config/i386/djgpp.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
 	* config/i386/i386-interix.h (HANDLE_SYSV_PRAGMA): Don't define.
 	(HANDLE_PRAGMA_WEAK): Don't undefine.
-	* config/i386/netware.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't
-	define.
+	* config/i386/netware.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
 	* config/i386/vxworks.h (HANDLE_SYSV_PRAGMA): Don't define.
 	* config/ia64/hpux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
 	* config/ia64/ia64.h (HANDLE_SYSV_PRAGMA): Don't define.
@@ -46,8 +49,7 @@
 	* config/pa/pa-hpux.h (HANDLE_SYSV_PRAGMA): Don't define.
 	(HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
 	* config/rs6000/aix.h (HANDLE_SYSV_PRAGMA): Don't define.
-	* config/rs6000/sysv4.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't
-	define.
+	* config/rs6000/sysv4.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
 	* config/rx/rx.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
 	* config/score/elf.h (HANDLE_SYSV_PRAGMA): Don't define.
 	* config/spu/spu.h (HANDLE_PRAGMA_PACK_PUSH_POP): Don't define.
@@ -83,8 +85,7 @@
 2010-11-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR other/46202
-	* Makefile.in (install_sh, INSTALL_STRIP_PROGRAM): New
-	variables.
+	* Makefile.in (install_sh, INSTALL_STRIP_PROGRAM): New variables.
 	(AR_FOR_TARGET, RANLIB_FOR_TARGET, STRIP_FOR_TARGET): Fix
 	shell quoting.
 	(STRIP_FOR_TARGET): Look for in-tree strip under name strip-new.
@@ -100,18 +101,18 @@
 	* config/pdp11/pdp11.md (define_constants): Add register numbers.
 	* config/pdp11/pdp11.c (pdp11_regno_reg_class,
 	pdp11_sp_frame_offset, pdp11_initial_elimination_offset): New
-	functions. 
+	functions.
 	* config/pdp11/pdp11.h (FIXED_REGISTERS, CALL_USED_REGISTERS): Add
 	frame pointer and argument pointer pseudo-registers.
 	(ARG_POINTER_REGNUM): Define.
 	(REG_CLASS_CONTENTS, REGNO_REG_CLASS): Add frame pointer and
-	argument pointer. 
+	argument pointer.
 	(FIRST_PARM_OFFSET): Update for argument pointer.
 	(INITIAL_FRAME_POINTER_OFFSET): Delete.
 	(ELIMINABLE_REGS, INITIAL_ELIMINATION_OFFSET): New macros.
 	(REGNO_OK_FOR_BASE_P, REGNO_OK_FOR_INDEX_P, REGISTER_NAMES): Add
-	frame pointer and argument pointer. 
-	
+	frame pointer and argument pointer.
+
 2010-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46561
@@ -153,7 +154,7 @@
 2010-11-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* mode-switching.c (optimize_mode_switching): Use
-	FOR_BB_INSNS instead of open-coded for loop.
+	FOR_BB_INSNS instead of open-coded loop.
 	* cfgrtl.c (redirect_branch_edge): Ditto.
 
 2010-11-19  Joern Rennecke  <amylaar@spamcop.net>
