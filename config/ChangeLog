@@ -1,3 +1,7 @@
+2010-11-19  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* cloog.m4: Use AS_HELP_STRING and fix help formatting.
+
 2010-11-15  Andreas Schwab  <schwab@redhat.com>
 
 	* cloog.m4 (CLOOG_INIT_FLAGS): Fix spelling in option names.
