@@ -20,7 +20,7 @@ Boston, MA 02110-1301, USA.  */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#ifdef HAVE_PRCTL_SET_NAME
+#ifdef HAVE_SYS_PRCTL_H
 #include <sys/prctl.h>
 #endif
 #include "ansidecl.h"
@@ -39,7 +39,7 @@ but defined for compatibility with BSD.
 void
 setproctitle (const char *name ATTRIBUTE_UNUSED, ...)
 {
-#ifdef HAVE_PRCTL_SET_NAME
+#ifdef PR_SET_NAME
   /* On Linux this sets the top visible "comm", but not necessarily
      the name visible in ps. */
   prctl (PR_SET_NAME, name);

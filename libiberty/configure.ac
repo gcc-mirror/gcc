@@ -246,7 +246,7 @@ AC_SUBST_FILE(host_makefile_frag)
 # It's OK to check for header files.  Although the compiler may not be
 # able to link anything, it had better be able to at least compile
 # something.
-AC_CHECK_HEADERS(sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h process.h)
+AC_CHECK_HEADERS(sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h process.h sys/prctl.h)
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 
@@ -537,16 +537,6 @@ fi
 
 AC_SUBST(CHECK)
 AC_SUBST(target_header_dir)
-
-# check for prctl PR_SET_NAME
-AC_LINK_IFELSE([AC_LANG_SOURCE([[
-#include <sys/prctl.h>
-int main()
-{
-  return (prctl(PR_SET_NAME, "foo") == 0) ? 0 : 1;
-}
-]])], AC_DEFINE(HAVE_PRCTL_SET_NAME, 1,
-	[Define if you have prctl PR_SET_NAME]))
 
 case "${host}" in
   *-*-cygwin* | *-*-mingw*)

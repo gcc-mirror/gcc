@@ -4895,7 +4895,7 @@ host_makefile_frag=${frag}
 # It's OK to check for header files.  Although the compiler may not be
 # able to link anything, it had better be able to at least compile
 # something.
-for ac_header in sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h process.h
+for ac_header in sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h process.h sys/prctl.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_preproc "$LINENO" "$ac_header" "$as_ac_Header"
@@ -5718,28 +5718,6 @@ fi
 
 
 
-
-# check for prctl PR_SET_NAME
-if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <sys/prctl.h>
-int main()
-{
-  return (prctl(PR_SET_NAME, "foo") == 0) ? 0 : 1;
-}
-
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-
-$as_echo "#define HAVE_PRCTL_SET_NAME 1" >>confdefs.h
-
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
 
 case "${host}" in
   *-*-cygwin* | *-*-mingw*)
