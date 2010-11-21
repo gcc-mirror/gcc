@@ -451,7 +451,8 @@ yes)
   ;;
 no)
   # Make sure we get it printed in the list of not supported target libs.
-  noconfigdirs="$noconfigdirs ${libgcj}"
+  # Don't disable libffi, though, other languages use it.
+  noconfigdirs="$noconfigdirs `echo ${libgcj} | sed -e 's/target-libffi//'`"
   ;;
 esac
 
@@ -1765,6 +1766,9 @@ if test -d ${srcdir}/gcc; then
   missing_languages=`echo ",$enable_languages," | sed -e s/,all,/,/ -e s/,c,/,/ `
   potential_languages=,c,
 
+  enabled_target_libs=
+  disabled_target_libs=
+
   for lang_frag in ${srcdir}/gcc/*/config-lang.in .. ; do
     case ${lang_frag} in
       ..) ;;
@@ -1842,17 +1846,20 @@ if test -d ${srcdir}/gcc; then
 	case $add_this_lang in
 	  unsupported)
             # Remove language-dependent dirs.
-            eval noconfigdirs='"$noconfigdirs "'\"$target_libs $lang_dirs\"
+	    disabled_target_libs="$disabled_target_libs $target_libs"
+	    noconfigdirs="$noconfigdirs $lang_dirs"
 	    ;;
 	  no)
             # Remove language-dependent dirs; still show language as supported.
-            eval noconfigdirs='"$noconfigdirs "'\"$target_libs $lang_dirs\"
+	    disabled_target_libs="$disabled_target_libs $target_libs"
+	    noconfigdirs="$noconfigdirs $lang_dirs"
             potential_languages="${potential_languages}${language},"
 	    ;;
           yes)
 	    new_enable_languages="${new_enable_languages}${language},"
             potential_languages="${potential_languages}${language},"
 	    missing_languages=`echo "$missing_languages" | sed "s/,$language,/,/"`
+	    enabled_target_libs="$enabled_target_libs $target_libs"
 	    case "${boot_language}:,$enable_stage1_languages," in
 	      yes:* | *:*,$language,* | *:*,yes, | *:*,all,)
 		# Add to (comma-separated) list of stage 1 languages.
@@ -1869,6 +1876,17 @@ if test -d ${srcdir}/gcc; then
         ;;
     esac
   done
+
+  # Add target libraries which are only needed for disabled languages
+  # to noconfigdirs.
+  if test -n "$disabled_target_libs"; then
+    for dir in $disabled_target_libs; do
+      case " $enabled_target_libs " in
+      *" ${dir} "*) ;;
+      *) noconfigdirs="$noconfigdirs $dir" ;;
+      esac
+    done
+  fi
 
   AC_ARG_ENABLE(stage1-languages,
 [  --enable-stage1-languages@<:@=all@:>@   choose additional languages to build during
