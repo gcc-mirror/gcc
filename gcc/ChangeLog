@@ -1,3 +1,9 @@
+2010-11-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/9468
+	* configure.ac: Ignore --with-dwarf2 option on 32-bit hppa*-*-hpux*.
+	* configure: Rebuild.
+
 2010-11-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* system.h (strerror): Poison.
