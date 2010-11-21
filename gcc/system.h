@@ -684,6 +684,12 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
  #pragma GCC poison malloc realloc
 #endif
 
+/* The %m format should be used when GCC's main diagnostic functions
+   supporting %m are available, and xstrerror from libiberty
+   otherwise.  */
+#undef strerror
+ #pragma GCC poison strerror
+
 /* Old target macros that have moved to the target hooks structure.  */
  #pragma GCC poison ASM_OPEN_PAREN ASM_CLOSE_PAREN			\
 	FUNCTION_PROLOGUE FUNCTION_EPILOGUE				\
