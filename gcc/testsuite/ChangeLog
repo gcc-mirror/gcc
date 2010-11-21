@@ -1,3 +1,8 @@
+2010-11-21  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-optimization/46571
+	* gcc.dg/pr46571.c: New.
+
 2010-11-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/lto/20090303_0.C: Do not pass -fPIC on the SPARC.
