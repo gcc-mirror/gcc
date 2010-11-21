@@ -1,3 +1,8 @@
+2010-11-21  Paul Koning  <ni1d@arrl.net>
+
+	* config/mips/pdp11.c (pdp11_legitimate_address_p): New function.
+	* config/mips/pdp11.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+
 2010-11-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/mips/mips.c (machine_function): Rename load_label_length to
