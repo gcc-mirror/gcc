@@ -227,6 +227,9 @@ static const struct default_options pdp11_option_optimization_table[] =
 
 #undef  TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
 #define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS pdp11_preferred_output_reload_class
+
+#undef  TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P pdp11_legitimate_address_p
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -1706,6 +1709,115 @@ pdp11_secondary_memory_needed (reg_class_t c1, reg_class_t c2,
   return (fromfloat != tofloat);
 }
 
+/* TARGET_LEGITIMATE_ADDRESS_P recognizes an RTL expression
+   that is a valid memory address for an instruction.
+   The MODE argument is the machine mode for the MEM expression
+   that wants to use this address.
+
+*/
+
+static bool
+pdp11_legitimate_address_p (enum machine_mode mode,
+			    rtx operand, bool strict)
+{
+    rtx xfoob;
+
+    /* accept @#address */
+    if (CONSTANT_ADDRESS_P (operand))
+      return true;
+    
+    switch (GET_CODE (operand))
+      {
+      case REG:
+	/* accept (R0) */
+	return !strict || REGNO_OK_FOR_BASE_P (REGNO (operand));
+    
+      case PLUS:
+	/* accept X(R0) */
+	return GET_CODE (XEXP (operand, 0)) == REG
+	  && (!strict || REGNO_OK_FOR_BASE_P (REGNO (XEXP (operand, 0))))
+	  && CONSTANT_ADDRESS_P (XEXP (operand, 1));
+
+      case PRE_DEC:
+	/* accept -(R0) */
+	return GET_CODE (XEXP (operand, 0)) == REG
+	  && (!strict || REGNO_OK_FOR_BASE_P (REGNO (XEXP (operand, 0))));
+
+      case POST_INC:
+	/* accept (R0)+ */
+	return GET_CODE (XEXP (operand, 0)) == REG
+	  && (!strict || REGNO_OK_FOR_BASE_P (REGNO (XEXP (operand, 0))));
+
+      case PRE_MODIFY:
+	/* accept -(SP) -- which uses PRE_MODIFY for byte mode */
+	return GET_CODE (XEXP (operand, 0)) == REG
+	  && REGNO (XEXP (operand, 0)) == STACK_POINTER_REGNUM
+	  && GET_CODE ((xfoob = XEXP (operand, 1))) == PLUS
+	  && GET_CODE (XEXP (xfoob, 0)) == REG
+	  && REGNO (XEXP (xfoob, 0)) == STACK_POINTER_REGNUM
+	  && CONSTANT_P (XEXP (xfoob, 1))
+	  && INTVAL (XEXP (xfoob,1)) == -2;
+
+      case POST_MODIFY:
+	/* accept (SP)+ -- which uses POST_MODIFY for byte mode */
+	return GET_CODE (XEXP (operand, 0)) == REG
+	  && REGNO (XEXP (operand, 0)) == STACK_POINTER_REGNUM
+	  && GET_CODE ((xfoob = XEXP (operand, 1))) == PLUS
+	  && GET_CODE (XEXP (xfoob, 0)) == REG
+	  && REGNO (XEXP (xfoob, 0)) == STACK_POINTER_REGNUM
+	  && CONSTANT_P (XEXP (xfoob, 1))
+	  && INTVAL (XEXP (xfoob,1)) == 2;
+
+      case MEM:
+	/* handle another level of indirection ! */
+	xfoob = XEXP (operand, 0);
+
+	/* (MEM:xx (MEM:xx ())) is not valid for SI, DI and currently
+	   also forbidden for float, because we have to handle this 
+	   in output_move_double and/or output_move_quad() - we could
+	   do it, but currently it's not worth it!!! 
+	   now that DFmode cannot go into CPU register file, 
+	   maybe I should allow float ... 
+	   but then I have to handle memory-to-memory moves in movdf ??  */
+	if (GET_MODE_BITSIZE(mode) > 16)
+	  return false;
+
+	/* accept @address */
+	if (CONSTANT_ADDRESS_P (xfoob))
+	  return true;
+
+	switch (GET_CODE (xfoob))
+	  {
+	  case REG:
+	    /* accept @(R0) - which is @0(R0) */
+	    return !strict || REGNO_OK_FOR_BASE_P(REGNO (xfoob));
+
+	  case PLUS:
+	    /* accept @X(R0) */
+	    return GET_CODE (XEXP (xfoob, 0)) == REG
+	      && (!strict || REGNO_OK_FOR_BASE_P (REGNO (XEXP (xfoob, 0))))
+	      && CONSTANT_ADDRESS_P (XEXP (xfoob, 1));
+
+	  case PRE_DEC:
+	    /* accept @-(R0) */
+	    return GET_CODE (XEXP (xfoob, 0)) == REG
+	      && (!strict || REGNO_OK_FOR_BASE_P (REGNO (XEXP (xfoob, 0))));
+
+	  case POST_INC:
+	    /* accept @(R0)+ */
+	    return GET_CODE (XEXP (xfoob, 0)) == REG
+	      && (!strict || REGNO_OK_FOR_BASE_P (REGNO (XEXP (xfoob, 0))));
+
+	  default:
+	    /* anything else is invalid */
+	    return false;
+	  }
+
+      default:
+	/* anything else is invalid */
+	return false;
+      }
+}
 /* Return the class number of the smallest class containing
    reg number REGNO.  */
 enum reg_class
@@ -1919,7 +2031,7 @@ pdp11_libcall_value (enum machine_mode mode,
 static bool
 pdp11_function_value_regno_p (const unsigned int regno)
 {
-  return (regno == 0) || (TARGET_AC0 && (regno == 8));
+  return (regno == RETVAL_REGNUM) || (TARGET_AC0 && (regno == AC0_REGNUM));
 }
 
 /* Worker function for TARGET_TRAMPOLINE_INIT.
