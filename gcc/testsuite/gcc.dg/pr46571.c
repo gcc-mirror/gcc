@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fcompare-debug" } */
+/* { dg-options "-O2 -fcompare-debug -w" } */
 
 typedef union tree_node *tree;
 typedef unsigned int source_location;
