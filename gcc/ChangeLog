@@ -1,3 +1,11 @@
+2010-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/mips/mips.c (machine_function): Rename load_label_length to
+	load_label_num_insns.
+	(mips_load_label_length): Rename to...
+	(mips_load_label_num_insns): ...this.  Adjust to first renaming.
+	(mips_adjust_insn_length): Adjust to second renaming.  Fix thinko.
+
 2010-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46533
