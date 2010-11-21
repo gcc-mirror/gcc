@@ -1,3 +1,11 @@
+2010-11-21  Michael Matz  <matz@suse.de>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR driver/46516
+	* gfortranspec.c (lang_specific_driver,
+	lang_specific_pre_link): Load libgfortran.spec in
+	lang_specific_pre_link unless found in the -L path.
+
 2010-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* f95-lang.c (gfc_init_decl_processing): Set size_type_node as

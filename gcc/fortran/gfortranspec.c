@@ -75,6 +75,9 @@ static void append_arg (const struct cl_decoded_option *);
 static unsigned int g77_newargc;
 static struct cl_decoded_option *g77_new_decoded_options;
 
+/* The path to the spec file.  */
+char *spec_file = NULL;
+
 
 /* Return full path name of spec file if it is in DIR, or NULL if
    not.  */
@@ -222,9 +225,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   /* Whether we should link a static libgfortran. */
   int static_lib = 0; 
-
-  /* The path to the spec file.  */
-  char *spec_file = NULL;
 
   /* Whether we need to link statically.  */
   int static_linking = 0;
@@ -447,9 +447,10 @@ For more information about these matters, see the file named COPYING\n\n"));
 #endif
 
   /* Read the specs file corresponding to libgfortran.
-     If we didn't find the spec file on the -L path, then we hope it
-     is somewhere in the standard install areas.  */
-  append_option (OPT_specs_, spec_file == NULL ? SPEC_FILE : spec_file, 1);
+     If we didn't find the spec file on the -L path, we load it
+     via lang_specific_pre_link.  */
+  if (spec_file)
+    append_option (OPT_specs_, spec_file, 1);
 
   if (verbose && g77_new_decoded_options != g77_x_decoded_options)
     {
@@ -467,8 +468,13 @@ For more information about these matters, see the file named COPYING\n\n"));
 
 /* Called before linking.  Returns 0 on success and -1 on failure.  */
 int
-lang_specific_pre_link (void)	/* Not used for F77.  */
+lang_specific_pre_link (void)
 {
+  if (spec_file)
+    free (spec_file);
+  else
+    do_spec ("%:include(libgfortran.spec)");
+
   return 0;
 }
 
