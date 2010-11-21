@@ -1778,12 +1778,6 @@ do {									\
 
 #define FUNCTION_MODE Pmode
 
-/* Define this macro to handle System V style pragmas: #pragma pack and
-   #pragma weak.  Note, #pragma weak will only be supported if SUPPORT_WEAK is
-   defined.  */
-
-#define HANDLE_SYSV_PRAGMA 1
-
 /* A C expression for the maximum number of instructions to execute via
    conditional execution instructions instead of a branch.  A value of
    BRANCH_COST+1 is the default if the machine does not use

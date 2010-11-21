@@ -1,3 +1,12 @@
+2010-11-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-pragma.c: Remove conditionals on HANDLE_PRAGMA_PACK,
+	HANDLE_PRAGMA_PACK_PUSH_POP, HANDLE_PRAGMA_WEAK and
+	HANDLE_PRAGMA_VISIBILITY.
+	* c-pragma.h (HANDLE_PRAGMA_WEAK, HANDLE_PRAGMA_PACK,
+	HANDLE_PRAGMA_VISIBILITY): Don't define.
+	(HANDLE_SYSV_PRAGMA, HANDLE_PRAGMA_PACK_PUSH_POP): Don't test.
+
 2010-11-20  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/16189

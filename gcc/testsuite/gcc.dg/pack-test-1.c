@@ -1,7 +1,7 @@
 /* Test semantics of #pragma pack.
    Contributed by Mike Coleman <mcoleman2@kc.rr.com> */
 
-/* { dg-do compile { target { { *-*-linux* *-*-cygwin* powerpc*-*-eabi* } && { ! default_packed } } } } */
+/* { dg-do compile { target { ! default_packed } } } */
 
 /* Mainly we're just testing whether pushing and popping seem to be
    working correctly, and verifying the (alignment == 1) case, which

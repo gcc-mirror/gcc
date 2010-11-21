@@ -94,9 +94,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "long int"
 
-/* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
-#define HANDLE_PRAGMA_PACK_PUSH_POP 1
-
 /* Use standard ELF-style local labels (not '$' as on early Irix).  */
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX "."

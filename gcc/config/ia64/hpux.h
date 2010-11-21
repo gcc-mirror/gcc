@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Steve Ellcey <sje@cup.hp.com> and
                   Reva Cuthbertson <reva@cup.hp.com>
@@ -212,9 +212,6 @@ do {								\
 
 #undef NO_PROFILE_COUNTERS
 #define NO_PROFILE_COUNTERS 0
-
-#undef HANDLE_PRAGMA_PACK_PUSH_POP
-#define HANDLE_PRAGMA_PACK_PUSH_POP
 
 /* The HP-UX linker has a bug that causes calls from functions in
    .text.unlikely to functions in .text to cause a segfault.  Until

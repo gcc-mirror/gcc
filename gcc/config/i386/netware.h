@@ -1,6 +1,7 @@
 /* Core target definitions for GCC for Intel 80x86 running Netware.
    and using dwarf for the debugging format.
-   Copyright (C) 1993, 1994, 2004, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 2004, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
    Written by David V. Henkel-Wallace (gumby@cygnus.com)
 
@@ -103,9 +104,6 @@ do {									\
 
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n) (svr4_dbx_register_map[n])
-
-/* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
-#define HANDLE_PRAGMA_PACK_PUSH_POP
 
 /* Default structure packing is 1-byte. */
 #define TARGET_DEFAULT_PACK_STRUCT 1

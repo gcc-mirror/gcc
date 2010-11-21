@@ -268,9 +268,6 @@ __enable_execute_stack (void *addr)					\
 #define TARGET_ASM_OPEN_PAREN ""
 #define TARGET_ASM_CLOSE_PAREN ""
 
-/* Handle #pragma weak and #pragma pack.  */
-#define HANDLE_SYSV_PRAGMA 1
-
 /* Handle #pragma extern_prefix.  */
 #define TARGET_HANDLE_PRAGMA_EXTERN_PREFIX 1
 

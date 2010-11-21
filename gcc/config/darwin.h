@@ -869,11 +869,6 @@ enum machopic_addr_class {
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION darwin_asm_named_section
 
-/* Handle pragma weak and pragma pack.  */
-#define HANDLE_SYSV_PRAGMA 1
-
-#define HANDLE_PRAGMA_PACK_PUSH_POP 1
-
 #define DARWIN_REGISTER_TARGET_PRAGMAS()			\
   do {								\
     if (!flag_preprocess_only)					\

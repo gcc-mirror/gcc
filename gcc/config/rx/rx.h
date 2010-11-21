@@ -151,8 +151,6 @@ extern enum rx_cpu_types  rx_cpu_type;
 
 #define LEGITIMATE_CONSTANT_P(X) 	rx_is_legitimate_constant (X)
 
-#define HANDLE_PRAGMA_PACK_PUSH_POP	1
-
 #define HAVE_PRE_DECCREMENT		1
 #define HAVE_POST_INCREMENT		1
 

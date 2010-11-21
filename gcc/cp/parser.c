@@ -13838,10 +13838,8 @@ cp_parser_namespace_definition (cp_parser* parser)
   /* Parse the body of the namespace.  */
   cp_parser_namespace_body (parser);
 
-#ifdef HANDLE_PRAGMA_VISIBILITY
   if (has_visibility)
     pop_visibility (1);
-#endif
 
   /* Finish the namespace.  */
   pop_namespace ();

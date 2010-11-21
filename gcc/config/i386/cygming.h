@@ -178,9 +178,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef LONG_TYPE_SIZE
 #define LONG_TYPE_SIZE 32
 
-/* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
-#define HANDLE_PRAGMA_PACK_PUSH_POP 1
-
 union tree_node;
 #define TREE union tree_node *
 

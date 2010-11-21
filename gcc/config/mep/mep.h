@@ -804,8 +804,6 @@ typedef struct
 
 #define REGISTER_TARGET_PRAGMAS()	 mep_register_pragmas ()
 
-#define HANDLE_PRAGMA_PACK_PUSH_POP 1
-   
 /* If defined, a C expression to determine the base term of address X.
    This macro is used in only one place: `find_base_term' in alias.c.
 

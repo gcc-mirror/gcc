@@ -587,5 +587,3 @@ enum reg_class
 #define FUNCTION_MODE HImode
 
 #define NO_IMPLICIT_EXTERN_C
-
-#define HANDLE_SYSV_PRAGMA 1
