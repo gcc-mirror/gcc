@@ -76,7 +76,11 @@ static unsigned int g77_newargc;
 static struct cl_decoded_option *g77_new_decoded_options;
 
 /* The path to the spec file.  */
-char *spec_file = NULL;
+static char *spec_file = NULL;
+
+/* This will be NULL if we encounter a situation where we should not
+   link in the fortran libraries.  */
+static const char *library = NULL;
 
 
 /* Return full path name of spec file if it is in DIR, or NULL if
@@ -207,10 +211,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   unsigned int i;
   int verbose = 0;
 
-  /* This will be NULL if we encounter a situation where we should not
-     link in libf2c.  */
-  const char *library = FORTRAN_LIBRARY;
-
   /* 0 => -xnone in effect.
      1 => -xfoo in effect.  */
   int saw_speclang = 0;
@@ -232,6 +232,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* The number of input and output files in the incoming arg list.  */
   int n_infiles = 0;
   int n_outfiles = 0;
+
+  library = FORTRAN_LIBRARY;
 
 #if 0
   fprintf (stderr, "Incoming:");
@@ -472,7 +474,7 @@ lang_specific_pre_link (void)
 {
   if (spec_file)
     free (spec_file);
-  else
+  else if (library)
     do_spec ("%:include(libgfortran.spec)");
 
   return 0;
