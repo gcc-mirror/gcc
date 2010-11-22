@@ -1,5 +1,8 @@
 2010-11-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR testsuite/46230
+	* gcc.dg/vect/pr46009.c: Add vect_int_mult target selector.
+
 	* gcc.dg/vect: Do not include <stdio.h> in testcases.
 	* gcc.dg/vect/costmodel/ppc: Likewise.
 
