@@ -1,3 +1,9 @@
+2010-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/43057
+	* fold-const.c (pedantic_non_lvalue_loc): Unshare x before
+	setting location.
+
 2010-11-21  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-optimization/46571
