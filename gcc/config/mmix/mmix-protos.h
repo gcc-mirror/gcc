@@ -45,7 +45,6 @@ extern void mmix_asm_output_skip (FILE *, int);
 extern void mmix_asm_output_align (FILE *, int);
 extern int mmix_shiftable_wyde_value (unsigned HOST_WIDEST_INT);
 extern void mmix_output_register_setting (FILE *, int, HOST_WIDEST_INT, int);
-extern void mmix_conditional_register_usage (void);
 extern int mmix_opposite_regno (int, int);
 extern int mmix_local_regno (int);
 extern unsigned mmix_dbx_register_number (unsigned);

@@ -101,6 +101,7 @@ static rtx m32r_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 static void m32r_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				       const_tree, bool);
 static bool m32r_can_eliminate (const int, const int);
+static void m32r_conditional_register_usage (void);
 static void m32r_trampoline_init (rtx, tree, rtx);
 
 /* M32R specific attributes.  */
@@ -203,6 +204,9 @@ static const struct default_options m32r_option_optimization_table[] =
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE m32r_can_eliminate
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE m32r_conditional_register_usage
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT m32r_trampoline_init
@@ -2836,4 +2840,14 @@ m32r_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 		       LCT_NORMAL, VOIDmode, 3, XEXP (m_tramp, 0), Pmode,
 		       gen_int_mode (TRAMPOLINE_SIZE, SImode), SImode,
 		       GEN_INT (3), SImode);
+}
+
+static void
+m32r_conditional_register_usage (void)
+{
+  if (flag_pic)
+    {
+      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+    }
 }

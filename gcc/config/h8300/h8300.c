@@ -1919,6 +1919,15 @@ h8300_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
   return (to == STACK_POINTER_REGNUM ? ! frame_pointer_needed : true);
 }
 
+/* Conditionally modify register usage based on target flags.  */
+
+static void
+h8300_conditional_register_usage (void)
+{
+  if (!TARGET_MAC)
+    fixed_regs[MAC_REG] = call_used_regs[MAC_REG] = 1;
+}
+
 /* Function for INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET).
    Define the offset between two registers, one to be eliminated, and
    the other its replacement, at the start of a routine.  */
@@ -5953,6 +5962,9 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE h8300_can_eliminate
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE h8300_conditional_register_usage
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT h8300_trampoline_init

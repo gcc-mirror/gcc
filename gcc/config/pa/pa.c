@@ -181,6 +181,7 @@ static rtx pa_delegitimize_address (rtx);
 static bool pa_print_operand_punct_valid_p (unsigned char);
 static rtx pa_internal_arg_pointer (void);
 static bool pa_can_eliminate (const int, const int);
+static void pa_conditional_register_usage (void);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -386,6 +387,8 @@ static const struct default_options pa_option_optimization_table[] =
 #define TARGET_INTERNAL_ARG_POINTER pa_internal_arg_pointer
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE pa_can_eliminate
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE pa_conditional_register_usage
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -10174,6 +10177,27 @@ pa_initial_elimination_offset (int from, int to)
     gcc_unreachable ();
 
   return offset;
+}
+
+static void
+pa_conditional_register_usage (void)
+{
+  int i;
+
+  if (!TARGET_64BIT && !TARGET_PA_11)
+    {
+      for (i = 56; i <= FP_REG_LAST; i++)
+	fixed_regs[i] = call_used_regs[i] = 1;
+      for (i = 33; i < 56; i += 2)
+	fixed_regs[i] = call_used_regs[i] = 1;
+    }
+  if (TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)
+    {
+      for (i = FP_REG_FIRST; i <= FP_REG_LAST; i++)
+	fixed_regs[i] = call_used_regs[i] = 1;
+    }
+  if (flag_pic)
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
 }
 
 #include "gt-pa.h"

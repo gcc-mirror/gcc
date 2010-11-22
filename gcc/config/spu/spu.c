@@ -231,6 +231,7 @@ static section *spu_select_section (tree, int, unsigned HOST_WIDE_INT);
 static void spu_unique_section (tree, int);
 static rtx spu_expand_load (rtx, rtx, rtx, int);
 static void spu_trampoline_init (rtx, tree, rtx);
+static void spu_conditional_register_usage (void);
 
 /* Which instruction set architecture to use.  */
 int spu_arch;
@@ -488,6 +489,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO  sjlj_except_unwind_info
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE spu_conditional_register_usage
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4285,7 +4289,7 @@ spu_setup_incoming_varargs (CUMULATIVE_ARGS * cum, enum machine_mode mode,
     }
 }
 
-void
+static void
 spu_conditional_register_usage (void)
 {
   if (flag_pic)

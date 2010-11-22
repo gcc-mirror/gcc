@@ -405,6 +405,7 @@ static reg_class_t frv_secondary_reload		(bool, rtx, reg_class_t,
 						 secondary_reload_info *);
 static bool frv_frame_pointer_required		(void);
 static bool frv_can_eliminate			(const int, const int);
+static void frv_conditional_register_usage	(void);
 static void frv_trampoline_init			(rtx, tree, rtx);
 static bool frv_class_likely_spilled_p 		(reg_class_t);
 
@@ -534,6 +535,9 @@ static const struct default_options frv_option_optimization_table[] =
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE frv_can_eliminate
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE frv_conditional_register_usage
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT frv_trampoline_init
@@ -903,7 +907,7 @@ frv_string_begins_with (const_tree name, const char *prefix)
    switches, then GCC will automatically avoid using these registers when the
    target switches are opposed to them.)  */
 
-void
+static void
 frv_conditional_register_usage (void)
 {
   int i;

@@ -101,6 +101,7 @@ static void arc_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 static unsigned int arc_function_arg_boundary (enum machine_mode, const_tree);
 static void arc_trampoline_init (rtx, tree, rtx);
 static void arc_option_override (void);
+static void arc_conditional_register_usage (void);
 
 
 /* ARC specific attributs.  */
@@ -170,6 +171,9 @@ static const struct attribute_spec arc_attribute_table[] =
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT arc_trampoline_init
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE arc_conditional_register_usage
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2473,3 +2477,16 @@ arc_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 
   emit_insn (gen_flush_icache (m_tramp));
 }
+
+/* Worker function for TARGET_CONDITIONAL_REGISTER_USAGE.  */
+
+static void
+arc_conditional_register_usage (void)
+{
+  if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
+    {
+      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+    }
+}
+

@@ -1906,8 +1906,8 @@ preserve the entire contents of a register across a call.
 @findex global_regs
 @findex reg_names
 @findex reg_class_contents
-@defmac CONDITIONAL_REGISTER_USAGE
-Zero or more C statements that may conditionally modify five variables
+@hook TARGET_CONDITIONAL_REGISTER_USAGE
+This hook may conditionally modify five variables
 @code{fixed_regs}, @code{call_used_regs}, @code{global_regs},
 @code{reg_names}, and @code{reg_class_contents}, to take into account
 any dependence of these register sets on target flags.  The first three
@@ -1921,8 +1921,6 @@ from @code{FIXED_REGISTERS}, @code{CALL_USED_REGISTERS},
 @code{global_regs} has been cleared, and any @option{-ffixed-@var{reg}},
 @option{-fcall-used-@var{reg}} and @option{-fcall-saved-@var{reg}}
 command options have been applied.
-
-You need not define this macro if it has no work to do.
 
 @cindex disabling certain registers
 @cindex controlling register usage
@@ -1938,7 +1936,7 @@ is called with a letter for a class that shouldn't be used.
 of the insn patterns whose constraints permit this class are
 controlled by target switches, then GCC will automatically avoid using
 these registers when the target switches are opposed to them.)
-@end defmac
+@end deftypefn
 
 @defmac INCOMING_REGNO (@var{out})
 Define this macro if the target machine has register windows.  This C

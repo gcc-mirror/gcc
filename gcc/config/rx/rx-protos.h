@@ -25,7 +25,6 @@
 #define Mmode 	enum machine_mode
 #define Fargs	CUMULATIVE_ARGS
 
-extern void		rx_conditional_register_usage (void);
 extern void		rx_expand_prologue (void);
 extern int		rx_initial_elimination_offset (int, int);
 

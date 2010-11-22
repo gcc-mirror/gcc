@@ -96,6 +96,7 @@ static void m68hc11_init_libfuncs (void);
 static rtx m68hc11_struct_value_rtx (tree, int);
 static bool m68hc11_return_in_memory (const_tree, const_tree);
 static bool m68hc11_can_eliminate (const int, const int);
+static void m68hc11_conditional_register_usage (void);
 static void m68hc11_trampoline_init (rtx, tree, rtx);
 
 static rtx m68hc11_function_arg (CUMULATIVE_ARGS*, enum machine_mode,
@@ -302,6 +303,9 @@ static const struct attribute_spec m68hc11_attribute_table[] =
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE m68hc11_can_eliminate
 
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE m68hc11_conditional_register_usage
+
 #undef TARGET_CLASS_LIKELY_SPILLED_P
 #define TARGET_CLASS_LIKELY_SPILLED_P m68hc11_class_likely_spilled_p
 
@@ -382,7 +386,10 @@ m68hc11_option_override (void)
 }
 
 
-void
+/* The soft-registers are disabled or enabled according to the
+  -msoft-reg-count=<n> option.  */
+
+static void
 m68hc11_conditional_register_usage (void)
 {
   int i;

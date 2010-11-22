@@ -58,7 +58,6 @@ extern rtx spu_function_value (const_tree type, const_tree func);
 extern void spu_setup_incoming_varargs (int *cum, enum machine_mode mode,
 					tree type, int *pretend_size,
 					int no_rtl);
-extern void spu_conditional_register_usage (void);
 extern int spu_expand_mov (rtx * ops, enum machine_mode mode);
 extern int spu_split_load (rtx * ops);
 extern int spu_split_store (rtx * ops);

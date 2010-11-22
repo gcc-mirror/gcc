@@ -342,12 +342,9 @@ init_reg_sets_1 (void)
     inv_reg_alloc_order[reg_alloc_order[i]] = i;
 #endif
 
-  /* This macro allows the fixed or call-used registers
-     and the register classes to depend on target flags.  */
+  /* Let the target tweak things if necessary.  */
 
-#ifdef CONDITIONAL_REGISTER_USAGE
-  CONDITIONAL_REGISTER_USAGE;
-#endif
+  targetm.conditional_register_usage ();
 
   /* Compute number of hard regs in each class.  */
 

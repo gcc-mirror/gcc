@@ -180,8 +180,9 @@ along with GCC; see the file COPYING3.  If not see
 
    The table initialized from this macro, and the table initialized by the
    following one, may be overridden at run time either automatically, by the
-   actions of the macro `CONDITIONAL_REGISTER_USAGE', or by the user with the
-   command options `-ffixed-REG', `-fcall-used-REG' and `-fcall-saved-REG'.  */
+   actions of the macro `TARGET_CONDITIONAL_REGISTER_USAGE', or by the user
+   with the command options `-ffixed-REG', `-fcall-used-REG' and
+   `-fcall-saved-REG'.  */
 #define FIXED_REGISTERS 			\
   { 1, 0, 0, 0, 0, 0, 0, 0, 	/*  0 -  7 */ 	\
     0, 0, 0, 0, 0, 0, 0, 1,	/*  8 - 15 */ 	\

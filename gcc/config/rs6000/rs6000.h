@@ -1102,11 +1102,6 @@ extern unsigned rs6000_pointer_size;
 
 #define FIXED_SCRATCH 0
 
-/* Define this macro to change register usage conditional on target
-   flags.  */
-
-#define CONDITIONAL_REGISTER_USAGE rs6000_conditional_register_usage ()
-
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 

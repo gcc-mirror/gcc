@@ -2475,6 +2475,28 @@ mn10300_adjust_sched_cost (rtx insn, rtx link, rtx dep, int cost)
   /* Extract the latency value from the timings attribute.  */
   return timings < 100 ? (timings % 10) : (timings % 100);
 }
+
+static void
+mn10300_conditional_register_usage (void)
+{
+  unsigned int i;
+
+  if (!TARGET_AM33)
+    {
+      for (i = FIRST_EXTENDED_REGNUM;
+	   i <= LAST_EXTENDED_REGNUM; i++)
+	fixed_regs[i] = call_used_regs[i] = 1;
+    }
+  if (!TARGET_AM33_2)
+    {
+      for (i = FIRST_FP_REGNUM;
+	   i <= LAST_FP_REGNUM; i++)
+	fixed_regs[i] = call_used_regs[i] = 1;
+    }
+  if (flag_pic)
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] =
+    call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+}
 
 /* Initialize the GCC target structure.  */
 
@@ -2560,5 +2582,8 @@ mn10300_adjust_sched_cost (rtx insn, rtx link, rtx dep, int cost)
 
 #undef  TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST mn10300_adjust_sched_cost
+
+#undef  TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE mn10300_conditional_register_usage
 
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -167,9 +167,6 @@ extern GTY(()) int spu_tune;
     1, 1, 1 \
 }
 
-#define CONDITIONAL_REGISTER_USAGE \
-	spu_conditional_register_usage()
-
 
 /* Values in Registers */
 

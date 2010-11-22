@@ -2258,6 +2258,15 @@ DEFHOOK
  bool, (const int from_reg, const int to_reg),
  hook_bool_const_int_const_int_true)
 
+/* Modify any or all of fixed_regs, call_used_regs, global_regs,
+   reg_names, and reg_class_contents to account of the vagaries of the
+   target.  */
+DEFHOOK
+(conditional_register_usage,
+ "",
+ void, (void),
+ hook_void_void)
+
 /* Functions specific to the C family of frontends.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_C_"

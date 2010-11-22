@@ -245,9 +245,6 @@ enum reg_class
   1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1	\
 }
 
-#define CONDITIONAL_REGISTER_USAGE			\
-  rx_conditional_register_usage ()
-
 #define LIBCALL_VALUE(MODE)				\
   gen_rtx_REG (((GET_MODE_CLASS (MODE) != MODE_INT	\
 		 || GET_MODE_SIZE (MODE) >= 4)		\

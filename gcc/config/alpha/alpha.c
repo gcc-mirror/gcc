@@ -10974,6 +10974,17 @@ alpha_init_libfuncs (void)
     }
 }
 
+/* On the Alpha, we use this to disable the floating-point registers
+   when they don't exist.  */
+
+static void
+alpha_conditional_register_usage (void)
+{
+  int i;
+  if (! TARGET_FPREGS)
+    for (i = 32; i < 63; i++)
+      fixed_regs[i] = call_used_regs[i] = 1;
+}
 
 /* Initialize the GCC target structure.  */
 #if TARGET_ABI_OPEN_VMS
@@ -11157,6 +11168,9 @@ alpha_init_libfuncs (void)
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P alpha_legitimate_address_p
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE alpha_conditional_register_usage
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

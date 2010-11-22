@@ -20,8 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Functions in i386.c */
-extern void ix86_conditional_register_usage (void);
-
 extern bool ix86_target_stack_probe (void);
 extern bool ix86_can_use_return_insn_p (void);
 extern void ix86_setup_frame_addresses (void);

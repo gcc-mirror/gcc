@@ -15926,9 +15926,9 @@ mips_swap_registers (unsigned int i)
 #undef SWAP_INT
 }
 
-/* Implement CONDITIONAL_REGISTER_USAGE.  */
+/* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
 
-void
+static void
 mips_conditional_register_usage (void)
 {
 
@@ -16614,6 +16614,9 @@ mips_shift_truncation_mask (enum machine_mode mode)
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE mips_can_eliminate
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE mips_conditional_register_usage
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT mips_trampoline_init

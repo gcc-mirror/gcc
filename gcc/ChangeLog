@@ -1,3 +1,120 @@
+2010-11-21  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* target.def (conditional_register_usage): Define.
+	* reginfo.c (init_reg_sets_1): Call
+	targetm.conditional_register_usage.
+	* system.h (CONDITIONAL_REGISTER_USAGE): Poison.
+	* doc/tm.texi.in (CONDITIONAL_REGISTER_USAGE): Adjust language
+	for making it a hook.
+	* doc/tm.texi: Regenerate.
+	* config/alpha/alpha.h (CONDITIONAL_REGISTER_USAGE): Move logic...
+	* config/alpha/alpha.c (alpha_conditional_register_usage): ...here.
+	New function.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/arc/arc.h (CONDITIONAL_REGISTER_USAGE): Move logic...
+	* config/arc/arc.c (arc_conditional_register_usage): ...here.
+	New function.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/arm/arm.h (CONDITIONAL_REGISTER_USAGE): Move logic...
+	* config/arm/arm.c (arm_conditional_register_usage): ...here.
+	New function.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/bfin/bfin.h (CONDITIONAL_REGISTER_USAGE): Delete.
+	* config/bfin/bfin-protos.h (conditional_register_usage): Delete.
+	* config/bfin/bfin.c (conditional_register_usage): Move code into...
+	(bfin_conditional_register_usage): ...here.  New function.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/cris/cris.h (CONDITIONAL_REGISTER_USAGE): Delete.
+	* config/cris/cris-protos.h (cris_conditional_register_usage): Delete.
+	* config/cris/cris.c (cris_conditional_register_usage): Make static.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/fr30/fr30.h (FIXED_REGISTERS): Adjust comment.
+	* config/frv/frv.h (CONDITIONAL_REGISTER_USAGE): Delete.
+	* config/frv/frv-protos.h (frv_conditional_register_usage): Delete.
+	* config/frv/frv.c (frv_conditional_register_usage): Make static.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/h8300/h8300.h (CONDITIONAL_REGISTER_USAGE): Move logic...
+	* config/h8300/h8300.c (h8300_conditional_register_usage): ...here.
+	New function.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/i386/i386.h (CONDITIONAL_REGISTER_USAGE): Delete.
+	* config/i386/i386-protos.h (ix86_conditional_register_usage): Delete.
+	* config/i386/i386.c (ix86_conditional_register_usage): Make static.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/m32c/m32c.h (CONDITIONAL_REGISTER_USAGE): Delete.
+	* config/m32c/m32c-protos.h (m32c_conditional_register_usage): Delete.
+	* config/m32c/m32c.c (m32c_conditional_register_usage): Make static.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/m32r/m32r.h (CONDITIONAL_REGISTER_USAGE): Move logic...
+	* config/m32r/m32r.c (m32r_conditional_register_usage): ...here.
+	New function.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/m68hc11/m68hc11.h (CONDITIONAL_REGISTER_USAGE): Delete.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_conditional_register_usage):
+	Delete.
+	* config/m68hc11/m68hc11.c (m68hc11_conditional_register_usage): Make
+	static.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/mep/mep.h (CONDITIONAL_REGISTER_USAGE): Delete.
+	* config/mep/mep-protos.h (mep_conditional_register_usage): Delete.
+	* config/mep/mep.c (mep_conditional_register_usage): Make static.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/mips/mips.h (CONDITIONAL_REGISTER_USAGE): Delete.
+	* config/mips/mips-protos.h (mips_conditional_register_usage): Delete.
+	* config/mips/mips.c (mips_conditional_register_usage): Make static.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/mmix/mmix.h (CONDITIONAL_REGISTER_USAGE): Delete.
+	* config/mmix/mmix-protos.h (mmix_conditional_register_usage): Delete.
+	* config/mmix/mmix.c (mmix_conditional_register_usage): Make static.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/mn10300/mn10300.h (CONDITIONAL_REGISTER_USAGE): Move logic...
+	* config/mn10300/mn10300.c (mn10300_conditional_register_usage):
+	...here.  New function.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/pa/pa32-regs.h (CONDITIONAL_REGISTER_USAGE): Move logic...
+	* config/pa/pa64-regs.h (CONDITIONAL_REGISTER_USAGE): ...with this...
+	* config/pa/pa.c (pa_conditional_register_usage): ...here.
+	New function.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/pdp11/pdp11.h (CONDITIONAL_REGISTER_USAGE): Move logic...
+	* config/pdp11/pdp11.c (pdp11_conditional_register_usage): ...here.
+	New function.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/rs6000/rs6000.h (CONDITIONAL_REGISTER_USAGE): Delete.
+	* config/rs6000/rs6000-protos.h (rs6000_conditional_register_usage):
+	Delete.
+	* config/rs6000/rs6000.c (rs6000_conditional_register_usage): Make
+	static.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/rx/rx.h (CONDITIONAL_REGISTER_USAGE): Delete.
+	* config/rx/rx-protos.h (rx_conditional_register_usage): Delete.
+	* config/rx/rx.c (rx_conditional_register_usage): Make static.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/s390/s390.h (CONDITIONAL_REGISTER_USAGE): Delete.
+	* config/s390/s390-protos.h (s390_conditional_register_usage): Delete.
+	* config/s390/s390.c (s390_conditional_register_usage): Make static.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/score/score.h (CONDITIONAL_REGISTER_USAGE): Move logic...
+	* config/score/score.c (score_conditional_register_usage): ...here.
+	New function.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/sh/sh.h (CONDITIONAL_REGISTER_USAGE): Move logic...
+	* config/sh/sh.c (sh_conditional_register_usage): ...here.
+	New function.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/sparc/sparc.h (CONDITIONAL_REGISTER_USAGE): Move logic...
+	* config/sparc/sparc.c (sparc_conditional_register_usage): ...here.
+	New function.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/spu/spu.h (CONDITIONAL_REGISTER_USAGE): Delete.
+	* config/spu/spu-protos.h (spu_conditional_register_usage): Delete.
+	* config/spu/spu.c (spu_conditional_register_usage): Make static.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+	* config/v850/v850.h (CONDITIONAL_REGISTER_USAGE): Move logic...
+	* config/v850/v850.c (v850_conditional_register_usage): ...here.
+	New function.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define.
+
 2010-11-21  Jan Hubicka  <jh@suse.cz>
 	    Dominique d'Humieres <dominiq@lps.ens.ft>
 

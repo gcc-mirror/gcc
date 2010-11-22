@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-extern void mep_conditional_register_usage (void);
 extern int mep_regno_reg_class (int);
 extern int mep_reg_class_from_constraint (int, const char *);
 extern bool mep_const_ok_for_letter_p (HOST_WIDE_INT, int);

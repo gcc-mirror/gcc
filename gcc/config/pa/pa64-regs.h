@@ -101,18 +101,6 @@ along with GCC; see the file COPYING3.  If not see
   /* shift register and soft frame pointer */    \
   1, 1}
 
-#define CONDITIONAL_REGISTER_USAGE \
-{						\
-  int i;					\
-  if (TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)\
-    {						\
-      for (i = FP_REG_FIRST; i <= FP_REG_LAST; i++)\
-	fixed_regs[i] = call_used_regs[i] = 1; 	\
-    }						\
-  if (flag_pic)					\
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
-}
-
 /* Allocate the call used registers first.  This should minimize
    the number of registers that need to be saved (as call used
    registers will generally not be allocated across a call).

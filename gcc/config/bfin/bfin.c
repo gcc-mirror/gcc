@@ -371,17 +371,6 @@ output_file_start (void)
   max_arg_registers = i;	/* how many arg reg used  */
 }
 
-/* Called early in the compilation to conditionally modify
-   fixed_regs/call_used_regs.  */
-
-void 
-conditional_register_usage (void)
-{
-  /* initialize condition code flag register rtx */
-  bfin_cc_rtx = gen_rtx_REG (BImode, REG_CC);
-  bfin_rets_rtx = gen_rtx_REG (Pmode, REG_RETS);
-}
-
 /* Examine machine-dependent attributes of function type FUNTYPE and return its
    type.  See the definition of E_FUNKIND.  */
 
@@ -6589,6 +6578,21 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
   gcc_unreachable ();
 }
+
+static void
+bfin_conditional_register_usage (void)
+{
+  /* initialize condition code flag register rtx */
+  bfin_cc_rtx = gen_rtx_REG (BImode, REG_CC);
+  bfin_rets_rtx = gen_rtx_REG (Pmode, REG_RETS);
+  if (TARGET_FDPIC)
+    call_used_regs[FDPIC_REGNO] = 1;
+  if (!TARGET_FDPIC && flag_pic)
+    {
+      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+    }
+}
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS bfin_init_builtins
@@ -6690,6 +6694,9 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE bfin_can_eliminate
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE bfin_conditional_register_usage
 
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE bfin_asm_trampoline_template

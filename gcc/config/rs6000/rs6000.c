@@ -1202,6 +1202,7 @@ static const reg_class_t *rs6000_ira_cover_classes (void);
 const int INSN_NOT_AVAILABLE = -1;
 static enum machine_mode rs6000_eh_return_filter_mode (void);
 static bool rs6000_can_eliminate (const int, const int);
+static void rs6000_conditional_register_usage (void);
 static void rs6000_trampoline_init (rtx, tree, rtx);
 
 /* Hash table stuff for keeping track of TOC entries.  */
@@ -1629,6 +1630,9 @@ static const struct default_options rs6000_option_optimization_table[] =
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE rs6000_can_eliminate
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE rs6000_conditional_register_usage
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT rs6000_trampoline_init
@@ -6989,7 +6993,7 @@ rs6000_offsettable_memref_p (rtx op)
 }
 
 /* Change register usage conditional on target flags.  */
-void
+static void
 rs6000_conditional_register_usage (void)
 {
   int i;

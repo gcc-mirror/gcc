@@ -22,7 +22,6 @@
 #define MM enum machine_mode
 #define UINT unsigned int
 
-void m32c_conditional_register_usage (void);
 int  m32c_const_ok_for_constraint_p (HOST_WIDE_INT, char, const char *);
 UINT m32c_dwarf_frame_regnum (int);
 int  m32c_eh_return_data_regno (int);

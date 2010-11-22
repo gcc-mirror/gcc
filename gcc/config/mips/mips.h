@@ -1085,8 +1085,6 @@ enum mips_code_readable_setting {
 /* The CACHE instruction is available.  */
 #define ISA_HAS_CACHE (TARGET_CACHE_BUILTIN && !TARGET_MIPS16)
 
-#define CONDITIONAL_REGISTER_USAGE mips_conditional_register_usage ()
-
 /* Tell collect what flags to pass to nm.  */
 #ifndef NM_FLAGS
 #define NM_FLAGS "-Bn"
@@ -1518,8 +1516,8 @@ enum mips_code_readable_setting {
    Regarding coprocessor registers: without evidence to the contrary,
    it's best to assume that each coprocessor register has a unique
    use.  This can be overridden, in, e.g., mips_option_override or
-   CONDITIONAL_REGISTER_USAGE should the assumption be inappropriate
-   for a particular target.  */
+   TARGET_CONDITIONAL_REGISTER_USAGE should the assumption be
+   inappropriate for a particular target.  */
 
 #define FIXED_REGISTERS							\
 {									\

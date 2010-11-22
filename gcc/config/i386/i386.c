@@ -4114,7 +4114,7 @@ ix86_option_override (void)
 
 /* Update register usage after having seen the compiler flags.  */
 
-void
+static void
 ix86_conditional_register_usage (void)
 {
   int i;
@@ -5619,8 +5619,8 @@ ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
 extern void init_regs (void);
 
 /* Implementation of call abi switching target hook. Specific to FNDECL
-   the specific call register sets are set. See also CONDITIONAL_REGISTER_USAGE
-   for more details.  */
+   the specific call register sets are set.  See also
+   ix86_conditional_register_usage for more details.  */
 void
 ix86_call_abi_override (const_tree fndecl)
 {
@@ -34705,6 +34705,9 @@ ix86_autovectorize_vector_sizes (void)
 
 #undef TARGET_ASM_CODE_END
 #define TARGET_ASM_CODE_END ix86_code_end
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE ix86_conditional_register_usage
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
