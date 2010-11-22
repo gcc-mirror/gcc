@@ -1,6 +1,8 @@
 2010-11-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR testsuite/46230
+	* gcc.dg/vect/vect-peel-3.c (main): Prevent initialization loop from
+	being vectorized.  Adjust dg-final pattern.
 	* gcc.dg/vect/pr46009.c: Add vect_int_mult target selector.
 
 	* gcc.dg/vect: Do not include <stdio.h> in testcases.
