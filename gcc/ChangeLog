@@ -1,5 +1,9 @@
 2010-11-21  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* system.h (FUNCTION_ARG_BOUNDARY): Really poison.
+
+2010-11-21  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* target.def (conditional_register_usage): Define.
 	* reginfo.c (init_reg_sets_1): Call
 	targetm.conditional_register_usage.
