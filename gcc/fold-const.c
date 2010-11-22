@@ -2097,7 +2097,16 @@ pedantic_non_lvalue_loc (location_t loc, tree x)
 {
   if (pedantic_lvalues)
     return non_lvalue_loc (loc, x);
-  protected_set_expr_location (x, loc);
+
+  if (CAN_HAVE_LOCATION_P (x)
+      && EXPR_LOCATION (x) != loc
+      && !(TREE_CODE (x) == SAVE_EXPR
+	   || TREE_CODE (x) == TARGET_EXPR
+	   || TREE_CODE (x) == BIND_EXPR))
+    {
+      x = copy_node (x);
+      SET_EXPR_LOCATION (x, loc);
+    }
   return x;
 }
 
