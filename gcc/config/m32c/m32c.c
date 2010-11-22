@@ -88,7 +88,6 @@ static rtx m32c_subreg (enum machine_mode, rtx, enum machine_mode, int);
 static int need_to_save (int);
 static rtx m32c_function_value (const_tree, const_tree, bool);
 static rtx m32c_libcall_value (enum machine_mode, const_rtx);
-static void m32c_conditional_register_usage (void);
 
 /* Returns true if an address is specified, else false.  */
 static bool m32c_get_pragma_address (const char *varname, unsigned *addr);
@@ -530,7 +529,7 @@ static struct
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE m32c_conditional_register_usage
-static void
+void
 m32c_conditional_register_usage (void)
 {
   int i;

@@ -17,6 +17,11 @@
 	* config/picochip/picochip-protos.h: Don't include "target.h" .
 	(picochip_secondary_reload): Don't declare.
 
+	PR target/46613
+	* config/m32c/m32c-protos.h (m32c_conditional_register_usage): Declare.
+	* config/m32c/m32c.c (m32c_conditional_register_usage): No longer
+	static.
+
 2010-11-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/46609
