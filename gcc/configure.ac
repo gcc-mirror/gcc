@@ -683,24 +683,7 @@ objc_boehm_gc='')
 
 AC_ARG_WITH(dwarf2,
 [  --with-dwarf2           force the default debug format to be DWARF 2],
-[
-  case $target in
-    hppa*-*-hpux*)
-      case $target in
-	hppa*64*-*-*)
-          dwarf2="$with_dwarf2"
-	  ;;
-	*)
-	  AC_MSG_WARN([dwarf2 debug format is not supported for this target, ignored])
-	  dwarf2=no
-	  ;;
-      esac
-      ;;
-    *)
-      dwarf2="$with_dwarf2"
-      ;;
-  esac
-],
+dwarf2="$with_dwarf2",
 dwarf2=no)
 
 AC_ARG_ENABLE(shared,
