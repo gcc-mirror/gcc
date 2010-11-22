@@ -34,7 +34,7 @@ enum debug_info_type
                           and DWARF v2 debug info (using dwarf2out.c).  */
 };
 
-enum debug_info_level
+enum debug_info_levels
 {
   DINFO_LEVEL_NONE,	/* Write no debugging info.  */
   DINFO_LEVEL_TERSE,	/* Write minimal info to support tracebacks only.  */

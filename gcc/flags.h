@@ -28,22 +28,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 
-/* Specify which kind of debugging info to generate.  */
-extern enum debug_info_type write_symbols;
-
 /* Names of debug_info_type, for error messages.  */
 extern const char *const debug_type_names[];
-
-/* Specify how much debugging info to generate.  */
-extern enum debug_info_level debug_info_level;
 
 extern int base_of_path (const char *path, const char **base_out);
 extern void set_struct_debug_option (struct gcc_options *opts,
 				     const char *value);
-
-/* Nonzero means use GNU-only extensions in the generated symbolic
-   debugging information.  */
-extern bool use_gnu_debug_info_extensions;
 
 /* Run the second compilation of -fcompare-debug.  Not defined using
    Var in common.opt because this is used in Ada code and so must be

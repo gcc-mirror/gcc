@@ -143,9 +143,6 @@ int main_input_baselength;
    to optimize in process_options ().  */
 #define AUTODETECT_VALUE 2
 
-/* Prefix for profile data files */
-const char *profile_data_prefix;
-
 /* Debug hooks - dependent upon command line options.  */
 
 const struct gcc_debug_hooks *debug_hooks;
