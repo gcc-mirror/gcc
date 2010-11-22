@@ -1,3 +1,8 @@
+2010-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/vect: Do not include <stdio.h> in testcases.
+	* gcc.dg/vect/costmodel/ppc: Likewise.
+
 2010-11-22  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/45652

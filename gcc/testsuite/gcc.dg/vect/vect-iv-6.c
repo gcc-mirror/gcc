@@ -1,5 +1,4 @@
 /* { dg-require-effective-target vect_int_mult } */
-#include <stdio.h>
 #include <stdarg.h>
 #include "tree-vect.h"
 

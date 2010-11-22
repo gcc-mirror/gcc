@@ -2,7 +2,6 @@
 
 #include <stdarg.h>
 #include "tree-vect.h"
-#include <stdio.h>
 
 #define N 64
 

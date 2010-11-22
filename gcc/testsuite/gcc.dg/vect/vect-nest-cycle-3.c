@@ -1,7 +1,6 @@
 /* { dg-require-effective-target vect_float } */
 
 #include <stdarg.h>
-#include <stdio.h>
 #include "tree-vect.h"
 
 #define N 16

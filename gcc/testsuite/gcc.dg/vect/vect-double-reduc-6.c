@@ -1,7 +1,6 @@
 /* { dg-require-effective-target vect_int_mult } */
 
 #include <stdarg.h>
-#include <stdio.h>
 #include "tree-vect.h"
 
 #define K 4 
