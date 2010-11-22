@@ -1,3 +1,10 @@
+2010-11-22  Richard Henderson  <rth@redhat.com>
+
+	PR target/46434
+	* config/crx/crx.c (crx_addr_reg): Rename from crx_addr_reg_p;
+	return the address register extracted.
+	(crx_decompose_address): Update the extracted address register.
+
 2010-11-22  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
 
 	PR driver/43335

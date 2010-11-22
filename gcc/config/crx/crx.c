@@ -590,30 +590,21 @@ crx_function_arg_regno_p (int n)
  * Scaled index		--> reg + reg | 22-bit disp. + reg + reg |
  *			    22-disp. + reg + reg + (2 | 4 | 8) */
 
-static int crx_addr_reg_p (rtx addr_reg)
+static rtx
+crx_addr_reg (rtx addr_reg)
 {
-  rtx reg;
+  if (GET_MODE (addr_reg) != Pmode)
+    return NULL_RTX;
 
   if (REG_P (addr_reg))
-    {
-      reg = addr_reg;
-    }
-  else if ((GET_CODE (addr_reg) == SUBREG
+    return addr_reg;
+  else if (GET_CODE (addr_reg) == SUBREG
 	   && REG_P (SUBREG_REG (addr_reg))
-	   && GET_MODE_SIZE (GET_MODE (SUBREG_REG (addr_reg)))
-	   <= UNITS_PER_WORD))
-    {
-      reg = SUBREG_REG (addr_reg);
-    }
+	   && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (addr_reg)))
+	       <= UNITS_PER_WORD))
+    return SUBREG_REG (addr_reg);
   else
-    return FALSE;
-
-  if (GET_MODE (addr_reg) != Pmode)
-    {
-      return FALSE;
-    }
-
-  return TRUE;
+    return NULL_RTX;
 }
 
 enum crx_addrtype
@@ -752,8 +743,18 @@ crx_decompose_address (rtx addr, struct crx_address *out)
       return CRX_INVALID;
     }
 
-  if (base && !crx_addr_reg_p (base)) return CRX_INVALID;
-  if (index && !crx_addr_reg_p (index)) return CRX_INVALID;
+  if (base)
+    {
+      base = crx_addr_reg (base);
+      if (!base)
+	return CRX_INVALID;
+    }
+  if (index)
+    {
+      index = crx_addr_reg (index);
+      if (!index)
+	return CRX_INVALID;
+    }
   
   out->base = base;
   out->index = index;
