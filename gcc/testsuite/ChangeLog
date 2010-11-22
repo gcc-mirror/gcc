@@ -6,6 +6,8 @@
 
 2010-11-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.dg/pr28796-2.c: SKIP on SPARC/Solaris 8.
+
 	PR rtl-optimization/46603
 	* gcc.dg/vect/slp-multitypes-2.c: XFAIL execution on SPARC 32-bit.
 
