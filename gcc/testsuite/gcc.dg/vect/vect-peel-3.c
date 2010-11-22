@@ -33,22 +33,23 @@ int main1 ()
 }
 
 int main (void)
-{ 
+{
   int i;
 
   check_vect ();
 
   for (i = 0; i < N+10; i++)
     {
+      asm volatile ("" : "+r" (i));
       ib[i] = i;
       ic[i] = i+2;
       ia[i] = i/2;
-    } 
+    }
 
   return main1 ();
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect"  { xfail vect_no_align } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
