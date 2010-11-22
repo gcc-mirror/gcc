@@ -1,3 +1,8 @@
+2010-11-22  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/45652
+	* gcc.dg/pr45652.c: New.
+
 2010-11-21  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-optimization/46571

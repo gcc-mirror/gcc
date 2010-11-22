@@ -1139,6 +1139,9 @@ init_regs_for_mode (enum machine_mode mode)
             /* Can't use regs which aren't saved by
                the prologue.  */
             || !TEST_HARD_REG_BIT (sel_hrd.regs_ever_used, cur_reg + i)
+	    /* Can't use regs with non-null REG_BASE_VALUE, because adjusting
+	       it affects aliasing globally and invalidates all AV sets.  */
+	    || get_reg_base_value (cur_reg + i)
 #ifdef LEAF_REGISTERS
             /* We can't use a non-leaf register if we're in a
                leaf function.  */
