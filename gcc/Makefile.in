@@ -433,6 +433,7 @@ FIBHEAP_H   = $(srcdir)/../include/fibheap.h
 PARTITION_H = $(srcdir)/../include/partition.h
 MD5_H	    = $(srcdir)/../include/md5.h
 DWARF2_H    = $(srcdir)/../include/dwarf2.h
+XREGEX_H    =  $(srcdir)/../include/xregex.h
 
 # Linker plugin API headers
 LINKER_PLUGIN_API_H = $(srcdir)/../include/plugin-api.h
@@ -3914,7 +3915,8 @@ build/gengtype-lex.o : gengtype-lex.c gengtype.h $(BCONFIG_H) $(SYSTEM_H)
 build/gengtype-parse.o : gengtype-parse.c gengtype.h $(BCONFIG_H)	\
   $(SYSTEM_H)
 build/gengtype.o : gengtype.c $(BCONFIG_H) $(SYSTEM_H) gengtype.h 	\
-  rtl.def insn-notes.def errors.h double-int.h $(HASHTAB_H)
+  rtl.def insn-notes.def errors.h double-int.h $(HASHTAB_H)             \
+  $(OBSTACK_H) $(XREGEX_H)
 build/genmddeps.o: genmddeps.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
   errors.h $(READ_MD_H)
 build/genmodes.o : genmodes.c $(BCONFIG_H) $(SYSTEM_H) errors.h		\

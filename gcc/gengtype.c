@@ -25,6 +25,8 @@
 #include "double-int.h"
 #include "version.h"		/* for version_string & pkgversion_string.  */
 #include "hashtab.h"
+#include "xregex.h"
+#include "obstack.h"
 #include "gengtype.h"
 
 /* Data types, macros, etc. used only in this file.  */
@@ -1727,6 +1729,251 @@ get_file_gtfilename (const input_file *inpf)
   return result;
 }
 
+/* Each input_file has its associated output file outf_p.  The
+   association is computed by the function
+   get_output_file_with_visibility.  The associated file is cached
+   inside input_file in its inpoutf field, so is really computed only
+   once.  Associated output file paths (i.e. output_name-s) are
+   computed by a rule based regexp machinery, using the files_rules
+   array of struct file_rule_st.  A for_name is also computed, giving
+   the source file name for which the output_file is generated; it is
+   often the last component of the input_file path.  */
+
+
+/*
+ Regexpr machinery to compute the output_name and for_name-s of each
+ input_file.  We have a sequence of file rules which gives the POSIX
+ extended regular expression to match an input file path, and two
+ transformed strings for the corresponding output_name and the
+ corresponding for_name.  The transformed string contain dollars: $0
+ is replaced by the entire match, $1 is replaced by the substring
+ matching the first parenthesis in the regexp, etc.  And $$ is replaced
+ by a single verbatim dollar.  The rule order is important.  The
+ general case is last, and the particular cases should come before.
+ An action routine can, when needed, update the out_name & for_name
+ and/or return the appropriate output file.  It is invoked only when a
+ rule is triggered.  When a rule is triggered, the output_name and
+ for_name are computed using their transform string in while $$, $0,
+ $1, ... are suitably replaced.  If there is an action, it is called.
+ In some few cases, the action can directly return the outf_p, but
+ usually it just updates the output_name and for_name so should free
+ them before replacing them.  The get_output_file_with_visibility
+ function creates an outf_p only once per each output_name, so it
+ scans the output_files list for previously seen output file names.
+ */
+
+/* Signature of actions in file rules.  */
+typedef outf_p (frul_actionrout_t) (input_file*, char**, char**);
+
+
+struct file_rule_st {
+  const char* frul_srcexpr;	/* Source string for regexp.  */
+  int frul_rflags;		/* Flags passed to regcomp, usually
+				 * REG_EXTENDED.  */
+  regex_t* frul_re;		/* Compiled regular expression
+				   obtained by regcomp.  */
+  const char* frul_tr_out;	/* Transformation string for making
+				 * the output_name, with $1 ... $9 for
+				 * subpatterns and $0 for the whole
+				 * matched filename.  */
+  const char* frul_tr_for;	/* Tranformation string for making the
+				   for_name.  */
+  frul_actionrout_t* frul_action; /* The action, if non null, is
+				   * called once the rule matches, on
+				   * the transformed out_name &
+				   * for_name.  It could change them
+				   * and/or give the output file.  */
+};
+
+/* File rule action handling *.h files.  */
+static outf_p header_dot_h_frul (input_file*, char**, char**);
+
+/* File rule action handling *.c files.  */
+static outf_p source_dot_c_frul (input_file*, char**, char**);
+
+#define NULL_REGEX (regex_t*)0
+
+/* The prefix in our regexp-s matching the directory.  */
+#define DIR_PREFIX_REGEX "^(([^/]*/)*)"
+
+#define NULL_FRULACT (frul_actionrout_t*)0
+
+/* The array of our rules governing file name generation.  Rules order
+   matters, so change with extreme care!  */
+
+struct file_rule_st files_rules[] = {
+  /* the c-family/ source directory is special.  */
+  { DIR_PREFIX_REGEX "c-family/([[:alnum:]_-]*)\\.c$",
+    REG_EXTENDED, NULL_REGEX,
+    "gt-c-family-$3.h", "c-family/$3.c", NULL_FRULACT},
+
+  { DIR_PREFIX_REGEX "c-family/([[:alnum:]_-]*)\\.h$",
+    REG_EXTENDED, NULL_REGEX,
+    "gt-c-family-$3.h", "c-family/$3.h", NULL_FRULACT},
+
+  /* Both c-lang.h & c-tree.h gives gt-c-decl.h for c-decl.c !  */
+  { DIR_PREFIX_REGEX "c-lang\\.h$",
+    REG_EXTENDED, NULL_REGEX, "gt-c-decl.h", "c-decl.c", NULL_FRULACT},
+
+  { DIR_PREFIX_REGEX "c-tree\\.h$",
+    REG_EXTENDED, NULL_REGEX, "gt-c-decl.h", "c-decl.c", NULL_FRULACT},
+
+  /* cp/cp-tree.h gives gt-cp-tree.h for cp/tree.c !  */
+  { DIR_PREFIX_REGEX "cp/cp-tree\\.h$",
+    REG_EXTENDED, NULL_REGEX,
+    "gt-cp-tree.h", "cp/tree.c", NULL_FRULACT },
+
+  /* cp/decl.h & cp/decl.c gives gt-cp-decl.h for cp/decl.c !  */
+  { DIR_PREFIX_REGEX "cp/decl\\.[ch]$",
+    REG_EXTENDED, NULL_REGEX,
+    "gt-cp-decl.h", "cp/decl.c", NULL_FRULACT },
+
+  /* cp/name-lookup.h gives gt-cp-name-lookup.h for cp/name-lookup.c !  */
+  { DIR_PREFIX_REGEX "cp/name-lookup\\.h$",
+    REG_EXTENDED, NULL_REGEX,
+    "gt-cp-name-lookup.h", "cp/name-lookup.c", NULL_FRULACT },
+
+  /* objc/objc-act.h fives gt-objc-objc-act.h for objc/objc-act.c !  */
+  { DIR_PREFIX_REGEX "objc/objc-act\\.h$",
+    REG_EXTENDED, NULL_REGEX,
+    "gt-objc-objc-act.h", "objc/objc-act.c", NULL_FRULACT },
+
+  /* General cases.  For header *.h and source *.c files, we need
+   * special actions to handle the language.  */
+
+  /* Source *.c files are using get_file_gtfilename to compute their
+     output_name and get_file_basename to compute their for_name
+     thru the source_dot_c_frul action.  */
+  { DIR_PREFIX_REGEX "([[:alnum:]_-]*)\\.c$",
+    REG_EXTENDED, NULL_REGEX, "gt-$3.h", "$3.c", source_dot_c_frul},
+  /* Common header files get "gtype-desc.c" as their output_name,
+   * while language specific header files are handled specially.  So
+   * we need the header_dot_h_frul action.  */
+  { DIR_PREFIX_REGEX "([[:alnum:]_-]*)\\.h$",
+    REG_EXTENDED, NULL_REGEX, "gt-$3.h", "$3.h", header_dot_h_frul},
+
+  { DIR_PREFIX_REGEX "([[:alnum:]_-]*)\\.in$",
+    REG_EXTENDED, NULL_REGEX, "gt-$3.h", "$3.in", NULL_FRULACT},
+
+  /* Mandatory null last entry signaling end of rules.  */
+  {NULL, 0, NULL_REGEX, NULL, NULL, NULL_FRULACT}
+};
+
+/* Special file rules action for handling *.h header files.  It gives
+   "gtype-desc.c" for common headers and corresponding output
+   files for language-specific header files.  */
+static outf_p
+header_dot_h_frul (input_file* inpf, char**poutname, char**pforname)
+{
+  const char *basename = 0;
+  int lang_index = 0;
+  const char *inpname = get_input_file_name (inpf);
+  DBGPRINTF ("inpf %p inpname %s outname %s forname %s",
+	     (void*) inpf, inpname, *poutname, *pforname);
+  basename = get_file_basename (inpf);
+  lang_index = get_prefix_langdir_index (basename);
+  DBGPRINTF ("basename %s lang_index %d", basename, lang_index);
+
+  if (lang_index >= 0)
+    {
+      /* The header is language specific.  Given output_name &
+	 for_name remains unchanged.  The base_files array gives the
+	 outf_p.  */
+      DBGPRINTF ("header_dot_h found language specific @ %p '%s'",
+		 (void*) base_files[lang_index],
+		 (base_files[lang_index])->name);
+      return base_files[lang_index];
+    }
+  else
+    {
+      /* The header is common to all front-end languages.  So
+	 output_name is "gtype-desc.c" file.  The calling function
+	 get_output_file_with_visibility will find its outf_p.  */
+      free (*poutname);
+      *poutname = xstrdup ("gtype-desc.c");
+      DBGPRINTF ("special 'gtype-desc.c' for inpname %s", inpname);
+      return NULL;
+    }
+}
+
+
+/* Special file rules action for handling *.c source files using
+ * get_file_gtfilename to compute their output_name and
+ * get_file_basename to compute their for_name.  The output_name is
+ * gt-<LANG>-<BASE>.h for language specific source files, and
+ * gt-<BASE>.h for common source files.  */
+static outf_p
+source_dot_c_frul (input_file* inpf, char**poutname, char**pforname)
+{
+  char *newbasename = CONST_CAST (char*, get_file_basename (inpf));
+  char *newoutname = CONST_CAST (char*, get_file_gtfilename (inpf));
+  const char *inpname = get_input_file_name (inpf);
+  DBGPRINTF ("inpf %p inpname %s original outname %s forname %s",
+	     (void*) inpf, inpname, *poutname, *pforname);
+  DBGPRINTF ("newoutname %s", newoutname);
+  DBGPRINTF ("newbasename %s", newbasename);
+  free (*poutname);
+  free (*pforname);
+  *poutname = newoutname;
+  *pforname = newbasename;
+  return NULL;
+}
+
+/* Utility function for get_output_file_with_visibility which returns
+ * a malloc-ed substituted string using TRS on matching of the FILNAM
+ * file name, using the PMATCH array.  */
+static char*
+matching_file_name_substitute (const char *filnam, regmatch_t pmatch[10],
+			       const char *trs)
+{
+  struct obstack str_obstack;
+  char *str = NULL;
+  char *rawstr = NULL;
+  const char *pt = NULL;
+  DBGPRINTF ("filnam %s", filnam);
+  obstack_init (&str_obstack);
+  for (pt = trs; *pt; pt++) {
+    char c = *pt;
+    if (c == '$')
+      {
+	if (pt[1] == '$')
+	  {
+	    /* A double dollar $$ is substituted by a single verbatim
+	       dollar, but who really uses dollar signs in file
+	       paths? */
+	    obstack_1grow (&str_obstack, '$');
+	  }
+	else if (ISDIGIT (pt[1]))
+	  {
+	    /* Handle $0 $1 ... $9 by appropriate substitution.  */
+	    int dolnum = pt[1] - '0';
+	    int so = pmatch[dolnum].rm_so;
+	    int eo = pmatch[dolnum].rm_eo;
+	    DBGPRINTF ("so=%d eo=%d dolnum=%d", so, eo, dolnum);
+	    if (so>=0 && eo>=so)
+	      obstack_grow (&str_obstack, filnam + so, eo - so);
+	  }
+	else
+	  {
+	    /* This can happen only when files_rules is buggy! */
+	    gcc_unreachable();
+	  }
+	/* Always skip the character after the dollar.  */
+	pt++;
+      }
+    else
+      obstack_1grow (&str_obstack, c);
+  }
+  obstack_1grow (&str_obstack, '\0');
+  rawstr = XOBFINISH (&str_obstack, char *);
+  str = xstrdup (rawstr);
+  obstack_free (&str_obstack, rawstr);
+  DBGPRINTF ("matched replacement %s", str);
+  rawstr = NULL;
+  return str;
+}
+
+
 /* An output file, suitable for definitions, that can see declarations
    made in INPF and is linked into every language that uses INPF.
    Since the the result is cached inside INPF, that argument cannot be
@@ -1736,10 +1983,9 @@ outf_p
 get_output_file_with_visibility (input_file *inpf)
 {
   outf_p r;
-  size_t len;
-  const char *basename;
-  const char *for_name;
-  const char *output_name;
+  char *for_name = NULL;
+  char *output_name = NULL;
+  const char* inpfname;
 
   /* This can happen when we need a file with visibility on a
      structure that we've never seen.  We have to just hope that it's
@@ -1747,76 +1993,140 @@ get_output_file_with_visibility (input_file *inpf)
   if (inpf == NULL)
     inpf = system_h_file;
 
+  /* The result is cached in INPF, so return it if already known.  */
+  if (inpf->inpoutf)
+    return inpf->inpoutf;
+
   /* In plugin mode, return NULL unless the input_file is one of the
      plugin_files.  */
   if (plugin_files)
     {
       size_t i;
       for (i = 0; i < nb_plugin_files; i++)
-	if (inpf == plugin_files[i])
-	  return plugin_output;
+	if (inpf == plugin_files[i]) 
+	  {
+	    inpf->inpoutf = plugin_output;
+	    return plugin_output;
+	  }
 
       return NULL;
     }
 
-  /* Determine the output file name.  */
-  basename = get_file_basename (inpf);
+  inpfname = get_input_file_name (inpf);
 
-  len = strlen (basename);
-  if ((len > 2 && memcmp (basename + len - 2, ".c", 2) == 0)
-      || (len > 2 && memcmp (basename + len - 2, ".y", 2) == 0)
-      || (len > 3 && memcmp (basename + len - 3, ".in", 3) == 0))
+  /* Try each rule in sequence in files_rules until one is triggered. */
+  {
+    int rulix = 0;
+    DBGPRINTF ("passing input file @ %p named %s thru the files_rules",
+	       (void*) inpf, inpfname);
+
+    for (; files_rules[rulix].frul_srcexpr != NULL; rulix++)
+      {
+	DBGPRINTF ("rulix#%d srcexpr %s",
+		   rulix, files_rules[rulix].frul_srcexpr);
+
+	if (!files_rules[rulix].frul_re)
+	  {
+	    /* Compile the regexpr lazily.  */
+	    int err = 0;
+	    files_rules[rulix].frul_re = XCNEW (regex_t);
+	    err = regcomp (files_rules[rulix].frul_re,
+			   files_rules[rulix].frul_srcexpr,
+			   files_rules[rulix].frul_rflags);
+	    if (err)
+	      {
+		/* The regular expression compilation fails only when
+		   file_rules is buggy.  */
+		gcc_unreachable ();
+	      }
+	  }
+
+	output_name = NULL;
+	for_name = NULL;
+
+	/* Match the regexpr and trigger the rule if matched.  */
+	{
+	  /* We have exactly ten pmatch-s, one for each $0, $1, $2,
+	     $3, ... $9.  */
+	  regmatch_t pmatch[10];
+	  memset (pmatch, 0, sizeof (pmatch));
+	  if (!regexec (files_rules[rulix].frul_re,
+			inpfname, 10, pmatch, 0))
+	    {
+	      DBGPRINTF ("input @ %p filename %s matched rulix#%d pattern %s",
+			 (void*) inpf, inpfname, rulix,
+			 files_rules[rulix].frul_srcexpr);
+	      for_name =
+		matching_file_name_substitute (inpfname, pmatch,
+					       files_rules[rulix].frul_tr_for);
+	      DBGPRINTF ("for_name %s", for_name);
+	      output_name =
+		matching_file_name_substitute (inpfname, pmatch,
+					       files_rules[rulix].frul_tr_out);
+	      DBGPRINTF ("output_name %s", output_name);
+	      if (files_rules[rulix].frul_action)
+		{
+		  /* Invoke our action routine.  */
+		  outf_p of = NULL;
+		  DBGPRINTF ("before action rulix#%d output_name %s for_name %s",
+			     rulix, output_name, for_name);
+		  of =
+		    (files_rules[rulix].frul_action) (inpf,
+						      &output_name, &for_name);
+		  DBGPRINTF ("after action rulix#%d of=%p output_name %s for_name %s",
+			     rulix, (void*)of, output_name, for_name);
+		  /* If the action routine returned something, give it back
+		     immediately and cache it in inpf.  */
+		  if (of)
+		    {
+		      inpf->inpoutf = of;
+		      return of;
+		    }
+		}
+	      /* The rule matched, and had no action, or that action did
+		 not return any output file but could have changed the
+		 output_name or for_name.  We break out of the loop on the
+		 files_rules.  */
+	      break;
+	    }
+	  else
+	    {
+	      /* The regexpr did not match.  */
+	      DBGPRINTF ("rulix#%d did not match %s pattern %s",
+			 rulix, inpfname, files_rules[rulix].frul_srcexpr);
+	      continue;
+	    }
+	}
+      }
+  }
+  if (!output_name || !for_name)
     {
-      output_name = get_file_gtfilename (inpf);
-      for_name = basename;
-    }
-  /* Some headers get used by more than one front-end; hence, it
-     would be inappropriate to spew them out to a single gtype-<lang>.h
-     (and gengtype doesn't know how to direct spewage into multiple
-     gtype-<lang>.h headers at this time).  Instead, we pair up these
-     headers with source files (and their special purpose gt-*.h headers).  */
-  else if (strncmp (basename, "c-family", 8) == 0
-	   && IS_DIR_SEPARATOR (basename[8])
-	   && strcmp (basename + 9, "c-common.h") == 0)
-    output_name = "gt-c-family-c-common.h", for_name = "c-family/c-common.c";
-  else if (strcmp (basename, "c-lang.h") == 0)
-    output_name = "gt-c-decl.h", for_name = "c-decl.c";
-  else if (strcmp (basename, "c-tree.h") == 0)
-    output_name = "gt-c-decl.h", for_name = "c-decl.c";
-  else if (strncmp (basename, "cp", 2) == 0 && IS_DIR_SEPARATOR (basename[2])
-	   && strcmp (basename + 3, "cp-tree.h") == 0)
-    output_name = "gt-cp-tree.h", for_name = "cp/tree.c";
-  else if (strncmp (basename, "cp", 2) == 0 && IS_DIR_SEPARATOR (basename[2])
-	   && strcmp (basename + 3, "decl.h") == 0)
-    output_name = "gt-cp-decl.h", for_name = "cp/decl.c";
-  else if (strncmp (basename, "cp", 2) == 0 && IS_DIR_SEPARATOR (basename[2])
-	   && strcmp (basename + 3, "name-lookup.h") == 0)
-    output_name = "gt-cp-name-lookup.h", for_name = "cp/name-lookup.c";
-  else if (strncmp (basename, "objc", 4) == 0
-	   && IS_DIR_SEPARATOR (basename[4])
-	   && strcmp (basename + 5, "objc-act.h") == 0)
-    output_name = "gt-objc-objc-act.h", for_name = "objc/objc-act.c";
-  else
-    {
-      int lang_index = get_prefix_langdir_index (basename);
-
-      if (lang_index >= 0)
-	return base_files[lang_index];
-
-      output_name = "gtype-desc.c";
-      for_name = NULL;
+      /* This is impossible, and could only happen if the files_rules is
+	 incomplete or buggy.  */
+      gcc_unreachable ();
     }
 
-  /* Look through to see if we've ever seen this output filename before.  */
+  /* Look through to see if we've ever seen this output filename
+     before.  If found, cache the result in inpf.  */
   for (r = output_files; r; r = r->next)
     if (strcmp (r->name, output_name) == 0)
-      return r;
+      {
+	inpf->inpoutf = r;
+	DBGPRINTF ("found r @ %p for output_name %s for_name %s", (void*)r,
+		   output_name, for_name);
+	return r;
+      }
 
-  /* If not, create it.  */
+  /* If not found, create it, and cache it in inpf.  */
   r = create_file (for_name, output_name);
 
   gcc_assert (r && r->name);
+  DBGPRINTF ("created r @ %p for output_name %s for_name %s", (void*) r,
+	     output_name, for_name);
+  inpf->inpoutf = r;
   return r;
+
+
 }
 
 /* The name of an output file, suitable for definitions, that can see

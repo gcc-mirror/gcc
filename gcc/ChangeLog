@@ -1,3 +1,21 @@
+
+2010-11-22  Jeremie Salvucci  <jeremie.salvucci@free.fr>
+	    Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* gengtype.c: Include xregex.h and obstack.h
+	Added comments about role of get_output_file_with_visibility and
+	our regexpr machinery.
+	(frul_actionrout_t, struct file_rule_st): New.
+	(hader_dot_h_frul, source_dot_c_frul): New functions.
+	(NULL_REGEX,  NULL_FRULACT): New.
+	(files_rules): New.
+	(matching_file_name_substitute): New function.
+	(get_output_file_with_visibility): Updated comments and rewritten
+	to use the new files_rules machinery.
+
+        * Makefile.in (XREGEX_H): Added variable.
+        (build/gengtype.o): Added dependencies for xregex.h and obstack.h
+
 2010-11-21  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* system.h (FUNCTION_ARG_BOUNDARY): Really poison.
