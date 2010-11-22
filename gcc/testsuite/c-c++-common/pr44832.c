@@ -1,6 +1,7 @@
 /* PR debug/44832 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fcompare-debug" } */
+/* { dg-options "-O2 -fcompare-debug -fno-short-enums" {target short_enums} } */
 
 struct rtx_def;
 typedef struct rtx_def *rtx;
