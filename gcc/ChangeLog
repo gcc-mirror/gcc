@@ -1,3 +1,10 @@
+2010-11-22  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR target/46608
+	* config/picochip/picochip.c (picochip_secondary_reload): Make static.
+	* config/picochip/picochip-protos.h: Don't include "target.h" .
+	(picochip_secondary_reload): Don't declare.
+
 2010-11-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/46609
