@@ -1,3 +1,27 @@
+2010-11-22  Paolo Bonzini<bonzini@gnu.org>
+
+	PR bootstrap/44970
+	* Makefile.in (fwprop.o) Add sparseset.h.
+	* fwprop.c: Include sparseset.h
+	(struct find_occurrence_data, find_occurrence_callback,
+	find_occurrence): Remove.
+	(active_defs, active_defs_check, register_active_defs,
+	update_df_init, update_uses): New.
+	(update_df): Rewrite.
+	(try_fwprop_subst, forward_propagate_asm): Add calls to
+	update_df_init and update_df.
+	(fwprop_init): Allocate active_defs and active_defs_check.
+	(fwprop_done): Free them.
+	(fwprop, fwprop_addr): Adjust comments.
+	* df.h (df_uses_create): Declare.
+	* df-scan.c (df_install_ref_incremental): Break out of df_ref_create.
+	(df_ref_create): Return result of df_ref_create_structure directly.
+	(df_ref_create_structure): Call df_install_ref_incremental when
+	no collection_rec is passed.
+	(df_ref_record): Do not create multiword hard reg info when no
+	collection_rec is passed.
+	(df_uses_create): New. 
+
 2010-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/43057

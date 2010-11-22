@@ -122,6 +122,7 @@ static void df_uses_record (struct df_collection_rec *,
 			    basic_block, struct df_insn_info *,
 			    int ref_flags);
 
+static void df_install_ref_incremental (df_ref);
 static df_ref df_ref_create_structure (enum df_ref_class,
 				       struct df_collection_rec *, rtx, rtx *,
 				       basic_block, struct df_insn_info *,
@@ -680,6 +681,19 @@ df_scan_blocks (void)
     }
 }
 
+/* Create new refs under address LOC within INSN.  This function is
+   only used externally.  REF_FLAGS must be either 0 or DF_REF_IN_NOTE,
+   depending on whether LOC is inside PATTERN (INSN) or a note.  */
+
+void
+df_uses_create (rtx *loc, rtx insn, int ref_flags)
+{
+  gcc_assert (!(ref_flags & ~DF_REF_IN_NOTE));
+  df_uses_record (NULL, loc, DF_REF_REG_USE,
+                  BLOCK_FOR_INSN (insn),
+                  DF_INSN_INFO_GET (insn),
+                  ref_flags);
+}
 
 /* Create a new ref of type DF_REF_TYPE for register REG at address
    LOC within INSN of BB.  This function is only used externally.  */
@@ -690,13 +704,6 @@ df_ref_create (rtx reg, rtx *loc, rtx insn,
 	       enum df_ref_type ref_type,
 	       int ref_flags)
 {
-  df_ref ref;
-  struct df_reg_info **reg_info;
-  struct df_ref_info *ref_info;
-  df_ref *ref_rec;
-  df_ref **ref_rec_ptr;
-  unsigned int count = 0;
-  bool add_to_table;
   enum df_ref_class cl;
 
   df_grow_reg_info ();
@@ -708,8 +715,24 @@ df_ref_create (rtx reg, rtx *loc, rtx insn,
     cl = DF_REF_REGULAR;
   else
     cl = DF_REF_BASE;
-  ref = df_ref_create_structure (cl, NULL, reg, loc, bb, DF_INSN_INFO_GET (insn),
-                                 ref_type, ref_flags);
+
+  return df_ref_create_structure (cl, NULL, reg, loc, bb,
+                                  DF_INSN_INFO_GET (insn),
+                                  ref_type, ref_flags);
+}
+
+static void
+df_install_ref_incremental (df_ref ref)
+{
+  struct df_reg_info **reg_info;
+  struct df_ref_info *ref_info;
+  df_ref *ref_rec;
+  df_ref **ref_rec_ptr;
+  unsigned int count = 0;
+  bool add_to_table;
+
+  rtx insn = DF_REF_INSN (ref);
+  basic_block bb = BLOCK_FOR_INSN (insn);
 
   if (DF_REF_REG_DEF_P (ref))
     {
@@ -798,8 +821,6 @@ df_ref_create (rtx reg, rtx *loc, rtx insn,
      to mark the block dirty ourselves.  */
   if (!DEBUG_INSN_P (DF_REF_INSN (ref)))
     df_set_bb_dirty (bb);
-
-  return ref;
 }
 
 
@@ -2796,6 +2817,8 @@ df_ref_create_structure (enum df_ref_class cl,
       else
 	VEC_safe_push (df_ref, stack, collection_rec->use_vec, this_ref);
     }
+  else
+    df_install_ref_incremental (this_ref);
 
   return this_ref;
 }
@@ -2839,7 +2862,8 @@ df_ref_record (enum df_ref_class cl,
       /*  If this is a multiword hardreg, we create some extra
 	  datastructures that will enable us to easily build REG_DEAD
 	  and REG_UNUSED notes.  */
-      if ((endregno != regno + 1) && insn_info)
+      if (collection_rec
+	  && (endregno != regno + 1) && insn_info)
 	{
 	  /* Sets to a subreg of a multiword register are partial.
 	     Sets to a non-subreg of a multiword register are not.  */
