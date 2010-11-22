@@ -889,10 +889,12 @@ interpret_fixed (const cpp_token *token, unsigned int flags)
 
 /* Convert a series of STRING, WSTRING, STRING16, STRING32 and/or
    UTF8STRING tokens into a tree, performing string constant
-   concatenation.  TOK is the first of these.  VALP is the location
-   to write the string into. OBJC_STRING indicates whether an '@' token
-   preceded the incoming token.
-   Returns the CPP token type of the result (CPP_STRING, CPP_WSTRING,
+   concatenation.  TOK is the first of these.  VALP is the location to
+   write the string into.  OBJC_STRING indicates whether an '@' token
+   preceded the incoming token (in that case, the strings can either
+   be ObjC strings, preceded by a single '@', or normal strings, not
+   preceded by '@'.  The result will be a CPP_OBJC_STRING).  Returns
+   the CPP token type of the result (CPP_STRING, CPP_WSTRING,
    CPP_STRING32, CPP_STRING16, CPP_UTF8STRING, or CPP_OBJC_STRING).
 
    This is unfortunately more work than it should be.  If any of the
@@ -918,6 +920,12 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
   cpp_string str = tok->val.str;
   cpp_string *strs = &str;
 
+  /* objc_at_sign_was_seen is only used when doing Objective-C string
+     concatenation.  It is 'true' if we have seen an '@' before the
+     current string, and 'false' if not.  We must see exactly one or
+     zero '@' before each string.  */
+  bool objc_at_sign_was_seen = false;
+
  retry:
   tok = cpp_get_token (parse_in);
   switch (tok->type)
@@ -925,9 +933,12 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
     case CPP_PADDING:
       goto retry;
     case CPP_ATSIGN:
-      if (c_dialect_objc ())
+      if (objc_string)
 	{
-	  objc_string = true;
+	  if (objc_at_sign_was_seen)
+	    error ("repeated %<@%> before Objective-C string");
+
+	  objc_at_sign_was_seen = true;
 	  goto retry;
 	}
       /* FALLTHROUGH */
@@ -956,8 +967,14 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
 
       concats++;
       obstack_grow (&str_ob, &tok->val.str, sizeof (cpp_string));
+      if (objc_string)
+	objc_at_sign_was_seen = false;
       goto retry;
     }
+
+  /* It is an error if we saw a '@' with no following string.  */
+  if (objc_at_sign_was_seen)
+    error ("stray %<@%> in program");
 
   /* We have read one more token than we want.  */
   _cpp_backup_tokens (parse_in, 1);
