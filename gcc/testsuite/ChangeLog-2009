@@ -6853,7 +6853,7 @@
 	* gcc.dg/tree-ssa/fre-vce-1.c: Cleanup "fre" tree dump.
 	* gcc.dg/vect/vect-shift-2.c: Cleanup "vect" tree dump.
 	* gcc.dg/vect/vect.exp (VECT_SLP_CFLAGS): Initialize with original
-	DEFAULT_VECTFLAGS.
+	DEFAULT_VECTCFLAGS.
 
 2009-06-21  Ira Rosen  <irar@il.ibm.com>
 	    Revital Eres  <eres@il.ibm.com>

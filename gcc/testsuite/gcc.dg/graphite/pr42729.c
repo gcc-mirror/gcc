@@ -1,4 +1,3 @@
-/* { dg-do compile } */
 /* { dg-options "-O1 -fgraphite-identity -fcompare-debug" } */
 
 int A[10];
