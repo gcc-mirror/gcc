@@ -1,5 +1,8 @@
 2010-11-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR rtl-optimization/46603
+	* gcc.dg/vect/slp-multitypes-2.c: XFAIL execution on SPARC 32-bit.
+
 	PR testsuite/46230
 	* gcc.dg/vect/vect-peel-3.c (main): Prevent initialization loop from
 	being vectorized.  Adjust dg-final pattern.
