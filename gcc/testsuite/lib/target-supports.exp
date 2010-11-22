@@ -3768,3 +3768,98 @@ proc check_effective_target_run_expensive_tests { } {
 proc check_effective_target_mempcpy {} {
     return [check_function_available "mempcpy"]
 }
+
+# Check whether the vectorizer tests are supported by the target and
+# append additional target-dependent compile flags to DEFAULT_VECTCFLAGS.
+# Set dg-do-what-default to either compile or run, depending on target
+# capabilities.  Return 1 if vectorizer tests are supported by
+# target, 0 otherwise.
+
+proc check_vect_support_and_set_flags { } {
+    global DEFAULT_VECTCFLAGS
+    global dg-do-what-default
+
+    if  [istarget "powerpc-*paired*"]  {
+        lappend DEFAULT_VECTCFLAGS "-mpaired"
+        if [check_750cl_hw_available] {
+            set dg-do-what-default run
+        } else {
+            set dg-do-what-default compile
+        }
+    } elseif [istarget "powerpc*-*-*"] {
+        # Skip targets not supporting -maltivec.
+        if ![is-effective-target powerpc_altivec_ok] {
+            return 0
+        }
+
+        lappend DEFAULT_VECTCFLAGS "-maltivec"
+        if [check_vsx_hw_available]  {
+            lappend DEFAULT_VECTCFLAGS "-mvsx" "-mno-allow-movmisalign"
+        }
+
+        if [check_vmx_hw_available] {
+            set dg-do-what-default run
+        } else {
+            if [is-effective-target ilp32] {
+                # Specify a cpu that supports VMX for compile-only tests.
+                lappend DEFAULT_VECTCFLAGS "-mcpu=970"
+            }
+            set dg-do-what-default compile
+        }
+    } elseif { [istarget  "spu-*-*"] } {
+        set dg-do-what-default run
+    } elseif { [istarget "i?86-*-*"] || [istarget "x86_64-*-*"] } {
+        lappend DEFAULT_VECTCFLAGS "-msse2"
+        if { [check_effective_target_sse2_runtime] } {
+            set dg-do-what-default run
+        } else {
+            set dg-do-what-default compile
+        }
+    } elseif { [istarget "mips*-*-*"]
+               && ([check_effective_target_mpaired_single]
+                    || [check_effective_target_mips_loongson])
+               && [check_effective_target_nomips16] } {
+        if { [check_effective_target_mpaired_single] } {
+            lappend DEFAULT_VECTCFLAGS "-mpaired-single"
+        }
+        set dg-do-what-default run
+    } elseif [istarget "sparc*-*-*"] {
+        lappend DEFAULT_VECTCFLAGS "-mcpu=ultrasparc" "-mvis"
+        if [check_effective_target_ultrasparc_hw] {
+            set dg-do-what-default run
+        } else {
+            set dg-do-what-default compile
+        }
+    } elseif [istarget "alpha*-*-*"] {
+        # Alpha's vectorization capabilities are extremely limited.
+        # It's more effort than its worth disabling all of the tests
+        # that it cannot pass.  But if you actually want to see what
+        # does work, command out the return.
+        return 0
+
+        lappend DEFAULT_VECTCFLAGS "-mmax"
+        if [check_alpha_max_hw_available] {
+            set dg-do-what-default run
+        } else {
+            set dg-do-what-default compile
+        }
+    } elseif [istarget "ia64-*-*"] {
+        set dg-do-what-default run
+    } elseif [is-effective-target arm_neon_ok] {
+        eval lappend DEFAULT_VECTCFLAGS [add_options_for_arm_neon ""]
+        # NEON does not support denormals, so is not used for vectorization by
+        # default to avoid loss of precision.  We must pass -ffast-math to test
+        # vectorization of float operations.
+        lappend DEFAULT_VECTCFLAGS "-ffast-math"
+        if [is-effective-target arm_neon_hw] {
+            set dg-do-what-default run
+        } else {
+            set dg-do-what-default compile
+        }
+    } else {
+        return 0
+    }
+
+    return 1
+}
+

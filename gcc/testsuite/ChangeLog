@@ -1,10 +1,30 @@
+2010-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/graphite/graphite.exp: Use check_vect_support_and_set_flags
+	for vectorizer tests.
+	* gcc.dg/graphite/vect-pr43423.c: Add "dg-do compile" dg directive.
+	* gcc.dg/graphite/pr40281.c: Remove "dg-do compile" dg directive.
+	* gcc.dg/graphite/pr41888.c: Ditto.
+	* gcc.dg/graphite/pr42729.c: Ditto.
+
+2010-11-22  Mingjie Xing  <mingjie.xing@gmail.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp (check_vect_support_and_set_flags): New
+	procedure to check if the target supports vectorizer tests. Set
+	DEFAULT_VECTCFLAGS and dg-do-what-default depending on vectorization
+	capabilites.
+	* gcc.dg/vect/vect.exp: Use check_vect_support_and_set_flags.
+	* g++.dg/vect/vect.exp: Ditto.
+	* gfortran.dg/vect/vect.exp: Ditto.
+
 2010-11-22  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/34033
 	* objc.dg/strings-1.m: New.
 	* objc.dg/strings-2.m: New.
 	* obj-c++.dg/strings-1.mm: New.
-	* obj-c++.dg/strings-2.mm: New.	
+	* obj-c++.dg/strings-2.mm: New.
 
 2010-11-22  Ian Bolton  <ian.bolton@arm.com>
 

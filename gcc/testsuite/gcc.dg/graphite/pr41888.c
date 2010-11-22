@@ -1,4 +1,3 @@
-/* { dg-do compile } */
 /* { dg-options "-g -O2 -ftree-loop-distribution -fgraphite-identity" } */
 
 int

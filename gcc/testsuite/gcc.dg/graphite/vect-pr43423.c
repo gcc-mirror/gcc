@@ -1,3 +1,4 @@
+/* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
 
 int a[100], b[100], c[100];
