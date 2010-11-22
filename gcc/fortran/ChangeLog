@@ -1,3 +1,10 @@
+2010-11-22  Michael Matz  <matz@suse.de>
+
+	* gfortranspec.c (library): New global, moved from ...
+	(lang_specific_driver): ... here.
+	(lang_specific_pre_link): Test it here before including
+	libgfortran.spec.
+
 2010-11-21  Michael Matz  <matz@suse.de>
 	    Tobias Burnus  <burnus@net-b.de>
 
