@@ -138,6 +138,9 @@ static const struct default_options score_option_optimization_table[] =
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE            score_can_eliminate
 
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE score_conditional_register_usage
+
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE	score_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
@@ -1230,6 +1233,14 @@ score_block_move (rtx *ops)
         }
     }
   return false;
+}
+
+static void
+score_conditional_register_usage (void)
+{
+   if (!flag_pic)
+     fixed_regs[PIC_OFFSET_TABLE_REGNUM] =
+     call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 0;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

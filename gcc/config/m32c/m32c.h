@@ -228,8 +228,6 @@ machine_function;
 			      1, 1, 1, 1, \
 			      1, 1, 1, 1, 1, 1, 1, 1 }
 
-#define CONDITIONAL_REGISTER_USAGE m32c_conditional_register_usage ();
-
 /* The *_REGNO theme matches m32c.md and most register number
    arguments; the PC_REGNUM is the odd one out.  */
 #ifndef PC_REGNO

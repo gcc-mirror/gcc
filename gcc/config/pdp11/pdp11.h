@@ -168,38 +168,6 @@ extern const struct real_format pdp11_d_format;
  0, 0, 0, 0, 0, 0, 1, 1 }
 
 
-/* Make sure everything's fine if we *don't* have an FPU.
-   This assumes that putting a register in fixed_regs will keep the
-   compiler's mitts completely off it.  We don't bother to zero it out
-   of register classes.  Also fix incompatible register naming with
-   the UNIX assembler.
-*/
-#define CONDITIONAL_REGISTER_USAGE \
-{ 						\
-  int i; 					\
-  HARD_REG_SET x; 				\
-  if (!TARGET_FPU)				\
-    { 						\
-      COPY_HARD_REG_SET (x, reg_class_contents[(int)FPU_REGS]); \
-      for (i = R0_REGNUM; i < FIRST_PSEUDO_REGISTER; i++ ) \
-       if (TEST_HARD_REG_BIT (x, i)) 		\
-	fixed_regs[i] = call_used_regs[i] = 1; 	\
-    } 						\
-						\
-  if (TARGET_AC0)				\
-      call_used_regs[AC0_REGNUM] = 1;		\
-  if (TARGET_UNIX_ASM)				\
-    {						\
-      /* Change names of FPU registers for the UNIX assembler.  */ \
-      reg_names[8] = "fr0";			\
-      reg_names[9] = "fr1";			\
-      reg_names[10] = "fr2";			\
-      reg_names[11] = "fr3";			\
-      reg_names[12] = "fr4";			\
-      reg_names[13] = "fr5";			\
-    }						\
-}
-
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
    This is ordinarily the length in words of a value of mode MODE

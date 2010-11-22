@@ -156,6 +156,7 @@ static rtx pdp11_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 			       const_tree, bool);
 static void pdp11_function_arg_advance (CUMULATIVE_ARGS *,
 					enum machine_mode, const_tree, bool);
+static void pdp11_conditional_register_usage (void);
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 
@@ -230,6 +231,9 @@ static const struct default_options pdp11_option_optimization_table[] =
 
 #undef  TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P pdp11_legitimate_address_p
+
+#undef  TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE pdp11_conditional_register_usage
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -2099,6 +2103,39 @@ pdp11_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   *cum += (mode != BLKmode
 	   ? GET_MODE_SIZE (mode)
 	   : int_size_in_bytes (type));
+}
+
+/* Make sure everything's fine if we *don't* have an FPU.
+   This assumes that putting a register in fixed_regs will keep the
+   compiler's mitts completely off it.  We don't bother to zero it out
+   of register classes.  Also fix incompatible register naming with
+   the UNIX assembler.  */
+
+static void
+pdp11_conditional_register_usage (void)
+{
+  int i;
+  HARD_REG_SET x;
+  if (!TARGET_FPU)
+    {
+      COPY_HARD_REG_SET (x, reg_class_contents[(int)FPU_REGS]);
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ )
+       if (TEST_HARD_REG_BIT (x, i))
+	fixed_regs[i] = call_used_regs[i] = 1;
+    }
+
+  if (TARGET_AC0)
+      call_used_regs[AC0_REGNUM] = 1;
+  if (TARGET_UNIX_ASM)
+    {
+      /* Change names of FPU registers for the UNIX assembler.  */
+      reg_names[8] = "fr0";
+      reg_names[9] = "fr1";
+      reg_names[10] = "fr2";
+      reg_names[11] = "fr3";
+      reg_names[12] = "fr4";
+      reg_names[13] = "fr5";
+    }
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

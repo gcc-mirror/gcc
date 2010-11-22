@@ -202,27 +202,6 @@ extern enum processor_type mn10300_tune_cpu;
   , 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 51 \
   }
 
-#define CONDITIONAL_REGISTER_USAGE \
-{						\
-  unsigned int i;				\
-						\
-  if (!TARGET_AM33)				\
-    {						\
-      for (i = FIRST_EXTENDED_REGNUM; 		\
-	   i <= LAST_EXTENDED_REGNUM; i++) 	\
-	fixed_regs[i] = call_used_regs[i] = 1; 	\
-    }						\
-  if (!TARGET_AM33_2)				\
-    {						\
-      for (i = FIRST_FP_REGNUM;			\
-	   i <= LAST_FP_REGNUM; i++) 		\
-	fixed_regs[i] = call_used_regs[i] = 1;	\
-    }						\
-  if (flag_pic)					\
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM] =       \
-    call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;\
-}
-
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
 

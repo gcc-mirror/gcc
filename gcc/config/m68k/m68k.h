@@ -398,25 +398,6 @@ along with GCC; see the file COPYING3.  If not see
 }
 
 
-/* Make sure everything's fine if we *don't* have a given processor.
-   This assumes that putting a register in fixed_regs will keep the
-   compiler's mitts completely off it.  We don't bother to zero it out
-   of register classes.  */
-#define CONDITIONAL_REGISTER_USAGE				\
-{								\
-  int i;							\
-  HARD_REG_SET x;						\
-  if (!TARGET_HARD_FLOAT)					\
-    {								\
-      COPY_HARD_REG_SET (x, reg_class_contents[(int)FP_REGS]);	\
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)		\
-        if (TEST_HARD_REG_BIT (x, i))				\
-	  fixed_regs[i] = call_used_regs[i] = 1;		\
-    }								\
-  if (flag_pic)							\
-    fixed_regs[PIC_REG] = call_used_regs[PIC_REG] = 1;		\
-}
-
 /* On the m68k, ordinary registers hold 32 bits worth;
    for the 68881 registers, a single register is always enough for
    anything that can be stored in them at all.  */

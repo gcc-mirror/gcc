@@ -204,19 +204,6 @@ extern enum alpha_fp_trap_mode alpha_fptm;
   {"cpu", "%{!mcpu=*:-mcpu=%(VALUE)}" }, \
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }
 
-
-/* Define this macro to change register usage conditional on target flags.
-
-   On the Alpha, we use this to disable the floating-point registers when
-   they don't exist.  */
-
-#define CONDITIONAL_REGISTER_USAGE		\
-{						\
-  int i;					\
-  if (! TARGET_FPREGS)				\
-    for (i = 32; i < 63; i++)			\
-      fixed_regs[i] = call_used_regs[i] = 1;	\
-}
 
 /* target machine storage layout */
 

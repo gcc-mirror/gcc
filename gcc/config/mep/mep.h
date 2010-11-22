@@ -256,9 +256,6 @@ crtbegin.o%s"
   1, CALL_USED_SHADOW_REGISTERS				\
   }
 
-#define CONDITIONAL_REGISTER_USAGE \
-	mep_conditional_register_usage ();
-
 #define REG_ALLOC_ORDER {						\
   /* core registers */							\
   3, 2, 1, 0, 9, 10, 11, 12, 4, 5, 6, 7, 8, 13, 14, 15, 		\

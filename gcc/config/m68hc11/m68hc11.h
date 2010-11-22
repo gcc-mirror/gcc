@@ -372,14 +372,6 @@ SOFT_REG_FIRST+28, SOFT_REG_FIRST+29,SOFT_REG_FIRST+30,SOFT_REG_FIRST+31
 /* X, D, Y, SP,PC,A, B, CCR, Z, FP, ZTMP,ZR,XYR, D1 - 32,     SOFT-FP, AP */
 
 
-/* Define this macro to change register usage conditional on target flags.
-
-   The soft-registers are disabled or enabled according to the
-  -msoft-reg-count=<n> option.  */
-
-
-#define CONDITIONAL_REGISTER_USAGE (m68hc11_conditional_register_usage ())
-
 /* List the order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.  */
 #define REG_ALLOC_ORDER							\

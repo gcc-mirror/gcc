@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #define STDIO_INCLUDED
 #endif
 
-extern void cris_conditional_register_usage (void);
 extern bool cris_simple_epilogue (void);
 #ifdef RTX_CODE
 extern const char *cris_op_str (rtx);

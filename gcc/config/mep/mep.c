@@ -231,6 +231,7 @@ static tree mep_build_builtin_va_list (void);
 static void mep_expand_va_start (tree, rtx);
 static tree mep_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static bool mep_can_eliminate (const int, const int);
+static void mep_conditional_register_usage (void);
 static void mep_trampoline_init (rtx, tree, rtx);
 
 #define WANT_GCC_DEFINITIONS
@@ -278,7 +279,7 @@ mep_set_leaf_registers (int enable)
       mep_leaf_registers[i] = enable;
 }
 
-void
+static void
 mep_conditional_register_usage (void)
 {
   int i;
@@ -7454,6 +7455,8 @@ mep_asm_init_sections (void)
 #define	TARGET_GIMPLIFY_VA_ARG_EXPR	mep_gimplify_va_arg_expr
 #undef  TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE            mep_can_eliminate
+#undef  TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE	mep_conditional_register_usage
 #undef  TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT		mep_trampoline_init
 

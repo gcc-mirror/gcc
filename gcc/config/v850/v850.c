@@ -3064,6 +3064,20 @@ v850_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
   return (to == STACK_POINTER_REGNUM ? ! frame_pointer_needed : true);
 }
 
+/* Worker function for TARGET_CONDITIONAL_REGISTER_USAGE.
+
+   If TARGET_APP_REGS is not defined then add r2 and r5 to
+   the pool of fixed registers. See PR 14505.  */
+
+static void
+v850_conditional_register_usage (void)
+{
+  if (TARGET_APP_REGS)
+    {
+     fixed_regs[2] = 0;  call_used_regs[2] = 0;
+     fixed_regs[5] = 0;  call_used_regs[5] = 1;
+    }
+}
 
 /* Worker function for TARGET_ASM_TRAMPOLINE_TEMPLATE.  */
 
@@ -3193,6 +3207,9 @@ static const struct attribute_spec v850_attribute_table[] =
 
 #undef  TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE v850_can_eliminate
+
+#undef  TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE v850_conditional_register_usage
 
 #undef  TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE v850_asm_trampoline_template

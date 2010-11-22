@@ -373,8 +373,6 @@ extern int s390_arch_flags;
   1, 1, 1, 1,					\
   0, 0 }
 
-#define CONDITIONAL_REGISTER_USAGE s390_conditional_register_usage ()
-
 /* Preferred register allocation order.  */
 #define REG_ALLOC_ORDER                                         \
 {  1, 2, 3, 4, 5, 0, 12, 11, 10, 9, 8, 7, 6, 14, 13,            \

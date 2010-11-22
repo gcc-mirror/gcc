@@ -218,7 +218,7 @@
    Regarding coprocessor registers: without evidence to the contrary,
    it's best to assume that each coprocessor register has a unique
    use.  This can be overridden, in, e.g., TARGET_OPTION_OVERRIDE or
-   CONDITIONAL_REGISTER_USAGE should the assumption be inappropriate
+   TARGET_CONDITIONAL_REGISTER_USAGE should the assumption be inappropriate
    for a particular target.  */
 
 /* Control Registers, use mfcr/mtcr insn
@@ -304,13 +304,6 @@
 
 /* Macro to conditionally modify fixed_regs/call_used_regs.  */
 #define PIC_OFFSET_TABLE_REGNUM          29
-
-#define CONDITIONAL_REGISTER_USAGE                     \
-{                                                      \
-   if (!flag_pic)                                      \
-     fixed_regs[PIC_OFFSET_TABLE_REGNUM] =             \
-     call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 0;      \
-}
 
 #define HARD_REGNO_NREGS(REGNO, MODE) \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)

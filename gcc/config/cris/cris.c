@@ -113,6 +113,8 @@ static void cris_print_operand_address (FILE *, rtx);
 
 static bool cris_print_operand_punct_valid_p (unsigned char code);
 
+static void cris_conditional_register_usage (void);
+
 static void cris_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
 
@@ -186,6 +188,9 @@ static const struct default_options cris_option_optimization_table[] =
 #define TARGET_PRINT_OPERAND_ADDRESS cris_print_operand_address
 #undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
 #define TARGET_PRINT_OPERAND_PUNCT_VALID_P cris_print_operand_punct_valid_p
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE cris_conditional_register_usage
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK cris_asm_output_mi_thunk
@@ -445,9 +450,9 @@ cris_store_multiple_op_p (rtx op)
   return true;
 }
 
-/* The CONDITIONAL_REGISTER_USAGE worker.  */
+/* The TARGET_CONDITIONAL_REGISTER_USAGE worker.  */
 
-void
+static void
 cris_conditional_register_usage (void)
 {
   /* FIXME: This isn't nice.  We should be able to use that register for
