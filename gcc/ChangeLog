@@ -1,5 +1,12 @@
 2010-11-22  Richard Guenther  <rguenther@suse.de>
 
+	* gimple-fold.c (maybe_fold_reference): When canonicalizing
+	MEM_REFs, preserve volatileness.
+	* cgraphbuild.c (mark_address): Properly check for FUNCTION_DECL
+	addresses.
+
+2010-11-22  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-ccp.c (get_base_constructor): Remove superfluous breaks.
 
 2010-11-22  Alexander Monakov  <amonakov@ispras.ru>

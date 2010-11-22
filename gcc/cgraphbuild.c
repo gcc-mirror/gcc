@@ -237,6 +237,7 @@ static bool
 mark_address (gimple stmt ATTRIBUTE_UNUSED, tree addr,
 	      void *data ATTRIBUTE_UNUSED)
 {
+  addr = get_base_address (addr);
   if (TREE_CODE (addr) == FUNCTION_DECL)
     {
       struct cgraph_node *node = cgraph_node (addr);
@@ -245,24 +246,20 @@ mark_address (gimple stmt ATTRIBUTE_UNUSED, tree addr,
 			    node, NULL,
 			    IPA_REF_ADDR, stmt);
     }
-  else
+  else if (addr && TREE_CODE (addr) == VAR_DECL
+	   && (TREE_STATIC (addr) || DECL_EXTERNAL (addr)))
     {
-      addr = get_base_address (addr);
-      if (addr && TREE_CODE (addr) == VAR_DECL
-	  && (TREE_STATIC (addr) || DECL_EXTERNAL (addr)))
-	{
-	  struct varpool_node *vnode = varpool_node (addr);
-	  int walk_subtrees;
+      struct varpool_node *vnode = varpool_node (addr);
+      int walk_subtrees;
 
-	  if (lang_hooks.callgraph.analyze_expr)
-	    lang_hooks.callgraph.analyze_expr (&addr, &walk_subtrees);
-	  varpool_mark_needed_node (vnode);
-	  if (vnode->alias && vnode->extra_name)
-	    vnode = vnode->extra_name;
-	  ipa_record_reference ((struct cgraph_node *)data, NULL,
-				NULL, vnode,
-				IPA_REF_ADDR, stmt);
-	}
+      if (lang_hooks.callgraph.analyze_expr)
+	lang_hooks.callgraph.analyze_expr (&addr, &walk_subtrees);
+      varpool_mark_needed_node (vnode);
+      if (vnode->alias && vnode->extra_name)
+	vnode = vnode->extra_name;
+      ipa_record_reference ((struct cgraph_node *)data, NULL,
+			    NULL, vnode,
+			    IPA_REF_ADDR, stmt);
     }
 
   return false;
