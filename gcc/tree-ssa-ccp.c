@@ -1362,8 +1362,6 @@ get_base_constructor (tree base, HOST_WIDE_INT *bit_offset)
 	  && (TREE_STATIC (base) || DECL_EXTERNAL (base)))
         return error_mark_node;
       return DECL_INITIAL (base);
-      
-      break;
 
     case ARRAY_REF:
     case COMPONENT_REF:
@@ -1372,12 +1370,10 @@ get_base_constructor (tree base, HOST_WIDE_INT *bit_offset)
 	return NULL_TREE;
       *bit_offset +=  bit_offset2;
       return get_base_constructor (base, bit_offset);
-      break;
 
     case STRING_CST:
     case CONSTRUCTOR:
       return base;
-      break;
 
     default:
       return NULL_TREE;
