@@ -1,4 +1,8 @@
-2010-11-22  Paolo Bonzini<bonzini@gnu.org>
+2010-11-22  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* gimple-pretty-print.c (dump_bb_header): Add check for cfun.
+
+2010-11-22  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/44970
 	* Makefile.in (fwprop.o) Add sparseset.h.

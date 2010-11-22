@@ -1898,7 +1898,8 @@ dump_bb_header (pretty_printer *buffer, basic_block bb, int indent, int flags)
 	}
     }
   pp_write_text_to_stream (buffer);
-  check_bb_profile (bb, buffer->buffer->stream);
+  if (cfun)
+    check_bb_profile (bb, buffer->buffer->stream);
 }
 
 
