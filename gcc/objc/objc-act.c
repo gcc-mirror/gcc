@@ -405,10 +405,6 @@ static int objc_collecting_ivars = 0;
 
 static char *errbuf;	/* Buffer for error diagnostics */
 
-/* Data imported from tree.c.  */
-
-extern enum debug_info_type write_symbols;
-
 
 static int flag_typed_selectors;
 

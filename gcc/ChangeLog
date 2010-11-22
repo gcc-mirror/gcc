@@ -1,3 +1,32 @@
+2010-11-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (exit_after_options, write_symbols, debug_info_level,
+	use_gnu_debug_info_extensions): New Variable entries.
+	(fprofile-dir=): Use Var.
+	* flag-types.h (enum debug_info_level): Rename to enum
+	debug_info_levels.
+	* flags.h (write_symbols, debug_info_level,
+	use_gnu_debug_info_extensions): Remove declarations.
+	* opts.c (exit_after_options, write_symbols, debug_info_level):
+	Remove.
+	(set_struct_debug_option): Make static variables const.
+	(use_gnu_debug_info_extensions): Remove.
+	(set_debug_level, print_filtered_help, print_specific_help,
+	fast_math_flags_set_p): Take gcc_options parameters and use them
+	in place of global variables.
+	(print_filtered_help): Make new_help non-static.
+	(print_specific_help): Update call to print_filtered_help.
+	(common_handle_option): Update calls to print_specific_help.  Use
+	gcc_options structure for more settings.  Make --help table
+	const.  Don't handle OPT_fprofile_dir_ here.  Update calls to
+	set_debug_level.
+	* toplev.c (profile_data_prefix): Remove.
+	* toplev.h (profile_data_prefix, exit_after_options): Remove
+	declarations.
+	(fast_math_flags_set_p): Update prototype.
+	* cppbuiltin.c (define_builtin_macros_for_compilation_flags):
+	Update call to fast_math_flags_set_p.
+
 2010-11-22  Richard Henderson  <rth@redhat.com>
 
 	PR target/46434

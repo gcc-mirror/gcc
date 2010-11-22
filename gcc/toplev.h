@@ -76,9 +76,6 @@ extern const char *main_input_filename;
 extern const char *main_input_basename;
 extern int main_input_baselength;
 
-extern const char *profile_data_prefix;
-extern bool exit_after_options;
-
 /* True if the user has tagged the function with the 'section'
    attribute.  */
 
@@ -99,7 +96,7 @@ extern struct ht *ident_hash;
 extern void decode_d_option		(const char *);
 
 /* Return true iff flags are set as if -ffast-math.  */
-extern bool fast_math_flags_set_p	(void);
+extern bool fast_math_flags_set_p	(const struct gcc_options *);
 extern bool fast_math_flags_struct_set_p (struct cl_optimization *);
 
 /* Inline versions of the above for speed.  */

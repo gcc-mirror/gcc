@@ -90,7 +90,7 @@ define_builtin_macros_for_compilation_flags (cpp_reader *pfile)
   if (optimize)
     cpp_define (pfile, "__OPTIMIZE__");
 
-  if (fast_math_flags_set_p ())
+  if (fast_math_flags_set_p (&global_options))
     cpp_define (pfile, "__FAST_MATH__");
   if (flag_signaling_nans)
     cpp_define (pfile, "__SUPPORT_SNAN__");

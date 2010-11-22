@@ -41,18 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "lto-streamer.h"
 
-/* True if we should exit after parsing options.  */
-bool exit_after_options;
-
-/* Type(s) of debugging information we are producing (if any).  See
-   flags.h for the definitions of the different possible types of
-   debugging information.  */
-enum debug_info_type write_symbols = NO_DEBUG;
-
-/* Level of debugging information we are producing.  See flags.h for
-   the definitions of the different possible levels.  */
-enum debug_info_level debug_info_level = DINFO_LEVEL_NONE;
-
 /* Run the second compilation of -fcompare-debug.  Not defined using
    Var in common.opt because this is used in Ada code and so must be
    an actual variable not a macro.  */
@@ -69,10 +57,10 @@ void
 set_struct_debug_option (struct gcc_options *opts, const char *spec)
 {
   /* various labels for comparison */
-  static char dfn_lbl[] = "dfn:", dir_lbl[] = "dir:", ind_lbl[] = "ind:";
-  static char ord_lbl[] = "ord:", gen_lbl[] = "gen:";
-  static char none_lbl[] = "none", any_lbl[] = "any";
-  static char base_lbl[] = "base", sys_lbl[] = "sys";
+  static const char dfn_lbl[] = "dfn:", dir_lbl[] = "dir:", ind_lbl[] = "ind:";
+  static const char ord_lbl[] = "ord:", gen_lbl[] = "gen:";
+  static const char none_lbl[] = "none", any_lbl[] = "any";
+  static const char base_lbl[] = "base", sys_lbl[] = "sys";
 
   enum debug_struct_file files = DINFO_STRUCT_FILE_ANY;
   /* Default is to apply to as much as possible. */
@@ -174,11 +162,6 @@ base_of_path (const char *path, const char **base_out)
   return dot - base;
 }
 
-/* Nonzero means use GNU-only extensions in the generated symbolic
-   debugging information.  Currently, this only has an effect when
-   write_symbols is set to DBX_DEBUG, XCOFF_DEBUG, or DWARF_DEBUG.  */
-bool use_gnu_debug_info_extensions;
-
 /* Global visibility options.  */
 struct visibility_flags visibility_options;
 
@@ -212,7 +195,8 @@ static char *write_langs (unsigned int lang_mask);
 static void complain_wrong_lang (const struct cl_decoded_option *,
 				 unsigned int lang_mask);
 static void set_debug_level (enum debug_info_type type, int extended,
-			     const char *arg);
+			     const char *arg, struct gcc_options *opts,
+			     struct gcc_options *opts_set);
 static void set_fast_math_flags (struct gcc_options *opts, int set);
 static void set_unsafe_math_optimizations_flags (struct gcc_options *opts,
 						 int set);
@@ -1165,7 +1149,8 @@ static void
 print_filtered_help (unsigned int include_flags,
 		     unsigned int exclude_flags,
 		     unsigned int any_flags,
-		     unsigned int columns)
+		     unsigned int columns,
+		     struct gcc_options *opts)
 {
   unsigned int i;
   const char *help;
@@ -1201,7 +1186,7 @@ print_filtered_help (unsigned int include_flags,
 
   for (i = 0; i < cl_options_count; i++)
     {
-      static char new_help[128];
+      char new_help[128];
       const struct cl_option *option = cl_options + i;
       unsigned int len;
       const char *opt;
@@ -1261,7 +1246,7 @@ print_filtered_help (unsigned int include_flags,
 	 with an option to be an indication of its current setting.  */
       if (!quiet_flag)
 	{
-	  void *flag_var = option_flag_var (i, &global_options);
+	  void *flag_var = option_flag_var (i, opts);
 
 	  if (len < (LEFT_COLUMN + 2))
 	    strcpy (new_help, "\t\t");
@@ -1285,7 +1270,7 @@ print_filtered_help (unsigned int include_flags,
 			     "%#x", * (int *) flag_var);
 		}
 	      else
-		strcat (new_help, option_enabled (i, &global_options)
+		strcat (new_help, option_enabled (i, opts)
 			? _("[enabled]") : _("[disabled]"));
 	    }
 
@@ -1324,11 +1309,13 @@ print_filtered_help (unsigned int include_flags,
 /* Display help for a specified type of option.
    The options must have ALL of the INCLUDE_FLAGS set
    ANY of the flags in the ANY_FLAGS set
-   and NONE of the EXCLUDE_FLAGS set.  */
+   and NONE of the EXCLUDE_FLAGS set.  The current option state is in
+   OPTS.  */
 static void
 print_specific_help (unsigned int include_flags,
 		     unsigned int exclude_flags,
-		     unsigned int any_flags)
+		     unsigned int any_flags,
+		     struct gcc_options *opts)
 {
   unsigned int all_langs_mask = (1U << cl_lang_count) - 1;
   const char * description = NULL;
@@ -1424,7 +1411,7 @@ print_specific_help (unsigned int include_flags,
     }
 
   printf ("%s%s:\n", description, descrip_extra);
-  print_filtered_help (include_flags, exclude_flags, any_flags, columns);
+  print_filtered_help (include_flags, exclude_flags, any_flags, columns, opts);
 }
 
 /* Handle target- and language-independent options.  Return zero to
@@ -1469,20 +1456,20 @@ common_handle_option (struct gcc_options *opts,
 	/* First display any single language specific options.  */
 	for (i = 0; i < cl_lang_count; i++)
 	  print_specific_help
-	    (1U << i, (all_langs_mask & (~ (1U << i))) | undoc_mask, 0);
+	    (1U << i, (all_langs_mask & (~ (1U << i))) | undoc_mask, 0, opts);
 	/* Next display any multi language specific options.  */
-	print_specific_help (0, undoc_mask, all_langs_mask);
+	print_specific_help (0, undoc_mask, all_langs_mask, opts);
 	/* Then display any remaining, non-language options.  */
 	for (i = CL_MIN_OPTION_CLASS; i <= CL_MAX_OPTION_CLASS; i <<= 1)
 	  if (i != CL_DRIVER)
-	    print_specific_help (i, undoc_mask, 0);
-	exit_after_options = true;
+	    print_specific_help (i, undoc_mask, 0, opts);
+	opts->x_exit_after_options = true;
 	break;
       }
 
     case OPT__target_help:
-      print_specific_help (CL_TARGET, CL_UNDOCUMENTED, 0);
-      exit_after_options = true;
+      print_specific_help (CL_TARGET, CL_UNDOCUMENTED, 0, opts);
+      opts->x_exit_after_options = true;
 
       /* Allow the target a chance to give the user some additional information.  */
       if (targetm.help)
@@ -1507,7 +1494,7 @@ common_handle_option (struct gcc_options *opts,
 		   params|common|<language>}  */
 	while (* a != 0)
 	  {
-	    static struct
+	    static const struct
 	    {
 	      const char * string;
 	      unsigned int flag;
@@ -1602,13 +1589,13 @@ common_handle_option (struct gcc_options *opts,
 	  }
 
 	if (include_flags)
-	  print_specific_help (include_flags, exclude_flags, 0);
-	exit_after_options = true;
+	  print_specific_help (include_flags, exclude_flags, 0, opts);
+	opts->x_exit_after_options = true;
 	break;
       }
 
     case OPT__version:
-      exit_after_options = true;
+      opts->x_exit_after_options = true;
       break;
 
     case OPT_O:
@@ -1775,12 +1762,8 @@ common_handle_option (struct gcc_options *opts,
       /* Deferred.  */
       break;
 
-    case OPT_fprofile_dir_:
-      profile_data_prefix = xstrdup (arg);
-      break;
-
     case OPT_fprofile_use_:
-      profile_data_prefix = xstrdup (arg);
+      opts->x_profile_data_prefix = xstrdup (arg);
       opts->x_flag_profile_use = true;
       value = true;
       /* No break here - do -fprofile-use processing. */
@@ -1813,7 +1796,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fprofile_generate_:
-      profile_data_prefix = xstrdup (arg);
+      opts->x_profile_data_prefix = xstrdup (arg);
       value = true;
       /* No break here - do -fprofile-generate processing. */
     case OPT_fprofile_generate:
@@ -1944,11 +1927,11 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_g:
-      set_debug_level (NO_DEBUG, DEFAULT_GDB_EXTENSIONS, arg);
+      set_debug_level (NO_DEBUG, DEFAULT_GDB_EXTENSIONS, arg, opts, opts_set);
       break;
 
     case OPT_gcoff:
-      set_debug_level (SDB_DEBUG, false, arg);
+      set_debug_level (SDB_DEBUG, false, arg, opts, opts_set);
       break;
 
     case OPT_gdwarf_:
@@ -1956,25 +1939,25 @@ common_handle_option (struct gcc_options *opts,
 	error ("dwarf version %d is not supported", value);
       else
 	dwarf_version = value;
-      set_debug_level (DWARF2_DEBUG, false, "");
+      set_debug_level (DWARF2_DEBUG, false, "", opts, opts_set);
       break;
 
     case OPT_ggdb:
-      set_debug_level (NO_DEBUG, 2, arg);
+      set_debug_level (NO_DEBUG, 2, arg, opts, opts_set);
       break;
 
     case OPT_gstabs:
     case OPT_gstabs_:
-      set_debug_level (DBX_DEBUG, code == OPT_gstabs_, arg);
+      set_debug_level (DBX_DEBUG, code == OPT_gstabs_, arg, opts, opts_set);
       break;
 
     case OPT_gvms:
-      set_debug_level (VMS_DEBUG, false, arg);
+      set_debug_level (VMS_DEBUG, false, arg, opts, opts_set);
       break;
 
     case OPT_gxcoff:
     case OPT_gxcoff_:
-      set_debug_level (XCOFF_DEBUG, code == OPT_gxcoff_, arg);
+      set_debug_level (XCOFF_DEBUG, code == OPT_gxcoff_, arg, opts, opts_set);
       break;
 
     case OPT_pedantic_errors:
@@ -2080,15 +2063,15 @@ set_unsafe_math_optimizations_flags (struct gcc_options *opts, int set)
   opts->x_flag_reciprocal_math = set;
 }
 
-/* Return true iff flags are set as if -ffast-math.  */
+/* Return true iff flags in OPTS are set as if -ffast-math.  */
 bool
-fast_math_flags_set_p (void)
+fast_math_flags_set_p (const struct gcc_options *opts)
 {
-  return (!flag_trapping_math
-	  && flag_unsafe_math_optimizations
-	  && flag_finite_math_only
-	  && !flag_signed_zeros
-	  && !flag_errno_math);
+  return (!opts->x_flag_trapping_math
+	  && opts->x_flag_unsafe_math_optimizations
+	  && opts->x_flag_finite_math_only
+	  && !opts->x_flag_signed_zeros
+	  && !opts->x_flag_errno_math);
 }
 
 /* Return true iff flags are set as if -ffast-math but using the flags stored
@@ -2103,49 +2086,52 @@ fast_math_flags_struct_set_p (struct cl_optimization *opt)
 	  && !opt->x_flag_errno_math);
 }
 
-/* Handle a debug output -g switch.  EXTENDED is true or false to support
-   extended output (2 is special and means "-ggdb" was given).  */
+/* Handle a debug output -g switch for options OPTS
+   (OPTS_SET->x_write_symbols storing whether a debug type was passed
+   explicitly).  EXTENDED is true or false to support extended output
+   (2 is special and means "-ggdb" was given).  */
 static void
-set_debug_level (enum debug_info_type type, int extended, const char *arg)
+set_debug_level (enum debug_info_type type, int extended, const char *arg,
+		 struct gcc_options *opts, struct gcc_options *opts_set)
 {
-  static bool type_explicit;
-
-  use_gnu_debug_info_extensions = extended;
+  opts->x_use_gnu_debug_info_extensions = extended;
 
   if (type == NO_DEBUG)
     {
-      if (write_symbols == NO_DEBUG)
+      if (opts->x_write_symbols == NO_DEBUG)
 	{
-	  write_symbols = PREFERRED_DEBUGGING_TYPE;
+	  opts->x_write_symbols = PREFERRED_DEBUGGING_TYPE;
 
 	  if (extended == 2)
 	    {
 #ifdef DWARF2_DEBUGGING_INFO
-	      write_symbols = DWARF2_DEBUG;
+	      opts->x_write_symbols = DWARF2_DEBUG;
 #elif defined DBX_DEBUGGING_INFO
-	      write_symbols = DBX_DEBUG;
+	      opts->x_write_symbols = DBX_DEBUG;
 #endif
 	    }
 
-	  if (write_symbols == NO_DEBUG)
+	  if (opts->x_write_symbols == NO_DEBUG)
 	    warning (0, "target system does not support debug output");
 	}
     }
   else
     {
       /* Does it conflict with an already selected type?  */
-      if (type_explicit && write_symbols != NO_DEBUG && type != write_symbols)
+      if (opts_set->x_write_symbols != NO_DEBUG
+	  && opts->x_write_symbols != NO_DEBUG
+	  && type != opts->x_write_symbols)
 	error ("debug format \"%s\" conflicts with prior selection",
 	       debug_type_names[type]);
-      write_symbols = type;
-      type_explicit = true;
+      opts->x_write_symbols = type;
+      opts_set->x_write_symbols = type;
     }
 
   /* A debug flag without a level defaults to level 2.  */
   if (*arg == '\0')
     {
-      if (!debug_info_level)
-	debug_info_level = DINFO_LEVEL_NORMAL;
+      if (!opts->x_debug_info_level)
+	opts->x_debug_info_level = DINFO_LEVEL_NORMAL;
     }
   else
     {
@@ -2155,7 +2141,7 @@ set_debug_level (enum debug_info_type type, int extended, const char *arg)
       else if (argval > 3)
 	error ("debug output level %s is too high", arg);
       else
-	debug_info_level = (enum debug_info_level) argval;
+	opts->x_debug_info_level = (enum debug_info_levels) argval;
     }
 }
 

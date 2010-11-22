@@ -126,6 +126,27 @@ enum debug_struct_file debug_struct_ordinary[DINFO_USAGE_NUM_ENUMS] = { DINFO_ST
 Variable
 enum debug_struct_file debug_struct_generic[DINFO_USAGE_NUM_ENUMS] = { DINFO_STRUCT_FILE_ANY, DINFO_STRUCT_FILE_ANY, DINFO_STRUCT_FILE_ANY }
 
+; True if we should exit after parsing options.
+Variable
+bool exit_after_options
+
+; Type(s) of debugging information we are producing (if any).  See
+; flag-types.h for the definitions of the different possible types of
+; debugging information.
+Variable
+enum debug_info_type write_symbols = NO_DEBUG
+
+; Level of debugging information we are producing.  See flag-types.h
+; for the definitions of the different possible levels.
+Variable
+enum debug_info_levels debug_info_level = DINFO_LEVEL_NONE
+
+; Nonzero means use GNU-only extensions in the generated symbolic
+; debugging information.  Currently, this only has an effect when
+; write_symbols is set to DBX_DEBUG, XCOFF_DEBUG, or DWARF_DEBUG.
+Variable
+bool use_gnu_debug_info_extensions
+
 ###
 Driver
 
@@ -1351,7 +1372,7 @@ Common Report Var(profile_arc_flag)
 Insert arc-based program profiling code
 
 fprofile-dir=
-Common Joined RejectNegative
+Common Joined RejectNegative Var(profile_data_prefix)
 Set the top-level directory for storing the profile data.
 The default is 'pwd'.
 

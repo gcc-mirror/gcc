@@ -1,3 +1,7 @@
+2010-11-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* objc-act.c (write_symbols): Don't declare here.
+
 2010-11-22  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/41108
