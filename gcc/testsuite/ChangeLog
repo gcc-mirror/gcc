@@ -1,3 +1,9 @@
+2010-11-22  Ian Bolton  <ian.bolton@arm.com>
+
+	* testsuite/c-c++-common/pr44832.c: Use -fno-short-enums option for
+	"target short_enums".
+	* testsuite/gcc.c-torture/compile/pr39845.c: Likewise.
+
 2010-11-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/46603
