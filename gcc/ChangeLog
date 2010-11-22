@@ -2176,6 +2176,7 @@
 
 2010-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR target/45986
 	* config/sparc/sparc.c (sparc_delegitimize_address): New function.
 	(TARGET_DELEGITIMIZE_ADDRESS): Define to above.
 
