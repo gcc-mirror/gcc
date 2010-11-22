@@ -1,3 +1,9 @@
+2010-11-22  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/41108
+	* objc-act.c (objc_generate_write_barrier): Added assert to make sure
+	this function is only called with the next runtime.
+
 2010-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/46547
