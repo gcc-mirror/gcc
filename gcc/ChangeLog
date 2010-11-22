@@ -1,3 +1,9 @@
+2010-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/43057
+	* fold-const.c (pedantic_non_lvalue_loc): Unshare x before
+	setting location.
+
 2010-11-22  Richard Guenther  <rguenther@suse.de>
 
 	* gimple-fold.c (maybe_fold_reference): When canonicalizing
@@ -31,8 +37,8 @@
 	(get_output_file_with_visibility): Updated comments and rewritten
 	to use the new files_rules machinery.
 
-        * Makefile.in (XREGEX_H): Added variable.
-        (build/gengtype.o): Added dependencies for xregex.h and obstack.h
+	* Makefile.in (XREGEX_H): Added variable.
+	(build/gengtype.o): Added dependencies for xregex.h and obstack.h
 
 2010-11-21  Nathan Froyd  <froydnj@codesourcery.com>
 
@@ -204,8 +210,7 @@
 
 	* doc/tm.texi.in (HANDLE_SYSV_PRAGMA,
 	HANDLE_PRAGMA_PACK_PUSH_POP): Remove.
-	(HANDLE_PRAGMA_PACK_WITH_EXPANSION): Don't refer to
-	HANDLE_SYSV_PRAGMA.
+	(HANDLE_PRAGMA_PACK_WITH_EXPANSION): Don't refer to HANDLE_SYSV_PRAGMA.
 	* doc/tm.texi: Regenerate.
 	* system.h (HANDLE_PRAGMA_PACK_PUSH_POP, HANDLE_SYSV_PRAGMA,
 	HANDLE_PRAGMA_WEAK): Poison.
