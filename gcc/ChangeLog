@@ -1,3 +1,8 @@
+2010-11-22  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
+
+	PR driver/43335
+	* gcc.c (main): Don't crash when lto-wrapper program is not found.
+
 2010-11-22  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR target/46608

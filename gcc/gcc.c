@@ -6074,6 +6074,7 @@ main (int argc, char **argv)
   int num_linker_inputs = 0;
   char *explicit_link_files;
   char *specs_file;
+  char *lto_wrapper_file;
   const char *p;
   struct user_specs *uptr;
   char **old_argv = argv;
@@ -6412,9 +6413,10 @@ main (int argc, char **argv)
 
   /* Set up to remember the pathname of the lto wrapper. */
 
-  lto_wrapper_spec = find_a_file (&exec_prefixes, "lto-wrapper", X_OK, false);
-  if (lto_wrapper_spec)
+  lto_wrapper_file = find_a_file (&exec_prefixes, "lto-wrapper", X_OK, false);
+  if (lto_wrapper_file)
     {
+      lto_wrapper_spec = lto_wrapper_file;
       obstack_init (&collect_obstack);
       obstack_grow (&collect_obstack, "COLLECT_LTO_WRAPPER=",
 		    sizeof ("COLLECT_LTO_WRAPPER=") - 1);
