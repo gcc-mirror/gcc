@@ -6990,25 +6990,7 @@ fi
 
 # Check whether --with-dwarf2 was given.
 if test "${with_dwarf2+set}" = set; then :
-  withval=$with_dwarf2;
-  case $target in
-    hppa*-*-hpux*)
-      case $target in
-	hppa*64*-*-*)
-          dwarf2="$with_dwarf2"
-	  ;;
-	*)
-	  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: dwarf2 debug format is not supported for this target, ignored" >&5
-$as_echo "$as_me: WARNING: dwarf2 debug format is not supported for this target, ignored" >&2;}
-	  dwarf2=no
-	  ;;
-      esac
-      ;;
-    *)
-      dwarf2="$with_dwarf2"
-      ;;
-  esac
-
+  withval=$with_dwarf2; dwarf2="$with_dwarf2"
 else
   dwarf2=no
 fi
@@ -17304,7 +17286,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17307 "configure"
+#line 17289 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17410,7 +17392,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17413 "configure"
+#line 17395 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
