@@ -6446,6 +6446,7 @@
 
 2010-07-16  Iain Sandoe  <iains@gcc.gnu.org>
 
+	PR testsuite/43925
 	* lib/plugin-support.exp (plugin-test-execute):
 	Add ${gcc_objdir}/intl to includes.
 
