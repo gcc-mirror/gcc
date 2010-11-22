@@ -21,7 +21,6 @@
    along with GCC; see the file COPYING3.  If not, see
    <http://www.gnu.org/licenses/>. */
 
-#include "target.h"
 extern void picochip_function_prologue (FILE *, HOST_WIDE_INT);
 extern void picochip_function_epilogue (FILE *, HOST_WIDE_INT);
 
@@ -65,12 +64,6 @@ extern int picochip_absolute_memory_operand (rtx op, enum machine_mode mode);
 
 extern rtx picochip_function_value (const_tree valtype, const_tree func, bool outgoing);
 extern int picochip_symbol_offset (rtx operand);
-
-extern reg_class_t picochip_secondary_reload(bool in_p,
-                                 rtx x,
-                                 reg_class_t cla,
-                                 enum machine_mode mode,
-                                 secondary_reload_info *sri);
 
 extern void picochip_get_hi_aligned_mem (rtx ref, rtx * paligned_mem, rtx * pbitnum);
 
