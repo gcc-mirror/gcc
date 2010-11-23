@@ -1,7 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++0x -fno-inline -save-temps" }
-// { dg-final { scan-assembler-not "_ZNSt23enable_shared_from_thisIiEC2Ev" } }
-// { dg-final { scan-assembler-not "_ZN7derivedC2Ev" } }
+// { dg-options "-std=gnu++0x" }
 
 // Copyright (C) 2010 Free Software Foundation, Inc.
 //
@@ -20,17 +18,40 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <memory>
+#include <complex>
 #include <testsuite_common_types.h>
 
-struct derived : public std::enable_shared_from_this<int>
+namespace __gnu_test
 {
-  constexpr derived() { }
-};
+  struct constexpr_functions
+  {
+    template<typename _Ttesttype>
+      void
+      operator()()
+      {
+	struct _Concept
+	{
+	  void __constraint()
+	  { 
+	    typedef typename _Ttesttype::_ComplexT _ComplexT;
+	    const _ComplexT cc = { 1.1 };
+	    constexpr _Ttesttype a(cc);
+	    constexpr auto v1 __attribute__((unused)) = real(a);
+	    constexpr auto v2 __attribute__((unused)) = imag(a);
+	  }
+	};
+
+	_Concept c;
+	c.__constraint();
+      }
+  };
+}
 
 int main()
 {
-  __gnu_test::constexpr_default_constructible test;
-  test.operator()<derived>();
+  __gnu_test::constexpr_functions test;
+  test.operator()<std::complex<float>>();
+  test.operator()<std::complex<double>>();
+  test.operator()<std::complex<long double>>();
   return 0;
 }

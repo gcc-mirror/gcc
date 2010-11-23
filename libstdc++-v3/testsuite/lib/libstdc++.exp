@@ -51,6 +51,7 @@ load_gcc_lib target-supports.exp
 load_gcc_lib target-supports-dg.exp
 load_lib prune.exp
 load_lib dg-options.exp
+load_gcc_lib scanasm.exp
 load_gcc_lib target-libpath.exp
 load_gcc_lib timeout.exp
 load_gcc_lib timeout-dg.exp

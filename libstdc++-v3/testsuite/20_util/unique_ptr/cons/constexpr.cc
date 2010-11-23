@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x -fno-inline -save-temps" }
-// { dg-final { scan-assembler-not "_ZNSt23enable_shared_from_thisIiEC2Ev" } }
-// { dg-final { scan-assembler-not "_ZN7derivedC2Ev" } }
+// { dg-final { scan-assembler-not "_ZNSt10unique_ptrIiSt14default_deleteIiEEC2Ev" } }
+// { dg-final { scan-assembler-not "_ZNSt10unique_ptrIiSt14default_deleteIiEEC2EDn" } }
 
 // Copyright (C) 2010 Free Software Foundation, Inc.
 //
@@ -23,14 +23,13 @@
 #include <memory>
 #include <testsuite_common_types.h>
 
-struct derived : public std::enable_shared_from_this<int>
-{
-  constexpr derived() { }
-};
-
 int main()
 {
-  __gnu_test::constexpr_default_constructible test;
-  test.operator()<derived>();
+  __gnu_test::constexpr_default_constructible test1;  //not literal
+  test1.operator()<std::unique_ptr<int>>();
+
+  __gnu_test::constexpr_single_value_constructible test2;  //not literal
+  test2.operator()<std::unique_ptr<int>, std::nullptr_t>();
+
   return 0;
 }

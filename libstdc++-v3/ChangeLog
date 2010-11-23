@@ -1,3 +1,42 @@
+2010-11-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/chrono: Constexpr markup for is_monotonic.
+	* src/chrono.cc: Same.
+	* testsuite/20_util/clocks/1.cc: Move...
+	* testsuite/20_util/system_clock/1.cc: ...here.
+	* testsuite/20_util/system_clock/constexpr_data.cc
+	* testsuite/20_util/monotonic_clock/constexpr_data.cc
+
+	* include/std/complex: Mark primary template constexpr.
+	* testsuite/26_numerics/complex/cons/constexpr_primary.cc: Add.
+	* testsuite/26_numerics/complex/complex_value.cc: Move...
+	* testsuite/26_numerics/complex/dr387.cc: Move...
+	* testsuite/26_numerics/complex/value_operations/1.cc: ... here.
+	* testsuite/26_numerics/complex/value_operations/dr387.cc: ...here.
+	* testsuite/26_numerics/complex/value_operations/constexpr.cc: New.
+
+2010-11-23  Benjamin Kosnik  <bkoz@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* testsuite/lib/libstdc++.exp: Use scanasm.
+	* testsuite/util/testsuite_common_types.h
+	(constexpr_default_constructible): Add support for non-literal types.
+	(constexpr_single_value_constructible): Same.
+	* testsuite/20_util/enable_shared_from_this/cons/constexpr.cc:
+	Remove xfail.
+	* testsuite/20_util/shared_ptr/cons/constexpr.cc: Add.
+	* testsuite/20_util/unique_ptr/cons/constexpr.cc: Add.
+	* testsuite/20_util/weak_ptr/cons/constexpr.cc: Add.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust line number.
+
+2010-11-23  Benjamin Kosnik  <bkoz@redhat.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/future (shared_future): Default ctor constexpr.
+	(future): Same.
+	* testsuite/30_threads/shared_future/cons/constexpr.cc: New.
+	* testsuite/30_threads/future/cons/constexpr.cc: New.
+
 2010-11-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/22_locale/collate/hash/char/wrapped_locale.cc: Require
