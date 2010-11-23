@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
     cc1objplus -fpreprocessed %i %(cc1_options) %2\
     %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
   {"@objc++-cpp-output",
-   "%{!M:%{!MM:%{!E:\
+   "%nobjc++-cpp-output is deprecated; please use objective-c++-cpp-output instead\n\
+    %{!M:%{!MM:%{!E:\
     cc1objplus -fpreprocessed %i %(cc1_options) %2\
     %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
