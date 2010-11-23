@@ -1,3 +1,45 @@
+2010-11-23  Jan Hubicka  <jh@suse.cz>
+
+	* tree.h (DECL_HAS_IMPLICIT_SECTION_NAME_P): New macro.
+	(tree_decl_with_vis): Add implicit_section_name_p.
+	* targhooks.h (default_function_section): Declare.
+	* target.def (function_section): New hook.
+	* defaults.h (HOT_TEXT_SECTION_NAME,
+	UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Remove.
+	* predict.c (choose_function_section): Remove.
+	(estimate_bb_frequencies): Do not use choose_function_section.
+	* coretypes.h (enum node_frequency): Move here from cgraph.h
+	* cgraph.h (enum node_frequency): Remove.
+	* varasm.c (initialize_cold_section_name, unlikely_text_section,
+	unlikely_text_section_p): Remove.
+	(named_subsection_entry): New structure.
+	(get_text_section): New function.
+	(default_function_section): New function.
+	(function_section_1): Break out from ...; handle profile info.
+	(function_section): ... here.
+	(unlikely_text_section): Remove.
+	(unlikely_text_section_p): Use function_section_1.
+	(assemble_start_function): Do not initialize cold section.
+	(default_section_type_flags): Do not special case cold subsection.
+	(switch_to_section): Likewise.
+	* output.h (get_text_section): Define.
+	* config/i386/winnt.c: Do not special case cold section.
+	* config/darwin-protos.h (darwin_function_section): Declare.
+	* config/microblaze/microblaze.h (HOT_TEXT_SECTION_NAME,
+	UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Remove.
+	* config/ia64/hpux.h (HOT_TEXT_SECTION_NAME,
+	UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Remove.
+	(TARGET_ASM_FUNCTION_SECTION): Define to ia64_hpux_function_section.
+	* config/ia64/ia64.c (ia64_hpux_function_section): New function.
+	* config/darwin.c (machopic_select_section): Use
+	darwin_function_section.
+	(darwin_function_section): New function.
+	* config/darwin.h (HOT_TEXT_SECTION_NAME,
+	UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Remove.
+	(TARGET_ASM_FUNCTION_SECTION): Define.
+	* system.h (HOT_TEXT_SECTION_NAME,
+	UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Poison.
+
 2010-11-23  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin.h (LINK_COMMAND_SPEC_A): Use %(link_gcc_c_sequence).

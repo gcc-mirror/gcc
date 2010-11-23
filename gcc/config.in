@@ -1142,6 +1142,10 @@
 #undef HAVE_LD_DEMANGLE
 #endif
 
+/* Define if your linker supports plugin. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_PLUGIN
+#endif
 
 /* Define if your linker supports --eh-frame-hdr option. */
 #undef HAVE_LD_EH_FRAME_HDR

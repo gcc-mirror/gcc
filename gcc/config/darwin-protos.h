@@ -57,6 +57,7 @@ extern section *machopic_select_section (tree, int, unsigned HOST_WIDE_INT);
 extern section *machopic_select_rtx_section (enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT);
 
+extern section *darwin_function_section (tree, enum node_frequency, bool, bool); 
 extern void darwin_unique_section (tree decl, int reloc);
 extern void darwin_asm_named_section (const char *, unsigned int, tree);
 extern void darwin_non_lazy_pcrel (FILE *, rtx);

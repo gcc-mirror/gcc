@@ -171,7 +171,8 @@ extern int default_label_align_after_barrier_max_skip (rtx);
 extern int default_loop_align_max_skip (rtx);
 extern int default_label_align_max_skip (rtx);
 extern int default_jump_align_max_skip (rtx);
-
+extern section * default_function_section(tree decl, enum node_frequency freq,
+					  bool startup, bool exit);
 extern enum machine_mode default_get_reg_raw_mode(int);
 
 extern const struct default_options empty_optimization_table[];

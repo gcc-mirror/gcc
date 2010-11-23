@@ -336,6 +336,8 @@ static tree ia64_builtin_decl (unsigned, bool);
 
 static reg_class_t ia64_preferred_reload_class (rtx, reg_class_t);
 static enum machine_mode ia64_get_reg_raw_mode (int regno);
+static section * ia64_hpux_function_section (tree, enum node_frequency,
+					     bool, bool);
 
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ia64_attribute_table[] =
@@ -11020,6 +11022,17 @@ ia64_get_reg_raw_mode (int regno)
   if (FR_REGNO_P (regno))
     return XFmode;
   return default_get_reg_raw_mode(regno);
+}
+
+/* Always default to .text section until HP-UX linker is fixed.  */
+
+ATTRIBUTE_UNUSED static section *
+ia64_hpux_function_section (tree decl ATTRIBUTE_UNUSED,
+			    enum node_frequency freq ATTRIBUTE_UNUSED,
+			    bool startup ATTRIBUTE_UNUSED,
+			    bool exit ATTRIBUTE_UNUSED)
+{
+  return NULL;
 }
 
 #include "gt-ia64.h"

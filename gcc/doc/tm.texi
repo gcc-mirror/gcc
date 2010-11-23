@@ -7328,6 +7328,16 @@ is non-NULL, it is the @code{VAR_DECL} or @code{FUNCTION_DECL} with which
 this section is associated.
 @end deftypefn
 
+@deftypefn {Target Hook} {section *} TARGET_ASM_FUNCTION_SECTION (tree @var{decl}, enum node_frequency @var{freq}, bool @var{startup}, bool @var{exit})
+Return preferred text (sub)section for function @var{decl}.
+Main purpose of this function is to separate cold, normal and hot
+functions. @var{startup} is true when function is known to be used only 
+at startup (from static constructors or it is @code{main()}).
+@var{exit} is true when function is known to be used only at exit
+(from static destructors).
+Return NULL if function should go to default text section.
+@end deftypefn
+
 @deftypevr {Target Hook} bool TARGET_HAVE_NAMED_SECTIONS
 This flag is true if the target supports @code{TARGET_ASM_NAMED_SECTION}.
 @end deftypevr

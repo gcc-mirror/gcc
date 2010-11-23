@@ -218,8 +218,4 @@ do {								\
    it is fixed, prevent code from being put into .text.unlikely or
    .text.hot.  */
 
-#undef UNLIKELY_EXECUTED_TEXT_SECTION_NAME
-#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME ".text"
-
-#undef HOT_TEXT_SECTION_NAME
-#define HOT_TEXT_SECTION_NAME ".text"
+#define TARGET_ASM_FUNCTION_SECTION ia64_hpux_function_section
