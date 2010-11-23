@@ -327,13 +327,17 @@ esac
 # Handle --enable-gold, --enable-ld.
 # --disable-gold [--enable-ld]
 #     Build only ld.  Default option.
-# --enable-gold[=default] [--enable-ld]
+# --enable-gold [--enable-ld]
+#     Build both gold and ld.  Install gold as "ld.gold", install ld
+#     as "ld.bfd" and "ld".
+# --enable-gold=default [--enable-ld]
 #     Build both gold and ld.  Install gold as "ld.gold" and "ld",
 #     install ld as "ld.bfd".
 # --enable-gold[=default] --disable-ld
 #     Build only gold, which is then installed as both "ld.gold" and "ld".
 # --enable-gold --enable-ld=default
-#     Build both gold (installed as "gold") and ld (installed as "ld").
+#     Build both gold (installed as "ld.gold") and ld (installed as "ld"
+#     and ld.bfd).
 #     In other words, ld is default
 # --enable-gold=default --enable-ld=default
 #     Error.
@@ -387,7 +391,7 @@ ENABLE_LD=yes)
 
 case "${ENABLE_LD}" in
   default)
-    if test x${default_ld} != xgold; then
+    if test x${default_ld} != x; then
       AC_MSG_ERROR([either gold or ld can be the default ld])
     fi
     ;;
