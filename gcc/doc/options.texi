@@ -340,6 +340,17 @@ is marked @code{Warn}, the target of the alias must not also be marked
 @item Report
 The state of the option should be printed by @option{-fverbose-asm}.
 
+@item Warning
+This is a warning option and should be shown as such in
+@option{--help} output.  This flag does not currently affect anything
+other than @option{--help}.
+
+@item Optimization
+This is an optimization option.  It should be shown as such in
+@option{--help} output, and any associated variable named using
+@code{Var} should be saved and restored when the optimization level is
+changed with @code{optimize} attributes.
+
 @item Undocumented
 The option is deliberately missing documentation and should not
 be included in the @option{--help} output.
