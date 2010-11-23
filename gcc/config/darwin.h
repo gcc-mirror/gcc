@@ -160,10 +160,9 @@ extern GTY(()) int darwin_ms_struct;
 	" %{pthread:-D_REENTRANT}"
 
 /* This is mostly a clone of the standard LINK_COMMAND_SPEC, plus
-   precomp, libtool, and fat build additions.  Also we
-   don't specify a second %G after %L because libSystem is
-   self-contained and doesn't need to link against libgcc.a.  */
-/* In general, random Darwin linker flags should go into LINK_SPEC
+   precomp, libtool, and fat build additions.
+
+   In general, random Darwin linker flags should go into LINK_SPEC
    instead of LINK_COMMAND_SPEC.  The command spec is better for
    specifying the handling of options understood by generic Unix
    linkers, and for positional arguments like libraries.  */
@@ -180,10 +179,12 @@ extern GTY(()) int darwin_ms_struct;
     %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
     %{fopenmp|ftree-parallelize-loops=*: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
-    %{!nostdlib:%{!nodefaultlibs: %(link_ssp) %G %L }} \
-    %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} %{F*} }}}}}}}\n"
+    %{!nostdlib:%{!nodefaultlibs:\
+      %(link_ssp) %(link_gcc_c_sequence)\
+    }}\
+    %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} %{F*} }}}}}}}"
 
-#define DSYMUTIL "dsymutil"
+#define DSYMUTIL "\ndsymutil"
 
 #define DSYMUTIL_SPEC \
    "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
@@ -191,6 +192,11 @@ extern GTY(()) int darwin_ms_struct;
     %{gdwarf-2:%{!gstabs*:%{!g0: " DSYMUTIL " %{o*:%*}%{!o:a.out}}}}}}}}}}}}"
 
 #define LINK_COMMAND_SPEC LINK_COMMAND_SPEC_A DSYMUTIL_SPEC
+
+/* We only want one instance of %G, since libSystem (Darwin's -lc) does not depend
+   on libgcc.  */
+#undef  LINK_GCC_C_SEQUENCE_SPEC
+#define LINK_GCC_C_SEQUENCE_SPEC "%G %L"
 
 #ifdef TARGET_SYSTEM_ROOT
 #define LINK_SYSROOT_SPEC \

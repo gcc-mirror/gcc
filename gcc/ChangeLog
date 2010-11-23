@@ -1,3 +1,8 @@
+2010-11-23  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Use %(link_gcc_c_sequence).
+	LINK_GCC_C_SEQUENCE_SPEC: Define new macro.
+
 2010-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46499
