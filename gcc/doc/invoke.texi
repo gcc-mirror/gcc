@@ -9690,6 +9690,18 @@ its usage:
 %:remove-outfile(-lm)
 @end smallexample
 
+@item @code{pass-through-libs}
+The @code{pass-through-libs} spec function takes any number of arguments.  It
+finds any @option{-l} options and any non-options ending in ".a" (which it
+assumes are the names of linker input library archive files) and returns a
+result containing all the found arguments each prepended by
+@option{-plugin-opt=-pass-through=} and joined by spaces.  This list is
+intended to be passed to the LTO linker plugin.
+
+@smallexample
+%:pass-through-libs(%G %L %G)
+@end smallexample
+
 @item @code{print-asm-header}
 The @code{print-asm-header} function takes no arguments and simply
 prints a banner like:

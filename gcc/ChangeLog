@@ -1,3 +1,17 @@
+2010-11-23  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR driver/42690
+	* gcc.c (LINK_COMMAND_SPEC): Remove hard-coded pass-through plugin
+	options, replace by call of pass-through-libs spec function to process
+	link_gcc_c_sequence spec.
+	(lto_libgcc_spec): Delete variable.
+	(static_specs[]): Remove related entry.
+	(static_spec_functions[]): Add new entry for pass-through-libs.
+	(main): Don't generate deleted lto_libgcc_spec.
+	(pass_through_libs_spec_func): New function to implement the new
+	pass-through-libs spec function.
+	* doc/invoke.texi (pass-through-libs): Document new spec function.
+
 2010-11-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/options.texi (Warning, Optimization): Document.

@@ -284,6 +284,7 @@ static const char *print_asm_header_spec_function (int, const char **);
 static const char *compare_debug_dump_opt_spec_function (int, const char **);
 static const char *compare_debug_self_opt_spec_function (int, const char **);
 static const char *compare_debug_auxbase_opt_spec_function (int, const char **);
+static const char *pass_through_libs_spec_func (int, const char **);
 
 /* The Specs Language
 
@@ -656,8 +657,7 @@ proper position among the other output files.  */
     -plugin %(linker_plugin_file) \
     -plugin-opt=%(lto_wrapper) \
     -plugin-opt=-fresolution=%u.res \
-    %{static|static-libgcc:-plugin-opt=-pass-through=%(lto_libgcc)}	\
-    %{static:-plugin-opt=-pass-through=-lc}	\
+    %{!nostdlib:%{!nodefaultlibs:%:pass-through-libs(%(link_gcc_c_sequence))}} \
     } \
     %{flto*:%<fcompare-debug*} \
     %{flto*} %l " LINK_PIE_SPEC \
@@ -712,7 +712,6 @@ static const char *linker_name_spec = LINKER_NAME;
 static const char *linker_plugin_file_spec = "";
 static const char *lto_wrapper_spec = "";
 static const char *lto_gcc_spec = "";
-static const char *lto_libgcc_spec = "";
 static const char *link_command_spec = LINK_COMMAND_SPEC;
 static const char *link_libgcc_spec = LINK_LIBGCC_SPEC;
 static const char *startfile_prefix_spec = STARTFILE_PREFIX_SPEC;
@@ -1197,7 +1196,6 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("linker_plugin_file",	&linker_plugin_file_spec),
   INIT_STATIC_SPEC ("lto_wrapper",		&lto_wrapper_spec),
   INIT_STATIC_SPEC ("lto_gcc",			&lto_gcc_spec),
-  INIT_STATIC_SPEC ("lto_libgcc",		&lto_libgcc_spec),
   INIT_STATIC_SPEC ("link_libgcc",		&link_libgcc_spec),
   INIT_STATIC_SPEC ("md_exec_prefix",		&md_exec_prefix),
   INIT_STATIC_SPEC ("md_startfile_prefix",	&md_startfile_prefix),
@@ -1242,6 +1240,7 @@ static const struct spec_function static_spec_functions[] =
   { "compare-debug-dump-opt",	compare_debug_dump_opt_spec_function },
   { "compare-debug-self-opt",	compare_debug_self_opt_spec_function },
   { "compare-debug-auxbase-opt", compare_debug_auxbase_opt_spec_function },
+  { "pass-through-libs",	pass_through_libs_spec_func },
 #ifdef EXTRA_SPEC_FUNCTIONS
   EXTRA_SPEC_FUNCTIONS
 #endif
@@ -6805,11 +6804,6 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 						 false);
 	  if (!linker_plugin_file_spec)
 	    fatal_error ("-fuse-linker-plugin, but " LTOPLUGINSONAME " not found");
-
-	  lto_libgcc_spec = find_a_file (&startfile_prefixes, "libgcc.a",
-					 R_OK, true);
-	  if (!lto_libgcc_spec)
-	    fatal_error ("could not find libgcc.a");
 	}
       lto_gcc_spec = argv[0];
 
@@ -8189,4 +8183,47 @@ compare_debug_auxbase_opt_spec_function (int arg,
 #undef OPT
 
   return name;
+}
+
+/* %:pass-through-libs spec function.  Finds all -l options and input
+   file names in the lib spec passed to it, and makes a list of them
+   prepended with the plugin option to cause them to be passed through
+   to the final link after all the new object files have been added.  */
+
+const char *
+pass_through_libs_spec_func (int argc, const char **argv)
+{
+  char *prepended = xstrdup (" ");
+  int n;
+  /* Shlemiel the painter's algorithm.  Innately horrible, but at least
+     we know that there will never be more than a handful of strings to
+     concat, and it's only once per run, so it's not worth optimising.  */
+  for (n = 0; n < argc; n++)
+    {
+      char *old = prepended;
+      /* Anything that isn't an option is a full path to an output
+         file; pass it through if it ends in '.a'.  Among options,
+	 pass only -l.  */
+      if (argv[n][0] == '-' && argv[n][1] == 'l')
+	{
+	  const char *lopt = argv[n] + 2;
+	  /* Handle both joined and non-joined -l options.  If for any
+	     reason there's a trailing -l with no joined or following
+	     arg just discard it.  */
+	  if (!*lopt && ++n >= argc)
+	    break;
+	  else if (!*lopt)
+	    lopt = argv[n];
+	  prepended = concat (prepended, "-plugin-opt=-pass-through=-l",
+		lopt, " ", NULL);
+	}
+      else if (!strcmp (".a", argv[n] + strlen (argv[n]) - 2))
+	{
+	  prepended = concat (prepended, "-plugin-opt=-pass-through=",
+		argv[n], " ", NULL);
+	}
+      if (prepended != old)
+	free (old);
+    }
+  return prepended;
 }
