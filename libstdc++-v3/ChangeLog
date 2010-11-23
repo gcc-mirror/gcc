@@ -1,3 +1,9 @@
+2010-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/22_locale/collate/hash/char/wrapped_locale.cc: Require
+	additional locale name.
+	* testsuite/22_locale/collate/hash/char/wrapped_env.cc: Ditto.
+
 2010-11-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/46455
@@ -94,42 +100,42 @@
 
 	PR libstdc++/44436 (partial)
 	PR libstdc++/46148
-        * include/bits/stl_tree.h (_Rb_tree<>::_M_insert_, _M_insert_lower,
+	* include/bits/stl_tree.h (_Rb_tree<>::_M_insert_, _M_insert_lower,
 	_M_insert_equal_lower, _M_insert_unique, _M_insert_equal,
 	_M_insert_unique_, _M_insert_equal_): Templatize in C++0x mode,
 	use _GLIBCXX_FORWARD throughout.
-        * include/bits/stl_map.h (map<>::insert(_Pair&&),
+	* include/bits/stl_map.h (map<>::insert(_Pair&&),
 	insert(const_iterator, _Pair&&), operator[](key_type&&): Add.
-        * include/bits/stl_set.h (set<>::insert(value_type&&),
+	* include/bits/stl_set.h (set<>::insert(value_type&&),
 	insert(const_iterator, value_type&&)): Likewise.
-        * include/bits/stl_multimap.h (multimap<>::insert(_Pair&&),
+	* include/bits/stl_multimap.h (multimap<>::insert(_Pair&&),
 	insert(const_iterator, _Pair&&)): Likewise.
-        * include/bits/stl_multiset.h (multiset<>::insert(value_type&&),
+	* include/bits/stl_multiset.h (multiset<>::insert(value_type&&),
 	insert(const_iterator, value_type&&)): Likewise.
 	* include/debug/set.h: Adjust.
-        * include/debug/multiset.h: Likewise.
-        * include/debug/map.h: Likewise.
-        * include/debug/multimap.h: Likewise.
-        * include/profile/set.h: Likewise.
-        * include/profile/multiset.h: Likewise.
-        * include/profile/map.h: Likewise.
-        * include/profile/multimap.h: Likewise.
-        * testsuite/23_containers/multimap/modifiers/insert/1.cc: New.
-        * testsuite/23_containers/multimap/modifiers/insert/2.cc: Likewise.
-        * testsuite/23_containers/multimap/modifiers/insert/3.cc: Likewise.
-        * testsuite/23_containers/multimap/modifiers/insert/4.cc: Likewise.
-        * testsuite/23_containers/set/modifiers/insert/2.cc: Likewise.
-        * testsuite/23_containers/set/modifiers/insert/3.cc: Likewise.
-        * testsuite/23_containers/multiset/modifiers/insert/3.cc: Likewise.
-        * testsuite/23_containers/multiset/modifiers/insert/4.cc: Likewise.
-        * testsuite/23_containers/map/modifiers/insert/2.cc: Likewise.
-        * testsuite/23_containers/map/modifiers/insert/3.cc: Likewise.
-        * testsuite/23_containers/map/modifiers/insert/4.cc: Likewise.
-        * testsuite/23_containers/map/modifiers/insert/5.cc: Likewise.
-        * testsuite/23_containers/map/element_access/2.cc: Likewise.
-        * testsuite/23_containers/map/element_access/46148.cc: Likewise.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/profile/set.h: Likewise.
+	* include/profile/multiset.h: Likewise.
+	* include/profile/map.h: Likewise.
+	* include/profile/multimap.h: Likewise.
+	* testsuite/23_containers/multimap/modifiers/insert/1.cc: New.
+	* testsuite/23_containers/multimap/modifiers/insert/2.cc: Likewise.
+	* testsuite/23_containers/multimap/modifiers/insert/3.cc: Likewise.
+	* testsuite/23_containers/multimap/modifiers/insert/4.cc: Likewise.
+	* testsuite/23_containers/set/modifiers/insert/2.cc: Likewise.
+	* testsuite/23_containers/set/modifiers/insert/3.cc: Likewise.
+	* testsuite/23_containers/multiset/modifiers/insert/3.cc: Likewise.
+	* testsuite/23_containers/multiset/modifiers/insert/4.cc: Likewise.
+	* testsuite/23_containers/map/modifiers/insert/2.cc: Likewise.
+	* testsuite/23_containers/map/modifiers/insert/3.cc: Likewise.
+	* testsuite/23_containers/map/modifiers/insert/4.cc: Likewise.
+	* testsuite/23_containers/map/modifiers/insert/5.cc: Likewise.
+	* testsuite/23_containers/map/element_access/2.cc: Likewise.
+	* testsuite/23_containers/map/element_access/46148.cc: Likewise.
 
-        * include/bits/hashtable.h: Trivial naming changes.
+	* include/bits/hashtable.h: Trivial naming changes.
 
 2010-11-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -145,10 +151,10 @@
 	line number.
 
 2010-11-09  François Dumont  <francois.cppdevs@free.fr>
-            Johannes Singler  <singler@kit.edu>
+	    Johannes Singler  <singler@kit.edu>
 
-        * include/parallel/algobase.h (equal):  Call parallel variant
-        for applicable overloads.
+	* include/parallel/algobase.h (equal):  Call parallel variant
+	for applicable overloads.
 
 2010-11-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -180,8 +186,8 @@
 
 2010-11-08  Benjamin Kosnik  <bkoz@redhat.com>
 
-        * include/std/complex (operator==, !=): Mark constexpr.
-        * testsuite/26_numerics/complex/comparison_operators/constexpr.cc: New.
+	* include/std/complex (operator==, !=): Mark constexpr.
+	* testsuite/26_numerics/complex/comparison_operators/constexpr.cc: New.
 
 2010-11-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -1839,89 +1845,89 @@
 
 2010-08-29  François Dumont  <francois.cppdevs@free.fr>
 
-        * include/bits/stl_algobase.h (_Iter_base):  Move...
-        * include/bits/stl_iterator_base_types.h: ...here.
-        * include/debug/functions.h (__check_valid_range, __check_string,
+	* include/bits/stl_algobase.h (_Iter_base):  Move...
+	* include/bits/stl_iterator_base_types.h: ...here.
+	* include/debug/functions.h (__check_valid_range, __check_string,
 	__check_sorted): Fix to not depend on _GLIBCXX_DEBUG; include
 	formatter.h and use formatting macros for a consistent debug result.
-        * include/debug/formatter.h (__check_singular): Declare; do not
+	* include/debug/formatter.h (__check_singular): Declare; do not
 	include debug.h.
-        * include/debug/debug.h: Do not include formatter.h.
-        * include/debug/safe_iterator.h (_Safe_iterator::_Base_Iterator)
-        rename to iterator_type.
+	* include/debug/debug.h: Do not include formatter.h.
+	* include/debug/safe_iterator.h (_Safe_iterator::_Base_Iterator)
+	rename to iterator_type.
 	(__gnu_debug::__base): Add.
-        * include/debug/set.h: Use everywhere __gnu_debug::__base once
+	* include/debug/set.h: Use everywhere __gnu_debug::__base once
 	iterator range valided.
-        * include/debug/unordered_map: Likewise.
-        * include/debug/multiset.h: Likewise.
-        * include/debug/vector: Likewise.
-        * include/debug/unordered_set: Likewise.
-        * include/debug/deque: Likewise.
-        * include/debug/map.h: Likewise.
-        * include/debug/string: Likewise.
-        * include/debug/list: Likewise.
-        * include/debug/multimap.h: Likewise.
-        * testsuite/23_containers/util/debug/assign_neg.h: New test cases on
-        debug checks performed on container assign operation.
-        * testsuite/23_containers/util/debug/construct_neg.h: New test cases
-        on debug checks on constructors.
-        * testsuite/23_containers/util/debug/insert_neg.h: New test cases on
-        debug checks performed on container insert operations.
-        * testsuite/23_containers/unordered_map/debug/cont_traits.h,
-        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
-        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
-        insert3_neg.cc, insert4_neg.cc: New.
-        * testsuite/23_containers/multimap/debug/cont_traits.h,
-        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
-        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
-        insert3_neg.cc, insert4_neg.cc: Likewise.
-        * testsuite/23_containers/set/debug/cont_traits.h,
-        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
-        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
-        insert3_neg.cc, insert4_neg.cc: Likewise.
-        * testsuite/23_containers/unordered_multimap/debug/cont_traits.h,
-        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
-        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
-        insert3_neg.cc, insert4_neg.cc: Likewise.
-        * testsuite/23_containers/unordered_set/debug/cont_traits.h,
-        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
-        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
-        insert3_neg.cc, insert4_neg.cc: Likewise.
-        * testsuite/23_containers/multiset/debug/cont_traits.h,
-        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
-        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
-        insert3_neg.cc, insert4_neg.cc: Likewise.
-        * testsuite/23_containers/unordered_multiset/debug/cont_traits.h,
-        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
-        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
-        insert3_neg.cc, insert4_neg.cc: Likewise.
-        * testsuite/23_containers/map/debug/cont_traits.h,
-        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
-        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
-        insert3_neg.cc, insert4_neg.cc: Likewise.
-        * testsuite/23_containers/vector/debug/cont_traits.h,
-        debug_cont_traits.h, assign1_neg.cc, assign2_neg.cc, assign3_neg.cc,
-        assign4_neg.cc, construct1_neg.cc, construct2_neg.cc,
-        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
-        insert3_neg.cc, insert4_neg.cc: Likewise.
-        * testsuite/23_containers/deque/debug/cont_traits.h,
-        debug_cont_traits.h, assign1_neg.cc, assign2_neg.cc, assign3_neg.cc,
-        assign4_neg.cc, construct1_neg.cc, construct2_neg.cc,
-        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
-        insert3_neg.cc, insert4_neg.cc: Likewise.
+	* include/debug/unordered_map: Likewise.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/vector: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/deque: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/string: Likewise.
+	* include/debug/list: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* testsuite/23_containers/util/debug/assign_neg.h: New test cases on
+	debug checks performed on container assign operation.
+	* testsuite/23_containers/util/debug/construct_neg.h: New test cases
+	on debug checks on constructors.
+	* testsuite/23_containers/util/debug/insert_neg.h: New test cases on
+	debug checks performed on container insert operations.
+	* testsuite/23_containers/unordered_map/debug/cont_traits.h,
+	debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+	construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+	insert3_neg.cc, insert4_neg.cc: New.
+	* testsuite/23_containers/multimap/debug/cont_traits.h,
+	debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+	construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+	insert3_neg.cc, insert4_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/cont_traits.h,
+	debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+	construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+	insert3_neg.cc, insert4_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/cont_traits.h,
+	debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+	construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+	insert3_neg.cc, insert4_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/cont_traits.h,
+	debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+	construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+	insert3_neg.cc, insert4_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/cont_traits.h,
+	debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+	construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+	insert3_neg.cc, insert4_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/cont_traits.h,
+	debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+	construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+	insert3_neg.cc, insert4_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/cont_traits.h,
+	debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+	construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+	insert3_neg.cc, insert4_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/cont_traits.h,
+	debug_cont_traits.h, assign1_neg.cc, assign2_neg.cc, assign3_neg.cc,
+	assign4_neg.cc, construct1_neg.cc, construct2_neg.cc,
+	construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+	insert3_neg.cc, insert4_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/cont_traits.h,
+	debug_cont_traits.h, assign1_neg.cc, assign2_neg.cc, assign3_neg.cc,
+	assign4_neg.cc, construct1_neg.cc, construct2_neg.cc,
+	construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+	insert3_neg.cc, insert4_neg.cc: Likewise.
 	* testsuite/23_containers/list/debug/cont_traits.h,
-        debug_cont_traits.h, assign1_neg.cc, assign2_neg.cc, assign3_neg.cc,
-        assign4_neg.cc, construct1_neg.cc, construct2_neg.cc,
-        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
-        insert3_neg.cc, insert4_neg.cc: Likewise.
-        * testsuite/performance/23_containers/range_construct/
+	debug_cont_traits.h, assign1_neg.cc, assign2_neg.cc, assign3_neg.cc,
+	assign4_neg.cc, construct1_neg.cc, construct2_neg.cc,
+	construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+	insert3_neg.cc, insert4_neg.cc: Likewise.
+	* testsuite/performance/23_containers/range_construct/
 	list_construct1.cc: New, validate performance impact of the patch
 	on the debug mode.
-        * testsuite/performance/23_containers/range_construct/
+	* testsuite/performance/23_containers/range_construct/
 	list_construct2.cc: Likewise.
-        * testsuite/performance/23_containers/range_construct/
+	* testsuite/performance/23_containers/range_construct/
 	vector_construct.cc: Likewise.
-        * testsuite/performance/23_containers/range_construct/
+	* testsuite/performance/23_containers/range_construct/
 	deque_construct.cc: Likewise.
 
 2010-08-26  Benjamin Kosnik  <bkoz@redhat.com>
@@ -3217,18 +3223,18 @@
 
 2010-06-08  Johannes Singler  <singler@kit.edu>
 
-        * include/parallel/find.h
-        (__find_template(.., growing_blocks_tag)): Make block size
-        proportional to current position.
-        * include/parallel/settings.h (_Settings): Introduce new tuning
-        parameter find_scale_factor to the end of the struct, defaults to
-        0.01f.
+	* include/parallel/find.h
+	(__find_template(.., growing_blocks_tag)): Make block size
+	proportional to current position.
+	* include/parallel/settings.h (_Settings): Introduce new tuning
+	parameter find_scale_factor to the end of the struct, defaults to
+	0.01f.
 
 2010-06-08  Johannes Singler  <singler@kit.edu>
 
-        * include/parallel/partial_sum.h
-        (__parallel_partial_sum_linear):
-        Correctly calculate part lengths for partial_sum_dilation!=1.
+	* include/parallel/partial_sum.h
+	(__parallel_partial_sum_linear):
+	Correctly calculate part lengths for partial_sum_dilation!=1.
 
 2010-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -3458,7 +3464,7 @@
 	* doc/xml/manual/status_cxx200x.xml: Update.
 
 2010-06-05  Magnus Fromreide  <magfr@lysator.liu.se>
-            Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/functional (function): Add nullptr_t support.
 	* include/bits/shared_ptr.h (shared_ptr): Likewise.
@@ -3509,7 +3515,7 @@
 2010-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/c++config (std::size_t, std::ptrdiff_t,
-        std::nullptr_t): Provide typedefs.
+	std::nullptr_t): Provide typedefs.
 	* include/c_std/cstddef: Don't provide std::size_t and
 	std::ptrdiff_t here.
 	* include/c_global/cstddef: Likewise.
@@ -4289,11 +4295,11 @@
 
 2010-04-22  Johannes Singler  <singler@kit.edu>
 
-        * include/parallel/partition.h (__parallel_partition):
-        Improve scalability by:
-        -introducing new variables __leftold, __rightold, __dist, thus
-        -getting rid of omp lock by using atomic operations
-        -getting rid of two omp barriers
+	* include/parallel/partition.h (__parallel_partition):
+	Improve scalability by:
+	-introducing new variables __leftold, __rightold, __dist, thus
+	-getting rid of omp lock by using atomic operations
+	-getting rid of two omp barriers
 
 2010-04-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
@@ -4343,10 +4349,10 @@
 
 2010-03-30  Johannes Singler  <singler@kit.edu>
 
-        * include/parallel/random_shuffle.h
-        (__parallel_random_shuffle_drs) : Take as many threads as
-        possible, i. e. favor parallelism over cache efficiency.
-        Use own PRNG also for the 1 thread case.
+	* include/parallel/random_shuffle.h
+	(__parallel_random_shuffle_drs) : Take as many threads as
+	possible, i. e. favor parallelism over cache efficiency.
+	Use own PRNG also for the 1 thread case.
 
 2010-03-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -4413,14 +4419,14 @@
 
 2010-03-22  Johannes Singler  <singler@kit.edu>
 
-        * include/parallel/numeric (inner_product, partial_sum):
-        Precede subsequent call with _GLIBCXX_STD_P:: to avoid ambiguity
-        between __gnu_parallel:: and std::
-        * include/parallel/algobase.h (equal): Likewise.
-        * include/parallel/algo.h (find_first_of, search_n, merge, nth_element,
-        partial_sort, max_element, min_element): Likewise.
-        * include/parallel/partial_sum.h (__parallel_partial_sum_linear):
-        Qualify accumulate call with __gnu_parallel::.
+	* include/parallel/numeric (inner_product, partial_sum):
+	Precede subsequent call with _GLIBCXX_STD_P:: to avoid ambiguity
+	between __gnu_parallel:: and std::
+	* include/parallel/algobase.h (equal): Likewise.
+	* include/parallel/algo.h (find_first_of, search_n, merge, nth_element,
+	partial_sort, max_element, min_element): Likewise.
+	* include/parallel/partial_sum.h (__parallel_partial_sum_linear):
+	Qualify accumulate call with __gnu_parallel::.
 
 2010-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -4940,8 +4946,8 @@
 
 2010-02-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
-       * src/hash-long-double-aux.cc (hash<long double>::
-       operator()(long double)): Hash both -0 and +0 to 0.
+	* src/hash-long-double-aux.cc (hash<long double>::
+	operator()(long double)): Hash both -0 and +0 to 0.
 
 2010-02-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
@@ -5088,9 +5094,9 @@
 
 2010-02-22  François Dumont  <francois.cppdevs@free.fr>
 
-       * doc/xml/manual/profile_mode.xml: Minor updates and fixes.
-       * doc/xml/manual/debug_mode.xml: Likewise.
-       * doc/xml/manual/test.xml: Likewise.
+	* doc/xml/manual/profile_mode.xml: Minor updates and fixes.
+	* doc/xml/manual/debug_mode.xml: Likewise.
+	* doc/xml/manual/test.xml: Likewise.
 
 2010-02-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
