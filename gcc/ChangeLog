@@ -1,3 +1,7 @@
+2010-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config.gcc (sparc*-*-*): Reorder.
+
 2010-11-23  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* gengtype.c (header_dot_h_frul, source_dot_c_frul):
