@@ -1,3 +1,7 @@
+2010-11-23  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc.dg/darwin-cfstring-1.c: Adjust format messages.
+
 2010-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46499
