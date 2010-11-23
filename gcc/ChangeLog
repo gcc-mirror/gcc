@@ -1,3 +1,8 @@
+2010-11-23  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* gengtype.c (header_dot_h_frul, source_dot_c_frul):
+	Remove ENABLE_CHECKING around DBGPRINTF.
+
 2010-11-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (exit_after_options, write_symbols, debug_info_level,

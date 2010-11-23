@@ -1868,16 +1868,12 @@ header_dot_h_frul (input_file* inpf, char**poutname,
 {
   const char *basename = 0;
   int lang_index = 0;
-#if ENABLE_CHECKING
-  const char *inpname = get_input_file_name (inpf);
   DBGPRINTF ("inpf %p inpname %s outname %s forname %s",
-	     (void*) inpf, inpname, *poutname, *pforname);
-#endif
+	     (void*) inpf, get_input_file_name (inpf),
+	     *poutname, *pforname);
   basename = get_file_basename (inpf);
   lang_index = get_prefix_langdir_index (basename);
-#if ENABLE_CHECKING
   DBGPRINTF ("basename %s lang_index %d", basename, lang_index);
-#endif
 
   if (lang_index >= 0)
     {
@@ -1896,7 +1892,8 @@ header_dot_h_frul (input_file* inpf, char**poutname,
 	 get_output_file_with_visibility will find its outf_p.  */
       free (*poutname);
       *poutname = xstrdup ("gtype-desc.c");
-      DBGPRINTF ("special 'gtype-desc.c' for inpname %s", inpname);
+      DBGPRINTF ("special 'gtype-desc.c' for inpname %s",
+		 get_input_file_name (inpf));
       return NULL;
     }
 }
@@ -1912,13 +1909,11 @@ source_dot_c_frul (input_file* inpf, char**poutname, char**pforname)
 {
   char *newbasename = CONST_CAST (char*, get_file_basename (inpf));
   char *newoutname = CONST_CAST (char*, get_file_gtfilename (inpf));
-#if ENABLE_CHECKING
-  const char *inpname = get_input_file_name (inpf);
   DBGPRINTF ("inpf %p inpname %s original outname %s forname %s",
-	     (void*) inpf, inpname, *poutname, *pforname);
+	     (void*) inpf, get_input_file_name (inpf),
+	     *poutname, *pforname);
   DBGPRINTF ("newoutname %s", newoutname);
   DBGPRINTF ("newbasename %s", newbasename);
-#endif
   free (*poutname);
   free (*pforname);
   *poutname = newoutname;
