@@ -189,8 +189,13 @@ get_imp (Class class, SEL sel)
 	      /* The dispatch table has been installed, and the method
 		 is not in the dispatch table.  So the method just
 		 doesn't exist for the class.  Return the forwarding
-		 implementation. */
-             res = __objc_get_forward_imp ((id)class, sel);
+		 implementation.  We don't know the receiver (only its
+		 class), so we have to pass 'nil' as the first
+		 argument.  Passing the class as first argument is
+		 wrong because the class is not the receiver; it can
+		 result in us calling a class method when we want an
+		 instance method of the same name.  */
+             res = __objc_get_forward_imp (nil, sel);
 	    }
 	}
     }
