@@ -228,7 +228,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			 && (treat_as_floating_point<rep>::value
 			     || !treat_as_floating_point<_Rep2>::value)>::type>
 	  constexpr explicit duration(const _Rep2& __rep)
-	    : __r(static_cast<rep>(__rep)) { }
+	  : __r(static_cast<rep>(__rep)) { }
 
 	template<typename _Rep2, typename _Period2, typename = typename
 	       enable_if<treat_as_floating_point<rep>::value
@@ -644,22 +644,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     struct system_clock
     {
 #ifdef _GLIBCXX_USE_CLOCK_REALTIME
-      typedef chrono::nanoseconds     duration;
+      typedef chrono::nanoseconds     				duration;
 #elif defined(_GLIBCXX_USE_GETTIMEOFDAY)
-      typedef chrono::microseconds    duration;
+      typedef chrono::microseconds    				duration;
 #else
-      typedef chrono::seconds         duration;
+      typedef chrono::seconds         				duration;
 #endif
 
-      typedef duration::rep    rep;
-      typedef duration::period period;
-      typedef chrono::time_point<system_clock, duration> time_point;
+      typedef duration::rep    					rep;
+      typedef duration::period 					period;
+      typedef chrono::time_point<system_clock, duration> 	time_point;
 
       static_assert(system_clock::duration::min()
 		    < system_clock::duration::zero(),
 		    "a clock's minimum duration cannot be less than its epoch");
 
-      static const bool is_monotonic = false;
+      static constexpr bool is_monotonic = false;
 
       static time_point
       now() throw ();
@@ -685,12 +685,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     /// monotonic_clock
     struct monotonic_clock
     {
-      typedef chrono::nanoseconds duration;
-      typedef duration::rep       rep;
-      typedef duration::period    period;
-      typedef chrono::time_point<monotonic_clock, duration> time_point;
+      typedef chrono::nanoseconds 				duration;
+      typedef duration::rep       				rep;
+      typedef duration::period    				period;
+      typedef chrono::time_point<monotonic_clock, duration> 	time_point;
 
-      static const bool is_monotonic = true;
+      static constexpr bool is_monotonic = true;
 
       static time_point
       now();

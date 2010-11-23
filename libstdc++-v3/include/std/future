@@ -556,7 +556,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       explicit
       __basic_future(future<_Res>&&);
 
-      __basic_future() { }
+      constexpr __basic_future() : _M_state() { }
 
       struct _Reset
       {
@@ -584,7 +584,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       future(const __state_type& __state) : _Base_type(__state) { }
 
     public:
-      future() : _Base_type() { }
+      constexpr future() : _Base_type() { }
 
       /// Move constructor
       future(future&& __uf) : _Base_type(std::move(__uf)) { }
@@ -625,7 +625,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       future(const __state_type& __state) : _Base_type(__state) { }
 
     public:
-      future() : _Base_type() { }
+      constexpr future() : _Base_type() { }
 
       /// Move constructor
       future(future&& __uf) : _Base_type(std::move(__uf)) { }
@@ -666,7 +666,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       future(const __state_type& __state) : _Base_type(__state) { }
 
     public:
-      future() : _Base_type() { }
+      constexpr future() : _Base_type() { }
 
       /// Move constructor
       future(future&& __uf) : _Base_type(std::move(__uf)) { }
@@ -698,7 +698,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef __basic_future<_Res> _Base_type;
 
     public:
-      shared_future() : _Base_type() { }
+      constexpr shared_future() : _Base_type() { }
 
       /// Copy constructor
       shared_future(const shared_future& __sf) : _Base_type(__sf) { }
@@ -742,7 +742,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef __basic_future<_Res&>           _Base_type;
 
     public:
-      shared_future() : _Base_type() { }
+      constexpr shared_future() : _Base_type() { }
 
       /// Copy constructor
       shared_future(const shared_future& __sf) : _Base_type(__sf) { }
@@ -781,7 +781,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef __basic_future<void> _Base_type;
 
     public:
-      shared_future() : _Base_type() { }
+      constexpr shared_future() : _Base_type() { }
 
       /// Copy constructor
       shared_future(const shared_future& __sf) : _Base_type(__sf) { }

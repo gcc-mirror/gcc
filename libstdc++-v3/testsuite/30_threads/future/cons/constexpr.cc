@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x -fno-inline -save-temps" }
-// { dg-final { scan-assembler-not "_ZNSt23enable_shared_from_thisIiEC2Ev" } }
-// { dg-final { scan-assembler-not "_ZN7derivedC2Ev" } }
+// { dg-final { scan-assembler-not "_ZNSt6futureIvEC2Ev" } }
+// { dg-final { scan-assembler-not "_ZNSt6futureIiEC2Ev" } }
 
 // Copyright (C) 2010 Free Software Foundation, Inc.
 //
@@ -20,17 +20,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <memory>
+#include <future>
 #include <testsuite_common_types.h>
-
-struct derived : public std::enable_shared_from_this<int>
-{
-  constexpr derived() { }
-};
 
 int main()
 {
-  __gnu_test::constexpr_default_constructible test;
-  test.operator()<derived>();
+  __gnu_test::constexpr_default_constructible test; //not literal
+  test.operator()<std::future<int>>();
+  test.operator()<std::future<void>>();
   return 0;
 }
