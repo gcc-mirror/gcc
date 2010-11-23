@@ -31,106 +31,6 @@
 
 /* Data types, macros, etc. used only in this file.  */
 
-/* Kinds of types we can understand.  */
-enum typekind
-{
-  TYPE_SCALAR,
-  TYPE_STRING,
-  TYPE_STRUCT,
-  TYPE_UNION,
-  TYPE_POINTER,
-  TYPE_ARRAY,
-  TYPE_LANG_STRUCT,
-  TYPE_PARAM_STRUCT
-};
-
-
-/* A way to pass data through to the output end.  */
-struct options
-{
-  struct options *next;
-  const char *name;
-  const char *info;
-};
-
-/* Option data for the 'nested_ptr' option.  */
-struct nested_ptr_data
-{
-  type_p type;
-  const char *convert_to;
-  const char *convert_from;
-};
-
-/* A name and a type.  */
-struct pair
-{
-  pair_p next;
-  const char *name;
-  type_p type;
-  struct fileloc line;
-  options_p opt;
-};
-
-#define NUM_PARAM 10
-
-/* A description of a type.  */
-enum gc_used_enum
-{
-  GC_UNUSED = 0,
-  GC_USED,
-  /* Used for structures whose definitions we haven't seen so far when
-     we encounter a pointer to it that is annotated with ``maybe_undef''.
-     If after reading in everything we don't have source file
-     information for it, we assume that it never has been defined. */
-  GC_MAYBE_POINTED_TO,
-  GC_POINTED_TO
-};
-
-struct type
-{
-  enum typekind kind;
-  type_p next;
-  type_p pointer_to;
-  enum gc_used_enum gc_used;
-  union
-  {
-    type_p p;
-    struct
-    {
-      const char *tag;
-      struct fileloc line;
-      pair_p fields;
-      options_p opt;
-      lang_bitmap bitmap;
-      type_p lang_struct;
-    } s;
-    bool scalar_is_char;
-    struct
-    {
-      type_p p;
-      const char *len;
-    } a;
-    struct
-    {
-      type_p stru;
-      type_p param[NUM_PARAM];
-      struct fileloc line;
-    } param_struct;
-  } u;
-};
-
-#define UNION_P(x)					\
- ((x)->kind == TYPE_UNION || 				\
-  ((x)->kind == TYPE_LANG_STRUCT 			\
-   && (x)->u.s.lang_struct->kind == TYPE_UNION))
-#define UNION_OR_STRUCT_P(x)			\
- ((x)->kind == TYPE_UNION 			\
-  || (x)->kind == TYPE_STRUCT 			\
-  || (x)->kind == TYPE_LANG_STRUCT)
-
-
-
-
 
 /* The list of output files.  */
 outf_p output_files;
@@ -554,27 +454,27 @@ read_input_list (const char *listname)
 
 /* The one and only TYPE_STRING.  */
 
-static struct type string_type = {
-  TYPE_STRING, 0, 0, GC_USED, {0}
+struct type string_type = {
+  TYPE_STRING, 0, 0, 0, GC_USED, {0}
 };
 
 /* The two and only TYPE_SCALARs.  Their u.scalar_is_char flags are
-   set to appropriate values at the beginning of main.  */
+   set early in main.  */
 
-static struct type scalar_nonchar = {
-  TYPE_SCALAR, 0, 0, GC_USED, {0}
+struct type scalar_nonchar = {
+  TYPE_SCALAR, 0, 0, 0, GC_USED, {0}
 };
 
-static struct type scalar_char = {
-  TYPE_SCALAR, 0, 0, GC_USED, {0}
+struct type scalar_char = {
+  TYPE_SCALAR, 0, 0, 0, GC_USED, {0}
 };
 
 /* Lists of various things.  */
 
-static pair_p typedefs;
-static type_p structures;
-static type_p param_structs;
-static pair_p variables;
+pair_p typedefs;
+type_p structures;
+type_p param_structs;
+pair_p variables;
 
 static type_p find_param_structure (type_p t, type_p param[NUM_PARAM]);
 static type_p adjust_field_tree_exp (type_p t, options_p opt);
@@ -800,16 +700,44 @@ create_array (type_p t, const char *len)
   return v;
 }
 
-/* Return an options structure with name NAME and info INFO.  NEXT is the
-   next option in the chain.  */
-
+/* Return a string options structure with name NAME and info INFO.
+   NEXT is the next option in the chain.  */
 options_p
-create_option (options_p next, const char *name, const void *info)
+create_string_option (options_p next, const char *name, const char *info)
+{
+  options_p o = XNEW (struct options);
+  o->kind = OPTION_STRING;
+  o->next = next;
+  o->name = name;
+  o->info.string = info;
+  return o;
+}
+
+/* Create a type options structure with name NAME and info INFO.  NEXT
+   is the next option in the chain.  */
+options_p
+create_type_option (options_p next, const char* name, type_p info)
 {
   options_p o = XNEW (struct options);
   o->next = next;
   o->name = name;
-  o->info = (const char *) info;
+  o->kind = OPTION_TYPE;
+  o->info.type = info;
+  return o;
+}
+
+/* Create a nested pointer options structure with name NAME and info
+   INFO.  NEXT is the next option in the chain.  */
+options_p
+create_nested_option (options_p next, const char* name,
+                      struct nested_ptr_data* info)
+{
+  options_p o;
+  o = XNEW (struct options);
+  o->next = next;
+  o->name = name;
+  o->kind = OPTION_NESTED;
+  o->info.nested = info;
   return o;
 }
 
@@ -823,12 +751,11 @@ create_nested_ptr_option (options_p next, type_p t,
   d->type = adjust_field_type (t, 0);
   d->convert_to = to;
   d->convert_from = from;
-  return create_option (next, "nested_ptr", d);
+  return create_nested_option (next, "nested_ptr", d);
 }
 
 /* Add a variable named S of type T with options O defined at POS,
    to `variables'.  */
-
 void
 note_variable (const char *s, type_p t, options_p o, struct fileloc *pos)
 {
@@ -890,15 +817,19 @@ create_optional_field_ (pair_p next, type_p type, const char *name,
      The field has a tag of "1".  This allows us to make the presence
      of a field of type TYPE depend on some boolean "desc" being true.  */
   union_fields = create_field (NULL, type, "");
-  union_fields->opt = create_option (union_fields->opt, "dot", "");
-  union_fields->opt = create_option (union_fields->opt, "tag", "1");
-  union_type = new_structure (xasprintf ("%s_%d", "fake_union", id++), 1,
-			      &lexer_line, union_fields, NULL);
+  union_fields->opt = 
+    create_string_option (union_fields->opt, "dot", "");
+  union_fields->opt = 
+    create_string_option (union_fields->opt, "tag", "1");
+  union_type = 
+    new_structure (xasprintf ("%s_%d", "fake_union", id++), 1,
+                   &lexer_line, union_fields, NULL);
 
   /* Create the field and give it the new fake union type.  Add a "desc"
      tag that specifies the condition under which the field is valid.  */
   return create_field_all (next, union_type, name,
-			   create_option (0, "desc", cond), this_file, line);
+			   create_string_option (0, "desc", cond), 
+			   this_file, line);
 }
 
 #define create_optional_field(next,type,name,cond)	\
@@ -1031,14 +962,16 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
       return &string_type;
     }
 
-  nodot = create_option (NULL, "dot", "");
+  nodot = create_string_option (NULL, "dot", "");
 
   rtx_tp = create_pointer (find_structure ("rtx_def", 0));
   rtvec_tp = create_pointer (find_structure ("rtvec_def", 0));
   tree_tp = create_pointer (find_structure ("tree_node", 1));
   mem_attrs_tp = create_pointer (find_structure ("mem_attrs", 0));
-  reg_attrs_tp = create_pointer (find_structure ("reg_attrs", 0));
-  basic_block_tp = create_pointer (find_structure ("basic_block_def", 0));
+  reg_attrs_tp = 
+    create_pointer (find_structure ("reg_attrs", 0));
+  basic_block_tp = 
+    create_pointer (find_structure ("basic_block_def", 0));
   constant_tp =
     create_pointer (find_structure ("constant_descriptor_rtx", 0));
   scalar_tp = &scalar_nonchar;	/* rtunion int */
@@ -1072,9 +1005,11 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	/* NOTE_INSN_MAX is used as the default field for line
 	   number notes.  */
 	if (c == NOTE_INSN_MAX)
-	  note_flds->opt = create_option (nodot, "default", "");
+	  note_flds->opt = 
+	    create_string_option (nodot, "default", "");
 	else
-	  note_flds->opt = create_option (nodot, "tag", note_insn_name[c]);
+	  note_flds->opt = 
+	    create_string_option (nodot, "tag", note_insn_name[c]);
       }
     note_union_tp = new_structure ("rtx_def_note_subunion", 1,
 				   &lexer_line, note_flds, NULL);
@@ -1082,13 +1017,10 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
   /* Create a type to represent the various forms of SYMBOL_REF_DATA.  */
   {
     pair_p sym_flds;
-
     sym_flds = create_field (NULL, tree_tp, "rt_tree");
-    sym_flds->opt = create_option (nodot, "default", "");
-
+    sym_flds->opt = create_string_option (nodot, "default", "");
     sym_flds = create_field (sym_flds, constant_tp, "rt_constant");
-    sym_flds->opt = create_option (nodot, "tag", "1");
-
+    sym_flds->opt = create_string_option (nodot, "tag", "1");
     symbol_union_tp = new_structure ("rtx_def_symbol_subunion", 1,
 				     &lexer_line, sym_flds, NULL);
   }
@@ -1152,9 +1084,10 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 		t = scalar_tp, subname = "rt_int";
 	      else
 		{
-		  error_at_line (&lexer_line,
-				 "rtx type `%s' has `0' in position %lu, can't handle",
-				 rtx_name[i], (unsigned long) aindex);
+		  error_at_line 
+		    (&lexer_line,
+		     "rtx type `%s' has `0' in position %lu, can't handle",
+		     rtx_name[i], (unsigned long) aindex);
 		  t = &string_type;
 		  subname = "rt_int";
 		}
@@ -1190,10 +1123,11 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	      break;
 
 	    default:
-	      error_at_line (&lexer_line,
-			     "rtx type `%s' has `%c' in position %lu, can't handle",
-			     rtx_name[i], rtx_format[i][aindex],
-			     (unsigned long) aindex);
+	      error_at_line
+		(&lexer_line,
+		 "rtx type `%s' has `%c' in position %lu, can't handle",
+		 rtx_name[i], rtx_format[i][aindex],
+		 (unsigned long) aindex);
 	      t = &string_type;
 	      subname = "rt_int";
 	      break;
@@ -1205,16 +1139,19 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 					       subname));
 	  subfields->opt = nodot;
 	  if (t == note_union_tp)
-	    subfields->opt = create_option (subfields->opt, "desc",
-					    "NOTE_KIND (&%0)");
+	    subfields->opt =
+	      create_string_option (subfields->opt, "desc",
+				    "NOTE_KIND (&%0)");
 	  if (t == symbol_union_tp)
-	    subfields->opt = create_option (subfields->opt, "desc",
-					    "CONSTANT_POOL_ADDRESS_P (&%0)");
+	    subfields->opt = 
+	      create_string_option (subfields->opt, "desc",
+				    "CONSTANT_POOL_ADDRESS_P (&%0)");
 	}
 
       if (i == SYMBOL_REF)
 	{
-	  /* Add the "block_sym" field if SYMBOL_REF_HAS_BLOCK_INFO_P holds.  */
+	  /* Add the "block_sym" field if SYMBOL_REF_HAS_BLOCK_INFO_P
+	     holds.  */
 	  type_p field_tp = find_structure ("block_symbol", 0);
 	  subfields
 	    = create_optional_field (subfields, field_tp, "block_sym",
@@ -1227,11 +1164,9 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
       ftag = xstrdup (rtx_name[i]);
       for (nmindex = 0; nmindex < strlen (ftag); nmindex++)
 	ftag[nmindex] = TOUPPER (ftag[nmindex]);
-
       flds = create_field (flds, substruct, "");
-      flds->opt = create_option (nodot, "tag", ftag);
+      flds->opt = create_string_option (nodot, "tag", ftag);
     }
-
   return new_structure ("rtx_def_subunion", 1, &lexer_line, flds, nodot);
 }
 
@@ -1254,12 +1189,12 @@ adjust_field_tree_exp (type_p t, options_p opt ATTRIBUTE_UNUSED)
       return &string_type;
     }
 
-  nodot = create_option (NULL, "dot", "");
+  nodot = create_string_option (NULL, "dot", "");
 
   flds = create_field (NULL, t, "");
-  flds->opt = create_option (nodot, "length",
-			     "TREE_OPERAND_LENGTH ((tree) &%0)");
-  flds->opt = create_option (flds->opt, "default", "");
+  flds->opt = create_string_option (nodot, "length",
+				    "TREE_OPERAND_LENGTH ((tree) &%0)");
+  flds->opt = create_string_option (flds->opt, "default", "");
 
   return new_structure ("tree_exp_subunion", 1, &lexer_line, flds, nodot);
 }
@@ -1289,10 +1224,11 @@ adjust_field_type (type_p t, options_p opt)
   for (; opt; opt = opt->next)
     if (strcmp (opt->name, "length") == 0)
       length_p = 1;
-    else if (strcmp (opt->name, "param_is") == 0
-	     || (strncmp (opt->name, "param", 5) == 0
-		 && ISDIGIT (opt->name[5])
-		 && strcmp (opt->name + 6, "_is") == 0))
+    else if ((strcmp (opt->name, "param_is") == 0
+	      || (strncmp (opt->name, "param", 5) == 0
+		  && ISDIGIT (opt->name[5])
+		  && strcmp (opt->name + 6, "_is") == 0))
+	     && opt->kind == OPTION_TYPE)
       {
 	int num = ISDIGIT (opt->name[5]) ? opt->name[5] - '0' : 0;
 
@@ -1309,14 +1245,14 @@ adjust_field_type (type_p t, options_p opt)
 	if (params[num] != NULL)
 	  error_at_line (&lexer_line, "duplicate `%s' option", opt->name);
 	if (!ISDIGIT (opt->name[5]))
-	  params[num] =
-	    create_pointer (CONST_CAST2 (type_p, const char *, opt->info));
+	  params[num] = create_pointer (opt->info.type);
 	else
-	  params[num] = CONST_CAST2 (type_p, const char *, opt->info);
+	  params[num] = opt->info.type;
       }
-    else if (strcmp (opt->name, "special") == 0)
+    else if (strcmp (opt->name, "special") == 0
+	     && opt->kind == OPTION_STRING)
       {
-	const char *special_name = opt->info;
+	const char *special_name = opt->info.string;
 	if (strcmp (special_name, "tree_exp") == 0)
 	  t = adjust_field_tree_exp (t, opt);
 	else if (strcmp (special_name, "rtx_def") == 0)
@@ -1359,8 +1295,9 @@ process_gc_options (options_p opt, enum gc_used_enum level, int *maybe_undef,
 {
   options_p o;
   for (o = opt; o; o = o->next)
-    if (strcmp (o->name, "ptr_alias") == 0 && level == GC_POINTED_TO)
-      set_gc_used_type (CONST_CAST2 (type_p, const char *, o->info),
+    if (strcmp (o->name, "ptr_alias") == 0 && level == GC_POINTED_TO
+	&& o->kind == OPTION_TYPE)
+      set_gc_used_type (o->info.type,
 			GC_POINTED_TO, NULL);
     else if (strcmp (o->name, "maybe_undef") == 0)
       *maybe_undef = 1;
@@ -1370,12 +1307,13 @@ process_gc_options (options_p opt, enum gc_used_enum level, int *maybe_undef,
       *length = 1;
     else if (strcmp (o->name, "skip") == 0)
       *skip = 1;
-    else if (strcmp (o->name, "nested_ptr") == 0)
-      *nested_ptr = ((const struct nested_ptr_data *) o->info)->type;
+    else if (strcmp (o->name, "nested_ptr") == 0
+	     && o->kind == OPTION_NESTED)
+      *nested_ptr = ((const struct nested_ptr_data *) o->info.nested)->type;
 }
 
-/* Set the gc_used field of T to LEVEL, and handle the types it references.  */
 
+/* Set the gc_used field of T to LEVEL, and handle the types it references.  */
 static void
 set_gc_used_type (type_p t, enum gc_used_enum level, type_p param[NUM_PARAM])
 {
@@ -2318,6 +2256,9 @@ output_mangled_typename (outf_p of, const_type_p t)
   else
     switch (t->kind)
       {
+      case TYPE_NONE:
+	gcc_unreachable ();
+	break;
       case TYPE_POINTER:
 	oprintf (of, "P");
 	output_mangled_typename (of, t->u.p);
@@ -2413,8 +2354,8 @@ walk_type (type_p t, struct walk_type_data *d)
 
   d->needs_cast_p = false;
   for (oo = d->opt; oo; oo = oo->next)
-    if (strcmp (oo->name, "length") == 0)
-      length = oo->info;
+    if (strcmp (oo->name, "length") == 0 && oo->kind == OPTION_STRING)
+      length = oo->info.string;
     else if (strcmp (oo->name, "maybe_undef") == 0)
       maybe_undef_p = 1;
     else if (strncmp (oo->name, "use_param", 9) == 0
@@ -2422,12 +2363,13 @@ walk_type (type_p t, struct walk_type_data *d)
       use_param_num = oo->name[9] == '\0' ? 0 : oo->name[9] - '0';
     else if (strcmp (oo->name, "use_params") == 0)
       use_params_p = 1;
-    else if (strcmp (oo->name, "desc") == 0)
-      desc = oo->info;
+    else if (strcmp (oo->name, "desc") == 0 && oo->kind == OPTION_STRING)
+      desc = oo->info.string;
     else if (strcmp (oo->name, "mark_hook") == 0)
       ;
-    else if (strcmp (oo->name, "nested_ptr") == 0)
-      nested_ptr_d = (const struct nested_ptr_data *) oo->info;
+    else if (strcmp (oo->name, "nested_ptr") == 0 
+	     && oo->kind == OPTION_NESTED)
+      nested_ptr_d = (const struct nested_ptr_data *) oo->info.nested;
     else if (strcmp (oo->name, "dot") == 0)
       ;
     else if (strcmp (oo->name, "tag") == 0)
@@ -2675,8 +2617,9 @@ walk_type (type_p t, struct walk_type_data *d)
 
 	/* Some things may also be defined in the structure's options.  */
 	for (o = t->u.s.opt; o; o = o->next)
-	  if (!desc && strcmp (o->name, "desc") == 0)
-	    desc = o->info;
+	  if (!desc && strcmp (o->name, "desc") == 0
+	      && o->kind == OPTION_STRING)
+	    desc = o->info.string;
 
 	d->prev_val[2] = oldval;
 	d->prev_val[1] = oldprevval2;
@@ -2707,16 +2650,19 @@ walk_type (type_p t, struct walk_type_data *d)
 
 	    d->reorder_fn = NULL;
 	    for (oo = f->opt; oo; oo = oo->next)
-	      if (strcmp (oo->name, "dot") == 0)
-		dot = oo->info;
-	      else if (strcmp (oo->name, "tag") == 0)
-		tagid = oo->info;
+	      if (strcmp (oo->name, "dot") == 0
+		  && oo->kind == OPTION_STRING)
+		dot = oo->info.string;
+	      else if (strcmp (oo->name, "tag") == 0
+		       && oo->kind == OPTION_STRING)
+		tagid = oo->info.string;
 	      else if (strcmp (oo->name, "skip") == 0)
 		skip_p = 1;
 	      else if (strcmp (oo->name, "default") == 0)
 		default_p = 1;
-	      else if (strcmp (oo->name, "reorder") == 0)
-		d->reorder_fn = oo->info;
+	      else if (strcmp (oo->name, "reorder") == 0
+		  && oo->kind == OPTION_STRING)
+		d->reorder_fn = oo->info.string;
 	      else if (strncmp (oo->name, "use_param", 9) == 0
 		       && (oo->name[9] == '\0' || ISDIGIT (oo->name[9])))
 		use_param_p = 1;
@@ -2830,6 +2776,8 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
 
   switch (f->kind)
     {
+    case TYPE_NONE:
+      gcc_unreachable ();
     case TYPE_POINTER:
       oprintf (d->of, "%*s%s (%s%s", d->indent, "",
 	       wtd->subfield_marker_routine, cast, d->val);
@@ -2882,7 +2830,7 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
     case TYPE_SCALAR:
       break;
 
-    default:
+    case TYPE_ARRAY:
       gcc_unreachable ();
     }
 }
@@ -2950,17 +2898,19 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
 
   memset (&d, 0, sizeof (d));
   d.of = get_output_file_for_structure (s, param);
-
   for (opt = s->u.s.opt; opt; opt = opt->next)
-    if (strcmp (opt->name, "chain_next") == 0)
-      chain_next = opt->info;
-    else if (strcmp (opt->name, "chain_prev") == 0)
-      chain_prev = opt->info;
-    else if (strcmp (opt->name, "chain_circular") == 0)
-      chain_circular = opt->info;
-    else if (strcmp (opt->name, "mark_hook") == 0)
-      mark_hook_name = opt->info;
-
+    if (strcmp (opt->name, "chain_next") == 0
+	&& opt->kind == OPTION_STRING)
+      chain_next = opt->info.string;
+    else if (strcmp (opt->name, "chain_prev") == 0
+	     && opt->kind == OPTION_STRING)
+      chain_prev = opt->info.string;
+    else if (strcmp (opt->name, "chain_circular") == 0
+	     && opt->kind == OPTION_STRING)
+      chain_circular = opt->info.string;
+    else if (strcmp (opt->name, "mark_hook") == 0
+	     && opt->kind == OPTION_STRING)
+      mark_hook_name = opt->info.string;
   if (chain_prev != NULL && chain_next == NULL)
     error_at_line (&s->u.s.line, "chain_prev without chain_next");
   if (chain_circular != NULL && chain_next != NULL)
@@ -3127,9 +3077,10 @@ write_types (outf_p output_header, type_p structures, type_p param_structs,
 	oprintf (output_header, "  } while (0)\n");
 
 	for (opt = s->u.s.opt; opt; opt = opt->next)
-	  if (strcmp (opt->name, "ptr_alias") == 0)
+	  if (strcmp (opt->name, "ptr_alias") == 0
+	      && opt->kind == OPTION_TYPE)
 	    {
-	      const_type_p const t = (const_type_p) opt->info;
+	      const_type_p const t = (const_type_p) opt->info.type;
 	      if (t->kind == TYPE_STRUCT
 		  || t->kind == TYPE_UNION || t->kind == TYPE_LANG_STRUCT)
 		oprintf (output_header,
@@ -3352,11 +3303,11 @@ write_local (outf_p output_header, type_p structures, type_p param_structs)
 
 	if (s->u.s.line.file == NULL)
 	  continue;
-
-	for (opt = s->u.s.opt; opt; opt = opt->next)
-	  if (strcmp (opt->name, "ptr_alias") == 0)
+ 	for (opt = s->u.s.opt; opt; opt = opt->next)
+	  if (strcmp (opt->name, "ptr_alias") == 0
+	      && opt->kind == OPTION_TYPE)
 	    {
-	      const_type_p const t = (const_type_p) opt->info;
+	      const_type_p const t = (const_type_p) opt->info.type;
 	      if (t->kind == TYPE_STRUCT
 		  || t->kind == TYPE_UNION || t->kind == TYPE_LANG_STRUCT)
 		{
@@ -3679,8 +3630,9 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 	    for (o = fld->opt; o; o = o->next)
 	      if (strcmp (o->name, "skip") == 0)
 		skip_p = 1;
-	      else if (strcmp (o->name, "desc") == 0)
-		desc = o->info;
+	      else if (strcmp (o->name, "desc") == 0
+		       && o->kind == OPTION_STRING)
+		desc = o->info.string;
 	      else if (strcmp (o->name, "param_is") == 0)
 		;
 	      else
@@ -3699,10 +3651,10 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 		  {
 		    const char *tag = NULL;
 		    options_p oo;
-
-		    for (oo = ufld->opt; oo; oo = oo->next)
-		      if (strcmp (oo->name, "tag") == 0)
-			tag = oo->info;
+ 		    for (oo = ufld->opt; oo; oo = oo->next)
+		      if (strcmp (oo->name, "tag") == 0
+			  && oo->kind == OPTION_STRING)
+			tag = oo->info.string;
 		    if (tag == NULL || strcmp (tag, desc) != 0)
 		      continue;
 		    if (validf != NULL)
@@ -3873,10 +3825,10 @@ write_roots (pair_p variables, bool emit_pch)
       const char *length = NULL;
       int deletable_p = 0;
       options_p o;
-
       for (o = v->opt; o; o = o->next)
-	if (strcmp (o->name, "length") == 0)
-	  length = o->info;
+	if (strcmp (o->name, "length") == 0
+	    && o->kind == OPTION_STRING)
+	  length = o->info.string;
 	else if (strcmp (o->name, "deletable") == 0)
 	  deletable_p = 1;
 	else if (strcmp (o->name, "param_is") == 0)
@@ -4003,12 +3955,11 @@ write_roots (pair_p variables, bool emit_pch)
       for (o = v->opt; o; o = o->next)
 	if (strcmp (o->name, "length") == 0)
 	  length_p = 1;
-	else if (strcmp (o->name, "if_marked") == 0)
-	  if_marked = o->info;
-
-      if (if_marked == NULL)
+	else if (strcmp (o->name, "if_marked") == 0
+		       && o->kind == OPTION_STRING)
+	  if_marked = o->info.string;
+       if (if_marked == NULL)
 	continue;
-
       if (v->type->kind != TYPE_POINTER
 	  || v->type->u.p->kind != TYPE_PARAM_STRUCT
 	  || v->type->u.p->u.param_struct.stru != find_structure ("htab", 0))
@@ -4143,9 +4094,8 @@ note_def_vec (const char *type_name, bool is_scalar, struct fileloc *pos)
   else
     {
       t = resolve_typedef (type_name, pos);
-      o = create_option (0, "length", "%h.num");
+      o = create_string_option (0, "length", "%h.num");
     }
-
   /* We assemble the field list in reverse order.  */
   fields = create_field_at (0, create_array (t, "1"), "vec", o, pos);
   fields = create_field_at (fields, len_ty, "alloc", 0, pos);
@@ -4463,7 +4413,21 @@ dump_options (int indent, options_p opt)
   o = opt;
   while (o)
     {
-      printf ("%s:%s ", o->name, o->info);
+      switch (o->kind)
+	{
+	case OPTION_STRING:
+	  printf ("%s:string %s ", o->name, o->info.string);
+	  break;
+	case OPTION_TYPE:
+	  printf ("%s:type ", o->name);
+	  dump_type (indent+1, o->info.type);
+	  break;
+	case OPTION_NESTED:
+	  printf ("%s:nested ", o->name);
+	  break;
+	case OPTION_NONE:
+	  gcc_unreachable ();
+	}
       o = o->next;
     }
   printf ("\n");
