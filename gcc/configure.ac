@@ -3127,28 +3127,6 @@ if test x"$demangler_in_ld" = xyes; then
   AC_MSG_RESULT($gcc_cv_ld_demangle)
 fi
 
-if test x"$linker_plugin_in_ld" = xyes; then
-  AC_MSG_CHECKING(linker support)
-  gcc_cv_ld_plugin=no
-  if test x"$ld_is_gold" = xyes; then
-      gcc_cv_ld_plugin=yes
-  else if test $in_tree_ld = yes; then
-    if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 21 -o "$gcc_cv_gld_major_version" -gt 2; then \
-      gcc_cv_ld_plugin=yes
-    fi
-  elif test x$PLUGIN_LD != x -a x"$gnu_ld" = xyes; then
-    # Check if the GNU linker supports --plugin-opt option
-    if $gcc_cv_ld --help 2>/dev/null | grep no-demangle > /dev/null; then
-      gcc_cv_ld_plugin=yes
-    fi
-  fi
-  if test x"$gcc_cv_ld_plugin" = xyes; then
-    AC_DEFINE(HAVE_LD_PLUGIN, 1,
-[Define if your linker supports plugin.])
-  fi
-  AC_MSG_RESULT($gcc_cv_ld_plugin)
-fi
-
 case "$target" in
   # All TARGET_ABI_OSF targets.
   alpha*-*-osf* | alpha*-*-linux* | alpha*-*-*bsd*)
