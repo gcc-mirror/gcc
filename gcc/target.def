@@ -281,6 +281,19 @@ DEFHOOK
  void, (const char *name, unsigned int flags, tree decl),
  default_no_named_section)
 
+/* Return preferred text (sub)section for function DECL.
+   Main purpose of this function is to separate cold, normal and hot
+   functions. STARTUP is true when function is known to be used only 
+   at startup (from static constructors or it is main()).
+   EXIT is true when function is known to be used only at exit
+   (from static destructors).
+   Return NULL if function should go to default text section.  */
+DEFHOOK
+(function_section,
+ "",
+ section *, (tree decl, enum node_frequency freq, bool startup, bool exit),
+ default_function_section)
+
 /* Return a mask describing how relocations should be treated when
    selecting sections.  Bit 1 should be set if global relocations
    should be placed in a read-write section; bit 0 should be set if

@@ -880,10 +880,6 @@ do {									 \
 #define SBSS_SECTION_ASM_OP     "\t.sbss"	/* Small RW uninitialized data */
 #define SBSS2_SECTION_ASM_OP    "\t.sbss2"	/* Small RO uninitialized data */
 
-#define HOT_TEXT_SECTION_NAME   ".text.hot"
-#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME \
-                                ".text.unlikely"
-
 /* We do this to save a few 10s of code space that would be taken up
    by the call_FUNC () wrappers, used by the generic CRT_CALL_STATIC_FUNCTION
    definition in crtstuff.c.  */

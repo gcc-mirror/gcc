@@ -664,11 +664,6 @@ int darwin_label_is_anonymous_local_objc_name (const char *name);
 /* The generic version, archs should over-ride where required.  */
 #define MACHOPIC_NL_SYMBOL_PTR_SECTION ".non_lazy_symbol_pointer"
 
-/* These are used by -fbranch-probabilities */
-#define HOT_TEXT_SECTION_NAME "__TEXT,__text,regular,pure_instructions"
-#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME \
-                              "__TEXT,__unlikely,regular,pure_instructions"
-
 /* Declare the section variables.  */
 #ifndef USED_FOR_TARGET
 enum darwin_section_enum {
@@ -683,6 +678,8 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
 #undef	TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION machopic_select_section
 #define USE_SELECT_SECTION_FOR_FUNCTIONS
+#undef	TARGET_ASM_FUNCTION_SECTION
+#define TARGET_ASM_FUNCTION_SECTION darwin_function_section
 
 #undef	TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION machopic_select_rtx_section

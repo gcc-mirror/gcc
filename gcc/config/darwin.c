@@ -1233,12 +1233,22 @@ machopic_select_section (tree decl,
 	       && DECL_WEAK (decl)
 	       && !lookup_attribute ("weak_import",
 				     DECL_ATTRIBUTES (decl)));
-  section *base_section;
+  section *base_section = NULL;
 
   switch (categorize_decl_for_section (decl, reloc))
     {
     case SECCAT_TEXT:
-      base_section = darwin_text_section (reloc, weak);
+      {
+	struct cgraph_node *node;
+	if (decl && TREE_CODE (decl) == FUNCTION_DECL
+	    && (node = cgraph_get_node (decl)) != NULL)
+	  base_section = darwin_function_section (decl,
+						  node->frequency,
+						  node->only_called_at_startup,
+						  node->only_called_at_exit);
+	if (!base_section)
+          base_section = darwin_text_section (reloc, weak);
+      }
       break;
 
     case SECCAT_RODATA:
@@ -2359,6 +2369,40 @@ darwin_enter_string_into_cfstring_table (tree str)
     {
       *loc = ggc_alloc_cleared_cfstring_descriptor ();
       ((struct cfstring_descriptor *)*loc)->literal = str;
+    }
+}
+
+/* Choose named function section based on its frequency.  */
+
+section *
+darwin_function_section (tree decl, enum node_frequency freq,
+			  bool startup, bool exit)
+{
+  /* Startup code should go to startup subsection unless it is
+     unlikely executed (this happens especially with function splitting
+     where we can split away unnecesary parts of static constructors.  */
+  if (startup && freq != NODE_FREQUENCY_UNLIKELY_EXECUTED)
+    return get_named_text_section
+	     (decl, "__TEXT,__startup,regular,pure_instructions", "_startup");
+
+  /* Similarly for exit.  */
+  if (exit && freq != NODE_FREQUENCY_UNLIKELY_EXECUTED)
+    return get_named_text_section (decl,
+				   "__TEXT,__exit,regular,pure_instructions",
+				   "_exit");
+
+  /* Group cold functions together, similarly for hot code.  */
+  switch (freq)
+    {
+      case NODE_FREQUENCY_UNLIKELY_EXECUTED:
+	return get_named_text_section
+		 (decl,
+	          "__TEXT,__unlikely,regular,pure_instructions", "_unlikely");
+      case NODE_FREQUENCY_HOT:
+	return get_named_text_section
+		 (decl, "__TEXT,__hot,regular,pure_instructions", "_hot");
+      default:
+	return NULL;
     }
 }
 

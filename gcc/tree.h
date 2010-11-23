@@ -3107,6 +3107,11 @@ struct GTY(()) tree_parm_decl {
 #define DECL_HAS_INIT_PRIORITY_P(NODE) \
   (VAR_DECL_CHECK (NODE)->decl_with_vis.init_priority_p)
 
+/* Specify whether the section name was set by user or by
+   compiler via -ffunction-sections.  */
+#define DECL_HAS_IMPLICIT_SECTION_NAME_P(NODE) \
+  (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.implicit_section_name_p)
+
 struct GTY(()) tree_decl_with_vis {
  struct tree_decl_with_rtl common;
  tree assembler_name;
@@ -3135,7 +3140,9 @@ struct GTY(()) tree_decl_with_vis {
  unsigned init_priority_p : 1;
  /* Used by C++ only.  Might become a generic decl flag.  */
  unsigned shadowed_for_var_p : 1;
- /* 14 unused bits. */
+ /* When SECTION_NAME is implied by -ffunsection-section.  */
+ unsigned implicit_section_name_p : 1;
+ /* 13 unused bits. */
 };
 
 extern tree decl_debug_expr_lookup (tree);

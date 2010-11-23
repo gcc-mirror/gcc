@@ -226,11 +226,6 @@ struct GTY(()) function_subsections {
   const char *cold_section_label;
   const char *hot_section_end_label;
   const char *cold_section_end_label;
-
-  /* String to be used for name of cold text sections, via
-     targetm.asm_out.named_section.  */
-
-  const char *unlikely_text_section_name;
 };
 
 /* Describe an empty area of space in the stack frame.  These can be chained

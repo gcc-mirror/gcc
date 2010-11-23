@@ -78,7 +78,6 @@ static sreal real_zero, real_one, real_almost_one, real_br_prob_base,
 static void combine_predictions_for_insn (rtx, basic_block);
 static void dump_prediction (FILE *, enum br_predictor, int, basic_block, int);
 static void predict_paths_leading_to (basic_block, enum br_predictor, enum prediction);
-static void choose_function_section (void);
 static bool can_predict_insn_p (const_rtx);
 
 /* Information we hold about each branch predictor.
@@ -2185,8 +2184,6 @@ estimate_bb_frequencies (void)
       free_aux_for_edges ();
     }
   compute_function_frequency ();
-  if (flag_reorder_functions)
-    choose_function_section ();
 }
 
 /* Decide whether function is hot, cold or unlikely executed.  */
@@ -2230,35 +2227,6 @@ compute_function_frequency (void)
       if (!probably_never_executed_bb_p (bb))
 	node->frequency = NODE_FREQUENCY_NORMAL;
     }
-}
-
-/* Choose appropriate section for the function.  */
-static void
-choose_function_section (void)
-{
-  struct cgraph_node *node = cgraph_node (current_function_decl);
-  if (DECL_SECTION_NAME (current_function_decl)
-      || !targetm.have_named_sections
-      /* Theoretically we can split the gnu.linkonce text section too,
-	 but this requires more work as the frequency needs to match
-	 for all generated objects so we need to merge the frequency
-	 of all instances.  For now just never set frequency for these.  */
-      || DECL_ONE_ONLY (current_function_decl))
-    return;
-
-  /* If we are doing the partitioning optimization, let the optimization
-     choose the correct section into which to put things.  */
-
-  if (flag_reorder_blocks_and_partition)
-    return;
-
-  if (node->frequency == NODE_FREQUENCY_HOT)
-    DECL_SECTION_NAME (current_function_decl) =
-      build_string (strlen (HOT_TEXT_SECTION_NAME), HOT_TEXT_SECTION_NAME);
-  if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
-    DECL_SECTION_NAME (current_function_decl) =
-      build_string (strlen (UNLIKELY_EXECUTED_TEXT_SECTION_NAME),
-		    UNLIKELY_EXECUTED_TEXT_SECTION_NAME);
 }
 
 static bool

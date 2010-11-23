@@ -897,14 +897,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_DEC_EVAL_METHOD 2
 #endif
 
-#ifndef HOT_TEXT_SECTION_NAME
-#define HOT_TEXT_SECTION_NAME ".text.hot"
-#endif
-
-#ifndef UNLIKELY_EXECUTED_TEXT_SECTION_NAME
-#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME ".text.unlikely"
-#endif
-
 #ifndef HAS_LONG_COND_BRANCH
 #define HAS_LONG_COND_BRANCH 0
 #endif
