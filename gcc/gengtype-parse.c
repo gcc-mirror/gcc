@@ -372,7 +372,7 @@ str_optvalue_opt (options_p prev)
       value = string_seq ();
       require (')');
     }
-  return create_option (prev, name, value);
+  return create_string_option (prev, name, value);
 }
 
 /* absdecl: type '*'*
@@ -410,7 +410,7 @@ type_optvalue (options_p prev, const char *name)
   require ('(');
   ty = absdecl ();
   require (')');
-  return create_option (prev, name, ty);
+  return create_type_option (prev, name, ty);
 }
 
 /* Nested pointer data: '(' type '*'* ',' string_seq ',' string_seq ')' */
@@ -459,7 +459,7 @@ option (options_p prev)
     default:
       parse_error ("expected an option keyword, have %s", print_cur_token ());
       advance ();
-      return create_option (prev, "", "");
+      return create_string_option (prev, "", "");
     }
 }
 

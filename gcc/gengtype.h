@@ -116,6 +116,218 @@ typedef struct options *options_p;
 extern int lexer_toplevel_done;
 extern struct fileloc lexer_line;
 
+/* Various things, organized as linked lists, needed both in
+   gengtype.c & in gengtype-state.c files.  */
+extern pair_p typedefs;
+extern type_p structures;
+extern type_p param_structs;
+extern pair_p variables;
+
+
+
+/* Discrimating kind of types we can understand.  */
+
+enum typekind {
+  TYPE_NONE=0,          /* Never used, so zeroed memory is invalid.  */
+  TYPE_SCALAR,          /* Scalar types like char.  */
+  TYPE_STRING,          /* The string type.  */
+  TYPE_STRUCT,          /* Type for GTY-ed structs.  */
+  TYPE_UNION,           /* Type for GTY-ed discriminated unions.  */
+  TYPE_POINTER,         /* Pointer type to GTY-ed type.  */
+  TYPE_ARRAY,           /* Array of GTY-ed types.  */
+  TYPE_LANG_STRUCT,     /* GCC front-end language specific structs.
+                           Various languages may have homonymous but
+                           different structs.  */
+  TYPE_PARAM_STRUCT     /* Type for parametrized structs, e.g. hash_t
+                           hash-tables, ...  See (param_is, use_param,
+                           param1_is, param2_is,... use_param1,
+                           use_param_2,... use_params) GTY
+                           options.  */
+};
+
+/* Discriminating kind for options.  */
+enum option_kind {
+  OPTION_NONE=0,        /* Never used, so zeroed memory is invalid.  */
+  OPTION_STRING,        /* A string-valued option.  Most options are
+                           strings.  */
+  OPTION_TYPE,          /* A type-valued option.  */
+  OPTION_NESTED         /* Option data for 'nested_ptr'.  */
+};
+
+
+/* A way to pass data through to the output end.  */
+struct options {
+  struct options *next;         /* next option of the same pair.  */
+  const char *name;             /* GTY option name.  */
+  enum option_kind kind;        /* discriminating option kind.  */
+  union {
+    const char* string;                    /* When OPTION_STRING.  */
+    type_p type;                           /* When OPTION_TYPE.  */
+    struct nested_ptr_data* nested;        /* when OPTION_NESTED.  */
+  } info;
+};
+
+
+/* Option data for the 'nested_ptr' option.  */
+struct nested_ptr_data {
+  type_p type;
+  const char *convert_to;
+  const char *convert_from;
+};
+
+/* Some functions to create various options structures with name NAME
+   and info INFO.  NEXT is the next option in the chain.  */
+
+/* Create a string option.  */
+options_p create_string_option (options_p next, const char* name,
+                                const char* info);
+
+/* Create a type option.  */
+options_p create_type_option (options_p next, const char* name,
+                              type_p info);
+
+/* Create a nested option.  */
+options_p create_nested_option (options_p next, const char* name,
+				struct nested_ptr_data* info);
+
+/* Create a nested pointer option.  */
+options_p create_nested_ptr_option (options_p, type_p t,
+			 	     const char *from, const char *to);
+
+/* A name and a type.  */
+struct pair {
+  pair_p next;                  /* The next pair in the linked list.  */
+  const char *name;             /* The defined name.  */
+  type_p type;                  /* Its GTY-ed type.  */
+  struct fileloc line;          /* The file location.  */
+  options_p opt;                /* GTY options, as a linked list.  */
+};
+
+/* Usage information for GTY-ed types.  Gengtype has to care only of
+   used GTY-ed types.  Types are initially unused, and their usage is
+   computed by set_gc_used_type and set_gc_used functions.  */
+
+enum gc_used_enum {
+
+  /* We need that zeroed types are initially unused.  */
+  GC_UNUSED=0,
+
+  /* The GTY-ed type is used, e.g by a GTY-ed variable or a field
+     inside a GTY-ed used type.  */
+  GC_USED,
+
+  /* For GTY-ed structures whose definitions we haven't seen so far
+     when we encounter a pointer to it that is annotated with
+     ``maybe_undef''.  If after reading in everything we don't have
+     source file information for it, we assume that it never has been
+     defined.  */
+  GC_MAYBE_POINTED_TO,
+
+  /* For known GTY-ed structures which are pointed to by GTY-ed
+     variables or fields.  */
+  GC_POINTED_TO
+};
+
+/* We can have at most ten type parameters in parameterized structures.  */
+#define NUM_PARAM 10
+
+/* Our type structure describes all types handled by gengtype.  */
+struct type {
+  /* Discriminating kind, cannot be TYPE_NONE.  */
+  enum typekind kind;
+
+  /* For top-level structs or unions, the 'next' field links the
+     global list 'structures' or 'param_structs'; for lang_structs,
+     their homonymous structs are linked using this 'next' field.  The
+     homonymous list starts at the s.lang_struct field of the
+     lang_struct.  See the new_structure function for details.  This is
+     tricky!  */
+  type_p next;
+
+  /* State number used when writing & reading the persistent state.  A
+     type with a positive number has already been written.  For ease
+     of debugging, newly allocated types have a unique negative
+     number.  */
+  int state_number;
+
+  /* Each GTY-ed type which is pointed to by some GTY-ed type knows
+     the GTY pointer type pointing to it.  See create_pointer
+     function.  */
+  type_p pointer_to;
+
+  /* Type usage information, computed by set_gc_used_type and
+     set_gc_used functions.  */
+  enum gc_used_enum gc_used;
+
+  /* The following union is discriminated by the 'kind' field above.  */
+  union {
+    /* TYPE__NONE is impossible.  */
+
+    /* when TYPE_POINTER:  */
+    type_p p;
+
+    /* when TYPE_STRUCT or TYPE_UNION or TYPE_LANG_STRUCT, we have an
+       aggregate type containing fields: */
+    struct {
+      const char *tag;          /* the aggragate tag, if any.  */
+      struct fileloc line;      /* the source location.  */
+      pair_p fields;            /* the linked list of fields.  */
+      options_p opt;            /* the GTY options if any.  */
+      lang_bitmap bitmap;       /* the set of front-end languages
+                                   using that GTY-ed aggregate.  */
+      /* For TYPE_LANG_STRUCT, the lang_struct field gives the first
+         element of a linked list of homonymous struct or union types.
+         Within this list, each homonymous type has as its lang_struct
+         field the original TYPE_LANG_STRUCT type.  This is a dirty
+         trick, see the new_structure function for details.  */
+      type_p lang_struct;
+    } s;
+
+    /* when TYPE_SCALAR: */
+    bool scalar_is_char;
+
+    /* when TYPE_ARRAY: */
+    struct {
+      type_p p;                 /* The array component type.  */
+      const char *len;          /* The string if any giving its length.  */
+    } a;
+
+    /* When TYPE_PARAM_STRUCT for (param_is, use_param, param1_is,
+       param2_is, ... use_param1, use_param_2, ... use_params) GTY
+       options.  */
+    struct {
+      type_p stru;              /* The generic GTY-ed type.  */
+      type_p param[NUM_PARAM];  /* The actual parameter types.  */
+      struct fileloc line;      /* The source location.  */
+    } param_struct;
+
+  } u;
+};
+
+/* The one and only TYPE_STRING.  */
+extern struct type string_type;
+
+/* The two and only TYPE_SCALARs.  Their u.scalar_is_char flags are
+   set early in main.  */
+extern struct type scalar_nonchar;
+extern struct type scalar_char;
+
+/* Test if a type is a union, either a plain one or a language
+   specific one.  */
+#define UNION_P(x)                                      \
+    ((x)->kind == TYPE_UNION ||                         \
+     ((x)->kind == TYPE_LANG_STRUCT                     \
+      && (x)->u.s.lang_struct->kind == TYPE_UNION))
+
+/* Test if a type is a union or a structure, perhaps a language
+   specific one.  */
+#define UNION_OR_STRUCT_P(x)			\
+    ((x)->kind == TYPE_UNION 			\
+     || (x)->kind == TYPE_STRUCT		\
+     || (x)->kind == TYPE_LANG_STRUCT)
+
+
+
 /* Structure representing an output file.  */
 struct outf
 {
@@ -180,11 +392,6 @@ extern type_p find_structure (const char *s, int isunion);
 extern type_p create_scalar_type (const char *name);
 extern type_p create_pointer (type_p t);
 extern type_p create_array (type_p t, const char *len);
-extern options_p create_option (options_p, const char *name,
-				const void *info);
-extern options_p create_nested_ptr_option (options_p, type_p t,
-					   const char *from,
-					   const char *to);
 extern pair_p create_field_at (pair_p next, type_p type,
 			       const char *name, options_p opt,
 			       struct fileloc *pos);

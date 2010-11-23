@@ -1,3 +1,41 @@
+2010-11-23  Basile Starynkevitch  <basile@starynkevitch.net>
+	    Jeremie Salvucci  <jeremie.salvucci@free.fr>
+
+	* gengtype.c (enum typekind, struct options)
+	(struct nested_ptr_data, struct pair, NUM_PARAM)
+	(enum gc_used_num, struct type, UNION_P, UNION_OR_STRUCT_P):
+	Move to gengtype.h.
+	(string_type, scalar_nonchar, scalar_nonchar, scalar_char):
+	Remove static, add zero state_number.
+	(typedefs, structures, param_structs, variables): Remove static.
+	(create_option): Remove.
+	(create_string_option, create_type_option, create_nested_option):
+	New functions.
+	(create_nested_ptr_option): Use create_nested_option.
+	(note_variable, adjust_field_rtx_def, adjust_field_type): Call the
+	new create*option functions.
+	(process_gc_options): Adjust for discriminated option.
+	(output_mangled_typename): Handle TYPE_NONE.
+	(walk_type): Test option kinds.
+	(write_types_process_field): Handle TYPE_NONE and TYPE_ARRAY.
+	(write_func_for_structure, write_type, write_local, write_root)
+	(write_roots, note_def_vec, dump_options): Adjust for
+	discriminated option.
+
+	* gengtype.h
+	(typedefs, structures, param_structs, variables, enum typekind):
+	Move from gengtype.c
+	(enum option_kind): New discriminating enumeration.
+	(struct options): Becomes discriminated.
+	(struct nested_ptr_data): Nove from gengtype.c
+	(create_string_option, create_type_option, create_nested_option)
+	(create_nested_ptr_option): New functions
+	(struct pair, enum_gc_used_enum, NUM_PARAM, struct type, UNION_P)
+	(UNION_OR_STRUCT_P): Move from gengtype.c
+
+	* gengtype-parse.c (str_optvalue_opt, type_optvalue, option): Make
+	discriminated options.
+
 2010-11-23  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Avoid doing work
