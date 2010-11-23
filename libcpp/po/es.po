@@ -1,14 +1,14 @@
-# Mensajes en español para cpplib-4.5.0
+# Mensajes en español para cpplib-4.6-b20101113.
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.5.0\n"
+"Project-Id-Version: cpplib 4.6-b20101113\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-10-22 14:48+0000\n"
-"PO-Revision-Date: 2010-04-18 03:46-0500\n"
+"PO-Revision-Date: 2010-11-18 17:40-0600\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -480,9 +480,8 @@ msgid "use of C++0x long long integer constant"
 msgstr "uso de una constante entera long long C++0x"
 
 #: expr.c:434
-#, fuzzy
 msgid "use of C99 long long integer constant"
-msgstr "uso de una constante entera long long C++0x"
+msgstr "uso de una constante entera long long C99"
 
 #: expr.c:448
 msgid "imaginary constants are a GCC extension"
