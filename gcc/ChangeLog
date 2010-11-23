@@ -1,3 +1,16 @@
+2010-11-23  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Avoid doing work
+	twice.  Avoid re-allocating the ops vector all the time.
+
+2010-11-23  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (refs_may_alias_p_1): Avoid calls to
+	is_gimple_min_invariant, group tree code checks to allow
+	combining them.
+	(stmt_may_clobber_ref_p_1): Check for SSA_NAME instead
+	of is_gimple_reg.
+
 2010-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config.gcc (sparc*-*-*): Reorder.

@@ -1288,21 +1288,25 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
   tree fndecl;
   tree base;
   HOST_WIDE_INT offset, maxsize;
+  static VEC (vn_reference_op_s, heap) *lhs_ops = NULL;
+  ao_ref lhs_ref;
+  bool lhs_ref_ok = false;
 
   /* First try to disambiguate after value-replacing in the definitions LHS.  */
   if (is_gimple_assign (def_stmt))
     {
+      VEC (vn_reference_op_s, heap) *tem;
       tree lhs = gimple_assign_lhs (def_stmt);
-      ao_ref ref1;
-      VEC (vn_reference_op_s, heap) *operands = NULL;
-      bool res = true;
-      copy_reference_ops_from_ref (lhs, &operands);
-      operands = valueize_refs (operands);
-      if (ao_ref_init_from_vn_reference (&ref1, get_alias_set (lhs),
-					 TREE_TYPE (lhs), operands))
-	res = refs_may_alias_p_1 (ref, &ref1, true);
-      VEC_free (vn_reference_op_s, heap, operands);
-      if (!res)
+      /* Avoid re-allocation overhead.  */
+      VEC_truncate (vn_reference_op_s, lhs_ops, 0);
+      copy_reference_ops_from_ref (lhs, &lhs_ops);
+      tem = lhs_ops;
+      lhs_ops = valueize_refs (lhs_ops);
+      gcc_assert (lhs_ops == tem);
+      lhs_ref_ok = ao_ref_init_from_vn_reference (&lhs_ref, get_alias_set (lhs),
+						  TREE_TYPE (lhs), lhs_ops);
+      if (lhs_ref_ok
+	  && !refs_may_alias_p_1 (ref, &lhs_ref, true))
 	return NULL;
     }
 
@@ -1378,34 +1382,38 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	       || handled_component_p (gimple_assign_rhs1 (def_stmt))))
     {
       tree base2;
-      HOST_WIDE_INT offset2, size2, maxsize2;
+      HOST_WIDE_INT offset2, size2;
       int i, j;
-      VEC (vn_reference_op_s, heap) *lhs = NULL, *rhs = NULL;
+      VEC (vn_reference_op_s, heap) *rhs = NULL;
       vn_reference_op_t vro;
       ao_ref r;
 
+      if (!lhs_ref_ok)
+	return (void *)-1;
+
       /* See if the assignment kills REF.  */
-      base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
-				       &offset2, &size2, &maxsize2);
-      if (!operand_equal_p (base, base2, 0)
+      base2 = ao_ref_base (&lhs_ref);
+      offset2 = lhs_ref.offset;
+      size2 = lhs_ref.size;
+      if ((base != base2
+	   && !operand_equal_p (base, base2, 0))
 	  || offset2 > offset
 	  || offset2 + size2 < offset + maxsize)
 	return (void *)-1;
 
-      /* Find the common base of ref and the lhs.  */
-      copy_reference_ops_from_ref (gimple_assign_lhs (def_stmt), &lhs);
+      /* Find the common base of ref and the lhs.  lhs_ops already
+         contains valueized operands for the lhs.  */
       i = VEC_length (vn_reference_op_s, vr->operands) - 1;
-      j = VEC_length (vn_reference_op_s, lhs) - 1;
+      j = VEC_length (vn_reference_op_s, lhs_ops) - 1;
       while (j >= 0 && i >= 0
 	     && vn_reference_op_eq (VEC_index (vn_reference_op_s,
 					       vr->operands, i),
-				    VEC_index (vn_reference_op_s, lhs, j)))
+				    VEC_index (vn_reference_op_s, lhs_ops, j)))
 	{
 	  i--;
 	  j--;
 	}
 
-      VEC_free (vn_reference_op_s, heap, lhs);
       /* i now points to the first additional op.
 	 ???  LHS may not be completely contained in VR, one or more
 	 VIEW_CONVERT_EXPRs could be in its way.  We could at least
