@@ -1,3 +1,9 @@
+2010-11-23  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: For --enable-gold, handle value `default' instead of
+	`both*'.   New configure option --{en,dis}able-ld.
+	* configure: Regenerate.
+
 2010-11-20  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Only disable a language library if no language needs
