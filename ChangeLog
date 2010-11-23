@@ -1,3 +1,10 @@
+2010-11-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR binutils/12258
+	* configure.ac: Correct comments for --enable-gold/--enable-ld.
+	Properly check default linker.
+	* configure: Regnerated.
+
 2010-11-23  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: For --enable-gold, handle value `default' instead of
