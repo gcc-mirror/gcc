@@ -1,3 +1,8 @@
+2010-11-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46545
+	* gfortran.texi (KIND Type Parameters): Quadmath and F2008 changes.
+
 2010-11-22  Michael Matz  <matz@suse.de>
 
 	* gfortranspec.c (library): New global, moved from ...
