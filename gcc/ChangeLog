@@ -1,3 +1,7 @@
+2010-11-23  Richard Guenther  <rguenther@suse.de>
+
+	* doc/md.texi (386 constraints): Clarify A constraint documentation.
+
 2010-11-23  Basile Starynkevitch  <basile@starynkevitch.net>
 	    Jeremie Salvucci  <jeremie.salvucci@free.fr>
 
