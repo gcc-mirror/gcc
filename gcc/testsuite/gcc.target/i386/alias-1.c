@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-alias "" } */
 
 int yum;
 void dessert (void) { ++yum; }

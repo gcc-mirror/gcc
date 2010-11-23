@@ -1,3 +1,7 @@
+2010-11-23  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	* gcc.target/i386/alias-1.c: Require alias support.
+
 2010-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/graphite/graphite.exp: Use check_vect_support_and_set_flags
