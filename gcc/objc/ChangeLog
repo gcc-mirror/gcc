@@ -1,3 +1,10 @@
+2010-11-23  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/24358
+	* lang-specs.h: Added objective-c-cpp-output.  Mapped .mi to
+	objective-c-cpp-output instead of objc-cpp-output.  Print a
+	deprecation note every time objc-cpp-output is requested.
+
 2010-11-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* objc-act.c (write_symbols): Don't declare here.

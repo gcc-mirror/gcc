@@ -1,3 +1,9 @@
+2010-11-23  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/24358
+	* lang-specs.h: Print a deprecation note every time
+	objc++-cpp-output is requested.
+
 2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objcp-lang.c (LANG_HOOKS_DECL_PRINTABLE_NAME): Do not define.
