@@ -2198,7 +2198,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* If there were errors during symbol merging bail out, we have no
      good way to recover here.  */
   if (seen_error ())
-    fatal_error ("errors during merging of translation units\n");
+    fatal_error ("errors during merging of translation units");
 
   /* Fixup all decls and types and free the type hash tables.  */
   lto_fixup_decls (all_file_decl_data);

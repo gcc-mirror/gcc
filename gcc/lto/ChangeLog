@@ -1,5 +1,9 @@
 2010-11-23  Richard Guenther  <rguenther@suse.de>
 
+	* lto.c (read_cgraph_and_symbols): Remove newline from diagnostic.
+
+2010-11-23  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/46605
 	* lto.c (read_cgraph_and_symbols): Bail out after errors.
 
