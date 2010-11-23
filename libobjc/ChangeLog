@@ -1,3 +1,9 @@
+2010-11-23  Richard Frith-Macdonald <rfm@gnu.org>
+
+	* sendmsg.c (get_imp): Fixed call to __objc_get_forward_imp to
+	pass nil as the receiver since we don't know the receiver at this
+	point.
+	
 2010-11-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* ivars.c: Include stdlib.h.
