@@ -1,5 +1,61 @@
 2010-11-23  Joseph Myers  <joseph@codesourcery.com>
 
+	* common.opt (initial_max_fld_align, flag_debug_asm,
+	flag_dump_rtl_in_asm, flag_dump_all_passed, rtl_dump_and_exit,
+	flag_print_asm_name, graph_dump_format, help_printed,
+	help_columns, flag_opts_finished): New Variable entries.
+	(fdbg-cnt-list, fdbg-cnt=, fdebug-prefix-map=, frandom-seed,
+	frandom-seed=): Mark deferred.
+	(fsched-verbose=): Use UInteger and Var.
+	* flags.h (set_struct_debug_option, flag_print_asm_name,
+	rtl_dump_and_exit, flag_debug_asm, flag_dump_rtl_in_asm,
+	graph_dump_format): Don't declare here.
+	* haifa-sched.c (sched_verbose_param, fix_sched_param): Remove.
+	* opts-global.c: Include dbgcnt.h and debug.h.
+	(decode_options): Pass location to finish_options.
+	(handle_common_deferred_options): Check flag_dump_all_passed.
+	Handle OPT_fdbg_cnt_, OPT_fdbg_cnt_list, OPT_fdebug_prefix_map_,
+	OPT_frandom_seed and OPT_frandom_seed_.  Don't assert on
+	OPT_fstack_limit.
+	* opts.c: Don't include toplev.h, dbgcnt.h or debug.h.
+	(set_struct_debug_option): Add location_t parameter.  Update
+	recursive call.  Use error_at.
+	(default_options_optimization): Use error_at.
+	(finish_options): Add location_t parameter.  Use
+	opts->x_flag_opts_finished instead of first_time_p.  Use
+	opts->x_optimize instead of optimize.  Use error_at.  Pass
+	location to inform.
+	(print_filtered_help): Use opts->x_help_printed to track what
+	options have been printed.
+	(print_specific_help): Use opts->x_help_columns to track number of
+	columns.
+	(common_handle_option): Pass locations and gcc_options pointers to
+	more functions.  Use warning_at instead of fnotice and warning.
+	Don't handle OPT_fdbg_cnt_, OPT_fdbg_cnt_list or
+	OPT_fdebug_prefix_map_.  Use error_at.  Set
+	opts->x_initial_max_fld_align; don't set maximum_field_alignment.
+	Don't handle OPT_frandom_seed or OPT_frandom_seed_.  Don't handle
+	OPT_fsched_verbose_.
+	(handle_param): Add location_r parameter.  Use error_at.
+	(set_debug_level): Add location_r parameter.  Use error_at and
+	warning_at.
+	(setup_core_dumping): Add diagnostic_context parameter.
+	(decode_d_option): Add gcc_options, location_t and
+	diagnostic_context parameters and use them instead of global
+	state.  Use warning_at.
+	(enable_warning_as_error): Use error_at.
+	* opts.h (finish_options): Update prototype.
+	(set_struct_debug_option): Declare here.
+	* rtl.h (fix_sched_param): Remove.
+	* stor-layout.c (initial_max_fld_align): Remove.
+	* toplev.c (rtl_dump_and_exit, flag_print_asm_name,
+	graph_dump_format, flag_debug_asm, flag_dump_rtl_in_asm): Remove.
+	(process_options): Set maximum_field_alignment.
+	* tree.h (initial_max_fld_align) Don't declare here.
+	* Makefile.in (opts.o, opts-global.o): Update dependencies.
+
+2010-11-23  Joseph Myers  <joseph@codesourcery.com>
+
 	* flag-types.h (struct visibility_flags): Don't declare here.
 	* flags.h (strip_off_ending, fast_math_flags_set_p,
 	fast_math_flags_struct_set_p): Declare here.

@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tm.h" /* Required by rtl.h.  */
 #include "rtl.h"
+#include "dbgcnt.h"
+#include "debug.h"
 #include "lto-streamer.h"
 #include "output.h"
 #include "plugin.h"
@@ -326,7 +328,7 @@ decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
 			loc, lang_mask,
 			&handlers, dc);
 
-  finish_options (opts, opts_set);
+  finish_options (opts, opts_set, loc);
 }
 
 /* Process common options that have been deferred until after the
@@ -340,6 +342,9 @@ handle_common_deferred_options (void)
   VEC(cl_deferred_option,heap) *vec
     = (VEC(cl_deferred_option,heap) *) common_deferred_options;
 
+  if (flag_dump_all_passed)
+    enable_rtl_dump_file ();
+
   FOR_EACH_VEC_ELT (cl_deferred_option, vec, i, opt)
     {
       switch (opt->opt_index)
@@ -350,6 +355,18 @@ handle_common_deferred_options (void)
 
 	case OPT_fcall_saved_:
 	  fix_register (opt->arg, 0, 0);
+	  break;
+
+	case OPT_fdbg_cnt_:
+	  dbg_cnt_process_opt (opt->arg);
+	  break;
+
+	case OPT_fdbg_cnt_list:
+	  dbg_cnt_list_all_counters ();
+	  break;
+
+	case OPT_fdebug_prefix_map_:
+	  add_debug_prefix_map (opt->arg);
 	  break;
 
 	case OPT_fdump_:
@@ -378,10 +395,20 @@ handle_common_deferred_options (void)
 #endif
 	  break;
 
+	case OPT_frandom_seed:
+	  /* The real switch is -fno-random-seed.  */
+	  if (!opt->value)
+	    set_random_seed (NULL);
+	  break;
+
+	case OPT_frandom_seed_:
+	  set_random_seed (opt->arg);
+	  break;
+
 	case OPT_fstack_limit:
 	  /* The real switch is -fno-stack-limit.  */
-	  gcc_assert (!opt->value);
-	  stack_limit_rtx = NULL_RTX;
+	  if (!opt->value)
+	    stack_limit_rtx = NULL_RTX;
 	  break;
 
 	case OPT_fstack_limit_register_:

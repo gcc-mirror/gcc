@@ -147,6 +147,51 @@ enum debug_info_levels debug_info_level = DINFO_LEVEL_NONE
 Variable
 bool use_gnu_debug_info_extensions
 
+; Original value of maximum field alignment in bytes, specified via
+; -fpack-struct=<value>.
+Variable
+unsigned int initial_max_fld_align = TARGET_DEFAULT_PACK_STRUCT
+
+; -dA causes debug commentary information to be produced in
+; the generated assembly code (to make it more readable).  This option
+; is generally only of use to those who actually need to read the
+; generated assembly code (perhaps while debugging the compiler itself).
+; Currently, this switch is only used by dwarf2out.c; however, it is intended
+; to be a catchall for printing debug information in the assembler file.
+Variable
+int flag_debug_asm
+
+; -dP causes the rtl to be emitted as a comment in assembly.
+Variable
+int flag_dump_rtl_in_asm
+
+; Whether -da was passed (used only in handle_common_deferred_options).
+Variable
+bool flag_dump_all_passed
+
+; Other flags saying which kinds of debugging dump have been requested.
+
+Variable
+int rtl_dump_and_exit
+
+Variable
+int flag_print_asm_name
+
+Variable
+enum graph_dump_types graph_dump_format = no_graph
+
+; Which options have been printed by --help.
+Variable
+char *help_printed
+
+; The number of columns for --help output.
+Variable
+unsigned int help_columns
+
+; Whether this options structure has been through finish_options
+Variable
+bool flag_opts_finished
+
 ###
 Driver
 
@@ -823,15 +868,15 @@ Common Report Var(flag_data_sections) Optimization
 Place data items into their own section
 
 fdbg-cnt-list
-Common Report
+Common Report Var(common_deferred_options) Defer
 List all available debugging counters with their limits and counts.
 
 fdbg-cnt=
-Common RejectNegative Joined
+Common RejectNegative Joined Var(common_deferred_options) Defer
 -fdbg-cnt=<counter>:<limit>[,<counter>:<limit>,...]	Set the debug counter limit.   
 
 fdebug-prefix-map=
-Common Joined RejectNegative
+Common Joined RejectNegative Var(common_deferred_options) Defer
 Map one directory name to another in debug information
 
 ; Nonzero for -fdefer-pop: don't pop args after each function call
@@ -1401,10 +1446,10 @@ Common Report Var(flag_profile_values)
 Insert code to profile values of expressions
 
 frandom-seed
-Common
+Common Var(common_deferred_options) Defer
 
 frandom-seed=
-Common Joined RejectNegative
+Common Joined RejectNegative Var(common_deferred_options) Defer
 -frandom-seed=<string>	Make compile reproducible using <string>
 
 ; This switch causes the command line that was used to create an
@@ -1474,7 +1519,7 @@ Common Report Var(flag_schedule_speculative_load_dangerous) Optimization
 Allow speculative motion of more loads
 
 fsched-verbose=
-Common RejectNegative Joined
+Common RejectNegative Joined UInteger Var(sched_verbose_param)
 -fsched-verbose=<number>	Set the verbosity level of the scheduler
 
 fsched2-use-superblocks

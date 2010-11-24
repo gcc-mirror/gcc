@@ -654,16 +654,16 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_femit_struct_debug_baseonly:
-      set_struct_debug_option (&global_options, "base");
+      set_struct_debug_option (&global_options, loc, "base");
       break;
 
     case OPT_femit_struct_debug_reduced:
-      set_struct_debug_option (&global_options,
+      set_struct_debug_option (&global_options, loc,
 			       "dir:ord:sys,dir:gen:any,ind:base");
       break;
 
     case OPT_femit_struct_debug_detailed_:
-      set_struct_debug_option (&global_options, arg);
+      set_struct_debug_option (&global_options, loc, arg);
       break;
 
     case OPT_idirafter:

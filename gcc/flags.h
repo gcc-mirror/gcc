@@ -33,8 +33,6 @@ extern const char *const debug_type_names[];
 
 extern void strip_off_ending (char *, int);
 extern int base_of_path (const char *path, const char **base_out);
-extern void set_struct_debug_option (struct gcc_options *opts,
-				     const char *value);
 
 /* Run the second compilation of -fcompare-debug.  Not defined using
    Var in common.opt because this is used in Ada code and so must be
@@ -60,17 +58,8 @@ extern bool fast_math_flags_struct_set_p (struct cl_optimization *);
    set to the default value of -Wstrict_aliasing=level.  */
 
 extern void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
-
-/* Nonzero for -dp: annotate the assembly with a comment describing the
-   pattern and alternative used.  */
-
-extern int flag_print_asm_name;
 
 /* Now the symbols that are set with `-f' switches.  */
-
-/* Nonzero if we are only using compiler to check syntax errors.  */
-
-extern int rtl_dump_and_exit;
 
 /* True if printing into -fdump-final-insns= dump.  */
 
@@ -80,20 +69,9 @@ extern bool final_insns_dump_p;
 
 extern int flag_permissive;
 
-/* -dA causes debug information to be produced in
-   the generated assembly code (to make it more readable).  This option
-   is generally only of use to those who actually need to read the
-   generated assembly code (perhaps while debugging the compiler itself).
-   Currently, this switch is only used by dwarfout.c; however, it is intended
-   to be a catchall for printing debug information in the assembler file.  */
-
-extern int flag_debug_asm;
-
 /* Generate code for GNU or NeXT Objective-C runtime environment.  */
 
 extern int flag_next_runtime;
-
-extern int flag_dump_rtl_in_asm;
 
 /* Other basic status info about current function.  */
 
@@ -141,8 +119,6 @@ extern struct target_flag_state *this_target_flag_state;
 
 /* Nonzero if we dump in VCG format, not plain text.  */
 extern int dump_for_graph;
-
-extern enum graph_dump_types graph_dump_format;
 
 extern enum stack_check_type flag_stack_check;
 

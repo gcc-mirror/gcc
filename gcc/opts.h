@@ -299,7 +299,8 @@ extern bool target_handle_option (struct gcc_options *opts,
 				  const struct cl_option_handlers *handlers,
 				  diagnostic_context *dc);
 extern void finish_options (struct gcc_options *opts,
-			    struct gcc_options *opts_set);
+			    struct gcc_options *opts_set,
+			    location_t loc);
 extern void default_options_optimization (struct gcc_options *opts,
 					  struct gcc_options *opts_set,
 					  struct cl_decoded_option *decoded_options,
@@ -308,4 +309,7 @@ extern void default_options_optimization (struct gcc_options *opts,
 					  unsigned int lang_mask,
 					  const struct cl_option_handlers *handlers,
 					  diagnostic_context *dc);
+extern void set_struct_debug_option (struct gcc_options *opts,
+				     location_t loc,
+				     const char *value);
 #endif

@@ -141,12 +141,6 @@ int main_input_baselength;
 
 const struct gcc_debug_hooks *debug_hooks;
 
-/* Other flags saying which kinds of debugging dump have been requested.  */
-
-int rtl_dump_and_exit;
-int flag_print_asm_name;
-enum graph_dump_types graph_dump_format;
-
 /* True if this is the lto front end.  This is used to disable
    gimple generation and lowering passes that are normally run on the
    output of a front end.  These passes must be bypassed for lto since
@@ -183,19 +177,6 @@ int flag_next_runtime = 0;
 /* Nonzero means make permerror produce warnings instead of errors.  */
 
 int flag_permissive = 0;
-
-/* -dA causes debug commentary information to be produced in
-   the generated assembly code (to make it more readable).  This option
-   is generally only of use to those who actually need to read the
-   generated assembly code (perhaps while debugging the compiler itself).
-   Currently, this switch is only used by dwarfout.c; however, it is intended
-   to be a catchall for printing debug information in the assembler file.  */
-
-int flag_debug_asm = 0;
-
-/* -dP causes the rtl to be emitted as a comment in assembly.  */
-
-int flag_dump_rtl_in_asm = 0;
 
 /* When non-NULL, indicates that whenever space is allocated on the
    stack, the resulting stack pointer must not pass this
@@ -1605,6 +1586,8 @@ process_options (void)
   /* Just in case lang_hooks.post_options ends up calling a debug_hook.
      This can happen with incorrect pre-processed input. */
   debug_hooks = &do_nothing_debug_hooks;
+
+  maximum_field_alignment = initial_max_fld_align * BITS_PER_UNIT;
 
   /* This replaces set_Wunused.  */
   if (warn_unused_function == -1)

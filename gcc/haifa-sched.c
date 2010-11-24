@@ -167,24 +167,11 @@ int issue_rate;
    N=3: rtl at abort point, control-flow, regions info.
    N=5: dependences info.  */
 
-static int sched_verbose_param = 0;
 int sched_verbose = 0;
 
 /* Debugging file.  All printouts are sent to dump, which is always set,
    either to stderr, or to the dump listing file (-dRS).  */
 FILE *sched_dump = 0;
-
-/* fix_sched_param() is called from toplev.c upon detection
-   of the -fsched-verbose=N option.  */
-
-void
-fix_sched_param (const char *param, const char *val)
-{
-  if (!strcmp (param, "verbose"))
-    sched_verbose_param = atoi (val);
-  else
-    warning (0, "fix_sched_param: unknown param: %s", param);
-}
 
 /* This is a placeholder for the scheduler parameters common
    to all schedulers.  */
