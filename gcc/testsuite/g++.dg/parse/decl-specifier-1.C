@@ -13,5 +13,4 @@ N::X X;                           // { dg-error "" "" }
 int main()
 {
     return sizeof(X);             // { dg-error "" "" }
-    // { dg-message "note" "suggested alternative" { target *-*-* } 15 }
 }

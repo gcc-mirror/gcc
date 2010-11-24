@@ -32,12 +32,10 @@ void g (N::A *a, M::B *b, O::C *c)
   One (a); // ok
   One (a, b); // ok
   One (b); // { dg-error "not declared" }
-  // { dg-message "note" "suggested alternative" { target *-*-* } 34 }
 
   Two (c); // ok
   Two (a, c); // ok
   Two (a); // { dg-error "not declared" }
-  // { dg-message "note" "suggested alternative" { target *-*-* } 39 }
   Two (a, a); // error masked by earlier error
   Two (b); // error masked by earlier error
   Two (a, b); // error masked by earlier error
@@ -45,5 +43,4 @@ void g (N::A *a, M::B *b, O::C *c)
   Three (b); // ok
   Three (a, b); // ok
   Three (a); // { dg-error "not declared" }
-  // { dg-message "note" "suggested alternative" { target *-*-* } 47 }
 }
