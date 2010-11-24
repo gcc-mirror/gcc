@@ -1,3 +1,10 @@
+2010-11-24  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/46606
+	* lto-streamer-in.c (input_gimple_stmt): When we cannot find
+	a FIELD_DECL that is type correct issue a warning and fixup
+	with a VIEW_CONVERT_EXPR.
+
 2010-11-24  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* doc/invoke.texi (Options for Debugging Your Program or GCC):
