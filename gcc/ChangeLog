@@ -1,3 +1,7 @@
+2010-11-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* toplev.c: Include <signal.h>.
+
 2010-11-24  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/43218

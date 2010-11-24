@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include <signal.h>
 
 #ifdef HAVE_SYS_TIMES_H
 # include <sys/times.h>
