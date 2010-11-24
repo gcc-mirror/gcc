@@ -152,6 +152,9 @@ bool use_gnu_debug_info_extensions
 Variable
 unsigned int initial_max_fld_align = TARGET_DEFAULT_PACK_STRUCT
 
+Variable
+enum vect_verbosity_levels user_vect_verbosity_level = MAX_VERBOSITY_LEVEL
+
 ; -dA causes debug commentary information to be produced in
 ; the generated assembly code (to make it more readable).  This option
 ; is generally only of use to those who actually need to read the
@@ -1952,7 +1955,7 @@ Common Report Var(flag_tree_vect_loop_version) Init(1) Optimization
 Enable loop versioning when doing loop vectorization on trees
 
 ftree-vectorizer-verbose=
-Common RejectNegative Joined
+Common RejectNegative Joined UInteger
 -ftree-vectorizer-verbose=<number>	Set the verbosity level of the vectorizer
 
 ftree-scev-cprop

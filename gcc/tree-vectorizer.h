@@ -70,22 +70,6 @@ enum vect_def_type {
                                    || ((D) == vect_double_reduction_def) \
                                    || ((D) == vect_nested_cycle))
 
-/* Define verbosity levels.  */
-enum verbosity_levels {
-  REPORT_NONE,
-  REPORT_VECTORIZED_LOCATIONS,
-  REPORT_UNVECTORIZED_LOCATIONS,
-  REPORT_COST,
-  REPORT_ALIGNMENT,
-  REPORT_DR_DETAILS,
-  REPORT_BAD_FORM_LOOPS,
-  REPORT_OUTER_LOOPS,
-  REPORT_SLP,
-  REPORT_DETAILS,
-  /* New verbosity levels should be added before this one.  */
-  MAX_VERBOSITY_LEVEL
-};
-
 /************************************************************************
   SLP
  ************************************************************************/
@@ -902,6 +886,6 @@ void vect_pattern_recog (loop_vec_info);
 /* In tree-vectorizer.c.  */
 unsigned vectorize_loops (void);
 /* Vectorization debug information */
-extern bool vect_print_dump_info (enum verbosity_levels);
+extern bool vect_print_dump_info (enum vect_verbosity_levels);
 
 #endif  /* GCC_TREE_VECTORIZER_H  */

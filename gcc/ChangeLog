@@ -1,3 +1,22 @@
+2010-11-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (user_vect_verbosity_level): New Variable entry.
+	(ftree-vectorizer-verbose=): Mark as UInteger.
+	* flag-types.h (enum vect_verbosity_levels): Move from enum
+	verbosity_levels in tree-vectorizer.h.
+	* opts.c: Don't include tree.h.
+	(vect_set_verbosity_level): Move from tree-vectorizer.c.  Use
+	gcc_options parameter; take integer option argument.
+	(common_handle_option): Update call to vect_set_verbosity_level.
+	* tree-vectorizer.c (user_vect_verbosity_level): Remove.
+	(vect_set_verbosity_level): Move to opts.c.
+	(vect_verbosity_level, vect_print_dump_info): Update for change of
+	enum name.
+	* tree-vectorizer.h (enum verbosity_levels): Move to flag-types.h.
+	(vect_print_dump_info): Update for change of enum name.
+	* tree.h (vect_set_verbosity_level): Remove.
+	* Makefile.in (opts.o): Update dependencies.
+
 2010-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46629

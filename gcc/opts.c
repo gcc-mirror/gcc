@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h" /* Needed by rtl.h and used for DWARF2_DEBUGGING_INFO
 		   and DBX_DEBUGGING_INFO.  */
-#include "tree.h" /* For vect_set_verbosity_level.  */
 #include "rtl.h" /* Needed by insn-attr.h.  */
 #include "opts.h"
 #include "options.h"
@@ -143,6 +142,19 @@ set_struct_debug_option (struct gcc_options *opts, location_t loc,
 		  "%<-femit-struct-debug-detailed=ind:...%>");
     }
 }
+
+/* Handle -ftree-vectorizer-verbose=VAL for options OPTS.  */
+
+static void
+vect_set_verbosity_level (struct gcc_options *opts, int val)
+{
+   if (val < MAX_VERBOSITY_LEVEL)
+     opts->x_user_vect_verbosity_level = (enum vect_verbosity_levels) val;
+   else
+     opts->x_user_vect_verbosity_level
+      = (enum vect_verbosity_levels) (MAX_VERBOSITY_LEVEL - 1);
+}
+
 
 /* Strip off a legitimate source ending from the input string NAME of
    length LEN.  Rather than having to know the names used by all of
@@ -1615,7 +1627,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_ftree_vectorizer_verbose_:
-      vect_set_verbosity_level (arg);
+      vect_set_verbosity_level (opts, value);
       break;
 
     case OPT_ftls_model_:
