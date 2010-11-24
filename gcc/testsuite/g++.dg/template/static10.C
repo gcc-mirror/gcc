@@ -20,5 +20,4 @@ namespace std
 {
   template<> void
   vector<int, allocator<int> >::swap(vector<int, allocator<int> >&) { } // { dg-error "" }
-  // { dg-message "note" "suggested alternative" { target *-*-* } 22 }
 }

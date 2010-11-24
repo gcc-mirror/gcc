@@ -10,5 +10,4 @@ void foo(const char*,...);
 inline void
 bar() {
   foo("",count);    //  { dg-error "" } multiple overloaded count functions
-  // { dg-message "note" "suggested alternative" { target *-*-* } 12 }
 }
