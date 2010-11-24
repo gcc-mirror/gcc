@@ -1,3 +1,14 @@
+2010-11-24  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* config/mips/loongson.md: Change the description comment of the file
+	and update the copyright years.
+	(define_insn "<u>div<mode>3): Add loongson3a support.
+	(define_insn "<u>mod<mode>3"): Likewise.
+	* config/mips/mips.md: Rename mul<mode>3_mul3_ls2ef to
+	mul<mode>3_mul3_loongson.
+	(define_expand "mul<mode>3"): Add TARGET_LOONGSON_3A.
+	(define_insn "mul<mode>3_mul3_loongson"): Add loongson3a support.
+
 2010-11-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (initial_max_fld_align, flag_debug_asm,

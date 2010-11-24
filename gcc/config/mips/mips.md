@@ -1324,9 +1324,9 @@
 		  (match_operand:GPR 2 "register_operand")))]
   ""
 {
-  if (TARGET_LOONGSON_2EF)
-    emit_insn (gen_mul<mode>3_mul3_ls2ef (operands[0], operands[1],
-                                          operands[2]));
+  if (TARGET_LOONGSON_2EF || TARGET_LOONGSON_3A)
+    emit_insn (gen_mul<mode>3_mul3_loongson (operands[0], operands[1],
+                                             operands[2]));
   else if (ISA_HAS_<D>MUL3)
     emit_insn (gen_mul<mode>3_mul3 (operands[0], operands[1], operands[2]));
   else if (TARGET_FIX_R4000)
@@ -1337,12 +1337,17 @@
   DONE;
 })
 
-(define_insn "mul<mode>3_mul3_ls2ef"
+(define_insn "mul<mode>3_mul3_loongson"
   [(set (match_operand:GPR 0 "register_operand" "=d")
         (mult:GPR (match_operand:GPR 1 "register_operand" "d")
                   (match_operand:GPR 2 "register_operand" "d")))]
-  "TARGET_LOONGSON_2EF"
-  "<d>multu.g\t%0,%1,%2"
+  "TARGET_LOONGSON_2EF || TARGET_LOONGSON_3A"
+{
+  if (TARGET_LOONGSON_2EF)
+    return "<d>multu.g\t%0,%1,%2";
+  else
+    return "gs<d>multu\t%0,%1,%2";
+}
   [(set_attr "type" "imul3nc")
    (set_attr "mode" "<MODE>")])
 
