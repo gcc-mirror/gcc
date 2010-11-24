@@ -1311,12 +1311,6 @@ default_debug_unwind_info (void)
 enum unwind_info_type
 default_except_unwind_info (void)
 {
-  /* ??? Change the one user to the hook, then poison this.  */
-#ifdef MUST_USE_SJLJ_EXCEPTIONS
-  if (MUST_USE_SJLJ_EXCEPTIONS)
-    return UI_SJLJ;
-#endif
-
   /* Obey the configure switch to turn on sjlj exceptions.  */
 #ifdef CONFIG_SJLJ_EXCEPTIONS
   if (CONFIG_SJLJ_EXCEPTIONS)
