@@ -18,22 +18,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <memory>
+#include <utility>
 #include <testsuite_common_types.h>
 
 int main()
 {
-  __gnu_test::constexpr_default_constructible test1;
-  test1.operator()<std::pair<int, int>>();
-
-  __gnu_test::constexpr_single_value_constructible test2;
-  test2.operator()<std::pair<int, int>, std::pair<int, int>>();
-  test2.operator()<std::pair<int, int>, std::pair<short, short>>();
-
-  // test 3
-  const int i1(129);
-  const int i2(6);
-  constexpr std::pair<int, int> p3(i1, i2);
-
+  __gnu_test::constexpr_comparison_operators test;
+  test.operator()<std::pair<int, int>>();
   return 0;
 }
