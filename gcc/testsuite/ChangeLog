@@ -1,3 +1,8 @@
+2010-11-24  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* gcc.target/mips/loongson3a-muldiv-1.c: New test.
+	* gcc.target/mips/loongson3a-muldiv-2.c: New test.
+
 2010-11-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/opts-5.c: New test.

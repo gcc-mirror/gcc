@@ -1,5 +1,6 @@
-;; Machine description for ST Microelectronics Loongson-2E/2F.
-;; Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+;; Machine description for Loongson-specific patterns, such as
+;; ST Microelectronics Loongson-2E/2F etc.
+;; Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 ;; Contributed by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -497,14 +498,19 @@
   "punpckl<V_stretch_half_suffix>\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
-;; Integer division and modulus.
+;; Integer division and modulus.  For integer multiplication, see mips.md.
 
 (define_insn "<u>div<mode>3"
   [(set (match_operand:GPR 0 "register_operand" "=&d")
 	(any_div:GPR (match_operand:GPR 1 "register_operand" "d")
 		     (match_operand:GPR 2 "register_operand" "d")))]
-  "TARGET_LOONGSON_2EF"
-  { return mips_output_division ("<d>div<u>.g\t%0,%1,%2", operands); }
+  "TARGET_LOONGSON_2EF || TARGET_LOONGSON_3A"
+  {
+    if (TARGET_LOONGSON_2EF)
+      return mips_output_division ("<d>div<u>.g\t%0,%1,%2", operands);
+    else
+      return mips_output_division ("gs<d>div<u>\t%0,%1,%2", operands);
+  }
   [(set_attr "type" "idiv3")
    (set_attr "mode" "<MODE>")])
 
@@ -512,7 +518,12 @@
   [(set (match_operand:GPR 0 "register_operand" "=&d")
 	(any_mod:GPR (match_operand:GPR 1 "register_operand" "d")
 		     (match_operand:GPR 2 "register_operand" "d")))]
-  "TARGET_LOONGSON_2EF"
-  { return mips_output_division ("<d>mod<u>.g\t%0,%1,%2", operands); }
+  "TARGET_LOONGSON_2EF || TARGET_LOONGSON_3A"
+  {
+    if (TARGET_LOONGSON_2EF)
+      return mips_output_division ("<d>mod<u>.g\t%0,%1,%2", operands);
+    else
+      return mips_output_division ("gs<d>mod<u>\t%0,%1,%2", operands);
+  }
   [(set_attr "type" "idiv3")
    (set_attr "mode" "<MODE>")])
