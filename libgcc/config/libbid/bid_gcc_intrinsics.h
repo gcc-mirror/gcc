@@ -30,11 +30,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "coretypes.h"
 #include "tm.h"
 
-#ifndef LIBGCC2_FLOAT_WORDS_BIG_ENDIAN
-#define LIBGCC2_FLOAT_WORDS_BIG_ENDIAN \
-  (__BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__)
-#endif
-
 #ifndef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE LONG_DOUBLE_TYPE_SIZE
 #endif

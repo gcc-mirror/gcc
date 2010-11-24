@@ -1932,7 +1932,6 @@ lto_fixup_tree (tree *tp, int *walk_subtrees, void *data)
 	{
 	  /* walk_tree only handles TREE_OPERANDs. Do the rest here.  */
 	  lto_fixup_common (t, data);
-	  LTO_FIXUP_SUBTREE (t->exp.block);
 	  *walk_subtrees = 1;
 	}
       else

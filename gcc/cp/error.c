@@ -1700,6 +1700,7 @@ dump_expr (tree t, int flags)
     case NAMESPACE_DECL:
     case LABEL_DECL:
     case OVERLOAD:
+    case TYPE_DECL:
     case IDENTIFIER_NODE:
       dump_decl (t, (flags & ~TFF_DECL_SPECIFIERS) | TFF_NO_FUNCTION_ARGUMENTS);
       break;

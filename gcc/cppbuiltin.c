@@ -157,6 +157,11 @@ define_builtin_macros_for_type_sizes (cpp_reader *pfile)
       cpp_define (pfile, "__BYTE_ORDER__=__ORDER_PDP_ENDIAN__");
     }
 
+  cpp_define_formatted (pfile, "__FLOAT_WORD_ORDER__=%s",
+                        (FLOAT_WORDS_BIG_ENDIAN
+                         ? "__ORDER_BIG_ENDIAN__"
+                         : "__ORDER_LITTLE_ENDIAN__"));
+
   /* ptr_type_node can't be used here since ptr_mode is only set when
      toplev calls backend_init which is not done with -E switch.  */
   cpp_define_formatted (pfile, "__SIZEOF_POINTER__=%d",

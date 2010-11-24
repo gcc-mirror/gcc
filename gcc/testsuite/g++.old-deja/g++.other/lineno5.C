@@ -16,4 +16,5 @@ namespace tmp {
 class A {
   public:
   int kaka(tmp::B = b);		// { dg-error "" } no b in scope
+  // { dg-message "note" "suggested alternative" { target *-*-* } 18 }
 };

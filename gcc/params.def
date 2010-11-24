@@ -855,6 +855,15 @@ DEFPARAM (MIN_PARTITION_SIZE,
 	  "lto-min-partition",
 	  "Size of minimal paritition for WHOPR (in estimated instructions)",
 	  1000, 0, 0)
+
+/* Diagnostic parameters.  */
+
+DEFPARAM (CXX_MAX_NAMESPACES_FOR_DIAGNOSTIC_HELP,
+	  "cxx-max-namespaces-for-diagnostic-help",
+	  "Maximum number of namespaces to search for alternatives when "
+	  "name lookup fails",
+	  1000, 0, 0)
+
 /*
 Local variables:
 mode:c

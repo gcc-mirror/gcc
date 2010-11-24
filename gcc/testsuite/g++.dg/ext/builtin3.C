@@ -10,4 +10,5 @@ extern "C" int printf(char*, ...);
 
 void foo() {
   printf("abc"); 		// { dg-error "not declared" }
+  // { dg-message "note" "suggested alternative" { target *-*-* } 12 }
 }
