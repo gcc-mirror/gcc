@@ -1,3 +1,7 @@
+2010-11-24  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* testsuite/libgomp.fortran/fortran.exp: Add paths for libquadmath.
+
 2010-11-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
