@@ -2289,6 +2289,11 @@ You should use these macros for testing like this:
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 @end smallexample
 
+@item __FLOAT_WORD_ORDER__
+@code{__FLOAT_WORD_ORDER__} is defined to one of the values
+@code{__ORDER_LITTLE_ENDIAN__} or @code{__ORDER_BIG_ENDIAN__} to reflect
+the layout of the words of multi-word floating-point quantities.
+
 @item __DEPRECATED
 This macro is defined, with value 1, when compiling a C++ source file
 with warnings about deprecated constructs enabled.  These warnings are

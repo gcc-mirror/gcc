@@ -4,6 +4,7 @@
 
 namespace N { int i; }
 void foo() { i; }   // { dg-error "not declared" }
+  // { dg-message "note" "suggested alternative" { target *-*-* } 6 }
 
 using namespace N;
 void bar() { i; }

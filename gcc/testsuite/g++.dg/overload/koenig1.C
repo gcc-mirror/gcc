@@ -14,5 +14,6 @@ void g ()
   B *bp;
   N::A *ap;
   f (bp);			// { dg-error "not declared" }
+  // { dg-message "note" "suggested alternative" { target *-*-* } 16 }
   f (ap);
 }
