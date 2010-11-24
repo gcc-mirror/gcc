@@ -1,3 +1,8 @@
+2010-11-24  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43218
+	* gcc.dg/lto/20100423-1_0.c: Enable for all LTO modes.
+
 2010-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/46614
