@@ -956,25 +956,61 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	      if (TREE_CODE (op) == COMPONENT_REF)
 		{
 		  tree field, type, tem;
+		  tree closest_match = NULL_TREE;
 		  field = TREE_OPERAND (op, 1);
 		  type = DECL_CONTEXT (field);
 		  for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
 		    {
-		      if (tem == field
-			  || (gimple_types_compatible_p (TREE_TYPE (tem),
-							 TREE_TYPE (field),
-							 GTC_DIAG)
-			      && DECL_NONADDRESSABLE_P (tem)
-				 == DECL_NONADDRESSABLE_P (field)
-			      && gimple_compare_field_offset (tem, field)))
+		      if (tem == field)
 			break;
+		      if (DECL_NONADDRESSABLE_P (tem)
+			  == DECL_NONADDRESSABLE_P (field)
+			  && gimple_compare_field_offset (tem, field))
+			{
+			  if (gimple_types_compatible_p (TREE_TYPE (tem),
+							 TREE_TYPE (field),
+							 GTC_DIAG))
+			    break;
+			  else
+			    closest_match = tem;
+			}
 		    }
 		  /* In case of type mismatches across units we can fail
 		     to unify some types and thus not find a proper
-		     field-decl here.  So only assert here if checking
-		     is enabled.  */
-		  gcc_checking_assert (tem != NULL_TREE);
-		  if (tem != NULL_TREE)
+		     field-decl here.  */
+		  if (tem == NULL_TREE)
+		    {
+		      /* Thus, emit a ODR violation warning.  */
+		      if (warning_at (gimple_location (stmt), 0,
+				      "use of type %<%E%> with two mismatching "
+				      "declarations at field %<%E%>",
+				      type, TREE_OPERAND (op, 1)))
+			{
+			  if (TYPE_FIELDS (type))
+			    inform (DECL_SOURCE_LOCATION (TYPE_FIELDS (type)),
+				    "original type declared here");
+			  inform (DECL_SOURCE_LOCATION (TREE_OPERAND (op, 1)),
+				  "field in mismatching type declared here");
+			  if (TYPE_NAME (TREE_TYPE (field))
+			      && (TREE_CODE (TYPE_NAME (TREE_TYPE (field)))
+				  == TYPE_DECL))
+			    inform (DECL_SOURCE_LOCATION
+				      (TYPE_NAME (TREE_TYPE (field))),
+				    "type of field declared here");
+			  if (closest_match
+			      && TYPE_NAME (TREE_TYPE (closest_match))
+			      && (TREE_CODE (TYPE_NAME
+				   (TREE_TYPE (closest_match))) == TYPE_DECL))
+			    inform (DECL_SOURCE_LOCATION
+				      (TYPE_NAME (TREE_TYPE (closest_match))),
+				    "type of mismatching field declared here");
+			}
+		      /* And finally fixup the types.  */
+		      TREE_OPERAND (op, 0)
+			= build1 (VIEW_CONVERT_EXPR, type,
+				  TREE_OPERAND (op, 0));
+		    }
+		  else
 		    TREE_OPERAND (op, 1) = tem;
 		}
 
