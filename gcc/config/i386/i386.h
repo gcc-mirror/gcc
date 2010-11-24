@@ -2294,12 +2294,6 @@ struct GTY(()) machine_function {
      stack below the return address.  */
   BOOL_BITFIELD static_chain_on_stack : 1;
 
-  /* Nonzero if the current function uses vzeroupper.  */
-  BOOL_BITFIELD use_vzeroupper_p : 1;
-
-  /* Nonzero if the current function uses 256bit AVX regisers.  */
-  BOOL_BITFIELD use_avx256_p : 1;
-
   /* Nonzero if caller passes 256bit AVX modes.  */
   BOOL_BITFIELD caller_pass_avx256_p : 1;
 
@@ -2311,6 +2305,9 @@ struct GTY(()) machine_function {
 
   /* Nonzero if the current callee returns 256bit AVX modes.  */
   BOOL_BITFIELD callee_return_avx256_p : 1;
+
+  /* Nonzero if rescan vzerouppers in the current function is needed.  */
+  BOOL_BITFIELD rescan_vzeroupper_p : 1;
 
   /* During prologue/epilogue generation, the current frame state.
      Otherwise, the frame state at the end of the prologue.  */

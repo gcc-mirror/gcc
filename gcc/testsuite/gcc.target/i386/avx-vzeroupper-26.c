@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx -mtune=generic -dp" } */
+/* { dg-options "-Os -mavx -mtune=generic -dp" } */
 
 #include <immintrin.h>
 
@@ -13,4 +13,4 @@ foo ()
   bar ();
 }
 
-/* { dg-final { scan-assembler-times "avx_vzeroupper" 1 } } */
+/* { dg-final { scan-assembler-not "avx_vzeroupper" } } */
