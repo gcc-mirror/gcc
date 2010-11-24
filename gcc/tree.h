@@ -5425,9 +5425,6 @@ extern bool in_gimple_form;
 extern tree get_base_address (tree t);
 extern void mark_addressable (tree);
 
-/* In tree-vectorizer.c.  */
-extern void vect_set_verbosity_level (const char *);
-
 /* In tree.c.  */
 
 struct GTY(()) tree_map_base {

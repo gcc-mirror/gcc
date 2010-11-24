@@ -75,8 +75,7 @@ FILE *vect_dump;
 
 /* vect_verbosity_level set to an invalid value
    to mark that it's uninitialized.  */
-static enum verbosity_levels vect_verbosity_level = MAX_VERBOSITY_LEVEL;
-static enum verbosity_levels user_vect_verbosity_level = MAX_VERBOSITY_LEVEL;
+static enum vect_verbosity_levels vect_verbosity_level = MAX_VERBOSITY_LEVEL;
 
 /* Loop or bb location.  */
 LOC vect_location;
@@ -85,25 +84,6 @@ LOC vect_location;
 VEC(vec_void_p,heap) *stmt_vec_info_vec;
 
 
-
-/* Function vect_set_verbosity_level.
-
-   Called from opts.c upon detection of the
-   -ftree-vectorizer-verbose=N option.  */
-
-void
-vect_set_verbosity_level (const char *val)
-{
-   unsigned int vl;
-
-   vl = atoi (val);
-   if (vl < MAX_VERBOSITY_LEVEL)
-     user_vect_verbosity_level = (enum verbosity_levels) vl;
-   else
-     user_vect_verbosity_level
-      = (enum verbosity_levels) (MAX_VERBOSITY_LEVEL - 1);
-}
-
 
 /* Function vect_set_dump_settings.
 
@@ -161,7 +141,7 @@ vect_set_dump_settings (bool slp)
    For vectorization debug dumps.  */
 
 bool
-vect_print_dump_info (enum verbosity_levels vl)
+vect_print_dump_info (enum vect_verbosity_levels vl)
 {
   if (vl > vect_verbosity_level)
     return false;
