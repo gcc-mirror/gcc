@@ -1,5 +1,9 @@
 2010-11-24  Richard Guenther  <rguenther@suse.de>
 
+	* lto-streamer-in.c (input_gimple_stmt): Use types_compatible_p.
+
+2010-11-24  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/46606
 	* lto-streamer-in.c (input_gimple_stmt): When we cannot find
 	a FIELD_DECL that is type correct issue a warning and fixup
