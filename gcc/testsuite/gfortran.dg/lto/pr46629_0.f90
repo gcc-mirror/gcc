@@ -1,4 +1,4 @@
-! PR middle-end/64429
+! PR middle-end/46629
 ! { dg-lto-do assemble }
 ! { dg-lto-options {{ -O2 -flto -ftree-vectorize }} }
 ! { dg-lto-options {{ -O2 -flto -ftree-vectorize -march=x86-64 }} { target i?86-*-* x86_64-*-* } }
