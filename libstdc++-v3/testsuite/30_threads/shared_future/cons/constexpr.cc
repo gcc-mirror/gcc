@@ -1,5 +1,8 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x -fno-inline -save-temps" }
+// { dg-require-cstdint "" }
+// { dg-require-gthreads "" }
+// { dg-require-atomic-builtins "" }
 // { dg-final { scan-assembler-not "_ZNSt13shared_futureIvEC2Ev" } }
 // { dg-final { scan-assembler-not "_ZNSt13shared_futureIiEC2Ev" } }
 
