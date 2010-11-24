@@ -8888,13 +8888,6 @@ This variable should be set to @code{true} if the target ABI requires unwinding
 tables even when exceptions are not used.
 @end deftypevr
 
-@defmac MUST_USE_SJLJ_EXCEPTIONS
-This macro need only be defined if @code{DWARF2_UNWIND_INFO} is
-runtime-variable.  In that case, @file{except.h} cannot correctly
-determine the corresponding definition of @code{MUST_USE_SJLJ_EXCEPTIONS},
-so the target must provide it directly.
-@end defmac
-
 @defmac DONT_USE_BUILTIN_SETJMP
 Define this macro to 1 if the @code{setjmp}/@code{longjmp}-based scheme
 should use the @code{setjmp}/@code{longjmp} functions from the C library

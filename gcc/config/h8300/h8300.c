@@ -5975,4 +5975,7 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE h8300_option_optimization_table
 
+#undef TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
+
 struct gcc_target targetm = TARGET_INITIALIZER;

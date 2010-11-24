@@ -125,10 +125,8 @@ extern const char * const *h8_reg_names;
 #define TARGET_DEFAULT (MASK_QUICKCALL)
 #endif
 
-/* We want dwarf2 info available to gdb...  */
+/* We want dwarf2 info available to gdb.  */
 #define DWARF2_DEBUGGING_INFO        1
-/* ... but we don't actually support full dwarf2 EH.  */
-#define MUST_USE_SJLJ_EXCEPTIONS 1
 
 /* The return address is pushed on the stack.  */
 #define INCOMING_RETURN_ADDR_RTX   gen_rtx_MEM (Pmode, gen_rtx_REG (Pmode, STACK_POINTER_REGNUM))
