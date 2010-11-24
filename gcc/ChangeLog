@@ -1,3 +1,9 @@
+2010-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/46629
+	* cfgexpand.c (maybe_cleanup_end_of_block): Test NEXT_INSN (insn)
+	instead of insn with any_condjump_p.
+
 2010-11-24  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* config/mips/loongson.md: Change the description comment of the file

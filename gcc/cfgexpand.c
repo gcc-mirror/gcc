@@ -1695,7 +1695,7 @@ maybe_cleanup_end_of_block (edge e, rtx last)
 	  insn = PREV_INSN (insn);
 	  if (JUMP_P (NEXT_INSN (insn)))
 	    {
-	      if (!any_condjump_p (insn))
+	      if (!any_condjump_p (NEXT_INSN (insn)))
 		{
 		  gcc_assert (BARRIER_P (NEXT_INSN (NEXT_INSN (insn))));
 		  delete_insn (NEXT_INSN (NEXT_INSN (insn)));
