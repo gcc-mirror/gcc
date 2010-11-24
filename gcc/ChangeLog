@@ -1,3 +1,9 @@
+2010-11-24  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43218
+	* lto-symtab.c (lto_cgraph_replace_node): Mark edges with
+	conflicting function signatures as non-inlineable.
+
 2010-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/46614
