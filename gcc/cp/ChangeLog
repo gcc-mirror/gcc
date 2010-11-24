@@ -1,3 +1,9 @@
+2010-11-23  Jeffrey Yasskin <jyasskin@google.com>
+
+	PR c++/46527
+	* pt.c (instantiate_decl): Propagate the template's location to
+	its instance.
+
 2010-11-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* name-lookup.c (handle_namespace_attrs): Don't check
