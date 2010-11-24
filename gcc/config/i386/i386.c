@@ -21755,7 +21755,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
     }
 
   /* Add UNSPEC_CALL_NEEDS_VZEROUPPER decoration.  */
-  if (TARGET_VZEROUPPER && !TREE_THIS_VOLATILE (cfun->decl))
+  if (TARGET_VZEROUPPER)
     {
       rtx unspec;
       int avx256;

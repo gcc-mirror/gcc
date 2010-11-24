@@ -1,6 +1,12 @@
 2010-11-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/46519
+	* config/i386/i386.c (ix86_expand_call): Don't check
+	TREE_THIS_VOLATILE.
+
+2010-11-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/46519
 	* config/i386/i386.c (upper_128bits_state): New.
 	(block_info_def): Remove upper_128bits_set and done.  Add state,
 	referenced, count, processed and rescanned. 
