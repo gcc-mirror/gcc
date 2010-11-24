@@ -1,5 +1,10 @@
 2010-11-23  Joseph Myers  <joseph@codesourcery.com>
 
+	* c-opts.c (c_common_handle_option): Pass location to
+	set_struct_debug_option.
+
+2010-11-23  Joseph Myers  <joseph@codesourcery.com>
+
 	* c-common.c (visibility_options): Move from ../opts.c.
 	* c-common.h (struct visibility_flags, visibility_options):
 	Declare here.

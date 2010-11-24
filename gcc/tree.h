@@ -4503,8 +4503,6 @@ extern void finalize_size_functions (void);
 
 /* If nonzero, an upper limit on alignment of structure fields, in bits,  */
 extern unsigned int maximum_field_alignment;
-/* and its original value in bytes, specified via -fpack-struct=<value>.  */
-extern unsigned int initial_max_fld_align;
 
 /* Concatenate two lists (chains of TREE_LIST nodes) X and Y
    by making the last node in X point to Y.

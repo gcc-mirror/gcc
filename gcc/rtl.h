@@ -2387,9 +2387,6 @@ extern void schedule_insns (void);
 /* In sched-ebb.c.  */
 extern void schedule_ebbs (void);
 
-/* In haifa-sched.c.  */
-extern void fix_sched_param (const char *, const char *);
-
 /* In sel-sched-dump.c.  */
 extern void sel_sched_fix_param (const char *param, const char *val);
 

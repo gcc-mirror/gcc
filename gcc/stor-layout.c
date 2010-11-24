@@ -50,8 +50,6 @@ tree sizetype_tab[(int) TYPE_KIND_LAST];
 /* If nonzero, this is an upper limit on alignment of structure fields.
    The value is measured in bits.  */
 unsigned int maximum_field_alignment = TARGET_DEFAULT_PACK_STRUCT * BITS_PER_UNIT;
-/* ... and its original value in bytes, specified via -fpack-struct=<value>.  */
-unsigned int initial_max_fld_align = TARGET_DEFAULT_PACK_STRUCT;
 
 /* Nonzero if all REFERENCE_TYPEs are internal and hence should be allocated
    in the address spaces' address_mode, not pointer_mode.   Set only by
