@@ -28,11 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include <signal.h>
-
-#ifdef HAVE_SYS_RESOURCE_H
-# include <sys/resource.h>
-#endif
 
 #ifdef HAVE_SYS_TIMES_H
 # include <sys/times.h>
@@ -114,7 +109,6 @@ static void init_asm_output (const char *);
 static void finalize (void);
 
 static void crash_signal (int) ATTRIBUTE_NORETURN;
-static void setup_core_dumping (void);
 static void compile_file (void);
 
 /* True if we don't need a backend (e.g. preprocessing only).  */
@@ -478,48 +472,6 @@ crash_signal (int signo)
     }
 
   internal_error ("%s", strsignal (signo));
-}
-
-/* Arrange to dump core on error.  (The regular error message is still
-   printed first, except in the case of abort().)  */
-
-static void
-setup_core_dumping (void)
-{
-#ifdef SIGABRT
-  signal (SIGABRT, SIG_DFL);
-#endif
-#if defined(HAVE_SETRLIMIT)
-  {
-    struct rlimit rlim;
-    if (getrlimit (RLIMIT_CORE, &rlim) != 0)
-      fatal_error ("getting core file size maximum limit: %m");
-    rlim.rlim_cur = rlim.rlim_max;
-    if (setrlimit (RLIMIT_CORE, &rlim) != 0)
-      fatal_error ("setting core file size limit to maximum: %m");
-  }
-#endif
-  diagnostic_abort_on_error (global_dc);
-}
-
-
-/* Strip off a legitimate source ending from the input string NAME of
-   length LEN.  Rather than having to know the names used by all of
-   our front ends, we strip off an ending of a period followed by
-   up to five characters.  (Java uses ".class".)  */
-
-void
-strip_off_ending (char *name, int len)
-{
-  int i;
-  for (i = 2; i < 6 && len > i; i++)
-    {
-      if (name[len - i] == '.')
-	{
-	  name[len - i] = '\0';
-	  break;
-	}
-    }
 }
 
 /* Output a quoted string.  */
@@ -965,51 +917,6 @@ compile_file (void)
      into the assembly file here, and hence we can not output anything to the
      assembly file after this point.  */
   targetm.asm_out.file_end ();
-}
-
-/* Parse a -d... command line switch.  */
-
-void
-decode_d_option (const char *arg)
-{
-  int c;
-
-  while (*arg)
-    switch (c = *arg++)
-      {
-      case 'A':
-	flag_debug_asm = 1;
-	break;
-      case 'p':
-	flag_print_asm_name = 1;
-	break;
-      case 'P':
-	flag_dump_rtl_in_asm = 1;
-	flag_print_asm_name = 1;
-	break;
-      case 'v':
-	graph_dump_format = vcg;
-	break;
-      case 'x':
-	rtl_dump_and_exit = 1;
-	break;
-      case 'D':	/* These are handled by the preprocessor.  */
-      case 'I':
-      case 'M':
-      case 'N':
-      case 'U':
-	break;
-      case 'H':
-	setup_core_dumping();
-	break;
-      case 'a':
-	enable_rtl_dump_file ();
-	break;
-
-      default:
-	  warning (0, "unrecognized gcc debugging option: %c", c);
-	break;
-      }
 }
 
 /* Indexed by enum debug_info_type.  */

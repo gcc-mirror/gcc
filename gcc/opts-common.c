@@ -994,6 +994,78 @@ option_flag_var (int opt_index, struct gcc_options *opts)
   return (void *)(((char *) opts) + option->flag_var_offset);
 }
 
+/* Return 1 if option OPT_IDX is enabled in OPTS, 0 if it is disabled,
+   or -1 if it isn't a simple on-off switch.  */
+
+int
+option_enabled (int opt_idx, void *opts)
+{
+  const struct cl_option *option = &(cl_options[opt_idx]);
+  struct gcc_options *optsg = (struct gcc_options *) opts;
+  void *flag_var = option_flag_var (opt_idx, optsg);
+
+  if (flag_var)
+    switch (option->var_type)
+      {
+      case CLVC_BOOLEAN:
+	return *(int *) flag_var != 0;
+
+      case CLVC_EQUAL:
+	return *(int *) flag_var == option->var_value;
+
+      case CLVC_BIT_CLEAR:
+	return (*(int *) flag_var & option->var_value) == 0;
+
+      case CLVC_BIT_SET:
+	return (*(int *) flag_var & option->var_value) != 0;
+
+      case CLVC_STRING:
+      case CLVC_DEFER:
+	break;
+      }
+  return -1;
+}
+
+/* Fill STATE with the current state of option OPTION in OPTS.  Return
+   true if there is some state to store.  */
+
+bool
+get_option_state (struct gcc_options *opts, int option,
+		  struct cl_option_state *state)
+{
+  void *flag_var = option_flag_var (option, opts);
+
+  if (flag_var == 0)
+    return false;
+
+  switch (cl_options[option].var_type)
+    {
+    case CLVC_BOOLEAN:
+    case CLVC_EQUAL:
+      state->data = flag_var;
+      state->size = sizeof (int);
+      break;
+
+    case CLVC_BIT_CLEAR:
+    case CLVC_BIT_SET:
+      state->ch = option_enabled (option, opts);
+      state->data = &state->ch;
+      state->size = 1;
+      break;
+
+    case CLVC_STRING:
+      state->data = *(const char **) flag_var;
+      if (state->data == 0)
+	state->data = "";
+      state->size = strlen ((const char *) state->data) + 1;
+      break;
+
+    case CLVC_DEFER:
+      return false;
+    }
+  return true;
+}
+
 /* Set a warning option OPT_INDEX (language mask LANG_MASK, option
    handlers HANDLERS) to have diagnostic kind KIND for option
    structures OPTS and OPTS_SET and diagnostic context DC (possibly

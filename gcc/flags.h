@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Names of debug_info_type, for error messages.  */
 extern const char *const debug_type_names[];
 
+extern void strip_off_ending (char *, int);
 extern int base_of_path (const char *path, const char **base_out);
 extern void set_struct_debug_option (struct gcc_options *opts,
 				     const char *value);
@@ -40,15 +41,16 @@ extern void set_struct_debug_option (struct gcc_options *opts,
    an actual variable not a macro.  */
 extern int flag_compare_debug;
 
-/* Global visibility options.  */
-extern struct visibility_flags visibility_options;
-
 /* True if this is the LTO front end (lto1).  This is used to disable
    gimple generation and lowering passes that are normally run on the
    output of a front end.  These passes must be bypassed for lto since
    they have already been done before the gimple was written.  */
 
 extern bool in_lto_p;
+
+/* Return true iff flags are set as if -ffast-math.  */
+extern bool fast_math_flags_set_p (const struct gcc_options *);
+extern bool fast_math_flags_struct_set_p (struct cl_optimization *);
 
 /* Used to set the level of -Wstrict-aliasing in OPTS, when no level
    is specified.  The external way to set the default level is to use

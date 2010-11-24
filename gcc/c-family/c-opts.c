@@ -116,7 +116,7 @@ static void add_prefixed_path (const char *, size_t);
 static void push_command_line_include (void);
 static void cb_file_change (cpp_reader *, const struct line_map *);
 static void cb_dir_change (cpp_reader *, const char *);
-static void finish_options (void);
+static void c_finish_options (void);
 
 #ifndef STDC_0_IN_SYSTEM_HEADERS
 #define STDC_0_IN_SYSTEM_HEADERS 0
@@ -1047,7 +1047,7 @@ c_common_init (void)
 
   if (flag_preprocess_only)
     {
-      finish_options ();
+      c_finish_options ();
       preprocess_file (parse_in);
       return false;
     }
@@ -1065,7 +1065,7 @@ c_common_parse_file (void)
   i = 0;
   for (;;)
     {
-      finish_options ();
+      c_finish_options ();
       pch_init ();
       push_file_scope ();
       c_parse_file ();
@@ -1277,7 +1277,7 @@ add_prefixed_path (const char *suffix, size_t chain)
 
 /* Handle -D, -U, -A, -imacros, and the first -include.  */
 static void
-finish_options (void)
+c_finish_options (void)
 {
   if (!cpp_opts->preprocessed)
     {

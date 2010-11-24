@@ -304,6 +304,9 @@ const struct fname_var_t fname_vars[] =
   {NULL, 0, 0},
 };
 
+/* Global visibility options.  */
+struct visibility_flags visibility_options;
+
 static tree c_fully_fold_internal (tree expr, bool, bool *, bool *);
 static tree check_case_value (tree);
 static bool check_case_bounds (tree, tree, tree *, tree *);
