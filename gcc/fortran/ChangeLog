@@ -1,3 +1,9 @@
+2010-11-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46638
+	* target-memory.c (gfc_interpret_derived): Correctly handle
+	component offset.
+
 2010-11-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46545
