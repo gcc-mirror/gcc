@@ -1,3 +1,8 @@
+2010-11-24  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* doc/invoke.texi (Options for Debugging Your Program or GCC):
+	Explain static numbering of dump files.
+
 2010-11-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (user_vect_verbosity_level): New Variable entry.
