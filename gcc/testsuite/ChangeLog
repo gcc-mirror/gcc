@@ -1,6 +1,11 @@
 2010-11-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/46519
+	* gfortran.dg/pr46519-1.f: New.
+
+2010-11-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/46519
 	* gcc.target/i386/avx-vzeroupper-10.c: Expect no avx_vzeroupper.
 	* gcc.target/i386/avx-vzeroupper-11.c: Likewise.
 
