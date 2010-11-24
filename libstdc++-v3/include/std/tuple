@@ -67,7 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       constexpr _Head_base()
       : _Head() { }
 
-      _Head_base(const _Head& __h)
+      constexpr _Head_base(const _Head& __h)
       : _Head(__h) { }
 
       template<typename _UHead>
@@ -77,7 +77,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _Head&       _M_head()       { return *this; }
       const _Head& _M_head() const { return *this; }
     
-      void _M_swap_impl(_Head&) { /* no-op */ }
+      void 
+      _M_swap_impl(_Head&) { /* no-op */ }
     };
 
   template<std::size_t _Idx, typename _Head>
@@ -86,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       constexpr _Head_base()
       : _M_head_impl() { }
 
-      _Head_base(const _Head& __h)
+      constexpr _Head_base(const _Head& __h)
       : _M_head_impl(__h) { }
 
       template<typename _UHead>
@@ -151,7 +152,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       : _Inherited(), _Base() { }
 
       explicit 
-      _Tuple_impl(const _Head& __head, const _Tail&... __tail)
+      constexpr _Tuple_impl(const _Head& __head, const _Tail&... __tail)
       : _Inherited(__tail...), _Base(__head) { }
 
       template<typename _UHead, typename... _UTail> 
@@ -160,10 +161,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	: _Inherited(std::forward<_UTail>(__tail)...),
 	  _Base(std::forward<_UHead>(__head)) { }
 
-      _Tuple_impl(const _Tuple_impl&) = default;
+      constexpr _Tuple_impl(const _Tuple_impl&) = default;
 
       _Tuple_impl(_Tuple_impl&& __in)
-      : _Inherited(std::move(__in._M_tail())),
+      : _Inherited(std::move(__in._M_tail())), 
 	_Base(std::forward<_Head>(__in._M_head())) { }
 
       template<typename... _UElements>
@@ -229,7 +230,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       : _Inherited() { }
 
       explicit
-      tuple(const _Elements&... __elements)
+      constexpr tuple(const _Elements&... __elements)
       : _Inherited(__elements...) { }
 
       template<typename... _UElements, typename = typename
@@ -239,7 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         tuple(_UElements&&... __elements)
 	: _Inherited(std::forward<_UElements>(__elements)...) {	}
 
-      tuple(const tuple&) = default;
+      constexpr tuple(const tuple&) = default;
 
       tuple(tuple&& __in)
       : _Inherited(static_cast<_Inherited&&>(__in)) { }
@@ -314,7 +315,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       : _Inherited() { }
 
       explicit
-      tuple(const _T1& __a1, const _T2& __a2)
+      constexpr tuple(const _T1& __a1, const _T2& __a2)
       : _Inherited(__a1, __a2) { }
 
       template<typename _U1, typename _U2>
@@ -322,7 +323,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         tuple(_U1&& __a1, _U2&& __a2)
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
 
-      tuple(const tuple&) = default;
+      constexpr tuple(const tuple&) = default;
 
       tuple(tuple&& __in)
       : _Inherited(static_cast<_Inherited&&>(__in)) { }
@@ -412,7 +413,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       : _Inherited() { }
 
       explicit
-      tuple(const _T1& __a1)
+      constexpr tuple(const _T1& __a1)
       : _Inherited(__a1) { }
 
       template<typename _U1, typename = typename
@@ -421,14 +422,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         tuple(_U1&& __a1)
 	: _Inherited(std::forward<_U1>(__a1)) { }
 
-      tuple(const tuple&) = default;
+      constexpr tuple(const tuple&) = default;
 
       tuple(tuple&& __in)
       : _Inherited(static_cast<_Inherited&&>(__in)) { }
 
       template<typename _U1>
         tuple(const tuple<_U1>& __in)
-        : _Inherited(static_cast<const _Tuple_impl<0, _U1>&>(__in)) { }
+	: _Inherited(static_cast<const _Tuple_impl<0, _U1>&>(__in)) { }
 
       template<typename _U1>
         tuple(tuple<_U1>&& __in)

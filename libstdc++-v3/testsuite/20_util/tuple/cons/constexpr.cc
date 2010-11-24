@@ -23,7 +23,25 @@
 
 int main()
 {
-  __gnu_test::constexpr_default_constructible test;
-  test.operator()<std::tuple<int, int>>();
+  __gnu_test::constexpr_default_constructible test1;
+  test1.operator()<std::tuple<int, int>>();
+
+  __gnu_test::constexpr_single_value_constructible test2;
+  test2.operator()<std::tuple<int, int>, std::tuple<int, int>>();
+  //  test2.operator()<std::tuple<int, int>, std::pair<short, short>>();
+  //  test2.operator()<std::tuple<int>, std::tuple<short>>();
+  //  test2.operator()<std::tuple<int, int>, std::tuple<short, short>>();
+
+  // test 3
+  const int i1(129);
+  const int i2(6);
+  constexpr std::tuple<int, int> p3(i1, i2);
+
+  // test 4
+  const int i3(415);
+  const int i4(550);
+  const int i5(6414);
+  constexpr std::tuple<int, int, int, int, int> p4(i1, i2, i3, i4, i5);
+
   return 0;
 }
