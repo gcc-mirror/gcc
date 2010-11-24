@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -mavx -mtune=generic -dp" } */
+/* { dg-options "-O2 -mavx -mtune=generic -dp" } */
 
 #include <immintrin.h>
 

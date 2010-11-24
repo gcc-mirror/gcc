@@ -1,3 +1,32 @@
+2010-11-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/46519
+	* config/i386/i386.c (upper_128bits_state): New.
+	(block_info_def): Remove upper_128bits_set and done.  Add state,
+	referenced, count, processed and rescanned. 
+	(check_avx256_stores): Updated.
+	(move_or_delete_vzeroupper_2): Updated. Handle deleted BB_END.
+	Call note_stores only if needed.  Set referenced and count.
+	(move_or_delete_vzeroupper_1): Updated.  Set rescan_vzeroupper_p.
+	(rescan_move_or_delete_vzeroupper): New.
+	(move_or_delete_vzeroupper):  Process and rescan all all basic
+	blocks instead of predecessor blocks of all exit points.
+	(ix86_option_override_internal): Enable vzeroupper optimization
+	only for -fexpensive-optimizations and not optimizing for size.
+	(use_avx256_p): Removed.
+	(init_cumulative_args): Don't set use_avx256_p.
+	(ix86_function_arg): Likewise.
+	(ix86_expand_move): Likewise.
+	(ix86_expand_vector_move_misalign): Likewise.
+	(ix86_local_alignment): Likewise.
+	(ix86_minimum_alignment): Likewise.
+	(ix86_expand_epilogue): Don't check use_avx256_p when generating
+	vzeroupper.
+	(ix86_expand_call): Likewise.
+
+	* config/i386/i386.h (machine_function): Remove use_vzeroupper_p
+	and use_avx256_p.  Add rescan_vzeroupper_p.
+
 2010-11-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* toplev.c: Include <signal.h>.
