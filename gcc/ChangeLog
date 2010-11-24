@@ -1,3 +1,14 @@
+2010-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/46614
+	* sched-deps.c (NON_FLUSH_JUMP_KIND, NON_FLUSH_JUMP_P): Define.
+	 (deps_analyze_insn): Mark JUMP_INSNs in
+	last_pending_memory_flush that weren't added through
+	flush_pending_lists with NON_FLUSH_JUMP_KIND.
+	(sched_analyze_2, sched_analyze_insn): Check NON_FLUSH_JUMP_P
+	on INSN_LIST instead of JUMP_P check on its operand.
+	* sched-rgn.c (concat_INSN_LIST): Copy over REG_NOTE_KIND.
+
 2010-11-24  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer-in.c (input_gimple_stmt): Use types_compatible_p.
