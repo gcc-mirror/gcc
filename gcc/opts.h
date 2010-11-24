@@ -284,4 +284,28 @@ extern void control_warning_option (unsigned int opt_index, int kind,
 				    diagnostic_context *dc);
 extern void print_ignored_options (void);
 extern void handle_common_deferred_options (void);
+extern bool common_handle_option (struct gcc_options *opts,
+				  struct gcc_options *opts_set,
+				  const struct cl_decoded_option *decoded,
+				  unsigned int lang_mask, int kind,
+				  location_t loc,
+				  const struct cl_option_handlers *handlers,
+				  diagnostic_context *dc);
+extern bool target_handle_option (struct gcc_options *opts,
+				  struct gcc_options *opts_set,
+				  const struct cl_decoded_option *decoded,
+				  unsigned int lang_mask, int kind,
+				  location_t loc,
+				  const struct cl_option_handlers *handlers,
+				  diagnostic_context *dc);
+extern void finish_options (struct gcc_options *opts,
+			    struct gcc_options *opts_set);
+extern void default_options_optimization (struct gcc_options *opts,
+					  struct gcc_options *opts_set,
+					  struct cl_decoded_option *decoded_options,
+					  unsigned int decoded_options_count,
+					  location_t loc,
+					  unsigned int lang_mask,
+					  const struct cl_option_handlers *handlers,
+					  diagnostic_context *dc);
 #endif

@@ -1,3 +1,49 @@
+2010-11-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* flag-types.h (struct visibility_flags): Don't declare here.
+	* flags.h (strip_off_ending, fast_math_flags_set_p,
+	fast_math_flags_struct_set_p): Declare here.
+	(visibility_options): Don't declare here.
+	* opts-common.c (option_enabled, get_option_state): Move from
+	opts.c.
+	* opts-global.c: Include diagnostic.h instead of
+	diagnostic-core.h.  Include tree.h, langhooks.h, lto-streamer.h
+	and toplev.h.
+	(const_char_p, ignored_options, in_fnames, num_in_fnames,
+	write_langs, complain_wrong_lang, postpone_unknown_option_warning,
+	print_ignored_options, unknown_option_callback,
+	post_handling_callback, lang_handle_option, add_input_filename,
+	read_cmdline_options, initial_lang_mask, init_options_once,
+	decode_cmdline_options_to_array_default_mask,
+	set_default_handlers, decode_options): Move from opts.c.
+	(print_ignored_options): Use warning_at instead of saving and
+	restoring input_location.
+	* opts.c: Include <signal.h> and <sys/resource.h>.  Include rtl.h
+	instead of expr.h.  Don't include langhooks.h, except.h or
+	lto-streamer.h.  Add more comments on includes.
+	(strip_off_ending, setup_core_dumping, decode_d_option): Move from
+	toplev.c.
+	(visibility_options): Move to c-family/c-common.c.
+	(const_char_p, ignored_options, in_fnames, num_in_fnames,
+	write_langs, complain_wrong_lang, postpone_unknown_option_warning,
+	print_ignored_options, unknown_option_callback,
+	post_handling_callback, lang_handle_option, add_input_filename,
+	read_cmdline_options, initial_lang_mask, init_options_once,
+	decode_cmdline_options_to_array_default_mask,
+	set_default_handlers, decode_options): Move to opts-global.c.
+	(target_handle_option, default_options_optimization,
+	finish_options, common_handle_option): Remove static.
+	(option_enabled, get_option_state): Move to opts-common.c.
+	* opts.h (common_handle_option, target_handle_option,
+	finish_options, default_options_optimization): Declare.
+	* toplev.c: Don't include <signal.h> or <sys/resource.h>.
+	(setup_core_dumping, strip_off_ending, decode_d_option): Move to
+	opts.c.
+	* toplev.h (strip_off_ending, decode_d_option,
+	fast_math_flags_set_p, fast_math_flags_struct_set_p): Don't
+	declare here.
+	* Makefile.in (opts.o, opts-global.o): Update dependencies.
+
 2010-11-23  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR driver/42690

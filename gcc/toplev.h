@@ -34,7 +34,6 @@ extern struct cl_decoded_option *save_decoded_options;
 extern unsigned int save_decoded_options_count;
 
 extern int toplev_main (int, char **);
-extern void strip_off_ending (char *, int);
 extern void rest_of_decl_compilation (tree, int, int);
 extern void rest_of_type_compilation (tree, int);
 extern void tree_rest_of_compilation (tree);
@@ -91,13 +90,6 @@ extern const char * default_pch_valid_p (const void *, size_t);
 
 /* The hashtable, so that the C front ends can pass it to cpplib.  */
 extern struct ht *ident_hash;
-
-/* Handle -d switch.  */
-extern void decode_d_option		(const char *);
-
-/* Return true iff flags are set as if -ffast-math.  */
-extern bool fast_math_flags_set_p	(const struct gcc_options *);
-extern bool fast_math_flags_struct_set_p (struct cl_optimization *);
 
 /* Inline versions of the above for speed.  */
 #if GCC_VERSION < 3004

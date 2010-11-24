@@ -106,12 +106,6 @@ enum symbol_visibility
 };
 #endif
 
-struct visibility_flags
-{
-  unsigned inpragma : 1;	/* True when in #pragma GCC visibility.  */
-  unsigned inlines_hidden : 1;	/* True when -finlineshidden in effect.  */
-};
-
 /* The algorithm used for the integrated register allocator (IRA).  */
 enum ira_algorithm
 {

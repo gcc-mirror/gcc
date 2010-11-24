@@ -660,6 +660,15 @@ extern bool done_lexing;
 #define C_TYPE_OBJECT_OR_INCOMPLETE_P(type) \
   (!C_TYPE_FUNCTION_P (type))
 
+struct visibility_flags
+{
+  unsigned inpragma : 1;	/* True when in #pragma GCC visibility.  */
+  unsigned inlines_hidden : 1;	/* True when -finlineshidden in effect.  */
+};
+
+/* Global visibility options.  */
+extern struct visibility_flags visibility_options;
+
 /* Attribute table common to the C front ends.  */
 extern const struct attribute_spec c_common_attribute_table[];
 extern const struct attribute_spec c_common_format_attribute_table[];

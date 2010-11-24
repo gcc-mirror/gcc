@@ -1,3 +1,11 @@
+2010-11-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (visibility_options): Move from ../opts.c.
+	* c-common.h (struct visibility_flags, visibility_options):
+	Declare here.
+	* c-opts.c (finish_options): Rename to c_finish_options.
+	(c_common_init): Update call to finish_options.
+
 2010-11-22  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/34033
