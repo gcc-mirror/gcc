@@ -1,3 +1,8 @@
+2010-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/46614
+	* gcc.dg/pr46614.c: New test.
+
 2010-11-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46638
