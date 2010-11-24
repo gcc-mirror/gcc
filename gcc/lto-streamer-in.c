@@ -967,9 +967,8 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 			  == DECL_NONADDRESSABLE_P (field)
 			  && gimple_compare_field_offset (tem, field))
 			{
-			  if (gimple_types_compatible_p (TREE_TYPE (tem),
-							 TREE_TYPE (field),
-							 GTC_DIAG))
+			  if (types_compatible_p (TREE_TYPE (tem),
+						  TREE_TYPE (field)))
 			    break;
 			  else
 			    closest_match = tem;
