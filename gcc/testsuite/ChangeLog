@@ -1,3 +1,8 @@
+2010-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization7.adb: Remove dg-require-effective-target.
+	* gnat.dg/sse_nolib.adb: Likewise.
+
 2010-11-25  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/46585
