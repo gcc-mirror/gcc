@@ -1,3 +1,10 @@
+2010-11-25  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_build_struct): Install TYPE_OBJC_INTERFACE
+	after finish_struct, not before, otherwise it may be wiped out by
+	it.  This fixes spurious warnings when a class has more than 15
+	instance variables.
+
 2010-11-23  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/24358

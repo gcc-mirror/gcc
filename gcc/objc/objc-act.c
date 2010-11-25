@@ -2137,10 +2137,15 @@ objc_build_struct (tree klass, tree fields, tree super_name)
       fields = base;
     }
 
-  /* NB: Calling finish_struct() may cause type TYPE_LANG_SPECIFIC fields
-     in all variants of this RECORD_TYPE to be clobbered, but it is therein
-     that we store protocol conformance info (e.g., 'NSObject <MyProtocol>').
-     Hence, we must squirrel away the ObjC-specific information before calling
+  /* NB: Calling finish_struct() may cause type TYPE_LANG_SPECIFIC
+     fields in all variants of this RECORD_TYPE to be clobbered (this
+     is because the C frontend stores a sorted version of the list of
+     fields in lang_type if it deems appropriate, and will update and
+     propagate that list to all variants ignoring the fact that we use
+     lang_type for something else and that such propagation will wipe
+     the objc_info away), but it is therein that we store protocol
+     conformance info (e.g., 'NSObject <MyProtocol>').  Hence, we must
+     squirrel away the ObjC-specific information before calling
      finish_struct(), and then reinstate it afterwards.  */
 
   for (t = TYPE_NEXT_VARIANT (s); t; t = TYPE_NEXT_VARIANT (t))
@@ -2153,11 +2158,15 @@ objc_build_struct (tree klass, tree fields, tree super_name)
       VEC_safe_push (tree, heap, objc_info, TYPE_OBJC_INFO (t));
     }
 
-  /* Point the struct at its related Objective-C class.  */
-  INIT_TYPE_OBJC_INFO (s);
-  TYPE_OBJC_INTERFACE (s) = klass;
-
   s = objc_finish_struct (s, fields);
+
+  /* Point the struct at its related Objective-C class.  We do this
+     after calling finish_struct() because otherwise finish_struct()
+     would wipe TYPE_OBJC_INTERFACE() out.  */
+  if (!TYPE_HAS_OBJC_INFO (s))
+    INIT_TYPE_OBJC_INFO (s);
+
+  TYPE_OBJC_INTERFACE (s) = klass;
 
   for (i = 0, t = TYPE_NEXT_VARIANT (s); t; t = TYPE_NEXT_VARIANT (t), i++)
     {
