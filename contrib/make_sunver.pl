@@ -12,8 +12,7 @@
 # A comment with the original pattern and its type is left in the output
 # file to make it easy to understand the matches.
 #
-# It expects a 'nm' with the POSIX '-P' option, but everyone has one of
-# those, right?
+# It uses elfdump when present (native), GNU readelf otherwise.
 # It depends on the GNU version of c++filt, since it must understand the
 # GNU mangling style.
 
@@ -46,35 +45,104 @@ foreach $file (@ARGV) {
     }
 }
 
-# The nm command to use.
-my $nm = $ENV{'NM_FOR_TARGET'} || "nm";
+# We need to detect and ignore hidden symbols.  Solaris nm can only detect
+# this in the harder to parse default output format, and GNU nm not at all,
+# so use elfdump -s in the native case and GNU readelf -s otherwise.
+# GNU objdump -t cannot be used since it produces a variable number of
+# columns.
 
-# Process each symbol.
-open NM,$nm.' -P '.(join ' ',@OBJECTS).'|' or die $!;
-while (<NM>) {
-    my $i;
-    chomp;
+# The path to elfdump.
+my $elfdump = "/usr/ccs/bin/elfdump";
 
-    # nm prints out stuff at the start, ignore it.
-    next if (/^$/);
-    next if (/:$/);
-    # Ignore entries without symbol name.  Sun nm emits those for local, .bss
-    # or scratch register (SPARC only) symbols for example.
-    next if (/^ /);
-    # Ignore undefined and local symbols.
-    next if (/^[^ ]+[ \t]+[Ua-z][ \t]+/);
-    # Ignore objects without symbol table.  Message goes to stdout with Sun
-    # nm, while GNU nm emits the corresponding message to stderr.
-    next if (/.* - No symbol table data/);
+if (-f $elfdump) {
+    open ELFDUMP,$elfdump.' -s '.(join ' ',@OBJECTS).'|' or die $!;
+    my $skip_arsym = 0;
 
-    # $sym is the name of the symbol.
-    die "unknown nm output $_" if (! /^([^ ]+)[ \t]+[A-Z][ \t]+/);
-    my $sym = $1;
+    while (<ELFDUMP>) {
+	chomp;
 
-    # Remember symbol.
-    $sym_hash{$sym}++;
+	# Ignore empty lines.
+	if (/^$/) {
+	    # End of archive symbol table, stop skipping.
+	    $skip_arsym = 0 if $skip_arsym;
+	    next;
+	}
+
+	# Keep skipping until end of archive symbol table.
+	next if ($skip_arsym);
+
+	# Ignore object name header for individual objects and archives.
+	next if (/:$/);
+
+	# Ignore table header lines.
+	next if (/^Symbol Table Section:/);
+	next if (/index.*value.*size/);
+
+	# Start of archive symbol table: start skipping.
+	if (/^Symbol Table: \(archive/) {
+	    $skip_arsym = 1;
+	    next;
+	}
+
+	# Split table.
+	(undef, undef, undef, undef, $bind, $oth, undef, $shndx, $name) = split;
+
+	# Error out for unknown input.
+	die "unknown input line:\n$_" unless defined($bind);
+
+	# Ignore local symbols.
+	next if ($bind eq "LOCL");
+	# Ignore hidden symbols.
+	next if ($oth eq "H");
+	# Ignore undefined symbols.
+	next if ($shndx eq "UNDEF");
+	# Error out for unhandled cases.
+	if ($bind !~ /^(GLOB|WEAK)/ or $oth ne "D") {
+	    die "unhandled symbol:\n$_";
+	}
+
+	# Remember symbol.
+	$sym_hash{$name}++;
+    }
+    close ELFDUMP or die "$elfdump error";
+} else {
+    open READELF, 'readelf -s -W '.(join ' ',@OBJECTS).'|' or die $!;
+    # Process each symbol.
+    while (<READELF>) {
+	chomp;
+
+	# Ignore empty lines.
+	next if (/^$/);
+
+	# Ignore object name header.
+	next if (/^File: .*$/);
+
+	# Ignore table header lines.
+	next if (/^Symbol table.*contains.*:/);
+	next if (/Num:.*Value.*Size/);
+
+	# Split table.
+	(undef, undef, undef, undef, $bind, $vis, $ndx, $name) = split;
+
+	# Error out for unknown input.
+	die "unknown input line:\n$_" unless defined($bind);
+
+	# Ignore local symbols.
+	next if ($bind eq "LOCAL");
+	# Ignore hidden symbols.
+	next if ($vis eq "HIDDEN");
+	# Ignore undefined symbols.
+	next if ($ndx eq "UND");
+	# Error out for unhandled cases.
+	if ($bind !~ /^(GLOBAL|WEAK)/ or $vis ne "DEFAULT") {
+	    die "unhandled symbol:\n$_";
+	}
+
+	# Remember symbol.
+	$sym_hash{$name}++;
+    }
+    close READELF or die "readelf error";
 }
-close NM or die "nm error";
 
 ##########
 # The various types of glob patterns.
