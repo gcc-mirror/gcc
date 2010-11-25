@@ -942,6 +942,7 @@ get_clear_regset_from_pool (void)
 void
 return_regset_to_pool (regset rs)
 {
+  gcc_assert (rs);
   regset_pool.diff--;
 
   if (regset_pool.n == regset_pool.s)
@@ -1175,6 +1176,9 @@ vinsn_init (vinsn_t vi, insn_t insn, bool force_unique_p)
   VINSN_COUNT (vi) = 0;
   vi->cost = -1;
 
+  if (INSN_NOP_P (insn))
+    return;
+
   if (DF_INSN_UID_SAFE_GET (INSN_UID (insn)) != NULL)
     init_id_from_df (VINSN_ID (vi), insn, force_unique_p);
   else
@@ -1256,9 +1260,12 @@ vinsn_delete (vinsn_t vi)
 {
   gcc_assert (VINSN_COUNT (vi) == 0);
 
-  return_regset_to_pool (VINSN_REG_SETS (vi));
-  return_regset_to_pool (VINSN_REG_USES (vi));
-  return_regset_to_pool (VINSN_REG_CLOBBERS (vi));
+  if (!INSN_NOP_P (VINSN_INSN_RTX (vi)))
+    {
+      return_regset_to_pool (VINSN_REG_SETS (vi));
+      return_regset_to_pool (VINSN_REG_USES (vi));
+      return_regset_to_pool (VINSN_REG_CLOBBERS (vi));
+    }
 
   free (vi);
 }
@@ -5607,7 +5614,7 @@ setup_nop_and_exit_insns (void)
   gcc_assert (nop_pattern == NULL_RTX
 	      && exit_insn == NULL_RTX);
 
-  nop_pattern = gen_nop ();
+  nop_pattern = constm1_rtx;
 
   start_sequence ();
   emit_insn (nop_pattern);

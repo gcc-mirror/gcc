@@ -1,5 +1,13 @@
 2010-11-25  Alexander Monakov  <amonakov@ispras.ru>
 
+	PR rtl-optimization/46585
+	* sel-sched-ir.c (return_regset_to_pool): Verify that RS is not NULL.
+	(vinsn_init): Skip computation of dependencies for local NOPs.
+	(vinsn_delete): Don't try to free regsets for local NOPs.
+	(setup_nop_and_exit_insns): Change definition of nop_pattern.
+
+2010-11-25  Alexander Monakov  <amonakov@ispras.ru>
+
 	PR rtl-optimization/46602
 	* sel-sched-ir.c (maybe_tidy_empty_bb): Move checking ...
 	(tidy_control_flow): Here.
