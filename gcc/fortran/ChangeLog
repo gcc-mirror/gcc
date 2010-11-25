@@ -1,3 +1,15 @@
+2010-11-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46581
+	* trans.h (gfc_process_block_locals): Removed second argument.
+	* trans-decl.c (trans_associate_var): Moved to trans-stmt.c.
+	(gfc_trans_deferred_vars): Skip ASSOCIATE variables.
+	(gfc_process_block_locals): Don't mark associate names to be
+	initialized.
+	* trans-stmt.c (trans_associate_var): Moved here from trans-decl.c.
+	(gfc_trans_block_construct): Call 'trans_associate_var' from here
+	to make sure SELECT TYPE with associate-name is treated correctly.
+
 2010-11-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46638
