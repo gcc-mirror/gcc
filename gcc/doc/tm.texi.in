@@ -2862,6 +2862,9 @@ otherwise there is no default implementation.  You must define either this
 macro or @code{IRA_COVER_CLASSES} in order to use the integrated register
 allocator with Chaitin-Briggs coloring. If the macro is not defined,
 the only available coloring algorithm is Chow's priority coloring.
+
+This hook must not be modified from @code{NULL} to non-@code{NULL} or
+vice versa by command-line option processing.
 @end deftypefn
 
 @defmac IRA_COVER_CLASSES
@@ -7315,6 +7318,7 @@ Return NULL if function should go to default text section.
 
 @hook TARGET_HAVE_NAMED_SECTIONS
 This flag is true if the target supports @code{TARGET_ASM_NAMED_SECTION}.
+It must not be modified by command-line option processing.
 @end deftypevr
 
 @anchor{TARGET_HAVE_SWITCHABLE_BSS_SECTIONS}
@@ -8843,19 +8847,23 @@ This may end up simplifying other parts of target-specific code.  The
 default implementation of this hook never returns @code{UI_NONE}.
 
 Note that the value returned by this hook should be constant.  It should
-not depend on anything except command-line switches.  In particular, the
+not depend on anything except the command-line switches described by
+@var{opts}.  In particular, the
 setting @code{UI_SJLJ} must be fixed at compiler start-up as C pre-processor
 macros and builtin functions related to exception handling are set up
 depending on this setting.
 
 The default implementation of the hook first honors the
 @option{--enable-sjlj-exceptions} configure option, then
-@code{DWARF2_UNWIND_INFO}, and finally defaults to @code{UI_SJLJ}.
+@code{DWARF2_UNWIND_INFO}, and finally defaults to @code{UI_SJLJ}.  If
+@code{DWARF2_UNWIND_INFO} depends on command-line options, the target
+must define this hook so that @var{opts} is used correctly.
 @end deftypefn
 
 @hook TARGET_UNWIND_TABLES_DEFAULT
 This variable should be set to @code{true} if the target ABI requires unwinding
-tables even when exceptions are not used.
+tables even when exceptions are not used.  It must not be modified by
+command-line option processing.
 @end deftypevr
 
 @defmac DONT_USE_BUILTIN_SETJMP

@@ -1,3 +1,8 @@
+2010-11-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Pass &global_options to
+	targetm.except_unwind_info.
+
 2010-11-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-opts.c (c_common_handle_option): Pass location to

@@ -201,7 +201,7 @@ static bool arm_output_ttype (rtx);
 static void arm_asm_emit_except_personality (rtx);
 static void arm_asm_init_sections (void);
 #endif
-static enum unwind_info_type arm_except_unwind_info (void);
+static enum unwind_info_type arm_except_unwind_info (struct gcc_options *);
 static void arm_dwarf_handle_frame_unspec (const char *, rtx, int);
 static rtx arm_dwarf_register_span (rtx);
 
@@ -2071,7 +2071,8 @@ arm_compute_func_type (void)
   if (optimize > 0
       && (TREE_NOTHROW (current_function_decl)
           || !(flag_unwind_tables
-               || (flag_exceptions && arm_except_unwind_info () != UI_SJLJ)))
+               || (flag_exceptions
+		   && arm_except_unwind_info (&global_options) != UI_SJLJ)))
       && TREE_THIS_VOLATILE (current_function_decl))
     type |= ARM_FT_VOLATILE;
 
@@ -15773,7 +15774,7 @@ arm_expand_prologue (void)
      using the EABI unwinder, to prevent faulting instructions from being
      swapped with a stack adjustment.  */
   if (crtl->profile || !TARGET_SCHED_PROLOG
-      || (arm_except_unwind_info () == UI_TARGET
+      || (arm_except_unwind_info (&global_options) == UI_TARGET
 	  && cfun->can_throw_non_call_exceptions))
     emit_insn (gen_blockage ());
 
@@ -19656,7 +19657,7 @@ thumb_pushpop (FILE *f, unsigned long mask, int push, int *cfa_offset,
       return;
     }
 
-  if (push && arm_except_unwind_info () == UI_TARGET)
+  if (push && arm_except_unwind_info (&global_options) == UI_TARGET)
     {
       fprintf (f, "\t.save\t{");
       for (regno = 0; regno < 15; regno++)
@@ -20596,7 +20597,7 @@ thumb1_expand_prologue (void)
      using the EABI unwinder, to prevent faulting instructions from being
      swapped with a stack adjustment.  */
   if (crtl->profile || !TARGET_SCHED_PROLOG
-      || (arm_except_unwind_info () == UI_TARGET
+      || (arm_except_unwind_info (&global_options) == UI_TARGET
 	  && cfun->can_throw_non_call_exceptions))
     emit_insn (gen_blockage ());
 
@@ -20710,7 +20711,7 @@ thumb1_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
   if (crtl->args.pretend_args_size)
     {
       /* Output unwind directive for the stack adjustment.  */
-      if (arm_except_unwind_info () == UI_TARGET)
+      if (arm_except_unwind_info (&global_options) == UI_TARGET)
 	fprintf (f, "\t.pad #%d\n",
 		 crtl->args.pretend_args_size);
 
@@ -20780,7 +20781,7 @@ thumb1_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 
       work_register = thumb_find_work_register (live_regs_mask);
 
-      if (arm_except_unwind_info () == UI_TARGET)
+      if (arm_except_unwind_info (&global_options) == UI_TARGET)
 	asm_fprintf (f, "\t.pad #16\n");
 
       asm_fprintf
@@ -22388,7 +22389,7 @@ arm_unwind_emit (FILE * asm_out_file, rtx insn)
 {
   rtx pat;
 
-  if (arm_except_unwind_info () != UI_TARGET)
+  if (arm_except_unwind_info (&global_options) != UI_TARGET)
     return;
 
   if (!(flag_unwind_tables || crtl->uses_eh_lsda)
@@ -22462,7 +22463,7 @@ arm_asm_init_sections (void)
 /* Implement TARGET_EXCEPT_UNWIND_INFO.  */
 
 static enum unwind_info_type
-arm_except_unwind_info (void)
+arm_except_unwind_info (struct gcc_options *opts)
 {
   /* Honor the --enable-sjlj-exceptions configure switch.  */
 #ifdef CONFIG_SJLJ_EXCEPTIONS
@@ -22475,7 +22476,7 @@ arm_except_unwind_info (void)
     {
       /* For simplicity elsewhere in this file, indicate that all unwind
 	 info is disabled if we're not emitting unwind tables.  */
-      if (!flag_exceptions && !flag_unwind_tables)
+      if (!opts->x_flag_exceptions && !opts->x_flag_unwind_tables)
 	return UI_NONE;
       else
 	return UI_TARGET;
@@ -22515,7 +22516,7 @@ arm_dwarf_handle_frame_unspec (const char *label, rtx pattern, int index)
 void
 arm_output_fn_unwind (FILE * f, bool prologue)
 {
-  if (arm_except_unwind_info () != UI_TARGET)
+  if (arm_except_unwind_info (&global_options) != UI_TARGET)
     return;
 
   if (prologue)

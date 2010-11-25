@@ -632,12 +632,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 {
   enum unwind_info_type ui_except;
 
-  /* These assertions are because of the use of target hooks that
-     still access global data rather than being passed an options
-     structure pointer.  */
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set = &global_options_set);
-
   if (opts->x_dump_base_name && ! IS_ABSOLUTE_PATH (opts->x_dump_base_name))
     {
       /* First try to make OPTS->X_DUMP_BASE_NAME relative to the
@@ -727,7 +721,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
      generating unwind info.  If opts->x_flag_exceptions is turned on
      we need to turn off the partitioning optimization.  */
 
-  ui_except = targetm.except_unwind_info ();
+  ui_except = targetm.except_unwind_info (opts);
 
   if (opts->x_flag_exceptions
       && opts->x_flag_reorder_blocks_and_partition
@@ -827,7 +821,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     opts->x_flag_split_stack = 0;
   else if (opts->x_flag_split_stack)
     {
-      if (!targetm.supports_split_stack (true))
+      if (!targetm.supports_split_stack (true, opts))
 	{
 	  error_at (loc, "%<-fsplit-stack%> is not supported by "
 		    "this compiler configuration");
@@ -1173,9 +1167,6 @@ common_handle_option (struct gcc_options *opts,
   int value = decoded->value;
   enum opt_code code = (enum opt_code) scode;
 
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
-  gcc_assert (dc == global_dc);
   gcc_assert (decoded->canonical_option_num_elements <= 2);
 
   switch (code)

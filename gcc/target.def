@@ -1831,13 +1831,14 @@ DEFHOOK
 
 DEFHOOK
 (supports_split_stack,
- "Whether this target supports splitting the stack.  This is called\
+ "Whether this target supports splitting the stack when the options\
+ described in @var{opts} have been passed.  This is called\
  after options have been parsed, so the target may reject splitting\
  the stack in some configurations.  The default version of this hook\
  returns false.  If @var{report} is true, this function may issue a warning\
  or error; if @var{report} is false, it must simply return a value",
- bool, (bool),
- hook_bool_bool_false)
+ bool, (bool report, struct gcc_options *opts),
+ hook_bool_bool_gcc_optionsp_false)
 
 /* Returns NULL if target supports the insn within a doloop block,
    otherwise it returns an error message.  */
@@ -2576,7 +2577,7 @@ DEFHOOK
 DEFHOOK
 (except_unwind_info,
  "",
- enum unwind_info_type, (void),
+ enum unwind_info_type, (struct gcc_options *opts),
  default_except_unwind_info)
 
 /* Leave the boolean fields at the end.  */

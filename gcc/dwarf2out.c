@@ -153,7 +153,7 @@ dwarf2out_do_frame (void)
     return true;
 
   if ((flag_unwind_tables || flag_exceptions)
-      && targetm.except_unwind_info () == UI_DWARF2)
+      && targetm.except_unwind_info (&global_options) == UI_DWARF2)
     return true;
 
   return false;
@@ -189,7 +189,7 @@ dwarf2out_do_cfi_asm (void)
      dwarf2 unwind info for exceptions, then emit .debug_frame by hand.  */
   if (!HAVE_GAS_CFI_SECTIONS_DIRECTIVE
       && !flag_unwind_tables && !flag_exceptions
-      && targetm.except_unwind_info () != UI_DWARF2)
+      && targetm.except_unwind_info (&global_options) != UI_DWARF2)
     return false;
 
   saved_do_cfi_asm = true;
@@ -4072,7 +4072,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
      call-site information.  We must emit this label if it might be used.  */
   if (!do_frame
       && (!flag_exceptions
-	  || targetm.except_unwind_info () != UI_TARGET))
+	  || targetm.except_unwind_info (&global_options) != UI_TARGET))
     return;
 
   fnsec = function_section (current_function_decl);
@@ -4256,7 +4256,7 @@ dwarf2out_frame_init (void)
   dwarf2out_def_cfa (NULL, STACK_POINTER_REGNUM, INCOMING_FRAME_SP_OFFSET);
 
   if (targetm.debug_unwind_info () == UI_DWARF2
-      || targetm.except_unwind_info () == UI_DWARF2)
+      || targetm.except_unwind_info (&global_options) == UI_DWARF2)
     initial_return_save (INCOMING_RETURN_ADDR_RTX);
 }
 
@@ -4269,7 +4269,7 @@ dwarf2out_frame_finish (void)
 
   /* Output another copy for the unwinder.  */
   if ((flag_unwind_tables || flag_exceptions)
-      && targetm.except_unwind_info () == UI_DWARF2)
+      && targetm.except_unwind_info (&global_options) == UI_DWARF2)
     output_call_frame_info (1);
 }
 
@@ -22014,7 +22014,7 @@ dwarf2out_assembly_start (void)
   if (HAVE_GAS_CFI_SECTIONS_DIRECTIVE
       && dwarf2out_do_cfi_asm ()
       && (!(flag_unwind_tables || flag_exceptions)
-	  || targetm.except_unwind_info () != UI_DWARF2))
+	  || targetm.except_unwind_info (&global_options) != UI_DWARF2))
     fprintf (asm_out_file, "\t.cfi_sections\t.debug_frame\n");
 }
 

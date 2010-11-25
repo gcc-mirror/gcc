@@ -9037,7 +9037,8 @@ ix86_builtin_setjmp_frame_value (void)
    field in the TCB, so they can not be used together.  */
 
 static bool
-ix86_supports_split_stack (bool report ATTRIBUTE_UNUSED)
+ix86_supports_split_stack (bool report ATTRIBUTE_UNUSED,
+			   struct gcc_options *opts ATTRIBUTE_UNUSED)
 {
   bool ret = true;
 

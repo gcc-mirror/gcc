@@ -163,9 +163,9 @@ extern reg_class_t default_preferred_output_reload_class (rtx, reg_class_t);
 extern bool default_class_likely_spilled_p (reg_class_t);
 
 extern enum unwind_info_type default_debug_unwind_info (void);
-extern enum unwind_info_type default_except_unwind_info (void);
-extern enum unwind_info_type dwarf2_except_unwind_info (void);
-extern enum unwind_info_type sjlj_except_unwind_info (void);
+extern enum unwind_info_type default_except_unwind_info (struct gcc_options *);
+extern enum unwind_info_type dwarf2_except_unwind_info (struct gcc_options *);
+extern enum unwind_info_type sjlj_except_unwind_info (struct gcc_options *);
 
 extern int default_label_align_after_barrier_max_skip (rtx);
 extern int default_loop_align_max_skip (rtx);
