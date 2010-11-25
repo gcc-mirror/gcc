@@ -1,3 +1,10 @@
+2010-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/46637
+	* combine.c (try_combine): When substing i2dest for i2src, pass
+	1 as last argument even if
+	i0_feeds_i1_n && i1_feeds_i2_n && i0dest_in_i0src.
+
 2010-11-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/46647
