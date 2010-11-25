@@ -1,3 +1,8 @@
+2010-11-25  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/ivar-problem-1.m: New.
+	* obj-c++.dg/ivar-problem-1.mm: New.
+
 2010-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46637
