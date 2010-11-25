@@ -56,6 +56,14 @@ hook_bool_bool_false (bool a ATTRIBUTE_UNUSED)
   return false;
 }
 
+/* Generic hook that takes (bool, struct gcc_options *) and returns false.  */
+bool
+hook_bool_bool_gcc_optionsp_false (bool a ATTRIBUTE_UNUSED,
+				   struct gcc_options *opts ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
 /* Generic hook that takes const int, const int) and returns true.  */
 bool hook_bool_const_int_const_int_true (const int a ATTRIBUTE_UNUSED,
                                          const int b ATTRIBUTE_UNUSED)

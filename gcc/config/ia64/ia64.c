@@ -262,7 +262,7 @@ static void ia64_asm_emit_except_personality (rtx);
 static void ia64_asm_init_sections (void);
 
 static enum unwind_info_type ia64_debug_unwind_info (void);
-static enum unwind_info_type ia64_except_unwind_info (void);
+static enum unwind_info_type ia64_except_unwind_info (struct gcc_options *);
 
 static struct bundle_state *get_free_bundle_state (void);
 static void free_bundle_state (struct bundle_state *);
@@ -4020,7 +4020,7 @@ ia64_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	     current_frame_info.n_output_regs,
 	     current_frame_info.n_rotate_regs);
 
-  if (ia64_except_unwind_info () != UI_TARGET)
+  if (ia64_except_unwind_info (&global_options) != UI_TARGET)
     return;
 
   /* Emit the .prologue directive.  */
@@ -4078,7 +4078,7 @@ ia64_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 static void
 ia64_output_function_end_prologue (FILE *file)
 {
-  if (ia64_except_unwind_info () != UI_TARGET)
+  if (ia64_except_unwind_info (&global_options) != UI_TARGET)
     return;
 
   fputs ("\t.body\n", file);
@@ -8700,7 +8700,7 @@ ia64_add_bundle_selector_before (int template0, rtx insn)
   ia64_emit_insn_before (b, insn);
 #if NR_BUNDLES == 10
   if ((template0 == 4 || template0 == 5)
-      && ia64_except_unwind_info () == UI_TARGET)
+      && ia64_except_unwind_info (&global_options) == UI_TARGET)
     {
       int i;
       rtx note = NULL_RTX;
@@ -9541,7 +9541,7 @@ ia64_reorg (void)
   /* A call must not be the last instruction in a function, so that the
      return address is still within the function, so that unwinding works
      properly.  Note that IA-64 differs from dwarf2 on this point.  */
-  if (ia64_except_unwind_info () == UI_TARGET)
+  if (ia64_except_unwind_info (&global_options) == UI_TARGET)
     {
       rtx insn;
       int saw_stop = 0;
@@ -10007,7 +10007,7 @@ process_cfa_offset (FILE *asm_out_file, rtx pat, bool unwind)
 static void
 ia64_asm_unwind_emit (FILE *asm_out_file, rtx insn)
 {
-  bool unwind = ia64_except_unwind_info () == UI_TARGET;
+  bool unwind = ia64_except_unwind_info (&global_options) == UI_TARGET;
   bool frame = dwarf2out_do_frame ();
   rtx note, pat;
   bool handled_one;
@@ -10144,7 +10144,7 @@ ia64_debug_unwind_info (void)
 /* Implement TARGET_EXCEPT_UNWIND_INFO.  */
 
 static enum unwind_info_type
-ia64_except_unwind_info (void)
+ia64_except_unwind_info (struct gcc_options *opts)
 {
   /* Honor the --enable-sjlj-exceptions configure switch.  */
 #ifdef CONFIG_UNWIND_EXCEPTIONS
@@ -10154,7 +10154,7 @@ ia64_except_unwind_info (void)
 
   /* For simplicity elsewhere in this file, indicate that all unwind
      info is disabled if we're not emitting unwind tables.  */
-  if (!flag_exceptions && !flag_unwind_tables)
+  if (!opts->x_flag_exceptions && !opts->x_flag_unwind_tables)
     return UI_NONE;
 
   return UI_TARGET;

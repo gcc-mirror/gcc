@@ -10290,7 +10290,7 @@ build_personality_function (const char *lang)
   tree decl, type;
   char *name;
 
-  switch (targetm.except_unwind_info ())
+  switch (targetm.except_unwind_info (&global_options))
     {
     case UI_NONE:
       return NULL;

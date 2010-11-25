@@ -1,3 +1,61 @@
+2010-11-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* target.def (supports_split_stack, except_unwind_info): Take
+	gcc_options parameters.
+	* targhooks.c (default_except_unwind_info,
+	dwarf2_except_unwind_info, sjlj_except_unwind_info): Take
+	gcc_options parameters.
+	* targhooks.h (default_except_unwind_info,
+	dwarf2_except_unwind_info, sjlj_except_unwind_info): Update
+	prototypes.
+	* doc/tm.texi.in (TARGET_IRA_COVER_CLASSES,
+	TARGET_HAVE_NAMED_SECTIONS, TARGET_UNWIND_TABLES_DEFAULT):
+	Document that hooks must not be modified.
+	(TARGET_EXCEPT_UNWIND_INFO): Refer to opts argument.
+	* doc/tm.texi: Regenerate.
+	* defaults.h (STACK_OLD_CHECK_PROTECT, STACK_CHECK_PROTECT): Pass
+	&global_options to targetm.except_unwind_info.
+	* dwarf2out.c (dwarf2out_do_frame, dwarf2out_do_cfi_asm,
+	dwarf2out_begin_prologue, dwarf2out_frame_init,
+	dwarf2out_frame_finish, dwarf2out_assembly_start): Pass
+	&global_options to targetm.except_unwind_info.
+	* except.c (init_eh, finish_eh_generation,
+	gate_convert_to_eh_region_ranges,
+	output_one_function_exception_table): Pass &global_options to
+	targetm.except_unwind_info.
+	* expr.c (build_personality_function): Pass &global_options to
+	targetm.except_unwind_info.
+	* function.c (expand_function_end): Pass &global_options to
+	targetm.except_unwind_info.
+	* hooks.c (hook_bool_bool_gcc_optionsp_false): New.
+	* hooks.h (hook_bool_bool_gcc_optionsp_false): Declare.
+	* opts.c (finish_options): Pass opts to targetm.except_unwind_info
+	and targetm.supports_split_stack.  Remove assertions about opts
+	and opts_set.
+	(common_handle_option): Remove assertions about opts, opts_set and
+	dc.
+	* tree-tailcall.c (suitable_for_tail_call_opt_p): Pass
+	&global_options to targetm.except_unwind_info.
+	* tree.c (build_common_builtin_nodes: Pass &global_options to
+	targetm.except_unwind_info.
+	* config/arm/arm.c (arm_except_unwind_info): Add gcc_options
+	parameter.
+	(arm_compute_func_type, arm_expand_prologue, thumb_pushpop,
+	thumb1_expand_prologue, thumb1_output_function_prologue,
+	arm_unwind_emit, arm_output_fn_unwind): Update calls to
+	arm_except_unwind_info.
+	* config/i386/i386.c (ix86_supports_split_stack): Add gcc_options
+	parameter.
+	* config/ia64/ia64.c (ia64_except_unwind_info): Add gcc_options
+	parameter.
+	(ia64_output_function_prologue, ia64_add_bundle_selector_before,
+	ia64_reorg, ia64_asm_unwind_emit): Update calls to
+	ia64_except_unwind_info.
+	* config/pa/pa.c (pa_option_override): Pass &global_options to
+	targetm.except_unwind_info.
+	* config/picochip/picochip-protos.h (picochip_except_unwind_info):
+	Remove prototype.
+
 2010-11-25  Kai Tietz  <kai.tietz@onevision.com>
 
 	* cgraphunit.c (process_function_and_variable_attributes):
