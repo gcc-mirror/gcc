@@ -1,3 +1,36 @@
+2010-11-25  François Dumont  <francois.cppdevs@free.fr>
+
+	* src/debug.cc: Introduce a mutex pool in get_safe_base_mutex.
+	Move code used to manipulate sequence safe iterators from safe
+	iterator methods to safe sequence ones. Remove usage of safe iterator
+	mutex, keep _Safe_iterator_base::_M_get_mutex for library backward
+	binary compatibility.
+	* src/Makefile.am: Build debug.cc in gnu++0x mode for _Hash_impl usage.
+	* src/Makefile.in: Regenerate
+	* include/debug/safe_base.h: Add _Safe_iterator_base _M_invalidate
+	and _M_reset. Add _Safe_sequence_base _M_attach, _M_attach_single,
+	_M_detach and _M_detach_single.
+	* include/debug.safe_iterator.h, safe_iterator.tcc: Remove
+	_Safe_iterator _M_invalidate and _M_invalidate_single. Implement all
+	methods in terms of normal iterators rather than safe ones.
+	* include/debug/safe_sequence.h: Replace _Safe_sequence
+	_M_transfe_iter with _M_transfer_from_if taking the source sequence
+	and a predicate signaling when a safe iterator shall be transfered.
+	Add _Equal_to predicate.
+	* include/debug/safe_sequence.tcc: New.
+	* include/Makefile.am: Adjust.
+	* include/Makefile.in: Regenerate.
+	* include/debug/forward_list: Swap safe iterators in move constructor.
+	Do not invalidate before begin in _M_invalidate_all method.
+	Reimplement safe methods using normal iterators rather than safe ones.
+	* include/debug/set.h, unordered_map, multiset.h, vector,
+	unordered_set, deque, map.h, list, multimap.h: Reimplement safe method
+	using normal iterators rather than safe ones.
+	* testsuite/23_containers/forward_list/debug/clear.cc, swap.cc,
+	move_constructor.cc, splice_after.cc, splice_after1.cc,
+	splice_after2.cc, splice_after3.cc, splice_after4.cc: New.
+	* testsuite/23_containers/vector/debug/multithreaded_swap.cc: New.
+
 2010-11-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/tuple: Mark more constructors constexpr.

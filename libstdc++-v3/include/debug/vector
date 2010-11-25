@@ -49,16 +49,17 @@ namespace __debug
       typedef _GLIBCXX_STD_D::vector<_Tp, _Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<vector>              _Safe_base;
 
+      typedef typename _Base::iterator _Base_iterator;
       typedef typename _Base::const_iterator _Base_const_iterator;
-      typedef __gnu_debug::_After_nth_from<_Base_const_iterator> _After_nth;
+      typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
 
     public:
       typedef typename _Base::reference             reference;
       typedef typename _Base::const_reference       const_reference;
 
-      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator,vector>
+      typedef __gnu_debug::_Safe_iterator<_Base_iterator,vector>
       iterator;
-      typedef __gnu_debug::_Safe_iterator<typename _Base::const_iterator,vector>
+      typedef __gnu_debug::_Safe_iterator<_Base_const_iterator,vector>
       const_iterator;
 
       typedef typename _Base::size_type             size_type;
@@ -246,7 +247,7 @@ namespace __debug
       {
 	bool __realloc = _M_requires_reallocation(__sz);
 	if (__sz < this->size())
-	  this->_M_invalidate_if(_After_nth(__sz, _M_base().begin()));
+	  this->_M_invalidate_after_nth(__sz);
 	_Base::resize(__sz);
 	if (__realloc)
 	  this->_M_invalidate_all();
@@ -258,7 +259,7 @@ namespace __debug
       {
 	bool __realloc = _M_requires_reallocation(__sz);
 	if (__sz < this->size())
-	  this->_M_invalidate_if(_After_nth(__sz, _M_base().begin()));
+	  this->_M_invalidate_after_nth(__sz);
 	_Base::resize(__sz, __c);
 	if (__realloc)
 	  this->_M_invalidate_all();
@@ -270,7 +271,7 @@ namespace __debug
       {
 	bool __realloc = _M_requires_reallocation(__sz);
 	if (__sz < this->size())
-	  this->_M_invalidate_if(_After_nth(__sz, _M_base().begin()));
+	  this->_M_invalidate_after_nth(__sz);
 	_Base::resize(__sz, __c);
 	if (__realloc)
 	  this->_M_invalidate_all();
@@ -388,8 +389,7 @@ namespace __debug
       pop_back()
       {
 	__glibcxx_check_nonempty();
-	iterator __victim = end() - 1;
-	__victim._M_invalidate();
+	this->_M_invalidate_if(_Equal(--_Base::end()));
 	_Base::pop_back();
       }
 
@@ -400,13 +400,13 @@ namespace __debug
 	{
 	  __glibcxx_check_insert(__position);
 	  bool __realloc = _M_requires_reallocation(this->size() + 1);
-	  difference_type __offset = __position - begin();
-	  typename _Base::iterator __res = _Base::emplace(__position.base(),
-					    std::forward<_Args>(__args)...);
+	  difference_type __offset = __position.base() - _Base::begin();
+	  _Base_iterator __res = _Base::emplace(__position.base(),
+						std::forward<_Args>(__args)...);
 	  if (__realloc)
 	    this->_M_invalidate_all();
 	  else
-	    this->_M_invalidate_if(_After_nth(__offset, _M_base().begin()));
+	    this->_M_invalidate_after_nth(__offset);
 	  _M_update_guaranteed_capacity();
 	  return iterator(__res, this);
 	}
@@ -417,12 +417,12 @@ namespace __debug
       {
 	__glibcxx_check_insert(__position);
 	bool __realloc = _M_requires_reallocation(this->size() + 1);
-	difference_type __offset = __position - begin();
-	typename _Base::iterator __res = _Base::insert(__position.base(),__x);
+	difference_type __offset = __position.base() - _Base::begin();
+	_Base_iterator __res = _Base::insert(__position.base(), __x);
 	if (__realloc)
 	  this->_M_invalidate_all();
 	else
-	  this->_M_invalidate_if(_After_nth(__offset, _M_base().begin()));
+	  this->_M_invalidate_after_nth(__offset);
 	_M_update_guaranteed_capacity();
 	return iterator(__res, this);
       }
@@ -444,12 +444,12 @@ namespace __debug
       {
 	__glibcxx_check_insert(__position);
 	bool __realloc = _M_requires_reallocation(this->size() + __n);
-	difference_type __offset = __position - begin();
+	difference_type __offset = __position.base() - _Base::begin();
 	_Base::insert(__position.base(), __n, __x);
 	if (__realloc)
 	  this->_M_invalidate_all();
 	else
-	  this->_M_invalidate_if(_After_nth(__offset, _M_base().begin()));
+	  this->_M_invalidate_after_nth(__offset);
 	_M_update_guaranteed_capacity();
       }
 
@@ -463,15 +463,15 @@ namespace __debug
 	  /* Hard to guess if invalidation will occur, because __last
 	     - __first can't be calculated in all cases, so we just
 	     punt here by checking if it did occur. */
-	  typename _Base::iterator __old_begin = _M_base().begin();
-	  difference_type __offset = __position - begin();
+	  _Base_iterator __old_begin = _M_base().begin();
+	  difference_type __offset = __position.base() - _Base::begin();
 	  _Base::insert(__position.base(), __gnu_debug::__base(__first),
 					   __gnu_debug::__base(__last));
 
 	  if (_M_base().begin() != __old_begin)
 	    this->_M_invalidate_all();
 	  else
-	    this->_M_invalidate_if(_After_nth(__offset, _M_base().begin()));
+	    this->_M_invalidate_after_nth(__offset);
 	  _M_update_guaranteed_capacity();
 	}
 
@@ -479,9 +479,9 @@ namespace __debug
       erase(iterator __position)
       {
 	__glibcxx_check_erase(__position);
-	difference_type __offset = __position - begin();
-	typename _Base::iterator __res = _Base::erase(__position.base());
-	this->_M_invalidate_if(_After_nth(__offset, _M_base().begin()));
+	difference_type __offset = __position.base() - _Base::begin();
+	_Base_iterator __res = _Base::erase(__position.base());
+	this->_M_invalidate_after_nth(__offset);
 	return iterator(__res, this);
       }
 
@@ -492,10 +492,10 @@ namespace __debug
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
 
-	difference_type __offset = __first - begin();
-	typename _Base::iterator __res = _Base::erase(__first.base(),
-							 __last.base());
-	this->_M_invalidate_if(_After_nth(__offset, _M_base().begin()));
+	difference_type __offset = __first.base() - _Base::begin();
+	_Base_iterator __res = _Base::erase(__first.base(),
+						      __last.base());
+	this->_M_invalidate_after_nth(__offset);
 	return iterator(__res, this);
       }
 
@@ -533,6 +533,13 @@ namespace __debug
       {
 	if (this->size() > _M_guaranteed_capacity)
 	  _M_guaranteed_capacity = this->size();
+      }
+
+      void
+      _M_invalidate_after_nth(difference_type __n)
+      {
+	typedef __gnu_debug::_After_nth_from<_Base_const_iterator> _After_nth;
+	this->_M_invalidate_if(_After_nth(__n, _Base::begin()));
       }
     };
 
