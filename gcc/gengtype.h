@@ -374,6 +374,13 @@ extern size_t srcdir_len;
 extern const char *read_state_filename; /* (-r) program argument. */
 extern const char *write_state_filename; /* (-w) program argument. */
 
+/* Functions reading and writing the entire gengtype state, called from
+   main, and implemented in file gengtype-state.c.  */
+void read_state (const char* path);
+/* Write the state, and update the state_number field in types.  */
+void write_state (const char* path);
+
+
 /* Print an error message.  */
 extern void error_at_line
 (const struct fileloc *pos, const char *msg, ...) ATTRIBUTE_PRINTF_2;
