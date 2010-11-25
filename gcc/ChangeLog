@@ -1,3 +1,10 @@
+2010-11-25  Joern Rennecke  <amylaar@spamcop.net>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/45888
+	* Makefile.in (s-tm-texi): Remove \r occurences from tmp-tm.texi.
+	Fix target.def pathname in timestamp comparison.
+
 2010-11-24  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/predicates.md (pmpyshr_operand): New.
