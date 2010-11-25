@@ -816,7 +816,14 @@ process_function_and_variable_attributes (struct cgraph_node *first,
       tree decl = node->decl;
       if (DECL_PRESERVE_P (decl))
 	cgraph_mark_needed_node (node);
-      if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
+      if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+	  && lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl))
+	  && TREE_PUBLIC (node->decl))
+	{
+	  if (node->local.finalized)
+	    cgraph_mark_needed_node (node);
+	}
+      else if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
 	{
 	  if (! TREE_PUBLIC (node->decl))
 	    warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wattributes,
@@ -835,7 +842,14 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 	  if (vnode->finalized)
 	    varpool_mark_needed_node (vnode);
 	}
-      if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
+      if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+	  && lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl))
+	  && TREE_PUBLIC (node->decl))
+	{
+	  if (vnode->finalized)
+	    varpool_mark_needed_node (vnode);
+	}
+      else if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
 	{
 	  if (! TREE_PUBLIC (vnode->decl))
 	    warning_at (DECL_SOURCE_LOCATION (vnode->decl), OPT_Wattributes,

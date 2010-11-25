@@ -1,3 +1,10 @@
+2010-11-25  Kai Tietz  <kai.tietz@onevision.com>
+
+	* cgraphunit.c (process_function_and_variable_attributes):
+	Mark dllexport-ed function/variables as needed.
+	* ipa.c (cgraph_externally_visible_p): Make dllexport-ed
+	as externally visible.
+
 2010-11-25  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/46585

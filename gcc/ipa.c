@@ -662,7 +662,9 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool 
     return true;
   if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (node->decl)))
     return true;
-
+  if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+      && lookup_attribute ("dllexport", DECL_ATTRIBUTES (node->decl)))
+    return true;
   /* When doing LTO or whole program, we can bring COMDAT functoins static.
      This improves code quality and we know we will duplicate them at most twice
      (in the case that we are not using plugin and link with object file
@@ -723,6 +725,10 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
     return true;
   if (lookup_attribute ("externally_visible",
 			DECL_ATTRIBUTES (vnode->decl)))
+    return true;
+  if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+      && lookup_attribute ("dllexport",
+			   DECL_ATTRIBUTES (vnode->decl)))
     return true;
 
   /* See if we have linker information about symbol not being used or
