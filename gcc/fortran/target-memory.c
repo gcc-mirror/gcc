@@ -486,7 +486,16 @@ gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *resu
 	     }
 	}
 
-      ptr = TREE_INT_CST_LOW (DECL_FIELD_OFFSET (cmp->backend_decl));
+      /* Calculate the offset, which consists of the the FIELD_OFFSET in
+	 bytes, which appears in multiples of DECL_OFFSET_ALIGN-bit-sized,
+	 and additional bits of FIELD_BIT_OFFSET. The code assumes that all
+	 sizes of the components are multiples of BITS_PER_UNIT,
+	 i.e. there are, e.g., no bit fields.  */
+
+      ptr = TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (cmp->backend_decl));
+      gcc_assert (ptr % 8 == 0);
+      ptr = ptr/8 + TREE_INT_CST_LOW (DECL_FIELD_OFFSET (cmp->backend_decl));
+
       gfc_target_interpret_expr (&buffer[ptr], buffer_size - ptr,
 				 tail->expr);
 
