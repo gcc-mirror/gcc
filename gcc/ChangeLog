@@ -1,3 +1,9 @@
+2010-11-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/46647
+	* builtins.c (target_char_cast): Check INTEGER_CST instead of
+	host_integerp.  Replace tree_low_cst with TREE_INT_CST_LOW.
+
 2010-11-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* target.def (supports_split_stack, except_unwind_info): Take
