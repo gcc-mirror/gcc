@@ -1,5 +1,9 @@
 2010-11-25  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* gfortran.dg/pr46519-1.f: Add -mtune=generic.
+
+2010-11-25  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR middle-end/46647
 	* gcc.target/i386/pr46647.c: New.
 
