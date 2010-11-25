@@ -1,3 +1,23 @@
+2010-11-25  Basile Starynkevitch  <basile@starynkevitch.net>
+	    Jeremie Salvucci  <jeremie.salvucci@free.fr>
+
+	* gentype-state.c: Add new file.
+
+	* gengtype.c (type count): New variable.
+	(new_structure, find_param_structure, create_pointer)
+	(create_array): Use it to set state_number in types.
+	(dump_everything): Improve comment.
+	(main): Call read_state and write_state. Print type_count.
+
+	* gengtype.h (type_lineloc): New function.
+	(read_state, write_state): New declarations.
+
+	* Makefile.in (GENGTYPE_FLAGS): New variable.
+	(s-gtype): Run gengtype twice and generate gtype.state.
+	(build/gengtype-state.o): New rule.
+	(build/gengtype$(build_exeext)): Link gengtype-state.o.
+	(mostlyclean): Update comment.  Remove gtype.state.
+
 2010-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46637

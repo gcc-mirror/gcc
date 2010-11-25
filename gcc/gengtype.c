@@ -67,6 +67,10 @@ int do_debug;
 /* Level for verbose messages.  */
 int verbosity_level;
 
+/* We have a type count and use it to set the state_number of newly
+   allocated types to some unique negative number.  */
+static int type_count;
+
 /* The backup directory should be in the same file system as the
    generated files, otherwise the rename(2) system call would fail.
    If NULL, no backup is made when overwriting a generated file.  */
@@ -563,12 +567,14 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
 	else if (si->u.s.line.file != NULL && si->u.s.bitmap != bitmap)
 	  {
 	    ls = si;
+	    type_count++;
 	    si = XCNEW (struct type);
 	    memcpy (si, ls, sizeof (struct type));
 	    ls->kind = TYPE_LANG_STRUCT;
 	    ls->u.s.lang_struct = si;
 	    ls->u.s.fields = NULL;
 	    si->next = NULL;
+	    si->state_number = -type_count;
 	    si->pointer_to = NULL;
 	    si->u.s.lang_struct = ls;
 	  }
@@ -577,7 +583,9 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
 
 	if (ls != NULL && s == NULL)
 	  {
+	    type_count++;
 	    s = XCNEW (struct type);
+	    s->state_number = -type_count;
 	    s->next = ls->u.s.lang_struct;
 	    ls->u.s.lang_struct = s;
 	    s->u.s.lang_struct = ls;
@@ -587,7 +595,9 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
 
   if (s == NULL)
     {
+      type_count++;
       s = XCNEW (struct type);
+      s->state_number = -type_count;
       s->next = structures;
       structures = s;
     }
@@ -625,8 +635,10 @@ find_structure (const char *name, int isunion)
     if (strcmp (name, s->u.s.tag) == 0 && UNION_P (s) == isunion)
       return s;
 
+  type_count++;
   s = XCNEW (struct type);
   s->next = structures;
+  s->state_number = -type_count;
   structures = s;
   s->kind = isunion ? TYPE_UNION : TYPE_STRUCT;
   s->u.s.tag = name;
@@ -650,9 +662,11 @@ find_param_structure (type_p t, type_p param[NUM_PARAM])
       break;
   if (res == NULL)
     {
+      type_count++;
       res = XCNEW (struct type);
       res->kind = TYPE_PARAM_STRUCT;
       res->next = param_structs;
+      res->state_number = -type_count;
       param_structs = res;
       res->u.param_struct.stru = t;
       memcpy (res->u.param_struct.param, param, sizeof (type_p) * NUM_PARAM);
@@ -679,6 +693,8 @@ create_pointer (type_p t)
   if (!t->pointer_to)
     {
       type_p r = XCNEW (struct type);
+      type_count++;
+      r->state_number = -type_count;
       r->kind = TYPE_POINTER;
       r->u.p = t;
       t->pointer_to = r;
@@ -693,8 +709,10 @@ create_array (type_p t, const char *len)
 {
   type_p v;
 
+  type_count++;
   v = XCNEW (struct type);
   v->kind = TYPE_ARRAY;
+  v->state_number = -type_count;
   v->u.a.p = t;
   v->u.a.len = len;
   return v;
@@ -4600,7 +4618,9 @@ dump_structures (const char *name, type_p structures)
   printf ("End of %s\n\n", name);
 }
 
-/* Dumps the internal structures of gengtype.  */
+/* Dumps the internal structures of gengtype.  This is useful to debug
+   gengtype itself, or to understand what it does, e.g. for plugin
+   developers.  */
 
 static void
 dump_everything (void)
@@ -4836,8 +4856,12 @@ main (int argc, char **argv)
   DBGPRINTF ("inputlist %s", inputlist);
   if (read_state_filename)
     {
-      fatal ("read state %s not implemented yet", read_state_filename);
-      /* TODO: implement read state.  */
+      if (inputlist)
+	fatal ("input list %s cannot be given with a read state file %s",
+	       inputlist, read_state_filename);
+      read_state (read_state_filename);
+      DBGPRINT_COUNT_TYPE ("structures after read_state", structures);
+      DBGPRINT_COUNT_TYPE ("param_structs after read_state", param_structs);
     }
   else if (inputlist)
     {
@@ -4867,7 +4891,8 @@ main (int argc, char **argv)
 		     (int) i, get_input_file_name (gt_files[i]));
 	}
       if (verbosity_level >= 1)
-	printf ("%s parsed %d files\n", progname, (int) num_gt_files);
+	printf ("%s parsed %d files with %d GTY types\n", 
+		progname, (int) num_gt_files, type_count);
 
       DBGPRINT_COUNT_TYPE ("structures after parsing", structures);
       DBGPRINT_COUNT_TYPE ("param_structs after parsing", param_structs);
@@ -4892,7 +4917,7 @@ main (int argc, char **argv)
 	fatal ("No plugin files given in plugin mode for %s",
 	       plugin_output_filename);
 
-      /* Parse our plugin files.  */
+      /* Parse our plugin files and augment the state.  */
       for (ix = 0; ix < nb_plugin_files; ix++)
 	parse_file (get_input_file_name (plugin_files[ix]));
 
@@ -4917,11 +4942,30 @@ main (int argc, char **argv)
      hence enlarge the param_structs list of types.  */
   set_gc_used (variables);
 
-  /* We should write the state here, but it is not yet implemented.  */
+ /* The state at this point is read from the state input file or by
+    parsing source files and optionally augmented by parsing plugin
+    source files.  Write it now.  */
   if (write_state_filename)
     {
-      fatal ("write state %s in not yet implemented", write_state_filename);
-      /* TODO: implement write state.  */
+      DBGPRINT_COUNT_TYPE ("structures before write_state", structures);
+      DBGPRINT_COUNT_TYPE ("param_structs before write_state", param_structs);
+
+      if (hit_error)
+	fatal ("didn't write state file %s after errors", 
+	       write_state_filename);
+
+      DBGPRINTF ("before write_state %s", write_state_filename);
+      write_state (write_state_filename);
+
+      if (do_dump)
+	dump_everything ();
+
+      /* After having written the state file we return immediately to
+	 avoid generating any output file.  */
+      if (hit_error)
+	return 1;
+      else
+	return 0;
     }
 
 
