@@ -2085,7 +2085,7 @@ static void
 read_state_structures (type_p *structures)
 {
   type_p head = NULL;
-  type_p previous;
+  type_p previous = NULL;
   type_p tmp;
   int nbstruct = 0, countstruct = 0;
   struct state_token_st *t0 = peek_state_token (0);
