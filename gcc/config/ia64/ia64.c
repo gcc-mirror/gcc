@@ -1972,6 +1972,44 @@ ia64_expand_vecint_minmax (enum rtx_code code, enum machine_mode mode,
   return true;
 }
 
+/* Emit an integral vector unpack operation.  */
+
+void
+ia64_expand_unpack (rtx operands[3], bool unsignedp, bool highp)
+{
+  enum machine_mode mode = GET_MODE (operands[1]);
+  rtx (*gen) (rtx, rtx, rtx);
+  rtx x;
+
+  switch (mode)
+    {
+    case V8QImode:
+      gen = highp ? gen_vec_interleave_highv8qi : gen_vec_interleave_lowv8qi;
+      break;
+    case V4HImode:
+      gen = highp ? gen_vec_interleave_highv4hi : gen_vec_interleave_lowv4hi;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Fill in x with the sign extension of each element in op1.  */
+  if (unsignedp)
+    x = CONST0_RTX (mode);
+  else
+    {
+      bool neg;
+
+      x = gen_reg_rtx (mode);
+
+      neg = ia64_expand_vecint_compare (LT, mode, x, operands[1],
+					CONST0_RTX (mode));
+      gcc_assert (!neg);
+    }
+
+  emit_insn (gen (gen_lowpart (mode, operands[0]), operands[1], x));
+}
+
 /* Emit an integral vector widening sum operations.  */
 
 void
@@ -1989,13 +2027,13 @@ ia64_expand_widen_sum (rtx operands[3], bool unsignedp)
   switch (mode)
     {
     case V8QImode:
-      unpack_l = gen_unpack1_l;
-      unpack_h = gen_unpack1_h;
+      unpack_l = gen_vec_interleave_lowv8qi;
+      unpack_h = gen_vec_interleave_highv8qi;
       plus = gen_addv4hi3;
       break;
     case V4HImode:
-      unpack_l = gen_unpack2_l;
-      unpack_h = gen_unpack2_h;
+      unpack_l = gen_vec_interleave_lowv4hi;
+      unpack_h = gen_vec_interleave_highv4hi;
       plus = gen_addv2si3;
       break;
     default:
@@ -2024,6 +2062,27 @@ ia64_expand_widen_sum (rtx operands[3], bool unsignedp)
   emit_insn (unpack_h (gen_lowpart (mode, h), operands[1], x));
   emit_insn (plus (s, l, operands[2]));
   emit_insn (plus (operands[0], h, s));
+}
+
+void
+ia64_expand_widen_mul_v4hi (rtx operands[3], bool unsignedp, bool highp)
+{
+  rtx l = gen_reg_rtx (V4HImode);
+  rtx h = gen_reg_rtx (V4HImode);
+  rtx (*mulhigh)(rtx, rtx, rtx, rtx);
+  rtx (*interl)(rtx, rtx, rtx);
+
+  emit_insn (gen_mulv4hi3 (l, operands[1], operands[2]));
+
+  /* For signed, pmpy2.r would appear to more closely match this operation.
+     However, the vectorizer is more likely to use the LO and HI patterns
+     in pairs. At which point, with this formulation, the first two insns
+     of each can be CSEd.  */
+  mulhigh = unsignedp ? gen_pmpyshr2_u : gen_pmpyshr2;
+  emit_insn (mulhigh (h, operands[1], operands[2], GEN_INT (16)));
+
+  interl = highp ? gen_vec_interleave_highv4hi : gen_vec_interleave_lowv4hi;
+  emit_insn (interl (gen_lowpart (V4HImode, operands[0]), l, h));
 }
 
 /* Emit a signed or unsigned V8QI dot product operation.  */
@@ -2056,10 +2115,14 @@ ia64_expand_dot_prod_v8qi (rtx operands[4], bool unsignedp)
   h1 = gen_reg_rtx (V4HImode);
   h2 = gen_reg_rtx (V4HImode);
 
-  emit_insn (gen_unpack1_l (gen_lowpart (V8QImode, l1), operands[1], x1));
-  emit_insn (gen_unpack1_l (gen_lowpart (V8QImode, l2), operands[2], x2));
-  emit_insn (gen_unpack1_h (gen_lowpart (V8QImode, h1), operands[1], x1));
-  emit_insn (gen_unpack1_h (gen_lowpart (V8QImode, h2), operands[2], x2));
+  emit_insn (gen_vec_interleave_lowv8qi
+	     (gen_lowpart (V8QImode, l1), operands[1], x1));
+  emit_insn (gen_vec_interleave_lowv8qi
+	     (gen_lowpart (V8QImode, l2), operands[2], x2));
+  emit_insn (gen_vec_interleave_highv8qi
+	     (gen_lowpart (V8QImode, h1), operands[1], x1));
+  emit_insn (gen_vec_interleave_highv8qi
+	     (gen_lowpart (V8QImode, h2), operands[2], x2));
 
   p1 = gen_reg_rtx (V2SImode);
   p2 = gen_reg_rtx (V2SImode);

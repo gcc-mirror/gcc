@@ -1,3 +1,10 @@
+2010-11-24  Richard Henderson  <rth@redhat.com>
+
+	* lib/target-supports.exp (vect_widen_sum_hi_to_si_pattern,
+	vect_widen_mult_hi_to_si, vect_sdot_qi, vect_udot_qi, vect_sdot_hi,
+	vect_unpack, vect_int_mult, vect_extract_even_odd,
+	vect_extract_even_odd_wide, vect_interleave): Enable for ia64.
+
 2010-11-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/46519
