@@ -1,3 +1,8 @@
+2010-11-25  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/46585
+	* gcc.dg/pr46585.c: New.
+
 2010-11-24  Richard Henderson  <rth@redhat.com>
 
 	* lib/target-supports.exp (vect_widen_sum_hi_to_si_pattern,
