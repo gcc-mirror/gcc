@@ -1,3 +1,9 @@
+2010-11-25  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/46602
+	* sel-sched-ir.c (maybe_tidy_empty_bb): Move checking ...
+	(tidy_control_flow): Here.
+
 2010-11-25  Joern Rennecke  <amylaar@spamcop.net>
 	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
