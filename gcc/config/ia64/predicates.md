@@ -526,6 +526,12 @@
                     INTVAL (op) == 1   || INTVAL (op) == 4  ||
                     INTVAL (op) == 8   || INTVAL (op) == 16")))
 
+;; True if OP is one of the immediate values 0, 7, 15, 16
+(define_predicate "pmpyshr_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 0 || INTVAL (op) == 7
+		    || INTVAL (op) == 15 || INTVAL (op) == 16")))
+
 ;; True if OP is 0..3.
 (define_predicate "const_int_2bit_operand"
   (and (match_code "const_int")

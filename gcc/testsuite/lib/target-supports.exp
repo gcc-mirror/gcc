@@ -2518,7 +2518,8 @@ proc check_effective_target_vect_widen_sum_hi_to_si_pattern { } {
         verbose "check_effective_target_vect_widen_sum_hi_to_si_pattern: using cached result" 2
     } else {
         set et_vect_widen_sum_hi_to_si_pattern_saved 0
-        if { [istarget powerpc*-*-*] } {
+        if { [istarget powerpc*-*-*]
+             || [istarget ia64-*-*] } {
             set et_vect_widen_sum_hi_to_si_pattern_saved 1
         }
     }
@@ -2644,6 +2645,7 @@ proc check_effective_target_vect_widen_mult_hi_to_si { } {
         }
         if { [istarget powerpc*-*-*]
 	      || [istarget spu-*-*]
+	      || [istarget ia64-*-*]
 	      || [istarget i?86-*-*]
 	      || [istarget x86_64-*-*] } {
             set et_vect_widen_mult_hi_to_si_saved 1
@@ -2665,6 +2667,9 @@ proc check_effective_target_vect_sdot_qi { } {
         verbose "check_effective_target_vect_sdot_qi: using cached result" 2
     } else {
         set et_vect_sdot_qi_saved 0
+        if { [istarget ia64-*-*] } {
+            set et_vect_udot_qi_saved 1
+        }
     }
     verbose "check_effective_target_vect_sdot_qi: returning $et_vect_sdot_qi_saved" 2
     return $et_vect_sdot_qi_saved
@@ -2682,7 +2687,8 @@ proc check_effective_target_vect_udot_qi { } {
         verbose "check_effective_target_vect_udot_qi: using cached result" 2
     } else {
         set et_vect_udot_qi_saved 0
-        if { [istarget powerpc*-*-*] } {
+        if { [istarget powerpc*-*-*]
+             || [istarget ia64-*-*] } {
             set et_vect_udot_qi_saved 1
         }
     }
@@ -2703,6 +2709,7 @@ proc check_effective_target_vect_sdot_hi { } {
     } else {
         set et_vect_sdot_hi_saved 0
         if { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
+	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*]
              || [istarget x86_64-*-*] } {
             set et_vect_sdot_hi_saved 1
@@ -2774,6 +2781,7 @@ proc check_effective_target_vect_unpack { } {
              || [istarget i?86-*-*]
              || [istarget x86_64-*-*] 
              || [istarget spu-*-*]
+             || [istarget ia64-*-*]
              || ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
             set et_vect_unpack_saved 1
         }
@@ -3050,6 +3058,7 @@ proc check_effective_target_vect_int_mult { } {
 	     || [istarget spu-*-*]
 	     || [istarget i?86-*-*]
 	     || [istarget x86_64-*-*]
+	     || [istarget ia64-*-*]
 	     || [check_effective_target_arm32] } {
 	   set et_vect_int_mult_saved 1
 	}
@@ -3071,6 +3080,7 @@ proc check_effective_target_vect_extract_even_odd { } {
         if { [istarget powerpc*-*-*] 
              || [istarget i?86-*-*]
              || [istarget x86_64-*-*]
+             || [istarget ia64-*-*]
              || [istarget spu-*-*] } {
            set et_vect_extract_even_odd_saved 1
         }
@@ -3093,6 +3103,7 @@ proc check_effective_target_vect_extract_even_odd_wide { } {
         if { [istarget powerpc*-*-*] 
              || [istarget i?86-*-*]
              || [istarget x86_64-*-*]
+             || [istarget ia64-*-*]
              || [istarget spu-*-*] } {
            set et_vect_extract_even_odd_wide_saved 1
         }
@@ -3114,6 +3125,7 @@ proc check_effective_target_vect_interleave { } {
         if { [istarget powerpc*-*-*]
              || [istarget i?86-*-*]
              || [istarget x86_64-*-*]
+             || [istarget ia64-*-*]
              || [istarget spu-*-*] } {
            set et_vect_interleave_saved 1
         }

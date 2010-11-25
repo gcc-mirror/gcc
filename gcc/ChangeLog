@@ -1,3 +1,42 @@
+2010-11-24  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/predicates.md (pmpyshr_operand): New.
+	* config/ia64/ia64.c (ia64_expand_unpack): New.
+	(ia64_expand_widen_mul_v4hi): New.
+	(ia64_expand_widen_sum): Update for pattern renames.
+	(ia64_expand_dot_prod_v8qi): Likewise.
+	* config/ia64/ia64-protos.h: Update.
+	* config/ia64/vect.md (vecwider): New mode attribute.
+	(vec_widen_umult_lo_v8qi, vec_widen_umult_hi_v8qi): New.
+	(vec_widen_smult_lo_v8qi, vec_widen_smult_hi_v8qi): New.
+	(pmpyshr2, pmpyshr2_u): New.
+	(vec_widen_smult_lo_v4hi, vec_widen_smult_hi_v4hi): New.
+	(vec_widen_umult_lo_v4hi, vec_widen_umult_hi_v4hi): New.
+	(mulv2si3): New.
+	(vec_pack_ssat_v4hi): Rename from pack2_sss.
+	(vec_pack_usat_v4hi): Rename from *pack2_uss.
+	(vec_pack_ssat_v2si): Rename from pack4_sss.
+	(vec_interleave_lowv8qi): Rename from unpack1_l, use the correct
+	vec_select operation.
+	(vec_interleave_highv8qi): Similarly.
+	(mux1_alt): Rename from *mux1_alt.
+	(vec_extract_evenv8qi, vec_extract_oddv8qi): New.
+	(vec_interleave_lowv4hi): Rename from unpack2_l.
+	(vec_interleave_highv4hi): Rename from unpack2_h.
+	(mix2_r): Rename from *mix2_r.
+	(mix2_l): Similarly.
+	(vec_extract_evenodd_helper): New.
+	(vec_extract_evenv4hi, vec_extract_oddv4hi): New.
+	(vec_interleave_lowv2si): Rename from *unpack4_l.
+	(vec_interleave_highv2si): Rename from *unpack4_h.
+	(vec_extract_evenv2si, vec_extract_oddv2si): New.
+	(vec_interleave_lowv2sf): Rename from fmix_r.
+	(vec_interleave_highv2sf): Rename from *fmix_l.
+	(vec_extract_evenv2sf, vec_extract_oddv2sf): New.
+	(vec_unpacku_lo_<VECINT12>, vec_unpacku_hi_<VECINT12>): New.
+	(vec_unpacks_lo_<VECINT12>, vec_unpacks_hi_<VECINT12>): New.
+	(vec_pack_trunc_v4hi, vec_pack_trunc_v2si): New.
+
 2010-11-24  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* targhooks.c (default_except_unwind_info): Remove
