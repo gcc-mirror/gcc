@@ -1,7 +1,11 @@
+2010-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gengtype-state.c (read_state_structures): Initialize "previous".
+
 2010-11-25  Basile Starynkevitch  <basile@starynkevitch.net>
 	    Jeremie Salvucci  <jeremie.salvucci@free.fr>
 
-	* gentype-state.c: Add new file.
+	* gengtype-state.c: Add new file.
 
 	* gengtype.c (type count): New variable.
 	(new_structure, find_param_structure, create_pointer)
@@ -65,14 +69,12 @@
 	* opts.c (finish_options): Pass opts to targetm.except_unwind_info
 	and targetm.supports_split_stack.  Remove assertions about opts
 	and opts_set.
-	(common_handle_option): Remove assertions about opts, opts_set and
-	dc.
+	(common_handle_option): Remove assertions about opts, opts_set and dc.
 	* tree-tailcall.c (suitable_for_tail_call_opt_p): Pass
 	&global_options to targetm.except_unwind_info.
 	* tree.c (build_common_builtin_nodes: Pass &global_options to
 	targetm.except_unwind_info.
-	* config/arm/arm.c (arm_except_unwind_info): Add gcc_options
-	parameter.
+	* config/arm/arm.c (arm_except_unwind_info): Add gcc_options parameter.
 	(arm_compute_func_type, arm_expand_prologue, thumb_pushpop,
 	thumb1_expand_prologue, thumb1_output_function_prologue,
 	arm_unwind_emit, arm_output_fn_unwind): Update calls to
@@ -185,7 +187,7 @@
 	PR target/46519
 	* config/i386/i386.c (upper_128bits_state): New.
 	(block_info_def): Remove upper_128bits_set and done.  Add state,
-	referenced, count, processed and rescanned. 
+	referenced, count, processed and rescanned.
 	(check_avx256_stores): Updated.
 	(move_or_delete_vzeroupper_2): Updated. Handle deleted BB_END.
 	Call note_stores only if needed.  Set referenced and count.
@@ -483,9 +485,8 @@
 	(write_roots, note_def_vec, dump_options): Adjust for
 	discriminated option.
 
-	* gengtype.h
-	(typedefs, structures, param_structs, variables, enum typekind):
-	Move from gengtype.c
+	* gengtype.h (typedefs, structures, param_structs, variables
+	enum typekind): Move from gengtype.c
 	(enum option_kind): New discriminating enumeration.
 	(struct options): Becomes discriminated.
 	(struct nested_ptr_data): Nove from gengtype.c
@@ -528,8 +529,7 @@
 	debug_info_levels.
 	* flags.h (write_symbols, debug_info_level,
 	use_gnu_debug_info_extensions): Remove declarations.
-	* opts.c (exit_after_options, write_symbols, debug_info_level):
-	Remove.
+	* opts.c (exit_after_options, write_symbols, debug_info_level): Remove.
 	(set_struct_debug_option): Make static variables const.
 	(use_gnu_debug_info_extensions): Remove.
 	(set_debug_level, print_filtered_help, print_specific_help,
@@ -604,7 +604,7 @@
 	no collection_rec is passed.
 	(df_ref_record): Do not create multiword hard reg info when no
 	collection_rec is passed.
-	(df_uses_create): New. 
+	(df_uses_create): New.
 
 2010-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -23892,7 +23892,7 @@
 	(ggc_common.o, ggc-page.o, ggc-zone.o, stringpool.o): Add
 	$(GGC_INTERNAL_H) to dependencies.
 
-	* gentype.c: Update copyright year.
+	* gengtype.c: Update copyright year.
 	(walk_type): Accept variable_size GTY option.
 	(USED_BY_TYPED_GC_P): New macro.
 	(write_enum_defn): Use USED_BY_TYPED_GC_P.  Do not output
