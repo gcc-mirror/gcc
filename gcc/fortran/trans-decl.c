@@ -3165,91 +3165,6 @@ init_intent_out_dt (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 }
 
 
-/* Do proper initialization for ASSOCIATE names.  */
-
-static void
-trans_associate_var (gfc_symbol* sym, gfc_wrapped_block* block)
-{
-  gfc_expr* e;
-  tree tmp;
-
-  gcc_assert (sym->assoc);
-  e = sym->assoc->target;
-
-  /* Do a `pointer assignment' with updated descriptor (or assign descriptor
-     to array temporary) for arrays with either unknown shape or if associating
-     to a variable.  */
-  if (sym->attr.dimension
-      && (sym->as->type == AS_DEFERRED || sym->assoc->variable))
-    {
-      gfc_se se;
-      gfc_ss* ss;
-      tree desc;
-
-      desc = sym->backend_decl;
-
-      /* If association is to an expression, evaluate it and create temporary.
-	 Otherwise, get descriptor of target for pointer assignment.  */
-      gfc_init_se (&se, NULL);
-      ss = gfc_walk_expr (e);
-      if (sym->assoc->variable)
-	{
-	  se.direct_byref = 1;
-	  se.expr = desc;
-	}
-      gfc_conv_expr_descriptor (&se, e, ss);
-
-      /* If we didn't already do the pointer assignment, set associate-name
-	 descriptor to the one generated for the temporary.  */
-      if (!sym->assoc->variable)
-	{
-	  int dim;
-
-	  gfc_add_modify (&se.pre, desc, se.expr);
-
-	  /* The generated descriptor has lower bound zero (as array
-	     temporary), shift bounds so we get lower bounds of 1.  */
-	  for (dim = 0; dim < e->rank; ++dim)
-	    gfc_conv_shift_descriptor_lbound (&se.pre, desc,
-					      dim, gfc_index_one_node);
-	}
-
-      /* Done, register stuff as init / cleanup code.  */
-      gfc_add_init_cleanup (block, gfc_finish_block (&se.pre),
-			    gfc_finish_block (&se.post));
-    }
-
-  /* Do a scalar pointer assignment; this is for scalar variable targets.  */
-  else if (gfc_is_associate_pointer (sym))
-    {
-      gfc_se se;
-
-      gcc_assert (!sym->attr.dimension);
-
-      gfc_init_se (&se, NULL);
-      gfc_conv_expr (&se, e);
-
-      tmp = TREE_TYPE (sym->backend_decl);
-      tmp = gfc_build_addr_expr (tmp, se.expr);
-      gfc_add_modify (&se.pre, sym->backend_decl, tmp);
-      
-      gfc_add_init_cleanup (block, gfc_finish_block( &se.pre),
-			    gfc_finish_block (&se.post));
-    }
-
-  /* Do a simple assignment.  This is for scalar expressions, where we
-     can simply use expression assignment.  */
-  else
-    {
-      gfc_expr* lhs;
-
-      lhs = gfc_lval_expr_from_sym (sym);
-      tmp = gfc_trans_assignment (lhs, e, false, true);
-      gfc_add_init_cleanup (block, tmp, NULL_TREE);
-    }
-}
-
-
 /* Generate function entry and exit code, and add it to the function body.
    This includes:
     Allocation and initialization of array variables.
@@ -3316,8 +3231,9 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
       bool sym_has_alloc_comp = (sym->ts.type == BT_DERIVED)
 				   && sym->ts.u.derived->attr.alloc_comp;
       if (sym->assoc)
-	trans_associate_var (sym, block);
-      else if (sym->attr.dimension)
+	continue;
+
+      if (sym->attr.dimension)
 	{
 	  switch (sym->as->type)
 	    {
@@ -4890,21 +4806,12 @@ gfc_generate_block_data (gfc_namespace * ns)
 /* Process the local variables of a BLOCK construct.  */
 
 void
-gfc_process_block_locals (gfc_namespace* ns, gfc_association_list* assoc)
+gfc_process_block_locals (gfc_namespace* ns)
 {
   tree decl;
 
   gcc_assert (saved_local_decls == NULL_TREE);
   generate_local_vars (ns);
-
-  /* Mark associate names to be initialized.  The symbol's namespace may not
-     be the BLOCK's, we have to force this so that the deferring
-     works as expected.  */
-  for (; assoc; assoc = assoc->next)
-    {
-      assoc->st->n.sym->ns = ns;
-      gfc_defer_symbol_init (assoc->st->n.sym);
-    }
 
   decl = saved_local_decls;
   while (decl)
