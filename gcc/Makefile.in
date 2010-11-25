@@ -3722,14 +3722,23 @@ s-target-hooks-def-h: build/genhooks$(build_exeext)
 # We use a different pathname here to avoid a circular dependency.
 s-tm-texi: $(srcdir)/doc/../doc/tm.texi
 
+# The tm.texi we want to compare against / check into svn should have
+# unix-style line endings.  To make this work on MinGW, remove \r.
+# \r is not portable to Solaris tr, therefore we have a special
+# case for ASCII.  We use \r for other encodings like EBCDIC.
 s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 	$(RUN_GEN) build/genhooks$(build_exeext) \
 			$(srcdir)/doc/tm.texi.in > tmp-tm.texi
+	case `echo X|tr X '\101'` in \
+	  A) tr -d '\015' < tmp-tm.texi > tmp2-tm.texi ;; \
+ 	  *) tr -d '\r' < tmp-tm.texi > tmp2-tm.texi ;; \
+	esac
+	mv tmp2-tm.texi tmp-tm.texi
 	$(SHELL) $(srcdir)/../move-if-change tmp-tm.texi tm.texi
 	@if cmp -s $(srcdir)/doc/tm.texi tm.texi; then \
 	  $(STAMP) $@; \
 	elif test $(srcdir)/doc/tm.texi -nt $(srcdir)/doc/tm.texi.in \
-	  && test $(srcdir)/doc/tm.texi -nt $(srcdir)/doc/target.def; then \
+	  && test $(srcdir)/doc/tm.texi -nt $(srcdir)/target.def; then \
 	  echo >&2 ; \
 	  echo You should edit $(srcdir)/doc/tm.texi.in rather than $(srcdir)/doc/tm.texi . >&2 ; \
 	  false; \
