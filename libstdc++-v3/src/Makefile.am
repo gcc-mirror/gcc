@@ -349,6 +349,11 @@ future.lo: future.cc
 future.o: future.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
+debug.lo: debug.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+debug.o: debug.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
 if GLIBCXX_LDBL_COMPAT
 # Use special rules for compatibility-ldbl.cc compilation, as we need to
 # pass -mlong-double-64.

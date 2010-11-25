@@ -57,6 +57,21 @@ namespace __gnu_debug
       { return __value != __x; }
     };
 
+  /** A simple function object that returns true if the passed-in
+   *  value is equal to the stored value. */
+  template <typename _Type>
+    class _Equal_to
+    {
+      _Type __value;
+
+    public:
+      explicit _Equal_to(const _Type& __v) : __value(__v) { }
+
+      bool
+      operator()(const _Type& __x) const
+      { return __value == __x; }
+    };
+
   /** A function object that returns true when the given random access
       iterator is at least @c n steps away from the given iterator. */
   template<typename _Iterator>
@@ -99,85 +114,24 @@ namespace __gnu_debug
     public:
       /** Invalidates all iterators @c x that reference this sequence,
 	  are not singular, and for which @c pred(x) returns @c
-	  true. The user of this routine should be careful not to make
-	  copies of the iterators passed to @p pred, as the copies may
-	  interfere with the invalidation. */
+	  true. @c pred will be invoked with the normal iterators nested
+	  in the safe ones. */
       template<typename _Predicate>
         void
         _M_invalidate_if(_Predicate __pred);
 
-      /** Transfers all iterators that reference this memory location
-	  to this sequence from whatever sequence they are attached
-	  to. */
-      template<typename _Iterator>
+      /** Transfers all iterators @c x that reference @c from sequence,
+	  are not singular, and for which @c pred(x) returns @c
+	  true. @c pred will be invoked with the normal iterators nested
+	  in the safe ones. */
+      template<typename _Predicate>
         void
-        _M_transfer_iter(const _Safe_iterator<_Iterator, _Sequence>& __x);
+        _M_transfer_from_if(_Safe_sequence& __from, _Predicate __pred);
     };
-
-  template<typename _Sequence>
-    template<typename _Predicate>
-      void
-      _Safe_sequence<_Sequence>::
-      _M_invalidate_if(_Predicate __pred)
-      {
-        typedef typename _Sequence::iterator iterator;
-        typedef typename _Sequence::const_iterator const_iterator;
-
-	__gnu_cxx::__scoped_lock sentry(this->_M_get_mutex());
-        for (_Safe_iterator_base* __iter = _M_iterators; __iter;)
-	  {
-	    iterator* __victim = static_cast<iterator*>(__iter);
-	    __iter = __iter->_M_next;
-	    if (!__victim->_M_singular())
-	      {
-		if (__pred(__victim->base()))
-		  __victim->_M_invalidate_single();
-	      }
-	  }
-
-        for (_Safe_iterator_base* __iter2 = _M_const_iterators; __iter2;)
-	  {
-	    const_iterator* __victim = static_cast<const_iterator*>(__iter2);
-	    __iter2 = __iter2->_M_next;
-	    if (!__victim->_M_singular())
-	      {
-		if (__pred(__victim->base()))
-		  __victim->_M_invalidate_single();
-	      }
-	  }
-      }
-
-  template<typename _Sequence>
-    template<typename _Iterator>
-      void
-      _Safe_sequence<_Sequence>::
-      _M_transfer_iter(const _Safe_iterator<_Iterator, _Sequence>& __x)
-      {
-	_Safe_sequence_base* __from = __x._M_sequence;
-	if (!__from)
-	  return;
-
-        typedef typename _Sequence::iterator iterator;
-        typedef typename _Sequence::const_iterator const_iterator;
-
-	__gnu_cxx::__scoped_lock sentry(this->_M_get_mutex());
-        for (_Safe_iterator_base* __iter = __from->_M_iterators; __iter;)
-	  {
-	    iterator* __victim = static_cast<iterator*>(__iter);
-	    __iter = __iter->_M_next;
-	    if (!__victim->_M_singular() && __victim->base() == __x.base())
-	      __victim->_M_attach_single(static_cast<_Sequence*>(this));
-	  }
-
-        for (_Safe_iterator_base* __iter2 = __from->_M_const_iterators; 
-	     __iter2;)
-	  {
-	    const_iterator* __victim = static_cast<const_iterator*>(__iter2);
-	    __iter2 = __iter2->_M_next;
-	    if (!__victim->_M_singular() && __victim->base() == __x.base())
-	      __victim->_M_attach_single(static_cast<_Sequence*>(this));
-	  }
-      }
 } // namespace __gnu_debug
+
+#ifndef _GLIBCXX_EXPORT_TEMPLATE
+#  include <debug/safe_sequence.tcc>
+#endif
 
 #endif

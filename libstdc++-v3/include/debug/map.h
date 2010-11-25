@@ -48,6 +48,9 @@ namespace __debug
       typedef _GLIBCXX_STD_D::map<_Key, _Tp, _Compare, _Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<map> _Safe_base;
 
+      typedef typename _Base::const_iterator _Base_const_iterator;
+      typedef typename _Base::iterator _Base_iterator;
+      typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
     public:
       // types:
       typedef _Key                                  key_type;
@@ -269,7 +272,7 @@ namespace __debug
       erase(const_iterator __position)
       {
 	__glibcxx_check_erase(__position);
-	__position._M_invalidate();
+	this->_M_invalidate_if(_Equal(__position.base()));
 	return iterator(_Base::erase(__position.base()), this);
       }
 #else
@@ -277,7 +280,7 @@ namespace __debug
       erase(iterator __position)
       {
 	__glibcxx_check_erase(__position);
-	__position._M_invalidate();
+	this->_M_invalidate_if(_Equal(__position.base()));
 	_Base::erase(__position.base());
       }
 #endif
@@ -285,15 +288,15 @@ namespace __debug
       size_type
       erase(const key_type& __x)
       {
-	iterator __victim = find(__x);
-	if (__victim == end())
+	_Base_iterator __victim = _Base::find(__x);
+	if (__victim == _Base::end())
 	  return 0;
 	else
-	{
-	  __victim._M_invalidate();
-	  _Base::erase(__victim.base());
-	  return 1;
-	}
+	  {
+	    this->_M_invalidate_if(_Equal(__victim));
+	    _Base::erase(__victim);
+	    return 1;
+	  }
       }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -303,9 +306,16 @@ namespace __debug
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
-	while (__first != __last)
-	  this->erase(__first++);
-	return iterator(__last.base()._M_const_cast(), this);
+	for (_Base_const_iterator __victim = __first.base();
+	     __victim != __last.base(); ++__victim)
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::end(),
+				  _M_message(__gnu_debug::__msg_valid_range)
+				  ._M_iterator(__first, "first")
+				  ._M_iterator(__last, "last"));
+	    this->_M_invalidate_if(_Equal(__victim));
+	  }
+	return iterator(_Base::erase(__first.base(), __last.base()), this);
       }
 #else
       void
@@ -314,8 +324,16 @@ namespace __debug
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
-	while (__first != __last)
-	  this->erase(__first++);
+	for (_Base_iterator __victim = __first.base();
+	     __victim != __last.base(); ++__victim)
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::end(),
+				  _M_message(__gnu_debug::__msg_valid_range)
+				  ._M_iterator(__first, "first")
+				  ._M_iterator(__last, "last"));
+	    this->_M_invalidate_if(_Equal(__victim));
+	  }
+	_Base::erase(__first.base(), __last.base());
       }
 #endif
 
@@ -328,7 +346,10 @@ namespace __debug
 
       void
       clear()
-      { this->erase(begin(), end()); }
+      {
+	this->_M_invalidate_all();
+	_Base::clear();
+      }
 
       // observers:
       using _Base::key_comp;

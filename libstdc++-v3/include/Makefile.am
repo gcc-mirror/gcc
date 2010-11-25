@@ -708,6 +708,7 @@ debug_headers = \
 	${debug_srcdir}/safe_iterator.h \
 	${debug_srcdir}/safe_iterator.tcc \
 	${debug_srcdir}/safe_sequence.h \
+	${debug_srcdir}/safe_sequence.tcc \
 	${debug_srcdir}/set \
 	${debug_srcdir}/set.h \
 	${debug_srcdir}/string \
