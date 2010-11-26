@@ -1,5 +1,9 @@
 2010-11-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/46647
+	* builtins.c (fold_builtin_memset): Check c is INTEGER_CST instead
+	of host_integerp check.  Use TREE_INT_CST_LOW instead of tree_low_cst.
+
 	PR bootstrap/45700
 	* tree.h (build1_stat_loc, build2_stat_loc, build3_stat_loc,
 	build4_stat_loc, build5_stat_loc, build6_stat_loc): New inlines.
