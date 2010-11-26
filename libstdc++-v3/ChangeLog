@@ -1,9 +1,9 @@
 2010-11-26  François Dumont  <francois.cppdevs@free.fr>
 
-	* testsuite/lib/libstdc++.exp [check_v3_target_debug_mode]: Use
-	remote_file delete for generated exe. [check_v3_target_profile_mode]
-	Add.
-	* testsuite/lib/dg-options.exp [dg-require-profile-mode]: Add
+	* testsuite/lib/libstdc++.exp ([check_v3_target_debug_mode]): Use
+	remote_file delete for generated exe.
+	([check_v3_target_profile_mode]): Add.
+	* testsuite/lib/dg-options.exp ([dg-require-profile-mode]): Add
 	* testsuite/ext/profile/mh.cc, profiler_algos.cc, all.cc: Use
 	dg-require-profile-mode, remove explicit _GLIBCXX_PROFILE definition.
 
