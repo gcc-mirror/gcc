@@ -1,3 +1,9 @@
+2010-11-26  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/46648
+	* gcc.dg/lto/20101125-1_0.c: New testcase.
+	* gcc.dg/lto/20101125-1_1.c: Likewise.
+
 2010-11-22   Bud Davis  <jmdavis@link.com>
 
 	* arith_divide_no_check.f
