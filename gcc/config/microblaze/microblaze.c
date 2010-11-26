@@ -729,7 +729,7 @@ microblaze_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
   delta = bits / BITS_PER_UNIT;
 
   /* Allocate a buffer for the temporary registers.  */
-  regs = alloca (sizeof (rtx) * length / delta);
+  regs = XALLOCAVEC (rtx, length / delta);
 
   /* Load as many BITS-sized chunks as possible.  Use a normal load if
      the source has enough alignment, otherwise use left/right pairs.  */
@@ -1317,7 +1317,9 @@ microblaze_option_override (void)
   if (ver < 0)
     {
       /* No hardware exceptions in earlier versions. So no worries.  */
-      // microblaze_select_flags &= ~(MICROBLAZE_MASK_NO_UNSAFE_DELAY);
+#if 0
+      microblaze_select_flags &= ~(MICROBLAZE_MASK_NO_UNSAFE_DELAY);
+#endif
       microblaze_no_unsafe_delay = 0;
       microblaze_pipe = MICROBLAZE_PIPE_3;
     }
@@ -1325,7 +1327,9 @@ microblaze_option_override (void)
 	   || (MICROBLAZE_VERSION_COMPARE (microblaze_select_cpu, "v4.00.b")
 	       == 0))
     {
-      // microblaze_select_flags |= (MICROBLAZE_MASK_NO_UNSAFE_DELAY);
+#if 0
+      microblaze_select_flags |= (MICROBLAZE_MASK_NO_UNSAFE_DELAY);
+#endif
       microblaze_no_unsafe_delay = 1;
       microblaze_pipe = MICROBLAZE_PIPE_3;
     }
@@ -1333,7 +1337,9 @@ microblaze_option_override (void)
     {
       /* We agree to use 5 pipe-stage model even on area optimized 3 
          pipe-stage variants.  */
-      // microblaze_select_flags &= ~(MICROBLAZE_MASK_NO_UNSAFE_DELAY);
+#if 0
+      microblaze_select_flags &= ~(MICROBLAZE_MASK_NO_UNSAFE_DELAY);
+#endif
       microblaze_no_unsafe_delay = 0;
       microblaze_pipe = MICROBLAZE_PIPE_5;
       if (MICROBLAZE_VERSION_COMPARE (microblaze_select_cpu, "v5.00.a") == 0
@@ -1362,7 +1368,9 @@ microblaze_option_override (void)
   /* Always use DFA scheduler.  */
   microblaze_sched_use_dfa = 1;
 
-  // microblaze_abicalls = MICROBLAZE_ABICALLS_NO;
+#if 0
+  microblaze_abicalls = MICROBLAZE_ABICALLS_NO;
+#endif
 
   /* Initialize the high, low values for legit floating point constants.  */
   real_maxval (&dfhigh, 0, DFmode);
@@ -2068,7 +2076,7 @@ save_restore_insns (int prologue)
     0, isr_mem_rtx = 0;
   rtx isr_msr_rtx = 0, insn;
   long mask = current_frame_info.mask;
-  HOST_WIDE_INT base_offset, gp_offset;
+  HOST_WIDE_INT gp_offset;
   int regno;
 
   if (frame_pointer_needed
@@ -2094,7 +2102,6 @@ save_restore_insns (int prologue)
   gcc_assert (gp_offset > 0);
 
   base_reg_rtx = stack_pointer_rtx;
-  base_offset = 0;
 
   /* For interrupt_handlers, need to save/restore the MSR.  */
   if (interrupt_handler)
@@ -2391,9 +2398,8 @@ microblaze_expand_prologue (void)
 
   if (flag_pic == 2 && df_regs_ever_live_p (MB_ABI_PIC_ADDR_REGNUM))
     {
-      rtx insn;
       SET_REGNO (pic_offset_table_rtx, MB_ABI_PIC_ADDR_REGNUM);
-      insn = emit_insn (gen_set_got (pic_offset_table_rtx));	/* setting GOT.  */
+      emit_insn (gen_set_got (pic_offset_table_rtx));	/* setting GOT.  */
     }
 
   /* If we are profiling, make sure no instructions are scheduled before
@@ -2518,9 +2524,9 @@ microblaze_can_use_return_insn (void)
 
 /* Implement TARGET_SECONDARY_RELOAD.  */
 
-static enum reg_class
+static reg_class_t
 microblaze_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED, 
-			     enum reg_class rclass, enum machine_mode mode ATTRIBUTE_UNUSED, 
+			     reg_class_t rclass, enum machine_mode mode ATTRIBUTE_UNUSED, 
 			     secondary_reload_info *sri ATTRIBUTE_UNUSED)
 {
   if (rclass == ST_REGS)
@@ -2546,6 +2552,8 @@ microblaze_globalize_label (FILE * stream, const char *name)
 static bool
 microblaze_elf_in_small_data_p (const_tree decl)
 {
+  HOST_WIDE_INT size;
+
   if (!TARGET_XLGPOPT)
     return false;
 
@@ -2567,7 +2575,7 @@ microblaze_elf_in_small_data_p (const_tree decl)
 	return true;
     }
 
-  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
+  size = int_size_in_bytes (TREE_TYPE (decl));
 
   return (size > 0 && size <= microblaze_section_threshold);
 }
@@ -2624,10 +2632,10 @@ microblaze_expand_move (enum machine_mode mode, rtx operands[])
 	  rtx addr = XEXP (operands[0], 0);
 	  if (GET_CODE (addr) == SYMBOL_REF)
 	    {
+	      rtx ptr_reg, result;
+
 	      if (reload_in_progress)
 		df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
-
-	      rtx ptr_reg, result;
 
 	      addr = expand_pic_symbol_ref (mode, addr);
 	      ptr_reg = gen_reg_rtx (Pmode);
