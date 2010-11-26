@@ -3731,7 +3731,7 @@ s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 			$(srcdir)/doc/tm.texi.in > tmp-tm.texi
 	case `echo X|tr X '\101'` in \
 	  A) tr -d '\015' < tmp-tm.texi > tmp2-tm.texi ;; \
- 	  *) tr -d '\r' < tmp-tm.texi > tmp2-tm.texi ;; \
+	  *) tr -d '\r' < tmp-tm.texi > tmp2-tm.texi ;; \
 	esac
 	mv tmp2-tm.texi tmp-tm.texi
 	$(SHELL) $(srcdir)/../move-if-change tmp-tm.texi tm.texi

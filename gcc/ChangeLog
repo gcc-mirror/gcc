@@ -1,3 +1,7 @@
+2010-11-26  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* Makefile.in (s-tm-texi): Remove spurous tab.
+
 2010-11-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/46258
