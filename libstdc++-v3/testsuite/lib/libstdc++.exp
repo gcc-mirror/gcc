@@ -935,12 +935,62 @@ proc check_v3_target_debug_mode { } {
 
 	if [string match "" $lines] {
 	    # No error message, compilation succeeded.
-	    file delete $exe
+	    remote_file build delete $exe
 	    set et_debug_mode 1
 	}
     }
     verbose "check_v3_target_debug_mode: $et_debug_mode" 2
     return $et_debug_mode
+}
+
+proc check_v3_target_profile_mode { } {
+    global et_profile_mode
+    global tool	
+
+    if { ![info exists et_profile_mode_target_name] } {
+	set et_profile_mode_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_profile_mode_target_name } {
+	verbose "check_v3_target_profile_mode: `$et_profile_mode_target_name'" 2
+	set et_profile_mode_target_name $current_target
+	if [info exists et_profile_mode] {
+	    verbose "check_v3_target_profile_mode: removing cached result" 2
+	    unset et_profile_mode
+	}
+    }
+
+    if [info exists et_profile_mode] {
+	verbose "check_v3_target_profile_mode: using cached result" 2
+    } else {
+	set et_profile_mode 0
+
+	# Set up and compile a C++ test program that depends
+	# on profile mode activated.
+	set src profile_mode[pid].cc
+	set exe profile_mode[pid].exe
+
+	set f [open $src "w"]
+	puts $f "#ifndef _GLIBCXX_PROFILE"
+	puts $f "#  error No profile mode"
+	puts $f "#endif"
+	puts $f "int main()"
+	puts $f "{ return 0; }"
+	close $f
+
+	set lines [v3_target_compile $src $exe executable ""]
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, compilation succeeded.
+	    remote_file build delete $exe
+	    set et_profile_mode 1
+	}
+    }
+    verbose "check_v3_target_profile_mode: $et_profile_mode" 2
+    return $et_profile_mode
 }
 
 proc check_v3_target_normal_mode { } {
