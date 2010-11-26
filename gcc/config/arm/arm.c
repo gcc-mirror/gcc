@@ -835,39 +835,51 @@ struct processors
   const struct tune_params *const tune;
 };
 
+
+#define ARM_PREFETCH_NOT_BENEFICIAL 0, -1, -1
+#define ARM_PREFETCH_BENEFICIAL(prefetch_slots,l1_size,l1_line_size) \
+  prefetch_slots, \
+  l1_size, \
+  l1_line_size
+
 const struct tune_params arm_slowmul_tune =
 {
   arm_slowmul_rtx_costs,
   NULL,
-  3
+  3,
+  ARM_PREFETCH_NOT_BENEFICIAL
 };
 
 const struct tune_params arm_fastmul_tune =
 {
   arm_fastmul_rtx_costs,
   NULL,
-  1
+  1,
+  ARM_PREFETCH_NOT_BENEFICIAL
 };
 
 const struct tune_params arm_xscale_tune =
 {
   arm_xscale_rtx_costs,
   xscale_sched_adjust_cost,
-  2
+  2,
+  ARM_PREFETCH_NOT_BENEFICIAL
 };
 
 const struct tune_params arm_9e_tune =
 {
   arm_9e_rtx_costs,
   NULL,
-  1
+  1,
+  ARM_PREFETCH_NOT_BENEFICIAL
 };
 
 const struct tune_params arm_cortex_a9_tune =
 {
   arm_9e_rtx_costs,
   cortex_a9_sched_adjust_cost,
-  1
+  1,
+  ARM_PREFETCH_BENEFICIAL(4,32,32)
 };
 
 
@@ -1982,6 +1994,32 @@ arm_option_override (void)
   /* ARM EABI defaults to strict volatile bitfields.  */
   if (TARGET_AAPCS_BASED && flag_strict_volatile_bitfields < 0)
     flag_strict_volatile_bitfields = 1;
+
+  /* Enable sw prefetching at -O3 for CPUS that have prefetch, and we have deemed
+     it beneficial (signified by setting num_prefetch_slots to 1 or more.)  */
+  if (flag_prefetch_loop_arrays < 0
+      && HAVE_prefetch
+      && optimize >= 3
+      && current_tune->num_prefetch_slots > 0)
+    flag_prefetch_loop_arrays = 1;
+
+  /* Set up parameters to be used in prefetching algorithm.  Do not override the
+     defaults unless we are tuning for a core we have researched values for.  */
+  if (current_tune->num_prefetch_slots > 0)
+    maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
+                           current_tune->num_prefetch_slots,
+                           global_options.x_param_values,
+                           global_options_set.x_param_values);
+  if (current_tune->l1_cache_line_size >= 0)
+    maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
+                           current_tune->l1_cache_line_size,
+                           global_options.x_param_values,
+                           global_options_set.x_param_values);
+  if (current_tune->l1_cache_size >= 0)
+    maybe_set_param_value (PARAM_L1_CACHE_SIZE,
+                           current_tune->l1_cache_size,
+                           global_options.x_param_values,
+                           global_options_set.x_param_values);
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
