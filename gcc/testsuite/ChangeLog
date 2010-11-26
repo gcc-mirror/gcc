@@ -1,3 +1,15 @@
+2010-11-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/gnat.exp: Load gcc.exp.
+	(gnat_target_compile): Use gcc_target_compile for *.c sources.
+	* gnat.dg/sse_nolib.adb: Use dg-require-effective-target sse_runtime.
+
+	Backport from mainline:
+	2010-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization7.adb: Remove dg-require-effective-target.
+	* gnat.dg/sse_nolib.adb: Likewise.
+
 2010-11-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46638
