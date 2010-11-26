@@ -107,7 +107,7 @@ static void process_options (void);
 static void backend_init (void);
 static int lang_dependent_init (const char *);
 static void init_asm_output (const char *);
-static void finalize (void);
+static void finalize (bool);
 
 static void crash_signal (int) ATTRIBUTE_NORETURN;
 static void compile_file (void);
@@ -2139,7 +2139,7 @@ dump_memory_report (bool final)
 /* Clean up: close opened files, etc.  */
 
 static void
-finalize (void)
+finalize (bool no_backend)
 {
   /* Close the dump files.  */
   if (flag_gen_aux_info)
@@ -2166,10 +2166,14 @@ finalize (void)
   if (stack_usage_file)
     fclose (stack_usage_file);
 
-  statistics_fini ();
-  finish_optimization_passes ();
+  if (!no_backend)
+    {
+      statistics_fini ();
 
-  ira_finish_once ();
+      finish_optimization_passes ();
+
+      ira_finish_once ();
+    }
 
   if (mem_report)
     dump_memory_report (true);
@@ -2206,7 +2210,7 @@ do_compile (void)
       if (lang_dependent_init (main_input_filename))
 	compile_file ();
 
-      finalize ();
+      finalize (no_backend);
     }
 
   /* Stop timing and print the times.  */

@@ -1,3 +1,9 @@
+2010-11-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* toplev.c (finalize): Add no_backend parameter.  Don't finish
+	passes when preprocessing only.  Adjust...
+	(do_compile): ... caller.
+
 2010-11-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa.md (negdf2): Condition on !flag_signed_zeros instead of
