@@ -8345,7 +8345,7 @@ fold_builtin_memset (location_t loc, tree dest, tree c, tree len,
   if (integer_zerop (len))
     return omit_one_operand_loc (loc, type, dest, c);
 
-  if (! host_integerp (c, 1) || TREE_SIDE_EFFECTS (dest))
+  if (TREE_CODE (c) != INTEGER_CST || TREE_SIDE_EFFECTS (dest))
     return NULL_TREE;
 
   var = dest;
@@ -8384,7 +8384,7 @@ fold_builtin_memset (location_t loc, tree dest, tree c, tree len,
       if (CHAR_BIT != 8 || BITS_PER_UNIT != 8 || HOST_BITS_PER_WIDE_INT > 64)
 	return NULL_TREE;
 
-      cval = tree_low_cst (c, 1);
+      cval = TREE_INT_CST_LOW (c);
       cval &= 0xff;
       cval |= cval << 8;
       cval |= cval << 16;
