@@ -1,3 +1,10 @@
+2010-11-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46528
+	PR debug/46338
+	* profile.c (branch_prob): Do not split blocks based on locations
+	from debug statements.
+
 2010-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46647

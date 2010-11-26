@@ -940,7 +940,8 @@ branch_prob (void)
 	  for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
 	    {
 	      last = gsi_stmt (gsi);
-	      if (gimple_has_location (last))
+	      if (!is_gimple_debug (last)
+		  && gimple_has_location (last))
 		break;
 	    }
 
