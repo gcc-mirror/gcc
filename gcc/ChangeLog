@@ -1,3 +1,11 @@
+2010-11-26  Michael Haubenwallner  <michael.haubenwallner@salomon.at>
+
+	PR target/33637
+	* configure.ac: Accept extra arguments for AS_FOR_TARGET,
+	LD_FOR_TARGET, NM_FOR_TARGET, OBJDUMP_FOR_TARGET.
+	* configure: Regenerated.
+	* exec-tool.in: Not quoting command, may have extra arguments.
+
 2010-11-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46528

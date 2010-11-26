@@ -80,7 +80,7 @@ case "$original" in
     fi
     ;;
   *)
-    exec "$original" ${1+"$@"}
+    exec $original ${1+"$@"}
     ;;
 esac
 
