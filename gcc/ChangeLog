@@ -1,3 +1,10 @@
+2010-11-26  Michael Matz  <matz@suse.de>
+
+	* tree-ssa-copy.c (fini_copy_prop): Don't DCE when we have loops.
+
+	* passes.c (init_optimization_passes): Remove superfluous
+	copy-prop pass.
+
 2010-11-26  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/46648

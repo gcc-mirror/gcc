@@ -897,7 +897,6 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_graphite);
 	    {
 	      struct opt_pass **p = &pass_graphite.pass.sub;
-	      NEXT_PASS (pass_copy_prop);
 	      NEXT_PASS (pass_graphite_transforms);
 	      NEXT_PASS (pass_copy_prop);
 	      NEXT_PASS (pass_dce_loop);
