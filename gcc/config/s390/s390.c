@@ -5130,7 +5130,11 @@ print_operand_address (FILE *file, rtx addr)
 
   if (s390_symref_operand_p (addr, NULL, NULL))
     {
-      gcc_assert (TARGET_Z10);
+      if (!TARGET_Z10)
+	{
+	  error ("symbolic memory references are only supported on z10 or later");
+	  return;
+	}
       output_addr_const (file, addr);
       return;
     }
@@ -5197,7 +5201,7 @@ print_operand (FILE *file, rtx x, int code)
       else if (GET_CODE (x) == GT)
 	fprintf (file, "h");
       else
-	gcc_unreachable ();
+	error ("invalid comparison operator for 'E' output modifier");
       return;
 
     case 'J':
@@ -5217,7 +5221,7 @@ print_operand (FILE *file, rtx x, int code)
 	  assemble_name (file, get_some_local_dynamic_name ());
 	}
       else
-	gcc_unreachable ();
+	error ("invalid reference for 'J' output modifier");
       return;
 
     case 'G':
@@ -5229,11 +5233,21 @@ print_operand (FILE *file, rtx x, int code)
         struct s390_address ad;
 	int ret;
 
-        gcc_assert (GET_CODE (x) == MEM);
+	if (!MEM_P (x))
+	  {
+	    error ("memory reference expected for 'O' output modifier");
+	    return;
+	  }
+
 	ret = s390_decompose_address (XEXP (x, 0), &ad);
-	gcc_assert (ret);
-	gcc_assert (!ad.base || REGNO_OK_FOR_BASE_P (REGNO (ad.base)));
-	gcc_assert (!ad.indx);
+
+	if (!ret
+	    || (ad.base && !REGNO_OK_FOR_BASE_P (REGNO (ad.base)))
+	    || ad.indx)
+	  {
+	    error ("invalid address for 'O' output modifier");
+	    return;
+	  }
 
         if (ad.disp)
           output_addr_const (file, ad.disp);
@@ -5247,11 +5261,21 @@ print_operand (FILE *file, rtx x, int code)
         struct s390_address ad;
 	int ret;
 
-        gcc_assert (GET_CODE (x) == MEM);
+	if (!MEM_P (x))
+	  {
+	    error ("memory reference expected for 'R' output modifier");
+	    return;
+	  }
+
 	ret = s390_decompose_address (XEXP (x, 0), &ad);
-	gcc_assert (ret);
-	gcc_assert (!ad.base || REGNO_OK_FOR_BASE_P (REGNO (ad.base)));
-	gcc_assert (!ad.indx);
+
+	if (!ret
+	    || (ad.base && !REGNO_OK_FOR_BASE_P (REGNO (ad.base)))
+	    || ad.indx)
+	  {
+	    error ("invalid address for 'R' output modifier");
+	    return;
+	  }
 
         if (ad.base)
           fprintf (file, "%s", reg_names[REGNO (ad.base)]);
@@ -5265,11 +5289,20 @@ print_operand (FILE *file, rtx x, int code)
 	struct s390_address ad;
 	int ret;
 
-        gcc_assert (GET_CODE (x) == MEM);
+	if (!MEM_P (x))
+	  {
+	    error ("memory reference expected for 'S' output modifier");
+	    return;
+	  }
 	ret = s390_decompose_address (XEXP (x, 0), &ad);
-	gcc_assert (ret);
-	gcc_assert (!ad.base || REGNO_OK_FOR_BASE_P (REGNO (ad.base)));
-	gcc_assert (!ad.indx);
+
+	if (!ret
+	    || (ad.base && !REGNO_OK_FOR_BASE_P (REGNO (ad.base)))
+	    || ad.indx)
+	  {
+	    error ("invalid address for 'S' output modifier");
+	    return;
+	  }
 
 	if (ad.disp)
 	  output_addr_const (file, ad.disp);
@@ -5287,7 +5320,7 @@ print_operand (FILE *file, rtx x, int code)
       else if (GET_CODE (x) == MEM)
 	x = change_address (x, VOIDmode, plus_constant (XEXP (x, 0), 4));
       else
-        gcc_unreachable ();
+	error ("register or memory expression expected for 'N' output modifier");
       break;
 
     case 'M':
@@ -5296,7 +5329,7 @@ print_operand (FILE *file, rtx x, int code)
       else if (GET_CODE (x) == MEM)
 	x = change_address (x, VOIDmode, plus_constant (XEXP (x, 0), 8));
       else
-        gcc_unreachable ();
+	error ("register or memory expression expected for 'M' output modifier");
       break;
 
     case 'Y':
@@ -5357,11 +5390,19 @@ print_operand (FILE *file, rtx x, int code)
       else if (code == 'h')
         fprintf (file, HOST_WIDE_INT_PRINT_DEC, ((CONST_DOUBLE_LOW (x) & 0xffff) ^ 0x8000) - 0x8000);
       else
-        gcc_unreachable ();
+	{
+	  if (code == 0)
+	    error ("invalid constant - try using an output modifier");
+	  else
+	    error ("invalid constant for output modifier '%c'", code);
+	}
       break;
 
     default:
-      fatal_insn ("UNKNOWN in print_operand !?", x);
+      if (code == 0)
+	error ("invalid expression - try using an output modifier");
+      else
+	error ("invalid expression for output modifier '%c'", code);
       break;
     }
 }
