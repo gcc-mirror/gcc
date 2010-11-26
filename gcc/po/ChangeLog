@@ -1,3 +1,7 @@
+2010-11-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* exgettext: Handle UnknownError.
+
 2010-11-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* sv.po: Update.

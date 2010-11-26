@@ -42,30 +42,12 @@ int flag_complex_method = 1
 Variable
 int flag_evaluation_order = 0
 
-; Set the default region and algorithm for the integrated register
-; allocator.
-
-Variable
-enum ira_algorithm flag_ira_algorithm = IRA_ALGORITHM_CB
-
-Variable
-enum ira_region flag_ira_region = IRA_REGION_MIXED
-
 ; Language specific warning pass for unused results.
 Variable
 bool flag_warn_unused_result = false
 
 Variable
 int *param_values
-
-; Floating-point contraction mode, fast by default.
-Variable
-enum fp_contract_mode flag_fp_contract_mode = FP_CONTRACT_FAST
-
-; The excess precision specified on the command line, or defaulted by
-; the front end.
-Variable
-enum excess_precision flag_excess_precision_cmdline = EXCESS_PRECISION_DEFAULT
 
 ; Nonzero if we should write GIMPLE bytecode for link-time optimization.
 Variable
@@ -96,14 +78,6 @@ int flag_gen_aux_info = 0
 ; executable.
 Variable
 int flag_shlib
-
-; The default visibility for all symbols (unless overridden).
-Variable
-enum symbol_visibility default_visibility = VISIBILITY_DEFAULT
-
-; Set to the default thread-local storage (tls) model to use.
-Variable
-enum tls_model flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC
 
 ; These two are really VEC(char_p,heap) *.
 
@@ -186,6 +160,12 @@ enum graph_dump_types graph_dump_format = no_graph
 ; Which options have been printed by --help.
 Variable
 char *help_printed
+
+; Which enums have been printed by --help.  0 = not printed, no
+; relevant options seen, 1 = relevant option seen, not yet printed, 2
+; = printed.
+Variable
+char *help_enum_printed
 
 ; The number of columns for --help output.
 Variable
@@ -897,8 +877,21 @@ Common Report Var(flag_delete_null_pointer_checks) Init(1) Optimization
 Delete useless null pointer checks
 
 fdiagnostics-show-location=
-Common Joined RejectNegative
+Common Joined RejectNegative Enum(diagnostic_prefixing_rule)
 -fdiagnostics-show-location=[once|every-line]	How often to emit source location at the beginning of line-wrapped diagnostics
+
+; Required for these enum values.
+SourceInclude
+pretty-print.h
+
+Enum
+Name(diagnostic_prefixing_rule) Type(int)
+
+EnumValue
+Enum(diagnostic_prefixing_rule) String(once) Value(DIAGNOSTICS_SHOW_PREFIX_ONCE)
+
+EnumValue
+Enum(diagnostic_prefixing_rule) String(every-line) Value(DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE)
 
 fdiagnostics-show-option
 Common Var(flag_diagnostics_show_option) Init(1)
@@ -972,8 +965,17 @@ Common Report Var(flag_expensive_optimizations) Optimization
 Perform a number of minor, expensive optimizations
 
 fexcess-precision=
-Common Joined RejectNegative
+Common Joined RejectNegative Enum(excess_precision) Var(flag_excess_precision_cmdline) Init(EXCESS_PRECISION_DEFAULT)
 -fexcess-precision=[fast|standard]	Specify handling of excess floating-point precision
+
+Enum
+Name(excess_precision) Type(enum excess_precision) UnknownError(unknown excess precision style %qs)
+
+EnumValue
+Enum(excess_precision) String(fast) Value(EXCESS_PRECISION_FAST)
+
+EnumValue
+Enum(excess_precision) String(standard) Value(EXCESS_PRECISION_STANDARD)
 
 ffast-math
 Common
@@ -999,8 +1001,21 @@ Common Report Var(flag_forward_propagate) Optimization
 Perform a forward propagation pass on RTL
 
 ffp-contract=
-Common Joined RejectNegative
+Common Joined RejectNegative Enum(fp_contract_mode) Var(flag_fp_contract_mode) Init(FP_CONTRACT_FAST)
 -ffp-contract=[off|on|fast] Perform floating-point expression contraction.
+
+Enum
+Name(fp_contract_mode) Type(enum fp_contract_mode) UnknownError(unknown floating point contraction style %qs)
+
+EnumValue
+Enum(fp_contract_mode) String(off) Value(FP_CONTRACT_OFF)
+
+; Not implemented, fall back to conservative FP_CONTRACT_OFF.
+EnumValue
+Enum(fp_contract_mode) String(on) Value(FP_CONTRACT_OFF)
+
+EnumValue
+Enum(fp_contract_mode) String(fast) Value(FP_CONTRACT_FAST)
 
 ; Nonzero means don't put addresses of constant functions in registers.
 ; Used for compiling the Unix kernel, where strange substitutions are
@@ -1183,12 +1198,33 @@ Perform structure layout optimizations based
 on profiling information.
 
 fira-algorithm=
-Common Joined RejectNegative
+Common Joined RejectNegative Enum(ira_algorithm) Var(flag_ira_algorithm) Init(IRA_ALGORITHM_CB)
 -fira-algorithm=[CB|priority] Set the used IRA algorithm
 
+Enum
+Name(ira_algorithm) Type(enum ira_algorithm) UnknownError(unknown IRA algorithm %qs)
+
+EnumValue
+Enum(ira_algorithm) String(CB) Value(IRA_ALGORITHM_CB)
+
+EnumValue
+Enum(ira_algorithm) String(priority) Value(IRA_ALGORITHM_PRIORITY)
+
 fira-region=
-Common Joined RejectNegative
+Common Joined RejectNegative Enum(ira_region) Var(flag_ira_region) Init(IRA_REGION_MIXED)
 -fira-region=[one|all|mixed] Set regions for IRA
+
+Enum
+Name(ira_region) Type(enum ira_region) UnknownError(unknown IRA region %qs)
+
+EnumValue
+Enum(ira_region) String(one) Value(IRA_REGION_ONE)
+
+EnumValue
+Enum(ira_region) String(all) Value(IRA_REGION_ALL)
+
+EnumValue
+Enum(ira_region) String(mixed) Value(IRA_REGION_MIXED)
 
 fira-loop-pressure
 Common Report Var(flag_ira_loop_pressure)
@@ -1718,8 +1754,23 @@ Common Report Var(time_report)
 Report the time taken by each compiler pass
 
 ftls-model=
-Common Joined RejectNegative
+Common Joined RejectNegative Enum(tls_model) Var(flag_tls_default) Init(TLS_MODEL_GLOBAL_DYNAMIC)
 -ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]	Set the default thread-local storage code generation model
+
+Enum
+Name(tls_model) Type(enum tls_model) UnknownError(unknown TLS model %qs)
+
+EnumValue
+Enum(tls_model) String(global-dynamic) Value(TLS_MODEL_GLOBAL_DYNAMIC)
+
+EnumValue
+Enum(tls_model) String(local-dynamic) Value(TLS_MODEL_LOCAL_DYNAMIC)
+
+EnumValue
+Enum(tls_model) String(initial-exec) Value(TLS_MODEL_INITIAL_EXEC)
+
+EnumValue
+Enum(tls_model) String(local-exec) Value(TLS_MODEL_LOCAL_EXEC)
 
 ftoplevel-reorder
 Common Report Var(flag_toplevel_reorder) Init(2) Optimization
@@ -1973,9 +2024,23 @@ Common Report Var(flag_verbose_asm)
 Add extra commentary to assembler output
 
 fvisibility=
-Common Joined RejectNegative
+Common Joined RejectNegative Enum(symbol_visibility) Var(default_visibility) Init(VISIBILITY_DEFAULT)
 -fvisibility=[default|internal|hidden|protected]	Set the default symbol visibility
 
+Enum
+Name(symbol_visibility) Type(enum symbol_visibility) UnknownError(unrecognized visibility value %qs)
+
+EnumValue
+Enum(symbol_visibility) String(default) Value(VISIBILITY_DEFAULT)
+
+EnumValue
+Enum(symbol_visibility) String(internal) Value(VISIBILITY_INTERNAL)
+
+EnumValue
+Enum(symbol_visibility) String(hidden) Value(VISIBILITY_HIDDEN)
+
+EnumValue
+Enum(symbol_visibility) String(protected) Value(VISIBILITY_PROTECTED)
 
 fvpt
 Common Report Var(flag_value_profile_transformations) Optimization
