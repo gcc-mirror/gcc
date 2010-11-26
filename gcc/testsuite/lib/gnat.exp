@@ -27,6 +27,7 @@
 load_lib libgloss.exp
 load_lib prune.exp
 load_lib gcc-defs.exp
+load_lib gcc.exp
 load_lib timeout.exp
 
 #
@@ -131,6 +132,11 @@ proc gnat_target_compile { source dest type options } {
     global ld_library_path
     global gnat_libgcc_s_path
     global gnat_target_current
+
+    # dg-require-effective-target tests must be compiled as C.
+    if [ string match "*.c" $source ] then {
+	return [gcc_target_compile $source $dest $type $options]
+    }
 
     # If we detect a change of target, we need to recompute both
     # GNAT_UNDER_TEST and the appropriate RTS.
