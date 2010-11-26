@@ -1,3 +1,8 @@
+2010-11-22   Bud Davis  <jmdavis@link.com>
+
+	* arith_divide_no_check.f
+	 ,arith_divide.f,old_style_init.f90: new tests.
+
 2010-11-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR tree-optimization/46665
