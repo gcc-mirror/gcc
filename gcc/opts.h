@@ -42,6 +42,10 @@ enum cl_var_type {
      argument.  */
   CLVC_STRING,
 
+  /* The switch takes an enumerated argument (VAR_ENUM says what
+     enumeration) and FLAG_VAR points to that argument.  */
+  CLVC_ENUM,
+
   /* The switch should be stored in the VEC pointed to by FLAG_VAR for
      later processing.  */
   CLVC_DEFER
@@ -61,6 +65,7 @@ struct cl_option
   int neg_index;
   unsigned int flags;
   unsigned short flag_var_offset;
+  unsigned short var_enum;
   enum cl_var_type var_type;
   int var_value;
 };
@@ -111,6 +116,52 @@ extern const unsigned int cl_lang_count;
 #define CL_UINTEGER		(1 << 29) /* Argument is an integer >=0.  */
 #define CL_UNDOCUMENTED		(1 << 30) /* Do not output with --help.  */
 
+/* Flags for an enumerated option argument.  */
+#define CL_ENUM_CANONICAL	(1 << 0) /* Canonical for this value.  */
+#define CL_ENUM_DRIVER_ONLY	(1 << 1) /* Only accepted in the driver.  */
+
+/* Structure describing an enumerated option argument.  */
+
+struct cl_enum_arg
+{
+  /* The argument text, or NULL at the end of the array.  */
+  const char *arg;
+
+  /* The corresponding integer value.  */
+  int value;
+
+  /* Flags associated with this argument.  */
+  unsigned int flags;
+};
+
+/* Structure describing an enumerated set of option arguments.  */
+
+struct cl_enum
+{
+  /* Help text, or NULL if the values should not be listed in --help
+     output.  */
+  const char *help;
+
+  /* Error message for unknown arguments, or NULL to use a generic
+     error.  */
+  const char *unknown_error;
+
+  /* Array of possible values.  */
+  const struct cl_enum_arg *values;
+
+  /* The size of the type used to store a value.  */
+  size_t var_size;
+
+  /* Function to set a variable of this type.  */
+  void (*set) (void *var, int value);
+
+  /* Function to get the value of a variable of this type.  */
+  int (*get) (const void *var);
+};
+
+extern const struct cl_enum cl_enums[];
+extern const unsigned int cl_enums_count;
+
 /* Possible ways in which a command-line option may be erroneous.
    These do not include not being known at all; an option index of
    OPT_SPECIAL_unknown is used for that.  */
@@ -119,7 +170,8 @@ extern const unsigned int cl_lang_count;
 #define CL_ERR_MISSING_ARG	(1 << 1) /* Argument required but missing.  */
 #define CL_ERR_WRONG_LANG	(1 << 2) /* Option for wrong language.  */
 #define CL_ERR_UINT_ARG		(1 << 3) /* Bad unsigned integer argument.  */
-#define CL_ERR_NEGATIVE		(1 << 4) /* Negative form of option
+#define CL_ERR_ENUM_ARG		(1 << 4) /* Bad enumerated argument.  */
+#define CL_ERR_NEGATIVE		(1 << 5) /* Negative form of option
 					    not permitted (together
 					    with OPT_SPECIAL_unknown).  */
 
@@ -230,6 +282,9 @@ extern unsigned num_in_fnames;
 
 size_t find_opt (const char *input, int lang_mask);
 extern int integral_argument (const char *arg);
+extern bool enum_value_to_arg (const struct cl_enum_arg *enum_args,
+			       const char **argp, int value,
+			       unsigned int lang_mask);
 extern void decode_cmdline_options_to_array (unsigned int argc,
 					     const char **argv, 
 					     unsigned int lang_mask,

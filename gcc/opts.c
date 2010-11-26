@@ -885,7 +885,8 @@ print_filtered_help (unsigned int include_flags,
 		     unsigned int exclude_flags,
 		     unsigned int any_flags,
 		     unsigned int columns,
-		     struct gcc_options *opts)
+		     struct gcc_options *opts,
+		     unsigned int lang_mask)
 {
   unsigned int i;
   const char *help;
@@ -917,6 +918,9 @@ print_filtered_help (unsigned int include_flags,
 
   if (!opts->x_help_printed)
     opts->x_help_printed = XCNEWVAR (char, cl_options_count);
+
+  if (!opts->x_help_enum_printed)
+    opts->x_help_enum_printed = XCNEWVAR (char, cl_enums_count);
 
   for (i = 0; i < cl_options_count; i++)
     {
@@ -999,6 +1003,20 @@ print_filtered_help (unsigned int include_flags,
 				  sizeof (new_help) - strlen (new_help),
 				  * (const char **) flag_var);
 		    }
+		  else if (option->var_type == CLVC_ENUM)
+		    {
+		      const struct cl_enum *e = &cl_enums[option->var_enum];
+		      int value;
+		      const char *arg = NULL;
+
+		      value = e->get (flag_var);
+		      enum_value_to_arg (e->values, &arg, value, lang_mask);
+		      if (arg == NULL)
+			arg = _("[default]");
+		      snprintf (new_help + strlen (new_help),
+				sizeof (new_help) - strlen (new_help),
+				arg);
+		    }
 		  else
 		    sprintf (new_help + strlen (new_help),
 			     "%#x", * (int *) flag_var);
@@ -1013,6 +1031,10 @@ print_filtered_help (unsigned int include_flags,
 
       wrap_help (help, opt, len, columns);
       displayed = true;
+
+      if (option->var_type == CLVC_ENUM
+	  && opts->x_help_enum_printed[option->var_enum] != 2)
+	opts->x_help_enum_printed[option->var_enum] = 1;
     }
 
   if (! found)
@@ -1038,18 +1060,57 @@ print_filtered_help (unsigned int include_flags,
     printf (_(" All options with the desired characteristics have already been displayed\n"));
 
   putchar ('\n');
+
+  /* Print details of enumerated option arguments, if those
+     enumerations have help text headings provided.  If no help text
+     is provided, presume that the possible values are listed in the
+     help text for the relevant options.  */
+  for (i = 0; i < cl_enums_count; i++)
+    {
+      unsigned int j, pos;
+
+      if (opts->x_help_enum_printed[i] != 1)
+	continue;
+      if (cl_enums[i].help == NULL)
+	continue;
+      printf ("  %s\n    ", _(cl_enums[i].help));
+      pos = 4;
+      for (j = 0; cl_enums[i].values[j].arg != NULL; j++)
+	{
+	  unsigned int len = strlen (cl_enums[i].values[j].arg);
+
+	  if (pos > 4 && pos + 1 + len <= columns)
+	    {
+	      printf (" %s", cl_enums[i].values[j].arg);
+	      pos += 1 + len;
+	    }
+	  else
+	    {
+	      if (pos > 4)
+		{
+		  printf ("\n    ");
+		  pos = 4;
+		}
+	      printf ("%s", cl_enums[i].values[j].arg);
+	      pos += len;
+	    }
+	}
+      printf ("\n\n");
+      opts->x_help_enum_printed[i] = 2;
+    }
 }
 
 /* Display help for a specified type of option.
    The options must have ALL of the INCLUDE_FLAGS set
    ANY of the flags in the ANY_FLAGS set
    and NONE of the EXCLUDE_FLAGS set.  The current option state is in
-   OPTS.  */
+   OPTS; LANG_MASK is used for interpreting enumerated option state.  */
 static void
 print_specific_help (unsigned int include_flags,
 		     unsigned int exclude_flags,
 		     unsigned int any_flags,
-		     struct gcc_options *opts)
+		     struct gcc_options *opts,
+		     unsigned int lang_mask)
 {
   unsigned int all_langs_mask = (1U << cl_lang_count) - 1;
   const char * description = NULL;
@@ -1145,7 +1206,7 @@ print_specific_help (unsigned int include_flags,
 
   printf ("%s%s:\n", description, descrip_extra);
   print_filtered_help (include_flags, exclude_flags, any_flags,
-		       opts->x_help_columns, opts);
+		       opts->x_help_columns, opts, lang_mask);
 }
 
 /* Handle target- and language-independent options.  Return zero to
@@ -1187,19 +1248,20 @@ common_handle_option (struct gcc_options *opts,
 	/* First display any single language specific options.  */
 	for (i = 0; i < cl_lang_count; i++)
 	  print_specific_help
-	    (1U << i, (all_langs_mask & (~ (1U << i))) | undoc_mask, 0, opts);
+	    (1U << i, (all_langs_mask & (~ (1U << i))) | undoc_mask, 0, opts,
+	     lang_mask);
 	/* Next display any multi language specific options.  */
-	print_specific_help (0, undoc_mask, all_langs_mask, opts);
+	print_specific_help (0, undoc_mask, all_langs_mask, opts, lang_mask);
 	/* Then display any remaining, non-language options.  */
 	for (i = CL_MIN_OPTION_CLASS; i <= CL_MAX_OPTION_CLASS; i <<= 1)
 	  if (i != CL_DRIVER)
-	    print_specific_help (i, undoc_mask, 0, opts);
+	    print_specific_help (i, undoc_mask, 0, opts, lang_mask);
 	opts->x_exit_after_options = true;
 	break;
       }
 
     case OPT__target_help:
-      print_specific_help (CL_TARGET, CL_UNDOCUMENTED, 0, opts);
+      print_specific_help (CL_TARGET, CL_UNDOCUMENTED, 0, opts, lang_mask);
       opts->x_exit_after_options = true;
 
       /* Allow the target a chance to give the user some additional information.  */
@@ -1321,7 +1383,8 @@ common_handle_option (struct gcc_options *opts,
 	  }
 
 	if (include_flags)
-	  print_specific_help (include_flags, exclude_flags, 0, opts);
+	  print_specific_help (include_flags, exclude_flags, 0, opts,
+			       lang_mask);
 	opts->x_exit_after_options = true;
 	break;
       }
@@ -1405,13 +1468,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_show_location_:
-      if (!strcmp (arg, "once"))
-	diagnostic_prefixing_rule (dc) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
-      else if (!strcmp (arg, "every-line"))
-	diagnostic_prefixing_rule (dc)
-	  = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
-      else
-	return false;
+      diagnostic_prefixing_rule (dc) = (diagnostic_prefixing_rule_t) value;
       break;
 
     case OPT_fdiagnostics_show_option:
@@ -1420,27 +1477,6 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_fdump_:
       /* Deferred.  */
-      break;
-
-    case OPT_ffp_contract_:
-      if (!strcmp (arg, "on"))
-	/* Not implemented, fall back to conservative FP_CONTRACT_OFF.  */
-	opts->x_flag_fp_contract_mode = FP_CONTRACT_OFF;
-      else if (!strcmp (arg, "off"))
-	opts->x_flag_fp_contract_mode = FP_CONTRACT_OFF;
-      else if (!strcmp (arg, "fast"))
-	opts->x_flag_fp_contract_mode = FP_CONTRACT_FAST;
-      else
-	error_at (loc, "unknown floating point contraction style \"%s\"", arg);
-      break;
-
-    case OPT_fexcess_precision_:
-      if (!strcmp (arg, "fast"))
-	opts->x_flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
-      else if (!strcmp (arg, "standard"))
-	opts->x_flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
-      else
-	error_at (loc, "unknown excess precision style \"%s\"", arg);
       break;
 
     case OPT_ffast_math:
@@ -1542,21 +1578,6 @@ common_handle_option (struct gcc_options *opts,
       dc->show_column = value;
       break;
 
-    case OPT_fvisibility_:
-      {
-        if (!strcmp(arg, "default"))
-          opts->x_default_visibility = VISIBILITY_DEFAULT;
-        else if (!strcmp(arg, "internal"))
-          opts->x_default_visibility = VISIBILITY_INTERNAL;
-        else if (!strcmp(arg, "hidden"))
-          opts->x_default_visibility = VISIBILITY_HIDDEN;
-        else if (!strcmp(arg, "protected"))
-          opts->x_default_visibility = VISIBILITY_PROTECTED;
-        else
-          error_at (loc, "unrecognized visibility value \"%s\"", arg);
-      }
-      break;
-
     case OPT_frandom_seed:
       /* The real switch is -fno-random-seed.  */
       if (value)
@@ -1619,39 +1640,6 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_ftree_vectorizer_verbose_:
       vect_set_verbosity_level (opts, value);
-      break;
-
-    case OPT_ftls_model_:
-      if (!strcmp (arg, "global-dynamic"))
-	opts->x_flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC;
-      else if (!strcmp (arg, "local-dynamic"))
-	opts->x_flag_tls_default = TLS_MODEL_LOCAL_DYNAMIC;
-      else if (!strcmp (arg, "initial-exec"))
-	opts->x_flag_tls_default = TLS_MODEL_INITIAL_EXEC;
-      else if (!strcmp (arg, "local-exec"))
-	opts->x_flag_tls_default = TLS_MODEL_LOCAL_EXEC;
-      else
-	warning_at (loc, 0, "unknown tls-model \"%s\"", arg);
-      break;
-
-    case OPT_fira_algorithm_:
-      if (!strcmp (arg, "CB"))
-	opts->x_flag_ira_algorithm = IRA_ALGORITHM_CB;
-      else if (!strcmp (arg, "priority"))
-	opts->x_flag_ira_algorithm = IRA_ALGORITHM_PRIORITY;
-      else
-	warning_at (loc, 0, "unknown ira algorithm \"%s\"", arg);
-      break;
-
-    case OPT_fira_region_:
-      if (!strcmp (arg, "one"))
-	opts->x_flag_ira_region = IRA_REGION_ONE;
-      else if (!strcmp (arg, "all"))
-	opts->x_flag_ira_region = IRA_REGION_ALL;
-      else if (!strcmp (arg, "mixed"))
-	opts->x_flag_ira_region = IRA_REGION_MIXED;
-      else
-	warning_at (loc, 0, "unknown ira region \"%s\"", arg);
       break;
 
     case OPT_g:

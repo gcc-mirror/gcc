@@ -78,6 +78,63 @@ two fields: the string @samp{SourceInclude} and the name of the
 include file.
 
 @item
+An enumeration record to define a set of strings that may be used as
+arguments to an option or options.  These records have three fields:
+the string @samp{Enum}, a space-separated list of properties and help
+text used to describe the set of strings in @option{--help} output.
+Properties use the same format as option properties; the following are
+valid:
+@table @code
+@item Name(@var{name})
+This property is required; @var{name} must be a name (suitable for use
+in C identifiers) used to identify the set of strings in @code{Enum}
+option properties.
+
+@item Type(@var{type})
+This property is required; @var{type} is the C type for variables set
+by options using this enumeration together with @code{Var}.
+
+@item UnknownError(@var{message})
+The message @var{message} will be used as an error message if the
+argument is invalid; for enumerations without @code{UnknownError}, a
+generic error message is used.  @var{message} should contain a single
+@samp{%qs} format, which will be used to format the invalid argument.
+@end table
+
+@item
+An enumeration value record to define one of the strings in a set
+given in an @samp{Enum} record.  These records have two fields: the
+string @samp{EnumValue} and a space-separated list of properties.
+Properties use the same format as option properties; the following are
+valid:
+@table @code
+@item Enum(@var{name})
+This property is required; @var{name} says which @samp{Enum} record
+this @samp{EnumValue} record corresponds to.
+
+@item String(@var{string})
+This property is required; @var{string} is the string option argument
+being described by this record.
+
+@item Value(@var{value})
+This property is required; it says what value (representable as
+@code{int}) should be used for the given string.
+
+@item Canonical
+This property is optional.  If present, it says the present string is
+the canonical one among all those with the given value.  Other strings
+yielding that value will be mapped to this one so specs do not need to
+handle them.
+
+@item DriverOnly
+This property is optional.  If present, the present string will only
+be accepted by the driver.  This is used for cases such as
+@option{-march=native} that are processed by the driver so that
+@samp{gcc -v} shows how the options chosen depended on the system on
+which the compiler was run.
+@end table
+
+@item
 An option definition record.  These records have the following fields:
 @enumerate
 @item
@@ -227,6 +284,13 @@ If the option takes an argument and has the @code{UInteger} property,
 @var{var} is an integer variable that stores the value of the argument.
 
 @item
+If the option takes an argument and has the @code{Enum} property,
+@var{var} is a variable (type given in the @code{Type} property of the
+@samp{Enum} record whose @code{Name} property has the same argument as
+the @code{Enum} property of this option) that stores the value of the
+argument.
+
+@item
 If the option has the @code{Defer} property, @var{var} is a pointer to
 a @code{VEC(cl_deferred_option,heap)} that stores the option for later
 processing.  (@var{var} is declared with type @code{void *} and needs
@@ -286,6 +350,12 @@ No @code{MASK} or @code{TARGET} definitions should be added to
 The main purpose of this property is to support synonymous options.
 The first option should use @samp{Mask(@var{name})} and the others
 should use @samp{Mask(@var{name}) MaskExists}.
+
+@item Enum(@var{name})
+The option's argument is a string from the set of strings associated
+with the corresponding @samp{Enum} record.  The string is checked and
+converted to the integer specified in the corresponding
+@samp{EnumValue} record before being passed to option handlers.
 
 @item Defer
 The option should be stored in a vector, specified with @code{Var},

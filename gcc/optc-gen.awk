@@ -34,6 +34,7 @@ BEGIN {
 	n_extra_target_vars = 0
 	n_extra_c_includes = 0
 	n_extra_h_includes = 0
+	n_enums = 0
 	quote = "\042"
 	comma = ","
 	FS=SUBSEP
@@ -80,6 +81,31 @@ BEGIN {
 		else if ($1 == "SourceInclude")  {
 			extra_c_includes[n_extra_c_includes++] = $2;
 		}
+		else if ($1 == "Enum") {
+			props = $2
+			name = opt_args("Name", props)
+			type = opt_args("Type", props)
+			unknown_error = opt_args("UnknownError", props)
+			enum_names[n_enums] = name
+			enum_type[name] = type
+			enum_index[name] = n_enums
+			enum_unknown_error[name] = unknown_error
+			enum_help[name] = $3
+			n_enums++
+		}
+		else if ($1 == "EnumValue")  {
+			props = $2
+			enum_name = opt_args("Enum", props)
+			string = opt_args("String", props)
+			value = opt_args("Value", props)
+			val_flags = "0"
+			val_flags = val_flags \
+			  test_flag("Canonical", props, "| CL_ENUM_CANONICAL") \
+			  test_flag("DriverOnly", props, "| CL_ENUM_DRIVER_ONLY")
+			enum_data[enum_name] = enum_data[enum_name] \
+			  "  { " quote string quote ", " value ", " val_flags \
+			  " },\n"
+		}
 		else {
 			name = opt_args("Mask", $1)
 			if (name == "") {
@@ -115,6 +141,56 @@ if (n_extra_c_includes > 0) {
 	}
 	print ""
 }
+
+for (i = 0; i < n_enums; i++) {
+	name = enum_names[i]
+	type = enum_type[name]
+	print "static const struct cl_enum_arg cl_enum_" name \
+	    "_data[] = "
+	print "{"
+	print enum_data[name] "  { NULL, 0, 0 }"
+	print "};"
+	print ""
+	print "static void"
+	print "cl_enum_" name "_set (void *var, int value)"
+	print "{"
+	print "  *((" type " *) var) = (" type ") value;"
+	print "}"
+	print ""
+	print "static int"
+	print "cl_enum_" name "_get (const void *var)"
+	print "{"
+	print "  return (int) *((const " type " *) var);"
+	print "}"
+	print ""
+}
+
+print "const struct cl_enum cl_enums[] ="
+print "{"
+for (i = 0; i < n_enums; i++) {
+	name = enum_names[i]
+	ehelp = enum_help[name]
+	if (ehelp == "")
+		ehelp = "NULL"
+	else
+		ehelp = quote ehelp quote
+	unknown_error = enum_unknown_error[name]
+	if (unknown_error == "")
+		unknown_error = "NULL"
+	else
+		unknown_error = quote unknown_error quote
+	print "  {"
+	print "    " ehelp ","
+	print "    " unknown_error ","
+	print "    cl_enum_" name "_data,"
+	print "    sizeof (" enum_type[name] "),"
+	print "    cl_enum_" name "_set,"
+	print "    cl_enum_" name "_get"
+	print "  },"
+}
+print "};"
+print "const unsigned int cl_enums_count = " n_enums ";"
+print ""
 
 have_save = 0;
 if (n_extra_target_vars)

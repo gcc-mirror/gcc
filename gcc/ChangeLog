@@ -1,3 +1,42 @@
+2010-11-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/options.texi (Enum, EnumValue): Document new record types.
+	(Enum): Document new option flag.
+	* opt-functions.awk
+	* optc-gen.awk: Handle enumerated option arguments.
+	* opth-gen.awk: Handle enumerated option arguments.
+	* opts-common.c (enum_arg_ok_for_language, enum_arg_to_value,
+	enum_value_to_arg): New.
+	(decode_cmdline_option): Handle enumerated arguments.
+	(read_cmdline_option): Handle CL_ERR_ENUM_ARG.
+	(set_option, option_enabled, get_option_state): Handle CLVC_ENUM.
+	* opts.c (print_filtered_help, print_specific_help): Take
+	lang_mask arguments.
+	(print_filtered_help): Handle printing values of enumerated
+	options.  Print possible arguments for enumerated options.
+	(print_specific_help): Update call to print_filtered_help.
+	(common_handle_option): Update calls to print_specific_help.  Use
+	value rather than arg for OPT_fdiagnostics_show_location_.  Don't
+	handle OPT_ffp_contract_, OPT_fexcess_precision_,
+	OPT_fvisibility_, OPT_ftls_model_, OPT_fira_algorithm_ or
+	OPT_fira_region_ here.
+	* opts.h (enum cl_var_type): Add CLVC_ENUM.
+	(struct cl_option): Add var_enum.
+	(CL_ENUM_CANONICAL, CL_ENUM_DRIVER_ONLY, struct cl_enum_arg,
+	struct cl_enum, cl_enums, cl_enums_count): New.
+	(CL_ERR_ENUM_ARG): Define.
+	(CL_ERR_NEGATIVE): Update value.
+	(enum_value_to_arg): Declare.
+	* common.opt (flag_ira_algorithm, flag_ira_region,
+	flag_fp_contract_mode, flag_excess_precision_cmdline,
+	default_visibility, flag_tls_default): Remove Variable entries.
+	(help_enum_printed): New Variable.
+	(fdiagnostics-show-location=): Use Enum.  Add associated
+	SourceInclude, Enum and EnumValue entries.
+	(fexcess-precision=, ffp-contract=, fira-algorithm=, fira-region=,
+	ftls-model=, fvisibility=): Use Enum, Var and Init.  Add
+	associated Enum and EnumValue entries.
+
 2010-11-26  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR target/46623
