@@ -434,7 +434,7 @@ tree
 aff_combination_to_tree (aff_tree *comb)
 {
   tree type = comb->type;
-  tree expr = comb->rest;
+  tree expr = NULL_TREE;
   unsigned i;
   double_int off, sgn;
   tree type1 = type;
@@ -446,6 +446,9 @@ aff_combination_to_tree (aff_tree *comb)
   for (i = 0; i < comb->n; i++)
     expr = add_elt_to_tree (expr, type, comb->elts[i].val, comb->elts[i].coef,
 			    comb);
+
+  if (comb->rest)
+    expr = add_elt_to_tree (expr, type, comb->rest, double_int_one, comb);
 
   /* Ensure that we get x - 1, not x + (-1) or x + 0xff..f if x is
      unsigned.  */
