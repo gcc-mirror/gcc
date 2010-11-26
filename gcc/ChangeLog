@@ -1,3 +1,10 @@
+2010-11-26  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (print_operand_address): Replace assert with
+	error message.
+	(print_operand): Replace assertions, gcc_unreachable and
+	fatal_insn with error messages.
+
 2010-11-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46665
