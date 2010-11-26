@@ -1854,7 +1854,7 @@ elif test -f $gcc_cv_as_gas_srcdir/configure.in \
 elif test -x as$build_exeext; then
 	# Build using assembler in the current directory.
 	gcc_cv_as=./as$build_exeext
-elif test -x $AS_FOR_TARGET; then
+elif ( set dummy $AS_FOR_TARGET; test -x $[2] ); then
         gcc_cv_as="$AS_FOR_TARGET"
 else
         AC_PATH_PROG(gcc_cv_as, $AS_FOR_TARGET)
@@ -1909,7 +1909,7 @@ elif test -f $gcc_cv_ld_gld_srcdir/configure.in \
 elif test -x collect-ld$build_exeext; then
 	# Build using linker in the current directory.
 	gcc_cv_ld=./collect-ld$build_exeext
-elif test -x $LD_FOR_TARGET; then
+elif ( set dummy $LD_FOR_TARGET; test -x $[2] ); then
         gcc_cv_ld="$LD_FOR_TARGET"
 else
         AC_PATH_PROG(gcc_cv_ld, $LD_FOR_TARGET)
@@ -1982,7 +1982,7 @@ if test -f $gcc_cv_binutils_srcdir/configure.in \
 	gcc_cv_nm=../binutils/nm-new$build_exeext
 elif test -x nm$build_exeext; then
 	gcc_cv_nm=./nm$build_exeext
-elif test -x $NM_FOR_TARGET; then
+elif ( set dummy $NM_FOR_TARGET; test -x $[2] ); then
         gcc_cv_nm="$NM_FOR_TARGET"
 else
         AC_PATH_PROG(gcc_cv_nm, $NM_FOR_TARGET)
@@ -2015,7 +2015,7 @@ if test -f $gcc_cv_binutils_srcdir/configure.in \
 	gcc_cv_objdump=../binutils/objdump$build_exeext
 elif test -x objdump$build_exeext; then
 	gcc_cv_objdump=./objdump$build_exeext
-elif test -x $OBJDUMP_FOR_TARGET; then
+elif ( set dummy $OBJDUMP_FOR_TARGET; test -x $[2] ); then
         gcc_cv_objdump="$OBJDUMP_FOR_TARGET"
 else
         AC_PATH_PROG(gcc_cv_objdump, $OBJDUMP_FOR_TARGET)
