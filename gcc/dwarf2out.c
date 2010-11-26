@@ -22965,7 +22965,6 @@ dwarf2out_finish (const char *filename)
   limbo_die_node *node, *next_node;
   comdat_type_node *ctnode;
   htab_t comdat_type_table;
-  dw_die_ref die = 0;
   unsigned int i;
 
   gen_remaining_tmpl_value_param_die_attribute ();
@@ -22998,8 +22997,8 @@ dwarf2out_finish (const char *filename)
      instance.  */
   for (node = limbo_die_list; node; node = next_node)
     {
+      dw_die_ref die = node->die;
       next_node = node->next;
-      die = node->die;
 
       if (die->die_parent == NULL)
 	{
@@ -23177,7 +23176,7 @@ dwarf2out_finish (const char *filename)
     add_AT_macptr (comp_unit_die (), DW_AT_macro_info, macinfo_section_label);
 
   if (have_location_lists)
-    optimize_location_lists (die);
+    optimize_location_lists (comp_unit_die ());
 
   /* Output all of the compilation units.  We put the main one last so that
      the offsets are available to output_pubnames.  */
@@ -23222,7 +23221,7 @@ dwarf2out_finish (const char *filename)
       ASM_GENERATE_INTERNAL_LABEL (loc_section_label,
 				   DEBUG_LOC_SECTION_LABEL, 0);
       ASM_OUTPUT_LABEL (asm_out_file, loc_section_label);
-      output_location_lists (die);
+      output_location_lists (comp_unit_die ());
     }
 
   /* Output public names table if necessary.  */
