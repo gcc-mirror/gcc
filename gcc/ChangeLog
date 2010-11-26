@@ -1,3 +1,9 @@
+2010-11-26  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/46560
+	* cgraph.c (cgraph_clone_edge): Clone call_stmt dependent
+	flags manually.
+
 2010-11-26  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (print_operand_address): Replace assert with

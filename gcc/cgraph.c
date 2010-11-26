@@ -2121,6 +2121,9 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
   new_edge->inline_failed = e->inline_failed;
   new_edge->indirect_inlining_edge = e->indirect_inlining_edge;
   new_edge->lto_stmt_uid = stmt_uid;
+  /* Clone flags that depend on call_stmt availability manually.  */
+  new_edge->can_throw_external = e->can_throw_external;
+  new_edge->call_stmt_cannot_inline_p = e->call_stmt_cannot_inline_p;
   if (update_original)
     {
       e->count -= new_edge->count;
