@@ -1,3 +1,11 @@
+2010-11-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/pa.md (negdf2): Condition on !flag_signed_zeros instead of
+	flag_unsafe_math_optimizations.
+	(negsf2): Likewise.
+	Move fnegabs related patterns together.  Only use fmpynfadd instruction
+	to negate a multiply if !flag_signed_zeros is true.
+
 2010-11-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gengtype-state.c (read_state_structures): Initialize "previous".
