@@ -1,3 +1,24 @@
+2010-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/45700
+	* tree.h (build1_stat_loc, build2_stat_loc, build3_stat_loc,
+	build4_stat_loc, build5_stat_loc, build6_stat_loc): New inlines.
+	(build1_loc, build2_loc, build3_loc, build4_loc, build5_loc,
+	build6_loc): Define.
+	* fold-const.c (protected_set_expr_location_unshare): New inline.
+	(fold_convert_loc, pedantic_non_lvalue_loc): Use it.
+	(negate_expr, associate_trees, non_lvalue_loc, omit_one_operand_loc,
+	pedantic_omit_one_operand_loc, omit_two_operands_loc,
+	fold_truth_not_expr, invert_truthvalue_loc, make_bit_field_ref,
+	optimize_bit_field_compare, make_range, fold_range_test, fold_truthop,
+	build_fold_addr_expr_with_type_loc, fold_unary_loc, fold_binary_loc,
+	fold_indirect_ref_1, build_fold_indirect_ref_loc): Use builN_loc
+	instead of buildN followed by SET_EXPR_LOCATION or
+	protected_set_expr_location.
+	(fold_build1_stat_loc, fold_build2_stat_loc, fold_build3_stat_loc):
+	Use buildN_stat_loc instead of buildN_stat followed by
+	SET_EXPR_LOCATION.
+
 2010-11-26  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* Makefile.in (s-tm-texi): Remove spurous tab.
