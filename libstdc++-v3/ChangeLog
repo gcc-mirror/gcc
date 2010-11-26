@@ -1,3 +1,12 @@
+2010-11-26  François Dumont  <francois.cppdevs@free.fr>
+
+	* testsuite/lib/libstdc++.exp [check_v3_target_debug_mode]: Use
+	remote_file delete for generated exe. [check_v3_target_profile_mode]
+	Add.
+	* testsuite/lib/dg-options.exp [dg-require-profile-mode]: Add
+	* testsuite/ext/profile/mh.cc, profiler_algos.cc, all.cc: Use
+	dg-require-profile-mode, remove explicit _GLIBCXX_PROFILE definition.
+
 2010-11-25  François Dumont  <francois.cppdevs@free.fr>
 
 	* src/debug.cc: Introduce a mutex pool in get_safe_base_mutex.
