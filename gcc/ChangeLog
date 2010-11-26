@@ -1,5 +1,11 @@
 2010-11-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/46258
+	* tree-cfg.c (replace_uses_by): Don't mark BBs as altered on
+	debug stmts.
+
+2010-11-26  Alexandre Oliva  <aoliva@redhat.com>
+
 	* toplev.c (finalize): Add no_backend parameter.  Don't finish
 	passes when preprocessing only.  Adjust...
 	(do_compile): ... caller.
