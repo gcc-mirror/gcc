@@ -3515,27 +3515,23 @@ gtc_visit (tree t1, tree t2, enum gtc_mode mode,
 
   if ((slot = pointer_map_contains (sccstate, p)) != NULL)
     cstate = (struct sccs *)*slot;
+  /* Not yet visited.  DFS recurse.  */
   if (!cstate)
     {
-      bool res;
-      /* Not yet visited.  DFS recurse.  */
-      res = gimple_types_compatible_p_1 (t1, t2, mode, p,
-					 sccstack, sccstate, sccstate_obstack);
-      if (!cstate)
-	cstate = (struct sccs *)* pointer_map_contains (sccstate, p);
+      gimple_types_compatible_p_1 (t1, t2, mode, p,
+				   sccstack, sccstate, sccstate_obstack);
+      cstate = (struct sccs *)* pointer_map_contains (sccstate, p);
       state->low = MIN (state->low, cstate->low);
-      /* If the type is no longer on the SCC stack and thus is not part
-	 of the parents SCC, return its state.  Otherwise we will
-	 ignore this pair and assume equality.  */
-      if (!cstate->on_sccstack)
-	return res;
     }
+  /* If the type is still on the SCC stack adjust the parents low.  */
   if (cstate->dfsnum < state->dfsnum
       && cstate->on_sccstack)
     state->low = MIN (cstate->dfsnum, state->low);
 
-  /* We are part of our parents SCC, skip this entry and return true.  */
-  return true;
+  /* Return the current lattice value.  We start with an equality
+     assumption so types part of a SCC will be optimistically
+     treated equal unless proven otherwise.  */
+  return cstate->u.same_p;
 }
 
 /* Worker for gimple_types_compatible.
@@ -3559,6 +3555,9 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
   state->dfsnum = gtc_next_dfs_num++;
   state->low = state->dfsnum;
   state->on_sccstack = true;
+  /* Start with an equality assumption.  As we DFS recurse into child
+     SCCs this assumption may get revisited.  */
+  state->u.same_p = 1;
 
   /* If their attributes are not the same they can't be the same type.  */
   if (!attribute_list_equal (TYPE_ATTRIBUTES (t1), TYPE_ATTRIBUTES (t2)))
@@ -3822,22 +3821,22 @@ different_types:
 
   /* Common exit path for types that are compatible.  */
 same_types:
-  state->u.same_p = 1;
-  goto pop;
+  gcc_assert (state->u.same_p == 1);
 
 pop:
   if (state->low == state->dfsnum)
     {
       type_pair_t x;
 
-      /* Pop off the SCC and set its cache values.  */
+      /* Pop off the SCC and set its cache values to the final
+         comparison result.  */
       do
 	{
 	  struct sccs *cstate;
 	  x = VEC_pop (type_pair_t, *sccstack);
 	  cstate = (struct sccs *)*pointer_map_contains (sccstate, x);
 	  cstate->on_sccstack = false;
-	  x->same_p[mode] = cstate->u.same_p;
+	  x->same_p[mode] = state->u.same_p;
 	}
       while (x != p);
     }

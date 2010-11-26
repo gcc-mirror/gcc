@@ -1,5 +1,14 @@
 2010-11-26  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/46648
+	* gimple.c (gtc_visit): Do not return true for members of an
+	SCC still being processed but the current lattice value of
+	the member.  Treat SCC members comparison state as lattice,
+	starting at equal, eventually dropping to unequal.
+	(gimple_types_compatible_p_1): Likewise.
+
+2010-11-26  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/46559
 	* dwarf2out.c (dwarf2out_finish): Use comp_unit_die as root
 	for location list processing.
