@@ -551,6 +551,26 @@ HOST_LIB_PATH_[+module+] = \
 @endif [+module+]
 [+ ENDIF lib_path +][+ ENDFOR host_modules +]
 
+CXX_FOR_TARGET_FLAG_TO_PASS = \
+	"CXX_FOR_TARGET=$(CXX_FOR_TARGET)"
+@if target-libstdc++-v3
+# CXX_FOR_TARGET is tricky to get right for target libs that require a
+# functional C++ compiler.  When we recurse, if we expand
+# CXX_FOR_TARGET before configuring libstdc++-v3, we won't get
+# libstdc++ include flags from the script.  Instead, we get an
+# -funconfigured-* word, so that we'll get errors if this invalid C++
+# command line is used for anything, but also so that we can use the
+# word to decide whether or not to pass on this CXX_FOR_TARGET.  If we
+# don't pass it on, sub-make will use the default definition, that
+# re-expands it at the time of use, so we'll get it right when we need
+# it.  One potential exception is the expansion of CXX_FOR_TARGET
+# passed down as part of CXX within TARGET_FLAGS, but this wouldn't
+# really work, for C++ host programs can't depend on the current-stage
+# C++ target library.
+CXX_FOR_TARGET_FLAG_TO_PASS = \
+	$(shell if echo "$(CXX_FOR_TARGET)" | grep " -funconfigured-" > /dev/null; then :; else echo '"CXX_FOR_TARGET=$(CXX_FOR_TARGET)"'; fi)
+@endif target-libstdc++-v3
+
 # Flags to pass down to all sub-makes.
 BASE_FLAGS_TO_PASS =[+ FOR flags_to_pass +][+ IF optional +] \
 	"`echo '[+flag+]=$([+flag+])' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"[+ ELSE optional +] \
@@ -558,6 +578,7 @@ BASE_FLAGS_TO_PASS =[+ FOR flags_to_pass +][+ IF optional +] \
 	"STAGE[+id+]_CFLAGS=$(STAGE[+id+]_CFLAGS)" \
 	"STAGE[+id+]_CXXFLAGS=$(STAGE[+id+]_CXXFLAGS)" \
 	"STAGE[+id+]_TFLAGS=$(STAGE[+id+]_TFLAGS)"[+ ENDFOR bootstrap-stage +] \
+	$(CXX_FOR_TARGET_FLAG_TO_PASS) \
 	"TFLAGS=$(TFLAGS)" \
 	"CONFIG_SHELL=$(SHELL)" \
 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 
