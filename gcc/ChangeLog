@@ -1,3 +1,10 @@
+2010-11-26  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/arm/arm.c (arm_option_override): enable loop array
+	prefetching at -O3 for suitable targets, and configure params.
+	* config/arm/arm-protos.h (struct tune_params): Add fields for
+	configuring loop array prefetching.
+
 2010-11-26  Christian Borntraeger  <borntraeger@de.ibm.com>
 
 	* config/s390/2817.md (z196_crack): Add z196_g3 as possible slot.
