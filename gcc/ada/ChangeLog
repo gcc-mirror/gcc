@@ -1,3 +1,8 @@
+2010-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.adb (Version_String): Change type to C-like array of chars.
+	(Gnat_Version_String): Adjust to above change.
+
 2010-11-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Subprogram_Type>: Also
