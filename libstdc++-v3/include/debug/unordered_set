@@ -519,12 +519,13 @@ namespace __debug
       erase(const key_type& __key)
       {
 	size_type __ret(0);
-	_Base_iterator __victim(_Base::find(__key));
-	if (__victim != _Base::end())
+	std::pair<_Base_iterator, _Base_iterator> __pair =
+	  _Base::equal_range(__key);
+	for (_Base_iterator __victim = __pair.first; __victim != __pair.second;)
 	  {
 	    this->_M_invalidate_if(_Equal(__victim));
-	    _Base::erase(__victim);
-	    __ret = 1;
+	    _Base::erase(__victim++);
+	    ++__ret;
 	  }
 	return __ret;
       }
