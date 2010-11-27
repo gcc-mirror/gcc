@@ -1,3 +1,9 @@
+2010-11-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46638
+	PR fortran/46668
+	* gfortran.dg/transfer_simplify_10.f90: Fix endian issue.
+
 2010-11-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/gnat.exp: Load gcc.exp.
@@ -13,8 +19,7 @@
 2010-11-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46638
-	* target-memory.c (gfc_interpret_derived): Correctly handle
-	component offset.
+	* gfortran.dg/transfer_simplify_10.f90: New.
 
 2010-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
