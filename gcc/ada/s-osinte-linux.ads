@@ -507,7 +507,7 @@ package System.OS_Interface is
 
 private
 
-   type sigset_t is array (0 .. 127) of Interfaces.C.unsigned_char;
+   type sigset_t is array (0 .. 127) of unsigned_char;
    pragma Convention (C, sigset_t);
    for sigset_t'Alignment use Interfaces.C.unsigned_long'Alignment;
 
@@ -556,8 +556,12 @@ private
 
    type pthread_mutex_t is new System.Linux.pthread_mutex_t;
 
+   type unsigned_long_long_t is mod 2 ** 64;
+   --  Interfaces.C.Extensions isn't preelaborated so cannot be with-ed
+
    type pthread_cond_t is array (0 .. 47) of unsigned_char;
    pragma Convention (C, pthread_cond_t);
+   for pthread_cond_t'Alignment use unsigned_long_long_t'Alignment;
 
    type pthread_key_t is new unsigned;
 
