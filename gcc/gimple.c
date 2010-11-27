@@ -1873,15 +1873,14 @@ gimple_call_return_flags (const_gimple stmt)
     }
 }
 
+
 /* Return true if GS is a copy assignment.  */
 
 bool
 gimple_assign_copy_p (gimple gs)
 {
-  return gimple_code (gs) == GIMPLE_ASSIGN
-         && get_gimple_rhs_class (gimple_assign_rhs_code (gs))
-	    == GIMPLE_SINGLE_RHS
-	 && is_gimple_val (gimple_op (gs, 1));
+  return (gimple_assign_single_p (gs)
+	  && is_gimple_val (gimple_op (gs, 1)));
 }
 
 
@@ -1890,27 +1889,11 @@ gimple_assign_copy_p (gimple gs)
 bool
 gimple_assign_ssa_name_copy_p (gimple gs)
 {
-  return (gimple_code (gs) == GIMPLE_ASSIGN
-	  && (get_gimple_rhs_class (gimple_assign_rhs_code (gs))
-	      == GIMPLE_SINGLE_RHS)
+  return (gimple_assign_single_p (gs)
 	  && TREE_CODE (gimple_assign_lhs (gs)) == SSA_NAME
 	  && TREE_CODE (gimple_assign_rhs1 (gs)) == SSA_NAME);
 }
 
-
-/* Return true if GS is an assignment with a singleton RHS, i.e.,
-   there is no operator associated with the assignment itself.
-   Unlike gimple_assign_copy_p, this predicate returns true for
-   any RHS operand, including those that perform an operation
-   and do not have the semantics of a copy, such as COND_EXPR.  */
-
-bool
-gimple_assign_single_p (gimple gs)
-{
-  return (gimple_code (gs) == GIMPLE_ASSIGN
-          && get_gimple_rhs_class (gimple_assign_rhs_code (gs))
-	     == GIMPLE_SINGLE_RHS);
-}
 
 /* Return true if GS is an assignment with a unary RHS, but the
    operator has no effect on the assigned value.  The logic is adapted
@@ -1929,7 +1912,7 @@ gimple_assign_single_p (gimple gs)
 bool
 gimple_assign_unary_nop_p (gimple gs)
 {
-  return (gimple_code (gs) == GIMPLE_ASSIGN
+  return (is_gimple_assign (gs)
           && (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (gs))
               || gimple_assign_rhs_code (gs) == NON_LVALUE_EXPR)
           && gimple_assign_rhs1 (gs) != error_mark_node
@@ -2948,15 +2931,6 @@ is_gimple_min_lval (tree t)
   if (!(t = CONST_CAST_TREE (strip_invariant_refs (t))))
     return false;
   return (is_gimple_id (t) || TREE_CODE (t) == MEM_REF);
-}
-
-/* Return true if T is a typecast operation.  */
-
-bool
-is_gimple_cast (tree t)
-{
-  return (CONVERT_EXPR_P (t)
-          || TREE_CODE (t) == FIX_TRUNC_EXPR);
 }
 
 /* Return true if T is a valid function operand of a CALL_EXPR.  */

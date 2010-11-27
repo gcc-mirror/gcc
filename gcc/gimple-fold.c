@@ -1273,7 +1273,7 @@ gimple_fold_builtin (gimple stmt)
 	  /* If the result is not a valid gimple value, or not a cast
 	     of a valid gimple value, then we cannot use the result.  */
 	  if (is_gimple_val (new_val)
-	      || (is_gimple_cast (new_val)
+	      || (CONVERT_EXPR_P (new_val)
 		  && is_gimple_val (TREE_OPERAND (new_val, 0))))
 	    return new_val;
 	}

@@ -1,3 +1,17 @@
+2010-11-27  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_assign_copy_p): Use gimple_assign_single_p.
+	(gimple_assign_ssa_name_copy_p): Likewise.
+	(gimple_assign_unary_nop_p): Use is_gimple_assign.
+	(is_gimple_cast): Remove.
+	(gimple_assign_single_p): Move ...
+	* gimple.h (gimple_assign_single_p): ... here.
+	(is_gimple_cast): Remove.
+	(gimple_assign_rhs_code): Simplify.
+	* gimple-fold.c (gimple_fold_builtin): Use CONVERT_EXPR_P
+	instead of is_gimple_cast.
+	* ipa-type-escape.c (look_for_casts): Likewise.
+
 2010-11-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/options.texi (Enum, EnumValue): Document new record types.
