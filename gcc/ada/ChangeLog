@@ -1,5 +1,11 @@
 2010-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/40777
+	* gcc-interface/targtyps.c (get_target_double_scalar_alignment): Guard
+	use of TARGET_64BIT macro.
+
+2010-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* s-osinte-linux.ads (sigset_t): Use unsigned_char subtype directly.
 	(unsigned_long_long_t): New modular type.
 	(pthread_cond_t): Add alignment clause.
