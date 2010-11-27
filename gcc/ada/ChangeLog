@@ -1,5 +1,10 @@
 2010-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/46574
+	* gcc-interface/utils2.c (compare_elmt_bitpos): Fix typos.
+
+2010-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/40777
 	* gcc-interface/targtyps.c (get_target_double_scalar_alignment): Guard
 	use of TARGET_64BIT macro.

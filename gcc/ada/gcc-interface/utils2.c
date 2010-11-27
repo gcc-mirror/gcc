@@ -1654,8 +1654,8 @@ build_call_raise_column (int msg, Node_Id gnat_node)
 static int
 compare_elmt_bitpos (const PTR rt1, const PTR rt2)
 {
-  const constructor_elt * const elmt1 = (const constructor_elt const *) rt1;
-  const constructor_elt * const elmt2 = (const constructor_elt const *) rt2;
+  const constructor_elt * const elmt1 = (const constructor_elt * const) rt1;
+  const constructor_elt * const elmt2 = (const constructor_elt * const) rt2;
   const_tree const field1 = elmt1->index;
   const_tree const field2 = elmt2->index;
   const int ret
