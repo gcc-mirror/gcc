@@ -1,5 +1,12 @@
 2010-11-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/property/at-property-24.m: New.
+	* objc.dg/property/at-property-25.m: New.	
+	* obj-c++.dg/property/at-property-24.mm: New.
+	* obj-c++.dg/property/at-property-25.mm: New.
+
+2010-11-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/protocol-qualifier-1.m: New.	
 	* objc.dg/protocol-qualifier-2.m: New.
 	* obj-c++.dg/protocol-qualifier-1.mm: New.	
