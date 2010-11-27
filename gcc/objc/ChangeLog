@@ -1,5 +1,22 @@
 2010-11-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	Implemented optional properties.
+	* objc-act.h (PROPERTY_OPTIONAL): New.
+	* objc-act.c (objc_add_property_declaration): Set
+	PROPERTY_OPTIONAL if appropriate.
+	(finish_class): When generating definitions of setter and getter
+	methods associated with a property for a protocol, mark them as
+	optional if the property is optional.
+	(maybe_make_artificial_property_decl): Added 'getter_name'
+	argument.  Set PROPERTY_OPTIONAL.
+	(objc_maybe_build_component_ref): Updated calls to
+	maybe_make_artificial_property_decl.  Added code for optional,
+	readonly properties.
+	(objc_build_class_component_ref): Updated call to
+	maybe_make_artificial_property_decl.
+	
+2010-11-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (objc_build_struct): Fixed loops that save and
 	restore TYPE_OBJC_INFO to iterate over all variants of the type; a
 	special case for the current type is then no longer required.

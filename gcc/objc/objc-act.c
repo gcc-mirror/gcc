@@ -1181,7 +1181,7 @@ objc_add_property_declaration (location_t location, tree decl,
       /* An existing property was found; check that it has the same
 	 types, or it is compatible.  */
       location_t original_location = DECL_SOURCE_LOCATION (x);
-	  
+
       if (PROPERTY_NONATOMIC (x) != parsed_property_nonatomic)
 	{
 	  warning_at (location, 0,
@@ -1293,6 +1293,13 @@ objc_add_property_declaration (location_t location, tree decl,
   PROPERTY_IVAR_NAME (property_decl) = NULL_TREE;
   PROPERTY_DYNAMIC (property_decl) = 0;
 
+  /* Remember the fact that the property was found in the @optional
+     section in a @protocol, or not.  */
+  if (objc_method_optional_flag)
+    PROPERTY_OPTIONAL (property_decl) = 1;
+  else
+    PROPERTY_OPTIONAL (property_decl) = 0;
+
   /* Note that PROPERTY_GETTER_NAME is always set for all
      PROPERTY_DECLs, and PROPERTY_SETTER_NAME is always set for all
      PROPERTY_DECLs where PROPERTY_READONLY == 0.  Any time we deal
@@ -1310,17 +1317,21 @@ objc_add_property_declaration (location_t location, tree decl,
    in the implementation, and failing that, the protocol list)
    provided for a 'setter' or 'getter' for 'component' with default
    names (ie, if 'component' is "name", then search for "name" and
-   "setName:").  If any is found, then create an artificial property
-   that uses them.  Return NULL_TREE if 'getter' or 'setter' could not
-   be found.  */
+   "setName:").  It is also possible to specify a different
+   'getter_name' (this is used for @optional readonly properties).  If
+   any is found, then create an artificial property that uses them.
+   Return NULL_TREE if 'getter' or 'setter' could not be found.  */
 static tree
 maybe_make_artificial_property_decl (tree interface, tree implementation, 
-				     tree protocol_list, tree component, bool is_class)
+				     tree protocol_list, tree component, bool is_class,
+				     tree getter_name)
 {
-  tree getter_name = component;
   tree setter_name = get_identifier (objc_build_property_setter_name (component));
   tree getter = NULL_TREE;
   tree setter = NULL_TREE;
+
+  if (getter_name == NULL_TREE)
+    getter_name = component;
 
   /* First, check the @interface and all superclasses.  */
   if (interface)
@@ -1401,6 +1412,7 @@ maybe_make_artificial_property_decl (tree interface, tree implementation,
       PROPERTY_ASSIGN_SEMANTICS (property_decl) = 0;
       PROPERTY_IVAR_NAME (property_decl) = NULL_TREE;
       PROPERTY_DYNAMIC (property_decl) = 0;
+      PROPERTY_OPTIONAL (property_decl) = 0;
 
       if (!getter)
 	PROPERTY_HAS_NO_GETTER (property_decl) = 1;
@@ -1481,7 +1493,7 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
 		 properties.  */
 	      if (!IS_CLASS (rtype))
 		x = lookup_property_in_protocol_list (rprotos, property_ident);
-	      
+
 	      if (x == NULL_TREE)
 		{
 		  /* Ok, no property.  Maybe it was an
@@ -1493,7 +1505,25 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
 							   NULL_TREE,
 							   rprotos, 
 							   property_ident,
-							   IS_CLASS (rtype));
+							   IS_CLASS (rtype),
+							   NULL_TREE);
+		}
+	      else if (PROPERTY_OPTIONAL (x) && PROPERTY_READONLY (x))
+		{
+		  /* This is a special, complicated case.  If the
+		     property is optional, and is read-only, then the
+		     property is always used for reading, but an
+		     eventual existing non-property setter can be used
+		     for writing.  We create an artificial property
+		     decl copying the getter from the optional
+		     property, and looking up the setter in the
+		     interface.  */
+		  x = maybe_make_artificial_property_decl (NULL_TREE,
+							   NULL_TREE,
+							   rprotos,
+							   property_ident,
+							   false,
+							   PROPERTY_GETTER_NAME (x));		  
 		}
 	    }
 	}
@@ -1538,7 +1568,22 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
 		  x = maybe_make_artificial_property_decl 
 		    (interface_type, implementation, NULL_TREE,
 		     property_ident,
-		     (TREE_CODE (objc_method_context) == CLASS_METHOD_DECL));
+		     (TREE_CODE (objc_method_context) == CLASS_METHOD_DECL),
+		     NULL_TREE);
+		}
+	      else if (PROPERTY_OPTIONAL (x) && PROPERTY_READONLY (x))
+		{
+		  tree implementation = NULL_TREE;
+		  
+		  if (t == self_decl)
+		    implementation = objc_implementation_context;
+		  
+		  x = maybe_make_artificial_property_decl (interface_type,
+							   implementation,
+							   NULL_TREE,
+							   property_ident,
+							   false,
+							   PROPERTY_GETTER_NAME (x));		  
 		}
 	    }
 	}
@@ -1603,8 +1648,25 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
 							   implementation,
 							   protocol_list, 
 							   property_ident,
-							   IS_CLASS (rtype));
+							   IS_CLASS (rtype),
+							   NULL_TREE);
 		}
+	      else if (PROPERTY_OPTIONAL (x) && PROPERTY_READONLY (x))
+		{
+		  tree implementation = NULL_TREE;
+
+		  if (objc_implementation_context
+		      && CLASS_NAME (objc_implementation_context) 
+		      == OBJC_TYPE_NAME (interface_type))
+		    implementation = objc_implementation_context;
+		  
+		  x = maybe_make_artificial_property_decl (interface_type,
+							   implementation,
+							   protocol_list,
+							   property_ident,
+							   false,
+							   PROPERTY_GETTER_NAME (x));		  
+		}	      
 	    }
 	}
     }
@@ -1703,7 +1765,7 @@ objc_build_class_component_ref (tree class_name, tree property_ident)
 
   x = maybe_make_artificial_property_decl (rtype, NULL_TREE, NULL_TREE,
 					   property_ident,
-					   true);
+					   true, NULL_TREE);
   
   if (x)
     {
@@ -10534,7 +10596,10 @@ finish_class (tree klass)
 		getter_decl = build_method_decl (INSTANCE_METHOD_DECL, 
 						 rettype, PROPERTY_GETTER_NAME (x), 
 						 NULL_TREE, false);
-		objc_add_method (objc_interface_context, getter_decl, false, false);
+		if (PROPERTY_OPTIONAL (x))
+		  objc_add_method (objc_interface_context, getter_decl, false, true);
+		else
+		  objc_add_method (objc_interface_context, getter_decl, false, false);
 		METHOD_PROPERTY_CONTEXT (getter_decl) = x;
 	      }
 
@@ -10574,7 +10639,10 @@ finish_class (tree klass)
 						     ret_type, selector,
 						     build_tree_list (NULL_TREE, NULL_TREE),
 						     false);
-		    objc_add_method (objc_interface_context, setter_decl, false, false);
+		    if (PROPERTY_OPTIONAL (x))
+		      objc_add_method (objc_interface_context, setter_decl, false, true);
+		    else
+		      objc_add_method (objc_interface_context, setter_decl, false, false);
 		    METHOD_PROPERTY_CONTEXT (setter_decl) = x;
 		  }	       
 	      }

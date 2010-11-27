@@ -113,6 +113,11 @@ typedef enum objc_property_assign_semantics {
    setter, it is set to 1.  */
 #define PROPERTY_HAS_NO_SETTER(DECL) DECL_LANG_FLAG_4 (DECL)
 
+/* PROPERTY_OPTIONAL can be 0 or 1.  Normally it is 0, but if this is
+   a property declared as @optional in a @protocol, then it is set to
+   1.  */
+#define PROPERTY_OPTIONAL(DECL) DECL_LANG_FLAG_5 (DECL)
+
 /* PROPERTY_REF.  A PROPERTY_REF represents an 'object.property'
    expression.  It is normally used for property access, but when
    the Objective-C 2.0 "dot-syntax" (object.component) is used
