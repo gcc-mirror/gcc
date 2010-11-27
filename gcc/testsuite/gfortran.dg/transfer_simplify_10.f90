@@ -17,11 +17,17 @@ program test5
    type(CPUID_TYPE) result
   result = transfer(achar(10)//achar(0)//achar(0)//achar(0)//'GenuineIntel'//'abcd',result)
 
-  if (     int(z'0000000A') /= result%eax  &
+  if((     int(z'0000000A') /= result%eax  &
       .or. int(z'756E6547') /= result%ebx  &
       .or. int(z'49656E69') /= result%edx  &
       .or. int(z'6C65746E') /= result%ecx  &
-      .or. int(z'64636261') /= result%bbb) then
+      .or. int(z'64636261') /= result%bbb) &
+     .and. & ! Big endian
+     (     int(z'0A000000') /= result%eax  &
+      .or. int(z'47656E75') /= result%ebx  &
+      .or. int(z'696E6549') /= result%edx  &
+      .or. int(z'6E74656C') /= result%ecx  &
+      .or. int(z'61626364') /= result%bbb)) then
     write(*,'(5(z8.8:1x))') result
     call abort()
   end if
