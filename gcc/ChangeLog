@@ -1,3 +1,11 @@
+2010-11-27  Jan Hubicka  <jh@suse.cz>
+
+	* dwarf2out.c (dwarf2out_begin_function): Set cold_text_section
+	and output cold_text_section_label.
+	(dwarf2out_init): Don't do that there.
+	(dwarf2out_finish): Handle cold section end label only if cold
+	section was used.
+
 2010-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-nested.c (remap_vla_decls): Fully expand value expressions of
