@@ -1,3 +1,9 @@
+2010-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/40777
+	* gcc-interface/targtyps.c (get_target_double_scalar_alignment): Guard
+	use of TARGET_64BIT macro.
+
 2010-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gnat_pushdecl): Do not do anything special
