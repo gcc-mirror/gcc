@@ -1236,7 +1236,7 @@ look_for_casts (tree t)
 {
   unsigned int cast = 0;
 
-  if (is_gimple_cast (t) || TREE_CODE (t) == VIEW_CONVERT_EXPR)
+  if (CONVERT_EXPR_P (t) || TREE_CODE (t) == VIEW_CONVERT_EXPR)
     {
       tree castfromvar = TREE_OPERAND (t, 0);
       cast = cast | check_cast (TREE_TYPE (t), castfromvar);
