@@ -185,9 +185,10 @@ namespace __debug
       }
 
       iterator
-      insert(const_iterator, const value_type& __obj)
+      insert(const_iterator __hint, const value_type& __obj)
       {
-	return iterator(_Base::insert(__obj).first, this);
+	__glibcxx_check_insert(__hint);
+	return iterator(_Base::insert(__hint.base(), __obj), this);
       }
 
       template<typename _Pair, typename = typename
@@ -205,9 +206,11 @@ namespace __debug
 	       std::enable_if<std::is_convertible<_Pair,
 						  value_type>::value>::type>
         iterator
-        insert(const_iterator, _Pair&& __obj)
+        insert(const_iterator __hint, _Pair&& __obj)
         {
-	  return iterator(_Base::insert(std::forward<_Pair>(__obj)).first,
+	  __glibcxx_check_insert(__hint);
+	  return iterator(_Base::insert(__hint.base(),
+					std::forward<_Pair>(__obj)),
 			  this);
 	}
 
@@ -467,8 +470,11 @@ namespace __debug
       { return iterator(_Base::insert(__obj), this); }
 
       iterator
-      insert(const_iterator, const value_type& __obj)
-      { return iterator(_Base::insert(__obj), this); }
+      insert(const_iterator __hint, const value_type& __obj)
+      {
+	__glibcxx_check_insert(__hint);
+	return iterator(_Base::insert(__hint.base(), __obj), this);
+      }
 
       template<typename _Pair, typename = typename
 	       std::enable_if<std::is_convertible<_Pair,
@@ -481,8 +487,13 @@ namespace __debug
 	       std::enable_if<std::is_convertible<_Pair,
 						  value_type>::value>::type>
 	iterator
-	insert(const_iterator, _Pair&& __obj)
-	{ return iterator(_Base::insert(std::forward<_Pair>(__obj)), this); }
+	insert(const_iterator __hint, _Pair&& __obj)
+	{
+	  __glibcxx_check_insert(__hint);
+	  return iterator(_Base::insert(__hint.base(),
+					std::forward<_Pair>(__obj)),
+			  this);
+	}
 
       void
       insert(std::initializer_list<value_type> __l)
