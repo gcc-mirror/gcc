@@ -5806,6 +5806,13 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 		      bool dealloc)
 {
   tree tmp;
+  
+  if (expr1->ts.type == BT_CHARACTER && expr1->ts.deferred)
+    {
+      gfc_error ("Assignment to deferred-length character variable at %L "
+		 "not implemented", &expr1->where);
+      return NULL_TREE;
+    }
 
   /* Special case a single function returning an array.  */
   if (expr2->expr_type == EXPR_FUNCTION && expr2->rank > 0)
