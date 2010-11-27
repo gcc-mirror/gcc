@@ -1,3 +1,9 @@
+2010-11-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/46301
+	trans-expr.c (gfc_trans_assignment): Add error message for not
+	implemented assignment to deferred-length character variable.
+
 2010-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/45700
