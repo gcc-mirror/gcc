@@ -1,5 +1,10 @@
 2010-11-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR objc++/46222	
+	* obj-c++.dg/property/at-property-2.mm: Uncommented testcase.
+
+2010-11-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/property/at-property-24.m: New.
 	* objc.dg/property/at-property-25.m: New.	
 	* obj-c++.dg/property/at-property-24.mm: New.

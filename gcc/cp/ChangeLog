@@ -1,3 +1,11 @@
+2010-11-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc++/46222
+	* decl.c (grokdeclarator): Replaced an assert (for a case that can
+	never happen in C++, but could happen in ObjC++ for invalid code)
+	with a check that prints an error message and returns
+	error_mark_node.
+
 2010-11-23  Jeffrey Yasskin <jyasskin@google.com>
 
 	PR c++/46527

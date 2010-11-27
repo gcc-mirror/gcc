@@ -9531,7 +9531,21 @@ grokdeclarator (const cp_declarator *declarator,
 
 	    if (friendp == 0)
 	      {
-		gcc_assert (ctype);
+		/* This should never happen in pure C++ (the check
+		   could be an assert).  It could happen in
+		   Objective-C++ if someone writes invalid code that
+		   uses a function declaration for an instance
+		   variable or property (instance variables and
+		   properties are parsed as FIELD_DECLs, but they are
+		   part of an Objective-C class, not a C++ class).
+		   That code is invalid and is caught by this
+		   check.  */
+		if (!ctype)
+		  {
+		    error ("declaration of function %qD in invalid context",
+			   unqualified_id);
+		    return error_mark_node;
+		  }
 
 		/* ``A union may [ ... ] not [ have ] virtual functions.''
 		   ARM 9.5 */
