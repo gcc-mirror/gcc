@@ -1,3 +1,10 @@
+2010-11-27  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/debug/bitset (bitset<>::reference): Clean code, use normal
+	reference type in experimental mode.
+	* testsuite/23_containers/bitset/debug/invalid/1.cc: Fix for
+	experimental mode.
+
 2010-11-26  François Dumont  <francois.cppdevs@free.fr>
 
 	* testsuite/lib/libstdc++.exp ([check_v3_target_debug_mode]): Use

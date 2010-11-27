@@ -34,7 +34,9 @@ void test01()
     i = new bitset<32>::reference(bs[7]);
     VERIFY(*i);
   }
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
   VERIFY(i->_M_singular());
+#endif
   delete i;
 }
 
