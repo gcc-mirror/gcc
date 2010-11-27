@@ -186,11 +186,10 @@ namespace __debug
       }
 
       iterator
-      insert(const_iterator, const value_type& __obj)
+      insert(const_iterator __hint, const value_type& __obj)
       {
-	typedef std::pair<_Base_iterator, bool> __pair_type;
-	__pair_type __res = _Base::insert(__obj);
-	return iterator(__res.first, this);
+	__glibcxx_check_insert(__hint);
+	return iterator(_Base::insert(__hint.base(), __obj), this);
       }
 
       std::pair<iterator, bool>
@@ -202,11 +201,10 @@ namespace __debug
       }
 
       iterator
-      insert(const_iterator, value_type&& __obj)
+      insert(const_iterator __hint, value_type&& __obj)
       {
-	typedef std::pair<typename _Base::iterator, bool> __pair_type;
-	__pair_type __res = _Base::insert(std::move(__obj));
-	return iterator(__res.first, this);
+	__glibcxx_check_insert(__hint);
+	return iterator(_Base::insert(__hint.base(), std::move(__obj)), this);
       }
 
       void
@@ -461,16 +459,22 @@ namespace __debug
       { return iterator(_Base::insert(__obj), this); }
 
       iterator
-      insert(const_iterator, const value_type& __obj)
-      { return iterator(_Base::insert(__obj), this); }
+      insert(const_iterator __hint, const value_type& __obj)
+      {
+	__glibcxx_check_insert(__hint);
+	return iterator(_Base::insert(__hint.base(), __obj), this);
+      }
 
       iterator
       insert(value_type&& __obj)
       { return iterator(_Base::insert(std::move(__obj)), this); }
 
       iterator
-      insert(const_iterator, value_type&& __obj)
-      { return iterator(_Base::insert(std::move(__obj)), this); }
+      insert(const_iterator __hint, value_type&& __obj)
+      {
+	__glibcxx_check_insert(__hint);
+	return iterator(_Base::insert(__hint.base(), std::move(__obj)), this);
+      }
 
       void
       insert(std::initializer_list<value_type> __l)
