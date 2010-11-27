@@ -1,3 +1,8 @@
+2010-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-nested.c (remap_vla_decls): Fully expand value expressions of
+	VLA variables.
+
 2010-11-27  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gimple_assign_copy_p): Use gimple_assign_single_p.

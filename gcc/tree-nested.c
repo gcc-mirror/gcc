@@ -2192,18 +2192,21 @@ remap_vla_decls (tree block, struct nesting_info *root)
     remap_vla_decls (subblock, root);
 
   for (var = BLOCK_VARS (block); var; var = DECL_CHAIN (var))
-    {
-      if (TREE_CODE (var) == VAR_DECL
-	  && variably_modified_type_p (TREE_TYPE (var), NULL)
-	  && DECL_HAS_VALUE_EXPR_P (var))
-	{
-	  type = TREE_TYPE (var);
-	  val = DECL_VALUE_EXPR (var);
-	  if (walk_tree (&type, contains_remapped_vars, root, NULL) != NULL
-	      ||  walk_tree (&val, contains_remapped_vars, root, NULL) != NULL)
-	    break;
-	}
-    }
+    if (TREE_CODE (var) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (var))
+      {
+	val = DECL_VALUE_EXPR (var);
+	type = TREE_TYPE (var);
+
+	if (!(TREE_CODE (val) == INDIRECT_REF
+	      && TREE_CODE (TREE_OPERAND (val, 0)) == VAR_DECL
+	      && variably_modified_type_p (type, NULL)))
+	  continue;
+
+	if (pointer_map_contains (root->var_map, TREE_OPERAND (val, 0))
+	    || walk_tree (&type, contains_remapped_vars, root, NULL))
+	  break;
+      }
+
   if (var == NULL_TREE)
     return;
 
@@ -2213,17 +2216,22 @@ remap_vla_decls (tree block, struct nesting_info *root)
   id.root = root;
 
   for (; var; var = DECL_CHAIN (var))
-    if (TREE_CODE (var) == VAR_DECL
-	&& variably_modified_type_p (TREE_TYPE (var), NULL)
-	&& DECL_HAS_VALUE_EXPR_P (var))
+    if (TREE_CODE (var) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (var))
       {
 	struct nesting_info *i;
-	tree newt, t, context;
+	tree newt, context;
+	void **slot;
 
-	t = type = TREE_TYPE (var);
 	val = DECL_VALUE_EXPR (var);
-	if (walk_tree (&type, contains_remapped_vars, root, NULL) == NULL
-	    && walk_tree (&val, contains_remapped_vars, root, NULL) == NULL)
+	type = TREE_TYPE (var);
+
+	if (!(TREE_CODE (val) == INDIRECT_REF
+	      && TREE_CODE (TREE_OPERAND (val, 0)) == VAR_DECL
+	      && variably_modified_type_p (type, NULL)))
+	  continue;
+
+	slot = pointer_map_contains (root->var_map, TREE_OPERAND (val, 0));
+	if (!slot && !walk_tree (&type, contains_remapped_vars, root, NULL))
 	  continue;
 
 	context = decl_function_context (var);
@@ -2234,6 +2242,15 @@ remap_vla_decls (tree block, struct nesting_info *root)
 	if (i == NULL)
 	  continue;
 
+	/* Fully expand value expressions.  This avoids having debug variables
+	   only referenced from them and that can be swept during GC.  */
+        if (slot)
+	  {
+	    tree t = (tree) *slot;
+	    gcc_assert (DECL_P (t) && DECL_HAS_VALUE_EXPR_P (t));
+	    val = build1 (INDIRECT_REF, TREE_TYPE (val), DECL_VALUE_EXPR (t));
+	  }
+
 	id.cb.src_fn = i->context;
 	id.cb.dst_fn = i->context;
 	id.cb.src_cfun = DECL_STRUCT_FUNCTION (root->context);
@@ -2242,13 +2259,13 @@ remap_vla_decls (tree block, struct nesting_info *root)
 	while (POINTER_TYPE_P (newt) && !TYPE_NAME (newt))
 	  {
 	    newt = TREE_TYPE (newt);
-	    t = TREE_TYPE (t);
+	    type = TREE_TYPE (type);
 	  }
 	if (TYPE_NAME (newt)
 	    && TREE_CODE (TYPE_NAME (newt)) == TYPE_DECL
 	    && DECL_ORIGINAL_TYPE (TYPE_NAME (newt))
-	    && newt != t
-	    && TYPE_NAME (newt) == TYPE_NAME (t))
+	    && newt != type
+	    && TYPE_NAME (newt) == TYPE_NAME (type))
 	  TYPE_NAME (newt) = remap_decl (TYPE_NAME (newt), &id.cb);
 
 	walk_tree (&val, copy_tree_body_r, &id.cb, NULL);

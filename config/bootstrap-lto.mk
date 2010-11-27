@@ -3,6 +3,3 @@
 
 STAGE2_CFLAGS += -flto=jobserver -fuse-linker-plugin -frandom-seed=1
 STAGE3_CFLAGS += -flto=jobserver -fuse-linker-plugin -frandom-seed=1
-
-# Ada fails to build with LTO, turn it off for now.
-BOOT_ADAFLAGS += -fno-lto

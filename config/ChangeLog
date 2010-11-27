@@ -1,3 +1,7 @@
+2010-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* bootstrap-lto.mk (BOOT_ADAFLAGS): Delete.
+
 2010-11-19  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* cloog.m4: Use AS_HELP_STRING and fix help formatting.
