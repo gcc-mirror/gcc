@@ -44,15 +44,16 @@ void test01()
   mm1.insert(value_type("umbra/penumbra", 8));
   mm1.insert(value_type("belonging (no longer mix)", 9));
   mm1.insert(value_type("one line behind", 10));
-  VERIFY( mm1.size() == 10 );
+  mm1.insert(value_type("because to why", 11));
+  VERIFY( mm1.size() == 11 );
 
   VERIFY( mm1.erase("eeilo") == 1 );
-  VERIFY( mm1.size() == 9 );
+  VERIFY( mm1.size() == 10 );
   iterator it1 = mm1.find("eeilo");
   VERIFY( it1 == mm1.end() );
 
   VERIFY( mm1.erase("tillsammans") == 1 );
-  VERIFY( mm1.size() == 8 );
+  VERIFY( mm1.size() == 9 );
   iterator it2 = mm1.find("tillsammans");
   VERIFY( it2 == mm1.end() );
 
@@ -60,17 +61,17 @@ void test01()
   iterator it3 = mm1.find("belonging (no longer mix)");
   VERIFY( it3 != mm1.end() );
   VERIFY( mm1.erase(it3->first) == 1 );
-  VERIFY( mm1.size() == 7 );
+  VERIFY( mm1.size() == 8 );
   it3 = mm1.find("belonging (no longer mix)");
   VERIFY( it3 == mm1.end() );
 
   VERIFY( !mm1.erase("abra") );
-  VERIFY( mm1.size() == 7 );
+  VERIFY( mm1.size() == 8 );
 
   VERIFY( !mm1.erase("eeilo") );
-  VERIFY( mm1.size() == 7 );
+  VERIFY( mm1.size() == 8 );
 
-  VERIFY( mm1.erase("because to why") == 1 );
+  VERIFY( mm1.erase("because to why") == 2 );
   VERIFY( mm1.size() == 6 );
   iterator it4 = mm1.find("because to why");
   VERIFY( it4 == mm1.end() );

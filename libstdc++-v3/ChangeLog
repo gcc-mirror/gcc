@@ -1,5 +1,14 @@
 2010-11-27  François Dumont  <francois.cppdevs@free.fr>
 
+	* include/debug/unordered_map (unordered_multimap<>::erase): Fix to
+	erase all elements associated to the key.
+	* include/debug/unordered_set (unordered_multiset<>::erase): Likewise.
+	* testsuite/23_containers/unordered_multimap/erase/1.cc: Modify to
+	check for multiple erase.
+	* testsuite/23_containers/unordered_multiset/erase/1.cc: Likewise.
+
+2010-11-27  François Dumont  <francois.cppdevs@free.fr>
+
 	* include/debug/unordered_map, unordered_set (unordered_map<>::insert,
 	unordered_multimap<>::insert, unordered_set<>::insert,
 	unordered_multiset<>::insert) Debug check iterator hint and pass it to
