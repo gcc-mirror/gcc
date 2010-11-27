@@ -249,8 +249,12 @@ Nat
 get_target_double_scalar_alignment (void)
 {
 #ifdef TARGET_ALIGN_DOUBLE
-  /* This macro is only defined by the i386 port.  */
-  if (!TARGET_ALIGN_DOUBLE && !TARGET_64BIT)
+  /* This macro is only defined by the i386 and sh ports.  */
+  if (!TARGET_ALIGN_DOUBLE
+#ifdef TARGET_64BIT
+      && !TARGET_64BIT
+#endif
+     )
     return 32 / BITS_PER_UNIT;
 #endif
   return 0;
