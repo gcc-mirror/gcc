@@ -1,5 +1,11 @@
 2010-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* s-osinte-linux.ads (sigset_t): Use unsigned_char subtype directly.
+	(unsigned_long_long_t): New modular type.
+	(pthread_cond_t): Add alignment clause.
+
+2010-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnatvsn.adb (Version_String): Change type to C-like array of chars.
 	(Gnat_Version_String): Adjust to above change.
 
