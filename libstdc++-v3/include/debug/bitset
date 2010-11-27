@@ -49,12 +49,16 @@ namespace __debug
       typedef _GLIBCXX_STD_D::bitset<_Nb> _Base;
 
     public:
+      // In C++0x we rely on normal reference type to preserve the property
+      // of bitset to be use as a literal.
+      // TODO: Find an other solution.
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      typedef typename _Base::reference reference;
+#else
       // bit reference:
       class reference
       : private _Base::reference
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
         , public __gnu_debug::_Safe_iterator_base
-#endif
       {
 	typedef typename _Base::reference _Base_ref;
 
@@ -64,27 +68,21 @@ namespace __debug
 	reference(const _Base_ref& __base,
 		  bitset* __seq __attribute__((__unused__)))
 	: _Base_ref(__base)
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
 	, _Safe_iterator_base(__seq, false)
-#endif
 	{ }
 
       public:
 	reference(const reference& __x)
 	: _Base_ref(__x)
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
 	, _Safe_iterator_base(__x, false)
-#endif
 	{ }
 
 	reference&
 	operator=(bool __x)
 	{
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
 			      _M_message(__gnu_debug::__msg_bad_bitset_write)
 				._M_iterator(*this));
-#endif
 	  *static_cast<_Base_ref*>(this) = __x;
 	  return *this;
 	}
@@ -92,14 +90,12 @@ namespace __debug
 	reference&
 	operator=(const reference& __x)
 	{
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
 	  _GLIBCXX_DEBUG_VERIFY(! __x._M_singular(),
 			       _M_message(__gnu_debug::__msg_bad_bitset_read)
 				._M_iterator(__x));
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
 			      _M_message(__gnu_debug::__msg_bad_bitset_write)
 				._M_iterator(*this));
-#endif
 	  *static_cast<_Base_ref*>(this) = __x;
 	  return *this;
 	}
@@ -107,36 +103,31 @@ namespace __debug
 	bool
 	operator~() const
 	{
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
 			       _M_message(__gnu_debug::__msg_bad_bitset_read)
 				._M_iterator(*this));
-#endif
 	  return ~(*static_cast<const _Base_ref*>(this));
 	}
 
 	operator bool() const
 	{
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
 			      _M_message(__gnu_debug::__msg_bad_bitset_read)
 				._M_iterator(*this));
-#endif
 	  return *static_cast<const _Base_ref*>(this);
 	}
 
 	reference&
 	flip()
 	{
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
 			      _M_message(__gnu_debug::__msg_bad_bitset_flip)
 				._M_iterator(*this));
-#endif
 	  _Base_ref::flip();
 	  return *this;
 	}
       };
+#endif
 
       // 23.3.5.1 constructors:
       _GLIBCXX_CONSTEXPR bitset() : _Base() { }
@@ -269,7 +260,11 @@ namespace __debug
       operator[](size_t __pos)
       {
 	__glibcxx_check_subscript(__pos);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	return _M_base()[__pos];
+#else
 	return reference(_M_base()[__pos], this);
+#endif
       }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
