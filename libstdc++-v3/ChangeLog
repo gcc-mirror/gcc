@@ -1,3 +1,8 @@
+2010-11-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/shared_ptr_base.h (operator>, operator>=, operator<=):
+	Remove comparisons not specified in the C++0x draft.
+
 2010-11-27  François Dumont  <francois.cppdevs@free.fr>
 
 	* include/debug/unordered_map (unordered_multimap<>::erase): Fix to

@@ -1098,25 +1098,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     : public _Sp_less<__shared_ptr<_Tp, _Lp>>
     { };
 
-  // XXX LessThanComparable<_Tp> concept should provide >, >= and <=
-  template<typename _Tp, _Lock_policy _Lp>
-    inline bool
-    operator>(const __shared_ptr<_Tp, _Lp>& __a,
-	      const __shared_ptr<_Tp, _Lp>& __b)
-    { return __a.get() > __b.get(); }
-
-  template<typename _Tp, _Lock_policy _Lp>
-    inline bool
-    operator>=(const __shared_ptr<_Tp, _Lp>& __a,
-	       const __shared_ptr<_Tp, _Lp>& __b)
-    { return __a.get() >= __b.get(); }
-
-  template<typename _Tp, _Lock_policy _Lp>
-    inline bool
-    operator<=(const __shared_ptr<_Tp, _Lp>& __a,
-	       const __shared_ptr<_Tp, _Lp>& __b)
-    { return __a.get() <= __b.get(); }
-
   // 2.2.3.8 shared_ptr specialized algorithms.
   template<typename _Tp, _Lock_policy _Lp>
     inline void
