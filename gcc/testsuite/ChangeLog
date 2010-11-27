@@ -1,3 +1,9 @@
+2010-11-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46638
+	PR fortran/46668
+	* gfortran.dg/transfer_simplify_10.f90: Fix endian issue.
+
 2010-11-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc++/46222	
