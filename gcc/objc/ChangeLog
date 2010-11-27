@@ -1,3 +1,12 @@
+2010-11-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_build_struct): Fixed loops that save and
+	restore TYPE_OBJC_INFO to iterate over all variants of the type; a
+	special case for the current type is then no longer required.
+	Duplicate TYPE_LANG_SPECIFIC for each type before restoring
+	TYPE_OBJC_INFO.
+	(objc_get_protocol_qualified_type): Updated comments.
+	
 2010-11-25  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_build_struct): Install TYPE_OBJC_INTERFACE

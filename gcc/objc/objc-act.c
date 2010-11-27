@@ -2137,41 +2137,54 @@ objc_build_struct (tree klass, tree fields, tree super_name)
       fields = base;
     }
 
-  /* NB: Calling finish_struct() may cause type TYPE_LANG_SPECIFIC
-     fields in all variants of this RECORD_TYPE to be clobbered (this
-     is because the C frontend stores a sorted version of the list of
-     fields in lang_type if it deems appropriate, and will update and
-     propagate that list to all variants ignoring the fact that we use
-     lang_type for something else and that such propagation will wipe
-     the objc_info away), but it is therein that we store protocol
-     conformance info (e.g., 'NSObject <MyProtocol>').  Hence, we must
-     squirrel away the ObjC-specific information before calling
+  /* NB: Calling finish_struct() may cause type TYPE_OBJC_INFO
+     information in all variants of this RECORD_TYPE to be destroyed
+     (this is because the C frontend manipulates TYPE_LANG_SPECIFIC
+     for something else and then will change all variants to use the
+     same resulting TYPE_LANG_SPECIFIC, ignoring the fact that we use
+     it for ObjC protocols and that such propagation will make all
+     variants use the same objc_info), but it is therein that we store
+     protocol conformance info (e.g., 'NSObject <MyProtocol>').
+     Hence, we must save the ObjC-specific information before calling
      finish_struct(), and then reinstate it afterwards.  */
 
-  for (t = TYPE_NEXT_VARIANT (s); t; t = TYPE_NEXT_VARIANT (t))
+  for (t = TYPE_MAIN_VARIANT (s); t; t = TYPE_NEXT_VARIANT (t))
     {
-      if (!TYPE_HAS_OBJC_INFO (t))
-	{
-	  INIT_TYPE_OBJC_INFO (t);
-	  TYPE_OBJC_INTERFACE (t) = klass;
-	}
+      INIT_TYPE_OBJC_INFO (t);
       VEC_safe_push (tree, heap, objc_info, TYPE_OBJC_INFO (t));
     }
 
   s = objc_finish_struct (s, fields);
 
-  /* Point the struct at its related Objective-C class.  We do this
-     after calling finish_struct() because otherwise finish_struct()
-     would wipe TYPE_OBJC_INTERFACE() out.  */
-  if (!TYPE_HAS_OBJC_INFO (s))
-    INIT_TYPE_OBJC_INFO (s);
-
-  TYPE_OBJC_INTERFACE (s) = klass;
-
-  for (i = 0, t = TYPE_NEXT_VARIANT (s); t; t = TYPE_NEXT_VARIANT (t), i++)
+  for (i = 0, t = TYPE_MAIN_VARIANT (s); t; t = TYPE_NEXT_VARIANT (t), i++)
     {
+      /* We now want to restore the different TYPE_OBJC_INFO, but we
+	 have the additional problem that the C frontend doesn't just
+	 copy TYPE_LANG_SPECIFIC from one variant to the other; it
+	 actually makes all of them the *same* TYPE_LANG_SPECIFIC.  As
+	 we need a different TYPE_OBJC_INFO for each (and
+	 TYPE_OBJC_INFO is a field in TYPE_LANG_SPECIFIC), we need to
+	 make a copy of each TYPE_LANG_SPECIFIC before we modify
+	 TYPE_OBJC_INFO.  */
+      if (TYPE_LANG_SPECIFIC (t))
+	{
+	  /* Create a copy of TYPE_LANG_SPECIFIC.  */
+	  struct lang_type *old_lang_type = TYPE_LANG_SPECIFIC (t);
+	  ALLOC_OBJC_TYPE_LANG_SPECIFIC (t);
+	  memcpy (TYPE_LANG_SPECIFIC (t), old_lang_type,
+		  SIZEOF_OBJC_TYPE_LANG_SPECIFIC);
+	}
+      else
+	{
+	  /* Just create a new one.  */
+	  ALLOC_OBJC_TYPE_LANG_SPECIFIC (t);
+	}
+      /* Replace TYPE_OBJC_INFO with the saved one.  This restores any
+	 protocol information that may have been associated with the
+	 type.  */
       TYPE_OBJC_INFO (t) = VEC_index (tree, objc_info, i);
-      /* Replace the IDENTIFIER_NODE with an actual @interface.  */
+      /* Replace the IDENTIFIER_NODE with an actual @interface now
+	 that we have it.  */
       TYPE_OBJC_INTERFACE (t) = klass;
     }
   VEC_free (tree, heap, objc_info);
@@ -2766,9 +2779,12 @@ objc_non_volatilized_type (tree type)
   return type;
 }
 
-/* Construct a PROTOCOLS-qualified variant of INTERFACE, where INTERFACE may
-   either name an Objective-C class, or refer to the special 'id' or 'Class'
-   types.  If INTERFACE is not a valid ObjC type, just return it unchanged.  */
+/* Construct a PROTOCOLS-qualified variant of INTERFACE, where
+   INTERFACE may either name an Objective-C class, or refer to the
+   special 'id' or 'Class' types.  If INTERFACE is not a valid ObjC
+   type, just return it unchanged.  This function is often called when
+   PROTOCOLS is NULL_TREE, in which case we simply look up the
+   appropriate INTERFACE.  */
 
 tree
 objc_get_protocol_qualified_type (tree interface, tree protocols)
@@ -4422,6 +4438,9 @@ objc_declare_class (tree ident_list)
 
 	  record = xref_tag (RECORD_TYPE, ident);
 	  INIT_TYPE_OBJC_INFO (record);
+	  /* In the case of a @class declaration, we store the ident
+	     in the TYPE_OBJC_INTERFACE.  If later an @interface is
+	     found, we'll replace the ident with the interface.  */
 	  TYPE_OBJC_INTERFACE (record) = ident;
 	  hash_class_name_enter (cls_name_hash_list, ident, NULL_TREE);
 	}
