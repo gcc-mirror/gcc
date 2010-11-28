@@ -5383,9 +5383,18 @@ update_ppc_arglist (gfc_expr* e)
   if (!po)
     return FAILURE;
 
+  /* F08:R739.  */
   if (po->rank > 0)
     {
       gfc_error ("Passed-object at %L must be scalar", &e->where);
+      return FAILURE;
+    }
+
+  /* F08:C611.  */
+  if (po->ts.type == BT_DERIVED && po->ts.u.derived->attr.abstract)
+    {
+      gfc_error ("Base object for procedure-pointer component call at %L is of"
+		 " ABSTRACT type '%s'", &e->where, po->ts.u.derived->name);
       return FAILURE;
     }
 
@@ -5413,6 +5422,7 @@ check_typebound_baseobject (gfc_expr* e)
 
   gcc_assert (base->ts.type == BT_DERIVED || base->ts.type == BT_CLASS);
 
+  /* F08:C611.  */
   if (base->ts.type == BT_DERIVED && base->ts.u.derived->attr.abstract)
     {
       gfc_error ("Base object for type-bound procedure call at %L is of"
@@ -5420,7 +5430,8 @@ check_typebound_baseobject (gfc_expr* e)
       goto cleanup;
     }
 
-  /* If the procedure called is NOPASS, the base object must be scalar.  */
+  /* F08:C1230. If the procedure called is NOPASS,
+     the base object must be scalar.  */
   if (e->value.compcall.tbp->nopass && base->rank > 0)
     {
       gfc_error ("Base object for NOPASS type-bound procedure call at %L must"
@@ -5428,7 +5439,7 @@ check_typebound_baseobject (gfc_expr* e)
       goto cleanup;
     }
 
-  /* FIXME: Remove once PR 41177 (this problem) is fixed completely.  */
+  /* FIXME: Remove once PR 43214 is fixed (TBP with non-scalar PASS).  */
   if (base->rank > 0)
     {
       gfc_error ("Non-scalar base object at %L currently not implemented",
