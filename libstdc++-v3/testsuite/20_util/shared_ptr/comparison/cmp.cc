@@ -79,26 +79,10 @@ test02()
   return 0;
 }
 
-int
-test03()
-{
-  bool test __attribute__((unused)) = true;
-
-  std::shared_ptr<A> p1;
-
-  // check other operators are defined
-  VERIFY( p1 <= p1 );
-  VERIFY( p1 >= p1 );
-  VERIFY( !(p1 > p1) );
-
-  return 0;
-}
-
 int 
 main()
 {
   test01();
   test02();
-  test03();
   return 0;
 }

@@ -1,3 +1,9 @@
+2010-11-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/46689
+	* testsuite/20_util/shared_ptr/comparison/cmp.cc: Remove tests for
+	invalid comparisons.
+
 2010-11-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/shared_ptr_base.h (operator>, operator>=, operator<=):
