@@ -14,5 +14,5 @@ package body Pack9 is
 
 end Pack9;
 
--- { dg-final { scan-tree-dump-not "__gnat_rcheck" "final_cleanup" } }
+-- { dg-final { scan-tree-dump-not "gnat_rcheck" "final_cleanup" } }
 -- { dg-final { cleanup-tree-dump "final_cleanup" } }

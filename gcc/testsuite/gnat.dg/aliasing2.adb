@@ -18,5 +18,5 @@ package body Aliasing2 is
 
 end Aliasing2;
 
--- { dg-final { scan-tree-dump-not "__gnat_rcheck" "final_cleanup" } }
+-- { dg-final { scan-tree-dump-not "gnat_rcheck" "final_cleanup" } }
 -- { dg-final { cleanup-tree-dump "final_cleanup" } }
