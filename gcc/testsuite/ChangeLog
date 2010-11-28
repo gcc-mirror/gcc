@@ -1,3 +1,8 @@
+2010-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aliasing2.adb (dg-final): Robustify pattern matching.
+	* gnat.dg/pack9.adb (dg-final): Likewise.
+
 2010-11-28  Paul Thomas  <pault@gcc.gnu.org
 
 	PR fortran/35810
