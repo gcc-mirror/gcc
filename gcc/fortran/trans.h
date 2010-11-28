@@ -216,7 +216,7 @@ typedef struct gfc_ss
      loops the terms appear in.  This will be 1 for the RHS expressions,
      2 for the LHS expressions, and 3(=1|2) for the temporary.  The bit
      'where' suppresses precalculation of scalars in WHERE assignments.  */
-  unsigned useflags:2, where:1;
+  unsigned useflags:2, where:1, is_alloc_lhs:1;
 }
 gfc_ss;
 #define gfc_get_ss() XCNEW (gfc_ss)

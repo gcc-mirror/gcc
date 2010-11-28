@@ -1,3 +1,16 @@
+2010-11-28  Paul Thomas  <pault@gcc.gnu.org
+
+	PR fortran/35810
+	* gfortran.dg/realloc_on_assign_1.f03: New test.
+	* gfortran.dg/realloc_on_assign_2.f03: New test.
+	* gfortran.dg/transpose_2.f90: dg-option -fno-realloc-lhs.
+	* gfortran.dg/unpack_bounds_1.f90: The same.
+	* gfortran.dg/cshift_bounds_2.f90: The same.
+	* gfortran.dg/matmul_bounds_2.f90: The same.
+	* gfortran.dg/matmul_bounds_3.f90: The same.
+	* gfortran.dg/matmul_bounds_4.f90: The same.
+	* gfortran.dg/matmul_bounds_5.f90: The same.
+
 2010-11-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46638

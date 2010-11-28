@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fbounds-check" }
+! { dg-options "-fbounds-check -fno-realloc-lhs" }
 ! { dg-shouldfail "Incorrect extent in return value of UNPACK intrinsic in dimension 2: is 1, should be 2" }
 program main
   integer, allocatable, dimension(:) :: vector

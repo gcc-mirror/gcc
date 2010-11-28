@@ -171,7 +171,7 @@ and warnings}.
 -fblas-matmul-limit=@var{n} -frecursive -finit-local-zero @gol
 -finit-integer=@var{n} -finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
 -finit-logical=@var{<true|false>} -finit-character=@var{n} @gol
--fno-align-commons -fno-protect-parens}
+-fno-align-commons -fno-protect-parens -frealloc-lhs}
 @end table
 
 @menu
@@ -1458,6 +1458,13 @@ levels such that the compiler does not do any re-association. Using
 @code{COMPLEX} expressions to produce faster code. Note that for the re-association
 optimization @option{-fno-signed-zeros} and @option{-fno-trapping-math}
 need to be in effect.
+
+@item -frealloc-lhs
+@opindex @code{frealloc-lhs}
+@cindex Reallocate the LHS in assignments
+An allocatable left-hand side of an intrinsic assignment is automatically
+(re)allocated if it is either unallocated or has a different shape. The
+option is enabled by default except when @option{-std=f95} is given.
 @end table
 
 @xref{Code Gen Options,,Options for Code Generation Conventions,

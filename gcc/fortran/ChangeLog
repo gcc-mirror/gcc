@@ -1,3 +1,42 @@
+2010-11-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	 PR fortran/35810
+	* trans-array.c (gfc_trans_array_constructor): If the loop->to
+	is a VAR_DECL, assume this is dynamic. In this case, use the
+	counter to obtain the value and set loop->to appropriately.
+	(gfc_conv_ss_descriptor): Always save the offset of a variable
+	in info.saved_offset.
+	(gfc_conv_ss_startstride): Do not attempt bound checking of the
+	lhs of an assignment, if allocatable and f2003 is allowed.
+	(gfc_conv_loop_setup): If possible, do not use an allocatable
+	lhs variable for the loopspec.
+	(gfc_is_reallocatable_lhs): New function.
+	(get_std_lbound): New function.
+	(gfc_alloc_allocatable_for_assignment): New function.
+	* gfortran.h : Add flag_realloc_lhs to the options structure.
+	* lang.opt : Add option f(no-)realloc-lhs.
+	* invoke.texi : Document option f(no-)realloc-lhs.
+	* options.c (gfc_init_options, gfc_post_options,
+	gfc_handle_option): Incorporate f(no-)realloc-lhs with default
+	to frealloc_lhs for -std > f95.
+	* trans-array.h : Add primitive for previous.
+	* trans-expr.c (gfc_conv_string_length): Return if character
+	length is a variable and the expression is NULL.
+	(gfc_conv_procedure_call): If the call is of the kind x = f(...)
+	and the lhs is allocatable and reallocation on assignment OK,
+	call gfc_alloc_allocatable_for_assignment. Do not generate the
+	function call unless direct by reference.
+	(realloc_lhs_loop_for_fcn_call): New function.
+	(realloc_lhs_bounds_for_intrinsic_call): New function.
+	(gfc_trans_arrayfunc_assign): Reallocation assignments need
+	a loopinfo and for the loop bounds to be set.  With intrinsic
+	functions, free the lhs data and let the library allocate the
+	data array. Done by the new functions above.
+	(gfc_trans_assignment_1): If the lhs is allocatable and
+	reallocation on assignment is allowed, mark the lhs and use
+	gfc_alloc_allocatable_for_assignment to make the reallocation.
+	* trans.h : Add is_alloc_lhs bitfield to gfc_ss structure.
+
 2010-11-27  Tobias Burnus  <burnus@net-b.de>
 	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 

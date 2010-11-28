@@ -1048,7 +1048,12 @@ gfc_typenode_for_spec (gfc_typespec * spec)
       break;
 
     case BT_CHARACTER:
-      basetype = gfc_get_character_type (spec->kind, spec->u.cl);
+#if 0
+      if (spec->deferred)
+	basetype = gfc_get_character_type (spec->kind, NULL);
+      else
+#endif
+	basetype = gfc_get_character_type (spec->kind, spec->u.cl);
       break;
 
     case BT_DERIVED:

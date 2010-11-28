@@ -474,6 +474,10 @@ frange-check
 Fortran
 Enable range checking during compilation
 
+frealloc-lhs
+Fortran
+Reallocate the LHS in assignments
+
 frecord-marker=4
 Fortran RejectNegative
 Use a 4-byte record marker for unformatted files
