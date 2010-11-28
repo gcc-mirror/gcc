@@ -335,6 +335,11 @@ gfc_conv_string_length (gfc_charlen * cl, gfc_expr * expr, stmtblock_t * pblock)
 
   gfc_init_se (&se, NULL);
 
+  if (!cl->length
+	&& cl->backend_decl
+	&& TREE_CODE (cl->backend_decl) == VAR_DECL)
+    return;
+
   /* If cl->length is NULL, use gfc_conv_expr to obtain the string length but
      "flatten" array constructors by taking their first element; all elements
      should be the same length or a cl->length should be present.  */
@@ -342,7 +347,6 @@ gfc_conv_string_length (gfc_charlen * cl, gfc_expr * expr, stmtblock_t * pblock)
     {
       gfc_expr* expr_flat;
       gcc_assert (expr);
-
       expr_flat = gfc_copy_expr (expr);
       flatten_array_ctors_without_strlen (expr_flat);
       gfc_resolve_expr (expr_flat);
@@ -3355,8 +3359,30 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    se->expr = build_fold_indirect_ref_loc (input_location,
 						se->expr);
 
-	  result = build_fold_indirect_ref_loc (input_location,
-						se->expr);
+	  /* If the lhs of an assignment x = f(..) is allocatable and
+	     f2003 is allowed, we must do the automatic reallocation.
+	     TODO - deal with instrinsics, without using a temporary.  */
+	  if (gfc_option.flag_realloc_lhs
+		&& se->ss && se->ss->loop_chain
+		&& se->ss->loop_chain->is_alloc_lhs
+		&& !expr->value.function.isym
+		&& sym->result->as != NULL)
+	    {
+	      /* Evaluate the bounds of the result, if known.  */
+	      gfc_set_loop_bounds_from_array_spec (&mapping, se,
+						   sym->result->as);
+
+	      /* Perform the automatic reallocation.  */
+	      tmp = gfc_alloc_allocatable_for_assignment (se->loop,
+							  expr, NULL);
+	      gfc_add_expr_to_block (&se->pre, tmp);
+
+	      /* Pass the temporary as the first argument.  */
+	      result = info->descriptor;
+	    }
+	  else
+	    result = build_fold_indirect_ref_loc (input_location,
+						  se->expr);
 	  VEC_safe_push (tree, gc, retargs, se->expr);
 	}
       else if (comp && comp->attr.dimension)
@@ -3369,6 +3395,17 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	  /* Evaluate the bounds of the result, if known.  */
 	  gfc_set_loop_bounds_from_array_spec (&mapping, se, comp->as);
+
+	  /* If the lhs of an assignment x = f(..) is allocatable and
+	     f2003 is allowed, we must not generate the function call
+	     here but should just send back the results of the mapping.
+	     This is signalled by the function ss being flagged.  */
+	  if (gfc_option.flag_realloc_lhs
+		&& se->ss && se->ss->is_alloc_lhs)
+	    {
+	      gfc_free_interface_mapping (&mapping);
+	      return has_alternate_specifier;
+	    }
 
 	  /* Create a temporary to store the result.  In case the function
 	     returns a pointer, the temporary will be a shallow copy and
@@ -3393,6 +3430,17 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	  /* Evaluate the bounds of the result, if known.  */
 	  gfc_set_loop_bounds_from_array_spec (&mapping, se, sym->result->as);
+
+	  /* If the lhs of an assignment x = f(..) is allocatable and
+	     f2003 is allowed, we must not generate the function call
+	     here but should just send back the results of the mapping.
+	     This is signalled by the function ss being flagged.  */
+	  if (gfc_option.flag_realloc_lhs
+		&& se->ss && se->ss->is_alloc_lhs)
+	    {
+	      gfc_free_interface_mapping (&mapping);
+	      return has_alternate_specifier;
+	    }
 
 	  /* Create a temporary to store the result.  In case the function
 	     returns a pointer, the temporary will be a shallow copy and
@@ -5331,6 +5379,81 @@ arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
 }
 
 
+/* Provide the loop info so that the lhs descriptor can be built for
+   reallocatable assignments from extrinsic function calls.  */
+
+static void
+realloc_lhs_loop_for_fcn_call (gfc_se *se, locus *where, gfc_ss **ss)
+{
+  gfc_loopinfo loop;
+  /* Signal that the function call should not be made by
+     gfc_conv_loop_setup. */
+  se->ss->is_alloc_lhs = 1;
+  gfc_init_loopinfo (&loop);
+  gfc_add_ss_to_loop (&loop, *ss);
+  gfc_add_ss_to_loop (&loop, se->ss);
+  gfc_conv_ss_startstride (&loop);
+  gfc_conv_loop_setup (&loop, where);
+  gfc_copy_loopinfo_to_se (se, &loop);
+  gfc_add_block_to_block (&se->pre, &loop.pre);
+  gfc_add_block_to_block (&se->pre, &loop.post);
+  se->ss->is_alloc_lhs = 0;
+}
+
+
+static void
+realloc_lhs_bounds_for_intrinsic_call (gfc_se *se, int rank)
+{
+  tree desc;
+  tree tmp;
+  tree offset;
+  int n;
+
+  /* Use the allocation done by the library.  */
+  desc = build_fold_indirect_ref_loc (input_location, se->expr);
+  tmp = gfc_conv_descriptor_data_get (desc);
+  tmp = gfc_call_free (fold_convert (pvoid_type_node, tmp));
+  gfc_add_expr_to_block (&se->pre, tmp);
+  gfc_conv_descriptor_data_set (&se->pre, desc, null_pointer_node);
+  /* Unallocated, the descriptor does not have a dtype.  */
+  tmp = gfc_conv_descriptor_dtype (desc);
+  gfc_add_modify (&se->pre, tmp, gfc_get_dtype (TREE_TYPE (desc)));
+
+  offset = gfc_index_zero_node;
+  tmp = gfc_index_one_node;
+  /* Now reset the bounds from zero based to unity based.  */
+  for (n = 0 ; n < rank; n++)
+    {
+      /* Accumulate the offset.  */
+      offset = fold_build2_loc (input_location, MINUS_EXPR,
+				gfc_array_index_type,
+				offset, tmp);
+      /* Now do the bounds.  */
+      gfc_conv_descriptor_offset_set (&se->post, desc, tmp);
+      tmp = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[n]);
+      tmp = fold_build2_loc (input_location, PLUS_EXPR,
+			     gfc_array_index_type,
+			     tmp, gfc_index_one_node);
+      gfc_conv_descriptor_lbound_set (&se->post, desc,
+				      gfc_rank_cst[n],
+				      gfc_index_one_node);
+      gfc_conv_descriptor_ubound_set (&se->post, desc,
+				      gfc_rank_cst[n], tmp);
+
+      /* The extent for the next contribution to offset.  */
+      tmp = fold_build2_loc (input_location, MINUS_EXPR,
+			     gfc_array_index_type,
+			     gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[n]),
+			     gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[n]));
+      tmp = fold_build2_loc (input_location, PLUS_EXPR,
+			     gfc_array_index_type,
+			     tmp, gfc_index_one_node);
+    }
+  gfc_conv_descriptor_offset_set (&se->post, desc, offset);
+}
+
+
+
 /* Try to translate array(:) = func (...), where func is a transformational
    array function, without using a temporary.  Returns NULL if this isn't the
    case.  */
@@ -5373,6 +5496,31 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   se.direct_byref = 1;
   se.ss = gfc_walk_expr (expr2);
   gcc_assert (se.ss != gfc_ss_terminator);
+
+  /* Reallocate on assignment needs the loopinfo for extrinsic functions.
+     This is signalled to gfc_conv_procedure_call by setting is_alloc_lhs.
+     Clearly, this cannot be done for an allocatable function result, since
+     the shape of the result is unknown and, in any case, the function must
+     correctly take care of the reallocation internally. For intrinsic
+     calls, the array data is freed and the library takes care of allocation.
+     TODO: Add logic of trans-array.c: gfc_alloc_allocatable_for_assignment
+     to the library.  */    
+  if (gfc_option.flag_realloc_lhs
+	&& gfc_is_reallocatable_lhs (expr1)
+	&& !gfc_expr_attr (expr1).codimension
+	&& !gfc_is_coindexed (expr1)
+	&& !(expr2->value.function.esym
+	    && expr2->value.function.esym->result->attr.allocatable))
+    {
+      if (!expr2->value.function.isym)
+	{
+	  realloc_lhs_loop_for_fcn_call (&se, &expr1->where, &ss);
+	  ss->is_alloc_lhs = 1;
+	}
+      else
+	realloc_lhs_bounds_for_intrinsic_call (&se, expr1->rank);
+    }
+
   gfc_conv_function_expr (&se, expr2);
   gfc_add_block_to_block (&se.pre, &se.post);
 
@@ -5603,6 +5751,10 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 
   /* Walk the lhs.  */
   lss = gfc_walk_expr (expr1);
+  if (gfc_is_reallocatable_lhs (expr1)
+	&& !(expr2->expr_type == EXPR_FUNCTION
+	     && expr2->value.function.isym != NULL))
+    lss->is_alloc_lhs = 1;
   rss = NULL;
   if (lss != gfc_ss_terminator)
     {
@@ -5746,6 +5898,17 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	  tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
 					 false, false, dealloc);
 	  gfc_add_expr_to_block (&body, tmp);
+	}
+
+      /* Allocate or reallocate lhs of allocatable array.  */
+      if (gfc_option.flag_realloc_lhs
+	    && gfc_is_reallocatable_lhs (expr1)
+	    && !gfc_expr_attr (expr1).codimension
+	    && !gfc_is_coindexed (expr1))
+	{
+	  tmp = gfc_alloc_allocatable_for_assignment (&loop, expr1, expr2);
+	  if (tmp != NULL_TREE)
+	    gfc_add_expr_to_block (&loop.code[expr1->rank - 1], tmp);
 	}
 
       /* Generate the copying loops.  */

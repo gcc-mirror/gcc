@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fbounds-check" }
+! { dg-options "-fbounds-check -fno-realloc-lhs" }
 ! { dg-shouldfail "Fortran runtime error: Incorrect extent in return array in MATMUL intrinsic: is 3, should be 2" }
 program main
   real, dimension(3) :: a

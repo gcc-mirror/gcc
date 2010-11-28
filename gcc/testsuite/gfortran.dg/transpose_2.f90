@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fbounds-check" }
+! { dg-options "-fbounds-check -fno-realloc-lhs" }
 ! { dg-shouldfail "Incorrect extent in return value of TRANSPOSE intrinsic in dimension 1: is 2, should be 3" }
 program main
   implicit none
