@@ -2952,7 +2952,7 @@ gfc_trans_auto_character_variable (gfc_symbol * sym, gfc_wrapped_block * block)
   gcc_assert (sym->backend_decl);
   gcc_assert (sym->ts.u.cl && sym->ts.u.cl->length);
 
-  gfc_start_block (&init);
+  gfc_init_block (&init);
 
   /* Evaluate the string length expression.  */
   gfc_conv_string_length (sym->ts.u.cl, NULL, &init);

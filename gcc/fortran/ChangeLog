@@ -1,3 +1,10 @@
+2010-11-27  Tobias Burnus  <burnus@net-b.de>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/46678
+	trans-decl.c (gfc_trans_auto_character_variable): Use gfc_init_block
+	instead of gfc_start_block.
+
 2010-11-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/46301
