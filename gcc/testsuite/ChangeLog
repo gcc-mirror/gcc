@@ -1,5 +1,10 @@
 2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/duplicate-class-1.m: New.
+	* obj-c++.dg/duplicate-class-1.mm: New.
+
+2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/property/dotsyntax-21.m
 	* obj-c++.dg/property/dotsyntax-21.mm
 

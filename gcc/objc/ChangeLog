@@ -1,5 +1,11 @@
 2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (start_class): When a class is reimplemented,
+	generate an error and avoid adding the class to the list of
+	implemented classes again, but do not return error_mark_node.
+
+2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (objc_maybe_build_component_ref): Removed TODO.
 
 2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
