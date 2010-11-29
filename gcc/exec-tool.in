@@ -28,6 +28,7 @@ fast_install=@enable_fast_install@
 objdir=@objdir@
 
 invoked=`basename "$0"`
+id=$invoked
 case "$invoked" in
   as)
     original=$ORIGINAL_AS_FOR_TARGET
@@ -44,6 +45,7 @@ case "$invoked" in
     fi
     prog=ld-new$exeext
     dir=ld
+    id=ld
     ;;
   nm)
     original=$ORIGINAL_NM_FOR_TARGET
@@ -68,9 +70,11 @@ case "$original" in
       # libtool has not relinked ld-new yet, but we cannot just use the
       # previous stage (because then the relinking would just never happen!).
       # So we take extra care to use prev-ld/ld-new *on recursive calls*.
+      eval LT_RCU="\${LT_RCU_$id}"
       test x"$LT_RCU" = x"1" && exec $scriptdir/../prev-$dir/$prog ${1+"$@"}
 
-      LT_RCU=1; export LT_RCU
+      eval LT_RCU_$id=1
+      export LT_RCU_$id
       $scriptdir/../$dir/$prog ${1+"$@"}
       result=$?
       exit $result
@@ -83,5 +87,3 @@ case "$original" in
     exec $original ${1+"$@"}
     ;;
 esac
-
-

@@ -1,3 +1,9 @@
+2010-11-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/46712
+	* exec-tool.in (id): New.
+	Check and export LT_RCU_$id instead of LT_RCU.
+
 2010-11-29  Zdenek Dvorak  <rakdver@kam.uniff.cz>
 
 	PR tree-optimization/46675
