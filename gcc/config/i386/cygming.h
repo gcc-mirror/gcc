@@ -118,8 +118,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_EXECUTABLE_SUFFIX ".exe"
 
-#include <stdio.h>
-
 #define TARGET_OS_CPP_BUILTINS()					\
   do									\
     {									\

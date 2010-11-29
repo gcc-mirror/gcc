@@ -1625,9 +1625,7 @@ vmsdbgout_finish (const char *main_input_filename ATTRIBUTE_UNUSED)
 #include <vms/stsdef.h>
 #include <vms/iodef.h>
 #include <vms/fatdef.h>
-#include <errno.h>
 #include <vms/descrip.h>
-#include <string.h>
 #include <unixlib.h>
 
 #define MAXPATH 256

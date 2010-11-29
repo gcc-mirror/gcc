@@ -1,3 +1,10 @@
+2010-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (check_deps_environment_vars): Use getenv instead of
+	GET_ENVIRONMENT.
+	* c-pch.c (O_BINARY): Don't define here.
+	* c-pragma.h: Include "cpplib.h" instead of <cpplib.h>.
+
 2010-11-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Pass &global_options to

@@ -38,17 +38,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "parse.h"
 #include "function.h"
 #include "ggc.h"
-#include "stdio.h"
 #include "cgraph.h"
 #include "tree-iterator.h"
 #include "vecprim.h"
 #include "tm.h"         /* FIXME: For gcc_obstack_init from defaults.h.  */
 #include "target.h"
-
-/* DOS brain-damage */
-#ifndef O_BINARY
-#define O_BINARY 0 /* MS-DOS brain-damage */
-#endif
 
 static tree make_method_value (tree);
 static tree build_java_method_type (tree, tree, int);

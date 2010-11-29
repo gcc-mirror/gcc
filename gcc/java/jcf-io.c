@@ -1,6 +1,6 @@
 /* Utility routines for finding and reading Java(TM) .class files.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -35,11 +35,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include <dirent.h>
 
 #include "zlib.h"
-
-/* DOS brain-damage */
-#ifndef O_BINARY
-#define O_BINARY 0 /* MS-DOS brain-damage */
-#endif
 
 int
 jcf_unexpected_eof (JCF *jcf, int count ATTRIBUTE_UNUSED)

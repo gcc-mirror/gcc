@@ -40,26 +40,11 @@ along with GCC; see the file COPYING3.  If not see
    file open.  Prefer either to valloc.  */
 #ifdef HAVE_MMAP_ANON
 # undef HAVE_MMAP_DEV_ZERO
-
-# include <sys/mman.h>
-# ifndef MAP_FAILED
-#  define MAP_FAILED -1
-# endif
-# if !defined (MAP_ANONYMOUS) && defined (MAP_ANON)
-#  define MAP_ANONYMOUS MAP_ANON
-# endif
 # define USING_MMAP
-
 #endif
 
 #ifdef HAVE_MMAP_DEV_ZERO
-
-# include <sys/mman.h>
-# ifndef MAP_FAILED
-#  define MAP_FAILED -1
-# endif
 # define USING_MMAP
-
 #endif
 
 #ifndef USING_MMAP

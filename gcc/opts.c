@@ -21,13 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
-
-#include <signal.h>
-
-#ifdef HAVE_SYS_RESOURCE_H
-# include <sys/resource.h>
-#endif
-
 #include "intl.h"
 #include "coretypes.h"
 #include "tm.h" /* Needed by rtl.h and used for DWARF2_DEBUGGING_INFO
@@ -1128,7 +1121,7 @@ print_specific_help (unsigned int include_flags,
     {
       const char *p;
 
-      GET_ENVIRONMENT (p, "COLUMNS");
+      p = getenv ("COLUMNS");
       if (p != NULL)
 	{
 	  int value = atoi (p);

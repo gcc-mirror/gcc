@@ -32,7 +32,6 @@ Note:
 
 */
 
-#include <stdio.h>
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

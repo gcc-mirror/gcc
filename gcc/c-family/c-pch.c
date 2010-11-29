@@ -472,10 +472,6 @@ c_common_no_more_pch (void)
 
 /* Handle #pragma GCC pch_preprocess, to load in the PCH file.  */
 
-#ifndef O_BINARY
-# define O_BINARY 0
-#endif
-
 void
 c_common_pch_pragma (cpp_reader *pfile, const char *name)
 {

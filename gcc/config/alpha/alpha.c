@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "debug.h"
 #include "langhooks.h"
-#include <splay-tree.h>
+#include "splay-tree.h"
 #include "cfglayout.h"
 #include "gimple.h"
 #include "tree-flow.h"

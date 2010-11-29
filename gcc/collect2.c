@@ -30,10 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include <signal.h>
-#if ! defined( SIGCHLD ) && defined( SIGCLD )
-#  define SIGCHLD SIGCLD
-#endif
 
 /* TARGET_64BIT may be defined to use driver specific functionality. */
 #undef TARGET_64BIT
@@ -822,7 +818,7 @@ static void
 prefix_from_env (const char *env, struct path_prefix *pprefix)
 {
   const char *p;
-  GET_ENVIRONMENT (p, env);
+  p = getenv (env);
 
   if (p)
     prefix_from_string (p, pprefix);

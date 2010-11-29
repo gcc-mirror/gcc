@@ -1,3 +1,19 @@
+2010-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* boehm.c: Include "config.h" instead of <config.h>.
+	* builtins.c: Don't include <stdarg.h>.
+	* class.c: Don't include "stdio.h".
+	(O_BINARY): Don't define here.
+	* jcf-depend.c: Don't include <assert.h>.
+	(jcf_dependency_set_dep_file, jcf_dependency_init,
+	jcf_dependency_write): Use gcc_assert.
+	* jcf-io.c (O_BINARY): Don't define here.
+	* jcf-path.c: Don't include "tm.h".
+	(jcf_path_init): Use getenv instead of GET_ENVIRONMENT.
+	* resource.c: Don't include "stdio.h".
+	(O_BINARY): Don't define here.
+	* verify-impl.c: Don't include <stdio.h>.
+
 2010-11-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* jcf-parse.c (java_parse_file): Take no arguments.

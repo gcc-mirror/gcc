@@ -1,5 +1,5 @@
 /* Definitions of Toshiba Media Processor
-   Copyright (C) 2001, 2002, 2003, 2005, 2006, 2007, 2009 Free
+   Copyright (C) 2001, 2002, 2003, 2005, 2006, 2007, 2009, 2010 Free
    Software Foundation, Inc.  Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include <stdio.h>
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

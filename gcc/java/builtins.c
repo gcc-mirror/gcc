@@ -36,7 +36,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "flags.h"
 #include "langhooks.h"
 #include "java-tree.h"
-#include <stdarg.h>
 
 /* FIXME: All these headers are necessary for sync_compare_and_swap.
    Front ends should never have to look at that.  */
