@@ -5,10 +5,10 @@
 /* { dg-options "-fconstant-string-class=MyTestString" } */
 /* { dg-options "-mno-constant-cfstrings -fconstant-string-class=MyTestString" { target *-*-darwin* } } */
 
-/* { dg-additional-sources "../objc-obj-c++-shared/Object1.m" } */
+/* { dg-additional-sources "../../objc-obj-c++-shared/Object1.m" } */
 
-#include "../objc-obj-c++-shared/Object1.h"
-#include "../objc-obj-c++-shared/next-mapping.h"
+#include "../../objc-obj-c++-shared/Object1.h"
+#include "../../objc-obj-c++-shared/next-mapping.h"
 
 #include <stdlib.h> /* For abort() */
 
@@ -31,6 +31,14 @@
 }
 @end
 
+#ifdef __NEXT_RUNTIME__
+#  ifdef NEXT_OBJC_USE_NEW_INTERFACE
+struct fudge_objc_class _MyTestStringClassReference;
+#  else
+struct objc_class _MyTestStringClassReference;
+#  endif
+#endif
+
 int main (void)
 {
   MyTestString *test_valid1 = @"test";
@@ -49,3 +57,15 @@ int main (void)
 
   return 0;
 }
+
+#ifdef __NEXT_RUNTIME__
+/* The MyTestString metaclass will need to be initialized before we can
+   send messages to strings.  */
+
+void testsuite_mytest_string_init (void) __attribute__((constructor));
+void testsuite_mytest_string_init (void) {
+  memcpy (&_MyTestStringClassReference,
+	  objc_getClass ("MyTestString"),
+	  sizeof (_MyTestStringClassReference));
+}
+#endif
