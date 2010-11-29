@@ -1,3 +1,7 @@
+2010-11-29  Jan Hubicka  <jh@suse.cz>
+
+	* collect2.c (main): Do not imply verbose output with LTO and linker plugin.
+
 2010-11-29  Dodji Seketeli  <dodji@redhat.com>
 
 	* dwarf2out.c (print_die): Print the address of the current DIE or
