@@ -9537,10 +9537,13 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	    {
 	      error ("reimplementation of class %qE",
 		     class_name);
-	      return error_mark_node;
+	      /* TODO: error message saying where it was previously
+		 implemented.  */
+	      break;
 	    }
-	implemented_classes = tree_cons (NULL_TREE, class_name,
-					 implemented_classes);
+	if (chain == NULL_TREE)
+	  implemented_classes = tree_cons (NULL_TREE, class_name,
+					   implemented_classes);
       }
 
       /* Reset for multiple classes per file.  */
