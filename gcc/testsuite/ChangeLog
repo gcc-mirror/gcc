@@ -1,5 +1,18 @@
 2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/exceptions-1.m: New.
+	* objc.dg/exceptions-2.m: New.
+	* objc.dg/exceptions-3.m: New.
+	* objc.dg/exceptions-4.m: New.
+	* objc.dg/exceptions-5.m: New.
+	* obj-c++.dg/exceptions-1.mm: New.
+	* obj-c++.dg/exceptions-2.mm: New.
+	* obj-c++.dg/exceptions-3.mm: New.
+	* obj-c++.dg/exceptions-4.mm: New.
+	* obj-c++.dg/exceptions-5.mm: New.
+
+2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* obj-c++.dg/property/at-property-1.mm: Fixed testcase.
 	* obj-c++.dg/property/at-property-16.mm: Fixed testcase.
 	* obj-c++.dg/property/at-property-20.mm: Fixed testcase.

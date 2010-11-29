@@ -1,3 +1,12 @@
+2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_parser_objc_try_catch_statement): Renamed to
+	c_parser_objc_try_catch_finally_statement for consistency with the
+	C++ parser.  Parse @catch(...) and pass NULL_TREE to
+	objc_begin_catch_clause() in that case.  Improved error recovery.
+	Reorganized code to be almost identical to
+	cp_parser_objc_try_catch_finally_statement.
+	
 2010-11-29  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR tree-optimization/46621
