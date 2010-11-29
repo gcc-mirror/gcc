@@ -1,3 +1,10 @@
+2010-11-29  Richard Henderson  <rth@redhat.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* src/x86/sysv.S (FDE_ENCODING, FDE_ENCODE): Define.
+	(.eh_frame): Use FDE_ENCODING.
+	(.LASFDE1, .LASFDE2, LASFDE3): Simplify with FDE_ENCODE.
+
 2010-11-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libffi-dg.exp: Rename ...
