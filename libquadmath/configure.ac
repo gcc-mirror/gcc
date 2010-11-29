@@ -21,12 +21,12 @@ AC_CONFIG_HEADER(config.h)
 # Do not delete or change the following two lines.  For why, see
 # http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html
 AC_CANONICAL_SYSTEM
+ACX_NONCANONICAL_TARGET
+
 target_alias=${target_alias-$host_alias}
+AC_SUBST(target_alias)
 
 AM_INIT_AUTOMAKE([1.9.0 foreign subdir-objects no-dist -Wall -Werror])
-
-AC_PROG_CC
-AM_PROG_CC_C_O
 
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 AC_ARG_ENABLE(version-specific-runtime-libs,
@@ -39,6 +39,7 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
 [version_specific_libs=no])
 AC_MSG_RESULT($version_specific_libs)
 
+GCC_NO_EXECUTABLES
 
 # Configure libtool
 AM_PROG_LIBTOOL
@@ -47,6 +48,26 @@ AC_SUBST(enable_static)
 
 AM_MAINTAINER_MODE
 AM_ENABLE_MULTILIB(, ..)
+
+AC_LANG_C
+# The same as in boehm-gc and libstdc++. Have to borrow it from there.
+# We must force CC to /not/ be precious variables; otherwise
+# the wrong, non-multilib-adjusted value will be used in multilibs.
+# As a side effect, we have to subst CFLAGS ourselves.
+
+m4_rename([_AC_ARG_VAR_PRECIOUS],[real_PRECIOUS])
+m4_define([_AC_ARG_VAR_PRECIOUS],[])
+AC_PROG_CC
+m4_rename_force([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
+
+AC_SUBST(CFLAGS)
+
+AM_PROG_CC_C_O
+
+if test "x$GCC" != "xyes"; then
+  AC_MSG_ERROR([libquadmath must be built with GCC])
+fi
+AC_PROG_CPP
 
 # Calculate toolexeclibdir
 # Also toolexecdir, though it's only used in toolexeclibdir
@@ -83,30 +104,36 @@ AC_CHECK_LIB([m],[cbrtl],[AC_DEFINE([HAVE_CBRTL],[1],[libm includes cbrtl])])
 
 # Check for symbol versioning (copied from libssp).
 AC_MSG_CHECKING([whether symbol versioning is supported])
-save_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
-cat > conftest.map <<EOF
+if test x$gcc_no_link = xyes; then
+  # If we cannot link, we cannot build shared libraries, so do not use
+  # symbol versioning.
+  quadmath_use_symver=no
+else
+  save_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
+  cat > conftest.map <<EOF
 FOO_1.0 {
   global: *foo*; bar; local: *;
 };
 EOF
-AC_TRY_LINK([int foo;],[],[quadmath_use_symver=gnu],[quadmath_use_symver=no])
-if test x$quadmath_use_symver = xno; then
-  case "$target_os" in
-    solaris2*)
-      LDFLAGS="$save_LDFLAGS"
-      LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
-      # Sun ld cannot handle wildcards and treats all entries as undefined.
-      cat > conftest.map <<EOF
+  AC_TRY_LINK([int foo;],[],[quadmath_use_symver=gnu],[quadmath_use_symver=no])
+  if test x$quadmath_use_symver = xno; then
+    case "$target_os" in
+      solaris2*)
+        LDFLAGS="$save_LDFLAGS"
+        LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
+        # Sun ld cannot handle wildcards and treats all entries as undefined.
+        cat > conftest.map <<EOF
 FOO_1.0 {
   global: foo; local: *;
 };
 EOF
-      AC_TRY_LINK([int foo;],[],[quadmath_use_symver=sun],[quadmath_use_symver=no])
-      ;;
-  esac
+        AC_TRY_LINK([int foo;],[],[quadmath_use_symver=sun],[quadmath_use_symver=no])
+        ;;
+    esac
+  fi
+  LDFLAGS="$save_LDFLAGS"
 fi
-LDFLAGS="$save_LDFLAGS"
 AC_MSG_RESULT($quadmath_use_symver)
 AM_CONDITIONAL(LIBQUAD_USE_SYMVER, [test "x$quadmath_use_symver" != xno])
 AM_CONDITIONAL(LIBQUAD_USE_SYMVER_GNU, [test "x$quadmath_use_symver" = xgnu])

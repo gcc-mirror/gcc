@@ -43,14 +43,15 @@ DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(srcdir)/config.h.in $(srcdir)/../mkinstalldirs \
 	$(srcdir)/../depcomp $(am__include_HEADERS_DIST)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../ltoptions.m4 \
+	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
+	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
-	$(top_srcdir)/../config/override.m4 \
-	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
-	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
-	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/no-executables.m4 \
+	$(top_srcdir)/../config/override.m4 $(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -122,6 +123,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @BUILD_LIBQUADMATH_TRUE@	math/truncq.lo math/floorq.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/powq.lo
 libquadmath_la_OBJECTS = $(am_libquadmath_la_OBJECTS)
+libquadmath_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libquadmath_la_LDFLAGS) $(LDFLAGS) -o $@
 @BUILD_LIBQUADMATH_TRUE@am_libquadmath_la_rpath = -rpath \
 @BUILD_LIBQUADMATH_TRUE@	$(toolexeclibdir)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -261,6 +265,7 @@ sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
 target_cpu = @target_cpu@
+target_noncanonical = @target_noncanonical@
 target_os = @target_os@
 target_vendor = @target_vendor@
 toolexecdir = @toolexecdir@
@@ -277,14 +282,12 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_FALSE@version_dep = 
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_GNU_TRUE@@LIBQUAD_USE_SYMVER_TRUE@version_dep = $(srcdir)/quadmath.map
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@version_dep = quadmath.map-sun
-@BUILD_LIBQUADMATH_TRUE@LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
-@BUILD_LIBQUADMATH_TRUE@            -no-undefined
-
 @BUILD_LIBQUADMATH_TRUE@toolexeclib_LTLIBRARIES = libquadmath.la
 @BUILD_LIBQUADMATH_TRUE@libquadmath_la_LIBADD = 
-@BUILD_LIBQUADMATH_TRUE@libquadmath_la_LDFLAGS = $(LTLDFLAGS) -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(version_arg) -lm
-@BUILD_LIBQUADMATH_TRUE@libquadmath_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
-@BUILD_LIBQUADMATH_TRUE@libquadmath_la_DEPENDENCIES = $(version_dep)
+@BUILD_LIBQUADMATH_TRUE@libquadmath_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
+@BUILD_LIBQUADMATH_TRUE@			 $(version_arg) -no-undefined -bindir "$(bindir)" -lm
+
+@BUILD_LIBQUADMATH_TRUE@libquadmath_la_DEPENDENCIES = $(version_dep) $(libquadmath_la_LIBADD)
 @BUILD_LIBQUADMATH_TRUE@include_HEADERS = quadmath.h quadmath_weak.h
 @BUILD_LIBQUADMATH_TRUE@libquadmath_la_SOURCES = \
 @BUILD_LIBQUADMATH_TRUE@  gdtoa/arith.h gdtoa/gdtoa_fltrnds.h gdtoa/gd_qnan.h gdtoa/gdtoaimp.h \
@@ -307,6 +310,48 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 @BUILD_LIBQUADMATH_TRUE@  math/nanq.c math/tgammaq.c math/finiteq.c math/nextafterq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/truncq.c math/floorq.c math/powq.c
 
+
+# Work around what appears to be a GNU make bug handling MAKEFLAGS
+# values defined in terms of make variables, as is the case for CC and
+# friends when we are called from the top level Makefile.
+@BUILD_LIBQUADMATH_TRUE@AM_MAKEFLAGS = \
+@BUILD_LIBQUADMATH_TRUE@	"AR_FLAGS=$(AR_FLAGS)" \
+@BUILD_LIBQUADMATH_TRUE@	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
+@BUILD_LIBQUADMATH_TRUE@	"CFLAGS=$(CFLAGS)" \
+@BUILD_LIBQUADMATH_TRUE@	"CXXFLAGS=$(CXXFLAGS)" \
+@BUILD_LIBQUADMATH_TRUE@	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
+@BUILD_LIBQUADMATH_TRUE@	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
+@BUILD_LIBQUADMATH_TRUE@	"INSTALL=$(INSTALL)" \
+@BUILD_LIBQUADMATH_TRUE@	"INSTALL_DATA=$(INSTALL_DATA)" \
+@BUILD_LIBQUADMATH_TRUE@	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
+@BUILD_LIBQUADMATH_TRUE@	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
+@BUILD_LIBQUADMATH_TRUE@	"JC1FLAGS=$(JC1FLAGS)" \
+@BUILD_LIBQUADMATH_TRUE@	"LDFLAGS=$(LDFLAGS)" \
+@BUILD_LIBQUADMATH_TRUE@	"LIBCFLAGS=$(LIBCFLAGS)" \
+@BUILD_LIBQUADMATH_TRUE@	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
+@BUILD_LIBQUADMATH_TRUE@	"MAKE=$(MAKE)" \
+@BUILD_LIBQUADMATH_TRUE@	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
+@BUILD_LIBQUADMATH_TRUE@	"PICFLAG=$(PICFLAG)" \
+@BUILD_LIBQUADMATH_TRUE@	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
+@BUILD_LIBQUADMATH_TRUE@	"SHELL=$(SHELL)" \
+@BUILD_LIBQUADMATH_TRUE@	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
+@BUILD_LIBQUADMATH_TRUE@	"exec_prefix=$(exec_prefix)" \
+@BUILD_LIBQUADMATH_TRUE@	"infodir=$(infodir)" \
+@BUILD_LIBQUADMATH_TRUE@	"libdir=$(libdir)" \
+@BUILD_LIBQUADMATH_TRUE@	"prefix=$(prefix)" \
+@BUILD_LIBQUADMATH_TRUE@	"includedir=$(includedir)" \
+@BUILD_LIBQUADMATH_TRUE@	"AR=$(AR)" \
+@BUILD_LIBQUADMATH_TRUE@	"AS=$(AS)" \
+@BUILD_LIBQUADMATH_TRUE@	"CC=$(CC)" \
+@BUILD_LIBQUADMATH_TRUE@	"CXX=$(CXX)" \
+@BUILD_LIBQUADMATH_TRUE@	"LD=$(LD)" \
+@BUILD_LIBQUADMATH_TRUE@	"LIBCFLAGS=$(LIBCFLAGS)" \
+@BUILD_LIBQUADMATH_TRUE@	"NM=$(NM)" \
+@BUILD_LIBQUADMATH_TRUE@	"PICFLAG=$(PICFLAG)" \
+@BUILD_LIBQUADMATH_TRUE@	"RANLIB=$(RANLIB)" \
+@BUILD_LIBQUADMATH_TRUE@	"DESTDIR=$(DESTDIR)"
+
+@BUILD_LIBQUADMATH_TRUE@MAKEOVERRIDES = 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

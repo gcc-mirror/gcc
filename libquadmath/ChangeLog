@@ -1,3 +1,21 @@
+2010-11-29  Kai Tietz  <kai.tietz@onevision.com>
+
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* configure.ac (ACX_NONCANONICAL_TARGET): Call it.
+	(target_alias): Use AC_SUBST for it.
+	(GCC_NO_EXECUTABLES): Call it.
+	(AC_PROG_CC): Improve multilib handling.
+	Check that gcc is used for compilation.
+	Use pattern from libssp for symbol versioning checking.
+	* Makefile.am (LTLDFLAGS): Removed.
+	(libquadmath_la_LDFLAGS): Add -no-undefined.
+	(libquadmath_la_LINK): Commented out.
+	(libquadmath_la_DEPENDENCIES): Add libquadmath_la_LIBADD.
+	(AM_MAKEFLAGS): Add hack for argument passing by top-level.
+	(MAKEOVERRIDES): New.
+	* aclocal.m4: Regenerated.
+
 2010-11-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.am (libquadmath_la_LIBADD): Move -lm ...
