@@ -826,7 +826,7 @@ replace_inc_dec (rtx *r, void *d)
     case POST_INC:
       {
 	rtx r1 = XEXP (x, 0);
-	rtx c = gen_int_mode (Pmode, data->size);
+	rtx c = gen_int_mode (data->size, Pmode);
 	emit_insn_before (gen_rtx_SET (Pmode, r1, 
 				       gen_rtx_PLUS (Pmode, r1, c)),
 			  data->insn);
@@ -837,7 +837,7 @@ replace_inc_dec (rtx *r, void *d)
     case POST_DEC:
       {
 	rtx r1 = XEXP (x, 0);
-	rtx c = gen_int_mode (Pmode, -data->size);
+	rtx c = gen_int_mode (-data->size, Pmode);
 	emit_insn_before (gen_rtx_SET (Pmode, r1, 
 				       gen_rtx_PLUS (Pmode, r1, c)),
 			  data->insn);
