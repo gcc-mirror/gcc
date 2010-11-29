@@ -1,3 +1,9 @@
+2010-11-29  Zdenek Dvorak  <rakdver@kam.uniff.cz>
+
+	PR tree-optimization/46675
+	* tree-ssa-loop-niter.c (split_to_var_and_offset): Avoid overflow
+	in offset calculation.
+
 2010-11-29  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/46258
