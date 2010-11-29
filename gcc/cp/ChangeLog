@@ -1,5 +1,11 @@
 2010-11-29  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/42260
+	* call.c (add_builtin_candidate): At this point the resulting type
+    	of an indirection operator should be complete.
+
+2010-11-29  Dodji Seketeli  <dodji@redhat.com>
+
 	PR c++/45383
 	Reverted patch for PR c++/42260
 	* cp-tree.h (lookup_conversions): Reverted "Add new bool parameter to

@@ -1,5 +1,12 @@
 2010-11-29  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/42260
+	* g++.dg/conversion/cast2.C: New test.
+	* g++.dg/conversion/cond4/C: Likewise. This ensures we don't regress on
+	PR c++/45383
+
+2010-11-29  Dodji Seketeli  <dodji@redhat.com>
+
 	PR c++/45383
 	Reverted patch for PR c++/42260
 	* conversion/cast2.C: Reverted new test.

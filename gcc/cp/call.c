@@ -2022,6 +2022,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 
     case INDIRECT_REF:
       if (TREE_CODE (type1) == POINTER_TYPE
+	  && is_complete (TREE_TYPE (type1))
 	  && (TYPE_PTROB_P (type1)
 	      || TREE_CODE (TREE_TYPE (type1)) == FUNCTION_TYPE))
 	break;
