@@ -1,3 +1,16 @@
+2010-11-29  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc/testsuite/objc.dg/strings-1.m: Move to...
+	* gcc/testsuite/objc.dg/strings/strings-1.m: ... here. Update paths.
+	* gcc/testsuite/objc.dg/strings-2.m: Move to ...
+	* gcc/testsuite/objc.dg/strings/strings-2.m ... here, provide a 
+	constructor and class reference for NeXT runtime.  Update paths.
+	* gcc/testsuite/obj-c++.dg/strings-1.m: Move to...
+	* gcc/testsuite/obj-c++.dg/strings/strings-1.m: ... here. Update paths.
+	* gcc/testsuite/obj-c++.dg/strings-2.m: Move to ...
+	* gcc/testsuite/obj-c__.dg/strings/strings-2.m ... here, provide a 
+	constructor and class reference for NeXT runtime.  Update paths.
+	
 2010-11-29  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42260
