@@ -1,4 +1,11 @@
 2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+	    Mike Stump  <mikestump@comcast.net>
+
+	Allow 'make check-objc -j2'
+	* Make-lang.in (lang_checks_parallelized): New.
+	(check_objc_parallelize): New.
+	
+2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (start_class): When a class is reimplemented,
 	generate an error and avoid adding the class to the list of

@@ -104,6 +104,12 @@ objc.tags: force
 
 lang_checks += check-objc
 
+# The following allows you to do 'make check-objc -j2'.  The
+# execute.exp tests will be run in parallel with all the other ones.
+# This is tuned for '-j2'.
+lang_checks_parallelized += check-objc
+check_objc_parallelize = execute.exp
+
 #
 # Install hooks:
 # cc1obj is installed elsewhere as part of $(COMPILERS).
