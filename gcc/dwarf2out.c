@@ -8450,11 +8450,14 @@ print_die (dw_die_ref die, FILE *outfile)
   unsigned ix;
 
   print_spaces (outfile);
-  fprintf (outfile, "DIE %4ld: %s\n",
-	   die->die_offset, dwarf_tag_name (die->die_tag));
+  fprintf (outfile, "DIE %4ld: %s (%p)\n",
+	   die->die_offset, dwarf_tag_name (die->die_tag),
+	   (void*) die);
   print_spaces (outfile);
   fprintf (outfile, "  abbrev id: %lu", die->die_abbrev);
-  fprintf (outfile, " offset: %ld\n", die->die_offset);
+  fprintf (outfile, " offset: %ld", die->die_offset);
+  fprintf (outfile, " mark: %d\n", die->die_mark);
+
   if (dwarf_version >= 4 && die->die_id.die_type_node)
     {
       print_spaces (outfile);
@@ -8518,6 +8521,7 @@ print_die (dw_die_ref die, FILE *outfile)
 		         AT_ref (a)->die_id.die_symbol);
 	      else
 		fprintf (outfile, "die -> %ld", AT_ref (a)->die_offset);
+	      fprintf (outfile, " (%p)", (void *) AT_ref (a));
 	    }
 	  else
 	    fprintf (outfile, "die -> <null>");
