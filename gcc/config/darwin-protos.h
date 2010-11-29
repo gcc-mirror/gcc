@@ -85,12 +85,26 @@ extern tree darwin_handle_weak_import_attribute (tree *node, tree name,
 extern void machopic_output_stub (FILE *, const char *, const char *);
 extern void darwin_globalize_label (FILE *, const char *);
 extern void darwin_assemble_visibility (tree, int);
+
 extern void darwin_asm_output_dwarf_delta (FILE *, int, const char *,
 					   const char *);
 extern void darwin_asm_output_dwarf_offset (FILE *, int, const char *,
 					    section *);
+
+extern void darwin_asm_declare_object_name (FILE *, const char *, tree);
 extern void darwin_asm_declare_constant_name (FILE *, const char *,
 					      const_tree, HOST_WIDE_INT);
+
+extern void darwin_output_aligned_bss (FILE *, tree, const char *,
+				       unsigned HOST_WIDE_INT, unsigned int);
+
+extern void darwin_asm_output_aligned_decl_local (FILE *, tree, const char *, 
+						  unsigned HOST_WIDE_INT, 
+						  unsigned int);
+extern void darwin_asm_output_aligned_decl_common (FILE *, tree, const char *,
+						   unsigned HOST_WIDE_INT, 
+						   unsigned int);
+
 extern bool darwin_binds_local_p (const_tree);
 extern void darwin_cpp_builtins (struct cpp_reader *);
 
@@ -104,6 +118,7 @@ extern tree darwin_build_constant_cfstring (tree);
 extern void darwin_enter_string_into_cfstring_table (tree);
 
 extern void darwin_asm_output_anchor (rtx symbol);
+extern bool darwin_use_anchors_for_symbol_p (const_rtx symbol);
 extern bool darwin_kextabi_p (void);
 extern void darwin_override_options (void);
 extern void darwin_patch_builtins (void);

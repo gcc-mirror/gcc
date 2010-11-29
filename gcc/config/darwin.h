@@ -529,33 +529,15 @@ extern GTY(()) int darwin_ms_struct;
 		  (CLASS_NAME), (SEL_NAME));				\
      } while (0)
 
+#undef ASM_DECLARE_OBJECT_NAME
+#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL) \
+	darwin_asm_declare_object_name ((FILE), (NAME), (DECL))
+
 /* The RTTI data (e.g., __ti4name) is common and public (and static),
    but it does need to be referenced via indirect PIC data pointers.
    The machopic_define_symbol calls are telling the machopic subsystem
    that the name *is* defined in this module, so it doesn't need to
    make them indirect.  */
-
-#undef ASM_DECLARE_OBJECT_NAME
-#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
-  do {									\
-    const char *xname = NAME;						\
-    if (GET_CODE (XEXP (DECL_RTL (DECL), 0)) != SYMBOL_REF)		\
-      xname = IDENTIFIER_POINTER (DECL_NAME (DECL));			\
-    if (! DECL_WEAK (DECL)						\
-        && ((TREE_STATIC (DECL)						\
-	     && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))		\
-            || DECL_INITIAL (DECL)))					\
-        machopic_define_symbol (DECL_RTL (DECL));			\
-    if ((TREE_STATIC (DECL)						\
-	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))		\
-        || DECL_INITIAL (DECL))						\
-      (* targetm.encode_section_info) (DECL, DECL_RTL (DECL), false);	\
-    ASM_OUTPUT_LABEL (FILE, xname);					\
-    /* Darwin doesn't support zero-size objects, so give them a		\
-       byte.  */							\
-    if (tree_low_cst (DECL_SIZE_UNIT (DECL), 1) == 0)			\
-      assemble_zeros (1);						\
-  } while (0)
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do {									\
@@ -580,7 +562,6 @@ extern GTY(()) int darwin_ms_struct;
 /* Wrap new method names in quotes so the assembler doesn't gag.
    Make Objective-C internal symbols local and in doing this, we need 
    to accommodate the name mangling done by c++ on file scope locals.  */
-
 
 int darwin_label_is_anonymous_local_objc_name (const char *name);
 
@@ -633,27 +614,7 @@ int darwin_label_is_anonymous_local_objc_name (const char *name);
 #undef	ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) != 0)			\
-    fprintf (FILE, "\t%s %d\n", ALIGN_ASM_OP, (LOG))
-
-/* Ensure correct alignment of bss data.  */
-
-#undef	ASM_OUTPUT_ALIGNED_DECL_LOCAL
-#define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN)	\
-  do {									\
-    unsigned HOST_WIDE_INT _new_size = SIZE;				\
-    fputs ("\t.lcomm ", (FILE));						\
-    assemble_name ((FILE), (NAME));					\
-    if (_new_size == 0) _new_size = 1;					\
-    fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n", _new_size,	\
-	     floor_log2 ((ALIGN) / BITS_PER_UNIT));			\
-    if ((DECL) && ((TREE_STATIC (DECL)					\
-	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))		\
-        || DECL_INITIAL (DECL)))					\
-      {									\
-	(* targetm.encode_section_info) (DECL, DECL_RTL (DECL), false);	\
-	machopic_define_symbol (DECL_RTL (DECL));			\
-      }									\
-  } while (0)
+    fprintf (FILE, "\t%s\t%d\n", ALIGN_ASM_OP, (LOG))
 
 /* The maximum alignment which the object file format can support in
    bits.  For Mach-O, this is 2^15 bytes.  */
@@ -661,8 +622,29 @@ int darwin_label_is_anonymous_local_objc_name (const char *name);
 #undef	MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT (0x8000 * 8)
 
+#define L2_MAX_OFILE_ALIGNMENT 15
+
+/*  These are the three variants that emit referenced blank space.  */
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)		\
+	darwin_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
+
+#undef	ASM_OUTPUT_ALIGNED_DECL_LOCAL
+#define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN)	\
+	darwin_asm_output_aligned_decl_local				\
+				  ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
+
+#undef  ASM_OUTPUT_ALIGNED_DECL_COMMON
+#define ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN)	\
+	darwin_asm_output_aligned_decl_common				\
+				   ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
+
 /* The generic version, archs should over-ride where required.  */
 #define MACHOPIC_NL_SYMBOL_PTR_SECTION ".non_lazy_symbol_pointer"
+
+/* Private flag applied to disable section-anchors in a particular section.
+   This needs to be kept in sync with the flags used by varasm.c (defined in
+   output.h).  */
+#define SECTION_NO_ANCHOR 0x2000000
 
 /* Declare the section variables.  */
 #ifndef USED_FOR_TARGET
@@ -911,17 +893,10 @@ void add_framework_path (char *);
 #undef GOMP_SELF_SPECS
 #define GOMP_SELF_SPECS ""
 
-/* Darwin can't support anchors until we can cope with the adjustments
-   to size that ASM_DECLARE_OBJECT_NAME and ASM_DECLARE_CONSTANT_NAME
-   when outputting members of an anchor block and the linker can be
-   taught to keep them together or we find some other suitable
-   code-gen technique.  */
-
-#if 0
-#define TARGET_ASM_OUTPUT_ANCHOR darwin_asm_output_anchor
-#else
+/* Darwin disables section anchors by default.  
+   They should be enabled per arch where support exists in that arch.  */
 #define TARGET_ASM_OUTPUT_ANCHOR NULL
-#endif
+#define DARWIN_SECTION_ANCHORS 0
 
 /* Attempt to turn on execute permission for the stack.  This may be
     used by TARGET_TRAMPOLINE_INIT if the target needs it (that is,
