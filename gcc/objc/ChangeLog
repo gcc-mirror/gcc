@@ -1,5 +1,9 @@
 2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_maybe_build_component_ref): Removed TODO.
+
+2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (objc_eh_runtime_type): Avoid ICE if error_mark_node
 	is passed as argument.
 	(objc_begin_catch_clause): Added code to deal with an
