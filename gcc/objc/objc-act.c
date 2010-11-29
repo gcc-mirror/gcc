@@ -12399,6 +12399,22 @@ objc_demangle (const char *mangled)
 {
   char *demangled, *cp;
 
+  /* First of all, if the name is too short it can't be an Objective-C
+     mangled method name.  */
+  if (mangled[0] == '\0' || mangled[1] == '\0' || mangled[2] == '\0')
+    return NULL;
+
+  /* If the name looks like an already demangled one, return it
+     unchanged.  This should only happen on Darwin, where method names
+     are mangled differently into a pretty-print form (such as
+     '+[NSObject class]', see darwin.h).  In that case, demangling is
+     a no-op, but we need to return the demangled name if it was an
+     ObjC one, and return NULL if not.  We should be safe as no C/C++
+     function can start with "-[" or "+[".  */
+  if ((mangled[0] == '-' || mangled[0] == '+')
+      && (mangled[1] == '['))
+    return mangled;
+
   if (mangled[0] == '_' &&
       (mangled[1] == 'i' || mangled[1] == 'c') &&
       mangled[2] == '_')
