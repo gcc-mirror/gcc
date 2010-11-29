@@ -27,8 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "vecprim.h"
 #include "vecir.h"
 #include "ggc.h"
-#include "tm.h"
-#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "tree-ssa-operands.h"
 #include "tree-ssa-alias.h"

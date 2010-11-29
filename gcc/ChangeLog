@@ -1,3 +1,9 @@
+2010-11-29  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR tree-optimization/46621
+	* gimple.h: Don't include tm.h or hard-reg-set.h .
+	* Makefile.in (GIMPLE_H): Remove $(TM_H).
+
 2010-11-27  Jan Hubicka  <jh@suse.cz>
 
 	* dwarf2out.c (dwarf2out_begin_function): Set cold_text_section
