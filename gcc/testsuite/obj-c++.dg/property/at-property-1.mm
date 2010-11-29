@@ -15,9 +15,6 @@
 @property (readonly,) int f;    /* { dg-error "expected identifier" } */
 @property (xxx) int g;          /* { dg-error "unknown property attribute" } */
 @property (readonly,xxx) int h; /* { dg-error "unknown property attribute" } */
-/* FIXME - there is a problem with the testuite in running the following test.  The compiler
-   generates the messages, but the testsuite still complains.  */
-/*@property ( int i;*/          /* dg-error "unknown property attribute" */
-                                /* dg-error "expected ... "       "" { target *-*-* } 18 */
-                                /* dg-error "expected identfier " "" { target *-*-* } 18 */
+@property ( int i;              /* { dg-error "expected identifier" } */
+                                /* { dg-error "expected ... "       "" { target *-*-* } 18 } */
 @end
