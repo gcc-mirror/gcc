@@ -1,3 +1,11 @@
+2010-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/46337
+	Backport from mainline
+	2009-04-20  Ian Lance Taylor  <iant@google.com>
+
+	* dse.c (replace_inc_dec): Reverse parameters to gen_int_mode.
+
 2010-10-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/45946
