@@ -1,5 +1,11 @@
 2010-11-29  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/45383
+	Reverted patch for PR c++/42260
+	* conversion/cast2.C: Reverted new test.
+
+2010-11-29  Dodji Seketeli  <dodji@redhat.com>
+
 	PR debug/46101
 	* g++.dg/debug/dwarf2/typedef5.C: New test
 
