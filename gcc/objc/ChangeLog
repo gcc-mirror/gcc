@@ -1,3 +1,9 @@
+2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_demangle): Return immediately if the string is
+	too short.  Detect names that do not need demangling, and return
+	them unchanged.
+
 2010-11-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented optional properties.
