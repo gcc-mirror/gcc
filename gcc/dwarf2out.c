@@ -6264,6 +6264,7 @@ static void remove_child_TAG (dw_die_ref, enum dwarf_tag);
 static void add_child_die (dw_die_ref, dw_die_ref);
 static dw_die_ref new_die (enum dwarf_tag, dw_die_ref, tree);
 static dw_die_ref lookup_type_die (tree);
+static dw_die_ref lookup_type_die_strip_naming_typedef (tree);
 static void equate_type_number_to_die (tree, dw_die_ref);
 static hashval_t decl_die_table_hash (const void *);
 static int decl_die_table_eq (const void *, const void *);
@@ -8031,6 +8032,27 @@ static inline dw_die_ref
 lookup_type_die (tree type)
 {
   return TYPE_SYMTAB_DIE (type);
+}
+
+/* Like lookup_type_die, but if type is an anonymous type named by a
+   typedef[1], return the DIE of the anonymous type instead the one of
+   the naming typedef.  This is because in gen_typedef_die, we did
+   equate the anonymous struct named by the typedef with the DIE of
+   the naming typedef. So by default, lookup_type_die on an anonymous
+   struct yields the DIE of the naming typedef.
+
+   [1]: Read the comment of is_naming_typedef_decl to learn about what
+   a naming typedef is.  */
+
+static inline dw_die_ref
+lookup_type_die_strip_naming_typedef (tree type)
+{
+  dw_die_ref die = lookup_type_die (type);
+  if (TREE_CODE (type) == RECORD_TYPE
+      && die->die_tag == DW_TAG_typedef
+      && is_naming_typedef_decl (TYPE_NAME (type)))
+    die = get_AT_ref (die, DW_AT_type);
+  return die;
 }
 
 /* Equate a DIE to a given type specifier.  */
@@ -17887,7 +17909,7 @@ scope_die_for (tree t, dw_die_ref context_die)
 	    scope_die = comp_unit_die ();
 	}
       else
-	scope_die = lookup_type_die (containing_scope);
+	scope_die = lookup_type_die_strip_naming_typedef (containing_scope);
     }
   else
     scope_die = context_die;
@@ -18714,7 +18736,7 @@ gen_type_die_for_member (tree type, tree member, dw_die_ref context_die)
       gcc_assert (!decl_ultimate_origin (member));
 
       push_decl_scope (type);
-      type_die = lookup_type_die (type);
+      type_die = lookup_type_die_strip_naming_typedef (type);
       if (TREE_CODE (member) == FUNCTION_DECL)
 	gen_subprogram_die (member, type_die);
       else if (TREE_CODE (member) == FIELD_DECL)

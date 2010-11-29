@@ -1,3 +1,11 @@
+2010-11-29  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/46101
+	* dwarf2out.c (lookup_type_die_strip_naming_typedef): New
+	function.
+    	(scope_die_for, gen_type_die_for_member): Replace uses of
+	lookup_type_die with use of lookup_type_die_strip_naming_typedef.
+
 2010-11-29  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin.c (darwin_mergeable_string_section): Remove blank line.
