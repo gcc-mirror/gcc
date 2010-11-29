@@ -1,3 +1,10 @@
+2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (cp_parser_objc_try_catch_finally_statement): Parse
+	@catch(...)  and pass NULL_TREE to objc_begin_catch_clause() in
+	that case.  Improved error recovery.  Reorganized code to be
+	almost identical to c_parser_objc_try_catch_finally_statement.
+
 2010-11-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc++/46222

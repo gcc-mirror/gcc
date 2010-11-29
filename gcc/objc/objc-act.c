@@ -5024,7 +5024,14 @@ static GTY(()) tree objc_eh_personality_decl;
 tree
 objc_eh_runtime_type (tree type)
 {
-  return add_objc_string (OBJC_TYPE_NAME (TREE_TYPE (type)), class_names);
+  /* Use 'ErrorMarkNode' as class name when error_mark_node is found
+     to prevent an ICE.  Note that we know that the compiler will
+     terminate with an error and this 'ErrorMarkNode' class name will
+     never be actually used.  */
+  if (type == error_mark_node)
+    return add_objc_string (get_identifier ("ErrorMarkNode"), class_names);
+  else
+    return add_objc_string (OBJC_TYPE_NAME (TREE_TYPE (type)), class_names);
 }
 
 tree
@@ -5355,7 +5362,9 @@ objc_begin_try_stmt (location_t try_locus, tree body)
 
 /* Called just after parsing "@catch (parm)".  Open a binding level,
    enter DECL into the binding level, and initialize it.  Leave the
-   binding level open while the body of the compound statement is parsed.  */
+   binding level open while the body of the compound statement is
+   parsed.  If DECL is NULL_TREE, then we are compiling "@catch(...)"
+   which we compile as "@catch(id tmp_variable)".  */
 
 void
 objc_begin_catch_clause (tree decl)
@@ -5365,46 +5374,99 @@ objc_begin_catch_clause (tree decl)
   /* Begin a new scope that the entire catch clause will live in.  */
   compound = c_begin_compound_stmt (true);
 
-  /* The parser passed in a PARM_DECL, but what we really want is a VAR_DECL.  */
-  decl = build_decl (input_location,
-		     VAR_DECL, DECL_NAME (decl), TREE_TYPE (decl));
-  lang_hooks.decls.pushdecl (decl);
+  /* Create the appropriate declaration for the argument.  */
+ if (decl == error_mark_node)
+   type = error_mark_node;
+ else
+   {
+     if (decl == NULL_TREE)
+       {
+	 /* If @catch(...) was specified, create a temporary variable of
+	    type 'id' and use it.  */
+	 decl = objc_create_temporary_var (objc_object_type, "__objc_generic_catch_var");
+	 DECL_SOURCE_LOCATION (decl) = input_location;
+       }
+     else
+       {
+	 /* The parser passed in a PARM_DECL, but what we really want is a VAR_DECL.  */
+	 decl = build_decl (input_location,
+			    VAR_DECL, DECL_NAME (decl), TREE_TYPE (decl));
+       }
+     lang_hooks.decls.pushdecl (decl);
 
-  /* Since a decl is required here by syntax, don't warn if its unused.  */
-  /* ??? As opposed to __attribute__((unused))?  Anyway, this appears to
-     be what the previous objc implementation did.  */
-  TREE_USED (decl) = 1;
-  DECL_READ_P (decl) = 1;
+     /* Mark the declaration as used so you never any warnings whether
+	you use the exception argument or not.  TODO: Implement a
+	-Wunused-exception-parameter flag, which would cause warnings
+	if exception parameter is not used.  */
+     TREE_USED (decl) = 1;
+     DECL_READ_P (decl) = 1;
 
-  /* Verify that the type of the catch is valid.  It must be a pointer
-     to an Objective-C class, or "id" (which is catch-all).  */
-  type = TREE_TYPE (decl);
+     type = TREE_TYPE (decl);
+   }
 
-  if (POINTER_TYPE_P (type) && objc_is_object_id (TREE_TYPE (type)))
-    type = NULL;
-  else if (!POINTER_TYPE_P (type) || !TYPED_OBJECT (TREE_TYPE (type)))
+ /* Verify that the type of the catch is valid.  It must be a pointer
+    to an Objective-C class, or "id" (which is catch-all).  */
+ if (type == error_mark_node)
+   {
+     ;/* Just keep going.  */
+   }
+ else if (!objc_type_valid_for_messaging (type, false))
     {
       error ("@catch parameter is not a known Objective-C class type");
       type = error_mark_node;
     }
-  else if (cur_try_context->catch_list)
+  else if (TYPE_HAS_OBJC_INFO (TREE_TYPE (type))
+	   && TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (type)))
     {
-      /* Examine previous @catch clauses and see if we've already
-	 caught the type in question.  */
-      tree_stmt_iterator i = tsi_start (cur_try_context->catch_list);
-      for (; !tsi_end_p (i); tsi_next (&i))
+      error ("@catch parameter can not be protocol-qualified");
+      type = error_mark_node;      
+    }
+  else if (objc_is_object_id (TREE_TYPE (type)))
+    type = NULL;
+  else
+    {
+      /* If 'type' was built using typedefs, we need to get rid of
+	 them and get a simple pointer to the class.  */
+      bool is_typedef = false;
+      tree x = TYPE_MAIN_VARIANT (type);
+      
+      /* Skip from the pointer to the pointee.  */
+      if (TREE_CODE (x) == POINTER_TYPE)
+	x = TREE_TYPE (x);
+      
+      /* Traverse typedef aliases */
+      while (TREE_CODE (x) == RECORD_TYPE && OBJC_TYPE_NAME (x)
+	     && TREE_CODE (OBJC_TYPE_NAME (x)) == TYPE_DECL
+	     && DECL_ORIGINAL_TYPE (OBJC_TYPE_NAME (x)))
 	{
-	  tree stmt = tsi_stmt (i);
-	  t = CATCH_TYPES (stmt);
-	  if (t == error_mark_node)
-	    continue;
-	  if (!t || DERIVED_FROM_P (TREE_TYPE (t), TREE_TYPE (type)))
+	  is_typedef = true;
+	  x = DECL_ORIGINAL_TYPE (OBJC_TYPE_NAME (x));
+	}
+
+      /* If it was a typedef, build a pointer to the final, original
+	 class.  */
+      if (is_typedef)
+	type = build_pointer_type (x);
+
+      if (cur_try_context->catch_list)
+	{
+	  /* Examine previous @catch clauses and see if we've already
+	     caught the type in question.  */
+	  tree_stmt_iterator i = tsi_start (cur_try_context->catch_list);
+	  for (; !tsi_end_p (i); tsi_next (&i))
 	    {
-	      warning (0, "exception of type %<%T%> will be caught",
-		       TREE_TYPE (type));
-	      warning_at  (EXPR_LOCATION (stmt), 0, "   by earlier handler for %<%T%>",
-			   TREE_TYPE (t ? t : objc_object_type));
-	      break;
+	      tree stmt = tsi_stmt (i);
+	      t = CATCH_TYPES (stmt);
+	      if (t == error_mark_node)
+		continue;
+	      if (!t || DERIVED_FROM_P (TREE_TYPE (t), TREE_TYPE (type)))
+		{
+		  warning (0, "exception of type %<%T%> will be caught",
+			   TREE_TYPE (type));
+		  warning_at  (EXPR_LOCATION (stmt), 0, "   by earlier handler for %<%T%>",
+			       TREE_TYPE (t ? t : objc_object_type));
+		  break;
+		}
 	    }
 	}
     }

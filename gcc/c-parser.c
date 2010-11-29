@@ -1155,7 +1155,7 @@ static void c_parser_objc_methodproto (c_parser *);
 static tree c_parser_objc_method_decl (c_parser *, bool, tree *);
 static tree c_parser_objc_type_name (c_parser *);
 static tree c_parser_objc_protocol_refs (c_parser *);
-static void c_parser_objc_try_catch_statement (c_parser *);
+static void c_parser_objc_try_catch_finally_statement (c_parser *);
 static void c_parser_objc_synchronized_statement (c_parser *);
 static tree c_parser_objc_selector (c_parser *);
 static tree c_parser_objc_selector_arg (c_parser *);
@@ -4371,7 +4371,7 @@ c_parser_statement_after_labels (c_parser *parser)
 	  break;
 	case RID_AT_TRY:
 	  gcc_assert (c_dialect_objc ());
-	  c_parser_objc_try_catch_statement (parser);
+	  c_parser_objc_try_catch_finally_statement (parser);
 	  break;
 	case RID_AT_SYNCHRONIZED:
 	  gcc_assert (c_dialect_objc ());
@@ -7468,53 +7468,97 @@ c_parser_objc_protocol_refs (c_parser *parser)
   return list;
 }
 
-/* Parse an objc-try-catch-statement.
+/* Parse an objc-try-catch-finally-statement.
 
-   objc-try-catch-statement:
+   objc-try-catch-finally-statement:
      @try compound-statement objc-catch-list[opt]
      @try compound-statement objc-catch-list[opt] @finally compound-statement
 
    objc-catch-list:
-     @catch ( parameter-declaration ) compound-statement
-     objc-catch-list @catch ( parameter-declaration ) compound-statement
-*/
+     @catch ( objc-catch-parameter-declaration ) compound-statement
+     objc-catch-list @catch ( objc-catch-parameter-declaration ) compound-statement
+
+   objc-catch-parameter-declaration:
+     parameter-declaration
+     '...'
+
+   where '...' is to be interpreted literally, that is, it means CPP_ELLIPSIS.
+
+   PS: This function is identical to cp_parser_objc_try_catch_finally_statement
+   for C++.  Keep them in sync.  */   
 
 static void
-c_parser_objc_try_catch_statement (c_parser *parser)
+c_parser_objc_try_catch_finally_statement (c_parser *parser)
 {
-  location_t loc;
+  location_t location;
   tree stmt;
+
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_AT_TRY));
   c_parser_consume_token (parser);
-  loc = c_parser_peek_token (parser)->location;
+  location = c_parser_peek_token (parser)->location;
   stmt = c_parser_compound_statement (parser);
-  objc_begin_try_stmt (loc, stmt);
+  objc_begin_try_stmt (location, stmt);
+
   while (c_parser_next_token_is_keyword (parser, RID_AT_CATCH))
     {
       struct c_parm *parm;
+      tree parameter_declaration = error_mark_node;
+      bool seen_open_paren = false;
+
       c_parser_consume_token (parser);
       if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
-	break;
-      parm = c_parser_parameter_declaration (parser, NULL_TREE);
-      if (parm == NULL)
+	seen_open_paren = true;
+      if (c_parser_next_token_is (parser, CPP_ELLIPSIS))
 	{
-	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
-	  break;
+	  /* We have "@catch (...)" (where the '...' are literally
+	     what is in the code).  Skip the '...'.
+	     parameter_declaration is set to NULL_TREE, and
+	     objc_being_catch_clauses() knows that that means
+	     '...'.  */
+	  c_parser_consume_token (parser);
+	  parameter_declaration = NULL_TREE;
 	}
-      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
-      objc_begin_catch_clause (grokparm (parm));
+      else
+	{
+	  /* We have "@catch (NSException *exception)" or something
+	     like that.  Parse the parameter declaration.  */
+	  parm = c_parser_parameter_declaration (parser, NULL_TREE);
+	  if (parm == NULL)
+	    parameter_declaration = error_mark_node;
+	  else
+	    parameter_declaration = grokparm (parm);
+	}
+      if (seen_open_paren)
+	c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>");
+      else
+	{
+	  /* If there was no open parenthesis, we are recovering from
+	     an error, and we are trying to figure out what mistake
+	     the user has made.  */
+
+	  /* If there is an immediate closing parenthesis, the user
+	     probably forgot the opening one (ie, they typed "@catch
+	     NSException *e)".  Parse the closing parenthesis and keep
+	     going.  */
+	  if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	    c_parser_consume_token (parser);
+	  
+	  /* If these is no immediate closing parenthesis, the user
+	     probably doesn't know that parenthesis are required at
+	     all (ie, they typed "@catch NSException *e").  So, just
+	     forget about the closing parenthesis and keep going.  */
+	}
+      objc_begin_catch_clause (parameter_declaration);
       if (c_parser_require (parser, CPP_OPEN_BRACE, "expected %<{%>"))
 	c_parser_compound_statement_nostart (parser);
       objc_finish_catch_clause ();
     }
   if (c_parser_next_token_is_keyword (parser, RID_AT_FINALLY))
     {
-      location_t finloc;
-      tree finstmt;
       c_parser_consume_token (parser);
-      finloc = c_parser_peek_token (parser)->location;
-      finstmt = c_parser_compound_statement (parser);
-      objc_build_finally_clause (finloc, finstmt);
+      location = c_parser_peek_token (parser)->location;
+      stmt = c_parser_compound_statement (parser);
+      objc_build_finally_clause (location, stmt);
     }
   objc_finish_try_stmt ();
 }

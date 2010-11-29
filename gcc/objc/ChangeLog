@@ -1,5 +1,13 @@
 2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_eh_runtime_type): Avoid ICE if error_mark_node
+	is passed as argument.
+	(objc_begin_catch_clause): Added code to deal with an
+	error_mark_node or NULL_TREE argument.  Improved checks for
+	invalid arguments.  Added code to traverse typedefs.
+
+2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (objc_demangle): Return immediately if the string is
 	too short.  Detect names that do not need demangling, and return
 	them unchanged.
