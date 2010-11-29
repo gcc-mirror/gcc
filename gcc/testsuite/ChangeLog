@@ -1,3 +1,11 @@
+2010-11-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-07-22  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/46651
+	* gcc.dg/graphite/id-24.c: New.
+
 2010-11-29  Richard Guenther  <rguenther@suse.de>
 	    Zdenek Dvorak  <rakdver@kam.uniff.cz>
 
