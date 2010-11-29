@@ -180,7 +180,7 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
 /* There are an extraordinary number of issues with <ctype.h>.
    The last straw is that it varies with the locale.  Use libiberty's
    replacement instead.  */
-#include <safe-ctype.h>
+#include "safe-ctype.h"
 
 #include <sys/types.h>
 
@@ -314,6 +314,9 @@ extern int errno;
 #ifndef O_WRONLY
 # define O_WRONLY 1
 #endif
+#ifndef O_BINARY
+# define O_BINARY 0
+#endif
 
 /* Some systems define these in, e.g., param.h.  We undefine these names
    here to avoid the warnings.  We prefer to use our definitions since we
@@ -351,6 +354,31 @@ extern int errno;
 #endif
 #ifndef WCOREFLG
 #define WCOREFLG 0200
+#endif
+
+#include <signal.h>
+#if !defined (SIGCHLD) && defined (SIGCLD)
+# define SIGCHLD SIGCLD
+#endif
+
+#ifdef HAVE_SYS_MMAN_H
+# include <sys/mman.h>
+#endif
+
+#ifndef MAP_FAILED
+# define MAP_FAILED ((void *)-1)
+#endif
+
+#if !defined (MAP_ANONYMOUS) && defined (MAP_ANON)
+# define MAP_ANONYMOUS MAP_ANON
+#endif
+
+#ifdef HAVE_SYS_RESOURCE_H
+# include <sys/resource.h>
+#endif
+
+#ifdef HAVE_SYS_TIMES_H
+# include <sys/times.h>
 #endif
 
 /* The HAVE_DECL_* macros are three-state, undefined, 0 or 1.  If they
@@ -524,6 +552,10 @@ extern int vsnprintf(char *, size_t, const char *, va_list);
 /* Some systems have mkdir that takes a single argument.  */
 #ifdef MKDIR_TAKES_ONE_ARG
 # define mkdir(a,b) mkdir(a)
+#endif
+
+#ifndef HAVE_KILL
+# define kill(p,s) raise(s)
 #endif
 
 /* Provide a way to print an address via printf.  */
@@ -804,7 +836,7 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
    LIBGCC2_FLOAT_WORDS_BIG_ENDIAN
 
 /* Miscellaneous macros that are no longer used.  */
- #pragma GCC poison USE_MAPPED_LOCATION
+ #pragma GCC poison USE_MAPPED_LOCATION GET_ENVIRONMENT
 
 /* Libiberty macros that are no longer used in GCC.  */
 #undef ANSI_PROTOTYPES

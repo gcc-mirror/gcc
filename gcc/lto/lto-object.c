@@ -26,14 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto.h"
 #include "tm.h"
 #include "lto-streamer.h"
-#include "libiberty.h"
 #include "simple-object.h"
-
-/* Handle opening elf files on hosts, such as Windows, that may use
-   text file handling that will break binary access.  */
-#ifndef O_BINARY
-# define O_BINARY 0
-#endif
 
 /* Segment name for LTO sections.  This is only used for Mach-O.
    FIXME: This needs to be kept in sync with darwin.c.  */

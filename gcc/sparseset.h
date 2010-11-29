@@ -1,5 +1,5 @@
 /* SparseSet implementation.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2010 Free Software Foundation, Inc.
    Contributed by Peter Bergner <bergner@vnet.ibm.com>
 
 This file is part of GCC.
@@ -20,8 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_SPARSESET_H
 #define GCC_SPARSESET_H
-
-#include <assert.h>
 
 #define SPARSESET_ELT_BITS ((unsigned) HOST_BITS_PER_WIDEST_FAST_INT)
 #define SPARSESET_ELT_TYPE unsigned int

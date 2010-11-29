@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_C_PRAGMA_H
 #define GCC_C_PRAGMA_H
 
-#include <cpplib.h> /* For enum cpp_ttype.  */
+#include "cpplib.h" /* For enum cpp_ttype.  */
 
 /* Pragma identifiers built in to the front end parsers.  Identifiers
    for ancillary handlers will follow these.  */

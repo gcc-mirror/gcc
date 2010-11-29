@@ -22,7 +22,6 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include <signal.h>
 #include "tm.h"
 #include "rtl.h"
 #include "regs.h"

@@ -1,3 +1,11 @@
+2010-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto-endian.h: Delete.
+	* lto-object.c: Don't include "libiberty.h".
+	(O_BINARY): Don't define.
+	* lto.c: Don't include "libiberty.h" or <sys/mman.h>.
+	(O_BINARY): Don't define.
+
 2010-11-23  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (read_cgraph_and_symbols): Remove newline from diagnostic.

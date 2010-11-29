@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "diagnostic-core.h"
 #include "tm.h"
-#include "libiberty.h"
 #include "cgraph.h"
 #include "ggc.h"
 #include "tree-ssa-operands.h"
@@ -45,20 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "splay-tree.h"
 #include "params.h"
-
-/* This needs to be included after config.h.  Otherwise, _GNU_SOURCE will not
-   be defined in time to set __USE_GNU in the system headers, and strsignal
-   will not be declared.  */
-#if HAVE_MMAP_FILE
-#include <sys/mman.h>
-#endif
-
-/* Handle opening elf files on hosts, such as Windows, that may use 
-   text file handling that will break binary access.  */
-
-#ifndef O_BINARY
-# define O_BINARY 0
-#endif
 
 static GTY(()) tree first_personality_decl;
 

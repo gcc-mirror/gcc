@@ -80,8 +80,6 @@ eight) times the number of the actual switch branches. */
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include <signal.h>
-
 #include "line-map.h"
 #include "params.h"
 #include "flags.h"

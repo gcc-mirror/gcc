@@ -1131,12 +1131,12 @@ check_deps_environment_vars (void)
 {
   char *spec;
 
-  GET_ENVIRONMENT (spec, "DEPENDENCIES_OUTPUT");
+  spec = getenv ("DEPENDENCIES_OUTPUT");
   if (spec)
     cpp_opts->deps.style = DEPS_USER;
   else
     {
-      GET_ENVIRONMENT (spec, "SUNPRO_DEPENDENCIES");
+      spec = getenv ("SUNPRO_DEPENDENCIES");
       if (spec)
 	{
 	  cpp_opts->deps.style = DEPS_SYSTEM;

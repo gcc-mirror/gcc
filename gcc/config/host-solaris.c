@@ -20,7 +20,6 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include <sys/mman.h>
 #include "hosthooks.h"
 #include "hosthooks-def.h"
 

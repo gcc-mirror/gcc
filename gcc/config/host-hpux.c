@@ -1,5 +1,5 @@
 /* HP-UX host-specific hook definitions.
-   Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -20,14 +20,8 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include <sys/mman.h>
-#include <unistd.h>
 #include "hosthooks.h"
 #include "hosthooks-def.h"
-
-#ifndef MAP_FAILED
-#define MAP_FAILED (void *)-1L
-#endif
 
 static void *hpux_gt_pch_get_address (size_t, int);
 static int hpux_gt_pch_use_address (void *, size_t, int, size_t);

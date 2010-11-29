@@ -35,10 +35,6 @@ compilation is specified by a string called a "spec".  */
 #include "coretypes.h"
 #include "multilib.h" /* before tm.h */
 #include "tm.h"
-#include <signal.h>
-#if ! defined( SIGCHLD ) && defined( SIGCLD )
-#  define SIGCHLD SIGCLD
-#endif
 #include "xregex.h"
 #include "obstack.h"
 #include "intl.h"
@@ -48,18 +44,6 @@ compilation is specified by a string called a "spec".  */
 #include "flags.h"
 #include "opts.h"
 #include "vec.h"
-
-#ifdef HAVE_MMAP_FILE
-# include <sys/mman.h>
-# ifdef HAVE_MINCORE
-/* This is on Solaris.  */
-#  include <sys/types.h>
-# endif
-#endif
-
-#ifndef MAP_FAILED
-# define MAP_FAILED ((void *)-1)
-#endif
 
 /* By default there is no special suffix for target executables.  */
 /* FIXME: when autoconf is fixed, remove the host check - dj */
@@ -86,10 +70,6 @@ static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
 /* Most every one is fine with LIBRARY_PATH.  For some, it conflicts.  */
 #ifndef LIBRARY_PATH_ENV
 #define LIBRARY_PATH_ENV "LIBRARY_PATH"
-#endif
-
-#ifndef HAVE_KILL
-#define kill(p,s) raise(s)
 #endif
 
 /* If a stage of compilation returns an exit status >= 1,
@@ -3506,7 +3486,7 @@ process_command (unsigned int decoded_options_count,
   struct cl_option_handlers handlers;
   unsigned int j;
 
-  GET_ENVIRONMENT (gcc_exec_prefix, "GCC_EXEC_PREFIX");
+  gcc_exec_prefix = getenv ("GCC_EXEC_PREFIX");
 
   n_switches = 0;
   n_infiles = 0;
@@ -3611,7 +3591,7 @@ process_command (unsigned int decoded_options_count,
   /* COMPILER_PATH and LIBRARY_PATH have values
      that are lists of directory names with colons.  */
 
-  GET_ENVIRONMENT (temp, "COMPILER_PATH");
+  temp = getenv ("COMPILER_PATH");
   if (temp)
     {
       const char *startp, *endp;
@@ -3645,7 +3625,7 @@ process_command (unsigned int decoded_options_count,
 	}
     }
 
-  GET_ENVIRONMENT (temp, LIBRARY_PATH_ENV);
+  temp = getenv (LIBRARY_PATH_ENV);
   if (temp && *cross_compile == '0')
     {
       const char *startp, *endp;
@@ -3678,7 +3658,7 @@ process_command (unsigned int decoded_options_count,
     }
 
   /* Use LPATH like LIBRARY_PATH (for the CMU build program).  */
-  GET_ENVIRONMENT (temp, "LPATH");
+  temp = getenv ("LPATH");
   if (temp && *cross_compile == '0')
     {
       const char *startp, *endp;

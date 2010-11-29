@@ -1,3 +1,8 @@
+2010-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* gfortran.h (alloca): Don't include definitions.
+	(NULL): Don't define.
+
 2010-11-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46662

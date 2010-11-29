@@ -1,5 +1,5 @@
 /* AIX cross support for collect2.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,8 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "collect2-aix.h"
 
 #ifdef CROSS_AIX_SUPPORT
-
-#include <sys/mman.h>
 
 /* Read SIZE bytes starting at DATA as a big-endian value.  */
 

@@ -1,5 +1,6 @@
 /* Functions related to the Boehm garbage collector.
-   Copyright (C) 2000, 2003, 2004, 2006, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004, 2006, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,8 +24,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Written by Tom Tromey <tromey@cygnus.com>.  */
 
-#include <config.h>
-
+#include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "double-int.h"

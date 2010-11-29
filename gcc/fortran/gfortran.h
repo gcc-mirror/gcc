@@ -38,24 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "input.h"
 #include "splay-tree.h"
-/* The following ifdefs are recommended by the autoconf documentation
-   for any code using alloca.  */
-
-/* AIX requires this to be the first thing in the file.  */
-#ifdef __GNUC__
-#else /* not __GNUC__ */
-#ifdef HAVE_ALLOCA_H
-#include <alloca.h>
-#else /* do not HAVE_ALLOCA_H */
-#ifdef _AIX
-#pragma alloca
-#else
-#ifndef alloca			/* predefined by HP cc +Olibcalls */
-char *alloca ();
-#endif /* not predefined */
-#endif /* not _AIX */
-#endif /* do not HAVE_ALLOCA_H */
-#endif /* not __GNUC__ */
 
 /* Major control parameters.  */
 
@@ -69,10 +51,6 @@ char *alloca ();
 
 #define free(x) Use_gfc_free_instead_of_free()
 #define gfc_is_whitespace(c) ((c==' ') || (c=='\t'))
-
-#ifndef NULL
-#define NULL ((void *) 0)
-#endif
 
 /* Stringization.  */
 #define stringize(x) expand_macro(x)

@@ -36,22 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "timevar.h"
 
-#ifdef HAVE_SYS_RESOURCE_H
-# include <sys/resource.h>
-#endif
-
-#ifdef HAVE_MMAP_FILE
-# include <sys/mman.h>
-# ifdef HAVE_MINCORE
-/* This is on Solaris.  */
-#  include <sys/types.h>
-# endif
-#endif
-
-#ifndef MAP_FAILED
-# define MAP_FAILED ((void *)-1)
-#endif
-
 /* When set, ggc_collect will do collection.  */
 bool ggc_force_collect;
 

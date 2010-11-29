@@ -1,3 +1,73 @@
+2010-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* system.h: Include "safe-ctype.h" instead of <safe-ctype.h>.
+	Include <signal.h>, <sys/mman.h>, <sys/resource.h> and
+	<sys/times.h>.
+	(O_BINARY, SIGCHLD, MAP_FAILED, MAP_ANONYMOUS, kill):
+	Conditionally define.
+	(GET_ENVIRONMENT): Poison.
+	* configure.ac: Don't test for mincore.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* collect2-aix.c: Don't include <sys/mman.h>.
+	* collect2.c: Don't include <signal.h>.
+	(SIGCHLD): Don't define.
+	(prefix_from_env): Use getenv instead of GET_ENVIRONMENT.
+	* config/alpha/alpha.c: Include "splay-tree.h" instead of
+	<splay-tree.h>.
+	* config/arm/arm.c (arm_target_help): Use getenv instead of
+	GET_ENVIRONMENT.
+	* config/avr/driver-avr.c: Don't include <stdlib.h>.
+	* config/frv/frv.c: Don't include <ctype.h>.
+	* config/host-darwin.c: Don't include <sys/mman.h>.
+	* config/host-hpux.c: Don't include <sys/mman.h> or <unistd.h>.
+	(MAP_FAILED): Don't define.
+	* config/host-linux.c: Don't include <sys/mman.h> or <limits.h>.
+	* config/host-solaris.c: Don't include <sys/mman.h>.
+	* config/i386/cygming.h: Don't include <stdio.h>.
+	* config/i386/driver-i386.c: Don't include <stdlib.h>.
+	* config/i386/host-cygwin.c: Don't include <sys/mman.h>.
+	* config/iq2000/iq2000.c: Don't include <signal.h>.
+	* config/m32c/m32c-pragma.c: Don't include <stdio.h>.
+	* config/m68hc11/m68hc11.c: Don't include <stdio.h>.
+	* config/mep/mep-pragma.c: Don't include <stdio.h>.
+	* config/microblaze/microblaze.c: Don't include <signal.h>.
+	* config/mips/mips.c: Don't include <signal.h>.
+	* config/rs6000/host-darwin.c: Don't include <signal.h>.
+	* cppdefault.c (cpp_relocated): Use getenv instead of
+	GET_ENVIRONMENT.
+	* defaults.h (GET_ENVIRONMENT): Don't define.
+	* et-forest.h: Don't include <ansidecl.h> or <stddef.h>.
+	* gcc.c: Don't include <signal.h>, <sys/mman.h> or <sys/types.h>.
+	(SIGCHLD, MAP_FAILED, kill): Don't define.
+	(process_command): Use getenv instead of GET_ENVIRONMENT.
+	* genhooks.c: Don't include <string.h>.
+	* ggc-common.c: Don't include <sys/resource.h>, <sys/mman.h> or
+	<sys/types.h>.
+	(MAP_FAILED): Don't define.
+	* ggc-page.c Don't include <sys/mman.h>.
+	(MAP_ANONYMOUS, MAP_FAILED): Don't define.
+	* ggc-zone.c: Don't include <sys/mman.h>.
+	(MAP_ANONYMOUS, MAP_FAILED): Don't define.
+	* graph.c: Include "config.h" instead of <config.h>.
+	* incpath.c (add_env_var_paths): Use getenv instead of
+	GET_ENVIRONMENT.
+	* lto-wrapper.c: Don't include <errno.h>, <signal.h> or
+	"libiberty.h".
+	(SIGCHLD, kill): Don't define.
+	* mips-tfile.c: Don't include <signal.h>.
+	* opts.c: Don't include <signal.h> or <sys/resource.h>.
+	(print_specific_help): Use getenv instead of GET_ENVIRONMENT.
+	* passes.c: Don't include <signal.h>, <sys/resource.h> or
+	<sys/times.h>.
+	* sparseset.h: Don't include <assert.h>.
+	* timevar.c: Don't include <sys/times.h> or <sys/resource.h>.
+	* tlink.c: Don't include "libiberty.h".
+	* toplev.c: Don't include <signal.h> or <sys/times.h>.
+	* tree-mudflap.c: Include "demangle.h" instead of <demangle.h>.
+	* tree-switch-conversion.c: Don't include <signal.h>.
+	* vmsdbgout.c: Don't include <errno.h> or <string.h>.
+
 2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-parser.c (c_parser_objc_try_catch_statement): Renamed to
