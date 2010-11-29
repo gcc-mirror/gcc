@@ -1,3 +1,9 @@
+2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* obj-c++.dg/property/at-property-1.mm: Fixed testcase.
+	* obj-c++.dg/property/at-property-16.mm: Fixed testcase.
+	* obj-c++.dg/property/at-property-20.mm: Fixed testcase.
+
 2010-11-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46662
