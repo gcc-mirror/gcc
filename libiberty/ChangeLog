@@ -1,3 +1,7 @@
+2010-11-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* setproctitle.c [HAVE_SYS_PRCTL_H]: Include <sys/types.h>.
+
 2010-11-20  Anthony Green  <green@moxielogic.com>
 
 	* configure.ac: Turn PR_SET_NAME link test into a test for
