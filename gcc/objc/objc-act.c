@@ -1539,11 +1539,8 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
 		 || TREE_CODE (t) == COMPONENT_REF)
 	    t = TREE_OPERAND (t, 0);
 	  
-	  if (t == UOBJC_SUPER_decl)
-	    {
-	      /* TODO: Check if this is correct also for 'super' in categories.  */
-	      interface_type = lookup_interface (CLASS_SUPER_NAME (implementation_template));
-	    }
+	  if (t == UOBJC_SUPER_decl)	
+	    interface_type = lookup_interface (CLASS_SUPER_NAME (implementation_template));
 	  else if (t == self_decl)
 	    interface_type = lookup_interface (CLASS_NAME (implementation_template));
 

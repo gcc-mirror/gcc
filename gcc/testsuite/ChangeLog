@@ -1,3 +1,8 @@
+2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/property/dotsyntax-21.m
+	* obj-c++.dg/property/dotsyntax-21.mm
+
 2010-11-29  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/46338
