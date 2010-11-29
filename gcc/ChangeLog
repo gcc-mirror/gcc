@@ -1,5 +1,10 @@
 2010-11-29  Dodji Seketeli  <dodji@redhat.com>
 
+	* dwarf2out.c (print_die): Print the address of the current DIE or
+	of any DIE referenced by the current one.
+
+2010-11-29  Dodji Seketeli  <dodji@redhat.com>
+
 	PR debug/46101
 	* dwarf2out.c (lookup_type_die_strip_naming_typedef): New
 	function.
