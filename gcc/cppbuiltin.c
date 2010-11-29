@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "cpp-id-data.h"
 #include "cppbuiltin.h"
+#include "target.h"
 
 
 /* Parse a BASEVER version string of the format "major.minor.patchlevel"
@@ -158,7 +159,7 @@ define_builtin_macros_for_type_sizes (cpp_reader *pfile)
     }
 
   cpp_define_formatted (pfile, "__FLOAT_WORD_ORDER__=%s",
-                        (FLOAT_WORDS_BIG_ENDIAN
+                        (targetm.float_words_big_endian ()
                          ? "__ORDER_BIG_ENDIAN__"
                          : "__ORDER_LITTLE_ENDIAN__"));
 

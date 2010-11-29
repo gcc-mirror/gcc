@@ -13,6 +13,11 @@
 	* gimple.h: Don't include tm.h or hard-reg-set.h .
 	* Makefile.in (GIMPLE_H): Remove $(TM_H).
 
+	PR bootstrap/44756
+	* cppbuiltin.c: Include target.h .
+	(define_builtin_macros_for_type_sizes):
+	Use targetm.float_words_big_endian.
+
 2010-11-27  Jan Hubicka  <jh@suse.cz>
 
 	* dwarf2out.c (dwarf2out_begin_function): Set cold_text_section
