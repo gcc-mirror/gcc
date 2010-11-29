@@ -1172,7 +1172,6 @@ static section *
 darwin_mergeable_string_section (tree exp,
 				 unsigned HOST_WIDE_INT align)
 {
-
   if (flag_merge_constants
       && TREE_CODE (exp) == STRING_CST
       && TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
@@ -1823,7 +1822,7 @@ fprintf (file, "# dadon: %s %s (%llu, %u) local %d weak %d"
     {
       unsigned int l2align = 0;
 
-      /* The align must be honoured, even for zero-sized.  */
+      /* The align must be honored, even for zero-sized.  */
       if (DECL_ALIGN (decl))
 	{
 	  l2align = floor_log2 (DECL_ALIGN (decl) / BITS_PER_UNIT);
@@ -2076,7 +2075,7 @@ fprintf (fp, "# albss: %s (%lld,%d) ro %d cst %d stat %d com %d"
      be passed a decl that should be in coalesced space.  */
   if (one || weak)
     {
-      /* Weak or COMDAT objects are put in mergable sections.  */
+      /* Weak or COMDAT objects are put in mergeable sections.  */
       darwin_emit_weak_or_comdat (fp, decl, name, size, 
 					DECL_ALIGN (decl));
       return;

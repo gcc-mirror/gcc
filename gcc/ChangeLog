@@ -1,4 +1,10 @@
 2010-11-29  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin.c (darwin_mergeable_string_section): Remove blank line.
+	(darwin_asm_declare_object_name): Correct spelling.
+	(darwin_output_aligned_bss): Likewise.
+
+2010-11-29  Iain Sandoe  <iains@gcc.gnu.org>
 	    Mike Stump  <mrs@gcc.gnu.org>
 
 	PR target/26427
