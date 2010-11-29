@@ -1,3 +1,15 @@
+2010-11-29  Iain Sandoe  <iains@gcc.gnu.org>
+	    Mike Stump  <mrs@gcc.gnu.org>
+
+	PR target/26427
+	PR target/33120
+	PR testsuite/35710
+	* gcc.target/powerpc/darwin-abi-12.c: Adjust for new allocators.
+	* gcc.dg/pr26427.c: Remove redundant warning for powerpc.
+	* gcc.dg/darwin-comm.c: Adjust for new allocators.
+	* gcc.dg/darwin-sections.c: New test.
+	* g++.dg/ext/instantiate2.C: Adjust for new allocators.
+
 2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/exceptions-1.m: New.

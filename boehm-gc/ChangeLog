@@ -1,3 +1,20 @@
+2010-11-29  Iain Sandoe  <iains@gcc.gnu.org>
+	    Mike Stump  <mrs@gcc.gnu.org>
+
+	PR target/26427
+	PR target/33120
+	PR testsuite/35710
+	* dyn_load.c (GC_register_dynamic_libraries/DARWIN):  Add new writable
+	data section names.
+	(GC_dyld_name_for_hdr): Adjust layout.
+	(GC_dyld_image_add): Adjust layout, add new Darwin sections, adjust
+	debug to name the sections.
+	(GC_dyld_image_remove): Adjust layout, remove new Darwin sections,
+	adjust debug to name the sections.
+	(GC_register_dynamic_libraries): Adjust layout.
+	(GC_init_dyld): Likewise.
+	(GC_register_main_static_data): Likewise.
+
 2010-10-29  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure: Regenerate.

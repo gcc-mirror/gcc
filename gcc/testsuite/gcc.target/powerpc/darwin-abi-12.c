@@ -1,5 +1,5 @@
 /* { dg-do compile { target powerpc*-*-darwin* } } */
-/* { dg-final { scan-assembler ".comm _x,12,2" } } */
+/* { dg-final { scan-assembler ".comm\[\t \]_x,12,2" } } */
 /* { dg-final { scan-assembler-not ".space 7" } } */
 /* PR 23071 */
 

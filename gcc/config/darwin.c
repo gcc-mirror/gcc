@@ -105,6 +105,10 @@ section * darwin_sections[NUM_DARWIN_SECTIONS];
 /* True if we're setting __attribute__ ((ms_struct)).  */
 int darwin_ms_struct = false;
 
+/* Earlier versions of Darwin as do not recognize an alignment field in 
+   .comm directives, this should be set for versions that allow it.  */
+int emit_aligned_common = false;
+
 /* A get_unnamed_section callback used to switch to an ObjC section.
    DIRECTIVE is as for output_section_asm_op.  */
 
@@ -172,6 +176,10 @@ darwin_init_sections (void)
   readonly_data_section = darwin_sections[const_section];
   exception_section = darwin_sections[darwin_exception_section];
   eh_frame_section = darwin_sections[darwin_eh_frame_section];
+
+  /* Make sure that there is no conflict between the 'no anchor' section
+     flag declared in darwin.h and the section flags declared in output.h.  */
+  gcc_assert (SECTION_NO_ANCHOR > SECTION_MACH_DEP);
 }
 
 int
@@ -1152,17 +1160,19 @@ darwin_text_section (int reloc, int weak)
 }
 
 static section *
-darwin_rodata_section (int weak)
+darwin_rodata_section (int weak, bool zsize)
 {
   return (weak
 	  ? darwin_sections[const_coal_section]
-	  : darwin_sections[const_section]);
+	  : (zsize ? darwin_sections[zobj_const_section]
+		   : darwin_sections[const_section]));
 }
 
 static section *
 darwin_mergeable_string_section (tree exp,
 				 unsigned HOST_WIDE_INT align)
 {
+
   if (flag_merge_constants
       && TREE_CODE (exp) == STRING_CST
       && TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
@@ -1173,6 +1183,11 @@ darwin_mergeable_string_section (tree exp,
 	  == strlen (TREE_STRING_POINTER (exp)) + 1))
     return darwin_sections[cstring_section];
 
+  if (DARWIN_SECTION_ANCHORS && flag_section_anchors
+      && TREE_CODE (exp) == STRING_CST
+      && TREE_STRING_LENGTH (exp) == 0)
+    return darwin_sections[zobj_const_section];
+
   return readonly_data_section;
 }
 
@@ -1182,10 +1197,16 @@ darwin_mergeable_string_section (tree exp,
 
 static section *
 darwin_mergeable_constant_section (tree exp,
-				   unsigned HOST_WIDE_INT align)
+				   unsigned HOST_WIDE_INT align,
+				   bool zsize)
 {
   enum machine_mode mode = DECL_MODE (exp);
   unsigned int modesize = GET_MODE_BITSIZE (mode);
+
+  if (DARWIN_SECTION_ANCHORS 
+      && flag_section_anchors 
+      && zsize)
+    return darwin_sections[zobj_const_section];
 
   if (flag_merge_constants
       && mode != VOIDmode
@@ -1229,11 +1250,22 @@ machopic_select_section (tree decl,
 			 int reloc,
 			 unsigned HOST_WIDE_INT align)
 {
-  bool weak = (DECL_P (decl)
-	       && DECL_WEAK (decl)
-	       && !lookup_attribute ("weak_import",
-				     DECL_ATTRIBUTES (decl)));
+  bool zsize, one, weak, ro;
   section *base_section = NULL;
+
+  weak = (DECL_P (decl)
+	  && DECL_WEAK (decl)
+	  && !lookup_attribute ("weak_import", DECL_ATTRIBUTES (decl)));
+
+  zsize = (DECL_P (decl) 
+	   && (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == CONST_DECL) 
+	   && tree_low_cst (DECL_SIZE_UNIT (decl), 1) == 0);
+
+  one = DECL_P (decl) 
+	&& TREE_CODE (decl) == VAR_DECL 
+	&& DECL_ONE_ONLY (decl);
+
+  ro = TREE_READONLY (decl) || TREE_CONSTANT (decl) ;
 
   switch (categorize_decl_for_section (decl, reloc))
     {
@@ -1253,7 +1285,7 @@ machopic_select_section (tree decl,
 
     case SECCAT_RODATA:
     case SECCAT_SRODATA:
-      base_section = darwin_rodata_section (weak);
+      base_section = darwin_rodata_section (weak, zsize);
       break;
 
     case SECCAT_RODATA_MERGE_STR:
@@ -1265,7 +1297,7 @@ machopic_select_section (tree decl,
       break;
 
     case SECCAT_RODATA_MERGE_CONST:
-      base_section =  darwin_mergeable_constant_section (decl, align);
+      base_section =  darwin_mergeable_constant_section (decl, align, zsize);
       break;
 
     case SECCAT_DATA:
@@ -1275,14 +1307,46 @@ machopic_select_section (tree decl,
     case SECCAT_DATA_REL_RO_LOCAL:
     case SECCAT_SDATA:
     case SECCAT_TDATA:
+      if (weak || one)
+	{
+	  if (ro)
+	    base_section = darwin_sections[const_data_coal_section];
+	  else 
+	    base_section = darwin_sections[data_coal_section];
+	}
+      else if (DARWIN_SECTION_ANCHORS 
+	       && flag_section_anchors
+	       && zsize)
+	{
+	  /* If we're doing section anchors, then punt zero-sized objects into
+	     their own sections so that they don't interfere with offset
+	     computation for the remaining vars.  This does not need to be done
+	     for stuff in mergeable sections, since these are ineligible for 
+	     anchors.  */
+	  if (ro)
+	    base_section = darwin_sections[zobj_const_data_section];
+	  else
+	    base_section = darwin_sections[zobj_data_section];
+	}
+      else if (ro)
+	base_section = darwin_sections[const_data_section];
+      else
+	base_section = data_section;
+      break;
     case SECCAT_BSS:
     case SECCAT_SBSS:
     case SECCAT_TBSS:
-      if (TREE_READONLY (decl) || TREE_CONSTANT (decl))
-	base_section = weak ? darwin_sections[const_data_coal_section]
-			    : darwin_sections[const_data_section];
+      if (weak || one) 
+	base_section = darwin_sections[data_coal_section];
       else
-	base_section = weak ? darwin_sections[data_coal_section] : data_section;
+	{
+	  if (!TREE_PUBLIC (decl))
+	    base_section = lcomm_section;
+	  else if (bss_noswitch_section)
+	    base_section = bss_noswitch_section;
+	  else
+	    base_section = data_section;
+	}
       break;
 
     default:
@@ -1319,13 +1383,16 @@ machopic_select_section (tree decl,
     {
       const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
 
+      /* We shall assert that zero-sized objects are an error in ObjC 
+         meta-data.  */
+      gcc_assert (tree_low_cst (DECL_SIZE_UNIT (decl), 1) != 0);
       if (!strncmp (name, "_OBJC_CLASS_METHODS_", 20))
         return darwin_sections[objc_cls_meth_section];
       else if (!strncmp (name, "_OBJC_INSTANCE_METHODS_", 23))
         return darwin_sections[objc_inst_meth_section];
-      else if (!strncmp (name, "_OBJC_CATEGORY_CLASS_METHODS_", 20))
+      else if (!strncmp (name, "_OBJC_CATEGORY_CLASS_METHODS_", 29))
         return darwin_sections[objc_cat_cls_meth_section];
-      else if (!strncmp (name, "_OBJC_CATEGORY_INSTANCE_METHODS_", 23))
+      else if (!strncmp (name, "_OBJC_CATEGORY_INSTANCE_METHODS_", 32))
         return darwin_sections[objc_cat_inst_meth_section];
       else if (!strncmp (name, "_OBJC_CLASS_VARIABLES_", 22))
         return darwin_sections[objc_class_vars_section];
@@ -1688,18 +1755,514 @@ darwin_non_lazy_pcrel (FILE *file, rtx addr)
   fputs ("-.", file);
 }
 
-/* The implementation of ASM_DECLARE_CONSTANT_NAME.  */
+/* If this is uncommented, details of each allocation will be printed
+   in the asm right before the actual code.  WARNING - this will cause some
+   test-suite fails (since the printout will contain items that some tests
+   are not expecting) -- so don't leave it on by default (it bloats the
+   asm too).  */
+/*#define DEBUG_DARWIN_MEM_ALLOCATORS*/
 
+/* The first two of these routines are ostensibly just intended to put
+   names into the asm.  However, they are both hijacked in order to ensure
+   that zero-sized items do not make their way into the output.  Consequently,
+   we also need to make these participate in provisions for dealing with
+   such items in section anchors.  */
+
+/* The implementation of ASM_DECLARE_OBJECT_NAME.  */
+/* The RTTI data (e.g., __ti4name) is common and public (and static),
+   but it does need to be referenced via indirect PIC data pointers.
+   The machopic_define_symbol calls are telling the machopic subsystem
+   that the name *is* defined in this module, so it doesn't need to
+   make them indirect.  */
+void 
+darwin_asm_declare_object_name (FILE *file, 
+				const char *nam, tree decl)
+{
+  const char *xname = nam;
+  unsigned HOST_WIDE_INT size;
+  bool local_def, weak;
+
+  weak = (DECL_P (decl)
+	  && DECL_WEAK (decl)
+	  && !lookup_attribute ("weak_import", 
+				 DECL_ATTRIBUTES (decl)));
+
+  local_def = DECL_INITIAL (decl) || (TREE_STATIC (decl) 
+				      && (!DECL_COMMON (decl) 
+					  || !TREE_PUBLIC (decl)));
+
+  if (GET_CODE (XEXP (DECL_RTL (decl), 0)) != SYMBOL_REF)
+    xname = IDENTIFIER_POINTER (DECL_NAME (decl));
+
+  if (local_def)
+    {
+      (* targetm.encode_section_info) (decl, DECL_RTL (decl), false);
+      if (!weak)
+	machopic_define_symbol (DECL_RTL (decl));
+    }
+
+  size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+
+#ifdef DEBUG_DARWIN_MEM_ALLOCATORS
+fprintf (file, "# dadon: %s %s (%llu, %u) local %d weak %d"
+	       " stat %d com %d pub %d t-const %d t-ro %d init %lx\n",
+	xname, (TREE_CODE (decl) == VAR_DECL?"var":"const"), 
+	(unsigned long long)size, DECL_ALIGN (decl), local_def, 
+	DECL_WEAK (decl), TREE_STATIC (decl), DECL_COMMON (decl),
+	TREE_PUBLIC (decl), TREE_CONSTANT (decl), TREE_READONLY (decl),
+	(unsigned long)DECL_INITIAL (decl)); 
+#endif
+
+  /* Darwin needs help to support local zero-sized objects. 
+     They must be made at least one byte, and the section containing must be
+     marked as unsuitable for section-anchors (see storage allocators below).
+     
+     For non-zero objects this output is handled by varasm.c.
+  */
+  if (!size)
+    {
+      unsigned int l2align = 0;
+
+      /* The align must be honoured, even for zero-sized.  */
+      if (DECL_ALIGN (decl))
+	{
+	  l2align = floor_log2 (DECL_ALIGN (decl) / BITS_PER_UNIT);
+	  fprintf (file, "\t.align\t%u\n", l2align);
+	}
+
+      ASM_OUTPUT_LABEL (file, xname);
+      size = 1;
+      fprintf (file, "\t.space\t"HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+
+      /* Check that we've correctly picked up the zero-sized item and placed it
+         properly.  */
+      gcc_assert ((!DARWIN_SECTION_ANCHORS || !flag_section_anchors)
+		  || (in_section 
+		      && (in_section->common.flags & SECTION_NO_ANCHOR)));
+    }
+  else
+    ASM_OUTPUT_LABEL (file, xname);
+}
+
+/* The implementation of ASM_DECLARE_CONSTANT_NAME.  */
 void
 darwin_asm_declare_constant_name (FILE *file, const char *name,
 				  const_tree exp ATTRIBUTE_UNUSED,
 				  HOST_WIDE_INT size)
 {
   assemble_label (file, name);
+  /* As for other items, we need at least one byte.  */
+  if (!size)
+    {
+      fputs ("\t.space\t1\n", file);
+      /* Check that we've correctly picked up the zero-sized item and placed it
+         properly.  */
+      gcc_assert ((!DARWIN_SECTION_ANCHORS || !flag_section_anchors)
+		  || (in_section 
+		      && (in_section->common.flags & SECTION_NO_ANCHOR)));
+    }
+}
 
-  /* Darwin doesn't support zero-size objects, so give them a byte.  */
-  if ((size) == 0)
-    assemble_zeros (1);
+/* Darwin storage allocators.
+
+   Zerofill sections are desirable for large blank data since, otherwise, these
+   data bloat objects (PR33210).
+
+   However, section anchors don't work in .zerofill sections (one cannot switch
+   to a zerofill section).  Ergo, for Darwin targets using section anchors we need
+   to put (at least some) data into 'normal' switchable sections.
+
+   Here we set a relatively arbitrary value for the size of an object to trigger
+   zerofill when section anchors are enabled (anything bigger than a page for
+   current Darwin implementations).  FIXME: there ought to be some objective way
+   to make this choice.
+
+   When section anchor are off this is ignored anyway.  */
+
+#define BYTES_ZFILL 4096
+
+/* Emit a chunk of data for items coalesced by the linker.  */
+static void
+darwin_emit_weak_or_comdat (FILE *fp, tree decl, const char *name,
+				  unsigned HOST_WIDE_INT size, 
+				  unsigned int align)
+{
+  /* Since the sections used here are coalesed, they will not be eligible
+     for section anchors, and therefore we don't need to break that out.  */
+ if (TREE_READONLY (decl) || TREE_CONSTANT (decl))
+    switch_to_section (darwin_sections[const_data_coal_section]);
+  else
+    switch_to_section (darwin_sections[data_coal_section]);
+
+  /* To be consistent, we'll allow darwin_asm_declare_object_name to assemble
+     the align info for zero-sized items... but do it here otherwise.  */
+  if (size && align)
+    fprintf (fp, "\t.align\t%d\n", floor_log2 (align / BITS_PER_UNIT));
+
+  if (TREE_PUBLIC (decl))
+    darwin_globalize_label (fp, name);
+
+  /* ... and we let it deal with outputting one byte of zero for them too.  */ 
+  darwin_asm_declare_object_name (fp, name, decl);
+  if (size)
+    assemble_zeros (size);
+}
+
+/* This routine emits 'local' storage:
+
+   When Section Anchors are off this routine emits .zerofill commands in 
+   sections named for their alignment.
+
+   When Section Anchors are on, smaller (non-zero-sized) items are placed in
+   the .static_data section so that the section anchoring system can see them.
+   Larger items are still placed in .zerofill sections, addressing PR33210.
+   The routine has no checking - it is all assumed to be done by the caller.
+*/
+static void
+darwin_emit_local_bss (FILE *fp, tree decl, const char *name, 
+			unsigned HOST_WIDE_INT size, 
+			unsigned int l2align)
+{
+   /* FIXME: We have a fudge to make this work with Java even when the target does
+   not use sections anchors -- Java seems to need at least one small item in a
+   non-zerofill segment.   */
+   if ((DARWIN_SECTION_ANCHORS && flag_section_anchors && size < BYTES_ZFILL)
+       || (size && size <= 2))
+    {
+      /* Put smaller objects in _static_data, where the section anchors system
+	 can get them.
+	 However, if they are zero-sized punt them to yet a different section
+	 (that is not allowed to participate in anchoring).  */
+      if (!size)
+	{
+	  fputs ("\t.section\t__DATA,__zobj_bss\n", fp);
+	  in_section = darwin_sections[zobj_bss_section];
+	  size = 1;
+	}
+      else
+	{
+	  fputs ("\t.static_data\n", fp);
+	  in_section = darwin_sections[static_data_section];
+	}
+
+      if (l2align)
+	fprintf (fp, "\t.align\t%u\n", l2align);
+
+      assemble_name (fp, name);        
+      fprintf (fp, ":\n\t.space\t"HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+    }
+  else 
+    {
+      /* When we are on a non-section anchor target, we can get zero-sized
+	 items here.  However, all we need to do is to bump them to one byte
+	 and the section alignment will take care of the rest.  */
+      char secnam[64];
+      unsigned int flags ;
+      snprintf (secnam, 64, "__DATA,__%sbss%u", ((size)?"":"zo_"), 
+						(unsigned) l2align);
+      /* We can't anchor (yet, if ever) in zerofill sections, because we can't
+	 switch to them and emit a label.  */
+      flags = SECTION_BSS|SECTION_WRITE|SECTION_NO_ANCHOR;
+      in_section = get_section (secnam, flags, NULL);
+      fprintf (fp, "\t.zerofill %s,", secnam);
+      assemble_name (fp, name);
+      if (!size)
+	size = 1;
+
+      if (l2align)
+	fprintf (fp, ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",
+		 size, (unsigned) l2align);
+      else
+	fprintf (fp, ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+    }
+
+  (*targetm.encode_section_info) (decl, DECL_RTL (decl), false);
+  /* This is defined as a file-scope var, so we know to notify machopic.  */
+  machopic_define_symbol (DECL_RTL (decl));
+}
+
+/* Emit a chunk of common.  */
+static void
+darwin_emit_common (FILE *fp, const char *name,
+		    unsigned HOST_WIDE_INT size, unsigned int align) 
+{
+  unsigned HOST_WIDE_INT rounded;
+  unsigned int l2align;
+
+  /* Earlier systems complain if the alignment exceeds the page size. 
+     The magic number is 4096 * 8 - hard-coded for legacy systems.  */
+  if (!emit_aligned_common && (align > 32768UL))
+    align = 4096UL; /* In units.  */
+  else
+    align /= BITS_PER_UNIT;
+
+  /* Make sure we have a meaningful align.  */
+  if (!align)
+    align = 1;
+
+  /* For earlier toolchains, we need to emit the var as a rounded size to 
+     tell ld the alignment.  */
+  if (size < align) 
+    rounded = align;
+  else
+    rounded = (size + (align-1)) & ~(align-1);
+
+  l2align = floor_log2 (align);
+  gcc_assert (l2align <= L2_MAX_OFILE_ALIGNMENT);
+
+  in_section = comm_section;
+  /* We mustn't allow multiple public symbols to share an address when using
+     the normal OSX toolchain.  */
+  if (!size)
+    {
+      /* Put at least one byte.  */
+      size = 1;
+      /* This section can no longer participate in section anchoring.  */
+      comm_section->common.flags |= SECTION_NO_ANCHOR;
+    }
+
+  fputs ("\t.comm\t", fp);
+  assemble_name (fp, name);
+  fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED, 
+	   emit_aligned_common?size:rounded);
+  if (l2align && emit_aligned_common)
+    fprintf (fp, ",%u", l2align);
+  fputs ("\n", fp);
+}
+
+/* Output a var which is all zero - into aligned BSS sections, common, lcomm
+   or coalescable data sections (for weak or comdat) as appropriate.  */
+
+void
+darwin_output_aligned_bss (FILE *fp, tree decl, const char *name,
+			  unsigned HOST_WIDE_INT size, unsigned int align)
+{
+  unsigned int l2align;
+  bool one, pub, weak;
+
+  pub = TREE_PUBLIC (decl);
+  one = DECL_ONE_ONLY (decl);
+  weak = (DECL_P (decl)
+	  && DECL_WEAK (decl)
+	  && !lookup_attribute ("weak_import", 
+				 DECL_ATTRIBUTES (decl)));
+
+#ifdef DEBUG_DARWIN_MEM_ALLOCATORS
+fprintf (fp, "# albss: %s (%lld,%d) ro %d cst %d stat %d com %d"
+	     " pub %d weak %d one %d init %lx\n",
+	name, (long long)size, (int)align, TREE_READONLY (decl), 
+	TREE_CONSTANT (decl), TREE_STATIC (decl), DECL_COMMON (decl),
+	pub, weak, one, (unsigned long)DECL_INITIAL (decl)); 
+#endif
+
+  /* Check that any initializer is valid.  */
+  gcc_assert ((DECL_INITIAL (decl) == NULL) 
+	       || (DECL_INITIAL (decl) == error_mark_node) 
+	       || initializer_zerop (DECL_INITIAL (decl)));
+
+  gcc_assert (DECL_SECTION_NAME (decl) == NULL);
+  gcc_assert (!DECL_COMMON (decl));
+
+  /*  Pick up the correct alignment.  */
+  if (!size || !align)
+    align = DECL_ALIGN (decl);
+
+  l2align = floor_log2 (align / BITS_PER_UNIT);
+  gcc_assert (l2align <= L2_MAX_OFILE_ALIGNMENT);
+  
+  last_assemble_variable_decl = decl;
+
+  /* We would rather not have to check this here - but it seems that we might
+     be passed a decl that should be in coalesced space.  */
+  if (one || weak)
+    {
+      /* Weak or COMDAT objects are put in mergable sections.  */
+      darwin_emit_weak_or_comdat (fp, decl, name, size, 
+					DECL_ALIGN (decl));
+      return;
+    } 
+
+  /* If this is not public, then emit according to local rules.  */
+  if (!pub)
+    {
+      darwin_emit_local_bss (fp, decl, name, size, l2align);	
+      return;
+    }
+
+  /* So we have a public symbol (small item fudge for Java, see above).  */
+  if ((DARWIN_SECTION_ANCHORS && flag_section_anchors && size < BYTES_ZFILL) 
+       || (size && size <= 2))
+    {
+      /* Put smaller objects in data, where the section anchors system can get
+	 them.  However, if they are zero-sized punt them to yet a different 
+	 section (that is not allowed to participate in anchoring).  */
+      if (!size)
+	{
+	  fputs ("\t.section\t__DATA,__zobj_data\n", fp);
+	  in_section = darwin_sections[zobj_data_section];
+	  size = 1;
+	}
+      else
+	{
+	  fputs ("\t.data\n", fp);
+	  in_section = data_section;
+	}
+
+      if (l2align)
+	fprintf (fp, "\t.align\t%u\n", l2align);
+
+      assemble_name (fp, name);
+      fprintf (fp, ":\n\t.space\t"HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+    }
+  else 
+    {
+      char secnam[64];
+      unsigned int flags ;
+      /* When we are on a non-section anchor target, we can get zero-sized
+	 items here.  However, all we need to do is to bump them to one byte
+	 and the section alignment will take care of the rest.  */
+      snprintf (secnam, 64, "__DATA,__%spu_bss%u", ((size)?"":"zo_"), l2align);
+
+      /* We can't anchor in zerofill sections, because we can't switch
+	 to them and emit a label.  */
+      flags = SECTION_BSS|SECTION_WRITE|SECTION_NO_ANCHOR;
+      in_section = get_section (secnam, flags, NULL);
+      fprintf (fp, "\t.zerofill %s,", secnam);
+      assemble_name (fp, name);
+      if (!size)
+	size = 1;
+
+      if (l2align)
+	fprintf (fp, ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n", size, l2align);
+      else
+	fprintf (fp, ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+    }
+  (* targetm.encode_section_info) (decl, DECL_RTL (decl), false);
+}
+
+/* Output a chunk of common, with alignment specified (where the target
+   supports this).  */
+void
+darwin_asm_output_aligned_decl_common (FILE *fp, tree decl, const char *name,
+				       unsigned HOST_WIDE_INT size, 
+				       unsigned int align)
+{
+  unsigned int l2align;
+  bool one, weak;
+  /* No corresponding var.  */
+  if (decl==NULL)
+    {
+#ifdef DEBUG_DARWIN_MEM_ALLOCATORS
+fprintf (fp, "# adcom: %s (%d,%d) decl=0x0\n", name, (int)size, (int)align); 
+#endif
+      darwin_emit_common (fp, name, size, align);
+      return;
+    }
+
+  one = DECL_ONE_ONLY (decl);
+  weak = (DECL_P (decl)
+	  && DECL_WEAK (decl)
+	  && !lookup_attribute ("weak_import", 
+				 DECL_ATTRIBUTES (decl)));
+
+#ifdef DEBUG_DARWIN_MEM_ALLOCATORS
+fprintf (fp, "# adcom: %s (%lld,%d) ro %d cst %d stat %d com %d pub %d"
+	     " weak %d one %d init %lx\n",
+	name,  (long long)size, (int)align, TREE_READONLY (decl), 
+	TREE_CONSTANT (decl), TREE_STATIC (decl), DECL_COMMON (decl),
+	TREE_PUBLIC (decl), weak, one, (unsigned long)DECL_INITIAL (decl)); 
+#endif
+
+  /* We shouldn't be messing with this if the decl has a section name.  */
+  gcc_assert (DECL_SECTION_NAME (decl) == NULL);
+
+  /* We would rather not have to check this here - but it seems that we might
+     be passed a decl that should be in coalesced space.  */
+  if (one || weak)
+    {
+      /* Weak or COMDAT objects are put in mergable sections.  */
+      darwin_emit_weak_or_comdat (fp, decl, name, size, 
+					DECL_ALIGN (decl));
+      return;
+    } 
+
+  /* We should only get here for DECL_COMMON, with a zero init (and, in 
+     principle, only for public symbols too - although we deal with local
+     ones below).  */
+
+  /* Check the initializer is OK.  */
+  gcc_assert (DECL_COMMON (decl) 
+	      && ((DECL_INITIAL (decl) == NULL) 
+	       || (DECL_INITIAL (decl) == error_mark_node) 
+	       || initializer_zerop (DECL_INITIAL (decl))));
+
+  last_assemble_variable_decl = decl;
+
+  if (!size || !align) 
+    align = DECL_ALIGN (decl);
+
+  l2align = floor_log2 (align / BITS_PER_UNIT);
+  /* Check we aren't asking for more aligment than the platform allows.  */
+  gcc_assert (l2align <= L2_MAX_OFILE_ALIGNMENT);
+
+  if (TREE_PUBLIC (decl) != 0)
+    darwin_emit_common (fp, name, size, align);
+  else
+    darwin_emit_local_bss (fp, decl, name, size, l2align);	
+}
+
+/* Output a chunk of BSS with alignment specfied.  */
+void
+darwin_asm_output_aligned_decl_local (FILE *fp, tree decl, const char *name, 
+				      unsigned HOST_WIDE_INT size, 
+				      unsigned int align)
+{
+  unsigned long l2align;
+  bool one, weak;
+
+  one = DECL_ONE_ONLY (decl);
+  weak = (DECL_P (decl)
+	  && DECL_WEAK (decl)
+	  && !lookup_attribute ("weak_import", 
+				 DECL_ATTRIBUTES (decl)));
+
+#ifdef DEBUG_DARWIN_MEM_ALLOCATORS
+fprintf (fp, "# adloc: %s (%lld,%d) ro %d cst %d stat %d one %d pub %d"
+	     " weak %d init %lx\n",
+	name, (long long)size, (int)align, TREE_READONLY (decl), 
+	TREE_CONSTANT (decl), TREE_STATIC (decl), one, TREE_PUBLIC (decl),
+	weak , (unsigned long)DECL_INITIAL (decl)); 
+#endif
+
+  /* We shouldn't be messing with this if the decl has a section name.  */
+  gcc_assert (DECL_SECTION_NAME (decl) == NULL);
+
+  /* We would rather not have to check this here - but it seems that we might
+     be passed a decl that should be in coalesced space.  */
+  if (one || weak)
+    {
+      /* Weak or COMDAT objects are put in mergable sections.  */
+      darwin_emit_weak_or_comdat (fp, decl, name, size, 
+					DECL_ALIGN (decl));
+      return;
+    } 
+
+  /* .. and it should be suitable for placement in local mem.  */
+  gcc_assert(!TREE_PUBLIC (decl) && !DECL_COMMON (decl));
+  /* .. and any initializer must be all-zero.  */
+  gcc_assert ((DECL_INITIAL (decl) == NULL) 
+	       || (DECL_INITIAL (decl) == error_mark_node) 
+	       || initializer_zerop (DECL_INITIAL (decl)));
+
+  last_assemble_variable_decl = decl;
+
+  if (!size || !align)
+    align = DECL_ALIGN (decl);
+
+  l2align = floor_log2 (align / BITS_PER_UNIT);
+  gcc_assert (l2align <= L2_MAX_OFILE_ALIGNMENT);
+
+  darwin_emit_local_bss (fp, decl, name, size, l2align);
 }
 
 /* Emit an assembler directive to set visibility for a symbol.  The
@@ -1813,6 +2376,7 @@ darwin_asm_output_dwarf_delta (FILE *file, int size,
     fprintf (file, "\t.set L$set$%d,", darwin_dwarf_label_counter);
   else
     fprintf (file, "\t%s\t", directive);
+
   assemble_name_raw (file, lab1);
   fprintf (file, "-");
   assemble_name_raw (file, lab2);
@@ -1916,7 +2480,10 @@ darwin_file_end (void)
     }
   obstack_free (&lto_section_names_obstack, NULL);
 
-  fprintf (asm_out_file, "\t.subsections_via_symbols\n");
+  /* If we have section anchors, then we must prevent the linker from
+     re-arranging data.  */
+  if (!DARWIN_SECTION_ANCHORS || !flag_section_anchors)
+    fprintf (asm_out_file, "\t.subsections_via_symbols\n");
 }
 
 /* TODO: Add a language hook for identifying if a decl is a vtable.  */
@@ -1932,12 +2499,9 @@ darwin_binds_local_p (const_tree decl)
 				  TARGET_KEXTABI && DARWIN_VTABLE_P (decl));
 }
 
-#if 0
-/* See TARGET_ASM_OUTPUT_ANCHOR for why we can't do this yet.  */
 /* The Darwin's implementation of TARGET_ASM_OUTPUT_ANCHOR.  Define the
    anchor relative to ".", the current section position.  We cannot use
    the default one because ASM_OUTPUT_DEF is wrong for Darwin.  */
-
 void
 darwin_asm_output_anchor (rtx symbol)
 {
@@ -1946,7 +2510,28 @@ darwin_asm_output_anchor (rtx symbol)
   fprintf (asm_out_file, ", . + " HOST_WIDE_INT_PRINT_DEC "\n",
 	   SYMBOL_REF_BLOCK_OFFSET (symbol));
 }
-#endif
+
+/* Disable section anchoring on any section containing a zero-sized 
+   object.  */
+bool
+darwin_use_anchors_for_symbol_p (const_rtx symbol)
+{
+  if (DARWIN_SECTION_ANCHORS && flag_section_anchors) 
+    {
+      section *sect;
+      /* If the section contains a zero-sized object it's ineligible.  */
+      sect = SYMBOL_REF_BLOCK (symbol)->sect;
+      /* This should have the effect of disabling anchors for vars that follow
+         any zero-sized one, in a given section.  */     
+      if (sect->common.flags & SECTION_NO_ANCHOR)
+	return false;
+
+        /* Also check the normal reasons for suppressing.  */
+        return default_use_anchors_for_symbol_p (symbol);
+    }
+  else
+    return false;
+}
 
 /* Set the darwin specific attributes on TYPE.  */
 void
@@ -1969,9 +2554,12 @@ darwin_kextabi_p (void) {
 void
 darwin_override_options (void)
 {
+  bool darwin9plus = (darwin_macosx_version_min
+		      && strverscmp (darwin_macosx_version_min, "10.5") >= 0);
+
   /* Don't emit DWARF3/4 unless specifically selected.  This is a 
      workaround for tool bugs.  */
-  if (dwarf_strict < 0) 
+  if (!global_options_set.x_dwarf_strict) 
     dwarf_strict = 1;
 
   /* Disable -freorder-blocks-and-partition for darwin_emit_unwind_label.  */
@@ -1997,11 +2585,15 @@ darwin_override_options (void)
       flag_exceptions = 0;
       /* No -fnon-call-exceptions data in kexts.  */
       flag_non_call_exceptions = 0;
+      /* so no tables either.. */
+      flag_unwind_tables = 0;
+      flag_asynchronous_unwind_tables = 0;
       /* We still need to emit branch islands for kernel context.  */
       darwin_emit_branch_islands = true;
     }
+
   if (flag_var_tracking
-      && strverscmp (darwin_macosx_version_min, "10.5") >= 0
+      && darwin9plus
       && debug_info_level >= DINFO_LEVEL_NORMAL
       && debug_hooks->var_location != do_nothing_debug_hooks.var_location)
     flag_var_tracking_uninit = 1;
@@ -2019,9 +2611,10 @@ darwin_override_options (void)
     }
 
   /* It is assumed that branch island stubs are needed for earlier systems.  */
-  if (darwin_macosx_version_min
-      && strverscmp (darwin_macosx_version_min, "10.5") < 0)
+  if (!darwin9plus)
     darwin_emit_branch_islands = true;
+  else
+    emit_aligned_common = true; /* Later systems can support aligned common.  */
 
   /* The c_dialect...() macros are not available to us here.  */
   darwin_running_cxx = (strstr (lang_hooks.name, "C++") != 0);

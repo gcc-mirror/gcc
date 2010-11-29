@@ -1,3 +1,57 @@
+2010-11-29  Iain Sandoe  <iains@gcc.gnu.org>
+	    Mike Stump  <mrs@gcc.gnu.org>
+
+	PR target/26427
+	PR target/33120
+	PR testsuite/35710
+	* config/i386/darwin.h (ASM_OUTPUT_COMMON): Remove
+	(ASM_OUTPUT_LOCAL): Likewise.
+	* config/darwin-protos.h (darwin_asm_declare_object_name): New.
+	(darwin_output_aligned_bss): Likewise.
+	(darwin_asm_output_aligned_decl_local): Likewise.
+	(darwin_asm_output_aligned_decl_common): Likewise.
+	(darwin_use_anchors_for_symbol_p): Likewise.
+	* config/rs6000/darwin.h (ASM_OUTPUT_COMMON): Remove.
+	(TARGET_ASM_OUTPUT_ANCHOR): Define.
+	(TARGET_USE_ANCHORS_FOR_SYMBOL_P): Define.
+	(DARWIN_SECTION_ANCHORS): Set to 1.
+	* config/darwin.c (emit_aligned_common): New var.
+	(darwin_init_sections): Check that the Darwin private zero-size section
+	marker is in range.
+	(darwin_text_section): Check for zero-sized objects.
+	(darwin_mergeable_string_section): Likewise.
+	(darwin_mergeable_constant_section): Likewise.
+	(machopic_select_section): Adjust to check for zero-sized objects.
+	Assert that OBJC meta data are non-zero sized.
+	(darwin_asm_declare_object_name): New.
+	(darwin_asm_declare_constant_name): Adjust for zero-sized
+	object sections.
+	(BYTES_ZFILL): Define.
+	(darwin_emit_weak_or_comdat): New.
+	(darwin_emit_local_bss): New.
+	(darwin_emit_common): New.
+	(darwin_output_aligned_bss): New.
+	(darwin_asm_output_aligned_decl_common): New.
+	(darwin_asm_output_aligned_decl_local): New.
+	(darwin_file_end): Disable subsections_via_symbols when section
+	anchoring is active.
+	(darwin_asm_output_anchor): Re-enable.
+	(darwin_use_anchors_for_symbol_p): New.
+	(darwin_override_options): Check for versions that can emit
+	aligned common.  Update usage of flags to current.
+	* config/darwin-sections.def: Update comments and flags for
+	non-anchor sections.  zobj_const_section, zobj_data_section,
+	zobj_bss_section, zobj_const_data_section: New.
+	* config/darwin.h (ASM_DECLARE_OBJECT_NAME): Redefine.
+	(ASM_OUTPUT_ALIGN): Make whitespace output consistent.
+	(L2_MAX_OFILE_ALIGNMENT): Define.
+	(ASM_OUTPUT_ALIGNED_BSS): Define.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Define.
+	(ASM_OUTPUT_ALIGNED_DECL_COMMON): Define.
+	(SECTION_NO_ANCHOR): Define.
+	(TARGET_ASM_OUTPUT_ANCHOR) Define with a default of NULL.
+	(DARWIN_SECTION_ANCHORS): Define with a default of 0.
+	
 2010-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* system.h: Include "safe-ctype.h" instead of <safe-ctype.h>.

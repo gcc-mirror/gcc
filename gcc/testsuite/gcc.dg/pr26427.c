@@ -1,4 +1,4 @@
-/* { dg-warning "this target does not support" } */
+/* { dg-warning "this target does not support" "" {target *86*-*-darwin* } 0 } */
 /* { dg-do run { target { *-*-darwin* } } } */
 /* { dg-options { -fsection-anchors -O } } */
 /* PR target/26427 */
