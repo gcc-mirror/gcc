@@ -1,3 +1,8 @@
+2010-11-29  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/46338
+	* g++.dg/debug/pr46338.C: New.
+
 2010-11-29  Richard Guenther  <rguenther@suse.de>
 	    Zdenek Dvorak  <rakdver@kam.uniff.cz>
 
