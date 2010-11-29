@@ -4268,7 +4268,22 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	    constant_expression_warning (DECL_SIZE (decl));
 	  else
 	    {
-	      error ("storage size of %q+D isn%'t constant", decl);
+	      if (upc_shared_type_p (TREE_TYPE (decl)))
+	        {
+		  gcc_assert (!flag_upc_threads);
+		  if (UPC_TYPE_HAS_THREADS_FACTOR (TREE_TYPE (decl)))
+		    error ("In the dynamic translation environment, THREADS may"
+		            " not appear in declarations of shared arrays"
+			    " with indefinite block size."
+		            "  The storage size of %q+D cannot be calculated.", decl);
+		  else
+		    error ("In the dynamic translation environment,"
+		           " THREADS must appear exactly once in"
+		           " declarations of shared arrays."
+		           "  The storage size of %q+D cannot be calculated.", decl);
+	        }
+	      else
+	        error ("storage size of %q+D isn%'t constant", decl);
 	      TREE_TYPE (decl) = error_mark_node;
 	    }
 	}
@@ -4996,7 +5011,22 @@ grokdeclarator (const struct c_declarator *declarator,
 				   TYPE_BLOCK_FACTOR (element_type),
 				   NULL_TREE, NULL_TREE);
       else
-	error ("merge of UPC layout qualifiers is currently unimplemented"); 
+        {
+          tree t = build_variant_type_copy (element_type);
+	  TYPE_BLOCK_FACTOR (t) = NULL_TREE;
+	  t = upc_set_block_factor (TREE_CODE (t), t, layout_qualifier);
+	  if (t != NULL_TREE && t != error_mark_node)
+	    {
+              const tree b1 = upc_get_block_factor (element_type);
+              const tree b2 = upc_get_block_factor (t);
+	      if (!tree_int_cst_equal (b1, b2))
+	        {
+                  error_at (loc, "UPC layout qualifier is incompatible with"
+	                         " the type specified by a typedef");
+		  layout_qualifier = NULL_TREE;
+	        }
+	    }
+	}
     }
   as1 = declspecs->address_space;
   as2 = TYPE_ADDR_SPACE (element_type);
@@ -5323,14 +5353,16 @@ grokdeclarator (const struct c_declarator *declarator,
 		    int n_thread_refs = count_upc_threads_refs (size);
 		    if (upc_threads_ref || n_thread_refs > 1)
 		      {
-			error ("THREADS may not be referenced more than once"
-			       " in a shared array declaration.");
+			error_at (loc, "THREADS may not be referenced more than once"
+			               " in a shared array declaration."
+			               "  The size of %qE cannot be calculated.", name);
 			size = integer_one_node;
 		      }
 		    else if (!is_multiple_of_upc_threads (size))
 		      {
-			error ("array dimension is not a simple multiple"
-			       " of THREADS");
+			error_at (loc, "Array dimension is not a simple multiple"
+			               " of THREADS.",
+			               "  The size of %qE cannot be calculated.", name);
 			size = integer_one_node;
 		      }
 		    else
@@ -5341,7 +5373,7 @@ grokdeclarator (const struct c_declarator *declarator,
 			if (TREE_CODE (size) != INTEGER_CST)
 			  {
 			    error_at (loc, "UPC forbids variable-size shared array %qE",
-				    name);
+				           name);
 			    size = integer_one_node;
 			  }
 		      }
@@ -5519,13 +5551,6 @@ grokdeclarator (const struct c_declarator *declarator,
 		      type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
 	            UPC_TYPE_HAS_THREADS_FACTOR (type) = 1; 
                   }
-
-		/* Add UPC-defined block size, if supplied */
-		if (layout_qualifier)
-		  {
-		    type = upc_set_block_factor (ARRAY_TYPE, type, layout_qualifier);
-		    layout_qualifier = 0;
-		  }
 
 		/* The GCC extension for zero-length arrays differs from
 		   ISO flexible array members in that sizeof yields
@@ -5792,6 +5817,13 @@ grokdeclarator (const struct c_declarator *declarator,
   if (bitfield)
     check_bitfield_type_and_width (&type, width, name);
 
+  /* Check for UPC's layout qualifier.  */
+  if (layout_qualifier)
+    {
+      type = upc_set_block_factor (TREE_CODE (type), type, layout_qualifier);
+      layout_qualifier = 0;
+    }
+
   /* Did array size calculations overflow?  */
 
   if (TREE_CODE (type) == ARRAY_TYPE
@@ -5819,6 +5851,11 @@ grokdeclarator (const struct c_declarator *declarator,
 		 "ISO C forbids qualified function types");
       if (type_quals)
 	type = c_build_qualified_type (type, type_quals);
+
+      /* Add UPC-defined block size, if supplied */
+      if (layout_qualifier)
+        type = upc_set_block_factor (TYPE_DECL, type, layout_qualifier);
+
       decl = build_decl (declarator->id_loc,
 			 TYPE_DECL, declarator->u.id, type);
       if (declspecs->explicit_signed_p)
@@ -5936,8 +5973,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	  }
         else if (type_quals & TYPE_QUAL_SHARED)
 	  {
-	    error_at (loc, "parameter %qE declared with shared qualifier",
-		   name);
+	    error ("parameter declared with shared qualifier");
 	    type_quals &= ~(TYPE_QUAL_SHARED | TYPE_QUAL_STRICT
 			    | TYPE_QUAL_RELAXED);
 	  }
@@ -8718,7 +8754,10 @@ declspecs_add_qual (struct c_declspecs *specs, tree qual)
   if (TREE_CODE (qual) == ARRAY_REF)
     {
       if (specs->upc_layout_qualifier)
-        error ("two or more layout qualifiers specified");
+        {
+          error ("two or more layout qualifiers specified");
+	  return specs;
+        }
       else
         {
           specs->upc_layout_qualifier = qual;

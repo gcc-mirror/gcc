@@ -33,6 +33,7 @@
 #undef fence
 #endif /* __sgi__ */
 #include <stdlib.h>
+#include <stddef.h>
 
 #define DEBUG_ALLOC 1
 #undef DEBUG_ALLOC
@@ -71,7 +72,7 @@ typedef union _pts_as_rep
   } pts_as_rep_t;
 
 /* Create a shared pointer, given (addrfield, thread)  */
-static
+static inline
 shared void *
 __upc_alloc_build_pts (size_t addrfield, size_t thread)
 {
@@ -80,6 +81,14 @@ __upc_alloc_build_pts (size_t addrfield, size_t thread)
   GUPCR_PTS_SET_VADDR  (r.rep, addrfield);
   GUPCR_PTS_SET_THREAD (r.rep, thread);
   return r.pts;
+}
+
+/* Increment a shared pointer, by nbytes */
+static inline
+shared void *
+__upc_alloc_ptr_add (shared void *ptr, ptrdiff_t nbytes)
+{
+  return (shared void *)(((shared [] char *)ptr) + nbytes);
 }
 
 #ifdef DEBUG_ALLOC
@@ -157,7 +166,7 @@ __upc_heap_alloc (shared upc_heap_p *heap_p, size_t alloc_size,
       if (rem > 0)
 	{
 	  /* link the remainder onto the free list */
-	  upc_heap_p frag = (shared void *)alloc + alloc_size;
+	  upc_heap_p frag = __upc_alloc_ptr_add (alloc, alloc_size);
 	  frag->next = alloc->next;
 	  frag->alloc_seq = alloc->alloc_seq;
 	  frag->is_global = alloc->is_global;
@@ -201,14 +210,14 @@ __upc_heap_free (shared upc_heap_p *heap_p, upc_heap_p ptr)
   ptr->alloc_tag = 0;
   ptr->next = *p;
   *p = ptr;
-  if (ptr->next && (ptr->next == ((shared void *)ptr + ptr->size))
+  if (ptr->next && (ptr->next == __upc_alloc_ptr_add (ptr, ptr->size))
       && (ptr->alloc_seq == ptr->next->alloc_seq))
     {
       /* adjacent, merge this block with the next */
       ptr->size += ptr->next->size;
       ptr->next =  ptr->next->next;
     }
-  if (prev && (ptr  == ((shared void *)prev + prev->size))
+  if (prev && (ptr  == __upc_alloc_ptr_add (prev, prev->size))
       && (ptr->alloc_seq == prev->alloc_seq))
     {
       /* adjacent, merge this block with previous */
@@ -284,7 +293,7 @@ __upc_global_alloc (size_t size)
       alloc = __upc_global_heap_alloc (alloc_size);
       __upc_release_alloc_lock ();
       if (alloc)
-        mem = (shared void *)alloc + GUPCR_HEAP_OVERHEAD;
+        mem = __upc_alloc_ptr_add (alloc, GUPCR_HEAP_OVERHEAD);
 #ifdef DEBUG_ALLOC
       printf ("%d: <- __upc_global_alloc: %s\n", MYTHREAD, __upc_alloc_sptostr(mem));
 #endif /* DEBUG_ALLOC */
@@ -339,7 +348,7 @@ __upc_local_alloc (size_t size)
 	}
       __upc_release_alloc_lock ();
       if (alloc)
-	mem = ((shared void *) alloc) + GUPCR_HEAP_OVERHEAD;
+        mem = __upc_alloc_ptr_add (alloc, GUPCR_HEAP_OVERHEAD);
     }
 #ifdef DEBUG_ALLOC
   printf ("%d: <-- __upc_local_alloc: %s\n", MYTHREAD, __upc_alloc_sptostr (mem));
@@ -407,7 +416,7 @@ upc_free (shared void *ptr)
       /* FIXME: add code to validate offset. */
       if (phase || thread >= THREADS)
         __upc_fatal (GUPCR_FREE_INVALID_PTR_MSG);
-      thisp = (upc_heap_p)(ptr - GUPCR_HEAP_OVERHEAD);
+      thisp = (upc_heap_p) __upc_alloc_ptr_add (ptr, -GUPCR_HEAP_OVERHEAD);
       if (thisp->is_global && thread)
         __upc_fatal (GUPCR_FREE_INVALID_PTR_MSG);
       if (thisp->alloc_tag != GUPCR_HEAP_ALLOC_TAG)

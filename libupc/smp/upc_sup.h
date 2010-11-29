@@ -41,6 +41,8 @@ extern void __upc_exit (int status) __attribute__ ((__noreturn__));
 extern void __upc_fatal (const char *msg) __attribute__ ((__noreturn__));
 
 /* Profiled versions of runtime routines.  */
+extern void *__cvtaddrg (upc_shared_ptr_t, const char *filename, const int linenum);
+extern void *__getaddrg (upc_shared_ptr_t, const char *filename, const int linenum);
 extern void __upc_barrierg (int barrier_id, const char *filename, const int linenum);
 extern void __upc_notifyg (int barrier_id, const char *filename, const int linenum);
 extern void __upc_waitg (int barrier_id, const char *filename, const int linenum);

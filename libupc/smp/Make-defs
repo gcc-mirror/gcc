@@ -98,7 +98,7 @@ WFLAGS = -W -Wall -Wwrite-strings -Wstrict-prototypes -Werror
 DFLAGS = -O0 -g
 ALL_CFLAGS = -I. -I$(target_srcdir) -I$(incdir) -I$(srcdir) $(WFLAGS) \
              $(DFLAGS) $(CPPFLAGS) $(CFLAGS) $(TARGET_DEFS) $(TARGET_CFLAGS) \
-	     -DIN_GCC -DIN_TARGET_LIBS
+	     -DIN_GCC -DIN_TARGET_LIBS -D_UPC_COLL_CHECK_ARGS
 
 L_CC=$(LIBTOOL_COMPILE) $(CC) -c $(ALL_CFLAGS) $(INCLUDES)
 L_CC_UPC=$(LIBTOOL_COMPILE) $(CC_UPC) -c $(ALL_CFLAGS) $(INCLUDES)

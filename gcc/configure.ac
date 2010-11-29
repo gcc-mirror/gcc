@@ -1011,7 +1011,7 @@ esac],
 AC_SUBST(onestep)
 
 ACX_PKGVERSION([GCC])
-ACX_BUGURL([http://www.intrepid.com/upc/bugs.html])
+ACX_BUGURL([http://gccupc.org/bugs])
 
 # Sanity check enable_languages in case someone does not run the toplevel
 # configure # script.

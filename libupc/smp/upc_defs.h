@@ -136,17 +136,29 @@ typedef upc_info_t *upc_info_p;
 /* system wide info */
 extern upc_info_p __upc_info;
 
-/* The base address of the UPC global area */
-extern void *__upc_global;
+/* The filename of the location where a runtime
+   error was detected.  This is set by the various
+   debug-enabled ('g') UPC runtime library routines.  */
+extern GUPCR_THREAD_LOCAL const char *__upc_err_filename;
 
-/* The size of each thread's contribution to the global shared. */
-extern size_t __upc_local_size;
+/* The line number of the location where a runtime
+   error was detected.  This is set by the various
+   debug-enabled ('g') UPC runtime library routines.  */
+extern GUPCR_THREAD_LOCAL unsigned int __upc_err_linenum;
 
-/* A pre-calculated value equal to:
-     (__upc_global - __upc_shared_start) which
-   is used to map a pointer-to-shared's address field
-   into a global memory address. */
-extern unsigned long __upc_global_base;
+#define GUPCR_SET_ERR_LOC() \
+  do \
+    { \
+      __upc_err_filename = filename; \
+      __upc_err_linenum  = linenum; \
+    } while (0)
+
+#define GUPCR_CLEAR_ERR_LOC() \
+  do \
+    { \
+      __upc_err_filename = NULL; \
+      __upc_err_linenum  = 0; \
+    } while (0)
 
 /* The base address of the UPC shared section */
 extern char GUPCR_SHARED_SECTION_START[1];

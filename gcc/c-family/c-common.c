@@ -215,10 +215,6 @@ int flag_upc_pthreads;
    and runtime to map N UPC threads per process onto
    N POSIX threads running inside the process. */
 int flag_upc_pthreads_per_process;
-
-/* The -fupc-inline-lib switch tells the UPC compiler to
-   inline shared access routines. */
-int flag_upc_inline_lib;
  
 /* The implementation model for UPC threads that
    are mapped to POSIX threads, specified at compilation
@@ -4279,11 +4275,17 @@ c_sizeof_or_alignof_type (location_t loc,
     }
   else if (type_code == VOID_TYPE || type_code == ERROR_MARK)
     {
-      if (type_code == VOID_TYPE
-	  && complain && (pedantic || warn_pointer_arith))
-	pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith,
-		 "invalid application of %qs to a void type", op_name);
-      else if (!complain)
+      if (complain)
+        {
+	  if (type_code == VOID_TYPE && upc_shared_type_p (type))
+	    error_at (loc, "invalid application of %qs"
+	                   " to %<shared void%> type", op_name);
+          else if (type_code == VOID_TYPE
+	           && (pedantic || warn_pointer_arith))
+	    pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith,
+		     "invalid application of %qs to a void type", op_name);
+        }
+      else
         return error_mark_node;
       value = size_one_node;
     }
@@ -8591,6 +8593,13 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
     }
 
   type = *ptype;
+  if (upc_shared_type_p (type))
+    {
+      /* Force a indefinte layout factor.  */ 
+      const tree layout_qualifier = build4 (ARRAY_REF, NULL_TREE, NULL_TREE,
+                                             size_zero_node, NULL_TREE, NULL_TREE);
+      type = upc_set_block_factor (ARRAY_TYPE, type, layout_qualifier);
+    }
   elt = TREE_TYPE (type);
   quals = TYPE_QUALS (strip_array_types (elt));
   if (quals == 0)

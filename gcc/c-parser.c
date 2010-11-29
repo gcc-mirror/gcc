@@ -7287,7 +7287,7 @@ c_parser_upc_shared_qual (c_parser *parser, struct c_declspecs *specs)
 
    upc_forall-statement:
      upc_forall ( expression[opt] ; expression[opt] ;
-                  expression[opt] ; affinity-opt ) statement
+                  expression[opt] ; affinity[opt] ) statement
    affinity: experssion | continue  */
 
 static void
@@ -7296,7 +7296,6 @@ c_parser_upc_forall_statement (c_parser *parser)
   tree block, cond, incr, save_break, save_cont, body;
   tree affinity;
   location_t loc = c_parser_peek_token (parser)->location;
-  location_t for_loc = c_parser_peek_token (parser)->location;
   location_t affinity_loc;
   const int profile_upc_forall = flag_upc_instrument && get_upc_pupc_mode();
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_UPC_FORALL));
@@ -7313,7 +7312,7 @@ c_parser_upc_forall_statement (c_parser *parser)
       else if (c_parser_next_token_starts_declspecs (parser))
 	{
 	  c_parser_declaration_or_fndef (parser, true, true, true, true, true);
-	  check_for_loop_decls (for_loc);
+	  check_for_loop_decls (loc);
 	}
       else if (c_parser_next_token_is_keyword (parser, RID_EXTENSION))
 	{
@@ -7332,7 +7331,7 @@ c_parser_upc_forall_statement (c_parser *parser)
 	      c_parser_consume_token (parser);
 	      c_parser_declaration_or_fndef (parser, true, true, true, true, true);
 	      restore_extension_diagnostics (ext);
-	      check_for_loop_decls (for_loc);
+	      check_for_loop_decls (loc);
 	    }
 	  else
 	    goto init_expr;
@@ -7355,7 +7354,7 @@ c_parser_upc_forall_statement (c_parser *parser)
 	  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
 	}
       /* Parse the increment expression.  */
-      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+      if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	incr = c_process_expr_stmt (loc, NULL_TREE);
       else
 	incr = c_process_expr_stmt (loc, c_parser_expression (parser).value);
@@ -7369,15 +7368,17 @@ c_parser_upc_forall_statement (c_parser *parser)
       else if (c_parser_peek_token (parser)->type == CPP_KEYWORD
                && c_parser_peek_token (parser)->keyword == RID_CONTINUE)
 	{
-	  c_parser_consume_token (parser);
 	  affinity = NULL_TREE;
+	  c_parser_consume_token (parser);
 	}
       else
 	{
 	  affinity = c_parser_expression_conv (parser).value;
-	  affinity = c_fully_fold (affinity, false, NULL);
+          affinity = c_fully_fold (affinity, false, NULL);
 	}
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
+      if (affinity)
+        affinity = upc_affinity_test (affinity_loc, affinity);
     }
   else
     {
@@ -7390,19 +7391,45 @@ c_parser_upc_forall_statement (c_parser *parser)
   save_cont = c_cont_label;
   c_cont_label = NULL_TREE;
   body = c_parser_c99_block_statement (parser);
-  body = upc_affinity_test (affinity_loc, body, affinity);
   if (profile_upc_forall)
     {
       const tree gasp_start = upc_instrument_forall (loc, 1 /* start */);
       add_stmt (gasp_start);
     }
-  c_finish_loop (loc, cond, incr, body, c_break_label, c_cont_label, true);
-  add_stmt (c_end_compound_stmt (loc, block, flag_isoc99));
+  loc = c_parser_peek_token (parser)->location;
+  if (affinity != NULL_TREE && affinity != error_mark_node)
+    {
+      tree upc_forall_depth;
+      upc_forall_depth = lookup_name (get_identifier (UPC_FORALL_DEPTH_NAME));
+      if (upc_forall_depth == NULL_TREE)
+        internal_error ("Cannot locate '" UPC_FORALL_DEPTH_NAME "'."
+	                "  This identifier should be defined in a compiler-supplied"
+			" include file.");
+      assemble_external (upc_forall_depth);
+      TREE_USED (upc_forall_depth) = 1;
+      c_finish_expr_stmt (loc,
+      build_unary_op (loc, PREINCREMENT_EXPR, upc_forall_depth, 0));
+      tree depth_gt_one;
+      depth_gt_one = build_binary_op (affinity_loc,
+				      GT_EXPR, upc_forall_depth, integer_one_node, 0);
+      depth_gt_one = c_objc_common_truthvalue_conversion (affinity_loc, depth_gt_one);
+      depth_gt_one = c_fully_fold (depth_gt_one, false, NULL);
+      affinity = build_binary_op (affinity_loc, TRUTH_OR_EXPR,
+                                  depth_gt_one, affinity, 0);
+      body = build3 (COND_EXPR, void_type_node, affinity,
+		     body, NULL_TREE);
+      c_finish_loop (loc, cond, incr, body, c_break_label, c_cont_label, true);
+      c_finish_expr_stmt (loc,
+        build_unary_op (loc, PREDECREMENT_EXPR, upc_forall_depth, 0));
+    }
+  else
+    c_finish_loop (loc, cond, incr, body, c_break_label, c_cont_label, true);
   if (profile_upc_forall)
     {
       const tree gasp_end = upc_instrument_forall (loc, 0 /* start */);
       add_stmt (gasp_end);
     }
+  add_stmt (c_end_compound_stmt (loc, block, flag_isoc99));
   c_break_label = save_break;
   c_cont_label = save_cont;
 }

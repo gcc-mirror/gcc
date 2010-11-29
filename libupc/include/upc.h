@@ -61,15 +61,24 @@ extern void upc_memgetg (void *, shared const void *, size_t, const char *, int)
 extern void upc_memputg (shared void *, const void *, size_t, const char *, int);
 extern void upc_memsetg (shared void *, int, size_t, const char *, int);
 
+/* The following functions are not profiled, but when -fupc-debug
+   is asserted will be called with the addtional file and line
+   arguments.  */
+extern size_t upc_threadofg (shared void *, const char *, int);
+extern size_t upc_phaseofg (shared void *, const char *, int);
+extern shared void *upc_resetphaseg (shared void *, const char *, int);
+extern size_t upc_addrfieldg (shared void *, const char *, int);
+extern size_t upc_affinitysizeg (size_t, size_t, size_t, const char *, int);
+
 /* upc_local_alloc is supported, though it is deprecrated
    and not profiled.  */
 extern shared void *upc_local_alloc (size_t, size_t);
 
 #define upc_all_alloc(n, b)      upc_all_allocg(n, b, __FILE__, __LINE__)
-#define upc_all_lock_alloc()    upc_all_lock_allocg(__FILE__, __LINE__)
+#define upc_all_lock_alloc()     upc_all_lock_allocg(__FILE__, __LINE__)
 #define upc_alloc(n)             upc_allocg(n, __FILE__, __LINE__)
 #define upc_free(ptr)            upc_freeg(ptr, __FILE__, __LINE__)
-#define upc_gloal_exit(n)        upc_global_exitg(n, __FILE__, __LINE__)
+#define upc_global_exit(n)       upc_global_exitg(n, __FILE__, __LINE__)
 #define upc_global_alloc(n, b)   upc_global_allocg(n, b, __FILE__, __LINE__)
 #define upc_global_lock_alloc()  upc_global_lock_allocg(__FILE__, __LINE__)
 #define upc_lock_attempt(lck)    upc_lock_attemptg(lck, __FILE__, __LINE__)
@@ -80,6 +89,14 @@ extern shared void *upc_local_alloc (size_t, size_t);
 #define upc_memput(p1, p2, n)    upc_memputg(p1, p2, n, __FILE__, __LINE__)
 #define upc_memset(p1, c, n)     upc_memsetg(p1, c, n, __FILE__, __LINE__)
 #define upc_unlock(lck)          upc_unlockg(lck, __FILE__, __LINE__)
+
+#define upc_threadof(p) upc_threadofg(p, __FILE__, __LINE__)
+#define upc_phaseof(p) upc_phaseofg(p, __FILE__, __LINE__)
+#define upc_resetphase(p) upc_resetphaseg(p, __FILE__, __LINE__)
+#define upc_addrfield(p) upc_addrfieldg(p, __FILE__, __LINE__)
+#define upc_affinity(totalsize, nbytes, threadid) \
+           upc_affinitysizeg(totalsize, nbytes, threadid, __FILE__, __LINE__)
+
 #else
 
 /* Standard UPC library functions */

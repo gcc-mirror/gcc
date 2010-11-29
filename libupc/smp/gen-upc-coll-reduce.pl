@@ -8,12 +8,12 @@
 # $PERL gen-upc-coll-reduce.pl upc_coll_all_prefix_reduce.in >
 #                              upc_coll_all_prefix_reduce.upc
 #
-# This script reads 'upc_coll_reduce.in' as template file,
+# This script reads 'upc_coll_reduce.in' as a template file,
 # and generates a new source file, upc_coll_reduce.upc,
 # which customizes the "upc_all_reduce_GENERIC" for each
 # data type that the procedure operates on.  The following
 # steps are performed:
-# 1. GENERIC is replaced with a one/two type suffix
+# 1. GENERIC is replaced with a one/two character type suffix
 #    where the suffix encodes the type that the procedure
 #    operates on.
 # 2. _UPC_RED_T is replaced with the full C type name
@@ -33,7 +33,8 @@ my @type_config = (
     ['signed long', 'L', 1],
     ['unsigned long', 'UL', 1],
     ['float', 'F', 0],
-    ['double', 'D', 0]
+    ['double', 'D', 0],
+    ['long double', 'LD', 0]
   );
 my $src;
 {

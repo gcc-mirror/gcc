@@ -82,6 +82,15 @@
 /* Define to 1 if the target supports __attribute__((visibility(...))). */
 #undef HAVE_ATTRIBUTE_VISIBILITY
 
+/* Define to 1 if you have the `backtrace' function. */
+#undef HAVE_BACKTRACE
+
+/* Define to 1 if you have the `backtrace_symbols' function. */
+#undef HAVE_BACKTRACE_SYMBOLS
+
+/* Define to 1 if you have the `backtrace_symbols_fd' function. */
+#undef HAVE_BACKTRACE_SYMBOLS_FD
+
 /* Define if the POSIX Semaphores do not work on your system. */
 #undef HAVE_BROKEN_POSIX_SEMAPHORES
 
@@ -97,6 +106,9 @@
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the <execinfo.h> header file. */
+#undef HAVE_EXECINFO_H
 
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H

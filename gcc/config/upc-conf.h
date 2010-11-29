@@ -69,7 +69,7 @@ Boston, MA 02111-1307, USA.  */
 #define UPC_PTS_THREAD_TYPE     ((LONG_TYPE_SIZE == 64) ? "uint32_t" : "uint16_t")
 #define UPC_PTS_PHASE_TYPE      ((LONG_TYPE_SIZE == 64) ? "uint32_t" : "uint16_t")
 #define UPC_MAX_BLOCK_SIZE_CSTU build_int_cstu (long_unsigned_type_node, \
-                                (LONG_TYPE_SIZE == 64) ? 0x100000000 : 0x10000)
+                                (LONG_TYPE_SIZE == 64) ? 0xffffffff : 0xffff)
 #define UPC_MAX_BLOCK_SIZE_STRING ((LONG_TYPE_SIZE == 64) ? "4294967295" : "65535")
 #define UPC_MAX_THREADS           ((LONG_TYPE_SIZE == 64) ? "4294967296" : "65536")
 
@@ -193,6 +193,12 @@ void (*UPC_INIT_ARRAY_END_NAME[]) (void) \
    program is called.  */
 #define UPC_INIT_DECLS_FUNC "__upc_init_decls"
 
+/* Name of runtime variable that is used by the code generated
+   for the 'upc_forall' statement to implement nested upc_forall
+   semantics.  Per the language specification, a nested upc_forall
+   statement with an affinity clause will operate as if "continue"
+   had been supplied for the affinity clause.  */
+#define UPC_FORALL_DEPTH_NAME "__upc_forall_depth"
 
 /* the name of the runtime variable holding the address of the beginning of
    the global shared region. */

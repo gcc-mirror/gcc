@@ -53,6 +53,14 @@ int use_upc_dwarf2_extensions;
 /* Nonzero whenever UPC functionality is being used.  */
 int flag_upc;
 
+/* Generate code that provides the UPC runtime with
+   the file and line number where the runtime was callled.  */
+int flag_upc_debug;
+
+/* The -fupc-inline-lib switch tells the UPC compiler to
+   inline shared access routines. */
+int flag_upc_inline_lib;
+
 /* The -fupc-instrument switch tells the UPC compiler to
    instrument UPC shared accesses and library calls, using GASP tool support.  */
 int flag_upc_instrument;
@@ -149,6 +157,14 @@ upc_init_options (unsigned int argc, const char **argv)
    * sees fit. For example, -traditional will deisable
    * prototype checking */
   set_std_c99 ( 0 /* iso=0 */ );
+
+  /* The consensus of the UPC community seems to be that
+     arithmetic on (void *) pointers and sizeof (void)
+     are compilation errors.  Enable this warning-as-error
+     mode by default.  */
+  warn_pointer_arith = 1;
+  enable_warning_as_error ("pointer-arith", true,
+                            CL_C | CL_ObjC | CL_UPC);
 
 #ifdef ENABLE_UPC_DWARF2_SUPPORT
   /* Some targets support UPC's DWARF2 extensions by default. */

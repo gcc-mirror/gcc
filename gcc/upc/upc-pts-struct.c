@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "upc-act.h"
 #include "upc-pts.h"
+#include "upc-gasp.h"
 #include "cgraph.h"
 #include "gimple.h"
 #include "c-family/c-common.h"
@@ -204,11 +205,12 @@ upc_is_null_pts_p (tree exp)
 tree
 upc_pts_build_threadof (location_t loc ATTRIBUTE_UNUSED, tree exp)
 {
-  const tree uint_t = unsigned_type_node;
   tree affinity;
+  tree type = TREE_TYPE (upc_thread_field_node);
   gcc_assert (TREE_TYPE (exp) == upc_pts_rep_type_node);
-  affinity = build3 (COMPONENT_REF, uint_t, exp,
+  affinity = build3 (COMPONENT_REF, type, exp,
 		    upc_thread_field_node, NULL_TREE);
+  affinity = fold_convert (sizetype, affinity);
   return affinity;
 }
 
@@ -467,17 +469,19 @@ upc_pts_build_cvt (location_t loc, tree exp)
       else
 	{
 	  /* shared -> local */
-	  tree libfunc = identifier_global_value (
-	                     get_identifier (UPC_GETADDR_LIBCALL));
+          int doprofcall = flag_upc_instrument && get_upc_pupc_mode();
+          const char *libfunc_name = doprofcall ? UPC_GETADDRG_LIBCALL : UPC_GETADDR_LIBCALL;
 	  tree src = build1 (NOP_EXPR, upc_pts_rep_type_node,
 	                     TREE_OPERAND (exp, 0));
-	  tree lib_call;
-
+          tree libfunc, lib_args, lib_call;
+          libfunc = identifier_global_value (get_identifier (libfunc_name));
 	  if (!libfunc)
 	    internal_error ("library function %s not found",
-	                    UPC_GETADDR_LIBCALL);
-	  lib_call = build_function_call (loc, libfunc,
-	                   build_tree_list (NULL_TREE, src));
+	                    libfunc_name);
+          lib_args = tree_cons (NULL_TREE, src, NULL_TREE);
+          if (doprofcall)
+            lib_args = upc_gasp_add_src_args (lib_args, input_filename, input_line);
+	  lib_call = build_function_call (loc, libfunc, lib_args);
 	  result = build1 (VIEW_CONVERT_EXPR, type, lib_call);
 	}
     }

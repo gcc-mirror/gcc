@@ -24,6 +24,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h>
 #include <stddef.h>
 
+#if !defined(__GNUC__) && !defined(__attribute__)
+#define __attribute__(X) 
+#endif
+
 shared [5] int a_blk5[10*THREADS];
 shared [5] int *ptr_to_blk5;
 shared [3] int *ptr_to_blk3;
@@ -56,7 +60,8 @@ shared volatile int shared_vol2[10][THREADS];
 double localData;
 double *localPtr;
  
-/* bug 103: ICE: codegen (AMD64) - fail while evaluating shared array element actual parameters */
+/* bug 103: ICE: codegen (AMD64) - fail while evaluating shared array element
+   actual parameters */
 shared double save_err[100][4][THREADS];
 
 /* gimple bug. */
@@ -611,6 +616,39 @@ bug362_test ()
 }
 
 
+/* bug 402: ICE: '[*]' layout factor on multi-dimensional shared array with
+   dynamic threads.  */
+shared [*] int A_402[THREADS][16];
+
+void
+bug402_test ()
+{
+  int i, j;
+  for (j = 0; j < 16; ++j)
+    A_402[MYTHREAD][j] = MYTHREAD*16 + j + 1;
+  upc_barrier;
+  if (!MYTHREAD)
+    {
+      if (upc_blocksizeof(A_402) != 16)
+	{
+	  fprintf (stderr, "Error: blocksizef(A_402) != 16  - bug 402 test failed\n");
+	  abort ();
+	}
+      for (i = 0; i < THREADS; ++i)
+        for (j = 0; j < 16; ++j)
+	  {
+	    int expected = i*16 + j + 1;
+	    int got = A_402[i][j];
+	    if (got != expected)
+	      {
+		fprintf (stderr, "Error: expected: %d, got: %d - bug 402 test failed\n",
+			 expected, got);
+		abort ();
+	      }
+	  }
+    }
+}
+
 void
 test18()
 {
@@ -976,6 +1014,8 @@ test18()
   bug349_test ();
   upc_barrier;
   bug351_test ();
+  upc_barrier;
+  bug402_test ();
   upc_barrier;
   if (MYTHREAD == 0)
     {

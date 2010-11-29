@@ -38,7 +38,7 @@ extern int upc_inner_shared_ref_p (tree);
 
 /* used by c-parser */
 extern tree upc_build_sync_stmt (location_t, tree, tree);
-extern tree upc_affinity_test (location_t, tree, tree);
+extern tree upc_affinity_test (location_t, tree);
 extern struct c_expr upc_blocksizeof_expr (location_t, struct c_expr);
 extern struct c_expr upc_blocksizeof_type (location_t, struct c_type_name *);
 extern struct c_expr upc_elemsizeof_expr (location_t, struct c_expr);

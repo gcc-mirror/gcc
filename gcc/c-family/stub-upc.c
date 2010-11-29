@@ -30,6 +30,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 int compiling_upc;
 int flag_upc;
+int flag_upc_debug;
+int flag_upc_inline_lib;
 int flag_upc_instrument;
 int flag_upc_instrument_functions;
 int use_upc_dwarf2_extensions;
@@ -147,7 +149,7 @@ upc_pts_diff (
 
 
 tree
-upc_affinity_test (location_t ARG_UNUSED(start_locus), tree ARG_UNUSED(for_body),
+upc_affinity_test (location_t ARG_UNUSED(start_locus),
                    tree ARG_UNUSED(affinity))
 {
   return 0;

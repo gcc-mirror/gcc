@@ -102,9 +102,17 @@ upc_handle_option (size_t scode, const char *arg, int value, int kind)
     case OPT_dwarf_2_upc:
       use_upc_dwarf2_extensions = value;
       break;
+    case OPT_fupc_debug:
+      if ((value == 1) && (flag_upc_inline_lib == 1))
+        error ("-fupc-debug is incompatible with -fupc-inline-lib");
+      flag_upc_debug = value;
+      flag_upc_instrument = value;
+      break;
     case OPT_fupc_inline_lib:
       if ((value == 1) && (flag_upc_instrument == 1))
         error ("-fupc-instrument is incompatible with -fupc-inline-lib");
+      if ((value == 1) && (flag_upc_debug == 1))
+        error ("-fupc-instrument is incompatible with -fupc-debug");
       flag_upc_inline_lib = value;
       break;
     case OPT_fupc_instrument:
@@ -719,9 +727,19 @@ upc_set_block_factor (const enum tree_code decl_kind,
       else
         {
           n_threads = convert (bitsizetype, upc_num_threads ());
-          block_factor = size_binop (CEIL_DIV_EXPR,
+          if (TREE_CODE (n_threads) != INTEGER_CST)
+	    {
+	      error ("A layout qualifier of '[*]' requires that"
+	             " the array size is either an integral constant"
+		     " or an integral multiple of THREADS.");
+              block_factor = size_one_node;
+	    }
+          else
+	    {
+              block_factor = size_binop (CEIL_DIV_EXPR,
                          size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (type), elt_size),
 	    	         n_threads);
+	    }
         }
     }
   else
@@ -736,6 +754,8 @@ upc_set_block_factor (const enum tree_code decl_kind,
   if (!block_factor)
     return type;
 
+  gcc_assert (TREE_CODE (block_factor) == INTEGER_CST);
+
   /* If the blocking factor is 1, leave TYPE_BLOCK_FACTOR()
      as NULL to normalize the representation. The UPC spec
      says all objects have a blocking factor of 1 if none
@@ -745,14 +765,18 @@ upc_set_block_factor (const enum tree_code decl_kind,
   if (tree_int_cst_equal (block_factor, size_one_node))
     return type;
 
+  if (tree_int_cst_compare (block_factor, integer_zero_node) <  0)
+    {
+      error ("layout qualifier must be a non-negative integral constant");
+      return type;
+    }
+
   if (tree_int_cst_compare (block_factor, UPC_MAX_BLOCK_SIZE_CSTU) > 0)
     {
       error ("Maximum block size in this implementation is %s",
 	        UPC_MAX_BLOCK_SIZE_STRING);
       return type;
     }
-
-  gcc_assert (TREE_CODE (block_factor) == INTEGER_CST);
 
   /* UPC TODO: Eliminate duplicate variant type copies.  */
   block_factor = convert (sizetype, block_factor);
@@ -910,6 +934,12 @@ void
 upc_decl_init (tree decl, tree init)
 {
   tree cur_stmt_list_save, init_stmt;
+  if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+    {
+      error ("initialization of UPC shared arrays"
+             " is currently not supported");
+      return;
+    }
   if (!upc_init_stmt_list)
     upc_init_stmt_list = alloc_stmt_list ();
   cur_stmt_list_save = cur_stmt_list;
@@ -996,74 +1026,90 @@ upc_lang_layout_decl (tree decl, tree type)
 	 && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
     t = TREE_TYPE(t);
 
-  if (TREE_CODE (t) == ARRAY_TYPE && upc_shared_type_p (TREE_TYPE (t)))
+  if (TREE_CODE (t) == ARRAY_TYPE
+      && TYPE_SIZE (type) != NULL_TREE
+      && upc_shared_type_p (TREE_TYPE (t)))
     {
-      tree elt_type = TREE_TYPE (t);
-      tree elt_size = TYPE_SIZE (elt_type);
-      tree block_factor = TYPE_BLOCK_FACTOR (elt_type)
-               ? convert (bitsizetype, TYPE_BLOCK_FACTOR (elt_type)) : NULL;
-      tree t_size = TYPE_SIZE (type);
-      tree n_elem = size_binop (FLOOR_DIV_EXPR, t_size, elt_size);
-      tree n_threads = convert (bitsizetype, upc_num_threads ());
-      if (UPC_TYPE_HAS_THREADS_FACTOR (type))
-	{
-	  if (block_factor)
-	    if (!integer_zerop (block_factor))
-	      {
-		tree t1, t2;
-		block_factor = convert (bitsizetype, block_factor);
-		t1 = size_binop (CEIL_DIV_EXPR, n_elem, block_factor);
-		t2 = size_binop (MULT_EXPR, t1, block_factor);
-		DECL_SIZE (decl) = size_binop (MULT_EXPR, t2, elt_size);
-	      }
-	    else
-	      DECL_SIZE (decl) = size_binop (MULT_EXPR, elt_size,
-					     n_threads);
-	  else
-	    DECL_SIZE (decl) = t_size;
-	}
-      else if (!(block_factor && integer_zerop (block_factor)))
-	{
-	  /* We want to allocate ceiling of n_elem/n_threads elements per
-	     thread, where n_elem is the total number of elements in
-	     the array.  If the array is blocked, then we allocate
-	     ((ceiling of (ceiling of n_elem/block_factor)/n_threads) *
-	     block_factor) elements per thread. */
-	  tree n_elem_per_thread;
-	  if (block_factor)
+      const tree elt_type = TREE_TYPE (t);
+      const tree elt_size = TYPE_SIZE (elt_type);
+      const tree block_factor = TYPE_BLOCK_FACTOR (elt_type)
+                 ? convert (bitsizetype, TYPE_BLOCK_FACTOR (elt_type)) : NULL;
+      if (block_factor && integer_zerop (block_factor))
+        {
+	  /* Allocate the entire array on thread 0. */
+	  if (UPC_TYPE_HAS_THREADS_FACTOR (type))
 	    {
-	      tree block_count, blocks_per_thread;
-	      block_count = size_binop (CEIL_DIV_EXPR,
-					n_elem, block_factor);
-	      blocks_per_thread = size_binop (CEIL_DIV_EXPR,
-					block_count, n_threads);
-	      n_elem_per_thread = size_binop (MULT_EXPR,
-					blocks_per_thread, block_factor);
+	      const tree n_threads = convert (bitsizetype, upc_num_threads ());
+	      DECL_SIZE (decl) = size_binop (MULT_EXPR, elt_size, n_threads);
 	    }
 	  else
-	    n_elem_per_thread = size_binop (CEIL_DIV_EXPR,
-	                                n_elem, n_threads);
-	  
-	  /* In the special case of an array of size 1, we know that
-	     we want a constant size no matter what n_threads is.  Make
-	     the size a constant so that declarations of shared int x[1]
-	     will work for runtime specification of threads. */
-	  if (integer_onep (n_elem))
-	    DECL_SIZE (decl) = elt_size;
-	  else
-	    DECL_SIZE (decl) = size_binop (MULT_EXPR, n_elem_per_thread,
-					   elt_size);
-	}
+	    DECL_SIZE (decl) = TYPE_SIZE (type);
+        }
       else
-	/* We want to allocate the entire array on one thread. */
-	DECL_SIZE (decl) = TYPE_SIZE (type);
+        {
+	  const tree t_size = TYPE_SIZE (type);
+	  const tree n_elem = size_binop (FLOOR_DIV_EXPR, t_size, elt_size);
+	  const tree n_threads = convert (bitsizetype, upc_num_threads ());
+	  if (UPC_TYPE_HAS_THREADS_FACTOR (type))
+	    {
+	      if (block_factor)
+		{
+		  const tree blk_size = convert (bitsizetype, block_factor);
+		  tree t1, t2;
+		  t1 = size_binop (CEIL_DIV_EXPR, n_elem, blk_size);
+		  t2 = size_binop (MULT_EXPR, t1, blk_size);
+		  DECL_SIZE (decl) = size_binop (MULT_EXPR, t2, elt_size);
+		}
+	      else
+		DECL_SIZE (decl) = t_size;
+	    }
+	  else
+	    {
+	      /* We want to allocate ceiling of n_elem/n_threads elements per
+		 thread, where n_elem is the total number of elements in
+		 the array.  If the array is blocked, then we allocate
+		 ((ceiling of (ceiling of n_elem/block_factor)/n_threads) *
+		 block_factor) elements per thread. */
+	      tree n_elem_per_thread;
+	      if (block_factor)
+		{
+		  tree block_count, blocks_per_thread;
+		  block_count = size_binop (CEIL_DIV_EXPR,
+					    n_elem, block_factor);
+		  blocks_per_thread = size_binop (CEIL_DIV_EXPR,
+					    block_count, n_threads);
+		  n_elem_per_thread = size_binop (MULT_EXPR,
+					    blocks_per_thread, block_factor);
+		}
+	      else
+		n_elem_per_thread = size_binop (CEIL_DIV_EXPR,
+					    n_elem, n_threads);
+	      
+	      /* In the special case of an array of size 1, we know that
+		 we want a constant size no matter what n_threads is.  Make
+		 the size a constant so that declarations of shared int x[1]
+		 will work for runtime specification of threads. */
+	      if (integer_onep (n_elem))
+		DECL_SIZE (decl) = elt_size;
+	      else
+		DECL_SIZE (decl) = size_binop (MULT_EXPR, n_elem_per_thread,
+					       elt_size);
+	    }
+	}
+        if (DECL_SIZE_UNIT (decl) == 0)
+            DECL_SIZE_UNIT (decl)
+              = fold_convert (sizetype, size_binop (CEIL_DIV_EXPR, DECL_SIZE (decl),
+			        bitsize_unit_node));
     }
-  else
-    DECL_SIZE (decl) = TYPE_SIZE (type);
-
-  DECL_SIZE_UNIT (decl)
-      = convert (sizetype, size_binop (CEIL_DIV_EXPR, DECL_SIZE (decl),
-				       bitsize_unit_node));
+  else if (DECL_SIZE (decl) == 0)
+    {
+      DECL_SIZE (decl) = TYPE_SIZE (type);
+      DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (type);
+    }
+  else if (DECL_SIZE_UNIT (decl) == 0)
+    DECL_SIZE_UNIT (decl)
+      = fold_convert (sizetype, size_binop (CEIL_DIV_EXPR, DECL_SIZE (decl),
+			        bitsize_unit_node));
 }
 
 /* Implement UPC's upc_forall `affinity' test, by augmenting the for statement's
@@ -1071,21 +1117,12 @@ upc_lang_layout_decl (tree decl, tree type)
      if (affinity == MYTHREAD) for_body; */
 
 tree
-upc_affinity_test (location_t loc, tree for_body, tree affinity)
+upc_affinity_test (location_t loc, tree affinity)
 {
   tree mythread;
   tree affinity_test;
-  tree if_stmt;
   
-  if (affinity == NULL_TREE || for_body == NULL_TREE)
-    return for_body;
-
-  /* Make sure that the identifier "MYTHREAD" will be listed in the
-     assembly file as .extern */
-
-  mythread = lookup_name (get_identifier ("MYTHREAD"));
-  assemble_external (mythread);
-  TREE_USED (mythread) = 1;
+  gcc_assert (affinity != NULL_TREE);
   
   if (TREE_CODE (TREE_TYPE (affinity)) == POINTER_TYPE
       && upc_shared_type_p (TREE_TYPE (TREE_TYPE (affinity))))
@@ -1104,9 +1141,17 @@ upc_affinity_test (location_t loc, tree for_body, tree affinity)
   else
     {
       error ("Affinity expression is neither an integer nor the address of a shared object");
-      return for_body;
+      return error_mark_node;
     }
   
+
+  /* Generate an external reference to the "MYTHREAD" indentifier.  */
+
+  mythread = lookup_name (get_identifier ("MYTHREAD"));
+  gcc_assert (mythread != NULL_TREE);
+  assemble_external (mythread);
+  TREE_USED (mythread) = 1;
+
   /* Affinity now contains an integer value that can be compared to MY_THREAD.
      Create an expression that tests if affinity is equal to MY_THREAD. */
 
@@ -1117,12 +1162,7 @@ upc_affinity_test (location_t loc, tree for_body, tree affinity)
   /* remove the MAYBE_CONST_EXPR's.  */
   affinity_test = c_fully_fold (affinity_test, false, NULL);
 
-  /* generate the statement: if (<affinity>) <for_body>; */
-
-  SET_EXPR_LOCATION (affinity_test, loc);
-  if_stmt = build3 (COND_EXPR, void_type_node, affinity_test,
-                    for_body, NULL_TREE);
-  return if_stmt;
+  return affinity_test;
 }
 
 /*
@@ -1412,18 +1452,23 @@ upc_pts_increment (location_t location ATTRIBUTE_UNUSED,
 }
 
 tree
-upc_pts_int_sum (location_t location ATTRIBUTE_UNUSED,
+upc_pts_int_sum (location_t loc,
                  enum tree_code resultcode, tree ptrop, tree intop)
 {
   /* The result type is a pointer of the same type that is being added,
      after dropping the shared qualifier (for PTS's that happen
      to live in shared memory). */
-  tree ttype = TREE_TYPE (ptrop);
-  int quals_minus_shared = TYPE_QUALS (ttype) & !TYPE_QUAL_SHARED;
-  tree result_type = c_build_qualified_type (ttype, quals_minus_shared);
-  tree result_targ_type = TREE_TYPE (result_type);
-  tree base_type = strip_array_types (result_targ_type);
+  const tree ttype = TREE_TYPE (ptrop);
+  const int shared_quals = (TYPE_QUAL_SHARED | TYPE_QUAL_STRICT | TYPE_QUAL_RELAXED);
+  const int quals_minus_shared = TYPE_QUALS (ttype) & ~shared_quals;
+  const tree result_type = c_build_qualified_type (ttype, quals_minus_shared);
+  const tree result_targ_type = TREE_TYPE (result_type);
+  const tree base_type = strip_array_types (result_targ_type);
   tree result;
+
+
+  if (TREE_CODE (result_targ_type) == VOID_TYPE)
+    error_at (loc, "pointer of type %<shared void *%> used in arithmetic");
 
   /* We have a pointer to a shared object.  For pointers to
      simple objects, just build a "resultcode" tree with the intop and
@@ -1485,7 +1530,7 @@ upc_pts_diff (tree op0, tree op1)
 	  && !upc_shared_type_p (target_type)))
     {
       error ("Attempt to take the difference of shared and nonshared pointers");
-      return error_mark_node;
+      return size_one_node;
     }
   result = build2 (MINUS_EXPR, ptrdiff_type_node, op0, op1);
   return result;

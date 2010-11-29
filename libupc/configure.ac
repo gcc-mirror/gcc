@@ -204,6 +204,7 @@ AM_PROG_UPC()
 AC_CHECK_TOOL(AR, ar)
 AC_CHECK_TOOL(RANLIB, ranlib, ranlib-not-found-in-path-error)
 AC_PATH_PROG(PERL, perl, perl-not-found-in-path-error)
+AC_PATH_PROG(ADDR2LINE, addr2line, addr2line-not-found-in-path-error)
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 
@@ -238,6 +239,7 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(sched.h)
 AC_CHECK_HEADERS([fcntl.h netdb.h netinet/in.h stddef.h stdlib.h sys/socket.h unistd.h])
 AC_CHECK_HEADERS([semaphore.h sys/loadavg.h])
+AC_CHECK_HEADERS([execinfo.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -276,6 +278,7 @@ AC_FUNC_MMAP
 AC_FUNC_STAT
 AC_CHECK_FUNCS([ftruncate gethostbyname gethostname memset munmap socket strerror])
 AC_CHECK_FUNCS([getloadavg clock_gettime strtoull])
+AC_CHECK_FUNCS([backtrace backtrace_symbols backtrace_symbols_fd])
 
 # Check for broken semaphore implementation on darwin.
 # sem_init returns: sem_init error: Function not implemented.
@@ -455,14 +458,8 @@ fi
 
 dnl Select target specific runtime implementation.
 
-targ_runtime=
+targ_runtime=smp
 targ_runtime_pthreads=
-case "${target}" in
-  *-catamount-*|*-cnl-*)
-    targ_runtime=stub ;;
-  *)                   
-    targ_runtime=smp ;;
-esac
 if test "$targ_runtime" = "smp"; then
   LIBUPC_GCC_TLS_SUPPORTED
   if test "$upc_cv_gcc_tls_supported"x = "yes"x ; then

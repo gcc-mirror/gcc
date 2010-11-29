@@ -1,8 +1,20 @@
+2010-11-28  Gary Funck  <gary@intrepid.com>
+
+	Merge GCC/UPC 4.5.1.2 changes into gupc branch.
+	* test18.upc: Add new test for ICE when compiling
+	a declaration of the form:
+	shared [*] int A[THREADS][16];
+	when compiled in a dynamic THREADS context.
+	Conditionally defined __attribute__()
+	to match the non- GCC-specific version of this test.
+	* test29.upc: New test.
+	Add a test for operations on 'shared long double types'.
+
 2010-07-03  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 161517 into gupc branch.
-        * test18.upc:
-	  Add 'unused' attributes to avoid "set, but
-	  not referenced" warnings.
-        * test19.upc:
-	  Likewise.
+	* test18.upc:
+	Add 'unused' attributes to avoid "set, but
+	not referenced" warnings.
+	* test19.upc:
+	Likewise.

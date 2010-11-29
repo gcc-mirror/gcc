@@ -832,8 +832,13 @@ funsigned-char
 C UPC ObjC C++ ObjC++ LTO Var(flag_signed_char, 0) VarExists
 Make \"char\" unsigned by default
 
+fupc-debug
+UPC Var(flag_upc_debug) VarExists
+Generate code that provides the UPC runtime with
+the file and line number where the runtime was callled.
+
 fupc-inline-lib
-UPC
+UPC Var(flag_upc_inline_lib) VarExists
 Generate code for inlined UPC runtime library routines.
 Default, at optimization levels greater than 0.
 

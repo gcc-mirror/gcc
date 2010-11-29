@@ -101,6 +101,10 @@ static const char GCCUPCConfig[]
 
 extern GUPCR_THREAD_LOCAL const int MYTHREAD;
 
+/* Depth count used to implement the semantics of
+   nested upc_forall statements.  */
+extern GUPCR_THREAD_LOCAL int __upc_forall_depth;
+
 #if !defined(_CRAYT3E)
 /* The UPC runtime's main program must run first,
  * we rename the user's main to upc_main(). */

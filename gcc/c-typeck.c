@@ -1132,6 +1132,13 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
   if (TYPE_QUALS (t1) != TYPE_QUALS (t2))
     return 0;
 
+  /* If the type is UPC qualified, the block sizes have
+     to be equal.  The block sizes are either NULL
+     or are the same integer constant.  */
+  if ((TYPE_QUALS (t1) & TYPE_QUAL_SHARED)
+      && (TYPE_BLOCK_FACTOR (t1) != TYPE_BLOCK_FACTOR (t2)))
+    return 0;
+
   /* Allow for two different type nodes which have essentially the same
      definition.  Note that we already checked for equality of the type
      qualifiers (just above).  */
@@ -3870,11 +3877,10 @@ build_unary_op (location_t location,
 
       /* If the lvalue is const or volatile, merge that into the type
 	 to which the address will point.  This should only be needed
-	 for function types.  */
+	 for function types.
 
-      /* By checking for all tree qualifiers, we also handle the UPC
+	 By checking for all tree qualifiers, we also handle the UPC
 	 defined qualifiers (`shared', `strict', `relaxed') here. */
-
       if ((DECL_P (arg) || REFERENCE_CLASS_P (arg))
 	  && TREE_QUALS (arg))
 	{
@@ -4665,6 +4671,12 @@ build_c_cast (location_t loc, tree type, tree expr)
   if (objc_is_object_ptr (type) && objc_is_object_ptr (TREE_TYPE (expr)))
     return build1 (NOP_EXPR, type, expr);
 
+  if (upc_shared_type_p (type))
+    {
+      error ("UPC does not allow casts to a shared type");
+      return error_mark_node;
+    }
+
   type = TYPE_MAIN_VARIANT (type);
 
   if (TREE_CODE (type) == ARRAY_TYPE)
@@ -4693,13 +4705,6 @@ build_c_cast (location_t loc, tree type, tree expr)
       && ! upc_shared_type_p (TREE_TYPE (TREE_TYPE (expr))))
     {
       value = upc_null_pts_node;
-    }
-
-  if (upc_shared_type_p (type) && !upc_shared_type_p (TREE_TYPE (expr)))
-    {
-      error ("UPC does not allow casts from non-shared values"
-             " to shared types");
-      return error_mark_node;
     }
 
   if (!upc_shared_type_p (type) && upc_shared_type_p (TREE_TYPE (expr)))
@@ -5219,6 +5224,34 @@ convert_for_assignment (location_t location, tree type, tree rhs,
       }                                                                  \
   } while (0)
 
+  /* Similar to WARN_FOR_ASSIGNMENT, but used to diagnose certain
+     error conditions defined by the UPC language specification
+     when converting between pointer-to-shared types and other types.  */
+#define ERROR_FOR_ASSIGNMENT(LOCATION, OPT, AR, AS, IN, RE)            	 \
+  do {                                                                   \
+    switch (errtype)                                                     \
+      {                                                                  \
+      case ic_argpass:                                                   \
+        error_at (LOCATION, AR, parmnum, rname);                         \
+        inform ((fundecl && !DECL_IS_BUILTIN (fundecl))			 \
+	    	? DECL_SOURCE_LOCATION (fundecl) : LOCATION,		 \
+                "expected %qT but argument is of type %qT",              \
+                type, rhstype);                                          \
+        break;                                                           \
+      case ic_assign:                                                    \
+        error_at (LOCATION, AS);                                         \
+        break;                                                           \
+      case ic_init:                                                      \
+        error_at (LOCATION, IN);                                         \
+        break;                                                           \
+      case ic_return:                                                    \
+        error_at (LOCATION, RE);                                 	 \
+        break;                                                           \
+      default:                                                           \
+        gcc_unreachable ();                                              \
+      }                                                                  \
+  } while (0)
+
   /* This macro is used to emit diagnostics to ensure that all format
      strings are complete sentences, visible to gettext and checked at
      compile time.  It is the same as WARN_FOR_ASSIGNMENT but with an
@@ -5533,7 +5566,7 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 	                          " from shared to local pointers.");
 	      return error_mark_node;
 	    }
-       }
+        }
       if (upc_shared_type_p (ttl) && upc_shared_type_p (ttr) && (ttl != ttr)
           && !(VOID_TYPE_P (ttl) || VOID_TYPE_P (ttr)))
         {
@@ -5742,16 +5775,28 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 	 or one that results from arithmetic, even including
 	 a cast to integer type.  */
       if (!null_pointer_constant)
-	WARN_FOR_ASSIGNMENT (location, 0,
-			     G_("passing argument %d of %qE makes "
-				"pointer from integer without a cast"),
-			     G_("assignment makes pointer from integer "
-				"without a cast"),
-			     G_("initialization makes pointer from "
-				"integer without a cast"),
-			     G_("return makes pointer from integer "
-				"without a cast"));
-
+        {
+	  if (upc_shared_type_p (TREE_TYPE (type)))
+	    ERROR_FOR_ASSIGNMENT (location, 0,
+				  G_("passing argument %d of %qE attempts to make "
+				     "a pointer-to-shared from an integer"),
+				  G_("assignment attempts to make pointer-to-shared "
+				     "from an integer"),
+				  G_("initialization attepts to make a pointer-to-shared "
+				     "from an integer without a cast"),
+				  G_("return makes a pointer-to-shared from an "
+				     "integer"));
+	  else
+	    WARN_FOR_ASSIGNMENT (location, 0,
+				 G_("passing argument %d of %qE makes "
+				    "pointer from integer without a cast"),
+				 G_("assignment makes pointer from integer "
+				    "without a cast"),
+				 G_("initialization makes pointer from "
+				    "integer without a cast"),
+				 G_("return makes pointer from integer "
+				     "without a cast"));
+        }
       return convert (type, rhs);
     }
   else if (codel == INTEGER_TYPE && coder == POINTER_TYPE)

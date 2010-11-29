@@ -1,3 +1,100 @@
+2010-10-18  Gary Funck  <gary@intrepid.com>
+
+	* smp/upc_alloc.upc: upc_alloc.upc: remove pointer arithmetic on
+	  (shared void *) types.
+
+	  Now that GCC/UPC prohibits arithmetic on "(shared void *)" types,
+	  re-work the logic in upc_alloc.upc to avoid operating directly on
+	  "(shared void *)" type.
+
+2010-10-16  Gary Funck  <gary@intrepid.com>
+
+	* smp/upc_main.c: Fix comment format.
+
+2010-10-16  Gary Funck  <gary@intrepid.com>
+
+	* smp/: upc_access.c, upc_access.h, upc_accessg.c: Implement fixes
+	  for SGI/IRIX/MIPS port.
+
+	  The gcc/Makefile.in rules for install-plugin had to be re-written to
+	  break up a long list of header files that exceeded the command line
+	  limitation imposed by Irix.
+
+	  Access functions for TFmode types had to be implemented.
+	  Apparently, this is the mode used for the SGI/MIPS port to represent
+	  "long float".
+
+	  See also: gcc/Makefile.in libupc/smp/upc_access.c
+	  libupc/smp/upc_access.h libupc/smp/upc_accessg.c
+
+2010-10-16  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* include/gcc-upc.h, smp/upc_main.c: Fix rand() implementation for
+	  pthreads run-time.
+
+	  For the pthreads implementation we keep a per-thread random seed number.
+	  This way, calls to rand() function will return the same value on
+	  each thread.
+
+	  rand() and srand() functions are redefined as __upc_random and
+	  __upc_srandom.
+
+2010-10-10  Gary Funck  <gary@intrepid.com>
+
+	* include/upc_collective.h, smp/gen-upc-coll-reduce.pl,
+	  smp/upc_coll_prefix_reduce.upc, smp/upc_coll_reduce.upc:
+	  Implement collectives on "long double" objects.
+
+	  See also: libupc/include/upc_collective.h
+	  libupc/smp/gen-upc-coll-reduce.pl
+	  libupc/smp/upc_coll_prefix_reduce.upc libupc/smp/upc_coll_reduce.upc
+
+2010-10-09  Gary Funck  <gary@intrepid.com>
+
+	* smp/: upc_access.c, upc_access.h, upc_accessg.c: Implement shared
+	  access to "long float" data type.
+
+	  See also: libupc/smp/upc_access.c libupc/smp/upc_access.h
+	  libupc/smp/upc_accessg.c
+
+2010-09-24  Gary Funck  <gary@intrepid.com>
+
+	* smp/upc_main.c: Fix bug: Failure to initialize per-thread
+	  static variables that refer to shared addresses.
+
+	  The shared data initialization routine created by the compiler needs
+	  to be called on each threead, because in some cases it will
+	  initialize per thread data.  At the moment, the compiler does not
+	  generate code that will differentiate between initialization code
+	  that should only occur on thread 0, so some additional work may get
+	  done.  In the future, that aspect of initialization will be
+	  corrected.
+
+2010-09-22  Gary Funck  <gary@intrepid.com>
+
+	* include/gcc-upc-lib.in, include/upc.h, smp/upc_main.c:
+	  Fix bug: Nested upc_forall() semantics are not implemented
+
+	  The checkforall test in the Berkeley harness test suite indicated
+	  that GCC/UPC was not properly implementing nested upc_forall
+	  semantics.  Nested upc_forall statements (both statically or
+	  dynamically nested) must implement their affinity clause as if it
+	  were "continue"; thus all steps in the loop must execute without
+	  regard for affinity.  To implement these semantics a global depth
+	  counter, __upc_forall_depth, is maintained by the generated code
+	  that implements upc_forall.
+
+	  See also: gcc/c-parser.c gcc/c-tree.h gcc/stub-upc.c
+	  gcc/upc/upc-act.c gcc/upc/upc-act.h libupc/include/gcc-upc-lib.in
+	  libupc/include/upc.h libupc/smp/upc_main.c
+
+2010-09-18  Gary Funck  <gary@intrepid.com>
+
+	* Makefile.in, config.h.in, configure, configure.ac, include/upc.h,
+	  smp/Make-defs, smp/upc_accessg.c, smp/upc_allocg.upc,
+	  smp/upc_defs.h, smp/upc_libg.c, smp/upc_main.c, smp/upc_sup.h:
+	  Implement -fupc-debug switch.
+
 2010-02-28  Gary Funck  <gary@intrepid.com>
 
 	Initial implementation and checkin.

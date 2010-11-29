@@ -62,4 +62,12 @@ typedef shared struct upc_lock_struct upc_lock_t;
 #define upc_poll() upcr_poll()
 #endif
 
+#ifdef __UPC_USES_PTHREADS__
+/* Pthreads implementation uses per thread random seed */
+#define rand __upc_rand
+#define srand __upc_srand
+extern int __upc_rand (void);
+extern void __upc_srand (unsigned int seed);
+#endif
+
 #endif /* !_GCC_UPC_H_ */

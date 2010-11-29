@@ -141,7 +141,7 @@ extern int count_upc_threads_refs (tree);
 extern int is_multiple_of_upc_threads (tree);
 extern void set_upc_threads_refs_to_one (tree *);
 extern struct c_expr upc_blocksizeof_expr (location_t, struct c_expr);
-extern tree upc_affinity_test (location_t, tree, tree);
+extern tree upc_affinity_test (location_t, tree);
 extern tree upc_build_shared_var_addr (location_t, tree, tree);
 extern tree upc_build_sync_stmt (location_t, tree, tree);
 extern int upc_check_decl_init (tree, tree);

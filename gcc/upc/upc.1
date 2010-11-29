@@ -30,8 +30,8 @@ Software Foundation.  In addition to the options specified here, all of
 the normal GCC options listed in the man pages for
 .I gcc(1)
 are available.
-The UPC compiler is integrated with the GCC compiler.  UPC processes input files
-through one or more of four stages: preprocessing, compilation,
+The UPC compiler is integrated with the GCC compiler.  The UPC compiler processes input files
+through one or more of four stages: pre-processing, compilation,
 assembly, and linking.
 .TP
 .PP
@@ -40,10 +40,12 @@ processing to be done:
 .Sp
 .nf
 .ta \w'\fB.cxx\fP  'u
-\&\fB.upc\fP	UPC source; preprocess, compile, assemble
-\&\fB.upci\fP	preprocessed UPC; compile, assemble
-\&\fB.h\fP	Preprocessor file; not usually named on command line
-\&\fB.c,.i,.s\fP	Are C, preprocessed C, and assembler source files, and are processed by the C compiler and assembler. The resulting object files can be linked with UPC source code.
+\&\fB.upc\fP	UPC source; pre-process, compile, assemble
+\&\fB.upci\fP	Preprocessed UPC; compile, assemble
+\&\fB.h\fP	Pre-processor file; not usually named on command line
+\&\fB.c\fP	Files will be compiled as UPC source, unless preceded by "-x c"
+.fi
+\&\fB.i,.s\fP	Preprocessed C, and assembler source files are processed by the C compiler and assembler. The resulting object files can be linked with UPC source code.
 .Sp
 .fi
 Files with other suffixes are passed to the linker.  Common cases include:
@@ -93,6 +95,8 @@ Here is a summary of all the UPC-specific options.
 .TP
 .B Debugging Options
 \-g
+.br
+\-fupc-debug
 .TP
 .B Optimization Options
 \-O1, -O2, -O3
@@ -133,6 +137,17 @@ and needs to be turned off if more condensed code is required.
 .TP
 .B \-g
 Produce symbolic debugging information
+.TP
+.B \-dwarf-2-upc
+Generate UPC-specific symbolic DWARF-2 debugging information.  This debugging
+information is processed by GDB-UPC, a variant of the GDB debugger that
+is UPC-aware, and the commercially available Totalview debugger, among
+others.
+.TP
+.B \-fupc-debug
+Generate calls to the UPC runtime library that include source filename and line
+number information that is used to print more informative error messages when
+errors are detected at runtime.
 .SH INSTRUMENTATION OPTIONS
 .TP
 .B \-fupc-instrument
@@ -146,7 +161,7 @@ Instrument functions calls, using GASP tool support (implies -fupc-instrument an
 This optimization level is one of GCC's standard options.  It is especially
 important for UPC because it enables instruction scheduling, which increases
 performance dramatically for distributed data access.  Nearly all supported
-optimizations that do not involve a space-speed tradeoff are performed.  Loop
+optimizations that do not involve a space-speed trade off are performed.  Loop
 unrolling and function inlining are not done, for example.
 
 .SH EXECUTION (RUNTIME) OPTIONS
@@ -173,12 +188,12 @@ program is executed. The UPC runtime recognizes the
 .I \-fupc\-threads\-<nthreads> 
 or
 .I \-n<nthreads>
-command line switch, and establishes the number of parallel execution
+command line switch, which establishes the number of parallel execution
 threads given by the value `<nthreads>'. Generally, `<nthreads>' should not exceed the
-number of physical central processing units.
+number of physical central processing units (or cores).
 .PP
 The size of the heap used by the UPC program is established with the
-specificaion of the
+specification of the
 .I \-fupc\-heap\-<heapsize>
 command line switch. The value of `<heapsize>' is the size of the heap available
 to each thread, specified in bytes.
@@ -188,33 +203,42 @@ and `G' indicates the value is given in gigabytes (2^30 bytes).
 If the \-fupc\-heap\-<heapsize> switch is not supplied, then the runtime system
 will choose a default heap size of 16 megabytes per thread.
 .PP
-As of version 4.2.3, upc run-time supports execution and memory affinity of UPC threads. The 
-following options control how threads are scheduled:
+As of version 4.2.3, the upc run-time supports the specification of execution
+and memory affinity for UPC threads.
+The following options control how threads are scheduled:
 .TP
 .B\-sched-policy [cpu,strict,node,auto]
 Controls the scheduling policy for threads. 
+.TP 8
 .I cpu
 specifies that threads are evenly scheduled over available CPUs (single processor or a core
 unit in multicore processor).
+.TP 8
 .I strict
 is similar to cpu scheduling except that one to one mapping of threads and CPUs is required.
+.TP 8
 .I node
 specifies that threads are scheduled on nodes if NUMA aware kernel is available. 
+.TP 8
 .I auto
 specifies that UPC run-time should not manage scheduling of UPC threads.
 .TP
-.B\-sched-cpu-avoid n1,n2,.. 
-Controls the availability of CPUs for UPC scheduling. UPC run-time will not schedule any thread
+.B\-sched\-cpu\-avoid n1,n2,.. 
+Controls the availability of CPUs for UPC scheduling.
+The UPC run-time will not schedule any thread
 on CPUs specified with this option.
 .TP
-.B\-mem-policy [node,strict,auto]
-Controls the threads's memory allocation policy if NUMA aware kernel is available.
--I node
-allocates memory first from the node on which thread is scheduled to run.
--I strict
-allocates memory only from the node on which thread is scheduled to run.
--I auto
-lets kernel decide the best memory allocation policy.
+.B\-mem\-policy [node,strict,auto]
+Controls the memory allocation policy if a NUMA aware kernel is available.
+.TP 8
+.I node
+allocates memory first from the node on which a thread is scheduled to run.
+.TP 8
+.I strict
+allocates memory only from the node on which a thread is scheduled to run.
+.TP 8
+.I auto
+lets the kernel decide the best memory allocation policy.
 .PP
 The UPC runtime will remove all switches that begin with the prefix
 .I \-fupc\-
@@ -226,7 +250,7 @@ before calling the UPC program's `main()' routine.
 .ta \w'LIBDIR/g++\-include 'u
 file.upc	UPC source file
 file.upci	preprocessed UPC source file
-file.c	C source file
+file.c	UPC source file (unless preceded by the "-x c" switch)
 file.h	C header (preprocessor) file
 file.i	preprocessed C source file
 file.s	assembly language file
@@ -251,7 +275,7 @@ should be found by using
 .I upc \-v
 .br
 .I TMPDIR
-comes from the environment variable
+The temporary directory location is given by the environment variable
 .B TMPDIR
 (default
 .B /usr/tmp
@@ -263,12 +287,12 @@ gcc(1), cpp(1), as(1), ld(1), gdb(1), adb(1), dbx(1), sdb(1).
 .PP
 .B Introduction to UPC and Language Specification
 .br
-(\fIhttp://projects.seas.gwu.edu/~hpcl/upcdev/upctr.pdf\fP)
+(\fIhttp://upc.lbl.gov/publications/UPC-TR-Original99.pdf\fP)
 William W. Carlson et al., LLNL, CCS-TR-99-157, May 13, 1999
 .PP
 .B UPC Language Specifications
 .br
-(\fIftp://ftp.seas.gwu.edu/pub/upc/downloads/upc_specs.pdf\fP)
+(\fIhttp://www.gwu.edu/~upc/docs/upc_specs_1.2.pdf\fP)
 Tarek A. El-Ghazawi et al, February 25, 2001
 .PP
 .B GASP Tool Interface
@@ -291,11 +315,12 @@ and other topics of interest to GCC UPC developers and users.
 
 .SH BUGS
 Report bugs to
-.I upc@intrepid.com
+.I http://gccupc.org/bugs
 \.
 
 .SH AUTHORS
+Current developers and maintainers are Gary Funck <gary@intrepid.com>
+and Nenad Vukicevic <nenad@intrepid.com>.
+.br
 Original Implementation by
 Jesse M. Draper <jdraper@super.org> and William W. Carlson <wwc@super.org>.
-.br
-Ported to SGI Irix 6.5 and the gcc 2.95.2 baseline by Gary Funck <gary@intrepid.com> and Nenad Vukicevic <nenad@intrepid.com>.

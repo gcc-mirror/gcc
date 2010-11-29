@@ -106,6 +106,22 @@ __getdf2 (upc_shared_ptr_t p)
 }
 
 //inline
+long double
+__gettf2 (upc_shared_ptr_t p)
+{
+  const long double *addr = (long double *) __upc_access_sptr_to_addr (p);
+  return *addr;
+}
+
+//inline
+long double
+__getxf2 (upc_shared_ptr_t p)
+{
+  const long double *addr = (long double *) __upc_access_sptr_to_addr (p);
+  return *addr;
+}
+
+//inline
 void
 __getblk3 (void *dest, upc_shared_ptr_t src, size_t n)
 {
@@ -167,6 +183,22 @@ void
 __putdf2 (upc_shared_ptr_t p, double v)
 {
   double * const addr = (double *) __upc_access_sptr_to_addr (p);
+  *addr = v;
+}
+
+//inline
+void
+__puttf2 (upc_shared_ptr_t p, long double v)
+{
+  long double * const addr = (long double *) __upc_access_sptr_to_addr (p);
+  *addr = v;
+}
+
+//inline
+void
+__putxf2 (upc_shared_ptr_t p, long double v)
+{
+  long double * const addr = (long double *) __upc_access_sptr_to_addr (p);
   *addr = v;
 }
 
@@ -273,6 +305,30 @@ __getsdf2 (upc_shared_ptr_t p)
 }
 
 //inline
+long double
+__getstf2 (upc_shared_ptr_t p)
+{
+  const long double *addr = (long double *) __upc_access_sptr_to_addr (p);
+  double result;
+  GUPCR_FENCE ();
+  result = *addr;
+  GUPCR_READ_FENCE ();
+  return result;
+}
+
+//inline
+long double
+__getsxf2 (upc_shared_ptr_t p)
+{
+  const long double *addr = (long double *) __upc_access_sptr_to_addr (p);
+  double result;
+  GUPCR_FENCE ();
+  result = *addr;
+  GUPCR_READ_FENCE ();
+  return result;
+}
+
+//inline
 void
 __getsblk3 (void *dest, upc_shared_ptr_t src, size_t len)
 {
@@ -348,6 +404,26 @@ void
 __putsdf2 (upc_shared_ptr_t p, double v)
 {
   double *addr = (double *) __upc_access_sptr_to_addr (p);
+  GUPCR_WRITE_FENCE ();
+  *addr = v;
+  GUPCR_FENCE ();
+}
+
+//inline
+void
+__putstf2 (upc_shared_ptr_t p, long double v)
+{
+  long double *addr = (long double *) __upc_access_sptr_to_addr (p);
+  GUPCR_WRITE_FENCE ();
+  *addr = v;
+  GUPCR_FENCE ();
+}
+
+//inline
+void
+__putsxf2 (upc_shared_ptr_t p, long double v)
+{
+  long double *addr = (long double *) __upc_access_sptr_to_addr (p);
   GUPCR_WRITE_FENCE ();
   *addr = v;
   GUPCR_FENCE ();

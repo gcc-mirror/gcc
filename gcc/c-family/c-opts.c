@@ -338,7 +338,7 @@ c_common_init_options (unsigned int argc, const char **argv)
       for (i = 1; i < argc; i++)
 	if (! strcmp (argv[i], "-lang-asm"))
 	  {
-	    result |= CL_C | CL_ObjC | CL_CXX | CL_ObjCXX | CL_UPC;
+	    result |= CL_C | CL_ObjC | CL_UPC | CL_CXX | CL_ObjCXX;
 	    break;
 	  }
     }
@@ -843,7 +843,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
  
     case OPT_lang_upc:
-      set_std_c99 (true /* ISO */);
+      cpp_set_lang (parse_in, CLK_UPC);
       break;
 
     case OPT_fupc_instrument:
@@ -1229,6 +1229,10 @@ c_common_parse_file (int set_yydebug)
       case clk_objc:
 	warning(0,
 		"The Objective-C parser does not support -dy, option ignored");
+	break;
+      case clk_upc:
+	warning(0,
+		"The UPC parser does not support -dy, option ignored");
 	break;
       case clk_cxx:
 	warning(0, "The C++ parser does not support -dy, option ignored");

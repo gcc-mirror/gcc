@@ -1,323 +1,282 @@
-<HTML><HEAD><TITLE>GCC UPC Manual Page</TITLE>
-</HEAD><BODY>
-<H1>
-<center>
-GCC UPC
-<br> A Unified Parallel C (UPC)
-<br> Compilation and Execution Environment
-<br> Based on the GNU C Compiler (GCC)
-</center>
-</H1>
-<A NAME="lbAB">&nbsp;</A>
-<H2>NAME</H2>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<meta name="generator" content=
+"HTML Tidy for Linux (vers 25 March 2009), see www.w3.org">
+<title>GCC/UPC Manual Page</title>
+</head>
+<body>
+<h1>UPC</h1>
+<a name="lbAB">&nbsp;</a>
+<h2>NAME</h2>
+upc - UPC compiler for parallel computers. <a name=
+"lbAC">&nbsp;</a>
+<h2>SYNOPSIS</h2>
+<b>upc</b> [ <i>option</i> | <i>filename</i> ]... <a name=
+"lbAD">&nbsp;</a>
+<h2>DESCRIPTION</h2>
+UPC is an extension to the GNU C compiler from the Free Software
+Foundation. In addition to the options specified here, all of the
+normal GCC options listed in the man pages for <b>gcc(1)</b> are
+available. The UPC compiler is integrated with the GCC compiler.
+The UPC compiler processes input files through one or more of four
+stages: pre-processing, compilation, assembly, and linking.
+<dl compact></dl>
+<dl>
+<dd>Suffixes of source file names indicate the language and kind of
+processing to be done:</dd>
+</dl>
+<pre>
 
-upc - UPC compiler for parallel computers.
-<A NAME="lbAC">&nbsp;</A>
-<H2>SYNOPSIS</H2>
-
-<B>upc</B>
-
-[ <I>option</I> | <I>filename</I> ]...
-
-<A NAME="lbAD">&nbsp;</A>
-<H2>DESCRIPTION</H2>
-
-UPC is an extension to the GNU C compiler from the Free
-Software Foundation.  In addition to the options specified here, all of
-the normal GCC options listed in the man pages for
-<I>gcc(1)</I>
-
-are available.
-The UPC compiler is integrated with the GCC compiler.  UPC processes input files
-through one or more of four stages: preprocessing, compilation,
-assembly, and linking.
-<DL COMPACT>
-<DT></DL>
-<P>
-
-<DD>
-Suffixes of source file names indicate the language and kind of
-processing to be done:
-
-<P>
-
-
-
-<PRE>
-
-<B>.upc</B>     UPC source; preprocess, compile, assemble
-<B>.upci</B>    Preprocessed UPC; compile, assemble
-<B>.h</B>       Preprocessor file; not usually named on command line
-<B>.c,.i,.s</B> C, preprocessed C, and assembler source files, and are processed by the C compiler and assembler. The resulting object files can be linked with UPC source code.
-
-
-</PRE>
-
-Files with other suffixes are passed to the linker.  Common cases include:
-
-<P>
-
-
-
-<PRE>
-<B>.o</B>      Object file
-<B>.a</B>      Archive file
-<BR>
-</PRE>
-
-
-<P>
-
-
-
-Linking is always the last stage unless you use one of the
-<B>-c</B>,
-
-<B>-S</B>,
-
-or
-<B>-E</B>
-
-options to avoid linking (or unless compilation errors stop the whole
-process).  For the link stage, all
-<B>.o</B>
-
-files corresponding to source files,
-<B>-l</B>
-
-libraries, unrecognized filenames (including named
-<B>.o</B>
-
-object files and
-<B>.a</B>
-
-archives)
-are passed to the linker in command-line order.
-<A NAME="lbAE">&nbsp;</A>
-<H2>OPTIONS</H2>
-
+<b>.upc</b>    UPC source; pre-process, compile, assemble
+<b>.upci</b>   Preprocessed UPC; compile, assemble
+<b>.h</b>      Pre-processor file; not usually named on command line
+<b>.c</b>      Files will be compiled as UPC source, unless preceded by "-x c"
+</pre>
+<b>.i,.s</b><tt>&nbsp;&nbsp;</tt>Preprocessed C, and assembler
+source files are processed by the C compiler and assembler. The
+resulting object files can be linked with UPC source code.<br>
+<p>Files with other suffixes are passed to the linker. Common cases
+include:</p>
+<pre>
+<b>.o</b>      Object file
+<b>.a</b>      Archive file
+<br>
+</pre>
+<p>Linking is always the last stage unless you use one of the
+<b>-c</b>, <b>-S</b>, or <b>-E</b> options to avoid linking (or
+unless compilation errors stop the whole process). For the link
+stage, all <b>.o</b> files corresponding to source files, <b>-l</b>
+libraries, unrecognized filenames (including named <b>.o</b> object
+files and <b>.a</b> archives) are passed to the linker in
+command-line order. <a name="lbAE">&nbsp;</a></p>
+<h2>OPTIONS</h2>
 Here is a summary of all the UPC-specific options.
-<DL COMPACT>
-<DT><B>Information Options</B>
-
-<DD>
--v
-<DT><B>Language Options</B>
-
-<DD>
--fupc-threads-n
-<BR>
-
--x upc
-<BR>
-
-<DT><DT><B>Debugging Options</B>
-
-<DD>
-<DD>
--g
-<DT><B>Optimization Options</B>
-
-<DD>
--O1, -O2, -O3
-</DL>
-<A NAME="lbAF">&nbsp;</A>
-<H2>INFORMATION OPTIONS</H2>
-
-<DL COMPACT>
-<DT><B>-v</B>
-
-<DD>
-Identifies the version of UPC currently in use, with a path name to a
-specification file that is in the same directory as include directories
-and other version-specific directories and files.  Can be invoked without
-a source file name.  When invoked with files, gives include and library
-directory paths in the order that they are searched.
-</DL>
-<A NAME="lbAG">&nbsp;</A>
-<H2>LANGUAGE OPTIONS</H2>
-
-All source files ending in .upc or .upci will be compiled by the UPC compiler. The
-<B>-x upc</B>
-
-switch tells the compiler to process all of the following file
-names as UPC source code, ignoring the default language typically
-associated with filename extensions.
-<DL COMPACT>
-<DT><B>-fupc-threads-n</B>
-
-<DD>
-Compile for
-<B>n</B>
-
-threads.  The special symbol THREADS will be set to
-<B>n</B>
-
-and can be used both in
-data declarations (as a constant for array dimensions) and in expressions.
-On each thread the special symbol MYTHREAD refers to the thread number.
-</DL>
-<A NAME="lbAH">&nbsp;</A>
-<H2>DEBUGGING OPTIONS</H2>
-
-<DL COMPACT>
-<DT><B>-g</B>
-
-<DD>
-Produce symbolic debugging information
-</DL>
-<A NAME="lbAI">&nbsp;</A>
-<H2>OPTIMIZATION OPTIONS</H2>
-
-<DL COMPACT>
-<DT><B>-O2</B>
-
-<DD>
-This optimization level is one of GCC's standard options.  It is especially
-important for UPC because it enables instruction scheduling, which increases
-performance dramatically for distributed data access.  Nearly all supported
-optimizations that do not involve a space-speed tradeoff are performed.  Loop
-unrolling and function inlining are not done, for example.
-<P>
-</DL>
-<A NAME="lbAJ">&nbsp;</A>
-<H2>EXECUTION (RUNTIME) OPTIONS</H2>
-
-<P>
-The number of THREADS in an UPC application can be specified
-statically at compile-time, or dynamically at execution time.
-In the static compilation environment THREADS is a constant,
-and can be used freely in contexts where a constant is required by
-the C language specification (for example in an array declaration).
-In a dynamic compilation environment, the value of THREADS is given at
+<dl compact>
+<dt><b>Information Options</b></dt>
+<dd>-v</dd>
+<dt><b>Language Options</b></dt>
+<dd>-fupc-threads-n<br>
+-fupc-pthreads-model-tls<br>
+-fupc-inline-lib<br>
+-fupc-instrument<br>
+-fupc-instrument-functions<br>
+-x upc<br></dd>
+<dt><b>Debugging Options</b></dt>
+<dd>-g<br>
+-fupc-debug</dd>
+<dt><b>Optimization Options</b></dt>
+<dd>-O1, -O2, -O3</dd>
+</dl>
+<a name="lbAF">&nbsp;</a>
+<h2>INFORMATION OPTIONS</h2>
+<dl compact>
+<dt><b>-v</b></dt>
+<dd>Identifies the version of UPC currently in use, with a path
+name to a specification file that is in the same directory as
+include directories and other version-specific directories and
+files. Can be invoked without a source file name. When invoked with
+files, gives include and library directory paths in the order that
+they are searched.</dd>
+</dl>
+<a name="lbAG">&nbsp;</a>
+<h2>LANGUAGE OPTIONS</h2>
+All source files ending in .upc or .upci will be compiled by the
+UPC compiler. The <b>-x upc</b> switch tells the compiler to
+process all of the following file names as UPC source code,
+ignoring the default language typically associated with filename
+extensions.
+<dl compact>
+<dt><b>-fupc-threads-n</b></dt>
+<dd>Compile for <b>n</b> threads. The special symbol THREADS will
+be set to <b>n</b> and can be used both in data declarations (as a
+constant for array dimensions) and in expressions. On each thread
+the special symbol MYTHREAD refers to the thread number.</dd>
+<dt><b>-fupc-pthreads-model-tls</b></dt>
+<dd>Compile for POSIX threads (pthreads) environment. Each UPC
+thread is directly mapped to one pthread.</dd>
+<dt><b>-fupc-inline-lib</b></dt>
+<dd>Inline UPC run-time library calls. This option is turned on by
+default and <b>-fno-upc-inline-lib</b> option must be specified to
+turn it off. In general, inlining of the run-time library calls
+produces larger code and needs to be turned off if more condensed
+code is required.</dd>
+</dl>
+<a name="lbAH">&nbsp;</a>
+<h2>DEBUGGING OPTIONS</h2>
+<dl compact>
+<dt><b>-g</b></dt>
+<dd>Produce symbolic debugging information</dd>
+<dt><b>-dwarf-2-upc</b></dt>
+<dd>Generate UPC-specific symbolic DWARF-2 debugging information.
+This debugging information is processed by GDB-UPC, a variant of
+the GDB debugger that is UPC-aware, and the commercially available
+Totalview debugger, among others.</dd>
+<dt><b>-fupc-debug</b></dt>
+<dd>Generate calls to the UPC runtime library that include source
+filename and line number information that is used to print more
+informative error messages when errors are detected at
+runtime.</dd>
+</dl>
+<a name="lbAI">&nbsp;</a>
+<h2>INSTRUMENTATION OPTIONS</h2>
+<dl compact>
+<dt><b>-fupc-instrument</b></dt>
+<dd>Instrument UPC shared accesses and library calls, using GASP
+tool support (implies -fno-upc-inline-lib)</dd>
+<dt><b>-fupc-instrument-functions</b></dt>
+<dd>Instrument functions calls, using GASP tool support (implies
+-fupc-instrument and -fno-upc-inline-lib)</dd>
+</dl>
+<a name="lbAJ">&nbsp;</a>
+<h2>OPTIMIZATION OPTIONS</h2>
+<dl compact>
+<dt><b>-O2</b></dt>
+<dd>This optimization level is one of GCC's standard options. It is
+especially important for UPC because it enables instruction
+scheduling, which increases performance dramatically for
+distributed data access. Nearly all supported optimizations that do
+not involve a space-speed trade off are performed. Loop unrolling
+and function inlining are not done, for example.</dd>
+</dl>
+<a name="lbAK">&nbsp;</a>
+<h2>EXECUTION (RUNTIME) OPTIONS</h2>
+<p>The number of THREADS in an UPC application can be specified
+statically at compile-time, or dynamically at execution time. In
+the static compilation environment THREADS is a constant, and can
+be used freely in contexts where a constant is required by the C
+language specification (for example in an array declaration). In a
+dynamic compilation environment, the value of THREADS is given at
 runtime, and THREADS can be used in array declarations only if the
-array is qualified as
-<I>shared</I>
-
-and in contexts where one and only one of the shared array's dimensions
-is specified as an integral multiple of THREADS.
-<P>
-<DL COMPACT>
-<DT><B>&lt;UPC_program&gt; [-fupc-threads-n] [-fupc-heap-n[K|M|G]] [program-specific-arguments and switches]</B>
-
-<DD>
-</DL>
-<P>
-
-If the UPC program was not compiled with the -fupc-threads-n
-option, then the number of THREADS must be specified 
-explicitly on the command line when the
-program is executed. The UPC runtime recognizes the
-<I>-fupc-threads-n</I>
-
-command line switch, and establishes the number of parallel execution
-threads given by the value `n'. Generally, `n' should not exceed the
-number of physical central processing units. The implementation-imposed
-maximum value of `n' is 256.
-<P>
-
-The size of the heap used by the UPC program is established with the
-specificaion of the
-<I>-fupc-heap-n</I>
-
-command line switch. The value of `n' is the size of the heap available
-to each thread, specified in bytes.
-A suffix of `K', indicates that the value `n' is expressed in kilobytes (2^10 bytes);
-a suffix of `M' indicates that `n' is expressed in megabytes (2^20 bytes);
-and `G' indicates the value is given in gigabytes (2^30 bytes).
-If the -fupc-heap-n switch is not supplied, then the runtime system
-will choose a default heap size of 10 megabytes per thread.
-<P>
-
-The UPC runtime will remove all switches that begin with the prefix
-<I>-fupc-</I>
-
-and that immediately follow the UPC program name on the command line,
-before calling the UPC program's `main()' routine.
-<P>
-<A NAME="lbAK">&nbsp;</A>
-<H2>FILES</H2>
-
-<PRE>
+array is qualified as <i>shared</i> and in contexts where one and
+only one of the shared array's dimensions is specified as an
+integral multiple of THREADS.</p>
+<dl compact>
+<dt><b>&lt;UPC_program&gt; [[-fupc-threads-|-n]&lt;nthreads&gt;]
+[[-fupc-heap-|-heap ]&lt;heapsize&gt;[K|M|G]] [upc affinity
+options] [program-specific-arguments and switches]</b></dt>
+</dl>
+<p>If the UPC program was not compiled with the -fupc-threads-
+option, then the number of THREADS must be specified explicitly on
+the command line when the program is executed. The UPC runtime
+recognizes the <i>-fupc-threads-&lt;nthreads&gt;</i> or
+<i>-n&lt;nthreads&gt;</i> command line switch, which establishes
+the number of parallel execution threads given by the value
+`&lt;nthreads&gt;'. Generally, `&lt;nthreads&gt;' should not exceed
+the number of physical central processing units (or cores).</p>
+<p>The size of the heap used by the UPC program is established with
+the specification of the <i>-fupc-heap-&lt;heapsize&gt;</i> command
+line switch. The value of `&lt;heapsize&gt;' is the size of the
+heap available to each thread, specified in bytes. A suffix of `K',
+indicates that the value `&lt;heapsize&gt;' is expressed in
+kilobytes (2^10 bytes); a suffix of `M' indicates that
+`&lt;heapsize&gt;' is expressed in megabytes (2^20 bytes); and `G'
+indicates the value is given in gigabytes (2^30 bytes). If the
+-fupc-heap-&lt;heapsize&gt; switch is not supplied, then the
+runtime system will choose a default heap size of 16 megabytes per
+thread.</p>
+<p>As of version 4.2.3, the upc run-time supports the specification
+of execution and memory affinity for UPC threads. The following
+options control how threads are scheduled:</p>
+<dl compact>
+<dd>Controls the scheduling policy for threads.</dd>
+<dt><i>cpu</i></dt>
+<dd>specifies that threads are evenly scheduled over available CPUs
+(single processor or a core unit in multicore processor).</dd>
+<dt><i>strict</i></dt>
+<dd>is similar to cpu scheduling except that one to one mapping of
+threads and CPUs is required.</dd>
+<dt><i>node</i></dt>
+<dd>specifies that threads are scheduled on nodes if NUMA aware
+kernel is available.</dd>
+<dt><i>auto</i></dt>
+<dd>specifies that UPC run-time should not manage scheduling of UPC
+threads.</dd>
+<dd>Controls the availability of CPUs for UPC scheduling. The UPC
+run-time will not schedule any thread on CPUs specified with this
+option.</dd>
+<dd>Controls the memory allocation policy if a NUMA aware kernel is
+available.</dd>
+<dt><i>node</i></dt>
+<dd>allocates memory first from the node on which a thread is
+scheduled to run.</dd>
+<dt><i>strict</i></dt>
+<dd>allocates memory only from the node on which a thread is
+scheduled to run.</dd>
+<dt><i>auto</i></dt>
+<dd>lets the kernel decide the best memory allocation policy.</dd>
+</dl>
+<p>The UPC runtime will remove all switches that begin with the
+prefix <i>-fupc-</i> and that immediately follow the UPC program
+name on the command line, before calling the UPC program's `main()'
+routine.</p>
+<p><a name="lbAL">&nbsp;</a></p>
+<h2>FILES</h2>
+<pre>
 
 file.upc           UPC source file
 file.upci          preprocessed UPC source file
-file.c             C source file
+file.c             UPC source file (unless preceded by the "-x c" switch)
 file.h             C header (preprocessor) file
 file.i             preprocessed C source file
 file.s             assembly language file
 file.o             object file
 a.out              link edited output
-<I>TMPDIR</I>/cc*         temporary files
-<I>LIBDIR</I>/cpp         preprocessor
-<I>LIBDIR</I>/cc1upc      compiler for UPC
-<I>LIBDIR</I>/cc1         compiler for C
-<I>LIBDIR</I>/collect2    linker front end needed on some machines
-<I>LIBDIR</I>/libupc.a    UPC runtime library
-<I>LIBDIR</I>/libgcc.a    GCC subroutine library
+<i>TMPDIR</i>/cc*         temporary files
+<i>LIBDIR</i>/cpp         preprocessor
+<i>LIBDIR</i>/cc1upc      compiler for UPC
+<i>LIBDIR</i>/cc1         compiler for C
+<i>LIBDIR</i>/collect2    linker front end needed on some machines
+<i>LIBDIR</i>/libupc.a    UPC runtime library
+<i>LIBDIR</i>/libgcc.a    GCC subroutine library
 /lib/crt[01n].o    start-up routine
 /lib/libc.a        standard C library, see
-<I>intro</I>(3)
-/usr/include       standard directory for #include files
-<I>LIBDIR</I>/include     standard gcc directory for #include files
+<i>intro(3)</i>
+/usr/include       standard directory for <b>#include</b> files
+<i>LIBDIR</i>/include     standard gcc directory for <b>#include</b> files
 
 
-</PRE>
-
-<I>LIBDIR</I>
-
-should be found by using
-<I>upc -v</I>
-
-<BR>
-
-<I>TMPDIR</I>
-
-comes from the environment variable
-<B>TMPDIR</B>
-
-(default
-<B>/usr/tmp</B>
-
-if available, else
-<B>/tmp</B>).
-<A NAME="lbAL">&nbsp;</A>
-<H2>SEE ALSO</H2>
-gcc(1), cpp(1), as(1), ld(1), gdb(1), adb(1), dbx(1), sdb(1).
-<p>
-<I><A HREF="http://projects.seas.gwu.edu/~hpcl/upcdev/upctr.pdf">
-Introduction to UPC and Language Specification</A>,</I>
-William W. Carlson et al., LLNL, CCS-TR-99-157, May 13, 1999
-<p>
-<I><A HREF="ftp://ftp.seas.gwu.edu/pub/upc/downloads/upc_specs.pdf">
-UPC Language Specifications</A></I>
-Tarek A. El-Ghazawi et al, February 25, 2001
-<P>
-The 
-<I><A HREF="http://www.gwu.edu/~upc/software/gnu-upc-ml.html">
-GCC UPC Mailing List</A></I>
-is an electronic forum for discussing
-news announcements, bug reports, planned developments,
-and other topics of interest to GCC UPC developers and users.
-
-<A NAME="lbAM">&nbsp;</A>
-<H2>BUGS</H2>
-
-Report bugs to
-<I><A HREF="mailto:upc@intrepid.com">upc@intrepid.com</A></I>.
-<A NAME="lbAN">&nbsp;</A>
-<H2>AUTHORS</H2>
-
-Original Implementation by
-Jesse M. Draper &lt;<A HREF="mailto:jdraper@super.org">jdraper@super.org</A>&gt; and William W. Carlson &lt;<A HREF="mailto:wwc@super.org">wwc@super.org</A>&gt;.
-<BR>
-
-Ported to SGI Irix 6.5 and the gcc 2.95.2 baseline by Gary Funck &lt;<A HREF="mailto:gary@intrepid.com">gary@intrepid.com</A>&gt; and Nenad Vukicevic &lt;<A HREF="mailto:nenad@intrepid.com">nenad@intrepid.com</A>&gt;.
-<P>
-
-<HR>
-<small>
-Last modified: Wed Oct 22 15:52:59 PDT 2003
-</small>
-</BODY>
-</HTML>
+</pre>
+<i>LIBDIR</i> should be found by using <i>upc -v</i><br>
+<i>TMPDIR</i> The temporary directory location is given by the
+environment variable <b>TMPDIR</b> (default <b>/usr/tmp</b> if
+available, else <b>/tmp</b>). <a name="lbAM">&nbsp;</a>
+<h2>SEE ALSO</h2>
+<b>gcc(1)</b>, <b>cpp(1)</b>, <b>as(1)</b>, <b>ld(1)</b>,
+<b>gdb(1)</b>.
+<p><b>Introduction to UPC and Language Specification</b><br>
+(<i><a href=
+"http://upc.lbl.gov/publications/UPC-TR-Original99.pdf">http://upc.lbl.gov/publications/UPC-TR-Original99.pdf</a></i>)
+William W. Carlson et al., LLNL, CCS-TR-99-157, May 13, 1999</p>
+<p><b>UPC Language Specifications</b><br>
+(<i><a href=
+"http://www.gwu.edu/~upc/docs/upc_specs_1.2.pdf">http://www.gwu.edu/~upc/docs/upc_specs_1.2.pdf</a></i>)
+Tarek A. El-Ghazawi et al, February 25, 2001</p>
+<p><b>GASP Tool Interface</b><br>
+(<i><a href=
+"http://gasp.hcs.ufl.edu/">http://gasp.hcs.ufl.edu/</a></i>)
+University of Florida, GASP Tool Interface</p>
+<p>The <b>GCC UPC web site</b><br>
+(<i><a href=
+"http://www.gccupc.org">http://www.gccupc.org</a></i>)</p>
+<p>The <b>GCC UPC Mailing List</b><br>
+(<i><a href=
+"http://www.gwu.edu/~upc/software/gnu-upc-ml.html">http://www.gwu.edu/~upc/software/gnu-upc-ml.html</a></i>)
+is an electronic forum for discussing news announcements, bug
+reports, planned developments, and other topics of interest to GCC
+UPC developers and users.</p>
+<p><a name="lbAN">&nbsp;</a></p>
+<h2>BUGS</h2>
+Report bugs to <i><a href=
+"http://gccupc.org/bugs">http://gccupc.org/bugs</a></i> .
+<p><a name="lbAO">&nbsp;</a></p>
+<h2>AUTHORS</h2>
+Current developers and maintainers are Gary Funck &lt;<a href=
+"mailto:gary@intrepid.com">gary@intrepid.com</a>&gt; and Nenad
+Vukicevic &lt;<a href=
+"mailto:nenad@intrepid.com">nenad@intrepid.com</a>&gt;.<br>
+Original Implementation by Jesse M. Draper &lt;<a href=
+"mailto:jdraper@super.org">jdraper@super.org</a>&gt; and William W.
+Carlson &lt;<a href="mailto:wwc@super.org">wwc@super.org</a>&gt;.
+</body>
+</html>

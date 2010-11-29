@@ -165,6 +165,13 @@ extern void upc_all_prefix_reduceD (shared void *dst, shared const void *src,
 				     size_t blk_size, double (*func) (double,
 								      double),
 				     upc_flag_t sync_mode);
+
+extern void upc_all_prefix_reduceLD (shared void *dst, shared const void *src,
+				      upc_op_t op, size_t nelems,
+				      size_t blk_size, long double (*func) (long double,
+				 				            long double),
+				      upc_flag_t sync_mode);
+
 extern void upc_all_reduceC (shared void *dst, shared const void *src,
 			      upc_op_t op, size_t nelems, size_t blk_size,
 			      signed char (*func) (signed char, signed char),
@@ -219,6 +226,11 @@ extern void upc_all_reduceD (shared void *dst, shared const void *src,
 			      upc_op_t op, size_t nelems, size_t blk_size,
 			      double (*func) (double, double),
 			      upc_flag_t sync_mode);
+
+extern void upc_all_reduceLD (shared void *dst, shared const void *src,
+			       upc_op_t op, size_t nelems, size_t blk_size,
+			       long double (*func) (long double, long double),
+			       upc_flag_t sync_mode);
 
 extern void upc_all_scatter (shared void *dst, shared const void *src,
 			     size_t nbytes, upc_flag_t sync_mode);

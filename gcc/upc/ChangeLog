@@ -1,3 +1,184 @@
+2010-11-06  Gary Funck  <gary@intrepid.com>
+
+	* upc-pts-struct.c: Fix bug: (pts + int) fails when int is negative
+	  for struct-pts representation
+
+	  Analysis indicated that for something like (+ ptr -80) this was
+	  being represented as (+ ptr (- 80)) and further, when the
+	  calculations were propagated into the individual operations on the
+	  components of the 'struct' pointer, it would end up with something
+	  like (+ ptr.vaddr (- 80)), and the type of (- 80) would end up as
+	  "long unsigned int" because of the addition to the pointer.  This
+	  caused the calculations involving the signed 'int' operand to be
+	  performed incorrectly.  This fix insures that the 'int' operand is
+	  signed.
+
+2010-10-17  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c: Issue a compilation error on attempts to perform
+	  arithmetic on generic pointer-to-shared values.
+
+	  (The rest of this update is a small code clean up.)
+
+2010-10-17  Gary Funck  <gary@intrepid.com>
+
+	* upc-lang.c: For UPC only, issue errors for arithmetic and related
+	  operations on void types.
+
+	  This update simulates the effect of -Werror=pointer-arith, thus
+	  causing arithmetic on void types, sizeof(void) and so on to be
+	  considered compilation errors.  This meets the expectations of some
+	  harness tests and the RTED/CTED test suites.  GCC is more
+	  permissive, but since this is for UPC only, we can fairly safely
+	  define this new policy.
+
+2010-10-16  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c: Fix bug: Static initilialization of shared
+	  arrays is unsupported -- issue an error meesage.
+
+	  Currently, static initialization of a shared array is not
+	  implemented corrrectly.
+
+	  We do not plan to fix this for a while, therefore the compiler will
+	  issue an error message indicating that this is an unsupported
+	  operation.
+
+2010-10-13  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c: Fix bug: negative layout qualifiers not diagnosed
+	  as an error.
+
+	  The CTED_UPC test c_A_1_3_b.upc, specified a negative blocksize, but
+	  it was not diagnosed as an error.  With this fix, negative block
+	  sizes will generate a translation error.
+
+2010-10-10  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c: Fix bug: ICE: Attempt to take the difference of
+	  shared and nonshared pointers
+
+	  The compiler detected the error, and then tried to return
+	  error_mark_node.  This apparently is not acceptable, as there is an
+	  explicit assertion check to prevent this from happening in
+	  build_binary_op.  Return the more user-friendly size_one_node
+	  instead.
+
+2010-10-09  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c: Fix bug: segfault on incomplete array definition.
+
+	  This turned out to be a bit complicated.   The logic in
+	  upc_lang_layout_decl had to be re-arranged to avoid trying to lookup
+	  the THREADS identifier in the case where the blocking factor has
+	  been set to indefinite ([]).  This can happen when indefinite array
+	  declarations are processed for shared arrays.  At that time, the
+	  file scope has been closed and THREADS is no longer in scope.  Some
+	  more work is needed on upc_lang_layout_decl().  It has some
+	  duplication, and notably duplicates the two branches of the if
+	  having to do with TYPE_SIZE and TYPE_SIZE_UNIT, that appear in the
+	  caller of this routine (layout_decl()).
+
+	  The method of forcing a layout qualifier of [] in the indefinite
+	  declaration handler is odd a well.  The code that just does the
+	  setting of the block factor, needs to moved into its own routine
+	  that doesn't depend upon a declspec for '[]' to be passed in, just
+	  in order to set the blocking factor to some value (in this case, 0).
+	  Also, the logic for how that shared type is constructed is strange.
+	  First the type with 0 blocking factor is set.  Then the shared
+	  qualifier is removed from the type, and then added back later.  The
+	  intermediate type has a blocking factor set, but it has no shared
+	  qualifier.  Fixing this will require some thought.  It is tempting
+	  just to make indefinite shared arrays an error, rather than forcing
+	  the dimension to be '1'.
+
+	  This likely fixes a serious error in the previous update to
+	  upc_lang_layout_decl(), where it didn't have the logic to set
+	  TYPE_SIZE_UNIT() in the main part of the 'if' statement.  This means
+	  the previous update would fail on many tests.
+
+	  See also: gcc/c-common.c gcc/upc/upc-act.c
+
+2010-10-01  Gary Funck  <gary@intrepid.com>
+
+	* upc-manpage.html, upc.1: Update manual page, and bug reporting
+	  URL.
+
+	  Update "man" page to reflect debugging switches.  Also, some general
+	  clean up.  Change the bug reporting URL to point to gccupc.org.
+
+	  See also: gcc/configure gcc/configure.ac gcc/upc/upc-manpage.html
+	  gcc/upc/upc.1
+
+2010-10-01  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c: Do not zap all qualifier bits when constructing a
+	  non-shared result node.
+
+	  This fix was suggested by Paul H. in the following Berkeley Bugzilla
+	  report: https://upc-bugs.lbl.gov/bugzilla/show_bug.cgi?id=2061 The
+	  use of "!" rather than "~" zapped all the type qualifier bits rather
+	  than just those that are related to the "shared" qualifier.  This
+	  fix clears only the relevant bits.
+
+2010-09-26  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c: Fix bug: upc_forall with empty clauses
+	  mis-diagnosed as syntax error.
+
+	  A failure was exhibited by the Berkeley test case,
+	  bug873a.upc, which has the code:
+	       double d;
+	       upc_forall (;;;d) {...} The compiler did not properly handle
+	  the empty "condition" clause, and did not recover well when it was
+	  determined that the use of a double value, "d" above, was neither a
+	  pointer-to-shared nor an intger expression.  The update implements a
+	  fix for both issues.
+
+	  See also: gcc/c-parser.c gcc/upc/upc-act.c
+
+2010-09-25  Gary Funck  <gary@intrepid.com>
+
+	* upc-pts-struct.c: Fix an ICE on 32-bit/struct target: failed
+	  gimple check when calculating affinity for upc_forall.
+
+	  Intrepid test, test10.upc, failed to compile due a mis-match between
+	  the COMPONENT_REF node and the internal 'thread' field.  Changed the
+	  code to make the types agree, and added a converstion to sizetype if
+	  necessary.
+
+2010-09-23  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c: Fix bug: ICE: '[*]' layout factor applied to array
+	  with static threads and size not a multiple of threads.
+
+	  Add an extra check for an attempt to apply a '[*]' layout qualifier
+	  to a shared array that does not specify a size that is a multiple of
+	  THREADS, when compiled in a static THREADS compilation environment.
+
+2010-09-22  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c, upc-act.h: Fix bug: Nested upc_forall() semantics
+	  are not implemented
+
+	  The checkforall test in the Berkeley harness test suite indicated
+	  that GCC/UPC was not properly implementing nested upc_forall
+	  semantics.  Nested upc_forall statements (both statically or
+	  dynamically nested) must implement their affinity clause as if it
+	  were "continue"; thus all steps in the loop must execute without
+	  regard for affinity.  To implement these semantics a global depth
+	  counter, __upc_forall_depth, is maintained by the generated code
+	  that implements upc_forall.
+
+	  See also: gcc/c-parser.c gcc/c-tree.h gcc/stub-upc.c
+	  gcc/upc/upc-act.c gcc/upc/upc-act.h libupc/include/gcc-upc-lib.in
+	  libupc/include/upc.h libupc/smp/upc_main.c
+
+2010-09-18  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c, upc-pts-packed.c, upc-pts-struct.c: Implement
+	  -fupc-debug switch.
+
 2010-07-03  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 161517 into gupc branch.

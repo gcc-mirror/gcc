@@ -51,6 +51,10 @@ int UPC_PTHREADS = -1;
 /* The current thread number (range: 0..THREADS-1) */
 GUPCR_THREAD_LOCAL int MYTHREAD;
 
+/* Depth count used to implement the semantics of
+   nested upc_forall statements.  */
+GUPCR_THREAD_LOCAL int __upc_forall_depth;
+
 /* The UPC page size, in bits.  Don't use 'const' here
    because we want this to end up the loaded data where
    the debug assistant can read it.  Eventually move this
@@ -62,6 +66,16 @@ static char *__upc_pgm_name;
 
 /* Runtime state information */
 upc_info_p __upc_info;
+
+/* The filename of the location where a runtime
+   error was detected.  This is set by the various
+   debug-enabled ('g') UPC runtime library routines.  */
+GUPCR_THREAD_LOCAL const char *__upc_err_filename;
+
+/* The line number of the location where a runtime
+   error was detected.  This is set by the various
+   debug-enabled ('g') UPC runtime library routines.  */
+GUPCR_THREAD_LOCAL unsigned int __upc_err_linenum;
 
 /* Interface to the debugger */
 MPIR_PROCDESC *MPIR_proctable = 0;
@@ -574,22 +588,19 @@ __upc_init (char *pgm, const char **err_msg)
 static void
 __upc_per_thread_init (upc_info_p u)
 {
+  typedef void (*func_ptr_t) (void);
+  extern func_ptr_t GUPCR_INIT_ARRAY_START[1];
+  extern func_ptr_t GUPCR_INIT_ARRAY_END[1];
+  const int n_init = (int)(GUPCR_INIT_ARRAY_END - GUPCR_INIT_ARRAY_START);
+  int i;
   __upc_vm_init_per_thread ();
-  if (!MYTHREAD)
+  __upc_heap_init (u->init_heap_base, u->init_heap_size);
+  for (i = 0; i < n_init; ++i)
     {
-      typedef void (*func_ptr_t) (void);
-      extern func_ptr_t GUPCR_INIT_ARRAY_START[1];
-      extern func_ptr_t GUPCR_INIT_ARRAY_END[1];
-      int n_init = (int)(GUPCR_INIT_ARRAY_END - GUPCR_INIT_ARRAY_START);
-      __upc_heap_init (u->init_heap_base, u->init_heap_size);
-      int i;
-      for (i = 0; i < n_init; ++i)
-	{
-	  func_ptr_t init_func = GUPCR_INIT_ARRAY_START[i];
-	  /* Skip zero words introduced by section marker, or by the linker.  */
-	  if (init_func)
-	    (*init_func) ();
-	}
+      func_ptr_t init_func = GUPCR_INIT_ARRAY_START[i];
+      /* Skip zero words introduced by section marker, or by the linker.  */
+      if (init_func)
+	(*init_func) ();
     }
 }
 
@@ -817,6 +828,22 @@ upc_global_exit (int status)
 
 /* Implement UPC threads as POSIX threads. */
 
+/* UPC rand() pthreads implementation uses per thread seed */
+
+static GUPCR_THREAD_LOCAL unsigned int __upc_rand_seed;
+
+int
+__upc_rand (void)
+{
+  return rand_r (&__upc_rand_seed);
+}
+
+void
+__upc_srand (unsigned int _seed)
+{
+  __upc_rand_seed = _seed;
+}
+
 typedef struct upc_startup_args_struct
 {
   int thread_id;
@@ -839,6 +866,9 @@ __upc_start_pthread (void *arg)
   __upc_affinity_set (u, thread_id);
   /* Perform per thread initialization.  */
   __upc_per_thread_init (u);
+  /* Initialize random number generator seed.
+     Note: C99 requires an initial seed value of 1, per 7.20.2.2. */
+  __upc_srand (1);
   status_ptr = &u->thread_info[thread_id].exit_status;
   __upc_barrier (GUPCR_RUNTIME_BARRIER_ID);
   __upc_pupc_init (&startup_args->argc, &startup_args->argv);
@@ -1019,7 +1049,15 @@ __upc_fatal (const char *msg)
   if (u)
     __upc_acquire_lock (&u->lock);
   fflush (0);
-  fprintf (stderr, "%s: UPC error: %s\n", __upc_pgm_name, msg);
+  if (__upc_err_filename && __upc_err_linenum)
+    {
+      fprintf (stderr, "%s: at %s:%u, UPC error: %s\n",
+         __upc_pgm_name, __upc_err_filename, __upc_err_linenum, msg);
+    }
+  else
+    {
+      fprintf (stderr, "%s: UPC error: %s\n", __upc_pgm_name, msg);
+    }
   fflush (0);
   __upc_notify_debugger_of_abort (msg);
   abort ();
@@ -1063,6 +1101,8 @@ GUPCR_START (int argc, char *argv[])
       abort ();
     }
   __upc_affinity_cpu_avoid_free (__upc_cpu_avoid_set);
+  /* Ensure that the upc_forall depth count is initialized to 0.  */
+  __upc_forall_depth = 0;
   /* Run the program */
   __upc_run_threads (u, argc, argv);
   status = __upc_monitor_threads ();

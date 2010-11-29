@@ -7263,7 +7263,7 @@ if test "${with_bugurl+set}" = set; then :
 	   ;;
      esac
 else
-  BUGURL="http://www.intrepid.com/upc/bugs.html"
+  BUGURL="http://gccupc.org/bugs"
 
 fi
 
