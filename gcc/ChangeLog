@@ -1,5 +1,6 @@
 2010-11-30  Dave Korn  <dave.korn.cygwin@gmail.com>
 
+	PR middle-end/46709
 	* cgraphunit.c (process_function_and_variable_attributes): Fix
 	cut'n'pasteo.
 
