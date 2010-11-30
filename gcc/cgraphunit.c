@@ -844,7 +844,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 	}
       if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
 	  && lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl))
-	  && TREE_PUBLIC (node->decl))
+	  && TREE_PUBLIC (vnode->decl))
 	{
 	  if (vnode->finalized)
 	    varpool_mark_needed_node (vnode);
