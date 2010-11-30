@@ -6739,7 +6739,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
       int i;
 
       for (i = 0; i < n_infiles ; i++)
-	if (infiles[i].language && infiles[i].language[0] != '*')
+	if (infiles[i].incompiler
+	    || (infiles[i].language && infiles[i].language[0] != '*'))
 	  {
 	    set_input (infiles[i].name);
 	    break;
