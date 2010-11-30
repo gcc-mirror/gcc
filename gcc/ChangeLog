@@ -5,11 +5,6 @@
 	call.  Manually create EH edges for the direct call and update
 	target PHI nodes.
 
-2010-11-30  Eric Botcazou  <ebotcazou@adacore.com>
-
-	* tree.c (build_range_type_1): Do not set TYPE_STRUCTURAL_EQUALITY_P
-	because of self-referential bounds.
-
 2010-11-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* diagnostic-core.h: Include bversion.h.
