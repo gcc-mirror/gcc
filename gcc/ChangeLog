@@ -1,3 +1,9 @@
+2010-11-30  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* ggc-zone.c (ggc_pch_read): Fix conditional compilation.
+	* ggc-none.c (ggc_internal_alloc_zone_stat)
+	(ggc_internal_cleared_alloc_zone_stat): New.
+
 2010-11-29  Joakim Tjernlund  <Joakim.Tjernlund@transmode.se>
 
 	* config/rs6000/rs6000.c (rs6000_reg_live_or_pic_offset_p): Check

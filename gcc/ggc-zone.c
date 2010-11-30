@@ -2464,7 +2464,7 @@ ggc_pch_read (FILE *f, void *addr)
 
   /* We've just read in a PCH file.  So, every object that used to be
      allocated is now free.  */
-#ifdef 0 && GATHER_STATISTICS
+#ifdef GATHER_STATISTICS
   zone_allocate_marks ();
   ggc_prune_overhead_list ();
   zone_free_marks ();
