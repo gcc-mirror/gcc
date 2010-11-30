@@ -111,7 +111,6 @@ a register with any other reload.  */
 #include "params.h"
 #include "target.h"
 #include "ira.h"
-#include "toplev.h" /* exact_log2 may be used by targets */
 
 /* True if X is a constant that can be forced into the constant pool.  */
 #define CONST_POOL_OK_P(X)			\

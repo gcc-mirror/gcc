@@ -1,5 +1,10 @@
 2010-11-30  Joseph Myers  <joseph@codesourcery.com>
 
+	* lto-object.c: Don't include toplev.h.
+	* Make-lang.in (lto/lto-object.o): Don't depend on toplev.h.
+
+2010-11-30  Joseph Myers  <joseph@codesourcery.com>
+
 	* Make-lang.in (lto/lto-object.o): Depend on toplev.h instead of
 	$(TOPLEV_H).
 

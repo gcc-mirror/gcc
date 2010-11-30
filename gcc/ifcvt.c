@@ -36,7 +36,6 @@
 #include "output.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "tm_p.h"
 #include "cfgloop.h"
 #include "target.h"

@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "pointer-set.h"
 #include "hashtab.h"
-#include "toplev.h"
 #include "flags.h"
 #include "debug.h"
 #include "target.h"

@@ -1,6 +1,6 @@
 /* Generate code from machine description to extract operands from insn as rtl.
    Copyright (C) 1987, 1991, 1992, 1993, 1997, 1998, 1999, 2000, 2003,
-   2004, 2005, 2007, 2008
+   2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -366,7 +366,6 @@ print_header (void)
 #include \"insn-config.h\"\n\
 #include \"recog.h\"\n\
 #include \"diagnostic-core.h\"\n\
-#include \"toplev.h\"\n\
 \n\
 /* This variable is used as the \"location\" of any missing operand\n\
    whose numbers are skipped by a given pattern.  */\n\

@@ -1,5 +1,6 @@
 /* HOST_WIDE_INT definitions for the GNU compiler.
-   Copyright (C) 1998, 2002, 2004, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2004, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -156,5 +157,75 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 #  define HOST_WIDEST_FAST_INT long
 #  define HOST_BITS_PER_WIDEST_FAST_INT HOST_BITS_PER_LONG
 #endif
+
+/* Inline functions operating on HOST_WIDE_INT.  */
+#if GCC_VERSION < 3004
+
+extern int clz_hwi (unsigned HOST_WIDE_INT x);
+extern int ctz_hwi (unsigned HOST_WIDE_INT x);
+extern int ffs_hwi (unsigned HOST_WIDE_INT x);
+
+/* Return log2, or -1 if not exact.  */
+extern int exact_log2                  (unsigned HOST_WIDE_INT);
+
+/* Return floor of log2, with -1 for zero.  */
+extern int floor_log2                  (unsigned HOST_WIDE_INT);
+
+#else /* GCC_VERSION >= 3004 */
+
+/* For convenience, define 0 -> word_size.  */
+static inline int
+clz_hwi (unsigned HOST_WIDE_INT x)
+{
+  if (x == 0)
+    return HOST_BITS_PER_WIDE_INT;
+# if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+  return __builtin_clzl (x);
+# elif HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONGLONG
+  return __builtin_clzll (x);
+# else
+  return __builtin_clz (x);
+# endif
+}
+
+static inline int
+ctz_hwi (unsigned HOST_WIDE_INT x)
+{
+  if (x == 0)
+    return HOST_BITS_PER_WIDE_INT;
+# if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+  return __builtin_ctzl (x);
+# elif HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONGLONG
+  return __builtin_ctzll (x);
+# else
+  return __builtin_ctz (x);
+# endif
+}
+
+static inline int
+ffs_hwi (unsigned HOST_WIDE_INT x)
+{
+# if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+  return __builtin_ffsl (x);
+# elif HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONGLONG
+  return __builtin_ffsll (x);
+# else
+  return __builtin_ffs (x);
+# endif
+}
+
+static inline int
+floor_log2 (unsigned HOST_WIDE_INT x)
+{
+  return HOST_BITS_PER_WIDE_INT - 1 - clz_hwi (x);
+}
+
+static inline int
+exact_log2 (unsigned HOST_WIDE_INT x)
+{
+  return x == (x & -x) && x ? ctz_hwi (x) : -1;
+}
+
+#endif /* GCC_VERSION >= 3004 */
 
 #endif /* ! GCC_HWINT_H */

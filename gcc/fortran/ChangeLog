@@ -1,3 +1,7 @@
+2010-11-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* trans-common.c: Don't include toplev.h.
+
 2010-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* gfortran.h (alloca): Don't include definitions.

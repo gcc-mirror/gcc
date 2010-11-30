@@ -863,7 +863,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"resource.h\"\n");
   printf ("#include \"reload.h\"\n");
   printf ("#include \"diagnostic-core.h\"\n");
-  printf ("#include \"toplev.h\"\n");
   printf ("#include \"regs.h\"\n");
   printf ("#include \"tm-constrs.h\"\n");
   printf ("#include \"ggc.h\"\n");

@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "langhooks.h"
 #include "flags.h"
-#include "toplev.h"
 #include "function.h"
 #include "tree-pretty-print.h"
 #include "tree-dump.h"
