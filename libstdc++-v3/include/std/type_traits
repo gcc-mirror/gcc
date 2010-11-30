@@ -250,6 +250,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     struct is_function<_Res(_ArgTypes......) const volatile>
     : public true_type { };
 
+  template<typename>
+    struct __is_nullptr_t_helper
+    : public false_type { };
+  _DEFINE_SPEC(0, __is_nullptr_t_helper, std::nullptr_t, true)
+
+  // __is_nullptr_t (extension).
+  template<typename _Tp>
+    struct __is_nullptr_t
+    : public integral_constant<bool, (__is_nullptr_t_helper<typename
+				      remove_cv<_Tp>::type>::value)>
+    { };
+
   // composite type traits.
   
   /// is_arithmetic
@@ -284,7 +296,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     : public integral_constant<bool, (is_arithmetic<_Tp>::value
 				      || is_enum<_Tp>::value
 				      || is_pointer<_Tp>::value
-				      || is_member_pointer<_Tp>::value)>
+				      || is_member_pointer<_Tp>::value
+				      || __is_nullptr_t<_Tp>::value)>
     { };
 
   /// is_compound
