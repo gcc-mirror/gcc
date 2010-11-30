@@ -1,3 +1,9 @@
+2010-11-30  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/45949
+	* cgraphunit.c (ipa_passes): Stop after errors from
+	small IPA passes.
+
 2010-11-30  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* gcc-plugin.h: Include coretypes.h.
