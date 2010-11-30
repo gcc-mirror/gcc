@@ -93,7 +93,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "recog.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "target.h"
 #include "optabs.h"
 #include "insn-codes.h"

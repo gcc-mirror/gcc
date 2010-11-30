@@ -1,3 +1,32 @@
+2010-11-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* hwint.c:  New.  Extracted from toplev.c.
+	* hwint.h (clz_hwi, ctz_hwi, ffs_hwi, exact_log2, floor_log2):
+	Move from toplev.h.
+	* toplev.c (clz_hwi, ctz_hwi, ffs_hwi, exact_log2, floor_log2):
+	Move to hwint.c.
+	* toplev.h (clz_hwi, ctz_hwi, ffs_hwi, exact_log2, floor_log2):
+	Move to hwint.h.
+	* builtins.c, combine.c, config/i386/winnt.c, double-int.c,
+	explow.c, expmed.c, fold-const.c, ggc-page.c, ggc-zone.c, ifcvt.c,
+	ipa-struct-reorg.c, ira-color.c, matrix-reorg.c, omp-low.c,
+	real.c, recog.c, reload.c, rtlanal.c, simplify-rtx.c,
+	stor-layout.c, tree-dfa.c, tree-ssa-alias.c,
+	tree-ssa-loop-niter.c, tree-vect-data-refs.c,
+	tree-vect-loop-manip.c, tree-vect-loop.c, tree-vect-stmts.c,
+	tree-vrp.c: Don't include toplev.h.
+	* genattrtab.c, genconditions.c, genemit.c, genextract.c,
+	genoutput.c, genpeep.c, genpreds.c, genrecog.c: Don't include
+	toplev.h in generated output.
+	* Makefile.in (OBJS-common): Add hwint.o.
+	Dependencies for above files changed to remove toplev.h.
+	(hwint.o): New.
+	(insn-attrtab.o, insn-emit.o, insn-extract.o, insn-output.o,
+	insn-peep.o, insn-preds.o, insn-recog.o): Don't depend on
+	toplev.h.
+	* config/i386/t-cygming (winnt.o): Don't depend on toplev.h.
+	* config/i386/t-interix (winnt.o): Don't depend on toplev.h.
+
 2010-11-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46717

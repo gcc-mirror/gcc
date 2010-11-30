@@ -1,6 +1,6 @@
 /* Generate code from machine description to perform peephole optimizations.
    Copyright (C) 1987, 1989, 1992, 1997, 1998, 1999, 2000, 2003, 2004,
-   2007  Free Software Foundation, Inc.
+   2007, 2010  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -377,7 +377,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"except.h\"\n");
   printf ("#include \"function.h\"\n");
   printf ("#include \"diagnostic-core.h\"\n");
-  printf ("#include \"toplev.h\"\n");
   printf ("#include \"flags.h\"\n");
   printf ("#include \"tm-constrs.h\"\n\n");
 

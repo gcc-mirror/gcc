@@ -120,7 +120,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow-inline.h"
 #include "langhooks.h"
 #include "hashtab.h"
-#include "toplev.h"
 #include "flags.h"
 #include "ggc.h"
 #include "debug.h"

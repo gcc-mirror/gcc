@@ -1,6 +1,6 @@
 /* Generate code from to output assembler insns as recognized from rtl.
    Copyright (C) 1987, 1988, 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2002,
-   2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -241,7 +241,6 @@ output_prologue (void)
   printf ("#include \"insn-attr.h\"\n\n");
   printf ("#include \"recog.h\"\n\n");
   printf ("#include \"diagnostic-core.h\"\n");
-  printf ("#include \"toplev.h\"\n");
   printf ("#include \"output.h\"\n");
   printf ("#include \"target.h\"\n");
   printf ("#include \"tm-constrs.h\"\n");

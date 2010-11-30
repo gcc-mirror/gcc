@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "rtl.h"
 #include "tm_p.h"
-#include "toplev.h" /* exact_log2 */
 #include "diagnostic-core.h"
 #include "flags.h"
 #include "ggc.h"

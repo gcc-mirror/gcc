@@ -271,7 +271,7 @@ java/jcf-dump.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(JAVA_TREE_H) \
   java/jcf-dump.c java/jcf-reader.c java/jcf.h java/javaop.h java/javaop.def \
   version.h $(GGC_H) intl.h java/zipfile.h
 java/boehm.o: java/boehm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(TREE_H) $(JAVA_TREE_H) java/parse.h toplev.h
+  $(TREE_H) $(JAVA_TREE_H) java/parse.h
 java/builtins.o: java/builtins.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(JAVA_TREE_H) $(GGC_H) $(FLAGS_H) $(OPTABS_H) $(EXPR_H) langhooks.h \
   gt-java-builtins.h

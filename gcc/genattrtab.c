@@ -4920,8 +4920,7 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"recog.h\"\n");
   printf ("#include \"regs.h\"\n");
   printf ("#include \"output.h\"\n");
-  printf ("#include \"diagnostic-core.h\"\n"
-          "#include \"toplev.h\"\n");
+  printf ("#include \"diagnostic-core.h\"\n");
   printf ("#include \"flags.h\"\n");
   printf ("#include \"function.h\"\n");
   printf ("\n");

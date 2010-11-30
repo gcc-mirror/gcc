@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "params.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"

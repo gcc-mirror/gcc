@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "tree-vectorizer.h"
 #include "langhooks.h"
 
