@@ -71,3 +71,22 @@ struct alloc_zone
 struct alloc_zone rtl_zone;
 struct alloc_zone tree_zone;
 struct alloc_zone tree_id_zone;
+
+#if defined (GGC_ZONE) && !defined (GENERATOR_FILE)
+
+void *
+ggc_internal_alloc_zone_stat (size_t size,
+                              struct alloc_zone * ARG_UNUSED(z) MEM_STAT_DECL)
+{
+    return xmalloc (size);
+}
+
+void *
+ggc_internal_cleared_alloc_zone_stat (size_t size,
+                                      struct alloc_zone * ARG_UNUSED(z)
+                                      MEM_STAT_DECL)
+{
+    return xcalloc (size, 1);
+}
+
+#endif
