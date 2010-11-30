@@ -1145,7 +1145,11 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
   icall_bb = e_di->dest;
   icall_bb->count = all - count;
 
-  e_ij = split_block (icall_bb, icall_stmt);
+  /* Do not disturb existing EH edges from the indirect call.  */
+  if (last_stmt (icall_bb) != icall_stmt)
+    e_ij = split_block (icall_bb, icall_stmt);
+  else
+    e_ij = find_fallthru_edge (icall_bb->succs);
   join_bb = e_ij->dest;
   join_bb->count = all;
 
@@ -1181,21 +1185,27 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
       add_phi_arg (phi, gimple_call_lhs (dcall_stmt), e_dj, UNKNOWN_LOCATION);
     }
 
-  /* Fix eh edges */
+  /* Build an EH edge for the direct call if necessary.  */
   lp_nr = lookup_stmt_eh_lp (icall_stmt);
-  if (lp_nr != 0)
+  if (lp_nr != 0
+      && stmt_could_throw_p (dcall_stmt))
     {
-      if (stmt_could_throw_p (dcall_stmt))
+      edge e_eh, e;
+      edge_iterator ei;
+      gimple_stmt_iterator psi;
+
+      add_stmt_to_eh_lp (dcall_stmt, lp_nr);
+      FOR_EACH_EDGE (e_eh, ei, icall_bb->succs)
+	if (e_eh->flags & EDGE_EH)
+	  break;
+      e = make_edge (dcall_bb, e_eh->dest, EDGE_EH);
+      for (psi = gsi_start_phis (e_eh->dest);
+	   !gsi_end_p (psi); gsi_next (&psi))
 	{
-	  add_stmt_to_eh_lp (dcall_stmt, lp_nr);
-	  make_eh_edges (dcall_stmt);
+	  gimple phi = gsi_stmt (psi);
+	  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (phi, e),
+		   PHI_ARG_DEF_FROM_EDGE (phi, e_eh));
 	}
-
-      gcc_assert (stmt_could_throw_p (icall_stmt));
-      make_eh_edges (icall_stmt);
-
-      /* The old EH edges are sill on the join BB, purge them.  */
-      gimple_purge_dead_eh_edges (join_bb);
     }
 
   return dcall_stmt;

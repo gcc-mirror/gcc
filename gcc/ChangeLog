@@ -1,3 +1,10 @@
+2010-11-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46717
+	* value-prof.c (gimple_ic): Preserve EH edges of the indirect
+	call.  Manually create EH edges for the direct call and update
+	target PHI nodes.
+
 2010-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (build_range_type_1): Do not set TYPE_STRUCTURAL_EQUALITY_P
