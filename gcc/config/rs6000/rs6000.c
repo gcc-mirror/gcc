@@ -20032,8 +20032,10 @@ rs6000_reg_live_or_pic_offset_p (int reg)
   return (((crtl->calls_eh_return || df_regs_ever_live_p (reg))
            && (!call_used_regs[reg]
                || (reg == RS6000_PIC_OFFSET_TABLE_REGNUM
+		   && !TARGET_SINGLE_PIC_BASE
                    && TARGET_TOC && TARGET_MINIMAL_TOC)))
           || (reg == RS6000_PIC_OFFSET_TABLE_REGNUM
+	      && !TARGET_SINGLE_PIC_BASE
               && ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
                   || (DEFAULT_ABI == ABI_DARWIN && flag_pic))));
 }
@@ -20687,6 +20689,9 @@ rs6000_emit_prologue (void)
 
       insn = emit_insn (generate_set_vrsave (reg, info, 0));
     }
+
+  if (TARGET_SINGLE_PIC_BASE)
+    return; /* Do not set PIC register */
 
   /* If we are using RS6000_PIC_OFFSET_TABLE_REGNUM, we need to set it up.  */
   if ((TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
