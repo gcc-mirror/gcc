@@ -275,6 +275,10 @@ mupdate
 Target Report RejectNegative InverseMask(NO_UPDATE, UPDATE)
 Generate load/store with update instructions
 
+msingle-pic-base
+Target Report Var(TARGET_SINGLE_PIC_BASE) Init(0)
+Do not load the PIC register in function prologues
+
 mavoid-indexed-addresses
 Target Report Var(TARGET_AVOID_XFORM) Init(-1) Save
 Avoid generation of indexed load/store instructions when possible

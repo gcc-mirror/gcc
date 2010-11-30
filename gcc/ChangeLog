@@ -1,3 +1,12 @@
+2010-11-29  Joakim Tjernlund  <Joakim.Tjernlund@transmode.se>
+
+	* config/rs6000/rs6000.c (rs6000_reg_live_or_pic_offset_p): Check
+	TARGET_SINGLE_PIC_BASE for RS6000_PIC_OFFSET_TABLE_REGNUM.
+	(rs6000_emit_prologue): Don't set PIC register if
+	TARGET_SINGLE_PIC_BASE.
+	* config/rs6000/rs6000.opt (msingle-pic-base): New option.
+	* doc/invoke.texi (msingle-pic-base): Document.
+
 2010-11-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/46712
