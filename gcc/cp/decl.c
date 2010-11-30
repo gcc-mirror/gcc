@@ -12811,6 +12811,9 @@ finish_function (int flags)
   if (fndecl == NULL_TREE)
     return error_mark_node;
 
+  if (c_dialect_objc ())
+    objc_finish_function ();
+
   gcc_assert (!defer_mark_used_calls);
   defer_mark_used_calls = true;
 

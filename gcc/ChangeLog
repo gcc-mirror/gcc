@@ -1,3 +1,10 @@
+2010-11-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-decl.c (finish_function): Call objc_finish_function in
+	Objective-C.
+	* c-typeck.c (convert_for_assignment): Do not call
+	objc_type_quals_match().
+	
 2010-11-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46722

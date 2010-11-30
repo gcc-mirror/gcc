@@ -1,3 +1,12 @@
+2010-11-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* decl.c (finish_function): Call objc_finish_function when
+	compiling Objective-C++.
+	* call.c (standard_conversion): Do not call
+	objc_non_volatilized_type().
+	(implicit_conversion): Same change.
+	* typeck.c (comp_ptr_ttypes_real): Same change.
+
 2010-11-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* cp-gimplify.c, cp-lang.c, cvt.c, cxx-pretty-print.c, error.c,

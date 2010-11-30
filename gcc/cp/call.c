@@ -872,8 +872,6 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	       && TREE_CODE (TREE_TYPE (from)) != FUNCTION_TYPE)
 	{
 	  tree nfrom = TREE_TYPE (from);
-	  if (c_dialect_objc ())
-	    nfrom = objc_non_volatilized_type (nfrom);
 	  from = build_pointer_type
 	    (cp_build_qualified_type (void_type_node, 
 			              cp_type_quals (nfrom)));
@@ -1482,9 +1480,6 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
   if (from == error_mark_node || to == error_mark_node
       || expr == error_mark_node)
     return NULL;
-
-  if (c_dialect_objc ())
-    from = objc_non_volatilized_type (from);
 
   if (TREE_CODE (to) == REFERENCE_TYPE)
     conv = reference_binding (to, from, expr, c_cast_p, flags);
