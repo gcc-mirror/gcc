@@ -114,6 +114,7 @@ contains
     real, dimension (1:m,1:m)              :: invima
     real, dimension (1:m,1:m), intent (in) :: a
     integer, intent (in)            :: j, k
+    invima = 0.0
     invima (j, j) = 1.0 / (1.0 - a (j, j))
   end function invima
   subroutine test6
