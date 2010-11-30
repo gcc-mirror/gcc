@@ -1,5 +1,11 @@
 2010-11-30  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/44986
+	* gcc.c (main): Use the first input with a compiler as infile
+	for link spec processing.
+
+2010-11-30  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/45949
 	* cgraphunit.c (ipa_passes): Stop after errors from
 	small IPA passes.
