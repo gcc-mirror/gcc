@@ -26,7 +26,6 @@
 #include "cpplib.h"
 #include "tree.h"
 #include "c-family/c-common.h"
-#include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
 

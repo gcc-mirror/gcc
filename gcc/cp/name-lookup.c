@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "name-lookup.h"
 #include "timevar.h"
-#include "toplev.h"
 #include "diagnostic-core.h"
 #include "debug.h"
 #include "c-family/c-pragma.h"

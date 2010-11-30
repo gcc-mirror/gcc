@@ -1,5 +1,5 @@
 /* mingw32 host-specific hook definitions.
-   Copyright (C) 2004, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007, 2009, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -22,7 +22,6 @@
 #include "coretypes.h"
 #include "hosthooks.h"
 #include "hosthooks-def.h"
-#include "toplev.h"
 #include "diagnostic.h"
 
 

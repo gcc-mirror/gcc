@@ -31,7 +31,6 @@
 #include "tm_p.h"
 #include "cp/cp-tree.h"	/* We need access to the OVL_... macros.  */
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "sh-symbian.h"
 
 

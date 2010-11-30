@@ -1,6 +1,6 @@
 /* Language-level data type conversion for GNU C.
    Copyright (C) 1987, 1988, 1991, 1998, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009 Free Software Foundation, Inc.
+   2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "c-tree.h"
 #include "langhooks.h"
-#include "toplev.h"
 #include "target.h"
 
 /* Change of width--truncation and extension of integers or reals--

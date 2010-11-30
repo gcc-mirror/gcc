@@ -110,7 +110,6 @@
 #include "tree-flow.h"
 #include "cselib.h"
 #include "target.h"
-#include "toplev.h"
 #include "params.h"
 #include "diagnostic.h"
 #include "tree-pretty-print.h"

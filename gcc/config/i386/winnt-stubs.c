@@ -1,6 +1,6 @@
 /* Dummy subroutines for language-specific support on Windows.
    Contributed by Danny Smith (dannysmith@users.sourceforge.net)
-   Copyright (C) 2005, 2007
+   Copyright (C) 2005, 2007, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tm_p.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "hashtab.h"
 
 bool

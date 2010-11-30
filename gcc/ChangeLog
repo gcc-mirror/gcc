@@ -1,3 +1,57 @@
+2010-11-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* diagnostic-core.h: Include bversion.h.
+	* toplev.h: Don't include input.h or bversion.h.
+	(parse_optimize_options): Don't declare here.
+	* alias.c, auto-inc-dec.c, c-aux-info.c, c-convert.c, c-parser.c,
+	caller-save.c, cfg.c, cfganal.c, cfgbuild.c, cfgcleanup.c,
+	combine-stack-adj.c, config/arm/pe.c, config/darwin-c.c,
+	config/host-darwin.c, config/i386/host-cygwin.c,
+	config/i386/host-mingw32.c, config/i386/msformat-c.c,
+	config/i386/netware.c, config/i386/nwld.c,
+	config/i386/winnt-cxx.c, config/i386/winnt-stubs.c,
+	config/ia64/ia64-c.c, config/m32c/m32c-pragma.c,
+	config/mep/mep-pragma.c, config/microblaze/microblaze-c.c,
+	config/rs6000/host-darwin.c, config/rs6000/rs6000-c.c,
+	config/score/score3.c, config/score/score7.c,
+	config/sh/symbian-base.c, config/sh/symbian-c.c,
+	config/sh/symbian-cxx.c, config/sol2-c.c, config/sol2.c,
+	config/v850/v850-c.c, config/vxworks.c, convert.c, cppbuiltin.c,
+	cselib.c, dbgcnt.c, ddg.c, dfp.c, dominance.c, emit-rtl.c,
+	fixed-value.c, fwprop.c, ggc-common.c, gimple.c, gimplify.c,
+	graphite-blocking.c, graphite-clast-to-gimple.c,
+	graphite-dependences.c, graphite-flattening.c,
+	graphite-interchange.c, graphite-poly.c,
+	graphite-scop-detection.c, graphite.c, haifa-sched.c,
+	implicit-zee.c, integrate.c, ipa-pure-const.c, ipa-reference.c,
+	ira-build.c, ira-conflicts.c, ira-costs.c, ira-lives.c, jump.c,
+	lists.c, loop-doloop.c, loop-iv.c, lto-cgraph.c, lto-compress.c,
+	lto-opts.c, lto-section-in.c, lto-section-out.c,
+	lto-streamer-out.c, lto-symtab.c, modulo-sched.c, optabs.c,
+	params.c, postreload-gcse.c, postreload.c, predict.c, profile.c,
+	regcprop.c, reginfo.c, regmove.c, reorg.c, resource.c,
+	sched-deps.c, sched-ebb.c, sched-rgn.c, sdbout.c,
+	sel-sched-dump.c, sel-sched-ir.c, sese.c, stmt.c, targhooks.c,
+	tree-cfgcleanup.c, tree-mudflap.c, tree-nomudflap.c,
+	tree-object-size.c, tree-outof-ssa.c, tree-phinodes.c,
+	tree-profile.c, tree-sra.c, tree-ssa-ccp.c, tree-ssa-coalesce.c,
+	tree-ssa-live.c, tree-ssa-loop-prefetch.c, tree-ssa-loop.c,
+	tree-ssa-operands.c, tree-ssa-structalias.c, tree-ssa-uninit.c,
+	tree-vect-patterns.c, value-prof.c, var-tracking.c, web.c: Don't
+	include toplev.h.
+	* Makefile.in (TOPLEV_H): Remove.  All uses changed to use
+	toplev.h.  Dependencies for above files and c-family files changed
+	to remove $(TOPLEV_H) or toplev.h.
+	(C_TREE_H): Don't include $(TOPLEV_H).
+	(DIAGNOSTIC_CORE_H): Use $(INPUT_H) instead of input.h.  Add
+	bversion.h.
+	* config/arm/t-pe, config/arm/t-wince-pe, config/i386/t-cygming,
+	config/ia64/t-ia64, config/mep/t-mep, config/score/t-score-elf,
+	config/t-darwin, config/t-sol2,
+	config/t-vxworks, config/v850/t-v850, config/v850/t-v850e:
+	Dependencies for above files changed to remove $(TOPLEV_H) or
+	toplev.h.
+
 2010-11-30  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44986

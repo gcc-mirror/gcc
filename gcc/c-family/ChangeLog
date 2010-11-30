@@ -1,3 +1,9 @@
+2010-11-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.h (parse_optimize_options): Declare.
+	* c-cppbuiltin.c, c-format.c, c-gimplify.c, c-lex.c, c-omp.c,
+	c-pch.c, c-pragma.c, c-semantics.c: Don't include toplev.h.
+
 2010-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-opts.c (check_deps_environment_vars): Use getenv instead of

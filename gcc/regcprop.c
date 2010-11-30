@@ -34,7 +34,6 @@
 #include "function.h"
 #include "recog.h"
 #include "flags.h"
-#include "toplev.h"
 #include "diagnostic-core.h"
 #include "obstack.h"
 #include "timevar.h"

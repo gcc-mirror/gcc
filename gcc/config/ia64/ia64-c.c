@@ -1,5 +1,6 @@
 /* Definitions of C specific functions for GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2010
+   Free Software Foundation, Inc.
    Contributed by Steve Ellcey <sje@cup.hp.com>
 
 This file is part of GCC.
@@ -27,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "tm_p.h"
 
 static void ia64_hpux_add_pragma_builtin (tree func);

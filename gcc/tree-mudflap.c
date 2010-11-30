@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "ggc.h"
 #include "cgraph.h"
-#include "toplev.h"
 #include "gimple.h"
 
 /* Internal function decls */

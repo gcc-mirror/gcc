@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "target.h"
 #include "diagnostic.h"
-#include "toplev.h"
 #include "lto-streamer.h"
 
 /* When a file is initially compiled, the options used when generating

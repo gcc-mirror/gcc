@@ -1,5 +1,6 @@
 /* Generic routines for manipulating PHIs
-   Copyright (C) 2003, 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tree-flow.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "gimple.h"
 
 /* Rewriting a function into SSA form can create a huge number of PHIs

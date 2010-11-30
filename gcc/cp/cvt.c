@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "intl.h"
 #include "convert.h"
-#include "toplev.h"
 #include "decl.h"
 #include "target.h"
 

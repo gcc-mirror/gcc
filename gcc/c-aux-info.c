@@ -2,7 +2,7 @@
    on information stored in GCC's tree structure.  This code implements the
    -aux-info option.
    Copyright (C) 1989, 1991, 1994, 1995, 1997, 1998,
-   1999, 2000, 2003, 2004, 2007 Free Software Foundation, Inc.
+   1999, 2000, 2003, 2004, 2007, 2010 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@segfault.us.com).
 
 This file is part of GCC.
@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tree.h"
 #include "c-tree.h"
-#include "toplev.h"
 
 enum formals_style_enum {
   ansi,

@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "cselib.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "except.h"
 #include "tree.h"
 #include "target.h"

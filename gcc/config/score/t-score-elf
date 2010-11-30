@@ -1,4 +1,4 @@
-# Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+# Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -19,13 +19,13 @@
 # Additional Backend Files
 score7.o: $(srcdir)/config/score/score7.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) $(RTL_H) output.h flags.h $(TREE_H) \
-  expr.h toplev.h $(TM_P_H)
+  expr.h $(TM_P_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(srcdir)/config/score/score7.c
 
 score3.o: $(srcdir)/config/score/score3.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) $(RTL_H) output.h flags.h $(TREE_H) \
-  expr.h toplev.h $(TM_P_H)
+  expr.h $(TM_P_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(srcdir)/config/score/score3.c
 

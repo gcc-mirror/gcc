@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "output.h"
 #include "debug.h"		/* For dwarf2out_do_cfi_asm.  */
-#include "toplev.h"
 #include "tm_p.h"		/* For TARGET_CPU_CPP_BUILTINS & friends.  */
 #include "target.h"
 #include "cpp-id-data.h"

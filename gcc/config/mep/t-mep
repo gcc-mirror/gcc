@@ -33,7 +33,7 @@ CRTSTUFF_CFLAGS = -O0 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
 TCFLAGS = -mlibrary
 
 mep-pragma.o: $(srcdir)/config/mep/mep-pragma.c $(CONFIG_H) $(SYSTEM_H) \
-	coretypes.h $(TM_H) $(TREE_H) $(RTL_H) toplev.h $(C_PRAGMA_H) \
+	coretypes.h $(TM_H) $(TREE_H) $(RTL_H) $(C_PRAGMA_H) \
 	$(CPPLIB_H) hard-reg-set.h output.h $(srcdir)/config/mep/mep-protos.h \
 	function.h insn-config.h reload.h $(TARGET_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

@@ -26,7 +26,6 @@
 #include "c-family/c-pragma.h"
 #include "c-family/c-common.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "cpplib.h"
 #include "hard-reg-set.h"
 #include "output.h"

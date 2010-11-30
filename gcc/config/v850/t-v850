@@ -1,4 +1,4 @@
-# Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2008, 2009
+# Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2008, 2009, 2010
 # Free Software Foundation, Inc.
 #
 # This file is part of GCC.
@@ -105,7 +105,7 @@ MULTILIB_MATCHES  = mv850e=mv850e1
 TCFLAGS = -mno-app-regs -msmall-sld -Wa,-mwarn-signed-overflow -Wa,-mwarn-unsigned-overflow
 
 v850-c.o: $(srcdir)/config/v850/v850-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(TM_H) $(CPPLIB_H) $(TREE_H) $(C_PRAGMA_H) toplev.h $(GGC_H) $(TM_P_H)
+  $(TM_H) $(CPPLIB_H) $(TREE_H) $(C_PRAGMA_H) $(GGC_H) $(TM_P_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/v850/v850-c.c 
 

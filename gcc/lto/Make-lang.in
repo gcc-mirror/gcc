@@ -87,7 +87,7 @@ lto/lto.o: lto/lto.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(OPTS_H) \
 	$(COMMON_H) debug.h $(TIMEVAR_H) $(GIMPLE_H) $(LTO_H) $(LTO_TREE_H) \
 	$(LTO_TAGS_H) $(LTO_STREAMER_H) $(SPLAY_TREE_H) gt-lto-lto.h $(PARAMS_H)
 lto/lto-object.o: lto/lto-object.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(DIAGNOSTIC_CORE_H) $(TOPLEV_H) $(LTO_H) $(TM_H) $(LTO_STREAMER_H) \
+	$(DIAGNOSTIC_CORE_H) toplev.h $(LTO_H) $(TM_H) $(LTO_STREAMER_H) \
 	../include/simple-object.h
 
 # LTO testing is done as part of C/C++/Fortran etc. testing.

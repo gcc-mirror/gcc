@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "convert.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "langhooks.h"
 
 /* Convert EXPR to some pointer or reference type TYPE.

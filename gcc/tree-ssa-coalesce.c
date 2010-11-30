@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dump.h"
 #include "tree-ssa-live.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 
 
 /* This set of routines implements a coalesce_list.  This is an object which

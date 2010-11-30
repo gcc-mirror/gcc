@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "timevar.h"
 #include "tree-pass.h"
-#include "toplev.h"
 #include "pointer-set.h"
 
 static struct value_prof_hooks *value_prof_hooks;

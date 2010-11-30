@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cp-tree.h"
 #include "input.h"
-#include "toplev.h"
 #include "params.h"
 #include "hashtab.h"
 #include "target.h"

@@ -31,7 +31,6 @@
 #include "expr.h"
 #include "tm_p.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "sh-symbian.h"
 
 /* Return nonzero if SYMBOL is marked as being dllexport'd.  */

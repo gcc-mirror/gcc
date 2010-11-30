@@ -76,7 +76,6 @@ static GTY(()) bool sdbout_initialized;
 #include "reload.h"
 #include "output.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "tm_p.h"
 #include "gsyms.h"
 #include "langhooks.h"

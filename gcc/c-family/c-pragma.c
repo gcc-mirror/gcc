@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "c-pragma.h"
 #include "flags.h"
-#include "toplev.h"
 #include "c-common.h"
 #include "output.h"
 #include "tm_p.h"		/* For REGISTER_TARGET_PRAGMAS (why is
