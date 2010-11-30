@@ -7110,9 +7110,11 @@ build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
   TYPE_USER_ALIGN (itype) = TYPE_USER_ALIGN (type);
 
   if ((TYPE_MIN_VALUE (itype)
-       && TREE_CODE (TYPE_MIN_VALUE (itype)) != INTEGER_CST)
+       && TREE_CODE (TYPE_MIN_VALUE (itype)) != INTEGER_CST
+       && !CONTAINS_PLACEHOLDER_P (TYPE_MIN_VALUE (itype)))
       || (TYPE_MAX_VALUE (itype)
-	  && TREE_CODE (TYPE_MAX_VALUE (itype)) != INTEGER_CST))
+	  && TREE_CODE (TYPE_MAX_VALUE (itype)) != INTEGER_CST
+	  && !CONTAINS_PLACEHOLDER_P (TYPE_MAX_VALUE (itype))))
     {
       /* Since we cannot reliably merge this type, we need to compare it using
 	 structural equality checks.  */
