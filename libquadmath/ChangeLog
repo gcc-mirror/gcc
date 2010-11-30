@@ -1,3 +1,9 @@
+2010-11-30  Tobias Burnus  <burnus@net-b.de>
+
+	* acinclude.m4 (LIBGOMP_CHECK_SYNC_BUILTINS,
+	LIBGOMP_CHECK_ATTRIBUTE_VISIBILITY,
+	LIBGOMP_CHECK_ATTRIBUTE_DLLEXPORT): Remove.
+
 2010-11-29  Kai Tietz  <kai.tietz@onevision.com>
 
 	* configure: Regenerated.
