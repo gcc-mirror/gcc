@@ -1,3 +1,12 @@
+2010-11-30  Kai Tietz  <kai.tietz@onevision.com>
+
+	Backport from mainline
+	2010-08-12  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/42986
+	* gnu/java/security/jce/prng/natVMSecureRandomWin32.cc
+	(natGenerateSeed): Add missing "::".
+
 2010-10-06  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	Backport from mainline
