@@ -1,3 +1,8 @@
+2010-11-30  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* gcc-plugin.h: Include coretypes.h.
+	* Makefile.in (FUNCTION_H): Add hard-reg-set.h.
+
 2010-11-30  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* ggc-zone.c (ggc_pch_read): Fix conditional compilation.
