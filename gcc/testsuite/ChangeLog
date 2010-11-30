@@ -1,3 +1,9 @@
+2010-11-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/ppc-fma-7.c: New file, test that (a*b)+c and
+	(a*b)-c generates two fma instructions, instead of separate
+	multiply, add, and subtract.
+
 2010-11-30  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/realloc_on_assign_2.f03 (invima): Assign
