@@ -1,3 +1,8 @@
+2010-11-30  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/realloc_on_assign_2.f03 (invima): Assign
+	a value to all array elements.
+
 2010-11-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46722
