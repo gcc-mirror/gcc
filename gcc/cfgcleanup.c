@@ -44,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "recog.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "cselib.h"
 #include "params.h"
 #include "tm_p.h"

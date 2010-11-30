@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "c-common.h"
 #include "output.h"
-#include "toplev.h"
 #include "debug.h"
 #include "c-pragma.h"
 #include "ggc.h"

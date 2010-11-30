@@ -1,5 +1,6 @@
 /* Glue to interface gcj with bytecode verifier.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,7 +35,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 #include "java-except.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 
 void *
 vfy_alloc (size_t bytes)

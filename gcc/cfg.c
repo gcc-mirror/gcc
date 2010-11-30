@@ -58,7 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "except.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "tm_p.h"
 #include "obstack.h"
 #include "timevar.h"

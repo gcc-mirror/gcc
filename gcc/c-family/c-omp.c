@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "c-common.h"
-#include "toplev.h"
 #include "gimple.h"		/* For create_tmp_var_raw.  */
 #include "langhooks.h"
 

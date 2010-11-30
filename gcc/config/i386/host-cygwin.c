@@ -22,7 +22,6 @@
 #include "coretypes.h"
 #include "hosthooks.h"
 #include "hosthooks-def.h"
-#include "toplev.h"
 #include "diagnostic.h"
 
 static void * cygwin_gt_pch_get_address (size_t, int fd);

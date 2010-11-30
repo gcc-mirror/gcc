@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "cxx-pretty-print.h"
 #include "tree-pretty-print.h"
-#include "toplev.h"
 
 /* Translate if being used for diagnostics, but not for dump files or
    __PRETTY_FUNCTION.  */

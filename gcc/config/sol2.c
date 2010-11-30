@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tm_p.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "ggc.h"
 
 tree solaris_pending_aligns, solaris_pending_inits, solaris_pending_finis;

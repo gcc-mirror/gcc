@@ -894,6 +894,8 @@ extern bool c_cpp_error (cpp_reader *, int, int, location_t, unsigned int,
 			 const char *, va_list *)
      ATTRIBUTE_GCC_DIAG(6,0);
 
+extern bool parse_optimize_options (tree, bool);
+
 /* Positive if an implicit `extern "C"' scope has just been entered;
    negative if such a scope has just been exited.  */
 extern GTY(()) int pending_lang_change;

@@ -1,6 +1,6 @@
 /* RunTime Type Identification
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009
+   2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Mostly written by Jason Merrill (jason@cygnus.com).
 
@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "output.h"
 #include "assert.h"
-#include "toplev.h"
 #include "convert.h"
 #include "target.h"
 #include "c-family/c-pragma.h"

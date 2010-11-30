@@ -1,6 +1,7 @@
 /* Subroutines for insn-output.c for NetWare.
    Contributed by Jan Beulich (jbeulich@novell.com)
-   Copyright (C) 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tm_p.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "langhooks.h"
 #include "ggc.h"
 

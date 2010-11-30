@@ -21,8 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_TOPLEV_H
 #define GCC_TOPLEV_H
-#include "input.h"
-#include "bversion.h"
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */
@@ -49,7 +47,6 @@ extern void init_eh (void);
 extern void announce_function (tree);
 
 extern void warn_deprecated_use (tree, tree);
-extern bool parse_optimize_options (tree, bool);
 
 #ifdef BUFSIZ
 extern void output_quoted_string	(FILE *, const char *);

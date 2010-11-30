@@ -49,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "flags.h"
 #include "timevar.h"
-#include "toplev.h"
 #include "diagnostic.h"
 #include "gimple-pretty-print.h"
 #include "langhooks.h"

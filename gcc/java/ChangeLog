@@ -1,3 +1,10 @@
+2010-11-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* expr.c, lang.c, mangle.c, mangle_name.c, typeck.c,
+	verify-glue.c: Don't include toplev.h.
+	* Make-lang.in: Dependencies for above files changed to remove
+	toplev.h.
+
 2010-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* boehm.c: Include "config.h" instead of <config.h>.

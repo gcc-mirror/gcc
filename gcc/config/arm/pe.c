@@ -1,5 +1,5 @@
 /* Routines for GCC for ARM/pe.
-   Copyright (C) 1995, 1996, 2000, 2001, 2002, 2004, 2005, 2007, 2008
+   Copyright (C) 1995, 1996, 2000, 2001, 2002, 2004, 2005, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Doug Evans (dje@cygnus.com).
 
@@ -29,7 +29,6 @@
 #include "tree.h"
 #include "expr.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "tm_p.h"
 
 extern int current_function_anonymous_args;

@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "params.h"
 #include "langhooks.h"
 #include "tree-inline.h"

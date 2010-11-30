@@ -1,5 +1,5 @@
 /* Mudflap: narrow-pointer bounds-checking by tree rewriting.
-   Copyright (C) 2001, 2002, 2003, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Frank Ch. Eigler <fche@redhat.com>
 
@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "ggc.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 
 
 

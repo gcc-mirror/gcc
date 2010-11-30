@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "decl.h"
 #include "flags.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "output.h"
 #include "target.h"
 #include "cgraph.h"

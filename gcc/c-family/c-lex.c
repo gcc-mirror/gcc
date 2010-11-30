@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "cpplib.h"
 #include "c-pragma.h"
-#include "toplev.h"
 #include "intl.h"
 #include "splay-tree.h"
 #include "debug.h"

@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "tree-dump.h"
 #include "tree-pass.h"
-#include "toplev.h"
 #include "diagnostic-core.h"
 #include "ssaexpand.h"
 

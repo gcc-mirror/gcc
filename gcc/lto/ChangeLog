@@ -1,3 +1,8 @@
+2010-11-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (lto/lto-object.o): Depend on toplev.h instead of
+	$(TOPLEV_H).
+
 2010-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* lto-endian.h: Delete.

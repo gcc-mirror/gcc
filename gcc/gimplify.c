@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "ggc.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "target.h"
 #include "pointer-set.h"
 #include "splay-tree.h"

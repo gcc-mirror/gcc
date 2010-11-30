@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "machmode.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "output.h"
 #include "ggc.h"
 #include "langhooks.h"

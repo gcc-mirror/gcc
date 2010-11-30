@@ -21,7 +21,6 @@
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "config/host-darwin.h"
 
 /* Yes, this is really supposed to work.  */

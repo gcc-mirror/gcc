@@ -1,5 +1,5 @@
 /* This file contains subroutine used by the C front-end to construct GENERIC.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Written by Benjamin Chelf (chelf@codesourcery.com).
 
@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "splay-tree.h"
 #include "c-common.h"
-#include "toplev.h"
 #include "flags.h"
 #include "output.h"
 #include "tree-iterator.h"

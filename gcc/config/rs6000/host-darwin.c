@@ -24,7 +24,6 @@
 #include <sys/ucontext.h>
 #include "hosthooks.h"
 #include "hosthooks-def.h"
-#include "toplev.h"
 #include "diagnostic.h"
 #include "config/host-darwin.h"
 

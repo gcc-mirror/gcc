@@ -1,5 +1,5 @@
 /* LTO symbol table.
-   Copyright 2009 Free Software Foundation, Inc.
+   Copyright 2009, 2010 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "tree.h"
 #include "gimple.h"
 #include "ggc.h"

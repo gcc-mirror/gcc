@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "params.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 
 /* An array containing the compiler parameters and their current
    values.  */
