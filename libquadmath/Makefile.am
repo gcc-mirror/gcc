@@ -39,7 +39,8 @@ libquadmath_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 			 $(version_arg) -no-undefined -bindir "$(bindir)" -lm
 libquadmath_la_DEPENDENCIES = $(version_dep) $(libquadmath_la_LIBADD)
 
-include_HEADERS = quadmath.h quadmath_weak.h
+nodist_libsubinclude_HEADERS = quadmath.h quadmath_weak.h
+libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 libquadmath_la_SOURCES = \
   gdtoa/arith.h gdtoa/gdtoa_fltrnds.h gdtoa/gd_qnan.h gdtoa/gdtoaimp.h \

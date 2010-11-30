@@ -1,5 +1,12 @@
 2010-11-30  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/46594
+	* Makefile.am: Install include files in
+	target/version specific directory.
+	* Makefile.in: Regenerate.
+
+2010-11-30  Tobias Burnus  <burnus@net-b.de>
+
 	* acinclude.m4 (LIBGOMP_CHECK_SYNC_BUILTINS,
 	LIBGOMP_CHECK_ATTRIBUTE_VISIBILITY,
 	LIBGOMP_CHECK_ATTRIBUTE_DLLEXPORT): Remove.
