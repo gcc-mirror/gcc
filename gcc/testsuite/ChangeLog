@@ -1,3 +1,8 @@
+2010-11-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46722
+	* gcc.target/i386/fma4-fma-2.c: New testcase.
+
 2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/duplicate-class-1.m: New.

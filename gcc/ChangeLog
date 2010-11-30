@@ -1,3 +1,11 @@
+2010-11-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46722
+	* tree-ssa-math-opts.c (convert_mult_to_fma): Get multiplication
+	operands as arguments.
+	(execute_optimize_widening_mul): Also handle power of two as
+	multiplication.
+
 2010-11-30  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR middle-end/46709
