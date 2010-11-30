@@ -1,3 +1,12 @@
+2010-11-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-common.h (objc_finish_function): New.
+	(objc_non_volatilized_type): Removed.
+	(objc_type_quals_match): Removed.
+	* stub-objc.c (objc_finish_function): New.
+	(objc_non_volatilized_type): Removed.
+	(objc_type_quals_match): Removed.
+	
 2010-11-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.h (parse_optimize_options): Declare.

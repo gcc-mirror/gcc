@@ -405,6 +405,10 @@ static int objc_collecting_ivars = 0;
 
 static char *errbuf;	/* Buffer for error diagnostics */
 
+/* An array of all the local variables in the current function that
+   need to be marked as volatile.  */
+VEC(tree,gc) *local_variables_to_volatilize = NULL;
+
 
 static int flag_typed_selectors;
 
@@ -2257,61 +2261,6 @@ objc_build_struct (tree klass, tree fields, tree super_name)
   return s;
 }
 
-/* Build a type differing from TYPE only in that TYPE_VOLATILE is set.
-   Unlike tree.c:build_qualified_type(), preserve TYPE_LANG_SPECIFIC in the
-   process.  */
-static tree
-objc_build_volatilized_type (tree type)
-{
-  tree t;
-
-  /* Check if we have not constructed the desired variant already.  */
-  for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-    {
-      /* The type qualifiers must (obviously) match up.  */
-      if (!TYPE_VOLATILE (t)
-	  || (TYPE_READONLY (t) != TYPE_READONLY (type))
-	  || (TYPE_RESTRICT (t) != TYPE_RESTRICT (type)))
-	continue;
-
-      /* For pointer types, the pointees (and hence their TYPE_LANG_SPECIFIC
-	 info, if any) must match up.  */
-      if (POINTER_TYPE_P (t)
-	  && (TREE_TYPE (t) != TREE_TYPE (type)))
-	continue;
-
-      /* Only match up the types which were previously volatilized in similar fashion and not
-	 because they were declared as such. */
-      if (!lookup_attribute ("objc_volatilized", TYPE_ATTRIBUTES (t)))
-	continue;
-
-      /* Everything matches up!  */
-      return t;
-    }
-
-  /* Ok, we could not re-use any of the pre-existing variants.  Create
-     a new one.  */
-  t = build_variant_type_copy (type);
-  TYPE_VOLATILE (t) = 1;
-
-  TYPE_ATTRIBUTES (t) = merge_attributes (TYPE_ATTRIBUTES (type),
-                      			  tree_cons (get_identifier ("objc_volatilized"),
-                                 	  NULL_TREE,
-                                 	  NULL_TREE));
-  if (TREE_CODE (t) == ARRAY_TYPE)
-    TREE_TYPE (t) = objc_build_volatilized_type (TREE_TYPE (t));
-
-  /* Set up the canonical type information. */
-  if (TYPE_STRUCTURAL_EQUALITY_P (type))
-    SET_TYPE_STRUCTURAL_EQUALITY (t);
-  else if (TYPE_CANONICAL (type) != type)
-    TYPE_CANONICAL (t) = objc_build_volatilized_type (TYPE_CANONICAL (type));
-  else
-    TYPE_CANONICAL (t) = t;
-
-  return t;
-}
-
 /* Mark DECL as being 'volatile' for purposes of Darwin
    _setjmp()/_longjmp() exception handling.  Called from
    objc_mark_locals_volatile().  */
@@ -2324,17 +2273,44 @@ objc_volatilize_decl (tree decl)
       && (TREE_CODE (decl) == VAR_DECL
 	  || TREE_CODE (decl) == PARM_DECL))
     {
-      tree t = TREE_TYPE (decl);
+      if (local_variables_to_volatilize == NULL)
+	local_variables_to_volatilize = VEC_alloc (tree, gc, 8);
 
-      t = objc_build_volatilized_type (t);
+      VEC_safe_push (tree, gc, local_variables_to_volatilize, decl);
+    }
+}
 
-      TREE_TYPE (decl) = t;
-      TREE_THIS_VOLATILE (decl) = 1;
-      TREE_SIDE_EFFECTS (decl) = 1;
-      DECL_REGISTER (decl) = 0;
+/* Called when parsing of a function completes; if any local variables
+   in the function were marked as variables to volatilize, change them
+   to volatile.  We do this at the end of the function when the
+   warnings about discarding 'volatile' have already been produced.
+   We are making the variables as volatile just to force the compiler
+   to preserve them between setjmp/longjmp, but we don't want warnings
+   for them as they aren't really volatile.  */
+void
+objc_finish_function (void)
+{
+  /* If there are any local variables to volatilize, volatilize them.  */
+  if (local_variables_to_volatilize)
+    {
+      int i;
+      tree decl;
+      FOR_EACH_VEC_ELT (tree, local_variables_to_volatilize, i, decl)
+	{
+	  tree t = TREE_TYPE (decl);
+
+	  t = build_qualified_type (t, TYPE_QUALS (t) | TYPE_QUAL_VOLATILE);
+	  TREE_TYPE (decl) = t;
+	  TREE_THIS_VOLATILE (decl) = 1;
+	  TREE_SIDE_EFFECTS (decl) = 1;
+	  DECL_REGISTER (decl) = 0;
 #ifndef OBJCPLUS
-      C_DECL_REGISTER (decl) = 0;
+	  C_DECL_REGISTER (decl) = 0;
 #endif
+	}
+
+      /* Now we delete the vector.  This sets it to NULL as well.  */
+      VEC_free (tree, gc, local_variables_to_volatilize);
     }
 }
 
@@ -2691,24 +2667,6 @@ objc_have_common_type (tree ltyp, tree rtyp, int argno, tree callee)
   return false;
 }
 
-/* Check if LTYP and RTYP have the same type qualifiers.  If either type
-   lives in the volatilized hash table, ignore the 'volatile' bit when
-   making the comparison.  */
-
-bool
-objc_type_quals_match (tree ltyp, tree rtyp)
-{
-  int lquals = TYPE_QUALS (ltyp), rquals = TYPE_QUALS (rtyp);
-
-  if (lookup_attribute ("objc_volatilized", TYPE_ATTRIBUTES (ltyp)))
-    lquals &= ~TYPE_QUAL_VOLATILE;
-
-  if (lookup_attribute ("objc_volatilized", TYPE_ATTRIBUTES (rtyp)))
-    rquals &= ~TYPE_QUAL_VOLATILE;
-
-  return (lquals == rquals);
-}
-
 #ifndef OBJCPLUS
 /* Determine if CHILD is derived from PARENT.  The routine assumes that
    both parameters are RECORD_TYPEs, and is non-reflexive.  */
@@ -2826,16 +2784,6 @@ objc_check_global_decl (tree decl)
   tree id = DECL_NAME (decl);
   if (objc_is_class_name (id) && global_bindings_p())
     error ("redeclaration of Objective-C class %qs", IDENTIFIER_POINTER (id));
-}
-
-/* Return a non-volatalized version of TYPE. */
-
-tree
-objc_non_volatilized_type (tree type)
-{
-  if (lookup_attribute ("objc_volatilized", TYPE_ATTRIBUTES (type)))
-    type = build_qualified_type (type, (TYPE_QUALS (type) & ~TYPE_QUAL_VOLATILE));
-  return type;
 }
 
 /* Construct a PROTOCOLS-qualified variant of INTERFACE, where
@@ -5353,6 +5301,9 @@ objc_begin_try_stmt (location_t try_locus, tree body)
       error_at (try_locus, "%<-fobjc-exceptions%> is required to enable Objective-C exception syntax");
     }
 
+  /* Collect the list of local variables.  We'll mark them as volatile
+     at the end of compilation of this function to prevent them being
+     clobbered by setjmp/longjmp.  */
   if (flag_objc_sjlj_exceptions)
     objc_mark_locals_volatile (NULL);
 }

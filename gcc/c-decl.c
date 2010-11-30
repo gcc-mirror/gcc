@@ -8184,6 +8184,9 @@ void
 finish_function (void)
 {
   tree fndecl = current_function_decl;
+  
+  if (c_dialect_objc ())
+    objc_finish_function ();
 
   if (TREE_CODE (fndecl) == FUNCTION_DECL
       && targetm.calls.promote_prototypes (TREE_TYPE (fndecl)))
