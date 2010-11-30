@@ -1,3 +1,8 @@
+2010-11-30  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* cgraphunit.c (process_function_and_variable_attributes): Fix
+	cut'n'pasteo.
+
 2010-11-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* hwint.c:  New.  Extracted from toplev.c.
