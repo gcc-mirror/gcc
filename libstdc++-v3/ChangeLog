@@ -1,3 +1,24 @@
+2010-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* scripts/extract_symvers.pl: New file.
+	* scripts/extract_symvers: Rename to ...
+	* scripts/extract_symvers.in: ... this.
+	Use extract_symvers.pl on SunOS.
+	* configure.ac: Add scripts/extract_symvers to AC_CONFIG_FILES.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.am (extract_symvers): Call extract_symvers
+	from $(glibcxx_builddir).
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/libstdc++-abi/abi.exp: Call extract_symvers from
+	$objdir.
+
+	* config/abi/post/solaris2.8/baseline_symbols.txt: Regenerate.
+	* config/abi/post/solaris2.8/sparcv9/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Likewise.
+
 2010-11-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/46718

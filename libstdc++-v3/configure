@@ -59292,6 +59292,8 @@ ac_config_files="$ac_config_files Makefile"
 
 ac_config_files="$ac_config_files scripts/testsuite_flags"
 
+ac_config_files="$ac_config_files scripts/extract_symvers"
+
 
 # Multilibs need MULTISUBDIR defined correctly in certain makefiles so
 # that multilib installs will end up installed in the correct place.
@@ -60470,6 +60472,7 @@ do
     "include/gstdint.h") CONFIG_COMMANDS="$CONFIG_COMMANDS include/gstdint.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "scripts/testsuite_flags") CONFIG_FILES="$CONFIG_FILES scripts/testsuite_flags" ;;
+    "scripts/extract_symvers") CONFIG_FILES="$CONFIG_FILES scripts/extract_symvers" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "libsupc++/Makefile") CONFIG_FILES="$CONFIG_FILES libsupc++/Makefile" ;;
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
@@ -62253,6 +62256,7 @@ fi
 
  ;;
     "scripts/testsuite_flags":F) chmod +x scripts/testsuite_flags ;;
+    "scripts/extract_symvers":F) chmod +x scripts/extract_symvers ;;
     "include/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
