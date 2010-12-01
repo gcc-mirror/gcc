@@ -23,8 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "intl.h"
 #include "coretypes.h"
-#include "tm.h" /* Needed by rtl.h and used for DWARF2_DEBUGGING_INFO
-		   and DBX_DEBUGGING_INFO.  */
+#include "tm.h" /* Needed by rtl.h and used for STACK_CHECK_BUILTIN,
+		   STACK_CHECK_STATIC_BUILTIN, DEFAULT_GDB_EXTENSIONS,
+		   DWARF2_DEBUGGING_INFO and DBX_DEBUGGING_INFO.  */
 #include "rtl.h" /* Needed by insn-attr.h.  */
 #include "opts.h"
 #include "options.h"
