@@ -36,8 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Enable multilib.  */
 
 #undef ASM_SPEC
-#define ASM_SPEC "%{v:-v} %{n} %{T} %{Ym,*} %{Yd,*} \
- %{Wa,*:%*} %{m32:--32} %{m64:--64}"
+#define ASM_SPEC "%{v} %{m32:--32} %{m64:--64}"
 
 #undef SPEC_32
 #undef SPEC_64

@@ -54,10 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 /* FIXME: Removed -K PIC from generic Solaris 2 ASM_SPEC: the native assembler
    gives many warnings: R_386_32 relocation is used for symbol ".text".  */
 #undef ASM_SPEC
-#define ASM_SPEC "\
-%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s \
-%(asm_cpu) \
-"
+#define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} -s %(asm_cpu)"
 
 #define ASM_CPU_SPEC ""
  
