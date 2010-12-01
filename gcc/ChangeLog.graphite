@@ -1,3 +1,13 @@
+2010-10-20  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-blocking.c (lst_do_strip_mine_loop): Extra parameter
+	for the stride.
+	(lst_do_strip_mine): Same.
+	(scop_do_strip_mine): Same.
+	* graphite-poly.c (apply_poly_transforms): Update call to
+	scop_do_strip_mine.
+	* graphite-poly.h (scop_do_strip_mine): Update declaration.
+
 2010-09-24  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/45758

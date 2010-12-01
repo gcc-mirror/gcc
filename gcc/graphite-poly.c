@@ -776,7 +776,7 @@ apply_poly_transforms (scop_p scop)
   else
     {
       if (flag_loop_strip_mine)
-	transform_done |= scop_do_strip_mine (scop);
+	transform_done |= scop_do_strip_mine (scop, 0);
 
       if (flag_loop_interchange)
 	transform_done |= scop_do_interchange (scop);

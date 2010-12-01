@@ -193,15 +193,14 @@ lst_strip_mine_profitable_p (lst_p lst, int stride)
   return res;
 }
 
-/* Strip-mines all the loops of LST that are considered profitable to
-   strip-mine.  Return true if it did strip-mined some loops.  */
+/* Strip-mines all the loops of LST with STRIDE.  Return true if it
+   did strip-mined some loops.  */
 
 static bool
-lst_do_strip_mine_loop (lst_p lst, int depth)
+lst_do_strip_mine_loop (lst_p lst, int depth, int stride)
 {
   int i;
   lst_p l;
-  int stride = PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE);
   poly_bb_p pbb;
 
   if (!lst)
@@ -212,7 +211,7 @@ lst_do_strip_mine_loop (lst_p lst, int depth)
       bool res = false;
 
       FOR_EACH_VEC_ELT (lst_p, LST_SEQ (lst), i, l)
-	res |= lst_do_strip_mine_loop (l, depth);
+	res |= lst_do_strip_mine_loop (l, depth, stride);
 
       return res;
     }
@@ -222,30 +221,45 @@ lst_do_strip_mine_loop (lst_p lst, int depth)
 				    stride);
 }
 
-/* Strip-mines all the loops of LST that are considered profitable to
-   strip-mine.  Return true if it did strip-mined some loops.  */
+/* Strip-mines all the loops of LST with STRIDE.  When STRIDE is zero,
+   read the stride from the PARAM_LOOP_BLOCK_TILE_SIZE.  Return true
+   if it did strip-mined some loops.
+
+   Strip mining transforms a loop
+
+   | for (i = 0; i < N; i++)
+   |   S (i);
+
+   into the following loop nest:
+
+   | for (k = 0; k < N; k += STRIDE)
+   |   for (j = 0; j < STRIDE; j++)
+   |     S (i = k + j);
+*/
 
 static bool
-lst_do_strip_mine (lst_p lst)
+lst_do_strip_mine (lst_p lst, int stride)
 {
   int i;
   lst_p l;
   bool res = false;
-  int stride = PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE);
   int depth;
+
+  if (!stride)
+    stride = PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE);
 
   if (!lst
       || !LST_LOOP_P (lst))
     return false;
 
   FOR_EACH_VEC_ELT (lst_p, LST_SEQ (lst), i, l)
-    res |= lst_do_strip_mine (l);
+    res |= lst_do_strip_mine (l, stride);
 
   depth = lst_depth (lst);
   if (depth >= 0
       && lst_strip_mine_profitable_p (lst, stride))
     {
-      res |= lst_do_strip_mine_loop (lst, lst_depth (lst));
+      res |= lst_do_strip_mine_loop (lst, lst_depth (lst), stride);
       lst_add_loop_under_loop (lst);
     }
 
@@ -256,9 +270,9 @@ lst_do_strip_mine (lst_p lst)
    have been strip-mined.  */
 
 bool
-scop_do_strip_mine (scop_p scop)
+scop_do_strip_mine (scop_p scop, int stride)
 {
-  return lst_do_strip_mine (SCOP_TRANSFORMED_SCHEDULE (scop));
+  return lst_do_strip_mine (SCOP_TRANSFORMED_SCHEDULE (scop), stride);
 }
 
 /* Loop blocks all the loops in SCOP.  Returns true when we manage to
@@ -272,7 +286,7 @@ scop_do_block (scop_p scop)
 
   store_scattering (scop);
 
-  strip_mined = lst_do_strip_mine (SCOP_TRANSFORMED_SCHEDULE (scop));
+  strip_mined = lst_do_strip_mine (SCOP_TRANSFORMED_SCHEDULE (scop), 0);
   interchanged = scop_do_interchange (scop);
 
   /* If we don't interchange loops, the strip mine alone will not be
