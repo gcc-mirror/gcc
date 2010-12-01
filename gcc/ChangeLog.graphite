@@ -1,5 +1,14 @@
 2010-11-22  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (handle_scalar_deps_crossing_scop_limits):
+	New.
+	(rewrite_cross_bb_scalar_deps): Pass in the scop.  Call
+	handle_scalar_deps_crossing_scop_limits.
+	(rewrite_cross_bb_scalar_deps_out_of_ssa): Create an empty BB
+	after the scop.  Update call to rewrite_cross_bb_scalar_deps.
+
+2010-11-22  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* sese.c (rename_uses): Call recompute_tree_invariant_for_addr_expr
 	when replacing a constant in an ADDR_EXPR.
 
