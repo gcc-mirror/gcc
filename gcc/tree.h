@@ -4959,6 +4959,7 @@ extern tree tree_strip_nop_conversions (tree);
 extern tree tree_strip_sign_nop_conversions (tree);
 extern tree lhd_gcc_personality (void);
 extern void assign_assembler_name_if_neeeded (tree);
+extern void warn_deprecated_use (tree, tree);
 
 
 /* In cgraph.c */

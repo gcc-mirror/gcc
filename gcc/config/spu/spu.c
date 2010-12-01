@@ -36,7 +36,6 @@
 #include "basic-block.h"
 #include "integrate.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "ggc.h"
 #include "hashtab.h"
 #include "tm_p.h"

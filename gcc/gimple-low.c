@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "function.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "tree-pass.h"
 
 /* The differences between High GIMPLE and Low GIMPLE are the

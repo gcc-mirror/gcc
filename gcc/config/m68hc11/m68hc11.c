@@ -51,7 +51,6 @@ Note:
 #include "expr.h"
 #include "libfuncs.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "basic-block.h"
 #include "function.h"
 #include "ggc.h"

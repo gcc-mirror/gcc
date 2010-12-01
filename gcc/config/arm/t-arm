@@ -49,7 +49,7 @@ arm.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
   insn-config.h conditions.h output.h \
   $(INSN_ATTR_H) $(FLAGS_H) reload.h $(FUNCTION_H) \
-  $(EXPR_H) $(OPTABS_H) toplev.h $(RECOG_H) $(CGRAPH_H) \
+  $(EXPR_H) $(OPTABS_H) $(RECOG_H) $(CGRAPH_H) \
   $(GGC_H) except.h $(C_PRAGMA_H) $(INTEGRATE_H) $(TM_P_H) \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H)

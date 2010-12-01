@@ -116,18 +116,6 @@ static bool no_backend;
 struct cl_decoded_option *save_decoded_options;
 unsigned int save_decoded_options_count;
 
-/* Name of top-level original source file (what was input to cpp).
-   This comes from the #-command at the beginning of the actual input.
-   If there isn't any there, then this is the cc1 input file name.  */
-
-const char *main_input_filename;
-
-/* Pointer to base name in main_input_filename, with directories and a
-   single final extension removed, and the length of this base
-   name.  */
-const char *main_input_basename;
-int main_input_baselength;
-
 /* Used to enable -fvar-tracking, -fweb and -frename-registers according
    to optimize in process_options ().  */
 #define AUTODETECT_VALUE 2
@@ -374,32 +362,6 @@ crash_signal (int signo)
   internal_error ("%s", strsignal (signo));
 }
 
-/* Output a quoted string.  */
-
-void
-output_quoted_string (FILE *asm_file, const char *string)
-{
-#ifdef OUTPUT_QUOTED_STRING
-  OUTPUT_QUOTED_STRING (asm_file, string);
-#else
-  char c;
-
-  putc ('\"', asm_file);
-  while ((c = *string++) != 0)
-    {
-      if (ISPRINT (c))
-	{
-	  if (c == '\"' || c == '\\')
-	    putc ('\\', asm_file);
-	  putc (c, asm_file);
-	}
-      else
-	fprintf (asm_file, "\\%03o", (unsigned char) c);
-    }
-  putc ('\"', asm_file);
-#endif
-}
-
 /* A subroutine of wrapup_global_declarations.  We've come to the end of
    the compilation unit.  All deferred variables should be undeferred,
    and all incomplete decls should be finalized.  */
@@ -595,111 +557,6 @@ emit_debug_global_declarations (tree *vec, int len)
   for (i = 0; i < len; i++)
     debug_hooks->global_decl (vec[i]);
   timevar_pop (TV_SYMOUT);
-}
-
-/* Warn about a use of an identifier which was marked deprecated.  */
-void
-warn_deprecated_use (tree node, tree attr)
-{
-  const char *msg;
-
-  if (node == 0 || !warn_deprecated_decl)
-    return;
-
-  if (!attr)
-    {
-      if (DECL_P (node))
-	attr = DECL_ATTRIBUTES (node);
-      else if (TYPE_P (node))
-	{
-	  tree decl = TYPE_STUB_DECL (node);
-	  if (decl)
-	    attr = lookup_attribute ("deprecated",
-				     TYPE_ATTRIBUTES (TREE_TYPE (decl)));
-	}
-    }
-
-  if (attr)
-    attr = lookup_attribute ("deprecated", attr);
-
-  if (attr)
-    msg = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr)));
-  else
-    msg = NULL;
-
-  if (DECL_P (node))
-    {
-      expanded_location xloc = expand_location (DECL_SOURCE_LOCATION (node));
-      if (msg)
-	warning (OPT_Wdeprecated_declarations,
-		 "%qD is deprecated (declared at %s:%d): %s",
-		 node, xloc.file, xloc.line, msg);
-      else
-	warning (OPT_Wdeprecated_declarations,
-		 "%qD is deprecated (declared at %s:%d)",
-		 node, xloc.file, xloc.line);
-    }
-  else if (TYPE_P (node))
-    {
-      tree what = NULL_TREE;
-      tree decl = TYPE_STUB_DECL (node);
-
-      if (TYPE_NAME (node))
-	{
-	  if (TREE_CODE (TYPE_NAME (node)) == IDENTIFIER_NODE)
-	    what = TYPE_NAME (node);
-	  else if (TREE_CODE (TYPE_NAME (node)) == TYPE_DECL
-		   && DECL_NAME (TYPE_NAME (node)))
-	    what = DECL_NAME (TYPE_NAME (node));
-	}
-
-      if (decl)
-	{
-	  expanded_location xloc
-	    = expand_location (DECL_SOURCE_LOCATION (decl));
-	  if (what)
-	    {
-	      if (msg)
-		warning (OPT_Wdeprecated_declarations,
-			 "%qE is deprecated (declared at %s:%d): %s",
-			 what, xloc.file, xloc.line, msg);
-	      else
-		warning (OPT_Wdeprecated_declarations,
-			 "%qE is deprecated (declared at %s:%d)", what,
-			 xloc.file, xloc.line);
-	    }
-	  else
-	    {
-	      if (msg)
-		warning (OPT_Wdeprecated_declarations,
-			 "type is deprecated (declared at %s:%d): %s",
-			 xloc.file, xloc.line, msg);
-	      else
-		warning (OPT_Wdeprecated_declarations,
-			 "type is deprecated (declared at %s:%d)",
-			 xloc.file, xloc.line);
-	    }
-	}
-      else
-	{
-	  if (what)
-	    {
-	      if (msg)
-		warning (OPT_Wdeprecated_declarations, "%qE is deprecated: %s",
-			 what, msg);
-	      else
-		warning (OPT_Wdeprecated_declarations, "%qE is deprecated", what);
-	    }
-	  else
-	    {
-	      if (msg)
-		warning (OPT_Wdeprecated_declarations, "type is deprecated: %s",
-			 msg);
-	      else
-		warning (OPT_Wdeprecated_declarations, "type is deprecated");
-	    }
-	}
-    }
 }
 
 /* Compile an entire translation unit.  Write a file of assembly
@@ -1106,115 +963,6 @@ init_asm_output (const char *name)
 	}
 #endif
     }
-}
-
-/* Return true if the state of option OPTION should be stored in PCH files
-   and checked by default_pch_valid_p.  Store the option's current state
-   in STATE if so.  */
-
-static inline bool
-option_affects_pch_p (int option, struct cl_option_state *state)
-{
-  if ((cl_options[option].flags & CL_TARGET) == 0)
-    return false;
-  if (option_flag_var (option, &global_options) == &target_flags)
-    if (targetm.check_pch_target_flags)
-      return false;
-  return get_option_state (&global_options, option, state);
-}
-
-/* Default version of get_pch_validity.
-   By default, every flag difference is fatal; that will be mostly right for
-   most targets, but completely right for very few.  */
-
-void *
-default_get_pch_validity (size_t *sz)
-{
-  struct cl_option_state state;
-  size_t i;
-  char *result, *r;
-
-  *sz = 2;
-  if (targetm.check_pch_target_flags)
-    *sz += sizeof (target_flags);
-  for (i = 0; i < cl_options_count; i++)
-    if (option_affects_pch_p (i, &state))
-      *sz += state.size;
-
-  result = r = XNEWVEC (char, *sz);
-  r[0] = flag_pic;
-  r[1] = flag_pie;
-  r += 2;
-  if (targetm.check_pch_target_flags)
-    {
-      memcpy (r, &target_flags, sizeof (target_flags));
-      r += sizeof (target_flags);
-    }
-
-  for (i = 0; i < cl_options_count; i++)
-    if (option_affects_pch_p (i, &state))
-      {
-	memcpy (r, state.data, state.size);
-	r += state.size;
-      }
-
-  return result;
-}
-
-/* Return a message which says that a PCH file was created with a different
-   setting of OPTION.  */
-
-static const char *
-pch_option_mismatch (const char *option)
-{
-  char *r;
-
-  asprintf (&r, _("created and used with differing settings of '%s'"), option);
-  if (r == NULL)
-    return _("out of memory");
-  return r;
-}
-
-/* Default version of pch_valid_p.  */
-
-const char *
-default_pch_valid_p (const void *data_p, size_t len)
-{
-  struct cl_option_state state;
-  const char *data = (const char *)data_p;
-  size_t i;
-
-  /* -fpic and -fpie also usually make a PCH invalid.  */
-  if (data[0] != flag_pic)
-    return _("created and used with different settings of -fpic");
-  if (data[1] != flag_pie)
-    return _("created and used with different settings of -fpie");
-  data += 2;
-
-  /* Check target_flags.  */
-  if (targetm.check_pch_target_flags)
-    {
-      int tf;
-      const char *r;
-
-      memcpy (&tf, data, sizeof (target_flags));
-      data += sizeof (target_flags);
-      len -= sizeof (target_flags);
-      r = targetm.check_pch_target_flags (tf);
-      if (r != NULL)
-	return r;
-    }
-
-  for (i = 0; i < cl_options_count; i++)
-    if (option_affects_pch_p (i, &state))
-      {
-	if (memcmp (data, state.data, state.size) != 0)
-	  return pch_option_mismatch (cl_options[i].opt_text);
-	data += state.size;
-	len -= state.size;
-      }
-
-  return NULL;
 }
 
 /* Default tree printer.   Handles declarations only.  */

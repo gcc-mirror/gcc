@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "debug.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "tm-preds.h"
 #include "tm-constrs.h"
 #include "tm_p.h"

@@ -1,3 +1,9 @@
+2010-12-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* cp-objcp-common.c, lex.c, typeck.c: Don't include toplev.h.
+	* Make-lang.in (cp/lex.o, cp/cp-objcp-common.o, cp/typeck2.o):
+	Update dependencies.
+
 2010-11-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* decl.c (finish_function): Call objc_finish_function when

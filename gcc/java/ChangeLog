@@ -1,3 +1,8 @@
+2010-12-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* jcf-parse.c: Don't include toplev.h.
+	* Make-lang.in (java/jcf-parse.o): Don't depend on toplev.h.
+
 2010-11-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* boehm.c: Don't include toplev.h.

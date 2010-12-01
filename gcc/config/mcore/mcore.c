@@ -41,7 +41,6 @@
 #include "function.h"
 #include "ggc.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "target.h"
 #include "target-def.h"
 #include "df.h"

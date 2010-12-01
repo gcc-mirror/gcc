@@ -3620,6 +3620,32 @@ output_addr_const (FILE *file, rtx x)
     }
 }
 
+/* Output a quoted string.  */
+
+void
+output_quoted_string (FILE *asm_file, const char *string)
+{
+#ifdef OUTPUT_QUOTED_STRING
+  OUTPUT_QUOTED_STRING (asm_file, string);
+#else
+  char c;
+
+  putc ('\"', asm_file);
+  while ((c = *string++) != 0)
+    {
+      if (ISPRINT (c))
+	{
+	  if (c == '\"' || c == '\\')
+	    putc ('\\', asm_file);
+	  putc (c, asm_file);
+	}
+      else
+	fprintf (asm_file, "\\%03o", (unsigned char) c);
+    }
+  putc ('\"', asm_file);
+#endif
+}
+
 /* A poor man's fprintf, with the added features of %I, %R, %L, and %U.
    %R prints the value of REGISTER_PREFIX.
    %L prints the value of LOCAL_LABEL_PREFIX.
