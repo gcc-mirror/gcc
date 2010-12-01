@@ -2025,7 +2025,6 @@ static void
 analyze_drs_in_stmts (scop_p scop, basic_block bb, VEC (gimple, heap) *stmts)
 {
   loop_p nest;
-  poly_bb_p pbb;
   gimple_bb_p gbb;
   gimple stmt;
   int i;
@@ -2034,7 +2033,6 @@ analyze_drs_in_stmts (scop_p scop, basic_block bb, VEC (gimple, heap) *stmts)
     return;
 
   nest = outermost_loop_in_sese (SCOP_REGION (scop), bb);
-  pbb = pbb_from_bb (bb);
   gbb = gbb_from_bb (bb);
 
   FOR_EACH_VEC_ELT (gimple, stmts, i, stmt)
@@ -2571,13 +2569,12 @@ static void
 rewrite_cross_bb_scalar_deps_out_of_ssa (scop_p scop)
 {
   basic_block bb;
-  basic_block exit;
   gimple_stmt_iterator psi;
   sese region = SCOP_REGION (scop);
   bool changed = false;
 
   /* Create an extra empty BB after the scop.  */
-  exit = split_edge (SESE_EXIT (region));
+  split_edge (SESE_EXIT (region));
 
   FOR_EACH_BB (bb)
     if (bb_in_sese_p (bb, region))

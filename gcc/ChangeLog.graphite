@@ -1,5 +1,11 @@
 2010-11-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (analyze_drs_in_stmts): Fix set but
+	unused warning.
+	(rewrite_cross_bb_scalar_deps_out_of_ssa): Same.
+
+2010-11-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (analyze_drs): Removed.
 	(build_scop_drs): Do not call analyze_drs.
 	(analyze_drs_in_stmts): New.
