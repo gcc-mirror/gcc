@@ -546,6 +546,19 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
 				       true, NULL_TREE);
       gsi_insert_seq_before (gsi_tgt, stmts, GSI_SAME_STMT);
       replace_exp (use_p, new_expr);
+
+
+      if (TREE_CODE (new_expr) == INTEGER_CST)
+	{
+	  tree lhs = gimple_assign_lhs (copy);
+	  tree rhs = gimple_assign_rhs1 (copy);
+
+	  if (TREE_CODE (lhs) == ADDR_EXPR)
+	    recompute_tree_invariant_for_addr_expr (lhs);
+	  if (TREE_CODE (rhs) == ADDR_EXPR)
+	    recompute_tree_invariant_for_addr_expr (rhs);
+	}
+
       set_rename (rename_map, old_name, new_expr);
     }
 }

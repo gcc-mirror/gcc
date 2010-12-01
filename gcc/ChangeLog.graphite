@@ -1,3 +1,8 @@
+2010-11-22  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* sese.c (rename_uses): Call recompute_tree_invariant_for_addr_expr
+	when replacing a constant in an ADDR_EXPR.
+
 2010-10-20  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-blocking.c (lst_do_strip_mine_loop): Extra parameter
