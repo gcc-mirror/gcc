@@ -5202,30 +5202,6 @@ build_string_literal (int len, const char *str)
   return t;
 }
 
-/* Expand a call to either the entry or exit function profiler.  */
-
-static rtx
-expand_builtin_profile_func (bool exitp)
-{
-  rtx this_rtx, which;
-
-  this_rtx = DECL_RTL (current_function_decl);
-  gcc_assert (MEM_P (this_rtx));
-  this_rtx = XEXP (this_rtx, 0);
-
-  if (exitp)
-    which = profile_function_exit_libfunc;
-  else
-    which = profile_function_entry_libfunc;
-
-  emit_library_call (which, LCT_NORMAL, VOIDmode, 2, this_rtx, Pmode,
-		     expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
-						 0),
-		     Pmode);
-
-  return const0_rtx;
-}
-
 /* Expand a call to __builtin___clear_cache.  */
 
 static rtx
@@ -6363,11 +6339,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_PREFETCH:
       expand_builtin_prefetch (exp);
       return const0_rtx;
-
-    case BUILT_IN_PROFILE_FUNC_ENTER:
-      return expand_builtin_profile_func (false);
-    case BUILT_IN_PROFILE_FUNC_EXIT:
-      return expand_builtin_profile_func (true);
 
     case BUILT_IN_INIT_TRAMPOLINE:
       return expand_builtin_init_trampoline (exp);

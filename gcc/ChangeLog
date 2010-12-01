@@ -1,3 +1,15 @@
+2010-12-01  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (build_common_builtin_nodes): Do not initialize
+	BUILT_IN_PROFILE_FUNC_ENTER and BUILT_IN_PROFILE_FUNC_EXIT.
+	* builtins.c (expand_builtin_profile_func): Remove.
+	(expand_builtin): Do not handle BUILT_IN_PROFILE_FUNC_ENTER and
+	BUILT_IN_PROFILE_FUNC_EXIT.
+	* builtins.def (profile_func_enter, profile_func_exit): Remove stubs.
+	(__cyg_profile_func_enter, __cyg_profile_func_exit): New.
+	* gimplify.c (gimplify_function_tree): Reorganize code calling
+	profiling functions.
+
 2010-12-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* opts.c: Expand comment on tm.h include.

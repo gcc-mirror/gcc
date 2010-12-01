@@ -9324,12 +9324,6 @@ build_common_builtin_nodes (void)
 			BUILT_IN_STACK_RESTORE,
 			"__builtin_stack_restore", ECF_NOTHROW | ECF_LEAF);
 
-  ftype = build_function_type_list (void_type_node, NULL_TREE);
-  local_define_builtin ("__builtin_profile_func_enter", ftype,
-			BUILT_IN_PROFILE_FUNC_ENTER, "profile_func_enter", 0);
-  local_define_builtin ("__builtin_profile_func_exit", ftype,
-			BUILT_IN_PROFILE_FUNC_EXIT, "profile_func_exit", 0);
-
   /* If there's a possibility that we might use the ARM EABI, build the
     alternate __cxa_end_cleanup node used to resume from C++ and Java.  */
   if (targetm.arm_eabi_unwinder)
