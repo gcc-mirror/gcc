@@ -4000,7 +4000,7 @@ gengtype-lex.c : gengtype-lex.l
 
 #
 # Remake internationalization support.
-intl.o: intl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h Makefile
+intl.o: intl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h intl.h Makefile
 	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	  -DLOCALEDIR=\"$(localedir)\" \
 	  -c $(srcdir)/intl.c $(OUTPUT_OPTION)
