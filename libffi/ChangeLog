@@ -1,3 +1,8 @@
+2010-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libffi.call/ffitest.h [__sgi] (PRId64, PRIu64): Define.
+	(PRIuPTR): Define.
+
 2010-11-29  Richard Henderson  <rth@redhat.com>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
