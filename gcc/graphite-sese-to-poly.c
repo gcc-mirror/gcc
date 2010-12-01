@@ -2425,13 +2425,57 @@ rewrite_cross_bb_scalar_dependence (tree zero_dim_array, tree def, gimple use_st
   update_stmt (use_stmt);
 }
 
+/* For every definition DEF in the SCOP that is used outside the scop,
+   insert a closing-scop definition in the basic block just after this
+   SCOP.  */
+
+static void
+handle_scalar_deps_crossing_scop_limits (scop_p scop, tree def, gimple stmt)
+{
+  tree var = create_tmp_reg (TREE_TYPE (def), NULL);
+  tree new_name = make_ssa_name (var, stmt);
+  bool needs_copy = false;
+  use_operand_p use_p;
+  imm_use_iterator imm_iter;
+  gimple use_stmt;
+  sese region = SCOP_REGION (scop);
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
+    {
+      if (!bb_in_sese_p (gimple_bb (use_stmt), region))
+	{
+	  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+	    {
+	      SET_USE (use_p, new_name);
+	    }
+	  update_stmt (use_stmt);
+	  needs_copy = true;
+	}
+    }
+
+  /* Insert in the empty BB just after the scop a use of DEF such
+     that the rewrite of cross_bb_scalar_dependences won't insert
+     arrays everywhere else.  */
+  if (needs_copy)
+    {
+      gimple assign = gimple_build_assign (new_name, def);
+      gimple_stmt_iterator psi = gsi_after_labels (SESE_EXIT (region)->dest);
+
+      add_referenced_var (var);
+      SSA_NAME_DEF_STMT (new_name) = assign;
+      update_stmt (assign);
+      gsi_insert_before (&psi, assign, GSI_SAME_STMT);
+    }
+}
+
 /* Rewrite the scalar dependences crossing the boundary of the BB
    containing STMT with an array.  Return true when something has been
    changed.  */
 
 static bool
-rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
+rewrite_cross_bb_scalar_deps (scop_p scop, gimple_stmt_iterator *gsi)
 {
+  sese region = SCOP_REGION (scop);
   gimple stmt = gsi_stmt (*gsi);
   imm_use_iterator imm_iter;
   tree def;
@@ -2472,6 +2516,8 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
 
   def_bb = gimple_bb (stmt);
 
+  handle_scalar_deps_crossing_scop_limits (scop, def, stmt);
+
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
     if (gimple_code (use_stmt) == GIMPLE_PHI
 	&& (res = true))
@@ -2511,14 +2557,18 @@ void
 rewrite_cross_bb_scalar_deps_out_of_ssa (scop_p scop)
 {
   basic_block bb;
+  basic_block exit;
   gimple_stmt_iterator psi;
   sese region = SCOP_REGION (scop);
   bool changed = false;
 
+  /* Create an extra empty BB after the scop.  */
+  exit = split_edge (SESE_EXIT (region));
+
   FOR_EACH_BB (bb)
     if (bb_in_sese_p (bb, region))
       for (psi = gsi_start_bb (bb); !gsi_end_p (psi); gsi_next (&psi))
-	changed |= rewrite_cross_bb_scalar_deps (region, &psi);
+	changed |= rewrite_cross_bb_scalar_deps (scop, &psi);
 
   if (changed)
     {
