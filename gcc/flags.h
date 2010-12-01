@@ -34,11 +34,6 @@ extern const char *const debug_type_names[];
 extern void strip_off_ending (char *, int);
 extern int base_of_path (const char *path, const char **base_out);
 
-/* Run the second compilation of -fcompare-debug.  Not defined using
-   Var in common.opt because this is used in Ada code and so must be
-   an actual variable not a macro.  */
-extern int flag_compare_debug;
-
 /* True if this is the LTO front end (lto1).  This is used to disable
    gimple generation and lowering passes that are normally run on the
    output of a front end.  These passes must be bypassed for lto since
@@ -119,8 +114,6 @@ extern struct target_flag_state *this_target_flag_state;
 
 /* Nonzero if we dump in VCG format, not plain text.  */
 extern int dump_for_graph;
-
-extern enum stack_check_type flag_stack_check;
 
 /* Returns TRUE if generated code should match ABI version N or
    greater is in use.  */

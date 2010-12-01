@@ -170,9 +170,6 @@ int flag_permissive = 0;
    the support provided depends on the backend.  */
 rtx stack_limit_rtx;
 
-/* Type of stack check.  */
-enum stack_check_type flag_stack_check = NO_STACK_CHECK;
-
 /* True if the user has tagged the function with the 'section'
    attribute.  */
 
