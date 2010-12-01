@@ -550,11 +550,8 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
 
       if (TREE_CODE (new_expr) == INTEGER_CST)
 	{
-	  tree lhs = gimple_assign_lhs (copy);
 	  tree rhs = gimple_assign_rhs1 (copy);
 
-	  if (TREE_CODE (lhs) == ADDR_EXPR)
-	    recompute_tree_invariant_for_addr_expr (lhs);
 	  if (TREE_CODE (rhs) == ADDR_EXPR)
 	    recompute_tree_invariant_for_addr_expr (rhs);
 	}
