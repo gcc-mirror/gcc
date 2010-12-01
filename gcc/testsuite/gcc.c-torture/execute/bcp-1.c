@@ -1,4 +1,4 @@
-int global;
+__attribute__ ((externally_visible)) int global;
 int func(void);
 
 /* These must fail.  */
@@ -39,23 +39,23 @@ int opt2(void) { return __builtin_constant_p("hi"[0]); }
 
 
 /* Call through tables so -finline-functions can't screw with us.  */
-int (*bad_t0[])(void) = {
+int (* volatile bad_t0[])(void) = {
 	bad0, bad1, bad5, bad7, bad8, bad10
 };
 
-int (*bad_t1[])(int x) = {
+int (* volatile bad_t1[])(int x) = {
 	bad2, bad3, bad6
 };
 
-int (*bad_t2[])(const char *x) = {
+int (* volatile bad_t2[])(const char *x) = {
 	bad4, bad9
 };
 
-int (*good_t0[])(void) = {
+int (* volatile good_t0[])(void) = {
 	good0, good1, good2
 };
 
-int (*opt_t0[])(void) = {
+int (* volatile opt_t0[])(void) = {
 	opt0, opt1, opt2 /* , opt3 */
 };
 

@@ -1,3 +1,7 @@
+2010-12-01  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/execute/bcp-1.c: Make ready for -fuse-linker-plugin
+
 2010-12-01  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/45297
