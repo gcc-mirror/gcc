@@ -273,7 +273,7 @@ lists_of_files = \
    testsuite_files_interactive \
    testsuite_files_performance
 
-extract_symvers = $(glibcxx_srcdir)/scripts/extract_symvers
+extract_symvers = $(glibcxx_builddir)/scripts/extract_symvers
 baseline_subdir := $(shell $(CXX) --print-multi-dir)
 check_DEJAGNU_normal_targets = $(patsubst %,check-DEJAGNUnormal%,0 1 2 3)
 
