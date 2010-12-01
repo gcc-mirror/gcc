@@ -1,3 +1,7 @@
+2010-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libgomp.fortran/vla8.f90: Use dg-timeout-factor 2.0.
+
 2010-11-24  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* testsuite/libgomp.fortran/fortran.exp: Add paths for libquadmath.
