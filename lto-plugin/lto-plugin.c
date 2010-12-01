@@ -47,7 +47,9 @@ along with this program; see the file COPYING3.  If not see
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
+#endif
 #include <libiberty.h>
 #include <hashtab.h>
 #include "../gcc/lto/common.h"

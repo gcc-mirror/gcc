@@ -1,3 +1,12 @@
+2010-12-01  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* configure.ac (AC_CHECK_HEADERS): Check for sys/wait.h.
+	* lto-plugin.c:  Include sys/wait.h conditionally.
+	* aclocal.m4: Regenerated.
+
 2010-11-13  Kai Tietz  <kai.tietz@onevision.com>
 
 	* lto-plugin.c (add_output_files): Fix memory leak.

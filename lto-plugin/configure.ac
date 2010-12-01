@@ -22,6 +22,7 @@ case $target in
 esac
 AC_TYPE_INT64_T
 AC_TYPE_UINT64_T
+AC_CHECK_HEADERS(sys/wait.h)
 AC_CONFIG_FILES(Makefile)
 AC_CONFIG_HEADERS(config.h)
 AC_OUTPUT
