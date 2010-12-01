@@ -1,5 +1,60 @@
 2010-11-22  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/45297
+	* graphite-poly.c (new_poly_bb): Returns a poly_bb_p.  Do not take
+	the reduction bool in parameter.  Clear PBB_IS_REDUCTION.  Set GBB_PBB.
+	* graphite-poly.h (new_poly_bb): Update declaration.
+	(gbb_from_bb): Moved here...
+	(pbb_from_bb): New.
+	* graphite-sese-to-poly.c (var_used_in_not_loop_header_phi_node):
+	Removed.
+	(graphite_stmt_p): Removed.
+	(try_generate_gimple_bb): Returns a gimple_bb_p.  Do not pass in
+	sbitmap reductions.  Always build a gimple_bb_p.  Do not call
+	new_poly_bb.
+	(build_scop_bbs_1): Do not pass in sbitmap reductions.
+	(build_scop_bbs): Same.
+	(gbb_from_bb): ... from here.
+	(add_conditions_to_constraints): Moved up.
+	(analyze_drs): New.
+	(build_scop_drs): Call analyze_drs.  Remove all the PBBs that do
+	not contain data references.
+	(new_pbb_from_pbb): New.
+	(insert_out_of_ssa_copy_on_edge): Call new_pbb_from_pbb after a
+	block is split.
+	(rewrite_close_phi_out_of_ssa): Update call to
+	insert_out_of_ssa_copy_on_edge.
+	(rewrite_reductions_out_of_ssa): Now static.
+	(rewrite_cross_bb_scalar_deps_out_of_ssa): Same.
+	(split_pbb): New.
+	(split_reduction_stmt): Call split_pbb.
+	(translate_scalar_reduction_to_array): Pass in the scop, do not
+	pass in the sbitmap reductions.
+	(rewrite_commutative_reductions_out_of_ssa_close_phi): Same.
+	(rewrite_commutative_reductions_out_of_ssa_loop): Same.
+	(rewrite_commutative_reductions_out_of_ssa): Same.
+	(build_poly_scop): Call build_scop_bbs,
+	rewrite_commutative_reductions_out_of_ssa,
+	rewrite_reductions_out_of_ssa, and
+	rewrite_cross_bb_scalar_deps_out_of_ssa.  Move build_scop_drs
+	before scop_to_lst.
+	* graphite-sese-to-poly.h (rewrite_commutative_reductions_out_of_ssa):
+	Removed declaration.
+	(rewrite_reductions_out_of_ssa): Same.
+	(rewrite_cross_bb_scalar_deps_out_of_ssa): Same.
+	(build_scop_bbs): Same.
+	* graphite.c (graphite_transform_loops): Do not initialize reductions.
+	Do not call build_scop_bbs,
+	rewrite_commutative_reductions_out_of_ssa,
+	rewrite_reductions_out_of_ssa, and
+	rewrite_cross_bb_scalar_deps_out_of_ssa.
+	* sese.h (struct gimple_bb): Add field pbb.
+	(GBB_PBB): New.
+
+	* gcc.dg/graphite/pr45297.c: New.
+
+2010-11-22  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (handle_scalar_deps_crossing_scop_limits):
 	New.
 	(rewrite_cross_bb_scalar_deps): Pass in the scop.  Call

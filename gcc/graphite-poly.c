@@ -874,8 +874,8 @@ free_poly_dr (poly_dr_p pdr)
 
 /* Create a new polyhedral black box.  */
 
-void
-new_poly_bb (scop_p scop, void *black_box, bool reduction)
+poly_bb_p
+new_poly_bb (scop_p scop, void *black_box)
 {
   poly_bb_p pbb = XNEW (struct poly_bb);
 
@@ -886,9 +886,11 @@ new_poly_bb (scop_p scop, void *black_box, bool reduction)
   PBB_SAVED (pbb) = NULL;
   PBB_ORIGINAL (pbb) = NULL;
   PBB_DRS (pbb) = VEC_alloc (poly_dr_p, heap, 3);
-  PBB_IS_REDUCTION (pbb) = reduction;
+  PBB_IS_REDUCTION (pbb) = false;
   PBB_PDR_DUPLICATES_REMOVED (pbb) = false;
-  VEC_safe_push (poly_bb_p, heap, SCOP_BBS (scop), pbb);
+  GBB_PBB ((gimple_bb_p) black_box) = pbb;
+
+  return pbb;
 }
 
 /* Free polyhedral black box.  */

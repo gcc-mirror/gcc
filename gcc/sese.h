@@ -312,6 +312,7 @@ recompute_all_dominators (void)
 typedef struct gimple_bb
 {
   basic_block bb;
+  struct poly_bb *pbb;
 
   /* Lists containing the restrictions of the conditional statements
      dominating this bb.  This bb can only be executed, if all conditions
@@ -338,10 +339,11 @@ typedef struct gimple_bb
   VEC (data_reference_p, heap) *data_refs;
 } *gimple_bb_p;
 
-#define GBB_BB(GBB) GBB->bb
-#define GBB_DATA_REFS(GBB) GBB->data_refs
-#define GBB_CONDITIONS(GBB) GBB->conditions
-#define GBB_CONDITION_CASES(GBB) GBB->condition_cases
+#define GBB_BB(GBB) (GBB)->bb
+#define GBB_PBB(GBB) (GBB)->pbb
+#define GBB_DATA_REFS(GBB) (GBB)->data_refs
+#define GBB_CONDITIONS(GBB) (GBB)->conditions
+#define GBB_CONDITION_CASES(GBB) (GBB)->condition_cases
 
 /* Return the innermost loop that contains the basic block GBB.  */
 
