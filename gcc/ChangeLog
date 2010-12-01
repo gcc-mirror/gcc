@@ -1,5 +1,15 @@
 2010-12-01  Joseph Myers  <joseph@codesourcery.com>
 
+	* common.opt (flag_stack_check): New Variable entry.
+	(fcompare-debug-second): Use Var.
+	* flags.h (flag_compare_debug, flag_stack_check): Remove.
+	* opts.c (flag_compare_debug): Remove.
+	(common_handle_option): Don't handle OPT_fcompare_debug_second.
+	Set opts->x_flag_stack_check for OPT_fstack_check_.
+	* toplev.c (flag_stack_check): Remove.
+
+2010-12-01  Joseph Myers  <joseph@codesourcery.com>
+
 	* common.opt (main_input_filename, main_input_basename,
 	main_input_baselength): New Variable entries.  From toplev.c.
 	* final.c (output_quoted_string): Move from toplev.c.

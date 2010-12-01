@@ -1,3 +1,9 @@
+2010-12-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/misc.c (flag_compare_debug, flag_stack_check):
+	Undefine as macros then define as variables.
+	(gnat_post_options): Set variables from global_options.
+
 2010-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/46574
