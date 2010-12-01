@@ -1,3 +1,8 @@
+2010-12-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* intl.c: Don't include tm.h.
+	* Makefile.in (intl.o): Don't depend on $(TM_H).
+
 2010-12-01  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (analyze_drs_in_stmts): Fix set but
