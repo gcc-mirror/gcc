@@ -1,5 +1,19 @@
 2010-11-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (analyze_drs): Removed.
+	(build_scop_drs): Do not call analyze_drs.
+	(analyze_drs_in_stmts): New.
+	(insert_stmts): New.
+	(insert_out_of_ssa_copy): Call analyze_drs_in_stmts.
+	(insert_out_of_ssa_copy_on_edge): Same.
+	(rewrite_close_phi_out_of_ssa): Call insert_stmts.
+	(rewrite_phi_out_of_ssa): Same.
+	(rewrite_cross_bb_scalar_dependence): Same.
+	(split_reduction_stmt): Move data references in the new basic blocks.
+	(translate_scalar_reduction_to_array_for_stmt): Call insert_stmts.
+
+2010-11-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* sese.c (rename_uses): Do not handle ADDR_EXPR in LHS of assignments.
 
 2010-11-22  Sebastian Pop  <sebastian.pop@amd.com>
