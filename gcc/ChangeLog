@@ -1,3 +1,8 @@
+2010-12-01  Yao Qi  <yao@codesourcery.com> 
+
+	* config/arm/predicates.md ("vfp_register_operand"): Return true for 
+	VFP_D0_D7_REGS classes.
+
 2010-12-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (flag_stack_check): New Variable entry.
