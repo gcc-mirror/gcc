@@ -1146,10 +1146,15 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
   icall_bb->count = all - count;
 
   /* Do not disturb existing EH edges from the indirect call.  */
-  if (last_stmt (icall_bb) != icall_stmt)
+  if (gsi_stmt (gsi_last_bb (icall_bb)) != icall_stmt)
     e_ij = split_block (icall_bb, icall_stmt);
   else
-    e_ij = find_fallthru_edge (icall_bb->succs);
+    {
+      e_ij = find_fallthru_edge (icall_bb->succs);
+      e_ij->probability = REG_BR_PROB_BASE;
+      e_ij->count = all - count;
+      e_ij = single_pred_edge (split_edge (e_ij));
+    }
   join_bb = e_ij->dest;
   join_bb->count = all;
 
