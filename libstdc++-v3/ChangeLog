@@ -1,3 +1,9 @@
+2010-12-01  François Dumont  <francois.cppdevs@free.fr>
+
+	* testsuite/23_containers/deque/cons/2.cc: Fix to explicitely invoke
+	the copy construtor with or without C++0x mode.
+	* testsuite/23_containers/vector/cons/4.cc: Likewise.
+			
 2010-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* scripts/extract_symvers.pl: New file.
