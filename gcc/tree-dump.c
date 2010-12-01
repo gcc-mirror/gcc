@@ -32,6 +32,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-iterator.h"
 
+/* If non-NULL, return one past-the-end of the matching SUBPART of
+   the WHOLE string.  */
+#define skip_leading_substring(whole,  part) \
+   (strncmp (whole, part, strlen (part)) ? NULL : whole + strlen (part))
+
 static unsigned int queue (dump_info_p, const_tree, int);
 static void dump_index (dump_info_p, unsigned int);
 static void dequeue_and_dump (dump_info_p);

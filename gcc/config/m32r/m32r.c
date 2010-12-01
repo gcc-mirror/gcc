@@ -35,7 +35,6 @@
 #include "function.h"
 #include "recog.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "ggc.h"
 #include "integrate.h"
 #include "df.h"

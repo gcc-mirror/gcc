@@ -295,7 +295,7 @@ java/expr.o: java/expr.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h $(REAL_H) \
 java/jcf-depend.o: java/jcf-depend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   java/jcf.h
 java/jcf-parse.o: java/jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) $(FLAGS_H) \
-  input.h java/java-except.h $(SYSTEM_H) coretypes.h toplev.h \
+  input.h java/java-except.h $(SYSTEM_H) coretypes.h \
   java/parse.h $(GGC_H) debug.h $(REAL_H) gt-java-jcf-parse.h \
   java/jcf-reader.c java/zipfile.h java/jcf.h $(BITMAP_H)
 java/jvgenmain.o: java/jvgenmain.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H) \

@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "flags.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "output.h"
 #include "ggc.h"
 #include "target.h"

@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "conditions.h"
 #include "insn-attr.h"
 #include "recog.h"
-#include "toplev.h"
 #include "output.h"
 #include "tree.h"
 #include "function.h"

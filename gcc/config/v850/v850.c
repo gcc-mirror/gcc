@@ -36,7 +36,6 @@
 #include "expr.h"
 #include "function.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "ggc.h"
 #include "integrate.h"
 #include "tm_p.h"

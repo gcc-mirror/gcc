@@ -41,7 +41,6 @@
 #include "target-def.h"
 #include "expr.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "recog.h"
 #include "optabs.h"
 #include "ggc.h"

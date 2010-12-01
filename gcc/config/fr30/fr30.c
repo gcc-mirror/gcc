@@ -41,7 +41,6 @@
 #include "function.h"
 #include "df.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"

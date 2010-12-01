@@ -39,7 +39,6 @@
 #include "function.h"
 #include "obstack.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"

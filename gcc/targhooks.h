@@ -176,3 +176,6 @@ extern section * default_function_section(tree decl, enum node_frequency freq,
 extern enum machine_mode default_get_reg_raw_mode(int);
 
 extern const struct default_options empty_optimization_table[];
+
+extern void *default_get_pch_validity (size_t *);
+extern const char *default_pch_valid_p (const void *, size_t);

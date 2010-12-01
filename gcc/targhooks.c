@@ -67,6 +67,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "optabs.h"
 #include "recog.h"
+#include "intl.h"
+#include "opts.h"
 
 
 bool
@@ -1354,6 +1356,115 @@ enum machine_mode
 default_get_reg_raw_mode(int regno)
 {
   return reg_raw_mode[regno];
+}
+
+/* Return true if the state of option OPTION should be stored in PCH files
+   and checked by default_pch_valid_p.  Store the option's current state
+   in STATE if so.  */
+
+static inline bool
+option_affects_pch_p (int option, struct cl_option_state *state)
+{
+  if ((cl_options[option].flags & CL_TARGET) == 0)
+    return false;
+  if (option_flag_var (option, &global_options) == &target_flags)
+    if (targetm.check_pch_target_flags)
+      return false;
+  return get_option_state (&global_options, option, state);
+}
+
+/* Default version of get_pch_validity.
+   By default, every flag difference is fatal; that will be mostly right for
+   most targets, but completely right for very few.  */
+
+void *
+default_get_pch_validity (size_t *sz)
+{
+  struct cl_option_state state;
+  size_t i;
+  char *result, *r;
+
+  *sz = 2;
+  if (targetm.check_pch_target_flags)
+    *sz += sizeof (target_flags);
+  for (i = 0; i < cl_options_count; i++)
+    if (option_affects_pch_p (i, &state))
+      *sz += state.size;
+
+  result = r = XNEWVEC (char, *sz);
+  r[0] = flag_pic;
+  r[1] = flag_pie;
+  r += 2;
+  if (targetm.check_pch_target_flags)
+    {
+      memcpy (r, &target_flags, sizeof (target_flags));
+      r += sizeof (target_flags);
+    }
+
+  for (i = 0; i < cl_options_count; i++)
+    if (option_affects_pch_p (i, &state))
+      {
+	memcpy (r, state.data, state.size);
+	r += state.size;
+      }
+
+  return result;
+}
+
+/* Return a message which says that a PCH file was created with a different
+   setting of OPTION.  */
+
+static const char *
+pch_option_mismatch (const char *option)
+{
+  char *r;
+
+  asprintf (&r, _("created and used with differing settings of '%s'"), option);
+  if (r == NULL)
+    return _("out of memory");
+  return r;
+}
+
+/* Default version of pch_valid_p.  */
+
+const char *
+default_pch_valid_p (const void *data_p, size_t len)
+{
+  struct cl_option_state state;
+  const char *data = (const char *)data_p;
+  size_t i;
+
+  /* -fpic and -fpie also usually make a PCH invalid.  */
+  if (data[0] != flag_pic)
+    return _("created and used with different settings of -fpic");
+  if (data[1] != flag_pie)
+    return _("created and used with different settings of -fpie");
+  data += 2;
+
+  /* Check target_flags.  */
+  if (targetm.check_pch_target_flags)
+    {
+      int tf;
+      const char *r;
+
+      memcpy (&tf, data, sizeof (target_flags));
+      data += sizeof (target_flags);
+      len -= sizeof (target_flags);
+      r = targetm.check_pch_target_flags (tf);
+      if (r != NULL)
+	return r;
+    }
+
+  for (i = 0; i < cl_options_count; i++)
+    if (option_affects_pch_p (i, &state))
+      {
+	if (memcmp (data, state.data, state.size) != 0)
+	  return pch_option_mismatch (cl_options[i].opt_text);
+	data += state.size;
+	len -= state.size;
+      }
+
+  return NULL;
 }
 
 const struct default_options empty_optimization_table[] =

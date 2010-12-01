@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "flags.h"
 #include "output.h"
-#include "toplev.h"
 #include "diagnostic.h"
 #include "intl.h"
 #include "target.h"
