@@ -1,3 +1,7 @@
+2010-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr46685.c: New test.
+
 2010-12-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/45199

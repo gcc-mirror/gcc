@@ -1025,6 +1025,36 @@ fp_high_losum_p (rtx op)
   return 0;
 }
 
+/* Return true if the address of LABEL can be loaded by means of the
+   mov{si,di}_pic_label_ref patterns in PIC mode.  */
+
+static bool
+can_use_mov_pic_label_ref (rtx label)
+{
+  /* VxWorks does not impose a fixed gap between segments; the run-time
+     gap can be different from the object-file gap.  We therefore can't
+     assume X - _GLOBAL_OFFSET_TABLE_ is a link-time constant unless we
+     are absolutely sure that X is in the same segment as the GOT.
+     Unfortunately, the flexibility of linker scripts means that we
+     can't be sure of that in general, so assume that GOT-relative
+     accesses are never valid on VxWorks.  */
+  if (TARGET_VXWORKS_RTP)
+    return false;
+
+  /* Similarly, if the label is non-local, it might end up being placed
+     in a different section than the current one; now mov_pic_label_ref
+     requires the label and the code to be in the same section.  */
+  if (LABEL_REF_NONLOCAL_P (label))
+    return false;
+
+  /* Finally, if we are reordering basic blocks and partition into hot
+     and cold sections, this might happen for any label.  */
+  if (flag_reorder_blocks_and_partition)
+    return false;
+
+  return true;
+}
+
 /* Expand a move instruction.  Return true if all work is done.  */
 
 bool
@@ -1059,14 +1089,9 @@ sparc_expand_move (enum machine_mode mode, rtx *operands)
       if (pic_address_needs_scratch (operands[1]))
 	operands[1] = sparc_legitimize_pic_address (operands[1], NULL_RTX);
 
-      /* VxWorks does not impose a fixed gap between segments; the run-time
-	 gap can be different from the object-file gap.  We therefore can't
-	 assume X - _GLOBAL_OFFSET_TABLE_ is a link-time constant unless we
-	 are absolutely sure that X is in the same segment as the GOT.
-	 Unfortunately, the flexibility of linker scripts means that we
-	 can't be sure of that in general, so assume that _G_O_T_-relative
-	 accesses are never valid on VxWorks.  */
-      if (GET_CODE (operands[1]) == LABEL_REF && !TARGET_VXWORKS_RTP)
+      /* We cannot use the mov{si,di}_pic_label_ref patterns in all cases.  */
+      if (GET_CODE (operands[1]) == LABEL_REF
+	  && can_use_mov_pic_label_ref (operands[1]))
 	{
 	  if (mode == SImode)
 	    {
@@ -3425,7 +3450,7 @@ sparc_legitimize_pic_address (rtx orig, rtx reg)
 
   if (GET_CODE (orig) == SYMBOL_REF
       /* See the comment in sparc_expand_move.  */
-      || (TARGET_VXWORKS_RTP && GET_CODE (orig) == LABEL_REF))
+      || (GET_CODE (orig) == LABEL_REF && !can_use_mov_pic_label_ref (orig)))
     {
       rtx pic_ref, address;
       rtx insn;
@@ -3478,11 +3503,13 @@ sparc_legitimize_pic_address (rtx orig, rtx reg)
 	}
       else
 	{
-	  pic_ref = gen_const_mem (Pmode,
-				   gen_rtx_PLUS (Pmode,
-						 pic_offset_table_rtx, address));
+	  pic_ref
+	    = gen_const_mem (Pmode,
+			     gen_rtx_PLUS (Pmode,
+					   pic_offset_table_rtx, address));
 	  insn = emit_move_insn (reg, pic_ref);
 	}
+
       /* Put a REG_EQUAL note on this insn, so that it can be optimized
 	 by loop.  */
       set_unique_reg_note (insn, REG_EQUAL, orig);
@@ -3520,9 +3547,8 @@ sparc_legitimize_pic_address (rtx orig, rtx reg)
       return gen_rtx_PLUS (Pmode, base, offset);
     }
   else if (GET_CODE (orig) == LABEL_REF)
-    /* ??? Why do we do this?  */
-    /* Now movsi_pic_label_ref uses it, but we ought to be checking that
-       the register is live instead, in case it is eliminated.  */
+    /* ??? We ought to be checking that the register is live instead, in case
+       it is eliminated.  */
     crtl->uses_pic_offset_table = 1;
 
   return orig;
@@ -9453,6 +9479,7 @@ sparc_file_end (void)
 	  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
 	  DECL_VISIBILITY_SPECIFIED (decl) = 1;
 	  allocate_struct_function (decl, true);
+	  cfun->is_thunk = 1;
 	  current_function_decl = decl;
 	  init_varasm_status ();
 	  assemble_start_function (decl, name);
