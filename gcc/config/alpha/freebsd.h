@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define LINK_SPEC "%{G*} %{relax:-relax}				\
   %{p:%nconsider using '-pg' instead of '-p' with gprof(1)}		\
-  %{Wl,*:%*}								\
   %{assert*} %{R*} %{rpath*} %{defsym*}					\
   %{shared:-Bshareable %{h*} %{soname*}}				\
   %{!shared:								\

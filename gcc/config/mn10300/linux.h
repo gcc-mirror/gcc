@@ -1,6 +1,6 @@
 /* Definitions of taret machine for GNU compiler.
    Matsushita AM33/2.0
-   Copyright 2001, 2002, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2005, 2006, 2007, 2010 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
    This file is part of GCC.
@@ -30,7 +30,7 @@
   %{pthread:-D_REENTRANT -D_PTHREADS}"
 
 #undef  ASM_SPEC
-#define ASM_SPEC "%{Wa,*:%*}"
+#define ASM_SPEC ""
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
 

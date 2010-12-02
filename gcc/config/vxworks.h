@@ -60,7 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 "%{!mrtp:-r}						\
  %{!shared:						\
    %{mrtp:-q %{h*}					\
-          %{R*} %{!Wl,-T*: %{!T*: %(link_start) }}	\
+          %{R*} %{!T*: %(link_start) }			\
           %(link_target) %(link_os)}}			\
  %{v:-v}						\
  %{shared:-shared}					\
