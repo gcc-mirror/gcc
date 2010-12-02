@@ -7096,6 +7096,7 @@ static tree
 build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
 {
   tree itype = make_node (INTEGER_TYPE);
+  hashval_t hashcode = 0;
 
   TREE_TYPE (itype) = type;
 
@@ -7109,6 +7110,9 @@ build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
   TYPE_ALIGN (itype) = TYPE_ALIGN (type);
   TYPE_USER_ALIGN (itype) = TYPE_USER_ALIGN (type);
 
+  if (!shared)
+    return itype;
+
   if ((TYPE_MIN_VALUE (itype)
        && TREE_CODE (TYPE_MIN_VALUE (itype)) != INTEGER_CST)
       || (TYPE_MAX_VALUE (itype)
@@ -7120,13 +7124,10 @@ build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
       return itype;
     }
 
-  if (shared)
-    {
-      hashval_t hash = iterative_hash_expr (TYPE_MIN_VALUE (itype), 0);
-      hash = iterative_hash_expr (TYPE_MAX_VALUE (itype), hash);
-      hash = iterative_hash_hashval_t (TYPE_HASH (type), hash);
-      itype = type_hash_canon (hash, itype);
-    }
+  hashcode = iterative_hash_expr (TYPE_MIN_VALUE (itype), hashcode);
+  hashcode = iterative_hash_expr (TYPE_MAX_VALUE (itype), hashcode);
+  hashcode = iterative_hash_hashval_t (TYPE_HASH (type), hashcode);
+  itype = type_hash_canon (hashcode, itype);
 
   return itype;
 }
