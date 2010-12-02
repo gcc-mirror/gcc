@@ -253,7 +253,6 @@ extern unsigned int bfin_workarounds;
 
 #define LINK_SPEC "\
 %{h*} %{v:-V} \
-%{b} \
 %{mfdpic:-melf32bfinfd -z text} \
 %{static:-dn -Bstatic} \
 %{shared:-G -Bdynamic} \

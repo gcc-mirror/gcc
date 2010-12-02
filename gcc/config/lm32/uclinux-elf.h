@@ -68,7 +68,6 @@
 
 #undef  LINK_SPEC
 #define LINK_SPEC "%{h*} %{version:-v} \
-   %{b} \
    %{static:-Bstatic} \
    %{shared:-shared} \
    %{symbolic:-Bsymbolic} \

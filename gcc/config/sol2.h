@@ -175,7 +175,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef  LINK_SPEC
 #define LINK_SPEC \
   "%{h*} %{v:-V} \
-   %{b} \
    %{!shared:%{!static:%{rdynamic: " RDYNAMIC_SPEC "}}} \
    %{static:-dn -Bstatic} \
    %{shared:-G -dy %{!mimpure-text:-z text}} \
