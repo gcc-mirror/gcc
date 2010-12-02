@@ -1,3 +1,9 @@
+2010-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46753
+	* trans-openmp.c (gfc_trans_omp_do): Use build2_loc instead of
+	fold_build2_loc for OMP_FOR conditions.
+
 2010-11-30  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/28105
