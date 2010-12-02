@@ -1,3 +1,8 @@
+2010-12-02  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Always set default for poststage1_ldflags to
+	-static-libstdc++ -static-libgcc.
+
 2010-11-29  Andreas Schwab  <schwab@redhat.com>
 
 	* configure.ac: Move comment to remove extra space in last argument

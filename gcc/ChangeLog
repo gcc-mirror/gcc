@@ -1,3 +1,8 @@
+2010-12-02  Ian Lance Taylor  <iant@google.com>
+
+	* doc/install.texi (Configuration): Update default for
+	--with-boot-ldflags.
+
 2010-12-02  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c/45062

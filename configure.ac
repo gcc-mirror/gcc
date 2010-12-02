@@ -1561,10 +1561,10 @@ AC_ARG_WITH(boot-ldflags,
    poststage1_ldflags=$withval
  fi],
 [poststage1_ldflags=
- # With --enable-build-with-cxx, default to linking libstdc++ and
- # libgcc statically.  But if the user explicitly specified the
- # libraries to use, trust that they are doing what they want.
- if test "$ENABLE_BUILD_WITH_CXX" = "yes" -a "$poststage1_libs" = ""; then
+ # In stages 2 and 3, default to linking libstdc++ and libgcc
+ # statically.  But if the user explicitly specified the libraries to
+ # use, trust that they are doing what they want.
+ if test "$poststage1_libs" = ""; then
    poststage1_ldflags="-static-libstdc++ -static-libgcc"
  fi])
 AC_SUBST(poststage1_ldflags)
