@@ -1,5 +1,8 @@
 2010-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/46753
+	* libgomp.fortran/pr46753.f90: New test.
+
 	PR libgomp/43706
 	* env.c (initialize_env): Default to spin count 300000
 	instead of 20000000 if neither OMP_WAIT_POLICY nor GOMP_SPINCOUNT
