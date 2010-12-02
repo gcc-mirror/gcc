@@ -1,4 +1,23 @@
 2010-12-02  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44871
+	* gimple.c (canonical_type_hash_cache): New hashtable.
+	(gimple_type_hash): Make a wrapper around ...
+	(gimple_type_hash_1): ... this.  Take gtc_mode argument.
+	(gimple_canonical_type_hash): Likewise.
+	(gtc_visit): Take a gtc_mode argument.
+	(gimple_types_compatible_p_1): Likewise. Do not compare struct
+	tag names or field names when computing canonical types.
+	(gimple_types_compatible_p): Adjust.
+	(visit): Take a gtc_mode argument.
+	(iterative_hash_gimple_type): Likewise.  Do not hash struct tag
+	names or field names when computing hashes of canonical types.
+	(gimple_register_canonical_type): Use gimple_canonical_type_hash
+	for the hash.
+	(print_gimple_types_stats): Dump stats of canonical_type_hash_cache.
+	(free_gimple_type_tables): Free canonical_type_hash_cache.
+
+2010-12-02  Richard Guenther  <rguenther@suse.de>
 	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/46663
