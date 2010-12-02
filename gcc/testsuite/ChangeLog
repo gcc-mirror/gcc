@@ -1,3 +1,8 @@
+2010-12-02  Jie Zhang  <jie@codesourcery.com>
+
+	PR middle-end/46674
+	* gcc.dg/pr46674.c: New test.
+
 2010-12-02  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/exceptions-6.m: New.
