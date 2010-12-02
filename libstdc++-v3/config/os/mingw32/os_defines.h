@@ -60,4 +60,9 @@
 // See  libstdc++/37522.
 #define _GLIBCXX_HAVE_BROKEN_VSWPRINTF 1
 
+// See libstdc++/43738
+// On native windows targets there is no ioctl function. And the existing
+// ioctlsocket function doesn't work for normal file-descriptors.
+#define _GLIBCXX_NO_IOCTL 1
+
 #endif
