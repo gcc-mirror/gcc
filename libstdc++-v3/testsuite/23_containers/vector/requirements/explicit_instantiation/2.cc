@@ -19,9 +19,12 @@
 // This file tests explicit instantiation of library containers
 
 #include <vector>
-#include <testsuite_hooks.h>
 #include <testsuite_api.h>
 
 // { dg-do compile }
 
+// N.B. In C++0x mode we cannot instantiate with T == NonDefaultConstructible
+// because of 23.4.1.1.4
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 template class std::vector<__gnu_test::NonDefaultConstructible>;
+#endif
