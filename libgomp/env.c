@@ -502,14 +502,14 @@ initialize_env (void)
     {
       /* Using a rough estimation of 100000 spins per msec,
 	 use 5 min blocking for OMP_WAIT_POLICY=active,
-	 200 msec blocking when OMP_WAIT_POLICY is not specificed
+	 3 msec blocking when OMP_WAIT_POLICY is not specificed
 	 and 0 when OMP_WAIT_POLICY=passive.
 	 Depending on the CPU speed, this can be e.g. 5 times longer
 	 or 5 times shorter.  */
       if (wait_policy > 0)
 	gomp_spin_count_var = 30000000000LL;
       else if (wait_policy < 0)
-	gomp_spin_count_var = 20000000LL;
+	gomp_spin_count_var = 300000LL;
     }
   /* gomp_throttled_spin_count_var is used when there are more libgomp
      managed threads than available CPUs.  Use very short spinning.  */
