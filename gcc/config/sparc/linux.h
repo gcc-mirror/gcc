@@ -75,8 +75,6 @@ along with GCC; see the file COPYING3.  If not see
    When the -shared link option is used a final link is not being
    done.  */
 
-/* If ELF is the default format, we should not use /lib/elf.  */
-
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.2"
 
 #undef  LINK_SPEC
