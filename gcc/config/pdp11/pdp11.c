@@ -1167,6 +1167,17 @@ output_jump (enum rtx_code code, int inv, int length)
     static char buf[1000];
     const char *pos, *neg;
 
+    if (cc_prev_status.flags & CC_NO_OVERFLOW)
+      {
+	switch (code)
+	  {
+	  case GTU: code = GT; break;
+	  case LTU: code = LT; break;
+	  case GEU: code = GE; break;
+	  case LEU: code = LE; break;
+	  default: ;
+	  }
+      }
     switch (code)
       {
       case EQ: pos = "beq", neg = "bne"; break;
@@ -1220,68 +1231,38 @@ notice_update_cc_on_set(rtx exp, rtx insn ATTRIBUTE_UNUSED)
 {
     if (GET_CODE (SET_DEST (exp)) == CC0)
     { 
-	cc_status.flags = 0;					
-	cc_status.value1 = SET_DEST (exp);			
-	cc_status.value2 = SET_SRC (exp);			
-
-/*
-	if (GET_MODE(SET_SRC(exp)) == DFmode)
-	    cc_status.flags |= CC_IN_FPU;
-*/	
-    }							
-    else if ((GET_CODE (SET_DEST (exp)) == REG		
-	      || GET_CODE (SET_DEST (exp)) == MEM)		
-	     && GET_CODE (SET_SRC (exp)) != PC		
-	     && (GET_MODE (SET_DEST(exp)) == HImode		
-		 || GET_MODE (SET_DEST(exp)) == QImode)	
-		&& (GET_CODE (SET_SRC(exp)) == PLUS		
-		    || GET_CODE (SET_SRC(exp)) == MINUS	
-		    || GET_CODE (SET_SRC(exp)) == AND	
-		    || GET_CODE (SET_SRC(exp)) == IOR	
-		    || GET_CODE (SET_SRC(exp)) == XOR	
-		    || GET_CODE (SET_SRC(exp)) == NOT	
-		    || GET_CODE (SET_SRC(exp)) == NEG	
-			|| GET_CODE (SET_SRC(exp)) == REG	
-		    || GET_CODE (SET_SRC(exp)) == MEM))	
-    { 
-	cc_status.flags = 0;					
-	cc_status.value1 = SET_SRC (exp);   			
-	cc_status.value2 = SET_DEST (exp);			
-	
-	if (cc_status.value1 && GET_CODE (cc_status.value1) == REG	
-	    && cc_status.value2					
-	    && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))
-    	    cc_status.value2 = 0;					
-	if (cc_status.value1 && GET_CODE (cc_status.value1) == MEM	
-	    && cc_status.value2					
-	    && GET_CODE (cc_status.value2) == MEM)			
-	    cc_status.value2 = 0; 					
+      cc_status.flags = 0;					
+      cc_status.value1 = SET_DEST (exp);			
+      cc_status.value2 = SET_SRC (exp);			
     }							
     else if (GET_CODE (SET_SRC (exp)) == CALL)		
     { 
-	CC_STATUS_INIT; 
+      CC_STATUS_INIT; 
     }
-    else if (GET_CODE (SET_DEST (exp)) == REG)       		
-	/* what's this ? */					
-    { 
-	if ((cc_status.value1					
-	     && reg_overlap_mentioned_p (SET_DEST (exp), cc_status.value1)))
-	    cc_status.value1 = 0;				
-	if ((cc_status.value2					
-	     && reg_overlap_mentioned_p (SET_DEST (exp), cc_status.value2)))
-	    cc_status.value2 = 0;				
-    }							
     else if (SET_DEST(exp) == pc_rtx)
     { 
-	/* jump */
-    }
-    else /* if (GET_CODE (SET_DEST (exp)) == MEM)	*/	
-    {  
-	/* the last else is a bit paranoiac, but since nearly all instructions 
-	   play with condition codes, it's reasonable! */
-
-	CC_STATUS_INIT; /* paranoia*/ 
+      /* jump */
+    }	
+    else if (GET_MODE (SET_DEST(exp)) == HImode		
+	     || GET_MODE (SET_DEST(exp)) == QImode)
+    { 
+      cc_status.flags = GET_CODE (SET_SRC(exp)) == MINUS ? 0 : CC_NO_OVERFLOW;
+      cc_status.value1 = SET_SRC (exp);   			
+      cc_status.value2 = SET_DEST (exp);			
+	
+      if (cc_status.value1 && GET_CODE (cc_status.value1) == REG	
+	  && cc_status.value2					
+	  && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))
+	cc_status.value2 = 0;					
+      if (cc_status.value1 && GET_CODE (cc_status.value1) == MEM	
+	  && cc_status.value2					
+	  && GET_CODE (cc_status.value2) == MEM)			
+	cc_status.value2 = 0; 					
     }		        
+    else
+    { 
+      CC_STATUS_INIT; 
+    }
 }
 
 
