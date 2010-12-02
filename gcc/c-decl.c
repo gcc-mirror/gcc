@@ -6131,9 +6131,13 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
   else if (arg_types && TREE_CODE (TREE_VALUE (arg_types)) == IDENTIFIER_NODE)
     {
       if (!funcdef_flag)
-	pedwarn (input_location, 0, "parameter names (without types) in function declaration");
+	{
+	  pedwarn (input_location, 0, "parameter names (without types) in function declaration");
+	  arg_info->parms = NULL_TREE;
+	}
+      else
+	arg_info->parms = arg_info->types;
 
-      arg_info->parms = arg_info->types;
       arg_info->types = 0;
       return 0;
     }
