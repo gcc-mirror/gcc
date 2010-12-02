@@ -1,5 +1,10 @@
 2010-12-02  Richard Guenther  <rguenther@suse.de>
 
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Disregard
+	sign-changing conversions for induction detection.
+
+2010-12-02  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/46723
 	* tree-vect-loop.c (get_initial_def_for_induction): Strip
 	conversions from the induction evolution and apply it to
