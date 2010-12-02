@@ -1,5 +1,11 @@
 2010-12-02  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/i386/linux.h, config/m32r/linux.h, config/m68k/linux.h,
+	config/sparc/linux.h, config/sparc/linux64.h: Remove comments
+	mentioning /lib/elf.
+
+2010-12-02  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/bfin/bfin.h (LINK_SPEC): Remove %{b}.
 	* config/frv/frv.h (LINK_SPEC): Remove %{b}.
 	* config/i386/netware.h (LINK_SPEC): Remove %{b}.
