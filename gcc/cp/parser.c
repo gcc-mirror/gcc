@@ -22705,7 +22705,8 @@ cp_parser_objc_try_catch_finally_statement (cp_parser *parser)
    Returns NULL_TREE.  */
 
 static tree
-cp_parser_objc_synchronized_statement (cp_parser *parser) {
+cp_parser_objc_synchronized_statement (cp_parser *parser)
+{
   location_t location;
   tree lock, stmt;
 
@@ -22732,14 +22733,15 @@ cp_parser_objc_synchronized_statement (cp_parser *parser) {
    Returns a constructed '@throw' statement.  */
 
 static tree
-cp_parser_objc_throw_statement (cp_parser *parser) {
+cp_parser_objc_throw_statement (cp_parser *parser)
+{
   tree expr = NULL_TREE;
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
   cp_parser_require_keyword (parser, RID_AT_THROW, RT_AT_THROW);
 
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
-    expr = cp_parser_assignment_expression (parser, false, NULL);
+    expr = cp_parser_expression (parser, /*cast_p=*/false, NULL);
 
   cp_parser_consume_semicolon_at_end_of_statement (parser);
 
@@ -22749,7 +22751,8 @@ cp_parser_objc_throw_statement (cp_parser *parser) {
 /* Parse an Objective-C statement.  */
 
 static tree
-cp_parser_objc_statement (cp_parser * parser) {
+cp_parser_objc_statement (cp_parser * parser)
+{
   /* Try to figure out what kind of declaration is present.  */
   cp_token *kwd = cp_lexer_peek_token (parser->lexer);
 
