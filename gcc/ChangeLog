@@ -1,3 +1,9 @@
+2010-12-02  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: AC_DEFINE ENABLE_BUILD_WITH_CXX.  Check for C++
+	header files unordered_map, tr1/unordered_map, and ext/hash_map.
+	* configure, config.in: Rebuild.
+
 2010-11-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/46685
