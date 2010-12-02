@@ -1,3 +1,11 @@
+2010-12-02  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.c (output_jump): Map unsigned to signed
+	opcodes if CC_NO_OVERFLOW is set.
+	(notice_update_cc_on_set): Correct setting of CC0 as a side
+	effect; set CC_NO_OVERFLOW for cases where C flag is not
+	meaningful.
+
 2010-12-02  Ian Lance Taylor  <iant@google.com>
 
 	* doc/install.texi (Configuration): Update default for
