@@ -1,3 +1,9 @@
+2010-12-02  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c/45062
+	* c-decl.c (grokparms): Set arg_info->parms to NULL_TREE when
+	!funcdef_flag.
+
 2010-12-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/45199
