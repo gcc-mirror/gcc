@@ -88,13 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Provide a LINK_SPEC appropriate for FreeBSD.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
    link things in one of these three modes by applying the appropriate
-   combinations of options at link-time. We like to support here for
-   as many of the other GNU linker options as possible. But I don't
-   have the time to search for those flags. I am sure how to add
-   support for -soname shared_object_name. H.J.
-
-   I took out %{v:%{!V:-V}}. It is too much :-(. They can use
-   -Wl,-V.
+   combinations of options at link-time.
 
    When the -shared link option is used a final link is not being
    done.  */

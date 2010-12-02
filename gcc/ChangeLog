@@ -1,5 +1,19 @@
 2010-12-02  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/i386/freebsd.h (LINK_SPEC): Cut long comment.
+	* config/i386/linux.h (LINK_SPEC): Cut long comment.
+	* config/i386/netware.h (LINK_SPEC): Remove %{V}.
+	* config/m32r/linux.h (LINK_SPEC): Cut long comment.
+	* config/m68k/linux.h (LINK_SPEC): Cut long comment.
+	* config/sparc/linux.h (LINK_SPEC): Cut long comment.
+	(ASM_SPEC): Remove %{V} and %{v:%{!V:-V}}.
+	* config/sparc/linux64.h (LINK_SPEC): Cut long comment.
+	(ASM_SPEC): Remove %{V} and %{v:%{!V:-V}}.
+	* config/sparc/netbsd-elf.h (ASM_SPEC): Remove %{V} and
+	%{v:%{!V:-V}}.
+
+2010-12-02  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.c (trad_capable_cpp, default_compilers): Don't handle
 	-ftraditional.
 
