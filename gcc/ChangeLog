@@ -1,5 +1,10 @@
 2010-12-02  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.c (trad_capable_cpp, default_compilers): Don't handle
+	-ftraditional.
+
+2010-12-02  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/alpha/freebsd.h (LINK_SPEC): Don't handle -Wl,.
 	* config/bfin/bfin.h (ASM_SPEC): Don't handle -Wa,.
 	* config/frv/frv.h (ASM_SPEC): Don't handle -Wa,.
