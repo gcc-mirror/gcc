@@ -1,3 +1,9 @@
+2010-12-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* src/future.cc (future_category): Export compatibility symbol.
+	* config/abi/pre/gnu.ver: Move _ZSt15future_categoryv to 3.4.15
+	version.
+
 2010-12-02  François Dumont  <francois.cppdevs@free.fr>
 
 	* testsuite/23_containers/vector/requirements/explicit_instantiation/
