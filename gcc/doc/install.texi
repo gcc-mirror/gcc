@@ -1611,8 +1611,9 @@ of GCC.  These are also used when linking GCC if configured with
 
 @item --with-boot-ldflags=@var{flags}
 This option may be used to set linker flags to be used when linking
-stage 2 and later when bootstrapping GCC.  By default no special flags
-are used.
+stage 2 and later when bootstrapping GCC.  If neither --with-boot-libs
+nor --with-host-libstdcxx is set to a value, then the default is
+@samp{-static-libstdc++ -static-libgcc}.
 
 @item --with-boot-libs=@var{libs}
 This option may be used to set libraries to be used when linking stage 2
