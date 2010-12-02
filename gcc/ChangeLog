@@ -1,3 +1,10 @@
+2010-12-02  Richard Guenther  <rguenther@suse.de>
+	    Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/46663
+	* tree-vect-patterns.c (vect_recog_pow_pattern): Check that
+	FUNCTION_DECL exists and that it's a builtin.
+
 2010-12-02  Jie Zhang  <jie@codesourcery.com>
 
 	PR middle-end/46674
