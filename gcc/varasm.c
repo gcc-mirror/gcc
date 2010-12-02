@@ -5525,12 +5525,21 @@ compute_visible_aliases (void)
 	{
 	  struct cgraph_node *fnode = NULL;
 	  struct varpool_node *vnode = NULL;
+	  tree asmname = DECL_ASSEMBLER_NAME (p->decl);
+	  const char *str = IDENTIFIER_POINTER (asmname);
+
+	  if (str[0] == '*')
+	    {
+	      str ++;
+	      asmname = get_identifier (str);
+	    }
+
 	  fnode = cgraph_node_for_asm (p->target);
 	  vnode = (fnode == NULL) ? varpool_node_for_asm (p->target) : NULL;
 	  if ((fnode
 	       || vnode
 	       || pointer_set_contains (visible, p->target))
-	      && !pointer_set_insert (visible, DECL_ASSEMBLER_NAME (p->decl)))
+	      && !pointer_set_insert (visible, asmname))
 	    changed = true;
 	}
     }
