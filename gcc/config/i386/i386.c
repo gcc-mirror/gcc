@@ -1410,79 +1410,6 @@ struct processor_costs nocona_cost = {
 };
 
 static const
-struct processor_costs core2_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (3),			/*				 HI */
-   COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (3),			/*				 DI */
-   COSTS_N_INSNS (3)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (22),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (22),			/*			    HI */
-   COSTS_N_INSNS (22),			/*			    SI */
-   COSTS_N_INSNS (22),			/*			    DI */
-   COSTS_N_INSNS (22)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  16,					/* MOVE_RATIO */
-  2,				     /* cost for loading QImode using movzbl */
-  {6, 6, 6},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  2,					/* cost of reg,reg fld/fst */
-  {6, 6, 6},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {4, 4, 4},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {6, 6},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {4, 4},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {6, 6, 6},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {4, 4, 4},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  2,					/* MMX or SSE register to integer */
-  32,					/* size of l1 cache.  */
-  2048,					/* size of l2 cache.  */
-  128,					/* size of prefetch block */
-  8,					/* number of parallel prefetches */
-  3,					/* Branch cost */
-  COSTS_N_INSNS (3),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (5),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (32),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (58),			/* cost of FSQRT instruction.  */
-  {{libcall, {{11, loop}, {-1, rep_prefix_4_byte}}},
-   {libcall, {{32, loop}, {64, rep_prefix_4_byte},
-	      {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {15, unrolled_loop},
-	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
-   {libcall, {{24, loop}, {32, unrolled_loop},
-	      {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
-
-static const
 struct processor_costs atom_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
@@ -1713,9 +1640,13 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_PPRO (1<<PROCESSOR_PENTIUMPRO)
 #define m_PENT4  (1<<PROCESSOR_PENTIUM4)
 #define m_NOCONA  (1<<PROCESSOR_NOCONA)
-#define m_CORE2  (1<<PROCESSOR_CORE2)
+#define m_CORE2_32  (1<<PROCESSOR_CORE2_32)
+#define m_CORE2_64  (1<<PROCESSOR_CORE2_64)
 #define m_COREI7_32  (1<<PROCESSOR_COREI7_32)
 #define m_COREI7_64  (1<<PROCESSOR_COREI7_64)
+#define m_CORE2I7_32  (m_CORE2_32 | m_COREI7_32)
+#define m_CORE2I7_64  (m_CORE2_64 | m_COREI7_64)
+#define m_CORE2I7  (m_CORE2I7_32 | m_CORE2I7_64)
 #define m_ATOM  (1<<PROCESSOR_ATOM)
 
 #define m_GEODE  (1<<PROCESSOR_GEODE)
@@ -1728,8 +1659,8 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_BDVER1  (1<<PROCESSOR_BDVER1)
 #define m_AMD_MULTIPLE  (m_K8 | m_ATHLON | m_AMDFAM10 | m_BDVER1)
 
-#define m_GENERIC32 (1<<PROCESSOR_GENERIC32 | m_COREI7_32)
-#define m_GENERIC64 (1<<PROCESSOR_GENERIC64 | m_COREI7_64)
+#define m_GENERIC32 (1<<PROCESSOR_GENERIC32)
+#define m_GENERIC64 (1<<PROCESSOR_GENERIC64)
 
 /* Generic instruction choice should be common subset of supported CPUs
    (PPro/PENT4/NOCONA/CORE2/Athlon/K8).  */
@@ -1745,21 +1676,22 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
      negatively, so enabling for Generic64 seems like good code size
      tradeoff.  We can't enable it for 32bit generic because it does not
      work well with PPro base chips.  */
-  m_386 | m_K6_GEODE | m_AMD_MULTIPLE | m_CORE2 | m_GENERIC64,
+  m_386 | m_K6_GEODE | m_AMD_MULTIPLE | m_CORE2I7_64 | m_GENERIC64,
 
   /* X86_TUNE_PUSH_MEMORY */
   m_386 | m_K6_GEODE | m_AMD_MULTIPLE | m_PENT4
-  | m_NOCONA | m_CORE2 | m_GENERIC,
+  | m_NOCONA | m_CORE2I7 | m_GENERIC,
 
   /* X86_TUNE_ZERO_EXTEND_WITH_AND */
   m_486 | m_PENT,
 
   /* X86_TUNE_UNROLL_STRLEN */
   m_486 | m_PENT | m_ATOM | m_PPRO | m_AMD_MULTIPLE | m_K6
-  | m_CORE2 | m_GENERIC,
+  | m_CORE2I7 | m_GENERIC,
 
   /* X86_TUNE_DEEP_BRANCH_PREDICTION */
-  m_ATOM | m_PPRO | m_K6_GEODE | m_AMD_MULTIPLE | m_PENT4 | m_GENERIC,
+  m_ATOM | m_PPRO | m_K6_GEODE | m_AMD_MULTIPLE | m_PENT4
+  | m_CORE2I7 | m_GENERIC,
 
   /* X86_TUNE_BRANCH_PREDICTION_HINTS: Branch hints were put in P4 based
      on simulation result. But after P4 was made, no performance benefit
@@ -1772,12 +1704,12 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_USE_SAHF */
   m_ATOM | m_PPRO | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_BDVER1 | m_PENT4
-  | m_NOCONA | m_CORE2 | m_GENERIC,
+  | m_NOCONA | m_CORE2I7 | m_GENERIC,
 
   /* X86_TUNE_MOVX: Enable to zero extend integer registers to avoid
      partial dependencies.  */
   m_AMD_MULTIPLE | m_ATOM | m_PPRO | m_PENT4 | m_NOCONA
-  | m_CORE2 | m_GENERIC | m_GEODE /* m_386 | m_K6 */,
+  | m_CORE2I7 | m_GENERIC | m_GEODE /* m_386 | m_K6 */,
 
   /* X86_TUNE_PARTIAL_REG_STALL: We probably ought to watch for partial
      register stalls on Generic32 compilation setting as well.  However
@@ -1790,19 +1722,19 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   m_PPRO,
 
   /* X86_TUNE_PARTIAL_FLAG_REG_STALL */
-  m_CORE2 | m_GENERIC,
+  m_CORE2I7 | m_GENERIC,
 
   /* X86_TUNE_USE_HIMODE_FIOP */
   m_386 | m_486 | m_K6_GEODE,
 
   /* X86_TUNE_USE_SIMODE_FIOP */
-  ~(m_PPRO | m_AMD_MULTIPLE | m_PENT | m_ATOM | m_CORE2 | m_GENERIC),
+  ~(m_PPRO | m_AMD_MULTIPLE | m_PENT | m_ATOM | m_CORE2I7 | m_GENERIC),
 
   /* X86_TUNE_USE_MOV0 */
   m_K6,
 
   /* X86_TUNE_USE_CLTD */
-  ~(m_PENT | m_ATOM | m_K6 | m_CORE2 | m_GENERIC),
+  ~(m_PENT | m_ATOM | m_K6 | m_CORE2I7 | m_GENERIC),
 
   /* X86_TUNE_USE_XCHGB: Use xchgb %rh,%rl instead of rolw/rorw $8,rx.  */
   m_PENT4,
@@ -1818,7 +1750,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_PROMOTE_QIMODE */
   m_K6_GEODE | m_PENT | m_ATOM | m_386 | m_486 | m_AMD_MULTIPLE
-  | m_CORE2 | m_GENERIC /* | m_PENT4 ? */,
+  | m_CORE2I7 | m_GENERIC /* | m_PENT4 ? */,
 
   /* X86_TUNE_FAST_PREFIX */
   ~(m_PENT | m_486 | m_386),
@@ -1859,11 +1791,11 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_INTEGER_DFMODE_MOVES: Enable if integer moves are preferred
      for DFmode copies */
-  ~(m_AMD_MULTIPLE | m_ATOM | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2
+  ~(m_AMD_MULTIPLE | m_ATOM | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2I7
     | m_GENERIC | m_GEODE),
 
   /* X86_TUNE_PARTIAL_REG_DEPENDENCY */
-  m_AMD_MULTIPLE | m_ATOM | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC,
+  m_AMD_MULTIPLE | m_ATOM | m_PENT4 | m_NOCONA | m_CORE2I7 | m_GENERIC,
 
   /* X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY: In the Generic model we have a
      conflict here in between PPro/Pentium4 based chips that thread 128bit
@@ -1874,7 +1806,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
      shows that disabling this option on P4 brings over 20% SPECfp regression,
      while enabling it on K8 brings roughly 2.4% regression that can be partly
      masked by careful scheduling of moves.  */
-  m_ATOM | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2 | m_GENERIC
+  m_ATOM | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2I7 | m_GENERIC
   | m_AMDFAM10 | m_BDVER1,
 
   /* X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL */
@@ -1899,13 +1831,13 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   m_PPRO | m_PENT4 | m_NOCONA,
 
   /* X86_TUNE_MEMORY_MISMATCH_STALL */
-  m_AMD_MULTIPLE | m_ATOM | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC,
+  m_AMD_MULTIPLE | m_ATOM | m_PENT4 | m_NOCONA | m_CORE2I7 | m_GENERIC,
 
   /* X86_TUNE_PROLOGUE_USING_MOVE */
-  m_ATHLON_K8 | m_ATOM | m_PPRO | m_CORE2 | m_GENERIC,
+  m_ATHLON_K8 | m_ATOM | m_PPRO | m_CORE2I7 | m_GENERIC,
 
   /* X86_TUNE_EPILOGUE_USING_MOVE */
-  m_ATHLON_K8 | m_ATOM | m_PPRO | m_CORE2 | m_GENERIC,
+  m_ATHLON_K8 | m_ATOM | m_PPRO | m_CORE2I7 | m_GENERIC,
 
   /* X86_TUNE_SHIFT1 */
   ~m_486,
@@ -1914,41 +1846,41 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   m_AMD_MULTIPLE,
 
   /* X86_TUNE_INTER_UNIT_MOVES */
-  ~(m_AMD_MULTIPLE | m_GENERIC),
+  ~(m_AMD_MULTIPLE | m_CORE2I7 | m_GENERIC),
 
   /* X86_TUNE_INTER_UNIT_CONVERSIONS */
   ~(m_AMDFAM10 | m_BDVER1),
 
   /* X86_TUNE_FOUR_JUMP_LIMIT: Some CPU cores are not able to predict more
      than 4 branch instructions in the 16 byte window.  */
-  m_ATOM | m_PPRO | m_AMD_MULTIPLE | m_PENT4 | m_NOCONA | m_CORE2
+  m_ATOM | m_PPRO | m_AMD_MULTIPLE | m_PENT4 | m_NOCONA | m_CORE2I7
   | m_GENERIC,
 
   /* X86_TUNE_SCHEDULE */
-  m_PPRO | m_AMD_MULTIPLE | m_K6_GEODE | m_PENT | m_ATOM | m_CORE2
+  m_PPRO | m_AMD_MULTIPLE | m_K6_GEODE | m_PENT | m_ATOM | m_CORE2I7
   | m_GENERIC,
 
   /* X86_TUNE_USE_BT */
-  m_AMD_MULTIPLE | m_ATOM | m_CORE2 | m_GENERIC,
+  m_AMD_MULTIPLE | m_ATOM | m_CORE2I7 | m_GENERIC,
 
   /* X86_TUNE_USE_INCDEC */
-  ~(m_PENT4 | m_NOCONA | m_GENERIC | m_ATOM),
+  ~(m_PENT4 | m_NOCONA | m_CORE2I7 | m_GENERIC | m_ATOM),
 
   /* X86_TUNE_PAD_RETURNS */
-  m_AMD_MULTIPLE | m_CORE2 | m_GENERIC,
+  m_AMD_MULTIPLE | m_CORE2I7 | m_GENERIC,
 
   /* X86_TUNE_PAD_SHORT_FUNCTION: Pad short funtion.  */
   m_ATOM,
 
   /* X86_TUNE_EXT_80387_CONSTANTS */
   m_K6_GEODE | m_ATHLON_K8 | m_ATOM | m_PENT4 | m_NOCONA | m_PPRO
-  | m_CORE2 | m_GENERIC,
+  | m_CORE2I7 | m_GENERIC,
 
   /* X86_TUNE_SHORTEN_X87_SSE */
   ~m_K8,
 
   /* X86_TUNE_AVOID_VECTOR_DECODE */
-  m_K8 | m_GENERIC64,
+  m_K8 | m_CORE2I7_64 | m_GENERIC64,
 
   /* X86_TUNE_PROMOTE_HIMODE_IMUL: Modern CPUs have same latency for HImode
      and SImode multiply, but 386 and 486 do HImode multiply faster.  */
@@ -1956,11 +1888,11 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_SLOW_IMUL_IMM32_MEM: Imul of 32-bit constant and memory is
      vector path on AMD machines.  */
-  m_K8 | m_GENERIC64 | m_AMDFAM10 | m_BDVER1,
+  m_K8 | m_CORE2I7_64 | m_GENERIC64 | m_AMDFAM10 | m_BDVER1,
 
   /* X86_TUNE_SLOW_IMUL_IMM8: Imul of 8-bit constant is vector path on AMD
      machines.  */
-  m_K8 | m_GENERIC64 | m_AMDFAM10 | m_BDVER1,
+  m_K8 | m_CORE2I7_64 | m_GENERIC64 | m_AMDFAM10 | m_BDVER1,
 
   /* X86_TUNE_MOVE_M1_VIA_OR: On pentiums, it is faster to load -1 via OR
      than a MOV.  */
@@ -1977,7 +1909,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_USE_VECTOR_FP_CONVERTS: Prefer vector packed SSE conversion
      from FP to FP. */
-  m_AMDFAM10 | m_GENERIC,
+  m_AMDFAM10 | m_CORE2I7 | m_GENERIC,
 
   /* X86_TUNE_USE_VECTOR_CONVERTS: Prefer vector packed SSE conversion
      from integer to FP. */
@@ -1986,7 +1918,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_FUSE_CMP_AND_BRANCH: Fuse a compare or test instruction
      with a subsequent conditional jump instruction into a single
      compare-and-branch uop.  */
-  m_CORE2 | m_BDVER1,
+  m_BDVER1,
 
   /* X86_TUNE_OPT_AGU: Optimize for Address Generation Unit. This flag
      will impact LEA instruction selection. */
@@ -2020,12 +1952,12 @@ static unsigned int initial_ix86_arch_features[X86_ARCH_LAST] = {
 };
 
 static const unsigned int x86_accumulate_outgoing_args
-  = m_AMD_MULTIPLE | m_ATOM | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2
+  = m_AMD_MULTIPLE | m_ATOM | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2I7
     | m_GENERIC;
 
 static const unsigned int x86_arch_always_fancy_math_387
   = m_PENT | m_ATOM | m_PPRO | m_AMD_MULTIPLE | m_PENT4
-    | m_NOCONA | m_CORE2 | m_GENERIC;
+    | m_NOCONA | m_CORE2I7 | m_GENERIC;
 
 static enum stringop_alg stringop_alg = no_stringop;
 
@@ -2540,7 +2472,10 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&pentium4_cost, 0, 0, 0, 0, 0},
   {&k8_cost, 16, 7, 16, 7, 16},
   {&nocona_cost, 0, 0, 0, 0, 0},
-  {&core2_cost, 16, 10, 16, 10, 16},
+  /* Core 2 32-bit.  */
+  {&generic32_cost, 16, 10, 16, 10, 16},
+  /* Core 2 64-bit.  */
+  {&generic64_cost, 16, 10, 16, 10, 16},
   /* Core i7 32-bit.  */
   {&generic32_cost, 16, 10, 16, 10, 16},
   /* Core i7 64-bit.  */
@@ -3296,12 +3231,12 @@ ix86_option_override_internal (bool main_args_p)
       {"nocona", PROCESSOR_NOCONA, CPU_NONE,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_CX16 | PTA_NO_SAHF},
-      {"core2", PROCESSOR_CORE2, CPU_CORE2,
+      {"core2", PROCESSOR_CORE2_64, CPU_GENERIC64,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_CX16},
       {"corei7", PROCESSOR_COREI7_64, CPU_GENERIC64,
-       PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-       | PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_CX16},
+	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_CX16},
       {"atom", PROCESSOR_ATOM, CPU_ATOM,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_CX16 | PTA_MOVBE},
@@ -3673,6 +3608,11 @@ ix86_option_override_internal (bool main_args_p)
 	      {
 	      case PROCESSOR_GENERIC64:
 		ix86_tune = PROCESSOR_GENERIC32;
+		ix86_schedule = CPU_PENTIUMPRO;
+		break;
+
+	      case PROCESSOR_CORE2_64:
+		ix86_tune = PROCESSOR_CORE2_32;
 		ix86_schedule = CPU_PENTIUMPRO;
 		break;
 
@@ -22242,9 +22182,6 @@ ix86_issue_rate (void)
     case PROCESSOR_BDVER1:
       return 3;
 
-    case PROCESSOR_CORE2:
-      return 4;
-
     default:
       return 1;
     }
@@ -22483,7 +22420,8 @@ ia32_multipass_dfa_lookahead (void)
     case PROCESSOR_K6:
       return 1;
 
-    case PROCESSOR_CORE2:
+    case PROCESSOR_CORE2_32:
+    case PROCESSOR_CORE2_64:
     case PROCESSOR_COREI7_32:
     case PROCESSOR_COREI7_64:
       /* Generally, we want haifa-sched:max_issue() to look ahead as far
@@ -22705,7 +22643,8 @@ ix86_sched_init_global (FILE *dump ATTRIBUTE_UNUSED,
      they are actually used.  */
   switch (ix86_tune)
     {
-    case PROCESSOR_CORE2:
+    case PROCESSOR_CORE2_32:
+    case PROCESSOR_CORE2_64:
     case PROCESSOR_COREI7_32:
     case PROCESSOR_COREI7_64:
       targetm.sched.dfa_post_advance_cycle

@@ -1,3 +1,24 @@
+2010-12-02  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	Define tuning for Core 2 and Core i7.
+
+	* config/i386/i386-c.c (ix86_target_macros_internal): Update.
+	* config/i386/i386.c (core2_cost): Delete, use generic costs instead.
+	(m_CORE2): Replace with m_CORE2_{32,64}.
+	(m_CORE2I7{,_32,_64}): New macros.
+	(m_GENERIC32, m_GENERIC64): Update.
+	(initial_ix86_tune_features, x86_accumulate_outgoing_args,)
+	(x86_arch_always_fancy_math_387): Set m_CORE2I7_32 iff m_GENERIC32 and
+	set m_CORE2I7_64 iff m_GENERIC64.
+	(processor_target_table): Use generic costs for Core 2 and Core i7.
+	(ix86_option_override_internal): Update entries for Core 2 and Core i7.
+	(ix86_issue_rate): Remove entry for Core 2.
+	(ia32_multipass_dfa_lookahead, ix86_sched_init_global): Update.
+	* config/i386/i386.h (TARGET_CORE2_32, TARGET_CORE2_64): New macros.
+	(TARGET_CORE2): Update.
+	(PROCESSOR_CORE2_32, PROCESSOR_CORE2_64): New constants.
+	(PROCESSOR_CORE2): Remove.
+
 2010-12-02  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer.h (LTO_major_version): Bump to 2.
