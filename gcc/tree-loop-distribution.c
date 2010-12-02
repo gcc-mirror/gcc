@@ -258,42 +258,27 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
   if (!dr_analyze_innermost (dr))
     goto end;
 
-  /* Test for a positive stride, iterating over every element.  */
-  if (integer_zerop (size_binop (MINUS_EXPR,
-				 fold_convert (sizetype, DR_STEP (dr)),
-				 TYPE_SIZE_UNIT (TREE_TYPE (op0)))))
-    {
-      addr_base = fold_convert_loc (loc, sizetype,
-				    size_binop_loc (loc, PLUS_EXPR,
-						    DR_OFFSET (dr),
-						    DR_INIT (dr)));
-      addr_base = fold_build2_loc (loc, POINTER_PLUS_EXPR,
-				   TREE_TYPE (DR_BASE_ADDRESS (dr)),
-				   DR_BASE_ADDRESS (dr), addr_base);
+  if (!stride_of_unit_type_p (DR_STEP (dr), TREE_TYPE (op0)))
+    goto end;
 
-      nb_bytes = build_size_arg_loc (loc, nb_iter, op0, &stmt_list);
-    }
+  nb_bytes = build_size_arg_loc (loc, nb_iter, op0, &stmt_list);
+  addr_base = size_binop_loc (loc, PLUS_EXPR, DR_OFFSET (dr), DR_INIT (dr));
+  addr_base = fold_convert_loc (loc, sizetype, addr_base);
 
   /* Test for a negative stride, iterating over every element.  */
-  else if (integer_zerop (size_binop (PLUS_EXPR,
-				      TYPE_SIZE_UNIT (TREE_TYPE (op0)),
-				      fold_convert (sizetype, DR_STEP (dr)))))
+  if (integer_zerop (size_binop (PLUS_EXPR,
+				 TYPE_SIZE_UNIT (TREE_TYPE (op0)),
+				 fold_convert (sizetype, DR_STEP (dr)))))
     {
-      nb_bytes = build_size_arg_loc (loc, nb_iter, op0, &stmt_list);
-
-      addr_base = size_binop_loc (loc, PLUS_EXPR, DR_OFFSET (dr), DR_INIT (dr));
-      addr_base = fold_convert_loc (loc, sizetype, addr_base);
       addr_base = size_binop_loc (loc, MINUS_EXPR, addr_base,
 				  fold_convert_loc (loc, sizetype, nb_bytes));
       addr_base = size_binop_loc (loc, PLUS_EXPR, addr_base,
 				  TYPE_SIZE_UNIT (TREE_TYPE (op0)));
-      addr_base = fold_build2_loc (loc, POINTER_PLUS_EXPR,
-				   TREE_TYPE (DR_BASE_ADDRESS (dr)),
-				   DR_BASE_ADDRESS (dr), addr_base);
     }
-  else
-    goto end;
 
+  addr_base = fold_build2_loc (loc, POINTER_PLUS_EXPR,
+			       TREE_TYPE (DR_BASE_ADDRESS (dr)),
+			       DR_BASE_ADDRESS (dr), addr_base);
   mem = force_gimple_operand (addr_base, &stmts, true, NULL);
   gimple_seq_add_seq (&stmt_list, stmts);
 
@@ -781,8 +766,9 @@ build_rdg_partition_for_component (struct graph *rdg, rdgc c,
      and determine those vertices that have some memory affinity with
      the current nodes in the component: these are stores to the same
      arrays, i.e. we're taking care of cache locality.  */
-  rdg_flag_similar_memory_accesses (rdg, partition, loops, processed,
-				    other_stores);
+  if (!flag_tree_loop_distribute_patterns)
+    rdg_flag_similar_memory_accesses (rdg, partition, loops, processed,
+				      other_stores);
 
   rdg_flag_loop_exits (rdg, loops, partition, processed, part_has_writes);
 

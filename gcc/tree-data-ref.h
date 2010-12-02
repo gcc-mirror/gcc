@@ -603,6 +603,17 @@ void remove_similar_memory_refs (VEC (gimple, heap) **);
 bool rdg_defs_used_in_other_loops_p (struct graph *, int);
 bool have_similar_memory_accesses (gimple, gimple);
 
+/* Returns true when STRIDE is equal in absolute value to the size of
+   the unit type of TYPE.  */
+
+static inline bool
+stride_of_unit_type_p (tree stride, tree type)
+{
+  return tree_int_cst_equal (fold_unary (ABS_EXPR, TREE_TYPE (stride),
+					 stride),
+			     TYPE_SIZE_UNIT (type));
+}
+
 /* Determines whether RDG vertices V1 and V2 access to similar memory
    locations, in which case they have to be in the same partition.  */
 
