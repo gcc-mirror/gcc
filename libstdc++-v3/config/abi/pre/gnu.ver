@@ -1107,13 +1107,15 @@ GLIBCXX_3.4.14 {
     _ZNSt9__atomic011atomic_flag5clearESt12memory_order;
 
     # future
-    _ZSt15future_category;
     _ZNSt12future_errorD*;
     _ZNKSt12future_error4whatEv;
     _ZTSSt12future_error;
     _ZTVSt12future_error;
     _ZTISt12future_error;
     _ZSt20__throw_future_errori;
+
+    # GLIBCXX_ABI compatibility only.
+    _ZSt15future_category;
 
     # string|wstring ::cbegin member functions
     _ZNKSs6cbeginEv;
@@ -1191,14 +1193,10 @@ GLIBCXX_3.4.15 {
     __emutls_v._ZSt11__once_call;
     __emutls_v._ZSt15__once_callable;
 
-} GLIBCXX_3.4.14;
-
-GLIBCXX_3.4.16 {
-
     # std::future_category is now a function
     _ZSt15future_categoryv;
 
-} GLIBCXX_3.4.15;
+} GLIBCXX_3.4.14;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
