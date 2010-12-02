@@ -1,5 +1,9 @@
 2010-12-02  Richard Guenther  <rguenther@suse.de>
 
+	* lto-streamer.h (LTO_major_version): Bump to 2.
+
+2010-12-02  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/44871
 	* gimple.c (canonical_type_hash_cache): New hashtable.
 	(gimple_type_hash): Make a wrapper around ...
