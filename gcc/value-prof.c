@@ -1146,7 +1146,7 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
   icall_bb->count = all - count;
 
   /* Do not disturb existing EH edges from the indirect call.  */
-  if (gsi_stmt (gsi_last_bb (icall_bb)) != icall_stmt)
+  if (!stmt_ends_bb_p (icall_stmt))
     e_ij = split_block (icall_bb, icall_stmt);
   else
     {

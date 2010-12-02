@@ -1,3 +1,8 @@
+2010-12-02  Richard Guenther  <rguenther@suse.de>
+
+	* value-prof.c (gimple_ic): Use stmt_ends_bb_p to detect
+	the case we need to split the edge and not the block.
+
 2010-12-02  Bernd Schmidt  <bernds@codesourcery.com>
 
 	DFA model for Core 2 and Core i7 scheduling.
