@@ -1,3 +1,13 @@
+2010-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/46685
+	* config/sparc/sparc.c (can_use_mov_pic_label_ref): New predicate.
+	(sparc_expand_move): Call it to decide whether to emit the special
+	mov{si,di}_pic_label_ref patterns.
+	(sparc_legitimize_pic_address): Call it to decide whether to emit
+	the regular PIC sequence for labels.  Fix long line.
+	(sparc_file_end): Set is_thunk for the PIC helper.
+
 2010-12-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (build_range_type_1): Do not SET_TYPE_STRUCTURAL_EQUALITY
@@ -5044,7 +5054,7 @@
 2010-11-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46149
-	* tree-ssa-structalias.c (get_constraint_for_1): Properly handle
+	* tree-ssa-structalias.c (get_constraint_fop_1): Properly handle
 	non-indirect MEM_REF variants.
 
 2010-11-02  Richard Guenther  <rguenther@suse.de>
