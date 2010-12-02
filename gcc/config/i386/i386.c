@@ -3231,10 +3231,10 @@ ix86_option_override_internal (bool main_args_p)
       {"nocona", PROCESSOR_NOCONA, CPU_NONE,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_CX16 | PTA_NO_SAHF},
-      {"core2", PROCESSOR_CORE2_64, CPU_GENERIC64,
+      {"core2", PROCESSOR_CORE2_64, CPU_CORE2,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_CX16},
-      {"corei7", PROCESSOR_COREI7_64, CPU_GENERIC64,
+      {"corei7", PROCESSOR_COREI7_64, CPU_COREI7,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_CX16},
       {"atom", PROCESSOR_ATOM, CPU_ATOM,
@@ -3613,12 +3613,10 @@ ix86_option_override_internal (bool main_args_p)
 
 	      case PROCESSOR_CORE2_64:
 		ix86_tune = PROCESSOR_CORE2_32;
-		ix86_schedule = CPU_PENTIUMPRO;
 		break;
 
 	      case PROCESSOR_COREI7_64:
 		ix86_tune = PROCESSOR_COREI7_32;
-		ix86_schedule = CPU_PENTIUMPRO;
 		break;
 
 	      default:
@@ -22173,6 +22171,10 @@ ix86_issue_rate (void)
 
     case PROCESSOR_PENTIUMPRO:
     case PROCESSOR_PENTIUM4:
+    case PROCESSOR_CORE2_32:
+    case PROCESSOR_CORE2_64:
+    case PROCESSOR_COREI7_32:
+    case PROCESSOR_COREI7_64:
     case PROCESSOR_ATHLON:
     case PROCESSOR_K8:
     case PROCESSOR_AMDFAM10:

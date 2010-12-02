@@ -1,3 +1,14 @@
+2010-12-02  Bernd Schmidt  <bernds@codesourcery.com>
+
+	DFA model for Core 2 and Core i7 scheduling.
+
+	* config/i386/core2.md: New DFA model for Core 2 and Core i7.
+	* config/i386/i386.c (ix86_option_override_internal): Update entries
+	for Core 2 and Core i7.
+	(ix86_issue_rate): Set issue rate to 3 [be realistic].
+	* config/i386/i386.md: Include "core2.md".
+	(define_attr cpu): Add "corei7".
+
 2010-12-02  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	Define tuning for Core 2 and Core i7.
