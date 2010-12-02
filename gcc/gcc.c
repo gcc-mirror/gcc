@@ -709,7 +709,7 @@ static const char *sysroot_hdrs_suffix_spec = SYSROOT_HEADERS_SUFFIX_SPEC;
    call cc1 (or cc1obj in objc/lang-specs.h) from the main specs so
    that we default the front end language better.  */
 static const char *trad_capable_cpp =
-"cc1 -E %{traditional|ftraditional|traditional-cpp:-traditional-cpp}";
+"cc1 -E %{traditional|traditional-cpp:-traditional-cpp}";
 
 /* We don't wrap .d files in %W{} since a missing .d file, and
    therefore no dependency entry, confuses make into thinking a .o
@@ -903,7 +903,7 @@ static const struct compiler default_compilers[] =
       external preprocessor if -save-temps is given.  */
      "%{E|M|MM:%(trad_capable_cpp) %(cpp_options) %(cpp_debug_options)}\
       %{!E:%{!M:%{!MM:\
-          %{traditional|ftraditional:\
+          %{traditional:\
 %eGNU C no longer supports -traditional without -E}\
       %{save-temps*|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
 	  %(cpp_options) -o %{save-temps*:%b.i} %{!save-temps*:%g.i} \n\

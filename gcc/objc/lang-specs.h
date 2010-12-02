@@ -1,5 +1,5 @@
 /* Definitions for specs for Objective-C.
-   Copyright (C) 1998, 1999, 2002, 2002, 2003, 2005, 2007
+   Copyright (C) 1998, 1999, 2002, 2002, 2003, 2005, 2007, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -24,10 +24,10 @@ along with GCC; see the file COPYING3.  If not see
 
   {".m", "@objective-c", 0, 0, 0},
   {"@objective-c",
-     "%{E|M|MM:cc1obj -E %{traditional|ftraditional|traditional-cpp:-traditional-cpp}\
+     "%{E|M|MM:cc1obj -E %{traditional|traditional-cpp:-traditional-cpp}\
           %(cpp_options) %(cpp_debug_options)}\
       %{!E:%{!M:%{!MM:\
-	%{traditional|ftraditional|traditional-cpp:\
+	%{traditional|traditional-cpp:\
 %eGNU Objective C no longer supports traditional compilation}\
 	%{save-temps|no-integrated-cpp:cc1obj -E %(cpp_options) -o %{save-temps:%b.mi} %{!save-temps:%g.mi} \n\
 	    cc1obj -fpreprocessed %{save-temps:%b.mi} %{!save-temps:%g.mi} %(cc1_options) %{print-objc-runtime-info} %{gen-decls}}\
@@ -35,10 +35,10 @@ along with GCC; see the file COPYING3.  If not see
 	    cc1obj %(cpp_unique_options) %(cc1_options) %{print-objc-runtime-info} %{gen-decls}}}\
         %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
   {"@objective-c-header",
-     "%{E|M|MM:cc1obj -E %{traditional|ftraditional|traditional-cpp:-traditional-cpp}\
+     "%{E|M|MM:cc1obj -E %{traditional|traditional-cpp:-traditional-cpp}\
           %(cpp_options) %(cpp_debug_options)}\
       %{!E:%{!M:%{!MM:\
-	%{traditional|ftraditional|traditional-cpp:\
+	%{traditional|traditional-cpp:\
 %eGNU Objective C no longer supports traditional compilation}\
 	%{save-temps|no-integrated-cpp:cc1obj -E %(cpp_options) -o %{save-temps:%b.mi} %{!save-temps:%g.mi} \n\
 	    cc1obj -fpreprocessed %b.mi %(cc1_options) %{print-objc-runtime-info} %{gen-decls}\

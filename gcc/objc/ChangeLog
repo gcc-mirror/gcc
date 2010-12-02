@@ -1,3 +1,7 @@
+2010-12-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang-specs.h: Don't handle -ftraditional.
+
 2010-12-02  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_build_throw_stmt): Return error_mark_node and
