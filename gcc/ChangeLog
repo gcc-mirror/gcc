@@ -1,3 +1,9 @@
+2010-12-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/45297
+	* tree-scalar-evolution.c (interpret_rhs_expr): Handle ADDR_EXPR
+	with MEM_REFs as POINTER_PLUS_EXPR.
+
 2010-12-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/linux.h, config/m32r/linux.h, config/m68k/linux.h,

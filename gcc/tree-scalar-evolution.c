@@ -1715,12 +1715,22 @@ interpret_rhs_expr (struct loop *loop, gimple at_stmt,
 	  return chrec_convert (type, analyze_scalar_evolution (loop, rhs1),
 				at_stmt);
 	}
-
-      return chrec_dont_know;
     }
 
   switch (code)
     {
+    case ADDR_EXPR:
+      /* Handle &MEM[ptr + CST] which is equivalent to POINTER_PLUS_EXPR.  */
+      if (TREE_CODE (TREE_OPERAND (rhs1, 0)) != MEM_REF)
+	{
+	  res = chrec_dont_know;
+	  break;
+	}
+
+      rhs2 = TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1);
+      rhs1 = TREE_OPERAND (TREE_OPERAND (rhs1, 0), 0);
+      /* Fall through.  */
+
     case POINTER_PLUS_EXPR:
       chrec1 = analyze_scalar_evolution (loop, rhs1);
       chrec2 = analyze_scalar_evolution (loop, rhs2);
