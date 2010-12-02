@@ -5520,7 +5520,7 @@ objc_build_throw_stmt (location_t loc, tree throw_expr)
           || cur_try_context->current_catch == NULL)
 	{
 	  error_at (loc, "%<@throw%> (rethrow) used outside of a @catch block");
-	  return NULL_TREE;
+	  return error_mark_node;
 	}
 
       /* Otherwise the object is still sitting in the EXC_PTR_EXPR

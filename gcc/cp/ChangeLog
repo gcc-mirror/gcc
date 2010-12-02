@@ -1,3 +1,9 @@
+2010-12-02  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (cp_parser_objc_throw_statement): Use
+	cp_parser_expression, not cp_parser_assignment_expression, to
+	parse the argument of a @throw.
+
 2010-12-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* cp-objcp-common.c, lex.c, typeck.c: Don't include toplev.h.

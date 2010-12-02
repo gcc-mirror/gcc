@@ -1,3 +1,8 @@
+2010-12-02  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_build_throw_stmt): Return error_mark_node and
+	not NULL_TREE when a @throw is used outside of a @catch block.
+
 2010-11-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_build_volatilized_type): Removed.
