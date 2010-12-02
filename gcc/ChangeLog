@@ -1,5 +1,14 @@
 2010-12-02  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/46723
+	* tree-vect-loop.c (get_initial_def_for_induction): Strip
+	conversions from the induction evolution and apply it to
+	the result instead.
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Handle
+	assigns for induction defs.
+
+2010-12-02  Richard Guenther  <rguenther@suse.de>
+
 	* value-prof.c (gimple_ic): Use stmt_ends_bb_p to detect
 	the case we need to split the edge and not the block.
 
