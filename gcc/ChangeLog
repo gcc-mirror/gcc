@@ -1,5 +1,15 @@
 2010-12-02  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/bfin/bfin.h (LINK_SPEC): Remove %{b}.
+	* config/frv/frv.h (LINK_SPEC): Remove %{b}.
+	* config/i386/netware.h (LINK_SPEC): Remove %{b}.
+	* config/i386/nto.h (LINK_SPEC): Remove %{b}.
+	* config/lm32/uclinux-elf.h (LINK_SPEC): Remove %{b}.
+	* config/sol2.h (LINK_SPEC): Remove %{b}.
+	* config/svr4.h (LINK_SPEC): Remove %{b}.
+
+2010-12-02  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/i386/freebsd.h (LINK_SPEC): Cut long comment.
 	* config/i386/linux.h (LINK_SPEC): Cut long comment.
 	* config/i386/netware.h (LINK_SPEC): Remove %{V}.

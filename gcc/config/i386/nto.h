@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running QNX/Neutrino.
-   Copyright (C) 2002, 2003, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -64,7 +64,6 @@ crti.o%s \
 #undef LINK_SPEC
 #define LINK_SPEC \
   "%{h*} %{v:-V} \
-   %{b} \
    %{static:-dn -Bstatic} \
    %{shared:-G -dy -z text} \
    %{symbolic:-Bsymbolic -G -dy -z text} \

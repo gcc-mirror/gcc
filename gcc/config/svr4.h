@@ -112,7 +112,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    support here for as many of the other svr4 linker options as seems
    reasonable, given that some of them conflict with options for other
    svr4 tools (e.g. the assembler).  In particular, we do support the
-   -z*, -V, -b, -t, -Qy, -Qn, and -YP* options here, and the -e*, -l*,
+   -z*, -V, -t, -Qy, -Qn, and -YP* options here, and the -e*, -l*,
    -o*, -r, -s, -u*, and -L* options are directly supported by gcc.c
    itself.  We don't directly support the -m (generate load map)
    option because that conflicts with the -m (run m4) option of the
@@ -131,7 +131,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef	LINK_SPEC
 #ifdef CROSS_DIRECTORY_STRUCTURE
 #define LINK_SPEC "%{h*} %{v:-V} \
-		   %{b} \
 		   %{static:-dn -Bstatic} \
 		   %{shared:-G -dy -z text} \
 		   %{symbolic:-Bsymbolic -G -dy -z text} \
@@ -140,7 +139,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 		   %{Qy:} %{!Qn:-Qy}"
 #else
 #define LINK_SPEC "%{h*} %{v:-V} \
-		   %{b} \
 		   %{static:-dn -Bstatic} \
 		   %{shared:-G -dy -z text} \
 		   %{symbolic:-Bsymbolic -G -dy -z text} \

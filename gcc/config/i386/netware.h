@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Kinda useless, but what the hell */
 #undef	LINK_SPEC
 #define LINK_SPEC "%{h*} %{v:-V} \
-		   %{b} \
 		   %{Qy:} %{!Qn:-Qy}"
 
 #undef	STARTFILE_SPEC
