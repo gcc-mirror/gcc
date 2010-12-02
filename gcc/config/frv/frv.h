@@ -71,7 +71,7 @@
    Defined in svr4.h.  */
 #undef  ASM_SPEC
 #define ASM_SPEC "\
-%{G*} %{v} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
+%{G*} %{v} %{n} %{T} %{Ym,*} %{Yd,*} \
 %{mtomcat-stats} \
 %{!mno-eflags: \
     %{mcpu=*} \
