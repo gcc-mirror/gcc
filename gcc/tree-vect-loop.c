@@ -478,6 +478,8 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 
       /* Analyze the evolution function.  */
       access_fn = analyze_scalar_evolution (loop, def);
+      if (access_fn)
+	STRIP_NOPS (access_fn);
       if (access_fn && vect_print_dump_info (REPORT_DETAILS))
 	{
 	  fprintf (vect_dump, "Access function of PHI: ");
