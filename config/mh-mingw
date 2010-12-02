@@ -2,5 +2,7 @@
 # Vista (see PR33281 for details).
 BOOT_CFLAGS += -D__USE_MINGW_ACCESS -Wno-pedantic-ms-format
 CFLAGS += -D__USE_MINGW_ACCESS
-# Increase stack limit to same as Linux default.
-LDFLAGS += -Wl,--stack,8388608
+# Increase stack limit to a figure based on the Linux default, with 4MB added
+# as GCC turns out to need that much more to pass all the limits-* tests.
+LDFLAGS += -Wl,--stack,12582912
+BOOT_LDFLAGS += -Wl,--stack,12582912
