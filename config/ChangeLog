@@ -1,3 +1,10 @@
+2010-12-02  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* mh-cygwin (LDFLAGS): Turn up stack allocation to 12MB.
+	(BOOT_LDFLAGS): Add matching stack size flag.
+	* mh-mingw (LDFLAGS): Likewise.
+	(BOOT_LDFLAGS): Likewise.
+
 2010-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* bootstrap-lto.mk (BOOT_ADAFLAGS): Delete.
