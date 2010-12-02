@@ -1,3 +1,16 @@
+2010-12-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/45199
+	* tree-data-ref.c (mem_write_stride_of_same_size_as_unit_type_p): New.
+	(stores_zero_from_loop): Call
+	mem_write_stride_of_same_size_as_unit_type_p.
+	* tree-data-ref.h (stride_of_unit_type_p): New.
+	* tree-loop-distribution.c (generate_memset_zero): Simplified.
+	Call stride_of_unit_type_p.
+	(build_rdg_partition_for_component): Do not call
+	rdg_flag_similar_memory_accesses when
+	flag_tree_loop_distribute_patterns is set.
+
 2010-12-02  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Disregard

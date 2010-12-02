@@ -1,3 +1,10 @@
+2010-12-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/45199
+	* gcc.dg/tree-ssa/ldist-15.c: New.
+	* gcc.dg/tree-ssa/ldist-16.c: New.
+	* gfortran.dg/ldist-pr45199.f: New.
+
 2010-12-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46723
@@ -23,8 +30,8 @@
 2010-12-02  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/exceptions-6.m: New.
-	* obj-c++.dg/exceptions-6.mm: New.	
-	
+	* obj-c++.dg/exceptions-6.mm: New.
+
 2010-12-01  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/bcp-1.c: Make ready for -fuse-linker-plugin
