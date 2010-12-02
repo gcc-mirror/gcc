@@ -1,3 +1,9 @@
+2010-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/45240
+	* parallel.c (GOMP_parallel_end): Unlock gomp_remaining_threads_lock
+	at the end if sync builtins aren't supported.
+
 2010-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.tgt (mips-sgi-irix6*): Add -lpthread to XLDFLAGS.
