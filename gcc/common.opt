@@ -415,6 +415,9 @@ Driver
 L
 Driver Joined Separate
 
+N
+Driver
+
 O
 Common JoinedOrMissing Optimization
 -O<number>	Set optimization level to <number>
@@ -426,6 +429,15 @@ Optimize for space rather than speed
 Ofast
 Common Optimization
 Optimize for speed disregarding exact standards compliance
+
+Q
+Driver
+
+Qn
+Driver Negative(Qy)
+
+Qy
+Driver Negative(Qn)
 
 R
 Driver Joined Separate
@@ -653,6 +665,9 @@ Driver Separate
 
 Xpreprocessor
 Driver Separate
+
+Z
+Driver
 
 aux-info
 Common Separate Var(aux_info_file_name)
@@ -2144,6 +2159,9 @@ Common Joined Var(plugindir_string) Init(0)
 l
 Driver Joined Separate
 
+n
+Driver
+
 no-canonical-prefixes
 Driver
 
@@ -2209,11 +2227,20 @@ quiet
 Common Var(quiet_flag) RejectDriver
 Do not display functions compiled or elapsed time
 
+r
+Driver
+
+s
+Driver
+
 save-temps
 Driver
 
 save-temps=
 Driver Joined
+
+t
+Driver
 
 time
 Driver Var(report_times)
