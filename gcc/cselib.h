@@ -51,12 +51,6 @@ struct elt_loc_list {
   rtx setting_insn;
 };
 
-/* A list of cselib_val structures.  */
-struct elt_list {
-  struct elt_list *next;
-  cselib_val *elt;
-};
-
 /* Describe a single set that is part of an insn.  */
 struct cselib_set
 {

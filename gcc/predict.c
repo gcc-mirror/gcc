@@ -387,6 +387,15 @@ rtl_predicted_by_p (const_basic_block bb, enum br_predictor predictor)
 
 static struct pointer_map_t *bb_predictions;
 
+/*  Structure representing predictions in tree level. */
+
+struct edge_prediction {
+    struct edge_prediction *ep_next;
+    edge ep_edge;
+    enum br_predictor ep_predictor;
+    int ep_probability;
+};
+
 /* Return true if the one of outgoing edges is already predicted by
    PREDICTOR.  */
 

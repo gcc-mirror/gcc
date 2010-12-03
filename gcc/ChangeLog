@@ -1,3 +1,12 @@
+2010-12-03  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* basic-block.h (struct edge_prediction): Remove forward
+	declaration.
+	* tree-flow.h (struct edge_prediction): Move from here...
+	* predict.c (struct edge_prediction): ...to here.
+	* cselib.h (struct elt_list): Move from here...
+	* cselib.c (struct elt_list): ...to here.
+
 2010-12-02  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.c (default_compilers): Add entry for ".go".

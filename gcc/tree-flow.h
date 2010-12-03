@@ -286,16 +286,6 @@ static inline var_ann_t get_var_ann (tree);
 static inline void update_stmt (gimple);
 static inline int get_lineno (const_gimple);
 
-/*---------------------------------------------------------------------------
-                  Structure representing predictions in tree level.
----------------------------------------------------------------------------*/
-struct edge_prediction {
-  struct edge_prediction *ep_next;
-  edge ep_edge;
-  enum br_predictor ep_predictor;
-  int ep_probability;
-};
-
 /* Accessors for basic block annotations.  */
 static inline gimple_seq phi_nodes (const_basic_block);
 static inline void set_phi_nodes (basic_block, gimple_seq);
