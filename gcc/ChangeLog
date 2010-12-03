@@ -1,3 +1,9 @@
+2010-12-03  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* doc/tm.texi.in (Cond. Exec. Macros): Rename node from this ...
+	(Cond Exec Macros): ... to this.
+	* doc/tm.texi: Regenerate.
+
 2010-12-03  Jason Merrill  <jason@redhat.com>
 
 	PR debug/46123
