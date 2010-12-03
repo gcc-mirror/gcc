@@ -1,3 +1,9 @@
+2010-12-03  Jason Merrill  <jason@redhat.com>
+
+	PR debug/46123
+	* dwarf2out.c (gen_tagged_type_die): Don't put local types in
+	a declaration DIE.
+
 2010-12-03  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/arm/arm.c (arm_legitimate_index_p): Split
