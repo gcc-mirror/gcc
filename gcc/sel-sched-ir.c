@@ -154,6 +154,7 @@ static void move_bb_info (basic_block, basic_block);
 static void remove_empty_bb (basic_block, bool);
 static void sel_merge_blocks (basic_block, basic_block);
 static void sel_remove_loop_preheader (void);
+static bool bb_has_removable_jump_to_p (basic_block, basic_block);
 
 static bool insn_is_the_only_one_in_bb_p (insn_t);
 static void create_initial_data_sets (basic_block);
@@ -3673,7 +3674,7 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
     return changed;
 
   /* Check if there is a unnecessary jump after insn left.  */
-  if (jump_leads_only_to_bb_p (BB_END (xbb), xbb->next_bb)
+  if (bb_has_removable_jump_to_p (xbb, xbb->next_bb)
       && INSN_SCHED_TIMES (BB_END (xbb)) == 0
       && !IN_CURRENT_FENCE_P (BB_END (xbb)))
     {
@@ -3714,7 +3715,7 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
       /* And unconditional jump in previous basic block leads to
          next basic block of XBB and this jump can be safely removed.  */
       && in_current_region_p (xbb->prev_bb)
-      && jump_leads_only_to_bb_p (BB_END (xbb->prev_bb), xbb->next_bb)
+      && bb_has_removable_jump_to_p (xbb->prev_bb, xbb->next_bb)
       && INSN_SCHED_TIMES (BB_END (xbb->prev_bb)) == 0
       /* Also this jump is not at the scheduling boundary.  */
       && !IN_CURRENT_FENCE_P (BB_END (xbb->prev_bb)))
@@ -6102,22 +6103,19 @@ sel_is_loop_preheader_p (basic_block bb)
   return false;
 }
 
-/* Checks whether JUMP leads to basic block DEST_BB and no other blocks.  */
-bool
-jump_leads_only_to_bb_p (insn_t jump, basic_block dest_bb)
+/* Check whether JUMP_BB ends with a jump insn that leads only to DEST_BB and
+   can be removed, making the corresponding edge fallthrough (assuming that
+   all basic blocks between JUMP_BB and DEST_BB are empty).  */
+static bool
+bb_has_removable_jump_to_p (basic_block jump_bb, basic_block dest_bb)
 {
-  basic_block jump_bb = BLOCK_FOR_INSN (jump);
-
-  /* It is not jump, jump with side-effects or jump can lead to several
-     basic blocks.  */
-  if (!onlyjump_p (jump)
-      || !any_uncondjump_p (jump))
+  if (!onlyjump_p (BB_END (jump_bb)))
     return false;
 
   /* Several outgoing edges, abnormal edge or destination of jump is
      not DEST_BB.  */
   if (EDGE_COUNT (jump_bb->succs) != 1
-      || EDGE_SUCC (jump_bb, 0)->flags & EDGE_ABNORMAL
+      || EDGE_SUCC (jump_bb, 0)->flags & (EDGE_ABNORMAL | EDGE_CROSSING)
       || EDGE_SUCC (jump_bb, 0)->dest != dest_bb)
     return false;
 
@@ -6197,7 +6195,7 @@ sel_remove_loop_preheader (void)
                  basic block if it becomes empty.  */
 	      if (next_bb->prev_bb == prev_bb
                   && prev_bb != ENTRY_BLOCK_PTR
-                  && jump_leads_only_to_bb_p (BB_END (prev_bb), next_bb))
+                  && bb_has_removable_jump_to_p (prev_bb, next_bb))
                 {
                   redirect_edge_and_branch (EDGE_SUCC (prev_bb, 0), next_bb);
                   if (BB_END (prev_bb) == bb_note (prev_bb))
