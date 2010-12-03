@@ -1531,6 +1531,10 @@ pp_c_postfix_expression (c_pretty_printer *pp, tree e)
       }
       break;
 
+    case MEM_REF:
+      pp_c_expression (pp, e);
+      break;
+
     case COMPLEX_CST:
     case VECTOR_CST:
       pp_c_compound_literal (pp, e);
@@ -1659,6 +1663,32 @@ pp_c_unary_expression (c_pretty_printer *pp, tree e)
       else if (code == TRUTH_NOT_EXPR)
 	pp_exclamation (pp);
       pp_c_cast_expression (pp, TREE_OPERAND (e, 0));
+      break;
+
+    case MEM_REF:
+      if (TREE_CODE (TREE_OPERAND (e, 0)) == ADDR_EXPR
+	  && integer_zerop (TREE_OPERAND (e, 1)))
+	pp_c_expression (pp, TREE_OPERAND (TREE_OPERAND (e, 0), 0));
+      else
+	{
+	  pp_c_star (pp);
+	  if (!integer_zerop (TREE_OPERAND (e, 1)))
+	    {
+	      pp_c_left_paren (pp);
+	      if (!integer_onep (TYPE_SIZE_UNIT
+				 (TREE_TYPE (TREE_TYPE (TREE_OPERAND (e, 0))))))
+		pp_c_type_cast (pp, ptr_type_node);
+	    }
+	  pp_c_cast_expression (pp, TREE_OPERAND (e, 0));
+	  if (!integer_zerop (TREE_OPERAND (e, 1)))
+	    {
+	      pp_plus (pp);
+	      pp_c_integer_constant (pp,
+				     fold_convert (ssizetype,
+						   TREE_OPERAND (e, 1)));
+	      pp_c_right_paren (pp);
+	    }
+	}
       break;
 
     case REALPART_EXPR:
@@ -2065,6 +2095,7 @@ pp_c_expression (c_pretty_printer *pp, tree e)
     case CONJ_EXPR:
     case ADDR_EXPR:
     case INDIRECT_REF:
+    case MEM_REF:
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
