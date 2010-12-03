@@ -5599,13 +5599,13 @@ tree_operand_length (const_tree node)
    defined by this point.  */
 
 /* Structure containing iterator state.  */
-typedef struct GTY (()) call_expr_arg_iterator_d {
+typedef struct call_expr_arg_iterator_d {
   tree t;	/* the call_expr */
   int n;	/* argument count */
   int i;	/* next argument index */
 } call_expr_arg_iterator;
 
-typedef struct GTY (()) const_call_expr_arg_iterator_d {
+typedef struct const_call_expr_arg_iterator_d {
   const_tree t;	/* the call_expr */
   int n;	/* argument count */
   int i;	/* next argument index */

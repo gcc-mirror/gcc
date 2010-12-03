@@ -294,7 +294,7 @@ enum c_declarator_kind {
   cdk_attrs
 };
 
-typedef struct GTY(()) c_arg_tag_d {
+typedef struct c_arg_tag_d {
   /* The argument name.  */
   tree id;
   /* The type of the argument.  */

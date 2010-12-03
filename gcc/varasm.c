@@ -2540,7 +2540,7 @@ assemble_real (REAL_VALUE_TYPE d, enum machine_mode mode, unsigned int align)
    Store them both in the structure *VALUE.
    EXP must be reducible.  */
 
-struct GTY(()) addr_const {
+struct addr_const {
   rtx base;
   HOST_WIDE_INT offset;
 };

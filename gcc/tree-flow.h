@@ -289,7 +289,7 @@ static inline int get_lineno (const_gimple);
 /*---------------------------------------------------------------------------
                   Structure representing predictions in tree level.
 ---------------------------------------------------------------------------*/
-struct GTY((chain_next ("%h.ep_next"))) edge_prediction {
+struct edge_prediction {
   struct edge_prediction *ep_next;
   edge ep_edge;
   enum br_predictor ep_predictor;
@@ -303,8 +303,7 @@ static inline void set_phi_nodes (basic_block, gimple_seq);
 /*---------------------------------------------------------------------------
 			      Global declarations
 ---------------------------------------------------------------------------*/
-struct GTY(()) int_tree_map {
-
+struct int_tree_map {
   unsigned int uid;
   tree to;
 };
@@ -533,7 +532,7 @@ extern bool gimple_check_call_args (gimple);
 /* In tree-ssa.c  */
 
 /* Mapping for redirected edges.  */
-struct GTY(()) _edge_var_map {
+struct _edge_var_map {
   tree result;			/* PHI result.  */
   tree def;			/* PHI arg definition.  */
   source_location locus;        /* PHI arg location.  */

@@ -681,7 +681,7 @@ lookup_type_for_runtime (tree type)
 
 /* Represent an entry in @TTypes for either catch actions
    or exception filter actions.  */
-struct GTY(()) ttypes_filter {
+struct ttypes_filter {
   tree t;
   int filter;
 };

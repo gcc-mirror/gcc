@@ -1,3 +1,20 @@
+2010-12-03  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* tree.h (struct call_expr_arg_iterator_d): Remove GTY tag.
+	(const_call_expr_arg_iterator_d): Likewise.
+	(expanded_location): Likewise.
+	* c-tree.h (struct c_arg_tag_d): Likewise.
+	* dwarf2out.c (struct cfa_loc): Likewise.
+	(struct skeleton_chain_struct): Likewise.
+	* except.c (struct ttypes_filter): Likewise.
+	* cselib.h (struct cselib_val_struct): Likewise.
+	(elt_loc_list): Likewise.
+	(elt_list): Likewise.
+	* varasm.c (struct addr_const): Likewise.
+	* tree-flow.h (struct edge_prediction): Likewise.
+	(struct int_tree_map): Likewise.
+	(struct _edge_var_map): Likewise.
+
 2010-12-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/46768

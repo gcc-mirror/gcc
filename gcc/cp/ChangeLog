@@ -1,3 +1,8 @@
+2010-12-03  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* cp-tree.h (struct aggr_init_expr_arg_iterator_d): Remove GTY
+	tag.
+
 2010-12-02  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* parser.c (cp_parser_objc_throw_statement): Use
