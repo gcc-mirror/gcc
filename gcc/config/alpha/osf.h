@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha on OSF/1.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2001, 2002, 2003,
-   2004, 2007, 2009 Free Software Foundation, Inc.
+   2004, 2007, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -246,3 +246,5 @@ __enable_execute_stack (void *addr)					\
 /* Handle #pragma extern_prefix.  Technically only needed for Tru64 5.x,
    but easier to manipulate preprocessor bits from here.  */
 #define TARGET_HANDLE_PRAGMA_EXTERN_PREFIX 1
+
+#define MD_UNWIND_SUPPORT "config/alpha/osf-unwind.h"

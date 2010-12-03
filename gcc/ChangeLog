@@ -1,6 +1,15 @@
 2010-12-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
+	2010-09-15  Olivier Hainque  <hainque@adacore.com>
+        	    Jose Ruiz  <ruiz@adacore.com>
+
+	* config/alpha/osf.h (MD_UNWIND_SUPPORT): Define.
+	* config/alpha/osf-unwind.h: New file.
+
+2010-12-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
 	2010-11-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/mips/iris6.h [!IRIX_USING_GNU_LD]
