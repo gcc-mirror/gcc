@@ -605,6 +605,8 @@ LIBOBJS
 STRINGOPS_FLAG
 HAVE_SYS_MMAN_H_FALSE
 HAVE_SYS_MMAN_H_TRUE
+PTHREAD_LIBS
+PTHREAD_CFLAGS
 USING_SPLIT_STACK_FALSE
 USING_SPLIT_STACK_TRUE
 SPLIT_STACK
@@ -10866,7 +10868,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10869 "configure"
+#line 10871 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10972,7 +10974,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10975 "configure"
+#line 10977 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13325,6 +13327,76 @@ if test "$ac_cv_libgo_linker_supports_split_stack" = yes; then
 $as_echo "#define LINKER_SUPPORTS_SPLIT_STACK 1" >>confdefs.h
 
 fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -pthread is supported" >&5
+$as_echo_n "checking whether -pthread is supported... " >&6; }
+if test "${ac_cv_libgo_pthread_supported+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -pthread"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int i;
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_libgo_pthread_supported=yes
+else
+  ac_cv_libgo_pthread_supported=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+CFLAGS=$CFLAGS_hold
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_libgo_pthread_supported" >&5
+$as_echo "$ac_cv_libgo_pthread_supported" >&6; }
+PTHREAD_CFLAGS=
+if test "$ac_cv_libgo_pthread_supported" = yes; then
+  PTHREAD_CFLAGS=-pthread
+fi
+
+
+PTHREAD_LIBS=
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for pthread_create in -lpthread" >&5
+$as_echo_n "checking for pthread_create in -lpthread... " >&6; }
+if test "${ac_cv_lib_pthread_pthread_create+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpthread  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char pthread_create ();
+int
+main ()
+{
+return pthread_create ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_pthread_pthread_create=yes
+else
+  ac_cv_lib_pthread_pthread_create=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pthread_pthread_create" >&5
+$as_echo "$ac_cv_lib_pthread_pthread_create" >&6; }
+if test "x$ac_cv_lib_pthread_pthread_create" = x""yes; then :
+  PTHREAD_LIBS=-lpthread
+fi
+
+
 
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether byte ordering is bigendian" >&5
 $as_echo_n "checking whether byte ordering is bigendian... " >&6; }
