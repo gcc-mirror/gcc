@@ -97,7 +97,7 @@ static struct incomplete *defer_limited_with;
 static int defer_finalize_level = 0;
 static VEC (tree,heap) *defer_finalize_list;
 
-typedef struct GTY(()) subst_pair_d {
+typedef struct subst_pair_d {
   tree discriminant;
   tree replacement;
 } subst_pair;
@@ -105,7 +105,7 @@ typedef struct GTY(()) subst_pair_d {
 DEF_VEC_O(subst_pair);
 DEF_VEC_ALLOC_O(subst_pair,heap);
 
-typedef struct GTY(()) variant_desc_d {
+typedef struct variant_desc_d {
   /* The type of the variant.  */
   tree type;
 

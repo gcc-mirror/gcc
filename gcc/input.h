@@ -37,7 +37,7 @@ extern GTY(()) struct line_maps *line_table;
 extern char builtins_location_check[(BUILTINS_LOCATION
 				     < RESERVED_LOCATION_COUNT) ? 1 : -1];
 
-typedef struct GTY (())
+typedef struct
 {
   /* The name of the source file involved.  */
   const char *file;

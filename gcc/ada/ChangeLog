@@ -1,3 +1,8 @@
+2010-12-03  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* gcc-interface/decl.c (struct subst_pair_d): Remove GTY tag.
+	(variant_desc_d): Likewise.
+
 2010-12-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/misc.c (flag_compare_debug, flag_stack_check):
