@@ -96,12 +96,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_COMMAND_SPEC
 #define LINK_COMMAND_SPEC \
 "%{!fsyntax-only: \
-%{!c:%{!M:%{!MM:%{!E:%{!S:%(linker) %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
+%{!c:%{!M:%{!MM:%{!E:%{!S:%(linker) %l %X %{o*} %{e*} %{N} %{n} \
 \t%{r} %{s} %{t} %{u*} %{z} %{Z}\
-\t%{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
+\t%{!nostdlib:%{!nostartfiles:%S}}\
 \t%{static:} %{L*} %D %o\
 \t%{!nostdlib:%{!nodefaultlibs:%G %L %G}}\
-\t%{!A:%{!nostdlib:%{!nostartfiles:%E}}}\
+\t%{!nostdlib:%{!nostartfiles:%E}}\
 \t-Tdjgpp.djl %{T*}}}}}}}\n\
 %{!c:%{!M:%{!MM:%{!E:%{!S:stubify %{v} %{o*:%*} %{!o*:a.out} }}}}}"
 
