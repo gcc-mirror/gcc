@@ -19125,6 +19125,10 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 	     out yet, use a NULL context for now; it will be fixed up in
 	     decls_for_scope.  */
 	  context_die = lookup_decl_die (TYPE_CONTEXT (type));
+	  /* A declaration DIE doesn't count; nested types need to go in the
+	     specification.  */
+	  if (context_die && is_declaration_die (context_die))
+	    context_die = NULL;
 	  need_pop = 0;
 	}
       else

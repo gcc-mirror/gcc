@@ -1,3 +1,9 @@
+2010-12-03  Jason Merrill  <jason@redhat.com>
+
+	PR debug/46123
+	* dwarf2out.c (gen_type_die_with_usage): Don't put local types in
+	a declaration DIE.
+
 2010-12-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
