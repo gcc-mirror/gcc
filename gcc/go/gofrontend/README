@@ -38,7 +38,7 @@ Contributing
 To contribute patches to the files in this directory, please see
 http://golang.org/doc/gccgo_contribute.html .
 
-These master copy of these files is hosted at
+The master copy of these files is hosted at
 http://code.google.com/p/gofrontend .  Changes to these files require
 signing a Google copyright license agreement.  If you are the
 copyright holder, you will need to agree to the individual contributor
