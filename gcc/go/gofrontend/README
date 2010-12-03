@@ -40,7 +40,7 @@ http://golang.org/doc/gccgo_contribute.html .
 
 The master copy of these files is hosted at
 http://code.google.com/p/gofrontend .  Changes to these files require
-signing a Google copyright license agreement.  If you are the
+signing a Google contributor license agreement.  If you are the
 copyright holder, you will need to agree to the individual contributor
 license agreement at
 http://code.google.com/legal/individual-cla-v1.0.html.  This agreement
