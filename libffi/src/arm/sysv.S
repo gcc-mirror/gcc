@@ -229,6 +229,83 @@ LSYM(Lepilogue):
         .size    CNAME(ffi_call_SYSV),.ffi_call_SYSV_end-CNAME(ffi_call_SYSV)
 
 
+/*
+	unsigned int FFI_HIDDEN
+	ffi_closure_SYSV_inner (closure, respp, args)
+	     ffi_closure *closure;
+	     void **respp;
+  	     void *args;
+*/
+
+ARM_FUNC_START ffi_closure_SYSV
+	UNWIND .pad #16
+	add	ip, sp, #16
+	stmfd	sp!, {ip, lr}
+	UNWIND .save	{r0, lr}
+	add	r2, sp, #8
+	UNWIND .pad #16
+	sub	sp, sp, #16
+	str	sp, [sp, #8]
+	add	r1, sp, #8
+	bl	ffi_closure_SYSV_inner
+	cmp	r0, #FFI_TYPE_INT
+	beq	.Lretint
+
+	cmp	r0, #FFI_TYPE_FLOAT
+#if defined(__SOFTFP__) || defined(__ARM_EABI__)
+	beq	.Lretint
+#else
+	beq	.Lretfloat
+#endif
+
+	cmp	r0, #FFI_TYPE_DOUBLE
+#if defined(__SOFTFP__) || defined(__ARM_EABI__)
+	beq	.Lretlonglong
+#else
+	beq	.Lretdouble
+#endif
+
+	cmp	r0, #FFI_TYPE_LONGDOUBLE
+#if defined(__SOFTFP__) || defined(__ARM_EABI__)
+	beq	.Lretlonglong
+#else
+	beq	.Lretlongdouble
+#endif
+
+	cmp	r0, #FFI_TYPE_SINT64
+	beq	.Lretlonglong
+.Lclosure_epilogue:
+	add	sp, sp, #16
+	ldmfd	sp, {sp, pc}
+.Lretint:
+	ldr	r0, [sp]
+	b	.Lclosure_epilogue
+.Lretlonglong:
+	ldr	r0, [sp]
+	ldr	r1, [sp, #4]
+	b	.Lclosure_epilogue
+
+#if !defined(__SOFTFP__) && !defined(__ARM_EABI__)
+.Lretfloat:
+	ldfs	f0, [sp]
+	b	.Lclosure_epilogue
+.Lretdouble:
+	ldfd	f0, [sp]
+	b	.Lclosure_epilogue
+.Lretlongdouble:
+	ldfd	f0, [sp]
+	b	.Lclosure_epilogue
+#endif
+
+.ffi_closure_SYSV_end:
+	UNWIND .fnend
+        .size    CNAME(ffi_closure_SYSV),.ffi_closure_SYSV_end-CNAME(ffi_closure_SYSV)
+
+
+/* Below are VFP hard-float ABI call and closure implementations.
+   Add VFP FPU directive here. */
+	.fpu	vfp
+
 	@ r0:   fn
 	@ r1:   &ecif
 	@ r2:   cif->bytes
@@ -321,79 +398,6 @@ LSYM(Lepilogue_vfp):
 .ffi_call_VFP_end:
 	UNWIND .fnend
         .size    CNAME(ffi_call_VFP),.ffi_call_VFP_end-CNAME(ffi_call_VFP)
-	
-	
-/*
-	unsigned int FFI_HIDDEN
-	ffi_closure_SYSV_inner (closure, respp, args)
-	     ffi_closure *closure;
-	     void **respp;
-  	     void *args;
-*/
-
-ARM_FUNC_START ffi_closure_SYSV
-	UNWIND .pad #16
-	add	ip, sp, #16
-	stmfd	sp!, {ip, lr}
-	UNWIND .save	{r0, lr}
-	add	r2, sp, #8
-	.pad #16
-	sub	sp, sp, #16
-	str	sp, [sp, #8]
-	add	r1, sp, #8
-	bl	ffi_closure_SYSV_inner
-	cmp	r0, #FFI_TYPE_INT
-	beq	.Lretint
-
-	cmp	r0, #FFI_TYPE_FLOAT
-#if defined(__SOFTFP__) || defined(__ARM_EABI__)
-	beq	.Lretint
-#else
-	beq	.Lretfloat
-#endif
-
-	cmp	r0, #FFI_TYPE_DOUBLE
-#if defined(__SOFTFP__) || defined(__ARM_EABI__)
-	beq	.Lretlonglong
-#else
-	beq	.Lretdouble
-#endif
-
-	cmp	r0, #FFI_TYPE_LONGDOUBLE
-#if defined(__SOFTFP__) || defined(__ARM_EABI__)
-	beq	.Lretlonglong
-#else
-	beq	.Lretlongdouble
-#endif
-
-	cmp	r0, #FFI_TYPE_SINT64
-	beq	.Lretlonglong
-.Lclosure_epilogue:
-	add	sp, sp, #16
-	ldmfd	sp, {sp, pc}
-.Lretint:
-	ldr	r0, [sp]
-	b	.Lclosure_epilogue
-.Lretlonglong:
-	ldr	r0, [sp]
-	ldr	r1, [sp, #4]
-	b	.Lclosure_epilogue
-
-#if !defined(__SOFTFP__) && !defined(__ARM_EABI__)
-.Lretfloat:
-	ldfs	f0, [sp]
-	b	.Lclosure_epilogue
-.Lretdouble:
-	ldfd	f0, [sp]
-	b	.Lclosure_epilogue
-.Lretlongdouble:
-	ldfd	f0, [sp]
-	b	.Lclosure_epilogue
-#endif
-
-.ffi_closure_SYSV_end:
-	UNWIND .fnend
-        .size    CNAME(ffi_closure_SYSV),.ffi_closure_SYSV_end-CNAME(ffi_closure_SYSV)
 
 
 ARM_FUNC_START ffi_closure_VFP
@@ -405,7 +409,7 @@ ARM_FUNC_START ffi_closure_VFP
 	UNWIND .save	{r0, lr}
 	add	r2, sp, #72
 	add	r3, sp, #8
-	.pad #72
+	UNWIND .pad #72
 	sub	sp, sp, #72
 	str	sp, [sp, #64]
 	add	r1, sp, #64
