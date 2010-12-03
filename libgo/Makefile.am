@@ -30,7 +30,7 @@ LIBFFIINCS = @LIBFFIINCS@
 WARN_CFLAGS = $(WARN_FLAGS) $(WERROR)
 
 # -I/-D flags to pass when compiling.
-AM_CPPFLAGS = -I $(srcdir)/runtime $(LIBFFIINCS) -pthread
+AM_CPPFLAGS = -I $(srcdir)/runtime $(LIBFFIINCS) $(PTHREAD_CFLAGS)
 
 ACLOCAL_AMFLAGS = -I ./config -I ../config
 
@@ -1263,7 +1263,7 @@ libgo_go_objs = \
 
 libgo_la_SOURCES = $(runtime_files)
 
-libgo_la_LIBADD = $(libgo_go_objs) $(LIBFFI) -lpthread
+libgo_la_LIBADD = $(libgo_go_objs) $(LIBFFI) $(PTHREAD_LIBS)
 
 libgobegin_a_SOURCES = \
 	runtime/go-main.c
@@ -1279,7 +1279,7 @@ LTGOCOMPILE = $(LIBTOOL) --tag GO --mode=compile $(GOC) $(INCLUDES) \
 
 GOLINK = $(LIBTOOL) --tag GO --mode-link $(GOC) \
 	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_GOCFLAGS) $(LTLDFLAGS) \
-	-lpthread -o $@
+	$(PTHREAD_LIBS) -o $@
 
 # Build a package.
 BUILDARCHIVE = \

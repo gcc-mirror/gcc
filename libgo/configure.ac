@@ -187,6 +187,26 @@ if test "$ac_cv_libgo_linker_supports_split_stack" = yes; then
 	    [Define if the linker support split stack adjustments])
 fi
 
+dnl Test whether the compiler supports the -pthread option.
+AC_CACHE_CHECK([whether -pthread is supported],
+[ac_cv_libgo_pthread_supported],
+[CFLAGS_hold=$CFLAGS
+CFLAGS="$CFLAGS -pthread"
+AC_COMPILE_IFELSE([[int i;]],
+[ac_cv_libgo_pthread_supported=yes],
+[ac_cv_libgo_pthread_supported=no])
+CFLAGS=$CFLAGS_hold])
+PTHREAD_CFLAGS=
+if test "$ac_cv_libgo_pthread_supported" = yes; then
+  PTHREAD_CFLAGS=-pthread
+fi
+AC_SUBST(PTHREAD_CFLAGS)
+
+dnl Test for the -lpthread library.
+PTHREAD_LIBS=
+AC_CHECK_LIB([pthread], [pthread_create], PTHREAD_LIBS=-lpthread)
+AC_SUBST(PTHREAD_LIBS)
+
 AC_C_BIGENDIAN
 
 GCC_CHECK_UNWIND_GETIPINFO
