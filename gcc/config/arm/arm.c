@@ -5649,10 +5649,22 @@ arm_legitimate_index_p (enum machine_mode mode, rtx index, RTX_CODE outer,
 	    && INTVAL (index) > -1024
 	    && (INTVAL (index) & 3) == 0);
 
-  if (TARGET_NEON
-      && (VALID_NEON_DREG_MODE (mode) || VALID_NEON_QREG_MODE (mode)))
+  /* For quad modes, we restrict the constant offset to be slightly less
+     than what the instruction format permits.  We do this because for
+     quad mode moves, we will actually decompose them into two separate
+     double-mode reads or writes.  INDEX must therefore be a valid
+     (double-mode) offset and so should INDEX+8.  */
+  if (TARGET_NEON && VALID_NEON_QREG_MODE (mode))
     return (code == CONST_INT
 	    && INTVAL (index) < 1016
+	    && INTVAL (index) > -1024
+	    && (INTVAL (index) & 3) == 0);
+
+  /* We have no such constraint on double mode offsets, so we permit the
+     full range of the instruction format.  */
+  if (TARGET_NEON && VALID_NEON_DREG_MODE (mode))
+    return (code == CONST_INT
+	    && INTVAL (index) < 1024
 	    && INTVAL (index) > -1024
 	    && (INTVAL (index) & 3) == 0);
 
@@ -5769,10 +5781,22 @@ thumb2_legitimate_index_p (enum machine_mode mode, rtx index, int strict_p)
 		&& (INTVAL (index) & 3) == 0);
     }
 
-  if (TARGET_NEON
-      && (VALID_NEON_DREG_MODE (mode) || VALID_NEON_QREG_MODE (mode)))
+  /* For quad modes, we restrict the constant offset to be slightly less
+     than what the instruction format permits.  We do this because for
+     quad mode moves, we will actually decompose them into two separate
+     double-mode reads or writes.  INDEX must therefore be a valid
+     (double-mode) offset and so should INDEX+8.  */
+  if (TARGET_NEON && VALID_NEON_QREG_MODE (mode))
     return (code == CONST_INT
 	    && INTVAL (index) < 1016
+	    && INTVAL (index) > -1024
+	    && (INTVAL (index) & 3) == 0);
+
+  /* We have no such constraint on double mode offsets, so we permit the
+     full range of the instruction format.  */
+  if (TARGET_NEON && VALID_NEON_DREG_MODE (mode))
+    return (code == CONST_INT
+	    && INTVAL (index) < 1024
 	    && INTVAL (index) > -1024
 	    && (INTVAL (index) & 3) == 0);
 
