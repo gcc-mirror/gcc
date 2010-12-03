@@ -1,0 +1,7 @@
+This directory is an exact copy (except for this file) of the Go
+testsuite from the test subdirectory of http://code.google.com/p/go.
+This is here so that we run the same tests as the gc Go compiler.  We
+do not, however, run the tests in the same way.  The gc compiler uses
+the run shell script in this directory.  For gccgo, we use the file
+go-test.exp in the parent directory to run the tests in gcc's usual
+DejaGNU test harness.

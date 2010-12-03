@@ -1070,6 +1070,9 @@ Free form Fortran source code which should not be preprocessed.
 Free form Fortran source code which must be preprocessed (with the
 traditional preprocessor).
 
+@item @var{file}.go
+Go source code.
+
 @c FIXME: Descriptions of Java file types.
 @c @var{file}.java
 @c @var{file}.class
@@ -1123,6 +1126,7 @@ objective-c++ objective-c++-header objective-c++-cpp-output
 assembler  assembler-with-cpp
 ada
 f77  f77-cpp-input f95  f95-cpp-input
+go
 java
 @end smallexample
 

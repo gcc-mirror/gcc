@@ -1,0 +1,94 @@
+#!/usr/bin/perl
+# Copyright 2009 The Go Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
+# This script checks that the compilers emits the errors which we
+# expect.  Usage: errchk COMPILER [OPTS] SOURCEFILE.  This will run
+# the command COMPILER [OPTS] SOURCEFILE.  The compilation is expected
+# to fail; if it succeeds, this script will report an error.  The
+# stderr output of the compiler will be matched against comments in
+# SOURCEFILE.  For each line of the source file which should generate
+# an error, there should be a comment of the form // ERROR "regexp".
+# If the compiler generates an error for a line which has no such
+# commnt, this script will report an error.  Likewise if the compiler
+# does not generate an error for a line which has a comment, or if the
+# error message does not match the <regexp>.  The <regexp> syntax
+# is Perl but its best to stick to egrep.
+
+use POSIX;
+
+if(@ARGV < 1) {
+	print STDERR "Usage: errchk COMPILER [OPTS] SOURCEFILE\n";
+	exit 1;
+}
+
+$file = $ARGV[@ARGV-1];
+open(SRC, $file) || die "BUG: errchk: open $file: $!";
+@src = <SRC>;
+close(SRC);
+
+# Run command
+$cmd = join(' ', @ARGV);
+open(CMD, "exec $cmd </dev/null 2>&1 |") || die "BUG: errchk: run $cmd: $!";
+
+# 6g error messages continue onto additional lines with leading tabs.
+# Split the output at the beginning of each line that doesn't begin with a tab.
+$out = join('', <CMD>);
+@out = split(/^(?!\t)/m, $out);
+
+close CMD;
+
+if($? == 0) {
+	print STDERR "BUG: errchk: command succeeded unexpectedly\n";
+	print STDERR @out;
+	exit 0;
+}
+
+if(!WIFEXITED($?)) {
+	print STDERR "BUG: errchk: compiler crashed\n";
+	print STDERR @out, "\n";
+	exit 0;
+}
+
+sub bug() {
+	if(!$bug++) {
+		print STDERR "BUG: ";
+	}
+}
+
+$line = 0;
+foreach $src (@src) {
+	$line++;
+	next unless $src =~ m|// (GC_)?ERROR (.*)|;
+	$regexp = $2;
+	if($regexp !~ /^"([^"]*)"/) {
+		print STDERR "$file:$line: malformed regexp\n";
+		next;
+	}
+	$regexp = $1;
+
+	@errmsg = grep { /$file:$line:/ } @out;
+	@out = grep { !/$file:$line:/ } @out;
+	if(@errmsg == 0) {
+		bug();
+		print STDERR "errchk: $file:$line: missing expected error: '$regexp'\n";
+		next;
+	}
+	@match = grep { /$regexp/ } @errmsg;
+	if(@match == 0) {
+		bug();
+		print STDERR "errchk: $file:$line: error message does not match '$regexp'\n";
+		next;
+	}
+}
+
+if(@out != 0) {
+	bug();
+	print STDERR "errchk: $file: unmatched error messages:\n";
+	print STDERR "==================================================\n";
+	print STDERR @out;
+	print STDERR "==================================================\n";
+}
+
+exit 0;

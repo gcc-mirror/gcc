@@ -271,6 +271,18 @@ The authoritative manual on Objective-C 2.0 is available from Apple:
 For more information concerning the history of Objective-C that is
 available online, see @uref{http://gcc.gnu.org/readings.html}
 
+@section Go language
+
+The Go language continues to evolve as of this writing; see the
+@uref{http://golang.org/@/doc/@/go_spec.html, current language
+specifications}.  At present there are no specific versions of Go, and
+there is no way to describe the language supported by GCC in terms of
+a specific version.  In general GCC tracks the evolving specification
+closely, and any given release will support the language as of the
+date that the release was frozen.
+
+@section References for other languages
+
 @xref{Top, GNAT Reference Manual, About This Guide, gnat_rm,
 GNAT Reference Manual}, for information on standard
 conformance and compatibility of the Ada compiler.
