@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-Wall" } */
 /* { dg-error "" "" { target { { *arm*-*-*elf* xtensa*-*-elf* } || vxworks_kernel } } 0 } */
+/* { dg-skip-if "No *intmax_t in <inttypes.h>" { alpha*-dec-osf* } } */
 
 /* Compile with -Wall to get a warning if built-in and system intmax_t don't
    match.  */
