@@ -1,3 +1,13 @@
+2010-12-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* trans-array.c (gfc_could_be_alias):  Handle BT_CLASS
+	as well as BT_DERIVED.
+	(gfc_array_allocate):  Likewise.
+	(gfc_conv_array_parameter):  Likewise.
+	(structure_alloc_comps):  Likewise.
+	(gfc_is_reallocatable_lhs):  Likewise.
+	(gfc_trans_deferred_array):  Likewise.
+
 2010-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/46753
