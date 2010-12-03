@@ -707,8 +707,8 @@ case "${target}" in
       *-*-aout)
 	unsupported_languages="$unsupported_languages fortran"
 	noconfigdirs="$noconfigdirs target-libffi target-boehm-gc";;
-      *-*-elf)
-	noconfigdirs="$noconfigdirs target-boehm-gc";;
+      *-*-elf) # See PR46792 regarding target-libffi.
+	noconfigdirs="$noconfigdirs target-libffi target-boehm-gc";;
       *-*-linux*)
 	noconfigdirs="$noconfigdirs target-newlib target-libgloss";;
       *)
