@@ -2505,6 +2505,24 @@ fix = {
 
 
 /*
+ *  IRIX 6.5 PTHREAD_*_INITIALIZER need an additional level of braces in
+ *  <pthread.h>.
+ */
+fix = {
+    hackname    = irix_pthread_init;
+    files       = pthread.h;
+    select      = "^(#define[ \t]+PTHREAD_.*_INITIALIZER[ \t]+)(\\{ 0 \\})";
+
+    mach	= "mips-sgi-irix6.5";
+    c_fix       = format;
+    c_fix_arg   = "%1{ %2 }";
+    test_text   = "#define PTHREAD_MUTEX_INITIALIZER	{ 0 }\n"
+		  "#define PTHREAD_COND_INITIALIZER	{ 0 }\n"
+		  "#define PTHREAD_RWLOCK_INITIALIZER	{ 0 }";
+};
+
+
+/*
  *  IRIX 6.5.1[78] <sys/socket.h> has a broken definition of socklen_t.
  *  Various socket function prototypes use different types instead,
  *  depending on the API in use (BSD, XPG4/5), but the socklen_t
