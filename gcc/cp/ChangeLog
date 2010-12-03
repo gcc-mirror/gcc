@@ -1,3 +1,8 @@
+2010-12-03  Richard Guenther  <rguenther@suse.de>
+
+	PR c/46745
+	* error.c (dump_expr): Handle MEM_REF.
+
 2010-12-03  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* cp-tree.h (struct aggr_init_expr_arg_iterator_d): Remove GTY
