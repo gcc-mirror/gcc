@@ -1,3 +1,8 @@
+2010-12-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46058
+	* tree.c (lvalue_kind) [SCOPE_REF]: Handle non-dependent case.
+
 2010-12-03  Richard Guenther  <rguenther@suse.de>
 
 	PR c/46745
