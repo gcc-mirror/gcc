@@ -1,3 +1,8 @@
+2010-12-03  Matthias Klose  <doko@ubuntu.com> 
+
+	* configure.ac (VERSION): Bump the version to 3:0:0.
+	* configure: Regenerate.
+
 2010-11-23  Richard Frith-Macdonald <rfm@gnu.org>
 
 	* sendmsg.c (get_imp): Fixed call to __objc_get_forward_imp to
