@@ -3467,8 +3467,8 @@ gfc_could_be_alias (gfc_ss * lss, gfc_ss * rss)
   if (gfc_symbols_could_alias (lsym, rsym))
     return 1;
 
-  if (rsym->ts.type != BT_DERIVED
-      && lsym->ts.type != BT_DERIVED)
+  if (rsym->ts.type != BT_DERIVED && rsym->ts.type != BT_CLASS
+      && lsym->ts.type != BT_DERIVED && lsym->ts.type != BT_CLASS)
     return 0;
 
   /* For derived types we must check all the component types.  We can ignore
@@ -4351,7 +4351,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
 
   gfc_conv_descriptor_offset_set (&se->pre, se->expr, offset);
 
-  if (expr->ts.type == BT_DERIVED
+  if ((expr->ts.type == BT_DERIVED || expr->ts.type == BT_CLASS)
 	&& expr->ts.u.derived->attr.alloc_comp)
     {
       tmp = gfc_nullify_alloc_comp (expr->ts.u.derived, se->expr,
@@ -5898,7 +5898,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
       if (sym->ts.type == BT_CHARACTER)
 	se->string_length = sym->ts.u.cl->backend_decl;
 
-      if (sym->ts.type == BT_DERIVED)
+      if (sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS)
 	{
 	  gfc_conv_expr_descriptor (se, expr, ss);
 	  se->expr = gfc_conv_array_data (se->expr);
@@ -6004,7 +6004,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
 
   /* Deallocate the allocatable components of structures that are
      not variable.  */
-  if (expr->ts.type == BT_DERIVED
+  if ((expr->ts.type == BT_DERIVED || expr->ts.type == BT_CLASS)
 	&& expr->ts.u.derived->attr.alloc_comp
 	&& expr->expr_type != EXPR_VARIABLE)
     {
@@ -6421,7 +6421,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
      act on a chain of components.  */
   for (c = der_type->components; c; c = c->next)
     {
-      bool cmp_has_alloc_comps = (c->ts.type == BT_DERIVED)
+      bool cmp_has_alloc_comps = (c->ts.type == BT_DERIVED
+				  || c->ts.type == BT_CLASS)
 				    && c->ts.u.derived->attr.alloc_comp;
       cdecl = c->backend_decl;
       ctype = TREE_TYPE (cdecl);
@@ -6684,7 +6685,8 @@ gfc_is_reallocatable_lhs (gfc_expr *expr)
     return true;
 
   /* All that can be left are allocatable components.  */
-  if (expr->symtree->n.sym->ts.type != BT_DERIVED
+  if ((expr->symtree->n.sym->ts.type != BT_DERIVED
+       && expr->symtree->n.sym->ts.type != BT_CLASS)
 	|| !expr->symtree->n.sym->ts.u.derived->attr.alloc_comp)
     return false;
 
@@ -7067,7 +7069,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
   int rank;
   bool sym_has_alloc_comp;
 
-  sym_has_alloc_comp = (sym->ts.type == BT_DERIVED)
+  sym_has_alloc_comp = (sym->ts.type == BT_DERIVED
+			|| sym->ts.type == BT_CLASS)
 			  && sym->ts.u.derived->attr.alloc_comp;
 
   /* Make sure the frontend gets these right.  */
