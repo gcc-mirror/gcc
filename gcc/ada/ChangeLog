@@ -1,3 +1,7 @@
+2010-12-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/lang.opt (k8): New option.
+
 2010-12-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gnatvsn.adb (Gnat_Version_String): Don't overrun Ver_Len_Max.

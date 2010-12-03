@@ -1,5 +1,10 @@
 2010-12-03  Joseph Myers  <joseph@codesourcery.com>
 
+	* common.opt (N, Q, Qn, Qy, Z, n, r, s, t): New options.
+	* gcc.c (cc1_options): Add %{Qy:}.
+
+2010-12-03  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.c (LINK_COMMAND_SPEC): Don't handle -A, -d or -m.
 	* config/darwin.h (LINK_COMMAND_SPEC_A): Likewise.
 	* config/i386/djgpp.h (LINK_COMMAND_SPEC): Likewise.

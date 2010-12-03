@@ -750,7 +750,7 @@ static const char *cc1_options =
  %{!fcompare-debug-second:%{c|S:%{o*:-auxbase-strip %*}%{!o*:-auxbase %b}}}%{!c:%{!S:-auxbase %b}} \
  %{g*} %{O*} %{W*&pedantic*} %{w} %{std*&ansi&trigraphs}\
  %{v:-version} %{pg:-p} %{p} %{f*} %{undef}\
- %{Qn:-fno-ident} %{-help:--help}\
+ %{Qn:-fno-ident} %{Qy:} %{-help:--help}\
  %{-target-help:--target-help}\
  %{-version:--version}\
  %{-help=*:--help=%*}\

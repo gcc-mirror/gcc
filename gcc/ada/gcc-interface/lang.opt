@@ -83,6 +83,9 @@ Woverlength-strings
 Ada
 ; Documented for C
 
+k8
+Driver
+
 nostdinc
 Ada RejectNegative
 ; Don't look for source files
