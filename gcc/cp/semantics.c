@@ -5484,10 +5484,8 @@ build_data_member_initialization (tree t, VEC(constructor_elt,gc) **vec)
       init = unshare_expr (TREE_OPERAND (t, 1));
       if (TREE_CODE (member) == INDIRECT_REF)
 	{
-	  /* Don't put out anything for value-init of an empty base.  */
+	  /* Don't put out anything for an empty base.  */
 	  gcc_assert (is_empty_class (TREE_TYPE (member)));
-	  gcc_assert (TREE_CODE (init) == CONSTRUCTOR
-		      && CONSTRUCTOR_NELTS (init) == 0);
 	  return true;
 	}
     }

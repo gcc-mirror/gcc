@@ -1,5 +1,8 @@
 2010-12-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46645
+	* semantics.c (build_data_member_initialization): Remove assert.
+
 	PR c++/46058
 	* tree.c (lvalue_kind) [SCOPE_REF]: Handle non-dependent case.
 
