@@ -35,3 +35,6 @@ target_libs="target-libgo target-libffi"
 lang_requires_boot_languages=c++
 
 gtfiles="\$(srcdir)/go/go-lang.c"
+
+# Do not build by default.
+build_by_default="no"
