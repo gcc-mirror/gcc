@@ -1,3 +1,9 @@
+2010-12-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gnatvsn.adb (Gnat_Version_String): Don't overrun Ver_Len_Max.
+	* gnatvsn.ads (Ver_Len_Max): Bump up to 256.
+	* g-comver.adb (Ver_Len_Max): Likewise.
+
 2010-12-03  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* gcc-interface/decl.c (struct subst_pair_d): Remove GTY tag.

@@ -70,7 +70,7 @@ package Gnatvsn is
    --  Return the name of the Copyright holder to be displayed by the different
    --  GNAT tools when switch --version is used.
 
-   Ver_Len_Max : constant := 64;
+   Ver_Len_Max : constant := 256;
    --  Longest possible length for Gnat_Version_String in this or any
    --  other version of GNAT. This is used by the binder to establish
    --  space to store any possible version string value for checks. This

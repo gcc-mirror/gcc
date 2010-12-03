@@ -74,6 +74,8 @@ package body Gnatvsn is
 
          S (Pos + 1) := Version_String (Pos);
          Pos := Pos + 1;
+
+         exit when Pos = Ver_Len_Max;
       end loop;
 
       return S (1 .. Pos);
