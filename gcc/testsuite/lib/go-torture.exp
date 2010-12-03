@@ -1,0 +1,369 @@
+# Copyright (C) 2009 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Please email any bugs, comments, and/or additions to this file to
+# the author.
+
+# This file was written by Ian Lance Taylor <iant@google.com> based on
+# fortran-torture.exp by Steven Bosscher and Rob Savoye.
+
+load_lib target-supports.exp
+
+# The default option list can be overridden by
+# TORTURE_OPTIONS="{ { list1 } ... { listN } }"
+
+if ![info exists TORTURE_OPTIONS] {
+    set TORTURE_OPTIONS [list \
+	{ -O0 } { -O1 } { -O2 } \
+	{ -O2 -fomit-frame-pointer -finline-functions } \
+	{ -O2 -fomit-frame-pointer -finline-functions -funroll-loops } \
+	{ -O2 -fbounds-check } \
+	{ -O3 -g } \
+	{ -Os }]
+}
+
+
+#
+# go-torture-compile -- compile a go.go-torture testcase.
+#
+# SRC is the full pathname of the testcase.
+# OPTION is the specific compiler flag we're testing (eg: -O2).
+#
+proc go-torture-compile { src option } {
+    global output
+    global srcdir tmpdir
+    global host_triplet
+
+    set output "$tmpdir/[file tail [file rootname $src]].o"
+
+    regsub "(?q)$srcdir/" $src "" testcase
+
+    # If we couldn't rip $srcdir out of `src' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $testcase] {
+	set testcase "[file tail [file dirname $src]]/[file tail $src]"
+    }
+
+    verbose "Testing $testcase, $option" 1
+
+    # Run the compiler and get results in comp_output.
+    set options ""
+    lappend options "additional_flags=-w $option"
+
+    set comp_output [go_target_compile "$src" "$output" object $options]
+    
+    # See if we got something bad.
+    set fatal_signal "*go*: Internal compiler error: program*got fatal signal"
+ 
+    if [string match "$fatal_signal 6" $comp_output] then {
+	go_fail $testcase "Got Signal 6, $option"
+	catch { remote_file build delete $output }
+	return
+    }
+
+    if [string match "$fatal_signal 11" $comp_output] then {
+	go_fail $testcase "Got Signal 11, $option"
+	catch { remote_file build delete $output }
+	return
+    }
+
+    if [string match "*internal compiler error*" $comp_output] then {
+	go_fail $testcase "$option (internal compiler error)"
+	catch { remote_file build delete $output }
+	return
+    }
+
+    # We shouldn't get these because of -w, but just in case.
+    if [string match "*go*:*warning:*" $comp_output] then {
+	warning "$testcase: (with warnings) $option"
+	send_log "$comp_output\n"
+	unresolved "$testcase, $option"
+	catch { remote_file build delete $output }
+	return
+    }
+
+    # Prune warnings we know are unwanted.
+    set comp_output [prune_warnings $comp_output]
+
+    # Report if the testcase is not supported.
+    set unsupported_message [go_check_unsupported_p $comp_output]
+    if { $unsupported_message != "" } {
+	unsupported "$testcase: $unsupported_message"
+	catch { remote_file build delete $output }
+	return
+    }
+
+    # remove any leftover LF/CR to make sure any output is legit
+    regsub -all -- "\[\r\n\]*" $comp_output "" comp_output
+
+    # If any message remains, we fail.
+    if ![string match "" $comp_output] then {
+	go_fail $testcase $option
+	catch { remote_file build delete $output }
+	return
+    }
+
+    go_pass $testcase $option
+    catch { remote_file build delete $output }
+}
+
+
+#
+# go-torture-execute -- compile and execute a testcase.
+#
+# SRC is the full pathname of the testcase.
+#
+# If the testcase has an associated .x file, we source that to run the
+# test instead.  We use .x so that we don't lengthen the existing filename
+# to more than 14 chars.
+#
+proc go-torture-execute { src } {
+    global output
+    global srcdir tmpdir
+    global tool
+    global compiler_conditional_xfail_data
+    global TORTURE_OPTIONS
+    global go_execute_args
+
+    # Check for alternate driver.
+    set additional_flags ""
+    if [file exists [file rootname $src].x] {
+	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
+	set done_p 0
+	catch "set done_p \[source [file rootname $src].x\]"
+	if { $done_p } {
+	    return
+	}
+    }
+
+    # Setup the options for the testcase run.
+    set option_list $TORTURE_OPTIONS
+    set executable $tmpdir/[file tail [file rootname $src].x]
+    regsub "(?q)$srcdir/" $src "" testcase
+
+    if { ! [info exists go_execute_args] } {
+	set go_execute_args ""
+    }
+
+    # If we couldn't rip $srcdir out of `src' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $testcase] {
+	set testcase "[file tail [file dirname $src]]/[file tail $src]"
+    }
+
+    # Walk the list of options and copmile and run the testcase for all
+    # options that are not explicitly disabled by the .x script (if present).
+    foreach option $option_list {
+
+	# Torture_{compile,execute}_xfail are set by the .x script.
+	if [info exists torture_compile_xfail] {
+	    setup_xfail $torture_compile_xfail
+	}
+
+	# Torture_execute_before_{compile,execute} can be set by the .x script.
+	if [info exists torture_eval_before_compile] {
+            set ignore_me [eval $torture_eval_before_compile]
+	}
+
+	# FIXME: We should make sure that the modules required by this testcase
+	# exist.  If not, the testcase should XFAIL.
+
+	# Compile the testcase.
+	catch { remote_file build delete $executable }
+	verbose "Testing $testcase, $option" 1
+
+	set options ""
+	lappend options "additional_flags=-w $option"
+	if { $additional_flags != "" } {
+	    lappend options "additional_flags=$additional_flags"
+	}
+	set comp_output [go_target_compile "$src" "$executable" executable $options]
+
+	# See if we got something bad.
+	set fatal_signal "*go*: Internal compiler error: program*got fatal signal"
+	
+	if [string match "$fatal_signal 6" $comp_output] then {
+	    go_fail $testcase "Got Signal 6, $option"
+	    catch { remote_file build delete $executable }
+	    continue
+	}
+	
+	if [string match "$fatal_signal 11" $comp_output] then {
+	    go_fail $testcase "Got Signal 11, $option"
+	    catch { remote_file build delete $executable }
+	    continue
+	}
+
+	if [string match "*internal compiler error*" $comp_output] then {
+	    go_fail $testcase "$option (internal compiler error)"
+	    catch { remote_file build delete $executable }
+	    continue
+	}
+	
+	# We shouldn't get these because of -w, but just in case.
+	if [string match "*go*:*warning:*" $comp_output] then {
+	    warning "$testcase: (with warnings) $option"
+	    send_log "$comp_output\n"
+	    unresolved "$testcase, $option"
+	    catch { remote_file build delete $executable }
+	    continue
+	}
+	
+	# Prune warnings we know are unwanted.
+	set comp_output [prune_warnings $comp_output]
+
+	# Report if the testcase is not supported.
+	set unsupported_message [go_check_unsupported_p $comp_output]
+	if { $unsupported_message != "" } {
+	    unsupported "$testcase: $unsupported_message"
+	    continue
+	} elseif ![file exists $executable] {
+	    if ![is3way] {
+		fail "$testcase compilation, $option"
+		untested "$testcase execution, $option"
+		continue
+	    } else {
+		# FIXME: since we can't test for the existence of a remote
+		# file without short of doing an remote file list, we assume
+		# that since we got no output, it must have compiled.
+		pass "$testcase compilation, $option"		
+	    }
+	} else {
+	    pass "$testcase compilation, $option"
+	}
+
+	if [info exists torture_execute_xfail] {
+	    setup_xfail $torture_execute_xfail
+	}
+
+	if [info exists torture_eval_before_execute] {
+            set ignore_me [eval $torture_eval_before_execute]
+	}
+
+	# Run the testcase, and analyse the output.
+	set result [go_load "$executable" "$go_execute_args" ""]
+	set status [lindex $result 0]
+	set output [lindex $result 1]
+
+	# In order to cooperate nicely with the master Go testsuite,
+	# if the output contains the string BUG, we treat the test as
+	# failing.
+	if [ string match "*BUG*" $output ] {
+	    set status "fail"
+	}
+
+        if { $status == "pass" } {
+	    catch { remote_file build delete $executable }
+        }
+	$status "$testcase execution, $option"
+    }
+}
+
+
+#
+# search_for_re -- looks for a string match in a file
+#
+proc search_for_re { file pattern } {
+    set fd [open $file r]
+    while { [gets $fd cur_line]>=0 } {
+	set lower [string tolower $cur_line]
+	if [regexp "$pattern" $lower] then {
+	    close $fd
+	    return 1
+	}
+    }
+    close $fd
+    return 0
+}
+
+
+#
+# go-torture -- the go-torture testcase source file processor
+#
+# This runs compilation only tests (no execute tests).
+#
+# SRC is the full pathname of the testcase, or just a file name in which
+# case we prepend $srcdir/$subdir.
+#
+# If the testcase has an associated .x file, we source that to run the
+# test instead.  We use .x so that we don't lengthen the existing filename
+# to more than 14 chars.
+#
+proc go-torture { args } {
+    global srcdir subdir
+    global compiler_conditional_xfail_data
+    global TORTURE_OPTIONS
+
+    set src [lindex $args 0]
+    if { [llength $args] > 1 } {
+	set options [lindex $args 1]
+    } else {
+	set options ""
+    }
+
+    # Prepend $srdir/$subdir if missing.
+    if ![string match "*/*" $src] {
+	set src "$srcdir/$subdir/$src"
+    }
+
+    # Check for alternate driver.
+    if [file exists [file rootname $src].x] {
+	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
+	set done_p 0
+	catch "set done_p \[source [file rootname $src].x\]"
+	if { $done_p } {
+	    return
+	}
+    }
+   
+    # loop through all the options
+    set option_list $TORTURE_OPTIONS
+    foreach option $option_list {
+
+	# torture_compile_xfail is set by the .x script (if present)
+	if [info exists torture_compile_xfail] {
+	    setup_xfail $torture_compile_xfail
+	}
+
+	# torture_execute_before_compile is set by the .x script (if present)
+	if [info exists torture_eval_before_compile] {
+            set ignore_me [eval $torture_eval_before_compile]
+	}
+
+	go-torture-compile $src "$option $options"
+    }
+}
+
+#
+# add-ieee-options -- add options necessary for 100% ieee conformance.
+#
+proc add-ieee-options { } {
+    # Ensure that excess precision does not cause problems.
+    if { [istarget "i?86-*-*"]
+	 || [istarget "m68k-*-*"] } then {
+      uplevel 1 lappend additional_flags "-ffloat-store"
+    }
+
+    # Enable full IEEE compliance mode.
+    if { [istarget "alpha*-*-*"]
+         || [istarget "sh*-*-*"] } then {
+      uplevel 1 lappend additional_flags "-mieee"
+    }
+}

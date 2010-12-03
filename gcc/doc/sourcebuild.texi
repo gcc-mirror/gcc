@@ -81,6 +81,10 @@ The GCC runtime library.
 @item libgfortran
 The Fortran runtime library.
 
+@item libgo
+The Go runtime library.  The bulk of this library is mirrored from the
+@uref{http://code.google.com/@/p/@/go, master Go repository}.
+
 @item libgomp
 The GNU OpenMP runtime library.
 

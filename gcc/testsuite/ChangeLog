@@ -1,4 +1,11 @@
-2010-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+2010-12-02  Ian Lance Taylor  <iant@google.com>
+
+	* lib/go.exp: New file.
+	* lib/go-dg.exp: New file.
+	* lib/go-torture.exp: New file.
+	* lib/target-supports.exp (check_compile): Match // Go.
+
+2010-12-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr46685.c: New test.
 

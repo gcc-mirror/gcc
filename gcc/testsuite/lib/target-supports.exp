@@ -34,7 +34,8 @@
 # "// C++" for c++,
 # "! Fortran" for Fortran code,
 # "/* ObjC", for ObjC
-# and "// ObjC++" for ObjC++
+# "// ObjC++" for ObjC++
+# and "// Go" for Go
 # If the tool is ObjC/ObjC++ then we overide the extension to .m/.mm to 
 # allow for ObjC/ObjC++ specific flags.
 proc check_compile {basename type contents args} {
@@ -51,6 +52,7 @@ proc check_compile {basename type contents args} {
 	"*// C++*" { set src ${basename}[pid].cc }
 	"*// ObjC++*" { set src ${basename}[pid].mm }
 	"*/* ObjC*" { set src ${basename}[pid].m }
+	"*// Go*" { set src ${basename}[pid].go }
 	default {
 	    switch -- $tool {
 		"objc" { set src ${basename}[pid].m }

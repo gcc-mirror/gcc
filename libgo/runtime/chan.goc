@@ -1,0 +1,39 @@
+// Copyright 2010 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package runtime
+#include "config.h"
+#include "channel.h"
+
+typedef _Bool bool;
+typedef unsigned char byte;
+typedef struct __go_channel chan;
+
+/* Do a nonblocking channel receive.  */
+
+func chanrecv2(c *chan, val *byte) (pres bool) {
+	if (c->element_size > 8) {
+		return __go_receive_nonblocking_big(c, val);
+	} else {
+		struct __go_receive_nonblocking_small rs;
+		union {
+			char b[8];
+			uint64_t v;
+		} u;
+
+		rs = __go_receive_nonblocking_small (c);
+		if (!rs.__success) {
+			__builtin_memset(val, 0, c->element_size);
+			return 0;
+		}
+		u.v = rs.__val;
+#ifndef WORDS_BIGENDIAN
+		__builtin_memcpy(val, u.b, c->element_size);
+#else
+		__builtin_memcpy(val, u.b + 8 - c->element_size,
+				 c->element_size);
+#endif
+		return 1;
+	}
+}

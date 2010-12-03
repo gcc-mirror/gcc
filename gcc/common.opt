@@ -2272,6 +2272,10 @@ Driver
 static-libstdc++
 Driver
 
+static-libgo
+Driver
+; Documented for Go, but always accepted by driver.
+
 symbolic
 Driver
 

@@ -1,0 +1,666 @@
+#   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+#   Written by Ian Lance Taylor <iant@google.com>.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+
+# Test using the testsuite for the gc Go compiler.  In these tests the
+# first line is a shell script to run.  That line expects the
+# following environment variables to be set:
+#   A   The file extension of the object file and the name of the executable
+#   G   The name of the compiler
+#   L   The name of the linker
+#   F   The basename of the test
+#   D   The directory of the test.
+#
+# Typical command lines:
+# // $G $D/$F.go && $L $F.$A && ./$A.out
+# // $G $D/$F.go && $L $F.$A || echo BUG: known to fail incorrectly
+# // $G $D/$F.go && echo BUG: compilation succeeds incorrectly
+# // $G $D/$F.go || echo BUG: compilation should succeed
+
+load_lib go-dg.exp
+load_lib go-torture.exp
+
+# Implement errchk
+proc errchk { test } {
+    global dg-do-what-default
+    global DEFAULT_GOCFLAGS
+
+    set saved-dg-do-what-default ${dg-do-what-default}
+    set dg-do-what-default compile
+    set filename [file tail $test]
+    if { "$filename" == "$test" } {
+	set filename "errchk-$filename"
+    }
+    set fdin [open $test r]
+    fconfigure $fdin -encoding binary
+    set fdout [open $filename w]
+    fconfigure $fdout -encoding binary
+    while { [gets $fdin copy_line] >= 0 } {
+	regsub "// \(GCCGO_\)?ERROR \"\(\[^\"\]*\)\".*$" $copy_line "// \{ dg-error \"\\2\" \}" out_line
+	if [string match "*dg-error*.\**" $out_line] {
+	    # I worked out the right number of backslashes by
+	    # experimentation, not analysis.
+	    regsub -all "\\.\\*" $out_line "\\\\\[ -~\\\\\]*" out_line
+	}
+	if [string match "*dg-error*\{*" $out_line] {
+	    set index [string first "dg-error" $out_line]
+	    regsub -start $index -all "\{" $out_line "\\\\\[\\\{\\\\\]" out_line
+	}
+	if [string match "*dg-error*\}*\}" $out_line] {
+	    set index [string first "dg-error" $out_line]
+	    regsub -start $index -all "\}\(.\)" $out_line "\\\\\[\\\}\\\\\]\\1" out_line
+	}
+	if [string match "*dg-error*\[.\]*" $out_line] {
+	    set index [string first "dg-error" $out_line]
+	    regsub -all "\\\[\\.\\\]" $out_line "\\\\\[.\\\\\]" out_line
+	}
+	puts $fdout $out_line
+    }
+    close $fdin
+    close $fdout
+    go-dg-runtest $filename "-fno-show-column $DEFAULT_GOCFLAGS"
+    file delete $filename
+    set dg-do-what-default ${saved-dg-do-what-default}
+}
+
+# This is an execution test which should fail.
+proc go-execute-xfail { test } {
+    global DEFAULT_GOCFLAGS
+
+    set filename [file tail $test]
+    set fdin [open $test r]
+    set fdout [open $filename w]
+    puts $fdout "// { dg-do run { xfail *-*-* } }"
+    while { [gets $fdin copy_line] >= 0 } {
+	puts $fdout $copy_line
+    }
+    close $fdin
+    close $fdout
+    go-dg-runtest $filename "-w $DEFAULT_GOCFLAGS"
+    file delete $filename
+}
+
+proc go-gc-tests { } {
+    global srcdir subdir
+    global runtests
+    global GCC_UNDER_TEST
+    global TOOL_OPTIONS
+    global TORTURE_OPTIONS
+    global dg-do-what-default
+    global go_execute_args
+    global target_triplet
+
+    # If a testcase doesn't have special options, use these.
+    global DEFAULT_GOCFLAGS
+    if ![info exists DEFAULT_GOCFLAGS] {
+	set DEFAULT_GOCFLAGS " -pedantic-errors"
+    }
+
+    # Running all the torture options takes too long and, since the
+    # frontend ignores the standard options, it doesn't significantly
+    # improve testing.
+    set saved_torture_options $TORTURE_OPTIONS
+    set TORTURE_OPTIONS [ list { -O2 -g }]
+
+    set saved-dg-do-what-default ${dg-do-what-default}
+
+    set testdir [pwd]
+
+    set tests [lsort [find $srcdir/$subdir *.go]]
+    foreach test $tests {
+	if ![runtest_file_p $runtests $test] {
+	    continue
+	}
+
+	# Skip the files in bench and garbage; they are not tests.
+	if [string match "*go.test/test/bench/*" $test] {
+	    continue
+	}
+	if [string match "*go.test/test/garbage/*" $test] {
+	    continue
+	}
+
+	# Skip files in sub-subdirectories: they are components of
+	# other tests.
+	if [string match "*go.test/test/*/*/*" $test] {
+	    continue
+	}
+
+	set name [dg-trim-dirname $srcdir $test]
+
+	# Skip certain tests if target is RTEMS OS.
+	if [istarget "*-*-rtems*"] {
+	    if { [string match "*go.test/test/args.go" \
+		   $test] \
+		 || [string match "*go.test/test/env.go" \
+		   $test] } {
+		    untested "$name: uses the command-line or environment variables"
+		    continue
+	    }
+
+	    if { [string match "*go.test/test/stack.go" \
+		   $test] \
+		 || [string match "*go.test/test/peano.go" \
+		   $test] \
+		 || [string match "*go.test/test/chan/goroutines.go" \
+		   $test] } {
+		    untested "$name: has very high memory requirement"
+		    continue
+	    }
+	}
+
+	set fd [open $test r]
+
+	set lines_ok 1
+
+	while 1 {
+	    if { [gets $fd test_line] < 0 } {
+		close $fd
+		clone_output "$test: could not read first line"
+		unresolved $name
+		set lines_ok 0
+		break
+	    }
+
+	    if { [ string match "*nacl*exit 0*" $test_line ] \
+		     || [ string match "*exit 0*nacl*" $test_line ] \
+		     || [ string match "*Android*exit 0*" $test_line ] \
+		     || [ string match "*exit 0*Android*" $test_line ] } {
+		continue
+	    }
+
+	    break
+	}
+
+	if { $lines_ok == 0 } {
+	    continue
+	}
+
+	set lineno 1
+	set test_line1 $test_line
+
+	while { [eval "string match \"//*&&\" \${test_line$lineno}"] } {
+	    set lineno [expr $lineno + 1]
+	    if { [eval "gets \$fd test_line$lineno"] < 0 } {
+		close $fd
+		clone_output "$test: could not read line $lineno"
+		unresolved $name
+		set lines_ok 0
+		break
+	    }
+	}
+	if { $lines_ok == 0 } {
+	    continue
+	}
+
+	close $fd
+
+	set go_execute_args ""
+	if { [regexp ".*\\\$A.out (\[^|&>\].*)\$" $test_line match progargs] } {
+	    set go_execute_args $progargs
+	    verbose -log "$test: go_execute_args is $go_execute_args"
+	    set index [string last " $progargs" $test_line]
+	    set test_line [string replace $test_line $index end]
+	}
+
+	if { $test_line == "// \$G \$D/\$F\.go && \$L \$F\.\$A && \./\$A\.out >tmp.go &&" \
+	     && $test_line2 == "// \$G tmp\.go && \$L tmp\.\$A && \./\$A\.out || echo BUG: 64bit" } {
+	    # 64bit.go is a special case.
+	    set go_execute_args ""
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "link"
+	    dg-test -keep-output $test "-O" "-w $DEFAULT_GOCFLAGS"
+	    set output_file "./[file rootname [file tail $test]].exe"
+	    set base "[file rootname [file tail $test]]"
+	    if [isnative] {
+		if { [catch "exec $output_file >$base-out.go"] != 0 } {
+		    fail "$name execution"
+		} else {
+		    pass "$name execution"
+		    file delete $base-out.x
+		    go-torture-execute "./$base-out.go"
+		}
+		file delete $base-out.go
+	    }
+	    file delete $output_file
+	    set runtests $hold_runtests
+	} elseif { $test_line == "// \$G \$D/\$F.go && \$L \$F.\$A && ./\$A.out" \
+		   || $test_line == "// \$G \$F.go && \$L \$F.\$A && ./\$A.out" \
+		   || $test_line == "// \$G \$F.go && \$L \$F.\$A &&./\$A.out" \
+		   || $test_line == "// \$G \$D/\$F.go && \$L \$F.\$A && \$A.out" \
+		   || [string match \
+			   "// \$G \$D/\$F.go && \$L \$F.\$A && ./\$A.out || echo BUG*" \
+			   $test_line]
+		   || [string match \
+			   "// \$G \$F.go && \$L \$F.\$A && (./\$A.out || echo BUG*" \
+			   $test_line]
+		   || [string match \
+			   "// \$G \$D/\$F.go && \$L \$F.\$A && (./\$A.out || echo BUG*" \
+			   $test_line]
+		   || [string match \
+			   "// \$G \$F.go && \$L \$F.\$A && GOMAXPROCS=* ./\$A.out" \
+			   $test_line]
+		   || [string match \
+			   "// \$G \$D/\$F.go && \$L \$F.\$A && ./\$A.out >* || echo BUG*" \
+			   $test_line] } {
+	    # This is a vanilla execution test.
+	    go-torture-execute $test
+	    file delete core [glob -nocomplain core.*]
+	} elseif { [string match \
+			"// \$G \$D/\$F.go && \$L \$F.\$A || echo BUG*" \
+			$test_line] \
+		   || [string match "// \$G \$F.go && \$L \$F.\$A  #*" \
+			   $test_line] } {
+	    # This is a vanilla compile and link test.
+	    set dg-do-what-default "link"
+	    go-dg-runtest $test "-w $DEFAULT_GOCFLAGS"
+	} elseif { [string match "// \$G \$D/\$F.go" $test_line] \
+		   || [string match "// \$G \$D/\$F.go || echo BUG*" \
+			   $test_line] \
+		   || [string match "// \$G \$F.go || echo BUG*" \
+			   $test_line] \
+		   || [string match "// ! \$G \$D/\$F.go && echo BUG*" \
+			   $test_line] } {
+	    # This is a vanilla compile test.
+	    set dg-do-what-default "assemble"
+	    go-dg-runtest $test "-w $DEFAULT_GOCFLAGS"
+	} elseif { [string match "// \$G \$D/\$F.go && echo BUG*" \
+			$test_line] \
+		   || $test_line == "// ! \$G \$D/\$F.go >/dev/null" \
+		   || $test_line == "// ! \$G \$D/\$F.go" \
+		   || $test_line == "// ! \$G \$F.go" \
+	           || [string match "// ! \$G \$D/\$F.go || echo BUG*" \
+			$test_line] } {
+	    # This is a compile test which should fail.
+	    set dg-do-what-default "assemble"
+	    setup_xfail "*-*-*"
+	    go-dg-runtest $test "-w $DEFAULT_GOCFLAGS"
+	} elseif { [string match "// \$G \$D/\$F.go && \$L \$F.\$A && ! ./\$A.out" \
+			$test_line] \
+		   || [string match "// \$G \$D/\$F.go && \$L \$F.\$A && ! ./\$A.out || echo BUG: *" \
+			$test_line] \
+		   || [string match "// \$G \$D/\$F.go && \$L \$F.\$A && (! ./\$A.out || echo BUG: *" \
+			$test_line] \
+		   || ($test_line == "// \$G \$D/\$F.go && \$L \$F.\$A &&"
+		       && $test_line2 == "//	((! sh -c ./\$A.out) >/dev/null 2>&1 || echo BUG: should fail)") } {
+	    go-execute-xfail $test
+	} elseif { [string match "// errchk \$G \$F.go" $test_line] \
+		    || [string match "// errchk \$G -e \$F.go" $test_line] \
+		    || [string match "// errchk \$G \$D/\$F.go" $test_line] \
+		    || [string match "//errchk \$G \$D/\$F.go" $test_line] \
+		    || [string match "// errchk \$G -e \$D/\$F.go" \
+			    $test_line] \
+		    || [string match "// ! errchk \$G \$D/\$F.go" $test_line] \
+		    || [string match "// ! errchk \$G -e \$D/\$F.go" \
+			    $test_line] \
+		    || [string match "// errchk \$G \$F.go || true" \
+			    $test_line] \
+		    || [string match "// errchk \$G \$D/\$F.go || true" \
+			    $test_line] \
+		    || [string match "// errchk \$G -e \$D/\$F.go || true" \
+			    $test_line] \
+		    || [string match "// errchk \$G \$D/\$F.go || echo BUG*" \
+			    $test_line] } {
+	    errchk $test
+	} elseif { [string match \
+			"// \$G \$D/\$F.dir/bug0.go && \$G \$D/\$F.dir/bug1.go || echo BUG*" \
+			$test_line] } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    regsub "\\.go$" $test ".dir/bug0.go" file1
+	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
+	    regsub "\\.go$" $test ".dir/bug1.go" file2
+	    dg-test $file2 "-O" "-w $DEFAULT_GOCFLAGS"
+	    file delete "[file rootname [file tail $file1]].o"
+	    set runtests $hold_runtests
+	} elseif { [string match \
+			"// \$G \$D/\$F.dir/bug0.go && errchk \$G \$D/\$F.dir/bug1.go" \
+			$test_line] \
+		       || [string match \
+			       "// \$G \$D/\$F.dir/p1.go && \$G \$D/\$F.dir/p2.go" \
+			       $test_line] } {
+	    if { [string match \
+		      "// \$G \$D/\$F.dir/p1.go && \$G \$D/\$F.dir/p2.go" \
+		      $test_line] } {
+		set name1 "p1.go"
+		set name2 "p2.go"
+	    } else {
+		set name1 "bug0.go"
+		set name2 "bug1.go"
+	    }
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    regsub "\\.go$" $test ".dir/$name1" file1
+	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
+	    regsub "\\.go$" $test ".dir/$name2" file2
+	    errchk $file2
+	    file delete "[file rootname [file tail $file1]].o"
+	    set runtests $hold_runtests
+	} elseif { [string match \
+			"// \$G \$D/\$F.dir/bug0.go && (! \$G \$D/\$F.dir/bug1.go || echo BUG*" \
+			$test_line] } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    regsub "\\.go$" $test ".dir/bug0.go" file1
+	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
+	    regsub "\\.go$" $test ".dir/bug1.go" file2
+	    setup_xfail "*-*-*"
+	    dg-test $file2 "-O" "-w $DEFAULT_GOCFLAGS"
+	    file delete "[file rootname [file tail $file1]].o"
+	    set runtests $hold_runtests
+	} elseif { [string match \
+			"// \$G \$D/\$F.dir/bug0.go && \$G \$D/\$F.dir/bug1.go && (! \$G \$D/\$F.dir/bug2.go || echo BUG*" \
+			$test_line] } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    regsub "\\.go$" $test ".dir/bug0.go" file1
+	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
+	    regsub "\\.go$" $test ".dir/bug1.go" file2
+	    dg-test -keep-output $file2 "-O" "-w $DEFAULT_GOCFLAGS"
+	    regsub "\\.go$" $test ".dir/bug2.go" file3
+	    setup_xfail "*-*-*"
+	    dg-test $file3 "-O" "-w $DEFAULT_GOCFLAGS"
+	    file delete "[file rootname [file tail $file1]].o"
+	    file delete "[file rootname [file tail $file2]].o"
+	    set runtests $hold_runtests
+	} elseif { [string match \
+			"// \$G \$D/\$F.dir/bug0.go && \$G \$D/\$F.dir/bug1.go && errchk \$G \$D/\$F.dir/bug2.go" \
+			$test_line] } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    regsub "\\.go$" $test ".dir/bug0.go" file1
+	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
+	    regsub "\\.go$" $test ".dir/bug1.go" file2
+	    dg-test -keep-output $file2 "-O" "-w $DEFAULT_GOCFLAGS"
+	    regsub "\\.go$" $test ".dir/bug2.go" file3
+	    errchk $file3
+	    file delete "[file rootname [file tail $file1]].o"
+	    file delete "[file rootname [file tail $file2]].o"
+	    set runtests $hold_runtests
+	} elseif { [string match \
+			"// \$G \$D/bug160.dir/x.go && \$G \$D/bug160.dir/y.go && \$L y.\$A && ./\$A.out" \
+			$test_line] } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    regsub "\\.go$" $test ".dir/x.go" file1
+	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
+	    set ofile1 "[file rootname [file tail $file1]].o"
+	    regsub "\\.go$" $test ".dir/y.go" file2
+	    dg-test -keep-output $file2 "-O" "-w $DEFAULT_GOCFLAGS"
+	    set ofile2 "[file rootname [file tail $file2]].o"
+	    set dg-do-what-default "link"
+	    set output_file "./[file rootname [file tail $test]].exe"
+	    set comp_output [go_target_compile "$ofile1 $ofile2" \
+				 $output_file "executable" "$DEFAULT_GOCFLAGS"]
+	    set comp_output [go-dg-prune $target_triplet $comp_output]
+	    verbose -log $comp_output
+	    set result [go_load "$output_file" "" ""]
+	    set status [lindex $result 0]
+	    $status $name
+	    file delete $ofile1 $ofile2 $output_file
+	    set runtests $hold_runtests
+	} elseif { [string match \
+			"// \$G \$D/bug191.dir/a.go && \$G \$D/bug191.dir/b.go && \$G \$D/\$F.go && \$L \$F.\$A" \
+			$test_line] } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    regsub "\\.go$" $test ".dir/a.go" file1
+	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
+	    set ofile1 "[file rootname [file tail $file1]].o"
+	    regsub "\\.go$" $test ".dir/b.go" file2
+	    dg-test -keep-output $file2 "-O" "-w $DEFAULT_GOCFLAGS"
+	    set ofile2 "[file rootname [file tail $file2]].o"
+	    dg-test -keep-output "$test" "-O" "-w $DEFAULT_GOCFLAGS"
+	    set ofile3 "[file rootname [file tail $test]].o"
+	    set dg-do-what-default "link"
+	    set output_file "./[file rootname [file tail $test]].exe"
+	    set comp_output [go_target_compile "$ofile1 $ofile2 $ofile3" \
+				 $output_file "executable" "$DEFAULT_GOCFLAGS"]
+	    set comp_output [go-dg-prune $target_triplet $comp_output]
+	    if [string match "" $comp_output] {
+		pass $name
+	    } else {
+		verbose -log $comp_output
+		fail $name
+	    }
+	    file delete $ofile1 $ofile2 $ofile3 $output_file
+	    set runtests $hold_runtests
+	} elseif { [string match \
+			"// \$G \$D/embed0.go && \$G \$D/\$F.go && \$L \$F.\$A && ./\$A.out" \
+			$test_line ] } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    regsub "/\[^/\]*$" $test "/embed0.go" file1
+	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
+	    set ofile1 "[file rootname [file tail $file1]].o"
+	    dg-test -keep-output $test "-O" "-w $DEFAULT_GOCFLAGS"
+	    set ofile2 "[file rootname [file tail $test]].o"
+	    set output_file "./[file rootname [file tail $test]].exe"
+	    set comp_output [go_target_compile "$ofile1 $ofile2" \
+				 $output_file "executable" "$DEFAULT_GOCFLAGS"]
+	    set comp_output [go-dg-prune $target_triplet $comp_output]
+	    if [string match "" $comp_output] {
+		set result [go_load "$output_file" "" ""]
+		set status [lindex $result 0]
+		$status $name
+	    } else {
+		verbose -log $comp_output
+		fail $name
+	    }
+	    file delete $ofile1 $ofile2 $output_file
+	    set runtests $hold_runtests
+	} elseif { [string match \
+			"// \$G \$D/\$F.dir/chanbug.go && \$G -I. \$D/\$F.dir/chanbug2.go" \
+			$test_line] } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    regsub "\\.go$" $test ".dir/chanbug.go" file1
+	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
+	    regsub "\\.go$" $test ".dir/chanbug2.go" file2
+	    dg-test $file2 "-O" "-w $DEFAULT_GOCFLAGS"
+	    file delete "[file rootname [file tail $file1]].o"
+	    set runtests $hold_runtests
+	} elseif { [string match \
+			"// (! \$G \$D/\$F.go) | grep 'initialization loop' *" \
+			$test_line] } {
+	    set dg-do-what-default "assemble"
+	    setup_xfail "*-*-*"
+	    go-dg-runtest $test "-w $DEFAULT_GOCFLAGS"
+	} elseif { [string match \
+			"// \$G \$D/\$F.dir/x.go && errchk \$G \$D/\$F.dir/y.go" \
+			$test_line] } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    regsub "\\.go$" $test ".dir/x.go" file1
+	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
+	    regsub "\\.go$" $test ".dir/y.go" file2
+	    errchk $file2
+	    file delete "[file rootname [file tail $file1]].o"
+	    set runtests $hold_runtests
+	} elseif { [string match "// true*" $test_line] } {
+	    # Not a real test, just ignore.
+	} elseif { $test_line == "// \$G \$D/\$F.dir/bug0.go &&" \
+		       && $test_line2 == "// \$G \$D/\$F.dir/bug1.go &&" \
+		       && $test_line3 == "// \$G \$D/\$F.dir/bug2.go &&" \
+		       && $test_line4 == "// errchk \$G -e \$D/\$F.dir/bug3.go &&" \
+		       && $test_line5 == "// \$L bug2.\$A &&" \
+		       && [string match "// ./\$A.out || echo BUG*" $test_line6] } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    regsub "\\.go$" $test ".dir/bug0.go" file0
+	    dg-test -keep-output $file0 "-O -fgo-prefix=bug0" "-w $DEFAULT_GOCFLAGS"
+	    set ofile0 "[file rootname [file tail $file0]].o"
+	    regsub "\\.go$" $test ".dir/bug1.go" file1
+	    dg-test -keep-output $file1 "-O -fgo-prefix=bug1" "-w $DEFAULT_GOCFLAGS"
+	    set ofile1 "[file rootname [file tail $file1]].o"
+	    regsub "\\.go$" $test ".dir/bug2.go" file2
+	    dg-test -keep-output $file2 "-O" "-w $DEFAULT_GOCFLAGS"
+	    set ofile2 "[file rootname [file tail $file2]].o"
+	    regsub "\\.go$" $test ".dir/bug3.go" file3
+	    errchk $file3
+	    set output_file "./[file rootname [file tail $test]].exe"
+	    set comp_output [go_target_compile "$ofile0 $ofile1 $ofile2" \
+				 $output_file "executable" "$DEFAULT_GOCFLAGS"]
+	    set comp-output [go-dg-prune $target_triplet $comp_output]
+	    if [string match "" $comp_output] {
+		set result [go_load "$output_file" "" ""]
+		set status [lindex $result 0]
+		$status $name
+	    } else {
+		verbose -log $comp_output
+		fail $name
+	    }
+	    file delete $ofile0 $ofile1 $ofile2 $output_file
+	    set runtests $hold_runtests
+	} elseif { $test_line == "// \$G \$D/import2.go && \$G \$D/\$F\.go" } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    regsub "/\[^/\]*$" $test "/import2.go" file1
+	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
+	    set ofile1 "[file rootname [file tail $file1]].o"
+	    dg-test $test "-O" "-w $DEFAULT_GOCFLAGS"
+	    file delete $ofile1
+	    set runtests $hold_runtests
+	} elseif { $test_line == "// \$G \$D/ddd2.go && \$G \$D/\$F.go && \$L \$F.\$A && ./\$A.out" } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    regsub "/\[^/\]*$" $test "/ddd2.go" file1
+	    dg-test -keep-output $file1 "-O" "-w $DEFAULT_GOCFLAGS"
+	    set ofile1 "[file rootname [file tail $file1]].o"
+	    dg-test -keep-output $test "-O" "-w $DEFAULT_GOCFLAGS"
+	    set ofile2 "[file rootname [file tail $test]].o"
+	    set output_file "./[file rootname [file tail $test]].exe"
+	    set comp_output [go_target_compile "$ofile1 $ofile2" \
+				 $output_file "executable" "$DEFAULT_GOCFLAGS"]
+	    set comp_output [go-dg-prune $target_triplet $comp_output]
+	    if [string match "" $comp_output] {
+		set result [go_load "$output_file" "" ""]
+		set status [lindex $result 0]
+		$status $name
+	    } else {
+		verbose -log $comp_output
+		fail $name
+	    }
+	    file delete $ofile1 $ofile2 $output_file
+	    set runtests $hold_runtests
+	} elseif { $test_line == "// \$G \$D/\$F.go \$D/cmplxdivide1.go && \$L \$D/\$F.\$A && ./\$A.out" } {
+	    regsub "/\[^/\]*$" $test "/cmplxdivide1.go" test2
+	    set output_file "./[file rootname [file tail $test]].o"
+	    set comp_output [go_target_compile "$test $test2" \
+			     $output_file "executable" "$DEFAULT_GOCFLAGS"]
+	    set comp_output [go-dg-prune $target_triplet $comp_output]
+	    if [string match "" $comp_output] {
+		set result [go_load "$output_file" "" ""]
+		set status [lindex $result 0]
+		$status $name
+	    } else {
+		verbose -log $comp_output
+		fail $name
+	    }
+	    file delete $output_file
+	} elseif { $test_line == "// \$G \$D/\$F.go && \$L \$F.\$A &&" \
+		       && $test_line2 == "// ./\$A.out -pass 0 >tmp.go && \$G tmp.go && \$L -o tmp1.\$A tmp.\$A && ./tmp1.\$A &&" \
+		       && $test_line3 == "// ./\$A.out -pass 1 >tmp.go && errchk \$G -e tmp.go &&" \
+		       && $test_line4 == "// ./\$A.out -pass 2 >tmp.go && errchk \$G -e tmp.go" } {
+	    set go_execute_args ""
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "link"
+	    dg-test -keep-output $test "-O" "-w $DEFAULT_GOCFLAGS"
+	    set output_file "./[file rootname [file tail $test]].exe"
+	    if [isnative] {
+		if { [catch "exec $output_file -pass 0 >tmp.go"] != 0 } {
+		    fail "$name execution 0"
+		} else {
+		    pass "$name execution 0"
+		    file delete tmp.x
+		    go-torture-execute "./tmp.go"
+		}
+		if { [catch "exec $output_file -pass 1 >tmp.go"] != 0 } {
+		    fail "$name execution 1"
+		} else {
+		    pass "$name execution 1"
+		    errchk tmp.go
+		}
+		if { [catch "exec $output_file -pass 2 >tmp.go"] != 0 } {
+		    fail "$name execution 2"
+		} else {
+		    pass "$name execution 2"
+		    errchk tmp.go
+		}
+		file delete tmp.go
+	    }
+	    file delete $output_file
+	    set runtests $hold_runtests
+	} elseif { $test_line == "// \$G \$D/\$F.go && \$L \$F.\$A && ./\$A.out >tmp.go &&" \
+			&& $test_line2 == "// errchk \$G -e tmp.go" } {
+	    set go_execute_args ""
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "link"
+	    dg-test -keep-output $test "-O" "-w $DEFAULT_GOCFLAGS"
+	    set output_file "./[file rootname [file tail $test]].exe"
+	    if [isnative] {
+		if { [catch "exec $output_file >tmp.go"] != 0 } {
+		    fail "$name execution"
+		} else {
+		    pass "$name execution"
+		    file delete tmp.x
+		    errchk tmp.go
+		}
+	    }
+	    file delete $output_file
+	    set runtests $hold_runtests
+	} elseif { $test_line == "// # generated by cmplxdivide.c" } {
+	    # Ignore.
+	} elseif { $test_line == "// \$G \$D/bug302.dir/p.go && gopack grc pp.a p.\$A && \$G \$D/bug302.dir/main.go" \
+		   || $test_line == "// \$G \$D/empty.go && errchk \$G \$D/\$F.go" } {
+	    # These tests import the same package under two different
+	    # names, which gccgo does not support.
+	} elseif { $test_line == "// \$G -S \$D/\$F.go | egrep initdone >/dev/null && echo FAIL || true" } {
+	    # This tests whether initializers are written out
+	    # statically.  gccgo does not provide a way to test that,
+	    # as an initializer will be generated for any code which
+	    # has global variables which need to be registered as GC
+	    # roots.
+	} else {
+	    clone_output "$name: unrecognized test line: $test_line"
+	    unsupported $name
+	}
+
+	set go_execute_args ""
+    }
+
+    set dg-do-what-default ${saved-dg-do-what-default}
+    set TORTURE_OPTIONS $saved_torture_options
+}
+
+go-gc-tests

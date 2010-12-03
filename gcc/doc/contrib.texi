@@ -900,8 +900,8 @@ Jeff Sturm for Java porting help, bug fixes, and encouragement.
 Shigeya Suzuki for this fixes for the bsdi platforms.
 
 @item
-Ian Lance Taylor for his mips16 work, general configury hacking,
-fixincludes, etc.
+Ian Lance Taylor for the Go frontend, the initial mips16 and mips64
+support, general configury hacking, fixincludes, etc.
 
 @item
 Holger Teutsch provided the support for the Clipper CPU@.

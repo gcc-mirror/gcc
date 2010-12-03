@@ -1,3 +1,19 @@
+2010-12-02  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.c (default_compilers): Add entry for ".go".
+	* common.opt: Add -static-libgo as a driver option.
+	* doc/install.texi (Configuration): Mention libgo as an option for
+	--enable-shared.  Mention go as an option for --enable-languages.
+	* doc/invoke.texi (Overall Options): Mention .go as a file name
+	suffix.  Mention go as a -x option.
+	* doc/frontends.texi (G++ and GCC): Mention Go as a supported
+	language.
+	* doc/sourcebuild.texi (Top Level): Mention libgo.
+	* doc/standards.texi (Standards): Add section on Go language.
+	Move references for other languages into their own section.
+	* doc/contrib.texi (Contributors): Mention that I contributed the
+	Go frontend.
+
 2010-12-03  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* tree.h (struct call_expr_arg_iterator_d): Remove GTY tag.

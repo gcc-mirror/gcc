@@ -1,0 +1,57 @@
+// Copyright 2009, 2010 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package runtime
+#include "runtime.h"
+#define charntorune(pv, str, len) __go_get_rune(str, len, pv)
+
+enum
+{
+	Runeself	= 0x80,
+};
+
+func stringiter(s String, k int32) (retk int32) {
+	int32 l, n;
+
+	if(k >= s.__length) {
+		// retk=0 is end of iteration
+		retk = 0;
+		goto out;
+	}
+
+	l = s.__data[k];
+	if(l < Runeself) {
+		retk = k+1;
+		goto out;
+	}
+
+	// multi-char rune
+	n = charntorune(&l, s.__data+k, s.__length-k);
+	retk = k + (n ? n : 1);
+
+out:
+}
+
+func stringiter2(s String, k int32) (retk int32, retv int32) {
+	int32 n;
+
+	if(k >= s.__length) {
+		// retk=0 is end of iteration
+		retk = 0;
+		retv = 0;
+		goto out;
+	}
+
+	retv = s.__data[k];
+	if(retv < Runeself) {
+		retk = k+1;
+		goto out;
+	}
+
+	// multi-char rune
+	n = charntorune(&retv, s.__data+k, s.__length-k);
+	retk = k + (n ? n : 1);
+
+out:
+}
