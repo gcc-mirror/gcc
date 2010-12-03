@@ -1,0 +1,7 @@
+2010-12-03  Ian Lance Taylor  <iant@google.com>
+
+	* config-lang.in (build_by_default): Set to no.
+
+2010-12-02  Ian Lance Taylor  <iant@google.com>
+
+	Go frontend added to gcc repository.
