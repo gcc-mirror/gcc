@@ -1,4 +1,4 @@
-2010-12-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2010-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159
 	* gfortran.dg/dependency_38.f90:  New test.
