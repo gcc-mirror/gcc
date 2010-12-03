@@ -1,3 +1,10 @@
+2010-12-03  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/arm/arm.c (arm_legitimate_index_p): Split
+	VALID_NEON_QREG_MODE and VALID_NEON_DREG_MODE cases.  Permit
+	slightly larger constants in the latter case.
+	(thumb2_legitimate_index_p): Likewise.
+
 2010-12-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (N, Q, Qn, Qy, Z, n, r, s, t): New options.
