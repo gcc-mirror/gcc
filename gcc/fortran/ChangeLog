@@ -1,5 +1,11 @@
 2010-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/44352
+	* dump-parse-tree.c (show_symbol):  Don't show formal namespace
+	for statement functions in order to avoid infinite recursion.
+
+2010-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/45159
 	* dependency.c (check_section_vs_section):  Pre-calculate
 	the relationship between the strides and the relationship
