@@ -1,3 +1,12 @@
+2010-12-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/45693
+	* configure.host (osf*): Set os_include_dir to os/generic.
+	Add -lpthread to OPT_LDFLAGS.
+
 2010-11-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/45999
