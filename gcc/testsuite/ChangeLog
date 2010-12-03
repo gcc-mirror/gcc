@@ -1,3 +1,8 @@
+2010-12-03  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/45354
+	* gcc.dg/tree-prof/pr45354.c: New.
+
 2010-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159
