@@ -1,4 +1,4 @@
-2010-12-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2010-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159
 	* dependency.c (check_section_vs_section):  Pre-calculate
@@ -10,7 +10,7 @@
 	and vice versa for negative stride.  No need to compare
 	end expressions in either case (assume no bounds violation).
 
-2010-12-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2010-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* trans-array.c (gfc_could_be_alias):  Handle BT_CLASS
 	as well as BT_DERIVED.
