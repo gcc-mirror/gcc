@@ -935,6 +935,7 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
   tree gfc_int4_type_node;
   int kind;
   int ikind;
+  int res_ikind_1, res_ikind_2;
   gfc_se lse;
   gfc_se rse;
   tree fndecl;
@@ -955,6 +956,13 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 
   gfc_int4_type_node = gfc_get_int_type (4);
 
+  /* In case of integer operands with kinds 1 or 2, we call the integer kind 4
+     library routine.  But in the end, we have to convert the result back
+     if this case applies -- with res_ikind_K, we keep track whether operand K
+     falls into this case.  */
+  res_ikind_1 = -1;
+  res_ikind_2 = -1;
+
   kind = expr->value.op.op1->ts.kind;
   switch (expr->value.op.op2->ts.type)
     {
@@ -965,6 +973,7 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 	case 1:
 	case 2:
 	  rse.expr = convert (gfc_int4_type_node, rse.expr);
+	  res_ikind_2 = ikind;
 	  /* Fall through.  */
 
 	case 4:
@@ -987,7 +996,10 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 	case 1:
 	case 2:
 	  if (expr->value.op.op1->ts.type == BT_INTEGER)
-	    lse.expr = convert (gfc_int4_type_node, lse.expr);
+	    {
+	      lse.expr = convert (gfc_int4_type_node, lse.expr);
+	      res_ikind_1 = kind;
+	    }
 	  else
 	    gcc_unreachable ();
 	  /* Fall through.  */
@@ -1099,6 +1111,15 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 
   se->expr = build_call_expr_loc (input_location,
 			      fndecl, 2, lse.expr, rse.expr);
+
+  /* Convert the result back if it is of wrong integer kind.  */
+  if (res_ikind_1 != -1 && res_ikind_2 != -1)
+    {
+      /* We want the maximum of both operand kinds as result.  */
+      if (res_ikind_1 < res_ikind_2)
+	res_ikind_1 = res_ikind_2;
+      se->expr = convert (gfc_get_int_type (res_ikind_1), se->expr);
+    }
 }
 
 
