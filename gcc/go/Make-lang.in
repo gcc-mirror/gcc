@@ -48,6 +48,7 @@ GO_OBJS = \
 	go/dataflow.o \
 	go/export.o \
 	go/expressions.o \
+	go/go-backend.o \
 	go/go-dump.o \
 	go/go-lang.o \
 	go/go.o \
@@ -215,10 +216,12 @@ GO_STATEMENTS_H = go/gofrontend/statements.h go/gofrontend/operator.h
 GO_EXPRESSIONS_H = go/gofrontend/expressions.h go/gofrontend/operator.h
 GO_IMPORT_H = go/gofrontend/import.h go/gofrontend/export.h
 
-go/go-lang.o: go/go-lang.c $(GO_SYSTEM_H) coretypes.h opts.h $(TREE_H) \
-	$(GIMPLE_H) $(GGC_H) $(TOPLEV_H) debug.h options.h $(FLAGS_H) \
-	convert.h langhooks.h $(LANGHOOKS_DEF_H) $(EXCEPT_H) $(TARGET_H) \
-	$(DIAGNOSTIC_H) $(GO_C_H) gt-go-go-lang.h gtype-go.h
+go/go-backend.o: go/go-backend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+	$(TREE_H) $(TM_H) $(TM_P_H)
+go/go-lang.o: go/go-lang.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(OPTS_H) \
+	$(TREE_H) $(GIMPLE_H) $(GGC_H) $(TOPLEV_H) debug.h options.h \
+	$(FLAGS_H) convert.h $(DIAGNOSTIC_H) langhooks.h $(LANGHOOKS_DEF_H) \
+	$(EXCEPT_H) $(TARGET_H) $(GO_C_H) gt-go-go-lang.h gtype-go.h
 
 GOINCLUDES = -I $(srcdir)/go -I $(srcdir)/go/gofrontend
 
@@ -232,14 +235,14 @@ go/export.o: go/gofrontend/export.cc $(GO_SYSTEM_H) \
 	$(GO_GOGO_H) $(GO_TYPES_H) $(GO_STATEMENTS_H) go/gofrontend/export.h
 go/expressions.o: go/gofrontend/expressions.cc $(GO_SYSTEM_H) $(TOPLEV_H) \
 	intl.h $(TREE_H) $(GIMPLE_H) tree-iterator.h convert.h $(REAL_H) \
-	realmpfr.h $(TM_H) $(TM_P_H) $(GO_C_H) $(GO_GOGO_H) $(GO_TYPES_H) \
+	realmpfr.h $(GO_C_H) $(GO_GOGO_H) $(GO_TYPES_H) \
 	go/gofrontend/export.h $(GO_IMPORT_H) $(GO_STATEMENTS_H) $(GO_LEX_H) \
 	$(GO_EXPRESSIONS_H)
 go/go.o: go/gofrontend/go.cc $(GO_SYSTEM_H) $(GO_C_H) $(GO_LEX_H) \
 	$(GO_PARSE_H) $(GO_GOGO_H)
 go/go-dump.o: go/gofrontend/go-dump.cc $(GO_SYSTEM_H) $(GO_C_H) \
 	go/gofrontend/go-dump.h
-go/gogo-tree.o: go/gofrontend/gogo-tree.cc $(GO_SYSTEM_H) $(TM_H) $(TOPLEV_H) \
+go/gogo-tree.o: go/gofrontend/gogo-tree.cc $(GO_SYSTEM_H) $(TOPLEV_H) \
 	$(TREE_H) $(GIMPLE_H) tree-iterator.h $(CGRAPH_H) langhooks.h \
 	convert.h output.h $(DIAGNOSTIC_H) $(RTL_H) $(GO_TYPES_H) \
 	$(GO_EXPRESSIONS_H) $(GO_STATEMENTS_H) $(GO_GOGO_H)

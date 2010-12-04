@@ -1,5 +1,17 @@
 2010-12-03  Ian Lance Taylor  <iant@google.com>
 
+	PR bootstrap/46776
+	* go-backend.c: New file.
+	* go-c.h (go_type_alignment): Declare.
+	(go_field_alignment, go_trampoline_info): Declare.
+	* Make-lang.in (GO_OBJS): Add go/go-backend.o.
+	(go/go-backend.o): New target.
+	(go/go-lang.o): Make dependencies match source file.
+	(go/expressions.o): Don't depend on $(TM_H) $(TM_P_H).
+	(go/gogo-tree.o): Don't depend on $(TM_H).
+
+2010-12-03  Ian Lance Taylor  <iant@google.com>
+
 	* config-lang.in (build_by_default): Set to no.
 
 2010-12-02  Ian Lance Taylor  <iant@google.com>

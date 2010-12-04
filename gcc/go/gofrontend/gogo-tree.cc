@@ -13,7 +13,6 @@ extern "C"
 {
 #endif
 
-#include "tm.h"
 #include "toplev.h"
 #include "tree.h"
 #include "gimple.h"
@@ -3048,8 +3047,9 @@ Gogo::trampoline_type_tree()
   static tree type_tree;
   if (type_tree == NULL_TREE)
     {
-      unsigned int align = TRAMPOLINE_ALIGNMENT;
-      unsigned int size = TRAMPOLINE_SIZE;
+      unsigned int size;
+      unsigned int align;
+      go_trampoline_info(&size, &align);
       tree t = build_index_type(build_int_cst(integer_type_node, size - 1));
       t = build_array_type(char_type_node, t);
 
