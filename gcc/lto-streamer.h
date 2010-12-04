@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "vecprim.h"
 #include "alloc-pool.h"
+#include "gcov-io.h"
 
 /* Define when debugging the LTO streamer.  This causes the writer
    to output the numeric value for the memory address of the tree node
@@ -610,6 +611,8 @@ struct GTY(()) lto_file_decl_data
 
   /* Symbol resolutions for this file */
   VEC(ld_plugin_symbol_resolution_t,heap) * GTY((skip)) resolutions;
+
+  struct gcov_ctr_summary GTY((skip)) profile_info;
 };
 
 typedef struct lto_file_decl_data *lto_file_decl_data_ptr;
