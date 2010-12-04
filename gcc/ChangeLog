@@ -1,3 +1,24 @@
+2010-12-03  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/46760
+	* cgraph.c (cgraph_create_node): Initialize count_materialization_scale.
+	* cgraph.h (struct cgraph_node): Add count_materialization_scale.
+	* lto-cgraph.c (lto_output_edge): Fix assert.
+	(lto_output_node): Output count_materialization_scale.
+	(output_profile_summary): Output only runs and sum_max.
+	(input_node): Input count_materialization_scale.
+	(input_profile_summary): Read data into file specific gcov summary.
+	(merge_profile_summaries): New function.
+	(input_cgraph): Update call of input_profile_summary;
+	call merge_profile_summaries.
+	* lto-streamer-in.c (input_cfg): Add count_materialization_scale arg;
+	rescale counts at read in.
+	(intput_bb): Likewise.
+	(input_function): Update call of input_bb.
+	(lto_read_body): Update call of input_cfg.
+	* lto-streamer.h: Inlclude gcov-io.h
+	(lto_file_decl_data): Add gcov_ctr_summary.
+
 2010-12-03  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* doc/tm.texi.in (Cond. Exec. Macros): Rename node from this ...

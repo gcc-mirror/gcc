@@ -478,6 +478,7 @@ cgraph_create_node (void)
   node->previous = NULL;
   node->global.estimated_growth = INT_MIN;
   node->frequency = NODE_FREQUENCY_NORMAL;
+  node->count_materialization_scale = REG_BR_PROB_BASE;
   ipa_empty_ref_list (&node->ref_list);
   cgraph_nodes = node;
   cgraph_n_nodes++;

@@ -233,6 +233,9 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
 
   /* Expected number of executions: calculated in profile.c.  */
   gcov_type count;
+  /* How to scale counts at materialization time; used to merge
+     LTO units with different number of profile runs.  */
+  int count_materialization_scale;
   /* Unique id of the node.  */
   int uid;
   /* Ordering of all cgraph nodes.  */
