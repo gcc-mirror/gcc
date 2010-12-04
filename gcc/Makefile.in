@@ -975,7 +975,8 @@ IRA_INT_H = ira.h ira-int.h $(CFGLOOP_H) alloc-pool.h
 DBGCNT_H = dbgcnt.h dbgcnt.def
 EBITMAP_H = ebitmap.h sbitmap.h
 LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
-		$(CGRAPH_H) $(VEC_H) vecprim.h $(TREE_H) $(GIMPLE_H)
+		$(CGRAPH_H) $(VEC_H) vecprim.h $(TREE_H) $(GIMPLE_H) \
+		$(GCOV_IO_H)
 TREE_VECTORIZER_H = tree-vectorizer.h $(TREE_DATA_REF_H)
 IPA_PROP_H = ipa-prop.h $(TREE_H) $(VEC_H) $(CGRAPH_H) $(GIMPLE_H)
 GSTAB_H = gstab.h stab.def
