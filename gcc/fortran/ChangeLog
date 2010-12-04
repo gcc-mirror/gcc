@@ -1,3 +1,9 @@
+2010-12-04  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/46794
+	* trans-expr.c (gfc_conv_power_op): Handle kind of result expression
+	correctly for integer kind 1 and 2 operands.
+
 2010-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/44352
