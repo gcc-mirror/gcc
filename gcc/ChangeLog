@@ -1,5 +1,10 @@
 2010-12-03  Jan Hubicka  <jh@suse.cz>
 
+	* dwarf2asm.c (dw2_output_indirect_constant_1): Set DECL_ASSEMBLER_NAME
+	to prevent mangling with lto frontend.
+
+2010-12-03  Jan Hubicka  <jh@suse.cz>
+
 	* Makefile.in (LTO_STREAMER_H): Add GCOV_IO_H.
 	* lto-cgraph.c (merge_profile_summaries): Fix thinko.
 
