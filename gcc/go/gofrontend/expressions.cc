@@ -21,8 +21,6 @@ extern "C"
 #include "convert.h"
 #include "real.h"
 #include "realmpfr.h"
-#include "tm.h"
-#include "tm_p.h"
 
 #ifndef ENABLE_BUILD_WITH_CXX
 }
@@ -6737,25 +6735,14 @@ Builtin_call_expression::do_integer_constant_value(bool iota_is_constant,
 	}
       else if (this->code_ == BUILTIN_ALIGNOF)
 	{
-	  val_long = TYPE_ALIGN(arg_type_tree);
-	  if (arg->field_reference_expression() != NULL)
+	  if (arg->field_reference_expression() == NULL)
+	    val_long = go_type_alignment(arg_type_tree);
+	  else
 	    {
 	      // Calling unsafe.Alignof(s.f) returns the alignment of
 	      // the type of f when it is used as a field in a struct.
-#ifdef BIGGEST_FIELD_ALIGNMENT
-	      if (val_long > BIGGEST_FIELD_ALIGNMENT)
-		val_long = BIGGEST_FIELD_ALIGNMENT;
-#endif
-#ifdef ADJUST_FIELD_ALIGN
-	      // A separate declaration avoids a warning promoted to
-	      // an error if ADJUST_FIELD_ALIGN ignores FIELD.
-	      tree field;
-	      field = build_decl(UNKNOWN_LOCATION, FIELD_DECL, NULL,
-				      arg_type_tree);
-	      val_long = ADJUST_FIELD_ALIGN(field, val_long);
-#endif
+	      val_long = go_field_alignment(arg_type_tree);
 	    }
-	  val_long /= BITS_PER_UNIT;
 	}
       else
 	gcc_unreachable();
@@ -12033,26 +12020,11 @@ Type_info_expression::do_get_tree(Translate_context* context)
 			    TYPE_SIZE_UNIT(type_tree));
   else
     {
-      unsigned HOST_WIDE_INT val;
+      unsigned int val;
       if (this->type_info_ == TYPE_INFO_ALIGNMENT)
-	val = TYPE_ALIGN_UNIT(type_tree);
+	val = go_type_alignment(type_tree);
       else
-	{
-	  gcc_assert(this->type_info_ == TYPE_INFO_FIELD_ALIGNMENT);
-	  val = TYPE_ALIGN(type_tree);
-#ifdef BIGGEST_FIELD_ALIGMENT
-	  if (val > BIGGEST_FIELD_ALIGNMENT)
-	    val = BIGGEST_FIELD_ALIGNMENT;
-#endif
-#ifdef ADJUST_FIELD_ALIGN
-	  {
-	    tree f = build_decl(UNKNOWN_LOCATION, FIELD_DECL, NULL, type_tree);
-	    val = ADJUST_FIELD_ALIGN(f, val);
-	  }
-#endif
-	  val /= BITS_PER_UNIT;
-	}
-
+	val = go_field_alignment(type_tree);
       return build_int_cstu(val_type_tree, val);
     }
 }

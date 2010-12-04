@@ -59,6 +59,12 @@ extern void go_preserve_from_gc (tree);
 
 extern const char *go_localize_identifier (const char*);
 
+extern unsigned int go_type_alignment (tree);
+
+extern unsigned int go_field_alignment (tree);
+
+extern void go_trampoline_info (unsigned int *size, unsigned int *alignment);
+
 #if defined(__cplusplus) && !defined(ENABLE_BUILD_WITH_CXX)
 } /* End extern "C".  */
 #endif
