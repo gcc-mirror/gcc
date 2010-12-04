@@ -656,23 +656,27 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{ }
     };
 
+  template<typename _Lock>
+    unique_lock<_Lock>
+    __try_to_lock(_Lock& __l)
+    { return unique_lock<_Lock>(__l, try_to_lock); }
+
   template<int _Idx, bool _Continue = true>
     struct __try_lock_impl
     {
       template<typename... _Lock>
-	static int
-	__do_try_lock(tuple<_Lock&...>& __locks)
+	static void
+	__do_try_lock(tuple<_Lock&...>& __locks, int& __idx)
 	{
-	  if(std::get<_Idx>(__locks).try_lock())
-	    {
-	      return __try_lock_impl<_Idx + 1,
-		_Idx + 2 < sizeof...(_Lock)>::__do_try_lock(__locks);
-	    }
-	  else
-	    {
-	      __unlock_impl<_Idx>::__do_unlock(__locks);
-	      return _Idx;
-	    }
+          __idx = _Idx;
+          auto __lock = __try_to_lock(std::get<_Idx>(__locks));
+          if (__lock.owns_lock())
+            {
+              __try_lock_impl<_Idx + 1, _Idx + 2 < sizeof...(_Lock)>::
+                __do_try_lock(__locks, __idx);
+              if (__idx == -1)
+                __lock.release();
+            }
 	}
     };
 
@@ -680,16 +684,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     struct __try_lock_impl<_Idx, false>
     {
       template<typename... _Lock>
-	static int
-	__do_try_lock(tuple<_Lock&...>& __locks)
+	static void
+	__do_try_lock(tuple<_Lock&...>& __locks, int& __idx)
 	{
-	  if(std::get<_Idx>(__locks).try_lock())
-	    return -1;
-	  else
-	    {
-	      __unlock_impl<_Idx>::__do_unlock(__locks);
-	      return _Idx;
-	    }
+          __idx = _Idx;
+          auto __lock = __try_to_lock(std::get<_Idx>(__locks));
+          if (__lock.owns_lock())
+            {
+              __idx = -1;
+              __lock.release();
+            }
 	}
     };
 
@@ -707,14 +711,43 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     int
     try_lock(_Lock1& __l1, _Lock2& __l2, _Lock3&... __l3)
     {
-      tuple<_Lock1&, _Lock2&, _Lock3&...> __locks(__l1, __l2, __l3...);
-      return __try_lock_impl<0>::__do_try_lock(__locks);
+      int __idx;
+      auto __locks = std::tie(__l1, __l2, __l3...);
+      __try
+      { __try_lock_impl<0>::__do_try_lock(__locks, __idx); }
+      __catch(...)
+      { }
+      return __idx;
     }
 
-  /// lock
+  /** @brief Generic lock.
+   *  @param __l1 Meets Mutex requirements (try_lock() may throw).
+   *  @param __l2 Meets Mutex requirements (try_lock() may throw).
+   *  @param __l3 Meets Mutex requirements (try_lock() may throw).
+   *  @throw An exception thrown by an argument's lock() or try_lock() member.
+   *  @post All arguments are locked.
+   *
+   *  All arguments are locked via a sequence of calls to lock(), try_lock()
+   *  and unlock().  If the call exits via an exception any locks that were
+   *  obtained will be released.
+   */
   template<typename _L1, typename _L2, typename ..._L3>
     void
-    lock(_L1&, _L2&, _L3&...);
+    lock(_L1& __l1, _L2& __l2, _L3&... __l3)
+    {
+      while (true)
+        {
+          unique_lock<_L1> __first(__l1);
+          int __idx;
+          auto __locks = std::tie(__l2, __l3...);
+          __try_lock_impl<0, sizeof...(_L3)>::__do_try_lock(__locks, __idx);
+          if (__idx == -1)
+            {
+              __first.release();
+              return;
+            }
+        }
+    }
 
   /// once_flag
   struct once_flag

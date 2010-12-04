@@ -5,7 +5,7 @@
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,84 +27,64 @@
 #include <system_error>
 #include <testsuite_hooks.h>
 
-typedef std::unique_lock<std::mutex> lock_type;
-
-void test01()
+struct user_lock
 {
-  bool test __attribute__((unused)) = true;
+  user_lock() : is_locked(false) { }
+  ~user_lock() = default;
+  user_lock(const user_lock&) = default;
 
-  try
-    {
-      std::mutex m1, m2, m3;
-      lock_type l1(m1);
-      int result = std::try_lock(m1, m2, m3);
-      VERIFY( result == 0 );
-      VERIFY( l1.owns_lock() );
-      lock_type l2(m2);
-      lock_type l3(m3);
-    }
-  catch (const std::system_error& e)
-    {
-      VERIFY( false );
-    }
-  catch (...)
-    {
-      VERIFY( false );
-    }
-}
+  void lock()
+  {
+    bool test __attribute__((unused)) = true;
+    VERIFY( !is_locked );
+    is_locked = true;
+  }
 
-void test02()
-{
-  bool test __attribute__((unused)) = true;
+  bool try_lock() 
+  { return is_locked ? false : (is_locked = true); }
 
-  try
-    {
-      std::mutex m1, m2, m3;
-      lock_type l2(m2);
-      int result = std::try_lock(m1, m2, m3);
-      VERIFY( result == 1 );
-      VERIFY( l2.owns_lock() );
-      lock_type l1(m1);
-      lock_type l3(m3);
-    }
-  catch (const std::system_error& e)
-    {
-      VERIFY( false );
-    }
-  catch (...)
-    {
-      VERIFY( false );
-    }
-}
+  void unlock()
+  {
+    bool test __attribute__((unused)) = true;
+    VERIFY( is_locked );
+    is_locked = false;
+  }
 
-void test03()
-{
-  bool test __attribute__((unused)) = true;
-
-  try
-    {
-      std::mutex m1, m2, m3;
-      lock_type l3(m3);
-      int result = std::try_lock(m1, m2, m3);
-      VERIFY( result == 2 );
-      VERIFY( l3.owns_lock() );
-      lock_type l1(m1);
-      lock_type l2(m2);
-    }
-  catch (const std::system_error& e)
-    {
-      VERIFY( false );
-    }
-  catch (...)
-    {
-      VERIFY( false );
-    }
-}
+private:
+  bool is_locked;
+};
 
 int main()
 {
-  test01();
-  test02();
-  test03();
+  bool test __attribute__((unused)) = true;
+
+  try
+    {
+      std::mutex m1;
+      std::recursive_mutex m2;
+      user_lock m3;
+
+      try
+	{
+	  //heterogeneous types
+	  std::lock(m1, m2, m3);
+	  m1.unlock();
+	  m2.unlock();
+	  m3.unlock();
+	}
+      catch (const std::system_error& e)
+	{
+	  VERIFY( false );
+	}
+    }
+  catch (const std::system_error& e)
+    {
+      VERIFY( false );
+    }
+  catch (...)
+    {
+      VERIFY( false );
+    }
+
   return 0;
 }
