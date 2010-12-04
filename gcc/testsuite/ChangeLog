@@ -1,3 +1,10 @@
+2010-12-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46584
+	* gfortran.dg/quad_1.f90: Remove some complex
+	math checks as they fail on some non-libquadmath
+	systems.
+
 2010-12-04  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/46794
