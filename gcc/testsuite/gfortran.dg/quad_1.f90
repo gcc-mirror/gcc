@@ -27,9 +27,11 @@ program test_qp
 
    print *, z
    print *, PI*cmplx(0.0_qp, 1.0_qp)
-   print *, 16*atan(0.2_QP)-4*atan(Z1/239)
-   print *, sin(z)
-   print *, cos(z)
-   print *, sinh(z) ! asinh not implemented, cf. PR 46416
+! Disable the complex functions as not all "long-double" systems have
+! a libm with those C99 functions. (libquadmath had), cf. PR 46584
+!   print *, 16*atan(0.2_QP)-4*atan(Z1/239)
+!   print *, sin(z)
+!   print *, cos(z)
+!   print *, sinh(z) ! asinh not implemented in libquadmath, cf. PR 46416
    print *, precision(z)
 end program test_qp
