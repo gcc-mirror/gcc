@@ -1504,16 +1504,14 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
      During LTRANS we already have values of count_materialization_scale
      computed, so just update them.  */
   for (node = cgraph_nodes; node; node = node->next)
-    if (node->local.lto_file_data->profile_info.run_max)
+    if (node->local.lto_file_data->profile_info.runs)
       {
 	int scale;
-	if (node->local.lto_file_data->profile_info.runs)
-	  scale =
-	     ((node->count_materialization_scale * max_runs
-	       + node->local.lto_file_data->profile_info.run_max / 2)
-	      / node->local.lto_file_data->profile_info.run_max);
-	else
-	  scale = node->count_materialization_scale;
+
+	scale =
+	   ((node->count_materialization_scale * max_runs
+	     + node->local.lto_file_data->profile_info.runs / 2)
+	    / node->local.lto_file_data->profile_info.runs);
 	node->count_materialization_scale = scale;
 	if (scale < 0)
 	  fatal_error ("Profile information in %s corrupted",

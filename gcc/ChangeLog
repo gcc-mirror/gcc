@@ -1,5 +1,10 @@
 2010-12-03  Jan Hubicka  <jh@suse.cz>
 
+	* Makefile.in (LTO_STREAMER_H): Add GCOV_IO_H.
+	* lto-cgraph.c (merge_profile_summaries): Fix thinko.
+
+2010-12-03  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimization/46760
 	* cgraph.c (cgraph_create_node): Initialize count_materialization_scale.
 	* cgraph.h (struct cgraph_node): Add count_materialization_scale.
