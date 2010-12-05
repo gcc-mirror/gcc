@@ -1,3 +1,11 @@
+2010-12-05  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac (AC_CHECK_HEADERS): Replaced by AC_HEADER_SYS_WAIT.
+	* lto-plugin.c (WIFEXITED): Define default.
+	(WEXITSTATUS): Likeiwse.
+
 2010-12-01  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config.h.in: Regenerated.
