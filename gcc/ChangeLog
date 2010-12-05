@@ -1,5 +1,12 @@
 2010-12-03  Jan Hubicka  <jh@suse.cz>
 
+	* ipa.c (cgraph_externally_visible_p): Do not localize builtins
+	and functions with user asm defined names.
+	(varpool_externally_visible_p): Do not localize vars with user
+	asm defined names.
+
+2010-12-03  Jan Hubicka  <jh@suse.cz>
+
 	* dwarf2asm.c (dw2_output_indirect_constant_1): Set DECL_ASSEMBLER_NAME
 	to prevent mangling with lto frontend.
 
