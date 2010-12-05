@@ -13,6 +13,9 @@ PROGRAM main
   INTEGER(KIND=1) :: k1
   INTEGER(KIND=2) :: k2
 
+  k1 = 1_1
+  k2 = 1_2
+
   k1 = 1_1 + 1_1**k1
   k2 = 1_2 + 1_2**k2
 
