@@ -463,6 +463,9 @@ vect_recog_pow_pattern (tree last_stmt, tree *type_in, tree *type_out)
     return NULL_TREE;
 
   fn = get_callee_fndecl (expr);
+  if (fn == NULL_TREE || DECL_BUILT_IN_CLASS (fn) != BUILT_IN_NORMAL)
+    return NULL;
+
   switch (DECL_FUNCTION_CODE (fn))
     {
     case BUILT_IN_POWIF:

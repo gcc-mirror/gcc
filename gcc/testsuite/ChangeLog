@@ -1,3 +1,9 @@
+2010-12-02  Richard Guenther  <rguenther@suse.de>
+	    Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/46663
+	* gcc.dg/vect/pr46663.c: New test.
+
 2010-10-22  Uros Bizjak  <ubizjak@gmail.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
