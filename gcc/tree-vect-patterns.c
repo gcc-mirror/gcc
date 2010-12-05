@@ -475,6 +475,9 @@ vect_recog_pow_pattern (gimple last_stmt, tree *type_in, tree *type_out)
   type = gimple_expr_type (last_stmt);
 
   fn = gimple_call_fndecl (last_stmt);
+  if (fn == NULL_TREE || DECL_BUILT_IN_CLASS (fn) != BUILT_IN_NORMAL)
+    return NULL;
+
   switch (DECL_FUNCTION_CODE (fn))
     {
     case BUILT_IN_POWIF:
