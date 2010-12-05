@@ -753,8 +753,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
       if (bb == NULL)
 	bb = make_new_block (fn, index);
 
-      edge_count = (lto_input_uleb128 (ib) * count_materialization_scale
-		    + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
+      edge_count = lto_input_uleb128 (ib);
 
       /* Connect up the CFG.  */
       for (i = 0; i < edge_count; i++)
@@ -768,7 +767,8 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
 
 	  dest_index = lto_input_uleb128 (ib);
 	  probability = (int) lto_input_sleb128 (ib);
-	  count = (gcov_type) lto_input_sleb128 (ib);
+	  count = ((gcov_type) lto_input_sleb128 (ib) * count_materialization_scale
+		   + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
 	  edge_flags = lto_input_uleb128 (ib);
 
 	  dest = BASIC_BLOCK_FOR_FUNCTION (fn, dest_index);
