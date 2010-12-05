@@ -1,3 +1,11 @@
+2010-12-04  Jan Hubicka  <jh@suse.cz>
+
+	* snprintf-chk.c (ptr): Declare volatile.
+	* strcpy-chk.c (s2, s3, l1): Declare volatile.
+	* snprintf-chk.c (ptr): Declare volatile.
+	* vsprintf-chk.c (ptr): Declare volatile.
+	* vsnprintf-chk.c (ptr): Declare volatile.
+
 2010-12-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46584

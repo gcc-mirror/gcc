@@ -20,7 +20,7 @@ char *s3 = "FGH";
 char *s4;
 size_t l1 = 1;
 static char buffer[32];
-char *ptr = "barf";
+char * volatile ptr = "barf"; /* prevent constant propagation to happen when whole program assumptions are made.  */
 
 void
 __attribute__((noinline))

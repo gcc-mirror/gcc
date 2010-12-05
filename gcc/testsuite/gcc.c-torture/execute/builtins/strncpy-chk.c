@@ -16,10 +16,10 @@ extern void *memset (void *, int, size_t);
 
 const char s1[] = "123";
 char p[32] = "";
-char *s2 = "defg";
-char *s3 = "FGH";
+char * volatile s2 = "defg";  /* prevent constant propagation to happen when whole program assumptions are made.  */
+char * volatile s3 = "FGH";  /* prevent constant propagation to happen when whole program assumptions are made.  */
 char *s4;
-size_t l1 = 1;
+volatile size_t l1 = 1;  /* prevent constant propagation to happen when whole program assumptions are made.  */
 int i;
 
 void
