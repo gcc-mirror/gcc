@@ -655,6 +655,22 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool 
   if (aliased)
     return true;
 
+  /* Do not try to localize built-in functions yet.  One of problems is that we
+     end up mangling their asm for WHOPR that makes it impossible to call them
+     using the implicit built-in declarations anymore.  Similarly this enables
+     us to remove them as unreachable before actual calls may appear during
+     expansion or folding.  */
+  if (DECL_BUILT_IN (node->decl))
+    return true;
+
+  /* FIXME: We get wrong symbols with asm aliases in callgraph and LTO.
+     This is because very little of code knows that assembler name needs to
+     mangled.  Avoid touching declarations with user asm name set to mask
+     some of the problems.  */
+  if (DECL_ASSEMBLER_NAME_SET_P (node->decl)
+      && IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl))[0]=='*')
+    return true;
+
   /* If linker counts on us, we must preserve the function.  */
   if (cgraph_used_from_object_file_p (node))
     return true;
@@ -719,6 +735,14 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
 
   /* If linker counts on us, we must preserve the function.  */
   if (varpool_used_from_object_file_p (vnode))
+    return true;
+
+  /* FIXME: We get wrong symbols with asm aliases in callgraph and LTO.
+     This is because very little of code knows that assembler name needs to
+     mangled.  Avoid touching declarations with user asm name set to mask
+     some of the problems.  */
+  if (DECL_ASSEMBLER_NAME_SET_P (vnode->decl)
+      && IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (vnode->decl))[0]=='*')
     return true;
 
   if (DECL_PRESERVE_P (vnode->decl))
