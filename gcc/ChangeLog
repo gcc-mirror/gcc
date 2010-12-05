@@ -1,5 +1,9 @@
 2010-12-03  Jan Hubicka  <jh@suse.cz>
 
+	* lto-streamer-in.c (input_cfg): Fix pasto.
+
+2010-12-03  Jan Hubicka  <jh@suse.cz>
+
 	* ipa.c (cgraph_externally_visible_p): Do not localize builtins
 	and functions with user asm defined names.
 	(varpool_externally_visible_p): Do not localize vars with user
