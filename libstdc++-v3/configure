@@ -58461,6 +58461,8 @@ $as_echo "#define HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT 1" >>confdefs.h
 
        symvers_renaming=yes  ;;
     esac
+else
+    symvers_renaming=no
 fi
 
 

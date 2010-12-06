@@ -16014,6 +16014,8 @@ $as_echo "#define HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT 1" >>confdefs.h
 
        symvers_renaming=yes ;;
     esac
+else
+    symvers_renaming=no
 fi
  if test $symvers_renaming = no; then
   LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_TRUE=

@@ -358,6 +358,8 @@ if test $enable_symvers != no ; then
          [Define to 1 if the target runtime linker supports binding the same symbol to different versions.])
        symvers_renaming=yes ;;
     esac
+else
+    symvers_renaming=no
 fi
 AM_CONDITIONAL(LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2, test $symvers_renaming = no)
 ])
