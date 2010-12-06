@@ -40,3 +40,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Use default ELF section syntax.  */
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION default_elf_asm_named_section
+
+/* And standard pushsection syntax.  While GNU as supports the non-standard
+   variant too, we prefer the former.  */
+#undef PUSHSECTION_FORMAT
+#define PUSHSECTION_FORMAT "\t.pushsection\t%s\n"
