@@ -1,3 +1,9 @@
+2010-12-06  Joern Rennecke  <amylaar@spamcop.net>
+	    Richard Henderson  <rth@redhat.com>
+
+	PR target/46740
+	* config/vax/vax.c (vax_output_int_move): Fold #if into if.
+
 2010-12-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sol2.h (PUSHSECTION_FORMAT): Redefine unconditionally.
