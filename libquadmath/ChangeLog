@@ -1,3 +1,13 @@
+2010-12-06  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/40125
+	PR lto/46695
+	* configure.ac: Invoke ACX_LT_HOST_FLAGS.
+	* Makefile.am (libquadmath_la_LDFLAGS): Use lt_host_flags.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2010-11-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46594

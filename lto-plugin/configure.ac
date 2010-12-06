@@ -7,6 +7,7 @@ AM_MAINTAINER_MODE
 AC_PROG_CC
 AC_SYS_LARGEFILE
 AM_PROG_LIBTOOL
+ACX_LT_HOST_FLAGS
 AC_SUBST(target_noncanonical)
 # Trying to get this information from gcc's config is tricky.
 case $target in

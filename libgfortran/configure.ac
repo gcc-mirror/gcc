@@ -202,6 +202,7 @@ AC_PROG_INSTALL
 #AC_MSG_NOTICE([====== Starting libtool configuration])
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
+ACX_LT_HOST_FLAGS
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 #AC_MSG_NOTICE([====== Finished libtool configuration]) ; sleep 10

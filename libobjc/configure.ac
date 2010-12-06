@@ -156,14 +156,15 @@ AC_PROG_CC
 m4_rename_force([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
 
 # extra LD Flags which are required for targets
+ACX_LT_HOST_FLAGS
 case "${host}" in
   *-darwin*)
     # Darwin needs -single_module when linking libobjc
-    extra_ldflags_libobjc=-Wl,-single_module
+    extra_ldflags_libobjc='$(lt_host_flags) -Wl,-single_module'
     ;;
   *-cygwin*|*-mingw*)
     # Tell libtool to build DLLs on Windows
-    extra_ldflags_libobjc='-no-undefined -bindir $(bindir)'
+    extra_ldflags_libobjc='$(lt_host_flags)'
     ;;
 esac
 AC_SUBST(extra_ldflags_libobjc)

@@ -1,3 +1,10 @@
+2010-12-06  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/40125
+	PR lto/46695
+	* lthostflags.m4: New file.
+	(ACX_LT_HOST_FLAGS): Define.
+
 2010-12-02  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* mh-cygwin (LDFLAGS): Turn up stack allocation to 12MB.

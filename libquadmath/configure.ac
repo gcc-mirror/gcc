@@ -43,6 +43,7 @@ GCC_NO_EXECUTABLES
 
 # Configure libtool
 AM_PROG_LIBTOOL
+ACX_LT_HOST_FLAGS
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 

@@ -43,6 +43,7 @@ toolexeclibdir = @toolexeclibdir@
 includedirname = @includedirname@
 libsuffix = @libsuffix@
 
+lt_host_flags = @lt_host_flags@
 extra_ldflags_libobjc = @extra_ldflags_libobjc@
 
 top_builddir = .

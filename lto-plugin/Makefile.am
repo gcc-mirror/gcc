@@ -15,7 +15,8 @@ libexecsub_LTLIBRARIES = liblto_plugin.la
 liblto_plugin_la_SOURCES = lto-plugin.c
 liblto_plugin_la_LIBADD = \
 	$(if $(wildcard ../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
-liblto_plugin_la_LDFLAGS = -no-undefined -bindir $(libexecsubdir) \
+# Note that we intentionally override the bindir supplied by ACX_LT_HOST_FLAGS
+liblto_plugin_la_LDFLAGS = $(lt_host_flags) -bindir $(libexecsubdir) \
 	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a)
 
 all: copy_lto_plugin
