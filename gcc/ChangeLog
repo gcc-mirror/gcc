@@ -1,3 +1,14 @@
+2010-12-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc: Allow corei7-avx for --with-arch/--with-cpu.
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Support
+	Sandy Bridge.
+
+	* config/i386/i386.c (override_options): Handle "corei7-avx".
+
+	* doc/invoke.texi: Document corei7-avx.
+
 2010-12-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46806
