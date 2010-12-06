@@ -1,3 +1,9 @@
+2010-12-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46806
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Do not
+	coalesce different types.
+
 2010-12-05  Richard Guenther  <rguenther@suse.de>
 	    Ira Rosen  <irar@il.ibm.com>
 
