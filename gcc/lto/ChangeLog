@@ -1,3 +1,8 @@
+2010-12-06  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/46796
+	* lto-lang.c (lto_init): Give names to basic types.
+
 2010-11-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* lto-object.c: Don't include toplev.h.

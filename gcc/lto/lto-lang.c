@@ -1142,6 +1142,34 @@ lto_init (void)
   targetm.init_builtins ();
   build_common_builtin_nodes ();
 
+  /* Assign names to the builtin types, otherwise they'll end up
+     as __unknown__ in debug info.
+     ???  We simply need to stop pre-seeding the streamer cache.
+     Below is modeled after from c-common.c:c_common_nodes_and_builtins  */
+#define NAME_TYPE(t,n) \
+  if (t) \
+    TYPE_NAME (t) = build_decl (UNKNOWN_LOCATION, TYPE_DECL, \
+			        get_identifier (n), t)
+  NAME_TYPE (integer_type_node, "int");
+  NAME_TYPE (char_type_node, "char");
+  NAME_TYPE (long_integer_type_node, "long int");
+  NAME_TYPE (unsigned_type_node, "unsigned int");
+  NAME_TYPE (long_unsigned_type_node, "long unsigned int");
+  NAME_TYPE (long_long_integer_type_node, "long long int");
+  NAME_TYPE (long_long_unsigned_type_node, "long long unsigned int");
+  NAME_TYPE (short_integer_type_node, "short int");
+  NAME_TYPE (short_unsigned_type_node, "short unsigned int");
+  if (signed_char_type_node != char_type_node)
+    NAME_TYPE (signed_char_type_node, "signed char");
+  if (unsigned_char_type_node != char_type_node)
+    NAME_TYPE (unsigned_char_type_node, "unsigned char");
+  NAME_TYPE (float_type_node, "float");
+  NAME_TYPE (double_type_node, "double");
+  NAME_TYPE (long_double_type_node, "long double");
+  NAME_TYPE (void_type_node, "void");
+  NAME_TYPE (boolean_type_node, "bool");
+#undef NAME_TYPE
+
   /* Initialize LTO-specific data structures.  */
   lto_global_var_decls = VEC_alloc (tree, gc, 256);
   in_lto_p = true;
