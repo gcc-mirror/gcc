@@ -1,3 +1,9 @@
+2010-12-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* ada/acats/run_acats (which): Assign output to temporary
+	variable, only use if successful.
+	Use last field of type output.
+
 2010-12-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46806
