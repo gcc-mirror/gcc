@@ -1,5 +1,8 @@
 2010-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/46771
+	* gcc.dg/pr46771.c: New test.
+
 	PR rtl-optimization/46777
 	* gcc.dg/pr46777.c: New test.
 
