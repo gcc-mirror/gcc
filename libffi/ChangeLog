@@ -1,3 +1,10 @@
+2010-12-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (libffi_cv_as_ascii_pseudo_op): Use double
+	backslashes.
+	(libffi_cv_as_string_pseudo_op): Likewise.
+	* configure: Regenerate.
+
 2010-12-03  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* src/arm/sysv.S (ffi_closure_SYSV): Add UNWIND to .pad directive.
