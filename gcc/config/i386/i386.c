@@ -1644,6 +1644,7 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_CORE2_64  (1<<PROCESSOR_CORE2_64)
 #define m_COREI7_32  (1<<PROCESSOR_COREI7_32)
 #define m_COREI7_64  (1<<PROCESSOR_COREI7_64)
+#define m_COREI7  (m_COREI7_32 | m_COREI7_64)
 #define m_CORE2I7_32  (m_CORE2_32 | m_COREI7_32)
 #define m_CORE2I7_64  (m_CORE2_64 | m_COREI7_64)
 #define m_CORE2I7  (m_CORE2I7_32 | m_CORE2I7_64)
@@ -1810,10 +1811,10 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   | m_AMDFAM10 | m_BDVER1,
 
   /* X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL */
-  m_AMDFAM10 | m_BDVER1,
+  m_AMDFAM10 | m_BDVER1 | m_COREI7,
 
   /* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL */
-  m_BDVER1,
+  m_BDVER1 | m_COREI7,
 
   /* X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL */
   m_BDVER1,
