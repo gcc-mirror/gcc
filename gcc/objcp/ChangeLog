@@ -1,3 +1,13 @@
+2010-12-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* config-lang.in (gtfiles): Added c-family/c-objc.h.
+	* Make-lang.in (objcp/objcp-act.o): Depend on
+	c-family/c-objc.h.
+	(objcp/objcp-lang.o): Same change.
+	(objcp/objcp-decl.o): Same change.
+	* objcp-lang.c: Include c-family/c-objc.h.
+	* objcp-decl.c: Same change.
+
 2010-11-23  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/24358

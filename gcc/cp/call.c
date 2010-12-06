@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "convert.h"
 #include "langhooks.h"
+#include "c-family/c-objc.h"
 
 /* The various kinds of conversion.  */
 

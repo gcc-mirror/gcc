@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "bitmap.h"
 #include "gimple.h"
+#include "c-family/c-objc.h"
 
 /* Possible cases of implicit bad conversions.  Used to select
    diagnostic messages in convert_for_assignment.  */

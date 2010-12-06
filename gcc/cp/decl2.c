@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "target.h"
 #include "c-family/c-common.h"
+#include "c-family/c-objc.h"
 #include "tree-mudflap.h"
 #include "cgraph.h"
 #include "tree-inline.h"

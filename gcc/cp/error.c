@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cxx-pretty-print.h"
 #include "tree-pretty-print.h"
 #include "pointer-set.h"
+#include "c-family/c-objc.h"
 
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')
 

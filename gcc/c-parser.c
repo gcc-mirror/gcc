@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "ggc.h"
 #include "c-family/c-common.h"
+#include "c-family/c-objc.h"
 #include "vec.h"
 #include "target.h"
 #include "cgraph.h"
