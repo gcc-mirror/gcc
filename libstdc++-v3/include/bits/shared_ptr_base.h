@@ -331,7 +331,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       {
 	_Deleter _M_del;         // copy constructor must not throw
 	_My_Deleter(_Deleter __d, const _Alloc& __a)
-	  : _My_alloc_type(__a), _M_del(__d) { }
+	: _My_alloc_type(__a), _M_del(__d) { }
       };
 
     protected:
@@ -504,7 +504,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       template<typename _Tp, typename _Alloc, typename... _Args>
-	__shared_count(_Sp_make_shared_tag, _Tp*, _Alloc __a, _Args&&... __args)
+	__shared_count(_Sp_make_shared_tag, _Tp*, const _Alloc& __a,
+		       _Args&&... __args)
 	: _M_pi(0)
 	{
 	  typedef _Sp_counted_ptr_inplace<_Tp, _Alloc, _Lp> _Sp_cp_type;
@@ -774,8 +775,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       template<typename _Tp1, typename _Deleter, typename _Alloc>
-	__shared_ptr(_Tp1* __p, _Deleter __d, const _Alloc& __a)
-	: _M_ptr(__p), _M_refcount(__p, __d, __a)
+	__shared_ptr(_Tp1* __p, _Deleter __d, _Alloc __a)
+	: _M_ptr(__p), _M_refcount(__p, __d, std::move(__a))
 	{
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
 	  // TODO requires _Deleter CopyConstructible and __d(__p) well-formed
@@ -788,8 +789,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{ }
 
       template<typename _Deleter, typename _Alloc>
-	__shared_ptr(nullptr_t __p, _Deleter __d, const _Alloc& __a)
-	: _M_ptr(0), _M_refcount(__p, __d, __a)
+        __shared_ptr(nullptr_t __p, _Deleter __d, _Alloc __a)
+	: _M_ptr(0), _M_refcount(__p, __d, std::move(__a))
 	{ }
 
       template<typename _Tp1>
@@ -924,8 +925,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       template<typename _Tp1, typename _Deleter, typename _Alloc>
 	void
-	reset(_Tp1* __p, _Deleter __d, const _Alloc& __a)
-	{ __shared_ptr(__p, __d, __a).swap(*this); }
+        reset(_Tp1* __p, _Deleter __d, _Alloc __a)
+        { __shared_ptr(__p, __d, std::move(__a)).swap(*this); }
 
       // Allow class instantiation when _Tp is [cv-qual] void.
       typename std::add_lvalue_reference<_Tp>::type
@@ -978,7 +979,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     protected:
       // This constructor is non-standard, it is used by allocate_shared.
       template<typename _Alloc, typename... _Args>
-	__shared_ptr(_Sp_make_shared_tag __tag, _Alloc __a, _Args&&... __args)
+	__shared_ptr(_Sp_make_shared_tag __tag, const _Alloc& __a,
+		     _Args&&... __args)
 	: _M_ptr(), _M_refcount(__tag, (_Tp*)0, __a,
 				std::forward<_Args>(__args)...)
 	{
@@ -1001,7 +1003,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         };
 
       template<typename _Alloc, typename... _Args>
-	__shared_ptr(_Sp_make_shared_tag __tag, _Alloc __a, _Args&&... __args)
+	__shared_ptr(_Sp_make_shared_tag __tag, const _Alloc& __a,
+		     _Args&&... __args)
 	: _M_ptr(), _M_refcount()
         {
 	  typedef typename _Alloc::template rebind<_Tp>::other _Alloc2;
@@ -1025,7 +1028,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename _Tp1, _Lock_policy _Lp1, typename _Alloc,
 	       typename... _Args>
 	friend __shared_ptr<_Tp1, _Lp1>
-	__allocate_shared(_Alloc __a, _Args&&... __args);
+	__allocate_shared(const _Alloc& __a, _Args&&... __args);
 
     private:
       void*
@@ -1350,10 +1353,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Tp, _Lock_policy _Lp, typename _Alloc, typename... _Args>
     inline __shared_ptr<_Tp, _Lp>
-    __allocate_shared(_Alloc __a, _Args&&... __args)
+    __allocate_shared(const _Alloc& __a, _Args&&... __args)
     {
-      return __shared_ptr<_Tp, _Lp>(_Sp_make_shared_tag(),
-	  std::forward<_Alloc>(__a), std::forward<_Args>(__args)...);
+      return __shared_ptr<_Tp, _Lp>(_Sp_make_shared_tag(), __a,
+				    std::forward<_Args>(__args)...);
     }
 
   template<typename _Tp, _Lock_policy _Lp, typename... _Args>

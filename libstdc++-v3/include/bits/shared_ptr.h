@@ -122,7 +122,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  __shared_ptr will release __p by calling __d(__p)
        */
       template<typename _Tp1, typename _Deleter>
-	shared_ptr(_Tp1* __p, _Deleter __d) : __shared_ptr<_Tp>(__p, __d) { }
+	shared_ptr(_Tp1* __p, _Deleter __d)
+        : __shared_ptr<_Tp>(__p, __d) { }
 
       /**
        *  @brief  Construct a %shared_ptr that owns a null pointer
@@ -157,8 +158,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  __shared_ptr will release __p by calling __d(__p)
        */
       template<typename _Tp1, typename _Deleter, typename _Alloc>
-	shared_ptr(_Tp1* __p, _Deleter __d, const _Alloc& __a)
-	: __shared_ptr<_Tp>(__p, __d, __a) { }
+	shared_ptr(_Tp1* __p, _Deleter __d, _Alloc __a)
+	: __shared_ptr<_Tp>(__p, __d, std::move(__a)) { }
 
       /**
        *  @brief  Construct a %shared_ptr that owns a null pointer
@@ -176,8 +177,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  The last owner will call __d(__p)
        */
       template<typename _Deleter, typename _Alloc>
-	shared_ptr(nullptr_t __p, _Deleter __d, const _Alloc& __a)
-	: __shared_ptr<_Tp>(__p, __d, __a) { }
+	shared_ptr(nullptr_t __p, _Deleter __d, _Alloc __a)
+	: __shared_ptr<_Tp>(__p, __d, std::move(__a)) { }
 
       // Aliasing constructor
 
@@ -305,13 +306,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     private:
       // This constructor is non-standard, it is used by allocate_shared.
       template<typename _Alloc, typename... _Args>
-	shared_ptr(_Sp_make_shared_tag __tag, _Alloc __a, _Args&&... __args)
+	shared_ptr(_Sp_make_shared_tag __tag, const _Alloc& __a,
+		   _Args&&... __args)
 	: __shared_ptr<_Tp>(__tag, __a, std::forward<_Args>(__args)...)
 	{ }
 
       template<typename _Tp1, typename _Alloc, typename... _Args>
 	friend shared_ptr<_Tp1>
-	allocate_shared(_Alloc __a, _Args&&... __args);
+	allocate_shared(const _Alloc& __a, _Args&&... __args);
     };
 
   // 20.8.13.2.7 shared_ptr comparisons
@@ -521,9 +523,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    */
   template<typename _Tp, typename _Alloc, typename... _Args>
     inline shared_ptr<_Tp>
-    allocate_shared(_Alloc __a, _Args&&... __args)
+    allocate_shared(const _Alloc& __a, _Args&&... __args)
     {
-      return shared_ptr<_Tp>(_Sp_make_shared_tag(), std::forward<_Alloc>(__a),
+      return shared_ptr<_Tp>(_Sp_make_shared_tag(), __a,
 			     std::forward<_Args>(__args)...);
     }
 
