@@ -1,5 +1,9 @@
 2010-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/46771
+	* reginfo.c (init_subregs_of_mode): Don't call find_subregs_of_mode
+	on DEBUG_INSNs.
+
 	PR rtl-optimization/46777
 	* cfglayout.c (duplicate_insn_chain): Avoid duplicating
 	also barrier after tablejump.
