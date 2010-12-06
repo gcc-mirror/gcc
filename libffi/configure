@@ -13301,7 +13301,7 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-asm (".ascii \"string\"");
+asm (".ascii \\"string\\"");
 int
 main ()
 {
@@ -13366,7 +13366,7 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-asm (".string \"string\"");
+asm (".string \\"string\\"");
 int
 main ()
 {
