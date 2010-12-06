@@ -1,3 +1,8 @@
+2010-12-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config.gcc [hppa[12]*-*-hpux10*, hppa[12]*-*-hpux11*]:  Ignore
+	--with-dwarf2 option.
+
 2010-12-03  Jan Hubicka  <jh@suse.cz>
 
 	* lto-streamer-in.c (input_cfg): Fix pasto.

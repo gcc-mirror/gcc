@@ -1065,6 +1065,10 @@ hppa[12]*-*-hpux10*)
 	fi
 	use_collect2=yes
 	gas=yes
+	if test "x$with_dwarf2" != x; then
+		echo "Warning: dwarf2 debug format is not supported for this targe, --with-dwarf2 ignored" 1>&2
+		dwarf2=no
+	fi
 	;;
 hppa*64*-*-hpux11*)
 	target_cpu_default="MASK_PA_11|MASK_PA_20"
@@ -1153,6 +1157,10 @@ hppa[12]*-*-hpux11*)
 		tm_file="${tm_file} hpux-stdint.h"
 		;;
 	esac
+	if test "x$with_dwarf2" != x; then
+		echo "Warning: dwarf2 debug format is not supported for this targe, --with-dwarf2 ignored" 1>&2
+		dwarf2=no
+	fi
 	;;
 i[34567]86-*-darwin*)
 	need_64bit_hwint=yes
