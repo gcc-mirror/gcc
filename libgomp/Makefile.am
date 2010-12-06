@@ -53,7 +53,7 @@ libgomp_version_dep =
 endif
 libgomp_version_info = -version-info $(libtool_VERSION)
 libgomp_la_LDFLAGS = $(libgomp_version_info) $(libgomp_version_script) \
-        -no-undefined -bindir "$(bindir)"
+        $(lt_host_flags)
 libgomp_la_DEPENDENCIES = $(libgomp_version_dep)
 libgomp_la_LINK = $(LINK) $(libgomp_la_LDFLAGS)
 

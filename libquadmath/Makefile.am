@@ -36,7 +36,7 @@ endif
 toolexeclib_LTLIBRARIES = libquadmath.la
 libquadmath_la_LIBADD = 
 libquadmath_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
-			 $(version_arg) -no-undefined -bindir "$(bindir)" -lm
+			 $(version_arg) $(lt_host_flags) -lm
 libquadmath_la_DEPENDENCIES = $(version_dep) $(libquadmath_la_LIBADD)
 
 nodist_libsubinclude_HEADERS = quadmath.h quadmath_weak.h

@@ -148,6 +148,7 @@ fi
 AC_SUBST(ssp_have_usable_vsnprintf)
 
 AM_PROG_LIBTOOL
+ACX_LT_HOST_FLAGS
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
