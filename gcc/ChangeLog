@@ -1,5 +1,11 @@
 2010-12-06  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/46806
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Do not
+	coalesce different types.
+
+2010-12-06  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/46785
 	* tree-vect-loop.c (vect_is_simple_reduction_1): Also allow
 	call statements as operand definition.

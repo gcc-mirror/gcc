@@ -1,5 +1,10 @@
 2010-12-06  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/46806
+	* g++.dg/torture/20100825.C: New testcase.
+
+2010-12-06  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/46785
 	* gcc.dg/vect/fast-math-vect-reduc-9.c: New testcase.
 
