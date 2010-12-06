@@ -2747,7 +2747,7 @@ mmix_intval (rtx x)
 
 	  retval |=
 	    (unsigned HOST_WIDEST_INT) CONST_DOUBLE_HIGH (x)
-	      << (HOST_BITS_PER_LONG);
+	      << (HOST_BITS_PER_LONG)/2 << (HOST_BITS_PER_LONG)/2;
 	}
       else
 	retval = CONST_DOUBLE_HIGH (x);

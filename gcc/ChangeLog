@@ -20,6 +20,9 @@
 	(frv_emit_movsi, output_move_single, frv_emit_cond_move): Likewise.
 	(frv_split_cond_move, frv_rtx_costs): Likewise.
 
+	PR target/46739
+	* config/mmix/mmix.c (mmix_intval): Split shift count.
+
 2010-12-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (m_COREI7): New.
