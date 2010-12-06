@@ -1129,18 +1129,16 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	    {
 	      lval >>= n;
 
-#if HOST_BITS_PER_WIDE_INT == 32
 	      /* On 32bit platforms, if the 6bits didn't overflow into the
 		 upper 32bit value that value better be 0.  If we have
 		 overflowed, make sure it wasn't too much.  */
-	      if (hval != 0)
+	      if (HOST_BITS_PER_WIDE_INT == 32 && hval != 0)
 		{
 		  if (n <= 26 || hval >= ((unsigned)1 << (n - 26)))
 		    n = 0;	/* failure */
 		  else
 		    lval |= hval << (32 - n);
 		}
-#endif
 	      /*  If n is 0, then ashq is not the best way to emit this.  */
 	      if (n > 0)
 		{
