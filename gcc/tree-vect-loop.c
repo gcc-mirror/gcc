@@ -1970,6 +1970,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
       && (code == COND_EXPR
           || (def1 && flow_bb_inside_loop_p (loop, gimple_bb (def1))
               && (is_gimple_assign (def1)
+		  || is_gimple_call (def1)
   	          || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1))
                       == vect_induction_def
    	          || (gimple_code (def1) == GIMPLE_PHI
@@ -1985,6 +1986,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
 	   && (code == COND_EXPR
                || (def2 && flow_bb_inside_loop_p (loop, gimple_bb (def2))
  	           && (is_gimple_assign (def2)
+		       || is_gimple_call (def2)
 	               || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2))
                            == vect_induction_def
  	               || (gimple_code (def2) == GIMPLE_PHI

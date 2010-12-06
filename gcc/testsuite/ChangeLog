@@ -1,3 +1,8 @@
+2010-12-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46785
+	* gcc.dg/vect/fast-math-vect-reduc-9.c: New testcase.
+
 2010-12-06  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* gcc.dg/pr46674.c (LABEL3): New macro definition.

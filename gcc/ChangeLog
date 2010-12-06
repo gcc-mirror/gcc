@@ -1,3 +1,9 @@
+2010-12-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46785
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Also allow
+	call statements as operand definition.
+
 2010-12-06  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* doc/tm.texi.in: Fix typo.
