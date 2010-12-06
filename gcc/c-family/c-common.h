@@ -434,14 +434,6 @@ extern c_language_kind c_language;
 #define c_dialect_cxx()		((c_language & clk_cxx) != 0)
 #define c_dialect_objc()	((c_language & clk_objc) != 0)
 
-/* ObjC ivar visibility types.  */
-typedef enum objc_ivar_visibility_kind {
-  OBJC_IVAR_VIS_PROTECTED = 0,
-  OBJC_IVAR_VIS_PUBLIC    = 1,
-  OBJC_IVAR_VIS_PRIVATE   = 2,
-  OBJC_IVAR_VIS_PACKAGE   = 3
-} objc_ivar_visibility_kind;
-
 /* The various name of operator that appears in error messages. */
 typedef enum ref_operator {
   /* NULL */
@@ -987,88 +979,6 @@ extern void builtin_define_with_value (const char *, const char *, int);
 extern void c_stddef_cpp_builtins (void);
 extern void fe_file_change (const struct line_map *);
 extern void c_parse_error (const char *, enum cpp_ttype, tree, unsigned char);
-
-/* Objective-C / Objective-C++ entry points.  */
-
-/* The following ObjC/ObjC++ functions are called by the C and/or C++
-   front-ends; they all must have corresponding stubs in stub-objc.c.  */
-extern void objc_write_global_declarations (void);
-extern tree objc_is_class_name (tree);
-extern tree objc_is_object_ptr (tree);
-extern void objc_check_decl (tree);
-extern void objc_check_global_decl (tree);
-extern tree objc_common_type (tree, tree);
-extern bool objc_compare_types (tree, tree, int, tree);
-extern bool objc_have_common_type (tree, tree, int, tree);
-extern bool objc_diagnose_private_ivar (tree);
-extern void objc_volatilize_decl (tree);
-extern tree objc_rewrite_function_call (tree, tree);
-extern tree objc_message_selector (void);
-extern tree objc_lookup_ivar (tree, tree);
-extern void objc_clear_super_receiver (void);
-extern int objc_is_public (tree, tree);
-extern tree objc_is_id (tree);
-extern void objc_declare_alias (tree, tree);
-extern void objc_declare_class (tree);
-extern void objc_declare_protocols (tree, tree);
-extern tree objc_build_message_expr (tree);
-extern tree objc_finish_message_expr (tree, tree, tree);
-extern tree objc_build_selector_expr (location_t, tree);
-extern tree objc_build_protocol_expr (tree);
-extern tree objc_build_encode_expr (tree);
-extern tree objc_build_string_object (tree);
-extern tree objc_get_protocol_qualified_type (tree, tree);
-extern tree objc_get_class_reference (tree);
-extern tree objc_get_class_ivars (tree);
-extern tree objc_get_interface_ivars (tree);
-extern void objc_start_class_interface (tree, tree, tree, tree);
-extern void objc_start_category_interface (tree, tree, tree, tree);
-extern void objc_start_protocol (tree, tree, tree);
-extern void objc_continue_interface (void);
-extern void objc_finish_interface (void);
-extern void objc_start_class_implementation (tree, tree);
-extern void objc_start_category_implementation (tree, tree);
-extern void objc_continue_implementation (void);
-extern void objc_finish_implementation (void);
-extern void objc_set_visibility (objc_ivar_visibility_kind);
-extern tree objc_build_method_signature (bool, tree, tree, tree, bool);
-extern void objc_add_method_declaration (bool, tree, tree);
-extern bool objc_start_method_definition (bool, tree, tree);
-extern void objc_finish_method_definition (tree);
-extern void objc_add_instance_variable (tree);
-extern tree objc_build_keyword_decl (tree, tree, tree, tree);
-extern tree objc_build_throw_stmt (location_t, tree);
-extern void objc_begin_try_stmt (location_t, tree);
-extern tree objc_finish_try_stmt (void);
-extern void objc_begin_catch_clause (tree);
-extern void objc_finish_catch_clause (void);
-extern void objc_build_finally_clause (location_t, tree);
-extern tree objc_build_synchronized (location_t, tree, tree);
-extern int objc_static_init_needed_p (void);
-extern tree objc_generate_static_init_call (tree);
-extern tree objc_generate_write_barrier (tree, enum tree_code, tree);
-extern void objc_set_method_opt (bool);
-extern void objc_finish_foreach_loop (location_t, tree, tree, tree, tree, tree);
-extern bool  objc_method_decl (enum tree_code);
-extern void objc_add_property_declaration (location_t, tree, bool, bool, bool, 
-					   bool, bool, bool, tree, tree);
-extern tree objc_maybe_build_component_ref (tree, tree);
-extern tree objc_build_class_component_ref (tree, tree);
-extern tree objc_maybe_build_modify_expr (tree, tree);
-extern tree objc_build_incr_expr_for_property_ref (location_t, enum tree_code, 
-						   tree, tree);
-extern void objc_add_synthesize_declaration (location_t, tree);
-extern void objc_add_dynamic_declaration (location_t, tree);
-extern const char * objc_maybe_printable_name (tree, int);
-extern bool objc_is_property_ref (tree);
-extern bool objc_string_ref_type_p (tree);
-extern void objc_check_format_arg (tree, tree);
-extern void objc_finish_function (void);
-
-/* The following are provided by the C and C++ front-ends, and called by
-   ObjC/ObjC++.  */
-extern void *objc_get_current_scope (void);
-extern void objc_mark_locals_volatile (void *);
 
 /* In c-ppoutput.c  */
 extern void init_pp_output (FILE *);

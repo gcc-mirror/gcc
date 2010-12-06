@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "c-tree.h"
 #include "c-family/c-common.h"
+#include "c-family/c-objc.h"
 #include "ggc.h"
 #include "objc-act.h"
 #include "langhooks.h"

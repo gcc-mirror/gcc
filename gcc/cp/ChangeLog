@@ -1,3 +1,25 @@
+2010-12-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* call.c: Include c-family/c-objc.h.
+	* decl.c: Same change.
+	* decl2.c: Same change.
+	* error.c: Same change.
+	* lex.c: Same change.
+	* parser.c: Same change.
+	* pt.c: Same change.
+	* semantics.c: Same change.
+	* typeck.c: Same change.
+	* Make-lang.in (cp/decl.o): Depend on c-family/c-objc.h.
+	(cp/decl2.o): Same change.
+	(cp/call.o): Same change.
+	(cp/error.o): Same change.
+	(cp/lex.o): Same change.
+	(cp/parser.o): Same change.
+	(cp/pt.o): Same change.
+	(cp/semantics.o): Same change.
+	(cp/typeck.o): Same change.
+	* config-lang.in (gtfiles): Added c-family/c-objc.h.
+	
 2010-12-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46645

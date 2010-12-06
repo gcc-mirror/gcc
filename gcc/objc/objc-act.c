@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #include "c-family/c-common.h"
+#include "c-family/c-objc.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-format.h"
 #include "flags.h"

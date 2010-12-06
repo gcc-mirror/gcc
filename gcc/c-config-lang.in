@@ -22,4 +22,4 @@
 # files used by C that have garbage collection GTY macros in them
 # which therefore need to be scanned by gengtype.c.
 
-gtfiles="\$(srcdir)/c-lang.c \$(srcdir)/c-tree.h \$(srcdir)/c-decl.c \$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-common.h \$(srcdir)/c-family/c-cppbuiltin.c \$(srcdir)/c-family/c-pragma.h \$(srcdir)/c-family/c-pragma.c \$(srcdir)/c-objc-common.c \$(srcdir)/c-parser.c \$(srcdir)/c-lang.h"
+gtfiles="\$(srcdir)/c-lang.c \$(srcdir)/c-tree.h \$(srcdir)/c-decl.c \$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-common.h \$(srcdir)/c-family/c-objc.h \$(srcdir)/c-family/c-cppbuiltin.c \$(srcdir)/c-family/c-pragma.h \$(srcdir)/c-family/c-pragma.c \$(srcdir)/c-objc-common.c \$(srcdir)/c-parser.c \$(srcdir)/c-lang.h"

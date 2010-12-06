@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "hashtab.h"
 
+#include "c-family/c-objc.h"
 #include "objc-act.h"
 #include "objcp-decl.h"
 

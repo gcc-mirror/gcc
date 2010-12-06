@@ -2026,7 +2026,7 @@ c-decl.o : c-decl.c c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(HASHTAB_H) $(LIBFUNCS_H) $(EXCEPT_H) $(LANGHOOKS_DEF_H) \
 	$(TREE_DUMP_H) $(C_COMMON_H) $(CPPLIB_H) $(DIAGNOSTIC_CORE_H) \
 	$(INPUT_H) langhooks.h tree-mudflap.h pointer-set.h tree-iterator.h \
-	$(PLUGIN_H) c-family/c-ada-spec.h
+	$(PLUGIN_H) c-family/c-ada-spec.h c-family/c-objc.h
 
 c-errors.o: c-errors.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 	$(C_TREE_H) $(FLAGS_H) $(DIAGNOSTIC_H) $(TM_P_H)
@@ -2047,11 +2047,13 @@ c-parser.o : c-parser.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(TREE_H) $(C_TREE_H) $(C_COMMON_H) $(C_PRAGMA_H) $(CPPLIB_H) \
 	$(GGC_H) $(TIMEVAR_H) $(INPUT_H) $(FLAGS_H) output.h \
 	gt-c-parser.h langhooks.h \
-	$(VEC_H) $(TARGET_H) $(CGRAPH_H) $(PLUGIN_H)
+	$(VEC_H) $(TARGET_H) $(CGRAPH_H) $(PLUGIN_H) \
+	 c-family/c-objc.h
 
 c-typeck.o : c-typeck.c c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(TREE_H) $(C_TREE_H) $(TARGET_H) $(FLAGS_H) intl.h output.h $(EXPR_H) \
-	langhooks.h tree-iterator.h $(BITMAP_H) $(GIMPLE_H)
+	langhooks.h tree-iterator.h $(BITMAP_H) $(GIMPLE_H) \
+	 c-family/c-objc.h
 
 
 
@@ -2095,7 +2097,7 @@ c-family/c-common.o : c-family/c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(TREE_H) \
 	$(OBSTACK_H) $(C_COMMON_H) $(FLAGS_H) toplev.h output.h $(C_PRAGMA_H) \
 	$(GGC_H) builtin-types.def builtin-attrs.def \
-	$(DIAGNOSTIC_H) langhooks.h \
+	$(DIAGNOSTIC_H) langhooks.h c-family/c-objc.h \
 	$(TARGET_H) tree-iterator.h langhooks.h tree-mudflap.h \
 	intl.h $(OPTS_H) $(CPPLIB_H) $(TREE_INLINE_H) $(HASHTAB_H) \
 	$(BUILTINS_DEF) $(CGRAPH_H) $(BASIC_BLOCK_H) $(TARGET_DEF_H) \
@@ -2115,7 +2117,7 @@ c-family/c-dump.o : c-family/c-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 c-family/c-format.o : c-family/c-format.c c-family/c-format.h \
 	$(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) langhooks.h \
 	$(C_COMMON_H) $(FLAGS_H) intl.h \
-	$(DIAGNOSTIC_CORE_H) alloc-pool.h
+	$(DIAGNOSTIC_CORE_H) alloc-pool.h c-family/c-objc.h
 
 c-family/c-gimplify.o : c-family/c-gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
 	$(C_COMMON_H) $(DIAGNOSTIC_CORE_H) $(GIMPLE_H) \
@@ -2170,7 +2172,7 @@ c-family/c-ada-spec.o : c-family/c-ada-spec.c c-family/c-ada-spec.h \
 	coretypes.h tree-iterator.h tree-pass.h output.h
 
 c-family/stub-objc.o : c-family/stub-objc.c $(CONFIG_H) $(SYSTEM_H) \
-	coretypes.h $(TREE_H) $(C_COMMON_H)
+	coretypes.h $(TREE_H) $(C_COMMON_H) c-family/c-objc.h
 
 
 # Files used by all variants of C and some other languages.
@@ -4563,7 +4565,8 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(GGC_H) $(TREE_DUMP_H) $(PRETTY_PRINT_H) $(OPTS_H) $(PARAMS_H) plugin.def \
   $(tm_file_list) $(tm_include_list) $(tm_p_file_list) $(tm_p_include_list) \
   $(host_xm_file_list) $(host_xm_include_list) $(xm_include_list) \
-  intl.h $(PLUGIN_VERSION_H) $(DIAGNOSTIC_H) $(C_COMMON_H) $(C_PRETTY_PRINT_H) \
+  intl.h $(PLUGIN_VERSION_H) $(DIAGNOSTIC_H) \
+  $(C_COMMON_H) c-family/c-objc.h $(C_PRETTY_PRINT_H) \
   tree-iterator.h $(PLUGIN_H) $(TREE_FLOW_H) langhooks.h incpath.h debug.h \
   $(EXCEPT_H) tree-ssa-sccvn.h real.h output.h $(IPA_UTILS_H) \
   $(C_PRAGMA_H)  $(CPPLIB_H)  $(FUNCTION_H) \

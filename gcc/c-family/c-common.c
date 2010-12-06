@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "ggc.h"
 #include "c-common.h"
+#include "c-objc.h"
 #include "tm_p.h"
 #include "obstack.h"
 #include "cpplib.h"

@@ -1,3 +1,24 @@
+2010-12-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-family/c-common.h: Removed the declarations of all the objc_
+	callbacks, and moved them into c-objc.h.  Removed
+	objc_ivar_visibility_kind and moved it into c-objc.h.
+	* c-family/c-objc.h: New file.
+	* c-family/c-common.c: Include c-objc.h.
+	* c-family/c-format.c: Same change.
+	* c-family/stub-objc.c: Same change.
+	* c-decl.c: Include c-family/c-objc.h.
+	* c-parser.c: Same change.	
+	* c-typeck.c: Same change.
+	* c-config-lang.in (gtfiles): Added c-family/c-objc.h.
+	* Makefile.in (c-decl.o): Depend on c-family/c-objc.h.
+	(c-parser.o): same change.
+	(c-typeck.o): Same change.
+	(c-family/c-format.o): Same change.
+	(c-family/stub-objc.o): Same change.
+	(c-family/c-common.o): Same change.
+	(PLUGIN_HEADERS): Added c-family/c-objc.h.
+	
 2010-12-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config.gcc [hppa[12]*-*-hpux10*, hppa[12]*-*-hpux11*]:  Ignore

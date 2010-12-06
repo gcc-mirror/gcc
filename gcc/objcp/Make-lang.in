@@ -72,11 +72,11 @@ cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBDEPS)
 objcp/objcp-lang.o : objcp/objcp-lang.c \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(CXX_TREE_H) \
   $(C_COMMON_H) $(LANGHOOKS_DEF_H) objc/objc-act.h cp/cp-objcp-common.h \
-  $(TARGET_H) gtype-objcp.h
+  $(TARGET_H) gtype-objcp.h c-family/c-objc.h
 
 objcp/objcp-decl.o : objcp/objcp-decl.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(CXX_TREE_H) \
-   objc/objc-act.h objcp/objcp-decl.h
+   objc/objc-act.h objcp/objcp-decl.h c-family/c-objc.h
 
 # The following must be an explicit rule; please keep in sync with the implicit
 # one in Makefile.in.
@@ -85,7 +85,7 @@ objcp/objcp-act.o : objc/objc-act.c \
    $(EXPR_H) $(TARGET_H) $(CXX_TREE_H) $(DIAGNOSTIC_H) toplev.h $(FLAGS_H) \
    objc/objc-act.h input.h $(FUNCTION_H) output.h debug.h langhooks.h \
    objcp/objcp-decl.h $(LANGHOOKS_DEF_H) $(HASHTAB_H) gt-objc-objc-act.h \
-   $(GIMPLE_H)
+   $(GIMPLE_H) c-family/c-objc.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
 		$(OUTPUT_OPTION)
 
