@@ -569,6 +569,17 @@ proc check_effective_target_pcc_bitfield_type_matters { } {
     }]
 }
 
+# Add to FLAGS all the target-specific flags needed to use thread-local storage.
+
+proc add_options_for_tls { flags } {
+    # Tru64 UNIX uses emutls, which relies on a couple of pthread functions
+    # which only live in libpthread, so always pass -pthread for TLS.
+    if { [istarget *-*-osf*] } {
+	return "$flags -pthread"
+    }
+    return $flags
+}
+
 # Return 1 if thread local storage (TLS) is supported, 0 otherwise.
 
 proc check_effective_target_tls {} {

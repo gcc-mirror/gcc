@@ -1,5 +1,6 @@
 /* { dg-do run { target *-wrs-vxworks } } */
 /* { dg-require-effective-target tls } */
+/* { dg-add-options tls } */
 
 /* vxworks' TLS model requires no extra padding on the tls proxy
    objects.  */

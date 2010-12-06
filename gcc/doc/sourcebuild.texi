@@ -1892,6 +1892,9 @@ compliance mode.
 @item mips16_attribute
 @code{mips16} function attributes.
 Only MIPS targets support this feature, and only then in certain modes.
+
+@item tls
+Add the target-specific flags needed to use thread-local storage.
 @end table
 
 @node Require Support
