@@ -1624,12 +1624,12 @@ static rtx
 frv_frame_offset_rtx (int offset)
 {
   rtx offset_rtx = GEN_INT (offset);
-  if (IN_RANGE_P (offset, -2048, 2047))
+  if (IN_RANGE (offset, -2048, 2047))
     return offset_rtx;
   else
     {
       rtx reg_rtx = gen_rtx_REG (SImode, OFFSET_REGNO);
-      if (IN_RANGE_P (offset, -32768, 32767))
+      if (IN_RANGE (offset, -32768, 32767))
 	emit_insn (gen_movsi (reg_rtx, offset_rtx));
       else
 	{
@@ -2057,7 +2057,7 @@ frv_asm_output_mi_thunk (FILE *file,
   const char *parallel = (frv_issue_rate () > 1 ? ".p" : "");
 
   /* Do the add using an addi if possible.  */
-  if (IN_RANGE_P (delta, -2048, 2047))
+  if (IN_RANGE (delta, -2048, 2047))
     fprintf (file, "\taddi %s,#%d,%s\n", name_arg0, (int) delta, name_arg0);
   else
     {
@@ -3459,13 +3459,13 @@ frv_legitimate_address_p_1 (enum machine_mode mode,
 	ret = FALSE;
       else
 	{
-	  ret = IN_RANGE_P (INTVAL (x), -2048, 2047);
+	  ret = IN_RANGE (INTVAL (x), -2048, 2047);
 
 	  /* If we can't use load/store double operations, make sure we can
 	     address the second word.  */
 	  if (ret && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-	    ret = IN_RANGE_P (INTVAL (x) + GET_MODE_SIZE (mode) - 1,
-			      -2048, 2047);
+	    ret = IN_RANGE (INTVAL (x) + GET_MODE_SIZE (mode) - 1,
+			    -2048, 2047);
 	}
       break;
 
@@ -3511,12 +3511,12 @@ frv_legitimate_address_p_1 (enum machine_mode mode,
 	  else
 	    {
 	      value = INTVAL (x1);
-	      ret = IN_RANGE_P (value, -2048, 2047);
+	      ret = IN_RANGE (value, -2048, 2047);
 
 	      /* If we can't use load/store double operations, make sure we can
 		 address the second word.  */
 	      if (ret && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-		ret = IN_RANGE_P (value + GET_MODE_SIZE (mode) - 1, -2048, 2047);
+		ret = IN_RANGE (value + GET_MODE_SIZE (mode) - 1, -2048, 2047);
 	    }
 	  break;
 
@@ -4076,9 +4076,9 @@ frv_emit_movsi (rtx dest, rtx src)
 		add instruction, so expose this to CSE by copying to
 		an intermediate register.  */
 	  || (GET_CODE (src) == REG
-	      && IN_RANGE_P (REGNO (src),
-			     FIRST_VIRTUAL_REGISTER,
-			     LAST_VIRTUAL_POINTER_REGISTER))))
+	      && IN_RANGE (REGNO (src),
+			   FIRST_VIRTUAL_REGISTER,
+			   LAST_VIRTUAL_POINTER_REGISTER))))
     {
       emit_insn (gen_rtx_SET (VOIDmode, dest, copy_to_mode_reg (SImode, src)));
       return TRUE;
@@ -4380,7 +4380,7 @@ output_move_single (rtx operands[], rtx insn)
 	      else
 		value = CONST_DOUBLE_LOW (src);
 
-	      if (IN_RANGE_P (value, -32768, 32767))
+	      if (IN_RANGE (value, -32768, 32767))
 		return "setlos %1, %0";
 
 	      return "#";
@@ -4951,8 +4951,8 @@ frv_emit_cond_move (rtx dest, rtx test_rtx, rtx src1, rtx src2)
          between the two fits in an addi's range, load up the difference, then
          conditionally move in 0, and then unconditionally add the first
 	 value.  */
-      else if (IN_RANGE_P (value1, -2048, 2047)
-	       && IN_RANGE_P (value2 - value1, -2048, 2047))
+      else if (IN_RANGE (value1, -2048, 2047)
+	       && IN_RANGE (value2 - value1, -2048, 2047))
 	;
 
       /* If neither condition holds, just force the constant into a
@@ -5046,8 +5046,8 @@ frv_split_cond_move (rtx operands[])
          between the two fits in an addi's range, load up the difference, then
          conditionally move in 0, and then unconditionally add the first
 	 value.  */
-      else if (IN_RANGE_P (value1, -2048, 2047)
-	       && IN_RANGE_P (value2 - value1, -2048, 2047))
+      else if (IN_RANGE (value1, -2048, 2047)
+	       && IN_RANGE (value2 - value1, -2048, 2047))
 	{
 	  rtx dest_si = ((GET_MODE (dest) == SImode)
 			 ? dest
@@ -9611,7 +9611,7 @@ frv_rtx_costs (rtx x,
     {
     case CONST_INT:
       /* Make 12-bit integers really cheap.  */
-      if (IN_RANGE_P (INTVAL (x), -2048, 2047))
+      if (IN_RANGE (INTVAL (x), -2048, 2047))
 	{
 	  *total = 0;
 	  return true;
