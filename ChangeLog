@@ -20,7 +20,7 @@
 
 2010-11-26  Alexandre Oliva  <aoliva@redhat.com>
 
-	PR other/46020
+	PR other/46026
 	* configure.ac (CXX_FOR_TARGET): Add -funconfigured-libstdc++-v3.
 	* Makefile.def (CXX_FOR_TARGET): Removed from flags_to_pass.
 	* Makefile.tpl (CXX_FOR_TARGET_FLAG_TO_PASS): New.
