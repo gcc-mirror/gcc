@@ -1066,7 +1066,7 @@ hppa[12]*-*-hpux10*)
 	use_collect2=yes
 	gas=yes
 	if test "x$with_dwarf2" != x; then
-		echo "Warning: dwarf2 debug format is not supported for this targe, --with-dwarf2 ignored" 1>&2
+		echo "Warning: dwarf2 debug format is not supported for this target, --with-dwarf2 ignored" 1>&2
 		dwarf2=no
 	fi
 	;;
@@ -1158,7 +1158,7 @@ hppa[12]*-*-hpux11*)
 		;;
 	esac
 	if test "x$with_dwarf2" != x; then
-		echo "Warning: dwarf2 debug format is not supported for this targe, --with-dwarf2 ignored" 1>&2
+		echo "Warning: dwarf2 debug format is not supported for this target, --with-dwarf2 ignored" 1>&2
 		dwarf2=no
 	fi
 	;;
