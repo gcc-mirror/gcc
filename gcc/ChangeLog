@@ -1,5 +1,10 @@
 2010-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/46528
+	PR debug/46338
+	* profile.c (branch_prob): Make sure last is never set to a debug
+	stmt.
+
 	PR debug/46771
 	* reginfo.c (init_subregs_of_mode): Don't call find_subregs_of_mode
 	on DEBUG_INSNs.
