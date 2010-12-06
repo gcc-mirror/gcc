@@ -1,5 +1,8 @@
 2010-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/43897
+	* gcc.target/ia64/pr43897.c: New test.
+
 	PR debug/46771
 	* gcc.dg/pr46771.c: New test.
 

@@ -1,5 +1,9 @@
 2010-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/43897
+	* config/ia64/ia64.c (rtx_needs_barrier): Handle asm CLOBBER
+	as a store into that register.
+
 	PR tree-optimization/46528
 	PR debug/46338
 	* profile.c (branch_prob): Make sure last is never set to a debug
