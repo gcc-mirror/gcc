@@ -279,7 +279,7 @@ if test x$TARGET = xX86 || test x$TARGET = xX86_WIN32 || test x$TARGET = xX86_64
        libffi_cv_as_ascii_pseudo_op, [
        libffi_cv_as_ascii_pseudo_op=unknown
        # Check if we have .ascii
-       AC_TRY_COMPILE([asm (".ascii \"string\"");],,
+       AC_TRY_COMPILE([asm (".ascii \\"string\\"");],,
 		       [libffi_cv_as_ascii_pseudo_op=yes],
 		       [libffi_cv_as_ascii_pseudo_op=no])
     ])
@@ -292,7 +292,7 @@ if test x$TARGET = xX86 || test x$TARGET = xX86_WIN32 || test x$TARGET = xX86_64
        libffi_cv_as_string_pseudo_op, [
        libffi_cv_as_string_pseudo_op=unknown
        # Check if we have .string
-       AC_TRY_COMPILE([asm (".string \"string\"");],,
+       AC_TRY_COMPILE([asm (".string \\"string\\"");],,
 		       [libffi_cv_as_string_pseudo_op=yes],
 		       [libffi_cv_as_string_pseudo_op=no])
     ])

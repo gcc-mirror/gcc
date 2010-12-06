@@ -12420,7 +12420,7 @@ else
        # Check if we have .ascii
        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-asm (".ascii \"string\"");
+asm (".ascii \\"string\\"");
 int
 main ()
 {
@@ -12455,7 +12455,7 @@ else
        # Check if we have .string
        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-asm (".string \"string\"");
+asm (".string \\"string\\"");
 int
 main ()
 {
