@@ -1,5 +1,9 @@
 2010-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/45997
+	* g++.dg/debug/dwarf2/pr45997-1.C: New test.
+	* g++.dg/debug/dwarf2/pr45997-2.C: New test.
+
 	PR target/43897
 	* gcc.target/ia64/pr43897.c: New test.
 
