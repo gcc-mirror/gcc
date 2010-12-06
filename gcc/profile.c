@@ -936,11 +936,12 @@ branch_prob (void)
 	  /* It may happen that there are compiler generated statements
 	     without a locus at all.  Go through the basic block from the
 	     last to the first statement looking for a locus.  */
-	  for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+	  for (gsi = gsi_last_nondebug_bb (bb);
+	       !gsi_end_p (gsi);
+	       gsi_prev_nondebug (&gsi))
 	    {
 	      last = gsi_stmt (gsi);
-	      if (!is_gimple_debug (last)
-		  && gimple_has_location (last))
+	      if (gimple_has_location (last))
 		break;
 	    }
 
