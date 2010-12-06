@@ -1,3 +1,12 @@
+2010-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/46821
+	* include/std/tuple (_Head_base<,, true>::_M_swap_impl):
+	Swap the empty bases.
+	(_Head_base<,, false>::_M_swap_impl): Minor tweak.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-error
+	line number.
+
 2010-12-06  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/40125
@@ -54,7 +63,7 @@
 	* testsuite/23_containers/deque/cons/2.cc: Fix to explicitly invoke
 	the copy constructor with or without C++0x mode.
 	* testsuite/23_containers/vector/cons/4.cc: Likewise.
-			
+
 2010-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* scripts/extract_symvers.pl: New file.

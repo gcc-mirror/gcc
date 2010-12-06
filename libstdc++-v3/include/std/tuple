@@ -78,7 +78,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const _Head& _M_head() const { return *this; }
     
       void 
-      _M_swap_impl(_Head&) { /* no-op */ }
+      _M_swap_impl(_Head& __h)
+      {
+	using std::swap;
+	swap(__h, _M_head());
+      }
     };
 
   template<std::size_t _Idx, typename _Head>
@@ -101,7 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_swap_impl(_Head& __h)
       { 
 	using std::swap;
-	swap(__h, _M_head_impl);
+	swap(__h, _M_head());
       }
 
       _Head _M_head_impl; 
