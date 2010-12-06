@@ -1,3 +1,9 @@
+2010-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/46777
+	* cfglayout.c (duplicate_insn_chain): Avoid duplicating
+	also barrier after tablejump.
+
 2010-12-06  Joern Rennecke  <amylaar@spamcop.net>
 	    Richard Henderson  <rth@redhat.com>
 
