@@ -110,7 +110,7 @@
   (match_code "reg,subreg,const_int,const")
 {
   if (GET_CODE (op) == CONST_INT)
-    return IN_RANGE_P (INTVAL (op), -2048, 2047);
+    return IN_RANGE (INTVAL (op), -2048, 2047);
 
   if (got12_operand (op, mode))
     return true;
@@ -141,7 +141,7 @@
   int regno;
 
   if (GET_CODE (op) == CONST_INT)
-    return IN_RANGE_P (INTVAL (op), -2048, 2047);
+    return IN_RANGE (INTVAL (op), -2048, 2047);
 
   if (GET_MODE (op) != mode && mode != VOIDmode)
     return FALSE;
@@ -170,7 +170,7 @@
   (match_code "reg,subreg,const_int")
 {
   if (GET_CODE (op) == CONST_INT)
-    return IN_RANGE_P (INTVAL (op), -512, 511);
+    return IN_RANGE (INTVAL (op), -512, 511);
 
   if (GET_MODE (op) != mode && mode != VOIDmode)
     return FALSE;
@@ -493,7 +493,7 @@
   if (GET_CODE (op) != CONST_INT)
     return FALSE;
 
-  return IN_RANGE_P (INTVAL (op), -2048, 2047);
+  return IN_RANGE (INTVAL (op), -2048, 2047);
 })
 
 ;; Return 1 if operand is an integer constant that takes 2
@@ -535,7 +535,7 @@
       return (flag_pic == 0) && (! SYMBOL_REF_SMALL_P (op));
 
     case CONST_INT:
-      return ! IN_RANGE_P (INTVAL (op), -32768, 32767);
+      return ! IN_RANGE (INTVAL (op), -32768, 32767);
 
     case CONST_DOUBLE:
       if (GET_MODE (op) == SFmode)
@@ -543,12 +543,12 @@
 	  REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
 	  REAL_VALUE_TO_TARGET_SINGLE (rv, l);
 	  value = l;
-	  return ! IN_RANGE_P (value, -32768, 32767);
+	  return ! IN_RANGE (value, -32768, 32767);
 	}
       else if (GET_MODE (op) == VOIDmode)
 	{
 	  value = CONST_DOUBLE_LOW (op);
-	  return ! IN_RANGE_P (value, -32768, 32767);
+	  return ! IN_RANGE (value, -32768, 32767);
 	}
       break;
     }
@@ -1117,7 +1117,7 @@
   if (GET_CODE (op) != CONST_INT)
     return FALSE;
 
-  return IN_RANGE_P (INTVAL (op), 0, 0xffff);
+  return IN_RANGE (INTVAL (op), 0, 0xffff);
 })
 
 ;; Returns 1 if OP is either a SYMBOL_REF or a constant.
@@ -1444,7 +1444,7 @@
   (match_code "reg,subreg,const_int")
 {
   if (GET_CODE (op) == CONST_INT)
-    return IN_RANGE_P (INTVAL (op), -32, 31);
+    return IN_RANGE (INTVAL (op), -32, 31);
 
   if (GET_MODE (op) != mode && mode != VOIDmode)
     return FALSE;
@@ -1471,7 +1471,7 @@
   if (GET_CODE (op) != CONST_INT)
     return FALSE;
 
-  return IN_RANGE_P (INTVAL (op), -32, 31);
+  return IN_RANGE (INTVAL (op), -32, 31);
 })
 
 ;; Return 1 if operand is a 5-bit signed immediate.
@@ -1479,7 +1479,7 @@
 (define_predicate "int5_operand"
   (match_code "const_int")
 {
-  return GET_CODE (op) == CONST_INT && IN_RANGE_P (INTVAL (op), -16, 15);
+  return GET_CODE (op) == CONST_INT && IN_RANGE (INTVAL (op), -16, 15);
 })
 
 ;; Return 1 if operand is a 5-bit unsigned immediate.
@@ -1487,7 +1487,7 @@
 (define_predicate "uint5_operand"
   (match_code "const_int")
 {
-  return GET_CODE (op) == CONST_INT && IN_RANGE_P (INTVAL (op), 0, 31);
+  return GET_CODE (op) == CONST_INT && IN_RANGE (INTVAL (op), 0, 31);
 })
 
 ;; Return 1 if operand is a 4-bit unsigned immediate.
@@ -1495,7 +1495,7 @@
 (define_predicate "uint4_operand"
   (match_code "const_int")
 {
-  return GET_CODE (op) == CONST_INT && IN_RANGE_P (INTVAL (op), 0, 15);
+  return GET_CODE (op) == CONST_INT && IN_RANGE (INTVAL (op), 0, 15);
 })
 
 ;; Return 1 if operand is a 1-bit unsigned immediate (0 or 1).
@@ -1503,7 +1503,7 @@
 (define_predicate "uint1_operand"
   (match_code "const_int")
 {
-  return GET_CODE (op) == CONST_INT && IN_RANGE_P (INTVAL (op), 0, 1);
+  return GET_CODE (op) == CONST_INT && IN_RANGE (INTVAL (op), 0, 1);
 })
 
 ;; Return 1 if operand is a valid ACC register number.

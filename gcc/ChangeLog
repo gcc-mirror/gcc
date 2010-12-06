@@ -1,3 +1,25 @@
+2010-12-06  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR target/46735
+	* config/frv/predicates.md (gpr_or_int12_operand): Use IN_RANGE.
+	(gpr_fpr_or_int12_operand, gpr_or_int10_operand): Likewise.
+	(int12_operand, int_2word_operand, uint16_operand): Likewise.
+	(fpr_or_int6_operand, int6_operand, int5_operand): Likewise.
+	(uint5_operand, uint4_operand): Likewise.
+	* config/frv/frv.h (IN_RANGE_P): Delete.
+	(GPR_P, FPR_P, CC_P, ICC_P, FCC_P, CR_P, ICR_P, FCR_P): Use IN_RANGE.
+	(ACC_P, ACCG_P, SPR_P, CONST_OK_FOR_I, CONST_OK_FOR_J): Likewise.
+	(CONST_OK_FOR_L, CONST_OK_FOR_M, CONST_OK_FOR_N): Likewise.
+	(CONST_OK_FOR_P): Likewise.
+	* config/frv/frv.md (*movqicc_internal2_int): Likewise.
+	(*movqicc_internal2_float, *movhicc_internal2_int): Likewise.
+	(*movhicc_internal2_float, *movsicc_internal2_int): Likewise.
+	(*movsicc_internal2_float, casesi): Likewise.
+	* config/frv/frv.c (frv_frame_offset_rtx): Likewise.
+	(frv_asm_output_mi_thunk, frv_legitimate_address_p_1): Likewise.
+	(frv_emit_movsi, output_move_single, frv_emit_cond_move): Likewise.
+	(frv_split_cond_move, frv_rtx_costs): Likewise.
+
 2010-12-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (m_COREI7): New.
