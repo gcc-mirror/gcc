@@ -12907,7 +12907,12 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
       /* Else cv-qualified version of named type; fall through.  */
     }
 
-  if (is_const_type)
+  if (is_const_type
+      /* If both is_const_type and is_volatile_type, prefer the path
+	 which leads to a qualified type.  */
+      && (!is_volatile_type
+	  || get_qualified_type (type, TYPE_QUAL_CONST) == NULL_TREE
+	  || get_qualified_type (type, TYPE_QUAL_VOLATILE) != NULL_TREE))
     {
       mod_type_die = new_die (DW_TAG_const_type, comp_unit_die (), type);
       sub_die = modified_type_die (type, 0, is_volatile_type, context_die);
@@ -12915,7 +12920,7 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
   else if (is_volatile_type)
     {
       mod_type_die = new_die (DW_TAG_volatile_type, comp_unit_die (), type);
-      sub_die = modified_type_die (type, 0, 0, context_die);
+      sub_die = modified_type_die (type, is_const_type, 0, context_die);
     }
   else if (code == POINTER_TYPE)
     {

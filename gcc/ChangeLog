@@ -1,5 +1,11 @@
 2010-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/45997
+	* dwarf2out.c (modified_type_die): If both is_const_type and
+	is_volatile_type is set, start with DW_TAG_const_type or
+	DW_TAG_volatile_type depending on where we get qualified type
+	in the recursive call.
+
 	PR target/43897
 	* config/ia64/ia64.c (rtx_needs_barrier): Handle asm CLOBBER
 	as a store into that register.
