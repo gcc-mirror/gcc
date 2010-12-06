@@ -1,3 +1,9 @@
+2010-12-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_parser_for_statement): Use c_fully_fold() instead
+	of c_process_expr_stmt() for the iterating and collection
+	expressions of an Objective-C fast enumeration loop.
+
 2010-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45997

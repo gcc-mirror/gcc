@@ -13290,6 +13290,18 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
   /* type object; */
   /* Done by c-parser.c.  */
 
+  /* Disable warnings that 'object' is unused.  For example the code
+
+     for (id object in collection)
+       i++;
+
+     which can be used to count how many objects there are in the
+     collection is fine and should generate no warnings even if
+     'object' is technically unused.  */
+  TREE_USED (object_expression) = 1;
+  if (DECL_P (object_expression))
+    DECL_READ_P (object_expression) = 1;
+
   /*  id __objc_foreach_collection */
   objc_foreach_collection_decl = objc_create_temporary_var (objc_object_type, "__objc_foreach_collection");
 

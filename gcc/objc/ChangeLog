@@ -1,5 +1,10 @@
 2010-12-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_finish_foreach_loop): Mark the
+	object_expression as used.
+
+2010-12-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c: Include c-family/c-objc.h.
 	* objc-lang.c: Same change.
 	* Make-lang.in (objc/objc-act.o): Depend on
