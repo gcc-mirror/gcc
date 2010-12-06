@@ -4812,8 +4812,7 @@ c_parser_for_statement (c_parser *parser)
 		is_foreach_statement = true;
 		if (! lvalue_p (init_expression))
 		  c_parser_error (parser, "invalid iterating variable in fast enumeration");
-		object_expression = c_process_expr_stmt (loc, init_expression);
-
+		object_expression = c_fully_fold (init_expression, false, NULL);
 	      }
 	    else
 	      {
@@ -4854,7 +4853,8 @@ c_parser_for_statement (c_parser *parser)
       else
 	{
 	  if (is_foreach_statement)
-	    collection_expression = c_process_expr_stmt (loc, c_parser_expression (parser).value);
+	    collection_expression = c_fully_fold (c_parser_expression (parser).value,
+						  false, NULL);
 	  else
 	    incr = c_process_expr_stmt (loc, c_parser_expression (parser).value);
 	}
