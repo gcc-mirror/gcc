@@ -1105,7 +1105,7 @@ If this macro is not defined, then @var{basic-align} is used.
 One use of this macro is to increase alignment of medium-size data to
 make it all fit in fewer cache lines.
 
-It the value of this macro has a type, it should be an unsigned type.
+If the value of this macro has a type, it should be an unsigned type.
 @end defmac
 
 @defmac STACK_SLOT_ALIGNMENT (@var{type}, @var{mode}, @var{basic-align})
@@ -1122,7 +1122,7 @@ be used.
 This macro is to set alignment of stack slot to the maximum alignment
 of all possible modes which the slot may have.
 
-It the value of this macro has a type, it should be an unsigned type.
+If the value of this macro has a type, it should be an unsigned type.
 @end defmac
 
 @defmac LOCAL_DECL_ALIGNMENT (@var{decl})
@@ -1136,7 +1136,7 @@ is used.
 One use of this macro is to increase alignment of medium-size data to
 make it all fit in fewer cache lines.
 
-It the value of this macro has a type, it should be an unsigned type.
+If the value of this macro has a type, it should be an unsigned type.
 @end defmac
 
 @defmac MINIMUM_ALIGNMENT (@var{exp}, @var{mode}, @var{align})
@@ -3849,7 +3849,7 @@ alignment.  Then the definition should be
 #define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
 @end smallexample
 
-It the value of this macro has a type, it should be an unsigned type.
+If the value of this macro has a type, it should be an unsigned type.
 @end defmac
 
 @findex current_function_outgoing_args_size
