@@ -568,6 +568,10 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  /* Westmere.  */
 	  cpu = "corei7";
 	  break;
+	case 0x2a:
+	  /* Sandy Bridge.  */
+	  cpu = "corei7-avx";
+	  break;
 	case 0x17:
 	case 0x1d:
 	  /* Penryn.  */
