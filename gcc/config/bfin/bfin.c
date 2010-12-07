@@ -4662,7 +4662,7 @@ free_loops (loop_info loops)
     }
 }
 
-#define BB_AUX_INDEX(BB) ((unsigned)(BB)->aux)
+#define BB_AUX_INDEX(BB) ((intptr_t)(BB)->aux)
 
 /* The taken-branch edge from the loop end can actually go forward.  Since the
    Blackfin's LSETUP instruction requires that the loop end be after the loop
@@ -4679,7 +4679,7 @@ bfin_reorder_loops (loop_info loops, FILE *dump_file)
 
   for (loop = loops; loop; loop = loop->next)
     {
-      unsigned index;
+      intptr_t index;
       basic_block bb;
       edge e;
       edge_iterator ei;
