@@ -3927,6 +3927,8 @@ gimple_expand_cfg (void)
       else
        set_curr_insn_source_location (cfun->function_start_locus);
     }
+  else
+    set_curr_insn_source_location (UNKNOWN_LOCATION);
   set_curr_insn_block (DECL_INITIAL (current_function_decl));
   prologue_locator = curr_insn_locator ();
 
