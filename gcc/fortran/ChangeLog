@@ -1,3 +1,14 @@
+2010-12-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44352
+	* trans-expr.c (gfc_string_to_single_character): Return if not
+	POINTER_TYPE_P.
+	(gfc_trans_string_copy): gfc_build_addr_expr if src or dest is
+	not a pointer.
+	(gfc_trans_string_copy): Make sure the argument string type
+	has a string length, fix indention, and remove not needed
+	gfc_build_addr_expr.
+
 2010-12-04  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/46794

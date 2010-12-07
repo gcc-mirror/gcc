@@ -1438,9 +1438,9 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
 tree
 gfc_string_to_single_character (tree len, tree str, int kind)
 {
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (str)));
 
-  if (!INTEGER_CST_P (len) || TREE_INT_CST_HIGH (len) != 0)
+  if (!INTEGER_CST_P (len) || TREE_INT_CST_HIGH (len) != 0
+      || !POINTER_TYPE_P (TREE_TYPE (str)))
     return NULL_TREE;
 
   if (TREE_INT_CST_LOW (len) == 1)
@@ -3826,12 +3826,12 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
 			  fold_convert (size_type_node,
 					TYPE_SIZE_UNIT (chartype)));
 
-  if (dlength)
+  if (dlength && POINTER_TYPE_P (TREE_TYPE (dest)))
     dest = fold_convert (pvoid_type_node, dest);
   else
     dest = gfc_build_addr_expr (pvoid_type_node, dest);
 
-  if (slength)
+  if (slength && POINTER_TYPE_P (TREE_TYPE (src)))
     src = fold_convert (pvoid_type_node, src);
   else
     src = gfc_build_addr_expr (pvoid_type_node, src);
@@ -3906,35 +3906,42 @@ gfc_conv_statement_function (gfc_se * se, gfc_expr * expr)
       gcc_assert (fargs->sym->attr.dimension == 0);
       fsym = fargs->sym;
 
-      /* Create a temporary to hold the value.  */
-      type = gfc_typenode_for_spec (&fsym->ts);
-      temp_vars[n] = gfc_create_var (type, fsym->name);
-
       if (fsym->ts.type == BT_CHARACTER)
         {
 	  /* Copy string arguments.  */
-          tree arglen;
+	  tree arglen;
 
-          gcc_assert (fsym->ts.u.cl && fsym->ts.u.cl->length
+	  gcc_assert (fsym->ts.u.cl && fsym->ts.u.cl->length
 		      && fsym->ts.u.cl->length->expr_type == EXPR_CONSTANT);
 
-          arglen = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
-          tmp = gfc_build_addr_expr (build_pointer_type (type),
-				     temp_vars[n]);
+	  /* Create a temporary to hold the value.  */
+          if (fsym->ts.u.cl->backend_decl == NULL_TREE)
+	     fsym->ts.u.cl->backend_decl
+		= gfc_conv_constant_to_tree (fsym->ts.u.cl->length);
 
-          gfc_conv_expr (&rse, args->expr);
-          gfc_conv_string_parameter (&rse);
-          gfc_add_block_to_block (&se->pre, &lse.pre);
-          gfc_add_block_to_block (&se->pre, &rse.pre);
+	  type = gfc_get_character_type (fsym->ts.kind, fsym->ts.u.cl);
+	  temp_vars[n] = gfc_create_var (type, fsym->name);
 
-	  gfc_trans_string_copy (&se->pre, arglen, tmp, fsym->ts.kind,
+	  arglen = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+
+	  gfc_conv_expr (&rse, args->expr);
+	  gfc_conv_string_parameter (&rse);
+	  gfc_add_block_to_block (&se->pre, &lse.pre);
+	  gfc_add_block_to_block (&se->pre, &rse.pre);
+
+	  gfc_trans_string_copy (&se->pre, arglen, temp_vars[n], fsym->ts.kind,
 				 rse.string_length, rse.expr, fsym->ts.kind);
-          gfc_add_block_to_block (&se->pre, &lse.post);
-          gfc_add_block_to_block (&se->pre, &rse.post);
+	  gfc_add_block_to_block (&se->pre, &lse.post);
+	  gfc_add_block_to_block (&se->pre, &rse.post);
         }
       else
         {
           /* For everything else, just evaluate the expression.  */
+
+	  /* Create a temporary to hold the value.  */
+	  type = gfc_typenode_for_spec (&fsym->ts);
+	  temp_vars[n] = gfc_create_var (type, fsym->name);
+
           gfc_conv_expr (&lse, args->expr);
 
           gfc_add_block_to_block (&se->pre, &lse.pre);
