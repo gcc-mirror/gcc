@@ -3,6 +3,9 @@
 	Backport from mainline
 	2010-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/46753
+	* libgomp.fortran/pr46753.f90: New test.
+
 	PR libgomp/45240
 	* parallel.c (GOMP_parallel_end): Unlock gomp_remaining_threads_lock
 	at the end if sync builtins aren't supported.

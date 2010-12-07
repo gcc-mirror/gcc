@@ -1243,8 +1243,9 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
       if (simple)
 	{
 	  TREE_VEC_ELT (init, i) = build2_v (MODIFY_EXPR, dovar, from);
-	  TREE_VEC_ELT (cond, i) = fold_build2 (simple > 0 ? LE_EXPR : GE_EXPR,
-						boolean_type_node, dovar, to);
+	  /* The condition should not be folded.  */
+	  TREE_VEC_ELT (cond, i) = build2 (simple > 0 ? LE_EXPR : GE_EXPR,
+					   boolean_type_node, dovar, to);
 	  TREE_VEC_ELT (incr, i) = fold_build2 (PLUS_EXPR, type, dovar, step);
 	  TREE_VEC_ELT (incr, i) = fold_build2 (MODIFY_EXPR, type, dovar,
 						TREE_VEC_ELT (incr, i));
@@ -1265,8 +1266,9 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 	  count = gfc_create_var (type, "count");
 	  TREE_VEC_ELT (init, i) = build2_v (MODIFY_EXPR, count,
 					     build_int_cst (type, 0));
-	  TREE_VEC_ELT (cond, i) = fold_build2 (LT_EXPR, boolean_type_node,
-						count, tmp);
+	  /* The condition should not be folded.  */
+	  TREE_VEC_ELT (cond, i) = build2 (LT_EXPR, boolean_type_node,
+					   count, tmp);
 	  TREE_VEC_ELT (incr, i) = fold_build2 (PLUS_EXPR, type, count,
 						build_int_cst (type, 1));
 	  TREE_VEC_ELT (incr, i) = fold_build2 (MODIFY_EXPR, type,
