@@ -2918,7 +2918,14 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
 
   if (DR_PTR_INFO (dr)
       && TREE_CODE (vec_stmt) == SSA_NAME)
-    duplicate_ssa_name_ptr_info (vec_stmt, DR_PTR_INFO (dr));
+    {
+      duplicate_ssa_name_ptr_info (vec_stmt, DR_PTR_INFO (dr));
+      if (offset)
+	{
+	  SSA_NAME_PTR_INFO (vec_stmt)->align = 1;
+	  SSA_NAME_PTR_INFO (vec_stmt)->misalign = 0;
+	}
+    }
 
   if (vect_print_dump_info (REPORT_DETAILS))
     {
@@ -3308,7 +3315,11 @@ bump_vector_ptr (tree dataref_ptr, gimple ptr_incr, gimple_stmt_iterator *gsi,
 
   /* Copy the points-to information if it exists. */
   if (DR_PTR_INFO (dr))
-    duplicate_ssa_name_ptr_info (new_dataref_ptr, DR_PTR_INFO (dr));
+    {
+      duplicate_ssa_name_ptr_info (new_dataref_ptr, DR_PTR_INFO (dr));
+      SSA_NAME_PTR_INFO (new_dataref_ptr)->align = 1;
+      SSA_NAME_PTR_INFO (new_dataref_ptr)->misalign = 0;
+    }
 
   if (!ptr_incr)
     return new_dataref_ptr;
