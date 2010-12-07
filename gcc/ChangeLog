@@ -1,3 +1,9 @@
+2010-12-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46832
+	* tree-ssa-math-opts.c (execute_optimize_widening_mul): Check
+	that the call has a lhs.
+
 2010-12-07  Yao Qi  <yao@codesourcery.com>
 
 	* Makefile.in: Add $(TARGET_H) to the regrename.o rule.

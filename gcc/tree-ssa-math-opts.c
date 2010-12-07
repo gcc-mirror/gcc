@@ -1707,7 +1707,8 @@ execute_optimize_widening_mul (void)
 		default:;
 		}
 	    }
-	  else if (is_gimple_call (stmt))
+	  else if (is_gimple_call (stmt)
+		   && gimple_call_lhs (stmt))
 	    {
 	      tree fndecl = gimple_call_fndecl (stmt);
 	      if (fndecl
