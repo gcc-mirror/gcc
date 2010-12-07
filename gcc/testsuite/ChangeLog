@@ -1,3 +1,11 @@
+2010-12-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/41562
+	* g++.dg/graphite/pr41562.C: New.
+
+	PR middle-end/46185
+	* gcc.dg/graphite/pr46185.c: New.
+
 2010-12-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/foreach-8.m: New.
