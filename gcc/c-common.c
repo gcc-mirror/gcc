@@ -2475,10 +2475,26 @@ warn_for_collisions (struct tlist *list)
 static int
 warning_candidate_p (tree x)
 {
-  /* !VOID_TYPE_P (TREE_TYPE (x)) is workaround for cp/tree.c
+  if (DECL_P (x) && DECL_ARTIFICIAL (x))
+    return 0;
+
+  /* VOID_TYPE_P (TREE_TYPE (x)) is workaround for cp/tree.c
      (lvalue_p) crash on TRY/CATCH. */
-  return !(DECL_P (x) && DECL_ARTIFICIAL (x))
-    && TREE_TYPE (x) && !VOID_TYPE_P (TREE_TYPE (x)) && lvalue_p (x);
+  if (TREE_TYPE (x) == NULL_TREE || VOID_TYPE_P (TREE_TYPE (x)))
+    return 0;
+
+  if (!lvalue_p (x))
+    return 0;
+
+  /* No point to track non-const calls, they will never satisfy
+     operand_equal_p.  */
+  if (TREE_CODE (x) == CALL_EXPR && (call_expr_flags (x) & ECF_CONST) == 0)
+    return 0;
+
+  if (TREE_CODE (x) == STRING_CST)
+    return 0;
+
+  return 1;
 }
 
 /* Return nonzero if X and Y appear to be the same candidate (or NULL) */
