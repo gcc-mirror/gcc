@@ -3536,6 +3536,8 @@ cp_make_fname_decl (tree id, int type_dep)
   if (current_function_decl)
     {
       struct cp_binding_level *b = current_binding_level;
+      if (b->kind == sk_function_parms)
+	return error_mark_node;
       while (b->level_chain->kind != sk_function_parms)
 	b = b->level_chain;
       pushdecl_with_scope (decl, b, /*is_friend=*/false);
