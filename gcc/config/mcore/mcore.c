@@ -25,7 +25,6 @@
 #include "rtl.h"
 #include "tree.h"
 #include "tm_p.h"
-#include "assert.h"
 #include "mcore.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -1826,7 +1825,7 @@ layout_mcore_frame (struct mcore_frame * infp)
       infp->local_growth = growths;
       all -= step;
 
-      assert (all == 0);
+      gcc_assert (all == 0);
 
       /* Finish off if we need to do so.  */
       if (outbounds)
@@ -1904,8 +1903,8 @@ layout_mcore_frame (struct mcore_frame * infp)
 
   /* Anything else that we've forgotten?, plus a few consistency checks.  */
  finish:
-  assert (infp->reg_offset >= 0);
-  assert (growths <= MAX_STACK_GROWS);
+  gcc_assert (infp->reg_offset >= 0);
+  gcc_assert (growths <= MAX_STACK_GROWS);
   
   for (i = 0; i < growths; i++)
     gcc_assert (!(infp->growth[i] % STACK_BYTES));
@@ -2772,7 +2771,7 @@ handle_structs_in_regs (enum machine_mode mode, const_tree type, int reg)
         }
 
       /* We assume here that NPARM_REGS == 6.  The assert checks this.  */
-      assert (ARRAY_SIZE (arg_regs) == 6);
+      gcc_assert (ARRAY_SIZE (arg_regs) == 6);
       rtvec = gen_rtvec (nregs, arg_regs[0], arg_regs[1], arg_regs[2],
 			  arg_regs[3], arg_regs[4], arg_regs[5]);
       
