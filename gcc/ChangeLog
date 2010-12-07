@@ -1,5 +1,10 @@
 2010-12-07  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/46726
+	* tree-inline.c (estimate_num_insns): Special case pow (x, 2.0).
+
+2010-12-07  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-math-opts.c (execute_optimize_widening_mul): Unlink
 	virtual operands.
 
