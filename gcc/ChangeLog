@@ -1,5 +1,10 @@
 2010-12-07  Paul Koning  <ni1d@arrl.net>
 
+	* config/pdp11/pdp11.c (output_addr_const_pdp11): Output negative
+	values with sign rather than as unsigned.
+
+2010-12-07  Paul Koning  <ni1d@arrl.net>
+
 	* config/pdp11/pdp11.c (TARGET_ASM_FUNCTION_SECTION): Define.
 	(pdp11_function_section): New function.
 
