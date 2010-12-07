@@ -1,3 +1,9 @@
+2010-12-07  Ian Lance Taylor  <iant@google.com>
+
+	PR tree-optimization/46805
+	PR tree-optimization/46833
+	* go-lang.c (go_langhook_type_for_mode): Handle vector modes.
+
 2010-12-06  Ian Lance Taylor  <iant@google.com>
 
 	PR other/46789
