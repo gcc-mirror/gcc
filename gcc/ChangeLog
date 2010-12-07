@@ -1,3 +1,9 @@
+2010-12-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/42327
+	* tree-data-ref.c (omega_setup_subscript): Call build_int_cst
+	instead of using integer_minus_one_node.
+
 2010-12-07  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/45330
@@ -27,7 +33,7 @@
 	* targhook.h: Declare it.
 	* doc/tm.texi.in: New hook TARGET_PREFERRED_RENAME_CLASS.
 	* doc/tm.texi: Regenerate.
-	
+
 2010-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46799
@@ -186,7 +192,7 @@
 	* c-family/c-format.c: Same change.
 	* c-family/stub-objc.c: Same change.
 	* c-decl.c: Include c-family/c-objc.h.
-	* c-parser.c: Same change.	
+	* c-parser.c: Same change.
 	* c-typeck.c: Same change.
 	* c-config-lang.in (gtfiles): Added c-family/c-objc.h.
 	* Makefile.in (c-decl.o): Depend on c-family/c-objc.h.
@@ -196,7 +202,7 @@
 	(c-family/stub-objc.o): Same change.
 	(c-family/c-common.o): Same change.
 	(PLUGIN_HEADERS): Added c-family/c-objc.h.
-	
+
 2010-12-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config.gcc [hppa[12]*-*-hpux10*, hppa[12]*-*-hpux11*]:  Ignore

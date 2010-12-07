@@ -1,3 +1,8 @@
+2010-12-06  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/42327
+	* gcc.dg/tree-ssa/pr42327.c: New.
+
 2010-12-07  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/45330

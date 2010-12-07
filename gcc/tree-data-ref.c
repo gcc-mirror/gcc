@@ -3482,6 +3482,7 @@ omega_setup_subscript (tree access_fun_a, tree access_fun_b,
   tree fun_a = chrec_convert (type, access_fun_a, NULL);
   tree fun_b = chrec_convert (type, access_fun_b, NULL);
   tree difference = chrec_fold_minus (type, fun_a, fun_b);
+  tree minus_one;
 
   /* When the fun_a - fun_b is not constant, the dependence is not
      captured by the classic distance vector representation.  */
@@ -3496,7 +3497,8 @@ omega_setup_subscript (tree access_fun_a, tree access_fun_b,
       return true;
     }
 
-  fun_b = chrec_fold_multiply (type, fun_b, integer_minus_one_node);
+  minus_one = build_int_cst (type, -1);
+  fun_b = chrec_fold_multiply (type, fun_b, minus_one);
 
   eq = omega_add_zero_eq (pb, omega_black);
   if (!init_omega_eq_with_af (pb, eq, DDR_NB_LOOPS (ddr), fun_a, ddr)
