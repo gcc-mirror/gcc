@@ -15,6 +15,8 @@ endif
 
 SUBDIRS = ${subdirs}
 
+gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+
 MAINT_CHARSET = latin1
 
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
@@ -95,7 +97,9 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 toolexeclib_LTLIBRARIES = libgo.la
 toolexeclib_LIBRARIES = libgobegin.a
 
-toolexeclib_DATA = \
+toolexeclibgodir = $(toolexeclibdir)/go/$(gcc_version)/$(target_alias)
+
+toolexeclibgo_DATA = \
 	asn1.gox \
 	big.gox \
 	bufio.gox \
@@ -145,30 +149,30 @@ toolexeclib_DATA = \
 	websocket.gox \
 	xml.gox
 
-toolexeclibarchivedir = $(toolexeclibdir)/archive
+toolexeclibgoarchivedir = $(toolexeclibgodir)/archive
 
-toolexeclibarchive_DATA = \
+toolexeclibgoarchive_DATA = \
 	archive/tar.gox \
 	archive/zip.gox
 
-toolexeclibcompressdir = $(toolexeclibdir)/compress
+toolexeclibgocompressdir = $(toolexeclibgodir)/compress
 
-toolexeclibcompress_DATA = \
+toolexeclibgocompress_DATA = \
 	compress/flate.gox \
 	compress/gzip.gox \
 	compress/zlib.gox
 
-toolexeclibcontainerdir = $(toolexeclibdir)/container
+toolexeclibgocontainerdir = $(toolexeclibgodir)/container
 
-toolexeclibcontainer_DATA = \
+toolexeclibgocontainer_DATA = \
 	container/heap.gox \
 	container/list.gox \
 	container/ring.gox \
 	container/vector.gox
 
-toolexeclibcryptodir = $(toolexeclibdir)/crypto
+toolexeclibgocryptodir = $(toolexeclibgodir)/crypto
 
-toolexeclibcrypto_DATA = \
+toolexeclibgocrypto_DATA = \
 	crypto/aes.gox \
 	crypto/block.gox \
 	crypto/blowfish.gox \
@@ -189,9 +193,9 @@ toolexeclibcrypto_DATA = \
 	crypto/x509.gox \
 	crypto/xtea.gox
 
-toolexeclibdebugdir = $(toolexeclibdir)/debug
+toolexeclibgodebugdir = $(toolexeclibgodir)/debug
 
-toolexeclibdebug_DATA = \
+toolexeclibgodebug_DATA = \
 	debug/dwarf.gox \
 	debug/elf.gox \
 	debug/gosym.gox \
@@ -199,9 +203,9 @@ toolexeclibdebug_DATA = \
 	debug/pe.gox \
 	debug/proc.gox
 
-toolexeclibencodingdir = $(toolexeclibdir)/encoding
+toolexeclibgoencodingdir = $(toolexeclibgodir)/encoding
 
-toolexeclibencoding_DATA = \
+toolexeclibgoencoding_DATA = \
 	encoding/ascii85.gox \
 	encoding/base64.gox \
 	encoding/binary.gox \
@@ -209,16 +213,16 @@ toolexeclibencoding_DATA = \
 	encoding/hex.gox \
 	encoding/pem.gox
 
-toolexeclibexpdir = $(toolexeclibdir)/exp
+toolexeclibgoexpdir = $(toolexeclibgodir)/exp
 
-toolexeclibexp_DATA = \
+toolexeclibgoexp_DATA = \
 	exp/datafmt.gox \
 	exp/draw.gox \
 	exp/eval.gox
 
-toolexeclibgodir = $(toolexeclibdir)/go
+toolexeclibgogodir = $(toolexeclibgodir)/go
 
-toolexeclibgo_DATA = \
+toolexeclibgogo_DATA = \
 	go/ast.gox \
 	go/doc.gox \
 	go/parser.gox \
@@ -227,63 +231,63 @@ toolexeclibgo_DATA = \
 	go/token.gox \
 	go/typechecker.gox
 
-toolexeclibhashdir = $(toolexeclibdir)/hash
+toolexeclibgohashdir = $(toolexeclibgodir)/hash
 
-toolexeclibhash_DATA = \
+toolexeclibgohash_DATA = \
 	hash/adler32.gox \
 	hash/crc32.gox \
 	hash/crc64.gox
 
-toolexeclibhttpdir = $(toolexeclibdir)/http
+toolexeclibgohttpdir = $(toolexeclibgodir)/http
 
-toolexeclibhttp_DATA = \
+toolexeclibgohttp_DATA = \
 	http/pprof.gox
 
-toolexeclibimagedir = $(toolexeclibdir)/image
+toolexeclibgoimagedir = $(toolexeclibgodir)/image
 
-toolexeclibimage_DATA = \
+toolexeclibgoimage_DATA = \
 	image/jpeg.gox \
 	image/png.gox
 
-toolexeclibindexdir = $(toolexeclibdir)/index
+toolexeclibgoindexdir = $(toolexeclibgodir)/index
 
-toolexeclibindex_DATA = \
+toolexeclibgoindex_DATA = \
 	index/suffixarray.gox
 
-toolexeclibiodir = $(toolexeclibdir)/io
+toolexeclibgoiodir = $(toolexeclibgodir)/io
 
-toolexeclibio_DATA = \
+toolexeclibgoio_DATA = \
 	io/ioutil.gox
 
-toolexeclibmimedir = $(toolexeclibdir)/mime
+toolexeclibgomimedir = $(toolexeclibgodir)/mime
 
-toolexeclibmime_DATA = \
+toolexeclibgomime_DATA = \
 	mime/multipart.gox
 
-toolexeclibnetdir = $(toolexeclibdir)/net
+toolexeclibgonetdir = $(toolexeclibgodir)/net
 
-toolexeclibnet_DATA = \
+toolexeclibgonet_DATA = \
 	net/dict.gox \
 	net/textproto.gox
 
-toolexeclibosdir = $(toolexeclibdir)/os
+toolexeclibgoosdir = $(toolexeclibgodir)/os
 
-toolexeclibos_DATA = \
+toolexeclibgoos_DATA = \
 	os/signal.gox
 
-toolexeclibrpcdir = $(toolexeclibdir)/rpc
+toolexeclibgorpcdir = $(toolexeclibgodir)/rpc
 
-toolexeclibrpc_DATA = \
+toolexeclibgorpc_DATA = \
 	rpc/jsonrpc.gox
 
-toolexeclibruntimedir = $(toolexeclibdir)/runtime
+toolexeclibgoruntimedir = $(toolexeclibgodir)/runtime
 
-toolexeclibruntime_DATA = \
+toolexeclibgoruntime_DATA = \
 	runtime/pprof.gox
 
-toolexeclibtestingdir = $(toolexeclibdir)/testing
+toolexeclibgotestingdir = $(toolexeclibgodir)/testing
 
-toolexeclibtesting_DATA = \
+toolexeclibgotesting_DATA = \
 	testing/iotest.gox \
 	testing/quick.gox \
 	testing/script.gox

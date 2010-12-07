@@ -154,8 +154,8 @@ compile time.
 
 @item -L@var{dir}
 @cindex @option{-L}
-When compiling, synonymous with @option{-I}.  When linking, specify a
-library search directory, as with @command{gcc}.
+When linking, specify a library search directory, as with
+@command{gcc}.
 
 @item -fgo-prefix=@var{string}
 @cindex @option{-fgo-prefix}
@@ -198,11 +198,10 @@ first one that it finds.
 @end table
 
 The compiler will search for these files in the directories named by
-any @option{-I} or @option{-L} options, in order in which the
-directories appear on the command line.  The compiler will then search
-several standard system directories.  Finally the compiler will search
-the current directory (to search the current directory earlier, use
-@samp{-I.}).
+any @option{-I} options, in order in which the directories appear on
+the command line.  The compiler will then search several standard
+system directories.  Finally the compiler will search the current
+directory (to search the current directory earlier, use @samp{-I.}).
 
 The compiler will extract the export information directly from the
 compiled object file.  The file @file{@var{gopackage}.gox} will

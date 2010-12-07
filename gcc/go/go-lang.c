@@ -162,6 +162,17 @@ go_langhook_init_options_struct (struct gcc_options *opts)
   opts->x_flag_non_call_exceptions = 1;
 }
 
+/* Infrastructure for a VEC of char * pointers.  */
+
+typedef const char *go_char_p;
+DEF_VEC_P(go_char_p);
+DEF_VEC_ALLOC_P(go_char_p, heap);
+
+/* The list of directories to search after all the Go specific
+   directories have been searched.  */
+
+static VEC(go_char_p, heap) *go_search_dirs;
+
 /* Handle Go specific options.  Return 0 if we didn't do anything.  */
 
 static bool
@@ -179,11 +190,45 @@ go_langhook_handle_option (
   switch (code)
     {
     case OPT_I:
-    case OPT_L:
-      /* For the compiler, we currently handle -I and -L exactly the
-	 same way: they give us a directory to search for import
-	 statements.  */
       go_add_search_path (arg);
+      break;
+
+    case OPT_L:
+      /* A -L option is assumed to come from the compiler driver.
+	 This is a system directory.  We search the following
+	 directories, if they exist, before this one:
+	   dir/go/VERSION
+	   dir/go/VERSION/MACHINE
+	 This is like include/c++.  */
+      {
+	static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
+	size_t len;
+	char *p;
+	struct stat st;
+
+	len = strlen (arg);
+	p = XALLOCAVEC (char,
+			(len + sizeof "go" + sizeof DEFAULT_TARGET_VERSION
+			 + sizeof DEFAULT_TARGET_MACHINE + 3));
+	strcpy (p, arg);
+	if (len > 0 && !IS_DIR_SEPARATOR (p[len - 1]))
+	  strcat (p, dir_separator_str);
+	strcat (p, "go");
+	strcat (p, dir_separator_str);
+	strcat (p, DEFAULT_TARGET_VERSION);
+	if (stat (p, &st) == 0 && S_ISDIR (st.st_mode))
+	  {
+	    go_add_search_path (p);
+	    strcat (p, dir_separator_str);
+	    strcat (p, DEFAULT_TARGET_MACHINE);
+	    if (stat (p, &st) == 0 && S_ISDIR (st.st_mode))
+	      go_add_search_path (p);
+	  }
+
+	/* Search ARG too, but only after we've searched to Go
+	   specific directories for all -L arguments.  */
+	VEC_safe_push (go_char_p, heap, go_search_dirs, arg);
+      }
       break;
 
     case OPT_fgo_dump_:
@@ -207,7 +252,15 @@ go_langhook_handle_option (
 static bool
 go_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 {
+  unsigned int ix;
+  const char *dir;
+
   gcc_assert (num_in_fnames > 0);
+
+  FOR_EACH_VEC_ELT (go_char_p, go_search_dirs, ix, dir)
+    go_add_search_path (dir);
+  VEC_free (go_char_p, heap, go_search_dirs);
+  go_search_dirs = NULL;
 
   if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
     flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;

@@ -92,26 +92,26 @@ am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
-	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" \
-	"$(DESTDIR)$(toolexeclibarchivedir)" \
-	"$(DESTDIR)$(toolexeclibcompressdir)" \
-	"$(DESTDIR)$(toolexeclibcontainerdir)" \
-	"$(DESTDIR)$(toolexeclibcryptodir)" \
-	"$(DESTDIR)$(toolexeclibdebugdir)" \
-	"$(DESTDIR)$(toolexeclibencodingdir)" \
-	"$(DESTDIR)$(toolexeclibexpdir)" \
-	"$(DESTDIR)$(toolexeclibgodir)" \
-	"$(DESTDIR)$(toolexeclibhashdir)" \
-	"$(DESTDIR)$(toolexeclibhttpdir)" \
-	"$(DESTDIR)$(toolexeclibimagedir)" \
-	"$(DESTDIR)$(toolexeclibindexdir)" \
-	"$(DESTDIR)$(toolexeclibiodir)" \
-	"$(DESTDIR)$(toolexeclibmimedir)" \
-	"$(DESTDIR)$(toolexeclibnetdir)" \
-	"$(DESTDIR)$(toolexeclibosdir)" \
-	"$(DESTDIR)$(toolexeclibrpcdir)" \
-	"$(DESTDIR)$(toolexeclibruntimedir)" \
-	"$(DESTDIR)$(toolexeclibtestingdir)"
+	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" \
+	"$(DESTDIR)$(toolexeclibgoarchivedir)" \
+	"$(DESTDIR)$(toolexeclibgocompressdir)" \
+	"$(DESTDIR)$(toolexeclibgocontainerdir)" \
+	"$(DESTDIR)$(toolexeclibgocryptodir)" \
+	"$(DESTDIR)$(toolexeclibgodebugdir)" \
+	"$(DESTDIR)$(toolexeclibgoencodingdir)" \
+	"$(DESTDIR)$(toolexeclibgoexpdir)" \
+	"$(DESTDIR)$(toolexeclibgogodir)" \
+	"$(DESTDIR)$(toolexeclibgohashdir)" \
+	"$(DESTDIR)$(toolexeclibgohttpdir)" \
+	"$(DESTDIR)$(toolexeclibgoimagedir)" \
+	"$(DESTDIR)$(toolexeclibgoindexdir)" \
+	"$(DESTDIR)$(toolexeclibgoiodir)" \
+	"$(DESTDIR)$(toolexeclibgomimedir)" \
+	"$(DESTDIR)$(toolexeclibgonetdir)" \
+	"$(DESTDIR)$(toolexeclibgoosdir)" \
+	"$(DESTDIR)$(toolexeclibgorpcdir)" \
+	"$(DESTDIR)$(toolexeclibgoruntimedir)" \
+	"$(DESTDIR)$(toolexeclibgotestingdir)"
 LIBRARIES = $(toolexeclib_LIBRARIES)
 ARFLAGS = cru
 libgobegin_a_AR = $(AR) $(ARFLAGS)
@@ -228,16 +228,16 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-pdf-recursive install-ps-recursive install-recursive \
 	installcheck-recursive installdirs-recursive pdf-recursive \
 	ps-recursive uninstall-recursive
-DATA = $(toolexeclib_DATA) $(toolexeclibarchive_DATA) \
-	$(toolexeclibcompress_DATA) $(toolexeclibcontainer_DATA) \
-	$(toolexeclibcrypto_DATA) $(toolexeclibdebug_DATA) \
-	$(toolexeclibencoding_DATA) $(toolexeclibexp_DATA) \
-	$(toolexeclibgo_DATA) $(toolexeclibhash_DATA) \
-	$(toolexeclibhttp_DATA) $(toolexeclibimage_DATA) \
-	$(toolexeclibindex_DATA) $(toolexeclibio_DATA) \
-	$(toolexeclibmime_DATA) $(toolexeclibnet_DATA) \
-	$(toolexeclibos_DATA) $(toolexeclibrpc_DATA) \
-	$(toolexeclibruntime_DATA) $(toolexeclibtesting_DATA)
+DATA = $(toolexeclibgo_DATA) $(toolexeclibgoarchive_DATA) \
+	$(toolexeclibgocompress_DATA) $(toolexeclibgocontainer_DATA) \
+	$(toolexeclibgocrypto_DATA) $(toolexeclibgodebug_DATA) \
+	$(toolexeclibgoencoding_DATA) $(toolexeclibgoexp_DATA) \
+	$(toolexeclibgogo_DATA) $(toolexeclibgohash_DATA) \
+	$(toolexeclibgohttp_DATA) $(toolexeclibgoimage_DATA) \
+	$(toolexeclibgoindex_DATA) $(toolexeclibgoio_DATA) \
+	$(toolexeclibgomime_DATA) $(toolexeclibgonet_DATA) \
+	$(toolexeclibgoos_DATA) $(toolexeclibgorpc_DATA) \
+	$(toolexeclibgoruntime_DATA) $(toolexeclibgotesting_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
@@ -420,6 +420,7 @@ top_srcdir = @top_srcdir@
 SUFFIXES = .c .go .gox .o .obj .lo .a
 @LIBGO_IS_RTEMS_TRUE@subdirs = testsuite
 SUBDIRS = ${subdirs}
+gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 PWD_COMMAND = $${PWDCMD-pwd}
@@ -489,7 +490,8 @@ AM_MAKEFLAGS = \
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 toolexeclib_LTLIBRARIES = libgo.la
 toolexeclib_LIBRARIES = libgobegin.a
-toolexeclib_DATA = \
+toolexeclibgodir = $(toolexeclibdir)/go/$(gcc_version)/$(target_alias)
+toolexeclibgo_DATA = \
 	asn1.gox \
 	big.gox \
 	bufio.gox \
@@ -539,26 +541,26 @@ toolexeclib_DATA = \
 	websocket.gox \
 	xml.gox
 
-toolexeclibarchivedir = $(toolexeclibdir)/archive
-toolexeclibarchive_DATA = \
+toolexeclibgoarchivedir = $(toolexeclibgodir)/archive
+toolexeclibgoarchive_DATA = \
 	archive/tar.gox \
 	archive/zip.gox
 
-toolexeclibcompressdir = $(toolexeclibdir)/compress
-toolexeclibcompress_DATA = \
+toolexeclibgocompressdir = $(toolexeclibgodir)/compress
+toolexeclibgocompress_DATA = \
 	compress/flate.gox \
 	compress/gzip.gox \
 	compress/zlib.gox
 
-toolexeclibcontainerdir = $(toolexeclibdir)/container
-toolexeclibcontainer_DATA = \
+toolexeclibgocontainerdir = $(toolexeclibgodir)/container
+toolexeclibgocontainer_DATA = \
 	container/heap.gox \
 	container/list.gox \
 	container/ring.gox \
 	container/vector.gox
 
-toolexeclibcryptodir = $(toolexeclibdir)/crypto
-toolexeclibcrypto_DATA = \
+toolexeclibgocryptodir = $(toolexeclibgodir)/crypto
+toolexeclibgocrypto_DATA = \
 	crypto/aes.gox \
 	crypto/block.gox \
 	crypto/blowfish.gox \
@@ -579,8 +581,8 @@ toolexeclibcrypto_DATA = \
 	crypto/x509.gox \
 	crypto/xtea.gox
 
-toolexeclibdebugdir = $(toolexeclibdir)/debug
-toolexeclibdebug_DATA = \
+toolexeclibgodebugdir = $(toolexeclibgodir)/debug
+toolexeclibgodebug_DATA = \
 	debug/dwarf.gox \
 	debug/elf.gox \
 	debug/gosym.gox \
@@ -588,8 +590,8 @@ toolexeclibdebug_DATA = \
 	debug/pe.gox \
 	debug/proc.gox
 
-toolexeclibencodingdir = $(toolexeclibdir)/encoding
-toolexeclibencoding_DATA = \
+toolexeclibgoencodingdir = $(toolexeclibgodir)/encoding
+toolexeclibgoencoding_DATA = \
 	encoding/ascii85.gox \
 	encoding/base64.gox \
 	encoding/binary.gox \
@@ -597,14 +599,14 @@ toolexeclibencoding_DATA = \
 	encoding/hex.gox \
 	encoding/pem.gox
 
-toolexeclibexpdir = $(toolexeclibdir)/exp
-toolexeclibexp_DATA = \
+toolexeclibgoexpdir = $(toolexeclibgodir)/exp
+toolexeclibgoexp_DATA = \
 	exp/datafmt.gox \
 	exp/draw.gox \
 	exp/eval.gox
 
-toolexeclibgodir = $(toolexeclibdir)/go
-toolexeclibgo_DATA = \
+toolexeclibgogodir = $(toolexeclibgodir)/go
+toolexeclibgogo_DATA = \
 	go/ast.gox \
 	go/doc.gox \
 	go/parser.gox \
@@ -613,52 +615,52 @@ toolexeclibgo_DATA = \
 	go/token.gox \
 	go/typechecker.gox
 
-toolexeclibhashdir = $(toolexeclibdir)/hash
-toolexeclibhash_DATA = \
+toolexeclibgohashdir = $(toolexeclibgodir)/hash
+toolexeclibgohash_DATA = \
 	hash/adler32.gox \
 	hash/crc32.gox \
 	hash/crc64.gox
 
-toolexeclibhttpdir = $(toolexeclibdir)/http
-toolexeclibhttp_DATA = \
+toolexeclibgohttpdir = $(toolexeclibgodir)/http
+toolexeclibgohttp_DATA = \
 	http/pprof.gox
 
-toolexeclibimagedir = $(toolexeclibdir)/image
-toolexeclibimage_DATA = \
+toolexeclibgoimagedir = $(toolexeclibgodir)/image
+toolexeclibgoimage_DATA = \
 	image/jpeg.gox \
 	image/png.gox
 
-toolexeclibindexdir = $(toolexeclibdir)/index
-toolexeclibindex_DATA = \
+toolexeclibgoindexdir = $(toolexeclibgodir)/index
+toolexeclibgoindex_DATA = \
 	index/suffixarray.gox
 
-toolexeclibiodir = $(toolexeclibdir)/io
-toolexeclibio_DATA = \
+toolexeclibgoiodir = $(toolexeclibgodir)/io
+toolexeclibgoio_DATA = \
 	io/ioutil.gox
 
-toolexeclibmimedir = $(toolexeclibdir)/mime
-toolexeclibmime_DATA = \
+toolexeclibgomimedir = $(toolexeclibgodir)/mime
+toolexeclibgomime_DATA = \
 	mime/multipart.gox
 
-toolexeclibnetdir = $(toolexeclibdir)/net
-toolexeclibnet_DATA = \
+toolexeclibgonetdir = $(toolexeclibgodir)/net
+toolexeclibgonet_DATA = \
 	net/dict.gox \
 	net/textproto.gox
 
-toolexeclibosdir = $(toolexeclibdir)/os
-toolexeclibos_DATA = \
+toolexeclibgoosdir = $(toolexeclibgodir)/os
+toolexeclibgoos_DATA = \
 	os/signal.gox
 
-toolexeclibrpcdir = $(toolexeclibdir)/rpc
-toolexeclibrpc_DATA = \
+toolexeclibgorpcdir = $(toolexeclibgodir)/rpc
+toolexeclibgorpc_DATA = \
 	rpc/jsonrpc.gox
 
-toolexeclibruntimedir = $(toolexeclibdir)/runtime
-toolexeclibruntime_DATA = \
+toolexeclibgoruntimedir = $(toolexeclibgodir)/runtime
+toolexeclibgoruntime_DATA = \
 	runtime/pprof.gox
 
-toolexeclibtestingdir = $(toolexeclibdir)/testing
-toolexeclibtesting_DATA = \
+toolexeclibgotestingdir = $(toolexeclibgodir)/testing
+toolexeclibgotesting_DATA = \
 	testing/iotest.gox \
 	testing/quick.gox \
 	testing/script.gox
@@ -2656,166 +2658,6 @@ distclean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean # $(MAKE)
 maintainer-clean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean # $(MAKE)
-install-toolexeclibDATA: $(toolexeclib_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)"
-	@list='$(toolexeclib_DATA)'; test -n "$(toolexeclibdir)" || list=; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibdir)" || exit $$?; \
-	done
-
-uninstall-toolexeclibDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclib_DATA)'; test -n "$(toolexeclibdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibdir)" && rm -f $$files
-install-toolexeclibarchiveDATA: $(toolexeclibarchive_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibarchivedir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibarchivedir)"
-	@list='$(toolexeclibarchive_DATA)'; test -n "$(toolexeclibarchivedir)" || list=; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibarchivedir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibarchivedir)" || exit $$?; \
-	done
-
-uninstall-toolexeclibarchiveDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibarchive_DATA)'; test -n "$(toolexeclibarchivedir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibarchivedir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibarchivedir)" && rm -f $$files
-install-toolexeclibcompressDATA: $(toolexeclibcompress_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibcompressdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibcompressdir)"
-	@list='$(toolexeclibcompress_DATA)'; test -n "$(toolexeclibcompressdir)" || list=; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibcompressdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibcompressdir)" || exit $$?; \
-	done
-
-uninstall-toolexeclibcompressDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibcompress_DATA)'; test -n "$(toolexeclibcompressdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibcompressdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibcompressdir)" && rm -f $$files
-install-toolexeclibcontainerDATA: $(toolexeclibcontainer_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibcontainerdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibcontainerdir)"
-	@list='$(toolexeclibcontainer_DATA)'; test -n "$(toolexeclibcontainerdir)" || list=; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibcontainerdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibcontainerdir)" || exit $$?; \
-	done
-
-uninstall-toolexeclibcontainerDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibcontainer_DATA)'; test -n "$(toolexeclibcontainerdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibcontainerdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibcontainerdir)" && rm -f $$files
-install-toolexeclibcryptoDATA: $(toolexeclibcrypto_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibcryptodir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibcryptodir)"
-	@list='$(toolexeclibcrypto_DATA)'; test -n "$(toolexeclibcryptodir)" || list=; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibcryptodir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibcryptodir)" || exit $$?; \
-	done
-
-uninstall-toolexeclibcryptoDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibcrypto_DATA)'; test -n "$(toolexeclibcryptodir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibcryptodir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibcryptodir)" && rm -f $$files
-install-toolexeclibdebugDATA: $(toolexeclibdebug_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibdebugdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibdebugdir)"
-	@list='$(toolexeclibdebug_DATA)'; test -n "$(toolexeclibdebugdir)" || list=; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibdebugdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibdebugdir)" || exit $$?; \
-	done
-
-uninstall-toolexeclibdebugDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibdebug_DATA)'; test -n "$(toolexeclibdebugdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibdebugdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibdebugdir)" && rm -f $$files
-install-toolexeclibencodingDATA: $(toolexeclibencoding_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibencodingdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibencodingdir)"
-	@list='$(toolexeclibencoding_DATA)'; test -n "$(toolexeclibencodingdir)" || list=; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibencodingdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibencodingdir)" || exit $$?; \
-	done
-
-uninstall-toolexeclibencodingDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibencoding_DATA)'; test -n "$(toolexeclibencodingdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibencodingdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibencodingdir)" && rm -f $$files
-install-toolexeclibexpDATA: $(toolexeclibexp_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibexpdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibexpdir)"
-	@list='$(toolexeclibexp_DATA)'; test -n "$(toolexeclibexpdir)" || list=; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibexpdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibexpdir)" || exit $$?; \
-	done
-
-uninstall-toolexeclibexpDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibexp_DATA)'; test -n "$(toolexeclibexpdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibexpdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibexpdir)" && rm -f $$files
 install-toolexeclibgoDATA: $(toolexeclibgo_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(toolexeclibgodir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgodir)"
@@ -2836,226 +2678,386 @@ uninstall-toolexeclibgoDATA:
 	test -n "$$files" || exit 0; \
 	echo " ( cd '$(DESTDIR)$(toolexeclibgodir)' && rm -f" $$files ")"; \
 	cd "$(DESTDIR)$(toolexeclibgodir)" && rm -f $$files
-install-toolexeclibhashDATA: $(toolexeclibhash_DATA)
+install-toolexeclibgoarchiveDATA: $(toolexeclibgoarchive_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibhashdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibhashdir)"
-	@list='$(toolexeclibhash_DATA)'; test -n "$(toolexeclibhashdir)" || list=; \
+	test -z "$(toolexeclibgoarchivedir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgoarchivedir)"
+	@list='$(toolexeclibgoarchive_DATA)'; test -n "$(toolexeclibgoarchivedir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibhashdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibhashdir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgoarchivedir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgoarchivedir)" || exit $$?; \
 	done
 
-uninstall-toolexeclibhashDATA:
+uninstall-toolexeclibgoarchiveDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibhash_DATA)'; test -n "$(toolexeclibhashdir)" || list=; \
+	@list='$(toolexeclibgoarchive_DATA)'; test -n "$(toolexeclibgoarchivedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibhashdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibhashdir)" && rm -f $$files
-install-toolexeclibhttpDATA: $(toolexeclibhttp_DATA)
+	echo " ( cd '$(DESTDIR)$(toolexeclibgoarchivedir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgoarchivedir)" && rm -f $$files
+install-toolexeclibgocompressDATA: $(toolexeclibgocompress_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibhttpdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibhttpdir)"
-	@list='$(toolexeclibhttp_DATA)'; test -n "$(toolexeclibhttpdir)" || list=; \
+	test -z "$(toolexeclibgocompressdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgocompressdir)"
+	@list='$(toolexeclibgocompress_DATA)'; test -n "$(toolexeclibgocompressdir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibhttpdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibhttpdir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgocompressdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgocompressdir)" || exit $$?; \
 	done
 
-uninstall-toolexeclibhttpDATA:
+uninstall-toolexeclibgocompressDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibhttp_DATA)'; test -n "$(toolexeclibhttpdir)" || list=; \
+	@list='$(toolexeclibgocompress_DATA)'; test -n "$(toolexeclibgocompressdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibhttpdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibhttpdir)" && rm -f $$files
-install-toolexeclibimageDATA: $(toolexeclibimage_DATA)
+	echo " ( cd '$(DESTDIR)$(toolexeclibgocompressdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgocompressdir)" && rm -f $$files
+install-toolexeclibgocontainerDATA: $(toolexeclibgocontainer_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibimagedir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibimagedir)"
-	@list='$(toolexeclibimage_DATA)'; test -n "$(toolexeclibimagedir)" || list=; \
+	test -z "$(toolexeclibgocontainerdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgocontainerdir)"
+	@list='$(toolexeclibgocontainer_DATA)'; test -n "$(toolexeclibgocontainerdir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibimagedir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibimagedir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgocontainerdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgocontainerdir)" || exit $$?; \
 	done
 
-uninstall-toolexeclibimageDATA:
+uninstall-toolexeclibgocontainerDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibimage_DATA)'; test -n "$(toolexeclibimagedir)" || list=; \
+	@list='$(toolexeclibgocontainer_DATA)'; test -n "$(toolexeclibgocontainerdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibimagedir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibimagedir)" && rm -f $$files
-install-toolexeclibindexDATA: $(toolexeclibindex_DATA)
+	echo " ( cd '$(DESTDIR)$(toolexeclibgocontainerdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgocontainerdir)" && rm -f $$files
+install-toolexeclibgocryptoDATA: $(toolexeclibgocrypto_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibindexdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibindexdir)"
-	@list='$(toolexeclibindex_DATA)'; test -n "$(toolexeclibindexdir)" || list=; \
+	test -z "$(toolexeclibgocryptodir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgocryptodir)"
+	@list='$(toolexeclibgocrypto_DATA)'; test -n "$(toolexeclibgocryptodir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibindexdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibindexdir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgocryptodir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgocryptodir)" || exit $$?; \
 	done
 
-uninstall-toolexeclibindexDATA:
+uninstall-toolexeclibgocryptoDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibindex_DATA)'; test -n "$(toolexeclibindexdir)" || list=; \
+	@list='$(toolexeclibgocrypto_DATA)'; test -n "$(toolexeclibgocryptodir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibindexdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibindexdir)" && rm -f $$files
-install-toolexeclibioDATA: $(toolexeclibio_DATA)
+	echo " ( cd '$(DESTDIR)$(toolexeclibgocryptodir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgocryptodir)" && rm -f $$files
+install-toolexeclibgodebugDATA: $(toolexeclibgodebug_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibiodir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibiodir)"
-	@list='$(toolexeclibio_DATA)'; test -n "$(toolexeclibiodir)" || list=; \
+	test -z "$(toolexeclibgodebugdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgodebugdir)"
+	@list='$(toolexeclibgodebug_DATA)'; test -n "$(toolexeclibgodebugdir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibiodir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibiodir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgodebugdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgodebugdir)" || exit $$?; \
 	done
 
-uninstall-toolexeclibioDATA:
+uninstall-toolexeclibgodebugDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibio_DATA)'; test -n "$(toolexeclibiodir)" || list=; \
+	@list='$(toolexeclibgodebug_DATA)'; test -n "$(toolexeclibgodebugdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibiodir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibiodir)" && rm -f $$files
-install-toolexeclibmimeDATA: $(toolexeclibmime_DATA)
+	echo " ( cd '$(DESTDIR)$(toolexeclibgodebugdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgodebugdir)" && rm -f $$files
+install-toolexeclibgoencodingDATA: $(toolexeclibgoencoding_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibmimedir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibmimedir)"
-	@list='$(toolexeclibmime_DATA)'; test -n "$(toolexeclibmimedir)" || list=; \
+	test -z "$(toolexeclibgoencodingdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgoencodingdir)"
+	@list='$(toolexeclibgoencoding_DATA)'; test -n "$(toolexeclibgoencodingdir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibmimedir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibmimedir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgoencodingdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgoencodingdir)" || exit $$?; \
 	done
 
-uninstall-toolexeclibmimeDATA:
+uninstall-toolexeclibgoencodingDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibmime_DATA)'; test -n "$(toolexeclibmimedir)" || list=; \
+	@list='$(toolexeclibgoencoding_DATA)'; test -n "$(toolexeclibgoencodingdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibmimedir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibmimedir)" && rm -f $$files
-install-toolexeclibnetDATA: $(toolexeclibnet_DATA)
+	echo " ( cd '$(DESTDIR)$(toolexeclibgoencodingdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgoencodingdir)" && rm -f $$files
+install-toolexeclibgoexpDATA: $(toolexeclibgoexp_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibnetdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibnetdir)"
-	@list='$(toolexeclibnet_DATA)'; test -n "$(toolexeclibnetdir)" || list=; \
+	test -z "$(toolexeclibgoexpdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgoexpdir)"
+	@list='$(toolexeclibgoexp_DATA)'; test -n "$(toolexeclibgoexpdir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibnetdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibnetdir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgoexpdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgoexpdir)" || exit $$?; \
 	done
 
-uninstall-toolexeclibnetDATA:
+uninstall-toolexeclibgoexpDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibnet_DATA)'; test -n "$(toolexeclibnetdir)" || list=; \
+	@list='$(toolexeclibgoexp_DATA)'; test -n "$(toolexeclibgoexpdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibnetdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibnetdir)" && rm -f $$files
-install-toolexeclibosDATA: $(toolexeclibos_DATA)
+	echo " ( cd '$(DESTDIR)$(toolexeclibgoexpdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgoexpdir)" && rm -f $$files
+install-toolexeclibgogoDATA: $(toolexeclibgogo_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibosdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibosdir)"
-	@list='$(toolexeclibos_DATA)'; test -n "$(toolexeclibosdir)" || list=; \
+	test -z "$(toolexeclibgogodir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgogodir)"
+	@list='$(toolexeclibgogo_DATA)'; test -n "$(toolexeclibgogodir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibosdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibosdir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgogodir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgogodir)" || exit $$?; \
 	done
 
-uninstall-toolexeclibosDATA:
+uninstall-toolexeclibgogoDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibos_DATA)'; test -n "$(toolexeclibosdir)" || list=; \
+	@list='$(toolexeclibgogo_DATA)'; test -n "$(toolexeclibgogodir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibosdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibosdir)" && rm -f $$files
-install-toolexeclibrpcDATA: $(toolexeclibrpc_DATA)
+	echo " ( cd '$(DESTDIR)$(toolexeclibgogodir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgogodir)" && rm -f $$files
+install-toolexeclibgohashDATA: $(toolexeclibgohash_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibrpcdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibrpcdir)"
-	@list='$(toolexeclibrpc_DATA)'; test -n "$(toolexeclibrpcdir)" || list=; \
+	test -z "$(toolexeclibgohashdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgohashdir)"
+	@list='$(toolexeclibgohash_DATA)'; test -n "$(toolexeclibgohashdir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibrpcdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibrpcdir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgohashdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgohashdir)" || exit $$?; \
 	done
 
-uninstall-toolexeclibrpcDATA:
+uninstall-toolexeclibgohashDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibrpc_DATA)'; test -n "$(toolexeclibrpcdir)" || list=; \
+	@list='$(toolexeclibgohash_DATA)'; test -n "$(toolexeclibgohashdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibrpcdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibrpcdir)" && rm -f $$files
-install-toolexeclibruntimeDATA: $(toolexeclibruntime_DATA)
+	echo " ( cd '$(DESTDIR)$(toolexeclibgohashdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgohashdir)" && rm -f $$files
+install-toolexeclibgohttpDATA: $(toolexeclibgohttp_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibruntimedir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibruntimedir)"
-	@list='$(toolexeclibruntime_DATA)'; test -n "$(toolexeclibruntimedir)" || list=; \
+	test -z "$(toolexeclibgohttpdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgohttpdir)"
+	@list='$(toolexeclibgohttp_DATA)'; test -n "$(toolexeclibgohttpdir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibruntimedir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibruntimedir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgohttpdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgohttpdir)" || exit $$?; \
 	done
 
-uninstall-toolexeclibruntimeDATA:
+uninstall-toolexeclibgohttpDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibruntime_DATA)'; test -n "$(toolexeclibruntimedir)" || list=; \
+	@list='$(toolexeclibgohttp_DATA)'; test -n "$(toolexeclibgohttpdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibruntimedir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibruntimedir)" && rm -f $$files
-install-toolexeclibtestingDATA: $(toolexeclibtesting_DATA)
+	echo " ( cd '$(DESTDIR)$(toolexeclibgohttpdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgohttpdir)" && rm -f $$files
+install-toolexeclibgoimageDATA: $(toolexeclibgoimage_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(toolexeclibtestingdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibtestingdir)"
-	@list='$(toolexeclibtesting_DATA)'; test -n "$(toolexeclibtestingdir)" || list=; \
+	test -z "$(toolexeclibgoimagedir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgoimagedir)"
+	@list='$(toolexeclibgoimage_DATA)'; test -n "$(toolexeclibgoimagedir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibtestingdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibtestingdir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgoimagedir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgoimagedir)" || exit $$?; \
 	done
 
-uninstall-toolexeclibtestingDATA:
+uninstall-toolexeclibgoimageDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibtesting_DATA)'; test -n "$(toolexeclibtestingdir)" || list=; \
+	@list='$(toolexeclibgoimage_DATA)'; test -n "$(toolexeclibgoimagedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(toolexeclibtestingdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(toolexeclibtestingdir)" && rm -f $$files
+	echo " ( cd '$(DESTDIR)$(toolexeclibgoimagedir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgoimagedir)" && rm -f $$files
+install-toolexeclibgoindexDATA: $(toolexeclibgoindex_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(toolexeclibgoindexdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgoindexdir)"
+	@list='$(toolexeclibgoindex_DATA)'; test -n "$(toolexeclibgoindexdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgoindexdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgoindexdir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgoindexDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgoindex_DATA)'; test -n "$(toolexeclibgoindexdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(toolexeclibgoindexdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgoindexdir)" && rm -f $$files
+install-toolexeclibgoioDATA: $(toolexeclibgoio_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(toolexeclibgoiodir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgoiodir)"
+	@list='$(toolexeclibgoio_DATA)'; test -n "$(toolexeclibgoiodir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgoiodir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgoiodir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgoioDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgoio_DATA)'; test -n "$(toolexeclibgoiodir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(toolexeclibgoiodir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgoiodir)" && rm -f $$files
+install-toolexeclibgomimeDATA: $(toolexeclibgomime_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(toolexeclibgomimedir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgomimedir)"
+	@list='$(toolexeclibgomime_DATA)'; test -n "$(toolexeclibgomimedir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgomimedir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgomimedir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgomimeDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgomime_DATA)'; test -n "$(toolexeclibgomimedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(toolexeclibgomimedir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgomimedir)" && rm -f $$files
+install-toolexeclibgonetDATA: $(toolexeclibgonet_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(toolexeclibgonetdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgonetdir)"
+	@list='$(toolexeclibgonet_DATA)'; test -n "$(toolexeclibgonetdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgonetdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgonetdir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgonetDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgonet_DATA)'; test -n "$(toolexeclibgonetdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(toolexeclibgonetdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgonetdir)" && rm -f $$files
+install-toolexeclibgoosDATA: $(toolexeclibgoos_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(toolexeclibgoosdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgoosdir)"
+	@list='$(toolexeclibgoos_DATA)'; test -n "$(toolexeclibgoosdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgoosdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgoosdir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgoosDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgoos_DATA)'; test -n "$(toolexeclibgoosdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(toolexeclibgoosdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgoosdir)" && rm -f $$files
+install-toolexeclibgorpcDATA: $(toolexeclibgorpc_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(toolexeclibgorpcdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgorpcdir)"
+	@list='$(toolexeclibgorpc_DATA)'; test -n "$(toolexeclibgorpcdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgorpcdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgorpcdir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgorpcDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgorpc_DATA)'; test -n "$(toolexeclibgorpcdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(toolexeclibgorpcdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgorpcdir)" && rm -f $$files
+install-toolexeclibgoruntimeDATA: $(toolexeclibgoruntime_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(toolexeclibgoruntimedir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgoruntimedir)"
+	@list='$(toolexeclibgoruntime_DATA)'; test -n "$(toolexeclibgoruntimedir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgoruntimedir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgoruntimedir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgoruntimeDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgoruntime_DATA)'; test -n "$(toolexeclibgoruntimedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(toolexeclibgoruntimedir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgoruntimedir)" && rm -f $$files
+install-toolexeclibgotestingDATA: $(toolexeclibgotesting_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(toolexeclibgotestingdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibgotestingdir)"
+	@list='$(toolexeclibgotesting_DATA)'; test -n "$(toolexeclibgotestingdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgotestingdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgotestingdir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgotestingDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgotesting_DATA)'; test -n "$(toolexeclibgotestingdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(toolexeclibgotestingdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibgotestingdir)" && rm -f $$files
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -3373,7 +3375,7 @@ all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) all-multi $(DATA) \
 		config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibarchivedir)" "$(DESTDIR)$(toolexeclibcompressdir)" "$(DESTDIR)$(toolexeclibcontainerdir)" "$(DESTDIR)$(toolexeclibcryptodir)" "$(DESTDIR)$(toolexeclibdebugdir)" "$(DESTDIR)$(toolexeclibencodingdir)" "$(DESTDIR)$(toolexeclibexpdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibhashdir)" "$(DESTDIR)$(toolexeclibhttpdir)" "$(DESTDIR)$(toolexeclibimagedir)" "$(DESTDIR)$(toolexeclibindexdir)" "$(DESTDIR)$(toolexeclibiodir)" "$(DESTDIR)$(toolexeclibmimedir)" "$(DESTDIR)$(toolexeclibnetdir)" "$(DESTDIR)$(toolexeclibosdir)" "$(DESTDIR)$(toolexeclibrpcdir)" "$(DESTDIR)$(toolexeclibruntimedir)" "$(DESTDIR)$(toolexeclibtestingdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgoexpdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohttpdir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgorpcdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgotestingdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -3433,18 +3435,20 @@ install-dvi: install-dvi-recursive
 
 install-dvi-am:
 
-install-exec-am: install-multi install-toolexeclibDATA \
-	install-toolexeclibLIBRARIES install-toolexeclibLTLIBRARIES \
-	install-toolexeclibarchiveDATA install-toolexeclibcompressDATA \
-	install-toolexeclibcontainerDATA install-toolexeclibcryptoDATA \
-	install-toolexeclibdebugDATA install-toolexeclibencodingDATA \
-	install-toolexeclibexpDATA install-toolexeclibgoDATA \
-	install-toolexeclibhashDATA install-toolexeclibhttpDATA \
-	install-toolexeclibimageDATA install-toolexeclibindexDATA \
-	install-toolexeclibioDATA install-toolexeclibmimeDATA \
-	install-toolexeclibnetDATA install-toolexeclibosDATA \
-	install-toolexeclibrpcDATA install-toolexeclibruntimeDATA \
-	install-toolexeclibtestingDATA
+install-exec-am: install-multi install-toolexeclibLIBRARIES \
+	install-toolexeclibLTLIBRARIES install-toolexeclibgoDATA \
+	install-toolexeclibgoarchiveDATA \
+	install-toolexeclibgocompressDATA \
+	install-toolexeclibgocontainerDATA \
+	install-toolexeclibgocryptoDATA install-toolexeclibgodebugDATA \
+	install-toolexeclibgoencodingDATA install-toolexeclibgoexpDATA \
+	install-toolexeclibgogoDATA install-toolexeclibgohashDATA \
+	install-toolexeclibgohttpDATA install-toolexeclibgoimageDATA \
+	install-toolexeclibgoindexDATA install-toolexeclibgoioDATA \
+	install-toolexeclibgomimeDATA install-toolexeclibgonetDATA \
+	install-toolexeclibgoosDATA install-toolexeclibgorpcDATA \
+	install-toolexeclibgoruntimeDATA \
+	install-toolexeclibgotestingDATA
 
 install-html: install-html-recursive
 
@@ -3486,20 +3490,23 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-toolexeclibDATA uninstall-toolexeclibLIBRARIES \
-	uninstall-toolexeclibLTLIBRARIES \
-	uninstall-toolexeclibarchiveDATA \
-	uninstall-toolexeclibcompressDATA \
-	uninstall-toolexeclibcontainerDATA \
-	uninstall-toolexeclibcryptoDATA uninstall-toolexeclibdebugDATA \
-	uninstall-toolexeclibencodingDATA uninstall-toolexeclibexpDATA \
-	uninstall-toolexeclibgoDATA uninstall-toolexeclibhashDATA \
-	uninstall-toolexeclibhttpDATA uninstall-toolexeclibimageDATA \
-	uninstall-toolexeclibindexDATA uninstall-toolexeclibioDATA \
-	uninstall-toolexeclibmimeDATA uninstall-toolexeclibnetDATA \
-	uninstall-toolexeclibosDATA uninstall-toolexeclibrpcDATA \
-	uninstall-toolexeclibruntimeDATA \
-	uninstall-toolexeclibtestingDATA
+uninstall-am: uninstall-toolexeclibLIBRARIES \
+	uninstall-toolexeclibLTLIBRARIES uninstall-toolexeclibgoDATA \
+	uninstall-toolexeclibgoarchiveDATA \
+	uninstall-toolexeclibgocompressDATA \
+	uninstall-toolexeclibgocontainerDATA \
+	uninstall-toolexeclibgocryptoDATA \
+	uninstall-toolexeclibgodebugDATA \
+	uninstall-toolexeclibgoencodingDATA \
+	uninstall-toolexeclibgoexpDATA uninstall-toolexeclibgogoDATA \
+	uninstall-toolexeclibgohashDATA \
+	uninstall-toolexeclibgohttpDATA \
+	uninstall-toolexeclibgoimageDATA \
+	uninstall-toolexeclibgoindexDATA uninstall-toolexeclibgoioDATA \
+	uninstall-toolexeclibgomimeDATA uninstall-toolexeclibgonetDATA \
+	uninstall-toolexeclibgoosDATA uninstall-toolexeclibgorpcDATA \
+	uninstall-toolexeclibgoruntimeDATA \
+	uninstall-toolexeclibgotestingDATA
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all all-multi \
 	clean-multi ctags-recursive distclean-multi install-am \
@@ -3520,37 +3527,41 @@ uninstall-am: uninstall-toolexeclibDATA uninstall-toolexeclibLIBRARIES \
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-man install-multi install-pdf \
 	install-pdf-am install-ps install-ps-am install-strip \
-	install-toolexeclibDATA install-toolexeclibLIBRARIES \
-	install-toolexeclibLTLIBRARIES install-toolexeclibarchiveDATA \
-	install-toolexeclibcompressDATA \
-	install-toolexeclibcontainerDATA install-toolexeclibcryptoDATA \
-	install-toolexeclibdebugDATA install-toolexeclibencodingDATA \
-	install-toolexeclibexpDATA install-toolexeclibgoDATA \
-	install-toolexeclibhashDATA install-toolexeclibhttpDATA \
-	install-toolexeclibimageDATA install-toolexeclibindexDATA \
-	install-toolexeclibioDATA install-toolexeclibmimeDATA \
-	install-toolexeclibnetDATA install-toolexeclibosDATA \
-	install-toolexeclibrpcDATA install-toolexeclibruntimeDATA \
-	install-toolexeclibtestingDATA installcheck installcheck-am \
+	install-toolexeclibLIBRARIES install-toolexeclibLTLIBRARIES \
+	install-toolexeclibgoDATA install-toolexeclibgoarchiveDATA \
+	install-toolexeclibgocompressDATA \
+	install-toolexeclibgocontainerDATA \
+	install-toolexeclibgocryptoDATA install-toolexeclibgodebugDATA \
+	install-toolexeclibgoencodingDATA install-toolexeclibgoexpDATA \
+	install-toolexeclibgogoDATA install-toolexeclibgohashDATA \
+	install-toolexeclibgohttpDATA install-toolexeclibgoimageDATA \
+	install-toolexeclibgoindexDATA install-toolexeclibgoioDATA \
+	install-toolexeclibgomimeDATA install-toolexeclibgonetDATA \
+	install-toolexeclibgoosDATA install-toolexeclibgorpcDATA \
+	install-toolexeclibgoruntimeDATA \
+	install-toolexeclibgotestingDATA installcheck installcheck-am \
 	installdirs installdirs-am maintainer-clean \
 	maintainer-clean-generic maintainer-clean-multi mostlyclean \
 	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
 	mostlyclean-local mostlyclean-multi pdf pdf-am ps ps-am tags \
 	tags-recursive uninstall uninstall-am \
-	uninstall-toolexeclibDATA uninstall-toolexeclibLIBRARIES \
-	uninstall-toolexeclibLTLIBRARIES \
-	uninstall-toolexeclibarchiveDATA \
-	uninstall-toolexeclibcompressDATA \
-	uninstall-toolexeclibcontainerDATA \
-	uninstall-toolexeclibcryptoDATA uninstall-toolexeclibdebugDATA \
-	uninstall-toolexeclibencodingDATA uninstall-toolexeclibexpDATA \
-	uninstall-toolexeclibgoDATA uninstall-toolexeclibhashDATA \
-	uninstall-toolexeclibhttpDATA uninstall-toolexeclibimageDATA \
-	uninstall-toolexeclibindexDATA uninstall-toolexeclibioDATA \
-	uninstall-toolexeclibmimeDATA uninstall-toolexeclibnetDATA \
-	uninstall-toolexeclibosDATA uninstall-toolexeclibrpcDATA \
-	uninstall-toolexeclibruntimeDATA \
-	uninstall-toolexeclibtestingDATA
+	uninstall-toolexeclibLIBRARIES \
+	uninstall-toolexeclibLTLIBRARIES uninstall-toolexeclibgoDATA \
+	uninstall-toolexeclibgoarchiveDATA \
+	uninstall-toolexeclibgocompressDATA \
+	uninstall-toolexeclibgocontainerDATA \
+	uninstall-toolexeclibgocryptoDATA \
+	uninstall-toolexeclibgodebugDATA \
+	uninstall-toolexeclibgoencodingDATA \
+	uninstall-toolexeclibgoexpDATA uninstall-toolexeclibgogoDATA \
+	uninstall-toolexeclibgohashDATA \
+	uninstall-toolexeclibgohttpDATA \
+	uninstall-toolexeclibgoimageDATA \
+	uninstall-toolexeclibgoindexDATA uninstall-toolexeclibgoioDATA \
+	uninstall-toolexeclibgomimeDATA uninstall-toolexeclibgonetDATA \
+	uninstall-toolexeclibgoosDATA uninstall-toolexeclibgorpcDATA \
+	uninstall-toolexeclibgoruntimeDATA \
+	uninstall-toolexeclibgotestingDATA
 
 
 goc2c.$(OBJEXT): runtime/goc2c.c
