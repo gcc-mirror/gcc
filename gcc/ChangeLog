@@ -1,6 +1,12 @@
 2010-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2010-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/46777
+	* cfglayout.c (duplicate_insn_chain): Avoid duplicating
+	also barrier after tablejump.
+
 	2010-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/46614

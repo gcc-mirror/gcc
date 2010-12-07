@@ -1165,7 +1165,20 @@ duplicate_insn_chain (rtx from, rtx to)
 	     moved far from original jump.  */
 	  if (GET_CODE (PATTERN (insn)) == ADDR_VEC
 	      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
-	    break;
+	    {
+	      /* Avoid copying following barrier as well if any
+		 (and debug insns in between).  */
+	      rtx next;
+
+	      for (next = NEXT_INSN (insn);
+		   next != NEXT_INSN (to);
+		   next = NEXT_INSN (next))
+		if (!DEBUG_INSN_P (next))
+		  break;
+	      if (next != NEXT_INSN (to) && BARRIER_P (next))
+		insn = next;
+	      break;
+	    }
 	  copy = emit_copy_of_insn_after (insn, get_last_insn ());
           maybe_copy_epilogue_insn (insn, copy);
 	  break;
