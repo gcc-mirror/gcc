@@ -1,5 +1,5 @@
 ! { dg-do run }
-! [ dg-options "-std=f2008" }
+! { dg-options "-std=f2008 -fall-intrinsics" }
 
 ! PR fortran/34162
 ! Internal procedures as actual arguments (like restricted closures).
