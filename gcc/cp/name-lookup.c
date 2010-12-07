@@ -29,8 +29,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "name-lookup.h"
 #include "timevar.h"
 #include "diagnostic-core.h"
+#include "intl.h"
 #include "debug.h"
 #include "c-family/c-pragma.h"
+#include "params.h"
 
 /* The bindings for a particular name in a particular scope.  */
 
@@ -3914,6 +3916,71 @@ remove_hidden_names (tree fns)
     }
 
   return fns;
+}
+
+/* Suggest alternatives for NAME, an IDENTIFIER_NODE for which name
+   lookup failed.  Search through all available namespaces and print out
+   possible candidates.  */
+
+void
+suggest_alternatives_for (tree name)
+{
+  VEC(tree,heap) *candidates = NULL;
+  VEC(tree,heap) *namespaces_to_search = NULL;
+  int max_to_search = PARAM_VALUE (CXX_MAX_NAMESPACES_FOR_DIAGNOSTIC_HELP);
+  int n_searched = 0;
+  tree t;
+  unsigned ix;
+  location_t name_location;
+
+  VEC_safe_push (tree, heap, namespaces_to_search, global_namespace);
+
+  while (!VEC_empty (tree, namespaces_to_search)
+	 && n_searched < max_to_search)
+    {
+      tree scope = VEC_pop (tree, namespaces_to_search);
+      struct scope_binding binding = EMPTY_SCOPE_BINDING;
+      struct cp_binding_level *level = NAMESPACE_LEVEL (scope);
+
+      /* Look in this namespace.  */
+      qualified_lookup_using_namespace (name, scope, &binding, 0);
+
+      n_searched++;
+
+      if (binding.value)
+	VEC_safe_push (tree, heap, candidates, binding.value);
+
+      /* Add child namespaces.  */
+      for (t = level->namespaces; t; t = DECL_CHAIN (t))
+	VEC_safe_push (tree, heap, namespaces_to_search, t);
+    }
+
+  name_location = location_of (name);
+
+  /* If we stopped before we could examine all namespaces, inform the
+     user.  Do this even if we don't have any candidates, since there
+     might be more candidates further down that we weren't able to
+     find.  */
+  if (n_searched >= max_to_search
+      && !VEC_empty (tree, namespaces_to_search))
+    inform (name_location,
+	    "maximum limit of %d namespaces searched for %qE",
+	    max_to_search, name);
+
+  VEC_free (tree, heap, namespaces_to_search);
+
+  /* Nothing useful to report.  */
+  if (VEC_empty (tree, candidates))
+    return;
+
+  inform_n (name_location, VEC_length (tree, candidates),
+	    "suggested alternative:",
+	    "suggested alternatives:");
+
+  FOR_EACH_VEC_ELT (tree, candidates, ix, t)
+    inform (location_of (t), "  %qE", t);
+
+  VEC_free (tree, heap, candidates);
 }
 
 /* Unscoped lookup of a global: iterate over current namespaces,

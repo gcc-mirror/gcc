@@ -3,7 +3,7 @@
 namespace A{
   void foo();             
   struct X{};
-  void (*bar)(X*)=0;
+  void (*bar)(X*)=0;		// { dg-message "A::bar" }
 }
 using A::X;
 
@@ -15,4 +15,5 @@ void g()
 			 // foo variable first, and therefore do not
 			 // perform argument-dependent lookup.
   bar(new X);            // { dg-error "not declared" }
+  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } 17 }
 }

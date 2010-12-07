@@ -98,7 +98,6 @@ static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
 
 static bool cp_printer (pretty_printer *, text_info *, const char *,
 			int, bool, bool, bool);
-static location_t location_of (tree);
 
 void
 init_error (void)
@@ -1700,6 +1699,7 @@ dump_expr (tree t, int flags)
     case NAMESPACE_DECL:
     case LABEL_DECL:
     case OVERLOAD:
+    case TYPE_DECL:
     case IDENTIFIER_NODE:
       dump_decl (t, (flags & ~TFF_DECL_SPECIFIERS) | TFF_NO_FUNCTION_ARGUMENTS);
       break;
@@ -2487,7 +2487,7 @@ lang_decl_name (tree decl, int v, bool translate)
 
 /* Return the location of a tree passed to %+ formats.  */
 
-static location_t
+location_t
 location_of (tree t)
 {
   if (TREE_CODE (t) == PARM_DECL && DECL_CONTEXT (t))

@@ -8821,6 +8821,10 @@ Size of minimal paritition for WHOPR (in estimated instructions).
 This prevents expenses of splitting very small programs into too many
 partitions.
 
+@item cxx-max-namespaces-for-diagnostic-help
+The maximum number of namespaces to consult for suggestions when C++
+name lookup fails for an identifier.  The default is 1000.
+
 @end table
 @end table
 

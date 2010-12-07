@@ -1,3 +1,19 @@
+2010-12-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/45330
+	* g++.dg/pr45330.C: New test.
+	* g++.dg/ext/builtin3.C: Adjust.
+	* g++.dg/lookup/error1.C: Adjust.
+	* g++.dg/lookup/koenig5.C: Adjust.
+	* g++.dg/overload/koenig1.C: Adjust.
+	* g++.dg/parse/decl-specifier-1.C: Adjust.
+	* g++.dg/template/static10.C: Adjust.
+	* g++.old-deja/g++.mike/ns5.C: Adjust.
+	* g++.old-deja/g++.mike/ns7.C: Adjust.
+	* g++.old-deja/g++.ns/koenig5.C: Adjust.
+	* g++.old-deja/g++.ns/koenig9.C: Adjust.
+	* g++.old-deja/g++.other/lineno5.C: Adjust.
+
 2010-12-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46832

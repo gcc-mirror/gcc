@@ -1,3 +1,9 @@
+2010-12-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/45330
+	* params.def (CXX_MAX_NAMESPACES_FOR_DIAGNOSTIC_HELP): New parameter.
+	* doc/invoke.texi (cxx-max-namespaces-for-diagnostic-help): Document.
+
 2010-12-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46832
