@@ -1,3 +1,17 @@
+2010-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46799
+	* tree-parloops.c (separate_decls_in_region): Use UNKNOWN_LOCATION
+	instead of BUILTINS_LOCATION.
+	(create_loop_fn): Add LOC argument, pass it to build_decl instead of
+	BUILTINS_LOCATION.
+	(create_parallel_loop): Add LOC argument, use it for OMP clauses
+	and GIMPLE_*OMP* statements.
+	(gen_parallel_loop): Determine locus for the parallel loop, pass it
+	to create_loop_fn and create_parallel_loop.
+	* cfgexpand.c (gimple_expand_cfg): For builtin functions, call
+	set_curr_insn_source_location (UNKNOWN_LOCATION).
+
 2010-12-07  Joern Rennecke  <amylaar@spamcop.net>
 	    Richard Guenther  <rguenther@suse.de>
 

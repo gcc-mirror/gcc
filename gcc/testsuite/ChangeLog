@@ -1,3 +1,8 @@
+2010-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46799
+	* gcc.dg/autopar/pr46799.c: New test.
+
 2010-12-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/internal_dummy_2.f08: Fix dg-options.
