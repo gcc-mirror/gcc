@@ -2504,6 +2504,10 @@ looking for one that is valid, and will reload one or both registers
 only if neither labeling works.
 @end defmac
 
+@deftypefn {Target Hook} reg_class_t TARGET_PREFERRED_RENAME_CLASS (reg_class_t @var{rclass})
+A target hook that places additional preference on the register class to use when it is necessary to rename a register in class @var{class} to another class, or perhaps @var{NO_REGS}, if no prefered register class is found or hook @code{preferred_rename_class} is not implemented. Sometimes returning a more restrictive class makes better code.  For example, on ARM, thumb-2 instructions using @code{LO_REGS} may be smaller than instructions using @code{GENERIC_REGS}.  By returning @code{LO_REGS} from @code{preferred_rename_class}, code size can be reduced.
+@end deftypefn
+
 @deftypefn {Target Hook} reg_class_t TARGET_PREFERRED_RELOAD_CLASS (rtx @var{x}, reg_class_t @var{rclass})
 A target hook that places additional restrictions on the register class
 to use when it is necessary to copy value @var{x} into a register in class

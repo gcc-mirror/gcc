@@ -1278,6 +1278,13 @@ default_preferred_output_reload_class (rtx x ATTRIBUTE_UNUSED,
 #endif
 }
 
+/* The default implementation of TARGET_PREFERRED_RENAME_CLASS.  */
+reg_class_t
+default_preferred_rename_class (reg_class_t rclass ATTRIBUTE_UNUSED)
+{
+  return NO_REGS;
+}
+
 /* The default implementation of TARGET_CLASS_LIKELY_SPILLED_P.  */
 
 bool

@@ -2224,6 +2224,21 @@ DEFHOOK
  bool, (reg_class_t rclass),
  default_class_likely_spilled_p)
 
+DEFHOOK
+(preferred_rename_class,
+ "A target hook that places additional preference on the register\
+ class to use when it is necessary to rename a register in class\
+ @var{class} to another class, or perhaps @var{NO_REGS}, if no\
+ prefered register class is found or hook @code{preferred_rename_class}\
+ is not implemented.\
+ Sometimes returning a more restrictive class makes better code.  For\
+ example, on ARM, thumb-2 instructions using @code{LO_REGS} may be\
+ smaller than instructions using @code{GENERIC_REGS}.  By returning\
+ @code{LO_REGS} from @code{preferred_rename_class}, code size can\
+ be reduced.",
+ reg_class_t, (reg_class_t rclass),
+ default_preferred_rename_class)
+
 /* This target hook allows the backend to perform additional
    processing while initializing for variable expansion.  */
 DEFHOOK
