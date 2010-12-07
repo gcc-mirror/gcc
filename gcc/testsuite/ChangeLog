@@ -1,3 +1,8 @@
+2010-12-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46832
+	* gcc.c-torture/compile/pr46832.c: New testcase.
+
 2010-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46799
