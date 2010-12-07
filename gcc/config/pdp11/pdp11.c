@@ -233,6 +233,10 @@ static const struct default_options pdp11_option_optimization_table[] =
 
 #undef  TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE pdp11_conditional_register_usage
+
+#undef  TARGET_ASM_FUNCTION_SECTION
+#define TARGET_ASM_FUNCTION_SECTION pdp11_function_section
+
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -2116,6 +2120,15 @@ pdp11_conditional_register_usage (void)
       reg_names[12] = "fr4";
       reg_names[13] = "fr5";
     }
+}
+
+static section *
+pdp11_function_section (tree decl ATTRIBUTE_UNUSED,
+			enum node_frequency freq ATTRIBUTE_UNUSED,
+			bool startup ATTRIBUTE_UNUSED,
+			bool exit ATTRIBUTE_UNUSED)
+{
+  return NULL;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

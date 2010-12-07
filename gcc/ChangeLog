@@ -1,3 +1,8 @@
+2010-12-07  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.c (TARGET_ASM_FUNCTION_SECTION): Define.
+	(pdp11_function_section): New function.
+
 2010-12-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mcore/mcore.c Don't include assert.h.
