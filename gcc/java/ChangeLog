@@ -1,3 +1,8 @@
+2010-12-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* jcf-parse.c: Don't include assert.h.
+	(java_parse_file): Use gcc_assert.
+
 2010-12-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang.opt (static-libgcj): New option.

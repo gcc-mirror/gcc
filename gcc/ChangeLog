@@ -1,3 +1,10 @@
+2010-12-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mcore/mcore.c Don't include assert.h.
+	(layout_mcore_frame, handle_structs_in_regs): Use gcc_assert.
+	* config/spu/spu.c: Don't include assert.h.
+	(spu_sms_res_mii): Use gcc_assert.
+
 2010-12-07  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/42327

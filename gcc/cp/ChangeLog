@@ -1,3 +1,7 @@
+2010-12-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* rtti.c: Don't include assert.h.
+
 2010-12-07  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/45330

@@ -46,7 +46,6 @@
 #include "cfglayout.h"
 #include "sched-int.h"
 #include "params.h"
-#include "assert.h"
 #include "machmode.h"
 #include "gimple.h"
 #include "tm-constrs.h"
@@ -6946,8 +6945,8 @@ spu_sms_res_mii (struct ddg *g)
       rtx insn = g->nodes[i].insn;
       int p = get_pipe (insn) + 2;
 
-      assert (p >= 0);
-      assert (p < 4);
+      gcc_assert (p >= 0);
+      gcc_assert (p < 4);
 
       t[p]++;
       if (dump_file && INSN_P (insn))
