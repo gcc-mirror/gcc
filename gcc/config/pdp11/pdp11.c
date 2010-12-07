@@ -1881,7 +1881,8 @@ void
 output_addr_const_pdp11 (FILE *file, rtx x)
 {
   char buf[256];
-
+  int i;
+  
  restart:
   switch (GET_CODE (x))
     {
@@ -1905,7 +1906,13 @@ output_addr_const_pdp11 (FILE *file, rtx x)
       break;
 
     case CONST_INT:
-      fprintf (file, "%#o", (int) INTVAL (x) & 0xffff);
+      i = INTVAL (x);
+      if (i < 0)
+	{
+	  i = -i;
+	  fprintf (file, "-");
+	}
+      fprintf (file, "%#o", i & 0xffff);
       break;
 
     case CONST:
@@ -1953,16 +1960,10 @@ output_addr_const_pdp11 (FILE *file, rtx x)
 	goto restart;
 
       output_addr_const_pdp11 (file, XEXP (x, 0));
-      fprintf (file, "-");
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && INTVAL (XEXP (x, 1)) < 0)
-	{
-	  fprintf (file, targetm.asm_out.open_paren);
-	  output_addr_const_pdp11 (file, XEXP (x, 1));
-	  fprintf (file, targetm.asm_out.close_paren);
-	}
-      else
-	output_addr_const_pdp11 (file, XEXP (x, 1));
+      if (GET_CODE (XEXP (x, 1)) != CONST_INT
+	  || INTVAL (XEXP (x, 1)) >= 0)
+	fprintf (file, "-");
+      output_addr_const_pdp11 (file, XEXP (x, 1));
       break;
 
     case ZERO_EXTEND:
