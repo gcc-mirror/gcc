@@ -1,3 +1,8 @@
+2010-12-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-math-opts.c (execute_optimize_widening_mul): Unlink
+	virtual operands.
+
 2010-12-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-parser.c (c_parser_typeof_specifier): Removed special
