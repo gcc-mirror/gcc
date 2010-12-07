@@ -2494,6 +2494,8 @@ looking for one that is valid, and will reload one or both registers
 only if neither labeling works.
 @end defmac
 
+@hook TARGET_PREFERRED_RENAME_CLASS
+
 @hook TARGET_PREFERRED_RELOAD_CLASS
 A target hook that places additional restrictions on the register class
 to use when it is necessary to copy value @var{x} into a register in class

@@ -1,3 +1,21 @@
+2010-12-07  Yao Qi  <yao@codesourcery.com>
+
+	* Makefile.in: Add $(TARGET_H) to the regrename.o rule.
+	* regrename.c (struct du_head): Add new element length.
+	(sort_du_head, get_element, merge, merge_sort_comparison):
+	New functions of merge sort implementation to du_head list.
+	(regrename_optimize): Sort du_head linked list by length.
+	Iterate registers in a preferred-register-first order.
+	Move some code to ...
+	(check_new_reg_p): here.  New function.
+	(create_new_chain):  Initialize length.
+	(scan_rtx_reg): Increase length for non-debug insns.
+	* target.def: New hook preferred_rename_class.
+	* targhook.c (default_preferred_rename_class): New.
+	* targhook.h: Declare it.
+	* doc/tm.texi.in: New hook TARGET_PREFERRED_RENAME_CLASS.
+	* doc/tm.texi: Regenerate.
+	
 2010-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46799

@@ -160,6 +160,7 @@ extern int default_register_move_cost (enum machine_mode, reg_class_t,
 extern bool default_profile_before_prologue (void);
 extern reg_class_t default_preferred_reload_class (rtx, reg_class_t);
 extern reg_class_t default_preferred_output_reload_class (rtx, reg_class_t);
+extern reg_class_t default_preferred_rename_class (reg_class_t rclass);
 extern bool default_class_likely_spilled_p (reg_class_t);
 
 extern enum unwind_info_type default_debug_unwind_info (void);
