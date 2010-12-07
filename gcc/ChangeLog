@@ -1,3 +1,10 @@
+2010-12-07  Joern Rennecke  <amylaar@spamcop.net>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR target/46737
+	* config/bfin/bfin.c (BB_AUX_INDEX): Cast to intptr_t.
+	(bfin_reorder_loops): Change type of index to intptr_t.
+
 2010-12-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46726
