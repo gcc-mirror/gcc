@@ -1,3 +1,8 @@
+2010-12-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_parser_typeof_specifier): Removed special
+	treatment of objc_volatilized attribute for Objective-C.
+
 2010-12-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira.c (update_equiv_regs): Prohibit move insns if
