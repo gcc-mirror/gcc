@@ -1550,14 +1550,18 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
       else if ((*p)->is_result_variable())
 	{
 	  tree var_decl = (*p)->get_tree(gogo, named_function);
-	  if ((*p)->result_var_value()->is_in_heap())
+	  if (var_decl != error_mark_node
+	      && (*p)->result_var_value()->is_in_heap())
 	    {
 	      gcc_assert(TREE_CODE(var_decl) == INDIRECT_REF);
 	      var_decl = TREE_OPERAND(var_decl, 0);
 	    }
-	  gcc_assert(TREE_CODE(var_decl) == VAR_DECL);
-	  DECL_CHAIN(var_decl) = declare_vars;
-	  declare_vars = var_decl;
+	  if (var_decl != error_mark_node)
+	    {
+	      gcc_assert(TREE_CODE(var_decl) == VAR_DECL);
+	      DECL_CHAIN(var_decl) = declare_vars;
+	      declare_vars = var_decl;
+	    }
 	}
     }
   *pp = NULL_TREE;
