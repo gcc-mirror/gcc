@@ -1,3 +1,9 @@
+2010-12-06  Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	PR libstdc++/46830
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_swap):
+	Early return when this == &__rcs.
+
 2010-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/shared_ptr.h (shared_ptr<>::shared_ptr(_Tp1*, _Deleter,
