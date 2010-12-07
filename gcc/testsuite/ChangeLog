@@ -1,6 +1,11 @@
 2010-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2010-11-20  Jakub Jelinek  <jakub@redhat.com>
+ 
+	PR c++/46538
+	* g++.dg/other/error34.C: New test.
+
 	2010-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46534
