@@ -1,4 +1,9 @@
-2010-12-06  Sebastian Pop  <sebastian.pop@amd.com>
+2010-12-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/44676
+	* gcc.dg/graphite/id-pr44676.c: New.
+
+2010-12-07  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/42327
 	* gcc.dg/tree-ssa/pr42327.c: New.
