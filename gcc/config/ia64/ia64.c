@@ -6050,6 +6050,17 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	      break;
 
 	    case CLOBBER:
+	      if (REG_P (XEXP (pat, 0))
+		  && extract_asm_operands (x) != NULL_RTX
+		  && REGNO (XEXP (pat, 0)) != AR_UNAT_REGNUM)
+		{
+		  new_flags.is_write = 1;
+		  need_barrier |= rtx_needs_barrier (XEXP (pat, 0),
+						     new_flags, pred);
+		  new_flags = flags;
+		}
+	      break;
+
 	    case RETURN:
 	      break;
 
