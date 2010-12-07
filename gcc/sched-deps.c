@@ -52,6 +52,12 @@ along with GCC; see the file COPYING3.  If not see
 #define CHECK (false)
 #endif
 
+/* In deps->last_pending_memory_flush marks JUMP_INSNs that weren't
+   added to the list because of flush_pending_lists, stands just
+   for itself and not for any other pending memory reads/writes.  */
+#define NON_FLUSH_JUMP_KIND REG_DEP_ANTI
+#define NON_FLUSH_JUMP_P(x) (REG_NOTE_KIND (x) == NON_FLUSH_JUMP_KIND)
+
 /* Holds current parameters for the dependency analyzer.  */
 struct sched_deps_info_def *sched_deps_info;
 
@@ -2480,7 +2486,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx insn)
 
 	    for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
 	      {
-		if (! JUMP_P (XEXP (u, 0)))
+		if (! NON_FLUSH_JUMP_P (u))
 		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 		else if (deps_may_trap_p (x))
 		  {
@@ -2792,8 +2798,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 			   REG_DEP_ANTI);
 
       for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	if (! JUMP_P (XEXP (u, 0))
-	    || !sel_sched_p ())
+	if (! NON_FLUSH_JUMP_P (u) || !sel_sched_p ())
 	  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
       EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
@@ -3238,8 +3243,15 @@ deps_analyze_insn (struct deps_desc *deps, rtx insn)
           if (deps->pending_flush_length++ > MAX_PENDING_LIST_LENGTH)
             flush_pending_lists (deps, insn, true, true);
           else
-            deps->last_pending_memory_flush
-              = alloc_INSN_LIST (insn, deps->last_pending_memory_flush);
+	    {
+	      deps->last_pending_memory_flush
+		= alloc_INSN_LIST (insn, deps->last_pending_memory_flush);
+	      /* Signal to sched_analyze_insn that this jump stands
+		 just for its own, not any other pending memory
+		 reads/writes flush_pending_lists had to flush.  */
+	      PUT_REG_NOTE_KIND (deps->last_pending_memory_flush,
+				 NON_FLUSH_JUMP_KIND);
+	    }
         }
 
       sched_analyze_insn (deps, PATTERN (insn), insn);
