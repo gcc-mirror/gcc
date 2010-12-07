@@ -1,3 +1,17 @@
+2010-12-06  Ian Lance Taylor  <iant@google.com>
+
+	PR other/46789
+	PR bootstrap/46812
+	* go-lang.c (go_char_p): Define type and vectors.
+	(go_search_dirs): New static variable.
+	(go_langhook_handle_option): Use version and version/machine
+	directories for -L.
+	(go_langhook_post_options): Add non-specific -L paths.
+	* Make-lang.in (go/go-lang.o): Define DEFAULT_TARGET_VERSION and
+	DEFAULT_TARGET_MACHINE when compiling.
+	* gccgo.texi (Invoking gccgo): Only document -L for linking.
+	(Import and Export): Don't mention -L for finding import files.
+
 2010-12-03  Ian Lance Taylor  <iant@google.com>
 
 	PR bootstrap/46776
