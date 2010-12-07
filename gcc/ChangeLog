@@ -1,3 +1,11 @@
+2010-12-07  Ian Lance Taylor  <iant@google.com>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/46810
+	* configure.ac: Disable AC_MSG_ERROR while looking for the C++
+	preprocessor.
+	* configure: Rebuild.
+
 2010-12-07  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.c (output_addr_const_pdp11): Output negative

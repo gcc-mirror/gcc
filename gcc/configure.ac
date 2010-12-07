@@ -913,6 +913,12 @@ AC_C_BIGENDIAN
 # Checks for C++ headers
 # ----------------------
 
+dnl Autoconf will give an error in the configure script if there is no
+dnl C++ preprocessor.  Hack to prevent that.
+m4_pushdef([AC_MSG_ERROR], m4_defn([AC_MSG_WARN]))[]dnl
+AC_PROG_CXXCPP
+m4_popdef([AC_MSG_ERROR])[]dnl
+
 AC_LANG_PUSH(C++)
 
 AC_CHECK_HEADERS(unordered_map)
