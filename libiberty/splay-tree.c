@@ -44,7 +44,7 @@ static inline void rotate_left (splay_tree_node *,
 static inline void rotate_right (splay_tree_node *,
 				splay_tree_node, splay_tree_node);
 static void splay_tree_splay (splay_tree, splay_tree_key);
-static int splay_tree_foreach_helper (splay_tree, splay_tree_node,
+static int splay_tree_foreach_helper (splay_tree_node,
                                       splay_tree_foreach_fn, void*);
 
 /* Deallocate NODE (a member of SP), and all its sub-trees.  */
@@ -204,25 +204,51 @@ splay_tree_splay (splay_tree sp, splay_tree_key key)
    value is returned.  Otherwise, this function returns 0.  */
 
 static int
-splay_tree_foreach_helper (splay_tree sp, splay_tree_node node,
+splay_tree_foreach_helper (splay_tree_node node,
                            splay_tree_foreach_fn fn, void *data)
 {
   int val;
+  splay_tree_node *stack;
+  int stack_ptr, stack_size;
 
-  if (!node)
-    return 0;
+  /* A non-recursive implementation is used to avoid filling the stack
+     for large trees.  Splay trees are worst case O(n) in the depth of
+     the tree.  */
 
-  val = splay_tree_foreach_helper (sp, node->left, fn, data);
-  if (val)
-    return val;
+#define INITIAL_STACK_SIZE 100
+  stack_size = INITIAL_STACK_SIZE;
+  stack_ptr = 0;
+  stack = XNEWVEC (splay_tree_node, stack_size);
+  val = 0;
 
-  val = (*fn)(node, data);
-  if (val)
-    return val;
+  for (;;)
+    {
+      while (node != NULL)
+	{
+	  if (stack_ptr == stack_size)
+	    {
+	      stack_size *= 2;
+	      stack = XRESIZEVEC (splay_tree_node, stack, stack_size);
+	    }
+	  stack[stack_ptr++] = node;
+	  node = node->left;
+	}
 
-  return splay_tree_foreach_helper (sp, node->right, fn, data);
+      if (stack_ptr == 0)
+	break;
+
+      node = stack[--stack_ptr];
+
+      val = (*fn) (node, data);
+      if (val)
+	break;
+
+      node = node->right;
+    }
+
+  XDELETEVEC (stack);
+  return val;
 }
-
 
 /* An allocator and deallocator based on xmalloc.  */
 static void *
@@ -537,7 +563,7 @@ splay_tree_successor (splay_tree sp, splay_tree_key key)
 int
 splay_tree_foreach (splay_tree sp, splay_tree_foreach_fn fn, void *data)
 {
-  return splay_tree_foreach_helper (sp, sp->root, fn, data);
+  return splay_tree_foreach_helper (sp->root, fn, data);
 }
 
 /* Splay-tree comparison function, treating the keys as ints.  */
