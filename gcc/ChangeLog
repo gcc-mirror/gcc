@@ -1,3 +1,9 @@
+2010-12-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref):
+	Reset alignment information.
+	(bump_vector_ptr): Likewise.
+
 2010-12-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/46671
