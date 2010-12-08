@@ -187,6 +187,11 @@ if test "$ac_cv_libgo_linker_supports_split_stack" = yes; then
 	    [Define if the linker support split stack adjustments])
 fi
 
+dnl Test for the -lm library.
+MATH_LIBS=
+AC_CHECK_LIB([m], [sqrt], MATH_LIBS=-lm)
+AC_SUBST(MATH_LIBS)
+
 dnl Test whether the compiler supports the -pthread option.
 AC_CACHE_CHECK([whether -pthread is supported],
 [ac_cv_libgo_pthread_supported],

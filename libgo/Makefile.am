@@ -1267,7 +1267,7 @@ libgo_go_objs = \
 
 libgo_la_SOURCES = $(runtime_files)
 
-libgo_la_LIBADD = $(libgo_go_objs) $(LIBFFI) $(PTHREAD_LIBS)
+libgo_la_LIBADD = $(libgo_go_objs) $(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS)
 
 libgobegin_a_SOURCES = \
 	runtime/go-main.c
@@ -1283,7 +1283,7 @@ LTGOCOMPILE = $(LIBTOOL) --tag GO --mode=compile $(GOC) $(INCLUDES) \
 
 GOLINK = $(LIBTOOL) --tag GO --mode-link $(GOC) \
 	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_GOCFLAGS) $(LTLDFLAGS) \
-	$(PTHREAD_LIBS) -o $@
+	$(PTHREAD_LIBS) $(MATH_LIBS) -o $@
 
 # Build a package.
 BUILDARCHIVE = \
