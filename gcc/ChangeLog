@@ -1,5 +1,10 @@
 2010-12-08  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Use a shift
+	instead of a division to divide by BITS_PER_UNIT.
+
+2010-12-08  Richard Guenther  <rguenther@suse.de>
+
 	* gimplify.c (gimple_tree_eq): Assert hashes are equal only
 	when checking is enabled.
 
