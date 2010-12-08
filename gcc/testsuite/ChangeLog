@@ -1,3 +1,8 @@
+2010-12-08  Wei Guozhi  <carrot@google.com>
+
+	PR target/46631
+	* gcc.target/arm/pr46631: New testcase.
+
 2010-12-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR middle-end/42694
