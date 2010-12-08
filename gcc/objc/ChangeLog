@@ -1,5 +1,10 @@
 2010-12-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_build_throw_stmt): Check that the argument of
+	@throw is an object and emit an error if not.
+
+2010-12-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (objc_finish_foreach_loop): Use error_at() instead of
 	error() when printing an error about the iterating variable or
 	collection not being an object.

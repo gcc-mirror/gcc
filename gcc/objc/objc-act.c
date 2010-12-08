@@ -5528,6 +5528,14 @@ objc_build_throw_stmt (location_t loc, tree throw_expr)
 	 value that we get from the runtime.  */
       throw_expr = objc_build_exc_ptr ();
     }
+  else if (throw_expr != error_mark_node)
+    {
+      if (!objc_type_valid_for_messaging (TREE_TYPE (throw_expr), true))
+	{
+	  error_at (loc, "%<@throw%> argument is not an object");
+	  return error_mark_node;
+	}
+    }
 
   /* A throw is just a call to the runtime throw function with the
      object as a parameter.  */
