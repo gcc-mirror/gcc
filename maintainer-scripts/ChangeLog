@@ -1,5 +1,10 @@
 2010-12-08  Ian Lance Taylor  <iant@google.com>
 
+	* gcc_release: Add support for releasing Go as a separate
+	tarball.
+
+2010-12-08  Ian Lance Taylor  <iant@google.com>
+
 	* update_web_docs_svn (MANUALS): Add gccgo.
 
 2010-12-08  Ian Lance Taylor  <iant@google.com>
