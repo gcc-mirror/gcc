@@ -7719,7 +7719,7 @@
   "@
    pinsrq\t{$0x1, %2, %0|%0, %2, 0x1}
    movq\t{%1, %0|%0, %1}
-   movq\t{%1, %0|%0, %1}
+   movd\t{%1, %0|%0, %1}
    movq2dq\t{%1, %0|%0, %1}
    punpcklqdq\t{%2, %0|%0, %2}
    movlhps\t{%2, %0|%0, %2}
@@ -7738,7 +7738,7 @@
   "TARGET_64BIT && TARGET_SSE"
   "@
    movq\t{%1, %0|%0, %1}
-   movq\t{%1, %0|%0, %1}
+   movd\t{%1, %0|%0, %1}
    movq2dq\t{%1, %0|%0, %1}
    punpcklqdq\t{%2, %0|%0, %2}
    movlhps\t{%2, %0|%0, %2}

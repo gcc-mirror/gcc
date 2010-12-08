@@ -82,8 +82,8 @@
     %vpxor\t%0, %d0
     %vmovq\t{%1, %0|%0, %1}
     %vmovq\t{%1, %0|%0, %1}
-    %vmovq\t{%1, %0|%0, %1}
-    %vmovq\t{%1, %0|%0, %1}"
+    %vmovd\t{%1, %0|%0, %1}
+    %vmovd\t{%1, %0|%0, %1}"
   [(set_attr "type" "imov,imov,mmx,mmxmov,mmxmov,mmxmov,ssecvt,ssecvt,sselog1,ssemov,ssemov,ssemov,ssemov")
    (set_attr "unit" "*,*,*,*,*,*,mmx,mmx,*,*,*,*,*")
    (set_attr "prefix_rep" "*,*,*,*,*,*,1,1,*,1,*,*,*")
