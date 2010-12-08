@@ -46,16 +46,16 @@ int main (void)
     ;
 
   for (12 in array) /* { dg-error "invalid iterating variable in fast enumeration" } */
-    ; /* { dg-error "iterating variable in fast enumeration is not an object" } */
+    ;               /* { dg-error "iterating variable in fast enumeration is not an object" "" { target *-*-* } 48 } */
 
-  for (object in 12)
-    ; /* { dg-error "collection in fast enumeration is not an object" } */
+  for (object in 12) /* { dg-error "collection in fast enumeration is not an object" } */
+    ;
 
-  for (object in invalid)
-    ; /* { dg-error "collection in fast enumeration is not an object" } */
+  for (object in invalid) /* { dg-error "collection in fast enumeration is not an object" } */
+    ;
 
-  for (invalid in [object enumerator])
-    ; /* { dg-error "iterating variable in fast enumeration is not an object" } */
+  for (invalid in [object enumerator]) /* { dg-error "iterating variable in fast enumeration is not an object" } */
+    ;
 
   return 0;
 }

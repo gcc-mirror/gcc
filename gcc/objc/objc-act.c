@@ -13246,13 +13246,13 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
 
   if (!objc_type_valid_for_messaging (TREE_TYPE (object_expression), true))
     {
-      error ("iterating variable in fast enumeration is not an object");
+      error_at (location, "iterating variable in fast enumeration is not an object");
       return;
     }
 
   if (!objc_type_valid_for_messaging (TREE_TYPE (collection_expression), true))
     {
-      error ("collection in fast enumeration is not an object");
+      error_at (location, "collection in fast enumeration is not an object");
       return;
     }
 
