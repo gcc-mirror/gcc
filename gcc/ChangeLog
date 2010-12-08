@@ -1,3 +1,12 @@
+2010-12-08  Iain Sandoe <iains@gcc.gnu.org>
+
+	gcc/config.gcc (with_cpu): Default i[34567]86-*-darwin* and
+	x86_64-*-darwin* to with_cpu:-core2.
+	gcc/config/i386/mmx.md (*mov<mode>_internal_rex64): Replace movq
+	with movd for darwin assembler.
+	gcc/config/i386/sse.md (*vec_concatv2di_rex64_sse4_1): Ditto.
+	(*vec_concatv2di_rex64_sse): Ditto.
+
 2010-12-08  Richard Guenther  <rguenther@suse.de>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 
