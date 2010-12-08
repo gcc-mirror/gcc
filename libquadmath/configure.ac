@@ -149,8 +149,8 @@ AM_CONDITIONAL(LIBQUAD_USE_SYMVER, [test "x$quadmath_use_symver" != xno])
 AM_CONDITIONAL(LIBQUAD_USE_SYMVER_GNU, [test "x$quadmath_use_symver" = xgnu])
 AM_CONDITIONAL(LIBQUAD_USE_SYMVER_SUN, [test "x$quadmath_use_symver" = xsun])
 
-AC_MSG_CHECKING([whether __float128 is supported])
-  AC_TRY_LINK([
+AC_CACHE_CHECK([whether __float128 is supported], [libquad_cv_have_float128],
+  [GCC_TRY_COMPILE_OR_LINK([
     typedef _Complex float __attribute__((mode(TC))) __complex128;
 
     __float128 foo (__float128 x)
@@ -173,20 +173,11 @@ AC_MSG_CHECKING([whether __float128 is supported])
     foo (1.2Q);
     bar (1.2Q);
   ],[
-    libquad_have_float128=yes
+    libquad_cv_have_float128=yes
   ],[
-    libquad_have_float128=no
-])
-AC_MSG_RESULT([$libquad_have_float128])
-
-dnl
-dnl Enable the following for a stand-alone library:
-dnl
-dnl if test $libquad_have_float128 = no; then
-dnl   AC_MSG_ERROR([__float128 support is required to build this library.])
-dnl fi
-
-AM_CONDITIONAL(BUILD_LIBQUADMATH, [test "x$libquad_have_float128" = xyes])
+    libquad_cv_have_float128=no
+])])
+AM_CONDITIONAL(BUILD_LIBQUADMATH, [test "x$libquad_cv_have_float128" = xyes])
 
 AC_CACHE_SAVE
 

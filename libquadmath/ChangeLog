@@ -1,5 +1,12 @@
 2010-12-08  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/46520
+	* configure.ac: Use GCC_TRY_COMPILE_OR_LINK instead of
+	AC_TRY_LINK and cache libquad_have_float128.
+	* configure: Regenerate.
+
+2010-12-08  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/46543
 	* configure.ac: Add texinfo checks.
 	* Makefile.am: Handle .texi documentation.
