@@ -644,10 +644,11 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 		  {
 		    double_int off
 		      = double_int_add (tree_to_double_int (this_offset),
-					double_int_sdiv
+					double_int_rshift
 					  (tree_to_double_int (bit_offset),
-					   uhwi_to_double_int (BITS_PER_UNIT),
-					   TRUNC_DIV_EXPR));
+					   BITS_PER_UNIT == 8
+					   ? 3 : exact_log2 (BITS_PER_UNIT),
+					   HOST_BITS_PER_DOUBLE_INT, true));
 		    if (double_int_fits_in_shwi_p (off))
 		      temp.off = off.low;
 		  }
