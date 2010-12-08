@@ -1318,8 +1318,7 @@ maybe_explain_implicit_delete (tree decl)
   /* If decl is a clone, get the primary variant.  */
   decl = DECL_ORIGIN (decl);
   gcc_assert (DECL_DELETED_FN (decl));
-  if (DECL_DEFAULTED_FN (decl)
-      && DECL_INITIAL (decl) == NULL_TREE)
+  if (DECL_DEFAULTED_FN (decl))
     {
       /* Not marked GTY; it doesn't need to be GC'd or written to PCH.  */
       static htab_t explained_htab;

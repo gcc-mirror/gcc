@@ -1,3 +1,10 @@
+2010-12-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46736
+	* decl.c (cp_finish_decl): Complain about an implicitly deleted
+	method defaulted outside the class.
+	* method.c (maybe_explain_implicit_delete): Don't check DECL_INITIAL.
+
 2010-12-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* rtti.c: Don't include assert.h.

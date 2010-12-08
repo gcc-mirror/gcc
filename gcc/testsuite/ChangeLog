@@ -1,3 +1,8 @@
+2010-12-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46736
+	* g++.dg/cpp0x/defaulted21.C: New.
+
 2010-12-08  Wei Guozhi  <carrot@google.com>
 
 	PR target/46631
