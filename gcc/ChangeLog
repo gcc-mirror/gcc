@@ -1,3 +1,15 @@
+2010-12-08  Mike Stump  <mikestump@comcast.net>
+
+	PR debug/46749
+	* config/darwin.h (COLLECT_RUN_DSYMUTIL): Add.
+	(DSYMUTIL_SPEC): Use `linker' flags instead to handle lto better.
+	* config/darwin9.h (COLLECT_RUN_DSYMUTIL): Add.
+	(DSYMUTIL_SPEC): Use `linker' flags instead to handle lto better.
+	* collect2.c (post_ld_pass): Add.
+	(process_args): Add.
+	(maybe_run_lto_and_relink): Call post_ld_pass after ld.
+	(main): Likewise.  Call process_args.
+
 2010-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46844
