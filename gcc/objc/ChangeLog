@@ -1,3 +1,9 @@
+2010-12-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_finish_foreach_loop): Use error_at() instead of
+	error() when printing an error about the iterating variable or
+	collection not being an object.
+
 2010-12-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_finish_foreach_loop): Mark the
