@@ -1,3 +1,9 @@
+2010-12-08  Ian Lance Taylor  <iant@google.com>
+
+	* doc/sourcebuild.texi (Texinfo Manuals): Change update_web_docs
+	to update_web_docs_svn.
+	(Front End): Likewise.
+
 2010-12-08  Iain Sandoe <iains@gcc.gnu.org>
 
 	gcc/config.gcc (with_cpu): Default i[34567]86-*-darwin* and
