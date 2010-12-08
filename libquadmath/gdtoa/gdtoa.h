@@ -34,6 +34,7 @@ THIS SOFTWARE.
 
 #include "arith.h"
 #include <stddef.h> /* for size_t */
+#include <stdlib.h> /* for strtod */
 
 #ifndef Long
 #define Long long
@@ -108,8 +109,6 @@ extern char* dtoa  ANSI((double d, int mode, int ndigits, int *decpt,
 extern char* gdtoa ANSI((FPI *fpi, int be, ULong *bits, int *kindp,
 			int mode, int ndigits, int *decpt, char **rve));
 extern void freedtoa ANSI((char*));
-extern float  strtof ANSI((CONST char *, char **));
-extern double strtod ANSI((CONST char *, char **));
 extern int strtodg ANSI((CONST char*, char**, FPI*, Long*, ULong*));
 
 extern char*	g_ddfmt  ANSI((char*, double*, int, size_t));
