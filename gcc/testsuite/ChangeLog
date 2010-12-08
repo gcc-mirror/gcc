@@ -1,3 +1,9 @@
+2010-12-07  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR target/43603
+	* gcc.target/ia64/pr43603.c: New.
+	* gcc/testsuite/g++.dg/opt/pr46640.C: New.
+
 2010-12-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44352
