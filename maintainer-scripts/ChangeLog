@@ -1,3 +1,7 @@
+2010-12-08  Ian Lance Taylor  <iant@google.com>
+
+	* README: Change "CVS" to "Subversion".
+
 2010-08-23  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gcc_release (snapshot_print): Also include an sha1 hash for
@@ -6,7 +10,7 @@
 2010-08-15  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gcc_release (CVSROOT): Remove all occurrences.
-	
+
 2010-08-14  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gcc_release (snapshot_print): Include md5 hash for every tarball
