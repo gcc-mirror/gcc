@@ -15,13 +15,14 @@ struct A
   void baz ();
 };
 
-template <typename T> void foo (int (*)(T));      // { dg-message "candidate" } 
+template <typename T> void foo (int (*)(T));      // { dg-message "note" } 
 template <typename T> void foo (int (A::*)(T));   // { dg-message "note" } candidate
 
 
 void A::baz ()
 {
   foo (&A::f);  // { dg-error "ambiguous" } 
+  // { dg-message "candidate" "candidate note" { target *-*-* } 24 }
   foo (A::f);
   foo (&(A::f));
   foo (f);

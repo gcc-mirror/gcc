@@ -14,7 +14,7 @@ public:
 
 class Something {
 public:
-  void DoSomething(Ding A);	// { dg-message "candidate is" } referred to
+  void DoSomething(Ding A);	// { dg-message "Something::DoSomething|no known conversion" } referred to
 };
 
 void DoSomething(Ding A);
@@ -23,5 +23,7 @@ void foo(Something* pX)
 {
   DoSomething(1);		// { dg-error "conversion" } 
   pX->DoSomething(1);		// { dg-error "no matching" } 
+  // { dg-message "candidate" "candidate note" { target *-*-* } 25 }
   (*pX).DoSomething(1);		// { dg-error "no matching" } 
+  // { dg-message "candidate" "candidate note" { target *-*-* } 27 }
 }

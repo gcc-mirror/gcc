@@ -16,6 +16,6 @@ template <typename T> struct srp
 };
 ptr<int> parent_get()
 {
-  srp<int> parent;
+  srp<int> parent;		// { dg-message "candidate" }
   return parent; // { dg-error "is ambiguous" }
 }

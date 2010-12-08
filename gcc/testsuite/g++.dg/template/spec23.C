@@ -20,6 +20,7 @@ struct Bar
 Foo Quux (Bar const &b)
 {
   return b; // { dg-error "ambiguous" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 22 }
 }
 
 

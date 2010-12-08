@@ -13,5 +13,7 @@ X foo() { X x; return x; }
 int main() 
 {
   X   x(foo()); // { dg-error "no match" } Compiler doesn't warn about temporary reference.
+  // { dg-message "candidate" "candidate note" { target *-*-* } 15 }
   x.bar(foo()); // { dg-error "no match" } The same mistake is warned about in this case.
+  // { dg-message "candidate" "candidate note" { target *-*-* } 17 }
 }

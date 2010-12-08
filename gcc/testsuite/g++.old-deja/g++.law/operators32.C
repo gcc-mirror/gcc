@@ -7,7 +7,7 @@
 //
 
 template <class T>
-void ffree(long rows, T** array) // { dg-message "candidate" }
+void ffree(long rows, T** array) // { dg-message "note" }
 {
 for( long i = 0; i < rows; i++ )
   delete [] array[i];                   // delete row
@@ -50,6 +50,8 @@ foo() {std::cout << "foo created" << std::endl; }
 
 foo **f2;
 allocate2d(d1, d2, f2);// { dg-error "" }  type.*// ERROR -    trying to.*
+// { dg-message "candidate" "candidate note" { target *-*-* } 52 }
 ffree(d1, f2);// { dg-error "" }  type.*// ERROR -    trying to.*
+// { dg-message "candidate" "candidate note" { target *-*-* } 54 }
 
 }

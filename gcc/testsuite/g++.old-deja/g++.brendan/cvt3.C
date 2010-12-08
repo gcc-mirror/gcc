@@ -38,11 +38,12 @@ struct bar
 class nnyacc
 {
 public:
-      static void assign(void*& lval, void*& rval); // { dg-message "candidate is" }
+      static void assign(void*& lval, void*& rval); // { dg-message "nnyacc::assign|no known conversion" }
 };
 
 void
 foo (bar yylval, bar *yyvsp)
 {
   nnyacc::assign(yylval.valueList, yyvsp[0].valueList);// { dg-error "no matching" } 
+  // { dg-message "candidate" "candidate note" { target *-*-* } 47 }
 }

@@ -4,13 +4,14 @@
 
 template <class U> struct A
 {
-	template <class T> class B {}; // { dg-message "operator=" }
+	template <class T> class B {}; // { dg-message "operator=|no known conversion" }
 };
 
 template <template <class> class TT> void f()
 {
 	TT<int> y;
 	y = 0; // { dg-error "no match" }
+	// { dg-message "candidate" "candidate note" { target *-*-* } 13 }
 }
 
 template <class T> struct C

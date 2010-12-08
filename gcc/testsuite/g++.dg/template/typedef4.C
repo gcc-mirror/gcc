@@ -6,4 +6,5 @@ template<typedef> void foo();  // { dg-error "no type|typedef declaration|templa
 void bar()
 {
   foo<int>();                  // { dg-error "matching" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 8 }
 }

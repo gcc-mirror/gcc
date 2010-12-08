@@ -1,10 +1,11 @@
 int i;
 struct A
 {
-  template <class T> operator T&() { return i; } // { dg-message "candidate" }
+  template <class T> operator T&() { return i; } // { dg-message "note" }
 };
 
 int main()
 {
   A().operator int();		// { dg-error "operator int" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 9 }
 }

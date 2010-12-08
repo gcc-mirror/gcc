@@ -8,4 +8,5 @@ template<typename... T> int foo(const T&) // { dg-error "not expanded with|T" }
 void bar()
 {
   foo(0); // { dg-error "no matching" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 10 }
 }

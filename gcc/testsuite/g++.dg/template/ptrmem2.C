@@ -7,9 +7,10 @@
 
 struct A {};
 
-template <typename T> T A::* Foo (); // { dg-message "candidate" }
+template <typename T> T A::* Foo (); // { dg-message "note" }
 
 void Baz ()
 {
   Foo <int &> (); // { dg-error "no matching function" "" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 14 }
 }

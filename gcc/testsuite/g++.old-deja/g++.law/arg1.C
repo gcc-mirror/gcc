@@ -9,13 +9,13 @@
 //  check the order of declarations
 class A {
 public:
-      void f(double* p) { std::cout << "A(double*)\n"; } // { dg-message "candidates" }
+      void f(double* p) { std::cout << "A(double*)\n"; } // { dg-message "note" }
       void f(int* p) { std::cout << "A(int*)\n"; } // { dg-message "note" }
 };
 
 class B {
 public:
-      void f(int* p) { std::cout << "B(int*)\n"; } // { dg-message "candidates" }
+      void f(int* p) { std::cout << "B(int*)\n"; } // { dg-message "note" }
       void f(double* p) { std::cout << "B(double*)\n"; } // { dg-message "note" }
 };
 
@@ -25,6 +25,8 @@ int main()
     B b;
 
     a.f(0);// { dg-error "ambiguous" }
+    // { dg-message "candidate" "candidate note" { target *-*-* } 27 }
     b.f(0);// { dg-error "ambiguous" }
+    // { dg-message "candidate" "candidate note" { target *-*-* } 29 }
 }
 

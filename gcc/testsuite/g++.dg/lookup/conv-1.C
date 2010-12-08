@@ -22,5 +22,6 @@ struct B : A1, A2
 int Foo (B const &b)
 {
   return b; // { dg-error "ambiguous" "" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 24 }
 }
 

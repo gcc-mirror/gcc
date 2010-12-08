@@ -8,24 +8,28 @@
 
 extern "C" int puts (char const *);
 
-template <typename T> int Foo (T);    // { dg-message "candidate" } 
+template <typename T> int Foo (T);    // { dg-message "note" } 
 template <typename T> int Foo (T &);  // { dg-message "note" } candidate
 
-template <typename T> int Qux (T);    // { dg-message "candidate" } 
+template <typename T> int Qux (T);    // { dg-message "note" } 
 template <typename T> int Qux (T const &);  // { dg-message "note" } candidate
 
-template <typename T> int Bar (T const *const &); // { dg-message "candidate" } 
+template <typename T> int Bar (T const *const &); // { dg-message "note" } 
 template <typename T> int Bar (T *const &);       // { dg-message "note" } candidate
 template <typename T> int Bar (T *);              // { dg-message "note" } candidate
 
-template <typename T> int Baz (T *const &);       // { dg-message "candidate" } 
+template <typename T> int Baz (T *const &);       // { dg-message "note" } 
 template <typename T> int Baz (T *);              // { dg-message "note" } candidate
 
 int Baz (int const *ptr, int *ptr2)
 {
   Baz (ptr2);   // { dg-error "ambiguous" } 
+  // { dg-message "candidate" "candidate note" { target *-*-* } 26 }
   Bar (ptr2);   // { dg-error "ambiguous" } 
+  // { dg-message "candidate" "candidate note" { target *-*-* } 28 }
   Foo (ptr2);   // { dg-error "ambiguous" } 
+  // { dg-message "candidate" "candidate note" { target *-*-* } 30 }
   Qux (ptr2);   // { dg-error "ambiguous" } 
+  // { dg-message "candidate" "candidate note" { target *-*-* } 32 }
   return 0;
 }

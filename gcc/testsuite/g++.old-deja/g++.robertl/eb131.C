@@ -10,11 +10,13 @@ struct a {
 	void bar( double );
 	void bar( float );
 
-  void foo( void (a::*member)(float) );   // { dg-message "candidate" } 
+  void foo( void (a::*member)(float) );   // { dg-message "void a::foo|no known conversion" } 
 };
 
 a::a()
 {
 	foo( &junk ); // { dg-error "match" } junk is an unqualified-id.
+	// { dg-message "candidate" "candidate note" { target *-*-* } 18 }
 	foo( &bar );  // { dg-error "match" } bar is an unqualified-id.
+	// { dg-message "candidate" "candidate note" { target *-*-* } 20 }
 }

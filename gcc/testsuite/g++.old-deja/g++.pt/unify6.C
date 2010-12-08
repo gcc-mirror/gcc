@@ -19,12 +19,14 @@ template<> void fn<int &>() {} // ok, specialize A
 template<> void fn<void ()>() {} // ok, specialize A
 
 // now make sure we moan when we really should
-template<class T> void foo(T const *){} // { dg-message "candidate" }
+template<class T> void foo(T const *){} // { dg-message "note" }
 
 void f()
 {
   foo<int &>(); // { dg-error "" } attempt to build int & const *
+  // { dg-message "candidate" "candidate note" { target *-*-* } 26 }
   foo<void ()>(); // { dg-error "" } attempt to build void (const *)()
+  // { dg-message "candidate" "candidate note" { target *-*-* } 28 }
 }
 
 typedef void (*Fptr)();

@@ -9,4 +9,5 @@ struct Foo {
 int main()
 {
   Foo* f1 = new Foo();		// { dg-error "ambiguous" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 11 }
 }
