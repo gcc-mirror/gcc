@@ -6094,7 +6094,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		{
 		  /* An out-of-class default definition is defined at
 		     the point where it is explicitly defaulted.  */
-		  if (DECL_INITIAL (decl) == error_mark_node)
+		  if (DECL_DELETED_FN (decl))
+		    maybe_explain_implicit_delete (decl);
+		  else if (DECL_INITIAL (decl) == error_mark_node)
 		    synthesize_method (decl);
 		}
 	      else
