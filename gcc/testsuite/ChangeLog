@@ -1,5 +1,12 @@
 2010-12-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/exceptions-7.m: New.
+	* obj-c++.dg/exceptions-7.mm: New.
+	* obj-c++.dg/exceptions-3.mm: Adjust for new C++ messages.
+	* obj-c++.dg/exceptions-5.mm: Same change.
+	
+2010-12-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/foreach-6.m: Updated location of error messages.
 	* objc.dg/foreach-7.m: Same change.
 	
