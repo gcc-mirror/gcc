@@ -1,3 +1,17 @@
+2010-12-08  Richard Guenther  <rguenther@suse.de>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/45230
+	PR tree-optimization/45231
+	PR tree-optimization/45370
+	* sese.c (rename_uses): Returns a bool.  Call
+	recompute_tree_invariant_for_addr_expr only on the RHS of a
+	GIMPLE_ASSIGN.
+	(graphite_copy_stmts_from_block): Call fold_stmt_inplace when
+	rename_uses returns true.
+	* tree-ssa-copy.c (replace_exp): Add a comment about calling
+	fold_stmt_inplace after replace_exp.
+
 2010-12-08  Mike Stump  <mikestump@comcast.net>
 
 	PR debug/46749

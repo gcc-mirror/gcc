@@ -191,7 +191,10 @@ propagate_value (use_operand_p op_p, tree val)
 
    Use this version when not const/copy propagating values.  For example,
    PRE uses this version when building expressions as they would appear
-   in specific blocks taking into account actions of PHI nodes.  */
+   in specific blocks taking into account actions of PHI nodes.
+
+   The statement in which an expression has been replaced should be
+   folded using fold_stmt_inplace.  */
 
 void
 replace_exp (use_operand_p op_p, tree val)

@@ -1,3 +1,13 @@
+2010-12-08  Richard Guenther  <rguenther@suse.de>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/45230
+	PR tree-optimization/45231
+	PR tree-optimization/45370
+	* gcc.dg/graphite/id-pr45230-1.c: New.
+	* gcc.dg/graphite/id-pr45231.c: New.
+	* gfortran.dg/graphite/id-pr45370.f90: New.
+
 2010-12-08  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/45329
