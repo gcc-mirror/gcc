@@ -470,14 +470,15 @@ set_rename (htab_t rename_map, tree old_name, tree expr)
    substitution map RENAME_MAP, inserting the gimplification code at
    GSI_TGT, for the translation REGION, with the original copied
    statement in LOOP, and using the induction variable renaming map
-   IV_MAP.  */
+   IV_MAP.  Returns true when something has been renamed.  */
 
-static void
+static bool
 rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
 	     sese region, loop_p loop, VEC (tree, heap) *iv_map)
 {
   use_operand_p use_p;
   ssa_op_iter op_iter;
+  bool changed = false;
 
   if (is_gimple_debug (copy))
     {
@@ -486,7 +487,7 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
       else
 	gcc_unreachable ();
 
-      return;
+      return false;
     }
 
   FOR_EACH_SSA_USE_OPERAND (use_p, copy, op_iter, SSA_OP_ALL_USES)
@@ -500,6 +501,7 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
 	  || SSA_NAME_IS_DEFAULT_DEF (old_name))
 	continue;
 
+      changed = true;
       new_expr = get_rename (rename_map, old_name);
       if (new_expr)
 	{
@@ -547,8 +549,8 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
       gsi_insert_seq_before (gsi_tgt, stmts, GSI_SAME_STMT);
       replace_exp (use_p, new_expr);
 
-
-      if (TREE_CODE (new_expr) == INTEGER_CST)
+      if (TREE_CODE (new_expr) == INTEGER_CST
+	  && is_gimple_assign (copy))
 	{
 	  tree rhs = gimple_assign_rhs1 (copy);
 
@@ -558,6 +560,8 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
 
       set_rename (rename_map, old_name, new_expr);
     }
+
+  return changed;
 }
 
 /* Duplicates the statements of basic block BB into basic block NEW_BB
@@ -611,7 +615,8 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 	  set_rename (rename_map, old_name, new_name);
  	}
 
-      rename_uses (copy, rename_map, &gsi_tgt, region, loop, iv_map);
+      if (rename_uses (copy, rename_map, &gsi_tgt, region, loop, iv_map))
+	fold_stmt_inplace (copy);
 
       update_stmt (copy);
     }
