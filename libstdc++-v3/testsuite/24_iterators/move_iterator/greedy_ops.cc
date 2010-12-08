@@ -1,6 +1,6 @@
-// 2005-12-01  Paolo Carlini  <pcarlini@suse.de>
-
-// Copyright (C) 2005, 2009, 2010 Free Software Foundation, Inc.
+// { dg-options "-std=gnu++0x" }
+// { dg-do compile }
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,25 +17,28 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
-
-#include <vector>
+#include <iterator>
 #include <testsuite_greedy_ops.h>
 
-int main()
+void test01()
 {
-  std::vector<greedy_ops::X> v(5);
-  const std::vector<greedy_ops::X> w(1);
+  typedef std::move_iterator<greedy_ops::X*> iterator_type;
 
-  v[0];
-  w[0];
-  v.size();
-  v.capacity();
-  v.resize(1);
-  v.insert(v.begin(), greedy_ops::X());
-  v.insert(v.begin(), 1, greedy_ops::X());
-  v.insert(v.begin(), w.begin(), w.end());
-  v = w;
+  iterator_type it(nullptr);
+  
+  it == it;
+  it != it;
+  it < it;
+  it <= it;
+  it > it;
+  it >= it;
+  it - it;
+  1 + it;
+  it + 1;
+}
 
+int main() 
+{ 
+  test01();
   return 0;
 }
