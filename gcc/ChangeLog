@@ -1,3 +1,11 @@
+2010-12-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR middle-end/42694
+	* builtins.c (expand_builtin_pow_root): Don't optimize pow(x,y)
+	where y is 0.25, 1./6., or 0.75 if the target does not have a sqrt
+	instruction, but do optimize if y is 0.5 or 1./3. since that
+	changes an expensive call into a cheaper one.
+
 2010-12-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Use a shift
