@@ -43,16 +43,17 @@ DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(srcdir)/config.h.in $(srcdir)/../mkinstalldirs \
 	$(srcdir)/../depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../ltoptions.m4 \
-	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/lthostflags.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
-	$(top_srcdir)/../config/override.m4 $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/override.m4 \
+	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
+	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
+	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -82,7 +83,7 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
+am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" \
 	"$(DESTDIR)$(libsubincludedir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__dirstamp = $(am__leading_dot)dirstamp
@@ -149,6 +150,18 @@ MULTIDIRS =
 MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
+INFO_DEPS = libquadmath.info
+am__TEXINFO_TEX_DIR = $(srcdir)/../gcc/doc/include
+DVIS = libquadmath.dvi
+PDFS = libquadmath.pdf
+PSS = libquadmath.ps
+HTMLS = libquadmath.html
+TEXINFOS = libquadmath.texi
+TEXI2DVI = texi2dvi
+TEXI2PDF = $(TEXI2DVI) --pdf --batch
+MAKEINFOHTML = $(MAKEINFO) --html
+AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS)
+DVIPS = dvips
 HEADERS = $(nodist_libsubinclude_HEADERS)
 ETAGS = etags
 CTAGS = ctags
@@ -354,11 +367,32 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 @BUILD_LIBQUADMATH_TRUE@	"DESTDIR=$(DESTDIR)"
 
 @BUILD_LIBQUADMATH_TRUE@MAKEOVERRIDES = 
+@BUILD_LIBQUADMATH_TRUE@@GENINSRC_FALSE@STAMP_GENINSRC = 
+
+# AM_CONDITIONAL on configure option --generated-files-in-srcdir
+@BUILD_LIBQUADMATH_TRUE@@GENINSRC_TRUE@STAMP_GENINSRC = stamp-geninsrc
+@BUILD_INFO_FALSE@@BUILD_LIBQUADMATH_TRUE@STAMP_BUILD_INFO = 
+
+# AM_CONDITIONAL on configure check ACX_CHECK_PROG_VER([MAKEINFO])
+@BUILD_INFO_TRUE@@BUILD_LIBQUADMATH_TRUE@STAMP_BUILD_INFO = stamp-build-info
+@BUILD_LIBQUADMATH_TRUE@CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) libquadmath.info
+@BUILD_LIBQUADMATH_TRUE@MAINTAINERCLEANFILES = $(srcdir)/libquadmath.info
+
+# Automake Documentation:
+# If your package has Texinfo files in many directories, you can use the
+# variable TEXINFO_TEX to tell Automake where to find the canonical
+# `texinfo.tex' for your package. The value of this variable should be
+# the relative path from the current `Makefile.am' to `texinfo.tex'.
+TEXINFO_TEX = ../gcc/doc/include/texinfo.tex
+
+# Defines info, dvi, pdf and html targets
+MAKEINFOFLAGS = -I $(srcdir)/../gcc/doc/include
+info_TEXINFOS = libquadmath.texi
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj
+.SUFFIXES: .c .dvi .lo .o .obj .ps
 am--refresh:
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -808,6 +842,147 @@ distclean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean # $(MAKE)
 maintainer-clean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean # $(MAKE)
+
+@BUILD_LIBQUADMATH_FALSE@libquadmath.info: libquadmath.texi 
+@BUILD_LIBQUADMATH_FALSE@	restore=: && backupdir="$(am__leading_dot)am$$$$" && \
+@BUILD_LIBQUADMATH_FALSE@	rm -rf $$backupdir && mkdir $$backupdir && \
+@BUILD_LIBQUADMATH_FALSE@	if ($(MAKEINFO) --version) >/dev/null 2>&1; then \
+@BUILD_LIBQUADMATH_FALSE@	  for f in $@ $@-[0-9] $@-[0-9][0-9] $(@:.info=).i[0-9] $(@:.info=).i[0-9][0-9]; do \
+@BUILD_LIBQUADMATH_FALSE@	    if test -f $$f; then mv $$f $$backupdir; restore=mv; else :; fi; \
+@BUILD_LIBQUADMATH_FALSE@	  done; \
+@BUILD_LIBQUADMATH_FALSE@	else :; fi && \
+@BUILD_LIBQUADMATH_FALSE@	if $(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) \
+@BUILD_LIBQUADMATH_FALSE@	 -o $@ `test -f 'libquadmath.texi' || echo '$(srcdir)/'`libquadmath.texi; \
+@BUILD_LIBQUADMATH_FALSE@	then \
+@BUILD_LIBQUADMATH_FALSE@	  rc=0; \
+@BUILD_LIBQUADMATH_FALSE@	else \
+@BUILD_LIBQUADMATH_FALSE@	  rc=$$?; \
+@BUILD_LIBQUADMATH_FALSE@	  $$restore $$backupdir/* `echo "./$@" | sed 's|[^/]*$$||'`; \
+@BUILD_LIBQUADMATH_FALSE@	fi; \
+@BUILD_LIBQUADMATH_FALSE@	rm -rf $$backupdir; exit $$rc
+
+libquadmath.dvi: libquadmath.texi  
+	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
+	MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)' \
+	$(TEXI2DVI) -o $@ `test -f 'libquadmath.texi' || echo '$(srcdir)/'`libquadmath.texi
+
+libquadmath.pdf: libquadmath.texi  
+	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
+	MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)' \
+	$(TEXI2PDF) -o $@ `test -f 'libquadmath.texi' || echo '$(srcdir)/'`libquadmath.texi
+
+libquadmath.html: libquadmath.texi  
+	rm -rf $(@:.html=.htp)
+	if $(MAKEINFOHTML) $(AM_MAKEINFOHTMLFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) \
+	 -o $(@:.html=.htp) `test -f 'libquadmath.texi' || echo '$(srcdir)/'`libquadmath.texi; \
+	then \
+	  rm -rf $@; \
+	  if test ! -d $(@:.html=.htp) && test -d $(@:.html=); then \
+	    mv $(@:.html=) $@; else mv $(@:.html=.htp) $@; fi; \
+	else \
+	  if test ! -d $(@:.html=.htp) && test -d $(@:.html=); then \
+	    rm -rf $(@:.html=); else rm -Rf $(@:.html=.htp) $@; fi; \
+	  exit 1; \
+	fi
+.dvi.ps:
+	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
+	$(DVIPS) -o $@ $<
+
+uninstall-dvi-am:
+	@$(NORMAL_UNINSTALL)
+	@list='$(DVIS)'; test -n "$(dvidir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(dvidir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(dvidir)/$$f"; \
+	done
+
+uninstall-html-am:
+	@$(NORMAL_UNINSTALL)
+	@list='$(HTMLS)'; test -n "$(htmldir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " rm -rf '$(DESTDIR)$(htmldir)/$$f'"; \
+	  rm -rf "$(DESTDIR)$(htmldir)/$$f"; \
+	done
+
+uninstall-info-am:
+	@$(PRE_UNINSTALL)
+	@if test -d '$(DESTDIR)$(infodir)' && \
+	    (install-info --version && \
+	     install-info --version 2>&1 | sed 1q | grep -i -v debian) >/dev/null 2>&1; then \
+	  list='$(INFO_DEPS)'; \
+	  for file in $$list; do \
+	    relfile=`echo "$$file" | sed 's|^.*/||'`; \
+	    echo " install-info --info-dir='$(DESTDIR)$(infodir)' --remove '$(DESTDIR)$(infodir)/$$relfile'"; \
+	    if install-info --info-dir="$(DESTDIR)$(infodir)" --remove "$(DESTDIR)$(infodir)/$$relfile"; \
+	    then :; else test ! -f "$(DESTDIR)$(infodir)/$$relfile" || exit 1; fi; \
+	  done; \
+	else :; fi
+	@$(NORMAL_UNINSTALL)
+	@list='$(INFO_DEPS)'; \
+	for file in $$list; do \
+	  relfile=`echo "$$file" | sed 's|^.*/||'`; \
+	  relfile_i=`echo "$$relfile" | sed 's|\.info$$||;s|$$|.i|'`; \
+	  (if test -d "$(DESTDIR)$(infodir)" && cd "$(DESTDIR)$(infodir)"; then \
+	     echo " cd '$(DESTDIR)$(infodir)' && rm -f $$relfile $$relfile-[0-9] $$relfile-[0-9][0-9] $$relfile_i[0-9] $$relfile_i[0-9][0-9]"; \
+	     rm -f $$relfile $$relfile-[0-9] $$relfile-[0-9][0-9] $$relfile_i[0-9] $$relfile_i[0-9][0-9]; \
+	   else :; fi); \
+	done
+
+uninstall-pdf-am:
+	@$(NORMAL_UNINSTALL)
+	@list='$(PDFS)'; test -n "$(pdfdir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(pdfdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(pdfdir)/$$f"; \
+	done
+
+uninstall-ps-am:
+	@$(NORMAL_UNINSTALL)
+	@list='$(PSS)'; test -n "$(psdir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(psdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(psdir)/$$f"; \
+	done
+
+dist-info: $(INFO_DEPS)
+	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
+	list='$(INFO_DEPS)'; \
+	for base in $$list; do \
+	  case $$base in \
+	    $(srcdir)/*) base=`echo "$$base" | sed "s|^$$srcdirstrip/||"`;; \
+	  esac; \
+	  if test -f $$base; then d=.; else d=$(srcdir); fi; \
+	  base_i=`echo "$$base" | sed 's|\.info$$||;s|$$|.i|'`; \
+	  for file in $$d/$$base $$d/$$base-[0-9] $$d/$$base-[0-9][0-9] $$d/$$base_i[0-9] $$d/$$base_i[0-9][0-9]; do \
+	    if test -f $$file; then \
+	      relfile=`expr "$$file" : "$$d/\(.*\)"`; \
+	      test -f "$(distdir)/$$relfile" || \
+		cp -p $$file "$(distdir)/$$relfile"; \
+	    else :; fi; \
+	  done; \
+	done
+
+mostlyclean-aminfo:
+	-rm -rf libquadmath.aux libquadmath.cp libquadmath.cps libquadmath.fn \
+	  libquadmath.fns libquadmath.ky libquadmath.kys \
+	  libquadmath.log libquadmath.pg libquadmath.pgs \
+	  libquadmath.tmp libquadmath.toc libquadmath.tp \
+	  libquadmath.tps libquadmath.vr libquadmath.vrs
+
+clean-aminfo:
+	-test -z "libquadmath.dvi libquadmath.pdf libquadmath.ps libquadmath.html" \
+	|| rm -rf libquadmath.dvi libquadmath.pdf libquadmath.ps libquadmath.html
+
+maintainer-clean-aminfo:
+	@list='$(INFO_DEPS)'; for i in $$list; do \
+	  i_i=`echo "$$i" | sed 's|\.info$$||;s|$$|.i|'`; \
+	  echo " rm -f $$i $$i-[0-9] $$i-[0-9][0-9] $$i_i[0-9] $$i_i[0-9][0-9]"; \
+	  rm -f $$i $$i-[0-9] $$i-[0-9][0-9] $$i_i[0-9] $$i_i[0-9][0-9]; \
+	done
 install-nodist_libsubincludeHEADERS: $(nodist_libsubinclude_HEADERS)
 	@$(NORMAL_INSTALL)
 	test -z "$(libsubincludedir)" || $(MKDIR_P) "$(DESTDIR)$(libsubincludedir)"
@@ -882,9 +1057,11 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) all-multi $(HEADERS) config.h
+@BUILD_LIBQUADMATH_FALSE@all-local:
+all-am: Makefile $(INFO_DEPS) $(LTLIBRARIES) all-multi $(HEADERS) \
+		config.h all-local
 installdirs:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(libsubincludedir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" "$(DESTDIR)$(libsubincludedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -904,6 +1081,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -916,10 +1094,11 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 clean: clean-am clean-multi
 
-clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-aminfo clean-generic clean-libtool \
+	clean-toolexeclibLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am distclean-multi
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -930,42 +1109,118 @@ distclean-am: clean-am distclean-compile distclean-generic \
 
 dvi: dvi-am
 
-dvi-am:
+dvi-am: $(DVIS)
 
 html: html-am
 
-html-am:
+html-am: $(HTMLS)
 
 info: info-am
 
-info-am:
+info-am: $(INFO_DEPS)
 
-install-data-am: install-nodist_libsubincludeHEADERS
+install-data-am: install-info-am install-nodist_libsubincludeHEADERS
 
 install-dvi: install-dvi-am
 
-install-dvi-am:
-
+install-dvi-am: $(DVIS)
+	@$(NORMAL_INSTALL)
+	test -z "$(dvidir)" || $(MKDIR_P) "$(DESTDIR)$(dvidir)"
+	@list='$(DVIS)'; test -n "$(dvidir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(dvidir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(dvidir)" || exit $$?; \
+	done
 install-exec-am: install-multi install-toolexeclibLTLIBRARIES
 
 install-html: install-html-am
 
-install-html-am:
-
+install-html-am: $(HTMLS)
+	@$(NORMAL_INSTALL)
+	test -z "$(htmldir)" || $(MKDIR_P) "$(DESTDIR)$(htmldir)"
+	@list='$(HTMLS)'; list2=; test -n "$(htmldir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p" || test -d "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  $(am__strip_dir) \
+	  if test -d "$$d$$p"; then \
+	    echo " $(MKDIR_P) '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(MKDIR_P) "$(DESTDIR)$(htmldir)/$$f" || exit 1; \
+	    echo " $(INSTALL_DATA) '$$d$$p'/* '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p"/* "$(DESTDIR)$(htmldir)/$$f" || exit $$?; \
+	  else \
+	    list2="$$list2 $$d$$p"; \
+	  fi; \
+	done; \
+	test -z "$$list2" || { echo "$$list2" | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(htmldir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(htmldir)" || exit $$?; \
+	done; }
 install-info: install-info-am
 
-install-info-am:
-
+install-info-am: $(INFO_DEPS)
+	@$(NORMAL_INSTALL)
+	test -z "$(infodir)" || $(MKDIR_P) "$(DESTDIR)$(infodir)"
+	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
+	list='$(INFO_DEPS)'; test -n "$(infodir)" || list=; \
+	for file in $$list; do \
+	  case $$file in \
+	    $(srcdir)/*) file=`echo "$$file" | sed "s|^$$srcdirstrip/||"`;; \
+	  esac; \
+	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
+	  file_i=`echo "$$file" | sed 's|\.info$$||;s|$$|.i|'`; \
+	  for ifile in $$d/$$file $$d/$$file-[0-9] $$d/$$file-[0-9][0-9] \
+	               $$d/$$file_i[0-9] $$d/$$file_i[0-9][0-9] ; do \
+	    if test -f $$ifile; then \
+	      echo "$$ifile"; \
+	    else : ; fi; \
+	  done; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(infodir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(infodir)" || exit $$?; done
+	@$(POST_INSTALL)
+	@if (install-info --version && \
+	     install-info --version 2>&1 | sed 1q | grep -i -v debian) >/dev/null 2>&1; then \
+	  list='$(INFO_DEPS)'; test -n "$(infodir)" || list=; \
+	  for file in $$list; do \
+	    relfile=`echo "$$file" | sed 's|^.*/||'`; \
+	    echo " install-info --info-dir='$(DESTDIR)$(infodir)' '$(DESTDIR)$(infodir)/$$relfile'";\
+	    install-info --info-dir="$(DESTDIR)$(infodir)" "$(DESTDIR)$(infodir)/$$relfile" || :;\
+	  done; \
+	else : ; fi
 install-man:
 
 install-pdf: install-pdf-am
 
-install-pdf-am:
-
+install-pdf-am: $(PDFS)
+	@$(NORMAL_INSTALL)
+	test -z "$(pdfdir)" || $(MKDIR_P) "$(DESTDIR)$(pdfdir)"
+	@list='$(PDFS)'; test -n "$(pdfdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(pdfdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(pdfdir)" || exit $$?; done
 install-ps: install-ps-am
 
-install-ps-am:
-
+install-ps-am: $(PSS)
+	@$(NORMAL_INSTALL)
+	test -z "$(psdir)" || $(MKDIR_P) "$(DESTDIR)$(psdir)"
+	@list='$(PSS)'; test -n "$(psdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(psdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(psdir)" || exit $$?; done
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am maintainer-clean-multi
@@ -973,44 +1228,49 @@ maintainer-clean: maintainer-clean-am maintainer-clean-multi
 	-rm -rf $(top_srcdir)/autom4te.cache
 	-rm -rf ./$(DEPDIR) gdtoa/$(DEPDIR) math/$(DEPDIR)
 	-rm -f Makefile
-maintainer-clean-am: distclean-am maintainer-clean-generic
+maintainer-clean-am: distclean-am maintainer-clean-aminfo \
+	maintainer-clean-generic
 
 mostlyclean: mostlyclean-am mostlyclean-multi
 
-mostlyclean-am: mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool
+mostlyclean-am: mostlyclean-aminfo mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool
 
 pdf: pdf-am
 
-pdf-am:
+pdf-am: $(PDFS)
 
 ps: ps-am
 
-ps-am:
+ps-am: $(PSS)
 
-uninstall-am: uninstall-nodist_libsubincludeHEADERS \
-	uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
+	uninstall-nodist_libsubincludeHEADERS uninstall-pdf-am \
+	uninstall-ps-am uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: all all-multi clean-multi distclean-multi install-am \
 	install-multi install-strip maintainer-clean-multi \
 	mostlyclean-multi
 
-.PHONY: CTAGS GTAGS all all-am all-multi am--refresh check check-am \
-	clean clean-generic clean-libtool clean-multi \
-	clean-toolexeclibLTLIBRARIES ctags distclean distclean-compile \
-	distclean-generic distclean-hdr distclean-libtool \
-	distclean-multi distclean-tags dvi dvi-am html html-am info \
-	info-am install install-am install-data install-data-am \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
-	install-man install-multi install-nodist_libsubincludeHEADERS \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip install-toolexeclibLTLIBRARIES installcheck \
-	installcheck-am installdirs maintainer-clean \
+.PHONY: CTAGS GTAGS all all-am all-local all-multi am--refresh check \
+	check-am clean clean-aminfo clean-generic clean-libtool \
+	clean-multi clean-toolexeclibLTLIBRARIES ctags dist-info \
+	distclean distclean-compile distclean-generic distclean-hdr \
+	distclean-libtool distclean-multi distclean-tags dvi dvi-am \
+	html html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-multi \
+	install-nodist_libsubincludeHEADERS install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip \
+	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-aminfo \
 	maintainer-clean-generic maintainer-clean-multi mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	mostlyclean-multi pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-nodist_libsubincludeHEADERS \
+	mostlyclean-aminfo mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool mostlyclean-multi pdf pdf-am ps ps-am tags \
+	uninstall uninstall-am uninstall-dvi-am uninstall-html-am \
+	uninstall-info-am uninstall-nodist_libsubincludeHEADERS \
+	uninstall-pdf-am uninstall-ps-am \
 	uninstall-toolexeclibLTLIBRARIES
 
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@quadmath.map-sun : $(srcdir)/quadmath.map \
@@ -1021,6 +1281,18 @@ uninstall-am: uninstall-nodist_libsubincludeHEADERS \
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	 `echo $(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD) | \
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	   sed 's,\([^/ 	]*\)\.l\([ao]\),.libs/\1.\2,g'` \
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	 > $@ || (rm -f $@ ; exit 1)
+
+@BUILD_LIBQUADMATH_TRUE@all-local: $(STAMP_GENINSRC)
+
+@BUILD_LIBQUADMATH_TRUE@stamp-geninsrc: libquadmath.info
+@BUILD_LIBQUADMATH_TRUE@	cp -p $(top_builddir)/libquadmath.info $(srcdir)/libquadmath.info
+@BUILD_LIBQUADMATH_TRUE@	@touch $@
+
+@BUILD_LIBQUADMATH_TRUE@libquadmath.info: $(STAMP_BUILD_INFO)
+
+@BUILD_LIBQUADMATH_TRUE@stamp-build-info: libquadmath.texi
+@BUILD_LIBQUADMATH_TRUE@	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -o libquadmath.info $(srcdir)/libquadmath.texi
+@BUILD_LIBQUADMATH_TRUE@	@touch $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
