@@ -20,35 +20,33 @@
 // { dg-do compile }
 
 #include <deque>
-
-namespace N
-{
-  struct X { };
-
-  template<typename T>
-    X operator+(T, std::size_t)
-    { return X(); }
-
-  template<typename T>
-    X operator-(T, T)
-    { return X(); }
-}
+#include <testsuite_greedy_ops.h>
 
 int main()
 {
-  std::deque<N::X> d(5);
-  const std::deque<N::X> e(1);
+  std::deque<greedy_ops::X> d(5);
+  const std::deque<greedy_ops::X> e(1);
 
   d[0];
   e[0];
   d.size();
   d.erase(d.begin());
   d.resize(1);
-  d.assign(1, N::X());
-  d.insert(d.begin(), N::X());
-  d.insert(d.begin(), 1, N::X());
+  d.assign(1, greedy_ops::X());
+  d.insert(d.begin(), greedy_ops::X());
+  d.insert(d.begin(), 1, greedy_ops::X());
   d.insert(d.begin(), e.begin(), e.end());
   d = e;
+
+  std::deque<greedy_ops::X>::iterator it;
+  it == it;
+  it != it;
+  it < it;
+  it <= it;
+  it > it;
+  it >= it;
+  it - it;
+  it + 1;
 
   return 0;
 }

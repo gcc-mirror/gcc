@@ -1,3 +1,16 @@
+2010-12-07  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/bits/stl_iterator.h: Add move_iterator operators overloads
+	to make it robust to template abuses.
+	* testsuite/util/testsuite_greedy_ops.h: New.
+	* testsuite/23_containers/vector/types/1.cc: Use latter.
+	* testsuite/23_containers/deque/types/1.cc: Likewise.
+	* testsuite/24_iterators/move_iterator/greedy_ops.cc: New.
+	* testsuite/24_iterators/normal_iterator/greedy_ops.cc: New.
+	* testsuite/24_iterators/reverse_iterator/greedy_ops.cc: New.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-error
+	line numbers.
+
 2010-12-06  Paul Pluzhnikov  <ppluzhnikov@google.com>
 
 	PR libstdc++/46830
