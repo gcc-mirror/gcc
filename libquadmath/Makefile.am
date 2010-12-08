@@ -105,4 +105,46 @@ AM_MAKEFLAGS = \
 
 MAKEOVERRIDES=
 
+# AM_CONDITIONAL on configure option --generated-files-in-srcdir
+if GENINSRC
+STAMP_GENINSRC = stamp-geninsrc
+else
+STAMP_GENINSRC =
 endif
+
+# AM_CONDITIONAL on configure check ACX_CHECK_PROG_VER([MAKEINFO])
+if BUILD_INFO
+STAMP_BUILD_INFO = stamp-build-info
+else
+STAMP_BUILD_INFO =
+endif
+
+
+all-local: $(STAMP_GENINSRC)
+
+stamp-geninsrc: libquadmath.info
+	cp -p $(top_builddir)/libquadmath.info $(srcdir)/libquadmath.info
+	@touch $@
+
+libquadmath.info: $(STAMP_BUILD_INFO)
+
+stamp-build-info: libquadmath.texi
+	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -o libquadmath.info $(srcdir)/libquadmath.texi
+	@touch $@
+
+CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) libquadmath.info
+MAINTAINERCLEANFILES = $(srcdir)/libquadmath.info
+
+endif
+
+
+# Automake Documentation:
+# If your package has Texinfo files in many directories, you can use the
+# variable TEXINFO_TEX to tell Automake where to find the canonical
+# `texinfo.tex' for your package. The value of this variable should be
+# the relative path from the current `Makefile.am' to `texinfo.tex'.
+TEXINFO_TEX   = ../gcc/doc/include/texinfo.tex
+
+# Defines info, dvi, pdf and html targets
+MAKEINFOFLAGS = -I $(srcdir)/../gcc/doc/include
+info_TEXINFOS = libquadmath.texi
