@@ -11941,6 +11941,54 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether __float128 is supported" >&5
 $as_echo_n "checking whether __float128 is supported... " >&6; }
+if test "${libquad_cv_have_float128+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    typedef _Complex float __attribute__((mode(TC))) __complex128;
+
+    __float128 foo (__float128 x)
+    {
+
+     __complex128 z1, z2;
+
+     z1 = x;
+     z2 = x / 7.Q;
+     z2 /= z1;
+
+     return (__float128) z2;
+    }
+
+    __float128 bar (__float128 x)
+    {
+      return x * __builtin_huge_valq ();
+    }
+
+int
+main ()
+{
+
+    foo (1.2Q);
+    bar (1.2Q);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+    libquad_cv_have_float128=yes
+
+else
+
+    libquad_cv_have_float128=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
   if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
@@ -11979,20 +12027,20 @@ main ()
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
 
-    libquad_have_float128=yes
+    libquad_cv_have_float128=yes
 
 else
 
-    libquad_have_float128=no
+    libquad_cv_have_float128=no
 
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libquad_have_float128" >&5
-$as_echo "$libquad_have_float128" >&6; }
-
-
- if test "x$libquad_have_float128" = xyes; then
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libquad_cv_have_float128" >&5
+$as_echo "$libquad_cv_have_float128" >&6; }
+ if test "x$libquad_cv_have_float128" = xyes; then
   BUILD_LIBQUADMATH_TRUE=
   BUILD_LIBQUADMATH_FALSE='#'
 else
