@@ -309,8 +309,8 @@ sort_du_head (struct du_head **head)
    registers.  */
 
 static bool
-check_new_reg_p (int reg, int new_reg,  struct du_head *this_head,
-		 HARD_REG_SET this_unavailable)
+check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
+		 struct du_head *this_head, HARD_REG_SET this_unavailable)
 {
   enum machine_mode mode = GET_MODE (*this_head->first->loc);
   int nregs = hard_regno_nregs[new_reg][mode];

@@ -1,3 +1,9 @@
+2010-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/46844
+	* regrename.c (check_new_reg_p): Add ATTRIBUTE_UNUSED to reg
+	parameter.
+
 2010-12-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/46631
