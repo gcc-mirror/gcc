@@ -4227,9 +4227,12 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
    another mechanism.  Exiting early also avoids problems with trying
    to perform argument conversions when the class isn't complete yet.  */
 #define LOOKUP_SPECULATIVE (LOOKUP_LIST_ONLY << 1)
+/* Used by calls from defaulted functions to limit the overload set to avoid
+   cycles trying to declare them (core issue 1092).  */
+#define LOOKUP_DEFAULTED (LOOKUP_SPECULATIVE << 1)
 /* Used in calls to store_init_value to suppress its usual call to
    digest_init.  */
-#define LOOKUP_ALREADY_DIGESTED (LOOKUP_SPECULATIVE << 1)
+#define LOOKUP_ALREADY_DIGESTED (LOOKUP_DEFAULTED << 1)
 
 #define LOOKUP_NAMESPACES_ONLY(F)  \
   (((F) & LOOKUP_PREFER_NAMESPACES) && !((F) & LOOKUP_PREFER_TYPES))

@@ -1645,13 +1645,10 @@ add_function_candidate (struct z_candidate **candidates,
   else if (!sufficient_parms_p (parmnode))
     viable = 0;
 
-  /* Kludge: When looking for a function from a subobject while generating
-     an implicit copy/move constructor/operator=, don't consider anything
-     that takes (a reference to) an unrelated type.  See c++/44909.  */
-  else if (parmlist
-	   && ((flags & LOOKUP_SPECULATIVE)
-	       || (current_function_decl
-		   && DECL_DEFAULTED_FN (current_function_decl))))
+  /* When looking for a function from a subobject from an implicit
+     copy/move constructor/operator=, don't consider anything that takes (a
+     reference to) an unrelated type.  See c++/44909 and core 1092.  */
+  else if (parmlist && (flags & LOOKUP_DEFAULTED))
     {
       if (DECL_CONSTRUCTOR_P (fn))
 	i = 1;
@@ -1667,6 +1664,9 @@ add_function_candidate (struct z_candidate **candidates,
 				    ctype))
 	    viable = 0;
 	}
+
+      /* This only applies at the top level.  */
+      flags &= ~LOOKUP_DEFAULTED;
     }
 
   if (! viable)
