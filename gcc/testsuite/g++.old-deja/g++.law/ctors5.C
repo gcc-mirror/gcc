@@ -5,7 +5,7 @@
 // Subject: bug in handling static const object of the enclosing class
 // Date: Tue, 1 Sep 92 10:38:44 EDT
 
-class X	      // { dg-message "7:X::X" } implicit constructor
+class X	      // { dg-message "7:X::X|candidate expects" } implicit constructor
 {
   private:
     int x;
@@ -23,7 +23,7 @@ class Y // { dg-error "1:new types may not be defined in a return type" "err" }
     Y();
 }
 X::X( int xi ) // { dg-error "14:return type specification for constructor invalid" "err" }
-// { dg-message "1:candidates are: X::X\\(int\\)" "note" { target *-*-* } 25 }
+// { dg-message "1:X::X|candidate expects" "match candidate text" { target *-*-* } 25 }
 {
     x = xi;
 }
@@ -31,6 +31,7 @@ X::X( int xi ) // { dg-error "14:return type specification for constructor inval
 const X X::x0( 0 );
 
 Y::Y() // { dg-error "6:no matching function for call to 'X::X\\(\\)'" }
+// { dg-message "candidate" "candidate note" { target *-*-* } 33 }
 {
     xx = X::x0;
 }

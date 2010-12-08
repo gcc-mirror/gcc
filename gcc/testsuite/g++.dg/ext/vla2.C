@@ -8,11 +8,12 @@
 // errors.
 
 template <unsigned int N>
-char* begin(char (&a) [N] );	// { dg-message "candidate" }
+char* begin(char (&a) [N] );	// { dg-message "note" }
 
 void bar(int i)
 {
   char d[i] ;
   
   begin(d);  // { dg-error "no matching function" "" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 17 }
 }

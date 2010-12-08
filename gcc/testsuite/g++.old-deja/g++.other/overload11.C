@@ -21,10 +21,8 @@
 // sure that doesn't happen again.
 
 
-void ovl (int);          // { dg-error "" } candidate
-// { dg-message "int" "int" { target *-*-* } 24 }
-void ovl (float);        // { dg-error "" } candidate
-// { dg-message "float" "float" { target *-*-* } 26 }
+void ovl (int);          // { dg-message "ovl|candidate expects" } candidate
+void ovl (float);        // { dg-message "ovl|candidate expects" } candidate
 void fn (int);
 void fna (int);
 
@@ -36,6 +34,7 @@ int main (int argc, char **argv)
   (ovl) (1);                // ok
   (&ovl) (1);               // { dg-error "" } not suitable for overload resolution
   (ovl) ();                 // { dg-error "" } no matching candidates
+  // { dg-message "candidate" "candidate note" { target *-*-* } 36 }
   (&ovl) ();                // { dg-error "" } not suitable for overload resolution
   
   // 13.3.1.1 indicates that the following are errors -- the primary expression

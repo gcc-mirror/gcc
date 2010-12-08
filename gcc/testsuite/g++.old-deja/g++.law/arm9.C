@@ -19,11 +19,12 @@ class B : public A {
 public:
     void set (f2 f);
 };
-void B::set (f2 f) { std::cout << "called B\n";} // { dg-message "candidate is" }
+void B::set (f2 f) { std::cout << "called B\n|no known conversion";} // { dg-message "B::set|no known conversion" }
 
 int main() {
     B b;
     b.set(F1); // ARM page 309: should call A.set(f1) and that what g++ does,// { dg-error "match" }
+    // { dg-message "candidate" "candidate note" { target *-*-* } 26 }
                // but 13.1 of ARM clearly states that it should call B::set()
                // or generate an error because overloading works only for
                // functions within the same scope (first page of chapter 13)

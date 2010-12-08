@@ -9,7 +9,7 @@ public:
 class Bar : public Foo
 {
 public:
-      int f (int); // { dg-message "candidate is" }
+      int f (int); // { dg-message "Bar::f|candidate expects" }
 };
 
 int main ()
@@ -17,5 +17,6 @@ int main ()
   Bar b;
 
   b.f ();// { dg-error "no matching" } 
+  // { dg-message "candidate" "candidate note" { target *-*-* } 19 }
   b.f (10);
 }

@@ -6,4 +6,5 @@ void f(int i, ...);		// { dg-message "void f" }
 int main()
 {
   f(1,1);			// { dg-error "ambiguous" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 8 }
 }

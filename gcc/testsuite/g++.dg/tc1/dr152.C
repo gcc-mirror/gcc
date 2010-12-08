@@ -4,7 +4,7 @@
 
 namespace N1 {
   struct X {
-    X();			// { dg-message "candidate" }
+    X();			// { dg-message "note" }
     explicit X(const X&);
   };
   void f(X);			// { dg-error "initializing" }
@@ -12,13 +12,14 @@ namespace N1 {
   { 
     X x; 
     f(x);     // { dg-error "matching" "matching" }
+    // { dg-message "candidate" "candidate note" { target *-*-* } 14 }
   }
 }
 
 namespace N2 {
   template <class T>
   struct X {
-    X();			// { dg-message "candidate" }
+    X();			// { dg-message "note" }
     explicit X(const X&);
   };
 
@@ -30,6 +31,7 @@ namespace N2 {
   { 
     X<T> x; 
     N2::f(x);   // { dg-error "matching" "matching" }
+    // { dg-message "candidate" "candidate note" { target *-*-* } 33 }
   }
 
   template int foo<float>();  // { dg-message "instantiated from here" }

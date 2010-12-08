@@ -1,13 +1,13 @@
 // { dg-do assemble  }
 // GROUPS passed overloading
-class CLogger
+class CLogger			// { dg-message "candidate" }
 {
 public:
-      void operator() (int,const char *) {}; // { dg-message "candidates" }
+      void operator() (int,const char *) {}; // { dg-message "note" }
       void operator() (int,const char *, ...) {}; // { dg-message "note" }
 } Log;
 
-class CGLogger : public CLogger
+class CGLogger : public CLogger	// { dg-message "candidate" }
 {
 } GLog;
 

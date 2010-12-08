@@ -30,7 +30,7 @@ template<typename X> struct auto_ptr {
    X* release() throw() { X* p=px; px=0; return p; }
    void reset(X* p=0) throw() { if (px != p) delete px, px = p; }
 
-   auto_ptr(auto_ptr_ref<X> r) throw() : px(r.py) {} // { dg-message "candidate" } 
+   auto_ptr(auto_ptr_ref<X> r) throw() : px(r.py) {} // { dg-message "note" } 
    template<typename Y> operator auto_ptr_ref<Y>() throw() {
       return auto_ptr_ref<Y>(release()); 
    }
@@ -52,4 +52,5 @@ int main() {
     x = y;
     g(f());
     h(f());			// { dg-error "match" "match" } no usable copy ctor
+    // { dg-message "candidate" "candidate note" { target *-*-* } 54 }
 }

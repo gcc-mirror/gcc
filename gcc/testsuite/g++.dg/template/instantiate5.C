@@ -13,12 +13,13 @@ int baz() { return A<0>::i; }
 
 struct B
 {
-  static void foo (int);	// { dg-message "candidate is" }
+  static void foo (int);	// { dg-message "B::foo|candidate expects" }
 };
 
 template <typename T> struct C
 {
   virtual void bar() const { T::foo(); } // { dg-error "no matching function" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 21 }
 };
 
 C<B> c;				// { dg-message "instantiated" }

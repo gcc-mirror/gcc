@@ -7,9 +7,10 @@
 
 struct A
 {
-  template<typename>   void foo(int); // { dg-message "candidate" }
-  template<typename T> void bar(T t) { // { dg-message "candidate" }
+  template<typename>   void foo(int); // { dg-message "note" }
+  template<typename T> void bar(T t) { // { dg-message "note" }
     this->foo<typename T>(t); } // { dg-error "expected|parse error|no matching" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 12 }
   template<typename T> void bad(T t) {
     foo<typename T>(t); } // { dg-error "expected|parse error|no matching" }
 };
@@ -19,6 +20,7 @@ struct B
 {
   void bar(T t) {
     A().bar<typename T>(t); } // { dg-error "expected|parse error|no matching" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 22 }
   void bad(T t) {
     B<typename T>::bar(t); } // { dg-error "invalid|not a template" }
 };

@@ -5,7 +5,7 @@ struct A {};
 
 template <int A::* p>
 int
-foo(A* q)			// { dg-message "candidate" }
+foo(A* q)			// { dg-message "note" }
 {
   return q->*p;
 }
@@ -15,6 +15,7 @@ int
 bar(int T::* p)
 {
   return foo<p>(0);// { dg-error "(not a valid template arg|no matching func|pointer-to-member)" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 17 }
 }
 
 int i = bar<A>(0);

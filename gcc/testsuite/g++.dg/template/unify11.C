@@ -8,7 +8,7 @@ struct A
 
 template <typename S, typename T, typename U, typename S::v = &S::v::s>
 typename S::A
-foo (S c, T t, U u)		// { dg-message "candidate" }
+foo (S c, T t, U u)		// { dg-message "note" }
 {
 }
 
@@ -21,6 +21,7 @@ struct B
     {
       A a;
       A b = foo (this, a, t); // { dg-error "no matching function" }
+      // { dg-message "candidate" "candidate note" { target *-*-* } 23 }
     }
   } c;
   B () : c (A ())

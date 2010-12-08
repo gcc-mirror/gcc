@@ -14,4 +14,5 @@ struct A
 template<int> void foo()
 {
   unique(A().begin); // { dg-error "no matching function" "" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 16 }
 }

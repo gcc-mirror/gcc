@@ -7,7 +7,7 @@
 template< typename SID, class SDR >
 void k( SID sid, SDR* p,
  void (SDR::*)
- ( typename SID::T ) );		// { dg-message "candidate" }
+ ( typename SID::T ) );		// { dg-message "note" }
 
 struct E { };
 struct S { void f( int ); };
@@ -15,4 +15,5 @@ struct S { void f( int ); };
 void f()
 {
   k( E(), (S*)0, &S::f );   // { dg-error "" } no match
+  // { dg-message "candidate" "candidate note" { target *-*-* } 17 }
 } 

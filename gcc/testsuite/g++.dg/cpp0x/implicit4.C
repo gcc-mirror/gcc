@@ -4,11 +4,12 @@
 
 struct A
 {
-  A();				// { dg-message "A::A" }
-  A(A&&);			// { dg-message "A::A" }
+  A();				// { dg-message "A::A|candidate expects" }
+  A(A&&);			// { dg-message "A::A|no known conversion" }
 };
 
 struct B: A			// { dg-error "implicit|no match" }
+// { dg-message "candidate" "candidate note" { target *-*-* } 11 }
 {
 };
 
