@@ -12183,6 +12183,7 @@ thumb2_reorg (void)
   FOR_EACH_BB (bb)
     {
       rtx insn;
+
       COPY_REG_SET (&live, DF_LR_OUT (bb));
       df_simulate_initialize_backwards (bb, &live);
       FOR_BB_INSNS_REVERSE (bb, insn)
@@ -12200,21 +12201,43 @@ thumb2_reorg (void)
 		  rtx dst = XEXP (pat, 0);
 		  rtx src = XEXP (pat, 1);
 		  rtx op0 = XEXP (src, 0);
+		  rtx op1 = (GET_RTX_CLASS (GET_CODE (src)) == RTX_COMM_ARITH
+			     ? XEXP (src, 1) : NULL);
+
 		  if (rtx_equal_p (dst, op0)
 		      || GET_CODE (src) == PLUS || GET_CODE (src) == MINUS)
 		    {
 		      rtx ccreg = gen_rtx_REG (CCmode, CC_REGNUM);
 		      rtx clobber = gen_rtx_CLOBBER (VOIDmode, ccreg);
 		      rtvec vec = gen_rtvec (2, pat, clobber);
+
+		      PATTERN (insn) = gen_rtx_PARALLEL (VOIDmode, vec);
+		      INSN_CODE (insn) = -1;
+		    }
+		  /* We can also handle a commutative operation where the
+		     second operand matches the destination.  */
+		  else if (op1 && rtx_equal_p (dst, op1))
+		    {
+		      rtx ccreg = gen_rtx_REG (CCmode, CC_REGNUM);
+		      rtx clobber = gen_rtx_CLOBBER (VOIDmode, ccreg);
+		      rtvec vec;
+
+		      src = copy_rtx (src);
+		      XEXP (src, 0) = op1;
+		      XEXP (src, 1) = op0;
+		      pat = gen_rtx_SET (VOIDmode, dst, src);
+		      vec = gen_rtvec (2, pat, clobber);
 		      PATTERN (insn) = gen_rtx_PARALLEL (VOIDmode, vec);
 		      INSN_CODE (insn) = -1;
 		    }
 		}
 	    }
+
 	  if (NONDEBUG_INSN_P (insn))
 	    df_simulate_one_insn_backwards (bb, insn, &live);
 	}
     }
+
   CLEAR_REG_SET (&live);
 }
 

@@ -1,3 +1,9 @@
+2010-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/46631
+	* arm.c (thumb2_reorg): Also try to reduce <commutative_op> Rd, Rn, Rd
+	into a 16-bit instruction.
+
 2010-12-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR middle-end/42694
