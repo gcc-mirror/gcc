@@ -503,6 +503,9 @@ perform_member_init (tree member, tree init)
 	}
       else
 	{
+	  int flags = LOOKUP_NORMAL;
+	  if (DECL_DEFAULTED_FN (current_function_decl))
+	    flags |= LOOKUP_DEFAULTED;
 	  if (CP_TYPE_CONST_P (type)
 	      && init == NULL_TREE
 	      && !type_has_user_provided_default_constructor (type))
@@ -511,7 +514,7 @@ perform_member_init (tree member, tree init)
 	    permerror (DECL_SOURCE_LOCATION (current_function_decl),
 		       "uninitialized member %qD with %<const%> type %qT",
 		       member, type);
-	  finish_expr_stmt (build_aggr_init (decl, init, 0, 
+	  finish_expr_stmt (build_aggr_init (decl, init, flags,
 					     tf_warning_or_error));
 	}
     }
@@ -852,10 +855,15 @@ sort_mem_initializers (tree t, tree mem_inits)
 void
 emit_mem_initializers (tree mem_inits)
 {
+  int flags = LOOKUP_NORMAL;
+
   /* We will already have issued an error message about the fact that
      the type is incomplete.  */
   if (!COMPLETE_TYPE_P (current_class_type))
     return;
+
+  if (DECL_DEFAULTED_FN (current_function_decl))
+    flags |= LOOKUP_DEFAULTED;
 
   /* Sort the mem-initializers into the order in which the
      initializations should be performed.  */
@@ -908,7 +916,7 @@ emit_mem_initializers (tree mem_inits)
 			      cp_build_indirect_ref (base_addr, RO_NULL,
                                                      tf_warning_or_error),
 			      arguments,
-			      LOOKUP_NORMAL,
+			      flags,
                               tf_warning_or_error);
 	  expand_cleanup_for_base (subobject, NULL_TREE);
 	}

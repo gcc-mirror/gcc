@@ -1,5 +1,13 @@
 2010-12-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45822
+	* cp-tree.h (LOOKUP_DEFAULTED): New.
+	* call.c (add_function_candidate): Check it.
+	* method.c (synthesized_method_walk): Set it.
+	(do_build_copy_assign): Likewise.
+	* init.c (perform_member_init): Likewise.
+	(emit_mem_initializers): Likewise.
+
 	PR c++/46736
 	* decl.c (cp_finish_decl): Complain about an implicitly deleted
 	method defaulted outside the class.

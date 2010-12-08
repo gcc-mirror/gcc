@@ -1,5 +1,8 @@
 2010-12-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45822
+	* g++.dg/init/synth4.C: New.
+
 	PR c++/46736
 	* g++.dg/cpp0x/defaulted21.C: New.
 
