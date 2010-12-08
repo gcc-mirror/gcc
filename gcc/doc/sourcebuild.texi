@@ -377,7 +377,7 @@ and they are included in release distributions.
 
 Manuals are also provided on the GCC web site, in both HTML and
 PostScript forms.  This is done via the script
-@file{maintainer-scripts/update_web_docs}.  Each manual to be
+@file{maintainer-scripts/update_web_docs_svn}.  Each manual to be
 provided online must be listed in the definition of @code{MANUALS} in
 that file; a file @file{@var{name}.texi} must only appear once in the
 source tree, and the output manual must have the same name as the
@@ -550,7 +550,7 @@ A news item on @file{index.html}, and possibly an announcement on the
 @email{gcc-announce@@gcc.gnu.org} mailing list.
 @item
 The front end's manuals should be mentioned in
-@file{maintainer-scripts/update_web_docs} (@pxref{Texinfo Manuals})
+@file{maintainer-scripts/update_web_docs_svn} (@pxref{Texinfo Manuals})
 and the online manuals should be linked to from
 @file{onlinedocs/index.html}.
 @item
