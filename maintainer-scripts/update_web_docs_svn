@@ -15,6 +15,7 @@ MANUALS="cpp
   cppinternals
   fastjar
   gcc
+  gccgo
   gccint
   gcj
   gfortran
