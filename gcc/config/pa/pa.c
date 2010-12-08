@@ -181,6 +181,7 @@ static bool pa_print_operand_punct_valid_p (unsigned char);
 static rtx pa_internal_arg_pointer (void);
 static bool pa_can_eliminate (const int, const int);
 static void pa_conditional_register_usage (void);
+static section *pa_function_section (tree, enum node_frequency, bool, bool);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -388,6 +389,8 @@ static const struct default_options pa_option_optimization_table[] =
 #define TARGET_CAN_ELIMINATE pa_can_eliminate
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE pa_conditional_register_usage
+#undef TARGET_ASM_FUNCTION_SECTION
+#define TARGET_ASM_FUNCTION_SECTION pa_function_section
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -10198,6 +10201,29 @@ pa_conditional_register_usage (void)
     }
   if (flag_pic)
     fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+}
+
+/* Target hook for function_section.  */
+
+static section *
+pa_function_section (tree decl, enum node_frequency freq,
+		     bool startup, bool exit)
+{
+  /* Put functions in text section if target doesn't have named sections.  */
+  if (!targetm.have_named_sections)
+    return text_section;
+
+  /* Force nested functions into the same section as the containing
+     function.  */
+  if (decl
+      && DECL_SECTION_NAME (decl) == NULL_TREE
+      && DECL_CONTEXT (decl) != NULL_TREE
+      && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL
+      && DECL_SECTION_NAME (DECL_CONTEXT (decl)) == NULL_TREE)
+    return function_section (DECL_CONTEXT (decl));
+
+  /* Otherwise, use the default function section.  */
+  return default_function_section (decl, freq, startup, exit);
 }
 
 #include "gt-pa.h"

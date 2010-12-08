@@ -1,3 +1,10 @@
+2010-12-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/46671
+	PR target/46685
+	* config/pa/pa.c (pa_function_section): New function.
+	(TARGET_ASM_FUNCTION_SECTION): Define.
+
 2010-12-07  Ian Lance Taylor  <iant@google.com>
 	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
