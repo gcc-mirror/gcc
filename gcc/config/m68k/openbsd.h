@@ -1,5 +1,6 @@
 /* Configuration file for an m68k OpenBSD target.
-   Copyright (C) 1999, 2002, 2003, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003, 2007, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -35,8 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ASM_SPEC
 #define ASM_SPEC "%(asm_cpu_spec) %{fpic|fpie:-k} %{fPIC|fPIE:-k -K}"
-
-#define AS_NEEDS_DASH_FOR_PIPED_INPUT
 
 /* Layout of source language data types.  */
 

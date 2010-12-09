@@ -72,8 +72,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef  ASM_SPEC
 #define ASM_SPEC SVR4_ASM_SPEC
 
-#define AS_NEEDS_DASH_FOR_PIPED_INPUT
-
 /* Under svr4, the normal location of the `ld' and `as' programs is the
    /usr/ccs/bin directory.  */
 

@@ -291,6 +291,9 @@ __enable_execute_stack (void *addr)					\
 #ifndef USE_GAS
 #undef TARGET_ASM_ASSEMBLE_VISIBILITY
 #define TARGET_ASM_ASSEMBLE_VISIBILITY solaris_assemble_visibility
+
+#define AS_NEEDS_DASH_FOR_PIPED_INPUT
+
 #endif
 
 extern GTY(()) tree solaris_pending_aligns;
