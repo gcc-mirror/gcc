@@ -1,3 +1,9 @@
+2010-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR c++/44641
+	* lib/scanasm.exp (dg-function-on-line): Add match pattern for
+	hppa*-*-*.
+
 2010-12-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46348
