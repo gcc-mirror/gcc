@@ -84,7 +84,7 @@ along with GCC; see the file COPYING3.  If not see
     %{!ibcs: \
       %{!static: \
         %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}} \
+        -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
         %{static:-static}}}"
 
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).

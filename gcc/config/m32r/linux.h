@@ -55,7 +55,7 @@
     %{!ibcs: \
       %{!static: \
 	%{rdynamic:-export-dynamic} \
-	%{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}} \
+	-dynamic-linker " LINUX_DYNAMIC_LINKER "} \
 	%{static:-static}}}"
 #else
 #define LINK_SPEC "%(link_cpu) -m m32relf_linux %{shared:-shared} \
@@ -63,7 +63,7 @@
     %{!ibcs: \
       %{!static: \
 	%{rdynamic:-export-dynamic} \
-	%{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}} \
+	-dynamic-linker " LINUX_DYNAMIC_LINKER "} \
 	%{static:-static}}}"
 #endif
 

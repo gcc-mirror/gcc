@@ -1,5 +1,5 @@
 /* Configuration file for sparc64 OpenBSD target.
-   Copyright (C) 1999, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2005, 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -77,7 +77,7 @@ along with GCC; see the file COPYING3.  If not see
    %{static:-Bstatic} \
    %{!static:-Bdynamic} \
    %{assert*} \
-   %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.so}"
+   -dynamic-linker /usr/libexec/ld.so"
 
 /* As an elf system, we need crtbegin/crtend stuff.  */
 #undef STARTFILE_SPEC

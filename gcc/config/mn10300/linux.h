@@ -38,7 +38,7 @@
 #define LINK_SPEC "%{mrelax:--relax} %{shared:-shared} \
    %{!static: \
      %{rdynamic:-export-dynamic} \
-     %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}} \
+     -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
    %{static:-static}"
 
 #undef  PROCESSOR_DEFAULT

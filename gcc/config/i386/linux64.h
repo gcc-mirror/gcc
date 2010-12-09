@@ -80,8 +80,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
-      %{" SPEC_32 ":%{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER32 "}} \
-      %{" SPEC_64 ":%{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER64 "}}} \
+      %{" SPEC_32 ":-dynamic-linker " LINUX_DYNAMIC_LINKER32 "} \
+      %{" SPEC_64 ":-dynamic-linker " LINUX_DYNAMIC_LINKER64 "}} \
     %{static:-static}}"
 
 /* Similar to standard Linux, but adding -ffast-math support.  */
