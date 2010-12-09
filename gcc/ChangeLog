@@ -1,3 +1,7 @@
+2010-12-09  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-typeck.c (build_indirect_ref): Call invalid_indirection_error.
+
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/extend.texi (Attribute Syntax): Correct description of

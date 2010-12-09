@@ -2776,23 +2776,8 @@ cp_build_indirect_ref (tree ptr, ref_operator errorstring,
            gcc_unreachable ();
       }
   else if (pointer != error_mark_node)
-    switch (errorstring)
-      {
-         case RO_NULL:
-           error ("invalid type argument");
-           break;
-         case RO_ARRAY_INDEXING:
-           error ("invalid type argument of array indexing");
-           break;
-         case RO_UNARY_STAR:
-           error ("invalid type argument of unary %<*%>");
-           break;
-         case RO_IMPLICIT_CONVERSION:
-           error ("invalid type argument of implicit conversion");
-           break;
-         default:
-           gcc_unreachable ();
-      }
+    invalid_indirection_error (input_location, type, errorstring);
+
   return error_mark_node;
 }
 

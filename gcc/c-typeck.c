@@ -2267,26 +2267,8 @@ build_indirect_ref (location_t loc, tree ptr, ref_operator errstring)
 	}
     }
   else if (TREE_CODE (pointer) != ERROR_MARK)
-    switch (errstring)
-      {
-         case RO_ARRAY_INDEXING:
-           error_at (loc,
-                     "invalid type argument of array indexing (have %qT)",
-                     type);
-           break;
-         case RO_UNARY_STAR:
-           error_at (loc,
-                     "invalid type argument of unary %<*%> (have %qT)",
-                     type);
-           break;
-         case RO_ARROW:
-           error_at (loc,
-                     "invalid type argument of %<->%> (have %qT)",
-                     type);
-           break;
-         default:
-           gcc_unreachable ();
-      }
+    invalid_indirection_error (loc, type, errstring);
+
   return error_mark_node;
 }
 

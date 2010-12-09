@@ -8585,6 +8585,43 @@ lvalue_error (enum lvalue_use use)
       gcc_unreachable ();
     }
 }
+
+/* Print an error message for an invalid indirection of type TYPE.
+   ERRSTRING is the name of the operator for the indirection.  */
+
+void
+invalid_indirection_error (location_t loc, tree type, ref_operator errstring)
+{
+  switch (errstring)
+    {
+    case RO_NULL:
+      gcc_assert (c_dialect_cxx ());
+      error_at (loc, "invalid type argument (have %qT)", type);
+      break;
+    case RO_ARRAY_INDEXING:
+      error_at (loc,
+		"invalid type argument of array indexing (have %qT)",
+		type);
+      break;
+    case RO_UNARY_STAR:
+      error_at (loc,
+		"invalid type argument of unary %<*%> (have %qT)",
+		type);
+      break;
+    case RO_ARROW:
+      error_at (loc,
+		"invalid type argument of %<->%> (have %qT)",
+		type);
+      break;
+    case RO_IMPLICIT_CONVERSION:
+      error_at (loc,
+		"invalid type argument of implicit conversion (have %qT)",
+		type);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
 
 /* *PTYPE is an incomplete array.  Complete it with a domain based on
    INITIAL_VALUE.  If INITIAL_VALUE is not present, use 1 if DO_DEFAULT
