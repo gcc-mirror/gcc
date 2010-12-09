@@ -62,7 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 %{EB:-mbig-endian} %{EL:-mlittle-endian} \
 "
 
-#define ASM_SPEC "%{v} %{EB} %{EL}"
+#define ASM_SPEC "%{EB} %{EL}"
 
 #define LINK_SPEC "%{v} %{EB} %{EL}"
 

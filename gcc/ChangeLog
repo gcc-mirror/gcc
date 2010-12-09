@@ -1,5 +1,33 @@
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/arc/arc.h (ASM_SPEC): Remove %{v}.
+	* config/bfin/bfin.h (ASM_SPEC): Remove %{v}.
+	* config/cris/cris.h (ASM_SPEC): Remove %{v:-v}.
+	* config/fr30/fr30.h (ASM_SPEC): Remove %{v}.
+	* config/frv/frv.h (ASM_SPEC): Remove %{v}.
+	* config/i386/linux.h (ASM_SPEC): Remove %{v}.
+	* config/i386/linux64.h (ASM_SPEC): Remove %{v}.
+	* config/i386/mingw-w64.h (ASM_SPEC): Remove %{v}.
+	* config/i386/sol2-10.h (ASM_SPEC): Remove %{v}.
+	* config/i386/vxworks.h (ASM_SPEC): Remove %{v}.
+	* config/i386/x86-64.h (ASM_SPEC): Remove %{v}.
+	* config/lm32/lm32.h (ASM_SPEC): Remove %{v}.
+	* config/m32r/m32r.h (ASM_SPEC): Remove %{v}.
+	* config/m68k/linux.h (ASM_SPEC): Remove %{v:-V}.
+	* config/microblaze/microblaze.h (ASM_SPEC): Remove %{v}.
+	* config/mips/mips.h (ASM_SPEC): Remove %{v}.
+	* config/mips/vxworks.h (ASM_SPEC): Remove %{v}.
+	* config/pa/pa-linux.h (ASM_SPEC): Remove %{v:-V}.
+	* config/rs6000/freebsd.h (SVR4_ASM_SPEC): Remove %{v}.
+	* config/rs6000/linux64.h (ASM_SPEC): Remove %{v:-V}.
+	* config/rs6000/vxworks.h (ASM_SPEC): Remove %{v:-v}.
+	* config/sparc/openbsd64.h (ASM_SPEC): Remove %{v:-V}.
+	* config/svr4.h (SVR4_ASM_SPEC): Remove %{v:-V}.
+	* config/xtensa/elf.h (ASM_SPEC): Remove %{v}.
+	* config/xtensa/linux.h (ASM_SPEC): Remove %{v}.
+
+2010-12-09  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/i386/openbsdelf.h (LINK_SPEC): Use %{r:} not %{r*:}.
 	* config/mips/openbsd.h (LINK_SPEC): Use %{r:} not %{r*:}.
 	* config/netbsd-aout.h (NETBSD_LINK_SPEC_AOUT): Use %{r:} not

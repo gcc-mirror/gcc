@@ -63,7 +63,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifdef USE_GAS
 #define SVR4_ASM_SPEC \
-  "%{v:-V}"
+  ""
 #else
 #define SVR4_ASM_SPEC \
   "%{v:-V} %{Qy:} %{!Qn:-Qy} %{Ym,*} %{Yd,*}"

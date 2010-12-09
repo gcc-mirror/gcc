@@ -43,8 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ASM_SPEC
 #define ASM_SPEC \
- "%{v} \
-  %{mtext-section-literals:--text-section-literals} \
+ "%{mtext-section-literals:--text-section-literals} \
   %{mno-text-section-literals:--no-text-section-literals} \
   %{mtarget-align:--target-align} \
   %{mno-target-align:--no-target-align} \

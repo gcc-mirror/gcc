@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ASM_SPEC
 #define ASM_SPEC \
-  "%{v:-V} %{Ym,*} %{Yd,*}"
+  "%{Ym,*} %{Yd,*}"
 
 /* Define this for shared library support because it isn't in the main
    linux.h file.  */

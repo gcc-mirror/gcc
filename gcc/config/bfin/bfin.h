@@ -248,7 +248,7 @@ extern unsigned int bfin_workarounds;
    Defined in svr4.h.  */
 #undef  ASM_SPEC
 #define ASM_SPEC "\
-%{v} %{Ym,*} %{Yd,*} \
+%{Ym,*} %{Yd,*} \
     %{mno-fdpic:-mnopic} %{mfdpic}"
 
 #define LINK_SPEC "\
