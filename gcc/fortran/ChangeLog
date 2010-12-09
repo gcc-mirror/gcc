@@ -1,3 +1,7 @@
+2010-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* check.c (gfc_check_float): Insert missing space in error message.
+
 2010-12-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44352
