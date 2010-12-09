@@ -1,3 +1,14 @@
+2010-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/41082
+	* config/rs6000/rs6000.c (rs6000_expand_vector_extract): Use stvx
+	instead of stve*x.
+	(altivec_expand_stv_builtin): For op0 use mode of operand 1 instead
+	of operand 0.
+	* config/rs6000/altivec.md (VI_scalar): New mode attr.
+	(altivec_stve<VI_char>x, *altivec_stvesfx): Use scalar instead of
+	vector mode for operand 0, put operand 1 into UNSPEC.
+
 2010-12-09  Yao Qi  <yao@codesourcery.com>
 
 	* config/arm/arm.c (arm_preferred_rename_class): Implement targethook
