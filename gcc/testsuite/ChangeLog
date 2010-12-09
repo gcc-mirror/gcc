@@ -1,3 +1,8 @@
+2010-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/45068
+	* g++.dg/debug/dwarf2/nested-2.C: Also match comments starting with ';'.
+
 2010-12-09  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/46734
