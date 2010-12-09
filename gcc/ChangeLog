@@ -1,3 +1,8 @@
+2010-12-09  Yao Qi  <yao@codesourcery.com>
+
+	* config/arm/arm.c (arm_preferred_rename_class): Implement targethook
+	PREFERRED_RENAME_CLASS.
+
 2010-12-08  Ian Lance Taylor  <iant@google.com>
 
 	* doc/sourcebuild.texi (Front End): Remove reference to
