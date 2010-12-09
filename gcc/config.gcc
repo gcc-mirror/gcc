@@ -966,12 +966,12 @@ fr30-*-elf)
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	;;
 frv-*-elf)
-	tm_file="dbxelf.h elfos.h svr4.h newlib-stdint.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	tm_file="${tm_file} ../../libgcc/config/frv/frv-abi.h"
 	tmake_file=frv/t-frv
 	;;
 frv-*-*linux*)
-	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} \
+	tm_file="dbxelf.h elfos.h ${tm_file} \
 	         linux.h glibc-stdint.h frv/linux.h"
 	tm_file="${tm_file} ../../libgcc/config/frv/frv-abi.h"
 	tmake_file="${tmake_file} frv/t-frv frv/t-linux"
