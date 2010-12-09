@@ -1,3 +1,8 @@
+2010-12-09  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/46794
+	* gfortran.dg/power2.f90: New test.
+
 2010-12-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/45081
