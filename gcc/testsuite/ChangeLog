@@ -1,3 +1,8 @@
+2010-12-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/46844
+	* gcc.c-torture/compile/pr46866.c: New testcase.
+
 2010-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/45068
