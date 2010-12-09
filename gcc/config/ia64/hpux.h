@@ -231,3 +231,5 @@ do {								\
    .text.hot.  */
 
 #define TARGET_ASM_FUNCTION_SECTION ia64_hpux_function_section
+
+#define TARGET_POSIX_IO

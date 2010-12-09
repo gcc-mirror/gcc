@@ -98,3 +98,4 @@ crti.o%s \
 
 #define NO_IMPLICIT_EXTERN_C 1
 
+#define TARGET_POSIX_IO

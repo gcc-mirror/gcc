@@ -21,12 +21,6 @@
 #ifndef GCC_MOXIE_H
 #define GCC_MOXIE_H
 
-/* This is defined by svr4.h, which is included prior to this file.
-   However, we should undefine it for moxie-elf, since we don't provide
-   functions like access() and mkdir() in newlib.  This will have to
-   be defined again for a Linux port.  */
-#undef TARGET_POSIX_IO
-
 /* Another C string constant used much like `LINK_SPEC'.  The difference
    between the two is that `STARTFILE_SPEC' is used at the very beginning of
    the command given to the linker.
