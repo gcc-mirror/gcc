@@ -1553,7 +1553,7 @@ ia64*-*-freebsd*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
 	;;
 ia64*-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h glibc-stdint.h ia64/sysv4.h ia64/linux.h"
+	tm_file="${tm_file} dbxelf.h elfos.h linux.h glibc-stdint.h ia64/sysv4.h ia64/linux.h"
 	tmake_file="${tmake_file} ia64/t-ia64 t-libunwind ia64/t-glibc"
 	if test x$with_system_libunwind != xyes ; then
 		tmake_file="${tmake_file} t-libunwind-elf ia64/t-glibc-libunwind"
@@ -1562,7 +1562,7 @@ ia64*-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
 	;;
 ia64*-*-hpux*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h ia64/sysv4.h ia64/hpux.h"
+	tm_file="${tm_file} dbxelf.h elfos.h ia64/sysv4.h ia64/hpux.h"
 	tmake_file="ia64/t-ia64 ia64/t-hpux"
 	target_cpu_default="MASK_GNU_AS"
 	case x$enable_threads in
