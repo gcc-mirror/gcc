@@ -1,3 +1,20 @@
+2010-12-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/bfin/bfin.h (ASM_SPEC): Remove %{n} and %{T}.
+	* config/frv/frv.h (ASM_SPEC): Likewise.
+	* config/i386/sol2-10.h (ASM_SPEC): Likewise.
+	* config/i386/sol2.h (ASM_SPEC): Likewise.
+	* config/m68k/linux.h (ASM_SPEC): Likewise.
+	* config/pa/pa-linux.h (ASM_SPEC): Likewise.
+	* config/rs6000/linux64.h (ASM_SPEC32): Likewise.
+	* config/rs6000/vxworks.h (ASM_SPEC): Likewise.
+	* config/sol2.h (ASM_SPEC): Likewise.
+	* config/sparc/linux.h (ASM_SPEC): Likewise.
+	* config/sparc/linux64.h (ASM_SPEC): Likewise.
+	* config/sparc/sp-elf.h (ASM_SPEC): Likewise.
+	* config/sparc/sysv4.h (ASM_SPEC): Likewise.
+	* config/svr4.h (SVR4_ASM_SPEC): Likewise.
+
 2010-12-09  Richard Guenther  <rguenther@suse.de>
 
 	* reginfo.c (struct subregs_of_mode_node): Remove.
