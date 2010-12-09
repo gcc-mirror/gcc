@@ -460,11 +460,15 @@ compute_complex_ancestor_jump_func (struct ipa_node_params *info,
   tree tmp, parm, expr;
   int index, i;
 
-  if (gimple_phi_num_args (phi) != 2
-      || !integer_zerop (PHI_ARG_DEF (phi, 1)))
+  if (gimple_phi_num_args (phi) != 2)
     return;
 
-  tmp = PHI_ARG_DEF (phi, 0);
+  if (integer_zerop (PHI_ARG_DEF (phi, 1)))
+    tmp = PHI_ARG_DEF (phi, 0);
+  else if (integer_zerop (PHI_ARG_DEF (phi, 0)))
+    tmp = PHI_ARG_DEF (phi, 1);
+  else
+    return;
   if (TREE_CODE (tmp) != SSA_NAME
       || SSA_NAME_IS_DEFAULT_DEF (tmp)
       || !POINTER_TYPE_P (TREE_TYPE (tmp))

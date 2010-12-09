@@ -1,5 +1,10 @@
 2010-12-09  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-prop.c (compute_complex_ancestor_jump_func): Work also if the
+	zero is the first phi parameter.
+
+2010-12-09  Martin Jambor  <mjambor@suse.cz>
+
 	* ipa-prop.h (struct ipa_parm_adjustment): New field alias_ptr_type.
 	* ipa-prop.c (ipa_modify_call_arguments): Use it.
 	* tree-sra.c (splice_param_accesses): Test that all accesses have the
