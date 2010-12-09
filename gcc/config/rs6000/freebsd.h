@@ -71,4 +71,4 @@
 #define ASM_APP_OFF "#NO_APP\n"
 /* Define SVR4_ASM_SPEC, we use GAS by default. See svr4.h for details.  */
 #define SVR4_ASM_SPEC \
-  "%{v:-V}"
+  ""

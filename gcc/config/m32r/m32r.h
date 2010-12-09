@@ -168,7 +168,7 @@
 
 /* Options to pass on to the assembler.  */
 #undef  ASM_SPEC
-#define ASM_SPEC "%{v} %(asm_cpu) %(relax) %{fpic|fpie:-K PIC} %{fPIC|fPIE:-K PIC}"
+#define ASM_SPEC "%(asm_cpu) %(relax) %{fpic|fpie:-K PIC} %{fPIC|fPIE:-K PIC}"
 
 #define LINK_SPEC "%{v} %(link_cpu) %(relax)"
 

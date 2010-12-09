@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_VERSION fprintf (stderr, " (80586, VxWorks syntax)");
 
 #undef  ASM_SPEC
-#define ASM_SPEC "%{v}"
+#define ASM_SPEC ""
 
 #define TARGET_OS_CPP_BUILTINS()			\
   do							\

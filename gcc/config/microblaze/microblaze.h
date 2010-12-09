@@ -74,7 +74,7 @@ extern enum pipeline_type microblaze_pipe;
 
 /* Assembler specs.  */
 
-#define TARGET_ASM_SPEC "%{v}"
+#define TARGET_ASM_SPEC ""
 
 #define ASM_SPEC "\
 %{microblaze1} \

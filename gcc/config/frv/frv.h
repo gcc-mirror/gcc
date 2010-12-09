@@ -65,7 +65,7 @@
    Defined in svr4.h.  */
 #undef  ASM_SPEC
 #define ASM_SPEC "\
-%{G*} %{v} %{Ym,*} %{Yd,*} \
+%{G*} %{Ym,*} %{Yd,*} \
 %{mtomcat-stats} \
 %{!mno-eflags: \
     %{mcpu=*} \
