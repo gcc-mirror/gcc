@@ -1,3 +1,8 @@
+2010-12-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/45081
+	* gfortran.dg/derived_array_intrinsics_1.f90: New test.
+
 2010-12-02  Richard Guenther  <rguenther@suse.de>
 	    Ira Rosen  <irar@il.ibm.com>
 
@@ -61,9 +66,9 @@
 
 2010-04-27  Richard Guenther  <rguenther@suse.de>
 
- 	Backport from mainline:
- 	2010-03-19  Michael Matz  <matz@suse.de>
- 
+	Backport from mainline:
+	2010-03-19  Michael Matz  <matz@suse.de>
+
 	PR c++/43116
 	* g++.dg/other/pr43116.C: New testcase.
 

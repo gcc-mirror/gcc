@@ -3257,7 +3257,8 @@ is_constant_array_expr (gfc_expr *e)
     return false;
   
   for (c = e->value.constructor; c; c = c->next)
-    if (c->expr->expr_type != EXPR_CONSTANT)
+    if (c->expr->expr_type != EXPR_CONSTANT
+	  && c->expr->expr_type != EXPR_STRUCTURE)
       return false;
 
   return true;
@@ -3485,6 +3486,11 @@ inc:
 
   e->ts = source->ts;
   e->rank = rank;
+
+  if (source->ts.type == BT_CHARACTER)
+    e->ts.cl = source->ts.cl;
+  else if (source->ts.type == BT_DERIVED)
+    e->ts.derived = source->ts.derived;
 
   return e;
 
