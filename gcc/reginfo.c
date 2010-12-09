@@ -1338,12 +1338,12 @@ init_subregs_of_mode (void)
    mode.  */
 bool
 invalid_mode_change_p (unsigned int regno,
-		       enum reg_class rclass ATTRIBUTE_UNUSED,
-		       enum machine_mode from)
+		       enum reg_class rclass ATTRIBUTE_UNUSED)
 {
   struct subregs_of_mode_node dummy, *node;
   unsigned int to;
   unsigned char mask;
+  enum machine_mode from = PSEUDO_REGNO_MODE (regno);
 
   gcc_assert (subregs_of_mode);
   dummy.block = regno & -8;

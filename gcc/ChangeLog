@@ -1,3 +1,15 @@
+2010-12-09  Richard Guenther  <rguenther@suse.de>
+
+	* ira.c (ira): Do not call finish_subregs_of_mode.
+	* ira-costs.c (finish_costs): Call finish_subregs_of_mode.
+
+2010-12-09  Richard Guenther  <rguenther@suse.de>
+
+	* rtl.h (invalid_mode_change_p): Adjust prototype.
+	* reginfo.c (invalid_mode_change_p): Remove from argument.
+	* ira-costs.c (print_allocno_costs): Adjust callers.
+	(find_costs_and_classes): Likewise.
+
 2010-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/s390/s390.md (*mov<mode>cc): Change lgoc and stgoc to
