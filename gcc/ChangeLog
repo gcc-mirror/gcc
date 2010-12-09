@@ -1,5 +1,14 @@
 2010-12-09  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-prop.h (struct ipa_parm_adjustment): New field alias_ptr_type.
+	* ipa-prop.c (ipa_modify_call_arguments): Use it.
+	* tree-sra.c (splice_param_accesses): Test that all accesses have the
+	same alias reference type.
+	(turn_representatives_into_adjustments): Set alias_ptr_type of the
+	adjustment.
+
+2010-12-09  Martin Jambor  <mjambor@suse.cz>
+
 	PR middle-end/46734
 	* tree-sra.c (splice_param_accesses): Check that there are not
 	multiple ADDRESSABLE types.
