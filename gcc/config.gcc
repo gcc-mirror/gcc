@@ -1762,7 +1762,7 @@ mcore-*-pe*)
 	use_gcc_stdint=wrap
 	;;
 mep-*-*)
-	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h ${tm_file}"
 	tmake_file=mep/t-mep
 	extra_parts="crtbegin.o crtend.o"
 	c_target_objs="mep-pragma.o"
