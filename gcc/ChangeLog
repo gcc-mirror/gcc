@@ -1,5 +1,20 @@
 2010-12-09  Richard Guenther  <rguenther@suse.de>
 
+	* reginfo.c (struct subregs_of_mode_node): Remove.
+	(subregs_of_mode): Likewise.
+	(som_hash): Likewise.
+	(som_eq): Likewise.
+	(invalid_mode_changes): New bitmap.
+	(record_subregs_of_mode): Get subregs_of_mode argument.
+	Fill in invalid_mode_changes bitmap.
+	(find_subregs_of_mode): Get subregs_of_mode argument and pass
+	it through.
+	(init_subregs_of_mode): Adjust.
+	(finish_subregs_of_mode): Likewise.
+	(invalid_mode_change_p): Query invalid_mode_changes bitmap.
+
+2010-12-09  Richard Guenther  <rguenther@suse.de>
+
 	* ira.c (ira): Do not call finish_subregs_of_mode.
 	* ira-costs.c (finish_costs): Call finish_subregs_of_mode.
 
