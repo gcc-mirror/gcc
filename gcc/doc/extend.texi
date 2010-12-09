@@ -4036,7 +4036,7 @@ If @code{D1} has the form @code{*
 declaration @code{T D} specifies the type
 ``@var{derived-declarator-type-list} @var{Type}'' for @var{ident}, then
 @code{T D1} specifies the type ``@var{derived-declarator-type-list}
-@var{type-qualifier-and-attribute-specifier-list} @var{Type}'' for
+@var{type-qualifier-and-attribute-specifier-list} pointer to @var{Type}'' for
 @var{ident}.
 
 For example,
