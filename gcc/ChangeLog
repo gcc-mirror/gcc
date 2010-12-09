@@ -1,5 +1,11 @@
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/pa/pa32-linux.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Define.
+	* config.gcc (hppa*64*-*-linux*, hppa*-*-linux*): Don't use
+	svr4.h.
+
+2010-12-09  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/moxie/moxie.h (LINK_SPEC, SIZE_TYPE, PTRDIFF_TYPE,
 	WCHAR_TYPE, WCHAR_TYPE_SIZE): Define.
 	* config/moxie/rtems.h (LINK_SPEC, SIZE_TYPE, PTRDIFF_TYPE,
