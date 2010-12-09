@@ -132,6 +132,10 @@ canonicalize_constructor_val (tree cval)
 	return NULL_TREE;
       if (base && TREE_CODE (base) == VAR_DECL)
 	add_referenced_var (base);
+      /* We never have the chance to fixup types in global initializers
+         during gimplification.  Do so here.  */
+      if (TREE_TYPE (TREE_TYPE (cval)) != TREE_TYPE (TREE_OPERAND (cval, 0)))
+	cval = build_fold_addr_expr (TREE_OPERAND (cval, 0));
     }
   return cval;
 }

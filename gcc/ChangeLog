@@ -1,3 +1,9 @@
+2010-12-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/46844
+	* gimple-fold.c (canonicalize_constructor_val): Canonicalize
+	addresses.
+
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/netware.h (TARGET_POSIX_IO): Define.
