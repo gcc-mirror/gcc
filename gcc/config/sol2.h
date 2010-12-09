@@ -120,6 +120,14 @@ along with GCC; see the file COPYING3.  If not see
 %(asm_cpu) \
 "
 
+#ifndef CROSS_DIRECTORY_STRUCTURE
+#undef MD_EXEC_PREFIX
+#define MD_EXEC_PREFIX "/usr/ccs/bin/"
+
+#undef MD_STARTFILE_PREFIX
+#define MD_STARTFILE_PREFIX "/usr/ccs/lib/"
+#endif
+
 /* We don't use the standard LIB_SPEC only because we don't yet support c++.  */
 #undef LIB_SPEC
 #define LIB_SPEC \

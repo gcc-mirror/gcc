@@ -72,22 +72,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef  ASM_SPEC
 #define ASM_SPEC SVR4_ASM_SPEC
 
-/* Under svr4, the normal location of the `ld' and `as' programs is the
-   /usr/ccs/bin directory.  */
-
-#ifndef CROSS_DIRECTORY_STRUCTURE
-#undef  MD_EXEC_PREFIX
-#define MD_EXEC_PREFIX "/usr/ccs/bin/"
-#endif
-
-/* Under svr4, the normal location of the various *crt*.o files is the
-   /usr/ccs/lib directory.  */
-
-#ifndef CROSS_DIRECTORY_STRUCTURE
-#undef  MD_STARTFILE_PREFIX
-#define MD_STARTFILE_PREFIX "/usr/ccs/lib/"
-#endif
-
 /* Provide a LIB_SPEC appropriate for svr4.  Here we tack on the default
    standard C library (unless we are building a shared library).  */
 

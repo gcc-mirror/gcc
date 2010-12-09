@@ -1,5 +1,32 @@
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/i386/nto.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Define.
+	* config/ia64/hpux.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX):
+	Define.
+	* config/linux.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Don't
+	undefine.
+	* config/mips/linux.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Don't
+	undefine.
+	* config/mips/netbsd.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX):
+	Don't undefine.
+	* config/rs6000/linux.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX):
+	Don't undefine.
+	* config/rs6000/linux64.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX):
+	Don't undefine.
+	* config/sol2.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Define.
+	* config/sparc/netbsd-elf.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX):
+	Don't undefine.
+	* config/sparc/openbsd64.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX):
+	Don't undefine.
+	* config/sparc/sp64-elf.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX):
+	Don't undefine.
+	* config/svr4.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Don't
+	define.
+	* config/xtensa/elf.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Don't
+	undefine.
+
+2010-12-09  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/ia64/hpux.h (AS_NEEDS_DASH_FOR_PIPED_INPUT): Define for
 	non-GNU assembler.
 	* config/m68k/netbsd-elf.h (AS_NEEDS_DASH_FOR_PIPED_INPUT):
