@@ -453,8 +453,6 @@ extern enum cmodel sparc_cmodel;
 %{!pg:%{!p:%{fpic|fPIC|fpie|fPIE:-k}}} %{keep-local-as-symbols:-L} \
 %(asm_cpu) %(asm_relax)"
 
-#define AS_NEEDS_DASH_FOR_PIPED_INPUT
-
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
    is an initializer with a subgrouping for each command option.

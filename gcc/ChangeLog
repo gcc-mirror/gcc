@@ -1,3 +1,16 @@
+2010-12-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/ia64/hpux.h (AS_NEEDS_DASH_FOR_PIPED_INPUT): Define for
+	non-GNU assembler.
+	* config/m68k/netbsd-elf.h (AS_NEEDS_DASH_FOR_PIPED_INPUT):
+	Remove.
+	* config/m68k/openbsd.h (AS_NEEDS_DASH_FOR_PIPED_INPUT): Remove.
+	* config/mips/openbsd.h (AS_NEEDS_DASH_FOR_PIPED_INPUT): Remove.
+	* config/sol2.h (AS_NEEDS_DASH_FOR_PIPED_INPUT): Define for
+	non-GNU assembler.
+	* config/sparc/sparc.h (AS_NEEDS_DASH_FOR_PIPED_INPUT): Remove.
+	* config/svr4.h (AS_NEEDS_DASH_FOR_PIPED_INPUT): Remove.
+
 2010-12-09  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (compute_complex_ancestor_jump_func): Work also if the

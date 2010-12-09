@@ -68,6 +68,10 @@ do {							\
 #undef  ASM_EXTRA_SPEC
 #define ASM_EXTRA_SPEC "%{milp32:-milp32} %{mlp64:-mlp64}"
 
+#ifndef USE_GAS
+#define AS_NEEDS_DASH_FOR_PIPED_INPUT
+#endif
+
 #undef ENDFILE_SPEC
 
 #undef STARTFILE_SPEC

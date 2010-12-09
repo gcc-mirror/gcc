@@ -24,8 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef SUBTARGET_ASM_SPEC
 #define SUBTARGET_ASM_SPEC "%{fPIC|fPIE:-KPIC}"
 
-#define AS_NEEDS_DASH_FOR_PIPED_INPUT
-
 /* CPP specific OpenBSD specs.  */
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC OBSD_CPP_SPEC
