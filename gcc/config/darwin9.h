@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
     %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm|.s: \
     %{g*:%{!gstabs*:%{!g0: -dsym}}}}}}}}}}}"
 
-/* Tell collet2 to run dsymutil for us as necessary.  */
+/* Tell collect2 to run dsymutil for us as necessary.  */
 #define COLLECT_RUN_DSYMUTIL 1
 
 /* libSystem contains unwind information for signal frames.  */

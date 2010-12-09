@@ -195,7 +195,7 @@ extern GTY(()) int darwin_ms_struct;
 
 #define LINK_COMMAND_SPEC LINK_COMMAND_SPEC_A DSYMUTIL_SPEC
 
-/* Tell collet2 to run dsymutil for us as necessary.  */
+/* Tell collect2 to run dsymutil for us as necessary.  */
 #define COLLECT_RUN_DSYMUTIL 1
 
 /* We only want one instance of %G, since libSystem (Darwin's -lc) does not depend
