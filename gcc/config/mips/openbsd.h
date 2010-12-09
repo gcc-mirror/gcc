@@ -83,7 +83,7 @@ along with GCC; see the file COPYING3.  If not see
    %{call_shared} %{no_archive} %{exact_version} \
    %{!shared: %{!non_shared: %{!call_shared: -non_shared}}} \
    -dynamic-linker /usr/libexec/ld.so \
-   %{!nostdlib:%{!r*:%{!e*:-e __start}}} -dc -dp \
+   %{!nostdlib:%{!r:%{!e*:-e __start}}} -dc -dp \
    %{static:-Bstatic} %{!static:-Bdynamic} %{assert*}"
 
 /* -G is incompatible with -KPIC which is the default, so only allow objects
