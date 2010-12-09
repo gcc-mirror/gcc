@@ -1,3 +1,9 @@
+2010-12-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46348
+	* semantics.c (cxx_eval_vec_init_1): Handle value-init.
+	(cxx_eval_vec_init): Pass value_init arg.
+
 2010-12-08  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/45329
