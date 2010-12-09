@@ -1,3 +1,8 @@
+2010-12-09  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* typeck.c (composite_pointer_error): New function.
+	(composite_pointer_type_r, composite_pointer_type): Call it.
+
 2010-12-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46348
