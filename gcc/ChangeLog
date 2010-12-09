@@ -1,5 +1,16 @@
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/i386/openbsdelf.h (LINK_SPEC): Use %{r:} not %{r*:}.
+	* config/mips/openbsd.h (LINK_SPEC): Use %{r:} not %{r*:}.
+	* config/netbsd-aout.h (NETBSD_LINK_SPEC_AOUT): Use %{r:} not
+	%{r*:}.
+	* config/netbsd-elf.h (NETBSD_LINK_SPEC_ELF): Use %{r:} not
+	%{r*:}.
+	* config/sparc/openbsd64.h (LINK_SPEC): Use %{r:} not %{r*:}.
+	* config/vax/netbsd-elf.h (LINK_SPEC): Use %{r:} not %{r*:}.
+
+2010-12-09  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/alpha/freebsd.h (LINK_SPEC): Don't use
 	%{!dynamic-linker:}.
 	* config/alpha/linux-elf.h (LINK_SPEC): Likewise.

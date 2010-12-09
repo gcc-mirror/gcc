@@ -57,7 +57,7 @@ along with GCC; see the file COPYING3.  If not see
   "%{nostdlib:-nostdlib}		\
    %{!shared:				\
      %{!nostdlib:			\
-       %{!r*:				\
+       %{!r:				\
 	 %{!e*:-e start}}}		\
      -dc -dp				\
      %{static:-Bstatic}}		\

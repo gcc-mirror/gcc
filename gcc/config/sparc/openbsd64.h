@@ -72,7 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef LINK_SPEC
 #define LINK_SPEC \
-  "%{!shared:%{!nostdlib:%{!r*:%{!e*:-e __start}}}} \
+  "%{!shared:%{!nostdlib:%{!r:%{!e*:-e __start}}}} \
    %{shared:-shared} %{R*} \
    %{static:-Bstatic} \
    %{!static:-Bdynamic} \
