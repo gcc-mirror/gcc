@@ -1,3 +1,8 @@
+2010-12-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/sse2-init-v2di-2.c: Add "-dp" and update
+	expected scan.
+
 2010-12-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/exceptions-7.m: New.
