@@ -3279,8 +3279,6 @@ ira (FILE *f)
 
   reload_completed = !reload (get_insns (), ira_conflicts_p);
 
-  finish_subregs_of_mode ();
-
   timevar_pop (TV_RELOAD);
 
   timevar_push (TV_IRA);
