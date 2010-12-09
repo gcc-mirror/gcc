@@ -1,3 +1,10 @@
+2010-12-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR testsuite/46860
+	* testsuite/20_util/auto_ptr/assign_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Adjust.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust.
+
 2010-12-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/bitset (_Base_bitset<>::_Base_bitset(),
