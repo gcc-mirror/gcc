@@ -1,8 +1,13 @@
+2010-12-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/45081
+	* gfortran.dg/derived_array_intrinsics_1.f90 : New test.
+
 2010-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
 	2010-11-20  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR c++/46538
 	* g++.dg/other/error34.C: New test.
 
