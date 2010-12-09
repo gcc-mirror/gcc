@@ -1,3 +1,8 @@
+2010-12-09  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.h (invalid_indirection_error): Declare.
+	* c-common.c (invalid_indirection_error): Define.
+
 2010-12-03  Richard Guenther  <rguenther@suse.de>
 
 	PR c/46745
