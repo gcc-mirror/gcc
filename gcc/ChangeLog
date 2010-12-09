@@ -1,5 +1,11 @@
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/fr30/fr30.h (LIB_SPEC, LINK_SPEC, SIZE_TYPE,
+	PTRDIFF_TYPE, WCHAR_TYPE, WCHAR_TYPE_SIZE): Define.
+	* config.gcc (fr30-*-elf): Don't use svr4.h.
+
+2010-12-09  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/cris/linux.h (SIZE_TYPE, PTRDIFF_TYPE): Define.
 	* config.gcc (crisv32-*-linux* | cris-*-linux*): Don't use svr4.h.
 
