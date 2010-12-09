@@ -175,5 +175,3 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
-
-#define TARGET_POSIX_IO

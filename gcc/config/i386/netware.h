@@ -165,3 +165,5 @@ const char *i386_nlm_strip_name_encoding (const char *);
 #define TARGET_MANGLE_DECL_ASSEMBLER_NAME i386_nlm_mangle_decl_assembler_name
 #undef  TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING  i386_nlm_strip_name_encoding
+
+#define TARGET_POSIX_IO

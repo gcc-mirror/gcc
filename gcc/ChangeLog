@@ -1,5 +1,18 @@
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/i386/netware.h (TARGET_POSIX_IO): Define.
+	* config/i386/nto.h (TARGET_POSIX_IO): Define.
+	* config/ia64/hpux.h (TARGET_POSIX_IO): Define.
+	* config/moxie/moxie.h (TARGET_POSIX_IO): Don't undefine.
+	* config/openbsd.h (TARGET_POSIX_IO): Define.
+	* config/rtems.h (TARGET_POSIX_IO): Define.
+	* config/sh/embed-elf.h (TARGET_POSIX_IO): Don't undefine.
+	* config/sol2.h (TARGET_POSIX_IO): Define.
+	* config/svr4.h (TARGET_POSIX_IO): Don't define.
+	* config/vxworksae.h (TARGET_POSIX_IO): Define.
+
+2010-12-09  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/i386/nto.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Define.
 	* config/ia64/hpux.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX):
 	Define.

@@ -144,6 +144,7 @@ while (0)
 #define LIB_SPEC OBSD_LIB_SPEC
 #endif
 
+#define TARGET_POSIX_IO
 
 /* Runtime target specification.  */
 

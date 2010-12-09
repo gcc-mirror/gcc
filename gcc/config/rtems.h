@@ -40,3 +40,5 @@ along with GCC; see the file COPYING3.  If not see
 "%{!nostdlib: %{qrtems: --start-group \
  -lrtemsbsp -lrtemscpu \
  -lc -lgcc --end-group %{!qnolinkcmds: -T linkcmds%s}}}"
+
+#define TARGET_POSIX_IO
