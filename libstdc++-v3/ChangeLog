@@ -1,3 +1,8 @@
+2010-12-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/bitset (_Base_bitset<>::_Base_bitset(),
+	_Base_bitset(unsigned long)): Simplify.
+
 2010-12-07  François Dumont  <francois.cppdevs@free.fr>
 
 	* include/bits/stl_iterator.h: Add move_iterator operators overloads
