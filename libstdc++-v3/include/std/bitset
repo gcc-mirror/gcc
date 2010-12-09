@@ -72,9 +72,10 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       /// 0 is the least significant word.
       _WordT 		_M_w[_Nw];
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      constexpr _Base_bitset() : _M_w({ }) { }
+      _GLIBCXX_CONSTEXPR _Base_bitset()
+      : _M_w() { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
       constexpr _Base_bitset(unsigned long long __val)
       : _M_w({ _WordT(__val)
 #if __SIZEOF_LONG_LONG__ > __SIZEOF_LONG__
@@ -82,14 +83,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 #endif
        }) { }
 #else
-      _Base_bitset()
-      { _M_do_reset(); }
-
       _Base_bitset(unsigned long __val)
-      {
-	_M_do_reset();
-	_M_w[0] = __val;
-      }
+      : _M_w()
+      { _M_w[0] = __val; }
 #endif
 
       static _GLIBCXX_CONSTEXPR size_t
