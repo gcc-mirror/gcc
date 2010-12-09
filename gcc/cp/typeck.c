@@ -443,6 +443,35 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
   return cp_common_type (t1, t2);
 }
 
+static void
+composite_pointer_error (diagnostic_t kind, tree t1, tree t2,
+			 composite_pointer_operation operation)
+{
+  switch (operation)
+    {
+    case CPO_COMPARISON:
+      emit_diagnostic (kind, input_location, 0,
+		       "comparison between "
+		       "distinct pointer types %qT and %qT lacks a cast",
+		       t1, t2);
+      break;
+    case CPO_CONVERSION:
+      emit_diagnostic (kind, input_location, 0,
+		       "conversion between "
+		       "distinct pointer types %qT and %qT lacks a cast",
+		       t1, t2);
+      break;
+    case CPO_CONDITIONAL_EXPR:
+      emit_diagnostic (kind, input_location, 0,
+		       "conditional expression between "
+		       "distinct pointer types %qT and %qT lacks a cast",
+		       t1, t2);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Subroutine of composite_pointer_type to implement the recursive
    case.  See that function for documentation of the parameters.  */
 
@@ -486,28 +515,8 @@ composite_pointer_type_r (tree t1, tree t2,
   else
     {
       if (complain & tf_error)
-        {
-          switch (operation)
-            {
-            case CPO_COMPARISON:
-              permerror (input_location, "comparison between "
-                         "distinct pointer types %qT and %qT lacks a cast",
-                         t1, t2);
-              break;
-            case CPO_CONVERSION:
-              permerror (input_location, "conversion between "
-                         "distinct pointer types %qT and %qT lacks a cast",
-                         t1, t2);
-              break;
-            case CPO_CONDITIONAL_EXPR:
-              permerror (input_location, "conditional expression between "
-                         "distinct pointer types %qT and %qT lacks a cast",
-                         t1, t2);
-              break;
-            default:
-              gcc_unreachable ();
-            }
-        }
+	composite_pointer_error (DK_PERMERROR, t1, t2, operation);
+
       result_type = void_type_node;
     }
   result_type = cp_build_qualified_type (result_type,
@@ -520,28 +529,7 @@ composite_pointer_type_r (tree t1, tree t2,
       if (!same_type_p (TYPE_PTRMEM_CLASS_TYPE (t1),
 			TYPE_PTRMEM_CLASS_TYPE (t2))
 	  && (complain & tf_error))
-        {
-          switch (operation)
-            {
-            case CPO_COMPARISON:
-              permerror (input_location, "comparison between "
-                         "distinct pointer types %qT and %qT lacks a cast", 
-                         t1, t2);
-              break;
-            case CPO_CONVERSION:
-              permerror (input_location, "conversion between "
-                         "distinct pointer types %qT and %qT lacks a cast",
-                         t1, t2);
-              break;
-            case CPO_CONDITIONAL_EXPR:
-              permerror (input_location, "conditional expression between "
-                         "distinct pointer types %qT and %qT lacks a cast",
-                         t1, t2);
-              break;
-            default:
-              gcc_unreachable ();
-            }
-        }
+	composite_pointer_error (DK_PERMERROR, t1, t2, operation);
       result_type = build_ptrmem_type (TYPE_PTRMEM_CLASS_TYPE (t1),
 				       result_type);
     }
@@ -662,23 +650,7 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
       else
         {
           if (complain & tf_error)
-            switch (operation)
-              {
-              case CPO_COMPARISON:
-                error ("comparison between distinct "
-                       "pointer types %qT and %qT lacks a cast", t1, t2);
-                break;
-              case CPO_CONVERSION:
-                error ("conversion between distinct "
-                       "pointer types %qT and %qT lacks a cast", t1, t2);
-                break;
-              case CPO_CONDITIONAL_EXPR:
-                error ("conditional expression between distinct "
-                       "pointer types %qT and %qT lacks a cast", t1, t2);
-                break;
-              default:
-                gcc_unreachable ();
-              }
+	    composite_pointer_error (DK_ERROR, t1, t2, operation);
           return error_mark_node;
         }
     }
