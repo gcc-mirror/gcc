@@ -66,7 +66,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   "%{v:-V}"
 #else
 #define SVR4_ASM_SPEC \
-  "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*}"
+  "%{v:-V} %{Qy:} %{!Qn:-Qy} %{Ym,*} %{Yd,*}"
 #endif
 
 #undef  ASM_SPEC

@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef USE_GAS
 #define ASM_SPEC "%{v} %{m32:--32} %{m64:--64} -s %(asm_cpu)"
 #else
-#define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} " \
+#define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{Ym,*} %{Yd,*} " \
 		 "%{m32:-xarch=generic} %{m64:-xarch=generic64} " \
 		 "-s %(asm_cpu)"
 #endif
