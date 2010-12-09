@@ -6391,15 +6391,16 @@ cxx_eval_bare_aggregate (const constexpr_call *call, tree t,
    initialization of a non-static data member of array type.  Reduce it to a
    CONSTRUCTOR.
 
-   Note that this is only intended to support the initializations done by
-   defaulted constructors for classes with non-static data members of array
-   type.  In this case, VEC_INIT_EXPR_INIT will either be NULL_TREE for the
-   default constructor, or a COMPONENT_REF for the copy/move
-   constructor.  */
+   Note that apart from value-initialization (when VALUE_INIT is true),
+   this is only intended to support value-initialization and the
+   initializations done by defaulted constructors for classes with
+   non-static data members of array type.  In this case, VEC_INIT_EXPR_INIT
+   will either be NULL_TREE for the default constructor, or a COMPONENT_REF
+   for the copy/move constructor.  */
 
 static tree
 cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
-		     bool allow_non_constant, bool addr,
+		     bool value_init, bool allow_non_constant, bool addr,
 		     bool *non_constant_p)
 {
   tree elttype = TREE_TYPE (atype);
@@ -6412,7 +6413,9 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
      here, as for a constructor to be constexpr, all members must be
      initialized, which for a defaulted default constructor means they must
      be of a class type with a constexpr default constructor.  */
-  if (!init)
+  if (value_init)
+    gcc_assert (!init);
+  else if (!init)
     {
       VEC(tree,gc) *argvec = make_tree_vector ();
       init = build_special_member_call (NULL_TREE, complete_ctor_identifier,
@@ -6433,11 +6436,20 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
       if (TREE_CODE (elttype) == ARRAY_TYPE)
 	{
 	  /* A multidimensional array; recurse.  */
-	  eltinit = cp_build_array_ref (input_location, init, idx,
-					tf_warning_or_error);
-	  eltinit = cxx_eval_vec_init_1 (call, elttype, eltinit,
+	  if (value_init)
+	    eltinit = NULL_TREE;
+	  else
+	    eltinit = cp_build_array_ref (input_location, init, idx,
+					  tf_warning_or_error);
+	  eltinit = cxx_eval_vec_init_1 (call, elttype, eltinit, value_init,
 					 allow_non_constant, addr,
 					 non_constant_p);
+	}
+      else if (value_init)
+	{
+	  eltinit = build_value_init (elttype, tf_warning_or_error);
+	  eltinit = cxx_eval_constant_expression
+	    (call, eltinit, allow_non_constant, addr, non_constant_p);
 	}
       else if (TREE_CODE (init) == CONSTRUCTOR)
 	{
@@ -6488,8 +6500,9 @@ cxx_eval_vec_init (const constexpr_call *call, tree t,
 {
   tree atype = TREE_TYPE (t);
   tree init = VEC_INIT_EXPR_INIT (t);
-  tree r = cxx_eval_vec_init_1 (call, atype, init, allow_non_constant,
-				addr, non_constant_p);
+  tree r = cxx_eval_vec_init_1 (call, atype, init,
+				VEC_INIT_EXPR_VALUE_INIT (t),
+				allow_non_constant, addr, non_constant_p);
   if (*non_constant_p)
     return t;
   else
