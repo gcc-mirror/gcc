@@ -942,7 +942,7 @@ cris-*-elf | cris-*-none)
 	use_gcc_stdint=wrap
 	;;
 crisv32-*-linux* | cris-*-linux*)
-	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} linux.h glibc-stdint.h cris/linux.h"
+	tm_file="dbxelf.h elfos.h ${tm_file} linux.h glibc-stdint.h cris/linux.h"
 	# We need to avoid using t-linux, so override default tmake_file
 	tmake_file="cris/t-cris t-slibgcc-elf-ver cris/t-linux"
 	extra_options="${extra_options} cris/linux.opt"
