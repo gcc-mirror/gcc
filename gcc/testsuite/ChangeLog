@@ -1,3 +1,8 @@
+2010-12-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/46734
+	* g++.dg/tree-ssa/pr46734.C: New test.
+
 2010-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR c++/44641

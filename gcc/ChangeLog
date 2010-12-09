@@ -1,3 +1,9 @@
+2010-12-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/46734
+	* tree-sra.c (splice_param_accesses): Check that there are not
+	multiple ADDRESSABLE types.
+
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arc/arc.h (ASM_SPEC): Remove %{v}.
