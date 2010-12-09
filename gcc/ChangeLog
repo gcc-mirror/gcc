@@ -1,5 +1,11 @@
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/mep/mep.h (SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE,
+	WCHAR_TYPE_SIZE): Define.
+	* config.gcc (mep-*-*): Don't use svr4.h.
+
+2010-12-09  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/mcore/mcore.h (PTRDIFF_TYPE, WCHAR_TYPE,
 	WCHAR_TYPE_SIZE): Define.
 	* config/svr3.h (SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE,
