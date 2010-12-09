@@ -692,8 +692,17 @@ extern const enum reg_class reg_class_from_letter[];
 /* 'char' is signed by default.  */
 #define DEFAULT_SIGNED_CHAR  0
 
-/* The type of size_t unsigned int.  */
+#undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+
+#undef WCHAR_TYPE
+#define WCHAR_TYPE "long int"
+
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE BITS_PER_WORD
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
