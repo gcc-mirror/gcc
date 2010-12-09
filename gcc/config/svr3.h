@@ -1,6 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for
    generic System V Release 3 system.
-   Copyright (C) 1991, 1996, 2000, 2002, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1996, 2000, 2002, 2004, 2007, 2010
+   Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GCC.
@@ -76,21 +77,6 @@ along with GCC; see the file COPYING3.  If not see
 /* We don't want to output DBX debugging information.  */
 
 #undef DBX_DEBUGGING_INFO
-
-/* Define the actual types of some ANSI-mandated types.  These
-   definitions should work for most SVR3 systems.  */
-
-#undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
-
-#undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
-
-#undef WCHAR_TYPE
-#define WCHAR_TYPE "long int"
-
-#undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE BITS_PER_WORD
 
 /* The prefix to add to user-visible assembler symbols.
 

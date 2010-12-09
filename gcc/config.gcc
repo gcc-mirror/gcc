@@ -1751,7 +1751,7 @@ m68k-*-rtems*)
 	extra_parts="crtbegin.o crtend.o"
 	;;
 mcore-*-elf)
-	tm_file="dbxelf.h elfos.h svr4.h newlib-stdint.h ${tm_file} mcore/mcore-elf.h"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} mcore/mcore-elf.h"
 	tmake_file=mcore/t-mcore
 	inhibit_libc=true
 	;;
