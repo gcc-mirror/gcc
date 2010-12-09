@@ -1611,20 +1611,20 @@ lm32-*-uclinux*)
 	tmake_file="${tmake_file} lm32/t-lm32 lm32/t-fprules-softfp soft-fp/t-softfp"
         ;;
 m32r-*-elf*)
-	tm_file="dbxelf.h elfos.h svr4.h newlib-stdint.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	extra_parts="crtinit.o crtfini.o"
  	;;
 m32rle-*-elf*)
-	tm_file="dbxelf.h elfos.h svr4.h newlib-stdint.h m32r/little.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h m32r/little.h ${tm_file}"
 	extra_parts="crtinit.o crtfini.o m32rx/crtinit.o m32rx/crtfini.o"
 	;;
 m32r-*-rtems*)
-	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} m32r/rtems.h rtems.h newlib-stdint.h"
+	tm_file="dbxelf.h elfos.h ${tm_file} m32r/rtems.h rtems.h newlib-stdint.h"
 	tmake_file="m32r/t-m32r t-rtems"
 	extra_parts="crtinit.o crtfini.o"
  	;;
 m32r-*-linux*)
-	tm_file="dbxelf.h elfos.h svr4.h linux.h glibc-stdint.h ${tm_file} m32r/linux.h"
+	tm_file="dbxelf.h elfos.h linux.h glibc-stdint.h ${tm_file} m32r/linux.h"
 	# We override the tmake_file for linux -- why?
 	tmake_file="t-slibgcc-elf-ver m32r/t-linux"
 	gnu_ld=yes
@@ -1633,7 +1633,7 @@ m32r-*-linux*)
 	fi
  	;;
 m32rle-*-linux*)
-	tm_file="dbxelf.h elfos.h svr4.h linux.h glibc-stdint.h m32r/little.h ${tm_file} m32r/linux.h"
+	tm_file="dbxelf.h elfos.h linux.h glibc-stdint.h m32r/little.h ${tm_file} m32r/linux.h"
 	# We override the tmake_file for linux -- why?
 	tmake_file="t-slibgcc-elf-ver m32r/t-linux"
 	gnu_ld=yes

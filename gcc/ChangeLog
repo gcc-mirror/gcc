@@ -1,5 +1,10 @@
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
+	* config.gcc (m32r-*-elf*, m32rle-*-elf*, m32r-*-rtems*,
+	m32r-*-linux*, m32rle-*-linux*): Don't use svr4.h.
+
+2010-12-09  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/iq2000/iq2000.h (LINK_SPEC, SIZE_TYPE, PTRDIFF_TYPE,
 	WCHAR_TYPE, WCHAR_TYPE_SIZE): Define.
 	* config.gcc (iq2000*-*-elf*): Don't use svr4.h.
