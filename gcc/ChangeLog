@@ -1,5 +1,10 @@
 2010-12-08  Ian Lance Taylor  <iant@google.com>
 
+	* doc/sourcebuild.texi (Front End): Remove reference to
+	snapshot-README and snapshot-index.html.
+
+2010-12-08  Ian Lance Taylor  <iant@google.com>
+
 	* doc/sourcebuild.texi (Texinfo Manuals): Change update_web_docs
 	to update_web_docs_svn.
 	(Front End): Likewise.
