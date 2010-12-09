@@ -5436,7 +5436,7 @@ rs6000_expand_vector_extract (rtx target, rtx vec, int elt)
 {
   enum machine_mode mode = GET_MODE (vec);
   enum machine_mode inner_mode = GET_MODE_INNER (mode);
-  rtx mem, x;
+  rtx mem;
 
   if (VECTOR_MEM_VSX_P (mode) && (mode == V2DFmode || mode == V2DImode))
     {
@@ -5449,17 +5449,11 @@ rs6000_expand_vector_extract (rtx target, rtx vec, int elt)
   /* Allocate mode-sized buffer.  */
   mem = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
 
-  /* Add offset to field within buffer matching vector element.  */
-  mem = adjust_address_nv (mem, mode, elt * GET_MODE_SIZE (inner_mode));
+  emit_move_insn (mem, vec);
 
-  /* Store single field into mode-sized buffer.  */
-  x = gen_rtx_UNSPEC (VOIDmode,
-		      gen_rtvec (1, const0_rtx), UNSPEC_STVE);
-  emit_insn (gen_rtx_PARALLEL (VOIDmode,
-			       gen_rtvec (2,
-					  gen_rtx_SET (VOIDmode,
-						       mem, vec),
-					  x)));
+  /* Add offset to field within buffer matching vector element.  */
+  mem = adjust_address_nv (mem, inner_mode, elt * GET_MODE_SIZE (inner_mode));
+
   emit_move_insn (target, adjust_address_nv (mem, inner_mode, 0));
 }
 
@@ -11114,6 +11108,7 @@ altivec_expand_stv_builtin (enum insn_code icode, tree exp)
   rtx op2 = expand_normal (arg2);
   rtx pat, addr;
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
+  enum machine_mode smode = insn_data[icode].operand[1].mode;
   enum machine_mode mode1 = Pmode;
   enum machine_mode mode2 = Pmode;
 
@@ -11123,8 +11118,8 @@ altivec_expand_stv_builtin (enum insn_code icode, tree exp)
       || arg2 == error_mark_node)
     return const0_rtx;
 
-  if (! (*insn_data[icode].operand[1].predicate) (op0, tmode))
-    op0 = copy_to_mode_reg (tmode, op0);
+  if (! (*insn_data[icode].operand[1].predicate) (op0, smode))
+    op0 = copy_to_mode_reg (smode, op0);
 
   op2 = copy_to_mode_reg (mode2, op2);
 

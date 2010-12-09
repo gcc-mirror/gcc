@@ -169,6 +169,7 @@
 (define_mode_iterator VM2 [V4SI V8HI V16QI V4SF V2DF V2DI])
 
 (define_mode_attr VI_char [(V4SI "w") (V8HI "h") (V16QI "b")])
+(define_mode_attr VI_scalar [(V4SI "SI") (V8HI "HI") (V16QI "QI")])
 
 ;; Vector move instructions.
 (define_insn "*altivec_mov<mode>"
@@ -1775,19 +1776,15 @@
   [(set_attr "type" "vecstore")])
 
 (define_insn "altivec_stve<VI_char>x"
-  [(parallel
-    [(set (match_operand:VI 0 "memory_operand" "=Z")
-	  (match_operand:VI 1 "register_operand" "v"))
-     (unspec [(const_int 0)] UNSPEC_STVE)])]
+  [(set (match_operand:<VI_scalar> 0 "memory_operand" "=Z")
+	(unspec:<VI_scalar> [(match_operand:VI 1 "register_operand" "v")] UNSPEC_STVE))]
   "TARGET_ALTIVEC"
   "stve<VI_char>x %1,%y0"
   [(set_attr "type" "vecstore")])
 
 (define_insn "*altivec_stvesfx"
-  [(parallel
-    [(set (match_operand:V4SF 0 "memory_operand" "=Z")
-	  (match_operand:V4SF 1 "register_operand" "v"))
-     (unspec [(const_int 0)] UNSPEC_STVE)])]
+  [(set (match_operand:SF 0 "memory_operand" "=Z")
+	(unspec:SF [(match_operand:V4SF 1 "register_operand" "v")] UNSPEC_STVE))]
   "TARGET_ALTIVEC"
   "stvewx %1,%y0"
   [(set_attr "type" "vecstore")])
