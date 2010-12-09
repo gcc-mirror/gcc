@@ -1,5 +1,47 @@
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/alpha/freebsd.h (LINK_SPEC): Don't use
+	%{!dynamic-linker:}.
+	* config/alpha/linux-elf.h (LINK_SPEC): Likewise.
+	* config/arm/freebsd.h (LINK_SPEC): Likewise.
+	* config/arm/linux-elf.h (LINUX_TARGET_LINK_SPEC): Likewise.
+	* config/bfin/linux.h (LINK_SPEC): Likewise.
+	* config/cris/linux.h (CRIS_LINK_SUBTARGET_SPEC): Likewise.
+	* config/frv/linux.h (LINK_SPEC): Likewise.
+	* config/i386/freebsd.h (LINK_SPEC): Likewise.
+	* config/i386/freebsd64.h (LINK_SPEC): Likewise.
+	* config/i386/linux.h (LINK_SPEC): Likewise.
+	* config/i386/linux64.h (LINK_SPEC): Likewise.
+	* config/i386/openbsdelf.h (LINK_SPEC): Likewise.
+	* config/ia64/freebsd.h (LINK_SPEC): Likewise.
+	* config/ia64/linux.h (LINK_SPEC): Likewise.
+	* config/lm32/uclinux-elf.h (LINK_SPEC): Likewise.
+	* config/m32r/linux.h (LINK_SPEC): Likewise.
+	* config/m68k/linux.h (LINK_SPEC): Likewise.
+	* config/microblaze/linux.h (LINK_SPEC): Likewise.
+	* config/mips/linux.h (LINK_SPEC): Likewise.
+	* config/mips/linux64.h (LINK_SPEC): Likewise.
+	* config/mips/openbsd.h (LINK_SPEC): Likewise.
+	* config/mn10300/linux.h (LINK_SPEC): Likewise.
+	* config/netbsd-elf.h (LINK_SPEC): Likewise.
+	* config/pa/pa-linux.h (LINK_SPEC): Likewise.
+	* config/rs6000/linux64.h (LINK_OS_LINUX_SPEC32,
+	LINK_OS_LINUX_SPEC64): Likewise.
+	* config/rs6000/sysv4.h (LINK_OS_FREEBSD_SPEC,
+	LINK_OS_LINUX_SPEC, LINK_OS_GNU_SPEC, LINK_OS_NETBSD_SPEC):
+	Likewise.
+	* config/s390/linux.h (LINK_SPEC): Likewise.
+	* config/sh/linux.h (SUBTARGET_LINK_SPEC): Likewise.
+	* config/sparc/freebsd.h (LINK_SPEC): Likewise.
+	* config/sparc/linux.h (LINK_SPEC): Likewise.
+	* config/sparc/linux64.h (LINK_ARCH32_SPEC, LINK_ARCH64_SPEC,
+	LINK_SPEC): Likewise.
+	* config/sparc/openbsd64.h (LINK_SPEC): Likewise.
+	* config/vax/linux.h (LINK_SPEC): Likewise.
+	* config/xtensa/linux.h (LINK_SPEC): Likewise.
+
+2010-12-09  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/bfin/bfin.h (ASM_SPEC): Remove %{n} and %{T}.
 	* config/frv/frv.h (ASM_SPEC): Likewise.
 	* config/i386/sol2-10.h (ASM_SPEC): Likewise.

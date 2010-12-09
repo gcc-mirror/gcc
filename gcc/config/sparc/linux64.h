@@ -118,7 +118,7 @@ along with GCC; see the file COPYING3.  If not see
     %{!ibcs: \
       %{!static: \
         %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER32 "}} \
+        -dynamic-linker " LINUX_DYNAMIC_LINKER32 "} \
         %{static:-static}}} \
 "
 
@@ -127,7 +127,7 @@ along with GCC; see the file COPYING3.  If not see
     %{!ibcs: \
       %{!static: \
         %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER64 "}} \
+        -dynamic-linker " LINUX_DYNAMIC_LINKER64 "} \
         %{static:-static}}} \
 "
 
@@ -208,7 +208,7 @@ along with GCC; see the file COPYING3.  If not see
     %{!ibcs: \
       %{!static: \
         %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER64 "}} \
+        -dynamic-linker " LINUX_DYNAMIC_LINKER64 "} \
         %{static:-static}}} \
 %{mlittle-endian:-EL} \
 %{!mno-relax:%{!r:-relax}} \

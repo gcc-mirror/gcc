@@ -1,6 +1,6 @@
 /* Definitions for MIPS running Linux-based GNU systems with ELF format
    using n32/64 abi.
-   Copyright 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -54,10 +54,9 @@ along with GCC; see the file COPYING3.  If not see
     %{!ibcs: \
       %{!static: \
         %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker: \
-	  %{mabi=n32: -dynamic-linker " LINUX_DYNAMIC_LINKERN32 "} \
-	  %{mabi=64: -dynamic-linker " LINUX_DYNAMIC_LINKER64 "} \
-	  %{mabi=32: -dynamic-linker " LINUX_DYNAMIC_LINKER32 "}}} \
+	%{mabi=n32: -dynamic-linker " LINUX_DYNAMIC_LINKERN32 "} \
+	%{mabi=64: -dynamic-linker " LINUX_DYNAMIC_LINKER64 "} \
+	%{mabi=32: -dynamic-linker " LINUX_DYNAMIC_LINKER32 "}} \
       %{static:-static}}} \
 %{mabi=n32:-melf32%{EB:b}%{EL:l}tsmipn32} \
 %{mabi=64:-melf64%{EB:b}%{EL:l}tsmip} \
