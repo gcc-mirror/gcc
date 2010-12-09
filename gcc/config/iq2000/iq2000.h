@@ -28,6 +28,10 @@
 #undef STARTFILE_SPEC
 #undef ENDFILE_SPEC
 
+#undef  LINK_SPEC
+#define LINK_SPEC "%{h*} %{v:-V} \
+		   %{static:-Bstatic} %{shared:-shared} %{symbolic:-Bsymbolic}"
+
 
 /* Run-time target specifications.  */
 
@@ -132,6 +136,18 @@
 #define DOUBLE_TYPE_SIZE 	64
 #define LONG_DOUBLE_TYPE_SIZE	64
 #define DEFAULT_SIGNED_CHAR	1
+
+#undef  SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef  PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+
+#undef  WCHAR_TYPE
+#define WCHAR_TYPE "long int"
+
+#undef  WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE BITS_PER_WORD
 
 
 /* Register Basics.  */
