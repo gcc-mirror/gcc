@@ -1592,7 +1592,7 @@ ia64-hp-*vms*)
 	extra_options="${extra_options} vms/vms.opt"
 	;;
 iq2000*-*-elf*)
-        tm_file="svr4.h elfos.h newlib-stdint.h iq2000/iq2000.h"
+        tm_file="elfos.h newlib-stdint.h iq2000/iq2000.h"
         tmake_file=iq2000/t-iq2000
         out_file=iq2000/iq2000.c
         md_file=iq2000/iq2000.md
