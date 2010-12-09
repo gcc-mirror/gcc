@@ -1291,7 +1291,7 @@ BUILDARCHIVE = \
 	test -d $(@D) || $(MKDIR_P) $(@D); \
 	rm -f $@; \
 	files=`echo $^ | sed -e 's/[^ ]*\.gox//g'`; \
-	if $(LTGOCOMPILE) -c -fgo-prefix="libgo_$(@D)" -o $@.$(OBJEXT) $$files; then \
+	if $(LTGOCOMPILE) -I . -c -fgo-prefix="libgo_$(@D)" -o $@.$(OBJEXT) $$files; then \
 	  $(AR) rc $@ $@.$(OBJEXT); \
 	else exit 1; fi
 
