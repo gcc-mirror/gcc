@@ -1146,7 +1146,11 @@ Func_expression::get_tree_without_closure(Gogo* gogo)
     }
 
   Named_object* no = this->function_;
-  tree id = this->function_->get_id(gogo);
+
+  tree id = no->get_id(gogo);
+  if (id == error_mark_node)
+    return error_mark_node;
+
   tree fndecl;
   if (no->is_function())
     fndecl = no->func_value()->get_or_make_decl(gogo, no, id);
@@ -1154,6 +1158,9 @@ Func_expression::get_tree_without_closure(Gogo* gogo)
     fndecl = no->func_declaration_value()->get_or_make_decl(gogo, no, id);
   else
     gcc_unreachable();
+
+  if (fndecl == error_mark_node)
+    return error_mark_node;
 
   return build_fold_addr_expr_loc(this->location(), fndecl);
 }

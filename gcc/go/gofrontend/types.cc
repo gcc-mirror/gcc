@@ -6864,6 +6864,8 @@ Named_type::do_get_tree(Gogo* gogo)
 	  t = make_node(RECORD_TYPE);
 	  this->named_tree_ = t;
 	  t = this->type_->interface_type()->fill_in_tree(gogo, t);
+	  if (t == error_mark_node)
+	    return error_mark_node;
 	}
       break;
 
