@@ -458,6 +458,10 @@ struct ipa_parm_adjustment
      be a pointer to this type.  */
   tree type;
 
+  /* Alias refrerence type to be used in MEM_REFs when adjusting caller
+     arguments.  */
+  tree alias_ptr_type;
+
   /* The new declaration when creating/replacing a parameter.  Created by
      ipa_modify_formal_parameters, useful for functions modifying the body
      accordingly. */
