@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-skip-if "Stack alignment is too small" { hppa*-*-hpux* } "*" "" } */
 
 #include <stdarg.h>
 #include "check.h"

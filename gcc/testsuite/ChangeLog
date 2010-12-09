@@ -1,5 +1,29 @@
 2010-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR target/46057
+	* gcc.dg/torture/stackalign/nested-1.c: Skip on hppa*-*-hpux*.
+	* gcc.dg/torture/stackalign/vararg-1.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-2.c: Likewise.
+	* gcc.dg/torture/stackalign/vararg-2.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-3.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-4.c: Likewise.
+	* gcc.dg/torture/stackalign/global-1.c: Likewise.
+	* gcc.dg/torture/stackalign/ret-struct-1.c: Likewise.
+	* gcc.dg/torture/stackalign/inline-1.c: Likewise.
+	* gcc.dg/torture/stackalign/inline-2.c: Likewise.
+	* gcc.dg/torture/stackalign/struct-1.c: Likewise.
+	* gcc.dg/torture/stackalign/pr16660-1.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-1.c: Likewise.
+	* g++.dg/torture/stackalign/throw-1.C: Likewise.
+	* g++.dg/torture/stackalign/throw-2.C: Likewise.
+	* g++.dg/torture/stackalign/throw-4.C: Likewise.
+	* g++.dg/torture/stackalign/eh-inline-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-inline-2.C: Likewise.
+	* g++.dg/torture/stackalign/eh-vararg-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-vararg-2.C: Likewise.
+	* g++.dg/torture/stackalign/eh-alloca-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-global-1.C: Likewise.
+
 	PR tree-optimization/46021
 	gcc.dg/tree-ssa/20040204-1.c: Remove XFAIL for hppa*-*.*.
 
