@@ -132,7 +132,14 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_define ("__NO_UNDERSCORES__");	\
     }						\
   while (0)
+
+/* Node: Type Layout */
      
+#undef SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
 
 /* Node: Sections */
 
