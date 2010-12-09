@@ -979,14 +979,14 @@ frv-*-*linux*)
 moxie-*-elf)
 	gas=yes
 	gnu_ld=yes
-	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h ${tm_file}"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	tmake_file="${tmake_file} moxie/t-moxie moxie/t-moxie-softfp soft-fp/t-softfp"
 	;;
 moxie-*-uclinux*)
 	gas=yes
 	gnu_ld=yes
-	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} linux.h glibc-stdint.h moxie/uclinux.h"
+	tm_file="dbxelf.h elfos.h ${tm_file} linux.h glibc-stdint.h moxie/uclinux.h"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	tmake_file="${tmake_file} moxie/t-moxie moxie/t-moxie-softfp soft-fp/t-softfp"
 	tm_defines="${tm_defines} DEFAULT_LIBC=LIBC_UCLIBC"
