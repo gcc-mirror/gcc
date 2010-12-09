@@ -248,6 +248,7 @@ static bool arm_builtin_support_vector_misalignment (enum machine_mode mode,
 						     int misalignment,
 						     bool is_packed);
 static void arm_conditional_register_usage (void);
+static reg_class_t arm_preferred_rename_class (reg_class_t class);
 
 
 /* Table of machine attributes.  */
@@ -584,6 +585,10 @@ static const struct default_options arm_option_optimization_table[] =
 #undef TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
 #define TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT \
   arm_builtin_support_vector_misalignment
+
+#undef TARGET_PREFERRED_RENAME_CLASS
+#define TARGET_PREFERRED_RENAME_CLASS \
+  arm_preferred_rename_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -23465,6 +23470,18 @@ arm_conditional_register_usage (void)
 	global_regs[ARM_HARD_FRAME_POINTER_REGNUM] = 1;
     }
   SUBTARGET_CONDITIONAL_REGISTER_USAGE
+}
+
+static reg_class_t
+arm_preferred_rename_class (reg_class_t class)
+{
+  /* Thumb-2 instructions using LO_REGS may be smaller than instructions
+     using GENERIC_REGS.  During register rename pass, we prefer LO_REGS,
+     and code size can be reduced.  */
+  if (TARGET_THUMB2 && class == GENERAL_REGS)
+    return LO_REGS;
+  else
+    return NO_REGS;
 }
 
 #include "gt-arm.h"
