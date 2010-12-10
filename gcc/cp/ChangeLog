@@ -1,3 +1,9 @@
+2010-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/46001
+	* decl.c (record_builtin_java_type): Call build_distinct_type_copy
+	on build_nonstandard_integer_type result for __java_* types.
+
 2010-12-10  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* decl.c (grokmethod): Test DECL_CLASS_SCOPE_P.

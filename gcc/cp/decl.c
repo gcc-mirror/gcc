@@ -3330,17 +3330,22 @@ record_builtin_java_type (const char* name, int size)
 {
   tree type, decl;
   if (size > 0)
-    type = build_nonstandard_integer_type (size, 0);
+    {
+      type = build_nonstandard_integer_type (size, 0);
+      type = build_distinct_type_copy (type);
+    }
   else if (size > -32)
     {
       tree stype;
       /* "__java_char" or ""__java_boolean".  */
       type = build_nonstandard_integer_type (-size, 1);
+      type = build_distinct_type_copy (type);
       /* Get the signed type cached and attached to the unsigned type,
 	 so it doesn't get garbage-collected at "random" times,
 	 causing potential codegen differences out of different UIDs
 	 and different alias set numbers.  */
       stype = build_nonstandard_integer_type (-size, 0);
+      stype = build_distinct_type_copy (stype);
       TREE_CHAIN (type) = stype;
       /*if (size == -1)	TREE_SET_CODE (type, BOOLEAN_TYPE);*/
     }

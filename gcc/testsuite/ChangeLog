@@ -1,3 +1,8 @@
+2010-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/46001
+	* g++.dg/diagnostic/bitfld1.C: New test.
+
 2010-12-10  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/43023
