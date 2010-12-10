@@ -2945,10 +2945,11 @@ print_conversion_rejection (location_t loc, struct conversion_info *info)
 {
   if (info->n_arg == -1)
     /* Conversion of implicit `this' argument failed.  */
-    inform (loc, "no known conversion for implicit %<this%> parameter from %qT to %qT",
+    inform (loc, "  no known conversion for implicit "
+	    "%<this%> parameter from %qT to %qT",
 	    info->from_type, info->to_type);
   else
-    inform (loc, "no known conversion for argument %d from %qT to %qT",
+    inform (loc, "  no known conversion for argument %d from %qT to %qT",
 	    info->n_arg+1, info->from_type, info->to_type);
 }
 
