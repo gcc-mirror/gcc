@@ -593,16 +593,16 @@ found:
 }
 
 /* Merge all decls in the symbol table chain to the prevailing decl and
-   issue diagnostics about type mismatches.  */
+   issue diagnostics about type mismatches.  If DIAGNOSED_P is true
+   do not issue further diagnostics.*/
 
 static void
-lto_symtab_merge_decls_2 (void **slot)
+lto_symtab_merge_decls_2 (void **slot, bool diagnosed_p)
 {
   lto_symtab_entry_t prevailing, e;
   VEC(tree, heap) *mismatches = NULL;
   unsigned i;
   tree decl;
-  bool diagnosed_p = false;
 
   /* Nothing to do for a single entry.  */
   prevailing = (lto_symtab_entry_t) *slot;
@@ -612,7 +612,8 @@ lto_symtab_merge_decls_2 (void **slot)
   /* Try to merge each entry with the prevailing one.  */
   for (e = prevailing->next; e; e = e->next)
     {
-      if (!lto_symtab_merge (prevailing, e))
+      if (!lto_symtab_merge (prevailing, e)
+	  && !diagnosed_p)
 	VEC_safe_push (tree, heap, mismatches, e->decl);
     }
   if (VEC_empty (tree, mismatches))
@@ -751,12 +752,7 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 
   /* Merge the chain to the single prevailing decl and diagnose
      mismatches.  */
-  lto_symtab_merge_decls_2 (slot);
-
-  /* Drop all but the prevailing decl from the symtab.  */
-  if (TREE_CODE (prevailing->decl) != FUNCTION_DECL
-      && TREE_CODE (prevailing->decl) != VAR_DECL)
-    prevailing->next = NULL;
+  lto_symtab_merge_decls_2 (slot, diagnosed_p);
 
   /* Store resolution decision into the callgraph.  
      In LTRANS don't overwrite information we stored into callgraph at
