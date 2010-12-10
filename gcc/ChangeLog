@@ -1,3 +1,8 @@
+2010-12-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/vax/linux.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Define.
+	* config.gcc (vax-*-linux*): Don't use svr4.h.
+
 2010-12-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-typeck.c (build_indirect_ref): Call invalid_indirection_error.

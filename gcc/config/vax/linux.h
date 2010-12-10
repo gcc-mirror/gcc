@@ -46,3 +46,9 @@ along with GCC; see the file COPYING3.  If not see
       %{rdynamic:-export-dynamic} \
       -dynamic-linker /lib/ld.so.1} \
     %{static:-static}}"
+
+#undef  WCHAR_TYPE
+#define WCHAR_TYPE "long int"
+
+#undef  WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE BITS_PER_WORD

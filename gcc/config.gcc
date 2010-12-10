@@ -2633,7 +2633,7 @@ v850-*-*)
 	use_gcc_stdint=wrap
 	;;
 vax-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h vax/elf.h vax/linux.h"
+	tm_file="${tm_file} dbxelf.h elfos.h linux.h vax/elf.h vax/linux.h"
 	tmake_file="${tmake_file} vax/t-linux"
 	;;
 vax-*-netbsdelf*)
