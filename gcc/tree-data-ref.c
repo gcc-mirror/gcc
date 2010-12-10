@@ -4509,7 +4509,7 @@ dump_rdg_vertex (FILE *file, struct graph *rdg, int i)
     for (e = v->succ; e; e = e->succ_next)
       fprintf (file, " %d", e->dest);
 
-  fprintf (file, ") \n");
+  fprintf (file, ")\n");
   print_gimple_stmt (file, RDGV_STMT (v), 0, TDF_VOPS|TDF_MEMSYMS);
   fprintf (file, ")\n");
 }
@@ -4976,16 +4976,27 @@ stores_from_loop (struct loop *loop, VEC (gimple, heap) **stmts)
   free (bbs);
 }
 
-/* Returns true when STMT is an assignment that contains a data
-   reference on its LHS with a stride of the same size as its unit
-   type.  */
+/* Returns true when the statement at STMT is of the form "A[i] = 0"
+   that contains a data reference on its LHS with a stride of the same
+   size as its unit type.  */
 
-static bool
-mem_write_stride_of_same_size_as_unit_type_p (gimple stmt)
+bool
+stmt_with_adjacent_zero_store_dr_p (gimple stmt)
 {
-  struct data_reference *dr = XCNEW (struct data_reference);
-  tree op0 = gimple_assign_lhs (stmt);
+  tree op0, op1;
   bool res;
+  struct data_reference *dr;
+
+  if (!stmt
+      || !gimple_vdef (stmt)
+      || !is_gimple_assign (stmt)
+      || !gimple_assign_single_p (stmt)
+      || !(op1 = gimple_assign_rhs1 (stmt))
+      || !(integer_zerop (op1) || real_zerop (op1)))
+    return false;
+
+  dr = XCNEW (struct data_reference);
+  op0 = gimple_assign_lhs (stmt);
 
   DR_STMT (dr) = stmt;
   DR_REF (dr) = op0;
@@ -5007,18 +5018,12 @@ stores_zero_from_loop (struct loop *loop, VEC (gimple, heap) **stmts)
   basic_block bb;
   gimple_stmt_iterator si;
   gimple stmt;
-  tree op;
   basic_block *bbs = get_loop_body_in_dom_order (loop);
 
   for (i = 0; i < loop->num_nodes; i++)
     for (bb = bbs[i], si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
       if ((stmt = gsi_stmt (si))
-	  && gimple_vdef (stmt)
-	  && is_gimple_assign (stmt)
-	  && gimple_assign_rhs_code (stmt) == INTEGER_CST
-	  && (op = gimple_assign_rhs1 (stmt))
-	  && (integer_zerop (op) || real_zerop (op))
-	  && mem_write_stride_of_same_size_as_unit_type_p (stmt))
+	  && stmt_with_adjacent_zero_store_dr_p (stmt))
 	VEC_safe_push (gimple, heap, *stmts, gsi_stmt (si));
 
   free (bbs);

@@ -1,3 +1,23 @@
+2010-12-10  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/43023
+	* tree-data-ref.c (mem_write_stride_of_same_size_as_unit_type_p):
+	Removed.
+	(stores_zero_from_loop): Call stmt_stores_zero.
+	* tree-data-ref.h (stmt_stores_zero): New.
+	* tree-loop-distribution.c (generate_memset_zero): Do not return a
+	boolean.  Call gcc_assert on stride_of_unit_type_p.
+	(generate_builtin): Call stmt_stores_zero.
+	(rdg_flag_all_uses): Removed.
+	(rdg_flag_similar_memory_accesses): Removed.
+	(build_rdg_partition_for_component): Removed parameter
+	other_stores.  Removed call to rdg_flag_similar_memory_accesses.
+	(can_generate_builtin): New.
+	(similar_memory_accesses): New.
+	(fuse_partitions_with_similar_memory_accesses): New.
+	(rdg_build_partitions): Call
+	fuse_partitions_with_similar_memory_accesses.
+
 2010-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/46804
@@ -108,9 +128,9 @@
 	(abshi2): Delete.
 	(neghi2, negqi2): Use PDPint iterator.
 	* config/pdp11/pdp11.c (find_addr_reg, output_move_double,
-	output_move_quad): Delete. 
+	output_move_quad): Delete.
 	(pdp11_expand_operands, output_move_multiple): New functions.
-	
+
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/vax/linux.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Define.
