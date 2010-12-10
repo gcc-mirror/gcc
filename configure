@@ -3055,6 +3055,9 @@ no)
   # Make sure we get it printed in the list of not supported target libs.
   # Don't disable libffi, though, other languages use it.
   noconfigdirs="$noconfigdirs `echo ${libgcj} | sed -e 's/target-libffi//'`"
+  # Clear libgcj_saved so that even if java is enabled libffi won't be
+  # built.
+  libgcj_saved=
   ;;
 esac
 
