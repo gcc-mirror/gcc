@@ -554,6 +554,15 @@ proc v3-build_support { } {
     }
 
     # Collect into libtestc++.a
+    # Delete libtestc++.a first.  Mixed 32 and 64-bit archives cannot be
+    # linked on IRIX 6.
+    # Use same procedure as gcc-dg.exp (remove-build-file).
+    if [is_remote host] {
+	# Ensure the host knows the file is gone by deleting there
+	# first.
+	remote_file host delete "./libtestc++.a"
+	}
+    remote_file build delete "./libtestc++.a"
     if  [info exists env(AR)] {
 	set ar $env(AR)
     } else {
