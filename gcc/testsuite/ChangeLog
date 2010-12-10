@@ -1,3 +1,8 @@
+2010-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46864
+	* g++.dg/opt/pr46864.C: New test.
+
 2010-12-10  Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Iain Sandoe  <iains@gcc.gnu.org>
 
