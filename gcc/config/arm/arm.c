@@ -248,7 +248,7 @@ static bool arm_builtin_support_vector_misalignment (enum machine_mode mode,
 						     int misalignment,
 						     bool is_packed);
 static void arm_conditional_register_usage (void);
-static reg_class_t arm_preferred_rename_class (reg_class_t class);
+static reg_class_t arm_preferred_rename_class (reg_class_t rclass);
 
 
 /* Table of machine attributes.  */
@@ -23473,12 +23473,12 @@ arm_conditional_register_usage (void)
 }
 
 static reg_class_t
-arm_preferred_rename_class (reg_class_t class)
+arm_preferred_rename_class (reg_class_t rclass)
 {
   /* Thumb-2 instructions using LO_REGS may be smaller than instructions
      using GENERIC_REGS.  During register rename pass, we prefer LO_REGS,
      and code size can be reduced.  */
-  if (TARGET_THUMB2 && class == GENERAL_REGS)
+  if (TARGET_THUMB2 && rclass == GENERAL_REGS)
     return LO_REGS;
   else
     return NO_REGS;
