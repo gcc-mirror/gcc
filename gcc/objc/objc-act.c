@@ -402,6 +402,12 @@ static bool objc_method_optional_flag = false;
 
 static int objc_collecting_ivars = 0;
 
+/* Flag that is set to 'true' while we are processing a class
+   extension.  Since a class extension just "reopens" the main
+   @interface, this can be used to determine if we are in the main
+   @interface, or in a class extension.  */
+static bool objc_in_class_extension = false;
+
 #define BUFSIZE		1024
 
 static char *errbuf;	/* Buffer for error diagnostics */
@@ -748,6 +754,11 @@ objc_start_category_interface (tree klass, tree categ,
 		    "category attributes are not available in this version"
 		    " of the compiler, (ignored)");
     }
+  if (categ == NULL_TREE)
+    {
+      if (flag_objc1_only)
+	error_at (input_location, "class extensions are not available in Objective-C 1.0");
+    }
   objc_interface_context
     = start_class (CATEGORY_INTERFACE_TYPE, klass, categ, protos, NULL_TREE);
   objc_ivar_chain
@@ -778,6 +789,7 @@ objc_finish_interface (void)
   finish_class (objc_interface_context);
   objc_interface_context = NULL_TREE;
   objc_method_optional_flag = false;
+  objc_in_class_extension = false;
 }
 
 void
@@ -952,6 +964,7 @@ objc_add_property_declaration (location_t location, tree decl,
      is readwrite).  */
   bool property_readonly = false;
   objc_property_assign_semantics property_assign_semantics = OBJC_PROPERTY_ASSIGN;
+  bool property_extension_in_class_extension = false;
 
   if (flag_objc1_only)
     error_at (input_location, "%<@property%> is not available in Objective-C 1.0");
@@ -1125,60 +1138,80 @@ objc_add_property_declaration (location_t location, tree decl,
 
   /* Check for duplicate property declarations.  We first check the
      immediate context for a property with the same name.  Any such
-     declarations are an error.  */
+     declarations are an error, unless this is a class extension and
+     we are extending a property from readonly to readwrite.  */
   for (x = CLASS_PROPERTY_DECL (objc_interface_context); x; x = TREE_CHAIN (x))
     {
       if (PROPERTY_NAME (x) == DECL_NAME (decl))
 	{
-	  location_t original_location = DECL_SOURCE_LOCATION (x);
-	  
-	  error_at (location, "redeclaration of property %qD", decl);
-
-	  if (original_location != UNKNOWN_LOCATION)
-	    inform (original_location, "originally specified here");
-	  return;
-      }
+	  if (objc_in_class_extension
+	      && property_readonly == 0
+	      && PROPERTY_READONLY (x) == 1)
+	    {
+	      /* This is a class extension, and we are extending an
+		 existing readonly property to a readwrite one.
+		 That's fine.  :-) */
+	      property_extension_in_class_extension = true;
+	      break;
+	    }
+	  else
+	    {
+	      location_t original_location = DECL_SOURCE_LOCATION (x);
+	      
+	      error_at (location, "redeclaration of property %qD", decl);
+	      
+	      if (original_location != UNKNOWN_LOCATION)
+		inform (original_location, "originally specified here");
+	      return;
+	    }
+	}
     }
 
-  /* We now need to check for existing property declarations (in the
-     superclass, other categories or protocols) and check that the new
-     declaration is not in conflict with existing ones.  */
-
-  /* Search for a previous, existing declaration of a property with
-     the same name in superclasses, protocols etc.  If one is found,
-     it will be in the 'x' variable.  */
-  x = NULL_TREE;
-
-  /* Note that, for simplicity, the following may search again the
-     local context.  That's Ok as nothing will be found (else we'd
-     have thrown an error above); it's only a little inefficient, but
-     the code is simpler.  */
-  switch (TREE_CODE (objc_interface_context))
+  /* If x is not NULL_TREE, we must be in a class extension and we're
+     extending a readonly property.  In that case, no point in
+     searching for another declaration.  */
+  if (x == NULL_TREE)
     {
-    case CLASS_INTERFACE_TYPE:
-      /* Look up the property in the current @interface (which will
-	 find nothing), then its protocols and categories and
-	 superclasses.  */
-      x = lookup_property (objc_interface_context, DECL_NAME (decl));
-      break;
-    case CATEGORY_INTERFACE_TYPE:
-      /* Look up the property in the main @interface, then protocols
-	 and categories (one of them is ours, and will find nothing)
-	 and superclasses.  */
-      x = lookup_property (lookup_interface (CLASS_NAME (objc_interface_context)),
-			   DECL_NAME (decl));
-      break;
-    case PROTOCOL_INTERFACE_TYPE:
-      /* Looks up the property in any protocols attached to the
-	 current protocol.  */
-      if (PROTOCOL_LIST (objc_interface_context))
+      /* We now need to check for existing property declarations (in
+	 the superclass, other categories or protocols) and check that
+	 the new declaration is not in conflict with existing
+	 ones.  */
+
+      /* Search for a previous, existing declaration of a property
+	 with the same name in superclasses, protocols etc.  If one is
+	 found, it will be in the 'x' variable.  */
+
+      /* Note that, for simplicity, the following may search again the
+	 local context.  That's Ok as nothing will be found (else we'd
+	 have thrown an error above); it's only a little inefficient,
+	 but the code is simpler.  */
+      switch (TREE_CODE (objc_interface_context))
 	{
-	  x = lookup_property_in_protocol_list (PROTOCOL_LIST (objc_interface_context),
-						DECL_NAME (decl));
+	case CLASS_INTERFACE_TYPE:
+	  /* Look up the property in the current @interface (which
+	     will find nothing), then its protocols and categories and
+	     superclasses.  */
+	  x = lookup_property (objc_interface_context, DECL_NAME (decl));
+	  break;
+	case CATEGORY_INTERFACE_TYPE:
+	  /* Look up the property in the main @interface, then
+	     protocols and categories (one of them is ours, and will
+	     find nothing) and superclasses.  */
+	  x = lookup_property (lookup_interface (CLASS_NAME (objc_interface_context)),
+			       DECL_NAME (decl));
+	  break;
+	case PROTOCOL_INTERFACE_TYPE:
+	  /* Looks up the property in any protocols attached to the
+	     current protocol.  */
+	  if (PROTOCOL_LIST (objc_interface_context))
+	    {
+	      x = lookup_property_in_protocol_list (PROTOCOL_LIST (objc_interface_context),
+						    DECL_NAME (decl));
+	    }
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
-      break;
-    default:
-      gcc_unreachable ();
     }
 
   if (x != NULL_TREE)
@@ -1276,6 +1309,17 @@ objc_add_property_declaration (location_t location, tree decl,
 		      "type of property %qD conflicts with previous declaration", decl);
 	  if (original_location != UNKNOWN_LOCATION)
 	    inform (original_location, "originally specified here");
+	  return;
+	}
+
+      /* If we are in a class extension and we're extending a readonly
+	 property in the main @interface, we'll just update the
+	 existing property with the readwrite flag and potentially the
+	 new setter name.  */
+      if (property_extension_in_class_extension)
+	{
+	  PROPERTY_READONLY (x) = 0;
+	  PROPERTY_SETTER_NAME (x) = parsed_property_setter_ident;
 	  return;
 	}
     }
@@ -9417,21 +9461,24 @@ check_protocols (tree proto_list, const char *type, tree name)
     }
 }
 
-/* Make sure that the class CLASS_NAME is defined
-   CODE says which kind of thing CLASS_NAME ought to be.
-   It can be CLASS_INTERFACE_TYPE, CLASS_IMPLEMENTATION_TYPE,
-   CATEGORY_INTERFACE_TYPE, or CATEGORY_IMPLEMENTATION_TYPE.  */
-
+/* Make sure that the class CLASS_NAME is defined CODE says which kind
+   of thing CLASS_NAME ought to be.  It can be CLASS_INTERFACE_TYPE,
+   CLASS_IMPLEMENTATION_TYPE, CATEGORY_INTERFACE_TYPE, or
+   CATEGORY_IMPLEMENTATION_TYPE.  For a CATEGORY_INTERFACE_TYPE,
+   SUPER_NAME is the name of the category.  For a class extension,
+   CODE is CATEGORY_INTERFACE_TYPE and SUPER_NAME is NULL_TREE.  */
 static tree
 start_class (enum tree_code code, tree class_name, tree super_name,
 	     tree protocol_list, tree attributes)
 {
-  tree klass, decl;
+  tree klass = NULL_TREE;
+  tree decl;
 
 #ifdef OBJCPLUS
-  if (current_namespace != global_namespace) {
-    error ("Objective-C declarations may only appear in global scope");
-  }
+  if (current_namespace != global_namespace)
+    {
+      error ("Objective-C declarations may only appear in global scope");
+    }
 #endif /* OBJCPLUS */
 
   if (objc_implementation_context)
@@ -9442,8 +9489,14 @@ start_class (enum tree_code code, tree class_name, tree super_name,
       objc_implementation_context = NULL_TREE;
     }
 
-  klass = make_node (code);
-  TYPE_LANG_SLOT_1 (klass) = make_tree_vec (CLASS_LANG_SLOT_ELTS);
+  /* If this is a class extension, we'll be "reopening" the existing
+     CLASS_INTERFACE_TYPE, so in that case there is no need to create
+     a new node.  */
+  if (code != CATEGORY_INTERFACE_TYPE || super_name != NULL_TREE)
+    {
+      klass = make_node (code);
+      TYPE_LANG_SLOT_1 (klass) = make_tree_vec (CLASS_LANG_SLOT_ELTS);
+    }
 
   /* Check for existence of the super class, if one was specified.  Note
      that we must have seen an @interface, not just a @class.  If we
@@ -9473,9 +9526,12 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	}
     }
 
-  CLASS_NAME (klass) = class_name;
-  CLASS_SUPER_NAME (klass) = super_name;
-  CLASS_CLS_METHODS (klass) = NULL_TREE;
+  if (code != CATEGORY_INTERFACE_TYPE || super_name != NULL_TREE)
+    {
+      CLASS_NAME (klass) = class_name;
+      CLASS_SUPER_NAME (klass) = super_name;
+      CLASS_CLS_METHODS (klass) = NULL_TREE;
+    }
 
   if (! objc_is_class_name (class_name)
       && (decl = lookup_name (class_name)))
@@ -9592,15 +9648,35 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	    if (TREE_DEPRECATED (class_category_is_assoc_with))
 	      warning (OPT_Wdeprecated_declarations, "class %qE is deprecated", 
 		       class_name);
-	    add_category (class_category_is_assoc_with, klass);
-	  }
 
-	if (protocol_list)
-	  CLASS_PROTOCOL_LIST (klass)
-	    = lookup_and_install_protocols (protocol_list);
+	    if (super_name == NULL_TREE)
+	      {
+		/* This is a class extension.  Get the original
+		   interface, and continue working on it.  */
+		objc_in_class_extension = true;
+		klass = class_category_is_assoc_with;
+
+		if (protocol_list)
+		  {
+		    /* Append protocols to the original protocol
+		       list.  */
+		    CLASS_PROTOCOL_LIST (klass)
+		      = chainon (CLASS_PROTOCOL_LIST (klass),
+				 lookup_and_install_protocols (protocol_list));
+		  }
+	      }
+	    else
+	      {
+		add_category (class_category_is_assoc_with, klass);
+		
+		if (protocol_list)
+		  CLASS_PROTOCOL_LIST (klass)
+		    = lookup_and_install_protocols (protocol_list);
+	      }
+	  }
       }
       break;
-
+	
     case CATEGORY_IMPLEMENTATION_TYPE:
       /* Reset for multiple classes per file.  */
       method_slot = 0;
@@ -9673,6 +9749,8 @@ continue_class (tree klass)
       }
     case CLASS_INTERFACE_TYPE:
       {
+	if (objc_in_class_extension)
+	  return NULL_TREE;
 #ifdef OBJCPLUS
 	push_lang_context (lang_name_c);
 #endif /* OBJCPLUS */

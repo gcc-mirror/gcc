@@ -6743,6 +6743,8 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
        objc-class-instance-variables[opt]
      @interface identifier ( identifier ) objc-protocol-refs[opt]
        objc-methodprotolist @end
+     @interface identifier ( ) objc-protocol-refs[opt]
+       objc-methodprotolist @end
      @implementation identifier ( identifier )
 
    objc-superclass:
@@ -6777,17 +6779,29 @@ c_parser_objc_class_definition (c_parser *parser, tree attributes)
   c_parser_consume_token (parser);
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
     {
+      /* We have a category or class extension.  */
       tree id2;
       tree proto = NULL_TREE;
       c_parser_consume_token (parser);
       if (c_parser_next_token_is_not (parser, CPP_NAME))
 	{
-	  c_parser_error (parser, "expected identifier");
-	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
-	  return;
+	  if (iface_p && c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	    {
+	      /* We have a class extension.  */
+	      id2 = NULL_TREE;
+	    }
+	  else
+	    {
+	      c_parser_error (parser, "expected identifier or %<)%>");
+	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+	      return;
+	    }
 	}
-      id2 = c_parser_peek_token (parser)->value;
-      c_parser_consume_token (parser);
+      else
+	{
+	  id2 = c_parser_peek_token (parser)->value;
+	  c_parser_consume_token (parser);
+	}
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
       if (!iface_p)
 	{

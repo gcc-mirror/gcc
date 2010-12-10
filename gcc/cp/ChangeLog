@@ -1,3 +1,12 @@
+2010-12-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (cp_parser_objc_superclass_or_category): Recognize
+	Objective-C 2.0 class extensions.  Added iface_p and
+	is_class_extension arguments.
+	(cp_parser_objc_class_interface): Updated call to
+	cp_parser_objc_superclass_or_category.
+	(cp_parser_objc_class_implementation): Same change.
+	
 2010-12-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* call.c (print_conversion_rejection): Indent messages two spaces.
