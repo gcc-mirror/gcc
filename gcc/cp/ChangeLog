@@ -1,5 +1,10 @@
 2010-12-10  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* decl.c (grokmethod): Test DECL_CLASS_SCOPE_P.
+	* error.c (dump_decl): Test DECL_FILE_SCOPE_P.
+
+2010-12-10  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* cp-tree.h (readonly_error_kind): Delete.
 	(readonly_error): Rename to...
 	(cxx_readonly_error): ...this.  Change second argument to be an
