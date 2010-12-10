@@ -742,6 +742,8 @@ enable_option_checking
 with_build_libsubdir
 enable_gold
 enable_ld
+enable_libquadmath
+enable_libquadmath_support
 enable_libada
 enable_libssp
 enable_build_with_cxx
@@ -1453,6 +1455,9 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-gold[=ARG]     build gold [ARG={default,yes,no}]
   --enable-ld[=ARG]     build ld [ARG={default,yes,no}]
+  --disable-libquadmath   do not build libquadmath directory
+  --disable-libquadmath-support
+                          disable libquadmath support for Fortran
   --enable-libada         build libada directory
   --enable-libssp         build libssp directory
   --enable-build-with-cxx build with C++ compiler instead of C compiler
@@ -2990,6 +2995,31 @@ case "${host}" in
     noconfigdirs="$noconfigdirs tk itcl libgui gdb dejagnu readline"
     ;;
 esac
+
+
+# Check whether --enable-libquadmath was given.
+if test "${enable_libquadmath+set}" = set; then :
+  enableval=$enable_libquadmath; ENABLE_LIBQUADMATH=$enableval
+else
+  ENABLE_LIBQUADMATH=yes
+fi
+
+if test "${ENABLE_LIBQUADMATH}" = "no" ; then
+  noconfigdirs="$noconfigdirs target-libquadmath"
+fi
+
+
+# Check whether --enable-libquadmath-support was given.
+if test "${enable_libquadmath_support+set}" = set; then :
+  enableval=$enable_libquadmath_support; ENABLE_LIBQUADMATH_SUPPORT=$enableval
+else
+  ENABLE_LIBQUADMATH_SUPPORT=yes
+fi
+
+enable_libquadmath_support=
+if test "${ENABLE_LIBQUADMATH_SUPPORT}" = "no" ; then
+  enable_libquadmath_support=no
+fi
 
 
 # Check whether --enable-libada was given.

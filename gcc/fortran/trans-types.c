@@ -415,12 +415,11 @@ gfc_init_kinds (void)
 
       /* Only let float, double, long double and __float128 go through.
 	 Runtime support for others is not provided, so they would be
-	 useless.  TODO: TFmode support should be enabled once libgfortran
-	 support is done.  */
+	 useless.  */
 	if (mode != TYPE_MODE (float_type_node)
 	    && (mode != TYPE_MODE (double_type_node))
 	    && (mode != TYPE_MODE (long_double_type_node))
-#ifdef LIBGCC2_HAS_TF_MODE
+#if defined(LIBGCC2_HAS_TF_MODE) && defined(ENABLE_LIBQUADMATH_SUPPORT)
 	    && (mode != TFmode)
 #endif
 	   )

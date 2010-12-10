@@ -12,7 +12,8 @@ GCC_TOPLEV_SUBDIRS
 
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 AC_ARG_ENABLE(version-specific-runtime-libs,
-[  --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory ],
+AS_HELP_STRING([--enable-version-specific-runtime-libs],
+  [specify that runtime libraries should be installed in a compiler-specific directory]),
 [case "$enableval" in
  yes) version_specific_libs=yes ;;
  no)  version_specific_libs=no ;;
@@ -24,7 +25,7 @@ AC_MSG_RESULT($version_specific_libs)
 # Build with intermodule optimisations
 AC_MSG_CHECKING([for --enable-intermodule])
 AC_ARG_ENABLE(intermodule,
-[  --enable-intermodule    build the library in one step],
+AS_HELP_STRING([--enable-intermodule],[build the library in one step]),
 [case "$enable_intermodule" in
   yes) onestep="-onestep";;
     *) onestep="";;
@@ -463,7 +464,18 @@ LIBGFOR_CHECK_MINGW_SNPRINTF
 # Check for a broken powf implementation
 LIBGFOR_CHECK_FOR_BROKEN_POWF
 
-# Check whether we have a __float128 type
+# Check whether libquadmath should be used
+AC_ARG_ENABLE(libquadmath-support,
+AS_HELP_STRING([--disable-libquadmath-support],
+  [disable libquadmath support for Fortran]),
+ENABLE_LIBQUADMATH_SUPPORT=$enableval,
+ENABLE_LIBQUADMATH_SUPPORT=yes)
+enable_libquadmath_support=
+if test "${ENABLE_LIBQUADMATH_SUPPORT}" = "no" ; then
+  enable_libquadmath_support=no
+fi
+
+# Check whether we have a __float128 type, depends on enable_libquadmath_support
 LIBGFOR_CHECK_FLOAT128
 
 # Check for GNU libc feenableexcept

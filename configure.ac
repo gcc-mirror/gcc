@@ -458,6 +458,27 @@ case "${host}" in
 esac
 
 
+AC_ARG_ENABLE(libquadmath,
+AS_HELP_STRING([--disable-libquadmath],
+  [do not build libquadmath directory]),
+ENABLE_LIBQUADMATH=$enableval,
+ENABLE_LIBQUADMATH=yes)
+if test "${ENABLE_LIBQUADMATH}" = "no" ; then
+  noconfigdirs="$noconfigdirs target-libquadmath"
+fi
+
+
+AC_ARG_ENABLE(libquadmath-support,
+AS_HELP_STRING([--disable-libquadmath-support],
+  [disable libquadmath support for Fortran]),
+ENABLE_LIBQUADMATH_SUPPORT=$enableval,
+ENABLE_LIBQUADMATH_SUPPORT=yes)
+enable_libquadmath_support=
+if test "${ENABLE_LIBQUADMATH_SUPPORT}" = "no" ; then
+  enable_libquadmath_support=no
+fi
+
+
 AC_ARG_ENABLE(libada,
 [  --enable-libada         build libada directory],
 ENABLE_LIBADA=$enableval,

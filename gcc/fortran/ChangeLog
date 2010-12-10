@@ -1,3 +1,9 @@
+2010-12-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46540
+	* trans-types.c (gfc_init_kinds): Handle
+	--disable-libquadmath-support.
+
 2010-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* check.c (gfc_check_sngl): Insert missing space in error message.
