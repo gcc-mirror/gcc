@@ -1,3 +1,19 @@
+2010-12-09  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11-protos.h (output_move_double,
+	output_move_quad): Delete.
+	(output_move_multiple, pdp11_expand_operands): New functions.
+	(pdp11_action, pdp11_partorder): New enums.
+	* config/pdp11/pdp11.md (movdi, movsi, movdf, movsf): Use
+	output_move_multiple.
+	(adddi3, subdi3, negdi2): New patterns.
+	(addsi3, subsi3, negsi2): Use pdp11_expand_operands.
+	(abshi2): Delete.
+	(neghi2, negqi2): Use PDPint iterator.
+	* config/pdp11/pdp11.c (find_addr_reg, output_move_double,
+	output_move_quad): Delete. 
+	(pdp11_expand_operands, output_move_multiple): New functions.
+	
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/vax/linux.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Define.

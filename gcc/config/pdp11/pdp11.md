@@ -260,21 +260,21 @@
 ;; Move instructions
 
 (define_insn "movdi"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=g,rm,o")
-	(match_operand:DI 1 "general_operand" "m,r,a"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=&r,g")
+	(match_operand:DI 1 "general_operand" "rN,g"))]
   ""
-  "* return output_move_quad (operands);"
+  "* return output_move_multiple (operands);"
 ;; what's the mose expensive code - say twice movsi = 16
-  [(set_attr "length" "32,32,32")])
+  [(set_attr "length" "16,32")])
 
 (define_insn "movsi"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,rm,m")
-	(match_operand:SI 1 "general_operand" "rN,IJ,K,m,r"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,g,g")
+	(match_operand:SI 1 "general_operand" "rN,IJ,IJ,g"))]
   ""
-  "* return output_move_double (operands);"
+  "* return output_move_multiple (operands);"
 ;; what's the most expensive code ? - I think 8!
 ;; we could split it up and make several sub-cases...
-  [(set_attr "length" "4,6,8,16,16")])
+  [(set_attr "length" "4,6,8,16")])
 
 (define_insn "mov<mode>"
   [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,rR,Q,Q")
@@ -298,7 +298,7 @@
      else if (which_alternative == 1 || which_alternative == 3)
        return \"std %1, %0\";
      else 
-       return output_move_quad (operands); "
+       return output_move_multiple (operands); "
 ;; just a guess..
   [(set_attr "length" "2,2,10,10,32")])
 
@@ -311,7 +311,7 @@
      else if (which_alternative == 1 || which_alternative == 3)
        return \"{stcdf|movfo} %1, %0\";
      else 
-       return output_move_double (operands); "
+       return output_move_multiple (operands); "
 ;; just a guess..
   [(set_attr "length" "2,2,10,10,16")])
 
@@ -614,55 +614,79 @@
   "{addd|addf} %2, %0"
   [(set_attr "length" "2,4,10")])
 
-(define_insn "addsi3"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,o,o,r,r,r,o,o,o")
-	(plus:SI (match_operand:SI 1 "general_operand" "%0,0,0,0,0,0,0,0,0,0")
-		 (match_operand:SI 2 "general_operand" "r,o,r,o,I,J,K,I,J,K")))]
+(define_insn "adddi3"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=&r,r,o,o")
+	(plus:DI (match_operand:DI 1 "general_operand" "%0,0,0,0")
+		 (match_operand:DI 2 "general_operand" "r,on,r,on")))]
   ""
   "*
-{ /* Here we trust that operands don't overlap 
-
-     or is lateoperands the low word?? - looks like it! */
-
-  rtx lateoperands[3];
+{
+  rtx inops[2];
+  rtx exops[4][2];
   
-  lateoperands[0] = operands[0];
-
-  if (REG_P (operands[0]))
-    operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
-  else
-    operands[0] = adjust_address (operands[0], HImode, 2);
+  inops[0] = operands[0];
+  inops[1] = operands[2];
+  pdp11_expand_operands (inops, exops, 2, NULL, either);
   
-  if (! CONSTANT_P(operands[2]))
+  if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
+    output_asm_insn (\"add %1, %0\", exops[0]);
+  if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
   {
-    lateoperands[2] = operands[2];
-
-    if (REG_P (operands[2]))
-      operands[2] = gen_rtx_REG (HImode, REGNO (operands[2]) + 1);
-    else
-      operands[2] = adjust_address (operands[2], HImode, 2);
-
-    output_asm_insn (\"add %2, %0\", operands);
-    output_asm_insn (\"adc %0\", lateoperands);
-    output_asm_insn (\"add %2, %0\", lateoperands);
-    return \"\";
+    output_asm_insn (\"add %1, %0\", exops[1]);
+    output_asm_insn (\"adc %0\", exops[0]);
   }
-
-  lateoperands[2] = GEN_INT ((INTVAL (operands[2]) >> 16) & 0xffff);
-  operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffff);
-  
-  if (INTVAL(operands[2]))
-  { 
-    output_asm_insn (\"add %2, %0\", operands);
-    output_asm_insn (\"adc %0\", lateoperands);
+  if (!CONSTANT_P (exops[2][1]) || INTVAL (exops[2][1]) != 0)
+  {
+    output_asm_insn (\"add %1, %0\", exops[2]);
+    output_asm_insn (\"adc %0\", exops[1]);
+    output_asm_insn (\"adc %0\", exops[0]);
   }
-
-  if (INTVAL(lateoperands[2]))
-    output_asm_insn (\"add %2, %0\", lateoperands);
+  if (!CONSTANT_P (exops[3][1]) || INTVAL (exops[3][1]) != 0)
+  {
+    output_asm_insn (\"add %1, %0\", exops[3]);
+    output_asm_insn (\"adc %0\", exops[2]);
+    output_asm_insn (\"adc %0\", exops[1]);
+    output_asm_insn (\"adc %0\", exops[0]);
+  }
 
   return \"\";
 }"
-  [(set_attr "length" "6,10,12,16,6,2,10,10,6,16")])
+  [(set_attr "length" "20,28,40,48")])
+
+;; Note that the register operand is not marked earlyclobber.
+;; The reason is that SI values go in register pairs, so they
+;; can't partially overlap.  They can be either disjoint, or
+;; source and destination can be equal.  The latter case is 
+;; handled properly because of the ordering of the individual
+;; instructions used.  Specifically, carry from the low to the
+;; high word is added at the end, so the adding of the high parts
+;; will always used the original high part and not a high part
+;; modified by carry (which would amount to double carry).
+(define_insn "addsi3"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,o,o")
+	(plus:SI (match_operand:SI 1 "general_operand" "%0,0,0,0")
+		 (match_operand:SI 2 "general_operand" "r,on,r,on")))]
+  ""
+  "*
+{
+  rtx inops[2];
+  rtx exops[2][2];
+  
+  inops[0] = operands[0];
+  inops[1] = operands[2];
+  pdp11_expand_operands (inops, exops, 2, NULL, either);
+  
+  if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
+    output_asm_insn (\"add %1, %0\", exops[0]);
+  if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
+  {
+    output_asm_insn (\"add %1, %0\", exops[1]);
+    output_asm_insn (\"adc %0\", exops[0]);
+  }
+
+  return \"\";
+}"
+  [(set_attr "length" "6,10,12,16")])
 
 (define_insn "addhi3"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,rR,Q,Q")
@@ -697,38 +721,69 @@
   "{subd|subf} %2, %0"
   [(set_attr "length" "2,4")])
 
-(define_insn "subsi3"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,o,o")
-        (minus:SI (match_operand:SI 1 "general_operand" "0,0,0,0")
-                  (match_operand:SI 2 "general_operand" "r,o,r,o")))]
+(define_insn "subdi3"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=&r,r,o,o")
+	(minus:DI (match_operand:DI 1 "general_operand" "0,0,0,0")
+		 (match_operand:DI 2 "general_operand" "r,on,r,on")))]
   ""
   "*
-{ /* Here we trust that operands don't overlap 
-
-     or is lateoperands the low word?? - looks like it! */
-
-  rtx lateoperands[3];
+{
+  rtx inops[2];
+  rtx exops[4][2];
   
-  lateoperands[0] = operands[0];
-
-  if (REG_P (operands[0]))
-    operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
-  else
-    operands[0] = adjust_address (operands[0], HImode, 2);
+  inops[0] = operands[0];
+  inops[1] = operands[2];
+  pdp11_expand_operands (inops, exops, 2, NULL, either);
   
-  lateoperands[2] = operands[2];
+  if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
+    output_asm_insn (\"sub %1, %0\", exops[0]);
+  if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
+  {
+    output_asm_insn (\"sub %1, %0\", exops[1]);
+    output_asm_insn (\"sbc %0\", exops[0]);
+  }
+  if (!CONSTANT_P (exops[2][1]) || INTVAL (exops[2][1]) != 0)
+  {
+    output_asm_insn (\"sub %1, %0\", exops[2]);
+    output_asm_insn (\"sbc %0\", exops[1]);
+    output_asm_insn (\"sbc %0\", exops[0]);
+  }
+  if (!CONSTANT_P (exops[3][1]) || INTVAL (exops[3][1]) != 0)
+  {
+    output_asm_insn (\"sub %1, %0\", exops[3]);
+    output_asm_insn (\"sbc %0\", exops[2]);
+    output_asm_insn (\"sbc %0\", exops[1]);
+    output_asm_insn (\"sbc %0\", exops[0]);
+  }
 
-  if (REG_P (operands[2]))
-    operands[2] = gen_rtx_REG (HImode, REGNO (operands[2]) + 1);
-  else
-    operands[2] = adjust_address (operands[2], HImode, 2);
-
-  output_asm_insn (\"sub %2, %0\", operands);
-  output_asm_insn (\"sbc %0\", lateoperands);
-  output_asm_insn (\"sub %2, %0\", lateoperands);
   return \"\";
 }"
-;; offsettable memory addresses always are expensive!!!
+  [(set_attr "length" "20,28,40,48")])
+
+(define_insn "subsi3"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,o,o")
+	(minus:SI (match_operand:SI 1 "general_operand" "0,0,0,0")
+		 (match_operand:SI 2 "general_operand" "r,on,r,on")))]
+  ""
+  "*
+{
+  rtx inops[2];
+  rtx exops[2][2];
+  
+  inops[0] = operands[0];
+  inops[1] = operands[2];
+  pdp11_expand_operands (inops, exops, 2, NULL, either);
+  
+  if (!CONSTANT_P (exops[0][1]) || INTVAL (exops[0][1]) != 0)
+    output_asm_insn (\"sub %1, %0\", exops[0]);
+  if (!CONSTANT_P (exops[1][1]) || INTVAL (exops[1][1]) != 0)
+  {
+    output_asm_insn (\"sub %1, %0\", exops[1]);
+    output_asm_insn (\"sbc %0\", exops[0]);
+  }
+
+  return \"\";
+}"
   [(set_attr "length" "6,10,12,16")])
 
 (define_insn "subhi3"
@@ -1070,60 +1125,6 @@
   "{absd|absf} %0"
   [(set_attr "length" "2,4")])
 
-(define_insn "abshi2"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,o")
-	(abs:HI (match_operand:HI 1 "general_operand" "0,0")))]
-  ""
-  "*
-{
-  static int count = 0;
-  char buf[200];
-	
-  output_asm_insn(\"tst %0\", operands);
-  sprintf(buf, \"bge abshi%d\", count);
-  output_asm_insn(buf, NULL);
-  output_asm_insn(\"neg %0\", operands);
-  sprintf(buf, \"\\nabshi%d:\", count++);
-  output_asm_insn(buf, NULL);
-
-  return \"\";
-}"
-  [(set_attr "length" "6,10")])
-
-
-;; define expand abshi - is much better !!! - but
-;; will it be optimized into an abshi2 ?
-;; it will leave better code, because the tsthi might be 
-;; optimized away!!
-; -- just a thought - don't have time to check 
-;
-;(define_expand "abshi2"
-;  [(match_operand:HI 0 "nonimmediate_operand" "")
-;   (match_operand:HI 1 "general_operand" "")]
-;  ""
-;  "
-;{
-;  rtx label = gen_label_rtx ();
-;
-;  /* do I need this? */
-;  do_pending_stack_adjust ();
-;
-;  emit_move_insn (operands[0], operands[1]);
-;
-;  emit_insn (gen_tsthi (operands[0]));
-;  emit_insn (gen_bge (label1));
-;
-;  emit_insn (gen_neghi(operands[0], operands[0])
-;  
-;  emit_barrier ();
-;
-;  emit_label (label);
-;
-;  /* allow REG_NOTES to be set on last insn (labels don't have enough
-;     fields, and can't be used for REG_NOTES anyway).  */
-;  emit_use (stack_pointer_rtx);
-;  DONE;
-;}")
 
 ;; negate insns
 
@@ -1134,41 +1135,51 @@
   "{negd|negf} %0"
   [(set_attr "length" "2,4")])
 
-(define_insn "negsi2"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(neg:SI (match_operand:SI 1 "general_operand" "0")))]
+(define_insn "negdi2"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,o")
+	(neg:DI (match_operand:DI 1 "general_operand" "0,0")))]
   ""
 {
+  rtx exops[4][2];
+  
+  pdp11_expand_operands (operands, exops, 1, NULL, either);
 
-  rtx lateoperands[2];
-
-  lateoperands[0] = operands[0];
-  operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
-
-  lateoperands[1] = operands[1];
-  operands[1] = gen_rtx_REG (HImode, REGNO (operands[1]) + 1);
-
-  output_asm_insn (\"com %0\", lateoperands);
-  output_asm_insn (\"com %0\", operands);
-  output_asm_insn (\"add $1, %0\", operands);
-  output_asm_insn (\"adc %0\", lateoperands);
+  output_asm_insn (\"com %0\", exops[3]);
+  output_asm_insn (\"com %0\", exops[2]);
+  output_asm_insn (\"com %0\", exops[1]);
+  output_asm_insn (\"com %0\", exops[0]);
+  output_asm_insn (\"add $1, %0\", exops[3]);
+  output_asm_insn (\"adc %0\", exops[2]);
+  output_asm_insn (\"adc %0\", exops[1]);
+  output_asm_insn (\"adc %0\", exops[0]);
 
   return \"\";
 }
-  [(set_attr "length" "14")])
+[(set_attr "length" "18,34")])
 
-(define_insn "neghi2"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=rR,Q")
-	(neg:HI (match_operand:HI 1 "general_operand" "0,0")))]
+(define_insn "negsi2"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,o")
+	(neg:SI (match_operand:SI 1 "general_operand" "0,0")))]
   ""
-  "neg %0"
-  [(set_attr "length" "2,4")])
+{
+  rtx exops[2][2];
+  
+  pdp11_expand_operands (operands, exops, 1, NULL, either);
 
-(define_insn "negqi2"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=rR,Q")
-	(neg:QI (match_operand:QI 1 "general_operand" "0,0")))]
+  output_asm_insn (\"com %0\", exops[1]);
+  output_asm_insn (\"com %0\", exops[0]);
+  output_asm_insn (\"add $1, %0\", exops[1]);
+  output_asm_insn (\"adc %0\", exops[0]);
+
+  return \"\";
+}
+[(set_attr "length" "12,20")])
+
+(define_insn "neg<mode>2"
+  [(set (match_operand:PDPint 0 "nonimmediate_operand" "=rR,Q")
+	(neg:PDPint (match_operand:PDPint 1 "general_operand" "0,0")))]
   ""
-  "negb %0"
+  "neg<isfx> %0"
   [(set_attr "length" "2,4")])
 
 
