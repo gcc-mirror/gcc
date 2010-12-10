@@ -1,3 +1,8 @@
+2010-12-10  Iain Sandoe <iains@gcc.gnu.org>
+
+	* config/darwin.c: Remove c-tree.h and c-lang.h
+	* config/t-darwin: Remove dependencies on c-tree.h and c-lang.h.
+
 2010-12-10  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR target/46881
