@@ -29,5 +29,8 @@ Subroutine PADEC(DKS,DKDS,HVAR,WM,WG,FN,NS,AN,BN,CN,IT)
   return
 end Subroutine PADEC
 
-! { dg-final { scan-tree-dump-times "distributed: split to 4 loops" 1 "ldist" } }
+! There are 5 legal partitions in this code.  Based on the data
+! locality heuristic, this loop should not be split.
+
+! { dg-final { scan-tree-dump-not "distributed: split to" "ldist" } }
 ! { dg-final { cleanup-tree-dump "ldist" } }

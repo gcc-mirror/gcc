@@ -1,3 +1,9 @@
+2010-12-10  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/43023
+	* gfortran.dg/ldist-1.f90: Adjust pattern.
+	* gfortran.dg/ldist-pr43023.f90: New.
+
 2010-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/46804
@@ -45,8 +51,8 @@
 	* obj-c++.dg/class-extension-3.mm: New.
 	* obj-c++.dg/property/at-property-26.mm: New.
 	* obj-c++.dg/property/at-property-27.mm: New.
-	* obj-c++.dg/property/at-property-28.mm: New.	
-	
+	* obj-c++.dg/property/at-property-28.mm: New.
+
 2010-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/46057
@@ -113,12 +119,12 @@
 	* obj-c++.dg/exceptions-7.mm: New.
 	* obj-c++.dg/exceptions-3.mm: Adjust for new C++ messages.
 	* obj-c++.dg/exceptions-5.mm: Same change.
-	
+
 2010-12-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/foreach-6.m: Updated location of error messages.
 	* objc.dg/foreach-7.m: Same change.
-	
+
 2010-12-08  Richard Guenther  <rguenther@suse.de>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 
