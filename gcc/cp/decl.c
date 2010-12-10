@@ -13098,8 +13098,7 @@ grokmethod (cp_decl_specifier_seq *declspecs,
 
   if (DECL_IN_AGGR_P (fndecl))
     {
-      if (DECL_CONTEXT (fndecl)
-	  && TREE_CODE (DECL_CONTEXT (fndecl)) != NAMESPACE_DECL)
+      if (DECL_CLASS_SCOPE_P (fndecl))
 	error ("%qD is already defined in class %qT", fndecl,
 	       DECL_CONTEXT (fndecl));
       return error_mark_node;

@@ -1027,7 +1027,7 @@ dump_decl (tree t, int flags)
 	      dump_type (DECL_CONTEXT (t), flags);
 	      pp_cxx_colon_colon (cxx_pp);
 	    }
-	  else if (DECL_CONTEXT (t))
+	  else if (!DECL_FILE_SCOPE_P (t))
 	    {
 	      dump_decl (DECL_CONTEXT (t), flags);
 	      pp_cxx_colon_colon (cxx_pp);
