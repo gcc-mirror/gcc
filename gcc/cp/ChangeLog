@@ -1,3 +1,16 @@
+2010-12-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cp-tree.h (readonly_error_kind): Delete.
+	(readonly_error): Rename to...
+	(cxx_readonly_error): ...this.  Change second argument to be an
+	enum lvalue_use.
+	* semantics.c (finish_asm_stmt): Call cxx_readonly_error.
+	* typeck.c (cp_build_unary_op): Likewise.
+	(cp_build_modify_expr): Likewise.
+	* typeck2.c (readonly_error): Rename to...
+	(cxx_readonly_error): ...this.  Delegate to readonly_error for
+	most cases.
+
 2010-12-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* parser.c (cp_parser_objc_superclass_or_category): Recognize

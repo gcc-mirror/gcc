@@ -1317,7 +1317,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		     effectively const.  */
 		  || (CLASS_TYPE_P (TREE_TYPE (operand))
 		      && C_TYPE_FIELDS_READONLY (TREE_TYPE (operand)))))
-	    readonly_error (operand, REK_ASSIGNMENT_ASM);
+	    cxx_readonly_error (operand, lv_asm);
 
 	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
 	  oconstraints[i] = constraint;
