@@ -1,3 +1,12 @@
+2010-12-10  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR target/46881
+	* doc/tm.texi: Regenerate.
+	* target.def: Fix "preferred" spelling.  Refer to rclass by its
+	exact name.
+	* config/arm/arm.c (arm_preferred_rename_class): Rename parameter class
+	to rclass.
+
 2010-12-09  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11-protos.h (output_move_double,
