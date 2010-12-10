@@ -1,3 +1,13 @@
+2010-12-10  Iain Sandoe <iains@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c
+	(rs6000_darwin64_record_arg_advance_recurse): Name register increment
+	explicitly.  (rs6000_darwin64_record_arg_recurse): Make sure we split
+	long doubles when we run out of regs.   Also flag that this requires
+	stack and therefore cannot be returned by value.
+	(rs6000_darwin64_record_arg): Update comment.
+	(rs6000_function_value): Likewise.
+
 2010-12-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-parser.c (c_parser_objc_class_definition): Recognize
