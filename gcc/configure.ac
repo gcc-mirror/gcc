@@ -3873,8 +3873,8 @@ gcc_GAS_CHECK_FEATURE([.lcomm with alignment], gcc_cv_as_lcomm_with_alignment,
   [Define if your assembler supports .lcomm with an alignment field.])])
 
 AC_ARG_ENABLE(gnu-unique-object,
- [  --enable-gnu-unique-object	enable the use of the @gnu_unique_object ELF extension on
-				glibc systems],
+ [AS_HELP_STRING([--enable-gnu-unique-object],
+   [enable the use of the @gnu_unique_object ELF extension on glibc systems])],
  [case $enable_gnu_unique_object in
     yes | no) ;;
     *) AC_MSG_ERROR(['$enable_gnu_unique_object' is an invalid value for --enable-gnu-unique-object.
@@ -4780,6 +4780,18 @@ AC_SUBST(enable_plugin)
 if test x"$enable_plugin" = x"yes"; then
   AC_DEFINE(ENABLE_PLUGIN, 1, [Define to enable plugin support.])
 fi
+
+
+AC_ARG_ENABLE(libquadmath-support,
+[AS_HELP_STRING([--disable-libquadmath-support],
+  [disable libquadmath support for Fortran])],
+ENABLE_LIBQUADMATH_SUPPORT=$enableval,
+ENABLE_LIBQUADMATH_SUPPORT=yes)
+if test "${ENABLE_LIBQUADMATH_SUPPORT}" != "no" ; then
+  AC_DEFINE(ENABLE_LIBQUADMATH_SUPPORT, 1,
+            [Define to 1 to enable libquadmath support])
+fi
+
 
 # Configure the subdirectories
 # AC_CONFIG_SUBDIRS($subdirs)

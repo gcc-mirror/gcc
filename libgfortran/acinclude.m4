@@ -279,6 +279,9 @@ esac])
 dnl Check whether we have a __float128 type
 AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
   LIBQUADSPEC=
+
+  if test "x$enable_libquadmath_support" != xno; then
+
   AC_CACHE_CHECK([whether we have a usable __float128 type],
                  libgfor_cv_have_float128, [
     AC_TRY_LINK([
@@ -340,6 +343,12 @@ AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
       LIBQUADLIB_DEP=
       LIBQUADINCLUDE=
     fi
+  fi
+  else
+    # for --disable-quadmath
+    LIBQUADLIB=
+    LIBQUADLIB_DEP=
+    LIBQUADINCLUDE=
   fi
 
   dnl For the spec file

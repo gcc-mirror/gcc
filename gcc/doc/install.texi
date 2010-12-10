@@ -1337,6 +1337,16 @@ do a @samp{make -C gcc gnatlib_and_tools}.
 Specify that the run-time libraries for stack smashing protection
 should not be built.
 
+@item --disable-libquadmath
+Specify that the GCC quad-precision math library should not be built.
+On some systems, the library is required to be linkable when building
+the Fortran front end, unless @option{--disable-libquadmath-support}
+is used.
+
+@item --disable-libquadmath-support
+Specify that the Fortran front end and @code{libgfortran} do not add
+support for @code{libquadmath} on systems supporting it.
+
 @item --disable-libgomp
 Specify that the run-time libraries used by GOMP should not be built.
 
