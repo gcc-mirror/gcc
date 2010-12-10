@@ -5115,9 +5115,9 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 	  || TREE_READONLY (arg)) 
         {
           if (complain & tf_error)
-            readonly_error (arg, ((code == PREINCREMENT_EXPR
-                                   || code == POSTINCREMENT_EXPR)
-                                  ? REK_INCREMENT : REK_DECREMENT));
+            cxx_readonly_error (arg, ((code == PREINCREMENT_EXPR
+				      || code == POSTINCREMENT_EXPR)
+				     ? lv_increment : lv_decrement));
           else
             return error_mark_node;
         }
@@ -6660,7 +6660,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	      && C_TYPE_FIELDS_READONLY (lhstype))))
     {
       if (complain & tf_error)
-	readonly_error (lhs, REK_ASSIGNMENT);
+	cxx_readonly_error (lhs, lv_assign);
       else
 	return error_mark_node;
     }

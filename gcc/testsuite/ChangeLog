@@ -1,3 +1,11 @@
+2010-12-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.dg/dfp/struct-union.c: Adjust.
+	* gcc.dg/lvalue-2.c: Adjust.
+	* gcc.dg/pr21419.c: Adjust.
+	* gcc.dg/qual-component-1.c: Adjust.
+	* g++.dg/other/const1.C: Adjust.
+
 2010-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/46865

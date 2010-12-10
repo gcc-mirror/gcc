@@ -13,5 +13,5 @@ struct Foo
 
 void Foo::Modify(unsigned j) const
 {
-  Foo::i = j;  // { dg-error "assignment of data-member" "" }
+  Foo::i = j;  // { dg-error "assignment of member" "" }
 }

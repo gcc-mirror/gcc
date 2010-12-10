@@ -928,6 +928,7 @@ enum lvalue_use {
   lv_asm
 };
 
+extern void readonly_error (tree, enum lvalue_use);
 extern void lvalue_error (enum lvalue_use);
 extern void invalid_indirection_error (location_t, tree, ref_operator);
 

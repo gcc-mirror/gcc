@@ -1,3 +1,7 @@
+2010-12-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-typeck.c (readonly_error): Delete.
+
 2010-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/46865

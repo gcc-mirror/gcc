@@ -1,3 +1,8 @@
+2010-12-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.h (readonly_error): Declare.
+	* c-common.c (readonly_error): Define.
+
 2010-12-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-common.h (invalid_indirection_error): Declare.
