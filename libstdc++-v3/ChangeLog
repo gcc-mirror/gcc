@@ -1,3 +1,9 @@
+2010-12-10  Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR 43751/target
+	* testsuite/lib/prune.exp: Prune dsymutil warnings.
+
 2010-12-08  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR testsuite/46860
