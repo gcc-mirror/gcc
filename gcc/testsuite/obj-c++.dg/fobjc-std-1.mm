@@ -71,3 +71,12 @@ id test (void)
   return MyRootClass.name; /* { dg-error "not available in Objective.C 1.0" } */
 }
 
+@interface MyRootClass3
+{
+  Class isa;
+}
+@end
+
+/* There is a problem with the testsuite on the following line; the compiler seems Ok, but the testsuite still barfs.  */
+/* @interface MyRootClass3 () */ /* dg-error "not available in Objective.C 1.0" */
+/* @end */
