@@ -1,3 +1,9 @@
+2010-12-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/fobjc-std-1.m: Updated to test that class extensions
+	produce an error with -fobjc-std=objc1.
+	* obj-c++.dg/fobjc-std-1.mm: Same change.
+
 2010-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/46001
