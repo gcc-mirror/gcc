@@ -1,3 +1,8 @@
+2010-12-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/lib/libstdc++.exp (v3-build_support): Delete
+	libtestc++.a before creation.
+
 2010-12-10  Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Iain Sandoe  <iains@gcc.gnu.org>
 
