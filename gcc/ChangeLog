@@ -1,3 +1,10 @@
+2010-12-10  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/46808
+	* lto-symtab.c (lto_symtab_merge_decls_2): Avoid type warnings
+	after errors.
+	(lto_symtab_merge_decls_1): Adjust.
+
 2010-12-10  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR middle-end/46674
