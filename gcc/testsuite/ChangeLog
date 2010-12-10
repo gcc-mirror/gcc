@@ -1,3 +1,18 @@
+2010-12-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/class-extension-1.m: New.
+	* objc.dg/class-extension-2.m: New.
+	* objc.dg/class-extension-3.m: New.
+	* objc.dg/property/at-property-26.m: New.
+	* objc.dg/property/at-property-27.m: New.
+	* objc.dg/property/at-property-28.m: New.
+	* obj-c++.dg/class-extension-1.mm: New.
+	* obj-c++.dg/class-extension-2.mm: New.
+	* obj-c++.dg/class-extension-3.mm: New.
+	* obj-c++.dg/property/at-property-26.mm: New.
+	* obj-c++.dg/property/at-property-27.mm: New.
+	* obj-c++.dg/property/at-property-28.mm: New.	
+	
 2010-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/46057

@@ -1,3 +1,17 @@
+2010-12-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_in_class_extension): New.
+	(objc_start_category_interface): If -fobjc-std=objc1
+	was specified, produce an error if a class extension is used.
+	(objc_finish_interface): Reset objc_in_class_extension to false.
+	(objc_add_property_declaration): Allow a class extension to extend
+	readonly properties in the main @interface to be readwrite.
+	(start_class): Added code to deal with class extensions.  In that
+	case, return the existing interface after adding any additional
+	protocols to it and setting objc_in_class_extension to true.
+	(continue_class): If in a class extension, do not generate the
+	instance variable template.
+
 2010-12-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_build_throw_stmt): Check that the argument of

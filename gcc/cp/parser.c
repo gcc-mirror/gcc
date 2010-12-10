@@ -22435,12 +22435,15 @@ cp_parser_objc_protocol_declaration (cp_parser* parser, tree attributes)
 /* Parse an Objective-C superclass or category.  */
 
 static void
-cp_parser_objc_superclass_or_category (cp_parser *parser, tree *super,
-							  tree *categ)
+cp_parser_objc_superclass_or_category (cp_parser *parser, 
+				       bool iface_p,
+				       tree *super,
+				       tree *categ, bool *is_class_extension)
 {
   cp_token *next = cp_lexer_peek_token (parser->lexer);
 
   *super = *categ = NULL_TREE;
+  *is_class_extension = false;
   if (next->type == CPP_COLON)
     {
       cp_lexer_consume_token (parser->lexer);  /* Eat ':'.  */
@@ -22449,7 +22452,17 @@ cp_parser_objc_superclass_or_category (cp_parser *parser, tree *super,
   else if (next->type == CPP_OPEN_PAREN)
     {
       cp_lexer_consume_token (parser->lexer);  /* Eat '('.  */
-      *categ = cp_parser_identifier (parser);
+
+      /* If there is no category name, and this is an @interface, we
+	 have a class extension.  */
+      if (iface_p && cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
+	{
+	  *categ = NULL_TREE;
+	  *is_class_extension = true;
+	}
+      else
+	*categ = cp_parser_identifier (parser);
+
       cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
     }
 }
@@ -22460,6 +22473,7 @@ static void
 cp_parser_objc_class_interface (cp_parser* parser, tree attributes)
 {
   tree name, super, categ, protos;
+  bool is_class_extension;
 
   cp_lexer_consume_token (parser->lexer);  /* Eat '@interface'.  */
   name = cp_parser_identifier (parser);
@@ -22472,11 +22486,12 @@ cp_parser_objc_class_interface (cp_parser* parser, tree attributes)
       */
       return;
     }
-  cp_parser_objc_superclass_or_category (parser, &super, &categ);
+  cp_parser_objc_superclass_or_category (parser, true, &super, &categ,
+					 &is_class_extension);
   protos = cp_parser_objc_protocol_refs_opt (parser);
 
   /* We have either a class or a category on our hands.  */
-  if (categ)
+  if (categ || is_class_extension)
     objc_start_category_interface (name, categ, protos, attributes);
   else
     {
@@ -22495,6 +22510,7 @@ static void
 cp_parser_objc_class_implementation (cp_parser* parser)
 {
   tree name, super, categ;
+  bool is_class_extension;
 
   cp_lexer_consume_token (parser->lexer);  /* Eat '@implementation'.  */
   name = cp_parser_identifier (parser);
@@ -22508,7 +22524,8 @@ cp_parser_objc_class_implementation (cp_parser* parser)
       */
       return;
     }
-  cp_parser_objc_superclass_or_category (parser, &super, &categ);
+  cp_parser_objc_superclass_or_category (parser, false, &super, &categ,
+					 &is_class_extension);
 
   /* We have either a class or a category on our hands.  */
   if (categ)
