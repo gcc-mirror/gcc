@@ -1,3 +1,9 @@
+2010-12-10  Ian Lance Taylor  <iant@google.com>
+
+	PR bootstrap/46819
+	* configure.ac: For --disable-libgcj clear libgcj_saved.
+	* configure: Rebuild.
+
 2010-12-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46540
