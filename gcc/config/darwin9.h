@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
    "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %{v} \
     %{g*:%{!gstabs*:%{!g0: -idsym}}}\
-    %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm|.s: \
+    %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm|.s|.f|.f90|.f95|.f03|.f77|.for|.F|.F90|.F95|.F03: \
     %{g*:%{!gstabs*:%{!g0: -dsym}}}}}}}}}}}"
 
 /* Tell collect2 to run dsymutil for us as necessary.  */

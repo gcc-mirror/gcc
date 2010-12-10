@@ -54,7 +54,9 @@ proc prune_gcc_output { text } {
 
     # Ignore harmless warnings from Xcode 3.2.x.
     regsub -all "(^|\n)\[^\n\]*ld: warning: can't add line info to anonymous symbol\[^\n\]*" $text "" text
-
+    regsub -all "(^|\n)\[^\n\]*warning: DWARFDebugInfoEntry::AppendDependants\[^\n\]*AT_\[^\n\]*_bound\[^\n\]*FORM_ref4\[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*warning:\[^\n\]*TAG_variable:  AT_location\[^\n\]*didn't have valid function low pc\[^\n\]*" $text "" text
+    
     #send_user "After:$text\n"
 
     return $text
