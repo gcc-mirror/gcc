@@ -1,3 +1,25 @@
+2010-12-10  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR middle-end/46674
+	PR lto/43157
+	* target.def (mangle_assembler_name): New target asm_out hook.
+	* targhooks.c (default_mangle_assembler_name): Add default hook
+	implementation.
+	* targhooks.h (default_mangle_assembler_name): Add prototype.
+	* lto-symtab.c (lto_symtab_register_decl): Use new hook when
+	processing DECL_ASSEMBLER_NAMEs for lto symtabs.
+	(lto_symtab_get_resolution): Likewise.
+	(lto_cgraph_replace_node): Likewise.
+	(lto_symtab_prevailing_decl): Likewise.
+	* lto-streamer-out.c (write_symbol): Likewise.
+	* doc/tm.texi.in (TARGET_MANGLE_ASSEMBLER_NAME): Add @hook directive.
+	* doc/tm.texi: Regenerate.
+	* config/i386/cygming.h (TARGET_MANGLE_ASSEMBLER_NAME): Define to
+	point at i386_pe_mangle_assembler_name.
+	* config/i386/winnt.c (i386_pe_mangle_assembler_name): New function.
+	* config/i386/i386-protos.h (i386_pe_mangle_assembler_name): Add
+	prototype.
+
 2010-12-10  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-typeck.c (readonly_error): Delete.

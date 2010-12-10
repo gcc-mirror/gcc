@@ -226,6 +226,7 @@ extern void i386_pe_file_end (void);
 extern void i386_pe_start_function (FILE *, const char *, tree);
 extern void i386_pe_end_function (FILE *, const char *, tree);
 extern tree i386_pe_mangle_decl_assembler_name (tree, tree);
+extern tree i386_pe_mangle_assembler_name (const char *);
 
 extern void i386_pe_seh_init (FILE *);
 extern void i386_pe_seh_end_prologue (FILE *);

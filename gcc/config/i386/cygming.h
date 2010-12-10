@@ -252,6 +252,10 @@ do {						\
   fputs ((NAME), (STREAM));			\
 } while (0)
 
+/* This does much the same in memory rather than to a stream.  */
+#undef TARGET_MANGLE_ASSEMBLER_NAME
+#define TARGET_MANGLE_ASSEMBLER_NAME i386_pe_mangle_assembler_name
+
 
 /* Emit code to check the stack when allocating more than 4000
    bytes in one go.  */

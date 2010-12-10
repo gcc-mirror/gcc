@@ -2368,15 +2368,13 @@ write_symbol (struct lto_streamer_cache_d *cache,
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (t));
 
+  /* This behaves like assemble_name_raw in varasm.c, performing the
+     same name manipulations that ASM_OUTPUT_LABELREF does. */
+  name = IDENTIFIER_POINTER ((*targetm.asm_out.mangle_assembler_name) (name));
+
   if (pointer_set_contains (seen, name))
     return;
   pointer_set_insert (seen, name);
-
-  /* FIXME lto: this is from assemble_name_raw in varasm.c. For some
-     architectures we might have to do the same name manipulations that
-     ASM_OUTPUT_LABELREF does. */
-  if (name[0] == '*')
-    name = &name[1];
 
   lto_streamer_cache_lookup (cache, t, &slot_num);
   gcc_assert (slot_num >= 0);
