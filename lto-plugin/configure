@@ -10872,24 +10872,6 @@ esac
 
 
 
-# Trying to get this information from gcc's config is tricky.
-case $target in
-  x86_64*-mingw*)
-
-$as_echo "#define SYM_STYLE ss_none" >>confdefs.h
-
-    ;;
-  *-cygwin* | i?86*-mingw* )
-
-$as_echo "#define SYM_STYLE ss_win32" >>confdefs.h
-
-    ;;
-  *)
-
-$as_echo "#define SYM_STYLE ss_none" >>confdefs.h
-
-    ;;
-esac
 ac_fn_c_find_intX_t "$LINENO" "64" "ac_cv_c_int64_t"
 case $ac_cv_c_int64_t in #(
   no|yes) ;; #(

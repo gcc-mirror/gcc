@@ -155,7 +155,8 @@ lto_symtab_register_decl (tree decl,
     gcc_assert (!DECL_ABSTRACT (decl));
 
   new_entry = ggc_alloc_cleared_lto_symtab_entry_def ();
-  new_entry->id = DECL_ASSEMBLER_NAME (decl);
+  new_entry->id = (*targetm.asm_out.mangle_assembler_name)
+		  (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
   new_entry->decl = decl;
   new_entry->resolution = resolution;
   new_entry->file_data = file_data;
@@ -190,7 +191,8 @@ lto_symtab_get_resolution (tree decl)
 
   gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
 
-  e = lto_symtab_get (DECL_ASSEMBLER_NAME (decl));
+  e = lto_symtab_get ((*targetm.asm_out.mangle_assembler_name)
+		      (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl))));
   while (e && e->decl != decl)
     e = e->next;
   if (!e)
@@ -218,7 +220,8 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 	       cgraph_node_name (node), node->uid,
 	       cgraph_node_name (prevailing_node),
 	       prevailing_node->uid,
-	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)));
+	       IDENTIFIER_POINTER ((*targetm.asm_out.mangle_assembler_name)
+		 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)))));
     }
 
   if (prevailing_node->same_body_alias)
@@ -836,7 +839,8 @@ lto_symtab_prevailing_decl (tree decl)
   gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
 
   /* Walk through the list of candidates and return the one we merged to.  */
-  ret = lto_symtab_get (DECL_ASSEMBLER_NAME (decl));
+  ret = lto_symtab_get ((*targetm.asm_out.mangle_assembler_name)
+			(IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl))));
   if (!ret)
     return NULL_TREE;
 

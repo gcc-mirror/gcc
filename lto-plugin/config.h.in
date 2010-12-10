@@ -61,9 +61,6 @@
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
-/* Default symbol style */
-#undef SYM_STYLE
-
 /* Version number of package */
 #undef VERSION
 
