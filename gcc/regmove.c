@@ -514,7 +514,7 @@ optimize_reg_copy_3 (rtx insn, rtx dest, rtx src)
   rtx src_reg = XEXP (src, 0);
   int src_no = REGNO (src_reg);
   int dst_no = REGNO (dest);
-  rtx p, set;
+  rtx p, set, set_insn;
   enum machine_mode old_mode;
   basic_block bb = BLOCK_FOR_INSN (insn);
 
@@ -552,6 +552,7 @@ optimize_reg_copy_3 (rtx insn, rtx dest, rtx src)
 				 GET_MODE_BITSIZE (GET_MODE (src_reg))))
     return;
 
+  set_insn = p;
   old_mode = GET_MODE (src_reg);
   PUT_MODE (src_reg, GET_MODE (src));
   XEXP (src, 0) = SET_SRC (set);
@@ -584,9 +585,19 @@ optimize_reg_copy_3 (rtx insn, rtx dest, rtx src)
     }
   else
     {
-      rtx note = find_reg_note (p, REG_EQUAL, NULL_RTX);
+      rtx note = find_reg_note (set_insn, REG_EQUAL, NULL_RTX);
       if (note)
-	remove_note (p, note);
+	{
+	  if (rtx_equal_p (XEXP (note, 0), XEXP (src, 0)))
+	    {
+	      XEXP (note, 0)
+		= gen_rtx_fmt_e (GET_CODE (src), GET_MODE (src),
+				 XEXP (note, 0));
+	      df_notes_rescan (set_insn);
+	    }
+	  else
+	    remove_note (set_insn, note);
+	}
     }
 }
 
