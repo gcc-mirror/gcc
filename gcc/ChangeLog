@@ -1,3 +1,9 @@
+2010-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46864
+	* tree-ssa-loop-im.c (loop_suitable_for_sm): Return false even
+	when there are EDGE_EH exit edges.
+
 2010-12-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46540
