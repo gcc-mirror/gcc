@@ -5293,6 +5293,16 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
     }
 }
 
+/* Helper function to check dimensions.  */
+static bool
+dim_ok (gfc_ss_info *info)
+{
+  int n;
+  for (n = 0; n < info->dimen; n++)
+    if (info->dim[n] != n)
+      return false;
+  return true;
+}
 
 /* Convert an array for passing as an actual argument.  Expressions and
    vector subscripts are evaluated and stored in a temporary, which is then
@@ -5378,15 +5388,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       else
 	full = gfc_full_array_ref_p (info->ref, NULL);
 
-      if (full)
-	for (n = 0; n < info->dimen; n++)
-	  if (info->dim[n] != n)
-	    {
-	      full = 0;
-	      break;
-	    }
-
-      if (full)
+      if (full && dim_ok (info))
 	{
 	  if (se->direct_byref && !se->byref_noassign)
 	    {
@@ -5588,7 +5590,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       desc = loop.temp_ss->data.info.descriptor;
     }
-  else if (expr->expr_type == EXPR_FUNCTION)
+  else if (expr->expr_type == EXPR_FUNCTION && dim_ok (info))
     {
       desc = info->descriptor;
       se->string_length = ss->string_length;
