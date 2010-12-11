@@ -1,3 +1,8 @@
+2010-12-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-resolve-method.m: New.
+	* obj-c++.dg/gnu-api-2-resolve-method.mm: New.	
+
 2010-12-10 Ahmad Sharif <asharif@google.com>
 
 	* gcc.target/i386/max-stack-align.c: New testcase.

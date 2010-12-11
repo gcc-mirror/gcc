@@ -138,6 +138,102 @@ __objc_get_forward_imp (id rcv, SEL sel)
     }
 }
 
+/* Selectors for +resolveClassMethod: and +resolveInstanceMethod:.
+   These are set up at startup.  */
+static SEL selector_resolveClassMethod = NULL;
+static SEL selector_resolveInstanceMethod = NULL;
+
+/* Internal routines use to resolve a class method using
+   +resolveClassMethod:.  'class' is always a non-Nil class (*not* a
+   meta-class), and 'sel' is the selector that we are trying to
+   resolve.  This must be called when class is not Nil, and the
+   dispatch table for class methods has already been installed.
+
+   This routine tries to call +resolveClassMethod: to give an
+   opportunity to resolve the method.  If +resolveClassMethod: returns
+   YES, it tries looking up the method again, and if found, it returns
+   it.  Else, it returns NULL.  */
+static inline
+IMP
+__objc_resolve_class_method (Class class, SEL sel)
+{
+  /* We need to lookup +resolveClassMethod:.  */
+  BOOL (*resolveMethodIMP) (id, SEL, SEL);
+
+  /* The dispatch table for class methods is already installed and we
+     don't want any forwarding to happen when looking up this method,
+     so we just look it up directly.  Note that if 'sel' is precisely
+     +resolveClassMethod:, this would look it up yet again and find
+     nothing.  That's no problem and there's no recursion.  */
+  resolveMethodIMP = (BOOL (*) (id, SEL, SEL))sarray_get_safe
+    (class->class_pointer->dtable, (size_t) selector_resolveClassMethod->sel_id);
+
+  if (resolveMethodIMP && resolveMethodIMP ((id)class, selector_resolveClassMethod, sel))
+    {
+      /* +resolveClassMethod: returned YES.  Look the method up again.
+	 We already know the dtable is installed.  */
+      
+      /* TODO: There is the case where +resolveClassMethod: is buggy
+	 and returned YES without actually adding the method.  We
+	 could maybe print an error message.  */
+      return sarray_get_safe (class->class_pointer->dtable, (size_t) sel->sel_id);
+    }
+
+  return NULL;
+}
+
+/* Internal routines use to resolve a instance method using
+   +resolveInstanceMethod:.  'class' is always a non-Nil class, and
+   'sel' is the selector that we are trying to resolve.  This must be
+   called when class is not Nil, and the dispatch table for instance
+   methods has already been installed.
+
+   This routine tries to call +resolveInstanceMethod: to give an
+   opportunity to resolve the method.  If +resolveInstanceMethod:
+   returns YES, it tries looking up the method again, and if found, it
+   returns it.  Else, it returns NULL.  */
+static inline
+IMP
+__objc_resolve_instance_method (Class class, SEL sel)
+{
+  /* We need to lookup +resolveInstanceMethod:.  */
+  BOOL (*resolveMethodIMP) (id, SEL, SEL);
+
+  /* The dispatch table for class methods may not be already installed
+     so we have to install it if needed.  */
+  resolveMethodIMP = sarray_get_safe (class->class_pointer->dtable,
+				      (size_t) selector_resolveInstanceMethod->sel_id);
+  if (resolveMethodIMP == 0)
+    {
+      /* Try again after installing the dtable.  */
+      if (class->class_pointer->dtable == __objc_uninstalled_dtable)
+	{
+	  objc_mutex_lock (__objc_runtime_mutex);
+	  if (class->class_pointer->dtable == __objc_uninstalled_dtable)
+	    __objc_install_dispatch_table_for_class (class->class_pointer);
+	  objc_mutex_unlock (__objc_runtime_mutex);
+	}
+      resolveMethodIMP = sarray_get_safe (class->class_pointer->dtable,
+					  (size_t) selector_resolveInstanceMethod->sel_id);	      
+    }
+
+  if (resolveMethodIMP && resolveMethodIMP ((id)class, selector_resolveInstanceMethod, sel))
+    {
+      /* +resolveInstanceMethod: returned YES.  Look the method up
+	 again.  We already know the dtable is installed.  */
+      
+      /* TODO: There is the case where +resolveInstanceMethod: is
+	 buggy and returned YES without actually adding the method.
+	 We could maybe print an error message.  */
+      return sarray_get_safe (class->dtable, (size_t) sel->sel_id);	
+    }
+
+  return NULL;
+}
+
+/* Temporary definition until we include objc/runtime.h.  */
+objc_EXPORT Class objc_lookupClass (const char *name);
+
 /* Given a class and selector, return the selector's implementation.  */
 inline
 IMP
@@ -188,14 +284,35 @@ get_imp (Class class, SEL sel)
 	    {
 	      /* The dispatch table has been installed, and the method
 		 is not in the dispatch table.  So the method just
-		 doesn't exist for the class.  Return the forwarding
-		 implementation.  We don't know the receiver (only its
-		 class), so we have to pass 'nil' as the first
-		 argument.  Passing the class as first argument is
-		 wrong because the class is not the receiver; it can
-		 result in us calling a class method when we want an
-		 instance method of the same name.  */
-             res = __objc_get_forward_imp (nil, sel);
+		 doesn't exist for the class.  */
+
+	      /* Try going through the +resolveClassMethod: or
+		 +resolveInstanceMethod: process.  */
+	      if (CLS_ISMETA (class))
+		{
+		  /* We have the meta class, but we need to invoke the
+		     +resolveClassMethod: method on the class.  So, we
+		     need to obtain the class from the meta class,
+		     which we do using the fact that both the class
+		     and the meta-class have the same name.  */
+		  Class realClass = objc_lookupClass (class->name);
+		  if (realClass)
+		    res = __objc_resolve_class_method (realClass, sel);
+		}
+	      else
+		res = __objc_resolve_instance_method (class, sel);
+
+	      if (res == 0)
+		{
+		  /* If that fails, then return the forwarding
+		     implementation.  We don't know the receiver (only its
+		     class), so we have to pass 'nil' as the first
+		     argument.  Passing the class as first argument is
+		     wrong because the class is not the receiver; it can
+		     result in us calling a class method when we want an
+		     instance method of the same name.  */
+		  res = __objc_get_forward_imp (nil, sel);
+		}
 	    }
 	}
     }
@@ -304,9 +421,20 @@ objc_msg_lookup (id receiver, SEL op)
 					(sidx)op->sel_id);
 	      if (result == 0)
 		{
-		  /* If the method still just doesn't exist for the
-		     class, attempt to forward the method. */
-		  result = __objc_get_forward_imp (receiver, op);
+		  /* Try going through the +resolveClassMethod: or
+		     +resolveInstanceMethod: process.  */
+		  if (CLS_ISMETA (receiver->class_pointer))
+		    result = __objc_resolve_class_method ((Class)receiver, op);
+		  else
+		    result = __objc_resolve_instance_method (receiver->class_pointer,
+							     op);
+
+		  if (result == 0)
+		    {
+		      /* If the method still just doesn't exist for
+			 the class, attempt to forward the method. */
+		      result = __objc_get_forward_imp (receiver, op);
+		    }
 		}
 	    }
 	}
@@ -343,6 +471,10 @@ void
 __objc_init_dispatch_tables ()
 {
   __objc_uninstalled_dtable = sarray_new (200, 0);
+
+  /* TODO: It would be cool to register typed selectors here.  */
+  selector_resolveClassMethod = sel_register_name ("resolveClassMethod:");
+  selector_resolveInstanceMethod  =sel_register_name ("resolveInstanceMethod:");
 }
 
 /* This function is called by objc_msg_lookup when the
@@ -566,20 +698,43 @@ class_get_class_method (MetaClass class, SEL op)
 struct objc_method *
 class_getInstanceMethod (Class class_, SEL selector)
 {
+  struct objc_method *m;
+
   if (class_ == Nil  ||  selector == NULL)
     return NULL;
 
-  return search_for_method_in_hierarchy (class_, selector);
+  m = search_for_method_in_hierarchy (class_, selector);
+  if (m)
+    return m;
+
+  /* Try going through +resolveInstanceMethod:, and do
+     the search again if successful.  */
+  if (__objc_resolve_instance_method (class_, selector))
+    return search_for_method_in_hierarchy (class_, selector);
+
+  return NULL;
 }
 
 struct objc_method *
 class_getClassMethod (Class class_, SEL selector)
 {
+  struct objc_method *m;
+
   if (class_ == Nil  ||  selector == NULL)
     return NULL;
   
-  return search_for_method_in_hierarchy (class_->class_pointer, 
-					 selector);
+  m = search_for_method_in_hierarchy (class_->class_pointer, 
+				      selector);
+  if (m)
+    return m;
+
+  /* Try going through +resolveClassMethod:, and do the search again
+     if successful.  */
+  if (__objc_resolve_class_method (class_, selector))
+    return search_for_method_in_hierarchy (class_->class_pointer, 
+					   selector);    
+
+  return NULL;
 }
 
 BOOL

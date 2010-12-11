@@ -1,5 +1,21 @@
 2010-12-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* sendmsg.c (selector_resolveClassMethod): New.
+	(selector_resolveInstanceMethod): New.
+	(__objc_resolve_class_method): New.
+	(__objc_resolve_instance_method): New.
+	(get_imp): Call __objc_resolve_class_method or
+	__objc_resolve_instance_method at the appropriate time.
+	(objc_msg_lookup): Same.
+	(class_getClassMethod): Same.	
+	(class_getInstanceMethod): Same.
+	(__objc_init_dispatch_tables): Initialize
+	selector_resolveClassMethod and selector_resolveInstanceMethod.
+	* objc/runtime.h: Updated documentation of class_getClassMethod,
+	class_getInstanceMethod and class_getMethodImplementation.
+	
+2010-12-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-private/module-abi-8.h (struct objc_symtab): Updated
 	description of sel_ref_cnt and refs.
 	* objc/deprecated/struct_objc_symtab.h (objc_symtab): Same change.
