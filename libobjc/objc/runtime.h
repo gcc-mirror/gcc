@@ -590,13 +590,17 @@ objc_disposeClassPair (Class class_);
 /* Return the instance method with selector 'selector' of class
    'class_', or NULL if the class (or one of its superclasses) does
    not implement the method.  Return NULL if class_ is Nil or selector
-   is NULL.  */
+   is NULL.  Calling this function may trigger a call to
+   +resolveInstanceMethod:, but does not return a forwarding
+   function.  */
 objc_EXPORT Method class_getInstanceMethod (Class class_, SEL selector);
 
 /* Return the class method with selector 'selector' of class 'class_',
    or NULL if the class (or one of its superclasses) does not
    implement the method.  Return NULL if class_ is Nil or selector is
-   NULL.  */
+   NULL.  Calling this function may trigger a call to
+   +resolveClassMethod:, but does not return a forwarding
+   function.  */
 objc_EXPORT Method class_getClassMethod (Class class_, SEL selector);
 
 /* Return the IMP (pointer to the function implementing a method) for
@@ -607,7 +611,15 @@ objc_EXPORT Method class_getClassMethod (Class class_, SEL selector);
    arguments and return type before calling it.  To get a class
    method, you can pass the meta-class as the class_ argument (ie, use
    class_getMethodImplementation (object_getClass (class_),
-   selector)).  Return NULL if class_ is Nil or selector is NULL.  */
+   selector)).  Return NULL if class_ is Nil or selector is NULL.
+   This function first looks for an existing method; if it is not
+   found, it calls +resolveClassMethod: or +resolveInstanceMethod:
+   (depending on whether a class or instance method is being looked
+   up) if it is implemented.  If the method returns YES, then it tries
+   the look up again (the assumption being that +resolveClassMethod:
+   or resolveInstanceMethod: will add the method using
+   class_addMethod()).  If it is still not found, it returns a
+   forwarding function.  */
 objc_EXPORT IMP class_getMethodImplementation (Class class_, SEL selector);
 
 /* Compatibility Note: the Apple/NeXT runtime has the function
