@@ -288,7 +288,7 @@ match_hollerith_constant (gfc_expr **result)
 
 	  for (i = 0; i < num; i++)
 	    {
-	      gfc_char_t c = gfc_next_char_literal (1);
+	      gfc_char_t c = gfc_next_char_literal (INSTRING_WARN);
 	      if (! gfc_wide_fits_in_byte (c))
 		{
 		  gfc_error ("Invalid Hollerith constant at %L contains a "
@@ -761,7 +761,7 @@ next_string_char (gfc_char_t delimiter, int *ret)
   locus old_locus;
   gfc_char_t c;
 
-  c = gfc_next_char_literal (1);
+  c = gfc_next_char_literal (INSTRING_WARN);
   *ret = 0;
 
   if (c == '\n')
@@ -785,7 +785,7 @@ next_string_char (gfc_char_t delimiter, int *ret)
     return c;
 
   old_locus = gfc_current_locus;
-  c = gfc_next_char_literal (0);
+  c = gfc_next_char_literal (NONSTRING);
 
   if (c == delimiter)
     return c;

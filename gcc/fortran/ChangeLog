@@ -1,3 +1,19 @@
+2010-12-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/46705
+	* gfortran.h: New enum gfc_instring.
+	(gfc_next_char_literal): Update prototype.
+	* scanner.c (gfc_next_char_literal): Use new enum. Only give missing
+	'&' warning for INSTRING_WARN. (gfc_next_char): Use new enum.
+	(gfc_gobble_whitespace): Likewise.
+	* io.c (next_char): Use new enum. (next_char_not_space): Likewise.
+	(format_lex): Likewise.
+	* match.c (gfc_match_parens): Likewise.
+	(gfc_match_special_char): Likewise. (gfc_match_name_C): Likewise.
+	* parse.c (next_fixed): Likewise.
+	* primary.c (match_hollerith_constant): Likewise.
+	(next_string_char): Likewise.
+
 2010-12-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46370

@@ -745,7 +745,7 @@ next_fixed (void)
 
   for (i = 0; i < 5; i++)
     {
-      c = gfc_next_char_literal (0);
+      c = gfc_next_char_literal (NONSTRING);
 
       switch (c)
 	{
@@ -771,18 +771,18 @@ next_fixed (void)
 	     here, except for GCC attributes and OpenMP directives.  */
 
 	case '*':
-	  c = gfc_next_char_literal (0);
+	  c = gfc_next_char_literal (NONSTRING);
 	  
 	  if (TOLOWER (c) == 'g')
 	    {
-	      for (i = 0; i < 4; i++, c = gfc_next_char_literal (0))
+	      for (i = 0; i < 4; i++, c = gfc_next_char_literal (NONSTRING))
 		gcc_assert (TOLOWER (c) == "gcc$"[i]);
 
 	      return decode_gcc_attribute ();
 	    }
 	  else if (c == '$' && gfc_option.gfc_flag_openmp)
 	    {
-	      for (i = 0; i < 4; i++, c = gfc_next_char_literal (0))
+	      for (i = 0; i < 4; i++, c = gfc_next_char_literal (NONSTRING))
 		gcc_assert ((char) gfc_wide_tolower (c) == "$omp"[i]);
 
 	      if (c != ' ' && c != '0')
@@ -821,7 +821,7 @@ next_fixed (void)
      of a previous statement.  If we see something here besides a
      space or zero, it must be a bad continuation line.  */
 
-  c = gfc_next_char_literal (0);
+  c = gfc_next_char_literal (NONSTRING);
   if (c == '\n')
     goto blank_line;
 
@@ -839,7 +839,7 @@ next_fixed (void)
   do
     {
       loc = gfc_current_locus;
-      c = gfc_next_char_literal (0);
+      c = gfc_next_char_literal (NONSTRING);
     }
   while (gfc_is_whitespace (c));
 
