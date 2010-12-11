@@ -1,3 +1,10 @@
+2010-12-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46370
+	* primary.c (gfc_match_varspec): Pass information about codimension
+	to gfc_match_array_ref also for BT_CLASS.
+	* resolve.c (resolve_procedure): Correct check for C612.
+
 2010-12-11  Mikael Morin   <mikael@gcc.gnu.org>
 	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 

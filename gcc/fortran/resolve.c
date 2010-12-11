@@ -5027,13 +5027,6 @@ resolve_procedure:
     {
       gfc_ref *ref, *ref2 = NULL;
 
-      if (e->ts.type == BT_CLASS)
-	{
-	  gfc_error ("Polymorphic subobject of coindexed object at %L",
-		     &e->where);
-	  t = FAILURE;
-	}
-
       for (ref = e->ref; ref; ref = ref->next)
 	{
 	  if (ref->type == REF_COMPONENT)
@@ -5045,6 +5038,14 @@ resolve_procedure:
       for ( ; ref; ref = ref->next)
 	if (ref->type == REF_COMPONENT)
 	  break;
+
+      /* Expression itself is not coindexed object.  */
+      if (ref && e->ts.type == BT_CLASS)
+	{
+	  gfc_error ("Polymorphic subobject of coindexed object at %L",
+		     &e->where);
+	  t = FAILURE;
+	}
 
       /* Expression itself is coindexed object.  */
       if (ref == NULL)
