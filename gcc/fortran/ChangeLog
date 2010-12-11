@@ -1,3 +1,11 @@
+2010-12-11  Mikael Morin   <mikael@gcc.gnu.org>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/46842
+	* trans-array.c (dim_ok): New helper function.
+	(gfc_conv_expr_descriptor): Use new helper function to check
+	function array is full.
+
 2010-12-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46540
